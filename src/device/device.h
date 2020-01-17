@@ -6,6 +6,7 @@
 class TownsDevice
 {
 public:
+	long long int devicdTime;
 };
 
 
