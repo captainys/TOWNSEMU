@@ -6,7 +6,7 @@ Device::Device()
 	abort=false;
 }
 
-void Device::Abort(const char abortReason[])
+void Device::Abort(const char abortReason[]) const
 {
 	abort=true;
 	this->abortReason=abortReason;

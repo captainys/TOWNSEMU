@@ -16,3 +16,29 @@ bool Memory::LoadROMImages(const char dirName[])
 
 	return true;
 }
+
+void Memory::SetMainRAMSize(long long int size)
+{
+	state.RAM.resize(size);
+}
+
+void Memory::SetVRAMSize(long long int size)
+{
+	state.VRAM.resize(size);
+}
+
+void Memory::SetSpriteRAMSize(long long int size)
+{
+	state.spriteRAM.resize(size);
+}
+
+void Memory::SetWaveRAMSize(long long int size)
+{
+	state.waveRAM.resize(size);
+}
+
+/* virtual */ void Memory::Reset(void)
+{
+	state.sysRomMapping=true;
+}
+

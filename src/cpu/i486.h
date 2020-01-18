@@ -62,7 +62,7 @@ public:
 		EFLAGS_VIRTUAL86=  0x20000,
 		EFLAGS_ALIGN_CHECK=0x40000,
 
-		CR0_PAGING=               0x80000000,  // [1] Page 4-6
+		CR0_PAGING_ENABLED=       0x80000000,  // [1] Page 4-6
 		CR0_CACHE_DISABLE=        0x40000000,
 		CR0_NOT_WRITE_THROUGH=    0x20000000,
 		CR0_ALIGNMENT_MASK=       0x00040000,
@@ -161,6 +161,59 @@ public:
 	/*! Loads a segment register in real mode.
 	*/
 	void LoadSegmentRegisterRealMode(SegmentRegister &reg,unsigned int value);
+
+	/*! Returns true if in 16-bit addressing mode.
+	*/
+	inline bool AddressingMode16Bit(void) const
+	{
+		if(0==(state.CR0&CR0_PROTECTION_ENABLE))
+		{
+			return true;
+		}
+		else
+		{
+			Abort("Protected mode not supported yet.");
+		}
+		return false;
+	}
+
+	/*! Returns true if Paging is enabled.
+	*/
+	inline bool PagingEnabled(void) const
+	{
+		return 0!=(state.CR0&CR0_PAGING_ENABLED);
+	}
+
+	/*!
+	*/
+	unsigned long LinearAddressToPhysicalAddress(unsigned int linearAddr,const Memory &mem) const
+	{
+		Abort("Paging not supported yet.");
+	}
+
+	/*! Fetch a byte. 
+	*/
+	inline unsigned int FetchByte(SegmentRegister seg,unsigned int offset,const Memory &mem) const
+	{
+		if(true==AddressingMode16Bit())
+		{
+			offset&=0xffff;
+		}
+		auto addr=seg.baseLinearAddr+offset;
+		if(true==PagingEnabled())
+		{
+			addr=LinearAddressToPhysicalAddress(addr,mem);
+		}
+		return mem.Fetch(addr);
+	}
+
+	/*! Fetch a byte from CS:[EIP+offset].
+	*/
+	inline unsigned int FetchInstructionByte(unsigned int offset,const Memory &mem) const
+	{
+		return FetchByte(state.CS,state.EIP+offset,mem);
+	}
+
 
 
 	unsigned long long RunOneInstruction(Memory &mem,InOut &io);

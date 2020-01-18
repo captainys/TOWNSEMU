@@ -43,3 +43,4 @@ void i486DX::LoadSegmentRegisterRealMode(SegmentRegister &reg,unsigned int value
 	reg.value=value;
 	reg.baseLinearAddr=(value<<4);
 }
+

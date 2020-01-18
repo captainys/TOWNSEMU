@@ -15,3 +15,5 @@ add_subdirectory(device)
 add_subdirectory(cpu)
 add_subdirectory(inout)
 add_subdirectory(ramrom)
+
+add_subdirectory(main_cui)

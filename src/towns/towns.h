@@ -67,12 +67,17 @@ public:
 	/*! After constructing FMTowns class, call this function to specify where to look
 	    for the ROM images.
 	    It just redirect the call to mem.LoadROMImages() function.
+	    Returns false if it could not read ROM images.
 	*/
-	void LoadROMImages(const char dirName[]);
+	bool LoadROMImages(const char dirName[]);
 
 	/*! Once the ROMs are loaded, call Reset function to start the virtual machine.
 	*/
 	void Reset(void);
+
+
+
+	// Following functions are for testing purposes.
 };
 
 

@@ -7,14 +7,14 @@
 class Device
 {
 public:
-	bool abort;
-	std::string abortReason;
+	mutable bool abort;
+	mutable std::string abortReason;
 
 	long long int deviceTime;
 
 	Device();
 
-	void Abort(const char abortReason[]);
+	void Abort(const char abortReason[]) const;
 
 	virtual const char *DeviceName(void) const=0;
 
