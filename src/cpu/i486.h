@@ -9,7 +9,7 @@
 class i486DX : public CPU
 {
 public:
-	unsigned long long 
+	unsigned long long RunOneInstruction(void);
 };
 
 /* } */

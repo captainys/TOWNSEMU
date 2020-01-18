@@ -1,0 +1,3 @@
+add_library(cpu cpu.h cpu.cpp i486.h i486.cpp)
+target_link_libraries(cpu device ramrom inout)
+target_include_directories(cpu PUBLIC .)

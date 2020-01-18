@@ -3,7 +3,7 @@
 /* { */
 
 
-class TownsDevice
+class Device
 {
 public:
 	long long int devicdTime;
