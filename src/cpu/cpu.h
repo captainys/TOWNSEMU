@@ -8,9 +8,5 @@ class CPU : public Device
 {
 };
 
-class i486DX : public CPU
-{
-};
-
 /* } */
 #endif
