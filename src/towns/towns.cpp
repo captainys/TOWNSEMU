@@ -37,3 +37,8 @@ void FMTowns::Reset(void)
 		devPtr->Reset();
 	}
 }
+
+unsigned int FMTowns::FetchByteCS_EIP(int offset) const
+{
+	return cpu.FetchInstructionByte(offset,mem);
+}

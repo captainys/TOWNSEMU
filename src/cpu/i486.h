@@ -189,6 +189,7 @@ public:
 	unsigned long LinearAddressToPhysicalAddress(unsigned int linearAddr,const Memory &mem) const
 	{
 		Abort("Paging not supported yet.");
+		return linearAddr;
 	}
 
 	/*! Fetch a byte. 
@@ -204,7 +205,7 @@ public:
 		{
 			addr=LinearAddressToPhysicalAddress(addr,mem);
 		}
-		return mem.Fetch(addr);
+		return mem.FetchByte(addr);
 	}
 
 	/*! Fetch a byte from CS:[EIP+offset].

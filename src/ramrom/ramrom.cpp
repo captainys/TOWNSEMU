@@ -37,6 +37,30 @@ void Memory::SetWaveRAMSize(long long int size)
 	state.waveRAM.resize(size);
 }
 
+unsigned int Memory::FetchByte(unsigned int addr) const
+{
+	if(addr<state.RAM.size())
+	{
+		if(true==state.sysRomMapping && 0xF8000<=addr && addr<=0xFFFFF)
+		{
+			return sysRom[addr-0xC0000];
+		}
+		else
+		{
+			return state.RAM[addr];
+		}
+	}
+	if(0x80000000<=addr && addr<0x80080000)
+	{
+		return state.VRAM[addr-0x80000000];
+	}
+	if(0xFFFC0000<=addr)
+	{
+		return sysRom[addr-0xFFFC0000];
+	}
+	return 0xFF;
+}
+
 /* virtual */ void Memory::Reset(void)
 {
 	state.sysRomMapping=true;

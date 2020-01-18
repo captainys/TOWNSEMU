@@ -78,6 +78,7 @@ public:
 
 
 	// Following functions are for testing purposes.
+	unsigned int FetchByteCS_EIP(int offset) const;
 };
 
 

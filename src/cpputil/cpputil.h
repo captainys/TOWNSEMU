@@ -21,6 +21,11 @@ const char *StrSkip(const char str[],const char ptn[]);
 const char *StrSkipSpace(const char str[]);
 const char *StrSkipNonSpace(const char str[]);
 const char *BoolToStr(bool b);
+int Xtoi(const char str[]);
+int Atoi(const char str[]);
+inline char FourBitToX(int i);
+std::string Uitox(unsigned int i);
+std::string Uitoa(unsigned int i);
 
 };
 

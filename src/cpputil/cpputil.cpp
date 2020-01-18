@@ -269,3 +269,135 @@ const char *cpputil::BoolToStr(bool b)
 		return "FALSE";
 	}
 }
+
+int cpputil::Xtoi(const char str[])
+{
+	int n=0;
+	while(0!=str[0])
+	{
+		if('0'<=*str && *str<='9')
+		{
+			n*=16;
+			n+=(*str-'0');
+		}
+		else if('a'<=*str && *str<='f')
+		{
+			n*=16;
+			n+=(10+*str-'a');
+		}
+		else if('A'<=*str && *str<='F')
+		{
+			n*=16;
+			n+=(10+*str-'A');
+		}
+		else
+		{
+			break;
+		}
+		++str;
+	}
+	return n;
+}
+
+int cpputil::Atoi(const char str[])
+{
+	if(nullptr==str)
+	{
+		return 0;
+	}
+
+	int sign=1;
+	if('-'==str[0])
+	{
+		sign=-1;
+		++str;
+	}
+
+	int n=0;
+	if(('0'==str[0] && ('x'==str[1] || 'X'==str[1])) ||
+	   ('&'==str[0] && ('h'==str[1] || 'H'==str[1])))
+	{
+		n=Xtoi(str+2);
+	}
+	else if('$'==str[0])
+	{
+		n=Xtoi(str+1);
+	}
+	else
+	{
+		bool hexaDecimal=false;
+		for(int i=0; str[i]!=0; ++i)
+		{
+			if(('h'==str[i] || 'H'==str[i]) &&
+			   (str[i+1]<'a' || 'z'<str[i+1]) &&
+			   (str[i+1]<'A' || 'Z'<str[i+1]) &&
+			   (str[i+1]<'0' || '9'<str[i+1]))
+			{
+				hexaDecimal=true;
+				break;
+			}
+		}
+		if(true==hexaDecimal)
+		{
+			n=Xtoi(str);
+		}
+		else
+		{
+			while(0!=*str)
+			{
+				if('0'<=*str && *str<='9')
+				{
+					n*=10;
+					n+=(*str-'0');
+				}
+				else
+				{
+					break;
+				}
+				++str;
+			}
+		}
+	}
+	return n*sign;
+}
+
+inline char cpputil::FourBitToX(int i)
+{
+	if(0<=i && i<=9)
+	{
+		return '0'+i;
+	}
+	else
+	{
+		return 'A'+i-10;
+	}
+}
+
+std::string cpputil::Uitox(unsigned int i)
+{
+	std::string s;
+	s.resize(9);
+	s[8]=0;
+	for(int n=7; 0<=n; --n)
+	{
+		s[n]=FourBitToX(i&0x0F);
+		i>>=4;
+	}
+	return s;
+}
+
+std::string cpputil::Uitoa(unsigned int i)
+{
+	std::string s;
+	while(0<i)
+	{
+		s.push_back('0'+(i%10));
+		i/=10;
+	}
+	for(int n=0; n<s.size()/2; ++n)
+	{
+		std::swap(s[n],s[s.size()-1-n]);
+	}
+	return s;
+}
+
