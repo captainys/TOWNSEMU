@@ -37,7 +37,8 @@ public:
 	public:
 		unsigned int EAX,EBX,ECX,EDX;
 		unsigned int ESI,EDI,EBP,ESP;
-		unsigned int EFLAGS;   // bit 1=Always 1 (pp.2-14 [1])
+		unsigned int EIP;
+		unsigned int EFLAGS;   // bit 1=Always 1 ([1] pp.2-14)
 		SegmentRegister CS,DS,ES,SS,FS,GS;
 		SystemAddressRegister GDT,LDT;
 		SystemSegmentRegister TR,IDTR;
@@ -61,7 +62,7 @@ public:
 		EFLAGS_VIRTUAL86=  0x20000,
 		EFLAGS_ALIGN_CHECK=0x40000,
 
-		CR0_PAGING=               0x80000000,  // Page 4-6 [1]
+		CR0_PAGING=               0x80000000,  // [1] Page 4-6
 		CR0_CACHE_DISABLE=        0x40000000,
 		CR0_NOT_WRITE_THROUGH=    0x20000000,
 		CR0_ALIGNMENT_MASK=       0x00040000,
@@ -72,13 +73,13 @@ public:
 		CR0_MATH_PRESENT=         0x00000002,
 		CR0_PROTECTION_ENABLE=    0x00000001,
 
-		CR3_PG_LVL_CACHE_DISABLE= 0x00000010;
-		CR3_PG_LVL_WRITE_TRNSPRNT=0x00000008;
+		CR3_PG_LVL_CACHE_DISABLE= 0x00000010,
+		CR3_PG_LVL_WRITE_TRNSPRNT=0x00000008,
 	};
 
 	enum
 	{
-		// pp.26-2 [1]
+		// [1] pp.26-2
 		INST_PREFIX_REP=  0xF3, // REP/REPE/REPZ
 		INST_PREFIX_REPNE=0xF2, // REPNE/REPNZ
 		INST_PREFIX_LOCK= 0xF0, // LOCK
@@ -93,10 +94,60 @@ public:
 		OPSIZE_OVERRIDE=  0x66,
 		ADDRSIZE_OVERRIDE=0x67,
 	};
+	enum
+	{
+		// [1] pp. 10-3
+		RESET_EFLAGS=        2,
+		RESET_EIP=      0xFFF0,
+		RESET_CS=       0xF000,
+		RESET_DS=       0x0000,
+		RESET_SS=       0x0000,
+		RESET_ES=       0x0000,
+		RESET_FS=       0x0000,
+		RESET_GS=       0x0000,
+		RESET_IDTRBASE=      0,
+		RESET_IDTRLIMIT=0x03FF,
+		RESET_DR7=           0,
+		RESET_EAX=           0,
+		RESET_DX=       0x0400,
+		RESET_CR0=           0,
+
+		RESET_FPU_CTRL_WORD=   0x37F,
+		RESET_FPU_STATUS_WOR=      0,
+		RESET_FPU_TAG_WORD=   0xffff,
+		RESET_FPU_IP_OFFSET=       0,
+		RESET_FPU_DATA_OP_OFFSET=  0,
+		RESET_FPU_CS_SELECTOR=     0,
+		RESET_FPU_OP_SELECTOR=     0,
+		RESET_FPU_OPCODE=          0,
+	};
+
 
 	State state;
 
-	unsigned long long RunOneInstruction(void);
+	inline void SetDX(unsigned int value)
+	{
+		state.EDX&=0xffff0000;
+		state.EDX|=value;
+	}
+	inline void SetDL(unsigned int value)
+	{
+		state.EDX&=0xffffff00;
+		state.EDX|=value;
+	}
+	inline void SetDH(unsigned int value)
+	{
+		state.EDX&=0xffff00ff;
+		state.EDX|=(value<<8);
+	}
+
+	i486DX();
+	void Reset(void);
+	void LoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem);
+	void LoadSegmentRegisterRealMode(SegmentRegister &reg,unsigned int value);
+
+
+	unsigned long long RunOneInstruction(Memory &mem,InOut &io);
 };
 
 /* } */
