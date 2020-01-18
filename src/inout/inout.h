@@ -2,8 +2,12 @@
 #define INOUT_IS_INCLUDED
 /* { */
 
-class InOut
+#include "device.h"
+
+class InOut : public Device
 {
+public:
+	virtual const char *DeviceName(void) const{return "IO";}
 };
 
 /* } */

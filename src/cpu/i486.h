@@ -141,9 +141,25 @@ public:
 		state.EDX|=(value<<8);
 	}
 
+	virtual const char *DeviceName(void) const{return "486DX";}
+
+	/*! Default constructor.  As you can see.
+	*/
 	i486DX();
+
+	/*! Resets the CPU.
+	*/
 	void Reset(void);
+
+	/*! Loads a segment register.
+	    How the segment linear base address is set depends on the CPU mode,
+	    and in the protected mode, it needs to look at GDT and LDT.
+	    Therefore it needs a reference to memory.
+	*/
 	void LoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem);
+
+	/*! Loads a segment register in real mode.
+	*/
 	void LoadSegmentRegisterRealMode(SegmentRegister &reg,unsigned int value);
 
 

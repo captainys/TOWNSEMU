@@ -2,6 +2,13 @@
 #define TOWNS_IS_INCLUDED
 /* { */
 
+#include <vector>
+#include <string>
+
+#include "device.h"
+#include "i486.h"
+#include "inout.h"
+#include "ramrom.h"
 
 class FMTowns
 {
@@ -12,8 +19,24 @@ public:
 	// 1 micro second is 1/1M second.
 	// 1 nano second is 1/1G second.
 
-	long long int townsTime;
-	long long int clocksPassed;
+	bool abort;
+	std::string abortReason;
+
+	class State
+	{
+		long long int townsTime;
+
+		/*! After running one instruction, townsTime may not be exactly the same
+		    as the real time (or whatever requested time.)
+		    This variable remembers how many clocks townsTime is ahead of the real time.
+		*/
+		long long int clockBalance;
+	};
+
+	i486DX cpu;
+	InOut io;
+	Memory mem;
+	std::vector <Device *> allDevices;
 
 
 	// Conceptual execution model
@@ -37,6 +60,19 @@ public:
 	//		auto balance=townsTime-stopTime;
 	//		return balance;
 	//	}
+
+
+	FMTowns();
+
+	/*! After constructing FMTowns class, call this function to specify where to look
+	    for the ROM images.
+	    It just redirect the call to mem.LoadROMImages() function.
+	*/
+	void LoadROMImages(const char dirName[]);
+
+	/*! Once the ROMs are loaded, call Reset function to start the virtual machine.
+	*/
+	void Reset(void);
 };
 
 

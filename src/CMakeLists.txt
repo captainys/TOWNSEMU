@@ -8,6 +8,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 
 
+add_subdirectory(cpputil)
+
 add_subdirectory(towns)
 add_subdirectory(device)
 add_subdirectory(cpu)
