@@ -91,6 +91,7 @@ public:
 		SEG_OVERRIDE_FS=  0x64,
 		SEG_OVERRIDE_GS=  0x65,
 
+		// [1] pp.26-1
 		OPSIZE_OVERRIDE=  0x66,
 		ADDRSIZE_OVERRIDE=0x67,
 	};
@@ -120,6 +121,28 @@ public:
 		RESET_FPU_CS_SELECTOR=     0,
 		RESET_FPU_OP_SELECTOR=     0,
 		RESET_FPU_OPCODE=          0,
+	};
+
+	class Instruction
+	{
+	public:
+		unsigned int numBytes;
+		unsigned int instPrefix;
+		unsigned int segOverride;
+		unsigned int operandSize;
+		unsigned int addressSize;
+
+		unsigned int opCode;
+		unsigned int operandLen;
+		unsigned char operand[12];  // Is 8 bytes maximum?
+
+		inline void Clear(void)
+		{
+			numBytes=0;
+			instPrefix=0;
+			segOverride=0;
+			operandLen=0;
+		}
 	};
 
 
@@ -162,11 +185,16 @@ public:
 	*/
 	void LoadSegmentRegisterRealMode(SegmentRegister &reg,unsigned int value);
 
+	inline bool IsInRealMode(void) const
+	{
+		return (0==(state.CR0&CR0_PROTECTION_ENABLE));
+	}
+
 	/*! Returns true if in 16-bit addressing mode.
 	*/
 	inline bool AddressingMode16Bit(void) const
 	{
-		if(0==(state.CR0&CR0_PROTECTION_ENABLE))
+		if(true==IsInRealMode())
 		{
 			return true;
 		}
@@ -183,6 +211,10 @@ public:
 	{
 		return 0!=(state.CR0&CR0_PAGING_ENABLED);
 	}
+
+	/*! Returns true if the opCode needs one more byte to be fully qualified.
+	*/
+	bool OpCodeNeedsOneMoreByte(unsigned int firstByte) const;
 
 	/*!
 	*/
@@ -214,6 +246,22 @@ public:
 	{
 		return FetchByte(state.CS,state.EIP+offset,mem);
 	}
+
+	/*! Fetch an instruction.
+	*/
+	inline Instruction FetchInstruction(const Memory &mem) const
+	{
+		return FetchInstruction(state.CS,state.EIP,mem);
+	}
+private:
+	int FetchOperand16(Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem) const;
+	int FetchOperand32(Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem) const;
+	void FetchOperand(Instruction &inst,SegmentRegister seg,int offset,const Memory &mem) const;
+
+public:
+	/*! Fetch an instruction from specific segment and offset.
+	*/
+	Instruction FetchInstruction(const SegmentRegister seg,unsigned int offset,const Memory &mem) const;
 
 
 

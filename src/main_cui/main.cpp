@@ -42,6 +42,10 @@ int main(int ac,char *av[])
 		std::cout << cpputil::Uitox(b) << std::endl;
 	}
 
+	auto inst=towns.FetchInstruction();
+	printf("%d\n",inst.numBytes);
+	printf("%x\n",inst.opCode);
+
 
 	return 0;
 }

@@ -42,3 +42,8 @@ unsigned int FMTowns::FetchByteCS_EIP(int offset) const
 {
 	return cpu.FetchInstructionByte(offset,mem);
 }
+
+i486DX::Instruction FMTowns::FetchInstruction(void) const
+{
+	return cpu.FetchInstruction(mem);
+}
