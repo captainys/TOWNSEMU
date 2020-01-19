@@ -231,7 +231,6 @@ void i486DX::FetchOperand(Instruction &inst,SegmentRegister seg,int offset,const
 	case I486_OPCODE_MOV_I8_TO_CH: //     0xB5,
 	case I486_OPCODE_MOV_I8_TO_DH: //     0xB6,
 	case I486_OPCODE_MOV_I8_TO_BH: //     0xB7,
-	case I486_OPCODE_MOV_I8_TO_RM8: //    0xC6,
 		FetchOperand8(inst,seg,offset,mem);
 		break;
 	case I486_OPCODE_MOV_I_TO_EAX: //   0xB8, // 16/32 depends on OPSIZE_OVERRIDE
@@ -242,7 +241,21 @@ void i486DX::FetchOperand(Instruction &inst,SegmentRegister seg,int offset,const
 	case I486_OPCODE_MOV_I_TO_EBP: //   0xBD, // 16/32 depends on OPSIZE_OVERRIDE
 	case I486_OPCODE_MOV_I_TO_ESI: //   0xBE, // 16/32 depends on OPSIZE_OVERRIDE
 	case I486_OPCODE_MOV_I_TO_EDI: //   0xBF, // 16/32 depends on OPSIZE_OVERRIDE
+		if(16==inst.operandSize)
+		{
+			FetchOperand16(inst,seg,offset,mem);
+		}
+		else // if(32==inst.operandSize)
+		{
+			FetchOperand32(inst,seg,offset,mem);
+		}
+		break;
+	case I486_OPCODE_MOV_I8_TO_RM8: //    0xC6,
+		FetchOperandRM(inst,seg,offset,mem);
+		FetchOperand8(inst,seg,offset,mem);
+		break;
 	case I486_OPCODE_MOV_I_TO_RM: //      0xC7, // 16/32 depends on OPSIZE_OVERRIDE
+		FetchOperandRM(inst,seg,offset,mem);
 		if(16==inst.operandSize)
 		{
 			FetchOperand16(inst,seg,offset,mem);
@@ -260,7 +273,7 @@ void i486DX::FetchOperand(Instruction &inst,SegmentRegister seg,int offset,const
 	}
 }
 
-std::string i486DX::Instruction::Disassemble(SegmentRegister reg,unsigned int offset) const
+std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip) const
 {
 	std::string disasm;
 
@@ -297,70 +310,189 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister reg,unsigned int of
 		}
 		break;
 
-/*	case I486_OPCODE_MOV_FROM_R8: //      0x88,
+	case I486_OPCODE_MOV_FROM_R8: //      0x88,
 		disasm="MOV";
 		cpputil::ExtendString(disasm,8);
 		{
+			auto dstAddr=i486DX::DisassembleAddressing(addressSize,8,operand);
+			auto srcReg=i486DX::Get8BitRegisterNameFromMODR_M(operand[0]);
+			disasm+=dstAddr;
+			disasm.push_back(',');
+			disasm+=srcReg;
 		}
 		break;
 	case I486_OPCODE_MOV_FROM_R: //       0x89, // 16/32 depends on OPSIZE_OVERRIDE
+		disasm="MOV";
+		cpputil::ExtendString(disasm,8);
+		{
+			auto dstAddr=i486DX::DisassembleAddressing(addressSize,operandSize,operand);
+			auto srcReg=i486DX::Get16or32BitRegisterNameFromMODR_M(operandSize,operand[0]);
+			disasm+=dstAddr;
+			disasm.push_back(',');
+			disasm+=srcReg;
+		}
 		break;
 	case I486_OPCODE_MOV_TO_R8: //        0x8A,
+		disasm="MOV";
+		cpputil::ExtendString(disasm,8);
+		{
+			auto srcAddr=i486DX::DisassembleAddressing(addressSize,8,operand);
+			auto dstReg=i486DX::Get8BitRegisterNameFromMODR_M(operand[0]);
+			disasm+=dstReg;
+			disasm.push_back(',');
+			disasm+=srcAddr;
+		}
 		break;
 	case I486_OPCODE_MOV_TO_R: //         0x8B, // 16/32 depends on OPSIZE_OVERRIDE
+		disasm="MOV";
+		cpputil::ExtendString(disasm,8);
+		{
+			auto srcAddr=i486DX::DisassembleAddressing(addressSize,operandSize,operand);
+			auto dstReg=i486DX::Get16or32BitRegisterNameFromMODR_M(operandSize,operand[0]);
+			disasm+=dstReg;
+			disasm.push_back(',');
+			disasm+=srcAddr;
+		}
 		break;
 	case I486_OPCODE_MOV_FROM_SEG: //     0x8C,
+//		disasm="MOV";
+//		cpputil::ExtendString(disasm,8);
+//		{
+//			auto dstAddr=i486DX::DisassembleAddressing(addressSize,16,operand);
+//			auto srcSeg=i486DX::GetSegmentRegisterNameFromMODR_M(operand[0]);
+//			disasm+=dstAddr;
+//			disasm.push_back(',');
+//			disasm+=srcSeg;
+//		}
 		break;
 	case I486_OPCODE_MOV_TO_SEG: //       0x8E,
+//		disasm="MOV";
+//		cpputil::ExtendString(disasm,8);
+//		{
+//			auto srcAddr=i486DX::DisassembleAddressing(addressSize,16,operand);
+//			auto dstSeg=i486DX::GetSegmentRegisterNameFromMODR_M(operand[0]);
+//			disasm+=dstReg;
+//			disasm.push_back(',');
+//			disasm+=srcAddr;
+//		}
 		break;
 	case I486_OPCODE_MOV_M_TO_AL: //      0xA0,
+		disasm="MOV";
+		cpputil::ExtendString(disasm,8);
+		{
+			auto srcAddr=i486DX::DisassembleAddressing(addressSize,8,operand);
+			disasm+="AL,";
+			disasm+=srcAddr;
+		}
 		break;
 	case I486_OPCODE_MOV_M_TO_EAX: //     0xA1, // 16/32 depends on OPSIZE_OVERRIDE
+		disasm="MOV";
+		cpputil::ExtendString(disasm,8);
+		{
+			auto srcAddr=i486DX::DisassembleAddressing(addressSize,8,operand);
+			if(16==operandSize)
+			{
+				disasm+="AX,";
+			}
+			else
+			{
+				disasm+="EAX,";
+			}
+			disasm+=srcAddr;
+		}
 		break;
 	case I486_OPCODE_MOV_M_FROM_AL: //    0xA2,
+		disasm="MOV";
+		cpputil::ExtendString(disasm,8);
+		{
+			auto srcAddr=i486DX::DisassembleAddressing(addressSize,8,operand);
+			disasm+=srcAddr;
+			disasm+=",AL";
+		}
 		break;
 	case I486_OPCODE_MOV_M_FROM_EAX: //   0xA3, // 16/32 depends on OPSIZE_OVERRIDE
+		disasm="MOV";
+		cpputil::ExtendString(disasm,8);
+		{
+			auto srcAddr=i486DX::DisassembleAddressing(addressSize,8,operand);
+			disasm+=srcAddr;
+			if(16==operandSize)
+			{
+				disasm+=",AX";
+			}
+			else
+			{
+				disasm+=",EAX";
+			}
+		}
 		break;
 	case I486_OPCODE_MOV_I8_TO_AL: //     0xB0,
-		break;
 	case I486_OPCODE_MOV_I8_TO_CL: //     0xB1,
-		break;
 	case I486_OPCODE_MOV_I8_TO_DL: //     0xB2,
-		break;
 	case I486_OPCODE_MOV_I8_TO_BL: //     0xB3,
-		break;
 	case I486_OPCODE_MOV_I8_TO_AH: //     0xB4,
-		break;
 	case I486_OPCODE_MOV_I8_TO_CH: //     0xB5,
-		break;
 	case I486_OPCODE_MOV_I8_TO_DH: //     0xB6,
-		break;
 	case I486_OPCODE_MOV_I8_TO_BH: //     0xB7,
+		disasm="MOV";
+		cpputil::ExtendString(disasm,8);
+		{
+			unsigned int srcImm=GetUimm8();
+			auto reg=opCode&7;
+			auto dstReg=i486DX::Reg8[reg];
+			disasm+=dstReg;
+			disasm.push_back(',');
+			disasm+=cpputil::Ubtox(srcImm);
+		}
 		break;
 	case I486_OPCODE_MOV_I_TO_EAX: //     0xB8, // 16/32 depends on OPSIZE_OVERRIDE
-		break;
 	case I486_OPCODE_MOV_I_TO_ECX: //     0xB9, // 16/32 depends on OPSIZE_OVERRIDE
-		break;
 	case I486_OPCODE_MOV_I_TO_EDX: //     0xBA, // 16/32 depends on OPSIZE_OVERRIDE
-		break;
 	case I486_OPCODE_MOV_I_TO_EBX: //     0xBB, // 16/32 depends on OPSIZE_OVERRIDE
-		break;
 	case I486_OPCODE_MOV_I_TO_ESP: //     0xBC, // 16/32 depends on OPSIZE_OVERRIDE
-		break;
 	case I486_OPCODE_MOV_I_TO_EBP: //     0xBD, // 16/32 depends on OPSIZE_OVERRIDE
-		break;
 	case I486_OPCODE_MOV_I_TO_ESI: //     0xBE, // 16/32 depends on OPSIZE_OVERRIDE
-		break;
 	case I486_OPCODE_MOV_I_TO_EDI: //     0xBF, // 16/32 depends on OPSIZE_OVERRIDE
+		disasm="MOV";
+		cpputil::ExtendString(disasm,8);
+		{
+			unsigned int srcImm=0;
+			auto reg=(opCode&7);
+			if(16==operandSize)
+			{
+				disasm+=i486DX::Reg16[reg];
+				srcImm=GetUimm16();
+			}
+			else
+			{
+				disasm+=i486DX::Reg32[reg];
+				srcImm=GetUimm32();
+			}
+			disasm.push_back(',');
+			disasm+=cpputil::Uitoa(srcImm);
+		}
+
 		break;
 	case I486_OPCODE_MOV_I8_TO_RM8: //    0xC6,
 		break;
 	case I486_OPCODE_MOV_I_TO_RM: //      0xC7, // 16/32 depends on OPSIZE_OVERRIDE
 		break;
-*/
 	}
 
 	return disasm;
+}
+
+unsigned int i486DX::Instruction::GetUimm8(void) const
+{
+	return operand[numBytes-1];
+}
+unsigned int i486DX::Instruction::GetUimm16(void) const
+{
+	return cpputil::GetWord(operand+numBytes-2);
+}
+unsigned int i486DX::Instruction::GetUimm32(void) const
+{
+	return cpputil::GetWord(operand+numBytes-4);
 }
 
 std::string i486DX::DisassembleAddressing(int addressSize,int dataSize,const unsigned char operand[])
@@ -567,6 +699,36 @@ std::string i486DX::DisassembleAddressing(int addressSize,int dataSize,const uns
 
 	return disasm;
 }
+
+/* static */ std::string i486DX::Get8BitRegisterNameFromMODR_M(unsigned char MOD_RM)
+{
+	auto REG_OPCODE=((MOD_RM>>3)&7);
+	return Reg8[REG_OPCODE];
+}
+/* static */ std::string i486DX::Get16BitRegisterNameFromMODR_M(unsigned char MOD_RM)
+{
+	auto REG_OPCODE=((MOD_RM>>3)&7);
+	return Reg16[REG_OPCODE];
+}
+/* static */ std::string i486DX::Get32BitRegisterNameFromMODR_M(unsigned char MOD_RM)
+{
+	auto REG_OPCODE=((MOD_RM>>3)&7);
+	return Reg32[REG_OPCODE];
+}
+/* static */ std::string i486DX::Get16or32BitRegisterNameFromMODR_M(int dataSize,unsigned char MOD_RM)
+{
+	if(16==dataSize)
+	{
+		auto REG_OPCODE=((MOD_RM>>3)&7);
+		return Reg16[REG_OPCODE];
+	}
+	else
+	{
+		auto REG_OPCODE=((MOD_RM>>3)&7);
+		return Reg32[REG_OPCODE];
+	}
+}
+
 
 unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 {

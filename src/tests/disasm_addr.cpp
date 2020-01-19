@@ -10,21 +10,36 @@ bool TestAddressingDisassembly(
     unsigned dataSize,
     unsigned oplen,const unsigned char operand[],FMTowns &towns,const std::string &correctDisasm)
 {
-	auto disasm=towns.cpu.DisassembleAddressing(addressSize,dataSize,operand);
+	i486DX::Operand oper;
+	auto numBytes=oper.Decode(addressSize,dataSize,operand);
+	auto disasm=oper.Disassemble();
+
+	if(numBytes!=oplen)
+	{
+		std::cout << "Inconsistent operand length!" << std::endl;
+		std::cout << "Decoded:" << numBytes << std::endl;
+		std::cout << "Correct:" << oplen << std::endl;
+		goto ERREND;
+	}
+
+	// auto disasm=towns.cpu.DisassembleAddressing(addressSize,dataSize,operand);
 	std::cout << "Disassembled as: " << disasm << std::endl;
 	if(disasm!=correctDisasm)
 	{
 		std::cout << "Wrong disassembly!" << std::endl;
-		std::cout << "Correct: " << correctDisasm << std::endl;
-		std::cout << "Operands: ";
-		for(unsigned i=0; i<oplen; ++i)
-		{
-			std::cout << cpputil::Ubtox(operand[i]) << " ";
-		}
-		std::cout << std::endl;
-		return false;
+		goto ERREND;
 	}
 	return true;
+
+ERREND:
+	std::cout << "Correct Disassembly: " << correctDisasm << std::endl;
+	std::cout << "Operands: ";
+	for(unsigned i=0; i<oplen; ++i)
+	{
+		std::cout << cpputil::Ubtox(operand[i]) << " ";
+	}
+	std::cout << std::endl;
+	return false;
 }
 
 int main(int ac,char *av[])
@@ -59,7 +74,7 @@ int main(int ac,char *av[])
 		return 1;
 	}
 
-	const unsigned char test5[]={0x85,0x34,0x10,0x00,0x00,0x10};
+	const unsigned char test5[]={0x85,0x34,0x10,0x00,0x00};
 	if(true!=TestAddressingDisassembly(32,32,sizeof(test5),test5,towns,"[EBP+00001034H]"))
 	{
 		return 1;
@@ -79,6 +94,30 @@ int main(int ac,char *av[])
 
 	const unsigned char test8[]={0xB4,0x4D,0x00,0x00,0x32,0x51};
 	if(true!=TestAddressingDisassembly(32,32,sizeof(test8),test8,towns,"[EBP+ECX*2+51320000H]"))
+	{
+		return 1;
+	}
+
+	const unsigned char test32_eax[]={0xC0};
+	if(true!=TestAddressingDisassembly(32,32,sizeof(test32_eax),test32_eax,towns,"EAX"))
+	{
+		return 1;
+	}
+
+	const unsigned char test32_ecx[]={0xC9};
+	if(true!=TestAddressingDisassembly(32,32,sizeof(test32_ecx),test32_ecx,towns,"ECX"))
+	{
+		return 1;
+	}
+
+	const unsigned char test32_esi[]={0xF6};
+	if(true!=TestAddressingDisassembly(32,32,sizeof(test32_esi),test32_esi,towns,"ESI"))
+	{
+		return 1;
+	}
+
+	const unsigned char test32_edi[]={0xFF};
+	if(true!=TestAddressingDisassembly(32,32,sizeof(test32_edi),test32_edi,towns,"EDI"))
 	{
 		return 1;
 	}
@@ -116,8 +155,26 @@ int main(int ac,char *av[])
 		return 1;
 	}
 
-	const unsigned char test16_6[]={0xC0};
-	if(true!=TestAddressingDisassembly(16,16,sizeof(test16_6),test16_6,towns,"AX"))
+	const unsigned char test16_ax[]={0xC0};
+	if(true!=TestAddressingDisassembly(16,16,sizeof(test16_ax),test16_ax,towns,"AX"))
+	{
+		return 1;
+	}
+
+	const unsigned char test16_cx[]={0xC9};
+	if(true!=TestAddressingDisassembly(16,16,sizeof(test16_cx),test16_cx,towns,"CX"))
+	{
+		return 1;
+	}
+
+	const unsigned char test16_si[]={0xF6};
+	if(true!=TestAddressingDisassembly(16,16,sizeof(test16_si),test16_si,towns,"SI"))
+	{
+		return 1;
+	}
+
+	const unsigned char test16_di[]={0xFF};
+	if(true!=TestAddressingDisassembly(16,16,sizeof(test16_di),test16_di,towns,"DI"))
 	{
 		return 1;
 	}

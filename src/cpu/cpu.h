@@ -6,6 +6,8 @@
 
 class CPU : public Device
 {
+public:
+	static const unsigned int twoToN[32];
 };
 
 /* } */

@@ -17,6 +17,73 @@ public:
 	static const char *const Reg32[8];
 	static const char *const Sreg[8];
 
+	enum
+	{
+		REG_NONE,
+
+		REG_AL,
+		REG_CL,
+		REG_BL,
+		REG_DL,
+		REG_AH,
+		REG_CH,
+		REG_BH,
+		REG_DH,
+
+		REG_AX,
+		REG_CX,
+		REG_DX,
+		REG_BX,
+		REG_SP,
+		REG_BP,
+		REG_SI,
+		REG_DI,
+
+		REG_EAX,
+		REG_ECX,
+		REG_EDX,
+		REG_EBX,
+		REG_ESP,
+		REG_EBP,
+		REG_ESI,
+		REG_EDI,
+
+		REG_EIP,
+		REG_EFLAGS,
+
+		REG_ES,
+		REG_CS,
+		REG_SS,
+		REG_DS,
+		REG_FS,
+		REG_GS,
+		REG_GDT,
+		REG_LDT,
+		REG_TR,
+		REG_IDTR,
+		REG_CR0,
+		REG_CR1,
+		REG_CR2,
+		REG_CR3,
+		REG_DR0,
+		REG_DR1,
+		REG_DR2,
+		REG_DR3,
+		REG_DR4,
+		REG_DR5,
+		REG_DR6,
+		REG_DR7,
+
+	REG_TOTAL_NUMBER_OF_REGISTERS
+	};
+	enum
+	{
+		REG_8BIT_REG_BASE=REG_AL,
+		REG_16BIT_REG_BASE=REG_AX,
+		REG_32BIT_REG_BASE=REG_EAX,
+	};
+	static const char *const RegToStr[REG_TOTAL_NUMBER_OF_REGISTERS];
+
 	class SegmentRegister
 	{
 	public:
@@ -49,6 +116,10 @@ public:
 		SystemSegmentRegister TR,IDTR;
 		unsigned int CR0,CR1,CR2,CR3;
 		unsigned int DR0,DR1,DR2,DR3,R4,DR5,DR6,DR7;
+
+		// [1] pp.26-211 in the description of the MOV instruction
+		// "Loading to SS register inhibits all interrupts until after the execution of the next instruction"
+		bool holdIRQ;
 	};
 	enum
 	{
@@ -150,6 +221,62 @@ public:
 		}
 
 		std::string Disassemble(SegmentRegister reg,unsigned int offset) const;
+
+	public:
+		/*! Returns Unsigned Imm8 (last byte in the operand) after decoding. */
+		unsigned int GetUimm8(void) const;
+
+		/*! Returns Unsigned Imm16 (last 2 byte in the operand) after decoding. */
+		unsigned int GetUimm16(void) const;
+
+		/*! Returns Unsigned Imm32 (last 4 byte in the operand) after decoding. */
+		unsigned int GetUimm32(void) const;
+	};
+
+
+	enum
+	{
+		OPER_UNDEFINED,
+		OPER_ADDR,    // BaseReg+IndexReg*IndexScaling+Offset
+		OPER_REG,
+		OPER_IMM8,
+		OPER_IMM16,
+		OPER_IMM32,
+	};
+	class Operand
+	{
+	public:
+		int operandType;
+
+		// For Register operand type
+		int reg;
+		// For Immediate operand type
+		int imm;
+		// For Addr operand type
+		int baseReg,indexReg,indexScaling,offset;
+		int offsetBits;
+
+		/*! operandType=OPER_UNDEFINED
+		*/
+		void Clear(void);
+
+		/*! Decode operand and returns the number of bytes.
+		*/
+		unsigned int Decode(int addressSize,int dataSize,const unsigned char operand[]);
+		/*! Decode operand and returns the number of bytes.
+		*/
+		unsigned int DecodeMODR_MForRegister(int dataSize,unsigned char MODR_M);
+		/*! Decode operand and returns the number of bytes.
+		*/
+		unsigned int DecodeMODR_MForSegmentRegister(unsigned char MODR_M);
+
+		/*! Returns a disassembly of the operand after decoding.
+		*/
+		std::string Disassemble(void) const;
+	private:
+		std::string DisassembleAsAddr(void) const;
+		std::string DisassembleAsReg(void) const;
+		std::string DisassembleAsImm(int immSize) const;
 	};
 
 
@@ -281,6 +408,16 @@ public:
 	/*! Disassemble addressing
 	*/
 	static std::string DisassembleAddressing(int addressSize,int dataSize,const unsigned char operand[]);
+
+
+	/*! Get 8-bit register name from MODR_M. */
+	static std::string Get8BitRegisterNameFromMODR_M(unsigned char MOD_RM);
+	/*! Get 16-bit register name from MODR_M. */
+	static std::string Get16BitRegisterNameFromMODR_M(unsigned char MOD_RM);
+	/*! Get 32-bit register name from MODR_M. */
+	static std::string Get32BitRegisterNameFromMODR_M(unsigned char MOD_RM);
+	/*! Get 32-bit register name from MODR_M. */
+	static std::string Get16or32BitRegisterNameFromMODR_M(int dataSize,unsigned char MOD_RM);
 
 
 	/*! Run one instruction and returns number of clocks. */

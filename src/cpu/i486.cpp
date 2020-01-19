@@ -24,6 +24,64 @@ const char *const i486DX::Sreg[8]=
 	"ES","CS","SS","DS","FS","GS"
 };
 
+const char *const i486DX::RegToStr[REG_TOTAL_NUMBER_OF_REGISTERS]=
+{
+	"(none)",
+
+	"AL",
+	"CL",
+	"BL",
+	"DL",
+	"AH",
+	"CH",
+	"BH",
+	"DH",
+
+	"AX",
+	"CX",
+	"DX",
+	"BX",
+	"SP",
+	"BP",
+	"SI",
+	"DI",
+
+	"EAX",
+	"ECX",
+	"EDX",
+	"EBX",
+	"ESP",
+	"EBP",
+	"ESI",
+	"EDI",
+
+	"EIP",
+	"EFLAGS",
+
+	"ES",
+	"CS",
+	"SS",
+	"DS",
+	"FS",
+	"GS",
+	"GDT",
+	"LDT",
+	"TR",
+	"IDTR",
+	"CR0",
+	"CR1",
+	"CR2",
+	"CR3",
+	"DR0",
+	"DR1",
+	"DR2",
+	"DR3",
+	"DR4",
+	"DR5",
+	"DR6",
+	"DR7",
+};
+
 
 
 i486DX::i486DX()
@@ -56,10 +114,16 @@ void i486DX::Reset(void)
 	state.EAX=RESET_EAX;
 	SetDX(RESET_DX);
 	state.CR0=RESET_CR0;
+
+	state.holdIRQ=false;
 }
 
 void i486DX::LoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem)
 {
+	if(&reg==&state.SS)
+	{
+		state.holdIRQ=true;
+	}
 	if(true==IsInRealMode())
 	{
 		LoadSegmentRegisterRealMode(reg,value);
@@ -72,6 +136,10 @@ void i486DX::LoadSegmentRegister(SegmentRegister &reg,unsigned int value,const M
 
 void i486DX::LoadSegmentRegisterRealMode(SegmentRegister &reg,unsigned int value)
 {
+	if(&reg==&state.SS)
+	{
+		state.holdIRQ=true;
+	}
 	reg.value=value;
 	reg.baseLinearAddr=(value<<4);
 }
