@@ -256,6 +256,12 @@ public:
 		int baseReg,indexReg,indexScaling,offset;
 		int offsetBits;
 
+		inline Operand(){}
+
+		/*! Constructor for decoding on construction.
+		*/
+		Operand(int addressSize,int dataSize,const unsigned char operand[]);
+
 		/*! operandType=OPER_UNDEFINED
 		*/
 		void Clear(void);
@@ -403,11 +409,6 @@ public:
 	/*! Make a disassembly.
 	*/
 	std::string Disassemble(const Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem) const;
-
-
-	/*! Disassemble addressing
-	*/
-	static std::string DisassembleAddressing(int addressSize,int dataSize,const unsigned char operand[]);
 
 
 	/*! Get 8-bit register name from MODR_M. */

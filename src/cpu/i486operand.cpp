@@ -6,6 +6,11 @@
 
 
 
+i486DX::Operand::Operand(int addressSize,int dataSize,const unsigned char operand[])
+{
+	Decode(addressSize,dataSize,operand);
+}
+
 void i486DX::Operand::Clear(void)
 {
 	operandType=OPER_UNDEFINED;

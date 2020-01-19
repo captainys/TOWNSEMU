@@ -314,7 +314,8 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		disasm="MOV";
 		cpputil::ExtendString(disasm,8);
 		{
-			auto dstAddr=i486DX::DisassembleAddressing(addressSize,8,operand);
+			i486DX::Operand oper(addressSize,8,operand);
+			auto dstAddr=oper.Disassemble();
 			auto srcReg=i486DX::Get8BitRegisterNameFromMODR_M(operand[0]);
 			disasm+=dstAddr;
 			disasm.push_back(',');
@@ -325,7 +326,8 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		disasm="MOV";
 		cpputil::ExtendString(disasm,8);
 		{
-			auto dstAddr=i486DX::DisassembleAddressing(addressSize,operandSize,operand);
+			i486DX::Operand oper(addressSize,operandSize,operand);
+			auto dstAddr=oper.Disassemble();
 			auto srcReg=i486DX::Get16or32BitRegisterNameFromMODR_M(operandSize,operand[0]);
 			disasm+=dstAddr;
 			disasm.push_back(',');
@@ -336,7 +338,8 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		disasm="MOV";
 		cpputil::ExtendString(disasm,8);
 		{
-			auto srcAddr=i486DX::DisassembleAddressing(addressSize,8,operand);
+			i486DX::Operand oper(addressSize,8,operand);
+			auto srcAddr=oper.Disassemble();
 			auto dstReg=i486DX::Get8BitRegisterNameFromMODR_M(operand[0]);
 			disasm+=dstReg;
 			disasm.push_back(',');
@@ -347,7 +350,8 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		disasm="MOV";
 		cpputil::ExtendString(disasm,8);
 		{
-			auto srcAddr=i486DX::DisassembleAddressing(addressSize,operandSize,operand);
+			i486DX::Operand oper(addressSize,operandSize,operand);
+			auto srcAddr=oper.Disassemble();
 			auto dstReg=i486DX::Get16or32BitRegisterNameFromMODR_M(operandSize,operand[0]);
 			disasm+=dstReg;
 			disasm.push_back(',');
@@ -380,7 +384,8 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		disasm="MOV";
 		cpputil::ExtendString(disasm,8);
 		{
-			auto srcAddr=i486DX::DisassembleAddressing(addressSize,8,operand);
+			i486DX::Operand oper(addressSize,8,operand);
+			auto srcAddr=oper.Disassemble();
 			disasm+="AL,";
 			disasm+=srcAddr;
 		}
@@ -389,7 +394,8 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		disasm="MOV";
 		cpputil::ExtendString(disasm,8);
 		{
-			auto srcAddr=i486DX::DisassembleAddressing(addressSize,8,operand);
+			i486DX::Operand oper(addressSize,8,operand);
+			auto srcAddr=oper.Disassemble();
 			if(16==operandSize)
 			{
 				disasm+="AX,";
@@ -405,7 +411,8 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		disasm="MOV";
 		cpputil::ExtendString(disasm,8);
 		{
-			auto srcAddr=i486DX::DisassembleAddressing(addressSize,8,operand);
+			i486DX::Operand oper(addressSize,8,operand);
+			auto srcAddr=oper.Disassemble();
 			disasm+=srcAddr;
 			disasm+=",AL";
 		}
@@ -414,7 +421,8 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		disasm="MOV";
 		cpputil::ExtendString(disasm,8);
 		{
-			auto srcAddr=i486DX::DisassembleAddressing(addressSize,8,operand);
+			i486DX::Operand oper(addressSize,8,operand);
+			auto srcAddr=oper.Disassemble();
 			disasm+=srcAddr;
 			if(16==operandSize)
 			{
@@ -493,211 +501,6 @@ unsigned int i486DX::Instruction::GetUimm16(void) const
 unsigned int i486DX::Instruction::GetUimm32(void) const
 {
 	return cpputil::GetWord(operand+numBytes-4);
-}
-
-std::string i486DX::DisassembleAddressing(int addressSize,int dataSize,const unsigned char operand[])
-{
-	std::string disasm;
-
-	auto MODR_M=operand[0];
-	auto MOD=((MODR_M>>6)&3);
-	auto REG_OPCODE=((MODR_M>>3)&7);
-	auto R_M=(MODR_M&7);
-	if(16==addressSize)
-	{
-		if(0b00==MOD && 0b110==R_M)
-		{
-			disasm="[";
-			auto sword=cpputil::GetSignedWord(operand+1);
-			disasm+=cpputil::Stox(sword);
-			disasm+="H]";
-		}
-		else if(0b00==MOD || 0b01==MOD || 0b10==MOD)
-		{
-			switch(R_M)
-			{
-			case 0:
-				disasm="[BX+SI";
-				break;
-			case 1:
-				disasm="[BX+DI";
-				break;
-			case 2:
-				disasm="[BP+SI";
-				break;
-			case 3:
-				disasm="[BP+DI";
-				break;
-			case 4:
-				disasm="[SI";
-				break;
-			case 5:
-				disasm="[DI";
-				break;
-			case 6:
-				disasm="[BP";
-				break;
-			case 7:
-				disasm="[BX";
-				break;
-			}
-			if(0b01==MOD)
-			{
-				auto sbyte=cpputil::GetSignedByte(operand[1]);
-				if(0<=sbyte)
-				{
-					disasm.push_back('+');
-				}
-				disasm+=cpputil::Btox(sbyte);
-				disasm.push_back('H');
-			}
-			else if(0b10==MOD)
-			{
-				auto sword=cpputil::GetSignedWord(operand+1);
-				if(0<=sword)
-				{
-					disasm.push_back('+');
-				}
-				disasm+=cpputil::Stox(sword);
-				disasm.push_back('H');
-			}
-			disasm.push_back(']');
-		}
-		else
-		{
-			if(8==dataSize)
-			{
-				disasm=Reg8[R_M];
-			}
-			else if(16==dataSize)
-			{
-				disasm=Reg16[R_M];
-			}
-			else if(32==dataSize)
-			{
-				disasm=Reg32[R_M];
-			}
-		}
-	}
-	else // if(32==addressSize)
-	{
-		disasm.push_back('[');
-		if(0b00==MOD && 0b101==R_M)
-		{
-			auto sdword=cpputil::GetSignedDword(operand+1);
-			disasm+=cpputil::Itox(sdword);
-			disasm.push_back('H');
-		}
-		else if(0b00==MOD || 0b01==MOD || 0b10==MOD)
-		{
-			if(0b100==R_M) // Depends on SIB
-			{
-				auto SIB=operand[1];
-				auto SS=((SIB>>6)&3);
-				auto INDEX=((SIB>>3)&7);
-				auto BASE=(SIB&7);
-
-				if(5!=BASE)
-				{
-					disasm+=Reg32[BASE];
-				}
-				else
-				{
-					if(0b00==MOD) // disp32[index]
-					{
-						// No base
-					}
-					else if(0b01==MOD || 0b10==MOD) // disp[EBP][index]
-					{
-						disasm+="EBP";
-					}
-				}
-				if(1!=disasm.size())
-				{
-					disasm.push_back('+');
-				}
-				if(0b100!=INDEX)
-				{
-					disasm+=Reg32[INDEX];
-					switch(SS)
-					{
-					case 1:
-						disasm+="*2";
-						break;
-					case 2:
-						disasm+="*4";
-						break;
-					case 3:
-						disasm+="*8";
-						break;
-					}
-				}
-
-				if((0==MOD && 5==BASE) || 0b10==MOD)
-				{
-					auto sdword=cpputil::GetSignedDword(operand+2);
-					if(0<=sdword)
-					{
-						disasm.push_back('+');
-					}
-					disasm+=cpputil::Itox(sdword);
-					disasm.push_back('H');
-				}
-				else if(0b01==MOD)
-				{
-					auto sbyte=cpputil::GetSignedByte(operand[2]);
-					if(0<=sbyte)
-					{
-						disasm.push_back('+');
-					}
-					disasm+=cpputil::Btox(sbyte);
-					disasm.push_back('H');
-				}
-			}
-			else
-			{
-				disasm+=Reg32[R_M];
-				if(0b01==MOD)
-				{
-					auto sbyte=cpputil::GetSignedByte(operand[1]);
-					if(0<=sbyte)
-					{
-						disasm.push_back('+');
-					}
-					disasm+=cpputil::Btox(sbyte);
-					disasm.push_back('H');
-				}
-				else if(0b10==MOD)
-				{
-					auto sdword=cpputil::GetSignedDword(operand+1);
-					if(0<=sdword)
-					{
-						disasm.push_back('+');
-					}
-					disasm+=cpputil::Itox(sdword);
-					disasm.push_back('H');
-				}
-			}
-		}
-		else if(0b11==MOD)
-		{
-			if(8==dataSize)
-			{
-				disasm=Reg8[R_M];
-			}
-			else if(16==dataSize)
-			{
-				disasm=Reg16[R_M];
-			}
-			else if(32==dataSize)
-			{
-				disasm=Reg32[R_M];
-			}
-		}
-		disasm.push_back(']');
-	}
-
-	return disasm;
 }
 
 /* static */ std::string i486DX::Get8BitRegisterNameFromMODR_M(unsigned char MOD_RM)
