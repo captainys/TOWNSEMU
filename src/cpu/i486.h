@@ -12,6 +12,11 @@
 class i486DX : public CPU
 {
 public:
+	static const char *const Reg8[8];
+	static const char *const Reg16[8];
+	static const char *const Reg32[8];
+	static const char *const Sreg[8];
+
 	class SegmentRegister
 	{
 	public:
@@ -256,8 +261,10 @@ public:
 		return FetchInstruction(state.CS,state.EIP,mem);
 	}
 private:
-	int FetchOperand16(Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem) const;
-	int FetchOperand32(Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem) const;
+	unsigned int FetchOperand8(Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem) const;
+	unsigned int FetchOperand16(Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem) const;
+	unsigned int FetchOperand32(Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem) const;
+	void FetchOperandRM(Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem) const;
 	void FetchOperand(Instruction &inst,SegmentRegister seg,int offset,const Memory &mem) const;
 
 public:
@@ -269,6 +276,11 @@ public:
 	/*! Make a disassembly.
 	*/
 	std::string Disassemble(const Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem) const;
+
+
+	/*! Disassemble addressing
+	*/
+	static std::string DisassembleAddressing(int addressSize,int dataSize,const unsigned char operand[]);
 
 
 	/*! Run one instruction and returns number of clocks. */

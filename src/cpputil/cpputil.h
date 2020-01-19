@@ -30,10 +30,19 @@ std::string Ustox(unsigned short i);
 std::string Ubtox(unsigned char i);
 std::string Uitoa(unsigned int i);
 
+std::string Itox(int i);
+std::string Stox(short i);
+std::string Btox(char i);
+std::string Itoa(int i);
+
 void ExtendString(std::string &str,int minimumLength);
 
 unsigned int GetDword(const unsigned char byteData[]);
 unsigned int GetWord(const unsigned char byteData[]);
+
+int GetSignedDword(const unsigned char byteData[]);
+int GetSignedWord(const unsigned char byteData[]);
+int GetSignedByte(const unsigned char byteData);
 
 };
 

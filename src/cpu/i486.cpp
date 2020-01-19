@@ -4,6 +4,27 @@
 #include "i486.h"
 
 
+const char *const i486DX::Reg8[8]=
+{
+	"AL","CL","DL","BL","AH","CH","DH","BH"
+};
+
+const char *const i486DX::Reg16[8]=
+{
+	"AX","CX","DX","BX","SP","BP","SI","DI"
+};
+
+const char *const i486DX::Reg32[8]=
+{
+	"EAX","ECX","EDX","EBX","ESP","EBP","ESI","EDI"
+};
+
+const char *const i486DX::Sreg[8]=
+{
+	"ES","CS","SS","DS","FS","GS"
+};
+
+
 
 i486DX::i486DX()
 {
@@ -53,7 +74,6 @@ void i486DX::LoadSegmentRegisterRealMode(SegmentRegister &reg,unsigned int value
 {
 	reg.value=value;
 	reg.baseLinearAddr=(value<<4);
-std::cout << cpputil::Uitox(reg.value) << " " << cpputil::Uitox(reg.baseLinearAddr) << std::endl;
 }
 
 std::string i486DX::Disassemble(const Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem) const

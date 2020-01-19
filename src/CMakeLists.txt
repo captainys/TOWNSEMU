@@ -16,4 +16,6 @@ add_subdirectory(cpu)
 add_subdirectory(inout)
 add_subdirectory(ramrom)
 
+add_subdirectory(tests)
+
 add_subdirectory(main_cui)

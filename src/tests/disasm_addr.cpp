@@ -48,19 +48,19 @@ int main(int ac,char *av[])
 	}
 
 	const unsigned char test3[]={0x8E,0x4D,0x38,0x00,0x00};
-	if(true!=TestAddressingDisassembly(32,32,sizeof(test3),test3,towns,"[ESI+00000384DH]"))
+	if(true!=TestAddressingDisassembly(32,32,sizeof(test3),test3,towns,"[ESI+0000384DH]"))
 	{
 		return 1;
 	}
 
 	const unsigned char test4[]={0x15,0xEC,0x19,0x02,0x00};
-	if(true!=TestAddressingDisassembly(32,32,sizeof(test4),test4,towns,"[0000219ECH]"))
+	if(true!=TestAddressingDisassembly(32,32,sizeof(test4),test4,towns,"[000219ECH]"))
 	{
 		return 1;
 	}
 
 	const unsigned char test5[]={0x85,0x34,0x10,0x00,0x00,0x10};
-	if(true!=TestAddressingDisassembly(32,32,sizeof(test5),test5,towns,"[EBP+000001034H]"))
+	if(true!=TestAddressingDisassembly(32,32,sizeof(test5),test5,towns,"[EBP+00001034H]"))
 	{
 		return 1;
 	}
@@ -72,13 +72,13 @@ int main(int ac,char *av[])
 	}
 
 	const unsigned char test7[]={0x04,0x7D,0xFF,0x3A,0x00,0x00};
-	if(true!=TestAddressingDisassembly(32,32,sizeof(test7),test7,towns,"[EDI*2+000003AFFH]"))
+	if(true!=TestAddressingDisassembly(32,32,sizeof(test7),test7,towns,"[EDI*2+00003AFFH]"))
 	{
 		return 1;
 	}
 
 	const unsigned char test8[]={0xB4,0x4D,0x00,0x00,0x32,0x51};
-	if(true!=TestAddressingDisassembly(32,32,sizeof(test8),test8,towns,"[EBP+ECX*2+051320000H]"))
+	if(true!=TestAddressingDisassembly(32,32,sizeof(test8),test8,towns,"[EBP+ECX*2+51320000H]"))
 	{
 		return 1;
 	}
@@ -87,7 +87,7 @@ int main(int ac,char *av[])
 
 	// 16 bit addressing
 	const unsigned char test16_1[]={0xA0,0xFF,0x06};
-	if(true!=TestAddressingDisassembly(16,16,sizeof(test16_1),test16_1,towns,"[BX+SI+006FFH]"))
+	if(true!=TestAddressingDisassembly(16,16,sizeof(test16_1),test16_1,towns,"[BX+SI+06FFH]"))
 	{
 		return 1;
 	}
@@ -105,13 +105,13 @@ int main(int ac,char *av[])
 	}
 
 	const unsigned char test16_4[]={0x47,0x06};
-	if(true!=TestAddressingDisassembly(16,16,sizeof(test16_4),test16_4,towns,"[BX+006H]"))
+	if(true!=TestAddressingDisassembly(16,16,sizeof(test16_4),test16_4,towns,"[BX+06H]"))
 	{
 		return 1;
 	}
 
 	const unsigned char test16_5[]={0x94,0x97,0x26};
-	if(true!=TestAddressingDisassembly(16,16,sizeof(test16_5),test16_5,towns,"[SI+02697H]"))
+	if(true!=TestAddressingDisassembly(16,16,sizeof(test16_5),test16_5,towns,"[SI+2697H]"))
 	{
 		return 1;
 	}
@@ -123,13 +123,13 @@ int main(int ac,char *av[])
 	}
 
 	const unsigned char test16_7[]={0x82,0x2a,0x65};
-	if(true!=TestAddressingDisassembly(16,16,sizeof(test16_7),test16_7,towns,"[BP+SI+0652AH]"))
+	if(true!=TestAddressingDisassembly(16,16,sizeof(test16_7),test16_7,towns,"[BP+SI+652AH]"))
 	{
 		return 1;
 	}
 
 	const unsigned char test16_8[]={0x8a,0x2a,0xe8};
-	if(true!=TestAddressingDisassembly(16,16,sizeof(test16_8),test16_8,towns,"[BP+SI-017D6H]"))
+	if(true!=TestAddressingDisassembly(16,16,sizeof(test16_8),test16_8,towns,"[BP+SI-17D6H]"))
 	{
 		return 1;
 	}
