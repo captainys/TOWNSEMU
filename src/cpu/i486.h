@@ -310,6 +310,12 @@ public:
 		std::string DisassembleAsFarAddr(void) const;
 		std::string DisassembleAsReg(void) const;
 		std::string DisassembleAsImm(int immSize) const;
+
+	public:
+		static void GetSizeQualifierToDisassembly(
+			std::string &op1Qual,std::string &op2Qual,const Operand &op1,const Operand &op2);
+
+		static std::string GetSegmentQualifierToDisassembly(int segOverride,const Operand &op);
 	};
 
 

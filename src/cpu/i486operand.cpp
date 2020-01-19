@@ -385,3 +385,68 @@ std::string i486DX::Operand::DisassembleAsImm(int immSize) const
 		return cpputil::Itox(imm);
 	}
 }
+/* static */ void i486DX::Operand::GetSizeQualifierToDisassembly(
+			std::string &op1Qual,std::string &op2Qual,const Operand &op1,const Operand &op2)
+{
+	// If one of the two operands is IMM and the other is an address.
+	if((op1.operandType==OPER_IMM8 ||
+	    op1.operandType==OPER_IMM16 ||
+	    op1.operandType==OPER_IMM32) &&
+	    op2.operandType==OPER_ADDR)
+	{
+		switch(op1.operandType)
+		{
+		case OPER_IMM8:
+			op2Qual="BYTE PTR ";
+			break;
+		case OPER_IMM16:
+			op2Qual="WORD PTR ";
+			break;
+		case OPER_IMM32:
+			op2Qual="DWORD PTR ";
+			break;
+		}
+	}
+	else if((op2.operandType==OPER_IMM8 ||
+	    op2.operandType==OPER_IMM16 ||
+	    op2.operandType==OPER_IMM32) &&
+	    op1.operandType==OPER_ADDR)
+	{
+		switch(op2.operandType)
+		{
+		case OPER_IMM8:
+			op1Qual="BYTE PTR ";
+			break;
+		case OPER_IMM16:
+			op1Qual="WORD PTR ";
+			break;
+		case OPER_IMM32:
+			op1Qual="DWORD PTR ";
+			break;
+		}
+	}
+
+}
+
+/* static */ std::string i486DX::Operand::GetSegmentQualifierToDisassembly(int segOverride,const Operand &op)
+{
+	if(0!=segOverride && OPER_ADDR==op.operandType)
+	{
+		switch(segOverride)
+		{
+		case SEG_OVERRIDE_CS: //  0x2E,
+			return "CS:";
+		case SEG_OVERRIDE_SS: //  0x36,
+			return "SS:";
+		case SEG_OVERRIDE_DS: //  0x3E,
+			return "DS:";
+		case SEG_OVERRIDE_ES: //  0x26,
+			return "ES:";
+		case SEG_OVERRIDE_FS: //  0x64,
+			return "FS:";
+		case SEG_OVERRIDE_GS: //  0x65,
+			return "GS:";
+		}
+	}
+	return "";
+}
