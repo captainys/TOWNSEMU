@@ -16,12 +16,12 @@ bool TestDisassembly(
 
 	inst.Clear();
 	inst.addressSize=addressSize;
-	inst.operandSize=oplen;
+	inst.operandSize=dataSize;
 	inst.opCode=opCode;
 	inst.operandLen=oplen;
 	for(unsigned int i=0; i<oplen; ++i)
 	{
-		inst.operand[i]=oplen;
+		inst.operand[i]=operand[i];
 	}
 
 	i486DX::SegmentRegister seg;
@@ -58,7 +58,7 @@ int main(int ac,char *av[])
 
 
 	// 32 bit addressing
-	const unsigned char test16_1[]={0x8B,0xC2}; // [ECX+EAX*8]
+	const unsigned char test16_1[]={0xC2}; // [ECX+EAX*8]
 	if(true!=TestDisassembly(16,16,0x8B,sizeof(test16_1),test16_1,towns,"MOV     AX,DX"))
 	{
 		return 1;
