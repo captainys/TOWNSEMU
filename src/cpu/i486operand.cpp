@@ -245,17 +245,17 @@ void i486DX::Operand::MakeByRegisterNumber(int dataSize,int regNum)
 void i486DX::Operand::MakeImm8(unsigned int imm)
 {
 	operandType=OPER_IMM8;
-	imm=imm;
+	this->imm=imm;
 }
 void i486DX::Operand::MakeImm16(unsigned int imm)
 {
 	operandType=OPER_IMM16;
-	imm=imm;
+	this->imm=imm;
 }
 void i486DX::Operand::MakeImm32(unsigned int imm)
 {
 	operandType=OPER_IMM32;
-	imm=imm;
+	this->imm=imm;
 }
 
 unsigned int i486DX::Operand::DecodeFarAddr(int addressSize,int operandSize,const unsigned char operand[])
@@ -378,11 +378,11 @@ std::string i486DX::Operand::DisassembleAsImm(int immSize) const
 	switch(immSize)
 	{
 	case 8:
-		return cpputil::Btox(imm);
+		return cpputil::Ubtox(imm)+"H";
 	case 16:
-		return cpputil::Stox(imm);
+		return cpputil::Ustox(imm)+"H";
 	default:
-		return cpputil::Itox(imm);
+		return cpputil::Uitox(imm)+"H";
 	}
 }
 /* static */ void i486DX::Operand::GetSizeQualifierToDisassembly(

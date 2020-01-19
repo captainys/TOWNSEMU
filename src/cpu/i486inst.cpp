@@ -70,8 +70,7 @@ PREFIX_DONE:
 	if(true==OpCodeNeedsOneMoreByte(inst.opCode))
 	{
 		lastByte=FetchByte(seg,offset+inst.numBytes++,mem);
-		inst.opCode<<=8;
-		inst.opCode|=lastByte;
+		inst.opCode|=(lastByte<<8);
 	}
 
 	FetchOperand(inst,seg,offset+inst.numBytes,mem);
@@ -442,15 +441,15 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 
 unsigned int i486DX::Instruction::GetUimm8(void) const
 {
-	return operand[numBytes-1];
+	return operand[operandLen-1];
 }
 unsigned int i486DX::Instruction::GetUimm16(void) const
 {
-	return cpputil::GetWord(operand+numBytes-2);
+	return cpputil::GetWord(operand+operandLen-2);
 }
 unsigned int i486DX::Instruction::GetUimm32(void) const
 {
-	return cpputil::GetWord(operand+numBytes-4);
+	return cpputil::GetDword(operand+operandLen-4);
 }
 
 /* static */ std::string i486DX::Get8BitRegisterNameFromMODR_M(unsigned char MOD_RM)
@@ -487,6 +486,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 {
 	auto inst=FetchInstruction(state.CS,state.EIP,mem);
 
+	Operand op1,op2;
+	inst.DecodeOperand(inst.addressSize,inst.operandSize,op1,op2);
+
 	bool EIPChanged=false;
 	unsigned int clocksPassed=0;
 
@@ -502,12 +504,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 	case I486_OPCODE_JMP_FAR:
 		{
-			unsigned int seg,offset;
 			switch(inst.operandSize)
 			{
 			case 16:
-				offset=cpputil::GetWord(inst.operand);
-				seg=cpputil::GetWord(inst.operand+2);
 				if(true==IsInRealMode())
 				{
 					clocksPassed=17;
@@ -518,8 +517,6 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				}
 				break;
 			case 32:
-				offset=cpputil::GetDword(inst.operand);
-				seg=cpputil::GetWord(inst.operand+4);
 				if(true==IsInRealMode())
 				{
 					clocksPassed=13;
@@ -530,8 +527,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				}
 				break;
 			}
-			LoadSegmentRegister(state.CS,seg,mem);
-			state.EIP=offset;
+			LoadSegmentRegister(state.CS,op1.seg,mem);
+			state.EIP=op1.offset;
 			EIPChanged=true;
 		}
 		break;
@@ -540,7 +537,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 	}
 
-	if(true!=EIPChanged)
+	if(true!=EIPChanged && true!=abort)
 	{
 		state.EIP+=inst.numBytes;
 	}

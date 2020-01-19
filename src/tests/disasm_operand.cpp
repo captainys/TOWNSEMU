@@ -58,13 +58,80 @@ int main(int ac,char *av[])
 
 
 	// 32 bit addressing
-	const unsigned char test16_1[]={0xC2}; // [ECX+EAX*8]
-	if(true!=TestDisassembly(16,16,0x8B,sizeof(test16_1),test16_1,towns,"MOV     AX,DX"))
+	const unsigned char test32_1[]={0xC2};
+	if(true!=TestDisassembly(32,32,0x8B,sizeof(test32_1),test32_1,towns,"MOV     EAX,EDX"))
+	{
+		return 1;
+	}
+
+	const unsigned char test32_2[]={0xD0};
+	if(true!=TestDisassembly(32,32,0x8B,sizeof(test32_2),test32_2,towns,"MOV     EDX,EAX"))
+	{
+		return 1;
+	}
+
+	const unsigned char test32_3[]={0x84,0x96,0xFF,0x1F,0x00,0x00};
+	if(true!=TestDisassembly(32,32,0x8A,sizeof(test32_3),test32_3,towns,"MOV     AL,[ESI+EDX*4+00001FFFH]"))
+	{
+		return 1;
+	}
+
+	const unsigned char test32_4[]={0x84,0x95,0xFF,0x2F,0x00,0x00};
+	if(true!=TestDisassembly(32,32,0x8A,sizeof(test32_4),test32_4,towns,"MOV     AL,[EBP+EDX*4+00002FFFH]"))
+	{
+		return 1;
+	}
+
+	const unsigned char test32_5[]={0x78,0x56,0x34,0x12};
+	if(true!=TestDisassembly(32,32,0xB9,sizeof(test32_5),test32_5,towns,"MOV     ECX,12345678H"))
+	{
+		return 1;
+	}
+
+	const unsigned char test32_6[]={0xAB,0xAB,0xAB,0xAB};
+	if(true!=TestDisassembly(32,32,0xBC,sizeof(test32_6),test32_6,towns,"MOV     ESP,ABABABABH"))
 	{
 		return 1;
 	}
 
 
+
+	// 16 bit addressing
+	const unsigned char test16_1[]={0xC2};
+	if(true!=TestDisassembly(16,16,0x8B,sizeof(test16_1),test16_1,towns,"MOV     AX,DX"))
+	{
+		return 1;
+	}
+
+	const unsigned char test16_2[]={0xD0};
+	if(true!=TestDisassembly(16,16,0x8B,sizeof(test16_2),test16_2,towns,"MOV     DX,AX"))
+	{
+		return 1;
+	}
+
+	const unsigned char test16_3[]={0x80,0xFF,0x1F};
+	if(true!=TestDisassembly(16,16,0x8A,sizeof(test16_3),test16_3,towns,"MOV     AL,[BX+SI+1FFFH]"))
+	{
+		return 1;
+	}
+
+	const unsigned char test16_4[]={0x83,0xFF,0x2F};
+	if(true!=TestDisassembly(16,16,0x8A,sizeof(test16_4),test16_4,towns,"MOV     AL,[BP+DI+2FFFH]"))
+	{
+		return 1;
+	}
+
+	const unsigned char test16_5[]={0x78,0x56};
+	if(true!=TestDisassembly(16,16,0xB9,sizeof(test16_5),test16_5,towns,"MOV     CX,5678H"))
+	{
+		return 1;
+	}
+
+	const unsigned char test16_6[]={0x76,0x98};
+	if(true!=TestDisassembly(16,16,0xBC,sizeof(test16_6),test16_6,towns,"MOV     SP,9876H"))
+	{
+		return 1;
+	}
 
 	return 0;
 }

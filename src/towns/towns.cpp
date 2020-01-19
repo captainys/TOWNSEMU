@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "towns.h"
 
 
@@ -16,6 +18,35 @@ FMTowns::FMTowns()
 	mem.SetWaveRAMSize(256*1024);
 
 	Reset();
+}
+
+bool FMTowns::CheckAbort(void) const
+{
+	bool ab=false;
+	if(true==abort)
+	{
+		std::cout << "FMTowns:" << abortReason << std::endl;
+		ab=true;
+	}
+	if(true==cpu.abort)
+	{
+		std::cout << cpu.DeviceName() << ':' << cpu.abortReason << std::endl;
+		ab=true;
+	}
+	if(true==mem.abort)
+	{
+		std::cout << mem.DeviceName() << ':' <<  mem.abortReason << std::endl;
+		ab=true;
+	}
+	for(auto devPtr : allDevices)
+	{
+		if(true==devPtr->abort)
+		{
+			std::cout << devPtr->DeviceName() << ':' <<  devPtr->abortReason << std::endl;
+			ab=true;
+		}
+	}
+	return ab;
 }
 
 bool FMTowns::LoadROMImages(const char dirName[])

@@ -64,6 +64,8 @@ public:
 
 	FMTowns();
 
+	bool CheckAbort(void) const;
+
 	/*! After constructing FMTowns class, call this function to specify where to look
 	    for the ROM images.
 	    It just redirect the call to mem.LoadROMImages() function.

@@ -56,8 +56,12 @@ int main(int ac,char *av[])
 		std::string cmd;
 		std::cin >> cmd;
 
-		auto clocksPassed=towns.RunOneInstruction();
-		std::cout << clocksPassed << " clocks passed." << std::endl;
+		if(true!=towns.CheckAbort())
+		{
+			auto clocksPassed=towns.RunOneInstruction();
+			std::cout << clocksPassed << " clocks passed." << std::endl;
+			towns.CheckAbort();
+		}
 	}
 
 	return 0;
