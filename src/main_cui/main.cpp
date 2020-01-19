@@ -42,10 +42,23 @@ int main(int ac,char *av[])
 		std::cout << cpputil::Uitox(b) << std::endl;
 	}
 
-	auto inst=towns.FetchInstruction();
-	printf("%d\n",inst.numBytes);
-	printf("%x\n",inst.opCode);
 
+	for(;;)
+	{
+		auto inst=towns.FetchInstruction();
+		auto disasm=towns.cpu.Disassemble(inst,towns.cpu.state.CS,towns.cpu.state.EIP,towns.mem);
+
+		std::cout << "CS:" << cpputil::Ustox(towns.cpu.state.CS.value) << std::endl;
+		std::cout << "EIP:" << cpputil::Uitox(towns.cpu.state.EIP) << std::endl;
+
+		std::cout << disasm << std::endl;
+		std::cout << ">";
+		std::string cmd;
+		std::cin >> cmd;
+
+		auto clocksPassed=towns.RunOneInstruction();
+		std::cout << clocksPassed << " clocks passed." << std::endl;
+	}
 
 	return 0;
 }

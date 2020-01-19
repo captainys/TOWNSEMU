@@ -1,3 +1,6 @@
+#include <iostream>
+
+#include "cpputil.h"
 #include "i486.h"
 
 
@@ -36,11 +39,39 @@ void i486DX::Reset(void)
 
 void i486DX::LoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem)
 {
+	if(true==IsInRealMode())
+	{
+		LoadSegmentRegisterRealMode(reg,value);
+	}
+	else
+	{
+		Abort("Protected mode not supported yet.");
+	}
 }
 
 void i486DX::LoadSegmentRegisterRealMode(SegmentRegister &reg,unsigned int value)
 {
 	reg.value=value;
 	reg.baseLinearAddr=(value<<4);
+std::cout << cpputil::Uitox(reg.value) << " " << cpputil::Uitox(reg.baseLinearAddr) << std::endl;
 }
 
+std::string i486DX::Disassemble(const Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem) const
+{
+	std::string disasm;
+	disasm+=cpputil::Ustox(seg.value);
+	disasm+=":";
+	disasm+=cpputil::Uitox(offset);
+	disasm+=" ";
+
+	for(unsigned int i=0; i<inst.numBytes; ++i)
+	{
+		disasm+=cpputil::Ubtox(FetchByte(seg,offset+i,mem));
+	}
+	disasm+=" ";
+
+	cpputil::ExtendString(disasm,40);
+	disasm+=inst.Disassemble(seg,offset);
+
+	return disasm;
+}

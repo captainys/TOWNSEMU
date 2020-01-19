@@ -75,6 +75,9 @@ public:
 	*/
 	void Reset(void);
 
+	/*! Run one instruction and returns the number of clocks passed. */
+	unsigned int RunOneInstruction(void);
+
 
 
 	// Following functions are for testing purposes.

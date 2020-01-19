@@ -24,8 +24,16 @@ const char *BoolToStr(bool b);
 int Xtoi(const char str[]);
 int Atoi(const char str[]);
 inline char FourBitToX(int i);
+
 std::string Uitox(unsigned int i);
+std::string Ustox(unsigned short i);
+std::string Ubtox(unsigned char i);
 std::string Uitoa(unsigned int i);
+
+void ExtendString(std::string &str,int minimumLength);
+
+unsigned int GetDword(const unsigned char byteData[]);
+unsigned int GetWord(const unsigned char byteData[]);
 
 };
 

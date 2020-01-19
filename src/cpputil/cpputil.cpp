@@ -376,9 +376,32 @@ inline char cpputil::FourBitToX(int i)
 std::string cpputil::Uitox(unsigned int i)
 {
 	std::string s;
-	s.resize(9);
-	s[8]=0;
+	s.resize(8);
 	for(int n=7; 0<=n; --n)
+	{
+		s[n]=FourBitToX(i&0x0F);
+		i>>=4;
+	}
+	return s;
+}
+
+std::string cpputil::Ustox(unsigned short i)
+{
+	std::string s;
+	s.resize(4);
+	for(int n=3; 0<=n; --n)
+	{
+		s[n]=FourBitToX(i&0x0F);
+		i>>=4;
+	}
+	return s;
+}
+
+std::string cpputil::Ubtox(unsigned char i)
+{
+	std::string s;
+	s.resize(2);
+	for(int n=1; 0<=n; --n)
 	{
 		s[n]=FourBitToX(i&0x0F);
 		i>>=4;
@@ -399,5 +422,23 @@ std::string cpputil::Uitoa(unsigned int i)
 		std::swap(s[n],s[s.size()-1-n]);
 	}
 	return s;
+}
+
+void cpputil::ExtendString(std::string &str,int minimumLength)
+{
+	while(str.size()<minimumLength)
+	{
+		str.push_back(' ');
+	}
+}
+
+unsigned int cpputil::GetDword(const unsigned char byteData[])
+{
+	return byteData[0]+(byteData[1]<<8)+(byteData[1]<<16)+(byteData[1]<<24);
+}
+
+unsigned int cpputil::GetWord(const unsigned char byteData[])
+{
+	return byteData[0]+(byteData[1]<<8);
 }
 

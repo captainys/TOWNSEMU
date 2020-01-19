@@ -143,6 +143,8 @@ public:
 			segOverride=0;
 			operandLen=0;
 		}
+
+		std::string Disassemble(SegmentRegister reg,unsigned int offset) const;
 	};
 
 
@@ -264,8 +266,13 @@ public:
 	Instruction FetchInstruction(const SegmentRegister seg,unsigned int offset,const Memory &mem) const;
 
 
+	/*! Make a disassembly.
+	*/
+	std::string Disassemble(const Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem) const;
 
-	unsigned long long RunOneInstruction(Memory &mem,InOut &io);
+
+	/*! Run one instruction and returns number of clocks. */
+	unsigned int RunOneInstruction(Memory &mem,InOut &io);
 };
 
 /* } */

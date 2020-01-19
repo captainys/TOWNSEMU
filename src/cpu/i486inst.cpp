@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include "cpputil.h"
 #include "i486.h"
 #include "i486inst.h"
 
@@ -98,6 +99,9 @@ void i486DX::FetchOperand(Instruction &inst,SegmentRegister seg,int offset,const
 {
 	switch(inst.opCode)
 	{
+	case I486_OPCODE_CLD:
+	case I486_OPCODE_CLI:
+		break;
 	case I486_OPCODE_JMP_FAR:
 		switch(inst.operandSize)
 		{
@@ -115,4 +119,110 @@ void i486DX::FetchOperand(Instruction &inst,SegmentRegister seg,int offset,const
 		// Undefined operand, or probably not implemented yet.
 		break;
 	}
+}
+
+std::string i486DX::Instruction::Disassemble(SegmentRegister reg,unsigned int offset) const
+{
+	std::string disasm;
+
+	switch(opCode)
+	{
+	case I486_OPCODE_CLD:
+		disasm="CLD";
+		break;
+	case I486_OPCODE_CLI:
+		disasm="CLI";
+		break;
+	case I486_OPCODE_JMP_FAR:
+		disasm="JMP";
+		cpputil::ExtendString(disasm,8);
+		{
+			unsigned int seg,offset;
+			switch(operandSize)
+			{
+			case 16:
+				offset=cpputil::GetWord(operand);
+				seg=cpputil::GetWord(operand+2);
+				disasm+=cpputil::Ustox(seg);
+				disasm+=":";
+				disasm+=cpputil::Uitox(offset);
+				break;
+			case 32:
+				offset=cpputil::GetDword(operand);
+				seg=cpputil::GetWord(operand+4);
+				disasm+=cpputil::Ustox(seg);
+				disasm+=":";
+				disasm+=cpputil::Ustox(offset);
+				break;
+			}
+		}
+		break;
+	}
+
+	return disasm;
+}
+
+unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
+{
+	auto inst=FetchInstruction(state.CS,state.EIP,mem);
+
+	bool EIPChanged=false;
+	unsigned int clocksPassed=0;
+
+	switch(inst.opCode)
+	{
+	case I486_OPCODE_CLD:
+		state.EFLAGS&=(~EFLAGS_DIRECTION);
+		clocksPassed=2;
+		break;
+	case I486_OPCODE_CLI:
+		state.EFLAGS&=(~EFLAGS_INT_ENABLE);
+		clocksPassed=2;
+		break;
+	case I486_OPCODE_JMP_FAR:
+		{
+			unsigned int seg,offset;
+			switch(inst.operandSize)
+			{
+			case 16:
+				offset=cpputil::GetWord(inst.operand);
+				seg=cpputil::GetWord(inst.operand+2);
+				if(true==IsInRealMode())
+				{
+					clocksPassed=17;
+				}
+				else
+				{
+					clocksPassed=19;
+				}
+				break;
+			case 32:
+				offset=cpputil::GetDword(inst.operand);
+				seg=cpputil::GetWord(inst.operand+4);
+				if(true==IsInRealMode())
+				{
+					clocksPassed=13;
+				}
+				else
+				{
+					clocksPassed=18;
+				}
+				break;
+			}
+			LoadSegmentRegister(state.CS,seg,mem);
+			state.EIP=offset;
+			EIPChanged=true;
+		}
+		break;
+	default:
+		Abort("Undefined instruction or simply not supported yet.");
+		break;
+	}
+
+	if(true!=EIPChanged)
+	{
+		state.EIP+=inst.numBytes;
+	}
+
+	return clocksPassed;
 }

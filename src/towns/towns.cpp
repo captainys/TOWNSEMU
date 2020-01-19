@@ -38,6 +38,15 @@ void FMTowns::Reset(void)
 	}
 }
 
+unsigned int FMTowns::RunOneInstruction(void)
+{
+	return cpu.RunOneInstruction(mem,io);
+}
+
+
+////////////////////////////////////////////////////////////
+
+
 unsigned int FMTowns::FetchByteCS_EIP(int offset) const
 {
 	return cpu.FetchInstructionByte(offset,mem);
