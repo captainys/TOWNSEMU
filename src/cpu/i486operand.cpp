@@ -215,12 +215,67 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 
 	return numBytes;
 }
-//unsigned int i486DX::Operand::DecodeMODR_MForRegister(int dataSize,unsigned char MODR_M)
-//{
-//}
-//unsigned int i486DX::Operand::DecodeMODR_MForSegmentRegister(unsigned char MODR_M)
-//{
-//}
+void i486DX::Operand::DecodeMODR_MForRegister(int dataSize,unsigned char MODR_M)
+{
+	auto REG_OPCODE=((MODR_M>>3)&7);
+	MakeByRegisterNumber(dataSize,REG_OPCODE);
+}
+void i486DX::Operand::DecodeMODR_MForSegmentRegister(unsigned char MODR_M)
+{
+	auto REG_OPCODE=((MODR_M>>3)&7);
+	operandType=OPER_REG;
+	reg=REG_SEGMENT_REG_BASE+REG_OPCODE;
+}
+void i486DX::Operand::MakeByRegisterNumber(int dataSize,int regNum)
+{
+	operandType=OPER_REG;
+	switch(dataSize)
+	{
+	case 8:
+		reg=REG_8BIT_REG_BASE+regNum;
+		break;
+	case 16:
+		reg=REG_16BIT_REG_BASE+regNum;
+		break;
+	default:
+		reg=REG_32BIT_REG_BASE+regNum;
+		break;
+	}
+}
+void i486DX::Operand::MakeImm8(unsigned int imm)
+{
+	operandType=OPER_IMM8;
+	imm=imm;
+}
+void i486DX::Operand::MakeImm16(unsigned int imm)
+{
+	operandType=OPER_IMM16;
+	imm=imm;
+}
+void i486DX::Operand::MakeImm32(unsigned int imm)
+{
+	operandType=OPER_IMM32;
+	imm=imm;
+}
+
+unsigned int i486DX::Operand::DecodeFarAddr(int addressSize,int operandSize,const unsigned char operand[])
+{
+	operandType=OPER_FARADDR;
+	switch(operandSize)
+	{
+	case 16:
+		offset=cpputil::GetWord(operand);
+		offsetBits=16;
+		seg=cpputil::GetWord(operand+2);
+		return 4;
+	case 32:
+	default:
+		offset=cpputil::GetDword(operand);
+		offsetBits=32;
+		seg=cpputil::GetWord(operand+4);
+		return 6;
+	}
+}
 
 std::string i486DX::Operand::Disassemble(void) const
 {
@@ -228,6 +283,8 @@ std::string i486DX::Operand::Disassemble(void) const
 	{
 	case OPER_ADDR:
 		return DisassembleAsAddr();
+	case OPER_FARADDR:
+		return DisassembleAsFarAddr();
 	case OPER_REG:
 		return DisassembleAsReg();
 	case OPER_IMM8:
@@ -290,6 +347,26 @@ std::string i486DX::Operand::DisassembleAsAddr(void) const
 	}
 
 	disasm.push_back(']');
+	return disasm;
+}
+std::string i486DX::Operand::DisassembleAsFarAddr(void) const
+{
+	// It doesn't add [] because may be used by JMP.
+	std::string disasm;
+	switch(offsetBits)
+	{
+	case 16:
+		disasm=cpputil::Ustox(seg);
+		disasm.push_back(':');
+		disasm+=cpputil::Ustox(offset);
+		break;
+	case 32:
+	default:
+		disasm=cpputil::Ustox(seg);
+		disasm.push_back(':');
+		disasm+=cpputil::Uitox(offset);
+		break;
+	}
 	return disasm;
 }
 std::string i486DX::Operand::DisassembleAsReg(void) const

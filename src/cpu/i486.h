@@ -51,12 +51,14 @@ public:
 		REG_EIP,
 		REG_EFLAGS,
 
+		// Segment order is in [1] pp.26-10
 		REG_ES,
 		REG_CS,
 		REG_SS,
 		REG_DS,
 		REG_FS,
 		REG_GS,
+
 		REG_GDT,
 		REG_LDT,
 		REG_TR,
@@ -81,6 +83,7 @@ public:
 		REG_8BIT_REG_BASE=REG_AL,
 		REG_16BIT_REG_BASE=REG_AX,
 		REG_32BIT_REG_BASE=REG_EAX,
+		REG_SEGMENT_REG_BASE=REG_ES,
 	};
 	static const char *const RegToStr[REG_TOTAL_NUMBER_OF_REGISTERS];
 
@@ -199,6 +202,8 @@ public:
 		RESET_FPU_OPCODE=          0,
 	};
 
+	class Operand;
+
 	class Instruction
 	{
 	public:
@@ -220,6 +225,11 @@ public:
 			operandLen=0;
 		}
 
+		/*! Decode operands.
+		    I think data size is operand size, but I am not 100% sure yet.
+		*/
+		void DecodeOperand(int addressSize,int operandSize,class Operand &op1,class Operand &op2) const;
+
 		std::string Disassemble(SegmentRegister reg,unsigned int offset) const;
 
 	public:
@@ -238,6 +248,7 @@ public:
 	{
 		OPER_UNDEFINED,
 		OPER_ADDR,    // BaseReg+IndexReg*IndexScaling+Offset
+		OPER_FARADDR,
 		OPER_REG,
 		OPER_IMM8,
 		OPER_IMM16,
@@ -248,13 +259,15 @@ public:
 	public:
 		int operandType;
 
-		// For Register operand type
+		// For OPER_REG operand type
 		int reg;
-		// For Immediate operand type
+		// For OPER_IMM* operand type
 		int imm;
-		// For Addr operand type
+		// For OPER_ADDR and OPER_FARADDR operand type
 		int baseReg,indexReg,indexScaling,offset;
 		int offsetBits;
+		// For OPER_FARADDR operand type.  NOT USED in any other operand types.
+		int seg;
 
 		inline Operand(){}
 
@@ -271,16 +284,30 @@ public:
 		unsigned int Decode(int addressSize,int dataSize,const unsigned char operand[]);
 		/*! Decode operand and returns the number of bytes.
 		*/
-		unsigned int DecodeMODR_MForRegister(int dataSize,unsigned char MODR_M);
+		void DecodeMODR_MForRegister(int dataSize,unsigned char MODR_M);
 		/*! Decode operand and returns the number of bytes.
 		*/
-		unsigned int DecodeMODR_MForSegmentRegister(unsigned char MODR_M);
+		void DecodeMODR_MForSegmentRegister(unsigned char MODR_M);
+		/*! Decode operand and returns the number of bytes.
+		*/
+		void MakeByRegisterNumber(int dataSize,int regNum);
+		/*! Make Immediate. */
+		void MakeImm8(unsigned int imm);
+		/*! Make Immediate. */
+		void MakeImm16(unsigned int imm);
+		/*! Make Immediate. */
+		void MakeImm32(unsigned int imm);
+
+		/*! Decode FAR address and returns the number of bytes used.
+		*/
+		unsigned int DecodeFarAddr(int addressSize,int dataSize,const unsigned char operand[]);
 
 		/*! Returns a disassembly of the operand after decoding.
 		*/
 		std::string Disassemble(void) const;
 	private:
 		std::string DisassembleAsAddr(void) const;
+		std::string DisassembleAsFarAddr(void) const;
 		std::string DisassembleAsReg(void) const;
 		std::string DisassembleAsImm(int immSize) const;
 	};
