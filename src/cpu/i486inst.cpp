@@ -313,6 +313,17 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 		op1.Decode(addressSize,operandSize,operand);
 		break;
 
+	case I486_OPCODE_DEC_EAX:
+	case I486_OPCODE_DEC_ECX:
+	case I486_OPCODE_DEC_EDX:
+	case I486_OPCODE_DEC_EBX:
+	case I486_OPCODE_DEC_ESP:
+	case I486_OPCODE_DEC_EBP:
+	case I486_OPCODE_DEC_ESI:
+	case I486_OPCODE_DEC_EDI:
+		op1.MakeByRegisterNumber(operandSize,opCode&7);
+		break;
+
 
 	case I486_OPCODE_JMP_FAR:
 		op1.DecodeFarAddr(addressSize,operandSize,operand);
@@ -620,7 +631,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,1);
 			auto i=value.GetAsDword();
-			Decrement(i);
+			DecrementByte(i);
 			value.SetDword(i);
 			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
 		}
@@ -629,7 +640,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
 			auto i=value.GetAsDword();
-			Decrement(i);
+			DecrementWordOrDword(inst.operandSize,i);
 			value.SetDword(i);
 			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
 		}
@@ -644,9 +655,13 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_OPCODE_DEC_EDI:
 		{
 			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,op1.GetSize());
+std::cout << RegToStr[op1.reg] << std::endl;
 			auto i=value.GetAsDword();
-			Decrement(i);
+std::cout << i << std::endl;
+			DecrementWordOrDword(inst.operandSize,i);
+std::cout << i << std::endl;
 			value.SetDword(i);
+std::cout << i << std::endl;
 			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
 		}
 		break;

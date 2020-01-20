@@ -379,6 +379,46 @@ void i486DX::Move(Memory &mem,int addressSize,int segmentOverride,const Operand 
 	StoreOperandValue(dst,mem,addressSize,segmentOverride,value);
 }
 
+// OF SF ZF AF PF
+void i486DX::DecrementWordOrDword(unsigned int operandSize,unsigned int &value)
+{
+	if(16==operandSize)
+	{
+		DecrementWord(value);
+	}
+	else
+	{
+		DecrementDword(value);
+	}
+}
+void i486DX::DecrementDword(unsigned int &value)
+{
+	--value;
+	SetOverflowFlag(value==0x7FFFFFFF);
+	SetSignFlag(0!=(value&0x80000000));
+	SetZeroFlag(0==value);
+	SetAuxCarryFlag(0x0F==(value&0x0F));
+	SetParityFlag(CheckParity(value&0xFF));
+}
+void i486DX::DecrementWord(unsigned int &value)
+{
+	value=((value-1)&0xFFFF);
+	SetOverflowFlag(value==0x7FFF);
+	SetSignFlag(0!=(value&0x8000));
+	SetZeroFlag(0==value);
+	SetAuxCarryFlag(0x0F==(value&0x0F));
+	SetParityFlag(CheckParity(value&0xFF));
+}
+void i486DX::DecrementByte(unsigned int &value)
+{
+	value=((value-1)&0xFF);
+	SetOverflowFlag(value==0x7F);
+	SetSignFlag(0!=(value&0x80));
+	SetZeroFlag(0==value);
+	SetAuxCarryFlag(0x0F==(value&0x0F));
+	SetParityFlag(CheckParity(value&0xFF));
+}
+
 i486DX::OperandValue i486DX::EvaluateOperand(
     const Memory &mem,int addressSize,int segmentOverride,const Operand &op,int destinationBytes) const
 {

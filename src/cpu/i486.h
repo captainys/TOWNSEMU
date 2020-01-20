@@ -347,11 +347,11 @@ public:
 			{
 			default:
 			case 4:
-				dword|=((byteData[3]<<24)&255);
+				dword|=(byteData[3]<<24);
 			case 3:
-				dword|=((byteData[2]<<16)&255);
+				dword|=(byteData[2]<<16);
 			case 2:
-				dword|=((byteData[1]<<8)&255);
+				dword|=(byteData[1]<<8);
 			case 1:
 				dword|= byteData[0];
 			case 0:
@@ -413,6 +413,59 @@ public:
 		state.EDX&=0xffff00ff;
 		state.EDX|=(value<<8);
 	}
+
+	inline void SetEFLAGSBit(bool flag,unsigned int bit)
+	{
+		if(true==flag)
+		{
+			state.EFLAGS|=bit;
+		}
+		else
+		{
+			state.EFLAGS&=(~bit);
+		}
+	}
+
+	inline void SetOverflowFlag(bool flag)
+	{
+		SetEFLAGSBit(flag,EFLAGS_OVERFLOW);
+	}
+
+	inline void SetSignFlag(bool flag)
+	{
+		SetEFLAGSBit(flag,EFLAGS_SIGN);
+	}
+
+	inline void SetZeroFlag(bool flag)
+	{
+		SetEFLAGSBit(flag,EFLAGS_ZERO);
+	}
+
+	inline void SetAuxCarryFlag(bool flag)
+	{
+		SetEFLAGSBit(flag,EFLAGS_AUX_CARRY);
+	}
+
+	inline void SetParityFlag(bool flag)
+	{
+		SetEFLAGSBit(flag,EFLAGS_PARITY);
+	}
+
+	inline bool CheckParity(unsigned char lowByte)
+	{
+		int n=0;
+		for(int i=0; i<8; ++i)
+		{
+			if(0!=(lowByte&1))
+			{
+				++n;
+			}
+			lowByte>>=1;
+		}
+		return 0==(n&1);
+	}
+
+
 
 	virtual const char *DeviceName(void) const{return "486DX";}
 
@@ -582,6 +635,15 @@ public:
 	    If the destination operand is SS, it sets holdIRQ flag.
 	*/
 	void Move(Memory &mem,int addressMode,int segmentOverride,const Operand &dst,const Operand &src);
+
+
+	/*! Decrement a value.  It also sets OF SF ZF AF PF according to the result.
+	    operandSize needs to be 16 or 32.
+	*/
+	void DecrementWordOrDword(unsigned int operandSize,unsigned int &value);
+	void DecrementDword(unsigned int &value);
+	void DecrementWord(unsigned int &value);
+	void DecrementByte(unsigned int &value);
 
 
 	/*! Evaluates an operand.
