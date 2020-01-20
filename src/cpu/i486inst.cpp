@@ -176,6 +176,21 @@ void i486DX::FetchOperand(Instruction &inst,SegmentRegister seg,int offset,const
 	case I486_OPCODE_CLD:
 	case I486_OPCODE_CLI:
 		break;
+
+	case I486_OPCODE_DEC_R_M8:
+	case I486_OPCODE_DEC_R_M:
+		FetchOperandRM(inst,seg,offset,mem);
+		break;
+	case I486_OPCODE_DEC_EAX:
+	case I486_OPCODE_DEC_ECX:
+	case I486_OPCODE_DEC_EDX:
+	case I486_OPCODE_DEC_EBX:
+	case I486_OPCODE_DEC_ESP:
+	case I486_OPCODE_DEC_EBP:
+	case I486_OPCODE_DEC_ESI:
+	case I486_OPCODE_DEC_EDI:
+		break;
+
 	case I486_OPCODE_JMP_FAR:
 		switch(inst.operandSize)
 		{
@@ -289,6 +304,16 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 	case I486_OPCODE_CLD:
 	case I486_OPCODE_CLI:
 		break;
+
+
+	case I486_OPCODE_DEC_R_M8:
+		op1.Decode(addressSize,8,operand);
+		break;
+	case I486_OPCODE_DEC_R_M:
+		op1.Decode(addressSize,operandSize,operand);
+		break;
+
+
 	case I486_OPCODE_JMP_FAR:
 		op1.DecodeFarAddr(addressSize,operandSize,operand);
 		break;
@@ -403,11 +428,53 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 	case I486_OPCODE_CLI:
 		disasm="CLI";
 		break;
+
+
+	case I486_OPCODE_DEC_R_M8:
+		{
+			auto sizeQual=i486DX::Operand::GetSizeQualifierToDisassembly(op1,8);
+			disasm="DEC";
+			cpputil::ExtendString(disasm,8);
+			disasm+=sizeQual;
+			disasm+=op1.Disassemble();
+		}
+		break;
+	case I486_OPCODE_DEC_R_M:
+		{
+			auto sizeQual=i486DX::Operand::GetSizeQualifierToDisassembly(op1,operandSize);
+			disasm="DEC";
+			cpputil::ExtendString(disasm,8);
+			disasm+=sizeQual;
+			disasm+=op1.Disassemble();
+		}
+		break;
+	case I486_OPCODE_DEC_EAX:
+	case I486_OPCODE_DEC_ECX:
+	case I486_OPCODE_DEC_EDX:
+	case I486_OPCODE_DEC_EBX:
+	case I486_OPCODE_DEC_ESP:
+	case I486_OPCODE_DEC_EBP:
+	case I486_OPCODE_DEC_ESI:
+	case I486_OPCODE_DEC_EDI:
+		disasm="DEC";
+		cpputil::ExtendString(disasm,8);
+		if(16==operandSize)
+		{
+			disasm+=Reg16[opCode&7];
+		}
+		else
+		{
+			disasm+=Reg32[opCode&7];
+		}
+		break;
+
+
 	case I486_OPCODE_JMP_FAR:
 		disasm="JMP";
 		cpputil::ExtendString(disasm,8);
 		disasm+=op1.Disassemble();
 		break;
+
 
 	case I486_OPCODE_MOV_FROM_R8: //      0x88,
 	case I486_OPCODE_MOV_FROM_R: //       0x89, // 16/32 depends on OPSIZE_OVERRIDE

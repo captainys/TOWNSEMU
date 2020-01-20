@@ -94,6 +94,24 @@ int main(int ac,char *av[])
 		return 1;
 	}
 
+	const unsigned char test32_7[]={0x0D,0x67,0x45,0x23,0x01};
+	if(true!=TestDisassembly(32,32,0xFE,sizeof(test32_7),test32_7,towns,"DEC     BYTE PTR [01234567H]"))
+	{
+		return 1;
+	}
+
+	const unsigned char test32_8[]={0x0D,0x67,0x45,0x23,0x01};
+	if(true!=TestDisassembly(32,32,0xFF,sizeof(test32_8),test32_8,towns,"DEC     DWORD PTR [01234567H]"))
+	{
+		return 1;
+	}
+
+	const unsigned char test32_9[]={0x8C,0x70,0x67,0x45,0x23,0x01};
+	if(true!=TestDisassembly(32,32,0xFE,sizeof(test32_9),test32_9,towns,"DEC     BYTE PTR [EAX+ESI*2+01234567H]"))
+	{
+		return 1;
+	}
+
 
 
 	// 16 bit addressing

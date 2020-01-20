@@ -8,12 +8,31 @@ enum
 	I486_OPCODE_NEED_SECOND_BYTE=0x0F,
 };
 
+// Adding support for a new instruction:
+//  (1) Add OPCODE enum.
+//  (2) Implement i486DX::FetchOperand
+//  (3) Implement i486DX::Instruction::DecodeOperand
+//  (4) Implement i486DX::Instruction::Disassemble
+//  (5) Implement 
+
 enum 
 {
 //	I486_OPCODE_
 
 	I486_OPCODE_CLD=        0xFC,
 	I486_OPCODE_CLI=        0xFA,
+
+
+	I486_OPCODE_DEC_R_M8=   0xFE,
+	I486_OPCODE_DEC_R_M=    0xFF,
+	I486_OPCODE_DEC_EAX=    0x48, // 16/32 depends on OPSIZE_OVERRIDE
+	I486_OPCODE_DEC_ECX=    0x49, // 16/32 depends on OPSIZE_OVERRIDE
+	I486_OPCODE_DEC_EDX=    0x4A, // 16/32 depends on OPSIZE_OVERRIDE
+	I486_OPCODE_DEC_EBX=    0x4B, // 16/32 depends on OPSIZE_OVERRIDE
+	I486_OPCODE_DEC_ESP=    0x4C, // 16/32 depends on OPSIZE_OVERRIDE
+	I486_OPCODE_DEC_EBP=    0x4D, // 16/32 depends on OPSIZE_OVERRIDE
+	I486_OPCODE_DEC_ESI=    0x4E, // 16/32 depends on OPSIZE_OVERRIDE
+	I486_OPCODE_DEC_EDI=    0x4F, // 16/32 depends on OPSIZE_OVERRIDE
 
 
 	I486_OPCODE_JA_SHORT=   0x77,

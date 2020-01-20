@@ -315,8 +315,14 @@ public:
 		std::string DisassembleAsImm(int immSize) const;
 
 	public:
+		/*! Returns size qualifier if one of the operands is address.
+		*/
 		static void GetSizeQualifierToDisassembly(
 			std::string &op1Qual,std::string &op2Qual,const Operand &op1,const Operand &op2);
+
+		/*! Returns size qualifier if the operand is address.
+		*/
+		static std::string GetSizeQualifierToDisassembly(const Operand &op,int operandSize);
 
 		static std::string GetSegmentQualifierToDisassembly(int segOverride,const Operand &op);
 

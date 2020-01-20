@@ -425,7 +425,23 @@ std::string i486DX::Operand::DisassembleAsImm(int immSize) const
 			break;
 		}
 	}
+}
 
+/* static */ std::string i486DX::Operand::GetSizeQualifierToDisassembly(const Operand &op,int operandSize)
+{
+	if(op.operandType==OPER_ADDR)
+	{
+		switch(operandSize)
+		{
+		case 8:
+			return "BYTE PTR ";
+		case 16:
+			return "WORD PTR ";
+		case 32:
+			return "DWORD PTR ";
+		}
+	}
+	return "";
 }
 
 /* static */ std::string i486DX::Operand::GetSegmentQualifierToDisassembly(int segOverride,const Operand &op)
