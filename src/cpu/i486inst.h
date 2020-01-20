@@ -13,7 +13,7 @@ enum
 //  (2) Implement i486DX::FetchOperand
 //  (3) Implement i486DX::Instruction::DecodeOperand
 //  (4) Implement i486DX::Instruction::Disassemble
-//  (5) Implement 
+//  (5) Implement i486DX::RunOneInstruction
 
 enum 
 {

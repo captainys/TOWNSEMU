@@ -614,6 +614,44 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		state.EFLAGS&=(~EFLAGS_INT_ENABLE);
 		clocksPassed=2;
 		break;
+
+
+	case I486_OPCODE_DEC_R_M8:
+		{
+			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,1);
+			auto i=value.GetAsDword();
+			Decrement(i);
+			value.SetDword(i);
+			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+		}
+		break;
+	case I486_OPCODE_DEC_R_M:
+		{
+			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+			auto i=value.GetAsDword();
+			Decrement(i);
+			value.SetDword(i);
+			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+		}
+		break;
+	case I486_OPCODE_DEC_EAX:
+	case I486_OPCODE_DEC_ECX:
+	case I486_OPCODE_DEC_EDX:
+	case I486_OPCODE_DEC_EBX:
+	case I486_OPCODE_DEC_ESP:
+	case I486_OPCODE_DEC_EBP:
+	case I486_OPCODE_DEC_ESI:
+	case I486_OPCODE_DEC_EDI:
+		{
+			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,op1.GetSize());
+			auto i=value.GetAsDword();
+			Decrement(i);
+			value.SetDword(i);
+			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+		}
+		break;
+
+
 	case I486_OPCODE_JMP_FAR:
 		{
 			switch(inst.operandSize)

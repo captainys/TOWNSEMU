@@ -336,6 +336,63 @@ public:
 	public:
 		unsigned int numBytes;
 		unsigned char byteData[10];
+
+		/*! Returns a value as a unsigned dword.
+		    It won't evaluate beyond numBytes.
+		*/
+		inline unsigned int GetAsDword(void) const
+		{
+			unsigned int dword=0;
+			switch(numBytes)
+			{
+			default:
+			case 4:
+				dword|=((byteData[3]<<24)&255);
+			case 3:
+				dword|=((byteData[2]<<16)&255);
+			case 2:
+				dword|=((byteData[1]<<8)&255);
+			case 1:
+				dword|= byteData[0];
+			case 0:
+				break;
+			}
+			return dword;
+		}
+
+		/*! SetDword does not change numBytes.
+		    It won't update beyond numBytes.
+		    If it needs to be made 4-byte long, use MakeDword instead.
+		*/
+		inline void SetDword(unsigned int dword)
+		{
+			switch(numBytes)
+			{
+			default:
+			case 4:
+				byteData[3]=((dword>>24)&255);
+			case 3:
+				byteData[2]=((dword>>16)&255);
+			case 2:
+				byteData[1]=((dword>>8)&255);
+			case 1:
+				byteData[0]=(dword&255);
+			case 0:
+				break;
+			}
+		}
+
+		/*! MakeDword makes a 4-byte long OperandValue.
+		    It updates numByte to 4.
+		*/
+		inline void MakeDword(unsigned int dword)
+		{
+			numBytes=4;
+			byteData[0]=(dword&255);
+			byteData[1]=((dword>>8)&255);
+			byteData[2]=((dword>>16)&255);
+			byteData[3]=((dword>>24)&255);
+		}
 	};
 
 
