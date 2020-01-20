@@ -411,6 +411,47 @@ public:
 
 	State state;
 
+	inline unsigned int GetEAX(void) const
+	{
+		return state.EAX;
+	}
+	inline unsigned int GetAX(void) const
+	{
+		return state.EAX&0xffff;
+	}
+	inline unsigned int GetAL(void) const
+	{
+		return state.EAX&0xff;
+	}
+	inline unsigned int GetAH(void) const
+	{
+		return (state.EAX>>8)&0xff;
+	}
+	inline void SetEAX(unsigned int value)
+	{
+		state.EAX=value;
+	}
+	inline void SetAX(unsigned int value)
+	{
+		state.EAX&=0xffff0000;
+		state.EAX|=value;
+	}
+	inline void SetAL(unsigned int value)
+	{
+		state.EAX&=0xffffff00;
+		state.EAX|=value;
+	}
+	inline void SetAH(unsigned int value)
+	{
+		state.EAX&=0xffff00ff;
+		state.EAX|=(value<<8);
+	}
+
+
+	inline void SetEDX(unsigned int value)
+	{
+		state.EDX=value;
+	}
 	inline void SetDX(unsigned int value)
 	{
 		state.EDX&=0xffff0000;
@@ -427,6 +468,7 @@ public:
 		state.EDX|=(value<<8);
 	}
 
+
 	inline void SetEFLAGSBit(bool flag,unsigned int bit)
 	{
 		if(true==flag)
@@ -437,6 +479,11 @@ public:
 		{
 			state.EFLAGS&=(~bit);
 		}
+	}
+
+	inline void SetCarryFlag(bool flag)
+	{
+		SetEFLAGSBit(flag,EFLAGS_CARRY);
 	}
 
 	inline void SetOverflowFlag(bool flag)
@@ -662,6 +709,14 @@ public:
 	void DecrementDword(unsigned int &value);
 	void DecrementWord(unsigned int &value);
 	void DecrementByte(unsigned int &value);
+
+	/*! Xor a value.  It also clears CF and OF, and sets SF,ZF, and PF according to the result.
+	    operandSize needs to be 16 or 32.
+	*/ 
+	void XorWordOrDword(int operandSize,unsigned int &value1,unsigned int value2);
+	void XorDword(unsigned int &value1,unsigned int value2);
+	void XorWord(unsigned int &value1,unsigned int value2);
+	void XorByte(unsigned int &value1,unsigned int value2);
 
 
 	/*! Evaluates an operand.

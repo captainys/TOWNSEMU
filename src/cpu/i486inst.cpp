@@ -435,6 +435,8 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 
 	case I486_OPCODE_OUT_I8_AL: //        0xE6,
 	case I486_OPCODE_OUT_I8_A: //         0xE7,
+		op1.MakeImm8(*this);
+		break;
 	case I486_OPCODE_OUT_DX_AL: //        0xEE,
 	case I486_OPCODE_OUT_DX_A: //         0xEF,
 		break;
@@ -748,13 +750,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_OPCODE_DEC_EDI:
 		{
 			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,op1.GetSize());
-std::cout << RegToStr[op1.reg] << std::endl;
 			auto i=value.GetAsDword();
-std::cout << i << std::endl;
 			DecrementWordOrDword(inst.operandSize,i);
-std::cout << i << std::endl;
 			value.SetDword(i);
-std::cout << i << std::endl;
 			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
 		}
 		break;
@@ -893,6 +891,62 @@ std::cout << i << std::endl;
 			clocksPassed=10; // 30 if CPL>IOPL
 		}
 		break;
+
+
+
+	case I486_OPCODE_XOR_AL_FROM_I8:
+		{
+			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,1);
+			auto al=GetAL();
+			auto v=value.GetAsDword();
+			XorByte(al,v);
+			SetAL(al);
+		}
+		break;
+	case I486_OPCODE_XOR_A_FROM_I:
+		if(16==inst.operandSize)
+		{
+			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+			auto ax=GetAX();
+			auto v=value.GetAsDword();
+			XorWord(ax,v);
+			SetAX(ax);
+		}
+		else
+		{
+			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+			auto eax=GetEAX();
+			auto v=value.GetAsDword();
+			XorDword(eax,v);
+			SetEAX(eax);
+		}
+		break;
+	case I486_OPCODE_XOR_RM8_FROM_I8:
+	case I486_OPCODE_XOR_RM8_FROM_R8:
+	case I486_OPCODE_XOR_R8_FROM_RM8:
+		{
+			auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,1);
+			auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,1);
+			auto i=value1.GetAsDword();
+			XorByte(i,value2.GetAsDword());
+			value1.SetDword(i);
+			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+		}
+		break;
+	case I486_OPCODE_XOR_R_FROM_I:
+	case I486_OPCODE_XOR_RM_FROM_SXI8: // Sign of op2 is already extended when decoded.
+	case I486_OPCODE_XOR_RM_FROM_R:
+	case I486_OPCODE_XOR_R_FROM_RM:
+		{
+			auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+			auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+			auto i=value1.GetAsDword();
+			XorWordOrDword(inst.operandSize,i,value2.GetAsDword());
+			value1.SetDword(i);
+			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+		}
+		break;
+
 
 	default:
 		Abort("Undefined instruction or simply not supported yet.");

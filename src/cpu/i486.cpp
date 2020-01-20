@@ -418,6 +418,46 @@ void i486DX::DecrementByte(unsigned int &value)
 	SetAuxCarryFlag(0x0F==(value&0x0F));
 	SetParityFlag(CheckParity(value&0xFF));
 }
+void i486DX::XorWordOrDword(int operandSize,unsigned int &value1,unsigned int value2)
+{
+	if(16==operandSize)
+	{
+		XorWord(value1,value2);
+	}
+	else
+	{
+		XorDword(value1,value2);
+	}
+}
+void i486DX::XorDword(unsigned int &value1,unsigned int value2)
+{
+	SetCarryFlag(false);
+	SetOverflowFlag(false);
+	value1^=value2;
+	SetSignFlag(0!=(0x80000000&value1));
+	SetZeroFlag(0==value1);
+	SetParityFlag(CheckParity(value1&0xFF));
+}
+void i486DX::XorWord(unsigned int &value1,unsigned int value2)
+{
+	SetCarryFlag(false);
+	SetOverflowFlag(false);
+	value1^=value2;
+	value1&=0xFFFF;
+	SetSignFlag(0!=(0x8000&value1));
+	SetZeroFlag(0==value1);
+	SetParityFlag(CheckParity(value1&0xFF));
+}
+void i486DX::XorByte(unsigned int &value1,unsigned int value2)
+{
+	SetCarryFlag(false);
+	SetOverflowFlag(false);
+	value1^=value2;
+	value1&=0xFF;
+	SetSignFlag(0!=(0x80&value1));
+	SetZeroFlag(0==value1);
+	SetParityFlag(CheckParity(value1&0xFF));
+}
 
 i486DX::OperandValue i486DX::EvaluateOperand(
     const Memory &mem,int addressSize,int segmentOverride,const Operand &op,int destinationBytes) const
