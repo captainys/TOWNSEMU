@@ -216,6 +216,16 @@ void i486DX::FetchOperand(Instruction &inst,SegmentRegister seg,int offset,const
 	case I486_OPCODE_DEC_EDI:
 		break;
 
+
+	case I486_OPCODE_IN_AL_I8://=        0xE4,
+	case I486_OPCODE_IN_A_I8://=         0xE5,
+		FetchOperand8(inst,seg,offset,mem);
+		break;
+	case I486_OPCODE_IN_AL_DX://=        0xEC,
+	case I486_OPCODE_IN_A_DX://=         0xED,
+		break;
+
+
 	case I486_OPCODE_JMP_FAR:
 		offset+=FetchOperand16or32(inst,seg,offset,mem);
 		FetchOperand16(inst,seg,offset,mem);
@@ -338,7 +348,6 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 	case I486_OPCODE_DEC_R_M:
 		op1.Decode(addressSize,operandSize,operand);
 		break;
-
 	case I486_OPCODE_DEC_EAX:
 	case I486_OPCODE_DEC_ECX:
 	case I486_OPCODE_DEC_EDX:
@@ -348,6 +357,15 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 	case I486_OPCODE_DEC_ESI:
 	case I486_OPCODE_DEC_EDI:
 		op1.MakeByRegisterNumber(operandSize,opCode&7);
+		break;
+
+
+	case I486_OPCODE_IN_AL_I8://=        0xE4,
+	case I486_OPCODE_IN_A_I8://=         0xE5,
+		op1.MakeImm8(*this);
+		break;
+	case I486_OPCODE_IN_AL_DX://=        0xEC,
+	case I486_OPCODE_IN_A_DX://=         0xED,
 		break;
 
 
@@ -529,6 +547,40 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		else
 		{
 			disasm+=Reg32[opCode&7];
+		}
+		break;
+
+
+	case I486_OPCODE_IN_AL_I8://=        0xE4,
+		disasm="IN";
+		cpputil::ExtendString(disasm,8);
+		disasm+="AL,";
+		disasm+=op1.Disassemble();
+		break;
+	case I486_OPCODE_IN_A_I8://=         0xE5,
+		disasm="IN";
+		cpputil::ExtendString(disasm,8);
+		if(16==operandSize)
+		{
+			disasm+="AX,";
+		}
+		else
+		{
+			disasm+="EAX,";
+		}
+		disasm+=op1.Disassemble();
+		break;
+	case I486_OPCODE_IN_AL_DX://=        0xEC,
+		disasm="IN      AL,DX";
+		break;
+	case I486_OPCODE_IN_A_DX://=         0xED,
+		if(16==operandSize)
+		{
+			disasm="IN      AX,DX";
+		}
+		else
+		{
+			disasm="IN      EAX,DX";
 		}
 		break;
 
@@ -729,6 +781,14 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			DecrementByte(i);
 			value.SetDword(i);
 			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+			if(op1.operandType==OPER_ADDR)
+			{
+				clocksPassed=3;
+			}
+			else
+			{
+				clocksPassed=1;
+			}
 		}
 		break;
 	case I486_OPCODE_DEC_R_M:
@@ -738,6 +798,14 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			DecrementWordOrDword(inst.operandSize,i);
 			value.SetDword(i);
 			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+			if(op1.operandType==OPER_ADDR)
+			{
+				clocksPassed=3;
+			}
+			else
+			{
+				clocksPassed=1;
+			}
 		}
 		break;
 	case I486_OPCODE_DEC_EAX:
@@ -754,6 +822,67 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			DecrementWordOrDword(inst.operandSize,i);
 			value.SetDword(i);
 			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+		}
+		clocksPassed=1;
+		break;
+
+
+	case I486_OPCODE_IN_AL_I8://=        0xE4,
+		SetAL(io.In8(inst.operand[0]));
+		if(true==IsInRealMode())
+		{
+			clocksPassed=14;
+		}
+		else
+		{
+			clocksPassed=8; // 28 if CPL>IOPL
+		}
+		break;
+	case I486_OPCODE_IN_A_I8://=         0xE5,
+		if(16==inst.operandSize)
+		{
+			SetAX(io.In16(inst.operand[0]));
+		}
+		else
+		{
+			SetEAX(io.In16(inst.operand[0]));
+		}
+		if(true==IsInRealMode())
+		{
+			clocksPassed=14;
+		}
+		else
+		{
+			clocksPassed=8; // 28 if CPL>IOPL
+		}
+		break;
+	case I486_OPCODE_IN_AL_DX://=        0xEC,
+		SetAL(io.In8(GetDX()));
+		if(true==IsInRealMode())
+		{
+			clocksPassed=14;
+		}
+		else
+		{
+			clocksPassed=8; // 28 if CPL>IOPL
+		}
+		break;
+	case I486_OPCODE_IN_A_DX://=         0xED,
+		if(16==inst.operandSize)
+		{
+			SetAX(io.In16(GetDX()));
+		}
+		else
+		{
+			SetEAX(io.In32(GetDX()));
+		}
+		if(true==IsInRealMode())
+		{
+			clocksPassed=14;
+		}
+		else
+		{
+			clocksPassed=8; // 28 if CPL>IOPL
 		}
 		break;
 
@@ -901,6 +1030,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			auto v=value.GetAsDword();
 			XorByte(al,v);
 			SetAL(al);
+			clocksPassed=1;
 		}
 		break;
 	case I486_OPCODE_XOR_A_FROM_I:
@@ -920,17 +1050,27 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			XorDword(eax,v);
 			SetEAX(eax);
 		}
+		clocksPassed=1;
 		break;
 	case I486_OPCODE_XOR_RM8_FROM_I8:
 	case I486_OPCODE_XOR_RM8_FROM_R8:
 	case I486_OPCODE_XOR_R8_FROM_RM8:
 		{
 			auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,1);
-			auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,1);
+			auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,1);
 			auto i=value1.GetAsDword();
 			XorByte(i,value2.GetAsDword());
 			value1.SetDword(i);
 			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+
+			if(op1.operandType==OPER_ADDR || op2.operandType==OPER_ADDR)
+			{
+				clocksPassed=3;
+			}
+			else
+			{
+				clocksPassed=1;
+			}
 		}
 		break;
 	case I486_OPCODE_XOR_R_FROM_I:
@@ -939,11 +1079,20 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_OPCODE_XOR_R_FROM_RM:
 		{
 			auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
-			auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+			auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize/8);
 			auto i=value1.GetAsDword();
 			XorWordOrDword(inst.operandSize,i,value2.GetAsDword());
 			value1.SetDword(i);
 			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+
+			if(op1.operandType==OPER_ADDR || op2.operandType==OPER_ADDR)
+			{
+				clocksPassed=3;
+			}
+			else
+			{
+				clocksPassed=1;
+			}
 		}
 		break;
 
@@ -956,6 +1105,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	if(true!=EIPChanged && true!=abort)
 	{
 		state.EIP+=inst.numBytes;
+	}
+	if(true!=abort && 0==clocksPassed)
+	{
+		Abort("Clocks-Passed is not set.");
 	}
 
 	return clocksPassed;

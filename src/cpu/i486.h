@@ -448,6 +448,22 @@ public:
 	}
 
 
+	inline unsigned int GetEDX(void) const
+	{
+		return state.EDX;
+	}
+	inline unsigned int GetDX(void) const
+	{
+		return state.EDX&0xffff;
+	}
+	inline unsigned int GetDL(void) const
+	{
+		return state.EDX&0xff;
+	}
+	inline unsigned int GetDH(void) const
+	{
+		return (state.EDX>>8)&0xff;
+	}
 	inline void SetEDX(unsigned int value)
 	{
 		state.EDX=value;
