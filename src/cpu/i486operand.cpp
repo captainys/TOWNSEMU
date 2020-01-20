@@ -242,20 +242,59 @@ void i486DX::Operand::MakeByRegisterNumber(int dataSize,int regNum)
 		break;
 	}
 }
-void i486DX::Operand::MakeImm8(unsigned int imm)
+void i486DX::Operand::MakeImm8(const Instruction &inst)
 {
 	operandType=OPER_IMM8;
-	this->imm=imm;
+	this->imm=inst.GetUimm8();
 }
-void i486DX::Operand::MakeImm16(unsigned int imm)
+void i486DX::Operand::MakeImm16(const Instruction &inst)
 {
 	operandType=OPER_IMM16;
-	this->imm=imm;
+	this->imm=inst.GetUimm16();
 }
-void i486DX::Operand::MakeImm32(unsigned int imm)
+void i486DX::Operand::MakeImm32(const Instruction &inst)
 {
 	operandType=OPER_IMM32;
-	this->imm=imm;
+	this->imm=inst.GetUimm32();
+}
+void i486DX::Operand::MakeImm16or32(const Instruction &inst,unsigned int operandSize)
+{
+	switch(operandSize)
+	{
+	case 16:
+		MakeImm16(inst);
+		break;
+	case 32:
+		MakeImm32(inst);
+		break;
+	}
+}
+bool i486DX::Operand::SignExtendImm(int newOperaType)
+{
+	switch(operandType)
+	{
+	case OPER_IMM8:
+		imm&=255;
+		if(0!=(imm&0x80))
+		{
+			imm-=256;
+		}
+		break;
+	case OPER_IMM16:
+		imm&=65535;
+		if(0!=(imm&0x8000))
+		{
+			imm-=65536;
+		}
+		break;
+	default:
+		std::cout << "!!!! ERROR !!!!" << std::endl;
+		std::cout << "Cannot Sign-Extend a non IMM8 and non IMM16." << std::endl;
+		return false;
+	}
+
+	operandType=newOperaType;
+	return true;
 }
 
 unsigned int i486DX::Operand::DecodeFarAddr(int addressSize,int operandSize,const unsigned char operand[])

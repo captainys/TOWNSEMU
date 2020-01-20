@@ -112,6 +112,95 @@ int main(int ac,char *av[])
 		return 1;
 	}
 
+	const unsigned char test32_10[]={0x68};
+	if(true!=TestDisassembly(32,32,0x34,sizeof(test32_10),test32_10,towns,"XOR     AL,68H"))
+	{
+		return 1;
+	}
+	const unsigned char test32_11[]={0x67,0x45,0x23,0x01};
+	if(true!=TestDisassembly(32,32,0x35,sizeof(test32_11),test32_11,towns,"XOR     EAX,01234567H"))
+	{
+		return 1;
+	}
+	const unsigned char test32_12[]={0xF3,0x77};
+	if(true!=TestDisassembly(32,32,0x80,sizeof(test32_12),test32_12,towns,"XOR     BL,77H"))
+	{
+		return 1;
+	}
+	const unsigned char test32_13[]={0xB4,0x97,0x67,0x45,0x23,0x01,0x86};
+	if(true!=TestDisassembly(32,32,0x80,sizeof(test32_13),test32_13,towns,"XOR     BYTE PTR [EDI+EDX*4+01234567H],86H"))
+	{
+		return 1;
+	}
+	const unsigned char test32_15[]={0xF3,0x67,0x45,0x23,0x01};
+	if(true!=TestDisassembly(32,32,0x81,sizeof(test32_15),test32_15,towns,"XOR     EBX,01234567H"))
+	{
+		return 1;
+	}
+	const unsigned char test32_16[]={0xB4,0x46,0x67,0x45,0x23,0x01,0xEF,0xCD,0xAB,0x89};
+	if(true!=TestDisassembly(32,32,0x81,sizeof(test32_16),test32_16,towns,"XOR     DWORD PTR [ESI+EAX*2+01234567H],89ABCDEFH"))
+	{
+		return 1;
+	}
+	const unsigned char test32_17[]={0xF1,0x80};
+	if(true!=TestDisassembly(32,32,0x83,sizeof(test32_17),test32_17,towns,"XOR     ECX,FFFFFF80H"))
+	{
+		return 1;
+	}
+	const unsigned char test32_18[]={0xB5,0x77,0x77,0x77,0x77,0x80};
+	if(true!=TestDisassembly(32,32,0x83,sizeof(test32_18),test32_18,towns,"XOR     DWORD PTR [EBP+77777777H],FFFFFF80H"))
+	{
+		return 1;
+	}
+	const unsigned char test32_19[]={0xF1,0x11};
+	if(true!=TestDisassembly(32,32,0x83,sizeof(test32_19),test32_19,towns,"XOR     ECX,00000011H"))
+	{
+		return 1;
+	}
+	const unsigned char test32_20[]={0xB4,0x24,0x77,0x77,0x77,0x77,0x11};
+	if(true!=TestDisassembly(32,32,0x83,sizeof(test32_20),test32_20,towns,"XOR     DWORD PTR [ESP+77777777H],00000011H"))
+	{
+		return 1;
+	}
+	const unsigned char test32_21[]={0xDF};
+	if(true!=TestDisassembly(32,32,0x32,sizeof(test32_21),test32_21,towns,"XOR     BL,BH"))
+	{
+		return 1;
+	}
+	const unsigned char test32_22[]={0xE9};
+	if(true!=TestDisassembly(32,32,0x32,sizeof(test32_22),test32_22,towns,"XOR     CH,CL"))
+	{
+		return 1;
+	}
+	const unsigned char test32_23[]={0xD9};
+	if(true!=TestDisassembly(32,32,0x33,sizeof(test32_23),test32_23,towns,"XOR     EBX,ECX"))
+	{
+		return 1;
+	}
+	const unsigned char test32_24[]={0xCB};
+	if(true!=TestDisassembly(32,32,0x33,sizeof(test32_24),test32_24,towns,"XOR     ECX,EBX"))
+	{
+		return 1;
+	}
+	const unsigned char test32_25[]={0x9F,0x11,0x11,0x11,0x11};
+	if(true!=TestDisassembly(32,32,0x32,sizeof(test32_25),test32_25,towns,"XOR     BL,[EDI+11111111H]"))
+	{
+		return 1;
+	}
+	const unsigned char test32_26[]={0x96,0x11,0x11,0x11,0x11};
+	if(true!=TestDisassembly(32,32,0x33,sizeof(test32_26),test32_26,towns,"XOR     EDX,[ESI+11111111H]"))
+	{
+		return 1;
+	}
+
+/*
+	const unsigned char test32_14[]={};
+	if(true!=TestDisassembly(32,32,,sizeof(test32_14),test32_14,towns,""))
+	{
+		return 1;
+	}
+
+*/
 
 
 	// 16 bit addressing
@@ -150,6 +239,17 @@ int main(int ac,char *av[])
 	{
 		return 1;
 	}
+
+/*
+	const unsigned char test32_14[]={};
+	if(true!=TestDisassembly(32,32,,sizeof(test32_14),test32_14,towns,""))
+	{
+		return 1;
+	}
+
+*/
+
+
 
 	return 0;
 }

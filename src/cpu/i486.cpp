@@ -30,12 +30,12 @@ const char *const i486DX::RegToStr[REG_TOTAL_NUMBER_OF_REGISTERS]=
 
 	"AL",
 	"CL",
-	"BL",
 	"DL",
+	"BL",
 	"AH",
 	"CH",
-	"BH",
 	"DH",
+	"BH",
 
 	"AX",
 	"CX",
@@ -1065,3 +1065,4 @@ void i486DX::StoreOperandValue(
 		break;
 	}
 }
+

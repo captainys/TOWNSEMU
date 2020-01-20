@@ -234,6 +234,11 @@ public:
 		void DecodeOperand(int addressSize,int operandSize,class Operand &op1,class Operand &op2) const;
 
 		std::string Disassemble(SegmentRegister reg,unsigned int offset) const;
+	private:
+		/* operandSize is 8, 16, or 32 */
+		std::string DisassembleTypicalOneOperand(std::string inst,const Operand &op,int operandSize) const;
+		std::string DisassembleTypicalTwoOperands(std::string inst,const Operand &op1,const Operand &op2) const;
+
 
 	public:
 		/*! Returns Unsigned Imm8 (last byte in the operand) after decoding. */
@@ -295,11 +300,19 @@ public:
 		*/
 		void MakeByRegisterNumber(int dataSize,int regNum);
 		/*! Make Immediate. */
-		void MakeImm8(unsigned int imm);
+		void MakeImm8(const Instruction &inst);
 		/*! Make Immediate. */
-		void MakeImm16(unsigned int imm);
+		void MakeImm16(const Instruction &inst);
 		/*! Make Immediate. */
-		void MakeImm32(unsigned int imm);
+		void MakeImm32(const Instruction &inst);
+		/*! Make Immediate 16 or 32.  Size depends on operandSize. */
+		void MakeImm16or32(const Instruction &inst,unsigned int operandSize);
+
+		/*! Sign-Extend imm operand.  If it is applied to non-imm operand, it returns false.
+		    Current operand type must be OPER_IMM8 or OPER_IMM16.
+		    newOperaType must be OPER_IMM16 or OPER_IMM32.
+		*/
+		bool SignExtendImm(int newOperaType);
 
 		/*! Decode FAR address and returns the number of bytes used.
 		*/
@@ -589,18 +602,23 @@ public:
 		return FetchInstruction(state.CS,state.EIP,mem);
 	}
 private:
-	/*! Fetch an 8-bit operand.
+	/*! Fetch an 8-bit operand.  Returns the number of bytes fetched.
 	*/
 	unsigned int FetchOperand8(Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem) const;
-	/*! Fetch an 16-bit operand.
+	/*! Fetch an 16-bit operand  Returns the number of bytes fetched..
 	*/
 	unsigned int FetchOperand16(Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem) const;
-	/*! Fetch an 32-bit operand.
+	/*! Fetch an 32-bit operand.  Returns the number of bytes fetched.
 	*/
 	unsigned int FetchOperand32(Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem) const;
-	/*! Fetch an operand defined by the RM byte.
+	/*! Fetch an 16- or 32-bit operand.  Length fetched depends on inst.operandSize.
+	    Returns the number of bytes fetched.
 	*/
-	void FetchOperandRM(Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem) const;
+	unsigned int FetchOperand16or32(Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem) const;
+	/*! Fetch an operand defined by the RM byte.
+	    Returns the number of bytes fetched.
+	*/
+	unsigned int FetchOperandRM(Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem) const;
 	/*! Fetch operand(s) for the instruction.
 	*/
 	void FetchOperand(Instruction &inst,SegmentRegister seg,int offset,const Memory &mem) const;
@@ -657,7 +675,6 @@ public:
 	/*!
 	*/
 	void StoreOperandValue(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,OperandValue value);
-
 };
 
 /* } */

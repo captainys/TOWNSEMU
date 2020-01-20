@@ -94,7 +94,7 @@ unsigned int i486DX::FetchOperand16(Instruction &inst,SegmentRegister seg,unsign
 	inst.operand[inst.operandLen++]=byte[0];
 	inst.operand[inst.operandLen++]=byte[1];
 	inst.numBytes+=2;
-	return byte[0]+(byte[1]<<8);
+	return 2;
 }
 unsigned int i486DX::FetchOperand32(Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem) const
 {
@@ -108,11 +108,24 @@ unsigned int i486DX::FetchOperand32(Instruction &inst,SegmentRegister seg,unsign
 	inst.operand[inst.operandLen++]=byte[2];
 	inst.operand[inst.operandLen++]=byte[3];
 	inst.numBytes+=4;
-	return byte[0]+(byte[1]<<8)+(byte[2]<<16)+(byte[3]<<24);
+	return 4;
 }
 
-void i486DX::FetchOperandRM(Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem) const
+unsigned int i486DX::FetchOperand16or32(Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem) const
 {
+	if(16==inst.operandSize)
+	{
+		return FetchOperand16(inst,seg,offset,mem);
+	}
+	else // if(32==inst.operandSize)
+	{
+		return FetchOperand32(inst,seg,offset,mem);
+	}
+}
+
+unsigned int i486DX::FetchOperandRM(Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem) const
+{
+	unsigned int numBytesFetched=1;
 	auto MODR_M=FetchOperand8(inst,seg,offset,mem);
 	auto MOD=(MODR_M>>6)&3;
 	auto R_M=(MODR_M)&7;
@@ -122,15 +135,15 @@ void i486DX::FetchOperandRM(Instruction &inst,SegmentRegister seg,unsigned int o
 	{
 		if(0b00==MOD && 0b110==R_M) // disp16
 		{
-			FetchOperand16(inst,seg,offset,mem);
+			numBytesFetched+=FetchOperand16(inst,seg,offset,mem);
 		}
 		else if(0b01==MOD)
 		{
-			FetchOperand8(inst,seg,offset,mem);
+			numBytesFetched+=FetchOperand8(inst,seg,offset,mem);
 		}
 		else if(0b10==MOD)
 		{
-			FetchOperand16(inst,seg,offset,mem);
+			numBytesFetched+=FetchOperand16(inst,seg,offset,mem);
 		}
 	}
 	else // if(32==inst.addressSize)
@@ -139,15 +152,20 @@ void i486DX::FetchOperandRM(Instruction &inst,SegmentRegister seg,unsigned int o
 		{
 			if(0b100==R_M) // SIB
 			{
-				auto SIB=FetchOperand8(inst,seg,offset,mem);
+				FetchOperand8(inst,seg,offset,mem);
+				++numBytesFetched;
+				++offset;
+
+				auto SIB=inst.operand[inst.operandLen-1];
 				auto BASE=(SIB&7);
 				// Special case MOD=0b00 && BASE==5 [1] Table 26-4 pp.26-7
 				// No base, [disp32+scaled_index]
-				FetchOperand32(inst,seg,offset,mem);
+
+				numBytesFetched+=FetchOperand32(inst,seg,offset,mem);
 			}
 			else if(0b101==R_M) // disp32
 			{
-				FetchOperand32(inst,seg,offset,mem);
+				numBytesFetched+=FetchOperand32(inst,seg,offset,mem);
 			}
 		}
 		else if(0b01==MOD)
@@ -155,18 +173,25 @@ void i486DX::FetchOperandRM(Instruction &inst,SegmentRegister seg,unsigned int o
 			if(0b100==R_M) // SIB+disp8
 			{
 				FetchOperand8(inst,seg,offset,mem);
+				++numBytesFetched;
+				++offset;
 			}
 			FetchOperand8(inst,seg,offset,mem);
+			++numBytesFetched;
 		}
 		else if(0b10==MOD)
 		{
 			if(0b100==R_M) // SIB+disp32
 			{
 				FetchOperand8(inst,seg,offset,mem);
+				++numBytesFetched;
+				++offset;
 			}
-			FetchOperand32(inst,seg,offset,mem);
+			numBytesFetched+=FetchOperand32(inst,seg,offset,mem);
 		}
 	}
+
+	return numBytesFetched;
 }
 
 void i486DX::FetchOperand(Instruction &inst,SegmentRegister seg,int offset,const Memory &mem) const
@@ -192,17 +217,7 @@ void i486DX::FetchOperand(Instruction &inst,SegmentRegister seg,int offset,const
 		break;
 
 	case I486_OPCODE_JMP_FAR:
-		switch(inst.operandSize)
-		{
-		case 16:
-			FetchOperand16(inst,seg,offset,mem);
-			offset+=2;
-			break;
-		case 32:
-			FetchOperand32(inst,seg,offset,mem);
-			offset+=4;
-			break;
-		}
+		offset+=FetchOperand16or32(inst,seg,offset,mem);
 		FetchOperand16(inst,seg,offset,mem);
 		break;
 
@@ -255,29 +270,15 @@ void i486DX::FetchOperand(Instruction &inst,SegmentRegister seg,int offset,const
 	case I486_OPCODE_MOV_I_TO_EBP: //   0xBD, // 16/32 depends on OPSIZE_OVERRIDE
 	case I486_OPCODE_MOV_I_TO_ESI: //   0xBE, // 16/32 depends on OPSIZE_OVERRIDE
 	case I486_OPCODE_MOV_I_TO_EDI: //   0xBF, // 16/32 depends on OPSIZE_OVERRIDE
-		if(16==inst.operandSize)
-		{
-			FetchOperand16(inst,seg,offset,mem);
-		}
-		else // if(32==inst.operandSize)
-		{
-			FetchOperand32(inst,seg,offset,mem);
-		}
+		FetchOperand16or32(inst,seg,offset,mem);
 		break;
 	case I486_OPCODE_MOV_I8_TO_RM8: //    0xC6,
-		FetchOperandRM(inst,seg,offset,mem);
+		offset+=FetchOperandRM(inst,seg,offset,mem);
 		FetchOperand8(inst,seg,offset,mem);
 		break;
 	case I486_OPCODE_MOV_I_TO_RM: //      0xC7, // 16/32 depends on OPSIZE_OVERRIDE
-		FetchOperandRM(inst,seg,offset,mem);
-		if(16==inst.operandSize)
-		{
-			FetchOperand16(inst,seg,offset,mem);
-		}
-		else // if(32==inst.operandSize)
-		{
-			FetchOperand32(inst,seg,offset,mem);
-		}
+		offset+=FetchOperandRM(inst,seg,offset,mem);
+		FetchOperand16or32(inst,seg,offset,mem);
 		break;
 
 	case I486_OPCODE_OUT_I8_AL: //        0xE6,
@@ -286,6 +287,31 @@ void i486DX::FetchOperand(Instruction &inst,SegmentRegister seg,int offset,const
 		break;
 	case I486_OPCODE_OUT_DX_AL: //        0xEE,
 	case I486_OPCODE_OUT_DX_A: //         0xEF,
+		break;
+
+	case I486_OPCODE_XOR_AL_FROM_I8:
+		FetchOperand8(inst,seg,offset,mem);
+		break;
+	case I486_OPCODE_XOR_A_FROM_I:
+		FetchOperand16or32(inst,seg,offset,mem);
+		break;
+	case I486_OPCODE_XOR_RM8_FROM_I8:
+		offset+=FetchOperandRM(inst,seg,offset,mem);
+		FetchOperand8(inst,seg,offset,mem);
+		break;
+	case I486_OPCODE_XOR_R_FROM_I:
+		offset+=FetchOperandRM(inst,seg,offset,mem);
+		FetchOperand16or32(inst,seg,offset,mem);
+		break;
+	case I486_OPCODE_XOR_RM_FROM_SXI8:
+		offset+=FetchOperandRM(inst,seg,offset,mem);
+		FetchOperand8(inst,seg,offset,mem);
+		break;
+	case I486_OPCODE_XOR_RM8_FROM_R8:
+	case I486_OPCODE_XOR_RM_FROM_R:
+	case I486_OPCODE_XOR_R8_FROM_RM8:
+	case I486_OPCODE_XOR_R_FROM_RM:
+		FetchOperandRM(inst,seg,offset,mem);
 		break;
 
 	default:
@@ -378,7 +404,7 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 	case I486_OPCODE_MOV_I8_TO_DH: //     0xB6,
 	case I486_OPCODE_MOV_I8_TO_BH: //     0xB7,
 		op1.MakeByRegisterNumber(8,opCode&7);
-		op2.MakeImm8(GetUimm8());
+		op2.MakeImm8(*this);
 		break;
 	case I486_OPCODE_MOV_I_TO_EAX: //     0xB8, // 16/32 depends on OPSIZE_OVERRIDE
 	case I486_OPCODE_MOV_I_TO_ECX: //     0xB9, // 16/32 depends on OPSIZE_OVERRIDE
@@ -391,33 +417,70 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 		op1.MakeByRegisterNumber(operandSize,opCode&7);
 		if(16==operandSize)
 		{
-			op2.MakeImm16(GetUimm16());
+			op2.MakeImm16(*this);
 		}
 		else
 		{
-			op2.MakeImm32(GetUimm32());
+			op2.MakeImm32(*this);
 		}
 		break;
 	case I486_OPCODE_MOV_I8_TO_RM8: //    0xC6,
 		op1.Decode(addressSize,8,operand);
-		op2.MakeImm8(GetUimm8());
+		op2.MakeImm8(*this);
 		break;
 	case I486_OPCODE_MOV_I_TO_RM: //      0xC7, // 16/32 depends on OPSIZE_OVERRIDE
 		op1.Decode(addressSize,operandSize,operand);
-		if(16==operandSize)
-		{
-			op2.MakeImm16(GetUimm16());
-		}
-		else
-		{
-			op2.MakeImm32(GetUimm32());
-		}
+		op2.MakeImm16or32(*this,operandSize);
 		break;
 
 	case I486_OPCODE_OUT_I8_AL: //        0xE6,
 	case I486_OPCODE_OUT_I8_A: //         0xE7,
 	case I486_OPCODE_OUT_DX_AL: //        0xEE,
 	case I486_OPCODE_OUT_DX_A: //         0xEF,
+		break;
+
+
+	case I486_OPCODE_XOR_AL_FROM_I8:
+		op1.MakeImm8(*this);
+		break;
+	case I486_OPCODE_XOR_A_FROM_I:
+		op1.MakeImm16or32(*this,operandSize);
+		break;
+	case I486_OPCODE_XOR_RM8_FROM_I8:
+		op1.Decode(addressSize,8,operand);
+		op2.MakeImm8(*this);
+		break;
+	case I486_OPCODE_XOR_R_FROM_I:
+		op1.Decode(addressSize,operandSize,operand);
+		op2.MakeImm16or32(*this,operandSize);
+		break;
+	case I486_OPCODE_XOR_RM_FROM_SXI8:
+		op1.Decode(addressSize,operandSize,operand);
+		op2.MakeImm8(*this);
+		if(16==operandSize)
+		{
+			op2.SignExtendImm(OPER_IMM16);
+		}
+		else
+		{
+			op2.SignExtendImm(OPER_IMM32);
+		}
+		break;
+	case I486_OPCODE_XOR_RM8_FROM_R8:
+		op2.DecodeMODR_MForRegister(8,operand[0]);
+		op1.Decode(addressSize,8,operand);
+		break;
+	case I486_OPCODE_XOR_RM_FROM_R:
+		op2.DecodeMODR_MForRegister(operandSize,operand[0]);
+		op1.Decode(addressSize,operandSize,operand);
+		break;
+	case I486_OPCODE_XOR_R8_FROM_RM8:
+		op1.DecodeMODR_MForRegister(8,operand[0]);
+		op2.Decode(addressSize,8,operand);
+		break;
+	case I486_OPCODE_XOR_R_FROM_RM:
+		op1.DecodeMODR_MForRegister(operandSize,operand[0]);
+		op2.Decode(addressSize,operandSize,operand);
 		break;
 	}
 }
@@ -442,22 +505,10 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 
 
 	case I486_OPCODE_DEC_R_M8:
-		{
-			auto sizeQual=i486DX::Operand::GetSizeQualifierToDisassembly(op1,8);
-			disasm="DEC";
-			cpputil::ExtendString(disasm,8);
-			disasm+=sizeQual;
-			disasm+=op1.Disassemble();
-		}
+		disasm=DisassembleTypicalOneOperand("DEC",op1,8);
 		break;
 	case I486_OPCODE_DEC_R_M:
-		{
-			auto sizeQual=i486DX::Operand::GetSizeQualifierToDisassembly(op1,operandSize);
-			disasm="DEC";
-			cpputil::ExtendString(disasm,8);
-			disasm+=sizeQual;
-			disasm+=op1.Disassemble();
-		}
+		disasm=DisassembleTypicalOneOperand("DEC",op1,operandSize);
 		break;
 	case I486_OPCODE_DEC_EAX:
 	case I486_OPCODE_DEC_ECX:
@@ -515,14 +566,7 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 	case I486_OPCODE_MOV_I_TO_EDI: //     0xBF, // 16/32 depends on OPSIZE_OVERRIDE
 	case I486_OPCODE_MOV_I8_TO_RM8: //    0xC6,
 	case I486_OPCODE_MOV_I_TO_RM: //      0xC7, // 16/32 depends on OPSIZE_OVERRIDE
-		disasm="MOV";
-		cpputil::ExtendString(disasm,8);
-		i486DX::Operand::GetSizeQualifierToDisassembly(op1SizeQual,op2SizeQual,op1,op2);
-		op1SegQual=i486DX::Operand::GetSegmentQualifierToDisassembly(segOverride,op1);
-		op2SegQual=i486DX::Operand::GetSegmentQualifierToDisassembly(segOverride,op2);
-		disasm+=op1SizeQual+op1SegQual+op1.Disassemble();
-		disasm.push_back(',');
-		disasm+=op2SizeQual+op2SegQual+op2.Disassemble();
+		disasm=DisassembleTypicalTwoOperands("MOV",op1,op2);
 		break;
 
 	case I486_OPCODE_OUT_I8_AL: //        0xE6,
@@ -557,7 +601,56 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 			disasm="OUT     DX,EAX";
 		}
 		break;
+
+
+	case I486_OPCODE_XOR_AL_FROM_I8:
+		disasm="XOR     AL,"+op1.Disassemble();
+		break;
+	case I486_OPCODE_XOR_A_FROM_I:
+		if(16==operandSize)
+		{
+			disasm="XOR     AX,"+op1.Disassemble();;
+		}
+		else
+		{
+			disasm="XOR     EAX,"+op1.Disassemble();;
+		}
+		break;
+	case I486_OPCODE_XOR_RM8_FROM_I8:
+	case I486_OPCODE_XOR_R_FROM_I:
+	case I486_OPCODE_XOR_RM_FROM_SXI8:
+	case I486_OPCODE_XOR_RM8_FROM_R8:
+	case I486_OPCODE_XOR_RM_FROM_R:
+	case I486_OPCODE_XOR_R8_FROM_RM8:
+	case I486_OPCODE_XOR_R_FROM_RM:
+		disasm=DisassembleTypicalTwoOperands("XOR",op1,op2);
+		break;
 	}
+
+	return disasm;
+}
+
+std::string i486DX::Instruction::DisassembleTypicalOneOperand(std::string inst,const Operand &op,int operandSize) const
+{
+	auto sizeQual=i486DX::Operand::GetSizeQualifierToDisassembly(op,operandSize);
+	auto segQual=i486DX::Operand::GetSegmentQualifierToDisassembly(segOverride,op);
+	auto disasm=inst;
+	cpputil::ExtendString(disasm,8);
+	disasm+=sizeQual+segQual+op.Disassemble();
+	return disasm;
+}
+
+std::string i486DX::Instruction::DisassembleTypicalTwoOperands(std::string inst,const Operand &op1,const Operand &op2) const
+{
+	std::string disasm=inst,op1SizeQual,op2SizeQual,op1SegQual,op2SegQual;
+	cpputil::ExtendString(disasm,8);
+
+	i486DX::Operand::GetSizeQualifierToDisassembly(op1SizeQual,op2SizeQual,op1,op2);
+	op1SegQual=i486DX::Operand::GetSegmentQualifierToDisassembly(segOverride,op1);
+	op2SegQual=i486DX::Operand::GetSegmentQualifierToDisassembly(segOverride,op2);
+	disasm+=op1SizeQual+op1SegQual+op1.Disassemble();
+	disasm.push_back(',');
+	disasm+=op2SizeQual+op2SegQual+op2.Disassemble();
 
 	return disasm;
 }

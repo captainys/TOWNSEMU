@@ -14,6 +14,7 @@ enum
 //  (3) Implement i486DX::Instruction::DecodeOperand
 //  (4) Implement i486DX::Instruction::Disassemble
 //  (5) Implement i486DX::RunOneInstruction
+//  (6) Add disassembly test.
 
 enum 
 {
