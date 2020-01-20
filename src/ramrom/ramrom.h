@@ -48,6 +48,10 @@ public:
 	*/
 	unsigned int FetchByte(unsigned int addr) const;
 
+	/*! Store a byte to the physical address.
+	*/
+	void StoreByte(unsigned int addr,unsigned char byteData);
+
 	void Reset(void);
 };
 

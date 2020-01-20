@@ -144,6 +144,178 @@ void i486DX::LoadSegmentRegisterRealMode(SegmentRegister &reg,unsigned int value
 	reg.baseLinearAddr=(value<<4);
 }
 
+unsigned int i486DX::GetRegisterValue(int reg) const
+{
+	switch(reg)
+	{
+	case REG_AL:
+		return state.EAX&255;
+	case REG_CL:
+		return state.ECX&255;
+	case REG_DL:
+		return state.EDX&255;
+	case REG_BL:
+		return state.EBX&255;
+	case REG_AH:
+		return (state.EAX>>8)&255;
+	case REG_CH:
+		return (state.ECX>>8)&255;
+	case REG_DH:
+		return (state.EDX>>8)&255;
+	case REG_BH:
+		return (state.EBX>>8)&255;
+
+	case REG_AX:
+		return state.EAX&65535;
+	case REG_CX:
+		return state.ECX&65535;
+	case REG_DX:
+		return state.EDX&65535;
+	case REG_BX:
+		return state.EBX&65535;
+	case REG_SP:
+		return state.ESP&65535;
+	case REG_BP:
+		return state.EBP&65535;
+	case REG_SI:
+		return state.ESI&65535;
+	case REG_DI:
+		return state.EDI&65535;
+
+	case REG_EAX:
+		return state.EAX;
+	case REG_ECX:
+		return state.ECX;
+	case REG_EDX:
+		return state.EDX;
+	case REG_EBX:
+		return state.EBX;
+	case REG_ESP:
+		return state.ESP;
+	case REG_EBP:
+		return state.EBP;
+	case REG_ESI:
+		return state.ESI;
+	case REG_EDI:
+		return state.EDI;
+
+	case REG_EIP:
+		return state.EIP;
+	case REG_EFLAGS:
+		return state.EFLAGS;
+
+	case REG_ES:
+		return state.ES.value;
+	case REG_CS:
+		return state.CS.value;
+	case REG_SS:
+		return state.SS.value;
+	case REG_DS:
+		return state.DS.value;
+	case REG_FS:
+		return state.FS.value;
+	case REG_GS:
+		return state.GS.value;
+
+	//case REG_GDT:
+	//case REG_LDT:
+	//case REG_TR:
+	//case REG_IDTR:
+
+	case REG_CR0:
+		return state.CR0;
+	case REG_CR1:
+		return state.CR1;
+	case REG_CR2:
+		return state.CR2;
+	case REG_CR3:
+		return state.CR3;
+	case REG_DR0:
+		return state.DR0;
+	case REG_DR1:
+		return state.DR1;
+	case REG_DR2:
+		return state.DR2;
+	case REG_DR3:
+		return state.DR3;
+	case REG_DR4:
+		return state.DR4;
+	case REG_DR5:
+		return state.DR5;
+	case REG_DR6:
+		return state.DR6;
+	case REG_DR7:
+		return state.DR7;
+	}
+	return 0;
+}
+
+/* static */ unsigned int i486DX::GetRegisterSize(int reg)
+{
+	switch(reg)
+	{
+	case REG_AL:
+	case REG_CL:
+	case REG_DL:
+	case REG_BL:
+	case REG_AH:
+	case REG_CH:
+	case REG_DH:
+	case REG_BH:
+		return 1;
+
+	case REG_AX:
+	case REG_CX:
+	case REG_DX:
+	case REG_BX:
+	case REG_SP:
+	case REG_BP:
+	case REG_SI:
+	case REG_DI:
+		return 2;
+
+	case REG_EAX:
+	case REG_ECX:
+	case REG_EDX:
+	case REG_EBX:
+	case REG_ESP:
+	case REG_EBP:
+	case REG_ESI:
+	case REG_EDI:
+	case REG_EIP:
+	case REG_EFLAGS:
+		return 4;
+
+	case REG_ES:
+	case REG_CS:
+	case REG_SS:
+	case REG_DS:
+	case REG_FS:
+	case REG_GS:
+		return 2;
+
+	//case REG_GDT:
+	//case REG_LDT:
+	//case REG_TR:
+	//case REG_IDTR:
+
+	case REG_CR0:
+	case REG_CR1:
+	case REG_CR2:
+	case REG_CR3:
+	case REG_DR0:
+	case REG_DR1:
+	case REG_DR2:
+	case REG_DR3:
+	case REG_DR4:
+	case REG_DR5:
+	case REG_DR6:
+	case REG_DR7:
+		return 4;
+	}
+	return 0;
+}
+
 std::string i486DX::Disassemble(const Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem) const
 {
 	std::string disasm;
@@ -162,4 +334,657 @@ std::string i486DX::Disassemble(const Instruction &inst,SegmentRegister seg,unsi
 	disasm+=inst.Disassemble(seg,offset);
 
 	return disasm;
+}
+
+void i486DX::Move(Memory &mem,int addressSize,int segmentOverride,const Operand &dst,const Operand &src)
+{
+	auto value=EvaluateOperand(mem,addressSize,segmentOverride,src,dst.GetSize());
+	StoreOperandValue(dst,mem,addressSize,segmentOverride,value);
+}
+
+i486DX::OperandValue i486DX::EvaluateOperand(
+    const Memory &mem,int addressSize,int segmentOverride,const Operand &op,int destinationBytes) const
+{
+	i486DX::OperandValue value;
+	value.numBytes=0;
+	switch(op.operandType)
+	{
+	case OPER_UNDEFINED:
+		Abort("Tried to evaluate an undefined operand.");
+		break;
+	case OPER_ADDR:
+		{
+			value.numBytes=destinationBytes;
+			SegmentRegister seg;
+			switch(segmentOverride)
+			{
+			case SEG_OVERRIDE_CS:
+				seg=state.CS;
+				break;
+			case SEG_OVERRIDE_SS:
+				seg=state.SS;
+				break;
+			case SEG_OVERRIDE_DS:
+				seg=state.DS;
+				break;
+			case SEG_OVERRIDE_ES:
+				seg=state.ES;
+				break;
+			case SEG_OVERRIDE_FS:
+				seg=state.FS;
+				break;
+			case SEG_OVERRIDE_GS:
+				seg=state.GS;
+				break;
+			default:
+				if(op.baseReg==REG_ESP || op.baseReg==REG_SP ||
+				   op.baseReg==REG_EBP || op.baseReg==REG_BP)
+				{
+					seg=state.SS;
+				}
+				else
+				{
+					seg=state.DS;
+				}
+				break;
+			}
+			unsigned int offset=
+			   GetRegisterValue(op.baseReg)+
+			   GetRegisterValue(op.indexReg)*op.indexScaling+
+			   op.offset;
+			if(addressSize==16)
+			{
+				for(int i=0; i<value.numBytes; ++i)
+				{
+					value.byteData[i]=FetchByte(seg,(offset+i)&65535,mem);
+				}
+			}
+			else
+			{
+				for(int i=0; i<value.numBytes; ++i)
+				{
+					value.byteData[i]=FetchByte(seg,offset+i,mem);
+				}
+			}
+		}
+		break;
+	case OPER_FARADDR:
+		Abort("Tried to evaluate FAR ADDRESS.");
+		break;
+	case OPER_REG:
+		switch(op.reg)
+		{
+		case REG_AL:
+			value.numBytes=1;
+			value.byteData[0]=(state.EAX&255);
+			break;
+		case REG_CL:
+			value.numBytes=1;
+			value.byteData[0]=(state.ECX&255);
+			break;
+		case REG_BL:
+			value.numBytes=1;
+			value.byteData[0]=(state.EBX&255);
+			break;
+		case REG_DL:
+			value.numBytes=1;
+			value.byteData[0]=(state.EDX&255);
+			break;
+		case REG_AH:
+			value.numBytes=1;
+			value.byteData[0]=((state.EAX>>8)&255);
+			break;
+		case REG_CH:
+			value.numBytes=1;
+			value.byteData[0]=((state.EAX>>8)&255);
+			break;
+		case REG_BH:
+			value.numBytes=1;
+			value.byteData[0]=((state.EAX>>8)&255);
+			break;
+		case REG_DH:
+			value.numBytes=1;
+			value.byteData[0]=((state.EAX>>8)&255);
+			break;
+
+		case REG_AX:
+			value.numBytes=2;
+			value.byteData[0]=(state.EAX&255);
+			value.byteData[1]=((state.EAX>>8)&255);
+			break;
+		case REG_CX:
+			value.numBytes=2;
+			value.byteData[0]=(state.ECX&255);
+			value.byteData[1]=((state.ECX>>8)&255);
+			break;
+		case REG_DX:
+			value.numBytes=2;
+			value.byteData[0]=(state.EDX&255);
+			value.byteData[1]=((state.EDX>>8)&255);
+			break;
+		case REG_BX:
+			value.numBytes=2;
+			value.byteData[0]=(state.EBX&255);
+			value.byteData[1]=((state.EBX>>8)&255);
+			break;
+		case REG_SP:
+			value.numBytes=2;
+			value.byteData[0]=(state.ESP&255);
+			value.byteData[1]=((state.ESP>>8)&255);
+			break;
+		case REG_BP:
+			value.numBytes=2;
+			value.byteData[0]=(state.EBP&255);
+			value.byteData[1]=((state.EBP>>8)&255);
+			break;
+		case REG_SI:
+			value.numBytes=2;
+			value.byteData[0]=(state.ESI&255);
+			value.byteData[1]=((state.ESI>>8)&255);
+			break;
+		case REG_DI:
+			value.numBytes=2;
+			value.byteData[0]=(state.EDI&255);
+			value.byteData[1]=((state.EDI>>8)&255);
+			break;
+
+		case REG_EAX:
+			value.numBytes=4;
+			value.byteData[0]=(state.EAX&255);
+			value.byteData[1]=((state.EAX>>8)&255);
+			value.byteData[2]=((state.EAX>>16)&255);
+			value.byteData[3]=((state.EAX>>24)&255);
+			break;
+		case REG_ECX:
+			value.numBytes=4;
+			value.byteData[0]=(state.ECX&255);
+			value.byteData[1]=((state.ECX>>8)&255);
+			value.byteData[2]=((state.ECX>>16)&255);
+			value.byteData[3]=((state.ECX>>24)&255);
+			break;
+		case REG_EDX:
+			value.numBytes=4;
+			value.byteData[0]=(state.EDX&255);
+			value.byteData[1]=((state.EDX>>8)&255);
+			value.byteData[2]=((state.EDX>>16)&255);
+			value.byteData[3]=((state.EDX>>24)&255);
+			break;
+		case REG_EBX:
+			value.numBytes=4;
+			value.byteData[0]=(state.EBX&255);
+			value.byteData[1]=((state.EBX>>8)&255);
+			value.byteData[2]=((state.EBX>>16)&255);
+			value.byteData[3]=((state.EBX>>24)&255);
+			break;
+		case REG_ESP:
+			value.numBytes=4;
+			value.byteData[0]=(state.ESP&255);
+			value.byteData[1]=((state.ESP>>8)&255);
+			value.byteData[2]=((state.ESP>>16)&255);
+			value.byteData[3]=((state.ESP>>24)&255);
+			break;
+		case REG_EBP:
+			value.numBytes=4;
+			value.byteData[0]=(state.EBP&255);
+			value.byteData[1]=((state.EBP>>8)&255);
+			value.byteData[2]=((state.EBP>>16)&255);
+			value.byteData[3]=((state.EBP>>24)&255);
+			break;
+		case REG_ESI:
+			value.numBytes=4;
+			value.byteData[0]=(state.ESI&255);
+			value.byteData[1]=((state.ESI>>8)&255);
+			value.byteData[2]=((state.ESI>>16)&255);
+			value.byteData[3]=((state.ESI>>24)&255);
+			break;
+		case REG_EDI:
+			value.numBytes=4;
+			value.byteData[0]=(state.EDI&255);
+			value.byteData[1]=((state.EDI>>8)&255);
+			value.byteData[2]=((state.EDI>>16)&255);
+			value.byteData[3]=((state.EDI>>24)&255);
+			break;
+
+		case REG_EIP:
+			value.numBytes=4;
+			value.byteData[0]=(state.EIP&255);
+			value.byteData[1]=((state.EIP>>8)&255);
+			value.byteData[2]=((state.EIP>>16)&255);
+			value.byteData[3]=((state.EIP>>24)&255);
+			break;
+		case REG_EFLAGS:
+			value.numBytes=4;
+			value.byteData[0]=(state.EFLAGS&255);
+			value.byteData[1]=((state.EFLAGS>>8)&255);
+			value.byteData[2]=((state.EFLAGS>>16)&255);
+			value.byteData[3]=((state.EFLAGS>>24)&255);
+			break;
+
+		case REG_ES:
+			value.numBytes=2;
+			value.byteData[0]=(state.ES.value&255);
+			value.byteData[1]=((state.ES.value>>8)&255);
+			break;
+		case REG_CS:
+			value.numBytes=2;
+			value.byteData[0]=(state.CS.value&255);
+			value.byteData[1]=((state.CS.value>>8)&255);
+			break;
+		case REG_SS:
+			value.numBytes=2;
+			value.byteData[0]=(state.SS.value&255);
+			value.byteData[1]=((state.SS.value>>8)&255);
+			break;
+		case REG_DS:
+			value.numBytes=2;
+			value.byteData[0]=(state.DS.value&255);
+			value.byteData[1]=((state.DS.value>>8)&255);
+			break;
+		case REG_FS:
+			value.numBytes=2;
+			value.byteData[0]=(state.FS.value&255);
+			value.byteData[1]=((state.FS.value>>8)&255);
+			break;
+		case REG_GS:
+			value.numBytes=2;
+			value.byteData[0]=(state.GS.value&255);
+			value.byteData[1]=((state.GS.value>>8)&255);
+			break;
+
+		case REG_GDT:
+			Abort("i486DX::EvaluateOperand, Check GDT Byte Order");
+			value.numBytes=6;
+			value.byteData[0]=(state.GDT.linearBaseAddr&255);
+			value.byteData[1]=((state.GDT.linearBaseAddr>>8)&255);
+			value.byteData[2]=((state.GDT.linearBaseAddr>>16)&255);
+			value.byteData[3]=((state.GDT.linearBaseAddr>>24)&255);
+			value.byteData[4]=(state.GDT.limit&255);
+			value.byteData[5]=((state.GDT.limit>>8)&255);
+			break;
+		case REG_LDT:
+			Abort("i486DX::EvaluateOperand, Check LDT Byte Order");
+			value.numBytes=6;
+			value.byteData[0]=(state.LDT.linearBaseAddr&255);
+			value.byteData[1]=((state.LDT.linearBaseAddr>>8)&255);
+			value.byteData[2]=((state.LDT.linearBaseAddr>>16)&255);
+			value.byteData[3]=((state.LDT.linearBaseAddr>>24)&255);
+			value.byteData[4]=(state.LDT.limit&255);
+			value.byteData[5]=((state.LDT.limit>>8)&255);
+			break;
+		case REG_TR:
+			Abort("i486DX::EvaluateOperand, Check TR Byte Order");
+			value.numBytes=10;
+			value.byteData[0]=(state.TR.linearBaseAddr&255);
+			value.byteData[1]=((state.TR.linearBaseAddr>>8)&255);
+			value.byteData[2]=((state.TR.linearBaseAddr>>16)&255);
+			value.byteData[3]=((state.TR.linearBaseAddr>>24)&255);
+			value.byteData[4]=(state.TR.limit&255);
+			value.byteData[5]=((state.TR.limit>>8)&255);
+			value.byteData[6]=(state.TR.selector&255);
+			value.byteData[7]=((state.TR.selector>>8)&255);
+			value.byteData[8]=(state.TR.attrib&255);
+			value.byteData[9]=((state.TR.attrib>>8)&255);
+			break;
+		case REG_IDTR:
+			Abort("i486DX::EvaluateOperand, Check IDTR Byte Order");
+			value.numBytes=10;
+			value.byteData[0]=(state.IDTR.linearBaseAddr&255);
+			value.byteData[1]=((state.IDTR.linearBaseAddr>>8)&255);
+			value.byteData[2]=((state.IDTR.linearBaseAddr>>16)&255);
+			value.byteData[3]=((state.IDTR.linearBaseAddr>>24)&255);
+			value.byteData[4]=(state.IDTR.limit&255);
+			value.byteData[5]=((state.IDTR.limit>>8)&255);
+			value.byteData[6]=(state.IDTR.selector&255);
+			value.byteData[7]=((state.IDTR.selector>>8)&255);
+			value.byteData[8]=(state.IDTR.attrib&255);
+			value.byteData[9]=((state.IDTR.attrib>>8)&255);
+			break;
+		case REG_CR0:
+			value.numBytes=4;
+			value.byteData[0]=(state.CR0&255);
+			value.byteData[1]=((state.CR0>>8)&255);
+			value.byteData[2]=((state.CR0>>16)&255);
+			value.byteData[3]=((state.CR0>>24)&255);
+			break;
+		case REG_CR1:
+			value.numBytes=4;
+			value.byteData[0]=(state.CR1&255);
+			value.byteData[1]=((state.CR1>>8)&255);
+			value.byteData[2]=((state.CR1>>16)&255);
+			value.byteData[3]=((state.CR1>>24)&255);
+			break;
+		case REG_CR2:
+			value.numBytes=4;
+			value.byteData[0]=(state.CR2&255);
+			value.byteData[1]=((state.CR2>>8)&255);
+			value.byteData[2]=((state.CR2>>16)&255);
+			value.byteData[3]=((state.CR2>>24)&255);
+			break;
+		case REG_CR3:
+			value.numBytes=4;
+			value.byteData[0]=(state.CR3&255);
+			value.byteData[1]=((state.CR3>>8)&255);
+			value.byteData[2]=((state.CR3>>16)&255);
+			value.byteData[3]=((state.CR3>>24)&255);
+			break;
+		case REG_DR0:
+			value.numBytes=4;
+			value.byteData[0]=(state.DR0&255);
+			value.byteData[1]=((state.DR0>>8)&255);
+			value.byteData[2]=((state.DR0>>16)&255);
+			value.byteData[3]=((state.DR0>>24)&255);
+			break;
+		case REG_DR1:
+			value.numBytes=4;
+			value.byteData[0]=(state.DR1&255);
+			value.byteData[1]=((state.DR1>>8)&255);
+			value.byteData[2]=((state.DR1>>16)&255);
+			value.byteData[3]=((state.DR1>>24)&255);
+			break;
+		case REG_DR2:
+			value.numBytes=4;
+			value.byteData[0]=(state.DR2&255);
+			value.byteData[1]=((state.DR2>>8)&255);
+			value.byteData[2]=((state.DR2>>16)&255);
+			value.byteData[3]=((state.DR2>>24)&255);
+			break;
+		case REG_DR3:
+			value.numBytes=4;
+			value.byteData[0]=(state.DR3&255);
+			value.byteData[1]=((state.DR3>>8)&255);
+			value.byteData[2]=((state.DR3>>16)&255);
+			value.byteData[3]=((state.DR3>>24)&255);
+			break;
+		case REG_DR4:
+			value.numBytes=4;
+			value.byteData[0]=(state.DR4&255);
+			value.byteData[1]=((state.DR4>>8)&255);
+			value.byteData[2]=((state.DR4>>16)&255);
+			value.byteData[3]=((state.DR4>>24)&255);
+			break;
+		case REG_DR5:
+			value.numBytes=4;
+			value.byteData[0]=(state.DR5&255);
+			value.byteData[1]=((state.DR5>>8)&255);
+			value.byteData[2]=((state.DR5>>16)&255);
+			value.byteData[3]=((state.DR5>>24)&255);
+			break;
+		case REG_DR6:
+			value.numBytes=4;
+			value.byteData[0]=(state.DR6&255);
+			value.byteData[1]=((state.DR6>>8)&255);
+			value.byteData[2]=((state.DR6>>16)&255);
+			value.byteData[3]=((state.DR6>>24)&255);
+			break;
+		case REG_DR7:
+			value.numBytes=4;
+			value.byteData[0]=(state.DR7&255);
+			value.byteData[1]=((state.DR7>>8)&255);
+			value.byteData[2]=((state.DR7>>16)&255);
+			value.byteData[3]=((state.DR7>>24)&255);
+			break;
+		}
+		break;
+	case OPER_IMM8:
+		value.numBytes=1;
+		value.byteData[0]=op.imm;
+		break;
+	case OPER_IMM16:
+		value.numBytes=2;
+		value.byteData[0]=(op.imm&255);
+		value.byteData[1]=((op.imm>>8)&255);
+		break;
+	case OPER_IMM32:
+		value.numBytes=4;
+		value.byteData[0]=(op.imm&255);
+		value.byteData[1]=((op.imm>>8)&255);
+		value.byteData[2]=((op.imm>>16)&255);
+		value.byteData[3]=((op.imm>>24)&255);
+		break;
+	}
+	return value;
+}
+
+void i486DX::StoreOperandValue(
+    const Operand &dst,Memory &mem,int addressSize,int segmentOverride,OperandValue value)
+{
+	switch(dst.operandType)
+	{
+	case OPER_UNDEFINED:
+		Abort("Tried to evaluate an undefined operand.");
+		break;
+	case OPER_ADDR:
+		{
+			SegmentRegister seg;
+			switch(segmentOverride)
+			{
+			case SEG_OVERRIDE_CS:
+				seg=state.CS;
+				break;
+			case SEG_OVERRIDE_SS:
+				seg=state.SS;
+				break;
+			case SEG_OVERRIDE_DS:
+				seg=state.DS;
+				break;
+			case SEG_OVERRIDE_ES:
+				seg=state.ES;
+				break;
+			case SEG_OVERRIDE_FS:
+				seg=state.FS;
+				break;
+			case SEG_OVERRIDE_GS:
+				seg=state.GS;
+				break;
+			default:
+				if(dst.baseReg==REG_ESP || dst.baseReg==REG_SP ||
+				   dst.baseReg==REG_EBP || dst.baseReg==REG_BP)
+				{
+					seg=state.SS;
+				}
+				else
+				{
+					seg=state.DS;
+				}
+				break;
+			}
+			unsigned int offset=
+			   GetRegisterValue(dst.baseReg)+
+			   GetRegisterValue(dst.indexReg)*dst.indexScaling+
+			   dst.offset;
+			if(addressSize==16)
+			{
+				for(int i=0; i<value.numBytes; ++i)
+				{
+					StoreByte(mem,seg,(offset+i)&65535,value.byteData[i]);
+				}
+			}
+			else
+			{
+				for(int i=0; i<value.numBytes; ++i)
+				{
+					StoreByte(mem,seg,offset+i,value.byteData[i]);
+				}
+			}
+		}
+		break;
+	case OPER_FARADDR:
+		Abort("Tried to evaluate FAR ADDRESS.");
+		break;
+	case OPER_REG:
+		switch(dst.reg)
+		{
+		case REG_AL:
+			state.EAX&=0xffffff00;
+			state.EAX|=value.byteData[0];
+			break;
+		case REG_CL:
+			state.ECX&=0xffffff00;
+			state.ECX|=value.byteData[0];
+			break;
+		case REG_BL:
+			state.EBX&=0xffffff00;
+			state.EBX|=value.byteData[0];
+			break;
+		case REG_DL:
+			state.EDX&=0xffffff00;
+			state.EDX|=value.byteData[0];
+			break;
+		case REG_AH:
+			state.EAX&=0xffff00ff;
+			state.EAX|=(((unsigned int)value.byteData[0])<<8);
+			break;
+		case REG_CH:
+			state.ECX&=0xffff00ff;
+			state.ECX|=(((unsigned int)value.byteData[0])<<8);
+			break;
+		case REG_BH:
+			state.EBX&=0xffff00ff;
+			state.EBX|=(((unsigned int)value.byteData[0])<<8);
+			break;
+		case REG_DH:
+			state.EDX&=0xffff00ff;
+			state.EDX|=(((unsigned int)value.byteData[0])<<8);
+			break;
+
+		case REG_AX:
+			state.EAX&=0xffff0000;
+			state.EAX|=cpputil::GetWord(value.byteData);
+			break;
+		case REG_CX:
+			state.ECX&=0xffff0000;
+			state.ECX|=cpputil::GetWord(value.byteData);
+			break;
+		case REG_DX:
+			state.EDX&=0xffff0000;
+			state.EDX|=cpputil::GetWord(value.byteData);
+			break;
+		case REG_BX:
+			state.EBX&=0xffff0000;
+			state.EBX|=cpputil::GetWord(value.byteData);
+			break;
+		case REG_SP:
+			state.ESP&=0xffff0000;
+			state.ESP|=cpputil::GetWord(value.byteData);
+			break;
+		case REG_BP:
+			state.EBP&=0xffff0000;
+			state.EBP|=cpputil::GetWord(value.byteData);
+			break;
+		case REG_SI:
+			state.ESI&=0xffff0000;
+			state.ESI|=cpputil::GetWord(value.byteData);
+			break;
+		case REG_DI:
+			state.EDI&=0xffff0000;
+			state.EDI|=cpputil::GetWord(value.byteData);
+			break;
+
+		case REG_EAX:
+			state.EAX=cpputil::GetDword(value.byteData);
+			break;
+		case REG_ECX:
+			state.ECX=cpputil::GetDword(value.byteData);
+			break;
+		case REG_EDX:
+			state.EDX=cpputil::GetDword(value.byteData);
+			break;
+		case REG_EBX:
+			state.EBX=cpputil::GetDword(value.byteData);
+			break;
+		case REG_ESP:
+			state.ESP=cpputil::GetDword(value.byteData);
+			break;
+		case REG_EBP:
+			state.EBP=cpputil::GetDword(value.byteData);
+			break;
+		case REG_ESI:
+			state.ESI=cpputil::GetDword(value.byteData);
+			break;
+		case REG_EDI:
+			state.ESI=cpputil::GetDword(value.byteData);
+			break;
+
+		case REG_EIP:
+			state.EIP=cpputil::GetDword(value.byteData);
+			break;
+		case REG_EFLAGS:
+			state.EFLAGS=cpputil::GetDword(value.byteData);
+			break;
+
+		case REG_ES:
+			LoadSegmentRegister(state.ES,cpputil::GetWord(value.byteData),mem);
+			break;
+		case REG_CS:
+			LoadSegmentRegister(state.CS,cpputil::GetWord(value.byteData),mem);
+			break;
+		case REG_SS:
+			LoadSegmentRegister(state.SS,cpputil::GetWord(value.byteData),mem);
+			break;
+		case REG_DS:
+			LoadSegmentRegister(state.DS,cpputil::GetWord(value.byteData),mem);
+			break;
+		case REG_FS:
+			LoadSegmentRegister(state.FS,cpputil::GetWord(value.byteData),mem);
+			break;
+		case REG_GS:
+			LoadSegmentRegister(state.GS,cpputil::GetWord(value.byteData),mem);
+			break;
+
+		case REG_GDT:
+			Abort("i486DX::StoreOperandValue, Check GDT Byte Order");
+			break;
+		case REG_LDT:
+			Abort("i486DX::StoreOperandValue, Check LDT Byte Order");
+			break;
+		case REG_TR:
+			Abort("i486DX::StoreOperandValue, Check TR Byte Order");
+			break;
+		case REG_IDTR:
+			Abort("i486DX::StoreOperandValue, Check IDTR Byte Order");
+			break;
+		case REG_CR0:
+			state.CR0=cpputil::GetDword(value.byteData);
+			break;
+		case REG_CR1:
+			state.CR1=cpputil::GetDword(value.byteData);
+			break;
+		case REG_CR2:
+			state.CR2=cpputil::GetDword(value.byteData);
+			break;
+		case REG_CR3:
+			state.CR3=cpputil::GetDword(value.byteData);
+			break;
+		case REG_DR0:
+			state.DR0=cpputil::GetDword(value.byteData);
+			break;
+		case REG_DR1:
+			state.DR1=cpputil::GetDword(value.byteData);
+			break;
+		case REG_DR2:
+			state.DR2=cpputil::GetDword(value.byteData);
+			break;
+		case REG_DR3:
+			state.DR3=cpputil::GetDword(value.byteData);
+			break;
+		case REG_DR4:
+			state.DR4=cpputil::GetDword(value.byteData);
+			break;
+		case REG_DR5:
+			state.DR5=cpputil::GetDword(value.byteData);
+			break;
+		case REG_DR6:
+			state.DR6=cpputil::GetDword(value.byteData);
+			break;
+		case REG_DR7:
+			state.DR7=cpputil::GetDword(value.byteData);
+			break;
+		}
+		break;
+	case OPER_IMM8:
+	case OPER_IMM16:
+	case OPER_IMM32:
+		Abort("Immediate value specified as a destination.");
+		break;
+	}
 }

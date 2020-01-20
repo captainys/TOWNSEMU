@@ -61,6 +61,24 @@ unsigned int Memory::FetchByte(unsigned int addr) const
 	return 0xFF;
 }
 
+void Memory::StoreByte(unsigned int addr,unsigned char byteData)
+{
+	if(addr<state.RAM.size())
+	{
+		if(true==state.sysRomMapping && 0xF8000<=addr && addr<=0xFFFFF)
+		{
+		}
+		else
+		{
+			state.RAM[addr]=byteData;
+		}
+	}
+	if(0x80000000<=addr && addr<0x80080000)
+	{
+		state.VRAM[addr-0x80000000]=byteData;
+	}
+}
+
 /* virtual */ void Memory::Reset(void)
 {
 	state.sysRomMapping=true;

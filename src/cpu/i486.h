@@ -9,6 +9,9 @@
 // References
 // [1]  i486 Processor Programmers Reference Manual
 
+// Todo:
+//   Move function should raise protection fault / real-mode exception
+
 class i486DX : public CPU
 {
 public:
@@ -23,12 +26,12 @@ public:
 
 		REG_AL,
 		REG_CL,
-		REG_BL,
 		REG_DL,
+		REG_BL,
 		REG_AH,
 		REG_CH,
-		REG_BH,
 		REG_DH,
+		REG_BH,
 
 		REG_AX,
 		REG_CX,
@@ -102,9 +105,9 @@ public:
 	class SystemSegmentRegister
 	{
 	public:
-		unsigned short selector;
 		unsigned int linearBaseAddr;
 		unsigned short limit;
+		unsigned short selector;
 		unsigned short attrib;
 	};
 	class State
@@ -118,7 +121,7 @@ public:
 		SystemAddressRegister GDT,LDT;
 		SystemSegmentRegister TR,IDTR;
 		unsigned int CR0,CR1,CR2,CR3;
-		unsigned int DR0,DR1,DR2,DR3,R4,DR5,DR6,DR7;
+		unsigned int DR0,DR1,DR2,DR3,DR4,DR5,DR6,DR7;
 
 		// [1] pp.26-211 in the description of the MOV instruction
 		// "Loading to SS register inhibits all interrupts until after the execution of the next instruction"
@@ -316,6 +319,17 @@ public:
 			std::string &op1Qual,std::string &op2Qual,const Operand &op1,const Operand &op2);
 
 		static std::string GetSegmentQualifierToDisassembly(int segOverride,const Operand &op);
+
+		/*! Returns the size in number of bytes if the size can be determined.
+		    Returns zero otherwise.
+		*/
+		unsigned int GetSize(void) const;
+	};
+	class OperandValue
+	{
+	public:
+		unsigned int numBytes;
+		unsigned char byteData[10];
 	};
 
 
@@ -362,6 +376,14 @@ public:
 	{
 		return (0==(state.CR0&CR0_PROTECTION_ENABLE));
 	}
+
+	/*! Returns a register value. 
+	*/
+	unsigned int GetRegisterValue(int reg) const;
+
+	/*! Returns a register size in number of bytes. 
+	*/
+	static unsigned int GetRegisterSize(int reg);
 
 	/*! Returns true if in 16-bit addressing mode.
 	*/
@@ -413,6 +435,22 @@ public:
 		return mem.FetchByte(addr);
 	}
 
+	/*! Store a byte.
+	*/
+	inline void StoreByte(Memory &mem,SegmentRegister seg,unsigned int offset,unsigned char byteData)
+	{
+		if(true==AddressingMode16Bit())
+		{
+			offset&=0xffff;
+		}
+		auto addr=seg.baseLinearAddr+offset;
+		if(true==PagingEnabled())
+		{
+			addr=LinearAddressToPhysicalAddress(addr,mem);
+		}
+		return mem.StoreByte(addr,byteData);
+	}
+
 	/*! Fetch a byte from CS:[EIP+offset].
 	*/
 	inline unsigned int FetchInstructionByte(unsigned int offset,const Memory &mem) const
@@ -456,6 +494,27 @@ public:
 
 	/*! Run one instruction and returns number of clocks. */
 	unsigned int RunOneInstruction(Memory &mem,InOut &io);
+
+
+	/*! Move source operand to destination operand.  
+	    If the destination operand is a segment register, it updates baseLinearAddr.
+	    If the destination operand is SS, it sets holdIRQ flag.
+	*/
+	void Move(Memory &mem,int addressMode,int segmentOverride,const Operand &dst,const Operand &src);
+
+
+	/*! Evaluates an operand.
+	    destinationBytes is non zero if the operand that receives the value has a known size.
+	    If the destination size depends on the source size, destinationBytes should be zero.
+	*/
+	OperandValue EvaluateOperand(
+	    const Memory &mem,int addressSize,int segmentOverride,const Operand &op,int destinationBytes) const;
+
+
+	/*!
+	*/
+	void StoreOperandValue(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,OperandValue value);
+
 };
 
 /* } */

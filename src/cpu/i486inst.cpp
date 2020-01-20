@@ -532,6 +532,50 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			EIPChanged=true;
 		}
 		break;
+	case I486_OPCODE_MOV_FROM_SEG: //     0x8C,
+		Move(mem,inst.addressSize,inst.segOverride,op1,op2);
+		clocksPassed=3;
+		break;
+	case I486_OPCODE_MOV_TO_SEG: //       0x8E,
+		Move(mem,inst.addressSize,inst.segOverride,op1,op2);
+		if(true==IsInRealMode())
+		{
+			clocksPassed=3;
+		}
+		else
+		{
+			clocksPassed=9;
+		}
+		break;
+	case I486_OPCODE_MOV_FROM_R8: //      0x88,
+	case I486_OPCODE_MOV_FROM_R: //       0x89, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_OPCODE_MOV_TO_R8: //        0x8A,
+	case I486_OPCODE_MOV_TO_R: //         0x8B, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_OPCODE_MOV_M_TO_AL: //      0xA0,
+	case I486_OPCODE_MOV_M_TO_EAX: //     0xA1, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_OPCODE_MOV_M_FROM_AL: //    0xA2,
+	case I486_OPCODE_MOV_M_FROM_EAX: //   0xA3, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_OPCODE_MOV_I8_TO_AL: //     0xB0,
+	case I486_OPCODE_MOV_I8_TO_CL: //     0xB1,
+	case I486_OPCODE_MOV_I8_TO_DL: //     0xB2,
+	case I486_OPCODE_MOV_I8_TO_BL: //     0xB3,
+	case I486_OPCODE_MOV_I8_TO_AH: //     0xB4,
+	case I486_OPCODE_MOV_I8_TO_CH: //     0xB5,
+	case I486_OPCODE_MOV_I8_TO_DH: //     0xB6,
+	case I486_OPCODE_MOV_I8_TO_BH: //     0xB7,
+	case I486_OPCODE_MOV_I_TO_EAX: //     0xB8, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_OPCODE_MOV_I_TO_ECX: //     0xB9, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_OPCODE_MOV_I_TO_EDX: //     0xBA, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_OPCODE_MOV_I_TO_EBX: //     0xBB, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_OPCODE_MOV_I_TO_ESP: //     0xBC, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_OPCODE_MOV_I_TO_EBP: //     0xBD, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_OPCODE_MOV_I_TO_ESI: //     0xBE, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_OPCODE_MOV_I_TO_EDI: //     0xBF, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_OPCODE_MOV_I8_TO_RM8: //    0xC6,
+	case I486_OPCODE_MOV_I_TO_RM: //      0xC7, // 16/32 depends on OPSIZE_OVERRIDE
+		Move(mem,inst.addressSize,inst.segOverride,op1,op2);
+		clocksPassed=1;
+		break;
 	default:
 		Abort("Undefined instruction or simply not supported yet.");
 		break;

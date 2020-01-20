@@ -450,3 +450,23 @@ std::string i486DX::Operand::DisassembleAsImm(int immSize) const
 	}
 	return "";
 }
+
+unsigned int i486DX::Operand::GetSize(void) const
+{
+	switch(operandType)
+	{
+	case OPER_ADDR:
+		return 0;
+	case OPER_FARADDR:
+		return 0;
+	case OPER_REG:
+		return i486DX::GetRegisterSize(reg);
+	case OPER_IMM8:
+		return 1;
+	case OPER_IMM16:
+		return 2;
+	case OPER_IMM32:
+		return 4;
+	}
+	return 0;
+}
