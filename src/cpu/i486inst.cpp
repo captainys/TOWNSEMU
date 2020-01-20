@@ -265,6 +265,13 @@ void i486DX::FetchOperand(Instruction &inst,SegmentRegister seg,int offset,const
 		}
 		break;
 
+	case I486_OPCODE_OUT_I8_AL: //        0xE6,
+	case I486_OPCODE_OUT_I8_A: //         0xE7,
+		FetchOperand8(inst,seg,offset,mem);
+		break;
+	case I486_OPCODE_OUT_DX_AL: //        0xEE,
+	case I486_OPCODE_OUT_DX_A: //         0xEF,
+		break;
 
 	default:
 		// Undefined operand, or probably not implemented yet.
@@ -280,7 +287,6 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 	switch(opCode)
 	{
 	case I486_OPCODE_CLD:
-		break;
 	case I486_OPCODE_CLI:
 		break;
 	case I486_OPCODE_JMP_FAR:
@@ -371,6 +377,12 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 			op2.MakeImm32(GetUimm32());
 		}
 		break;
+
+	case I486_OPCODE_OUT_I8_AL: //        0xE6,
+	case I486_OPCODE_OUT_I8_A: //         0xE7,
+	case I486_OPCODE_OUT_DX_AL: //        0xEE,
+	case I486_OPCODE_OUT_DX_A: //         0xEF,
+		break;
 	}
 }
 
@@ -433,6 +445,39 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		disasm+=op1SizeQual+op1SegQual+op1.Disassemble();
 		disasm.push_back(',');
 		disasm+=op2SizeQual+op2SegQual+op2.Disassemble();
+		break;
+
+	case I486_OPCODE_OUT_I8_AL: //        0xE6,
+		disasm="OUT";
+		cpputil::ExtendString(disasm,8);
+		disasm+=op1.Disassemble();
+		disasm+=",AL";
+		break;
+	case I486_OPCODE_OUT_I8_A: //         0xE7,
+		disasm="OUT";
+		cpputil::ExtendString(disasm,8);
+		disasm+=op1.Disassemble();
+		if(16==operandSize)
+		{
+			disasm+=",AX";
+		}
+		else
+		{
+			disasm+=",EAX";
+		}
+		break;
+	case I486_OPCODE_OUT_DX_AL: //        0xEE,
+		disasm="OUT     DX,AL";
+		break;
+	case I486_OPCODE_OUT_DX_A: //         0xEF,
+		if(16==operandSize)
+		{
+			disasm="OUT     DX,AX";
+		}
+		else
+		{
+			disasm="OUT     DX,EAX";
+		}
 		break;
 	}
 
@@ -576,6 +621,66 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		Move(mem,inst.addressSize,inst.segOverride,op1,op2);
 		clocksPassed=1;
 		break;
+
+	case I486_OPCODE_OUT_I8_AL: //        0xE6,
+		io.Out8(inst.operand[0],GetRegisterValue(REG_AL));
+		if(true==IsInRealMode())
+		{
+			clocksPassed=16;
+		}
+		else
+		{
+			clocksPassed=11; // 31 if CPL>IOPL
+		}
+		break;
+	case I486_OPCODE_OUT_I8_A: //         0xE7,
+		if(16==inst.operandSize)
+		{
+			io.Out16(inst.operand[0],GetRegisterValue(REG_AX));
+		}
+		else
+		{
+			io.Out32(inst.operand[0],GetRegisterValue(REG_EAX));
+		}
+		if(true==IsInRealMode())
+		{
+			clocksPassed=16;
+		}
+		else
+		{
+			clocksPassed=11; // 31 if CPL>IOPL
+		}
+		break;
+	case I486_OPCODE_OUT_DX_AL: //        0xEE,
+		io.Out8(GetRegisterValue(REG_DX),GetRegisterValue(REG_AL));
+		if(true==IsInRealMode())
+		{
+			clocksPassed=16;
+		}
+		else
+		{
+			clocksPassed=10; // 30 if CPL>IOPL
+		}
+		break;
+	case I486_OPCODE_OUT_DX_A: //         0xEF,
+		if(16==inst.operandSize)
+		{
+			io.Out16(GetRegisterValue(REG_DX),GetRegisterValue(REG_AX));
+		}
+		else
+		{
+			io.Out32(GetRegisterValue(REG_DX),GetRegisterValue(REG_EAX));
+		}
+		if(true==IsInRealMode())
+		{
+			clocksPassed=16;
+		}
+		else
+		{
+			clocksPassed=10; // 30 if CPL>IOPL
+		}
+		break;
+
 	default:
 		Abort("Undefined instruction or simply not supported yet.");
 		break;

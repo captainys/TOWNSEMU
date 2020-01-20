@@ -125,6 +125,10 @@ enum
 	I486_OPCODE_MOV_FROM_TR=      0x240F,
 	I486_OPCODE_MOV_TO_TR=        0x260F,
 
+	I486_OPCODE_OUT_I8_AL=        0xE6,
+	I486_OPCODE_OUT_I8_A=         0xE7,
+	I486_OPCODE_OUT_DX_AL=        0xEE,
+	I486_OPCODE_OUT_DX_A=         0xEF,
 };
 
 /* } */

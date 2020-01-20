@@ -473,10 +473,20 @@ public:
 		return FetchInstruction(state.CS,state.EIP,mem);
 	}
 private:
+	/*! Fetch an 8-bit operand.
+	*/
 	unsigned int FetchOperand8(Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem) const;
+	/*! Fetch an 16-bit operand.
+	*/
 	unsigned int FetchOperand16(Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem) const;
+	/*! Fetch an 32-bit operand.
+	*/
 	unsigned int FetchOperand32(Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem) const;
+	/*! Fetch an operand defined by the RM byte.
+	*/
 	void FetchOperandRM(Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem) const;
+	/*! Fetch operand(s) for the instruction.
+	*/
 	void FetchOperand(Instruction &inst,SegmentRegister seg,int offset,const Memory &mem) const;
 
 public:
