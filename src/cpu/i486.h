@@ -361,6 +361,14 @@ public:
 	*/
 	void Reset(void);
 
+	/*! Returns the state text.
+	*/
+	std::vector <std::string> GetStateText(void) const;
+
+	/*! Print state.
+	*/
+	void PrintState(void) const;
+
 	/*! Loads a segment register.
 	    How the segment linear base address is set depends on the CPU mode,
 	    and in the protected mode, it needs to look at GDT and LDT.

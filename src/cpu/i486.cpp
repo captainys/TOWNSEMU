@@ -118,6 +118,43 @@ void i486DX::Reset(void)
 	state.holdIRQ=false;
 }
 
+std::vector <std::string> i486DX::GetStateText(void) const
+{
+	std::vector <std::string> text;
+
+	text.push_back(
+	     "CS:EIP="
+	    +cpputil::Ustox(state.CS.value)+":"+cpputil::Uitox(state.EIP));
+
+	text.push_back(
+	     "EAX="+cpputil::Uitox(state.EAX)
+	    +"  EBX="+cpputil::Uitox(state.EBX)
+	    +"  ECX="+cpputil::Uitox(state.ECX)
+	    +"  EDX="+cpputil::Uitox(state.EDX)
+	    );
+
+	text.push_back(
+	     "ESI="+cpputil::Uitox(state.ESI)
+	    +"  EDI="+cpputil::Uitox(state.EDI)
+	    +"  EBP="+cpputil::Uitox(state.EBP)
+	    +"  ESP="+cpputil::Uitox(state.ESP)
+	    );
+
+	text.push_back(
+	     "EFLAGS="+cpputil::Uitox(state.EFLAGS)
+	    );
+
+	return text;
+}
+
+void i486DX::PrintState(void) const
+{
+	for(auto &str : GetStateText())
+	{
+		std::cout << str << std::endl;
+	}
+}
+
 void i486DX::LoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem)
 {
 	if(&reg==&state.SS)

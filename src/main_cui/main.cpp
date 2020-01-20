@@ -46,10 +46,10 @@ int main(int ac,char *av[])
 	for(;;)
 	{
 		auto inst=towns.FetchInstruction();
-		auto disasm=towns.cpu.Disassemble(inst,towns.cpu.state.CS,towns.cpu.state.EIP,towns.mem);
 
-		std::cout << "CS:" << cpputil::Ustox(towns.cpu.state.CS.value) << std::endl;
-		std::cout << "EIP:" << cpputil::Uitox(towns.cpu.state.EIP) << std::endl;
+		towns.cpu.PrintState();
+
+		auto disasm=towns.cpu.Disassemble(inst,towns.cpu.state.CS,towns.cpu.state.EIP,towns.mem);
 
 		std::cout << disasm << std::endl;
 		std::cout << ">";
