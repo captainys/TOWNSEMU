@@ -476,6 +476,43 @@ public:
 	}
 
 
+	inline unsigned int GetECX(void) const
+	{
+		return state.ECX;
+	}
+	inline unsigned int GetCX(void) const
+	{
+		return state.ECX&0xffff;
+	}
+	inline unsigned int GetCL(void) const
+	{
+		return state.ECX&0xff;
+	}
+	inline unsigned int GetCH(void) const
+	{
+		return (state.ECX>>8)&0xff;
+	}
+	inline void SetECX(unsigned int value)
+	{
+		state.ECX=value;
+	}
+	inline void SetCX(unsigned int value)
+	{
+		state.ECX&=0xffff0000;
+		state.ECX|=value;
+	}
+	inline void SetCL(unsigned int value)
+	{
+		state.ECX&=0xffffff00;
+		state.ECX|=value;
+	}
+	inline void SetCH(unsigned int value)
+	{
+		state.ECX&=0xffff00ff;
+		state.ECX|=(value<<8);
+	}
+
+
 	inline unsigned int GetEDX(void) const
 	{
 		return state.EDX;
@@ -625,6 +662,137 @@ public:
 		}
 		return 0==(n&1);
 	}
+
+	inline bool CondJA(void) const  // Unsigned above
+	{
+		return true!=GetCF() && true!=GetZF();
+	}
+	inline bool ConJAE(void) const  // Unsigned above or equal
+	{
+		return true!=GetCF();
+	}
+	inline bool CondJB(void) const // Unsigned below
+	{
+		return GetCF();
+	}
+	inline bool ConJBE(void) const // Unsgned below or equal
+	{
+		return GetCF() || GetZF();
+	}
+	inline bool CondJC(void) const
+	{
+		return GetCF();
+	}
+	inline bool CondJCXZ(void) const
+	{
+		return GetCX()==0;
+	}
+	inline bool CondJECXZ(void) const
+	{
+		return GetECX()==0;
+	}
+	inline bool CondJE(void) const
+	{
+		return GetZF();
+	}
+	inline bool CondJG(void) const // Signed greater
+	{
+		return true!=GetZF() && GetSF()==GetOF();
+	}
+	inline bool CondJGE(void) const
+	{
+		return GetSF()==GetOF();
+	}
+	inline bool CondJL(void) const // Signed less
+	{
+		return GetSF()!=GetOF();
+	}
+	inline bool CondJLE(void) const
+	{
+		return GetZF() || GetSF()!=GetOF();
+	}
+	inline bool CondJNA(void) const
+	{
+		return GetCF() || GetZF();
+	}
+	inline bool CondJNAE(void) const
+	{
+		return GetCF();
+	}
+	inline bool CondJNB(void) const
+	{
+		return true!=GetCF();
+	}
+	inline bool CondJNBE(void) const
+	{
+		return true!=GetCF() && true!=GetZF();
+	}
+	inline bool CondJNC(void) const
+	{
+		return true!=GetCF();
+	}
+	inline bool CondJNE(void) const
+	{
+		return true!=GetZF();
+	}
+	inline bool CondJNG(void) const
+	{
+		return GetZF() || GetSF()!=GetOF();
+	}
+	inline bool CondJNGE(void) const
+	{
+		return GetSF()!=GetOF();
+	}
+	inline bool CondJNL(void) const
+	{
+		return GetSF()==GetOF();
+	}
+	inline bool CondJNLE(void) const
+	{
+		return true!=GetZF() && GetSF()==GetOF();
+	}
+	inline bool CondJNO(void) const
+	{
+		return true!=GetOF();
+	}
+	inline bool CondJNP(void) const
+	{
+		return true!=GetPF();
+	}
+	inline bool CondJNS(void) const
+	{
+		return true!=GetSF();
+	}
+	inline bool CondJNZ(void) const
+	{
+		return true!=GetZF();
+	}
+	inline bool CondJO(void) const
+	{
+		return GetOF();
+	}
+	inline bool CondJP(void) const
+	{
+		return GetPF();
+	}
+	inline bool CondJPE(void) const
+	{
+		return GetPF();
+	}
+	inline bool CondJPO(void) const
+	{
+		return true!=GetPF();
+	}
+	inline bool CondJS(void) const
+	{
+		return GetSF();
+	}
+	inline bool CondJZ(void) const
+	{
+		return GetZF();
+	}
+
+
 
 
 

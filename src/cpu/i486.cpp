@@ -806,14 +806,14 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 			   op.offset;
 			if(addressSize==16)
 			{
-				for(int i=0; i<value.numBytes; ++i)
+				for(unsigned int i=0; i<value.numBytes; ++i)
 				{
 					value.byteData[i]=FetchByte(seg,(offset+i)&65535,mem);
 				}
 			}
 			else
 			{
-				for(int i=0; i<value.numBytes; ++i)
+				for(unsigned int i=0; i<value.numBytes; ++i)
 				{
 					value.byteData[i]=FetchByte(seg,offset+i,mem);
 				}
@@ -1304,14 +1304,14 @@ void i486DX::StoreOperandValue(
 			   dst.offset;
 			if(addressSize==16)
 			{
-				for(int i=0; i<value.numBytes; ++i)
+				for(unsigned int i=0; i<value.numBytes; ++i)
 				{
 					StoreByte(mem,seg,(offset+i)&65535,value.byteData[i]);
 				}
 			}
 			else
 			{
-				for(int i=0; i<value.numBytes; ++i)
+				for(unsigned int i=0; i<value.numBytes; ++i)
 				{
 					StoreByte(mem,seg,offset+i,value.byteData[i]);
 				}
