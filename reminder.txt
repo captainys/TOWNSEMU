@@ -1,0 +1,4 @@
+[Reminder to myself]
+
+Probably:
+I'm not setting carry flag correctly in SBB and ADC.  In case Carry+Op2==0x100000000, the prev and new values are equal, but it goes exactly one round.
