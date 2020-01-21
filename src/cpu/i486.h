@@ -667,7 +667,7 @@ public:
 	{
 		return true!=GetCF() && true!=GetZF();
 	}
-	inline bool ConJAE(void) const  // Unsigned above or equal
+	inline bool CondJAE(void) const  // Unsigned above or equal
 	{
 		return true!=GetCF();
 	}
@@ -675,7 +675,7 @@ public:
 	{
 		return GetCF();
 	}
-	inline bool ConJBE(void) const // Unsgned below or equal
+	inline bool CondJBE(void) const // Unsgned below or equal
 	{
 		return GetCF() || GetZF();
 	}

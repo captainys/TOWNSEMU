@@ -1213,6 +1213,93 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 
 
+	case I486_OPCODE_JO_REL8:   // 0x70,
+	case I486_OPCODE_JNO_REL8:  // 0x71,
+	case I486_OPCODE_JB_REL8:   // 0x72,
+	case I486_OPCODE_JAE_REL8:  // 0x73,
+	case I486_OPCODE_JE_REL8:   // 0x74,
+	case I486_OPCODE_JNE_REL8:  // 0x75,
+	case I486_OPCODE_JBE_REL8:  // 0x76,
+	case I486_OPCODE_JA_REL8:   // 0x77,
+	case I486_OPCODE_JS_REL8:   // 0x78,
+	case I486_OPCODE_JNS_REL8:  // 0x79,
+	case I486_OPCODE_JP_REL8:   // 0x7A,
+	case I486_OPCODE_JNP_REL8:  // 0x7B,
+	case I486_OPCODE_JL_REL8:   // 0x7C,
+	case I486_OPCODE_JGE_REL8:  // 0x7D,
+	case I486_OPCODE_JLE_REL8:  // 0x7E,
+	case I486_OPCODE_JG_REL8:   // 0x7F,
+		{
+			bool jumpCond=false;
+			switch(inst.opCode)
+			{
+			case I486_OPCODE_JO_REL8:   // 0x70,
+				jumpCond=CondJO();
+				break;
+			case I486_OPCODE_JNO_REL8:  // 0x71,
+				jumpCond=CondJNO();
+				break;
+			case I486_OPCODE_JB_REL8:   // 0x72,
+				jumpCond=CondJB();
+				break;
+			case I486_OPCODE_JAE_REL8:  // 0x73,
+				jumpCond=CondJAE();
+				break;
+			case I486_OPCODE_JE_REL8:   // 0x74,
+				jumpCond=CondJE();
+				break;
+			case I486_OPCODE_JNE_REL8:  // 0x75,
+				jumpCond=CondJNE();
+				break;
+			case I486_OPCODE_JBE_REL8:  // 0x76,
+				jumpCond=CondJBE();
+				break;
+			case I486_OPCODE_JA_REL8:   // 0x77,
+				jumpCond=CondJA();
+				break;
+			case I486_OPCODE_JS_REL8:   // 0x78,
+				jumpCond=CondJS();
+				break;
+			case I486_OPCODE_JNS_REL8:  // 0x79,
+				jumpCond=CondJNS();
+				break;
+			case I486_OPCODE_JP_REL8:   // 0x7A,
+				jumpCond=CondJP();
+				break;
+			case I486_OPCODE_JNP_REL8:  // 0x7B,
+				jumpCond=CondJNP();
+				break;
+			case I486_OPCODE_JL_REL8:   // 0x7C,
+				jumpCond=CondJL();
+				break;
+			case I486_OPCODE_JGE_REL8:  // 0x7D,
+				jumpCond=CondJGE();
+				break;
+			case I486_OPCODE_JLE_REL8:  // 0x7E,
+				jumpCond=CondJLE();
+				break;
+			case I486_OPCODE_JG_REL8:   // 0x7F,
+				jumpCond=CondJG();
+				break;
+			}
+			if(true==jumpCond)
+			{
+				auto offset=inst.GetSimm8();
+				auto destin=state.EIP+offset+inst.numBytes;
+				if(16==inst.operandSize)
+				{
+					state.EIP&=0xffff;
+				}
+				clocksPassed=3;
+			}
+			else
+			{
+				clocksPassed=1;
+			}
+		}
+		break;
+
+
 	case I486_OPCODE_JMP_FAR:
 		{
 			switch(inst.operandSize)
