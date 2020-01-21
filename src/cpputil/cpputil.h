@@ -44,6 +44,9 @@ int GetSignedDword(const unsigned char byteData[]);
 int GetSignedWord(const unsigned char byteData[]);
 int GetSignedByte(const unsigned char byteData);
 
+char BoolToChar(bool flag);
+const char *BoolToNumberStr(bool flag);
+
 };
 
 /* } */

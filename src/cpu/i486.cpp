@@ -155,6 +155,23 @@ std::vector <std::string> i486DX::GetStateText(void) const
 	    +"  CR3="+cpputil::Uitox(state.CR3)
 	    );
 
+	text.push_back(
+	     std::string("CF")+cpputil::BoolToNumberStr(GetCF())
+	    +"  PF"+cpputil::BoolToNumberStr(GetPF())
+	    +"  AF"+cpputil::BoolToNumberStr(GetAF())
+	    +"  ZF"+cpputil::BoolToNumberStr(GetZF())
+	    +"  SF"+cpputil::BoolToNumberStr(GetSF())
+	    +"  TF"+cpputil::BoolToNumberStr(GetTF())
+	    +"  IF"+cpputil::BoolToNumberStr(GetIF())
+	    +"  DF"+cpputil::BoolToNumberStr(GetDF())
+	    +"  OF"+cpputil::BoolToNumberStr(GetOF())
+	    +"  IOPL"+cpputil::Ubtox(GetIOPL())
+	    +"  NT"+cpputil::BoolToNumberStr(GetNT())
+	    +"  RF"+cpputil::BoolToNumberStr(GetRF())
+	    +"  VM"+cpputil::BoolToNumberStr(GetVM())
+	    +"  AC"+cpputil::BoolToNumberStr(GetAC())
+	    );
+
 	return text;
 }
 

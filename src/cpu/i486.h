@@ -525,6 +525,63 @@ public:
 		}
 	}
 
+	inline bool GetCF(void) const
+	{
+		return 0!=(state.EFLAGS&EFLAGS_CARRY);
+	}
+	inline bool GetPF(void) const
+	{
+		return 0!=(state.EFLAGS&EFLAGS_PARITY);
+	}
+	inline bool GetAF(void) const
+	{
+		return 0!=(state.EFLAGS&EFLAGS_AUX_CARRY);
+	}
+	inline bool GetZF(void) const
+	{
+		return 0!=(state.EFLAGS&EFLAGS_ZERO);
+	}
+	inline bool GetSF(void) const
+	{
+		return 0!=(state.EFLAGS&EFLAGS_SIGN);
+	}
+	inline bool GetTF(void) const
+	{
+		return 0!=(state.EFLAGS&EFLAGS_TRAP);
+	}
+	inline bool GetIF(void) const
+	{
+		return 0!=(state.EFLAGS&EFLAGS_INT_ENABLE);
+	}
+	inline bool GetDF(void) const
+	{
+		return 0!=(state.EFLAGS&EFLAGS_DIRECTION);
+	}
+	inline bool GetOF(void) const
+	{
+		return 0!=(state.EFLAGS&EFLAGS_OVERFLOW);
+	}
+	inline unsigned int GetIOPL(void) const
+	{
+		return (state.EFLAGS&EFLAGS_IOPL)>>12;
+	}
+	inline bool GetNT(void) const
+	{
+		return 0!=(state.EFLAGS&EFLAGS_NESTED);
+	}
+	inline bool GetRF(void) const
+	{
+		return 0!=(state.EFLAGS&EFLAGS_RESUME);
+	}
+	inline bool GetVM(void) const
+	{
+		return 0!=(state.EFLAGS&EFLAGS_VIRTUAL86);
+	}
+	inline bool GetAC(void) const
+	{
+		return 0!=(state.EFLAGS&EFLAGS_ALIGN_CHECK);
+	}
+
 	inline void SetCarryFlag(bool flag)
 	{
 		SetEFLAGSBit(flag,EFLAGS_CARRY);

@@ -525,3 +525,12 @@ int cpputil::GetSignedByte(const unsigned char byteData)
 	return byte;
 }
 
+char cpputil::BoolToChar(bool flag)
+{
+	return ((true==flag) ? '1' : '0');
+}
+
+const char *cpputil::BoolToNumberStr(bool flag)
+{
+	return ((true==flag) ? "1" : "0");
+}
