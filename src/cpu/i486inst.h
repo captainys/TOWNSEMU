@@ -6,9 +6,12 @@
 enum
 {
 	I486_OPCODE_NEED_SECOND_BYTE=0x0F,
+	I486_OPCODE_NEED_SECOND_BYTE_AAD=0xD5,
+	I486_OPCODE_NEED_SECOND_BYTE_AAM=0xD4,
 };
 
 // Adding support for a new instruction:
+// Instruction-Set /digit means the real instruction depends on the REG bits of MODR/M byte (operand[0])
 //  (1) Add OPCODE enum.
 //  (2) Implement i486DX::FetchOperand
 //  (3) Implement i486DX::Instruction::DecodeOperand
@@ -16,12 +19,44 @@ enum
 //  (5) Implement i486DX::RunOneInstruction
 //  (6) Add disassembly test.
 
+
+/*
+0x80,0x81,0x83 can be:
+ADD(REG=0)
+OR(REG=1)
+ADC(REG=2)
+SBB(REG=3)
+AND(REG=4)
+SUB(REG=5)
+XOR(REG=6)
+CMP(REG=7)
+	I486_OPCODE_BINARYOP_RM8_FROM_I8=  0x80, // AND(REG=4), OR(REG=1), or XOR(REG=6) depends on the REG field of MODR/M
+	I486_OPCODE_BINARYOP_R_FROM_I=     0x81,
+	I486_OPCODE_BINARYOP_RM_FROM_SXI8= 0x83,
+
+0xF6,0xF7 can be:
+TEST(REG=0)
+
+0xFF can be:
+JMP(REG=4,5)
+CALL(REG=2,3)
+*/
+
+
 enum 
 {
 //	I486_OPCODE_
 
 	I486_OPCODE_CLD=        0xFC,
 	I486_OPCODE_CLI=        0xFA,
+
+
+	I486_OPCODE_AND_AL_FROM_I8=  0x24,
+	I486_OPCODE_AND_A_FROM_I=    0x25,
+	I486_OPCODE_AND_RM8_FROM_R8= 0x20,
+	I486_OPCODE_AND_RM_FROM_R=   0x21,
+	I486_OPCODE_AND_R8_FROM_RM8= 0x22,
+	I486_OPCODE_AND_R_FROM_RM=   0x23,
 
 
 	I486_OPCODE_DEC_R_M8=   0xFE,
@@ -110,10 +145,18 @@ enum
 	// I486_OPCODE_JZ_LONG=    0x840F, Same as JE_LONG
 	
 
+
 	I486_OPCODE_JMP_SHORT=        0xEB,   // cb
 	I486_OPCODE_JMP_NEAR=         0xE9,   // cw or cd
 	I486_OPCODE_JMP_NEAR_INDIRECT=0xFF,   // /4 or /5
 	I486_OPCODE_JMP_FAR=          0xEA,   // cd or cp
+
+
+	// AND, OR, or XOR
+	I486_OPCODE_BINARYOP_RM8_FROM_I8=  0x80, // AND(REG=4), OR(REG=1), or XOR(REG=6) depends on the REG field of MODR/M
+	I486_OPCODE_BINARYOP_R_FROM_I=     0x81,
+	I486_OPCODE_BINARYOP_RM_FROM_SXI8= 0x83,
+
 
 	I486_OPCODE_MOV_FROM_R8=      0x88,
 	I486_OPCODE_MOV_FROM_R=       0x89, // 16/32 depends on OPSIZE_OVERRIDE
@@ -144,12 +187,14 @@ enum
 	I486_OPCODE_MOV_I8_TO_RM8=    0xC6,
 	I486_OPCODE_MOV_I_TO_RM=      0xC7, // 16/32 depends on OPSIZE_OVERRIDE
 
+
 	I486_OPCODE_MOV_TO_CR=        0x220F,
 	I486_OPCODE_MOV_FROM_CR=      0x200F,
 	I486_OPCODE_MOV_FROM_DR=      0x210F,
 	I486_OPCODE_MOV_TO_DR=        0x230F,
 	I486_OPCODE_MOV_FROM_TR=      0x240F,
 	I486_OPCODE_MOV_TO_TR=        0x260F,
+
 
 	I486_OPCODE_OUT_I8_AL=        0xE6,
 	I486_OPCODE_OUT_I8_A=         0xE7,
@@ -159,9 +204,6 @@ enum
 
 	I486_OPCODE_XOR_AL_FROM_I8=   0x34,
 	I486_OPCODE_XOR_A_FROM_I=     0x35,
-	I486_OPCODE_XOR_RM8_FROM_I8=  0x80,
-	I486_OPCODE_XOR_R_FROM_I=     0x81,
-	I486_OPCODE_XOR_RM_FROM_SXI8= 0x83,
 	I486_OPCODE_XOR_RM8_FROM_R8=  0x30,
 	I486_OPCODE_XOR_RM_FROM_R=    0x31,
 	I486_OPCODE_XOR_R8_FROM_RM8=  0x32,

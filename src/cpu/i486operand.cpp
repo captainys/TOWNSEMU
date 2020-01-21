@@ -226,6 +226,24 @@ void i486DX::Operand::DecodeMODR_MForSegmentRegister(unsigned char MODR_M)
 	operandType=OPER_REG;
 	reg=REG_SEGMENT_REG_BASE+REG_OPCODE;
 }
+void i486DX::Operand::DecodeMODR_MForCRRegister(unsigned char MODR_M)
+{
+	auto REG_OPCODE=((MODR_M>>3)&7);
+	operandType=OPER_REG;
+	reg=REG_CR_REG_BASE+REG_OPCODE;
+}
+void i486DX::Operand::DecodeMODR_MForDRRegister(unsigned char MODR_M)
+{
+	auto REG_OPCODE=((MODR_M>>3)&7);
+	operandType=OPER_REG;
+	reg=REG_DR_REG_BASE+REG_OPCODE;
+}
+void i486DX::Operand::DecodeMODR_MForTRRegister(unsigned char MODR_M)
+{
+	auto REG_OPCODE=((MODR_M>>3)&7);
+	operandType=OPER_REG;
+	reg=REG_TR_REG_BASE+REG_OPCODE;
+}
 void i486DX::Operand::MakeByRegisterNumber(int dataSize,int regNum)
 {
 	operandType=OPER_REG;

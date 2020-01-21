@@ -66,7 +66,14 @@ const char *const i486DX::RegToStr[REG_TOTAL_NUMBER_OF_REGISTERS]=
 	"GS",
 	"GDT",
 	"LDT",
-	"TR",
+	"TR0",
+	"TR1",
+	"TR2",
+	"TR3",
+	"TR4",
+	"TR5",
+	"TR6",
+	"TR7",
 	"IDTR",
 	"CR0",
 	"CR1",
@@ -124,7 +131,8 @@ std::vector <std::string> i486DX::GetStateText(void) const
 
 	text.push_back(
 	     "CS:EIP="
-	    +cpputil::Ustox(state.CS.value)+":"+cpputil::Uitox(state.EIP));
+	    +cpputil::Ustox(state.CS.value)+":"+cpputil::Uitox(state.EIP)
+	    +"  EFLAGS="+cpputil::Uitox(state.EFLAGS));
 
 	text.push_back(
 	     "EAX="+cpputil::Uitox(state.EAX)
@@ -141,7 +149,10 @@ std::vector <std::string> i486DX::GetStateText(void) const
 	    );
 
 	text.push_back(
-	     "EFLAGS="+cpputil::Uitox(state.EFLAGS)
+	     "CR0="+cpputil::Uitox(state.CR0)
+	    +"  CR1="+cpputil::Uitox(state.CR1)
+	    +"  CR2="+cpputil::Uitox(state.CR2)
+	    +"  CR3="+cpputil::Uitox(state.CR3)
 	    );
 
 	return text;
@@ -418,6 +429,271 @@ void i486DX::DecrementByte(unsigned int &value)
 	SetAuxCarryFlag(0x0F==(value&0x0F));
 	SetParityFlag(CheckParity(value&0xFF));
 }
+
+
+
+void i486DX::AddWordOrDword(int operandSize,unsigned int &value1,unsigned int value2)
+{
+	if(16==operandSize)
+	{
+		AddWord(value1,value2);
+	}
+	else
+	{
+		AddDword(value1,value2);
+	}
+}
+void i486DX::AddDword(unsigned int &value1,unsigned int value2)
+{
+	auto prevValue=value1&0xffffffff;
+	value1=(value1+value2)&0xffffffff;
+	SetOverflowFlag(prevValue<0x80000000 && 0x80000000<=value1);
+	SetSignFlag(0!=(value1&0x80000000));
+	SetZeroFlag(0==value1);
+	SetAuxCarryFlag((prevValue&0x0F)<(value1&0x0F));
+	SetCarryFlag(value1<prevValue);
+	SetParityFlag(CheckParity(value1&0xFF));
+}
+void i486DX::AddWord(unsigned int &value1,unsigned int value2)
+{
+	auto prevValue=value1&0xffff;
+	value1=(value1+value2)&0xffff;
+	SetOverflowFlag(prevValue<0x8000 && 0x8000<=value1);
+	SetSignFlag(0!=(value1&0x8000));
+	SetZeroFlag(0==value1);
+	SetAuxCarryFlag((prevValue&0x0F)<(value1&0x0F));
+	SetCarryFlag(value1<prevValue);
+	SetParityFlag(CheckParity(value1&0xFF));
+}
+void i486DX::AddByte(unsigned int &value1,unsigned int value2)
+{
+	auto prevValue=value1&0xff;
+	value1=(value1+value2)&0xff;
+	SetOverflowFlag(prevValue<0x80 && 0x80<=value1);
+	SetSignFlag(0!=(value1&0x80));
+	SetZeroFlag(0==value1);
+	SetAuxCarryFlag((prevValue&0x0F)<(value1&0x0F));
+	SetCarryFlag(value1<prevValue);
+	SetParityFlag(CheckParity(value1&0xFF));
+}
+void i486DX::AndWordOrDword(int operandSize,unsigned int &value1,unsigned int value2)
+{
+	if(16==operandSize)
+	{
+		AndWord(value1,value2);
+	}
+	else
+	{
+		AndDword(value1,value2);
+	}
+}
+void i486DX::AndDword(unsigned int &value1,unsigned int value2)
+{
+	SetCarryFlag(false);
+	SetOverflowFlag(false);
+	value1&=value2;
+	SetSignFlag(0!=(0x80000000&value1));
+	SetZeroFlag(0==value1);
+	SetParityFlag(CheckParity(value1&0xFF));
+}
+void i486DX::AndWord(unsigned int &value1,unsigned int value2)
+{
+	SetCarryFlag(false);
+	SetOverflowFlag(false);
+	value1&=value2;
+	value1&=0xFFFF;
+	SetSignFlag(0!=(0x8000&value1));
+	SetZeroFlag(0==value1);
+	SetParityFlag(CheckParity(value1&0xFF));
+}
+void i486DX::AndByte(unsigned int &value1,unsigned int value2)
+{
+	SetCarryFlag(false);
+	SetOverflowFlag(false);
+	value1&=value2;
+	value1&=0xFF;
+	SetSignFlag(0!=(0x80&value1));
+	SetZeroFlag(0==value1);
+	SetParityFlag(CheckParity(value1&0xFF));
+}
+void i486DX::SubWordOrDword(int operandSize,unsigned int &value1,unsigned int value2)
+{
+	if(16==operandSize)
+	{
+		SubWord(value1,value2);
+	}
+	else
+	{
+		SubDword(value1,value2);
+	}
+}
+void i486DX::SubDword(unsigned int &value1,unsigned int value2)
+{
+	auto prevValue=value1&0xffffffff;
+	value1=(value1-value2)&0xffffffff;
+	SetOverflowFlag(prevValue>=0x80000000 && 0x80000000>value1);
+	SetSignFlag(0!=(value1&0x80000000));
+	SetZeroFlag(0==value1);
+	SetAuxCarryFlag((prevValue&0xFF)>=0x10 && (value1&0xFF)<=0x10);
+	SetCarryFlag(value1>prevValue);
+	SetParityFlag(CheckParity(value1&0xFF));
+}
+void i486DX::SubWord(unsigned int &value1,unsigned int value2)
+{
+	auto prevValue=value1&0xffff;
+	value1=(value1-value2)&0xffff;
+	SetOverflowFlag(prevValue>=0x8000 && 0x8000>value1);
+	SetSignFlag(0!=(value1&0x8000));
+	SetZeroFlag(0==value1);
+	SetAuxCarryFlag((prevValue&0xFF)>=0x10 && (value1&0xFF)<=0x10);
+	SetCarryFlag(value1>prevValue);
+	SetParityFlag(CheckParity(value1&0xFF));
+}
+void i486DX::SubByte(unsigned int &value1,unsigned int value2)
+{
+	auto prevValue=value1&0xff;
+	value1=(value1-value2)&0xff;
+	SetOverflowFlag(prevValue>=0x80 && 0x80>value1);
+	SetSignFlag(0!=(value1&0x80));
+	SetZeroFlag(0==value1);
+	SetAuxCarryFlag((prevValue&0xFF)>=0x10 && (value1&0xFF)<=0x10);
+	SetCarryFlag(value1>prevValue);
+	SetParityFlag(CheckParity(value1&0xFF));
+}
+void i486DX::AdcWordOrDword(int operandSize,unsigned int &value1,unsigned int value2)
+{
+	if(16==operandSize)
+	{
+		AdcWord(value1,value2);
+	}
+	else
+	{
+		AdcDword(value1,value2);
+	}
+}
+void i486DX::AdcDword(unsigned int &value1,unsigned int value2)
+{
+	auto carry=(0!=(state.EFLAGS&EFLAGS_CARRY) ? 1 : 0);
+	auto prevValue=value1&0xffffffff;
+	value1=(value1+value2+carry)&0xffffffff;
+	SetOverflowFlag(prevValue<0x80000000 && 0x80000000<=value1);
+	SetSignFlag(0!=(value1&0x80000000));
+	SetZeroFlag(0==value1);
+	SetAuxCarryFlag((prevValue&0x0F)<(value1&0x0F));
+	SetCarryFlag(value1<prevValue);
+	SetParityFlag(CheckParity(value1&0xFF));
+}
+void i486DX::AdcWord(unsigned int &value1,unsigned int value2)
+{
+	auto carry=(0!=(state.EFLAGS&EFLAGS_CARRY) ? 1 : 0);
+	auto prevValue=value1&0xffff;
+	value1=(value1+value2+carry)&0xffff;
+	SetOverflowFlag(prevValue<0x8000 && 0x8000<=value1);
+	SetSignFlag(0!=(value1&0x8000));
+	SetZeroFlag(0==value1);
+	SetAuxCarryFlag((prevValue&0x0F)<(value1&0x0F));
+	SetCarryFlag(value1<prevValue);
+	SetParityFlag(CheckParity(value1&0xFF));
+}
+void i486DX::AdcByte(unsigned int &value1,unsigned int value2)
+{
+	auto carry=(0!=(state.EFLAGS&EFLAGS_CARRY) ? 1 : 0);
+	auto prevValue=value1&0xff;
+	value1=(value1+value2+carry)&0xff;
+	SetOverflowFlag(prevValue<0x80 && 0x80<=value1);
+	SetSignFlag(0!=(value1&0x80));
+	SetZeroFlag(0==value1);
+	SetAuxCarryFlag((prevValue&0x0F)<(value1&0x0F));
+	SetCarryFlag(value1<prevValue);
+	SetParityFlag(CheckParity(value1&0xFF));
+}
+void i486DX::SbbWordOrDword(int operandSize,unsigned int &value1,unsigned int value2)
+{
+	if(16==operandSize)
+	{
+		SbbWord(value1,value2);
+	}
+	else
+	{
+		SbbDword(value1,value2);
+	}
+}
+void i486DX::SbbDword(unsigned int &value1,unsigned int value2)
+{
+	auto carry=(0!=(state.EFLAGS&EFLAGS_CARRY) ? 1 : 0);
+	auto prevValue=value1&0xffffffff;
+	value1=(value1-value2-carry)&0xffffffff;
+	SetOverflowFlag(prevValue>=0x80000000 && 0x80000000>value1);
+	SetSignFlag(0!=(value1&0x80000000));
+	SetZeroFlag(0==value1);
+	SetAuxCarryFlag((prevValue&0xFF)>=0x10 && (value1&0xFF)<=0x10);
+	SetCarryFlag(value1>prevValue);
+	SetParityFlag(CheckParity(value1&0xFF));
+}
+void i486DX::SbbWord(unsigned int &value1,unsigned int value2)
+{
+	auto carry=(0!=(state.EFLAGS&EFLAGS_CARRY) ? 1 : 0);
+	auto prevValue=value1&0xffff;
+	value1=(value1-value2-carry)&0xffff;
+	SetOverflowFlag(prevValue>=0x8000 && 0x8000>value1);
+	SetSignFlag(0!=(value1&0x8000));
+	SetZeroFlag(0==value1);
+	SetAuxCarryFlag((prevValue&0xFF)>=0x10 && (value1&0xFF)<=0x10);
+	SetCarryFlag(value1>prevValue);
+	SetParityFlag(CheckParity(value1&0xFF));
+}
+void i486DX::SbbByte(unsigned int &value1,unsigned int value2)
+{
+	auto carry=(0!=(state.EFLAGS&EFLAGS_CARRY) ? 1 : 0);
+	auto prevValue=value1&0xff;
+	value1=(value1-value2-carry)&0xff;
+	SetOverflowFlag(prevValue>=0x80 && 0x80>value1);
+	SetSignFlag(0!=(value1&0x80));
+	SetZeroFlag(0==value1);
+	SetAuxCarryFlag((prevValue&0xFF)>=0x10 && (value1&0xFF)<=0x10);
+	SetCarryFlag(value1>prevValue);
+	SetParityFlag(CheckParity(value1&0xFF));
+}
+void i486DX::OrWordOrDword(int operandSize,unsigned int &value1,unsigned int value2)
+{
+	if(16==operandSize)
+	{
+		OrWord(value1,value2);
+	}
+	else
+	{
+		OrDword(value1,value2);
+	}
+}
+void i486DX::OrDword(unsigned int &value1,unsigned int value2)
+{
+	SetCarryFlag(false);
+	SetOverflowFlag(false);
+	value1|=value2;
+	SetSignFlag(0!=(0x80000000&value1));
+	SetZeroFlag(0==value1);
+	SetParityFlag(CheckParity(value1&0xFF));
+}
+void i486DX::OrWord(unsigned int &value1,unsigned int value2)
+{
+	SetCarryFlag(false);
+	SetOverflowFlag(false);
+	value1|=value2;
+	value1&=0xFFFF;
+	SetSignFlag(0!=(0x8000&value1));
+	SetZeroFlag(0==value1);
+	SetParityFlag(CheckParity(value1&0xFF));
+}
+void i486DX::OrByte(unsigned int &value1,unsigned int value2)
+{
+	SetCarryFlag(false);
+	SetOverflowFlag(false);
+	value1|=value2;
+	value1&=0xFF;
+	SetSignFlag(0!=(0x80&value1));
+	SetZeroFlag(0==value1);
+	SetParityFlag(CheckParity(value1&0xFF));
+}
 void i486DX::XorWordOrDword(int operandSize,unsigned int &value1,unsigned int value2)
 {
 	if(16==operandSize)
@@ -458,6 +734,8 @@ void i486DX::XorByte(unsigned int &value1,unsigned int value2)
 	SetZeroFlag(0==value1);
 	SetParityFlag(CheckParity(value1&0xFF));
 }
+
+
 
 i486DX::OperandValue i486DX::EvaluateOperand(
     const Memory &mem,int addressSize,int segmentOverride,const Operand &op,int destinationBytes) const
@@ -728,19 +1006,117 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 			value.byteData[4]=(state.LDT.limit&255);
 			value.byteData[5]=((state.LDT.limit>>8)&255);
 			break;
-		case REG_TR:
-			Abort("i486DX::EvaluateOperand, Check TR Byte Order");
+		case REG_TR0:
+			Abort("i486DX::EvaluateOperand, Check TR0 Byte Order");
 			value.numBytes=10;
-			value.byteData[0]=(state.TR.linearBaseAddr&255);
-			value.byteData[1]=((state.TR.linearBaseAddr>>8)&255);
-			value.byteData[2]=((state.TR.linearBaseAddr>>16)&255);
-			value.byteData[3]=((state.TR.linearBaseAddr>>24)&255);
-			value.byteData[4]=(state.TR.limit&255);
-			value.byteData[5]=((state.TR.limit>>8)&255);
-			value.byteData[6]=(state.TR.selector&255);
-			value.byteData[7]=((state.TR.selector>>8)&255);
-			value.byteData[8]=(state.TR.attrib&255);
-			value.byteData[9]=((state.TR.attrib>>8)&255);
+			value.byteData[0]=(state.TR0.linearBaseAddr&255);
+			value.byteData[1]=((state.TR0.linearBaseAddr>>8)&255);
+			value.byteData[2]=((state.TR0.linearBaseAddr>>16)&255);
+			value.byteData[3]=((state.TR0.linearBaseAddr>>24)&255);
+			value.byteData[4]=(state.TR0.limit&255);
+			value.byteData[5]=((state.TR0.limit>>8)&255);
+			value.byteData[6]=(state.TR0.selector&255);
+			value.byteData[7]=((state.TR0.selector>>8)&255);
+			value.byteData[8]=(state.TR0.attrib&255);
+			value.byteData[9]=((state.TR0.attrib>>8)&255);
+			break;
+		case REG_TR1:
+			Abort("i486DX::EvaluateOperand, Check TR1 Byte Order");
+			value.numBytes=10;
+			value.byteData[0]=(state.TR1.linearBaseAddr&255);
+			value.byteData[1]=((state.TR1.linearBaseAddr>>8)&255);
+			value.byteData[2]=((state.TR1.linearBaseAddr>>16)&255);
+			value.byteData[3]=((state.TR1.linearBaseAddr>>24)&255);
+			value.byteData[4]=(state.TR1.limit&255);
+			value.byteData[5]=((state.TR1.limit>>8)&255);
+			value.byteData[6]=(state.TR1.selector&255);
+			value.byteData[7]=((state.TR1.selector>>8)&255);
+			value.byteData[8]=(state.TR1.attrib&255);
+			value.byteData[9]=((state.TR1.attrib>>8)&255);
+			break;
+		case REG_TR2:
+			Abort("i486DX::EvaluateOperand, Check TR2 Byte Order");
+			value.numBytes=10;
+			value.byteData[0]=(state.TR2.linearBaseAddr&255);
+			value.byteData[1]=((state.TR2.linearBaseAddr>>8)&255);
+			value.byteData[2]=((state.TR2.linearBaseAddr>>16)&255);
+			value.byteData[3]=((state.TR2.linearBaseAddr>>24)&255);
+			value.byteData[4]=(state.TR2.limit&255);
+			value.byteData[5]=((state.TR2.limit>>8)&255);
+			value.byteData[6]=(state.TR2.selector&255);
+			value.byteData[7]=((state.TR2.selector>>8)&255);
+			value.byteData[8]=(state.TR2.attrib&255);
+			value.byteData[9]=((state.TR2.attrib>>8)&255);
+			break;
+		case REG_TR3:
+			Abort("i486DX::EvaluateOperand, Check TR3 Byte Order");
+			value.numBytes=10;
+			value.byteData[0]=(state.TR3.linearBaseAddr&255);
+			value.byteData[1]=((state.TR3.linearBaseAddr>>8)&255);
+			value.byteData[2]=((state.TR3.linearBaseAddr>>16)&255);
+			value.byteData[3]=((state.TR3.linearBaseAddr>>24)&255);
+			value.byteData[4]=(state.TR3.limit&255);
+			value.byteData[5]=((state.TR3.limit>>8)&255);
+			value.byteData[6]=(state.TR3.selector&255);
+			value.byteData[7]=((state.TR3.selector>>8)&255);
+			value.byteData[8]=(state.TR3.attrib&255);
+			value.byteData[9]=((state.TR3.attrib>>8)&255);
+			break;
+		case REG_TR4:
+			Abort("i486DX::EvaluateOperand, Check TR4 Byte Order");
+			value.numBytes=10;
+			value.byteData[0]=(state.TR4.linearBaseAddr&255);
+			value.byteData[1]=((state.TR4.linearBaseAddr>>8)&255);
+			value.byteData[2]=((state.TR4.linearBaseAddr>>16)&255);
+			value.byteData[3]=((state.TR4.linearBaseAddr>>24)&255);
+			value.byteData[4]=(state.TR4.limit&255);
+			value.byteData[5]=((state.TR4.limit>>8)&255);
+			value.byteData[6]=(state.TR4.selector&255);
+			value.byteData[7]=((state.TR4.selector>>8)&255);
+			value.byteData[8]=(state.TR4.attrib&255);
+			value.byteData[9]=((state.TR4.attrib>>8)&255);
+			break;
+		case REG_TR5:
+			Abort("i486DX::EvaluateOperand, Check TR5 Byte Order");
+			value.numBytes=10;
+			value.byteData[0]=(state.TR5.linearBaseAddr&255);
+			value.byteData[1]=((state.TR5.linearBaseAddr>>8)&255);
+			value.byteData[2]=((state.TR5.linearBaseAddr>>16)&255);
+			value.byteData[3]=((state.TR5.linearBaseAddr>>24)&255);
+			value.byteData[4]=(state.TR5.limit&255);
+			value.byteData[5]=((state.TR5.limit>>8)&255);
+			value.byteData[6]=(state.TR5.selector&255);
+			value.byteData[7]=((state.TR5.selector>>8)&255);
+			value.byteData[8]=(state.TR5.attrib&255);
+			value.byteData[9]=((state.TR5.attrib>>8)&255);
+			break;
+		case REG_TR6:
+			Abort("i486DX::EvaluateOperand, Check TR6 Byte Order");
+			value.numBytes=10;
+			value.byteData[0]=(state.TR6.linearBaseAddr&255);
+			value.byteData[1]=((state.TR6.linearBaseAddr>>8)&255);
+			value.byteData[2]=((state.TR6.linearBaseAddr>>16)&255);
+			value.byteData[3]=((state.TR6.linearBaseAddr>>24)&255);
+			value.byteData[4]=(state.TR6.limit&255);
+			value.byteData[5]=((state.TR6.limit>>8)&255);
+			value.byteData[6]=(state.TR6.selector&255);
+			value.byteData[7]=((state.TR6.selector>>8)&255);
+			value.byteData[8]=(state.TR6.attrib&255);
+			value.byteData[9]=((state.TR6.attrib>>8)&255);
+			break;
+		case REG_TR7:
+			Abort("i486DX::EvaluateOperand, Check TR7 Byte Order");
+			value.numBytes=10;
+			value.byteData[0]=(state.TR7.linearBaseAddr&255);
+			value.byteData[1]=((state.TR7.linearBaseAddr>>8)&255);
+			value.byteData[2]=((state.TR7.linearBaseAddr>>16)&255);
+			value.byteData[3]=((state.TR7.linearBaseAddr>>24)&255);
+			value.byteData[4]=(state.TR7.limit&255);
+			value.byteData[5]=((state.TR7.limit>>8)&255);
+			value.byteData[6]=(state.TR7.selector&255);
+			value.byteData[7]=((state.TR7.selector>>8)&255);
+			value.byteData[8]=(state.TR7.attrib&255);
+			value.byteData[9]=((state.TR7.attrib>>8)&255);
 			break;
 		case REG_IDTR:
 			Abort("i486DX::EvaluateOperand, Check IDTR Byte Order");
@@ -1054,7 +1430,28 @@ void i486DX::StoreOperandValue(
 		case REG_LDT:
 			Abort("i486DX::StoreOperandValue, Check LDT Byte Order");
 			break;
-		case REG_TR:
+		case REG_TR0:
+			Abort("i486DX::StoreOperandValue, Check TR Byte Order");
+			break;
+		case REG_TR1:
+			Abort("i486DX::StoreOperandValue, Check TR Byte Order");
+			break;
+		case REG_TR2:
+			Abort("i486DX::StoreOperandValue, Check TR Byte Order");
+			break;
+		case REG_TR3:
+			Abort("i486DX::StoreOperandValue, Check TR Byte Order");
+			break;
+		case REG_TR4:
+			Abort("i486DX::StoreOperandValue, Check TR Byte Order");
+			break;
+		case REG_TR5:
+			Abort("i486DX::StoreOperandValue, Check TR Byte Order");
+			break;
+		case REG_TR6:
+			Abort("i486DX::StoreOperandValue, Check TR Byte Order");
+			break;
+		case REG_TR7:
 			Abort("i486DX::StoreOperandValue, Check TR Byte Order");
 			break;
 		case REG_IDTR:

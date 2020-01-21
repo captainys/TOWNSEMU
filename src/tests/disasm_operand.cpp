@@ -127,6 +127,11 @@ int main(int ac,char *av[])
 	{
 		return 1;
 	}
+	const unsigned char test32_12and[]={0xE3,0x77};
+	if(true!=TestDisassembly(32,32,0x80,sizeof(test32_12and),test32_12and,towns,"AND     BL,77H"))
+	{
+		return 1;
+	}
 	const unsigned char test32_13[]={0xB4,0x97,0x67,0x45,0x23,0x01,0x86};
 	if(true!=TestDisassembly(32,32,0x80,sizeof(test32_13),test32_13,towns,"XOR     BYTE PTR [EDI+EDX*4+01234567H],86H"))
 	{
@@ -134,6 +139,11 @@ int main(int ac,char *av[])
 	}
 	const unsigned char test32_15[]={0xF3,0x67,0x45,0x23,0x01};
 	if(true!=TestDisassembly(32,32,0x81,sizeof(test32_15),test32_15,towns,"XOR     EBX,01234567H"))
+	{
+		return 1;
+	}
+	const unsigned char test32_15and[]={0xE3,0x67,0x45,0x23,0x01};
+	if(true!=TestDisassembly(32,32,0x81,sizeof(test32_15and),test32_15and,towns,"AND     EBX,01234567H"))
 	{
 		return 1;
 	}

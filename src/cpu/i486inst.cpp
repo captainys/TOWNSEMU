@@ -11,6 +11,8 @@ bool i486DX::OpCodeNeedsOneMoreByte(unsigned int firstByte) const
 	switch(firstByte)
 	{
 	case I486_OPCODE_NEED_SECOND_BYTE:
+	case I486_OPCODE_NEED_SECOND_BYTE_AAD://_=0xD5,
+	case I486_OPCODE_NEED_SECOND_BYTE_AAM://_=0xD4,
 		return true;
 	}
 	return false;
@@ -231,6 +233,21 @@ void i486DX::FetchOperand(Instruction &inst,SegmentRegister seg,int offset,const
 		FetchOperand16(inst,seg,offset,mem);
 		break;
 
+
+	case I486_OPCODE_BINARYOP_RM8_FROM_I8:
+		offset+=FetchOperandRM(inst,seg,offset,mem);
+		FetchOperand8(inst,seg,offset,mem);
+		break;
+	case I486_OPCODE_BINARYOP_R_FROM_I:
+		offset+=FetchOperandRM(inst,seg,offset,mem);
+		FetchOperand16or32(inst,seg,offset,mem);
+		break;
+	case I486_OPCODE_BINARYOP_RM_FROM_SXI8:
+		offset+=FetchOperandRM(inst,seg,offset,mem);
+		FetchOperand8(inst,seg,offset,mem);
+		break;
+
+
 	case I486_OPCODE_MOV_FROM_R8: //      0x88,
 		// Example:  88 4c ff        MOV CL,[SI-1]     In Real Mode
 		// Example:  88 10           MOV DL,[BX+SI]    In Real Mode
@@ -291,6 +308,19 @@ void i486DX::FetchOperand(Instruction &inst,SegmentRegister seg,int offset,const
 		FetchOperand16or32(inst,seg,offset,mem);
 		break;
 
+
+	case I486_OPCODE_MOV_TO_CR://        0x220F,
+	case I486_OPCODE_MOV_FROM_CR://      0x200F,
+	case I486_OPCODE_MOV_FROM_DR://      0x210F,
+	case I486_OPCODE_MOV_TO_DR://        0x230F,
+	case I486_OPCODE_MOV_FROM_TR://      0x240F,
+	case I486_OPCODE_MOV_TO_TR://        0x260F,
+		inst.operandSize=32; // [1] pp.26-213 32bit operands are always used with these instructions, 
+		                     //      regardless of the opreand-size attribute.
+		FetchOperandRM(inst,seg,offset,mem);
+		break;
+
+
 	case I486_OPCODE_OUT_I8_AL: //        0xE6,
 	case I486_OPCODE_OUT_I8_A: //         0xE7,
 		FetchOperand8(inst,seg,offset,mem);
@@ -299,28 +329,23 @@ void i486DX::FetchOperand(Instruction &inst,SegmentRegister seg,int offset,const
 	case I486_OPCODE_OUT_DX_A: //         0xEF,
 		break;
 
+
 	case I486_OPCODE_XOR_AL_FROM_I8:
+	case I486_OPCODE_AND_AL_FROM_I8://  0x24,
 		FetchOperand8(inst,seg,offset,mem);
 		break;
 	case I486_OPCODE_XOR_A_FROM_I:
+	case I486_OPCODE_AND_A_FROM_I://    0x25,
 		FetchOperand16or32(inst,seg,offset,mem);
-		break;
-	case I486_OPCODE_XOR_RM8_FROM_I8:
-		offset+=FetchOperandRM(inst,seg,offset,mem);
-		FetchOperand8(inst,seg,offset,mem);
-		break;
-	case I486_OPCODE_XOR_R_FROM_I:
-		offset+=FetchOperandRM(inst,seg,offset,mem);
-		FetchOperand16or32(inst,seg,offset,mem);
-		break;
-	case I486_OPCODE_XOR_RM_FROM_SXI8:
-		offset+=FetchOperandRM(inst,seg,offset,mem);
-		FetchOperand8(inst,seg,offset,mem);
 		break;
 	case I486_OPCODE_XOR_RM8_FROM_R8:
+	case I486_OPCODE_AND_RM8_FROM_R8:// 0x20,
 	case I486_OPCODE_XOR_RM_FROM_R:
+	case I486_OPCODE_AND_RM_FROM_R://   0x21,
 	case I486_OPCODE_XOR_R8_FROM_RM8:
+	case I486_OPCODE_AND_R8_FROM_RM8:// 0x22,
 	case I486_OPCODE_XOR_R_FROM_RM:
+	case I486_OPCODE_AND_R_FROM_RM://   0x23,
 		FetchOperandRM(inst,seg,offset,mem);
 		break;
 
@@ -372,6 +397,29 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 	case I486_OPCODE_JMP_FAR:
 		op1.DecodeFarAddr(addressSize,operandSize,operand);
 		break;
+
+
+	case I486_OPCODE_BINARYOP_RM8_FROM_I8: //  0x80, // AND(REG=4), OR(REG=1), or XOR(REG=6) depends on the REG field of MODR/M
+		op1.Decode(addressSize,8,operand);
+		op2.MakeImm8(*this);
+		break;
+	case I486_OPCODE_BINARYOP_R_FROM_I://     0x81,
+		op1.Decode(addressSize,operandSize,operand);
+		op2.MakeImm16or32(*this,operandSize);
+		break;
+	case I486_OPCODE_BINARYOP_RM_FROM_SXI8:// 0x83,
+		op1.Decode(addressSize,operandSize,operand);
+		op2.MakeImm8(*this);
+		if(16==operandSize)
+		{
+			op2.SignExtendImm(OPER_IMM16);
+		}
+		else
+		{
+			op2.SignExtendImm(OPER_IMM32);
+		}
+		break;
+
 
 	case I486_OPCODE_MOV_FROM_R8: //      0x88,
 		op1.Decode(addressSize,8,operand);
@@ -451,6 +499,33 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 		op2.MakeImm16or32(*this,operandSize);
 		break;
 
+
+	case I486_OPCODE_MOV_TO_CR://        0x220F,  Op1=CR, OP2=R32
+		op1.DecodeMODR_MForCRRegister(operand[0]);
+		op2.Decode(addressSize,32,operand);
+		break;
+	case I486_OPCODE_MOV_FROM_CR://      0x200F,  Op1=R32, Op2=CR
+		op1.Decode(addressSize,32,operand);
+		op2.DecodeMODR_MForCRRegister(operand[0]);
+		break;
+	case I486_OPCODE_MOV_FROM_DR://      0x210F,  Op1=R32, Op2=DR
+		op1.Decode(addressSize,32,operand);
+		op2.DecodeMODR_MForDRRegister(operand[0]);
+		break;
+	case I486_OPCODE_MOV_TO_DR://        0x230F,  Op1=DR, Op2=R32
+		op1.DecodeMODR_MForDRRegister(operand[0]);
+		op2.Decode(addressSize,32,operand);
+		break;
+	case I486_OPCODE_MOV_FROM_TR://      0x240F,  Op1=R32, Op2=TR
+		op1.Decode(addressSize,32,operand);
+		op2.DecodeMODR_MForTRRegister(operand[0]);
+		break;
+	case I486_OPCODE_MOV_TO_TR://        0x260F,  Op1=TR, Op2=R32
+		op1.DecodeMODR_MForTRRegister(operand[0]);
+		op2.Decode(addressSize,32,operand);
+		break;
+
+
 	case I486_OPCODE_OUT_I8_AL: //        0xE6,
 	case I486_OPCODE_OUT_I8_A: //         0xE7,
 		op1.MakeImm8(*this);
@@ -461,44 +536,30 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 
 
 	case I486_OPCODE_XOR_AL_FROM_I8:
+	case I486_OPCODE_AND_AL_FROM_I8://  0x24,
 		op1.MakeImm8(*this);
 		break;
 	case I486_OPCODE_XOR_A_FROM_I:
+	case I486_OPCODE_AND_A_FROM_I://    0x25,
 		op1.MakeImm16or32(*this,operandSize);
 		break;
-	case I486_OPCODE_XOR_RM8_FROM_I8:
-		op1.Decode(addressSize,8,operand);
-		op2.MakeImm8(*this);
-		break;
-	case I486_OPCODE_XOR_R_FROM_I:
-		op1.Decode(addressSize,operandSize,operand);
-		op2.MakeImm16or32(*this,operandSize);
-		break;
-	case I486_OPCODE_XOR_RM_FROM_SXI8:
-		op1.Decode(addressSize,operandSize,operand);
-		op2.MakeImm8(*this);
-		if(16==operandSize)
-		{
-			op2.SignExtendImm(OPER_IMM16);
-		}
-		else
-		{
-			op2.SignExtendImm(OPER_IMM32);
-		}
-		break;
 	case I486_OPCODE_XOR_RM8_FROM_R8:
+	case I486_OPCODE_AND_RM8_FROM_R8:// 0x20,
 		op2.DecodeMODR_MForRegister(8,operand[0]);
 		op1.Decode(addressSize,8,operand);
 		break;
 	case I486_OPCODE_XOR_RM_FROM_R:
+	case I486_OPCODE_AND_RM_FROM_R://   0x21,
 		op2.DecodeMODR_MForRegister(operandSize,operand[0]);
 		op1.Decode(addressSize,operandSize,operand);
 		break;
 	case I486_OPCODE_XOR_R8_FROM_RM8:
+	case I486_OPCODE_AND_R8_FROM_RM8:// 0x22,
 		op1.DecodeMODR_MForRegister(8,operand[0]);
 		op2.Decode(addressSize,8,operand);
 		break;
 	case I486_OPCODE_XOR_R_FROM_RM:
+	case I486_OPCODE_AND_R_FROM_RM://   0x23,
 		op1.DecodeMODR_MForRegister(operandSize,operand[0]);
 		op2.Decode(addressSize,operandSize,operand);
 		break;
@@ -521,6 +582,27 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		break;
 	case I486_OPCODE_CLI:
 		disasm="CLI";
+		break;
+
+
+	case I486_OPCODE_AND_AL_FROM_I8:
+		disasm="AND     AL,"+op1.Disassemble();
+		break;
+	case I486_OPCODE_AND_A_FROM_I:
+		if(16==operandSize)
+		{
+			disasm="AND     AX,"+op1.Disassemble();;
+		}
+		else
+		{
+			disasm="AND     EAX,"+op1.Disassemble();;
+		}
+		break;
+	case I486_OPCODE_AND_RM8_FROM_R8:
+	case I486_OPCODE_AND_RM_FROM_R:
+	case I486_OPCODE_AND_R8_FROM_RM8:
+	case I486_OPCODE_AND_R_FROM_RM:
+		disasm=DisassembleTypicalTwoOperands("AND",op1,op2);
 		break;
 
 
@@ -592,6 +674,42 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		break;
 
 
+	case I486_OPCODE_BINARYOP_RM8_FROM_I8://=  0x80, // AND(REG=4), OR(REG=1), or XOR(REG=6) depends on the REG field of MODR/M
+	case I486_OPCODE_BINARYOP_R_FROM_I://=     0x81,
+	case I486_OPCODE_BINARYOP_RM_FROM_SXI8://= 0x83,
+		switch((operand[0]>>3)&7) // REG
+		{
+		case 0:
+			disasm=DisassembleTypicalTwoOperands("ADD",op1,op2);
+			break;
+		case 1:
+			disasm=DisassembleTypicalTwoOperands("OR",op1,op2);
+			break;
+		case 2:
+			disasm=DisassembleTypicalTwoOperands("ADC",op1,op2);
+			break;
+		case 3:
+			disasm=DisassembleTypicalTwoOperands("SBB",op1,op2);
+			break;
+		case 4:
+			disasm=DisassembleTypicalTwoOperands("AND",op1,op2);
+			break;
+		case 5:
+			disasm=DisassembleTypicalTwoOperands("SUB",op1,op2);
+			break;
+		case 6:
+			disasm=DisassembleTypicalTwoOperands("XOR",op1,op2);
+			break;
+		case 7:
+			disasm=DisassembleTypicalTwoOperands("CMP",op1,op2);
+			break;
+		default:
+			disasm=DisassembleTypicalTwoOperands(cpputil::Ubtox(opCode)+"?",op1,op2);
+			break;
+		}
+		break;
+
+
 	case I486_OPCODE_MOV_FROM_R8: //      0x88,
 	case I486_OPCODE_MOV_FROM_R: //       0x89, // 16/32 depends on OPSIZE_OVERRIDE
 	case I486_OPCODE_MOV_TO_R8: //        0x8A,
@@ -620,6 +738,14 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 	case I486_OPCODE_MOV_I_TO_EDI: //     0xBF, // 16/32 depends on OPSIZE_OVERRIDE
 	case I486_OPCODE_MOV_I8_TO_RM8: //    0xC6,
 	case I486_OPCODE_MOV_I_TO_RM: //      0xC7, // 16/32 depends on OPSIZE_OVERRIDE
+
+	case I486_OPCODE_MOV_TO_CR://        0x220F,
+	case I486_OPCODE_MOV_FROM_CR://      0x200F,
+	case I486_OPCODE_MOV_FROM_DR://      0x210F,
+	case I486_OPCODE_MOV_TO_DR://        0x230F,
+	case I486_OPCODE_MOV_FROM_TR://      0x240F,
+	case I486_OPCODE_MOV_TO_TR://        0x260F,
+
 		disasm=DisassembleTypicalTwoOperands("MOV",op1,op2);
 		break;
 
@@ -670,9 +796,6 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 			disasm="XOR     EAX,"+op1.Disassemble();;
 		}
 		break;
-	case I486_OPCODE_XOR_RM8_FROM_I8:
-	case I486_OPCODE_XOR_R_FROM_I:
-	case I486_OPCODE_XOR_RM_FROM_SXI8:
 	case I486_OPCODE_XOR_RM8_FROM_R8:
 	case I486_OPCODE_XOR_RM_FROM_R:
 	case I486_OPCODE_XOR_R8_FROM_RM8:
@@ -917,6 +1040,111 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			EIPChanged=true;
 		}
 		break;
+
+
+	case I486_OPCODE_BINARYOP_RM8_FROM_I8://=  0x80, // AND(REG=4), OR(REG=1), or XOR(REG=6) depends on the REG field of MODR/M
+		{
+			auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,1);
+			auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,1);
+			auto i=value1.GetAsDword();
+			auto REG=(inst.operand[0]>>3)&7;
+			switch(REG)
+			{
+			case 0:
+				AddByte(i,value2.GetAsDword());
+				break;
+			case 1:
+				OrByte(i,value2.GetAsDword());
+				break;
+			case 2:
+				AdcByte(i,value2.GetAsDword());
+				break;
+			case 3:
+				SbbByte(i,value2.GetAsDword());
+				break;
+			case 4:
+				AndByte(i,value2.GetAsDword());
+				break;
+			case 5:
+				SubByte(i,value2.GetAsDword());
+				break;
+			case 6:
+				XorByte(i,value2.GetAsDword());
+				break;
+			case 7: // CMP
+				SubByte(i,value2.GetAsDword());
+				break;
+			}
+			if(7!=REG) // Don't store a value if it is CMP
+			{
+				value1.SetDword(i);
+				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+			}
+
+			if(op1.operandType==OPER_ADDR || op2.operandType==OPER_ADDR)
+			{
+				clocksPassed=3;
+			}
+			else
+			{
+				clocksPassed=1;
+			}
+		}
+	case I486_OPCODE_BINARYOP_R_FROM_I://=     0x81,
+	case I486_OPCODE_BINARYOP_RM_FROM_SXI8://= 0x83, Sign of op2 is already extended when decoded.
+		{
+			auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+			auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize/8);
+			auto i=value1.GetAsDword();
+			auto REG=(inst.operand[0]>>3)&7;
+			switch(REG)
+			{
+			case 0:
+				AddWordOrDword(inst.operandSize,i,value2.GetAsDword());
+				break;
+			case 1:
+				OrWordOrDword(inst.operandSize,i,value2.GetAsDword());
+				break;
+			case 2:
+				AdcWordOrDword(inst.operandSize,i,value2.GetAsDword());
+				break;
+			case 3:
+				SbbWordOrDword(inst.operandSize,i,value2.GetAsDword());
+				break;
+			case 4:
+				AndWordOrDword(inst.operandSize,i,value2.GetAsDword());
+				break;
+			case 5:
+				SubWordOrDword(inst.operandSize,i,value2.GetAsDword());
+				break;
+			case 6:
+				XorWordOrDword(inst.operandSize,i,value2.GetAsDword());
+				break;
+			case 7:
+				SubWordOrDword(inst.operandSize,i,value2.GetAsDword());
+				break;
+			default:
+				Abort("Binary-operator not implemented yet.\n");
+				break;
+			}
+			if(7!=REG) // Don't store a value if it is CMP
+			{
+				value1.SetDword(i);
+				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+			}
+
+			if(op1.operandType==OPER_ADDR || op2.operandType==OPER_ADDR)
+			{
+				clocksPassed=3;
+			}
+			else
+			{
+				clocksPassed=1;
+			}
+		}
+		break;
+
+
 	case I486_OPCODE_MOV_FROM_SEG: //     0x8C,
 		Move(mem,inst.addressSize,inst.segOverride,op1,op2);
 		clocksPassed=3;
@@ -960,6 +1188,31 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_OPCODE_MOV_I_TO_RM: //      0xC7, // 16/32 depends on OPSIZE_OVERRIDE
 		Move(mem,inst.addressSize,inst.segOverride,op1,op2);
 		clocksPassed=1;
+		break;
+
+	case I486_OPCODE_MOV_TO_CR://        0x220F,
+		Move(mem,inst.addressSize,inst.segOverride,op1,op2);
+		clocksPassed=16;
+		break;
+	case I486_OPCODE_MOV_FROM_CR://      0x200F,
+		Move(mem,inst.addressSize,inst.segOverride,op1,op2);
+		clocksPassed=4;
+		break;
+	case I486_OPCODE_MOV_FROM_DR://      0x210F,
+		Move(mem,inst.addressSize,inst.segOverride,op1,op2);
+		clocksPassed=10;
+		break;
+	case I486_OPCODE_MOV_TO_DR://        0x230F,
+		Move(mem,inst.addressSize,inst.segOverride,op1,op2);
+		clocksPassed=11;
+		break;
+	case I486_OPCODE_MOV_FROM_TR://      0x240F,
+		Move(mem,inst.addressSize,inst.segOverride,op1,op2);
+		clocksPassed=4;  // 3 for TR3 strictly speaking.
+		break;
+	case I486_OPCODE_MOV_TO_TR://        0x260F,
+		Move(mem,inst.addressSize,inst.segOverride,op1,op2);
+		clocksPassed=4;  // 6 for TR6 strictly speaking.
 		break;
 
 	case I486_OPCODE_OUT_I8_AL: //        0xE6,
@@ -1022,24 +1275,41 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 
 
-
 	case I486_OPCODE_XOR_AL_FROM_I8:
+	case I486_OPCODE_AND_AL_FROM_I8://  0x24,
 		{
 			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,1);
 			auto al=GetAL();
 			auto v=value.GetAsDword();
-			XorByte(al,v);
+			switch(inst.opCode)
+			{
+			case I486_OPCODE_AND_AL_FROM_I8://  0x24,
+				AndByte(al,v);
+				break;
+			case I486_OPCODE_XOR_AL_FROM_I8:
+				XorByte(al,v);
+				break;
+			}
 			SetAL(al);
 			clocksPassed=1;
 		}
 		break;
 	case I486_OPCODE_XOR_A_FROM_I:
+	case I486_OPCODE_AND_A_FROM_I://    0x25,
 		if(16==inst.operandSize)
 		{
 			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
 			auto ax=GetAX();
 			auto v=value.GetAsDword();
-			XorWord(ax,v);
+			switch(inst.opCode)
+			{
+			case I486_OPCODE_AND_A_FROM_I://    0x25,
+				AndWord(ax,v);
+				break;
+			case I486_OPCODE_XOR_A_FROM_I:
+				XorWord(ax,v);
+				break;
+			}
 			SetAX(ax);
 		}
 		else
@@ -1047,19 +1317,38 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
 			auto eax=GetEAX();
 			auto v=value.GetAsDword();
-			XorDword(eax,v);
+			switch(inst.opCode)
+			{
+			case I486_OPCODE_AND_A_FROM_I://    0x25,
+				AndDword(eax,v);
+				break;
+			case I486_OPCODE_XOR_A_FROM_I:
+				XorDword(eax,v);
+				break;
+			}
 			SetEAX(eax);
 		}
 		clocksPassed=1;
 		break;
-	case I486_OPCODE_XOR_RM8_FROM_I8:
 	case I486_OPCODE_XOR_RM8_FROM_R8:
+	case I486_OPCODE_AND_RM8_FROM_R8:// 0x20,
 	case I486_OPCODE_XOR_R8_FROM_RM8:
+	case I486_OPCODE_AND_R8_FROM_RM8:// 0x22,
 		{
 			auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,1);
 			auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,1);
 			auto i=value1.GetAsDword();
-			XorByte(i,value2.GetAsDword());
+			switch(inst.opCode)
+			{
+			case I486_OPCODE_AND_RM8_FROM_R8:// 0x20,
+			case I486_OPCODE_AND_R8_FROM_RM8:// 0x22,
+				AndByte(i,value2.GetAsDword());
+				break;
+			case I486_OPCODE_XOR_RM8_FROM_R8:
+			case I486_OPCODE_XOR_R8_FROM_RM8:
+				XorByte(i,value2.GetAsDword());
+				break;
+			}
 			value1.SetDword(i);
 			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
 
@@ -1073,15 +1362,25 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			}
 		}
 		break;
-	case I486_OPCODE_XOR_R_FROM_I:
-	case I486_OPCODE_XOR_RM_FROM_SXI8: // Sign of op2 is already extended when decoded.
 	case I486_OPCODE_XOR_RM_FROM_R:
+	case I486_OPCODE_AND_RM_FROM_R://   0x21,
 	case I486_OPCODE_XOR_R_FROM_RM:
+	case I486_OPCODE_AND_R_FROM_RM://   0x23,
 		{
 			auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
 			auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize/8);
 			auto i=value1.GetAsDword();
-			XorWordOrDword(inst.operandSize,i,value2.GetAsDword());
+			switch(inst.opCode)
+			{
+			case I486_OPCODE_AND_RM_FROM_R://   0x21,
+			case I486_OPCODE_AND_R_FROM_RM://   0x23,
+				AndWordOrDword(inst.operandSize,i,value2.GetAsDword());
+				break;
+			case I486_OPCODE_XOR_RM_FROM_R:
+			case I486_OPCODE_XOR_R_FROM_RM:
+				XorWordOrDword(inst.operandSize,i,value2.GetAsDword());
+				break;
+			}
 			value1.SetDword(i);
 			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
 

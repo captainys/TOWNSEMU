@@ -64,7 +64,14 @@ public:
 
 		REG_GDT,
 		REG_LDT,
-		REG_TR,
+		REG_TR0,
+		REG_TR1,
+		REG_TR2,
+		REG_TR3,
+		REG_TR4,
+		REG_TR5,
+		REG_TR6,
+		REG_TR7,
 		REG_IDTR,
 		REG_CR0,
 		REG_CR1,
@@ -87,6 +94,9 @@ public:
 		REG_16BIT_REG_BASE=REG_AX,
 		REG_32BIT_REG_BASE=REG_EAX,
 		REG_SEGMENT_REG_BASE=REG_ES,
+		REG_CR_REG_BASE=REG_CR0,
+		REG_DR_REG_BASE=REG_DR0,
+		REG_TR_REG_BASE=REG_TR0,
 	};
 	static const char *const RegToStr[REG_TOTAL_NUMBER_OF_REGISTERS];
 
@@ -119,7 +129,7 @@ public:
 		unsigned int EFLAGS;   // bit 1=Always 1 ([1] pp.2-14)
 		SegmentRegister CS,DS,ES,SS,FS,GS;
 		SystemAddressRegister GDT,LDT;
-		SystemSegmentRegister TR,IDTR;
+		SystemSegmentRegister TR0,TR1,TR2,TR3,TR4,TR5,TR6,TR7,IDTR;
 		unsigned int CR0,CR1,CR2,CR3;
 		unsigned int DR0,DR1,DR2,DR3,DR4,DR5,DR6,DR7;
 
@@ -296,6 +306,15 @@ public:
 		/*! Decode operand and returns the number of bytes.
 		*/
 		void DecodeMODR_MForSegmentRegister(unsigned char MODR_M);
+		/*! Decode operand for a CR register.
+		*/
+		void DecodeMODR_MForCRRegister(unsigned char MODR_M);
+		/*! Decode operand for a DR register.
+		*/
+		void DecodeMODR_MForDRRegister(unsigned char MODR_M);
+		/*! Decode operand for a TR register.
+		*/
+		void DecodeMODR_MForTRRegister(unsigned char MODR_M);
 		/*! Decode operand and returns the number of bytes.
 		*/
 		void MakeByRegisterNumber(int dataSize,int regNum);
@@ -683,6 +702,14 @@ private:
 	*/
 	unsigned int FetchOperandRM(Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem) const;
 	/*! Fetch operand(s) for the instruction.
+	The following instruction:
+	    I486_OPCODE_MOV_TO_CR://        0x220F,
+	    I486_OPCODE_MOV_FROM_CR://      0x200F,
+	    I486_OPCODE_MOV_FROM_DR://      0x210F,
+	    I486_OPCODE_MOV_TO_DR://        0x230F,
+	    I486_OPCODE_MOV_FROM_TR://      0x240F,
+	    I486_OPCODE_MOV_TO_TR://        0x260F,
+	always set 32 to inst.operandSize regardless of the preceding operand-size override, or default operand size.
 	*/
 	void FetchOperand(Instruction &inst,SegmentRegister seg,int offset,const Memory &mem) const;
 
@@ -726,13 +753,63 @@ public:
 	void DecrementWord(unsigned int &value);
 	void DecrementByte(unsigned int &value);
 
-	/*! Xor a value.  It also clears CF and OF, and sets SF,ZF, and PF according to the result.
+
+	/*! Add a value.  OF,SF,ZF,AF,CF, and PF flags are set accoring to the result.
+	    operandSize needs to be 16 or 32.
+	*/ 
+	void AddWordOrDword(int operandSize,unsigned int &value1,unsigned int value2);
+	void AddDword(unsigned int &value1,unsigned int value2);
+	void AddWord(unsigned int &value1,unsigned int value2);
+	void AddByte(unsigned int &value1,unsigned int value2);
+	/*! Bitwise-And a value.  It also clears CF and OF, and sets SF,ZF, and PF according to the result.
+	    operandSize needs to be 16 or 32.
+	*/ 
+	void AndWordOrDword(int operandSize,unsigned int &value1,unsigned int value2);
+	void AndDword(unsigned int &value1,unsigned int value2);
+	void AndWord(unsigned int &value1,unsigned int value2);
+	void AndByte(unsigned int &value1,unsigned int value2);
+	/*! Add a value + carry flag.  OF,SF,ZF,AF,CF, and PF flags are set accoring to the result.
+	    operandSize needs to be 16 or 32.
+	*/ 
+	void AdcWordOrDword(int operandSize,unsigned int &value1,unsigned int value2);
+	void AdcDword(unsigned int &value1,unsigned int value2);
+	void AdcWord(unsigned int &value1,unsigned int value2);
+	void AdcByte(unsigned int &value1,unsigned int value2);
+	/*! Subtract (a value + carry flag).  OF,SF,ZF,AF,CF, and PF flags are set accoring to the result.
+	    operandSize needs to be 16 or 32.
+	*/ 
+	void SbbWordOrDword(int operandSize,unsigned int &value1,unsigned int value2);
+	void SbbDword(unsigned int &value1,unsigned int value2);
+	void SbbWord(unsigned int &value1,unsigned int value2);
+	void SbbByte(unsigned int &value1,unsigned int value2);
+	/*! Bitwise-Or a value.  It also clears CF and OF, and sets SF,ZF, and PF according to the result.
+	    operandSize needs to be 16 or 32.
+	*/ 
+	void OrWordOrDword(int operandSize,unsigned int &value1,unsigned int value2);
+	void OrDword(unsigned int &value1,unsigned int value2);
+	void OrWord(unsigned int &value1,unsigned int value2);
+	void OrByte(unsigned int &value1,unsigned int value2);
+	/*! Subtract a value.  OF,SF,ZF,AF,CF, and PF flags are set accoring to the result.
+	    operandSize needs to be 16 or 32.
+	*/ 
+	void SubWordOrDword(int operandSize,unsigned int &value1,unsigned int value2);
+	void SubDword(unsigned int &value1,unsigned int value2);
+	void SubWord(unsigned int &value1,unsigned int value2);
+	void SubByte(unsigned int &value1,unsigned int value2);
+	/*! Bitwise-Xor a value.  It also clears CF and OF, and sets SF,ZF, and PF according to the result.
 	    operandSize needs to be 16 or 32.
 	*/ 
 	void XorWordOrDword(int operandSize,unsigned int &value1,unsigned int value2);
 	void XorDword(unsigned int &value1,unsigned int value2);
 	void XorWord(unsigned int &value1,unsigned int value2);
 	void XorByte(unsigned int &value1,unsigned int value2);
+	/*! Compare two values and set OF,SF,ZF,AF,CF, and PF flags accoring to the result.
+	    operandSize needs to be 16 or 32.
+	*/ 
+	void CmpWordOrDword(int operandSize,unsigned int &value1,unsigned int value2);
+	void CmpDword(unsigned int &value1,unsigned int value2);
+	void CmpWord(unsigned int &value1,unsigned int value2);
+	void CmpByte(unsigned int &value1,unsigned int value2);
 
 
 	/*! Evaluates an operand.
