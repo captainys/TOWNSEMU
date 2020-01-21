@@ -173,6 +173,15 @@ std::vector <std::string> i486DX::GetStateText(void) const
 	    +"  AC"+cpputil::BoolToNumberStr(GetAC())
 	    );
 
+	if(true==state.exception)
+	{
+		text.push_back("!EXCEPTION!");
+	}
+	if(true==state.holdIRQ)
+	{
+		text.push_back("HOLD IRQ for 1 Instruction");
+	}
+
 	return text;
 }
 
