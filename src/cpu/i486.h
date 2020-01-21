@@ -259,6 +259,15 @@ public:
 
 		/*! Returns Unsigned Imm32 (last 4 byte in the operand) after decoding. */
 		unsigned int GetUimm32(void) const;
+
+		/*! Returns Signed Imm8 (last byte in the operand) after decoding. */
+		int GetSimm8(void) const;
+
+		/*! Returns Signed Imm16 (last 2 byte in the operand) after decoding. */
+		int GetSimm16(void) const;
+
+		/*! Returns Signed Imm32 (last 4 byte in the operand) after decoding. */
+		int GetSimm32(void) const;
 	};
 
 

@@ -74,6 +74,18 @@ PREFIX_DONE:
 		lastByte=FetchByte(seg,offset+inst.numBytes++,mem);
 		inst.opCode|=(lastByte<<8);
 	}
+	if(inst.opCode==0xDB)
+	{
+		auto nextByte=FetchByte(seg,offset+inst.numBytes,mem);
+		if(0xE3==nextByte
+		   // || ??==nextByte
+		)
+		{
+			lastByte=nextByte;
+			inst.opCode|=(lastByte<<8);
+			++inst.numBytes;
+		}
+	}
 
 	FetchOperand(inst,seg,offset+inst.numBytes,mem);
 
@@ -200,9 +212,15 @@ void i486DX::FetchOperand(Instruction &inst,SegmentRegister seg,int offset,const
 {
 	switch(inst.opCode)
 	{
+	case I486_OPCODE_F6_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF6
+	case I486_OPCODE_F7_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF7,
+		break;
+
+
 	case I486_OPCODE_CLD:
 	case I486_OPCODE_CLI:
 		break;
+
 
 	case I486_OPCODE_DEC_R_M8:
 	case I486_OPCODE_DEC_R_M:
@@ -219,12 +237,36 @@ void i486DX::FetchOperand(Instruction &inst,SegmentRegister seg,int offset,const
 		break;
 
 
+	case I486_OPCODE_FNINIT:
+		break;
+
+
 	case I486_OPCODE_IN_AL_I8://=        0xE4,
 	case I486_OPCODE_IN_A_I8://=         0xE5,
 		FetchOperand8(inst,seg,offset,mem);
 		break;
 	case I486_OPCODE_IN_AL_DX://=        0xEC,
 	case I486_OPCODE_IN_A_DX://=         0xED,
+		break;
+
+
+	case I486_OPCODE_JO_REL8:   // 0x70,
+	case I486_OPCODE_JNO_REL8:  // 0x71,
+	case I486_OPCODE_JB_REL8:   // 0x72,
+	case I486_OPCODE_JAE_REL8:  // 0x73,
+	case I486_OPCODE_JE_REL8:   // 0x74,
+	case I486_OPCODE_JNE_REL8:  // 0x75,
+	case I486_OPCODE_JBE_REL8:  // 0x76,
+	case I486_OPCODE_JA_REL8:   // 0x77,
+	case I486_OPCODE_JS_REL8:   // 0x78,
+	case I486_OPCODE_JNS_REL8:  // 0x79,
+	case I486_OPCODE_JP_REL8:   // 0x7A,
+	case I486_OPCODE_JNP_REL8:  // 0x7B,
+	case I486_OPCODE_JL_REL8:   // 0x7C,
+	case I486_OPCODE_JGE_REL8:  // 0x7D,
+	case I486_OPCODE_JLE_REL8:  // 0x7E,
+	case I486_OPCODE_JG_REL8:   // 0x7F,
+		FetchOperand8(inst,seg,offset,mem);
 		break;
 
 
@@ -330,24 +372,31 @@ void i486DX::FetchOperand(Instruction &inst,SegmentRegister seg,int offset,const
 		break;
 
 
-	case I486_OPCODE_XOR_AL_FROM_I8:
 	case I486_OPCODE_AND_AL_FROM_I8://  0x24,
+	case I486_OPCODE_TEST_AL_FROM_I8://  0xA8,
+	case I486_OPCODE_XOR_AL_FROM_I8:
 		FetchOperand8(inst,seg,offset,mem);
 		break;
-	case I486_OPCODE_XOR_A_FROM_I:
 	case I486_OPCODE_AND_A_FROM_I://    0x25,
+	case I486_OPCODE_TEST_A_FROM_I://    0xA9,
+	case I486_OPCODE_XOR_A_FROM_I:
 		FetchOperand16or32(inst,seg,offset,mem);
 		break;
-	case I486_OPCODE_XOR_RM8_FROM_R8:
 	case I486_OPCODE_AND_RM8_FROM_R8:// 0x20,
-	case I486_OPCODE_XOR_RM_FROM_R:
+	case I486_OPCODE_TEST_RM8_FROM_R8:// 0x84,
+	case I486_OPCODE_XOR_RM8_FROM_R8:
 	case I486_OPCODE_AND_RM_FROM_R://   0x21,
-	case I486_OPCODE_XOR_R8_FROM_RM8:
+	case I486_OPCODE_TEST_RM_FROM_R://   0x85,
+	case I486_OPCODE_XOR_RM_FROM_R:
 	case I486_OPCODE_AND_R8_FROM_RM8:// 0x22,
-	case I486_OPCODE_XOR_R_FROM_RM:
+	case I486_OPCODE_XOR_R8_FROM_RM8:
 	case I486_OPCODE_AND_R_FROM_RM://   0x23,
+	case I486_OPCODE_XOR_R_FROM_RM:
 		FetchOperandRM(inst,seg,offset,mem);
 		break;
+
+
+
 
 	default:
 		// Undefined operand, or probably not implemented yet.
@@ -362,8 +411,17 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 
 	switch(opCode)
 	{
+	case I486_OPCODE_F6_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF6
+	case I486_OPCODE_F7_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF7,
+		break;
+
+
 	case I486_OPCODE_CLD:
 	case I486_OPCODE_CLI:
+		break;
+
+
+	case I486_OPCODE_FNINIT:
 		break;
 
 
@@ -391,6 +449,25 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 		break;
 	case I486_OPCODE_IN_AL_DX://=        0xEC,
 	case I486_OPCODE_IN_A_DX://=         0xED,
+		break;
+
+
+	case I486_OPCODE_JO_REL8:   // 0x70,
+	case I486_OPCODE_JNO_REL8:  // 0x71,
+	case I486_OPCODE_JB_REL8:   // 0x72,
+	case I486_OPCODE_JAE_REL8:  // 0x73,
+	case I486_OPCODE_JE_REL8:   // 0x74,
+	case I486_OPCODE_JNE_REL8:  // 0x75,
+	case I486_OPCODE_JBE_REL8:  // 0x76,
+	case I486_OPCODE_JA_REL8:   // 0x77,
+	case I486_OPCODE_JS_REL8:   // 0x78,
+	case I486_OPCODE_JNS_REL8:  // 0x79,
+	case I486_OPCODE_JP_REL8:   // 0x7A,
+	case I486_OPCODE_JNP_REL8:  // 0x7B,
+	case I486_OPCODE_JL_REL8:   // 0x7C,
+	case I486_OPCODE_JGE_REL8:  // 0x7D,
+	case I486_OPCODE_JLE_REL8:  // 0x7E,
+	case I486_OPCODE_JG_REL8:   // 0x7F,
 		break;
 
 
@@ -535,34 +612,39 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 		break;
 
 
-	case I486_OPCODE_XOR_AL_FROM_I8:
 	case I486_OPCODE_AND_AL_FROM_I8://  0x24,
+	case I486_OPCODE_XOR_AL_FROM_I8:
+	case I486_OPCODE_TEST_AL_FROM_I8://  0xA8,
 		op1.MakeImm8(*this);
 		break;
-	case I486_OPCODE_XOR_A_FROM_I:
 	case I486_OPCODE_AND_A_FROM_I://    0x25,
+	case I486_OPCODE_TEST_A_FROM_I://    0xA9,
+	case I486_OPCODE_XOR_A_FROM_I:
 		op1.MakeImm16or32(*this,operandSize);
 		break;
-	case I486_OPCODE_XOR_RM8_FROM_R8:
 	case I486_OPCODE_AND_RM8_FROM_R8:// 0x20,
+	case I486_OPCODE_TEST_RM8_FROM_R8:// 0x84,
+	case I486_OPCODE_XOR_RM8_FROM_R8:
 		op2.DecodeMODR_MForRegister(8,operand[0]);
 		op1.Decode(addressSize,8,operand);
 		break;
-	case I486_OPCODE_XOR_RM_FROM_R:
 	case I486_OPCODE_AND_RM_FROM_R://   0x21,
+	case I486_OPCODE_TEST_RM_FROM_R://   0x85,
+	case I486_OPCODE_XOR_RM_FROM_R:
 		op2.DecodeMODR_MForRegister(operandSize,operand[0]);
 		op1.Decode(addressSize,operandSize,operand);
 		break;
-	case I486_OPCODE_XOR_R8_FROM_RM8:
 	case I486_OPCODE_AND_R8_FROM_RM8:// 0x22,
+	case I486_OPCODE_XOR_R8_FROM_RM8:
 		op1.DecodeMODR_MForRegister(8,operand[0]);
 		op2.Decode(addressSize,8,operand);
 		break;
-	case I486_OPCODE_XOR_R_FROM_RM:
 	case I486_OPCODE_AND_R_FROM_RM://   0x23,
+	case I486_OPCODE_XOR_R_FROM_RM:
 		op1.DecodeMODR_MForRegister(operandSize,operand[0]);
 		op2.Decode(addressSize,operandSize,operand);
 		break;
+
 	}
 }
 
@@ -585,6 +667,11 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		break;
 
 
+	case I486_OPCODE_FNINIT:
+		disasm="FNINIT";
+		break;
+
+
 	case I486_OPCODE_AND_AL_FROM_I8:
 		disasm="AND     AL,"+op1.Disassemble();
 		break;
@@ -603,6 +690,25 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 	case I486_OPCODE_AND_R8_FROM_RM8:
 	case I486_OPCODE_AND_R_FROM_RM:
 		disasm=DisassembleTypicalTwoOperands("AND",op1,op2);
+		break;
+
+
+	case I486_OPCODE_TEST_AL_FROM_I8:
+		disasm="TEST    AL,"+op1.Disassemble();
+		break;
+	case I486_OPCODE_TEST_A_FROM_I:
+		if(16==operandSize)
+		{
+			disasm="TEST    AX,"+op1.Disassemble();;
+		}
+		else
+		{
+			disasm="TEST    EAX,"+op1.Disassemble();;
+		}
+		break;
+	case I486_OPCODE_TEST_RM8_FROM_R8:
+	case I486_OPCODE_TEST_RM_FROM_R:
+		disasm=DisassembleTypicalTwoOperands("TEST",op1,op2);
 		break;
 
 
@@ -663,6 +769,81 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		else
 		{
 			disasm="IN      EAX,DX";
+		}
+		break;
+
+	case I486_OPCODE_JO_REL8:   // 0x70,
+	case I486_OPCODE_JNO_REL8:  // 0x71,
+	case I486_OPCODE_JB_REL8:   // 0x72,
+	case I486_OPCODE_JAE_REL8:  // 0x73,
+	case I486_OPCODE_JE_REL8:   // 0x74,
+	case I486_OPCODE_JNE_REL8:  // 0x75,
+	case I486_OPCODE_JBE_REL8:  // 0x76,
+	case I486_OPCODE_JA_REL8:   // 0x77,
+	case I486_OPCODE_JS_REL8:   // 0x78,
+	case I486_OPCODE_JNS_REL8:  // 0x79,
+	case I486_OPCODE_JP_REL8:   // 0x7A,
+	case I486_OPCODE_JNP_REL8:  // 0x7B,
+	case I486_OPCODE_JL_REL8:   // 0x7C,
+	case I486_OPCODE_JGE_REL8:  // 0x7D,
+	case I486_OPCODE_JLE_REL8:  // 0x7E,
+	case I486_OPCODE_JG_REL8:   // 0x7F,
+		switch(opCode)
+		{
+		case I486_OPCODE_JO_REL8:   // 0x70,
+			disasm="JO";
+			break;
+		case I486_OPCODE_JNO_REL8:  // 0x71,
+			disasm="JNO";
+			break;
+		case I486_OPCODE_JB_REL8:   // 0x72,
+			disasm="JB";
+			break;
+		case I486_OPCODE_JAE_REL8:  // 0x73,
+			disasm="JAE";
+			break;
+		case I486_OPCODE_JE_REL8:   // 0x74,
+			disasm="JE";
+			break;
+		case I486_OPCODE_JNE_REL8:  // 0x75,
+			disasm="JNE";
+			break;
+		case I486_OPCODE_JBE_REL8:  // 0x76,
+			disasm="JBE";
+			break;
+		case I486_OPCODE_JA_REL8:   // 0x77,
+			disasm="JA";
+			break;
+		case I486_OPCODE_JS_REL8:   // 0x78,
+			disasm="JS";
+			break;
+		case I486_OPCODE_JNS_REL8:  // 0x79,
+			disasm="JNS";
+			break;
+		case I486_OPCODE_JP_REL8:   // 0x7A,
+			disasm="JP";
+			break;
+		case I486_OPCODE_JNP_REL8:  // 0x7B,
+			disasm="JNP";
+			break;
+		case I486_OPCODE_JL_REL8:   // 0x7C,
+			disasm="JL";
+			break;
+		case I486_OPCODE_JGE_REL8:  // 0x7D,
+			disasm="JGE";
+			break;
+		case I486_OPCODE_JLE_REL8:  // 0x7E,
+			disasm="JLE";
+			break;
+		case I486_OPCODE_JG_REL8:   // 0x7F,
+			disasm="JG";
+			break;
+		}
+		cpputil::ExtendString(disasm,8);
+		{
+			auto offset=GetSimm8();
+			auto destin=eip+offset+numBytes;
+			disasm+=cpputil::Uitox(destin);
 		}
 		break;
 
@@ -844,6 +1025,18 @@ unsigned int i486DX::Instruction::GetUimm32(void) const
 {
 	return cpputil::GetDword(operand+operandLen-4);
 }
+int i486DX::Instruction::GetSimm8(void) const
+{
+	return cpputil::GetSignedByte(operand[operandLen-1]);
+}
+int i486DX::Instruction::GetSimm16(void) const
+{
+	return cpputil::GetSignedWord(operand+operandLen-2);
+}
+int i486DX::Instruction::GetSimm32(void) const
+{
+	return cpputil::GetSignedDword(operand+operandLen-4);
+}
 
 /* static */ std::string i486DX::Get8BitRegisterNameFromMODR_M(unsigned char MOD_RM)
 {
@@ -887,6 +1080,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 	switch(inst.opCode)
 	{
+	case I486_OPCODE_F6_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF6
+	case I486_OPCODE_F7_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF7,
+		Abort("F6 and F7 not implemented yet.");
+		break;
+
 	case I486_OPCODE_CLD:
 		state.EFLAGS&=(~EFLAGS_DIRECTION);
 		clocksPassed=2;
@@ -894,6 +1092,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_OPCODE_CLI:
 		state.EFLAGS&=(~EFLAGS_INT_ENABLE);
 		clocksPassed=2;
+		break;
+
+
+	case I486_OPCODE_FNINIT:
+		clocksPassed=17;
 		break;
 
 
@@ -1275,8 +1478,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 
 
-	case I486_OPCODE_XOR_AL_FROM_I8:
 	case I486_OPCODE_AND_AL_FROM_I8://  0x24,
+	case I486_OPCODE_TEST_AL_FROM_I8://  0xA8,
+	case I486_OPCODE_XOR_AL_FROM_I8:
 		{
 			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,1);
 			auto al=GetAL();
@@ -1284,18 +1488,23 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			switch(inst.opCode)
 			{
 			case I486_OPCODE_AND_AL_FROM_I8://  0x24,
+			case I486_OPCODE_TEST_AL_FROM_I8://  0xA8,
 				AndByte(al,v);
 				break;
 			case I486_OPCODE_XOR_AL_FROM_I8:
 				XorByte(al,v);
 				break;
 			}
-			SetAL(al);
+			if(I486_OPCODE_TEST_AL_FROM_I8!=inst.opCode) // Don't actually update value if TEST.
+			{
+				SetAL(al);
+			}
 			clocksPassed=1;
 		}
 		break;
-	case I486_OPCODE_XOR_A_FROM_I:
 	case I486_OPCODE_AND_A_FROM_I://    0x25,
+	case I486_OPCODE_TEST_A_FROM_I://    0xA9,
+	case I486_OPCODE_XOR_A_FROM_I:
 		if(16==inst.operandSize)
 		{
 			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
@@ -1304,13 +1513,17 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			switch(inst.opCode)
 			{
 			case I486_OPCODE_AND_A_FROM_I://    0x25,
+			case I486_OPCODE_TEST_A_FROM_I://    0xA9,
 				AndWord(ax,v);
 				break;
 			case I486_OPCODE_XOR_A_FROM_I:
 				XorWord(ax,v);
 				break;
 			}
-			SetAX(ax);
+			if(I486_OPCODE_TEST_A_FROM_I!=inst.opCode)
+			{
+				SetAX(ax);
+			}
 		}
 		else
 		{
@@ -1320,20 +1533,25 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			switch(inst.opCode)
 			{
 			case I486_OPCODE_AND_A_FROM_I://    0x25,
+			case I486_OPCODE_TEST_A_FROM_I://    0xA9,
 				AndDword(eax,v);
 				break;
 			case I486_OPCODE_XOR_A_FROM_I:
 				XorDword(eax,v);
 				break;
 			}
-			SetEAX(eax);
+			if(I486_OPCODE_TEST_A_FROM_I!=inst.opCode)
+			{
+				SetEAX(eax);
+			}
 		}
 		clocksPassed=1;
 		break;
-	case I486_OPCODE_XOR_RM8_FROM_R8:
+	case I486_OPCODE_TEST_RM8_FROM_R8:// 0x84,
 	case I486_OPCODE_AND_RM8_FROM_R8:// 0x20,
-	case I486_OPCODE_XOR_R8_FROM_RM8:
+	case I486_OPCODE_XOR_RM8_FROM_R8:
 	case I486_OPCODE_AND_R8_FROM_RM8:// 0x22,
+	case I486_OPCODE_XOR_R8_FROM_RM8:
 		{
 			auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,1);
 			auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,1);
@@ -1349,12 +1567,22 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				XorByte(i,value2.GetAsDword());
 				break;
 			}
-			value1.SetDword(i);
-			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+			if(I486_OPCODE_TEST_RM8_FROM_R8!=inst.opCode)
+			{
+				value1.SetDword(i);
+				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+			}
 
 			if(op1.operandType==OPER_ADDR || op2.operandType==OPER_ADDR)
 			{
-				clocksPassed=3;
+				if(I486_OPCODE_TEST_RM8_FROM_R8!=inst.opCode)
+				{
+					clocksPassed=3;
+				}
+				else
+				{
+					clocksPassed=2;
+				}
 			}
 			else
 			{
@@ -1363,6 +1591,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		break;
 	case I486_OPCODE_XOR_RM_FROM_R:
+	case I486_OPCODE_TEST_RM_FROM_R://   0x85,
 	case I486_OPCODE_AND_RM_FROM_R://   0x21,
 	case I486_OPCODE_XOR_R_FROM_RM:
 	case I486_OPCODE_AND_R_FROM_RM://   0x23,
@@ -1373,6 +1602,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			switch(inst.opCode)
 			{
 			case I486_OPCODE_AND_RM_FROM_R://   0x21,
+			case I486_OPCODE_TEST_RM_FROM_R://   0x85,
 			case I486_OPCODE_AND_R_FROM_RM://   0x23,
 				AndWordOrDword(inst.operandSize,i,value2.GetAsDword());
 				break;
@@ -1381,12 +1611,22 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				XorWordOrDword(inst.operandSize,i,value2.GetAsDword());
 				break;
 			}
-			value1.SetDword(i);
-			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+			if(I486_OPCODE_TEST_RM_FROM_R!=inst.opCode)
+			{
+				value1.SetDword(i);
+				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+			}
 
 			if(op1.operandType==OPER_ADDR || op2.operandType==OPER_ADDR)
 			{
-				clocksPassed=3;
+				if(I486_OPCODE_TEST_RM_FROM_R!=inst.opCode)
+				{
+					clocksPassed=3;
+				}
+				else
+				{
+					clocksPassed=2;
+				}
 			}
 			else
 			{
@@ -1401,13 +1641,13 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 	}
 
-	if(true!=EIPChanged && true!=abort)
-	{
-		state.EIP+=inst.numBytes;
-	}
 	if(true!=abort && 0==clocksPassed)
 	{
 		Abort("Clocks-Passed is not set.");
+	}
+	if(true!=EIPChanged && true!=abort)
+	{
+		state.EIP+=inst.numBytes;
 	}
 
 	return clocksPassed;
