@@ -136,6 +136,9 @@ public:
 		// [1] pp.26-211 in the description of the MOV instruction
 		// "Loading to SS register inhibits all interrupts until after the execution of the next instruction"
 		bool holdIRQ;
+
+		// True when an instruction raised an exception.
+		bool exception;
 	};
 	enum
 	{

@@ -123,6 +123,7 @@ void i486DX::Reset(void)
 	state.CR0=RESET_CR0;
 
 	state.holdIRQ=false;
+	state.exception=false;
 }
 
 std::vector <std::string> i486DX::GetStateText(void) const
