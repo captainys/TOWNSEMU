@@ -123,8 +123,73 @@ public:
 	class State
 	{
 	public:
-		unsigned int EAX,EBX,ECX,EDX;
-		unsigned int ESI,EDI,EBP,ESP;
+		unsigned int reg32[8];
+
+		inline unsigned int EAX(void) const
+		{
+			return reg32[REG_EAX-REG_EAX];
+		}
+		inline unsigned int EBX(void) const
+		{
+			return reg32[REG_EBX-REG_EAX];
+		}
+		inline unsigned int ECX(void) const
+		{
+			return reg32[REG_ECX-REG_EAX];
+		}
+		inline unsigned int EDX(void) const
+		{
+			return reg32[REG_EDX-REG_EAX];
+		}
+		inline unsigned int ESI(void) const
+		{
+			return reg32[REG_ESI-REG_EAX];
+		}
+		inline unsigned int EDI(void) const
+		{
+			return reg32[REG_EDI-REG_EAX];
+		}
+		inline unsigned int EBP(void) const
+		{
+			return reg32[REG_EBP-REG_EAX];
+		}
+		inline unsigned int ESP(void) const
+		{
+			return reg32[REG_ESP-REG_EAX];
+		}
+		inline unsigned int &EAX(void)
+		{
+			return reg32[REG_EAX-REG_EAX];
+		}
+		inline unsigned int &EBX(void)
+		{
+			return reg32[REG_EBX-REG_EAX];
+		}
+		inline unsigned int &ECX(void)
+		{
+			return reg32[REG_ECX-REG_EAX];
+		}
+		inline unsigned int &EDX(void)
+		{
+			return reg32[REG_EDX-REG_EAX];
+		}
+		inline unsigned int &ESI(void)
+		{
+			return reg32[REG_ESI-REG_EAX];
+		}
+		inline unsigned int &EDI(void)
+		{
+			return reg32[REG_EDI-REG_EAX];
+		}
+		inline unsigned int &EBP(void)
+		{
+			return reg32[REG_EBP-REG_EAX];
+		}
+		inline unsigned int &ESP(void)
+		{
+			return reg32[REG_ESP-REG_EAX];
+		}
+
 		unsigned int EIP;
 		unsigned int EFLAGS;   // bit 1=Always 1 ([1] pp.2-14)
 		SegmentRegister CS,DS,ES,SS,FS,GS;
@@ -453,129 +518,129 @@ public:
 
 	inline unsigned int GetEAX(void) const
 	{
-		return state.EAX;
+		return state.EAX();
 	}
 	inline unsigned int GetAX(void) const
 	{
-		return state.EAX&0xffff;
+		return state.EAX()&0xffff;
 	}
 	inline unsigned int GetAL(void) const
 	{
-		return state.EAX&0xff;
+		return state.EAX()&0xff;
 	}
 	inline unsigned int GetAH(void) const
 	{
-		return (state.EAX>>8)&0xff;
+		return (state.EAX()>>8)&0xff;
 	}
 	inline void SetEAX(unsigned int value)
 	{
-		state.EAX=value;
+		state.EAX()=value;
 	}
 	inline void SetAX(unsigned int value)
 	{
-		state.EAX&=0xffff0000;
-		state.EAX|=value;
+		state.EAX()&=0xffff0000;
+		state.EAX()|=value;
 	}
 	inline void SetAL(unsigned int value)
 	{
-		state.EAX&=0xffffff00;
-		state.EAX|=value;
+		state.EAX()&=0xffffff00;
+		state.EAX()|=value;
 	}
 	inline void SetAH(unsigned int value)
 	{
-		state.EAX&=0xffff00ff;
-		state.EAX|=(value<<8);
+		state.EAX()&=0xffff00ff;
+		state.EAX()|=(value<<8);
 	}
 
 
 	inline unsigned int GetECX(void) const
 	{
-		return state.ECX;
+		return state.ECX();
 	}
 	inline unsigned int GetCX(void) const
 	{
-		return state.ECX&0xffff;
+		return state.ECX()&0xffff;
 	}
 	inline unsigned int GetCL(void) const
 	{
-		return state.ECX&0xff;
+		return state.ECX()&0xff;
 	}
 	inline unsigned int GetCH(void) const
 	{
-		return (state.ECX>>8)&0xff;
+		return (state.ECX()>>8)&0xff;
 	}
 	inline void SetECX(unsigned int value)
 	{
-		state.ECX=value;
+		state.ECX()=value;
 	}
 	inline void SetCX(unsigned int value)
 	{
-		state.ECX&=0xffff0000;
-		state.ECX|=value;
+		state.ECX()&=0xffff0000;
+		state.ECX()|=value;
 	}
 	inline void SetCL(unsigned int value)
 	{
-		state.ECX&=0xffffff00;
-		state.ECX|=value;
+		state.ECX()&=0xffffff00;
+		state.ECX()|=value;
 	}
 	inline void SetCH(unsigned int value)
 	{
-		state.ECX&=0xffff00ff;
-		state.ECX|=(value<<8);
+		state.ECX()&=0xffff00ff;
+		state.ECX()|=(value<<8);
 	}
 
 
 	inline unsigned int GetEDX(void) const
 	{
-		return state.EDX;
+		return state.EDX();
 	}
 	inline unsigned int GetDX(void) const
 	{
-		return state.EDX&0xffff;
+		return state.EDX()&0xffff;
 	}
 	inline unsigned int GetDL(void) const
 	{
-		return state.EDX&0xff;
+		return state.EDX()&0xff;
 	}
 	inline unsigned int GetDH(void) const
 	{
-		return (state.EDX>>8)&0xff;
+		return (state.EDX()>>8)&0xff;
 	}
 	inline void SetEDX(unsigned int value)
 	{
-		state.EDX=value;
+		state.EDX()=value;
 	}
 	inline void SetDX(unsigned int value)
 	{
-		state.EDX&=0xffff0000;
-		state.EDX|=value;
+		state.EDX()&=0xffff0000;
+		state.EDX()|=value;
 	}
 	inline void SetDL(unsigned int value)
 	{
-		state.EDX&=0xffffff00;
-		state.EDX|=value;
+		state.EDX()&=0xffffff00;
+		state.EDX()|=value;
 	}
 	inline void SetDH(unsigned int value)
 	{
-		state.EDX&=0xffff00ff;
-		state.EDX|=(value<<8);
+		state.EDX()&=0xffff00ff;
+		state.EDX()|=(value<<8);
 	}
 	inline unsigned int GetSP(void) const
 	{
-		return state.ESP&0xffff;
+		return state.ESP()&0xffff;
 	}
 	inline void SetSP(unsigned int value)
 	{
-		state.ESP&=0xffff0000;
-		state.ESP|=(value&0xffff);
+		state.ESP()&=0xffff0000;
+		state.ESP()|=(value&0xffff);
 	}
 	inline unsigned int GetESP(void) const
 	{
-		return state.ESP;
+		return state.ESP();
 	}
 	inline void SetESP(unsigned int value)
 	{
-		state.ESP=value;
+		state.ESP()=value;
 	}
 	inline unsigned int GetIP(void) const
 	{

@@ -117,7 +117,7 @@ void i486DX::Reset(void)
 
 	state.DR7=RESET_DR7;
 
-	state.EAX=RESET_EAX;
+	state.EAX()=RESET_EAX;
 	SetDX(RESET_DX);
 	state.CR[0]=RESET_CR0;
 
@@ -135,17 +135,17 @@ std::vector <std::string> i486DX::GetStateText(void) const
 	    +"  EFLAGS="+cpputil::Uitox(state.EFLAGS));
 
 	text.push_back(
-	     "EAX="+cpputil::Uitox(state.EAX)
-	    +"  EBX="+cpputil::Uitox(state.EBX)
-	    +"  ECX="+cpputil::Uitox(state.ECX)
-	    +"  EDX="+cpputil::Uitox(state.EDX)
+	     "EAX="+cpputil::Uitox(state.EAX())
+	    +"  EBX="+cpputil::Uitox(state.EBX())
+	    +"  ECX="+cpputil::Uitox(state.ECX())
+	    +"  EDX="+cpputil::Uitox(state.EDX())
 	    );
 
 	text.push_back(
-	     "ESI="+cpputil::Uitox(state.ESI)
-	    +"  EDI="+cpputil::Uitox(state.EDI)
-	    +"  EBP="+cpputil::Uitox(state.EBP)
-	    +"  ESP="+cpputil::Uitox(state.ESP)
+	     "ESI="+cpputil::Uitox(state.ESI())
+	    +"  EDI="+cpputil::Uitox(state.EDI())
+	    +"  EBP="+cpputil::Uitox(state.EBP())
+	    +"  ESP="+cpputil::Uitox(state.ESP())
 	    );
 
 	text.push_back(
@@ -223,55 +223,55 @@ unsigned int i486DX::GetRegisterValue(int reg) const
 	switch(reg)
 	{
 	case REG_AL:
-		return state.EAX&255;
+		return state.EAX()&255;
 	case REG_CL:
-		return state.ECX&255;
+		return state.ECX()&255;
 	case REG_DL:
-		return state.EDX&255;
+		return state.EDX()&255;
 	case REG_BL:
-		return state.EBX&255;
+		return state.EBX()&255;
 	case REG_AH:
-		return (state.EAX>>8)&255;
+		return (state.EAX()>>8)&255;
 	case REG_CH:
-		return (state.ECX>>8)&255;
+		return (state.ECX()>>8)&255;
 	case REG_DH:
-		return (state.EDX>>8)&255;
+		return (state.EDX()>>8)&255;
 	case REG_BH:
-		return (state.EBX>>8)&255;
+		return (state.EBX()>>8)&255;
 
 	case REG_AX:
-		return state.EAX&65535;
+		return state.EAX()&65535;
 	case REG_CX:
-		return state.ECX&65535;
+		return state.ECX()&65535;
 	case REG_DX:
-		return state.EDX&65535;
+		return state.EDX()&65535;
 	case REG_BX:
-		return state.EBX&65535;
+		return state.EBX()&65535;
 	case REG_SP:
-		return state.ESP&65535;
+		return state.ESP()&65535;
 	case REG_BP:
-		return state.EBP&65535;
+		return state.EBP()&65535;
 	case REG_SI:
-		return state.ESI&65535;
+		return state.ESI()&65535;
 	case REG_DI:
-		return state.EDI&65535;
+		return state.EDI()&65535;
 
 	case REG_EAX:
-		return state.EAX;
+		return state.EAX();
 	case REG_ECX:
-		return state.ECX;
+		return state.ECX();
 	case REG_EDX:
-		return state.EDX;
+		return state.EDX();
 	case REG_EBX:
-		return state.EBX;
+		return state.EBX();
 	case REG_ESP:
-		return state.ESP;
+		return state.ESP();
 	case REG_EBP:
-		return state.EBP;
+		return state.EBP();
 	case REG_ESI:
-		return state.ESI;
+		return state.ESI();
 	case REG_EDI:
-		return state.EDI;
+		return state.EDI();
 
 	case REG_EIP:
 		return state.EIP;
@@ -970,133 +970,133 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 		{
 		case REG_AL:
 			value.numBytes=1;
-			value.byteData[0]=(state.EAX&255);
+			value.byteData[0]=(state.EAX()&255);
 			break;
 		case REG_CL:
 			value.numBytes=1;
-			value.byteData[0]=(state.ECX&255);
+			value.byteData[0]=(state.ECX()&255);
 			break;
 		case REG_BL:
 			value.numBytes=1;
-			value.byteData[0]=(state.EBX&255);
+			value.byteData[0]=(state.EBX()&255);
 			break;
 		case REG_DL:
 			value.numBytes=1;
-			value.byteData[0]=(state.EDX&255);
+			value.byteData[0]=(state.EDX()&255);
 			break;
 		case REG_AH:
 			value.numBytes=1;
-			value.byteData[0]=((state.EAX>>8)&255);
+			value.byteData[0]=((state.EAX()>>8)&255);
 			break;
 		case REG_CH:
 			value.numBytes=1;
-			value.byteData[0]=((state.EAX>>8)&255);
+			value.byteData[0]=((state.EAX()>>8)&255);
 			break;
 		case REG_BH:
 			value.numBytes=1;
-			value.byteData[0]=((state.EAX>>8)&255);
+			value.byteData[0]=((state.EAX()>>8)&255);
 			break;
 		case REG_DH:
 			value.numBytes=1;
-			value.byteData[0]=((state.EAX>>8)&255);
+			value.byteData[0]=((state.EAX()>>8)&255);
 			break;
 
 		case REG_AX:
 			value.numBytes=2;
-			value.byteData[0]=(state.EAX&255);
-			value.byteData[1]=((state.EAX>>8)&255);
+			value.byteData[0]=(state.EAX()&255);
+			value.byteData[1]=((state.EAX()>>8)&255);
 			break;
 		case REG_CX:
 			value.numBytes=2;
-			value.byteData[0]=(state.ECX&255);
-			value.byteData[1]=((state.ECX>>8)&255);
+			value.byteData[0]=(state.ECX()&255);
+			value.byteData[1]=((state.ECX()>>8)&255);
 			break;
 		case REG_DX:
 			value.numBytes=2;
-			value.byteData[0]=(state.EDX&255);
-			value.byteData[1]=((state.EDX>>8)&255);
+			value.byteData[0]=(state.EDX()&255);
+			value.byteData[1]=((state.EDX()>>8)&255);
 			break;
 		case REG_BX:
 			value.numBytes=2;
-			value.byteData[0]=(state.EBX&255);
-			value.byteData[1]=((state.EBX>>8)&255);
+			value.byteData[0]=(state.EBX()&255);
+			value.byteData[1]=((state.EBX()>>8)&255);
 			break;
 		case REG_SP:
 			value.numBytes=2;
-			value.byteData[0]=(state.ESP&255);
-			value.byteData[1]=((state.ESP>>8)&255);
+			value.byteData[0]=(state.ESP()&255);
+			value.byteData[1]=((state.ESP()>>8)&255);
 			break;
 		case REG_BP:
 			value.numBytes=2;
-			value.byteData[0]=(state.EBP&255);
-			value.byteData[1]=((state.EBP>>8)&255);
+			value.byteData[0]=(state.EBP()&255);
+			value.byteData[1]=((state.EBP()>>8)&255);
 			break;
 		case REG_SI:
 			value.numBytes=2;
-			value.byteData[0]=(state.ESI&255);
-			value.byteData[1]=((state.ESI>>8)&255);
+			value.byteData[0]=(state.ESI()&255);
+			value.byteData[1]=((state.ESI()>>8)&255);
 			break;
 		case REG_DI:
 			value.numBytes=2;
-			value.byteData[0]=(state.EDI&255);
-			value.byteData[1]=((state.EDI>>8)&255);
+			value.byteData[0]=(state.EDI()&255);
+			value.byteData[1]=((state.EDI()>>8)&255);
 			break;
 
 		case REG_EAX:
 			value.numBytes=4;
-			value.byteData[0]=(state.EAX&255);
-			value.byteData[1]=((state.EAX>>8)&255);
-			value.byteData[2]=((state.EAX>>16)&255);
-			value.byteData[3]=((state.EAX>>24)&255);
+			value.byteData[0]=(state.EAX()&255);
+			value.byteData[1]=((state.EAX()>>8)&255);
+			value.byteData[2]=((state.EAX()>>16)&255);
+			value.byteData[3]=((state.EAX()>>24)&255);
 			break;
 		case REG_ECX:
 			value.numBytes=4;
-			value.byteData[0]=(state.ECX&255);
-			value.byteData[1]=((state.ECX>>8)&255);
-			value.byteData[2]=((state.ECX>>16)&255);
-			value.byteData[3]=((state.ECX>>24)&255);
+			value.byteData[0]=(state.ECX()&255);
+			value.byteData[1]=((state.ECX()>>8)&255);
+			value.byteData[2]=((state.ECX()>>16)&255);
+			value.byteData[3]=((state.ECX()>>24)&255);
 			break;
 		case REG_EDX:
 			value.numBytes=4;
-			value.byteData[0]=(state.EDX&255);
-			value.byteData[1]=((state.EDX>>8)&255);
-			value.byteData[2]=((state.EDX>>16)&255);
-			value.byteData[3]=((state.EDX>>24)&255);
+			value.byteData[0]=(state.EDX()&255);
+			value.byteData[1]=((state.EDX()>>8)&255);
+			value.byteData[2]=((state.EDX()>>16)&255);
+			value.byteData[3]=((state.EDX()>>24)&255);
 			break;
 		case REG_EBX:
 			value.numBytes=4;
-			value.byteData[0]=(state.EBX&255);
-			value.byteData[1]=((state.EBX>>8)&255);
-			value.byteData[2]=((state.EBX>>16)&255);
-			value.byteData[3]=((state.EBX>>24)&255);
+			value.byteData[0]=(state.EBX()&255);
+			value.byteData[1]=((state.EBX()>>8)&255);
+			value.byteData[2]=((state.EBX()>>16)&255);
+			value.byteData[3]=((state.EBX()>>24)&255);
 			break;
 		case REG_ESP:
 			value.numBytes=4;
-			value.byteData[0]=(state.ESP&255);
-			value.byteData[1]=((state.ESP>>8)&255);
-			value.byteData[2]=((state.ESP>>16)&255);
-			value.byteData[3]=((state.ESP>>24)&255);
+			value.byteData[0]=(state.ESP()&255);
+			value.byteData[1]=((state.ESP()>>8)&255);
+			value.byteData[2]=((state.ESP()>>16)&255);
+			value.byteData[3]=((state.ESP()>>24)&255);
 			break;
 		case REG_EBP:
 			value.numBytes=4;
-			value.byteData[0]=(state.EBP&255);
-			value.byteData[1]=((state.EBP>>8)&255);
-			value.byteData[2]=((state.EBP>>16)&255);
-			value.byteData[3]=((state.EBP>>24)&255);
+			value.byteData[0]=(state.EBP()&255);
+			value.byteData[1]=((state.EBP()>>8)&255);
+			value.byteData[2]=((state.EBP()>>16)&255);
+			value.byteData[3]=((state.EBP()>>24)&255);
 			break;
 		case REG_ESI:
 			value.numBytes=4;
-			value.byteData[0]=(state.ESI&255);
-			value.byteData[1]=((state.ESI>>8)&255);
-			value.byteData[2]=((state.ESI>>16)&255);
-			value.byteData[3]=((state.ESI>>24)&255);
+			value.byteData[0]=(state.ESI()&255);
+			value.byteData[1]=((state.ESI()>>8)&255);
+			value.byteData[2]=((state.ESI()>>16)&255);
+			value.byteData[3]=((state.ESI()>>24)&255);
 			break;
 		case REG_EDI:
 			value.numBytes=4;
-			value.byteData[0]=(state.EDI&255);
-			value.byteData[1]=((state.EDI>>8)&255);
-			value.byteData[2]=((state.EDI>>16)&255);
-			value.byteData[3]=((state.EDI>>24)&255);
+			value.byteData[0]=(state.EDI()&255);
+			value.byteData[1]=((state.EDI()>>8)&255);
+			value.byteData[2]=((state.EDI()>>16)&255);
+			value.byteData[3]=((state.EDI()>>24)&255);
 			break;
 
 		case REG_EIP:
@@ -1467,94 +1467,94 @@ void i486DX::StoreOperandValue(
 		switch(dst.reg)
 		{
 		case REG_AL:
-			state.EAX&=0xffffff00;
-			state.EAX|=value.byteData[0];
+			state.EAX()&=0xffffff00;
+			state.EAX()|=value.byteData[0];
 			break;
 		case REG_CL:
-			state.ECX&=0xffffff00;
-			state.ECX|=value.byteData[0];
+			state.ECX()&=0xffffff00;
+			state.ECX()|=value.byteData[0];
 			break;
 		case REG_BL:
-			state.EBX&=0xffffff00;
-			state.EBX|=value.byteData[0];
+			state.EBX()&=0xffffff00;
+			state.EBX()|=value.byteData[0];
 			break;
 		case REG_DL:
-			state.EDX&=0xffffff00;
-			state.EDX|=value.byteData[0];
+			state.EDX()&=0xffffff00;
+			state.EDX()|=value.byteData[0];
 			break;
 		case REG_AH:
-			state.EAX&=0xffff00ff;
-			state.EAX|=(((unsigned int)value.byteData[0])<<8);
+			state.EAX()&=0xffff00ff;
+			state.EAX()|=(((unsigned int)value.byteData[0])<<8);
 			break;
 		case REG_CH:
-			state.ECX&=0xffff00ff;
-			state.ECX|=(((unsigned int)value.byteData[0])<<8);
+			state.ECX()&=0xffff00ff;
+			state.ECX()|=(((unsigned int)value.byteData[0])<<8);
 			break;
 		case REG_BH:
-			state.EBX&=0xffff00ff;
-			state.EBX|=(((unsigned int)value.byteData[0])<<8);
+			state.EBX()&=0xffff00ff;
+			state.EBX()|=(((unsigned int)value.byteData[0])<<8);
 			break;
 		case REG_DH:
-			state.EDX&=0xffff00ff;
-			state.EDX|=(((unsigned int)value.byteData[0])<<8);
+			state.EDX()&=0xffff00ff;
+			state.EDX()|=(((unsigned int)value.byteData[0])<<8);
 			break;
 
 		case REG_AX:
-			state.EAX&=0xffff0000;
-			state.EAX|=cpputil::GetWord(value.byteData);
+			state.EAX()&=0xffff0000;
+			state.EAX()|=cpputil::GetWord(value.byteData);
 			break;
 		case REG_CX:
-			state.ECX&=0xffff0000;
-			state.ECX|=cpputil::GetWord(value.byteData);
+			state.ECX()&=0xffff0000;
+			state.ECX()|=cpputil::GetWord(value.byteData);
 			break;
 		case REG_DX:
-			state.EDX&=0xffff0000;
-			state.EDX|=cpputil::GetWord(value.byteData);
+			state.EDX()&=0xffff0000;
+			state.EDX()|=cpputil::GetWord(value.byteData);
 			break;
 		case REG_BX:
-			state.EBX&=0xffff0000;
-			state.EBX|=cpputil::GetWord(value.byteData);
+			state.EBX()&=0xffff0000;
+			state.EBX()|=cpputil::GetWord(value.byteData);
 			break;
 		case REG_SP:
-			state.ESP&=0xffff0000;
-			state.ESP|=cpputil::GetWord(value.byteData);
+			state.ESP()&=0xffff0000;
+			state.ESP()|=cpputil::GetWord(value.byteData);
 			break;
 		case REG_BP:
-			state.EBP&=0xffff0000;
-			state.EBP|=cpputil::GetWord(value.byteData);
+			state.EBP()&=0xffff0000;
+			state.EBP()|=cpputil::GetWord(value.byteData);
 			break;
 		case REG_SI:
-			state.ESI&=0xffff0000;
-			state.ESI|=cpputil::GetWord(value.byteData);
+			state.ESI()&=0xffff0000;
+			state.ESI()|=cpputil::GetWord(value.byteData);
 			break;
 		case REG_DI:
-			state.EDI&=0xffff0000;
-			state.EDI|=cpputil::GetWord(value.byteData);
+			state.EDI()&=0xffff0000;
+			state.EDI()|=cpputil::GetWord(value.byteData);
 			break;
 
 		case REG_EAX:
-			state.EAX=cpputil::GetDword(value.byteData);
+			state.EAX()=cpputil::GetDword(value.byteData);
 			break;
 		case REG_ECX:
-			state.ECX=cpputil::GetDword(value.byteData);
+			state.ECX()=cpputil::GetDword(value.byteData);
 			break;
 		case REG_EDX:
-			state.EDX=cpputil::GetDword(value.byteData);
+			state.EDX()=cpputil::GetDword(value.byteData);
 			break;
 		case REG_EBX:
-			state.EBX=cpputil::GetDword(value.byteData);
+			state.EBX()=cpputil::GetDword(value.byteData);
 			break;
 		case REG_ESP:
-			state.ESP=cpputil::GetDword(value.byteData);
+			state.ESP()=cpputil::GetDword(value.byteData);
 			break;
 		case REG_EBP:
-			state.EBP=cpputil::GetDword(value.byteData);
+			state.EBP()=cpputil::GetDword(value.byteData);
 			break;
 		case REG_ESI:
-			state.ESI=cpputil::GetDword(value.byteData);
+			state.ESI()=cpputil::GetDword(value.byteData);
 			break;
 		case REG_EDI:
-			state.ESI=cpputil::GetDword(value.byteData);
+			state.ESI()=cpputil::GetDword(value.byteData);
 			break;
 
 		case REG_EIP:

@@ -2218,7 +2218,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		SetIPorEIP(inst.operandSize,Pop(mem,inst.operandSize));
 		LoadSegmentRegister(state.CS,Pop(mem,inst.operandSize),mem);
-		state.ESP+=inst.GetUimm16(); // Do I need to take &0xffff if address mode is 16? 
+		state.ESP()+=inst.GetUimm16(); // Do I need to take &0xffff if address mode is 16? 
 		EIPChanged=true;
 		break;
 	case I486_OPCODE_RET_I16://          0xC2,
@@ -2237,7 +2237,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		SetIPorEIP(inst.operandSize,Pop(mem,inst.operandSize));
 		LoadSegmentRegister(state.CS,Pop(mem,inst.operandSize),mem);
-		state.ESP+=inst.GetUimm16(); // Do I need to take &0xffff if address mode is 16? 
+		state.ESP()+=inst.GetUimm16(); // Do I need to take &0xffff if address mode is 16? 
 		EIPChanged=true;
 		break;
 
