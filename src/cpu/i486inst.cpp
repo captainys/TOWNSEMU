@@ -217,12 +217,22 @@ void i486DX::FetchOperand(Instruction &inst,SegmentRegister seg,int offset,const
 		break;
 
 
+	case I486_OPCODE_CALL_REL://   0xE8,
+	case I486_OPCODE_JMP_REL://          0xE9,   // cw or cd
+		FetchOperand16or32(inst,seg,offset,mem);
+		break;
+	case I486_OPCODE_CALL_FAR://   0x9A,
+	case I486_OPCODE_JMP_FAR:
+		offset+=FetchOperand16or32(inst,seg,offset,mem);
+		FetchOperand16(inst,seg,offset,mem);
+		break;
+
+
 	case I486_OPCODE_CLD:
 	case I486_OPCODE_CLI:
 		break;
 
 
-	case I486_OPCODE_DEC_R_M8:
 	case I486_OPCODE_DEC_R_M:
 		FetchOperandRM(inst,seg,offset,mem);
 		break;
@@ -250,6 +260,20 @@ void i486DX::FetchOperand(Instruction &inst,SegmentRegister seg,int offset,const
 		break;
 
 
+	case I486_OPCODE_INC_DEC_R_M8:
+		FetchOperandRM(inst,seg,offset,mem);
+		break;
+	case I486_OPCODE_INC_EAX://    0x40, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_OPCODE_INC_ECX://    0x41, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_OPCODE_INC_EDX://    0x42, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_OPCODE_INC_EBX://    0x43, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_OPCODE_INC_ESP://    0x44, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_OPCODE_INC_EBP://    0x45, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_OPCODE_INC_ESI://    0x46, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_OPCODE_INC_EDI://    0x47, // 16/32 depends on OPSIZE_OVERRIDE
+		break;
+
+
 	case I486_OPCODE_JO_REL8:   // 0x70,
 	case I486_OPCODE_JNO_REL8:  // 0x71,
 	case I486_OPCODE_JB_REL8:   // 0x72,
@@ -267,12 +291,6 @@ void i486DX::FetchOperand(Instruction &inst,SegmentRegister seg,int offset,const
 	case I486_OPCODE_JLE_REL8:  // 0x7E,
 	case I486_OPCODE_JG_REL8:   // 0x7F,
 		FetchOperand8(inst,seg,offset,mem);
-		break;
-
-
-	case I486_OPCODE_JMP_FAR:
-		offset+=FetchOperand16or32(inst,seg,offset,mem);
-		FetchOperand16(inst,seg,offset,mem);
 		break;
 
 
@@ -425,6 +443,16 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 		break;
 
 
+	case I486_OPCODE_CALL_REL://   0xE8,
+	case I486_OPCODE_JMP_REL://          0xE9,   // cw or cd
+		op1.MakeImm16or32(*this,operandSize);
+		break;
+	case I486_OPCODE_CALL_FAR://   0x9A,
+	case I486_OPCODE_JMP_FAR:
+		op1.DecodeFarAddr(addressSize,operandSize,operand);
+		break;
+
+
 	case I486_OPCODE_CLD:
 	case I486_OPCODE_CLI:
 		break;
@@ -434,9 +462,6 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 		break;
 
 
-	case I486_OPCODE_DEC_R_M8:
-		op1.Decode(addressSize,8,operand);
-		break;
 	case I486_OPCODE_DEC_R_M:
 		op1.Decode(addressSize,operandSize,operand);
 		break;
@@ -461,6 +486,21 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 		break;
 
 
+	case I486_OPCODE_INC_DEC_R_M8:
+		op1.Decode(addressSize,8,operand);
+		break;
+	case I486_OPCODE_INC_EAX://    0x40, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_OPCODE_INC_ECX://    0x41, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_OPCODE_INC_EDX://    0x42, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_OPCODE_INC_EBX://    0x43, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_OPCODE_INC_ESP://    0x44, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_OPCODE_INC_EBP://    0x45, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_OPCODE_INC_ESI://    0x46, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_OPCODE_INC_EDI://    0x47, // 16/32 depends on OPSIZE_OVERRIDE
+		op1.MakeByRegisterNumber(operandSize,opCode&7);
+		break;
+
+
 	case I486_OPCODE_JO_REL8:   // 0x70,
 	case I486_OPCODE_JNO_REL8:  // 0x71,
 	case I486_OPCODE_JB_REL8:   // 0x72,
@@ -477,11 +517,6 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 	case I486_OPCODE_JGE_REL8:  // 0x7D,
 	case I486_OPCODE_JLE_REL8:  // 0x7E,
 	case I486_OPCODE_JG_REL8:   // 0x7F,
-		break;
-
-
-	case I486_OPCODE_JMP_FAR:
-		op1.DecodeFarAddr(addressSize,operandSize,operand);
 		break;
 
 
@@ -674,6 +709,24 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 
 	switch(opCode)
 	{
+	case I486_OPCODE_CALL_REL://   0xE8,
+	case I486_OPCODE_JMP_REL://          0xE9,   // cw or cd
+		disasm=(I486_OPCODE_JMP_REL==opCode ? "JMP" : "CALL");
+		cpputil::ExtendString(disasm,8);
+		{
+			auto offset=GetSimm16or32(operandSize);
+			auto destin=eip+offset+numBytes;
+			disasm+=cpputil::Uitox(destin);
+		}
+		break;
+	case I486_OPCODE_CALL_FAR://   0x9A,
+	case I486_OPCODE_JMP_FAR:
+		disasm=(I486_OPCODE_JMP_FAR==opCode ? "JMP" : "CALL");
+		cpputil::ExtendString(disasm,8);
+		disasm+=op1.Disassemble();
+		break;
+
+
 	case I486_OPCODE_CLD:
 		disasm="CLD";
 		break;
@@ -727,8 +780,16 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		break;
 
 
-	case I486_OPCODE_DEC_R_M8:
-		disasm=DisassembleTypicalOneOperand("DEC",op1,8);
+	case I486_OPCODE_INC_DEC_R_M8:
+		switch(GetREG())
+		{
+		case 0:
+			disasm=DisassembleTypicalOneOperand("INC",op1,8);
+			break;
+		case 1:
+			disasm=DisassembleTypicalOneOperand("DEC",op1,8);
+			break;
+		}
 		break;
 	case I486_OPCODE_DEC_R_M:
 		disasm=DisassembleTypicalOneOperand("DEC",op1,operandSize);
@@ -786,6 +847,28 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 			disasm="IN      EAX,DX";
 		}
 		break;
+
+
+	case I486_OPCODE_INC_EAX://    0x40, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_OPCODE_INC_ECX://    0x41, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_OPCODE_INC_EDX://    0x42, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_OPCODE_INC_EBX://    0x43, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_OPCODE_INC_ESP://    0x44, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_OPCODE_INC_EBP://    0x45, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_OPCODE_INC_ESI://    0x46, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_OPCODE_INC_EDI://    0x47, // 16/32 depends on OPSIZE_OVERRIDE
+		disasm="INC";
+		cpputil::ExtendString(disasm,8);
+		if(16==operandSize)
+		{
+			disasm+=Reg16[opCode&7];
+		}
+		else
+		{
+			disasm+=Reg32[opCode&7];
+		}
+		break;
+
 
 	case I486_OPCODE_JO_REL8:   // 0x70,
 	case I486_OPCODE_JNO_REL8:  // 0x71,
@@ -863,17 +946,10 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		break;
 
 
-	case I486_OPCODE_JMP_FAR:
-		disasm="JMP";
-		cpputil::ExtendString(disasm,8);
-		disasm+=op1.Disassemble();
-		break;
-
-
 	case I486_OPCODE_BINARYOP_RM8_FROM_I8://=  0x80, // AND(REG=4), OR(REG=1), or XOR(REG=6) depends on the REG field of MODR/M
 	case I486_OPCODE_BINARYOP_R_FROM_I://=     0x81,
 	case I486_OPCODE_BINARYOP_RM_FROM_SXI8://= 0x83,
-		switch((operand[0]>>3)&7) // REG
+		switch(GetREG())
 		{
 		case 0:
 			disasm=DisassembleTypicalTwoOperands("ADD",op1,op2);
@@ -1073,6 +1149,17 @@ int i486DX::Instruction::GetSimm32(void) const
 {
 	return cpputil::GetSignedDword(operand+operandLen-4);
 }
+int i486DX::Instruction::GetSimm16or32(unsigned int operandSize) const
+{
+	if(16==operandSize)
+	{
+		return GetSimm16();
+	}
+	else
+	{
+		return GetSimm32();
+	}
+}
 
 /* static */ std::string i486DX::Get8BitRegisterNameFromMODR_M(unsigned char MOD_RM)
 {
@@ -1123,6 +1210,40 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		Abort("F6 and F7 not implemented yet.");
 		break;
 
+
+	case I486_OPCODE_CALL_FAR://   0x9A,
+		{
+			if(true==IsInRealMode())
+			{
+				clocksPassed=18;
+			}
+			else
+			{
+				clocksPassed=20;
+			}
+			Push(mem,inst.operandSize,state.CS.value);
+			Push(mem,inst.operandSize,state.EIP);
+			LoadSegmentRegister(state.CS,op1.seg,mem);
+			state.EIP=op1.offset;
+			EIPChanged=true;
+		}
+		break;
+	case I486_OPCODE_CALL_REL://   0xE8,
+		{
+			clocksPassed=3;
+			Push(mem,inst.operandSize,state.EIP);
+			auto offset=inst.GetSimm16or32(inst.operandSize);
+			auto destin=state.EIP+offset+inst.numBytes;
+			if(16==inst.operandSize)
+			{
+				destin&=0xffff;
+			}
+			state.EIP=destin;
+			EIPChanged=true;
+		}
+		break;
+
+
 	case I486_OPCODE_CLD:
 		state.EFLAGS&=(~EFLAGS_DIRECTION);
 		clocksPassed=2;
@@ -1138,13 +1259,21 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 
 
-	case I486_OPCODE_DEC_R_M8:
+	case I486_OPCODE_INC_DEC_R_M8:
 		{
 			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,1);
 			if(true!=state.exception)
 			{
 				auto i=value.GetAsDword();
-				DecrementByte(i);
+				switch(inst.GetREG())
+				{
+				case 0:
+					IncrementByte(i);
+					break;
+				case 1:
+					DecrementByte(i);
+					break;
+				}
 				value.SetDword(i);
 				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
 			}
@@ -1288,6 +1417,27 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 
 
+	case I486_OPCODE_INC_EAX://    0x40, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_OPCODE_INC_ECX://    0x41, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_OPCODE_INC_EDX://    0x42, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_OPCODE_INC_EBX://    0x43, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_OPCODE_INC_ESP://    0x44, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_OPCODE_INC_EBP://    0x45, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_OPCODE_INC_ESI://    0x46, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_OPCODE_INC_EDI://    0x47, // 16/32 depends on OPSIZE_OVERRIDE
+		{
+			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,op1.GetSize());
+			if(true!=state.exception)
+			{
+				auto i=value.GetAsDword();
+				IncrementWordOrDword(inst.operandSize,i);
+				value.SetDword(i);
+				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+			}
+		}
+		clocksPassed=1;
+
+
 	case I486_OPCODE_JO_REL8:   // 0x70,
 	case I486_OPCODE_JNO_REL8:  // 0x71,
 	case I486_OPCODE_JB_REL8:   // 0x72,
@@ -1363,8 +1513,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				auto destin=state.EIP+offset+inst.numBytes;
 				if(16==inst.operandSize)
 				{
-					state.EIP&=0xffff;
+					destin&=0xffff;
 				}
+				state.EIP=destin;
 				clocksPassed=3;
 			}
 			else
@@ -1375,6 +1526,20 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 
 
+	case I486_OPCODE_JMP_REL://          0xE9,   // cw or cd
+		{
+			clocksPassed=3;
+			Push(mem,inst.operandSize,state.EIP);
+			auto offset=inst.GetSimm16or32(inst.operandSize);
+			auto destin=state.EIP+offset+inst.numBytes;
+			if(16==inst.operandSize)
+			{
+				destin&=0xffff;
+			}
+			state.EIP=destin;
+			EIPChanged=true;
+		}
+		break;
 	case I486_OPCODE_JMP_FAR:
 		{
 			switch(inst.operandSize)
@@ -1426,7 +1591,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			}
 
 			auto i=value1.GetAsDword();
-			auto REG=(inst.operand[0]>>3)&7;
+			auto REG=inst.GetREG();
 			switch(REG)
 			{
 			case 0:
@@ -1480,7 +1645,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			}
 
 			auto i=value1.GetAsDword();
-			auto REG=(inst.operand[0]>>3)&7;
+			auto REG=inst.GetREG();
 			switch(REG)
 			{
 			case 0:

@@ -254,6 +254,12 @@ public:
 
 
 	public:
+		/*! Returns REG of MODR/M byte. */
+		inline unsigned int GetREG(void) const
+		{
+			return (operand[0]>>3)&7;
+		}
+
 		/*! Returns Unsigned Imm8 (last byte in the operand) after decoding. */
 		unsigned int GetUimm8(void) const;
 
@@ -271,6 +277,9 @@ public:
 
 		/*! Returns Signed Imm32 (last 4 byte in the operand) after decoding. */
 		int GetSimm32(void) const;
+
+		/*! Returns Signed Imm16 or Imm32 after decoding. */
+		int GetSimm16or32(unsigned int operandSize) const;
 	};
 
 
@@ -551,6 +560,24 @@ public:
 		state.EDX&=0xffff00ff;
 		state.EDX|=(value<<8);
 	}
+	inline unsigned int GetSP(void) const
+	{
+		return state.ESP&0xffff;
+	}
+	inline void SetSP(unsigned int value)
+	{
+		state.ESP&=0xffff0000;
+		state.ESP|=(value&0xffff);
+	}
+	inline unsigned int GetESP(void) const
+	{
+		return state.ESP;
+	}
+	inline void SetESP(unsigned int value)
+	{
+		state.ESP=value;
+	}
+
 
 
 	inline void SetEFLAGSBit(bool flag,unsigned int bit)
@@ -796,9 +823,6 @@ public:
 	}
 
 
-
-
-
 	virtual const char *DeviceName(void) const{return "486DX";}
 
 	/*! Default constructor.  As you can see.
@@ -856,6 +880,10 @@ public:
 		return false;
 	}
 
+	/*! Returns the addressing size (16 or 32) of the stack segment.
+	*/
+	unsigned int GetStackAddressingSize(void) const;
+
 	/*! Returns true if Paging is enabled.
 	*/
 	inline bool PagingEnabled(void) const
@@ -874,6 +902,12 @@ public:
 		Abort("Paging not supported yet.");
 		return linearAddr;
 	}
+
+
+	/*! Push a value.
+	*/
+	void Push(Memory &mem,unsigned int operandSize,unsigned int value);
+
 
 	/*! Fetch a byte. 
 	*/
@@ -989,6 +1023,15 @@ public:
 	void DecrementDword(unsigned int &value);
 	void DecrementWord(unsigned int &value);
 	void DecrementByte(unsigned int &value);
+
+
+	/*! Increment a value.  It also sets OF SF ZF AF PF according to the result.
+	    operandSize needs to be 16 or 32.
+	*/
+	void IncrementWordOrDword(unsigned int operandSize,unsigned int &value);
+	void IncrementDword(unsigned int &value);
+	void IncrementWord(unsigned int &value);
+	void IncrementByte(unsigned int &value);
 
 
 	/*! Add a value.  OF,SF,ZF,AF,CF, and PF flags are set accoring to the result.

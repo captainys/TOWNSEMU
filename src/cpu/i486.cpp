@@ -90,7 +90,6 @@ const char *const i486DX::RegToStr[REG_TOTAL_NUMBER_OF_REGISTERS]=
 };
 
 
-
 i486DX::i486DX()
 {
 	Reset();
@@ -391,6 +390,65 @@ unsigned int i486DX::GetRegisterValue(int reg) const
 	return 0;
 }
 
+unsigned int i486DX::GetStackAddressingSize(void) const
+{
+	if(true==IsInRealMode())
+	{
+		return 16;
+	}
+	else
+	{
+		std::cout << __FUNCTION__ << std::endl;
+		std::cout << "Protected mode not supported yet." << std::endl;
+		Abort("Protected mode not supported yet.");
+	}
+	return 0;
+}
+
+void i486DX::Push(Memory &mem,unsigned int operandSize,unsigned int value)
+{
+	if(16==GetStackAddressingSize())
+	{
+		auto SP=GetSP();
+		if(16==operandSize)
+		{
+			SP-=2;
+			SP&=65535;
+			StoreByte(mem,state.SS,SP  ,value&255);
+			StoreByte(mem,state.SS,SP+1,(value>>8)&255);
+		}
+		else if(32==operandSize)
+		{
+			SP-=4;
+			SP&=65535;
+			StoreByte(mem,state.SS,SP  ,value&255);
+			StoreByte(mem,state.SS,SP+1,(value>>8)&255);
+			StoreByte(mem,state.SS,SP+2,(value>>16)&255);
+			StoreByte(mem,state.SS,SP+3,(value>>24)&255);
+		}
+		SetSP(SP);
+	}
+	else
+	{
+		auto ESP=GetESP();
+		if(16==operandSize)
+		{
+			ESP-=2;
+			StoreByte(mem,state.SS,ESP  ,value&255);
+			StoreByte(mem,state.SS,ESP+1,(value>>8)&255);
+		}
+		else if(32==operandSize)
+		{
+			ESP-=4;
+			StoreByte(mem,state.SS,ESP  ,value&255);
+			StoreByte(mem,state.SS,ESP+1,(value>>8)&255);
+			StoreByte(mem,state.SS,ESP+2,(value>>16)&255);
+			StoreByte(mem,state.SS,ESP+3,(value>>24)&255);
+		}
+		SetESP(ESP);
+	}
+}
+
 std::string i486DX::Disassemble(const Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem) const
 {
 	std::string disasm;
@@ -454,6 +512,44 @@ void i486DX::DecrementByte(unsigned int &value)
 	SetSignFlag(0!=(value&0x80));
 	SetZeroFlag(0==value);
 	SetAuxCarryFlag(0x0F==(value&0x0F));
+	SetParityFlag(CheckParity(value&0xFF));
+}
+void i486DX::IncrementWordOrDword(unsigned int operandSize,unsigned int &value)
+{
+	if(16==operandSize)
+	{
+		IncrementWord(value);
+	}
+	else
+	{
+		IncrementDword(value);
+	}
+}
+void i486DX::IncrementDword(unsigned int &value)
+{
+	SetAuxCarryFlag(0x0F==(value&0x0F));
+	++value;
+	SetOverflowFlag(value==0x80000000);
+	SetSignFlag(0!=(value&0x80000000));
+	SetZeroFlag(0==value);
+	SetParityFlag(CheckParity(value&0xFF));
+}
+void i486DX::IncrementWord(unsigned int &value)
+{
+	SetAuxCarryFlag(0x0F==(value&0x0F));
+	value=(value+1)&0xffff;
+	SetOverflowFlag(value==0x8000);
+	SetSignFlag(0!=(value&0x8000));
+	SetZeroFlag(0==value);
+	SetParityFlag(CheckParity(value&0xFF));
+}
+void i486DX::IncrementByte(unsigned int &value)
+{
+	SetAuxCarryFlag(0x0F==(value&0x0F));
+	value=(value+1)&0xff;
+	SetOverflowFlag(value==0x80);
+	SetSignFlag(0!=(value&0x80));
+	SetZeroFlag(0==value);
 	SetParityFlag(CheckParity(value&0xFF));
 }
 
