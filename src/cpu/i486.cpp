@@ -115,7 +115,7 @@ void i486DX::Reset(void)
 	state.IDTR.limit=RESET_IDTRLIMIT;
 	state.IDTR.attrib=0;
 
-	state.DR7=RESET_DR7;
+	state.DR[7]=RESET_DR7;
 
 	state.EAX()=RESET_EAX;
 	SetDX(RESET_DX);
@@ -305,21 +305,21 @@ unsigned int i486DX::GetRegisterValue(int reg) const
 	case REG_CR3:
 		return state.CR[3];
 	case REG_DR0:
-		return state.DR0;
+		return state.DR[0];
 	case REG_DR1:
-		return state.DR1;
+		return state.DR[1];
 	case REG_DR2:
-		return state.DR2;
+		return state.DR[2];
 	case REG_DR3:
-		return state.DR3;
+		return state.DR[3];
 	case REG_DR4:
-		return state.DR4;
+		return state.DR[4];
 	case REG_DR5:
-		return state.DR5;
+		return state.DR[5];
 	case REG_DR6:
-		return state.DR6;
+		return state.DR[6];
 	case REG_DR7:
-		return state.DR7;
+		return state.DR[7];
 	}
 	return 0;
 }
@@ -1168,114 +1168,114 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 		case REG_TR0:
 			Abort("i486DX::EvaluateOperand, Check TR0 Byte Order");
 			value.numBytes=10;
-			value.byteData[0]=(state.TR0.linearBaseAddr&255);
-			value.byteData[1]=((state.TR0.linearBaseAddr>>8)&255);
-			value.byteData[2]=((state.TR0.linearBaseAddr>>16)&255);
-			value.byteData[3]=((state.TR0.linearBaseAddr>>24)&255);
-			value.byteData[4]=(state.TR0.limit&255);
-			value.byteData[5]=((state.TR0.limit>>8)&255);
-			value.byteData[6]=(state.TR0.selector&255);
-			value.byteData[7]=((state.TR0.selector>>8)&255);
-			value.byteData[8]=(state.TR0.attrib&255);
-			value.byteData[9]=((state.TR0.attrib>>8)&255);
+			value.byteData[0]=(state.TR[0].linearBaseAddr&255);
+			value.byteData[1]=((state.TR[0].linearBaseAddr>>8)&255);
+			value.byteData[2]=((state.TR[0].linearBaseAddr>>16)&255);
+			value.byteData[3]=((state.TR[0].linearBaseAddr>>24)&255);
+			value.byteData[4]=(state.TR[0].limit&255);
+			value.byteData[5]=((state.TR[0].limit>>8)&255);
+			value.byteData[6]=(state.TR[0].selector&255);
+			value.byteData[7]=((state.TR[0].selector>>8)&255);
+			value.byteData[8]=(state.TR[0].attrib&255);
+			value.byteData[9]=((state.TR[0].attrib>>8)&255);
 			break;
 		case REG_TR1:
 			Abort("i486DX::EvaluateOperand, Check TR1 Byte Order");
 			value.numBytes=10;
-			value.byteData[0]=(state.TR1.linearBaseAddr&255);
-			value.byteData[1]=((state.TR1.linearBaseAddr>>8)&255);
-			value.byteData[2]=((state.TR1.linearBaseAddr>>16)&255);
-			value.byteData[3]=((state.TR1.linearBaseAddr>>24)&255);
-			value.byteData[4]=(state.TR1.limit&255);
-			value.byteData[5]=((state.TR1.limit>>8)&255);
-			value.byteData[6]=(state.TR1.selector&255);
-			value.byteData[7]=((state.TR1.selector>>8)&255);
-			value.byteData[8]=(state.TR1.attrib&255);
-			value.byteData[9]=((state.TR1.attrib>>8)&255);
+			value.byteData[0]=(state.TR[1].linearBaseAddr&255);
+			value.byteData[1]=((state.TR[1].linearBaseAddr>>8)&255);
+			value.byteData[2]=((state.TR[1].linearBaseAddr>>16)&255);
+			value.byteData[3]=((state.TR[1].linearBaseAddr>>24)&255);
+			value.byteData[4]=(state.TR[1].limit&255);
+			value.byteData[5]=((state.TR[1].limit>>8)&255);
+			value.byteData[6]=(state.TR[1].selector&255);
+			value.byteData[7]=((state.TR[1].selector>>8)&255);
+			value.byteData[8]=(state.TR[1].attrib&255);
+			value.byteData[9]=((state.TR[1].attrib>>8)&255);
 			break;
 		case REG_TR2:
 			Abort("i486DX::EvaluateOperand, Check TR2 Byte Order");
 			value.numBytes=10;
-			value.byteData[0]=(state.TR2.linearBaseAddr&255);
-			value.byteData[1]=((state.TR2.linearBaseAddr>>8)&255);
-			value.byteData[2]=((state.TR2.linearBaseAddr>>16)&255);
-			value.byteData[3]=((state.TR2.linearBaseAddr>>24)&255);
-			value.byteData[4]=(state.TR2.limit&255);
-			value.byteData[5]=((state.TR2.limit>>8)&255);
-			value.byteData[6]=(state.TR2.selector&255);
-			value.byteData[7]=((state.TR2.selector>>8)&255);
-			value.byteData[8]=(state.TR2.attrib&255);
-			value.byteData[9]=((state.TR2.attrib>>8)&255);
+			value.byteData[0]=(state.TR[2].linearBaseAddr&255);
+			value.byteData[1]=((state.TR[2].linearBaseAddr>>8)&255);
+			value.byteData[2]=((state.TR[2].linearBaseAddr>>16)&255);
+			value.byteData[3]=((state.TR[2].linearBaseAddr>>24)&255);
+			value.byteData[4]=(state.TR[2].limit&255);
+			value.byteData[5]=((state.TR[2].limit>>8)&255);
+			value.byteData[6]=(state.TR[2].selector&255);
+			value.byteData[7]=((state.TR[2].selector>>8)&255);
+			value.byteData[8]=(state.TR[2].attrib&255);
+			value.byteData[9]=((state.TR[2].attrib>>8)&255);
 			break;
 		case REG_TR3:
 			Abort("i486DX::EvaluateOperand, Check TR3 Byte Order");
 			value.numBytes=10;
-			value.byteData[0]=(state.TR3.linearBaseAddr&255);
-			value.byteData[1]=((state.TR3.linearBaseAddr>>8)&255);
-			value.byteData[2]=((state.TR3.linearBaseAddr>>16)&255);
-			value.byteData[3]=((state.TR3.linearBaseAddr>>24)&255);
-			value.byteData[4]=(state.TR3.limit&255);
-			value.byteData[5]=((state.TR3.limit>>8)&255);
-			value.byteData[6]=(state.TR3.selector&255);
-			value.byteData[7]=((state.TR3.selector>>8)&255);
-			value.byteData[8]=(state.TR3.attrib&255);
-			value.byteData[9]=((state.TR3.attrib>>8)&255);
+			value.byteData[0]=(state.TR[3].linearBaseAddr&255);
+			value.byteData[1]=((state.TR[3].linearBaseAddr>>8)&255);
+			value.byteData[2]=((state.TR[3].linearBaseAddr>>16)&255);
+			value.byteData[3]=((state.TR[3].linearBaseAddr>>24)&255);
+			value.byteData[4]=(state.TR[3].limit&255);
+			value.byteData[5]=((state.TR[3].limit>>8)&255);
+			value.byteData[6]=(state.TR[3].selector&255);
+			value.byteData[7]=((state.TR[3].selector>>8)&255);
+			value.byteData[8]=(state.TR[3].attrib&255);
+			value.byteData[9]=((state.TR[3].attrib>>8)&255);
 			break;
 		case REG_TR4:
 			Abort("i486DX::EvaluateOperand, Check TR4 Byte Order");
 			value.numBytes=10;
-			value.byteData[0]=(state.TR4.linearBaseAddr&255);
-			value.byteData[1]=((state.TR4.linearBaseAddr>>8)&255);
-			value.byteData[2]=((state.TR4.linearBaseAddr>>16)&255);
-			value.byteData[3]=((state.TR4.linearBaseAddr>>24)&255);
-			value.byteData[4]=(state.TR4.limit&255);
-			value.byteData[5]=((state.TR4.limit>>8)&255);
-			value.byteData[6]=(state.TR4.selector&255);
-			value.byteData[7]=((state.TR4.selector>>8)&255);
-			value.byteData[8]=(state.TR4.attrib&255);
-			value.byteData[9]=((state.TR4.attrib>>8)&255);
+			value.byteData[0]=(state.TR[4].linearBaseAddr&255);
+			value.byteData[1]=((state.TR[4].linearBaseAddr>>8)&255);
+			value.byteData[2]=((state.TR[4].linearBaseAddr>>16)&255);
+			value.byteData[3]=((state.TR[4].linearBaseAddr>>24)&255);
+			value.byteData[4]=(state.TR[4].limit&255);
+			value.byteData[5]=((state.TR[4].limit>>8)&255);
+			value.byteData[6]=(state.TR[4].selector&255);
+			value.byteData[7]=((state.TR[4].selector>>8)&255);
+			value.byteData[8]=(state.TR[4].attrib&255);
+			value.byteData[9]=((state.TR[4].attrib>>8)&255);
 			break;
 		case REG_TR5:
 			Abort("i486DX::EvaluateOperand, Check TR5 Byte Order");
 			value.numBytes=10;
-			value.byteData[0]=(state.TR5.linearBaseAddr&255);
-			value.byteData[1]=((state.TR5.linearBaseAddr>>8)&255);
-			value.byteData[2]=((state.TR5.linearBaseAddr>>16)&255);
-			value.byteData[3]=((state.TR5.linearBaseAddr>>24)&255);
-			value.byteData[4]=(state.TR5.limit&255);
-			value.byteData[5]=((state.TR5.limit>>8)&255);
-			value.byteData[6]=(state.TR5.selector&255);
-			value.byteData[7]=((state.TR5.selector>>8)&255);
-			value.byteData[8]=(state.TR5.attrib&255);
-			value.byteData[9]=((state.TR5.attrib>>8)&255);
+			value.byteData[0]=(state.TR[5].linearBaseAddr&255);
+			value.byteData[1]=((state.TR[5].linearBaseAddr>>8)&255);
+			value.byteData[2]=((state.TR[5].linearBaseAddr>>16)&255);
+			value.byteData[3]=((state.TR[5].linearBaseAddr>>24)&255);
+			value.byteData[4]=(state.TR[5].limit&255);
+			value.byteData[5]=((state.TR[5].limit>>8)&255);
+			value.byteData[6]=(state.TR[5].selector&255);
+			value.byteData[7]=((state.TR[5].selector>>8)&255);
+			value.byteData[8]=(state.TR[5].attrib&255);
+			value.byteData[9]=((state.TR[5].attrib>>8)&255);
 			break;
 		case REG_TR6:
 			Abort("i486DX::EvaluateOperand, Check TR6 Byte Order");
 			value.numBytes=10;
-			value.byteData[0]=(state.TR6.linearBaseAddr&255);
-			value.byteData[1]=((state.TR6.linearBaseAddr>>8)&255);
-			value.byteData[2]=((state.TR6.linearBaseAddr>>16)&255);
-			value.byteData[3]=((state.TR6.linearBaseAddr>>24)&255);
-			value.byteData[4]=(state.TR6.limit&255);
-			value.byteData[5]=((state.TR6.limit>>8)&255);
-			value.byteData[6]=(state.TR6.selector&255);
-			value.byteData[7]=((state.TR6.selector>>8)&255);
-			value.byteData[8]=(state.TR6.attrib&255);
-			value.byteData[9]=((state.TR6.attrib>>8)&255);
+			value.byteData[0]=(state.TR[6].linearBaseAddr&255);
+			value.byteData[1]=((state.TR[6].linearBaseAddr>>8)&255);
+			value.byteData[2]=((state.TR[6].linearBaseAddr>>16)&255);
+			value.byteData[3]=((state.TR[6].linearBaseAddr>>24)&255);
+			value.byteData[4]=(state.TR[6].limit&255);
+			value.byteData[5]=((state.TR[6].limit>>8)&255);
+			value.byteData[6]=(state.TR[6].selector&255);
+			value.byteData[7]=((state.TR[6].selector>>8)&255);
+			value.byteData[8]=(state.TR[6].attrib&255);
+			value.byteData[9]=((state.TR[6].attrib>>8)&255);
 			break;
 		case REG_TR7:
 			Abort("i486DX::EvaluateOperand, Check TR7 Byte Order");
 			value.numBytes=10;
-			value.byteData[0]=(state.TR7.linearBaseAddr&255);
-			value.byteData[1]=((state.TR7.linearBaseAddr>>8)&255);
-			value.byteData[2]=((state.TR7.linearBaseAddr>>16)&255);
-			value.byteData[3]=((state.TR7.linearBaseAddr>>24)&255);
-			value.byteData[4]=(state.TR7.limit&255);
-			value.byteData[5]=((state.TR7.limit>>8)&255);
-			value.byteData[6]=(state.TR7.selector&255);
-			value.byteData[7]=((state.TR7.selector>>8)&255);
-			value.byteData[8]=(state.TR7.attrib&255);
-			value.byteData[9]=((state.TR7.attrib>>8)&255);
+			value.byteData[0]=(state.TR[7].linearBaseAddr&255);
+			value.byteData[1]=((state.TR[7].linearBaseAddr>>8)&255);
+			value.byteData[2]=((state.TR[7].linearBaseAddr>>16)&255);
+			value.byteData[3]=((state.TR[7].linearBaseAddr>>24)&255);
+			value.byteData[4]=(state.TR[7].limit&255);
+			value.byteData[5]=((state.TR[7].limit>>8)&255);
+			value.byteData[6]=(state.TR[7].selector&255);
+			value.byteData[7]=((state.TR[7].selector>>8)&255);
+			value.byteData[8]=(state.TR[7].attrib&255);
+			value.byteData[9]=((state.TR[7].attrib>>8)&255);
 			break;
 		case REG_IDTR:
 			Abort("i486DX::EvaluateOperand, Check IDTR Byte Order");
@@ -1321,59 +1321,59 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 			break;
 		case REG_DR0:
 			value.numBytes=4;
-			value.byteData[0]=(state.DR0&255);
-			value.byteData[1]=((state.DR0>>8)&255);
-			value.byteData[2]=((state.DR0>>16)&255);
-			value.byteData[3]=((state.DR0>>24)&255);
+			value.byteData[0]=(state.DR[0]&255);
+			value.byteData[1]=((state.DR[0]>>8)&255);
+			value.byteData[2]=((state.DR[0]>>16)&255);
+			value.byteData[3]=((state.DR[0]>>24)&255);
 			break;
 		case REG_DR1:
 			value.numBytes=4;
-			value.byteData[0]=(state.DR1&255);
-			value.byteData[1]=((state.DR1>>8)&255);
-			value.byteData[2]=((state.DR1>>16)&255);
-			value.byteData[3]=((state.DR1>>24)&255);
+			value.byteData[0]=(state.DR[1]&255);
+			value.byteData[1]=((state.DR[1]>>8)&255);
+			value.byteData[2]=((state.DR[1]>>16)&255);
+			value.byteData[3]=((state.DR[1]>>24)&255);
 			break;
 		case REG_DR2:
 			value.numBytes=4;
-			value.byteData[0]=(state.DR2&255);
-			value.byteData[1]=((state.DR2>>8)&255);
-			value.byteData[2]=((state.DR2>>16)&255);
-			value.byteData[3]=((state.DR2>>24)&255);
+			value.byteData[0]=(state.DR[2]&255);
+			value.byteData[1]=((state.DR[2]>>8)&255);
+			value.byteData[2]=((state.DR[2]>>16)&255);
+			value.byteData[3]=((state.DR[2]>>24)&255);
 			break;
 		case REG_DR3:
 			value.numBytes=4;
-			value.byteData[0]=(state.DR3&255);
-			value.byteData[1]=((state.DR3>>8)&255);
-			value.byteData[2]=((state.DR3>>16)&255);
-			value.byteData[3]=((state.DR3>>24)&255);
+			value.byteData[0]=(state.DR[3]&255);
+			value.byteData[1]=((state.DR[3]>>8)&255);
+			value.byteData[2]=((state.DR[3]>>16)&255);
+			value.byteData[3]=((state.DR[3]>>24)&255);
 			break;
 		case REG_DR4:
 			value.numBytes=4;
-			value.byteData[0]=(state.DR4&255);
-			value.byteData[1]=((state.DR4>>8)&255);
-			value.byteData[2]=((state.DR4>>16)&255);
-			value.byteData[3]=((state.DR4>>24)&255);
+			value.byteData[0]=(state.DR[4]&255);
+			value.byteData[1]=((state.DR[4]>>8)&255);
+			value.byteData[2]=((state.DR[4]>>16)&255);
+			value.byteData[3]=((state.DR[4]>>24)&255);
 			break;
 		case REG_DR5:
 			value.numBytes=4;
-			value.byteData[0]=(state.DR5&255);
-			value.byteData[1]=((state.DR5>>8)&255);
-			value.byteData[2]=((state.DR5>>16)&255);
-			value.byteData[3]=((state.DR5>>24)&255);
+			value.byteData[0]=(state.DR[5]&255);
+			value.byteData[1]=((state.DR[5]>>8)&255);
+			value.byteData[2]=((state.DR[5]>>16)&255);
+			value.byteData[3]=((state.DR[5]>>24)&255);
 			break;
 		case REG_DR6:
 			value.numBytes=4;
-			value.byteData[0]=(state.DR6&255);
-			value.byteData[1]=((state.DR6>>8)&255);
-			value.byteData[2]=((state.DR6>>16)&255);
-			value.byteData[3]=((state.DR6>>24)&255);
+			value.byteData[0]=(state.DR[6]&255);
+			value.byteData[1]=((state.DR[6]>>8)&255);
+			value.byteData[2]=((state.DR[6]>>16)&255);
+			value.byteData[3]=((state.DR[6]>>24)&255);
 			break;
 		case REG_DR7:
 			value.numBytes=4;
-			value.byteData[0]=(state.DR7&255);
-			value.byteData[1]=((state.DR7>>8)&255);
-			value.byteData[2]=((state.DR7>>16)&255);
-			value.byteData[3]=((state.DR7>>24)&255);
+			value.byteData[0]=(state.DR[7]&255);
+			value.byteData[1]=((state.DR[7]>>8)&255);
+			value.byteData[2]=((state.DR[7]>>16)&255);
+			value.byteData[3]=((state.DR[7]>>24)&255);
 			break;
 		}
 		break;
@@ -1629,28 +1629,28 @@ void i486DX::StoreOperandValue(
 			state.CR[3]=cpputil::GetDword(value.byteData);
 			break;
 		case REG_DR0:
-			state.DR0=cpputil::GetDword(value.byteData);
+			state.DR[0]=cpputil::GetDword(value.byteData);
 			break;
 		case REG_DR1:
-			state.DR1=cpputil::GetDword(value.byteData);
+			state.DR[1]=cpputil::GetDword(value.byteData);
 			break;
 		case REG_DR2:
-			state.DR2=cpputil::GetDword(value.byteData);
+			state.DR[2]=cpputil::GetDword(value.byteData);
 			break;
 		case REG_DR3:
-			state.DR3=cpputil::GetDword(value.byteData);
+			state.DR[3]=cpputil::GetDword(value.byteData);
 			break;
 		case REG_DR4:
-			state.DR4=cpputil::GetDword(value.byteData);
+			state.DR[4]=cpputil::GetDword(value.byteData);
 			break;
 		case REG_DR5:
-			state.DR5=cpputil::GetDword(value.byteData);
+			state.DR[5]=cpputil::GetDword(value.byteData);
 			break;
 		case REG_DR6:
-			state.DR6=cpputil::GetDword(value.byteData);
+			state.DR[6]=cpputil::GetDword(value.byteData);
 			break;
 		case REG_DR7:
-			state.DR7=cpputil::GetDword(value.byteData);
+			state.DR[7]=cpputil::GetDword(value.byteData);
 			break;
 		}
 		break;

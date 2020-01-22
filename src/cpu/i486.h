@@ -194,9 +194,9 @@ public:
 		unsigned int EFLAGS;   // bit 1=Always 1 ([1] pp.2-14)
 		SegmentRegister CS,DS,ES,SS,FS,GS;
 		SystemAddressRegister GDT,LDT;
-		SystemSegmentRegister TR0,TR1,TR2,TR3,TR4,TR5,TR6,TR7,IDTR;
+		SystemSegmentRegister TR[8],IDTR;
 		unsigned int CR[4];
-		unsigned int DR0,DR1,DR2,DR3,DR4,DR5,DR6,DR7;
+		unsigned int DR[8];
 
 		// [1] pp.26-211 in the description of the MOV instruction
 		// "Loading to SS register inhibits all interrupts until after the execution of the next instruction"
