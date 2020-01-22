@@ -233,9 +233,6 @@ void i486DX::FetchOperand(Instruction &inst,SegmentRegister seg,int offset,const
 		break;
 
 
-	case I486_OPCODE_DEC_R_M:
-		FetchOperandRM(inst,seg,offset,mem);
-		break;
 	case I486_OPCODE_DEC_EAX:
 	case I486_OPCODE_DEC_ECX:
 	case I486_OPCODE_DEC_EDX:
@@ -261,6 +258,9 @@ void i486DX::FetchOperand(Instruction &inst,SegmentRegister seg,int offset,const
 
 
 	case I486_OPCODE_INC_DEC_R_M8:
+		FetchOperandRM(inst,seg,offset,mem);
+		break;
+	case I486_OPCODE_INC_DEC_CALL_CALLF_JMP_JMPF_PUSH:
 		FetchOperandRM(inst,seg,offset,mem);
 		break;
 	case I486_OPCODE_INC_EAX://    0x40, // 16/32 depends on OPSIZE_OVERRIDE
@@ -390,6 +390,15 @@ void i486DX::FetchOperand(Instruction &inst,SegmentRegister seg,int offset,const
 		break;
 
 
+	case I486_OPCODE_RET://              0xC3,
+	case I486_OPCODE_RETF://             0xCB,
+		break;
+	case I486_OPCODE_RET_I16://          0xC2,
+	case I486_OPCODE_RETF_I16://         0xCA,
+		FetchOperand16(inst,seg,offset,mem);
+		break;
+
+
 	case I486_OPCODE_AND_AL_FROM_I8://  0x24,
 	case I486_OPCODE_OR_AL_FROM_I8://    0x0C,
 	case I486_OPCODE_TEST_AL_FROM_I8://  0xA8,
@@ -462,9 +471,6 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 		break;
 
 
-	case I486_OPCODE_DEC_R_M:
-		op1.Decode(addressSize,operandSize,operand);
-		break;
 	case I486_OPCODE_DEC_EAX:
 	case I486_OPCODE_DEC_ECX:
 	case I486_OPCODE_DEC_EDX:
@@ -488,6 +494,9 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 
 	case I486_OPCODE_INC_DEC_R_M8:
 		op1.Decode(addressSize,8,operand);
+		break;
+	case I486_OPCODE_INC_DEC_CALL_CALLF_JMP_JMPF_PUSH:
+		op1.Decode(addressSize,operandSize,operand);
 		break;
 	case I486_OPCODE_INC_EAX://    0x40, // 16/32 depends on OPSIZE_OVERRIDE
 	case I486_OPCODE_INC_ECX://    0x41, // 16/32 depends on OPSIZE_OVERRIDE
@@ -780,20 +789,6 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		break;
 
 
-	case I486_OPCODE_INC_DEC_R_M8:
-		switch(GetREG())
-		{
-		case 0:
-			disasm=DisassembleTypicalOneOperand("INC",op1,8);
-			break;
-		case 1:
-			disasm=DisassembleTypicalOneOperand("DEC",op1,8);
-			break;
-		}
-		break;
-	case I486_OPCODE_DEC_R_M:
-		disasm=DisassembleTypicalOneOperand("DEC",op1,operandSize);
-		break;
 	case I486_OPCODE_DEC_EAX:
 	case I486_OPCODE_DEC_ECX:
 	case I486_OPCODE_DEC_EDX:
@@ -849,6 +844,43 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		break;
 
 
+	case I486_OPCODE_INC_DEC_R_M8:
+		switch(GetREG())
+		{
+		case 0:
+			disasm=DisassembleTypicalOneOperand("INC",op1,8);
+			break;
+		case 1:
+			disasm=DisassembleTypicalOneOperand("DEC",op1,8);
+			break;
+		}
+		break;
+	case I486_OPCODE_INC_DEC_CALL_CALLF_JMP_JMPF_PUSH:
+		switch(GetREG())
+		{
+		case 0:
+			disasm=DisassembleTypicalOneOperand("INC",op1,operandSize);
+			break;
+		case 1:
+			disasm=DisassembleTypicalOneOperand("DEC",op1,operandSize);
+			break;
+		case 2:
+			disasm=DisassembleTypicalOneOperand("CALL",op1,operandSize);
+			break;
+		case 3:
+			disasm=DisassembleTypicalOneOperand("CALLF",op1,operandSize);
+			break;
+		case 4:
+			disasm=DisassembleTypicalOneOperand("JMP",op1,operandSize);
+			break;
+		case 5:
+			disasm=DisassembleTypicalOneOperand("JMPF",op1,operandSize);
+			break;
+		case 6:
+			disasm=DisassembleTypicalOneOperand("PUSH",op1,operandSize);
+			break;
+		}
+		break;
 	case I486_OPCODE_INC_EAX://    0x40, // 16/32 depends on OPSIZE_OVERRIDE
 	case I486_OPCODE_INC_ECX://    0x41, // 16/32 depends on OPSIZE_OVERRIDE
 	case I486_OPCODE_INC_EDX://    0x42, // 16/32 depends on OPSIZE_OVERRIDE
@@ -1020,6 +1052,27 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 
 		disasm=DisassembleTypicalTwoOperands("MOV",op1,op2);
 		break;
+
+
+	case I486_OPCODE_RET://              0xC3,
+		disasm="RET";
+		break;
+	case I486_OPCODE_RETF://             0xCB,
+		disasm="RETF";
+		break;
+	case I486_OPCODE_RET_I16://          0xC2,
+		disasm="RET";
+		cpputil::ExtendString(disasm,8);
+		disasm+=op1.Disassemble();
+		break;
+	case I486_OPCODE_RETF_I16://         0xCA,
+		disasm="RETF";
+		cpputil::ExtendString(disasm,8);
+		disasm+=op1.Disassemble();
+		break;
+
+
+
 
 	case I486_OPCODE_OUT_I8_AL: //        0xE6,
 		disasm="OUT";
@@ -1259,54 +1312,6 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 
 
-	case I486_OPCODE_INC_DEC_R_M8:
-		{
-			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,1);
-			if(true!=state.exception)
-			{
-				auto i=value.GetAsDword();
-				switch(inst.GetREG())
-				{
-				case 0:
-					IncrementByte(i);
-					break;
-				case 1:
-					DecrementByte(i);
-					break;
-				}
-				value.SetDword(i);
-				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
-			}
-			if(op1.operandType==OPER_ADDR)
-			{
-				clocksPassed=3;
-			}
-			else
-			{
-				clocksPassed=1;
-			}
-		}
-		break;
-	case I486_OPCODE_DEC_R_M:
-		{
-			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
-			if(true!=state.exception)
-			{
-				auto i=value.GetAsDword();
-				DecrementWordOrDword(inst.operandSize,i);
-				value.SetDword(i);
-				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
-			}
-			if(op1.operandType==OPER_ADDR)
-			{
-				clocksPassed=3;
-			}
-			else
-			{
-				clocksPassed=1;
-			}
-		}
-		break;
 	case I486_OPCODE_DEC_EAX:
 	case I486_OPCODE_DEC_ECX:
 	case I486_OPCODE_DEC_EDX:
@@ -1417,6 +1422,71 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 
 
+	case I486_OPCODE_INC_DEC_R_M8:
+		{
+			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,1);
+			if(true!=state.exception)
+			{
+				auto i=value.GetAsDword();
+				switch(inst.GetREG())
+				{
+				case 0:
+					IncrementByte(i);
+					break;
+				case 1:
+					DecrementByte(i);
+					break;
+				}
+				value.SetDword(i);
+				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+			}
+			if(op1.operandType==OPER_ADDR)
+			{
+				clocksPassed=3;
+			}
+			else
+			{
+				clocksPassed=1;
+			}
+		}
+		break;
+	case I486_OPCODE_INC_DEC_CALL_CALLF_JMP_JMPF_PUSH:
+		{
+			auto REG=inst.GetREG();
+			switch(REG)
+			{
+			case 0:
+			case 1:
+				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+				if(true!=state.exception)
+				{
+					auto i=value.GetAsDword();
+					if(0==REG)
+					{
+						IncrementWordOrDword(inst.operandSize,i);
+					}
+					else
+					{
+						DecrementWordOrDword(inst.operandSize,i);
+					}
+					value.SetDword(i);
+					StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+				}
+				if(op1.operandType==OPER_ADDR)
+				{
+					clocksPassed=3;
+				}
+				else
+				{
+					clocksPassed=1;
+				}
+				break;
+			case 2:
+				Abort("I486_OPCODE_INC_DEC_CALL_CALLF_JMP_JMPF_PUSH  REG Not implemented yet.");
+				break;
+			}
+		}
+		break;
 	case I486_OPCODE_INC_EAX://    0x40, // 16/32 depends on OPSIZE_OVERRIDE
 	case I486_OPCODE_INC_ECX://    0x41, // 16/32 depends on OPSIZE_OVERRIDE
 	case I486_OPCODE_INC_EDX://    0x42, // 16/32 depends on OPSIZE_OVERRIDE
@@ -1754,6 +1824,18 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		Move(mem,inst.addressSize,inst.segOverride,op1,op2);
 		clocksPassed=4;  // 6 for TR6 strictly speaking.
 		break;
+
+
+	case I486_OPCODE_RET://              0xC3,
+		break;
+	case I486_OPCODE_RETF://             0xCB,
+		break;
+	case I486_OPCODE_RET_I16://          0xC2,
+		break;
+	case I486_OPCODE_RETF_I16://         0xCA,
+		break;
+
+
 
 	case I486_OPCODE_OUT_I8_AL: //        0xE6,
 		io.Out8(inst.operand[0],GetRegisterValue(REG_AL));
