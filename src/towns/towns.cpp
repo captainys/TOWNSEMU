@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include "cpputil.h"
 #include "towns.h"
 
 
@@ -86,4 +87,27 @@ unsigned int FMTowns::FetchByteCS_EIP(int offset) const
 i486DX::Instruction FMTowns::FetchInstruction(void) const
 {
 	return cpu.FetchInstruction(mem);
+}
+std::vector <std::string> FMTowns::GetStackText(unsigned int numBytes) const
+{
+	std::vector <std::string> text;
+	for(unsigned int offsetHigh=0; offsetHigh<numBytes; offsetHigh+=16)
+	{
+		std::string line;
+		line="SS+"+cpputil::Uitox(offsetHigh)+":";
+		for(unsigned int offsetLow=0; offsetLow<16 && offsetHigh+offsetLow<numBytes; ++offsetLow)
+		{
+			line+=cpputil::Ubtox(cpu.FetchByte(cpu.state.SS,cpu.state.ESP+offsetHigh+offsetLow,mem));
+			line.push_back(' ');
+		}
+		text.push_back(line);
+	}
+	return text;
+}
+void FMTowns::PrintStack(unsigned int numBytes) const
+{
+	for(auto s : GetStackText(numBytes))
+	{
+		std::cout << s << std::endl;
+	}
 }

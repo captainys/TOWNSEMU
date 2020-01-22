@@ -68,6 +68,7 @@ int main(int ac,char *av[])
 		auto inst=towns.FetchInstruction();
 
 		towns.cpu.PrintState();
+		towns.PrintStack(32);
 
 		auto disasm=towns.cpu.Disassemble(inst,towns.cpu.state.CS,towns.cpu.state.EIP,towns.mem);
 

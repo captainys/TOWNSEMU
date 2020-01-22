@@ -459,8 +459,6 @@ unsigned int i486DX::Pop(Memory &mem,unsigned int operandSize)
 		{
 			value=FetchByte(state.SS,SP,mem)|(FetchByte(state.SS,SP+1,mem)<<8);
 			SP+=2;
-			StoreByte(mem,state.SS,SP  ,value&255);
-			StoreByte(mem,state.SS,SP+1,(value>>8)&255);
 		}
 		else if(32==operandSize)
 		{
