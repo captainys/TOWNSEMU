@@ -4,17 +4,17 @@
 #include "i486.h"
 
 
-const char *const i486DX::Reg8[8]=
+const char *const i486DX::Reg8Str[8]=
 {
 	"AL","CL","DL","BL","AH","CH","DH","BH"
 };
 
-const char *const i486DX::Reg16[8]=
+const char *const i486DX::Reg16Str[8]=
 {
 	"AX","CX","DX","BX","SP","BP","SI","DI"
 };
 
-const char *const i486DX::Reg32[8]=
+const char *const i486DX::Reg32Str[8]=
 {
 	"EAX","ECX","EDX","EBX","ESP","EBP","ESI","EDI"
 };

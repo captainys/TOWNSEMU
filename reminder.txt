@@ -1,4 +1,13 @@
 [Reminder to myself]
 
+Reorganize CPU State class
+
+Reg16[] -> Reg16Str[]
+Reg32[] -> Reg32Str[]
+EAX,EDX,ECX,EBX... -> Reg32[], EAX(),EDX(),ECX(),EBX()
+CR0,CR1,... -> CR[],CR0(),CR1(),CR2(),...
+
+
+
 Probably:
 I'm not setting carry flag correctly in SBB and ADC.  In case Carry+Op2==0x100000000, the prev and new values are equal, but it goes exactly one round.

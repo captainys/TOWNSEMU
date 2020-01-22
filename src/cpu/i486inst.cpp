@@ -849,11 +849,11 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		cpputil::ExtendString(disasm,8);
 		if(16==operandSize)
 		{
-			disasm+=Reg16[opCode&7];
+			disasm+=Reg16Str[opCode&7];
 		}
 		else
 		{
-			disasm+=Reg32[opCode&7];
+			disasm+=Reg32Str[opCode&7];
 		}
 		break;
 
@@ -941,11 +941,11 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		cpputil::ExtendString(disasm,8);
 		if(16==operandSize)
 		{
-			disasm+=Reg16[opCode&7];
+			disasm+=Reg16Str[opCode&7];
 		}
 		else
 		{
-			disasm+=Reg32[opCode&7];
+			disasm+=Reg32Str[opCode&7];
 		}
 		break;
 
@@ -1167,12 +1167,12 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		if(16==operandSize)
 		{
 			disasm="PUSH    ";
-			disasm+=Reg16[opCode&7];
+			disasm+=Reg16Str[opCode&7];
 		}
 		else
 		{
 			disasm="PUSH    ";
-			disasm+=Reg16[opCode&7];
+			disasm+=Reg16Str[opCode&7];
 		}
 		break;
 	case I486_OPCODE_PUSH_I8://          0x6A,
@@ -1310,29 +1310,29 @@ int i486DX::Instruction::GetSimm16or32(unsigned int operandSize) const
 /* static */ std::string i486DX::Get8BitRegisterNameFromMODR_M(unsigned char MOD_RM)
 {
 	auto REG_OPCODE=((MOD_RM>>3)&7);
-	return Reg8[REG_OPCODE];
+	return Reg8Str[REG_OPCODE];
 }
 /* static */ std::string i486DX::Get16BitRegisterNameFromMODR_M(unsigned char MOD_RM)
 {
 	auto REG_OPCODE=((MOD_RM>>3)&7);
-	return Reg16[REG_OPCODE];
+	return Reg16Str[REG_OPCODE];
 }
 /* static */ std::string i486DX::Get32BitRegisterNameFromMODR_M(unsigned char MOD_RM)
 {
 	auto REG_OPCODE=((MOD_RM>>3)&7);
-	return Reg32[REG_OPCODE];
+	return Reg32Str[REG_OPCODE];
 }
 /* static */ std::string i486DX::Get16or32BitRegisterNameFromMODR_M(int dataSize,unsigned char MOD_RM)
 {
 	if(16==dataSize)
 	{
 		auto REG_OPCODE=((MOD_RM>>3)&7);
-		return Reg16[REG_OPCODE];
+		return Reg16Str[REG_OPCODE];
 	}
 	else
 	{
 		auto REG_OPCODE=((MOD_RM>>3)&7);
-		return Reg32[REG_OPCODE];
+		return Reg32Str[REG_OPCODE];
 	}
 }
 

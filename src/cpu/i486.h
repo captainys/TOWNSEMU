@@ -15,9 +15,9 @@
 class i486DX : public CPU
 {
 public:
-	static const char *const Reg8[8];
-	static const char *const Reg16[8];
-	static const char *const Reg32[8];
+	static const char *const Reg8Str[8];
+	static const char *const Reg16Str[8];
+	static const char *const Reg32Str[8];
 	static const char *const Sreg[8];
 
 	enum
