@@ -577,7 +577,34 @@ public:
 	{
 		state.ESP=value;
 	}
-
+	inline unsigned int GetIP(void) const
+	{
+		return state.EIP&0xffff;
+	}
+	inline unsigned int GetEIP(void) const
+	{
+		return state.EIP;
+	}
+	inline void SetIP(unsigned int value)
+	{
+		state.EIP&=0xffff0000;
+		state.EIP|=(value&0xffff);
+	}
+	inline void SetEIP(unsigned int value)
+	{
+		state.EIP=value;
+	}
+	inline void SetIPorEIP(unsigned int operandSize,unsigned int value)
+	{
+		if(16==operandSize)
+		{
+			SetIP(value);
+		}
+		else
+		{
+			SetEIP(value);
+		}
+	}
 
 
 	inline void SetEFLAGSBit(bool flag,unsigned int bit)
@@ -907,6 +934,10 @@ public:
 	/*! Push a value.
 	*/
 	void Push(Memory &mem,unsigned int operandSize,unsigned int value);
+
+	/*! Pop a value.
+	*/
+	unsigned int Pop(Memory &mem,unsigned int operandSize);
 
 
 	/*! Fetch a byte. 

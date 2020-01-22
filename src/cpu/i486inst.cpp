@@ -1264,6 +1264,209 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 
 
+	case I486_OPCODE_AND_AL_FROM_I8://  0x24,
+	case I486_OPCODE_OR_AL_FROM_I8://    0x0C,
+	case I486_OPCODE_TEST_AL_FROM_I8://  0xA8,
+	case I486_OPCODE_XOR_AL_FROM_I8:
+		{
+			clocksPassed=1;
+			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,1);
+			if(true==state.exception)
+			{
+				break;
+			}
+			auto al=GetAL();
+			auto v=value.GetAsDword();
+			switch(inst.opCode)
+			{
+			case I486_OPCODE_AND_AL_FROM_I8://  0x24,
+			case I486_OPCODE_TEST_AL_FROM_I8://  0xA8,
+				AndByte(al,v);
+				break;
+			case I486_OPCODE_OR_AL_FROM_I8://    0x0C,
+				OrByte(al,v);
+				break;
+			case I486_OPCODE_XOR_AL_FROM_I8:
+				XorByte(al,v);
+				break;
+			}
+			if(I486_OPCODE_TEST_AL_FROM_I8!=inst.opCode) // Don't actually update value if TEST.
+			{
+				SetAL(al);
+			}
+		}
+		break;
+	case I486_OPCODE_AND_A_FROM_I://    0x25,
+	case I486_OPCODE_OR_A_FROM_I://      0x0D,
+	case I486_OPCODE_TEST_A_FROM_I://    0xA9,
+	case I486_OPCODE_XOR_A_FROM_I:
+		clocksPassed=1;
+		if(16==inst.operandSize)
+		{
+			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+			if(true==state.exception)
+			{
+				break;
+			}
+			auto ax=GetAX();
+			auto v=value.GetAsDword();
+			switch(inst.opCode)
+			{
+			case I486_OPCODE_AND_A_FROM_I://    0x25,
+			case I486_OPCODE_TEST_A_FROM_I://    0xA9,
+				AndWord(ax,v);
+				break;
+			case I486_OPCODE_OR_A_FROM_I://      0x0D,
+				OrWord(ax,v);
+				break;
+			case I486_OPCODE_XOR_A_FROM_I:
+				XorWord(ax,v);
+				break;
+			}
+			if(I486_OPCODE_TEST_A_FROM_I!=inst.opCode)
+			{
+				SetAX(ax);
+			}
+		}
+		else
+		{
+			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+			if(true==state.exception)
+			{
+				break;
+			}
+			auto eax=GetEAX();
+			auto v=value.GetAsDword();
+			switch(inst.opCode)
+			{
+			case I486_OPCODE_AND_A_FROM_I://    0x25,
+			case I486_OPCODE_TEST_A_FROM_I://    0xA9,
+				AndDword(eax,v);
+				break;
+			case I486_OPCODE_OR_A_FROM_I://      0x0D,
+				OrDword(eax,v);
+				break;
+			case I486_OPCODE_XOR_A_FROM_I:
+				XorDword(eax,v);
+				break;
+			}
+			if(I486_OPCODE_TEST_A_FROM_I!=inst.opCode)
+			{
+				SetEAX(eax);
+			}
+		}
+		break;
+	case I486_OPCODE_AND_RM8_FROM_R8:// 0x20,
+	case I486_OPCODE_OR_RM8_FROM_R8://   0x08,
+	case I486_OPCODE_XOR_RM8_FROM_R8:
+	case I486_OPCODE_TEST_RM8_FROM_R8:// 0x84,
+	case I486_OPCODE_AND_R8_FROM_RM8:// 0x22,
+	case I486_OPCODE_OR_R8_FROM_RM8://   0x0A,
+	case I486_OPCODE_XOR_R8_FROM_RM8:
+		{
+			if(op1.operandType==OPER_ADDR || op2.operandType==OPER_ADDR)
+			{
+				if(I486_OPCODE_TEST_RM8_FROM_R8!=inst.opCode)
+				{
+					clocksPassed=3;
+				}
+				else
+				{
+					clocksPassed=2;
+				}
+			}
+			else
+			{
+				clocksPassed=1;
+			}
+
+			auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,1);
+			auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,1);
+			if(true==state.exception)
+			{
+				break;
+			}
+			auto i=value1.GetAsDword();
+			switch(inst.opCode)
+			{
+			case I486_OPCODE_TEST_RM8_FROM_R8:// 0x84,
+			case I486_OPCODE_AND_RM8_FROM_R8:// 0x20,
+			case I486_OPCODE_AND_R8_FROM_RM8:// 0x22,
+				AndByte(i,value2.GetAsDword());
+				break;
+			case I486_OPCODE_OR_RM8_FROM_R8://   0x08,
+			case I486_OPCODE_OR_R8_FROM_RM8://   0x0A,
+				OrByte(i,value2.GetAsDword());
+				break;
+			case I486_OPCODE_XOR_RM8_FROM_R8:
+			case I486_OPCODE_XOR_R8_FROM_RM8:
+				XorByte(i,value2.GetAsDword());
+				break;
+			}
+			if(I486_OPCODE_TEST_RM8_FROM_R8!=inst.opCode)
+			{
+				value1.SetDword(i);
+				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+			}
+		}
+		break;
+	case I486_OPCODE_AND_RM_FROM_R://   0x21,
+	case I486_OPCODE_TEST_RM_FROM_R://   0x85,
+	case I486_OPCODE_OR_RM_FROM_R://     0x09,
+	case I486_OPCODE_XOR_RM_FROM_R:
+
+	case I486_OPCODE_AND_R_FROM_RM://   0x23,
+	case I486_OPCODE_OR_R_FROM_RM://     0x0B,
+	case I486_OPCODE_XOR_R_FROM_RM:
+		{
+			if(op1.operandType==OPER_ADDR || op2.operandType==OPER_ADDR)
+			{
+				if(I486_OPCODE_TEST_RM_FROM_R!=inst.opCode)
+				{
+					clocksPassed=3;
+				}
+				else
+				{
+					clocksPassed=2;
+				}
+			}
+			else
+			{
+				clocksPassed=1;
+			}
+
+			auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+			auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize/8);
+			if(true==state.exception)
+			{
+				break;
+			}
+			auto i=value1.GetAsDword();
+			switch(inst.opCode)
+			{
+			case I486_OPCODE_AND_RM_FROM_R://   0x21,
+			case I486_OPCODE_TEST_RM_FROM_R://   0x85,
+			case I486_OPCODE_AND_R_FROM_RM://   0x23,
+				AndWordOrDword(inst.operandSize,i,value2.GetAsDword());
+				break;
+			case I486_OPCODE_OR_RM_FROM_R://     0x09,
+			case I486_OPCODE_OR_R_FROM_RM://     0x0B,
+				OrWordOrDword(inst.operandSize,i,value2.GetAsDword());
+				break;
+			case I486_OPCODE_XOR_RM_FROM_R:
+			case I486_OPCODE_XOR_R_FROM_RM:
+				XorWordOrDword(inst.operandSize,i,value2.GetAsDword());
+				break;
+			}
+			if(I486_OPCODE_TEST_RM_FROM_R!=inst.opCode)
+			{
+				value1.SetDword(i);
+				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+			}
+		}
+		break;
+
+
 	case I486_OPCODE_CALL_FAR://   0x9A,
 		{
 			if(true==IsInRealMode())
@@ -1275,7 +1478,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				clocksPassed=20;
 			}
 			Push(mem,inst.operandSize,state.CS.value);
-			Push(mem,inst.operandSize,state.EIP);
+			Push(mem,inst.operandSize,state.EIP+inst.numBytes);
 			LoadSegmentRegister(state.CS,op1.seg,mem);
 			state.EIP=op1.offset;
 			EIPChanged=true;
@@ -1284,7 +1487,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_OPCODE_CALL_REL://   0xE8,
 		{
 			clocksPassed=3;
-			Push(mem,inst.operandSize,state.EIP);
+			Push(mem,inst.operandSize,state.EIP+inst.numBytes);
 			auto offset=inst.GetSimm16or32(inst.operandSize);
 			auto destin=state.EIP+offset+inst.numBytes;
 			if(16==inst.operandSize)
@@ -1826,17 +2029,6 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 
 
-	case I486_OPCODE_RET://              0xC3,
-		break;
-	case I486_OPCODE_RETF://             0xCB,
-		break;
-	case I486_OPCODE_RET_I16://          0xC2,
-		break;
-	case I486_OPCODE_RETF_I16://         0xCA,
-		break;
-
-
-
 	case I486_OPCODE_OUT_I8_AL: //        0xE6,
 		io.Out8(inst.operand[0],GetRegisterValue(REG_AL));
 		if(true==IsInRealMode())
@@ -1897,206 +2089,43 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 
 
-	case I486_OPCODE_AND_AL_FROM_I8://  0x24,
-	case I486_OPCODE_OR_AL_FROM_I8://    0x0C,
-	case I486_OPCODE_TEST_AL_FROM_I8://  0xA8,
-	case I486_OPCODE_XOR_AL_FROM_I8:
-		{
-			clocksPassed=1;
-			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,1);
-			if(true==state.exception)
-			{
-				break;
-			}
-			auto al=GetAL();
-			auto v=value.GetAsDword();
-			switch(inst.opCode)
-			{
-			case I486_OPCODE_AND_AL_FROM_I8://  0x24,
-			case I486_OPCODE_TEST_AL_FROM_I8://  0xA8,
-				AndByte(al,v);
-				break;
-			case I486_OPCODE_OR_AL_FROM_I8://    0x0C,
-				OrByte(al,v);
-				break;
-			case I486_OPCODE_XOR_AL_FROM_I8:
-				XorByte(al,v);
-				break;
-			}
-			if(I486_OPCODE_TEST_AL_FROM_I8!=inst.opCode) // Don't actually update value if TEST.
-			{
-				SetAL(al);
-			}
-		}
+	case I486_OPCODE_RET://              0xC3,
+		clocksPassed=5;
+		SetIPorEIP(inst.operandSize,Pop(mem,inst.operandSize));
+		EIPChanged=true;
 		break;
-	case I486_OPCODE_AND_A_FROM_I://    0x25,
-	case I486_OPCODE_OR_A_FROM_I://      0x0D,
-	case I486_OPCODE_TEST_A_FROM_I://    0xA9,
-	case I486_OPCODE_XOR_A_FROM_I:
-		clocksPassed=1;
-		if(16==inst.operandSize)
+	case I486_OPCODE_RETF://             0xCB,
+		if(true==IsInRealMode())
 		{
-			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
-			if(true==state.exception)
-			{
-				break;
-			}
-			auto ax=GetAX();
-			auto v=value.GetAsDword();
-			switch(inst.opCode)
-			{
-			case I486_OPCODE_AND_A_FROM_I://    0x25,
-			case I486_OPCODE_TEST_A_FROM_I://    0xA9,
-				AndWord(ax,v);
-				break;
-			case I486_OPCODE_OR_A_FROM_I://      0x0D,
-				OrWord(ax,v);
-				break;
-			case I486_OPCODE_XOR_A_FROM_I:
-				XorWord(ax,v);
-				break;
-			}
-			if(I486_OPCODE_TEST_A_FROM_I!=inst.opCode)
-			{
-				SetAX(ax);
-			}
+			clocksPassed=13;
 		}
 		else
 		{
-			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
-			if(true==state.exception)
-			{
-				break;
-			}
-			auto eax=GetEAX();
-			auto v=value.GetAsDword();
-			switch(inst.opCode)
-			{
-			case I486_OPCODE_AND_A_FROM_I://    0x25,
-			case I486_OPCODE_TEST_A_FROM_I://    0xA9,
-				AndDword(eax,v);
-				break;
-			case I486_OPCODE_OR_A_FROM_I://      0x0D,
-				OrDword(eax,v);
-				break;
-			case I486_OPCODE_XOR_A_FROM_I:
-				XorDword(eax,v);
-				break;
-			}
-			if(I486_OPCODE_TEST_A_FROM_I!=inst.opCode)
-			{
-				SetEAX(eax);
-			}
+			clocksPassed=18;
 		}
+		SetIPorEIP(inst.operandSize,Pop(mem,inst.operandSize));
+		LoadSegmentRegister(state.CS,Pop(mem,inst.operandSize),mem);
+		state.ESP+=inst.GetUimm16(); // Do I need to take &0xffff if address mode is 16? 
+		EIPChanged=true;
 		break;
-	case I486_OPCODE_TEST_RM8_FROM_R8:// 0x84,
-	case I486_OPCODE_AND_RM8_FROM_R8:// 0x20,
-	case I486_OPCODE_OR_RM8_FROM_R8://   0x08,
-	case I486_OPCODE_XOR_RM8_FROM_R8:
-	case I486_OPCODE_AND_R8_FROM_RM8:// 0x22,
-	case I486_OPCODE_OR_R8_FROM_RM8://   0x0A,
-	case I486_OPCODE_XOR_R8_FROM_RM8:
-		{
-			if(op1.operandType==OPER_ADDR || op2.operandType==OPER_ADDR)
-			{
-				if(I486_OPCODE_TEST_RM8_FROM_R8!=inst.opCode)
-				{
-					clocksPassed=3;
-				}
-				else
-				{
-					clocksPassed=2;
-				}
-			}
-			else
-			{
-				clocksPassed=1;
-			}
-
-			auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,1);
-			auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,1);
-			if(true==state.exception)
-			{
-				break;
-			}
-			auto i=value1.GetAsDword();
-			switch(inst.opCode)
-			{
-			case I486_OPCODE_TEST_RM8_FROM_R8:// 0x84,
-			case I486_OPCODE_AND_RM8_FROM_R8:// 0x20,
-			case I486_OPCODE_AND_R8_FROM_RM8:// 0x22,
-				AndByte(i,value2.GetAsDword());
-				break;
-			case I486_OPCODE_OR_RM8_FROM_R8://   0x08,
-			case I486_OPCODE_OR_R8_FROM_RM8://   0x0A,
-				OrByte(i,value2.GetAsDword());
-				break;
-			case I486_OPCODE_XOR_RM8_FROM_R8:
-			case I486_OPCODE_XOR_R8_FROM_RM8:
-				XorByte(i,value2.GetAsDword());
-				break;
-			}
-			if(I486_OPCODE_TEST_RM8_FROM_R8!=inst.opCode)
-			{
-				value1.SetDword(i);
-				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
-			}
-		}
+	case I486_OPCODE_RET_I16://          0xC2,
+		clocksPassed=5;
+		SetIPorEIP(inst.operandSize,Pop(mem,inst.operandSize));
+		EIPChanged=true;
 		break;
-	case I486_OPCODE_AND_RM_FROM_R://   0x21,
-	case I486_OPCODE_TEST_RM_FROM_R://   0x85,
-	case I486_OPCODE_OR_RM_FROM_R://     0x09,
-	case I486_OPCODE_XOR_RM_FROM_R:
-
-	case I486_OPCODE_AND_R_FROM_RM://   0x23,
-	case I486_OPCODE_OR_R_FROM_RM://     0x0B,
-	case I486_OPCODE_XOR_R_FROM_RM:
+	case I486_OPCODE_RETF_I16://         0xCA,
+		if(true==IsInRealMode())
 		{
-			if(op1.operandType==OPER_ADDR || op2.operandType==OPER_ADDR)
-			{
-				if(I486_OPCODE_TEST_RM_FROM_R!=inst.opCode)
-				{
-					clocksPassed=3;
-				}
-				else
-				{
-					clocksPassed=2;
-				}
-			}
-			else
-			{
-				clocksPassed=1;
-			}
-
-			auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
-			auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize/8);
-			if(true==state.exception)
-			{
-				break;
-			}
-			auto i=value1.GetAsDword();
-			switch(inst.opCode)
-			{
-			case I486_OPCODE_AND_RM_FROM_R://   0x21,
-			case I486_OPCODE_TEST_RM_FROM_R://   0x85,
-			case I486_OPCODE_AND_R_FROM_RM://   0x23,
-				AndWordOrDword(inst.operandSize,i,value2.GetAsDword());
-				break;
-			case I486_OPCODE_OR_RM_FROM_R://     0x09,
-			case I486_OPCODE_OR_R_FROM_RM://     0x0B,
-				OrWordOrDword(inst.operandSize,i,value2.GetAsDword());
-				break;
-			case I486_OPCODE_XOR_RM_FROM_R:
-			case I486_OPCODE_XOR_R_FROM_RM:
-				XorWordOrDword(inst.operandSize,i,value2.GetAsDword());
-				break;
-			}
-			if(I486_OPCODE_TEST_RM_FROM_R!=inst.opCode)
-			{
-				value1.SetDword(i);
-				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
-			}
+			clocksPassed=14;
 		}
+		else
+		{
+			clocksPassed=17;
+		}
+		SetIPorEIP(inst.operandSize,Pop(mem,inst.operandSize));
+		LoadSegmentRegister(state.CS,Pop(mem,inst.operandSize),mem);
+		state.ESP+=inst.GetUimm16(); // Do I need to take &0xffff if address mode is 16? 
+		EIPChanged=true;
 		break;
 
 

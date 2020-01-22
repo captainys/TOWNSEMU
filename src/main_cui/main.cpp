@@ -43,6 +43,26 @@ int main(int ac,char *av[])
 	}
 
 
+	unsigned int runUntil=0x7F0;
+	for(;;)
+	{
+		auto inst=towns.FetchInstruction();
+		auto disasm=towns.cpu.Disassemble(inst,towns.cpu.state.CS,towns.cpu.state.EIP,towns.mem);
+		std::cout << disasm << std::endl;
+
+		auto eip=towns.cpu.state.EIP;
+		towns.RunOneInstruction();
+		if(true==towns.CheckAbort())
+		{
+			break;
+		}
+		if(eip<runUntil && runUntil<=towns.cpu.state.EIP)
+		{
+			break;
+		}
+	}
+
+
 	for(;;)
 	{
 		auto inst=towns.FetchInstruction();

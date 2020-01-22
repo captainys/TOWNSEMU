@@ -449,6 +449,44 @@ void i486DX::Push(Memory &mem,unsigned int operandSize,unsigned int value)
 	}
 }
 
+unsigned int i486DX::Pop(Memory &mem,unsigned int operandSize)
+{
+	unsigned int value;
+	if(16==GetStackAddressingSize())
+	{
+		auto SP=GetSP();
+		if(16==operandSize)
+		{
+			value=FetchByte(state.SS,SP,mem)|(FetchByte(state.SS,SP+1,mem)<<8);
+			SP+=2;
+			StoreByte(mem,state.SS,SP  ,value&255);
+			StoreByte(mem,state.SS,SP+1,(value>>8)&255);
+		}
+		else if(32==operandSize)
+		{
+			value=FetchByte(state.SS,SP,mem)|(FetchByte(state.SS,SP+1,mem)<<8)|(FetchByte(state.SS,SP+2,mem)<<16)|(FetchByte(state.SS,SP+3,mem)<<24);
+			SP+=4;
+		}
+		SetSP(SP); // SetSP does SP&=0xffff;
+	}
+	else
+	{
+		auto ESP=GetESP();
+		if(16==operandSize)
+		{
+			value=FetchByte(state.SS,ESP,mem)|(FetchByte(state.SS,ESP+1,mem)<<8);
+			ESP+=2;
+		}
+		else if(32==operandSize)
+		{
+			value=FetchByte(state.SS,ESP,mem)|(FetchByte(state.SS,ESP+1,mem)<<8)|(FetchByte(state.SS,ESP+2,mem)<<16)|(FetchByte(state.SS,ESP+3,mem)<<24);
+			ESP+=4;
+		}
+		SetESP(ESP);
+	}
+	return value;
+}
+
 std::string i486DX::Disassemble(const Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem) const
 {
 	std::string disasm;
