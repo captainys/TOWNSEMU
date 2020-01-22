@@ -730,7 +730,7 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		break;
 	case I486_OPCODE_CALL_FAR://   0x9A,
 	case I486_OPCODE_JMP_FAR:
-		disasm=(I486_OPCODE_JMP_FAR==opCode ? "JMP" : "CALL");
+		disasm=(I486_OPCODE_JMP_FAR==opCode ? "JMPF" : "CALLF");
 		cpputil::ExtendString(disasm,8);
 		disasm+=op1.Disassemble();
 		break;
