@@ -390,6 +390,30 @@ void i486DX::FetchOperand(Instruction &inst,SegmentRegister seg,int offset,const
 		break;
 
 
+	case I486_OPCODE_PUSH_EAX://         0x50,
+	case I486_OPCODE_PUSH_ECX://         0x51,
+	case I486_OPCODE_PUSH_EDX://         0x52,
+	case I486_OPCODE_PUSH_EBX://         0x53,
+	case I486_OPCODE_PUSH_ESP://         0x54,
+	case I486_OPCODE_PUSH_EBP://         0x55,
+	case I486_OPCODE_PUSH_ESI://         0x56,
+	case I486_OPCODE_PUSH_EDI://         0x57,
+		break;
+	case I486_OPCODE_PUSH_I8://          0x6A,
+		FetchOperand8(inst,seg,offset,mem);
+		break;
+	case I486_OPCODE_PUSH_I://           0x68,
+		FetchOperand16or32(inst,seg,offset,mem);
+		break;
+	case I486_OPCODE_PUSH_CS://          0x0E,
+	case I486_OPCODE_PUSH_SS://          0x16,
+	case I486_OPCODE_PUSH_DS://          0x1E,
+	case I486_OPCODE_PUSH_ES://          0x06,
+	case I486_OPCODE_PUSH_FS://          0xA00F,
+	case I486_OPCODE_PUSH_GS://          0xA80F,
+		break;
+
+
 	case I486_OPCODE_RET://              0xC3,
 	case I486_OPCODE_RETF://             0xCB,
 		break;
@@ -662,6 +686,30 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 		break;
 	case I486_OPCODE_OUT_DX_AL: //        0xEE,
 	case I486_OPCODE_OUT_DX_A: //         0xEF,
+		break;
+
+
+	case I486_OPCODE_PUSH_EAX://         0x50,
+	case I486_OPCODE_PUSH_ECX://         0x51,
+	case I486_OPCODE_PUSH_EDX://         0x52,
+	case I486_OPCODE_PUSH_EBX://         0x53,
+	case I486_OPCODE_PUSH_ESP://         0x54,
+	case I486_OPCODE_PUSH_EBP://         0x55,
+	case I486_OPCODE_PUSH_ESI://         0x56,
+	case I486_OPCODE_PUSH_EDI://         0x57,
+		op1.MakeImm8(*this);
+		break;
+	case I486_OPCODE_PUSH_I8://          0x6A,
+		op1.MakeImm16or32(*this,operandSize);
+		break;
+	case I486_OPCODE_PUSH_I://           0x68,
+		break;
+	case I486_OPCODE_PUSH_CS://          0x0E,
+	case I486_OPCODE_PUSH_SS://          0x16,
+	case I486_OPCODE_PUSH_DS://          0x1E,
+	case I486_OPCODE_PUSH_ES://          0x06,
+	case I486_OPCODE_PUSH_FS://          0xA00F,
+	case I486_OPCODE_PUSH_GS://          0xA80F,
 		break;
 
 
@@ -1105,6 +1153,51 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		{
 			disasm="OUT     DX,EAX";
 		}
+		break;
+
+
+	case I486_OPCODE_PUSH_EAX://         0x50,
+	case I486_OPCODE_PUSH_ECX://         0x51,
+	case I486_OPCODE_PUSH_EDX://         0x52,
+	case I486_OPCODE_PUSH_EBX://         0x53,
+	case I486_OPCODE_PUSH_ESP://         0x54,
+	case I486_OPCODE_PUSH_EBP://         0x55,
+	case I486_OPCODE_PUSH_ESI://         0x56,
+	case I486_OPCODE_PUSH_EDI://         0x57,
+		if(16==operandSize)
+		{
+			disasm="PUSH    ";
+			disasm+=Reg16[opCode&7];
+		}
+		else
+		{
+			disasm="PUSH    ";
+			disasm+=Reg16[opCode&7];
+		}
+		break;
+	case I486_OPCODE_PUSH_I8://          0x6A,
+		disasm=DisassembleTypicalOneOperand("PUSH",op1,8);
+		break;
+	case I486_OPCODE_PUSH_I://           0x68,
+		disasm=DisassembleTypicalOneOperand("PUSH",op1,operandSize);
+		break;
+	case I486_OPCODE_PUSH_CS://          0x0E,
+		disasm="PUSH    CS";
+		break;
+	case I486_OPCODE_PUSH_SS://          0x16,
+		disasm="PUSH    SS";
+		break;
+	case I486_OPCODE_PUSH_DS://          0x1E,
+		disasm="PUSH    DS";
+		break;
+	case I486_OPCODE_PUSH_ES://          0x06,
+		disasm="PUSH    ES";
+		break;
+	case I486_OPCODE_PUSH_FS://          0xA00F,
+		disasm="PUSH    FS";
+		break;
+	case I486_OPCODE_PUSH_GS://          0xA80F,
+		disasm="PUSH    GS";
 		break;
 
 
@@ -2087,6 +2180,25 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			clocksPassed=10; // 30 if CPL>IOPL
 		}
+		break;
+
+
+	case I486_OPCODE_PUSH_EAX://         0x50,
+	case I486_OPCODE_PUSH_ECX://         0x51,
+	case I486_OPCODE_PUSH_EDX://         0x52,
+	case I486_OPCODE_PUSH_EBX://         0x53,
+	case I486_OPCODE_PUSH_ESP://         0x54,
+	case I486_OPCODE_PUSH_EBP://         0x55,
+	case I486_OPCODE_PUSH_ESI://         0x56,
+	case I486_OPCODE_PUSH_EDI://         0x57,
+	case I486_OPCODE_PUSH_I8://          0x6A,
+	case I486_OPCODE_PUSH_I://           0x68,
+	case I486_OPCODE_PUSH_CS://          0x0E,
+	case I486_OPCODE_PUSH_SS://          0x16,
+	case I486_OPCODE_PUSH_DS://          0x1E,
+	case I486_OPCODE_PUSH_ES://          0x06,
+	case I486_OPCODE_PUSH_FS://          0xA00F,
+	case I486_OPCODE_PUSH_GS://          0xA80F,
 		break;
 
 
