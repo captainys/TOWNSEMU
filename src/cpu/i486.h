@@ -130,7 +130,7 @@ public:
 		SegmentRegister CS,DS,ES,SS,FS,GS;
 		SystemAddressRegister GDT,LDT;
 		SystemSegmentRegister TR0,TR1,TR2,TR3,TR4,TR5,TR6,TR7,IDTR;
-		unsigned int CR0,CR1,CR2,CR3;
+		unsigned int CR[4];
 		unsigned int DR0,DR1,DR2,DR3,DR4,DR5,DR6,DR7;
 
 		// [1] pp.26-211 in the description of the MOV instruction
@@ -881,7 +881,7 @@ public:
 
 	inline bool IsInRealMode(void) const
 	{
-		return (0==(state.CR0&CR0_PROTECTION_ENABLE));
+		return (0==(state.CR[0]&CR0_PROTECTION_ENABLE));
 	}
 
 	/*! Returns a register value. 
@@ -915,7 +915,7 @@ public:
 	*/
 	inline bool PagingEnabled(void) const
 	{
-		return 0!=(state.CR0&CR0_PAGING_ENABLED);
+		return 0!=(state.CR[0]&CR0_PAGING_ENABLED);
 	}
 
 	/*! Returns true if the opCode needs one more byte to be fully qualified.
