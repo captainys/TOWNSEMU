@@ -1790,6 +1790,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				}
 				state.EIP=destin;
 				clocksPassed=3;
+				EIPChanged=true;
 			}
 			else
 			{
