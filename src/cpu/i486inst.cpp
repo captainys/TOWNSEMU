@@ -19,7 +19,7 @@ bool i486DX::OpCodeNeedsOneMoreByte(unsigned int firstByte) const
 }
 
 
-i486DX::Instruction i486DX::FetchInstruction(const SegmentRegister seg,unsigned int offset,const Memory &mem) const
+i486DX::Instruction i486DX::FetchInstruction(const SegmentRegister &CS,unsigned int offset,const Memory &mem) const
 {
 	Instruction inst;
 	inst.Clear();
@@ -31,12 +31,13 @@ i486DX::Instruction i486DX::FetchInstruction(const SegmentRegister seg,unsigned 
 	else
 	{
 		// Default operandSize and addressSize depends on the D flag of the segment descriptor.
-		Abort("Protected mode not supported yet.");
+		inst.operandSize=CS.operandSize;
+		inst.addressSize=CS.addressSize;
 	}
 
 	// Question: Do prefixes need to be in the specific order INST_PREFIX->ADDRSIZE_OVERRIDE->OPSIZE_OVERRIDE->SEG_OVERRIDE?
 
-	unsigned int lastByte=FetchByte(seg,offset+inst.numBytes++,mem);
+	unsigned int lastByte=FetchByte(CS,offset+inst.numBytes++,mem);
 	for(;;) // While looking at prefixes.
 	{
 		switch(lastByte)
@@ -65,18 +66,18 @@ i486DX::Instruction i486DX::FetchInstruction(const SegmentRegister seg,unsigned 
 		default:
 			goto PREFIX_DONE;
 		}
-		lastByte=FetchByte(seg,offset+inst.numBytes++,mem);
+		lastByte=FetchByte(CS,offset+inst.numBytes++,mem);
 	}
 PREFIX_DONE:
 	inst.opCode=lastByte;
 	if(true==OpCodeNeedsOneMoreByte(inst.opCode))
 	{
-		lastByte=FetchByte(seg,offset+inst.numBytes++,mem);
+		lastByte=FetchByte(CS,offset+inst.numBytes++,mem);
 		inst.opCode|=(lastByte<<8);
 	}
 	if(inst.opCode==0xDB)
 	{
-		auto nextByte=FetchByte(seg,offset+inst.numBytes,mem);
+		auto nextByte=FetchByte(CS,offset+inst.numBytes,mem);
 		if(0xE3==nextByte
 		   // || ??==nextByte
 		)
@@ -87,19 +88,19 @@ PREFIX_DONE:
 		}
 	}
 
-	FetchOperand(inst,seg,offset+inst.numBytes,mem);
+	FetchOperand(inst,CS,offset+inst.numBytes,mem);
 
 	return inst;
 }
 
-unsigned int i486DX::FetchOperand8(Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem) const
+unsigned int i486DX::FetchOperand8(Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 {
 	auto byte=FetchByte(seg,offset++,mem);
 	inst.operand[inst.operandLen++]=byte;
 	++inst.numBytes;
 	return 1;
 }
-unsigned int i486DX::FetchOperand16(Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem) const
+unsigned int i486DX::FetchOperand16(Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 {
 	unsigned int byte[2];
 	byte[0]=FetchByte(seg,offset++,mem);
@@ -110,7 +111,7 @@ unsigned int i486DX::FetchOperand16(Instruction &inst,SegmentRegister seg,unsign
 	inst.numBytes+=2;
 	return 2;
 }
-unsigned int i486DX::FetchOperand32(Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem) const
+unsigned int i486DX::FetchOperand32(Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 {
 	unsigned int byte[4];
 	byte[0]=FetchByte(seg,offset++,mem);
@@ -125,7 +126,7 @@ unsigned int i486DX::FetchOperand32(Instruction &inst,SegmentRegister seg,unsign
 	return 4;
 }
 
-unsigned int i486DX::FetchOperand16or32(Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem) const
+unsigned int i486DX::FetchOperand16or32(Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 {
 	if(16==inst.operandSize)
 	{
@@ -137,7 +138,7 @@ unsigned int i486DX::FetchOperand16or32(Instruction &inst,SegmentRegister seg,un
 	}
 }
 
-unsigned int i486DX::FetchOperandRM(Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem) const
+unsigned int i486DX::FetchOperandRM(Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 {
 	offset+=FetchOperand8(inst,seg,offset,mem);
 
@@ -210,7 +211,7 @@ unsigned int i486DX::FetchOperandRM(Instruction &inst,SegmentRegister seg,unsign
 	return numBytesFetched;
 }
 
-void i486DX::FetchOperand(Instruction &inst,SegmentRegister seg,int offset,const Memory &mem) const
+void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offset,const Memory &mem) const
 {
 	switch(inst.opCode)
 	{

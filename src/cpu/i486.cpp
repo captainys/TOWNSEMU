@@ -202,7 +202,63 @@ void i486DX::LoadSegmentRegister(SegmentRegister &reg,unsigned int value,const M
 	}
 	else
 	{
-		Abort("Protected mode not supported yet.");
+		auto RPL=(value&3);
+		auto TI=(0!=(value&4));
+		auto INDEX=(value>>3)&0b0001111111111111;
+
+		unsigned int DTLinearBaseAddr=0;
+		if(0==TI)
+		{
+			DTLinearBaseAddr=state.GDTR.linearBaseAddr;
+		}
+		else
+		{
+			Abort("LDT not supported yet.");
+		}
+		DTLinearBaseAddr+=(8*INDEX);
+
+		const unsigned char rawDesc[8]=
+		{
+			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr),
+			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+1),
+			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+2),
+			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+3),
+			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+4),
+			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+5),
+			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+6),
+			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+7)
+		};
+
+		// Sample GDT from WRHIGH.ASM
+		//	DB		0FFH,0FFH	; Segment Limit (0-15)
+		//	DB		0,0,010H		; Base Address 0-23
+		//	DB		10010010B	; P=1, DPL=00, S=1, TYPE=0010
+		//	DB		11000111B	; G=1, DB=1, (Unused)=0, A=0, LIMIT 16-19=0011
+		//	DB		0			; Base Address 24-31
+
+		unsigned int segLimit=rawDesc[0]|(rawDesc[1]<<8)|((rawDesc[6]&0x0F)<<16);
+		unsigned int segBase=rawDesc[2]|(rawDesc[3]<<8)|(rawDesc[4]<<16)|(rawDesc[7]<<24);
+		if((0x80&rawDesc[6])==0) // G==0
+		{
+			reg.limit=segLimit;
+		}
+		else
+		{
+			reg.limit=(segLimit+1)*4096-1;
+		}
+		reg.baseLinearAddr=segBase;
+		reg.value=value;
+
+		if((0x40&rawDesc[6])==0) // D==0
+		{
+			reg.addressSize=16;
+			reg.operandSize=16;
+		}
+		else
+		{
+			reg.addressSize=32;
+			reg.operandSize=32;
+		}
 	}
 }
 
@@ -214,6 +270,9 @@ void i486DX::LoadSegmentRegisterRealMode(SegmentRegister &reg,unsigned int value
 	}
 	reg.value=value;
 	reg.baseLinearAddr=(value<<4);
+	reg.addressSize=16;
+	reg.operandSize=16;
+	reg.limit=0xffff;
 }
 
 void i486DX::LoadDescriptorTableRegister(SystemAddressRegister &reg,int operandSize,const unsigned char byteData[])

@@ -104,7 +104,12 @@ public:
 	{
 	public:
 		unsigned short value;
+
+		// Cache
 		unsigned int baseLinearAddr;
+		unsigned int operandSize;
+		unsigned int addressSize;
+		unsigned int limit;
 	};
 	class SystemAddressRegister
 	{
@@ -1035,7 +1040,7 @@ public:
 		}
 		else
 		{
-			Abort("Protected mode not supported yet.");
+			return (16==state.CS().addressSize);
 		}
 		return false;
 	}
@@ -1057,7 +1062,7 @@ public:
 
 	/*!
 	*/
-	unsigned long LinearAddressToPhysicalAddress(unsigned int linearAddr,const Memory &mem) const
+	inline unsigned long LinearAddressToPhysicalAddress(unsigned int linearAddr,const Memory &mem) const
 	{
 		Abort("Paging not supported yet.");
 		return linearAddr;
@@ -1087,6 +1092,17 @@ public:
 			addr=LinearAddressToPhysicalAddress(addr,mem);
 		}
 		return mem.FetchByte(addr);
+	}
+
+	/*! Fetch a byte by linear address.
+	*/
+	inline unsigned int FetchByteByLinearAddress(const Memory &mem,unsigned int linearAddr) const
+	{
+		if(true==PagingEnabled())
+		{
+			linearAddr=LinearAddressToPhysicalAddress(linearAddr,mem);
+		}
+		return mem.FetchByte(linearAddr);
 	}
 
 	/*! Store a byte.
@@ -1134,21 +1150,21 @@ public:
 private:
 	/*! Fetch an 8-bit operand.  Returns the number of bytes fetched.
 	*/
-	unsigned int FetchOperand8(Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem) const;
+	unsigned int FetchOperand8(Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
 	/*! Fetch an 16-bit operand  Returns the number of bytes fetched..
 	*/
-	unsigned int FetchOperand16(Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem) const;
+	unsigned int FetchOperand16(Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
 	/*! Fetch an 32-bit operand.  Returns the number of bytes fetched.
 	*/
-	unsigned int FetchOperand32(Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem) const;
+	unsigned int FetchOperand32(Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
 	/*! Fetch an 16- or 32-bit operand.  Length fetched depends on inst.operandSize.
 	    Returns the number of bytes fetched.
 	*/
-	unsigned int FetchOperand16or32(Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem) const;
+	unsigned int FetchOperand16or32(Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
 	/*! Fetch an operand defined by the RM byte.
 	    Returns the number of bytes fetched.
 	*/
-	unsigned int FetchOperandRM(Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem) const;
+	unsigned int FetchOperandRM(Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
 	/*! Fetch operand(s) for the instruction.
 	The following instruction:
 	    I486_OPCODE_MOV_TO_CR://        0x220F,
@@ -1159,12 +1175,12 @@ private:
 	    I486_OPCODE_MOV_TO_TR://        0x260F,
 	always set 32 to inst.operandSize regardless of the preceding operand-size override, or default operand size.
 	*/
-	void FetchOperand(Instruction &inst,SegmentRegister seg,int offset,const Memory &mem) const;
+	void FetchOperand(Instruction &inst,const SegmentRegister &seg,int offset,const Memory &mem) const;
 
 public:
 	/*! Fetch an instruction from specific segment and offset.
 	*/
-	Instruction FetchInstruction(const SegmentRegister seg,unsigned int offset,const Memory &mem) const;
+	Instruction FetchInstruction(const SegmentRegister &CS,unsigned int offset,const Memory &mem) const;
 
 
 	/*! Make a disassembly.
