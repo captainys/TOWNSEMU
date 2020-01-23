@@ -1719,9 +1719,13 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		break;
 	case I486_OPCODE_CALL_REL://   0xE8,
+	case I486_OPCODE_JMP_REL://          0xE9,   // cw or cd
 		{
 			clocksPassed=3;
-			Push(mem,inst.operandSize,state.EIP+inst.numBytes);
+			if(I486_OPCODE_CALL_REL==inst.opCode)
+			{
+				Push(mem,inst.operandSize,state.EIP+inst.numBytes);
+			}
 			auto offset=inst.GetSimm16or32(inst.operandSize);
 			auto destin=state.EIP+offset+inst.numBytes;
 			if(16==inst.operandSize)
@@ -2050,20 +2054,6 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 
 
-	case I486_OPCODE_JMP_REL://          0xE9,   // cw or cd
-		{
-			clocksPassed=3;
-			Push(mem,inst.operandSize,state.EIP);
-			auto offset=inst.GetSimm16or32(inst.operandSize);
-			auto destin=state.EIP+offset+inst.numBytes;
-			if(16==inst.operandSize)
-			{
-				destin&=0xffff;
-			}
-			state.EIP=destin;
-			EIPChanged=true;
-		}
-		break;
 	case I486_OPCODE_JMP_FAR:
 		{
 			switch(inst.operandSize)
