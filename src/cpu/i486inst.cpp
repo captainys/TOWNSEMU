@@ -2657,8 +2657,31 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 
 	case I486_OPCODE_MOVZX_R_RM8://=      0xB60F, 8bit to 16or32bit
+		{
+			clocksPassed=3;
+			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,1);
+			if(true!=state.exception)
+			{
+				value.numBytes=1;
+				value.byteData[1]=0;
+				value.byteData[2]=0;
+				value.byteData[3]=0;
+				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+			}
+		}
 		break;
 	case I486_OPCODE_MOVZX_R32_RM16://=   0xB70F, 16bit to 32bit
+		{
+			clocksPassed=3;
+			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,2);
+			if(true!=state.exception)
+			{
+				value.numBytes=2;
+				value.byteData[2]=0;
+				value.byteData[3]=0;
+				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+			}
+		}
 		break;
 
 
