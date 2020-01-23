@@ -8,6 +8,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 
 
+enable_testing()
+
 add_subdirectory(cpputil)
 
 add_subdirectory(towns)

@@ -97,7 +97,7 @@ std::vector <std::string> FMTowns::GetStackText(unsigned int numBytes) const
 		line="SS+"+cpputil::Uitox(offsetHigh)+":";
 		for(unsigned int offsetLow=0; offsetLow<16 && offsetHigh+offsetLow<numBytes; ++offsetLow)
 		{
-			line+=cpputil::Ubtox(cpu.FetchByte(cpu.state.SS,cpu.state.ESP()+offsetHigh+offsetLow,mem));
+			line+=cpputil::Ubtox(cpu.FetchByte(cpu.state.SS(),cpu.state.ESP()+offsetHigh+offsetLow,mem));
 			line.push_back(' ');
 		}
 		text.push_back(line);

@@ -1,12 +1,5 @@
 [Reminder to myself]
 
-Reorganize CPU State class
-
-Reg16[] -> Reg16Str[]
-Reg32[] -> Reg32Str[]
-EAX,EDX,ECX,EBX... -> Reg32[], EAX(),EDX(),ECX(),EBX()
-CR0,CR1,... -> CR[],CR0(),CR1(),CR2(),...
-
 
 
 Probably:

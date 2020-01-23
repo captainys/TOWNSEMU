@@ -9,7 +9,7 @@ void RunUntil(FMTowns &towns,unsigned int runUntil)
 	for(;;)
 	{
 		auto inst=towns.FetchInstruction();
-		auto disasm=towns.cpu.Disassemble(inst,towns.cpu.state.CS,towns.cpu.state.EIP,towns.mem);
+		auto disasm=towns.cpu.Disassemble(inst,towns.cpu.state.CS(),towns.cpu.state.EIP,towns.mem);
 		std::cout << disasm << std::endl;
 
 		auto eip=towns.cpu.state.EIP;
@@ -80,7 +80,7 @@ int main(int ac,char *av[])
 		towns.cpu.PrintState();
 		towns.PrintStack(32);
 
-		auto disasm=towns.cpu.Disassemble(inst,towns.cpu.state.CS,towns.cpu.state.EIP,towns.mem);
+		auto disasm=towns.cpu.Disassemble(inst,towns.cpu.state.CS(),towns.cpu.state.EIP,towns.mem);
 
 		std::cout << disasm << std::endl;
 		std::cout << ">";

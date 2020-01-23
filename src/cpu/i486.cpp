@@ -101,14 +101,14 @@ void i486DX::Reset(void)
 	state.EFLAGS=RESET_EFLAGS;
 
 	state.EIP=RESET_EIP;
-	state.CS.value=RESET_CS;
-	state.CS.baseLinearAddr=0xFFFF0000;
+	state.CS().value=RESET_CS;
+	state.CS().baseLinearAddr=0xFFFF0000;
 
-	LoadSegmentRegisterRealMode(state.DS,RESET_DS);
-	LoadSegmentRegisterRealMode(state.SS,RESET_SS);
-	LoadSegmentRegisterRealMode(state.ES,RESET_ES);
-	LoadSegmentRegisterRealMode(state.FS,RESET_FS);
-	LoadSegmentRegisterRealMode(state.GS,RESET_GS);
+	LoadSegmentRegisterRealMode(state.DS(),RESET_DS);
+	LoadSegmentRegisterRealMode(state.SS(),RESET_SS);
+	LoadSegmentRegisterRealMode(state.ES(),RESET_ES);
+	LoadSegmentRegisterRealMode(state.FS(),RESET_FS);
+	LoadSegmentRegisterRealMode(state.GS(),RESET_GS);
 
 	state.IDTR.selector=0;
 	state.IDTR.linearBaseAddr=RESET_IDTRBASE;
@@ -131,7 +131,7 @@ std::vector <std::string> i486DX::GetStateText(void) const
 
 	text.push_back(
 	     "CS:EIP="
-	    +cpputil::Ustox(state.CS.value)+":"+cpputil::Uitox(state.EIP)
+	    +cpputil::Ustox(state.CS().value)+":"+cpputil::Uitox(state.EIP)
 	    +"  EFLAGS="+cpputil::Uitox(state.EFLAGS));
 
 	text.push_back(
@@ -194,7 +194,7 @@ void i486DX::PrintState(void) const
 
 void i486DX::LoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem)
 {
-	if(&reg==&state.SS)
+	if(&reg==&state.SS())
 	{
 		state.holdIRQ=true;
 	}
@@ -210,7 +210,7 @@ void i486DX::LoadSegmentRegister(SegmentRegister &reg,unsigned int value,const M
 
 void i486DX::LoadSegmentRegisterRealMode(SegmentRegister &reg,unsigned int value)
 {
-	if(&reg==&state.SS)
+	if(&reg==&state.SS())
 	{
 		state.holdIRQ=true;
 	}
@@ -279,17 +279,17 @@ unsigned int i486DX::GetRegisterValue(int reg) const
 		return state.EFLAGS;
 
 	case REG_ES:
-		return state.ES.value;
+		return state.ES().value;
 	case REG_CS:
-		return state.CS.value;
+		return state.CS().value;
 	case REG_SS:
-		return state.SS.value;
+		return state.SS().value;
 	case REG_DS:
-		return state.DS.value;
+		return state.DS().value;
 	case REG_FS:
-		return state.FS.value;
+		return state.FS().value;
 	case REG_GS:
-		return state.GS.value;
+		return state.GS().value;
 
 	//case REG_GDT:
 	//case REG_LDT:
@@ -414,17 +414,17 @@ void i486DX::Push(Memory &mem,unsigned int operandSize,unsigned int value)
 		{
 			SP-=2;
 			SP&=65535;
-			StoreByte(mem,state.SS,SP  ,value&255);
-			StoreByte(mem,state.SS,SP+1,(value>>8)&255);
+			StoreByte(mem,state.SS(),SP  ,value&255);
+			StoreByte(mem,state.SS(),SP+1,(value>>8)&255);
 		}
 		else if(32==operandSize)
 		{
 			SP-=4;
 			SP&=65535;
-			StoreByte(mem,state.SS,SP  ,value&255);
-			StoreByte(mem,state.SS,SP+1,(value>>8)&255);
-			StoreByte(mem,state.SS,SP+2,(value>>16)&255);
-			StoreByte(mem,state.SS,SP+3,(value>>24)&255);
+			StoreByte(mem,state.SS(),SP  ,value&255);
+			StoreByte(mem,state.SS(),SP+1,(value>>8)&255);
+			StoreByte(mem,state.SS(),SP+2,(value>>16)&255);
+			StoreByte(mem,state.SS(),SP+3,(value>>24)&255);
 		}
 		SetSP(SP);
 	}
@@ -434,16 +434,16 @@ void i486DX::Push(Memory &mem,unsigned int operandSize,unsigned int value)
 		if(16==operandSize)
 		{
 			ESP-=2;
-			StoreByte(mem,state.SS,ESP  ,value&255);
-			StoreByte(mem,state.SS,ESP+1,(value>>8)&255);
+			StoreByte(mem,state.SS(),ESP  ,value&255);
+			StoreByte(mem,state.SS(),ESP+1,(value>>8)&255);
 		}
 		else if(32==operandSize)
 		{
 			ESP-=4;
-			StoreByte(mem,state.SS,ESP  ,value&255);
-			StoreByte(mem,state.SS,ESP+1,(value>>8)&255);
-			StoreByte(mem,state.SS,ESP+2,(value>>16)&255);
-			StoreByte(mem,state.SS,ESP+3,(value>>24)&255);
+			StoreByte(mem,state.SS(),ESP  ,value&255);
+			StoreByte(mem,state.SS(),ESP+1,(value>>8)&255);
+			StoreByte(mem,state.SS(),ESP+2,(value>>16)&255);
+			StoreByte(mem,state.SS(),ESP+3,(value>>24)&255);
 		}
 		SetESP(ESP);
 	}
@@ -457,12 +457,12 @@ unsigned int i486DX::Pop(Memory &mem,unsigned int operandSize)
 		auto SP=GetSP();
 		if(16==operandSize)
 		{
-			value=FetchByte(state.SS,SP,mem)|(FetchByte(state.SS,SP+1,mem)<<8);
+			value=FetchByte(state.SS(),SP,mem)|(FetchByte(state.SS(),SP+1,mem)<<8);
 			SP+=2;
 		}
 		else if(32==operandSize)
 		{
-			value=FetchByte(state.SS,SP,mem)|(FetchByte(state.SS,SP+1,mem)<<8)|(FetchByte(state.SS,SP+2,mem)<<16)|(FetchByte(state.SS,SP+3,mem)<<24);
+			value=FetchByte(state.SS(),SP,mem)|(FetchByte(state.SS(),SP+1,mem)<<8)|(FetchByte(state.SS(),SP+2,mem)<<16)|(FetchByte(state.SS(),SP+3,mem)<<24);
 			SP+=4;
 		}
 		SetSP(SP); // SetSP does SP&=0xffff;
@@ -472,12 +472,12 @@ unsigned int i486DX::Pop(Memory &mem,unsigned int operandSize)
 		auto ESP=GetESP();
 		if(16==operandSize)
 		{
-			value=FetchByte(state.SS,ESP,mem)|(FetchByte(state.SS,ESP+1,mem)<<8);
+			value=FetchByte(state.SS(),ESP,mem)|(FetchByte(state.SS(),ESP+1,mem)<<8);
 			ESP+=2;
 		}
 		else if(32==operandSize)
 		{
-			value=FetchByte(state.SS,ESP,mem)|(FetchByte(state.SS,ESP+1,mem)<<8)|(FetchByte(state.SS,ESP+2,mem)<<16)|(FetchByte(state.SS,ESP+3,mem)<<24);
+			value=FetchByte(state.SS(),ESP,mem)|(FetchByte(state.SS(),ESP+1,mem)<<8)|(FetchByte(state.SS(),ESP+2,mem)<<16)|(FetchByte(state.SS(),ESP+3,mem)<<24);
 			ESP+=4;
 		}
 		SetESP(ESP);
@@ -913,32 +913,32 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 			switch(segmentOverride)
 			{
 			case SEG_OVERRIDE_CS:
-				seg=state.CS;
+				seg=state.CS();
 				break;
 			case SEG_OVERRIDE_SS:
-				seg=state.SS;
+				seg=state.SS();
 				break;
 			case SEG_OVERRIDE_DS:
-				seg=state.DS;
+				seg=state.DS();
 				break;
 			case SEG_OVERRIDE_ES:
-				seg=state.ES;
+				seg=state.ES();
 				break;
 			case SEG_OVERRIDE_FS:
-				seg=state.FS;
+				seg=state.FS();
 				break;
 			case SEG_OVERRIDE_GS:
-				seg=state.GS;
+				seg=state.GS();
 				break;
 			default:
 				if(op.baseReg==REG_ESP || op.baseReg==REG_SP ||
 				   op.baseReg==REG_EBP || op.baseReg==REG_BP)
 				{
-					seg=state.SS;
+					seg=state.SS();
 				}
 				else
 				{
-					seg=state.DS;
+					seg=state.DS();
 				}
 				break;
 			}
@@ -1116,33 +1116,33 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 
 		case REG_ES:
 			value.numBytes=2;
-			value.byteData[0]=(state.ES.value&255);
-			value.byteData[1]=((state.ES.value>>8)&255);
+			value.byteData[0]=(state.ES().value&255);
+			value.byteData[1]=((state.ES().value>>8)&255);
 			break;
 		case REG_CS:
 			value.numBytes=2;
-			value.byteData[0]=(state.CS.value&255);
-			value.byteData[1]=((state.CS.value>>8)&255);
+			value.byteData[0]=(state.CS().value&255);
+			value.byteData[1]=((state.CS().value>>8)&255);
 			break;
 		case REG_SS:
 			value.numBytes=2;
-			value.byteData[0]=(state.SS.value&255);
-			value.byteData[1]=((state.SS.value>>8)&255);
+			value.byteData[0]=(state.SS().value&255);
+			value.byteData[1]=((state.SS().value>>8)&255);
 			break;
 		case REG_DS:
 			value.numBytes=2;
-			value.byteData[0]=(state.DS.value&255);
-			value.byteData[1]=((state.DS.value>>8)&255);
+			value.byteData[0]=(state.DS().value&255);
+			value.byteData[1]=((state.DS().value>>8)&255);
 			break;
 		case REG_FS:
 			value.numBytes=2;
-			value.byteData[0]=(state.FS.value&255);
-			value.byteData[1]=((state.FS.value>>8)&255);
+			value.byteData[0]=(state.FS().value&255);
+			value.byteData[1]=((state.FS().value>>8)&255);
 			break;
 		case REG_GS:
 			value.numBytes=2;
-			value.byteData[0]=(state.GS.value&255);
-			value.byteData[1]=((state.GS.value>>8)&255);
+			value.byteData[0]=(state.GS().value&255);
+			value.byteData[1]=((state.GS().value>>8)&255);
 			break;
 
 		case REG_GDT:
@@ -1411,32 +1411,32 @@ void i486DX::StoreOperandValue(
 			switch(segmentOverride)
 			{
 			case SEG_OVERRIDE_CS:
-				seg=state.CS;
+				seg=state.CS();
 				break;
 			case SEG_OVERRIDE_SS:
-				seg=state.SS;
+				seg=state.SS();
 				break;
 			case SEG_OVERRIDE_DS:
-				seg=state.DS;
+				seg=state.DS();
 				break;
 			case SEG_OVERRIDE_ES:
-				seg=state.ES;
+				seg=state.ES();
 				break;
 			case SEG_OVERRIDE_FS:
-				seg=state.FS;
+				seg=state.FS();
 				break;
 			case SEG_OVERRIDE_GS:
-				seg=state.GS;
+				seg=state.GS();
 				break;
 			default:
 				if(dst.baseReg==REG_ESP || dst.baseReg==REG_SP ||
 				   dst.baseReg==REG_EBP || dst.baseReg==REG_BP)
 				{
-					seg=state.SS;
+					seg=state.SS();
 				}
 				else
 				{
-					seg=state.DS;
+					seg=state.DS();
 				}
 				break;
 			}
@@ -1565,22 +1565,22 @@ void i486DX::StoreOperandValue(
 			break;
 
 		case REG_ES:
-			LoadSegmentRegister(state.ES,cpputil::GetWord(value.byteData),mem);
+			LoadSegmentRegister(state.ES(),cpputil::GetWord(value.byteData),mem);
 			break;
 		case REG_CS:
-			LoadSegmentRegister(state.CS,cpputil::GetWord(value.byteData),mem);
+			LoadSegmentRegister(state.CS(),cpputil::GetWord(value.byteData),mem);
 			break;
 		case REG_SS:
-			LoadSegmentRegister(state.SS,cpputil::GetWord(value.byteData),mem);
+			LoadSegmentRegister(state.SS(),cpputil::GetWord(value.byteData),mem);
 			break;
 		case REG_DS:
-			LoadSegmentRegister(state.DS,cpputil::GetWord(value.byteData),mem);
+			LoadSegmentRegister(state.DS(),cpputil::GetWord(value.byteData),mem);
 			break;
 		case REG_FS:
-			LoadSegmentRegister(state.FS,cpputil::GetWord(value.byteData),mem);
+			LoadSegmentRegister(state.FS(),cpputil::GetWord(value.byteData),mem);
 			break;
 		case REG_GS:
-			LoadSegmentRegister(state.GS,cpputil::GetWord(value.byteData),mem);
+			LoadSegmentRegister(state.GS(),cpputil::GetWord(value.byteData),mem);
 			break;
 
 		case REG_GDT:

@@ -1341,7 +1341,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 {
 	state.holdIRQ=false;
 
-	auto inst=FetchInstruction(state.CS,state.EIP,mem);
+	auto inst=FetchInstruction(state.CS(),state.EIP,mem);
 
 	Operand op1,op2;
 	inst.DecodeOperand(inst.addressSize,inst.operandSize,op1,op2);
@@ -1570,9 +1570,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{
 				clocksPassed=20;
 			}
-			Push(mem,inst.operandSize,state.CS.value);
+			Push(mem,inst.operandSize,state.CS().value);
 			Push(mem,inst.operandSize,state.EIP+inst.numBytes);
-			LoadSegmentRegister(state.CS,op1.seg,mem);
+			LoadSegmentRegister(state.CS(),op1.seg,mem);
 			state.EIP=op1.offset;
 			EIPChanged=true;
 		}
@@ -1932,7 +1932,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				}
 				break;
 			}
-			LoadSegmentRegister(state.CS,op1.seg,mem);
+			LoadSegmentRegister(state.CS(),op1.seg,mem);
 			state.EIP=op1.offset;
 			EIPChanged=true;
 		}
@@ -2217,7 +2217,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			clocksPassed=18;
 		}
 		SetIPorEIP(inst.operandSize,Pop(mem,inst.operandSize));
-		LoadSegmentRegister(state.CS,Pop(mem,inst.operandSize),mem);
+		LoadSegmentRegister(state.CS(),Pop(mem,inst.operandSize),mem);
 		state.ESP()+=inst.GetUimm16(); // Do I need to take &0xffff if address mode is 16? 
 		EIPChanged=true;
 		break;
@@ -2236,7 +2236,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			clocksPassed=17;
 		}
 		SetIPorEIP(inst.operandSize,Pop(mem,inst.operandSize));
-		LoadSegmentRegister(state.CS,Pop(mem,inst.operandSize),mem);
+		LoadSegmentRegister(state.CS(),Pop(mem,inst.operandSize),mem);
 		state.ESP()+=inst.GetUimm16(); // Do I need to take &0xffff if address mode is 16? 
 		EIPChanged=true;
 		break;

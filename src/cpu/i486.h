@@ -192,11 +192,63 @@ public:
 
 		unsigned int EIP;
 		unsigned int EFLAGS;   // bit 1=Always 1 ([1] pp.2-14)
-		SegmentRegister CS,DS,ES,SS,FS,GS;
+		SegmentRegister sreg[6];
 		SystemAddressRegister GDT,LDT;
 		SystemSegmentRegister TR[8],IDTR;
 		unsigned int CR[4];
 		unsigned int DR[8];
+
+		const SegmentRegister &ES(void) const
+		{
+			return sreg[REG_ES-REG_SEGMENT_REG_BASE];
+		}
+		const SegmentRegister &CS(void) const
+		{
+			return sreg[REG_CS-REG_SEGMENT_REG_BASE];
+		}
+		const SegmentRegister &SS(void) const
+		{
+			return sreg[REG_SS-REG_SEGMENT_REG_BASE];
+		}
+		const SegmentRegister &DS(void) const
+		{
+			return sreg[REG_DS-REG_SEGMENT_REG_BASE];
+		}
+		const SegmentRegister &FS(void) const
+		{
+			return sreg[REG_FS-REG_SEGMENT_REG_BASE];
+		}
+		const SegmentRegister &GS(void) const
+		{
+			return sreg[REG_GS-REG_SEGMENT_REG_BASE];
+		}
+		SegmentRegister &ES(void)
+		{
+			return sreg[REG_ES-REG_SEGMENT_REG_BASE];
+		}
+		SegmentRegister &CS(void)
+		{
+			return sreg[REG_CS-REG_SEGMENT_REG_BASE];
+		}
+		SegmentRegister &SS(void)
+		{
+			return sreg[REG_SS-REG_SEGMENT_REG_BASE];
+		}
+		SegmentRegister &DS(void)
+		{
+			return sreg[REG_DS-REG_SEGMENT_REG_BASE];
+		}
+		SegmentRegister &FS(void)
+		{
+			return sreg[REG_FS-REG_SEGMENT_REG_BASE];
+		}
+		SegmentRegister &GS(void)
+		{
+			return sreg[REG_GS-REG_SEGMENT_REG_BASE];
+		}
+
+
+
 
 		// [1] pp.26-211 in the description of the MOV instruction
 		// "Loading to SS register inhibits all interrupts until after the execution of the next instruction"
@@ -1041,14 +1093,14 @@ public:
 	*/
 	inline unsigned int FetchInstructionByte(unsigned int offset,const Memory &mem) const
 	{
-		return FetchByte(state.CS,state.EIP+offset,mem);
+		return FetchByte(state.CS(),state.EIP+offset,mem);
 	}
 
 	/*! Fetch an instruction.
 	*/
 	inline Instruction FetchInstruction(const Memory &mem) const
 	{
-		return FetchInstruction(state.CS,state.EIP,mem);
+		return FetchInstruction(state.CS(),state.EIP,mem);
 	}
 private:
 	/*! Fetch an 8-bit operand.  Returns the number of bytes fetched.
