@@ -8,7 +8,7 @@ Device::Device()
 	abort=false;
 }
 
-void Device::Abort(const char abortReason[]) const
+void Device::Abort(const std::string &abortReason) const
 {
 	abort=true;
 	this->abortReason=abortReason;

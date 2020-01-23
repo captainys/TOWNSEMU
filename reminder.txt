@@ -1,6 +1,13 @@
 [Reminder to myself]
 
 
-
 Probably:
 I'm not setting carry flag correctly in SBB and ADC.  In case Carry+Op2==0x100000000, the prev and new values are equal, but it goes exactly one round.
+
+
+
+#20200123-1
+Clocks for RCL/RCR
+For REG it should be 8-30, for MEM it should be 9-31.
+But how to calculate is nowhere to find.
+For now temporarilyl I make it 10 for everything.

@@ -14,7 +14,7 @@ public:
 
 	Device();
 
-	void Abort(const char abortReason[]) const;
+	void Abort(const std::string &abortReason) const;
 
 	virtual const char *DeviceName(void) const=0;
 

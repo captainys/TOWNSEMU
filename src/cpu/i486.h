@@ -380,6 +380,7 @@ public:
 	private:
 		/* operandSize is 8, 16, or 32 */
 		std::string DisassembleTypicalOneOperand(std::string inst,const Operand &op,int operandSize) const;
+		std::string DisassembleTypicalRM_I8(std::string inst,const Operand &op1,const Operand &op2) const;
 		std::string DisassembleTypicalTwoOperands(std::string inst,const Operand &op1,const Operand &op2) const;
 
 
@@ -1283,6 +1284,15 @@ public:
 	void CmpDword(unsigned int &value1,unsigned int value2);
 	void CmpWord(unsigned int &value1,unsigned int value2);
 	void CmpByte(unsigned int &value1,unsigned int value2);
+
+	/*! SHL a value and set OF and CF flags accoring to the result.
+	    OF is only set if ctr==1.
+	    operandSize needs to be 16 or 32.
+	*/ 
+	void ShlWordOrDword(int operandSize,unsigned int &value,unsigned int ctr);
+	void ShlDword(unsigned int &value,unsigned int ctr);
+	void ShlWord(unsigned int &value,unsigned int ctr);
+	void ShlByte(unsigned int &value,unsigned int ctr);
 
 
 	/*! Evaluates an operand.

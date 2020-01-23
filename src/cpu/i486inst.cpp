@@ -215,6 +215,12 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 {
 	switch(inst.opCode)
 	{
+	case I486_OPCODE_C1_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_I8:// =0xC1, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
+		offset+=FetchOperandRM(inst,seg,offset,mem);
+		FetchOperand8(inst,seg,offset,mem);
+		break;
+
+
 	case I486_OPCODE_F6_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF6
 	case I486_OPCODE_F7_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF7,
 		break;
@@ -491,6 +497,12 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 
 	switch(opCode)
 	{
+	case I486_OPCODE_C1_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_I8:// =0xC1, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
+		op1.Decode(addressSize,operandSize,operand);
+		op2.MakeImm8(*this);
+		break;
+
+
 	case I486_OPCODE_F6_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF6
 	case I486_OPCODE_F7_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF7,
 		break;
@@ -803,6 +815,37 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 
 	switch(opCode)
 	{
+	case I486_OPCODE_C1_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_I8:// =0xC1, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
+		switch(GetREG())
+		{
+		case 0:
+			disasm="ROL";
+			break;
+		case 1:
+			disasm="ROR";
+			break;
+		case 2:
+			disasm="RCL";
+			break;
+		case 3:
+			disasm="RCR";
+			break;
+		case 4:
+			disasm="SHL";
+			break;
+		case 5:
+			disasm="SHR";
+			break;
+		case 6:
+			disasm=cpputil::Ubtox(opCode)+"?";
+			break;
+		case 7:
+			disasm="SAR";
+			break;
+		}
+		disasm=DisassembleTypicalRM_I8(disasm,op1,op2);
+		break;
+
 	case I486_OPCODE_CALL_REL://   0xE8,
 	case I486_OPCODE_JMP_REL://          0xE9,   // cw or cd
 		disasm=(I486_OPCODE_JMP_REL==opCode ? "JMP" : "CALL");
@@ -1356,6 +1399,16 @@ std::string i486DX::Instruction::DisassembleTypicalOneOperand(std::string inst,c
 	return disasm;
 }
 
+std::string i486DX::Instruction::DisassembleTypicalRM_I8(std::string inst,const Operand &op1,const Operand &op2) const
+{
+	auto sizeQual=i486DX::Operand::GetSizeQualifierToDisassembly(op1,operandSize);
+	auto segQual=i486DX::Operand::GetSegmentQualifierToDisassembly(segOverride,op1);
+	auto disasm=inst;
+	cpputil::ExtendString(disasm,8);
+	disasm+=sizeQual+segQual+op1.Disassemble()+","+op2.Disassemble();
+	return disasm;
+}
+
 std::string i486DX::Instruction::DisassembleTypicalTwoOperands(std::string inst,const Operand &op1,const Operand &op2) const
 {
 	std::string disasm=inst,op1SizeQual,op2SizeQual,op1SegQual,op2SegQual;
@@ -1462,6 +1515,56 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 	switch(inst.opCode)
 	{
+	case I486_OPCODE_C1_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_I8:// =0xC1, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
+		{
+			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,1);
+			auto i=value.GetAsDword();
+			auto ctr=inst.GetUimm8()&31; // [1] pp.26-243 Only bottom 5 bits are used.
+			if(true==state.exception)
+			{
+				break;
+			}
+			switch(inst.GetREG())
+			{
+			case 0:// "ROL";
+				Abort("C1 ROL not implemented yet.");
+				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
+				break;
+			case 1:// "ROR";
+				Abort("C1 ROR not implemented yet.");
+				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
+				break;
+			case 2:// "RCL";
+				Abort("C1 RCL not implemented yet.");
+				clocksPassed=(OPER_ADDR==op1.operandType ? 10 : 11);  // See reminder #20200123-1
+				break;
+			case 3:// "RCR";
+				Abort("C1 RCR not implemented yet.");
+				clocksPassed=(OPER_ADDR==op1.operandType ? 10 : 11);  // See reminder #20200123-1
+				break;
+			case 4:// "SHL";
+				ShlWordOrDword(inst.operandSize,i,ctr);
+				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
+				break;
+			case 5:// "SHR";
+				Abort("C1 SHR not implemented yet.");
+				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
+				break;
+			case 6:// cpputil::Ubtox(opCode)+"?";
+				Abort("Undefined REG for"+cpputil::Ubtox(inst.opCode));
+				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
+				break;
+			case 7:// "SAR";
+				Abort("C1 SAR not implemented yet.");
+				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
+				break;
+			}
+			value.SetDword(i);
+			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+		}
+		break;
+
+
 	case I486_OPCODE_F6_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF6
 	case I486_OPCODE_F7_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF7,
 		Abort("F6 and F7 not implemented yet.");
@@ -1877,6 +1980,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				case 1:
 					DecrementByte(i);
 					break;
+				default:
+					Abort("Undefined REG for"+cpputil::Ubtox(inst.opCode));
+					break;
 				}
 				value.SetDword(i);
 				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
@@ -1935,7 +2041,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				}
 				break;
 			default:
-				Abort("I486_OPCODE_INC_DEC_CALL_CALLF_JMP_JMPF_PUSH  REG Not implemented yet.");
+				Abort("Undefined REG for"+cpputil::Ubtox(inst.opCode));
 				break;
 			}
 		}
@@ -2132,6 +2238,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			case 7: // CMP
 				SubByte(i,value2.GetAsDword());
 				break;
+			default:
+				Abort("Undefined REG for"+cpputil::Ubtox(inst.opCode));
+				break;
 			}
 			if(7!=REG) // Don't store a value if it is CMP
 			{
@@ -2187,7 +2296,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				SubWordOrDword(inst.operandSize,i,value2.GetAsDword());
 				break;
 			default:
-				Abort("Binary-operator not implemented yet.\n");
+				Abort("Undefined REG for"+cpputil::Ubtox(inst.opCode));
 				break;
 			}
 			if(7!=REG) // Don't store a value if it is CMP
@@ -2234,7 +2343,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			}
 			break;
 		default:
-			Abort("I486_OPCODE_LGDT_LIDT undefined/unimplemted REG value.");
+			Abort("Undefined REG for"+cpputil::Ubtox(inst.opCode));
 			break;
 		}
 		break;
