@@ -276,6 +276,7 @@ void i486DX::FetchOperand(Instruction &inst,SegmentRegister seg,int offset,const
 		break;
 
 
+	case I486_OPCODE_JMP_REL8://         0xEB,   // cb
 	case I486_OPCODE_JO_REL8:   // 0x70,
 	case I486_OPCODE_JNO_REL8:  // 0x71,
 	case I486_OPCODE_JB_REL8:   // 0x72,
@@ -552,6 +553,7 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 		break;
 
 
+	case I486_OPCODE_JMP_REL8://         0xEB,   // cb
 	case I486_OPCODE_JO_REL8:   // 0x70,
 	case I486_OPCODE_JNO_REL8:  // 0x71,
 	case I486_OPCODE_JB_REL8:   // 0x72,
@@ -1005,6 +1007,7 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		break;
 
 
+	case I486_OPCODE_JMP_REL8://         0xEB,   // cb
 	case I486_OPCODE_JO_REL8:   // 0x70,
 	case I486_OPCODE_JNO_REL8:  // 0x71,
 	case I486_OPCODE_JB_REL8:   // 0x72,
@@ -1023,6 +1026,9 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 	case I486_OPCODE_JG_REL8:   // 0x7F,
 		switch(opCode)
 		{
+		case I486_OPCODE_JMP_REL8://         0xEB,   // cb
+			disasm="JMP";
+			break;
 		case I486_OPCODE_JO_REL8:   // 0x70,
 			disasm="JO";
 			break;
@@ -1887,31 +1893,43 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{
 			case 0:
 			case 1:
-				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
-				if(true!=state.exception)
 				{
-					auto i=value.GetAsDword();
-					if(0==REG)
+					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+					if(true!=state.exception)
 					{
-						IncrementWordOrDword(inst.operandSize,i);
+						auto i=value.GetAsDword();
+						if(0==REG)
+						{
+							IncrementWordOrDword(inst.operandSize,i);
+						}
+						else
+						{
+							DecrementWordOrDword(inst.operandSize,i);
+						}
+						value.SetDword(i);
+						StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+					}
+					if(op1.operandType==OPER_ADDR)
+					{
+						clocksPassed=3;
 					}
 					else
 					{
-						DecrementWordOrDword(inst.operandSize,i);
+						clocksPassed=1;
 					}
-					value.SetDword(i);
-					StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
-				}
-				if(op1.operandType==OPER_ADDR)
-				{
-					clocksPassed=3;
-				}
-				else
-				{
-					clocksPassed=1;
 				}
 				break;
-			case 2:
+			case 6: // PUSH
+				{
+					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+					clocksPassed=4;
+					if(true!=state.exception)
+					{
+						Push(mem,inst.operandSize,value.GetAsDword());
+					}
+				}
+				break;
+			default:
 				Abort("I486_OPCODE_INC_DEC_CALL_CALLF_JMP_JMPF_PUSH  REG Not implemented yet.");
 				break;
 			}
@@ -1938,6 +1956,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		clocksPassed=1;
 
 
+	case I486_OPCODE_JMP_REL8://         0xEB,   // cb
 	case I486_OPCODE_JO_REL8:   // 0x70,
 	case I486_OPCODE_JNO_REL8:  // 0x71,
 	case I486_OPCODE_JB_REL8:   // 0x72,
@@ -1958,6 +1977,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			bool jumpCond=false;
 			switch(inst.opCode)
 			{
+			case I486_OPCODE_JMP_REL8://         0xEB,   // cb
+				jumpCond=true;
+				break;
 			case I486_OPCODE_JO_REL8:   // 0x70,
 				jumpCond=CondJO();
 				break;

@@ -1122,7 +1122,7 @@ public:
 
 	/*! Raise an exception. 
 	*/
-	void RaiseException(int exceptionType,int exception){};// Right now it's just a placeholder
+	void RaiseException(int exceptionType,int exception){exception=true;};// Right now it's just a placeholder
 
 
 	/*! Shoot an interrupt.

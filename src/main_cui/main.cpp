@@ -73,6 +73,10 @@ int main(int ac,char *av[])
 	std::cout << ">";
 	std::cin >> cmd;
 
+	RunUntil(towns,0xDB9);
+	std::cout << ">";
+	std::cin >> cmd;
+
 	for(;;)
 	{
 		auto inst=towns.FetchInstruction();

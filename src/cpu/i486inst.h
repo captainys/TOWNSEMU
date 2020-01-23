@@ -176,7 +176,7 @@ enum
 	// I486_OPCODE_JZ_REL=    0x840F, Same as JE_REL
 
 
-	I486_OPCODE_JMP_SHORT=        0xEB,   // cb
+	I486_OPCODE_JMP_REL8=         0xEB,   // cb
 	I486_OPCODE_JMP_REL=          0xE9,   // cw or cd
 	I486_OPCODE_JMP_FAR=          0xEA,   // cd or cp
 
