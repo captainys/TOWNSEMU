@@ -193,8 +193,8 @@ public:
 		unsigned int EIP;
 		unsigned int EFLAGS;   // bit 1=Always 1 ([1] pp.2-14)
 		SegmentRegister sreg[6];
-		SystemAddressRegister GDT,LDT;
-		SystemSegmentRegister TR[8],IDTR;
+		SystemAddressRegister GDTR,IDTR,LDTR;
+		SystemSegmentRegister TR[8];
 		unsigned int CR[4];
 		unsigned int DR[8];
 
@@ -335,6 +335,14 @@ public:
 		RESET_FPU_OPCODE=          0,
 	};
 
+	enum
+	{
+		EXCEPTION_GP,
+		EXCEPTION_UD,
+		EXCEPTION_SS,
+		EXCEPTION_PF
+	};
+
 	class Operand;
 
 	class Instruction
@@ -385,6 +393,9 @@ public:
 
 		/*! Returns Unsigned Imm32 (last 4 byte in the operand) after decoding. */
 		unsigned int GetUimm32(void) const;
+
+		/*! Returns Unsigned Imm16 or Imm32 after decoding. */
+		unsigned int GetUimm16or32(unsigned int operandSize) const;
 
 		/*! Returns Signed Imm8 (last byte in the operand) after decoding. */
 		int GetSimm8(void) const;
@@ -996,6 +1007,11 @@ public:
 	*/
 	void LoadSegmentRegisterRealMode(SegmentRegister &reg,unsigned int value);
 
+	/*! Loads limit and linear base address to a descriptor table register.
+	    How many bytes are loaded depends on operand size.  [1] 26-194.
+	*/
+	void LoadDescriptorTableRegister(SystemAddressRegister &reg,int operandSize,const unsigned char byteData[]);
+
 	inline bool IsInRealMode(void) const
 	{
 		return (0==(state.CR[0]&CR0_PROTECTION_ENABLE));
@@ -1102,6 +1118,19 @@ public:
 	{
 		return FetchInstruction(state.CS(),state.EIP,mem);
 	}
+
+
+	/*! Raise an exception. 
+	*/
+	void RaiseException(int exceptionType,int exception){};// Right now it's just a placeholder
+
+
+	/*! Shoot an interrupt.
+	*/
+	void Interrupt(int intNum){};// Right now it's just a placeholder
+
+
+
 private:
 	/*! Fetch an 8-bit operand.  Returns the number of bytes fetched.
 	*/

@@ -110,10 +110,8 @@ void i486DX::Reset(void)
 	LoadSegmentRegisterRealMode(state.FS(),RESET_FS);
 	LoadSegmentRegisterRealMode(state.GS(),RESET_GS);
 
-	state.IDTR.selector=0;
 	state.IDTR.linearBaseAddr=RESET_IDTRBASE;
 	state.IDTR.limit=RESET_IDTRLIMIT;
-	state.IDTR.attrib=0;
 
 	state.DR[7]=RESET_DR7;
 
@@ -216,6 +214,22 @@ void i486DX::LoadSegmentRegisterRealMode(SegmentRegister &reg,unsigned int value
 	}
 	reg.value=value;
 	reg.baseLinearAddr=(value<<4);
+}
+
+void i486DX::LoadDescriptorTableRegister(SystemAddressRegister &reg,int operandSize,const unsigned char byteData[])
+{
+	reg.limit=byteData[0]|(byteData[1]<<8);
+	if(16==operandSize)
+	{
+		reg.linearBaseAddr=byteData[2]|(byteData[3]<<8)|(byteData[4]<<16);
+	}
+	else
+	{
+		reg.linearBaseAddr=byteData[2]|(byteData[3]<<8)|(byteData[4]<<16)|(byteData[5]<<24);
+	}
+	std::cout << __FUNCTION__ << std::endl;
+	std::cout << "LIMIT:" << cpputil::Ustox(reg.limit) << std::endl;
+	std::cout << "BASE:" << cpputil::Uitox(reg.linearBaseAddr) << std::endl;
 }
 
 unsigned int i486DX::GetRegisterValue(int reg) const
@@ -1148,22 +1162,22 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 		case REG_GDT:
 			Abort("i486DX::EvaluateOperand, Check GDT Byte Order");
 			value.numBytes=6;
-			value.byteData[0]=(state.GDT.linearBaseAddr&255);
-			value.byteData[1]=((state.GDT.linearBaseAddr>>8)&255);
-			value.byteData[2]=((state.GDT.linearBaseAddr>>16)&255);
-			value.byteData[3]=((state.GDT.linearBaseAddr>>24)&255);
-			value.byteData[4]=(state.GDT.limit&255);
-			value.byteData[5]=((state.GDT.limit>>8)&255);
+			value.byteData[0]=(state.GDTR.linearBaseAddr&255);
+			value.byteData[1]=((state.GDTR.linearBaseAddr>>8)&255);
+			value.byteData[2]=((state.GDTR.linearBaseAddr>>16)&255);
+			value.byteData[3]=((state.GDTR.linearBaseAddr>>24)&255);
+			value.byteData[4]=(state.GDTR.limit&255);
+			value.byteData[5]=((state.GDTR.limit>>8)&255);
 			break;
 		case REG_LDT:
 			Abort("i486DX::EvaluateOperand, Check LDT Byte Order");
 			value.numBytes=6;
-			value.byteData[0]=(state.LDT.linearBaseAddr&255);
-			value.byteData[1]=((state.LDT.linearBaseAddr>>8)&255);
-			value.byteData[2]=((state.LDT.linearBaseAddr>>16)&255);
-			value.byteData[3]=((state.LDT.linearBaseAddr>>24)&255);
-			value.byteData[4]=(state.LDT.limit&255);
-			value.byteData[5]=((state.LDT.limit>>8)&255);
+			value.byteData[0]=(state.LDTR.linearBaseAddr&255);
+			value.byteData[1]=((state.LDTR.linearBaseAddr>>8)&255);
+			value.byteData[2]=((state.LDTR.linearBaseAddr>>16)&255);
+			value.byteData[3]=((state.LDTR.linearBaseAddr>>24)&255);
+			value.byteData[4]=(state.LDTR.limit&255);
+			value.byteData[5]=((state.LDTR.limit>>8)&255);
 			break;
 		case REG_TR0:
 			Abort("i486DX::EvaluateOperand, Check TR0 Byte Order");
@@ -1279,17 +1293,13 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 			break;
 		case REG_IDTR:
 			Abort("i486DX::EvaluateOperand, Check IDTR Byte Order");
-			value.numBytes=10;
+			value.numBytes=6;
 			value.byteData[0]=(state.IDTR.linearBaseAddr&255);
 			value.byteData[1]=((state.IDTR.linearBaseAddr>>8)&255);
 			value.byteData[2]=((state.IDTR.linearBaseAddr>>16)&255);
 			value.byteData[3]=((state.IDTR.linearBaseAddr>>24)&255);
 			value.byteData[4]=(state.IDTR.limit&255);
 			value.byteData[5]=((state.IDTR.limit>>8)&255);
-			value.byteData[6]=(state.IDTR.selector&255);
-			value.byteData[7]=((state.IDTR.selector>>8)&255);
-			value.byteData[8]=(state.IDTR.attrib&255);
-			value.byteData[9]=((state.IDTR.attrib>>8)&255);
 			break;
 		case REG_CR0:
 			value.numBytes=4;

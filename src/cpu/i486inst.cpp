@@ -139,8 +139,10 @@ unsigned int i486DX::FetchOperand16or32(Instruction &inst,SegmentRegister seg,un
 
 unsigned int i486DX::FetchOperandRM(Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem) const
 {
+	offset+=FetchOperand8(inst,seg,offset,mem);
+
 	unsigned int numBytesFetched=1;
-	auto MODR_M=FetchOperand8(inst,seg,offset,mem);
+	auto MODR_M=inst.operand[inst.operandLen-1];
 	auto MOD=(MODR_M>>6)&3;
 	auto R_M=(MODR_M)&7;
 
@@ -308,6 +310,11 @@ void i486DX::FetchOperand(Instruction &inst,SegmentRegister seg,int offset,const
 		break;
 
 
+	case I486_OPCODE_LGDT_LIDT:
+		FetchOperandRM(inst,seg,offset,mem);
+		break;
+
+
 	case I486_OPCODE_MOV_FROM_R8: //      0x88,
 		// Example:  88 4c ff        MOV CL,[SI-1]     In Real Mode
 		// Example:  88 10           MOV DL,[BX+SI]    In Real Mode
@@ -390,6 +397,11 @@ void i486DX::FetchOperand(Instruction &inst,SegmentRegister seg,int offset,const
 		break;
 
 
+	case I486_OPCODE_PUSHA://            0x60,
+	case I486_OPCODE_PUSHF://            0x9C,
+		break;
+
+
 	case I486_OPCODE_PUSH_EAX://         0x50,
 	case I486_OPCODE_PUSH_ECX://         0x51,
 	case I486_OPCODE_PUSH_EDX://         0x52,
@@ -424,32 +436,38 @@ void i486DX::FetchOperand(Instruction &inst,SegmentRegister seg,int offset,const
 
 
 	case I486_OPCODE_AND_AL_FROM_I8://  0x24,
+	case I486_OPCODE_CMP_AL_FROM_I8://  0x3C,
 	case I486_OPCODE_OR_AL_FROM_I8://    0x0C,
 	case I486_OPCODE_TEST_AL_FROM_I8://  0xA8,
 	case I486_OPCODE_XOR_AL_FROM_I8:
 		FetchOperand8(inst,seg,offset,mem);
 		break;
 	case I486_OPCODE_AND_A_FROM_I://    0x25,
+	case I486_OPCODE_CMP_A_FROM_I://    0x3D,
 	case I486_OPCODE_OR_A_FROM_I://      0x0D,
 	case I486_OPCODE_TEST_A_FROM_I://    0xA9,
 	case I486_OPCODE_XOR_A_FROM_I:
 		FetchOperand16or32(inst,seg,offset,mem);
 		break;
 	case I486_OPCODE_AND_RM8_FROM_R8:// 0x20,
+	case I486_OPCODE_CMP_RM8_FROM_R8:// 0x38,
 	case I486_OPCODE_OR_RM8_FROM_R8://   0x08,
 	case I486_OPCODE_TEST_RM8_FROM_R8:// 0x84,
 	case I486_OPCODE_XOR_RM8_FROM_R8:
 
 	case I486_OPCODE_AND_RM_FROM_R://   0x21,
+	case I486_OPCODE_CMP_RM_FROM_R://   0x39,
 	case I486_OPCODE_OR_RM_FROM_R://     0x09,
 	case I486_OPCODE_TEST_RM_FROM_R://   0x85,
 	case I486_OPCODE_XOR_RM_FROM_R:
 
 	case I486_OPCODE_AND_R8_FROM_RM8:// 0x22,
+	case I486_OPCODE_CMP_R8_FROM_RM8:// 0x3A,
 	case I486_OPCODE_OR_R8_FROM_RM8://   0x0A,
 	case I486_OPCODE_XOR_R8_FROM_RM8:
 
 	case I486_OPCODE_AND_R_FROM_RM://   0x23,
+	case I486_OPCODE_CMP_R_FROM_RM://   0x3B,
 	case I486_OPCODE_OR_R_FROM_RM://     0x0B,
 	case I486_OPCODE_XOR_R_FROM_RM:
 		FetchOperandRM(inst,seg,offset,mem);
@@ -550,6 +568,11 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 	case I486_OPCODE_JGE_REL8:  // 0x7D,
 	case I486_OPCODE_JLE_REL8:  // 0x7E,
 	case I486_OPCODE_JG_REL8:   // 0x7F,
+		break;
+
+
+	case I486_OPCODE_LGDT_LIDT:
+		op1.Decode(addressSize,operandSize,operand);
 		break;
 
 
@@ -689,6 +712,11 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 		break;
 
 
+	case I486_OPCODE_PUSHA://            0x60,
+	case I486_OPCODE_PUSHF://            0x9C,
+		break;
+
+
 	case I486_OPCODE_PUSH_EAX://         0x50,
 	case I486_OPCODE_PUSH_ECX://         0x51,
 	case I486_OPCODE_PUSH_EDX://         0x52,
@@ -714,18 +742,21 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 
 
 	case I486_OPCODE_AND_AL_FROM_I8://  0x24,
+	case I486_OPCODE_CMP_AL_FROM_I8://  0x3C,
 	case I486_OPCODE_OR_AL_FROM_I8://    0x0C,
 	case I486_OPCODE_XOR_AL_FROM_I8:
 	case I486_OPCODE_TEST_AL_FROM_I8://  0xA8,
 		op1.MakeImm8(*this);
 		break;
 	case I486_OPCODE_AND_A_FROM_I://    0x25,
+	case I486_OPCODE_CMP_A_FROM_I://    0x3D,
 	case I486_OPCODE_OR_A_FROM_I://      0x0D,
 	case I486_OPCODE_TEST_A_FROM_I://    0xA9,
 	case I486_OPCODE_XOR_A_FROM_I:
 		op1.MakeImm16or32(*this,operandSize);
 		break;
 	case I486_OPCODE_AND_RM8_FROM_R8:// 0x20,
+	case I486_OPCODE_CMP_RM8_FROM_R8:// 0x38,
 	case I486_OPCODE_OR_RM8_FROM_R8://   0x08,
 	case I486_OPCODE_TEST_RM8_FROM_R8:// 0x84,
 	case I486_OPCODE_XOR_RM8_FROM_R8:
@@ -733,6 +764,7 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 		op1.Decode(addressSize,8,operand);
 		break;
 	case I486_OPCODE_AND_RM_FROM_R://   0x21,
+	case I486_OPCODE_CMP_RM_FROM_R://   0x39,
 	case I486_OPCODE_OR_RM_FROM_R://     0x09,
 	case I486_OPCODE_TEST_RM_FROM_R://   0x85,
 	case I486_OPCODE_XOR_RM_FROM_R:
@@ -740,12 +772,14 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 		op1.Decode(addressSize,operandSize,operand);
 		break;
 	case I486_OPCODE_AND_R8_FROM_RM8:// 0x22,
+	case I486_OPCODE_CMP_R8_FROM_RM8:// 0x3A,
 	case I486_OPCODE_OR_R8_FROM_RM8://   0x0A,
 	case I486_OPCODE_XOR_R8_FROM_RM8:
 		op1.DecodeMODR_MForRegister(8,operand[0]);
 		op2.Decode(addressSize,8,operand);
 		break;
 	case I486_OPCODE_AND_R_FROM_RM://   0x23,
+	case I486_OPCODE_CMP_R_FROM_RM://   0x3B,
 	case I486_OPCODE_OR_R_FROM_RM://     0x0B,
 	case I486_OPCODE_XOR_R_FROM_RM:
 		op1.DecodeMODR_MForRegister(operandSize,operand[0]);
@@ -815,6 +849,27 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 	case I486_OPCODE_AND_R8_FROM_RM8:
 	case I486_OPCODE_AND_R_FROM_RM:
 		disasm=DisassembleTypicalTwoOperands("AND",op1,op2);
+		break;
+
+
+	case I486_OPCODE_CMP_AL_FROM_I8:
+		disasm="CMP     AL,"+op1.Disassemble();
+		break;
+	case I486_OPCODE_CMP_A_FROM_I:
+		if(16==operandSize)
+		{
+			disasm="CMP     AX,"+op1.Disassemble();;
+		}
+		else
+		{
+			disasm="CMP     EAX,"+op1.Disassemble();;
+		}
+		break;
+	case I486_OPCODE_CMP_RM8_FROM_R8:
+	case I486_OPCODE_CMP_RM_FROM_R:
+	case I486_OPCODE_CMP_R8_FROM_RM8:
+	case I486_OPCODE_CMP_R_FROM_RM:
+		disasm=DisassembleTypicalTwoOperands("CMP",op1,op2);
 		break;
 
 
@@ -1062,6 +1117,22 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		break;
 
 
+	case I486_OPCODE_LGDT_LIDT:
+		switch(GetREG())
+		{
+		case 2:
+			disasm=DisassembleTypicalOneOperand("LGDT",op1,16+operandSize);
+			break;
+		case 3:
+			disasm=DisassembleTypicalOneOperand("LIDT",op1,16+operandSize);
+			break;
+		default:
+			disasm=DisassembleTypicalTwoOperands(cpputil::Ubtox(opCode)+"?",op1,op2);
+			break;
+		}
+		break;
+
+
 	case I486_OPCODE_MOV_FROM_R8: //      0x88,
 	case I486_OPCODE_MOV_FROM_R: //       0x89, // 16/32 depends on OPSIZE_OVERRIDE
 	case I486_OPCODE_MOV_TO_R8: //        0x8A,
@@ -1152,6 +1223,28 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		else
 		{
 			disasm="OUT     DX,EAX";
+		}
+		break;
+
+
+	case I486_OPCODE_PUSHA://            0x60,
+		if(16==operandSize)
+		{
+			disasm="PUSHA";
+		}
+		else
+		{
+			disasm="PUSHAD";
+		}
+		break;
+	case I486_OPCODE_PUSHF://            0x9C,
+		if(16==operandSize)
+		{
+			disasm="PUSHF";
+		}
+		else
+		{
+			disasm="PUSHFD";
 		}
 		break;
 
@@ -1283,6 +1376,17 @@ unsigned int i486DX::Instruction::GetUimm32(void) const
 {
 	return cpputil::GetDword(operand+operandLen-4);
 }
+unsigned int i486DX::Instruction::GetUimm16or32(unsigned int operandSize) const
+{
+	if(16==operandSize)
+	{
+		return GetUimm16();
+	}
+	else
+	{
+		return GetUimm32();
+	}
+}
 int i486DX::Instruction::GetSimm8(void) const
 {
 	return cpputil::GetSignedByte(operand[operandLen-1]);
@@ -1357,10 +1461,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 
 
-	case I486_OPCODE_AND_AL_FROM_I8://  0x24,
-	case I486_OPCODE_OR_AL_FROM_I8://    0x0C,
+	case  I486_OPCODE_AND_AL_FROM_I8://  0x24,
+	case  I486_OPCODE_CMP_AL_FROM_I8://  0x3C,
+	case   I486_OPCODE_OR_AL_FROM_I8://  0x0C,
 	case I486_OPCODE_TEST_AL_FROM_I8://  0xA8,
-	case I486_OPCODE_XOR_AL_FROM_I8:
+	case  I486_OPCODE_XOR_AL_FROM_I8:
 		{
 			clocksPassed=1;
 			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,1);
@@ -1376,6 +1481,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			case I486_OPCODE_TEST_AL_FROM_I8://  0xA8,
 				AndByte(al,v);
 				break;
+			case I486_OPCODE_CMP_AL_FROM_I8://  0x3C,
+				SubByte(al,v);
+				break;
 			case I486_OPCODE_OR_AL_FROM_I8://    0x0C,
 				OrByte(al,v);
 				break;
@@ -1383,16 +1491,18 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				XorByte(al,v);
 				break;
 			}
-			if(I486_OPCODE_TEST_AL_FROM_I8!=inst.opCode) // Don't actually update value if TEST.
+			if(I486_OPCODE_TEST_AL_FROM_I8!=inst.opCode &&
+			   I486_OPCODE_CMP_AL_FROM_I8!=inst.opCode) // Don't actually update value if TEST or CMP.
 			{
 				SetAL(al);
 			}
 		}
 		break;
-	case I486_OPCODE_AND_A_FROM_I://    0x25,
-	case I486_OPCODE_OR_A_FROM_I://      0x0D,
+	case  I486_OPCODE_AND_A_FROM_I://    0x25,
+	case  I486_OPCODE_CMP_A_FROM_I://    0x3D,
+	case   I486_OPCODE_OR_A_FROM_I://    0x0D,
 	case I486_OPCODE_TEST_A_FROM_I://    0xA9,
-	case I486_OPCODE_XOR_A_FROM_I:
+	case  I486_OPCODE_XOR_A_FROM_I:
 		clocksPassed=1;
 		if(16==inst.operandSize)
 		{
@@ -1409,6 +1519,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			case I486_OPCODE_TEST_A_FROM_I://    0xA9,
 				AndWord(ax,v);
 				break;
+			case I486_OPCODE_CMP_A_FROM_I://    0x3D,
+				SubWord(ax,v);
+				break;
 			case I486_OPCODE_OR_A_FROM_I://      0x0D,
 				OrWord(ax,v);
 				break;
@@ -1416,7 +1529,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				XorWord(ax,v);
 				break;
 			}
-			if(I486_OPCODE_TEST_A_FROM_I!=inst.opCode)
+			if(I486_OPCODE_TEST_A_FROM_I!=inst.opCode &&
+			   I486_OPCODE_CMP_A_FROM_I!=inst.opCode)
 			{
 				SetAX(ax);
 			}
@@ -1436,6 +1550,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			case I486_OPCODE_TEST_A_FROM_I://    0xA9,
 				AndDword(eax,v);
 				break;
+			case I486_OPCODE_CMP_A_FROM_I://    0x3D,
+				SubDword(eax,v);
+				break;
 			case I486_OPCODE_OR_A_FROM_I://      0x0D,
 				OrDword(eax,v);
 				break;
@@ -1443,18 +1560,21 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				XorDword(eax,v);
 				break;
 			}
-			if(I486_OPCODE_TEST_A_FROM_I!=inst.opCode)
+			if(I486_OPCODE_TEST_A_FROM_I!=inst.opCode &&
+			   I486_OPCODE_CMP_A_FROM_I!=inst.opCode)
 			{
 				SetEAX(eax);
 			}
 		}
 		break;
-	case I486_OPCODE_AND_RM8_FROM_R8:// 0x20,
-	case I486_OPCODE_OR_RM8_FROM_R8://   0x08,
-	case I486_OPCODE_XOR_RM8_FROM_R8:
+	case  I486_OPCODE_AND_RM8_FROM_R8:// 0x20,
+	case  I486_OPCODE_CMP_RM8_FROM_R8:// 0x38,
+	case   I486_OPCODE_OR_RM8_FROM_R8://   0x08,
+	case  I486_OPCODE_XOR_RM8_FROM_R8:
 	case I486_OPCODE_TEST_RM8_FROM_R8:// 0x84,
 	case I486_OPCODE_AND_R8_FROM_RM8:// 0x22,
-	case I486_OPCODE_OR_R8_FROM_RM8://   0x0A,
+	case I486_OPCODE_CMP_R8_FROM_RM8:// 0x3A,
+	case  I486_OPCODE_OR_R8_FROM_RM8://   0x0A,
 	case I486_OPCODE_XOR_R8_FROM_RM8:
 		{
 			if(op1.operandType==OPER_ADDR || op2.operandType==OPER_ADDR)
@@ -1487,6 +1607,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			case I486_OPCODE_AND_R8_FROM_RM8:// 0x22,
 				AndByte(i,value2.GetAsDword());
 				break;
+			case I486_OPCODE_CMP_RM8_FROM_R8:// 0x38,
+			case I486_OPCODE_CMP_R8_FROM_RM8:// 0x3A,
+				SubByte(i,value2.GetAsDword());
+				break;
 			case I486_OPCODE_OR_RM8_FROM_R8://   0x08,
 			case I486_OPCODE_OR_R8_FROM_RM8://   0x0A,
 				OrByte(i,value2.GetAsDword());
@@ -1496,20 +1620,24 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				XorByte(i,value2.GetAsDword());
 				break;
 			}
-			if(I486_OPCODE_TEST_RM8_FROM_R8!=inst.opCode)
+			if(I486_OPCODE_TEST_RM8_FROM_R8!=inst.opCode &&
+			   I486_OPCODE_CMP_RM8_FROM_R8!=inst.opCode &&
+			   I486_OPCODE_CMP_R8_FROM_RM8!=inst.opCode)
 			{
 				value1.SetDword(i);
 				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
 			}
 		}
 		break;
-	case I486_OPCODE_AND_RM_FROM_R://   0x21,
+	case  I486_OPCODE_AND_RM_FROM_R://   0x21,
+	case  I486_OPCODE_CMP_RM_FROM_R://   0x39,
 	case I486_OPCODE_TEST_RM_FROM_R://   0x85,
-	case I486_OPCODE_OR_RM_FROM_R://     0x09,
-	case I486_OPCODE_XOR_RM_FROM_R:
+	case   I486_OPCODE_OR_RM_FROM_R://   0x09,
+	case  I486_OPCODE_XOR_RM_FROM_R:
 
-	case I486_OPCODE_AND_R_FROM_RM://   0x23,
-	case I486_OPCODE_OR_R_FROM_RM://     0x0B,
+	case I486_OPCODE_AND_R_FROM_RM://    0x23,
+	case I486_OPCODE_CMP_R_FROM_RM://    0x3B,
+	case  I486_OPCODE_OR_R_FROM_RM://    0x0B,
 	case I486_OPCODE_XOR_R_FROM_RM:
 		{
 			if(op1.operandType==OPER_ADDR || op2.operandType==OPER_ADDR)
@@ -1542,6 +1670,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			case I486_OPCODE_AND_R_FROM_RM://   0x23,
 				AndWordOrDword(inst.operandSize,i,value2.GetAsDword());
 				break;
+			case I486_OPCODE_CMP_RM_FROM_R://   0x39,
+			case I486_OPCODE_CMP_R_FROM_RM://   0x3B,
+				SubWordOrDword(inst.operandSize,i,value2.GetAsDword());
+				break;
 			case I486_OPCODE_OR_RM_FROM_R://     0x09,
 			case I486_OPCODE_OR_R_FROM_RM://     0x0B,
 				OrWordOrDword(inst.operandSize,i,value2.GetAsDword());
@@ -1551,7 +1683,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				XorWordOrDword(inst.operandSize,i,value2.GetAsDword());
 				break;
 			}
-			if(I486_OPCODE_TEST_RM_FROM_R!=inst.opCode)
+			if(I486_OPCODE_TEST_RM_FROM_R!=inst.opCode &&
+			   I486_OPCODE_CMP_RM_FROM_R!=inst.opCode &&
+			   I486_OPCODE_CMP_R_FROM_RM!=inst.opCode)
 			{
 				value1.SetDword(i);
 				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
@@ -2052,6 +2186,47 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 
 
+	case I486_OPCODE_LGDT_LIDT:
+		switch(inst.GetREG())
+		{
+		case 2: // LGDT
+		case 3: // LIDT
+			clocksPassed=11;
+			if(OPER_ADDR==op1.operandType)
+			{
+				auto numBytes=(inst.operandSize+16)/8;
+				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,numBytes);
+				switch(inst.GetREG())
+				{
+				case 2:
+					LoadDescriptorTableRegister(state.GDTR,inst.operandSize,value.byteData);
+					break;
+				case 3:
+					LoadDescriptorTableRegister(state.IDTR,inst.operandSize,value.byteData);
+					break;
+				}
+			}
+			else
+			{
+				if(IsInRealMode())
+				{
+					Interrupt(6);
+					EIPChanged=true;
+				}
+				else
+				{
+					RaiseException(EXCEPTION_UD,0);
+					EIPChanged=true;
+				}
+			}
+			break;
+		default:
+			Abort("I486_OPCODE_LGDT_LIDT undefined/unimplemted REG value.");
+			break;
+		}
+		break;
+
+
 	case I486_OPCODE_MOV_FROM_SEG: //     0x8C,
 		Move(mem,inst.addressSize,inst.segOverride,op1,op2);
 		clocksPassed=3;
@@ -2183,6 +2358,28 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 
 
+	case I486_OPCODE_PUSHA://            0x60,
+		clocksPassed=11;
+		{
+			auto temp=state.ESP();
+			Push(mem,inst.operandSize,state.EAX());
+			Push(mem,inst.operandSize,state.ECX());
+			Push(mem,inst.operandSize,state.EDX());
+			Push(mem,inst.operandSize,state.EBX());
+			Push(mem,inst.operandSize,temp);
+			Push(mem,inst.operandSize,state.EBP());
+			Push(mem,inst.operandSize,state.ESI());
+			Push(mem,inst.operandSize,state.EDI());
+		}
+		break;
+	case I486_OPCODE_PUSHF://            0x9C,
+		clocksPassed=4; // If running as 386 and in protected mode, 3 clocks.
+		{
+			Push(mem,inst.operandSize,state.EFLAGS);
+		}
+		break;
+
+
 	case I486_OPCODE_PUSH_EAX://         0x50,
 	case I486_OPCODE_PUSH_ECX://         0x51,
 	case I486_OPCODE_PUSH_EDX://         0x52,
@@ -2191,14 +2388,37 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_OPCODE_PUSH_EBP://         0x55,
 	case I486_OPCODE_PUSH_ESI://         0x56,
 	case I486_OPCODE_PUSH_EDI://         0x57,
+		Push(mem,inst.operandSize,state.reg32[(inst.opCode&7)]);
+		break;
 	case I486_OPCODE_PUSH_I8://          0x6A,
+		Push(mem,inst.operandSize,inst.GetUimm8());
+		break;
 	case I486_OPCODE_PUSH_I://           0x68,
+		Push(mem,inst.operandSize,inst.GetUimm32());
+		break;
 	case I486_OPCODE_PUSH_CS://          0x0E,
+		Push(mem,inst.operandSize,state.CS().value);
+		clocksPassed=3;
+		break;
 	case I486_OPCODE_PUSH_SS://          0x16,
+		Push(mem,inst.operandSize,state.SS().value);
+		clocksPassed=3;
+		break;
 	case I486_OPCODE_PUSH_DS://          0x1E,
+		Push(mem,inst.operandSize,state.DS().value);
+		clocksPassed=3;
+		break;
 	case I486_OPCODE_PUSH_ES://          0x06,
+		Push(mem,inst.operandSize,state.ES().value);
+		clocksPassed=3;
+		break;
 	case I486_OPCODE_PUSH_FS://          0xA00F,
+		Push(mem,inst.operandSize,state.FS().value);
+		clocksPassed=3;
+		break;
 	case I486_OPCODE_PUSH_GS://          0xA80F,
+		Push(mem,inst.operandSize,state.GS().value);
+		clocksPassed=3;
 		break;
 
 

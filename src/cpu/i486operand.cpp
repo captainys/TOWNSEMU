@@ -496,6 +496,8 @@ std::string i486DX::Operand::DisassembleAsImm(int immSize) const
 			return "WORD PTR ";
 		case 32:
 			return "DWORD PTR ";
+		case 48:
+			return "FWORD PTR ";
 		}
 	}
 	return "";
