@@ -1027,7 +1027,60 @@ void i486DX::ShlByte(unsigned int &value,unsigned int ctr)
 		SetOverflowFlag((prevValue&0x80)!=(value&0x80));
 	}
 }
-
+void i486DX::ShrWordOrDword(int operandSize,unsigned int &value,unsigned int ctr)
+{
+	if(16==operandSize)
+	{
+		ShrWord(value,ctr);
+	}
+	else
+	{
+		ShrDword(value,ctr);
+	}
+}
+void i486DX::ShrDword(unsigned int &value,unsigned int ctr)
+{
+	SetCarryFlag(0!=(value&1));
+	if(1<ctr)
+	{
+		value>>=ctr;
+	}
+	else if(1==ctr)
+	{
+		SetOverflowFlag(false);
+		value>>=1;
+	}
+}
+void i486DX::ShrWord(unsigned int &value,unsigned int ctr)
+{
+	SetCarryFlag(0!=(value&1));
+	if(1<ctr)
+	{
+		value&=0xffff;
+		value>>=ctr;
+	}
+	else if(1==ctr)
+	{
+		SetOverflowFlag(false);
+		value&=0xffff;
+		value>>=1;
+	}
+}
+void i486DX::ShrByte(unsigned int &value,unsigned int ctr)
+{
+	SetCarryFlag(0!=(value&1));
+	if(1<ctr)
+	{
+		value&=0xff;
+		value>>=ctr;
+	}
+	else if(1==ctr)
+	{
+		SetOverflowFlag(false);
+		value&=0xff;
+		value>>=1;
+	}
+}
 
 
 

@@ -77,6 +77,18 @@ int main(int ac,char *av[])
 	std::cout << ">";
 	std::cin >> cmd;
 
+	RunUntil(towns,0xF94);
+	std::cout << ">";
+	std::cin >> cmd;
+
+	RunUntil(towns,0x11FF);
+	std::cout << ">";
+	std::cin >> cmd;
+
+	RunUntil(towns,0xDBD);
+	std::cout << ">";
+	std::cin >> cmd;
+
 	for(;;)
 	{
 		auto inst=towns.FetchInstruction();

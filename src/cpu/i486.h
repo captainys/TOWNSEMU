@@ -380,6 +380,7 @@ public:
 	private:
 		/* operandSize is 8, 16, or 32 */
 		std::string DisassembleTypicalOneOperand(std::string inst,const Operand &op,int operandSize) const;
+		std::string DisassembleTypicalRM8_I8(std::string inst,const Operand &op1,const Operand &op2) const;
 		std::string DisassembleTypicalRM_I8(std::string inst,const Operand &op1,const Operand &op2) const;
 		std::string DisassembleTypicalTwoOperands(std::string inst,const Operand &op1,const Operand &op2) const;
 
@@ -579,6 +580,13 @@ public:
 			byteData[1]=((dword>>8)&255);
 			byteData[2]=((dword>>16)&255);
 			byteData[3]=((dword>>24)&255);
+		}
+
+		/*! Get Segment part of FWORD PTR, which is last two bytes of the byte data.
+		*/
+		inline unsigned int GetFwordSegment(void) const
+		{
+			return byteData[numBytes-2]|(byteData[numBytes-1]<<8);
 		}
 	};
 
@@ -1293,6 +1301,14 @@ public:
 	void ShlDword(unsigned int &value,unsigned int ctr);
 	void ShlWord(unsigned int &value,unsigned int ctr);
 	void ShlByte(unsigned int &value,unsigned int ctr);
+	/*! SHR a value and set OF and CF flags accoring to the result.
+	    OF is only set if ctr==1.
+	    operandSize needs to be 16 or 32.
+	*/ 
+	void ShrWordOrDword(int operandSize,unsigned int &value,unsigned int ctr);
+	void ShrDword(unsigned int &value,unsigned int ctr);
+	void ShrWord(unsigned int &value,unsigned int ctr);
+	void ShrByte(unsigned int &value,unsigned int ctr);
 
 
 	/*! Evaluates an operand.
