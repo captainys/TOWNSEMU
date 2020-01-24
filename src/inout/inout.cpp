@@ -55,7 +55,7 @@ unsigned int InOut::In8(unsigned int port)
 
 unsigned int InOut::In16(unsigned int port)
 {
-	unsigned int value=0xff;
+	unsigned int value=0xffff;
 
 	if(port<NUM_IO_ADDR && nullptr!=ioMap[port])
 	{
@@ -76,7 +76,7 @@ unsigned int InOut::In16(unsigned int port)
 
 unsigned int InOut::In32(unsigned int port)
 {
-	unsigned int value=0xff;
+	unsigned int value=0xffffffff;
 
 	if(port<NUM_IO_ADDR && nullptr!=ioMap[port])
 	{

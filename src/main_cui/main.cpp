@@ -27,6 +27,13 @@ void RunUntil(FMTowns &towns,unsigned int CS,unsigned int EIP)
 
 int main(int ac,char *av[])
 {
+	if(sizeof(void *)<8)
+	{
+		printf("This requires minimum 64-bit CPU.\n");
+		return 0;
+	}
+
+
 	if(ac<2)
 	{
 		printf("Usage:\n");
