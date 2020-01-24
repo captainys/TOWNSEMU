@@ -6,11 +6,16 @@
 
 #include "device.h"
 
-class InOut : public Device
+class InOut
 {
-public:
-	virtual const char *DeviceName(void) const{return "IO";}
+protected:
+	enum
+	{
+		NUM_IO_ADDR=0x10000
+	};
+	std::vector <Device *> ioMap;
 
+public:
 	class IOLog
 	{
 	public:
@@ -26,6 +31,8 @@ public:
 	void EnableLog(void);
 
 	void ClearLog(void);
+
+	void AddDevice(Device *devPtr,unsigned int minIOPort,unsigned int maxIOPort);
 
 	unsigned int In8(unsigned int port);
 	unsigned int In16(unsigned int port);

@@ -18,43 +18,31 @@ void Device::Abort(const std::string &abortReason) const
 {
 }
 
-/* virtual */ bool Device::IOWriteByte(unsigned int ioport,unsigned int data)
+/* virtual */ void Device::IOWriteByte(unsigned int ioport,unsigned int data)
 {
 	ioport;
 	data;
-	return false;
 }
-/* virtual */ bool Device::IOWriteWord(unsigned int ioport,unsigned int data)
+/* virtual */ void Device::IOWriteWord(unsigned int ioport,unsigned int data)
 {
 	ioport;
 	data;
-	return false;
 }
-/* virtual */ bool Device::IOWriteDword(unsigned int ioport,unsigned int data)
+/* virtual */ void Device::IOWriteDword(unsigned int ioport,unsigned int data)
 {
 	ioport;
 	data;
-	return false;
 }
 
-/* virtual */ Device::IORead Device::IOReadByte(unsigned int ioport)
+/* virtual */ unsigned int Device::IOReadByte(unsigned int ioport)
 {
-	IORead ioread;
-	ioread.valueReturned=false;
-	ioread.value=0xffffffff;
-	return ioread;
+	return 0xff;
 }
-/* virtual */ Device::IORead Device::IOReadWord(unsigned int ioport)
+/* virtual */ unsigned int Device::IOReadWord(unsigned int ioport)
 {
-	IORead ioread;
-	ioread.valueReturned=false;
-	ioread.value=0xffff;
-	return ioread;
+	return 0xffff;
 }
-/* virtual */ Device::IORead Device::IOReadDword(unsigned int ioport)
+/* virtual */ unsigned int Device::IOReadDword(unsigned int ioport)
 {
-	IORead ioread;
-	ioread.valueReturned=false;
-	ioread.value=0xff;
-	return ioread;
+	return 0xffffffff;
 }

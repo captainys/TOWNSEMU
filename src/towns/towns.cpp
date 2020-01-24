@@ -8,7 +8,7 @@
 FMTowns::FMTowns()
 {
 	abort=false;
-	allDevices.push_back(&io);
+	allDevices.push_back(&ioRAM);
 	allDevices.push_back(&mem);
 
 	mem.SetMainRAMSize(4*1024*1024);
@@ -17,6 +17,8 @@ FMTowns::FMTowns()
 	mem.SetVRAMSize(1024*1024);
 	mem.SetSpriteRAMSize(512*1024);
 	mem.SetWaveRAMSize(256*1024);
+
+	io.AddDevice(&ioRAM,0x3000,0x3FFF);
 
 	Reset();
 }

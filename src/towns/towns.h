@@ -10,6 +10,8 @@
 #include "inout.h"
 #include "ramrom.h"
 
+#include "ioram.h"
+
 class FMTowns
 {
 public:
@@ -35,6 +37,7 @@ public:
 
 	i486DX cpu;
 	InOut io;
+	IORam ioRAM;
 	Memory mem;
 	std::vector <Device *> allDevices;
 

@@ -1,22 +1,34 @@
-#ifndef DEVICE_IS_INCLUDED
-#define DEVICE_IS_INCLUDED
+#ifndef IORAM_IS_INCLUDED
+#define IORAM_IS_INCLUDED
 /* { */
 
-#include <string>
+#include <vector>
 
-class Device
+#include "device.h"
+
+/*! Unpublished specification?
+    FM Towns IO Port 3000H to 3FFFH(?) just seem to work as a RAM.
+*/
+class IORam : public Device
 {
 public:
-	mutable bool abort;
-	mutable std::string abortReason;
+	class State
+	{
+	public:
+		std::vector <unsigned int> RAM;
+	};
 
-	long long int deviceTime;
+	enum
+	{
+		NUM_PORTS=0x1000,
+		PORT_TOP=0x3000
+	};
 
-	Device();
+	State state;
 
-	void Abort(const std::string &abortReason) const;
+	virtual const char *DeviceName(void) const{return "IO_RAM";}
 
-	virtual const char *DeviceName(void) const=0;
+	IORam();
 
 	virtual void Reset(void);
 
@@ -28,7 +40,6 @@ public:
 	virtual unsigned int IOReadWord(unsigned int ioport);
 	virtual unsigned int IOReadDword(unsigned int ioport);
 };
-
 
 /* } */
 #endif
