@@ -11,3 +11,9 @@ Clocks for RCL/RCR
 For REG it should be 8-30, for MEM it should be 9-31.
 But how to calculate is nowhere to find.
 For now temporarilyl I make it 10 for everything.
+
+
+
+#20200124-1
+Stack Addressing Size
+In the explanation of PUSH instructions, [1] mentions about stack addressing size.  I cannot find the same description anywhere else.  In one location I read default operand size and default addressing size depends on the D bit of CS in the protected mode, or always 16 in the real mode.  What defines stack addressing size?  Is it D bit of SS?

@@ -13,6 +13,7 @@ enable_testing()
 add_subdirectory(cpputil)
 
 add_subdirectory(towns)
+add_subdirectory(townsdef)
 add_subdirectory(device)
 add_subdirectory(cpu)
 add_subdirectory(inout)

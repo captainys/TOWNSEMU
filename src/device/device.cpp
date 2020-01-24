@@ -14,6 +14,11 @@ void Device::Abort(const std::string &abortReason) const
 	this->abortReason=abortReason;
 }
 
+/* virtual */ void Device::PowerOn(void)
+{
+	Reset();
+}
+
 /* virtual */ void Device::Reset(void)
 {
 }

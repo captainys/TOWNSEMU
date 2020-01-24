@@ -18,6 +18,9 @@ public:
 
 	virtual const char *DeviceName(void) const=0;
 
+	/*! Default behavior of PowerOn is just call Reset.
+	*/
+	virtual void PowerOn(void);
 	virtual void Reset(void);
 
 	virtual void IOWriteByte(unsigned int ioport,unsigned int data);

@@ -12,7 +12,7 @@
 
 #include "ioram.h"
 
-class FMTowns
+class FMTowns : public Device
 {
 public:
 	// I'm talking about 66MHz to 120MHz ball park.
@@ -21,11 +21,22 @@ public:
 	// 1 micro second is 1/1M second.
 	// 1 nano second is 1/1G second.
 
+	enum
+	{
+		FREQUENCY_DEFAULT=66
+	};
+
+	virtual const char *DeviceName(void) const{return "FMTOWNS";}
+
 	bool abort;
 	std::string abortReason;
 
 	class State
 	{
+	public:
+		/*! Time passed since power on in micro seconds.
+		    I think 64-bit is long enough.  So, I make it signed int.
+		*/
 		long long int townsTime;
 
 		/*! After running one instruction, townsTime may not be exactly the same
@@ -33,7 +44,17 @@ public:
 		    This variable remembers how many clocks townsTime is ahead of the real time.
 		*/
 		long long int clockBalance;
+
+		/*! Clock frequency in MHz.  Default is FREQUENCY_DEFAULT.
+		*/
+		long long int freq;
+
+
+		void PowerOn(void);
+		void Reset(void);
 	};
+
+	State state;
 
 	i486DX cpu;
 	InOut io;
@@ -76,12 +97,26 @@ public:
 	*/
 	bool LoadROMImages(const char dirName[]);
 
-	/*! Once the ROMs are loaded, call Reset function to start the virtual machine.
+	/*! Once the ROMs are loaded, call PowerOn function to start the virtual machine.
+	*/
+	void PowerOn(void);
+
+	/*! Resets the virtual machine.
 	*/
 	void Reset(void);
 
 	/*! Run one instruction and returns the number of clocks passed. */
 	unsigned int RunOneInstruction(void);
+
+
+
+	/*! I/O access for internal devices. */
+	virtual void IOWriteByte(unsigned int ioport,unsigned int data);
+	virtual void IOWriteWord(unsigned int ioport,unsigned int data);
+	virtual void IOWriteDword(unsigned int ioport,unsigned int data);
+	virtual unsigned int IOReadByte(unsigned int ioport);
+	virtual unsigned int IOReadWord(unsigned int ioport);
+	virtual unsigned int IOReadDword(unsigned int ioport);
 
 
 

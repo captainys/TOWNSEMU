@@ -4,6 +4,20 @@
 #include "towns.h"
 
 
+void FMTowns::State::PowerOn(void)
+{
+	Reset();
+	townsTime=0;
+	freq=FREQUENCY_DEFAULT;
+}
+void FMTowns::State::Reset(void)
+{
+	clockBalance=0;
+}
+
+
+////////////////////////////////////////////////////////////
+
 
 FMTowns::FMTowns()
 {
@@ -20,7 +34,16 @@ FMTowns::FMTowns()
 
 	io.AddDevice(&ioRAM,0x3000,0x3FFF);
 
-	Reset();
+	// Free-run counter since FM TOWNS 2UG [2] pp.801
+	// Didn't it exist since the first model FM TOWNS 2?
+	// I vaguely rember I used something similar when I wrote my first flight simulator 
+	// submitted to Japan National High School Students' Programming Contest.
+	// FM TOWNS 2UG didn't exist then.
+	// I'm positive that I was using the second-generation FM TOWNS then.
+	// I'll check if I can find the source code from my old backups.
+	io.AddDevice(this,0x26,0x27);
+
+	PowerOn();
 }
 
 bool FMTowns::CheckAbort(void) const
@@ -63,8 +86,18 @@ bool FMTowns::LoadROMImages(const char dirName[])
 	return true;
 }
 
+void FMTowns::PowerOn(void)
+{
+	state.PowerOn();
+	cpu.PowerOn();
+	for(auto devPtr : allDevices)
+	{
+		devPtr->PowerOn();
+	}
+}
 void FMTowns::Reset(void)
 {
+	state.Reset();
 	cpu.Reset();
 	for(auto devPtr : allDevices)
 	{
@@ -74,7 +107,14 @@ void FMTowns::Reset(void)
 
 unsigned int FMTowns::RunOneInstruction(void)
 {
-	return cpu.RunOneInstruction(mem,io);
+	auto clocksPassed=cpu.RunOneInstruction(mem,io);
+	state.clockBalance+=clocksPassed;
+	if(state.freq<=state.clockBalance)
+	{
+		state.townsTime+=(state.clockBalance/state.freq);
+		state.clockBalance%=state.freq;
+	}
+	return clocksPassed;
 }
 
 
