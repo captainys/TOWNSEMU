@@ -301,6 +301,20 @@ public:
 		INST_PREFIX_REPNE=0xF2, // REPNE/REPNZ
 		INST_PREFIX_LOCK= 0xF0, // LOCK
 
+		// 0xF3 can precede:
+		//   INS and interpreted as REP
+		//   MOVS and interpreted as REP
+		//   OUTS and interpreted as REP
+		//   STOS and interpreted as REP
+		//   CMPS and interpreted as REPE
+		//   SCAS and interpreted as REPE
+		// 0xF2 can precede:
+		//   LODS and interpreted as REP    <- Seriously?  Prob typo.  386ASM writes F2 AC
+		//   CMPS and interpreted as REPNE
+		//   SCAS and interpreted as REPNE
+		
+
+
 		SEG_OVERRIDE_CS=  0x2E,
 		SEG_OVERRIDE_SS=  0x36,
 		SEG_OVERRIDE_DS=  0x3E,

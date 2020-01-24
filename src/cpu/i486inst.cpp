@@ -226,8 +226,18 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 
 
 	case I486_OPCODE_F6_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF6
+		offset+=FetchOperandRM(inst,seg,offset,mem);
+		if(0==inst.GetREG()) // TEST RM8,I8
+		{
+			FetchOperand8(inst,seg,offset,mem);
+		}
+		break;
 	case I486_OPCODE_F7_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF7,
-		FetchOperandRM(inst,seg,offset,mem);
+		offset+=FetchOperandRM(inst,seg,offset,mem);
+		if(0==inst.GetREG()) // TEST RM8,I8
+		{
+			FetchOperand16or32(inst,seg,offset,mem);
+		}
 		break;
 
 
@@ -483,6 +493,11 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		break;
 
 
+	case I486_OPCODE_STOSB://            0xAA,
+	case I486_OPCODE_STOS://             0xAB,
+		break;
+
+
 	case  I486_OPCODE_ADD_AL_FROM_I8://  0x04,
 	case  I486_OPCODE_AND_AL_FROM_I8://  0x24,
 	case  I486_OPCODE_CMP_AL_FROM_I8://  0x3C,
@@ -564,9 +579,17 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 
 	case I486_OPCODE_F6_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF6
 		op1.Decode(addressSize,8,operand);
+		if(0==GetREG()) // TEST RM8,I8
+		{
+			op2.MakeImm8(*this);
+		}
 		break;
 	case I486_OPCODE_F7_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF7,
 		op1.Decode(addressSize,operandSize,operand);
+		if(0==GetREG()) // TEST RM,I
+		{
+			op2.MakeImm16or32(*this,operandSize);
+		}
 		break;
 
 
@@ -992,6 +1015,9 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 	case I486_OPCODE_F6_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF6
 		switch(GetREG())
 		{
+		case 0:
+			disasm=DisassembleTypicalTwoOperands("TEST",op1,op2);
+			break;
 		case 4:
 			disasm=DisassembleTypicalOneOperand("MUL",op1,8);
 			break;
@@ -1003,6 +1029,9 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 	case I486_OPCODE_F7_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF7,
 		switch(GetREG())
 		{
+		case 0:
+			disasm=DisassembleTypicalTwoOperands("TEST",op1,op2);
+			break;
 		case 4:
 			disasm=DisassembleTypicalOneOperand("MUL",op1,operandSize);
 			break;
@@ -1462,6 +1491,19 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		break;
 
 
+	case I486_OPCODE_STOSB://            0xAA,
+		disasm="STOSB";
+		break;
+	case I486_OPCODE_STOS://             0xAB,
+		if(16==operandSize)
+		{
+			disasm="STOSW";
+		}
+		else
+		{
+			disasm="STOSD";
+		}
+		break;
 
 
 	case I486_OPCODE_OUT_I8_AL: //        0xE6,
@@ -1957,11 +1999,32 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_OPCODE_F6_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF6
 		switch(inst.GetREG())
 		{
-		case 4:
+		case 0: // TEST
+			{
+				clocksPassed=(OPER_ADDR==op1.operandType ? 2 : 1);
+				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,1);
+				unsigned int byte=value.byteData[0];
+				AndByte(byte,inst.GetUimm8());
+				SetCarryFlag(false);
+				SetOverflowFlag(false);
+			}
+			break;
+		case 4: // MUL
 			{
 				clocksPassed=(OPER_ADDR==op1.operandType ? 18 : 13);
 				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,1);
-				SetAX(GetAL()*value.byteData[0]);
+				auto mul=GetAL()*value.byteData[0];
+				SetAX(mul);
+				if(0!=(mul&0xff00))
+				{
+					SetCarryFlag(true);
+					SetOverflowFlag(true);
+				}
+				else
+				{
+					SetCarryFlag(false);
+					SetOverflowFlag(false);
+				}
 			}
 			break;
 		default:
@@ -1973,7 +2036,18 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_OPCODE_F7_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF7,
 		switch(inst.GetREG())
 		{
-		case 4:
+		case 0: // TEST
+			{
+				clocksPassed=(OPER_ADDR==op1.operandType ? 2 : 1);
+				auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize);
+				auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize);
+				unsigned int i1=value1.GetAsDword();
+				AndWordOrDword(inst.operandSize,i1,value2.GetAsDword());
+				SetCarryFlag(false);
+				SetOverflowFlag(false);
+			}
+			break;
+		case 4: // MUL
 			if(16==inst.operandSize)
 			{
 				clocksPassed=(OPER_ADDR==op1.operandType ? 26 : 13);
@@ -1981,6 +2055,16 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				auto DXAX=GetAX()*value.GetAsWord();
 				SetAX(DXAX&0xffff);
 				SetDX((DXAX>>16)&0xffff);
+				if(0!=(DXAX&0xffff0000))
+				{
+					SetCarryFlag(true);
+					SetOverflowFlag(true);
+				}
+				else
+				{
+					SetCarryFlag(false);
+					SetOverflowFlag(false);
+				}
 			}
 			else
 			{
@@ -1989,6 +2073,16 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				unsigned long long EDXEAX=GetEAX()*value.GetAsDword();
 				SetEAX(EDXEAX&0xffffffff);
 				SetEDX((EDXEAX>>32)&0xffffffff);
+				if(0!=(EDXEAX&0xffffffff00000000))
+				{
+					SetCarryFlag(true);
+					SetOverflowFlag(true);
+				}
+				else
+				{
+					SetCarryFlag(false);
+					SetOverflowFlag(false);
+				}
 			}
 			break;
 		default:
@@ -3205,6 +3299,18 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		LoadSegmentRegister(state.CS(),Pop(mem,inst.operandSize),mem);
 		state.ESP()+=inst.GetUimm16(); // Do I need to take &0xffff if address mode is 16? 
 		EIPChanged=true;
+		break;
+
+
+	case I486_OPCODE_STOSB://            0xAA,
+		{
+			// REP/REPE/REPNE CX or ECX is chosen based on addressSize.
+		}
+		break;
+	case I486_OPCODE_STOS://             0xAB,
+		{
+			// REP/REPE/REPNE CX or ECX is chosen based on addressSize.
+		}
 		break;
 
 

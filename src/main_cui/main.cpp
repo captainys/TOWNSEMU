@@ -71,7 +71,7 @@ int main(int ac,char *av[])
 
 
 	std::string cmd;
-	RunUntil(towns,0xFC00,0xE0A);
+	RunUntil(towns,0x0010,0x117F);
 	std::cout << ">";
 	std::getline(std::cin,cmd);
 
