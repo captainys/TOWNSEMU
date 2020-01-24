@@ -808,12 +808,12 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 	case I486_OPCODE_PUSH_EBP://         0x55,
 	case I486_OPCODE_PUSH_ESI://         0x56,
 	case I486_OPCODE_PUSH_EDI://         0x57,
-		op1.MakeImm8(*this);
 		break;
 	case I486_OPCODE_PUSH_I8://          0x6A,
-		op1.MakeImm16or32(*this,operandSize);
+		op1.MakeImm8(*this);
 		break;
 	case I486_OPCODE_PUSH_I://           0x68,
+		op1.MakeImm16or32(*this,operandSize);
 		break;
 	case I486_OPCODE_PUSH_CS://          0x0E,
 	case I486_OPCODE_PUSH_SS://          0x16,
@@ -2935,12 +2935,15 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_OPCODE_PUSH_EBP://         0x55,
 	case I486_OPCODE_PUSH_ESI://         0x56,
 	case I486_OPCODE_PUSH_EDI://         0x57,
+		clocksPassed=1;
 		Push(mem,inst.operandSize,state.reg32[(inst.opCode&7)]);
 		break;
 	case I486_OPCODE_PUSH_I8://          0x6A,
+		clocksPassed=1;
 		Push(mem,inst.operandSize,inst.GetUimm8());
 		break;
 	case I486_OPCODE_PUSH_I://           0x68,
+		clocksPassed=1;
 		Push(mem,inst.operandSize,inst.GetUimm32());
 		break;
 	case I486_OPCODE_PUSH_CS://          0x0E,
