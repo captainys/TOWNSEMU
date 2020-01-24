@@ -519,6 +519,12 @@ public:
 		*/
 		unsigned int GetSize(void) const;
 	};
+	/*! OperandValue class is an evaluated operand value, or a value to be stored to
+	    the destination described by the operand.
+	    In 80486, operand itself may not know its size if it is an address operand.
+	    The size is defined by the instruction an the operand size.
+	    This OperandValue is after the operand size is evaluated therefore it knows its size.
+	*/
 	class OperandValue
 	{
 	public:
@@ -580,6 +586,27 @@ public:
 			byteData[1]=((dword>>8)&255);
 			byteData[2]=((dword>>16)&255);
 			byteData[3]=((dword>>24)&255);
+		}
+		/*! MakeDword makes a 4-byte long OperandValue.
+		    It updates numByte to 4.
+		*/
+		inline void MakeWord(unsigned int word)
+		{
+			numBytes=2;
+			byteData[0]=(word&255);
+			byteData[1]=((word>>8)&255);
+		}
+		/*! Makes a word or dword value.  The size depends on the operandSize. */
+		inline void MakeWordOrDword(unsigned int operandSize,unsigned int value)
+		{
+			if(16==operandSize)
+			{
+				MakeWord(value);
+			}
+			else
+			{
+				MakeDword(value);
+			}
 		}
 
 		/*! Get Segment part of FWORD PTR, which is last two bytes of the byte data.

@@ -63,24 +63,8 @@ int main(int ac,char *av[])
 	}
 
 
-	RunUntil(towns,0xFC00,0x7EF);
-	std::cout << ">";
 	std::string cmd;
-	std::cin >> cmd;
-
-	RunUntil(towns,0xFC00,0x260);
-	std::cout << ">";
-	std::cin >> cmd;
-
-	RunUntil(towns,0xFC00,0xF91);
-	std::cout << ">";
-	std::cin >> cmd;
-
-	RunUntil(towns,0x0028,0xE35);
-	std::cout << ">";
-	std::cin >> cmd;
-
-	RunUntil(towns,0xFC00,0xDBD);
+	RunUntil(towns,0xFC00,0xE0A);
 	std::cout << ">";
 	std::cin >> cmd;
 

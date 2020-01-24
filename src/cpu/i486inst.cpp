@@ -327,6 +327,13 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		break;
 
 
+	case I486_OPCODE_LOOP://             0xE2,
+	case I486_OPCODE_LOOPE://            0xE1,
+	case I486_OPCODE_LOOPNE://           0xE0,
+		FetchOperand8(inst,seg,offset,mem);
+		break;
+
+
 	case I486_OPCODE_MOV_FROM_R8: //      0x88,
 		// Example:  88 4c ff        MOV CL,[SI-1]     In Real Mode
 		// Example:  88 10           MOV DL,[BX+SI]    In Real Mode
@@ -655,6 +662,12 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 		{
 			op2.SignExtendImm(OPER_IMM32);
 		}
+		break;
+
+
+	case I486_OPCODE_LOOP://             0xE2,
+	case I486_OPCODE_LOOPE://            0xE1,
+	case I486_OPCODE_LOOPNE://           0xE0,
 		break;
 
 
@@ -1185,6 +1198,9 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 	case I486_OPCODE_JGE_REL8:  // 0x7D,
 	case I486_OPCODE_JLE_REL8:  // 0x7E,
 	case I486_OPCODE_JG_REL8:   // 0x7F,
+	case I486_OPCODE_LOOP://             0xE2,
+	case I486_OPCODE_LOOPE://            0xE1,
+	case I486_OPCODE_LOOPNE://           0xE0,
 		switch(opCode)
 		{
 		case I486_OPCODE_JMP_REL8://         0xEB,   // cb
@@ -1237,6 +1253,15 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 			break;
 		case I486_OPCODE_JG_REL8:   // 0x7F,
 			disasm="JG";
+			break;
+		case I486_OPCODE_LOOP://             0xE2,
+			disasm="LOOP";
+			break;
+		case I486_OPCODE_LOOPE://            0xE1,
+			disasm="LOOPE";
+			break;
+		case I486_OPCODE_LOOPNE://           0xE0,
+			disasm="LOOPNE";
 			break;
 		}
 		cpputil::ExtendString(disasm,8);
@@ -2427,6 +2452,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_OPCODE_JGE_REL8:  // 0x7D,
 	case I486_OPCODE_JLE_REL8:  // 0x7E,
 	case I486_OPCODE_JG_REL8:   // 0x7F,
+	case I486_OPCODE_LOOP://             0xE2,
+	case I486_OPCODE_LOOPE://            0xE1,
+	case I486_OPCODE_LOOPNE://           0xE0,
 		{
 			bool jumpCond=false;
 			switch(inst.opCode)
@@ -2481,6 +2509,31 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				break;
 			case I486_OPCODE_JG_REL8:   // 0x7F,
 				jumpCond=CondJG();
+				break;
+			case I486_OPCODE_LOOP://             0xE2,
+			case I486_OPCODE_LOOPE://            0xE1,
+			case I486_OPCODE_LOOPNE://           0xE0,
+				{
+					unsigned int ctr;
+					if(16==inst.operandSize)
+					{
+						ctr=((state.ECX())&0xffff)-1;
+						state.ECX()=(state.ECX()&0xffff0000)|ctr;
+					}
+					else
+					{
+						ctr=state.ECX()-1;
+						state.ECX()=(ctr&0xffffffff);
+					}
+					if(0==ctr ||
+					  (I486_OPCODE_LOOPE==inst.opCode && true!=GetZF()) ||
+					  (I486_OPCODE_LOOPNE==inst.opCode && true==GetZF()))
+					{
+						jumpCond=false;
+						break;
+					}
+					jumpCond=true;
+				}
 				break;
 			}
 			if(true==jumpCond)
@@ -2917,6 +2970,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 
 	case I486_OPCODE_POP_M://            0x8F,
+		clocksPassed=6;
+		{
+			OperandValue value;
+			value.MakeWordOrDword(inst.operandSize,Pop(mem,inst.operandSize));
+			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+		}
 		break;
 	case I486_OPCODE_POP_EAX://          0x58,
 	case I486_OPCODE_POP_ECX://          0x59,
@@ -2926,19 +2985,65 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_OPCODE_POP_EBP://          0x5D,
 	case I486_OPCODE_POP_ESI://          0x5E,
 	case I486_OPCODE_POP_EDI://          0x5F,
+		clocksPassed=4;
+		{
+			auto value=Pop(mem,inst.operandSize);
+			if(16==inst.operandSize)
+			{
+				state.reg32[(inst.opCode&7)]&=0xffff0000;
+				state.reg32[(inst.opCode&7)]|=(value&0xffff);
+			}
+			else
+			{
+				state.reg32[(inst.opCode&7)]=value;
+			}
+		}
 		break;
 	case I486_OPCODE_POP_SS://           0x17,
+		clocksPassed=3;
+		LoadSegmentRegister(state.SS(),Pop(mem,inst.operandSize),mem);
 		break;
 	case I486_OPCODE_POP_DS://           0x1F,
+		clocksPassed=3;
+		LoadSegmentRegister(state.DS(),Pop(mem,inst.operandSize),mem);
 		break;
 	case I486_OPCODE_POP_ES://           0x07,
+		clocksPassed=3;
+		LoadSegmentRegister(state.ES(),Pop(mem,inst.operandSize),mem);
 		break;
 	case I486_OPCODE_POP_FS://           0xA10F,
+		clocksPassed=3;
+		LoadSegmentRegister(state.FS(),Pop(mem,inst.operandSize),mem);
 		break;
 	case I486_OPCODE_POP_GS://           0xA90F,
+		clocksPassed=3;
+		LoadSegmentRegister(state.GS(),Pop(mem,inst.operandSize),mem);
 		break;
 
 	case I486_OPCODE_POPA://             0x61,
+		clocksPassed=9;
+		if(16==inst.operandSize)
+		{
+			state.EDI()=((state.EDI()&0xffff0000)|(Pop(mem,inst.operandSize)&0xffff));
+			state.ESI()=((state.ESI()&0xffff0000)|(Pop(mem,inst.operandSize)&0xffff));
+			state.EBP()=((state.EBP()&0xffff0000)|(Pop(mem,inst.operandSize)&0xffff));
+			Pop(mem,inst.operandSize);
+			state.EBX()=((state.EBX()&0xffff0000)|(Pop(mem,inst.operandSize)&0xffff));
+			state.EDX()=((state.EDX()&0xffff0000)|(Pop(mem,inst.operandSize)&0xffff));
+			state.ECX()=((state.ECX()&0xffff0000)|(Pop(mem,inst.operandSize)&0xffff));
+			state.EAX()=((state.EAX()&0xffff0000)|(Pop(mem,inst.operandSize)&0xffff));
+		}
+		else
+		{
+			state.EDI()=Pop(mem,inst.operandSize);
+			state.ESI()=Pop(mem,inst.operandSize);
+			state.EBP()=Pop(mem,inst.operandSize);
+			Pop(mem,inst.operandSize);
+			state.EBX()=Pop(mem,inst.operandSize);
+			state.EDX()=Pop(mem,inst.operandSize);
+			state.ECX()=Pop(mem,inst.operandSize);
+			state.EAX()=Pop(mem,inst.operandSize);
+		}
 		break;
 
 	case I486_OPCODE_POPF://             0x9D,
