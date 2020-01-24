@@ -749,6 +749,17 @@ public:
 	}
 
 
+	inline void SetFLAGSorEFLAGS(unsigned int operandSize,unsigned int value)
+	{
+		if(16==operandSize)
+		{
+			state.EFLAGS=(state.EFLAGS&0xffff0000)|(value&0xffff);
+		}
+		else
+		{
+			state.EFLAGS=value;
+		}
+	}
 	inline void SetEFLAGSBit(bool flag,unsigned int bit)
 	{
 		if(true==flag)

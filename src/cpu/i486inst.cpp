@@ -444,6 +444,28 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		break;
 
 
+	case I486_OPCODE_POP_M://            0x8F,
+		FetchOperandRM(inst,seg,offset,mem);
+		break;
+	case I486_OPCODE_POP_EAX://          0x58,
+	case I486_OPCODE_POP_ECX://          0x59,
+	case I486_OPCODE_POP_EDX://          0x5A,
+	case I486_OPCODE_POP_EBX://          0x5B,
+	case I486_OPCODE_POP_ESP://          0x5C,
+	case I486_OPCODE_POP_EBP://          0x5D,
+	case I486_OPCODE_POP_ESI://          0x5E,
+	case I486_OPCODE_POP_EDI://          0x5F,
+	case I486_OPCODE_POP_SS://           0x17,
+	case I486_OPCODE_POP_DS://           0x1F,
+	case I486_OPCODE_POP_ES://           0x07,
+	case I486_OPCODE_POP_FS://           0xA10F,
+	case I486_OPCODE_POP_GS://           0xA90F,
+
+	case I486_OPCODE_POPA://             0x61,
+	case I486_OPCODE_POPF://             0x9D,
+		break;
+
+
 	case I486_OPCODE_RET://              0xC3,
 	case I486_OPCODE_RETF://             0xCB,
 		break;
@@ -786,6 +808,28 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 	case I486_OPCODE_PUSH_ES://          0x06,
 	case I486_OPCODE_PUSH_FS://          0xA00F,
 	case I486_OPCODE_PUSH_GS://          0xA80F,
+		break;
+
+
+	case I486_OPCODE_POP_M://            0x8F,
+		op1.Decode(addressSize,operandSize,operand);
+		break;
+	case I486_OPCODE_POP_EAX://          0x58,
+	case I486_OPCODE_POP_ECX://          0x59,
+	case I486_OPCODE_POP_EDX://          0x5A,
+	case I486_OPCODE_POP_EBX://          0x5B,
+	case I486_OPCODE_POP_ESP://          0x5C,
+	case I486_OPCODE_POP_EBP://          0x5D,
+	case I486_OPCODE_POP_ESI://          0x5E,
+	case I486_OPCODE_POP_EDI://          0x5F,
+	case I486_OPCODE_POP_SS://           0x17,
+	case I486_OPCODE_POP_DS://           0x1F,
+	case I486_OPCODE_POP_ES://           0x07,
+	case I486_OPCODE_POP_FS://           0xA10F,
+	case I486_OPCODE_POP_GS://           0xA90F,
+
+	case I486_OPCODE_POPA://             0x61,
+	case I486_OPCODE_POPF://             0x9D,
 		break;
 
 
@@ -1406,7 +1450,7 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		else
 		{
 			disasm="PUSH    ";
-			disasm+=Reg16Str[opCode&7];
+			disasm+=Reg32Str[opCode&7];
 		}
 		break;
 	case I486_OPCODE_PUSH_I8://          0x6A,
@@ -1432,6 +1476,69 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		break;
 	case I486_OPCODE_PUSH_GS://          0xA80F,
 		disasm="PUSH    GS";
+		break;
+
+
+	case I486_OPCODE_POP_M://            0x8F,
+		disasm=DisassembleTypicalOneOperand("POP",op1,operandSize);
+		break;
+	case I486_OPCODE_POP_EAX://          0x58,
+	case I486_OPCODE_POP_ECX://          0x59,
+	case I486_OPCODE_POP_EDX://          0x5A,
+	case I486_OPCODE_POP_EBX://          0x5B,
+	case I486_OPCODE_POP_ESP://          0x5C,
+	case I486_OPCODE_POP_EBP://          0x5D,
+	case I486_OPCODE_POP_ESI://          0x5E,
+	case I486_OPCODE_POP_EDI://          0x5F,
+		if(16==operandSize)
+		{
+			disasm="POP     ";
+			disasm+=Reg16Str[opCode&7];
+		}
+		else
+		{
+			disasm="POP     ";
+			disasm+=Reg32Str[opCode&7];
+		}
+		break;
+	case I486_OPCODE_POP_SS://           0x17,
+		disasm="POP     SS";
+		break;
+	case I486_OPCODE_POP_DS://           0x1F,
+		disasm="POP     DS";
+		break;
+	case I486_OPCODE_POP_ES://           0x07,
+		disasm="POP     ES";
+		break;
+	case I486_OPCODE_POP_FS://           0xA10F,
+		disasm="POP     FS";
+		break;
+	case I486_OPCODE_POP_GS://           0xA90F,
+		disasm="POP     GS";
+		break;
+
+
+	case I486_OPCODE_POPA://             0x61,
+		switch(operandSize)
+		{
+		case 16:
+			disasm="POPA";
+			break;
+		case 32:
+			disasm="POPAD";
+			break;
+		}
+		break;
+	case I486_OPCODE_POPF://             0x9D,
+		switch(operandSize)
+		{
+		case 16:
+			disasm="POPF";
+			break;
+		case 32:
+			disasm="POPFD";
+			break;
+		}
 		break;
 
 
@@ -2806,6 +2913,37 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_OPCODE_PUSH_GS://          0xA80F,
 		Push(mem,inst.operandSize,state.GS().value);
 		clocksPassed=3;
+		break;
+
+
+	case I486_OPCODE_POP_M://            0x8F,
+		break;
+	case I486_OPCODE_POP_EAX://          0x58,
+	case I486_OPCODE_POP_ECX://          0x59,
+	case I486_OPCODE_POP_EDX://          0x5A,
+	case I486_OPCODE_POP_EBX://          0x5B,
+	case I486_OPCODE_POP_ESP://          0x5C,
+	case I486_OPCODE_POP_EBP://          0x5D,
+	case I486_OPCODE_POP_ESI://          0x5E,
+	case I486_OPCODE_POP_EDI://          0x5F,
+		break;
+	case I486_OPCODE_POP_SS://           0x17,
+		break;
+	case I486_OPCODE_POP_DS://           0x1F,
+		break;
+	case I486_OPCODE_POP_ES://           0x07,
+		break;
+	case I486_OPCODE_POP_FS://           0xA10F,
+		break;
+	case I486_OPCODE_POP_GS://           0xA90F,
+		break;
+
+	case I486_OPCODE_POPA://             0x61,
+		break;
+
+	case I486_OPCODE_POPF://             0x9D,
+		SetFLAGSorEFLAGS(inst.operandSize,Pop(mem,inst.operandSize));
+		clocksPassed=(IsInRealMode() ? 9 : 6);
 		break;
 
 

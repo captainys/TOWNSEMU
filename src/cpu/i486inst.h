@@ -268,6 +268,25 @@ enum
 	I486_OPCODE_PUSH_GS=          0xA80F,
 
 
+	I486_OPCODE_POP_M=            0x8F,
+	I486_OPCODE_POP_EAX=          0x58,
+	I486_OPCODE_POP_ECX=          0x59,
+	I486_OPCODE_POP_EDX=          0x5A,
+	I486_OPCODE_POP_EBX=          0x5B,
+	I486_OPCODE_POP_ESP=          0x5C,
+	I486_OPCODE_POP_EBP=          0x5D,
+	I486_OPCODE_POP_ESI=          0x5E,
+	I486_OPCODE_POP_EDI=          0x5F,
+	I486_OPCODE_POP_SS=           0x17,
+	I486_OPCODE_POP_DS=           0x1F,
+	I486_OPCODE_POP_ES=           0x07,
+	I486_OPCODE_POP_FS=           0xA10F,
+	I486_OPCODE_POP_GS=           0xA90F,
+
+	I486_OPCODE_POPA=             0x61,
+	I486_OPCODE_POPF=             0x9D,
+
+
 	I486_OPCODE_OR_AL_FROM_I8=    0x0C,
 	I486_OPCODE_OR_A_FROM_I=      0x0D,
 	I486_OPCODE_OR_RM8_FROM_R8=   0x08,
