@@ -553,6 +553,26 @@ public:
 			}
 			return dword;
 		}
+		/*! Returns a value as a unsigned wword.
+		    It won't evaluate beyond numBytes.
+		*/
+		inline unsigned int GetAsWord(void) const
+		{
+			unsigned int word=0;
+			switch(numBytes)
+			{
+			default:
+			case 4:
+			case 3:
+			case 2:
+				word|=(byteData[1]<<8);
+			case 1:
+				word|= byteData[0];
+			case 0:
+				break;
+			}
+			return word;
+		}
 
 		/*! SetDword does not change numBytes.
 		    It won't update beyond numBytes.

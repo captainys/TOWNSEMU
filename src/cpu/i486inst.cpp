@@ -227,6 +227,7 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 
 	case I486_OPCODE_F6_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF6
 	case I486_OPCODE_F7_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF7,
+		FetchOperandRM(inst,seg,offset,mem);
 		break;
 
 
@@ -556,7 +557,10 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 
 
 	case I486_OPCODE_F6_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF6
+		op1.Decode(addressSize,8,operand);
+		break;
 	case I486_OPCODE_F7_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF7,
+		op1.Decode(addressSize,operandSize,operand);
 		break;
 
 
@@ -955,6 +959,7 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		}
 		break;
 
+
 	case I486_OPCODE_CALL_REL://   0xE8,
 	case I486_OPCODE_JMP_REL://          0xE9,   // cw or cd
 		disasm=(I486_OPCODE_JMP_REL==opCode ? "JMP" : "CALL");
@@ -970,6 +975,30 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		disasm=(I486_OPCODE_JMP_FAR==opCode ? "JMPF" : "CALLF");
 		cpputil::ExtendString(disasm,8);
 		disasm+=op1.Disassemble();
+		break;
+
+
+	case I486_OPCODE_F6_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF6
+		switch(GetREG())
+		{
+		case 4:
+			disasm=DisassembleTypicalOneOperand("MUL",op1,8);
+			break;
+		default:
+			disasm=DisassembleTypicalOneOperand(cpputil::Ubtox(opCode)+"?",op1,8);
+			break;
+		}
+		break;
+	case I486_OPCODE_F7_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF7,
+		switch(GetREG())
+		{
+		case 4:
+			disasm=DisassembleTypicalOneOperand("MUL",op1,operandSize);
+			break;
+		default:
+			disasm=DisassembleTypicalOneOperand(cpputil::Ubtox(opCode)+"?",op1,operandSize);
+			break;
+		}
 		break;
 
 
@@ -1894,8 +1923,47 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 
 	case I486_OPCODE_F6_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF6
+		switch(inst.GetREG())
+		{
+		case 4:
+			{
+				clocksPassed=(OPER_ADDR==op1.operandType ? 18 : 13);
+				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,1);
+				SetAX(GetAL()*value.byteData[0]);
+			}
+			break;
+		default:
+			Abort("Undefined REG for "+cpputil::Ubtox(inst.opCode));
+			clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
+			break;
+		}
+		break;
 	case I486_OPCODE_F7_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF7,
-		Abort("F6 and F7 not implemented yet.");
+		switch(inst.GetREG())
+		{
+		case 4:
+			if(16==inst.operandSize)
+			{
+				clocksPassed=(OPER_ADDR==op1.operandType ? 26 : 13);
+				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,2);
+				auto DXAX=GetAX()*value.GetAsWord();
+				SetAX(DXAX&0xffff);
+				SetDX((DXAX>>16)&0xffff);
+			}
+			else
+			{
+				clocksPassed=(OPER_ADDR==op1.operandType ? 42 : 13);
+				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,2);
+				unsigned long long EDXEAX=GetEAX()*value.GetAsDword();
+				SetEAX(EDXEAX&0xffffffff);
+				SetEDX((EDXEAX>>32)&0xffffffff);
+			}
+			break;
+		default:
+			Abort("Undefined REG for "+cpputil::Ubtox(inst.opCode));
+			clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
+			break;
+		}
 		break;
 
 
