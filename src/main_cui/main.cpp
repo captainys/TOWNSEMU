@@ -66,7 +66,7 @@ int main(int ac,char *av[])
 	std::string cmd;
 	RunUntil(towns,0xFC00,0xE0A);
 	std::cout << ">";
-	std::cin >> cmd;
+	std::getline(std::cin,cmd);
 
 	for(;;)
 	{
@@ -77,11 +77,12 @@ int main(int ac,char *av[])
 
 		auto disasm=towns.cpu.Disassemble(inst,towns.cpu.state.CS(),towns.cpu.state.EIP,towns.mem);
 
+		std::string cmd;
+
 		std::cout << disasm << std::endl;
 		std::cout << ">";
-		std::string cmd;
-		std::cin >> cmd;
-
+		std::getline(std::cin,cmd);
+	
 		if(true!=towns.CheckAbort())
 		{
 			auto clocksPassed=towns.RunOneInstruction();
