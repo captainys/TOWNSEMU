@@ -4,7 +4,7 @@
 #include "cpputil.h"
 
 
-void RunUntil(FMTowns &towns,unsigned int runUntil)
+void RunUntil(FMTowns &towns,unsigned int CS,unsigned int EIP)
 {
 	for(;;)
 	{
@@ -12,13 +12,12 @@ void RunUntil(FMTowns &towns,unsigned int runUntil)
 		auto disasm=towns.cpu.Disassemble(inst,towns.cpu.state.CS(),towns.cpu.state.EIP,towns.mem);
 		std::cout << disasm << std::endl;
 
-		auto eip=towns.cpu.state.EIP;
 		towns.RunOneInstruction();
 		if(true==towns.CheckAbort())
 		{
 			break;;
 		}
-		if(eip<runUntil && runUntil<=towns.cpu.state.EIP)
+		if(towns.cpu.state.CS().value==CS && towns.cpu.state.EIP==EIP)
 		{
 			break;
 		}
@@ -64,24 +63,24 @@ int main(int ac,char *av[])
 	}
 
 
-	RunUntil(towns,0x7F0);
+	RunUntil(towns,0xFC00,0x7EF);
 	std::cout << ">";
 	std::string cmd;
 	std::cin >> cmd;
 
-	RunUntil(towns,0xE2C);
+	RunUntil(towns,0xFC00,0x260);
 	std::cout << ">";
 	std::cin >> cmd;
 
-	RunUntil(towns,0xDB9);
+	RunUntil(towns,0xFC00,0xF91);
 	std::cout << ">";
 	std::cin >> cmd;
 
-	RunUntil(towns,0xF94);
+	RunUntil(towns,0x0028,0xE35);
 	std::cout << ">";
 	std::cin >> cmd;
 
-	RunUntil(towns,0x11FF);
+	RunUntil(towns,0xFC00,0xDBD);
 	std::cout << ">";
 	std::cin >> cmd;
 
