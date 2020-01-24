@@ -17,3 +17,9 @@ For now temporarilyl I make it 10 for everything.
 #20200124-1
 Stack Addressing Size
 In the explanation of PUSH instructions, [1] mentions about stack addressing size.  I cannot find the same description anywhere else.  In one location I read default operand size and default addressing size depends on the D bit of CS in the protected mode, or always 16 in the real mode.  What defines stack addressing size?  Is it D bit of SS?
+
+Correct in i486.cpp:
+
+unsigned int i486DX::GetStackAddressingSize(void) const
+
+When what exactly stack addressing size is.

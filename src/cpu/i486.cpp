@@ -472,9 +472,7 @@ unsigned int i486DX::GetStackAddressingSize(void) const
 	}
 	else
 	{
-		std::cout << __FUNCTION__ << std::endl;
-		std::cout << "Protected mode not supported yet." << std::endl;
-		Abort("Protected mode not supported yet.");
+		return state.SS().addressSize;
 	}
 	return 0;
 }
