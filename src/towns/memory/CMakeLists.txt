@@ -1,3 +1,3 @@
-add_library(ramrom ramrom.h ramrom.cpp)
-target_link_libraries(ramrom device cpputil)
-target_include_directories(ramrom PUBLIC .)
+add_library(townsmem physmem.h physmem.cpp memaccess.h memaccess.cpp)
+target_link_libraries(townsmem device cpputil)
+target_include_directories(townsmem PUBLIC .)
