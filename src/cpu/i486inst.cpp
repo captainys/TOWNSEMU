@@ -220,7 +220,8 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		offset+=FetchOperandRM(inst,seg,offset,mem);
 		FetchOperand8(inst,seg,offset,mem);
 		break;
-	case I486_OPCODE_D1_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_1://=0xD1, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
+	case I486_OPCODE_D0_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_1://=0xD0, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
+	case I486_OPCODE_D1_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_1://=0xD1, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
 		offset+=FetchOperandRM(inst,seg,offset,mem);
 		break;
 
@@ -254,6 +255,10 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 
 	case I486_OPCODE_CLD:
 	case I486_OPCODE_CLI:
+		break;
+
+
+	case I486_OPCODE_CMC://        0xF5,
 		break;
 
 
@@ -572,7 +577,10 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 		op1.Decode(addressSize,operandSize,operand);
 		op2.MakeImm8(*this);
 		break;
-	case I486_OPCODE_D1_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_1://=0xD1, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
+	case I486_OPCODE_D0_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_1://=0xD0, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
+		op1.Decode(addressSize,8,operand);
+		break;
+	case I486_OPCODE_D1_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_1://=0xD1, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
 		op1.Decode(addressSize,operandSize,operand);
 		break;
 
@@ -605,6 +613,10 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 
 	case I486_OPCODE_CLD:
 	case I486_OPCODE_CLI:
+		break;
+
+
+	case I486_OPCODE_CMC://        0xF5,
 		break;
 
 
@@ -951,7 +963,8 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 	{
 	case I486_OPCODE_C0_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_I8://=0xC0,// ::ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
 	case I486_OPCODE_C1_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_I8:// =0xC1, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
-	case I486_OPCODE_D1_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_1://=0xD1, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
+	case I486_OPCODE_D0_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_1://=0xD0, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
+	case I486_OPCODE_D1_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_1://=0xD1, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
 		switch(GetREG())
 		{
 		case 0:
@@ -987,7 +1000,8 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		case I486_OPCODE_C1_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_I8:// =0xC1, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
 			disasm=DisassembleTypicalRM_I8(disasm,op1,op2);
 			break;
-		case I486_OPCODE_D1_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_1://=0xD1, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
+		case I486_OPCODE_D0_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_1://=0xD0, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
+		case I486_OPCODE_D1_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_1://=0xD1, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
 			disasm=DisassembleTypicalOneOperand(disasm,op1,operandSize)+",1";
 			break;
 		}
@@ -1047,6 +1061,11 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		break;
 	case I486_OPCODE_CLI:
 		disasm="CLI";
+		break;
+
+
+	case I486_OPCODE_CMC://        0xF5,
+		disasm="CMC";
 		break;
 
 
@@ -1859,11 +1878,20 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 	switch(inst.opCode)
 	{
-	case I486_OPCODE_C0_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_I8://=0xC0,// ::ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
+	case I486_OPCODE_C0_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_I8://0xC0,// ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
+	case I486_OPCODE_D0_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_1://0xD0, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
 		{
 			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,1);
 			auto i=value.GetAsDword();
-			auto ctr=inst.GetUimm8()&31; // [1] pp.26-243 Only bottom 5 bits are used.
+			unsigned int ctr;
+			if(I486_OPCODE_C0_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_I8==inst.opCode)
+			{
+				ctr=inst.GetUimm8()&31; // [1] pp.26-243 Only bottom 5 bits are used.
+			}
+			else
+			{
+				ctr=1;
+			}
 			if(true==state.exception)
 			{
 				break;
@@ -1908,10 +1936,19 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		break;
 	case I486_OPCODE_C1_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_I8:// =0xC1, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
+	case I486_OPCODE_D1_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_1://=0xD1, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
 		{
 			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,1);
 			auto i=value.GetAsDword();
-			auto ctr=inst.GetUimm8()&31; // [1] pp.26-243 Only bottom 5 bits are used.
+			unsigned int ctr=0;
+			if(I486_OPCODE_C1_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_I8==inst.opCode)
+			{
+				ctr=inst.GetUimm8()&31; // [1] pp.26-243 Only bottom 5 bits are used.
+			}
+			else
+			{
+				ctr=1;
+			}
 			if(true==state.exception)
 			{
 				break;
@@ -1955,54 +1992,6 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
 		}
 		break;
-	case I486_OPCODE_D1_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_1://=0xD1, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
-		{
-			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,1);
-			auto i=value.GetAsDword();
-			if(true==state.exception)
-			{
-				break;
-			}
-			switch(inst.GetREG())
-			{
-			case 0:// "ROL";
-				Abort("C1 ROL not implemented yet.");
-				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
-				break;
-			case 1:// "ROR";
-				Abort("C1 ROR not implemented yet.");
-				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
-				break;
-			case 2:// "RCL";
-				Abort("C1 RCL not implemented yet.");
-				clocksPassed=(OPER_ADDR==op1.operandType ? 10 : 11);  // See reminder #20200123-1
-				break;
-			case 3:// "RCR";
-				Abort("C1 RCR not implemented yet.");
-				clocksPassed=(OPER_ADDR==op1.operandType ? 10 : 11);  // See reminder #20200123-1
-				break;
-			case 4:// "SHL";
-				ShlWordOrDword(inst.operandSize,i,1);
-				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
-				break;
-			case 5:// "SHR";
-				ShrWordOrDword(inst.operandSize,i,1);
-				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
-				break;
-			case 6:// cpputil::Ubtox(opCode)+"?";
-				Abort("Undefined REG for "+cpputil::Ubtox(inst.opCode));
-				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
-				break;
-			case 7:// "SAR";
-				Abort("C1 SAR not implemented yet.");
-				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
-				break;
-			}
-			value.SetDword(i);
-			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
-		}
-		break;
-
 
 	case I486_OPCODE_F6_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF6
 		switch(inst.GetREG())
@@ -2411,6 +2400,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 	case I486_OPCODE_CLI:
 		state.EFLAGS&=(~EFLAGS_INT_ENABLE);
+		clocksPassed=2;
+		break;
+
+
+	case I486_OPCODE_CMC://        0xF5,
+		SetCarryFlag(GetCF()==true ? false : true);
 		clocksPassed=2;
 		break;
 
