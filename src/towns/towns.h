@@ -10,7 +10,10 @@
 #include "inout.h"
 #include "ramrom.h"
 
+// FM Towns specific
 #include "ioram.h"
+#include "physmem.h"
+#include "memaccess.h"
 
 class FMTowns : public Device
 {
@@ -54,12 +57,25 @@ public:
 		void Reset(void);
 	};
 
+	// Machine State >>
 	State state;
-
 	i486DX cpu;
-	InOut io;
+	TownsPhysicalMemory physMem;
 	IORam ioRAM;
+	// Machine State <<
+
+	InOut io;
 	Memory mem;
+	TownsMainRAMAccess mainRAMAccess;
+	TownsMainRAMorSysROMAccess mainRAMorSysROMAccess;
+	TownsMainRAMorFMRVRAMAccess mainRAMorFMRVRAMAccess;
+	TownsDicROMandDicRAMAccess dicROMandDicRAMAccess;
+	TownsVRAMAccess VRAMAccess;
+	TownsSpriteRAMAccess spriteRAMAccess;
+	TownsOsROMAccess osROMAccess;
+	TownsWaveRAMAccess waveRAMAccess;
+	TownsSysROMAccess sysROMAccess;
+
 	std::vector <Device *> allDevices;
 
 
