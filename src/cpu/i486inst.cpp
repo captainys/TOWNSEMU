@@ -324,6 +324,40 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		break;
 
 
+	case I486_OPCODE_JA_REL://    0x870F,
+	case I486_OPCODE_JAE_REL://   0x830F,
+	case I486_OPCODE_JB_REL://    0x820F,
+	case I486_OPCODE_JBE_REL://   0x860F,
+	// case I486_OPCODE_JC_REL://    0x820F, Same as JB_REL
+	case I486_OPCODE_JE_REL://    0x840F,
+	// case I486_OPCODE_JZ_REL://    0x840F, Same as JZ_REL
+	case I486_OPCODE_JG_REL://    0x8F0F,
+	case I486_OPCODE_JGE_REL://   0x8D0F,
+	case I486_OPCODE_JL_REL://    0x8C0F,
+	case I486_OPCODE_JLE_REL://   0x8E0F,
+	// case I486_OPCODE_JNA_REL://   0x860F, Same as JBE_REL
+	// case I486_OPCODE_JNAE_REL://  0x820F, Same as JB_REL
+	// case I486_OPCODE_JNB_REL://   0x830F, Same as JAE_REL
+	// case I486_OPCODE_JNBE_REL://  0x870F, Same as JA_REL
+	// case I486_OPCODE_JNC_REL://   0x830F, Same as JAE_REL
+	case I486_OPCODE_JNE_REL://   0x850F,
+	// case I486_OPCODE_JNG_REL://   0x8E0F, Same as JLE_REL
+	// case I486_OPCODE_JNGE_REL://  0x8C0F, Same as JL_REL
+	// case I486_OPCODE_JNL_REL://   0x8D0F, Same as JGE_REL
+	// case I486_OPCODE_JNLE_REL://  0x8F0F, Same as JG_REL
+	case I486_OPCODE_JNO_REL://   0x810F,
+	case I486_OPCODE_JNP_REL://   0x8B0F,
+	case I486_OPCODE_JNS_REL://   0x890F,
+	// case I486_OPCODE_JNZ_REL://   0x850F, Same as JNE_REL
+	case I486_OPCODE_JO_REL://    0x800F,
+	case I486_OPCODE_JP_REL://    0x8A0F,
+	// case I486_OPCODE_JPE_REL://   0x8A0F, Same as JP_REL
+	// case I486_OPCODE_JPO_REL://   0x8B0F, Same as JNP_REL
+	case I486_OPCODE_JS_REL://    0x880F,
+		FetchOperand16or32(inst,seg,offset,mem);
+		break;
+
+
 	case I486_OPCODE_BINARYOP_RM8_FROM_I8:
 		offset+=FetchOperandRM(inst,seg,offset,mem);
 		FetchOperand8(inst,seg,offset,mem);
@@ -1376,6 +1410,99 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		cpputil::ExtendString(disasm,8);
 		{
 			auto offset=GetSimm8();
+			auto destin=eip+offset+numBytes;
+			disasm+=cpputil::Uitox(destin);
+		}
+		break;
+
+
+	case I486_OPCODE_JA_REL://    0x870F,
+	case I486_OPCODE_JAE_REL://   0x830F,
+	case I486_OPCODE_JB_REL://    0x820F,
+	case I486_OPCODE_JBE_REL://   0x860F,
+	// case I486_OPCODE_JC_REL://    0x820F, Same as JB_REL
+	case I486_OPCODE_JE_REL://    0x840F,
+	// case I486_OPCODE_JZ_REL://    0x840F, Same as JZ_REL
+	case I486_OPCODE_JG_REL://    0x8F0F,
+	case I486_OPCODE_JGE_REL://   0x8D0F,
+	case I486_OPCODE_JL_REL://    0x8C0F,
+	case I486_OPCODE_JLE_REL://   0x8E0F,
+	// case I486_OPCODE_JNA_REL://   0x860F, Same as JBE_REL
+	// case I486_OPCODE_JNAE_REL://  0x820F, Same as JB_REL
+	// case I486_OPCODE_JNB_REL://   0x830F, Same as JAE_REL
+	// case I486_OPCODE_JNBE_REL://  0x870F, Same as JA_REL
+	// case I486_OPCODE_JNC_REL://   0x830F, Same as JAE_REL
+	case I486_OPCODE_JNE_REL://   0x850F,
+	// case I486_OPCODE_JNG_REL://   0x8E0F, Same as JLE_REL
+	// case I486_OPCODE_JNGE_REL://  0x8C0F, Same as JL_REL
+	// case I486_OPCODE_JNL_REL://   0x8D0F, Same as JGE_REL
+	// case I486_OPCODE_JNLE_REL://  0x8F0F, Same as JG_REL
+	case I486_OPCODE_JNO_REL://   0x810F,
+	case I486_OPCODE_JNP_REL://   0x8B0F,
+	case I486_OPCODE_JNS_REL://   0x890F,
+	// case I486_OPCODE_JNZ_REL://   0x850F, Same as JNE_REL
+	case I486_OPCODE_JO_REL://    0x800F,
+	case I486_OPCODE_JP_REL://    0x8A0F,
+	// case I486_OPCODE_JPE_REL://   0x8A0F, Same as JP_REL
+	// case I486_OPCODE_JPO_REL://   0x8B0F, Same as JNP_REL
+	case I486_OPCODE_JS_REL://    0x880F,
+		switch(opCode)
+		{
+		case I486_OPCODE_JO_REL:   // 0x70,
+			disasm="JO";
+			break;
+		case I486_OPCODE_JNO_REL:  // 0x71,
+			disasm="JNO";
+			break;
+		case I486_OPCODE_JB_REL:   // 0x72,
+			disasm="JB";
+			break;
+		case I486_OPCODE_JAE_REL:  // 0x73,
+			disasm="JAE";
+			break;
+		case I486_OPCODE_JE_REL:   // 0x74,
+			disasm="JE";
+			break;
+		case I486_OPCODE_JNE_REL:  // 0x75,
+			disasm="JNE";
+			break;
+		case I486_OPCODE_JBE_REL:  // 0x76,
+			disasm="JBE";
+			break;
+		case I486_OPCODE_JA_REL:   // 0x77,
+			disasm="JA";
+			break;
+		case I486_OPCODE_JS_REL:   // 0x78,
+			disasm="JS";
+			break;
+		case I486_OPCODE_JNS_REL:  // 0x79,
+			disasm="JNS";
+			break;
+		case I486_OPCODE_JP_REL:   // 0x7A,
+			disasm="JP";
+			break;
+		case I486_OPCODE_JNP_REL:  // 0x7B,
+			disasm="JNP";
+			break;
+		case I486_OPCODE_JL_REL:   // 0x7C,
+			disasm="JL";
+			break;
+		case I486_OPCODE_JGE_REL:  // 0x7D,
+			disasm="JGE";
+			break;
+		case I486_OPCODE_JLE_REL:  // 0x7E,
+			disasm="JLE";
+			break;
+		case I486_OPCODE_JG_REL:   // 0x7F,
+			disasm="JG";
+			break;
+		default:
+			disasm="J?";
+			break;
+		}
+		cpputil::ExtendString(disasm,8);
+		{
+			auto offset=GetSimm16or32(operandSize);
 			auto destin=eip+offset+numBytes;
 			disasm+=cpputil::Uitox(destin);
 		}
@@ -2749,6 +2876,112 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					}
 					jumpCond=true;
 				}
+				break;
+			}
+			if(true==jumpCond)
+			{
+				auto offset=inst.GetSimm8();
+				auto destin=state.EIP+offset+inst.numBytes;
+				if(16==inst.operandSize)
+				{
+					destin&=0xffff;
+				}
+				state.EIP=destin;
+				clocksPassed=3;
+				EIPSetByInstruction=true;
+			}
+			else
+			{
+				clocksPassed=1;
+			}
+		}
+		break;
+
+
+	case I486_OPCODE_JA_REL://    0x870F,
+	case I486_OPCODE_JAE_REL://   0x830F,
+	case I486_OPCODE_JB_REL://    0x820F,
+	case I486_OPCODE_JBE_REL://   0x860F,
+	// case I486_OPCODE_JC_REL://    0x820F, Same as JB_REL
+	case I486_OPCODE_JE_REL://    0x840F,
+	// case I486_OPCODE_JZ_REL://    0x840F, Same as JZ_REL
+	case I486_OPCODE_JG_REL://    0x8F0F,
+	case I486_OPCODE_JGE_REL://   0x8D0F,
+	case I486_OPCODE_JL_REL://    0x8C0F,
+	case I486_OPCODE_JLE_REL://   0x8E0F,
+	// case I486_OPCODE_JNA_REL://   0x860F, Same as JBE_REL
+	// case I486_OPCODE_JNAE_REL://  0x820F, Same as JB_REL
+	// case I486_OPCODE_JNB_REL://   0x830F, Same as JAE_REL
+	// case I486_OPCODE_JNBE_REL://  0x870F, Same as JA_REL
+	// case I486_OPCODE_JNC_REL://   0x830F, Same as JAE_REL
+	case I486_OPCODE_JNE_REL://   0x850F,
+	// case I486_OPCODE_JNG_REL://   0x8E0F, Same as JLE_REL
+	// case I486_OPCODE_JNGE_REL://  0x8C0F, Same as JL_REL
+	// case I486_OPCODE_JNL_REL://   0x8D0F, Same as JGE_REL
+	// case I486_OPCODE_JNLE_REL://  0x8F0F, Same as JG_REL
+	case I486_OPCODE_JNO_REL://   0x810F,
+	case I486_OPCODE_JNP_REL://   0x8B0F,
+	case I486_OPCODE_JNS_REL://   0x890F,
+	// case I486_OPCODE_JNZ_REL://   0x850F, Same as JNE_REL
+	case I486_OPCODE_JO_REL://    0x800F,
+	case I486_OPCODE_JP_REL://    0x8A0F,
+	// case I486_OPCODE_JPE_REL://   0x8A0F, Same as JP_REL
+	// case I486_OPCODE_JPO_REL://   0x8B0F, Same as JNP_REL
+	case I486_OPCODE_JS_REL://    0x880F,
+		{
+			bool jumpCond=false;
+			switch(inst.opCode)
+			{
+			case I486_OPCODE_JO_REL:   // 0x70,
+				jumpCond=CondJO();
+				break;
+			case I486_OPCODE_JNO_REL:  // 0x71,
+				jumpCond=CondJNO();
+				break;
+			case I486_OPCODE_JB_REL:   // 0x72,
+				jumpCond=CondJB();
+				break;
+			case I486_OPCODE_JAE_REL:  // 0x73,
+				jumpCond=CondJAE();
+				break;
+			case I486_OPCODE_JE_REL:   // 0x74,
+				jumpCond=CondJE();
+				break;
+			case I486_OPCODE_JNE_REL:  // 0x75,
+				jumpCond=CondJNE();
+				break;
+			case I486_OPCODE_JBE_REL:  // 0x76,
+				jumpCond=CondJBE();
+				break;
+			case I486_OPCODE_JA_REL:   // 0x77,
+				jumpCond=CondJA();
+				break;
+			case I486_OPCODE_JS_REL:   // 0x78,
+				jumpCond=CondJS();
+				break;
+			case I486_OPCODE_JNS_REL:  // 0x79,
+				jumpCond=CondJNS();
+				break;
+			case I486_OPCODE_JP_REL:   // 0x7A,
+				jumpCond=CondJP();
+				break;
+			case I486_OPCODE_JNP_REL:  // 0x7B,
+				jumpCond=CondJNP();
+				break;
+			case I486_OPCODE_JL_REL:   // 0x7C,
+				jumpCond=CondJL();
+				break;
+			case I486_OPCODE_JGE_REL:  // 0x7D,
+				jumpCond=CondJGE();
+				break;
+			case I486_OPCODE_JLE_REL:  // 0x7E,
+				jumpCond=CondJLE();
+				break;
+			case I486_OPCODE_JG_REL:   // 0x7F,
+				jumpCond=CondJG();
+				break;
+			default:
+				Abort("Unhandled Conditional Jump");
 				break;
 			}
 			if(true==jumpCond)

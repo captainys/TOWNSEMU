@@ -12,9 +12,18 @@
 
 // FM Towns specific
 #include "ioram.h"
+#include "crtc.h"
 #include "physmem.h"
 #include "memaccess.h"
 
+
+
+// Adding a device:
+// (1) Make a class
+// (2) Implement State, IO functions, Reset function.
+// (3) Add as data memter in FMTowns class.
+// (4) In FMTowns::FMTowns() add to allDevices.
+// (5) In FMTowns::FMTowns() add to io.
 class FMTowns : public Device
 {
 public:
@@ -62,8 +71,10 @@ public:
 	i486DX cpu;
 	TownsPhysicalMemory physMem;
 	IORam ioRAM;
+	TownsCRTC crtc;
 	// Machine State <<
 
+	unsigned int townsType;
 	InOut io;
 	Memory mem;
 	TownsMainRAMAccess mainRAMAccess;

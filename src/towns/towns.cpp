@@ -2,6 +2,8 @@
 
 #include "cpputil.h"
 #include "towns.h"
+#include "townsdef.h"
+
 
 
 void FMTowns::State::PowerOn(void)
@@ -19,11 +21,14 @@ void FMTowns::State::Reset(void)
 ////////////////////////////////////////////////////////////
 
 
-FMTowns::FMTowns()
+FMTowns::FMTowns() : crtc(this)
 {
+	townsType=TOWNSTYPE_2_MX;
+
 	abort=false;
 	allDevices.push_back(&ioRAM);
 	allDevices.push_back(&physMem);
+	allDevices.push_back(&crtc);
 
 	physMem.SetMainRAMSize(4*1024*1024);
 
@@ -75,7 +80,9 @@ FMTowns::FMTowns()
 	// FM TOWNS 2UG didn't exist then.
 	// I'm positive that I was using the second-generation FM TOWNS then.
 	// I'll check if I can find the source code from my old backups.
-	io.AddDevice(this,0x26,0x27);
+	io.AddDevice(this,TOWNSIO_FREERUN_TIMER_LOW/*0x26*/,TOWNSIO_FREERUN_TIMER_HIGH/*0x27*/);
+	io.AddDevice(&crtc,TOWNSIO_MX_HIRES/*0x470*/,TOWNSIO_MX_IMGOUT_ADDR_D3/*0x477*/);
+
 
 	PowerOn();
 }

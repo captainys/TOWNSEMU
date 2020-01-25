@@ -23,3 +23,12 @@ Correct in i486.cpp:
 unsigned int i486DX::GetStackAddressingSize(void) const
 
 When what exactly stack addressing size is.
+
+
+
+#2020/01/25-1
+unsigned int TownsCRTC::IOReadByte(unsigned int ioport)
+Video Out Control Register (Address Latch 0472H:0473H, Data 0474H to 0477H)
+Unless bit1 of register-04 read is 0, boot ROM goes into infinite loop.
+Meaning is unknown.  For the time being, Register 0004 always returns 0.
+

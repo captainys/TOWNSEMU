@@ -74,7 +74,11 @@ int main(int ac,char *av[])
 
 
 	std::string cmd;
-	RunUntil(towns,0x0010,0x24D0);
+	// 24D0 for Ready to Turn Off
+	// 21A0 Checking HIRES bit.
+	// 2227 Checking VideoOutControl Register 4
+	// 2297 After banging 0000 into IO:[0474H] 0x400 times.
+	RunUntil(towns,0x0010, 0x2297);
 
 	std::cout << "Kanji Count:" << towns.physMem.JISCodeLog.size() << std::endl;
 	{
