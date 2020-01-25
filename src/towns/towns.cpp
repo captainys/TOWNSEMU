@@ -11,10 +11,12 @@ void FMTowns::State::PowerOn(void)
 	Reset();
 	townsTime=0;
 	freq=FREQUENCY_DEFAULT;
+	resetReason=0;
 }
 void FMTowns::State::Reset(void)
 {
 	clockBalance=0;
+	resetReason&=4;
 }
 
 
@@ -87,6 +89,7 @@ FMTowns::FMTowns() : crtc(this)
 	io.AddDevice(this,TOWNSIO_FREERUN_TIMER_LOW/*0x26*/,TOWNSIO_MACHINE_ID_HIGH/*0x31*/);
 	io.AddDevice(&crtc,TOWNSIO_MX_HIRES/*0x470*/,TOWNSIO_MX_IMGOUT_ADDR_D3/*0x477*/);
 
+	io.AddDevice(this,TOWNSIO_RESET_REASON);
 	io.AddDevice(&physMem,TOWNSIO_FMR_VRAM_OR_MAINRAM);
 
 	PowerOn();

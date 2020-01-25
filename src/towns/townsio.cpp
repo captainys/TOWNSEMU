@@ -17,6 +17,9 @@
 {
 	switch(ioport)
 	{
+	case TOWNSIO_RESET_REASON://      0x20,
+		return state.resetReason;
+
 	case TOWNSIO_MACHINE_ID_LOW://         0x30
 		switch(townsType)
 		{

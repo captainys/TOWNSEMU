@@ -11,6 +11,8 @@ enum
 // When adding an IO port, make sure to register in FMTowns::FMTowns()
 enum
 {
+	TOWNSIO_RESET_REASON=      0x20,
+
 	TOWNSIO_FREERUN_TIMER     =0x26,
 	TOWNSIO_FREERUN_TIMER_LOW =0x26,
 	TOWNSIO_FREERUN_TIMER_HIGH=0x27,

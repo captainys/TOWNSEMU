@@ -61,6 +61,10 @@ public:
 		*/
 		long long int freq;
 
+		/*! Reset reason.
+		*/
+		unsigned int resetReason;
+
 
 		void PowerOn(void);
 		void Reset(void);

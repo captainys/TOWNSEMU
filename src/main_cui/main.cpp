@@ -82,6 +82,7 @@ int main(int ac,char *av[])
 
 
 	std::string cmd;
+	// Path Bit2 of ResetReason is on.
 	// 0010:24D0 for Ready to Turn Off
 	// 0010:21A0 Checking HIRES bit.
 	// 0010:2227 Checking VideoOutControl Register 4
@@ -92,7 +93,9 @@ int main(int ac,char *av[])
 	// 0010:2404 Reading VRAMSize IO (0471H)
 	// 0010:241B REP STOSD VRAM Clear
 	// 0010:241D After VRAM Clear
-	RunUntil(towns,0x0010, 0x241D);
+
+	// FC00:12AE XCHG if Bit2 of ResetReason is clear.
+	RunUntil(towns,0xFC00,0x12AE);
 
 	std::cout << "Kanji Count:" << towns.physMem.JISCodeLog.size() << std::endl;
 	{
