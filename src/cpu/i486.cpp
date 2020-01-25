@@ -119,6 +119,7 @@ void i486DX::Reset(void)
 	SetDX(RESET_DX);
 	state.CR[0]=RESET_CR0;
 
+	state.halt=false;
 	state.holdIRQ=false;
 	state.exception=false;
 }
@@ -1176,15 +1177,15 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 			break;
 		case REG_CH:
 			value.numBytes=1;
-			value.byteData[0]=((state.EAX()>>8)&255);
+			value.byteData[0]=((state.ECX()>>8)&255);
 			break;
 		case REG_BH:
 			value.numBytes=1;
-			value.byteData[0]=((state.EAX()>>8)&255);
+			value.byteData[0]=((state.EBX()>>8)&255);
 			break;
 		case REG_DH:
 			value.numBytes=1;
-			value.byteData[0]=((state.EAX()>>8)&255);
+			value.byteData[0]=((state.EDX()>>8)&255);
 			break;
 
 		case REG_AX:
