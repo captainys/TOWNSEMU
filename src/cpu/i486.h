@@ -726,6 +726,28 @@ public:
 		state.ECX()&=0xffff00ff;
 		state.ECX()|=(value<<8);
 	}
+	inline unsigned int GetCXorECX(unsigned int bits) const
+	{
+		if(16==bits)
+		{
+			return GetCX();
+		}
+		else
+		{
+			return GetECX();
+		}
+	}
+	inline void SetCXorECX(unsigned int bits,unsigned int newECX)
+	{
+		if(16==bits)
+		{
+			SetCX(newECX);
+		}
+		else
+		{
+			SetECX(newECX);
+		}
+	}
 
 
 	inline unsigned int GetEDX(void) const
@@ -1063,6 +1085,66 @@ public:
 		return GetZF();
 	}
 
+	inline void UpdateDIorEDIAfterStringOp(unsigned int addressSize,unsigned int operandSize)
+	{
+		if(16==addressSize)
+		{
+			auto DI=state.EDI();
+			if(true==GetDF())
+			{
+				--DI;
+			}
+			else
+			{
+				++DI;
+			}
+			state.EDI()=(state.EDI()&0xffff0000|(DI&0xffff));
+		}
+		else
+		{
+			auto EDI=state.EDI();
+			if(true==GetDF())
+			{
+				EDI-=operandSize/8;
+			}
+			else
+			{
+				EDI+=operandSize/8;
+			}
+			state.EDI()=EDI;
+		}
+	}
+	inline void UpdateSIorESIAfterStringOp(unsigned int addressSize,unsigned int operandSize)
+	{
+		if(16==addressSize)
+		{
+			auto SI=state.ESI();
+			if(true==GetDF())
+			{
+				--SI;
+			}
+			else
+			{
+				++SI;
+			}
+			state.ESI()=(state.ESI()&0xffff0000|(SI&0xffff));
+		}
+		else
+		{
+			auto ESI=state.ESI();
+			if(true==GetDF())
+			{
+				ESI-=operandSize/8;
+			}
+			else
+			{
+				ESI+=operandSize/8;
+			}
+			state.ESI()=ESI;
+		}
+	}
+
+
 
 	virtual const char *DeviceName(void) const{return "486DX";}
 
@@ -1202,6 +1284,33 @@ public:
 		return mem.StoreByte(addr,byteData);
 	}
 
+	/*! Store a word or dword.  Operand size must be 16 or 32.
+	*/
+	inline void StoreWordOrDword(Memory &mem,unsigned int operandSize,SegmentRegister seg,unsigned int offset,unsigned int data)
+	{
+		if(true==AddressingMode16Bit())
+		{
+			offset&=0xffff;
+		}
+		auto addr=seg.baseLinearAddr+offset;
+		if(true==PagingEnabled())
+		{
+			addr=LinearAddressToPhysicalAddress(addr,mem);
+		}
+		if(16==operandSize)
+		{
+			mem.StoreByte(addr,data&255);
+			mem.StoreByte(addr,(data>>8)&255);
+		}
+		else
+		{
+			mem.StoreByte(addr,data&255);
+			mem.StoreByte(addr,(data>>8)&255);
+			mem.StoreByte(addr,(data>>16)&255);
+			mem.StoreByte(addr,(data>>24)&255);
+		}
+	}
+
 	/*! Fetch a byte from CS:[EIP+offset].
 	*/
 	inline unsigned int FetchInstructionByte(unsigned int offset,const Memory &mem) const
@@ -1225,6 +1334,10 @@ public:
 	/*! Shoot an interrupt.
 	*/
 	void Interrupt(int intNum){};// Right now it's just a placeholder
+
+
+	/*! Check for REP.  Execute a string operation if the return value is true. */
+	bool REPCheck(unsigned int &clocksForRep,unsigned int instPrefix,unsigned int addressSize);
 
 
 

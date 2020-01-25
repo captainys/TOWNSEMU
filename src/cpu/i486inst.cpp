@@ -1493,6 +1493,10 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 
 	case I486_OPCODE_STOSB://            0xAA,
 		disasm="STOSB";
+		if(INST_PREFIX_REP==instPrefix)
+		{
+			disasm="REP "+disasm;
+		}
 		break;
 	case I486_OPCODE_STOS://             0xAB,
 		if(16==operandSize)
@@ -1502,6 +1506,10 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		else
 		{
 			disasm="STOSD";
+		}
+		if(INST_PREFIX_REP==instPrefix)
+		{
+			disasm="REP "+disasm;
 		}
 		break;
 
@@ -1846,7 +1854,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	Operand op1,op2;
 	inst.DecodeOperand(inst.addressSize,inst.operandSize,op1,op2);
 
-	bool EIPChanged=false;
+	bool EIPSetByInstruction=false;
 	unsigned int clocksPassed=0;
 
 	switch(inst.opCode)
@@ -2374,7 +2382,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			Push(mem,inst.operandSize,state.EIP+inst.numBytes);
 			LoadSegmentRegister(state.CS(),op1.seg,mem);
 			state.EIP=op1.offset;
-			EIPChanged=true;
+			EIPSetByInstruction=true;
 		}
 		break;
 	case I486_OPCODE_CALL_REL://   0xE8,
@@ -2392,7 +2400,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				destin&=0xffff;
 			}
 			state.EIP=destin;
-			EIPChanged=true;
+			EIPSetByInstruction=true;
 		}
 		break;
 
@@ -2593,7 +2601,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					{
 						SetIPorEIP(inst.operandSize,value.GetAsDword());
 						LoadSegmentRegister(state.CS(),value.GetFwordSegment(),mem);
-						EIPChanged=true;
+						EIPSetByInstruction=true;
 					}
 					if(op1.operandType==OPER_ADDR)
 					{
@@ -2753,7 +2761,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				}
 				state.EIP=destin;
 				clocksPassed=3;
-				EIPChanged=true;
+				EIPSetByInstruction=true;
 			}
 			else
 			{
@@ -2790,7 +2798,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			}
 			LoadSegmentRegister(state.CS(),op1.seg,mem);
 			state.EIP=op1.offset;
-			EIPChanged=true;
+			EIPSetByInstruction=true;
 		}
 		break;
 
@@ -2936,12 +2944,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				if(IsInRealMode())
 				{
 					Interrupt(6);
-					EIPChanged=true;
+					EIPSetByInstruction=true;
 				}
 				else
 				{
 					RaiseException(EXCEPTION_UD,0);
-					EIPChanged=true;
+					EIPSetByInstruction=true;
 				}
 			}
 			break;
@@ -3265,7 +3273,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_OPCODE_RET://              0xC3,
 		clocksPassed=5;
 		SetIPorEIP(inst.operandSize,Pop(mem,inst.operandSize));
-		EIPChanged=true;
+		EIPSetByInstruction=true;
 		break;
 	case I486_OPCODE_RETF://             0xCB,
 		if(true==IsInRealMode())
@@ -3279,12 +3287,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		SetIPorEIP(inst.operandSize,Pop(mem,inst.operandSize));
 		LoadSegmentRegister(state.CS(),Pop(mem,inst.operandSize),mem);
 		state.ESP()+=inst.GetUimm16(); // Do I need to take &0xffff if address mode is 16? 
-		EIPChanged=true;
+		EIPSetByInstruction=true;
 		break;
 	case I486_OPCODE_RET_I16://          0xC2,
 		clocksPassed=5;
 		SetIPorEIP(inst.operandSize,Pop(mem,inst.operandSize));
-		EIPChanged=true;
+		EIPSetByInstruction=true;
 		break;
 	case I486_OPCODE_RETF_I16://         0xCA,
 		if(true==IsInRealMode())
@@ -3298,18 +3306,34 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		SetIPorEIP(inst.operandSize,Pop(mem,inst.operandSize));
 		LoadSegmentRegister(state.CS(),Pop(mem,inst.operandSize),mem);
 		state.ESP()+=inst.GetUimm16(); // Do I need to take &0xffff if address mode is 16? 
-		EIPChanged=true;
+		EIPSetByInstruction=true;
 		break;
 
 
 	case I486_OPCODE_STOSB://            0xAA,
 		{
 			// REP/REPE/REPNE CX or ECX is chosen based on addressSize.
+			if(true!=REPCheck(clocksPassed,inst.instPrefix,inst.addressSize))
+			{
+				break;
+			}
+			StoreByte(mem,state.ES(),state.EDI(),GetAL());
+			UpdateDIorEDIAfterStringOp(inst.addressSize,8);
+			EIPSetByInstruction=(INST_PREFIX_REP==inst.instPrefix);
+			clocksPassed+=5;
 		}
 		break;
 	case I486_OPCODE_STOS://             0xAB,
 		{
 			// REP/REPE/REPNE CX or ECX is chosen based on addressSize.
+			if(true!=REPCheck(clocksPassed,inst.instPrefix,inst.addressSize))
+			{
+				break;
+			}
+			StoreWordOrDword(mem,inst.operandSize,state.ES(),state.EDI(),GetEAX());
+			UpdateDIorEDIAfterStringOp(inst.addressSize,inst.operandSize);
+			EIPSetByInstruction=(INST_PREFIX_REP==inst.instPrefix);
+			clocksPassed+=5;
 		}
 		break;
 
@@ -3323,7 +3347,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	{
 		Abort("Clocks-Passed is not set.");
 	}
-	if(true!=EIPChanged && true!=abort)
+	if(true!=EIPSetByInstruction && true!=abort)
 	{
 		state.EIP+=inst.numBytes;
 	}

@@ -1736,7 +1736,7 @@ void i486DX::StoreOperandValue(
 			state.ESI()=cpputil::GetDword(value.byteData);
 			break;
 		case REG_EDI:
-			state.ESI()=cpputil::GetDword(value.byteData);
+			state.EDI()=cpputil::GetDword(value.byteData);
 			break;
 
 		case REG_EIP:
@@ -1844,3 +1844,19 @@ void i486DX::StoreOperandValue(
 	}
 }
 
+bool i486DX::REPCheck(unsigned int &clocksPassed,unsigned int instPrefix,unsigned int addressSize)
+{
+	if(INST_PREFIX_REP==instPrefix)
+	{
+		auto counter=GetCXorECX(addressSize);
+		if(0==counter)
+		{
+			clocksPassed=5;
+			return false;
+		}
+		--counter;
+		SetCXorECX(addressSize,counter);
+		clocksPassed=7;
+	}
+	return true;
+}
