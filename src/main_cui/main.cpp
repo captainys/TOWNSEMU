@@ -7,11 +7,19 @@
 
 void RunUntil(FMTowns &towns,unsigned int CS,unsigned int EIP)
 {
+	unsigned int prevCS=0x7fffffff;
+	unsigned int prevEIP=0x7fffffff;
 	for(;;)
 	{
 		auto inst=towns.FetchInstruction();
-		auto disasm=towns.cpu.Disassemble(inst,towns.cpu.state.CS(),towns.cpu.state.EIP,towns.mem);
-		std::cout << disasm << std::endl;
+
+		if(towns.cpu.state.CS().value!=prevCS || towns.cpu.state.EIP!=prevEIP)
+		{
+			auto disasm=towns.cpu.Disassemble(inst,towns.cpu.state.CS(),towns.cpu.state.EIP,towns.mem);
+			std::cout << disasm << std::endl;
+		}
+		prevCS=towns.cpu.state.CS().value;
+		prevEIP=towns.cpu.state.EIP;
 
 		towns.RunOneInstruction();
 		if(true==towns.CheckAbort())
@@ -74,11 +82,17 @@ int main(int ac,char *av[])
 
 
 	std::string cmd;
-	// 24D0 for Ready to Turn Off
-	// 21A0 Checking HIRES bit.
-	// 2227 Checking VideoOutControl Register 4
-	// 2297 After banging 0000 into IO:[0474H] 0x400 times.
-	RunUntil(towns,0x0010, 0x2297);
+	// 0010:24D0 for Ready to Turn Off
+	// 0010:21A0 Checking HIRES bit.
+	// 0010:2227 Checking VideoOutControl Register 4
+	// 0010:2297 After banging 0000 into IO:[0474H] 0x400 times.
+	// 0010:239D After massively banging Video Out Control Registers.
+	// 0010:20FC CRTC Init Loop
+	// 0010:2165 After initializing Digital Palette Registers
+	// 0010:2404 Reading VRAMSize IO (0471H)
+	// 0010:241B REP STOSD VRAM Clear
+	// 0010:241D After VRAM Clear
+	RunUntil(towns,0x0010, 0x241D);
 
 	std::cout << "Kanji Count:" << towns.physMem.JISCodeLog.size() << std::endl;
 	{

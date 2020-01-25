@@ -60,6 +60,7 @@ FMTowns::FMTowns() : crtc(this)
 	VRAMAccess.SetPhysicalMemoryPointer(&physMem);
 	mem.AddAccess(&VRAMAccess,0x80000000,0x8007FFFF);
 	mem.AddAccess(&VRAMAccess,0x80100000,0x8017FFFF);
+	mem.AddAccess(&VRAMAccess,0x82000000,0x83FFFFFF); // For IIMX High Resolution Access.
 
 	spriteRAMAccess.SetPhysicalMemoryPointer(&physMem);
 	mem.AddAccess(&spriteRAMAccess,0x81000000,0x8101FFFF);
@@ -80,9 +81,13 @@ FMTowns::FMTowns() : crtc(this)
 	// FM TOWNS 2UG didn't exist then.
 	// I'm positive that I was using the second-generation FM TOWNS then.
 	// I'll check if I can find the source code from my old backups.
-	io.AddDevice(this,TOWNSIO_FREERUN_TIMER_LOW/*0x26*/,TOWNSIO_FREERUN_TIMER_HIGH/*0x27*/);
+
+	// Do range I/O mapping first, then do single I/O mapping.
+	// Range I/O mapping may wipe single I/O mapping.
+	io.AddDevice(this,TOWNSIO_FREERUN_TIMER_LOW/*0x26*/,TOWNSIO_MACHINE_ID_HIGH/*0x31*/);
 	io.AddDevice(&crtc,TOWNSIO_MX_HIRES/*0x470*/,TOWNSIO_MX_IMGOUT_ADDR_D3/*0x477*/);
 
+	io.AddDevice(&physMem,TOWNSIO_FMR_VRAM_OR_MAINRAM);
 
 	PowerOn();
 }

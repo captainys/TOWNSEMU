@@ -73,8 +73,8 @@ public:
 		if(nullptr!=memAccess)
 		{
 			return memAccess->FetchDword(physAddr);
-		return 0xffffffff;
 		}
+		return 0xffffffff;
 	}
 
 	inline void StoreByte(unsigned int physAddr,unsigned char data)

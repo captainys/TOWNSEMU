@@ -1244,7 +1244,7 @@ public:
 
 	/*! Fetch a byte. 
 	*/
-	inline unsigned int FetchByte(SegmentRegister seg,unsigned int offset,const Memory &mem) const
+	inline unsigned int FetchByte(const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 	{
 		if(true==AddressingMode16Bit())
 		{
@@ -1257,6 +1257,55 @@ public:
 		}
 		return mem.FetchByte(addr);
 	}
+
+	/*! Fetch a dword.
+	*/
+	inline unsigned int FetchWord(const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+	{
+		if(true==AddressingMode16Bit())
+		{
+			offset&=0xffff;
+		}
+		auto addr=seg.baseLinearAddr+offset;
+		if(true==PagingEnabled())
+		{
+			addr=LinearAddressToPhysicalAddress(addr,mem);
+			if(0xFFC<(addr&0xfff)) // May hit the page boundary
+			{
+				return FetchByte(seg,offset,mem)|(FetchByte(seg,offset+1,mem)<<8);
+			}
+		}
+		return mem.FetchWord(addr);
+	}
+
+	/*! Fetch a dword.
+	*/
+	inline unsigned int FetchDword(const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+	{
+		if(true==AddressingMode16Bit())
+		{
+			offset&=0xffff;
+		}
+		auto addr=seg.baseLinearAddr+offset;
+		if(true==PagingEnabled())
+		{
+			addr=LinearAddressToPhysicalAddress(addr,mem);
+			if(0xFF8<(addr&0xfff)) // May hit the page boundary
+			{
+				return 
+				    FetchByte(seg,offset,mem)|(FetchByte(seg,offset+1,mem)<<8)|
+				    (FetchByte(seg,offset+2,mem)<<16)||(FetchByte(seg,offset+3,mem)<<24);
+			}
+		}
+		return mem.FetchDword(addr);
+	}
+	/*! Fetch a word or dword.
+	*/
+	inline unsigned int FetchWordOrDword(unsigned int operandSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+	{
+		return (16==operandSize ? FetchWord(seg,offset,mem) : FetchDword(seg,offset,mem));
+	}
+
 
 	/*! Fetch a byte by linear address.
 	*/

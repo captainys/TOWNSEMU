@@ -117,6 +117,7 @@ TownsCRTC::TownsCRTC(class FMTowns *ptr)
 		return (TOWNSTYPE_2_MX<=townsPtr->townsType ? 0x7F : 0x80); // [2] pp. 831
 
 	case TOWNSIO_MX_VRAMSIZE://         0x471,
+		return (TOWNSTYPE_2_MX<=townsPtr->townsType ? 0x01 : 0x00); // [2] pp. 831
 		break;
 
 	case TOWNSIO_MX_IMGOUT_ADDR_LOW://  0x472,

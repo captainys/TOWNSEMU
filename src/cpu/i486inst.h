@@ -201,6 +201,10 @@ enum
 	I486_OPCODE_BINARYOP_RM_FROM_SXI8= 0x83,
 
 
+	I486_OPCODE_LODSB=            0xAC,
+	I486_OPCODE_LODS=             0xAD,
+
+
 	I486_OPCODE_LOOP=             0xE2,
 	I486_OPCODE_LOOPE=            0xE1,
 	I486_OPCODE_LOOPNE=           0xE0,
@@ -244,6 +248,10 @@ enum
 	I486_OPCODE_MOV_TO_TR=        0x260F,
 
 
+	I486_OPCODE_MOVSB=            0xA4,
+	I486_OPCODE_MOVS=             0xA5,
+
+
 	I486_OPCODE_MOVZX_R_RM8=      0xB60F,
 	I486_OPCODE_MOVZX_R32_RM16=   0xB70F,
 
@@ -252,6 +260,10 @@ enum
 	I486_OPCODE_OUT_I8_A=         0xE7,
 	I486_OPCODE_OUT_DX_AL=        0xEE,
 	I486_OPCODE_OUT_DX_A=         0xEF,
+
+
+	I486_OPCODE_OUTSB=            0x6E,
+	I486_OPCODE_OUTS=             0x6F,
 
 
 	I486_OPCODE_PUSHA=            0x60,

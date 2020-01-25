@@ -35,6 +35,14 @@ void InOut::AddDevice(Device *devPtr,unsigned int minIOPort,unsigned int maxIOPo
 	}
 }
 
+void InOut::AddDevice(Device *devPtr,unsigned int ioPort)
+{
+	if(ioPort<NUM_IO_ADDR)
+	{
+		ioMap[ioPort]=devPtr;
+	}
+}
+
 unsigned int InOut::In8(unsigned int port)
 {
 	unsigned int value=0xff;

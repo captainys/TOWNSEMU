@@ -377,6 +377,11 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		break;
 
 
+	case I486_OPCODE_LODSB://            0xAC,
+	case I486_OPCODE_LODS://             0xAD,
+		break;
+
+
 	case I486_OPCODE_LOOP://             0xE2,
 	case I486_OPCODE_LOOPE://            0xE1,
 	case I486_OPCODE_LOOPNE://           0xE0,
@@ -457,6 +462,11 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		break;
 
 
+	case I486_OPCODE_MOVSB://            0xA4,
+	case I486_OPCODE_MOVS://             0xA5,
+		break;
+
+
 	case I486_OPCODE_MOVZX_R_RM8://=      0xB60F,
 	case I486_OPCODE_MOVZX_R32_RM16://=   0xB70F,
 		FetchOperandRM(inst,seg,offset,mem);
@@ -469,6 +479,11 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		break;
 	case I486_OPCODE_OUT_DX_AL: //        0xEE,
 	case I486_OPCODE_OUT_DX_A: //         0xEF,
+		break;
+
+
+	case I486_OPCODE_OUTSB://            0x6E,
+	case I486_OPCODE_OUTS://             0x6F,
 		break;
 
 
@@ -744,6 +759,11 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 		break;
 
 
+	case I486_OPCODE_LODSB://            0xAC,
+	case I486_OPCODE_LODS://             0xAD,
+		break;
+
+
 	case I486_OPCODE_LOOP://             0xE2,
 	case I486_OPCODE_LOOPE://            0xE1,
 	case I486_OPCODE_LOOPNE://           0xE0,
@@ -855,6 +875,11 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 		break;
 
 
+	case I486_OPCODE_MOVSB://            0xA4,
+	case I486_OPCODE_MOVS://             0xA5,
+		break;
+
+
 	case I486_OPCODE_MOVZX_R_RM8://=      0xB60F,
 		op1.DecodeMODR_MForRegister(operandSize,operand[0]);
 		op2.Decode(addressSize,8,operand);
@@ -871,6 +896,11 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 		break;
 	case I486_OPCODE_OUT_DX_AL: //        0xEE,
 	case I486_OPCODE_OUT_DX_A: //         0xEF,
+		break;
+
+
+	case I486_OPCODE_OUTSB://            0x6E,
+	case I486_OPCODE_OUTS://             0x6F,
 		break;
 
 
@@ -1545,6 +1575,14 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		break;
 
 
+	case I486_OPCODE_LODSB://            0xAC,
+		disasm="LODSB";
+		break;
+	case I486_OPCODE_LODS://             0xAD,
+		disasm=(16==operandSize ? "LODSW" : "LODSD");
+		break;
+
+
 	case I486_OPCODE_LGDT_LIDT:
 		switch(GetREG())
 		{
@@ -1598,6 +1636,14 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 	case I486_OPCODE_MOV_TO_TR://        0x260F,
 
 		disasm=DisassembleTypicalTwoOperands("MOV",op1,op2);
+		break;
+
+
+	case I486_OPCODE_MOVSB://            0xA4,
+		disasm="MOVSB";
+		break;
+	case I486_OPCODE_MOVS://             0xA5,
+		disasm=(16==operandSize ? "MOVSW" : "MOVSD");
 		break;
 
 
@@ -1694,25 +1740,27 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		break;
 
 
-	case I486_OPCODE_PUSHA://            0x60,
-		if(16==operandSize)
+	case I486_OPCODE_OUTSB://            0x6E,
+		disasm="OUTSB";
+		if(INST_PREFIX_REP==instPrefix)
 		{
-			disasm="PUSHA";
-		}
-		else
-		{
-			disasm="PUSHAD";
+			disasm="REP "+disasm;
 		}
 		break;
+	case I486_OPCODE_OUTS://             0x6F,
+		disasm=(16==operandSize ? "OUTSW" : "OUTSD");
+		if(INST_PREFIX_REP==instPrefix)
+		{
+			disasm="REP "+disasm;
+		}
+		break;
+
+
+	case I486_OPCODE_PUSHA://            0x60,
+		disasm=(16==operandSize ? "PUSHA" : "PUSHAD");
+		break;
 	case I486_OPCODE_PUSHF://            0x9C,
-		if(16==operandSize)
-		{
-			disasm="PUSHF";
-		}
-		else
-		{
-			disasm="PUSHFD";
-		}
+		disasm=(16==operandSize ? "PUSHF" : "PUSHFD");
 		break;
 
 
@@ -3152,6 +3200,34 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 
 
+	case I486_OPCODE_LODSB://            0xAC,
+		// REP/REPE/REPNE CX or ECX is chosen based on addressSize.
+		if(true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize))
+		{
+			SetAL(FetchByte(state.DS(),state.ESI(),mem));
+			UpdateSIorESIAfterStringOp(inst.addressSize,8);
+			EIPSetByInstruction=(INST_PREFIX_REP==inst.instPrefix);
+			clocksPassed+=5;
+		}
+		break;
+	case I486_OPCODE_LODS://             0xAD,
+		if(true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize))
+		{
+			if(16==inst.operandSize)
+			{
+				SetAX(FetchWord(state.DS(),state.ESI(),mem));
+			}
+			else
+			{
+				SetEAX(FetchDword(state.DS(),state.ESI(),mem));
+			}
+			UpdateSIorESIAfterStringOp(inst.addressSize,inst.operandSize);
+			EIPSetByInstruction=(INST_PREFIX_REP==inst.instPrefix);
+			clocksPassed+=5;
+		}
+		break;
+
+
 	case I486_OPCODE_LGDT_LIDT:
 		switch(inst.GetREG())
 		{
@@ -3264,6 +3340,31 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 
 
+	case I486_OPCODE_MOVSB://            0xA4,
+		// REP/REPE/REPNE CX or ECX is chosen based on addressSize.
+		if(true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize))
+		{
+			auto data=FetchByte(state.DS(),state.ESI(),mem);
+			StoreByte(mem,state.ES(),state.EDI(),data);
+			UpdateSIorESIAfterStringOp(inst.addressSize,8);
+			UpdateDIorEDIAfterStringOp(inst.addressSize,8);
+			EIPSetByInstruction=(INST_PREFIX_REP==inst.instPrefix);
+			clocksPassed+=7;
+		}
+		break;
+	case I486_OPCODE_MOVS://             0xA5,
+		if(true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize))
+		{
+			auto data=FetchWordOrDword(inst.operandSize,state.DS(),state.ESI(),mem);
+			StoreWordOrDword(mem,inst.operandSize,state.ES(),state.EDI(),GetEAX());
+			UpdateSIorESIAfterStringOp(inst.addressSize,inst.operandSize);
+			UpdateDIorEDIAfterStringOp(inst.addressSize,inst.operandSize);
+			EIPSetByInstruction=(INST_PREFIX_REP==inst.instPrefix);
+			clocksPassed+=7;
+		}
+		break;
+
+
 	case I486_OPCODE_MOVZX_R_RM8://=      0xB60F, 8bit to 16or32bit
 		{
 			clocksPassed=3;
@@ -3349,6 +3450,34 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		else
 		{
 			clocksPassed=10; // 30 if CPL>IOPL
+		}
+		break;
+
+
+	case I486_OPCODE_OUTSB://            0x6E,
+		// REP/REPE/REPNE CX or ECX is chosen based on addressSize.
+		if(true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize))
+		{
+			io.Out8(GetDX(),FetchByte(state.DS(),state.ESI(),mem));
+			UpdateSIorESIAfterStringOp(inst.addressSize,8);
+			EIPSetByInstruction=(INST_PREFIX_REP==inst.instPrefix);
+			clocksPassed+=(IsInRealMode() ? 17 : 10); // Protected Mode 32 if CPL>IOPL
+		}
+		break;
+	case I486_OPCODE_OUTS://             0x6F,
+		if(true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize))
+		{
+			if(16==inst.operandSize)
+			{
+				io.Out16(GetDX(),FetchWord(state.DS(),state.ESI(),mem));
+			}
+			else
+			{
+				io.Out32(GetDX(),FetchDword(state.DS(),state.ESI(),mem));
+			}
+			UpdateSIorESIAfterStringOp(inst.addressSize,inst.operandSize);
+			EIPSetByInstruction=(INST_PREFIX_REP==inst.instPrefix);
+			clocksPassed+=(IsInRealMode() ? 17 : 10); // Protected Mode 32 if CPL>IOPL
 		}
 		break;
 
@@ -3544,12 +3673,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 
 	case I486_OPCODE_STOSB://            0xAA,
+		// REP/REPE/REPNE CX or ECX is chosen based on addressSize.
+		if(true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize))
 		{
-			// REP/REPE/REPNE CX or ECX is chosen based on addressSize.
-			if(true!=REPCheck(clocksPassed,inst.instPrefix,inst.addressSize))
-			{
-				break;
-			}
 			StoreByte(mem,state.ES(),state.EDI(),GetAL());
 			UpdateDIorEDIAfterStringOp(inst.addressSize,8);
 			EIPSetByInstruction=(INST_PREFIX_REP==inst.instPrefix);
@@ -3557,12 +3683,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		break;
 	case I486_OPCODE_STOS://             0xAB,
+		// REP/REPE/REPNE CX or ECX is chosen based on addressSize.
+		if(true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize))
 		{
-			// REP/REPE/REPNE CX or ECX is chosen based on addressSize.
-			if(true!=REPCheck(clocksPassed,inst.instPrefix,inst.addressSize))
-			{
-				break;
-			}
 			StoreWordOrDword(mem,inst.operandSize,state.ES(),state.EDI(),GetEAX());
 			UpdateDIorEDIAfterStringOp(inst.addressSize,inst.operandSize);
 			EIPSetByInstruction=(INST_PREFIX_REP==inst.instPrefix);

@@ -255,6 +255,18 @@ void TownsMemAccess::SetPhysicalMemoryPointer(TownsPhysicalMemory *ptr)
 	{
 		switch(physAddr)
 		{
+		case TOWNSMEMIO_MIX://                0x000CFF80, // Called Dummy [2] pp.22, pp.158
+		case TOWNSMEMIO_FMR_GVRAMUPDATE://    0x000CFF81, // [2] pp.22,pp.159
+		case TOWNSMEMIO_FMR_GVRAMDISPMODE://  0x000CFF82, // [2] pp.22,pp.158
+		case TOWNSMEMIO_FMR_GVRAMPAGESEL://   0x000CFF83, // [2] pp.22,pp.159
+			break;
+
+		case TOWNSMEMIO_FIRQ://               0x000CFF84, // [2] pp.22,pp.95 Always zero in FM TOWNS
+			return 0;
+
+		case TOWNSMEMIO_FMR_HSYNC_VSYNC://    0x000CFF86, // [2] pp.22,pp.160
+			break;
+
 		case TOWNSMEMIO_KANJI_JISCODE_HIGH:// 0x000CFF94,
 			return 0x80;  // 
 		case TOWNSMEMIO_KANJI_JISCODE_LOW://  0x000CFF95,
@@ -284,6 +296,18 @@ void TownsMemAccess::SetPhysicalMemoryPointer(TownsPhysicalMemory *ptr)
 	{
 		switch(physAddr)
 		{
+		case TOWNSMEMIO_MIX://                0x000CFF80, // Called Dummy [2] pp.22, pp.158
+		case TOWNSMEMIO_FMR_GVRAMUPDATE://    0x000CFF81, // [2] pp.22,pp.159
+		case TOWNSMEMIO_FMR_GVRAMDISPMODE://  0x000CFF82, // [2] pp.22,pp.158
+		case TOWNSMEMIO_FMR_GVRAMPAGESEL://   0x000CFF83, // [2] pp.22,pp.159
+			break;
+
+		case TOWNSMEMIO_FIRQ://               0x000CFF84, // [2] pp.22,pp.95 Always zero in FM TOWNS
+			break; // No write access
+
+		case TOWNSMEMIO_FMR_HSYNC_VSYNC://    0x000CFF86, // [2] pp.22,pp.160
+			break;
+
 		case TOWNSMEMIO_KANJI_JISCODE_HIGH:// 0x000CFF94,
 			physMemPtr->state.kanjiROMAccess.JISCodeHigh=data;
 			break;

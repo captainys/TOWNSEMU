@@ -25,6 +25,8 @@ public:
 	{
 	public:
 		bool sysRomMapping;
+		bool FMRVRAM;
+
 		std::vector <unsigned char> RAM;
 		std::vector <unsigned char> VRAM;
 		std::vector <unsigned char> spriteRAM;
@@ -65,6 +67,8 @@ public:
 	*/
 	void SetWaveRAMSize(long long int size);
 
+	virtual void IOWriteByte(unsigned int ioport,unsigned int data);
+	virtual unsigned int IOReadByte(unsigned int ioport);
 	void Reset(void);
 };
 

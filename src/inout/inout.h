@@ -34,6 +34,7 @@ public:
 	void ClearLog(void);
 
 	void AddDevice(Device *devPtr,unsigned int minIOPort,unsigned int maxIOPort);
+	void AddDevice(Device *devPtr,unsigned int ioPort);
 
 	unsigned int In8(unsigned int port);
 	unsigned int In16(unsigned int port);

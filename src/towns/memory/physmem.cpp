@@ -1,6 +1,7 @@
 #include "physmem.h"
 #include "ramrom.h"
 #include "cpputil.h"
+#include "townsdef.h"
 
 
 
@@ -18,7 +19,30 @@ void TownsPhysicalMemory::KanjiROMAccess::Reset()
 void TownsPhysicalMemory::State::Reset(void)
 {
 	sysRomMapping=true;
+	FMRVRAM=true; // [2] pp.91
 	kanjiROMAccess.Reset();
+}
+
+
+////////////////////////////////////////////////////////////
+
+
+/* virtual */ void TownsPhysicalMemory::IOWriteByte(unsigned int ioport,unsigned int data)
+{
+	switch(ioport)
+	{
+	case TOWNSIO_FMR_VRAM_OR_MAINRAM: // 0x404
+		state.FMRVRAM=((0x80&data)==0);
+		break;
+	}
+}
+/* virtual */ unsigned int TownsPhysicalMemory::IOReadByte(unsigned int ioport)
+{
+	switch(ioport)
+	{
+	case TOWNSIO_FMR_VRAM_OR_MAINRAM: // 0x404
+		return (true==state.FMRVRAM ? 0 : 0x80);
+	}
 }
 
 
