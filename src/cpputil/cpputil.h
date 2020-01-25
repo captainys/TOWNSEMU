@@ -10,6 +10,7 @@ namespace cpputil
 
 std::string MakeFullPathName(std::string dirName,std::string fName);
 std::vector <unsigned char> ReadBinaryFile(std::string fName);
+bool WriteBinaryFile(const std::string &fName,unsigned long long length,const unsigned char dat[]);
 std::vector <std::string> Parser(const char str[]);
 void Capitalize(std::string &s);
 std::string GetExtension(const char fName[]);

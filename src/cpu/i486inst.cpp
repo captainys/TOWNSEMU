@@ -1866,6 +1866,11 @@ int i486DX::Instruction::GetSimm16or32(unsigned int operandSize) const
 
 unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 {
+	if(true==state.halt)
+	{
+		return 1;
+	}
+
 	state.holdIRQ=false;
 
 	auto inst=FetchInstruction(state.CS(),state.EIP,mem);

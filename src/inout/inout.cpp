@@ -18,6 +18,10 @@ void InOut::EnableLog(void)
 {
 	takeLog=true;
 }
+void InOut::DisableLog(void)
+{
+	takeLog=false;
+}
 void InOut::ClearLog(void)
 {
 	log.clear();

@@ -29,6 +29,7 @@ public:
 
 	InOut();
 	void EnableLog(void);
+	void DisableLog(void);
 
 	void ClearLog(void);
 

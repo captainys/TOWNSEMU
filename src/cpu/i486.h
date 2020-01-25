@@ -254,6 +254,7 @@ public:
 
 
 
+		bool halt;
 
 		// [1] pp.26-211 in the description of the MOV instruction
 		// "Loading to SS register inhibits all interrupts until after the execution of the next instruction"

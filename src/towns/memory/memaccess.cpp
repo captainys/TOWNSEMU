@@ -1,4 +1,5 @@
 #include "memaccess.h"
+#include "townsdef.h"
 
 
 
@@ -249,10 +250,59 @@ void TownsMemAccess::SetPhysicalMemoryPointer(TownsPhysicalMemory *ptr)
 
 /* virtual */ unsigned int TownsMainRAMorFMRVRAMAccess::FetchByte(unsigned int physAddr) const
 {
+	if((TOWNS_MEMIO_1_LOW<=physAddr && physAddr<=TOWNS_MEMIO_1_HIGH) ||
+	   (TOWNS_MEMIO_2_LOW<=physAddr && physAddr<=TOWNS_MEMIO_2_HIGH))
+	{
+		switch(physAddr)
+		{
+		case TOWNSMEMIO_KANJI_JISCODE_HIGH:// 0x000CFF94,
+			return 0x80;  // 
+		case TOWNSMEMIO_KANJI_JISCODE_LOW://  0x000CFF95,
+			break;
+		case TOWNSMEMIO_KANJI_PTN_HIGH://     0x000CFF96,
+			break;
+		case TOWNSMEMIO_KANJI_PTN_LOW ://     0x000CFF97,
+			if(true==physMemPtr->takeJISCodeLog && 0==physMemPtr->state.kanjiROMAccess.row)
+			{
+				physMemPtr->JISCodeLog.push_back(physMemPtr->state.kanjiROMAccess.JISCodeHigh);
+				physMemPtr->JISCodeLog.push_back(physMemPtr->state.kanjiROMAccess.JISCodeLow);
+			}
+			physMemPtr->state.kanjiROMAccess.row=(physMemPtr->state.kanjiROMAccess.row+1)&0x0F;
+			break;
+		}
+	}
+	else
+	{
+		return physMemPtr->state.RAM[physAddr];
+	}
 	return 0xff;
 }
 /* virtual */ void TownsMainRAMorFMRVRAMAccess::StoreByte(unsigned int physAddr,unsigned char data)
 {
+	if((TOWNS_MEMIO_1_LOW<=physAddr && physAddr<=TOWNS_MEMIO_1_HIGH) ||
+	   (TOWNS_MEMIO_2_LOW<=physAddr && physAddr<=TOWNS_MEMIO_2_HIGH))
+	{
+		switch(physAddr)
+		{
+		case TOWNSMEMIO_KANJI_JISCODE_HIGH:// 0x000CFF94,
+			physMemPtr->state.kanjiROMAccess.JISCodeHigh=data;
+			break;
+		case TOWNSMEMIO_KANJI_JISCODE_LOW://  0x000CFF95,
+			physMemPtr->state.kanjiROMAccess.JISCodeLow=data;
+			physMemPtr->state.kanjiROMAccess.row=0;
+			break;
+		case TOWNSMEMIO_KANJI_PTN_HIGH://     0x000CFF96,
+			// Write access enabled? [2] pp.95
+			break;
+		case TOWNSMEMIO_KANJI_PTN_LOW://      0x000CFF97,
+			// Write access enabled? [2] pp.95
+			break;
+		}
+	}
+	else
+	{
+		physMemPtr->state.RAM[physAddr]=data;
+	}
 }
 
 

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 
 #include "towns.h"
 #include "cpputil.h"
@@ -50,6 +51,8 @@ int main(int ac,char *av[])
 	printf("Loaded ROM Images.\n");
 
 	towns.Reset();
+	towns.physMem.takeJISCodeLog=true;
+	towns.io.EnableLog();
 
 	printf("Virtual Machine Reset.\n");
 
@@ -71,7 +74,21 @@ int main(int ac,char *av[])
 
 
 	std::string cmd;
-	RunUntil(towns,0x0010,0x24CA);
+	RunUntil(towns,0x0010,0x24D0);
+
+	std::cout << "Kanji Count:" << towns.physMem.JISCodeLog.size() << std::endl;
+	{
+		std::vector <unsigned char> jisTxt;
+		jisTxt.push_back(0x1B);
+		jisTxt.push_back(0x24);
+		jisTxt.push_back(0x42);
+		jisTxt.insert(jisTxt.end(),towns.physMem.JISCodeLog.begin(),towns.physMem.JISCodeLog.end());
+		jisTxt.push_back(0x1B);
+		jisTxt.push_back(0x28);
+		jisTxt.push_back(0x42);
+		// cpputil::WriteBinaryFile("kanjilog.txt",jisTxt.size(),jisTxt.data());
+	}
+
 	std::cout << ">";
 	std::getline(std::cin,cmd);
 

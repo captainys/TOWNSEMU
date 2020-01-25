@@ -4,6 +4,32 @@
 
 
 
+void TownsPhysicalMemory::KanjiROMAccess::Reset()
+{
+	JISCodeHigh=0;
+	JISCodeLow=0;
+	row=0;
+}
+
+
+////////////////////////////////////////////////////////////
+
+
+void TownsPhysicalMemory::State::Reset(void)
+{
+	sysRomMapping=true;
+	kanjiROMAccess.Reset();
+}
+
+
+////////////////////////////////////////////////////////////
+
+
+TownsPhysicalMemory::TownsPhysicalMemory()
+{
+	takeJISCodeLog=false;
+}
+
 bool TownsPhysicalMemory::LoadROMImages(const char dirName[])
 {
 	std::string fName;
@@ -40,6 +66,6 @@ void TownsPhysicalMemory::SetWaveRAMSize(long long int size)
 
 /* virtual */ void TownsPhysicalMemory::Reset(void)
 {
-	state.sysRomMapping=true;
+	state.Reset();
 }
 

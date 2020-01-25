@@ -10,6 +10,17 @@
 class TownsPhysicalMemory : public Device
 {
 public:
+	class KanjiROMAccess
+	{
+	public:
+		unsigned char JISCodeHigh; // 000CFF94 Big Endian?
+		unsigned char JISCodeLow;  // 000CFF95
+		int row;
+
+		void Reset();
+		inline unsigned int JISCode(){return JISCodeLow|(JISCodeHigh<<8);}
+	};
+
 	class State
 	{
 	public:
@@ -18,12 +29,23 @@ public:
 		std::vector <unsigned char> VRAM;
 		std::vector <unsigned char> spriteRAM;
 		std::vector <unsigned char> waveRAM;
+
+		KanjiROMAccess kanjiROMAccess;
+
+		void Reset(void);
 	};
 
 	State state;
 	std::vector <unsigned char> sysRom;
 
+	bool takeJISCodeLog;
+	std::vector <unsigned char> JISCodeLog; // Log KanjiROM Read Access
+
 	virtual const char *DeviceName(void) const{return "MEMORY";}
+
+
+
+	TownsPhysicalMemory();
 
 	bool LoadROMImages(const char dirName[]);
 

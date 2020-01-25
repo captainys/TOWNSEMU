@@ -27,6 +27,18 @@ std::vector <unsigned char> cpputil::ReadBinaryFile(std::string fName)
 	return dat;
 }
 
+bool cpputil::WriteBinaryFile(const std::string &fName,unsigned long long length,const unsigned char dat[])
+{
+	std::ofstream fp(fName,std::ofstream::binary);
+	if(true==fp.is_open())
+	{
+		fp.write((char *)dat,length);
+		fp.close();
+		return true;
+	}
+	return false;
+}
+
 std::vector <std::string> cpputil::Parser(const char str[])
 {
 	int state=0;
