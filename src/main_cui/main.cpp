@@ -56,6 +56,9 @@ int main(int ac,char *av[])
 		return 1;
 	}
 
+	towns.var.freeRunTimerShift=9;
+	printf("**** For Testing Purpose Free-Running Timer is scaled up by 512.\n");
+
 	printf("Loaded ROM Images.\n");
 
 	towns.Reset();
@@ -99,7 +102,14 @@ int main(int ac,char *av[])
 	// FC00:12BB Decides later SS and SP
 	// FC00:1346 RETF
 	// 0010:1E30 Wait Keyboard Ready
-	RunUntil(towns,0x0010,0x1E30);
+	// 0010:1DDA Keyboard Initialized, and the waited 5ms
+	// 0010:1DED After waiting 5ms again (Keyboard)
+	// 0010:1D56 After waiting 5ms again (Keyboard)
+	// 0010:1DDA After waiting 5ms again (Keyboard)
+	// 0010:1E25 End of Keyboard things.
+	// 0010:1DA6 Keyboard initialization again?
+	// 0010:1DAB End of Keyboard things.
+	RunUntil(towns,0x0010,0x1dab);
 
 	std::cout << "Kanji Count:" << towns.physMem.JISCodeLog.size() << std::endl;
 	{

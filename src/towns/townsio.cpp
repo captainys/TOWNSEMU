@@ -45,9 +45,9 @@
 
 
 	case TOWNSIO_FREERUN_TIMER_LOW ://0x26,
-		return state.townsTime&0xff;
+		return (state.townsTime<<var.freeRunTimerShift)&0xff;
 	case TOWNSIO_FREERUN_TIMER_HIGH://0x28,
-		return (state.townsTime>>8)&0xff;
+		return ((state.townsTime<<var.freeRunTimerShift)>>8)&0xff;
 	}
 	return 0xff;
 }
@@ -56,7 +56,7 @@
 	switch(ioport)
 	{
 	case TOWNSIO_FREERUN_TIMER:// 0x26
-		return state.townsTime&0xffff;
+		return (state.townsTime<<var.freeRunTimerShift)&0xffff;
 	}
 	return Device::IOReadWord(ioport);
 }

@@ -13,6 +13,7 @@
 // FM Towns specific
 #include "ioram.h"
 #include "crtc.h"
+#include "keyboard.h"
 #include "physmem.h"
 #include "memaccess.h"
 
@@ -70,15 +71,25 @@ public:
 		void Reset(void);
 	};
 
+	class Variable
+	{
+	public:
+		unsigned int freeRunTimerShift;
+		Variable();
+		void Reset(void);
+	};
+
 	// Machine State >>
 	State state;
 	i486DX cpu;
 	TownsPhysicalMemory physMem;
 	IORam ioRAM;
 	TownsCRTC crtc;
+	TownsKeyboard keyboard;
 	// Machine State <<
 
 	unsigned int townsType;
+	Variable var;
 	InOut io;
 	Memory mem;
 	TownsMainRAMAccess mainRAMAccess;

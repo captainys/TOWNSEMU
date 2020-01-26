@@ -16,7 +16,22 @@ void FMTowns::State::PowerOn(void)
 void FMTowns::State::Reset(void)
 {
 	clockBalance=0;
-	resetReason&=4;
+	// resetReason should survive Reset.
+}
+
+
+////////////////////////////////////////////////////////////
+
+
+FMTowns::Variable::Variable()
+{
+	freeRunTimerShift=0;
+	Reset();
+}
+
+void FMTowns::Variable::Reset(void)
+{
+	// freeRunTimerShift should survive Reset.
 }
 
 
@@ -88,6 +103,7 @@ FMTowns::FMTowns() : crtc(this)
 	// Range I/O mapping may wipe single I/O mapping.
 	io.AddDevice(this,TOWNSIO_FREERUN_TIMER_LOW/*0x26*/,TOWNSIO_MACHINE_ID_HIGH/*0x31*/);
 	io.AddDevice(&crtc,TOWNSIO_MX_HIRES/*0x470*/,TOWNSIO_MX_IMGOUT_ADDR_D3/*0x477*/);
+	io.AddDevice(&keyboard,TOWNSIO_KEYBOARD_DATA/*0x600*/,TOWNSIO_KEYBOARD_IRQ/*0x604*/);
 
 	io.AddDevice(this,TOWNSIO_RESET_REASON);
 	io.AddDevice(&physMem,TOWNSIO_FMR_VRAM_OR_MAINRAM);
@@ -146,6 +162,7 @@ void FMTowns::PowerOn(void)
 }
 void FMTowns::Reset(void)
 {
+	var.Reset();
 	state.Reset();
 	cpu.Reset();
 	for(auto devPtr : allDevices)
