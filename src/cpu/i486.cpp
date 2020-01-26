@@ -967,6 +967,59 @@ void i486DX::XorByte(unsigned int &value1,unsigned int value2)
 	SetParityFlag(CheckParity(value1&0xFF));
 }
 
+void i486DX::RcrWordOrDword(int operandSize,unsigned int &value,unsigned int ctr)
+{
+	if(16==operandSize)
+	{
+		RcrWord(value,ctr);
+	}
+	else
+	{
+		RcrDword(value,ctr);
+	}
+}
+void i486DX::RcrDword(unsigned int &value,unsigned int ctr)
+{
+	for(int i=0; i<ctr; ++i)
+	{
+		unsigned int highBit=(GetCF() ? 0x80000000 : 0);
+		SetCarryFlag(0!=(value&1));
+		value=(value>>1)|highBit;
+	}
+	if(1==ctr)
+	{
+		SetOverflowFlag(false);
+	}
+}
+void i486DX::RcrWord(unsigned int &value,unsigned int ctr)
+{
+	value&=0xffff;
+	for(int i=0; i<ctr; ++i)
+	{
+		unsigned int highBit=(GetCF() ? 0x8000 : 0);
+		SetCarryFlag(0!=(value&1));
+		value=(value>>1)|highBit;
+	}
+	if(1==ctr)
+	{
+		SetOverflowFlag(false);
+	}
+}
+void i486DX::RcrByte(unsigned int &value,unsigned int ctr)
+{
+	value&=0xff;
+	for(int i=0; i<ctr; ++i)
+	{
+		unsigned int highBit=(GetCF() ? 0x80 : 0);
+		SetCarryFlag(0!=(value&1));
+		value=(value>>1)|highBit;
+	}
+	if(1==ctr)
+	{
+		SetOverflowFlag(false);
+	}
+}
+
 void i486DX::ShlWordOrDword(int operandSize,unsigned int &value,unsigned int ctr)
 {
 	if(16==operandSize)

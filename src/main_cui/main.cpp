@@ -5,7 +5,7 @@
 #include "cpputil.h"
 
 
-void RunUntil(FMTowns &towns,unsigned int CS,unsigned int EIP)
+void RunUntil(FMTowns &towns,unsigned int CS,unsigned int EIP,bool silent)
 {
 	unsigned int prevCS=0x7fffffff;
 	unsigned int prevEIP=0x7fffffff;
@@ -13,13 +13,16 @@ void RunUntil(FMTowns &towns,unsigned int CS,unsigned int EIP)
 	{
 		auto inst=towns.FetchInstruction();
 
-		if(towns.cpu.state.CS().value!=prevCS || towns.cpu.state.EIP!=prevEIP)
+		if(true!=silent)
 		{
-			auto disasm=towns.cpu.Disassemble(inst,towns.cpu.state.CS(),towns.cpu.state.EIP,towns.mem);
-			std::cout << disasm << std::endl;
+			if(towns.cpu.state.CS().value!=prevCS || towns.cpu.state.EIP!=prevEIP)
+			{
+				auto disasm=towns.cpu.Disassemble(inst,towns.cpu.state.CS(),towns.cpu.state.EIP,towns.mem);
+				std::cout << disasm << std::endl;
+			}
+			prevCS=towns.cpu.state.CS().value;
+			prevEIP=towns.cpu.state.EIP;
 		}
-		prevCS=towns.cpu.state.CS().value;
-		prevEIP=towns.cpu.state.EIP;
 
 		towns.RunOneInstruction();
 		if(true==towns.CheckAbort())
@@ -109,7 +112,9 @@ int main(int ac,char *av[])
 	// 0010:1E25 End of Keyboard things.
 	// 0010:1DA6 Keyboard initialization again?
 	// 0010:1DAB End of Keyboard things.
-	RunUntil(towns,0x0010,0x1dab);
+	// 0010:16DB RCR DX,1
+	// 0010:15EE REP MOVSB  Drawing FM TOWNS Logo?
+	RunUntil(towns,0x0010,0x16DB,true);
 
 	std::cout << "Kanji Count:" << towns.physMem.JISCodeLog.size() << std::endl;
 	{

@@ -1520,13 +1520,15 @@ public:
 	void XorDword(unsigned int &value1,unsigned int value2);
 	void XorWord(unsigned int &value1,unsigned int value2);
 	void XorByte(unsigned int &value1,unsigned int value2);
-	/*! Compare two values and set OF,SF,ZF,AF,CF, and PF flags accoring to the result.
+
+	/*! RCR a value and set OF and CF flags accoring to the result.
+	    OF is only set if ctr==1.
 	    operandSize needs to be 16 or 32.
 	*/ 
-	void CmpWordOrDword(int operandSize,unsigned int &value1,unsigned int value2);
-	void CmpDword(unsigned int &value1,unsigned int value2);
-	void CmpWord(unsigned int &value1,unsigned int value2);
-	void CmpByte(unsigned int &value1,unsigned int value2);
+	void RcrWordOrDword(int operandSize,unsigned int &value,unsigned int ctr);
+	void RcrDword(unsigned int &value,unsigned int ctr);
+	void RcrWord(unsigned int &value,unsigned int ctr);
+	void RcrByte(unsigned int &value,unsigned int ctr);
 
 	/*! SHL a value and set OF and CF flags accoring to the result.
 	    OF is only set if ctr==1.
