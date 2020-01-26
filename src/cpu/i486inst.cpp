@@ -379,6 +379,11 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		break;
 
 
+	case I486_OPCODE_LEA://=              0x8D,
+		FetchOperandRM(inst,seg,offset,mem);
+		break;
+
+
 	case I486_OPCODE_LODSB://            0xAC,
 	case I486_OPCODE_LODS://             0xAD,
 		break;
@@ -777,6 +782,12 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 		{
 			op2.SignExtendImm(OPER_IMM32);
 		}
+		break;
+
+
+	case I486_OPCODE_LEA://=              0x8D,
+		op1.DecodeMODR_MForRegister(operandSize,operand[0]);
+		op2.Decode(addressSize,operandSize,operand);
 		break;
 
 
@@ -1622,6 +1633,19 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 			disasm=DisassembleTypicalTwoOperands(cpputil::Ubtox(opCode)+"?",op1,op2);
 			break;
 		}
+		break;
+
+
+	case I486_OPCODE_LEA://=              0x8D,
+		disasm="LEA";
+		cpputil::ExtendString(disasm,8);
+		disasm+=op1.Disassemble();
+		disasm.push_back(',');
+		if(addressSize!=operandSize)
+		{
+			disasm+=Operand::GetSizeQualifierToDisassembly(op2,addressSize);
+		}
+		disasm+=op2.Disassemble();
 		break;
 
 
@@ -3322,6 +3346,29 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				value1.SetDword(i);
 				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
 			}
+		}
+		break;
+
+
+	case I486_OPCODE_LEA://=              0x8D,
+		clocksPassed=1;
+		if(OPER_ADDR==op2.operandType && OPER_REG==op1.operandType)
+		{
+			unsigned int offset=
+			   GetRegisterValue(op2.baseReg)+
+			   GetRegisterValue(op2.indexReg)*op2.indexScaling+
+			   op2.offset;
+			if(16==inst.addressSize)
+			{
+				offset&=0xFFFF;
+			}
+			OperandValue value;
+			value.MakeDword(offset);
+			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+		}
+		else
+		{
+			RaiseException(EXCEPTION_UD,0);
 		}
 		break;
 

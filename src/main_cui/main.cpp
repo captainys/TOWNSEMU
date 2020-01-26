@@ -96,7 +96,10 @@ int main(int ac,char *av[])
 
 	// FC00:12AE XCHG if Bit2 of ResetReason is clear.
 	// FC00:135C CALL    WORD PTR CS:[BX+1187H]
-	RunUntil(towns,0xFC00,0x135C);
+	// FC00:12BB Decides later SS and SP
+	// FC00:1346 RETF
+	// 0010:1E30 Wait Keyboard Ready
+	RunUntil(towns,0x0010,0x1E30);
 
 	std::cout << "Kanji Count:" << towns.physMem.JISCodeLog.size() << std::endl;
 	{

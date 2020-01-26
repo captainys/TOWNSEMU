@@ -207,6 +207,9 @@ enum
 	I486_OPCODE_BINARYOP_RM_FROM_SXI8= 0x83,
 
 
+	I486_OPCODE_LEA=              0x8D,
+
+
 	I486_OPCODE_LODSB=            0xAC,
 	I486_OPCODE_LODS=             0xAD,
 
