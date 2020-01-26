@@ -622,6 +622,7 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		break;
 	case I486_OPCODE_RM8_R8://           0x86,
 	case I486_OPCODE_RM_R://             0x87,
+		FetchOperandRM(inst,seg,offset,mem);
 		break;
 
 
@@ -1038,6 +1039,25 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 	case I486_OPCODE_XOR_R_FROM_RM:
 		op1.DecodeMODR_MForRegister(operandSize,operand[0]);
 		op2.Decode(addressSize,operandSize,operand);
+		break;
+
+
+	case I486_OPCODE_XCHG_EAX_ECX://     0x91,
+	case I486_OPCODE_XCHG_EAX_EDX://     0x92,
+	case I486_OPCODE_XCHG_EAX_EBX://     0x93,
+	case I486_OPCODE_XCHG_EAX_ESP://     0x94,
+	case I486_OPCODE_XCHG_EAX_EBP://     0x95,
+	case I486_OPCODE_XCHG_EAX_ESI://     0x96,
+	case I486_OPCODE_XCHG_EAX_EDI://     0x97,
+		// No operand
+		break;
+	case I486_OPCODE_RM8_R8://           0x86,
+		op1.Decode(addressSize,8,operand);
+		op2.DecodeMODR_MForRegister(8,operand[0]);
+		break;
+	case I486_OPCODE_RM_R://             0x87,
+		op1.Decode(addressSize,operandSize,operand);
+		op2.DecodeMODR_MForRegister(operandSize,operand[0]);
 		break;
 	}
 }
@@ -1949,6 +1969,30 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 	case I486_OPCODE_XOR_R8_FROM_RM8:
 	case I486_OPCODE_XOR_R_FROM_RM:
 		disasm=DisassembleTypicalTwoOperands("XOR",op1,op2);
+		break;
+
+
+	case I486_OPCODE_XCHG_EAX_ECX://     0x91,
+	case I486_OPCODE_XCHG_EAX_EDX://     0x92,
+	case I486_OPCODE_XCHG_EAX_EBX://     0x93,
+	case I486_OPCODE_XCHG_EAX_ESP://     0x94,
+	case I486_OPCODE_XCHG_EAX_EBP://     0x95,
+	case I486_OPCODE_XCHG_EAX_ESI://     0x96,
+	case I486_OPCODE_XCHG_EAX_EDI://     0x97,
+		if(16==operandSize)
+		{
+			disasm="XOR     AX,";
+			disasm+=Reg16Str[opCode&7];
+		}
+		else
+		{
+			disasm="XOR     EAX,";
+			disasm+=Reg32Str[opCode&7];
+		}
+		break;
+	case I486_OPCODE_RM8_R8://           0x86,
+	case I486_OPCODE_RM_R://             0x87,
+		disasm=DisassembleTypicalTwoOperands("XCHG",op1,op2);
 		break;
 	}
 
@@ -3739,6 +3783,49 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			UpdateDIorEDIAfterStringOp(inst.addressSize,inst.operandSize);
 			EIPSetByInstruction=(INST_PREFIX_REP==inst.instPrefix);
 			clocksPassed+=5;
+		}
+		break;
+
+
+	case I486_OPCODE_XCHG_EAX_ECX://     0x91,
+	case I486_OPCODE_XCHG_EAX_EDX://     0x92,
+	case I486_OPCODE_XCHG_EAX_EBX://     0x93,
+	case I486_OPCODE_XCHG_EAX_ESP://     0x94,
+	case I486_OPCODE_XCHG_EAX_EBP://     0x95,
+	case I486_OPCODE_XCHG_EAX_ESI://     0x96,
+	case I486_OPCODE_XCHG_EAX_EDI://     0x97,
+		clocksPassed=3;
+		if(16==inst.operandSize)
+		{
+			auto op1=GetAX();
+			auto op2=state.reg32[inst.opCode&7];
+			SetAX(op2);
+			state.reg32[inst.opCode&7]=(state.reg32[inst.opCode&7]&0xffff0000)|(op1&0xffff);
+		}
+		else
+		{
+			auto op1=GetEAX();
+			auto op2=state.reg32[inst.opCode&7];
+			SetEAX(op2);
+			state.reg32[inst.opCode&7]=op1;
+		}
+		break;
+	case I486_OPCODE_RM8_R8://           0x86,
+		clocksPassed=(OPER_ADDR==op1.operandType ? 5 : 3);
+		{
+			auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,1);
+			auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,1);
+			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value2);
+			StoreOperandValue(op2,mem,inst.addressSize,inst.segOverride,value1);
+		}
+		break;
+	case I486_OPCODE_RM_R://             0x87,
+		clocksPassed=(OPER_ADDR==op1.operandType ? 5 : 3);
+		{
+			auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+			auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize/8);
+			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value2);
+			StoreOperandValue(op2,mem,inst.addressSize,inst.segOverride,value1);
 		}
 		break;
 
