@@ -2875,6 +2875,26 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					}
 				}
 				break;
+			case 2: // CALL Indirect
+				{
+					clocksPassed=5;  // Same for CALL Indirect and JMP Indirect.
+					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+					if(true!=state.exception)
+					{
+						if(2==REG) // CALL
+						{
+							Push(mem,inst.operandSize,state.EIP+inst.numBytes);
+						}
+						auto destin=value.GetAsDword();
+						if(16==inst.operandSize)
+						{
+							destin&=0xffff;
+						}
+						state.EIP=destin;
+						EIPSetByInstruction=true;
+					}
+				}
+				break;
 			case 5: // JMPF Indirect
 				{
 					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,(inst.operandSize+16)/8);

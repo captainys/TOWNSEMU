@@ -95,7 +95,8 @@ int main(int ac,char *av[])
 	// 0010:241D After VRAM Clear
 
 	// FC00:12AE XCHG if Bit2 of ResetReason is clear.
-	RunUntil(towns,0xFC00,0x12AE);
+	// FC00:135C CALL    WORD PTR CS:[BX+1187H]
+	RunUntil(towns,0xFC00,0x135C);
 
 	std::cout << "Kanji Count:" << towns.physMem.JISCodeLog.size() << std::endl;
 	{
