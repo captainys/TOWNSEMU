@@ -253,11 +253,9 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		break;
 
 
+	case I486_OPCODE_CBW_CWDE://        0x98,
 	case I486_OPCODE_CLD:
 	case I486_OPCODE_CLI:
-		break;
-
-
 	case I486_OPCODE_CMC://        0xF5,
 		break;
 
@@ -681,11 +679,9 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 		break;
 
 
+	case I486_OPCODE_CBW_CWDE://        0x98,
 	case I486_OPCODE_CLD:
 	case I486_OPCODE_CLI:
-		break;
-
-
 	case I486_OPCODE_CMC://        0xF5,
 		break;
 
@@ -1168,14 +1164,15 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		break;
 
 
+	case I486_OPCODE_CBW_CWDE://        0x98,
+		disasm=(16==operandSize ? "CBW" : "CWDE");
+		break;
 	case I486_OPCODE_CLD:
 		disasm="CLD";
 		break;
 	case I486_OPCODE_CLI:
 		disasm="CLI";
 		break;
-
-
 	case I486_OPCODE_CMC://        0xF5,
 		disasm="CMC";
 		break;
@@ -2656,6 +2653,27 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 
 
+	case I486_OPCODE_CBW_CWDE://        0x98,
+		clocksPassed=3;
+		if(16==inst.operandSize) // Sign Extend AL to AX
+		{
+			unsigned int AL=GetAL();
+			if(0!=(0x80&AL))
+			{
+				AL|=0xff00;
+			}
+			SetAX(AL);
+		}
+		else // Sign Extend AX to EAX
+		{
+			unsigned int AX=GetAX();
+			if(0!=(0x8000&AX))
+			{
+				AX|=0xffff0000;
+			}
+			SetEAX(AX);
+		}
+		break;
 	case I486_OPCODE_CLD:
 		state.EFLAGS&=(~EFLAGS_DIRECTION);
 		clocksPassed=2;
