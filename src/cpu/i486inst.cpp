@@ -286,6 +286,10 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		break;
 
 
+	case I486_OPCODE_HLT://        0xF4,
+		break;
+
+
 	case I486_OPCODE_INC_DEC_R_M8:
 		FetchOperandRM(inst,seg,offset,mem);
 		break;
@@ -473,6 +477,10 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		break;
 
 
+	case I486_OPCODE_NOP://              0x90,
+		break;
+
+
 	case I486_OPCODE_OUT_I8_AL: //        0xE6,
 	case I486_OPCODE_OUT_I8_A: //         0xE7,
 		FetchOperand8(inst,seg,offset,mem);
@@ -603,6 +611,18 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		break;
 
 
+	case I486_OPCODE_XCHG_EAX_ECX://     0x91,
+	case I486_OPCODE_XCHG_EAX_EDX://     0x92,
+	case I486_OPCODE_XCHG_EAX_EBX://     0x93,
+	case I486_OPCODE_XCHG_EAX_ESP://     0x94,
+	case I486_OPCODE_XCHG_EAX_EBP://     0x95,
+	case I486_OPCODE_XCHG_EAX_ESI://     0x96,
+	case I486_OPCODE_XCHG_EAX_EDI://     0x97,
+		// No operand
+		break;
+	case I486_OPCODE_RM8_R8://           0x86,
+	case I486_OPCODE_RM_R://             0x87,
+		break;
 
 
 	default:
@@ -691,6 +711,10 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 		break;
 	case I486_OPCODE_IN_AL_DX://=        0xEC,
 	case I486_OPCODE_IN_A_DX://=         0xED,
+		break;
+
+
+	case I486_OPCODE_HLT://        0xF4,
 		break;
 
 
@@ -887,6 +911,10 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 	case I486_OPCODE_MOVZX_R32_RM16://=   0xB70F,
 		op1.DecodeMODR_MForRegister(32,operand[0]);
 		op2.Decode(addressSize,16,operand);
+		break;
+
+
+	case I486_OPCODE_NOP://              0x90,
 		break;
 
 
@@ -1293,6 +1321,11 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		{
 			disasm="IN      EAX,DX";
 		}
+		break;
+
+
+	case I486_OPCODE_HLT://        0xF4,
+		disasm="HLT";
 		break;
 
 
@@ -1703,6 +1736,11 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		{
 			disasm="REP "+disasm;
 		}
+		break;
+
+
+	case I486_OPCODE_NOP://              0x90,
+		disasm="NOP";
 		break;
 
 
@@ -2705,6 +2743,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 
 
+	case I486_OPCODE_HLT://        0xF4,
+		clocksPassed=4;
+		state.halt=true;
+		break;
+
+
 	case I486_OPCODE_INC_DEC_R_M8:
 		{
 			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,1);
@@ -3391,6 +3435,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
 			}
 		}
+		break;
+
+
+	case I486_OPCODE_NOP://              0x90,
+		clocksPassed=1;
 		break;
 
 
