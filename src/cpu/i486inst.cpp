@@ -2981,6 +2981,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_OPCODE_INC_EBP://    0x45, // 16/32 depends on OPSIZE_OVERRIDE
 	case I486_OPCODE_INC_ESI://    0x46, // 16/32 depends on OPSIZE_OVERRIDE
 	case I486_OPCODE_INC_EDI://    0x47, // 16/32 depends on OPSIZE_OVERRIDE
+		clocksPassed=1;
 		{
 			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,op1.GetSize());
 			if(true!=state.exception)
@@ -2991,7 +2992,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
 			}
 		}
-		clocksPassed=1;
+		break;
 
 
 	case I486_OPCODE_JMP_REL8://         0xEB,   // cb
@@ -3309,6 +3310,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
 			}
 		}
+		break;
+
 	case I486_OPCODE_BINARYOP_R_FROM_I://=     0x81,
 	case I486_OPCODE_BINARYOP_RM_FROM_SXI8://= 0x83, Sign of op2 is already extended when decoded.
 		{

@@ -100,6 +100,7 @@ int main(int ac,char *av[])
 	// 0010:241B REP STOSD VRAM Clear
 	// 0010:241D After VRAM Clear
 
+	// Path Bit2 of ResetReason is off. (Before fixing SUB DH,Imm8);
 	// FC00:12AE XCHG if Bit2 of ResetReason is clear.
 	// FC00:135C CALL    WORD PTR CS:[BX+1187H]
 	// FC00:12BB Decides later SS and SP
@@ -114,7 +115,16 @@ int main(int ac,char *av[])
 	// 0010:1DAB End of Keyboard things.
 	// 0010:16DB RCR DX,1
 	// 0010:15EE REP MOVSB  Drawing FM TOWNS Logo?
-	RunUntil(towns,0x0010,0x16DB,true);
+	// 0010:15EE REP MOVSB  Drawing FM TOWNS Logo?
+	// 0010:0c87 After drawing FM TOWNS logo.
+	// 0010:0c87 After drawing FM TOWNS logo.
+	// 0010:03aa Probably after printing "Memory Size=0000MB" (in Japanese)
+
+	// Path Bit2 of ResetReason is off. (After fixing SUB DH,Imm8);
+	// FC00:0328 Transferring 600H bytes from C8000H to F7A00H
+	// FC00:032A After transfer
+	// FC00:256B Wait for Floppy Disk Data byte loop
+	RunUntil(towns,0xFC00,0x256B,false);
 
 	std::cout << "Kanji Count:" << towns.physMem.JISCodeLog.size() << std::endl;
 	{
@@ -126,7 +136,7 @@ int main(int ac,char *av[])
 		jisTxt.push_back(0x1B);
 		jisTxt.push_back(0x28);
 		jisTxt.push_back(0x42);
-		// cpputil::WriteBinaryFile("kanjilog.txt",jisTxt.size(),jisTxt.data());
+		cpputil::WriteBinaryFile("kanjilog.txt",jisTxt.size(),jisTxt.data());
 	}
 
 	std::cout << ">";
