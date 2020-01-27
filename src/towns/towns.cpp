@@ -46,6 +46,7 @@ FMTowns::FMTowns() : crtc(this)
 	allDevices.push_back(&ioRAM);
 	allDevices.push_back(&physMem);
 	allDevices.push_back(&crtc);
+	allDevices.push_back(&fdc);
 
 	physMem.SetMainRAMSize(4*1024*1024);
 
@@ -104,6 +105,8 @@ FMTowns::FMTowns() : crtc(this)
 	io.AddDevice(this,TOWNSIO_FREERUN_TIMER_LOW/*0x26*/,TOWNSIO_MACHINE_ID_HIGH/*0x31*/);
 	io.AddDevice(&crtc,TOWNSIO_MX_HIRES/*0x470*/,TOWNSIO_MX_IMGOUT_ADDR_D3/*0x477*/);
 	io.AddDevice(&keyboard,TOWNSIO_KEYBOARD_DATA/*0x600*/,TOWNSIO_KEYBOARD_IRQ/*0x604*/);
+	io.AddDevice(&fdc,TOWNSIO_FDC_STATUS_COMMAND/*0x200*/,TOWNSIO_FDC_DRIVE_SWITCH/*0x20E*/);
+
 
 	io.AddDevice(this,TOWNSIO_RESET_REASON);
 	io.AddDevice(&physMem,TOWNSIO_FMR_VRAM_OR_MAINRAM);

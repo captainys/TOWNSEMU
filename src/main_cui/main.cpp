@@ -113,18 +113,11 @@ int main(int ac,char *av[])
 	// 0010:1E25 End of Keyboard things.
 	// 0010:1DA6 Keyboard initialization again?
 	// 0010:1DAB End of Keyboard things.
-	// 0010:16DB RCR DX,1
-	// 0010:15EE REP MOVSB  Drawing FM TOWNS Logo?
+	// FC00:2B60 Prob: FDC reset
 	// 0010:15EE REP MOVSB  Drawing FM TOWNS Logo?
 	// 0010:0c87 After drawing FM TOWNS logo.
-	// 0010:0c87 After drawing FM TOWNS logo.
+	RunUntil(towns,0x0010,0x03AA,false);
 	// 0010:03aa Probably after printing "Memory Size=0000MB" (in Japanese)
-
-	// Path Bit2 of ResetReason is off. (After fixing SUB DH,Imm8);
-	// FC00:0328 Transferring 600H bytes from C8000H to F7A00H
-	// FC00:032A After transfer
-	// FC00:256B Wait for Floppy Disk Data byte loop
-	RunUntil(towns,0xFC00,0x256B,false);
 
 	std::cout << "Kanji Count:" << towns.physMem.JISCodeLog.size() << std::endl;
 	{

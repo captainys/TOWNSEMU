@@ -13,6 +13,7 @@
 // FM Towns specific
 #include "ioram.h"
 #include "crtc.h"
+#include "fdc.h"
 #include "keyboard.h"
 #include "physmem.h"
 #include "memaccess.h"
@@ -22,7 +23,7 @@
 // Adding a device:
 // (1) Make a class
 // (2) Implement State, IO functions, Reset function.
-// (3) Add as data memter in FMTowns class.
+// (3) Add as data member in FMTowns class.
 // (4) In FMTowns::FMTowns() add to allDevices.
 // (5) In FMTowns::FMTowns() add to io.
 class FMTowns : public Device
@@ -85,6 +86,7 @@ public:
 	TownsPhysicalMemory physMem;
 	IORam ioRAM;
 	TownsCRTC crtc;
+	TownsFDC fdc;
 	TownsKeyboard keyboard;
 	// Machine State <<
 
