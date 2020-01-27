@@ -1900,7 +1900,7 @@ void i486DX::StoreOperandValue(
 
 bool i486DX::REPCheck(unsigned int &clocksPassed,unsigned int instPrefix,unsigned int addressSize)
 {
-	if(INST_PREFIX_REP==instPrefix)
+	if(INST_PREFIX_REP==instPrefix || INST_PREFIX_REPNE==instPrefix)
 	{
 		auto counter=GetCXorECX(addressSize);
 		if(0==counter)
@@ -1911,6 +1911,19 @@ bool i486DX::REPCheck(unsigned int &clocksPassed,unsigned int instPrefix,unsigne
 		--counter;
 		SetCXorECX(addressSize,counter);
 		clocksPassed=7;
+	}
+	return true;
+}
+
+bool i486DX::REPEorNECheck(unsigned int &clocksForRep,unsigned int instPrefix,unsigned int addressSize)
+{
+	if(INST_PREFIX_REPE==instPrefix)
+	{
+		return GetZF();
+	}
+	else if(INST_PREFIX_REPNE==instPrefix)
+	{
+		return (true!=GetZF());
 	}
 	return true;
 }

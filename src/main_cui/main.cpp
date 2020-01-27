@@ -116,8 +116,11 @@ int main(int ac,char *av[])
 	// FC00:2B60 Prob: FDC reset
 	// 0010:15EE REP MOVSB  Drawing FM TOWNS Logo?
 	// 0010:0c87 After drawing FM TOWNS logo.
-	RunUntil(towns,0x0010,0x03AA,false);
 	// 0010:03aa Probably after printing "Memory Size=0000MB" (in Japanese)
+	// 0010:0531 Memory Test
+	// 0010:0541 REPE SCASD
+	// 0010:0543 End of REPE SCASD
+	RunUntil(towns,0x0010,0x03ca,false);
 
 	std::cout << "Kanji Count:" << towns.physMem.JISCodeLog.size() << std::endl;
 	{

@@ -335,6 +335,10 @@ enum
 	I486_OPCODE_RETF_I16=         0xCA,
 
 
+	I486_OPCODE_SCASB=            0xAE,
+	I486_OPCODE_SCAS=             0xAF,
+
+
 	I486_OPCODE_STOSB=            0xAA,
 	I486_OPCODE_STOS=             0xAB,
 

@@ -299,6 +299,7 @@ public:
 	{
 		// [1] pp.26-2
 		INST_PREFIX_REP=  0xF3, // REP/REPE/REPZ
+		INST_PREFIX_REPE= 0xF3, // REP/REPE/REPZ
 		INST_PREFIX_REPNE=0xF2, // REPNE/REPNZ
 		INST_PREFIX_LOCK= 0xF0, // LOCK
 
@@ -1294,7 +1295,7 @@ public:
 			{
 				return 
 				    FetchByte(seg,offset,mem)|(FetchByte(seg,offset+1,mem)<<8)|
-				    (FetchByte(seg,offset+2,mem)<<16)||(FetchByte(seg,offset+3,mem)<<24);
+				    (FetchByte(seg,offset+2,mem)<<16)|(FetchByte(seg,offset+3,mem)<<24);
 			}
 		}
 		return mem.FetchDword(addr);
@@ -1346,18 +1347,30 @@ public:
 		if(true==PagingEnabled())
 		{
 			addr=LinearAddressToPhysicalAddress(addr,mem);
+			if(0xFF8<(addr&0xfff)) // May hit the page boundary
+			{
+				if(16==operandSize)
+				{
+					mem.StoreByte(addr,data&255);
+					mem.StoreByte(addr+1,(data>>8)&255);
+				}
+				else
+				{
+					mem.StoreByte(addr,data&255);
+					mem.StoreByte(addr+1,(data>>8)&255);
+					mem.StoreByte(addr+2,(data>>16)&255);
+					mem.StoreByte(addr+3,(data>>24)&255);
+				}
+				return;
+			}
 		}
 		if(16==operandSize)
 		{
-			mem.StoreByte(addr,data&255);
-			mem.StoreByte(addr,(data>>8)&255);
+			mem.StoreWord(addr,data);
 		}
 		else
 		{
-			mem.StoreByte(addr,data&255);
-			mem.StoreByte(addr,(data>>8)&255);
-			mem.StoreByte(addr,(data>>16)&255);
-			mem.StoreByte(addr,(data>>24)&255);
+			mem.StoreDword(addr,data);
 		}
 	}
 
@@ -1386,8 +1399,18 @@ public:
 	void Interrupt(int intNum){};// Right now it's just a placeholder
 
 
-	/*! Check for REP.  Execute a string operation if the return value is true. */
+	/*! Check for REP.  Execute a string operation if the return value is true. 
+	    It returns true if no REP prefix.
+	*/
 	bool REPCheck(unsigned int &clocksForRep,unsigned int instPrefix,unsigned int addressSize);
+
+	/*! Check for REPE or REPNE.
+	    It returns true if the operation should be continued to the next iteration.
+	    This check must be after performing a string operation because [1] pp.26-246
+	    indicates that REPE and REPNE must be do-while loop.  (Counter should be checked before the operation)
+        Therefore, REPCheck is used before the operation, and REPEorNECheck after.
+	*/
+	bool REPEorNECheck(unsigned int &clocksForRep,unsigned int instPrefix,unsigned int addressSize);
 
 
 

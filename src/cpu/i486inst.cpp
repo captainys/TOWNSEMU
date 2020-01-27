@@ -560,6 +560,11 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		break;
 
 
+	case I486_OPCODE_SCASB://            0xAE,
+	case I486_OPCODE_SCAS://             0xAF,
+		break;
+
+
 	case I486_OPCODE_STOSB://            0xAA,
 	case I486_OPCODE_STOS://             0xAB,
 		break;
@@ -1772,6 +1777,30 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		disasm="RETF";
 		cpputil::ExtendString(disasm,8);
 		disasm+=op1.Disassemble();
+		break;
+
+
+	case I486_OPCODE_SCASB://            0xAE,
+		disasm="SCASB";
+		if(instPrefix==INST_PREFIX_REPE)
+		{
+			disasm="REPE "+disasm;
+		}
+		else if(instPrefix==INST_PREFIX_REPNE)
+		{
+			disasm="REPNE "+disasm;
+		}
+		break;
+	case I486_OPCODE_SCAS://             0xAF,
+		disasm=(16==operandSize ? "SCASW" : "SCASD");
+		if(instPrefix==INST_PREFIX_REPE)
+		{
+			disasm="REPE "+disasm;
+		}
+		else if(instPrefix==INST_PREFIX_REPNE)
+		{
+			disasm="REPNE "+disasm;
+		}
 		break;
 
 
@@ -3878,6 +3907,36 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		LoadSegmentRegister(state.CS(),Pop(mem,inst.operandSize),mem);
 		state.ESP()+=inst.GetUimm16(); // Do I need to take &0xffff if address mode is 16? 
 		EIPSetByInstruction=true;
+		break;
+
+
+	case I486_OPCODE_SCASB://            0xAE,
+		if(true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize))
+		{
+			auto data=FetchByte(state.ES(),state.EDI(),mem);
+			auto AL=GetAL();
+			SubByte(AL,data);
+			UpdateDIorEDIAfterStringOp(inst.addressSize,8);
+			clocksPassed+=6;
+			if(true==REPEorNECheck(clocksPassed,inst.instPrefix,inst.addressSize))
+			{
+				EIPSetByInstruction=true;
+			}
+		}
+		break;
+	case I486_OPCODE_SCAS://             0xAF,
+		if(true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize))
+		{
+			auto data=FetchWordOrDword(inst.operandSize,state.ES(),state.EDI(),mem);
+			auto EAX=GetEAX();
+			SubWordOrDword(inst.operandSize,EAX,data);
+			UpdateDIorEDIAfterStringOp(inst.addressSize,inst.operandSize);
+			clocksPassed+=6;
+			if(true==REPEorNECheck(clocksPassed,inst.instPrefix,inst.addressSize))
+			{
+				EIPSetByInstruction=true;
+			}
+		}
 		break;
 
 
