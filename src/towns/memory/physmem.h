@@ -25,6 +25,7 @@ public:
 	{
 	public:
 		bool sysRomMapping;
+		bool dicRom;
 		bool FMRVRAM;
 
 		std::vector <unsigned char> RAM;

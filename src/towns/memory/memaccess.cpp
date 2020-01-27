@@ -250,8 +250,9 @@ void TownsMemAccess::SetPhysicalMemoryPointer(TownsPhysicalMemory *ptr)
 
 /* virtual */ unsigned int TownsMainRAMorFMRVRAMAccess::FetchByte(unsigned int physAddr) const
 {
-	if((TOWNS_MEMIO_1_LOW<=physAddr && physAddr<=TOWNS_MEMIO_1_HIGH) ||
-	   (TOWNS_MEMIO_2_LOW<=physAddr && physAddr<=TOWNS_MEMIO_2_HIGH))
+	if(true==physMemPtr->state.FMRVRAM &&
+	   ((TOWNS_MEMIO_1_LOW<=physAddr && physAddr<=TOWNS_MEMIO_1_HIGH) ||
+	    (TOWNS_MEMIO_2_LOW<=physAddr && physAddr<=TOWNS_MEMIO_2_HIGH)))
 	{
 		switch(physAddr)
 		{
@@ -282,6 +283,15 @@ void TownsMemAccess::SetPhysicalMemoryPointer(TownsPhysicalMemory *ptr)
 			physMemPtr->state.kanjiROMAccess.row=(physMemPtr->state.kanjiROMAccess.row+1)&0x0F;
 			break;
 		}
+	}
+	else if(true==physMemPtr->state.FMRVRAM && 0xC0000<=physAddr && physAddr<0xD0000) /// FMR VRAM Plane Access
+	{
+	}
+	else if(true==physMemPtr->state.dicRom && 0xD0000<=physAddr && physAddr<0xD8000) // Dic ROM
+	{
+	}
+	else if(true==physMemPtr->state.dicRom && 0xD8000<=physAddr && physAddr<0xDA000) // 
+	{
 	}
 	else
 	{
