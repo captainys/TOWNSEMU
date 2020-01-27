@@ -121,7 +121,11 @@ int main(int ac,char *av[])
 	// 0010:0541 REPE SCASD
 	// 0010:0543 End of REPE SCASD
 	// 0010:041E JECXZ
-	RunUntil(towns,0x0010,0x041E,false);
+	// 0010:0492 After all RAM check?
+	// FC00:078A Call wait with C350H 50000us Twice
+	// FC00:0794 After wait
+	// FC00:05A3 After INT vector is set.
+	RunUntil(towns,0xFC00,0x0000,false);
 ;
 	std::cout << "Kanji Count:" << towns.physMem.JISCodeLog.size() << std::endl;
 	{
