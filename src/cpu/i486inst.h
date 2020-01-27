@@ -130,7 +130,7 @@ enum
 
 
 	// I486_OPCODE_JCXZ_REL8= 0xE3, Same as JCXZ_REL8
-	I486_OPCODE_JECXZ_REL8=0xE3,  // Depending on the operand size?
+	I486_OPCODE_JECXZ_REL8=0xE3,  // Depending on the operand size
 
 	I486_OPCODE_JA_REL8=   0x77,
 	I486_OPCODE_JAE_REL8=  0x73,

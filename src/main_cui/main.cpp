@@ -120,8 +120,9 @@ int main(int ac,char *av[])
 	// 0010:0531 Memory Test
 	// 0010:0541 REPE SCASD
 	// 0010:0543 End of REPE SCASD
-	RunUntil(towns,0x0010,0x03ca,false);
-
+	// 0010:041E JECXZ
+	RunUntil(towns,0x0010,0x041E,false);
+return 0;
 	std::cout << "Kanji Count:" << towns.physMem.JISCodeLog.size() << std::endl;
 	{
 		std::vector <unsigned char> jisTxt;

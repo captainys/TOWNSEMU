@@ -313,6 +313,7 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 	case I486_OPCODE_JB_REL8:   // 0x72,
 	case I486_OPCODE_JAE_REL8:  // 0x73,
 	case I486_OPCODE_JE_REL8:   // 0x74,
+	case I486_OPCODE_JECXZ_REL8:// 0xE3,  // Depending on the operand size
 	case I486_OPCODE_JNE_REL8:  // 0x75,
 	case I486_OPCODE_JBE_REL8:  // 0x76,
 	case I486_OPCODE_JA_REL8:   // 0x77,
@@ -753,6 +754,7 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 	case I486_OPCODE_JB_REL8:   // 0x72,
 	case I486_OPCODE_JAE_REL8:  // 0x73,
 	case I486_OPCODE_JE_REL8:   // 0x74,
+	case I486_OPCODE_JECXZ_REL8:// 0xE3,  // Depending on the operand size
 	case I486_OPCODE_JNE_REL8:  // 0x75,
 	case I486_OPCODE_JBE_REL8:  // 0x76,
 	case I486_OPCODE_JA_REL8:   // 0x77,
@@ -1436,6 +1438,7 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 	case I486_OPCODE_JB_REL8:   // 0x72,
 	case I486_OPCODE_JAE_REL8:  // 0x73,
 	case I486_OPCODE_JE_REL8:   // 0x74,
+	case I486_OPCODE_JECXZ_REL8:// 0xE3,  // Depending on the operand size
 	case I486_OPCODE_JNE_REL8:  // 0x75,
 	case I486_OPCODE_JBE_REL8:  // 0x76,
 	case I486_OPCODE_JA_REL8:   // 0x77,
@@ -1469,6 +1472,9 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 			break;
 		case I486_OPCODE_JE_REL8:   // 0x74,
 			disasm="JE";
+			break;
+		case I486_OPCODE_JECXZ_REL8:// 0xE3,  // Depending on the operand size
+			disasm=(16==operandSize ? "JCXZ" : "JECXZ");
 			break;
 		case I486_OPCODE_JNE_REL8:  // 0x75,
 			disasm="JNE";
@@ -3039,6 +3045,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_OPCODE_JB_REL8:   // 0x72,
 	case I486_OPCODE_JAE_REL8:  // 0x73,
 	case I486_OPCODE_JE_REL8:   // 0x74,
+	case I486_OPCODE_JECXZ_REL8:// 0xE3,  // Depending on the operand size
 	case I486_OPCODE_JNE_REL8:  // 0x75,
 	case I486_OPCODE_JBE_REL8:  // 0x76,
 	case I486_OPCODE_JA_REL8:   // 0x77,
@@ -3074,6 +3081,16 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				break;
 			case I486_OPCODE_JE_REL8:   // 0x74,
 				jumpCond=CondJE();
+				break;
+			case I486_OPCODE_JECXZ_REL8:// 0xE3,  // Depending on the operand size
+				if(16==inst.operandSize)
+				{
+					jumpCond=(GetCX()==0);
+				}
+				else
+				{
+					jumpCond=(GetECX()==0);
+				}
 				break;
 			case I486_OPCODE_JNE_REL8:  // 0x75,
 				jumpCond=CondJNE();
