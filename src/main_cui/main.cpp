@@ -125,8 +125,13 @@ int main(int ac,char *av[])
 	// FC00:078A Call wait with C350H 50000us Twice
 	// FC00:0794 After wait
 	// FC00:05A3 After INT vector is set.
-	RunUntil(towns,0xFC00,0x0000,false);
-;
+	// 0010:197D MOVSX
+	// Memory Card IO 490H, 491H [2] pp.786
+	// FC00:0C00 Prob After Checking Memory Card  <- Coming to this address multiple times
+	// FC00:0C68 Must be after checking 11 types of devices?  Or re-trying ROM card 11 times?
+	// FC00:0CA2 RET
+	RunUntil(towns,0xFC00,0x0CA2,false);
+
 	std::cout << "Kanji Count:" << towns.physMem.JISCodeLog.size() << std::endl;
 	{
 		std::vector <unsigned char> jisTxt;

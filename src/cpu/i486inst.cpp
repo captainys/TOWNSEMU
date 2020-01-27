@@ -477,6 +477,8 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		break;
 
 
+	case I486_OPCODE_MOVSX_R_RM8://=      0xBE0F,
+	case I486_OPCODE_MOVSX_R32_RM16://=   0xBF0F,
 	case I486_OPCODE_MOVZX_R_RM8://=      0xB60F,
 	case I486_OPCODE_MOVZX_R32_RM16://=   0xB70F,
 		FetchOperandRM(inst,seg,offset,mem);
@@ -923,10 +925,12 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 		break;
 
 
+	case I486_OPCODE_MOVSX_R_RM8://=      0xBE0F,
 	case I486_OPCODE_MOVZX_R_RM8://=      0xB60F,
 		op1.DecodeMODR_MForRegister(operandSize,operand[0]);
 		op2.Decode(addressSize,8,operand);
 		break;
+	case I486_OPCODE_MOVSX_R32_RM16://=   0xBF0F,
 	case I486_OPCODE_MOVZX_R32_RM16://=   0xB70F,
 		op1.DecodeMODR_MForRegister(32,operand[0]);
 		op2.Decode(addressSize,16,operand);
@@ -1750,16 +1754,18 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		break;
 
 
+	case I486_OPCODE_MOVSX_R_RM8://=      0xBE0F,
 	case I486_OPCODE_MOVZX_R_RM8://=      0xB60F,
-		disasm="MOVZX";
+		disasm=(I486_OPCODE_MOVZX_R_RM8==opCode ? "MOVZX" : "MOVSX");
 		cpputil::ExtendString(disasm,8);
 		disasm+=op1.Disassemble();
 		disasm.push_back(',');
 		disasm+=Operand::GetSizeQualifierToDisassembly(op2,8);
 		disasm+=op2.Disassemble();
 		break;
+	case I486_OPCODE_MOVSX_R32_RM16://=   0xBF0F,
 	case I486_OPCODE_MOVZX_R32_RM16://=   0xB70F,
-		disasm="MOVZX";
+		disasm=(I486_OPCODE_MOVZX_R32_RM16==opCode ? "MOVZX" : "MOVSX");
 		cpputil::ExtendString(disasm,8);
 		disasm+=op1.Disassemble();
 		disasm.push_back(',');
@@ -3615,29 +3621,48 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 
 
+	case I486_OPCODE_MOVSX_R_RM8://=      0xBE0F,
 	case I486_OPCODE_MOVZX_R_RM8://=      0xB60F, 8bit to 16or32bit
 		{
 			clocksPassed=3;
 			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,1);
 			if(true!=state.exception)
 			{
-				value.numBytes=1;
-				value.byteData[1]=0;
-				value.byteData[2]=0;
-				value.byteData[3]=0;
+				value.numBytes=4;
+				if(I486_OPCODE_MOVZX_R_RM8==inst.opCode || 0==(value.byteData[0]&0x80))
+				{
+					value.byteData[1]=0;
+					value.byteData[2]=0;
+					value.byteData[3]=0;
+				}
+				else
+				{
+					value.byteData[1]=0xff;
+					value.byteData[2]=0xff;
+					value.byteData[3]=0xff;
+				}
 				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
 			}
 		}
 		break;
+	case I486_OPCODE_MOVSX_R32_RM16://=   0xBF0F,
 	case I486_OPCODE_MOVZX_R32_RM16://=   0xB70F, 16bit to 32bit
 		{
 			clocksPassed=3;
 			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,2);
 			if(true!=state.exception)
 			{
-				value.numBytes=2;
-				value.byteData[2]=0;
-				value.byteData[3]=0;
+				value.numBytes=4;
+				if(I486_OPCODE_MOVZX_R32_RM16==inst.opCode || 0==(value.byteData[1]&0x80))
+				{
+					value.byteData[2]=0;
+					value.byteData[3]=0;
+				}
+				else
+				{
+					value.byteData[2]=0xff;
+					value.byteData[3]=0xff;
+				}
 				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
 			}
 		}
