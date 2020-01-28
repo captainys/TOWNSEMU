@@ -57,10 +57,8 @@ void i486Debugger::SetOneTimeBreakPoint(unsigned int CS,unsigned int EIP)
 	oneTimeBreakPoint.EIP=EIP;
 }
 
-unsigned int i486Debugger::RunOneInstruction(i486DX &cpu,Memory &mem,InOut &io)
+void i486Debugger::BeforeRunOneInstruction(i486DX &cpu,Memory &mem,InOut &io,const i486DX::Instruction &inst)
 {
-	auto clocksPassed=cpu.RunOneInstruction(mem,io);
-
 	CS_EIP cseip;
 	cseip.CS=cpu.state.CS().value;
 	cseip.EIP=cpu.state.EIP;
@@ -71,6 +69,13 @@ unsigned int i486Debugger::RunOneInstruction(i486DX &cpu,Memory &mem,InOut &io)
 		auto disasm=cpu.Disassemble(inst,cpu.state.CS(),cpu.state.EIP,mem);
 		std::cout << disasm << std::endl;
 	}
+}
+
+void i486Debugger::AfterRunOneInstruction(unsigned int clocksPassed,i486DX &cpu,Memory &mem,InOut &io,const i486DX::Instruction &inst)
+{
+	CS_EIP cseip;
+	cseip.CS=cpu.state.CS().value;
+	cseip.EIP=cpu.state.EIP;
 
 	if(breakPoint.find(cseip)!=breakPoint.end())
 	{
@@ -81,6 +86,4 @@ unsigned int i486Debugger::RunOneInstruction(i486DX &cpu,Memory &mem,InOut &io)
 		stop=true;
 		oneTimeBreakPoint.Nullify();
 	}
-
-	return clocksPassed;
 }

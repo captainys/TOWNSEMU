@@ -94,6 +94,7 @@ i486DX::i486DX()
 {
 	Reset();
 	enableCallStack=false;
+	debuggerPtr=nullptr;
 }
 
 void i486DX::Reset(void)

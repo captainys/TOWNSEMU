@@ -3,6 +3,7 @@
 #include "cpputil.h"
 #include "i486.h"
 #include "i486inst.h"
+#include "i486debug.h"
 
 
 
@@ -2211,6 +2212,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	state.holdIRQ=false;
 
 	auto inst=FetchInstruction(state.CS(),state.EIP,mem);
+	if(nullptr!=debuggerPtr)
+	{
+		debuggerPtr->BeforeRunOneInstruction(*this,mem,io,inst);
+	}
 
 	Operand op1,op2;
 	inst.DecodeOperand(inst.addressSize,inst.operandSize,op1,op2);
@@ -4101,6 +4106,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	if(true!=EIPSetByInstruction && true!=abort)
 	{
 		state.EIP+=inst.numBytes;
+	}
+
+	if(nullptr!=debuggerPtr)
+	{
+		debuggerPtr->AfterRunOneInstruction(clocksPassed,*this,mem,io,inst);
 	}
 
 	return clocksPassed;

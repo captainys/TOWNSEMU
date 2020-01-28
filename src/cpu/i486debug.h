@@ -65,7 +65,13 @@ public:
 
 	void SetOneTimeBreakPoint(unsigned int CS,unsigned int EIP);
 
-	unsigned int RunOneInstruction(i486DX &cpu,Memory &mem,InOut &io);
+	/*! Callback from i486DX::RunOneInstruction.
+	*/
+	void BeforeRunOneInstruction(i486DX &cpu,Memory &mem,InOut &io,const i486DX::Instruction &inst);
+
+	/*! Callback from i486DX::RunOneInstruction.
+	*/
+	void AfterRunOneInstruction(unsigned int clocksPassed,i486DX &cpu,Memory &mem,InOut &io,const i486DX::Instruction &inst);
 };
 
 

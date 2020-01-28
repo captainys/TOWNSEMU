@@ -654,6 +654,7 @@ public:
 	};
 
 
+	// Debugger >>
 	class CallStack
 	{
 	public:
@@ -664,6 +665,8 @@ public:
 	};
 	bool enableCallStack;
 	std::vector <CallStack> callStack;
+	class i486Debugger *debuggerPtr;
+
 
 	/*! Make a call-stack entry.
 	*/
@@ -680,6 +683,16 @@ public:
 	/*! Pop an entry from call stack.
 	*/
 	void PopCallStack(void);
+
+	/*! Attaches a debugger.
+	*/
+	void AttachDebugger(i486Debugger *debugger);
+
+	/*! Detaches a debugger.
+	*/
+	void DetachDebugger(void);
+
+	// Debugger <<
 
 
 	State state;
