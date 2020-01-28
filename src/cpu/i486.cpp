@@ -93,6 +93,7 @@ const char *const i486DX::RegToStr[REG_TOTAL_NUMBER_OF_REGISTERS]=
 i486DX::i486DX()
 {
 	Reset();
+	enableCallStack=false;
 }
 
 void i486DX::Reset(void)
@@ -1012,7 +1013,7 @@ void i486DX::RclWord(unsigned int &value,unsigned int ctr)
 void i486DX::RclByte(unsigned int &value,unsigned int ctr)
 {
 	auto prevValue=value;
-	for(int i=0; i<ctr; ++i)
+	for(unsigned int i=0; i<ctr; ++i)
 	{
 		auto orValue=(GetCF() ? 1 : 0);
 		SetCarryFlag(0!=(value&0x80));
@@ -1039,7 +1040,7 @@ void i486DX::RcrWordOrDword(int operandSize,unsigned int &value,unsigned int ctr
 }
 void i486DX::RcrDword(unsigned int &value,unsigned int ctr)
 {
-	for(int i=0; i<ctr; ++i)
+	for(unsigned int i=0; i<ctr; ++i)
 	{
 		unsigned int highBit=(GetCF() ? 0x80000000 : 0);
 		SetCarryFlag(0!=(value&1));
@@ -1053,7 +1054,7 @@ void i486DX::RcrDword(unsigned int &value,unsigned int ctr)
 void i486DX::RcrWord(unsigned int &value,unsigned int ctr)
 {
 	value&=0xffff;
-	for(int i=0; i<ctr; ++i)
+	for(unsigned int i=0; i<ctr; ++i)
 	{
 		unsigned int highBit=(GetCF() ? 0x8000 : 0);
 		SetCarryFlag(0!=(value&1));
@@ -1067,7 +1068,7 @@ void i486DX::RcrWord(unsigned int &value,unsigned int ctr)
 void i486DX::RcrByte(unsigned int &value,unsigned int ctr)
 {
 	value&=0xff;
-	for(int i=0; i<ctr; ++i)
+	for(unsigned int i=0; i<ctr; ++i)
 	{
 		unsigned int highBit=(GetCF() ? 0x80 : 0);
 		SetCarryFlag(0!=(value&1));
@@ -1985,4 +1986,33 @@ bool i486DX::REPEorNECheck(unsigned int &clocksForRep,unsigned int instPrefix,un
 		return (true!=GetZF());
 	}
 	return true;
+}
+
+i486DX::CallStack i486DX::MakeCallStack(
+	    bool isInterrupt,
+	    unsigned int fromCS,unsigned int fromEIP,unsigned int callOpCodeLength,
+	    unsigned int procCS,unsigned int procEIP)
+{
+	CallStack stk;
+	stk.isInterrupt=isInterrupt;
+	stk.fromCS=fromCS;
+	stk.fromEIP=fromEIP;
+	stk.callOpCodeLength=callOpCodeLength;
+	stk.procCS=procCS;
+	stk.procEIP=procEIP;
+	return stk;
+}
+void i486DX::PushCallStack(
+	    bool isInterrupt,
+	    unsigned int fromCS,unsigned int fromEIP,unsigned int callOpCodeLength,
+	    unsigned int procCS,unsigned int procEIP)
+{
+	callStack.push_back(MakeCallStack(isInterrupt,fromCS,fromEIP,callOpCodeLength,procCS,procEIP));
+}
+void i486DX::PopCallStack(void)
+{
+	if(true!=callStack.empty())
+	{
+		callStack.pop_back();
+	}
 }

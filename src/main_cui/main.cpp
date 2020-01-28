@@ -67,6 +67,7 @@ int main(int ac,char *av[])
 	towns.Reset();
 	towns.physMem.takeJISCodeLog=true;
 	towns.io.EnableLog();
+	towns.cpu.enableCallStack=true;
 
 	printf("Virtual Machine Reset.\n");
 

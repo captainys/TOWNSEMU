@@ -654,6 +654,34 @@ public:
 	};
 
 
+	class CallStack
+	{
+	public:
+		bool isInterrupt;
+		unsigned int fromCS,fromEIP;
+		unsigned int callOpCodeLength;
+		unsigned int procCS,procEIP;
+	};
+	bool enableCallStack;
+	std::vector <CallStack> callStack;
+
+	/*! Make a call-stack entry.
+	*/
+	CallStack MakeCallStack(
+	    bool isInterrupt,
+	    unsigned int fromCS,unsigned int fromEIP,unsigned int callOpCodeLength,
+	    unsigned int procCS,unsigned int procEIP);
+	/*! Make a call-stack entry, and push to the call stack.
+	*/
+	void PushCallStack(
+	    bool isInterrupt,
+	    unsigned int fromCS,unsigned int fromEIP,unsigned int callOpCodeLength,
+	    unsigned int procCS,unsigned int procEIP);
+	/*! Pop an entry from call stack.
+	*/
+	void PopCallStack(void);
+
+
 	State state;
 
 	inline unsigned int GetEAX(void) const

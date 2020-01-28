@@ -2721,6 +2721,15 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			}
 			Push(mem,inst.operandSize,state.CS().value);
 			Push(mem,inst.operandSize,state.EIP+inst.numBytes);
+
+			if(true==enableCallStack)
+			{
+				PushCallStack(
+				    false,
+				    state.CS().value,state.EIP,inst.numBytes,
+				    op1.seg,op1.offset);
+			}
+
 			LoadSegmentRegister(state.CS(),op1.seg,mem);
 			state.EIP=op1.offset;
 			EIPSetByInstruction=true;
@@ -2730,16 +2739,26 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_OPCODE_JMP_REL://          0xE9,   // cw or cd
 		{
 			clocksPassed=3;
-			if(I486_OPCODE_CALL_REL==inst.opCode)
-			{
-				Push(mem,inst.operandSize,state.EIP+inst.numBytes);
-			}
+
 			auto offset=inst.GetSimm16or32(inst.operandSize);
 			auto destin=state.EIP+offset+inst.numBytes;
 			if(16==inst.operandSize)
 			{
 				destin&=0xffff;
 			}
+
+			if(I486_OPCODE_CALL_REL==inst.opCode) // Otherwise it is JMP.
+			{
+				Push(mem,inst.operandSize,state.EIP+inst.numBytes);
+				if(true==enableCallStack)
+				{
+					PushCallStack(
+					    false,
+					    state.CS().value,state.EIP,inst.numBytes,
+					    state.CS().value,destin);
+				}
+			}
+
 			state.EIP=destin;
 			EIPSetByInstruction=true;
 		}
@@ -2977,6 +2996,13 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 						if(2==REG) // CALL
 						{
 							Push(mem,inst.operandSize,state.EIP+inst.numBytes);
+							if(true==enableCallStack)
+							{
+								PushCallStack(
+								    false,
+								    state.CS().value,state.EIP,inst.numBytes,
+								    state.CS().value,value.GetAsDword());
+							}
 						}
 						auto destin=value.GetAsDword();
 						if(16==inst.operandSize)
@@ -3916,6 +3942,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		clocksPassed=5;
 		SetIPorEIP(inst.operandSize,Pop(mem,inst.operandSize));
 		EIPSetByInstruction=true;
+		if(enableCallStack)
+		{
+			PopCallStack();
+		}
 		break;
 	case I486_OPCODE_RETF://             0xCB,
 		if(true==IsInRealMode())
@@ -3930,11 +3960,19 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		LoadSegmentRegister(state.CS(),Pop(mem,inst.operandSize),mem);
 		state.ESP()+=inst.GetUimm16(); // Do I need to take &0xffff if address mode is 16? 
 		EIPSetByInstruction=true;
+		if(enableCallStack)
+		{
+			PopCallStack();
+		}
 		break;
 	case I486_OPCODE_RET_I16://          0xC2,
 		clocksPassed=5;
 		SetIPorEIP(inst.operandSize,Pop(mem,inst.operandSize));
 		EIPSetByInstruction=true;
+		if(enableCallStack)
+		{
+			PopCallStack();
+		}
 		break;
 	case I486_OPCODE_RETF_I16://         0xCA,
 		if(true==IsInRealMode())
@@ -3949,6 +3987,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		LoadSegmentRegister(state.CS(),Pop(mem,inst.operandSize),mem);
 		state.ESP()+=inst.GetUimm16(); // Do I need to take &0xffff if address mode is 16? 
 		EIPSetByInstruction=true;
+		if(enableCallStack)
+		{
+			PopCallStack();
+		}
 		break;
 
 
