@@ -2,24 +2,37 @@
 #define TOWNS_CMD_IS_INCLUDED
 /* { */
 
+#include <vector>
+#include <string>
+#include <unordered_map>
 
-class TownsCommand
+class TownsCommandInterpreter
 {
+private:
+	std::unordered_map <std::string,unsigned int> primaryCmdMap;
+	std::unordered_map <std::string,unsigned int> featureMap;
+	std::unordered_map <std::string,unsigned int> printableMap;
+
 public:
 	enum
 	{
 		CMD_NONE,
 
+		CMD_HELP,
+
 		CMD_RUN,
-		CMD_RUN_TO_NEXTLINE,
+		CMD_RETURN_FROM_PROCEDURE,
 
 		CMD_ENABLE,
+		CMD_DISABLE,
 		// ENABLE CMDLOG
 		// DISABLE CMDLOG
 
 		CMD_PRINT,
 
-		CMD_BREAK_POINT,
+		CMD_ADD_BREAKPOINT,
+		CMD_DELETE_BREAKPOINT,
+		CMD_CLEAR_BREAKPOINT,
 	};
 
 	enum
@@ -33,6 +46,7 @@ public:
 	{
 		PRINT_NONE,
 		PRINT_CALLSTACK,
+		PRINT_BREAKPOINT,
 	};
 
 
@@ -41,8 +55,14 @@ public:
 	public:
 		std::string cmdline;
 		std::vector <std::string> argv;
-		int cmd;
+		int primaryCmd;
 	};
+
+	TownsCommandInterpreter();
+
+	void PrintHelp(void) const;
+
+	Command Interpret(const std::string &cmdline) const;
 };
 
 
