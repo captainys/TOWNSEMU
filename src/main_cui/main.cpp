@@ -109,6 +109,7 @@ int main(int ac,char *av[])
 	// 0010:1DDA Keyboard Initialized, and the waited 5ms
 	// 0010:1DED After waiting 5ms again (Keyboard)
 	// 0010:1D56 After waiting 5ms again (Keyboard)
+	// 0010:1D5B Checking Boot Key Combination
 	// 0010:1DDA After waiting 5ms again (Keyboard)
 	// 0010:1E25 End of Keyboard things.
 	// 0010:1DA6 Keyboard initialization again?
@@ -130,7 +131,8 @@ int main(int ac,char *av[])
 	// FC00:0C00 Prob After Checking Memory Card  <- Coming to this address multiple times
 	// FC00:0C68 Must be after checking 11 types of devices?  Or re-trying ROM card 11 times?
 	// FC00:0CA2 RET
-	RunUntil(towns,0xFC00,0x0CA2,false);
+	RunUntil(towns,0x0010,0x1DB0,false);
+	towns.cpu.PrintState();
 
 	std::cout << "Kanji Count:" << towns.physMem.JISCodeLog.size() << std::endl;
 	{
