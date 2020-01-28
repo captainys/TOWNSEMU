@@ -11,10 +11,9 @@ void RunUntil(FMTowns &towns,unsigned int CS,unsigned int EIP,bool silent)
 	unsigned int prevEIP=0x7fffffff;
 	for(;;)
 	{
-		auto inst=towns.FetchInstruction();
-
 		if(true!=silent)
 		{
+			auto inst=towns.FetchInstruction();
 			if(towns.cpu.state.CS().value!=prevCS || towns.cpu.state.EIP!=prevEIP)
 			{
 				auto disasm=towns.cpu.Disassemble(inst,towns.cpu.state.CS(),towns.cpu.state.EIP,towns.mem);
