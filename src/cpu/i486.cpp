@@ -2017,3 +2017,11 @@ void i486DX::PopCallStack(void)
 		callStack.pop_back();
 	}
 }
+void i486DX::AttachDebugger(i486Debugger *debugger)
+{
+	this->debuggerPtr=debugger;
+}
+void i486DX::DetachDebugger(void)
+{
+	debuggerPtr=nullptr;
+}

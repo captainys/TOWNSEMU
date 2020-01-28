@@ -2,6 +2,8 @@
 #include <fstream>
 
 #include "towns.h"
+#include "townsthread.h"
+#include "townscommand.h"
 #include "cpputil.h"
 
 
@@ -34,6 +36,33 @@ void RunUntil(FMTowns &towns,unsigned int CS,unsigned int EIP,bool silent)
 		}
 	}
 }
+
+
+void Run(FMTowns &towns)
+{
+	TownsThread townsThread;
+	std::thread stdTownsThread(&TownsThread::Start,&townsThread,&towns);
+
+	TownsCommandInterpreter cmdInterpreter;
+	for(;;)
+	{
+		std::string cmdline;
+		std::cout << ">";
+		std::getline(std::cin,cmdline);
+
+		auto cmd=cmdInterpreter.Interpret(cmdline);
+		townsThread.vmLock.lock();
+		cmdInterpreter.Execute(townsThread,towns,cmd);
+		townsThread.vmLock.unlock();
+		if(TownsCommandInterpreter::CMD_QUIT==cmd.primaryCmd)
+		{
+			break;
+		}
+	}
+
+	stdTownsThread.join();
+}
+
 
 
 int main(int ac,char *av[])
@@ -83,9 +112,11 @@ int main(int ac,char *av[])
 	};
 	for(auto b : eightBytesCSEIP)
 	{
-		std::cout << cpputil::Uitox(b) << std::endl;
+		std::cout << cpputil::Ubtox(b) << std::endl;
 	}
 
+	Run(towns);
+return 0;
 
 	std::string cmd;
 	// Path Bit2 of ResetReason is on.

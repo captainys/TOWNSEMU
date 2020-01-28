@@ -7,6 +7,7 @@
 
 #include "device.h"
 #include "i486.h"
+#include "i486debug.h"
 #include "inout.h"
 #include "ramrom.h"
 
@@ -83,6 +84,7 @@ public:
 	// Machine State >>
 	State state;
 	i486DX cpu;
+	i486Debugger debugger;
 	TownsPhysicalMemory physMem;
 	IORam ioRAM;
 	TownsCRTC crtc;
@@ -169,6 +171,7 @@ public:
 	i486DX::Instruction FetchInstruction(void) const;
 	std::vector <std::string> GetStackText(unsigned int numBytes) const;
 	void PrintStack(unsigned int numBytes) const;
+	void PrintDisassembly(void) const;
 };
 
 

@@ -6,6 +6,9 @@
 #include <string>
 #include <unordered_map>
 
+#include "towns.h"
+#include "townsthread.h"
+
 class TownsCommandInterpreter
 {
 private:
@@ -18,9 +21,13 @@ public:
 	{
 		CMD_NONE,
 
+		CMD_QUIT,
+
 		CMD_HELP,
 
 		CMD_RUN,
+		CMD_PAUSE,
+
 		CMD_RETURN_FROM_PROCEDURE,
 
 		CMD_ENABLE,
@@ -61,8 +68,17 @@ public:
 	TownsCommandInterpreter();
 
 	void PrintHelp(void) const;
+	void PrintError_TooFewArguments(void) const;
 
 	Command Interpret(const std::string &cmdline) const;
+
+	/*! Executes a command.
+	    VM must be locked before calling.
+	*/
+	void Execute(TownsThread &thr,FMTowns &towns,Command &cmd);
+
+	void Execute_Enable(FMTowns &towns,Command &cmd);
+	void Execute_Disable(FMTowns &towns,Command &cmd);
 };
 
 

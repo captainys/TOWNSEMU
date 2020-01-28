@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "towns_cmd.h"
+#include "townscommand.h"
 #include "cpputil.h"
 
 
@@ -11,8 +11,12 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["HELP"]=CMD_HELP;
 	primaryCmdMap["HLP"]=CMD_HELP;
 	primaryCmdMap["H"]=CMD_HELP;
+	primaryCmdMap["QUIT"]=CMD_QUIT;
+	primaryCmdMap["Q"]=CMD_QUIT;
 	primaryCmdMap["?"]=CMD_HELP;
 	primaryCmdMap["RUN"]=CMD_RUN;
+	primaryCmdMap["PAUSE"]=CMD_PAUSE;
+	primaryCmdMap["PAU"]=CMD_PAUSE;
 	primaryCmdMap["RET"]=CMD_RETURN_FROM_PROCEDURE;
 	primaryCmdMap["RTS"]=CMD_RETURN_FROM_PROCEDURE;
 	primaryCmdMap["ENABLE"]=CMD_ENABLE;
@@ -40,8 +44,12 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "<< Primary Command >>" << std::endl;
 	std::cout << "HELP|HLP|H|?" << std::endl;
 	std::cout << "  Print help." << std::endl;
+	std::cout << "QUIT|Q" << std::endl;
+	std::cout << "  Quit." << std::endl;
 	std::cout << "RUN|RUN EIP|RUN CS:EIP" << std::endl;
 	std::cout << "  Run.  Can specify temporary break point." << std::endl;
+	std::cout << "PAUSE|PAU" << std::endl;
+	std::cout << "  Pause VM." << std::endl;
 	std::cout << "RET|RTS" << std::endl;
 	std::cout << "  Run until return from the current procedure." << std::endl;
 	std::cout << "  Available only when call-stack is enabled." << std::endl;
@@ -75,6 +83,11 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "BREAKPOINT|BRK" << std::endl;
 }
 
+void TownsCommandInterpreter::PrintError_TooFewArguments(void) const
+{
+	std::cout << "Error: Too few arguments." << std::endl;
+}
+
 TownsCommandInterpreter::Command TownsCommandInterpreter::Interpret(const std::string &cmdline) const
 {
 	Command cmd;
@@ -95,4 +108,90 @@ TownsCommandInterpreter::Command TownsCommandInterpreter::Interpret(const std::s
 	}
 
 	return cmd;
+}
+
+void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,Command &cmd)
+{
+	switch(cmd.primaryCmd)
+	{
+	case CMD_HELP:
+		PrintHelp();
+		break;
+	case CMD_QUIT:
+		thr.SetRunMode(TownsThread::RUNMODE_EXIT);
+		break;
+	case CMD_RUN:
+		towns.debugger.stop=false;
+		thr.SetRunMode(TownsThread::RUNMODE_DEBUGGER);
+		break;
+	case CMD_PAUSE:
+		thr.SetRunMode(TownsThread::RUNMODE_PAUSE);
+		towns.cpu.PrintState();
+		towns.PrintStack(32);
+		towns.PrintDisassembly();
+		break;
+	case CMD_RETURN_FROM_PROCEDURE:
+		break;
+
+	case CMD_ENABLE:
+		Execute_Enable(towns,cmd);
+		break;
+	case CMD_DISABLE:
+		Execute_Disable(towns,cmd);
+		break;
+
+	case CMD_PRINT:
+		break;
+
+	case CMD_ADD_BREAKPOINT:
+		break;
+	case CMD_DELETE_BREAKPOINT:
+		break;
+	case CMD_CLEAR_BREAKPOINT:
+		break;
+
+	}
+}
+
+void TownsCommandInterpreter::Execute_Enable(FMTowns &towns,Command &cmd)
+{
+	if(cmd.argv.size()<2)
+	{
+		PrintError_TooFewArguments();
+		return;
+	}
+	auto iter=featureMap.find(cmd.argv[1]);
+	if(featureMap.end()!=iter)
+	{
+		switch(iter->second)
+		{
+		case ENABLE_CMDLOG:
+			break;
+		case ENABLE_DISASSEMBLE_EVERY_INST:
+			towns.debugger.disassembleEveryStep=true;
+			std::cout << "Disassemble_Every_Step is ON." << std::endl;
+			break;
+		}
+	}
+}
+void TownsCommandInterpreter::Execute_Disable(FMTowns &towns,Command &cmd)
+{
+	if(cmd.argv.size()<2)
+	{
+		PrintError_TooFewArguments();
+		return;
+	}
+	auto iter=featureMap.find(cmd.argv[1]);
+	if(featureMap.end()!=iter)
+	{
+		switch(iter->second)
+		{
+		case ENABLE_CMDLOG:
+			break;
+		case ENABLE_DISASSEMBLE_EVERY_INST:
+			towns.debugger.disassembleEveryStep=false;
+			std::cout << "Disassemble_Every_Step is OFF." << std::endl;
+			break;
+		}
+	}
 }
