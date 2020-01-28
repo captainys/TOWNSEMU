@@ -967,6 +967,65 @@ void i486DX::XorByte(unsigned int &value1,unsigned int value2)
 	SetParityFlag(CheckParity(value1&0xFF));
 }
 
+void i486DX::RclWordOrDword(int operandSize,unsigned int &value,unsigned int ctr)
+{
+	if(16==operandSize)
+	{
+		RclWord(value,ctr);
+	}
+	else
+	{
+		RclDword(value,ctr);
+	}
+}
+void i486DX::RclDword(unsigned int &value,unsigned int ctr)
+{
+	auto prevValue=value;
+	for(unsigned int i=0; i<ctr; ++i)
+	{
+		auto orValue=(GetCF() ? 1 : 0);
+		SetCarryFlag(0!=(value&0x80000000));
+		prevValue=value;
+		value=(value<<1)|orValue;
+	}
+	if(1==ctr)
+	{
+		SetOverflowFlag((prevValue&0x80000000)!=(value&0x80000000));
+	}
+}
+void i486DX::RclWord(unsigned int &value,unsigned int ctr)
+{
+	auto prevValue=value;
+	for(unsigned int i=0; i<ctr; ++i)
+	{
+		auto orValue=(GetCF() ? 1 : 0);
+		SetCarryFlag(0!=(value&0x8000));
+		prevValue=value;
+		value=(value<<1)|orValue;
+	}
+	value&=0xffff;
+	if(1==ctr)
+	{
+		SetOverflowFlag((prevValue&0x8000)!=(value&0x8000));
+	}
+}
+void i486DX::RclByte(unsigned int &value,unsigned int ctr)
+{
+	auto prevValue=value;
+	for(int i=0; i<ctr; ++i)
+	{
+		auto orValue=(GetCF() ? 1 : 0);
+		SetCarryFlag(0!=(value&0x80));
+		prevValue=value;
+		value=(value<<1)|orValue;
+	}
+	value&=0xff;
+	if(1==ctr)
+	{
+		SetOverflowFlag((prevValue&0x80)!=(value&0x80));
+	}
+}
+
 void i486DX::RcrWordOrDword(int operandSize,unsigned int &value,unsigned int ctr)
 {
 	if(16==operandSize)

@@ -110,6 +110,7 @@ int main(int ac,char *av[])
 	// 0010:1DED After waiting 5ms again (Keyboard)
 	// 0010:1D56 After waiting 5ms again (Keyboard)
 	// 0010:1D5B Checking Boot Key Combination
+	// 0010:1DB0 Key combination stored in EBX
 	// 0010:1DDA After waiting 5ms again (Keyboard)
 	// 0010:1E25 End of Keyboard things.
 	// 0010:1DA6 Keyboard initialization again?

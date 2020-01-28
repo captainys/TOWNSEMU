@@ -82,6 +82,7 @@ void TownsKeyboard::PushFifo(unsigned char code1,unsigned char code2)
 			{
 				fifoBuf[i]=fifoBuf[i+1];
 			}
+			--nFifoFilled;
 			return ret;
 		}
 		break;

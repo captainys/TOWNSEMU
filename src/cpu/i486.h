@@ -1544,6 +1544,15 @@ public:
 	void XorWord(unsigned int &value1,unsigned int value2);
 	void XorByte(unsigned int &value1,unsigned int value2);
 
+	/*! RCL a value and set OF and CF flags accoring to the result.
+	    OF is only set if ctr==1.
+	    operandSize needs to be 16 or 32.
+	*/ 
+	void RclWordOrDword(int operandSize,unsigned int &value,unsigned int ctr);
+	void RclDword(unsigned int &value,unsigned int ctr);
+	void RclWord(unsigned int &value,unsigned int ctr);
+	void RclByte(unsigned int &value,unsigned int ctr);
+
 	/*! RCR a value and set OF and CF flags accoring to the result.
 	    OF is only set if ctr==1.
 	    operandSize needs to be 16 or 32.

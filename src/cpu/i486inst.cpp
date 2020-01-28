@@ -2254,11 +2254,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
 				break;
 			case 2:// "RCL";
-				Abort("C1 RCL not implemented yet.");
+				RclByte(i,ctr);
 				clocksPassed=(OPER_ADDR==op1.operandType ? 10 : 11);  // See reminder #20200123-1
 				break;
 			case 3:// "RCR";
-				Abort("C1 RCR not implemented yet.");
+				RcrByte(i,ctr);
 				clocksPassed=(OPER_ADDR==op1.operandType ? 10 : 11);  // See reminder #20200123-1
 				break;
 			case 4:// "SHL";
@@ -2316,7 +2316,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
 				break;
 			case 2:// "RCL";
-				Abort("C1 RCL not implemented yet.");
+				RclWordOrDword(inst.operandSize,i,ctr);
 				clocksPassed=(OPER_ADDR==op1.operandType ? 10 : 11);  // See reminder #20200123-1
 				break;
 			case 3:// "RCR";
