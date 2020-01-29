@@ -27,6 +27,7 @@ public:
 
 		CMD_RUN,
 		CMD_PAUSE,
+		CMD_WAIT,
 
 		CMD_RETURN_FROM_PROCEDURE,
 
@@ -64,6 +65,8 @@ public:
 		std::vector <std::string> argv;
 		int primaryCmd;
 	};
+
+	bool waitVM;
 
 	TownsCommandInterpreter();
 

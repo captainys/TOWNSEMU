@@ -9,6 +9,8 @@
 
 TownsCommandInterpreter::TownsCommandInterpreter()
 {
+	waitVM=false;
+
 	primaryCmdMap["HELP"]=CMD_HELP;
 	primaryCmdMap["HLP"]=CMD_HELP;
 	primaryCmdMap["H"]=CMD_HELP;
@@ -17,6 +19,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["?"]=CMD_HELP;
 	primaryCmdMap["RUN"]=CMD_RUN;
 	primaryCmdMap["PAUSE"]=CMD_PAUSE;
+	primaryCmdMap["WAIT"]=CMD_WAIT;
 	primaryCmdMap["PAU"]=CMD_PAUSE;
 	primaryCmdMap["RET"]=CMD_RETURN_FROM_PROCEDURE;
 	primaryCmdMap["RTS"]=CMD_RETURN_FROM_PROCEDURE;
@@ -51,6 +54,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Run.  Can specify temporary break point." << std::endl;
 	std::cout << "PAUSE|PAU" << std::endl;
 	std::cout << "  Pause VM." << std::endl;
+	std::cout << "WAIT" << std::endl;
+	std::cout << "  Wait until VM becomes PAUSE state." << std::endl;
 	std::cout << "RET|RTS" << std::endl;
 	std::cout << "  Run until return from the current procedure." << std::endl;
 	std::cout << "  Available only when call-stack is enabled." << std::endl;
@@ -137,6 +142,9 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,Command &c
 	case CMD_PAUSE:
 		thr.SetRunMode(TownsThread::RUNMODE_PAUSE);
 		thr.PrintStatus(towns);
+		break;
+	case CMD_WAIT:
+		waitVM=true;
 		break;
 	case CMD_RETURN_FROM_PROCEDURE:
 		break;

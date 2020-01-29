@@ -1,5 +1,7 @@
 #include <iostream>
 #include <fstream>
+#include <thread>
+#include <chrono>
 
 #include "towns.h"
 #include "townsthread.h"
@@ -57,6 +59,22 @@ void Run(FMTowns &towns)
 		if(TownsCommandInterpreter::CMD_QUIT==cmd.primaryCmd)
 		{
 			break;
+		}
+		if(true==cmdInterpreter.waitVM)
+		{
+			for(;;)
+			{
+				unsigned int vmState;
+				townsThread.vmLock.lock();
+				vmState=townsThread.GetRunMode();
+				townsThread.vmLock.unlock();
+				if(TownsThread::RUNMODE_PAUSE==vmState ||
+				   TownsThread::RUNMODE_EXIT==vmState)
+				{
+					break;
+				}
+				std::this_thread::sleep_for(std::chrono::milliseconds(10));
+			}
 		}
 	}
 

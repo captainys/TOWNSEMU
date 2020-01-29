@@ -32,3 +32,10 @@ Video Out Control Register (Address Latch 0472H:0473H, Data 0474H to 0477H)
 Unless bit1 of register-04 read is 0, boot ROM goes into infinite loop.
 Meaning is unknown.  For the time being, Register 0004 always returns 0.
 
+
+
+#2020/01/29-1
+When Digital-Palette register FD98-FDA0 is written, 
+it should set bit7 of 044CH Digital Palette Modify Flag.  The flat should be reset when it is read.
+This I/O is also used by Sprite controller.  Should implement when implementing sprites.
+
