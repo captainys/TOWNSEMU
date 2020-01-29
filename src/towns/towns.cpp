@@ -247,3 +247,33 @@ void FMTowns::PrintDisassembly(void) const
 	auto disasm=cpu.Disassemble(inst,cpu.state.CS(),cpu.state.EIP,mem);
 	std::cout << disasm << std::endl;
 }
+
+std::vector <std::string> FMTowns::GetRealModeIntVectorsText(void) const
+{
+	std::vector <std::string> text;
+	for(int i=0; i<256; i+=4)
+	{
+		std::string str;
+		for(int j=0; j<4; ++j)
+		{
+			if(0<j)
+			{
+				str+=" | ";
+			}
+			auto ij=i+j;
+			str+=cpputil::Ubtox(ij)+" ";
+			unsigned int offset=physMem.state.RAM[ij*4]|((unsigned int)physMem.state.RAM[ij*4+1]<<8);
+			unsigned int seg=physMem.state.RAM[ij*4+2]|((unsigned int)physMem.state.RAM[ij*4+3]<<8);
+			str+=cpputil::Ustox(seg)+":"+cpputil::Ustox(offset);
+		}
+		text.push_back(str);
+	}
+	return text;
+}
+void FMTowns::DumpRealModeIntVectors(void) const
+{
+	for(auto s : GetRealModeIntVectorsText())
+	{
+		std::cout << s << std::endl;
+	}
+}

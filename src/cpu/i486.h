@@ -1182,11 +1182,11 @@ public:
 			auto DI=state.EDI();
 			if(true==GetDF())
 			{
-				--DI;
+				DI-=operandSize/8;
 			}
 			else
 			{
-				++DI;
+				DI+=operandSize/8;
 			}
 			state.EDI()=(state.EDI()&0xffff0000|(DI&0xffff));
 		}
@@ -1211,11 +1211,11 @@ public:
 			auto SI=state.ESI();
 			if(true==GetDF())
 			{
-				--SI;
+				SI-=operandSize/8;
 			}
 			else
 			{
-				++SI;
+				SI+=operandSize/8;
 			}
 			state.ESI()=(state.ESI()&0xffff0000|(SI&0xffff));
 		}

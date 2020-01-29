@@ -55,7 +55,7 @@ public:
 		    A 64-bit integer should be able to hold decades.
 		    I think 64-bit is long enough.  So, I make it signed int.
 		*/
-		long long int townsTime;
+		unsigned long long int townsTime;
 
 		/*! Number of clocks times 1000 since last update of townsTime.
 		    After running one instruction, townsTime may not be exactly the same
@@ -182,6 +182,8 @@ public:
 	std::vector <std::string> GetStackText(unsigned int numBytes) const;
 	void PrintStack(unsigned int numBytes) const;
 	void PrintDisassembly(void) const;
+	std::vector <std::string> GetRealModeIntVectorsText(void) const;
+	void DumpRealModeIntVectors(void) const;
 };
 
 

@@ -45,14 +45,15 @@ void TownsThread::Start(FMTowns *townsPtr)
 			{
 				clocksPassed+=townsPtr->RunOneInstruction();
 				townsPtr->CheckRenderingTimer();
+				if(true==townsPtr->debugger.stop)
+				{
+					PrintStatus(*townsPtr);
+					std::cout << ">";
+					runMode=RUNMODE_PAUSE;
+					break;
+				}
 			}
 			if(true==townsPtr->CheckAbort())
-			{
-				PrintStatus(*townsPtr);
-				std::cout << ">";
-				runMode=RUNMODE_PAUSE;
-			}
-			if(true==townsPtr->debugger.stop)
 			{
 				PrintStatus(*townsPtr);
 				std::cout << ">";

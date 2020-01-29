@@ -176,6 +176,7 @@ return 0;
 	// 0010:0492 After all RAM check?
 	// FC00:078A Call wait with C350H 50000us Twice
 	// FC00:0794 After wait
+	// FC00:04AA STOS for writing INT Vector
 	// FC00:05A3 After INT vector is set.
 	// 0010:197D MOVSX
 	// Memory Card IO 490H, 491H [2] pp.786

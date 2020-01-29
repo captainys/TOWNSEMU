@@ -15,6 +15,7 @@ private:
 	std::unordered_map <std::string,unsigned int> primaryCmdMap;
 	std::unordered_map <std::string,unsigned int> featureMap;
 	std::unordered_map <std::string,unsigned int> printableMap;
+	std::unordered_map <std::string,unsigned int> dumpableMap;
 
 public:
 	enum
@@ -37,6 +38,7 @@ public:
 		// DISABLE CMDLOG
 
 		CMD_PRINT,
+		CMD_DUMP,
 
 		CMD_ADD_BREAKPOINT,
 		CMD_DELETE_BREAKPOINT,
@@ -57,6 +59,16 @@ public:
 		PRINT_BREAKPOINT,
 	};
 
+	enum
+	{
+		DUMP_REAL_MODE_INT_VECTOR
+	};
+
+	enum
+	{
+		ERROR_TOO_FEW_ARGS,
+		ERROR_DUMP_TARGET_UNDEFINED,
+	};
 
 	class Command
 	{
@@ -71,7 +83,7 @@ public:
 	TownsCommandInterpreter();
 
 	void PrintHelp(void) const;
-	void PrintError_TooFewArguments(void) const;
+	void PrintError(int errCode) const;
 
 	Command Interpret(const std::string &cmdline) const;
 
@@ -82,6 +94,8 @@ public:
 
 	void Execute_Enable(FMTowns &towns,Command &cmd);
 	void Execute_Disable(FMTowns &towns,Command &cmd);
+
+	void Execute_Dump(FMTowns &towns,Command &cmd);
 };
 
 

@@ -29,6 +29,8 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["DIS"]=CMD_DISABLE;
 	primaryCmdMap["PRINT"]=CMD_PRINT;
 	primaryCmdMap["PRI"]=CMD_PRINT;
+	primaryCmdMap["DUMP"]=CMD_DUMP;
+	primaryCmdMap["DM"]=CMD_DUMP;
 	primaryCmdMap["BRK"]=CMD_ADD_BREAKPOINT;
 	primaryCmdMap["BREAK"]=CMD_ADD_BREAKPOINT;
 	primaryCmdMap["DLBRK"]=CMD_DELETE_BREAKPOINT;
@@ -40,6 +42,8 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	printableMap["CALLSTACK"]=PRINT_CALLSTACK;
 	printableMap["BREAKPOINT"]=PRINT_BREAKPOINT;
 	printableMap["BRK"]=PRINT_BREAKPOINT;
+
+	dumpableMap["RINTVEC"]=DUMP_REAL_MODE_INT_VECTOR;
 }
 
 
@@ -65,6 +69,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Disable a feature." << std::endl;
 	std::cout << "PRINT info|PRI info" << std::endl;
 	std::cout << "  Print information." << std::endl;
+	std::cout << "DUMP info|DM info" << std::endl;
+	std::cout << "  Dump information." << std::endl;
 	std::cout << "BREAK EIP|BRK EIP" << std::endl;
 	std::cout << "BREAK CS:EIP|BRK CS:EIP" << std::endl;
 	std::cout << "  Add a break point." << std::endl;
@@ -87,11 +93,28 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "<< Information that can be printed >>" << std::endl;
 	std::cout << "CALLSTACK" << std::endl;
 	std::cout << "BREAKPOINT|BRK" << std::endl;
+
+	std::cout << "" << std::endl;
+
+	std::cout << "<< Information that can be dumped >>" << std::endl;
+	std::cout << "RINTVEC" << std::endl;
+	std::cout << "  Real-mode Interrupt Vectors" << std::endl;
 }
 
-void TownsCommandInterpreter::PrintError_TooFewArguments(void) const
+void TownsCommandInterpreter::PrintError(int errCode) const
 {
-	std::cout << "Error: Too few arguments." << std::endl;
+	switch(errCode)
+	{
+	case ERROR_TOO_FEW_ARGS:
+		std::cout << "Error: Too few arguments." << std::endl;
+		break;
+	case ERROR_DUMP_TARGET_UNDEFINED:
+		std::cout << "Error: Dump what?" << std::endl;
+		break;
+	default:
+		std::cout << "Error" << std::endl;
+		break;
+	}
 }
 
 TownsCommandInterpreter::Command TownsCommandInterpreter::Interpret(const std::string &cmdline) const
@@ -158,6 +181,9 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,Command &c
 
 	case CMD_PRINT:
 		break;
+	case CMD_DUMP:
+		Execute_Dump(towns,cmd);
+		break;
 
 	case CMD_ADD_BREAKPOINT:
 		break;
@@ -173,7 +199,7 @@ void TownsCommandInterpreter::Execute_Enable(FMTowns &towns,Command &cmd)
 {
 	if(cmd.argv.size()<2)
 	{
-		PrintError_TooFewArguments();
+		PrintError(ERROR_TOO_FEW_ARGS);
 		return;
 	}
 	auto iter=featureMap.find(cmd.argv[1]);
@@ -194,7 +220,7 @@ void TownsCommandInterpreter::Execute_Disable(FMTowns &towns,Command &cmd)
 {
 	if(cmd.argv.size()<2)
 	{
-		PrintError_TooFewArguments();
+		PrintError(ERROR_TOO_FEW_ARGS);
 		return;
 	}
 	auto iter=featureMap.find(cmd.argv[1]);
@@ -209,5 +235,29 @@ void TownsCommandInterpreter::Execute_Disable(FMTowns &towns,Command &cmd)
 			std::cout << "Disassemble_Every_Step is OFF." << std::endl;
 			break;
 		}
+	}
+}
+
+void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
+{
+	if(cmd.argv.size()<2)
+	{
+		PrintError(ERROR_TOO_FEW_ARGS);
+		return;
+	}
+	auto dumpIter=dumpableMap.find(cmd.argv[1]);
+	if(dumpIter!=dumpableMap.end())
+	{
+		switch(dumpIter->second)
+		{
+		case DUMP_REAL_MODE_INT_VECTOR:
+			towns.DumpRealModeIntVectors();
+			break;
+		}
+	}
+	else
+	{
+		PrintError(ERROR_DUMP_TARGET_UNDEFINED);
+		return;
 	}
 }
