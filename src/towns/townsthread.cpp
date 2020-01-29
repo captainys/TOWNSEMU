@@ -28,6 +28,7 @@ void TownsThread::Start(FMTowns *townsPtr)
 			    )
 			{
 				clocksPassed+=townsPtr->RunOneInstruction();
+				townsPtr->CheckRenderingTimer();
 			}
 			if(true==townsPtr->CheckAbort())
 			{
@@ -43,6 +44,7 @@ void TownsThread::Start(FMTowns *townsPtr)
 			    )
 			{
 				clocksPassed+=townsPtr->RunOneInstruction();
+				townsPtr->CheckRenderingTimer();
 			}
 			if(true==townsPtr->CheckAbort())
 			{
@@ -62,6 +64,7 @@ void TownsThread::Start(FMTowns *townsPtr)
 			if(true!=townsPtr->CheckAbort())
 			{
 				townsPtr->RunOneInstruction();
+				townsPtr->CheckRenderingTimer();
 			}
 			if(true==townsPtr->CheckAbort())
 			{

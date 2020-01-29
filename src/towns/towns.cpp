@@ -32,6 +32,7 @@ FMTowns::Variable::Variable()
 void FMTowns::Variable::Reset(void)
 {
 	// freeRunTimerShift should survive Reset.
+	nextRenderingTime=0;
 }
 
 
@@ -183,13 +184,25 @@ void FMTowns::Reset(void)
 unsigned int FMTowns::RunOneInstruction(void)
 {
 	auto clocksPassed=cpu.RunOneInstruction(mem,io);
-	state.clockBalance+=clocksPassed;
-	if(state.freq<=state.clockBalance)
-	{
-		state.townsTime+=(state.clockBalance/state.freq);
-		state.clockBalance%=state.freq;
-	}
+	state.clockBalance+=clocksPassed*1000;
+
+	// Since last update, clockBalance*1000/freq nano seconds have passed.
+	// Eg.  66MHz ->  66 clocks passed means 1 micro second.
+	//                clockBalance is 66000.
+	//                clockBalance/freq=1000.  1000 nano seconds.
+	state.townsTime+=(state.clockBalance/state.freq);
+	state.clockBalance%=state.freq;
 	return clocksPassed;
+}
+
+bool FMTowns::CheckRenderingTimer(void)
+{
+	if(var.nextRenderingTime<=state.townsTime)
+	{
+		var.nextRenderingTime=state.townsTime+TOWNS_RENDERING_FREQUENCY;
+		return true;
+	}
+	return false;
 }
 
 

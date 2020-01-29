@@ -49,12 +49,16 @@ public:
 	class State
 	{
 	public:
-		/*! Time passed since power on in micro seconds.
+		/*! Time passed since power on in nano seconds.
+		    Initially I thought to make it micro seconds, but may be too coarse.
+		    And, a 32-bit integer is good for 4,000,000,000 nano seconds = 4 seconds.
+		    A 64-bit integer should be able to hold decades.
 		    I think 64-bit is long enough.  So, I make it signed int.
 		*/
 		long long int townsTime;
 
-		/*! After running one instruction, townsTime may not be exactly the same
+		/*! Number of clocks times 1000 since last update of townsTime.
+		    After running one instruction, townsTime may not be exactly the same
 		    as the real time (or whatever requested time.)
 		    This variable remembers how many clocks townsTime is ahead of the real time.
 		*/
@@ -77,6 +81,7 @@ public:
 	{
 	public:
 		unsigned int freeRunTimerShift;
+		unsigned long long int nextRenderingTime;
 		Variable();
 		void Reset(void);
 	};
@@ -154,6 +159,11 @@ public:
 	/*! Run one instruction and returns the number of clocks passed. */
 	unsigned int RunOneInstruction(void);
 
+	/*! Check Rendering Timer and render if townsTime catches up with the timer.
+	    It will increment rendering timer.
+	    Returns true if rendered.
+	*/
+	bool CheckRenderingTimer(void);
 
 
 	/*! I/O access for internal devices. */

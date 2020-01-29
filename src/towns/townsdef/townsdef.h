@@ -2,6 +2,11 @@
 #define TOWNSDEF_IS_INCLUDED
 /* { */
 
+
+const int PER_SECOND=1000000000;  // Unit: Nano Seconds
+const int TOWNS_RENDERING_FREQUENCY=PER_SECOND/60;
+
+
 enum
 {
 	TOWNSTYPE_1_2F, // 1F,2F

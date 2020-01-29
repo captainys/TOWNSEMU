@@ -25,6 +25,23 @@ void TownsPhysicalMemory::State::Reset(void)
 	FMRDisplayMode=0x77; // [2] pp.158
 	FMRVRAMWriteOffset=0;
 	kanjiROMAccess.Reset();
+
+	for(auto &c : RAM)
+	{
+		c=0;
+	}
+	for(auto &c : VRAM)
+	{
+		c=0;
+	}
+	for(auto &c : spriteRAM)
+	{
+		c=0;
+	}
+	for(auto &c : waveRAM)
+	{
+		c=0;
+	}
 }
 
 
