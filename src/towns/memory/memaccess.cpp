@@ -251,42 +251,74 @@ void TownsMemAccess::SetPhysicalMemoryPointer(TownsPhysicalMemory *ptr)
 /* virtual */ unsigned int TownsMainRAMorFMRVRAMAccess::FetchByte(unsigned int physAddr) const
 {
 	if(true==physMemPtr->state.FMRVRAM &&
-	   ((TOWNS_MEMIO_1_LOW<=physAddr && physAddr<=TOWNS_MEMIO_1_HIGH) ||
-	    (TOWNS_MEMIO_2_LOW<=physAddr && physAddr<=TOWNS_MEMIO_2_HIGH)))
+	   0xC0000<=physAddr && physAddr<=0xF0000)
 	{
-		switch(physAddr)
+		if((TOWNS_MEMIO_1_LOW<=physAddr && physAddr<=TOWNS_MEMIO_1_HIGH) ||
+		   (TOWNS_MEMIO_2_LOW<=physAddr && physAddr<=TOWNS_MEMIO_2_HIGH))
 		{
-		case TOWNSMEMIO_MIX://                0x000CFF80, // Called Dummy [2] pp.22, pp.158
-		case TOWNSMEMIO_FMR_GVRAMUPDATE://    0x000CFF81, // [2] pp.22,pp.159
-		case TOWNSMEMIO_FMR_GVRAMDISPMODE://  0x000CFF82, // [2] pp.22,pp.158
-		case TOWNSMEMIO_FMR_GVRAMPAGESEL://   0x000CFF83, // [2] pp.22,pp.159
-			break;
-
-		case TOWNSMEMIO_FIRQ://               0x000CFF84, // [2] pp.22,pp.95 Always zero in FM TOWNS
-			return 0;
-
-		case TOWNSMEMIO_FMR_HSYNC_VSYNC://    0x000CFF86, // [2] pp.22,pp.160
-			break;
-
-		case TOWNSMEMIO_KANJI_JISCODE_HIGH:// 0x000CFF94,
-			return 0x80;  // 
-		case TOWNSMEMIO_KANJI_JISCODE_LOW://  0x000CFF95,
-			break;
-		case TOWNSMEMIO_KANJI_PTN_HIGH://     0x000CFF96,
-			break;
-		case TOWNSMEMIO_KANJI_PTN_LOW ://     0x000CFF97,
-			if(true==physMemPtr->takeJISCodeLog && 0==physMemPtr->state.kanjiROMAccess.row)
+			switch(physAddr)
 			{
-				physMemPtr->JISCodeLog.push_back(physMemPtr->state.kanjiROMAccess.JISCodeHigh);
-				physMemPtr->JISCodeLog.push_back(physMemPtr->state.kanjiROMAccess.JISCodeLow);
+			case TOWNSMEMIO_MIX://                0x000CFF80, // Called Dummy [2] pp.22, pp.158
+				break;
+			case TOWNSMEMIO_FMR_GVRAMMASK://      0x000CFF81, // [2] pp.22,pp.159
+				return physMemPtr->state.FMRVRAMMask;
+			case TOWNSMEMIO_FMR_GVRAMDISPMODE://  0x000CFF82, // [2] pp.22,pp.158
+				break;
+			case TOWNSMEMIO_FMR_GVRAMPAGESEL://   0x000CFF83, // [2] pp.22,pp.159
+				break;
+
+			case TOWNSMEMIO_FIRQ://               0x000CFF84, // [2] pp.22,pp.95 Always zero in FM TOWNS
+				return 0;
+
+			case TOWNSMEMIO_FMR_HSYNC_VSYNC://    0x000CFF86, // [2] pp.22,pp.160
+				break;
+
+			case TOWNSMEMIO_KANJI_JISCODE_HIGH:// 0x000CFF94,
+				return 0x80;  // 
+			case TOWNSMEMIO_KANJI_JISCODE_LOW://  0x000CFF95,
+				break;
+			case TOWNSMEMIO_KANJI_PTN_HIGH://     0x000CFF96,
+				break;
+			case TOWNSMEMIO_KANJI_PTN_LOW ://     0x000CFF97,
+				if(true==physMemPtr->takeJISCodeLog && 0==physMemPtr->state.kanjiROMAccess.row)
+				{
+					physMemPtr->JISCodeLog.push_back(physMemPtr->state.kanjiROMAccess.JISCodeHigh);
+					physMemPtr->JISCodeLog.push_back(physMemPtr->state.kanjiROMAccess.JISCodeLow);
+				}
+				physMemPtr->state.kanjiROMAccess.row=(physMemPtr->state.kanjiROMAccess.row+1)&0x0F;
+				break;
 			}
-			physMemPtr->state.kanjiROMAccess.row=(physMemPtr->state.kanjiROMAccess.row+1)&0x0F;
-			break;
+		}
+		else if(0xC0000<=physAddr && physAddr<0xD8000) /// FMR VRAM Plane Access
+		{
+			const auto FMRAddr=physAddr-0xC000;
+			const auto VRAMAddr=(FMRAddr<<2)+physMemPtr->state.FMRVRAMWriteOffset;
+			auto shift=(physMemPtr->state.FMRVRAMMask>>6)&3;
+			unsigned char andPtnHigh=(0x10<<shift);
+			unsigned char andPtnLow=(1<<shift);
+			unsigned char orPtnHigh=0x80;
+			unsigned char orPtnLow=0x40;
+			unsigned char data=0;
+			for(int i=0; i<4; ++i)
+			{
+				if(0!=(physMemPtr->state.VRAM[VRAMAddr+i]&andPtnHigh))
+				{
+					data|=orPtnHigh;
+				}
+				if(0!=(physMemPtr->state.VRAM[VRAMAddr+i]&andPtnLow))
+				{
+					data|=orPtnLow;
+				}
+				orPtnHigh>>=2;
+				orPtnLow>>=2;
+			}
+			return data;
+		}
+		else if(0xC8000<=physAddr && physAddr<0xD0000) /// FMR I/OCVRAM Access
+		{
 		}
 	}
-	else if(true==physMemPtr->state.FMRVRAM && 0xC0000<=physAddr && physAddr<0xD0000) /// FMR VRAM Plane Access
-	{
-	}
+	
 	else if(true==physMemPtr->state.dicRom && 0xD0000<=physAddr && physAddr<0xD8000) // Dic ROM
 	{
 	}
@@ -301,36 +333,78 @@ void TownsMemAccess::SetPhysicalMemoryPointer(TownsPhysicalMemory *ptr)
 }
 /* virtual */ void TownsMainRAMorFMRVRAMAccess::StoreByte(unsigned int physAddr,unsigned char data)
 {
-	if((TOWNS_MEMIO_1_LOW<=physAddr && physAddr<=TOWNS_MEMIO_1_HIGH) ||
-	   (TOWNS_MEMIO_2_LOW<=physAddr && physAddr<=TOWNS_MEMIO_2_HIGH))
+	if(true==physMemPtr->state.FMRVRAM &&
+	   0xC0000<=physAddr && physAddr<0xF0000)
 	{
-		switch(physAddr)
+		if((TOWNS_MEMIO_1_LOW<=physAddr && physAddr<=TOWNS_MEMIO_1_HIGH) ||
+		   (TOWNS_MEMIO_2_LOW<=physAddr && physAddr<=TOWNS_MEMIO_2_HIGH))
 		{
-		case TOWNSMEMIO_MIX://                0x000CFF80, // Called Dummy [2] pp.22, pp.158
-		case TOWNSMEMIO_FMR_GVRAMUPDATE://    0x000CFF81, // [2] pp.22,pp.159
-		case TOWNSMEMIO_FMR_GVRAMDISPMODE://  0x000CFF82, // [2] pp.22,pp.158
-		case TOWNSMEMIO_FMR_GVRAMPAGESEL://   0x000CFF83, // [2] pp.22,pp.159
-			break;
+			switch(physAddr)
+			{
+			case TOWNSMEMIO_MIX://                0x000CFF80, // Called Dummy [2] pp.22, pp.158
+				break;
+			case TOWNSMEMIO_FMR_GVRAMMASK://      0x000CFF81, // [2] pp.22,pp.159
+				physMemPtr->state.FMRVRAMMask=data;
+				break;
+			case TOWNSMEMIO_FMR_GVRAMDISPMODE://  0x000CFF82, // [2] pp.22,pp.158
+				physMemPtr->state.FMRDisplayMode=data;
+				break;
+			case TOWNSMEMIO_FMR_GVRAMPAGESEL://   0x000CFF83, // [2] pp.22,pp.159
+				physMemPtr->state.FMRVRAMWriteOffset=(0!=(data&0x10) ? 0x40000 : 0);
+				break;
 
-		case TOWNSMEMIO_FIRQ://               0x000CFF84, // [2] pp.22,pp.95 Always zero in FM TOWNS
-			break; // No write access
+			case TOWNSMEMIO_FIRQ://               0x000CFF84, // [2] pp.22,pp.95 Always zero in FM TOWNS
+				break; // No write access
 
-		case TOWNSMEMIO_FMR_HSYNC_VSYNC://    0x000CFF86, // [2] pp.22,pp.160
-			break;
+			case TOWNSMEMIO_FMR_HSYNC_VSYNC://    0x000CFF86, // [2] pp.22,pp.160
+				break;
 
-		case TOWNSMEMIO_KANJI_JISCODE_HIGH:// 0x000CFF94,
-			physMemPtr->state.kanjiROMAccess.JISCodeHigh=data;
-			break;
-		case TOWNSMEMIO_KANJI_JISCODE_LOW://  0x000CFF95,
-			physMemPtr->state.kanjiROMAccess.JISCodeLow=data;
-			physMemPtr->state.kanjiROMAccess.row=0;
-			break;
-		case TOWNSMEMIO_KANJI_PTN_HIGH://     0x000CFF96,
-			// Write access enabled? [2] pp.95
-			break;
-		case TOWNSMEMIO_KANJI_PTN_LOW://      0x000CFF97,
-			// Write access enabled? [2] pp.95
-			break;
+			case TOWNSMEMIO_KANJI_JISCODE_HIGH:// 0x000CFF94,
+				physMemPtr->state.kanjiROMAccess.JISCodeHigh=data;
+				break;
+			case TOWNSMEMIO_KANJI_JISCODE_LOW://  0x000CFF95,
+				physMemPtr->state.kanjiROMAccess.JISCodeLow=data;
+				physMemPtr->state.kanjiROMAccess.row=0;
+				break;
+			case TOWNSMEMIO_KANJI_PTN_HIGH://     0x000CFF96,
+				// Write access enabled? [2] pp.95
+				break;
+			case TOWNSMEMIO_KANJI_PTN_LOW://      0x000CFF97,
+				// Write access enabled? [2] pp.95
+				break;
+			}
+		}
+		else if(0xC0000<=physAddr && physAddr<0xC8000)
+		{
+			// Assume screen mode 1 and 2.
+			//   Logical Resolution 640x819
+			//   Visible Resolution 640x400 or 640x200
+			// FMRVram 8pixels per byte, 640pixels=80bytes.
+			// TownsVRAM 2pixels per byte, 640pixels=320bytes.
+			// Just multiply 4 to get TownsVRAM address.
+			const auto FMRAddr=physAddr-0xC000;
+			const auto VRAMAddr=(FMRAddr<<2)+physMemPtr->state.FMRVRAMWriteOffset;
+
+			unsigned char maskLow=(physMemPtr->state.FMRVRAMMask&0x0F);
+			auto maskHigh=(maskLow<<4);
+			auto andPtn=~(maskLow|maskHigh);
+
+			unsigned char bitTestHigh=0x80;
+			unsigned char bitTestLow=0x40;
+			for(int i=0; i<4; ++i)
+			{
+				physMemPtr->state.VRAM[VRAMAddr+i]&=andPtn;
+				if(0!=(data&bitTestHigh))
+				{
+					physMemPtr->state.VRAM[VRAMAddr+i]|=maskHigh;
+				}
+				if(0!=(data&bitTestLow))
+				{
+					physMemPtr->state.VRAM[VRAMAddr+i]|=maskLow;
+				}
+				bitTestHigh>>=2;
+				bitTestLow>>=2;
+			}
 		}
 	}
 	else

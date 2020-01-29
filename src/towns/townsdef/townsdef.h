@@ -50,12 +50,20 @@ enum
 	TOWNSIO_KEYBOARD_DATA=       0x600, // [2] pp.234
 	TOWNSIO_KEYBOARD_STATUS_CMD= 0x602, // [2] pp.231
 	TOWNSIO_KEYBOARD_IRQ=        0x604, // [2] pp.236
+
+	TOWNSIO_FMR_VRAMMASK=        0xFF81, 
+	// Not official.  But 2MX BIOS is obviously writing it.
+	// It apparently works same ax memory-mapped I/O 000CFF81H.
+	TOWNSIO_FMR_VRAMDISPLAYMODE= 0xFF82, 
+	// Not official.  But, since FMR_VRAMMASK is also mapped to I/O FF81H, FF82H may be too.
+	TOWNSIO_FMR_VRAMPAGESEL=     0xFF83, 
+	// Not official.  But, since FMR_VRAMMASK is also mapped to I/O FF81H, FF83H may be too.
 };
 
 enum
 {
 	TOWNSMEMIO_MIX=                0x000CFF80, // Called Dummy [2] pp.22, pp.158
-	TOWNSMEMIO_FMR_GVRAMUPDATE=    0x000CFF81, // [2] pp.22,pp.159
+	TOWNSMEMIO_FMR_GVRAMMASK=      0x000CFF81, // [2] pp.22,pp.159
 	TOWNSMEMIO_FMR_GVRAMDISPMODE=  0x000CFF82, // [2] pp.22,pp.158
 	TOWNSMEMIO_FMR_GVRAMPAGESEL=   0x000CFF83, // [2] pp.22,pp.159
 	TOWNSMEMIO_FIRQ=               0x000CFF84, // [2] pp.22,pp.95 Always zero in FM TOWNS

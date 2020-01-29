@@ -113,6 +113,9 @@ FMTowns::FMTowns() : crtc(this)
 	io.AddDevice(&physMem,TOWNSIO_FMR_VRAM_OR_MAINRAM);
 	io.AddDevice(&physMem,TOWNSIO_SYSROM_DICROM);
 	io.AddDevice(&physMem,TOWNSIO_MEMSIZE);
+	io.AddDevice(&physMem,TOWNSIO_FMR_VRAMMASK);
+	io.AddDevice(&physMem,TOWNSIO_FMR_VRAMDISPLAYMODE);
+	io.AddDevice(&physMem,TOWNSIO_FMR_VRAMPAGESEL);
 
 	PowerOn();
 }

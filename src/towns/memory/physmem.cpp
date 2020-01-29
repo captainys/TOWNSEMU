@@ -21,6 +21,9 @@ void TownsPhysicalMemory::State::Reset(void)
 	sysRomMapping=true;
 	dicRom=false;
 	FMRVRAM=true; // [2] pp.91
+	FMRVRAMMask=0x0F; // [2] pp.159
+	FMRDisplayMode=0x77; // [2] pp.158
+	FMRVRAMWriteOffset=0;
 	kanjiROMAccess.Reset();
 }
 
@@ -38,6 +41,15 @@ void TownsPhysicalMemory::State::Reset(void)
 	case TOWNSIO_SYSROM_DICROM: // 0x480
 		state.sysRomMapping=(0==(data&2));
 		state.dicRom=(0!=(data&1));
+		break;
+	case TOWNSIO_FMR_VRAMMASK: // 0xFF81
+		state.FMRVRAMMask=data;
+		break;
+	case TOWNSIO_FMR_VRAMDISPLAYMODE:
+		state.FMRDisplayMode=data;
+		break;
+	case TOWNSIO_FMR_VRAMPAGESEL:
+		state.FMRVRAMWriteOffset=(0!=(data&0x10) ? 0x40000 : 0);
 		break;
 	}
 }
@@ -63,6 +75,8 @@ void TownsPhysicalMemory::State::Reset(void)
 		break;
 	case TOWNSIO_MEMSIZE:
 		return (unsigned int)(state.RAM.size()/(1024*1024));
+	case TOWNSIO_FMR_VRAMMASK: // 0xFF81
+		return state.FMRVRAMMask;
 	}
 	return 0xFF;
 }

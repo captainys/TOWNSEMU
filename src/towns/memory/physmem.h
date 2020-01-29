@@ -27,6 +27,9 @@ public:
 		bool sysRomMapping;
 		bool dicRom;
 		bool FMRVRAM;
+		unsigned int FMRVRAMMask;
+		unsigned int FMRDisplayMode;
+		unsigned int FMRVRAMWriteOffset;
 
 		std::vector <unsigned char> RAM;
 		std::vector <unsigned char> VRAM;
