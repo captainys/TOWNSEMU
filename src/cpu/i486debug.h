@@ -9,44 +9,8 @@
 class i486Debugger
 {
 public:
-	class CS_EIP
-	{
-	public:
-		unsigned int CS;
-		unsigned int EIP;
+	typedef i486DX::FarPointer CS_EIP;
 
-		inline unsigned long long int Combine(void) const
-		{
-			unsigned long long LCS=CS;
-			return (LCS<<32)|EIP;
-		}
-		void Nullify(void);
-
-		bool operator==(const CS_EIP rv) const
-		{
-			return this->Combine()==rv.Combine();
-		}
-		bool operator!=(const CS_EIP rv) const
-		{
-			return this->Combine()!=rv.Combine();
-		}
-		bool operator<(const CS_EIP rv) const
-		{
-			return this->Combine()<rv.Combine();
-		}
-		bool operator>(const CS_EIP rv) const
-		{
-			return this->Combine()>rv.Combine();
-		}
-		bool operator<=(const CS_EIP rv) const
-		{
-			return this->Combine()<=rv.Combine();
-		}
-		bool operator>=(const CS_EIP rv) const
-		{
-			return this->Combine()>=rv.Combine();
-		}
-	};
 	std::set <CS_EIP> breakPoint;
 	CS_EIP oneTimeBreakPoint;
 

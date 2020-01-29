@@ -125,6 +125,53 @@ public:
 		unsigned short selector;
 		unsigned short attrib;
 	};
+	class FarPointer
+	{
+	public:
+		unsigned int SEG;
+		unsigned int OFFSET;
+
+		enum
+		{
+			NO_SEG=0xFFFF0000,
+		};
+
+		inline unsigned long long int Combine(void) const
+		{
+			unsigned long long LSEG=SEG;
+			return (LSEG<<32)|OFFSET;
+		}
+		inline void Nullify(void)
+		{
+			SEG=0;
+			OFFSET=0;
+		}
+
+		bool operator==(const FarPointer rv) const
+		{
+			return this->Combine()==rv.Combine();
+		}
+		bool operator!=(const FarPointer rv) const
+		{
+			return this->Combine()!=rv.Combine();
+		}
+		bool operator<(const FarPointer rv) const
+		{
+			return this->Combine()<rv.Combine();
+		}
+		bool operator>(const FarPointer rv) const
+		{
+			return this->Combine()>rv.Combine();
+		}
+		bool operator<=(const FarPointer rv) const
+		{
+			return this->Combine()<=rv.Combine();
+		}
+		bool operator>=(const FarPointer rv) const
+		{
+			return this->Combine()>=rv.Combine();
+		}
+	};
 	class State
 	{
 	public:

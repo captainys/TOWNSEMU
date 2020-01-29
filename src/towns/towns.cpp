@@ -65,6 +65,7 @@ FMTowns::FMTowns() : crtc(this)
 
 	dicROMandDicRAMAccess.SetPhysicalMemoryPointer(&physMem);
 	mem.AddAccess(&dicROMandDicRAMAccess,0x000D0000,0x000EFFFF);
+	mem.AddAccess(&dicROMandDicRAMAccess,0xC2080000,0xC20FFFFF);
 	mem.AddAccess(&dicROMandDicRAMAccess,0xC2140000,0xC2141FFF);
 
 	mainRAMorSysROMAccess.SetPhysicalMemoryPointer(&physMem);

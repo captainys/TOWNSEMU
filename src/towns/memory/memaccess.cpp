@@ -391,6 +391,11 @@ void TownsMemAccess::SetPhysicalMemoryPointer(TownsPhysicalMemory *ptr)
 
 /* virtual */ unsigned int TownsOsROMAccess::FetchByte(unsigned int physAddr) const
 {
+	physAddr-=0xC2000000;
+	if(physAddr<physMemPtr->dosRom.size())
+	{
+		return physMemPtr->dosRom[physAddr];
+	}
 	return 0xff;
 }
 /* virtual */ void TownsOsROMAccess::StoreByte(unsigned int physAddr,unsigned char data)

@@ -31,6 +31,8 @@ void TownsThread::Start(FMTowns *townsPtr)
 			}
 			if(true==townsPtr->CheckAbort())
 			{
+				PrintStatus(*townsPtr);
+				std::cout << ">";
 				runMode=RUNMODE_PAUSE;
 			}
 			break;
@@ -44,10 +46,14 @@ void TownsThread::Start(FMTowns *townsPtr)
 			}
 			if(true==townsPtr->CheckAbort())
 			{
+				PrintStatus(*townsPtr);
+				std::cout << ">";
 				runMode=RUNMODE_PAUSE;
 			}
 			if(true==townsPtr->debugger.stop)
 			{
+				PrintStatus(*townsPtr);
+				std::cout << ">";
 				runMode=RUNMODE_PAUSE;
 			}
 			break;
@@ -59,6 +65,8 @@ void TownsThread::Start(FMTowns *townsPtr)
 			}
 			if(true==townsPtr->CheckAbort())
 			{
+				PrintStatus(*townsPtr);
+				std::cout << ">";
 				runMode=RUNMODE_PAUSE;
 			}
 			break;
@@ -85,4 +93,11 @@ int TownsThread::GetRunMode(void) const
 void TownsThread::SetRunMode(int nextRunMode)
 {
 	runMode=nextRunMode;
+}
+
+void TownsThread::PrintStatus(const FMTowns &towns) const
+{
+	towns.cpu.PrintState();
+	towns.PrintStack(32);
+	towns.PrintDisassembly();
 }

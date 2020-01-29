@@ -39,6 +39,8 @@ public:
 	    The thread that calls this function must take vmLock before calling. 
 	*/
 	void SetRunMode(int runModevoid);
+
+	void PrintStatus(const FMTowns &towns) const;
 };
 
 

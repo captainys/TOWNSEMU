@@ -78,11 +78,46 @@ bool TownsPhysicalMemory::LoadROMImages(const char dirName[])
 	std::string fName;
 	fName=cpputil::MakeFullPathName(dirName,"FMT_SYS.ROM");
 	sysRom=cpputil::ReadBinaryFile(fName);
-	if(0==sysRom.size())
+	if(256*1024!=sysRom.size())
 	{
-		Abort("Cannot read FMT_SYS.ROM");
+		Abort("Cannot read FMT_SYS.ROM or incorrect file size.");
 		return false;
 	}
+
+	fName=cpputil::MakeFullPathName(dirName,"FMT_DOS.ROM");
+	dosRom=cpputil::ReadBinaryFile(fName);
+	if(512*1024!=dosRom.size())
+	{
+		Abort("Cannot read FMT_DOS.ROM or incorrect file size.");
+		return false;
+	}
+
+	fName=cpputil::MakeFullPathName(dirName,"FMT_FNT.ROM");
+	fontRom=cpputil::ReadBinaryFile(fName);
+	if(256*1024!=fontRom.size())
+	{
+		Abort("Cannot read FMT_FNT.ROM or incorrect file size.");
+		return false;
+	}
+
+	fName=cpputil::MakeFullPathName(dirName,"FMT_F20.ROM");
+	font20Rom=cpputil::ReadBinaryFile(fName);
+	if(512*1024!=font20Rom.size())
+	{
+		Abort("Cannot read FMT_F20.ROM or incorrect file size.");
+		return false;
+	}
+
+	fName=cpputil::MakeFullPathName(dirName,"FMT_DIC.ROM");
+	dicRom=cpputil::ReadBinaryFile(fName);
+	if(512*1024!=dicRom.size())
+	{
+		Abort("Cannot read FMT_DIC.ROM or incorrect file size.");
+		return false;
+	}
+
+	fName=cpputil::MakeFullPathName(dirName,"MYTOWNS.ROM");
+	serialRom=cpputil::ReadBinaryFile(fName);
 
 	return true;
 }

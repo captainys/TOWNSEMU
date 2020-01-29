@@ -84,6 +84,7 @@ int main(int ac,char *av[])
 	FMTowns towns;
 	if(true!=towns.LoadROMImages(av[1]))
 	{
+		std::cout << towns.physMem.abortReason << std::endl;
 		return 1;
 	}
 

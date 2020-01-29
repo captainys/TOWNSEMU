@@ -2,6 +2,7 @@
 #include <fstream>
 
 #include "townscommand.h"
+#include "townscommandutil.h"
 #include "cpputil.h"
 
 
@@ -123,12 +124,19 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,Command &c
 	case CMD_RUN:
 		towns.debugger.stop=false;
 		thr.SetRunMode(TownsThread::RUNMODE_DEBUGGER);
+		if(1<cmd.argv.size())
+		{
+			auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1]);
+			if(farPtr.SEG==i486DX::FarPointer::NO_SEG)
+			{
+				farPtr.SEG=towns.cpu.state.CS().value;
+			}
+			towns.debugger.oneTimeBreakPoint=farPtr;
+		}
 		break;
 	case CMD_PAUSE:
 		thr.SetRunMode(TownsThread::RUNMODE_PAUSE);
-		towns.cpu.PrintState();
-		towns.PrintStack(32);
-		towns.PrintDisassembly();
+		thr.PrintStatus(towns);
 		break;
 	case CMD_RETURN_FROM_PROCEDURE:
 		break;

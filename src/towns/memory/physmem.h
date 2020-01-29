@@ -39,7 +39,7 @@ public:
 	};
 
 	State state;
-	std::vector <unsigned char> sysRom;
+	std::vector <unsigned char> sysRom,dosRom,fontRom,font20Rom,dicRom,serialRom;
 
 	bool takeJISCodeLog;
 	std::vector <unsigned char> JISCodeLog; // Log KanjiROM Read Access
