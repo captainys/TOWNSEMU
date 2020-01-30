@@ -278,6 +278,10 @@ void TownsMemAccess::SetPhysicalMemoryPointer(TownsPhysicalMemory *ptr)
 			case TOWNSMEMIO_KANJI_JISCODE_LOW://  0x000CFF95,
 				break;
 			case TOWNSMEMIO_KANJI_PTN_HIGH://     0x000CFF96,
+				{
+					auto ROMCode=(physMemPtr->state.kanjiROMAccess.FontROMCode())&8191;
+					return physMemPtr->fontRom[32*ROMCode+physMemPtr->state.kanjiROMAccess.row*2];
+				}
 				break;
 			case TOWNSMEMIO_KANJI_PTN_LOW ://     0x000CFF97,
 				if(true==physMemPtr->takeJISCodeLog && 0==physMemPtr->state.kanjiROMAccess.row)
@@ -285,7 +289,12 @@ void TownsMemAccess::SetPhysicalMemoryPointer(TownsPhysicalMemory *ptr)
 					physMemPtr->JISCodeLog.push_back(physMemPtr->state.kanjiROMAccess.JISCodeHigh);
 					physMemPtr->JISCodeLog.push_back(physMemPtr->state.kanjiROMAccess.JISCodeLow);
 				}
-				physMemPtr->state.kanjiROMAccess.row=(physMemPtr->state.kanjiROMAccess.row+1)&0x0F;
+				{
+					auto ROMCode=physMemPtr->state.kanjiROMAccess.FontROMCode()&8191;
+					auto byteData=physMemPtr->fontRom[32*ROMCode+physMemPtr->state.kanjiROMAccess.row*2+1];
+					physMemPtr->state.kanjiROMAccess.row=(physMemPtr->state.kanjiROMAccess.row+1)&0x0F;
+					return byteData;
+				}
 				break;
 			}
 		}
