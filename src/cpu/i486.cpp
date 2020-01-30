@@ -151,6 +151,25 @@ std::vector <std::string> i486DX::GetStateText(void) const
 	    );
 
 	text.push_back(
+	     "CS="+cpputil::Ustox(state.CS().value)
+	    +"(LIN:"+cpputil::Uitox(state.CS().baseLinearAddr)+")"
+	    +"  "
+	     "DS="+cpputil::Ustox(state.DS().value)
+	    +"(LIN:"+cpputil::Uitox(state.DS().baseLinearAddr)+")"
+	    +"  "
+	     "ES="+cpputil::Ustox(state.ES().value)
+	    +"(LIN:"+cpputil::Uitox(state.ES().baseLinearAddr)+")"
+	    +"  ");
+
+	text.push_back(
+	     "FS="+cpputil::Ustox(state.FS().value)
+	    +"(LIN:"+cpputil::Uitox(state.FS().baseLinearAddr)+")"
+	    +"  "
+	     "GS="+cpputil::Ustox(state.GS().value)
+	    +"(LIN:"+cpputil::Uitox(state.GS().baseLinearAddr)+")"
+	    +"  ");
+
+	text.push_back(
 	     "CR0="+cpputil::Uitox(state.CR[0])
 	    +"  CR1="+cpputil::Uitox(state.CR[1])
 	    +"  CR2="+cpputil::Uitox(state.CR[2])
