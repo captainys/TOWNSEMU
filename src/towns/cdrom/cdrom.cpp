@@ -96,6 +96,13 @@ TownsCDROM::TownsCDROM()
 		state.cmdReceived=false;
 		state.nParamQueue=0;
 		state.nStatusQueue=0;
+
+		// Tentatively Drive Not Ready.
+		state.nStatusQueue=4;
+		state.statusQueue[0]=0x21;
+		state.statusQueue[1]=0x07;
+		state.statusQueue[2]=0;
+		state.statusQueue[3]=0;
 	}
 }
 /* virtual */ unsigned int TownsCDROM::IOReadByte(unsigned int ioport)

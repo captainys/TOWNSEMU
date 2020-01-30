@@ -24,6 +24,27 @@ public:
 		STATE_QUEUE_LEN=4,
 	};
 
+	// Reference [3] 
+	enum
+	{
+		// Take &0x9F with byte data written to 04C2H
+		CDCMD_SEEK=       0x00,
+		CDCMD_MODE2READ=  0x01,
+		CDCMD_MODE1READ=  0x02,
+		CDCMD_RAWREAD=    0x03,
+		CDCMD_CDDAPLAY=   0x04,
+		CDCMD_TOCREAD=    0x05,
+		CDCMD_SUBQREAD=   0x06,
+		CDCMD_UNKNOWN1=   0x1F, // NOP and requst status? I guess?
+
+		CDCMD_SETSTATE=   0x80,
+		CDCMD_CDDASET=    0x81,
+		CDCMD_CDDASTOP=   0x84,
+		CDCMD_CDDAPAUSE=  0x85,
+		CDCMD_UNKNOWN2=   0x86,
+		CDCMD_CDDARESUME= 0x87,
+	};
+
 	class State
 	{
 	public:

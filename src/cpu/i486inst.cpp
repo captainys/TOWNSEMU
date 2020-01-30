@@ -1176,6 +1176,9 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		case 4:
 			disasm=DisassembleTypicalOneOperand("MUL",op1,8);
 			break;
+		case 6:
+			disasm=DisassembleTypicalOneOperand("DIV",op1,8);
+			break;
 		default:
 			disasm=DisassembleTypicalOneOperand(cpputil::Ubtox(opCode)+"?",op1,8);
 			break;
@@ -2381,8 +2384,35 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				}
 			}
 			break;
+		case 6: // DIV
+			{
+				clocksPassed=16;
+				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,1);
+				if(0==value.byteData[0])
+				{
+					Interrupt(0); // [1] pp.26-28
+					// I don't think INT 0 was issued unless division by zero.
+					// I thought it just overflew if quo didn't fit in the target register, am I wrong?
+				}
+				else
+				{
+					unsigned int quo=GetAX()/value.byteData[0];
+					unsigned int rem=GetAX()%value.byteData[0];
+					SetAL(quo);
+					SetAH(rem);
+				}
+			}
+			break;
 		default:
-			Abort("Undefined REG for "+cpputil::Ubtox(inst.opCode));
+			{
+				std::string msg;
+				msg="Undefined REG for ";
+				msg+=cpputil::Ubtox(inst.opCode);
+				msg+="(REG=";
+				msg+=cpputil::Ubtox(inst.GetREG());
+				msg+=")";
+				Abort(msg);
+			}
 			clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
 			break;
 		}
