@@ -27,6 +27,7 @@ public:
 		CMD_HELP,
 
 		CMD_RUN,
+		CMD_RUN_ONE_INSTRUCTION,
 		CMD_PAUSE,
 		CMD_WAIT,
 

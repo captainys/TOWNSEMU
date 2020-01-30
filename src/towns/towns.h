@@ -165,6 +165,11 @@ public:
 	*/
 	bool CheckRenderingTimer(class TownsRender &render,class Outside_World &world);
 
+	/*! Force render regardless of the rendering timer.
+	    It does not update the rendering timer.
+	*/
+	void ForceRender(class TownsRender &render,class Outside_World &world);
+
 
 	/*! I/O access for internal devices. */
 	virtual void IOWriteByte(unsigned int ioport,unsigned int data);

@@ -27,8 +27,7 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 		switch(runMode)
 		{
 		case RUNMODE_PAUSE:
-			outside_world->Render(render.GetImage());
-			outside_world->DevicePolling();
+			townsPtr->ForceRender(render,*outside_world);
 			break;
 		case RUNMODE_FREE:
 			townsPtr->cpu.DetachDebugger();
@@ -76,14 +75,10 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 			if(true!=townsPtr->CheckAbort())
 			{
 				townsPtr->RunOneInstruction();
-				townsPtr->CheckRenderingTimer(render,*outside_world);
 			}
-			if(true==townsPtr->CheckAbort())
-			{
-				PrintStatus(*townsPtr);
-				std::cout << ">";
-				runMode=RUNMODE_PAUSE;
-			}
+			PrintStatus(*townsPtr);
+			std::cout << ">";
+			runMode=RUNMODE_PAUSE;
 			break;
 		case RUNMODE_EXIT:
 			terminate=true;

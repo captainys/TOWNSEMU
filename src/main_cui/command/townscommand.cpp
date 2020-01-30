@@ -35,6 +35,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["BREAK"]=CMD_ADD_BREAKPOINT;
 	primaryCmdMap["DLBRK"]=CMD_DELETE_BREAKPOINT;
 	primaryCmdMap["CLBRK"]=CMD_CLEAR_BREAKPOINT;
+	primaryCmdMap["T"]=CMD_RUN_ONE_INSTRUCTION;
 
 	featureMap["CMDLOG"]=ENABLE_CMDLOG;
 	featureMap["AUTODISASM"]=ENABLE_DISASSEMBLE_EVERY_INST;
@@ -56,6 +57,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Quit." << std::endl;
 	std::cout << "RUN|RUN EIP|RUN CS:EIP" << std::endl;
 	std::cout << "  Run.  Can specify temporary break point." << std::endl;
+	std::cout << "T" << std::endl;
+	std::cout << "  Trace.  Run one instruction." << std::endl;
 	std::cout << "PAUSE|PAU" << std::endl;
 	std::cout << "  Pause VM." << std::endl;
 	std::cout << "WAIT" << std::endl;
@@ -170,6 +173,13 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,Command &c
 		waitVM=true;
 		break;
 	case CMD_RETURN_FROM_PROCEDURE:
+		if(0<towns.cpu.callStack.size())
+		{
+			auto s=towns.cpu.callStack.back();
+			towns.debugger.stop=false;
+			towns.debugger.SetOneTimeBreakPoint(s.fromCS,s.fromEIP+s.callOpCodeLength);
+			thr.SetRunMode(TownsThread::RUNMODE_DEBUGGER);
+		}
 		break;
 
 	case CMD_ENABLE:
@@ -184,6 +194,10 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,Command &c
 		break;
 	case CMD_DUMP:
 		Execute_Dump(towns,cmd);
+		break;
+
+	case CMD_RUN_ONE_INSTRUCTION:
+		thr.SetRunMode(TownsThread::RUNMODE_ONE_INSTRUCTION);
 		break;
 
 	case CMD_ADD_BREAKPOINT:
