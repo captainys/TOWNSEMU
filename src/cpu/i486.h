@@ -519,7 +519,11 @@ public:
 		/*! Decode operand and returns the number of bytes.
 		*/
 		unsigned int Decode(int addressSize,int dataSize,const unsigned char operand[]);
-		/*! Decode operand and returns the number of bytes.
+		/*! Decode operand MODR/M byte.
+		    MODR/M byte only tells a register number between 0 and 7.
+		    Same number like number 0 can be AL, AX, or EAX.
+		    This function identifies which of possible registers based on dataSize.
+		    Subsequent StoreOperandValue will correctly store a value to the identified register.
 		*/
 		void DecodeMODR_MForRegister(int dataSize,unsigned char MODR_M);
 		/*! Decode operand and returns the number of bytes.
@@ -1671,6 +1675,11 @@ public:
 	/*! Evaluates an operand.
 	    destinationBytes is non zero if the operand that receives the value has a known size.
 	    If the destination size depends on the source size, destinationBytes should be zero.
+
+		When operandType is OPER_ADDR, destinationBytes parameter defines the number of bytes fetched from the memory.
+		It is significant when FWORD PTR (4 bytes in Real Mode, 6 bytes in Protected Mode) needs to be
+		fetched.  First 2 or 4 bytes from FWORD PTR will give offset, and the last 2 bytes give segment.
+		In which case returned OperandValue will return correct value for GetAsDword, GetAsWord, and GetFwordSegment.
 	*/
 	OperandValue EvaluateOperand(
 	    const Memory &mem,int addressSize,int segmentOverride,const Operand &op,int destinationBytes) const;

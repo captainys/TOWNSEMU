@@ -388,6 +388,15 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		break;
 
 
+	case I486_OPCODE_LDS://              0xC5,
+	case I486_OPCODE_LSS://              0xB20F,
+	case I486_OPCODE_LES://              0xC4,
+	case I486_OPCODE_LFS://              0xB40F,
+	case I486_OPCODE_LGS://              0xB50F,
+		FetchOperandRM(inst,seg,offset,mem);
+		break;
+
+
 	case I486_OPCODE_LODSB://            0xAC,
 	case I486_OPCODE_LODS://             0xAD,
 		break;
@@ -800,6 +809,16 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 
 
 	case I486_OPCODE_LEA://=              0x8D,
+		op1.DecodeMODR_MForRegister(operandSize,operand[0]);
+		op2.Decode(addressSize,operandSize,operand);
+		break;
+
+
+	case I486_OPCODE_LDS://              0xC5,
+	case I486_OPCODE_LSS://              0xB20F,
+	case I486_OPCODE_LES://              0xC4,
+	case I486_OPCODE_LFS://              0xB40F,
+	case I486_OPCODE_LGS://              0xB50F,
 		op1.DecodeMODR_MForRegister(operandSize,operand[0]);
 		op2.Decode(addressSize,operandSize,operand);
 		break;
@@ -1675,6 +1694,33 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 			disasm+=Operand::GetSizeQualifierToDisassembly(op2,addressSize);
 		}
 		disasm+=op2.Disassemble();
+		break;
+
+
+	case I486_OPCODE_LDS://              0xC5,
+	case I486_OPCODE_LSS://              0xB20F,
+	case I486_OPCODE_LES://              0xC4,
+	case I486_OPCODE_LFS://              0xB40F,
+	case I486_OPCODE_LGS://              0xB50F,
+		switch(opCode)
+		{
+		case I486_OPCODE_LDS://              0xC5,
+			disasm="LDS";
+			break;
+		case I486_OPCODE_LSS://              0xB20F,
+			disasm="LSS";
+			break;
+		case I486_OPCODE_LES://              0xC4,
+			disasm="LES";
+			break;
+		case I486_OPCODE_LFS://              0xB40F,
+			disasm="LFS";
+			break;
+		case I486_OPCODE_LGS://              0xB50F,
+			disasm="LGS";
+			break;
+		}
+		disasm=DisassembleTypicalTwoOperands(disasm,op1,op2);
 		break;
 
 
@@ -3513,6 +3559,53 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		else
 		{
 			RaiseException(EXCEPTION_UD,0);
+		}
+		break;
+
+
+	case I486_OPCODE_LDS://              0xC5,
+	case I486_OPCODE_LSS://              0xB20F,
+	case I486_OPCODE_LES://              0xC4,
+	case I486_OPCODE_LFS://              0xB40F,
+	case I486_OPCODE_LGS://              0xB50F,
+		if(OPER_ADDR==op2.operandType)
+		{
+			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,(inst.operandSize+16)/8);
+			if(true!=state.exception)
+			{
+				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+				auto seg=value.GetFwordSegment();
+				switch(inst.opCode)
+				{
+				case I486_OPCODE_LDS://              0xC5,
+					LoadSegmentRegister(state.DS(),seg,mem);
+					break;
+				case I486_OPCODE_LSS://              0xB20F,
+					if(0==seg)
+					{
+						RaiseException(EXCEPTION_GP,0);
+					}
+					else
+					{
+						LoadSegmentRegister(state.SS(),seg,mem);
+					}
+					break;
+				case I486_OPCODE_LES://              0xC4,
+					LoadSegmentRegister(state.ES(),seg,mem);
+					break;
+				case I486_OPCODE_LFS://              0xB40F,
+					LoadSegmentRegister(state.FS(),seg,mem);
+					break;
+				case I486_OPCODE_LGS://              0xB50F,
+					LoadSegmentRegister(state.GS(),seg,mem);
+					break;
+				}
+			}
+			clocksPassed=9;  // It is described as 6/12, but what makes it 6 clocks or 12 clocks is not given.  Quaaaaack!!!!
+		}
+		else
+		{
+			RaiseException(EXCEPTION_GP,0);
 		}
 		break;
 

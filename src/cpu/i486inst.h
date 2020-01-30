@@ -212,6 +212,13 @@ enum
 	I486_OPCODE_LEA=              0x8D,
 
 
+	I486_OPCODE_LDS=              0xC5,
+	I486_OPCODE_LSS=              0xB20F,
+	I486_OPCODE_LES=              0xC4,
+	I486_OPCODE_LFS=              0xB40F,
+	I486_OPCODE_LGS=              0xB50F,
+
+
 	I486_OPCODE_LODSB=            0xAC,
 	I486_OPCODE_LODS=             0xAD,
 
