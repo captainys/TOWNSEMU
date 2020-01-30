@@ -203,6 +203,7 @@ bool FMTowns::CheckRenderingTimer(TownsRender &render,Outside_World &world)
 	{
 		render.BuildImage(crtc,physMem);
 		world.Render(render.GetImage());
+		var.nextRenderingTime=state.townsTime+TOWNS_RENDERING_FREQUENCY;
 		return true;
 	}
 	return false;

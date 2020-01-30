@@ -382,7 +382,7 @@ void TownsMemAccess::SetPhysicalMemoryPointer(TownsPhysicalMemory *ptr)
 			// FMRVram 8pixels per byte, 640pixels=80bytes.
 			// TownsVRAM 2pixels per byte, 640pixels=320bytes.
 			// Just multiply 4 to get TownsVRAM address.
-			const auto FMRAddr=physAddr-0xC000;
+			const auto FMRAddr=physAddr-0xC0000;
 			const auto VRAMAddr=(FMRAddr<<2)+physMemPtr->state.FMRVRAMWriteOffset;
 
 			unsigned char maskLow=(physMemPtr->state.FMRVRAMMask&0x0F);
