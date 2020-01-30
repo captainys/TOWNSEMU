@@ -20,7 +20,10 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 	TownsRender render;
 	for(;true!=terminate;)
 	{
+		int runModeCopy=0;
+
 		vmLock.lock();
+		runModeCopy=runMode;
 		switch(runMode)
 		{
 		case RUNMODE_PAUSE:
@@ -91,10 +94,14 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 			break;
 		}
 		vmLock.unlock();
-		if(RUNMODE_PAUSE==runMode)
+
+		if(RUNMODE_PAUSE==runModeCopy)
 		{
 			std::this_thread::sleep_for(std::chrono::milliseconds(10));
 		}
+
+		signalLock.lock();
+		signalLock.unlock();
 	}
 }
 

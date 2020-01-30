@@ -16,7 +16,7 @@ private:
 	int runMode;
 
 public:
-	mutable std::mutex vmLock;
+	mutable std::mutex vmLock,signalLock;
 
 	enum
 	{

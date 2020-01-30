@@ -180,6 +180,7 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,Command &c
 		break;
 
 	case CMD_PRINT:
+		Execute_Print(towns,cmd);
 		break;
 	case CMD_DUMP:
 		Execute_Dump(towns,cmd);
@@ -252,6 +253,30 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 		{
 		case DUMP_REAL_MODE_INT_VECTOR:
 			towns.DumpRealModeIntVectors();
+			break;
+		}
+	}
+	else
+	{
+		PrintError(ERROR_DUMP_TARGET_UNDEFINED);
+		return;
+	}
+}
+
+void TownsCommandInterpreter::Execute_Print(FMTowns &towns,Command &cmd)
+{
+	if(cmd.argv.size()<2)
+	{
+		PrintError(ERROR_TOO_FEW_ARGS);
+		return;
+	}
+	auto printIter=printableMap.find(cmd.argv[1]);
+	if(printIter!=printableMap.end())
+	{
+		switch(printIter->second)
+		{
+		case PRINT_CALLSTACK:
+			towns.PrintCallStack();
 			break;
 		}
 	}

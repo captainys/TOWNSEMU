@@ -184,6 +184,8 @@ public:
 	void PrintDisassembly(void) const;
 	std::vector <std::string> GetRealModeIntVectorsText(void) const;
 	void DumpRealModeIntVectors(void) const;
+	std::vector <std::string> GetCallStackText(void) const;
+	void PrintCallStack(void) const;
 };
 
 

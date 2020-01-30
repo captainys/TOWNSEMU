@@ -54,9 +54,11 @@ void Run(FMTowns &towns,Outside_World &outside_world)
 		std::getline(std::cin,cmdline);
 
 		auto cmd=cmdInterpreter.Interpret(cmdline);
+		townsThread.signalLock.lock();
 		townsThread.vmLock.lock();
 		cmdInterpreter.Execute(townsThread,towns,cmd);
 		townsThread.vmLock.unlock();
+		townsThread.signalLock.unlock();
 		if(TownsCommandInterpreter::CMD_QUIT==cmd.primaryCmd)
 		{
 			break;

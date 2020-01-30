@@ -36,6 +36,10 @@ public:
 	/*! Callback from i486DX::RunOneInstruction.
 	*/
 	void AfterRunOneInstruction(unsigned int clocksPassed,i486DX &cpu,Memory &mem,InOut &io,const i486DX::Instruction &inst);
+
+	/*! Return formatted call-stack text.
+	*/
+	std::vector <std::string> GetCallStackText(const i486DX &cpu) const;
 };
 
 

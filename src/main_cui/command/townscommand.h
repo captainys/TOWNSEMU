@@ -96,6 +96,8 @@ public:
 	void Execute_Disable(FMTowns &towns,Command &cmd);
 
 	void Execute_Dump(FMTowns &towns,Command &cmd);
+
+	void Execute_Print(FMTowns &towns,Command &cmd);
 };
 
 

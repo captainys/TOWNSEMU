@@ -281,3 +281,14 @@ void FMTowns::DumpRealModeIntVectors(void) const
 		std::cout << s << std::endl;
 	}
 }
+std::vector <std::string> FMTowns::GetCallStackText(void) const
+{
+	return debugger.GetCallStackText(cpu);
+}
+void FMTowns::PrintCallStack(void) const
+{
+	for(auto str : GetCallStackText())
+	{
+		std::cout << str << std::endl;
+	}
+}

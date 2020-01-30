@@ -4,6 +4,7 @@
 #include "i486.h"
 #include "i486inst.h"
 #include "i486debug.h"
+#include "cpputil.h"
 
 
 
@@ -78,4 +79,26 @@ void i486Debugger::AfterRunOneInstruction(unsigned int clocksPassed,i486DX &cpu,
 		stop=true;
 		oneTimeBreakPoint.Nullify();
 	}
+}
+
+std::vector <std::string> i486Debugger::GetCallStackText(const i486DX &cpu) const
+{
+	std::vector <std::string> text;
+	for(auto &s : cpu.callStack)
+	{
+/*bool isInterrupt;
+unsigned int fromCS,fromEIP;
+unsigned int callOpCodeLength;
+unsigned int procCS,procEIP;*/
+		std::string str;
+		str+="FR="+cpputil::Ustox(s.fromCS)+":"+cpputil::Uitox(s.fromEIP)+"  ";
+		str+="TO="+cpputil::Ustox(s.procCS)+":"+cpputil::Uitox(s.procEIP)+"  ";
+		str+="RET="+cpputil::Ustox(s.fromCS)+":"+cpputil::Uitox(s.fromEIP+s.callOpCodeLength);
+		if(true==s.isInterrupt)
+		{
+			str+="  (INT)";
+		}
+		text.push_back((std::string &&)str);
+	}
+	return text;
 }
