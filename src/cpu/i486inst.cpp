@@ -3643,7 +3643,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		if(true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize))
 		{
 			auto data=FetchWordOrDword(inst.operandSize,state.DS(),state.ESI(),mem);
-			StoreWordOrDword(mem,inst.operandSize,state.ES(),state.EDI(),GetEAX());
+			StoreWordOrDword(mem,inst.operandSize,state.ES(),state.EDI(),data);
 			UpdateSIorESIAfterStringOp(inst.addressSize,inst.operandSize);
 			UpdateDIorEDIAfterStringOp(inst.addressSize,inst.operandSize);
 			EIPSetByInstruction=(INST_PREFIX_REP==inst.instPrefix);

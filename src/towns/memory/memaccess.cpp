@@ -298,7 +298,7 @@ void TownsMemAccess::SetPhysicalMemoryPointer(TownsPhysicalMemory *ptr)
 				break;
 			}
 		}
-		else if(0xC0000<=physAddr && physAddr<0xD8000) /// FMR VRAM Plane Access
+		else if(0xC0000<=physAddr && physAddr<0xC8000) /// FMR VRAM Plane Access
 		{
 			const auto FMRAddr=physAddr-0xC000;
 			const auto VRAMAddr=(FMRAddr<<2)+physMemPtr->state.FMRVRAMWriteOffset;
@@ -414,6 +414,9 @@ void TownsMemAccess::SetPhysicalMemoryPointer(TownsPhysicalMemory *ptr)
 				bitTestHigh>>=2;
 				bitTestLow>>=2;
 			}
+		}
+		else if(0xC8000<=physAddr && physAddr<0xCFFFF) // Except I/O.
+		{
 		}
 	}
 	else

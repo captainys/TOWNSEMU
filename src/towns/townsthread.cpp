@@ -28,6 +28,7 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 		{
 		case RUNMODE_PAUSE:
 			townsPtr->ForceRender(render,*outside_world);
+			outside_world->DevicePolling();
 			break;
 		case RUNMODE_FREE:
 			townsPtr->cpu.DetachDebugger();
