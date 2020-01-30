@@ -22,3 +22,7 @@ add_subdirectory(towns)
 add_subdirectory(tests)
 
 add_subdirectory(main_cui)
+
+
+#externals
+add_subdirectory(externals)

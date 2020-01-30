@@ -7,6 +7,7 @@
 #include <mutex>
 
 #include "towns.h"
+#include "outside_world.h"
 
 class TownsThread
 {
@@ -28,7 +29,7 @@ public:
 
 	TownsThread();
 
-	void Start(FMTowns *townsPtr);
+	void Start(FMTowns *townsPtr,Outside_World *outside_world);
 
 	/*! Returns the current run mode.
 	    The thread that calls this function must take vmLock before calling.

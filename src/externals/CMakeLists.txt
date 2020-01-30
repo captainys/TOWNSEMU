@@ -1,0 +1,2 @@
+add_subdirectory(connect_fssimplewindow)
+add_subdirectory(fssimplewindow/src)

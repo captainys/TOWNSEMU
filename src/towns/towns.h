@@ -163,7 +163,7 @@ public:
 	    It will increment rendering timer.
 	    Returns true if rendered.
 	*/
-	bool CheckRenderingTimer(void);
+	bool CheckRenderingTimer(class TownsRender &render,class Outside_World &world);
 
 
 	/*! I/O access for internal devices. */

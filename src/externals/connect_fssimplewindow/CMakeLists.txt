@@ -1,0 +1,3 @@
+add_library(fssimplewindow_connection fssimplewindow_connection.h fssimplewindow_connection.cpp)
+target_link_libraries(fssimplewindow_connection outside_world fssimplewindow)
+target_include_directories(fssimplewindow_connection PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

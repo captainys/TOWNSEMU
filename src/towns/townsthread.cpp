@@ -2,7 +2,7 @@
 #include <chrono>
 
 #include "townsthread.h"
-
+#include "render.h"
 
 
 TownsThread::TownsThread(void)
@@ -10,16 +10,22 @@ TownsThread::TownsThread(void)
 	runMode=RUNMODE_PAUSE;
 }
 
-void TownsThread::Start(FMTowns *townsPtr)
+void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 {
 	bool terminate=false;
 	this->townsPtr=townsPtr;
+
+	outside_world->OpenWindow();
+
+	TownsRender render;
 	for(;true!=terminate;)
 	{
 		vmLock.lock();
 		switch(runMode)
 		{
 		case RUNMODE_PAUSE:
+			outside_world->Render(render.GetImage());
+			outside_world->DevicePolling();
 			break;
 		case RUNMODE_FREE:
 			townsPtr->cpu.DetachDebugger();
@@ -28,8 +34,9 @@ void TownsThread::Start(FMTowns *townsPtr)
 			    )
 			{
 				clocksPassed+=townsPtr->RunOneInstruction();
-				townsPtr->CheckRenderingTimer();
+				townsPtr->CheckRenderingTimer(render,*outside_world);
 			}
+			outside_world->DevicePolling();
 			if(true==townsPtr->CheckAbort())
 			{
 				PrintStatus(*townsPtr);
@@ -44,7 +51,7 @@ void TownsThread::Start(FMTowns *townsPtr)
 			    )
 			{
 				clocksPassed+=townsPtr->RunOneInstruction();
-				townsPtr->CheckRenderingTimer();
+				townsPtr->CheckRenderingTimer(render,*outside_world);
 				if(true==townsPtr->debugger.stop)
 				{
 					PrintStatus(*townsPtr);
@@ -53,6 +60,7 @@ void TownsThread::Start(FMTowns *townsPtr)
 					break;
 				}
 			}
+			outside_world->DevicePolling();
 			if(true==townsPtr->CheckAbort())
 			{
 				PrintStatus(*townsPtr);
@@ -65,7 +73,7 @@ void TownsThread::Start(FMTowns *townsPtr)
 			if(true!=townsPtr->CheckAbort())
 			{
 				townsPtr->RunOneInstruction();
-				townsPtr->CheckRenderingTimer();
+				townsPtr->CheckRenderingTimer(render,*outside_world);
 			}
 			if(true==townsPtr->CheckAbort())
 			{

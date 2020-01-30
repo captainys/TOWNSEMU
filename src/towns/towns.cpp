@@ -3,6 +3,8 @@
 #include "cpputil.h"
 #include "towns.h"
 #include "townsdef.h"
+#include "render.h"
+#include "outside_world.h"
 
 
 
@@ -195,11 +197,12 @@ unsigned int FMTowns::RunOneInstruction(void)
 	return clocksPassed;
 }
 
-bool FMTowns::CheckRenderingTimer(void)
+bool FMTowns::CheckRenderingTimer(TownsRender &render,Outside_World &world)
 {
 	if(var.nextRenderingTime<=state.townsTime)
 	{
-		var.nextRenderingTime=state.townsTime+TOWNS_RENDERING_FREQUENCY;
+		render.BuildImage(crtc,physMem);
+		world.Render(render.GetImage());
 		return true;
 	}
 	return false;

@@ -8,6 +8,7 @@
 #include "townscommand.h"
 #include "cpputil.h"
 
+#include "fssimplewindow_connection.h"
 
 void RunUntil(FMTowns &towns,unsigned int CS,unsigned int EIP,bool silent)
 {
@@ -40,10 +41,10 @@ void RunUntil(FMTowns &towns,unsigned int CS,unsigned int EIP,bool silent)
 }
 
 
-void Run(FMTowns &towns)
+void Run(FMTowns &towns,Outside_World &outside_world)
 {
 	TownsThread townsThread;
-	std::thread stdTownsThread(&TownsThread::Start,&townsThread,&towns);
+	std::thread stdTownsThread(&TownsThread::Start,&townsThread,&towns,&outside_world);
 
 	TownsCommandInterpreter cmdInterpreter;
 	for(;;)
@@ -134,7 +135,8 @@ int main(int ac,char *av[])
 		std::cout << cpputil::Ubtox(b) << std::endl;
 	}
 
-	Run(towns);
+	Outside_World *outside_world=new FsSimpleWindowConnection ;
+	Run(towns,*outside_world);
 return 0;
 
 	std::string cmd;
