@@ -50,6 +50,7 @@ FMTowns::FMTowns() : crtc(this)
 	allDevices.push_back(&physMem);
 	allDevices.push_back(&crtc);
 	allDevices.push_back(&fdc);
+	allDevices.push_back(&cdrom);
 
 	physMem.SetMainRAMSize(4*1024*1024);
 
@@ -119,6 +120,15 @@ FMTowns::FMTowns() : crtc(this)
 	io.AddDevice(&physMem,TOWNSIO_FMR_VRAMMASK);
 	io.AddDevice(&physMem,TOWNSIO_FMR_VRAMDISPLAYMODE);
 	io.AddDevice(&physMem,TOWNSIO_FMR_VRAMPAGESEL);
+
+
+	io.AddDevice(&cdrom,TOWNSIO_CDROM_MASTER_CTRL_STATUS);
+	io.AddDevice(&cdrom,TOWNSIO_CDROM_COMMAND_STATUS);
+	io.AddDevice(&cdrom,TOWNSIO_CDROM_PARAMETER_DATA);
+	io.AddDevice(&cdrom,TOWNSIO_CDROM_TRANSFER_CTRL);
+	io.AddDevice(&cdrom,TOWNSIO_CDROM_SUBCODE_STATUS);
+	io.AddDevice(&cdrom,TOWNSIO_CDROM_SUBCODE_DATA);
+
 
 	PowerOn();
 }
