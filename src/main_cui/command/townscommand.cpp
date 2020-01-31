@@ -41,8 +41,13 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	featureMap["AUTODISASM"]=ENABLE_DISASSEMBLE_EVERY_INST;
 
 	printableMap["CALLSTACK"]=PRINT_CALLSTACK;
+	printableMap["CST"]=PRINT_CALLSTACK;
 	printableMap["BREAKPOINT"]=PRINT_BREAKPOINT;
 	printableMap["BRK"]=PRINT_BREAKPOINT;
+	printableMap["STATUS"]=PRINT_CURRENT_STATUS;
+	printableMap["STATE"]=PRINT_CURRENT_STATUS;
+	printableMap["STA"]=PRINT_CURRENT_STATUS;
+	printableMap["S"]=PRINT_CURRENT_STATUS;
 
 	dumpableMap["RINTVEC"]=DUMP_REAL_MODE_INT_VECTOR;
 }
@@ -94,8 +99,12 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "" << std::endl;
 
 	std::cout << "<< Information that can be printed >>" << std::endl;
-	std::cout << "CALLSTACK" << std::endl;
+	std::cout << "CALLSTACK|CST" << std::endl;
+	std::cout << "  Call Stack"<<std::endl;
 	std::cout << "BREAKPOINT|BRK" << std::endl;
+	std::cout << "  Break Points"<<std::endl;
+	std::cout << "STATUS|STATE|STA|S"<<std::endl;
+	std::cout << "  Current status"<<std::endl;
 
 	std::cout << "" << std::endl;
 
@@ -112,7 +121,7 @@ void TownsCommandInterpreter::PrintError(int errCode) const
 		std::cout << "Error: Too few arguments." << std::endl;
 		break;
 	case ERROR_DUMP_TARGET_UNDEFINED:
-		std::cout << "Error: Dump what?" << std::endl;
+		std::cout << "Error: Do what?" << std::endl;
 		break;
 	default:
 		std::cout << "Error" << std::endl;
@@ -153,7 +162,7 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,Command &c
 		thr.SetRunMode(TownsThread::RUNMODE_EXIT);
 		break;
 	case CMD_RUN:
-		towns.debugger.stop=false;
+		towns.debugger.ClearStopFlag();
 		thr.SetRunMode(TownsThread::RUNMODE_DEBUGGER);
 		if(1<cmd.argv.size())
 		{
@@ -176,7 +185,7 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,Command &c
 		if(0<towns.cpu.callStack.size())
 		{
 			auto s=towns.cpu.callStack.back();
-			towns.debugger.stop=false;
+			towns.debugger.ClearStopFlag();
 			towns.debugger.SetOneTimeBreakPoint(s.fromCS,s.fromEIP+s.callOpCodeLength);
 			thr.SetRunMode(TownsThread::RUNMODE_DEBUGGER);
 		}
@@ -260,7 +269,9 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 		PrintError(ERROR_TOO_FEW_ARGS);
 		return;
 	}
-	auto dumpIter=dumpableMap.find(cmd.argv[1]);
+	auto argv1=cmd.argv[1];
+	cpputil::Capitalize(argv1);
+	auto dumpIter=dumpableMap.find(argv1);
 	if(dumpIter!=dumpableMap.end())
 	{
 		switch(dumpIter->second)
@@ -284,11 +295,16 @@ void TownsCommandInterpreter::Execute_Print(FMTowns &towns,Command &cmd)
 		PrintError(ERROR_TOO_FEW_ARGS);
 		return;
 	}
-	auto printIter=printableMap.find(cmd.argv[1]);
+	auto argv1=cmd.argv[1];
+	cpputil::Capitalize(argv1);
+	auto printIter=printableMap.find(argv1);
 	if(printIter!=printableMap.end())
 	{
 		switch(printIter->second)
 		{
+		case PRINT_CURRENT_STATUS:
+			towns.PrintStatus();
+			break;
 		case PRINT_CALLSTACK:
 			towns.PrintCallStack();
 			break;

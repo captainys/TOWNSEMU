@@ -314,3 +314,14 @@ void FMTowns::PrintCallStack(void) const
 		std::cout << str << std::endl;
 	}
 }
+
+void FMTowns::PrintStatus(void) const
+{
+	cpu.PrintState();
+	PrintStack(32);
+	if(""!=debugger.externalBreakReason)
+	{
+		std::cout << debugger.externalBreakReason << std::endl;
+	}
+	PrintDisassembly();
+}

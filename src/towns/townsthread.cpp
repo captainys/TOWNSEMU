@@ -112,7 +112,5 @@ void TownsThread::SetRunMode(int nextRunMode)
 
 void TownsThread::PrintStatus(const FMTowns &towns) const
 {
-	towns.cpu.PrintState();
-	towns.PrintStack(32);
-	towns.PrintDisassembly();
+	towns.PrintStatus();
 }

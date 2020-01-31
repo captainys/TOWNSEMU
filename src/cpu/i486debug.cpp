@@ -108,3 +108,9 @@ void i486Debugger::ExternalBreak(const std::string &reason)
 	stop=true;
 	externalBreakReason=reason;
 }
+
+void i486Debugger::ClearStopFlag(void)
+{
+	stop=false;
+	externalBreakReason="";
+}

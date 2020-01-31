@@ -46,6 +46,10 @@ public:
 	    It sets stop==1 and externalBreakReason=reason.
 	*/
 	void ExternalBreak(const std::string &reason);
+
+	/*! Clear stop flag and externalBreakReason.
+	*/
+	void ClearStopFlag(void);
 };
 
 
