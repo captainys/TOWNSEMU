@@ -44,9 +44,12 @@ public:
 
 	State state;
 
+	bool debugBreakOnDMACRequest;
+
 	TownsDMAC(class FMTowns *townsPtr)
 	{
 		this->townsPtr=townsPtr;
+		debugBreakOnDMACRequest=false;
 	}
 
 	virtual void PowerOn(void);

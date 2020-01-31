@@ -132,6 +132,10 @@ void TownsDMAC::State::Reset(void)
 		break;
 	case TOWNSIO_DMAC_REQUEST://             0xAE,
 		state.req=data;
+		if(true==debugBreakOnDMACRequest)
+		{
+			townsPtr->debugger.ExternalBreak("DMAC Received a Request");
+		}
 		break;
 	case TOWNSIO_DMAC_MASK://                0xAF,
 		state.mask=data;
