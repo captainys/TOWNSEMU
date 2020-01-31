@@ -32,6 +32,5 @@ public:
 	virtual unsigned int IOReadDword(unsigned int ioport); // Default behavior calls IOWriteByte 4 times
 };
 
-
 /* } */
 #endif
