@@ -41,11 +41,12 @@ void FMTowns::Variable::Reset(void)
 ////////////////////////////////////////////////////////////
 
 
-FMTowns::FMTowns() : crtc(this)
+FMTowns::FMTowns() : crtc(this),pic(this)
 {
 	townsType=TOWNSTYPE_2_MX;
 
 	abort=false;
+	allDevices.push_back(&pic);
 	allDevices.push_back(&ioRAM);
 	allDevices.push_back(&physMem);
 	allDevices.push_back(&crtc);
@@ -111,6 +112,12 @@ FMTowns::FMTowns() : crtc(this)
 	io.AddDevice(&crtc,TOWNSIO_MX_HIRES/*0x470*/,TOWNSIO_MX_IMGOUT_ADDR_D3/*0x477*/);
 	io.AddDevice(&keyboard,TOWNSIO_KEYBOARD_DATA/*0x600*/,TOWNSIO_KEYBOARD_IRQ/*0x604*/);
 	io.AddDevice(&fdc,TOWNSIO_FDC_STATUS_COMMAND/*0x200*/,TOWNSIO_FDC_DRIVE_SWITCH/*0x20E*/);
+
+
+	io.AddDevice(&pic,TOWNSIO_PIC_PRIMARY_ICW1/*=          0x00,*/);
+	io.AddDevice(&pic,TOWNSIO_PIC_PRIMARY_ICW2_3_4_OCW/*=  0x02,*/);
+	io.AddDevice(&pic,TOWNSIO_PIC_SECONDARY_ICW1/*=        0x10,*/);
+	io.AddDevice(&pic,TOWNSIO_PIC_SECONDARY_ICW2_3_4_OCW/*=0x12,*/);
 
 
 	io.AddDevice(this,TOWNSIO_RESET_REASON);

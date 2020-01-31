@@ -102,3 +102,9 @@ unsigned int procCS,procEIP;*/
 	}
 	return text;
 }
+
+void i486Debugger::ExternalBreak(const std::string &reason)
+{
+	stop=true;
+	externalBreakReason=reason;
+}

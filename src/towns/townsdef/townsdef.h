@@ -16,6 +16,11 @@ enum
 // When adding an IO port, make sure to register in FMTowns::FMTowns()
 enum
 {
+	TOWNSIO_PIC_PRIMARY_ICW1=          0x00,
+	TOWNSIO_PIC_PRIMARY_ICW2_3_4_OCW=  0x02,
+	TOWNSIO_PIC_SECONDARY_ICW1=        0x10,
+	TOWNSIO_PIC_SECONDARY_ICW2_3_4_OCW=0x12,
+
 	TOWNSIO_RESET_REASON=      0x20,
 
 	TOWNSIO_FREERUN_TIMER     =0x26,

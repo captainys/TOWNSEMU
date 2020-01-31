@@ -13,6 +13,7 @@ public:
 
 	std::set <CS_EIP> breakPoint;
 	CS_EIP oneTimeBreakPoint;
+	std::string externalBreakReason;
 
 	bool stop;
 
@@ -40,6 +41,11 @@ public:
 	/*! Return formatted call-stack text.
 	*/
 	std::vector <std::string> GetCallStackText(const i486DX &cpu) const;
+
+	/*! Break from an external reason.
+	    It sets stop==1 and externalBreakReason=reason.
+	*/
+	void ExternalBreak(const std::string &reason);
 };
 
 

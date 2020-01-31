@@ -12,6 +12,7 @@
 #include "ramrom.h"
 
 // FM Towns specific
+#include "pic.h"
 #include "cdrom.h"
 #include "ioram.h"
 #include "crtc.h"
@@ -91,6 +92,7 @@ public:
 	State state;
 	i486DX cpu;
 	i486Debugger debugger;
+	TownsPIC pic;
 	TownsCDROM cdrom;
 	TownsPhysicalMemory physMem;
 	IORam ioRAM;
