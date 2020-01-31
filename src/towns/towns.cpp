@@ -41,12 +41,13 @@ void FMTowns::Variable::Reset(void)
 ////////////////////////////////////////////////////////////
 
 
-FMTowns::FMTowns() : crtc(this),pic(this)
+FMTowns::FMTowns() : crtc(this),pic(this),dmac(this)
 {
 	townsType=TOWNSTYPE_2_MX;
 
 	abort=false;
 	allDevices.push_back(&pic);
+	allDevices.push_back(&dmac);
 	allDevices.push_back(&ioRAM);
 	allDevices.push_back(&physMem);
 	allDevices.push_back(&crtc);
@@ -118,6 +119,24 @@ FMTowns::FMTowns() : crtc(this),pic(this)
 	io.AddDevice(&pic,TOWNSIO_PIC_PRIMARY_ICW2_3_4_OCW/*=  0x02,*/);
 	io.AddDevice(&pic,TOWNSIO_PIC_SECONDARY_ICW1/*=        0x10,*/);
 	io.AddDevice(&pic,TOWNSIO_PIC_SECONDARY_ICW2_3_4_OCW/*=0x12,*/);
+
+
+	io.AddDevice(&dmac,TOWNSIO_DMAC_INITIALIZE);//          0xA0,
+	io.AddDevice(&dmac,TOWNSIO_DMAC_CHANNEL);//             0xA1,
+	io.AddDevice(&dmac,TOWNSIO_DMAC_COUNT_LOW);//           0xA2,
+	io.AddDevice(&dmac,TOWNSIO_DMAC_COUNT_HIGH);//          0xA3,
+	io.AddDevice(&dmac,TOWNSIO_DMAC_ADDRESS_LOWEST);//      0xA4,
+	io.AddDevice(&dmac,TOWNSIO_DMAC_ADDRESS_MIDLOW);//      0xA5,
+	io.AddDevice(&dmac,TOWNSIO_DMAC_ADDRESS_MIDHIGH);//     0xA6,
+	io.AddDevice(&dmac,TOWNSIO_DMAC_ADDRESS_HIGHEST);//     0xA7,
+	io.AddDevice(&dmac,TOWNSIO_DMAC_DEVICE_CONTROL_LOW);//  0xA8,
+	io.AddDevice(&dmac,TOWNSIO_DMAC_DEVICE_CONTROL_HIGH);// 0xA9,
+	io.AddDevice(&dmac,TOWNSIO_DMAC_MODE_CONTROL);//        0xAA,
+	io.AddDevice(&dmac,TOWNSIO_DMAC_STATUS);//              0xAB,
+	io.AddDevice(&dmac,TOWNSIO_DMAC_TEMPORARY_REG_LOW);//   0xAC,
+	io.AddDevice(&dmac,TOWNSIO_DMAC_TEMPORARY_REG_HIGH);//  0xAD,
+	io.AddDevice(&dmac,TOWNSIO_DMAC_REQUEST);//             0xAE,
+	io.AddDevice(&dmac,TOWNSIO_DMAC_MASK);//                0xAF,
 
 
 	io.AddDevice(this,TOWNSIO_RESET_REASON);
