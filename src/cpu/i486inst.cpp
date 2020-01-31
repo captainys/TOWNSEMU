@@ -2921,7 +2921,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 	case I486_OPCODE_IN_AL_I8://=        0xE4,
 		{
-			auto ioRead=io.In8(inst.operand[0]);
+			auto ioRead=IOIn8(io,inst.operand[0]);
 			if(true!=state.exception)
 			{
 				SetAL(ioRead);
@@ -2939,7 +2939,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_OPCODE_IN_A_I8://=         0xE5,
 		if(16==inst.operandSize)
 		{
-			auto ioRead=io.In16(inst.operand[0]);
+			auto ioRead=IOIn16(io,inst.operand[0]);
 			if(true!=state.exception)
 			{
 				SetAX(ioRead);
@@ -2947,7 +2947,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		else
 		{
-			auto ioRead=io.In32(inst.operand[0]);
+			auto ioRead=IOIn32(io,inst.operand[0]);
 			if(true!=state.exception)
 			{
 				SetEAX(ioRead);
@@ -2964,7 +2964,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 	case I486_OPCODE_IN_AL_DX://=        0xEC,
 		{
-			auto ioRead=io.In8(GetDX());
+			auto ioRead=IOIn8(io,GetDX());
 			if(true!=state.exception)
 			{
 				SetAL(ioRead);
@@ -2982,7 +2982,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_OPCODE_IN_A_DX://=         0xED,
 		if(16==inst.operandSize)
 		{
-			auto ioRead=io.In16(GetDX());
+			auto ioRead=IOIn16(io,GetDX());
 			if(true!=state.exception)
 			{
 				SetAX(ioRead);
@@ -2990,7 +2990,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		else
 		{
-			auto ioRead=io.In32(GetDX());
+			auto ioRead=IOIn32(io,GetDX());
 			if(true!=state.exception)
 			{
 				SetEAX(ioRead);
@@ -3838,7 +3838,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 
 	case I486_OPCODE_OUT_I8_AL: //        0xE6,
-		io.Out8(inst.operand[0],GetRegisterValue(REG_AL));
+		IOOut8(io,inst.operand[0],GetRegisterValue(REG_AL));
 		if(true==IsInRealMode())
 		{
 			clocksPassed=16;
@@ -3851,11 +3851,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_OPCODE_OUT_I8_A: //         0xE7,
 		if(16==inst.operandSize)
 		{
-			io.Out16(inst.operand[0],GetRegisterValue(REG_AX));
+			IOOut16(io,inst.operand[0],GetRegisterValue(REG_AX));
 		}
 		else
 		{
-			io.Out32(inst.operand[0],GetRegisterValue(REG_EAX));
+			IOOut32(io,inst.operand[0],GetRegisterValue(REG_EAX));
 		}
 		if(true==IsInRealMode())
 		{
@@ -3867,7 +3867,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		break;
 	case I486_OPCODE_OUT_DX_AL: //        0xEE,
-		io.Out8(GetRegisterValue(REG_DX),GetRegisterValue(REG_AL));
+		IOOut8(io,GetRegisterValue(REG_DX),GetRegisterValue(REG_AL));
 		if(true==IsInRealMode())
 		{
 			clocksPassed=16;
@@ -3880,11 +3880,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_OPCODE_OUT_DX_A: //         0xEF,
 		if(16==inst.operandSize)
 		{
-			io.Out16(GetRegisterValue(REG_DX),GetRegisterValue(REG_AX));
+			IOOut16(io,GetRegisterValue(REG_DX),GetRegisterValue(REG_AX));
 		}
 		else
 		{
-			io.Out32(GetRegisterValue(REG_DX),GetRegisterValue(REG_EAX));
+			IOOut32(io,GetRegisterValue(REG_DX),GetRegisterValue(REG_EAX));
 		}
 		if(true==IsInRealMode())
 		{
@@ -3901,7 +3901,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		// REP/REPE/REPNE CX or ECX is chosen based on addressSize.
 		if(true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize))
 		{
-			io.Out8(GetDX(),FetchByte(state.DS(),state.ESI(),mem));
+			IOOut8(io,GetDX(),FetchByte(state.DS(),state.ESI(),mem));
 			UpdateSIorESIAfterStringOp(inst.addressSize,8);
 			EIPSetByInstruction=(INST_PREFIX_REP==inst.instPrefix);
 			clocksPassed+=(IsInRealMode() ? 17 : 10); // Protected Mode 32 if CPL>IOPL
@@ -3912,11 +3912,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			if(16==inst.operandSize)
 			{
-				io.Out16(GetDX(),FetchWord(state.DS(),state.ESI(),mem));
+				IOOut16(io,GetDX(),FetchWord(state.DS(),state.ESI(),mem));
 			}
 			else
 			{
-				io.Out32(GetDX(),FetchDword(state.DS(),state.ESI(),mem));
+				IOOut32(io,GetDX(),FetchDword(state.DS(),state.ESI(),mem));
 			}
 			UpdateSIorESIAfterStringOp(inst.addressSize,inst.operandSize);
 			EIPSetByInstruction=(INST_PREFIX_REP==inst.instPrefix);

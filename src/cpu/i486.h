@@ -1241,6 +1241,13 @@ public:
 		}
 	}
 
+	inline void IOOut8(InOut &io,unsigned int ioport,unsigned int data);
+	inline void IOOut16(InOut &io,unsigned int ioport,unsigned int data);
+	inline void IOOut32(InOut &io,unsigned int ioport,unsigned int data);
+	inline unsigned int IOIn8(InOut &io,unsigned int ioport);
+	inline unsigned int IOIn16(InOut &io,unsigned int ioport);
+	inline unsigned int IOIn32(InOut &io,unsigned int ioport);
+
 
 
 	virtual const char *DeviceName(void) const{return "486DX";}
@@ -1692,6 +1699,36 @@ public:
 	*/
 	void StoreOperandValue(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,OperandValue value);
 };
+
+
+#include "i486debug.h"
+
+inline void i486DX::IOOut8(InOut &io,unsigned int ioport,unsigned int data)
+{
+	io.Out8(ioport,data);
+}
+inline void i486DX::IOOut16(InOut &io,unsigned int ioport,unsigned int data)
+{
+	io.Out16(ioport,data);
+}
+inline void i486DX::IOOut32(InOut &io,unsigned int ioport,unsigned int data)
+{
+	io.Out32(ioport,data);
+}
+inline unsigned int i486DX::IOIn8(InOut &io,unsigned int ioport)
+{
+	return io.In8(ioport);
+}
+inline unsigned int i486DX::IOIn16(InOut &io,unsigned int ioport)
+{
+	return io.In16(ioport);
+}
+inline unsigned int i486DX::IOIn32(InOut &io,unsigned int ioport)
+{
+	return io.In32(ioport);
+}
+
+
 
 /* } */
 #endif
