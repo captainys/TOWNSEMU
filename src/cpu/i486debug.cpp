@@ -114,3 +114,22 @@ void i486Debugger::ClearStopFlag(void)
 	stop=false;
 	externalBreakReason="";
 }
+
+void i486Debugger::IOWriteByte(unsigned int ioport,unsigned int data)
+{
+}
+void i486Debugger::IOWriteWord(unsigned int ioport,unsigned int data)
+{
+}
+void i486Debugger::IOWriteDword(unsigned int ioport,unsigned int data)
+{
+}
+void i486Debugger::IOReadByte(unsigned int ioport,unsigned int data)
+{
+}
+void i486Debugger::IOReadWord(unsigned int ioport,unsigned int data)
+{
+}
+void i486Debugger::IOReadDword(unsigned int ioport,unsigned int data)
+{
+}

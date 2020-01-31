@@ -1705,27 +1705,54 @@ public:
 
 inline void i486DX::IOOut8(InOut &io,unsigned int ioport,unsigned int data)
 {
+	if(nullptr!=debuggerPtr)
+	{
+		debuggerPtr->IOWriteByte(ioport,data);
+	}
 	io.Out8(ioport,data);
 }
 inline void i486DX::IOOut16(InOut &io,unsigned int ioport,unsigned int data)
 {
+	if(nullptr!=debuggerPtr)
+	{
+		debuggerPtr->IOWriteWord(ioport,data);
+	}
 	io.Out16(ioport,data);
 }
 inline void i486DX::IOOut32(InOut &io,unsigned int ioport,unsigned int data)
 {
+	if(nullptr!=debuggerPtr)
+	{
+		debuggerPtr->IOWriteDword(ioport,data);
+	}
 	io.Out32(ioport,data);
 }
 inline unsigned int i486DX::IOIn8(InOut &io,unsigned int ioport)
 {
-	return io.In8(ioport);
+	auto data=io.In8(ioport);
+	if(nullptr!=debuggerPtr)
+	{
+		debuggerPtr->IOReadByte(ioport,data);
+	}
+	return data;
 }
 inline unsigned int i486DX::IOIn16(InOut &io,unsigned int ioport)
 {
-	return io.In16(ioport);
+	auto data=io.In16(ioport);
+	if(nullptr!=debuggerPtr)
+	{
+		debuggerPtr->IOReadWord(ioport,data);
+	}
+	return data;
 }
 inline unsigned int i486DX::IOIn32(InOut &io,unsigned int ioport)
 {
-	return io.In32(ioport);
+	auto data=io.In32(ioport);
+	if(nullptr!=debuggerPtr)
+	{
+		debuggerPtr->IOReadDword(ioport,data);
+	}
+	return data;
 }
 
 
