@@ -704,7 +704,7 @@ void i486DX::AddDword(unsigned int &value1,unsigned int value2)
 	SetSignFlag(0!=(value1&0x80000000));
 	SetZeroFlag(0==value1);
 	SetAuxCarryFlag((prevValue&0x0F)<(value1&0x0F));
-	SetCarryFlag(value1<prevValue);
+	SetCF(value1<prevValue);
 	SetParityFlag(CheckParity(value1&0xFF));
 }
 void i486DX::AddWord(unsigned int &value1,unsigned int value2)
@@ -715,7 +715,7 @@ void i486DX::AddWord(unsigned int &value1,unsigned int value2)
 	SetSignFlag(0!=(value1&0x8000));
 	SetZeroFlag(0==value1);
 	SetAuxCarryFlag((prevValue&0x0F)<(value1&0x0F));
-	SetCarryFlag(value1<prevValue);
+	SetCF(value1<prevValue);
 	SetParityFlag(CheckParity(value1&0xFF));
 }
 void i486DX::AddByte(unsigned int &value1,unsigned int value2)
@@ -726,7 +726,7 @@ void i486DX::AddByte(unsigned int &value1,unsigned int value2)
 	SetSignFlag(0!=(value1&0x80));
 	SetZeroFlag(0==value1);
 	SetAuxCarryFlag((prevValue&0x0F)<(value1&0x0F));
-	SetCarryFlag(value1<prevValue);
+	SetCF(value1<prevValue);
 	SetParityFlag(CheckParity(value1&0xFF));
 }
 void i486DX::AndWordOrDword(int operandSize,unsigned int &value1,unsigned int value2)
@@ -742,7 +742,7 @@ void i486DX::AndWordOrDword(int operandSize,unsigned int &value1,unsigned int va
 }
 void i486DX::AndDword(unsigned int &value1,unsigned int value2)
 {
-	SetCarryFlag(false);
+	SetCF(false);
 	SetOverflowFlag(false);
 	value1&=value2;
 	SetSignFlag(0!=(0x80000000&value1));
@@ -751,7 +751,7 @@ void i486DX::AndDword(unsigned int &value1,unsigned int value2)
 }
 void i486DX::AndWord(unsigned int &value1,unsigned int value2)
 {
-	SetCarryFlag(false);
+	SetCF(false);
 	SetOverflowFlag(false);
 	value1&=value2;
 	value1&=0xFFFF;
@@ -761,7 +761,7 @@ void i486DX::AndWord(unsigned int &value1,unsigned int value2)
 }
 void i486DX::AndByte(unsigned int &value1,unsigned int value2)
 {
-	SetCarryFlag(false);
+	SetCF(false);
 	SetOverflowFlag(false);
 	value1&=value2;
 	value1&=0xFF;
@@ -788,7 +788,7 @@ void i486DX::SubDword(unsigned int &value1,unsigned int value2)
 	SetSignFlag(0!=(value1&0x80000000));
 	SetZeroFlag(0==value1);
 	SetAuxCarryFlag((prevValue&0xFF)>=0x10 && (value1&0xFF)<=0x10);
-	SetCarryFlag(value1>prevValue);
+	SetCF(value1>prevValue);
 	SetParityFlag(CheckParity(value1&0xFF));
 }
 void i486DX::SubWord(unsigned int &value1,unsigned int value2)
@@ -799,7 +799,7 @@ void i486DX::SubWord(unsigned int &value1,unsigned int value2)
 	SetSignFlag(0!=(value1&0x8000));
 	SetZeroFlag(0==value1);
 	SetAuxCarryFlag((prevValue&0xFF)>=0x10 && (value1&0xFF)<=0x10);
-	SetCarryFlag(value1>prevValue);
+	SetCF(value1>prevValue);
 	SetParityFlag(CheckParity(value1&0xFF));
 }
 void i486DX::SubByte(unsigned int &value1,unsigned int value2)
@@ -810,7 +810,7 @@ void i486DX::SubByte(unsigned int &value1,unsigned int value2)
 	SetSignFlag(0!=(value1&0x80));
 	SetZeroFlag(0==value1);
 	SetAuxCarryFlag((prevValue&0xFF)>=0x10 && (value1&0xFF)<=0x10);
-	SetCarryFlag(value1>prevValue);
+	SetCF(value1>prevValue);
 	SetParityFlag(CheckParity(value1&0xFF));
 }
 void i486DX::AdcWordOrDword(int operandSize,unsigned int &value1,unsigned int value2)
@@ -833,7 +833,7 @@ void i486DX::AdcDword(unsigned int &value1,unsigned int value2)
 	SetSignFlag(0!=(value1&0x80000000));
 	SetZeroFlag(0==value1);
 	SetAuxCarryFlag((prevValue&0x0F)<(value1&0x0F));
-	SetCarryFlag(value1<prevValue);
+	SetCF(value1<prevValue);
 	SetParityFlag(CheckParity(value1&0xFF));
 }
 void i486DX::AdcWord(unsigned int &value1,unsigned int value2)
@@ -845,7 +845,7 @@ void i486DX::AdcWord(unsigned int &value1,unsigned int value2)
 	SetSignFlag(0!=(value1&0x8000));
 	SetZeroFlag(0==value1);
 	SetAuxCarryFlag((prevValue&0x0F)<(value1&0x0F));
-	SetCarryFlag(value1<prevValue);
+	SetCF(value1<prevValue);
 	SetParityFlag(CheckParity(value1&0xFF));
 }
 void i486DX::AdcByte(unsigned int &value1,unsigned int value2)
@@ -857,7 +857,7 @@ void i486DX::AdcByte(unsigned int &value1,unsigned int value2)
 	SetSignFlag(0!=(value1&0x80));
 	SetZeroFlag(0==value1);
 	SetAuxCarryFlag((prevValue&0x0F)<(value1&0x0F));
-	SetCarryFlag(value1<prevValue);
+	SetCF(value1<prevValue);
 	SetParityFlag(CheckParity(value1&0xFF));
 }
 void i486DX::SbbWordOrDword(int operandSize,unsigned int &value1,unsigned int value2)
@@ -880,7 +880,7 @@ void i486DX::SbbDword(unsigned int &value1,unsigned int value2)
 	SetSignFlag(0!=(value1&0x80000000));
 	SetZeroFlag(0==value1);
 	SetAuxCarryFlag((prevValue&0xFF)>=0x10 && (value1&0xFF)<=0x10);
-	SetCarryFlag(value1>prevValue);
+	SetCF(value1>prevValue);
 	SetParityFlag(CheckParity(value1&0xFF));
 }
 void i486DX::SbbWord(unsigned int &value1,unsigned int value2)
@@ -892,7 +892,7 @@ void i486DX::SbbWord(unsigned int &value1,unsigned int value2)
 	SetSignFlag(0!=(value1&0x8000));
 	SetZeroFlag(0==value1);
 	SetAuxCarryFlag((prevValue&0xFF)>=0x10 && (value1&0xFF)<=0x10);
-	SetCarryFlag(value1>prevValue);
+	SetCF(value1>prevValue);
 	SetParityFlag(CheckParity(value1&0xFF));
 }
 void i486DX::SbbByte(unsigned int &value1,unsigned int value2)
@@ -904,7 +904,7 @@ void i486DX::SbbByte(unsigned int &value1,unsigned int value2)
 	SetSignFlag(0!=(value1&0x80));
 	SetZeroFlag(0==value1);
 	SetAuxCarryFlag((prevValue&0xFF)>=0x10 && (value1&0xFF)<=0x10);
-	SetCarryFlag(value1>prevValue);
+	SetCF(value1>prevValue);
 	SetParityFlag(CheckParity(value1&0xFF));
 }
 void i486DX::OrWordOrDword(int operandSize,unsigned int &value1,unsigned int value2)
@@ -920,7 +920,7 @@ void i486DX::OrWordOrDword(int operandSize,unsigned int &value1,unsigned int val
 }
 void i486DX::OrDword(unsigned int &value1,unsigned int value2)
 {
-	SetCarryFlag(false);
+	SetCF(false);
 	SetOverflowFlag(false);
 	value1|=value2;
 	SetSignFlag(0!=(0x80000000&value1));
@@ -929,7 +929,7 @@ void i486DX::OrDword(unsigned int &value1,unsigned int value2)
 }
 void i486DX::OrWord(unsigned int &value1,unsigned int value2)
 {
-	SetCarryFlag(false);
+	SetCF(false);
 	SetOverflowFlag(false);
 	value1|=value2;
 	value1&=0xFFFF;
@@ -939,7 +939,7 @@ void i486DX::OrWord(unsigned int &value1,unsigned int value2)
 }
 void i486DX::OrByte(unsigned int &value1,unsigned int value2)
 {
-	SetCarryFlag(false);
+	SetCF(false);
 	SetOverflowFlag(false);
 	value1|=value2;
 	value1&=0xFF;
@@ -960,7 +960,7 @@ void i486DX::XorWordOrDword(int operandSize,unsigned int &value1,unsigned int va
 }
 void i486DX::XorDword(unsigned int &value1,unsigned int value2)
 {
-	SetCarryFlag(false);
+	SetCF(false);
 	SetOverflowFlag(false);
 	value1^=value2;
 	SetSignFlag(0!=(0x80000000&value1));
@@ -969,7 +969,7 @@ void i486DX::XorDword(unsigned int &value1,unsigned int value2)
 }
 void i486DX::XorWord(unsigned int &value1,unsigned int value2)
 {
-	SetCarryFlag(false);
+	SetCF(false);
 	SetOverflowFlag(false);
 	value1^=value2;
 	value1&=0xFFFF;
@@ -979,7 +979,7 @@ void i486DX::XorWord(unsigned int &value1,unsigned int value2)
 }
 void i486DX::XorByte(unsigned int &value1,unsigned int value2)
 {
-	SetCarryFlag(false);
+	SetCF(false);
 	SetOverflowFlag(false);
 	value1^=value2;
 	value1&=0xFF;
@@ -1005,7 +1005,7 @@ void i486DX::RclDword(unsigned int &value,unsigned int ctr)
 	for(unsigned int i=0; i<ctr; ++i)
 	{
 		auto orValue=(GetCF() ? 1 : 0);
-		SetCarryFlag(0!=(value&0x80000000));
+		SetCF(0!=(value&0x80000000));
 		prevValue=value;
 		value=(value<<1)|orValue;
 	}
@@ -1020,7 +1020,7 @@ void i486DX::RclWord(unsigned int &value,unsigned int ctr)
 	for(unsigned int i=0; i<ctr; ++i)
 	{
 		auto orValue=(GetCF() ? 1 : 0);
-		SetCarryFlag(0!=(value&0x8000));
+		SetCF(0!=(value&0x8000));
 		prevValue=value;
 		value=(value<<1)|orValue;
 	}
@@ -1036,7 +1036,7 @@ void i486DX::RclByte(unsigned int &value,unsigned int ctr)
 	for(unsigned int i=0; i<ctr; ++i)
 	{
 		auto orValue=(GetCF() ? 1 : 0);
-		SetCarryFlag(0!=(value&0x80));
+		SetCF(0!=(value&0x80));
 		prevValue=value;
 		value=(value<<1)|orValue;
 	}
@@ -1063,7 +1063,7 @@ void i486DX::RcrDword(unsigned int &value,unsigned int ctr)
 	for(unsigned int i=0; i<ctr; ++i)
 	{
 		unsigned int highBit=(GetCF() ? 0x80000000 : 0);
-		SetCarryFlag(0!=(value&1));
+		SetCF(0!=(value&1));
 		value=(value>>1)|highBit;
 	}
 	if(1==ctr)
@@ -1077,7 +1077,7 @@ void i486DX::RcrWord(unsigned int &value,unsigned int ctr)
 	for(unsigned int i=0; i<ctr; ++i)
 	{
 		unsigned int highBit=(GetCF() ? 0x8000 : 0);
-		SetCarryFlag(0!=(value&1));
+		SetCF(0!=(value&1));
 		value=(value>>1)|highBit;
 	}
 	if(1==ctr)
@@ -1091,7 +1091,7 @@ void i486DX::RcrByte(unsigned int &value,unsigned int ctr)
 	for(unsigned int i=0; i<ctr; ++i)
 	{
 		unsigned int highBit=(GetCF() ? 0x80 : 0);
-		SetCarryFlag(0!=(value&1));
+		SetCF(0!=(value&1));
 		value=(value>>1)|highBit;
 	}
 	if(1==ctr)
@@ -1116,12 +1116,12 @@ void i486DX::ShlDword(unsigned int &value,unsigned int ctr)
 	if(1<ctr)
 	{
 		value=(value<<(ctr-1));
-		SetCarryFlag(0!=(value&0x80000000));
+		SetCF(0!=(value&0x80000000));
 		value=(value<<1);
 	}
 	else if(1==ctr)
 	{
-		SetCarryFlag(0!=(value&0x80000000));
+		SetCF(0!=(value&0x80000000));
 		auto prevValue=value;
 		value=(value<<1);
 		SetOverflowFlag((prevValue&0x80000000)!=(value&0x80000000));
@@ -1132,12 +1132,12 @@ void i486DX::ShlWord(unsigned int &value,unsigned int ctr)
 	if(1<ctr)
 	{
 		value=(value<<(ctr-1));
-		SetCarryFlag(0!=(value&0x8000));
+		SetCF(0!=(value&0x8000));
 		value=(value<<1)&0xffff;
 	}
 	else if(1==ctr)
 	{
-		SetCarryFlag(0!=(value&0x8000));
+		SetCF(0!=(value&0x8000));
 		auto prevValue=value;
 		value=(value<<1)&0xffff;
 		SetOverflowFlag((prevValue&0x8000)!=(value&0x8000));
@@ -1148,12 +1148,12 @@ void i486DX::ShlByte(unsigned int &value,unsigned int ctr)
 	if(1<ctr)
 	{
 		value=(value<<(ctr-1));
-		SetCarryFlag(0!=(value&0x80));
+		SetCF(0!=(value&0x80));
 		value=(value<<1)&0xff;
 	}
 	else if(1==ctr)
 	{
-		SetCarryFlag(0!=(value&0x80));
+		SetCF(0!=(value&0x80));
 		auto prevValue=value;
 		value=(value<<1)&0xff;
 		SetOverflowFlag((prevValue&0x80)!=(value&0x80));
@@ -1172,7 +1172,7 @@ void i486DX::ShrWordOrDword(int operandSize,unsigned int &value,unsigned int ctr
 }
 void i486DX::ShrDword(unsigned int &value,unsigned int ctr)
 {
-	SetCarryFlag(0!=(value&1));
+	SetCF(0!=(value&1));
 	if(1<ctr)
 	{
 		value>>=ctr;
@@ -1185,7 +1185,7 @@ void i486DX::ShrDword(unsigned int &value,unsigned int ctr)
 }
 void i486DX::ShrWord(unsigned int &value,unsigned int ctr)
 {
-	SetCarryFlag(0!=(value&1));
+	SetCF(0!=(value&1));
 	if(1<ctr)
 	{
 		value&=0xffff;
@@ -1200,7 +1200,7 @@ void i486DX::ShrWord(unsigned int &value,unsigned int ctr)
 }
 void i486DX::ShrByte(unsigned int &value,unsigned int ctr)
 {
-	SetCarryFlag(0!=(value&1));
+	SetCF(0!=(value&1));
 	if(1<ctr)
 	{
 		value&=0xff;

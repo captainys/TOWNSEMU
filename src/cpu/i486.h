@@ -1006,11 +1006,14 @@ public:
 		return 0!=(state.EFLAGS&EFLAGS_ALIGN_CHECK);
 	}
 
-	inline void SetCarryFlag(bool flag)
+	inline void SetCF(bool flag)
 	{
 		SetEFLAGSBit(flag,EFLAGS_CARRY);
 	}
-
+	inline void SetIF(bool flag)
+	{
+		SetEFLAGSBit(flag,EFLAGS_INT_ENABLE);
+	}
 	inline void SetOverflowFlag(bool flag)
 	{
 		SetEFLAGSBit(flag,EFLAGS_OVERFLOW);

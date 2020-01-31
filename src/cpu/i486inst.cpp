@@ -578,6 +578,10 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		break;
 
 
+	case I486_OPCODE_STI://              0xFB,
+		break;
+
+
 	case I486_OPCODE_STOSB://            0xAA,
 	case I486_OPCODE_STOS://             0xAB,
 		break;
@@ -1866,6 +1870,11 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		break;
 
 
+	case I486_OPCODE_STI://              0xFB,
+		disasm="STI";
+		break;
+
+
 	case I486_OPCODE_STOSB://            0xAA,
 		disasm="STOSB";
 		if(INST_PREFIX_REP==instPrefix)
@@ -2408,7 +2417,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,1);
 				unsigned int byte=value.byteData[0];
 				AndByte(byte,inst.GetUimm8());
-				SetCarryFlag(false);
+				SetCF(false);
 				SetOverflowFlag(false);
 			}
 			break;
@@ -2420,12 +2429,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				SetAX(mul);
 				if(0!=(mul&0xff00))
 				{
-					SetCarryFlag(true);
+					SetCF(true);
 					SetOverflowFlag(true);
 				}
 				else
 				{
-					SetCarryFlag(false);
+					SetCF(false);
 					SetOverflowFlag(false);
 				}
 			}
@@ -2473,7 +2482,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize);
 				unsigned int i1=value1.GetAsDword();
 				AndWordOrDword(inst.operandSize,i1,value2.GetAsDword());
-				SetCarryFlag(false);
+				SetCF(false);
 				SetOverflowFlag(false);
 			}
 			break;
@@ -2487,12 +2496,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				SetDX((DXAX>>16)&0xffff);
 				if(0!=(DXAX&0xffff0000))
 				{
-					SetCarryFlag(true);
+					SetCF(true);
 					SetOverflowFlag(true);
 				}
 				else
 				{
-					SetCarryFlag(false);
+					SetCF(false);
 					SetOverflowFlag(false);
 				}
 			}
@@ -2505,12 +2514,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				SetEDX((EDXEAX>>32)&0xffffffff);
 				if(0!=(EDXEAX&0xffffffff00000000))
 				{
-					SetCarryFlag(true);
+					SetCF(true);
 					SetOverflowFlag(true);
 				}
 				else
 				{
-					SetCarryFlag(false);
+					SetCF(false);
 					SetOverflowFlag(false);
 				}
 			}
@@ -2878,7 +2887,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 
 	case I486_OPCODE_CMC://        0xF5,
-		SetCarryFlag(GetCF()==true ? false : true);
+		SetCF(GetCF()==true ? false : true);
 		clocksPassed=2;
 		break;
 
@@ -4149,6 +4158,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				EIPSetByInstruction=true;
 			}
 		}
+		break;
+
+
+	case I486_OPCODE_STI://              0xFB,
+		SetIF(true);
+		clocksPassed=5;
 		break;
 
 
