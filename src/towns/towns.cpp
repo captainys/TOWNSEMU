@@ -314,6 +314,13 @@ void FMTowns::PrintCallStack(void) const
 		std::cout << str << std::endl;
 	}
 }
+void FMTowns::PrintPIC(void) const
+{
+	for(auto str : pic.GetStateText())
+	{
+		std::cout << str << std::endl;
+	}
+}
 
 void FMTowns::PrintStatus(void) const
 {
