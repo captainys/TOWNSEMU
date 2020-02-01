@@ -16,6 +16,7 @@ private:
 	std::unordered_map <std::string,unsigned int> featureMap;
 	std::unordered_map <std::string,unsigned int> printableMap;
 	std::unordered_map <std::string,unsigned int> dumpableMap;
+	std::unordered_map <std::string,unsigned int> breakEventMap;
 
 public:
 	enum
@@ -44,6 +45,9 @@ public:
 		CMD_ADD_BREAKPOINT,
 		CMD_DELETE_BREAKPOINT,
 		CMD_CLEAR_BREAKPOINT,
+
+		CMD_BREAK_ON,
+		CMD_DONT_BREAK_ON,
 	};
 
 	enum
@@ -61,6 +65,14 @@ public:
 		PRINT_CALLSTACK,
 		PRINT_BREAKPOINT,
 		PRINT_PIC,
+	};
+
+	enum
+	{
+		BREAK_ON_PIC_IWC1,
+		BREAK_ON_PIC_IWC4,
+		BREAK_ON_DMAC_REQUEST,
+		BREAK_ON_FDC_COMMAND,
 	};
 
 	enum
@@ -102,6 +114,9 @@ public:
 	void Execute_Dump(FMTowns &towns,Command &cmd);
 
 	void Execute_Print(FMTowns &towns,Command &cmd);
+
+	void Execute_BreakOn(FMTowns &towns,Command &cmd);
+	void Execute_ClearBreakOn(FMTowns &towns,Command &cmd);
 };
 
 

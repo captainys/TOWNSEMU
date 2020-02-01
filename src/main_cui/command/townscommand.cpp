@@ -36,6 +36,8 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["DLBRK"]=CMD_DELETE_BREAKPOINT;
 	primaryCmdMap["CLBRK"]=CMD_CLEAR_BREAKPOINT;
 	primaryCmdMap["T"]=CMD_RUN_ONE_INSTRUCTION;
+	primaryCmdMap["BRKON"]=CMD_BREAK_ON;
+	primaryCmdMap["CBRKON"]=CMD_DONT_BREAK_ON;
 
 	featureMap["CMDLOG"]=ENABLE_CMDLOG;
 	featureMap["AUTODISASM"]=ENABLE_DISASSEMBLE_EVERY_INST;
@@ -52,6 +54,11 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	printableMap["PIC"]=PRINT_PIC;
 
 	dumpableMap["RINTVEC"]=DUMP_REAL_MODE_INT_VECTOR;
+
+	breakEventMap["IWC1"]=   BREAK_ON_PIC_IWC1;
+	breakEventMap["IWC4"]=   BREAK_ON_PIC_IWC4;
+	breakEventMap["DMACREQ"]=BREAK_ON_DMAC_REQUEST;
+	breakEventMap["FDCCMD"]= BREAK_ON_FDC_COMMAND;
 }
 
 
@@ -89,6 +96,10 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Num is the number printed by PRINT BRK." << std::endl;
 	std::cout << "CLBRK" << std::endl;
 	std::cout << "  Clear all break points." << std::endl;
+	std::cout << "BRKON" << std::endl;
+	std::cout << "  Break on event." << std::endl;
+	std::cout << "CBRKON" << std::endl;
+	std::cout << "  Clear break-on event." << std::endl;
 
 	std::cout << "" << std::endl;
 
@@ -117,6 +128,14 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "<< Information that can be dumped >>" << std::endl;
 	std::cout << "RINTVEC" << std::endl;
 	std::cout << "  Real-mode Interrupt Vectors" << std::endl;
+
+	std::cout << "" << std::endl;
+
+	std::cout << "<< Event that can break >>" << std::endl;
+	std::cout << "IWC1" << std::endl;
+	std::cout << "IWC4" << std::endl;
+	std::cout << "DMACREQ" << std::endl;
+	std::cout << "FDCCMD" << std::endl;
 }
 
 void TownsCommandInterpreter::PrintError(int errCode) const
@@ -222,6 +241,12 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,Command &c
 	case CMD_CLEAR_BREAKPOINT:
 		break;
 
+	case CMD_BREAK_ON:
+		Execute_BreakOn(towns,cmd);
+		break;
+	case CMD_DONT_BREAK_ON:
+		Execute_ClearBreakOn(towns,cmd);
+		break;
 	}
 }
 
@@ -335,5 +360,66 @@ void TownsCommandInterpreter::Execute_Print(FMTowns &towns,Command &cmd)
 	{
 		PrintError(ERROR_DUMP_TARGET_UNDEFINED);
 		return;
+	}
+}
+
+void TownsCommandInterpreter::Execute_BreakOn(FMTowns &towns,Command &cmd)
+{
+	if(cmd.argv.size()<2)
+	{
+		PrintError(ERROR_TOO_FEW_ARGS);
+		return;
+	}
+	auto argv1=cmd.argv[1];
+	cpputil::Capitalize(argv1);
+	auto iter=breakEventMap.find(argv1);
+	if(iter!=breakEventMap.end())
+	{
+		switch(iter->second)
+		{
+		case BREAK_ON_PIC_IWC1:
+			towns.pic.debugBreakOnICW1Write=true;
+			break;
+		case BREAK_ON_PIC_IWC4:
+			towns.pic.debugBreakOnICW4Write=true;
+			break;
+		case BREAK_ON_DMAC_REQUEST:
+			towns.dmac.debugBreakOnDMACRequest=true;
+			break;
+		case BREAK_ON_FDC_COMMAND:
+			towns.fdc.debugBreakOnCommandWrite=true;
+			break;
+		}
+		std::cout << iter->first << " is ON." << std::endl;
+	}
+}
+void TownsCommandInterpreter::Execute_ClearBreakOn(FMTowns &towns,Command &cmd)
+{
+	if(cmd.argv.size()<2)
+	{
+		PrintError(ERROR_TOO_FEW_ARGS);
+		return;
+	}
+	auto argv1=cmd.argv[1];
+	cpputil::Capitalize(argv1);
+	auto iter=breakEventMap.find(argv1);
+	if(iter!=breakEventMap.end())
+	{
+		switch(iter->second)
+		{
+		case BREAK_ON_PIC_IWC1:
+			towns.pic.debugBreakOnICW1Write=false;
+			break;
+		case BREAK_ON_PIC_IWC4:
+			towns.pic.debugBreakOnICW4Write=false;
+			break;
+		case BREAK_ON_DMAC_REQUEST:
+			towns.dmac.debugBreakOnDMACRequest=false;
+			break;
+		case BREAK_ON_FDC_COMMAND:
+			towns.fdc.debugBreakOnCommandWrite=false;
+			break;
+		}
+		std::cout << iter->first << " is OFF." << std::endl;
 	}
 }

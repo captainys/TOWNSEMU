@@ -1,14 +1,19 @@
 #include "cpputil.h"
 #include "fdc.h"
 #include "townsdef.h"
+#include "towns.h"
 
 
 
 void TownsFDC::State::Reset(void)
 {
 }
-TownsFDC::TownsFDC()
+TownsFDC::TownsFDC(class FMTowns *townsPtr)
 {
+	this->townsPtr=townsPtr;
+
+	Reset();
+	debugBreakOnCommandWrite=false;
 }
 /* virtual */ void TownsFDC::IOWriteByte(unsigned int ioport,unsigned int data)
 {
@@ -17,6 +22,10 @@ TownsFDC::TownsFDC()
 	case TOWNSIO_FDC_STATUS_COMMAND://       0x200, // [2] pp.253
 		// During the start-up, System ROM writes 0FEH to this register,
 		// which is not listed in the data sheet of MB
+		if(true==debugBreakOnCommandWrite)
+		{
+			townsPtr->debugger.ExternalBreak("FDC Command Write");
+		}
 		break;
 	case TOWNSIO_FDC_TRACK://                0x202, // [2] pp.253
 		break;

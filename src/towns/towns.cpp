@@ -42,7 +42,7 @@ void FMTowns::Variable::Reset(void)
 ////////////////////////////////////////////////////////////
 
 
-FMTowns::FMTowns() : crtc(this),pic(this),dmac(this)
+FMTowns::FMTowns() : crtc(this),pic(this),dmac(this),fdc(this)
 {
 	townsType=TOWNSTYPE_2_MX;
 
