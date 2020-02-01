@@ -254,6 +254,11 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		break;
 
 
+	case I486_OPCODE_CMPSB://           0xA6,
+	case I486_OPCODE_CMPS://            0xA7,
+		break;
+
+
 	case I486_OPCODE_DEC_EAX:
 	case I486_OPCODE_DEC_ECX:
 	case I486_OPCODE_DEC_EDX:
@@ -705,6 +710,11 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 	case I486_OPCODE_CLD:
 	case I486_OPCODE_CLI:
 	case I486_OPCODE_CMC://        0xF5,
+		break;
+
+
+	case I486_OPCODE_CMPSB://           0xA6,
+	case I486_OPCODE_CMPS://            0xA7,
 		break;
 
 
@@ -1225,6 +1235,30 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		break;
 	case I486_OPCODE_CMC://        0xF5,
 		disasm="CMC";
+		break;
+
+
+	case I486_OPCODE_CMPSB://           0xA6,
+		disasm="CMPSB";
+		if(instPrefix==INST_PREFIX_REPE)
+		{
+			disasm="REPE "+disasm;
+		}
+		else if(instPrefix==INST_PREFIX_REPNE)
+		{
+			disasm="REPNE "+disasm;
+		}
+		break;
+	case I486_OPCODE_CMPS://            0xA7,
+		disasm=(16==operandSize ? "CMPSW" : "CMPSD");
+		if(instPrefix==INST_PREFIX_REPE)
+		{
+			disasm="REPE "+disasm;
+		}
+		else if(instPrefix==INST_PREFIX_REPNE)
+		{
+			disasm="REPNE "+disasm;
+		}
 		break;
 
 

@@ -116,10 +116,11 @@ void i486Debugger::ClearStopFlag(void)
 	externalBreakReason="";
 }
 
-void i486Debugger::IOWriteByte(unsigned int ioport,unsigned int data)
+void i486Debugger::IOWriteByte(const i486DX &cpu,unsigned int ioport,unsigned int data)
 {
 	if(true==monitorIO)
 	{
+		std::cout << cpputil::Ustox(cpu.state.CS().value) << ":" << cpputil::Uitox(cpu.state.EIP) << " ";
 		std::cout << "Write IO8:[" << cpputil::Ustox(ioport) << "] " << cpputil::Ubtox(data);
 		auto iter=ioLabel.find(ioport);
 		if(ioLabel.end()!=iter)
@@ -129,10 +130,11 @@ void i486Debugger::IOWriteByte(unsigned int ioport,unsigned int data)
 		std::cout << std::endl;
 	}
 }
-void i486Debugger::IOWriteWord(unsigned int ioport,unsigned int data)
+void i486Debugger::IOWriteWord(const i486DX &cpu,unsigned int ioport,unsigned int data)
 {
 	if(true==monitorIO)
 	{
+		std::cout << cpputil::Ustox(cpu.state.CS().value) << ":" << cpputil::Uitox(cpu.state.EIP) << " ";
 		std::cout << "Write IO16:[" << cpputil::Ustox(ioport) << "] " << cpputil::Ustox(data);
 		auto iter=ioLabel.find(ioport);
 		if(ioLabel.end()!=iter)
@@ -142,10 +144,11 @@ void i486Debugger::IOWriteWord(unsigned int ioport,unsigned int data)
 		std::cout << std::endl;
 	}
 }
-void i486Debugger::IOWriteDword(unsigned int ioport,unsigned int data)
+void i486Debugger::IOWriteDword(const i486DX &cpu,unsigned int ioport,unsigned int data)
 {
 	if(true==monitorIO)
 	{
+		std::cout << cpputil::Ustox(cpu.state.CS().value) << ":" << cpputil::Uitox(cpu.state.EIP) << " ";
 		std::cout << "Write IO32:[" << cpputil::Ustox(ioport) << "] " << cpputil::Uitox(data);
 		auto iter=ioLabel.find(ioport);
 		if(ioLabel.end()!=iter)
@@ -155,10 +158,11 @@ void i486Debugger::IOWriteDword(unsigned int ioport,unsigned int data)
 		std::cout << std::endl;
 	}
 }
-void i486Debugger::IOReadByte(unsigned int ioport,unsigned int data)
+void i486Debugger::IOReadByte(const i486DX &cpu,unsigned int ioport,unsigned int data)
 {
 	if(true==monitorIO)
 	{
+		std::cout << cpputil::Ustox(cpu.state.CS().value) << ":" << cpputil::Uitox(cpu.state.EIP) << " ";
 		std::cout << "Read IO8:[" << cpputil::Ustox(ioport) << "] " << cpputil::Ubtox(data);
 		auto iter=ioLabel.find(ioport);
 		if(ioLabel.end()!=iter)
@@ -168,10 +172,11 @@ void i486Debugger::IOReadByte(unsigned int ioport,unsigned int data)
 		std::cout << std::endl;
 	}
 }
-void i486Debugger::IOReadWord(unsigned int ioport,unsigned int data)
+void i486Debugger::IOReadWord(const i486DX &cpu,unsigned int ioport,unsigned int data)
 {
 	if(true==monitorIO)
 	{
+		std::cout << cpputil::Ustox(cpu.state.CS().value) << ":" << cpputil::Uitox(cpu.state.EIP) << " ";
 		std::cout << "Read IO16:[" << cpputil::Ustox(ioport) << "] " << cpputil::Ubtox(data);
 		auto iter=ioLabel.find(ioport);
 		if(ioLabel.end()!=iter)
@@ -181,10 +186,11 @@ void i486Debugger::IOReadWord(unsigned int ioport,unsigned int data)
 		std::cout << std::endl;
 	}
 }
-void i486Debugger::IOReadDword(unsigned int ioport,unsigned int data)
+void i486Debugger::IOReadDword(const i486DX &cpu,unsigned int ioport,unsigned int data)
 {
 	if(true==monitorIO)
 	{
+		std::cout << cpputil::Ustox(cpu.state.CS().value) << ":" << cpputil::Uitox(cpu.state.EIP) << " ";
 		std::cout << "Read IO32:[" << cpputil::Ustox(ioport) << "] " << cpputil::Ubtox(data);
 		auto iter=ioLabel.find(ioport);
 		if(ioLabel.end()!=iter)
