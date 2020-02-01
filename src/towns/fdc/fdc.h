@@ -11,7 +11,39 @@ public:
 	class State
 	{
 	public:
+		class Drive
+		{
+		public:
+			bool diskInserted; // Will be replaced with D77 disk image class
+			int trackPos;      // Actual head location.
+			int trackReg;      // Value in track register 0202H
+			int sectorReg;     // Value in sector register 0x04H
+			int dataReg;       // Value in data register 0x06H
+		};
+
+		Drive drive[4];
+		bool driveSwitch;  // [2] pp.258
+		bool busy;
+		unsigned int driveSelect;
+		unsigned int lastCmd;
+		unsigned int lastStatus;
+
 		void Reset(void);
+
+		void SendCommand(unsigned int data);
+
+		unsigned int CommandToCommandType(unsigned int cmd) const;
+		unsigned char MakeUpStatus(unsigned int cmd) const;
+		bool DriveReady(void) const;
+		bool WriteProtected(void) const;
+		bool SeekError(void) const;
+		bool CRCError(void) const;
+		bool IndexHole(void) const;
+		bool RecordType(void) const;
+		bool RecordNotFound(void) const;
+		bool LostData(void) const;
+		bool DataRequest(void) const;
+		bool WriteFault(void) const;
 	};
 
 	class FMTowns *townsPtr;
