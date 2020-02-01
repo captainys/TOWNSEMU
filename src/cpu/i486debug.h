@@ -4,6 +4,7 @@
 
 
 #include <set>
+#include <map>
 #include "i486.h"
 
 class i486Debugger
@@ -14,9 +15,10 @@ public:
 	std::set <CS_EIP> breakPoint;
 	CS_EIP oneTimeBreakPoint;
 	std::string externalBreakReason;
+	std::map <unsigned int,std::string> ioLabel;
 
 	bool stop;
-
+	bool monitorIO;
 	bool disassembleEveryStep;
 
 	CS_EIP lastDisassembleAddr;

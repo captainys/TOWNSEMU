@@ -39,6 +39,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 
 	featureMap["CMDLOG"]=ENABLE_CMDLOG;
 	featureMap["AUTODISASM"]=ENABLE_DISASSEMBLE_EVERY_INST;
+	featureMap["IOMON"]=ENABLE_IOMONITOR;
 
 	printableMap["CALLSTACK"]=PRINT_CALLSTACK;
 	printableMap["CST"]=PRINT_CALLSTACK;
@@ -96,6 +97,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Command log.  Saved to CMD.LOG." << std::endl;
 	std::cout << "AUTODISASM" << std::endl;
 	std::cout << "  Disassemble while running." << std::endl;
+	std::cout << "IOMON" << std::endl;
+	std::cout << "  IO Monitor." << std::endl;
 
 	std::cout << "" << std::endl;
 
@@ -229,7 +232,9 @@ void TownsCommandInterpreter::Execute_Enable(FMTowns &towns,Command &cmd)
 		PrintError(ERROR_TOO_FEW_ARGS);
 		return;
 	}
-	auto iter=featureMap.find(cmd.argv[1]);
+	auto argv1=cmd.argv[1];
+	cpputil::Capitalize(argv1);
+	auto iter=featureMap.find(argv1);
 	if(featureMap.end()!=iter)
 	{
 		switch(iter->second)
@@ -239,6 +244,10 @@ void TownsCommandInterpreter::Execute_Enable(FMTowns &towns,Command &cmd)
 		case ENABLE_DISASSEMBLE_EVERY_INST:
 			towns.debugger.disassembleEveryStep=true;
 			std::cout << "Disassemble_Every_Step is ON." << std::endl;
+			break;
+		case ENABLE_IOMONITOR:
+			towns.debugger.monitorIO=true;
+			std::cout << "IO_Monitor is ON." << std::endl;
 			break;
 		}
 	}
@@ -250,7 +259,9 @@ void TownsCommandInterpreter::Execute_Disable(FMTowns &towns,Command &cmd)
 		PrintError(ERROR_TOO_FEW_ARGS);
 		return;
 	}
-	auto iter=featureMap.find(cmd.argv[1]);
+	auto argv1=cmd.argv[1];
+	cpputil::Capitalize(argv1);
+	auto iter=featureMap.find(argv1);
 	if(featureMap.end()!=iter)
 	{
 		switch(iter->second)
@@ -260,6 +271,10 @@ void TownsCommandInterpreter::Execute_Disable(FMTowns &towns,Command &cmd)
 		case ENABLE_DISASSEMBLE_EVERY_INST:
 			towns.debugger.disassembleEveryStep=false;
 			std::cout << "Disassemble_Every_Step is OFF." << std::endl;
+			break;
+		case ENABLE_IOMONITOR:
+			towns.debugger.monitorIO=false;
+			std::cout << "IO_Monitor is OFF." << std::endl;
 			break;
 		}
 	}

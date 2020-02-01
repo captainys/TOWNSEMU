@@ -53,7 +53,6 @@ unsigned int InOut::In8(unsigned int port)
 	}
 
 	// Read from appropriate device..
-	std::cout << "Read IO8:[" << cpputil::Ustox(port) << "] " << cpputil::Ubtox(value) << std::endl;
 	if(true==takeLog)
 	{
 		IOLog l;
@@ -74,7 +73,6 @@ unsigned int InOut::In16(unsigned int port)
 		value=ioMap[port]->IOReadWord(port);
 	}
 
-	std::cout << "Read IO16:[" << cpputil::Ustox(port) << "] " << cpputil::Ubtox(value) << std::endl;
 	if(true==takeLog)
 	{
 		IOLog l;
@@ -95,7 +93,6 @@ unsigned int InOut::In32(unsigned int port)
 		value=ioMap[port]->IOReadDword(port);
 	}
 
-	std::cout << "Read IO32:[" << cpputil::Ustox(port) << "] " << cpputil::Ubtox(value) << std::endl;
 	if(true==takeLog)
 	{
 		IOLog l;
@@ -109,8 +106,6 @@ unsigned int InOut::In32(unsigned int port)
 
 void InOut::Out8(unsigned int port,unsigned int value)
 {
-	std::cout << "Write IO8:[" << cpputil::Ustox(port) << "] " << cpputil::Ubtox(value) << std::endl;
-
 	if(port<NUM_IO_ADDR && nullptr!=ioMap[port])
 	{
 		ioMap[port]->IOWriteByte(port,value);
@@ -127,8 +122,6 @@ void InOut::Out8(unsigned int port,unsigned int value)
 }
 void InOut::Out16(unsigned int port,unsigned int value)
 {
-	std::cout << "Write IO16:[" << cpputil::Ustox(port) << "] " << cpputil::Ustox(value) << std::endl;
-
 	if(port<NUM_IO_ADDR && nullptr!=ioMap[port])
 	{
 		ioMap[port]->IOWriteWord(port,value);
@@ -145,8 +138,6 @@ void InOut::Out16(unsigned int port,unsigned int value)
 }
 void InOut::Out32(unsigned int port,unsigned int value)
 {
-	std::cout << "Write IO32:[" << cpputil::Ustox(port) << "] " << cpputil::Uitox(value) << std::endl;
-
 	if(port<NUM_IO_ADDR && nullptr!=ioMap[port])
 	{
 		ioMap[port]->IOWriteDword(port,value);

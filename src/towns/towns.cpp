@@ -3,6 +3,7 @@
 #include "cpputil.h"
 #include "towns.h"
 #include "townsdef.h"
+#include "townsmap.h"
 #include "render.h"
 #include "outside_world.h"
 
@@ -44,6 +45,8 @@ void FMTowns::Variable::Reset(void)
 FMTowns::FMTowns() : crtc(this),pic(this),dmac(this)
 {
 	townsType=TOWNSTYPE_2_MX;
+
+	debugger.ioLabel=FMTownsIOMap();
 
 	abort=false;
 	allDevices.push_back(&pic);
