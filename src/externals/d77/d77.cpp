@@ -1282,6 +1282,16 @@ std::vector <unsigned char> D77File::D77Disk::ReadSector(int trk,int sid,int sec
 	return empty;
 }
 
+const D77File::D77Disk::D77Sector *D77File::D77Disk::GetSector(int trk,int sid,int sec) const
+{
+	auto trkPtr=FindTrack(trk,sid);
+	if(nullptr!=trkPtr)
+	{
+		return trkPtr->FindSector(sec);
+	}
+	return nullptr;
+}
+
 bool D77File::D77Disk::CopyTrack(int dstTrk,int dstSide,int srcTrk,int srcSide)
 {
 	auto fromTrk=GetTrack(srcTrk,srcSide);
@@ -1417,7 +1427,7 @@ bool D77File::SetRawBinary(long long int nByte,const unsigned char byteData[],bo
 
 	if(true==verboseMode)
 	{
-		printf("Identified as %dKB disk.\n",nByte/1024);
+		printf("Identified as %lldKB disk.\n",nByte/1024);
 		printf("%d bytes/sector\n",bytesPerSector);
 		printf("%d sectors/track\n",sectorsPerTrack);
 		printf("%d tracks\n",numTracks);

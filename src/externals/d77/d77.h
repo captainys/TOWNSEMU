@@ -347,6 +347,10 @@ public:
 		*/
 		std::vector <unsigned char> ReadSector(int trk,int sid,int sec) const;
 
+		/*! Get a pointer to a sector.
+		*/
+		const D77Sector *GetSector(int trk,int sid,int sec) const;
+
 		/*! Copies a track.
 		*/
 		bool CopyTrack(int dstTrk,int dstSide,int srcTrk,int srcSide);

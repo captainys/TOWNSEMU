@@ -6,6 +6,33 @@
 #include "towns.h"
 
 
+void TownsFDC::ImageFile::SaveIfModified(void)
+{
+	bool modified=false;
+	for(int i=0; i<d77.GetNumDisk(); ++i)
+	{
+		auto diskPtr=d77.GetDisk(i);
+		if(true==diskPtr->IsModified())
+		{
+			modified=true;
+			break;
+		}
+	}
+
+	if(true==modified)
+	{
+		std::cout << __FUNCTION__ << std::endl;
+		std::cout << "I'm supposed to save modified disk image." << std::endl;
+		std::cout << "But I haven't implemented yet." << std::endl;
+	}
+
+	for(int i=0; i<d77.GetNumDisk(); ++i)
+	{
+		d77.GetDisk(i)->ClearModified();
+	}
+}
+
+////////////////////////////////////////////////////////////
 
 void TownsFDC::State::Reset(void)
 {
@@ -26,21 +53,108 @@ void TownsFDC::State::Reset(void)
 	lastCmd=0;
 	lastStatus=0;
 }
-void TownsFDC::State::SendCommand(unsigned int data)
+
+
+////////////////////////////////////////////////////////////
+
+
+TownsFDC::TownsFDC(class FMTowns *townsPtr)
+{
+	this->townsPtr=townsPtr;
+
+	Reset();
+	debugBreakOnCommandWrite=false;
+	for(auto &d : state.drive)
+	{
+		d.imgFileNum=-1;
+		d.diskIndex=-1;
+	}
+	for(auto &i : imgFile)
+	{
+		i.fileType=IMGFILE_RAW;
+	}
+}
+
+
+bool TownsFDC::LoadRawBinary(unsigned int driveNum,const char fName[],bool verbose)
+{
+	driveNum&=3;
+
+	auto bin=cpputil::ReadBinaryFile(fName);
+	if(0==bin.size())
+	{
+		return false;
+	}
+
+	// First unlink any drive pointing to the disk image
+	for(auto &d : state.drive)
+	{
+		if(d.imgFileNum==driveNum)
+		{
+			d.imgFileNum=-1;
+			d.diskIndex=-1;
+		}
+	}
+
+	imgFile[driveNum].SaveIfModified();
+
+	if(true==imgFile[driveNum].d77.SetRawBinary(bin,verbose))
+	{
+		imgFile[driveNum].fileType=IMGFILE_RAW;
+		imgFile[driveNum].fName=fName;
+		state.drive[driveNum].imgFileNum=driveNum;
+		state.drive[driveNum].diskIndex=0;
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+D77File::D77Disk *TownsFDC::GetDriveDisk(int driveNum)
+{
+	if(0<=driveNum && driveNum<NUM_DRIVES)
+	{
+		auto &drv=state.drive[driveNum];
+		if(0<=drv.imgFileNum && drv.imgFileNum<NUM_DRIVES)
+		{
+			return imgFile[drv.imgFileNum].d77.GetDisk(drv.diskIndex);
+		}
+	}
+	return nullptr;
+}
+const D77File::D77Disk *TownsFDC::GetDriveDisk(int driveNum) const
+{
+	if(0<=driveNum && driveNum<NUM_DRIVES)
+	{
+		auto &drv=state.drive[driveNum];
+		if(0<=drv.imgFileNum && drv.imgFileNum<NUM_DRIVES)
+		{
+			return imgFile[drv.imgFileNum].d77.GetDisk(drv.diskIndex);
+		}
+	}
+	return nullptr;
+}
+
+////////////////////////////////////////////////////////////
+
+
+void TownsFDC::SendCommand(unsigned int data)
 {
 	if(0xFE==data)
 	{
 		// Prob reset.
 		Reset();
 	}
-	else if((data&0xF0)!=0xD0 && 0==driveSelectBit)
+	else if((data&0xF0)!=0xD0 && 0==state.driveSelectBit)
 	{
 		// Drive not selected.
 		return;
 	}
 	else
 	{
-		auto &drv=drive[DriveSelect()];
+		auto &drv=state.drive[DriveSelect()];
 		switch(data&0xF0)
 		{
 		case 0x00: // Restore
@@ -90,20 +204,20 @@ void TownsFDC::State::SendCommand(unsigned int data)
 			break;
 
 		case 0xD0: // Force Interrupt
-			if(true==busy)
+			if(true==state.busy)
 			{
-				lastCmd=data;
-				busy=false;
+				state.lastCmd=data;
+				state.busy=false;
 				return; // Don't update status.
 			}
-			busy=false;
+			state.busy=false;
 			break;
 		}
 	}
-	lastCmd=data;
-	lastStatus=MakeUpStatus(data);
+	state.lastCmd=data;
+	state.lastStatus=MakeUpStatus(data);
 }
-unsigned int TownsFDC::State::CommandToCommandType(unsigned int cmd) const
+unsigned int TownsFDC::CommandToCommandType(unsigned int cmd) const
 {
 	if(0xFE==cmd)
 	{
@@ -137,7 +251,7 @@ unsigned int TownsFDC::State::CommandToCommandType(unsigned int cmd) const
 	}
 	return 0; // What?
 }
-unsigned char TownsFDC::State::MakeUpStatus(unsigned int cmd) const
+unsigned char TownsFDC::MakeUpStatus(unsigned int cmd) const
 {
 	unsigned char data=0;
 	if(0xFE==cmd)
@@ -145,7 +259,7 @@ unsigned char TownsFDC::State::MakeUpStatus(unsigned int cmd) const
 		cmd=0xD0; // System ROM is using this 0xFE.  Same as 0xD0?  Or Reset?
 	}
 	data|=(true!=DriveReady() ? 0x80 : 0);
-	data|=(true==busy ? 0x01 : 0);
+	data|=(true==state.busy ? 0x01 : 0);
 	switch(cmd&0xF0)
 	{
 	case 0x00: // Restore
@@ -160,7 +274,7 @@ unsigned char TownsFDC::State::MakeUpStatus(unsigned int cmd) const
 		data|=(DriveReady() ?     0x20 : 0); // Head-Engaged: Make it same as drive ready.
 		data|=(SeekError() ?      0x10 : 0);
 		data|=(CRCError() ?       0x08 : 0);
-		data|=(drive[DriveSelect()].trackPos==0 ? 0x04 : 0);
+		data|=(state.drive[DriveSelect()].trackPos==0 ? 0x04 : 0);
 		data|=(IndexHole() ?      0x02 : 0);
 		break;
 
@@ -202,84 +316,81 @@ unsigned char TownsFDC::State::MakeUpStatus(unsigned int cmd) const
 	case 0xD0: // Force Interrupt
 		data|=(WriteProtected() ? 0x40 : 0);
 		data|=(DriveReady() ?     0x20 : 0); // Head-Engaged: Make it same as drive ready.
-		data|=(drive[DriveSelect()].trackPos==0 ? 0x04 : 0);
+		data|=(state.drive[DriveSelect()].trackPos==0 ? 0x04 : 0);
 		data|=(IndexHole() ?      0x02 : 0);
 		data&=0xFE;
 		break;
 	}
 	return data;
 }
-unsigned int TownsFDC::State::DriveSelect(void) const
+unsigned int TownsFDC::DriveSelect(void) const
 {
-	if(0!=(driveSelectBit&1))
+	if(0!=(state.driveSelectBit&1))
 	{
 		return 0;
 	}
-	if(0!=(driveSelectBit&2))
+	if(0!=(state.driveSelectBit&2))
 	{
 		return 1;
 	}
-	if(0!=(driveSelectBit&4))
+	if(0!=(state.driveSelectBit&4))
 	{
 		return 2;
 	}
-	if(0!=(driveSelectBit&8))
+	if(0!=(state.driveSelectBit&8))
 	{
 		return 3;
 	}
 	return 0;
 }
-bool TownsFDC::State::DriveReady(void) const
+bool TownsFDC::DriveReady(void) const
 {
-	return true; // Tentative.
+	if(0!=state.driveSelectBit && nullptr!=GetDriveDisk(DriveSelect()))
+	{
+		return true;
+	}
+	return false;
 }
-bool TownsFDC::State::WriteProtected(void) const
+bool TownsFDC::WriteProtected(void) const
 {
 	return false; // Tentative.
 }
-bool TownsFDC::State::SeekError(void) const
+bool TownsFDC::SeekError(void) const
 {
 	return false;
 }
-bool TownsFDC::State::CRCError(void) const
+bool TownsFDC::CRCError(void) const
 {
 	return false;
 }
-bool TownsFDC::State::IndexHole(void) const
+bool TownsFDC::IndexHole(void) const
 {
 	return false;
 }
-bool TownsFDC::State::RecordType(void) const
+bool TownsFDC::RecordType(void) const
 {
 	return false;
 }
-bool TownsFDC::State::RecordNotFound(void) const
+bool TownsFDC::RecordNotFound(void) const
 {
 	return false;
 }
-bool TownsFDC::State::LostData(void) const
+bool TownsFDC::LostData(void) const
 {
 	return false;
 }
-bool TownsFDC::State::DataRequest(void) const
+bool TownsFDC::DataRequest(void) const
 {
 	return false;
 }
-bool TownsFDC::State::WriteFault(void) const
+bool TownsFDC::WriteFault(void) const
 {
 	return false;
 }
+
 
 ////////////////////////////////////////////////////////////
 
-
-TownsFDC::TownsFDC(class FMTowns *townsPtr)
-{
-	this->townsPtr=townsPtr;
-
-	Reset();
-	debugBreakOnCommandWrite=false;
-}
 
 /* virtual */ void TownsFDC::IOWriteByte(unsigned int ioport,unsigned int data)
 {
@@ -288,20 +399,20 @@ TownsFDC::TownsFDC(class FMTowns *townsPtr)
 	case TOWNSIO_FDC_STATUS_COMMAND://       0x200, // [2] pp.253
 		// During the start-up, System ROM writes 0FEH to this register,
 		// which is not listed in the data sheet of MB
-		state.SendCommand(data);
+		SendCommand(data);
 		if(true==debugBreakOnCommandWrite)
 		{
 			townsPtr->debugger.ExternalBreak("FDC Command Write "+cpputil::Ubtox(data));
 		}
 		break;
 	case TOWNSIO_FDC_TRACK://                0x202, // [2] pp.253
-		state.drive[state.DriveSelect()].trackReg=data;
+		state.drive[DriveSelect()].trackReg=data;
 		break;
 	case TOWNSIO_FDC_SECTOR://               0x204, // [2] pp.253
-		state.drive[state.DriveSelect()].sectorReg=data;
+		state.drive[DriveSelect()].sectorReg=data;
 		break;
 	case TOWNSIO_FDC_DATA://                 0x205, // [2] pp.253
-		state.drive[state.DriveSelect()].dataReg=data;
+		state.drive[DriveSelect()].dataReg=data;
 		break;
 	case TOWNSIO_FDC_DRIVE_STATUS_CONTROL:// 0x208, // [2] pp.253
 		break;
@@ -336,7 +447,7 @@ TownsFDC::TownsFDC(class FMTowns *townsPtr)
 		break;
 	case TOWNSIO_FDC_DRIVE_STATUS_CONTROL:// 0x208, // [2] pp.253
 		data=5; // Bit0:Always 1   Bit2:3.5inch drive
-		data|=(state.DriveReady() ? 2 : 0);
+		data|=(DriveReady() ? 2 : 0);
 		break;
 	case TOWNSIO_FDC_DRIVE_SELECT://         0x20C, // [2] pp.253
 		break;
