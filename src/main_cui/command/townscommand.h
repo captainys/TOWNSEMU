@@ -48,6 +48,10 @@ public:
 
 		CMD_BREAK_ON,
 		CMD_DONT_BREAK_ON,
+
+		CMD_DISASM,
+		CMD_DISASM16,
+		CMD_DISASM32,
 	};
 
 	enum

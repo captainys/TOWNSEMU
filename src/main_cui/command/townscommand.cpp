@@ -36,6 +36,9 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["DLBRK"]=CMD_DELETE_BREAKPOINT;
 	primaryCmdMap["CLBRK"]=CMD_CLEAR_BREAKPOINT;
 	primaryCmdMap["T"]=CMD_RUN_ONE_INSTRUCTION;
+	primaryCmdMap["U"]=CMD_DISASM;
+	primaryCmdMap["U16"]=CMD_DISASM16;
+	primaryCmdMap["U32"]=CMD_DISASM32;
 	primaryCmdMap["BRKON"]=CMD_BREAK_ON;
 	primaryCmdMap["CBRKON"]=CMD_DONT_BREAK_ON;
 
@@ -73,6 +76,12 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Run.  Can specify temporary break point." << std::endl;
 	std::cout << "T" << std::endl;
 	std::cout << "  Trace.  Run one instruction." << std::endl;
+	std::cout << "U addr" << std::endl;
+	std::cout << "  Unassemble (disassemble)" << std::endl;
+	std::cout << "U16 addr" << std::endl;
+	std::cout << "  Unassemble (disassemble) as 16-bit operand size" << std::endl;
+	std::cout << "U32 addr" << std::endl;
+	std::cout << "  Unassemble (disassemble) as 32-bit operand size" << std::endl;
 	std::cout << "PAUSE|PAU" << std::endl;
 	std::cout << "  Pause VM." << std::endl;
 	std::cout << "WAIT" << std::endl;
@@ -198,6 +207,12 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,Command &c
 			}
 			towns.debugger.oneTimeBreakPoint=farPtr;
 		}
+		break;
+	case CMD_DISASM:
+		break;
+	case CMD_DISASM16:
+		break;
+	case CMD_DISASM32:
 		break;
 	case CMD_PAUSE:
 		thr.SetRunMode(TownsThread::RUNMODE_PAUSE);

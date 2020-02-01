@@ -20,21 +20,12 @@ bool i486DX::OpCodeNeedsOneMoreByte(unsigned int firstByte) const
 }
 
 
-i486DX::Instruction i486DX::FetchInstruction(const SegmentRegister &CS,unsigned int offset,const Memory &mem) const
+i486DX::Instruction i486DX::FetchInstruction(const SegmentRegister &CS,unsigned int offset,const Memory &mem,unsigned int defOperSize,unsigned int defAddrSize) const
 {
 	Instruction inst;
 	inst.Clear();
-	if(true==IsInRealMode())
-	{
-		inst.operandSize=16;
-		inst.addressSize=16;
-	}
-	else
-	{
-		// Default operandSize and addressSize depends on the D flag of the segment descriptor.
-		inst.operandSize=CS.operandSize;
-		inst.addressSize=CS.addressSize;
-	}
+	inst.operandSize=defOperSize;
+	inst.addressSize=defAddrSize;
 
 	// Question: Do prefixes need to be in the specific order INST_PREFIX->ADDRSIZE_OVERRIDE->OPSIZE_OVERRIDE->SEG_OVERRIDE?
 

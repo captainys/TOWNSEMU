@@ -1549,9 +1549,25 @@ private:
 public:
 	/*! Fetch an instruction from specific segment and offset.
 	*/
-	Instruction FetchInstruction(const SegmentRegister &CS,unsigned int offset,const Memory &mem) const;
+	inline Instruction FetchInstruction(const SegmentRegister &CS,unsigned int offset,const Memory &mem) const
+	{
+		if(true==IsInRealMode())
+		{
+			return FetchInstruction(CS,offset,mem,16,16);
+		}
+		else
+		{
+			// Default operandSize and addressSize depends on the D flag of the segment descriptor.
+			return FetchInstruction(CS,offset,mem,CS.operandSize,CS.addressSize);
+		}
+	}
+
+	/*! Fetch an instruction from specific segment and offset with given default operand size and address size.
+	*/
+	Instruction FetchInstruction(const SegmentRegister &CS,unsigned int offset,const Memory &mem,unsigned int defOperSize,unsigned int defAddrSize) const;
 
 
+public:
 	/*! Make a disassembly.
 	*/
 	std::string Disassemble(const Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem) const;
