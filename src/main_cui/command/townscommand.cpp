@@ -55,6 +55,8 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	printableMap["STA"]=PRINT_CURRENT_STATUS;
 	printableMap["S"]=PRINT_CURRENT_STATUS;
 	printableMap["PIC"]=PRINT_PIC;
+	printableMap["DMA"]=PRINT_DMAC;
+	printableMap["DMAC"]=PRINT_DMAC;
 
 	dumpableMap["RINTVEC"]=DUMP_REAL_MODE_INT_VECTOR;
 
@@ -131,6 +133,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Current status"<<std::endl;
 	std::cout << "PIC" << std::endl;
 	std::cout << "  Pilot-In-Command. No!  Programmable Interrupt Controller." << std::endl;
+	std::cout << "DMA|DMAC" << std::endl;
+	std::cout << "  DMA Controller." << std::endl;
 
 	std::cout << "" << std::endl;
 
@@ -371,6 +375,9 @@ void TownsCommandInterpreter::Execute_Print(FMTowns &towns,Command &cmd)
 			break;
 		case PRINT_PIC:
 			towns.PrintPIC();
+			break;
+		case PRINT_DMAC:
+			towns.PrintDMAC();
 			break;
 		}
 	}

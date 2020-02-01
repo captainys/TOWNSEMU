@@ -353,6 +353,14 @@ void FMTowns::PrintPIC(void) const
 	}
 }
 
+void FMTowns::PrintDMAC(void) const
+{
+	for(auto str : dmac.GetStateText())
+	{
+		std::cout << str << std::endl;
+	}
+}
+
 void FMTowns::PrintStatus(void) const
 {
 	cpu.PrintState();

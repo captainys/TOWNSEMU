@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "cpputil.h"
 #include "fdc.h"
 #include "townsdef.h"
@@ -16,13 +18,88 @@ void TownsFDC::State::Reset(void)
 		d.dataReg=0;       // Value in data register 0x06H
 	}
 	driveSwitch=false;
-	driveSelect=0;
+	driveSelectBit=0;
+	busy=false;
+	MODEB=false;
+	HISPD=false;
+	INUSE=false;
 	lastCmd=0;
 	lastStatus=0;
-	busy=false;
 }
 void TownsFDC::State::SendCommand(unsigned int data)
 {
+	if(0xFE==data)
+	{
+		// Prob reset.
+		Reset();
+	}
+	else if((data&0xF0)!=0xD0 && 0==driveSelectBit)
+	{
+		// Drive not selected.
+		return;
+	}
+	else
+	{
+		auto &drv=drive[DriveSelect()];
+		switch(data&0xF0)
+		{
+		case 0x00: // Restore
+			std::cout << __FUNCTION__ << std::endl;
+			std::cout << "Command " << cpputil::Ubtox(data) << " not supported yet." << std::endl;
+			break;
+		case 0x10: // Seek
+			std::cout << __FUNCTION__ << std::endl;
+			std::cout << "Command " << cpputil::Ubtox(data) << " not supported yet." << std::endl;
+			break;
+		case 0x20: // Step?
+		case 0x30: // Step?
+			std::cout << __FUNCTION__ << std::endl;
+			std::cout << "Command " << cpputil::Ubtox(data) << " not supported yet." << std::endl;
+			break;
+		case 0x40: // Step In
+		case 0x50: // Step In
+			std::cout << __FUNCTION__ << std::endl;
+			std::cout << "Command " << cpputil::Ubtox(data) << " not supported yet." << std::endl;
+			break;
+		case 0x60: // Step Out
+		case 0x70: // Step Out
+			std::cout << __FUNCTION__ << std::endl;
+			std::cout << "Command " << cpputil::Ubtox(data) << " not supported yet." << std::endl;
+			break;
+
+		case 0x80: // Read Data (Read Sector)
+		case 0x90: // Read Data (Read Sector)
+			break;
+		case 0xA0: // Write Data (Write Sector)
+		case 0xB0: // Write Data (Write Sector)
+			std::cout << __FUNCTION__ << std::endl;
+			std::cout << "Command " << cpputil::Ubtox(data) << " not supported yet." << std::endl;
+			break;
+
+		case 0xC0: // Read Address
+			std::cout << __FUNCTION__ << std::endl;
+			std::cout << "Command " << cpputil::Ubtox(data) << " not supported yet." << std::endl;
+			break;
+		case 0xE0: // Read Track
+			std::cout << __FUNCTION__ << std::endl;
+			std::cout << "Command " << cpputil::Ubtox(data) << " not supported yet." << std::endl;
+			break;
+		case 0xF0: // Write Track
+			std::cout << __FUNCTION__ << std::endl;
+			std::cout << "Command " << cpputil::Ubtox(data) << " not supported yet." << std::endl;
+			break;
+
+		case 0xD0: // Force Interrupt
+			if(true==busy)
+			{
+				lastCmd=data;
+				busy=false;
+				return; // Don't update status.
+			}
+			busy=false;
+			break;
+		}
+	}
 	lastCmd=data;
 	lastStatus=MakeUpStatus(data);
 }
@@ -83,7 +160,7 @@ unsigned char TownsFDC::State::MakeUpStatus(unsigned int cmd) const
 		data|=(DriveReady() ?     0x20 : 0); // Head-Engaged: Make it same as drive ready.
 		data|=(SeekError() ?      0x10 : 0);
 		data|=(CRCError() ?       0x08 : 0);
-		data|=(drive[driveSelect].trackPos==0 ? 0x04 : 0);
+		data|=(drive[DriveSelect()].trackPos==0 ? 0x04 : 0);
 		data|=(IndexHole() ?      0x02 : 0);
 		break;
 
@@ -125,12 +202,32 @@ unsigned char TownsFDC::State::MakeUpStatus(unsigned int cmd) const
 	case 0xD0: // Force Interrupt
 		data|=(WriteProtected() ? 0x40 : 0);
 		data|=(DriveReady() ?     0x20 : 0); // Head-Engaged: Make it same as drive ready.
-		data|=(drive[driveSelect].trackPos==0 ? 0x04 : 0);
+		data|=(drive[DriveSelect()].trackPos==0 ? 0x04 : 0);
 		data|=(IndexHole() ?      0x02 : 0);
 		data&=0xFE;
 		break;
 	}
 	return data;
+}
+unsigned int TownsFDC::State::DriveSelect(void) const
+{
+	if(0!=(driveSelectBit&1))
+	{
+		return 0;
+	}
+	if(0!=(driveSelectBit&2))
+	{
+		return 1;
+	}
+	if(0!=(driveSelectBit&4))
+	{
+		return 2;
+	}
+	if(0!=(driveSelectBit&8))
+	{
+		return 3;
+	}
+	return 0;
 }
 bool TownsFDC::State::DriveReady(void) const
 {
@@ -194,37 +291,29 @@ TownsFDC::TownsFDC(class FMTowns *townsPtr)
 		state.SendCommand(data);
 		if(true==debugBreakOnCommandWrite)
 		{
-			townsPtr->debugger.ExternalBreak("FDC Command Write"+cpputil::Ubtox(data));
+			townsPtr->debugger.ExternalBreak("FDC Command Write "+cpputil::Ubtox(data));
 		}
 		break;
 	case TOWNSIO_FDC_TRACK://                0x202, // [2] pp.253
-		state.drive[state.driveSelect].trackReg=data;
+		state.drive[state.DriveSelect()].trackReg=data;
 		break;
 	case TOWNSIO_FDC_SECTOR://               0x204, // [2] pp.253
-		state.drive[state.driveSelect].sectorReg=data;
+		state.drive[state.DriveSelect()].sectorReg=data;
 		break;
 	case TOWNSIO_FDC_DATA://                 0x205, // [2] pp.253
-		state.drive[state.driveSelect].dataReg=data;
+		state.drive[state.DriveSelect()].dataReg=data;
 		break;
 	case TOWNSIO_FDC_DRIVE_STATUS_CONTROL:// 0x208, // [2] pp.253
 		break;
 	case TOWNSIO_FDC_DRIVE_SELECT://         0x20C, // [2] pp.253
-		if(data&1)
+		if(0==state.driveSelectBit && 0!=(state.driveSelectBit&0x0F))
 		{
-			state.driveSelect=0;
+			// Latch MODE-B and HISPD
+			state.MODEB=(0!=(data&0x80));
+			state.HISPD=(0!=(data&0x40));
 		}
-		else if(data&2)
-		{
-			state.driveSelect=1;
-		}
-		else if(data&4)
-		{
-			state.driveSelect=2;
-		}
-		else if(data&8)
-		{
-			state.driveSelect=3;
-		}
+		state.INUSE=(0!=(data&0x10));
+		state.driveSelectBit=(data&0x0F);
 		break;
 	case TOWNSIO_FDC_DRIVE_SWITCH://         0x20E, // [2] pp.253
 		// Let's disable it.

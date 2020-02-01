@@ -69,6 +69,7 @@ public:
 		PRINT_CALLSTACK,
 		PRINT_BREAKPOINT,
 		PRINT_PIC,
+		PRINT_DMAC,
 	};
 
 	enum

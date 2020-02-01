@@ -24,7 +24,9 @@ public:
 		Drive drive[4];
 		bool driveSwitch;  // [2] pp.258
 		bool busy;
-		unsigned int driveSelect;
+		bool MODEB,HISPD;  // [2] pp.258, pp.809
+		bool INUSE;
+		unsigned int driveSelectBit;
 		unsigned int lastCmd;
 		unsigned int lastStatus;
 
@@ -34,6 +36,8 @@ public:
 
 		unsigned int CommandToCommandType(unsigned int cmd) const;
 		unsigned char MakeUpStatus(unsigned int cmd) const;
+		unsigned int DriveSelect(void) const;
+
 		bool DriveReady(void) const;
 		bool WriteProtected(void) const;
 		bool SeekError(void) const;

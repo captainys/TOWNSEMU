@@ -2,6 +2,8 @@
 #define DMAC_IS_INCLUDED
 /* { */
 
+#include <vector>
+#include <string>
 #include "device.h"
 
 class TownsDMAC : public Device
@@ -58,6 +60,8 @@ public:
 	virtual void IOWriteByte(unsigned int ioport,unsigned int data);
 
 	virtual unsigned int IOReadByte(unsigned int ioport);
+
+	std::vector <std::string> GetStateText(void) const;
 };
 
 

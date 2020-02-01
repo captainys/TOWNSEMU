@@ -199,6 +199,7 @@ public:
 	std::vector <std::string> GetCallStackText(void) const;
 	void PrintCallStack(void) const;
 	void PrintPIC(void) const;
+	void PrintDMAC(void) const;
 
 	void PrintStatus(void) const;
 };
