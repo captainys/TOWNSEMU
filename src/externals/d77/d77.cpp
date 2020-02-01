@@ -1362,6 +1362,95 @@ void D77File::SetData(long long int nByte,const unsigned char byteData[],bool ve
 	}
 }
 
+bool D77File::SetRawBinary(const std::vector <unsigned char> &byteData,bool verboseMode)
+{
+	return SetRawBinary(byteData.size(),byteData.data(),verboseMode);
+}
+bool D77File::SetRawBinary(long long int nByte,const unsigned char byteData[],bool verboseMode)
+{
+	int bytesPerSector;
+	int sectorsPerTrack;
+	int numTracks;
+	/*    1474560 bytes -> 1440KB   512bytes/sector, 18sectors/track, 80tracks, 2sides
+	      1261568 bytes -> 1232KB  1024bytes/sector,  8sectors/track, 77tracks, 2sides
+		   737280 bytes ->  720KB   512bytes/sector,  9sectors/track, 80tracks, 2sides
+		   655360 bytes ->  640KB   512bytes/sector,  8sectors/track, 80tracks, 2sides
+		   327680 bytes ->  320KB   256bytes/sector, 16sectors/track, 40tracks, 2sides */
+	switch(nByte)
+	{
+	case 1474560:
+		bytesPerSector= 512;
+		sectorsPerTrack=18;
+		numTracks=      80;
+		break;
+	case 1261568:
+		bytesPerSector= 1024;
+		sectorsPerTrack=8;
+		numTracks=      77;
+		break;
+	case  737280:
+		bytesPerSector= 512;
+		sectorsPerTrack=9;
+		numTracks=      80;
+		break;
+	case  655360:
+		bytesPerSector= 512;
+		sectorsPerTrack=8;
+		numTracks=      80;
+		break;
+	case  327680:
+		bytesPerSector= 256;
+		sectorsPerTrack=16;
+		numTracks=      40;
+		break;
+	default:
+		return false;
+	}
+
+	auto verifySize=bytesPerSector*sectorsPerTrack*numTracks*2;
+	if(verifySize!=nByte)
+	{
+		printf("%s %d\n",__FUNCTION__,__LINE__);
+		printf("Error.  Did not identify disk geometry correctly.\n");
+		return false;
+	}
+
+	if(true==verboseMode)
+	{
+		printf("Identified as %dKB disk.\n",nByte/1024);
+		printf("%d bytes/sector\n",bytesPerSector);
+		printf("%d sectors/track\n",sectorsPerTrack);
+		printf("%d tracks\n",numTracks);
+		printf("2 sides\n");
+	}
+
+	CleanUp();
+	auto diskId=CreateUnformatted(numTracks*2,"D77_DISK");
+	auto diskPtr=GetDisk(diskId);
+	unsigned long long int imgPtr=0;
+	for(int side=0; side<2; ++side)
+	{
+		for(int track=0; track<numTracks; ++track)
+		{
+			for(int sector=1; sector<=sectorsPerTrack; ++sector)
+			{
+				diskPtr->AddSector(track,side,sector,bytesPerSector);
+				diskPtr->WriteSector(track,side,sector,bytesPerSector,byteData+imgPtr);
+				imgPtr+=bytesPerSector;
+			}
+		}
+	}
+
+	if(imgPtr!=nByte)
+	{
+		printf("%s %d\n",__FUNCTION__,__LINE__);
+		printf("Error.  Total number of bytes used is incorrect.\n");
+		return false;
+	}
+
+	return true;
+}
+
 int D77File::CreateStandardFormatted(void)
 {
 	D77Disk disk;

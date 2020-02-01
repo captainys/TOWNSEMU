@@ -270,6 +270,8 @@ public:
 		void CreateStandardFormatted(void);
 
 		/*! Create an unformatted disk.
+		    nTrack must be number-of-tracks times number-of-sides.
+		    If 40 tracks 2 sides, nTrack must be 80.
 		*/
 		void CreateUnformatted(int nTrack,const char diskName[]);
 
@@ -282,6 +284,7 @@ public:
 		/*! Add a sector to a track.
 		    This trk and side points to the physical location, not track and side numbers
 		    stored in the sector.
+		    Sector size (secSize) is in number of bytes.  128,256,512, or 1024.
 		*/
 		bool AddSector(int trk,int sid,int secId,int secSize);
 
@@ -369,6 +372,16 @@ public:
 
 	void SetData(const std::vector <unsigned char> &byteData,bool verboseMode=true);
 	void SetData(long long int nByte,const unsigned char byteData[],bool verboseMode=true);
+
+	/*! Create from a RAW image.  Disk type is identified by the file size.
+	      1474560 bytes -> 1440KB   512bytes/sector, 18sectors/track, 80tracks, 2sides
+	      1261568 bytes -> 1232KB  1024bytes/sector,  8sectors/track, 77tracks, 2sides
+		   737280 bytes ->  720KB   512bytes/sector,  9sectors/track, 80tracks, 2sides
+		   655360 bytes ->  640KB   512bytes/sector,  8sectors/track, 80tracks, 2sides
+		   327680 bytes ->  320KB   256bytes/sector, 16sectors/track, 40tracks, 2sides
+	*/
+	bool SetRawBinary(const std::vector <unsigned char> &byteData,bool verboseMode=true);
+	bool SetRawBinary(long long int nByte,const unsigned char byteData[],bool verboseMode=true);
 
 	/*! Create a standard format disk and return a disk Id.
 	*/
