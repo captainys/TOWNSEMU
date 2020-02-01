@@ -121,6 +121,10 @@ public:
 
 	void Execute_BreakOn(FMTowns &towns,Command &cmd);
 	void Execute_ClearBreakOn(FMTowns &towns,Command &cmd);
+
+	void Execute_Disassemble(FMTowns &towns,Command &cmd);
+	void Execute_Disassemble16(FMTowns &towns,Command &cmd);
+	void Execute_Disassemble32(FMTowns &towns,Command &cmd);
 };
 
 

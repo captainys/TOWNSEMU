@@ -209,10 +209,13 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,Command &c
 		}
 		break;
 	case CMD_DISASM:
+		Execute_Disassemble(towns,cmd);
 		break;
 	case CMD_DISASM16:
+		Execute_Disassemble16(towns,cmd);
 		break;
 	case CMD_DISASM32:
+		Execute_Disassemble32(towns,cmd);
 		break;
 	case CMD_PAUSE:
 		thr.SetRunMode(TownsThread::RUNMODE_PAUSE);
@@ -436,5 +439,78 @@ void TownsCommandInterpreter::Execute_ClearBreakOn(FMTowns &towns,Command &cmd)
 			break;
 		}
 		std::cout << iter->first << " is OFF." << std::endl;
+	}
+}
+
+void TownsCommandInterpreter::Execute_Disassemble(FMTowns &towns,Command &cmd)
+{
+	i486DX::FarPointer farPtr;
+	farPtr.SEG=towns.cpu.state.CS().value;
+	farPtr.OFFSET=towns.cpu.state.EIP;
+	if(2<=cmd.argv.size())
+	{
+		farPtr=cmdutil::MakeFarPointer(cmd.argv[1]);
+		if(farPtr.SEG==i486DX::FarPointer::NO_SEG)
+		{
+			farPtr.SEG=towns.cpu.state.CS().value;
+		}
+	}
+
+	i486DX::SegmentRegister seg;
+	towns.cpu.LoadSegmentRegister(seg,farPtr.SEG,towns.mem);
+	for(int i=0; i<16; ++i)
+	{
+		auto inst=towns.cpu.FetchInstruction(seg,farPtr.OFFSET,towns.mem);
+		auto disasm=towns.cpu.Disassemble(inst,seg,farPtr.OFFSET,towns.mem);
+		std::cout << disasm << std::endl;
+		farPtr.OFFSET+=inst.numBytes;
+	}
+}
+void TownsCommandInterpreter::Execute_Disassemble16(FMTowns &towns,Command &cmd)
+{
+	i486DX::FarPointer farPtr;
+	farPtr.SEG=towns.cpu.state.CS().value;
+	farPtr.OFFSET=towns.cpu.state.EIP;
+	if(2<=cmd.argv.size())
+	{
+		farPtr=cmdutil::MakeFarPointer(cmd.argv[1]);
+		if(farPtr.SEG==i486DX::FarPointer::NO_SEG)
+		{
+			farPtr.SEG=towns.cpu.state.CS().value;
+		}
+	}
+
+	i486DX::SegmentRegister seg;
+	towns.cpu.LoadSegmentRegister(seg,farPtr.SEG,towns.mem);
+	for(int i=0; i<16; ++i)
+	{
+		auto inst=towns.cpu.FetchInstruction(seg,farPtr.OFFSET,towns.mem,16,16);
+		auto disasm=towns.cpu.Disassemble(inst,seg,farPtr.OFFSET,towns.mem);
+		std::cout << disasm << std::endl;
+		farPtr.OFFSET+=inst.numBytes;
+	}
+}
+void TownsCommandInterpreter::Execute_Disassemble32(FMTowns &towns,Command &cmd)
+{
+	i486DX::FarPointer farPtr;
+	farPtr.SEG=towns.cpu.state.CS().value;
+	farPtr.OFFSET=towns.cpu.state.EIP;
+	if(2<=cmd.argv.size())
+	{
+		farPtr=cmdutil::MakeFarPointer(cmd.argv[1]);
+		if(farPtr.SEG==i486DX::FarPointer::NO_SEG)
+		{
+			farPtr.SEG=towns.cpu.state.CS().value;
+		}
+	}
+
+	i486DX::SegmentRegister seg;
+	towns.cpu.LoadSegmentRegister(seg,farPtr.SEG,towns.mem);
+	for(int i=0; i<16; ++i)
+	{
+		auto inst=towns.cpu.FetchInstruction(seg,farPtr.OFFSET,towns.mem,32,32);
+		auto disasm=towns.cpu.Disassemble(inst,seg,farPtr.OFFSET,towns.mem);
+		std::cout << disasm << std::endl;
+		farPtr.OFFSET+=inst.numBytes;
 	}
 }
