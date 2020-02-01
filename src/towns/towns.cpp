@@ -36,6 +36,8 @@ void FMTowns::Variable::Reset(void)
 {
 	// freeRunTimerShift should survive Reset.
 	nextRenderingTime=0;
+	disassemblePointer.SEG=0;
+	disassemblePointer.OFFSET=0;
 }
 
 
@@ -220,6 +222,9 @@ void FMTowns::Reset(void)
 	{
 		devPtr->Reset();
 	}
+
+	var.disassemblePointer.SEG=cpu.state.CS().value;
+	var.disassemblePointer.OFFSET=cpu.state.EIP;
 }
 
 unsigned int FMTowns::RunOneInstruction(void)
@@ -233,6 +238,10 @@ unsigned int FMTowns::RunOneInstruction(void)
 	//                clockBalance/freq=1000.  1000 nano seconds.
 	state.townsTime+=(state.clockBalance/state.freq);
 	state.clockBalance%=state.freq;
+
+	var.disassemblePointer.SEG=cpu.state.CS().value;
+	var.disassemblePointer.OFFSET=cpu.state.EIP;
+
 	return clocksPassed;
 }
 

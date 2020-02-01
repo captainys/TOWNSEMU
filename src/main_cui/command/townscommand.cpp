@@ -444,9 +444,7 @@ void TownsCommandInterpreter::Execute_ClearBreakOn(FMTowns &towns,Command &cmd)
 
 void TownsCommandInterpreter::Execute_Disassemble(FMTowns &towns,Command &cmd)
 {
-	i486DX::FarPointer farPtr;
-	farPtr.SEG=towns.cpu.state.CS().value;
-	farPtr.OFFSET=towns.cpu.state.EIP;
+	auto farPtr=towns.var.disassemblePointer;
 	if(2<=cmd.argv.size())
 	{
 		farPtr=cmdutil::MakeFarPointer(cmd.argv[1]);
@@ -465,12 +463,11 @@ void TownsCommandInterpreter::Execute_Disassemble(FMTowns &towns,Command &cmd)
 		std::cout << disasm << std::endl;
 		farPtr.OFFSET+=inst.numBytes;
 	}
+	towns.var.disassemblePointer=farPtr;
 }
 void TownsCommandInterpreter::Execute_Disassemble16(FMTowns &towns,Command &cmd)
 {
-	i486DX::FarPointer farPtr;
-	farPtr.SEG=towns.cpu.state.CS().value;
-	farPtr.OFFSET=towns.cpu.state.EIP;
+	auto farPtr=towns.var.disassemblePointer;
 	if(2<=cmd.argv.size())
 	{
 		farPtr=cmdutil::MakeFarPointer(cmd.argv[1]);
@@ -489,12 +486,11 @@ void TownsCommandInterpreter::Execute_Disassemble16(FMTowns &towns,Command &cmd)
 		std::cout << disasm << std::endl;
 		farPtr.OFFSET+=inst.numBytes;
 	}
+	towns.var.disassemblePointer=farPtr;
 }
 void TownsCommandInterpreter::Execute_Disassemble32(FMTowns &towns,Command &cmd)
 {
-	i486DX::FarPointer farPtr;
-	farPtr.SEG=towns.cpu.state.CS().value;
-	farPtr.OFFSET=towns.cpu.state.EIP;
+	auto farPtr=towns.var.disassemblePointer;
 	if(2<=cmd.argv.size())
 	{
 		farPtr=cmdutil::MakeFarPointer(cmd.argv[1]);
@@ -513,4 +509,5 @@ void TownsCommandInterpreter::Execute_Disassemble32(FMTowns &towns,Command &cmd)
 		std::cout << disasm << std::endl;
 		farPtr.OFFSET+=inst.numBytes;
 	}
+	towns.var.disassemblePointer=farPtr;
 }

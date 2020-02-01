@@ -85,6 +85,7 @@ public:
 	public:
 		unsigned int freeRunTimerShift;
 		unsigned long long int nextRenderingTime;
+		i486DX::FarPointer disassemblePointer;
 		Variable();
 		void Reset(void);
 	};
