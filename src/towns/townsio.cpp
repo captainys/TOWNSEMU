@@ -48,6 +48,11 @@
 		return (state.townsTime<<var.freeRunTimerShift)&0xff;
 	case TOWNSIO_FREERUN_TIMER_HIGH://0x28,
 		return ((state.townsTime<<var.freeRunTimerShift)>>8)&0xff;
+
+	case TOWNSIO_FMR_RESOLUTION: // 0x400
+		// Bit0 should always be 0.
+		// In FM-R, Bit3 is labeled as "160P".  Meaning unknown.
+		return 0xFE;
 	}
 	return 0xff;
 }

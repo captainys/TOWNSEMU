@@ -120,10 +120,13 @@ FMTowns::FMTowns() : crtc(this),pic(this),dmac(this),fdc(this,&dmac)
 	io.AddDevice(&fdc,TOWNSIO_FDC_STATUS_COMMAND/*0x200*/,TOWNSIO_FDC_DRIVE_SWITCH/*0x20E*/);
 
 
-	io.AddDevice(&pic,TOWNSIO_PIC_PRIMARY_ICW1/*=          0x00,*/);
-	io.AddDevice(&pic,TOWNSIO_PIC_PRIMARY_ICW2_3_4_OCW/*=  0x02,*/);
-	io.AddDevice(&pic,TOWNSIO_PIC_SECONDARY_ICW1/*=        0x10,*/);
-	io.AddDevice(&pic,TOWNSIO_PIC_SECONDARY_ICW2_3_4_OCW/*=0x12,*/);
+	io.AddDevice(this,TOWNSIO_FMR_RESOLUTION); // 0x400
+
+
+	io.AddDevice(&pic,TOWNSIO_PIC_PRIMARY_ICW1);//          0x00
+	io.AddDevice(&pic,TOWNSIO_PIC_PRIMARY_ICW2_3_4_OCW);//  0x02
+	io.AddDevice(&pic,TOWNSIO_PIC_SECONDARY_ICW1);//        0x10
+	io.AddDevice(&pic,TOWNSIO_PIC_SECONDARY_ICW2_3_4_OCW);//0x12
 
 
 	io.AddDevice(&dmac,TOWNSIO_DMAC_INITIALIZE);//          0xA0,

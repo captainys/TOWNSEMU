@@ -177,8 +177,9 @@ void TownsFDC::SendCommand(unsigned int cmd)
 {
 	if(0xFE==cmd)
 	{
-		// Prob reset.
-		Reset();
+		// Meaning of 0xFE is unknown.
+		// MB8877 Data sheet does not list this command.
+		// Should I take it as 0xDE?
 		state.lastStatus=MakeUpStatus(0xD0);
 	}
 	else if((cmd&0xF0)!=0xD0 && 0==state.driveSelectBit)

@@ -39,3 +39,8 @@ When Digital-Palette register FD98-FDA0 is written,
 it should set bit7 of 044CH Digital Palette Modify Flag.  The flat should be reset when it is read.
 This I/O is also used by Sprite controller.  Should implement when implementing sprites.
 
+
+
+#2020/02/02-1
+FDC Comman 0xFE doesn't seem to be RESET.  Meaning is unknown.  MB8877A data sheet does not tell what it is.
+I am taking it as NOP right now.
