@@ -81,7 +81,7 @@ std::vector <std::string> cpputil::Parser(const char str[])
 	return argv;
 }
 
-void cpputil::Capitalize(std::string &s)
+const std::string &cpputil::Capitalize(std::string &s)
 {
 	for(auto &c : s)
 	{
@@ -90,6 +90,12 @@ void cpputil::Capitalize(std::string &s)
 			c=c+'A'-'a';
 		}
 	}
+	return s;
+}
+
+std::string cpputil::Capitalize(const char s[])
+{
+	return std::string(s);
 }
 
 std::string cpputil::GetExtension(const char fName[])
