@@ -2,6 +2,7 @@
 #define FDC_IS_INCLUDED
 /* { */
 
+#include <vector>
 #include <string>
 #include "device.h"
 #include "d77.h"
@@ -48,6 +49,8 @@ public:
 			int lastSeekDir;   // For STEP command.
 			int imgFileNum;    // Pointer to imgFile.
 			int diskIndex;     // Disk Index in imgFile[imgFileNum]
+
+			bool motor;
 		};
 
 		Drive drive[NUM_DRIVES];
@@ -55,9 +58,14 @@ public:
 		bool busy;
 		bool MODEB,HISPD;  // [2] pp.258, pp.809
 		bool INUSE;
+		unsigned int side; // Is side common for all drives?  Or Per drive?
+		bool CLKSEL,DDEN,IRQMSK;
+
 		unsigned int driveSelectBit;
 		unsigned int lastCmd;
 		unsigned int lastStatus;
+
+		bool recordType,recordNotFound,CRCError,lostData;
 
 		long long int scheduleTime;
 
@@ -78,6 +86,8 @@ public:
 	bool LoadRawBinary(unsigned int driveNum,const char fName[],bool verbose=true);
 	D77File::D77Disk *GetDriveDisk(int driveNum);
 	const D77File::D77Disk *GetDriveDisk(int driveNum) const;
+	ImageFile *GetDriveImageFile(int driveNum);
+	const ImageFile *GetDriveImageFile(int driveNum) const;
 
 	void SendCommand(unsigned int data);
 
@@ -101,6 +111,8 @@ public:
 	virtual unsigned int IOReadByte(unsigned int ioport);
 
 	virtual void Reset(void);
+
+	std::vector <std::string> GetStatusText(void) const;
 };
 
 

@@ -372,6 +372,14 @@ void FMTowns::PrintDMAC(void) const
 	}
 }
 
+void FMTowns::PrintFDC(void) const
+{
+	for(auto str : fdc.GetStatusText())
+	{
+		std::cout << str << std::endl;
+	}
+}
+
 void FMTowns::PrintStatus(void) const
 {
 	cpu.PrintState();

@@ -43,15 +43,23 @@ void TownsFDC::State::Reset(void)
 		d.sectorReg=1;     // Value in sector register 0x04H
 		d.dataReg=0;       // Value in data register 0x06H
 		d.lastSeekDir=1;
+		d.motor=false;
 	}
 	driveSwitch=false;
 	driveSelectBit=1;      // Looks like A drive is selected by default.
+	side=0;
 	busy=false;
 	MODEB=false;
 	HISPD=false;
 	INUSE=false;
 	lastCmd=0;
 	lastStatus=0;
+
+	CLKSEL=false;
+	DDEN=false;
+	IRQMSK=true;
+
+	recordNotFound=false;
 }
 
 
@@ -137,19 +145,43 @@ const D77File::D77Disk *TownsFDC::GetDriveDisk(int driveNum) const
 	}
 	return nullptr;
 }
+TownsFDC::ImageFile *TownsFDC::GetDriveImageFile(int driveNum)
+{
+	if(0<=driveNum && driveNum<NUM_DRIVES)
+	{
+		auto &drv=state.drive[driveNum];
+		if(0<=drv.imgFileNum && drv.imgFileNum<NUM_DRIVES)
+		{
+			return &imgFile[drv.imgFileNum];
+		}
+	}
+	return nullptr;
+}
+const TownsFDC::ImageFile *TownsFDC::GetDriveImageFile(int driveNum) const
+{
+	if(0<=driveNum && driveNum<NUM_DRIVES)
+	{
+		auto &drv=state.drive[driveNum];
+		if(0<=drv.imgFileNum && drv.imgFileNum<NUM_DRIVES)
+		{
+			return &imgFile[drv.imgFileNum];
+		}
+	}
+	return nullptr;
+}
 
 ////////////////////////////////////////////////////////////
 
 
-void TownsFDC::SendCommand(unsigned int data)
+void TownsFDC::SendCommand(unsigned int cmd)
 {
-	if(0xFE==data)
+	if(0xFE==cmd)
 	{
 		// Prob reset.
 		Reset();
 		state.lastStatus=MakeUpStatus(0xD0);
 	}
-	else if((data&0xF0)!=0xD0 && 0==state.driveSelectBit)
+	else if((cmd&0xF0)!=0xD0 && 0==state.driveSelectBit)
 	{
 		// Drive not selected.
 		return;
@@ -157,60 +189,104 @@ void TownsFDC::SendCommand(unsigned int data)
 	else
 	{
 		auto &drv=state.drive[DriveSelect()];
-		switch(data&0xF0)
+		switch(cmd&0xF0)
 		{
 		case 0x00: // Restore
 			commonState.scheduleTime=townsPtr->state.townsTime+RESTORE_TIME;
+			state.recordType=false;
+			state.recordNotFound=false;
+			state.CRCError=false;
+			state.lostData=false;
 			state.busy=true;
 			break;
 		case 0x10: // Seek
 			commonState.scheduleTime=townsPtr->state.townsTime+SEEK_TIME;
+			state.recordType=false;
+			state.recordNotFound=false;
+			state.CRCError=false;
+			state.lostData=false;
 			state.busy=true;
 			break;
 		case 0x20: // Step?
 		case 0x30: // Step?
 			commonState.scheduleTime=townsPtr->state.townsTime+STEP_TIME;
+			state.recordType=false;
+			state.recordNotFound=false;
+			state.CRCError=false;
+			state.lostData=false;
 			state.busy=true;
 			break;
 		case 0x40: // Step In
 		case 0x50: // Step In
 			commonState.scheduleTime=townsPtr->state.townsTime+STEP_TIME;
+			state.recordType=false;
+			state.recordNotFound=false;
+			state.CRCError=false;
+			state.lostData=false;
 			state.busy=true;
 			break;
 		case 0x60: // Step Out
 		case 0x70: // Step Out
 			commonState.scheduleTime=townsPtr->state.townsTime+STEP_TIME;
+			state.recordType=false;
+			state.recordNotFound=false;
+			state.CRCError=false;
+			state.lostData=false;
 			state.busy=true;
 			break;
 
 		case 0x80: // Read Data (Read Sector)
 		case 0x90: // Read Data (Read Sector)
 			commonState.scheduleTime=townsPtr->state.townsTime+SECTOR_READ_WRITE_TIME;
+			state.recordType=false;
+			state.recordNotFound=false;
+			state.CRCError=false;
+			state.lostData=false;
 			state.busy=true;
 			break;
 		case 0xA0: // Write Data (Write Sector)
 		case 0xB0: // Write Data (Write Sector)
 			commonState.scheduleTime=townsPtr->state.townsTime+SECTOR_READ_WRITE_TIME;
+			state.recordType=false;
+			state.recordNotFound=false;
+			state.CRCError=false;
+			state.lostData=false;
 			state.busy=true;
 			break;
 
 		case 0xC0: // Read Address
+			state.recordType=false;
+			state.recordNotFound=false;
+			state.CRCError=false;
+			state.lostData=false;
 			std::cout << __FUNCTION__ << std::endl;
-			std::cout << "Command " << cpputil::Ubtox(data) << " not supported yet." << std::endl;
+			std::cout << "Command " << cpputil::Ubtox(cmd) << " not supported yet." << std::endl;
 			break;
 		case 0xE0: // Read Track
+			state.recordType=false;
+			state.recordNotFound=false;
+			state.CRCError=false;
+			state.lostData=false;
 			std::cout << __FUNCTION__ << std::endl;
-			std::cout << "Command " << cpputil::Ubtox(data) << " not supported yet." << std::endl;
+			std::cout << "Command " << cpputil::Ubtox(cmd) << " not supported yet." << std::endl;
 			break;
 		case 0xF0: // Write Track
+			state.recordType=false;
+			state.recordNotFound=false;
+			state.CRCError=false;
+			state.lostData=false;
 			std::cout << __FUNCTION__ << std::endl;
-			std::cout << "Command " << cpputil::Ubtox(data) << " not supported yet." << std::endl;
+			std::cout << "Command " << cpputil::Ubtox(cmd) << " not supported yet." << std::endl;
 			break;
 
 		case 0xD0: // Force Interrupt
+			state.recordType=false;
+			state.recordNotFound=false;
+			state.CRCError=false;
+			state.lostData=false;
 			if(true==state.busy)
 			{
-				state.lastCmd=data;
+				state.lastCmd=cmd;
 				state.busy=false;
 				return; // Don't update status.
 			}
@@ -218,8 +294,8 @@ void TownsFDC::SendCommand(unsigned int data)
 			break;
 		}
 	}
-	state.lastCmd=data;
-	state.lastStatus=MakeUpStatus(data);
+	state.lastCmd=cmd;
+	state.lastStatus=MakeUpStatus(cmd);
 }
 unsigned int TownsFDC::CommandToCommandType(unsigned int cmd) const
 {
@@ -474,6 +550,39 @@ bool TownsFDC::WriteFault(void) const
 
 	case 0x80: // Read Data (Read Sector)
 	case 0x90: // Read Data (Read Sector)
+		commonState.scheduleTime=TIME_NO_SCHEDULE; // Tentativelu
+		if(nullptr!=diskPtr)
+		{
+			auto secPtr=diskPtr->GetSector(drv.trackPos,state.side,drv.sectorReg);
+			if(nullptr!=secPtr)
+			{
+				auto DMACh=DMACPtr->GetAvailableHardwareDMAChannel();
+				if(nullptr!=DMACh)
+				{
+					DMACPtr->DeviceToMemory(DMACh,secPtr->sectorData);
+					// What am I supposed to if error during DMA?
+					if(state.lastCmd&0x10 && diskPtr->GetSector(drv.trackPos,state.side,drv.sectorReg+1)) // Multi Record
+					{
+						++drv.sectorReg;
+						commonState.scheduleTime=townsPtr->state.townsTime+SECTOR_READ_WRITE_TIME;
+					}
+					else
+					{
+						state.busy=false;
+					}
+				}
+				else
+				{
+					state.lostData=true;
+					state.busy=false;
+				}
+			}
+			else
+			{
+				state.recordNotFound=true;
+				state.busy=false;
+			}
+		}
 		break;
 	case 0xA0: // Write Data (Write Sector)
 	case 0xB0: // Write Data (Write Sector)
@@ -499,10 +608,12 @@ bool TownsFDC::WriteFault(void) const
 		state.busy=false;
 		break;
 	}
+	state.lastStatus=MakeUpStatus(state.lastCmd);
 }
 
 /* virtual */ void TownsFDC::IOWriteByte(unsigned int ioport,unsigned int data)
 {
+	auto &drv=state.drive[DriveSelect()];
 	switch(ioport)
 	{
 	case TOWNSIO_FDC_STATUS_COMMAND://       0x200, // [2] pp.253
@@ -524,6 +635,11 @@ bool TownsFDC::WriteFault(void) const
 		state.drive[DriveSelect()].dataReg=data;
 		break;
 	case TOWNSIO_FDC_DRIVE_STATUS_CONTROL:// 0x208, // [2] pp.253
+		state.IRQMSK=(0!=(data&1));
+		state.DDEN=(0!=(data&2));
+		state.side=(0!=(data&4) ? 0 : 1);  // Is it really bit=ON for side 0?  Counter intuitive.
+		drv.motor=(0!=(data&0x10));
+		state.CLKSEL=(0!=(data&0x20));
 		break;
 	case TOWNSIO_FDC_DRIVE_SELECT://         0x20C, // [2] pp.253
 		if(0==state.driveSelectBit && 0!=(state.driveSelectBit&0x0F))
@@ -570,4 +686,73 @@ bool TownsFDC::WriteFault(void) const
 /* virtual */ void TownsFDC::Reset(void)
 {
 	state.Reset();
+}
+
+std::vector <std::string> TownsFDC::GetStatusText(void) const
+{
+	std::string line;
+	std::vector <std::string> text;
+
+	text.push_back(line);
+	text.back()="FDC";
+
+	for(auto &drv : state.drive)
+	{
+		const int driveNum=int(&drv-state.drive);
+		auto imgFilePtr=GetDriveImageFile(driveNum);
+
+		text.push_back(line);
+		text.back()="Drive"+cpputil::Ubtox(driveNum)+" ";
+		if(nullptr!=imgFilePtr)
+		{
+			text.back()+="(";
+			text.back()+=imgFilePtr->fName;
+			text.back()+=")";
+		}
+
+		text.push_back(line);
+		text.back()+="TRKPOS:"+cpputil::Uitoa(drv.trackPos)+" TRKREG:"+cpputil::Uitoa(drv.trackReg);
+		text.back()+=" SEC:"+cpputil::Uitoa(drv.sectorReg)+" LAST SEEK DIR:"+cpputil::Itoa(drv.lastSeekDir);
+		text.back()+=" DATAREG:"+cpputil::Ubtox(drv.dataReg)+" MOTOR:"+(drv.motor ? "ON" : "OFF");
+	}
+
+	text.push_back(line);
+	text.back()="DRVSELBIT:"+cpputil::Ubtox(state.driveSelectBit)+" SIDE:"+cpputil::Ubtox(state.side);
+
+	text.push_back(line);
+	text.back()="BUSY:";
+	text.back()+=(state.busy ? "1" : "0");
+	text.back()+=" MODEB:";
+	text.back()+=(state.MODEB ? "1" : "0");
+	text.back()+=" HISPD:";
+	text.back()+=(state.HISPD ? "1" : "0");
+	text.back()+=" INUSE:";
+	text.back()+=(state.INUSE ? "1" : "0");
+
+	text.push_back(line);
+	text.back()="CLKSEL:";
+	text.back()+=(state.CLKSEL ? "1" : "0");
+	text.back()+=" DDEN:";
+	text.back()+=(state.DDEN ? "1" : "0");
+	text.back()+=" IRQMSK:";
+	text.back()+=(state.IRQMSK ? "1" : "0");
+	
+
+	text.push_back(line);
+	text.back()="RecordType:";
+	text.back()+=(state.recordType ? "1" : "0");
+	text.back()+=" RecNotFound:";
+	text.back()+=(state.recordNotFound ? "1" : "0");
+	text.back()+=" CRCError:";
+	text.back()+=(state.CRCError ? "1" : "0");
+	text.back()+=" LostData:";
+	text.back()+=(state.lostData ? "1" : "0");
+
+	text.push_back(line);
+	text.back()="Last CMD:";
+	text.back()+=cpputil::Ubtox(state.lastCmd);
+	text.back()+=" STATUS:";
+	text.back()+=cpputil::Ubtox(state.lastStatus);
+
+	return text;
 }

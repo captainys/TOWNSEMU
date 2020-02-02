@@ -61,6 +61,18 @@ public:
 
 	virtual unsigned int IOReadByte(unsigned int ioport);
 
+	State::Channel *GetAvailableHardwareDMAChannel(void);
+	const State::Channel *GetAvailableHardwareDMAChannel(void) const;
+
+	/*! Transfer data from device to memory.
+	    Returns number of bytes written to memory.
+	*/
+	unsigned int DeviceToMemory(State::Channel *DMACh,const std::vector <unsigned char> &dat);
+	/*! Transfer data from memory to device.
+	    Returns number of bytes read from memory.
+	*/
+	std::vector <unsigned char> MemoryToDevice(State::Channel *DMACh,unsigned int length);
+
 	std::vector <std::string> GetStateText(void) const;
 };
 

@@ -70,6 +70,7 @@ public:
 		PRINT_BREAKPOINT,
 		PRINT_PIC,
 		PRINT_DMAC,
+		PRINT_FDC,
 	};
 
 	enum

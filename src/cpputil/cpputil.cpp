@@ -429,6 +429,11 @@ std::string cpputil::Ubtox(unsigned char i)
 
 std::string cpputil::Uitoa(unsigned int i)
 {
+	if(0==i)
+	{
+		return "0";
+	}
+
 	std::string s;
 	while(0<i)
 	{

@@ -184,6 +184,75 @@ void TownsDMAC::State::Reset(void)
 	return 0xff;
 }
 
+TownsDMAC::State::Channel *TownsDMAC::GetAvailableHardwareDMAChannel(void)
+{
+	if(0==(state.mask&1))
+	{
+		return &state.ch[0];
+	}
+	else if(0==(state.mask&2))
+	{
+		return &state.ch[1];
+	}
+	else if(0==(state.mask&4))
+	{
+		return &state.ch[2];
+	}
+	else if(0==(state.mask&8))
+	{
+		return &state.ch[3];
+	}
+	return nullptr;
+}
+const TownsDMAC::State::Channel *TownsDMAC::GetAvailableHardwareDMAChannel(void) const
+{
+	if(0==(state.mask&1))
+	{
+		return &state.ch[0];
+	}
+	else if(0==(state.mask&2))
+	{
+		return &state.ch[1];
+	}
+	else if(0==(state.mask&4))
+	{
+		return &state.ch[2];
+	}
+	else if(0==(state.mask&8))
+	{
+		return &state.ch[3];
+	}
+	return nullptr;
+}
+
+unsigned int TownsDMAC::DeviceToMemory(State::Channel *DMACh,const std::vector <unsigned char> &data)
+{
+	unsigned int i;
+	auto &mem=townsPtr->mem;
+	for(i=0; i<data.size() && 0<=DMACh->currentCount && DMACh->currentCount<=DMACh->baseCount; ++i)
+	{
+		mem.StoreByte(DMACh->currentAddr,data[i]);
+		++DMACh->currentAddr;
+		--DMACh->currentCount;
+	}
+	return i;
+}
+std::vector <unsigned char> TownsDMAC::MemoryToDevice(State::Channel *DMACh,unsigned int length)
+{
+	std::vector <unsigned char> data;
+	unsigned int i;
+	auto &mem=townsPtr->mem;
+	data.resize(length);
+	for(i=0; i<length && 0<=DMACh->currentCount && DMACh->currentCount<=DMACh->baseCount; ++i)
+	{
+		data[i]=mem.FetchByte(DMACh->currentAddr);
+		++DMACh->currentAddr;
+		--DMACh->currentCount;
+	}
+	data.resize(i);
+	return data;
+}
+
 std::vector <std::string> TownsDMAC::GetStateText(void) const
 {
 	std::string line;

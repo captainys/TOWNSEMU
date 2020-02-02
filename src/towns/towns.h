@@ -204,6 +204,7 @@ public:
 	void PrintCallStack(void) const;
 	void PrintPIC(void) const;
 	void PrintDMAC(void) const;
+	void PrintFDC(void) const;
 
 	void PrintStatus(void) const;
 };
