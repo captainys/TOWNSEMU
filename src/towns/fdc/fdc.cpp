@@ -38,14 +38,14 @@ void TownsFDC::State::Reset(void)
 {
 	for(auto &d : drive)
 	{
-		d.diskInserted=true; // Will be replaced with D77 disk image class
 		d.trackPos=0;      // Actual head location.
 		d.trackReg=0;      // Value in track register 0202H
 		d.sectorReg=1;     // Value in sector register 0x04H
 		d.dataReg=0;       // Value in data register 0x06H
+		d.lastSeekDir=1;
 	}
 	driveSwitch=false;
-	driveSelectBit=0;
+	driveSelectBit=1;      // Looks like A drive is selected by default.
 	busy=false;
 	MODEB=false;
 	HISPD=false;
@@ -58,9 +58,10 @@ void TownsFDC::State::Reset(void)
 ////////////////////////////////////////////////////////////
 
 
-TownsFDC::TownsFDC(class FMTowns *townsPtr)
+TownsFDC::TownsFDC(class FMTowns *townsPtr,class TownsDMAC *DMACPtr)
 {
 	this->townsPtr=townsPtr;
+	this->DMACPtr=DMACPtr;
 
 	Reset();
 	debugBreakOnCommandWrite=false;
@@ -146,6 +147,7 @@ void TownsFDC::SendCommand(unsigned int data)
 	{
 		// Prob reset.
 		Reset();
+		state.lastStatus=MakeUpStatus(0xD0);
 	}
 	else if((data&0xF0)!=0xD0 && 0==state.driveSelectBit)
 	{
@@ -158,36 +160,38 @@ void TownsFDC::SendCommand(unsigned int data)
 		switch(data&0xF0)
 		{
 		case 0x00: // Restore
-			std::cout << __FUNCTION__ << std::endl;
-			std::cout << "Command " << cpputil::Ubtox(data) << " not supported yet." << std::endl;
+			commonState.scheduleTime=townsPtr->state.townsTime+RESTORE_TIME;
+			state.busy=true;
 			break;
 		case 0x10: // Seek
-			std::cout << __FUNCTION__ << std::endl;
-			std::cout << "Command " << cpputil::Ubtox(data) << " not supported yet." << std::endl;
+			commonState.scheduleTime=townsPtr->state.townsTime+SEEK_TIME;
+			state.busy=true;
 			break;
 		case 0x20: // Step?
 		case 0x30: // Step?
-			std::cout << __FUNCTION__ << std::endl;
-			std::cout << "Command " << cpputil::Ubtox(data) << " not supported yet." << std::endl;
+			commonState.scheduleTime=townsPtr->state.townsTime+STEP_TIME;
+			state.busy=true;
 			break;
 		case 0x40: // Step In
 		case 0x50: // Step In
-			std::cout << __FUNCTION__ << std::endl;
-			std::cout << "Command " << cpputil::Ubtox(data) << " not supported yet." << std::endl;
+			commonState.scheduleTime=townsPtr->state.townsTime+STEP_TIME;
+			state.busy=true;
 			break;
 		case 0x60: // Step Out
 		case 0x70: // Step Out
-			std::cout << __FUNCTION__ << std::endl;
-			std::cout << "Command " << cpputil::Ubtox(data) << " not supported yet." << std::endl;
+			commonState.scheduleTime=townsPtr->state.townsTime+STEP_TIME;
+			state.busy=true;
 			break;
 
 		case 0x80: // Read Data (Read Sector)
 		case 0x90: // Read Data (Read Sector)
+			commonState.scheduleTime=townsPtr->state.townsTime+SECTOR_READ_WRITE_TIME;
+			state.busy=true;
 			break;
 		case 0xA0: // Write Data (Write Sector)
 		case 0xB0: // Write Data (Write Sector)
-			std::cout << __FUNCTION__ << std::endl;
-			std::cout << "Command " << cpputil::Ubtox(data) << " not supported yet." << std::endl;
+			commonState.scheduleTime=townsPtr->state.townsTime+SECTOR_READ_WRITE_TIME;
+			state.busy=true;
 			break;
 
 		case 0xC0: // Read Address
@@ -391,6 +395,111 @@ bool TownsFDC::WriteFault(void) const
 
 ////////////////////////////////////////////////////////////
 
+/* virtual */ void TownsFDC::RunScheduledTask(unsigned long long int townsTime)
+{
+	auto &drv=state.drive[DriveSelect()];
+	auto diskPtr=GetDriveDisk(DriveSelect());
+	switch(state.lastCmd&0xF0)
+	{
+	case 0x00: // Restore
+		commonState.scheduleTime=TIME_NO_SCHEDULE;
+		state.busy=false;
+		drv.trackPos=0;
+		drv.trackReg=0;
+		break;
+	case 0x10: // Seek
+		commonState.scheduleTime=TIME_NO_SCHEDULE;
+		state.busy=false;
+		// Seek to dataReg
+		if(drv.trackPos<drv.dataReg)
+		{
+			drv.lastSeekDir=1;
+		}
+		else if(drv.dataReg<drv.trackPos)
+		{
+			drv.lastSeekDir=-1;
+		}
+		drv.trackPos=drv.dataReg;
+		if(state.lastCmd&0x10)
+		{
+			drv.trackReg=drv.trackPos;
+		}
+		break;
+	case 0x20: // Step?
+	case 0x30: // Step?
+		commonState.scheduleTime=TIME_NO_SCHEDULE;
+		state.busy=false;
+		drv.trackPos+=drv.lastSeekDir;
+		if(drv.trackPos<0)
+		{
+			drv.trackPos=0;
+		}
+		else if(80<drv.trackPos)
+		{
+			drv.trackPos=80;
+		}
+		if(state.lastCmd&0x10)
+		{
+			drv.trackReg=drv.trackPos;
+		}
+		break;
+	case 0x40: // Step In
+	case 0x50: // Step In
+		commonState.scheduleTime=TIME_NO_SCHEDULE;
+		state.busy=false;
+		++drv.trackPos;
+		if(80<drv.trackPos)
+		{
+			drv.trackPos=80;
+		}
+		if(state.lastCmd&0x10)
+		{
+			drv.trackReg=drv.trackPos;
+		}
+		break;
+	case 0x60: // Step Out
+	case 0x70: // Step Out
+		commonState.scheduleTime=TIME_NO_SCHEDULE;
+		state.busy=false;
+		--drv.trackPos;
+		if(drv.trackPos<0)
+		{
+			drv.trackPos=0;
+		}
+		if(state.lastCmd&0x10)
+		{
+			drv.trackReg=drv.trackPos;
+		}
+		break;
+
+	case 0x80: // Read Data (Read Sector)
+	case 0x90: // Read Data (Read Sector)
+		break;
+	case 0xA0: // Write Data (Write Sector)
+	case 0xB0: // Write Data (Write Sector)
+		std::cout << __FUNCTION__ << std::endl;
+		std::cout << "Command " << cpputil::Ubtox(state.lastCmd) << " not supported yet." << std::endl;
+		break;
+
+	case 0xC0: // Read Address
+		std::cout << __FUNCTION__ << std::endl;
+		std::cout << "Command " << cpputil::Ubtox(state.lastCmd) << " not supported yet." << std::endl;
+		break;
+	case 0xE0: // Read Track
+		std::cout << __FUNCTION__ << std::endl;
+		std::cout << "Command " << cpputil::Ubtox(state.lastCmd) << " not supported yet." << std::endl;
+		break;
+	case 0xF0: // Write Track
+		std::cout << __FUNCTION__ << std::endl;
+		std::cout << "Command " << cpputil::Ubtox(state.lastCmd) << " not supported yet." << std::endl;
+		break;
+
+	default:
+	case 0xD0: // Force Interrupt
+		state.busy=false;
+		break;
+	}
+}
 
 /* virtual */ void TownsFDC::IOWriteByte(unsigned int ioport,unsigned int data)
 {
@@ -444,6 +553,7 @@ bool TownsFDC::WriteFault(void) const
 	case TOWNSIO_FDC_SECTOR://               0x204, // [2] pp.253
 		break;
 	case TOWNSIO_FDC_DATA://                 0x205, // [2] pp.253
+		data=state.drive[DriveSelect()].dataReg;
 		break;
 	case TOWNSIO_FDC_DRIVE_STATUS_CONTROL:// 0x208, // [2] pp.253
 		data=5; // Bit0:Always 1   Bit2:3.5inch drive

@@ -18,7 +18,11 @@ public:
 	};
 	enum
 	{
-		NUM_DRIVES=4
+		NUM_DRIVES=4,
+		RESTORE_TIME=20000,     // In Nano Seconds.  Just arbitrary.  Need to make it real.
+		SEEK_TIME=20000,        // In Nano Seconds.  Just arbitrary.  Need to make it real.
+		STEP_TIME=10000,
+		SECTOR_READ_WRITE_TIME=5000,  // In Nano Seconds.  Just arbitrary.  Need to make it real.
 	};
 	class ImageFile
 	{
@@ -36,12 +40,12 @@ public:
 		class Drive
 		{
 		public:
-			bool diskInserted; // Will be replaced with D77 disk image class
 			int trackPos;      // Actual head location.
 			int trackReg;      // Value in track register 0202H
 			int sectorReg;     // Value in sector register 0x04H
 			int dataReg;       // Value in data register 0x06H
 
+			int lastSeekDir;   // For STEP command.
 			int imgFileNum;    // Pointer to imgFile.
 			int diskIndex;     // Disk Index in imgFile[imgFileNum]
 		};
@@ -55,10 +59,13 @@ public:
 		unsigned int lastCmd;
 		unsigned int lastStatus;
 
+		long long int scheduleTime;
+
 		void Reset(void);
 	};
 
 	class FMTowns *townsPtr;
+	class TownsDMAC *DMACPtr;
 
 	State state;
 
@@ -66,7 +73,7 @@ public:
 
 	virtual const char *DeviceName(void) const{return "FDC";}
 
-	TownsFDC(class FMTowns *townsPtr);
+	TownsFDC(class FMTowns *townsPtr,class TownsDMAC *dmacPtr);
 
 	bool LoadRawBinary(unsigned int driveNum,const char fName[],bool verbose=true);
 	D77File::D77Disk *GetDriveDisk(int driveNum);
@@ -89,6 +96,7 @@ public:
 	bool DataRequest(void) const;
 	bool WriteFault(void) const;
 
+	virtual void RunScheduledTask(unsigned long long int townsTime);
 	virtual void IOWriteByte(unsigned int ioport,unsigned int data);
 	virtual unsigned int IOReadByte(unsigned int ioport);
 

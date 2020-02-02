@@ -5,6 +5,8 @@
 
 Device::Device()
 {
+	commonState.deviceTime=0;
+	commonState.scheduleTime=TIME_NO_SCHEDULE;
 	abort=false;
 }
 
@@ -21,6 +23,11 @@ void Device::Abort(const std::string &abortReason) const
 
 /* virtual */ void Device::Reset(void)
 {
+}
+
+/* virtual */ void Device::RunScheduledTask(unsigned long long int townsTime)
+{
+	commonState.scheduleTime=TIME_NO_SCHEDULE;
 }
 
 /* virtual */ void Device::IOWriteByte(unsigned int ioport,unsigned int data)

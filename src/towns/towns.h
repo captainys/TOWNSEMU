@@ -166,6 +166,10 @@ public:
 	/*! Run one instruction and returns the number of clocks passed. */
 	unsigned int RunOneInstruction(void);
 
+	/*! Run scheduled tasks.
+	*/
+	void RunScheduledTasks(void);
+
 	/*! Check Rendering Timer and render if townsTime catches up with the timer.
 	    It will increment rendering timer.
 	    Returns true if rendered.

@@ -44,7 +44,7 @@ void FMTowns::Variable::Reset(void)
 ////////////////////////////////////////////////////////////
 
 
-FMTowns::FMTowns() : crtc(this),pic(this),dmac(this),fdc(this)
+FMTowns::FMTowns() : crtc(this),pic(this),dmac(this),fdc(this,&dmac)
 {
 	townsType=TOWNSTYPE_2_MX;
 
@@ -243,6 +243,17 @@ unsigned int FMTowns::RunOneInstruction(void)
 	var.disassemblePointer.OFFSET=cpu.state.EIP;
 
 	return clocksPassed;
+}
+
+void FMTowns::RunScheduledTasks(void)
+{
+	for(auto devPtr : allDevices)
+	{
+		if(devPtr->commonState.scheduleTime<=state.townsTime)
+		{
+			devPtr->RunScheduledTask(state.townsTime);
+		}
+	}
 }
 
 bool FMTowns::CheckRenderingTimer(TownsRender &render,Outside_World &world)
