@@ -778,9 +778,13 @@ void i486DX::AndByte(unsigned int &value1,unsigned int value2)
 	SetZeroFlag(0==value1);
 	SetParityFlag(CheckParity(value1&0xFF));
 }
-void i486DX::SubWordOrDword(int operandSize,unsigned int &value1,unsigned int value2)
+void i486DX::SubByteWordOrDword(int operandSize,unsigned int &value1,unsigned int value2)
 {
-	if(16==operandSize)
+	if(8==operandSize)
+	{
+		SubByte(value1,value2);
+	}
+	else if(16==operandSize)
 	{
 		SubWord(value1,value2);
 	}
@@ -788,6 +792,10 @@ void i486DX::SubWordOrDword(int operandSize,unsigned int &value1,unsigned int va
 	{
 		SubDword(value1,value2);
 	}
+}
+void i486DX::SubWordOrDword(int operandSize,unsigned int &value1,unsigned int value2)
+{
+	SubByteWordOrDword(operandSize,value1,value2);
 }
 void i486DX::SubDword(unsigned int &value1,unsigned int value2)
 {

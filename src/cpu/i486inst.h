@@ -63,6 +63,7 @@ enum
 	I486_OPCODE_CALL_FAR=   0x9A,
 
 
+	I486_OPCODE_CLC=        0xF8,
 	I486_OPCODE_CLD=        0xFC,
 	I486_OPCODE_CLI=        0xFA,
 

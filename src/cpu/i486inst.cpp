@@ -248,6 +248,7 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 
 
 	case I486_OPCODE_CBW_CWDE://        0x98,
+	case I486_OPCODE_CLC:
 	case I486_OPCODE_CLD:
 	case I486_OPCODE_CLI:
 	case I486_OPCODE_CMC://        0xF5,
@@ -255,6 +256,8 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 
 
 	case I486_OPCODE_CMPSB://           0xA6,
+		inst.operandSize=8;
+		break;
 	case I486_OPCODE_CMPS://            0xA7,
 		break;
 
@@ -707,6 +710,7 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 
 
 	case I486_OPCODE_CBW_CWDE://        0x98,
+	case I486_OPCODE_CLC:
 	case I486_OPCODE_CLD:
 	case I486_OPCODE_CLI:
 	case I486_OPCODE_CMC://        0xF5,
@@ -1226,6 +1230,9 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 
 	case I486_OPCODE_CBW_CWDE://        0x98,
 		disasm=(16==operandSize ? "CBW" : "CWDE");
+		break;
+	case I486_OPCODE_CLC:
+		disasm="CLC";
 		break;
 	case I486_OPCODE_CLD:
 		disasm="CLD";
@@ -2901,6 +2908,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			SetEAX(AX);
 		}
 		break;
+	case I486_OPCODE_CLC:
+		state.EFLAGS&=(~EFLAGS_CARRY);
+		clocksPassed=2;
+		break;
 	case I486_OPCODE_CLD:
 		state.EFLAGS&=(~EFLAGS_DIRECTION);
 		clocksPassed=2;
@@ -2914,6 +2925,27 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_OPCODE_CMC://        0xF5,
 		SetCF(GetCF()==true ? false : true);
 		clocksPassed=2;
+		break;
+
+
+	case I486_OPCODE_CMPSB://           0xA6,
+	case I486_OPCODE_CMPS://            0xA7,
+		if(true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize))
+		{
+			auto data1=FetchByteWordOrDword(inst.operandSize,state.DS(),state.ESI(),mem);
+			auto data2=FetchByteWordOrDword(inst.operandSize,state.ES(),state.EDI(),mem);
+			if(true!=state.exception)
+			{
+				SubByteWordOrDword(inst.operandSize,data1,data2);
+				UpdateDIorEDIAfterStringOp(inst.addressSize,inst.operandSize);
+				UpdateSIorESIAfterStringOp(inst.addressSize,inst.operandSize);
+				clocksPassed+=8;
+				if(true==REPEorNECheck(clocksPassed,inst.instPrefix,inst.addressSize))
+				{
+					EIPSetByInstruction=true;
+				}
+			}
+		}
 		break;
 
 

@@ -1418,13 +1418,27 @@ public:
 		}
 		return mem.FetchDword(addr);
 	}
-	/*! Fetch a word or dword.
+	/*! Fetch a byte, word, or dword.
+	    Function name is left as FetchWordOrDword temporarily for the time being.
+	    Will be unified to FetchByteWordOrDword in the future.
 	*/
 	inline unsigned int FetchWordOrDword(unsigned int operandSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 	{
-		return (16==operandSize ? FetchWord(seg,offset,mem) : FetchDword(seg,offset,mem));
+		switch(operandSize)
+		{
+		case 8:
+			return FetchByte(seg,offset,mem);
+		case 16:
+			return FetchWord(seg,offset,mem);
+		default:
+		case 32:
+			return FetchDword(seg,offset,mem);
+		}
 	}
-
+	inline unsigned int FetchByteWordOrDword(unsigned int operandSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+	{
+		return FetchWordOrDword(operandSize,seg,offset,mem);
+	}
 
 	/*! Fetch a byte by linear address.
 	*/
@@ -1664,8 +1678,9 @@ public:
 	void OrWord(unsigned int &value1,unsigned int value2);
 	void OrByte(unsigned int &value1,unsigned int value2);
 	/*! Subtract a value.  OF,SF,ZF,AF,CF, and PF flags are set accoring to the result.
-	    operandSize needs to be 16 or 32.
+	    operandSize needs to be 8, 16, or 32.
 	*/ 
+	void SubByteWordOrDword(int operandSize,unsigned int &value1,unsigned int value2);
 	void SubWordOrDword(int operandSize,unsigned int &value1,unsigned int value2);
 	void SubDword(unsigned int &value1,unsigned int value2);
 	void SubWord(unsigned int &value1,unsigned int value2);
