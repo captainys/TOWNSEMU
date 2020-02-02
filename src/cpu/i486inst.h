@@ -363,6 +363,7 @@ enum
 	I486_OPCODE_SCAS=             0xAF,
 
 
+	I486_OPCODE_STC=              0xF9,
 	I486_OPCODE_STI=              0xFB,
 
 

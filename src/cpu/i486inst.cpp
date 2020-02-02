@@ -577,6 +577,7 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		break;
 
 
+	case I486_OPCODE_STC://              0xF9,
 	case I486_OPCODE_STI://              0xFB,
 		break;
 
@@ -1935,6 +1936,9 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		break;
 
 
+	case I486_OPCODE_STC://              0xF9,
+		disasm="STC";
+		break;
 	case I486_OPCODE_STI://              0xFB,
 		disasm="STI";
 		break;
@@ -3194,6 +3198,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				}
 				break;
 			case 2: // CALL Indirect
+			case 4: // JMP Indirect
 				{
 					clocksPassed=5;  // Same for CALL Indirect and JMP Indirect.
 					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
@@ -4294,6 +4299,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 
 
+	case I486_OPCODE_STC://              0xFB,
+		SetCF(true);
+		clocksPassed=2;
+		break;
 	case I486_OPCODE_STI://              0xFB,
 		SetIF(true);
 		clocksPassed=5;
