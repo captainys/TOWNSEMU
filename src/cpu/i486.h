@@ -558,6 +558,11 @@ public:
 		/*! Make Immediate 16 or 32.  Size depends on operandSize. */
 		void MakeImm8or16or32(const Instruction &inst,unsigned int operandSize);
 
+		/*! Make Simple Offset from segment base.  Like for MOV(A0H,A1H,A2H,A3H)
+		    Number of bytes evaluated will be inst.addressSize/8.
+		*/
+		void MakeSimpleAddressOffset(const Instruction &inst);
+
 		/*! Sign-Extend imm operand.  If it is applied to non-imm operand, it returns false.
 		    Current operand type must be OPER_IMM8 or OPER_IMM16.
 		    newOperaType must be OPER_IMM16 or OPER_IMM32.

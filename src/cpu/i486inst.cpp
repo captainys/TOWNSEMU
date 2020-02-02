@@ -436,7 +436,16 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 	case I486_OPCODE_MOV_M_TO_EAX: //     0xA1, // 16/32 depends on OPSIZE_OVERRIDE
 	case I486_OPCODE_MOV_M_FROM_AL: //    0xA2,
 	case I486_OPCODE_MOV_M_FROM_EAX: //   0xA3, // 16/32 depends on OPSIZE_OVERRIDE
-		FetchOperandRM(inst,seg,offset,mem);
+		switch(inst.addressSize)
+		{
+		default:
+		case 32:
+			FetchOperand16(inst,seg,offset,mem);
+			break;
+		case 16:
+			FetchOperand16(inst,seg,offset,mem);
+			break;
+		}
 		break;
 
 	case I486_OPCODE_MOV_I8_TO_AL: //     0xB0,
@@ -876,19 +885,19 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 		op1.DecodeMODR_MForSegmentRegister(operand[0]);
 		break;
 	case I486_OPCODE_MOV_M_TO_AL: //      0xA0,
-		op2.Decode(addressSize,operandSize,operand);
+		op2.MakeSimpleAddressOffset(*this);
 		op1.MakeByRegisterNumber(8,REG_AL-REG_8BIT_REG_BASE);
 		break;
 	case I486_OPCODE_MOV_M_TO_EAX: //     0xA1, // 16/32 depends on OPSIZE_OVERRIDE
-		op2.Decode(addressSize,operandSize,operand);
+		op2.MakeSimpleAddressOffset(*this);
 		op1.MakeByRegisterNumber(operandSize,REG_AL-REG_8BIT_REG_BASE);
 		break;
 	case I486_OPCODE_MOV_M_FROM_AL: //    0xA2,
-		op1.Decode(addressSize,operandSize,operand);
+		op1.MakeSimpleAddressOffset(*this);
 		op2.MakeByRegisterNumber(8,REG_AL-REG_8BIT_REG_BASE);
 		break;
 	case I486_OPCODE_MOV_M_FROM_EAX: //   0xA3, // 16/32 depends on OPSIZE_OVERRIDE
-		op1.Decode(addressSize,operandSize,operand);
+		op1.MakeSimpleAddressOffset(*this);
 		op2.MakeByRegisterNumber(operandSize,REG_AL-REG_8BIT_REG_BASE);
 		break;
 	case I486_OPCODE_MOV_I8_TO_AL: //     0xB0,

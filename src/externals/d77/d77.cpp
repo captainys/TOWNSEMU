@@ -1438,9 +1438,9 @@ bool D77File::SetRawBinary(long long int nByte,const unsigned char byteData[],bo
 	auto diskId=CreateUnformatted(numTracks*2,"D77_DISK");
 	auto diskPtr=GetDisk(diskId);
 	unsigned long long int imgPtr=0;
-	for(int side=0; side<2; ++side)
+	for(int track=0; track<numTracks; ++track)
 	{
-		for(int track=0; track<numTracks; ++track)
+		for(int side=0; side<2; ++side)
 		{
 			for(int sector=1; sector<=sectorsPerTrack; ++sector)
 			{

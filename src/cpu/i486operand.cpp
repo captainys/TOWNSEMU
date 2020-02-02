@@ -290,6 +290,31 @@ void i486DX::Operand::MakeImm8or16or32(const Instruction &inst,unsigned int oper
 		break;
 	}
 }
+
+void i486DX::Operand::MakeSimpleAddressOffset(const Instruction &inst)
+{
+	switch(inst.addressSize)
+	{
+	default:
+	case 32:
+		operandType=OPER_ADDR;
+		baseReg=REG_NONE;
+		indexReg=REG_NONE;
+		indexScaling=1;
+		offset=cpputil::GetSignedDword(inst.operand+inst.operandLen-4);
+		offsetBits=32;
+		break;
+	case 16:
+		operandType=OPER_ADDR;
+		baseReg=REG_NONE;
+		indexReg=REG_NONE;
+		indexScaling=1;
+		offset=cpputil::GetSignedWord(inst.operand+inst.operandLen-2);
+		offsetBits=16;
+		break;
+	}
+}
+
 bool i486DX::Operand::SignExtendImm(int newOperaType)
 {
 	switch(operandType)
