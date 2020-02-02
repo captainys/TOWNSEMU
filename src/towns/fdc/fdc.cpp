@@ -642,7 +642,7 @@ bool TownsFDC::WriteFault(void) const
 		state.CLKSEL=(0!=(data&0x20));
 		break;
 	case TOWNSIO_FDC_DRIVE_SELECT://         0x20C, // [2] pp.253
-		if(0==state.driveSelectBit && 0!=(state.driveSelectBit&0x0F))
+		if(0==state.driveSelectBit && 0!=(data&0x0F))
 		{
 			// Latch MODE-B and HISPD
 			state.MODEB=(0!=(data&0x80));
