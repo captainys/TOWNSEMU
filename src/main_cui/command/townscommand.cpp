@@ -465,6 +465,15 @@ void TownsCommandInterpreter::Execute_Disassemble(FMTowns &towns,Command &cmd)
 		{
 			farPtr.SEG=towns.cpu.state.CS().value;
 		}
+		else if((farPtr.SEG&0xFFFF0000)==i486DX::FarPointer::SEG_REGISTER)
+		{
+			farPtr.SEG=towns.cpu.GetRegisterValue(farPtr.SEG&0xFFFF);
+		}
+		else
+		{
+			std::cout << "Disassembly cannot be from Linear or Physical address." << std::endl;
+			return;
+		}
 	}
 
 	i486DX::SegmentRegister seg;
@@ -488,6 +497,15 @@ void TownsCommandInterpreter::Execute_Disassemble16(FMTowns &towns,Command &cmd)
 		{
 			farPtr.SEG=towns.cpu.state.CS().value;
 		}
+		else if((farPtr.SEG&0xFFFF0000)==i486DX::FarPointer::SEG_REGISTER)
+		{
+			farPtr.SEG=towns.cpu.GetRegisterValue(farPtr.SEG&0xFFFF);
+		}
+		else
+		{
+			std::cout << "Disassembly cannot be from Linear or Physical address." << std::endl;
+			return;
+		}
 	}
 
 	i486DX::SegmentRegister seg;
@@ -510,6 +528,15 @@ void TownsCommandInterpreter::Execute_Disassemble32(FMTowns &towns,Command &cmd)
 		if(farPtr.SEG==i486DX::FarPointer::NO_SEG)
 		{
 			farPtr.SEG=towns.cpu.state.CS().value;
+		}
+		else if((farPtr.SEG&0xFFFF0000)==i486DX::FarPointer::SEG_REGISTER)
+		{
+			farPtr.SEG=towns.cpu.GetRegisterValue(farPtr.SEG&0xFFFF);
+		}
+		else
+		{
+			std::cout << "Disassembly cannot be from Linear or Physical address." << std::endl;
+			return;
 		}
 	}
 

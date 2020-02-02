@@ -213,15 +213,15 @@ void i486DX::PrintState(void) const
 	}
 }
 
-void i486DX::LoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem)
+inline void i486DX::LoadSegmentRegisterQuiet(SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode) const
 {
-	if(&reg==&state.SS())
+	if(true==isInRealMode)
 	{
-		state.holdIRQ=true;
-	}
-	if(true==IsInRealMode())
-	{
-		LoadSegmentRegisterRealMode(reg,value);
+		reg.value=value;
+		reg.baseLinearAddr=(value<<4);
+		reg.addressSize=16;
+		reg.operandSize=16;
+		reg.limit=0xffff;
 	}
 	else
 	{
@@ -283,6 +283,15 @@ void i486DX::LoadSegmentRegister(SegmentRegister &reg,unsigned int value,const M
 			reg.operandSize=32;
 		}
 	}
+}
+
+void i486DX::LoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem)
+{
+	if(&reg==&state.SS())
+	{
+		state.holdIRQ=true;
+	}
+	LoadSegmentRegisterQuiet(reg,value,mem,IsInRealMode());
 }
 
 void i486DX::LoadSegmentRegisterRealMode(SegmentRegister &reg,unsigned int value)

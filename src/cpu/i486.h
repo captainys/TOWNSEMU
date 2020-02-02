@@ -128,12 +128,20 @@ public:
 	class FarPointer
 	{
 	public:
+		/*! If SEG&0xFFFF0000 is:
+		      SEG_REGISTER, SEG&0xFFFF is one of REG_ES,REG_CS,REG_SS,REG_DS,REG_FS,REG_GS.
+	          LINEAR_ADDR, OFFSET should be interpreted as linear address.
+	          PHYS_ADDR, OFFSET should be interpreted as physical address.
+		*/
 		unsigned int SEG;
 		unsigned int OFFSET;
 
 		enum
 		{
 			NO_SEG=0xFFFF0000,
+			SEG_REGISTER=0x00010000,
+			LINEAR_ADDR=0x00020000,
+			PHYS_ADDR=0x00020000,
 		};
 
 		inline unsigned long long int Combine(void) const
@@ -1269,6 +1277,7 @@ public:
 	void PrintState(void) const;
 
 	/*! Loads a segment register.
+	    If reg is SS, it raise holdIRQ flag.
 	    How the segment linear base address is set depends on the CPU mode,
 	    and in the protected mode, it needs to look at GDT and LDT.
 	    Therefore it needs a reference to memory.
@@ -1276,8 +1285,15 @@ public:
 	void LoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem);
 
 	/*! Loads a segment register in real mode.
+	    If reg is SS, it raise holdIRQ flag.
 	*/
 	void LoadSegmentRegisterRealMode(SegmentRegister &reg,unsigned int value);
+
+	/*! Loads a segment register.
+	    It does not rely on the current CPU state, instead isInRealMode is given as a parameter.
+	    Even if reg==SS, it does not update holdIRQ flag.
+	*/
+	inline void LoadSegmentRegisterQuiet(SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode) const;
 
 	/*! Loads limit and linear base address to a descriptor table register.
 	    How many bytes are loaded depends on operand size.  [1] 26-194.
