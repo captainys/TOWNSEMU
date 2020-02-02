@@ -556,7 +556,7 @@ public:
 		/*! Make Immediate. */
 		void MakeImm32(const Instruction &inst);
 		/*! Make Immediate 16 or 32.  Size depends on operandSize. */
-		void MakeImm16or32(const Instruction &inst,unsigned int operandSize);
+		void MakeImm8or16or32(const Instruction &inst,unsigned int operandSize);
 
 		/*! Sign-Extend imm operand.  If it is applied to non-imm operand, it returns false.
 		    Current operand type must be OPER_IMM8 or OPER_IMM16.

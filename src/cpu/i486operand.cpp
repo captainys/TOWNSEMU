@@ -275,10 +275,13 @@ void i486DX::Operand::MakeImm32(const Instruction &inst)
 	operandType=OPER_IMM32;
 	this->imm=inst.GetUimm32();
 }
-void i486DX::Operand::MakeImm16or32(const Instruction &inst,unsigned int operandSize)
+void i486DX::Operand::MakeImm8or16or32(const Instruction &inst,unsigned int operandSize)
 {
 	switch(operandSize)
 	{
+	case 8:
+		MakeImm8(inst);
+		break;
 	case 16:
 		MakeImm16(inst);
 		break;
