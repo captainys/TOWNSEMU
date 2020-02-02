@@ -3161,16 +3161,33 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					}
 				}
 				break;
+			case 3: // CALLF Indirect
 			case 5: // JMPF Indirect
 				{
 					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,(inst.operandSize+16)/8);
 					if(true!=state.exception)
 					{
+						if(3==REG) // Call
+						{
+							Push(mem,inst.operandSize,state.CS().value);
+							Push(mem,inst.operandSize,state.EIP+inst.numBytes);
+						}
 						SetIPorEIP(inst.operandSize,value.GetAsDword());
 						LoadSegmentRegister(state.CS(),value.GetFwordSegment(),mem);
 						EIPSetByInstruction=true;
 					}
-					if(op1.operandType==OPER_ADDR)
+					if(3==REG) // CALLF Indirect
+					{
+						if(true==IsInRealMode())
+						{
+							clocksPassed=17;
+						}
+						else
+						{
+							clocksPassed=20;
+						}
+					}
+					else if(op1.operandType==OPER_ADDR)
 					{
 						clocksPassed=3;
 					}
