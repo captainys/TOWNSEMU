@@ -4,6 +4,7 @@
 #include "townscommand.h"
 #include "townscommandutil.h"
 #include "cpputil.h"
+#include "miscutil.h"
 
 
 
@@ -351,8 +352,19 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 	}
 	else
 	{
-		PrintError(ERROR_DUMP_TARGET_UNDEFINED);
-		return;
+		auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1]);
+		if(i486DX::FarPointer::NO_SEG!=farPtr.SEG)
+		{
+			for(auto str : miscutil::MakeMemDump(towns.cpu,towns.mem,farPtr,256,/*shiftJIS*/false))
+			{
+				std::cout << str << std::endl;
+			}
+		}
+		else
+		{
+			PrintError(ERROR_DUMP_TARGET_UNDEFINED);
+			return;
+		}
 	}
 }
 
@@ -469,7 +481,8 @@ void TownsCommandInterpreter::Execute_Disassemble(FMTowns &towns,Command &cmd)
 		{
 			farPtr.SEG=towns.cpu.GetRegisterValue(farPtr.SEG&0xFFFF);
 		}
-		else
+		else if((farPtr.SEG&0xFFFF0000)==i486DX::FarPointer::PHYS_ADDR ||
+		        (farPtr.SEG&0xFFFF0000)==i486DX::FarPointer::LINEAR_ADDR)
 		{
 			std::cout << "Disassembly cannot be from Linear or Physical address." << std::endl;
 			return;
@@ -501,7 +514,8 @@ void TownsCommandInterpreter::Execute_Disassemble16(FMTowns &towns,Command &cmd)
 		{
 			farPtr.SEG=towns.cpu.GetRegisterValue(farPtr.SEG&0xFFFF);
 		}
-		else
+		else if((farPtr.SEG&0xFFFF0000)==i486DX::FarPointer::PHYS_ADDR ||
+		        (farPtr.SEG&0xFFFF0000)==i486DX::FarPointer::LINEAR_ADDR)
 		{
 			std::cout << "Disassembly cannot be from Linear or Physical address." << std::endl;
 			return;
@@ -533,7 +547,8 @@ void TownsCommandInterpreter::Execute_Disassemble32(FMTowns &towns,Command &cmd)
 		{
 			farPtr.SEG=towns.cpu.GetRegisterValue(farPtr.SEG&0xFFFF);
 		}
-		else
+		else if((farPtr.SEG&0xFFFF0000)==i486DX::FarPointer::PHYS_ADDR ||
+		        (farPtr.SEG&0xFFFF0000)==i486DX::FarPointer::LINEAR_ADDR)
 		{
 			std::cout << "Disassembly cannot be from Linear or Physical address." << std::endl;
 			return;

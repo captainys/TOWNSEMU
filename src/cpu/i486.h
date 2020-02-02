@@ -141,7 +141,7 @@ public:
 			NO_SEG=0xFFFF0000,
 			SEG_REGISTER=0x00010000,
 			LINEAR_ADDR=0x00020000,
-			PHYS_ADDR=0x00020000,
+			PHYS_ADDR=0x00030000,
 		};
 
 		inline unsigned long long int Combine(void) const

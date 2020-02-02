@@ -637,7 +637,7 @@ bool TownsFDC::WriteFault(void) const
 	case TOWNSIO_FDC_DRIVE_STATUS_CONTROL:// 0x208, // [2] pp.253
 		state.IRQMSK=(0!=(data&1));
 		state.DDEN=(0!=(data&2));
-		state.side=(0!=(data&4) ? 0 : 1);  // Is it really bit=ON for side 0?  Counter intuitive.
+		state.side=(0!=(data&4) ? 1 : 0);  // Is it really bit=ON for side 0?  Counter intuitive.
 		drv.motor=(0!=(data&0x10));
 		state.CLKSEL=(0!=(data&0x20));
 		break;

@@ -122,5 +122,7 @@ std::vector <std::string> miscutil::MakeMemDump(const i486DX &cpu,const Memory &
 			text.push_back((std::string &&)str);
 		}
 	}
+
+	return text;
 }
 
