@@ -226,6 +226,7 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		{
 			FetchOperand8(inst,seg,offset,mem);
 		}
+		inst.operandSize=8;
 		break;
 	case I486_OPCODE_F7_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF7,
 		offset+=FetchOperandRM(inst,seg,offset,mem);
@@ -429,7 +430,7 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		// Example:  8c c6           MOV SI,ES
 		// Sreg: ES=0, CS=1, SS=2, DS=3, FD=4, GS=5 (OPCODE part of MODR_M)  [1] pp.26-10
 	case I486_OPCODE_MOV_TO_SEG: //       0x8E,
-		FetchOperand8(inst,seg,offset,mem);
+		FetchOperandRM(inst,seg,offset,mem);
 		break;
 
 	case I486_OPCODE_MOV_M_TO_AL: //      0xA0,
@@ -700,12 +701,6 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 
 
 	case I486_OPCODE_F6_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF6
-		op1.Decode(addressSize,8,operand);
-		if(0==GetREG()) // TEST RM8,I8
-		{
-			op2.MakeImm8(*this);
-		}
-		break;
 	case I486_OPCODE_F7_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF7,
 		op1.Decode(addressSize,operandSize,operand);
 		if(0==GetREG()) // TEST RM,I
@@ -1218,30 +1213,20 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 
 
 	case I486_OPCODE_F6_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF6
-		switch(GetREG())
-		{
-		case 0:
-			disasm=DisassembleTypicalTwoOperands("TEST",op1,op2);
-			break;
-		case 4:
-			disasm=DisassembleTypicalOneOperand("MUL",op1,8);
-			break;
-		case 6:
-			disasm=DisassembleTypicalOneOperand("DIV",op1,8);
-			break;
-		default:
-			disasm=DisassembleTypicalOneOperand(cpputil::Ubtox(opCode)+"?",op1,8);
-			break;
-		}
-		break;
 	case I486_OPCODE_F7_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF7,
 		switch(GetREG())
 		{
 		case 0:
 			disasm=DisassembleTypicalTwoOperands("TEST",op1,op2);
 			break;
+		case 2:
+			disasm=DisassembleTypicalOneOperand("NOT",op1,operandSize);
+			break;
 		case 4:
 			disasm=DisassembleTypicalOneOperand("MUL",op1,operandSize);
+			break;
+		case 6:
+			disasm=DisassembleTypicalOneOperand("DIV",op1,operandSize);
 			break;
 		default:
 			disasm=DisassembleTypicalOneOperand(cpputil::Ubtox(opCode)+"?",op1,operandSize);
@@ -2497,6 +2482,17 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				AndByte(byte,inst.GetUimm8());
 				SetCF(false);
 				SetOverflowFlag(false);
+			}
+			break;
+		case 2: // NOT
+			{
+				clocksPassed=(OPER_ADDR==op1.operandType ? 3 : 1);
+				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+				if(true!=state.exception)
+				{
+					value.byteData[0]=~value.byteData[0];
+					StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+				}
 			}
 			break;
 		case 4: // MUL
