@@ -430,6 +430,22 @@ std::string i486DX::Operand::DisassembleAsAddr(void) const
 		}
 		disasm.push_back('H');
 	}
+	else if(REG_NONE==baseReg && REG_NONE==indexReg)
+	{
+		switch(offsetBits)
+		{
+		case 8:
+			disasm+=cpputil::Ubtox(offset);
+			break;
+		case 16:
+			disasm+=cpputil::Ustox(offset);
+			break;
+		default:
+			disasm+=cpputil::Uitox(offset);
+			break;
+		}
+		disasm.push_back('H');
+	}
 
 	disasm.push_back(']');
 	return disasm;
