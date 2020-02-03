@@ -2599,6 +2599,17 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				SetOverflowFlag(false);
 			}
 			break;
+		case 2: // NOT
+			{
+				clocksPassed=(OPER_ADDR==op1.operandType ? 2 : 1);
+				auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize);
+				value1.byteData[0]=~value1.byteData[0];
+				value1.byteData[1]=~value1.byteData[1];
+				value1.byteData[2]=~value1.byteData[2];
+				value1.byteData[3]=~value1.byteData[3];
+				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+			}
+			break;
 		case 4: // MUL
 			if(16==inst.operandSize)
 			{
