@@ -308,7 +308,15 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		break;
 
 
-	case I486_OPCODE_INC_IRET://   0xCF,
+	case I486_OPCODE_IRET://   0xCF,
+		break;
+
+
+	case I486_OPCODE_INT3://       0xCC,
+		break;
+	case I486_OPCODE_INT://        0xCD,
+	case I486_OPCODE_INTO://       0xCE,
+		FetchOperand8(inst,seg,offset,mem);
 		break;
 
 
@@ -784,7 +792,15 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 		break;
 
 
-	case I486_OPCODE_INC_IRET://   0xCF,
+	case I486_OPCODE_INT3://       0xCC,
+		break;
+	case I486_OPCODE_INT://        0xCD,
+	case I486_OPCODE_INTO://       0xCE,
+		op1.MakeImm8(*this);
+		break;
+
+
+	case I486_OPCODE_IRET://   0xCF,
 		break;
 
 
@@ -1531,7 +1547,17 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		break;
 
 
-	case I486_OPCODE_INC_IRET://   0xCF,
+	case I486_OPCODE_INT3://       0xCC,
+		disasm="INT3";
+		break;
+	case I486_OPCODE_INTO://        0xCD,
+	case I486_OPCODE_INT://        0xCD,
+		disasm=(I486_OPCODE_INT==opCode ? "INT" : "INTO");
+		disasm=DisassembleTypicalOneOperand(disasm,op1,8);
+		break;
+
+
+	case I486_OPCODE_IRET://   0xCF,
 		disasm=(16==operandSize ? "IRET" : "IRETD");
 		break;
 
@@ -3330,6 +3356,14 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 
 
+	case I486_OPCODE_INT3://       0xCC,
+		break;
+	case I486_OPCODE_INT://        0xCD,
+		break;
+	case I486_OPCODE_INTO://       0xCE,
+		break;
+
+
 	case I486_OPCODE_JMP_REL8://         0xEB,   // cb
 	case I486_OPCODE_JO_REL8:   // 0x70,
 	case I486_OPCODE_JNO_REL8:  // 0x71,
@@ -4253,7 +4287,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			PopCallStack();
 		}
 		break;
-	case I486_OPCODE_INC_IRET://   0xCF,
+	case I486_OPCODE_IRET://   0xCF,
 	case I486_OPCODE_RETF://             0xCB,
 		if(I486_OPCODE_RETF==inst.opCode)
 		{
@@ -4279,7 +4313,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		SetIPorEIP(inst.operandSize,Pop(mem,inst.operandSize));
 		LoadSegmentRegister(state.CS(),Pop(mem,inst.operandSize),mem);
-		if(I486_OPCODE_INC_IRET==inst.opCode)
+		if(I486_OPCODE_IRET==inst.opCode)
 		{
 			SetFLAGSorEFLAGS(inst.operandSize,Pop(mem,inst.operandSize));
 		}
