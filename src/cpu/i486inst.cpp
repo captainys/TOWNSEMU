@@ -2558,7 +2558,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,1);
 				if(0==value.byteData[0])
 				{
-					Interrupt(0); // [1] pp.26-28
+					Interrupt(0,mem,0); // [1] pp.26-28
 					// I don't think INT 0 was issued unless division by zero.
 					// I thought it just overflew if quo didn't fit in the target register, am I wrong?
 				}
@@ -3357,10 +3357,26 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 
 	case I486_OPCODE_INT3://       0xCC,
+		Interrupt(3,mem,1);
+		EIPSetByInstruction=true;
+		clocksPassed=26;
 		break;
 	case I486_OPCODE_INT://        0xCD,
+		clocksPassed=(IsInRealMode() ? 30 : 44);
+		Interrupt(inst.GetUimm8(),mem,2);
+		EIPSetByInstruction=true;
 		break;
 	case I486_OPCODE_INTO://       0xCE,
+		if(GetOF())
+		{
+			Interrupt(inst.GetUimm8(),mem,2);
+			EIPSetByInstruction=true;
+			clocksPassed=(IsInRealMode() ? 28 : 46);
+		}
+		else
+		{
+			clocksPassed=3;
+		}
 		break;
 
 
@@ -3874,7 +3890,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{
 				if(IsInRealMode())
 				{
-					Interrupt(6);
+					Interrupt(6,mem,0);
 					EIPSetByInstruction=true;
 				}
 				else

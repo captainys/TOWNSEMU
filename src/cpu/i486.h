@@ -1254,6 +1254,19 @@ public:
 		}
 	}
 
+	/*! Issue an interrupt.
+	    This function does not check Interrupt-Enabled Flag (IF),
+	    nor check mask state of PIC.
+	    This function should be called when it is certain that the interrupt 
+	    needs to be handled by the CPU.
+
+		numInstbyte should tell how many bytes that EIP should be displaced for the return address.
+		For hardware-interrupt, it should be 1.
+		For INT, INTO it should be 2.
+		For INT3, it should be 1.
+		For interrupt by exception, it should be 0 to allow re-try.
+	*/
+	inline void Interrupt(unsigned int intNum,Memory &mem,unsigned int numInstBytes);
 	inline void IOOut8(InOut &io,unsigned int ioport,unsigned int data);
 	inline void IOOut16(InOut &io,unsigned int ioport,unsigned int data);
 	inline void IOOut32(InOut &io,unsigned int ioport,unsigned int data);
@@ -1531,11 +1544,6 @@ public:
 	void RaiseException(int exceptionType,int exception){exception=true;};// Right now it's just a placeholder
 
 
-	/*! Shoot an interrupt.
-	*/
-	void Interrupt(int intNum){};// Right now it's just a placeholder
-
-
 	/*! Check for REP.  Execute a string operation if the return value is true. 
 	    It returns true if no REP prefix.
 	*/
@@ -1754,6 +1762,33 @@ public:
 
 
 #include "i486debug.h"
+
+inline void i486DX::Interrupt(unsigned int intNum,Memory &mem,unsigned int numInstBytes)
+{
+	if(IsInRealMode())
+	{
+		Push(mem,16,state.EFLAGS&0xFFFF);
+		Push(mem,16,state.CS().value);
+		Push(mem,16,state.EIP+numInstBytes);
+
+		auto intVecAddr=(intNum&0xFF)*4;
+		auto destIP=mem.FetchWord(intVecAddr);
+		auto destCS=mem.FetchWord(intVecAddr+2);
+		if(true==enableCallStack)
+		{
+			PushCallStack(
+			    true, // Is an interrupt
+			    state.CS().value,state.EIP,numInstBytes,
+			    destCS,destIP);
+		}
+		LoadSegmentRegisterRealMode(state.CS(),destCS);
+		state.EIP=destIP;
+	}
+	else
+	{
+		Abort("Protected-Mode Interrupt not supported yet.");
+	}
+};
 
 inline void i486DX::IOOut8(InOut &io,unsigned int ioport,unsigned int data)
 {
