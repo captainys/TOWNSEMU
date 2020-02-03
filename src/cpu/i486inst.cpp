@@ -308,6 +308,10 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		break;
 
 
+	case I486_OPCODE_INC_IRET://   0xCF,
+		break;
+
+
 	case I486_OPCODE_JMP_REL8://         0xEB,   // cb
 	case I486_OPCODE_JO_REL8:   // 0x70,
 	case I486_OPCODE_JNO_REL8:  // 0x71,
@@ -777,6 +781,10 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 	case I486_OPCODE_INC_ESI://    0x46, // 16/32 depends on OPSIZE_OVERRIDE
 	case I486_OPCODE_INC_EDI://    0x47, // 16/32 depends on OPSIZE_OVERRIDE
 		op1.MakeByRegisterNumber(operandSize,opCode&7);
+		break;
+
+
+	case I486_OPCODE_INC_IRET://   0xCF,
 		break;
 
 
@@ -1520,6 +1528,11 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		{
 			disasm+=Reg32Str[opCode&7];
 		}
+		break;
+
+
+	case I486_OPCODE_INC_IRET://   0xCF,
+		disasm=(16==operandSize ? "IRET" : "IRETD");
 		break;
 
 
@@ -3240,6 +3253,19 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 						{
 							Push(mem,inst.operandSize,state.CS().value);
 							Push(mem,inst.operandSize,state.EIP+inst.numBytes);
+							if(true==enableCallStack)
+							{
+								auto destSeg=value.GetFwordSegment();
+								auto destEIP=value.GetAsDword();
+								if(16==inst.operandSize)
+								{
+									destEIP&=0xFFFF;
+								}
+								PushCallStack(
+								    false,
+								    state.CS().value,state.EIP,inst.numBytes,
+								    destSeg,destEIP);
+							}
 						}
 						SetIPorEIP(inst.operandSize,value.GetAsDword());
 						LoadSegmentRegister(state.CS(),value.GetFwordSegment(),mem);
@@ -4227,18 +4253,36 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			PopCallStack();
 		}
 		break;
+	case I486_OPCODE_INC_IRET://   0xCF,
 	case I486_OPCODE_RETF://             0xCB,
-		if(true==IsInRealMode())
+		if(I486_OPCODE_RETF==inst.opCode)
 		{
-			clocksPassed=13;
+			if(true==IsInRealMode())
+			{
+				clocksPassed=13;
+			}
+			else
+			{
+				clocksPassed=18;
+			}
 		}
 		else
 		{
-			clocksPassed=18;
+			if(true==IsInRealMode())
+			{
+				clocksPassed=15;
+			}
+			else
+			{
+				clocksPassed=36;
+			}
 		}
 		SetIPorEIP(inst.operandSize,Pop(mem,inst.operandSize));
 		LoadSegmentRegister(state.CS(),Pop(mem,inst.operandSize),mem);
-		state.ESP()+=inst.GetUimm16(); // Do I need to take &0xffff if address mode is 16? 
+		if(I486_OPCODE_INC_IRET==inst.opCode)
+		{
+			SetFLAGSorEFLAGS(inst.operandSize,Pop(mem,inst.operandSize));
+		}
 		EIPSetByInstruction=true;
 		if(enableCallStack)
 		{
@@ -4248,6 +4292,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_OPCODE_RET_I16://          0xC2,
 		clocksPassed=5;
 		SetIPorEIP(inst.operandSize,Pop(mem,inst.operandSize));
+		state.ESP()+=inst.GetUimm16(); // Do I need to take &0xffff if address mode is 16? 
 		EIPSetByInstruction=true;
 		if(enableCallStack)
 		{

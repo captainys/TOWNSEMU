@@ -142,6 +142,9 @@ enum
 	I486_OPCODE_INC_EDI=    0x47, // 16/32 depends on OPSIZE_OVERRIDE
 
 
+	I486_OPCODE_INC_IRET=   0xCF,
+
+
 	// I486_OPCODE_JCXZ_REL8= 0xE3, Same as JCXZ_REL8
 	I486_OPCODE_JECXZ_REL8=0xE3,  // Depending on the operand size
 
