@@ -17,6 +17,7 @@ add_subdirectory(device)
 add_subdirectory(cpu)
 add_subdirectory(inout)
 add_subdirectory(ramrom)
+add_subdirectory(ym2612)
 
 add_subdirectory(towns)
 
