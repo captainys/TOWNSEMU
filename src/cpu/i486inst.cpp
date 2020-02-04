@@ -4002,7 +4002,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			if(16==inst.operandSize)
 			{
-				SetAX(FetchWord(state.DS(),state.ESI(),mem));
+				SetAX(FetchWord(inst.addressSize,state.DS(),state.ESI(),mem));
 			}
 			else
 			{
@@ -4313,7 +4313,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			if(16==inst.operandSize)
 			{
-				IOOut16(io,GetDX(),FetchWord(state.DS(),state.ESI(),mem));
+				IOOut16(io,GetDX(),FetchWord(inst.addressSize,state.DS(),state.ESI(),mem));
 			}
 			else
 			{
