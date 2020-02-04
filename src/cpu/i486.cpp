@@ -167,6 +167,9 @@ std::vector <std::string> i486DX::GetStateText(void) const
 	    +"  "
 	     "GS="+cpputil::Ustox(state.GS().value)
 	    +"(LIN:"+cpputil::Uitox(state.GS().baseLinearAddr)+")"
+	    +"  "
+	    +"SS="+cpputil::Ustox(state.SS().value)
+	    +"(LIN:"+cpputil::Uitox(state.SS().baseLinearAddr)+")"
 	    +"  ");
 
 	text.push_back(
@@ -192,6 +195,11 @@ std::vector <std::string> i486DX::GetStateText(void) const
 	    +"  VM"+cpputil::BoolToNumberStr(GetVM())
 	    +"  AC"+cpputil::BoolToNumberStr(GetAC())
 	    );
+
+	text.push_back(
+	     std::string("Default Operand Size=")+cpputil::Itoa(state.CS().operandSize)
+	    +std::string("  Default Address Size=")+cpputil::Itoa(state.CS().addressSize)
+	    +std::string("  Stack Address Size=")+cpputil::Itoa(state.SS().addressSize));
 
 	if(true==state.exception)
 	{
