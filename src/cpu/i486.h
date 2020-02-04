@@ -1397,19 +1397,7 @@ public:
 
 	/*! Returns true if in 16-bit addressing mode.
 	*/
-	inline bool AddressingMode16Bit(void) const
-	{
-		if(true==IsInRealMode())
-		{
-			return true;
-		}
-		else
-		{
-			return (16==state.CS().addressSize);
-		}
-		return false;
-	}
-	inline bool AddressingMode16Bit(int addressSize) const // Temporarily two versions.
+	inline bool AddressingMode16Bit(int addressSize) const
 	{
 		if(true==IsInRealMode())
 		{
@@ -1458,9 +1446,9 @@ public:
 
 	/*! Fetch a byte. 
 	*/
-	inline unsigned int FetchByte(const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+	inline unsigned int FetchByte(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 	{
-		if(true==AddressingMode16Bit())
+		if(true==AddressingMode16Bit(addressSize))
 		{
 			offset&=0xffff;
 		}
@@ -1486,7 +1474,7 @@ public:
 			addr=LinearAddressToPhysicalAddress(addr,mem);
 			if(0xFFC<(addr&0xfff)) // May hit the page boundary
 			{
-				return FetchByte(seg,offset,mem)|(FetchByte(seg,offset+1,mem)<<8);
+				return FetchByte(addressSize,seg,offset,mem)|(FetchByte(addressSize,seg,offset+1,mem)<<8);
 			}
 		}
 		return mem.FetchWord(addr);
@@ -1507,8 +1495,10 @@ public:
 			if(0xFF8<(addr&0xfff)) // May hit the page boundary
 			{
 				return 
-				    FetchByte(seg,offset,mem)|(FetchByte(seg,offset+1,mem)<<8)|
-				    (FetchByte(seg,offset+2,mem)<<16)|(FetchByte(seg,offset+3,mem)<<24);
+				     FetchByte(addressSize,seg,offset,mem)
+				   |(FetchByte(addressSize,seg,offset+1,mem)<<8)
+				   |(FetchByte(addressSize,seg,offset+2,mem)<<16)
+				   |(FetchByte(addressSize,seg,offset+3,mem)<<24);
 			}
 		}
 		return mem.FetchDword(addr);
@@ -1522,7 +1512,7 @@ public:
 		switch(operandSize)
 		{
 		case 8:
-			return FetchByte(seg,offset,mem);
+			return FetchByte(addressSize,seg,offset,mem);
 		case 16:
 			return FetchWord(addressSize,seg,offset,mem);
 		default:
@@ -1605,7 +1595,7 @@ public:
 	*/
 	inline unsigned int FetchInstructionByte(unsigned int offset,const Memory &mem) const
 	{
-		return FetchByte(state.CS(),state.EIP+offset,mem);
+		return FetchByte(state.CS().addressSize,state.CS(),state.EIP+offset,mem);
 	}
 
 	/*! Fetch an instruction.

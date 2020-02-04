@@ -5,6 +5,8 @@
 
 std::vector <std::string> miscutil::MakeMemDump(const i486DX &cpu,const Memory &mem,i486DX::FarPointer ptr,unsigned int length,bool shiftJIS)
 {
+	// Make it 32-bit addressing.  I don't think there is any point rounding the address for memory dump.
+	const int addressSize=32;
 	std::vector <std::string> text;
 
 	if((ptr.SEG&0xffff0000)==i486DX::FarPointer::SEG_REGISTER)
@@ -88,7 +90,7 @@ std::vector <std::string> miscutil::MakeMemDump(const i486DX &cpu,const Memory &
 				}
 				else
 				{
-					str+=" "+cpputil::Ubtox(cpu.FetchByte(seg,addr,mem));
+					str+=" "+cpputil::Ubtox(cpu.FetchByte(addressSize,seg,addr,mem));
 				}
 			}
 			str.push_back('|');
@@ -101,7 +103,7 @@ std::vector <std::string> miscutil::MakeMemDump(const i486DX &cpu,const Memory &
 				}
 				else
 				{
-					auto byte=cpu.FetchByte(seg,addr,mem);
+					auto byte=cpu.FetchByte(addressSize,seg,addr,mem);
 					if(byte<' ' || (true!=shiftJIS && 0x80<=byte))
 					{
 						str.push_back(' ');

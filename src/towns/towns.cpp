@@ -299,11 +299,12 @@ std::vector <std::string> FMTowns::GetStackText(unsigned int numBytes) const
 	std::vector <std::string> text;
 	for(unsigned int offsetHigh=0; offsetHigh<numBytes; offsetHigh+=16)
 	{
+		auto addressSize=cpu.GetStackAddressingSize();
 		std::string line;
 		line="SS+"+cpputil::Uitox(offsetHigh)+":";
 		for(unsigned int offsetLow=0; offsetLow<16 && offsetHigh+offsetLow<numBytes; ++offsetLow)
 		{
-			line+=cpputil::Ubtox(cpu.FetchByte(cpu.state.SS(),cpu.state.ESP()+offsetHigh+offsetLow,mem));
+			line+=cpputil::Ubtox(cpu.FetchByte(addressSize,cpu.state.SS(),cpu.state.ESP()+offsetHigh+offsetLow,mem));
 			line.push_back(' ');
 		}
 		text.push_back(line);

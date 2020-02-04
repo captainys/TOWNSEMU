@@ -29,7 +29,7 @@ i486DX::Instruction i486DX::FetchInstruction(const SegmentRegister &CS,unsigned 
 
 	// Question: Do prefixes need to be in the specific order INST_PREFIX->ADDRSIZE_OVERRIDE->OPSIZE_OVERRIDE->SEG_OVERRIDE?
 
-	unsigned int lastByte=FetchByte(CS,offset+inst.numBytes++,mem);
+	unsigned int lastByte=FetchByte(defAddrSize,CS,offset+inst.numBytes++,mem);
 	for(;;) // While looking at prefixes.
 	{
 		switch(lastByte)
@@ -58,13 +58,13 @@ i486DX::Instruction i486DX::FetchInstruction(const SegmentRegister &CS,unsigned 
 		default:
 			goto PREFIX_DONE;
 		}
-		lastByte=FetchByte(CS,offset+inst.numBytes++,mem);
+		lastByte=FetchByte(inst.addressSize,CS,offset+inst.numBytes++,mem);
 	}
 PREFIX_DONE:
 	inst.opCode=lastByte;
 	if(true==OpCodeNeedsOneMoreByte(inst.opCode))
 	{
-		lastByte=FetchByte(CS,offset+inst.numBytes++,mem);
+		lastByte=FetchByte(inst.addressSize,CS,offset+inst.numBytes++,mem);
 		inst.opCode|=(lastByte<<8);
 	}
 
@@ -75,21 +75,21 @@ PREFIX_DONE:
 
 unsigned int i486DX::FetchOperand8(Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 {
-	auto byte=FetchByte(seg,offset++,mem);
+	auto byte=FetchByte(inst.addressSize,seg,offset++,mem);
 	inst.operand[inst.operandLen++]=byte;
 	++inst.numBytes;
 	return 1;
 }
 unsigned int i486DX::PeekOperand8(unsigned int &operand,const Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 {
-	operand=FetchByte(seg,offset,mem);
+	operand=FetchByte(inst.addressSize,seg,offset,mem);
 	return 1;
 }
 unsigned int i486DX::FetchOperand16(Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 {
 	unsigned int byte[2];
-	byte[0]=FetchByte(seg,offset++,mem);
-	byte[1]=FetchByte(seg,offset++,mem);
+	byte[0]=FetchByte(inst.addressSize,seg,offset++,mem);
+	byte[1]=FetchByte(inst.addressSize,seg,offset++,mem);
 
 	inst.operand[inst.operandLen++]=byte[0];
 	inst.operand[inst.operandLen++]=byte[1];
@@ -99,10 +99,10 @@ unsigned int i486DX::FetchOperand16(Instruction &inst,const SegmentRegister &seg
 unsigned int i486DX::FetchOperand32(Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 {
 	unsigned int byte[4];
-	byte[0]=FetchByte(seg,offset++,mem);
-	byte[1]=FetchByte(seg,offset++,mem);
-	byte[2]=FetchByte(seg,offset++,mem);
-	byte[3]=FetchByte(seg,offset++,mem);
+	byte[0]=FetchByte(inst.addressSize,seg,offset++,mem);
+	byte[1]=FetchByte(inst.addressSize,seg,offset++,mem);
+	byte[2]=FetchByte(inst.addressSize,seg,offset++,mem);
+	byte[3]=FetchByte(inst.addressSize,seg,offset++,mem);
 	inst.operand[inst.operandLen++]=byte[0];
 	inst.operand[inst.operandLen++]=byte[1];
 	inst.operand[inst.operandLen++]=byte[2];
@@ -3991,7 +3991,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		// REP/REPE/REPNE CX or ECX is chosen based on addressSize.
 		if(true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize))
 		{
-			SetAL(FetchByte(state.DS(),state.ESI(),mem));
+			SetAL(FetchByte(inst.addressSize,state.DS(),state.ESI(),mem));
 			UpdateSIorESIAfterStringOp(inst.addressSize,8);
 			EIPSetByInstruction=(INST_PREFIX_REP==inst.instPrefix);
 			clocksPassed+=5;
@@ -4164,7 +4164,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		// REP/REPE/REPNE CX or ECX is chosen based on addressSize.
 		if(true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize))
 		{
-			auto data=FetchByte(state.DS(),state.ESI(),mem);
+			auto data=FetchByte(inst.addressSize,state.DS(),state.ESI(),mem);
 			StoreByte(mem,inst.addressSize,state.ES(),state.EDI(),data);
 			UpdateSIorESIAfterStringOp(inst.addressSize,8);
 			UpdateDIorEDIAfterStringOp(inst.addressSize,8);
@@ -4302,7 +4302,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		// REP/REPE/REPNE CX or ECX is chosen based on addressSize.
 		if(true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize))
 		{
-			IOOut8(io,GetDX(),FetchByte(state.DS(),state.ESI(),mem));
+			IOOut8(io,GetDX(),FetchByte(inst.addressSize,state.DS(),state.ESI(),mem));
 			UpdateSIorESIAfterStringOp(inst.addressSize,8);
 			EIPSetByInstruction=(INST_PREFIX_REP==inst.instPrefix);
 			clocksPassed+=(IsInRealMode() ? 17 : 10); // Protected Mode 32 if CPL>IOPL
@@ -4554,7 +4554,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_OPCODE_SCASB://            0xAE,
 		if(true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize))
 		{
-			auto data=FetchByte(state.ES(),state.EDI(),mem);
+			auto data=FetchByte(inst.addressSize,state.ES(),state.EDI(),mem);
 			auto AL=GetAL();
 			SubByte(AL,data);
 			UpdateDIorEDIAfterStringOp(inst.addressSize,8);

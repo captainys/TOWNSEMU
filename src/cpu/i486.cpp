@@ -573,17 +573,21 @@ void i486DX::Push(Memory &mem,unsigned int operandSize,unsigned int value)
 unsigned int i486DX::Pop(Memory &mem,unsigned int operandSize)
 {
 	unsigned int value;
-	if(16==GetStackAddressingSize())
+	auto addressSize=GetStackAddressingSize();
+	if(16==addressSize)
 	{
 		auto SP=GetSP();
 		if(16==operandSize)
 		{
-			value=FetchByte(state.SS(),SP,mem)|(FetchByte(state.SS(),SP+1,mem)<<8);
+			value=FetchByte(addressSize,state.SS(),SP,mem)|(FetchByte(addressSize,state.SS(),SP+1,mem)<<8);
 			SP+=2;
 		}
 		else if(32==operandSize)
 		{
-			value=FetchByte(state.SS(),SP,mem)|(FetchByte(state.SS(),SP+1,mem)<<8)|(FetchByte(state.SS(),SP+2,mem)<<16)|(FetchByte(state.SS(),SP+3,mem)<<24);
+			value= FetchByte(addressSize,state.SS(),SP,mem)
+			     |(FetchByte(addressSize,state.SS(),SP+1,mem)<<8)
+			     |(FetchByte(addressSize,state.SS(),SP+2,mem)<<16)
+			     |(FetchByte(addressSize,state.SS(),SP+3,mem)<<24);
 			SP+=4;
 		}
 		SetSP(SP); // SetSP does SP&=0xffff;
@@ -593,12 +597,16 @@ unsigned int i486DX::Pop(Memory &mem,unsigned int operandSize)
 		auto ESP=GetESP();
 		if(16==operandSize)
 		{
-			value=FetchByte(state.SS(),ESP,mem)|(FetchByte(state.SS(),ESP+1,mem)<<8);
+			value= FetchByte(addressSize,state.SS(),ESP,mem)
+			     |(FetchByte(addressSize,state.SS(),ESP+1,mem)<<8);
 			ESP+=2;
 		}
 		else if(32==operandSize)
 		{
-			value=FetchByte(state.SS(),ESP,mem)|(FetchByte(state.SS(),ESP+1,mem)<<8)|(FetchByte(state.SS(),ESP+2,mem)<<16)|(FetchByte(state.SS(),ESP+3,mem)<<24);
+			value= FetchByte(addressSize,state.SS(),ESP,mem)
+			     |(FetchByte(addressSize,state.SS(),ESP+1,mem)<<8)
+			     |(FetchByte(addressSize,state.SS(),ESP+2,mem)<<16)
+			     |(FetchByte(addressSize,state.SS(),ESP+3,mem)<<24);
 			ESP+=4;
 		}
 		SetESP(ESP);
@@ -616,7 +624,7 @@ std::string i486DX::Disassemble(const Instruction &inst,SegmentRegister seg,unsi
 
 	for(unsigned int i=0; i<inst.numBytes; ++i)
 	{
-		disasm+=cpputil::Ubtox(FetchByte(seg,offset+i,mem));
+		disasm+=cpputil::Ubtox(FetchByte(inst.addressSize,seg,offset+i,mem));
 	}
 	disasm+=" ";
 
@@ -1349,14 +1357,14 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 			{
 				for(unsigned int i=0; i<value.numBytes; ++i)
 				{
-					value.byteData[i]=FetchByte(seg,(offset+i)&65535,mem);
+					value.byteData[i]=FetchByte(addressSize,seg,(offset+i)&65535,mem);
 				}
 			}
 			else
 			{
 				for(unsigned int i=0; i<value.numBytes; ++i)
 				{
-					value.byteData[i]=FetchByte(seg,offset+i,mem);
+					value.byteData[i]=FetchByte(addressSize,seg,offset+i,mem);
 				}
 			}
 		}
