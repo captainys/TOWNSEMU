@@ -9,13 +9,9 @@ std::vector <std::string> miscutil::MakeMemDump(const i486DX &cpu,const Memory &
 	const int addressSize=32;
 	std::vector <std::string> text;
 
-	if((ptr.SEG&0xffff0000)==i486DX::FarPointer::SEG_REGISTER)
-	{
-		ptr.SEG=cpu.GetRegisterValue(ptr.SEG&0xffff);
-	}
-
 	auto lineStart=(ptr.OFFSET&~0x0F);
 	auto lineEnd=((ptr.OFFSET+length-1)&~0x0F);
+
 	if((ptr.SEG&0xffff0000)==i486DX::FarPointer::LINEAR_ADDR)
 	{
 		text.push_back("Linear Address Dump not supported yet.");
@@ -73,7 +69,14 @@ std::vector <std::string> miscutil::MakeMemDump(const i486DX &cpu,const Memory &
 	else
 	{
 		i486DX::SegmentRegister seg;
-		cpu.LoadSegmentRegisterQuiet(seg,ptr.SEG,mem,cpu.IsInRealMode());
+		if((ptr.SEG&0xffff0000)==i486DX::FarPointer::SEG_REGISTER)
+		{
+			seg=cpu.state.GetSegmentRegister(ptr.SEG&0xffff);
+		}
+		else
+		{
+			cpu.LoadSegmentRegisterQuiet(seg,ptr.SEG,mem,cpu.IsInRealMode());
+		}
 		for(auto addr0=lineStart; addr0<lineEnd; addr0+=16)
 		{
 			std::string str;

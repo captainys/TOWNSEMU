@@ -3295,7 +3295,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			// I just make it 20 clocks.
 			clocksPassed=20;
 			auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize);
-			auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize);
+			auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize);
 			if(true!=state.exception)
 			{
 				long long int i1=value1.GetAsSignedDword();

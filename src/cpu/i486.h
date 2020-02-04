@@ -316,6 +316,28 @@ public:
 			return sreg[REG_GS-REG_SEGMENT_REG_BASE];
 		}
 
+		/*! Returns Segment-Register.  REG must be REG_CS,REG_DS,REG_ES,REG_FS,REG_FS,REG_SS.
+		*/
+		SegmentRegister GetSegmentRegister(int reg) const
+		{
+			switch(reg)
+			{
+			case REG_CS:
+				return CS();
+			case REG_DS:
+				return DS();
+			case REG_ES:
+				return ES();
+			case REG_FS:
+				return FS();
+			case REG_GS:
+				return GS();
+			case REG_SS:
+				return SS();
+			}
+			return DS();
+		}
+
 		FPUState fpuState;
 
 		bool halt;
