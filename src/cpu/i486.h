@@ -1494,9 +1494,9 @@ public:
 
 	/*! Fetch a dword.
 	*/
-	inline unsigned int FetchDword(const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+	inline unsigned int FetchDword(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 	{
-		if(true==AddressingMode16Bit())
+		if(true==AddressingMode16Bit(addressSize))
 		{
 			offset&=0xffff;
 		}
@@ -1527,7 +1527,7 @@ public:
 			return FetchWord(seg,offset,mem);
 		default:
 		case 32:
-			return FetchDword(seg,offset,mem);
+			return FetchDword(addressSize,seg,offset,mem);
 		}
 	}
 	inline unsigned int FetchByteWordOrDword(unsigned int operandSize,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const

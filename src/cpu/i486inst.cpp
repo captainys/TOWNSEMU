@@ -4006,7 +4006,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			}
 			else
 			{
-				SetEAX(FetchDword(state.DS(),state.ESI(),mem));
+				SetEAX(FetchDword(inst.addressSize,state.DS(),state.ESI(),mem));
 			}
 			UpdateSIorESIAfterStringOp(inst.addressSize,inst.operandSize);
 			EIPSetByInstruction=(INST_PREFIX_REP==inst.instPrefix);
@@ -4317,7 +4317,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			}
 			else
 			{
-				IOOut32(io,GetDX(),FetchDword(state.DS(),state.ESI(),mem));
+				IOOut32(io,GetDX(),FetchDword(inst.addressSize,state.DS(),state.ESI(),mem));
 			}
 			UpdateSIorESIAfterStringOp(inst.addressSize,inst.operandSize);
 			EIPSetByInstruction=(INST_PREFIX_REP==inst.instPrefix);
