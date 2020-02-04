@@ -9,6 +9,12 @@
 
 void TownsCRTC::State::Reset(void)
 {
+	for(auto &d : crtcReg)
+	{
+		d=0;
+	}
+	crtcAddrLatch=0;
+
 	for(auto &d : mxVideoOutCtrl)
 	{
 		d=0;
@@ -32,6 +38,18 @@ TownsCRTC::TownsCRTC(class FMTowns *ptr)
 {
 	switch(ioport)
 	{
+	case TOWNSIO_CRTC_ADDRESS://             0x440,
+		state.crtcAddrLatch=data&0x1f;
+		break;
+	case TOWNSIO_CRTC_DATA_LOW://            0x442,
+		state.crtcReg[state.crtcAddrLatch]&=0xff00;
+		state.crtcReg[state.crtcAddrLatch]|=(data&0xff);
+		break;
+	case TOWNSIO_CRTC_DATA_HIGH://           0x443,
+		state.crtcReg[state.crtcAddrLatch]&=0x00ff;
+		state.crtcReg[state.crtcAddrLatch]|=((data&0xff)<<8);
+		break;
+
 	case TOWNSIO_MX_HIRES://            0x470,
 	case TOWNSIO_MX_VRAMSIZE://         0x471,
 		break; // No write access;
@@ -74,6 +92,15 @@ TownsCRTC::TownsCRTC(class FMTowns *ptr)
 {
 	switch(ioport)
 	{
+	case TOWNSIO_CRTC_ADDRESS://             0x440,
+		state.crtcAddrLatch=data&0x1f;
+		break;
+	case TOWNSIO_CRTC_DATA_LOW://            0x442,
+		state.crtcReg[state.crtcAddrLatch]=(data&0xfff);
+		break;
+	case TOWNSIO_CRTC_DATA_HIGH://           0x443,
+		break;
+
 	case TOWNSIO_MX_HIRES://            0x470,
 	case TOWNSIO_MX_VRAMSIZE://         0x471,
 		break; // No write access;
@@ -111,26 +138,41 @@ TownsCRTC::TownsCRTC(class FMTowns *ptr)
 
 /* virtual */ unsigned int TownsCRTC::IOReadByte(unsigned int ioport)
 {
+	unsigned char data=0xff;
 	switch(ioport)
 	{
+	case TOWNSIO_CRTC_ADDRESS://             0x440,
+		break;
+	case TOWNSIO_CRTC_DATA_LOW://            0x442,
+		// It is supposed to be write-only, but 1 bit "START" can be read.  Why not make all readable then.
+		data=state.crtcReg[state.crtcAddrLatch]&0xff;
+		break;
+	case TOWNSIO_CRTC_DATA_HIGH://           0x443,
+		data=(state.crtcReg[state.crtcAddrLatch]>>8)&0xff;
+		break;
+
 	case TOWNSIO_MX_HIRES://            0x470,
-		return (TOWNSTYPE_2_MX<=townsPtr->townsType ? 0x7F : 0x80); // [2] pp. 831
+		data=(TOWNSTYPE_2_MX<=townsPtr->townsType ? 0x7F : 0x80); // [2] pp. 831
+		break;
 
 	case TOWNSIO_MX_VRAMSIZE://         0x471,
-		return (TOWNSTYPE_2_MX<=townsPtr->townsType ? 0x01 : 0x00); // [2] pp. 831
+		data=(TOWNSTYPE_2_MX<=townsPtr->townsType ? 0x01 : 0x00); // [2] pp. 831
 		break;
 
 	case TOWNSIO_MX_IMGOUT_ADDR_LOW://  0x472,
-		return (TOWNSTYPE_2_MX<=townsPtr->townsType ? (state.mxVideoOutCtrlAddrLatch&255) : 0xff);
+		data=(TOWNSTYPE_2_MX<=townsPtr->townsType ? (state.mxVideoOutCtrlAddrLatch&255) : 0xff);
+		break;
 
 	case TOWNSIO_MX_IMGOUT_ADDR_HIGH:// 0x473,
-		return (TOWNSTYPE_2_MX<=townsPtr->townsType ? ((state.mxVideoOutCtrlAddrLatch>>8)&255) : 0xff);
+		data=(TOWNSTYPE_2_MX<=townsPtr->townsType ? ((state.mxVideoOutCtrlAddrLatch>>8)&255) : 0xff);
+		break;
 
 	case TOWNSIO_MX_IMGOUT_ADDR_D0://   0x474,
 		switch(state.mxVideoOutCtrlAddrLatch)
 		{
 		case 0x0004:
-			return 0;
+			data=0;
+			break;
 		}
 		break;
 	case TOWNSIO_MX_IMGOUT_ADDR_D1://   0x475,
@@ -140,7 +182,7 @@ TownsCRTC::TownsCRTC(class FMTowns *ptr)
 	case TOWNSIO_MX_IMGOUT_ADDR_D3://   0x477,
 		break;
 	}
-	return 0xff;
+	return data;
 }
 
 /* virtual */ void TownsCRTC::Reset(void)

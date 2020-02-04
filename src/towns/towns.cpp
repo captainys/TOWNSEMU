@@ -121,6 +121,11 @@ FMTowns::FMTowns() : crtc(this),pic(this),dmac(this),fdc(this,&dmac),rtc(this)
 	io.AddDevice(&fdc,TOWNSIO_FDC_STATUS_COMMAND/*0x200*/,TOWNSIO_FDC_DRIVE_SWITCH/*0x20E*/);
 
 
+	io.AddDevice(&crtc,TOWNSIO_CRTC_ADDRESS);//             0x440,
+	io.AddDevice(&crtc,TOWNSIO_CRTC_DATA_LOW);//            0x442,
+	io.AddDevice(&crtc,TOWNSIO_CRTC_DATA_HIGH);//           0x443,
+
+
 	io.AddDevice(this,TOWNSIO_FMR_RESOLUTION); // 0x400
 
 
