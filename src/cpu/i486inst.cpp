@@ -4165,7 +4165,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		if(true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize))
 		{
 			auto data=FetchByte(state.DS(),state.ESI(),mem);
-			StoreByte(mem,state.ES(),state.EDI(),data);
+			StoreByte(mem,inst.addressSize,state.ES(),state.EDI(),data);
 			UpdateSIorESIAfterStringOp(inst.addressSize,8);
 			UpdateDIorEDIAfterStringOp(inst.addressSize,8);
 			EIPSetByInstruction=(INST_PREFIX_REP==inst.instPrefix);
@@ -4176,7 +4176,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		if(true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize))
 		{
 			auto data=FetchWordOrDword(inst.operandSize,state.DS(),state.ESI(),mem);
-			StoreWordOrDword(mem,inst.operandSize,state.ES(),state.EDI(),data);
+			StoreWordOrDword(mem,inst.operandSize,inst.addressSize,state.ES(),state.EDI(),data);
 			UpdateSIorESIAfterStringOp(inst.addressSize,inst.operandSize);
 			UpdateDIorEDIAfterStringOp(inst.addressSize,inst.operandSize);
 			EIPSetByInstruction=(INST_PREFIX_REP==inst.instPrefix);
@@ -4595,7 +4595,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		// REP/REPE/REPNE CX or ECX is chosen based on addressSize.
 		if(true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize))
 		{
-			StoreByte(mem,state.ES(),state.EDI(),GetAL());
+			StoreByte(mem,inst.addressSize,state.ES(),state.EDI(),GetAL());
 			UpdateDIorEDIAfterStringOp(inst.addressSize,8);
 			EIPSetByInstruction=(INST_PREFIX_REP==inst.instPrefix);
 			clocksPassed+=5;
@@ -4605,7 +4605,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		// REP/REPE/REPNE CX or ECX is chosen based on addressSize.
 		if(true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize))
 		{
-			StoreWordOrDword(mem,inst.operandSize,state.ES(),state.EDI(),GetEAX());
+			StoreWordOrDword(mem,inst.operandSize,inst.addressSize,state.ES(),state.EDI(),GetEAX());
 			UpdateDIorEDIAfterStringOp(inst.addressSize,inst.operandSize);
 			EIPSetByInstruction=(INST_PREFIX_REP==inst.instPrefix);
 			clocksPassed+=5;

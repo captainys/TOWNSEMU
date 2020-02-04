@@ -1409,6 +1409,19 @@ public:
 		}
 		return false;
 	}
+	inline bool AddressingMode16Bit(int addressSize) const // Temporarily two versions.
+	{
+		if(true==IsInRealMode())
+		{
+			return true;
+		}
+		else
+		{
+			return (16==addressSize);
+		}
+		return false;
+	}
+
 
 	/*! Returns the addressing size (16 or 32) of the stack segment.
 	*/
@@ -1535,9 +1548,9 @@ public:
 
 	/*! Store a byte.
 	*/
-	inline void StoreByte(Memory &mem,SegmentRegister seg,unsigned int offset,unsigned char byteData)
+	inline void StoreByte(Memory &mem,int addressSize,SegmentRegister seg,unsigned int offset,unsigned char byteData)
 	{
-		if(true==AddressingMode16Bit())
+		if(true==AddressingMode16Bit(addressSize))
 		{
 			offset&=0xffff;
 		}
@@ -1551,9 +1564,9 @@ public:
 
 	/*! Store a word or dword.  Operand size must be 16 or 32.
 	*/
-	inline void StoreWordOrDword(Memory &mem,unsigned int operandSize,SegmentRegister seg,unsigned int offset,unsigned int data)
+	inline void StoreWordOrDword(Memory &mem,unsigned int operandSize,int addressSize,SegmentRegister seg,unsigned int offset,unsigned int data)
 	{
-		if(true==AddressingMode16Bit())
+		if(true==AddressingMode16Bit(addressSize))
 		{
 			offset&=0xffff;
 		}

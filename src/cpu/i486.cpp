@@ -527,24 +527,25 @@ unsigned int i486DX::GetStackAddressingSize(void) const
 
 void i486DX::Push(Memory &mem,unsigned int operandSize,unsigned int value)
 {
-	if(16==GetStackAddressingSize())
+	auto addressSize=GetStackAddressingSize();
+	if(16==addressSize)
 	{
 		auto SP=GetSP();
 		if(16==operandSize)
 		{
 			SP-=2;
 			SP&=65535;
-			StoreByte(mem,state.SS(),SP  ,value&255);
-			StoreByte(mem,state.SS(),SP+1,(value>>8)&255);
+			StoreByte(mem,addressSize,state.SS(),SP  ,value&255);
+			StoreByte(mem,addressSize,state.SS(),SP+1,(value>>8)&255);
 		}
 		else if(32==operandSize)
 		{
 			SP-=4;
 			SP&=65535;
-			StoreByte(mem,state.SS(),SP  ,value&255);
-			StoreByte(mem,state.SS(),SP+1,(value>>8)&255);
-			StoreByte(mem,state.SS(),SP+2,(value>>16)&255);
-			StoreByte(mem,state.SS(),SP+3,(value>>24)&255);
+			StoreByte(mem,addressSize,state.SS(),SP  ,value&255);
+			StoreByte(mem,addressSize,state.SS(),SP+1,(value>>8)&255);
+			StoreByte(mem,addressSize,state.SS(),SP+2,(value>>16)&255);
+			StoreByte(mem,addressSize,state.SS(),SP+3,(value>>24)&255);
 		}
 		SetSP(SP);
 	}
@@ -554,16 +555,16 @@ void i486DX::Push(Memory &mem,unsigned int operandSize,unsigned int value)
 		if(16==operandSize)
 		{
 			ESP-=2;
-			StoreByte(mem,state.SS(),ESP  ,value&255);
-			StoreByte(mem,state.SS(),ESP+1,(value>>8)&255);
+			StoreByte(mem,addressSize,state.SS(),ESP  ,value&255);
+			StoreByte(mem,addressSize,state.SS(),ESP+1,(value>>8)&255);
 		}
 		else if(32==operandSize)
 		{
 			ESP-=4;
-			StoreByte(mem,state.SS(),ESP  ,value&255);
-			StoreByte(mem,state.SS(),ESP+1,(value>>8)&255);
-			StoreByte(mem,state.SS(),ESP+2,(value>>16)&255);
-			StoreByte(mem,state.SS(),ESP+3,(value>>24)&255);
+			StoreByte(mem,addressSize,state.SS(),ESP  ,value&255);
+			StoreByte(mem,addressSize,state.SS(),ESP+1,(value>>8)&255);
+			StoreByte(mem,addressSize,state.SS(),ESP+2,(value>>16)&255);
+			StoreByte(mem,addressSize,state.SS(),ESP+3,(value>>24)&255);
 		}
 		SetESP(ESP);
 	}
@@ -1842,14 +1843,14 @@ void i486DX::StoreOperandValue(
 			{
 				for(unsigned int i=0; i<value.numBytes; ++i)
 				{
-					StoreByte(mem,seg,(offset+i)&65535,value.byteData[i]);
+					StoreByte(mem,addressSize,seg,(offset+i)&65535,value.byteData[i]);
 				}
 			}
 			else
 			{
 				for(unsigned int i=0; i<value.numBytes; ++i)
 				{
-					StoreByte(mem,seg,offset+i,value.byteData[i]);
+					StoreByte(mem,addressSize,seg,offset+i,value.byteData[i]);
 				}
 			}
 		}
