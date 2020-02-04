@@ -1517,7 +1517,7 @@ public:
 	    Function name is left as FetchWordOrDword temporarily for the time being.
 	    Will be unified to FetchByteWordOrDword in the future.
 	*/
-	inline unsigned int FetchWordOrDword(unsigned int operandSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+	inline unsigned int FetchWordOrDword(unsigned int operandSize,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 	{
 		switch(operandSize)
 		{
@@ -1530,9 +1530,9 @@ public:
 			return FetchDword(seg,offset,mem);
 		}
 	}
-	inline unsigned int FetchByteWordOrDword(unsigned int operandSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+	inline unsigned int FetchByteWordOrDword(unsigned int operandSize,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 	{
-		return FetchWordOrDword(operandSize,seg,offset,mem);
+		return FetchWordOrDword(operandSize,addressSize,seg,offset,mem);
 	}
 
 	/*! Fetch a byte by linear address.

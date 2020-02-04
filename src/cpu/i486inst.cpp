@@ -3132,8 +3132,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_OPCODE_CMPS://            0xA7,
 		if(true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize))
 		{
-			auto data1=FetchByteWordOrDword(inst.operandSize,state.DS(),state.ESI(),mem);
-			auto data2=FetchByteWordOrDword(inst.operandSize,state.ES(),state.EDI(),mem);
+			auto data1=FetchByteWordOrDword(inst.operandSize,inst.addressSize,state.DS(),state.ESI(),mem);
+			auto data2=FetchByteWordOrDword(inst.operandSize,inst.addressSize,state.ES(),state.EDI(),mem);
 			if(true!=state.exception)
 			{
 				SubByteWordOrDword(inst.operandSize,data1,data2);
@@ -4175,7 +4175,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_OPCODE_MOVS://             0xA5,
 		if(true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize))
 		{
-			auto data=FetchWordOrDword(inst.operandSize,state.DS(),state.ESI(),mem);
+			auto data=FetchWordOrDword(inst.operandSize,inst.addressSize,state.DS(),state.ESI(),mem);
 			StoreWordOrDword(mem,inst.operandSize,inst.addressSize,state.ES(),state.EDI(),data);
 			UpdateSIorESIAfterStringOp(inst.addressSize,inst.operandSize);
 			UpdateDIorEDIAfterStringOp(inst.addressSize,inst.operandSize);
@@ -4568,7 +4568,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_OPCODE_SCAS://             0xAF,
 		if(true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize))
 		{
-			auto data=FetchWordOrDword(inst.operandSize,state.ES(),state.EDI(),mem);
+			auto data=FetchWordOrDword(inst.operandSize,inst.addressSize,state.ES(),state.EDI(),mem);
 			auto EAX=GetEAX();
 			SubWordOrDword(inst.operandSize,EAX,data);
 			UpdateDIorEDIAfterStringOp(inst.addressSize,inst.operandSize);
