@@ -1288,6 +1288,9 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		case 2:
 			disasm=DisassembleTypicalOneOperand("NOT",op1,operandSize);
 			break;
+		case 3:
+			disasm=DisassembleTypicalOneOperand("NEG",op1,operandSize);
+			break;
 		case 4:
 			disasm=DisassembleTypicalOneOperand("MUL",op1,operandSize);
 			break;
@@ -2598,7 +2601,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		case 0: // TEST
 			{
 				clocksPassed=(OPER_ADDR==op1.operandType ? 2 : 1);
-				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,1);
+				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
 				unsigned int byte=value.byteData[0];
 				AndByte(byte,inst.GetUimm8());
 				SetCF(false);
@@ -2616,10 +2619,24 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				}
 			}
 			break;
+		case 3: // NEG
+			{
+				clocksPassed=(OPER_ADDR==op1.operandType ? 3 : 1);
+				auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+				auto i=value1.GetAsSignedDword();
+				SetOverflowFlag(-128==i);
+				SetZeroFlag(0==i);
+				SetCF(0!=i);
+				i=-i;
+				SetSignFlag(i<0);
+				value1.SetSignedDword(i);
+				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+			}
+			break;
 		case 4: // MUL
 			{
 				clocksPassed=(OPER_ADDR==op1.operandType ? 18 : 13);
-				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,1);
+				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
 				auto mul=GetAL()*value.byteData[0];
 				SetAX(mul);
 				if(0!=(mul&0xff00))
@@ -2637,7 +2654,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		case 6: // DIV
 			{
 				clocksPassed=16;
-				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,1);
+				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
 				if(0==value.byteData[0])
 				{
 					Interrupt(0,mem,0); // [1] pp.26-28
@@ -2673,8 +2690,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		case 0: // TEST
 			{
 				clocksPassed=(OPER_ADDR==op1.operandType ? 2 : 1);
-				auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize);
-				auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize);
+				auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+				auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize/8);
 				unsigned int i1=value1.GetAsDword();
 				AndWordOrDword(inst.operandSize,i1,value2.GetAsDword());
 				SetCF(false);
@@ -2684,12 +2701,16 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		case 2: // NOT
 			{
 				clocksPassed=(OPER_ADDR==op1.operandType ? 2 : 1);
-				auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize);
+				auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
 				value1.byteData[0]=~value1.byteData[0];
 				value1.byteData[1]=~value1.byteData[1];
 				value1.byteData[2]=~value1.byteData[2];
 				value1.byteData[3]=~value1.byteData[3];
 				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+			}
+			break;
+		case 3: // NEG
+			{
 			}
 			break;
 		case 4: // MUL
@@ -3294,8 +3315,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			// I don't know how it should be calculated.
 			// I just make it 20 clocks.
 			clocksPassed=20;
-			auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize);
-			auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize);
+			auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+			auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize/8);
 			if(true!=state.exception)
 			{
 				long long int i1=value1.GetAsSignedDword();
