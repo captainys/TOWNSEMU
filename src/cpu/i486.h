@@ -669,6 +669,38 @@ public:
 			return word;
 		}
 
+		/*! Returns a value as a signed byte, word, or dword.
+		*/
+		inline int GetAsSignedDword(void) const
+		{
+			unsigned long long int uValue=GetAsDword();
+			switch(numBytes)
+			{
+			default:
+			case 4:
+				if(0x80000000&uValue)
+				{
+					uValue-=0x80000000;
+					uValue-=0x80000000;
+				}
+				break;
+			case 3:
+			case 2:
+				if(0x8000&uValue)
+				{
+					uValue-=0x10000;
+				}
+				break;
+			case 1:
+				if(0x80&uValue)
+				{
+					uValue-=0x100;
+				}
+				break;
+			}
+			return (int)uValue;
+		}
+
 		/*! SetDword does not change numBytes.
 		    It won't update beyond numBytes.
 		    If it needs to be made 4-byte long, use MakeDword instead.
@@ -689,6 +721,19 @@ public:
 			case 0:
 				break;
 			}
+		}
+
+		inline void SetSignedDword(int dword)
+		{
+			unsigned int uDword;
+			// I probably can just say uDword=*((unsigned int *)&dword).
+			// But, officially the behavior is undefined by C/C++.
+			uDword=(dword&0x7FFFFFFF);
+			if(dword<0)
+			{
+				uDword|=0x80000000;
+			}
+			SetDword(uDword);
 		}
 
 		/*! MakeDword makes a 4-byte long OperandValue.
@@ -1725,6 +1770,15 @@ public:
 	void XorDword(unsigned int &value1,unsigned int value2);
 	void XorWord(unsigned int &value1,unsigned int value2);
 	void XorByte(unsigned int &value1,unsigned int value2);
+
+	/*! ROL a value and set OF and CF flags accoring to the result.
+	    OF is only set if ctr==1.
+	    operandSize needs to be 16 or 32.
+	*/ 
+	void RolByteWordOrDword(int operandSize,unsigned int &value,unsigned int ctr);
+	void RolDword(unsigned int &value,unsigned int ctr);
+	void RolWord(unsigned int &value,unsigned int ctr);
+	void RolByte(unsigned int &value,unsigned int ctr);
 
 	/*! RCL a value and set OF and CF flags accoring to the result.
 	    OF is only set if ctr==1.

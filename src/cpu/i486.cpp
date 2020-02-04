@@ -1005,6 +1005,50 @@ void i486DX::XorByte(unsigned int &value1,unsigned int value2)
 	SetParityFlag(CheckParity(value1&0xFF));
 }
 
+void i486DX::RolByteWordOrDword(int operandSize,unsigned int &value,unsigned int ctr)
+{
+	switch(operandSize)
+	{
+	case 8:
+		RolByte(value,ctr);
+		break;
+	case 16:
+		RolWord(value,ctr);
+		break;
+	default:
+	case 32:
+		RolDword(value,ctr);
+		break;
+	}
+}
+
+void i486DX::RolDword(unsigned int &value,unsigned int ctr)
+{
+	unsigned long long int mask=0xFFFFFFFF;
+	ctr&=0x1F;
+	mask>>=(32-ctr);
+	value=(value<<ctr)|((value>>(32-ctr))&mask);
+	value&=0xFFFFFFFF;
+}
+
+void i486DX::RolWord(unsigned int &value,unsigned int ctr)
+{
+	unsigned long long int mask=0xFFFF;
+	ctr&=0xF;
+	mask>>=(16-ctr);
+	value=(value<<ctr)|((value>>(16-ctr))&mask);
+	value&=0xFFFF;
+}
+
+void i486DX::RolByte(unsigned int &value,unsigned int ctr)
+{
+	unsigned long long int mask=0xFF;
+	ctr&=0x7;
+	mask>>=(8-ctr);
+	value=(value<<ctr)|((value>>(8-ctr))&mask);
+	value&=0xFF;
+}
+
 void i486DX::RclWordOrDword(int operandSize,unsigned int &value,unsigned int ctr)
 {
 	if(16==operandSize)

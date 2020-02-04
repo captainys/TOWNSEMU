@@ -314,6 +314,11 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		break;
 
 
+	case I486_OPCODE_IMUL_R_RM://       0xAF0F,
+		FetchOperandRM(inst,seg,offset,mem);
+		break;
+
+
 	case I486_OPCODE_HLT://        0xF4,
 		break;
 
@@ -798,6 +803,12 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 		break;
 	case I486_OPCODE_IN_AL_DX://=        0xEC,
 	case I486_OPCODE_IN_A_DX://=         0xED,
+		break;
+
+
+	case I486_OPCODE_IMUL_R_RM://       0xAF0F,
+		op1.DecodeMODR_MForRegister(operandSize,operand[0]);
+		op2.Decode(addressSize,operandSize,operand);
 		break;
 
 
@@ -1535,6 +1546,11 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		break;
 
 
+	case I486_OPCODE_IMUL_R_RM://       0xAF0F,
+		disasm=DisassembleTypicalTwoOperands("IMUL",op1,op2);
+		break;
+
+
 	case I486_OPCODE_HLT://        0xF4,
 		disasm="HLT";
 		break;
@@ -1889,14 +1905,29 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 	case I486_OPCODE_LGDT_LIDT:
 		switch(GetREG())
 		{
+		case 0:
+			disasm=DisassembleTypicalOneOperand("SGDT",op1,16+operandSize);
+			break;
+		case 1:
+			disasm=DisassembleTypicalOneOperand("SIDT",op1,16+operandSize);
+			break;
 		case 2:
 			disasm=DisassembleTypicalOneOperand("LGDT",op1,16+operandSize);
 			break;
 		case 3:
 			disasm=DisassembleTypicalOneOperand("LIDT",op1,16+operandSize);
 			break;
+		case 4:
+			disasm=DisassembleTypicalOneOperand("SMSW",op1,16+operandSize);
+			break;
+		case 6:
+			disasm=DisassembleTypicalOneOperand("LMSW",op1,16+operandSize);
+			break;
+		case 7:
+			disasm=DisassembleTypicalOneOperand("INVLPG",op1,16+operandSize);
+			break;
 		default:
-			disasm=DisassembleTypicalTwoOperands(cpputil::Ubtox(opCode)+"?",op1,op2);
+			disasm=DisassembleTypicalTwoOperands(cpputil::Ubtox(opCode)+"?",op1,op2)+" REG="+cpputil::Ubtox(GetREG());
 			break;
 		}
 		break;
@@ -2462,7 +2493,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			switch(inst.GetREG())
 			{
 			case 0:// "ROL";
-				Abort("C1 ROL not implemented yet.");
+				RolByte(i,ctr);
 				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
 				break;
 			case 1:// "ROR";
@@ -2524,7 +2555,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			switch(inst.GetREG())
 			{
 			case 0:// "ROL";
-				Abort("C1 ROL not implemented yet.");
+				RolByteWordOrDword(inst.operandSize,i,ctr);
 				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
 				break;
 			case 1:// "ROR";
@@ -3253,6 +3284,38 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		else
 		{
 			clocksPassed=8; // 28 if CPL>IOPL
+		}
+		break;
+
+
+	case I486_OPCODE_IMUL_R_RM://       0xAF0F,
+		{
+			// Clocks should be 13-26 for 16-bit operand, 13-42 for 32-bit operand.
+			// I don't know how it should be calculated.
+			// I just make it 20 clocks.
+			clocksPassed=20;
+			auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize);
+			auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize);
+			if(true!=state.exception)
+			{
+				long long int i1=value1.GetAsSignedDword();
+				long long int i2=value2.GetAsSignedDword();
+				long long int result=i1*i2;
+				value1.SetSignedDword((int)result);
+				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+				switch(inst.operandSize)
+				{
+				case 8:
+					SetOverflowFlag(result<-128 || 127<result);
+					break;
+				case 16:
+					SetOverflowFlag(result<-32768 || 32767<result);
+					break;
+				case 32:
+					SetOverflowFlag(result<-0x80000000LL || 0x7FFFFFFFLL<result);
+					break;
+				}
+			}
 		}
 		break;
 
