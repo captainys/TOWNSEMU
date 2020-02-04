@@ -323,6 +323,23 @@ void i486DX::LoadDescriptorTableRegister(SystemAddressRegister &reg,int operandS
 	std::cout << "BASE:" << cpputil::Uitox(reg.linearBaseAddr) << std::endl;
 }
 
+i486DX::OperandValue i486DX::DescriptorTableToOperandValue(const SystemAddressRegister &reg,int operandSize) const
+{
+	OperandValue operaValue;
+	operaValue.numBytes=6;
+	operaValue.byteData[0]=reg.limit&0xFF;
+	operaValue.byteData[1]=(reg.limit>>8)&0xFF;
+	operaValue.byteData[2]=reg.linearBaseAddr&0xFF;
+	operaValue.byteData[3]=(reg.linearBaseAddr>>8)&0xFF;
+	operaValue.byteData[4]=(reg.linearBaseAddr>>16)&0xFF;
+	operaValue.byteData[5]=(reg.linearBaseAddr>>24)&0xFF;
+	if(16==operandSize)
+	{
+		operaValue.byteData[5]=0;
+	}
+	return operaValue;
+}
+
 unsigned int i486DX::GetRegisterValue(int reg) const
 {
 	switch(reg)

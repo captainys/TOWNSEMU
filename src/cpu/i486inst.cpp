@@ -422,7 +422,7 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		break;
 
 
-	case I486_OPCODE_LGDT_LIDT:
+	case I486_OPCODE_LGDT_LIDT_SGDT_SIDT:
 		FetchOperandRM(inst,seg,offset,mem);
 		break;
 
@@ -867,7 +867,7 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 		break;
 
 
-	case I486_OPCODE_LGDT_LIDT:
+	case I486_OPCODE_LGDT_LIDT_SGDT_SIDT:
 		op1.Decode(addressSize,operandSize,operand);
 		break;
 
@@ -1902,7 +1902,7 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		break;
 
 
-	case I486_OPCODE_LGDT_LIDT:
+	case I486_OPCODE_LGDT_LIDT_SGDT_SIDT:
 		switch(GetREG())
 		{
 		case 0:
@@ -4015,7 +4015,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 
 
-	case I486_OPCODE_LGDT_LIDT:
+	case I486_OPCODE_LGDT_LIDT_SGDT_SIDT:
 		switch(inst.GetREG())
 		{
 		case 2: // LGDT
@@ -4034,6 +4034,39 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					LoadDescriptorTableRegister(state.IDTR,inst.operandSize,value.byteData);
 					break;
 				}
+			}
+			else
+			{
+				if(IsInRealMode())
+				{
+					Interrupt(6,mem,0);
+					EIPSetByInstruction=true;
+				}
+				else
+				{
+					RaiseException(EXCEPTION_UD,0);
+					EIPSetByInstruction=true;
+				}
+			}
+			break;
+		case 0: // SGDT
+		case 1: // SIDT
+			clocksPassed=11;
+			if(OPER_ADDR==op1.operandType)
+			{
+				auto numBytes=(inst.operandSize+16)/8;
+				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,numBytes);
+				OperandValue fwordData;
+				switch(inst.GetREG())
+				{
+				case 0:
+					fwordData=DescriptorTableToOperandValue(state.GDTR,inst.operandSize);
+					break;
+				case 1:
+					fwordData=DescriptorTableToOperandValue(state.IDTR,inst.operandSize);
+					break;
+				}
+				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,fwordData);
 			}
 			else
 			{

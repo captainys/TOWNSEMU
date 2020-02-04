@@ -1378,6 +1378,10 @@ public:
 	*/
 	void LoadDescriptorTableRegister(SystemAddressRegister &reg,int operandSize,const unsigned char byteData[]);
 
+	/*! Make an OperandValue from a descriptor table register.
+	*/
+	OperandValue DescriptorTableToOperandValue(const SystemAddressRegister &reg,int operandSize) const;
+
 	inline bool IsInRealMode(void) const
 	{
 		return (0==(state.CR[0]&CR0_PROTECTION_ENABLE));
@@ -1829,7 +1833,9 @@ public:
 	    const Memory &mem,int addressSize,int segmentOverride,const Operand &op,int destinationBytes) const;
 
 
-	/*!
+	/*! Stores value to the destination described by the operand.
+	    If the destination is memory, the number of bytes stored depends on numByte member of OperandValue.
+	    If the destination is a register, the number of bytes stored depends on the size of the register.
 	*/
 	void StoreOperandValue(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,OperandValue value);
 };
