@@ -18,6 +18,7 @@
 #include "ioram.h"
 #include "crtc.h"
 #include "fdc.h"
+#include "rtc.h"
 #include "keyboard.h"
 #include "physmem.h"
 #include "memaccess.h"
@@ -95,6 +96,7 @@ public:
 	i486DX cpu;
 	i486Debugger debugger;
 	TownsPIC pic;
+	TownsRTC rtc;
 	TownsDMAC dmac;
 	TownsCDROM cdrom;
 	TownsPhysicalMemory physMem;

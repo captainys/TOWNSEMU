@@ -67,18 +67,6 @@ PREFIX_DONE:
 		lastByte=FetchByte(CS,offset+inst.numBytes++,mem);
 		inst.opCode|=(lastByte<<8);
 	}
-	if(inst.opCode==0xDB)
-	{
-		auto nextByte=FetchByte(CS,offset+inst.numBytes,mem);
-		if(0xE3==nextByte
-		   // || ??==nextByte
-		)
-		{
-			lastByte=nextByte;
-			inst.opCode|=(lastByte<<8);
-			++inst.numBytes;
-		}
-	}
 
 	FetchOperand(inst,CS,offset+inst.numBytes,mem);
 
@@ -90,6 +78,11 @@ unsigned int i486DX::FetchOperand8(Instruction &inst,const SegmentRegister &seg,
 	auto byte=FetchByte(seg,offset++,mem);
 	inst.operand[inst.operandLen++]=byte;
 	++inst.numBytes;
+	return 1;
+}
+unsigned int i486DX::PeekOperand8(unsigned int &operand,const Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+{
+	operand=FetchByte(seg,offset,mem);
 	return 1;
 }
 unsigned int i486DX::FetchOperand16(Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
@@ -274,7 +267,41 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		break;
 
 
-	case I486_OPCODE_FNINIT:
+	case I486_OPCODE_FWAIT://      0x9B,
+		break;
+	case I486_OPCODE_FPUINST_DB:// 0xDB,
+		{
+			unsigned int MODR_M;
+			PeekOperand8(MODR_M,inst,seg,offset,mem);
+			if(0xE3==MODR_M) // FNINIT
+			{
+				FetchOperand8(inst,seg,offset,mem);
+			}
+			else
+			{
+				FetchOperand8(inst,seg,offset,mem);
+				switch(Instruction::GetREG(MODR_M))
+				{
+				}
+			}
+		}
+		break;
+	case I486_OPCODE_FPUINST_DF:// 0xDF,
+		{
+			unsigned int MODR_M;
+			PeekOperand8(MODR_M,inst,seg,offset,mem);
+			if(0xE0==MODR_M) // FNSTSW
+			{
+				FetchOperand8(inst,seg,offset,mem);
+			}
+			else
+			{
+				FetchOperand8(inst,seg,offset,mem); // Tentative.
+				switch(Instruction::GetREG(MODR_M))
+				{
+				}
+			}
+		}
 		break;
 
 
@@ -745,7 +772,11 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 		break;
 
 
-	case I486_OPCODE_FNINIT:
+	case I486_OPCODE_FWAIT://      0x9B,
+		break;
+	case I486_OPCODE_FPUINST_DB:// 0xDB,
+		break;
+	case I486_OPCODE_FPUINST_DF:// 0xDF,
 		break;
 
 
@@ -1300,8 +1331,28 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		break;
 
 
-	case I486_OPCODE_FNINIT:
-		disasm="FNINIT";
+	case I486_OPCODE_FWAIT://      0x9B,
+		disasm="FWAIT";
+		break;
+	case I486_OPCODE_FPUINST_DB:// 0xDB,
+		if(0xE3==operand[0])
+		{
+			disasm="FNINIT";
+		}
+		else
+		{
+			disasm="?FPUINST DBH";
+		}
+		break;
+	case I486_OPCODE_FPUINST_DF:// 0xDF,
+		if(0xE0==operand[0])
+		{
+			disasm="FNSTSW  AX";
+		}
+		else
+		{
+			disasm="?FPUINST DFH";
+		}
 		break;
 
 
@@ -3067,8 +3118,32 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 
 
-	case I486_OPCODE_FNINIT:
-		clocksPassed=17;
+	case I486_OPCODE_FWAIT://      0x9B,
+		if(true==state.fpuState.ExceptionPending())
+		{
+			EIPSetByInstruction=true;
+		}
+		clocksPassed=3;
+		break;
+	case I486_OPCODE_FPUINST_DB:// 0xDB,
+		if(0xE3==inst.operand[0])
+		{
+			state.fpuState.FNINIT();
+			clocksPassed=17;
+		}
+		else
+		{
+		}
+		break;
+	case I486_OPCODE_FPUINST_DF:// 0xDF,
+		if(0xE0==inst.operand[0])
+		{
+			SetAX(state.fpuState.GetStatusWord());
+			clocksPassed=3;
+		}
+		else
+		{
+		}
 		break;
 
 

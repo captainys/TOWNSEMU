@@ -44,7 +44,7 @@ void FMTowns::Variable::Reset(void)
 ////////////////////////////////////////////////////////////
 
 
-FMTowns::FMTowns() : crtc(this),pic(this),dmac(this),fdc(this,&dmac)
+FMTowns::FMTowns() : crtc(this),pic(this),dmac(this),fdc(this,&dmac),rtc(this)
 {
 	townsType=TOWNSTYPE_2_MX;
 
@@ -58,6 +58,7 @@ FMTowns::FMTowns() : crtc(this),pic(this),dmac(this),fdc(this,&dmac)
 	allDevices.push_back(&crtc);
 	allDevices.push_back(&fdc);
 	allDevices.push_back(&cdrom);
+	allDevices.push_back(&rtc);
 
 	physMem.SetMainRAMSize(4*1024*1024);
 
@@ -162,6 +163,10 @@ FMTowns::FMTowns() : crtc(this),pic(this),dmac(this),fdc(this,&dmac)
 	io.AddDevice(&cdrom,TOWNSIO_CDROM_TRANSFER_CTRL);
 	io.AddDevice(&cdrom,TOWNSIO_CDROM_SUBCODE_STATUS);
 	io.AddDevice(&cdrom,TOWNSIO_CDROM_SUBCODE_DATA);
+
+
+	io.AddDevice(&rtc,TOWNSIO_RTC_DATA);//                 0x70,
+	io.AddDevice(&rtc,TOWNSIO_RTC_COMMAND);//              0x80,
 
 
 	PowerOn();

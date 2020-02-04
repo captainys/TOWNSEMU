@@ -30,6 +30,9 @@ enum
 	TOWNSIO_MACHINE_ID_LOW=         0x30,
 	TOWNSIO_MACHINE_ID_HIGH=        0x31,
 
+	TOWNSIO_RTC_DATA=                 0x70,
+	TOWNSIO_RTC_COMMAND=              0x80,
+
 	TOWNSIO_DMAC_INITIALIZE=          0xA0,
 	TOWNSIO_DMAC_CHANNEL=             0xA1,
 	TOWNSIO_DMAC_COUNT_LOW=           0xA2,

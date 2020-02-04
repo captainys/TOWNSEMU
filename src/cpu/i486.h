@@ -180,6 +180,15 @@ public:
 			return this->Combine()>=rv.Combine();
 		}
 	};
+
+	class FPUState
+	{
+	public:
+		void FNINIT(void);
+		bool ExceptionPending(void) const;
+		unsigned int GetStatusWord(void) const;
+	};
+
 	class State
 	{
 	public:
@@ -307,7 +316,7 @@ public:
 			return sreg[REG_GS-REG_SEGMENT_REG_BASE];
 		}
 
-
+		FPUState fpuState;
 
 		bool halt;
 
@@ -457,10 +466,16 @@ public:
 
 
 	public:
-		/*! Returns REG of MODR/M byte. */
+		/*! Returns REG of MODR/M byte from the first byte of operand internally
+		    stored in this class. */
 		inline unsigned int GetREG(void) const
 		{
 			return (operand[0]>>3)&7;
+		}
+		/*! Returns REG of MODR/M byte, when MODR/M byte is already known. */
+		static inline unsigned int GetREG(unsigned int MODR_M)
+		{
+			return (MODR_M>>3)&7;
 		}
 
 		/*! Returns Unsigned Imm8 (last byte in the operand) after decoding. */
@@ -1561,8 +1576,13 @@ public:
 
 private:
 	/*! Fetch an 8-bit operand.  Returns the number of bytes fetched.
+	    It pushes inst.operandLen and this->numBytes by 1 byte.
 	*/
 	unsigned int FetchOperand8(Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+	/*! Peek an 8-bit operand.  Returns the number of bytes fetched.
+	    It does not push inst.operandLen and this->numBytes by 1 byte.
+	*/
+	unsigned int PeekOperand8(unsigned int &operand,const Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
 	/*! Fetch an 16-bit operand  Returns the number of bytes fetched..
 	*/
 	unsigned int FetchOperand16(Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
