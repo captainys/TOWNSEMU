@@ -22,6 +22,7 @@
 #include "keyboard.h"
 #include "physmem.h"
 #include "memaccess.h"
+#include "sound.h"
 
 
 
@@ -42,7 +43,8 @@ public:
 
 	enum
 	{
-		FREQUENCY_DEFAULT=66
+		FREQUENCY_DEFAULT=66,              // MHz
+		FAST_DEVICE_POLLING_INTERVAL=100,  // Nano-seconds
 	};
 
 	virtual const char *DeviceName(void) const{return "FMTOWNS";}
@@ -60,6 +62,10 @@ public:
 		    I think 64-bit is long enough.  So, I make it signed int.
 		*/
 		unsigned long long int townsTime;
+
+		/*! 
+		*/
+		unsigned long long int nextFastDevicePollingTime;
 
 		/*! Number of clocks times 1000 since last update of townsTime.
 		    After running one instruction, townsTime may not be exactly the same
@@ -104,6 +110,7 @@ public:
 	TownsCRTC crtc;
 	TownsFDC fdc;
 	TownsKeyboard keyboard;
+	TownsSound sound;
 	// Machine State <<
 
 	unsigned int townsType;
@@ -120,7 +127,14 @@ public:
 	TownsWaveRAMAccess waveRAMAccess;
 	TownsSysROMAccess sysROMAccess;
 
+	/*! Pointers of all devices (except *this) must be stored in allDevices.
+	*/
 	std::vector <Device *> allDevices;
+
+	/*! Pointers of the devices that requires very fast polling must be stored in this fastDevices.
+	    Such as YM2612 and PCM (TownsSound class).
+	*/
+	std::vector <Device *> fastDevices;
 
 
 	// Conceptual execution model
@@ -171,6 +185,10 @@ public:
 	/*! Run scheduled tasks.
 	*/
 	void RunScheduledTasks(void);
+
+	/*! Check nextFastDevicePollingTime and call RunScheduledTask function of the devices in fastDevices.
+	*/
+	void RunFastDevicePolling(void);
 
 	/*! Check Rendering Timer and render if townsTime catches up with the timer.
 	    It will increment rendering timer.

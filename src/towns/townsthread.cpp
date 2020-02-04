@@ -37,6 +37,7 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 			    )
 			{
 				clocksPassed+=townsPtr->RunOneInstruction();
+				townsPtr->RunFastDevicePolling();
 				townsPtr->RunScheduledTasks();
 				townsPtr->CheckRenderingTimer(render,*outside_world);
 			}
@@ -55,6 +56,7 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 			    )
 			{
 				clocksPassed+=townsPtr->RunOneInstruction();
+				townsPtr->RunFastDevicePolling();
 				townsPtr->RunScheduledTasks();
 				townsPtr->CheckRenderingTimer(render,*outside_world);
 				if(true==townsPtr->debugger.stop)
@@ -78,6 +80,7 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 			if(true!=townsPtr->CheckAbort())
 			{
 				townsPtr->RunOneInstruction();
+				townsPtr->RunFastDevicePolling();
 				townsPtr->RunScheduledTasks();
 			}
 			PrintStatus(*townsPtr);

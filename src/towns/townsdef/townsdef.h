@@ -79,6 +79,8 @@ enum
 	TOWNSIO_MX_IMGOUT_ADDR_D2=        0x476,
 	TOWNSIO_MX_IMGOUT_ADDR_D3=        0x477,
 
+	TOWNSIO_SYSROM_DICROM=            0x480, // [2] pp.91
+
 	TOWNSIO_CDROM_MASTER_CTRL_STATUS=0x4C0, // [2] pp.224
 	TOWNSIO_CDROM_COMMAND_STATUS=    0x4C2, // [2] pp.224
 	TOWNSIO_CDROM_PARAMETER_DATA=    0x4C4, // [2] pp.224
@@ -86,7 +88,23 @@ enum
 	TOWNSIO_CDROM_SUBCODE_STATUS=    0x4CC,
 	TOWNSIO_CDROM_SUBCODE_DATA=      0x4CD,
 
-	TOWNSIO_SYSROM_DICROM=            0x480, // [2] pp.91
+	TOWNSIO_SOUND_MUTE=              0x4D5, // [2] pp.18,
+	TOWNSIO_SOUND_STATUS_ADDRESS0=   0x4D8, // [2] pp.18,
+	TOWNSIO_SOUND_DATA0=             0x4DA, // [2] pp.18,
+	TOWNSIO_SOUND_ADDRESS1=          0x4DC, // [2] pp.18,
+	TOWNSIO_SOUND_DATA1=             0x4DE, // [2] pp.18,
+	TOWNSIO_SOUND_INT_REASON=        0x4E9, // [2] pp.19,
+	TOWNSIO_SOUND_PCM_INT_MASK=      0x4EA, // [2] pp.19,
+	TOWNSIO_SOUND_PCM_INT=           0x4EB, // [2] pp.19,
+	TOWNSIO_SOUND_PCM_ENV=           0x4F0, // [2] pp.19,
+	TOWNSIO_SOUND_PCM_PAN=           0x4F1, // [2] pp.19,
+	TOWNSIO_SOUND_PCM_FDL=           0x4F2, // [2] pp.19,
+	TOWNSIO_SOUND_PCM_FDH=           0x4F3, // [2] pp.19,
+	TOWNSIO_SOUND_PCM_LSL=           0x4F4, // [2] pp.19,
+	TOWNSIO_SOUND_PCM_LSH=           0x4F5, // [2] pp.19,
+	TOWNSIO_SOUND_PCM_ST=            0x4F6, // [2] pp.19,
+	TOWNSIO_SOUND_PCM_CTRL=          0x4F7, // [2] pp.19,
+	TOWNSIO_SOUND_PCM_CH_ON_OFF=     0x4F8, // [2] pp.19,
 
 	TOWNSIO_MEMSIZE=                  0x5E8, // [2] pp.827
 

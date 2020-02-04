@@ -13,6 +13,7 @@ void FMTowns::State::PowerOn(void)
 {
 	Reset();
 	townsTime=0;
+	nextFastDevicePollingTime=FAST_DEVICE_POLLING_INTERVAL;
 	freq=FREQUENCY_DEFAULT;
 	resetReason=0;
 }
@@ -44,7 +45,7 @@ void FMTowns::Variable::Reset(void)
 ////////////////////////////////////////////////////////////
 
 
-FMTowns::FMTowns() : crtc(this),pic(this),dmac(this),fdc(this,&dmac),rtc(this)
+FMTowns::FMTowns() : crtc(this),pic(this),dmac(this),fdc(this,&dmac),rtc(this),sound(this)
 {
 	townsType=TOWNSTYPE_2_MX;
 
@@ -59,6 +60,9 @@ FMTowns::FMTowns() : crtc(this),pic(this),dmac(this),fdc(this,&dmac),rtc(this)
 	allDevices.push_back(&fdc);
 	allDevices.push_back(&cdrom);
 	allDevices.push_back(&rtc);
+	allDevices.push_back(&sound);
+
+	fastDevices.push_back(&sound);
 
 	physMem.SetMainRAMSize(4*1024*1024);
 
@@ -174,6 +178,25 @@ FMTowns::FMTowns() : crtc(this),pic(this),dmac(this),fdc(this,&dmac),rtc(this)
 	io.AddDevice(&rtc,TOWNSIO_RTC_COMMAND);//              0x80,
 
 
+	io.AddDevice(&sound,TOWNSIO_SOUND_MUTE);//              0x4D5, // [2] pp.18,
+	io.AddDevice(&sound,TOWNSIO_SOUND_STATUS_ADDRESS0);//   0x4D8, // [2] pp.18,
+	io.AddDevice(&sound,TOWNSIO_SOUND_DATA0);//             0x4DA, // [2] pp.18,
+	io.AddDevice(&sound,TOWNSIO_SOUND_ADDRESS1);//          0x4DC, // [2] pp.18,
+	io.AddDevice(&sound,TOWNSIO_SOUND_DATA1);//             0x4DE, // [2] pp.18,
+	io.AddDevice(&sound,TOWNSIO_SOUND_INT_REASON);//        0x4E9, // [2] pp.19,
+	io.AddDevice(&sound,TOWNSIO_SOUND_PCM_INT_MASK);//      0x4EA, // [2] pp.19,
+	io.AddDevice(&sound,TOWNSIO_SOUND_PCM_INT);//           0x4EB, // [2] pp.19,
+	io.AddDevice(&sound,TOWNSIO_SOUND_PCM_ENV);//           0x4F0, // [2] pp.19,
+	io.AddDevice(&sound,TOWNSIO_SOUND_PCM_PAN);//           0x4F1, // [2] pp.19,
+	io.AddDevice(&sound,TOWNSIO_SOUND_PCM_FDL);//           0x4F2, // [2] pp.19,
+	io.AddDevice(&sound,TOWNSIO_SOUND_PCM_FDH);//           0x4F3, // [2] pp.19,
+	io.AddDevice(&sound,TOWNSIO_SOUND_PCM_LSL);//           0x4F4, // [2] pp.19,
+	io.AddDevice(&sound,TOWNSIO_SOUND_PCM_LSH);//           0x4F5, // [2] pp.19,
+	io.AddDevice(&sound,TOWNSIO_SOUND_PCM_ST);//            0x4F6, // [2] pp.19,
+	io.AddDevice(&sound,TOWNSIO_SOUND_PCM_CTRL);//          0x4F7, // [2] pp.19,
+	io.AddDevice(&sound,TOWNSIO_SOUND_PCM_CH_ON_OFF);//     0x4F8, // [2] pp.19,
+
+
 	PowerOn();
 }
 
@@ -266,6 +289,18 @@ void FMTowns::RunScheduledTasks(void)
 		{
 			devPtr->RunScheduledTask(state.townsTime);
 		}
+	}
+}
+
+void FMTowns::RunFastDevicePolling(void)
+{
+	if(state.nextFastDevicePollingTime<state.townsTime)
+	{
+		for(auto devPtr : fastDevices)
+		{
+			devPtr->RunScheduledTask(state.townsTime);
+		}
+		state.nextFastDevicePollingTime=state.townsTime+FAST_DEVICE_POLLING_INTERVAL;
 	}
 }
 
