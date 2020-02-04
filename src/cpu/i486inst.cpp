@@ -424,6 +424,10 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 
 	case I486_OPCODE_LGDT_LIDT_SGDT_SIDT:
 		FetchOperandRM(inst,seg,offset,mem);
+		if(5==inst.GetREG() || 6==inst.GetREG())
+		{
+			inst.operandSize=16;
+		}
 		break;
 
 
@@ -2751,6 +2755,42 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				}
 			}
 			break;
+		case 6: // DIV
+			{
+				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+				unsigned int denom=value.GetAsDword();
+				if(true==state.exception)
+				{
+					EIPSetByInstruction=true;
+				}
+				else if(0==denom)
+				{
+					Interrupt(0,mem,0); // [1] pp.26-28
+					// I don't think INT 0 was issued unless division by zero.
+					// I thought it just overflew if quo didn't fit in the target register, am I wrong?
+				}
+				else if(16==inst.operandSize)
+				{
+					clocksPassed=24;
+					unsigned int DXAX=(GetDX()<<16)|GetAX();
+					unsigned int quo=DXAX/denom;
+					unsigned int rem=DXAX%denom;
+					SetAX(quo);
+					SetDX(rem);
+				}
+				else if(32==inst.operandSize)
+				{
+					clocksPassed=40;
+					unsigned long long int EDXEAX=GetEDX();
+					EDXEAX<<=32;
+					EDXEAX|=GetEAX();
+					unsigned int quo=(unsigned int)(EDXEAX/denom);
+					unsigned int rem=(unsigned int)(EDXEAX%denom);
+					SetEAX(quo);
+					SetEDX(rem);
+				}
+			}
+			break;
 		default:
 			Abort("Undefined REG for "+cpputil::Ubtox(inst.opCode));
 			clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
@@ -4101,6 +4141,18 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					RaiseException(EXCEPTION_UD,0);
 					EIPSetByInstruction=true;
 				}
+			}
+			break;
+		case 4: // SMSW
+			clocksPassed=(OPER_ADDR==op1.operandType ? 3 : 2);
+			{
+				OperandValue value;
+				value.MakeWord(GetRegisterValue(REG_CR0));
+				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+			}
+			break;
+		case 6: // LMSW
+			{
 			}
 			break;
 		default:

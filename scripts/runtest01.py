@@ -15,12 +15,16 @@ DISKDIR=os.path.join(THISDIR,"..","testdata","DISKIMG")
 
 def Run():
 	os.chdir(BUILDDIR)
-	subprocess.Popen([
+	proc=subprocess.Popen([
 		"./main_cui/main_cui.exe",
 		ROMDIR,
 		"-FD0",
 		os.path.join(DISKDIR,"console.xdf")
-	]).wait()
+	])
+	proc.communicate();
+	if proc.returncode!=0:
+		print("Build Error!")
+		quit()
 
 
 
