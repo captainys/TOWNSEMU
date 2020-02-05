@@ -424,7 +424,7 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 
 	case I486_OPCODE_LGDT_LIDT_SGDT_SIDT:
 		FetchOperandRM(inst,seg,offset,mem);
-		if(5==inst.GetREG() || 6==inst.GetREG())
+		if(4==inst.GetREG() || 6==inst.GetREG())
 		{
 			inst.operandSize=16;
 		}
@@ -632,6 +632,41 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 
 	case I486_OPCODE_SCASB://            0xAE,
 	case I486_OPCODE_SCAS://             0xAF,
+		break;
+
+
+	case I486_OPCODE_SETA://             0x970F,
+	case I486_OPCODE_SETAE://            0x930F,
+	case I486_OPCODE_SETB://             0x920F,
+	case I486_OPCODE_SETBE://            0x960F,
+	// I486_OPCODE_SETC://             0x920F,
+	case I486_OPCODE_SETE://             0x940F,
+	case I486_OPCODE_SETG://             0x9F0F,
+	case I486_OPCODE_SETGE://            0x9D0F,
+	case I486_OPCODE_SETL://             0x9C0F,
+	case I486_OPCODE_SETLE://            0x9E0F,
+	//I486_OPCODE_SETNA://            0x960F,
+	//I486_OPCODE_SETNAE://           0x920F,
+	//I486_OPCODE_SETNB://            0x930F,
+	//I486_OPCODE_SETNBE://           0x970F,
+	//I486_OPCODE_SETNC://            0x930F,
+	case I486_OPCODE_SETNE://            0x950F,
+	//I486_OPCODE_SETNG://            0x9E0F,
+	//I486_OPCODE_SETNGE://           0x9C0F,
+	//I486_OPCODE_SETNL://            0x9D0F,
+	//I486_OPCODE_SETNLE://           0x9F0F,
+	case I486_OPCODE_SETNO://            0x910F,
+	case I486_OPCODE_SETNP://            0x9B0F,
+	case I486_OPCODE_SETNS://            0x990F,
+	// I486_OPCODE_SETNZ://            0x950F,
+	case I486_OPCODE_SETO://             0x900F,
+	case I486_OPCODE_SETP://             0x9A0F,
+	//I486_OPCODE_SETPE://            0x9A0F,
+	//I486_OPCODE_SETPO://            0x9B0F,
+	case I486_OPCODE_SETS://             0x980F,
+	// I486_OPCODE_SETZ://             0x940F,
+		FetchOperandRM(inst,seg,offset,mem);
+		inst.operandSize=8;
 		break;
 
 
@@ -1113,6 +1148,40 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 
 	case I486_OPCODE_POPA://             0x61,
 	case I486_OPCODE_POPF://             0x9D,
+		break;
+
+
+	case I486_OPCODE_SETA://             0x970F,
+	case I486_OPCODE_SETAE://            0x930F,
+	case I486_OPCODE_SETB://             0x920F,
+	case I486_OPCODE_SETBE://            0x960F,
+	// I486_OPCODE_SETC://             0x920F,
+	case I486_OPCODE_SETE://             0x940F,
+	case I486_OPCODE_SETG://             0x9F0F,
+	case I486_OPCODE_SETGE://            0x9D0F,
+	case I486_OPCODE_SETL://             0x9C0F,
+	case I486_OPCODE_SETLE://            0x9E0F,
+	//I486_OPCODE_SETNA://            0x960F,
+	//I486_OPCODE_SETNAE://           0x920F,
+	//I486_OPCODE_SETNB://            0x930F,
+	//I486_OPCODE_SETNBE://           0x970F,
+	//I486_OPCODE_SETNC://            0x930F,
+	case I486_OPCODE_SETNE://            0x950F,
+	//I486_OPCODE_SETNG://            0x9E0F,
+	//I486_OPCODE_SETNGE://           0x9C0F,
+	//I486_OPCODE_SETNL://            0x9D0F,
+	//I486_OPCODE_SETNLE://           0x9F0F,
+	case I486_OPCODE_SETNO://            0x910F,
+	case I486_OPCODE_SETNP://            0x9B0F,
+	case I486_OPCODE_SETNS://            0x990F,
+	// I486_OPCODE_SETNZ://            0x950F,
+	case I486_OPCODE_SETO://             0x900F,
+	case I486_OPCODE_SETP://             0x9A0F,
+	//I486_OPCODE_SETPE://            0x9A0F,
+	//I486_OPCODE_SETPO://            0x9B0F,
+	case I486_OPCODE_SETS://             0x980F,
+	// I486_OPCODE_SETZ://             0x940F,
+		op1.Decode(addressSize,operandSize,operand);
 		break;
 
 
@@ -2056,6 +2125,70 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 			disasm="REPNE "+disasm;
 		}
 		break;
+
+
+	case I486_OPCODE_SETA://             0x970F,
+		disasm=DisassembleTypicalOneOperand("SETA",op1,8);
+		break;
+	case I486_OPCODE_SETAE://            0x930F,
+		disasm=DisassembleTypicalOneOperand("SETAE",op1,8);
+		break;
+	case I486_OPCODE_SETB://             0x920F,
+		disasm=DisassembleTypicalOneOperand("SETB",op1,8);
+		break;
+	case I486_OPCODE_SETBE://            0x960F,
+		disasm=DisassembleTypicalOneOperand("SETBE",op1,8);
+		break;
+	// I486_OPCODE_SETC://             0x920F,
+	case I486_OPCODE_SETE://             0x940F,
+		disasm=DisassembleTypicalOneOperand("SETE",op1,8);
+		break;
+	case I486_OPCODE_SETG://             0x9F0F,
+		disasm=DisassembleTypicalOneOperand("SETG",op1,8);
+		break;
+	case I486_OPCODE_SETGE://            0x9D0F,
+		disasm=DisassembleTypicalOneOperand("SETGE",op1,8);
+		break;
+	case I486_OPCODE_SETL://             0x9C0F,
+		disasm=DisassembleTypicalOneOperand("SETL",op1,8);
+		break;
+	case I486_OPCODE_SETLE://            0x9E0F,
+		disasm=DisassembleTypicalOneOperand("SETLE",op1,8);
+		break;
+	//I486_OPCODE_SETNA://            0x960F,
+	//I486_OPCODE_SETNAE://           0x920F,
+	//I486_OPCODE_SETNB://            0x930F,
+	//I486_OPCODE_SETNBE://           0x970F,
+	//I486_OPCODE_SETNC://            0x930F,
+	case I486_OPCODE_SETNE://            0x950F,
+		disasm=DisassembleTypicalOneOperand("SETNE",op1,8);
+		break;
+	//I486_OPCODE_SETNG://            0x9E0F,
+	//I486_OPCODE_SETNGE://           0x9C0F,
+	//I486_OPCODE_SETNL://            0x9D0F,
+	//I486_OPCODE_SETNLE://           0x9F0F,
+	case I486_OPCODE_SETNO://            0x910F,
+		disasm=DisassembleTypicalOneOperand("SETNO",op1,8);
+		break;
+	case I486_OPCODE_SETNP://            0x9B0F,
+		disasm=DisassembleTypicalOneOperand("SETNP",op1,8);
+		break;
+	case I486_OPCODE_SETNS://            0x990F,
+		disasm=DisassembleTypicalOneOperand("SETNS",op1,8);
+		break;
+	// I486_OPCODE_SETNZ://            0x950F,
+	case I486_OPCODE_SETO://             0x900F,
+		disasm=DisassembleTypicalOneOperand("SETO",op1,8);
+		break;
+	case I486_OPCODE_SETP://             0x9A0F,
+		disasm=DisassembleTypicalOneOperand("SETP",op1,8);
+		break;
+	//I486_OPCODE_SETPE://            0x9A0F,
+	//I486_OPCODE_SETPO://            0x9B0F,
+	case I486_OPCODE_SETS://             0x980F,
+		disasm=DisassembleTypicalOneOperand("SETS",op1,8);
+		break;
+	// I486_OPCODE_SETZ://             0x940F,
 
 
 	case I486_OPCODE_STC://              0xF9,
@@ -4084,7 +4217,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			clocksPassed=11;
 			if(OPER_ADDR==op1.operandType)
 			{
-				auto numBytes=(inst.operandSize+16)/8;
+				// If operand size==16, take first 3 bytes of linear-base address.
+				// Which means it nees 5 bytes minimum.
+				auto numBytes=(16==inst.operandSize ? 5 : 6);
 				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,numBytes);
 				switch(inst.GetREG())
 				{
@@ -4115,7 +4250,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			clocksPassed=11;
 			if(OPER_ADDR==op1.operandType)
 			{
-				auto numBytes=(inst.operandSize+16)/8;
+				auto numBytes=(16==inst.operandSize ? 5 : 6);;
 				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,numBytes);
 				OperandValue fwordData;
 				switch(inst.GetREG())
@@ -4152,7 +4287,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			}
 			break;
 		case 6: // LMSW
+			clocksPassed=13;
 			{
+				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,2);
+				auto i=value.GetAsDword();
+				state.CR[0]&=(~0xFFFF);
+				state.CR[0]|=(i&0xFFFF);
 			}
 			break;
 		default:
@@ -4650,6 +4790,119 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{
 				EIPSetByInstruction=true;
 			}
+		}
+		break;
+
+
+	case I486_OPCODE_SETA://             0x970F,
+	case I486_OPCODE_SETAE://            0x930F,
+	case I486_OPCODE_SETB://             0x920F,
+	case I486_OPCODE_SETBE://            0x960F,
+	// I486_OPCODE_SETC://             0x920F,
+	case I486_OPCODE_SETE://             0x940F,
+	case I486_OPCODE_SETG://             0x9F0F,
+	case I486_OPCODE_SETGE://            0x9D0F,
+	case I486_OPCODE_SETL://             0x9C0F,
+	case I486_OPCODE_SETLE://            0x9E0F,
+	//I486_OPCODE_SETNA://            0x960F,
+	//I486_OPCODE_SETNAE://           0x920F,
+	//I486_OPCODE_SETNB://            0x930F,
+	//I486_OPCODE_SETNBE://           0x970F,
+	//I486_OPCODE_SETNC://            0x930F,
+	case I486_OPCODE_SETNE://            0x950F,
+	//I486_OPCODE_SETNG://            0x9E0F,
+	//I486_OPCODE_SETNGE://           0x9C0F,
+	//I486_OPCODE_SETNL://            0x9D0F,
+	//I486_OPCODE_SETNLE://           0x9F0F,
+	case I486_OPCODE_SETNO://            0x910F,
+	case I486_OPCODE_SETNP://            0x9B0F,
+	case I486_OPCODE_SETNS://            0x990F,
+	// case I486_OPCODE_SETNZ://            0x950F,
+	case I486_OPCODE_SETO://             0x900F,
+	case I486_OPCODE_SETP://             0x9A0F,
+	//I486_OPCODE_SETPE://            0x9A0F,
+	//I486_OPCODE_SETPO://            0x9B0F,
+	case I486_OPCODE_SETS://             0x980F,
+	// I486_OPCODE_SETZ://             0x940F,
+		{
+			bool cond=false;
+			switch(inst.opCode)
+			{
+			case I486_OPCODE_SETA://             0x970F,
+				cond=CondJA();
+				break;
+			case I486_OPCODE_SETAE://            0x930F,
+				cond=CondJAE();
+				break;
+			case I486_OPCODE_SETB://             0x920F,
+				cond=CondJB();
+				break;
+			case I486_OPCODE_SETBE://            0x960F,
+				cond=CondJBE();
+				break;
+			// I486_OPCODE_SETC://             0x920F,
+			case I486_OPCODE_SETE://             0x940F,
+				cond=CondJE();
+				break;
+			case I486_OPCODE_SETG://             0x9F0F,
+				cond=CondJG();
+				break;
+			case I486_OPCODE_SETGE://            0x9D0F,
+				cond=CondJGE();
+				break;
+			case I486_OPCODE_SETL://             0x9C0F,
+				cond=CondJL();
+				break;
+			case I486_OPCODE_SETLE://            0x9E0F,
+				cond=CondJLE();
+				break;
+			//I486_OPCODE_SETNA://            0x960F,
+			//I486_OPCODE_SETNAE://           0x920F,
+			//I486_OPCODE_SETNB://            0x930F,
+			//I486_OPCODE_SETNBE://           0x970F,
+			//I486_OPCODE_SETNC://            0x930F,
+			case I486_OPCODE_SETNE://            0x950F,
+				cond=CondJNE();
+				break;
+			//I486_OPCODE_SETNG://            0x9E0F,
+			//I486_OPCODE_SETNGE://           0x9C0F,
+			//I486_OPCODE_SETNL://            0x9D0F,
+			//I486_OPCODE_SETNLE://           0x9F0F,
+			case I486_OPCODE_SETNO://            0x910F,
+				cond=CondJNO();
+				break;
+			case I486_OPCODE_SETNP://            0x9B0F,
+				cond=CondJNP();
+				break;
+			case I486_OPCODE_SETNS://            0x990F,
+				cond=CondJNS();
+				break;
+			//I486_OPCODE_SETNZ://            0x950F,
+			case I486_OPCODE_SETO://             0x900F,
+				cond=CondJO();
+				break;
+			case I486_OPCODE_SETP://             0x9A0F,
+				cond=CondJP();
+				break;
+			//I486_OPCODE_SETPE://            0x9A0F,
+			//I486_OPCODE_SETPO://            0x9B0F,
+			case I486_OPCODE_SETS://             0x980F,
+				cond=CondJS();
+				break;
+			// I486_OPCODE_SETZ://             0x940F,
+			}
+			OperandValue value;
+			if(true==cond)
+			{
+				value.MakeDword(1);
+				clocksPassed=4;
+			}
+			else
+			{
+				value.MakeDword(0);
+				clocksPassed=3;
+			}
+			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
 		}
 		break;
 

@@ -2100,7 +2100,7 @@ bool i486DX::REPEorNECheck(unsigned int &clocksForRep,unsigned int instPrefix,un
 	{
 		return (true!=GetZF());
 	}
-	return true;
+	return false;
 }
 
 i486DX::CallStack i486DX::MakeCallStack(
