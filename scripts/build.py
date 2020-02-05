@@ -13,9 +13,13 @@ DISKDIR=os.path.join(THISDIR,"..","testdata","DISKIMG")
 
 def Run():
 	os.chdir(BUILDDIR)
-	subprocess.Popen([
+	proc=subprocess.Popen([
 		"nmake",
-	]).wait()
+	])
+	proc.communicate();
+	if proc.returncode!=0:
+		print("Build Error!")
+		quit()
 
 
 

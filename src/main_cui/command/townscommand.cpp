@@ -59,6 +59,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	printableMap["DMA"]=PRINT_DMAC;
 	printableMap["DMAC"]=PRINT_DMAC;
 	printableMap["FDC"]=PRINT_FDC;
+	printableMap["TIMER"]=PRINT_TIMER;
 
 	dumpableMap["RINTVEC"]=DUMP_REAL_MODE_INT_VECTOR;
 
@@ -139,6 +140,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  DMA Controller." << std::endl;
 	std::cout << "FDC" << std::endl;
 	std::cout << "  Floppy Disk Controller." << std::endl;
+	std::cout << "TIMER" << std::endl;
+	std::cout << "  Interval Timer (i8253)" << std::endl;
 
 	std::cout << "" << std::endl;
 
@@ -396,6 +399,9 @@ void TownsCommandInterpreter::Execute_Print(FMTowns &towns,Command &cmd)
 			break;
 		case PRINT_FDC:
 			towns.PrintFDC();
+			break;
+		case PRINT_TIMER:
+			towns.PrintTimer();
 			break;
 		}
 	}

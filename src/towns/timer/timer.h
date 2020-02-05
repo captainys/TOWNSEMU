@@ -2,9 +2,14 @@
 #define TIMER_IS_INCLUDED
 /* { */
 
+
+#include <vector>
+#include <string>
+
 #include "device.h"
 #include "townsdef.h"
-#include "cpputil.h"
+
+
 
 class TownsTimer : public Device
 {
@@ -14,11 +19,39 @@ private:
 public:
 	virtual const char *DeviceName(void) const{return "INTERVALTIMER";}
 
+	enum
+	{
+		NUM_CHANNELS=8,        // Actually 3 channels, but I want to use (channel&7) rather than (channel%6).
+		TICK_INTERVAL=3257,   // 3257nano-seconds
+	};
+
 	class State
 	{
 	public:
+		class Channel
+		{
+		public:
+			unsigned char mode,lastCmd;
+			unsigned short counter,counterInitialValue;
+			unsigned short latchedCounter;
+			unsigned short increment;
+			bool timerUp;
+			mutable bool latched,bcd;
+		};
+		unsigned long long int nextTickTimeInNS;
+		Channel channels[NUM_CHANNELS];
+		bool TMMSK[2];  // Only Channels 0 and 1.
+		bool TMOUT[2];
+		bool SOUND;
+
 		void PowerOn(void);
 		void Reset(void);
+
+		void Latch(unsigned int ch);
+		unsigned short ReadLatchedCounter(unsigned int ch) const;
+		void SetChannelCounterLow(unsigned int ch,unsigned int value);
+		void SetChannelCounterHigh(unsigned int ch,unsigned int value);
+		void ProcessControlCommand(unsigned int ch,unsigned int cmd);
 	};
 
 	State state;
@@ -26,6 +59,7 @@ public:
 	TownsTimer(class FMTowns *townsPtr,class TownsPIC *picPtr)
 	{
 		this->townsPtr=townsPtr;
+		this->picPtr=picPtr;
 	}
 
 	virtual void PowerOn(void);
@@ -36,6 +70,8 @@ public:
 	virtual unsigned int IOReadByte(unsigned int ioport);
 
 	virtual void RunScheduledTask(unsigned long long int townsTime);
+
+	std::vector <std::string> GetStatusText(void) const;
 };
 
 /* } */

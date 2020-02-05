@@ -71,6 +71,7 @@ public:
 		PRINT_PIC,
 		PRINT_DMAC,
 		PRINT_FDC,
+		PRINT_TIMER,
 	};
 
 	enum

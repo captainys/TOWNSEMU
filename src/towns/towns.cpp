@@ -220,7 +220,7 @@ FMTowns::FMTowns() :
 	io.AddDevice(&timer,TOWNSIO_TIMER5_COUNT_LOW);//         0x54,
 	io.AddDevice(&timer,TOWNSIO_TIMER5_COUNT_HIGH);//        0x55,
 	io.AddDevice(&timer,TOWNSIO_TIMER_3_4_5_CTRL);//         0x56,
-
+	io.AddDevice(&timer,TOWNSIO_TIMER_INT_CTRL_INT_REASON);
 
 	PowerOn();
 }
@@ -449,6 +449,14 @@ void FMTowns::PrintDMAC(void) const
 void FMTowns::PrintFDC(void) const
 {
 	for(auto str : fdc.GetStatusText())
+	{
+		std::cout << str << std::endl;
+	}
+}
+
+void FMTowns::PrintTimer(void) const
+{
+	for(auto str : timer.GetStatusText())
 	{
 		std::cout << str << std::endl;
 	}
