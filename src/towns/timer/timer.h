@@ -22,6 +22,7 @@ public:
 	enum
 	{
 		NUM_CHANNELS=8,        // Actually 3 channels, but I want to use (channel&7) rather than (channel%6).
+		NUM_CHANNELS_ACTUAL=6,
 		TICK_INTERVAL=3257,   // 3257nano-seconds
 	};
 
@@ -35,10 +36,10 @@ public:
 			unsigned short counter,counterInitialValue;
 			unsigned short latchedCounter;
 			unsigned short increment;
-			bool timerUp;
+			bool OUT;
 			mutable bool latched,bcd;
 		};
-		unsigned long long int nextTickTimeInNS;
+		unsigned long long int lastTickTimeInNS;
 		Channel channels[NUM_CHANNELS];
 		bool TMMSK[2];  // Only Channels 0 and 1.
 		bool TMOUT[2];
@@ -52,6 +53,8 @@ public:
 		void SetChannelCounterLow(unsigned int ch,unsigned int value);
 		void SetChannelCounterHigh(unsigned int ch,unsigned int value);
 		void ProcessControlCommand(unsigned int ch,unsigned int cmd);
+
+		void TickIn(unsigned int nTick);
 	};
 
 	State state;

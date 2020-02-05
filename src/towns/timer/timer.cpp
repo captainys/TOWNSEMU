@@ -11,7 +11,7 @@ void TownsTimer::State::PowerOn(void)
 }
 void TownsTimer::State::Reset(void)
 {
-	nextTickTimeInNS=0;
+	lastTickTimeInNS=0;
 	for(auto &ch : channels)
 	{
 		ch.mode=0;
@@ -21,7 +21,7 @@ void TownsTimer::State::Reset(void)
 		ch.latchedCounter=0;
 		ch.increment=1;
 		ch.bcd=false;
-		ch.timerUp=false;
+		ch.OUT=false;
 		ch.latched=false;
 	}
 	for(auto &b : TMMSK)
@@ -55,13 +55,17 @@ void TownsTimer::State::SetChannelCounterLow(unsigned int ch,unsigned int value)
 	auto &CH=channels[ch&7];
 	CH.counterInitialValue&=0xff00;
 	CH.counterInitialValue|=(value&0xff);
-	CH.counter=CH.counterInitialValue;
 	switch(CH.mode)
 	{
 	case 0:
-		CH.timerUp=false;
+		CH.OUT=false;
+		break;
+	case 3:
+		CH.OUT=true;
+		CH.counterInitialValue+=(value&1); // Force it to be even number.
 		break;
 	}
+	CH.counter=CH.counterInitialValue;
 }
 void TownsTimer::State::SetChannelCounterHigh(unsigned int ch,unsigned int value)
 {
@@ -72,7 +76,10 @@ void TownsTimer::State::SetChannelCounterHigh(unsigned int ch,unsigned int value
 	switch(CH.mode)
 	{
 	case 0:
-		CH.timerUp=false;
+		CH.OUT=false;
+		break;
+	case 3:
+		CH.OUT=true;
 		break;
 	}
 }
@@ -81,6 +88,40 @@ void TownsTimer::State::ProcessControlCommand(unsigned int ch,unsigned int cmd)
 	auto &CH=channels[ch&7];
 	CH.lastCmd=cmd;
 	CH.bcd=(0!=(cmd&1));
+}
+void TownsTimer::State::TickIn(unsigned int nTick)
+{
+	for(int ch=0; ch<NUM_CHANNELS_ACTUAL; ++ch)
+	{
+		auto &CH=channels[ch];
+		auto increment=nTick*CH.increment;
+		switch(CH.mode)
+		{
+		case 0:
+			if(CH.counter<=increment)
+			{
+				CH.OUT=true;
+				CH.counter=CH.counterInitialValue;
+			}
+			else
+			{
+				CH.counter-=increment;
+			}
+			break;
+		case 3:
+			increment*=2;
+			if(CH.counter<=increment)
+			{
+				CH.OUT=(true==CH.OUT ? false : true);
+				CH.counter=CH.counterInitialValue;
+			}
+			else
+			{
+				CH.counter-=increment;
+			}
+			break;
+		}
+	}
 }
 
 
@@ -234,6 +275,34 @@ void TownsTimer::State::ProcessControlCommand(unsigned int ch,unsigned int cmd)
 
 /* virtual */ void TownsTimer::RunScheduledTask(unsigned long long int townsTime)
 {
+	if(0==state.lastTickTimeInNS)
+	{
+		state.lastTickTimeInNS=townsTime;
+	}
+	else if(state.lastTickTimeInNS+TICK_INTERVAL<=townsTime)
+	{
+		auto nTick=(townsTime-state.lastTickTimeInNS)/TICK_INTERVAL;
+		state.lastTickTimeInNS+=nTick*TICK_INTERVAL;
+
+		bool IRQ=false;
+		bool OUT[2]={state.channels[0].OUT,state.channels[1].OUT};
+		state.TickIn((unsigned int)nTick);
+		for(unsigned int ch=0; ch<2; ++ch)
+		{
+			if(true!=OUT[ch] && true==state.channels[ch].OUT)
+			{
+				state.TMOUT[ch]=true;
+				if(true==state.TMMSK[ch])
+				{
+					IRQ=true;
+				}
+			}
+		}
+		if(true==IRQ)
+		{
+			// picPtr->InterruptRequest(TOWNSIRQ_TIMER);
+		}
+	}
 }
 
 std::vector <std::string> TownsTimer::GetStatusText(void) const
@@ -266,15 +335,15 @@ std::vector <std::string> TownsTimer::GetStatusText(void) const
 		text.back()+=((CH.latched) ? "1" : "0");
 		text.back()+="  LATCHEDCTR=";
 		text.back()+=cpputil::Ustox(CH.latchedCounter);
-		text.back()+="  UP=";
-		text.back()+=((CH.timerUp) ? "1" : "0");
+		text.back()+="  OUT=";
+		text.back()+=((CH.OUT) ? "1" : "0");
 	}
 	text.push_back(newline);
 	text.back()+="TM0INT:";
 	text.back()+=(state.TMMSK[0] ? "Enabled" : "Disabled");
 	text.back()+="  TM1INT:";
 	text.back()+=(state.TMMSK[1] ? "Enabled" : "Disabled");
-	text.back()+="TM0OUT:";
+	text.back()+="  TM0OUT:";
 	text.back()+=(state.TMOUT[0] ? "1" : "0");
 	text.back()+="  TM1OUT:";
 	text.back()+=(state.TMOUT[1] ? "1" : "0");
