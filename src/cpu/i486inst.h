@@ -410,6 +410,7 @@ enum
 
 
 	I486_OPCODE_STC=              0xF9,
+	I486_OPCODE_STD=              0xFD,
 	I486_OPCODE_STI=              0xFB,
 
 

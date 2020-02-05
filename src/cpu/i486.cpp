@@ -1083,6 +1083,54 @@ void i486DX::RolByte(unsigned int &value,unsigned int ctr)
 	value&=0xFF;
 }
 
+void i486DX::RorByteWordOrDword(int operandSize,unsigned int &value,unsigned int ctr)
+{
+	switch(operandSize)
+	{
+	case 8:
+		RorByte(value,ctr);
+		break;
+	case 16:
+		RorWord(value,ctr);
+		break;
+	default:
+	case 32:
+		RorDword(value,ctr);
+		break;
+	}
+}
+
+template <unsigned int bitCount,unsigned int allBits,unsigned int signBit>
+inline void i486DX::RorTemplate(unsigned int &value,unsigned int ctr)
+{
+	auto prevValue=value;
+	unsigned int rightBitsMask=(allBits>>(bitCount-ctr));
+	unsigned int rightBits=(value&rightBitsMask);
+	value&=allBits;
+	value>>=ctr;
+	value|=(rightBits<<(bitCount-ctr));
+	SetCF(0!=(value&signBit));
+	if(1==ctr)
+	{
+		SetOverflowFlag((prevValue&signBit)!=(value&signBit));
+	}
+}
+
+void i486DX::RorDword(unsigned int &value,unsigned int ctr)
+{
+	RorTemplate<32,0xffffffff,0x80000000>(value,ctr);
+}
+
+void i486DX::RorWord(unsigned int &value,unsigned int ctr)
+{
+	RorTemplate<16,0xffff,0x8000>(value,ctr);
+}
+
+void i486DX::RorByte(unsigned int &value,unsigned int ctr)
+{
+	RorTemplate<8,0xff,0x80>(value,ctr);
+}
+
 void i486DX::RclWordOrDword(int operandSize,unsigned int &value,unsigned int ctr)
 {
 	if(16==operandSize)

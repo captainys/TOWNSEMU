@@ -671,6 +671,7 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 
 
 	case I486_OPCODE_STC://              0xF9,
+	case I486_OPCODE_STD://              0xFD,
 	case I486_OPCODE_STI://              0xFB,
 		break;
 
@@ -2194,6 +2195,9 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 	case I486_OPCODE_STC://              0xF9,
 		disasm="STC";
 		break;
+	case I486_OPCODE_STD://              0xFD,
+		disasm="STD";
+		break;
 	case I486_OPCODE_STI://              0xFB,
 		disasm="STI";
 		break;
@@ -2637,7 +2641,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
 				break;
 			case 1:// "ROR";
-				Abort("C1 ROR not implemented yet.");
+				RorByte(i,ctr);
 				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
 				break;
 			case 2:// "RCL";
@@ -2848,6 +2852,23 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			break;
 		case 3: // NEG
 			{
+				clocksPassed=(OPER_ADDR==op1.operandType ? 3 : 1);
+				auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+				auto i=value1.GetAsSignedDword();
+				if(16==inst.operandSize)
+				{
+					SetOverflowFlag(-32768==i);
+				}
+				else if(32==inst.operandSize)
+				{
+					SetOverflowFlag(-0x80000000LL==i);
+				}
+				i=-i;
+				SetZeroFlag(0==i);
+				SetCF(0!=i);
+				SetSignFlag(i<0);
+				value1.SetSignedDword(i);
+				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
 			}
 			break;
 		case 4: // MUL
@@ -4909,6 +4930,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 	case I486_OPCODE_STC://              0xFB,
 		SetCF(true);
+		clocksPassed=2;
+		break;
+	case I486_OPCODE_STD://              0xFD,
+		SetDF(true);
 		clocksPassed=2;
 		break;
 	case I486_OPCODE_STI://              0xFB,

@@ -1105,6 +1105,10 @@ public:
 	{
 		SetEFLAGSBit(flag,EFLAGS_CARRY);
 	}
+	inline void SetDF(bool flag)
+	{
+		SetEFLAGSBit(flag,EFLAGS_DIRECTION);
+	}
 	inline void SetIF(bool flag)
 	{
 		SetEFLAGSBit(flag,EFLAGS_INT_ENABLE);
@@ -1808,6 +1812,19 @@ public:
 	void RolDword(unsigned int &value,unsigned int ctr);
 	void RolWord(unsigned int &value,unsigned int ctr);
 	void RolByte(unsigned int &value,unsigned int ctr);
+
+private:
+	template <unsigned int bitCount,unsigned int allBits,unsigned int signBit>
+	inline void RorTemplate(unsigned int &value,unsigned int ctr);
+public:
+	/*! ROR a value and set OF and CF flags accoring to the result.
+	    OF is only set if ctr==1.
+	    operandSize needs to be 16 or 32.
+	*/ 
+	void RorByteWordOrDword(int operandSize,unsigned int &value,unsigned int ctr);
+	void RorDword(unsigned int &value,unsigned int ctr);
+	void RorWord(unsigned int &value,unsigned int ctr);
+	void RorByte(unsigned int &value,unsigned int ctr);
 
 	/*! RCL a value and set OF and CF flags accoring to the result.
 	    OF is only set if ctr==1.
