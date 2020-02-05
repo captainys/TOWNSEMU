@@ -45,7 +45,14 @@ void FMTowns::Variable::Reset(void)
 ////////////////////////////////////////////////////////////
 
 
-FMTowns::FMTowns() : crtc(this),pic(this),dmac(this),fdc(this,&dmac),rtc(this),sound(this)
+FMTowns::FMTowns() : 
+	crtc(this),
+	pic(this),
+	dmac(this),
+	fdc(this,&dmac),
+	rtc(this),
+	sound(this),
+	timer(this,&pic)
 {
 	townsType=TOWNSTYPE_2_MX;
 
@@ -61,8 +68,10 @@ FMTowns::FMTowns() : crtc(this),pic(this),dmac(this),fdc(this,&dmac),rtc(this),s
 	allDevices.push_back(&cdrom);
 	allDevices.push_back(&rtc);
 	allDevices.push_back(&sound);
+	allDevices.push_back(&timer);
 
 	fastDevices.push_back(&sound);
+	fastDevices.push_back(&timer);
 
 	physMem.SetMainRAMSize(4*1024*1024);
 
@@ -195,6 +204,22 @@ FMTowns::FMTowns() : crtc(this),pic(this),dmac(this),fdc(this,&dmac),rtc(this),s
 	io.AddDevice(&sound,TOWNSIO_SOUND_PCM_ST);//            0x4F6, // [2] pp.19,
 	io.AddDevice(&sound,TOWNSIO_SOUND_PCM_CTRL);//          0x4F7, // [2] pp.19,
 	io.AddDevice(&sound,TOWNSIO_SOUND_PCM_CH_ON_OFF);//     0x4F8, // [2] pp.19,
+
+
+	io.AddDevice(&timer,TOWNSIO_TIMER0_COUNT_LOW);//         0x40,
+	io.AddDevice(&timer,TOWNSIO_TIMER0_COUNT_HIGH);//        0x41,
+	io.AddDevice(&timer,TOWNSIO_TIMER1_COUNT_LOW);//         0x42,
+	io.AddDevice(&timer,TOWNSIO_TIMER1_COUNT_HIGH);//        0x43,
+	io.AddDevice(&timer,TOWNSIO_TIMER2_COUNT_LOW);//         0x44,
+	io.AddDevice(&timer,TOWNSIO_TIMER2_COUNT_HIGH);//        0x45,
+	io.AddDevice(&timer,TOWNSIO_TIMER_0_1_2_CTRL);//         0x46,
+	io.AddDevice(&timer,TOWNSIO_TIMER3_COUNT_LOW);//         0x50,
+	io.AddDevice(&timer,TOWNSIO_TIMER3_COUNT_HIGH);//        0x51,
+	io.AddDevice(&timer,TOWNSIO_TIMER4_COUNT_LOW);//         0x52,
+	io.AddDevice(&timer,TOWNSIO_TIMER4_COUNT_HIGH);//        0x53,
+	io.AddDevice(&timer,TOWNSIO_TIMER5_COUNT_LOW);//         0x54,
+	io.AddDevice(&timer,TOWNSIO_TIMER5_COUNT_HIGH);//        0x55,
+	io.AddDevice(&timer,TOWNSIO_TIMER_3_4_5_CTRL);//         0x56,
 
 
 	PowerOn();

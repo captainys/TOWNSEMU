@@ -23,6 +23,7 @@
 #include "physmem.h"
 #include "memaccess.h"
 #include "sound.h"
+#include "timer.h"
 
 
 
@@ -111,6 +112,7 @@ public:
 	TownsFDC fdc;
 	TownsKeyboard keyboard;
 	TownsSound sound;
+	TownsTimer timer;
 	// Machine State <<
 
 	unsigned int townsType;
