@@ -189,6 +189,14 @@ public:
 		unsigned int GetStatusWord(void) const;
 	};
 
+	class InterruptDescripor
+	{
+	public:
+		unsigned int selector;
+		unsigned int offset;
+		unsigned short flags;
+	};
+
 	class State
 	{
 	public:
@@ -1403,6 +1411,10 @@ public:
 	    How many bytes are loaded depends on operand size.  [1] 26-194.
 	*/
 	void LoadDescriptorTableRegister(SystemAddressRegister &reg,int operandSize,const unsigned char byteData[]);
+
+	/*! Retrieve Interrupt Descriptor from the current IDT.
+	*/
+	InterruptDescripor GetInterruptDescriptor(unsigned int INTNum,const Memory &mem) const;
 
 	/*! Make an OperandValue from a descriptor table register.
 	*/
