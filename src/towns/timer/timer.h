@@ -74,6 +74,8 @@ public:
 
 	virtual void RunScheduledTask(unsigned long long int townsTime);
 
+	void UpdatePICRequest(void) const;
+
 	std::vector <std::string> GetStatusText(void) const;
 };
 

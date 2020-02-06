@@ -163,9 +163,13 @@ void TownsTimer::State::TickIn(unsigned int nTick)
 		break;
 	case TOWNSIO_TIMER1_COUNT_LOW://         0x42,
 		state.SetChannelCounterLow(1,data);
+		state.TMOUT[1]=false;
+		UpdatePICRequest();
 		break;
 	case TOWNSIO_TIMER1_COUNT_HIGH://        0x43,
 		state.SetChannelCounterLow(1,data);
+		state.TMOUT[1]=false;
+		UpdatePICRequest();
 		break;
 	case TOWNSIO_TIMER2_COUNT_LOW://         0x44,
 		state.SetChannelCounterLow(2,data);
@@ -211,6 +215,7 @@ void TownsTimer::State::TickIn(unsigned int nTick)
 		{
 			state.TMOUT[0]=false;
 		}
+		UpdatePICRequest();
 		break;
 	}
 }
@@ -284,7 +289,6 @@ void TownsTimer::State::TickIn(unsigned int nTick)
 		auto nTick=(townsTime-state.lastTickTimeInNS)/TICK_INTERVAL;
 		state.lastTickTimeInNS+=nTick*TICK_INTERVAL;
 
-		bool IRQ=false;
 		bool OUT[2]={state.channels[0].OUT,state.channels[1].OUT};
 		state.TickIn((unsigned int)nTick);
 		for(unsigned int ch=0; ch<2; ++ch)
@@ -292,17 +296,16 @@ void TownsTimer::State::TickIn(unsigned int nTick)
 			if(true!=OUT[ch] && true==state.channels[ch].OUT)
 			{
 				state.TMOUT[ch]=true;
-				if(true==state.TMMSK[ch])
-				{
-					IRQ=true;
-				}
 			}
 		}
-		if(true==IRQ)
-		{
-			// picPtr->InterruptRequest(TOWNSIRQ_TIMER);
-		}
+		UpdatePICRequest();
 	}
+}
+
+void TownsTimer::UpdatePICRequest(void) const
+{
+	auto IRQBit=((state.TMOUT[0] && state.TMMSK[0]) || (state.TMOUT[1] && state.TMMSK[1]));
+	picPtr->SetInterruptRequestBit(TOWNSIRQ_TIMER,IRQBit);
 }
 
 std::vector <std::string> TownsTimer::GetStatusText(void) const
