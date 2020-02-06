@@ -196,6 +196,10 @@ public:
 	{
 	public:
 		unsigned short flags;
+		inline unsigned int GetType(void) const
+		{
+			return (flags>>8)&0x1F;
+		}
 	};
 
 	class State
@@ -1938,22 +1942,42 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 		auto desc=GetInterruptDescriptor(INTNum,mem);
 		if(FarPointer::NO_SEG!=desc.SEG)
 		{
+			auto type=desc.GetType();
+			std::string errMsg;
+			const unsigned int gateOperandSize=32;
+			// https://wiki.osdev.org/Interrupt_Descriptor_Table
+			switch(type)
+			{
+			default:
+				errMsg="Unsupported Interrupt Descriptor Type:"+cpputil::Ubtox(type);
+				Abort(errMsg);
+				return;
+			case 0b0110:
+				Abort("286 16-bit INT gate not supported");
+				break;
+			case 0b0111:
+				Abort("286 16-bit Trap gate not supported");
+				break;
+			case 0b0101: //"386 32-bit Task";
+			case 0b1110: //"386 32-bit INT";
+			case 0b1111: //"386 32-bit Trap";
+				break;
+			}
+
+			if(true==enableCallStack)
+			{
+				PushCallStack(
+				    true, // Is an interrupt
+				    state.CS().value,state.EIP,numInstBytes,
+				    desc.SEG,desc.OFFSET);
+			}
+
 			SegmentRegister newCS;
 			LoadSegmentRegister(newCS,desc.SEG,mem);
-			if(32==newCS.operandSize)
-			{
-				Push(mem,32,state.EFLAGS);
-				Push(mem,32,state.CS().value);
-				Push(mem,32,state.EIP+numInstBytes);
-				SetEIP(desc.OFFSET);
-			}
-			else
-			{
-				Push(mem,16,state.EFLAGS&0xFFFF);
-				Push(mem,16,state.CS().value);
-				Push(mem,16,(state.EIP+numInstBytes)&0xFFFF);
-				SetIP(desc.OFFSET);
-			}
+			Push(mem,gateOperandSize,state.EFLAGS);
+			Push(mem,gateOperandSize,state.CS().value);
+			Push(mem,gateOperandSize,state.EIP+numInstBytes);
+			SetIPorEIP(gateOperandSize,desc.OFFSET);
 			state.CS()=newCS;
 		}
 		else

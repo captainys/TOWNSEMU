@@ -230,6 +230,34 @@ std::vector <std::string> i486DX::GetIDTText(const Memory &mem) const
 		text.back()+=cpputil::Ustox(desc.SEG);
 		text.back()+="  OFFSET=";
 		text.back()+=cpputil::Uitox(desc.OFFSET);
+
+		auto type=(desc.flags>>8)&0x1F;
+		text.back()+="  TYPE=";
+		text.back()+=cpputil::Ubtox(type);
+		text.back()+="(";
+		// https://wiki.osdev.org/Interrupt_Descriptor_Table
+		switch(type)
+		{
+		default:
+			text.back()+="UNKNOWN        ";
+			break;
+		case 0b0101:
+			text.back()+="386 32-bit Task";
+			break;
+		case 0b0110:
+			text.back()+="286 16-bit INT";
+			break;
+		case 0b0111:
+			text.back()+="286 16-bit Trap";
+			break;
+		case 0b1110:
+			text.back()+="386 32-bit INT";
+			break;
+		case 0b1111:
+			text.back()+="386 32-bit Trap";
+			break;
+		}
+		text.back()+=")";
 	}
 
 	return text;

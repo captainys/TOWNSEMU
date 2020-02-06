@@ -68,6 +68,11 @@ void i486Debugger::BeforeRunOneInstruction(i486DX &cpu,Memory &mem,InOut &io,con
 
 void i486Debugger::AfterRunOneInstruction(unsigned int clocksPassed,i486DX &cpu,Memory &mem,InOut &io,const i486DX::Instruction &inst)
 {
+	CheckForBreakPoints(cpu);
+}
+
+void i486Debugger::CheckForBreakPoints(i486DX &cpu)
+{
 	CS_EIP cseip;
 	cseip.SEG=cpu.state.CS().value;
 	cseip.OFFSET=cpu.state.EIP;

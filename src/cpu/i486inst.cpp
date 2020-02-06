@@ -162,8 +162,10 @@ unsigned int i486DX::FetchOperandRM(Instruction &inst,const SegmentRegister &seg
 				auto BASE=(SIB&7);
 				// Special case MOD=0b00 && BASE==5 [1] Table 26-4 pp.26-7
 				// No base, [disp32+scaled_index]
-
-				numBytesFetched+=FetchOperand32(inst,seg,offset,mem);
+				if(5==BASE)
+				{
+					numBytesFetched+=FetchOperand32(inst,seg,offset,mem);
+				}
 			}
 			else if(0b101==R_M) // disp32
 			{

@@ -7,6 +7,7 @@
 
 #include "device.h"
 #include "i486.h"
+#include "i486debug.h"
 #include "memory.h"
 #include "townsdef.h"
 
@@ -148,6 +149,10 @@ public:
 			if(INTToGo<8)
 			{
 				state.i8259A[chip].FireIRQ(cpu,mem,INTToGo);
+				if(nullptr!=cpu.debuggerPtr)
+				{
+					cpu.debuggerPtr->CheckForBreakPoints(cpu);
+				}
 			}
 		}
 	}

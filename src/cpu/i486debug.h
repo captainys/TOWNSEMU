@@ -41,6 +41,10 @@ public:
 	*/
 	void AfterRunOneInstruction(unsigned int clocksPassed,i486DX &cpu,Memory &mem,InOut &io,const i486DX::Instruction &inst);
 
+	/*! Check for break points. 
+	*/
+	void CheckForBreakPoints(i486DX &cpu);
+
 	/*! Break on INT
 	*/
 	void SetBreakOnINT(unsigned int IRQNum);
