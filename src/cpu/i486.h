@@ -331,7 +331,7 @@ public:
 
 		/*! Returns Segment-Register.  REG must be REG_CS,REG_DS,REG_ES,REG_FS,REG_FS,REG_SS.
 		*/
-		SegmentRegister GetSegmentRegister(int reg) const
+		inline SegmentRegister GetSegmentRegister(int reg) const
 		{
 			switch(reg)
 			{
@@ -347,6 +347,28 @@ public:
 				return GS();
 			case REG_SS:
 				return SS();
+			}
+			return DS();
+		}
+
+		/*! Returns Segment Register from Segment-Overrie Prefix.
+		*/
+		inline SegmentRegister GetSegmentFromSegmentOverridePrefix(int segOverride) const
+		{
+			switch(segOverride)
+			{
+			case SEG_OVERRIDE_CS://  0x2E,
+				return CS();
+			case SEG_OVERRIDE_SS://  0x36,
+				return SS();
+			case SEG_OVERRIDE_DS://  0x3E,
+				return DS();
+			case SEG_OVERRIDE_ES://  0x26,
+				return ES();
+			case SEG_OVERRIDE_FS://  0x64,
+				return FS();
+			case SEG_OVERRIDE_GS://  0x65,
+				return GS();
 			}
 			return DS();
 		}
@@ -536,8 +558,9 @@ public:
 
 		/*! Returns Signed Imm16 or Imm32 after decoding. */
 		int GetSimm16or32(unsigned int operandSize) const;
-	};
 
+		static std::string SegmentOverrideString(int segOverridePrefix);
+	};
 
 	enum
 	{
@@ -892,6 +915,43 @@ public:
 	{
 		state.EAX()&=0xffff00ff;
 		state.EAX()|=(value<<8);
+	}
+
+
+	inline unsigned int GetEBX(void) const
+	{
+		return state.EBX();
+	}
+	inline unsigned int GetBX(void) const
+	{
+		return state.EBX()&0xffff;
+	}
+	inline unsigned int GetBL(void) const
+	{
+		return state.EBX()&0xff;
+	}
+	inline unsigned int GetBH(void) const
+	{
+		return (state.EBX()>>8)&0xff;
+	}
+	inline void SetEBX(unsigned int value)
+	{
+		state.EBX()=value;
+	}
+	inline void SetBX(unsigned int value)
+	{
+		state.EBX()&=0xffff0000;
+		state.EBX()|=value;
+	}
+	inline void SetBL(unsigned int value)
+	{
+		state.EBX()&=0xffffff00;
+		state.EBX()|=value;
+	}
+	inline void SetBH(unsigned int value)
+	{
+		state.EBX()&=0xffff00ff;
+		state.EBX()|=(value<<8);
 	}
 
 

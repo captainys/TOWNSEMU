@@ -198,6 +198,26 @@ unsigned int i486DX::FetchOperandRM(Instruction &inst,const SegmentRegister &seg
 	return numBytesFetched;
 }
 
+std::string i486DX::Instruction::SegmentOverrideString(int segOverridePrefix)
+{
+	switch(segOverridePrefix)
+	{
+	case SEG_OVERRIDE_CS://  0x2E,
+		return "CS:";
+	case SEG_OVERRIDE_SS://  0x36,
+		return "SS:";
+	case SEG_OVERRIDE_DS://  0x3E,
+		return "DS:";
+	case SEG_OVERRIDE_ES://  0x26,
+		return "ES:";
+	case SEG_OVERRIDE_FS://  0x64,
+		return "FS:";
+	case SEG_OVERRIDE_GS://  0x65,
+		return "GS:";
+	}
+	return "";
+}
+
 void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offset,const Memory &mem) const
 {
 	switch(inst.opCode)
@@ -755,9 +775,13 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 	case I486_OPCODE_XCHG_EAX_EDI://     0x97,
 		// No operand
 		break;
-	case I486_OPCODE_RM8_R8://           0x86,
-	case I486_OPCODE_RM_R://             0x87,
+	case I486_OPCODE_XCHG_RM8_R8://      0x86,
+	case I486_OPCODE_XCHG_RM_R://        0x87,
 		FetchOperandRM(inst,seg,offset,mem);
+		break;
+
+
+	case I486_OPCODE_XLAT://             0xD7,
 		break;
 
 
@@ -1273,13 +1297,15 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 	case I486_OPCODE_XCHG_EAX_EDI://     0x97,
 		// No operand
 		break;
-	case I486_OPCODE_RM8_R8://           0x86,
+	case I486_OPCODE_XCHG_RM8_R8://      0x86,
 		op1.Decode(addressSize,8,operand);
 		op2.DecodeMODR_MForRegister(8,operand[0]);
 		break;
-	case I486_OPCODE_RM_R://             0x87,
+	case I486_OPCODE_XCHG_RM_R://        0x87,
 		op1.Decode(addressSize,operandSize,operand);
 		op2.DecodeMODR_MForRegister(operandSize,operand[0]);
+		break;
+	case I486_OPCODE_XLAT://             0xD7,
 		break;
 	}
 }
@@ -2492,9 +2518,25 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 			disasm+=Reg32Str[opCode&7];
 		}
 		break;
-	case I486_OPCODE_RM8_R8://           0x86,
-	case I486_OPCODE_RM_R://             0x87,
+	case I486_OPCODE_XCHG_RM8_R8://           0x86,
+	case I486_OPCODE_XCHG_RM_R://             0x87,
 		disasm=DisassembleTypicalTwoOperands("XCHG",op1,op2);
+		break;
+
+
+	case I486_OPCODE_XLAT://             0xD7,
+		{
+			disasm="XLAT    ";
+			disasm+=SegmentOverrideString(segOverride);
+			if(16==addressSize)
+			{
+				disasm+="[BX]";
+			}
+			else
+			{
+				disasm+="[EBX]";
+			}
+		}
 		break;
 	}
 
@@ -5045,7 +5087,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			state.reg32[inst.opCode&7]=op1;
 		}
 		break;
-	case I486_OPCODE_RM8_R8://           0x86,
+	case I486_OPCODE_XCHG_RM8_R8://           0x86,
 		clocksPassed=(OPER_ADDR==op1.operandType ? 5 : 3);
 		{
 			auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,1);
@@ -5054,13 +5096,43 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			StoreOperandValue(op2,mem,inst.addressSize,inst.segOverride,value1);
 		}
 		break;
-	case I486_OPCODE_RM_R://             0x87,
+	case I486_OPCODE_XCHG_RM_R://             0x87,
 		clocksPassed=(OPER_ADDR==op1.operandType ? 5 : 3);
 		{
 			auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
 			auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize/8);
 			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value2);
 			StoreOperandValue(op2,mem,inst.addressSize,inst.segOverride,value1);
+		}
+		break;
+
+
+	case I486_OPCODE_XLAT://             0xD7,
+		clocksPassed=4;
+		{
+			SegmentRegister seg;
+			if(0!=inst.segOverride)
+			{
+				seg=state.GetSegmentFromSegmentOverridePrefix(inst.segOverride);
+			}
+			else
+			{
+				seg=state.DS();
+			}
+			unsigned int offset=GetAL();
+			if(32==inst.addressSize)
+			{
+				offset+=GetEBX();
+			}
+			else
+			{
+				offset+=GetBX();
+			}
+			auto nextAL=FetchByte(inst.addressSize,seg,offset,mem);
+			if(true!=state.exception)
+			{
+				SetAL(nextAL);
+			}
 		}
 		break;
 
