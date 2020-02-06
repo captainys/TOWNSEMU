@@ -464,6 +464,7 @@ void FMTowns::PrintTimer(void) const
 
 void FMTowns::PrintStatus(void) const
 {
+	std::cout << "Towns TIME (Nano-Seconds): " << state.townsTime << std::endl;
 	cpu.PrintState();
 	PrintStack(32);
 	if(""!=debugger.externalBreakReason)

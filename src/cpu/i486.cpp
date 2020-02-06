@@ -384,9 +384,6 @@ void i486DX::LoadDescriptorTableRegister(SystemAddressRegister &reg,int operandS
 	{
 		reg.linearBaseAddr=byteData[2]|(byteData[3]<<8)|(byteData[4]<<16)|(byteData[5]<<24);
 	}
-	std::cout << __FUNCTION__ << std::endl;
-	std::cout << "LIMIT:" << cpputil::Ustox(reg.limit) << std::endl;
-	std::cout << "BASE:" << cpputil::Uitox(reg.linearBaseAddr) << std::endl;
 }
 
 i486DX::InterruptDescriptor i486DX::GetInterruptDescriptor(unsigned int INTNum,const Memory &mem) const

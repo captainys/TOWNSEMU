@@ -314,9 +314,9 @@ std::vector <std::string> TownsTimer::GetStatusText(void) const
 	std::vector <std::string> text;
 	text.push_back("Programmable Timer (i8253 x2)");
 
-	for(auto &CH : state.channels)
+	for(int ch=0; ch<NUM_CHANNELS_ACTUAL; ++ch)
 	{
-		unsigned int ch=(unsigned int)(&CH-state.channels);
+		auto &CH=state.channels[ch];
 		text.push_back(newline);
 		text.back()+="[";
 		text.back()+=cpputil::Ubtox(ch);
