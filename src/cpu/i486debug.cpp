@@ -16,6 +16,7 @@ void i486Debugger::CleanUp(void)
 {
 	breakPoint.clear();
 	stop=true;
+	breakOnINT=0xffff;
 	monitorIO=false;
 	disassembleEveryStep=false;
 	lastDisassembleAddr.Nullify();
@@ -80,6 +81,16 @@ void i486Debugger::AfterRunOneInstruction(unsigned int clocksPassed,i486DX &cpu,
 		stop=true;
 		oneTimeBreakPoint.Nullify();
 	}
+}
+
+void i486Debugger::SetBreakOnINT(unsigned int INTNum)
+{
+	breakOnINT=INTNum;
+}
+
+void i486Debugger::ClearBreakOnINT(void)
+{
+	breakOnINT=0xffffffff;
 }
 
 std::vector <std::string> i486Debugger::GetCallStackText(const i486DX &cpu) const

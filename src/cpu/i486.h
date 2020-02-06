@@ -2,9 +2,12 @@
 #define I486_IS_INCLUDED
 /* { */
 
+#include <string>
+
 #include "cpu.h"
 #include "ramrom.h"
 #include "inout.h"
+#include "cpputil.h"
 
 // References
 // [1]  i486 Processor Programmers Reference Manual
@@ -1902,15 +1905,22 @@ public:
 
 #include "i486debug.h"
 
-inline void i486DX::Interrupt(unsigned int intNum,Memory &mem,unsigned int numInstBytes)
+inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numInstBytes)
 {
+	if(nullptr!=debuggerPtr && debuggerPtr->breakOnINT==INTNum)
+	{
+		std::string str("Break on INT ");
+		str+=cpputil::Ubtox(INTNum);
+		debuggerPtr->ExternalBreak(str);
+	}
+
 	if(IsInRealMode())
 	{
 		Push(mem,16,state.EFLAGS&0xFFFF);
 		Push(mem,16,state.CS().value);
 		Push(mem,16,state.EIP+numInstBytes);
 
-		auto intVecAddr=(intNum&0xFF)*4;
+		auto intVecAddr=(INTNum&0xFF)*4;
 		auto destIP=mem.FetchWord(intVecAddr);
 		auto destCS=mem.FetchWord(intVecAddr+2);
 		if(true==enableCallStack)
@@ -1925,7 +1935,31 @@ inline void i486DX::Interrupt(unsigned int intNum,Memory &mem,unsigned int numIn
 	}
 	else
 	{
-		Abort("Protected-Mode Interrupt not supported yet.");
+		auto desc=GetInterruptDescriptor(INTNum,mem);
+		if(FarPointer::NO_SEG!=desc.SEG)
+		{
+			SegmentRegister newCS;
+			LoadSegmentRegister(newCS,desc.SEG,mem);
+			if(32==newCS.operandSize)
+			{
+				Push(mem,32,state.EFLAGS);
+				Push(mem,32,state.CS().value);
+				Push(mem,32,state.EIP+numInstBytes);
+				SetEIP(desc.OFFSET);
+			}
+			else
+			{
+				Push(mem,16,state.EFLAGS&0xFFFF);
+				Push(mem,16,state.CS().value);
+				Push(mem,16,(state.EIP+numInstBytes)&0xFFFF);
+				SetIP(desc.OFFSET);
+			}
+			state.CS()=newCS;
+		}
+		else
+		{
+			RaiseException(EXCEPTION_GP,INTNum*8); // What's +EXT?  ([1] pp.26-170)
+		}
 	}
 };
 

@@ -81,6 +81,7 @@ public:
 		BREAK_ON_PIC_IWC4,
 		BREAK_ON_DMAC_REQUEST,
 		BREAK_ON_FDC_COMMAND,
+		BREAK_ON_INT,
 	};
 
 	enum

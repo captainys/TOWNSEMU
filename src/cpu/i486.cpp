@@ -363,29 +363,35 @@ void i486DX::LoadDescriptorTableRegister(SystemAddressRegister &reg,int operandS
 
 i486DX::InterruptDescriptor i486DX::GetInterruptDescriptor(unsigned int INTNum,const Memory &mem) const
 {
-	auto DTLinearBaseAddr=state.IDTR.linearBaseAddr;
-	DTLinearBaseAddr+=(8*INTNum);
-
-	const unsigned char rawDesc[8]=
-	{
-		(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr),
-		(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+1),
-		(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+2),
-		(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+3),
-		(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+4),
-		(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+5),
-		(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+6),
-		(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+7)
-	};
-
 	InterruptDescriptor desc;
-	desc.SEG=rawDesc[2]|(rawDesc[3]<<8);
-	desc.OFFSET= (unsigned int)rawDesc[0]
-	           |((unsigned int)rawDesc[1]<<8)
-	           |((unsigned int)rawDesc[6]<<16)
-	           |((unsigned int)rawDesc[7]<<24);
-	desc.flags=  (unsigned short)rawDesc[4]
-	           |((unsigned short)rawDesc[5]<<8);
+	if(8*INTNum<state.IDTR.limit)
+	{
+		auto DTLinearBaseAddr=state.IDTR.linearBaseAddr;
+		DTLinearBaseAddr+=(8*INTNum);
+		const unsigned char rawDesc[8]=
+		{
+			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr),
+			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+1),
+			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+2),
+			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+3),
+			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+4),
+			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+5),
+			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+6),
+			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+7)
+		};
+		desc.SEG=rawDesc[2]|(rawDesc[3]<<8);
+		desc.OFFSET= (unsigned int)rawDesc[0]
+		           |((unsigned int)rawDesc[1]<<8)
+		           |((unsigned int)rawDesc[6]<<16)
+		           |((unsigned int)rawDesc[7]<<24);
+		desc.flags=  (unsigned short)rawDesc[4]
+		           |((unsigned short)rawDesc[5]<<8);
+	}
+	else
+	{
+		desc.SEG=FarPointer::NO_SEG;
+		desc.OFFSET=0;
+	}
 	return desc;
 }
 

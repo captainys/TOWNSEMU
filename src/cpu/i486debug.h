@@ -17,6 +17,7 @@ public:
 	std::string externalBreakReason;
 	std::map <unsigned int,std::string> ioLabel;
 
+	unsigned int breakOnINT;
 	bool stop;
 	bool monitorIO;
 	bool disassembleEveryStep;
@@ -39,6 +40,14 @@ public:
 	/*! Callback from i486DX::RunOneInstruction.
 	*/
 	void AfterRunOneInstruction(unsigned int clocksPassed,i486DX &cpu,Memory &mem,InOut &io,const i486DX::Instruction &inst);
+
+	/*! Break on INT
+	*/
+	void SetBreakOnINT(unsigned int IRQNum);
+
+	/*! Clear break on INT
+	*/
+	void ClearBreakOnINT(void);
 
 	/*! Return formatted call-stack text.
 	*/

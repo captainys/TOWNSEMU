@@ -69,6 +69,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	breakEventMap["IWC4"]=   BREAK_ON_PIC_IWC4;
 	breakEventMap["DMACREQ"]=BREAK_ON_DMAC_REQUEST;
 	breakEventMap["FDCCMD"]= BREAK_ON_FDC_COMMAND;
+	breakEventMap["INT"]=    BREAK_ON_INT;
 }
 
 
@@ -160,6 +161,7 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "IWC4" << std::endl;
 	std::cout << "DMACREQ" << std::endl;
 	std::cout << "FDCCMD" << std::endl;
+	std::cout << "INT n" << std::endl;
 }
 
 void TownsCommandInterpreter::PrintError(int errCode) const
@@ -431,6 +433,7 @@ void TownsCommandInterpreter::Execute_BreakOn(FMTowns &towns,Command &cmd)
 	auto iter=breakEventMap.find(argv1);
 	if(iter!=breakEventMap.end())
 	{
+		std::string reason=iter->first;
 		switch(iter->second)
 		{
 		case BREAK_ON_PIC_IWC1:
@@ -445,8 +448,19 @@ void TownsCommandInterpreter::Execute_BreakOn(FMTowns &towns,Command &cmd)
 		case BREAK_ON_FDC_COMMAND:
 			towns.fdc.debugBreakOnCommandWrite=true;
 			break;
+		case BREAK_ON_INT:
+			if(3<=cmd.argv.size())
+			{
+				towns.debugger.SetBreakOnINT(cpputil::Xtoi(cmd.argv[2].c_str()));
+			}
+			else
+			{
+				PrintError(ERROR_TOO_FEW_ARGS);
+				return;
+			}
+			break;
 		}
-		std::cout << iter->first << " is ON." << std::endl;
+		std::cout << reason << " is ON." << std::endl;
 	}
 }
 void TownsCommandInterpreter::Execute_ClearBreakOn(FMTowns &towns,Command &cmd)
@@ -474,6 +488,9 @@ void TownsCommandInterpreter::Execute_ClearBreakOn(FMTowns &towns,Command &cmd)
 			break;
 		case BREAK_ON_FDC_COMMAND:
 			towns.fdc.debugBreakOnCommandWrite=false;
+			break;
+		case BREAK_ON_INT:
+			towns.debugger.ClearBreakOnINT();
 			break;
 		}
 		std::cout << iter->first << " is OFF." << std::endl;
