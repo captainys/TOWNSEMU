@@ -60,6 +60,8 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	printableMap["DMAC"]=PRINT_DMAC;
 	printableMap["FDC"]=PRINT_FDC;
 	printableMap["TIMER"]=PRINT_TIMER;
+	printableMap["IDT"]=PRINT_IDT;
+
 
 	dumpableMap["RINTVEC"]=DUMP_REAL_MODE_INT_VECTOR;
 
@@ -130,6 +132,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "<< Information that can be printed >>" << std::endl;
 	std::cout << "CALLSTACK|CST" << std::endl;
 	std::cout << "  Call Stack"<<std::endl;
+	std::cout << "IDT" << std::endl;
+	std::cout << "  Protected-Mode Interrupt Descriptor Table" << std::endl;
 	std::cout << "BREAKPOINT|BRK" << std::endl;
 	std::cout << "  Break Points"<<std::endl;
 	std::cout << "STATUS|STATE|STA|S"<<std::endl;
@@ -387,6 +391,9 @@ void TownsCommandInterpreter::Execute_Print(FMTowns &towns,Command &cmd)
 		{
 		case PRINT_CURRENT_STATUS:
 			towns.PrintStatus();
+			break;
+		case PRINT_IDT:
+			towns.cpu.PrintIDT(towns.mem);
 			break;
 		case PRINT_CALLSTACK:
 			towns.PrintCallStack();

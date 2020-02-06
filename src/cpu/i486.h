@@ -189,11 +189,9 @@ public:
 		unsigned int GetStatusWord(void) const;
 	};
 
-	class InterruptDescripor
+	class InterruptDescriptor : public FarPointer
 	{
 	public:
-		unsigned int selector;
-		unsigned int offset;
 		unsigned short flags;
 	};
 
@@ -1384,9 +1382,16 @@ public:
 	*/
 	std::vector <std::string> GetStateText(void) const;
 
+	/*! Returns IDT text.
+	*/
+	std::vector <std::string> GetIDTText(const Memory &mem) const;
+
 	/*! Print state.
 	*/
 	void PrintState(void) const;
+
+	/*! Print IDT. */
+	void PrintIDT(const Memory &mem) const;
 
 	/*! Loads a segment register.
 	    If reg is SS, it raise holdIRQ flag.
@@ -1414,7 +1419,7 @@ public:
 
 	/*! Retrieve Interrupt Descriptor from the current IDT.
 	*/
-	InterruptDescripor GetInterruptDescriptor(unsigned int INTNum,const Memory &mem) const;
+	InterruptDescriptor GetInterruptDescriptor(unsigned int INTNum,const Memory &mem) const;
 
 	/*! Make an OperandValue from a descriptor table register.
 	*/

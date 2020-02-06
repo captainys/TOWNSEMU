@@ -213,9 +213,39 @@ std::vector <std::string> i486DX::GetStateText(void) const
 	return text;
 }
 
+std::vector <std::string> i486DX::GetIDTText(const Memory &mem) const
+{
+	std::vector <std::string> text;
+	std::string empty;
+
+	text.push_back(empty);
+	text.back()="Limit="+cpputil::Uitox(state.IDTR.limit);
+	for(unsigned int offset=0; offset<state.IDTR.limit && offset<0x800; offset+=8)
+	{
+		auto desc=GetInterruptDescriptor(offset/8,mem);
+		text.push_back(empty);
+		text.back()=cpputil::Ubtox(offset/8);
+		text.back()+=":";
+		text.back()+="SEG=";
+		text.back()+=cpputil::Ustox(desc.SEG);
+		text.back()+="  OFFSET=";
+		text.back()+=cpputil::Uitox(desc.OFFSET);
+	}
+
+	return text;
+}
+
 void i486DX::PrintState(void) const
 {
 	for(auto &str : GetStateText())
+	{
+		std::cout << str << std::endl;
+	}
+}
+
+void i486DX::PrintIDT(const Memory &mem) const
+{
+	for(auto &str : GetIDTText(mem))
 	{
 		std::cout << str << std::endl;
 	}
@@ -331,7 +361,7 @@ void i486DX::LoadDescriptorTableRegister(SystemAddressRegister &reg,int operandS
 	std::cout << "BASE:" << cpputil::Uitox(reg.linearBaseAddr) << std::endl;
 }
 
-i486DX::InterruptDescripor i486DX::GetInterruptDescriptor(unsigned int INTNum,const Memory &mem) const
+i486DX::InterruptDescriptor i486DX::GetInterruptDescriptor(unsigned int INTNum,const Memory &mem) const
 {
 	auto DTLinearBaseAddr=state.IDTR.linearBaseAddr;
 	DTLinearBaseAddr+=(8*INTNum);
@@ -348,9 +378,9 @@ i486DX::InterruptDescripor i486DX::GetInterruptDescriptor(unsigned int INTNum,co
 		(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+7)
 	};
 
-	InterruptDescripor desc;
-	desc.selector=rawDesc[2]|(rawDesc[3]<<8);
-	desc.offset= (unsigned int)rawDesc[0]
+	InterruptDescriptor desc;
+	desc.SEG=rawDesc[2]|(rawDesc[3]<<8);
+	desc.OFFSET= (unsigned int)rawDesc[0]
 	           |((unsigned int)rawDesc[1]<<8)
 	           |((unsigned int)rawDesc[6]<<16)
 	           |((unsigned int)rawDesc[7]<<24);
