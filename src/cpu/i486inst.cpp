@@ -3320,7 +3320,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			if(true==enableCallStack)
 			{
 				PushCallStack(
-				    false,
+				    false,0xffff,0xffff,
 				    state.CS().value,state.EIP,inst.numBytes,
 				    op1.seg,op1.offset);
 			}
@@ -3348,7 +3348,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				if(true==enableCallStack)
 				{
 					PushCallStack(
-					    false,
+					    false,0xffff,0xffff,
 					    state.CS().value,state.EIP,inst.numBytes,
 					    state.CS().value,destin);
 				}
@@ -3676,7 +3676,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 							if(true==enableCallStack)
 							{
 								PushCallStack(
-								    false,
+								    false,0xffff,0xffff,
 								    state.CS().value,state.EIP,inst.numBytes,
 								    state.CS().value,value.GetAsDword());
 							}
@@ -3710,7 +3710,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 									destEIP&=0xFFFF;
 								}
 								PushCallStack(
-								    false,
+								    false,0xffff,0xffff,
 								    state.CS().value,state.EIP,inst.numBytes,
 								    destSeg,destEIP);
 							}

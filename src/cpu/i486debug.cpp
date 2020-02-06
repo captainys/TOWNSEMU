@@ -103,17 +103,17 @@ std::vector <std::string> i486Debugger::GetCallStackText(const i486DX &cpu) cons
 	std::vector <std::string> text;
 	for(auto &s : cpu.callStack)
 	{
-/*bool isInterrupt;
-unsigned int fromCS,fromEIP;
-unsigned int callOpCodeLength;
-unsigned int procCS,procEIP;*/
 		std::string str;
 		str+="FR="+cpputil::Ustox(s.fromCS)+":"+cpputil::Uitox(s.fromEIP)+"  ";
 		str+="TO="+cpputil::Ustox(s.procCS)+":"+cpputil::Uitox(s.procEIP)+"  ";
 		str+="RET="+cpputil::Ustox(s.fromCS)+":"+cpputil::Uitox(s.fromEIP+s.callOpCodeLength);
-		if(true==s.isInterrupt)
+		if(s.INTNum<0x100)
 		{
-			str+="  (INT)";
+			str+="  (INT ";
+			str+=cpputil::Ubtox(s.INTNum);
+			str+=",AX=";
+			str+=cpputil::Ustox(s.AX);
+			str+="H)";
 		}
 		text.push_back((std::string &&)str);
 	}

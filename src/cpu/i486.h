@@ -817,7 +817,7 @@ public:
 	class CallStack
 	{
 	public:
-		bool isInterrupt;
+		unsigned short INTNum,AX;
 		unsigned int fromCS,fromEIP;
 		unsigned int callOpCodeLength;
 		unsigned int procCS,procEIP;
@@ -828,15 +828,17 @@ public:
 
 
 	/*! Make a call-stack entry.
+	    INTNum and AX are valid only if isInterrupt is true.  Otherwise, give 0xffff for both.
 	*/
 	CallStack MakeCallStack(
-	    bool isInterrupt,
+	    bool isInterrupt,unsigned short INTNum,unsigned short AX,
 	    unsigned int fromCS,unsigned int fromEIP,unsigned int callOpCodeLength,
 	    unsigned int procCS,unsigned int procEIP);
 	/*! Make a call-stack entry, and push to the call stack.
+	    INTNum and AX are valid only if isInterrupt is true.  Otherwise, give 0xffff for both.
 	*/
 	void PushCallStack(
-	    bool isInterrupt,
+	    bool isInterrupt,unsigned short INTNum,unsigned short AX,
 	    unsigned int fromCS,unsigned int fromEIP,unsigned int callOpCodeLength,
 	    unsigned int procCS,unsigned int procEIP);
 	/*! Pop an entry from call stack.
@@ -1930,7 +1932,7 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 		if(true==enableCallStack)
 		{
 			PushCallStack(
-			    true, // Is an interrupt
+			    true,INTNum,GetAX(), // Is an interrupt
 			    state.CS().value,state.EIP,numInstBytes,
 			    destCS,destIP);
 		}
@@ -1967,7 +1969,7 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 			if(true==enableCallStack)
 			{
 				PushCallStack(
-				    true, // Is an interrupt
+				    true,INTNum,GetAX(), // Is an interrupt
 				    state.CS().value,state.EIP,numInstBytes,
 				    desc.SEG,desc.OFFSET);
 			}

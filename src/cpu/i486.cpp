@@ -2241,12 +2241,21 @@ bool i486DX::REPEorNECheck(unsigned int &clocksForRep,unsigned int instPrefix,un
 }
 
 i486DX::CallStack i486DX::MakeCallStack(
-	    bool isInterrupt,
+	    bool isInterrupt,unsigned short INTNum,unsigned short AX,
 	    unsigned int fromCS,unsigned int fromEIP,unsigned int callOpCodeLength,
 	    unsigned int procCS,unsigned int procEIP)
 {
 	CallStack stk;
-	stk.isInterrupt=isInterrupt;
+	if(true==isInterrupt)
+	{
+		stk.INTNum=INTNum;
+		stk.AX=AX;
+	}
+	else
+	{
+		stk.INTNum=0xffff;
+		stk.AX=0xffff;
+	}
 	stk.fromCS=fromCS;
 	stk.fromEIP=fromEIP;
 	stk.callOpCodeLength=callOpCodeLength;
@@ -2255,11 +2264,11 @@ i486DX::CallStack i486DX::MakeCallStack(
 	return stk;
 }
 void i486DX::PushCallStack(
-	    bool isInterrupt,
+	    bool isInterrupt,unsigned short INTNum,unsigned short AX,
 	    unsigned int fromCS,unsigned int fromEIP,unsigned int callOpCodeLength,
 	    unsigned int procCS,unsigned int procEIP)
 {
-	callStack.push_back(MakeCallStack(isInterrupt,fromCS,fromEIP,callOpCodeLength,procCS,procEIP));
+	callStack.push_back(MakeCallStack(isInterrupt,INTNum,AX,fromCS,fromEIP,callOpCodeLength,procCS,procEIP));
 }
 void i486DX::PopCallStack(void)
 {
