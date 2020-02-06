@@ -72,6 +72,7 @@ public:
 		PRINT_DMAC,
 		PRINT_FDC,
 		PRINT_TIMER,
+		PRINT_GDT,
 		PRINT_IDT,
 	};
 

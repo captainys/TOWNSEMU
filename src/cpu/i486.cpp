@@ -213,6 +213,74 @@ std::vector <std::string> i486DX::GetStateText(void) const
 	return text;
 }
 
+std::vector <std::string> i486DX::GetGDTText(const Memory &mem) const
+{
+	std::vector <std::string> text;
+	text.push_back("GDT  Limit=");
+	text.back()+=cpputil::Ustox(state.GDTR.limit);
+
+	for(unsigned int selector=0; selector<state.GDTR.limit; selector+=8)
+	{
+		unsigned int DTLinearBaseAddr=state.GDTR.linearBaseAddr+selector;
+		const unsigned char rawDesc[8]=
+		{
+			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr),
+			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+1),
+			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+2),
+			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+3),
+			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+4),
+			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+5),
+			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+6),
+			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+7)
+		};
+
+		// Sample GDT from WRHIGH.ASM
+		//	DB		0FFH,0FFH	; Segment Limit (0-15)
+		//	DB		0,0,010H		; Base Address 0-23
+		//	DB		10010010B	; P=1, DPL=00, S=1, TYPE=0010
+		//	DB		11000111B	; G=1, DB=1, (Unused)=0, A=0, LIMIT 16-19=0011
+		//	DB		0			; Base Address 24-31
+
+		unsigned int segLimit=rawDesc[0]|(rawDesc[1]<<8)|((rawDesc[6]&0x0F)<<16);
+		unsigned int segBase=rawDesc[2]|(rawDesc[3]<<8)|(rawDesc[4]<<16)|(rawDesc[7]<<24);
+		if((0x80&rawDesc[6])==0) // G==0
+		{
+			segLimit=segLimit;
+		}
+		else
+		{
+			segLimit=(segLimit+1)*4096-1;
+		}
+
+		unsigned int addressSize,operandSize;
+		if((0x40&rawDesc[6])==0) // D==0
+		{
+			addressSize=16;
+			operandSize=16;
+		}
+		else
+		{
+			addressSize=32;
+			operandSize=32;
+		}
+
+		std::string empty;
+		text.push_back(empty);
+		text.back()+=cpputil::Ustox(selector);
+		text.back()+=":";
+		text.back()+="Lin-Base=";
+		text.back()+=cpputil::Uitox(segBase);
+		text.back()+="  Limit=";
+		text.back()+=cpputil::Uitox(segLimit);
+		text.back()+="  OperSize=";
+		text.back()+=cpputil::Ubtox(operandSize);
+		text.back()+="H  AddrSize=";
+		text.back()+=cpputil::Ubtox(addressSize);
+		text.back()+="H";
+	}
+	return text;
+}
+
 std::vector <std::string> i486DX::GetIDTText(const Memory &mem) const
 {
 	std::vector <std::string> text;
@@ -266,6 +334,14 @@ std::vector <std::string> i486DX::GetIDTText(const Memory &mem) const
 void i486DX::PrintState(void) const
 {
 	for(auto &str : GetStateText())
+	{
+		std::cout << str << std::endl;
+	}
+}
+
+void i486DX::PrintGDT(const Memory &mem) const
+{
+	for(auto &str : GetGDTText(mem))
 	{
 		std::cout << str << std::endl;
 	}
