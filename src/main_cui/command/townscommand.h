@@ -76,6 +76,7 @@ public:
 		PRINT_TIMER,
 		PRINT_GDT,
 		PRINT_IDT,
+		PRINT_SOUND,
 	};
 
 	enum

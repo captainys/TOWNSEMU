@@ -132,3 +132,9 @@ void TownsSound::State::ResetVariables(void)
 {
 	state.ym2612.Run(townsTime);
 }
+
+
+std::vector <std::string> TownsSound::GetStatusText(void) const
+{
+	return state.ym2612.GetStatusText();
+}

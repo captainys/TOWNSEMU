@@ -27,6 +27,8 @@ int Xtoi(const char str[]);
 int Atoi(const char str[]);
 inline char FourBitToX(int i);
 
+char BoolToChar(bool f);
+
 std::string Uitox(unsigned int i);
 std::string Ustox(unsigned short i);
 std::string Ubtox(unsigned char i);

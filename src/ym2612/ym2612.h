@@ -2,6 +2,9 @@
 #define YM2612_IS_INCLUDED
 /* { */
 
+#include <vector>
+#include <string>
+
 
 /*! G** D*** I*!  I didn't realize data sheet of YM2612 is not available today!
 */
@@ -63,6 +66,8 @@ public:
 	/*! Returns timer-up state of 
 	*/
 	bool TimerUp(unsigned int timerId) const;
+
+	std::vector <std::string> GetStatusText(void) const;
 };
 
 

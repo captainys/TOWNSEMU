@@ -474,6 +474,14 @@ void FMTowns::PrintTimer(void) const
 	}
 }
 
+void FMTowns::PrintSound(void) const
+{
+	for(auto str : sound.state.ym2612.GetStatusText())
+	{
+		std::cout << str << std::endl;
+	}
+}
+
 void FMTowns::PrintStatus(void) const
 {
 	std::cout << "Towns TIME (Nano-Seconds): " << state.townsTime << std::endl;

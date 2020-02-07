@@ -63,6 +63,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	printableMap["TIMER"]=PRINT_TIMER;
 	printableMap["GDT"]=PRINT_GDT;
 	printableMap["IDT"]=PRINT_IDT;
+	printableMap["SOUND"]=PRINT_SOUND;
 
 
 	dumpableMap["RINTVEC"]=DUMP_REAL_MODE_INT_VECTOR;
@@ -425,6 +426,9 @@ void TownsCommandInterpreter::Execute_Print(FMTowns &towns,Command &cmd)
 			break;
 		case PRINT_IDT:
 			towns.cpu.PrintIDT(towns.mem);
+			break;
+		case PRINT_SOUND:
+			towns.PrintSound();
 			break;
 		case PRINT_CALLSTACK:
 			towns.PrintCallStack();

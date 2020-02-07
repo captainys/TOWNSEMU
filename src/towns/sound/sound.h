@@ -2,6 +2,9 @@
 #define SOUND_IS_INCLUDED
 /* { */
 
+#include <vector>
+#include <string>
+
 #include "device.h"
 #include "townsdef.h"
 #include "cpputil.h"
@@ -41,6 +44,8 @@ public:
 	virtual unsigned int IOReadByte(unsigned int ioport);
 
 	virtual void RunScheduledTask(unsigned long long int townsTime);
+
+	std::vector <std::string> GetStatusText(void) const;
 };
 
 /* } */

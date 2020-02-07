@@ -391,6 +391,11 @@ inline char cpputil::FourBitToX(int i)
 	}
 }
 
+char BoolToChar(bool f)
+{
+	return (true==f ? '1' : '0');
+}
+
 std::string cpputil::Uitox(unsigned int i)
 {
 	std::string s;

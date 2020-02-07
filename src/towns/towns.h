@@ -228,6 +228,7 @@ public:
 	void PrintDMAC(void) const;
 	void PrintFDC(void) const;
 	void PrintTimer(void) const;
+	void PrintSound(void) const;
 
 	void PrintStatus(void) const;
 };

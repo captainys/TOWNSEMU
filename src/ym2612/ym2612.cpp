@@ -131,3 +131,29 @@ bool YM2612::TimerUp(unsigned int timerId) const
 		return TimerBUp();
 	}
 }
+
+
+#include "cpputil.h"
+
+std::vector <std::string> YM2612::GetStatusText(void) const
+{
+	std::vector <std::string> text;
+	std::string empty;
+
+	text.push_back(empty);
+	text.back()="YM2612";
+
+	text.push_back(empty);
+	text.back()="TimerA Up=";
+	text.back().push_back(cpputil::BoolToChar(TimerAUp()));
+	text.back()+="  TimerB Up=";
+	text.back().push_back(cpputil::BoolToChar(TimerBUp()));
+
+	text.push_back(empty);
+	text.back()="Timer Control(Reg ";
+	text.back()+=cpputil::Ubtox(REG_TIMER_CONTROL);
+	text.back()+=")=";
+	text.back()+=cpputil::Ubtox(state.reg[REG_TIMER_CONTROL]);
+
+	return text;
+}

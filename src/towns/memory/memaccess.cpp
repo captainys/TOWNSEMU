@@ -351,7 +351,7 @@ TownsMainRAMorFMRVRAMAccess::TownsMainRAMorFMRVRAMAccess()
 			{
 				cpuPtr->debuggerPtr->ExternalBreak("CVRAM Read "+cpputil::Uitox(physAddr));
 			}
-			return physMemPtr->state.CVRAM[physAddr-0xC8000];
+			return physMemPtr->state.spriteRAM[physAddr-0xC8000];
 		}
 	}
 	else
@@ -449,7 +449,7 @@ TownsMainRAMorFMRVRAMAccess::TownsMainRAMorFMRVRAMAccess()
 			{
 				cpuPtr->debuggerPtr->ExternalBreak("CVRAM Write "+cpputil::Uitox(physAddr));
 			}
-			physMemPtr->state.CVRAM[physAddr-0xC8000]=data;
+			physMemPtr->state.spriteRAM[physAddr-0xC8000]=data;
 			physMemPtr->state.TVRAMWrite=true;
 		}
 	}
@@ -525,10 +525,14 @@ TownsMainRAMorFMRVRAMAccess::TownsMainRAMorFMRVRAMAccess()
 
 /* virtual */ unsigned int TownsSpriteRAMAccess::FetchByte(unsigned int physAddr) const
 {
-	return 0xff;
+	// 0x81000000,0x8101FFFF
+	auto &state=physMemPtr->state;
+	return state.spriteRAM[physAddr-0x81000000];
 }
 /* virtual */ void TownsSpriteRAMAccess::StoreByte(unsigned int physAddr,unsigned char data)
 {
+	auto &state=physMemPtr->state;
+	state.spriteRAM[physAddr-0x81000000]=data;
 }
 
 
