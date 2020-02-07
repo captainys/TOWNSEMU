@@ -1,5 +1,6 @@
+#include "townsdef.h"
 #include "sound.h"
-
+#include "towns.h"
 
 
 void TownsSound::State::PowerOn(void)
@@ -131,6 +132,9 @@ void TownsSound::State::ResetVariables(void)
 /* virtual */ void TownsSound::RunScheduledTask(unsigned long long int townsTime)
 {
 	state.ym2612.Run(townsTime);
+
+	bool IRQ=(state.ym2612.TimerAUp() || state.ym2612.TimerBUp());
+	townsPtr->pic.SetInterruptRequestBit(TOWNSIRQ_SOUND,IRQ);
 }
 
 
