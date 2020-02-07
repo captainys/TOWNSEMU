@@ -1184,6 +1184,20 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 		break;
 
 
+	case I486_OPCODE_RET://              0xC3,
+	case I486_OPCODE_RETF://             0xCB,
+		break;
+	case I486_OPCODE_RET_I16://          0xC2,
+	case I486_OPCODE_RETF_I16://         0xCA,
+		op1.MakeImm16(*this);
+		break;
+
+
+	case I486_OPCODE_SCASB://            0xAE,
+	case I486_OPCODE_SCAS://             0xAF,
+		break;
+
+
 	case I486_OPCODE_SETA://             0x970F,
 	case I486_OPCODE_SETAE://            0x930F,
 	case I486_OPCODE_SETB://             0x920F,
