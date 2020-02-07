@@ -56,6 +56,7 @@ public:
 		bool sysRomMapping;
 		bool dicRom;
 		bool FMRVRAM;
+		bool TVRAMWrite;
 		unsigned int FMRVRAMMask;
 		unsigned int FMRDisplayMode;
 		unsigned int FMRVRAMWriteOffset;

@@ -184,6 +184,7 @@ FMTowns::FMTowns() :
 	io.AddDevice(&physMem,TOWNSIO_FMR_VRAMMASK);
 	io.AddDevice(&physMem,TOWNSIO_FMR_VRAMDISPLAYMODE);
 	io.AddDevice(&physMem,TOWNSIO_FMR_VRAMPAGESEL);
+	io.AddDevice(&physMem,TOWNSIO_TVRAM_WRITE);
 
 
 	io.AddDevice(&cdrom,TOWNSIO_CDROM_MASTER_CTRL_STATUS);

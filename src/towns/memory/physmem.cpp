@@ -26,6 +26,7 @@ void TownsPhysicalMemory::State::Reset(void)
 	FMRVRAMMask=0x0F; // [2] pp.159
 	FMRDisplayMode=0x77; // [2] pp.158
 	FMRVRAMWriteOffset=0;
+	TVRAMWrite=false;
 	kanjiROMAccess.Reset();
 
 	for(auto &c : RAM)
@@ -78,6 +79,7 @@ void TownsPhysicalMemory::State::Reset(void)
 }
 /* virtual */ unsigned int TownsPhysicalMemory::IOReadByte(unsigned int ioport)
 {
+	unsigned char data;
 	switch(ioport)
 	{
 	case TOWNSIO_FMR_VRAM_OR_MAINRAM: // 0x404
@@ -96,12 +98,16 @@ void TownsPhysicalMemory::State::Reset(void)
 			return byteData;
 		}
 		break;
+	case TOWNSIO_TVRAM_WRITE:
+		data=(state.TVRAMWrite ? 0xff : 0x00);
+		state.TVRAMWrite=false;
+		break;
 	case TOWNSIO_MEMSIZE:
 		return (unsigned int)(state.RAM.size()/(1024*1024));
 	case TOWNSIO_FMR_VRAMMASK: // 0xFF81
 		return state.FMRVRAMMask;
 	}
-	return 0xFF;
+	return data;
 }
 
 TownsPhysicalMemory::TownsPhysicalMemory(class i486DX *cpuPtr)

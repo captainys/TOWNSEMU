@@ -144,6 +144,8 @@ enum
 	TOWNSIO_SOUND_PCM_CTRL=          0x4F7, // [2] pp.19,
 	TOWNSIO_SOUND_PCM_CH_ON_OFF=     0x4F8, // [2] pp.19,
 
+	TOWNSIO_TVRAM_WRITE=             0x5C8, // [2] pp.19, pp.94
+
 	TOWNSIO_MEMSIZE=                  0x5E8, // [2] pp.827
 
 	TOWNSIO_KEYBOARD_DATA=       0x600, // [2] pp.234

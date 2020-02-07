@@ -456,6 +456,7 @@ TownsMainRAMorFMRVRAMAccess::TownsMainRAMorFMRVRAMAccess()
 				cpuPtr->debuggerPtr->ExternalBreak("CVRAM Write "+cpputil::Uitox(physAddr));
 			}
 			physMemPtr->state.CVRAM[physAddr-0xC8000]=data;
+			physMemPtr->state.TVRAMWrite=true;
 		}
 	}
 	else
