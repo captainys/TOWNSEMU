@@ -3,13 +3,16 @@
 /* { */
 
 #include "physmem.h"
+#include "i486.h"
 
 class TownsMemAccess : public MemoryAccess
 {
 public:
 	TownsPhysicalMemory *physMemPtr;
+	class i486DX *cpuPtr;
 	TownsMemAccess();
 	void SetPhysicalMemoryPointer(TownsPhysicalMemory *ptr);
+	void SetCPUPointer(class i486DX *cpuPtr);
 };
 
 

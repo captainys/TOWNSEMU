@@ -62,6 +62,7 @@ public:
 
 		std::vector <unsigned char> RAM;
 		std::vector <unsigned char> VRAM;
+		std::vector <unsigned char> CVRAM;
 		std::vector <unsigned char> spriteRAM;
 		std::vector <unsigned char> waveRAM;
 
@@ -76,11 +77,13 @@ public:
 	bool takeJISCodeLog;
 	std::vector <unsigned char> JISCodeLog; // Log KanjiROM Read Access
 
+	class i486DX *cpuPtr;
+
 	virtual const char *DeviceName(void) const{return "MEMORY";}
 
 
 
-	TownsPhysicalMemory();
+	TownsPhysicalMemory(class i486DX *cpuPtr);
 
 	bool LoadROMImages(const char dirName[]);
 
@@ -91,6 +94,10 @@ public:
 	/*! Sets the VRAM size.
 	*/
 	void SetVRAMSize(long long int size);
+
+	/*! Sets the Character VRAM size.
+	*/
+	void SetCVRAMSize(long long int size);
 
 	/*! Sets the SpriteRAM size.
 	*/

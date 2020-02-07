@@ -6,10 +6,15 @@
 TownsMemAccess::TownsMemAccess()
 {
 	physMemPtr=nullptr;
+	cpuPtr=nullptr;
 }
 void TownsMemAccess::SetPhysicalMemoryPointer(TownsPhysicalMemory *ptr)
 {
 	physMemPtr=ptr;
+}
+void TownsMemAccess::SetCPUPointer(class i486DX *cpuPtr)
+{
+	this->cpuPtr=cpuPtr;
 }
 
 
@@ -325,6 +330,7 @@ void TownsMemAccess::SetPhysicalMemoryPointer(TownsPhysicalMemory *ptr)
 		}
 		else if(0xC8000<=physAddr && physAddr<0xD0000) /// FMR I/OCVRAM Access
 		{
+			return physMemPtr->state.CVRAM[physAddr-0xC8000];
 		}
 	}
 	
@@ -417,6 +423,7 @@ void TownsMemAccess::SetPhysicalMemoryPointer(TownsPhysicalMemory *ptr)
 		}
 		else if(0xC8000<=physAddr && physAddr<0xCFFFF) // Except I/O.
 		{
+			physMemPtr->state.CVRAM[physAddr-0xC8000]=data;
 		}
 	}
 	else

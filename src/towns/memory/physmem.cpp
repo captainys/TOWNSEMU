@@ -2,6 +2,8 @@
 #include "ramrom.h"
 #include "cpputil.h"
 #include "townsdef.h"
+#include "i486.h"
+#include "i486debug.h"
 
 
 
@@ -31,6 +33,10 @@ void TownsPhysicalMemory::State::Reset(void)
 		c=0;
 	}
 	for(auto &c : VRAM)
+	{
+		c=0;
+	}
+	for(auto &c : CVRAM)
 	{
 		c=0;
 	}
@@ -98,9 +104,10 @@ void TownsPhysicalMemory::State::Reset(void)
 	return 0xFF;
 }
 
-TownsPhysicalMemory::TownsPhysicalMemory()
+TownsPhysicalMemory::TownsPhysicalMemory(class i486DX *cpuPtr)
 {
 	takeJISCodeLog=false;
+	this->cpuPtr=cpuPtr;
 	state.Reset();
 }
 
@@ -161,6 +168,11 @@ void TownsPhysicalMemory::SetMainRAMSize(long long int size)
 void TownsPhysicalMemory::SetVRAMSize(long long int size)
 {
 	state.VRAM.resize(size);
+}
+
+void TownsPhysicalMemory::SetCVRAMSize(long long int size)
+{
+	state.CVRAM.resize(size);
 }
 
 void TownsPhysicalMemory::SetSpriteRAMSize(long long int size)

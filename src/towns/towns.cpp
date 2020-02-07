@@ -46,6 +46,7 @@ void FMTowns::Variable::Reset(void)
 
 
 FMTowns::FMTowns() : 
+	physMem(&cpu),
 	crtc(this),
 	pic(this),
 	dmac(this),
@@ -76,24 +77,29 @@ FMTowns::FMTowns() :
 	physMem.SetMainRAMSize(4*1024*1024);
 
 	physMem.SetVRAMSize(1024*1024);
+	physMem.SetCVRAMSize(32768);
 	physMem.SetSpriteRAMSize(512*1024);
 	physMem.SetWaveRAMSize(64*1024);
 
 	io.AddDevice(&ioRAM,0x3000,0x3FFF);
 
 	mainRAMAccess.SetPhysicalMemoryPointer(&physMem);
+	mainRAMAccess.SetCPUPointer(&cpu);
 	mem.AddAccess(&mainRAMAccess,0x00000000,0x000BFFFF);
 	mem.AddAccess(&mainRAMAccess,0x000F0000,0x000F7FFF);
 
 	mainRAMorFMRVRAMAccess.SetPhysicalMemoryPointer(&physMem);
+	mainRAMorFMRVRAMAccess.SetCPUPointer(&cpu);
 	mem.AddAccess(&mainRAMorFMRVRAMAccess,0x000C0000,0x000CFFFF);
 
 	dicROMandDicRAMAccess.SetPhysicalMemoryPointer(&physMem);
+	dicROMandDicRAMAccess.SetCPUPointer(&cpu);
 	mem.AddAccess(&dicROMandDicRAMAccess,0x000D0000,0x000EFFFF);
 	mem.AddAccess(&dicROMandDicRAMAccess,0xC2080000,0xC20FFFFF);
 	mem.AddAccess(&dicROMandDicRAMAccess,0xC2140000,0xC2141FFF);
 
 	mainRAMorSysROMAccess.SetPhysicalMemoryPointer(&physMem);
+	mainRAMorSysROMAccess.SetCPUPointer(&cpu);
 	mem.AddAccess(&mainRAMorSysROMAccess,0x000F8000,0x000FFFFF);
 
 	if(0x00100000<physMem.state.RAM.size())
@@ -102,20 +108,25 @@ FMTowns::FMTowns() :
 	}
 
 	VRAMAccess.SetPhysicalMemoryPointer(&physMem);
+	VRAMAccess.SetCPUPointer(&cpu);
 	mem.AddAccess(&VRAMAccess,0x80000000,0x8007FFFF);
 	mem.AddAccess(&VRAMAccess,0x80100000,0x8017FFFF);
 	mem.AddAccess(&VRAMAccess,0x82000000,0x83FFFFFF); // For IIMX High Resolution Access.
 
 	spriteRAMAccess.SetPhysicalMemoryPointer(&physMem);
+	spriteRAMAccess.SetCPUPointer(&cpu);
 	mem.AddAccess(&spriteRAMAccess,0x81000000,0x8101FFFF);
 
 	osROMAccess.SetPhysicalMemoryPointer(&physMem);
+	osROMAccess.SetCPUPointer(&cpu);
 	mem.AddAccess(&osROMAccess,0xC2000000,0xC208FFFF);
 
 	waveRAMAccess.SetPhysicalMemoryPointer(&physMem);
+	waveRAMAccess.SetCPUPointer(&cpu);
 	mem.AddAccess(&waveRAMAccess,0xC2200000,0xC2200FFF);
 
 	sysROMAccess.SetPhysicalMemoryPointer(&physMem);
+	sysROMAccess.SetCPUPointer(&cpu);
 	mem.AddAccess(&sysROMAccess,0xFFFC0000,0xFFFFFFFF);
 
 	// Free-run counter since FM TOWNS 2UG [2] pp.801
