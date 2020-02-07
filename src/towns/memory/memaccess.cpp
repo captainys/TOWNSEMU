@@ -1,5 +1,6 @@
 #include "memaccess.h"
 #include "townsdef.h"
+#include "cpputil.h"
 
 
 
@@ -111,6 +112,14 @@ void TownsMemAccess::SetCPUPointer(class i486DX *cpuPtr)
 
 ////////////////////////////////////////////////////////////
 
+
+TownsMainRAMorFMRVRAMAccess::TownsMainRAMorFMRVRAMAccess()
+{
+	breakOnFMRVRAMWrite=false;
+	breakOnFMRVRAMRead=false;
+	breakOnCVRAMWrite=false;
+	breakOnCVRAMRead=false;
+}
 
 /* virtual */ unsigned int TownsMainRAMorSysROMAccess::FetchByte(unsigned int physAddr) const
 {
@@ -256,7 +265,7 @@ void TownsMemAccess::SetCPUPointer(class i486DX *cpuPtr)
 /* virtual */ unsigned int TownsMainRAMorFMRVRAMAccess::FetchByte(unsigned int physAddr) const
 {
 	if(true==physMemPtr->state.FMRVRAM &&
-	   0xC0000<=physAddr && physAddr<=0xF0000)
+	   0xC0000<=physAddr && physAddr<=0xD0000)
 	{
 		if((TOWNS_MEMIO_1_LOW<=physAddr && physAddr<=TOWNS_MEMIO_1_HIGH) ||
 		   (TOWNS_MEMIO_2_LOW<=physAddr && physAddr<=TOWNS_MEMIO_2_HIGH))
@@ -326,14 +335,25 @@ void TownsMemAccess::SetCPUPointer(class i486DX *cpuPtr)
 				orPtnHigh>>=2;
 				orPtnLow>>=2;
 			}
+			if(true==breakOnFMRVRAMRead &&
+			   nullptr!=cpuPtr &&
+			   nullptr!=cpuPtr->debuggerPtr)
+			{
+				cpuPtr->debuggerPtr->ExternalBreak("FMRVRAM Read "+cpputil::Uitox(physAddr));
+			}
 			return data;
 		}
 		else if(0xC8000<=physAddr && physAddr<0xD0000) /// FMR I/OCVRAM Access
 		{
+			if(true==breakOnCVRAMRead &&
+			   nullptr!=cpuPtr &&
+			   nullptr!=cpuPtr->debuggerPtr)
+			{
+				cpuPtr->debuggerPtr->ExternalBreak("CVRAM Read "+cpputil::Uitox(physAddr));
+			}
 			return physMemPtr->state.CVRAM[physAddr-0xC8000];
 		}
 	}
-	
 	else if(true==physMemPtr->state.dicRom && 0xD0000<=physAddr && physAddr<0xD8000) // Dic ROM
 	{
 	}
@@ -349,7 +369,7 @@ void TownsMemAccess::SetCPUPointer(class i486DX *cpuPtr)
 /* virtual */ void TownsMainRAMorFMRVRAMAccess::StoreByte(unsigned int physAddr,unsigned char data)
 {
 	if(true==physMemPtr->state.FMRVRAM &&
-	   0xC0000<=physAddr && physAddr<0xF0000)
+	   0xC0000<=physAddr && physAddr<0xD0000)
 	{
 		if((TOWNS_MEMIO_1_LOW<=physAddr && physAddr<=TOWNS_MEMIO_1_HIGH) ||
 		   (TOWNS_MEMIO_2_LOW<=physAddr && physAddr<=TOWNS_MEMIO_2_HIGH))
@@ -420,9 +440,21 @@ void TownsMemAccess::SetCPUPointer(class i486DX *cpuPtr)
 				bitTestHigh>>=2;
 				bitTestLow>>=2;
 			}
+			if(true==breakOnFMRVRAMWrite &&
+			   nullptr!=cpuPtr &&
+			   nullptr!=cpuPtr->debuggerPtr)
+			{
+				cpuPtr->debuggerPtr->ExternalBreak("FMRVRAM Write "+cpputil::Uitox(physAddr));
+			}
 		}
 		else if(0xC8000<=physAddr && physAddr<0xCFFFF) // Except I/O.
 		{
+			if(true==breakOnCVRAMWrite &&
+			   nullptr!=cpuPtr &&
+			   nullptr!=cpuPtr->debuggerPtr)
+			{
+				cpuPtr->debuggerPtr->ExternalBreak("CVRAM Write "+cpputil::Uitox(physAddr));
+			}
 			physMemPtr->state.CVRAM[physAddr-0xC8000]=data;
 		}
 	}

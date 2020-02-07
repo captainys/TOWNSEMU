@@ -71,6 +71,10 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	breakEventMap["DMACREQ"]=BREAK_ON_DMAC_REQUEST;
 	breakEventMap["FDCCMD"]= BREAK_ON_FDC_COMMAND;
 	breakEventMap["INT"]=    BREAK_ON_INT;
+	breakEventMap["RDCVRAM"]=BREAK_ON_CVRAM_READ;
+	breakEventMap["WRCVRAM"]=BREAK_ON_CVRAM_WRITE;
+	breakEventMap["RDFMRVRAM"]=BREAK_ON_FMRVRAM_READ;
+	breakEventMap["WRFMRVRAM"]=BREAK_ON_FMRVRAM_WRITE;
 }
 
 
@@ -165,6 +169,10 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "DMACREQ" << std::endl;
 	std::cout << "FDCCMD" << std::endl;
 	std::cout << "INT n" << std::endl;
+	std::cout << "RDCVRAM" << std::endl;
+	std::cout << "WRCVRAM" << std::endl;
+	std::cout << "RDFMRVRAM" << std::endl;
+	std::cout << "WRFMRVRAM" << std::endl;
 }
 
 void TownsCommandInterpreter::PrintError(int errCode) const
@@ -465,6 +473,18 @@ void TownsCommandInterpreter::Execute_BreakOn(FMTowns &towns,Command &cmd)
 				return;
 			}
 			break;
+		case BREAK_ON_CVRAM_READ:
+			towns.mainRAMorFMRVRAMAccess.breakOnCVRAMRead=true;
+			break;
+		case BREAK_ON_CVRAM_WRITE:
+			towns.mainRAMorFMRVRAMAccess.breakOnCVRAMWrite=true;
+			break;
+		case BREAK_ON_FMRVRAM_READ:
+			towns.mainRAMorFMRVRAMAccess.breakOnFMRVRAMRead=true;
+			break;
+		case BREAK_ON_FMRVRAM_WRITE:
+			towns.mainRAMorFMRVRAMAccess.breakOnFMRVRAMWrite=true;
+			break;
 		}
 		std::cout << reason << " is ON." << std::endl;
 	}
@@ -497,6 +517,18 @@ void TownsCommandInterpreter::Execute_ClearBreakOn(FMTowns &towns,Command &cmd)
 			break;
 		case BREAK_ON_INT:
 			towns.debugger.ClearBreakOnINT();
+			break;
+		case BREAK_ON_FMRVRAM_READ:
+			towns.mainRAMorFMRVRAMAccess.breakOnFMRVRAMRead=false;
+			break;
+		case BREAK_ON_FMRVRAM_WRITE:
+			towns.mainRAMorFMRVRAMAccess.breakOnFMRVRAMWrite=false;
+			break;
+		case BREAK_ON_CVRAM_READ:
+			towns.mainRAMorFMRVRAMAccess.breakOnCVRAMRead=false;
+			break;
+		case BREAK_ON_CVRAM_WRITE:
+			towns.mainRAMorFMRVRAMAccess.breakOnCVRAMWrite=false;
 			break;
 		}
 		std::cout << iter->first << " is OFF." << std::endl;

@@ -41,6 +41,9 @@ public:
 class TownsMainRAMorFMRVRAMAccess : public TownsMemAccess
 {
 public:
+	bool breakOnFMRVRAMWrite,breakOnFMRVRAMRead;
+	bool breakOnCVRAMWrite,breakOnCVRAMRead;
+	TownsMainRAMorFMRVRAMAccess();
 	virtual unsigned int FetchByte(unsigned int physAddr) const;
 	virtual void StoreByte(unsigned int physAddr,unsigned char data);
 };
