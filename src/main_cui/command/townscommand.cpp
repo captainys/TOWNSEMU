@@ -42,6 +42,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["U32"]=CMD_DISASM32;
 	primaryCmdMap["BRKON"]=CMD_BREAK_ON;
 	primaryCmdMap["CBRKON"]=CMD_DONT_BREAK_ON;
+	primaryCmdMap["INTERRUPT"]=CMD_INTERRUPT;
 
 	featureMap["CMDLOG"]=ENABLE_CMDLOG;
 	featureMap["AUTODISASM"]=ENABLE_DISASSEMBLE_EVERY_INST;
@@ -89,6 +90,9 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Run.  Can specify temporary break point." << std::endl;
 	std::cout << "T" << std::endl;
 	std::cout << "  Trace.  Run one instruction." << std::endl;
+	std::cout << "INTERRUPT INTNum" << std::endl;
+	std::cout << "  Inject interrupt.  Same as CPU Instruction INT INTNum.  INTNum is hexadecimal." << std::endl;
+	std::cout << "  For example, INTERRUPT 4B will work same as INT 4BH." << std::endl;
 	std::cout << "U addr" << std::endl;
 	std::cout << "  Unassemble (disassemble)" << std::endl;
 	std::cout << "U16 addr" << std::endl;
@@ -234,6 +238,17 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,Command &c
 				farPtr.SEG=towns.cpu.state.CS().value;
 			}
 			towns.debugger.oneTimeBreakPoint=farPtr;
+		}
+		break;
+	case CMD_INTERRUPT:
+		if(1<cmd.argv.size())
+		{
+			towns.cpu.Interrupt(cpputil::Xtoi(cmd.argv[1].c_str()),towns.mem,0);
+			towns.PrintStatus();
+		}
+		else
+		{
+			PrintError(ERROR_TOO_FEW_ARGS);
 		}
 		break;
 	case CMD_DISASM:

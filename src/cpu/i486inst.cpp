@@ -4076,9 +4076,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				Abort("Unhandled Conditional Jump");
 				break;
 			}
+
 			if(true==jumpCond)
 			{
-				auto offset=inst.GetSimm8();
+				auto offset=inst.GetSimm16or32(inst.operandSize);
 				auto destin=state.EIP+offset+inst.numBytes;
 				if(16==inst.operandSize)
 				{

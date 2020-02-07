@@ -354,12 +354,6 @@ TownsMainRAMorFMRVRAMAccess::TownsMainRAMorFMRVRAMAccess()
 			return physMemPtr->state.CVRAM[physAddr-0xC8000];
 		}
 	}
-	else if(true==physMemPtr->state.dicRom && 0xD0000<=physAddr && physAddr<0xD8000) // Dic ROM
-	{
-	}
-	else if(true==physMemPtr->state.dicRom && 0xD8000<=physAddr && physAddr<0xDA000) // 
-	{
-	}
 	else
 	{
 		return physMemPtr->state.RAM[physAddr];
@@ -447,7 +441,7 @@ TownsMainRAMorFMRVRAMAccess::TownsMainRAMorFMRVRAMAccess()
 				cpuPtr->debuggerPtr->ExternalBreak("FMRVRAM Write "+cpputil::Uitox(physAddr));
 			}
 		}
-		else if(0xC8000<=physAddr && physAddr<0xCFFFF) // Except I/O.
+		else if(0xC8000<=physAddr && physAddr<0xD0000) // Except I/O.
 		{
 			if(true==breakOnCVRAMWrite &&
 			   nullptr!=cpuPtr &&
@@ -471,10 +465,36 @@ TownsMainRAMorFMRVRAMAccess::TownsMainRAMorFMRVRAMAccess()
 
 /* virtual */ unsigned int TownsDicROMandDicRAMAccess::FetchByte(unsigned int physAddr) const
 {
+	if(true==physMemPtr->state.dicRom)
+	{
+		if(0xD0000<=physAddr && physAddr<0xD8000) // Dic ROM
+		{
+		}
+		else if(0xD8000<=physAddr && physAddr<0xDA000) // 
+		{
+		}
+	}
+	else
+	{
+		return physMemPtr->state.RAM[physAddr];
+	}
 	return 0xff;
 }
 /* virtual */ void TownsDicROMandDicRAMAccess::StoreByte(unsigned int physAddr,unsigned char data)
 {
+	if(true==physMemPtr->state.dicRom)
+	{
+		if(0xD0000<=physAddr && physAddr<0xD8000) // Dic ROM
+		{
+		}
+		else if(0xD8000<=physAddr && physAddr<0xDA000) // 
+		{
+		}
+	}
+	else
+	{
+		physMemPtr->state.RAM[physAddr]=data;
+	}
 }
 
 
