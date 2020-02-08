@@ -341,6 +341,10 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		break;
 
 
+	case I486_OPCODE_LEAVE://            0xC9,
+		break;
+
+
 	case I486_OPCODE_HLT://        0xF4,
 		break;
 
@@ -889,6 +893,10 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 	case I486_OPCODE_IMUL_R_RM://       0xAF0F,
 		op1.DecodeMODR_MForRegister(operandSize,operand[0]);
 		op2.Decode(addressSize,operandSize,operand);
+		break;
+
+
+	case I486_OPCODE_LEAVE://            0xC9,
 		break;
 
 
@@ -1716,6 +1724,11 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 
 	case I486_OPCODE_IMUL_R_RM://       0xAF0F,
 		disasm=DisassembleTypicalTwoOperands("IMUL",op1,op2);
+		break;
+
+
+	case I486_OPCODE_LEAVE://            0xC9,
+		disasm="LEAVE";
 		break;
 
 
@@ -3671,6 +3684,27 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					break;
 				}
 			}
+		}
+		break;
+
+
+	case I486_OPCODE_LEAVE://            0xC9,
+		clocksPassed=5;
+		if(16==GetStackAddressingSize())
+		{
+			SetSP(state.BP());
+		}
+		else
+		{
+			SetESP(state.EBP());
+		}
+		if(16==inst.operandSize)
+		{
+			SetBP(Pop(mem,inst.operandSize));
+		}
+		else
+		{
+			SetEBP(Pop(mem,inst.operandSize));
 		}
 		break;
 

@@ -91,9 +91,10 @@ void i486Debugger::SpecialDebugInfo::BeforeRunOneInstruction(i486Debugger &debug
 			++passCount;
 			if(20<=int40HCount)
 			{
-				std::cout << "Pass 3A4:D26:" << passCount << std::endl;
+				std::cout << "Pass 3A4:D26=" << pass03A4_00000D26 << std::endl;
 				if(true==enableSpecialBreak3)
 				{
+					std::cout << "Pass 3A4:0D1E=" << passCount << std::endl;
 					debugger.ExternalBreak("SpecialBreak3");
 					enableSpecialBreak3=false;
 				}

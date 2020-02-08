@@ -1082,6 +1082,25 @@ public:
 	{
 		state.ESP()=value;
 	}
+
+	inline unsigned int GetBP(void) const
+	{
+		return state.EBP()&0xffff;
+	}
+	inline void SetBP(unsigned int value)
+	{
+		state.EBP()&=0xffff0000;
+		state.EBP()|=(value&0xffff);
+	}
+	inline unsigned int GetEBP(void) const
+	{
+		return state.EBP();
+	}
+	inline void SetEBP(unsigned int value)
+	{
+		state.EBP()=value;
+	}
+
 	inline unsigned int GetIP(void) const
 	{
 		return state.EIP&0xffff;

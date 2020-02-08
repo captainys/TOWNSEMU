@@ -249,6 +249,9 @@ enum
 	I486_OPCODE_LGS=              0xB50F,
 
 
+	I486_OPCODE_LEAVE=            0xC9,
+
+
 	I486_OPCODE_LODSB=            0xAC,
 	I486_OPCODE_LODS=             0xAD,
 
