@@ -69,19 +69,29 @@ std::vector <std::string> miscutil::MakeMemDump(const i486DX &cpu,const Memory &
 	else
 	{
 		i486DX::SegmentRegister seg;
+		std::string segTxt;
 		if((ptr.SEG&0xffff0000)==i486DX::FarPointer::SEG_REGISTER)
 		{
 			seg=cpu.state.GetSegmentRegister(ptr.SEG&0xffff);
+			if((ptr.SEG&0xff)<i486DX::REG_TOTAL_NUMBER_OF_REGISTERS)
+			{
+				segTxt=cpu.RegToStr[ptr.SEG&0xff];
+			}
+			else
+			{
+				segTxt="????";
+			}
 		}
 		else
 		{
 			cpu.LoadSegmentRegisterQuiet(seg,ptr.SEG,mem,cpu.IsInRealMode());
+			segTxt=cpputil::Ustox(ptr.SEG);
 		}
 		for(auto addr0=lineStart; addr0<lineEnd; addr0+=16)
 		{
 			std::string str;
 
-			str=cpputil::Ustox(ptr.SEG);
+			str=segTxt;
 			str.push_back(':');
 			str+=cpputil::Uitox(addr0);
 			for(int i=0; i<16; ++i)

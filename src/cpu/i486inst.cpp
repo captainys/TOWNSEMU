@@ -453,6 +453,10 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		break;
 
 
+	case I486_OPCODE_LAHF://=             0x9F,
+		break;
+
+
 	case I486_OPCODE_LEA://=              0x8D,
 		FetchOperandRM(inst,seg,offset,mem);
 		break;
@@ -649,6 +653,10 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 	case I486_OPCODE_RET_I16://          0xC2,
 	case I486_OPCODE_RETF_I16://         0xCA,
 		FetchOperand16(inst,seg,offset,mem);
+		break;
+
+
+	case I486_OPCODE_SAHF://=             0x9E,
 		break;
 
 
@@ -966,6 +974,10 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 		break;
 
 
+	case I486_OPCODE_LAHF://=             0x9F,
+		break;
+
+
 	case I486_OPCODE_LEA://=              0x8D,
 		op1.DecodeMODR_MForRegister(operandSize,operand[0]);
 		op2.Decode(addressSize,operandSize,operand);
@@ -1190,6 +1202,10 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 	case I486_OPCODE_RET_I16://          0xC2,
 	case I486_OPCODE_RETF_I16://         0xCA,
 		op1.MakeImm16(*this);
+		break;
+
+
+	case I486_OPCODE_SAHF://=             0x9E,
 		break;
 
 
@@ -2006,6 +2022,11 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		break;
 
 
+	case I486_OPCODE_LAHF://=             0x9F,
+		disasm="LAHF";
+		break;
+
+
 	case I486_OPCODE_LEA://=              0x8D,
 		disasm="LEA";
 		cpputil::ExtendString(disasm,8);
@@ -2176,6 +2197,11 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		disasm="RETF";
 		cpputil::ExtendString(disasm,8);
 		disasm+=op1.Disassemble();
+		break;
+
+
+	case I486_OPCODE_SAHF://=             0x9E,
+		disasm="SAHF";
 		break;
 
 
@@ -4247,6 +4273,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 
 
+	case I486_OPCODE_LAHF://=             0x9F,
+		SetAH(state.EFLAGS&0xFF);
+		clocksPassed=2;
+		break;
+
+
 	case I486_OPCODE_LEA://=              0x8D,
 		clocksPassed=1;
 		if(OPER_ADDR==op2.operandType && OPER_REG==op1.operandType)
@@ -4897,6 +4929,13 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			PopCallStack();
 		}
+		break;
+
+
+	case I486_OPCODE_SAHF://=             0x9E,
+		state.EFLAGS&=(~0xFF);
+		state.EFLAGS|=GetAH();
+		clocksPassed=2;
 		break;
 
 

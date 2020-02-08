@@ -236,6 +236,9 @@ enum
 	I486_OPCODE_BINARYOP_RM_FROM_SXI8= 0x83,
 
 
+	I486_OPCODE_LAHF=             0x9F,
+
+
 	I486_OPCODE_LEA=              0x8D,
 
 
@@ -371,6 +374,9 @@ enum
 	I486_OPCODE_RETF=             0xCB,
 	I486_OPCODE_RET_I16=          0xC2,
 	I486_OPCODE_RETF_I16=         0xCA,
+
+
+	I486_OPCODE_SAHF=             0x9E,
 
 
 	I486_OPCODE_SCASB=            0xAE,
