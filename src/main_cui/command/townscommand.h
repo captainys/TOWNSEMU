@@ -14,7 +14,6 @@ class TownsCommandInterpreter
 private:
 	std::unordered_map <std::string,unsigned int> primaryCmdMap;
 	std::unordered_map <std::string,unsigned int> featureMap;
-	std::unordered_map <std::string,unsigned int> printableMap;
 	std::unordered_map <std::string,unsigned int> dumpableMap;
 	std::unordered_map <std::string,unsigned int> breakEventMap;
 
@@ -41,12 +40,11 @@ public:
 		// ENABLE CMDLOG
 		// DISABLE CMDLOG
 
-		CMD_PRINT,
 		CMD_DUMP,
 
 		CMD_ADD_BREAKPOINT,
 		CMD_DELETE_BREAKPOINT,
-		CMD_CLEAR_BREAKPOINT,
+		CMD_LIST_BREAKPOINTS,
 
 		CMD_BREAK_ON,
 		CMD_DONT_BREAK_ON,
@@ -66,17 +64,18 @@ public:
 
 	enum
 	{
-		PRINT_NONE,
-		PRINT_CURRENT_STATUS,
-		PRINT_CALLSTACK,
-		PRINT_BREAKPOINT,
-		PRINT_PIC,
-		PRINT_DMAC,
-		PRINT_FDC,
-		PRINT_TIMER,
-		PRINT_GDT,
-		PRINT_IDT,
-		PRINT_SOUND,
+		DUMP_NONE,
+		DUMP_CURRENT_STATUS,
+		DUMP_CALLSTACK,
+		DUMP_BREAKPOINT,
+		DUMP_PIC,
+		DUMP_DMAC,
+		DUMP_FDC,
+		DUMP_TIMER,
+		DUMP_GDT,
+		DUMP_IDT,
+		DUMP_SOUND,
+		DUMP_REAL_MODE_INT_VECTOR
 	};
 
 	enum
@@ -90,11 +89,6 @@ public:
 		BREAK_ON_CVRAM_WRITE,
 		BREAK_ON_FMRVRAM_READ,
 		BREAK_ON_FMRVRAM_WRITE,
-	};
-
-	enum
-	{
-		DUMP_REAL_MODE_INT_VECTOR
 	};
 
 	enum
@@ -128,9 +122,11 @@ public:
 	void Execute_Enable(FMTowns &towns,Command &cmd);
 	void Execute_Disable(FMTowns &towns,Command &cmd);
 
-	void Execute_Dump(FMTowns &towns,Command &cmd);
+	void Execute_AddBreakPoint(FMTowns &towns,Command &cmd);
+	void Execute_DeleteBreakPoint(FMTowns &towns,Command &cmd);
+	void Execute_ListBreakPoints(FMTowns &towns,Command &cmd);
 
-	void Execute_Print(FMTowns &towns,Command &cmd);
+	void Execute_Dump(FMTowns &towns,Command &cmd);
 
 	void Execute_BreakOn(FMTowns &towns,Command &cmd);
 	void Execute_ClearBreakOn(FMTowns &towns,Command &cmd);

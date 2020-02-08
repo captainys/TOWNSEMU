@@ -28,14 +28,13 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["ENA"]=CMD_ENABLE;
 	primaryCmdMap["DISABLE"]=CMD_DISABLE;
 	primaryCmdMap["DIS"]=CMD_DISABLE;
-	primaryCmdMap["PRINT"]=CMD_PRINT;
-	primaryCmdMap["PRI"]=CMD_PRINT;
+	primaryCmdMap["PRINT"]=CMD_DUMP;
+	primaryCmdMap["PRI"]=CMD_DUMP;
 	primaryCmdMap["DUMP"]=CMD_DUMP;
 	primaryCmdMap["DM"]=CMD_DUMP;
-	primaryCmdMap["BRK"]=CMD_ADD_BREAKPOINT;
-	primaryCmdMap["BREAK"]=CMD_ADD_BREAKPOINT;
-	primaryCmdMap["DLBRK"]=CMD_DELETE_BREAKPOINT;
-	primaryCmdMap["CLBRK"]=CMD_CLEAR_BREAKPOINT;
+	primaryCmdMap["BP"]=CMD_ADD_BREAKPOINT;
+	primaryCmdMap["BC"]=CMD_DELETE_BREAKPOINT;
+	primaryCmdMap["BL"]=CMD_LIST_BREAKPOINTS;
 	primaryCmdMap["T"]=CMD_RUN_ONE_INSTRUCTION;
 	primaryCmdMap["U"]=CMD_DISASM;
 	primaryCmdMap["U16"]=CMD_DISASM16;
@@ -48,25 +47,23 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	featureMap["AUTODISASM"]=ENABLE_DISASSEMBLE_EVERY_INST;
 	featureMap["IOMON"]=ENABLE_IOMONITOR;
 
-	printableMap["CALLSTACK"]=PRINT_CALLSTACK;
-	printableMap["CST"]=PRINT_CALLSTACK;
-	printableMap["BREAKPOINT"]=PRINT_BREAKPOINT;
-	printableMap["BRK"]=PRINT_BREAKPOINT;
-	printableMap["STATUS"]=PRINT_CURRENT_STATUS;
-	printableMap["STATE"]=PRINT_CURRENT_STATUS;
-	printableMap["STA"]=PRINT_CURRENT_STATUS;
-	printableMap["S"]=PRINT_CURRENT_STATUS;
-	printableMap["PIC"]=PRINT_PIC;
-	printableMap["DMA"]=PRINT_DMAC;
-	printableMap["DMAC"]=PRINT_DMAC;
-	printableMap["FDC"]=PRINT_FDC;
-	printableMap["TIMER"]=PRINT_TIMER;
-	printableMap["GDT"]=PRINT_GDT;
-	printableMap["IDT"]=PRINT_IDT;
-	printableMap["SOUND"]=PRINT_SOUND;
-
-
-	dumpableMap["RINTVEC"]=DUMP_REAL_MODE_INT_VECTOR;
+	dumpableMap["CALLSTACK"]=DUMP_CALLSTACK;
+	dumpableMap["CST"]=DUMP_CALLSTACK;
+	dumpableMap["BREAKPOINT"]=DUMP_BREAKPOINT;
+	dumpableMap["BRK"]=DUMP_BREAKPOINT;
+	dumpableMap["STATUS"]=DUMP_CURRENT_STATUS;
+	dumpableMap["STATE"]=DUMP_CURRENT_STATUS;
+	dumpableMap["STA"]=DUMP_CURRENT_STATUS;
+	dumpableMap["S"]=DUMP_CURRENT_STATUS;
+	dumpableMap["PIC"]=DUMP_PIC;
+	dumpableMap["DMA"]=DUMP_DMAC;
+	dumpableMap["DMAC"]=DUMP_DMAC;
+	dumpableMap["FDC"]=DUMP_FDC;
+	dumpableMap["TIMER"]=DUMP_TIMER;
+	dumpableMap["GDT"]=DUMP_GDT;
+	dumpableMap["IDT"]=DUMP_IDT;
+	dumpableMap["SOUND"]=DUMP_SOUND;
+	dumpableMap["RIDT"]=DUMP_REAL_MODE_INT_VECTOR;
 
 	breakEventMap["IWC1"]=   BREAK_ON_PIC_IWC1;
 	breakEventMap["IWC4"]=   BREAK_ON_PIC_IWC4;
@@ -112,17 +109,17 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "DIS feature|DISABLE feature" << std::endl;
 	std::cout << "  Disable a feature." << std::endl;
 	std::cout << "PRINT info|PRI info" << std::endl;
-	std::cout << "  Print information." << std::endl;
 	std::cout << "DUMP info|DM info" << std::endl;
-	std::cout << "  Dump information." << std::endl;
-	std::cout << "BREAK EIP|BRK EIP" << std::endl;
-	std::cout << "BREAK CS:EIP|BRK CS:EIP" << std::endl;
+	std::cout << "  Print/Dump information." << std::endl;
+	std::cout << "BP EIP|BRK EIP" << std::endl;
+	std::cout << "BP CS:EIP|BRK CS:EIP" << std::endl;
 	std::cout << "  Add a break point." << std::endl;
-	std::cout << "DLBRK Num" << std::endl;
+	std::cout << "BC Num" << std::endl;
 	std::cout << "  Delete a break point." << std::endl;
 	std::cout << "  Num is the number printed by PRINT BRK." << std::endl;
-	std::cout << "CLBRK" << std::endl;
-	std::cout << "  Clear all break points." << std::endl;
+	std::cout << "  BC * to erase all break points." << std::endl;
+	std::cout << "BL" << std::endl;
+	std::cout << "  List break points." << std::endl;
 	std::cout << "BRKON" << std::endl;
 	std::cout << "  Break on event." << std::endl;
 	std::cout << "CBRKON" << std::endl;
@@ -147,6 +144,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Protected-Mode Global Descriptor Table" << std::endl;
 	std::cout << "IDT" << std::endl;
 	std::cout << "  Protected-Mode Interrupt Descriptor Table" << std::endl;
+	std::cout << "RIDT" << std::endl;
+	std::cout << "  Real-mode Interrupt Descriptor Tables" << std::endl;
 	std::cout << "BREAKPOINT|BRK" << std::endl;
 	std::cout << "  Break Points"<<std::endl;
 	std::cout << "STATUS|STATE|STA|S"<<std::endl;
@@ -159,12 +158,6 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Floppy Disk Controller." << std::endl;
 	std::cout << "TIMER" << std::endl;
 	std::cout << "  Interval Timer (i8253)" << std::endl;
-
-	std::cout << "" << std::endl;
-
-	std::cout << "<< Information that can be dumped >>" << std::endl;
-	std::cout << "RINTVEC" << std::endl;
-	std::cout << "  Real-mode Interrupt Vectors" << std::endl;
 
 	std::cout << "" << std::endl;
 
@@ -222,6 +215,9 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,Command &c
 {
 	switch(cmd.primaryCmd)
 	{
+	case CMD_NONE:
+		std::cout << "Do what?" << std::endl;
+		break;
 	case CMD_HELP:
 		PrintHelp();
 		break;
@@ -285,9 +281,6 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,Command &c
 		Execute_Disable(towns,cmd);
 		break;
 
-	case CMD_PRINT:
-		Execute_Print(towns,cmd);
-		break;
 	case CMD_DUMP:
 		Execute_Dump(towns,cmd);
 		break;
@@ -297,10 +290,13 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,Command &c
 		break;
 
 	case CMD_ADD_BREAKPOINT:
+		Execute_AddBreakPoint(towns,cmd);
 		break;
 	case CMD_DELETE_BREAKPOINT:
+		Execute_DeleteBreakPoint(towns,cmd);
 		break;
-	case CMD_CLEAR_BREAKPOINT:
+	case CMD_LIST_BREAKPOINTS:
+		Execute_ListBreakPoints(towns,cmd);
 		break;
 
 	case CMD_BREAK_ON:
@@ -367,6 +363,47 @@ void TownsCommandInterpreter::Execute_Disable(FMTowns &towns,Command &cmd)
 	}
 }
 
+void TownsCommandInterpreter::Execute_AddBreakPoint(FMTowns &towns,Command &cmd)
+{
+	if(cmd.argv.size()<2)
+	{
+		PrintError(ERROR_TOO_FEW_ARGS);
+		return;
+	}
+	auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1]);
+	towns.debugger.AddBreakPoint(farPtr);
+}
+void TownsCommandInterpreter::Execute_DeleteBreakPoint(FMTowns &towns,Command &cmd)
+{
+	if(cmd.argv.size()<2)
+	{
+		PrintError(ERROR_TOO_FEW_ARGS);
+		return;
+	}
+	if("*"==cmd.argv[1])
+	{
+		towns.debugger.ClearBreakPoints();
+	}
+	else
+	{
+		auto list=towns.debugger.GetBreakPoints();
+		auto bpn=cpputil::Xtoi(cmd.argv[1].c_str());
+		if(0<=bpn && bpn<list.size())
+		{
+			towns.debugger.RemoveBreakPoint(list[bpn]);
+		}
+	}
+}
+void TownsCommandInterpreter::Execute_ListBreakPoints(FMTowns &towns,Command &cmd)
+{
+	int bpn=0;
+	for(auto bp : towns.debugger.GetBreakPoints())
+	{
+		std::cout << cpputil::Ubtox(bpn) << " " << cpputil::Ustox(bp.SEG) << ":" << cpputil::Uitox(bp.OFFSET) << std::endl;
+		++bpn;
+	}
+}
+
 void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 {
 	if(cmd.argv.size()<2)
@@ -376,13 +413,40 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 	}
 	auto argv1=cmd.argv[1];
 	cpputil::Capitalize(argv1);
-	auto dumpIter=dumpableMap.find(argv1);
-	if(dumpIter!=dumpableMap.end())
+	auto printIter=dumpableMap.find(argv1);
+	if(printIter!=dumpableMap.end())
 	{
-		switch(dumpIter->second)
+		switch(printIter->second)
 		{
 		case DUMP_REAL_MODE_INT_VECTOR:
 			towns.DumpRealModeIntVectors();
+			break;
+		case DUMP_CURRENT_STATUS:
+			towns.PrintStatus();
+			break;
+		case DUMP_GDT:
+			towns.cpu.PrintGDT(towns.mem);
+			break;
+		case DUMP_IDT:
+			towns.cpu.PrintIDT(towns.mem);
+			break;
+		case DUMP_SOUND:
+			towns.PrintSound();
+			break;
+		case DUMP_CALLSTACK:
+			towns.PrintCallStack();
+			break;
+		case DUMP_PIC:
+			towns.PrintPIC();
+			break;
+		case DUMP_DMAC:
+			towns.PrintDMAC();
+			break;
+		case DUMP_FDC:
+			towns.PrintFDC();
+			break;
+		case DUMP_TIMER:
+			towns.PrintTimer();
 			break;
 		}
 	}
@@ -401,56 +465,6 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 			PrintError(ERROR_DUMP_TARGET_UNDEFINED);
 			return;
 		}
-	}
-}
-
-void TownsCommandInterpreter::Execute_Print(FMTowns &towns,Command &cmd)
-{
-	if(cmd.argv.size()<2)
-	{
-		PrintError(ERROR_TOO_FEW_ARGS);
-		return;
-	}
-	auto argv1=cmd.argv[1];
-	cpputil::Capitalize(argv1);
-	auto printIter=printableMap.find(argv1);
-	if(printIter!=printableMap.end())
-	{
-		switch(printIter->second)
-		{
-		case PRINT_CURRENT_STATUS:
-			towns.PrintStatus();
-			break;
-		case PRINT_GDT:
-			towns.cpu.PrintGDT(towns.mem);
-			break;
-		case PRINT_IDT:
-			towns.cpu.PrintIDT(towns.mem);
-			break;
-		case PRINT_SOUND:
-			towns.PrintSound();
-			break;
-		case PRINT_CALLSTACK:
-			towns.PrintCallStack();
-			break;
-		case PRINT_PIC:
-			towns.PrintPIC();
-			break;
-		case PRINT_DMAC:
-			towns.PrintDMAC();
-			break;
-		case PRINT_FDC:
-			towns.PrintFDC();
-			break;
-		case PRINT_TIMER:
-			towns.PrintTimer();
-			break;
-		}
-	}
-	else
-	{
-		PrintError(ERROR_DUMP_TARGET_UNDEFINED);
-		return;
 	}
 }
 

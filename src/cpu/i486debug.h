@@ -12,7 +12,7 @@ class i486Debugger
 public:
 	typedef i486DX::FarPointer CS_EIP;
 
-	std::set <CS_EIP> breakPoint;
+	std::set <CS_EIP> breakPoints;
 	CS_EIP oneTimeBreakPoint;
 	std::string externalBreakReason;
 	std::map <unsigned int,std::string> ioLabel;
@@ -28,8 +28,10 @@ public:
 	i486Debugger();
 	void CleanUp(void);
 
-	void AddBreakPoint(unsigned int CS,unsigned int EIP);
-	void RemoveBreakPoint(unsigned int CS,unsigned int EIP);
+	void AddBreakPoint(CS_EIP bp);
+	void RemoveBreakPoint(CS_EIP bp);
+	void ClearBreakPoints(void);
+	std::vector <CS_EIP> GetBreakPoints(void) const;
 
 	void SetOneTimeBreakPoint(unsigned int CS,unsigned int EIP);
 
@@ -91,6 +93,16 @@ public:
 	void IOReadDword(const i486DX &cpu,unsigned int ioport,unsigned int data);
 };
 
+template <>
+struct std::hash <i486Debugger::CS_EIP>
+{
+	std::size_t operator()(const i486Debugger::CS_EIP &bp) const noexcept
+	{
+		size_t high=bp.SEG;
+		size_t low=bp.OFFSET;
+		return (high<<32)|low;
+	}
+};
 
 /* } */
 #endif

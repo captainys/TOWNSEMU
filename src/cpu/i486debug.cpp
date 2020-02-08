@@ -14,34 +14,38 @@ i486Debugger::i486Debugger()
 }
 void i486Debugger::CleanUp(void)
 {
-	breakPoint.clear();
+	breakPoints.clear();
 	stop=true;
 	breakOnINT=0xffff;
 	monitorIO=false;
 	disassembleEveryStep=false;
 	lastDisassembleAddr.Nullify();
 }
-void i486Debugger::AddBreakPoint(unsigned int CS,unsigned int EIP)
+void i486Debugger::AddBreakPoint(CS_EIP bp)
 {
-	CS_EIP bp;
-	bp.SEG=CS;
-	bp.OFFSET=EIP;
-	auto iter=breakPoint.find(bp);
-	if(breakPoint.end()!=iter)
+	auto iter=breakPoints.find(bp);
+	if(breakPoints.end()==iter)
 	{
-		breakPoint.insert(bp);
+		breakPoints.insert(bp);
 	}
 }
-void i486Debugger::RemoveBreakPoint(unsigned int CS,unsigned int EIP)
+void i486Debugger::RemoveBreakPoint(CS_EIP bp)
 {
-	CS_EIP bp;
-	bp.SEG=CS;
-	bp.OFFSET=EIP;
-	auto iter=breakPoint.find(bp);
-	if(breakPoint.end()!=iter)
+	auto iter=breakPoints.find(bp);
+	if(breakPoints.end()!=iter)
 	{
-		breakPoint.erase(iter);
+		breakPoints.erase(iter);
 	}
+}
+void i486Debugger::ClearBreakPoints(void)
+{
+	breakPoints.clear();
+}
+std::vector <i486Debugger::CS_EIP> i486Debugger::GetBreakPoints(void) const
+{
+	std::vector <CS_EIP> list;
+	list.insert(list.end(),breakPoints.begin(),breakPoints.end());
+	return list;
 }
 
 void i486Debugger::SetOneTimeBreakPoint(unsigned int CS,unsigned int EIP)
@@ -77,7 +81,7 @@ void i486Debugger::CheckForBreakPoints(i486DX &cpu)
 	cseip.SEG=cpu.state.CS().value;
 	cseip.OFFSET=cpu.state.EIP;
 
-	if(breakPoint.find(cseip)!=breakPoint.end())
+	if(breakPoints.find(cseip)!=breakPoints.end())
 	{
 		stop=true;
 	}
@@ -110,7 +114,7 @@ std::vector <std::string> i486Debugger::GetCallStackText(const i486DX &cpu) cons
 		if(s.INTNum<0x100)
 		{
 			str+="  (INT ";
-			str+=cpputil::Ubtox(s.INTNum);
+			str+=cpputil::Ubtox((unsigned char)s.INTNum);
 			str+=",AX=";
 			str+=cpputil::Ustox(s.AX);
 			str+="H)";
