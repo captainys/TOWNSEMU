@@ -47,6 +47,24 @@ public:
 		REG_CR2=    0x1F,
 	};
 
+	class Layer
+	{
+	public:
+		int mode; // -1 if it is using non-standard screen mode.
+		unsigned bitsPerPixel;
+		unsigned int virtualWid,virtualHei;
+		unsigned int visibleWid,visibleHei;
+		unsigned int bytesPerLine;
+	};
+	class ScreenModeCache
+	{
+	public:
+		unsigned int numLayers;
+		Layer layer[2];
+		ScreenModeCache();
+		void MakeFMRCompatible(void);
+	};
+
 	class State
 	{
 	public:
@@ -59,8 +77,11 @@ public:
 		void Reset(void);
 	};
 
-	State state;
 	class FMTowns *townsPtr;
+	State state;
+
+	bool cached;
+	ScreenModeCache cache;
 
 	virtual const char *DeviceName(void) const{return "CRTC";}
 
@@ -72,6 +93,8 @@ public:
 	virtual unsigned int IOReadByte(unsigned int ioport);
 
 	virtual void Reset(void);
+
+	void GetRenderSize(unsigned int &wid,unsigned int &hei) const;
 };
 
 

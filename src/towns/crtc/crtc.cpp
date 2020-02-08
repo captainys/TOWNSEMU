@@ -1,4 +1,5 @@
 #include <iostream>
+#include <algorithm>
 
 #include "cpputil.h"
 #include "crtc.h"
@@ -22,6 +23,31 @@ void TownsCRTC::State::Reset(void)
 	mxVideoOutCtrlAddrLatch=0;
 }
 
+TownsCRTC::ScreenModeCache::ScreenModeCache()
+{
+	MakeFMRCompatible();
+}
+
+void TownsCRTC::ScreenModeCache::MakeFMRCompatible(void)
+{
+	numLayers=2;
+
+	layer[0].mode=1;
+	layer[0].bitsPerPixel=4;
+	layer[0].virtualWid=640;
+	layer[0].virtualHei=400;
+	layer[0].visibleWid=640;
+	layer[0].visibleHei=400;
+	layer[0].bytesPerLine=320;
+
+	layer[1].mode=4;
+	layer[1].bitsPerPixel=4;
+	layer[1].virtualWid=1024;
+	layer[1].virtualHei=512;
+	layer[1].visibleWid=640;
+	layer[1].visibleHei=400;
+	layer[1].bytesPerLine=512;
+}
 
 ////////////////////////////////////////////////////////////
 
@@ -31,6 +57,9 @@ TownsCRTC::TownsCRTC(class FMTowns *ptr)
 	townsPtr=ptr;
 	state.mxVideoOutCtrl.resize(0x10000);
 	state.Reset();
+
+	// Tentatively
+	cached=true;
 }
 
 
@@ -188,4 +217,18 @@ TownsCRTC::TownsCRTC(class FMTowns *ptr)
 /* virtual */ void TownsCRTC::Reset(void)
 {
 	state.Reset();
+}
+
+void TownsCRTC::GetRenderSize(unsigned int &wid,unsigned int &hei) const
+{
+	if(1==cache.numLayers)
+	{
+		wid=cache.layer[0].visibleWid;
+		hei=cache.layer[0].visibleHei;
+	}
+	else
+	{
+		wid=std::max(cache.layer[0].visibleWid,cache.layer[1].visibleWid);
+		hei=std::max(cache.layer[0].visibleHei,cache.layer[1].visibleHei);
+	}
 }

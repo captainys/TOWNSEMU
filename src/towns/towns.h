@@ -123,6 +123,7 @@ public:
 	TownsMainRAMorSysROMAccess mainRAMorSysROMAccess;
 	TownsMainRAMorFMRVRAMAccess mainRAMorFMRVRAMAccess;
 	TownsDicROMandDicRAMAccess dicROMandDicRAMAccess;
+	TownsFontROMAccess fontROMAccess;
 	TownsVRAMAccess VRAMAccess;
 	TownsSpriteRAMAccess spriteRAMAccess;
 	TownsOsROMAccess osROMAccess;

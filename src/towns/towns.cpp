@@ -119,7 +119,11 @@ FMTowns::FMTowns() :
 
 	osROMAccess.SetPhysicalMemoryPointer(&physMem);
 	osROMAccess.SetCPUPointer(&cpu);
-	mem.AddAccess(&osROMAccess,0xC2000000,0xC208FFFF);
+	mem.AddAccess(&osROMAccess,0xC2000000,0xC207FFFF);
+
+	fontROMAccess.SetPhysicalMemoryPointer(&physMem);
+	fontROMAccess.SetCPUPointer(&cpu);
+	mem.AddAccess(&fontROMAccess,0xC2100000,0xC213FFFF);
 
 	waveRAMAccess.SetPhysicalMemoryPointer(&physMem);
 	waveRAMAccess.SetCPUPointer(&cpu);

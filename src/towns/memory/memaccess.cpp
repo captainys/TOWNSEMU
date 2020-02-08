@@ -418,8 +418,8 @@ TownsMainRAMorFMRVRAMAccess::TownsMainRAMorFMRVRAMAccess()
 			auto maskHigh=(maskLow<<4);
 			auto andPtn=~(maskLow|maskHigh);
 
-			unsigned char bitTestHigh=0x80;
-			unsigned char bitTestLow=0x40;
+			unsigned char bitTestHigh=0x40;
+			unsigned char bitTestLow=0x80;
 			for(int i=0; i<4; ++i)
 			{
 				physMemPtr->state.VRAM[VRAMAddr+i]&=andPtn;
@@ -549,6 +549,23 @@ TownsMainRAMorFMRVRAMAccess::TownsMainRAMorFMRVRAMAccess()
 	return 0xff;
 }
 /* virtual */ void TownsOsROMAccess::StoreByte(unsigned int physAddr,unsigned char data)
+{
+}
+
+
+////////////////////////////////////////////////////////////
+
+
+/* virtual */ unsigned int TownsFontROMAccess::FetchByte(unsigned int physAddr) const
+{
+	physAddr-=0xC2100000;
+	if(physAddr<physMemPtr->fontRom.size())
+	{
+		return physMemPtr->fontRom[physAddr];
+	}
+	return 0xff;
+}
+/* virtual */ void TownsFontROMAccess::StoreByte(unsigned int physAddr,unsigned char data)
 {
 }
 

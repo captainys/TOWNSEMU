@@ -76,6 +76,13 @@ public:
 	virtual void StoreByte(unsigned int physAddr,unsigned char data);
 };
 
+class TownsFontROMAccess : public TownsMemAccess
+{
+public:
+	virtual unsigned int FetchByte(unsigned int physAddr) const;
+	virtual void StoreByte(unsigned int physAddr,unsigned char data);
+};
+
 class TownsWaveRAMAccess : public TownsMemAccess
 {
 public:
