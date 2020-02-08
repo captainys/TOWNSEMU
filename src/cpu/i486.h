@@ -259,17 +259,33 @@ public:
 		{
 			return reg32[REG_ESI-REG_EAX];
 		}
+		inline unsigned int SI(void)
+		{
+			return reg32[REG_ESI-REG_EAX]&0xffff;
+		}
 		inline unsigned int &EDI(void)
 		{
 			return reg32[REG_EDI-REG_EAX];
+		}
+		inline unsigned int DI(void)
+		{
+			return reg32[REG_EDI-REG_EAX]&0xffff;
 		}
 		inline unsigned int &EBP(void)
 		{
 			return reg32[REG_EBP-REG_EAX];
 		}
+		inline unsigned int BP(void)
+		{
+			return reg32[REG_EBP-REG_EAX]&0xffff;
+		}
 		inline unsigned int &ESP(void)
 		{
 			return reg32[REG_ESP-REG_EAX];
+		}
+		inline unsigned int SP(void)
+		{
+			return reg32[REG_ESP-REG_EAX]&0xffff;
 		}
 
 		unsigned int EIP;
@@ -1197,7 +1213,10 @@ public:
 	{
 		SetEFLAGSBit(flag,EFLAGS_SIGN);
 	}
-
+	inline void SetTF(bool flag)
+	{
+		SetEFLAGSBit(flag,EFLAGS_TRAP);
+	}
 	inline void SetZeroFlag(bool flag)
 	{
 		SetEFLAGSBit(flag,EFLAGS_ZERO);
@@ -1980,11 +1999,9 @@ public:
 
 inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numInstBytes)
 {
-	if(nullptr!=debuggerPtr && debuggerPtr->breakOnINT==INTNum)
+	if(nullptr!=debuggerPtr)
 	{
-		std::string str("Break on INT ");
-		str+=cpputil::Ubtox(INTNum);
-		debuggerPtr->ExternalBreak(str);
+		debuggerPtr->Interrupt(*this,INTNum,mem,numInstBytes);
 	}
 
 	if(IsInRealMode())
@@ -2005,6 +2022,8 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 		}
 		LoadSegmentRegisterRealMode(state.CS(),destCS);
 		state.EIP=destIP;
+		SetIF(false);
+		SetTF(false);
 	}
 	else
 	{
@@ -2048,6 +2067,8 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 			Push(mem,gateOperandSize,state.EIP+numInstBytes);
 			SetIPorEIP(gateOperandSize,desc.OFFSET);
 			state.CS()=newCS;
+			SetIF(false);
+			SetTF(false);
 		}
 		else
 		{

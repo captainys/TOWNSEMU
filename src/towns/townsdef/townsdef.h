@@ -67,6 +67,7 @@ enum
 	TOWNSIO_TIMER_3_4_5_CTRL=         0x56,
 	TOWNSIO_TIMER_INT_CTRL_INT_REASON=0x60,
 
+	TOWNSIO_TIMER_1US_WAIT=           0x6C, // Since Towns 20F
 
 	TOWNSIO_RTC_DATA=                 0x70,
 	TOWNSIO_RTC_COMMAND=              0x80,

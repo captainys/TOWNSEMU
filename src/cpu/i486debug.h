@@ -26,6 +26,7 @@ public:
 	class CSEIPLogType : public i486DX::FarPointer
 	{
 	public:
+		unsigned int SS,ESP;
 		size_t count;
 		bool operator==(const CSEIPLogType &from)
 		{
@@ -38,6 +39,9 @@ public:
 	};
 	size_t CSEIPLogPtr;
 	std::vector <CSEIPLogType> CSEIPLog;
+
+	class SpecialDebugInfo;
+	SpecialDebugInfo *specialDebugInfo;
 
 
 	unsigned int breakOnINT;
@@ -92,6 +96,10 @@ public:
 	/*! Clear stop flag and externalBreakReason.
 	*/
 	void ClearStopFlag(void);
+
+	/*! Called from i486DX class when an interrupt is shot.
+	*/
+	void Interrupt(const i486DX &cpu,unsigned int INTNum,Memory &mem,unsigned int numInstBytes);
 
 	/*! Called from i486DX class when a byte is written to I/O.
 	*/

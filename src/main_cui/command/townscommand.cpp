@@ -462,6 +462,10 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 				for(auto iter=list.rbegin(); iter!=list.rend(); ++iter)
 				{
 					std::cout << cpputil::Ustox(iter->SEG) << ":" << cpputil::Uitox(iter->OFFSET);
+					std::cout << " ";
+					std::cout << "SS=" << cpputil::Ustox(iter->SS);
+					std::cout << " ";
+					std::cout << "ESP=" << cpputil::Uitox(iter->ESP);
 					if(1<iter->count)
 					{
 						std::cout << "(" << cpputil::Itoa(iter->count) << ")";
