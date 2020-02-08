@@ -10,12 +10,35 @@
 class i486Debugger
 {
 public:
+	enum
+	{
+		CSEIP_LOG_SIZE=0x10000,
+		CSEIP_LOG_MASK=0x0FFFF
+	};
+
 	typedef i486DX::FarPointer CS_EIP;
 
 	std::set <CS_EIP> breakPoints;
 	CS_EIP oneTimeBreakPoint;
 	std::string externalBreakReason;
 	std::map <unsigned int,std::string> ioLabel;
+
+	class CSEIPLogType : public i486DX::FarPointer
+	{
+	public:
+		size_t count;
+		bool operator==(const CSEIPLogType &from)
+		{
+			return (from.SEG==SEG && from.OFFSET==OFFSET);
+		}
+		bool operator!=(const CSEIPLogType &from)
+		{
+			return (from.SEG!=SEG || from.OFFSET!=OFFSET);
+		}
+	};
+	size_t CSEIPLogUsed,CSEIPLogPtr;
+	std::vector <CSEIPLogType> CSEIPLog;
+
 
 	unsigned int breakOnINT;
 	bool stop;
@@ -32,6 +55,8 @@ public:
 	void RemoveBreakPoint(CS_EIP bp);
 	void ClearBreakPoints(void);
 	std::vector <CS_EIP> GetBreakPoints(void) const;
+
+	std::vector <CSEIPLogType> GetCSEIPLog(unsigned int steps);
 
 	void SetOneTimeBreakPoint(unsigned int CS,unsigned int EIP);
 

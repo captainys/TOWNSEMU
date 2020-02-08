@@ -55,6 +55,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	dumpableMap["STATE"]=DUMP_CURRENT_STATUS;
 	dumpableMap["STA"]=DUMP_CURRENT_STATUS;
 	dumpableMap["S"]=DUMP_CURRENT_STATUS;
+	dumpableMap["CSEIPLOG"]=DUMP_CSEIP_LOG;
 	dumpableMap["PIC"]=DUMP_PIC;
 	dumpableMap["DMA"]=DUMP_DMAC;
 	dumpableMap["DMAC"]=DUMP_DMAC;
@@ -140,6 +141,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "<< Information that can be printed >>" << std::endl;
 	std::cout << "CALLSTACK|CST" << std::endl;
 	std::cout << "  Call Stack"<<std::endl;
+	std::cout << "CSEIPLOG" << std::endl;
+	std::cout << "  Log of CS:EIP.  Can specify number of steps." << std::endl;
 	std::cout << "GDT" << std::endl;
 	std::cout << "  Protected-Mode Global Descriptor Table" << std::endl;
 	std::cout << "IDT" << std::endl;
@@ -447,6 +450,25 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 			break;
 		case DUMP_TIMER:
 			towns.PrintTimer();
+			break;
+		case DUMP_CSEIP_LOG:
+			{
+				unsigned int n=20;
+				if(3<=cmd.argv.size())
+				{
+					n=cpputil::Atoi(cmd.argv[2].c_str());
+				}
+				auto list=towns.debugger.GetCSEIPLog(n);
+				for(auto iter=list.rbegin(); iter!=list.rend(); ++iter)
+				{
+					std::cout << cpputil::Ustox(iter->SEG) << ":" << cpputil::Uitox(iter->OFFSET);
+					if(1<iter->count)
+					{
+						std::cout << "(" << cpputil::Itoa(iter->count) << ")";
+					}
+					std::cout << std::endl;
+				}
+			}
 			break;
 		}
 	}

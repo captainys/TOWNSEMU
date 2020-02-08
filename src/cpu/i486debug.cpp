@@ -20,6 +20,10 @@ void i486Debugger::CleanUp(void)
 	monitorIO=false;
 	disassembleEveryStep=false;
 	lastDisassembleAddr.Nullify();
+
+	CSEIPLog.resize(CSEIP_LOG_SIZE);
+	CSEIPLogUsed=0;
+	CSEIPLogPtr=0;
 }
 void i486Debugger::AddBreakPoint(CS_EIP bp)
 {
@@ -60,6 +64,23 @@ void i486Debugger::BeforeRunOneInstruction(i486DX &cpu,Memory &mem,InOut &io,con
 	cseip.SEG=cpu.state.CS().value;
 	cseip.OFFSET=cpu.state.EIP;
 
+	CSEIPLog[CSEIPLogPtr].SEG=cpu.state.CS().value;
+	CSEIPLog[CSEIPLogPtr].OFFSET=cpu.state.EIP;
+	CSEIPLog[CSEIPLogPtr].count=1;
+	auto &prevCSEIPLog=CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK)&CSEIP_LOG_MASK];
+	if(prevCSEIPLog!=CSEIPLog[CSEIPLogPtr])
+	{
+		CSEIPLogPtr=(CSEIPLogPtr+1)&CSEIP_LOG_MASK;
+		if(CSEIPLogUsed<CSEIP_LOG_SIZE)
+		{
+			++CSEIPLogUsed;
+		}
+	}
+	else
+	{
+		++prevCSEIPLog.count;
+	}
+
 	if(true==disassembleEveryStep && lastDisassembleAddr!=cseip)
 	{
 		auto inst=cpu.FetchInstruction(mem);
@@ -73,6 +94,19 @@ void i486Debugger::BeforeRunOneInstruction(i486DX &cpu,Memory &mem,InOut &io,con
 void i486Debugger::AfterRunOneInstruction(unsigned int clocksPassed,i486DX &cpu,Memory &mem,InOut &io,const i486DX::Instruction &inst)
 {
 	CheckForBreakPoints(cpu);
+}
+
+std::vector <i486Debugger::CSEIPLogType> i486Debugger::GetCSEIPLog(unsigned int steps)
+{
+	std::vector <CSEIPLogType> list;
+	unsigned int offset=CSEIP_LOG_MASK;
+	for(unsigned int i=0; i<steps && i<CSEIPLog.size(); ++i)
+	{
+		auto idx=(CSEIPLogUsed+offset)&CSEIP_LOG_MASK;
+		list.push_back(CSEIPLog[idx]);
+		--offset;
+	}
+	return list;
 }
 
 void i486Debugger::CheckForBreakPoints(i486DX &cpu)
