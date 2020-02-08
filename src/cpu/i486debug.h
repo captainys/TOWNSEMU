@@ -36,7 +36,7 @@ public:
 			return (from.SEG!=SEG || from.OFFSET!=OFFSET);
 		}
 	};
-	size_t CSEIPLogUsed,CSEIPLogPtr;
+	size_t CSEIPLogPtr;
 	std::vector <CSEIPLogType> CSEIPLog;
 
 

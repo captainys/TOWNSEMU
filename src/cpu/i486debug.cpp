@@ -22,7 +22,12 @@ void i486Debugger::CleanUp(void)
 	lastDisassembleAddr.Nullify();
 
 	CSEIPLog.resize(CSEIP_LOG_SIZE);
-	CSEIPLogUsed=0;
+	for(auto &log : CSEIPLog)
+	{
+		log.SEG=0;
+		log.OFFSET=0;
+		log.count=0;
+	}
 	CSEIPLogPtr=0;
 }
 void i486Debugger::AddBreakPoint(CS_EIP bp)
@@ -71,10 +76,6 @@ void i486Debugger::BeforeRunOneInstruction(i486DX &cpu,Memory &mem,InOut &io,con
 	if(prevCSEIPLog!=CSEIPLog[CSEIPLogPtr])
 	{
 		CSEIPLogPtr=(CSEIPLogPtr+1)&CSEIP_LOG_MASK;
-		if(CSEIPLogUsed<CSEIP_LOG_SIZE)
-		{
-			++CSEIPLogUsed;
-		}
 	}
 	else
 	{
@@ -102,7 +103,7 @@ std::vector <i486Debugger::CSEIPLogType> i486Debugger::GetCSEIPLog(unsigned int 
 	unsigned int offset=CSEIP_LOG_MASK;
 	for(unsigned int i=0; i<steps && i<CSEIPLog.size(); ++i)
 	{
-		auto idx=(CSEIPLogUsed+offset)&CSEIP_LOG_MASK;
+		auto idx=(CSEIPLogPtr+offset)&CSEIP_LOG_MASK;
 		list.push_back(CSEIPLog[idx]);
 		--offset;
 	}

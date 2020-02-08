@@ -50,7 +50,7 @@ FMTowns::FMTowns() :
 	crtc(this),
 	pic(this),
 	dmac(this),
-	fdc(this,&dmac),
+	fdc(this,&pic,&dmac),
 	rtc(this),
 	sound(this),
 	timer(this,&pic)

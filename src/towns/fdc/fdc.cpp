@@ -59,16 +59,22 @@ void TownsFDC::State::Reset(void)
 	DDEN=false;
 	IRQMSK=true;
 
+	recordType=false;
 	recordNotFound=false;
+	CRCError=false;
+	lostData=false;
+
+	addrMarkReadCount=0;
 }
 
 
 ////////////////////////////////////////////////////////////
 
 
-TownsFDC::TownsFDC(class FMTowns *townsPtr,class TownsDMAC *DMACPtr)
+TownsFDC::TownsFDC(class FMTowns *townsPtr,class TownsPIC *PICPtr,class TownsDMAC *DMACPtr)
 {
 	this->townsPtr=townsPtr;
+	this->PICPtr=PICPtr;
 	this->DMACPtr=DMACPtr;
 
 	Reset();
@@ -256,12 +262,12 @@ void TownsFDC::SendCommand(unsigned int cmd)
 			break;
 
 		case 0xC0: // Read Address
+			commonState.scheduleTime=townsPtr->state.townsTime+ADDRMARK_READ_TIME;
 			state.recordType=false;
 			state.recordNotFound=false;
 			state.CRCError=false;
 			state.lostData=false;
-			std::cout << __FUNCTION__ << std::endl;
-			std::cout << "Command " << cpputil::Ubtox(cmd) << " not supported yet." << std::endl;
+			state.busy=true;
 			break;
 		case 0xE0: // Read Track
 			state.recordType=false;
@@ -424,6 +430,13 @@ unsigned int TownsFDC::DriveSelect(void) const
 	}
 	return 0;
 }
+
+void TownsFDC::MakeReady(void)
+{
+	state.busy=false;
+	PICPtr->SetInterruptRequestBit(TOWNSIRQ_FDC,state.IRQMSK);
+}
+
 bool TownsFDC::DriveReady(void) const
 {
 	if(0!=state.driveSelectBit && nullptr!=GetDriveDisk(DriveSelect()))
@@ -480,13 +493,13 @@ bool TownsFDC::WriteFault(void) const
 	{
 	case 0x00: // Restore
 		commonState.scheduleTime=TIME_NO_SCHEDULE;
-		state.busy=false;
+		MakeReady();
 		drv.trackPos=0;
 		drv.trackReg=0;
 		break;
 	case 0x10: // Seek
 		commonState.scheduleTime=TIME_NO_SCHEDULE;
-		state.busy=false;
+		MakeReady();
 		// Seek to dataReg
 		if(drv.trackPos<drv.dataReg)
 		{
@@ -505,7 +518,7 @@ bool TownsFDC::WriteFault(void) const
 	case 0x20: // Step?
 	case 0x30: // Step?
 		commonState.scheduleTime=TIME_NO_SCHEDULE;
-		state.busy=false;
+		MakeReady();
 		drv.trackPos+=drv.lastSeekDir;
 		if(drv.trackPos<0)
 		{
@@ -523,7 +536,7 @@ bool TownsFDC::WriteFault(void) const
 	case 0x40: // Step In
 	case 0x50: // Step In
 		commonState.scheduleTime=TIME_NO_SCHEDULE;
-		state.busy=false;
+		MakeReady();
 		++drv.trackPos;
 		if(80<drv.trackPos)
 		{
@@ -537,7 +550,7 @@ bool TownsFDC::WriteFault(void) const
 	case 0x60: // Step Out
 	case 0x70: // Step Out
 		commonState.scheduleTime=TIME_NO_SCHEDULE;
-		state.busy=false;
+		MakeReady();
 		--drv.trackPos;
 		if(drv.trackPos<0)
 		{
@@ -569,19 +582,19 @@ bool TownsFDC::WriteFault(void) const
 					}
 					else
 					{
-						state.busy=false;
+						MakeReady();
 					}
 				}
 				else
 				{
 					state.lostData=true;
-					state.busy=false;
+					MakeReady();
 				}
 			}
 			else
 			{
 				state.recordNotFound=true;
-				state.busy=false;
+				MakeReady();
 			}
 		}
 		break;
@@ -589,19 +602,57 @@ bool TownsFDC::WriteFault(void) const
 	case 0xB0: // Write Data (Write Sector)
 		std::cout << __FUNCTION__ << std::endl;
 		std::cout << "Command " << cpputil::Ubtox(state.lastCmd) << " not supported yet." << std::endl;
+		MakeReady();
 		break;
 
 	case 0xC0: // Read Address
-		std::cout << __FUNCTION__ << std::endl;
-		std::cout << "Command " << cpputil::Ubtox(state.lastCmd) << " not supported yet." << std::endl;
+		if(nullptr!=diskPtr)
+		{
+			// Copy CHRN and CRC CRC to DMA.
+			auto trkPtr=diskPtr->GetTrack(drv.trackPos,state.side);
+			if(nullptr!=trkPtr)
+			{
+				if(trkPtr->sector.size()<=state.addrMarkReadCount)
+				{
+					state.addrMarkReadCount=0;
+				}
+				auto &sector=trkPtr->sector[state.addrMarkReadCount];
+
+				std::vector <unsigned char> CRHN_CRC=
+				{
+					sector.cylinder,
+					sector.head,
+					sector.sector,
+					sector.sizeShift,
+					0x7f, // How can I calculate CRC?
+					0x7f
+				};
+				auto DMACh=DMACPtr->GetAvailableHardwareDMAChannel();
+				if(nullptr!=DMACh)
+				{
+					DMACPtr->DeviceToMemory(DMACh,CRHN_CRC);
+					MakeReady();
+				}
+				else
+				{
+					state.lostData=true;
+					MakeReady();
+				}
+
+				++state.addrMarkReadCount;
+			}
+		}
+		MakeReady();
 		break;
 	case 0xE0: // Read Track
 		std::cout << __FUNCTION__ << std::endl;
 		std::cout << "Command " << cpputil::Ubtox(state.lastCmd) << " not supported yet." << std::endl;
+		MakeReady();
 		break;
 	case 0xF0: // Write Track
 		std::cout << __FUNCTION__ << std::endl;
 		std::cout << "Command " << cpputil::Ubtox(state.lastCmd) << " not supported yet." << std::endl;
+		MakeReady();
 		break;
 
 	default:
@@ -621,6 +672,7 @@ bool TownsFDC::WriteFault(void) const
 		// During the start-up, System ROM writes 0FEH to this register,
 		// which is not listed in the data sheet of MB
 		SendCommand(data);
+		PICPtr->SetInterruptRequestBit(TOWNSIRQ_FDC,false);
 		if(true==debugBreakOnCommandWrite)
 		{
 			townsPtr->debugger.ExternalBreak("FDC Command Write "+cpputil::Ubtox(data));
@@ -663,8 +715,8 @@ bool TownsFDC::WriteFault(void) const
 	switch(ioport)
 	{
 	case TOWNSIO_FDC_STATUS_COMMAND://       0x200, // [2] pp.253
+		PICPtr->SetInterruptRequestBit(TOWNSIRQ_FDC,false);
 		return state.lastStatus;
-		break;
 	case TOWNSIO_FDC_TRACK://                0x202, // [2] pp.253
 		break;
 	case TOWNSIO_FDC_SECTOR://               0x204, // [2] pp.253

@@ -24,6 +24,7 @@ public:
 		SEEK_TIME=20000,        // In Nano Seconds.  Just arbitrary.  Need to make it real.
 		STEP_TIME=10000,
 		SECTOR_READ_WRITE_TIME=5000,  // In Nano Seconds.  Just arbitrary.  Need to make it real.
+		ADDRMARK_READ_TIME=5000,
 	};
 	class ImageFile
 	{
@@ -66,6 +67,7 @@ public:
 		unsigned int lastStatus;
 
 		bool recordType,recordNotFound,CRCError,lostData;
+		unsigned int addrMarkReadCount;
 
 		long long int scheduleTime;
 
@@ -73,6 +75,7 @@ public:
 	};
 
 	class FMTowns *townsPtr;
+	class TownsPIC *PICPtr;
 	class TownsDMAC *DMACPtr;
 
 	State state;
@@ -81,7 +84,7 @@ public:
 
 	virtual const char *DeviceName(void) const{return "FDC";}
 
-	TownsFDC(class FMTowns *townsPtr,class TownsDMAC *dmacPtr);
+	TownsFDC(class FMTowns *townsPtr,class TownsPIC *PICPtr,class TownsDMAC *dmacPtr);
 
 	bool LoadRawBinary(unsigned int driveNum,const char fName[],bool verbose=true);
 	D77File::D77Disk *GetDriveDisk(int driveNum);
@@ -94,6 +97,10 @@ public:
 	unsigned int CommandToCommandType(unsigned int cmd) const;
 	unsigned char MakeUpStatus(unsigned int cmd) const;
 	unsigned int DriveSelect(void) const;
+
+	/*! Turns off BUSY flag.  Also if IRQ is not masked it raises IRR flag of PIC.
+	*/
+	void MakeReady(void);
 
 	bool DriveReady(void) const;
 	bool WriteProtected(void) const;
