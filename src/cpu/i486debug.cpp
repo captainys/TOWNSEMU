@@ -153,24 +153,12 @@ void i486Debugger::SpecialDebugInfo::Interrupt(i486Debugger &debugger,const i486
 }
 void i486Debugger::SpecialDebugInfo::MemWriteByte(i486Debugger &debugger,const i486DX &cpu,const i486DX::SegmentRegister &seg,unsigned int offset,unsigned int linear,unsigned int physical,unsigned int data)
 {
-	if(0x4D788==physical)
-	{
-		debugger.ExternalBreak("Writing to 4D788");
-	}
 }
 void i486Debugger::SpecialDebugInfo::MemWriteWord(i486Debugger &debugger,const i486DX &cpu,const i486DX::SegmentRegister &seg,unsigned int offset,unsigned int linear,unsigned int physical,unsigned int data)
 {
-	if(0x4D788==physical || 0x4D787==physical)
-	{
-		debugger.ExternalBreak("Writing to 4D788");
-	}
 }
 void i486Debugger::SpecialDebugInfo::MemWriteDword(i486Debugger &debugger,const i486DX &cpu,const i486DX::SegmentRegister &seg,unsigned int offset,unsigned int linear,unsigned int physical,unsigned int data)
 {
-	if(0x4D788==physical || 0x4D787==physical || 0x4D786==physical || 0x4D785==physical)
-	{
-		debugger.ExternalBreak("Writing to 4D788");
-	}
 }
 void i486Debugger::SpecialDebugInfo::IOWriteByte(i486Debugger &debugger,const i486DX &cpu,unsigned int ioport,unsigned int data)
 {

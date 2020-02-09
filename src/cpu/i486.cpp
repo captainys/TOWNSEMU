@@ -112,8 +112,15 @@ void i486DX::Reset(void)
 	LoadSegmentRegisterRealMode(state.FS(),RESET_FS);
 	LoadSegmentRegisterRealMode(state.GS(),RESET_GS);
 
+	state.GDTR.linearBaseAddr=RESET_GDTRBASE;
+	state.GDTR.limit=RESET_GDTRLIMIT;
+
 	state.IDTR.linearBaseAddr=RESET_IDTRBASE;
 	state.IDTR.limit=RESET_IDTRLIMIT;
+
+	state.LDTR.linearBaseAddr=RESET_LDTRBASE;
+	state.LDTR.limit=RESET_LDTRLIMIT;
+	state.LDTR.selector=RESET_LDTRSELECTOR;
 
 	state.DR[7]=RESET_DR7;
 

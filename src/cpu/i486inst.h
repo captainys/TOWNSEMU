@@ -440,6 +440,9 @@ enum
 	// I486_OPCODE_SETZ=             0x940F,
 
 
+	I486_OPCODE_SLDT_STR_LLDT_LTR_VERR_VERW=             0x000F,
+
+
 	I486_OPCODE_STC=              0xF9,
 	I486_OPCODE_STD=              0xFD,
 	I486_OPCODE_STI=              0xFB,

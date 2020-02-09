@@ -120,12 +120,14 @@ public:
 		unsigned int linearBaseAddr;
 		unsigned short limit;
 	};
-	class SystemSegmentRegister
+	class SystemAddressRegisterAndSelector : public SystemAddressRegister
 	{
 	public:
-		unsigned int linearBaseAddr;
-		unsigned short limit;
 		unsigned short selector;
+	};
+	class SystemAddressRegisterAndSelectorAndAttrib : public SystemAddressRegisterAndSelector
+	{
+	public:
 		unsigned short attrib;
 	};
 	class FarPointer
@@ -296,8 +298,9 @@ public:
 		unsigned int EIP;
 		unsigned int EFLAGS;   // bit 1=Always 1 ([1] pp.2-14)
 		SegmentRegister sreg[6];
-		SystemAddressRegister GDTR,IDTR,LDTR;
-		SystemSegmentRegister TR[8];
+		SystemAddressRegister GDTR,IDTR;
+		SystemAddressRegisterAndSelector LDTR;
+		SystemAddressRegisterAndSelectorAndAttrib TR[8];
 		unsigned int CR[4];
 		unsigned int DR[8];
 
@@ -486,8 +489,13 @@ public:
 		RESET_ES=       0x0000,
 		RESET_FS=       0x0000,
 		RESET_GS=       0x0000,
+		RESET_GDTRBASE=      0,
+		RESET_GDTRLIMIT=     0,
 		RESET_IDTRBASE=      0,
 		RESET_IDTRLIMIT=0x03FF,
+		RESET_LDTRBASE=      0,
+		RESET_LDTRLIMIT=     0,
+		RESET_LDTRSELECTOR=  0,
 		RESET_DR7=           0,
 		RESET_EAX=           0,
 		RESET_DX=       0x0400,

@@ -5,7 +5,7 @@
 
 /* virtual */ void FsSimpleWindowConnection::OpenWindow(void)
 {
-	FsOpenWindow(0,0,1024,768,1);
+	FsOpenWindow(0,0,640,480,1);
 }
 /* virtual */ void FsSimpleWindowConnection::DevicePolling(void)
 {

@@ -753,6 +753,12 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		break;
 
 
+	case I486_OPCODE_SLDT_STR_LLDT_LTR_VERR_VERW://             0x000F,
+		FetchOperandRM(inst,seg,offset,mem);
+		inst.operandSize=16;
+		break;
+
+
 	case I486_OPCODE_STC://              0xF9,
 	case I486_OPCODE_STD://              0xFD,
 	case I486_OPCODE_STI://              0xFB,
@@ -1328,6 +1334,22 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 	case I486_OPCODE_SETS://             0x980F,
 	// I486_OPCODE_SETZ://             0x940F,
 		op1.Decode(addressSize,operandSize,operand);
+		break;
+
+
+	case I486_OPCODE_SLDT_STR_LLDT_LTR_VERR_VERW://             0x000F,
+		op1.Decode(addressSize,operandSize,operand);
+		break;
+
+
+	case I486_OPCODE_STC://              0xF9,
+	case I486_OPCODE_STD://              0xFD,
+	case I486_OPCODE_STI://              0xFB,
+		break;
+
+
+	case I486_OPCODE_STOSB://            0xAA,
+	case I486_OPCODE_STOS://             0xAB,
 		break;
 
 
@@ -2463,6 +2485,31 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		disasm=DisassembleTypicalOneOperand("SETS",op1,8);
 		break;
 	// I486_OPCODE_SETZ://             0x940F,
+
+
+	case I486_OPCODE_SLDT_STR_LLDT_LTR_VERR_VERW://             0x000F,
+		switch(GetREG())
+		{
+		case 0:
+			disasm=DisassembleTypicalOneOperand("SLDT",op1,16);
+			break;
+		case 1:
+			disasm=DisassembleTypicalOneOperand("STR",op1,16);
+			break;
+		case 2:
+			disasm=DisassembleTypicalOneOperand("LLDT",op1,16);
+			break;
+		case 3:
+			disasm=DisassembleTypicalOneOperand("LTR",op1,16);
+			break;
+		case 4:
+			disasm=DisassembleTypicalOneOperand("VERR",op1,16);
+			break;
+		case 5:
+			disasm=DisassembleTypicalOneOperand("VERW",op1,16);
+			break;
+		}
+		break;
 
 
 	case I486_OPCODE_STC://              0xF9,
@@ -5452,6 +5499,66 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				clocksPassed=3;
 			}
 			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+		}
+		break;
+
+
+	case I486_OPCODE_SLDT_STR_LLDT_LTR_VERR_VERW://             0x000F,
+		switch(inst.GetREG())
+		{
+		case 0: // "SLDT"
+			{
+				clocksPassed=(OPER_ADDR==op1.operandType ? 3 : 2);
+				OperandValue value;
+				value.MakeWord(state.LDTR.selector);
+				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+			}
+			break;
+		case 1: // 
+			break;
+		case 2: // "LLDT"
+			{
+				clocksPassed=11;
+				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+				if(true!=state.exception)
+				{
+					auto selector=value.GetAsWord();
+					auto TI=(0!=(selector&4));
+					state.LDTR.selector=selector;
+					if(0==selector)
+					{
+						state.LDTR.linearBaseAddr=0;
+						state.LDTR.limit=0;
+					}
+					else if(0!=TI) // Pointing LDT
+					{
+						RaiseException(EXCEPTION_GP,selector); // [1] pp.26-199
+					}
+					else
+					{
+						SegmentRegister seg;
+						LoadSegmentRegisterQuiet(seg,selector,mem,false); // Force to read from GDT by setting isInRealMode=false
+						const unsigned char byteData[]=
+						{
+							 seg.limit    &0xff,
+							(seg.limit>>8)&0xff,
+							 seg.baseLinearAddr     &0xff,
+							(seg.baseLinearAddr>>8) &0xff,
+							(seg.baseLinearAddr>>16)&0xff,
+							(seg.baseLinearAddr>>24)&0xff,
+						};
+						LoadDescriptorTableRegister(state.GDTR,32,byteData);
+					}
+				}
+				std::cout << cpputil::Ustox(value.GetAsWord()) << std::endl;
+			}
+			break;
+		case 3: // 
+			break;
+		case 4: // "VERR"
+			break;
+		case 5: // "VERW"
+			break;
 		}
 		break;
 
