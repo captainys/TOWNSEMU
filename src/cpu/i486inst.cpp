@@ -264,6 +264,7 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 
 
 	case I486_OPCODE_CBW_CWDE://        0x98,
+	case I486_OPCODE_CWD_CDQ://         0x99,
 	case I486_OPCODE_CLC:
 	case I486_OPCODE_CLD:
 	case I486_OPCODE_CLI:
@@ -286,6 +287,12 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 	case I486_OPCODE_DEC_EBP:
 	case I486_OPCODE_DEC_ESI:
 	case I486_OPCODE_DEC_EDI:
+		break;
+
+
+	case I486_OPCODE_ENTER://      0xC8,
+		offset+=FetchOperand16(inst,seg,offset,mem);
+		FetchOperand8(inst,seg,offset,mem);
 		break;
 
 
@@ -511,15 +518,15 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		FetchOperandRM(inst,seg,offset,mem);
 		break;
 
-	case I486_OPCODE_MOV_M_TO_AL: //      0xA0,
-	case I486_OPCODE_MOV_M_TO_EAX: //     0xA1, // 16/32 depends on OPSIZE_OVERRIDE
-	case I486_OPCODE_MOV_M_FROM_AL: //    0xA2,
-	case I486_OPCODE_MOV_M_FROM_EAX: //   0xA3, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_OPCODE_MOV_M_TO_AL: //      0xA0, // 16/32 depends on ADDRESSSIZE_OVERRIDE
+	case I486_OPCODE_MOV_M_TO_EAX: //     0xA1, // 16/32 depends on ADDRESSSIZE_OVERRIDE
+	case I486_OPCODE_MOV_M_FROM_AL: //    0xA2, // 16/32 depends on ADDRESSSIZE_OVERRIDE
+	case I486_OPCODE_MOV_M_FROM_EAX: //   0xA3, // 16/32 depends on ADDRESSSIZE_OVERRIDE
 		switch(inst.addressSize)
 		{
 		default:
 		case 32:
-			FetchOperand16(inst,seg,offset,mem);
+			FetchOperand32(inst,seg,offset,mem);
 			break;
 		case 16:
 			FetchOperand16(inst,seg,offset,mem);
@@ -849,6 +856,7 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 
 
 	case I486_OPCODE_CBW_CWDE://        0x98,
+	case I486_OPCODE_CWD_CDQ://         0x99,
 	case I486_OPCODE_CLC:
 	case I486_OPCODE_CLD:
 	case I486_OPCODE_CLI:
@@ -858,6 +866,10 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 
 	case I486_OPCODE_CMPSB://           0xA6,
 	case I486_OPCODE_CMPS://            0xA7,
+		break;
+
+
+	case I486_OPCODE_ENTER://      0xC8,
 		break;
 
 
@@ -1459,6 +1471,9 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 	case I486_OPCODE_CBW_CWDE://        0x98,
 		disasm=(16==operandSize ? "CBW" : "CWDE");
 		break;
+	case I486_OPCODE_CWD_CDQ://         0x99,
+		disasm=(16==operandSize ? "CWD" : "CDQ");
+		break;
 	case I486_OPCODE_CLC:
 		disasm="CLC";
 		break;
@@ -1493,6 +1508,18 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		else if(instPrefix==INST_PREFIX_REPNE)
 		{
 			disasm="REPNE "+disasm;
+		}
+		break;
+
+
+	case I486_OPCODE_ENTER://      0xC8,
+		disasm="ENTER   ";
+		{
+			// Weird operand.
+			unsigned int frameSize=operand[0]|(((unsigned int)operand[1])<<8);
+			unsigned int level=operand[2];
+			disasm+=cpputil::Ustox(frameSize)+"H,";
+			disasm+=cpputil::Ubtox(level)+"H";
 		}
 		break;
 
@@ -3476,6 +3503,17 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			SetEAX(AX);
 		}
 		break;
+	case I486_OPCODE_CWD_CDQ://         0x99,
+		clocksPassed=3;
+		if(16==inst.operandSize) // CWD AX->DX:AX
+		{
+			SetDX(0!=(GetAX()&0x8000) ? 0xFFFF : 0);
+		}
+		else // CDQ
+		{
+			SetEDX(0!=(GetAX()&0x80000000) ? 0xFFFFFFFF : 0);
+		}
+		break;
 	case I486_OPCODE_CLC:
 		state.EFLAGS&=(~EFLAGS_CARRY);
 		clocksPassed=2;
@@ -3512,6 +3550,50 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				{
 					EIPSetByInstruction=true;
 				}
+			}
+		}
+		break;
+
+
+	case I486_OPCODE_ENTER://      0xC8,
+		{
+			// Weird operand.
+			unsigned int frameSize=inst.operand[0]|(((unsigned int)inst.operand[1])<<8);
+			unsigned int level=inst.operand[2]&0x1F;
+
+			clocksPassed=14+level*3;
+
+			Push(mem,inst.operandSize,state.EBP());
+			auto framePtr=state.ESP();
+			while(0<level)
+			{
+				if(16==inst.operandSize)
+				{
+					SetBP(GetBP()-2);
+					Push(mem,inst.operandSize,state.BP());
+				}
+				else
+				{
+					SetEBP(GetEBP()-4);
+					Push(mem,inst.operandSize,state.EBP());
+				}
+			}
+			Push(mem,inst.operandSize,framePtr);  // Should it be operandSize or addressSize?  Extremely confusing!
+			if(16==inst.operandSize)
+			{
+				SetBP(framePtr&0xFFFF);
+			}
+			else
+			{
+				SetEBP(framePtr);
+			}
+			if(16==GetStackAddressingSize())
+			{
+				SetSP(GetSP()-frameSize);
+			}
+			else
+			{
+				SetESP(GetESP()-frameSize);
 			}
 		}
 		break;

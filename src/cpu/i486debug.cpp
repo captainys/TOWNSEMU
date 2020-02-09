@@ -53,6 +53,7 @@ void i486Debugger::SpecialDebugInfo::BeforeRunOneInstruction(i486Debugger &debug
 	inTheTargetRange=true;
 	if(0==inst.opCode && 0==inst.operand[0])
 	{
+		std::cout << cpputil::Ustox(inst.opCode) << " " << cpputil::Ubtox(inst.operand[0]) << std::endl;
 		debugger.ExternalBreak("SpecialBreak1");
 	}
 	if(cpu.state.CS().value==0x7501)
