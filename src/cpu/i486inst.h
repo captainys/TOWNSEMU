@@ -237,6 +237,9 @@ enum
 	// AND, OR, or XOR
 	I486_OPCODE_BINARYOP_RM8_FROM_I8=  0x80, // AND(REG=4), OR(REG=1), or XOR(REG=6) depends on the REG field of MODR/M
 	I486_OPCODE_BINARYOP_R_FROM_I=     0x81,
+	I486_OPCODE_BINARYOP_RM8_FROM_I8_ALIAS=0x82, 
+	// http://ref.x86asm.net/coder32.html#x0FA4, https://github.com/aquynh/capstone/issues/238 imply 0x82 is alias for 0x80.
+	// Also Linux objdump seems to interpret 0x82 and 0x80 same.
 	I486_OPCODE_BINARYOP_RM_FROM_SXI8= 0x83,
 
 

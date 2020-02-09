@@ -1975,6 +1975,15 @@ public:
 	void RcrWord(unsigned int &value,unsigned int ctr);
 	void RcrByte(unsigned int &value,unsigned int ctr);
 
+	/*! SAR a value and set OF and CF flags accoring to the result.
+	    OF is only set if ctr==1.
+	    operandSize needs to be 16 or 32.
+	*/ 
+	void SarByteWordOrDword(int operandSize,unsigned int &value,unsigned int ctr);
+	void SarDword(unsigned int &value,unsigned int ctr);
+	void SarWord(unsigned int &value,unsigned int ctr);
+	void SarByte(unsigned int &value,unsigned int ctr);
+
 	/*! SHL a value and set OF and CF flags accoring to the result.
 	    OF is only set if ctr==1.
 	    operandSize needs to be 16 or 32.

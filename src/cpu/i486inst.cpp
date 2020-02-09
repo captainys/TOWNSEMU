@@ -442,6 +442,7 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 
 
 	case I486_OPCODE_BINARYOP_RM8_FROM_I8:
+	case I486_OPCODE_BINARYOP_RM8_FROM_I8_ALIAS:
 		offset+=FetchOperandRM(inst,seg,offset,mem);
 		FetchOperand8(inst,seg,offset,mem);
 		break;
@@ -982,6 +983,7 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 
 
 	case I486_OPCODE_BINARYOP_RM8_FROM_I8: //  0x80, // AND(REG=4), OR(REG=1), or XOR(REG=6) depends on the REG field of MODR/M
+	case I486_OPCODE_BINARYOP_RM8_FROM_I8_ALIAS:
 		op1.Decode(addressSize,8,operand);
 		op2.MakeImm8(*this);
 		break;
@@ -2043,6 +2045,7 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 
 
 	case I486_OPCODE_BINARYOP_RM8_FROM_I8://=  0x80, // AND(REG=4), OR(REG=1), or XOR(REG=6) depends on the REG field of MODR/M
+	case I486_OPCODE_BINARYOP_RM8_FROM_I8_ALIAS:
 	case I486_OPCODE_BINARYOP_R_FROM_I://=     0x81,
 	case I486_OPCODE_BINARYOP_RM_FROM_SXI8://= 0x83,
 		switch(GetREG())
@@ -2920,7 +2923,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
 				break;
 			case 7:// "SAR";
-				Abort("C1 SAR not implemented yet.");
+				SarByteWordOrDword(inst.operandSize,i,ctr);
 				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
 				break;
 			}
@@ -4308,6 +4311,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 
 	case I486_OPCODE_BINARYOP_RM8_FROM_I8://=  0x80, // AND(REG=4), OR(REG=1), or XOR(REG=6) depends on the REG field of MODR/M
+	case I486_OPCODE_BINARYOP_RM8_FROM_I8_ALIAS:
 		{
 			if(op1.operandType==OPER_ADDR || op2.operandType==OPER_ADDR)
 			{

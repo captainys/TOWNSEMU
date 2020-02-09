@@ -1408,6 +1408,80 @@ void i486DX::RcrByte(unsigned int &value,unsigned int ctr)
 	}
 }
 
+void i486DX::SarByteWordOrDword(int operandSize,unsigned int &value,unsigned int ctr)
+{
+	switch(operandSize)
+	{
+	case 8:
+		SarByte(value,ctr);
+		break;
+	case 16:
+		SarWord(value,ctr);
+		break;
+	default:
+	case 32:
+		SarDword(value,ctr);
+		break;
+	}
+}
+void i486DX::SarDword(unsigned int &value,unsigned int ctr)
+{
+	unsigned long long int value64=value;
+	if(0!=(value64&0x80000000))
+	{
+		value64|=0xFFFFFFFF00000000LL;
+	}
+	SetCF(0<ctr && 0!=(value&(1<<(ctr-1))));
+	value64>>=ctr;
+	value64&=0xFFFFFFFF;
+	SetZeroFlag(0==value64);
+	SetSignFlag(0!=(value64&0x80000000));
+	SetParityFlag(CheckParity(value64&0xFF));
+	if(1==ctr)
+	{
+		SetOverflowFlag(false);
+	}
+	value=(unsigned int)(value64);
+}
+void i486DX::SarWord(unsigned int &value,unsigned int ctr)
+{
+	unsigned int value32=value;
+	if(0!=(value32&0x8000))
+	{
+		value32|=0xFFFF0000;
+	}
+	SetCF(0<ctr && 0!=(value&(1<<(ctr-1))));
+	value32>>=ctr;
+	value32&=0xFFFF;
+	SetZeroFlag(0==value32);
+	SetSignFlag(0!=(value32&0x8000));
+	SetParityFlag(CheckParity(value32&0xFF));
+	if(1==ctr)
+	{
+		SetOverflowFlag(false);
+	}
+	value=value32;
+}
+void i486DX::SarByte(unsigned int &value,unsigned int ctr)
+{
+	unsigned int value16=value;
+	if(0!=(value16&0x80))
+	{
+		value16|=0xFF00;
+	}
+	SetCF(0<ctr && 0!=(value&(1<<(ctr-1))));
+	value16>>=ctr;
+	value16&=0xFF;
+	SetZeroFlag(0==value16);
+	SetSignFlag(0!=(value16&0x80));
+	SetParityFlag(CheckParity(value16&0xFF));
+	if(1==ctr)
+	{
+		SetOverflowFlag(false);
+	}
+	value=value16;
+}
+
 void i486DX::ShlWordOrDword(int operandSize,unsigned int &value,unsigned int ctr)
 {
 	if(16==operandSize)
