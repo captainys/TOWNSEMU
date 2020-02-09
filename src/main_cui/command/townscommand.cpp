@@ -313,7 +313,14 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,Command &c
 		break;
 
 	case CMD_PRINT_HISTORY:
-		Execute_PrintHistory(towns,cmd);
+		if(2<=cmd.argv.size())
+		{
+			Execute_PrintHistory(towns,cpputil::Atoi(cmd.argv[1].c_str()));
+		}
+		else
+		{
+			Execute_PrintHistory(towns,20);
+		}
 		break;
 	case CMD_PRINT_STATUS:
 		towns.PrintStatus();
@@ -462,7 +469,14 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 			towns.PrintTimer();
 			break;
 		case DUMP_CSEIP_LOG:
-			Execute_PrintHistory(towns,cmd);
+			if(3<=cmd.argv.size())
+			{
+				Execute_PrintHistory(towns,cpputil::Atoi(cmd.argv[2].c_str()));
+			}
+			else
+			{
+				Execute_PrintHistory(towns,20);
+			}
 			break;
 		}
 	}
@@ -684,13 +698,8 @@ void TownsCommandInterpreter::Execute_Disassemble32(FMTowns &towns,Command &cmd)
 	towns.var.disassemblePointer=farPtr;
 }
 
-void TownsCommandInterpreter::Execute_PrintHistory(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_PrintHistory(FMTowns &towns,unsigned int n)
 {
-	unsigned int n=20;
-	if(3<=cmd.argv.size())
-	{
-		n=cpputil::Atoi(cmd.argv[2].c_str());
-	}
 	auto list=towns.debugger.GetCSEIPLog(n);
 	for(auto iter=list.rbegin(); iter!=list.rend(); ++iter)
 	{

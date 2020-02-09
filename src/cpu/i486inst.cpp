@@ -362,6 +362,17 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		break;
 
 
+	case I486_OPCODE_IMUL_R_RM_IMM://0x69,
+		offset+=FetchOperandRM(inst,seg,offset,mem);
+		if(16==inst.operandSize)
+		{
+			FetchOperand16(inst,seg,offset,mem);
+		}
+		else
+		{
+			FetchOperand32(inst,seg,offset,mem);
+		}
+		break;
 	case I486_OPCODE_IMUL_R_RM://       0xAF0F,
 		FetchOperandRM(inst,seg,offset,mem);
 		break;
@@ -943,6 +954,7 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 		break;
 
 
+	case I486_OPCODE_IMUL_R_RM_IMM://0x69,
 	case I486_OPCODE_IMUL_R_RM://       0xAF0F,
 		op1.DecodeMODR_MForRegister(operandSize,operand[0]);
 		op2.Decode(addressSize,operandSize,operand);
@@ -1830,6 +1842,12 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		break;
 
 
+	case I486_OPCODE_IMUL_R_RM_IMM://0x69,
+		disasm="IMUL    ";
+		disasm+=op1.Disassemble()+",";
+		disasm+=op2.Disassemble()+",";
+		disasm+=cpputil::Itox(GetSimm16or32(operandSize));
+		break;
 	case I486_OPCODE_IMUL_R_RM://       0xAF0F,
 		disasm=DisassembleTypicalTwoOperands("IMUL",op1,op2);
 		break;
@@ -3871,9 +3889,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 
 
+	case I486_OPCODE_IMUL_R_RM_IMM://0x69,
 	case I486_OPCODE_IMUL_R_RM://       0xAF0F,
 		{
-			// Clocks should be 13-26 for 16-bit operand, 13-42 for 32-bit operand.
+			// Clocks should be 13-26 for 16-bit operand, 13-42 for 32-bit operand, (I486_OPCODE_IMUL_R_RM)
+			// or 13-42 (I486_OPCODE_IMUL_R_RM_IMM).
 			// I don't know how it should be calculated.
 			// I just make it 20 clocks.
 			clocksPassed=20;
@@ -3881,10 +3901,25 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize/8);
 			if(true!=state.exception)
 			{
-				long long int i1=value1.GetAsSignedDword();
-				long long int i2=value2.GetAsSignedDword();
-				long long int result=i1*i2;
-				value1.SetSignedDword((int)result);
+				long long int result;
+				if(I486_OPCODE_IMUL_R_RM_IMM==inst.opCode)
+				{
+					long long int i2=value2.GetAsSignedDword();
+					long long int i3=inst.GetSimm16or32(inst.operandSize);
+					result=i2*i3;
+					value1.SetSignedDword((int)result);
+				}
+				else if(I486_OPCODE_IMUL_R_RM==inst.opCode)
+				{
+					long long int i1=value1.GetAsSignedDword();
+					long long int i2=value2.GetAsSignedDword();
+					result=i1*i2;
+					value1.SetSignedDword((int)result);
+				}
+				else
+				{
+					Abort("What IMUL?");
+				}
 				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
 				switch(inst.operandSize)
 				{

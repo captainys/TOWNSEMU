@@ -138,7 +138,7 @@ public:
 	void Execute_Disassemble16(FMTowns &towns,Command &cmd);
 	void Execute_Disassemble32(FMTowns &towns,Command &cmd);
 
-	void Execute_PrintHistory(FMTowns &towns,Command &cmd);
+	void Execute_PrintHistory(FMTowns &towns,unsigned int n);
 };
 
 
