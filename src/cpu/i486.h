@@ -187,9 +187,14 @@ public:
 	class FPUState
 	{
 	public:
+		bool FPUEnabled;
+
 		void FNINIT(void);
 		bool ExceptionPending(void) const;
 		unsigned int GetStatusWord(void) const;
+		unsigned int GetControlWord(void) const;
+
+		FPUState();
 	};
 
 	class InterruptDescriptor : public FarPointer

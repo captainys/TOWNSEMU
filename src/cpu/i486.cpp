@@ -120,6 +120,10 @@ void i486DX::Reset(void)
 	state.EAX()=RESET_EAX;
 	SetDX(RESET_DX);
 	state.CR[0]=RESET_CR0;
+	if(true!=state.fpuState.FPUEnabled)
+	{
+		state.CR[0]&=(~CR0_MATH_PRESENT);
+	}
 
 	state.halt=false;
 	state.holdIRQ=false;

@@ -126,8 +126,16 @@ enum
 
 
 	I486_OPCODE_FWAIT=      0x9B,
-	I486_OPCODE_FPUINST_DB= 0xDB,
-	I486_OPCODE_FPUINST_DF= 0xDF,
+	I486_OPCODE_FPU_D8_FADD=                   0xD8, // REG 0:FADD
+	I486_OPCODE_FPU_D9_FNSTCW_M16_FNSTENV_F2XM1_FXAM_FXCH_FXTRACT_FYL2X_FYL2XP1_FABS_= 0xD9,
+	I486_OPCODE_FPU_DB_FNINIT_FRSTOR=     0xDB, 
+	I486_OPCODE_FPU_DC_FADD=                   0xDC, // REG 0:FADD
+	I486_OPCODE_FPU_DD_FLD_FSAVE_FST_FNSTSW_M16_FFREE_FUCOM= 0xDD,
+	I486_OPCODE_FPU_DF_FNSTSW_AX=  0xDF,
+	// [1] i486 Programmers Reference does not list DD /7 as FNSTSW.
+	// However, [5] 80387 Programmers Reference example uses DD 3C as FNSTSW.
+	// [4] also lists DD /7 as FNSTSW.  Most likely [1] pp.26-136 listing of DF /7 is wrong.
+	// Linux objump interprets DD /7 as FNSTSW.  [1] lists DD /7 as FIST as well.
 
 
 	I486_OPCODE_HLT=        0xF4,

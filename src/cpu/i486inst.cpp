@@ -298,7 +298,21 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 
 	case I486_OPCODE_FWAIT://      0x9B,
 		break;
-	case I486_OPCODE_FPUINST_DB:// 0xDB,
+	case I486_OPCODE_FPU_D9_FNSTCW_M16_FNSTENV_F2XM1_FXAM_FXCH_FXTRACT_FYL2X_FYL2XP1_FABS_:// 0xD9,
+		{
+			unsigned int MODR_M;
+			PeekOperand8(MODR_M,inst,seg,offset,mem);
+			if(0xF0<=MODR_M && MODR_M<=0xFF)
+			{
+				FetchOperand8(inst,seg,offset,mem);
+			}
+			else
+			{
+				FetchOperandRM(inst,seg,offset,mem);
+			}
+		}
+		break;
+	case I486_OPCODE_FPU_DB_FNINIT_FRSTOR://     0xDB, 
 		{
 			unsigned int MODR_M;
 			PeekOperand8(MODR_M,inst,seg,offset,mem);
@@ -315,7 +329,7 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 			}
 		}
 		break;
-	case I486_OPCODE_FPUINST_DF:// 0xDF,
+	case I486_OPCODE_FPU_DF_FNSTSW_AX://  0xDF,
 		{
 			unsigned int MODR_M;
 			PeekOperand8(MODR_M,inst,seg,offset,mem);
@@ -887,9 +901,19 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 
 	case I486_OPCODE_FWAIT://      0x9B,
 		break;
-	case I486_OPCODE_FPUINST_DB:// 0xDB,
+	case I486_OPCODE_FPU_D9_FNSTCW_M16_FNSTENV_F2XM1_FXAM_FXCH_FXTRACT_FYL2X_FYL2XP1_FABS_:// 0xD9,
+		if(0xF0<=operand[0] && operand[0]<=0xFF)
+		{
+			// Do nothing
+		}
+		else
+		{
+			op1.Decode(addressSize,operandSize,operand);
+		}
 		break;
-	case I486_OPCODE_FPUINST_DF:// 0xDF,
+	case I486_OPCODE_FPU_DB_FNINIT_FRSTOR://     0xDB, 
+		break;
+	case I486_OPCODE_FPU_DF_FNSTSW_AX://  0xDF,
 		break;
 
 
@@ -1549,7 +1573,21 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 	case I486_OPCODE_FWAIT://      0x9B,
 		disasm="FWAIT";
 		break;
-	case I486_OPCODE_FPUINST_DB:// 0xDB,
+	case I486_OPCODE_FPU_D9_FNSTCW_M16_FNSTENV_F2XM1_FXAM_FXCH_FXTRACT_FYL2X_FYL2XP1_FABS_:// 0xD9,
+		if(0xF0<=operand[0] && operand[0]<=0xFF)
+		{
+		}
+		else
+		{
+			switch(GetREG())
+			{
+			case 7:
+				disasm=DisassembleTypicalOneOperand("FNSTCW",op1,operandSize);
+				break;
+			}
+		}
+		break;
+	case I486_OPCODE_FPU_DB_FNINIT_FRSTOR://     0xDB, 
 		if(0xE3==operand[0])
 		{
 			disasm="FNINIT";
@@ -1559,7 +1597,7 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 			disasm="?FPUINST DBH";
 		}
 		break;
-	case I486_OPCODE_FPUINST_DF:// 0xDF,
+	case I486_OPCODE_FPU_DF_FNSTSW_AX://  0xDF,
 		if(0xE0==operand[0])
 		{
 			disasm="FNSTSW  AX";
@@ -3661,7 +3699,26 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		clocksPassed=3;
 		break;
-	case I486_OPCODE_FPUINST_DB:// 0xDB,
+	case I486_OPCODE_FPU_D9_FNSTCW_M16_FNSTENV_F2XM1_FXAM_FXCH_FXTRACT_FYL2X_FYL2XP1_FABS_:// 0xD9,
+		if(0xF0<=inst.operand[0] && inst.operand[0]<=0xFF)
+		{
+		}
+		else
+		{
+			switch(inst.GetREG())
+			{
+			case 7: // "FNSTCW"
+				{
+					OperandValue value;
+					value.MakeWord(state.fpuState.GetControlWord());
+					StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+					clocksPassed=3;
+				}
+				break;
+			}
+		}
+		break;
+	case I486_OPCODE_FPU_DB_FNINIT_FRSTOR://     0xDB, 
 		if(0xE3==inst.operand[0])
 		{
 			state.fpuState.FNINIT();
@@ -3671,7 +3728,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 		}
 		break;
-	case I486_OPCODE_FPUINST_DF:// 0xDF,
+	case I486_OPCODE_FPU_DF_FNSTSW_AX://  0xDF,
 		if(0xE0==inst.operand[0])
 		{
 			SetAX(state.fpuState.GetStatusWord());
@@ -5113,17 +5170,19 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 	case I486_OPCODE_SHLD_RM_I8://       0xA40F,
 	case I486_OPCODE_SHLD_RM_CL://       0xA50F,
+	case I486_OPCODE_SHRD_RM_I8://       0xAC0F,
+	case I486_OPCODE_SHRD_RM_CL://       0xAD0F,
 		{
 			unsigned int count;
 			if(I486_OPCODE_SHLD_RM_CL==inst.opCode)
 			{
 				clocksPassed=3;
-				count=GetCL();
+				count=GetCL()&0x1F;
 			}
 			else
 			{
 				clocksPassed=2;
-				count=inst.GetUimm8();
+				count=inst.GetUimm8()&0x1F;
 			}
 			if(OPER_ADDR==op1.operandType)
 			{
@@ -5133,36 +5192,68 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize/8);
 
 			unsigned long long int concat;
-			if(16==inst.operandSize)
+			switch(inst.opCode)
 			{
-				auto v1=value1.GetAsDword();
-				concat=(v1<<16)|(value2.GetAsDword()&0xFFFF);
-				concat>>=(16-count);
-				value1.MakeWord(concat&0xFFFF);
-				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
-				SetCF(0!=(concat&0x10000));
-				SetOverflowFlag((concat&0x8000)!=(v1&0x8000));
-				SetZeroFlag(0==(concat&0xFFFF));
-				SetSignFlag(0!=(concat&0x8000));
-				SetParityFlag(CheckParity(concat&0xFF));
-			}
-			else
-			{
-				unsigned long long int v1=value1.GetAsDword();
-				concat=(v1<<32)|value2.GetAsDword();
-				concat>>=(32-count);
-				value1.MakeDword(concat&0xFFFFFFFF);
-				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
-				SetCF(0!=(concat&0x100000000LL));
-				SetOverflowFlag((concat&0x80000000)!=(v1&0x80000000));
-				SetZeroFlag(0==(concat&0xFFFFFFFF));
-				SetSignFlag(0!=(concat&0x80000000));
-				SetParityFlag(CheckParity(concat&0xFF));
+			case I486_OPCODE_SHLD_RM_I8://       0xA40F,
+			case I486_OPCODE_SHLD_RM_CL://       0xA50F,
+				if(16==inst.operandSize)
+				{
+					auto v1=value1.GetAsWord();
+					concat=(v1<<16)|value2.GetAsWord();
+					concat>>=(16-count);
+					value1.MakeWord(concat&0xFFFF);
+					StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+					SetCF(0!=(concat&0x10000));
+					SetOverflowFlag((concat&0x8000)!=(v1&0x8000));
+					SetZeroFlag(0==(concat&0xFFFF));
+					SetSignFlag(0!=(concat&0x8000));
+					SetParityFlag(CheckParity(concat&0xFF));
+				}
+				else
+				{
+					unsigned long long int v1=value1.GetAsDword();
+					concat=(v1<<32)|value2.GetAsDword();
+					concat>>=(32-count);
+					value1.MakeDword(concat&0xFFFFFFFF);
+					StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+					SetCF(0!=(concat&0x100000000LL));
+					SetOverflowFlag((concat&0x80000000)!=(v1&0x80000000));
+					SetZeroFlag(0==(concat&0xFFFFFFFF));
+					SetSignFlag(0!=(concat&0x80000000));
+					SetParityFlag(CheckParity(concat&0xFF));
+				}
+			case I486_OPCODE_SHRD_RM_I8://       0xAC0F,
+			case I486_OPCODE_SHRD_RM_CL://       0xAD0F,
+				if(16==inst.operandSize)
+				{
+					auto v1=value1.GetAsWord();
+					concat=(value2.GetAsWord()<<16)|v1;
+					SetCF(0!=count && 0!=(concat&(1LL<<(count-1))));
+					concat>>=count;
+					value1.MakeWord(concat&0xffff);
+					StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+					SetOverflowFlag((concat&0x8000)!=(v1&0x8000));
+					SetZeroFlag(0==(concat&0xFFFF));
+					SetSignFlag(0!=(concat&0x8000));
+					SetParityFlag(CheckParity(concat&0xFF));
+				}
+				else
+				{
+					unsigned long long int v1=value1.GetAsDword();
+					concat=value2.GetAsDword();
+					concat=(concat<<32)|v1;
+					SetCF(0!=count && 0!=(concat&(1LL<<(count-1))));
+					concat>>=count;
+					value1.MakeDword(concat&0xffffffff);
+					StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+					SetOverflowFlag((concat&0x80000000)!=(v1&0x80000000));
+					SetZeroFlag(0==(concat&0xFFFFFFFF));
+					SetSignFlag(0!=(concat&0x80000000));
+					SetParityFlag(CheckParity(concat&0xFF));
+				}
+				break;
 			}
 		}
-		break;
-	case I486_OPCODE_SHRD_RM_I8://       0xAC0F,
-	case I486_OPCODE_SHRD_RM_CL://       0xAD0F,
 		break;
 
 
