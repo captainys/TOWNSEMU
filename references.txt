@@ -1,3 +1,4 @@
 [1] Intel i486TM Microprocessor Programmer's Reference Manual, Intel, 1990
 [2] Noriaki Chiba, FM TOWNS Technical Databook, 3rd Edition, ASCII, 1994
 [3] towns_cd.h, Linux for FM TOWNS source code.
+[4] X86 Opcode and Instruction Reference Home, http://ref.x86asm.net/coder32.html (As of February 9 2020)

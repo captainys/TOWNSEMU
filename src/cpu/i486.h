@@ -881,8 +881,11 @@ public:
 	    unsigned int fromCS,unsigned int fromEIP,unsigned int callOpCodeLength,
 	    unsigned int procCS,unsigned int procEIP);
 	/*! Pop an entry from call stack.
+	    Some interrupt handlers like INT B2H adds SP by 6 at the end to double-IRET from the service routine.
+	    To deal with irregular return, it compares return address and pops stack until CS:EIP matches the
+	    bottom of the stack.
 	*/
-	void PopCallStack(void);
+	void PopCallStack(unsigned int CS,unsigned int EIP);
 
 	/*! Attaches a debugger.
 	*/

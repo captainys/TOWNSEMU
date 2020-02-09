@@ -2420,11 +2420,31 @@ void i486DX::PushCallStack(
 {
 	callStack.push_back(MakeCallStack(isInterrupt,INTNum,AX,fromCS,fromEIP,callOpCodeLength,procCS,procEIP));
 }
-void i486DX::PopCallStack(void)
+void i486DX::PopCallStack(unsigned int CS,unsigned int EIP)
 {
 	if(true!=callStack.empty())
 	{
-		callStack.pop_back();
+		int nPop=1;
+		bool match=false;
+		for(auto iter=callStack.rbegin(); iter!=callStack.rend(); ++iter)
+		{
+			if(CS==iter->fromCS && EIP==iter->fromEIP+iter->callOpCodeLength)
+			{
+				match=true;
+				break;
+			}
+			++nPop;
+		}
+
+		if(true!=match) // Prob: Jump by RET?
+		{
+			nPop=0;
+		}
+		while(0<nPop)
+		{
+			callStack.pop_back();
+			--nPop;
+		}
 	}
 }
 void i486DX::AttachDebugger(i486Debugger *debugger)

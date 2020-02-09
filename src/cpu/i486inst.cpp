@@ -673,10 +673,12 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 
 
 	case I486_OPCODE_SHLD_RM_I8://       0xA40F,
+	case I486_OPCODE_SHRD_RM_I8://       0xAC0F,
 		offset+=FetchOperandRM(inst,seg,offset,mem);
 		FetchOperand8(inst,seg,offset,mem);
 		break;
 	case I486_OPCODE_SHLD_RM_CL://       0xA50F,
+	case I486_OPCODE_SHRD_RM_CL://       0xAD0F,
 		FetchOperandRM(inst,seg,offset,mem);
 		break;
 
@@ -1242,6 +1244,8 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 
 	case I486_OPCODE_SHLD_RM_I8://       0xA40F,
 	case I486_OPCODE_SHLD_RM_CL://       0xA50F,
+	case I486_OPCODE_SHRD_RM_I8://       0xAC0F,
+	case I486_OPCODE_SHRD_RM_CL://       0xAD0F,
 		op1.Decode(addressSize,operandSize,operand);
 		op2.DecodeMODR_MForRegister(operandSize,operand[0]);
 		break;
@@ -2266,9 +2270,11 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 
 	case I486_OPCODE_SHLD_RM_I8://       0xA40F,
 	case I486_OPCODE_SHLD_RM_CL://       0xA50F,
+	case I486_OPCODE_SHRD_RM_I8://       0xAC0F,
+	case I486_OPCODE_SHRD_RM_CL://       0xAD0F,
 		{
 			std::string count;
-			if(I486_OPCODE_SHLD_RM_CL==opCode)
+			if(I486_OPCODE_SHLD_RM_CL==opCode || I486_OPCODE_SHRD_RM_CL==opCode)
 			{
 				count="CL";
 			}
@@ -2276,7 +2282,17 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 			{
 				count=cpputil::Ubtox(GetUimm8())+"H";
 			}
-			disasm="SHLD    ";
+			switch(opCode)
+			{
+			case I486_OPCODE_SHLD_RM_I8://       0xA40F,
+			case I486_OPCODE_SHLD_RM_CL://       0xA50F,
+				disasm="SHLD    ";
+				break;
+			case I486_OPCODE_SHRD_RM_I8://       0xAC0F,
+			case I486_OPCODE_SHRD_RM_CL://       0xAD0F,
+				disasm="SHRD    ";
+				break;
+			}
 			disasm+=op1.Disassemble()+",";
 			disasm+=op2.Disassemble()+",";
 			disasm+=count;
@@ -5019,7 +5035,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		EIPSetByInstruction=true;
 		if(enableCallStack)
 		{
-			PopCallStack();
+			PopCallStack(state.CS().value,state.EIP);
 		}
 		break;
 	case I486_OPCODE_IRET://   0xCF,
@@ -5055,7 +5071,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		EIPSetByInstruction=true;
 		if(enableCallStack)
 		{
-			PopCallStack();
+			PopCallStack(state.CS().value,state.EIP);
 		}
 		break;
 	case I486_OPCODE_RET_I16://          0xC2,
@@ -5065,7 +5081,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		EIPSetByInstruction=true;
 		if(enableCallStack)
 		{
-			PopCallStack();
+			PopCallStack(state.CS().value,state.EIP);
 		}
 		break;
 	case I486_OPCODE_RETF_I16://         0xCA,
@@ -5083,7 +5099,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		EIPSetByInstruction=true;
 		if(enableCallStack)
 		{
-			PopCallStack();
+			PopCallStack(state.CS().value,state.EIP);
 		}
 		break;
 
@@ -5144,6 +5160,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				SetParityFlag(CheckParity(concat&0xFF));
 			}
 		}
+		break;
+	case I486_OPCODE_SHRD_RM_I8://       0xAC0F,
+	case I486_OPCODE_SHRD_RM_CL://       0xAD0F,
 		break;
 
 
