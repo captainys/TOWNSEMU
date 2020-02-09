@@ -116,7 +116,7 @@ std::vector <std::string> miscutil::MakeMemDump(const i486DX &cpu,const Memory &
 				}
 				else
 				{
-					auto byte=cpu.FetchByte(addressSize,seg,addr,mem);
+					auto byte=cpu.DebugFetchByte(addressSize,seg,addr,mem);
 					if(byte<' ' || (true!=shiftJIS && 0x80<=byte))
 					{
 						str.push_back(' ');

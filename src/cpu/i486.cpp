@@ -2459,3 +2459,102 @@ void i486DX::DetachDebugger(void)
 {
 	debuggerPtr=nullptr;
 }
+
+/*! Fetch a byte for debugger.  It won't change exception status.
+*/
+unsigned int i486DX::DebugFetchByte(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+{
+	if(true==AddressingMode16Bit(addressSize))
+	{
+		offset&=0xffff;
+	}
+	auto addr=seg.baseLinearAddr+offset;
+	if(true==PagingEnabled())
+	{
+		addr=LinearAddressToPhysicalAddress(addr,mem);
+	}
+	auto returnValue=mem.FetchByte(addr);
+	return returnValue;
+}
+
+/*! Fetch a dword.  It won't change exception status.
+*/
+unsigned int i486DX::DebugFetchWord(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+{
+	if(true==AddressingMode16Bit(addressSize))
+	{
+		offset&=0xffff;
+	}
+	auto addr=seg.baseLinearAddr+offset;
+	if(true==PagingEnabled())
+	{
+		addr=LinearAddressToPhysicalAddress(addr,mem);
+		if(0xFFC<(addr&0xfff)) // May hit the page boundary
+		{
+			return FetchByte(addressSize,seg,offset,mem)|(FetchByte(addressSize,seg,offset+1,mem)<<8);
+		}
+	}
+	auto returnValue=mem.FetchWord(addr);
+	return returnValue;
+}
+
+/*! Fetch a dword for debugging.  It won't change exception status.
+*/
+unsigned int i486DX::DebugFetchDword(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+{
+	if(true==AddressingMode16Bit(addressSize))
+	{
+		offset&=0xffff;
+	}
+	auto addr=seg.baseLinearAddr+offset;
+	if(true==PagingEnabled())
+	{
+		addr=LinearAddressToPhysicalAddress(addr,mem);
+		if(0xFF8<(addr&0xfff)) // May hit the page boundary
+		{
+			auto returnValue=
+			     FetchByte(addressSize,seg,offset,mem)
+			   |(FetchByte(addressSize,seg,offset+1,mem)<<8)
+			   |(FetchByte(addressSize,seg,offset+2,mem)<<16)
+			   |(FetchByte(addressSize,seg,offset+3,mem)<<24);
+			return returnValue;
+		}
+	}
+	auto returnValue=mem.FetchDword(addr);
+	return returnValue;
+}
+/*! Fetch a byte, word, or dword for debugging.
+    It won't change the exception status.
+    Function name is left as FetchWordOrDword temporarily for the time being.
+    Will be unified to FetchByteWordOrDword in the future.
+*/
+unsigned int i486DX::DebugFetchWordOrDword(unsigned int operandSize,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+{
+	switch(operandSize)
+	{
+	case 8:
+		return DebugFetchByte(addressSize,seg,offset,mem);
+	case 16:
+		return DebugFetchWord(addressSize,seg,offset,mem);
+	default:
+	case 32:
+		return DebugFetchDword(addressSize,seg,offset,mem);
+	}
+}
+inline unsigned int i486DX::DebugFetchByteWordOrDword(unsigned int operandSize,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+{
+	return DebugFetchWordOrDword(operandSize,addressSize,seg,offset,mem);
+}
+
+/*! Fetch a byte by linear address for debugging.  It won't change exception status.
+*/
+inline unsigned int i486DX::DebugFetchByteByLinearAddress(const Memory &mem,unsigned int linearAddr) const
+{
+	if(true==PagingEnabled())
+	{
+		linearAddr=LinearAddressToPhysicalAddress(linearAddr,mem);
+	}
+	auto returnValue=mem.FetchByte(linearAddr);
+	return returnValue;
+}
+

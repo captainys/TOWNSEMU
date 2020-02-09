@@ -404,6 +404,7 @@ public:
 
 		// True when an instruction raised an exception.
 		bool exception;
+		unsigned int exceptionCode,exceptionType;
 	};
 	enum
 	{
@@ -1762,6 +1763,22 @@ public:
 		}
 	}
 
+	/*! Fetch a byte for debugger.  It won't change exception status.
+	*/
+	unsigned int DebugFetchByte(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+	/*! Fetch a dword.  It won't change exception status.
+	*/
+	unsigned int DebugFetchWord(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+	/*! Fetch a dword for debugging.  It won't change exception status.
+	*/
+	unsigned int DebugFetchDword(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+	unsigned int DebugFetchWordOrDword(unsigned int operandSize,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+	inline unsigned int DebugFetchByteWordOrDword(unsigned int operandSize,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+	inline unsigned int DebugFetchByteByLinearAddress(const Memory &mem,unsigned int linearAddr) const;
+
+
+
+
 	/*! Fetch a byte from CS:[EIP+offset].
 	*/
 	inline unsigned int FetchInstructionByte(unsigned int offset,const Memory &mem) const
@@ -1779,7 +1796,7 @@ public:
 
 	/*! Raise an exception. 
 	*/
-	void RaiseException(int exceptionType,int exception){exception=true;};// Right now it's just a placeholder
+	void RaiseException(int type,int code){state.exception=true;state.exceptionType=type;state.exceptionCode=code;};// Right now it's just a placeholder
 
 
 	/*! Check for REP.  Execute a string operation if the return value is true. 
