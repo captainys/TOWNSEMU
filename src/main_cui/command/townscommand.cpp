@@ -30,8 +30,11 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["DIS"]=CMD_DISABLE;
 	primaryCmdMap["PRINT"]=CMD_DUMP;
 	primaryCmdMap["PRI"]=CMD_DUMP;
+	primaryCmdMap["P"]=CMD_DUMP;
 	primaryCmdMap["DUMP"]=CMD_DUMP;
 	primaryCmdMap["DM"]=CMD_DUMP;
+	primaryCmdMap["STA"]=CMD_PRINT_STATUS;
+	primaryCmdMap["HIST"]=CMD_PRINT_HISTORY;
 	primaryCmdMap["BP"]=CMD_ADD_BREAKPOINT;
 	primaryCmdMap["BC"]=CMD_DELETE_BREAKPOINT;
 	primaryCmdMap["BL"]=CMD_LIST_BREAKPOINTS;
@@ -55,7 +58,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	dumpableMap["STATE"]=DUMP_CURRENT_STATUS;
 	dumpableMap["STA"]=DUMP_CURRENT_STATUS;
 	dumpableMap["S"]=DUMP_CURRENT_STATUS;
-	dumpableMap["CSEIPLOG"]=DUMP_CSEIP_LOG;
+	dumpableMap["HIST"]=DUMP_CSEIP_LOG;
 	dumpableMap["PIC"]=DUMP_PIC;
 	dumpableMap["DMA"]=DUMP_DMAC;
 	dumpableMap["DMAC"]=DUMP_DMAC;
@@ -109,7 +112,7 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Enable a feature." << std::endl;
 	std::cout << "DIS feature|DISABLE feature" << std::endl;
 	std::cout << "  Disable a feature." << std::endl;
-	std::cout << "PRINT info|PRI info" << std::endl;
+	std::cout << "PRINT info|PRI info|P info" << std::endl;
 	std::cout << "DUMP info|DM info" << std::endl;
 	std::cout << "  Print/Dump information." << std::endl;
 	std::cout << "BP EIP|BRK EIP" << std::endl;
@@ -141,8 +144,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "<< Information that can be printed >>" << std::endl;
 	std::cout << "CALLSTACK|CST" << std::endl;
 	std::cout << "  Call Stack"<<std::endl;
-	std::cout << "CSEIPLOG" << std::endl;
-	std::cout << "  Log of CS:EIP.  Can specify number of steps." << std::endl;
+	std::cout << "HIST" << std::endl;
+	std::cout << "  Log of CS:EIP.  Can specify number of steps.  Same as HIST command." << std::endl;
 	std::cout << "GDT" << std::endl;
 	std::cout << "  Protected-Mode Global Descriptor Table" << std::endl;
 	std::cout << "IDT" << std::endl;
@@ -152,7 +155,7 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "BREAKPOINT|BRK" << std::endl;
 	std::cout << "  Break Points"<<std::endl;
 	std::cout << "STATUS|STATE|STA|S"<<std::endl;
-	std::cout << "  Current status"<<std::endl;
+	std::cout << "  Current status.  Same as STA command."<<std::endl;
 	std::cout << "PIC" << std::endl;
 	std::cout << "  Pilot-In-Command. No!  Programmable Interrupt Controller." << std::endl;
 	std::cout << "DMA|DMAC" << std::endl;
@@ -308,6 +311,13 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,Command &c
 	case CMD_DONT_BREAK_ON:
 		Execute_ClearBreakOn(towns,cmd);
 		break;
+
+	case CMD_PRINT_HISTORY:
+		Execute_PrintHistory(towns,cmd);
+		break;
+	case CMD_PRINT_STATUS:
+		towns.PrintStatus();
+		break;
 	}
 }
 
@@ -452,27 +462,7 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 			towns.PrintTimer();
 			break;
 		case DUMP_CSEIP_LOG:
-			{
-				unsigned int n=20;
-				if(3<=cmd.argv.size())
-				{
-					n=cpputil::Atoi(cmd.argv[2].c_str());
-				}
-				auto list=towns.debugger.GetCSEIPLog(n);
-				for(auto iter=list.rbegin(); iter!=list.rend(); ++iter)
-				{
-					std::cout << cpputil::Ustox(iter->SEG) << ":" << cpputil::Uitox(iter->OFFSET);
-					std::cout << " ";
-					std::cout << "SS=" << cpputil::Ustox(iter->SS);
-					std::cout << " ";
-					std::cout << "ESP=" << cpputil::Uitox(iter->ESP);
-					if(1<iter->count)
-					{
-						std::cout << "(" << cpputil::Itoa(iter->count) << ")";
-					}
-					std::cout << std::endl;
-				}
-			}
+			Execute_PrintHistory(towns,cmd);
 			break;
 		}
 	}
@@ -693,3 +683,27 @@ void TownsCommandInterpreter::Execute_Disassemble32(FMTowns &towns,Command &cmd)
 	}
 	towns.var.disassemblePointer=farPtr;
 }
+
+void TownsCommandInterpreter::Execute_PrintHistory(FMTowns &towns,Command &cmd)
+{
+	unsigned int n=20;
+	if(3<=cmd.argv.size())
+	{
+		n=cpputil::Atoi(cmd.argv[2].c_str());
+	}
+	auto list=towns.debugger.GetCSEIPLog(n);
+	for(auto iter=list.rbegin(); iter!=list.rend(); ++iter)
+	{
+		std::cout << cpputil::Ustox(iter->SEG) << ":" << cpputil::Uitox(iter->OFFSET);
+		std::cout << " ";
+		std::cout << "SS=" << cpputil::Ustox(iter->SS);
+		std::cout << " ";
+		std::cout << "ESP=" << cpputil::Uitox(iter->ESP);
+		if(1<iter->count)
+		{
+			std::cout << "(" << cpputil::Itoa(iter->count) << ")";
+		}
+		std::cout << std::endl;
+	}
+}
+

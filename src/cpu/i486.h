@@ -469,6 +469,10 @@ public:
 		// [1] pp.26-1
 		OPSIZE_OVERRIDE=  0x66,
 		ADDRSIZE_OVERRIDE=0x67,
+
+
+		// 
+		FPU_FWAIT=        0x9B,
 	};
 	enum
 	{
@@ -516,6 +520,7 @@ public:
 		unsigned int segOverride;
 		unsigned int operandSize;
 		unsigned int addressSize;
+		unsigned int fwait;
 
 		unsigned int opCode;
 		unsigned int operandLen;
@@ -527,6 +532,7 @@ public:
 			instPrefix=0;
 			segOverride=0;
 			operandLen=0;
+			fwait=0;
 		}
 
 		/*! Decode operands.

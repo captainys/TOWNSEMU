@@ -55,6 +55,11 @@ i486DX::Instruction i486DX::FetchInstruction(const SegmentRegister &CS,unsigned 
 		case ADDRSIZE_OVERRIDE:
 			inst.addressSize^=48;
 			break;
+
+		case FPU_FWAIT:
+			inst.fwait=lastByte;
+			break;
+
 		default:
 			goto PREFIX_DONE;
 		}
@@ -1576,6 +1581,7 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 	case I486_OPCODE_FPU_D9_FNSTCW_M16_FNSTENV_F2XM1_FXAM_FXCH_FXTRACT_FYL2X_FYL2XP1_FABS_:// 0xD9,
 		if(0xF0<=operand[0] && operand[0]<=0xFF)
 		{
+			disasm="?FPUINST"+cpputil::Ubtox(opCode)+" "+cpputil::Ubtox(operand[0]);
 		}
 		else
 		{
@@ -1584,7 +1590,14 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 			case 7:
 				disasm=DisassembleTypicalOneOperand("FNSTCW",op1,operandSize);
 				break;
+			default:
+				disasm="?FPUINST"+cpputil::Ubtox(opCode)+" "+cpputil::Ubtox(operand[0]);
+				break;
 			}
+		}
+		if(FPU_FWAIT==fwait)
+		{
+			disasm="FWAIT "+disasm;
 		}
 		break;
 	case I486_OPCODE_FPU_DB_FNINIT_FRSTOR://     0xDB, 
@@ -1594,7 +1607,11 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		}
 		else
 		{
-			disasm="?FPUINST DBH";
+			disasm="?FPUINST"+cpputil::Ubtox(opCode)+" "+cpputil::Ubtox(operand[0]);
+		}
+		if(FPU_FWAIT==fwait)
+		{
+			disasm="FWAIT "+disasm;
 		}
 		break;
 	case I486_OPCODE_FPU_DF_FNSTSW_AX://  0xDF,
@@ -1604,7 +1621,11 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		}
 		else
 		{
-			disasm="?FPUINST DFH";
+			disasm="?FPUINST"+cpputil::Ubtox(opCode)+" "+cpputil::Ubtox(operand[0]);
+		}
+		if(FPU_FWAIT==fwait)
+		{
+			disasm="FWAIT "+disasm;
 		}
 		break;
 

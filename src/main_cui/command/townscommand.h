@@ -41,6 +41,8 @@ public:
 		// DISABLE CMDLOG
 
 		CMD_DUMP,
+		CMD_PRINT_STATUS,
+		CMD_PRINT_HISTORY,
 
 		CMD_ADD_BREAKPOINT,
 		CMD_DELETE_BREAKPOINT,
@@ -135,6 +137,8 @@ public:
 	void Execute_Disassemble(FMTowns &towns,Command &cmd);
 	void Execute_Disassemble16(FMTowns &towns,Command &cmd);
 	void Execute_Disassemble32(FMTowns &towns,Command &cmd);
+
+	void Execute_PrintHistory(FMTowns &towns,Command &cmd);
 };
 
 

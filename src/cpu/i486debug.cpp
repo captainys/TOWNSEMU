@@ -51,6 +51,10 @@ public:
 void i486Debugger::SpecialDebugInfo::BeforeRunOneInstruction(i486Debugger &debugger,i486DX &cpu,Memory &mem,InOut &io,const i486DX::Instruction &inst)
 {
 	inTheTargetRange=true;
+	if(0x9B==inst.fwait)
+	{
+		debugger.ExternalBreak("FWAIT Break");
+	}
 	if(0==inst.opCode && 0==inst.operand[0])
 	{
 		std::cout << cpputil::Ustox(inst.opCode) << " " << cpputil::Ubtox(inst.operand[0]) << std::endl;
