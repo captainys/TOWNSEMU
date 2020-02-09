@@ -5063,7 +5063,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		clocksPassed=6;
 		{
 			OperandValue value;
-			value.MakeWordOrDword(inst.operandSize,Pop(mem,inst.operandSize));
+			value.MakeByteWordOrDword(inst.operandSize,Pop(mem,inst.operandSize));
 			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
 		}
 		break;
@@ -5443,12 +5443,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			OperandValue value;
 			if(true==cond)
 			{
-				value.MakeDword(1);
+				value.MakeByte(1);
 				clocksPassed=4;
 			}
 			else
 			{
-				value.MakeDword(0);
+				value.MakeByte(0);
 				clocksPassed=3;
 			}
 			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);

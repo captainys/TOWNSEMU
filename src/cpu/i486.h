@@ -833,8 +833,8 @@ public:
 			byteData[2]=((dword>>16)&255);
 			byteData[3]=((dword>>24)&255);
 		}
-		/*! MakeDword makes a 4-byte long OperandValue.
-		    It updates numByte to 4.
+		/*! MakeWord makes a 2-byte long OperandValue.
+		    It updates numByte to 2.
 		*/
 		inline void MakeWord(unsigned int word)
 		{
@@ -842,10 +842,22 @@ public:
 			byteData[0]=(word&255);
 			byteData[1]=((word>>8)&255);
 		}
-		/*! Makes a word or dword value.  The size depends on the operandSize. */
-		inline void MakeWordOrDword(unsigned int operandSize,unsigned int value)
+		/*! MakeByte makes a 1-byte long OperandValue.
+		    It updates numByte to 1.
+		*/
+		inline void MakeByte(unsigned int word)
 		{
-			if(16==operandSize)
+			numBytes=1;
+			byteData[0]=(word&255);
+		}
+		/*! Makes a word or dword value.  The size depends on the operandSize. */
+		inline void MakeByteWordOrDword(unsigned int operandSize,unsigned int value)
+		{
+			if(8==operandSize)
+			{
+				MakeByte(value);
+			}
+			else if(16==operandSize)
 			{
 				MakeWord(value);
 			}
