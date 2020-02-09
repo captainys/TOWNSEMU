@@ -1180,12 +1180,12 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 		op1.DecodeMODR_MForDRRegister(operand[0]);
 		op2.Decode(addressSize,32,operand);
 		break;
-	case I486_OPCODE_MOV_FROM_TR://      0x240F,  Op1=R32, Op2=TR
+	case I486_OPCODE_MOV_FROM_TR://      0x240F,  Op1=R32, Op2=TR  TR is a test register!  Not Task Register!  How confusing!
 		op1.Decode(addressSize,32,operand);
-		op2.DecodeMODR_MForTRRegister(operand[0]);
+		op2.DecodeMODR_MForTestRegister(operand[0]);
 		break;
 	case I486_OPCODE_MOV_TO_TR://        0x260F,  Op1=TR, Op2=R32
-		op1.DecodeMODR_MForTRRegister(operand[0]);
+		op1.DecodeMODR_MForTestRegister(operand[0]);
 		op2.Decode(addressSize,32,operand);
 		break;
 
@@ -5514,7 +5514,13 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
 			}
 			break;
-		case 1: // 
+		case 1: // "STR"
+			{
+				clocksPassed=(OPER_ADDR==op1.operandType ? 3 : 2);
+				OperandValue value;
+				value.MakeWord(state.TR.selector);
+				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+			}
 			break;
 		case 2: // "LLDT"
 			{

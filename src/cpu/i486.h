@@ -67,14 +67,7 @@ public:
 
 		REG_GDT,
 		REG_LDT,
-		REG_TR0,
-		REG_TR1,
-		REG_TR2,
-		REG_TR3,
-		REG_TR4,
-		REG_TR5,
-		REG_TR6,
-		REG_TR7,
+		REG_TR,
 		REG_IDTR,
 		REG_CR0,
 		REG_CR1,
@@ -89,6 +82,15 @@ public:
 		REG_DR6,
 		REG_DR7,
 
+		REG_TEST0,
+		REG_TEST1,
+		REG_TEST2,
+		REG_TEST3,
+		REG_TEST4,
+		REG_TEST5,
+		REG_TEST6,
+		REG_TEST7,
+
 	REG_TOTAL_NUMBER_OF_REGISTERS
 	};
 	enum
@@ -99,7 +101,7 @@ public:
 		REG_SEGMENT_REG_BASE=REG_ES,
 		REG_CR_REG_BASE=REG_CR0,
 		REG_DR_REG_BASE=REG_DR0,
-		REG_TR_REG_BASE=REG_TR0,
+		REG_TEST_REG_BASE=REG_TEST0,
 	};
 	static const char *const RegToStr[REG_TOTAL_NUMBER_OF_REGISTERS];
 
@@ -300,9 +302,10 @@ public:
 		SegmentRegister sreg[6];
 		SystemAddressRegister GDTR,IDTR;
 		SystemAddressRegisterAndSelector LDTR;
-		SystemAddressRegisterAndSelectorAndAttrib TR[8];
+		SystemAddressRegisterAndSelectorAndAttrib TR; // Is there only one TR or 8 TRs?
 		unsigned int CR[4];
 		unsigned int DR[8];
+		unsigned int TEST[8];
 
 		const SegmentRegister &ES(void) const
 		{
@@ -496,6 +499,10 @@ public:
 		RESET_LDTRBASE=      0,
 		RESET_LDTRLIMIT=     0,
 		RESET_LDTRSELECTOR=  0,
+		RESET_TRBASE=        0,
+		RESET_TRLIMIT=       0,
+		RESET_TRSELECTOR=    0,
+		RESET_TRATTRIB=      0,
 		RESET_DR7=           0,
 		RESET_EAX=           0,
 		RESET_DX=       0x0400,
@@ -652,9 +659,9 @@ public:
 		/*! Decode operand for a DR register.
 		*/
 		void DecodeMODR_MForDRRegister(unsigned char MODR_M);
-		/*! Decode operand for a TR register.
+		/*! Decode operand for a Test register.
 		*/
-		void DecodeMODR_MForTRRegister(unsigned char MODR_M);
+		void DecodeMODR_MForTestRegister(unsigned char MODR_M);
 		/*! Decode operand and returns the number of bytes.
 		*/
 		void MakeByRegisterNumber(int dataSize,int regNum);

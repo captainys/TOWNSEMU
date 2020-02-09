@@ -238,11 +238,11 @@ void i486DX::Operand::DecodeMODR_MForDRRegister(unsigned char MODR_M)
 	operandType=OPER_REG;
 	reg=REG_DR_REG_BASE+REG_OPCODE;
 }
-void i486DX::Operand::DecodeMODR_MForTRRegister(unsigned char MODR_M)
+void i486DX::Operand::DecodeMODR_MForTestRegister(unsigned char MODR_M)
 {
 	auto REG_OPCODE=((MODR_M>>3)&7);
 	operandType=OPER_REG;
-	reg=REG_TR_REG_BASE+REG_OPCODE;
+	reg=REG_TEST_REG_BASE+REG_OPCODE;
 }
 void i486DX::Operand::MakeByRegisterNumber(int dataSize,int regNum)
 {
