@@ -386,6 +386,10 @@ enum
 	I486_OPCODE_SAHF=             0x9E,
 
 
+	I486_OPCODE_SHLD_RM_I8=       0xA40F,
+	I486_OPCODE_SHLD_RM_CL=       0xA50F,
+
+
 	I486_OPCODE_SCASB=            0xAE,
 	I486_OPCODE_SCAS=             0xAF,
 

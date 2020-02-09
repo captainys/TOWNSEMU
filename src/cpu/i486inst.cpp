@@ -671,6 +671,15 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		break;
 
 
+	case I486_OPCODE_SHLD_RM_I8://       0xA40F,
+		offset+=FetchOperandRM(inst,seg,offset,mem);
+		FetchOperand8(inst,seg,offset,mem);
+		break;
+	case I486_OPCODE_SHLD_RM_CL://       0xA50F,
+		FetchOperandRM(inst,seg,offset,mem);
+		break;
+
+
 	case I486_OPCODE_SCASB://            0xAE,
 	case I486_OPCODE_SCAS://             0xAF,
 		break;
@@ -1226,6 +1235,13 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 
 
 	case I486_OPCODE_SAHF://=             0x9E,
+		break;
+
+
+	case I486_OPCODE_SHLD_RM_I8://       0xA40F,
+	case I486_OPCODE_SHLD_RM_CL://       0xA50F,
+		op1.Decode(addressSize,operandSize,operand);
+		op2.DecodeMODR_MForRegister(operandSize,operand[0]);
 		break;
 
 
@@ -2242,6 +2258,26 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 
 	case I486_OPCODE_SAHF://=             0x9E,
 		disasm="SAHF";
+		break;
+
+
+	case I486_OPCODE_SHLD_RM_I8://       0xA40F,
+	case I486_OPCODE_SHLD_RM_CL://       0xA50F,
+		{
+			std::string count;
+			if(I486_OPCODE_SHLD_RM_CL==opCode)
+			{
+				count="CL";
+			}
+			else
+			{
+				count=cpputil::Ubtox(GetUimm8())+"H";
+			}
+			disasm="SHLD    ";
+			disasm+=op1.Disassemble()+",";
+			disasm+=op2.Disassemble()+",";
+			disasm+=count;
+		}
 		break;
 
 
@@ -5052,6 +5088,58 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		state.EFLAGS&=(~0xFF);
 		state.EFLAGS|=GetAH();
 		clocksPassed=2;
+		break;
+
+
+	case I486_OPCODE_SHLD_RM_I8://       0xA40F,
+	case I486_OPCODE_SHLD_RM_CL://       0xA50F,
+		{
+			unsigned int count;
+			if(I486_OPCODE_SHLD_RM_CL==inst.opCode)
+			{
+				clocksPassed=3;
+				count=GetCL();
+			}
+			else
+			{
+				clocksPassed=2;
+				count=inst.GetUimm8();
+			}
+			if(OPER_ADDR==op1.operandType)
+			{
+				++clocksPassed;
+			}
+			auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+			auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize/8);
+
+			unsigned long long int concat;
+			if(16==inst.operandSize)
+			{
+				auto v1=value1.GetAsDword();
+				concat=(v1<<16)|(value2.GetAsDword()&0xFFFF);
+				concat>>=(16-count);
+				value1.MakeWord(concat&0xFFFF);
+				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+				SetCF(0!=(concat&0x10000));
+				SetOverflowFlag((concat&0x8000)!=(v1&0x8000));
+				SetZeroFlag(0==(concat&0xFFFF));
+				SetSignFlag(0!=(concat&0x8000));
+				SetParityFlag(CheckParity(concat&0xFF));
+			}
+			else
+			{
+				unsigned long long int v1=value1.GetAsDword();
+				concat=(v1<<32)|value2.GetAsDword();
+				concat>>=(32-count);
+				value1.MakeDword(concat&0xFFFFFFFF);
+				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+				SetCF(0!=(concat&0x100000000LL));
+				SetOverflowFlag((concat&0x80000000)!=(v1&0x80000000));
+				SetZeroFlag(0==(concat&0xFFFFFFFF));
+				SetSignFlag(0!=(concat&0x80000000));
+				SetParityFlag(CheckParity(concat&0xFF));
+			}
+		}
 		break;
 
 
