@@ -1710,58 +1710,13 @@ public:
 
 	/*! Store a byte.
 	*/
-	inline void StoreByte(Memory &mem,int addressSize,SegmentRegister seg,unsigned int offset,unsigned char byteData)
-	{
-		if(true==AddressingMode16Bit(addressSize))
-		{
-			offset&=0xffff;
-		}
-		auto addr=seg.baseLinearAddr+offset;
-		if(true==PagingEnabled())
-		{
-			addr=LinearAddressToPhysicalAddress(addr,mem);
-		}
-		return mem.StoreByte(addr,byteData);
-	}
+	inline void StoreByte(Memory &mem,int addressSize,SegmentRegister seg,unsigned int offset,unsigned char byteData);
+
+
 
 	/*! Store a word or dword.  Operand size must be 16 or 32.
 	*/
-	inline void StoreWordOrDword(Memory &mem,unsigned int operandSize,int addressSize,SegmentRegister seg,unsigned int offset,unsigned int data)
-	{
-		if(true==AddressingMode16Bit(addressSize))
-		{
-			offset&=0xffff;
-		}
-		auto addr=seg.baseLinearAddr+offset;
-		if(true==PagingEnabled())
-		{
-			addr=LinearAddressToPhysicalAddress(addr,mem);
-			if(0xFF8<(addr&0xfff)) // May hit the page boundary
-			{
-				if(16==operandSize)
-				{
-					mem.StoreByte(addr,data&255);
-					mem.StoreByte(addr+1,(data>>8)&255);
-				}
-				else
-				{
-					mem.StoreByte(addr,data&255);
-					mem.StoreByte(addr+1,(data>>8)&255);
-					mem.StoreByte(addr+2,(data>>16)&255);
-					mem.StoreByte(addr+3,(data>>24)&255);
-				}
-				return;
-			}
-		}
-		if(16==operandSize)
-		{
-			mem.StoreWord(addr,data);
-		}
-		else
-		{
-			mem.StoreDword(addr,data);
-		}
-	}
+	inline void StoreWordOrDword(Memory &mem,unsigned int operandSize,int addressSize,SegmentRegister seg,unsigned int offset,unsigned int data);
 
 	/*! Fetch a byte for debugger.  It won't change exception status.
 	*/
@@ -2135,6 +2090,78 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 		}
 	}
 };
+
+inline void i486DX::StoreByte(Memory &mem,int addressSize,SegmentRegister seg,unsigned int offset,unsigned char byteData)
+{
+	if(true==AddressingMode16Bit(addressSize))
+	{
+		offset&=0xffff;
+	}
+	auto linearAddr=seg.baseLinearAddr+offset;
+	auto physicalAddr=linearAddr;
+	if(true==PagingEnabled())
+	{
+		physicalAddr=LinearAddressToPhysicalAddress(linearAddr,mem);
+	}
+	if(nullptr!=debuggerPtr)
+	{
+		debuggerPtr->MemWriteByte(*this,seg,offset,linearAddr,physicalAddr,byteData);
+	}
+	return mem.StoreByte(physicalAddr,byteData);
+}
+inline void i486DX::StoreWordOrDword(Memory &mem,unsigned int operandSize,int addressSize,SegmentRegister seg,unsigned int offset,unsigned int data)
+{
+	if(true==AddressingMode16Bit(addressSize))
+	{
+		offset&=0xffff;
+	}
+	auto linearAddr=seg.baseLinearAddr+offset;
+	auto physicalAddr=linearAddr;
+	if(true==PagingEnabled())
+	{
+		physicalAddr=LinearAddressToPhysicalAddress(linearAddr,mem);
+		if(0xFF8<(physicalAddr&0xfff)) // May hit the page boundary
+		{
+			if(16==operandSize)
+			{
+				if(nullptr!=debuggerPtr)
+				{
+					debuggerPtr->MemWriteWord(*this,seg,offset,linearAddr,physicalAddr,data);
+				}
+				mem.StoreByte(physicalAddr,data&255);
+				mem.StoreByte(physicalAddr+1,(data>>8)&255);
+			}
+			else
+			{
+				if(nullptr!=debuggerPtr)
+				{
+					debuggerPtr->MemWriteDword(*this,seg,offset,linearAddr,physicalAddr,data);
+				}
+				mem.StoreByte(physicalAddr,data&255);
+				mem.StoreByte(physicalAddr+1,(data>>8)&255);
+				mem.StoreByte(physicalAddr+2,(data>>16)&255);
+				mem.StoreByte(physicalAddr+3,(data>>24)&255);
+			}
+			return;
+		}
+	}
+	if(16==operandSize)
+	{
+		if(nullptr!=debuggerPtr)
+		{
+			debuggerPtr->MemWriteWord(*this,seg,offset,linearAddr,physicalAddr,data);
+		}
+		mem.StoreWord(physicalAddr,data);
+	}
+	else
+	{
+		if(nullptr!=debuggerPtr)
+		{
+			debuggerPtr->MemWriteDword(*this,seg,offset,linearAddr,physicalAddr,data);
+		}
+		mem.StoreDword(physicalAddr,data);
+	}
+}
 
 inline void i486DX::IOOut8(InOut &io,unsigned int ioport,unsigned int data)
 {
