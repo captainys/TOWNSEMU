@@ -5556,7 +5556,6 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 						LoadDescriptorTableRegister(state.GDTR,32,byteData);
 					}
 				}
-				std::cout << cpputil::Ustox(value.GetAsWord()) << std::endl;
 			}
 			break;
 		case 3: // 
