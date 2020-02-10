@@ -65,7 +65,7 @@ void i486Debugger::SpecialDebugInfo::BeforeRunOneInstruction(i486Debugger &debug
 	if(0==inst.opCode && 0==inst.operand[0])
 	{
 		std::cout << cpputil::Ustox(inst.opCode) << " " << cpputil::Ubtox(inst.operand[0]) << std::endl;
-		debugger.ExternalBreak("SpecialBreak1");
+		debugger.ExternalBreak("SpecialBreak opCode==0 && operand[0]==0");
 	}
 	if(cpu.state.CS().value==0x03A4)
 	{
@@ -132,30 +132,33 @@ void i486Debugger::SpecialDebugInfo::Interrupt(i486Debugger &debugger,const i486
 }
 void i486Debugger::SpecialDebugInfo::MemWriteByte(i486Debugger &debugger,const i486DX &cpu,const i486DX::SegmentRegister &seg,unsigned int offset,unsigned int linear,unsigned int physical,unsigned int data)
 {
+	/* I think it was stack overflow that I fixed.  Leave it as a comment for the time being.
 	const unsigned int ds=0x4B92;
 	const unsigned int a0=0x3C46,a1=0x3C4A;
 	if(ds*0x10+a0<=physical && physical<=ds*0x10+a1)
 	{
 		debugger.ExternalBreak("Writing DS:3C46 "+cpputil::Uitox(physical));
-	}
+	} */
 }
 void i486Debugger::SpecialDebugInfo::MemWriteWord(i486Debugger &debugger,const i486DX &cpu,const i486DX::SegmentRegister &seg,unsigned int offset,unsigned int linear,unsigned int physical,unsigned int data)
 {
+	/* I think it was stack overflow that I fixed.  Leave it as a comment for the time being.
 	const unsigned int ds=0x4B92;
 	const unsigned int a0=0x3C46,a1=0x3C4A;
 	if(ds*0x10+a0<=physical && physical<=ds*0x10+a1)
 	{
 		debugger.ExternalBreak("Writing DS:3C46 "+cpputil::Uitox(physical));
-	}
+	} */
 }
 void i486Debugger::SpecialDebugInfo::MemWriteDword(i486Debugger &debugger,const i486DX &cpu,const i486DX::SegmentRegister &seg,unsigned int offset,unsigned int linear,unsigned int physical,unsigned int data)
 {
+	/* I think it was stack overflow that I fixed.  Leave it as a comment for the time being.
 	const unsigned int ds=0x4B92;
 	const unsigned int a0=0x3C46,a1=0x3C4A;
 	if(ds*0x10+a0<=physical && physical<=ds*0x10+a1)
 	{
 		debugger.ExternalBreak("Writing DS:3C46 "+cpputil::Uitox(physical));
-	}
+	} */
 }
 void i486Debugger::SpecialDebugInfo::IOWriteByte(i486Debugger &debugger,const i486DX &cpu,unsigned int ioport,unsigned int data)
 {

@@ -23,6 +23,9 @@ void TownsTimer::State::Reset(void)
 		ch.bcd=false;
 		ch.OUT=false;
 		ch.latched=false;
+
+		ch.RL=1;
+		ch.accessLow=true;
 	}
 	for(auto &b : TMMSK)
 	{
@@ -50,11 +53,19 @@ unsigned short TownsTimer::State::ReadLatchedCounter(unsigned int ch) const
 	CH.latched=false;
 	return CH.latchedCounter;
 }
-void TownsTimer::State::SetChannelCounterLow(unsigned int ch,unsigned int value)
+void TownsTimer::State::SetChannelCounter(unsigned int ch,unsigned int value)
 {
 	auto &CH=channels[ch&7];
-	CH.counterInitialValue&=0xff00;
-	CH.counterInitialValue|=(value&0xff);
+	if(true==CH.accessLow)
+	{
+		CH.counterInitialValue&=0xff00;
+		CH.counterInitialValue|=(value&0xff);
+	}
+	else
+	{
+		CH.counterInitialValue&=0xff;
+		CH.counterInitialValue|=((value&0xff)<<8);
+	}
 	switch(CH.mode)
 	{
 	case 0:
@@ -62,32 +73,65 @@ void TownsTimer::State::SetChannelCounterLow(unsigned int ch,unsigned int value)
 		break;
 	case 3:
 		CH.OUT=true;
-		CH.counterInitialValue+=(value&1); // Force it to be even number.
+		if(true==CH.accessLow)
+		{
+			CH.counterInitialValue+=(value&1); // Force it to be even number.
+		}
 		break;
 	}
 	CH.counter=CH.counterInitialValue;
+
+	// Don't do it until the end.  CH.accessLow is checked inside switch(CH.mode).
+	if(3==CH.RL)
+	{
+		CH.accessLow=(true==CH.accessLow ? false : true);
+	}
 }
-void TownsTimer::State::SetChannelCounterHigh(unsigned int ch,unsigned int value)
+unsigned int TownsTimer::State::ReadChannelCounter(unsigned int ch) // accessLow may flip.  Not to be const.
 {
+	unsigned int data=0;
 	auto &CH=channels[ch&7];
-	CH.counterInitialValue&=0x00ff;
-	CH.counterInitialValue|=((value&0xff)<<8);
-	CH.counter=CH.counterInitialValue;
-	switch(CH.mode)
+	if(true==CH.accessLow)
 	{
-	case 0:
-		CH.OUT=false;
-		break;
-	case 3:
-		CH.OUT=true;
-		break;
+		data=CH.latchedCounter&0xff;
 	}
+	else
+	{
+		data=(CH.latchedCounter>>8)&0xff;
+	}
+	if(3==CH.RL)
+	{
+		CH.accessLow=(true==CH.accessLow ? false : true);
+	}
+	return data;
 }
 void TownsTimer::State::ProcessControlCommand(unsigned int ch,unsigned int cmd)
 {
 	auto &CH=channels[ch&7];
 	CH.lastCmd=cmd;
 	CH.bcd=(0!=(cmd&1));
+
+	auto RL=(cmd>>4)&3;
+	if(0==RL)
+	{
+		Latch(ch);
+	}
+	else
+	{
+		CH.RL=RL;
+		if(1==RL)
+		{
+			CH.accessLow=true;
+		}
+		else if(2==RL)
+		{
+			CH.accessLow=false;
+		}
+		else if(3==RL)
+		{
+			CH.accessLow=true;
+		}
+	}
 }
 void TownsTimer::State::TickIn(unsigned int nTick)
 {
@@ -155,27 +199,16 @@ void TownsTimer::State::TickIn(unsigned int nTick)
 {
 	switch(ioport)
 	{
-	case TOWNSIO_TIMER0_COUNT_LOW://         0x40,
-		state.SetChannelCounterLow(0,data);
+	case TOWNSIO_TIMER0_COUNT://             0x40,
+		state.SetChannelCounter(0,data);
 		break;
-	case TOWNSIO_TIMER0_COUNT_HIGH://        0x41,
-		state.SetChannelCounterHigh(0,data);
-		break;
-	case TOWNSIO_TIMER1_COUNT_LOW://         0x42,
-		state.SetChannelCounterLow(1,data);
+	case TOWNSIO_TIMER1_COUNT://             0x42,
+		state.SetChannelCounter(1,data);
 		state.TMOUT[1]=false;
 		UpdatePICRequest();
 		break;
-	case TOWNSIO_TIMER1_COUNT_HIGH://        0x43,
-		state.SetChannelCounterLow(1,data);
-		state.TMOUT[1]=false;
-		UpdatePICRequest();
-		break;
-	case TOWNSIO_TIMER2_COUNT_LOW://         0x44,
-		state.SetChannelCounterLow(2,data);
-		break;
-	case TOWNSIO_TIMER2_COUNT_HIGH://        0x45,
-		state.SetChannelCounterLow(2,data);
+	case TOWNSIO_TIMER2_COUNT://             0x44,
+		state.SetChannelCounter(2,data);
 		break;
 	case TOWNSIO_TIMER_0_1_2_CTRL://         0x46,
 		{
@@ -183,23 +216,14 @@ void TownsTimer::State::TickIn(unsigned int nTick)
 			state.ProcessControlCommand(ch,data&0x3f);
 		}
 		break;
-	case TOWNSIO_TIMER3_COUNT_LOW://         0x50,
-		state.SetChannelCounterLow(3,data);
+	case TOWNSIO_TIMER3_COUNT://             0x50,
+		state.SetChannelCounter(3,data);
 		break;
-	case TOWNSIO_TIMER3_COUNT_HIGH://        0x51,
-		state.SetChannelCounterLow(3,data);
+	case TOWNSIO_TIMER4_COUNT://             0x52,
+		state.SetChannelCounter(4,data);
 		break;
-	case TOWNSIO_TIMER4_COUNT_LOW://         0x52,
-		state.SetChannelCounterLow(4,data);
-		break;
-	case TOWNSIO_TIMER4_COUNT_HIGH://        0x53,
-		state.SetChannelCounterLow(4,data);
-		break;
-	case TOWNSIO_TIMER5_COUNT_LOW://         0x54,
-		state.SetChannelCounterLow(5,data);
-		break;
-	case TOWNSIO_TIMER5_COUNT_HIGH://        0x55,
-		state.SetChannelCounterLow(5,data);
+	case TOWNSIO_TIMER5_COUNT://             0x54,
+		state.SetChannelCounter(5,data);
 		break;
 	case TOWNSIO_TIMER_3_4_5_CTRL://         0x56,
 		{
@@ -224,45 +248,26 @@ void TownsTimer::State::TickIn(unsigned int nTick)
 	unsigned char data=0xff;
 	switch(ioport)
 	{
-	case TOWNSIO_TIMER0_COUNT_LOW://         0x40,
-		data=(state.channels[0].latchedCounter&0xff);
+	case TOWNSIO_TIMER0_COUNT://             0x40,
+		data=state.ReadChannelCounter(0);
 		break;
-	case TOWNSIO_TIMER0_COUNT_HIGH://        0x41,
-		data=((state.channels[0].latchedCounter>>8)&0xff);
-		break;
-	case TOWNSIO_TIMER1_COUNT_LOW://         0x42,
-		data=(state.channels[1].latchedCounter&0xff);
+	case TOWNSIO_TIMER1_COUNT://             0x42,
+		data=state.ReadChannelCounter(1);
 		state.TMOUT[1]=false;
 		break;
-	case TOWNSIO_TIMER1_COUNT_HIGH://        0x43,
-		data=((state.channels[1].latchedCounter>>8)&0xff);
-		state.TMOUT[1]=false;
-		break;
-	case TOWNSIO_TIMER2_COUNT_LOW://         0x44,
-		data=(state.channels[2].latchedCounter&0xff);
-		break;
-	case TOWNSIO_TIMER2_COUNT_HIGH://        0x45,
-		data=((state.channels[2].latchedCounter>>8)&0xff);
+	case TOWNSIO_TIMER2_COUNT://             0x44,
+		data=state.ReadChannelCounter(2);
 		break;
 	case TOWNSIO_TIMER_0_1_2_CTRL://         0x46,
 		break;
-	case TOWNSIO_TIMER3_COUNT_LOW://         0x50,
-		data=(state.channels[3].latchedCounter&0xff);
+	case TOWNSIO_TIMER3_COUNT://             0x50,
+		data=state.ReadChannelCounter(3);
 		break;
-	case TOWNSIO_TIMER3_COUNT_HIGH://        0x51,
-		data=((state.channels[3].latchedCounter>>8)&0xff);
+	case TOWNSIO_TIMER4_COUNT://             0x52,
+		data=state.ReadChannelCounter(4);
 		break;
-	case TOWNSIO_TIMER4_COUNT_LOW://         0x52,
-		data=(state.channels[4].latchedCounter&0xff);
-		break;
-	case TOWNSIO_TIMER4_COUNT_HIGH://        0x53,
-		data=((state.channels[4].latchedCounter>>8)&0xff);
-		break;
-	case TOWNSIO_TIMER5_COUNT_LOW://         0x54,
-		data=(state.channels[5].latchedCounter&0xff);
-		break;
-	case TOWNSIO_TIMER5_COUNT_HIGH://        0x55,
-		data=((state.channels[5].latchedCounter>>8)&0xff);
+	case TOWNSIO_TIMER5_COUNT://             0x54,
+		data=state.ReadChannelCounter(5);
 		break;
 	case TOWNSIO_TIMER_3_4_5_CTRL://         0x56,
 		break;

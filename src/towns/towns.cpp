@@ -222,19 +222,13 @@ FMTowns::FMTowns() :
 	io.AddDevice(&sound,TOWNSIO_SOUND_PCM_CH_ON_OFF);//     0x4F8, // [2] pp.19,
 
 
-	io.AddDevice(&timer,TOWNSIO_TIMER0_COUNT_LOW);//         0x40,
-	io.AddDevice(&timer,TOWNSIO_TIMER0_COUNT_HIGH);//        0x41,
-	io.AddDevice(&timer,TOWNSIO_TIMER1_COUNT_LOW);//         0x42,
-	io.AddDevice(&timer,TOWNSIO_TIMER1_COUNT_HIGH);//        0x43,
-	io.AddDevice(&timer,TOWNSIO_TIMER2_COUNT_LOW);//         0x44,
-	io.AddDevice(&timer,TOWNSIO_TIMER2_COUNT_HIGH);//        0x45,
+	io.AddDevice(&timer,TOWNSIO_TIMER0_COUNT);//             0x40,
+	io.AddDevice(&timer,TOWNSIO_TIMER1_COUNT);//             0x42,
+	io.AddDevice(&timer,TOWNSIO_TIMER2_COUNT);//             0x44,
 	io.AddDevice(&timer,TOWNSIO_TIMER_0_1_2_CTRL);//         0x46,
-	io.AddDevice(&timer,TOWNSIO_TIMER3_COUNT_LOW);//         0x50,
-	io.AddDevice(&timer,TOWNSIO_TIMER3_COUNT_HIGH);//        0x51,
-	io.AddDevice(&timer,TOWNSIO_TIMER4_COUNT_LOW);//         0x52,
-	io.AddDevice(&timer,TOWNSIO_TIMER4_COUNT_HIGH);//        0x53,
-	io.AddDevice(&timer,TOWNSIO_TIMER5_COUNT_LOW);//         0x54,
-	io.AddDevice(&timer,TOWNSIO_TIMER5_COUNT_HIGH);//        0x55,
+	io.AddDevice(&timer,TOWNSIO_TIMER3_COUNT);//             0x50,
+	io.AddDevice(&timer,TOWNSIO_TIMER4_COUNT);//             0x52,
+	io.AddDevice(&timer,TOWNSIO_TIMER5_COUNT);//             0x54,
 	io.AddDevice(&timer,TOWNSIO_TIMER_3_4_5_CTRL);//         0x56,
 	io.AddDevice(&timer,TOWNSIO_TIMER_INT_CTRL_INT_REASON);
 

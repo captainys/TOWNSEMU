@@ -38,9 +38,14 @@ public:
 			unsigned short increment;
 			bool OUT;
 			mutable bool latched,bcd;
+
+			unsigned int RL;
+			bool accessLow; // true->access low byte  false->access high byte
 		};
 		unsigned long long int lastTickTimeInNS;
 		Channel channels[NUM_CHANNELS];
+
+
 		bool TMMSK[2];  // Only Channels 0 and 1.
 		bool TMOUT[2];
 		bool SOUND;
@@ -50,8 +55,8 @@ public:
 
 		void Latch(unsigned int ch);
 		unsigned short ReadLatchedCounter(unsigned int ch) const;
-		void SetChannelCounterLow(unsigned int ch,unsigned int value);
-		void SetChannelCounterHigh(unsigned int ch,unsigned int value);
+		void SetChannelCounter(unsigned int ch,unsigned int value);
+		unsigned int ReadChannelCounter(unsigned int ch); // accessLow may flip.  Not to be const.
 		void ProcessControlCommand(unsigned int ch,unsigned int cmd);
 
 		void TickIn(unsigned int nTick);
