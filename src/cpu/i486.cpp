@@ -133,10 +133,12 @@ void i486DX::Reset(void)
 
 	state.EAX()=RESET_EAX;
 	SetDX(RESET_DX);
-	state.CR[0]=RESET_CR0;
+	SetCR(0,RESET_CR0);
 	if(true!=state.fpuState.FPUEnabled)
 	{
-		state.CR[0]&=(~CR0_MATH_PRESENT);
+		auto cr0=state.GetCR(0);
+		cr0&=(~CR0_MATH_PRESENT);
+		SetCR(0,cr0);
 	}
 
 	for(auto &t : state.TEST)
@@ -196,10 +198,10 @@ std::vector <std::string> i486DX::GetStateText(void) const
 	    +"  ");
 
 	text.push_back(
-	     "CR0="+cpputil::Uitox(state.CR[0])
-	    +"  CR1="+cpputil::Uitox(state.CR[1])
-	    +"  CR2="+cpputil::Uitox(state.CR[2])
-	    +"  CR3="+cpputil::Uitox(state.CR[3])
+	     "CR0="+cpputil::Uitox(state.GetCR(0))
+	    +"  CR1="+cpputil::Uitox(state.GetCR(1))
+	    +"  CR2="+cpputil::Uitox(state.GetCR(2))
+	    +"  CR3="+cpputil::Uitox(state.GetCR(3))
 	    );
 
 	text.push_back(
@@ -615,13 +617,13 @@ unsigned int i486DX::GetRegisterValue(int reg) const
 	//case REG_IDTR:
 
 	case REG_CR0:
-		return state.CR[0];
+		return state.GetCR(0);
 	case REG_CR1:
-		return state.CR[1];
+		return state.GetCR(1);
 	case REG_CR2:
-		return state.CR[2];
+		return state.GetCR(2);
 	case REG_CR3:
-		return state.CR[3];
+		return state.GetCR(3);
 
 	case REG_DR0:
 	case REG_DR1:
@@ -1928,89 +1930,31 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 			value.byteData[4]=(state.IDTR.limit&255);
 			value.byteData[5]=((state.IDTR.limit>>8)&255);
 			break;
+
 		case REG_CR0:
-			value.numBytes=4;
-			value.byteData[0]=(state.CR[0]&255);
-			value.byteData[1]=((state.CR[0]>>8)&255);
-			value.byteData[2]=((state.CR[0]>>16)&255);
-			value.byteData[3]=((state.CR[0]>>24)&255);
-			break;
 		case REG_CR1:
-			value.numBytes=4;
-			value.byteData[0]=(state.CR[1]&255);
-			value.byteData[1]=((state.CR[1]>>8)&255);
-			value.byteData[2]=((state.CR[1]>>16)&255);
-			value.byteData[3]=((state.CR[1]>>24)&255);
-			break;
 		case REG_CR2:
-			value.numBytes=4;
-			value.byteData[0]=(state.CR[2]&255);
-			value.byteData[1]=((state.CR[2]>>8)&255);
-			value.byteData[2]=((state.CR[2]>>16)&255);
-			value.byteData[3]=((state.CR[2]>>24)&255);
-			break;
 		case REG_CR3:
 			value.numBytes=4;
-			value.byteData[0]=(state.CR[3]&255);
-			value.byteData[1]=((state.CR[3]>>8)&255);
-			value.byteData[2]=((state.CR[3]>>16)&255);
-			value.byteData[3]=((state.CR[3]>>24)&255);
+			value.byteData[0]=( state.GetCR(op.reg-REG_CR0)&255);
+			value.byteData[1]=((state.GetCR(op.reg-REG_CR0)>>8)&255);
+			value.byteData[2]=((state.GetCR(op.reg-REG_CR0)>>16)&255);
+			value.byteData[3]=((state.GetCR(op.reg-REG_CR0)>>24)&255);
 			break;
+
 		case REG_DR0:
-			value.numBytes=4;
-			value.byteData[0]=(state.DR[0]&255);
-			value.byteData[1]=((state.DR[0]>>8)&255);
-			value.byteData[2]=((state.DR[0]>>16)&255);
-			value.byteData[3]=((state.DR[0]>>24)&255);
-			break;
 		case REG_DR1:
-			value.numBytes=4;
-			value.byteData[0]=(state.DR[1]&255);
-			value.byteData[1]=((state.DR[1]>>8)&255);
-			value.byteData[2]=((state.DR[1]>>16)&255);
-			value.byteData[3]=((state.DR[1]>>24)&255);
-			break;
 		case REG_DR2:
-			value.numBytes=4;
-			value.byteData[0]=(state.DR[2]&255);
-			value.byteData[1]=((state.DR[2]>>8)&255);
-			value.byteData[2]=((state.DR[2]>>16)&255);
-			value.byteData[3]=((state.DR[2]>>24)&255);
-			break;
 		case REG_DR3:
-			value.numBytes=4;
-			value.byteData[0]=(state.DR[3]&255);
-			value.byteData[1]=((state.DR[3]>>8)&255);
-			value.byteData[2]=((state.DR[3]>>16)&255);
-			value.byteData[3]=((state.DR[3]>>24)&255);
-			break;
 		case REG_DR4:
-			value.numBytes=4;
-			value.byteData[0]=(state.DR[4]&255);
-			value.byteData[1]=((state.DR[4]>>8)&255);
-			value.byteData[2]=((state.DR[4]>>16)&255);
-			value.byteData[3]=((state.DR[4]>>24)&255);
-			break;
 		case REG_DR5:
-			value.numBytes=4;
-			value.byteData[0]=(state.DR[5]&255);
-			value.byteData[1]=((state.DR[5]>>8)&255);
-			value.byteData[2]=((state.DR[5]>>16)&255);
-			value.byteData[3]=((state.DR[5]>>24)&255);
-			break;
 		case REG_DR6:
-			value.numBytes=4;
-			value.byteData[0]=(state.DR[6]&255);
-			value.byteData[1]=((state.DR[6]>>8)&255);
-			value.byteData[2]=((state.DR[6]>>16)&255);
-			value.byteData[3]=((state.DR[6]>>24)&255);
-			break;
 		case REG_DR7:
 			value.numBytes=4;
-			value.byteData[0]=(state.DR[7]&255);
-			value.byteData[1]=((state.DR[7]>>8)&255);
-			value.byteData[2]=((state.DR[7]>>16)&255);
-			value.byteData[3]=((state.DR[7]>>24)&255);
+			value.byteData[0]=( state.DR[op.reg-REG_DR0]&255);
+			value.byteData[1]=((state.DR[op.reg-REG_DR0]>>8)&255);
+			value.byteData[2]=((state.DR[op.reg-REG_DR0]>>16)&255);
+			value.byteData[3]=((state.DR[op.reg-REG_DR0]>>24)&255);
 			break;
 
 		case REG_TEST0:
@@ -2248,16 +2192,16 @@ void i486DX::StoreOperandValue(
 			Abort("i486DX::StoreOperandValue, I don't think IDTR can be an operand.");
 			break;
 		case REG_CR0:
-			state.CR[0]=cpputil::GetDword(value.byteData);
+			SetCR(0,cpputil::GetDword(value.byteData));
 			break;
 		case REG_CR1:
-			state.CR[1]=cpputil::GetDword(value.byteData);
+			SetCR(1,cpputil::GetDword(value.byteData));
 			break;
 		case REG_CR2:
-			state.CR[2]=cpputil::GetDword(value.byteData);
+			SetCR(2,cpputil::GetDword(value.byteData));
 			break;
 		case REG_CR3:
-			state.CR[3]=cpputil::GetDword(value.byteData);
+			SetCR(3,cpputil::GetDword(value.byteData));
 			break;
 		case REG_DR0:
 			state.DR[0]=cpputil::GetDword(value.byteData);

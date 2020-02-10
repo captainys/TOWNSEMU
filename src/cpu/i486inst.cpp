@@ -4791,8 +4791,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{
 				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,2);
 				auto i=value.GetAsDword();
-				state.CR[0]&=(~0xFFFF);
-				state.CR[0]|=(i&0xFFFF);
+				auto cr0=state.GetCR(0);
+				cr0&=(~0xFFFF);
+				cr0|=(i&0xFFFF);
+				SetCR(0,cr0);
 			}
 			break;
 		default:

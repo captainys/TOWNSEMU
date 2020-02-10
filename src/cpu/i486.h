@@ -303,7 +303,9 @@ public:
 		SystemAddressRegister GDTR,IDTR;
 		SystemAddressRegisterAndSelector LDTR;
 		SystemAddressRegisterAndSelectorAndAttrib TR; // Is there only one TR or 8 TRs?
+	private:
 		unsigned int CR[4];
+	public:
 		unsigned int DR[8];
 		unsigned int TEST[8];
 
@@ -399,6 +401,20 @@ public:
 			}
 			return DS();
 		}
+
+		inline unsigned int GetCR(unsigned int num) const
+		{
+			return CR[num&3];
+		}
+
+		/*! This function must NOT be used anywhere outside i486DX::SetCR.
+		*/
+		inline void _SetCR(unsigned int num,unsigned int value)
+		{
+			CR[num]=value;
+		}
+
+
 
 		FPUState fpuState;
 
@@ -1495,6 +1511,19 @@ public:
 		}
 	}
 
+
+	/*! Write to Control Register.  If num==3, it builds Page Table cache.
+	*/
+	inline void SetCR(unsigned int num,unsigned int value)
+	{
+		state._SetCR(num,value);
+		if(3==num)
+		{
+			// RebuildPageTableCache();
+		}
+	}
+
+
 	/*! Issue an interrupt.
 	    This function does not check Interrupt-Enabled Flag (IF),
 	    nor check mask state of PIC.
@@ -1583,7 +1612,7 @@ public:
 
 	inline bool IsInRealMode(void) const
 	{
-		return (0==(state.CR[0]&CR0_PROTECTION_ENABLE));
+		return (0==(state.GetCR(0)&CR0_PROTECTION_ENABLE));
 	}
 
 	/*! Returns a register value. 
@@ -1618,7 +1647,7 @@ public:
 	*/
 	inline bool PagingEnabled(void) const
 	{
-		return 0!=(state.CR[0]&CR0_PAGING_ENABLED);
+		return 0!=(state.GetCR(0)&CR0_PAGING_ENABLED);
 	}
 
 	/*! Returns true if the opCode needs one more byte to be fully qualified.
