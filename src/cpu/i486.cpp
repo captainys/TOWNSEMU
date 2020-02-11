@@ -243,6 +243,9 @@ std::vector <std::string> i486DX::GetGDTText(const Memory &mem) const
 	std::vector <std::string> text;
 	text.push_back("GDT  Limit=");
 	text.back()+=cpputil::Ustox(state.GDTR.limit);
+	text.back()+="  LinearBase=";
+	text.back()+=cpputil::Uitox(state.GDTR.linearBaseAddr);
+
 
 	for(unsigned int selector=0; selector<state.GDTR.limit; selector+=8)
 	{

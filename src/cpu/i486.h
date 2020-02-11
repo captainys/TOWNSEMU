@@ -536,6 +536,7 @@ public:
 
 	enum
 	{
+		EXCEPTION_NONE,
 		EXCEPTION_GP,
 		EXCEPTION_UD,
 		EXCEPTION_SS,
@@ -1656,10 +1657,50 @@ public:
 
 	/*!
 	*/
+	inline unsigned long LinearAddressToPhysicalAddress(
+	    unsigned int &exceptionType,unsigned int &exceptionCode,unsigned int linearAddr,const Memory &mem) const
+	{
+		unsigned int pageDirectoryIndex=((linearAddr>>22)&1023);
+		unsigned int pageTableIndex=((linearAddr>>12)&1023);
+		unsigned int offset=(linearAddr&4095);
+
+		const unsigned int pageDirectoryPtr=state.GetCR(3)&0xFFFFF000;
+
+		unsigned int pageTableInfo=mem.FetchDword(pageDirectoryPtr+(pageDirectoryIndex<<2));
+		if(0==(pageTableInfo&1))
+		{
+			exceptionCode=EXCEPTION_PF;
+			exceptionType=0;
+			return 0;
+		}
+
+		const unsigned int pageTablePtr=(pageTableInfo&0xFFFFF000);
+		unsigned int pageInfo=mem.FetchDword(pageTablePtr+(pageTableIndex<<2));
+		if(0==(pageInfo&1))
+		{
+			exceptionCode=EXCEPTION_PF;
+			exceptionType=0;
+			return 0;
+		}
+
+		auto physicalAddr=(pageInfo&0xFFFFF000)+offset;
+		exceptionType=EXCEPTION_NONE;
+		return linearAddr;
+	}
+
+
+	/*!
+	*/
 	inline unsigned long LinearAddressToPhysicalAddress(unsigned int linearAddr,const Memory &mem) const
 	{
-		Abort("Paging not supported yet.");
-		return linearAddr;
+		unsigned int exceptionType,exceptionCode;
+		auto physicalAddr=LinearAddressToPhysicalAddress(exceptionType,exceptionCode,linearAddr,mem);
+		if(EXCEPTION_NONE!=exceptionType)
+		{
+		// 	RaiseException(exceptionType,exceptionCode);
+		// 	return 0;
+		}
+		return physicalAddr;
 	}
 
 

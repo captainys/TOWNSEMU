@@ -14,7 +14,53 @@ std::vector <std::string> miscutil::MakeMemDump(const i486DX &cpu,const Memory &
 
 	if((ptr.SEG&0xffff0000)==i486DX::FarPointer::LINEAR_ADDR)
 	{
-		text.push_back("Linear Address Dump not supported yet.");
+		for(auto addr0=lineStart; addr0<lineEnd; addr0+=16)
+		{
+			std::string str;
+
+			str+=cpputil::Uitox(addr0);
+			for(int i=0; i<16; ++i)
+			{
+				auto addr=addr0+i;
+				if(addr<ptr.OFFSET || ptr.OFFSET+length<=addr)
+				{
+					str+="   ";
+				}
+				else
+				{
+					str+=" "+cpputil::Ubtox(cpu.FetchByteByLinearAddress(mem,addr));
+				}
+			}
+			str.push_back('|');
+			for(int i=0; i<16; ++i)
+			{
+				auto addr=addr0+i;
+				if(addr<ptr.OFFSET || ptr.OFFSET+length<=addr)
+				{
+					str.push_back(' ');
+				}
+				else
+				{
+					auto byte=cpu.FetchByteByLinearAddress(mem,addr);
+					if(byte<' ' || (true!=shiftJIS && 0x80<=byte))
+					{
+						str.push_back(' ');
+					}
+					else
+					{
+						str.push_back(byte);
+					}
+				}
+			}
+			if(true==shiftJIS)
+			{
+				// Make sure to break first char of shift-JIS
+				str.push_back(' ');
+				str.push_back(' ');
+			}
+
+			text.push_back((std::string &&)str);
+		}
 	}
 	else if((ptr.SEG&0xffff0000)==i486DX::FarPointer::PHYS_ADDR)
 	{

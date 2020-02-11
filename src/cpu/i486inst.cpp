@@ -5555,7 +5555,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 							(seg.baseLinearAddr>>16)&0xff,
 							(seg.baseLinearAddr>>24)&0xff,
 						};
-						LoadDescriptorTableRegister(state.GDTR,32,byteData);
+						LoadDescriptorTableRegister(state.LDTR,32,byteData);
 					}
 				}
 			}
