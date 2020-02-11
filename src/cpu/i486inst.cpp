@@ -4883,6 +4883,21 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 
 
+	case I486_OPCODE_LSL://              0x030F,
+		clocksPassed=10;
+		{
+			auto selectorValue=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize/8); // What to do with high 16 bits?
+			auto selector=selectorValue.GetAsWord();
+			SegmentRegister seg;
+			LoadSegmentRegisterQuiet(seg,selector,mem,false);
+			OperandValue limit;
+			limit.MakeDword(seg.limit);
+			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,limit);
+			SetZeroFlag(true);
+		}
+		break;
+
+
 	case I486_OPCODE_MOV_FROM_SEG: //     0x8C,
 		Move(mem,inst.addressSize,inst.segOverride,op1,op2);
 		clocksPassed=3;
