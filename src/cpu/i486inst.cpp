@@ -534,6 +534,11 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		break;
 
 
+	case I486_OPCODE_LSL://              0x030F,
+		FetchOperandRM(inst,seg,offset,mem);
+		break;
+
+
 	case I486_OPCODE_MOV_FROM_R8: //      0x88,
 		// Example:  88 4c ff        MOV CL,[SI-1]     In Real Mode
 		// Example:  88 10           MOV DL,[BX+SI]    In Real Mode
@@ -1098,6 +1103,12 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 	case I486_OPCODE_LOOP://             0xE2,
 	case I486_OPCODE_LOOPE://            0xE1,
 	case I486_OPCODE_LOOPNE://           0xE0,
+		break;
+
+
+	case I486_OPCODE_LSL://              0x030F,
+		op1.DecodeMODR_MForRegister(operandSize,operand[0]);
+		op2.Decode(addressSize,operandSize,operand);
 		break;
 
 
@@ -2292,6 +2303,11 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 			disasm=DisassembleTypicalTwoOperands(cpputil::Ubtox(opCode)+"?",op1,op2)+" REG="+cpputil::Ubtox(GetREG());
 			break;
 		}
+		break;
+
+
+	case I486_OPCODE_LSL://              0x030F,
+		disasm=DisassembleTypicalTwoOperands("LSL",op1,op2);
 		break;
 
 

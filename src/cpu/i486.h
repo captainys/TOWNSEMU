@@ -1573,6 +1573,10 @@ public:
 	*/
 	std::vector <std::string> GetGDTText(const Memory &mem) const;
 
+	/*! Returns LDT text.
+	*/
+	std::vector <std::string> GetLDTText(const Memory &mem) const;
+
 	/*! Returns IDT text.
 	*/
 	std::vector <std::string> GetIDTText(const Memory &mem) const;
@@ -1586,6 +1590,9 @@ public:
 
 	/*! Print GDT. */
 	void PrintGDT(const Memory &mem) const;
+
+	/*! Print LDT. */
+	void PrintLDT(const Memory &mem) const;
 
 	/*! Loads a segment register.
 	    If reg is SS, it raise holdIRQ flag.

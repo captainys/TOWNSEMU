@@ -65,6 +65,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	dumpableMap["FDC"]=DUMP_FDC;
 	dumpableMap["TIMER"]=DUMP_TIMER;
 	dumpableMap["GDT"]=DUMP_GDT;
+	dumpableMap["LDT"]=DUMP_LDT;
 	dumpableMap["IDT"]=DUMP_IDT;
 	dumpableMap["SOUND"]=DUMP_SOUND;
 	dumpableMap["RIDT"]=DUMP_REAL_MODE_INT_VECTOR;
@@ -148,6 +149,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Log of CS:EIP.  Can specify number of steps.  Same as HIST command." << std::endl;
 	std::cout << "GDT" << std::endl;
 	std::cout << "  Protected-Mode Global Descriptor Table" << std::endl;
+	std::cout << "LDT" << std::endl;
+	std::cout << "  Protected-Mode Local Descriptor Table" << std::endl;
 	std::cout << "IDT" << std::endl;
 	std::cout << "  Protected-Mode Interrupt Descriptor Table" << std::endl;
 	std::cout << "RIDT" << std::endl;
@@ -446,6 +449,9 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 			break;
 		case DUMP_GDT:
 			towns.cpu.PrintGDT(towns.mem);
+			break;
+		case DUMP_LDT:
+			towns.cpu.PrintLDT(towns.mem);
 			break;
 		case DUMP_IDT:
 			towns.cpu.PrintIDT(towns.mem);

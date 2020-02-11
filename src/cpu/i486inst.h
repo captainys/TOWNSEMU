@@ -282,6 +282,9 @@ enum
 	I486_OPCODE_LOOPNE=           0xE0,
 
 
+	I486_OPCODE_LSL=              0x030F,
+
+
 	I486_OPCODE_MOV_FROM_R8=      0x88,
 	I486_OPCODE_MOV_FROM_R=       0x89, // 16/32 depends on OPSIZE_OVERRIDE
 	I486_OPCODE_MOV_TO_R8=        0x8A,
