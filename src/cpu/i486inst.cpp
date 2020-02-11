@@ -257,6 +257,11 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		break;
 
 
+	case I486_OPCODE_BTS_RM_R://   0xAB0F,
+		FetchOperandRM(inst,seg,offset,mem);
+		break;
+
+
 	case I486_OPCODE_CALL_REL://   0xE8,
 	case I486_OPCODE_JMP_REL://          0xE9,   // cw or cd
 		FetchOperand16or32(inst,seg,offset,mem);
@@ -362,6 +367,10 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		break;
 
 
+	case I486_OPCODE_IMUL_R_RM_I8://0x6B,
+		offset+=FetchOperandRM(inst,seg,offset,mem);
+		FetchOperand8(inst,seg,offset,mem);
+		break;
 	case I486_OPCODE_IMUL_R_RM_IMM://0x69,
 		offset+=FetchOperandRM(inst,seg,offset,mem);
 		if(16==inst.operandSize)
@@ -893,6 +902,12 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 		break;
 
 
+	case I486_OPCODE_BTS_RM_R://   0xAB0F,
+		op1.Decode(addressSize,operandSize,operand);
+		op2.DecodeMODR_MForRegister(operandSize,operand[0]);
+		break;
+
+
 	case I486_OPCODE_CALL_REL://   0xE8,
 	case I486_OPCODE_JMP_REL://          0xE9,   // cw or cd
 		op1.MakeImm8or16or32(*this,operandSize);
@@ -960,6 +975,7 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 		break;
 
 
+	case I486_OPCODE_IMUL_R_RM_I8://0x6B,
 	case I486_OPCODE_IMUL_R_RM_IMM://0x69,
 	case I486_OPCODE_IMUL_R_RM://       0xAF0F,
 		op1.DecodeMODR_MForRegister(operandSize,operand[0]);
@@ -1509,6 +1525,11 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		break;
 
 
+	case I486_OPCODE_BTS_RM_R://   0xAB0F,
+		disasm=DisassembleTypicalTwoOperands("BTS",op1,op2);
+		break;
+
+
 	case I486_OPCODE_CALL_REL://   0xE8,
 	case I486_OPCODE_JMP_REL://          0xE9,   // cw or cd
 		disasm=(I486_OPCODE_JMP_REL==opCode ? "JMP" : "CALL");
@@ -1864,6 +1885,12 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		break;
 
 
+	case I486_OPCODE_IMUL_R_RM_I8://0x6B,
+		disasm="IMUL    ";
+		disasm+=op1.Disassemble()+",";
+		disasm+=op2.Disassemble()+",";
+		disasm+=cpputil::Itox(GetSimm8());
+		break;
 	case I486_OPCODE_IMUL_R_RM_IMM://0x69,
 		disasm="IMUL    ";
 		disasm+=op1.Disassemble()+",";
@@ -3605,6 +3632,28 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 
 
+	case I486_OPCODE_BTS_RM_R://   0xAB0F,
+		{
+			clocksPassed=(OPER_ADDR==op1.operandType ? 13 : 6);
+			auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+			auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize/8);
+			if(true!=state.exception)
+			{
+				auto bitOffset=value2.GetAsByte()&0x1F;
+				auto bit=(1<<bitOffset);
+				auto src=value2.GetAsDword();
+				SetCF(0!=(src&bit));
+				if(0==(src&bit))
+				{
+					src|=bit;
+					value2.SetDword(src);
+					StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+				}
+			}
+		}
+		break;
+
+
 	case I486_OPCODE_CALL_FAR://   0x9A,
 		{
 			if(true==IsInRealMode())
@@ -3936,6 +3985,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 
 
+	case I486_OPCODE_IMUL_R_RM_I8://0x6B,
 	case I486_OPCODE_IMUL_R_RM_IMM://0x69,
 	case I486_OPCODE_IMUL_R_RM://       0xAF0F,
 		{
@@ -3949,7 +3999,14 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			if(true!=state.exception)
 			{
 				long long int result;
-				if(I486_OPCODE_IMUL_R_RM_IMM==inst.opCode)
+				if(I486_OPCODE_IMUL_R_RM_I8==inst.opCode)
+				{
+					long long int i2=value2.GetAsSignedDword();
+					long long int i3=inst.GetSimm8();
+					result=i2*i3;
+					value1.SetSignedDword((int)result);
+				}
+				else if(I486_OPCODE_IMUL_R_RM_IMM==inst.opCode)
 				{
 					long long int i2=value2.GetAsSignedDword();
 					long long int i3=inst.GetSimm16or32(inst.operandSize);
@@ -3968,17 +4025,23 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					Abort("What IMUL?");
 				}
 				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+				bool clearOFCF=false;
 				switch(inst.operandSize)
 				{
 				case 8:
-					SetOverflowFlag(result<-128 || 127<result);
+					clearOFCF=(result<-128 || 127<result);
 					break;
 				case 16:
-					SetOverflowFlag(result<-32768 || 32767<result);
+					clearOFCF=(result<-32768 || 32767<result);
 					break;
 				case 32:
-					SetOverflowFlag(result<-0x80000000LL || 0x7FFFFFFFLL<result);
+					clearOFCF=(result<-0x80000000LL || 0x7FFFFFFFLL<result);
 					break;
+				}
+				if(true==clearOFCF)
+				{
+					SetCF(false);
+					SetOverflowFlag(false);
 				}
 			}
 		}

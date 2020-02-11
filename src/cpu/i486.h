@@ -766,6 +766,14 @@ public:
 			}
 			return dword;
 		}
+		/*! Returns a value as an unsigned byte.
+		    It won't evaluate beyond numBytes.
+		*/
+		inline unsigned int GetAsByte(void) const
+		{
+			return byteData[0];
+		}
+
 		/*! Returns a value as a unsigned wword.
 		    It won't evaluate beyond numBytes.
 		*/
