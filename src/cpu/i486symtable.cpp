@@ -69,6 +69,36 @@ bool i486SymbolTable::Save(const char fName[]) const
 }
 bool i486SymbolTable::Save(std::ostream &ofp) const
 {
+	for(auto &ptrAndSym : symTable)
+	{
+		auto &ptr=ptrAndSym.first;
+		auto &sym=ptrAndSym.second;
+		if(true!=sym.temporary)
+		{
+			ofp << "/begin0" << std::endl;
+			ofp << "T " << (int)(sym.symType) << std::endl;
+			ofp << "* " << sym.Format() << std::endl;
+			ofp << "R " << sym.return_type << std::endl;
+			ofp << "L " << sym.label  << std::endl;
+			ofp << "P " << sym.param <<  std::endl;
+			for(auto &i : sym.info)
+			{
+				ofp << "I " << i <<  std::endl;
+			}
+			ofp << "/end" << std::endl;
+		}
+	}
+
+	// /begin0
+	// T 0/1/2,2  Type (0:Any 1:Procedure 2:Jump Destination 3:Data)
+	// * 000C:00004000  SEG:OFFSET
+	// R void  Return-Type
+	// L main  Label
+	// P int argc,char *argv[]
+	// I Supplimental Info
+	// /end
+
+	
 	return false;
 }
 

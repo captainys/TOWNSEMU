@@ -92,6 +92,15 @@ const char *const i486DX::RegToStr[REG_TOTAL_NUMBER_OF_REGISTERS]=
 };
 
 
+std::string i486DX::FarPointer::Format(void) const
+{
+	return cpputil::Uitox(SEG)+":"+cpputil::Uitox(OFFSET);
+}
+
+
+////////////////////////////////////////////////////////////
+
+
 i486DX::i486DX()
 {
 	Reset();

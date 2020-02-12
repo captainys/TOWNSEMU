@@ -189,6 +189,8 @@ public:
 		{
 			return this->Combine()>=rv.Combine();
 		}
+
+		std::string Format(void) const;
 	};
 
 	class FPUState
