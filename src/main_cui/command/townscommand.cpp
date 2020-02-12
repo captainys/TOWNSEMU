@@ -403,7 +403,7 @@ void TownsCommandInterpreter::Execute_AddBreakPoint(FMTowns &towns,Command &cmd)
 		PrintError(ERROR_TOO_FEW_ARGS);
 		return;
 	}
-	auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1]);
+	auto farPtr=towns.cpu.TranslateFarPointer(cmdutil::MakeFarPointer(cmd.argv[1]));
 	towns.debugger.AddBreakPoint(farPtr);
 }
 void TownsCommandInterpreter::Execute_DeleteBreakPoint(FMTowns &towns,Command &cmd)
@@ -626,19 +626,15 @@ void TownsCommandInterpreter::Execute_Disassemble(FMTowns &towns,Command &cmd)
 	if(2<=cmd.argv.size())
 	{
 		farPtr=cmdutil::MakeFarPointer(cmd.argv[1]);
-		if(farPtr.SEG==i486DX::FarPointer::NO_SEG)
-		{
-			farPtr.SEG=towns.cpu.state.CS().value;
-		}
-		else if((farPtr.SEG&0xFFFF0000)==i486DX::FarPointer::SEG_REGISTER)
-		{
-			farPtr.SEG=towns.cpu.GetRegisterValue(farPtr.SEG&0xFFFF);
-		}
-		else if((farPtr.SEG&0xFFFF0000)==i486DX::FarPointer::PHYS_ADDR ||
-		        (farPtr.SEG&0xFFFF0000)==i486DX::FarPointer::LINEAR_ADDR)
+		if((farPtr.SEG&0xFFFF0000)==i486DX::FarPointer::PHYS_ADDR ||
+		   (farPtr.SEG&0xFFFF0000)==i486DX::FarPointer::LINEAR_ADDR)
 		{
 			std::cout << "Disassembly cannot be from Linear or Physical address." << std::endl;
 			return;
+		}
+		else
+		{
+			farPtr=towns.cpu.TranslateFarPointer(farPtr);
 		}
 	}
 

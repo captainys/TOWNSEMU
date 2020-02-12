@@ -153,6 +153,20 @@ void i486DX::FarPointer::MakeFromString(const std::string &str)
 	this->OFFSET=cpputil::Xtoi(str.data());
 }
 
+i486DX::FarPointer i486DX::TranslateFarPointer(FarPointer ptr) const
+{
+	if(ptr.SEG==FarPointer::NO_SEG)
+	{
+		ptr.SEG=state.CS().value;
+	}
+	else if((ptr.SEG&0xFFFF0000)==FarPointer::SEG_REGISTER)
+	{
+		ptr.SEG=GetRegisterValue(ptr.SEG&0xFFFF);
+	}
+	return ptr;
+}
+
+
 
 ////////////////////////////////////////////////////////////
 

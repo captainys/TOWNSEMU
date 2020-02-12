@@ -194,6 +194,13 @@ public:
 		void MakeFromString(const std::string &str);
 	};
 
+	/*! Translate far pointer.
+	    If NO_SEG is given as SEG, it will replace SEG with CS value.
+	    If a segment register is specified in SEG, it will place values accordingly.
+	    It does nothing for LINEAR_ADDR and PHYS_ADDR types.
+	*/
+	FarPointer TranslateFarPointer(FarPointer ptr) const;
+
 	class FPUState
 	{
 	public:
