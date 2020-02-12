@@ -1700,7 +1700,7 @@ public:
 
 		auto physicalAddr=(pageInfo&0xFFFFF000)+offset;
 		exceptionType=EXCEPTION_NONE;
-		return linearAddr;
+		return physicalAddr;
 	}
 
 
