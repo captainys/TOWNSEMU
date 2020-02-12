@@ -49,3 +49,11 @@ I am taking it as NOP right now.
 
 #2020/02/04-1
 Probably for CPU test IO.SYS of Towns OS V2.1 L30 (in the sub-routine 03A4:00002E24) tests if Bit15-12 of FLAGS can be all 1.  i486 Programmers' reference says Bit15 should always be 0.  It is unclear if it can be made 1, or it stays zero.
+
+
+
+#2020/02/11
+DIV/IDIV: "If the resulting quotient is too large to fit in the destination, or if the division is 0, an Interrupt 0 is generated."  Really?  I thought if the quotient was too large, it just overflew and continued.  Do I remember wrong?
+
+CRTC: TOWNSIO_HSYNC_VSYNC should calculate timing better.
+

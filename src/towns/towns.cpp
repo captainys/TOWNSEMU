@@ -152,6 +152,7 @@ FMTowns::FMTowns() :
 	io.AddDevice(&crtc,TOWNSIO_CRTC_ADDRESS);//             0x440,
 	io.AddDevice(&crtc,TOWNSIO_CRTC_DATA_LOW);//            0x442,
 	io.AddDevice(&crtc,TOWNSIO_CRTC_DATA_HIGH);//           0x443,
+	io.AddDevice(&crtc,TOWNSIO_HSYNC_VSYNC);//              0xFDA0,
 
 
 	io.AddDevice(this,TOWNSIO_FMR_RESOLUTION); // 0x400

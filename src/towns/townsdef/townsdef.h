@@ -156,6 +156,8 @@ enum
 	TOWNSIO_FMR_DIGITALPALETTE6= 0xFD96,
 	TOWNSIO_FMR_DIGITALPALETTE7= 0xFD97,
 
+	TOWNSIO_HSYNC_VSYNC=         0xFDA0,
+
 	TOWNSIO_FMR_VRAMMASK=        0xFF81, 
 	// Not official.  But 2MX BIOS is obviously writing it.
 	// It apparently works same ax memory-mapped I/O 000CFF81H.

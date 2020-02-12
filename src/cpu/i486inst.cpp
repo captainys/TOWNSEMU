@@ -257,6 +257,11 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		break;
 
 
+	case I486_OPCODE_ARPL://       0x63,
+		FetchOperandRM(inst,seg,offset,mem);
+		break;
+
+
 	case I486_OPCODE_BTS_RM_R://   0xAB0F,
 		FetchOperandRM(inst,seg,offset,mem);
 		break;
@@ -907,6 +912,13 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 		break;
 
 
+	case I486_OPCODE_ARPL://       0x63,
+		operandSize=16;
+		op1.Decode(addressSize,operandSize,operand);
+		op2.DecodeMODR_MForRegister(operandSize,operand[0]);
+		break;
+
+
 	case I486_OPCODE_BTS_RM_R://   0xAB0F,
 		op1.Decode(addressSize,operandSize,operand);
 		op2.DecodeMODR_MForRegister(operandSize,operand[0]);
@@ -1536,6 +1548,11 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		break;
 
 
+	case I486_OPCODE_ARPL://       0x63,
+		disasm=DisassembleTypicalTwoOperands("ARPL",op1,op2);
+		break;
+
+
 	case I486_OPCODE_BTS_RM_R://   0xAB0F,
 		disasm=DisassembleTypicalTwoOperands("BTS",op1,op2);
 		break;
@@ -1577,6 +1594,9 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 			break;
 		case 6:
 			disasm=DisassembleTypicalOneOperand("DIV",op1,operandSize);
+			break;
+		case 7:
+			disasm=DisassembleTypicalOneOperand("IDIV",op1,operandSize);
 			break;
 		default:
 			disasm=DisassembleTypicalOneOperand(cpputil::Ubtox(opCode)+"?",op1,operandSize);
@@ -3324,6 +3344,58 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				}
 			}
 			break;
+		case 7: // IDIV
+			{
+				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+				int denom=value.GetAsSignedDword();
+				if(true==state.exception)
+				{
+					EIPSetByInstruction=true;
+				}
+				else if(0==denom)
+				{
+					Interrupt(0,mem,0); // [1] pp.26-28
+					// I don't think INT 0 was issued unless division by zero.
+					// I thought it just overflew if quo didn't fit in the target register, am I wrong?
+				}
+				else if(16==inst.operandSize)
+				{
+					clocksPassed=24;
+
+					int DXAX=GetDX();
+					if(0!=(0x8000&DXAX))
+					{
+						DXAX-=10000LL;
+					}
+					DXAX<<=32;
+					DXAX|=GetAX();
+
+					int quo=DXAX/denom;
+					int rem=DXAX%denom;
+
+					SetAX(quo&0xFFFF);
+					SetDX(rem&0xFFFF);
+				}
+				else if(32==inst.operandSize)
+				{
+					clocksPassed=40;
+
+					long long int EDXEAX=GetEDX();
+					if(0!=(0x80000000&EDXEAX))
+					{
+						EDXEAX-=100000000LL;
+					}
+					EDXEAX<<=32;
+					EDXEAX|=GetEAX();
+
+					long long int quo=EDXEAX/denom;
+					long long int rem=EDXEAX%denom;
+
+					SetEAX(quo&0xFFFFFFFF);
+					SetEDX(rem&0xFFFFFFFF);
+				}
+			}
+			break;
 		default:
 			Abort("Undefined REG for "+cpputil::Ubtox(inst.opCode));
 			clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
@@ -3643,6 +3715,29 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{
 				value1.SetDword(i);
 				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+			}
+		}
+		break;
+
+
+	case I486_OPCODE_ARPL://       0x63,
+		{
+			clocksPassed=9;
+			auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+			auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize/8);
+			auto dst=value1.GetAsWord();
+			auto src=value2.GetAsWord();
+			if((dst&3)<(src&3))
+			{
+				dst&=(~3);
+				dst|=(src&3);
+				SetZeroFlag(false);
+				value1.MakeWord(dst);
+				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+			}
+			else
+			{
+				SetZeroFlag(true);
 			}
 		}
 		break;

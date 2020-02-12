@@ -210,6 +210,28 @@ TownsCRTC::TownsCRTC(class FMTowns *ptr)
 		break;
 	case TOWNSIO_MX_IMGOUT_ADDR_D3://   0x477,
 		break;
+
+	case TOWNSIO_HSYNC_VSYNC:
+		// Let's say 60 frames per sec.
+		// 1 frame takes 16.7ms.
+		// Horizontal Scan frequency is say 31KHz.
+		// 1 line takes 0.032ms.
+		// 480 lines take 15.36ms.
+		// Then, VSYNC should be 1.34ms long.
+		// Will take screenmode into account eventually.
+		// Also should take HSYNC into account.
+		{
+			auto intoFrame=townsPtr->state.townsTime%16700000;
+			if(15360000<intoFrame)
+			{
+				data=1;
+			}
+			else
+			{
+				data=0;
+			}
+		}
+		break;
 	}
 	return data;
 }
