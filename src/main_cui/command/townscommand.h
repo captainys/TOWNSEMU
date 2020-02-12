@@ -8,6 +8,7 @@
 
 #include "towns.h"
 #include "townsthread.h"
+#include "i486symtable.h"
 
 class TownsCommandInterpreter
 {
@@ -16,6 +17,7 @@ private:
 	std::unordered_map <std::string,unsigned int> featureMap;
 	std::unordered_map <std::string,unsigned int> dumpableMap;
 	std::unordered_map <std::string,unsigned int> breakEventMap;
+	i486SymbolTable symTable;
 
 public:
 	enum
@@ -54,6 +56,8 @@ public:
 		CMD_DISASM,
 		CMD_DISASM16,
 		CMD_DISASM32,
+
+		CMD_ADD_SYMBOL,
 	};
 
 	enum
@@ -80,6 +84,7 @@ public:
 		DUMP_SOUND,
 		DUMP_REAL_MODE_INT_VECTOR,
 		DUMP_CSEIP_LOG,
+		DUMP_SYMBOL_TABLE,
 	};
 
 	enum
@@ -140,6 +145,8 @@ public:
 	void Execute_Disassemble32(FMTowns &towns,Command &cmd);
 
 	void Execute_PrintHistory(FMTowns &towns,unsigned int n);
+
+	void Execute_AddSymbol(FMTowns &towns,Command &cmd);
 };
 
 

@@ -20,6 +20,7 @@ public:
 		SYM_DATA,
 	};
 	i486DX::FarPointer ptr;
+	bool temporary;  // If true, it will not be saved to file.
 	unsigned int symType;
 	std::string return_type;
 	std::string label;
@@ -44,14 +45,26 @@ class i486SymbolTable
 private:
 	std::map <i486DX::FarPointer,i486Symbol> symTable;
 public:
+	mutable std::string fName;
 
+	/*! Open the given file name.  
+	    It updates data member fName to the given file name if successful.
+	*/
 	bool Load(const char fName[]);
 	bool Load(std::istream &ifp);
+
+	/*! Save to the given file name.
+	    It updates data member fName to the given file name if successful.
+	*/
 	bool Save(const char fName[]) const;
 	bool Save(std::ostream &ofp) const;
 
-	const i486Symbol *Find(i486DX::FarPointer ptr);
+	const i486Symbol *Find(i486DX::FarPointer ptr) const;
 	i486Symbol *Update(i486DX::FarPointer ptr,const std::string &label);
+	bool Delete(i486DX::FarPointer ptr);
+	const std::map <i486DX::FarPointer,i486Symbol> &GetTable(void) const;
+
+	std::vector <std::string> GetList(bool returnType=false,bool label=true,bool param=true) const;
 };
 
 

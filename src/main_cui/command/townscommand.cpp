@@ -45,6 +45,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["BRKON"]=CMD_BREAK_ON;
 	primaryCmdMap["CBRKON"]=CMD_DONT_BREAK_ON;
 	primaryCmdMap["INTERRUPT"]=CMD_INTERRUPT;
+	primaryCmdMap["ADDSYM"]=CMD_ADD_SYMBOL;
 
 	featureMap["CMDLOG"]=ENABLE_CMDLOG;
 	featureMap["AUTODISASM"]=ENABLE_DISASSEMBLE_EVERY_INST;
@@ -69,6 +70,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	dumpableMap["IDT"]=DUMP_IDT;
 	dumpableMap["SOUND"]=DUMP_SOUND;
 	dumpableMap["RIDT"]=DUMP_REAL_MODE_INT_VECTOR;
+	dumpableMap["SYM"]=DUMP_SYMBOL_TABLE;
 
 	breakEventMap["IWC1"]=   BREAK_ON_PIC_IWC1;
 	breakEventMap["IWC4"]=   BREAK_ON_PIC_IWC4;
@@ -102,6 +104,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Unassemble (disassemble) as 16-bit operand size" << std::endl;
 	std::cout << "U32 addr" << std::endl;
 	std::cout << "  Unassemble (disassemble) as 32-bit operand size" << std::endl;
+	std::cout << "ADDSYM SEG:OFFSET label" << std::endl;
+	std::cout << "  Add symbol." << std::endl;
 	std::cout << "PAUSE|PAU" << std::endl;
 	std::cout << "  Pause VM." << std::endl;
 	std::cout << "WAIT" << std::endl;
@@ -145,6 +149,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "<< Information that can be printed >>" << std::endl;
 	std::cout << "CALLSTACK|CST" << std::endl;
 	std::cout << "  Call Stack"<<std::endl;
+	std::cout << "SYM" << std::endl;
+	std::cout << "  Symbol table" << std::endl;
 	std::cout << "HIST" << std::endl;
 	std::cout << "  Log of CS:EIP.  Can specify number of steps.  Same as HIST command." << std::endl;
 	std::cout << "GDT" << std::endl;
@@ -328,6 +334,10 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,Command &c
 	case CMD_PRINT_STATUS:
 		towns.PrintStatus();
 		break;
+
+	case CMD_ADD_SYMBOL:
+		Execute_AddSymbol(towns,cmd);
+		break;
 	}
 }
 
@@ -482,6 +492,12 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 			else
 			{
 				Execute_PrintHistory(towns,20);
+			}
+			break;
+		case DUMP_SYMBOL_TABLE:
+			for(auto str : symTable.GetList())
+			{
+				std::cout << str << std::endl;
 			}
 			break;
 		}
@@ -722,3 +738,11 @@ void TownsCommandInterpreter::Execute_PrintHistory(FMTowns &towns,unsigned int n
 	}
 }
 
+void TownsCommandInterpreter::Execute_AddSymbol(FMTowns &towns,Command &cmd)
+{
+	if(3<=cmd.argv.size())
+	{
+		symTable.Update(cmdutil::MakeFarPointer(cmd.argv[1]),cmd.argv[2]);
+		std::cout << "Added symbol" << std::endl;
+	}
+}
