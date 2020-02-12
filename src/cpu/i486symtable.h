@@ -40,6 +40,7 @@ public:
 	// \end
 
 	i486Symbol();
+	void CleanUp(void);
 	std::string Format(bool returnType=false,bool label=true,bool param=true) const;
 };
 
@@ -51,6 +52,8 @@ public:
 	mutable std::string fName;
 
 	/*! Open the given file name.  
+	    It won't erase the current contents of the symbol table.
+	    It adds or overwrites the contents from the symbol-table file.
 	    It updates data member fName to the given file name if successful.
 	*/
 	bool Load(const char fName[]);

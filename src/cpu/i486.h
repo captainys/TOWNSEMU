@@ -191,6 +191,7 @@ public:
 		}
 
 		std::string Format(void) const;
+		void MakeFromString(const std::string &str);
 	};
 
 	class FPUState

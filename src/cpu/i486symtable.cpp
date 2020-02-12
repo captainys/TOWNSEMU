@@ -8,8 +8,16 @@
 
 i486Symbol::i486Symbol()
 {
-	symType=SYM_ANY;
+	CleanUp();
+}
+void i486Symbol::CleanUp(void)
+{
 	temporary=false;
+	symType=SYM_ANY;
+	return_type="";
+	label="";
+	param="";
+	info.clear();
 }
 std::string i486Symbol::Format(bool returnType,bool label,bool param) const
 {
@@ -54,7 +62,78 @@ bool i486SymbolTable::Load(const char fName[])
 }
 bool i486SymbolTable::Load(std::istream &ifp)
 {
-	return false;
+	const int STATE_OUTSIDE=0,STATE_INSIDE=1;
+	int state=STATE_OUTSIDE;
+	i486DX::FarPointer curPtr;
+	i486Symbol curSymbol;
+
+	// /begin0
+	// T 0/1/2,2  Type (0:Any 1:Procedure 2:Jump Destination 3:Data)
+	// * 000C:00004000  SEG:OFFSET
+	// R void  Return-Type
+	// L main  Label
+	// P int argc,char *argv[]
+	// I Supplimental Info
+	// /end
+
+	while(true!=ifp.eof())
+	{
+		std::string str;
+		std::getline(ifp,str);
+
+		if(STATE_OUTSIDE==state)
+		{
+			cpputil::Capitalize(str);
+			if(str=="/BEGIN0")
+			{
+				curPtr.SEG=0;
+				curPtr.OFFSET=0;
+				curSymbol.CleanUp();
+				state=STATE_INSIDE;
+			}
+		}
+		else if(STATE_INSIDE==state)
+		{
+			if('/'==str[0])
+			{
+				cpputil::Capitalize(str);
+				if("/END"==str)
+				{
+					symTable[curPtr]=curSymbol;
+				}
+			}
+			else if(2<str.size())
+			{
+				switch(str[0])
+				{
+				case 't':
+				case 'T':
+					curSymbol.symType=cpputil::Atoi(str.c_str()+2);
+					break;
+				case '*':
+					curPtr.MakeFromString(str.c_str()+2);
+					break;
+				case 'r':
+				case 'R':
+					curSymbol.return_type=(str.c_str()+2);
+					break;
+				case 'l':
+				case 'L':
+					curSymbol.label=(str.c_str()+2);
+					break;
+				case 'p':
+				case 'P':
+					curSymbol.param=(str.c_str()+2);
+					break;
+				case 'i':
+				case 'I':
+					curSymbol.info.push_back(str.c_str()+2);
+					break;
+				}
+			}
+		}
+	}
+	return true;
 }
 
 bool i486SymbolTable::Save(const char fName[]) const
@@ -77,7 +156,7 @@ bool i486SymbolTable::Save(std::ostream &ofp) const
 		{
 			ofp << "/begin0" << std::endl;
 			ofp << "T " << (int)(sym.symType) << std::endl;
-			ofp << "* " << sym.Format() << std::endl;
+			ofp << "* " << ptr.Format() << std::endl;
 			ofp << "R " << sym.return_type << std::endl;
 			ofp << "L " << sym.label  << std::endl;
 			ofp << "P " << sym.param <<  std::endl;
@@ -88,18 +167,7 @@ bool i486SymbolTable::Save(std::ostream &ofp) const
 			ofp << "/end" << std::endl;
 		}
 	}
-
-	// /begin0
-	// T 0/1/2,2  Type (0:Any 1:Procedure 2:Jump Destination 3:Data)
-	// * 000C:00004000  SEG:OFFSET
-	// R void  Return-Type
-	// L main  Label
-	// P int argc,char *argv[]
-	// I Supplimental Info
-	// /end
-
-	
-	return false;
+	return true;
 }
 
 bool i486SymbolTable::AutoSave(void) const

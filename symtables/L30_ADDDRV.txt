@@ -1,0 +1,70 @@
+/begin0
+T 0
+* 00000008:00004A84
+R 
+L Protected-Mode_Entry
+P 
+/end
+/begin0
+T 0
+* 0000000C:00001D54
+R 
+L MEMCPY
+P DST,SRC,SIZE
+/end
+/begin0
+T 0
+* 0000000C:00001D98
+R 
+L FILL_MEMORY
+P COUNT,PTR,VALUE,UNITSIZE
+/end
+/begin0
+T 0
+* 0000000C:00001F0C
+R 
+L DOS_CLOSE_FILE
+P 
+/end
+/begin0
+T 0
+* 0000000C:00001F28
+R 
+L DOS_OPEN_FILE
+P 
+/end
+/begin0
+T 0
+* 0000000C:00001F44
+R 
+L READ_NSD_HEADER
+P 
+/end
+/begin0
+T 0
+* 0000000C:000025BC
+R 
+L DOS_LSEEK_INT21H,AH=42H
+P 
+/end
+/begin0
+T 0
+* 0000000C:000025FC
+R 
+L DOS_READ_FILE
+P 
+/end
+/begin0
+T 0
+* 0000000C:00002708
+R 
+L ADDDRV.EXP
+P 
+/end
+/begin0
+T 0
+* 00003D5B:000000B5
+R 
+L RUN386
+P 
+/end

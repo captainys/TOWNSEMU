@@ -97,6 +97,62 @@ std::string i486DX::FarPointer::Format(void) const
 	return cpputil::Uitox(SEG)+":"+cpputil::Uitox(OFFSET);
 }
 
+void i486DX::FarPointer::MakeFromString(const std::string &str)
+{
+	Nullify();
+	for(unsigned int i=0; i<str.size(); ++i)
+	{
+		if(':'==str[i])
+		{
+			this->OFFSET=cpputil::Xtoi(str.data()+i+1);
+
+			auto segPart=str;
+			segPart.resize(i);
+			cpputil::Capitalize(segPart);
+			if("CS"==segPart)
+			{
+				this->SEG=i486DX::FarPointer::SEG_REGISTER|i486DX::REG_CS;
+			}
+			else if("SS"==segPart)
+			{
+				this->SEG=i486DX::FarPointer::SEG_REGISTER|i486DX::REG_SS;
+			}
+			else if("DS"==segPart)
+			{
+				this->SEG=i486DX::FarPointer::SEG_REGISTER|i486DX::REG_DS;
+			}
+			else if("ES"==segPart)
+			{
+				this->SEG=i486DX::FarPointer::SEG_REGISTER|i486DX::REG_ES;
+			}
+			else if("FS"==segPart)
+			{
+				this->SEG=i486DX::FarPointer::SEG_REGISTER|i486DX::REG_FS;
+			}
+			else if("GS"==segPart)
+			{
+				this->SEG=i486DX::FarPointer::SEG_REGISTER|i486DX::REG_GS;
+			}
+			else if("PHYS"==segPart || "P"==segPart)
+			{
+				this->SEG=i486DX::FarPointer::PHYS_ADDR;
+			}
+			else if("LINE"==segPart || "L"==segPart)
+			{
+				this->SEG=i486DX::FarPointer::LINEAR_ADDR;
+			}
+			else
+			{
+				this->SEG=cpputil::Xtoi(str.data());
+			}
+			return;
+		}
+	}
+
+	this->SEG=i486DX::FarPointer::NO_SEG;
+	this->OFFSET=cpputil::Xtoi(str.data());
+}
+
 
 ////////////////////////////////////////////////////////////
 
