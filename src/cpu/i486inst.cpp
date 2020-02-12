@@ -1567,6 +1567,12 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 			auto offset=GetSimm16or32(operandSize);
 			auto destin=eip+offset+numBytes;
 			disasm+=cpputil::Uitox(destin);
+
+			auto *sym=symTable.Find(cs.value,destin);
+			if(nullptr!=sym)
+			{
+				disasm+=" {"+sym->Format(true,true,true)+"}";
+			}
 		}
 		break;
 	case I486_OPCODE_CALL_FAR://   0x9A,
@@ -1574,6 +1580,13 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		disasm=(I486_OPCODE_JMP_FAR==opCode ? "JMPF" : "CALLF");
 		cpputil::ExtendString(disasm,8);
 		disasm+=op1.Disassemble();
+		{
+			auto *sym=symTable.Find(op1.seg,op1.offset);
+			if(nullptr!=sym)
+			{
+				disasm+=" {"+sym->Format(true,true,true)+"}";
+			}
+		}
 		break;
 
 
@@ -2109,6 +2122,12 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 			auto offset=GetSimm8();
 			auto destin=eip+offset+numBytes;
 			disasm+=cpputil::Uitox(destin);
+
+			auto *sym=symTable.Find(cs.value,destin);
+			if(nullptr!=sym)
+			{
+				disasm+=" {"+sym->Format(true,true,true)+"}";
+			}
 		}
 		break;
 
@@ -2202,6 +2221,12 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 			auto offset=GetSimm16or32(operandSize);
 			auto destin=eip+offset+numBytes;
 			disasm+=cpputil::Uitox(destin);
+
+			auto *sym=symTable.Find(cs.value,destin);
+			if(nullptr!=sym)
+			{
+				disasm+=" {"+sym->Format(true,true,true)+"}";
+			}
 		}
 		break;
 

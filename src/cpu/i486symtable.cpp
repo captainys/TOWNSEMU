@@ -1,4 +1,5 @@
 #include <fstream>
+#include <iostream>
 
 #include "i486symtable.h"
 #include "cpputil.h"
@@ -7,12 +8,36 @@
 
 i486Symbol::i486Symbol()
 {
-	ptr.SEG=0;
-	ptr.OFFSET=0;
 	symType=SYM_ANY;
 	temporary=false;
 }
-
+std::string i486Symbol::Format(bool returnType,bool label,bool param) const
+{
+	std::string str;
+	if(true==returnType)
+	{
+		str+=this->return_type;
+		if(true==label || true==param)
+		{
+			str+=" ";
+		}
+	}
+	if(true==label)
+	{
+		str+=this->label;
+		if(SYM_JUMP_DESTINATION==symType)
+		{
+			str+=':';
+		}
+	}
+	if((SYM_PROCEDURE==symType || SYM_ANY==symType) && true==param)
+	{
+		str+="(";
+		str+=this->param;
+		str+=")";
+	}
+	return str;
+}
 
 ////////////////////////////////////////////////////////////
 
@@ -47,8 +72,20 @@ bool i486SymbolTable::Save(std::ostream &ofp) const
 	return false;
 }
 
+const i486Symbol *i486SymbolTable::Find(unsigned int SEG,unsigned int OFFSET) const
+{
+	i486DX::FarPointer ptr;
+	ptr.SEG=SEG;
+	ptr.OFFSET=OFFSET;
+	return Find(ptr);
+}
 const i486Symbol *i486SymbolTable::Find(i486DX::FarPointer ptr) const
 {
+	auto iter=symTable.find(ptr);
+	if(symTable.end()!=iter)
+	{
+		return &iter->second;
+	}
 	return nullptr;
 }
 i486Symbol *i486SymbolTable::Update(i486DX::FarPointer ptr,const std::string &label)
@@ -72,6 +109,18 @@ const std::map <i486DX::FarPointer,i486Symbol> &i486SymbolTable::GetTable(void) 
 	return symTable;
 }
 
+void i486SymbolTable::PrintIfAny(unsigned int SEG,unsigned int OFFSET,bool returnType,bool label,bool param) const
+{
+	i486DX::FarPointer ptr;
+	ptr.SEG=SEG;
+	ptr.OFFSET=OFFSET;
+	auto *sym=Find(ptr);
+	if(nullptr!=sym)
+	{
+		std::cout << sym->Format(returnType,label,param) << std::endl;
+	}
+}
+
 std::vector <std::string> i486SymbolTable::GetList(bool returnType,bool label,bool param) const
 {
 	std::vector <std::string> text;
@@ -87,22 +136,8 @@ std::vector <std::string> i486SymbolTable::GetList(bool returnType,bool label,bo
 		text.back()+=":";
 		text.back()+=cpputil::Uitox(addr.OFFSET);
 
-		if(true==returnType)
-		{
-			text.back()+=" ";
-			text.back()+=sym.return_type;
-		}
-		if(true==label)
-		{
-			text.back()+=" ";
-			text.back()+=sym.label;
-		}
-		if(true==param)
-		{
-			text.back()+=" (";
-			text.back()+=sym.param;
-			text.back()+=")";
-		}
+		text.back()+=" ";
+		text.back()+=sym.Format(returnType,label,param);
 	}
 	return text;
 }

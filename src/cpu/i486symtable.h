@@ -16,10 +16,12 @@ public:
 	enum
 	{
 		SYM_ANY,
-		SYM_CODE,
+		SYM_PROCEDURE,
+		SYM_JUMP_DESTINATION,
 		SYM_DATA,
+		SYM_COMMENT,
 	};
-	i486DX::FarPointer ptr;
+
 	bool temporary;  // If true, it will not be saved to file.
 	unsigned int symType;
 	std::string return_type;
@@ -29,7 +31,7 @@ public:
 
 	// Format
 	// \begin0
-	// 0/1/2  Type (0:Any 1:Code 2:Data)
+	// 0/1/2,2  Type (0:Any 1:Procedure 2:Jump Destination 3:Data)
 	// 000C:00004000  SEG:OFFSET
 	// void  Return-Type
 	// main  Label
@@ -38,6 +40,7 @@ public:
 	// \end
 
 	i486Symbol();
+	std::string Format(bool returnType=false,bool label=true,bool param=true) const;
 };
 
 class i486SymbolTable
@@ -59,10 +62,15 @@ public:
 	bool Save(const char fName[]) const;
 	bool Save(std::ostream &ofp) const;
 
+	const i486Symbol *Find(unsigned int SEG,unsigned int OFFSET) const;
 	const i486Symbol *Find(i486DX::FarPointer ptr) const;
 	i486Symbol *Update(i486DX::FarPointer ptr,const std::string &label);
 	bool Delete(i486DX::FarPointer ptr);
 	const std::map <i486DX::FarPointer,i486Symbol> &GetTable(void) const;
+
+	/*! Print if a symbol is defined for the SEG:OFFSET
+	*/
+	void PrintIfAny(unsigned int SEG,unsigned int OFFSET,bool returnType=false,bool label=true,bool param=true) const;
 
 	std::vector <std::string> GetList(bool returnType=false,bool label=true,bool param=true) const;
 };
