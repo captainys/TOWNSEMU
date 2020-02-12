@@ -4,6 +4,8 @@
 #include "i486.h"
 #include "i486inst.h"
 #include "i486debug.h"
+#include "i486symtable.h"
+
 #include "cpputil.h"
 
 
@@ -186,8 +188,24 @@ void i486Debugger::SpecialDebugInfo::IOReadDword(i486Debugger &debugger,const i4
 i486Debugger::i486Debugger()
 {
 	specialDebugInfo=new SpecialDebugInfo;
+	symTablePtr=new i486SymbolTable;
 	CleanUp();
 }
+i486Debugger::~i486Debugger()
+{
+	delete specialDebugInfo;
+	delete symTablePtr;
+}
+
+i486SymbolTable &i486Debugger::GetSymTable(void)
+{
+	return *symTablePtr;
+}
+const i486SymbolTable &i486Debugger::GetSymTable(void) const
+{
+	return *symTablePtr;
+}
+
 void i486Debugger::CleanUp(void)
 {
 	breakPoints.clear();
@@ -267,7 +285,7 @@ void i486Debugger::BeforeRunOneInstruction(i486DX &cpu,Memory &mem,InOut &io,con
 	if(true==disassembleEveryStep && lastDisassembleAddr!=cseip)
 	{
 		auto inst=cpu.FetchInstruction(mem);
-		auto disasm=cpu.Disassemble(inst,cpu.state.CS(),cpu.state.EIP,mem);
+		auto disasm=cpu.Disassemble(inst,cpu.state.CS(),cpu.state.EIP,mem,GetSymTable());
 		lastDisassembleAddr.SEG=cpu.state.CS().value;
 		lastDisassembleAddr.OFFSET=cpu.state.EIP;
 		std::cout << disasm << std::endl;

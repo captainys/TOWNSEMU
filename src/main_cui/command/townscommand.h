@@ -17,7 +17,6 @@ private:
 	std::unordered_map <std::string,unsigned int> featureMap;
 	std::unordered_map <std::string,unsigned int> dumpableMap;
 	std::unordered_map <std::string,unsigned int> breakEventMap;
-	i486SymbolTable symTable;
 
 public:
 	enum

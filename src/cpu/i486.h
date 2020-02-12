@@ -15,6 +15,9 @@
 // Todo:
 //   Move function should raise protection fault / real-mode exception
 
+class i486SymbolTable;
+
+
 class i486DX : public CPU
 {
 public:
@@ -573,7 +576,7 @@ public:
 		*/
 		void DecodeOperand(int addressSize,int operandSize,class Operand &op1,class Operand &op2) const;
 
-		std::string Disassemble(SegmentRegister reg,unsigned int offset) const;
+		std::string Disassemble(SegmentRegister reg,unsigned int offset,const class i486SymbolTable &symTable) const;
 	private:
 		/* operandSize is 8, 16, or 32 */
 		std::string DisassembleTypicalOneOperand(std::string inst,const Operand &op,int operandSize) const;
@@ -1940,7 +1943,7 @@ public:
 public:
 	/*! Make a disassembly.
 	*/
-	std::string Disassemble(const Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem) const;
+	std::string Disassemble(const Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem,const class i486SymbolTable &symTable) const;
 
 
 	/*! Get 8-bit register name from MODR_M. */

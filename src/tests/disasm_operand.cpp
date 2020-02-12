@@ -3,6 +3,7 @@
 
 #include "towns.h"
 #include "cpputil.h"
+#include "i486symtable.h"
 
 
 
@@ -28,7 +29,8 @@ bool TestDisassembly(
 	seg.value=0;
 	seg.baseLinearAddr=0;
 
-	auto disasm=inst.Disassemble(seg,0);
+	i486SymbolTable symTable;
+	auto disasm=inst.Disassemble(seg,0,symTable);
 
 	// auto disasm=towns.cpu.DisassembleAddressing(addressSize,dataSize,operand);
 	std::cout << "Disassembled as: " << disasm << std::endl;

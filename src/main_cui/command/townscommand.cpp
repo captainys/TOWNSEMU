@@ -495,7 +495,7 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 			}
 			break;
 		case DUMP_SYMBOL_TABLE:
-			for(auto str : symTable.GetList())
+			for(auto str : towns.debugger.GetSymTable().GetList())
 			{
 				std::cout << str << std::endl;
 			}
@@ -647,7 +647,7 @@ void TownsCommandInterpreter::Execute_Disassemble(FMTowns &towns,Command &cmd)
 	for(int i=0; i<16; ++i)
 	{
 		auto inst=towns.cpu.FetchInstruction(seg,farPtr.OFFSET,towns.mem);
-		auto disasm=towns.cpu.Disassemble(inst,seg,farPtr.OFFSET,towns.mem);
+		auto disasm=towns.cpu.Disassemble(inst,seg,farPtr.OFFSET,towns.mem,towns.debugger.GetSymTable());
 		std::cout << disasm << std::endl;
 		farPtr.OFFSET+=inst.numBytes;
 	}
@@ -680,7 +680,7 @@ void TownsCommandInterpreter::Execute_Disassemble16(FMTowns &towns,Command &cmd)
 	for(int i=0; i<16; ++i)
 	{
 		auto inst=towns.cpu.FetchInstruction(seg,farPtr.OFFSET,towns.mem,16,16);
-		auto disasm=towns.cpu.Disassemble(inst,seg,farPtr.OFFSET,towns.mem);
+		auto disasm=towns.cpu.Disassemble(inst,seg,farPtr.OFFSET,towns.mem,towns.debugger.GetSymTable());
 		std::cout << disasm << std::endl;
 		farPtr.OFFSET+=inst.numBytes;
 	}
@@ -713,7 +713,7 @@ void TownsCommandInterpreter::Execute_Disassemble32(FMTowns &towns,Command &cmd)
 	for(int i=0; i<16; ++i)
 	{
 		auto inst=towns.cpu.FetchInstruction(seg,farPtr.OFFSET,towns.mem,32,32);
-		auto disasm=towns.cpu.Disassemble(inst,seg,farPtr.OFFSET,towns.mem);
+		auto disasm=towns.cpu.Disassemble(inst,seg,farPtr.OFFSET,towns.mem,towns.debugger.GetSymTable());
 		std::cout << disasm << std::endl;
 		farPtr.OFFSET+=inst.numBytes;
 	}
@@ -742,6 +742,7 @@ void TownsCommandInterpreter::Execute_AddSymbol(FMTowns &towns,Command &cmd)
 {
 	if(3<=cmd.argv.size())
 	{
+		auto &symTable=towns.debugger.GetSymTable();
 		symTable.Update(cmdutil::MakeFarPointer(cmd.argv[1]),cmd.argv[2]);
 		std::cout << "Added symbol" << std::endl;
 	}

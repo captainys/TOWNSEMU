@@ -4,6 +4,7 @@
 #include "i486.h"
 #include "i486inst.h"
 #include "i486debug.h"
+#include "i486symtable.h"
 
 
 
@@ -1484,7 +1485,7 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 	}
 }
 
-std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip) const
+std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip,const i486SymbolTable &symTable) const
 {
 	std::string disasm;
 	Operand op1,op2;

@@ -7,6 +7,8 @@
 #include <map>
 #include "i486.h"
 
+
+
 class i486Debugger
 {
 public:
@@ -40,6 +42,12 @@ public:
 	size_t CSEIPLogPtr;
 	std::vector <CSEIPLogType> CSEIPLog;
 
+private:
+	class i486SymbolTable *symTablePtr;
+public:
+	i486SymbolTable &GetSymTable(void);
+	const i486SymbolTable &GetSymTable(void) const;
+
 	class SpecialDebugInfo;
 	SpecialDebugInfo *specialDebugInfo;
 
@@ -53,6 +61,7 @@ public:
 
 
 	i486Debugger();
+	~i486Debugger();
 	void CleanUp(void);
 
 	void AddBreakPoint(CS_EIP bp);

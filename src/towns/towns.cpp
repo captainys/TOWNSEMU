@@ -397,7 +397,7 @@ void FMTowns::PrintStack(unsigned int numBytes) const
 void FMTowns::PrintDisassembly(void) const
 {
 	auto inst=FetchInstruction();
-	auto disasm=cpu.Disassemble(inst,cpu.state.CS(),cpu.state.EIP,mem);
+	auto disasm=cpu.Disassemble(inst,cpu.state.CS(),cpu.state.EIP,mem,debugger.GetSymTable());
 	std::cout << disasm << std::endl;
 }
 
