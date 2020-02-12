@@ -79,6 +79,10 @@ public:
 	*/
 	void PrintIfAny(unsigned int SEG,unsigned int OFFSET,bool returnType=false,bool label=true,bool param=true) const;
 
+	/*! This function does exhaustive search.
+	*/
+	std::pair <i486DX::FarPointer,i486Symbol> FindSymbolFromLabel(const std::string &label) const;
+
 	std::vector <std::string> GetList(bool returnType=false,bool label=true,bool param=true) const;
 };
 

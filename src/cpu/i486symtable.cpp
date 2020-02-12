@@ -102,7 +102,7 @@ bool i486SymbolTable::Load(std::istream &ifp)
 					symTable[curPtr]=curSymbol;
 				}
 			}
-			else if(2<str.size())
+			else if(2<=str.size())
 			{
 				switch(str[0])
 				{
@@ -190,6 +190,18 @@ const i486Symbol *i486SymbolTable::Find(i486DX::FarPointer ptr) const
 		return &iter->second;
 	}
 	return nullptr;
+}
+std::pair <i486DX::FarPointer,i486Symbol> i486SymbolTable::FindSymbolFromLabel(const std::string &label) const
+{
+	for(auto &addrAndSym : symTable)
+	{
+		if(addrAndSym.second.label==label)
+		{
+			return addrAndSym;
+		}
+	}
+	std::pair <i486DX::FarPointer,i486Symbol> empty;
+	return empty;
 }
 i486Symbol *i486SymbolTable::Update(i486DX::FarPointer ptr,const std::string &label)
 {

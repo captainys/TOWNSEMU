@@ -403,8 +403,17 @@ void TownsCommandInterpreter::Execute_AddBreakPoint(FMTowns &towns,Command &cmd)
 		PrintError(ERROR_TOO_FEW_ARGS);
 		return;
 	}
-	auto farPtr=towns.cpu.TranslateFarPointer(cmdutil::MakeFarPointer(cmd.argv[1]));
-	towns.debugger.AddBreakPoint(farPtr);
+
+	auto addrAndSym=towns.debugger.GetSymTable().FindSymbolFromLabel(cmd.argv[1]);
+	if(addrAndSym.second.label==cmd.argv[1])
+	{
+		towns.debugger.AddBreakPoint(addrAndSym.first);
+	}
+	else
+	{
+		auto farPtr=towns.cpu.TranslateFarPointer(cmdutil::MakeFarPointer(cmd.argv[1]));
+		towns.debugger.AddBreakPoint(farPtr);
+	}
 }
 void TownsCommandInterpreter::Execute_DeleteBreakPoint(FMTowns &towns,Command &cmd)
 {
