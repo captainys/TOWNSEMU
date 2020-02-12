@@ -2831,12 +2831,12 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 	case I486_OPCODE_XCHG_EAX_EDI://     0x97,
 		if(16==operandSize)
 		{
-			disasm="XOR     AX,";
+			disasm="XCHG    AX,";
 			disasm+=Reg16Str[opCode&7];
 		}
 		else
 		{
-			disasm="XOR     EAX,";
+			disasm="XCHG    EAX,";
 			disasm+=Reg32Str[opCode&7];
 		}
 		break;
