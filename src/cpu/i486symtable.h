@@ -62,6 +62,10 @@ public:
 	bool Save(const char fName[]) const;
 	bool Save(std::ostream &ofp) const;
 
+	/*! Save to the stored file name.
+	*/
+	bool AutoSave(void) const;
+
 	const i486Symbol *Find(unsigned int SEG,unsigned int OFFSET) const;
 	const i486Symbol *Find(i486DX::FarPointer ptr) const;
 	i486Symbol *Update(i486DX::FarPointer ptr,const std::string &label);

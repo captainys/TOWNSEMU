@@ -7,6 +7,7 @@
 #include "townsthread.h"
 #include "townscommand.h"
 #include "townsargv.h"
+#include "i486symtable.h"
 #include "cpputil.h"
 
 #include "fssimplewindow_connection.h"
@@ -95,6 +96,22 @@ int main(int ac,char *av[])
 			towns.fdc.LoadRawBinary(drv,argv.fdImgFName[drv].c_str());
 		}
 	}
+
+
+	if(0<argv.symbolFName.size())
+	{
+		towns.debugger.GetSymTable().fName=argv.symbolFName;
+		if(true==towns.debugger.GetSymTable().Load(argv.symbolFName.c_str()))
+		{
+			std::cout << "Loaded Symbol Table: " << argv.symbolFName << std::endl;
+		}
+		else
+		{
+			std::cout << "Failed to Load Symbol Table: " << argv.symbolFName << std::endl;
+			std::cout << "Will create a new file." << argv.symbolFName << std::endl;
+		}
+	}
+
 
 	towns.var.freeRunTimerShift=9;
 	printf("**** For Testing Purpose Free-Running Timer is scaled up by 512.\n");

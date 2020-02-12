@@ -748,6 +748,11 @@ void TownsCommandInterpreter::Execute_AddSymbol(FMTowns &towns,Command &cmd)
 		auto &symTable=towns.debugger.GetSymTable();
 		symTable.Update(cmdutil::MakeFarPointer(cmd.argv[1]),cmd.argv[2]);
 		std::cout << "Added symbol " << cmd.argv[2] << std::endl;
+		if(true!=towns.debugger.GetSymTable().AutoSave())
+		{
+			std::cout << "Auto-Saving of Symbol Table Failed." << std::endl;
+			std::cout << "File name is not specified or invalid." << std::endl;
+		}
 	}
 	else
 	{

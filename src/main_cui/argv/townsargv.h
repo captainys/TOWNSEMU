@@ -10,6 +10,7 @@ public:
 	std::string ROMPath;
 	std::string fdImgFName[2];
 	std::string startUpScriptFName;
+	std::string symbolFName;
 
 	TownsARGV();
 	void PrintHelp(void) const;

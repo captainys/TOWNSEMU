@@ -72,6 +72,11 @@ bool i486SymbolTable::Save(std::ostream &ofp) const
 	return false;
 }
 
+bool i486SymbolTable::AutoSave(void) const
+{
+	return Save(fName.c_str());
+}
+
 const i486Symbol *i486SymbolTable::Find(unsigned int SEG,unsigned int OFFSET) const
 {
 	i486DX::FarPointer ptr;

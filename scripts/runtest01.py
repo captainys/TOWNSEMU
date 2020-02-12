@@ -19,7 +19,9 @@ def Run():
 		"./main_cui/main_cui.exe",
 		ROMDIR,
 		"-FD0",
-		os.path.join(DISKDIR,"console.xdf")
+		os.path.join(DISKDIR,"console.xdf"),
+		"-SYM",
+		"../symtables/L30_ADDDRV.txt",
 	]).wait()
 
 

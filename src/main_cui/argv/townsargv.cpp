@@ -17,6 +17,8 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  Floppy disk image file name for Drive A." << std::endl;
 	std::cout << "-FD1 filename" << std::endl;
 	std::cout << "  Floppy disk image file name for Drive B." << std::endl;
+	std::cout << "-SYM filename" << std::endl;
+	std::cout << "  Specify symbol file name." << std::endl;
 }
 
 bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
@@ -38,6 +40,11 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 			fdImgFName[1]=argv[i+1];
 			++i;
 		}
+		else if("-SYM"==ARG && i+1<argc)
+		{
+			symbolFName=argv[i+1];
+			++i;
+		}
 		else
 		{
 			if(1==i)
@@ -46,7 +53,7 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 			}
 			else
 			{
-				std::cout << "Undefined Option:" << argv[i] << std::endl;
+				std::cout << "Undefined Option or Insufficient Parameters:" << argv[i] << std::endl;
 			}
 		}
 	}
