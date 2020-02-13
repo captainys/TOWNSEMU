@@ -238,6 +238,105 @@ FMTowns::FMTowns() :
 	PowerOn();
 }
 
+unsigned int FMTowns::MachineID(void) const
+{
+	const int i80286=0;
+	const int i80386=1;
+	const int i80486SX=2;
+	const int i80486DX=2;
+	const int i80386SX=3;
+
+	unsigned int lowByte=0,highByte=0;
+
+	switch(townsType)
+	{
+	case FMR_50_60:
+		lowByte=0xF8|i80386;
+		break;
+	case FMR_50S:
+		lowByte=0xE8|i80386;
+		break;
+	case FMR_70:
+		lowByte=0xF0|i80386;
+		break;
+	default:
+	case TOWNSTYPE_MODEL1_2:  // 1st Gen: model1: model2
+	case TOWNSTYPE_1F_2F:     // 2nd Gen: 1F:2F
+	case TOWNSTYPE_10F_20F:   // 3rd Gen: 10F:20F
+		lowByte=i80386; // [2] pp.775
+		break;
+	case TOWNSTYPE_UX:
+		lowByte=i80386SX; // [2] pp.781
+		break;
+	case TOWNSTYPE_2_CX:
+		lowByte=i80386; // [2] pp.775  Was it 386?
+		break;
+	case TOWNSTYPE_2_UG:
+	case TOWNSTYPE_2_HG:
+	case TOWNSTYPE_2_HR:
+		lowByte=i80486SX; // [2] pp.781
+		break;
+	case TOWNSTYPE_2_UR:
+	case TOWNSTYPE_2_MA:
+	case TOWNSTYPE_2_MX:
+	case TOWNSTYPE_2_ME:
+	case TOWNSTYPE_2_MF_FRESH:
+		lowByte=i80486DX; // [2] pp.826
+		break;
+	}
+
+	switch(townsType)
+	{
+	case FMR_50_60:
+	case FMR_50S:
+	case FMR_70:
+		highByte=0xFF;
+		break;
+	default:
+	case TOWNSTYPE_MODEL1_2:  // 1st Gen: model1: model2
+		highByte=0x1; // [2] pp.775
+		break;
+	case TOWNSTYPE_1F_2F: // 1F,2F
+		highByte=0x2; // [2] pp.775
+		break;
+	case TOWNSTYPE_10F_20F:   // 3rd Gen: 10F:20F
+		highByte=0x4; // [2] pp.826
+		break;
+	case TOWNSTYPE_UX:
+		highByte=0x3; // [2] pp.826
+		break;
+	case TOWNSTYPE_2_CX:
+		highByte=0x5; // [2] pp.826
+		break;
+	case TOWNSTYPE_2_UG:
+		highByte=0x6; // [2] pp.826
+		break;
+	case TOWNSTYPE_2_HG:
+		highByte=0x8; // [2] pp.826
+		break;
+	case TOWNSTYPE_2_HR:
+		highByte=0x7; // [2] pp.826
+		break;
+	case TOWNSTYPE_2_UR:
+		highByte=0x9; // [2] pp.826
+		break;
+	case TOWNSTYPE_2_MA:
+		highByte=0xB; // [2] pp.826
+		break;
+	case TOWNSTYPE_2_MX: // MX
+		highByte=0xC; // [2] pp.826
+		break;
+	case TOWNSTYPE_2_ME:
+		highByte=0xD; // [2] pp.826
+		break;
+	case TOWNSTYPE_2_MF_FRESH:
+		highByte=0xF; // [2] pp.826
+		break;
+	}
+
+	return (highByte<<8)|lowByte;
+}
+
 bool FMTowns::CheckAbort(void) const
 {
 	bool ab=false;

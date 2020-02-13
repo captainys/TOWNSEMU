@@ -165,6 +165,8 @@ public:
 
 	FMTowns();
 
+	unsigned int MachineID(void) const;
+
 	bool CheckAbort(void) const;
 
 	/*! After constructing FMTowns class, call this function to specify where to look

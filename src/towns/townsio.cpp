@@ -15,6 +15,7 @@
 }
 /* virtual */ unsigned int FMTowns::IOReadByte(unsigned int ioport)
 {
+
 	switch(ioport)
 	{
 	case TOWNSIO_RESET_REASON://      0x20,
@@ -25,25 +26,9 @@
 		}
 		break;
 	case TOWNSIO_MACHINE_ID_LOW://         0x30
-		switch(townsType)
-		{
-		case TOWNSTYPE_1_2F: // 1F,2F
-			return 0x01; // [2] pp.775
-		case TOWNSTYPE_2_MX: // MA,ME,Fresh
-			return 0x02; // [2] pp.826
-		}
-		break;
+		return MachineID()&0xFF;
 	case TOWNSIO_MACHINE_ID_HIGH://=        0x31,
-		switch(townsType)
-		{
-		case TOWNSTYPE_1_2F: // 1F,2F
-			return 0x02; // [2] pp.775
-		case TOWNSTYPE_2_MX: // MA,ME,Fresh
-			return 0x0C; // [2] pp.826
-		}
-		break;
-
-
+		return (MachineID()>>8)&0xFF;
 	case TOWNSIO_FREERUN_TIMER_LOW ://0x26,
 		return (state.townsTime<<var.freeRunTimerShift)&0xff;
 	case TOWNSIO_FREERUN_TIMER_HIGH://0x28,
