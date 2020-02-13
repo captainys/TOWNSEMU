@@ -4,3 +4,5 @@
 *.BIN
 *.XDF
 *.IMG
+*.SYS
+AUTOEXEC.BAT

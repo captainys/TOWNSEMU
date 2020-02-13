@@ -21,7 +21,7 @@ def Run():
 		"-FD0",
 		os.path.join(DISKDIR,"console.xdf"),
 		"-SYM",
-		"../symtables/L30_ADDDRV.txt",
+		"../symtables/L30_OAK.txt",
 	]).wait()
 
 
