@@ -84,6 +84,12 @@ public:
 		unsigned int resetReason;
 
 
+		/*! Serial-ROM access
+		*/
+		unsigned int serialROMBitCount;
+		unsigned int lastSerialROMCommand;
+
+
 		void PowerOn(void);
 		void Reset(void);
 	};

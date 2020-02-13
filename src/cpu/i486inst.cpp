@@ -5291,11 +5291,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 	case I486_OPCODE_PUSH_I8://          0x6A,
 		clocksPassed=1;
-		Push(mem,inst.operandSize,inst.GetUimm8());
+		Push(mem,inst.operandSize,inst.GetSimm8());
 		break;
 	case I486_OPCODE_PUSH_I://           0x68,
 		clocksPassed=1;
-		Push(mem,inst.operandSize,inst.GetUimm16or32(inst.operandSize));
+		Push(mem,inst.operandSize,inst.GetSimm16or32(inst.operandSize));
 		break;
 	case I486_OPCODE_PUSH_CS://          0x0E,
 		Push(mem,inst.operandSize,state.CS().value);

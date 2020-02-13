@@ -64,6 +64,8 @@ enum
 	TOWNSIO_MACHINE_ID_LOW=         0x30,
 	TOWNSIO_MACHINE_ID_HIGH=        0x31,
 
+	TOWNSIO_SERIAL_ROM_CTRL=        0x32,
+
 
 	TOWNSIO_TIMER0_COUNT=             0x40,
 	TOWNSIO_TIMER1_COUNT=             0x42,

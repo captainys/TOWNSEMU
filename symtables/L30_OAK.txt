@@ -1,5 +1,12 @@
 /begin0
 T 0
+* 00000354:0000015E
+R 
+L INT_AFH_AH=05H_GET_MACHINE_ID
+P 
+/end
+/begin0
+T 0
 * 00002235:0000004F
 R 
 L mistake

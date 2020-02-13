@@ -121,6 +121,13 @@ TownsPhysicalMemory::TownsPhysicalMemory(class i486DX *cpuPtr)
 {
 	takeJISCodeLog=false;
 	this->cpuPtr=cpuPtr;
+
+	// Just took from my 2MX.
+	unsigned char defSerialRom[SERIAL_ROM_LENGTH]=
+	{
+		0x04,0x65,0x54,0xA4,0x95,0x45,0x35,0x5F,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+		0xFF,0xFF,0xFF,0xFF,0xFE,0xFF,0xFF,0x0C,0x02,0x00,0x00,0x00,0x15,0xE0,0x00,0x00,
+	};
 	state.Reset();
 }
 
@@ -168,7 +175,14 @@ bool TownsPhysicalMemory::LoadROMImages(const char dirName[])
 	}
 
 	fName=cpputil::MakeFullPathName(dirName,"MYTOWNS.ROM");
-	serialRom=cpputil::ReadBinaryFile(fName);
+	auto data=cpputil::ReadBinaryFile(fName);
+	if(SERIAL_ROM_LENGTH<=data.size())
+	{
+		for(int i=0; i<SERIAL_ROM_LENGTH; ++i)
+		{
+			serialROM[i]=data[i];
+		}
+	}
 
 	return true;
 }

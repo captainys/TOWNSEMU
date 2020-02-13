@@ -4,6 +4,20 @@
 
 /* virtual */ void FMTowns::IOWriteByte(unsigned int ioport,unsigned int data)
 {
+	switch(ioport)
+	{
+	case TOWNSIO_SERIAL_ROM_CTRL://=        0x32,
+		if((0x60&data)==0x60 && (0x80&state.lastSerialROMCommand)!=0 && (0x80&data)==0)
+		{
+			state.serialROMBitCount=0;
+		}
+		else if((0xA0&data)==0x20 && (0x40&state.lastSerialROMCommand)==0 && (0x40&data)!=0)
+		{
+			state.serialROMBitCount=(state.serialROMBitCount+1)&255;
+		}
+		state.lastSerialROMCommand=data;
+		break;
+	}
 }
 /* virtual */ void FMTowns::IOWriteWord(unsigned int ioport,unsigned int data)
 {
@@ -33,6 +47,21 @@
 		return (state.townsTime<<var.freeRunTimerShift)&0xff;
 	case TOWNSIO_FREERUN_TIMER_HIGH://0x28,
 		return ((state.townsTime<<var.freeRunTimerShift)>>8)&0xff;
+
+
+	case TOWNSIO_SERIAL_ROM_CTRL://=        0x32,
+		{
+			unsigned int data=(state.lastSerialROMCommand&0xC0);
+			unsigned int index=255-(state.serialROMBitCount>>3);
+			unsigned int bit=(1<<(state.serialROMBitCount&7));
+			if(0!=(physMem.serialROM[index]&bit))
+			{
+				data|=1;
+			}
+			return data;
+		}
+		break;
+
 
 	case TOWNSIO_FMR_RESOLUTION: // 0x400
 		// Bit0 should always be 0.

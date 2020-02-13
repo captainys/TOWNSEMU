@@ -8,8 +8,8 @@ THISFILE=os.path.realpath(__file__)
 THISDIR=os.path.dirname(THISFILE)
 BUILDDIR=os.path.join(THISDIR,"..","build")
 SRCDIR=os.path.join(THISDIR,"..","src")
-ROMDIR=os.path.join(THISDIR,"..","testdata","ROM_MX")
-DISKDIR=os.path.join(THISDIR,"..","testdata","DISKIMG")
+ROMDIR=os.path.join(THISDIR,"..","..","TOWNSEMU_TEST","ROM_MX")
+DISKDIR=os.path.join(THISDIR,"..","..","TOWNSEMU_TEST","DISKIMG")
 
 
 
@@ -19,9 +19,9 @@ def Run():
 		"./main_cui/main_cui.exe",
 		ROMDIR,
 		"-FD0",
-		os.path.join(DISKDIR,"console.xdf"),
+		os.path.join(DISKDIR,"testset01.bin"),
 		"-SYM",
-		"../symtables/L30_OAK.txt",
+		"../symtables/TESTSET01.txt",
 	]).wait()
 
 

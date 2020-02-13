@@ -20,6 +20,10 @@ void FMTowns::State::PowerOn(void)
 void FMTowns::State::Reset(void)
 {
 	clockBalance=0;
+
+	serialROMBitCount=0;
+	lastSerialROMCommand=0;
+
 	// resetReason should survive Reset.
 }
 
@@ -155,6 +159,8 @@ FMTowns::FMTowns() :
 	io.AddDevice(&crtc,TOWNSIO_CRTC_DATA_HIGH);//           0x443,
 	io.AddDevice(&crtc,TOWNSIO_HSYNC_VSYNC);//              0xFDA0,
 
+
+	io.AddDevice(this,TOWNSIO_SERIAL_ROM_CTRL); //        0x32,
 
 	io.AddDevice(this,TOWNSIO_FMR_RESOLUTION); // 0x400
 

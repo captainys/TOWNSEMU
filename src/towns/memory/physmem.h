@@ -75,7 +75,12 @@ public:
 	};
 
 	State state;
-	std::vector <unsigned char> sysRom,dosRom,fontRom,font20Rom,dicRom,serialRom;
+	std::vector <unsigned char> sysRom,dosRom,fontRom,font20Rom,dicRom;
+	enum
+	{
+		SERIAL_ROM_LENGTH=32
+	};
+	unsigned char serialROM[SERIAL_ROM_LENGTH];
 
 	bool takeJISCodeLog;
 	std::vector <unsigned char> JISCodeLog; // Log KanjiROM Read Access
