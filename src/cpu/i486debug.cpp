@@ -134,33 +134,33 @@ void i486Debugger::SpecialDebugInfo::Interrupt(i486Debugger &debugger,const i486
 }
 void i486Debugger::SpecialDebugInfo::MemWriteByte(i486Debugger &debugger,const i486DX &cpu,const i486DX::SegmentRegister &seg,unsigned int offset,unsigned int linear,unsigned int physical,unsigned int data)
 {
-	/* I think it was stack overflow that I fixed.  Leave it as a comment for the time being.
-	const unsigned int ds=0x4B92;
-	const unsigned int a0=0x3C46,a1=0x3C4A;
-	if(ds*0x10+a0<=physical && physical<=ds*0x10+a1)
+	unsigned DS=0x2F87;
+	unsigned OFFSET1=0x1751,OFFSET2=0x1755;
+	auto phys1=DS*0x10+OFFSET1,phys2=DS*0x10+OFFSET2;
+	if(0x00461==physical || 0x3F000==physical || phys1==physical || phys2==physical)
 	{
-		debugger.ExternalBreak("Writing DS:3C46 "+cpputil::Uitox(physical));
-	} */
+		debugger.ExternalBreak("Special Break Mem Write "+cpputil::Uitox(physical));
+	}
 }
 void i486Debugger::SpecialDebugInfo::MemWriteWord(i486Debugger &debugger,const i486DX &cpu,const i486DX::SegmentRegister &seg,unsigned int offset,unsigned int linear,unsigned int physical,unsigned int data)
 {
-	/* I think it was stack overflow that I fixed.  Leave it as a comment for the time being.
-	const unsigned int ds=0x4B92;
-	const unsigned int a0=0x3C46,a1=0x3C4A;
-	if(ds*0x10+a0<=physical && physical<=ds*0x10+a1)
+	unsigned DS=0x2F87;
+	unsigned OFFSET1=0x1751,OFFSET2=0x1755;
+	auto phys1=DS*0x10+OFFSET1,phys2=DS*0x10+OFFSET2;
+	if(0x00461==physical || 0x3F000==physical || phys1==physical || phys2==physical)
 	{
-		debugger.ExternalBreak("Writing DS:3C46 "+cpputil::Uitox(physical));
-	} */
+		debugger.ExternalBreak("Special Break Mem Write "+cpputil::Uitox(physical));
+	}
 }
 void i486Debugger::SpecialDebugInfo::MemWriteDword(i486Debugger &debugger,const i486DX &cpu,const i486DX::SegmentRegister &seg,unsigned int offset,unsigned int linear,unsigned int physical,unsigned int data)
 {
-	/* I think it was stack overflow that I fixed.  Leave it as a comment for the time being.
-	const unsigned int ds=0x4B92;
-	const unsigned int a0=0x3C46,a1=0x3C4A;
-	if(ds*0x10+a0<=physical && physical<=ds*0x10+a1)
+	unsigned DS=0x2F87;
+	unsigned OFFSET1=0x1751,OFFSET2=0x1755;
+	auto phys1=DS*0x10+OFFSET1,phys2=DS*0x10+OFFSET2;
+	if(0x00461==physical || 0x3F000==physical || phys1==physical || phys2==physical)
 	{
-		debugger.ExternalBreak("Writing DS:3C46 "+cpputil::Uitox(physical));
-	} */
+		debugger.ExternalBreak("Special Break Mem Write "+cpputil::Uitox(physical));
+	}
 }
 void i486Debugger::SpecialDebugInfo::IOWriteByte(i486Debugger &debugger,const i486DX &cpu,unsigned int ioport,unsigned int data)
 {
