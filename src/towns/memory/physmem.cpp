@@ -22,6 +22,7 @@ void TownsPhysicalMemory::State::Reset(void)
 {
 	sysRomMapping=true;
 	dicRom=false;
+	DICROMBank=0;
 	FMRVRAM=true; // [2] pp.91
 	FMRVRAMMask=0x0F; // [2] pp.159
 	FMRDisplayMode=0x77; // [2] pp.158
@@ -66,6 +67,9 @@ void TownsPhysicalMemory::State::Reset(void)
 		state.sysRomMapping=(0==(data&2));
 		state.dicRom=(0!=(data&1));
 		break;
+	case TOWNSIO_DICROM_BANK://              0x484, // [2] pp.92
+		state.DICROMBank=data&0x0F;
+		break;
 	case TOWNSIO_FMR_VRAMMASK: // 0xFF81
 		state.FMRVRAMMask=data;
 		break;
@@ -97,6 +101,9 @@ void TownsPhysicalMemory::State::Reset(void)
 			}
 			return byteData;
 		}
+		break;
+	case TOWNSIO_DICROM_BANK://              0x484, // [2] pp.92
+		data=state.DICROMBank;
 		break;
 	case TOWNSIO_TVRAM_WRITE:
 		data=(state.TVRAMWrite ? 0xff : 0x00);
@@ -196,3 +203,11 @@ void TownsPhysicalMemory::SetWaveRAMSize(long long int size)
 	state.Reset();
 }
 
+void TownsPhysicalMemory::SetDICRAMSize(long long int size)
+{
+	state.DICRAM.resize(size);
+	for(auto &d : state.DICRAM)
+	{
+		d=0;
+	}
+}

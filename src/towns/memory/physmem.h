@@ -55,6 +55,7 @@ public:
 	public:
 		bool sysRomMapping;
 		bool dicRom;
+		unsigned int DICROMBank;
 		bool FMRVRAM;
 		bool TVRAMWrite;
 		unsigned int FMRVRAMMask;
@@ -66,6 +67,7 @@ public:
 		std::vector <unsigned char> CVRAM;
 		std::vector <unsigned char> spriteRAM;
 		std::vector <unsigned char> waveRAM;
+		std::vector <unsigned char> DICRAM;
 
 		KanjiROMAccess kanjiROMAccess;
 
@@ -107,6 +109,10 @@ public:
 	/*! Sets the WaveRAM size.
 	*/
 	void SetWaveRAMSize(long long int size);
+
+	/*! Sets the DICRAM size.  Supposed to be 32768.
+	*/
+	void SetDICRAMSize(long long int size);
 
 	virtual void IOWriteByte(unsigned int ioport,unsigned int data);
 	virtual unsigned int IOReadByte(unsigned int ioport);

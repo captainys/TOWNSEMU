@@ -465,35 +465,56 @@ TownsMainRAMorFMRVRAMAccess::TownsMainRAMorFMRVRAMAccess()
 
 /* virtual */ unsigned int TownsDicROMandDicRAMAccess::FetchByte(unsigned int physAddr) const
 {
-	if(true==physMemPtr->state.dicRom)
+	auto &physMem=*physMemPtr;
+	if(0x000D0000<=physAddr && physAddr<=0x000EFFFF)
 	{
-		if(0xD0000<=physAddr && physAddr<0xD8000) // Dic ROM
+		if(true==physMem.state.dicRom)
 		{
+			if(0xD0000<=physAddr && physAddr<0xD8000) // Dic ROM
+			{
+				unsigned int offset=32768*physMem.state.DICROMBank+(physAddr-0xD000);
+				return physMem.dicRom[offset];
+			}
+			else if(0xD8000<=physAddr && physAddr<0xE0000) // 
+			{
+				return physMem.state.DICRAM[physAddr-0xD8000];
+			}
 		}
-		else if(0xD8000<=physAddr && physAddr<0xDA000) // 
+		else
 		{
+			return physMemPtr->state.RAM[physAddr];
 		}
 	}
-	else
+	else if(0xC2080000<=physAddr && physAddr<=0xC20FFFFF)
 	{
-		return physMemPtr->state.RAM[physAddr];
+		return physMem.dicRom[physAddr-0xC2080000];
+	}
+	else if(0xC2140000<=physAddr && physAddr<=0xC2141FFF)
+	{
+		return physMem.state.DICRAM[physAddr-0xC2140000];
 	}
 	return 0xff;
 }
 /* virtual */ void TownsDicROMandDicRAMAccess::StoreByte(unsigned int physAddr,unsigned char data)
 {
-	if(true==physMemPtr->state.dicRom)
+	auto &physMem=*physMemPtr;
+	if(0x000D0000<=physAddr && physAddr<=0x000EFFFF)
 	{
-		if(0xD0000<=physAddr && physAddr<0xD8000) // Dic ROM
+		if(true==physMem.state.dicRom)
 		{
+			if(0xD8000<=physAddr && physAddr<0xE0000) // 
+			{
+				physMem.state.DICRAM[physAddr-0xD8000]=data;
+			}
 		}
-		else if(0xD8000<=physAddr && physAddr<0xDA000) // 
+		else
 		{
+			physMemPtr->state.RAM[physAddr]=data;
 		}
 	}
-	else
+	else if(0xC2140000<=physAddr && physAddr<=0xC2141FFF)
 	{
-		physMemPtr->state.RAM[physAddr]=data;
+		physMem.state.DICRAM[physAddr-0xC2140000]=data;
 	}
 }
 

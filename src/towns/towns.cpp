@@ -80,6 +80,7 @@ FMTowns::FMTowns() :
 	physMem.SetCVRAMSize(32768);
 	physMem.SetSpriteRAMSize(512*1024);
 	physMem.SetWaveRAMSize(64*1024);
+	physMem.SetDICRAMSize(32768);
 
 	io.AddDevice(&ioRAM,0x3000,0x3FFF);
 
@@ -185,6 +186,7 @@ FMTowns::FMTowns() :
 	io.AddDevice(this,TOWNSIO_RESET_REASON);
 	io.AddDevice(&physMem,TOWNSIO_FMR_VRAM_OR_MAINRAM);
 	io.AddDevice(&physMem,TOWNSIO_SYSROM_DICROM);
+	io.AddDevice(&physMem,TOWNSIO_DICROM_BANK);
 	io.AddDevice(&physMem,TOWNSIO_MEMSIZE);
 	io.AddDevice(&physMem,TOWNSIO_FMR_VRAMMASK);
 	io.AddDevice(&physMem,TOWNSIO_FMR_VRAMDISPLAYMODE);
