@@ -1,2 +1,0 @@
-Place ROM images and disk images for testing.
-Not to be committed to the repository.
