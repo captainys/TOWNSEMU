@@ -6,6 +6,7 @@
 /* virtual */ void FsSimpleWindowConnection::OpenWindow(void)
 {
 	FsOpenWindow(0,0,640,480,1);
+	FsSetWindowTitle("FM Towns Emulator - TSUGARU");
 }
 /* virtual */ void FsSimpleWindowConnection::DevicePolling(void)
 {

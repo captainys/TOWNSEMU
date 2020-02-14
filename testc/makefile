@@ -1,0 +1,34 @@
+build\test01.obj : test01.c
+	hcd386 test01.c -obj build\test01.obj
+
+build\test01.exp : build\test01.obj
+	386link build\test01.obj -lib C:\hc386\small\hce.lib -exe build\test01.exp
+
+
+
+build\test02.obj : test02.c
+	hcd386 test02.c -obj build\test02.obj
+
+build\test02.exp : build\test02.obj
+	386link build\test02.obj -lib C:\hc386\small\hce.lib -exe build\test02.exp
+
+
+
+build\test03.obj : test03.c
+	hcd386 test03.c -obj build\test03.obj
+
+build\test03.exp : build\test03.obj
+	386link build\test03.obj -lib C:\hc386\small\hce.lib -exe build\test03.exp
+
+
+
+
+build\test04.obj : test04.c
+	hcd386 test04.c -obj build\test04.obj
+
+build\test04.exp : build\test04.obj
+	386link build\test04.obj -lib C:\hc386\small\hce.lib -exe build\test04.exp
+
+
+
+
