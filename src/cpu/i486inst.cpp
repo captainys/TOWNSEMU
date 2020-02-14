@@ -263,7 +263,9 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		break;
 
 
+	case I486_OPCODE_BSF_R_RM://   0xBC0F,
 	case I486_OPCODE_BTS_RM_R://   0xAB0F,
+	case I486_OPCODE_BTR_RM_R://   0xB30F,
 		FetchOperandRM(inst,seg,offset,mem);
 		break;
 
@@ -920,7 +922,14 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 		break;
 
 
+	case I486_OPCODE_BSF_R_RM://   0xBC0F,
+		op1.DecodeMODR_MForRegister(operandSize,operand[0]);
+		op2.Decode(addressSize,operandSize,operand);
+		break;
+
+
 	case I486_OPCODE_BTS_RM_R://   0xAB0F,
+	case I486_OPCODE_BTR_RM_R://   0xB30F,
 		op1.Decode(addressSize,operandSize,operand);
 		op2.DecodeMODR_MForRegister(operandSize,operand[0]);
 		break;
@@ -1554,8 +1563,14 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		break;
 
 
+	case I486_OPCODE_BSF_R_RM://   0xBC0F,
+		disasm=DisassembleTypicalTwoOperands("BSF",op1,op2);
+		break;
 	case I486_OPCODE_BTS_RM_R://   0xAB0F,
 		disasm=DisassembleTypicalTwoOperands("BTS",op1,op2);
+		break;
+	case I486_OPCODE_BTR_RM_R://   0xB30F,
+		disasm=DisassembleTypicalTwoOperands("BTR",op1,op2);
 		break;
 
 
@@ -3765,6 +3780,39 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{
 				SetZeroFlag(true);
 			}
+		}
+		break;
+
+
+	case I486_OPCODE_BSF_R_RM://   0xBC0F,
+		{
+			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize/8);
+			auto src=value.GetAsDword();
+			unsigned int bit=1;
+			unsigned int count;
+			for(count=0; count<inst.operandSize; ++count)
+			{
+				if(0!=(src&bit))
+				{
+					break;
+				}
+			}
+			clocksPassed=6+count; // Real:6-42  ?? Why is it not 6+count ?? [1] pp. 26-31
+			if(OPER_ADDR==op2.operandType)
+			{
+				++clocksPassed;
+			}
+			if(count<inst.operandSize)
+			{
+				value.SetDword(count);
+				SetZeroFlag(false);
+			}
+			else
+			{
+				value.SetDword(0);
+				SetZeroFlag(true);
+			}
+			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
 		}
 		break;
 
