@@ -633,6 +633,8 @@ public:
 		int GetSimm16or32(unsigned int operandSize) const;
 
 		static std::string SegmentOverrideString(int segOverridePrefix);
+
+		static std::string SegmentOverrideSIorESIString(int segOverridePrefix,int addressSize);
 	};
 
 	enum
@@ -2131,6 +2133,29 @@ public:
 	    If the destination is a register, the number of bytes stored depends on the size of the register.
 	*/
 	void StoreOperandValue(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,OperandValue value);
+
+
+	/*! Returns override-segment for the prefix.  Returns default DS.
+	*/
+	inline const SegmentRegister &SegmentOverrideDefaultDS(int segOverridePrefix)
+	{
+		switch(segOverridePrefix)
+		{
+		case SEG_OVERRIDE_CS://  0x2E,
+			return state.CS();
+		case SEG_OVERRIDE_SS://  0x36,
+			return state.SS();
+		case SEG_OVERRIDE_DS://  0x3E,
+			return state.DS();
+		case SEG_OVERRIDE_ES://  0x26,
+			return state.ES();
+		case SEG_OVERRIDE_FS://  0x64,
+			return state.FS();
+		case SEG_OVERRIDE_GS://  0x65,
+			return state.GS();
+		}
+		return state.DS();
+	}
 };
 
 

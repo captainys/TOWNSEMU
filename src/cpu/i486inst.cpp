@@ -224,6 +224,26 @@ std::string i486DX::Instruction::SegmentOverrideString(int segOverridePrefix)
 	return "";
 }
 
+/* static */ std::string i486DX::Instruction::SegmentOverrideSIorESIString(int segOverridePrefix,int addressSize)
+{
+	if(0==segOverridePrefix)
+	{
+		return "";
+	}
+	auto str=SegmentOverrideString(segOverridePrefix);
+	switch(addressSize)
+	{
+	case 16:
+		str+="[SI]";
+		break;
+	case 32:
+	default:
+		str+="[ESI]";
+		break;
+	}
+	return str;
+}
+
 void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offset,const Memory &mem) const
 {
 	switch(inst.opCode)
@@ -1655,7 +1675,7 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 
 
 	case I486_OPCODE_CMPSB://           0xA6,
-		disasm="CMPSB";
+		disasm="CMPSB   ";
 		if(instPrefix==INST_PREFIX_REPE)
 		{
 			disasm="REPE "+disasm;
@@ -1664,9 +1684,10 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		{
 			disasm="REPNE "+disasm;
 		}
+		disasm+=SegmentOverrideSIorESIString(segOverride,addressSize);
 		break;
 	case I486_OPCODE_CMPS://            0xA7,
-		disasm=(16==operandSize ? "CMPSW" : "CMPSD");
+		disasm=(16==operandSize ? "CMPSW   " : "CMPSD   ");
 		if(instPrefix==INST_PREFIX_REPE)
 		{
 			disasm="REPE "+disasm;
@@ -1675,6 +1696,7 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		{
 			disasm="REPNE "+disasm;
 		}
+		disasm+=SegmentOverrideSIorESIString(segOverride,addressSize);
 		break;
 
 
@@ -2329,10 +2351,12 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 
 
 	case I486_OPCODE_LODSB://            0xAC,
-		disasm="LODSB";
+		disasm="LODSB   ";
+		disasm+=SegmentOverrideSIorESIString(segOverride,addressSize);
 		break;
 	case I486_OPCODE_LODS://             0xAD,
-		disasm=(16==operandSize ? "LODSW" : "LODSD");
+		disasm=(16==operandSize ? "LODSW   " : "LODSD   ");
+		disasm+=SegmentOverrideSIorESIString(segOverride,addressSize);
 		break;
 
 
@@ -2413,18 +2437,20 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 
 
 	case I486_OPCODE_MOVSB://            0xA4,
-		disasm="MOVSB";
+		disasm="MOVSB   ";
 		if(INST_PREFIX_REP==instPrefix)
 		{
 			disasm="REP "+disasm;
 		}
+		disasm+=SegmentOverrideSIorESIString(segOverride,addressSize);
 		break;
 	case I486_OPCODE_MOVS://             0xA5,
-		disasm=(16==operandSize ? "MOVSW" : "MOVSD");
+		disasm=(16==operandSize ? "MOVSW   " : "MOVSD  ");
 		if(INST_PREFIX_REP==instPrefix)
 		{
 			disasm="REP "+disasm;
 		}
+		disasm+=SegmentOverrideSIorESIString(segOverride,addressSize);
 		break;
 
 
@@ -2690,18 +2716,20 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 
 
 	case I486_OPCODE_OUTSB://            0x6E,
-		disasm="OUTSB";
+		disasm="OUTSB   ";
 		if(INST_PREFIX_REP==instPrefix)
 		{
 			disasm="REP "+disasm;
 		}
+		disasm+=SegmentOverrideSIorESIString(segOverride,addressSize);
 		break;
 	case I486_OPCODE_OUTS://             0x6F,
-		disasm=(16==operandSize ? "OUTSW" : "OUTSD");
+		disasm=(16==operandSize ? "OUTSW   " : "OUTSD   ");
 		if(INST_PREFIX_REP==instPrefix)
 		{
 			disasm="REP "+disasm;
 		}
+		disasm+=SegmentOverrideSIorESIString(segOverride,addressSize);
 		break;
 
 
@@ -3951,7 +3979,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_OPCODE_CMPS://            0xA7,
 		if(true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize))
 		{
-			auto data1=FetchByteWordOrDword(inst.operandSize,inst.addressSize,state.DS(),state.ESI(),mem);
+			auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
+			auto data1=FetchByteWordOrDword(inst.operandSize,inst.addressSize,seg,state.ESI(),mem);
 			auto data2=FetchByteWordOrDword(inst.operandSize,inst.addressSize,state.ES(),state.EDI(),mem);
 			if(true!=state.exception)
 			{
@@ -4933,7 +4962,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		// REP/REPE/REPNE CX or ECX is chosen based on addressSize.
 		if(true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize))
 		{
-			SetAL(FetchByte(inst.addressSize,state.DS(),state.ESI(),mem));
+			auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
+			SetAL(FetchByte(inst.addressSize,seg,state.ESI(),mem));
 			UpdateSIorESIAfterStringOp(inst.addressSize,8);
 			EIPSetByInstruction=(INST_PREFIX_REP==inst.instPrefix);
 			clocksPassed+=5;
@@ -4942,13 +4972,14 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_OPCODE_LODS://             0xAD,
 		if(true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize))
 		{
+			auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
 			if(16==inst.operandSize)
 			{
-				SetAX(FetchWord(inst.addressSize,state.DS(),state.ESI(),mem));
+				SetAX(FetchWord(inst.addressSize,seg,state.ESI(),mem));
 			}
 			else
 			{
-				SetEAX(FetchDword(inst.addressSize,state.DS(),state.ESI(),mem));
+				SetEAX(FetchDword(inst.addressSize,seg,state.ESI(),mem));
 			}
 			UpdateSIorESIAfterStringOp(inst.addressSize,inst.operandSize);
 			EIPSetByInstruction=(INST_PREFIX_REP==inst.instPrefix);
@@ -5142,7 +5173,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		// REP/REPE/REPNE CX or ECX is chosen based on addressSize.
 		if(true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize))
 		{
-			auto data=FetchByte(inst.addressSize,state.DS(),state.ESI(),mem);
+			auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
+			auto data=FetchByte(inst.addressSize,seg,state.ESI(),mem);
 			StoreByte(mem,inst.addressSize,state.ES(),state.EDI(),data);
 			UpdateSIorESIAfterStringOp(inst.addressSize,8);
 			UpdateDIorEDIAfterStringOp(inst.addressSize,8);
@@ -5153,7 +5185,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_OPCODE_MOVS://             0xA5,
 		if(true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize))
 		{
-			auto data=FetchWordOrDword(inst.operandSize,inst.addressSize,state.DS(),state.ESI(),mem);
+			auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
+			auto data=FetchWordOrDword(inst.operandSize,inst.addressSize,seg,state.ESI(),mem);
 			StoreWordOrDword(mem,inst.operandSize,inst.addressSize,state.ES(),state.EDI(),data);
 			UpdateSIorESIAfterStringOp(inst.addressSize,inst.operandSize);
 			UpdateDIorEDIAfterStringOp(inst.addressSize,inst.operandSize);
@@ -5280,7 +5313,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		// REP/REPE/REPNE CX or ECX is chosen based on addressSize.
 		if(true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize))
 		{
-			IOOut8(io,GetDX(),FetchByte(inst.addressSize,state.DS(),state.ESI(),mem));
+			auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
+			IOOut8(io,GetDX(),FetchByte(inst.addressSize,seg,state.ESI(),mem));
 			UpdateSIorESIAfterStringOp(inst.addressSize,8);
 			EIPSetByInstruction=(INST_PREFIX_REP==inst.instPrefix);
 			clocksPassed+=(IsInRealMode() ? 17 : 10); // Protected Mode 32 if CPL>IOPL
@@ -5289,13 +5323,14 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_OPCODE_OUTS://             0x6F,
 		if(true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize))
 		{
+			auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
 			if(16==inst.operandSize)
 			{
-				IOOut16(io,GetDX(),FetchWord(inst.addressSize,state.DS(),state.ESI(),mem));
+				IOOut16(io,GetDX(),FetchWord(inst.addressSize,seg,state.ESI(),mem));
 			}
 			else
 			{
-				IOOut32(io,GetDX(),FetchDword(inst.addressSize,state.DS(),state.ESI(),mem));
+				IOOut32(io,GetDX(),FetchDword(inst.addressSize,seg,state.ESI(),mem));
 			}
 			UpdateSIorESIAfterStringOp(inst.addressSize,inst.operandSize);
 			EIPSetByInstruction=(INST_PREFIX_REP==inst.instPrefix);
