@@ -4007,20 +4007,26 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 			Push(mem,inst.operandSize,state.EBP());
 			auto framePtr=state.ESP();
-			while(0<level)
+			if(0<level)
 			{
-				if(16==inst.operandSize)
+				Abort("ENTER with 0<level: Pseudo Code Ambiguity in [2] pp. 26-70");
+				while(0<level)
 				{
-					SetBP(GetBP()-2);
-					Push(mem,inst.operandSize,state.BP());
+					if(16==inst.operandSize)
+					{
+						SetBP(GetBP()-2);
+						Push(mem,inst.operandSize,state.BP());
+					}
+					else
+					{
+						SetEBP(GetEBP()-4);
+						Push(mem,inst.operandSize,state.EBP());
+					}
 				}
-				else
-				{
-					SetEBP(GetEBP()-4);
-					Push(mem,inst.operandSize,state.EBP());
-				}
+				// Should this push inside while loop or outside?
+				// [2] pp.26-70's pseudo code is ambiguous.
+				Push(mem,inst.operandSize,framePtr);  // Should it be operandSize or addressSize?  Extremely confusing!
 			}
-			Push(mem,inst.operandSize,framePtr);  // Should it be operandSize or addressSize?  Extremely confusing!
 			if(16==inst.operandSize)
 			{
 				SetBP(framePtr&0xFFFF);
