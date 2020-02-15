@@ -38,3 +38,19 @@ build\test05.exp : build\test05.obj
 
 
 
+build\test06.obj : test06.c
+	hcd386 test06.c -obj build\test06.obj
+
+build\test06.exp : build\test06.obj
+	386link build\test06.obj -lib C:\hc386\small\hce.lib -exe build\test06.exp
+
+
+
+build\test07.obj : test07.c
+	hcd386 test07.c -obj build\test07.obj
+
+build\test07.exp : build\test07.obj
+	386link build\test07.obj -lib C:\hc386\small\hce.lib -exe build\test07.exp
+
+
+
