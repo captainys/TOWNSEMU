@@ -5631,6 +5631,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					SetSignFlag(0!=(concat&0x80000000));
 					SetParityFlag(CheckParity(concat&0xFF));
 				}
+				break;
 			case I486_OPCODE_SHRD_RM_I8://       0xAC0F,
 			case I486_OPCODE_SHRD_RM_CL://       0xAD0F,
 				if(16==inst.operandSize)
