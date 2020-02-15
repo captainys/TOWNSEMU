@@ -22,13 +22,19 @@ build\test03.exp : build\test03.obj
 
 
 
-
 build\test04.obj : test04.c
 	hcd386 test04.c -obj build\test04.obj
 
 build\test04.exp : build\test04.obj
 	386link build\test04.obj -lib C:\hc386\small\hce.lib -exe build\test04.exp
 
+
+
+build\test05.obj : test05.c
+	hcd386 test05.c -obj build\test05.obj
+
+build\test05.exp : build\test05.obj
+	386link build\test05.obj -lib C:\hc386\small\hce.lib -exe build\test05.exp
 
 
 
