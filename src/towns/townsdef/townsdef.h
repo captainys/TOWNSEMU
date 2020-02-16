@@ -310,7 +310,7 @@ enum
 	TOWNS_JISKEY_J=               0x24,
 	TOWNS_JISKEY_K=               0x25,
 	TOWNS_JISKEY_L=               0x26,
-	TOWNS_JISKEY_SEMI_COLON=      0x27,
+	TOWNS_JISKEY_SEMICOLON=       0x27,
 	TOWNS_JISKEY_COLON=           0x28,
 	TOWNS_JISKEY_RIGHT_SQ_BRACKET=0x29,
 

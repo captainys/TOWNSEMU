@@ -38,40 +38,40 @@
 	{false,false,TOWNS_JISKEY_NULL},                            // 0x1F
 
 	{false,false,TOWNS_JISKEY_SPACE},                            // 0x20
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x21
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x22
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x23
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x24
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x25
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x26
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x27
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x28
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x29
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x2A
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x2B
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x2C
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x2D
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x2E
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x2F
+	{true ,false,TOWNS_JISKEY_1},                            // 0x21 !
+	{true ,false,TOWNS_JISKEY_2},                          // 0x22 "
+	{true ,false,TOWNS_JISKEY_3},                            // 0x23 #
+	{true ,false,TOWNS_JISKEY_4},                            // 0x24 $
+	{true ,false,TOWNS_JISKEY_5},                            // 0x25 %
+	{true ,false,TOWNS_JISKEY_6},                            // 0x26 &
+	{true ,false,TOWNS_JISKEY_7},                            // 0x27 ' -> a?
+	{true ,false,TOWNS_JISKEY_8},                            // 0x28 (
+	{true ,false,TOWNS_JISKEY_9},                            // 0x29 )
+	{true ,false,TOWNS_JISKEY_COLON},                           // 0x2A *
+	{true ,false,TOWNS_JISKEY_SEMICOLON},                       // 0x2B +
+	{false,false,TOWNS_JISKEY_COMMA},                            // 0x2C ,
+	{false,false,TOWNS_JISKEY_MINUS},                            // 0x2D -
+	{false,false,TOWNS_JISKEY_DOT},                            // 0x2E .
+	{false,false,TOWNS_JISKEY_SLASH},                            // 0x2F /
 
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x30
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x31
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x32
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x33
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x34
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x35
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x36
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x37
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x38
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x39
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x3A
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x3B
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x3C
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x3D
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x3E
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x3F
+	{false,false,TOWNS_JISKEY_0},                            // 0x30
+	{false,false,TOWNS_JISKEY_1},                            // 0x31
+	{false,false,TOWNS_JISKEY_2},                            // 0x32
+	{false,false,TOWNS_JISKEY_3},                            // 0x33
+	{false,false,TOWNS_JISKEY_4},                            // 0x34
+	{false,false,TOWNS_JISKEY_5},                            // 0x35
+	{false,false,TOWNS_JISKEY_6},                            // 0x36
+	{false,false,TOWNS_JISKEY_7},                            // 0x37
+	{false,false,TOWNS_JISKEY_8},                            // 0x38
+	{false,false,TOWNS_JISKEY_9},                            // 0x39
+	{false,false,TOWNS_JISKEY_COLON},                            // 0x3A :
+	{false,false,TOWNS_JISKEY_SEMICOLON},                            // 0x3B ;
+	{true ,false,TOWNS_JISKEY_COMMA},                            // 0x3C <
+	{true ,false,TOWNS_JISKEY_MINUS},                            // 0x3D =
+	{true ,false,TOWNS_JISKEY_DOT},                            // 0x3E >
+	{true ,false,TOWNS_JISKEY_SLASH},                            // 0x3F ?
 
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x40
+	{false,false,TOWNS_JISKEY_AT},                            // 0x40 @
 	{true ,false,TOWNS_JISKEY_A},                            // 0x41 'A'
 	{true ,false,TOWNS_JISKEY_B},                            // 0x42
 	{true ,false,TOWNS_JISKEY_C},                            // 0x43
@@ -99,13 +99,13 @@
 	{true ,false,TOWNS_JISKEY_X},                            // 0x58
 	{true ,false,TOWNS_JISKEY_Y},                            // 0x59
 	{false,false,TOWNS_JISKEY_Z},                            // 0x5A
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x5B
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x5C
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x5D
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x5E
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x5F
+	{false,false,TOWNS_JISKEY_LEFT_SQ_BRACKET},                            // 0x5B [
+	{false,false,TOWNS_JISKEY_BACKSLASH},                            // 0x5C (Back Slash)
+	{false,false,TOWNS_JISKEY_RIGHT_SQ_BRACKET},                            // 0x5D ]
+	{false,false,TOWNS_JISKEY_HAT},                            // 0x5E ^
+	{true ,false,TOWNS_JISKEY_DOUBLEQUOTE},                            // 0x5F _
 
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x60
+	{true ,false,TOWNS_JISKEY_AT},                            // 0x60 `
 	{false,false,TOWNS_JISKEY_A},                            // 0x61
 	{false,false,TOWNS_JISKEY_B},                            // 0x62
 	{false,false,TOWNS_JISKEY_C},                            // 0x63
@@ -133,10 +133,10 @@
 	{false,false,TOWNS_JISKEY_X},                            // 0x78
 	{false,false,TOWNS_JISKEY_Y},                            // 0x79
 	{false,false,TOWNS_JISKEY_Z},                            // 0x7A
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x7B
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x7C
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x7D
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x7E
+	{true ,false,TOWNS_JISKEY_LEFT_SQ_BRACKET},                            // 0x7B {
+	{true ,false,TOWNS_JISKEY_BACKSLASH},                            // 0x7C |
+	{true ,false,TOWNS_JISKEY_RIGHT_SQ_BRACKET},                            // 0x7D }
+	{true ,false,TOWNS_JISKEY_HAT},                            // 0x7E `
 	{false,false,TOWNS_JISKEY_NULL},                            // 0x7F
 
 	{false,false,TOWNS_JISKEY_NULL},                            // 0x80
