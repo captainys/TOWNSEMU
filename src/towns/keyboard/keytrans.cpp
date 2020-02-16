@@ -1,7 +1,7 @@
 #include "keyboard.h"
 #include "townsdef.h"
 
-/* static */ TownsKeyboard::TownsKeyCombination translation_data[256]=
+/* static */ TownsKeyboard::TownsKeyCombination TownsKeyboard::translation_data[256]=
 {
 	{false,false,TOWNS_JISKEY_NULL},                            // 0x00
 	{false,false,TOWNS_JISKEY_NULL},                            // 0x01
@@ -11,12 +11,12 @@
 	{false,false,TOWNS_JISKEY_NULL},                            // 0x05
 	{false,false,TOWNS_JISKEY_NULL},                            // 0x06
 	{false,false,TOWNS_JISKEY_NULL},                            // 0x07
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x08
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x09
+	{false,false,TOWNS_JISKEY_BACKSPACE},                       // 0x08
+	{false,false,TOWNS_JISKEY_TAB},                             // 0x09
 	{false,false,TOWNS_JISKEY_NULL},                            // 0x0A
 	{false,false,TOWNS_JISKEY_NULL},                            // 0x0B
 	{false,false,TOWNS_JISKEY_NULL},                            // 0x0C
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x0D
+	{false,false,TOWNS_JISKEY_RETURN},                          // 0x0D
 	{false,false,TOWNS_JISKEY_NULL},                            // 0x0E
 	{false,false,TOWNS_JISKEY_NULL},                            // 0x0F
 
@@ -37,7 +37,7 @@
 	{false,false,TOWNS_JISKEY_NULL},                            // 0x1E
 	{false,false,TOWNS_JISKEY_NULL},                            // 0x1F
 
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x20
+	{false,false,TOWNS_JISKEY_SPACE},                            // 0x20
 	{false,false,TOWNS_JISKEY_NULL},                            // 0x21
 	{false,false,TOWNS_JISKEY_NULL},                            // 0x22
 	{false,false,TOWNS_JISKEY_NULL},                            // 0x23
@@ -72,33 +72,33 @@
 	{false,false,TOWNS_JISKEY_NULL},                            // 0x3F
 
 	{false,false,TOWNS_JISKEY_NULL},                            // 0x40
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x41
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x42
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x43
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x44
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x45
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x46
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x47
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x48
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x49
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x4A
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x4B
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x4C
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x4D
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x4E
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x4F
+	{true ,false,TOWNS_JISKEY_A},                            // 0x41 'A'
+	{true ,false,TOWNS_JISKEY_B},                            // 0x42
+	{true ,false,TOWNS_JISKEY_C},                            // 0x43
+	{true ,false,TOWNS_JISKEY_D},                            // 0x44
+	{true ,false,TOWNS_JISKEY_E},                            // 0x45
+	{true ,false,TOWNS_JISKEY_F},                            // 0x46
+	{true ,false,TOWNS_JISKEY_G},                            // 0x47
+	{true ,false,TOWNS_JISKEY_H},                            // 0x48
+	{true ,false,TOWNS_JISKEY_I},                            // 0x49
+	{true ,false,TOWNS_JISKEY_J},                            // 0x4A
+	{true ,false,TOWNS_JISKEY_K},                            // 0x4B
+	{true ,false,TOWNS_JISKEY_L},                            // 0x4C
+	{true ,false,TOWNS_JISKEY_M},                            // 0x4D
+	{true ,false,TOWNS_JISKEY_N},                            // 0x4E
+	{true ,false,TOWNS_JISKEY_O},                            // 0x4F
 
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x50
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x51
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x52
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x53
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x54
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x55
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x56
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x57
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x58
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x59
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x5A
+	{true ,false,TOWNS_JISKEY_P},                            // 0x50
+	{true ,false,TOWNS_JISKEY_Q},                            // 0x51
+	{true ,false,TOWNS_JISKEY_R},                            // 0x52
+	{true ,false,TOWNS_JISKEY_S},                            // 0x53
+	{true ,false,TOWNS_JISKEY_T},                            // 0x54
+	{true ,false,TOWNS_JISKEY_U},                            // 0x55
+	{true ,false,TOWNS_JISKEY_V},                            // 0x56
+	{true ,false,TOWNS_JISKEY_W},                            // 0x57
+	{true ,false,TOWNS_JISKEY_X},                            // 0x58
+	{true ,false,TOWNS_JISKEY_Y},                            // 0x59
+	{false,false,TOWNS_JISKEY_Z},                            // 0x5A
 	{false,false,TOWNS_JISKEY_NULL},                            // 0x5B
 	{false,false,TOWNS_JISKEY_NULL},                            // 0x5C
 	{false,false,TOWNS_JISKEY_NULL},                            // 0x5D
@@ -106,33 +106,33 @@
 	{false,false,TOWNS_JISKEY_NULL},                            // 0x5F
 
 	{false,false,TOWNS_JISKEY_NULL},                            // 0x60
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x61
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x62
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x63
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x64
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x65
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x66
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x67
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x68
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x69
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x6A
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x6B
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x6C
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x6D
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x6E
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x6F
-
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x70
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x71
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x72
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x73
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x74
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x75
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x76
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x77
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x78
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x79
-	{false,false,TOWNS_JISKEY_NULL},                            // 0x7A
+	{false,false,TOWNS_JISKEY_A},                            // 0x61
+	{false,false,TOWNS_JISKEY_B},                            // 0x62
+	{false,false,TOWNS_JISKEY_C},                            // 0x63
+	{false,false,TOWNS_JISKEY_D},                            // 0x64
+	{false,false,TOWNS_JISKEY_E},                            // 0x65
+	{false,false,TOWNS_JISKEY_F},                            // 0x66
+	{false,false,TOWNS_JISKEY_G},                            // 0x67
+	{false,false,TOWNS_JISKEY_H},                            // 0x68
+	{false,false,TOWNS_JISKEY_I},                            // 0x69
+	{false,false,TOWNS_JISKEY_J},                            // 0x6A
+	{false,false,TOWNS_JISKEY_K},                            // 0x6B
+	{false,false,TOWNS_JISKEY_L},                            // 0x6C
+	{false,false,TOWNS_JISKEY_M},                            // 0x6D
+	{false,false,TOWNS_JISKEY_N},                            // 0x6E
+	{false,false,TOWNS_JISKEY_O},                            // 0x6F
+                              
+	{false,false,TOWNS_JISKEY_P},                            // 0x70
+	{false,false,TOWNS_JISKEY_Q},                            // 0x71
+	{false,false,TOWNS_JISKEY_R},                            // 0x72
+	{false,false,TOWNS_JISKEY_S},                            // 0x73
+	{false,false,TOWNS_JISKEY_T},                            // 0x74
+	{false,false,TOWNS_JISKEY_U},                            // 0x75
+	{false,false,TOWNS_JISKEY_V},                            // 0x76
+	{false,false,TOWNS_JISKEY_W},                            // 0x77
+	{false,false,TOWNS_JISKEY_X},                            // 0x78
+	{false,false,TOWNS_JISKEY_Y},                            // 0x79
+	{false,false,TOWNS_JISKEY_Z},                            // 0x7A
 	{false,false,TOWNS_JISKEY_NULL},                            // 0x7B
 	{false,false,TOWNS_JISKEY_NULL},                            // 0x7C
 	{false,false,TOWNS_JISKEY_NULL},                            // 0x7D
@@ -274,11 +274,18 @@
 	{false,false,TOWNS_JISKEY_NULL},                            // 0xFD
 	{false,false,TOWNS_JISKEY_NULL},                            // 0xFE
 	{false,false,TOWNS_JISKEY_NULL},                            // 0xFF
-
 };
 
 
-/* static */ unsigned int TownsKeyboard::TranslateChar(unsigned char keyCodeBuf[16],bool keyPress,bool keyRelease)
+/* static */ unsigned int TownsKeyboard::TranslateChar(unsigned char keyCodeBuf[2],unsigned char c)
 {
+	keyCodeBuf[1]=translation_data[c].keyCode;
+	if(TOWNS_JISKEY_NULL!=keyCodeBuf[1])
+	{
+		keyCodeBuf[0]=TOWNS_KEYFLAG_THUMBSHIFT_TYPE_JIS|TOWNS_KEYFLAG_THUMBSHIFT_TYPE_FIRSTBYTE;
+		keyCodeBuf[0]|=(true==translation_data[c].shift ? TOWNS_KEYFLAG_THUMBSHIFT_SHIFT : 0);
+		keyCodeBuf[0]|=(true==translation_data[c].ctrl ? TOWNS_KEYFLAG_THUMBSHIFT_CTRL : 0);
+		return 2;
+	}
 	return 0;
 }

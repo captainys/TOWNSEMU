@@ -51,6 +51,7 @@ void FMTowns::Variable::Reset(void)
 
 FMTowns::FMTowns() : 
 	physMem(&cpu),
+	keyboard(this,&pic),
 	crtc(this),
 	pic(this),
 	dmac(this),

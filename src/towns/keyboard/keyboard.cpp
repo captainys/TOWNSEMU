@@ -1,14 +1,20 @@
 #include "cpputil.h"
 #include "keyboard.h"
 #include "townsdef.h"
-
+#include "pic.h"
+#include "towns.h"
 
 
 void TownsKeyboard::State::Reset(void)
 {
+	IRQEnabled=false;
+	KBINT=false;
 }
-TownsKeyboard::TownsKeyboard()
+TownsKeyboard::TownsKeyboard(FMTowns *townsPtr,TownsPIC *picPtr)
 {
+	this->townsPtr=townsPtr;
+	this->picPtr=picPtr;
+
 	state.Reset();
 	afterReset=SEND_CD_AFTER_RESET;
 	nFifoFilled=0;
@@ -21,6 +27,11 @@ void TownsKeyboard::PushFifo(unsigned char code1,unsigned char code2)
 		fifoBuf[nFifoFilled  ]=code1;
 		fifoBuf[nFifoFilled+1]=code2;
 		nFifoFilled+=2;
+	}
+	state.KBINT=true;
+	if(true==state.IRQEnabled)
+	{
+		picPtr->SetInterruptRequestBit(TOWNSIRQ_KEYBOARD,true);
 	}
 }
 
@@ -67,6 +78,7 @@ void TownsKeyboard::PushFifo(unsigned char code1,unsigned char code2)
 		}
 		break;
 	case TOWNSIO_KEYBOARD_IRQ://        0x604, // [2] pp.236
+		state.IRQEnabled=(0!=(data&1));
 		break;
 	}
 }
@@ -75,6 +87,8 @@ void TownsKeyboard::PushFifo(unsigned char code1,unsigned char code2)
 	switch(ioport)
 	{
 	case TOWNSIO_KEYBOARD_DATA://       0x600, // [2] pp.234
+		picPtr->SetInterruptRequestBit(TOWNSIRQ_TIMER,false);
+		state.KBINT=false;
 		if(0<nFifoFilled)
 		{
 			auto ret=fifoBuf[0];
@@ -83,6 +97,10 @@ void TownsKeyboard::PushFifo(unsigned char code1,unsigned char code2)
 				fifoBuf[i]=fifoBuf[i+1];
 			}
 			--nFifoFilled;
+			if(0<nFifoFilled && true==state.IRQEnabled)
+			{
+				commonState.scheduleTime=townsPtr->state.townsTime+KEY_REPEAT_INTERVAL;
+			}
 			return ret;
 		}
 		break;
@@ -100,4 +118,14 @@ void TownsKeyboard::PushFifo(unsigned char code1,unsigned char code2)
 /* virtual */ void TownsKeyboard::Reset(void)
 {
 	state.Reset();
+}
+
+/* virtual */ void TownsKeyboard::RunScheduledTask(unsigned long long int townsTime)
+{
+	// 9600bps=600words per seconds.
+	if(0<nFifoFilled)
+	{
+		state.KBINT=true;
+		picPtr->SetInterruptRequestBit(TOWNSIRQ_KEYBOARD,true);
+	}
 }

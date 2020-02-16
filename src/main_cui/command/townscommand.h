@@ -57,6 +57,8 @@ public:
 		CMD_DISASM32,
 
 		CMD_ADD_SYMBOL,
+
+		CMD_TYPE_KEYBOARD,
 	};
 
 	enum
@@ -146,6 +148,8 @@ public:
 	void Execute_PrintHistory(FMTowns &towns,unsigned int n);
 
 	void Execute_AddSymbol(FMTowns &towns,Command &cmd);
+
+	void Execute_TypeKeyboard(FMTowns &towns,Command &cmd);
 };
 
 

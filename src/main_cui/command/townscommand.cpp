@@ -46,6 +46,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["CBRKON"]=CMD_DONT_BREAK_ON;
 	primaryCmdMap["INTERRUPT"]=CMD_INTERRUPT;
 	primaryCmdMap["ADDSYM"]=CMD_ADD_SYMBOL;
+	primaryCmdMap["TYPE"]=CMD_TYPE_KEYBOARD;
 
 	featureMap["CMDLOG"]=ENABLE_CMDLOG;
 	featureMap["AUTODISASM"]=ENABLE_DISASSEMBLE_EVERY_INST;
@@ -133,6 +134,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Break on event." << std::endl;
 	std::cout << "CBRKON" << std::endl;
 	std::cout << "  Clear break-on event." << std::endl;
+	std::cout << "TYPE characters" << std::endl;
+	std::cout << "  Send keyboard codes." << std::endl;
 
 	std::cout << "" << std::endl;
 
@@ -337,6 +340,10 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,Command &c
 
 	case CMD_ADD_SYMBOL:
 		Execute_AddSymbol(towns,cmd);
+		break;
+
+	case CMD_TYPE_KEYBOARD:
+		Execute_TypeKeyboard(towns,cmd);
 		break;
 	}
 }
@@ -762,5 +769,29 @@ void TownsCommandInterpreter::Execute_AddSymbol(FMTowns &towns,Command &cmd)
 	else
 	{
 		PrintError(ERROR_TOO_FEW_ARGS);
+	}
+}
+
+void TownsCommandInterpreter::Execute_TypeKeyboard(FMTowns &towns,Command &cmd)
+{
+	for(int i=0; i<cmd.cmdline.size(); ++i)
+	{
+		if(' '==cmd.cmdline[i] || '\t'==cmd.cmdline[i])
+		{
+			for(int j=i+1; j<cmd.cmdline.size(); ++j)
+			{
+				unsigned char byteData[2];
+				if(0<TownsKeyboard::TranslateChar(byteData,cmd.cmdline[j]))
+				{
+					towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_THUMBSHIFT_PRESS_OR_RELEASE,byteData[1]);
+					towns.keyboard.PushFifo(byteData[0],byteData[1]);
+				}
+			}
+			unsigned char byteData[2];
+			TownsKeyboard::TranslateChar(byteData,0x0D);
+			towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_THUMBSHIFT_PRESS_OR_RELEASE,byteData[1]);
+			towns.keyboard.PushFifo(byteData[0],byteData[1]);
+			return;
+		}
 	}
 }

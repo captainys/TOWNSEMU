@@ -299,6 +299,9 @@ std::vector <std::string> TownsPIC::GetStateText(void) const
 		text.back()="A="+cpputil::Ustox(i8259A.GetA())+"  T="+cpputil::Ustox(i8259A.GetT());
 
 		text.push_back(newline);
+		text.back()="IRR="+cpputil::Ubtox(i8259A.IRR)+" ISR="+cpputil::Ubtox(i8259A.ISR);
+
+		text.push_back(newline);
 		text.back()="ICW1="+cpputil::Ubtox(i8259A.ICW[0]);
 		text.back()=text.back()+"  LTIM:"+((i8259A.ICW[0]&0x08) ? "1" : "0");
 		text.back()=text.back()+"  ADI:" +((i8259A.ICW[0]&0x04) ? "1" : "0");
