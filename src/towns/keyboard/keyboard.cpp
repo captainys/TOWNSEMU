@@ -115,7 +115,7 @@ void TownsKeyboard::PushFifo(unsigned char code1,unsigned char code2)
 		}
 		return 0;  // IBF=0 Data Empty. Always Ready.
 	case TOWNSIO_KEYBOARD_IRQ://        0x604, // [2] pp.236
-		return 0; // NO IRQ Implemented yet.
+		return (true==state.KBINT ? 1 : 0);
 	}
 	return 0xff;
 }

@@ -13,8 +13,6 @@ bool i486DX::OpCodeNeedsOneMoreByte(unsigned int firstByte) const
 	switch(firstByte)
 	{
 	case I486_OPCODE_NEED_SECOND_BYTE:
-	case I486_OPCODE_NEED_SECOND_BYTE_AAD://_=0xD5,
-	case I486_OPCODE_NEED_SECOND_BYTE_AAM://_=0xD4,
 		return true;
 	}
 	return false;
@@ -275,6 +273,12 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		{
 			FetchOperand16or32(inst,seg,offset,mem);
 		}
+		break;
+
+
+	case I486_OPCODE_AAD_ADX://    0xD5,
+	case I486_OPCODE_AAM_AMX://    0xD4,
+		FetchOperand8(inst,seg,offset,mem);
 		break;
 
 
@@ -935,6 +939,12 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 		break;
 
 
+	case I486_OPCODE_AAD_ADX://    0xD5,
+	case I486_OPCODE_AAM_AMX://    0xD4,
+		op1.MakeImm8(*this);
+		break;
+
+
 	case I486_OPCODE_ARPL://       0x63,
 		operandSize=16;
 		op1.Decode(addressSize,operandSize,operand);
@@ -1574,6 +1584,28 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		case I486_OPCODE_D3_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_CL://0xD3, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
 			disasm=DisassembleTypicalOneOperand(disasm,op1,operandSize)+",CL";
 			break;
+		}
+		break;
+
+
+	case I486_OPCODE_AAD_ADX://    0xD5,
+		if(0x0A==GetUimm8())
+		{
+			disasm="AAD";
+		}
+		else
+		{
+			disasm=DisassembleTypicalOneOperand("ADX",op1,8);
+		}
+		break;
+	case I486_OPCODE_AAM_AMX://    0xD4,
+		if(0x0A==GetUimm8())
+		{
+			disasm="AAM";
+		}
+		else
+		{
+			disasm=DisassembleTypicalOneOperand("AMX",op1,8);
 		}
 		break;
 
@@ -3785,6 +3817,28 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				value1.SetDword(i);
 				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
 			}
+		}
+		break;
+
+
+	case I486_OPCODE_AAD_ADX://    0xD5,
+		// Not implemented yet.
+		break;
+
+
+	case I486_OPCODE_AAM_AMX://    0xD4,
+		if(0x0A==inst.GetUimm8())
+		{
+			clocksPassed=15;
+			auto AL=GetAL();
+			auto quo=AL/10;
+			auto rem=AL%10;
+			SetAH(quo);
+			SetAL(rem);
+		}
+		else
+		{
+			Abort("AMX 0D Imm8(!=0x0A) may not be a 80486 instruction.");
 		}
 		break;
 
