@@ -28,7 +28,7 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 		{
 		case RUNMODE_PAUSE:
 			townsPtr->ForceRender(render,*outside_world);
-			outside_world->DevicePolling();
+			outside_world->DevicePolling(*townsPtr);
 			break;
 		case RUNMODE_FREE:
 			townsPtr->cpu.DetachDebugger();
@@ -42,7 +42,7 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 				townsPtr->RunScheduledTasks();
 				townsPtr->CheckRenderingTimer(render,*outside_world);
 			}
-			outside_world->DevicePolling();
+			outside_world->DevicePolling(*townsPtr);
 			if(true==townsPtr->CheckAbort())
 			{
 				PrintStatus(*townsPtr);
@@ -69,7 +69,7 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 					break;
 				}
 			}
-			outside_world->DevicePolling();
+			outside_world->DevicePolling(*townsPtr);
 			if(true==townsPtr->CheckAbort())
 			{
 				PrintStatus(*townsPtr);

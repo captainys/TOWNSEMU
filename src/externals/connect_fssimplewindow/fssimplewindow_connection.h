@@ -8,7 +8,7 @@ class FsSimpleWindowConnection : public Outside_World
 {
 public:
 	virtual void OpenWindow(void);
-	virtual void DevicePolling(void);
+	virtual void DevicePolling(class FMTowns &towns);
 	virtual void Render(const TownsRender::Image &img);
 };
 

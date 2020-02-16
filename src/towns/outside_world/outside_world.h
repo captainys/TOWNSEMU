@@ -8,7 +8,7 @@ class Outside_World
 {
 public:
 	virtual void OpenWindow(void)=0;
-	virtual void DevicePolling(void)=0;
+	virtual void DevicePolling(class FMTowns &towns)=0;
 	virtual void Render(const TownsRender::Image &img)=0;
 };
 
