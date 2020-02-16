@@ -1673,6 +1673,9 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		case 4:
 			disasm=DisassembleTypicalOneOperand("MUL",op1,operandSize);
 			break;
+		case 5:
+			disasm=DisassembleTypicalOneOperand("IMUL",op1,operandSize);
+			break;
 		case 6:
 			disasm=DisassembleTypicalOneOperand("DIV",op1,operandSize);
 			break;
@@ -3406,6 +3409,45 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				{
 					SetCF(false);
 					SetOverflowFlag(false);
+				}
+			}
+			break;
+		case 5: // MUL
+			{
+				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+				if(true==state.exception)
+				{
+					EIPSetByInstruction=true;
+				}
+				else
+				{
+					int multiplicand=value.GetAsSignedDword();
+					if(16==inst.operandSize)
+					{
+						clocksPassed=20; // 13-26.  I don't know exactly how to calculate it.
+						int DXAX=GetAX();
+						if((0x8000&DXAX)!=0)
+						{
+							DXAX-=0x10000;
+						}
+						DXAX*=multiplicand;
+
+						SetAX(DXAX&0xFFFF);
+						SetDX((DXAX>>16)&0xFFFF);
+					}
+					else
+					{
+						clocksPassed=30; // 13-42.  I don't know exactly how to calculate it.
+						long long int EDXEAX=GetEAX();
+						if((0x80000000&EDXEAX)!=0)
+						{
+							EDXEAX-=0x100000000LL;
+						}
+						EDXEAX*=multiplicand;
+
+						SetEAX(EDXEAX&0xFFFFFFFF);
+						SetEDX((EDXEAX>>32)&0xFFFFFFFF);
+					}
 				}
 			}
 			break;
