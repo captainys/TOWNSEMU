@@ -75,6 +75,7 @@ FMTowns::FMTowns() :
 	allDevices.push_back(&rtc);
 	allDevices.push_back(&sound);
 	allDevices.push_back(&timer);
+	allDevices.push_back(&keyboard);
 
 	fastDevices.push_back(&sound);
 	fastDevices.push_back(&timer);

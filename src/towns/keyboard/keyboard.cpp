@@ -87,7 +87,7 @@ void TownsKeyboard::PushFifo(unsigned char code1,unsigned char code2)
 	switch(ioport)
 	{
 	case TOWNSIO_KEYBOARD_DATA://       0x600, // [2] pp.234
-		picPtr->SetInterruptRequestBit(TOWNSIRQ_TIMER,false);
+		picPtr->SetInterruptRequestBit(TOWNSIRQ_KEYBOARD,false);
 		state.KBINT=false;
 		if(0<nFifoFilled)
 		{
@@ -102,6 +102,10 @@ void TownsKeyboard::PushFifo(unsigned char code1,unsigned char code2)
 				commonState.scheduleTime=townsPtr->state.townsTime+KEY_REPEAT_INTERVAL;
 			}
 			return ret;
+		}
+		else
+		{
+			return 0;
 		}
 		break;
 	case TOWNSIO_KEYBOARD_STATUS_CMD:// 0x602, // [2] pp.231
@@ -123,7 +127,7 @@ void TownsKeyboard::PushFifo(unsigned char code1,unsigned char code2)
 /* virtual */ void TownsKeyboard::RunScheduledTask(unsigned long long int townsTime)
 {
 	// 9600bps=600words per seconds.
-	if(0<nFifoFilled)
+	if(0<nFifoFilled && true==state.IRQEnabled)
 	{
 		state.KBINT=true;
 		picPtr->SetInterruptRequestBit(TOWNSIRQ_KEYBOARD,true);

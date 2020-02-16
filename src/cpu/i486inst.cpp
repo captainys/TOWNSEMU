@@ -3171,7 +3171,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
 				break;
 			case 1:// "ROR";
-				Abort("C1 ROR not implemented yet.");
+				RorByteWordOrDword(inst.operandSize,i,ctr);
 				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
 				break;
 			case 2:// "RCL";
