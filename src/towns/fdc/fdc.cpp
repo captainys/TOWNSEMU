@@ -600,12 +600,14 @@ bool TownsFDC::WriteFault(void) const
 		break;
 	case 0xA0: // Write Data (Write Sector)
 	case 0xB0: // Write Data (Write Sector)
+		commonState.scheduleTime=TIME_NO_SCHEDULE;
 		std::cout << __FUNCTION__ << std::endl;
 		std::cout << "Command " << cpputil::Ubtox(state.lastCmd) << " not supported yet." << std::endl;
 		MakeReady();
 		break;
 
 	case 0xC0: // Read Address
+		commonState.scheduleTime=TIME_NO_SCHEDULE;
 		if(nullptr!=diskPtr)
 		{
 			// Copy CHRN and CRC CRC to DMA.
@@ -645,11 +647,13 @@ bool TownsFDC::WriteFault(void) const
 		MakeReady();
 		break;
 	case 0xE0: // Read Track
+		commonState.scheduleTime=TIME_NO_SCHEDULE;
 		std::cout << __FUNCTION__ << std::endl;
 		std::cout << "Command " << cpputil::Ubtox(state.lastCmd) << " not supported yet." << std::endl;
 		MakeReady();
 		break;
 	case 0xF0: // Write Track
+		commonState.scheduleTime=TIME_NO_SCHEDULE;
 		std::cout << __FUNCTION__ << std::endl;
 		std::cout << "Command " << cpputil::Ubtox(state.lastCmd) << " not supported yet." << std::endl;
 		MakeReady();
@@ -657,6 +661,7 @@ bool TownsFDC::WriteFault(void) const
 
 	default:
 	case 0xD0: // Force Interrupt
+		commonState.scheduleTime=TIME_NO_SCHEDULE;
 		state.busy=false;
 		break;
 	}
