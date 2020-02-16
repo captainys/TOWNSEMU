@@ -282,9 +282,9 @@
 	keyCodeBuf[1]=translation_data[c].keyCode;
 	if(TOWNS_JISKEY_NULL!=keyCodeBuf[1])
 	{
-		keyCodeBuf[0]=TOWNS_KEYFLAG_THUMBSHIFT_TYPE_JIS|TOWNS_KEYFLAG_THUMBSHIFT_TYPE_FIRSTBYTE;
-		keyCodeBuf[0]|=(true==translation_data[c].shift ? TOWNS_KEYFLAG_THUMBSHIFT_SHIFT : 0);
-		keyCodeBuf[0]|=(true==translation_data[c].ctrl ? TOWNS_KEYFLAG_THUMBSHIFT_CTRL : 0);
+		keyCodeBuf[0]=TOWNS_KEYFLAG_TYPE_JIS|TOWNS_KEYFLAG_TYPE_FIRSTBYTE;
+		keyCodeBuf[0]|=(true==translation_data[c].shift ? TOWNS_KEYFLAG_SHIFT : 0);
+		keyCodeBuf[0]|=(true==translation_data[c].ctrl ? TOWNS_KEYFLAG_CTRL : 0);
 		return 2;
 	}
 	return 0;

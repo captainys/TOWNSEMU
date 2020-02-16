@@ -35,10 +35,10 @@
 			{
 				if(' '<=c)
 				{
-					unsigned char byteData[2];
+					unsigned char byteData[2]={0,0};
 					if(0<TownsKeyboard::TranslateChar(byteData,c))
 					{
-						towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_THUMBSHIFT_PRESS_OR_RELEASE,byteData[1]);
+						towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_PRESS_OR_RELEASE,byteData[1]);
 						towns.keyboard.PushFifo(byteData[0],byteData[1]);
 					}
 				}
@@ -46,7 +46,7 @@
 		}
 		while(0!=(c=FsInkey()))
 		{
-			unsigned char byteData[2];
+			unsigned char byteData[2]={0,0};
 			switch(c)
 			{
 			default:
@@ -60,6 +60,60 @@
 				break;
 			case FSKEY_TAB:
 				byteData[1]=TOWNS_JISKEY_TAB;
+				break;
+			case FSKEY_C:
+				if(0!=FsGetKeyState(FSKEY_CTRL))
+				{
+					byteData[0]=TOWNS_KEYFLAG_CTRL;
+					towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_JIS_PRESS,  TOWNS_JISKEY_C);
+					towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_JIS_RELEASE,TOWNS_JISKEY_C);
+				}
+				break;
+			case FSKEY_S:
+				if(0!=FsGetKeyState(FSKEY_CTRL))
+				{
+					byteData[0]=TOWNS_KEYFLAG_CTRL;
+					towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_JIS_PRESS,  TOWNS_JISKEY_S);
+					towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_JIS_RELEASE,TOWNS_JISKEY_S);
+				}
+				break;
+			case FSKEY_Q:
+				if(0!=FsGetKeyState(FSKEY_CTRL))
+				{
+					byteData[0]=TOWNS_KEYFLAG_CTRL;
+					towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_JIS_PRESS,  TOWNS_JISKEY_Q);
+					towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_JIS_RELEASE,TOWNS_JISKEY_Q);
+				}
+				break;
+			case FSKEY_ESC:
+				byteData[0]|=(0!=FsGetKeyState(FSKEY_CTRL) ? TOWNS_KEYFLAG_CTRL : 0);
+				byteData[0]|=(0!=FsGetKeyState(FSKEY_SHIFT) ? TOWNS_KEYFLAG_SHIFT : 0);
+				towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_JIS_PRESS,  TOWNS_JISKEY_ESC);
+				towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_JIS_RELEASE,TOWNS_JISKEY_ESC);
+				break;
+			case FSKEY_UP:
+				byteData[0]=(0!=FsGetKeyState(FSKEY_CTRL) ? TOWNS_KEYFLAG_CTRL : 0);
+				byteData[0]|=(0!=FsGetKeyState(FSKEY_SHIFT) ? TOWNS_KEYFLAG_SHIFT : 0);
+				towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_JIS_PRESS,  TOWNS_JISKEY_UP);
+				towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_JIS_RELEASE,TOWNS_JISKEY_UP);
+				break;
+			case FSKEY_DOWN:
+				byteData[0]=(0!=FsGetKeyState(FSKEY_CTRL) ? TOWNS_KEYFLAG_CTRL : 0);
+				byteData[0]|=(0!=FsGetKeyState(FSKEY_SHIFT) ? TOWNS_KEYFLAG_SHIFT : 0);
+				towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_JIS_PRESS,  TOWNS_JISKEY_DOWN);
+				towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_JIS_RELEASE,TOWNS_JISKEY_DOWN);
+				break;
+			case FSKEY_LEFT:
+				byteData[0]=(0!=FsGetKeyState(FSKEY_CTRL) ? TOWNS_KEYFLAG_CTRL : 0);
+				byteData[0]|=(0!=FsGetKeyState(FSKEY_SHIFT) ? TOWNS_KEYFLAG_SHIFT : 0);
+				towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_JIS_PRESS,  TOWNS_JISKEY_LEFT);
+				towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_JIS_RELEASE,TOWNS_JISKEY_LEFT);
+				break;
+			case FSKEY_RIGHT:
+				byteData[0]=(0!=FsGetKeyState(FSKEY_CTRL) ? TOWNS_KEYFLAG_CTRL : 0);
+				byteData[0]|=(0!=FsGetKeyState(FSKEY_SHIFT) ? TOWNS_KEYFLAG_SHIFT : 0);
+				towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_JIS_PRESS,  TOWNS_JISKEY_RIGHT);
+				towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_JIS_RELEASE,TOWNS_JISKEY_RIGHT);
 				break;
 			}
 			if(0!=byteData[1])
