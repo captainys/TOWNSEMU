@@ -23,3 +23,63 @@ add_test(
 		-UNITTEST
 )
 
+add_test(
+ 	NAME 2F_V21L30
+	COMMAND 
+		main_cui 
+		"${CMAKE_SOURCE_DIR}/../../TOWNSEMU_TEST/ROM_2F"
+		-FD0
+		"${CMAKE_SOURCE_DIR}/../../TOWNSEMU_TEST/DISKIMG/testset01.bin"
+		-SYM
+		"${CMAKE_SOURCE_DIR}/../symtables/UNITTEST.txt"
+		-UNITTEST
+)
+
+add_test(
+ 	NAME MX_V21L20
+	COMMAND 
+		main_cui 
+		"${CMAKE_SOURCE_DIR}/../../TOWNSEMU_TEST/ROM_MX"
+		-FD0
+		"${CMAKE_SOURCE_DIR}/../../TOWNSEMU_TEST/DISKIMG/testset02.bin"
+		-SYM
+		"${CMAKE_SOURCE_DIR}/../symtables/UNITTEST.txt"
+		-UNITTEST
+)
+
+add_test(
+ 	NAME 2F_V21L20
+	COMMAND 
+		main_cui 
+		"${CMAKE_SOURCE_DIR}/../../TOWNSEMU_TEST/ROM_2F"
+		-FD0
+		"${CMAKE_SOURCE_DIR}/../../TOWNSEMU_TEST/DISKIMG/testset02.bin"
+		-SYM
+		"${CMAKE_SOURCE_DIR}/../symtables/UNITTEST.txt"
+		-UNITTEST
+)
+
+add_test(
+ 	NAME MX_DOSCOMMANDS
+	COMMAND 
+		main_cui 
+		"${CMAKE_SOURCE_DIR}/../../TOWNSEMU_TEST/ROM_MX"
+		-FD0
+		"${CMAKE_SOURCE_DIR}/../../TOWNSEMU_TEST/DISKIMG/testset03.bin"
+		-SYM
+		"${CMAKE_SOURCE_DIR}/../symtables/UNITTEST.txt"
+		-UNITTEST
+)
+
+add_test(
+ 	NAME 2F_DOSCOMMANDS
+	COMMAND 
+		main_cui 
+		"${CMAKE_SOURCE_DIR}/../../TOWNSEMU_TEST/ROM_2F"
+		-FD0
+		"${CMAKE_SOURCE_DIR}/../../TOWNSEMU_TEST/DISKIMG/testset03.bin"
+		-SYM
+		"${CMAKE_SOURCE_DIR}/../symtables/UNITTEST.txt"
+		-UNITTEST
+)
+
