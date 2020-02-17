@@ -8,6 +8,8 @@
 TownsThread::TownsThread(void)
 {
 	runMode=RUNMODE_PAUSE;
+	unitTestDone=false;
+	returnCode=0;
 }
 
 void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
@@ -98,6 +100,10 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 			std::cout << "Undefined VM RunMode!" << std::endl;
 			break;
 		}
+		if(true==UnitTestDone(*townsPtr))
+		{
+			runMode=RUNMODE_EXIT;
+		}
 		vmLock.unlock();
 
 		if(RUNMODE_PAUSE==runModeCopy)
@@ -122,4 +128,20 @@ void TownsThread::SetRunMode(int nextRunMode)
 void TownsThread::PrintStatus(const FMTowns &towns) const
 {
 	towns.PrintStatus();
+}
+
+bool TownsThread::UnitTestDone(const FMTowns &towns)
+{
+	if(towns.cpu.GetEDX()==0x47555354 && towns.cpu.GetEAX()==0x21555241)
+	{
+		unitTestDone=true;
+		returnCode=0;
+		return true;
+	}
+	else if(towns.cpu.GetEDX()==0x4C494146 && towns.cpu.GetEAX()==0x4C494146)
+	{
+		unitTestDone=true;
+		returnCode=1;
+		return true;
+	}
 }

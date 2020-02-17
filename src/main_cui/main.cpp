@@ -14,28 +14,48 @@
 
 
 
-void Run(FMTowns &towns,Outside_World &outside_world)
+int Run(FMTowns &towns,const TownsARGV &argv,Outside_World &outside_world)
 {
 	TownsThread townsThread;
+	if(true==argv.autoStart)
+	{
+		townsThread.SetRunMode(TownsThread::RUNMODE_DEBUGGER);
+	}
+
 	std::thread stdTownsThread(&TownsThread::Start,&townsThread,&towns,&outside_world);
 
 	TownsCommandInterpreter cmdInterpreter;
 	for(;;)
 	{
-		std::string cmdline;
-		std::cout << ">";
-		std::getline(std::cin,cmdline);
-
-		auto cmd=cmdInterpreter.Interpret(cmdline);
-		townsThread.signalLock.lock();
-		townsThread.vmLock.lock();
-		cmdInterpreter.Execute(townsThread,towns,cmd);
-		townsThread.vmLock.unlock();
-		townsThread.signalLock.unlock();
-		if(TownsCommandInterpreter::CMD_QUIT==cmd.primaryCmd)
+		if(true==argv.interactive)
 		{
-			break;
+			std::string cmdline;
+			std::cout << ">";
+			std::getline(std::cin,cmdline);
+
+			auto cmd=cmdInterpreter.Interpret(cmdline);
+			townsThread.signalLock.lock();
+			townsThread.vmLock.lock();
+			cmdInterpreter.Execute(townsThread,towns,cmd);
+			townsThread.vmLock.unlock();
+			townsThread.signalLock.unlock();
+			if(TownsCommandInterpreter::CMD_QUIT==cmd.primaryCmd)
+			{
+				break;
+			}
 		}
+		else
+		{
+			std::this_thread::sleep_for(std::chrono::milliseconds(10));
+			townsThread.vmLock.lock();
+			auto vmTerminate=townsThread.unitTestDone;
+			townsThread.vmLock.unlock();
+			if(true==vmTerminate)
+			{
+				break;
+			}
+		}
+
 		if(true==cmdInterpreter.waitVM)
 		{
 			for(;;)
@@ -55,39 +75,23 @@ void Run(FMTowns &towns,Outside_World &outside_world)
 	}
 
 	stdTownsThread.join();
+
+	return townsThread.returnCode;
 }
 
-
-
-int main(int ac,char *av[])
+bool Setup(FMTowns &towns,const TownsARGV &argv)
 {
-	if(sizeof(void *)<8)
-	{
-		printf("This requires minimum 64-bit CPU.\n");
-		return 0;
-	}
-
-
-	TownsARGV argv;
-	if(true!=argv.AnalyzeCommandParameter(ac,av))
-	{
-		return 1;
-	}
 	if(""==argv.ROMPath)
 	{
-		printf("Usage:\n");
-		printf("main_cui rom_directory_name\n");
-		return 1;
+		std::cout << "Usage:\n";
+		std::cout << "main_cui rom_directory_name\n";
+		return false;
 	}
 
-
-
-
-	FMTowns towns;
 	if(true!=towns.LoadROMImages(argv.ROMPath.c_str()))
 	{
 		std::cout << towns.physMem.abortReason << std::endl;
-		return 1;
+		return false;
 	}
 	for(int drv=0; drv<2; ++drv)
 	{
@@ -96,7 +100,6 @@ int main(int ac,char *av[])
 			towns.fdc.LoadRawBinary(drv,argv.fdImgFName[drv].c_str());
 		}
 	}
-
 
 	if(0<argv.symbolFName.size())
 	{
@@ -112,18 +115,47 @@ int main(int ac,char *av[])
 		}
 	}
 
-
 	towns.var.freeRunTimerShift=9;
-	printf("**** For Testing Purpose Free-Running Timer is scaled up by 512.\n");
+	std::cout << "**** For Testing Purpose Free-Running Timer is scaled up by 512.\n";
 
-	printf("Loaded ROM Images.\n");
+	std::cout << "Loaded ROM Images.\n";
 
 	towns.Reset();
 	towns.physMem.takeJISCodeLog=true;
 	towns.io.EnableLog();
 	towns.cpu.enableCallStack=true;
 
-	printf("Virtual Machine Reset.\n");
+	std::cout << "Virtual Machine Reset.\n";
+
+	return true;
+}
+
+int main(int ac,char *av[])
+{
+	if(sizeof(void *)<8)
+	{
+		std::cout << "This requires minimum 64-bit CPU.\n";
+		return 1;
+	}
+	if(sizeof(long long int)<8)
+	{
+		std::cout << "long long it needs to be minimum 64-bit.\n";
+		return 1;
+	}
+
+
+	TownsARGV argv;
+	if(true!=argv.AnalyzeCommandParameter(ac,av))
+	{
+		return 1;
+	}
+
+
+	FMTowns towns;
+	if(true!=Setup(towns,argv))
+	{
+		return 1;
+	}
 
 	unsigned int eightBytesCSEIP[8]=
 	{
@@ -142,7 +174,5 @@ int main(int ac,char *av[])
 	}
 
 	Outside_World *outside_world=new FsSimpleWindowConnection ;
-	Run(towns,*outside_world);
-
-	return 0;
+	return Run(towns,argv,*outside_world);
 }

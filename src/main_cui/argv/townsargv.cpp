@@ -7,12 +7,18 @@
 
 TownsARGV::TownsARGV()
 {
+	autoStart=true;
+	interactive=true;
 }
 void TownsARGV::PrintHelp(void) const
 {
 	std::cout << "Usage:" << std::endl;
 	std::cout << "-HELP,-H,-?" << std::endl;
 	std::cout << "  Print Help." << std::endl;
+	std::cout << "-PAUSE" << std::endl;
+	std::cout << "  Machine state is PAUSE on start up." << std::endl;
+	std::cout << "-UNITTEST" << std::endl;
+	std::cout << "  Let it run automatically to the end without taking control commands." << std::endl;
 	std::cout << "-FD0 filename" << std::endl;
 	std::cout << "  Floppy disk image file name for Drive A." << std::endl;
 	std::cout << "-FD1 filename" << std::endl;
@@ -29,6 +35,16 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		if("-HELP"==ARG || "-H"==ARG || "-?"==ARG)
 		{
 			PrintHelp();
+		}
+		else if("-PAUSE"==ARG && i+1<argc)
+		{
+			autoStart=false;
+			++i;
+		}
+		else if("-UNITTEST"==ARG && i+1<argc)
+		{
+			interactive=false;
+			++i;
 		}
 		else if("-FD0"==ARG && i+1<argc)
 		{

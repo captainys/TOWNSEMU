@@ -12,6 +12,9 @@ public:
 	std::string startUpScriptFName;
 	std::string symbolFName;
 
+	bool autoStart;
+	bool interactive;
+
 	TownsARGV();
 	void PrintHelp(void) const;
 	bool AnalyzeCommandParameter(int argc,char *argv[]);

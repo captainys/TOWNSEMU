@@ -209,7 +209,7 @@ const i486SymbolTable &i486Debugger::GetSymTable(void) const
 void i486Debugger::CleanUp(void)
 {
 	breakPoints.clear();
-	stop=true;
+	stop=false;
 	breakOnINT=0xffff;
 	monitorIO=false;
 	disassembleEveryStep=false;

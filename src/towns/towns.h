@@ -50,8 +50,8 @@ public:
 
 	virtual const char *DeviceName(void) const{return "FMTOWNS";}
 
-	bool abort;
-	std::string abortReason;
+	using Device::abort;
+	using Device::abortReason;
 
 	class State
 	{
