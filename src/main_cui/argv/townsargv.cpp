@@ -36,12 +36,12 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		{
 			PrintHelp();
 		}
-		else if("-PAUSE"==ARG && i+1<argc)
+		else if("-PAUSE"==ARG)
 		{
 			autoStart=false;
 			++i;
 		}
-		else if("-UNITTEST"==ARG && i+1<argc)
+		else if("-UNITTEST"==ARG)
 		{
 			interactive=false;
 			++i;
