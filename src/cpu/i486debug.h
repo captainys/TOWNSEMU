@@ -114,21 +114,14 @@ public:
 	*/
 	void MemWrite(const i486DX &cpu,const i486DX::SegmentRegister &seg,unsigned int offset,unsigned int linear,unsigned int physical,unsigned int data,unsigned int lengthInBytes);
 
-	/*! Called from i486DX class when a byte is written to I/O.
+	/*! Called from i486DX class when data is written to I/O.
 	*/
 	void IOWrite(const i486DX &cpu,unsigned int ioport,unsigned int data,unsigned int lengthInBytes);
 
-	/*! Called from i486DX class when a byte is read from I/O.
+	/*! Called from i486DX class when data is read from I/O.
 	*/
-	void IOReadByte(const i486DX &cpu,unsigned int ioport,unsigned int data);
+	void IORead(const i486DX &cpu,unsigned int ioport,unsigned int data,unsigned int lengthInBytes);
 
-	/*! Called from i486DX class when a byte is read from I/O.
-	*/
-	void IOReadWord(const i486DX &cpu,unsigned int ioport,unsigned int data);
-
-	/*! Called from i486DX class when a byte is read from I/O.
-	*/
-	void IOReadDword(const i486DX &cpu,unsigned int ioport,unsigned int data);
 };
 
 template <>

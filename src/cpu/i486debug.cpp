@@ -43,9 +43,7 @@ public:
 	void Interrupt(i486Debugger &debugger,const i486DX &cpu,unsigned int INTNum,Memory &mem,unsigned int numInstBytes);
 	void MemWrite(i486Debugger &debugger,const i486DX &cpu,const i486DX::SegmentRegister &seg,unsigned int offset,unsigned int linear,unsigned int physical,unsigned int data,unsigned int lengthInBytes);
 	void IOWrite(i486Debugger &debugger,const i486DX &cpu,unsigned int ioport,unsigned int data,unsigned int lengthInBytes);
-	void IOReadByte(i486Debugger &debugger,const i486DX &cpu,unsigned int ioport,unsigned int data);
-	void IOReadWord(i486Debugger &debugger,const i486DX &cpu,unsigned int ioport,unsigned int data);
-	void IOReadDword(i486Debugger &debugger,const i486DX &cpu,unsigned int ioport,unsigned int data);
+	void IORead(i486Debugger &debugger,const i486DX &cpu,unsigned int ioport,unsigned int data,unsigned int lengthInBytes);
 	std::vector <std::string> GetText(void) const;
 };
 
@@ -141,13 +139,7 @@ void i486Debugger::SpecialDebugInfo::MemWrite(i486Debugger &debugger,const i486D
 void i486Debugger::SpecialDebugInfo::IOWrite(i486Debugger &debugger,const i486DX &cpu,unsigned int ioport,unsigned int data,unsigned int lengthInBytes)
 {
 }
-void i486Debugger::SpecialDebugInfo::IOReadByte(i486Debugger &debugger,const i486DX &cpu,unsigned int ioport,unsigned int data)
-{
-}
-void i486Debugger::SpecialDebugInfo::IOReadWord(i486Debugger &debugger,const i486DX &cpu,unsigned int ioport,unsigned int data)
-{
-}
-void i486Debugger::SpecialDebugInfo::IOReadDword(i486Debugger &debugger,const i486DX &cpu,unsigned int ioport,unsigned int data)
+void i486Debugger::SpecialDebugInfo::IORead(i486Debugger &debugger,const i486DX &cpu,unsigned int ioport,unsigned int data,unsigned int lengthInBytes)
 {
 }
 
@@ -373,43 +365,13 @@ void i486Debugger::IOWrite(const i486DX &cpu,unsigned int ioport,unsigned int da
 		std::cout << std::endl;
 	}
 }
-void i486Debugger::IOReadByte(const i486DX &cpu,unsigned int ioport,unsigned int data)
+void i486Debugger::IORead(const i486DX &cpu,unsigned int ioport,unsigned int data,unsigned int lengthInBytes)
 {
-	specialDebugInfo->IOReadByte(*this,cpu,ioport,data);
+	specialDebugInfo->IORead(*this,cpu,ioport,data,lengthInBytes);
 	if(true==monitorIO)
 	{
 		std::cout << cpputil::Ustox(cpu.state.CS().value) << ":" << cpputil::Uitox(cpu.state.EIP) << " ";
-		std::cout << "Read IO8:[" << cpputil::Ustox(ioport) << "] " << cpputil::Ubtox(data);
-		auto iter=ioLabel.find(ioport);
-		if(ioLabel.end()!=iter)
-		{
-			std::cout << "(" << iter->second << ")" << std::endl;
-		}
-		std::cout << std::endl;
-	}
-}
-void i486Debugger::IOReadWord(const i486DX &cpu,unsigned int ioport,unsigned int data)
-{
-	specialDebugInfo->IOReadWord(*this,cpu,ioport,data);
-	if(true==monitorIO)
-	{
-		std::cout << cpputil::Ustox(cpu.state.CS().value) << ":" << cpputil::Uitox(cpu.state.EIP) << " ";
-		std::cout << "Read IO16:[" << cpputil::Ustox(ioport) << "] " << cpputil::Ubtox(data);
-		auto iter=ioLabel.find(ioport);
-		if(ioLabel.end()!=iter)
-		{
-			std::cout << "(" << iter->second << ")" << std::endl;
-		}
-		std::cout << std::endl;
-	}
-}
-void i486Debugger::IOReadDword(const i486DX &cpu,unsigned int ioport,unsigned int data)
-{
-	specialDebugInfo->IOReadDword(*this,cpu,ioport,data);
-	if(true==monitorIO)
-	{
-		std::cout << cpputil::Ustox(cpu.state.CS().value) << ":" << cpputil::Uitox(cpu.state.EIP) << " ";
-		std::cout << "Read IO32:[" << cpputil::Ustox(ioport) << "] " << cpputil::Ubtox(data);
+		std::cout << "Read IO" << (lengthInBytes<<3) << ":[" << cpputil::Ustox(ioport) << "] " << cpputil::Ubtox(data);
 		auto iter=ioLabel.find(ioport);
 		if(ioLabel.end()!=iter)
 		{

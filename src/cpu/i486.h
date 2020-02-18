@@ -2357,7 +2357,7 @@ inline unsigned int i486DX::IOIn8(InOut &io,unsigned int ioport)
 	auto data=io.In8(ioport);
 	if(nullptr!=debuggerPtr)
 	{
-		debuggerPtr->IOReadByte(*this,ioport,data);
+		debuggerPtr->IORead(*this,ioport,data,1);
 	}
 	return data;
 }
@@ -2366,7 +2366,7 @@ inline unsigned int i486DX::IOIn16(InOut &io,unsigned int ioport)
 	auto data=io.In16(ioport);
 	if(nullptr!=debuggerPtr)
 	{
-		debuggerPtr->IOReadWord(*this,ioport,data);
+		debuggerPtr->IORead(*this,ioport,data,2);
 	}
 	return data;
 }
@@ -2375,7 +2375,7 @@ inline unsigned int i486DX::IOIn32(InOut &io,unsigned int ioport)
 	auto data=io.In32(ioport);
 	if(nullptr!=debuggerPtr)
 	{
-		debuggerPtr->IOReadDword(*this,ioport,data);
+		debuggerPtr->IORead(*this,ioport,data,4);
 	}
 	return data;
 }
