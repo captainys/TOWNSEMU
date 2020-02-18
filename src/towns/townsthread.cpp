@@ -114,6 +114,8 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 		signalLock.lock();
 		signalLock.unlock();
 	}
+
+	std::cout << "Ending Towns Thread." << std::endl;
 }
 
 int TownsThread::GetRunMode(void) const
@@ -144,4 +146,5 @@ bool TownsThread::UnitTestDone(const FMTowns &towns)
 		returnCode=1;
 		return true;
 	}
+	return false;
 }
