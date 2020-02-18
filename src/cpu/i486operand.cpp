@@ -13,6 +13,8 @@ i486DX::Operand::Operand(int addressSize,int dataSize,const unsigned char operan
 
 unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned char operand[])
 {
+	NUM_BYTES_TO_BASIC_REG_BASE
+
 	auto MODR_M=operand[0];
 	auto MOD=((MODR_M>>6)&3);
 	auto REG_OPCODE=((MODR_M>>3)&7);
@@ -74,6 +76,8 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 		else
 		{
 			operandType=OPER_REG;
+			reg=R_M+(numBytesToBasicRegBase[dataSize>>3]);
+			/* Equivalent to:
 			if(8==dataSize)
 			{
 				reg=REG_8BIT_REG_BASE+R_M;
@@ -85,7 +89,7 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 			else if(32==dataSize)
 			{
 				reg=REG_32BIT_REG_BASE+R_M;
-			}
+			} */
 			numBytes=1;
 		}
 	}
@@ -171,6 +175,8 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 		else if(0b11==MOD)
 		{
 			operandType=OPER_REG;
+			reg=R_M+(numBytesToBasicRegBase[dataSize>>3]);
+			/* Equivalent
 			if(8==dataSize)
 			{
 				reg=REG_8BIT_REG_BASE+R_M;
@@ -182,7 +188,7 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 			else if(32==dataSize)
 			{
 				reg=REG_32BIT_REG_BASE+R_M;
-			}
+			} */
 			numBytes=1;
 		}
 	}

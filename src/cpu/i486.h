@@ -22,6 +22,7 @@ class i486DX : public CPU
 {
 public:
 	#define NUM_BYTES_MASK static const unsigned int numBytesMask[5]={0,0xFF,0xFFFF,0xFFFFFF,0xFFFFFFFF};
+	#define NUM_BYTES_TO_BASIC_REG_BASE static const unsigned int numBytesToBasicRegBase[5]={REG_8BIT_REG_BASE,REG_8BIT_REG_BASE,REG_16BIT_REG_BASE,REG_16BIT_REG_BASE,REG_32BIT_REG_BASE};
 
 	static const char *const Reg8Str[8];
 	static const char *const Reg16Str[8];
