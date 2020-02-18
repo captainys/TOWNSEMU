@@ -2197,17 +2197,25 @@ void i486DX::StoreOperandValue(
 			   dst.offset;
 			if(addressSize==16)
 			{
-				for(unsigned int i=0; i<value.numBytes; ++i)
-				{
-					StoreByte(mem,addressSize,seg,(offset+i)&65535,value.byteData[i]);
-				}
+				offset=offset&0xFFFF;
 			}
-			else
+			switch(value.numBytes)
 			{
+			case 1:
+				StoreByte(mem,addressSize,seg,offset,value.byteData[0]);
+				break;
+			case 2:
+				StoreWord(mem,addressSize,seg,offset,cpputil::GetWord(value.byteData));// cpputil::GetWord is faster than using value.GetAsWord.
+				break;
+			case 4:
+				StoreDword(mem,addressSize,seg,offset,cpputil::GetDword(value.byteData));// cpputil::GetWord is faster than using value.GetAsDword.
+				break;
+			default:
 				for(unsigned int i=0; i<value.numBytes; ++i)
 				{
 					StoreByte(mem,addressSize,seg,offset+i,value.byteData[i]);
 				}
+				break;
 			}
 		}
 		break;
