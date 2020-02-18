@@ -1852,7 +1852,15 @@ public:
 
 	/*! Store a byte.
 	*/
-	inline void StoreByte(Memory &mem,int addressSize,SegmentRegister seg,unsigned int offset,unsigned char byteData);
+	inline void StoreByte(Memory &mem,int addressSize,SegmentRegister seg,unsigned int offset,unsigned char data);
+
+	/*! Store a word.
+	*/
+	inline void StoreWord(Memory &mem,int addressSize,SegmentRegister seg,unsigned int offset,unsigned int data);
+
+	/*! Store a dword.
+	*/
+	inline void StoreDword(Memory &mem,int addressSize,SegmentRegister seg,unsigned int offset,unsigned int data);
 
 
 
@@ -2274,7 +2282,8 @@ inline void i486DX::StoreByte(Memory &mem,int addressSize,SegmentRegister seg,un
 	}
 	return mem.StoreByte(physicalAddr,byteData);
 }
-inline void i486DX::StoreWordOrDword(Memory &mem,unsigned int operandSize,int addressSize,SegmentRegister seg,unsigned int offset,unsigned int data)
+
+inline void i486DX::StoreWord(Memory &mem,int addressSize,SegmentRegister seg,unsigned int offset,unsigned int data)
 {
 	if(true==AddressingMode16Bit(addressSize))
 	{
@@ -2285,46 +2294,68 @@ inline void i486DX::StoreWordOrDword(Memory &mem,unsigned int operandSize,int ad
 	if(true==PagingEnabled())
 	{
 		physicalAddr=LinearAddressToPhysicalAddress(linearAddr,mem);
-		if(0xFF8<(physicalAddr&0xfff)) // May hit the page boundary
+		if(0xFFE<(physicalAddr&0xfff)) // May hit the page boundary
 		{
-			if(16==operandSize)
+			if(nullptr!=debuggerPtr)
 			{
-				if(nullptr!=debuggerPtr)
-				{
-					debuggerPtr->MemWrite(*this,seg,offset,linearAddr,physicalAddr,data,2);
-				}
-				mem.StoreByte(physicalAddr,data&255);       // May hit the page boundary. Don't use StoreWord
-				mem.StoreByte(physicalAddr+1,(data>>8)&255);// May hit the page boundary. Don't use StoreWord
+				debuggerPtr->MemWrite(*this,seg,offset,linearAddr,physicalAddr,data,2);
 			}
-			else
-			{
-				if(nullptr!=debuggerPtr)
-				{
-					debuggerPtr->MemWrite(*this,seg,offset,linearAddr,physicalAddr,data,4);
-				}
-				mem.StoreByte(physicalAddr,data&255);
-				mem.StoreByte(physicalAddr+1,(data>>8)&255); // May hit the page boundary. Don't use StoreDword
-				mem.StoreByte(physicalAddr+2,(data>>16)&255);// May hit the page boundary. Don't use StoreDword
-				mem.StoreByte(physicalAddr+3,(data>>24)&255);// May hit the page boundary. Don't use StoreDword
-			}
+			mem.StoreByte(physicalAddr,data&255);       // May hit the page boundary. Don't use StoreWord
+			mem.StoreByte(physicalAddr+1,(data>>8)&255);// May hit the page boundary. Don't use StoreWord
 			return;
 		}
 	}
-	if(16==operandSize)
+	if(nullptr!=debuggerPtr)
 	{
-		if(nullptr!=debuggerPtr)
-		{
-			debuggerPtr->MemWrite(*this,seg,offset,linearAddr,physicalAddr,data,2);
-		}
-		mem.StoreWord(physicalAddr,data);
+		debuggerPtr->MemWrite(*this,seg,offset,linearAddr,physicalAddr,data,2);
 	}
-	else
+	mem.StoreWord(physicalAddr,data);
+}
+inline void i486DX::StoreDword(Memory &mem,int addressSize,SegmentRegister seg,unsigned int offset,unsigned int data)
+{
+	if(true==AddressingMode16Bit(addressSize))
 	{
-		if(nullptr!=debuggerPtr)
+		offset&=0xffff;
+	}
+	auto linearAddr=seg.baseLinearAddr+offset;
+	auto physicalAddr=linearAddr;
+	if(true==PagingEnabled())
+	{
+		physicalAddr=LinearAddressToPhysicalAddress(linearAddr,mem);
+		if(0xFFC<(physicalAddr&0xfff)) // May hit the page boundary
 		{
-			debuggerPtr->MemWrite(*this,seg,offset,linearAddr,physicalAddr,data,4);
+			if(nullptr!=debuggerPtr)
+			{
+				debuggerPtr->MemWrite(*this,seg,offset,linearAddr,physicalAddr,data,4);
+			}
+			mem.StoreByte(physicalAddr,data&255);
+			mem.StoreByte(physicalAddr+1,(data>>8)&255); // May hit the page boundary. Don't use StoreDword
+			mem.StoreByte(physicalAddr+2,(data>>16)&255);// May hit the page boundary. Don't use StoreDword
+			mem.StoreByte(physicalAddr+3,(data>>24)&255);// May hit the page boundary. Don't use StoreDword
+			return;
 		}
-		mem.StoreDword(physicalAddr,data);
+	}
+	if(nullptr!=debuggerPtr)
+	{
+		debuggerPtr->MemWrite(*this,seg,offset,linearAddr,physicalAddr,data,4);
+	}
+	mem.StoreDword(physicalAddr,data);
+}
+
+inline void i486DX::StoreWordOrDword(Memory &mem,unsigned int operandSize,int addressSize,SegmentRegister seg,unsigned int offset,unsigned int data)
+{
+	switch(operandSize)
+	{
+	case 8:
+		StoreByte(mem,addressSize,seg,offset,data);
+		break;
+	case 16:
+		StoreWord(mem,addressSize,seg,offset,data);
+		break;
+	default:
+	case 32:
+		StoreDword(mem,addressSize,seg,offset,data);
+		break;
 	}
 }
 

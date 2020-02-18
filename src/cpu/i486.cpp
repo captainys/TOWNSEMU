@@ -910,17 +910,13 @@ void i486DX::Push(Memory &mem,unsigned int operandSize,unsigned int value)
 		{
 			SP-=2;
 			SP&=65535;
-			StoreByte(mem,addressSize,state.SS(),SP  ,value&255);
-			StoreByte(mem,addressSize,state.SS(),SP+1,(value>>8)&255);
+			StoreWord(mem,addressSize,state.SS(),SP,value);
 		}
 		else if(32==operandSize)
 		{
 			SP-=4;
 			SP&=65535;
-			StoreByte(mem,addressSize,state.SS(),SP  ,value&255);
-			StoreByte(mem,addressSize,state.SS(),SP+1,(value>>8)&255);
-			StoreByte(mem,addressSize,state.SS(),SP+2,(value>>16)&255);
-			StoreByte(mem,addressSize,state.SS(),SP+3,(value>>24)&255);
+			StoreDword(mem,addressSize,state.SS(),SP,value);
 		}
 		SetSP(SP);
 	}
@@ -930,16 +926,12 @@ void i486DX::Push(Memory &mem,unsigned int operandSize,unsigned int value)
 		if(16==operandSize)
 		{
 			ESP-=2;
-			StoreByte(mem,addressSize,state.SS(),ESP  ,value&255);
-			StoreByte(mem,addressSize,state.SS(),ESP+1,(value>>8)&255);
+			StoreWord(mem,addressSize,state.SS(),ESP,value);
 		}
 		else if(32==operandSize)
 		{
 			ESP-=4;
-			StoreByte(mem,addressSize,state.SS(),ESP  ,value&255);
-			StoreByte(mem,addressSize,state.SS(),ESP+1,(value>>8)&255);
-			StoreByte(mem,addressSize,state.SS(),ESP+2,(value>>16)&255);
-			StoreByte(mem,addressSize,state.SS(),ESP+3,(value>>24)&255);
+			StoreDword(mem,addressSize,state.SS(),ESP,value);
 		}
 		SetESP(ESP);
 	}
