@@ -42,9 +42,7 @@ public:
 	void AfterRunOneInstruction(i486Debugger &debugger,unsigned int clocksPassed,i486DX &cpu,Memory &mem,InOut &io,const i486DX::Instruction &inst);
 	void Interrupt(i486Debugger &debugger,const i486DX &cpu,unsigned int INTNum,Memory &mem,unsigned int numInstBytes);
 	void MemWrite(i486Debugger &debugger,const i486DX &cpu,const i486DX::SegmentRegister &seg,unsigned int offset,unsigned int linear,unsigned int physical,unsigned int data,unsigned int lengthInBytes);
-	void IOWriteByte(i486Debugger &debugger,const i486DX &cpu,unsigned int ioport,unsigned int data);
-	void IOWriteWord(i486Debugger &debugger,const i486DX &cpu,unsigned int ioport,unsigned int data);
-	void IOWriteDword(i486Debugger &debugger,const i486DX &cpu,unsigned int ioport,unsigned int data);
+	void IOWrite(i486Debugger &debugger,const i486DX &cpu,unsigned int ioport,unsigned int data,unsigned int lengthInBytes);
 	void IOReadByte(i486Debugger &debugger,const i486DX &cpu,unsigned int ioport,unsigned int data);
 	void IOReadWord(i486Debugger &debugger,const i486DX &cpu,unsigned int ioport,unsigned int data);
 	void IOReadDword(i486Debugger &debugger,const i486DX &cpu,unsigned int ioport,unsigned int data);
@@ -140,13 +138,7 @@ void i486Debugger::SpecialDebugInfo::MemWrite(i486Debugger &debugger,const i486D
 		debugger.ExternalBreak("Special Break Mem Write "+cpputil::Uitox(physical));
 	} */
 }
-void i486Debugger::SpecialDebugInfo::IOWriteByte(i486Debugger &debugger,const i486DX &cpu,unsigned int ioport,unsigned int data)
-{
-}
-void i486Debugger::SpecialDebugInfo::IOWriteWord(i486Debugger &debugger,const i486DX &cpu,unsigned int ioport,unsigned int data)
-{
-}
-void i486Debugger::SpecialDebugInfo::IOWriteDword(i486Debugger &debugger,const i486DX &cpu,unsigned int ioport,unsigned int data)
+void i486Debugger::SpecialDebugInfo::IOWrite(i486Debugger &debugger,const i486DX &cpu,unsigned int ioport,unsigned int data,unsigned int lengthInBytes)
 {
 }
 void i486Debugger::SpecialDebugInfo::IOReadByte(i486Debugger &debugger,const i486DX &cpu,unsigned int ioport,unsigned int data)
@@ -366,43 +358,13 @@ void i486Debugger::MemWrite(const i486DX &cpu,const i486DX::SegmentRegister &seg
 	specialDebugInfo->MemWrite(*this,cpu,seg,offset,linear,physical,data,lengthInBytes);
 }
 
-void i486Debugger::IOWriteByte(const i486DX &cpu,unsigned int ioport,unsigned int data)
+void i486Debugger::IOWrite(const i486DX &cpu,unsigned int ioport,unsigned int data,unsigned int lengthInBytes)
 {
-	specialDebugInfo->IOWriteByte(*this,cpu,ioport,data);
+	specialDebugInfo->IOWrite(*this,cpu,ioport,data,lengthInBytes);
 	if(true==monitorIO)
 	{
 		std::cout << cpputil::Ustox(cpu.state.CS().value) << ":" << cpputil::Uitox(cpu.state.EIP) << " ";
-		std::cout << "Write IO8:[" << cpputil::Ustox(ioport) << "] " << cpputil::Ubtox(data);
-		auto iter=ioLabel.find(ioport);
-		if(ioLabel.end()!=iter)
-		{
-			std::cout << "(" << iter->second << ")" << std::endl;
-		}
-		std::cout << std::endl;
-	}
-}
-void i486Debugger::IOWriteWord(const i486DX &cpu,unsigned int ioport,unsigned int data)
-{
-	specialDebugInfo->IOWriteWord(*this,cpu,ioport,data);
-	if(true==monitorIO)
-	{
-		std::cout << cpputil::Ustox(cpu.state.CS().value) << ":" << cpputil::Uitox(cpu.state.EIP) << " ";
-		std::cout << "Write IO16:[" << cpputil::Ustox(ioport) << "] " << cpputil::Ustox(data);
-		auto iter=ioLabel.find(ioport);
-		if(ioLabel.end()!=iter)
-		{
-			std::cout << "(" << iter->second << ")" << std::endl;
-		}
-		std::cout << std::endl;
-	}
-}
-void i486Debugger::IOWriteDword(const i486DX &cpu,unsigned int ioport,unsigned int data)
-{
-	specialDebugInfo->IOWriteDword(*this,cpu,ioport,data);
-	if(true==monitorIO)
-	{
-		std::cout << cpputil::Ustox(cpu.state.CS().value) << ":" << cpputil::Uitox(cpu.state.EIP) << " ";
-		std::cout << "Write IO32:[" << cpputil::Ustox(ioport) << "] " << cpputil::Uitox(data);
+		std::cout << "Write IO" << (lengthInBytes<<3) << ":[" << cpputil::Ustox(ioport) << "] " << cpputil::Ubtox(data);
 		auto iter=ioLabel.find(ioport);
 		if(ioLabel.end()!=iter)
 		{

@@ -2332,7 +2332,7 @@ inline void i486DX::IOOut8(InOut &io,unsigned int ioport,unsigned int data)
 {
 	if(nullptr!=debuggerPtr)
 	{
-		debuggerPtr->IOWriteByte(*this,ioport,data);
+		debuggerPtr->IOWrite(*this,ioport,data,1);
 	}
 	io.Out8(ioport,data);
 }
@@ -2340,7 +2340,7 @@ inline void i486DX::IOOut16(InOut &io,unsigned int ioport,unsigned int data)
 {
 	if(nullptr!=debuggerPtr)
 	{
-		debuggerPtr->IOWriteWord(*this,ioport,data);
+		debuggerPtr->IOWrite(*this,ioport,data,2);
 	}
 	io.Out16(ioport,data);
 }
@@ -2348,7 +2348,7 @@ inline void i486DX::IOOut32(InOut &io,unsigned int ioport,unsigned int data)
 {
 	if(nullptr!=debuggerPtr)
 	{
-		debuggerPtr->IOWriteDword(*this,ioport,data);
+		debuggerPtr->IOWrite(*this,ioport,data,4);
 	}
 	io.Out32(ioport,data);
 }

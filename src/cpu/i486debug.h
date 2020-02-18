@@ -116,15 +116,7 @@ public:
 
 	/*! Called from i486DX class when a byte is written to I/O.
 	*/
-	void IOWriteByte(const i486DX &cpu,unsigned int ioport,unsigned int data);
-
-	/*! Called from i486DX class when a word is written to I/O.
-	*/
-	void IOWriteWord(const i486DX &cpu,unsigned int ioport,unsigned int data);
-
-	/*! Called from i486DX class when a word is written to I/O.
-	*/
-	void IOWriteDword(const i486DX &cpu,unsigned int ioport,unsigned int data);
+	void IOWrite(const i486DX &cpu,unsigned int ioport,unsigned int data,unsigned int lengthInBytes);
 
 	/*! Called from i486DX class when a byte is read from I/O.
 	*/
