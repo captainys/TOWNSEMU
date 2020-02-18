@@ -756,30 +756,34 @@ public:
 	class OperandValue
 	{
 	public:
+		enum
+		{
+			MAX_NUM_BYTES=10
+		};
+
 		unsigned int numBytes;
-		unsigned char byteData[10];
+		unsigned char byteData[MAX_NUM_BYTES];
 
 		/*! Returns a value as a unsigned dword.
 		    It won't evaluate beyond numBytes.
 		*/
 		inline unsigned int GetAsDword(void) const
 		{
-			unsigned int dword=0;
-			switch(numBytes)
+			static const unsigned int numBytesMask[MAX_NUM_BYTES]=
 			{
-			default:
-			case 4:
-				dword|=(byteData[3]<<24);
-			case 3:
-				dword|=(byteData[2]<<16);
-			case 2:
-				dword|=(byteData[1]<<8);
-			case 1:
-				dword|= byteData[0];
-			case 0:
-				break;
-			}
-			return dword;
+				0x00000000,
+				0x000000FF,
+				0x0000FFFF,
+				0x00FFFFFF,
+				0xFFFFFFFF,
+				0xFFFFFFFF,
+				0xFFFFFFFF,
+				0xFFFFFFFF,
+				0xFFFFFFFF,
+				0xFFFFFFFF,
+			};
+			unsigned int dword=(byteData[3]<<24)|(byteData[2]<<16)|(byteData[1]<<8)|byteData[0];
+			return dword&numBytesMask[numBytes];
 		}
 		/*! Returns a value as an unsigned byte.
 		    It won't evaluate beyond numBytes.
@@ -794,19 +798,22 @@ public:
 		*/
 		inline unsigned int GetAsWord(void) const
 		{
-			unsigned int word=0;
-			switch(numBytes)
+			static const unsigned int numBytesMask[MAX_NUM_BYTES]=
 			{
-			default:
-			case 4:
-			case 3:
-			case 2:
-				word|=(byteData[1]<<8);
-			case 1:
-				word|= byteData[0];
-			case 0:
-				break;
-			}
+				0x00000000,
+				0x000000FF,
+				0x0000FFFF,
+				0x0000FFFF,
+				0x0000FFFF,
+				0x0000FFFF,
+				0x0000FFFF,
+				0x0000FFFF,
+				0x0000FFFF,
+				0x0000FFFF,
+			};
+
+			unsigned int word=(byteData[1]<<8)|byteData[0];
+			word&=numBytesMask[numBytes];
 			return word;
 		}
 

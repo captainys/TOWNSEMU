@@ -41,6 +41,18 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 		}
 		else if(0b00==MOD || 0b01==MOD || 0b10==MOD)
 		{
+			static const unsigned int R_M_to_BaseIndex[8][2]=
+			{
+				{REG_BX,REG_SI},
+				{REG_BX,REG_DI},
+				{REG_BP,REG_SI},
+				{REG_BP,REG_DI},
+				{REG_SI,REG_NONE},
+				{REG_DI,REG_NONE},
+				{REG_BP,REG_NONE},
+				{REG_BX,REG_NONE},
+			};
+
 			operandType=OPER_ADDR;
 			baseReg=REG_NONE;
 			indexReg=REG_NONE;
@@ -49,41 +61,9 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 			offsetBits=16;
 			numBytes=1;
 
-			switch(R_M)
-			{
-			case 0: // "[BX+SI";
-				baseReg=REG_BX;
-				indexReg=REG_SI;
-				break;
-			case 1: // "[BX+DI";
-				baseReg=REG_BX;
-				indexReg=REG_DI;
-				break;
-			case 2: // "[BP+SI";
-				baseReg=REG_BP;
-				indexReg=REG_SI;
-				break;
-			case 3: // "[BP+DI";
-				baseReg=REG_BP;
-				indexReg=REG_DI;
-				break;
-			case 4: // "[SI";
-				baseReg=REG_SI;
-				indexReg=REG_NONE;
-				break;
-			case 5: // "[DI";
-				baseReg=REG_DI;
-				indexReg=REG_NONE;
-				break;
-			case 6: // "[BP";
-				baseReg=REG_BP;
-				indexReg=REG_NONE;
-				break;
-			case 7: // "[BX";
-				baseReg=REG_BX;
-				indexReg=REG_NONE;
-				break;
-			}
+			baseReg=R_M_to_BaseIndex[R_M][0];
+			indexReg=R_M_to_BaseIndex[R_M][1];
+
 			if(0b01==MOD)
 			{
 				offsetBits=8;
