@@ -112,15 +112,7 @@ public:
 
 	/*! Called from i486DX when memory is written.
 	*/
-	void MemWriteByte(const i486DX &cpu,const i486DX::SegmentRegister &seg,unsigned int offset,unsigned int linear,unsigned int physical,unsigned int data);
-
-	/*! Called from i486DX when memory is written.
-	*/
-	void MemWriteWord(const i486DX &cpu,const i486DX::SegmentRegister &seg,unsigned int offset,unsigned int linear,unsigned int physical,unsigned int data);
-
-	/*! Called from i486DX when memory is written.
-	*/
-	void MemWriteDword(const i486DX &cpu,const i486DX::SegmentRegister &seg,unsigned int offset,unsigned int linear,unsigned int physical,unsigned int data);
+	void MemWrite(const i486DX &cpu,const i486DX::SegmentRegister &seg,unsigned int offset,unsigned int linear,unsigned int physical,unsigned int data,unsigned int lengthInBytes);
 
 	/*! Called from i486DX class when a byte is written to I/O.
 	*/

@@ -2270,7 +2270,7 @@ inline void i486DX::StoreByte(Memory &mem,int addressSize,SegmentRegister seg,un
 	}
 	if(nullptr!=debuggerPtr)
 	{
-		debuggerPtr->MemWriteByte(*this,seg,offset,linearAddr,physicalAddr,byteData);
+		debuggerPtr->MemWrite(*this,seg,offset,linearAddr,physicalAddr,byteData,1);
 	}
 	return mem.StoreByte(physicalAddr,byteData);
 }
@@ -2291,21 +2291,21 @@ inline void i486DX::StoreWordOrDword(Memory &mem,unsigned int operandSize,int ad
 			{
 				if(nullptr!=debuggerPtr)
 				{
-					debuggerPtr->MemWriteWord(*this,seg,offset,linearAddr,physicalAddr,data);
+					debuggerPtr->MemWrite(*this,seg,offset,linearAddr,physicalAddr,data,2);
 				}
-				mem.StoreByte(physicalAddr,data&255);
-				mem.StoreByte(physicalAddr+1,(data>>8)&255);
+				mem.StoreByte(physicalAddr,data&255);       // May hit the page boundary. Don't use StoreWord
+				mem.StoreByte(physicalAddr+1,(data>>8)&255);// May hit the page boundary. Don't use StoreWord
 			}
 			else
 			{
 				if(nullptr!=debuggerPtr)
 				{
-					debuggerPtr->MemWriteDword(*this,seg,offset,linearAddr,physicalAddr,data);
+					debuggerPtr->MemWrite(*this,seg,offset,linearAddr,physicalAddr,data,4);
 				}
 				mem.StoreByte(physicalAddr,data&255);
-				mem.StoreByte(physicalAddr+1,(data>>8)&255);
-				mem.StoreByte(physicalAddr+2,(data>>16)&255);
-				mem.StoreByte(physicalAddr+3,(data>>24)&255);
+				mem.StoreByte(physicalAddr+1,(data>>8)&255); // May hit the page boundary. Don't use StoreDword
+				mem.StoreByte(physicalAddr+2,(data>>16)&255);// May hit the page boundary. Don't use StoreDword
+				mem.StoreByte(physicalAddr+3,(data>>24)&255);// May hit the page boundary. Don't use StoreDword
 			}
 			return;
 		}
@@ -2314,7 +2314,7 @@ inline void i486DX::StoreWordOrDword(Memory &mem,unsigned int operandSize,int ad
 	{
 		if(nullptr!=debuggerPtr)
 		{
-			debuggerPtr->MemWriteWord(*this,seg,offset,linearAddr,physicalAddr,data);
+			debuggerPtr->MemWrite(*this,seg,offset,linearAddr,physicalAddr,data,2);
 		}
 		mem.StoreWord(physicalAddr,data);
 	}
@@ -2322,7 +2322,7 @@ inline void i486DX::StoreWordOrDword(Memory &mem,unsigned int operandSize,int ad
 	{
 		if(nullptr!=debuggerPtr)
 		{
-			debuggerPtr->MemWriteDword(*this,seg,offset,linearAddr,physicalAddr,data);
+			debuggerPtr->MemWrite(*this,seg,offset,linearAddr,physicalAddr,data,4);
 		}
 		mem.StoreDword(physicalAddr,data);
 	}
