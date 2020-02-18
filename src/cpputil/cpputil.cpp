@@ -512,47 +512,6 @@ void cpputil::ExtendString(std::string &str,int minimumLength)
 	}
 }
 
-unsigned int cpputil::GetDword(const unsigned char byteData[])
-{
-	return byteData[0]+(byteData[1]<<8)+(byteData[2]<<16)+(byteData[3]<<24);
-}
-
-unsigned int cpputil::GetWord(const unsigned char byteData[])
-{
-	return byteData[0]+(byteData[1]<<8);
-}
-
-int cpputil::GetSignedDword(const unsigned char byteData[])
-{
-	long long int dword;
-	dword=GetDword(byteData);
-	if(0x80000000<=dword)
-	{
-		dword-=0x100000000;
-	}
-	return (int)dword;
-}
-
-int cpputil::GetSignedWord(const unsigned char byteData[])
-{
-	int word=GetWord(byteData);
-	if(0x8000<=word)
-	{
-		word-=0x10000;
-	}
-	return word;
-}
-
-int cpputil::GetSignedByte(const unsigned char byteData)
-{
-	int byte=byteData;
-	if(0x80<=byteData)
-	{
-		byte-=0x100;
-	}
-	return byte;
-}
-
 char cpputil::BoolToChar(bool flag)
 {
 	return ((true==flag) ? '1' : '0');

@@ -8,17 +8,6 @@
 
 
 
-bool i486DX::OpCodeNeedsOneMoreByte(unsigned int firstByte) const
-{
-	switch(firstByte)
-	{
-	case I486_OPCODE_NEED_SECOND_BYTE:
-		return true;
-	}
-	return false;
-}
-
-
 i486DX::Instruction i486DX::FetchInstruction(const SegmentRegister &CS,unsigned int offset,const Memory &mem,unsigned int defOperSize,unsigned int defAddrSize) const
 {
 	Instruction inst;
@@ -91,26 +80,21 @@ unsigned int i486DX::PeekOperand8(unsigned int &operand,const Instruction &inst,
 }
 unsigned int i486DX::FetchOperand16(Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 {
-	unsigned int byte[2];
-	byte[0]=FetchByte(inst.addressSize,seg,offset++,mem);
-	byte[1]=FetchByte(inst.addressSize,seg,offset++,mem);
-
-	inst.operand[inst.operandLen++]=byte[0];
-	inst.operand[inst.operandLen++]=byte[1];
+	unsigned int word=FetchWord(inst.addressSize,seg,offset,mem);
+	inst.operand[inst.operandLen  ]=word&0xff;
+	inst.operand[inst.operandLen+1]=(word>>8)&0xff;
+	inst.operandLen+=2;
 	inst.numBytes+=2;
 	return 2;
 }
 unsigned int i486DX::FetchOperand32(Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 {
-	unsigned int byte[4];
-	byte[0]=FetchByte(inst.addressSize,seg,offset++,mem);
-	byte[1]=FetchByte(inst.addressSize,seg,offset++,mem);
-	byte[2]=FetchByte(inst.addressSize,seg,offset++,mem);
-	byte[3]=FetchByte(inst.addressSize,seg,offset++,mem);
-	inst.operand[inst.operandLen++]=byte[0];
-	inst.operand[inst.operandLen++]=byte[1];
-	inst.operand[inst.operandLen++]=byte[2];
-	inst.operand[inst.operandLen++]=byte[3];
+	unsigned int dword=FetchDword(inst.addressSize,seg,offset,mem);
+	inst.operand[inst.operandLen  ]=dword&0xff;
+	inst.operand[inst.operandLen+1]=(dword>>8)&0xff;
+	inst.operand[inst.operandLen+2]=(dword>>16)&0xff;
+	inst.operand[inst.operandLen+3]=(dword>>24)&0xff;
+	inst.operandLen+=4;
 	inst.numBytes+=4;
 	return 4;
 }

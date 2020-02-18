@@ -3,11 +3,6 @@
 /* { */
 
 
-enum
-{
-	I486_OPCODE_NEED_SECOND_BYTE=0x0F,
-};
-
 // Adding support for a new instruction:
 // Instruction-Set /digit means the real instruction depends on the REG bits of MODR/M byte (operand[0])
 //  (1) Add OPCODE enum.

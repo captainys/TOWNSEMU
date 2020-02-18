@@ -28,6 +28,11 @@ public:
 
 	enum
 	{
+		I486_OPCODE_NEED_SECOND_BYTE=0x0F,
+	};
+
+	enum
+	{
 		REG_NONE,
 
 		REG_AL,
@@ -1690,7 +1695,10 @@ public:
 
 	/*! Returns true if the opCode needs one more byte to be fully qualified.
 	*/
-	bool OpCodeNeedsOneMoreByte(unsigned int firstByte) const;
+	inline static bool OpCodeNeedsOneMoreByte(unsigned int firstByte)
+	{
+		return (firstByte==I486_OPCODE_NEED_SECOND_BYTE);
+	}
 
 	/*!
 	*/

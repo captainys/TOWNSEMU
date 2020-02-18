@@ -41,12 +41,47 @@ std::string Itoa(int i);
 
 void ExtendString(std::string &str,int minimumLength);
 
-unsigned int GetDword(const unsigned char byteData[]);
-unsigned int GetWord(const unsigned char byteData[]);
+inline unsigned int GetDword(const unsigned char byteData[])
+{
+	return byteData[0]|(byteData[1]<<8)|(byteData[2]<<16)|(byteData[3]<<24);
+}
 
-int GetSignedDword(const unsigned char byteData[]);
-int GetSignedWord(const unsigned char byteData[]);
-int GetSignedByte(const unsigned char byteData);
+inline unsigned int GetWord(const unsigned char byteData[])
+{
+	return byteData[0]|(byteData[1]<<8);
+}
+
+inline int GetSignedDword(const unsigned char byteData[])
+{
+	long long int dword=GetDword(byteData);
+	if(0x80000000<=dword)
+	{
+		dword-=0x100000000;
+	}
+	return (int)dword;
+}
+
+
+inline int GetSignedWord(const unsigned char byteData[])
+{
+	int word=GetWord(byteData);
+	if(0x8000<=word)
+	{
+		word-=0x10000;
+	}
+	return word;
+}
+
+inline int GetSignedByte(const unsigned char byteData){
+	int byte=byteData;
+	if(0x80<=byteData)
+	{
+		byte-=0x100;
+	}
+	return byte;
+}
+
+
 
 char BoolToChar(bool flag);
 const char *BoolToNumberStr(bool flag);
