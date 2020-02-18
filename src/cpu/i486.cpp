@@ -1844,17 +1844,25 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 			   op.offset;
 			if(addressSize==16)
 			{
-				for(unsigned int i=0; i<value.numBytes; ++i)
-				{
-					value.byteData[i]=FetchByte(addressSize,seg,(offset+i)&65535,mem);
-				}
+				offset&=0xFFFF;
 			}
-			else
+			switch(value.numBytes)
 			{
+			case 1:
+				value.byteData[0]=FetchByte(addressSize,seg,offset,mem);
+				break;
+			case 2:
+				value.SetWord(FetchWord(addressSize,seg,offset,mem));
+				break;
+			case 4:
+				value.SetDword(FetchDword(addressSize,seg,offset,mem));
+				break;
+			default:
 				for(unsigned int i=0; i<value.numBytes; ++i)
 				{
 					value.byteData[i]=FetchByte(addressSize,seg,offset+i,mem);
 				}
+				break;
 			}
 		}
 		break;

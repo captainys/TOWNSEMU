@@ -21,6 +21,8 @@ class i486SymbolTable;
 class i486DX : public CPU
 {
 public:
+	#define NUM_BYTES_MASK static const unsigned int numBytesMask[5]={0,0xFF,0xFFFF,0xFFFFFF,0xFFFFFFFF};
+
 	static const char *const Reg8Str[8];
 	static const char *const Reg16Str[8];
 	static const char *const Reg32Str[8];
@@ -675,7 +677,11 @@ public:
 
 		/*! operandType=OPER_UNDEFINED
 		*/
-		void Clear(void);
+		inline void Clear(void)
+		{
+			operandType=OPER_UNDEFINED;
+			indexScaling=1;
+		}
 
 		/*! Decode operand and returns the number of bytes.
 		*/
@@ -855,25 +861,25 @@ public:
 		}
 
 		/*! SetDword does not change numBytes.
-		    It won't update beyond numBytes.
+		    It updates first 4 bytes of the value, but only numBytes will be evaluated.
 		    If it needs to be made 4-byte long, use MakeDword instead.
 		*/
 		inline void SetDword(unsigned int dword)
 		{
-			switch(numBytes)
-			{
-			default:
-			case 4:
-				byteData[3]=((dword>>24)&255);
-			case 3:
-				byteData[2]=((dword>>16)&255);
-			case 2:
-				byteData[1]=((dword>>8)&255);
-			case 1:
-				byteData[0]=(dword&255);
-			case 0:
-				break;
-			}
+			byteData[0]=(dword&255);
+			byteData[1]=((dword>>8)&255);
+			byteData[2]=((dword>>16)&255);
+			byteData[3]=((dword>>24)&255);
+		}
+
+		/*! SetWord does not change numBytes.
+		    It updates first 4 bytes of the value, but only numBytes will be evaluated.
+		    If it needs to be made 4-byte long, use MakeDword instead.
+		*/
+		inline void SetWord(unsigned int word)
+		{
+			byteData[0]=(word&255);
+			byteData[1]=((word>>8)&255);
 		}
 
 		inline void SetSignedDword(int dword)
@@ -920,18 +926,11 @@ public:
 		/*! Makes a word or dword value.  The size depends on the operandSize. */
 		inline void MakeByteWordOrDword(unsigned int operandSize,unsigned int value)
 		{
-			if(8==operandSize)
-			{
-				MakeByte(value);
-			}
-			else if(16==operandSize)
-			{
-				MakeWord(value);
-			}
-			else
-			{
-				MakeDword(value);
-			}
+			numBytes=(operandSize>>3);
+			byteData[0]=( value     &255);
+			byteData[1]=((value>>8) &255);
+			byteData[2]=((value>>16)&255);
+			byteData[3]=((value>>24)&255);
 		}
 
 		/*! Get Segment part of FWORD PTR, which is last two bytes of the byte data.

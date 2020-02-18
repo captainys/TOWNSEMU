@@ -11,12 +11,6 @@ i486DX::Operand::Operand(int addressSize,int dataSize,const unsigned char operan
 	Decode(addressSize,dataSize,operand);
 }
 
-void i486DX::Operand::Clear(void)
-{
-	operandType=OPER_UNDEFINED;
-	indexScaling=1;
-}
-
 unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned char operand[])
 {
 	auto MODR_M=operand[0];
