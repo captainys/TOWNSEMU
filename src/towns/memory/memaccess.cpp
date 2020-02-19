@@ -134,70 +134,73 @@ TownsMainRAMorFMRVRAMAccess::TownsMainRAMorFMRVRAMAccess()
 	}
 	return 0xff;
 }
-///* virtual */ unsigned int TownsMainRAMorSysROMAccess::FetchWord(unsigned int physAddr) const
-//{
-//	auto &state=physMemPtr->state;
-//	if(true==state.sysRomMapping)
-//	{
-//		if(0xF8000<=physAddr && physAddr<=0xFFFFE)
-//		{
-//			return sysRom[physAddr-TOWNSADDR_FMR_VRAM_BASE]|(sysRom[physAddr-TOWNSADDR_FMR_VRAM_BASE+1]<<8);
-//		}
-//		else if(0xF8000<=physAddr && physAddr<=0xFFFFF)
-//		{
-//			return sysRom[physAddr-TOWNSADDR_FMR_VRAM_BASE];
-//		}
-//	}
-//	if(physAddr<state.RAM.size()-1)
-//	{
-//		return state.RAM[physAddr]|(state.RAM[physAddr+1]<<8);
-//	}
-//	else if(physAddr==state.RAM.size()-1)
-//	{
-//		return state.RAM[physAddr];
-//	}
-//	return 0xffff;
-//}
-///* virtual */ unsigned int TownsMainRAMorSysROMAccess::FetchDword(unsigned int physAddr) const
-//{
-//	auto &state=physMemPtr->state;
-//	if(true==state.sysRomMapping)
-//	{
-//		if(0xF8000<=physAddr && physAddr<=0xFFFFC)
-//		{
-//			return sysRom[physAddr-TOWNSADDR_FMR_VRAM_BASE]|(sysRom[physAddr-TOWNSADDR_FMR_VRAM_BASE+1]<<8)|(sysRom[physAddr-TOWNSADDR_FMR_VRAM_BASE+2]<<16)|(sysRom[physAddr-TOWNSADDR_FMR_VRAM_BASE+3]<<24);
-//		}
-//		else if(0xF8000<=physAddr && physAddr<=0xFFFFD)
-//		{
-//			return sysRom[physAddr-TOWNSADDR_FMR_VRAM_BASE]|(sysRom[physAddr-TOWNSADDR_FMR_VRAM_BASE+1]<<8)|(sysRom[physAddr-TOWNSADDR_FMR_VRAM_BASE+2]<<16);
-//		}
-//		else if(0xF8000<=physAddr && physAddr<=0xFFFFE)
-//		{
-//			return sysRom[physAddr-TOWNSADDR_FMR_VRAM_BASE]|(sysRom[physAddr-TOWNSADDR_FMR_VRAM_BASE+1]<<8);
-//		}
-//		else if(0xF8000<=physAddr && physAddr<=0xFFFFF)
-//		{
-//			return sysRom[physAddr-TOWNSADDR_FMR_VRAM_BASE];
-//		}
-//	}
-//	if(physAddr<state.RAM.size()-3)
-//	{
-//		return state.RAM[physAddr]|(state.RAM[physAddr+1]<<8)|(state.RAM[physAddr+2]<<16)|(state.RAM[physAddr+3]<<24);
-//	}
-//	else if(physAddr<state.RAM.size()-2)
-//	{
-//		return state.RAM[physAddr]|(state.RAM[physAddr+1]<<8)|(state.RAM[physAddr+2]<<16);
-//	}
-//	else if(physAddr<state.RAM.size()-1)
-//	{
-//		return state.RAM[physAddr]|(state.RAM[physAddr+1]<<8);
-//	}
-//	else if(physAddr==state.RAM.size()-1)
-//	{
-//		return state.RAM[physAddr];
-//	}
-//	return 0xffffffff;
-//}
+/* virtual */ unsigned int TownsMainRAMorSysROMAccess::FetchWord(unsigned int physAddr) const
+{
+	auto &state=physMemPtr->state;
+	if(true==state.sysRomMapping)
+	{
+		if(0xF8000<=physAddr && physAddr<=0xFFFFE)
+		{
+			return physMemPtr->sysRom[physAddr-TOWNSADDR_FMR_VRAM_BASE]|(physMemPtr->sysRom[physAddr-TOWNSADDR_FMR_VRAM_BASE+1]<<8);
+		}
+		else if(0xF8000<=physAddr && physAddr<=0xFFFFF)
+		{
+			return physMemPtr->sysRom[physAddr-TOWNSADDR_FMR_VRAM_BASE];
+		}
+	}
+	if(physAddr<state.RAM.size()-1)
+	{
+		return state.RAM[physAddr]|(state.RAM[physAddr+1]<<8);
+	}
+	else if(physAddr==state.RAM.size()-1)
+	{
+		return state.RAM[physAddr];
+	}
+	return 0xffff;
+}
+/* virtual */ unsigned int TownsMainRAMorSysROMAccess::FetchDword(unsigned int physAddr) const
+{
+	auto &state=physMemPtr->state;
+	if(true==state.sysRomMapping)
+	{
+		if(0xF8000<=physAddr && physAddr<=0xFFFFC)
+		{
+			return physMemPtr->sysRom[physAddr-TOWNSADDR_FMR_VRAM_BASE]|
+			      (physMemPtr->sysRom[physAddr-TOWNSADDR_FMR_VRAM_BASE+1]<<8)|
+			      (physMemPtr->sysRom[physAddr-TOWNSADDR_FMR_VRAM_BASE+2]<<16)|
+			      (physMemPtr->sysRom[physAddr-TOWNSADDR_FMR_VRAM_BASE+3]<<24);
+		}
+		else if(0xF8000<=physAddr && physAddr<=0xFFFFD)
+		{
+			return physMemPtr->sysRom[physAddr-TOWNSADDR_FMR_VRAM_BASE]|(physMemPtr->sysRom[physAddr-TOWNSADDR_FMR_VRAM_BASE+1]<<8)|(physMemPtr->sysRom[physAddr-TOWNSADDR_FMR_VRAM_BASE+2]<<16);
+		}
+		else if(0xF8000<=physAddr && physAddr<=0xFFFFE)
+		{
+			return physMemPtr->sysRom[physAddr-TOWNSADDR_FMR_VRAM_BASE]|(physMemPtr->sysRom[physAddr-TOWNSADDR_FMR_VRAM_BASE+1]<<8);
+		}
+		else if(0xF8000<=physAddr && physAddr<=0xFFFFF)
+		{
+			return physMemPtr->sysRom[physAddr-TOWNSADDR_FMR_VRAM_BASE];
+		}
+	}
+	if(physAddr<state.RAM.size()-3)
+	{
+		return state.RAM[physAddr]|(state.RAM[physAddr+1]<<8)|(state.RAM[physAddr+2]<<16)|(state.RAM[physAddr+3]<<24);
+	}
+	else if(physAddr<state.RAM.size()-2)
+	{
+		return state.RAM[physAddr]|(state.RAM[physAddr+1]<<8)|(state.RAM[physAddr+2]<<16);
+	}
+	else if(physAddr<state.RAM.size()-1)
+	{
+		return state.RAM[physAddr]|(state.RAM[physAddr+1]<<8);
+	}
+	else if(physAddr==state.RAM.size()-1)
+	{
+		return state.RAM[physAddr];
+	}
+	return 0xffffffff;
+}
 /* virtual */ void TownsMainRAMorSysROMAccess::StoreByte(unsigned int physAddr,unsigned char data)
 {
 	auto &state=physMemPtr->state;
@@ -210,53 +213,53 @@ TownsMainRAMorFMRVRAMAccess::TownsMainRAMorFMRVRAMAccess()
 		state.RAM[physAddr]=data;
 	}
 }
-///* virtual */ void TownsMainRAMorSysROMAccess::StoreWord(unsigned int physAddr,unsigned int data)
-//{
-//	auto &state=physMemPtr->state;
-//	if(true==state.sysRomMapping && 0xF8000<=physAddr && physAddr<=0xFFFFF)
-//	{
-//		// ROM mode no writing
-//	}
-//	else if(physAddr<state.RAM.size()-1)
-//	{
-//		state.RAM[physAddr]=data&255;
-//		state.RAM[physAddr+1]=(data>>8)&255;
-//	}
-//	else if(physAddr<state.RAM.size())
-//	{
-//		state.RAM[physAddr]=data;
-//	}
-//}
-///* virtual */ void TownsMainRAMorSysROMAccess::StoreDword(unsigned int physAddr,unsigned int data)
-//{
-//	auto &state=physMemPtr->state;
-//	if(true==state.sysRomMapping && 0xF8000<=physAddr && physAddr<=0xFFFFF)
-//	{
-//		// ROM mode no writing
-//	}
-//	else if(physAddr<state.RAM.size()-3)
-//	{
-//		state.RAM[physAddr]=data&255;
-//		state.RAM[physAddr+1]=(data>>8)&255;
-//		state.RAM[physAddr+2]=(data>>16)&255;
-//		state.RAM[physAddr+3]=(data>>24)&255;
-//	}
-//	else if(physAddr<state.RAM.size()-2)
-//	{
-//		state.RAM[physAddr]=data&255;
-//		state.RAM[physAddr+1]=(data>>8)&255;
-//		state.RAM[physAddr+2]=(data>>16)&255;
-//	}
-//	else if(physAddr<state.RAM.size()-1)
-//	{
-//		state.RAM[physAddr]=data&255;
-//		state.RAM[physAddr+1]=(data>>8)&255;
-//	}
-//	else if(physAddr<state.RAM.size())
-//	{
-//		state.RAM[physAddr]=data;
-//	}
-//}
+/* virtual */ void TownsMainRAMorSysROMAccess::StoreWord(unsigned int physAddr,unsigned int data)
+{
+	auto &state=physMemPtr->state;
+	if(true==state.sysRomMapping && 0xF8000<=physAddr && physAddr<=0xFFFFF)
+	{
+		// ROM mode no writing
+	}
+	else if(physAddr<state.RAM.size()-1)
+	{
+		state.RAM[physAddr]=data&255;
+		state.RAM[physAddr+1]=(data>>8)&255;
+	}
+	else if(physAddr<state.RAM.size())
+	{
+		state.RAM[physAddr]=data;
+	}
+}
+/* virtual */ void TownsMainRAMorSysROMAccess::StoreDword(unsigned int physAddr,unsigned int data)
+{
+	auto &state=physMemPtr->state;
+	if(true==state.sysRomMapping && 0xF8000<=physAddr && physAddr<=0xFFFFF)
+	{
+		// ROM mode no writing
+	}
+	else if(physAddr<state.RAM.size()-3)
+	{
+		state.RAM[physAddr]=data&255;
+		state.RAM[physAddr+1]=(data>>8)&255;
+		state.RAM[physAddr+2]=(data>>16)&255;
+		state.RAM[physAddr+3]=(data>>24)&255;
+	}
+	else if(physAddr<state.RAM.size()-2)
+	{
+		state.RAM[physAddr]=data&255;
+		state.RAM[physAddr+1]=(data>>8)&255;
+		state.RAM[physAddr+2]=(data>>16)&255;
+	}
+	else if(physAddr<state.RAM.size()-1)
+	{
+		state.RAM[physAddr]=data&255;
+		state.RAM[physAddr+1]=(data>>8)&255;
+	}
+	else if(physAddr<state.RAM.size())
+	{
+		state.RAM[physAddr]=data;
+	}
+}
 
 
 ////////////////////////////////////////////////////////////
