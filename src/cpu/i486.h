@@ -665,7 +665,7 @@ public:
 		// For OPER_IMM* operand type
 		int imm;
 		// For OPER_ADDR and OPER_FARADDR operand type
-		int baseReg,indexReg,indexScaling,offset;
+		int baseReg,indexReg,indexShift,offset;
 		int offsetBits;
 		// For OPER_FARADDR operand type.  NOT USED in any other operand types.
 		int seg;
@@ -681,7 +681,7 @@ public:
 		inline void Clear(void)
 		{
 			operandType=OPER_UNDEFINED;
-			indexScaling=1;
+			indexShift=0;
 		}
 
 		/*! Decode operand and returns the number of bytes.

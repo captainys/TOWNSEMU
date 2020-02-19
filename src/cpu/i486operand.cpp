@@ -30,7 +30,7 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 			operandType=OPER_ADDR;
 			baseReg=REG_NONE;
 			indexReg=REG_NONE;
-			indexScaling=1;
+			// indexShift=0; Already cleared in Clear()
 			offset=cpputil::GetSignedWord(operand+1);
 			offsetBits=16;
 			numBytes=3;
@@ -52,7 +52,7 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 			operandType=OPER_ADDR;
 			baseReg=REG_NONE;
 			indexReg=REG_NONE;
-			indexScaling=1;
+			// indexShisft=0; Already cleared in Clear()
 			offset=0;  // Tentative
 			offsetBits=16;
 			numBytes=1;
@@ -100,7 +100,7 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 			operandType=OPER_ADDR;
 			baseReg=REG_NONE;
 			indexReg=REG_NONE;
-			indexScaling=1;
+			// indexShift=0; Already cleared in Clear()
 			offset=cpputil::GetSignedDword(operand+1);
 			offsetBits=32;
 			numBytes=5;
@@ -110,7 +110,7 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 			operandType=OPER_ADDR;
 			baseReg=REG_NONE;
 			indexReg=REG_NONE;
-			indexScaling=1;
+			// indexShift=0; Already cleared in Clear()
 			offset=0;
 			numBytes=1;
 			if(0b100==R_M) // Depends on SIB
@@ -139,7 +139,7 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 				if(0b100!=INDEX)
 				{
 					indexReg=REG_32BIT_REG_BASE+INDEX;
-					indexScaling=twoToN[SS];
+					indexShift=SS;
 				}
 
 				if((0==MOD && 5==BASE) || 0b10==MOD)
@@ -276,7 +276,7 @@ void i486DX::Operand::MakeSimpleAddressOffset(const Instruction &inst)
 	operandType=OPER_ADDR;
 	baseReg=REG_NONE;
 	indexReg=REG_NONE;
-	indexScaling=1;
+	indexShift=0;
 	offsetBits=inst.addressSize;
 	switch(inst.addressSize)
 	{
@@ -377,10 +377,10 @@ std::string i486DX::Operand::DisassembleAsAddr(void) const
 			disasm.push_back('+');
 		}
 		disasm+=RegToStr[indexReg];
-		if(1!=indexScaling)
+		if(0!=indexShift)
 		{
 			disasm.push_back('*');
-			disasm.push_back('0'+indexScaling);
+			disasm.push_back('0'+(1<<indexShift));
 		}
 		empty=false;
 	}

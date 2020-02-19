@@ -4980,7 +4980,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			unsigned int offset=
 			   GetRegisterValue(op2.baseReg)+
-			   GetRegisterValue(op2.indexReg)*op2.indexScaling+
+			   (GetRegisterValue(op2.indexReg)<<op2.indexShift)+
 			   op2.offset;
 			if(16==inst.addressSize)
 			{

@@ -1840,7 +1840,7 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 			}
 			unsigned int offset=
 			   GetRegisterValue(op.baseReg)+
-			   GetRegisterValue(op.indexReg)*op.indexScaling+
+			   (GetRegisterValue(op.indexReg)<<op.indexShift)+
 			   op.offset;
 			if(addressSize==16)
 			{
@@ -2201,7 +2201,7 @@ void i486DX::StoreOperandValue(
 			}
 			unsigned int offset=
 			   GetRegisterValue(dst.baseReg)+
-			   GetRegisterValue(dst.indexReg)*dst.indexScaling+
+			   (GetRegisterValue(dst.indexReg)<<dst.indexShift)+
 			   dst.offset;
 			if(addressSize==16)
 			{
