@@ -147,16 +147,9 @@ TownsMainRAMorFMRVRAMAccess::TownsMainRAMorFMRVRAMAccess()
 		{
 			return physMemPtr->sysRom[physAddr-TOWNSADDR_FMR_VRAM_BASE];
 		}
+		return 0xffff;
 	}
-	if(physAddr<state.RAM.size()-1)
-	{
-		return state.RAM[physAddr]|(state.RAM[physAddr+1]<<8);
-	}
-	else if(physAddr==state.RAM.size()-1)
-	{
-		return state.RAM[physAddr];
-	}
-	return 0xffff;
+	return state.RAM[physAddr]|(state.RAM[physAddr+1]<<8);
 }
 /* virtual */ unsigned int TownsMainRAMorSysROMAccess::FetchDword(unsigned int physAddr) const
 {
@@ -182,24 +175,9 @@ TownsMainRAMorFMRVRAMAccess::TownsMainRAMorFMRVRAMAccess()
 		{
 			return physMemPtr->sysRom[physAddr-TOWNSADDR_FMR_VRAM_BASE];
 		}
+		return 0xffffffff;
 	}
-	if(physAddr<state.RAM.size()-3)
-	{
-		return state.RAM[physAddr]|(state.RAM[physAddr+1]<<8)|(state.RAM[physAddr+2]<<16)|(state.RAM[physAddr+3]<<24);
-	}
-	else if(physAddr<state.RAM.size()-2)
-	{
-		return state.RAM[physAddr]|(state.RAM[physAddr+1]<<8)|(state.RAM[physAddr+2]<<16);
-	}
-	else if(physAddr<state.RAM.size()-1)
-	{
-		return state.RAM[physAddr]|(state.RAM[physAddr+1]<<8);
-	}
-	else if(physAddr==state.RAM.size()-1)
-	{
-		return state.RAM[physAddr];
-	}
-	return 0xffffffff;
+	return state.RAM[physAddr]|(state.RAM[physAddr+1]<<8)|(state.RAM[physAddr+2]<<16)|(state.RAM[physAddr+3]<<24);
 }
 /* virtual */ void TownsMainRAMorSysROMAccess::StoreByte(unsigned int physAddr,unsigned char data)
 {
@@ -220,14 +198,10 @@ TownsMainRAMorFMRVRAMAccess::TownsMainRAMorFMRVRAMAccess()
 	{
 		// ROM mode no writing
 	}
-	else if(physAddr<state.RAM.size()-1)
+	else
 	{
 		state.RAM[physAddr]=data&255;
 		state.RAM[physAddr+1]=(data>>8)&255;
-	}
-	else if(physAddr<state.RAM.size())
-	{
-		state.RAM[physAddr]=data;
 	}
 }
 /* virtual */ void TownsMainRAMorSysROMAccess::StoreDword(unsigned int physAddr,unsigned int data)
@@ -237,27 +211,12 @@ TownsMainRAMorFMRVRAMAccess::TownsMainRAMorFMRVRAMAccess()
 	{
 		// ROM mode no writing
 	}
-	else if(physAddr<state.RAM.size()-3)
+	else
 	{
 		state.RAM[physAddr]=data&255;
 		state.RAM[physAddr+1]=(data>>8)&255;
 		state.RAM[physAddr+2]=(data>>16)&255;
 		state.RAM[physAddr+3]=(data>>24)&255;
-	}
-	else if(physAddr<state.RAM.size()-2)
-	{
-		state.RAM[physAddr]=data&255;
-		state.RAM[physAddr+1]=(data>>8)&255;
-		state.RAM[physAddr+2]=(data>>16)&255;
-	}
-	else if(physAddr<state.RAM.size()-1)
-	{
-		state.RAM[physAddr]=data&255;
-		state.RAM[physAddr+1]=(data>>8)&255;
-	}
-	else if(physAddr<state.RAM.size())
-	{
-		state.RAM[physAddr]=data;
 	}
 }
 
@@ -371,6 +330,33 @@ TownsMainRAMorFMRVRAMAccess::TownsMainRAMorFMRVRAMAccess()
 	}
 	return 0xff;
 }
+/* virtual */ unsigned int TownsMainRAMorFMRVRAMAccess::FetchWord(unsigned int physAddr) const
+{
+	if(true==physMemPtr->state.FMRVRAM &&
+	   TOWNSADDR_FMR_VRAM_BASE<=physAddr && physAddr<=TOWNSADDR_FMR_CVRAM_END)
+	{
+		return TownsMemAccess::FetchWord(physAddr);
+	}
+	else
+	{
+		return physMemPtr->state.RAM[physAddr]|(physMemPtr->state.RAM[physAddr+1]<<8);
+	}
+}
+/* virtual */ unsigned int TownsMainRAMorFMRVRAMAccess::FetchDword(unsigned int physAddr) const
+{
+	if(true==physMemPtr->state.FMRVRAM &&
+	   TOWNSADDR_FMR_VRAM_BASE<=physAddr && physAddr<=TOWNSADDR_FMR_CVRAM_END)
+	{
+		return TownsMemAccess::FetchDword(physAddr);
+	}
+	else
+	{
+		return physMemPtr->state.RAM[physAddr]|
+		      (physMemPtr->state.RAM[physAddr+1]<<8)|
+		      (physMemPtr->state.RAM[physAddr+2]<<16)|
+		      (physMemPtr->state.RAM[physAddr+3]<<24);
+	}
+}
 /* virtual */ void TownsMainRAMorFMRVRAMAccess::StoreByte(unsigned int physAddr,unsigned char data)
 {
 	if(true==physMemPtr->state.FMRVRAM &&
@@ -469,6 +455,32 @@ TownsMainRAMorFMRVRAMAccess::TownsMainRAMorFMRVRAMAccess()
 		physMemPtr->state.RAM[physAddr]=data;
 	}
 }
+/* virtual */ void TownsMainRAMorFMRVRAMAccess::StoreWord(unsigned int physAddr,unsigned int data)
+{
+	if(true==physMemPtr->state.FMRVRAM)
+	{
+		TownsMemAccess::StoreWord(physAddr,data);
+	}
+	else
+	{
+		physMemPtr->state.RAM[physAddr  ]=data&0xFF;
+		physMemPtr->state.RAM[physAddr+1]=(data>>8)&0xFF;
+	}
+}
+/* virtual */ void TownsMainRAMorFMRVRAMAccess::StoreDword(unsigned int physAddr,unsigned int data)
+{
+	if(true==physMemPtr->state.FMRVRAM)
+	{
+		TownsMemAccess::StoreDword(physAddr,data);
+	}
+	else
+	{
+		physMemPtr->state.RAM[physAddr  ]= data&0xFF;
+		physMemPtr->state.RAM[physAddr+1]=(data>>8)&0xFF;
+		physMemPtr->state.RAM[physAddr+2]=(data>>16)&0xFF;
+		physMemPtr->state.RAM[physAddr+3]=(data>>24)&0xFF;
+	}
+}
 
 
 ////////////////////////////////////////////////////////////
@@ -536,18 +548,97 @@ TownsMainRAMorFMRVRAMAccess::TownsMainRAMorFMRVRAMAccess()
 /* virtual */ unsigned int TownsVRAMAccess::FetchByte(unsigned int physAddr) const
 {
 	auto &state=physMemPtr->state;
-	if(0x80000000<=physAddr && physAddr<0x80080000)
+	if(TOWNSADDR_VRAM_BASE<=physAddr && physAddr<TOWNSADDR_VRAM_END)
 	{
-		return state.VRAM[physAddr-0x80000000];
+		return state.VRAM[physAddr-TOWNSADDR_VRAM_BASE];
 	}
 	return 0xff;
+}
+/* virtual */ unsigned int TownsVRAMAccess::FetchWord(unsigned int physAddr) const
+{
+	auto &state=physMemPtr->state;
+	if(TOWNSADDR_VRAM_BASE<=physAddr && physAddr<TOWNSADDR_VRAM_END-1)
+	{
+		return state.VRAM[physAddr-TOWNSADDR_VRAM_BASE]|(state.VRAM[physAddr-TOWNSADDR_VRAM_BASE+1]<<8);
+	}
+	else if(TOWNSADDR_VRAM_BASE<=physAddr && physAddr<TOWNSADDR_VRAM_END)
+	{
+		return state.VRAM[physAddr-TOWNSADDR_VRAM_BASE];
+	}
+	return 0xffff;
+}
+/* virtual */ unsigned int TownsVRAMAccess::FetchDword(unsigned int physAddr) const
+{
+	auto &state=physMemPtr->state;
+	if(TOWNSADDR_VRAM_BASE<=physAddr && physAddr<TOWNSADDR_VRAM_END-3)
+	{
+		return state.VRAM[physAddr-TOWNSADDR_VRAM_BASE]|
+		      (state.VRAM[physAddr-TOWNSADDR_VRAM_BASE+1]<<8)|
+		      (state.VRAM[physAddr-TOWNSADDR_VRAM_BASE+2]<<16)|
+		      (state.VRAM[physAddr-TOWNSADDR_VRAM_BASE+3]<<24);
+	}
+	else if(TOWNSADDR_VRAM_BASE<=physAddr && physAddr<TOWNSADDR_VRAM_END-2)
+	{
+		return state.VRAM[physAddr-TOWNSADDR_VRAM_BASE]|
+		      (state.VRAM[physAddr-TOWNSADDR_VRAM_BASE+1]<<8)|
+		      (state.VRAM[physAddr-TOWNSADDR_VRAM_BASE+2]<<16);
+	}
+	else if(TOWNSADDR_VRAM_BASE<=physAddr && physAddr<TOWNSADDR_VRAM_END-1)
+	{
+		return state.VRAM[physAddr-TOWNSADDR_VRAM_BASE]|
+		      (state.VRAM[physAddr-TOWNSADDR_VRAM_BASE+1]<<8);
+	}
+	else if(TOWNSADDR_VRAM_BASE<=physAddr && physAddr<TOWNSADDR_VRAM_END)
+	{
+		return state.VRAM[physAddr-TOWNSADDR_VRAM_BASE];
+	}
+	return 0xffffffff;
 }
 /* virtual */ void TownsVRAMAccess::StoreByte(unsigned int physAddr,unsigned char data)
 {
 	auto &state=physMemPtr->state;
-	if(0x80000000<=physAddr && physAddr<0x80080000)
+	if(TOWNSADDR_VRAM_BASE<=physAddr && physAddr<TOWNSADDR_VRAM_END)
 	{
-		state.VRAM[physAddr-0x80000000]=data;
+		state.VRAM[physAddr-TOWNSADDR_VRAM_BASE]=data;
+	}
+}
+/* virtual */ void TownsVRAMAccess::StoreWord(unsigned int physAddr,unsigned int data)
+{
+	auto &state=physMemPtr->state;
+	if(TOWNSADDR_VRAM_BASE<=physAddr && physAddr<TOWNSADDR_VRAM_END-1)
+	{
+		state.VRAM[physAddr-TOWNSADDR_VRAM_BASE  ]= data    &255;
+		state.VRAM[physAddr-TOWNSADDR_VRAM_BASE+1]=(data>>8)&255;
+	}
+	else if(TOWNSADDR_VRAM_BASE<=physAddr && physAddr<TOWNSADDR_VRAM_END)
+	{
+		state.VRAM[physAddr-TOWNSADDR_VRAM_BASE]=data;
+	}
+}
+/* virtual */ void TownsVRAMAccess::StoreDword(unsigned int physAddr,unsigned int data)
+{
+	auto &state=physMemPtr->state;
+	if(TOWNSADDR_VRAM_BASE<=physAddr && physAddr<TOWNSADDR_VRAM_END-3)
+	{
+		state.VRAM[physAddr-TOWNSADDR_VRAM_BASE  ]= data     &255;
+		state.VRAM[physAddr-TOWNSADDR_VRAM_BASE+1]=(data>>8) &255;
+		state.VRAM[physAddr-TOWNSADDR_VRAM_BASE+2]=(data>>16)&255;
+		state.VRAM[physAddr-TOWNSADDR_VRAM_BASE+3]=(data>>24)&255;
+	}
+	else if(TOWNSADDR_VRAM_BASE<=physAddr && physAddr<TOWNSADDR_VRAM_END-2)
+	{
+		state.VRAM[physAddr-TOWNSADDR_VRAM_BASE  ]= data     &255;
+		state.VRAM[physAddr-TOWNSADDR_VRAM_BASE+1]=(data>>8) &255;
+		state.VRAM[physAddr-TOWNSADDR_VRAM_BASE+2]=(data>>16)&255;
+	}
+	else if(TOWNSADDR_VRAM_BASE<=physAddr && physAddr<TOWNSADDR_VRAM_END-1)
+	{
+		state.VRAM[physAddr-TOWNSADDR_VRAM_BASE  ]= data    &255;
+		state.VRAM[physAddr-TOWNSADDR_VRAM_BASE+1]=(data>>8)&255;
+	}
+	else if(TOWNSADDR_VRAM_BASE<=physAddr && physAddr<TOWNSADDR_VRAM_END)
+	{
+		state.VRAM[physAddr-TOWNSADDR_VRAM_BASE]=data;
 	}
 }
 

@@ -23,7 +23,6 @@ public:
 	//     03A4:00000D1E F606430480                TEST    BYTE PTR [0443H],80H
 	//     03A4:00000D23 75F9                      JNE     00000D1E
 	//   Another pattern is jump to CS=7501H where no instructions are written.
-	unsigned char timerInfoBlock[10];
 	unsigned int passCount;
 	unsigned int int40HCount,otherIntCount;
 	bool inTheTargetRange;
@@ -71,16 +70,6 @@ void i486Debugger::SpecialDebugInfo::BeforeRunOneInstruction(i486Debugger &debug
 			int40HCount=0;
 			otherIntCount=0;
 			pass03A4_00000D26=0;
-			timerInfoBlock[0]=cpu.FetchByte(cpu.state.CS().addressSize,cpu.state.DS(),cpu.state.DI()+0,mem);
-			timerInfoBlock[1]=cpu.FetchByte(cpu.state.CS().addressSize,cpu.state.DS(),cpu.state.DI()+1,mem);
-			timerInfoBlock[2]=cpu.FetchByte(cpu.state.CS().addressSize,cpu.state.DS(),cpu.state.DI()+2,mem);
-			timerInfoBlock[3]=cpu.FetchByte(cpu.state.CS().addressSize,cpu.state.DS(),cpu.state.DI()+3,mem);
-			timerInfoBlock[4]=cpu.FetchByte(cpu.state.CS().addressSize,cpu.state.DS(),cpu.state.DI()+4,mem);
-			timerInfoBlock[5]=cpu.FetchByte(cpu.state.CS().addressSize,cpu.state.DS(),cpu.state.DI()+5,mem);
-			timerInfoBlock[6]=cpu.FetchByte(cpu.state.CS().addressSize,cpu.state.DS(),cpu.state.DI()+6,mem);
-			timerInfoBlock[7]=cpu.FetchByte(cpu.state.CS().addressSize,cpu.state.DS(),cpu.state.DI()+7,mem);
-			timerInfoBlock[8]=cpu.FetchByte(cpu.state.CS().addressSize,cpu.state.DS(),cpu.state.DI()+8,mem);
-			timerInfoBlock[9]=cpu.FetchByte(cpu.state.CS().addressSize,cpu.state.DS(),cpu.state.DI()+9,mem);
 		}
 		if(0x0D16<=cpu.state.EIP && cpu.state.EIP<=0x0D23)
 		{
