@@ -330,51 +330,51 @@ public:
 		unsigned int DR[8];
 		unsigned int TEST[8];
 
-		const SegmentRegister &ES(void) const
+		inline const SegmentRegister &ES(void) const
 		{
 			return sreg[REG_ES-REG_SEGMENT_REG_BASE];
 		}
-		const SegmentRegister &CS(void) const
+		inline const SegmentRegister &CS(void) const
 		{
 			return sreg[REG_CS-REG_SEGMENT_REG_BASE];
 		}
-		const SegmentRegister &SS(void) const
+		inline const SegmentRegister &SS(void) const
 		{
 			return sreg[REG_SS-REG_SEGMENT_REG_BASE];
 		}
-		const SegmentRegister &DS(void) const
+		inline const SegmentRegister &DS(void) const
 		{
 			return sreg[REG_DS-REG_SEGMENT_REG_BASE];
 		}
-		const SegmentRegister &FS(void) const
+		inline const SegmentRegister &FS(void) const
 		{
 			return sreg[REG_FS-REG_SEGMENT_REG_BASE];
 		}
-		const SegmentRegister &GS(void) const
+		inline const SegmentRegister &GS(void) const
 		{
 			return sreg[REG_GS-REG_SEGMENT_REG_BASE];
 		}
-		SegmentRegister &ES(void)
+		inline SegmentRegister &ES(void)
 		{
 			return sreg[REG_ES-REG_SEGMENT_REG_BASE];
 		}
-		SegmentRegister &CS(void)
+		inline SegmentRegister &CS(void)
 		{
 			return sreg[REG_CS-REG_SEGMENT_REG_BASE];
 		}
-		SegmentRegister &SS(void)
+		inline SegmentRegister &SS(void)
 		{
 			return sreg[REG_SS-REG_SEGMENT_REG_BASE];
 		}
-		SegmentRegister &DS(void)
+		inline SegmentRegister &DS(void)
 		{
 			return sreg[REG_DS-REG_SEGMENT_REG_BASE];
 		}
-		SegmentRegister &FS(void)
+		inline SegmentRegister &FS(void)
 		{
 			return sreg[REG_FS-REG_SEGMENT_REG_BASE];
 		}
-		SegmentRegister &GS(void)
+		inline SegmentRegister &GS(void)
 		{
 			return sreg[REG_GS-REG_SEGMENT_REG_BASE];
 		}
