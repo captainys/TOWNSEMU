@@ -50,12 +50,7 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 			};
 
 			operandType=OPER_ADDR;
-			baseReg=REG_NONE;
-			indexReg=REG_NONE;
 			// indexShisft=0; Already cleared in Clear()
-			offset=0;  // Tentative
-			offsetBits=16;
-			numBytes=1;
 
 			baseReg=R_M_to_BaseIndex[R_M][0];
 			indexReg=R_M_to_BaseIndex[R_M][1];
@@ -64,13 +59,19 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 			{
 				offsetBits=8;
 				offset=cpputil::GetSignedByte(operand[1]);
-				++numBytes;
+				numBytes=2;
 			}
 			else if(0b10==MOD)
 			{
 				offsetBits=16;
 				offset=cpputil::GetSignedWord(operand+1);
-				numBytes+=2;
+				numBytes=3;
+			}
+			else
+			{
+				offset=0;  // Tentative
+				offsetBits=16;
+				numBytes=1;
 			}
 		}
 		else
