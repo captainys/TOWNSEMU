@@ -15,10 +15,10 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 {
 	NUM_BYTES_TO_BASIC_REG_BASE
 
-	auto MODR_M=operand[0];
-	auto MOD=((MODR_M>>6)&3);
-	auto REG_OPCODE=((MODR_M>>3)&7);
-	auto R_M=(MODR_M&7);
+	const auto MODR_M=operand[0];
+	const auto MOD=((MODR_M>>6)&3);
+	const auto REG_OPCODE=((MODR_M>>3)&7);
+	const auto R_M=(MODR_M&7);
 	unsigned int numBytes=0;
 
 	Clear();
@@ -227,7 +227,12 @@ void i486DX::Operand::DecodeMODR_MForTestRegister(unsigned char MODR_M)
 }
 void i486DX::Operand::MakeByRegisterNumber(int dataSize,int regNum)
 {
+	NUM_BYTES_TO_BASIC_REG_BASE
+
 	operandType=OPER_REG;
+	reg=regNum+numBytesToBasicRegBase[dataSize>>3];
+
+	/* Equivalent
 	switch(dataSize)
 	{
 	case 8:
@@ -239,7 +244,7 @@ void i486DX::Operand::MakeByRegisterNumber(int dataSize,int regNum)
 	default:
 		reg=REG_32BIT_REG_BASE+regNum;
 		break;
-	}
+	} */
 }
 void i486DX::Operand::MakeImm8(const Instruction &inst)
 {

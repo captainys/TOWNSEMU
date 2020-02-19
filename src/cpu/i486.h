@@ -874,7 +874,7 @@ public:
 		}
 
 		/*! SetWord does not change numBytes.
-		    It updates first 4 bytes of the value, but only numBytes will be evaluated.
+		    It updates first 2 bytes of the value, but only numBytes will be evaluated.
 		    If it needs to be made 4-byte long, use MakeDword instead.
 		*/
 		inline void SetWord(unsigned int word)
