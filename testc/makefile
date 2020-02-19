@@ -1,3 +1,13 @@
+build\io.obj : io.asm
+	386asm io.asm -OBJECT build\io.obj
+
+build\captcrtc.obj : captcrtc.c
+	hcd386 captcrtc.c -obj build\captcrtc.obj
+
+build\captcrtc.exp : build\captcrtc.obj build\io.obj
+	386link build\captcrtc.obj build\io.obj -lib C:\hc386\small\hce.lib -lib C:\hc386\townslib\lib\tbios.lib -exe build\captcrtc.exp
+
+
 build\test01.obj : test01.c
 	hcd386 test01.c -obj build\test01.obj
 
