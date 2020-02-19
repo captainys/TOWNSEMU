@@ -160,6 +160,7 @@ public:
 			SEG_REGISTER=0x00010000,
 			LINEAR_ADDR=0x00020000,
 			PHYS_ADDR=0x00030000,
+			REAL_ADDR=0x00040000,
 		};
 
 		inline unsigned long long int Combine(void) const
@@ -200,6 +201,8 @@ public:
 
 		std::string Format(void) const;
 		void MakeFromString(const std::string &str);
+
+		void LoadSegmentRegister(SegmentRegister &seg,i486DX &cpu,const Memory &mem) const;
 	};
 
 	/*! Translate far pointer.

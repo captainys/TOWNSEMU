@@ -3,6 +3,7 @@
 /* { */
 
 #include <vector>
+#include <string>
 
 #include "device.h"
 #include "ramrom.h"
@@ -122,6 +123,10 @@ public:
 	virtual void IOWriteByte(unsigned int ioport,unsigned int data);
 	virtual unsigned int IOReadByte(unsigned int ioport);
 	void Reset(void);
+
+
+
+	std::vector <std::string> GetStatusText(void) const;
 };
 
 

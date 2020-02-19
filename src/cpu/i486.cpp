@@ -141,6 +141,10 @@ void i486DX::FarPointer::MakeFromString(const std::string &str)
 			{
 				this->SEG=i486DX::FarPointer::LINEAR_ADDR;
 			}
+			else if('R'==segPart[0] || 'r'==segPart[0])
+			{
+				this->SEG=i486DX::FarPointer::REAL_ADDR|cpputil::Xtoi(str.data()+1);
+			}
 			else
 			{
 				this->SEG=cpputil::Xtoi(str.data());
@@ -164,6 +168,38 @@ i486DX::FarPointer i486DX::TranslateFarPointer(FarPointer ptr) const
 		ptr.SEG=GetRegisterValue(ptr.SEG&0xFFFF);
 	}
 	return ptr;
+}
+
+void i486DX::FarPointer::LoadSegmentRegister(SegmentRegister &seg,i486DX &cpu,const Memory &mem) const
+{
+	if(SEG==NO_SEG)
+	{
+		seg=cpu.state.CS();
+	}
+	else if(0==(SEG&0xFFFF0000))
+	{
+		cpu.LoadSegmentRegister(seg,SEG&0xFFFF,mem);
+	}
+	else if((SEG&0xFFFF0000)==SEG_REGISTER)
+	{
+		seg=cpu.state.GetSegmentRegister(SEG&0xFFFF);
+	}
+	else if((SEG&0xFFFF0000)==LINEAR_ADDR)
+	{
+		seg.value=0;
+		seg.baseLinearAddr=0;
+		seg.operandSize=32;
+		seg.addressSize=32;
+		seg.limit=0xFFFFFFFF;
+	}
+	else if((SEG&0xFFFF0000)==REAL_ADDR)
+	{
+		seg.value=SEG&0xFFFF;
+		seg.baseLinearAddr=seg.value*0x10;
+		seg.operandSize=16;
+		seg.addressSize=16;
+		seg.limit=0xFFFF;
+	}
 }
 
 

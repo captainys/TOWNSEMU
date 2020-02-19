@@ -225,3 +225,46 @@ void TownsPhysicalMemory::SetDICRAMSize(long long int size)
 		d=0;
 	}
 }
+
+std::vector <std::string> TownsPhysicalMemory::GetStatusText(void) const
+{
+	std::vector <std::string> text;
+	std::string empty;
+
+	text.push_back(empty);
+	text.back()="C0000-CFFFF:";
+	if(true==state.FMRVRAM)
+	{
+		text.back()+="FMR VRAM";
+	}
+	else
+	{
+		text.back()+="Main RAM";
+	}
+
+	text.push_back(empty);
+	text.back()="D0000-EFFFF:";
+	if(true==state.dicRom)
+	{
+		text.back()+="Dictionary RAM/ROM, User Font RAM";
+	}
+	else
+	{
+		text.back()+="Main RAM";
+	}
+	text.back()+="  Dictionary Bank:";
+	text.back()+=cpputil::Uitox(state.DICROMBank);
+
+	text.push_back(empty);
+	text.back()="FF000-FFFFF:";
+	if(true==state.sysRomMapping)
+	{
+		text.back()+="Boot ROM";
+	}
+	else
+	{
+		text.back()+="Main RAM";
+	}
+
+	return text;
+}

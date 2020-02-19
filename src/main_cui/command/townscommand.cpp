@@ -72,6 +72,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	dumpableMap["SOUND"]=DUMP_SOUND;
 	dumpableMap["RIDT"]=DUMP_REAL_MODE_INT_VECTOR;
 	dumpableMap["SYM"]=DUMP_SYMBOL_TABLE;
+	dumpableMap["MEM"]=DUMP_MEMORY;
 
 	breakEventMap["IWC1"]=   BREAK_ON_PIC_IWC1;
 	breakEventMap["IWC4"]=   BREAK_ON_PIC_IWC4;
@@ -176,6 +177,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Floppy Disk Controller." << std::endl;
 	std::cout << "TIMER" << std::endl;
 	std::cout << "  Interval Timer (i8253)" << std::endl;
+	std::cout << "MEM" << std::endl;
+	std::cout << "  Memory" << std::endl;
 
 	std::cout << "" << std::endl;
 
@@ -516,6 +519,12 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 				std::cout << str << std::endl;
 			}
 			break;
+		case DUMP_MEMORY:
+			for(auto str : towns.physMem.GetStatusText())
+			{
+				std::cout << str << std::endl;
+			}
+			break;
 		}
 	}
 	else
@@ -642,20 +651,15 @@ void TownsCommandInterpreter::Execute_Disassemble(FMTowns &towns,Command &cmd)
 	if(2<=cmd.argv.size())
 	{
 		farPtr=cmdutil::MakeFarPointer(cmd.argv[1]);
-		if((farPtr.SEG&0xFFFF0000)==i486DX::FarPointer::PHYS_ADDR ||
-		   (farPtr.SEG&0xFFFF0000)==i486DX::FarPointer::LINEAR_ADDR)
+		if((farPtr.SEG&0xFFFF0000)==i486DX::FarPointer::PHYS_ADDR)
 		{
-			std::cout << "Disassembly cannot be from Linear or Physical address." << std::endl;
+			std::cout << "Disassembly cannot be from Physical address." << std::endl;
 			return;
-		}
-		else
-		{
-			farPtr=towns.cpu.TranslateFarPointer(farPtr);
 		}
 	}
 
 	i486DX::SegmentRegister seg;
-	towns.cpu.LoadSegmentRegister(seg,farPtr.SEG,towns.mem);
+	farPtr.LoadSegmentRegister(seg,towns.cpu,towns.mem);
 	for(int i=0; i<16; ++i)
 	{
 		towns.debugger.GetSymTable().PrintIfAny(farPtr.SEG,farPtr.OFFSET);
@@ -672,24 +676,15 @@ void TownsCommandInterpreter::Execute_Disassemble16(FMTowns &towns,Command &cmd)
 	if(2<=cmd.argv.size())
 	{
 		farPtr=cmdutil::MakeFarPointer(cmd.argv[1]);
-		if(farPtr.SEG==i486DX::FarPointer::NO_SEG)
+		if((farPtr.SEG&0xFFFF0000)==i486DX::FarPointer::PHYS_ADDR)
 		{
-			farPtr.SEG=towns.cpu.state.CS().value;
-		}
-		else if((farPtr.SEG&0xFFFF0000)==i486DX::FarPointer::SEG_REGISTER)
-		{
-			farPtr.SEG=towns.cpu.GetRegisterValue(farPtr.SEG&0xFFFF);
-		}
-		else if((farPtr.SEG&0xFFFF0000)==i486DX::FarPointer::PHYS_ADDR ||
-		        (farPtr.SEG&0xFFFF0000)==i486DX::FarPointer::LINEAR_ADDR)
-		{
-			std::cout << "Disassembly cannot be from Linear or Physical address." << std::endl;
+			std::cout << "Disassembly cannot be from Physical address." << std::endl;
 			return;
 		}
 	}
 
 	i486DX::SegmentRegister seg;
-	towns.cpu.LoadSegmentRegister(seg,farPtr.SEG,towns.mem);
+	farPtr.LoadSegmentRegister(seg,towns.cpu,towns.mem);
 	for(int i=0; i<16; ++i)
 	{
 		auto inst=towns.cpu.FetchInstruction(seg,farPtr.OFFSET,towns.mem,16,16);
@@ -706,24 +701,15 @@ void TownsCommandInterpreter::Execute_Disassemble32(FMTowns &towns,Command &cmd)
 	if(2<=cmd.argv.size())
 	{
 		farPtr=cmdutil::MakeFarPointer(cmd.argv[1]);
-		if(farPtr.SEG==i486DX::FarPointer::NO_SEG)
+		if((farPtr.SEG&0xFFFF0000)==i486DX::FarPointer::PHYS_ADDR)
 		{
-			farPtr.SEG=towns.cpu.state.CS().value;
-		}
-		else if((farPtr.SEG&0xFFFF0000)==i486DX::FarPointer::SEG_REGISTER)
-		{
-			farPtr.SEG=towns.cpu.GetRegisterValue(farPtr.SEG&0xFFFF);
-		}
-		else if((farPtr.SEG&0xFFFF0000)==i486DX::FarPointer::PHYS_ADDR ||
-		        (farPtr.SEG&0xFFFF0000)==i486DX::FarPointer::LINEAR_ADDR)
-		{
-			std::cout << "Disassembly cannot be from Linear or Physical address." << std::endl;
+			std::cout << "Disassembly cannot be from Physical address." << std::endl;
 			return;
 		}
 	}
 
 	i486DX::SegmentRegister seg;
-	towns.cpu.LoadSegmentRegister(seg,farPtr.SEG,towns.mem);
+	farPtr.LoadSegmentRegister(seg,towns.cpu,towns.mem);
 	for(int i=0; i<16; ++i)
 	{
 		auto inst=towns.cpu.FetchInstruction(seg,farPtr.OFFSET,towns.mem,32,32);
