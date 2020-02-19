@@ -34,6 +34,7 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 			break;
 		case RUNMODE_FREE:
 			townsPtr->cpu.DetachDebugger();
+			townsPtr->cpu.enableCallStack=false;
 			for(unsigned int clocksPassed=0; 
 			    clocksPassed<10000 && true!=townsPtr->CheckAbort();
 			    )
@@ -54,6 +55,7 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 			break;
 		case RUNMODE_DEBUGGER:
 			townsPtr->cpu.AttachDebugger(&townsPtr->debugger);
+			townsPtr->cpu.enableCallStack=true;
 			for(unsigned int clocksPassed=0; 
 			    clocksPassed<1000 && true!=townsPtr->CheckAbort();
 			    )
@@ -81,6 +83,7 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 			break;
 		case RUNMODE_ONE_INSTRUCTION:
 			townsPtr->cpu.AttachDebugger(&townsPtr->debugger);
+			townsPtr->cpu.enableCallStack=true;
 			if(true!=townsPtr->CheckAbort())
 			{
 				townsPtr->RunOneInstruction();
