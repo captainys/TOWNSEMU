@@ -58,6 +58,12 @@ void TownsPhysicalMemory::State::Reset(void)
 
 /* virtual */ void TownsPhysicalMemory::IOWriteByte(unsigned int ioport,unsigned int data)
 {
+	if(TOWNSIO_CMOS_BASE<=ioport && ioport<TOWNSIO_CMOS_END)
+	{
+		state.DICRAM[(ioport-TOWNSIO_CMOS_BASE)/2]=(unsigned char)(data&0xFF);
+		return;
+	}
+
 	switch(ioport)
 	{
 	case TOWNSIO_FMR_VRAM_OR_MAINRAM: // 0x404
@@ -83,6 +89,11 @@ void TownsPhysicalMemory::State::Reset(void)
 }
 /* virtual */ unsigned int TownsPhysicalMemory::IOReadByte(unsigned int ioport)
 {
+	if(TOWNSIO_CMOS_BASE<=ioport && ioport<TOWNSIO_CMOS_END)
+	{
+		return state.DICRAM[(ioport-TOWNSIO_CMOS_BASE)/2];
+	}
+
 	unsigned char data;
 	switch(ioport)
 	{

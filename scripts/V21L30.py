@@ -22,6 +22,7 @@ def Run():
 		os.path.join(DISKDIR,"V2.1L30.bin"),
 		"-SYM",
 		"../symtables/V2.1L30.txt",
+		"-PAUSE",
 	]).wait()
 
 

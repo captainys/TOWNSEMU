@@ -67,7 +67,6 @@ FMTowns::FMTowns() :
 	abort=false;
 	allDevices.push_back(&pic);
 	allDevices.push_back(&dmac);
-	allDevices.push_back(&ioRAM);
 	allDevices.push_back(&physMem);
 	allDevices.push_back(&crtc);
 	allDevices.push_back(&fdc);
@@ -87,8 +86,6 @@ FMTowns::FMTowns() :
 	physMem.SetSpriteRAMSize(512*1024);
 	physMem.SetWaveRAMSize(64*1024);
 	physMem.SetDICRAMSize(32768);
-
-	io.AddDevice(&ioRAM,0x3000,0x3FFF);
 
 	mainRAMAccess.SetPhysicalMemoryPointer(&physMem);
 	mainRAMAccess.SetCPUPointer(&cpu);
@@ -154,6 +151,7 @@ FMTowns::FMTowns() :
 	io.AddDevice(&crtc,TOWNSIO_MX_HIRES/*0x470*/,TOWNSIO_MX_IMGOUT_ADDR_D3/*0x477*/);
 	io.AddDevice(&keyboard,TOWNSIO_KEYBOARD_DATA/*0x600*/,TOWNSIO_KEYBOARD_IRQ/*0x604*/);
 	io.AddDevice(&fdc,TOWNSIO_FDC_STATUS_COMMAND/*0x200*/,TOWNSIO_FDC_DRIVE_SWITCH/*0x20E*/);
+	io.AddDevice(&physMem,TOWNSIO_CMOS_BASE,TOWNSIO_CMOS_END-1);
 
 
 	io.AddDevice(&crtc,TOWNSIO_CRTC_ADDRESS);//             0x440,

@@ -15,7 +15,6 @@
 #include "pic.h"
 #include "dmac.h"
 #include "cdrom.h"
-#include "ioram.h"
 #include "crtc.h"
 #include "fdc.h"
 #include "rtc.h"
@@ -113,7 +112,6 @@ public:
 	TownsDMAC dmac;
 	TownsCDROM cdrom;
 	TownsPhysicalMemory physMem;
-	IORam ioRAM;
 	TownsCRTC crtc;
 	TownsFDC fdc;
 	TownsKeyboard keyboard;

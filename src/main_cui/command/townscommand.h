@@ -61,6 +61,8 @@ public:
 		CMD_TYPE_KEYBOARD,
 
 		CMD_LET,
+
+		CMD_CMOSLOAD,
 	};
 
 	enum
@@ -109,6 +111,8 @@ public:
 	{
 		ERROR_TOO_FEW_ARGS,
 		ERROR_DUMP_TARGET_UNDEFINED,
+		ERROR_CANNOT_OPEN_FILE,
+		ERROR_INCORRECT_FILE_SIZE,
 	};
 
 	class Command
@@ -156,6 +160,8 @@ public:
 	void Execute_TypeKeyboard(FMTowns &towns,Command &cmd);
 
 	void Execute_Let(FMTowns &towns,Command &cmd);
+
+	void Execute_CMOSLoad(FMTowns &towns,Command &cmd);
 };
 
 

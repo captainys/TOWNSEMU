@@ -49,6 +49,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["ADDSYM"]=CMD_ADD_SYMBOL;
 	primaryCmdMap["TYPE"]=CMD_TYPE_KEYBOARD;
 	primaryCmdMap["LET"]=CMD_LET;
+	primaryCmdMap["CMOSLOAD"]=CMD_CMOSLOAD;
 
 	featureMap["CMDLOG"]=ENABLE_CMDLOG;
 	featureMap["AUTODISASM"]=ENABLE_DISASSEMBLE_EVERY_INST;
@@ -143,6 +144,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Send keyboard codes." << std::endl;
 	std::cout << "LET register value" << std::endl;
 	std::cout << "  Load a register value." << std::endl;
+	std::cout << "CMOSLOAD filename" << std::endl;
+	std::cout << "  Load CMOS." << std::endl;
 
 	std::cout << "" << std::endl;
 
@@ -212,6 +215,13 @@ void TownsCommandInterpreter::PrintError(int errCode) const
 	case ERROR_DUMP_TARGET_UNDEFINED:
 		std::cout << "Error: Do what?" << std::endl;
 		break;
+	case ERROR_CANNOT_OPEN_FILE:
+		std::cout << "Error: Cannot open file." << std::endl;
+		break;
+	case ERROR_INCORRECT_FILE_SIZE:
+		std::cout << "Error: Incorrect File Size." << std::endl;
+		break;
+
 	default:
 		std::cout << "Error" << std::endl;
 		break;
@@ -359,6 +369,9 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,Command &c
 
 	case CMD_LET:
 		Execute_Let(towns,cmd);
+		break;
+	case CMD_CMOSLOAD:
+		Execute_CMOSLoad(towns,cmd);
 		break;
 	}
 }
@@ -857,5 +870,27 @@ void TownsCommandInterpreter::Execute_Let(FMTowns &towns,Command &cmd)
 		{
 			std::cout << "Cannot load a value to this register/flag." << std::endl;
 		}
+	}
+}
+
+void TownsCommandInterpreter::Execute_CMOSLoad(FMTowns &towns,Command &cmd)
+{
+	if(2<=cmd.argv.size())
+	{
+		auto dat=cpputil::ReadBinaryFile(cmd.argv[1]);
+		if(0==dat.size())
+		{
+			PrintError(ERROR_CANNOT_OPEN_FILE);
+		}
+		else if(TOWNS_CMOS_SIZE!=dat.size())
+		{
+			PrintError(ERROR_INCORRECT_FILE_SIZE);
+		}
+		towns.physMem.state.DICRAM=dat;
+		std::cout << "Loaded CMOS." << std::endl;
+	}
+	else
+	{
+		PrintError(ERROR_TOO_FEW_ARGS);
 	}
 }
