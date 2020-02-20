@@ -14,7 +14,7 @@ std::vector <std::string> miscutil::MakeMemDump(const i486DX &cpu,const Memory &
 
 	if((ptr.SEG&0xffff0000)==i486DX::FarPointer::LINEAR_ADDR)
 	{
-		for(auto addr0=lineStart; addr0<lineEnd; addr0+=16)
+		for(auto addr0=lineStart; addr0<=lineEnd; addr0+=16)
 		{
 			std::string str;
 
@@ -64,7 +64,7 @@ std::vector <std::string> miscutil::MakeMemDump(const i486DX &cpu,const Memory &
 	}
 	else if((ptr.SEG&0xffff0000)==i486DX::FarPointer::PHYS_ADDR)
 	{
-		for(auto addr0=lineStart; addr0<lineEnd; addr0+=16)
+		for(auto addr0=lineStart; addr0<=lineEnd; addr0+=16)
 		{
 			std::string str;
 
@@ -133,7 +133,7 @@ std::vector <std::string> miscutil::MakeMemDump(const i486DX &cpu,const Memory &
 			cpu.LoadSegmentRegisterQuiet(seg,ptr.SEG,mem,cpu.IsInRealMode());
 			segTxt=cpputil::Ustox(ptr.SEG);
 		}
-		for(auto addr0=lineStart; addr0<lineEnd; addr0+=16)
+		for(auto addr0=lineStart; addr0<=lineEnd; addr0+=16)
 		{
 			std::string str;
 
