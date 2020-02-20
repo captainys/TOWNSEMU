@@ -1028,7 +1028,7 @@ void i486DX::AddDword(unsigned int &value1,unsigned int value2)
 {
 	auto prevValue=value1&0xffffffff;
 	value1=(value1+value2)&0xffffffff;
-	SetOverflowFlag(prevValue<0x80000000 && 0x80000000<=value1);
+	SetOverflowFlag((prevValue&0x80000000)==(value2&0x80000000) && (prevValue&0x80000000)!=(value1&0x80000000)); // Two sources have same sign, but the result sign is different.
 	SetSignFlag(0!=(value1&0x80000000));
 	SetZeroFlag(0==value1);
 	SetAuxCarryFlag((prevValue&0x0F)<(value1&0x0F));
@@ -1039,7 +1039,7 @@ void i486DX::AddWord(unsigned int &value1,unsigned int value2)
 {
 	auto prevValue=value1&0xffff;
 	value1=(value1+value2)&0xffff;
-	SetOverflowFlag(prevValue<0x8000 && 0x8000<=value1);
+	SetOverflowFlag((prevValue&0x8000)==(value2&0x8000) && (prevValue&0x8000)!=(value1&0x8000)); // Two sources have same sign, but the result sign is different.
 	SetSignFlag(0!=(value1&0x8000));
 	SetZeroFlag(0==value1);
 	SetAuxCarryFlag((prevValue&0x0F)<(value1&0x0F));
@@ -1050,7 +1050,7 @@ void i486DX::AddByte(unsigned int &value1,unsigned int value2)
 {
 	auto prevValue=value1&0xff;
 	value1=(value1+value2)&0xff;
-	SetOverflowFlag(prevValue<0x80 && 0x80<=value1);
+	SetOverflowFlag((prevValue&0x80)==(value2&0x80) && (prevValue&0x80)!=(value1&0x80)); // Two sources have same sign, but the result sign is different.
 	SetSignFlag(0!=(value1&0x80));
 	SetZeroFlag(0==value1);
 	SetAuxCarryFlag((prevValue&0x0F)<(value1&0x0F));
@@ -1120,7 +1120,7 @@ void i486DX::SubDword(unsigned int &value1,unsigned int value2)
 {
 	auto prevValue=value1&0xffffffff;
 	value1=(value1-value2)&0xffffffff;
-	SetOverflowFlag(prevValue>=0x80000000 && 0x80000000>value1);
+	SetOverflowFlag((prevValue&0x80000000)!=(value2&0x80000000) && (prevValue&0x80000000)!=(value1&0x80000000)); // Source values have different signs, but the sign flipped.
 	SetSignFlag(0!=(value1&0x80000000));
 	SetZeroFlag(0==value1);
 	SetAuxCarryFlag((prevValue&0xFF)>=0x10 && (value1&0xFF)<=0x10);
@@ -1131,7 +1131,7 @@ void i486DX::SubWord(unsigned int &value1,unsigned int value2)
 {
 	auto prevValue=value1&0xffff;
 	value1=(value1-value2)&0xffff;
-	SetOverflowFlag(prevValue>=0x8000 && 0x8000>value1);
+	SetOverflowFlag((prevValue&0x8000)!=(value2&0x8000) && (prevValue&0x8000)!=(value1&0x8000)); // Source values have different signs, but the sign flipped.
 	SetSignFlag(0!=(value1&0x8000));
 	SetZeroFlag(0==value1);
 	SetAuxCarryFlag((prevValue&0xFF)>=0x10 && (value1&0xFF)<=0x10);
@@ -1142,7 +1142,7 @@ void i486DX::SubByte(unsigned int &value1,unsigned int value2)
 {
 	auto prevValue=value1&0xff;
 	value1=(value1-value2)&0xff;
-	SetOverflowFlag(prevValue>=0x80 && 0x80>value1);
+	SetOverflowFlag((prevValue&0x80)!=(value2&0x80) && (prevValue&0x80)!=(value1&0x80)); // Source values have different signs, but the sign flipped.
 	SetSignFlag(0!=(value1&0x80));
 	SetZeroFlag(0==value1);
 	SetAuxCarryFlag((prevValue&0xFF)>=0x10 && (value1&0xFF)<=0x10);
@@ -1165,7 +1165,7 @@ void i486DX::AdcDword(unsigned int &value1,unsigned int value2)
 	auto carry=(0!=(state.EFLAGS&EFLAGS_CARRY) ? 1 : 0);
 	auto prevValue=value1&0xffffffff;
 	value1=(value1+value2+carry)&0xffffffff;
-	SetOverflowFlag(prevValue<0x80000000 && 0x80000000<=value1);
+	SetOverflowFlag((prevValue&0x80000000)==(value2&0x80000000) && (prevValue&0x80000000)!=(value1&0x80000000)); // Two sources have same sign, but the result sign is different.
 	SetSignFlag(0!=(value1&0x80000000));
 	SetZeroFlag(0==value1);
 	SetAuxCarryFlag((prevValue&0x0F)<(value1&0x0F));
@@ -1177,7 +1177,7 @@ void i486DX::AdcWord(unsigned int &value1,unsigned int value2)
 	auto carry=(0!=(state.EFLAGS&EFLAGS_CARRY) ? 1 : 0);
 	auto prevValue=value1&0xffff;
 	value1=(value1+value2+carry)&0xffff;
-	SetOverflowFlag(prevValue<0x8000 && 0x8000<=value1);
+	SetOverflowFlag((prevValue&0x8000)==(value2&0x8000) && (prevValue&0x8000)!=(value1&0x8000)); // Two sources have same sign, but the result sign is different.
 	SetSignFlag(0!=(value1&0x8000));
 	SetZeroFlag(0==value1);
 	SetAuxCarryFlag((prevValue&0x0F)<(value1&0x0F));
@@ -1189,7 +1189,7 @@ void i486DX::AdcByte(unsigned int &value1,unsigned int value2)
 	auto carry=(0!=(state.EFLAGS&EFLAGS_CARRY) ? 1 : 0);
 	auto prevValue=value1&0xff;
 	value1=(value1+value2+carry)&0xff;
-	SetOverflowFlag(prevValue<0x80 && 0x80<=value1);
+	SetOverflowFlag((prevValue&0x80)==(value2&0x80) && (prevValue&0x80)!=(value1&0x80)); // Two sources have same sign, but the result sign is different.
 	SetSignFlag(0!=(value1&0x80));
 	SetZeroFlag(0==value1);
 	SetAuxCarryFlag((prevValue&0x0F)<(value1&0x0F));
@@ -1212,7 +1212,7 @@ void i486DX::SbbDword(unsigned int &value1,unsigned int value2)
 	auto carry=(0!=(state.EFLAGS&EFLAGS_CARRY) ? 1 : 0);
 	auto prevValue=value1&0xffffffff;
 	value1=(value1-value2-carry)&0xffffffff;
-	SetOverflowFlag(prevValue>=0x80000000 && 0x80000000>value1);
+	SetOverflowFlag((prevValue&0x80000000)!=(value2&0x80000000) && (prevValue&0x80000000)!=(value1&0x80000000)); // Source values have different signs, but the sign flipped.
 	SetSignFlag(0!=(value1&0x80000000));
 	SetZeroFlag(0==value1);
 	SetAuxCarryFlag((prevValue&0xFF)>=0x10 && (value1&0xFF)<=0x10);
@@ -1224,7 +1224,7 @@ void i486DX::SbbWord(unsigned int &value1,unsigned int value2)
 	auto carry=(0!=(state.EFLAGS&EFLAGS_CARRY) ? 1 : 0);
 	auto prevValue=value1&0xffff;
 	value1=(value1-value2-carry)&0xffff;
-	SetOverflowFlag(prevValue>=0x8000 && 0x8000>value1);
+	SetOverflowFlag((prevValue&0x8000)!=(value2&0x8000) && (prevValue&0x8000)!=(value1&0x8000)); // Source values have different signs, but the sign flipped.
 	SetSignFlag(0!=(value1&0x8000));
 	SetZeroFlag(0==value1);
 	SetAuxCarryFlag((prevValue&0xFF)>=0x10 && (value1&0xFF)<=0x10);
@@ -1236,7 +1236,7 @@ void i486DX::SbbByte(unsigned int &value1,unsigned int value2)
 	auto carry=(0!=(state.EFLAGS&EFLAGS_CARRY) ? 1 : 0);
 	auto prevValue=value1&0xff;
 	value1=(value1-value2-carry)&0xff;
-	SetOverflowFlag(prevValue>=0x80 && 0x80>value1);
+	SetOverflowFlag((prevValue&0x80)!=(value2&0x80) && (prevValue&0x80)!=(value1&0x80)); // Source values have different signs, but the sign flipped.
 	SetSignFlag(0!=(value1&0x80));
 	SetZeroFlag(0==value1);
 	SetAuxCarryFlag((prevValue&0xFF)>=0x10 && (value1&0xFF)<=0x10);
