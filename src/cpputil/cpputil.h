@@ -86,6 +86,8 @@ inline int GetSignedByte(const unsigned char byteData){
 char BoolToChar(bool flag);
 const char *BoolToNumberStr(bool flag);
 
+std::vector <std::string> MakeDump(unsigned int printAddr,long long int size,const unsigned char data[]);
+
 };
 
 /* } */

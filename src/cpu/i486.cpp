@@ -737,116 +737,6 @@ i486DX::OperandValue i486DX::DescriptorTableToOperandValue(const SystemAddressRe
 	return operaValue;
 }
 
-unsigned int i486DX::GetRegisterValue(int reg) const
-{
-	switch(reg)
-	{
-	case REG_AL:
-		return state.EAX()&255;
-	case REG_CL:
-		return state.ECX()&255;
-	case REG_DL:
-		return state.EDX()&255;
-	case REG_BL:
-		return state.EBX()&255;
-	case REG_AH:
-		return (state.EAX()>>8)&255;
-	case REG_CH:
-		return (state.ECX()>>8)&255;
-	case REG_DH:
-		return (state.EDX()>>8)&255;
-	case REG_BH:
-		return (state.EBX()>>8)&255;
-
-	case REG_AX:
-		return state.EAX()&65535;
-	case REG_CX:
-		return state.ECX()&65535;
-	case REG_DX:
-		return state.EDX()&65535;
-	case REG_BX:
-		return state.EBX()&65535;
-	case REG_SP:
-		return state.ESP()&65535;
-	case REG_BP:
-		return state.EBP()&65535;
-	case REG_SI:
-		return state.ESI()&65535;
-	case REG_DI:
-		return state.EDI()&65535;
-
-	case REG_EAX:
-		return state.EAX();
-	case REG_ECX:
-		return state.ECX();
-	case REG_EDX:
-		return state.EDX();
-	case REG_EBX:
-		return state.EBX();
-	case REG_ESP:
-		return state.ESP();
-	case REG_EBP:
-		return state.EBP();
-	case REG_ESI:
-		return state.ESI();
-	case REG_EDI:
-		return state.EDI();
-
-	case REG_EIP:
-		return state.EIP;
-	case REG_EFLAGS:
-		return state.EFLAGS;
-
-	case REG_ES:
-		return state.ES().value;
-	case REG_CS:
-		return state.CS().value;
-	case REG_SS:
-		return state.SS().value;
-	case REG_DS:
-		return state.DS().value;
-	case REG_FS:
-		return state.FS().value;
-	case REG_GS:
-		return state.GS().value;
-
-	//case REG_GDT:
-	//case REG_LDT:
-	//case REG_TR:
-	//case REG_IDTR:
-
-	case REG_CR0:
-		return state.GetCR(0);
-	case REG_CR1:
-		return state.GetCR(1);
-	case REG_CR2:
-		return state.GetCR(2);
-	case REG_CR3:
-		return state.GetCR(3);
-
-	case REG_DR0:
-	case REG_DR1:
-	case REG_DR2:
-	case REG_DR3:
-	case REG_DR4:
-	case REG_DR5:
-	case REG_DR6:
-	case REG_DR7:
-		return state.DR[reg-REG_DR0];
-
-	case REG_TEST0:
-	case REG_TEST1:
-	case REG_TEST2:
-	case REG_TEST3:
-	case REG_TEST4:
-	case REG_TEST5:
-	case REG_TEST6:
-	case REG_TEST7:
-		return state.TEST[reg-REG_TEST0];
-	}
-	return 0;
-}
-
 /* static */ unsigned int i486DX::GetRegisterSize(int reg)
 {
 	switch(reg)
@@ -2648,3 +2538,14 @@ inline unsigned int i486DX::DebugFetchByteByLinearAddress(const Memory &mem,unsi
 	return returnValue;
 }
 
+/* static */ int i486DX::StrToReg(const std::string &regName)
+{
+	for(int i=0; i<REG_TOTAL_NUMBER_OF_REGISTERS; ++i)
+	{
+		if(regName==RegToStr[i])
+		{
+			return i;
+		}
+	}
+	return REG_NONE;
+}

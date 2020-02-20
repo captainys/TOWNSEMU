@@ -521,3 +521,58 @@ const char *cpputil::BoolToNumberStr(bool flag)
 {
 	return ((true==flag) ? "1" : "0");
 }
+
+std::vector <std::string> cpputil::MakeDump(unsigned int printAddr,long long int length,const unsigned char data[])
+{
+	// Make it 32-bit addressing.  I don't think there is any point rounding the address for memory dump.
+	const int addressSize=32;
+	std::vector <std::string> text;
+
+	auto lineStart=(printAddr&~0x0F);
+	auto lineEnd=((printAddr+length-1)&~0x0F);
+
+	for(auto addr0=lineStart; addr0<=lineEnd; addr0+=16)
+	{
+		std::string str;
+
+		// printAddr corresponds to data[0]
+
+		str+=cpputil::Uitox(addr0);
+		for(int i=0; i<16; ++i)
+		{
+			auto addr=addr0+i;
+			if(addr<printAddr || printAddr+length<=addr)
+			{
+				str+="   ";
+			}
+			else
+			{
+				str+=" "+cpputil::Ubtox(data[addr-printAddr]);
+			}
+		}
+		str.push_back('|');
+		for(int i=0; i<16; ++i)
+		{
+			auto addr=addr0+i;
+			if(addr<printAddr || printAddr+length<=addr)
+			{
+				str.push_back(' ');
+			}
+			else
+			{
+				auto byte=data[addr-printAddr];
+				if(byte<' ' || 0x80<=byte)
+				{
+					str.push_back(' ');
+				}
+				else
+				{
+					str.push_back(byte);
+				}
+			}
+		}
+		text.push_back((std::string &&)str);
+	}
+
+	return text;
+}

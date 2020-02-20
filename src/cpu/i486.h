@@ -1162,6 +1162,43 @@ public:
 		state.EDX()&=0xffff00ff;
 		state.EDX()|=(value<<8);
 	}
+
+	inline unsigned int GetSI(void) const
+	{
+		return state.ESI()&0xffff;
+	}
+	inline void SetSI(unsigned int value)
+	{
+		state.ESI()&=0xffff0000;
+		state.ESI()|=(value&0xffff);
+	}
+	inline unsigned int GetESI(void) const
+	{
+		return state.ESI();
+	}
+	inline void SetESI(unsigned int value)
+	{
+		state.ESI()=value;
+	}
+
+	inline unsigned int GetDI(void) const
+	{
+		return state.EDI()&0xffff;
+	}
+	inline void SetDI(unsigned int value)
+	{
+		state.EDI()&=0xffff0000;
+		state.EDI()|=(value&0xffff);
+	}
+	inline unsigned int GetEDI(void) const
+	{
+		return state.EDI();
+	}
+	inline void SetEDI(unsigned int value)
+	{
+		state.EDI()=value;
+	}
+
 	inline unsigned int GetSP(void) const
 	{
 		return state.ESP()&0xffff;
@@ -1663,7 +1700,13 @@ public:
 
 	/*! Returns a register value. 
 	*/
-	unsigned int GetRegisterValue(int reg) const;
+	inline unsigned int GetRegisterValue(int reg) const;
+
+	/*! Sets a register value.
+	    reg can be conventional registers only.
+	    Trying to set a value to other registers with this function will Abort the VM.
+	*/
+	inline void SetRegisterValue(unsigned int reg,unsigned int value);
 
 	/*! Returns a register size in number of bytes. 
 	*/
@@ -2182,6 +2225,8 @@ public:
 		}
 		return state.DS();
 	}
+
+	static int StrToReg(const std::string &regName);
 };
 
 
@@ -2414,7 +2459,200 @@ inline unsigned int i486DX::IOIn32(InOut &io,unsigned int ioport)
 	return data;
 }
 
+inline unsigned int i486DX::GetRegisterValue(int reg) const
+{
+	switch(reg)
+	{
+	case REG_AL:
+		return state.EAX()&255;
+	case REG_CL:
+		return state.ECX()&255;
+	case REG_DL:
+		return state.EDX()&255;
+	case REG_BL:
+		return state.EBX()&255;
+	case REG_AH:
+		return (state.EAX()>>8)&255;
+	case REG_CH:
+		return (state.ECX()>>8)&255;
+	case REG_DH:
+		return (state.EDX()>>8)&255;
+	case REG_BH:
+		return (state.EBX()>>8)&255;
 
+	case REG_AX:
+		return state.EAX()&65535;
+	case REG_CX:
+		return state.ECX()&65535;
+	case REG_DX:
+		return state.EDX()&65535;
+	case REG_BX:
+		return state.EBX()&65535;
+	case REG_SP:
+		return state.ESP()&65535;
+	case REG_BP:
+		return state.EBP()&65535;
+	case REG_SI:
+		return state.ESI()&65535;
+	case REG_DI:
+		return state.EDI()&65535;
+
+	case REG_EAX:
+		return state.EAX();
+	case REG_ECX:
+		return state.ECX();
+	case REG_EDX:
+		return state.EDX();
+	case REG_EBX:
+		return state.EBX();
+	case REG_ESP:
+		return state.ESP();
+	case REG_EBP:
+		return state.EBP();
+	case REG_ESI:
+		return state.ESI();
+	case REG_EDI:
+		return state.EDI();
+
+	case REG_EIP:
+		return state.EIP;
+	case REG_EFLAGS:
+		return state.EFLAGS;
+
+	case REG_ES:
+		return state.ES().value;
+	case REG_CS:
+		return state.CS().value;
+	case REG_SS:
+		return state.SS().value;
+	case REG_DS:
+		return state.DS().value;
+	case REG_FS:
+		return state.FS().value;
+	case REG_GS:
+		return state.GS().value;
+
+	//case REG_GDT:
+	//case REG_LDT:
+	//case REG_TR:
+	//case REG_IDTR:
+
+	case REG_CR0:
+		return state.GetCR(0);
+	case REG_CR1:
+		return state.GetCR(1);
+	case REG_CR2:
+		return state.GetCR(2);
+	case REG_CR3:
+		return state.GetCR(3);
+
+	case REG_DR0:
+	case REG_DR1:
+	case REG_DR2:
+	case REG_DR3:
+	case REG_DR4:
+	case REG_DR5:
+	case REG_DR6:
+	case REG_DR7:
+		return state.DR[reg-REG_DR0];
+
+	case REG_TEST0:
+	case REG_TEST1:
+	case REG_TEST2:
+	case REG_TEST3:
+	case REG_TEST4:
+	case REG_TEST5:
+	case REG_TEST6:
+	case REG_TEST7:
+		return state.TEST[reg-REG_TEST0];
+	}
+	return 0;
+}
+
+inline void i486DX::SetRegisterValue(unsigned int reg,unsigned int value)
+{
+	switch(reg)
+	{
+	case REG_AL:
+		SetAL(value);
+		break;
+	case REG_CL:
+		SetCL(value);
+		break;
+	case REG_DL:
+		SetDL(value);
+		break;
+	case REG_BL:
+		SetBL(value);
+		break;
+	case REG_AH:
+		SetAH(value);
+		break;
+	case REG_CH:
+		SetCH(value);
+		break;
+	case REG_DH:
+		SetDH(value);
+		break;
+	case REG_BH:
+		SetBH(value);
+		break;
+
+	case REG_AX:
+		SetAX(value);
+		break;
+	case REG_CX:
+		SetCX(value);
+		break;
+	case REG_DX:
+		SetDX(value);
+		break;
+	case REG_BX:
+		SetBX(value);
+		break;
+	case REG_SP:
+		SetSP(value);
+		break;
+	case REG_BP:
+		SetBP(value);
+		break;
+	case REG_SI:
+		SetSI(value);
+		break;
+	case REG_DI:
+		SetDI(value);
+		break;
+
+	case REG_EAX:
+		SetEAX(value);
+		break;
+	case REG_ECX:
+		SetECX(value);
+		break;
+	case REG_EDX:
+		SetEDX(value);
+		break;
+	case REG_EBX:
+		SetEBX(value);
+		break;
+	case REG_ESP:
+		SetESP(value);
+		break;
+	case REG_EBP:
+		SetEBP(value);
+		break;
+	case REG_ESI:
+		SetESI(value);
+		break;
+	case REG_EDI:
+		SetEDI(value);
+		break;
+
+	default:
+		Abort("SetRegisterValue function is not suppose to be used for this register.");
+		break;
+	}
+}
 
 /* } */
 #endif

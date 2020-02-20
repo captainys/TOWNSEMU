@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <iostream>
 #include <fstream>
 
@@ -47,6 +48,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["INTERRUPT"]=CMD_INTERRUPT;
 	primaryCmdMap["ADDSYM"]=CMD_ADD_SYMBOL;
 	primaryCmdMap["TYPE"]=CMD_TYPE_KEYBOARD;
+	primaryCmdMap["LET"]=CMD_LET;
 
 	featureMap["CMDLOG"]=ENABLE_CMDLOG;
 	featureMap["AUTODISASM"]=ENABLE_DISASSEMBLE_EVERY_INST;
@@ -73,6 +75,8 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	dumpableMap["RIDT"]=DUMP_REAL_MODE_INT_VECTOR;
 	dumpableMap["SYM"]=DUMP_SYMBOL_TABLE;
 	dumpableMap["MEM"]=DUMP_MEMORY;
+	dumpableMap["DICRAM"]=DUMP_DICRAM;
+
 
 	breakEventMap["IWC1"]=   BREAK_ON_PIC_IWC1;
 	breakEventMap["IWC4"]=   BREAK_ON_PIC_IWC4;
@@ -137,6 +141,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Clear break-on event." << std::endl;
 	std::cout << "TYPE characters" << std::endl;
 	std::cout << "  Send keyboard codes." << std::endl;
+	std::cout << "LET register value" << std::endl;
+	std::cout << "  Load a register value." << std::endl;
 
 	std::cout << "" << std::endl;
 
@@ -178,7 +184,9 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "TIMER" << std::endl;
 	std::cout << "  Interval Timer (i8253)" << std::endl;
 	std::cout << "MEM" << std::endl;
-	std::cout << "  Memory" << std::endl;
+	std::cout << "  Memory Settings" << std::endl;
+	std::cout << "DICRAM addr" << std::endl;
+	std::cout << "  Dictionary (Battery-Backed) RAM" << std::endl;
 
 	std::cout << "" << std::endl;
 
@@ -347,6 +355,10 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,Command &c
 
 	case CMD_TYPE_KEYBOARD:
 		Execute_TypeKeyboard(towns,cmd);
+		break;
+
+	case CMD_LET:
+		Execute_Let(towns,cmd);
 		break;
 	}
 }
@@ -523,6 +535,30 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 			for(auto str : towns.physMem.GetStatusText())
 			{
 				std::cout << str << std::endl;
+			}
+			break;
+		case DUMP_DICRAM:
+			if(3<=cmd.argv.size())
+			{
+				auto addr=cpputil::Xtoi(cmd.argv[2].c_str());
+				if(addr<0x2000)
+				{
+					auto length=std::min(256,0x2000-addr);
+					std::vector <unsigned char> RAM;
+					for(int i=0; i<length; ++i)
+					{
+						// RAM.push_back((unsigned char)towns.ioRAM.state.RAM[addr+i]);
+						RAM.push_back(towns.physMem.state.DICRAM[addr+i]);
+					}
+					for(auto str : cpputil::MakeDump(addr,RAM.size(),RAM.data()))
+					{
+						std::cout << str << std::endl;
+					}
+				}
+			}
+			else
+			{
+				PrintError(ERROR_TOO_FEW_ARGS);
 			}
 			break;
 		}
@@ -778,6 +814,48 @@ void TownsCommandInterpreter::Execute_TypeKeyboard(FMTowns &towns,Command &cmd)
 			towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_PRESS_OR_RELEASE,byteData[1]);
 			towns.keyboard.PushFifo(byteData[0],byteData[1]);
 			return;
+		}
+	}
+}
+
+void TownsCommandInterpreter::Execute_Let(FMTowns &towns,Command &cmd)
+{
+	if(3<=cmd.argv.size())
+	{
+		auto reg=towns.cpu.StrToReg(cmd.argv[1]);
+		if(
+		   i486DX::REG_AL==reg ||
+		   i486DX::REG_AH==reg ||
+		   i486DX::REG_AX==reg ||
+		   i486DX::REG_EAX==reg ||
+		   i486DX::REG_BL==reg ||
+		   i486DX::REG_BH==reg ||
+		   i486DX::REG_BX==reg ||
+		   i486DX::REG_EBX==reg ||
+		   i486DX::REG_CL==reg ||
+		   i486DX::REG_CH==reg ||
+		   i486DX::REG_CX==reg ||
+		   i486DX::REG_ECX==reg ||
+		   i486DX::REG_DL==reg ||
+		   i486DX::REG_DH==reg ||
+		   i486DX::REG_DX==reg ||
+		   i486DX::REG_EDX==reg ||
+		   i486DX::REG_SI==reg ||
+		   i486DX::REG_ESI==reg ||
+		   i486DX::REG_DI==reg ||
+		   i486DX::REG_EDI==reg ||
+		   i486DX::REG_SP==reg ||
+		   i486DX::REG_ESP==reg ||
+		   i486DX::REG_BP==reg ||
+		   i486DX::REG_EBP==reg
+		)
+		{
+			towns.cpu.SetRegisterValue(reg,cpputil::Xtoi(cmd.argv[2].c_str()));
+			std::cout << "Loaded register value." << std::endl;
+		}
+		else
+		{
+			std::cout << "Cannot load a value to this register/flag." << std::endl;
 		}
 	}
 }

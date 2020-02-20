@@ -59,6 +59,8 @@ public:
 		CMD_ADD_SYMBOL,
 
 		CMD_TYPE_KEYBOARD,
+
+		CMD_LET,
 	};
 
 	enum
@@ -87,6 +89,7 @@ public:
 		DUMP_CSEIP_LOG,
 		DUMP_SYMBOL_TABLE,
 		DUMP_MEMORY,
+		DUMP_DICRAM,
 	};
 
 	enum
@@ -151,6 +154,8 @@ public:
 	void Execute_AddSymbol(FMTowns &towns,Command &cmd);
 
 	void Execute_TypeKeyboard(FMTowns &towns,Command &cmd);
+
+	void Execute_Let(FMTowns &towns,Command &cmd);
 };
 
 
