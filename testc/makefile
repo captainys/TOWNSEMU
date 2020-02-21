@@ -1,11 +1,17 @@
 build\io.obj : io.asm
 	386asm io.asm -OBJECT build\io.obj
 
+build\FAIL.obj : FAIL.asm
+	386asm FAIL.asm -OBJECT build\FAIL.obj
+
+
+
 build\captcrtc.obj : captcrtc.c
 	hcd386 captcrtc.c -obj build\captcrtc.obj
 
 build\captcrtc.exp : build\captcrtc.obj build\io.obj
 	386link build\captcrtc.obj build\io.obj -lib C:\hc386\small\hce.lib -lib C:\hc386\townslib\lib\tbios.lib -exe build\captcrtc.exp
+
 
 
 build\test01.obj : test01.c
@@ -64,3 +70,8 @@ build\test07.exp : build\test07.obj
 
 
 
+build\test08.obj : test08.c
+	hcd386 test08.c -obj build\test08.obj
+
+build\test08.exp : build\test08.obj build\io.obj build\FAIL.obj
+	386link build\test08.obj -exe build\test08.exp @LIBS.LN

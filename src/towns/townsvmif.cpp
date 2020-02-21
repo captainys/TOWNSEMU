@@ -11,5 +11,21 @@
 
 void FMTowns::ProcessVMToHostCommand(unsigned int vmCmd,unsigned int paramLen,const unsigned char param[])
 {
-	std::cout << "Received VM-Host Command:" << cpputil::Ubtox(vmCmd) << std::endl;
+	switch(vmCmd)
+	{
+	case TOWNS_VMIF_CMD_CAPTURE_CRTC:
+		std::cout << "0x" << cpputil::Ubtox(param[0]) << ",0x" << cpputil::Ubtox(param[1]) << "," << std::endl;
+		{
+			const int nReg=sizeof(crtc.state.crtcReg)/sizeof(crtc.state.crtcReg[0]);
+			for(int i=0; i<nReg; ++i)
+			{
+				std::cout << "0x" << cpputil::Ustox(crtc.state.crtcReg[i]) << ",";
+				if(i%16==15 || nReg-1==i)
+				{
+					std::cout << std::endl;
+				}
+			}
+		}
+		break;
+	}
 }
