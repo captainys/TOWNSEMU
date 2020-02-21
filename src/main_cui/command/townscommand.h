@@ -82,6 +82,7 @@ public:
 		DUMP_PIC,
 		DUMP_DMAC,
 		DUMP_FDC,
+		DUMP_CRTC,
 		DUMP_TIMER,
 		DUMP_GDT,
 		DUMP_LDT,

@@ -254,3 +254,30 @@ void TownsCRTC::GetRenderSize(unsigned int &wid,unsigned int &hei) const
 		hei=std::max(cache.layer[0].visibleHei,cache.layer[1].visibleHei);
 	}
 }
+
+std::vector <std::string> TownsCRTC::GetStatusText(void) const
+{
+	std::vector <std::string> text;
+	std::string empty;
+
+	text.push_back(empty);
+	text.back()="Registers:";
+	for(int i=0; i<sizeof(state.crtcReg)/sizeof(state.crtcReg[0]); ++i)
+	{
+		if(0==i%16)
+		{
+			text.push_back(empty);
+			text.back()+="REG";
+			text.back()+=cpputil::Ubtox(i);
+			text.back()+=":";
+		}
+		text.back()+=" ";
+		text.back()+=cpputil::Ustox(state.crtcReg[i]);
+	}
+
+	text.push_back(empty);
+	text.back()="Address Latch: ";
+	text.back()+=cpputil::Uitox(state.crtcAddrLatch)+"H";
+
+	return text;
+}

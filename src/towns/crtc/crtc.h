@@ -95,6 +95,8 @@ public:
 	virtual void Reset(void);
 
 	void GetRenderSize(unsigned int &wid,unsigned int &hei) const;
+
+	std::vector <std::string> GetStatusText(void) const;
 };
 
 

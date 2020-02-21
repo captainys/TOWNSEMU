@@ -68,6 +68,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	dumpableMap["DMA"]=DUMP_DMAC;
 	dumpableMap["DMAC"]=DUMP_DMAC;
 	dumpableMap["FDC"]=DUMP_FDC;
+	dumpableMap["CRTC"]=DUMP_CRTC;
 	dumpableMap["TIMER"]=DUMP_TIMER;
 	dumpableMap["GDT"]=DUMP_GDT;
 	dumpableMap["LDT"]=DUMP_LDT;
@@ -184,6 +185,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  DMA Controller." << std::endl;
 	std::cout << "FDC" << std::endl;
 	std::cout << "  Floppy Disk Controller." << std::endl;
+	std::cout << "CRTC" << std::endl;
+	std::cout << "  CRTC." << std::endl;
 	std::cout << "TIMER" << std::endl;
 	std::cout << "  Interval Timer (i8253)" << std::endl;
 	std::cout << "MEM" << std::endl;
@@ -524,6 +527,12 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 			break;
 		case DUMP_FDC:
 			towns.PrintFDC();
+			break;
+		case DUMP_CRTC:
+			for(auto str : towns.crtc.GetStatusText())
+			{
+				std::cout << str << std::endl;
+			}
 			break;
 		case DUMP_TIMER:
 			towns.PrintTimer();
