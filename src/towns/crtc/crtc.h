@@ -87,6 +87,9 @@ public:
 
 	TownsCRTC(class FMTowns *ptr);
 
+	bool InVSYNC(const unsigned long long int townsTime) const;
+	bool InHSYNC(const unsigned long long int townsTime) const;
+
 	virtual void IOWriteByte(unsigned int ioport,unsigned int data);
 	virtual void IOWriteWord(unsigned int ioport,unsigned int data); // Default behavior calls IOWriteByte twice
 	virtual void IOWriteDword(unsigned int ioport,unsigned int data); // Default behavior calls IOWriteByte 4 times

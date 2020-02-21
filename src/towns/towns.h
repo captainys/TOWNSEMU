@@ -98,6 +98,14 @@ public:
 	public:
 		unsigned int freeRunTimerShift;
 		unsigned long long int nextRenderingTime;
+
+		enum
+		{
+			VM2HOST_PARAM_QUEUE_LENGTH=256,
+		};
+		unsigned int nVM2HostParam;
+		unsigned char VM2HostParam[VM2HOST_PARAM_QUEUE_LENGTH];
+
 		i486DX::FarPointer disassemblePointer;
 		Variable();
 		void Reset(void);
@@ -218,6 +226,11 @@ public:
 	virtual unsigned int IOReadByte(unsigned int ioport);
 	virtual unsigned int IOReadWord(unsigned int ioport);
 	virtual unsigned int IOReadDword(unsigned int ioport);
+
+
+
+	// VM<->Host Interface
+	void ProcessVMToHostCommand(unsigned int vmCmd,unsigned int paramLen,const unsigned char param[]);
 
 
 

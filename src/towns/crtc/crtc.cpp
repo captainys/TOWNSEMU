@@ -63,6 +63,31 @@ TownsCRTC::TownsCRTC(class FMTowns *ptr)
 }
 
 
+// Let's say 60 frames per sec.
+// 1 frame takes 16.7ms.
+// Horizontal Scan frequency is say 31KHz.
+// 1 line takes 0.032ms.
+// 480 lines take 15.36ms.
+// Then, VSYNC should be 1.34ms long.
+// Will take screenmode into account eventually.
+// Also should take HSYNC into account.
+bool TownsCRTC::InVSYNC(const unsigned long long int townsTime) const
+{
+	auto intoFrame=townsTime%16700000;
+	return  (15360000<intoFrame);
+}
+bool TownsCRTC::InHSYNC(const unsigned long long int townsTime) const
+{
+	auto intoFrame=townsTime%16700000;
+	if(intoFrame<1536000)
+	{
+		auto intoLine=intoFrame%32000;
+		return (30000<intoLine);
+	}
+	return false;
+}
+
+
 /* virtual */ void TownsCRTC::IOWriteByte(unsigned int ioport,unsigned int data)
 {
 	switch(ioport)
@@ -173,11 +198,34 @@ TownsCRTC::TownsCRTC(class FMTowns *ptr)
 	case TOWNSIO_CRTC_ADDRESS://             0x440,
 		break;
 	case TOWNSIO_CRTC_DATA_LOW://            0x442,
-		// It is supposed to be write-only, but 1 bit "START" can be read.  Why not make all readable then.
+		// It is supposed to be write-only, but 
+		//   1 bit "START" and high-byte of FR can be read.  Why not make all readable then.
 		data=state.crtcReg[state.crtcAddrLatch]&0xff;
 		break;
 	case TOWNSIO_CRTC_DATA_HIGH://           0x443,
-		data=(state.crtcReg[state.crtcAddrLatch]>>8)&0xff;
+		if(REG_FR==state.crtcAddrLatch)
+		{
+			const auto VSYNC=InVSYNC(townsPtr->state.townsTime);
+			const auto HSYNC=InHSYNC(townsPtr->state.townsTime);
+			const auto DSPTV0=!VSYNC;
+			const auto DSPTV1=DSPTV0;
+			const auto DSPTH0=!HSYNC;
+			const auto DSPTH1=DSPTH0;
+			const bool FIELD=false;   // What's FIELD?
+			const bool VIN=false;
+			data= (true==VIN ?    0x01 : 0)
+			     |(true==HSYNC  ? 0x02 : 0)
+			     |(true==VSYNC  ? 0x04 : 0)
+			     |(true==FIELD  ? 0x08 : 0)
+			     |(true==DSPTH0 ? 0x10 : 0)
+			     |(true==DSPTH1 ? 0x20 : 0)
+			     |(true==DSPTV0 ? 0x40 : 0)
+			     |(true==DSPTV1 ? 0x80 : 0);
+		}
+		else
+		{
+			data=(state.crtcReg[state.crtcAddrLatch]>>8)&0xff;
+		}
 		break;
 
 	case TOWNSIO_MX_HIRES://            0x470,
@@ -212,25 +260,8 @@ TownsCRTC::TownsCRTC(class FMTowns *ptr)
 		break;
 
 	case TOWNSIO_HSYNC_VSYNC:
-		// Let's say 60 frames per sec.
-		// 1 frame takes 16.7ms.
-		// Horizontal Scan frequency is say 31KHz.
-		// 1 line takes 0.032ms.
-		// 480 lines take 15.36ms.
-		// Then, VSYNC should be 1.34ms long.
-		// Will take screenmode into account eventually.
-		// Also should take HSYNC into account.
-		{
-			auto intoFrame=townsPtr->state.townsTime%16700000;
-			if(15360000<intoFrame)
-			{
-				data=1;
-			}
-			else
-			{
-				data=0;
-			}
-		}
+		data= (true==InVSYNC(townsPtr->state.townsTime) ? 1 : 0)
+		     |(true==InHSYNC(townsPtr->state.townsTime) ? 2 : 0);
 		break;
 	}
 	return data;

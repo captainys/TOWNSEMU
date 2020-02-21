@@ -21,6 +21,7 @@ void SetScreenMode(int m1,int m2)
 	EGB_resolution(EGB_work,0,m1);
 	EGB_resolution(EGB_work,1,m2);
 
-	IOWriteByte(0x2077,m1);
-	IOWriteByte(0x2077,m2);
+	IOWriteByte(TOWNSIO_VM_HOST_IF_DATA,m1);
+	IOWriteByte(TOWNSIO_VM_HOST_IF_DATA,m2);
+	IOWriteByte(TOWNSIO_VM_HOST_IF_CMD_STATUS,TOWNS_VMIF_CMD_CAPTURE_CRTC);
 }

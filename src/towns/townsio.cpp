@@ -17,6 +17,17 @@
 		}
 		state.lastSerialROMCommand=data;
 		break;
+
+	case TOWNSIO_VM_HOST_IF_CMD_STATUS:
+		ProcessVMToHostCommand(data,var.nVM2HostParam,var.VM2HostParam);
+		var.nVM2HostParam=0;
+		break;
+	case TOWNSIO_VM_HOST_IF_DATA:
+		if(var.nVM2HostParam<Variable::VM2HOST_PARAM_QUEUE_LENGTH)
+		{
+			var.VM2HostParam[var.nVM2HostParam++]=data;
+		}
+		break;
 	}
 }
 /* virtual */ void FMTowns::IOWriteWord(unsigned int ioport,unsigned int data)

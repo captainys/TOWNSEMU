@@ -43,6 +43,8 @@ void FMTowns::Variable::Reset(void)
 	nextRenderingTime=0;
 	disassemblePointer.SEG=0;
 	disassemblePointer.OFFSET=0;
+
+	nVM2HostParam=0;
 }
 
 
@@ -161,8 +163,9 @@ FMTowns::FMTowns() :
 
 
 	io.AddDevice(this,TOWNSIO_SERIAL_ROM_CTRL); //        0x32,
-
 	io.AddDevice(this,TOWNSIO_FMR_RESOLUTION); // 0x400
+	io.AddDevice(this,TOWNSIO_VM_HOST_IF_CMD_STATUS);
+	io.AddDevice(this,TOWNSIO_VM_HOST_IF_DATA);
 
 
 	io.AddDevice(&pic,TOWNSIO_PIC_PRIMARY_ICW1);//          0x00

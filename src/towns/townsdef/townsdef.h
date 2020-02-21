@@ -214,6 +214,13 @@ enum
 	// Not official.  But, since FMR_VRAMMASK is also mapped to I/O FF81H, FF82H may be too.
 	TOWNSIO_FMR_VRAMPAGESEL=     0xFF83, 
 	// Not official.  But, since FMR_VRAMMASK is also mapped to I/O FF81H, FF83H may be too.
+
+	// 0x2000 to 0x2FFF must be open for testing for Fujitsu's internal development.
+	// [2] pp.12
+	// I take two addresses for VM-Host communication.
+	// In the VM, push parameters to TOWNSIO_VM_HOST_IF_DATA, and then write a command.
+	TOWNSIO_VM_HOST_IF_CMD_STATUS=0x2386,
+	TOWNSIO_VM_HOST_IF_DATA=      0x2387,
 };
 
 enum
@@ -386,6 +393,12 @@ enum
 	TOWNS_JISKEY_NUM_RETURN=      0x45,
 	TOWNS_JISKEY_NUM_0=           0x46,
 	TOWNS_JISKEY_NUM_000=         0x4A,
+};
+
+enum
+{
+	TOWNS_VMIF_CMD_NOP=           0x00, 
+	TOWNS_VMIF_CMD_CAPTURE_CRTC=  0x01, // Capture CRTC. Followed by two bytes mode0, and mode1.
 };
 
 
