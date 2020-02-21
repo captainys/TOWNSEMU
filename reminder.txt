@@ -57,3 +57,8 @@ DIV/IDIV: "If the resulting quotient is too large to fit in the destination, or 
 
 CRTC: TOWNSIO_HSYNC_VSYNC should calculate timing better.
 
+
+
+#2020/02/21
+ROL Instruction.  Forgetting to update carry.  That made me wonder if my interpretation of carry flag setting after Right-Shift is correct.
+

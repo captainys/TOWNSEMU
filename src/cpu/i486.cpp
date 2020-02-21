@@ -1346,6 +1346,7 @@ void i486DX::RolDword(unsigned int &value,unsigned int ctr)
 	unsigned long long int mask=0xFFFFFFFF;
 	ctr&=0x1F;
 	mask>>=(32-ctr);
+	SetCF(0!=(value&0x80000000));
 	value=(value<<ctr)|((value>>(32-ctr))&mask);
 	value&=0xFFFFFFFF;
 }
@@ -1355,6 +1356,7 @@ void i486DX::RolWord(unsigned int &value,unsigned int ctr)
 	unsigned long long int mask=0xFFFF;
 	ctr&=0xF;
 	mask>>=(16-ctr);
+	SetCF(0!=(value&0x8000));
 	value=(value<<ctr)|((value>>(16-ctr))&mask);
 	value&=0xFFFF;
 }
@@ -1364,6 +1366,7 @@ void i486DX::RolByte(unsigned int &value,unsigned int ctr)
 	unsigned long long int mask=0xFF;
 	ctr&=0x7;
 	mask>>=(8-ctr);
+	SetCF(0!=(value&0x80));
 	value=(value<<ctr)|((value>>(8-ctr))&mask);
 	value&=0xFF;
 }

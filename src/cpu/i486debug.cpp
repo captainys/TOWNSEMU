@@ -127,9 +127,17 @@ void i486Debugger::SpecialDebugInfo::MemWrite(i486Debugger &debugger,const i486D
 }
 void i486Debugger::SpecialDebugInfo::IOWrite(i486Debugger &debugger,const i486DX &cpu,unsigned int ioport,unsigned int data,unsigned int lengthInBytes)
 {
+	/* if(0x3150==ioport || 0x3A5C==ioport || 0x3188==ioport)
+	{
+		debugger.ExternalBreak("Special Break IO Write "+cpputil::Uitox(ioport));
+	} */
 }
 void i486Debugger::SpecialDebugInfo::IORead(i486Debugger &debugger,const i486DX &cpu,unsigned int ioport,unsigned int data,unsigned int lengthInBytes)
 {
+	/* if(0x5e8==ioport || 0x3A5C==ioport)
+	{
+		debugger.ExternalBreak("Special Break IO Read "+cpputil::Uitox(ioport));
+	} */
 }
 
 
