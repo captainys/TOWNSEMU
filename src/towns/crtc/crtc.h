@@ -51,10 +51,11 @@ public:
 	class Layer
 	{
 	public:
-		int mode; // -1 if it is using non-standard screen mode.
 		unsigned bitsPerPixel;
-		unsigned int virtualWid,virtualHei;
-		unsigned int visibleWid,visibleHei;
+		unsigned int VRAMAddr;
+		unsigned int VRAMOffset;
+		Vec2i visibleSize;
+		Vec2i zoom;
 		unsigned int bytesPerLine;
 	};
 	class ScreenModeCache
@@ -84,8 +85,8 @@ public:
 	class FMTowns *townsPtr;
 	State state;
 
-	bool cached;
-	ScreenModeCache cache;
+	bool cached;   // At this time unused.
+	ScreenModeCache cache;   // At this time unused.
 
 	virtual const char *DeviceName(void) const{return "CRTC";}
 
@@ -101,23 +102,32 @@ public:
 	unsigned int GetBaseClockFreq(void) const;
 	unsigned int GetBaseClockScaler(void) const;
 
-	/*! Returns vertical scaling.  Between 1 to 4. */
-	unsigned int GetPageZoomV(unsigned char page) const;
-	/*! Returns horizontal scaling.  Between 1 to 4. */
-	unsigned int GetPageZoomH(unsigned char page) const;
+	/*! Returns scaling.  Between 1 to 4 in each axis. 
+	*/
+	Vec2i GetPageZoom(unsigned char page) const;
 	/*! Tentatively returning (0,0)
 	*/
-	Vec2i GetTopLeftCorner(unsigned char page) const;
+	Vec2i GetPageTopLeftCorner(unsigned char page) const;
 	/*! Returns width and height of the page display size in VGA (640x480) coordinate.
 	*/
-	Vec2i GetDisplaySize(unsigned char page) const;
+	Vec2i GetPageDisplaySize(unsigned char page) const;
 	/*! Returns number of bytes in VRAM per line.
 	*/
-	unsigned int GetBytesPerLine(unsigned char page) const;
+	unsigned int GetPageBytesPerLine(unsigned char page) const;
 	/*! Returns bits per pixel.  4, 8, or 16
 	    [2] pp.147
 	*/
 	unsigned int GetPageBitsPerPixel(unsigned char page) const;
+	/*! Get VRAM Address Offset
+	    [2] pp.145
+	*/
+	unsigned int GetPageVRAMAddressOffset(unsigned char page) const;
+	/*! Returns priority page 0 or 1.
+	*/
+	unsigned int GetPriorityPage(void) const;
+	/*! Make Layer infor.
+	*/
+	void MakePageLayerInfo(Layer &layer,unsigned char page) const;
 
 
 	virtual void IOWriteByte(unsigned int ioport,unsigned int data);
@@ -127,7 +137,10 @@ public:
 
 	virtual void Reset(void);
 
-	void GetRenderSize(unsigned int &wid,unsigned int &hei) const;
+	/*! Returns the render size.  At this time it always returns 640x480.
+	    If I figure the high-res settings, it may return 1024x768.
+	*/
+	Vec2i GetRenderSize(void) const;
 
 	std::vector <std::string> GetStatusText(void) const;
 	std::vector <std::string> GetPageStatusText(int page) const;

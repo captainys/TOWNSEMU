@@ -20,20 +20,31 @@ void TownsRender::BuildImage(const TownsCRTC &crtc,const TownsPhysicalMemory &ph
 void TownsRender::BuildImageFMRMode(const TownsCRTC &crtc,const TownsPhysicalMemory &physMem)
 {
 	int priorityPage=0;
-	unsigned int wid,hei;
 
-	crtc.GetRenderSize(wid,hei);
-	SetResolution(wid,hei);
+
+	auto renderSize=crtc.GetRenderSize();
+	SetResolution(renderSize.x(),renderSize.y());
 
 	if(true!=crtc.cached)
 	{
 		// Cache crtc setting.
 	}
 
-	unsigned int page0Ptr=0;
-	unsigned int page1Ptr=0x40000;
-	Render(crtc.cache.layer[0],page0Ptr,physMem.state.VRAM,false);
-	Render(crtc.cache.layer[1],page1Ptr,physMem.state.VRAM,true);
+	if(true==crtc.InSinglePageMode())
+	{
+		TownsCRTC::Layer layer;
+		crtc.MakePageLayerInfo(layer,0);
+		Render(layer,physMem.state.VRAM,false);
+	}
+	else
+	{
+		TownsCRTC::Layer layer[2];
+		crtc.MakePageLayerInfo(layer[0],0);
+		crtc.MakePageLayerInfo(layer[1],1);
+		auto priorityPage=crtc.GetPriorityPage();
+		Render(layer[priorityPage]  ,physMem.state.VRAM,false);
+		Render(layer[1-priorityPage],physMem.state.VRAM,true);
+	}
 }
 void TownsRender::SetResolution(int wid,int hei)
 {
@@ -53,17 +64,17 @@ TownsRender::Image TownsRender::GetImage(void) const
 	return img;
 }
 
-void TownsRender::Render(const TownsCRTC::Layer &layer,unsigned int VRAMAddr,const std::vector <unsigned char> &VRAM,bool transparent)
+void TownsRender::Render(const TownsCRTC::Layer &layer,const std::vector <unsigned char> &VRAM,bool transparent)
 {
 	switch(layer.bitsPerPixel)
 	{
 	case 4:
-		Render4Bit(layer,VRAMAddr,VRAM,transparent);
+		Render4Bit(layer,VRAM,transparent);
 		break;
 	}
 }
 
-void TownsRender::Render4Bit(const TownsCRTC::Layer &layer,unsigned int VRAMAddr,const std::vector <unsigned char> &VRAM,bool transparent)
+void TownsRender::Render4Bit(const TownsCRTC::Layer &layer,const std::vector <unsigned char> &VRAM,bool transparent)
 {
 	unsigned char palette[16][4]=
 	{
@@ -84,11 +95,12 @@ void TownsRender::Render4Bit(const TownsCRTC::Layer &layer,unsigned int VRAMAddr
 		{255,255,  0,255},
 		{255,255,255,255},
 	};
-	for(int y=0; y<layer.visibleHei; ++y)
+	unsigned int VRAMAddr=layer.VRAMAddr;
+	for(int y=0; y<layer.visibleSize.y(); ++y)
 	{
 		const unsigned char *src=VRAM.data()+VRAMAddr+layer.bytesPerLine*y;
 		unsigned char *dst=rgba.data()+4*y*this->wid;
-		for(int x=0; x<layer.visibleWid; x+=2)
+		for(int x=0; x<layer.visibleSize.x(); x+=2)
 		{
 			unsigned char vrambyte=*src;
 			unsigned char pix=(vrambyte&0x0f);

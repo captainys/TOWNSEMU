@@ -41,8 +41,8 @@ public:
 	*/
 	Image GetImage(void) const;
 
-	void Render(const TownsCRTC::Layer &layer,unsigned int VRAMAddr,const std::vector <unsigned char> &VRAM,bool transparent);
-	void Render4Bit(const TownsCRTC::Layer &layer,unsigned int VRAMAddr,const std::vector <unsigned char> &VRAM,bool transparent);
+	void Render(const TownsCRTC::Layer &layer,const std::vector <unsigned char> &VRAM,bool transparent);
+	void Render4Bit(const TownsCRTC::Layer &layer,const std::vector <unsigned char> &VRAM,bool transparent);
 };
 
 
