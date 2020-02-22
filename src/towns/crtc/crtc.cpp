@@ -16,6 +16,12 @@ void TownsCRTC::State::Reset(void)
 	}
 	crtcAddrLatch=0;
 
+	for(auto &d : sifter)
+	{
+		d=0;
+	}
+	sifterAddrLatch=0;
+
 	for(auto &d : mxVideoOutCtrl)
 	{
 		d=0;
@@ -87,6 +93,92 @@ bool TownsCRTC::InHSYNC(const unsigned long long int townsTime) const
 	return false;
 }
 
+bool TownsCRTC::InSinglePageMode(void) const
+{
+	return (0==(state.sifter[0]&0x10));
+}
+
+unsigned int TownsCRTC::GetBaseClockFreq(void) const
+{
+	auto CLKSEL=state.crtcReg[REG_CR1]&3;
+	static const unsigned int freqTable[4]=
+	{
+		28636300,
+		24545400,
+		25175000,
+		21052500,
+	};
+	return freqTable[CLKSEL];
+}
+unsigned int TownsCRTC::GetBaseClockScaler(void) const
+{
+	auto SCSEL=state.crtcReg[REG_CR1]&0x0C;
+	return (SCSEL>>1)+2;
+}
+unsigned int TownsCRTC::GetPageZoomV(unsigned char page) const
+{
+	auto reg=state.crtcReg[REG_ZOOM];
+	reg>>=(4+(page<<3));
+	return (reg&0x0F)+1;
+}
+unsigned int TownsCRTC::GetPageZoomH(unsigned char page) const
+{
+	auto reg=state.crtcReg[REG_ZOOM];
+	reg>>=(page<<3);
+	return (reg&0x0F)+1;
+}
+Vec2i TownsCRTC::GetTopLeftCorner(unsigned char page) const
+{
+	page;
+	return Vec2i::Origin();
+}
+Vec2i TownsCRTC::GetDisplaySize(unsigned char page) const
+{
+	auto wid= state.crtcReg[REG_HDE0+page*2]-state.crtcReg[REG_HDS0+page*2];
+	auto hei=(state.crtcReg[REG_VDE0+page*2]-state.crtcReg[REG_VDS0+page*2])>>1;
+	return Vec2i::Make(wid,hei);
+}
+unsigned int TownsCRTC::GetPageBitsPerPixel(unsigned char page) const
+{
+	const unsigned int CL=(state.crtcReg[REG_CR0]>>(page*2))&3;
+	if(true==InSinglePageMode())
+	{
+		if(2==CL)
+		{
+			return 16;
+		}
+		else if(3==CL)
+		{
+			return 256;
+		}
+	}
+	else
+	{
+		if(1==CL)
+		{
+			return 16;
+		}
+		else if(3==CL)
+		{
+			return 4;
+		}
+	}
+	std::cout << __FUNCTION__ << std::endl;
+	std::cout << "Unknown color setting." << std::endl;
+	return 4; // What else can I do?
+}
+unsigned int TownsCRTC::GetBytesPerLine(unsigned char page) const
+{
+	auto FOx=state.crtcReg[REG_FO0+page*4];
+	auto LOx=state.crtcReg[REG_LO0+page*4];
+	auto numBytes=(LOx-FOx)*4;
+	if(true==InSinglePageMode())
+	{
+		numBytes*=2;
+	}
+	return numBytes;
+}
+
 
 /* virtual */ void TownsCRTC::IOWriteByte(unsigned int ioport,unsigned int data)
 {
@@ -103,6 +195,15 @@ bool TownsCRTC::InHSYNC(const unsigned long long int townsTime) const
 		state.crtcReg[state.crtcAddrLatch]&=0x00ff;
 		state.crtcReg[state.crtcAddrLatch]|=((data&0xff)<<8);
 		break;
+
+
+	case TOWNSIO_VIDEO_OUT_CTRL_ADDRESS://=   0x448,
+		state.sifterAddrLatch=(data&3);
+		break;
+	case TOWNSIO_VIDEO_OUT_CTRL_DATA://=      0x44A,
+		state.sifter[state.sifterAddrLatch]=data;
+		break;
+
 
 	case TOWNSIO_MX_HIRES://            0x470,
 	case TOWNSIO_MX_VRAMSIZE://         0x471,
@@ -155,6 +256,13 @@ bool TownsCRTC::InHSYNC(const unsigned long long int townsTime) const
 	case TOWNSIO_CRTC_DATA_HIGH://           0x443,
 		break;
 
+	case TOWNSIO_VIDEO_OUT_CTRL_ADDRESS://=   0x448,
+		state.sifterAddrLatch=(data&3);
+		break;
+	case TOWNSIO_VIDEO_OUT_CTRL_DATA://=      0x44A,
+		state.sifter[state.sifterAddrLatch]=data;
+		break;
+
 	case TOWNSIO_MX_HIRES://            0x470,
 	case TOWNSIO_MX_VRAMSIZE://         0x471,
 		break; // No write access;
@@ -202,6 +310,14 @@ bool TownsCRTC::InHSYNC(const unsigned long long int townsTime) const
 		//   1 bit "START" and high-byte of FR can be read.  Why not make all readable then.
 		data=state.crtcReg[state.crtcAddrLatch]&0xff;
 		break;
+
+	case TOWNSIO_VIDEO_OUT_CTRL_ADDRESS://=   0x448,  Supposed to be write-only
+		data=state.sifterAddrLatch;
+		break;
+	case TOWNSIO_VIDEO_OUT_CTRL_DATA://=      0x44A,  Supposed to be write-only
+		data=state.sifter[state.sifterAddrLatch];
+		break;
+
 	case TOWNSIO_CRTC_DATA_HIGH://           0x443,
 		if(REG_FR==state.crtcAddrLatch)
 		{
@@ -309,6 +425,55 @@ std::vector <std::string> TownsCRTC::GetStatusText(void) const
 	text.push_back(empty);
 	text.back()="Address Latch: ";
 	text.back()+=cpputil::Uitox(state.crtcAddrLatch)+"H";
+
+	const unsigned int CL[2]=
+	{
+		(unsigned int)( state.crtcReg[REG_CR0]&3),
+		(unsigned int)((state.crtcReg[REG_CR0]>>2)&3),
+	};
+
+	text.push_back(empty);
+	text.back()="CL0:"+cpputil::Itoa(CL[0])+"  CL1:"+cpputil::Itoa(CL[1]);
+
+	if(true==InSinglePageMode())
+	{
+		text.push_back(empty);
+		text.back()="Single-Page Mode.  ";
+
+		auto pageStat0=GetPageStatusText(0);
+		text.insert(text.end(),pageStat0.begin(),pageStat0.end());
+	}
+	else
+	{
+		text.push_back(empty);
+		text.back()="2-Page Mode.  ";
+
+		auto pageStat0=GetPageStatusText(0);
+		text.insert(text.end(),pageStat0.begin(),pageStat0.end());
+
+		auto pageStat1=GetPageStatusText(1);
+		text.insert(text.end(),pageStat1.begin(),pageStat1.end());
+	}
+
+	
+
+	return text;
+}
+
+std::vector <std::string> TownsCRTC::GetPageStatusText(int page) const
+{
+	std::vector <std::string> text;
+	std::string empty;
+
+	text.push_back(empty);
+	text.back()="Page "+cpputil::Itoa(page);
+
+	text.push_back(empty);
+	auto dim=GetDisplaySize(0);
+	text.back()+="Display Size:("+cpputil::Itoa(dim.x())+","+cpputil::Itoa(dim.y())+")";
+
+	text.push_back(empty);
+	text.back()+=cpputil::Itoa(1<<GetPageBitsPerPixel(page))+" colors";
 
 	return text;
 }

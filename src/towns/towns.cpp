@@ -160,6 +160,8 @@ FMTowns::FMTowns() :
 	io.AddDevice(&crtc,TOWNSIO_CRTC_DATA_LOW);//            0x442,
 	io.AddDevice(&crtc,TOWNSIO_CRTC_DATA_HIGH);//           0x443,
 	io.AddDevice(&crtc,TOWNSIO_HSYNC_VSYNC);//              0xFDA0,
+	io.AddDevice(&crtc,TOWNSIO_VIDEO_OUT_CTRL_ADDRESS);//   0x448,
+	io.AddDevice(&crtc,TOWNSIO_VIDEO_OUT_CTRL_DATA);//      0x44A,
 
 
 	io.AddDevice(this,TOWNSIO_SERIAL_ROM_CTRL); //        0x32,

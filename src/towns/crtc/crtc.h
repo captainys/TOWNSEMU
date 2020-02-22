@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "device.h"
+#include "cheapmath.h"
 
 
 
@@ -71,6 +72,9 @@ public:
 		unsigned short crtcReg[32];
 		unsigned int crtcAddrLatch;
 
+		unsigned char sifter[4];   // Is it really Sifter?  Isn't it Shifter? [2] pp.140
+		unsigned int sifterAddrLatch;
+
 		std::vector <unsigned int> mxVideoOutCtrl;
 		unsigned int mxVideoOutCtrlAddrLatch;
 
@@ -90,6 +94,32 @@ public:
 	bool InVSYNC(const unsigned long long int townsTime) const;
 	bool InHSYNC(const unsigned long long int townsTime) const;
 
+	/*! [2] pp.152
+	*/
+	bool InSinglePageMode(void) const;
+
+	unsigned int GetBaseClockFreq(void) const;
+	unsigned int GetBaseClockScaler(void) const;
+
+	/*! Returns vertical scaling.  Between 1 to 4. */
+	unsigned int GetPageZoomV(unsigned char page) const;
+	/*! Returns horizontal scaling.  Between 1 to 4. */
+	unsigned int GetPageZoomH(unsigned char page) const;
+	/*! Tentatively returning (0,0)
+	*/
+	Vec2i GetTopLeftCorner(unsigned char page) const;
+	/*! Returns width and height of the page display size in VGA (640x480) coordinate.
+	*/
+	Vec2i GetDisplaySize(unsigned char page) const;
+	/*! Returns number of bytes in VRAM per line.
+	*/
+	unsigned int GetBytesPerLine(unsigned char page) const;
+	/*! Returns bits per pixel.  4, 8, or 16
+	    [2] pp.147
+	*/
+	unsigned int GetPageBitsPerPixel(unsigned char page) const;
+
+
 	virtual void IOWriteByte(unsigned int ioport,unsigned int data);
 	virtual void IOWriteWord(unsigned int ioport,unsigned int data); // Default behavior calls IOWriteByte twice
 	virtual void IOWriteDword(unsigned int ioport,unsigned int data); // Default behavior calls IOWriteByte 4 times
@@ -100,6 +130,7 @@ public:
 	void GetRenderSize(unsigned int &wid,unsigned int &hei) const;
 
 	std::vector <std::string> GetStatusText(void) const;
+	std::vector <std::string> GetPageStatusText(int page) const;
 };
 
 
