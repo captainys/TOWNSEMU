@@ -28,6 +28,7 @@ public:
 	static const char *const Reg16Str[8];
 	static const char *const Reg32Str[8];
 	static const char *const Sreg[8];
+	static const bool ParityTable[256];
 
 	enum
 	{
@@ -1387,7 +1388,8 @@ public:
 
 	inline bool CheckParity(unsigned char lowByte)
 	{
-		int n=0;
+		return ParityTable[lowByte];
+		/* int n=0;
 		for(int i=0; i<8; ++i)
 		{
 			if(0!=(lowByte&1))
@@ -1396,7 +1398,7 @@ public:
 			}
 			lowByte>>=1;
 		}
-		return 0==(n&1);
+		return 0==(n&1); */
 	}
 
 	inline bool CondJA(void) const  // Unsigned above
@@ -2117,6 +2119,10 @@ public:
 	void XorWord(unsigned int &value1,unsigned int value2);
 	void XorByte(unsigned int &value1,unsigned int value2);
 
+private:
+	template <unsigned int valueMask,unsigned int countMask,unsigned int bitLength,unsigned int signBit>
+	inline void RolTemplate(unsigned int &value,unsigned int ctr);
+public:
 	/*! ROL a value and set OF and CF flags accoring to the result.
 	    OF is only set if ctr==1.
 	    operandSize needs to be 16 or 32.

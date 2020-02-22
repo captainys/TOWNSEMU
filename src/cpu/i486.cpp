@@ -91,6 +91,25 @@ const char *const i486DX::RegToStr[REG_TOTAL_NUMBER_OF_REGISTERS]=
 	"TEST7",
 };
 
+const bool i486DX::ParityTable[256]=
+{
+true, false,false,true, false,true, true, false,false,true, true, false,true, false,false,true,
+false,true, true, false,true, false,false,true, true, false,false,true, false,true, true, false,
+false,true, true, false,true, false,false,true, true, false,false,true, false,true, true, false,
+true, false,false,true, false,true, true, false,false,true, true, false,true, false,false,true,
+false,true, true, false,true, false,false,true, true, false,false,true, false,true, true, false,
+true, false,false,true, false,true, true, false,false,true, true, false,true, false,false,true,
+true, false,false,true, false,true, true, false,false,true, true, false,true, false,false,true,
+false,true, true, false,true, false,false,true, true, false,false,true, false,true, true, false,
+false,true, true, false,true, false,false,true, true, false,false,true, false,true, true, false,
+true, false,false,true, false,true, true, false,false,true, true, false,true, false,false,true,
+true, false,false,true, false,true, true, false,false,true, true, false,true, false,false,true,
+false,true, true, false,true, false,false,true, true, false,false,true, false,true, true, false,
+true, false,false,true, false,true, true, false,false,true, true, false,true, false,false,true,
+false,true, true, false,true, false,false,true, true, false,false,true, false,true, true, false,
+false,true, true, false,true, false,false,true, true, false,false,true, false,true, true, false,
+true, false,false,true, false,true, true, false,false,true, true, false,true, false,false,true,
+};
 
 std::string i486DX::FarPointer::Format(void) const
 {
@@ -1324,6 +1343,17 @@ void i486DX::XorByte(unsigned int &value1,unsigned int value2)
 	SetParityFlag(CheckParity(value1&0xFF));
 }
 
+template <unsigned int valueMask,unsigned int countMask,unsigned int bitLength,unsigned int signBit>
+inline void i486DX::RolTemplate(unsigned int &value,unsigned int ctr)
+{
+	unsigned long long int mask=valueMask;
+	ctr&=countMask;
+	mask>>=(bitLength-ctr);
+	SetCF(0!=(value&signBit));
+	value=(value<<ctr)|((value>>(bitLength-ctr))&mask);
+	value&=valueMask;
+}
+
 void i486DX::RolByteWordOrDword(int operandSize,unsigned int &value,unsigned int ctr)
 {
 	switch(operandSize)
@@ -1343,32 +1373,38 @@ void i486DX::RolByteWordOrDword(int operandSize,unsigned int &value,unsigned int
 
 void i486DX::RolDword(unsigned int &value,unsigned int ctr)
 {
-	unsigned long long int mask=0xFFFFFFFF;
+	RolTemplate<0xFFFFFFFF,0x1F,32,0x80000000>(value,ctr);
+
+	/* unsigned long long int mask=0xFFFFFFFF;
 	ctr&=0x1F;
 	mask>>=(32-ctr);
 	SetCF(0!=(value&0x80000000));
 	value=(value<<ctr)|((value>>(32-ctr))&mask);
-	value&=0xFFFFFFFF;
+	value&=0xFFFFFFFF; */
 }
 
 void i486DX::RolWord(unsigned int &value,unsigned int ctr)
 {
-	unsigned long long int mask=0xFFFF;
+	RolTemplate<0xFFFF,0xF,16,0x8000>(value,ctr);
+
+	/* unsigned long long int mask=0xFFFF;
 	ctr&=0xF;
 	mask>>=(16-ctr);
 	SetCF(0!=(value&0x8000));
 	value=(value<<ctr)|((value>>(16-ctr))&mask);
-	value&=0xFFFF;
+	value&=0xFFFF; */
 }
 
 void i486DX::RolByte(unsigned int &value,unsigned int ctr)
 {
-	unsigned long long int mask=0xFF;
+	RolTemplate<0xFF,0x7,8,0x80>(value,ctr);
+
+	/* unsigned long long int mask=0xFF;
 	ctr&=0x7;
 	mask>>=(8-ctr);
 	SetCF(0!=(value&0x80));
 	value=(value<<ctr)|((value>>(8-ctr))&mask);
-	value&=0xFF;
+	value&=0xFF; */
 }
 
 void i486DX::RorByteWordOrDword(int operandSize,unsigned int &value,unsigned int ctr)
