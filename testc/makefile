@@ -75,3 +75,11 @@ build\test08.obj : test08.c
 
 build\test08.exp : build\test08.obj build\io.obj build\FAIL.obj
 	386link build\test08.obj -exe build\test08.exp @LIBS.LN
+
+
+
+build\egb01.obj : egb01.c
+	hcd386 egb01.c -obj build\egb01.obj
+
+build\egb01.exp : build\egb01.obj build\io.obj
+	386link build\egb01.obj -exe build\egb01.exp @LIBS.LN
