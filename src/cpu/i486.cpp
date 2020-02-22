@@ -891,15 +891,12 @@ unsigned int i486DX::Pop(Memory &mem,unsigned int operandSize)
 		auto SP=GetSP();
 		if(16==operandSize)
 		{
-			value=FetchByte(addressSize,state.SS(),SP,mem)|(FetchByte(addressSize,state.SS(),SP+1,mem)<<8);
+			value=FetchWord(addressSize,state.SS(),SP,mem);
 			SP+=2;
 		}
 		else if(32==operandSize)
 		{
-			value= FetchByte(addressSize,state.SS(),SP,mem)
-			     |(FetchByte(addressSize,state.SS(),SP+1,mem)<<8)
-			     |(FetchByte(addressSize,state.SS(),SP+2,mem)<<16)
-			     |(FetchByte(addressSize,state.SS(),SP+3,mem)<<24);
+			value=FetchDword(addressSize,state.SS(),SP,mem);
 			SP+=4;
 		}
 		SetSP(SP); // SetSP does SP&=0xffff;
@@ -909,16 +906,12 @@ unsigned int i486DX::Pop(Memory &mem,unsigned int operandSize)
 		auto ESP=GetESP();
 		if(16==operandSize)
 		{
-			value= FetchByte(addressSize,state.SS(),ESP,mem)
-			     |(FetchByte(addressSize,state.SS(),ESP+1,mem)<<8);
+			value=FetchWord(addressSize,state.SS(),ESP,mem);
 			ESP+=2;
 		}
 		else if(32==operandSize)
 		{
-			value= FetchByte(addressSize,state.SS(),ESP,mem)
-			     |(FetchByte(addressSize,state.SS(),ESP+1,mem)<<8)
-			     |(FetchByte(addressSize,state.SS(),ESP+2,mem)<<16)
-			     |(FetchByte(addressSize,state.SS(),ESP+3,mem)<<24);
+			value=FetchDword(addressSize,state.SS(),ESP,mem);
 			ESP+=4;
 		}
 		SetESP(ESP);
