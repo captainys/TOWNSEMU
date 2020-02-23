@@ -137,7 +137,7 @@ public:
 	/*! sregIndexToSregPtrTable[i] should be &state.sreg[i] except sregIndexToSregPtrTable[NUM_SEGMENT_REGISTERS].
 	   It is used for quickly finding the segment register from segment override prefix.
 	*/
-	SegmentRegister *sregIndexToSregPtrTable[NUM_SEGMENT_REGISTERS+1];
+	mutable SegmentRegister *sregIndexToSregPtrTable[NUM_SEGMENT_REGISTERS+1];
 	/* segPrefixToSregIndex maps segment-override prefix to segment-register number.
 	   For a number that is a segment-override prefix, it is 0 to NUM_SEGMENT_REGISTERS-1.
 	   For a number that is not a segment-override prefix, it is NUM_SEGMENT_REGISTERS.
@@ -405,7 +405,7 @@ public:
 
 		/*! Returns Segment-Register.  REG must be REG_CS,REG_DS,REG_ES,REG_FS,REG_FS,REG_SS.
 		*/
-		inline SegmentRegister GetSegmentRegister(int reg) const
+		inline SegmentRegister GetSegmentRegister(unsigned int reg) const
 		{
 			switch(reg)
 			{
@@ -421,28 +421,6 @@ public:
 				return GS();
 			case REG_SS:
 				return SS();
-			}
-			return DS();
-		}
-
-		/*! Returns Segment Register from Segment-Overrie Prefix.
-		*/
-		inline SegmentRegister GetSegmentFromSegmentOverridePrefix(int segOverride) const
-		{
-			switch(segOverride)
-			{
-			case SEG_OVERRIDE_CS://  0x2E,
-				return CS();
-			case SEG_OVERRIDE_SS://  0x36,
-				return SS();
-			case SEG_OVERRIDE_DS://  0x3E,
-				return DS();
-			case SEG_OVERRIDE_ES://  0x26,
-				return ES();
-			case SEG_OVERRIDE_FS://  0x64,
-				return FS();
-			case SEG_OVERRIDE_GS://  0x65,
-				return GS();
 			}
 			return DS();
 		}
@@ -2234,22 +2212,9 @@ public:
 	*/
 	inline const SegmentRegister &SegmentOverrideDefaultDS(int segOverridePrefix)
 	{
-		switch(segOverridePrefix)
-		{
-		case SEG_OVERRIDE_CS://  0x2E,
-			return state.CS();
-		case SEG_OVERRIDE_SS://  0x36,
-			return state.SS();
-		case SEG_OVERRIDE_DS://  0x3E,
-			return state.DS();
-		case SEG_OVERRIDE_ES://  0x26,
-			return state.ES();
-		case SEG_OVERRIDE_FS://  0x64,
-			return state.FS();
-		case SEG_OVERRIDE_GS://  0x65,
-			return state.GS();
-		}
-		return state.DS();
+		sregIndexToSregPtrTable[NUM_SEGMENT_REGISTERS]=&state.sreg[REG_DS-REG_SEGMENT_REG_BASE];
+		auto sregIndex=segPrefixToSregIndex[segOverridePrefix];
+		return *sregIndexToSregPtrTable[sregIndex];
 	}
 
 	static int StrToReg(const std::string &regName);

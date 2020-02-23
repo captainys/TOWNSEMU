@@ -1789,31 +1789,11 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 	case OPER_ADDR:
 		{
 			value.numBytes=destinationBytes;
-			SegmentRegister seg;
-			switch(segmentOverride)
-			{
-			case SEG_OVERRIDE_CS:
-				seg=state.CS();
-				break;
-			case SEG_OVERRIDE_SS:
-				seg=state.SS();
-				break;
-			case SEG_OVERRIDE_DS:
-				seg=state.DS();
-				break;
-			case SEG_OVERRIDE_ES:
-				seg=state.ES();
-				break;
-			case SEG_OVERRIDE_FS:
-				seg=state.FS();
-				break;
-			case SEG_OVERRIDE_GS:
-				seg=state.GS();
-				break;
-			default:
-				seg=*baseRegisterToDefaultSegment[op.baseReg];
-				break;
-			}
+
+			sregIndexToSregPtrTable[NUM_SEGMENT_REGISTERS]=baseRegisterToDefaultSegment[op.baseReg];
+			auto sregIndex=segPrefixToSregIndex[segmentOverride];
+			SegmentRegister seg=*sregIndexToSregPtrTable[sregIndex];
+
 			unsigned int offset=
 			   GetRegisterValue(op.baseReg)+
 			   (GetRegisterValue(op.indexReg)<<op.indexShift)+
@@ -2142,31 +2122,10 @@ void i486DX::StoreOperandValue(
 		break;
 	case OPER_ADDR:
 		{
-			SegmentRegister seg;
-			switch(segmentOverride)
-			{
-			case SEG_OVERRIDE_CS:
-				seg=state.CS();
-				break;
-			case SEG_OVERRIDE_SS:
-				seg=state.SS();
-				break;
-			case SEG_OVERRIDE_DS:
-				seg=state.DS();
-				break;
-			case SEG_OVERRIDE_ES:
-				seg=state.ES();
-				break;
-			case SEG_OVERRIDE_FS:
-				seg=state.FS();
-				break;
-			case SEG_OVERRIDE_GS:
-				seg=state.GS();
-				break;
-			default:
-				seg=*baseRegisterToDefaultSegment[dst.baseReg];
-				break;
-			}
+			sregIndexToSregPtrTable[NUM_SEGMENT_REGISTERS]=baseRegisterToDefaultSegment[dst.baseReg];
+			auto sregIndex=segPrefixToSregIndex[segmentOverride];
+			SegmentRegister seg=*sregIndexToSregPtrTable[sregIndex];
+
 			unsigned int offset=
 			   GetRegisterValue(dst.baseReg)+
 			   (GetRegisterValue(dst.indexReg)<<dst.indexShift)+

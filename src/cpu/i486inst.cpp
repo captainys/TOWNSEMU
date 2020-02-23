@@ -6037,15 +6037,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_OPCODE_XLAT://             0xD7,
 		clocksPassed=4;
 		{
-			SegmentRegister seg;
-			if(0!=inst.segOverride)
-			{
-				seg=state.GetSegmentFromSegmentOverridePrefix(inst.segOverride);
-			}
-			else
-			{
-				seg=state.DS();
-			}
+ 			SegmentRegister seg=SegmentOverrideDefaultDS(inst.segOverride);
 			unsigned int offset=GetAL();
 			if(32==inst.addressSize)
 			{
