@@ -96,11 +96,11 @@ void TownsRender::Render4Bit(const TownsCRTC::Layer &layer,const std::vector <un
 		{255,255,255,255},
 	};
 	unsigned int VRAMAddr=layer.VRAMAddr;
-	for(int y=0; y<layer.visibleSize.y(); ++y)
+	for(int y=0; y<layer.sizeOnMonitor.y(); ++y)
 	{
 		const unsigned char *src=VRAM.data()+VRAMAddr+layer.bytesPerLine*y;
 		unsigned char *dst=rgba.data()+4*y*this->wid;
-		for(int x=0; x<layer.visibleSize.x(); x+=2)
+		for(int x=0; x<layer.sizeOnMonitor.x(); x+=2)
 		{
 			unsigned char vrambyte=*src;
 			unsigned char pix=(vrambyte&0x0f);

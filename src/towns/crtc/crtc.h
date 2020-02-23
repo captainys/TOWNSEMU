@@ -9,6 +9,29 @@
 
 
 
+/* Reverse Engineering of the CRTC settings.
+Probably,
+Horizontal page size (in pixels) on the monitor is:
+    HDSx-HDEx    in 24 and 31KHz modes, and
+   (HDSx-HDEx)/2 in 15KHz mode.
+Horizontal VRAM-coverage size (in pixels) that is mapped to the horizontal page size on the monitor is:
+   (HDSx-HDEx)/(ZHx+1)
+
+Vertical page size (in pixels) on the monitor is:
+   (VDEx-VDSx)/2 if FOx==0, and
+    VDEx-VDSx    if F0X!=0.
+Vertical VRAM-coverage size (in pixels) that is mapped to the vertical page size on the monitor is:
+   ((VDEx-VDSx)/2)/(ZVx+1) if FOx==0, and
+   ( VDEx-VDSx   )/(ZVx+1) if F0x!=0.
+
+CLKSEL
+  0 and 1 are for 15KHz modes.
+  2 is for 31KHz modes.
+  3 is for 24KHz modes.
+*/
+
+
+
 class TownsCRTC : public Device
 {
 public:
@@ -48,13 +71,17 @@ public:
 		REG_CR2=    0x1F,
 	};
 
+	unsigned int CLKSELtoFreq[4];
+
 	class Layer
 	{
 	public:
 		unsigned bitsPerPixel;
 		unsigned int VRAMAddr;
 		unsigned int VRAMOffset;
-		Vec2i visibleSize;
+		Vec2i originOnMonitor;
+		Vec2i sizeOnMonitor;
+		Vec2i VRAMCoverage1X;
 		Vec2i zoom;
 		unsigned int bytesPerLine;
 	};
@@ -128,12 +155,15 @@ public:
 	/*! Returns scaling.  Between 1 to 4 in each axis. 
 	*/
 	Vec2i GetPageZoom(unsigned char page) const;
-	/*! Tentatively returning (0,0)
+	/*! Returns the page display origin on the monitor in VGA (640x480) coordinate.
 	*/
-	Vec2i GetPageTopLeftCorner(unsigned char page) const;
+	Vec2i GetPageOriginOnMonitor(unsigned char page) const;
 	/*! Returns width and height of the page display size in VGA (640x480) coordinate.
 	*/
-	Vec2i GetPageDisplaySize(unsigned char page) const;
+	Vec2i GetPageSizeOnMonitor(unsigned char page) const;
+	/*! Returns width and height in the VRAM in pixels that is mapped to the page size on the monitor.
+	*/
+	Vec2i GetPageVRAMCoverageSize1X(unsigned char page) const;
 	/*! Returns number of bytes in VRAM per line.
 	*/
 	unsigned int GetPageBytesPerLine(unsigned char page) const;
@@ -164,6 +194,20 @@ public:
 	    If I figure the high-res settings, it may return 1024x768.
 	*/
 	Vec2i GetRenderSize(void) const;
+
+	inline unsigned int CLKSEL(void) const
+	{
+		return state.crtcReg[REG_CR1]&3;
+	}
+	inline unsigned int GetHorizontalFrequency(void) const
+	{
+		auto freq=CLKSELtoFreq[CLKSEL()];
+		if(0<state.crtcReg[REG_HST])
+		{
+			return freq/state.crtcReg[REG_HST];
+		}
+		return 31; // Just make it 31KHz.  Not to crash.
+	}
 
 	std::vector <std::string> GetStatusText(void) const;
 	std::vector <std::string> GetPageStatusText(int page) const;

@@ -191,12 +191,12 @@ void TownsCRTC::ScreenModeCache::MakeFMRCompatible(void)
 
 	layer[0].VRAMAddr=0;
 	layer[0].bitsPerPixel=4;
-	layer[0].visibleSize=Vec2i::Make(640,400);
+	layer[0].sizeOnMonitor=Vec2i::Make(640,400);
 	layer[0].bytesPerLine=320;
 
 	layer[1].VRAMAddr=0x40000;
 	layer[1].bitsPerPixel=4;
-	layer[1].visibleSize=Vec2i::Make(640,400);
+	layer[1].sizeOnMonitor=Vec2i::Make(640,400);
 	layer[1].bytesPerLine=512;
 }
 
@@ -208,6 +208,11 @@ TownsCRTC::TownsCRTC(class FMTowns *ptr)
 	townsPtr=ptr;
 	state.mxVideoOutCtrl.resize(0x10000);
 	state.Reset();
+
+	CLKSELtoFreq[0]=28636; // 28636KHz
+	CLKSELtoFreq[1]=24545; // 24545KHz
+	CLKSELtoFreq[2]=25175; // 25175KHz
+	CLKSELtoFreq[3]=21052; // 21052KHz
 
 	// Tentatively
 	cached=true;
@@ -268,15 +273,58 @@ Vec2i TownsCRTC::GetPageZoom(unsigned char page) const
 	zoom.y()=(((pageZoom>>4)&15)+1);
 	return zoom;
 }
-Vec2i TownsCRTC::GetPageTopLeftCorner(unsigned char page) const
+Vec2i TownsCRTC::GetPageOriginOnMonitor(unsigned char page) const
 {
-	page;
-	return Vec2i::Origin();
+	int x0,y0;
+	switch(CLKSEL())
+	{
+	case 0:
+		x0=(state.crtcReg[REG_HDS0]-0x129)>>1;
+		y0=(state.crtcReg[REG_VDS0]-0x2a)>>1; // I'm not sure if I should divide by 2.  Will need experiments.
+		break;
+	case 1:
+		x0=(state.crtcReg[REG_HDS0]-0xe7)>>1;
+		y0=(state.crtcReg[REG_VDS0]-0x2a)>>1; // I'm not sure if I should divide by 2.  Will need experiments.
+		break;
+	case 2:
+		x0=(state.crtcReg[REG_HDS0]-0x8a);
+		y0=(state.crtcReg[REG_VDS0]-0x46);
+		break;
+	case 3:
+		x0=(state.crtcReg[REG_HDS0]-0x9c);
+		y0=(state.crtcReg[REG_VDS0]-0x40);
+		break;
+	default:
+		x0=0;
+		y0=0;
+		break;
+	}
+	return Vec2i::Make(x0,y0);
 }
-Vec2i TownsCRTC::GetPageDisplaySize(unsigned char page) const
+Vec2i TownsCRTC::GetPageSizeOnMonitor(unsigned char page) const
 {
-	auto wid= state.crtcReg[REG_HDE0+page*2]-state.crtcReg[REG_HDS0+page*2];
-	auto hei=(state.crtcReg[REG_VDE0+page*2]-state.crtcReg[REG_VDS0+page*2])>>1;
+	auto KHz=GetHorizontalFrequency();
+	auto wid=state.crtcReg[REG_HDE0+page*2]-state.crtcReg[REG_HDS0+page*2];
+	auto hei=state.crtcReg[REG_VDE0+page*2]-state.crtcReg[REG_VDS0+page*2];
+	if(15==KHz)
+	{
+		wid/=2;
+	}
+	if(0==state.crtcReg[REG_FO0+4*page])
+	{
+		hei/=2;
+	}
+	return Vec2i::Make(wid,hei);
+}
+Vec2i TownsCRTC::GetPageVRAMCoverageSize1X(unsigned char page) const
+{
+	auto wid=state.crtcReg[REG_HDE0+page*2]-state.crtcReg[REG_HDS0+page*2];
+	auto hei=state.crtcReg[REG_VDE0+page*2]-state.crtcReg[REG_VDS0+page*2];
+	auto FO=state.crtcReg[REG_FO0+4*page];
+	if(0==FO)
+	{
+		hei/=2;
+	}
 	return Vec2i::Make(wid,hei);
 }
 unsigned int TownsCRTC::GetPageBitsPerPixel(unsigned char page) const
@@ -342,7 +390,9 @@ void TownsCRTC::MakePageLayerInfo(Layer &layer,unsigned char page) const
 {
 	page&=1;
 	layer.bitsPerPixel=GetPageBitsPerPixel(page);
-	layer.visibleSize=GetPageDisplaySize(page);
+	layer.originOnMonitor=GetPageOriginOnMonitor(page);
+	layer.sizeOnMonitor=GetPageSizeOnMonitor(page);
+	layer.VRAMCoverage1X=GetPageVRAMCoverageSize1X(page);
 	layer.zoom=GetPageZoom(page);
 	layer.VRAMAddr=0x40000*page;
 	layer.VRAMOffset=GetPageVRAMAddressOffset(page);
@@ -657,9 +707,9 @@ std::vector <std::string> TownsCRTC::GetPageStatusText(int page) const
 	text.back()="Page "+cpputil::Itoa(page);
 
 	text.push_back(empty);
-	auto topLeft=GetPageTopLeftCorner(page);
+	auto topLeft=GetPageOriginOnMonitor(page);
 	text.back()+="Top-Left:("+cpputil::Itoa(topLeft.x())+","+cpputil::Itoa(topLeft.y())+")  ";
-	auto dim=GetPageDisplaySize(page);
+	auto dim=GetPageSizeOnMonitor(page);
 	text.back()+="Display Size:("+cpputil::Itoa(dim.x())+","+cpputil::Itoa(dim.y())+")";
 
 	text.push_back(empty);
