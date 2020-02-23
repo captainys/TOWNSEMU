@@ -33,7 +33,6 @@ public:
 	*/
 	void BuildImage(const TownsCRTC &crtc,const TownsPhysicalMemory &physMem);
 private:
-	void BuildImageFMRMode(const TownsCRTC &crtc,const TownsPhysicalMemory &physMem);
 	void SetResolution(int wid,int hei);
 
 public:
@@ -41,8 +40,8 @@ public:
 	*/
 	Image GetImage(void) const;
 
-	void Render(const TownsCRTC::Layer &layer,const std::vector <unsigned char> &VRAM,bool transparent);
-	void Render4Bit(const TownsCRTC::Layer &layer,const std::vector <unsigned char> &VRAM,bool transparent);
+	void Render(unsigned int page,const TownsCRTC::Layer &layer,const TownsCRTC::AnalogPalette &palette,const std::vector <unsigned char> &VRAM,bool transparent);
+	void Render4Bit(const TownsCRTC::Layer &layer,const Vec3ub palette[16],const std::vector <unsigned char> &VRAM,bool transparent);
 };
 
 
