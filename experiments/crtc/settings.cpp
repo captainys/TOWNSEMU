@@ -96,6 +96,7 @@ unsigned int settings[]=
 
 
 #include <stdio.h>
+#include <vector>
 
 enum
 {
@@ -132,6 +133,8 @@ enum
 	REG_FR=     0x1E,
 	REG_CR2=    0x1F,
 };
+
+const unsigned int clockTable[]={28,24,25,21};
 
 // Looks like:
 //   When CLKSEL is:
@@ -170,7 +173,6 @@ void PrintSettings(unsigned int settings[])
 	auto SCSEL=(regs[REG_CR1]>>2)&3;
 	auto CLKSEL=regs[REG_CR1]&3;
 	printf("CR1=%04xH,  SCSEL=%2d,  CLKSEL=%2d\n",regs[REG_CR1],SCSEL,CLKSEL);
-	unsigned int clockTable[]={28,24,25,21};
 	printf("Clock:%dMHz, Clock/PreScalar:%dMHz\n",clockTable[CLKSEL],clockTable[CLKSEL]/(SCSEL+1));
 }
 
@@ -215,6 +217,107 @@ void PrintHSWandPrescaler(unsigned int settings[])
 	}
 }
 
+void PrintMinimumHScalingAndHSW(unsigned int n,const unsigned int settings[])
+{
+	std::vector <const unsigned int *> scalingToSetting[16];
+	for(int i=0; i+34<=n; i+=34)
+	{
+		if(settings[i]==settings[i+1] || 0xFF==settings[i+1])
+		{
+			auto regs=settings+i+2;
+			auto ZH0=regs[REG_ZOOM]&15;
+			scalingToSetting[ZH0].push_back(settings+i);
+		}
+	}
+
+	for(unsigned int i=0; i<4; ++i)
+	{
+		if(0<scalingToSetting[i].size())
+		{
+			printf("ZH=%d\n",i);
+			for(auto setting : scalingToSetting[i])
+			{
+				auto regs=setting+2;
+
+				auto CLKSEL=regs[REG_CR1]&3;
+				auto SCSEL=(regs[REG_CR1]>>2)&3;
+				auto KHz=(clockTable[CLKSEL]*1000)/regs[REG_HST];
+
+				printf("Mode %02d %dKHz [SCSEL%2d FO0%3X HDE0-HDS0 %4d HST %04X HSW1 %04X HSW2 %04X]\n",
+					setting[0],
+					KHz,
+					SCSEL,
+					regs[REG_FO0],
+					regs[REG_HDE0]-regs[REG_HDS0],
+					regs[REG_HST],
+					regs[REG_HSW1],
+					regs[REG_HSW2]);
+			}
+		}
+	}
+}
+
+void PrintVertecalResolution(const unsigned int setting[])
+{
+	if(setting[0]==setting[1] || 255==setting[1])
+	{
+		auto regs=setting+2;
+
+		auto CLKSEL=regs[REG_CR1]&3;
+		auto SCSEL=(regs[REG_CR1]>>2)&3;
+		auto KHz=(clockTable[CLKSEL]*1000)/regs[REG_HST];
+
+		printf("Mode %02d %dKHz [SCSEL%2d VST %04d VDE0-VDS0 %4d FO0 %04X LO0 %04X]\n",
+			setting[0],
+			KHz,
+			SCSEL,
+			regs[REG_VST],
+			regs[REG_VDE0]-regs[REG_VDS0],
+			regs[REG_FO0],
+			regs[REG_LO0]
+			
+		);
+	}
+}
+
+void PrintCLKSELandDisplayStart(unsigned int n,const unsigned int settings[])
+{
+	std::vector <const unsigned int *> clkSelToSetting[4];
+	for(int i=0; i+34<=n; i+=34)
+	{
+		if(settings[i]==settings[i+1] || 0xFF==settings[i+1])
+		{
+			auto regs=settings+i+2;
+			auto CLKSEL=regs[REG_CR1]&3;
+			clkSelToSetting[CLKSEL].push_back(settings+i);
+		}
+	}
+
+	for(unsigned int i=0; i<4; ++i)
+	{
+		if(0<clkSelToSetting[i].size())
+		{
+			printf("CLKSEL=%d\n",i);
+			for(auto setting : clkSelToSetting[i])
+			{
+				auto regs=setting+2;
+
+				auto CLKSEL=regs[REG_CR1]&3;
+				auto SCSEL=(regs[REG_CR1]>>2)&3;
+				auto KHz=(clockTable[CLKSEL]*1000)/regs[REG_HST];
+
+				printf("Mode %02d %dKHz [SCSEL%2d HDS0:%04x VDS0:%04x HAJ0:%04x]\n",
+					setting[0],
+					KHz,
+					SCSEL,
+					regs[REG_HDS0],
+					regs[REG_VDS0],
+					regs[REG_HAJ0]);
+			}
+		}
+	}
+}
+
 int main(void)
 {
 	for(int i=0; i+34<=sizeof(settings)/(sizeof(settings[0])); i+=34)
@@ -231,8 +334,19 @@ int main(void)
 	//	}
 	//}
 
-	for(int i=0; i+34<=sizeof(settings)/(sizeof(settings[0])); i+=34)
-	{
-		PrintHSWandPrescaler(settings+i);
-	}
+	// for(int i=0; i+34<=sizeof(settings)/(sizeof(settings[0])); i+=34)
+	// {
+	// 	PrintHSWandPrescaler(settings+i);
+	// }
+
+	// PrintMinimumHScalingAndHSW(sizeof(settings)/(sizeof(settings[0])),settings);
+
+	//for(int i=0; i+34<=sizeof(settings)/(sizeof(settings[0])); i+=34)
+	//{
+	//	PrintVertecalResolution(settings+i);
+	//}
+
+	PrintCLKSELandDisplayStart(sizeof(settings)/(sizeof(settings[0])),settings);
+
+	return 0;
 }

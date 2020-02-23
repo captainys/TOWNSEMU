@@ -162,6 +162,11 @@ FMTowns::FMTowns() :
 	io.AddDevice(&crtc,TOWNSIO_HSYNC_VSYNC);//              0xFDA0,
 	io.AddDevice(&crtc,TOWNSIO_VIDEO_OUT_CTRL_ADDRESS);//   0x448,
 	io.AddDevice(&crtc,TOWNSIO_VIDEO_OUT_CTRL_DATA);//      0x44A,
+	io.AddDevice(&crtc,TOWNSIO_ANALOGPALETTE_CODE);//=  0xFD90,
+	io.AddDevice(&crtc,TOWNSIO_ANALOGPALETTE_BLUE);//=  0xFD92,
+	io.AddDevice(&crtc,TOWNSIO_ANALOGPALETTE_RED);//=   0xFD94,
+	io.AddDevice(&crtc,TOWNSIO_ANALOGPALETTE_GREEN);//= 0xFD96,
+
 
 
 	io.AddDevice(this,TOWNSIO_SERIAL_ROM_CTRL); //        0x32,

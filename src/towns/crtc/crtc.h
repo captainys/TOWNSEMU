@@ -67,6 +67,27 @@ public:
 		void MakeFMRCompatible(void);
 	};
 
+	class AnalogPalette
+	{
+	public:
+		unsigned int codeLatch;
+		Vec3ub plt16[2][16];
+		Vec3ub plt256[256];
+		void Reset(void);
+
+		void Set16(unsigned int page,unsigned int component,unsigned char v);
+		void Set256(unsigned int component,unsigned char v);
+		void SetRed(unsigned char v,unsigned int PLT); // PLT is (sifter[1]>>2)&3
+		void SetGreen(unsigned char v,unsigned int PLT);
+		void SetBlue(unsigned char v,unsigned int PLT);
+
+		unsigned char Get16(unsigned int page,unsigned int component) const;
+		unsigned char Get256(unsigned int component) const;
+		unsigned char GetRed(unsigned int PLT) const;
+		unsigned char GetGreen(unsigned int PLT) const;
+		unsigned char GetBlue(unsigned int PLT) const;
+	};
+
 	class State
 	{
 	public:
@@ -78,6 +99,8 @@ public:
 
 		std::vector <unsigned int> mxVideoOutCtrl;
 		unsigned int mxVideoOutCtrlAddrLatch;
+
+		AnalogPalette palette;
 
 		void Reset(void);
 	};
