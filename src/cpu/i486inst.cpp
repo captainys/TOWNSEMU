@@ -3233,7 +3233,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				unsigned int byte=value.byteData[0];
 				AndByte(byte,inst.GetUimm8());
 				SetCF(false);
-				SetOverflowFlag(false);
+				SetOF(false);
 			}
 			break;
 		case 2: // NOT
@@ -3252,8 +3252,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				clocksPassed=(OPER_ADDR==op1.operandType ? 3 : 1);
 				auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
 				auto i=value1.GetAsSignedDword();
-				SetOverflowFlag(-128==i);
-				SetZeroFlag(0==i);
+				SetOF(-128==i);
+				SetZF(0==i);
 				SetCF(0!=i);
 				i=-i;
 				SetSignFlag(i<0);
@@ -3270,12 +3270,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				if(0!=(mul&0xff00))
 				{
 					SetCF(true);
-					SetOverflowFlag(true);
+					SetOF(true);
 				}
 				else
 				{
 					SetCF(false);
-					SetOverflowFlag(false);
+					SetOF(false);
 				}
 			}
 			break;
@@ -3323,7 +3323,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				unsigned int i1=value1.GetAsDword();
 				AndWordOrDword(inst.operandSize,i1,value2.GetAsDword());
 				SetCF(false);
-				SetOverflowFlag(false);
+				SetOF(false);
 			}
 			break;
 		case 2: // NOT
@@ -3344,14 +3344,14 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				auto i=value1.GetAsSignedDword();
 				if(16==inst.operandSize)
 				{
-					SetOverflowFlag(-32768==i);
+					SetOF(-32768==i);
 				}
 				else if(32==inst.operandSize)
 				{
-					SetOverflowFlag(-0x80000000LL==i);
+					SetOF(-0x80000000LL==i);
 				}
 				i=-i;
-				SetZeroFlag(0==i);
+				SetZF(0==i);
 				SetCF(0!=i);
 				SetSignFlag(i<0);
 				value1.SetSignedDword(i);
@@ -3369,12 +3369,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				if(0!=(DXAX&0xffff0000))
 				{
 					SetCF(true);
-					SetOverflowFlag(true);
+					SetOF(true);
 				}
 				else
 				{
 					SetCF(false);
-					SetOverflowFlag(false);
+					SetOF(false);
 				}
 			}
 			else
@@ -3387,12 +3387,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				if(0!=(EDXEAX&0xffffffff00000000))
 				{
 					SetCF(true);
-					SetOverflowFlag(true);
+					SetOF(true);
 				}
 				else
 				{
 					SetCF(false);
-					SetOverflowFlag(false);
+					SetOF(false);
 				}
 			}
 			break;
@@ -3880,13 +3880,13 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{
 				dst&=(~3);
 				dst|=(src&3);
-				SetZeroFlag(false);
+				SetZF(false);
 				value1.MakeWord(dst);
 				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
 			}
 			else
 			{
-				SetZeroFlag(true);
+				SetZF(true);
 			}
 		}
 		break;
@@ -3913,12 +3913,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			if(count<inst.operandSize)
 			{
 				value.SetDword(count);
-				SetZeroFlag(false);
+				SetZF(false);
 			}
 			else
 			{
 				value.SetDword(0);
-				SetZeroFlag(true);
+				SetZF(true);
 			}
 			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
 		}
@@ -4341,7 +4341,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				if(true==clearOFCF)
 				{
 					SetCF(false);
-					SetOverflowFlag(false);
+					SetOF(false);
 				}
 			}
 		}
@@ -5179,7 +5179,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			OperandValue limit;
 			limit.MakeDword(seg.limit);
 			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,limit);
-			SetZeroFlag(true);
+			SetZF(true);
 		}
 		break;
 
@@ -5693,8 +5693,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					value1.MakeWord(concat&0xFFFF);
 					StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
 					SetCF(0!=(concat&0x10000));
-					SetOverflowFlag((concat&0x8000)!=(v1&0x8000));
-					SetZeroFlag(0==(concat&0xFFFF));
+					SetOF((concat&0x8000)!=(v1&0x8000));
+					SetZF(0==(concat&0xFFFF));
 					SetSignFlag(0!=(concat&0x8000));
 					SetParityFlag(CheckParity(concat&0xFF));
 				}
@@ -5706,8 +5706,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					value1.MakeDword(concat&0xFFFFFFFF);
 					StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
 					SetCF(0!=(concat&0x100000000LL));
-					SetOverflowFlag((concat&0x80000000)!=(v1&0x80000000));
-					SetZeroFlag(0==(concat&0xFFFFFFFF));
+					SetOF((concat&0x80000000)!=(v1&0x80000000));
+					SetZF(0==(concat&0xFFFFFFFF));
 					SetSignFlag(0!=(concat&0x80000000));
 					SetParityFlag(CheckParity(concat&0xFF));
 				}
@@ -5722,8 +5722,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					concat>>=count;
 					value1.MakeWord(concat&0xffff);
 					StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
-					SetOverflowFlag((concat&0x8000)!=(v1&0x8000));
-					SetZeroFlag(0==(concat&0xFFFF));
+					SetOF((concat&0x8000)!=(v1&0x8000));
+					SetZF(0==(concat&0xFFFF));
 					SetSignFlag(0!=(concat&0x8000));
 					SetParityFlag(CheckParity(concat&0xFF));
 				}
@@ -5736,8 +5736,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					concat>>=count;
 					value1.MakeDword(concat&0xffffffff);
 					StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
-					SetOverflowFlag((concat&0x80000000)!=(v1&0x80000000));
-					SetZeroFlag(0==(concat&0xFFFFFFFF));
+					SetOF((concat&0x80000000)!=(v1&0x80000000));
+					SetZF(0==(concat&0xFFFFFFFF));
 					SetSignFlag(0!=(concat&0x80000000));
 					SetParityFlag(CheckParity(concat&0xFF));
 				}

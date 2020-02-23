@@ -1356,7 +1356,7 @@ public:
 	{
 		SetEFLAGSBit(flag,EFLAGS_INT_ENABLE);
 	}
-	inline void SetOverflowFlag(bool flag)
+	inline void SetOF(bool flag)
 	{
 		SetEFLAGSBit(flag,EFLAGS_OVERFLOW);
 	}
@@ -1369,7 +1369,7 @@ public:
 	{
 		SetEFLAGSBit(flag,EFLAGS_TRAP);
 	}
-	inline void SetZeroFlag(bool flag)
+	inline void SetZF(bool flag)
 	{
 		SetEFLAGSBit(flag,EFLAGS_ZERO);
 	}
