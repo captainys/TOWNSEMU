@@ -128,6 +128,26 @@ public:
 		unsigned int addressSize;
 		unsigned int limit;
 	};
+
+
+	enum
+	{
+		NUM_SEGMENT_REGISTERS=REG_GS-REG_SEGMENT_REG_BASE+1
+	};
+	/*! sregIndexToSregPtrTable[i] should be &state.sreg[i] except sregIndexToSregPtrTable[NUM_SEGMENT_REGISTERS].
+	   It is used for quickly finding the segment register from segment override prefix.
+	*/
+	SegmentRegister *sregIndexToSregPtrTable[NUM_SEGMENT_REGISTERS+1];
+	/* segPrefixToSregIndex maps segment-override prefix to segment-register number.
+	   For a number that is a segment-override prefix, it is 0 to NUM_SEGMENT_REGISTERS-1.
+	   For a number that is not a segment-override prefix, it is NUM_SEGMENT_REGISTERS.
+	*/
+	unsigned int segPrefixToSregIndex[256];
+	/*! 
+	*/
+	SegmentRegister *baseRegisterToDefaultSegment[REG_TOTAL_NUMBER_OF_REGISTERS];
+
+
 	class SystemAddressRegister
 	{
 	public:

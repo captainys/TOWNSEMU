@@ -231,6 +231,32 @@ i486DX::i486DX()
 	Reset();
 	enableCallStack=false;
 	debuggerPtr=nullptr;
+
+	for(auto &sregPtr : baseRegisterToDefaultSegment)
+	{
+		sregPtr=&state.sreg[REG_DS-REG_SEGMENT_REG_BASE];
+	}
+	baseRegisterToDefaultSegment[REG_SP]=&state.sreg[REG_SS-REG_SEGMENT_REG_BASE];
+	baseRegisterToDefaultSegment[REG_BP]=&state.sreg[REG_SS-REG_SEGMENT_REG_BASE];
+	baseRegisterToDefaultSegment[REG_ESP]=&state.sreg[REG_SS-REG_SEGMENT_REG_BASE];
+	baseRegisterToDefaultSegment[REG_EBP]=&state.sreg[REG_SS-REG_SEGMENT_REG_BASE];
+
+	for(int i=0; i<sizeof(state.sreg)/sizeof(state.sreg[0]); ++i)
+	{
+		sregIndexToSregPtrTable[i]=&state.sreg[i];
+	}
+	sregIndexToSregPtrTable[NUM_SEGMENT_REGISTERS]=nullptr;
+
+	for(auto &i : segPrefixToSregIndex)
+	{
+		i=NUM_SEGMENT_REGISTERS;
+	}
+	segPrefixToSregIndex[SEG_OVERRIDE_CS]=REG_CS-REG_SEGMENT_REG_BASE;
+	segPrefixToSregIndex[SEG_OVERRIDE_SS]=REG_SS-REG_SEGMENT_REG_BASE;
+	segPrefixToSregIndex[SEG_OVERRIDE_DS]=REG_DS-REG_SEGMENT_REG_BASE;
+	segPrefixToSregIndex[SEG_OVERRIDE_ES]=REG_ES-REG_SEGMENT_REG_BASE;
+	segPrefixToSregIndex[SEG_OVERRIDE_FS]=REG_FS-REG_SEGMENT_REG_BASE;
+	segPrefixToSregIndex[SEG_OVERRIDE_GS]=REG_GS-REG_SEGMENT_REG_BASE;
 }
 
 void i486DX::Reset(void)
@@ -1785,15 +1811,7 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 				seg=state.GS();
 				break;
 			default:
-				if(op.baseReg==REG_ESP || op.baseReg==REG_SP ||
-				   op.baseReg==REG_EBP || op.baseReg==REG_BP)
-				{
-					seg=state.SS();
-				}
-				else
-				{
-					seg=state.DS();
-				}
+				seg=*baseRegisterToDefaultSegment[op.baseReg];
 				break;
 			}
 			unsigned int offset=
@@ -2146,15 +2164,7 @@ void i486DX::StoreOperandValue(
 				seg=state.GS();
 				break;
 			default:
-				if(dst.baseReg==REG_ESP || dst.baseReg==REG_SP ||
-				   dst.baseReg==REG_EBP || dst.baseReg==REG_BP)
-				{
-					seg=state.SS();
-				}
-				else
-				{
-					seg=state.DS();
-				}
+				seg=*baseRegisterToDefaultSegment[dst.baseReg];
 				break;
 			}
 			unsigned int offset=
