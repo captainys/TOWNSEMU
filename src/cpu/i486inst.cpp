@@ -3525,7 +3525,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					{
 						DXAX-=10000LL;
 					}
-					DXAX<<=32;
+					DXAX<<=inst.operandSize;
 					DXAX|=GetAX();
 
 					int quo=DXAX/denom;
