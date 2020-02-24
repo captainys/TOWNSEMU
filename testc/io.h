@@ -10,6 +10,7 @@ enum
 {
 	TOWNS_VMIF_CMD_NOP=           0x00, 
 	TOWNS_VMIF_CMD_CAPTURE_CRTC=  0x01, // Capture CRTC. Followed by two bytes mode0, and mode1.
+	TOWNS_VMIF_CMD_PAUSE=         0x02, // Pause VM
 };
 
 extern void IOWriteByte(unsigned int ioport,unsigned int byteData);

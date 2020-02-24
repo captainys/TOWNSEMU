@@ -27,5 +27,8 @@ void FMTowns::ProcessVMToHostCommand(unsigned int vmCmd,unsigned int paramLen,co
 			}
 		}
 		break;
+	case TOWNS_VMIF_CMD_PAUSE:
+		debugger.ExternalBreak("Break Request from VM");
+		break;
 	}
 }

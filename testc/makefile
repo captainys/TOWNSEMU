@@ -91,3 +91,11 @@ build\egb02.obj : egb02.c
 
 build\egb02.exp : build\egb02.obj build\io.obj
 	386link build\egb02.obj -exe build\egb02.exp @LIBS.LN
+
+
+
+build\mos01.obj : mos01.c
+	hcd386 mos01.c -obj build\mos01.obj
+
+build\mos01.exp : build\mos01.obj build\io.obj
+	386link build\mos01.obj -exe build\mos01.exp @LIBS.LN
