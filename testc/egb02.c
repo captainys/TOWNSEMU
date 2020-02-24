@@ -101,6 +101,20 @@ int main(void)
 			EGB_displayStart(EGB_work,1,0,y);
 		}
 	}
+	{
+		int x;
+		EGB_writePage(EGB_work,1);
+		for(x=0; x<=512; x+=16)
+		{
+			EGB_displayStart(EGB_work,1,x,0);
+		}
+
+		EGB_writePage(EGB_work,0);
+		for(x=0; x<=512; x+=16)
+		{
+			EGB_displayStart(EGB_work,1,x,0);
+		}
+	}
 
 	return 0;
 }
