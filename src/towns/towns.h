@@ -22,6 +22,7 @@
 #include "physmem.h"
 #include "memaccess.h"
 #include "sound.h"
+#include "gameport.h"
 #include "timer.h"
 
 
@@ -124,6 +125,7 @@ public:
 	TownsFDC fdc;
 	TownsKeyboard keyboard;
 	TownsSound sound;
+	TownsGamePort gameport;
 	TownsTimer timer;
 	// Machine State <<
 

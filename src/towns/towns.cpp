@@ -60,6 +60,7 @@ FMTowns::FMTowns() :
 	fdc(this,&pic,&dmac),
 	rtc(this),
 	sound(this),
+	gameport(this),
 	timer(this,&pic)
 {
 	townsType=TOWNSTYPE_2_MX;
@@ -75,6 +76,7 @@ FMTowns::FMTowns() :
 	allDevices.push_back(&cdrom);
 	allDevices.push_back(&rtc);
 	allDevices.push_back(&sound);
+	allDevices.push_back(&gameport);
 	allDevices.push_back(&timer);
 	allDevices.push_back(&keyboard);
 
@@ -149,12 +151,16 @@ FMTowns::FMTowns() :
 
 	// Do range I/O mapping first, then do single I/O mapping.
 	// Range I/O mapping may wipe single I/O mapping.
+
+	// Range I/O mappings >>>
 	io.AddDevice(this,TOWNSIO_FREERUN_TIMER_LOW/*0x26*/,TOWNSIO_MACHINE_ID_HIGH/*0x31*/);
 	io.AddDevice(&crtc,TOWNSIO_MX_HIRES/*0x470*/,TOWNSIO_MX_IMGOUT_ADDR_D3/*0x477*/);
 	io.AddDevice(&keyboard,TOWNSIO_KEYBOARD_DATA/*0x600*/,TOWNSIO_KEYBOARD_IRQ/*0x604*/);
 	io.AddDevice(&fdc,TOWNSIO_FDC_STATUS_COMMAND/*0x200*/,TOWNSIO_FDC_DRIVE_SWITCH/*0x20E*/);
 	io.AddDevice(&physMem,TOWNSIO_CMOS_BASE,TOWNSIO_CMOS_END-1);
 
+
+	// Individual I/O mappings >>>
 
 	io.AddDevice(&crtc,TOWNSIO_CRTC_ADDRESS);//             0x440,
 	io.AddDevice(&crtc,TOWNSIO_CRTC_DATA_LOW);//            0x442,
@@ -166,7 +172,6 @@ FMTowns::FMTowns() :
 	io.AddDevice(&crtc,TOWNSIO_ANALOGPALETTE_BLUE);//=  0xFD92,
 	io.AddDevice(&crtc,TOWNSIO_ANALOGPALETTE_RED);//=   0xFD94,
 	io.AddDevice(&crtc,TOWNSIO_ANALOGPALETTE_GREEN);//= 0xFD96,
-
 
 
 	io.AddDevice(this,TOWNSIO_SERIAL_ROM_CTRL); //        0x32,
@@ -220,6 +225,11 @@ FMTowns::FMTowns() :
 
 	io.AddDevice(&rtc,TOWNSIO_RTC_DATA);//                 0x70,
 	io.AddDevice(&rtc,TOWNSIO_RTC_COMMAND);//              0x80,
+
+
+	io.AddDevice(&gameport,TOWNSIO_GAMEPORT_A_INPUT);  //0x4D0,
+	io.AddDevice(&gameport,TOWNSIO_GAMEPORT_B_INPUT);  //0x4D2,
+	io.AddDevice(&gameport,TOWNSIO_GAMEPORT_OUTPUT);   //0x4D6,
 
 
 	io.AddDevice(&sound,TOWNSIO_SOUND_MUTE);//              0x4D5, // [2] pp.18,
