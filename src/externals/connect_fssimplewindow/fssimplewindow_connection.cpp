@@ -125,6 +125,34 @@
 			}
 		}
 	}
+
+	int lb,mb,rb,mx,my;
+	FsGetMouseEvent(lb,mb,rb,mx,my);
+	for(auto &p : towns.gameport.state.ports)
+	{
+		if(p.device==TownsGamePort::MOUSE)
+		{
+			p.button[0]=(0!=lb);
+			p.button[1]=(0!=rb);
+
+			if(FsGetKeyState(FSKEY_UP))
+			{
+				p.mouseMotion.y()=1;
+			}
+			else if(FsGetKeyState(FSKEY_DOWN))
+			{
+				p.mouseMotion.y()=-1;
+			}
+			if(FsGetKeyState(FSKEY_LEFT))
+			{
+				p.mouseMotion.x()=1;
+			}
+			else if(FsGetKeyState(FSKEY_RIGHT))
+			{
+				p.mouseMotion.x()=-1;
+			}
+		}
+	}
 }
 /* virtual */ void FsSimpleWindowConnection::Render(const TownsRender::Image &img)
 {
