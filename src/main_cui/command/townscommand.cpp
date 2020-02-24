@@ -89,6 +89,8 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	breakEventMap["WRCVRAM"]=BREAK_ON_CVRAM_WRITE;
 	breakEventMap["RDFMRVRAM"]=BREAK_ON_FMRVRAM_READ;
 	breakEventMap["WRFMRVRAM"]=BREAK_ON_FMRVRAM_WRITE;
+	breakEventMap["IOR"]=BREAK_ON_IOREAD;
+	breakEventMap["IOW"]=BREAK_ON_IOWRITE;
 }
 
 
@@ -206,6 +208,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "WRCVRAM" << std::endl;
 	std::cout << "RDFMRVRAM" << std::endl;
 	std::cout << "WRFMRVRAM" << std::endl;
+	std::cout << "IOR ioport" << std::endl;
+	std::cout << "IOW ioport" << std::endl;
 }
 
 void TownsCommandInterpreter::PrintError(int errCode) const
@@ -482,6 +486,24 @@ void TownsCommandInterpreter::Execute_ListBreakPoints(FMTowns &towns,Command &cm
 		std::cout << cpputil::Ubtox(bpn) << " " << cpputil::Ustox(bp.SEG) << ":" << cpputil::Uitox(bp.OFFSET) << std::endl;
 		++bpn;
 	}
+	auto &breakOnIORead=towns.debugger.GetBreakOnIORead();
+	if(true!=breakOnIORead.empty())
+	{
+		std::cout << "Break on IORead:" << std::endl;
+		for(auto ioport : breakOnIORead)
+		{
+			std::cout << cpputil::Uitox(ioport) << std::endl;
+		}
+	}
+	auto &breakOnIOWrite=towns.debugger.GetBreakOnIOWrite();
+	if(true!=breakOnIOWrite.empty())
+	{
+		std::cout << "Break on IOWrite:" << std::endl;
+		for(auto ioport : breakOnIOWrite)
+		{
+			std::cout << cpputil::Uitox(ioport) << std::endl;
+		}
+	}
 }
 
 void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
@@ -653,6 +675,28 @@ void TownsCommandInterpreter::Execute_BreakOn(FMTowns &towns,Command &cmd)
 		case BREAK_ON_FMRVRAM_WRITE:
 			towns.mainRAMorFMRVRAMAccess.breakOnFMRVRAMWrite=true;
 			break;
+		case BREAK_ON_IOREAD:
+			if(3<=cmd.argv.size())
+			{
+				auto ioport=cpputil::Xtoi(cmd.argv[2].c_str());
+				towns.debugger.AddBreakOnIORead(ioport);
+			}
+			else
+			{
+				PrintError(ERROR_TOO_FEW_ARGS);
+			}
+			break;
+		case BREAK_ON_IOWRITE:
+			if(3<=cmd.argv.size())
+			{
+				auto ioport=cpputil::Xtoi(cmd.argv[2].c_str());
+				towns.debugger.AddBreakOnIOWrite(ioport);
+			}
+			else
+			{
+				PrintError(ERROR_TOO_FEW_ARGS);
+			}
+			break;
 		}
 		std::cout << reason << " is ON." << std::endl;
 	}
@@ -697,6 +741,28 @@ void TownsCommandInterpreter::Execute_ClearBreakOn(FMTowns &towns,Command &cmd)
 			break;
 		case BREAK_ON_CVRAM_WRITE:
 			towns.mainRAMorFMRVRAMAccess.breakOnCVRAMWrite=false;
+			break;
+		case BREAK_ON_IOREAD:
+			if(3<=cmd.argv.size())
+			{
+				auto ioport=cpputil::Xtoi(cmd.argv[2].c_str());
+				towns.debugger.RemoveBreakOnIORead(ioport);
+			}
+			else
+			{
+				PrintError(ERROR_TOO_FEW_ARGS);
+			}
+			break;
+		case BREAK_ON_IOWRITE:
+			if(3<=cmd.argv.size())
+			{
+				auto ioport=cpputil::Xtoi(cmd.argv[2].c_str());
+				towns.debugger.RemoveBreakOnIOWrite(ioport);
+			}
+			else
+			{
+				PrintError(ERROR_TOO_FEW_ARGS);
+			}
 			break;
 		}
 		std::cout << iter->first << " is OFF." << std::endl;
