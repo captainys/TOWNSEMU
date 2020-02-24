@@ -338,7 +338,7 @@ unsigned int TownsCRTC::GetPageBitsPerPixel(unsigned char page) const
 		}
 		else if(3==CL)
 		{
-			return 256;
+			return 8;
 		}
 	}
 	else

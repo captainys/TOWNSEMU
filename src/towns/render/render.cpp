@@ -62,13 +62,13 @@ void TownsRender::Render(unsigned int page,const TownsCRTC::Layer &layer,const T
 		Render4Bit(layer,palette.plt16[page&1],VRAM,transparent);
 		break;
 	case 8:
+		Render8Bit(layer,palette.plt256,VRAM,transparent);
 		break;
 	case 16:
 		Render16Bit(layer,VRAM,transparent);
 		break;
 	}
 }
-
 void TownsRender::Render4Bit(const TownsCRTC::Layer &layer,const Vec3ub palette[16],const std::vector <unsigned char> &VRAM,bool transparent)
 {
 	unsigned int VRAMAddr=layer.VRAMAddr;
@@ -98,6 +98,50 @@ void TownsRender::Render4Bit(const TownsCRTC::Layer &layer,const Vec3ub palette[
 			}
 			++src;
 			dst+=8;
+		}
+	}
+}
+void TownsRender::Render8Bit(const TownsCRTC::Layer &layer,const Vec3ub palette[256],const std::vector <unsigned char> &VRAM,bool transparent)
+{
+	unsigned int VRAMBase=layer.VRAMAddr; // Supposed to be zero.
+	unsigned int VRAMOffsetVertical=layer.VRAMOffset&~layer.HScrollMask;
+	unsigned int VRAMOffsetHorizontal=layer.VRAMOffset&layer.HScrollMask;
+	const unsigned int VRAMHScrollMask=layer.HScrollMask;
+	const unsigned int VRAMVScrollMask=layer.VScrollMask;
+	unsigned int lineVRAMOffset=0;
+	auto ZV=layer.zoom.y();
+	for(int y=0; y<layer.sizeOnMonitor.y() && y+layer.originOnMonitor.y()<this->hei; ++y)
+	{
+		auto X=  layer.originOnMonitor.x();
+		auto Y=y+layer.originOnMonitor.y();
+		unsigned char *dst=rgba.data()+4*(Y*this->wid+X);
+
+		unsigned int inLineVRAMOffset=0;
+		auto ZH=layer.zoom.x();
+		for(int x=0; x<layer.sizeOnMonitor.x() && x+layer.originOnMonitor.x()<this->wid && inLineVRAMOffset<layer.bytesPerLine; x++)
+		{
+			unsigned int VRAMAddr=lineVRAMOffset+((inLineVRAMOffset+VRAMOffsetHorizontal)&VRAMHScrollMask);
+			VRAMAddr=VRAMBase+((VRAMAddr+VRAMOffsetVertical)&VRAMVScrollMask);
+
+			unsigned char col8=VRAM[VRAMAddr];
+			if(true!=transparent || 0!=col8)
+			{
+				dst[0]=palette[col8][0];
+				dst[1]=palette[col8][1];
+				dst[2]=palette[col8][2];
+				dst[3]=255;
+			}
+			dst+=4;
+			if(0==(--ZH))
+			{
+				ZH=layer.zoom.x();
+				++inLineVRAMOffset;
+			}
+		}
+		if(0==(--ZV))
+		{
+			ZV=layer.zoom.y();
+			lineVRAMOffset+=layer.bytesPerLine;
 		}
 	}
 }

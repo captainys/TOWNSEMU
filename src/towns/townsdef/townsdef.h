@@ -74,6 +74,9 @@ enum
 
 	TOWNSADDR_VRAM_BASE=       0x80000000,
 	TOWNSADDR_VRAM_END=        0x80080000,
+
+	TOWNSADDR_VRAM2_BASE=      0x80100000,
+	TOWNSADDR_VRAM2_END=       0x80180000,
 };
 
 // When adding an IO port, make sure to register in FMTowns::FMTowns()

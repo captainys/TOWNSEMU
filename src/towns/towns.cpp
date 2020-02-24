@@ -115,8 +115,8 @@ FMTowns::FMTowns() :
 
 	VRAMAccess.SetPhysicalMemoryPointer(&physMem);
 	VRAMAccess.SetCPUPointer(&cpu);
-	mem.AddAccess(&VRAMAccess,0x80000000,0x8007FFFF);
-	mem.AddAccess(&VRAMAccess,0x80100000,0x8017FFFF);
+	mem.AddAccess(&VRAMAccess,TOWNSADDR_VRAM_BASE, TOWNSADDR_VRAM_END-1);
+	mem.AddAccess(&VRAMAccess,TOWNSADDR_VRAM2_BASE,TOWNSADDR_VRAM2_END-1);
 	mem.AddAccess(&VRAMAccess,0x82000000,0x83FFFFFF); // For IIMX High Resolution Access.
 
 	spriteRAMAccess.SetPhysicalMemoryPointer(&physMem);
