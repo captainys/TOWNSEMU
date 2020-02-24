@@ -83,3 +83,11 @@ build\egb01.obj : egb01.c
 
 build\egb01.exp : build\egb01.obj build\io.obj
 	386link build\egb01.obj -exe build\egb01.exp @LIBS.LN
+
+
+
+build\egb02.obj : egb02.c
+	hcd386 egb02.c -obj build\egb02.obj
+
+build\egb02.exp : build\egb02.obj build\io.obj
+	386link build\egb02.obj -exe build\egb02.exp @LIBS.LN

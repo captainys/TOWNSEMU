@@ -700,6 +700,9 @@ std::vector <std::string> TownsCRTC::GetStatusText(void) const
 
 std::vector <std::string> TownsCRTC::GetPageStatusText(int page) const
 {
+	Layer layer;
+	MakePageLayerInfo(layer,page);
+
 	std::vector <std::string> text;
 	std::string empty;
 
@@ -707,13 +710,15 @@ std::vector <std::string> TownsCRTC::GetPageStatusText(int page) const
 	text.back()="Page "+cpputil::Itoa(page);
 
 	text.push_back(empty);
-	auto topLeft=GetPageOriginOnMonitor(page);
-	text.back()+="Top-Left:("+cpputil::Itoa(topLeft.x())+","+cpputil::Itoa(topLeft.y())+")  ";
-	auto dim=GetPageSizeOnMonitor(page);
-	text.back()+="Display Size:("+cpputil::Itoa(dim.x())+","+cpputil::Itoa(dim.y())+")";
+	text.back()+="Top-Left:("+cpputil::Itoa(layer.originOnMonitor.x())+","+cpputil::Itoa(layer.originOnMonitor.y())+")  ";
+	text.back()+="Display Size:("+cpputil::Itoa(layer.sizeOnMonitor.x())+","+cpputil::Itoa(layer.sizeOnMonitor.y())+")";
 
 	text.push_back(empty);
-	text.back()+=cpputil::Itoa(1<<GetPageBitsPerPixel(page))+" colors";
+	text.back()+=cpputil::Itoa(layer.bitsPerPixel)+"-bit color";
+
+	text.push_back(empty);
+	text.back()+="VRAM Base="+cpputil::Uitox(layer.VRAMAddr);
+	text.back()+="  Offset="+cpputil::Uitox(layer.VRAMOffset);
 
 	return text;
 }
