@@ -212,6 +212,39 @@ std::vector <i486Debugger::CS_EIP> i486Debugger::GetBreakPoints(void) const
 	return list;
 }
 
+void i486Debugger::AddBreakOnIORead(unsigned int ioport)
+{
+	breakOnIORead.insert(ioport);
+}
+void i486Debugger::RemoveBreakOnIORead(unsigned int ioport)
+{
+	auto found=breakOnIORead.find(ioport);
+	if(breakOnIORead.end()!=found)
+	{
+		breakOnIORead.erase(found);
+	}
+}
+void i486Debugger::AddBreakOnIOWrite(unsigned int ioport)
+{
+	breakOnIOWrite.insert(ioport);
+}
+void i486Debugger::RemoveBreakOnIOWrite(unsigned int ioport)
+{
+	auto found=breakOnIOWrite.find(ioport);
+	if(breakOnIOWrite.end()!=found)
+	{
+		breakOnIOWrite.erase(found);
+	}
+}
+const std::set <unsigned int> &i486Debugger::GetBreakOnIORead(void) const
+{
+	return breakOnIORead;
+}
+const std::set <unsigned int> &i486Debugger::GetBreakOnIOWrite(void) const
+{
+	return breakOnIOWrite;
+}
+
 void i486Debugger::SetOneTimeBreakPoint(unsigned int CS,unsigned int EIP)
 {
 	oneTimeBreakPoint.SEG=CS;
@@ -350,6 +383,12 @@ void i486Debugger::MemWrite(const i486DX &cpu,const i486DX::SegmentRegister &seg
 void i486Debugger::IOWrite(const i486DX &cpu,unsigned int ioport,unsigned int data,unsigned int lengthInBytes)
 {
 	specialDebugInfo->IOWrite(*this,cpu,ioport,data,lengthInBytes);
+
+	if(breakOnIOWrite.end()!=breakOnIOWrite.find(ioport))
+	{
+		ExternalBreak("IOWrite "+cpputil::Uitox(ioport));
+	}
+
 	if(true==monitorIO)
 	{
 		std::cout << cpputil::Ustox(cpu.state.CS().value) << ":" << cpputil::Uitox(cpu.state.EIP) << " ";
@@ -365,6 +404,12 @@ void i486Debugger::IOWrite(const i486DX &cpu,unsigned int ioport,unsigned int da
 void i486Debugger::IORead(const i486DX &cpu,unsigned int ioport,unsigned int data,unsigned int lengthInBytes)
 {
 	specialDebugInfo->IORead(*this,cpu,ioport,data,lengthInBytes);
+
+	if(breakOnIORead.end()!=breakOnIORead.find(ioport))
+	{
+		ExternalBreak("IORead "+cpputil::Uitox(ioport));
+	}
+
 	if(true==monitorIO)
 	{
 		std::cout << cpputil::Ustox(cpu.state.CS().value) << ":" << cpputil::Uitox(cpu.state.EIP) << " ";

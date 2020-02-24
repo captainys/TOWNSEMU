@@ -21,6 +21,7 @@ public:
 	typedef i486DX::FarPointer CS_EIP;
 
 	std::set <CS_EIP> breakPoints;
+	std::set <unsigned int> breakOnIORead,breakOnIOWrite;
 	CS_EIP oneTimeBreakPoint;
 	std::string externalBreakReason;
 	std::map <unsigned int,std::string> ioLabel;
@@ -68,6 +69,13 @@ public:
 	void RemoveBreakPoint(CS_EIP bp);
 	void ClearBreakPoints(void);
 	std::vector <CS_EIP> GetBreakPoints(void) const;
+
+	void AddBreakOnIORead(unsigned int ioport);
+	void RemoveBreakOnIORead(unsigned int ioport);
+	void AddBreakOnIOWrite(unsigned int ioport);
+	void RemoveBreakOnIOWrite(unsigned int ioport);
+	const std::set <unsigned int> &GetBreakOnIORead(void) const;
+	const std::set <unsigned int> &GetBreakOnIOWrite(void) const;
 
 	std::vector <CSEIPLogType> GetCSEIPLog(unsigned int steps);
 
