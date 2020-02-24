@@ -104,7 +104,10 @@ void TownsRender::Render4Bit(const TownsCRTC::Layer &layer,const Vec3ub palette[
 void TownsRender::Render16Bit(const TownsCRTC::Layer &layer,const std::vector <unsigned char> &VRAM,bool transparent)
 {
 	unsigned int VRAMBase=layer.VRAMAddr;
-	unsigned int VRAMOffsetVertical=0,VRAMOffsetHorizontal=0,VRAMHScrollMask=0xFFFFFFFF,VRAMVScrollMask=0x0003FFFF;
+	unsigned int VRAMOffsetVertical=layer.VRAMOffset&~layer.HScrollMask;
+	unsigned int VRAMOffsetHorizontal=layer.VRAMOffset&layer.HScrollMask;
+	const unsigned int VRAMHScrollMask=layer.HScrollMask;
+	const unsigned int VRAMVScrollMask=layer.VScrollMask;
 	unsigned int lineVRAMOffset=0;
 	auto ZV=layer.zoom.y();
 	for(int y=0; y<layer.sizeOnMonitor.y() && y+layer.originOnMonitor.y()<this->hei; ++y)
@@ -118,7 +121,7 @@ void TownsRender::Render16Bit(const TownsCRTC::Layer &layer,const std::vector <u
 		for(int x=0; x<layer.sizeOnMonitor.x() && x+layer.originOnMonitor.x()<this->wid && inLineVRAMOffset<layer.bytesPerLine; x++)
 		{
 			unsigned int VRAMAddr=lineVRAMOffset+((inLineVRAMOffset+VRAMOffsetHorizontal)&VRAMHScrollMask);
-			VRAMAddr=VRAMBase+(VRAMAddr&VRAMVScrollMask);
+			VRAMAddr=VRAMBase+((VRAMAddr+VRAMOffsetVertical)&VRAMVScrollMask);
 
 			unsigned short col16=VRAM[VRAMAddr]|(VRAM[VRAMAddr+1]<<8);
 			if(true!=transparent || 0==(col16&0x8000))

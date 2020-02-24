@@ -397,6 +397,23 @@ void TownsCRTC::MakePageLayerInfo(Layer &layer,unsigned char page) const
 	layer.VRAMAddr=0x40000*page;
 	layer.VRAMOffset=GetPageVRAMAddressOffset(page);
 	layer.bytesPerLine=GetPageBytesPerLine(page);
+
+	if(512==layer.bytesPerLine || 1024==layer.bytesPerLine)
+	{
+		layer.HScrollMask=layer.bytesPerLine-1;
+	}
+	else
+	{
+		layer.HScrollMask=0xFFFFFFFF;
+	}
+	if(true==InSinglePageMode() && 0==page)
+	{
+		layer.VScrollMask=0x7FFFF;
+	}
+	else
+	{
+		layer.VScrollMask=0x3FFFF;
+	}
 }
 
 /* virtual */ void TownsCRTC::IOWriteByte(unsigned int ioport,unsigned int data)
@@ -484,7 +501,7 @@ void TownsCRTC::MakePageLayerInfo(Layer &layer,unsigned char page) const
 		state.crtcAddrLatch=data&0x1f;
 		break;
 	case TOWNSIO_CRTC_DATA_LOW://            0x442,
-		state.crtcReg[state.crtcAddrLatch]=(data&0xfff);
+		state.crtcReg[state.crtcAddrLatch]=(data&0xffff);
 		break;
 	case TOWNSIO_CRTC_DATA_HIGH://           0x443,
 		break;
@@ -719,6 +736,12 @@ std::vector <std::string> TownsCRTC::GetPageStatusText(int page) const
 	text.push_back(empty);
 	text.back()+="VRAM Base="+cpputil::Uitox(layer.VRAMAddr);
 	text.back()+="  Offset="+cpputil::Uitox(layer.VRAMOffset);
+
+	text.push_back(empty);
+	text.back()+="BytesPerLine="+cpputil::Uitox(layer.bytesPerLine);
+
+	text.push_back(empty);
+	text.back()+="Zoom=("+cpputil::Uitox(layer.zoom.x())+","+cpputil::Uitox(layer.zoom.y())+")";
 
 	return text;
 }

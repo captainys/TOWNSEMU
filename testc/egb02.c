@@ -61,13 +61,17 @@ int main(void)
 	EGB_writePage(EGB_work,0);
 	EGB_color(EGB_work,EGB_BACKGROUND_COLOR,0x8000);
 	EGB_clearScreen(EGB_work);
+	EGB_displayStart(EGB_work,2,2,2);
+	EGB_displayStart(EGB_work,3,320,240);
 
 	EGB_writePage(EGB_work,1);
 	EGB_color(EGB_work,EGB_BACKGROUND_COLOR,0x8000);
 	EGB_clearScreen(EGB_work);
+	EGB_displayStart(EGB_work,2,2,2);
+	EGB_displayStart(EGB_work,3,320,240);
 
 
-	EGB_writePage(EGB_work,0);
+	EGB_writePage(EGB_work,1);
 
 	EGB_color(EGB_work,EGB_FOREGROUND_COLOR,0x7FFF);
 	EGB_writeMode(EGB_work,EGB_PSET);
@@ -75,12 +79,28 @@ int main(void)
 	EGB_connect(EGB_work,seihou);
 	EGB_connect(EGB_work,hishigata);
 
-	EGB_writePage(EGB_work,1);
+	EGB_writePage(EGB_work,0);
 
 	EGB_color(EGB_work,EGB_FOREGROUND_COLOR,0x001F);
 	EGB_writeMode(EGB_work,EGB_PSET);
 
 	EGB_unConnect(EGB_work,taikaku);
+
+
+	{
+		int y;
+		EGB_writePage(EGB_work,1);
+		for(y=0; y<=256; y+=8)
+		{
+			EGB_displayStart(EGB_work,1,0,y);
+		}
+
+		EGB_writePage(EGB_work,0);
+		for(y=0; y<=256; y+=8)
+		{
+			EGB_displayStart(EGB_work,1,0,y);
+		}
+	}
 
 	return 0;
 }

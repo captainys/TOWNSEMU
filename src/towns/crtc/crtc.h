@@ -84,6 +84,8 @@ public:
 		Vec2i VRAMCoverage1X;
 		Vec2i zoom;
 		unsigned int bytesPerLine;
+
+		unsigned int HScrollMask,VScrollMask;
 	};
 	class ScreenModeCache
 	{

@@ -3279,6 +3279,37 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				}
 			}
 			break;
+		case 5: // IMUL R/M8
+			{
+				clocksPassed=(OPER_ADDR==op1.operandType ? 18 : 13);
+				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+				if(true!=state.exception)
+				{
+					int AL=GetAL();
+					int OP=value.byteData[0];
+					if(0!=(AL&0x80))
+					{
+						AL-=0x100;
+					}
+					if(0!=(OP&0x80))
+					{
+						OP-=0x100;
+					}
+					auto imul=AL*OP;
+					SetAX(imul&0xFFFF);
+					if(0==(imul&0xFF00) || 0xFF00==(imul&0xFF00))
+					{
+						SetCF(false);
+						SetOF(false);
+					}
+					else
+					{
+						SetCF(true);
+						SetOF(true);
+					}
+				}
+			}
+			break;
 		case 6: // DIV
 			{
 				clocksPassed=16;
