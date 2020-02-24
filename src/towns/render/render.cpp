@@ -71,33 +71,81 @@ void TownsRender::Render(unsigned int page,const TownsCRTC::Layer &layer,const T
 }
 void TownsRender::Render4Bit(const TownsCRTC::Layer &layer,const Vec3ub palette[16],const std::vector <unsigned char> &VRAM,bool transparent)
 {
-	unsigned int VRAMAddr=layer.VRAMAddr;
+	const unsigned int VRAMAddr=layer.VRAMAddr;
 
-	for(int y=0; y<layer.sizeOnMonitor.y(); ++y)
+/*	if(layer.zoom==Vec2i::Make(1,1))
 	{
-		const unsigned char *src=VRAM.data()+VRAMAddr+layer.bytesPerLine*y;
-		unsigned char *dst=rgba.data()+4*y*this->wid;
-		for(int x=0; x<layer.sizeOnMonitor.x(); x+=2)
+		for(int y=0; y<layer.sizeOnMonitor.y(); ++y)
 		{
-			unsigned char vrambyte=*src;
-			unsigned char pix=(vrambyte&0x0f);
-			if(0!=pix ||true!=transparent)
+			const unsigned char *src=VRAM.data()+VRAMAddr+((layer.VRAMOffset+layer.bytesPerLine*y)&layer.VScrollMask);
+			unsigned char *dst=rgba.data()+4*y*this->wid;
+			for(int x=0; x<layer.sizeOnMonitor.x(); x+=2)
 			{
-				dst[0]=palette[pix][0];
-				dst[1]=palette[pix][1];
-				dst[2]=palette[pix][2];
-				dst[3]=255;
+				unsigned char vrambyte=*src;
+				unsigned char pix=(vrambyte&0x0f);
+				if(0!=pix ||true!=transparent)
+				{
+					dst[0]=palette[pix][0];
+					dst[1]=palette[pix][1];
+					dst[2]=palette[pix][2];
+					dst[3]=255;
+				}
+				pix=(vrambyte&0xf0)>>4;
+				if(0!=pix ||true!=transparent)
+				{
+					dst[4]=palette[pix][0];
+					dst[5]=palette[pix][1];
+					dst[6]=palette[pix][2];
+					dst[7]=255;
+				}
+				++src;
+				dst+=8;
 			}
-			pix=(vrambyte&0xf0)>>4;
-			if(0!=pix ||true!=transparent)
+		}
+	}
+	else */
+	{
+		auto ZV=layer.zoom.y();
+		const auto ZH=layer.zoom.x();
+		int VRAMy=0;
+		for(int y=0; y<layer.sizeOnMonitor.y(); ++y)
+		{
+			const unsigned char *src=VRAM.data()+VRAMAddr+((layer.VRAMOffset+layer.bytesPerLine*VRAMy)&layer.VScrollMask);
+			unsigned char *dst=rgba.data()+4*y*this->wid;
+			for(int x=0; x<layer.sizeOnMonitor.x(); x+=2)
 			{
-				dst[4]=palette[pix][0];
-				dst[5]=palette[pix][1];
-				dst[6]=palette[pix][2];
-				dst[7]=255;
+				unsigned char vrambyte=*src;
+				unsigned char pix=(vrambyte&0x0f);
+				for(int i=0; i<ZH; ++i)
+				{
+					if(0!=pix ||true!=transparent)
+					{
+						dst[0]=palette[pix][0];
+						dst[1]=palette[pix][1];
+						dst[2]=palette[pix][2];
+						dst[3]=255;
+					}
+					dst+=4;
+				}
+				pix=(vrambyte&0xf0)>>4;
+				for(int i=0; i<ZH; ++i)
+				{
+					if(0!=pix ||true!=transparent)
+					{
+						dst[0]=palette[pix][0];
+						dst[1]=palette[pix][1];
+						dst[2]=palette[pix][2];
+						dst[3]=255;
+					}
+					dst+=4;
+				}
+				++src;
 			}
-			++src;
-			dst+=8;
+			if(0==(--ZV))
+			{
+				ZV=layer.zoom.y();
+				++VRAMy;
+			}
 		}
 	}
 }

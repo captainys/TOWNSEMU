@@ -44,6 +44,14 @@ public:
 		v[0]=x;
 		v[1]=y;
 	}
+	inline bool operator==(const VectorTemplate &incoming) const
+	{
+		return incoming.v[0]==this->v[0] && incoming.v[1]==this->v[1];
+	}
+	inline bool operator!=(const VectorTemplate &incoming) const
+	{
+		return incoming.v[0]!=this->v[0] || incoming.v[1]!=this->v[1];
+	}
 };
 
 template <class ComponentType>
@@ -104,6 +112,14 @@ public:
 		v[0]=x;
 		v[1]=y;
 		v[2]=z;
+	}
+	inline bool operator==(const VectorTemplate &incoming) const
+	{
+		return incoming.v[0]==this->v[0] && incoming.v[1]==this->v[1] && incoming.v[2]==this->v[2];
+	}
+	inline bool operator!=(const VectorTemplate &incoming) const
+	{
+		return incoming.v[0]!=this->v[0] || incoming.v[1]!=this->v[1] || incoming.v[2]!=this->v[2];
 	}
 };
 
