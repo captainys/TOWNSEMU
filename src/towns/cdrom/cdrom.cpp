@@ -5,12 +5,29 @@
 
 
 
+TownsCDROM::State::State()
+{
+	imgPtr=new DiscImage;
+}
+TownsCDROM::State::~State()
+{
+	delete imgPtr;
+}
+const DiscImage &TownsCDROM::State::GetDisc(void) const
+{
+	return *imgPtr;
+}
+DiscImage &TownsCDROM::State::GetDisc(void)
+{
+	return *imgPtr;
+}
 void TownsCDROM::State::Reset(void)
 {
 	// Do not clear imgFileName on reset.
 	ResetMPU();
 	enableSIRQ=false;
 	enableDEI=false;
+	discChanged=false;
 }
 
 void TownsCDROM::State::ResetMPU(void)
@@ -244,4 +261,11 @@ std::vector <std::string> TownsCDROM::GetStatusText(void) const
 	text.back()+=(true==state.enableDEI ? "1" : "0");
 
 	return text;
+}
+
+unsigned int TownsCDROM::LoadDiscImage(const std::string &fName)
+{
+	auto return_value=state.GetDisc().Open(fName);
+	state.discChanged=true;
+	return return_value;
 }

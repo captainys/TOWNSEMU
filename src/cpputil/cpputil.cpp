@@ -41,20 +41,28 @@ bool cpputil::WriteBinaryFile(const std::string &fName,unsigned long long length
 
 std::vector <std::string> cpputil::Parser(const char str[])
 {
-	int state=0;
+	const int STATE_OUTSIDE=0,STATE_WORD=1,STATE_DOUBLEQUOTE=2;
+	const char DQ='\"';
+	int state=STATE_OUTSIDE;
 	std::string curStr;
 	std::vector <std::string> argv;
 	for(int i=0; 0!=str[i]; ++i)
 	{
-		if(0==state)
+		if(STATE_OUTSIDE==state)
 		{
-			if(' '!=str[i] && '\t'!=str[i])
+			if(DQ==str[i])
+			{
+				curStr="";
+				state=STATE_DOUBLEQUOTE;
+			}
+			else if(' '!=str[i] && '\t'!=str[i])
 			{
 				curStr.push_back(str[i]);
-				state=1;
+				state=STATE_WORD;
 			}
+
 		}
-		else if(1==state)
+		else if(STATE_WORD==state)
 		{
 			if(' '==str[i] || '\t'==str[i] || 0==str[i+1])
 			{
@@ -64,7 +72,20 @@ std::vector <std::string> cpputil::Parser(const char str[])
 				}
 				argv.push_back((std::string &&)curStr);
 				curStr="";
-				state=0;
+				state=STATE_OUTSIDE;
+			}
+			else
+			{
+				curStr.push_back(str[i]);
+			}
+		}
+		else if(STATE_DOUBLEQUOTE==state)
+		{
+			if(DQ==str[i])
+			{
+				argv.push_back((std::string&&)curStr);
+				curStr="";
+				state=STATE_OUTSIDE;
 			}
 			else
 			{

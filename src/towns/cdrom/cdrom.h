@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <string>
+#include "discimg.h"
 #include "device.h"
 #include "townsdef.h"
 
@@ -69,6 +70,17 @@ public:
 
 		bool DMATransfer,CPUTransfer; // Both are not supposed to be 1, but I/O can set it that way.
 
+		bool discChanged;
+
+	private:
+		DiscImage *imgPtr;
+	public:
+		State();
+		~State();
+
+		const DiscImage &GetDisc(void) const;
+		DiscImage &GetDisc(void);
+
 		void Reset(void);
 		void ResetMPU(void);
 	};
@@ -86,6 +98,14 @@ public:
 	virtual unsigned int IOReadByte(unsigned int ioport);
 
 	std::vector <std::string> GetStatusText(void) const;
+
+	/*! Loads a disc-image file.  It can be .CUE or .ISO format file.
+	    The return value is an error code of DiscImage class.
+	    Use DiscImage::ErrorCodeToText(return_value) to get the text if
+	    the return_value is not DiscImage::ERROR_NOERROR.
+	    It also sets discChanged flag.
+	*/
+	unsigned int LoadDiscImage(const std::string &fName);
 };
 
 

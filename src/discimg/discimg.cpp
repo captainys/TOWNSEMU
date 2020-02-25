@@ -52,6 +52,7 @@ DiscImage::DiscImage()
 void DiscImage::CleanUp(void)
 {
 	fileType=FILETYPE_NONE;
+	binFileSize=0;
 	fName="";
 	binFName="";
 	num_sectors=0;
@@ -84,8 +85,6 @@ unsigned int DiscImage::OpenISO(const std::string &fName)
 		return ERROR_CANNOT_OPEN;
 	}
 
-	CleanUp();
-
 	auto begin=ifp.tellg();
 	ifp.seekg(0,std::ios::end);
 	auto end=ifp.tellg();
@@ -96,6 +95,9 @@ unsigned int DiscImage::OpenISO(const std::string &fName)
 	{
 		return ERROR_SECTOR_SIZE;
 	}
+
+	CleanUp();
+
 
 	fileType=FILETYPE_ISO;
 	num_sectors=(unsigned int)(fSize/2048);

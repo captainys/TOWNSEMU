@@ -63,6 +63,7 @@ public:
 		CMD_LET,
 
 		CMD_CMOSLOAD,
+		CMD_CDLOAD,
 	};
 
 	enum
@@ -169,6 +170,7 @@ public:
 	void Execute_Let(FMTowns &towns,Command &cmd);
 
 	void Execute_CMOSLoad(FMTowns &towns,Command &cmd);
+	void Execute_CDLoad(FMTowns &towns,Command &cmd);
 };
 
 

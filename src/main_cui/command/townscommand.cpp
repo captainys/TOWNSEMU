@@ -50,6 +50,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["TYPE"]=CMD_TYPE_KEYBOARD;
 	primaryCmdMap["LET"]=CMD_LET;
 	primaryCmdMap["CMOSLOAD"]=CMD_CMOSLOAD;
+	primaryCmdMap["CDLOAD"]=CMD_CDLOAD;
 
 	featureMap["CMDLOG"]=ENABLE_CMDLOG;
 	featureMap["AUTODISASM"]=ENABLE_DISASSEMBLE_EVERY_INST;
@@ -152,6 +153,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Load a register value." << std::endl;
 	std::cout << "CMOSLOAD filename" << std::endl;
 	std::cout << "  Load CMOS." << std::endl;
+	std::cout << "CDLOAD filename" << std::endl;
+	std::cout << "  Load CD-ROM image." << std::endl;
 	std::cout << "CDROM" << std::endl;
 	std::cout << "  CD-ROM Status." << std::endl;
 
@@ -387,6 +390,10 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,Command &c
 		break;
 	case CMD_CMOSLOAD:
 		Execute_CMOSLoad(towns,cmd);
+		break;
+
+	case CMD_CDLOAD:
+		Execute_CDLoad(towns,cmd);
 		break;
 	}
 }
@@ -995,5 +1002,22 @@ void TownsCommandInterpreter::Execute_CMOSLoad(FMTowns &towns,Command &cmd)
 	else
 	{
 		PrintError(ERROR_TOO_FEW_ARGS);
+	}
+}
+
+void TownsCommandInterpreter::Execute_CDLoad(FMTowns &towns,Command &cmd)
+{
+	if(2<=cmd.argv.size())
+	{
+		auto errCode=towns.cdrom.LoadDiscImage(cmd.argv[1]);
+		std::cout << "[" << cmd.argv[1] << "]" << std::endl;
+		if(DiscImage::ERROR_NOERROR==errCode)
+		{
+			std::cout << "Loaded Disc Image:" << cmd.argv[1] << std::endl;
+		}
+		else
+		{
+			std::cout << "Load Error:" << DiscImage::ErrorCodeToText(errCode) << std::endl;
+		}
 	}
 }

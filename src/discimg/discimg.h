@@ -59,7 +59,8 @@ public:
 		MinSecFrm start,end;
 		MinSecFrm postGap;
 	};
-	unsigned int fileType;
+	unsigned int fileType=FILETYPE_NONE;
+	unsigned long long int binFileSize=0;
 	std::string fName,binFName;
 	unsigned int num_sectors;
 	std::vector <Track> tracks;
@@ -71,6 +72,12 @@ public:
 	unsigned int Open(const std::string &fName);
 	unsigned int OpenCUE(const std::string &fName);
 	unsigned int OpenISO(const std::string &fName);
+
+	/*! Returns the number of tracks.
+	    Returns zero if image is not loaded.
+	*/
+	unsigned int GetNumTracks(void) const;
+
 	static MinSecFrm HSGtoMSF(unsigned int HSG);
 	static unsigned int MSFtoHSG(MinSecFrm MSF);
 };
