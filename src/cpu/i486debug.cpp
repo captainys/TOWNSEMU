@@ -148,6 +148,16 @@ i486Debugger::i486Debugger()
 {
 	specialDebugInfo=new SpecialDebugInfo;
 	symTablePtr=new i486SymbolTable;
+	breakOnIORead.resize(i486DX::I486_NUM_IOPORT);
+	breakOnIOWrite.resize(i486DX::I486_NUM_IOPORT);
+	for(auto &b : breakOnIORead)
+	{
+		b=false;
+	}
+	for(auto &b : breakOnIOWrite)
+	{
+		b=false;
+	}
 	CleanUp();
 }
 i486Debugger::~i486Debugger()
@@ -214,35 +224,43 @@ std::vector <i486Debugger::CS_EIP> i486Debugger::GetBreakPoints(void) const
 
 void i486Debugger::AddBreakOnIORead(unsigned int ioport)
 {
-	breakOnIORead.insert(ioport);
+	breakOnIORead[ioport%(i486DX::I486_NUM_IOPORT)]=true;
 }
 void i486Debugger::RemoveBreakOnIORead(unsigned int ioport)
 {
-	auto found=breakOnIORead.find(ioport);
-	if(breakOnIORead.end()!=found)
-	{
-		breakOnIORead.erase(found);
-	}
+	breakOnIORead[ioport%(i486DX::I486_NUM_IOPORT)]=false;
 }
 void i486Debugger::AddBreakOnIOWrite(unsigned int ioport)
 {
-	breakOnIOWrite.insert(ioport);
+	breakOnIOWrite[ioport%(i486DX::I486_NUM_IOPORT)]=true;
 }
 void i486Debugger::RemoveBreakOnIOWrite(unsigned int ioport)
 {
-	auto found=breakOnIOWrite.find(ioport);
-	if(breakOnIOWrite.end()!=found)
+	breakOnIOWrite[ioport%(i486DX::I486_NUM_IOPORT)]=false;
+}
+const std::vector <unsigned int> i486Debugger::GetBreakOnIORead(void) const
+{
+	std::vector <unsigned int> ioport;
+	for(unsigned int i=0; i<i486DX::I486_NUM_IOPORT; ++i)
 	{
-		breakOnIOWrite.erase(found);
+		if(true==breakOnIORead[i])
+		{
+			ioport.push_back(i);
+		}
 	}
+	return ioport;
 }
-const std::set <unsigned int> &i486Debugger::GetBreakOnIORead(void) const
+const std::vector <unsigned int> i486Debugger::GetBreakOnIOWrite(void) const
 {
-	return breakOnIORead;
-}
-const std::set <unsigned int> &i486Debugger::GetBreakOnIOWrite(void) const
-{
-	return breakOnIOWrite;
+	std::vector <unsigned int> ioport;
+	for(unsigned int i=0; i<i486DX::I486_NUM_IOPORT; ++i)
+	{
+		if(true==breakOnIOWrite[i])
+		{
+			ioport.push_back(i);
+		}
+	}
+	return ioport;
 }
 
 void i486Debugger::SetOneTimeBreakPoint(unsigned int CS,unsigned int EIP)
@@ -384,7 +402,7 @@ void i486Debugger::IOWrite(const i486DX &cpu,unsigned int ioport,unsigned int da
 {
 	specialDebugInfo->IOWrite(*this,cpu,ioport,data,lengthInBytes);
 
-	if(breakOnIOWrite.end()!=breakOnIOWrite.find(ioport))
+	if(true==breakOnIOWrite[ioport&(i486DX::I486_NUM_IOPORT-1)])
 	{
 		ExternalBreak("IOWrite "+cpputil::Uitox(ioport));
 	}
@@ -405,7 +423,7 @@ void i486Debugger::IORead(const i486DX &cpu,unsigned int ioport,unsigned int dat
 {
 	specialDebugInfo->IORead(*this,cpu,ioport,data,lengthInBytes);
 
-	if(breakOnIORead.end()!=breakOnIORead.find(ioport))
+	if(true==breakOnIORead[ioport&(i486DX::I486_NUM_IOPORT-1)])
 	{
 		ExternalBreak("IORead "+cpputil::Uitox(ioport));
 	}

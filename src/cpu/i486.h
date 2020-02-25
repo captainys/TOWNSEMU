@@ -33,6 +33,7 @@ public:
 	enum
 	{
 		I486_OPCODE_NEED_SECOND_BYTE=0x0F,
+		I486_NUM_IOPORT=65536,
 	};
 
 	enum
