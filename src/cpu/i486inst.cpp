@@ -5694,7 +5694,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_OPCODE_SHRD_RM_CL://       0x0FAD,
 		{
 			unsigned int count;
-			if(I486_OPCODE_SHLD_RM_CL==inst.opCode)
+			if(I486_OPCODE_SHLD_RM_CL==inst.opCode ||
+			   I486_OPCODE_SHRD_RM_CL==inst.opCode)
 			{
 				clocksPassed=3;
 				count=GetCL()&0x1F;
