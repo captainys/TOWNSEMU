@@ -24,6 +24,8 @@ add_subdirectory(towns)
 
 add_subdirectory(tests)
 
+add_subdirectory(discimg)
+
 add_subdirectory(main_cui)
 
 
