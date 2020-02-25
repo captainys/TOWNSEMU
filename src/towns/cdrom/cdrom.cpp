@@ -146,3 +146,102 @@ TownsCDROM::TownsCDROM()
 	}
 	return 0xff;
 }
+
+std::vector <std::string> TownsCDROM::GetStatusText(void) const
+{
+	std::vector <std::string> text;
+
+	text.push_back("");
+	text.back()+="Last Command:"+cpputil::Ubtox(state.cmd);
+
+	switch(state.cmd&0x9F)
+	{
+	case CDCMD_SEEK://       0x00,
+		text.back()+="(SEEK)";
+		break;
+	case CDCMD_MODE2READ://  0x01,
+		text.back()+="(MODE2READ)";
+		break;
+	case CDCMD_MODE1READ://  0x02,
+		text.back()+="(MODE1READ)";
+		break;
+	case CDCMD_RAWREAD://    0x03,
+		text.back()+="(RAWREAD)";
+		break;
+	case CDCMD_CDDAPLAY://   0x04,
+		text.back()+="(CDDAPLAY)";
+		break;
+	case CDCMD_TOCREAD://    0x05,
+		text.back()+="(TOCREAD)";
+		break;
+	case CDCMD_SUBQREAD://   0x06,
+		text.back()+="(SUBQREAD)";
+		break;
+	case CDCMD_UNKNOWN1://   0x1F, // NOP and requst status? I guess?
+		text.back()+="(UNKNOWN1)";
+		break;
+
+	case CDCMD_SETSTATE://   0x80,
+		text.back()+="(SETSTATE)";
+		break;
+	case CDCMD_CDDASET://    0x81,
+		text.back()+="(CDDASET)";
+		break;
+	case CDCMD_CDDASTOP://   0x84,
+		text.back()+="(CDDASTOP)";
+		break;
+	case CDCMD_CDDAPAUSE://  0x85,
+		text.back()+="(CDDAPAUSE)";
+		break;
+	case CDCMD_UNKNOWN2://   0x86,
+		text.back()+="(UNKNOWN2)";
+		break;
+	case CDCMD_CDDARESUME:// 0x87,
+		text.back()+="(CDDARESUME)";
+		break;
+	}
+	if(0!=(state.cmd&0x40))
+	{
+		text.back()+="+IRQ";
+	}
+	if(0!=(state.cmd&0x20))
+	{
+		text.back()+="+REQSTA";
+	}
+
+
+	text.push_back("Param Queue (Towns->CD):");
+	for(int i=0; i<state.nParamQueue; ++i)
+	{
+		text.back()+=cpputil::Ubtox(state.paramQueue[i])+" ";
+	}
+
+	text.push_back("Status Queue (CD->Towns):");
+	for(int i=0; i<state.nStatusQueue; ++i)
+	{
+		text.back()+=cpputil::Ubtox(state.statusQueue[i])+" ";
+	}
+
+	text.push_back("DMA Transfer:");
+	text.back()+=(true==state.DMATransfer ? "1" : "0");
+	text.back()+=("  CPU Transfer:");
+	text.back()+=(true==state.CPUTransfer ? "1" : "0");
+
+	text.push_back("");
+	text.back()+="SIRQ:";
+	text.back()+=(true==state.SIRQ ? "1" : "0");
+	text.back()+="  DEI:";
+	text.back()+=(true==state.DEI ? "1" : "0");
+	text.back()+="  STSF:";
+	text.back()+=(true==state.STSF ? "1" : "0");
+	text.back()+="  DTSF:";
+	text.back()+=(true==state.DTSF ? "1" : "0");
+	text.back()+="  DRY:";
+	text.back()+=(true==state.DRY ? "1" : "0");
+	text.back()+="  enableSIRQ:";
+	text.back()+=(true==state.enableSIRQ ? "1" : "0");
+	text.back()+="  enableDEI:";
+	text.back()+=(true==state.enableDEI ? "1" : "0");
+
+	return text;
+}

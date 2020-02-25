@@ -92,7 +92,8 @@ public:
 		DUMP_CSEIP_LOG,
 		DUMP_SYMBOL_TABLE,
 		DUMP_MEMORY,
-		DUMP_DICRAM,
+		DUMP_CMOS,
+		DUMP_CDROM,
 	};
 
 	enum

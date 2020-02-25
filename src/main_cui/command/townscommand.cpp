@@ -77,7 +77,8 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	dumpableMap["RIDT"]=DUMP_REAL_MODE_INT_VECTOR;
 	dumpableMap["SYM"]=DUMP_SYMBOL_TABLE;
 	dumpableMap["MEM"]=DUMP_MEMORY;
-	dumpableMap["DICRAM"]=DUMP_DICRAM;
+	dumpableMap["CMOS"]=DUMP_CMOS;
+	dumpableMap["CDROM"]=DUMP_CDROM;
 
 
 	breakEventMap["IWC1"]=   BREAK_ON_PIC_IWC1;
@@ -151,6 +152,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Load a register value." << std::endl;
 	std::cout << "CMOSLOAD filename" << std::endl;
 	std::cout << "  Load CMOS." << std::endl;
+	std::cout << "CDROM" << std::endl;
+	std::cout << "  CD-ROM Status." << std::endl;
 
 	std::cout << "" << std::endl;
 
@@ -195,8 +198,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Interval Timer (i8253)" << std::endl;
 	std::cout << "MEM" << std::endl;
 	std::cout << "  Memory Settings" << std::endl;
-	std::cout << "DICRAM addr" << std::endl;
-	std::cout << "  Dictionary (Battery-Backed) RAM" << std::endl;
+	std::cout << "CMOS addr" << std::endl;
+	std::cout << "  CMOS RAM" << std::endl;
 
 	std::cout << "" << std::endl;
 
@@ -586,7 +589,7 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 				std::cout << str << std::endl;
 			}
 			break;
-		case DUMP_DICRAM:
+		case DUMP_CMOS:
 			if(3<=cmd.argv.size())
 			{
 				auto addr=cpputil::Xtoi(cmd.argv[2].c_str());
@@ -608,6 +611,12 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 			else
 			{
 				PrintError(ERROR_TOO_FEW_ARGS);
+			}
+			break;
+		case DUMP_CDROM:
+			for(auto str : towns.cdrom.GetStatusText())
+			{
+				std::cout << str << std::endl;
 			}
 			break;
 		}
