@@ -678,6 +678,17 @@ std::vector <std::string> TownsCRTC::GetStatusText(void) const
 	}
 
 	text.push_back(empty);
+	text.back()="Sifters (Isn't it Shifter?):";
+	for(int i=0; i<2; ++i)
+	{
+		text.back()+=cpputil::Ubtox(state.sifter[i]);
+		text.back().push_back(' ');
+	}
+	text.back()+="PLT:";
+	text.back()+=cpputil::Ubtox((state.sifter[1]>>4)&3);
+
+
+	text.push_back(empty);
 	text.back()="Address Latch: ";
 	text.back()+=cpputil::Uitox(state.crtcAddrLatch)+"H";
 
@@ -710,7 +721,35 @@ std::vector <std::string> TownsCRTC::GetStatusText(void) const
 		text.insert(text.end(),pageStat1.begin(),pageStat1.end());
 	}
 
-	
+	text.push_back(empty);
+	text.back()+="16-Color Palette";
+	for(int page=0; page<2; ++page)
+	{
+		text.push_back(empty);
+		text.back()+="Page";
+		text.back().push_back((char)('0'+page));
+		text.back().push_back(':');
+		for(int i=0; i<16; ++i)
+		{
+			text.back()+=cpputil::Ubtox(state.palette.plt16[page][i][0]);
+			text.back()+=cpputil::Ubtox(state.palette.plt16[page][i][1]);
+			text.back()+=cpputil::Ubtox(state.palette.plt16[page][i][2]);
+			text.back().push_back(' ');
+		}
+	}
+	text.push_back(empty);
+	text.back()+="256-Color Palette";
+	for(int i=0; i<256; i+=16)
+	{
+		text.push_back(empty);
+		for(int j=0; j<16; ++j)
+		{
+			text.back()+=cpputil::Ubtox(state.palette.plt256[i+j][0]);
+			text.back()+=cpputil::Ubtox(state.palette.plt256[i+j][1]);
+			text.back()+=cpputil::Ubtox(state.palette.plt256[i+j][2]);
+			text.back().push_back(' ');
+		}
+	}
 
 	return text;
 }

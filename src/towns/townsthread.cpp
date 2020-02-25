@@ -57,7 +57,7 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 			townsPtr->cpu.AttachDebugger(&townsPtr->debugger);
 			townsPtr->cpu.enableCallStack=true;
 			for(unsigned int clocksPassed=0; 
-			    clocksPassed<1000 && true!=townsPtr->CheckAbort();
+			    clocksPassed<10000 && true!=townsPtr->CheckAbort();
 			    )
 			{
 				clocksPassed+=townsPtr->RunOneInstruction();
