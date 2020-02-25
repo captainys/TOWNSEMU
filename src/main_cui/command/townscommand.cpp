@@ -91,8 +91,10 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	breakEventMap["WRFMRVRAM"]=BREAK_ON_FMRVRAM_WRITE;
 	breakEventMap["IOR"]=BREAK_ON_IOREAD;
 	breakEventMap["IOW"]=BREAK_ON_IOWRITE;
+	breakEventMap["VRAMR"]=BREAK_ON_VRAMREAD;
+	breakEventMap["VRAMW"]=BREAK_ON_VRAMWRITE;
+	breakEventMap["VRAMRW"]=BREAK_ON_VRAMREADWRITE;
 }
-
 
 void TownsCommandInterpreter::PrintHelp(void) const
 {
@@ -210,6 +212,9 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "WRFMRVRAM" << std::endl;
 	std::cout << "IOR ioport" << std::endl;
 	std::cout << "IOW ioport" << std::endl;
+	std::cout << "VRAMR" << std::endl;
+	std::cout << "VRAMW" << std::endl;
+	std::cout << "VRAMRW" << std::endl;
 }
 
 void TownsCommandInterpreter::PrintError(int errCode) const
@@ -697,6 +702,15 @@ void TownsCommandInterpreter::Execute_BreakOn(FMTowns &towns,Command &cmd)
 				PrintError(ERROR_TOO_FEW_ARGS);
 			}
 			break;
+		case BREAK_ON_VRAMREAD:
+			towns.SetUpVRAMAccess(true,false);
+			break;
+		case BREAK_ON_VRAMWRITE:
+			towns.SetUpVRAMAccess(false,true);
+			break;
+		case BREAK_ON_VRAMREADWRITE:
+			towns.SetUpVRAMAccess(true,true);
+			break;
 		}
 		std::cout << reason << " is ON." << std::endl;
 	}
@@ -763,6 +777,11 @@ void TownsCommandInterpreter::Execute_ClearBreakOn(FMTowns &towns,Command &cmd)
 			{
 				PrintError(ERROR_TOO_FEW_ARGS);
 			}
+			break;
+		case BREAK_ON_VRAMREAD:
+		case BREAK_ON_VRAMWRITE:
+		case BREAK_ON_VRAMREADWRITE:
+			towns.SetUpVRAMAccess(false,false);
 			break;
 		}
 		std::cout << iter->first << " is OFF." << std::endl;

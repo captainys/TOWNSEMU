@@ -67,7 +67,7 @@ int main(void)
 	EGB_unConnect(EGB_work,seihou);
 
 	MOS_start(MOS_work,MosWorkSize);
-	MOS_setpos(100,100);
+	MOS_setpos(124,100);
 	MOS_disp(1);
 	IOWriteByte(TOWNSIO_VM_HOST_IF_CMD_STATUS,TOWNS_VMIF_CMD_PAUSE);
 
