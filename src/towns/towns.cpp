@@ -117,9 +117,9 @@ FMTowns::FMTowns() :
 
 	VRAMAccess.SetPhysicalMemoryPointer(&physMem);
 	VRAMAccess.SetCPUPointer(&cpu);
-	mem.AddAccess(&VRAMAccess,TOWNSADDR_VRAM_BASE, TOWNSADDR_VRAM_END-1);
-	mem.AddAccess(&VRAMAccess,TOWNSADDR_VRAM2_BASE,TOWNSADDR_VRAM2_END-1);
-	mem.AddAccess(&VRAMAccess,0x82000000,0x83FFFFFF); // For IIMX High Resolution Access.
+	VRAMAccessDebug.SetPhysicalMemoryPointer(&physMem);
+	VRAMAccessDebug.SetCPUPointer(&cpu);
+	SetUpVRAMAccess(false,false);
 
 	spriteRAMAccess.SetPhysicalMemoryPointer(&physMem);
 	spriteRAMAccess.SetCPUPointer(&cpu);
@@ -477,6 +477,24 @@ bool FMTowns::CheckRenderingTimer(TownsRender &render,Outside_World &world)
 		return true;
 	}
 	return false;
+}
+
+void FMTowns::SetUpVRAMAccess(bool breakOnRead,bool breakOnWrite)
+{
+	if(true!=breakOnRead && true!=breakOnWrite)
+	{
+		mem.AddAccess(&VRAMAccess,TOWNSADDR_VRAM_BASE, TOWNSADDR_VRAM_END-1);
+		mem.AddAccess(&VRAMAccess,TOWNSADDR_VRAM2_BASE,TOWNSADDR_VRAM2_END-1);
+		mem.AddAccess(&VRAMAccess,0x82000000,0x83FFFFFF); // For IIMX High Resolution Access.
+	}
+	else
+	{
+		VRAMAccessDebug.breakOnRead=breakOnRead;
+		VRAMAccessDebug.breakOnWrite=breakOnWrite;
+		mem.AddAccess(&VRAMAccessDebug,TOWNSADDR_VRAM_BASE, TOWNSADDR_VRAM_END-1);
+		mem.AddAccess(&VRAMAccessDebug,TOWNSADDR_VRAM2_BASE,TOWNSADDR_VRAM2_END-1);
+		mem.AddAccess(&VRAMAccessDebug,0x82000000,0x83FFFFFF); // For IIMX High Resolution Access.
+	}
 }
 
 void FMTowns::ForceRender(class TownsRender &render,class Outside_World &world)

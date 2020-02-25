@@ -139,6 +139,7 @@ public:
 	TownsDicROMandDicRAMAccess dicROMandDicRAMAccess;
 	TownsFontROMAccess fontROMAccess;
 	TownsVRAMAccess VRAMAccess;
+	TownsMemAccessDebug <TownsVRAMAccess> VRAMAccessDebug;
 	TownsSpriteRAMAccess spriteRAMAccess;
 	TownsOsROMAccess osROMAccess;
 	TownsWaveRAMAccess waveRAMAccess;
@@ -219,6 +220,12 @@ public:
 	    It does not update the rendering timer.
 	*/
 	void ForceRender(class TownsRender &render,class Outside_World &world);
+
+
+	/*! Set up VRAM access.  Can have breakOnRead/breakOnWrite flag for debugging.
+	    Zero performance penalty if both flags are false.
+	*/
+	void SetUpVRAMAccess(bool breakOnRead,bool breakOnWrite);
 
 
 	/*! I/O access for internal devices. */

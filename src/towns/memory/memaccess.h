@@ -4,6 +4,7 @@
 
 #include "physmem.h"
 #include "i486.h"
+#include "i486debug.h"
 
 class TownsMemAccess : public MemoryAccess
 {
@@ -103,6 +104,64 @@ class TownsSysROMAccess : public TownsMemAccess
 public:
 	virtual unsigned int FetchByte(unsigned int physAddr) const;
 	virtual void StoreByte(unsigned int physAddr,unsigned char data);
+};
+
+
+template <class MemAccessClass>
+class TownsMemAccessDebug : public MemAccessClass
+{
+public:
+	bool breakOnWrite=false;
+	bool breakOnRead=false;
+
+	virtual unsigned int FetchByte(unsigned int physAddr) const
+	{
+		if(true==breakOnRead && nullptr!=cpuPtr->debuggerPtr)
+		{
+			cpuPtr->debuggerPtr->ExternalBreak("Memory Read");
+		}
+		return MemAccessClass::FetchByte(physAddr);
+	}
+	virtual unsigned int FetchWord(unsigned int physAddr) const
+	{
+		if(true==breakOnRead && nullptr!=cpuPtr->debuggerPtr)
+		{
+			cpuPtr->debuggerPtr->ExternalBreak("Memory Read");
+		}
+		return MemAccessClass::FetchWord(physAddr);
+	}
+	virtual unsigned int FetchDword(unsigned int physAddr) const
+	{
+		if(true==breakOnRead && nullptr!=cpuPtr->debuggerPtr)
+		{
+			cpuPtr->debuggerPtr->ExternalBreak("Memory Read");
+		}
+		return MemAccessClass::FetchDword(physAddr);
+	}
+	virtual void StoreByte(unsigned int physAddr,unsigned char data)
+	{
+		if(true==breakOnWrite && nullptr!=cpuPtr->debuggerPtr)
+		{
+			cpuPtr->debuggerPtr->ExternalBreak("Memory Write");
+		}
+		MemAccessClass::StoreByte(physAddr,data);
+	}
+	virtual void StoreWord(unsigned int physAddr,unsigned int data)
+	{
+		if(true==breakOnWrite && nullptr!=cpuPtr->debuggerPtr)
+		{
+			cpuPtr->debuggerPtr->ExternalBreak("Memory Write");
+		}
+		MemAccessClass::StoreWord(physAddr,data);
+	}
+	virtual void StoreDword(unsigned int physAddr,unsigned int data)
+	{
+		if(true==breakOnWrite && nullptr!=cpuPtr->debuggerPtr)
+		{
+			cpuPtr->debuggerPtr->ExternalBreak("Memory Write");
+		}
+		MemAccessClass::StoreDword(physAddr,data);
+	}
 };
 
 

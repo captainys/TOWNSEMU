@@ -21,7 +21,7 @@ def Run():
 		"-FD0",
 		os.path.join(DISKDIR,"V2.1L20.bin"),
 		"-SYM",
-		"../symtables/V2.1L30.txt",
+		"../symtables/V2.1L20.txt",
 		# "-PAUSE",
 	]).wait()
 
