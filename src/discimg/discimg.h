@@ -19,7 +19,8 @@ public:
 	enum
 	{
 		HSG_BASE=150,
-		MODE1_BYTES_PER_SECTOR=2048
+		MODE1_BYTES_PER_SECTOR=2048,
+		RAW_BYTES_PER_SECTOR=2352,
 	};
 	static const char *ErrorCodeToText(unsigned int errCode)
 	{

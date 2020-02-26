@@ -108,6 +108,8 @@ unsigned int DiscImage::OpenISO(const std::string &fName)
 
 
 	fileType=FILETYPE_ISO;
+	this->fName=fName;
+	this->binFName=fName;
 	num_sectors=(unsigned int)(fSize/2048);
 
 	tracks.resize(1);
@@ -150,17 +152,34 @@ const std::vector <DiscImage::Track> &DiscImage::GetTracks(void) const
 
 std::vector <unsigned char> DiscImage::ReadSectorMODE1(unsigned int HSG,unsigned int numSec) const
 {
+	std::ifstream ifp;
+	ifp.open(binFName,std::ios::binary);
+
 	std::vector <unsigned char> data;
-	if(0<tracks.size() && (tracks[0].trackType==TRACK_MODE1_DATA || tracks[0].trackType==TRACK_MODE2_DATA))
+	if(true==ifp.is_open() && 0<tracks.size() && (tracks[0].trackType==TRACK_MODE1_DATA || tracks[0].trackType==TRACK_MODE2_DATA))
 	{
 		if(HSG+numSec<=tracks[0].end.ToHSG())
 		{
+			auto sectorIntoTrack=HSG-tracks[0].start.ToHSG();
+			auto locationInTrack=sectorIntoTrack*tracks[0].sectorLength;
+
+			ifp.seekg(tracks[0].locationInFile+locationInTrack,std::ios::beg);
 			data.resize(numSec*MODE1_BYTES_PER_SECTOR);
 			if(MODE1_BYTES_PER_SECTOR==tracks[0].sectorLength)
 			{
+				ifp.read((char *)data.data(),MODE1_BYTES_PER_SECTOR*numSec);
 			}
-			else
+			else if(RAW_BYTES_PER_SECTOR==tracks[0].sectorLength)
 			{
+				unsigned int dataPointer=0;
+				char skipper[288];
+				for(int i=0; i<numSec; ++i)
+				{
+					ifp.read(skipper,16);
+					ifp.read((char *)data.data()+dataPointer,MODE1_BYTES_PER_SECTOR);
+					ifp.read(skipper,288);
+					dataPointer+=MODE1_BYTES_PER_SECTOR;
+				}
 			}
 		}
 	}
