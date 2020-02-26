@@ -206,6 +206,14 @@ public:
 	*/
 	void RunScheduledTasks(void);
 
+	/*!
+	*/
+	void ScheduleDeviceCallBack(Device &dev,long long int timer);
+
+	/*!
+	*/
+	void UnscheduleDeviceCallBack(Device &dev);
+
 	/*! Check nextFastDevicePollingTime and call RunScheduledTask function of the devices in fastDevices.
 	*/
 	void RunFastDevicePolling(void);

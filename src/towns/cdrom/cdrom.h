@@ -64,11 +64,21 @@ Interpretation in the Linux for Towns source towns_cd.c (static void process_eve
 
 class TownsCDROM : public Device
 {
+private:
+	class FMTowns *townsPtr;
+	class TownsPIC *PICPtr;
+	class TownsDMAC *DMACPtr;
+
 public:
-	enum2
+	enum
 	{
 		PARAM_QUEUE_LEN=8,
 		STATE_QUEUE_LEN=4,
+	};
+
+	enum
+	{
+		READ_SECTOR_TIME=100000000,  // Tentatively 100ms
 	};
 
 	// Reference [3] 
@@ -109,7 +119,9 @@ public:
 		bool cmdReceived;
 		unsigned char cmd;
 		int nParamQueue;
-		unsigned char paramQueue[8];
+		/*! paramQueueCopy is a copy of parameter queue at the time of the command byte was written.
+		*/
+		unsigned char paramQueue[8],paramQueueCopy[8];
 		std::vector <unsigned char> statusQueue;
 
 		bool DMATransfer,CPUTransfer; // Both are not supposed to be 1, but I/O can set it that way.
@@ -136,7 +148,8 @@ public:
 
 	virtual const char *DeviceName(void) const{return "CDROM";}
 
-	TownsCDROM();
+	TownsCDROM(class FMTowns *townsPtr,class TownsPIC *PICPtr,class TownsDMAC *DMACPtr);
+
 
 	virtual void PowerOn(void);
 	virtual void Reset(void);
@@ -157,6 +170,10 @@ public:
 	/*! 
 	*/
 	void ExecuteCDROMCommand(void);
+
+	/*! Call-back from FMTowns class.
+	*/
+	void RunScheduledTask(unsigned long long int townsTime);
 private:
 	void SetStatusDriveNotReadyOrDiscChangedOrNoError(void);
 	bool SetStatusDriveNotReadyOrDiscChanged(void);
@@ -164,6 +181,7 @@ private:
 	void SetStatusDriveNotReady(void);
 	void SetStatusDiscChanged(void);
 	void SetStatusQueueForTOC(void);
+	void CopyParameterQueue(void);
 };
 
 

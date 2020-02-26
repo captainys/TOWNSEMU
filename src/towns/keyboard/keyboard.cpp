@@ -99,7 +99,7 @@ void TownsKeyboard::PushFifo(unsigned char code1,unsigned char code2)
 			--nFifoFilled;
 			if(0<nFifoFilled && true==state.IRQEnabled)
 			{
-				commonState.scheduleTime=townsPtr->state.townsTime+KEY_REPEAT_INTERVAL;
+				townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+KEY_REPEAT_INTERVAL);
 			}
 			return ret;
 		}

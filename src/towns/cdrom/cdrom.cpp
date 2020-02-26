@@ -1,6 +1,7 @@
 #include <iostream>
 #include "cdrom.h"
 #include "townsdef.h"
+#include "towns.h"
 #include "cpputil.h"
 
 
@@ -51,6 +52,11 @@ void TownsCDROM::State::ResetMPU(void)
 
 	cmdReceived=false;
 	nParamQueue=0;
+	for(int i=0; i<8; ++i)
+	{
+		paramQueue[i]=0;
+		paramQueueCopy[i]=0;
+	}
 	ClearStatusQueue();
 	DMATransfer=false;
 	CPUTransfer=true;
@@ -58,8 +64,11 @@ void TownsCDROM::State::ResetMPU(void)
 
 ////////////////////////////////////////////////////////////
 
-TownsCDROM::TownsCDROM()
+TownsCDROM::TownsCDROM(class FMTowns *townsPtr,class TownsPIC *PICPtr,class TownsDMAC *DMACPtr)
 {
+	this->townsPtr=townsPtr;
+	this->PICPtr=PICPtr;
+	this->DMACPtr=DMACPtr;
 	state.Reset();
 }
 
@@ -234,6 +243,12 @@ std::vector <std::string> TownsCDROM::GetStatusText(void) const
 		text.back()+=cpputil::Ubtox(state.paramQueue[i])+" ";
 	}
 
+	text.push_back("Param Queue (Copied):");
+	for(int i=0; i<sizeof(state.paramQueueCopy)/sizeof(state.paramQueueCopy[0]); ++i)
+	{
+		text.back()+=cpputil::Ubtox(state.paramQueueCopy[i])+" ";
+	}
+
 	text.push_back("Status Queue (CD->Towns):");
 	for(auto d : state.statusQueue)
 	{
@@ -284,7 +299,8 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 		std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " not implemented yet." << std::endl;
 		break;
 	case CDCMD_MODE1READ://  0x02,
-		std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " not implemented yet." << std::endl;
+		CopyParameterQueue();
+		townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+READ_SECTOR_TIME);
 		break;
 	case CDCMD_RAWREAD://    0x03,
 		std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " not implemented yet." << std::endl;
@@ -332,6 +348,9 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 	state.nParamQueue=0;
 
 	// Tentatively Drive Not Ready.
+}
+/* virtual */ void TownsCDROM::RunScheduledTask(unsigned long long int townsTime)
+{
 }
 void TownsCDROM::SetStatusDriveNotReadyOrDiscChangedOrNoError(void)
 {
@@ -405,5 +424,12 @@ void TownsCDROM::SetStatusQueueForTOC(void)
 	                      DiscImage::BinToBCD(MSF.min),
 	                      DiscImage::BinToBCD(MSF.sec),
 	                      DiscImage::BinToBCD(MSF.frm));
+	}
+}
+void TownsCDROM::CopyParameterQueue(void)
+{
+	for(int i=0; i<sizeof(state.paramQueue)/sizeof(state.paramQueue[0]); ++i)
+	{
+		state.paramQueueCopy[i]=state.paramQueue[i];
 	}
 }

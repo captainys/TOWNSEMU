@@ -199,7 +199,7 @@ void TownsFDC::SendCommand(unsigned int cmd)
 		switch(cmd&0xF0)
 		{
 		case 0x00: // Restore
-			commonState.scheduleTime=townsPtr->state.townsTime+RESTORE_TIME;
+			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+RESTORE_TIME);
 			state.recordType=false;
 			state.recordNotFound=false;
 			state.CRCError=false;
@@ -207,7 +207,7 @@ void TownsFDC::SendCommand(unsigned int cmd)
 			state.busy=true;
 			break;
 		case 0x10: // Seek
-			commonState.scheduleTime=townsPtr->state.townsTime+SEEK_TIME;
+			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+SEEK_TIME);
 			state.recordType=false;
 			state.recordNotFound=false;
 			state.CRCError=false;
@@ -216,7 +216,7 @@ void TownsFDC::SendCommand(unsigned int cmd)
 			break;
 		case 0x20: // Step?
 		case 0x30: // Step?
-			commonState.scheduleTime=townsPtr->state.townsTime+STEP_TIME;
+			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+STEP_TIME);
 			state.recordType=false;
 			state.recordNotFound=false;
 			state.CRCError=false;
@@ -225,7 +225,7 @@ void TownsFDC::SendCommand(unsigned int cmd)
 			break;
 		case 0x40: // Step In
 		case 0x50: // Step In
-			commonState.scheduleTime=townsPtr->state.townsTime+STEP_TIME;
+			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+STEP_TIME);
 			state.recordType=false;
 			state.recordNotFound=false;
 			state.CRCError=false;
@@ -234,7 +234,7 @@ void TownsFDC::SendCommand(unsigned int cmd)
 			break;
 		case 0x60: // Step Out
 		case 0x70: // Step Out
-			commonState.scheduleTime=townsPtr->state.townsTime+STEP_TIME;
+			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+STEP_TIME);
 			state.recordType=false;
 			state.recordNotFound=false;
 			state.CRCError=false;
@@ -244,7 +244,7 @@ void TownsFDC::SendCommand(unsigned int cmd)
 
 		case 0x80: // Read Data (Read Sector)
 		case 0x90: // Read Data (Read Sector)
-			commonState.scheduleTime=townsPtr->state.townsTime+SECTOR_READ_WRITE_TIME;
+			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+SECTOR_READ_WRITE_TIME);
 			state.recordType=false;
 			state.recordNotFound=false;
 			state.CRCError=false;
@@ -253,7 +253,7 @@ void TownsFDC::SendCommand(unsigned int cmd)
 			break;
 		case 0xA0: // Write Data (Write Sector)
 		case 0xB0: // Write Data (Write Sector)
-			commonState.scheduleTime=townsPtr->state.townsTime+SECTOR_READ_WRITE_TIME;
+			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+SECTOR_READ_WRITE_TIME);
 			state.recordType=false;
 			state.recordNotFound=false;
 			state.CRCError=false;
@@ -262,7 +262,7 @@ void TownsFDC::SendCommand(unsigned int cmd)
 			break;
 
 		case 0xC0: // Read Address
-			commonState.scheduleTime=townsPtr->state.townsTime+ADDRMARK_READ_TIME;
+			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+ADDRMARK_READ_TIME);
 			state.recordType=false;
 			state.recordNotFound=false;
 			state.CRCError=false;
@@ -492,13 +492,13 @@ bool TownsFDC::WriteFault(void) const
 	switch(state.lastCmd&0xF0)
 	{
 	case 0x00: // Restore
-		commonState.scheduleTime=TIME_NO_SCHEDULE;
+		townsPtr->UnscheduleDeviceCallBack(*this);
 		MakeReady();
 		drv.trackPos=0;
 		drv.trackReg=0;
 		break;
 	case 0x10: // Seek
-		commonState.scheduleTime=TIME_NO_SCHEDULE;
+		townsPtr->UnscheduleDeviceCallBack(*this);
 		MakeReady();
 		// Seek to dataReg
 		if(drv.trackPos<drv.dataReg)
@@ -517,7 +517,7 @@ bool TownsFDC::WriteFault(void) const
 		break;
 	case 0x20: // Step?
 	case 0x30: // Step?
-		commonState.scheduleTime=TIME_NO_SCHEDULE;
+		townsPtr->UnscheduleDeviceCallBack(*this);
 		MakeReady();
 		drv.trackPos+=drv.lastSeekDir;
 		if(drv.trackPos<0)
@@ -535,7 +535,7 @@ bool TownsFDC::WriteFault(void) const
 		break;
 	case 0x40: // Step In
 	case 0x50: // Step In
-		commonState.scheduleTime=TIME_NO_SCHEDULE;
+		townsPtr->UnscheduleDeviceCallBack(*this);
 		MakeReady();
 		++drv.trackPos;
 		if(80<drv.trackPos)
@@ -549,7 +549,7 @@ bool TownsFDC::WriteFault(void) const
 		break;
 	case 0x60: // Step Out
 	case 0x70: // Step Out
-		commonState.scheduleTime=TIME_NO_SCHEDULE;
+		
 		MakeReady();
 		--drv.trackPos;
 		if(drv.trackPos<0)
@@ -564,7 +564,7 @@ bool TownsFDC::WriteFault(void) const
 
 	case 0x80: // Read Data (Read Sector)
 	case 0x90: // Read Data (Read Sector)
-		commonState.scheduleTime=TIME_NO_SCHEDULE; // Tentativelu
+		townsPtr->UnscheduleDeviceCallBack(*this); // Tentativelu
 		if(nullptr!=diskPtr)
 		{
 			auto secPtr=diskPtr->GetSector(drv.trackPos,state.side,drv.sectorReg);
@@ -578,7 +578,7 @@ bool TownsFDC::WriteFault(void) const
 					if(state.lastCmd&0x10 && diskPtr->GetSector(drv.trackPos,state.side,drv.sectorReg+1)) // Multi Record
 					{
 						++drv.sectorReg;
-						commonState.scheduleTime=townsPtr->state.townsTime+SECTOR_READ_WRITE_TIME;
+						townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+SECTOR_READ_WRITE_TIME);
 					}
 					else
 					{
@@ -600,14 +600,14 @@ bool TownsFDC::WriteFault(void) const
 		break;
 	case 0xA0: // Write Data (Write Sector)
 	case 0xB0: // Write Data (Write Sector)
-		commonState.scheduleTime=TIME_NO_SCHEDULE;
+		townsPtr->UnscheduleDeviceCallBack(*this);
 		std::cout << __FUNCTION__ << std::endl;
 		std::cout << "Command " << cpputil::Ubtox(state.lastCmd) << " not supported yet." << std::endl;
 		MakeReady();
 		break;
 
 	case 0xC0: // Read Address
-		commonState.scheduleTime=TIME_NO_SCHEDULE;
+		townsPtr->UnscheduleDeviceCallBack(*this);
 		if(nullptr!=diskPtr)
 		{
 			// Copy CHRN and CRC CRC to DMA.
@@ -647,13 +647,13 @@ bool TownsFDC::WriteFault(void) const
 		MakeReady();
 		break;
 	case 0xE0: // Read Track
-		commonState.scheduleTime=TIME_NO_SCHEDULE;
+		townsPtr->UnscheduleDeviceCallBack(*this);
 		std::cout << __FUNCTION__ << std::endl;
 		std::cout << "Command " << cpputil::Ubtox(state.lastCmd) << " not supported yet." << std::endl;
 		MakeReady();
 		break;
 	case 0xF0: // Write Track
-		commonState.scheduleTime=TIME_NO_SCHEDULE;
+		townsPtr->UnscheduleDeviceCallBack(*this);
 		std::cout << __FUNCTION__ << std::endl;
 		std::cout << "Command " << cpputil::Ubtox(state.lastCmd) << " not supported yet." << std::endl;
 		MakeReady();
@@ -661,7 +661,7 @@ bool TownsFDC::WriteFault(void) const
 
 	default:
 	case 0xD0: // Force Interrupt
-		commonState.scheduleTime=TIME_NO_SCHEDULE;
+		townsPtr->UnscheduleDeviceCallBack(*this);
 		state.busy=false;
 		break;
 	}
