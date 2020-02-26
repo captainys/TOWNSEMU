@@ -17,6 +17,50 @@
     I first try A and see if it works.
 */
 
+
+/*! 4-byte Status Code from CD-ROM Drive
+My guess based on the BIOS Disassembly:
+00H xx  xx xx  Probably No Error
+07H ??         The BIOS is checking, but the meaning is unknown.
+xxH 01H xx xx  Probably Parameter Error
+21H 01H xx xx  Probably Parameter Error
+21H 02H        Probably Parameter Error
+21H 0CH        Probably Parameter Error
+21H 0FH        Probably Abnormal Termination
+21H 05H        Probably Media Error (like bad sector)
+21H 06H        Probably Media Error (like bad sector)
+21H 07H        Probably Media Error (like bad sector)
+21H 03H        Probably Hard Error
+21H 04H        Probably Hard Error
+21H 09H xx xx  Probably Hard Error
+21H 0DH xx xx  Probably Hard Error
+21H 08H        Probably Media Changed
+    What about drive-not-ready?
+
+Interpretation in the Linux for Towns source towns_cd.c (static void process_event(u_char st))
+00H 09H xx xx  Media change?
+00H xx  xx xx  No error
+01H xx  xx xx  Command Accept Error
+22H xx  xx xx  Data Ready
+06H xx  xx xx  Read Done
+07H xx  xx xx  CDDA Play Done
+09H xx  xx xx  Door open
+10H xx  xx xx  Door close Media not exists
+11H xx  xx xx  Stop done
+12H xx  xx xx  Pause done
+13H xx  xx xx  Resume done
+16H MM  xx xx  TOC Read  (MM>>4)==0 Mode 1  (MM>>4)==4 Mode 2  Else Mode 0  What's mode?
+17H            TOC Read2
+18H            SUBQ Read
+19H            SUBQ Read2
+20H            SUBQ Read3
+21H 05H        Read Audio Track
+21H 07H        Drive Not Ready
+21H 08H        Media Changed
+21H 0FH        Retry?
+*/
+
+
 class TownsCDROM : public Device
 {
 public:
@@ -106,6 +150,16 @@ public:
 	    It also sets discChanged flag.
 	*/
 	unsigned int LoadDiscImage(const std::string &fName);
+
+	/*! 
+	*/
+	void ExecuteCDROMCommand(void);
+private:
+	void SetStatusDriveNotReadyOrDiscChangedOrNoError(void);
+	bool SetStatusDriveNotReadyOrDiscChanged(void);
+	void SetStatusNoError(void);
+	void SetStatusDriveNotReady(void);
+	void SetStatusDiscChanged(void);
 };
 
 

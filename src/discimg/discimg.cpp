@@ -110,6 +110,10 @@ unsigned int DiscImage::OpenISO(const std::string &fName)
 
 	return ERROR_NOERROR;
 }
+unsigned int DiscImage::GetNumTracks(void) const
+{
+	return tracks.size();
+}
 /* static */ DiscImage::MinSecFrm DiscImage::HSGtoMSF(unsigned int HSG)
 {
 	MinSecFrm MSF;

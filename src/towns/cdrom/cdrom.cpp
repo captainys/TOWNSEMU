@@ -109,17 +109,7 @@ TownsCDROM::TownsCDROM()
 	}
 	if(true==state.cmdReceived && PARAM_QUEUE_LEN<=state.nParamQueue)
 	{
-		std::cout << "Exec CDROM Command not implemented yet." << std::endl;
-		state.cmdReceived=false;
-		state.nParamQueue=0;
-		state.nStatusQueue=0;
-
-		// Tentatively Drive Not Ready.
-		state.nStatusQueue=4;
-		state.statusQueue[0]=0x21;
-		state.statusQueue[1]=0x07;
-		state.statusQueue[2]=0;
-		state.statusQueue[3]=0;
+		ExecuteCDROMCommand();
 	}
 }
 /* virtual */ unsigned int TownsCDROM::IOReadByte(unsigned int ioport)
@@ -269,3 +259,102 @@ unsigned int TownsCDROM::LoadDiscImage(const std::string &fName)
 	state.discChanged=true;
 	return return_value;
 }
+void TownsCDROM::ExecuteCDROMCommand(void)
+{
+	std::cout << "Exec CDROM Command not implemented yet." << std::endl;
+
+	state.nStatusQueue=0;
+
+	switch(state.cmd&0x9F)
+	{
+	case CDCMD_SEEK://       0x00,
+		if(0x20&state.cmd)
+		{
+			SetStatusDriveNotReadyOrDiscChangedOrNoError();
+		}
+		break;
+	case CDCMD_MODE2READ://  0x01,
+		break;
+	case CDCMD_MODE1READ://  0x02,
+		break;
+	case CDCMD_RAWREAD://    0x03,
+		break;
+	case CDCMD_CDDAPLAY://   0x04,
+		break;
+	case CDCMD_TOCREAD://    0x05,
+		break;
+	case CDCMD_SUBQREAD://   0x06,
+		break;
+	case CDCMD_UNKNOWN1://   0x1F, // NOP and requst status? I guess?
+		break;
+
+	case CDCMD_SETSTATE://   0x80,
+		if(0x20&state.cmd)
+		{
+			SetStatusDriveNotReadyOrDiscChangedOrNoError();
+		}
+		break;
+	case CDCMD_CDDASET://    0x81,
+		break;
+	case CDCMD_CDDASTOP://   0x84,
+		break;
+	case CDCMD_CDDAPAUSE://  0x85,
+		break;
+	case CDCMD_UNKNOWN2://   0x86,
+		break;
+	case CDCMD_CDDARESUME:// 0x87,
+		break;
+	}
+
+	state.cmdReceived=false;
+	state.nParamQueue=0;
+
+	// Tentatively Drive Not Ready.
+}
+void TownsCDROM::SetStatusDriveNotReadyOrDiscChangedOrNoError(void)
+{
+	if(true!=SetStatusDriveNotReadyOrDiscChanged())
+	{
+		SetStatusNoError();
+	}
+}
+bool TownsCDROM::SetStatusDriveNotReadyOrDiscChanged(void)
+{
+	if(0==state.GetDisc().GetNumTracks())
+	{
+		SetStatusDriveNotReady();
+		return true;
+	}
+	else if(true==state.discChanged)
+	{
+		SetStatusDiscChanged();
+		state.discChanged=false;
+		return true;
+	}
+	return false;
+}
+void TownsCDROM::SetStatusNoError(void)
+{
+	state.nStatusQueue=4;
+	state.statusQueue[0]=0;
+	state.statusQueue[1]=0;
+	state.statusQueue[2]=0;
+	state.statusQueue[3]=0;
+}
+void TownsCDROM::SetStatusDriveNotReady(void)
+{
+	state.nStatusQueue=4;
+	state.statusQueue[0]=0x21;
+	state.statusQueue[1]=0x07;
+	state.statusQueue[2]=0;
+	state.statusQueue[3]=0;
+}
+void TownsCDROM::SetStatusDiscChanged(void)
+{
+	state.nStatusQueue=4;
+	state.statusQueue[0]=0x21;
+	state.statusQueue[1]=0x08;
+	state.statusQueue[2]=0;
+	state.statusQueue[3]=0;
+}
+
