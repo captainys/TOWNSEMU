@@ -18,7 +18,8 @@ public:
 	};
 	enum
 	{
-		HSG_BASE=150
+		HSG_BASE=150,
+		MODE1_BYTES_PER_SECTOR=2048
 	};
 	static const char *ErrorCodeToText(unsigned int errCode)
 	{
@@ -45,6 +46,7 @@ public:
 	};
 	enum
 	{
+		TRACK_UNKNOWNTYPE,
 		TRACK_MODE1_DATA,
 		TRACK_MODE2_DATA,
 		TRACK_AUDIO,
@@ -169,10 +171,11 @@ public:
 	class Track
 	{
 	public:
-		unsigned int trackType;
+		unsigned int trackType=TRACK_UNKNOWNTYPE;
 		unsigned int sectorLength=2352; // Default 2352 bytes per sector.
-		std::vector <unsigned char> dataCache;
-		MinSecFrm start,end;
+		unsigned long long int locationInFile=0;
+		mutable std::vector <unsigned char> dataCache;
+		MinSecFrm start,end;  // end must be 1-frame before the next track or the disc length.
 		MinSecFrm postGap;
 	};
 	unsigned int fileType=FILETYPE_NONE;
@@ -201,6 +204,12 @@ public:
 	/*! Returns tracks.
 	*/
 	const std::vector <Track> &GetTracks(void) const;
+
+	/*! Read data sectors MODE1 (2048 bytes/sector).
+	    If it cannot be read (no data track, unsupported sector length, go beyond the data-track limit, etc.),
+	    it returns zero byte.
+	*/
+	std::vector <unsigned char> ReadSectorMODE1(unsigned int HSG,unsigned int numSec) const;
 
 	static MinSecFrm HSGtoMSF(unsigned int HSG);
 	static unsigned int MSFtoHSG(MinSecFrm MSF);

@@ -121,7 +121,7 @@ unsigned int DiscImage::OpenISO(const std::string &fName)
 }
 unsigned int DiscImage::GetNumTracks(void) const
 {
-	return tracks.size();
+	return (unsigned int)tracks.size();
 }
 unsigned int DiscImage::GetNumSectors(void) const
 {
@@ -146,4 +146,23 @@ const std::vector <DiscImage::Track> &DiscImage::GetTracks(void) const
 	unsigned int high=bin/10;
 	unsigned int low=bin%10;
 	return (high<<4)+low;
+}
+
+std::vector <unsigned char> DiscImage::ReadSectorMODE1(unsigned int HSG,unsigned int numSec) const
+{
+	std::vector <unsigned char> data;
+	if(0<tracks.size() && (tracks[0].trackType==TRACK_MODE1_DATA || tracks[0].trackType==TRACK_MODE2_DATA))
+	{
+		if(HSG+numSec<=tracks[0].end.ToHSG())
+		{
+			data.resize(numSec*MODE1_BYTES_PER_SECTOR);
+			if(MODE1_BYTES_PER_SECTOR==tracks[0].sectorLength)
+			{
+			}
+			else
+			{
+			}
+		}
+	}
+	return data;
 }
