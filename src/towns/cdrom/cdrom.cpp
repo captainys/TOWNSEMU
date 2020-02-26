@@ -21,6 +21,17 @@ DiscImage &TownsCDROM::State::GetDisc(void)
 {
 	return *imgPtr;
 }
+void TownsCDROM::State::ClearStatusQueue(void)
+{
+	statusQueue.clear();
+}
+void TownsCDROM::State::PushStatusQueue(unsigned char d0,unsigned char d1,unsigned char d2,unsigned char d3)
+{
+	statusQueue.push_back(d0);
+	statusQueue.push_back(d1);
+	statusQueue.push_back(d2);
+	statusQueue.push_back(d3);
+}
 void TownsCDROM::State::Reset(void)
 {
 	// Do not clear imgFileName on reset.
@@ -40,7 +51,7 @@ void TownsCDROM::State::ResetMPU(void)
 
 	cmdReceived=false;
 	nParamQueue=0;
-	nStatusQueue=0;
+	ClearStatusQueue();
 	DMATransfer=false;
 	CPUTransfer=true;
 }
@@ -122,18 +133,18 @@ TownsCDROM::TownsCDROM()
 		data|=(state.DEI  ? 0x40 : 0);
 		data|=(state.STSF ? 0x20 : 0);
 		data|=(state.DTSF ? 0x10 : 0);
-		data|=(0<state.nStatusQueue ? 2 : 0);
+		data|=(0<state.statusQueue.size() ? 2 : 0);
 		data|=(state.DRY  ?    1 : 0);
 		return data;
 	case TOWNSIO_CDROM_COMMAND_STATUS://    0x4C2, // [2] pp.224
-		if(0<state.nStatusQueue)
+		if(0<state.statusQueue.size())
 		{
-			data=state.statusQueue[0];
-			--state.nStatusQueue;
-			for(int i=0; i<state.nStatusQueue; ++i)
+			data=state.statusQueue.front();
+			for(int i=0; i<state.statusQueue.size()-1; ++i)
 			{
 				state.statusQueue[i]=state.statusQueue[i+1];
 			}
+			state.statusQueue.pop_back();
 			return data;
 		}
 		break;
@@ -224,9 +235,9 @@ std::vector <std::string> TownsCDROM::GetStatusText(void) const
 	}
 
 	text.push_back("Status Queue (CD->Towns):");
-	for(int i=0; i<state.nStatusQueue; ++i)
+	for(auto d : state.statusQueue)
 	{
-		text.back()+=cpputil::Ubtox(state.statusQueue[i])+" ";
+		text.back()+=cpputil::Ubtox(d)+" ";
 	}
 
 	text.push_back("DMA Transfer:");
@@ -261,10 +272,6 @@ unsigned int TownsCDROM::LoadDiscImage(const std::string &fName)
 }
 void TownsCDROM::ExecuteCDROMCommand(void)
 {
-	std::cout << "Exec CDROM Command not implemented yet." << std::endl;
-
-	state.nStatusQueue=0;
-
 	switch(state.cmd&0x9F)
 	{
 	case CDCMD_SEEK://       0x00,
@@ -274,18 +281,28 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 		}
 		break;
 	case CDCMD_MODE2READ://  0x01,
+		std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " not implemented yet." << std::endl;
 		break;
 	case CDCMD_MODE1READ://  0x02,
+		std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " not implemented yet." << std::endl;
 		break;
 	case CDCMD_RAWREAD://    0x03,
+		std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " not implemented yet." << std::endl;
 		break;
 	case CDCMD_CDDAPLAY://   0x04,
+		std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " not implemented yet." << std::endl;
 		break;
 	case CDCMD_TOCREAD://    0x05,
+		if(0x20&state.cmd)
+		{
+			SetStatusQueueForTOC();
+		}
 		break;
 	case CDCMD_SUBQREAD://   0x06,
+		std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " not implemented yet." << std::endl;
 		break;
 	case CDCMD_UNKNOWN1://   0x1F, // NOP and requst status? I guess?
+		std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " not implemented yet." << std::endl;
 		break;
 
 	case CDCMD_SETSTATE://   0x80,
@@ -295,14 +312,19 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 		}
 		break;
 	case CDCMD_CDDASET://    0x81,
+		std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " not implemented yet." << std::endl;
 		break;
 	case CDCMD_CDDASTOP://   0x84,
+		std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " not implemented yet." << std::endl;
 		break;
 	case CDCMD_CDDAPAUSE://  0x85,
+		std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " not implemented yet." << std::endl;
 		break;
 	case CDCMD_UNKNOWN2://   0x86,
+		std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " not implemented yet." << std::endl;
 		break;
 	case CDCMD_CDDARESUME:// 0x87,
+		std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " not implemented yet." << std::endl;
 		break;
 	}
 
@@ -335,26 +357,53 @@ bool TownsCDROM::SetStatusDriveNotReadyOrDiscChanged(void)
 }
 void TownsCDROM::SetStatusNoError(void)
 {
-	state.nStatusQueue=4;
-	state.statusQueue[0]=0;
-	state.statusQueue[1]=0;
-	state.statusQueue[2]=0;
-	state.statusQueue[3]=0;
+	state.PushStatusQueue(0,0,0,0);
 }
 void TownsCDROM::SetStatusDriveNotReady(void)
 {
-	state.nStatusQueue=4;
-	state.statusQueue[0]=0x21;
-	state.statusQueue[1]=0x07;
-	state.statusQueue[2]=0;
-	state.statusQueue[3]=0;
+	state.PushStatusQueue(0x21,7,0,0);
 }
 void TownsCDROM::SetStatusDiscChanged(void)
 {
-	state.nStatusQueue=4;
-	state.statusQueue[0]=0x21;
-	state.statusQueue[1]=0x08;
-	state.statusQueue[2]=0;
-	state.statusQueue[3]=0;
+	state.PushStatusQueue(0x21,8,0,0);
 }
+void TownsCDROM::SetStatusQueueForTOC(void)
+{
+	if(true==SetStatusDriveNotReadyOrDiscChanged())
+	{
+		return;
+	}
+	auto &disc=state.GetDisc();
 
+	state.statusQueue.clear();
+
+	SetStatusNoError();
+
+	state.PushStatusQueue(0x16,0,0,0);
+	state.PushStatusQueue(0x17,1,0,0);
+
+	state.PushStatusQueue(0x16,0,0,0);
+	state.PushStatusQueue(0x17,disc.GetNumTracks(),0,0);
+
+	auto length=DiscImage::HSGtoMSF(disc.GetNumSectors()+DiscImage::HSG_BASE-1); // Prob -1
+	state.PushStatusQueue(0x16,0,0,0);
+	state.PushStatusQueue(0x17,
+	                      DiscImage::BinToBCD(length.min),
+	                      DiscImage::BinToBCD(length.sec),
+	                      DiscImage::BinToBCD(length.frm));
+
+	for(auto &trk : disc.GetTracks())
+	{
+		unsigned char secondByte=(trk.trackType==DiscImage::TRACK_AUDIO ? 0 : 0x40);
+		state.PushStatusQueue(0x16,secondByte,0,0);
+
+		auto HSG=DiscImage::MSFtoHSG(trk.start);
+		HSG+=DiscImage::HSG_BASE;
+		auto MSF=DiscImage::HSGtoMSF(HSG);
+
+		state.PushStatusQueue(0x17,
+	                      DiscImage::BinToBCD(MSF.min),
+	                      DiscImage::BinToBCD(MSF.sec),
+	                      DiscImage::BinToBCD(MSF.frm));
+	}
+}

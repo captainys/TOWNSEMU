@@ -103,6 +103,7 @@ unsigned int DiscImage::OpenISO(const std::string &fName)
 	num_sectors=(unsigned int)(fSize/2048);
 
 	tracks.resize(1);
+	tracks[0].trackType=TRACK_MODE1_DATA;
 	tracks[0].sectorLength=2048;
 	tracks[0].start=MinSecFrm::Zero();
 	tracks[0].end=HSGtoMSF(num_sectors);
@@ -113,6 +114,14 @@ unsigned int DiscImage::OpenISO(const std::string &fName)
 unsigned int DiscImage::GetNumTracks(void) const
 {
 	return tracks.size();
+}
+unsigned int DiscImage::GetNumSectors(void) const
+{
+	return num_sectors;
+}
+const std::vector <DiscImage::Track> &DiscImage::GetTracks(void) const
+{
+	return tracks;
 }
 /* static */ DiscImage::MinSecFrm DiscImage::HSGtoMSF(unsigned int HSG)
 {
@@ -127,4 +136,10 @@ unsigned int DiscImage::GetNumTracks(void) const
 /* static */ unsigned int DiscImage::MSFtoHSG(MinSecFrm MSF)
 {
 	return (MSF.min*60+MSF.sec)*75+MSF.frm;
+}
+/* static */ unsigned int DiscImage::BinToBCD(unsigned int bin)
+{
+	unsigned int high=bin/10;
+	unsigned int low=bin%10;
+	return (high<<4)+low;
 }

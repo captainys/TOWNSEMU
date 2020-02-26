@@ -2,6 +2,7 @@
 #define CDROM_IS_INCLUDED
 /* { */
 
+// #include <queue>  std::queue turned out to be useless.
 #include <vector>
 #include <string>
 #include "discimg.h"
@@ -64,7 +65,7 @@ Interpretation in the Linux for Towns source towns_cd.c (static void process_eve
 class TownsCDROM : public Device
 {
 public:
-	enum
+	enum2
 	{
 		PARAM_QUEUE_LEN=8,
 		STATE_QUEUE_LEN=4,
@@ -109,8 +110,7 @@ public:
 		unsigned char cmd;
 		int nParamQueue;
 		unsigned char paramQueue[8];
-		int nStatusQueue;
-		unsigned char statusQueue[4];
+		std::vector <unsigned char> statusQueue;
 
 		bool DMATransfer,CPUTransfer; // Both are not supposed to be 1, but I/O can set it that way.
 
@@ -124,6 +124,9 @@ public:
 
 		const DiscImage &GetDisc(void) const;
 		DiscImage &GetDisc(void);
+
+		void ClearStatusQueue(void);
+		void PushStatusQueue(unsigned char d0,unsigned char d1,unsigned char d2,unsigned char d3);
 
 		void Reset(void);
 		void ResetMPU(void);
@@ -160,6 +163,7 @@ private:
 	void SetStatusNoError(void);
 	void SetStatusDriveNotReady(void);
 	void SetStatusDiscChanged(void);
+	void SetStatusQueueForTOC(void);
 };
 
 

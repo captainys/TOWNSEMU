@@ -16,6 +16,10 @@ public:
 		ERROR_NOT_YET_SUPPORTED,
 		ERROR_SECTOR_SIZE,
 	};
+	enum
+	{
+		HSG_BASE=150
+	};
 	static const char *ErrorCodeToText(unsigned int errCode)
 	{
 		switch(errCode)
@@ -54,6 +58,7 @@ public:
 	class Track
 	{
 	public:
+		unsigned int trackType;
 		unsigned int sectorLength=2352; // Default 2352 bytes per sector.
 		std::vector <unsigned char> dataCache;
 		MinSecFrm start,end;
@@ -78,8 +83,17 @@ public:
 	*/
 	unsigned int GetNumTracks(void) const;
 
+	/*! Returns theu number of sectors.
+	*/
+	unsigned int GetNumSectors(void) const;
+
+	/*! Returns tracks.
+	*/
+	const std::vector <Track> &GetTracks(void) const;
+
 	static MinSecFrm HSGtoMSF(unsigned int HSG);
 	static unsigned int MSFtoHSG(MinSecFrm MSF);
+	static unsigned int BinToBCD(unsigned int bin);
 };
 
 
