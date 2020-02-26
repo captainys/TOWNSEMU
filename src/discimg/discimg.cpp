@@ -12,6 +12,14 @@
 	MSF.frm=0;
 	return MSF;
 }
+/* static */ DiscImage::MinSecFrm DiscImage::MinSecFrm::TwoSeconds(void)
+{
+	MinSecFrm MSF;
+	MSF.min=0;
+	MSF.sec=2;
+	MSF.frm=0;
+	return MSF;
+}
 
 
 ////////////////////////////////////////////////////////////
@@ -126,16 +134,12 @@ const std::vector <DiscImage::Track> &DiscImage::GetTracks(void) const
 /* static */ DiscImage::MinSecFrm DiscImage::HSGtoMSF(unsigned int HSG)
 {
 	MinSecFrm MSF;
-	MSF.frm=HSG%75;
-	HSG/=75;
-	MSF.sec=HSG%60;
-	HSG/=60;
-	MSF.min=HSG;
+	MSF.FromHSG(HSG);
 	return MSF;
 }
 /* static */ unsigned int DiscImage::MSFtoHSG(MinSecFrm MSF)
 {
-	return (MSF.min*60+MSF.sec)*75+MSF.frm;
+	return MSF.ToHSG();
 }
 /* static */ unsigned int DiscImage::BinToBCD(unsigned int bin)
 {
