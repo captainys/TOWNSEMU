@@ -177,7 +177,23 @@ public:
 		unsigned long long int locationInFile=0;
 		mutable std::vector <unsigned char> dataCache;
 		MinSecFrm start,end;  // end must be 1-frame before the next track or the disc length.
-		MinSecFrm postGap;
+		MinSecFrm preGap,postGap;
+
+		inline Track()
+		{
+			CleanUp();
+		}
+		inline void CleanUp(void)
+		{
+			trackType=TRACK_UNKNOWNTYPE;
+			sectorLength=2352;
+			locationInFile=0;
+			dataCache.clear();
+			start=MinSecFrm::Zero();
+			end=MinSecFrm::Zero();
+			preGap=MinSecFrm::Zero();
+			postGap=MinSecFrm::Zero();
+		}
 	};
 	unsigned int fileType=FILETYPE_NONE;
 	unsigned long long int binFileSize=0;

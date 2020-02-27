@@ -1,6 +1,10 @@
-#include "iostream"
-#include "fstream"
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <unordered_map>
+
 #include "discimg.h"
+#include "cpputil.h"
 
 
 
@@ -82,6 +86,67 @@ unsigned int DiscImage::Open(const std::string &fName)
 }
 unsigned int DiscImage::OpenCUE(const std::string &fName)
 {
+	std::ifstream ifp;
+	ifp.open(fName);
+	if(true!=ifp.is_open())
+	{
+		return ERROR_CANNOT_OPEN;
+	}
+
+	this->fName=fName;
+	this->binFName="";
+
+	// https://en.wikipedia.org/wiki/Cue_sheet_(computing)
+	enum
+	{
+		CMD_FILE,
+		CMD_TRACK,
+		CMD_INDEX,
+		CMD_PREGAP,
+		CMD_POSTGAP,
+	};
+	std::unordered_map <std::string,int> cmdMap;
+	cmdMap["FILE"]=CMD_FILE;
+	cmdMap["TRACK"]=CMD_TRACK;
+	cmdMap["INDEX"]=CMD_INDEX;
+	cmdMap["PREGAP"]=CMD_PREGAP;
+	cmdMap["POSTGAP"]=CMD_POSTGAP;
+
+	while(true!=ifp.eof())
+	{
+		std::string line;
+		std::getline(ifp,line);
+
+		std::vector <std::string> argv=cpputil::Parser(line.c_str());
+		if(0<argv.size())
+		{
+			cpputil::Capitalize(argv[0]);
+			auto found=cmdMap.find(argv[0]);
+			if(cmdMap.end()==found)
+			{
+				continue;
+			}
+			switch(found->second)
+			{
+			case CMD_FILE:
+				if(2<=argv.size())
+				{
+					binFName=argv[1];
+				}
+				break;
+			case CMD_TRACK:
+				break;
+			case CMD_INDEX:
+				break;
+			case CMD_PREGAP:
+				break;
+			case CMD_POSTGAP:
+				break;
+			}
+		}
+	}
+
+
 	return ERROR_NOT_YET_SUPPORTED;
 }
 unsigned int DiscImage::OpenISO(const std::string &fName)
