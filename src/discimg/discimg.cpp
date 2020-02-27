@@ -149,6 +149,12 @@ const std::vector <DiscImage::Track> &DiscImage::GetTracks(void) const
 	unsigned int low=bin%10;
 	return (high<<4)+low;
 }
+/* static */ unsigned int DiscImage::BCDToBin(unsigned int bin)
+{
+	unsigned int high=(bin>>4);
+	unsigned int low=(bin&15);
+	return high*10+low;
+}
 
 std::vector <unsigned char> DiscImage::ReadSectorMODE1(unsigned int HSG,unsigned int numSec) const
 {

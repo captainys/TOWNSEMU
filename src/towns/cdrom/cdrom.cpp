@@ -1,4 +1,5 @@
 #include <iostream>
+#include "discimg.h"
 #include "cdrom.h"
 #include "townsdef.h"
 #include "towns.h"
@@ -55,8 +56,9 @@ void TownsCDROM::State::ResetMPU(void)
 	for(int i=0; i<8; ++i)
 	{
 		paramQueue[i]=0;
-		paramQueueCopy[i]=0;
 	}
+	readingSectorHSG=0;
+	endSectorHSG=0;
 	ClearStatusQueue();
 	DMATransfer=false;
 	CPUTransfer=true;
@@ -88,10 +90,18 @@ TownsCDROM::TownsCDROM(class FMTowns *townsPtr,class TownsPIC *PICPtr,class Town
 		if(0!=(data&0x80)) // SMIC: Clear SIRQ
 		{
 			state.SIRQ=false;
+			if(true!=state.SIRQ && true!=state.DEI)
+			{
+				PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,false);
+			}
 		}
 		if(0!=(data&0x40)) // DEIC: Clera DMA-End IRQ
 		{
 			state.DEI=false;
+			if(true!=state.SIRQ && true!=state.DEI)
+			{
+				PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,false);
+			}
 		}
 		if(0!=(data&0x04))
 		{
@@ -243,11 +253,10 @@ std::vector <std::string> TownsCDROM::GetStatusText(void) const
 		text.back()+=cpputil::Ubtox(state.paramQueue[i])+" ";
 	}
 
-	text.push_back("Param Queue (Copied):");
-	for(int i=0; i<sizeof(state.paramQueueCopy)/sizeof(state.paramQueueCopy[0]); ++i)
-	{
-		text.back()+=cpputil::Ubtox(state.paramQueueCopy[i])+" ";
-	}
+	text.push_back("Reading Sector(HSG):");
+	text.back()+=cpputil::Itoa(state.readingSectorHSG);
+	text.back()+="  End Sector(HSG):";
+	text.back()+=cpputil::Itoa(state.endSectorHSG);
 
 	text.push_back("Status Queue (CD->Towns):");
 	for(auto d : state.statusQueue)
@@ -299,8 +308,34 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 		std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " not implemented yet." << std::endl;
 		break;
 	case CDCMD_MODE1READ://  0x02,
-		CopyParameterQueue();
-		townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+READ_SECTOR_TIME);
+		{
+			DiscImage::MinSecFrm msfBegin,msfEnd;
+
+			msfBegin.min=DiscImage::BCDToBin(state.paramQueue[0]);
+			msfBegin.sec=DiscImage::BCDToBin(state.paramQueue[1]);
+			msfBegin.frm=DiscImage::BCDToBin(state.paramQueue[2]);
+			msfEnd.min=DiscImage::BCDToBin(state.paramQueue[3]);
+			msfEnd.sec=DiscImage::BCDToBin(state.paramQueue[4]);
+			msfEnd.frm=DiscImage::BCDToBin(state.paramQueue[5]);
+
+			state.readingSectorHSG=msfBegin.ToHSG();
+			state.endSectorHSG=msfEnd.ToHSG();
+			if(state.readingSectorHSG>state.endSectorHSG || state.readingSectorHSG<150) // 150frames=two seconds
+			{
+				SetStatusParameterError();
+				state.readingSectorHSG=0;
+				state.endSectorHSG=0;
+			}
+			else
+			{
+				state.readingSectorHSG-=150;
+				state.endSectorHSG-=150;
+				townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+READ_SECTOR_TIME);
+				// Should I immediately return No-Error status before starting transfer?
+				// BIOS is not checking it immediately.
+				state.DRY=false;
+			}
+		}
 		break;
 	case CDCMD_RAWREAD://    0x03,
 		std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " not implemented yet." << std::endl;
@@ -351,6 +386,57 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 }
 /* virtual */ void TownsCDROM::RunScheduledTask(unsigned long long int townsTime)
 {
+	switch(state.cmd&0x9F)
+	{
+	case CDCMD_MODE1READ://  0x02,
+		{
+			if(state.readingSectorHSG<=state.endSectorHSG) // Have more data.
+			{
+				auto DMACh=DMACPtr->GetAvailableHardwareDMAChannel();
+				if(nullptr!=DMACh && (0<DMACh->currentCount && 0xFFFFFFFF!=(DMACh->currentCount&0xFFFFFFFF)))
+				{
+					auto data=state.GetDisc().ReadSectorMODE1(state.readingSectorHSG,1);
+					if(DMACh->currentCount+1<data.size())
+					{
+						data.resize(DMACh->currentCount+1);
+					}
+					DMACPtr->DeviceToMemory(DMACh,data);
+					++state.readingSectorHSG;
+					townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+READ_SECTOR_TIME);
+				}
+				else
+				{
+					state.ClearStatusQueue();
+					SetStatusDataReady();
+					state.SIRQ=true;
+					state.DEI=false;
+					state.DTSF=true;
+					PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
+					townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+NOTIFICATION_TIME);
+				}
+			}
+			else
+			{
+				if(true==state.enableDEI)
+				{
+					state.DEI=true;
+					state.SIRQ=false;
+					state.DTSF=false;
+					PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
+					// No more interrupt.  End of transfer.
+				}
+				else
+				{
+					state.SIRQ=true;
+					state.DEI=false;
+					SetStatusReadDone();
+					PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
+					townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+NOTIFICATION_TIME);
+				}
+			}
+		}
+		break;
+	}
 }
 void TownsCDROM::SetStatusDriveNotReadyOrDiscChangedOrNoError(void)
 {
@@ -385,6 +471,22 @@ void TownsCDROM::SetStatusDriveNotReady(void)
 void TownsCDROM::SetStatusDiscChanged(void)
 {
 	state.PushStatusQueue(0x21,8,0,0);
+}
+void TownsCDROM::SetStatusReadDone(void)
+{
+	state.PushStatusQueue(0x06,0,0,0);
+}
+void TownsCDROM::SetStatusHardError(void)
+{
+	state.PushStatusQueue(0x21,04,0,0);
+}
+void TownsCDROM::SetStatusParameterError(void)
+{
+	state.PushStatusQueue(0x21,01,0,0);
+}
+void TownsCDROM::SetStatusDataReady(void)
+{
+	state.PushStatusQueue(0x22,0,0,0);
 }
 void TownsCDROM::SetStatusQueueForTOC(void)
 {
@@ -424,12 +526,5 @@ void TownsCDROM::SetStatusQueueForTOC(void)
 	                      DiscImage::BinToBCD(MSF.min),
 	                      DiscImage::BinToBCD(MSF.sec),
 	                      DiscImage::BinToBCD(MSF.frm));
-	}
-}
-void TownsCDROM::CopyParameterQueue(void)
-{
-	for(int i=0; i<sizeof(state.paramQueue)/sizeof(state.paramQueue[0]); ++i)
-	{
-		state.paramQueueCopy[i]=state.paramQueue[i];
 	}
 }

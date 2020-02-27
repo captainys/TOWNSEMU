@@ -215,6 +215,7 @@ public:
 	static MinSecFrm HSGtoMSF(unsigned int HSG);
 	static unsigned int MSFtoHSG(MinSecFrm MSF);
 	static unsigned int BinToBCD(unsigned int bin);
+	static unsigned int BCDToBin(unsigned int bin);
 };
 
 

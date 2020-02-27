@@ -79,6 +79,7 @@ public:
 	enum
 	{
 		READ_SECTOR_TIME=100000000,  // Tentatively 100ms
+		NOTIFICATION_TIME= 5000000,  // Tentatively 5ms
 	};
 
 	// Reference [3] 
@@ -119,10 +120,10 @@ public:
 		bool cmdReceived;
 		unsigned char cmd;
 		int nParamQueue;
-		/*! paramQueueCopy is a copy of parameter queue at the time of the command byte was written.
-		*/
-		unsigned char paramQueue[8],paramQueueCopy[8];
+		unsigned char paramQueue[8];
 		std::vector <unsigned char> statusQueue;
+
+		unsigned int readingSectorHSG,endSectorHSG;
 
 		bool DMATransfer,CPUTransfer; // Both are not supposed to be 1, but I/O can set it that way.
 
@@ -180,8 +181,11 @@ private:
 	void SetStatusNoError(void);
 	void SetStatusDriveNotReady(void);
 	void SetStatusDiscChanged(void);
+	void SetStatusReadDone(void);
+	void SetStatusHardError(void);
+	void SetStatusParameterError(void);
 	void SetStatusQueueForTOC(void);
-	void CopyParameterQueue(void);
+	void SetStatusDataReady(void);
 };
 
 
