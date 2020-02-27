@@ -74,12 +74,14 @@ public:
 	{
 		PARAM_QUEUE_LEN=8,
 		STATE_QUEUE_LEN=4,
+		CMDFLAG_STATUS_REQUEST=0x20,
+		CMDFLAG_IRQ=0x40,
 	};
 
 	enum
 	{
-		READ_SECTOR_TIME=100000000,  // Tentatively 100ms
-		NOTIFICATION_TIME= 5000000,  // Tentatively 5ms
+		READ_SECTOR_TIME= 5000000,  // Tentatively 5ms
+		NOTIFICATION_TIME=1000000,  // Tentatively 1ms
 	};
 
 	// Reference [3] 

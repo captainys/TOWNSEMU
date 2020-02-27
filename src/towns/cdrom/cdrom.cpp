@@ -407,11 +407,17 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 				else
 				{
 					state.ClearStatusQueue();
-					SetStatusDataReady();
+					if(0!=(state.cmd&CMDFLAG_STATUS_REQUEST))
+					{
+						SetStatusDataReady();
+						if(0!=(state.cmd&CMDFLAG_IRQ) && true==state.enableSIRQ)
+						{
+							PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
+						}
+					}
 					state.SIRQ=true;
 					state.DEI=false;
 					state.DTSF=true;
-					PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
 					townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+NOTIFICATION_TIME);
 				}
 			}
@@ -429,8 +435,14 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 				{
 					state.SIRQ=true;
 					state.DEI=false;
-					SetStatusReadDone();
-					PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
+					if(0!=(state.cmd&CMDFLAG_STATUS_REQUEST))
+					{
+						SetStatusReadDone();
+						if(0!=(state.cmd&CMDFLAG_IRQ) && true==state.enableSIRQ)
+						{
+							PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
+						}
+					}
 					townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+NOTIFICATION_TIME);
 				}
 			}
