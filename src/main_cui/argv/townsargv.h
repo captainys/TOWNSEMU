@@ -14,6 +14,7 @@ public:
 	std::string symbolFName;
 
 	bool autoStart;
+	bool debugger;
 	bool interactive;
 
 	TownsARGV();

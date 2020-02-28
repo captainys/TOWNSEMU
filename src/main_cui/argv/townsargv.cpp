@@ -8,6 +8,7 @@
 TownsARGV::TownsARGV()
 {
 	autoStart=true;
+	debugger=false;
 	interactive=true;
 }
 void TownsARGV::PrintHelp(void) const
@@ -17,6 +18,8 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  Print Help." << std::endl;
 	std::cout << "-PAUSE" << std::endl;
 	std::cout << "  Machine state is PAUSE on start up." << std::endl;
+	std::cout << "-DEBUG,-DEBUGGER" << std::endl;
+	std::cout << "  Start the machine with debugger enabled." << std::endl;
 	std::cout << "-UNITTEST" << std::endl;
 	std::cout << "  Let it run automatically to the end without taking control commands." << std::endl;
 	std::cout << "-FD0 filename" << std::endl;
@@ -39,6 +42,11 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 			PrintHelp();
 		}
 		else if("-PAUSE"==ARG)
+		{
+			autoStart=false;
+			++i;
+		}
+		else if("-DEBUG"==ARG || "-DEBUGGER"==ARG)
 		{
 			autoStart=false;
 			++i;

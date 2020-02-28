@@ -20,7 +20,14 @@ int Run(FMTowns &towns,const TownsARGV &argv,Outside_World &outside_world)
 	TownsThread townsThread;
 	if(true==argv.autoStart)
 	{
-		townsThread.SetRunMode(TownsThread::RUNMODE_DEBUGGER);
+		if(true==argv.debugger)
+		{
+			townsThread.SetRunMode(TownsThread::RUNMODE_DEBUGGER);
+		}
+		else
+		{
+			townsThread.SetRunMode(TownsThread::RUNMODE_FREE);
+		}
 	}
 
 	std::thread stdTownsThread(&TownsThread::Start,&townsThread,&towns,&outside_world);

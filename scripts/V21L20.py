@@ -24,6 +24,7 @@ def Run():
 		os.path.join(THISDIR,"..","testdata","ISOIMG","TESTDISC.ISO"),
 		"-SYM",
 		"../symtables/V2.1L20.txt",
+		"-DEBUG",
 		# "-PAUSE",
 	]).wait()
 
