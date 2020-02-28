@@ -1,5 +1,6 @@
 #include "egb.h"
 #include "io.h"
+#include "vmif.h"
 
 static char EGB_work[EgbWorkSize];
 

@@ -1,6 +1,7 @@
 #include "egb.h"
 #include "mos.h"
 #include "io.h"
+#include "vmif.h"
 
 static char EGB_work[EgbWorkSize];
 static char MOS_work[MosWorkSize];
