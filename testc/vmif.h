@@ -15,5 +15,8 @@ enum
 	TOWNS_VMIF_CMD_EXIT_VM=       0x03, // Exit the VM.  Return code taken from the data queu.
 };
 
+extern void TEST_FAILED(void);
+extern void TEST_SUCCEEDED(void);
+
 /* } */
 #endif

@@ -1,6 +1,5 @@
 build\io.obj
 build\vmif.obj
-build\FAILPROC.obj
 -lib
 C:\hc386\small\hce.lib
 -lib

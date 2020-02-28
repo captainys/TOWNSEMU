@@ -1,3 +1,14 @@
 #include "vmif.h"
 #include "io.h"
 
+void TEST_FAILED(void)
+{
+	IOWriteByte(TOWNSIO_VM_HOST_IF_DATA,      1);
+	IOWriteByte(TOWNSIO_VM_HOST_IF_CMD_STATUS,TOWNS_VMIF_CMD_EXIT_VM);
+}
+
+void TEST_SUCCEEDED(void)
+{
+	IOWriteByte(TOWNSIO_VM_HOST_IF_DATA,      0);
+	IOWriteByte(TOWNSIO_VM_HOST_IF_CMD_STATUS,TOWNS_VMIF_CMD_EXIT_VM);
+}

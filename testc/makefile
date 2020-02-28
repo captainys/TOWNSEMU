@@ -1,9 +1,6 @@
 build\io.obj : io.asm
 	386asm io.asm -OBJECT build\io.obj
 
-build\FAILPROC.obj : FAILPROC.asm
-	386asm FAILPROC.asm -OBJECT build\FAILPROC.obj
-
 build\vmif.obj : vmif.c
 	hcd386 vmif.c -obj build\vmif.obj
 
