@@ -83,3 +83,31 @@ add_test(
 		-UNITTEST
 )
 
+add_test(
+ 	NAME 2F_CDROM_ISO_V21L20
+	COMMAND 
+		main_cui 
+		"${CMAKE_SOURCE_DIR}/../../TOWNSEMU_TEST/ROM_2F"
+		-FD0
+		"${CMAKE_SOURCE_DIR}/../../TOWNSEMU_TEST/DISKIMG/testcdV2.1L20.bin"
+		-SYM
+		"${CMAKE_SOURCE_DIR}/../symtables/UNITTEST.txt"
+		-CD
+		"${CMAKE_SOURCE_DIR}/../testdata/ISOIMG/TESTDISC.iso"
+		-UNITTEST
+)
+
+add_test(
+ 	NAME MX_CDROM_ISO_V21L30
+	COMMAND 
+		main_cui 
+		"${CMAKE_SOURCE_DIR}/../../TOWNSEMU_TEST/ROM_MX"
+		-FD0
+		"${CMAKE_SOURCE_DIR}/../../TOWNSEMU_TEST/DISKIMG/testcdV2.1L30.bin"
+		-SYM
+		"${CMAKE_SOURCE_DIR}/../symtables/UNITTEST.txt"
+		-CD
+		"${CMAKE_CURRENT_SOURCE_DIR}/../../testdata/ISOIMG/TESTDISC.iso"
+		-UNITTEST
+)
+
