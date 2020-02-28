@@ -9,6 +9,7 @@
 #include "townsargv.h"
 #include "i486symtable.h"
 #include "cpputil.h"
+#include "discimg.h"
 
 #include "fssimplewindow_connection.h"
 
@@ -98,6 +99,14 @@ bool Setup(FMTowns &towns,const TownsARGV &argv)
 		if(""!=argv.fdImgFName[drv])
 		{
 			towns.fdc.LoadRawBinary(drv,argv.fdImgFName[drv].c_str());
+		}
+	}
+	if(""!=argv.cdImgFName)
+	{
+		auto errCode=towns.cdrom.state.GetDisc().Open(argv.cdImgFName);
+		if(DiscImage::ERROR_NOERROR!=errCode)
+		{
+			std::cout << DiscImage::ErrorCodeToText(errCode);
 		}
 	}
 

@@ -23,6 +23,8 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  Floppy disk image file name for Drive A." << std::endl;
 	std::cout << "-FD1 filename" << std::endl;
 	std::cout << "  Floppy disk image file name for Drive B." << std::endl;
+	std::cout << "-CD image-file-name" << std::endl;
+	std::cout << "  CD-ROM image file name for the internal drive. ISO or CUE." << std::endl;
 	std::cout << "-SYM filename" << std::endl;
 	std::cout << "  Specify symbol file name." << std::endl;
 }
@@ -54,6 +56,11 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		else if("-FD1"==ARG && i+1<argc)
 		{
 			fdImgFName[1]=argv[i+1];
+			++i;
+		}
+		else if("-CD"==ARG && i+1<argc)
+		{
+			cdImgFName=argv[i+1];
 			++i;
 		}
 		else if("-SYM"==ARG && i+1<argc)

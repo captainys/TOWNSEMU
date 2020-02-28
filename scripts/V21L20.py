@@ -20,6 +20,8 @@ def Run():
 		ROMDIR,
 		"-FD0",
 		os.path.join(DISKDIR,"V2.1L20.bin"),
+		"-CD",
+		os.path.join(THISDIR,"..","testdata","ISOIMG","TESTDISC.ISO"),
 		"-SYM",
 		"../symtables/V2.1L20.txt",
 		# "-PAUSE",

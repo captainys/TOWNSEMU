@@ -9,6 +9,7 @@ class TownsARGV
 public:
 	std::string ROMPath;
 	std::string fdImgFName[2];
+	std::string cdImgFName;
 	std::string startUpScriptFName;
 	std::string symbolFName;
 

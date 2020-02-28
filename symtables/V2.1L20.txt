@@ -336,6 +336,13 @@ P
 /end
 /begin0
 T 0
+* 00001048:00002C9C
+R 
+L ????:SHOOT_INT_93H
+P 
+/end
+/begin0
+T 0
 * 00001048:00004A89
 R 
 L NOT_CX_Bytes_From_DS:[SI]
