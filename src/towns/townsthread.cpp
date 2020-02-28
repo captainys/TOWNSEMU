@@ -139,6 +139,7 @@ bool TownsThread::UnitTestDone(const FMTowns &towns)
 {
 	if(true==towns.var.unitTestDone)
 	{
+		this->unitTestDone=true;
 		this->returnCode=towns.var.returnCode;
 		return true;
 	}

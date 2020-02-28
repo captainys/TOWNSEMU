@@ -7,8 +7,7 @@
 CODE					SEGMENT USE16
 
 MAIN					PROC
-
-						MOV		AL,1
+						MOV		AL,0
 						MOV		DX,TOWNSIO_VM_HOST_IF_DATA
 						OUT		DX,AL
 
