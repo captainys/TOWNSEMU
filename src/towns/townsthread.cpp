@@ -137,16 +137,9 @@ void TownsThread::PrintStatus(const FMTowns &towns) const
 
 bool TownsThread::UnitTestDone(const FMTowns &towns)
 {
-	if(towns.cpu.GetEDX()==0x47555354 && towns.cpu.GetEAX()==0x21555241)
+	if(true==towns.var.unitTestDone)
 	{
-		unitTestDone=true;
-		returnCode=0;
-		return true;
-	}
-	else if(towns.cpu.GetEDX()==0x4C494146 && towns.cpu.GetEAX()==0x4C494146)
-	{
-		unitTestDone=true;
-		returnCode=1;
+		this->returnCode=towns.var.returnCode;
 		return true;
 	}
 	return false;

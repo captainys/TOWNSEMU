@@ -100,6 +100,9 @@ public:
 		unsigned int freeRunTimerShift;
 		unsigned long long int nextRenderingTime;
 
+		bool unitTestDone=false;
+		int returnCode=0;
+
 		enum
 		{
 			VM2HOST_PARAM_QUEUE_LENGTH=256,
