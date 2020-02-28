@@ -1,5 +1,7 @@
 #include <stdio.h>
 
+extern void TEST_FAILED(void);
+
 int main(void)
 {
 	FILE *fp;
@@ -16,16 +18,19 @@ int main(void)
 	if(NULL==fp)
 	{
 		fprintf(stderr,"Cannot Open Q:/TEXT.TXT\n");
+		TEST_FAILED();
 		return 1;
 	}
 	if(NULL==fgets(buf,255,fp))
 	{
 		fprintf(stderr,"Cannot read a line from Q:/TEXT.TXT\n");
+		TEST_FAILED();
 		return 1;
 	}
 	if(0!=strncmp(buf,"FM Towns Emulator TSUGARU.",26))
 	{
 		fprintf(stderr,"Not getting file content from Q:/TEXT.TXT\n");
+		TEST_FAILED();
 		return 1;
 	}
 	fclose(fp);
@@ -34,11 +39,13 @@ int main(void)
 	if(NULL==fp)
 	{
 		fprintf(stderr,"Cannot Open Q:/BINARY.BIN\n");
+		TEST_FAILED();
 		return 1;
 	}
 	if(33!=fread(ubuf,1,256,fp))
 	{
 		fprintf(stderr,"Cannot read 33 bytes from Q:/BINARY.BIN\n");
+		TEST_FAILED();
 		return 1;
 	}
 	for(int i=0; i<33; ++i)
@@ -46,6 +53,7 @@ int main(void)
 		if(binaryData[i]!=ubuf[i])
 		{
 			fprintf(stderr,"Not getting file content from Q:/BINARY.BIN\n");
+			TEST_FAILED();
 			return 1;
 		}
 	}
