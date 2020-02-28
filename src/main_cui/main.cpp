@@ -82,10 +82,7 @@ int Run(FMTowns &towns,const TownsARGV &argv,Outside_World &outside_world)
 		}
 	}
 
-printf("%s %d\n",__FUNCTION__,__LINE__);
-printf("%d\n",townsThread.returnCode);
 	stdTownsThread.join();
-printf("%s %d\n",__FUNCTION__,__LINE__);
 
 	return townsThread.returnCode;
 }
