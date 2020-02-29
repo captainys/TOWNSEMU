@@ -38,6 +38,9 @@ xxH 01H xx xx  Probably Parameter Error
 21H 08H        Probably Media Changed
     What about drive-not-ready?
 
+My guess based on the Boot-ROM Disassembly:
+04H xx xx xx   Probably Seek done (After issuing 20H Seek, it waits for 00H No Error, and then 04H)
+
 Interpretation in the Linux for Towns source towns_cd.c (static void process_event(u_char st))
 00H 09H xx xx  Media change?
 00H xx  xx xx  No error

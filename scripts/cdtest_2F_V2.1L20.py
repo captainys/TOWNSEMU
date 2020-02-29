@@ -25,7 +25,7 @@ def Run():
 		"-SYM",
 		"../symtables/CDTEST_2F_V2.1L20.txt",
 		"-DEBUG",
-		# "-PAUSE",
+		"-PAUSE",
 	]).wait()
 
 

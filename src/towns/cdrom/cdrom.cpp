@@ -301,7 +301,13 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 	case CDCMD_SEEK://       0x00,
 		if(0x20&state.cmd)
 		{
-			SetStatusDriveNotReadyOrDiscChangedOrNoError();
+			if(true!=SetStatusDriveNotReadyOrDiscChanged())
+			{
+				SetStatusNoError();
+				state.PushStatusQueue(4,0,0,0);
+				// Probably status code 4 means Seek Done.
+				// FM Towns 2F BIOS waits for No Error (00H) and then waits for 04H after issuing command 20H Seek.
+			}
 		}
 		break;
 	case CDCMD_MODE2READ://  0x01,
