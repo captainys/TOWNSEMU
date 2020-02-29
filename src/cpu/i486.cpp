@@ -1048,6 +1048,15 @@ void i486DX::IncrementByte(unsigned int &value)
 	SetZF(0==value);
 	SetParityFlag(CheckParity(value&0xFF));
 }
+void i486DX::IncrementWithMask(unsigned int &value,unsigned int mask,unsigned int signBit)
+{
+	SetAuxCarryFlag(0x0F==(value&0x0F));
+	value=(value+1)&mask;
+	SetOF(value==signBit);
+	SetSignFlag(value&signBit);
+	SetZF(0==value);
+	SetParityFlag(CheckParity(value&0xFF));
+}
 
 
 

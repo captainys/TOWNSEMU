@@ -2065,6 +2065,7 @@ public:
 	void IncrementDword(unsigned int &value);
 	void IncrementWord(unsigned int &value);
 	void IncrementByte(unsigned int &value);
+	void IncrementWithMask(unsigned int &value,unsigned int mask,unsigned int signBit);
 
 
 	/*! Add a value.  OF,SF,ZF,AF,CF, and PF flags are set accoring to the result.

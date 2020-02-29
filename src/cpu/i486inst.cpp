@@ -1046,7 +1046,6 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 	case I486_OPCODE_INC_EBP://    0x45, // 16/32 depends on OPSIZE_OVERRIDE
 	case I486_OPCODE_INC_ESI://    0x46, // 16/32 depends on OPSIZE_OVERRIDE
 	case I486_OPCODE_INC_EDI://    0x47, // 16/32 depends on OPSIZE_OVERRIDE
-		op1.MakeByRegisterNumber(operandSize,opCode&7);
 		break;
 
 
@@ -3077,6 +3076,33 @@ int i486DX::Instruction::GetSimm16or32(unsigned int operandSize) const
 
 unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 {
+	static const unsigned int operandSizeMask[]=
+	{
+		0x00000000,  // 0
+		0x000000FF,  // (8>>3)
+		0x0000FFFF,  // (16>>3)
+		0x00FFFFFF,  // (24>>3)
+		0xFFFFFFFF,  // (32>>3)
+	};
+	static const unsigned int operandSizeSignBit[]=
+	{
+		0x00000000,  // 0
+		0x00000080,  // (8>>3)
+		0x00008000,  // (16>>3)
+		0x00800000,  // (24>>3)
+		0x80000000,  // (32>>3)
+	};
+	static const unsigned int operandSizeAndPattern[]=
+	{
+		0xFFFFFFFF, // 0
+		0xFFFFFF00, // (8>>3)
+		0xFFFF0000, // (16>>3)
+		0xFF000000, // (24>>3)
+		0x00000000, // (32>>3)
+	};
+
+
+
 	if(true==state.halt)
 	{
 		return 1;
@@ -4564,23 +4590,75 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		break;
 	case I486_OPCODE_INC_EAX://    0x40, // 16/32 depends on OPSIZE_OVERRIDE
+		clocksPassed=1;
+		{
+			const auto nBytes=(inst.operandSize>>3);
+			auto value=state.EAX();
+			IncrementWithMask(value,operandSizeMask[nBytes],operandSizeSignBit[nBytes]);
+			state.EAX()=((state.EAX()&operandSizeAndPattern[nBytes])|value);
+		}
+		break;
 	case I486_OPCODE_INC_ECX://    0x41, // 16/32 depends on OPSIZE_OVERRIDE
+		clocksPassed=1;
+		{
+			const auto nBytes=(inst.operandSize>>3);
+			auto value=state.ECX();
+			IncrementWithMask(value,operandSizeMask[nBytes],operandSizeSignBit[nBytes]);
+			state.ECX()=((state.ECX()&operandSizeAndPattern[nBytes])|value);
+		}
+		break;
 	case I486_OPCODE_INC_EDX://    0x42, // 16/32 depends on OPSIZE_OVERRIDE
+		clocksPassed=1;
+		{
+			const auto nBytes=(inst.operandSize>>3);
+			auto value=state.EDX();
+			IncrementWithMask(value,operandSizeMask[nBytes],operandSizeSignBit[nBytes]);
+			state.EDX()=((state.EDX()&operandSizeAndPattern[nBytes])|value);
+		}
+		break;
 	case I486_OPCODE_INC_EBX://    0x43, // 16/32 depends on OPSIZE_OVERRIDE
+		clocksPassed=1;
+		{
+			const auto nBytes=(inst.operandSize>>3);
+			auto value=state.EBX();
+			IncrementWithMask(value,operandSizeMask[nBytes],operandSizeSignBit[nBytes]);
+			state.EBX()=((state.EBX()&operandSizeAndPattern[nBytes])|value);
+		}
+		break;
 	case I486_OPCODE_INC_ESP://    0x44, // 16/32 depends on OPSIZE_OVERRIDE
+		clocksPassed=1;
+		{
+			const auto nBytes=(inst.operandSize>>3);
+			auto value=state.ESP();
+			IncrementWithMask(value,operandSizeMask[nBytes],operandSizeSignBit[nBytes]);
+			state.ESP()=((state.ESP()&operandSizeAndPattern[nBytes])|value);
+		}
+		break;
 	case I486_OPCODE_INC_EBP://    0x45, // 16/32 depends on OPSIZE_OVERRIDE
+		clocksPassed=1;
+		{
+			const auto nBytes=(inst.operandSize>>3);
+			auto value=state.EBP();
+			IncrementWithMask(value,operandSizeMask[nBytes],operandSizeSignBit[nBytes]);
+			state.EBP()=((state.EBP()&operandSizeAndPattern[nBytes])|value);
+		}
+		break;
 	case I486_OPCODE_INC_ESI://    0x46, // 16/32 depends on OPSIZE_OVERRIDE
+		clocksPassed=1;
+		{
+			const auto nBytes=(inst.operandSize>>3);
+			auto value=state.ESI();
+			IncrementWithMask(value,operandSizeMask[nBytes],operandSizeSignBit[nBytes]);
+			state.ESI()=((state.ESI()&operandSizeAndPattern[nBytes])|value);
+		}
+		break;
 	case I486_OPCODE_INC_EDI://    0x47, // 16/32 depends on OPSIZE_OVERRIDE
 		clocksPassed=1;
 		{
-			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,op1.GetSize());
-			if(true!=state.exception)
-			{
-				auto i=value.GetAsDword();
-				IncrementWordOrDword(inst.operandSize,i);
-				value.SetDword(i);
-				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
-			}
+			const auto nBytes=(inst.operandSize>>3);
+			auto value=state.EDI();
+			IncrementWithMask(value,operandSizeMask[nBytes],operandSizeSignBit[nBytes]);
+			state.EDI()=((state.EDI()&operandSizeAndPattern[nBytes])|value);
 		}
 		break;
 
