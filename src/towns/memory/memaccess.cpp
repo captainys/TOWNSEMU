@@ -130,103 +130,50 @@ TownsMainRAMorFMRVRAMAccess::TownsMainRAMorFMRVRAMAccess()
 	breakOnCVRAMRead=false;
 }
 
-/* virtual */ unsigned int TownsMainRAMorSysROMAccess::FetchByte(unsigned int physAddr) const
+/* virtual */ unsigned int TownsMappedSysROMAccess::FetchByte(unsigned int physAddr) const
 {
-	auto &state=physMemPtr->state;
-	if(true==state.sysRomMapping && 0xF8000<=physAddr && physAddr<=0xFFFFF)
+	unsigned int offset=physAddr-TOWNSADDR_SYSROM_MAP_BASE;
+	auto ROMPtr=physMemPtr->sysRom.data()+TOWNSADDR_SYSROM_MAP_OFFSET_DIFFERENCE+offset;
+	if(offset<TOWNSADDR_SYSROM_MAP_SIZE)
 	{
-		return physMemPtr->sysRom[physAddr-TOWNSADDR_FMR_VRAM_BASE];
+		return ROMPtr[0];
 	}
-	else if(physAddr<state.RAM.size())
-	{
-		return state.RAM[physAddr];
-	}
-	return 0xff;
+	cpuPtr->Abort("Out-of-bound access to Mapped SYSROM");
+	return 0xFFFFFFFF;
 }
-/* virtual */ unsigned int TownsMainRAMorSysROMAccess::FetchWord(unsigned int physAddr) const
+/* virtual */ unsigned int TownsMappedSysROMAccess::FetchWord(unsigned int physAddr) const
 {
-	auto &state=physMemPtr->state;
-	if(true==state.sysRomMapping)
+	unsigned int offset=physAddr-TOWNSADDR_SYSROM_MAP_BASE;
+	auto ROMPtr=physMemPtr->sysRom.data()+TOWNSADDR_SYSROM_MAP_OFFSET_DIFFERENCE+offset;
+	if(offset<TOWNSADDR_SYSROM_MAP_SIZE-1)
 	{
-		if(0xF8000<=physAddr && physAddr<=0xFFFFE)
-		{
-			return physMemPtr->sysRom[physAddr-TOWNSADDR_FMR_VRAM_BASE]|(physMemPtr->sysRom[physAddr-TOWNSADDR_FMR_VRAM_BASE+1]<<8);
-		}
-		else if(0xF8000<=physAddr && physAddr<=0xFFFFF)
-		{
-			return physMemPtr->sysRom[physAddr-TOWNSADDR_FMR_VRAM_BASE];
-		}
-		return 0xffff;
+		return ROMPtr[0]|(ROMPtr[1]<<8);
 	}
-	return state.RAM[physAddr]|(state.RAM[physAddr+1]<<8);
+	cpuPtr->Abort("Cross-Border WORD access to Mapped SYSROM");
+	return 0xFFFFFFFF;
 }
-/* virtual */ unsigned int TownsMainRAMorSysROMAccess::FetchDword(unsigned int physAddr) const
+/* virtual */ unsigned int TownsMappedSysROMAccess::FetchDword(unsigned int physAddr) const
 {
-	auto &state=physMemPtr->state;
-	if(true==state.sysRomMapping)
+	unsigned int offset=physAddr-TOWNSADDR_SYSROM_MAP_BASE;
+	auto ROMPtr=physMemPtr->sysRom.data()+TOWNSADDR_SYSROM_MAP_OFFSET_DIFFERENCE+offset;
+	if(offset<TOWNSADDR_SYSROM_MAP_SIZE-3)
 	{
-		if(0xF8000<=physAddr && physAddr<=0xFFFFC)
-		{
-			return physMemPtr->sysRom[physAddr-TOWNSADDR_FMR_VRAM_BASE]|
-			      (physMemPtr->sysRom[physAddr-TOWNSADDR_FMR_VRAM_BASE+1]<<8)|
-			      (physMemPtr->sysRom[physAddr-TOWNSADDR_FMR_VRAM_BASE+2]<<16)|
-			      (physMemPtr->sysRom[physAddr-TOWNSADDR_FMR_VRAM_BASE+3]<<24);
-		}
-		else if(0xF8000<=physAddr && physAddr<=0xFFFFD)
-		{
-			return physMemPtr->sysRom[physAddr-TOWNSADDR_FMR_VRAM_BASE]|(physMemPtr->sysRom[physAddr-TOWNSADDR_FMR_VRAM_BASE+1]<<8)|(physMemPtr->sysRom[physAddr-TOWNSADDR_FMR_VRAM_BASE+2]<<16);
-		}
-		else if(0xF8000<=physAddr && physAddr<=0xFFFFE)
-		{
-			return physMemPtr->sysRom[physAddr-TOWNSADDR_FMR_VRAM_BASE]|(physMemPtr->sysRom[physAddr-TOWNSADDR_FMR_VRAM_BASE+1]<<8);
-		}
-		else if(0xF8000<=physAddr && physAddr<=0xFFFFF)
-		{
-			return physMemPtr->sysRom[physAddr-TOWNSADDR_FMR_VRAM_BASE];
-		}
-		return 0xffffffff;
+		return ROMPtr[0]|(ROMPtr[1]<<8)|(ROMPtr[2]<<16)|(ROMPtr[3]<<24);
 	}
-	return state.RAM[physAddr]|(state.RAM[physAddr+1]<<8)|(state.RAM[physAddr+2]<<16)|(state.RAM[physAddr+3]<<24);
+	cpuPtr->Abort("Cross-Border DWORD access to Mapped SYSROM");
+	return 0xFFFFFFFF;
 }
-/* virtual */ void TownsMainRAMorSysROMAccess::StoreByte(unsigned int physAddr,unsigned char data)
+/* virtual */ void TownsMappedSysROMAccess::StoreByte(unsigned int physAddr,unsigned char data)
 {
-	auto &state=physMemPtr->state;
-	if(true==state.sysRomMapping && 0xF8000<=physAddr && physAddr<=0xFFFFF)
-	{
-		// ROM mode no writing
-	}
-	else if(physAddr<state.RAM.size())
-	{
-		state.RAM[physAddr]=data;
-	}
+	// ROM mode no writing
 }
-/* virtual */ void TownsMainRAMorSysROMAccess::StoreWord(unsigned int physAddr,unsigned int data)
+/* virtual */ void TownsMappedSysROMAccess::StoreWord(unsigned int physAddr,unsigned int data)
 {
-	auto &state=physMemPtr->state;
-	if(true==state.sysRomMapping && 0xF8000<=physAddr && physAddr<=0xFFFFF)
-	{
-		// ROM mode no writing
-	}
-	else
-	{
-		state.RAM[physAddr]=data&255;
-		state.RAM[physAddr+1]=(data>>8)&255;
-	}
+	// ROM mode no writing
 }
-/* virtual */ void TownsMainRAMorSysROMAccess::StoreDword(unsigned int physAddr,unsigned int data)
+/* virtual */ void TownsMappedSysROMAccess::StoreDword(unsigned int physAddr,unsigned int data)
 {
-	auto &state=physMemPtr->state;
-	if(true==state.sysRomMapping && 0xF8000<=physAddr && physAddr<=0xFFFFF)
-	{
-		// ROM mode no writing
-	}
-	else
-	{
-		state.RAM[physAddr]=data&255;
-		state.RAM[physAddr+1]=(data>>8)&255;
-		state.RAM[physAddr+2]=(data>>16)&255;
-		state.RAM[physAddr+3]=(data>>24)&255;
-	}
+	// ROM mode no writing
 }
 
 

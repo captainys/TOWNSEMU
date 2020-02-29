@@ -39,7 +39,7 @@ public:
 	virtual void StoreDword(unsigned int physAddr,unsigned int data);
 };
 
-class TownsMainRAMorSysROMAccess : public TownsMemAccess
+class TownsMappedSysROMAccess : public TownsMemAccess
 {
 public:
 	virtual unsigned int FetchByte(unsigned int physAddr) const;
@@ -223,7 +223,9 @@ public:
 	class State
 	{
 	public:
-		bool sysRomMapping;
+		// Memo for myself:  When implementing state load, make sure to refresh mapping 
+		//                   according to sysRomMapping, dicRom, and FMRVRAM flags.
+		bool sysRomMapping;  // Whenever changing this flag, synchronously change memory access mapping.
 		bool dicRom;
 		unsigned int DICROMBank;
 		bool FMRVRAM;
@@ -259,7 +261,7 @@ public:
 	class Memory *memPtr;
 
 	TownsMainRAMAccess mainRAMAccess;
-	TownsMainRAMorSysROMAccess mainRAMorSysROMAccess;
+	TownsMappedSysROMAccess mappedSysROMAccess;
 	TownsMainRAMorFMRVRAMAccess mainRAMorFMRVRAMAccess;
 	TownsDicROMandDicRAMAccess dicROMandDicRAMAccess;
 	TownsFontROMAccess fontROMAccess;
@@ -310,6 +312,10 @@ public:
 	/*!
 	*/
 	void SetUpVRAMAccess(bool breakOnRead,bool breakOnWrite);
+
+	/*! 
+	*/
+	void SetSysRomMappingFlag(bool sysRomMapping);
 
 
 	virtual void IOWriteByte(unsigned int ioport,unsigned int data);

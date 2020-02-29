@@ -70,7 +70,7 @@ void TownsPhysicalMemory::State::Reset(void)
 		state.FMRVRAM=((0x80&data)==0);
 		break;
 	case TOWNSIO_SYSROM_DICROM: // 0x480
-		state.sysRomMapping=(0==(data&2));
+		SetSysRomMappingFlag(0==(data&2));
 		state.dicRom=(0!=(data&1));
 		break;
 	case TOWNSIO_DICROM_BANK://              0x484, // [2] pp.92
@@ -227,6 +227,7 @@ void TownsPhysicalMemory::SetWaveRAMSize(long long int size)
 /* virtual */ void TownsPhysicalMemory::Reset(void)
 {
 	state.Reset();
+	SetSysRomMappingFlag(state.sysRomMapping);
 }
 
 void TownsPhysicalMemory::SetDICRAMSize(long long int size)
@@ -258,9 +259,9 @@ void TownsPhysicalMemory::SetUpMemoryAccess(void)
 	mem.AddAccess(&dicROMandDicRAMAccess,0xC2080000,0xC20FFFFF);
 	mem.AddAccess(&dicROMandDicRAMAccess,0xC2140000,0xC2141FFF);
 
-	mainRAMorSysROMAccess.SetPhysicalMemoryPointer(this);
-	mainRAMorSysROMAccess.SetCPUPointer(&cpu);
-	mem.AddAccess(&mainRAMorSysROMAccess,0x000F8000,0x000FFFFF);
+	mappedSysROMAccess.SetPhysicalMemoryPointer(this);
+	mappedSysROMAccess.SetCPUPointer(&cpu);
+	SetSysRomMappingFlag(true);
 
 	if(0x00100000<state.RAM.size())
 	{
@@ -310,6 +311,19 @@ void TownsPhysicalMemory::SetUpVRAMAccess(bool breakOnRead,bool breakOnWrite)
 		mem.AddAccess(&VRAMAccessDebug,TOWNSADDR_VRAM_BASE, TOWNSADDR_VRAM_END-1);
 		mem.AddAccess(&VRAMAccessDebug,TOWNSADDR_VRAM2_BASE,TOWNSADDR_VRAM2_END-1);
 		mem.AddAccess(&VRAMAccessDebug,0x82000000,0x83FFFFFF); // For IIMX High Resolution Access.
+	}
+}
+
+void TownsPhysicalMemory::SetSysRomMappingFlag(bool sysRomMapping)
+{
+	state.sysRomMapping=sysRomMapping;
+	if(true==sysRomMapping)
+	{
+		memPtr->AddAccess(&mappedSysROMAccess,0x000F8000,0x000FFFFF);
+	}
+	else
+	{
+		memPtr->AddAccess(&mainRAMAccess,0x000F8000,0x000FFFFF);
 	}
 }
 
