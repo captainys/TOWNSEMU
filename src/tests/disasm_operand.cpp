@@ -85,13 +85,37 @@ int main(int ac,char *av[])
 	}
 
 	const unsigned char test32_5[]={0x78,0x56,0x34,0x12};
+	if(true!=TestDisassembly(32,32,0xB8,sizeof(test32_5),test32_5,towns,"MOV     EAX,12345678H"))
+	{
+		return 1;
+	}
 	if(true!=TestDisassembly(32,32,0xB9,sizeof(test32_5),test32_5,towns,"MOV     ECX,12345678H"))
+	{
+		return 1;
+	}
+	if(true!=TestDisassembly(32,32,0xBA,sizeof(test32_5),test32_5,towns,"MOV     EDX,12345678H"))
+	{
+		return 1;
+	}
+	if(true!=TestDisassembly(32,32,0xBB,sizeof(test32_5),test32_5,towns,"MOV     EBX,12345678H"))
 	{
 		return 1;
 	}
 
 	const unsigned char test32_6[]={0xAB,0xAB,0xAB,0xAB};
 	if(true!=TestDisassembly(32,32,0xBC,sizeof(test32_6),test32_6,towns,"MOV     ESP,ABABABABH"))
+	{
+		return 1;
+	}
+	if(true!=TestDisassembly(32,32,0xBD,sizeof(test32_6),test32_6,towns,"MOV     EBP,ABABABABH"))
+	{
+		return 1;
+	}
+	if(true!=TestDisassembly(32,32,0xBE,sizeof(test32_6),test32_6,towns,"MOV     ESI,ABABABABH"))
+	{
+		return 1;
+	}
+	if(true!=TestDisassembly(32,32,0xBF,sizeof(test32_6),test32_6,towns,"MOV     EDI,ABABABABH"))
 	{
 		return 1;
 	}
