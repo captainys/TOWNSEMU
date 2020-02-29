@@ -249,9 +249,9 @@ void TownsPhysicalMemory::SetUpMemoryAccess(void)
 	mem.AddAccess(&mainRAMAccess,0x00000000,0x000BFFFF);
 	mem.AddAccess(&mainRAMAccess,0x000F0000,0x000F7FFF);
 
-	mainRAMorFMRVRAMAccess.SetPhysicalMemoryPointer(this);
-	mainRAMorFMRVRAMAccess.SetCPUPointer(&cpu);
-	mem.AddAccess(&mainRAMorFMRVRAMAccess,0x000C0000,0x000CFFFF);
+	FMRVRAMAccess.SetPhysicalMemoryPointer(this);
+	FMRVRAMAccess.SetCPUPointer(&cpu);
+	SetFMRVRAMMappingFlag(true);  // This will set up memory access for 0xC0000 to 0xCFFFF
 
 	dicROMandDicRAMAccess.SetPhysicalMemoryPointer(this);
 	dicROMandDicRAMAccess.SetCPUPointer(&cpu);
@@ -261,7 +261,7 @@ void TownsPhysicalMemory::SetUpMemoryAccess(void)
 
 	mappedSysROMAccess.SetPhysicalMemoryPointer(this);
 	mappedSysROMAccess.SetCPUPointer(&cpu);
-	SetSysRomMappingFlag(true);
+	SetSysRomMappingFlag(true);   // This will set up memory access for 0xF8000 to 0xFFFFF
 
 	if(0x00100000<state.RAM.size())
 	{
@@ -333,6 +333,14 @@ void TownsPhysicalMemory::SetDicROMMappingFlag(bool dicRomMapping)
 void TownsPhysicalMemory::SetFMRVRAMMappingFlag(bool FMRVRAMMapping)
 {
 	state.FMRVRAM=FMRVRAMMapping;
+	if(true==FMRVRAMMapping)
+	{
+		memPtr->AddAccess(&FMRVRAMAccess,TOWNSADDR_FMR_VRAM_BASE,TOWNSADDR_FMR_CVRAM_END-1);
+	}
+	else
+	{
+		memPtr->AddAccess(&mainRAMAccess,TOWNSADDR_FMR_VRAM_BASE,TOWNSADDR_FMR_CVRAM_END-1);
+	}
 }
 
 std::vector <std::string> TownsPhysicalMemory::GetStatusText(void) const

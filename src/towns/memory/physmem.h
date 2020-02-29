@@ -50,12 +50,12 @@ public:
 	virtual void StoreDword(unsigned int physAddr,unsigned int data);
 };
 
-class TownsMainRAMorFMRVRAMAccess : public TownsMemAccess
+class TownsFMRVRAMAccess : public TownsMemAccess
 {
 public:
 	bool breakOnFMRVRAMWrite,breakOnFMRVRAMRead;
 	bool breakOnCVRAMWrite,breakOnCVRAMRead;
-	TownsMainRAMorFMRVRAMAccess();
+	TownsFMRVRAMAccess();
 	virtual unsigned int FetchByte(unsigned int physAddr) const;
 	virtual unsigned int FetchWord(unsigned int physAddr) const;
 	virtual unsigned int FetchDword(unsigned int physAddr) const;
@@ -262,7 +262,7 @@ public:
 
 	TownsMainRAMAccess mainRAMAccess;
 	TownsMappedSysROMAccess mappedSysROMAccess;
-	TownsMainRAMorFMRVRAMAccess mainRAMorFMRVRAMAccess;
+	TownsFMRVRAMAccess FMRVRAMAccess;
 	TownsDicROMandDicRAMAccess dicROMandDicRAMAccess;
 	TownsFontROMAccess fontROMAccess;
 	TownsVRAMAccess VRAMAccess;
