@@ -4571,12 +4571,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 								    state.CS().value,value.GetAsDword());
 							}
 						}
-						auto destin=value.GetAsDword();
-						if(16==inst.operandSize)
-						{
-							destin&=0xffff;
-						}
-						state.EIP=destin;
+						state.EIP=(value.GetAsDword()&operandSizeMask[inst.operandSize>>3]);
 						EIPSetByInstruction=true;
 					}
 				}
