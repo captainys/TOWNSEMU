@@ -34,30 +34,32 @@ void TownsMemAccess::SetCPUPointer(class i486DX *cpuPtr)
 /* virtual */ unsigned int TownsMainRAMAccess::FetchWord(unsigned int physAddr) const
 {
 	auto &state=physMemPtr->state;
+	auto *RAMPtr=state.RAM.data()+physAddr;
 	if(physAddr<state.RAM.size()-1)
 	{
-		return state.RAM[physAddr]|(state.RAM[physAddr+1]<<8);
+		return RAMPtr[0]|(RAMPtr[1]<<8);
 	}
 	return 0xffff;
 }
 /* virtual */ unsigned int TownsMainRAMAccess::FetchDword(unsigned int physAddr) const
 {
 	auto &state=physMemPtr->state;
+	auto *RAMPtr=state.RAM.data()+physAddr;
 	if(physAddr<state.RAM.size()-3)
 	{
-		return state.RAM[physAddr]|(state.RAM[physAddr+1]<<8)|(state.RAM[physAddr+2]<<16)|(state.RAM[physAddr+3]<<24);
+		return RAMPtr[0]|(RAMPtr[1]<<8)|(RAMPtr[2]<<16)|(RAMPtr[3]<<24);
 	}
 	else if(physAddr<state.RAM.size()-2)
 	{
-		return state.RAM[physAddr]|(state.RAM[physAddr+1]<<8)|(state.RAM[physAddr+2]<<16);
+		return RAMPtr[1]|(RAMPtr[1]<<8)|(RAMPtr[2]<<16);
 	}
 	else if(physAddr<state.RAM.size()-1)
 	{
-		return state.RAM[physAddr]|(state.RAM[physAddr+1]<<8);
+		return RAMPtr[2]|(RAMPtr[1]<<8);
 	}
 	else if(physAddr<state.RAM.size())
 	{
-		return state.RAM[physAddr];
+		return RAMPtr[3];
 	}
 	return 0xffffff;
 }
@@ -72,40 +74,42 @@ void TownsMemAccess::SetCPUPointer(class i486DX *cpuPtr)
 /* virtual */ void TownsMainRAMAccess::StoreWord(unsigned int physAddr,unsigned int data)
 {
 	auto &state=physMemPtr->state;
+	auto *RAMPtr=state.RAM.data()+physAddr;
 	if(physAddr<state.RAM.size()-1)
 	{
-		state.RAM[physAddr]=data&255;
-		state.RAM[physAddr+1]=(data>>8)&255;
+		RAMPtr[0]=data&255;
+		RAMPtr[1]=(data>>8)&255;
 	}
 	else if(physAddr<state.RAM.size())
 	{
-		state.RAM[physAddr]=data&255;
+		RAMPtr[0]=data&255;
 	}
 }
 /* virtual */ void TownsMainRAMAccess::StoreDword(unsigned int physAddr,unsigned int data)
 {
 	auto &state=physMemPtr->state;
+	auto *RAMPtr=state.RAM.data()+physAddr;
 	if(physAddr<state.RAM.size()-3)
 	{
-		state.RAM[physAddr]=data&255;
-		state.RAM[physAddr+1]=(data>>8)&255;
-		state.RAM[physAddr+2]=(data>>16)&255;
-		state.RAM[physAddr+3]=(data>>24)&255;
+		RAMPtr[0]=data&255;
+		RAMPtr[1]=(data>>8)&255;
+		RAMPtr[2]=(data>>16)&255;
+		RAMPtr[3]=(data>>24)&255;
 	}
 	else if(physAddr<state.RAM.size()-2)
 	{
-		state.RAM[physAddr]=data&255;
-		state.RAM[physAddr+1]=(data>>8)&255;
-		state.RAM[physAddr+2]=(data>>16)&255;
+		RAMPtr[0]=data&255;
+		RAMPtr[1]=(data>>8)&255;
+		RAMPtr[2]=(data>>16)&255;
 	}
 	else if(physAddr<state.RAM.size()-1)
 	{
-		state.RAM[physAddr]=data&255;
-		state.RAM[physAddr+1]=(data>>8)&255;
+		RAMPtr[0]=data&255;
+		RAMPtr[1]=(data>>8)&255;
 	}
 	else if(physAddr<state.RAM.size())
 	{
-		state.RAM[physAddr]=data&255;
+		RAMPtr[0]=data&255;
 	}
 }
 
