@@ -256,10 +256,10 @@ void TownsPhysicalMemory::SetUpMemoryAccess(void)
 	mappedDicROMandDicRAMAccess.SetCPUPointer(&cpu);
 	SetDicROMMappingFlag(true);  // This will set up memory access for 0xD0000 to 0xEFFFF
 
-	dicROMandDicRAMAccess.SetPhysicalMemoryPointer(this);
-	dicROMandDicRAMAccess.SetCPUPointer(&cpu);
-	mem.AddAccess(&dicROMandDicRAMAccess,0xC2080000,0xC20FFFFF);
-	mem.AddAccess(&dicROMandDicRAMAccess,0xC2140000,0xC2141FFF);
+	nativeDicROMandDicRAMAccess.SetPhysicalMemoryPointer(this);
+	nativeDicROMandDicRAMAccess.SetCPUPointer(&cpu);
+	mem.AddAccess(&nativeDicROMandDicRAMAccess,0xC2080000,0xC20FFFFF);
+	mem.AddAccess(&nativeDicROMandDicRAMAccess,0xC2140000,0xC2141FFF);
 
 	mappedSysROMAccess.SetPhysicalMemoryPointer(this);
 	mappedSysROMAccess.SetCPUPointer(&cpu);

@@ -182,8 +182,7 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 
 /* virtual */ unsigned int TownsFMRVRAMAccess::FetchByte(unsigned int physAddr) const
 {
-	if(true==physMemPtr->state.FMRVRAM &&
-	   TOWNSADDR_FMR_VRAM_BASE<=physAddr && physAddr<=TOWNSADDR_FMR_CVRAM_END)
+	if(TOWNSADDR_FMR_VRAM_BASE<=physAddr && physAddr<=TOWNSADDR_FMR_CVRAM_END)
 	{
 		if((TOWNS_MEMIO_1_LOW<=physAddr && physAddr<=TOWNS_MEMIO_1_HIGH) ||
 		   (TOWNS_MEMIO_2_LOW<=physAddr && physAddr<=TOWNS_MEMIO_2_HIGH))
@@ -280,43 +279,27 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 			return physMemPtr->fontRom[TOWNSADDR_FMR_ANK16_MAP+physAddr-TOWNSADDR_FMR_ANK16_BASE];
 		}
 	}
-	else
-	{
-		return physMemPtr->state.RAM[physAddr];
-	}
 	return 0xff;
 }
 /* virtual */ unsigned int TownsFMRVRAMAccess::FetchWord(unsigned int physAddr) const
 {
-	if(true==physMemPtr->state.FMRVRAM &&
-	   TOWNSADDR_FMR_VRAM_BASE<=physAddr && physAddr<=TOWNSADDR_FMR_CVRAM_END)
+	if(TOWNSADDR_FMR_VRAM_BASE<=physAddr && physAddr<=TOWNSADDR_FMR_CVRAM_END)
 	{
 		return TownsMemAccess::FetchWord(physAddr);
 	}
-	else
-	{
-		return physMemPtr->state.RAM[physAddr]|(physMemPtr->state.RAM[physAddr+1]<<8);
-	}
+	return 0xffff;
 }
 /* virtual */ unsigned int TownsFMRVRAMAccess::FetchDword(unsigned int physAddr) const
 {
-	if(true==physMemPtr->state.FMRVRAM &&
-	   TOWNSADDR_FMR_VRAM_BASE<=physAddr && physAddr<=TOWNSADDR_FMR_CVRAM_END)
+	if(TOWNSADDR_FMR_VRAM_BASE<=physAddr && physAddr<=TOWNSADDR_FMR_CVRAM_END)
 	{
 		return TownsMemAccess::FetchDword(physAddr);
 	}
-	else
-	{
-		return physMemPtr->state.RAM[physAddr]|
-		      (physMemPtr->state.RAM[physAddr+1]<<8)|
-		      (physMemPtr->state.RAM[physAddr+2]<<16)|
-		      (physMemPtr->state.RAM[physAddr+3]<<24);
-	}
+	return 0xffffffff;
 }
 /* virtual */ void TownsFMRVRAMAccess::StoreByte(unsigned int physAddr,unsigned char data)
 {
-	if(true==physMemPtr->state.FMRVRAM &&
-	   TOWNSADDR_FMR_VRAM_BASE<=physAddr && physAddr<TOWNSADDR_FMR_CVRAM_END)
+	if(TOWNSADDR_FMR_VRAM_BASE<=physAddr && physAddr<TOWNSADDR_FMR_CVRAM_END)
 	{
 		if((TOWNS_MEMIO_1_LOW<=physAddr && physAddr<=TOWNS_MEMIO_1_HIGH) ||
 		   (TOWNS_MEMIO_2_LOW<=physAddr && physAddr<=TOWNS_MEMIO_2_HIGH))
@@ -406,36 +389,14 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 			physMemPtr->state.TVRAMWrite=true;
 		}
 	}
-	else
-	{
-		physMemPtr->state.RAM[physAddr]=data;
-	}
 }
 /* virtual */ void TownsFMRVRAMAccess::StoreWord(unsigned int physAddr,unsigned int data)
 {
-	if(true==physMemPtr->state.FMRVRAM)
-	{
-		TownsMemAccess::StoreWord(physAddr,data);
-	}
-	else
-	{
-		physMemPtr->state.RAM[physAddr  ]=data&0xFF;
-		physMemPtr->state.RAM[physAddr+1]=(data>>8)&0xFF;
-	}
+	TownsMemAccess::StoreWord(physAddr,data);
 }
 /* virtual */ void TownsFMRVRAMAccess::StoreDword(unsigned int physAddr,unsigned int data)
 {
-	if(true==physMemPtr->state.FMRVRAM)
-	{
-		TownsMemAccess::StoreDword(physAddr,data);
-	}
-	else
-	{
-		physMemPtr->state.RAM[physAddr  ]= data&0xFF;
-		physMemPtr->state.RAM[physAddr+1]=(data>>8)&0xFF;
-		physMemPtr->state.RAM[physAddr+2]=(data>>16)&0xFF;
-		physMemPtr->state.RAM[physAddr+3]=(data>>24)&0xFF;
-	}
+	TownsMemAccess::StoreDword(physAddr,data);
 }
 
 
@@ -467,29 +428,10 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 ////////////////////////////////////////////////////////////
 
 
-/* virtual */ unsigned int TownsDicROMandDicRAMAccess::FetchByte(unsigned int physAddr) const
+/* virtual */ unsigned int TownsNativeDicROMandDicRAMAccess::FetchByte(unsigned int physAddr) const
 {
 	auto &physMem=*physMemPtr;
-	if(TOWNSADDR_FMR_DICROM_BASE<=physAddr && physAddr<TOWNSADDR_FMR_RESERVED_END)
-	{
-		if(true==physMem.state.dicRom)
-		{
-			if(TOWNSADDR_FMR_DICROM_BASE<=physAddr && physAddr<TOWNSADDR_FMR_DICROM_END) // Dic ROM
-			{
-				unsigned int offset=32768*physMem.state.DICROMBank+(physAddr-TOWNSADDR_FMR_DICROM_BASE);
-				return physMem.dicRom[offset];
-			}
-			else if(TOWNSADDR_BACKUP_RAM_BASE<=physAddr && physAddr<TOWNSADDR_BACKUP_RAM_END) // 
-			{
-				return physMem.state.DICRAM[physAddr-TOWNSADDR_BACKUP_RAM_BASE];
-			}
-		}
-		else
-		{
-			return physMemPtr->state.RAM[physAddr];
-		}
-	}
-	else if(0xC2080000<=physAddr && physAddr<=0xC20FFFFF)
+	if(0xC2080000<=physAddr && physAddr<=0xC20FFFFF)
 	{
 		return physMem.dicRom[physAddr-0xC2080000];
 	}
@@ -499,24 +441,10 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 	}
 	return 0xff;
 }
-/* virtual */ void TownsDicROMandDicRAMAccess::StoreByte(unsigned int physAddr,unsigned char data)
+/* virtual */ void TownsNativeDicROMandDicRAMAccess::StoreByte(unsigned int physAddr,unsigned char data)
 {
 	auto &physMem=*physMemPtr;
-	if(TOWNSADDR_FMR_DICROM_BASE<=physAddr && physAddr<TOWNSADDR_FMR_RESERVED_END)
-	{
-		if(true==physMem.state.dicRom)
-		{
-			if(TOWNSADDR_BACKUP_RAM_BASE<=physAddr && physAddr<TOWNSADDR_BACKUP_RAM_END) // 
-			{
-				physMem.state.DICRAM[physAddr-TOWNSADDR_BACKUP_RAM_BASE]=data;
-			}
-		}
-		else
-		{
-			physMemPtr->state.RAM[physAddr]=data;
-		}
-	}
-	else if(0xC2140000<=physAddr && physAddr<=0xC2141FFF)
+	if(0xC2140000<=physAddr && physAddr<=0xC2141FFF)
 	{
 		physMem.state.DICRAM[physAddr-0xC2140000]=data;
 	}
