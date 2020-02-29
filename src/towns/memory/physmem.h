@@ -5,8 +5,177 @@
 #include <vector>
 #include <string>
 
+#ifdef REG_NONE  // F**king Windows headers!
+#undef REG_NONE
+#endif
+
+#include "i486.h"
+#include "i486debug.h"
+
 #include "device.h"
 #include "ramrom.h"
+
+
+
+class TownsMemAccess : public MemoryAccess
+{
+public:
+	class TownsPhysicalMemory *physMemPtr;
+	class i486DX *cpuPtr;
+	TownsMemAccess();
+	void SetPhysicalMemoryPointer(TownsPhysicalMemory *ptr);
+	void SetCPUPointer(class i486DX *cpuPtr);
+};
+
+
+class TownsMainRAMAccess : public TownsMemAccess
+{
+public:
+	virtual unsigned int FetchByte(unsigned int physAddr) const;
+	virtual unsigned int FetchWord(unsigned int physAddr) const;
+	virtual unsigned int FetchDword(unsigned int physAddr) const;
+	virtual void StoreByte(unsigned int physAddr,unsigned char data);
+	virtual void StoreWord(unsigned int physAddr,unsigned int data);
+	virtual void StoreDword(unsigned int physAddr,unsigned int data);
+};
+
+class TownsMainRAMorSysROMAccess : public TownsMemAccess
+{
+public:
+	virtual unsigned int FetchByte(unsigned int physAddr) const;
+	virtual unsigned int FetchWord(unsigned int physAddr) const;
+	virtual unsigned int FetchDword(unsigned int physAddr) const;
+	virtual void StoreByte(unsigned int physAddr,unsigned char data);
+	virtual void StoreWord(unsigned int physAddr,unsigned int data);
+	virtual void StoreDword(unsigned int physAddr,unsigned int data);
+};
+
+class TownsMainRAMorFMRVRAMAccess : public TownsMemAccess
+{
+public:
+	bool breakOnFMRVRAMWrite,breakOnFMRVRAMRead;
+	bool breakOnCVRAMWrite,breakOnCVRAMRead;
+	TownsMainRAMorFMRVRAMAccess();
+	virtual unsigned int FetchByte(unsigned int physAddr) const;
+	virtual unsigned int FetchWord(unsigned int physAddr) const;
+	virtual unsigned int FetchDword(unsigned int physAddr) const;
+	virtual void StoreByte(unsigned int physAddr,unsigned char data);
+	virtual void StoreWord(unsigned int physAddr,unsigned int data);
+	virtual void StoreDword(unsigned int physAddr,unsigned int data);
+};
+
+class TownsDicROMandDicRAMAccess : public TownsMemAccess
+{
+public:
+	virtual unsigned int FetchByte(unsigned int physAddr) const;
+	virtual void StoreByte(unsigned int physAddr,unsigned char data);
+};
+
+class TownsVRAMAccess : public TownsMemAccess
+{
+public:
+	virtual unsigned int FetchByte(unsigned int physAddr) const;
+	virtual unsigned int FetchWord(unsigned int physAddr) const;
+	virtual unsigned int FetchDword(unsigned int physAddr) const;
+	virtual void StoreByte(unsigned int physAddr,unsigned char data);
+	virtual void StoreWord(unsigned int physAddr,unsigned int data);
+	virtual void StoreDword(unsigned int physAddr,unsigned int data);
+};
+
+class TownsSpriteRAMAccess : public TownsMemAccess
+{
+public:
+	virtual unsigned int FetchByte(unsigned int physAddr) const;
+	virtual void StoreByte(unsigned int physAddr,unsigned char data);
+};
+
+class TownsOsROMAccess : public TownsMemAccess
+{
+public:
+	virtual unsigned int FetchByte(unsigned int physAddr) const;
+	virtual void StoreByte(unsigned int physAddr,unsigned char data);
+};
+
+class TownsFontROMAccess : public TownsMemAccess
+{
+public:
+	virtual unsigned int FetchByte(unsigned int physAddr) const;
+	virtual void StoreByte(unsigned int physAddr,unsigned char data);
+};
+
+class TownsWaveRAMAccess : public TownsMemAccess
+{
+public:
+	virtual unsigned int FetchByte(unsigned int physAddr) const;
+	virtual void StoreByte(unsigned int physAddr,unsigned char data);
+};
+
+class TownsSysROMAccess : public TownsMemAccess
+{
+public:
+	virtual unsigned int FetchByte(unsigned int physAddr) const;
+	virtual void StoreByte(unsigned int physAddr,unsigned char data);
+};
+
+
+template <class MemAccessClass>
+class TownsMemAccessDebug : public MemAccessClass
+{
+public:
+	bool breakOnWrite=false;
+	bool breakOnRead=false;
+
+	virtual unsigned int FetchByte(unsigned int physAddr) const
+	{
+		if(true==breakOnRead && nullptr!=cpuPtr->debuggerPtr)
+		{
+			cpuPtr->debuggerPtr->ExternalBreak("Memory Read");
+		}
+		return MemAccessClass::FetchByte(physAddr);
+	}
+	virtual unsigned int FetchWord(unsigned int physAddr) const
+	{
+		if(true==breakOnRead && nullptr!=cpuPtr->debuggerPtr)
+		{
+			cpuPtr->debuggerPtr->ExternalBreak("Memory Read");
+		}
+		return MemAccessClass::FetchWord(physAddr);
+	}
+	virtual unsigned int FetchDword(unsigned int physAddr) const
+	{
+		if(true==breakOnRead && nullptr!=cpuPtr->debuggerPtr)
+		{
+			cpuPtr->debuggerPtr->ExternalBreak("Memory Read");
+		}
+		return MemAccessClass::FetchDword(physAddr);
+	}
+	virtual void StoreByte(unsigned int physAddr,unsigned char data)
+	{
+		if(true==breakOnWrite && nullptr!=cpuPtr->debuggerPtr)
+		{
+			cpuPtr->debuggerPtr->ExternalBreak("Memory Write");
+		}
+		MemAccessClass::StoreByte(physAddr,data);
+	}
+	virtual void StoreWord(unsigned int physAddr,unsigned int data)
+	{
+		if(true==breakOnWrite && nullptr!=cpuPtr->debuggerPtr)
+		{
+			cpuPtr->debuggerPtr->ExternalBreak("Memory Write");
+		}
+		MemAccessClass::StoreWord(physAddr,data);
+	}
+	virtual void StoreDword(unsigned int physAddr,unsigned int data)
+	{
+		if(true==breakOnWrite && nullptr!=cpuPtr->debuggerPtr)
+		{
+			cpuPtr->debuggerPtr->ExternalBreak("Memory Write");
+		}
+		MemAccessClass::StoreDword(physAddr,data);
+	}
+};
+
+
 
 class TownsPhysicalMemory : public Device
 {
@@ -89,6 +258,19 @@ public:
 	class i486DX *cpuPtr;
 	class Memory *memPtr;
 
+	TownsMainRAMAccess mainRAMAccess;
+	TownsMainRAMorSysROMAccess mainRAMorSysROMAccess;
+	TownsMainRAMorFMRVRAMAccess mainRAMorFMRVRAMAccess;
+	TownsDicROMandDicRAMAccess dicROMandDicRAMAccess;
+	TownsFontROMAccess fontROMAccess;
+	TownsVRAMAccess VRAMAccess;
+	TownsMemAccessDebug <TownsVRAMAccess> VRAMAccessDebug;
+	TownsSpriteRAMAccess spriteRAMAccess;
+	TownsOsROMAccess osROMAccess;
+	TownsWaveRAMAccess waveRAMAccess;
+	TownsSysROMAccess sysROMAccess;
+
+
 	virtual const char *DeviceName(void) const{return "MEMORY";}
 
 
@@ -120,6 +302,15 @@ public:
 	/*! Sets the DICRAM size.  Supposed to be 32768.
 	*/
 	void SetDICRAMSize(long long int size);
+
+	/*!
+	*/
+	void SetUpMemoryAccess(void);
+
+	/*!
+	*/
+	void SetUpVRAMAccess(bool breakOnRead,bool breakOnWrite);
+
 
 	virtual void IOWriteByte(unsigned int ioport,unsigned int data);
 	virtual unsigned int IOReadByte(unsigned int ioport);

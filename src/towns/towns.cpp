@@ -92,55 +92,7 @@ FMTowns::FMTowns() :
 	physMem.SetWaveRAMSize(64*1024);
 	physMem.SetDICRAMSize(32768);
 
-	mainRAMAccess.SetPhysicalMemoryPointer(&physMem);
-	mainRAMAccess.SetCPUPointer(&cpu);
-	mem.AddAccess(&mainRAMAccess,0x00000000,0x000BFFFF);
-	mem.AddAccess(&mainRAMAccess,0x000F0000,0x000F7FFF);
-
-	mainRAMorFMRVRAMAccess.SetPhysicalMemoryPointer(&physMem);
-	mainRAMorFMRVRAMAccess.SetCPUPointer(&cpu);
-	mem.AddAccess(&mainRAMorFMRVRAMAccess,0x000C0000,0x000CFFFF);
-
-	dicROMandDicRAMAccess.SetPhysicalMemoryPointer(&physMem);
-	dicROMandDicRAMAccess.SetCPUPointer(&cpu);
-	mem.AddAccess(&dicROMandDicRAMAccess,0x000D0000,0x000EFFFF);
-	mem.AddAccess(&dicROMandDicRAMAccess,0xC2080000,0xC20FFFFF);
-	mem.AddAccess(&dicROMandDicRAMAccess,0xC2140000,0xC2141FFF);
-
-	mainRAMorSysROMAccess.SetPhysicalMemoryPointer(&physMem);
-	mainRAMorSysROMAccess.SetCPUPointer(&cpu);
-	mem.AddAccess(&mainRAMorSysROMAccess,0x000F8000,0x000FFFFF);
-
-	if(0x00100000<physMem.state.RAM.size())
-	{
-		mem.AddAccess(&mainRAMAccess,0x00100000,(unsigned int)physMem.state.RAM.size()-1);
-	}
-
-	VRAMAccess.SetPhysicalMemoryPointer(&physMem);
-	VRAMAccess.SetCPUPointer(&cpu);
-	VRAMAccessDebug.SetPhysicalMemoryPointer(&physMem);
-	VRAMAccessDebug.SetCPUPointer(&cpu);
-	SetUpVRAMAccess(false,false);
-
-	spriteRAMAccess.SetPhysicalMemoryPointer(&physMem);
-	spriteRAMAccess.SetCPUPointer(&cpu);
-	mem.AddAccess(&spriteRAMAccess,0x81000000,0x8101FFFF);
-
-	osROMAccess.SetPhysicalMemoryPointer(&physMem);
-	osROMAccess.SetCPUPointer(&cpu);
-	mem.AddAccess(&osROMAccess,0xC2000000,0xC207FFFF);
-
-	fontROMAccess.SetPhysicalMemoryPointer(&physMem);
-	fontROMAccess.SetCPUPointer(&cpu);
-	mem.AddAccess(&fontROMAccess,0xC2100000,0xC213FFFF);
-
-	waveRAMAccess.SetPhysicalMemoryPointer(&physMem);
-	waveRAMAccess.SetCPUPointer(&cpu);
-	mem.AddAccess(&waveRAMAccess,0xC2200000,0xC2200FFF);
-
-	sysROMAccess.SetPhysicalMemoryPointer(&physMem);
-	sysROMAccess.SetCPUPointer(&cpu);
-	mem.AddAccess(&sysROMAccess,0xFFFC0000,0xFFFFFFFF);
+	physMem.SetUpMemoryAccess();
 
 	// Free-run counter since FM TOWNS 2UG [2] pp.801
 	// Didn't it exist since the first model FM TOWNS 2?
@@ -496,20 +448,7 @@ bool FMTowns::CheckRenderingTimer(TownsRender &render,Outside_World &world)
 
 void FMTowns::SetUpVRAMAccess(bool breakOnRead,bool breakOnWrite)
 {
-	if(true!=breakOnRead && true!=breakOnWrite)
-	{
-		mem.AddAccess(&VRAMAccess,TOWNSADDR_VRAM_BASE, TOWNSADDR_VRAM_END-1);
-		mem.AddAccess(&VRAMAccess,TOWNSADDR_VRAM2_BASE,TOWNSADDR_VRAM2_END-1);
-		mem.AddAccess(&VRAMAccess,0x82000000,0x83FFFFFF); // For IIMX High Resolution Access.
-	}
-	else
-	{
-		VRAMAccessDebug.breakOnRead=breakOnRead;
-		VRAMAccessDebug.breakOnWrite=breakOnWrite;
-		mem.AddAccess(&VRAMAccessDebug,TOWNSADDR_VRAM_BASE, TOWNSADDR_VRAM_END-1);
-		mem.AddAccess(&VRAMAccessDebug,TOWNSADDR_VRAM2_BASE,TOWNSADDR_VRAM2_END-1);
-		mem.AddAccess(&VRAMAccessDebug,0x82000000,0x83FFFFFF); // For IIMX High Resolution Access.
-	}
+	physMem.SetUpVRAMAccess(breakOnRead,breakOnWrite);
 }
 
 void FMTowns::ForceRender(class TownsRender &render,class Outside_World &world)

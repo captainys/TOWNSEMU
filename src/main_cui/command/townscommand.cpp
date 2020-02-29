@@ -685,16 +685,16 @@ void TownsCommandInterpreter::Execute_BreakOn(FMTowns &towns,Command &cmd)
 			}
 			break;
 		case BREAK_ON_CVRAM_READ:
-			towns.mainRAMorFMRVRAMAccess.breakOnCVRAMRead=true;
+			towns.physMem.mainRAMorFMRVRAMAccess.breakOnCVRAMRead=true;
 			break;
 		case BREAK_ON_CVRAM_WRITE:
-			towns.mainRAMorFMRVRAMAccess.breakOnCVRAMWrite=true;
+			towns.physMem.mainRAMorFMRVRAMAccess.breakOnCVRAMWrite=true;
 			break;
 		case BREAK_ON_FMRVRAM_READ:
-			towns.mainRAMorFMRVRAMAccess.breakOnFMRVRAMRead=true;
+			towns.physMem.mainRAMorFMRVRAMAccess.breakOnFMRVRAMRead=true;
 			break;
 		case BREAK_ON_FMRVRAM_WRITE:
-			towns.mainRAMorFMRVRAMAccess.breakOnFMRVRAMWrite=true;
+			towns.physMem.mainRAMorFMRVRAMAccess.breakOnFMRVRAMWrite=true;
 			break;
 		case BREAK_ON_IOREAD:
 			if(3<=cmd.argv.size())
@@ -761,16 +761,16 @@ void TownsCommandInterpreter::Execute_ClearBreakOn(FMTowns &towns,Command &cmd)
 			towns.debugger.ClearBreakOnINT();
 			break;
 		case BREAK_ON_FMRVRAM_READ:
-			towns.mainRAMorFMRVRAMAccess.breakOnFMRVRAMRead=false;
+			towns.physMem.mainRAMorFMRVRAMAccess.breakOnFMRVRAMRead=false;
 			break;
 		case BREAK_ON_FMRVRAM_WRITE:
-			towns.mainRAMorFMRVRAMAccess.breakOnFMRVRAMWrite=false;
+			towns.physMem.mainRAMorFMRVRAMAccess.breakOnFMRVRAMWrite=false;
 			break;
 		case BREAK_ON_CVRAM_READ:
-			towns.mainRAMorFMRVRAMAccess.breakOnCVRAMRead=false;
+			towns.physMem.mainRAMorFMRVRAMAccess.breakOnCVRAMRead=false;
 			break;
 		case BREAK_ON_CVRAM_WRITE:
-			towns.mainRAMorFMRVRAMAccess.breakOnCVRAMWrite=false;
+			towns.physMem.mainRAMorFMRVRAMAccess.breakOnCVRAMWrite=false;
 			break;
 		case BREAK_ON_IOREAD:
 			if(3<=cmd.argv.size())

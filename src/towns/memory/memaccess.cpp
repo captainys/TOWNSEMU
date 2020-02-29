@@ -1,3 +1,8 @@
+#include "i486.h"
+#include "i486debug.h"
+
+
+
 #include "memaccess.h"
 #include "townsdef.h"
 #include "cpputil.h"

@@ -238,6 +238,81 @@ void TownsPhysicalMemory::SetDICRAMSize(long long int size)
 	}
 }
 
+void TownsPhysicalMemory::SetUpMemoryAccess(void)
+{
+	auto &mem=*memPtr;
+	auto &cpu=*cpuPtr;
+
+	mainRAMAccess.SetPhysicalMemoryPointer(this);
+	mainRAMAccess.SetCPUPointer(&cpu);
+	mem.AddAccess(&mainRAMAccess,0x00000000,0x000BFFFF);
+	mem.AddAccess(&mainRAMAccess,0x000F0000,0x000F7FFF);
+
+	mainRAMorFMRVRAMAccess.SetPhysicalMemoryPointer(this);
+	mainRAMorFMRVRAMAccess.SetCPUPointer(&cpu);
+	mem.AddAccess(&mainRAMorFMRVRAMAccess,0x000C0000,0x000CFFFF);
+
+	dicROMandDicRAMAccess.SetPhysicalMemoryPointer(this);
+	dicROMandDicRAMAccess.SetCPUPointer(&cpu);
+	mem.AddAccess(&dicROMandDicRAMAccess,0x000D0000,0x000EFFFF);
+	mem.AddAccess(&dicROMandDicRAMAccess,0xC2080000,0xC20FFFFF);
+	mem.AddAccess(&dicROMandDicRAMAccess,0xC2140000,0xC2141FFF);
+
+	mainRAMorSysROMAccess.SetPhysicalMemoryPointer(this);
+	mainRAMorSysROMAccess.SetCPUPointer(&cpu);
+	mem.AddAccess(&mainRAMorSysROMAccess,0x000F8000,0x000FFFFF);
+
+	if(0x00100000<state.RAM.size())
+	{
+		mem.AddAccess(&mainRAMAccess,0x00100000,(unsigned int)state.RAM.size()-1);
+	}
+
+	VRAMAccess.SetPhysicalMemoryPointer(this);
+	VRAMAccess.SetCPUPointer(&cpu);
+	VRAMAccessDebug.SetPhysicalMemoryPointer(this);
+	VRAMAccessDebug.SetCPUPointer(&cpu);
+	SetUpVRAMAccess(false,false);
+
+	spriteRAMAccess.SetPhysicalMemoryPointer(this);
+	spriteRAMAccess.SetCPUPointer(&cpu);
+	mem.AddAccess(&spriteRAMAccess,0x81000000,0x8101FFFF);
+
+	osROMAccess.SetPhysicalMemoryPointer(this);
+	osROMAccess.SetCPUPointer(&cpu);
+	mem.AddAccess(&osROMAccess,0xC2000000,0xC207FFFF);
+
+	fontROMAccess.SetPhysicalMemoryPointer(this);
+	fontROMAccess.SetCPUPointer(&cpu);
+	mem.AddAccess(&fontROMAccess,0xC2100000,0xC213FFFF);
+
+	waveRAMAccess.SetPhysicalMemoryPointer(this);
+	waveRAMAccess.SetCPUPointer(&cpu);
+	mem.AddAccess(&waveRAMAccess,0xC2200000,0xC2200FFF);
+
+	sysROMAccess.SetPhysicalMemoryPointer(this);
+	sysROMAccess.SetCPUPointer(&cpu);
+	mem.AddAccess(&sysROMAccess,0xFFFC0000,0xFFFFFFFF);
+}
+
+void TownsPhysicalMemory::SetUpVRAMAccess(bool breakOnRead,bool breakOnWrite)
+{
+	auto &mem=*memPtr;
+	if(true!=breakOnRead && true!=breakOnWrite)
+	{
+		mem.AddAccess(&VRAMAccess,TOWNSADDR_VRAM_BASE, TOWNSADDR_VRAM_END-1);
+		mem.AddAccess(&VRAMAccess,TOWNSADDR_VRAM2_BASE,TOWNSADDR_VRAM2_END-1);
+		mem.AddAccess(&VRAMAccess,0x82000000,0x83FFFFFF); // For IIMX High Resolution Access.
+	}
+	else
+	{
+		VRAMAccessDebug.breakOnRead=breakOnRead;
+		VRAMAccessDebug.breakOnWrite=breakOnWrite;
+		mem.AddAccess(&VRAMAccessDebug,TOWNSADDR_VRAM_BASE, TOWNSADDR_VRAM_END-1);
+		mem.AddAccess(&VRAMAccessDebug,TOWNSADDR_VRAM2_BASE,TOWNSADDR_VRAM2_END-1);
+		mem.AddAccess(&VRAMAccessDebug,0x82000000,0x83FFFFFF); // For IIMX High Resolution Access.
+	}
+}
+
 std::vector <std::string> TownsPhysicalMemory::GetStatusText(void) const
 {
 	std::vector <std::string> text;

@@ -136,17 +136,6 @@ public:
 	Variable var;
 	InOut io;
 	Memory mem;
-	TownsMainRAMAccess mainRAMAccess;
-	TownsMainRAMorSysROMAccess mainRAMorSysROMAccess;
-	TownsMainRAMorFMRVRAMAccess mainRAMorFMRVRAMAccess;
-	TownsDicROMandDicRAMAccess dicROMandDicRAMAccess;
-	TownsFontROMAccess fontROMAccess;
-	TownsVRAMAccess VRAMAccess;
-	TownsMemAccessDebug <TownsVRAMAccess> VRAMAccessDebug;
-	TownsSpriteRAMAccess spriteRAMAccess;
-	TownsOsROMAccess osROMAccess;
-	TownsWaveRAMAccess waveRAMAccess;
-	TownsSysROMAccess sysROMAccess;
 
 	/*! Pointers of all devices (except *this) must be stored in allDevices.
 	*/
