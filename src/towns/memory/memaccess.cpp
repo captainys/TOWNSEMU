@@ -442,6 +442,31 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 ////////////////////////////////////////////////////////////
 
 
+/* virtual */ unsigned int TownsMappedDicROMandDicRAMAccess::FetchByte(unsigned int physAddr) const
+{
+	if(TOWNSADDR_FMR_DICROM_BASE<=physAddr && physAddr<TOWNSADDR_FMR_DICROM_END) // Dic ROM
+	{
+		unsigned int offset=32768*physMemPtr->state.DICROMBank+(physAddr-TOWNSADDR_FMR_DICROM_BASE);
+		return physMemPtr->dicRom[offset];
+	}
+	else if(TOWNSADDR_BACKUP_RAM_BASE<=physAddr && physAddr<TOWNSADDR_BACKUP_RAM_END) // 
+	{
+		return physMemPtr->state.DICRAM[physAddr-TOWNSADDR_BACKUP_RAM_BASE];
+	}
+	return 0xFF;
+}
+/* virtual */ void TownsMappedDicROMandDicRAMAccess::StoreByte(unsigned int physAddr,unsigned char data)
+{
+	if(TOWNSADDR_BACKUP_RAM_BASE<=physAddr && physAddr<TOWNSADDR_BACKUP_RAM_END) // 
+	{
+		physMemPtr->state.DICRAM[physAddr-TOWNSADDR_BACKUP_RAM_BASE]=data;
+	}
+}
+
+
+////////////////////////////////////////////////////////////
+
+
 /* virtual */ unsigned int TownsDicROMandDicRAMAccess::FetchByte(unsigned int physAddr) const
 {
 	auto &physMem=*physMemPtr;

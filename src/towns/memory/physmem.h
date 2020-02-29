@@ -64,6 +64,13 @@ public:
 	virtual void StoreDword(unsigned int physAddr,unsigned int data);
 };
 
+class TownsMappedDicROMandDicRAMAccess : public TownsMemAccess
+{
+public:
+	virtual unsigned int FetchByte(unsigned int physAddr) const;
+	virtual void StoreByte(unsigned int physAddr,unsigned char data);
+};
+
 class TownsDicROMandDicRAMAccess : public TownsMemAccess
 {
 public:
@@ -263,6 +270,7 @@ public:
 	TownsMainRAMAccess mainRAMAccess;
 	TownsMappedSysROMAccess mappedSysROMAccess;
 	TownsFMRVRAMAccess FMRVRAMAccess;
+	TownsMappedDicROMandDicRAMAccess mappedDicROMandDicRAMAccess;
 	TownsDicROMandDicRAMAccess dicROMandDicRAMAccess;
 	TownsFontROMAccess fontROMAccess;
 	TownsVRAMAccess VRAMAccess;

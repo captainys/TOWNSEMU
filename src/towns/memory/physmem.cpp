@@ -246,16 +246,18 @@ void TownsPhysicalMemory::SetUpMemoryAccess(void)
 
 	mainRAMAccess.SetPhysicalMemoryPointer(this);
 	mainRAMAccess.SetCPUPointer(&cpu);
-	mem.AddAccess(&mainRAMAccess,0x00000000,0x000BFFFF);
-	mem.AddAccess(&mainRAMAccess,0x000F0000,0x000F7FFF);
+	mem.AddAccess(&mainRAMAccess,0x00000000,0x000FFFFF);
 
 	FMRVRAMAccess.SetPhysicalMemoryPointer(this);
 	FMRVRAMAccess.SetCPUPointer(&cpu);
 	SetFMRVRAMMappingFlag(true);  // This will set up memory access for 0xC0000 to 0xCFFFF
 
+	mappedDicROMandDicRAMAccess.SetPhysicalMemoryPointer(this);
+	mappedDicROMandDicRAMAccess.SetCPUPointer(&cpu);
+	SetDicROMMappingFlag(true);  // This will set up memory access for 0xD0000 to 0xEFFFF
+
 	dicROMandDicRAMAccess.SetPhysicalMemoryPointer(this);
 	dicROMandDicRAMAccess.SetCPUPointer(&cpu);
-	mem.AddAccess(&dicROMandDicRAMAccess,0x000D0000,0x000EFFFF);
 	mem.AddAccess(&dicROMandDicRAMAccess,0xC2080000,0xC20FFFFF);
 	mem.AddAccess(&dicROMandDicRAMAccess,0xC2140000,0xC2141FFF);
 
@@ -329,6 +331,14 @@ void TownsPhysicalMemory::SetSysRomMappingFlag(bool sysRomMapping)
 void TownsPhysicalMemory::SetDicROMMappingFlag(bool dicRomMapping)
 {
 	state.dicRom=dicRomMapping;
+	if(true==dicRomMapping)
+	{
+		memPtr->AddAccess(&mappedDicROMandDicRAMAccess,TOWNSADDR_FMR_DICROM_BASE,TOWNSADDR_BACKUP_RAM_END-1);
+	}
+	else
+	{
+		memPtr->AddAccess(&mainRAMAccess,TOWNSADDR_FMR_DICROM_BASE,TOWNSADDR_BACKUP_RAM_END-1);
+	}
 }
 void TownsPhysicalMemory::SetFMRVRAMMappingFlag(bool FMRVRAMMapping)
 {
