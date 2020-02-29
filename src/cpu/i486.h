@@ -38,7 +38,7 @@ public:
 
 	enum
 	{
-		REG_NONE,
+		REG_NULL,
 
 		REG_AL,
 		REG_CL,

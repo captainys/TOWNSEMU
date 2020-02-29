@@ -2567,5 +2567,5 @@ inline unsigned int i486DX::DebugFetchByteByLinearAddress(const Memory &mem,unsi
 			return i;
 		}
 	}
-	return REG_NONE;
+	return REG_NULL;
 }

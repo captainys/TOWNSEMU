@@ -28,8 +28,8 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 		if(0b00==MOD && 0b110==R_M)
 		{
 			operandType=OPER_ADDR;
-			baseReg=REG_NONE;
-			indexReg=REG_NONE;
+			baseReg=REG_NULL;
+			indexReg=REG_NULL;
 			// indexShift=0; Already cleared in Clear()
 			offset=cpputil::GetSignedWord(operand+1);
 			offsetBits=16;
@@ -43,10 +43,10 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 				{REG_BX,REG_DI},
 				{REG_BP,REG_SI},
 				{REG_BP,REG_DI},
-				{REG_SI,REG_NONE},
-				{REG_DI,REG_NONE},
-				{REG_BP,REG_NONE},
-				{REG_BX,REG_NONE},
+				{REG_SI,REG_NULL},
+				{REG_DI,REG_NULL},
+				{REG_BP,REG_NULL},
+				{REG_BX,REG_NULL},
 			};
 
 			operandType=OPER_ADDR;
@@ -99,8 +99,8 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 		if(0b00==MOD && 0b101==R_M)
 		{
 			operandType=OPER_ADDR;
-			baseReg=REG_NONE;
-			indexReg=REG_NONE;
+			baseReg=REG_NULL;
+			indexReg=REG_NULL;
 			// indexShift=0; Already cleared in Clear()
 			offset=cpputil::GetSignedDword(operand+1);
 			offsetBits=32;
@@ -109,8 +109,8 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 		else if(0b00==MOD || 0b01==MOD || 0b10==MOD)
 		{
 			operandType=OPER_ADDR;
-			baseReg=REG_NONE;
-			indexReg=REG_NONE;
+			baseReg=REG_NULL;
+			indexReg=REG_NULL;
 			// indexShift=0; Already cleared in Clear()
 			offset=0;
 			numBytes=1;
@@ -280,8 +280,8 @@ void i486DX::Operand::MakeImm8or16or32(const Instruction &inst,unsigned int oper
 void i486DX::Operand::MakeSimpleAddressOffset(const Instruction &inst)
 {
 	operandType=OPER_ADDR;
-	baseReg=REG_NONE;
-	indexReg=REG_NONE;
+	baseReg=REG_NULL;
+	indexReg=REG_NULL;
 	indexShift=0;
 	offsetBits=inst.addressSize;
 	switch(inst.addressSize)
@@ -370,13 +370,13 @@ std::string i486DX::Operand::DisassembleAsAddr(void) const
 	std::string disasm;
 	disasm.push_back('[');
 
-	if(REG_NONE!=baseReg)
+	if(REG_NULL!=baseReg)
 	{
 		disasm+=RegToStr[baseReg];
 		empty=false;
 	}
 
-	if(REG_NONE!=indexReg)
+	if(REG_NULL!=indexReg)
 	{
 		if(true!=empty)
 		{
@@ -411,7 +411,7 @@ std::string i486DX::Operand::DisassembleAsAddr(void) const
 		}
 		disasm.push_back('H');
 	}
-	else if(REG_NONE==baseReg && REG_NONE==indexReg)
+	else if(REG_NULL==baseReg && REG_NULL==indexReg)
 	{
 		switch(offsetBits)
 		{
