@@ -317,6 +317,14 @@ public:
 	*/
 	void SetSysRomMappingFlag(bool sysRomMapping);
 
+	/*!
+	*/
+	void SetDicROMMappingFlag(bool dicRomMapping);
+
+	/*!
+	*/
+	void SetFMRVRAMMappingFlag(bool FMRVRAMMapping);
+
 
 	virtual void IOWriteByte(unsigned int ioport,unsigned int data);
 	virtual unsigned int IOReadByte(unsigned int ioport);

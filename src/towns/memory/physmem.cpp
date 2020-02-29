@@ -67,11 +67,11 @@ void TownsPhysicalMemory::State::Reset(void)
 	switch(ioport)
 	{
 	case TOWNSIO_FMR_VRAM_OR_MAINRAM: // 0x404
-		state.FMRVRAM=((0x80&data)==0);
+		SetFMRVRAMMappingFlag((0x80&data)==0);
 		break;
 	case TOWNSIO_SYSROM_DICROM: // 0x480
 		SetSysRomMappingFlag(0==(data&2));
-		state.dicRom=(0!=(data&1));
+		SetDicROMMappingFlag(0!=(data&1));
 		break;
 	case TOWNSIO_DICROM_BANK://              0x484, // [2] pp.92
 		state.DICROMBank=data&0x0F;
@@ -319,12 +319,20 @@ void TownsPhysicalMemory::SetSysRomMappingFlag(bool sysRomMapping)
 	state.sysRomMapping=sysRomMapping;
 	if(true==sysRomMapping)
 	{
-		memPtr->AddAccess(&mappedSysROMAccess,0x000F8000,0x000FFFFF);
+		memPtr->AddAccess(&mappedSysROMAccess,TOWNSADDR_SYSROM_MAP_BASE,TOWNSADDR_SYSROM_MAP_END-1);
 	}
 	else
 	{
-		memPtr->AddAccess(&mainRAMAccess,0x000F8000,0x000FFFFF);
+		memPtr->AddAccess(&mainRAMAccess,TOWNSADDR_SYSROM_MAP_BASE,TOWNSADDR_SYSROM_MAP_END-1);
 	}
+}
+void TownsPhysicalMemory::SetDicROMMappingFlag(bool dicRomMapping)
+{
+	state.dicRom=dicRomMapping;
+}
+void TownsPhysicalMemory::SetFMRVRAMMappingFlag(bool FMRVRAMMapping)
+{
+	state.FMRVRAM=FMRVRAMMapping;
 }
 
 std::vector <std::string> TownsPhysicalMemory::GetStatusText(void) const
