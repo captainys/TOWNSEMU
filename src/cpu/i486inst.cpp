@@ -1194,8 +1194,6 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 	case I486_OPCODE_MOV_I8_TO_CH: //     0xB5,
 	case I486_OPCODE_MOV_I8_TO_DH: //     0xB6,
 	case I486_OPCODE_MOV_I8_TO_BH: //     0xB7,
-		op1.MakeByRegisterNumber(8,opCode&7);
-		op2.MakeImm8(*this);
 		break;
 	case I486_OPCODE_MOV_I_TO_EAX: //     0xB8, // 16/32 depends on OPSIZE_OVERRIDE
 	case I486_OPCODE_MOV_I_TO_ECX: //     0xB9, // 16/32 depends on OPSIZE_OVERRIDE
@@ -2414,6 +2412,17 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 	case I486_OPCODE_MOV_M_TO_EAX: //     0xA1, // 16/32 depends on OPSIZE_OVERRIDE
 	case I486_OPCODE_MOV_M_FROM_AL: //    0xA2,
 	case I486_OPCODE_MOV_M_FROM_EAX: //   0xA3, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_OPCODE_MOV_I_TO_RM: //      0xC7, // 16/32 depends on OPSIZE_OVERRIDE
+
+	case I486_OPCODE_MOV_TO_CR://        0x0F22,
+	case I486_OPCODE_MOV_FROM_CR://      0x0F20,
+	case I486_OPCODE_MOV_FROM_DR://      0x0F21,
+	case I486_OPCODE_MOV_TO_DR://        0x0F23,
+	case I486_OPCODE_MOV_FROM_TR://      0x0F24,
+	case I486_OPCODE_MOV_TO_TR://        0x0F26,
+		disasm=DisassembleTypicalTwoOperands("MOV",op1,op2);
+		break;
+
 	case I486_OPCODE_MOV_I8_TO_AL: //     0xB0,
 	case I486_OPCODE_MOV_I8_TO_CL: //     0xB1,
 	case I486_OPCODE_MOV_I8_TO_DL: //     0xB2,
@@ -2423,14 +2432,8 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 	case I486_OPCODE_MOV_I8_TO_DH: //     0xB6,
 	case I486_OPCODE_MOV_I8_TO_BH: //     0xB7,
 	case I486_OPCODE_MOV_I8_TO_RM8: //    0xC6,
-	case I486_OPCODE_MOV_I_TO_RM: //      0xC7, // 16/32 depends on OPSIZE_OVERRIDE
-
-	case I486_OPCODE_MOV_TO_CR://        0x0F22,
-	case I486_OPCODE_MOV_FROM_CR://      0x0F20,
-	case I486_OPCODE_MOV_FROM_DR://      0x0F21,
-	case I486_OPCODE_MOV_TO_DR://        0x0F23,
-	case I486_OPCODE_MOV_FROM_TR://      0x0F24,
-	case I486_OPCODE_MOV_TO_TR://        0x0F26,
+		op1.MakeByRegisterNumber(8,opCode&7);
+		op2.MakeImm8(*this);
 		disasm=DisassembleTypicalTwoOperands("MOV",op1,op2);
 		break;
 
@@ -5364,18 +5367,33 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_OPCODE_MOV_M_TO_EAX: //     0xA1, // 16/32 depends on OPSIZE_OVERRIDE
 	case I486_OPCODE_MOV_M_FROM_AL: //    0xA2,
 	case I486_OPCODE_MOV_M_FROM_EAX: //   0xA3, // 16/32 depends on OPSIZE_OVERRIDE
-	case I486_OPCODE_MOV_I8_TO_AL: //     0xB0,
-	case I486_OPCODE_MOV_I8_TO_CL: //     0xB1,
-	case I486_OPCODE_MOV_I8_TO_DL: //     0xB2,
-	case I486_OPCODE_MOV_I8_TO_BL: //     0xB3,
-	case I486_OPCODE_MOV_I8_TO_AH: //     0xB4,
-	case I486_OPCODE_MOV_I8_TO_CH: //     0xB5,
-	case I486_OPCODE_MOV_I8_TO_DH: //     0xB6,
-	case I486_OPCODE_MOV_I8_TO_BH: //     0xB7,
 	case I486_OPCODE_MOV_I8_TO_RM8: //    0xC6,
 	case I486_OPCODE_MOV_I_TO_RM: //      0xC7, // 16/32 depends on OPSIZE_OVERRIDE
 		Move(mem,inst.addressSize,inst.segOverride,op1,op2);
 		clocksPassed=1;
+		break;
+
+	case I486_OPCODE_MOV_I8_TO_AL: //     0xB0,
+	case I486_OPCODE_MOV_I8_TO_CL: //     0xB1,
+	case I486_OPCODE_MOV_I8_TO_DL: //     0xB2,
+	case I486_OPCODE_MOV_I8_TO_BL: //     0xB3,
+		{
+			auto regNum=inst.opCode&3;
+			auto imm=inst.GetUimm8();
+			state.reg32[regNum]=(state.reg32[regNum]&0xFFFFFF00)|imm;
+			clocksPassed=1;
+		}
+		break;
+	case I486_OPCODE_MOV_I8_TO_AH: //     0xB4,
+	case I486_OPCODE_MOV_I8_TO_CH: //     0xB5,
+	case I486_OPCODE_MOV_I8_TO_DH: //     0xB6,
+	case I486_OPCODE_MOV_I8_TO_BH: //     0xB7,
+		{
+			auto regNum=inst.opCode&3;
+			auto imm=inst.GetUimm8();
+			state.reg32[regNum]=(state.reg32[regNum]&0xFFFF00FF)|(imm<<8);
+			clocksPassed=1;
+		}
 		break;
 
 	case I486_OPCODE_MOV_I_TO_EAX: //     0xB8, // 16/32 depends on OPSIZE_OVERRIDE

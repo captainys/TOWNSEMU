@@ -276,6 +276,40 @@ int main(int ac,char *av[])
 		return 1;
 	}
 
+	const unsigned char test16_7[]={0x77};
+	if(true!=TestDisassembly(16,16,0xB0,sizeof(test16_7),test16_7,towns,"MOV     AL,77H"))
+	{
+		return 1;
+	}
+	if(true!=TestDisassembly(16,16,0xB1,sizeof(test16_7),test16_7,towns,"MOV     CL,77H"))
+	{
+		return 1;
+	}
+	if(true!=TestDisassembly(16,16,0xB2,sizeof(test16_7),test16_7,towns,"MOV     DL,77H"))
+	{
+		return 1;
+	}
+	if(true!=TestDisassembly(16,16,0xB3,sizeof(test16_7),test16_7,towns,"MOV     BL,77H"))
+	{
+		return 1;
+	}
+	if(true!=TestDisassembly(16,16,0xB4,sizeof(test16_7),test16_7,towns,"MOV     AH,77H"))
+	{
+		return 1;
+	}
+	if(true!=TestDisassembly(16,16,0xB5,sizeof(test16_7),test16_7,towns,"MOV     CH,77H"))
+	{
+		return 1;
+	}
+	if(true!=TestDisassembly(16,16,0xB6,sizeof(test16_7),test16_7,towns,"MOV     DH,77H"))
+	{
+		return 1;
+	}
+	if(true!=TestDisassembly(16,16,0xB7,sizeof(test16_7),test16_7,towns,"MOV     BH,77H"))
+	{
+		return 1;
+	}
+
 /*
 	const unsigned char test32_14[]={};
 	if(true!=TestDisassembly(32,32,,sizeof(test32_14),test32_14,towns,""))
