@@ -2056,6 +2056,7 @@ public:
 	void DecrementDword(unsigned int &value);
 	void DecrementWord(unsigned int &value);
 	void DecrementByte(unsigned int &value);
+	void DecrementWithMask(unsigned int &value,unsigned int mask,unsigned int signBit);
 
 
 	/*! Increment a value.  It also sets OF SF ZF AF PF according to the result.

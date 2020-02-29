@@ -1003,7 +1003,6 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 	case I486_OPCODE_DEC_EBP:
 	case I486_OPCODE_DEC_ESI:
 	case I486_OPCODE_DEC_EDI:
-		op1.MakeByRegisterNumber(operandSize,opCode&7);
 		break;
 
 
@@ -4233,24 +4232,76 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 
 	case I486_OPCODE_DEC_EAX:
-	case I486_OPCODE_DEC_ECX:
-	case I486_OPCODE_DEC_EDX:
-	case I486_OPCODE_DEC_EBX:
-	case I486_OPCODE_DEC_ESP:
-	case I486_OPCODE_DEC_EBP:
-	case I486_OPCODE_DEC_ESI:
-	case I486_OPCODE_DEC_EDI:
-		{
-			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,op1.GetSize());
-			if(true!=state.exception)
-			{
-				auto i=value.GetAsDword();
-				DecrementWordOrDword(inst.operandSize,i);
-				value.SetDword(i);
-				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
-			}
-		}
 		clocksPassed=1;
+		{
+			const auto nBytes=(inst.operandSize>>3);
+			auto value=state.EAX();
+			DecrementWithMask(value,operandSizeMask[nBytes],operandSizeSignBit[nBytes]);
+			state.EAX()=((state.EAX()&operandSizeAndPattern[nBytes])|value);
+		}
+		break;
+	case I486_OPCODE_DEC_ECX:
+		clocksPassed=1;
+		{
+			const auto nBytes=(inst.operandSize>>3);
+			auto value=state.ECX();
+			DecrementWithMask(value,operandSizeMask[nBytes],operandSizeSignBit[nBytes]);
+			state.ECX()=((state.ECX()&operandSizeAndPattern[nBytes])|value);
+		}
+		break;
+	case I486_OPCODE_DEC_EDX:
+		clocksPassed=1;
+		{
+			const auto nBytes=(inst.operandSize>>3);
+			auto value=state.EDX();
+			DecrementWithMask(value,operandSizeMask[nBytes],operandSizeSignBit[nBytes]);
+			state.EDX()=((state.EDX()&operandSizeAndPattern[nBytes])|value);
+		}
+		break;
+	case I486_OPCODE_DEC_EBX:
+		clocksPassed=1;
+		{
+			const auto nBytes=(inst.operandSize>>3);
+			auto value=state.EBX();
+			DecrementWithMask(value,operandSizeMask[nBytes],operandSizeSignBit[nBytes]);
+			state.EBX()=((state.EBX()&operandSizeAndPattern[nBytes])|value);
+		}
+		break;
+	case I486_OPCODE_DEC_ESP:
+		clocksPassed=1;
+		{
+			const auto nBytes=(inst.operandSize>>3);
+			auto value=state.ESP();
+			DecrementWithMask(value,operandSizeMask[nBytes],operandSizeSignBit[nBytes]);
+			state.ESP()=((state.ESP()&operandSizeAndPattern[nBytes])|value);
+		}
+		break;
+	case I486_OPCODE_DEC_EBP:
+		clocksPassed=1;
+		{
+			const auto nBytes=(inst.operandSize>>3);
+			auto value=state.EBP();
+			DecrementWithMask(value,operandSizeMask[nBytes],operandSizeSignBit[nBytes]);
+			state.EBP()=((state.EBP()&operandSizeAndPattern[nBytes])|value);
+		}
+		break;
+	case I486_OPCODE_DEC_ESI:
+		clocksPassed=1;
+		{
+			const auto nBytes=(inst.operandSize>>3);
+			auto value=state.ESI();
+			DecrementWithMask(value,operandSizeMask[nBytes],operandSizeSignBit[nBytes]);
+			state.ESI()=((state.ESI()&operandSizeAndPattern[nBytes])|value);
+		}
+		break;
+	case I486_OPCODE_DEC_EDI:
+		clocksPassed=1;
+		{
+			const auto nBytes=(inst.operandSize>>3);
+			auto value=state.EDI();
+			DecrementWithMask(value,operandSizeMask[nBytes],operandSizeSignBit[nBytes]);
+			state.EDI()=((state.EDI()&operandSizeAndPattern[nBytes])|value);
+		}
 		break;
 
 

@@ -1010,6 +1010,16 @@ void i486DX::DecrementByte(unsigned int &value)
 	SetAuxCarryFlag(0x0F==(value&0x0F));
 	SetParityFlag(CheckParity(value&0xFF));
 }
+void i486DX::DecrementWithMask(unsigned int &value,unsigned int mask,unsigned int signBit)
+{
+	value=((value-1)&mask);
+	SetOF(signBit-1==value);
+	SetAuxCarryFlag(0x0F==(value&0x0F));
+	SetSignFlag(value&signBit);
+	SetZF(0==value);
+	SetParityFlag(CheckParity(value&0xFF));
+}
+
 void i486DX::IncrementWordOrDword(unsigned int operandSize,unsigned int &value)
 {
 	if(16==operandSize)
