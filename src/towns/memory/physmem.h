@@ -87,12 +87,13 @@ public:
 	std::vector <unsigned char> JISCodeLog; // Log KanjiROM Read Access
 
 	class i486DX *cpuPtr;
+	class Memory *memPtr;
 
 	virtual const char *DeviceName(void) const{return "MEMORY";}
 
 
 
-	TownsPhysicalMemory(class i486DX *cpuPtr);
+	TownsPhysicalMemory(class i486DX *cpuPtr,class Memory *memPtr);
 
 	bool LoadROMImages(const char dirName[]);
 

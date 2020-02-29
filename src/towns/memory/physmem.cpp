@@ -128,10 +128,11 @@ void TownsPhysicalMemory::State::Reset(void)
 	return data;
 }
 
-TownsPhysicalMemory::TownsPhysicalMemory(class i486DX *cpuPtr)
+TownsPhysicalMemory::TownsPhysicalMemory(class i486DX *cpuPtr,class Memory *memPtr)
 {
 	takeJISCodeLog=false;
 	this->cpuPtr=cpuPtr;
+	this->memPtr=memPtr;
 
 	// Just took from my 2MX.
 	unsigned char defSerialRom[SERIAL_ROM_LENGTH]=
