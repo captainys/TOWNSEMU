@@ -5685,28 +5685,82 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
 		}
 		break;
+
+
 	case I486_OPCODE_POP_EAX://          0x58,
+		clocksPassed=4;
+		{
+			auto nBytes=(inst.operandSize>>3);
+			auto value=Pop(mem,inst.operandSize);
+			state.EAX()&=operandSizeAndPattern[nBytes];
+			state.EAX()|=value;
+		}
+		break;
 	case I486_OPCODE_POP_ECX://          0x59,
+		clocksPassed=4;
+		{
+			auto nBytes=(inst.operandSize>>3);
+			auto value=Pop(mem,inst.operandSize);
+			state.ECX()&=operandSizeAndPattern[nBytes];
+			state.ECX()|=value;
+		}
+		break;
 	case I486_OPCODE_POP_EDX://          0x5A,
+		clocksPassed=4;
+		{
+			auto nBytes=(inst.operandSize>>3);
+			auto value=Pop(mem,inst.operandSize);
+			state.EDX()&=operandSizeAndPattern[nBytes];
+			state.EDX()|=value;
+		}
+		break;
 	case I486_OPCODE_POP_EBX://          0x5B,
+		clocksPassed=4;
+		{
+			auto nBytes=(inst.operandSize>>3);
+			auto value=Pop(mem,inst.operandSize);
+			state.EBX()&=operandSizeAndPattern[nBytes];
+			state.EBX()|=value;
+		}
+		break;
 	case I486_OPCODE_POP_ESP://          0x5C,
+		clocksPassed=4;
+		{
+			auto nBytes=(inst.operandSize>>3);
+			auto value=Pop(mem,inst.operandSize);
+			state.ESP()&=operandSizeAndPattern[nBytes];
+			state.ESP()|=value;
+		}
+		break;
 	case I486_OPCODE_POP_EBP://          0x5D,
+		clocksPassed=4;
+		{
+			auto nBytes=(inst.operandSize>>3);
+			auto value=Pop(mem,inst.operandSize);
+			state.EBP()&=operandSizeAndPattern[nBytes];
+			state.EBP()|=value;
+		}
+		break;
 	case I486_OPCODE_POP_ESI://          0x5E,
+		clocksPassed=4;
+		{
+			auto nBytes=(inst.operandSize>>3);
+			auto value=Pop(mem,inst.operandSize);
+			state.ESI()&=operandSizeAndPattern[nBytes];
+			state.ESI()|=value;
+		}
+		break;
 	case I486_OPCODE_POP_EDI://          0x5F,
 		clocksPassed=4;
 		{
+			auto nBytes=(inst.operandSize>>3);
 			auto value=Pop(mem,inst.operandSize);
-			if(16==inst.operandSize)
-			{
-				state.reg32[(inst.opCode&7)]&=0xffff0000;
-				state.reg32[(inst.opCode&7)]|=(value&0xffff);
-			}
-			else
-			{
-				state.reg32[(inst.opCode&7)]=value;
-			}
+			state.EDI()&=operandSizeAndPattern[nBytes];
+			state.EDI()|=value;
 		}
 		break;
+
+
 	case I486_OPCODE_POP_SS://           0x17,
 		clocksPassed=3;
 		LoadSegmentRegister(state.SS(),Pop(mem,inst.operandSize),mem);
