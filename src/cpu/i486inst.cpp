@@ -4825,40 +4825,34 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				jumpCond=CondJG();
 				break;
 			case I486_OPCODE_LOOP://             0xE2,
+				{
+					auto nBytes=(inst.operandSize>>3);
+					unsigned int ctr=((state.ECX()-1)&operandSizeMask[nBytes]);
+					state.ECX()=((state.ECX()&operandSizeAndPattern[nBytes])|ctr);
+					jumpCond=(0!=ctr);
+				}
+				break;
 			case I486_OPCODE_LOOPE://            0xE1,
+				{
+					auto nBytes=(inst.operandSize>>3);
+					unsigned int ctr=((state.ECX()-1)&operandSizeMask[nBytes]);
+					state.ECX()=((state.ECX()&operandSizeAndPattern[nBytes])|ctr);
+					jumpCond=(0!=ctr && true==GetZF());
+				}
+				break;
 			case I486_OPCODE_LOOPNE://           0xE0,
 				{
-					unsigned int ctr;
-					if(16==inst.operandSize)
-					{
-						ctr=((state.ECX())&0xffff)-1;
-						state.ECX()=(state.ECX()&0xffff0000)|ctr;
-					}
-					else
-					{
-						ctr=state.ECX()-1;
-						state.ECX()=(ctr&0xffffffff);
-					}
-					if(0==ctr ||
-					  (I486_OPCODE_LOOPE==inst.opCode && true!=GetZF()) ||
-					  (I486_OPCODE_LOOPNE==inst.opCode && true==GetZF()))
-					{
-						jumpCond=false;
-						break;
-					}
-					jumpCond=true;
+					auto nBytes=(inst.operandSize>>3);
+					unsigned int ctr=((state.ECX()-1)&operandSizeMask[nBytes]);
+					state.ECX()=((state.ECX()&operandSizeAndPattern[nBytes])|ctr);
+					jumpCond=(0!=ctr && true!=GetZF());
 				}
 				break;
 			}
 			if(true==jumpCond)
 			{
 				auto offset=inst.GetSimm8();
-				auto destin=state.EIP+offset+inst.numBytes;
-				if(16==inst.operandSize)
-				{
-					destin&=0xffff;
-				}
-				state.EIP=destin;
+				state.EIP=((state.EIP+offset+inst.numBytes)&operandSizeMask[inst.operandSize>>3]);
 				clocksPassed=3;
 				EIPSetByInstruction=true;
 			}
