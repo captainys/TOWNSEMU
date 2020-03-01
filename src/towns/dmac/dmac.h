@@ -29,6 +29,8 @@ public:
 			unsigned int baseAddr;     // 00A4 to 00A7
 			unsigned int currentAddr;  // 00A4 to 00A7
 			unsigned char modeCtrl;    // 00AA
+
+			bool AUTI(void) const; // Auto re-initialize
 		};
 
 		unsigned int bitSize;      // 00A0H 8 or 16

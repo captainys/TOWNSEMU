@@ -7,6 +7,16 @@
 #include "dmac.h"
 
 
+
+bool TownsDMAC::State::Channel::AUTI(void) const
+{
+	return 0!=(modeCtrl&0x10);
+}
+
+
+////////////////////////////////////////////////////////////
+
+
 void TownsDMAC::State::PowerOn(void)
 {
 	Reset();
@@ -124,6 +134,10 @@ void TownsDMAC::State::Reset(void)
 		break;
 	case TOWNSIO_DMAC_MODE_CONTROL://        0xAA,
 		state.ch[state.SELCH].modeCtrl=data;
+		if(state.ch[state.SELCH].modeCtrl&0x20)
+		{
+			townsPtr->cpu.Abort("DMAC: ADIR bit not supported.");
+		}
 		break;
 	case TOWNSIO_DMAC_STATUS://              0xAB,
 		break;
@@ -153,16 +167,46 @@ void TownsDMAC::State::Reset(void)
 	case TOWNSIO_DMAC_CHANNEL://             0xA1,
 		return (1<<state.SELCH)|(state.BASE ? 0x10 : 0);
 	case TOWNSIO_DMAC_COUNT_LOW://           0xA2,
+		{
+			auto &CH=state.ch[state.SELCH];
+			auto value=(true==state.BASE ? CH.baseCount : CH.currentCount);
+			return value&0xFF;
+		}
 		break;
 	case TOWNSIO_DMAC_COUNT_HIGH://          0xA3,
+		{
+			auto &CH=state.ch[state.SELCH];
+			auto value=(true==state.BASE ? CH.baseCount : CH.currentCount);
+			return (value>>8)&0xFF;
+		}
 		break;
 	case TOWNSIO_DMAC_ADDRESS_LOWEST://      0xA4,
+		{
+			auto &CH=state.ch[state.SELCH];
+			auto value=(true==state.BASE ? CH.baseAddr : CH.currentAddr);
+			return value&0xFF;
+		}
 		break;
 	case TOWNSIO_DMAC_ADDRESS_MIDLOW://      0xA5,
+		{
+			auto &CH=state.ch[state.SELCH];
+			auto value=(true==state.BASE ? CH.baseAddr : CH.currentAddr);
+			return (value>>8)&0xFF;
+		}
 		break;
 	case TOWNSIO_DMAC_ADDRESS_MIDHIGH://     0xA6,
+		{
+			auto &CH=state.ch[state.SELCH];
+			auto value=(true==state.BASE ? CH.baseAddr : CH.currentAddr);
+			return (value>>16)&0xFF;
+		}
 		break;
 	case TOWNSIO_DMAC_ADDRESS_HIGHEST://     0xA7,
+		{
+			auto &CH=state.ch[state.SELCH];
+			auto value=(true==state.BASE ? CH.baseAddr : CH.currentAddr);
+			return (value>>24)&0xFF;
+		}
 		break;
 	case TOWNSIO_DMAC_DEVICE_CONTROL_LOW://  0xA8,
 		break;
@@ -213,6 +257,10 @@ unsigned int TownsDMAC::DeviceToMemory(State::Channel *DMACh,const std::vector <
 		++DMACh->currentAddr;
 		--DMACh->currentCount;
 	}
+	if(DMACh->currentCount+1==0 && true==DMACh->AUTI()) // :-(  Maybe I should use signed integer for counts.
+	{
+		DMACh->currentCount=DMACh->baseCount;
+	}
 	return i;
 }
 std::vector <unsigned char> TownsDMAC::MemoryToDevice(State::Channel *DMACh,unsigned int length)
@@ -228,6 +276,10 @@ std::vector <unsigned char> TownsDMAC::MemoryToDevice(State::Channel *DMACh,unsi
 		--DMACh->currentCount;
 	}
 	data.resize(i);
+	if(DMACh->currentCount+1==0 && true==DMACh->AUTI()) // :-(  Maybe I should use signed integer for counts.
+	{
+		DMACh->currentCount=DMACh->baseCount;
+	}
 	return data;
 }
 

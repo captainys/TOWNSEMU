@@ -61,7 +61,7 @@ void TownsCDROM::State::ResetMPU(void)
 	endSectorHSG=0;
 	ClearStatusQueue();
 	DMATransfer=false;
-	CPUTransfer=true;
+	CPUTransfer=false;
 }
 
 ////////////////////////////////////////////////////////////
@@ -416,7 +416,7 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 				bool DMAAvailable=(nullptr!=DMACh && (0<DMACh->currentCount && 0xFFFFFFFF!=(DMACh->currentCount&0xFFFFFFFF)));
 
 				// Initial State.  CPU doesn't know data ready, therefore does not make DMAC available.
-				if(true!=DMAAvailable)
+				if(true!=DMAAvailable || true!=state.DMATransfer)
 				{
 					state.ClearStatusQueue();
 					if(0!=(state.cmd&CMDFLAG_STATUS_REQUEST))
@@ -433,13 +433,13 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 					townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+NOTIFICATION_TIME);
 				}
 				// Second State.  DMA available, but the transfer hasn't started.
-				else if(true==DMAAvailable && true!=state.DTSF)
+				else if(true==DMAAvailable && true==state.DMATransfer && true!=state.DTSF)
 				{
 					state.DTSF=true;
 					townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+READ_SECTOR_TIME);
 				}
 				// Third State.  Transfer done for a sector.
-				else if(true==DMAAvailable && true==state.DTSF)
+				else if(true==DMAAvailable && true==state.DMATransfer && true==state.DTSF)
 				{
 					auto data=state.GetDisc().ReadSectorMODE1(state.readingSectorHSG,1);
 					if(DMACh->currentCount+1<data.size())
@@ -449,6 +449,8 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 					DMACPtr->DeviceToMemory(DMACh,data);
 					++state.readingSectorHSG;
 					townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+NOTIFICATION_TIME);
+					state.DMATransfer=false;
+					state.DTSF=false;  // Questionable.  Should I turn it off also?
 				}
 			}
 			else
