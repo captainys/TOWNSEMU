@@ -184,43 +184,21 @@ void TownsDMAC::State::Reset(void)
 	return 0xff;
 }
 
-TownsDMAC::State::Channel *TownsDMAC::GetAvailableHardwareDMAChannel(void)
+TownsDMAC::State::Channel *TownsDMAC::GetDMAChannel(unsigned int ch)
 {
-	if(0==(state.mask&1))
+	ch&=3;
+	if(0==(state.mask&(1<<ch)))
 	{
-		return &state.ch[0];
-	}
-	else if(0==(state.mask&2))
-	{
-		return &state.ch[1];
-	}
-	else if(0==(state.mask&4))
-	{
-		return &state.ch[2];
-	}
-	else if(0==(state.mask&8))
-	{
-		return &state.ch[3];
+		return &state.ch[ch];
 	}
 	return nullptr;
 }
-const TownsDMAC::State::Channel *TownsDMAC::GetAvailableHardwareDMAChannel(void) const
+const TownsDMAC::State::Channel *TownsDMAC::GetDMAChannel(unsigned int ch) const
 {
-	if(0==(state.mask&1))
+	ch&=3;
+	if(0==(state.mask&(1<<ch)))
 	{
-		return &state.ch[0];
-	}
-	else if(0==(state.mask&2))
-	{
-		return &state.ch[1];
-	}
-	else if(0==(state.mask&4))
-	{
-		return &state.ch[2];
-	}
-	else if(0==(state.mask&8))
-	{
-		return &state.ch[3];
+		return &state.ch[ch];
 	}
 	return nullptr;
 }

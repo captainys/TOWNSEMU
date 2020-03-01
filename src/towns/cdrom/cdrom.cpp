@@ -412,7 +412,7 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 		{
 			if(state.readingSectorHSG<=state.endSectorHSG) // Have more data.
 			{
-				auto DMACh=DMACPtr->GetAvailableHardwareDMAChannel();
+				auto DMACh=DMACPtr->GetDMAChannel(TOWNSDMA_CDROM);
 				bool DMAAvailable=(nullptr!=DMACh && (0<DMACh->currentCount && 0xFFFFFFFF!=(DMACh->currentCount&0xFFFFFFFF)));
 
 				// Initial State.  CPU doesn't know data ready, therefore does not make DMAC available.

@@ -570,7 +570,7 @@ bool TownsFDC::WriteFault(void) const
 			auto secPtr=diskPtr->GetSector(drv.trackPos,state.side,drv.sectorReg);
 			if(nullptr!=secPtr)
 			{
-				auto DMACh=DMACPtr->GetAvailableHardwareDMAChannel();
+				auto DMACh=DMACPtr->GetDMAChannel(TOWNSDMA_FPD);
 				if(nullptr!=DMACh)
 				{
 					DMACPtr->DeviceToMemory(DMACh,secPtr->sectorData);
@@ -629,7 +629,7 @@ bool TownsFDC::WriteFault(void) const
 					0x7f, // How can I calculate CRC?
 					0x7f
 				};
-				auto DMACh=DMACPtr->GetAvailableHardwareDMAChannel();
+				auto DMACh=DMACPtr->GetDMAChannel(TOWNSDMA_FPD);
 				if(nullptr!=DMACh)
 				{
 					DMACPtr->DeviceToMemory(DMACh,CRHN_CRC);

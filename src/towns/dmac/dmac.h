@@ -61,8 +61,10 @@ public:
 
 	virtual unsigned int IOReadByte(unsigned int ioport);
 
-	State::Channel *GetAvailableHardwareDMAChannel(void);
-	const State::Channel *GetAvailableHardwareDMAChannel(void) const;
+	/*! Returns a pointer to the DMA channel, or nullptr if the channel is unavailable.
+	*/
+	State::Channel *GetDMAChannel(unsigned int ch);
+	const State::Channel *GetDMAChannel(unsigned int ch) const;
 
 	/*! Transfer data from device to memory.
 	    Returns number of bytes written to memory.
