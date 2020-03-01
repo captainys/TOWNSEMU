@@ -460,6 +460,7 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 					state.DEI=true;
 					state.SIRQ=false;
 					state.DTSF=false;
+					state.DRY=true;
 					PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
 					// No more interrupt.  End of transfer.
 				}
@@ -468,6 +469,8 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 					state.SIRQ=true;
 					state.DEI=false;
 					state.DTSF=false;
+					state.DRY=true;
+					state.ClearStatusQueue();
 					if(0!=(state.cmd&CMDFLAG_STATUS_REQUEST))
 					{
 						SetStatusReadDone();
