@@ -40,6 +40,8 @@ xxH 01H xx xx  Probably Parameter Error
 
 My guess based on the Boot-ROM Disassembly:
 04H xx xx xx   Probably Seek done (After issuing 20H Seek, it waits for 00H No Error, and then 04H)
+00H 04 xx xx   CDROM BIOS re-shoots command A0H if CDROM returns this code.
+00H 08 xx xx   CDROM BIOS re-shoots command A0H if CDROM returns this code.
 
 Interpretation in the Linux for Towns source towns_cd.c (static void process_event(u_char st))
 00H 09H xx xx  Media change?
@@ -151,6 +153,7 @@ public:
 	};
 
 	State state;
+	bool debugBreakOnCommandWrite=false;
 
 	virtual const char *DeviceName(void) const{return "CDROM";}
 

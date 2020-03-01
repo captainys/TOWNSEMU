@@ -114,6 +114,10 @@ TownsCDROM::TownsCDROM(class FMTowns *townsPtr,class TownsPIC *PICPtr,class Town
 		std::cout << "CDROM Command " << cpputil::Ubtox(data) << std::endl;
 		state.cmdReceived=true;
 		state.cmd=data;
+		if(true==debugBreakOnCommandWrite)
+		{
+			townsPtr->debugger.ExternalBreak("CDROM Command Write:"+cpputil::Ubtox(data));
+		}
 		break;
 	case TOWNSIO_CDROM_PARAMETER_DATA://    0x4C4, // [2] pp.224
 		if(8<=state.nParamQueue)
@@ -296,6 +300,13 @@ unsigned int TownsCDROM::LoadDiscImage(const std::string &fName)
 }
 void TownsCDROM::ExecuteCDROMCommand(void)
 {
+	std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " |";
+	for(int i=0; i<8; ++i)
+	{
+		std::cout << cpputil::Ubtox(state.paramQueue[i]) << " ";
+	}
+	std::cout << std::endl;
+
 	switch(state.cmd&0x9F)
 	{
 	case CDCMD_SEEK://       0x00,
@@ -339,6 +350,8 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 				townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+READ_SECTOR_TIME);
 				// Should I immediately return No-Error status before starting transfer?
 				// BIOS is not checking it immediately.
+				// 2F Boot ROM _IS_ checking it immediately.
+				SetStatusNoError();
 				state.DRY=false;
 				state.DTSF=false;
 			}

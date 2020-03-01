@@ -96,6 +96,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	breakEventMap["VRAMR"]=BREAK_ON_VRAMREAD;
 	breakEventMap["VRAMW"]=BREAK_ON_VRAMWRITE;
 	breakEventMap["VRAMRW"]=BREAK_ON_VRAMREADWRITE;
+	breakEventMap["CDCCMD"]=BREAK_ON_CDC_COMMAND;
 }
 
 void TownsCommandInterpreter::PrintHelp(void) const
@@ -211,6 +212,7 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "IWC4" << std::endl;
 	std::cout << "DMACREQ" << std::endl;
 	std::cout << "FDCCMD" << std::endl;
+	std::cout << "CDCCMD" << std::endl;
 	std::cout << "INT n" << std::endl;
 	std::cout << "RDCVRAM" << std::endl;
 	std::cout << "WRCVRAM" << std::endl;
@@ -727,6 +729,9 @@ void TownsCommandInterpreter::Execute_BreakOn(FMTowns &towns,Command &cmd)
 		case BREAK_ON_VRAMREADWRITE:
 			towns.SetUpVRAMAccess(true,true);
 			break;
+		case BREAK_ON_CDC_COMMAND:
+			towns.cdrom.debugBreakOnCommandWrite=true;
+			break;
 		}
 		std::cout << reason << " is ON." << std::endl;
 	}
@@ -798,6 +803,9 @@ void TownsCommandInterpreter::Execute_ClearBreakOn(FMTowns &towns,Command &cmd)
 		case BREAK_ON_VRAMWRITE:
 		case BREAK_ON_VRAMREADWRITE:
 			towns.SetUpVRAMAccess(false,false);
+			break;
+		case BREAK_ON_CDC_COMMAND:
+			towns.cdrom.debugBreakOnCommandWrite=false;
 			break;
 		}
 		std::cout << iter->first << " is OFF." << std::endl;
