@@ -316,6 +316,93 @@ int main(int ac,char *av[])
 	}
 
 
+
+	// 0000007E  8B 94 8D 40 23 01 00             						MOV     EDX,[EBP+ECX*4+00012340H]
+	const unsigned char test32_19a[]={0x94,0x8D,0x40,0x23,0x01,0x00};
+	if(true!=TestDisassembly(32,32,0x8B,sizeof(test32_19a),test32_19a,towns,"MOV     EDX,[EBP+ECX*4+00012340H]"))
+	{
+		return 1;
+	}
+	// 00000085  8B 8C 8D 40 23 01 00             						MOV     ECX,[EBP+ECX*4+00012340H]
+	const unsigned char test32_19b[]={0x8C,0x8D,0x40,0x23,0x01,0x00};
+	if(true!=TestDisassembly(32,32,0x8B,sizeof(test32_19b),test32_19b,towns,"MOV     ECX,[EBP+ECX*4+00012340H]"))
+	{
+		return 1;
+	}
+	// 0000008C  8B 9C 8D 40 23 01 00             						MOV     EBX,[EBP+ECX*4+00012340H]
+	const unsigned char test32_19c[]={0x9C,0x8D,0x40,0x23,0x01,0x00};
+	if(true!=TestDisassembly(32,32,0x8B,sizeof(test32_19c),test32_19c,towns,"MOV     EBX,[EBP+ECX*4+00012340H]"))
+	{
+		return 1;
+	}
+	// 00000093  8B A4 8D 40 23 01 00             						MOV     ESP,[EBP+ECX*4+00012340H]
+	const unsigned char test32_19d[]={0xA4,0x8D,0x40,0x23,0x01,0x00};
+	if(true!=TestDisassembly(32,32,0x8B,sizeof(test32_19d),test32_19d,towns,"MOV     ESP,[EBP+ECX*4+00012340H]"))
+	{
+		return 1;
+	}
+	// 0000009A  8B AC 8D 40 23 01 00             						MOV     EBP,[EBP+ECX*4+00012340H]
+	const unsigned char test32_19e[]={0xAC,0x8D,0x40,0x23,0x01,0x00};
+	if(true!=TestDisassembly(32,32,0x8B,sizeof(test32_19e),test32_19e,towns,"MOV     EBP,[EBP+ECX*4+00012340H]"))
+	{
+		return 1;
+	}
+	// 000000A1  8B B4 8D 40 23 01 00             						MOV     ESI,[EBP+ECX*4+00012340H]
+	const unsigned char test32_19f[]={0xB4,0x8D,0x40,0x23,0x01,0x00};
+	if(true!=TestDisassembly(32,32,0x8B,sizeof(test32_19f),test32_19f,towns,"MOV     ESI,[EBP+ECX*4+00012340H]"))
+	{
+		return 1;
+	}
+	// 000000A8  8B BC 8D 40 23 01 00             						MOV     EDI,[EBP+ECX*4+00012340H]
+	const unsigned char test32_19g[]={0xBC,0x8D,0x40,0x23,0x01,0x00};
+	if(true!=TestDisassembly(32,32,0x8B,sizeof(test32_19g),test32_19g,towns,"MOV     EDI,[EBP+ECX*4+00012340H]"))
+	{
+		return 1;
+	}
+	// 000000AF  89 94 8D 40 23 01 00             						MOV     [EBP+ECX*4+00012340H],EDX
+	const unsigned char test32_19h[]={0x94,0x8D,0x40,0x23,0x01,0x00};
+	if(true!=TestDisassembly(32,32,0x89,sizeof(test32_19h),test32_19h,towns,"MOV     [EBP+ECX*4+00012340H],EDX"))
+	{
+		return 1;
+	}
+	// 000000B6  89 8C 8D 40 23 01 00             						MOV     [EBP+ECX*4+00012340H],ECX
+	const unsigned char test32_19i[]={0x8C,0x8D,0x40,0x23,0x01,0x00};
+	if(true!=TestDisassembly(32,32,0x89,sizeof(test32_19i),test32_19i,towns,"MOV     [EBP+ECX*4+00012340H],ECX"))
+	{
+		return 1;
+	}
+	// 000000BD  89 9C 8D 40 23 01 00             						MOV     [EBP+ECX*4+00012340H],EBX
+	const unsigned char test32_19j[]={0x9C,0x8D,0x40,0x23,0x01,0x00};
+	if(true!=TestDisassembly(32,32,0x89,sizeof(test32_19j),test32_19j,towns,"MOV     [EBP+ECX*4+00012340H],EBX"))
+	{
+		return 1;
+	}
+	// 000000C4  89 A4 8D 40 23 01 00             						MOV     [EBP+ECX*4+00012340H],ESP
+	const unsigned char test32_19k[]={0xA4,0x8D,0x40,0x23,0x01,0x00};
+	if(true!=TestDisassembly(32,32,0x89,sizeof(test32_19k),test32_19k,towns,"MOV     [EBP+ECX*4+00012340H],ESP"))
+	{
+		return 1;
+	}
+	// 000000CB  89 AC 8D 40 23 01 00             						MOV     [EBP+ECX*4+00012340H],EBP
+	const unsigned char test32_19l[]={0xAC,0x8D,0x40,0x23,0x01,0x00};
+	if(true!=TestDisassembly(32,32,0x89,sizeof(test32_19l),test32_19l,towns,"MOV     [EBP+ECX*4+00012340H],EBP"))
+	{
+		return 1;
+	}
+	// 000000D2  89 B4 8D 40 23 01 00             						MOV     [EBP+ECX*4+00012340H],ESI
+	const unsigned char test32_19m[]={0xB4,0x8D,0x40,0x23,0x01,0x00};
+	if(true!=TestDisassembly(32,32,0x89,sizeof(test32_19m),test32_19m,towns,"MOV     [EBP+ECX*4+00012340H],ESI"))
+	{
+		return 1;
+	}
+	// 000000D9  89 BC 8D 40 23 01 00             						MOV     [EBP+ECX*4+00012340H],EDI
+	const unsigned char test32_19n[]={0xBC,0x8D,0x40,0x23,0x01,0x00};
+	if(true!=TestDisassembly(32,32,0x89,sizeof(test32_19n),test32_19n,towns,"MOV     [EBP+ECX*4+00012340H],EDI"))
+	{
+		return 1;
+	}
+
+
 /*
 	const unsigned char test32_14[]={};
 	if(true!=TestDisassembly(32,32,,sizeof(test32_14),test32_14,towns,""))

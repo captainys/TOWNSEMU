@@ -1151,14 +1151,12 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 		break;
 	case I486_OPCODE_MOV_FROM_R: //       0x89, // 16/32 depends on OPSIZE_OVERRIDE
 		op1.Decode(addressSize,operandSize,operand);
-		op2.DecodeMODR_MForRegister(operandSize,operand[0]);
 		break;
 	case I486_OPCODE_MOV_TO_R8: //        0x8A,
 		op2.Decode(addressSize,8,operand);
 		break;
 	case I486_OPCODE_MOV_TO_R: //         0x8B, // 16/32 depends on OPSIZE_OVERRIDE
 		op2.Decode(addressSize,operandSize,operand);
-		op1.DecodeMODR_MForRegister(operandSize,operand[0]);
 		break;
 	case I486_OPCODE_MOV_FROM_SEG: //     0x8C,
 		op1.Decode(addressSize,operandSize,operand);
@@ -2404,13 +2402,19 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		op2.DecodeMODR_MForRegister(8,operand[0]);
 		disasm=DisassembleTypicalTwoOperands("MOV",op1,op2);
 		break;
+	case I486_OPCODE_MOV_FROM_R: //       0x89, // 16/32 depends on OPSIZE_OVERRIDE
+		op2.DecodeMODR_MForRegister(operandSize,operand[0]);
+		disasm=DisassembleTypicalTwoOperands("MOV",op1,op2);
+		break;
 	case I486_OPCODE_MOV_TO_R8: //        0x8A,
 		op1.DecodeMODR_MForRegister(8,operand[0]);
 		disasm=DisassembleTypicalTwoOperands("MOV",op1,op2);
 		break;
-
-	case I486_OPCODE_MOV_FROM_R: //       0x89, // 16/32 depends on OPSIZE_OVERRIDE
 	case I486_OPCODE_MOV_TO_R: //         0x8B, // 16/32 depends on OPSIZE_OVERRIDE
+		op1.DecodeMODR_MForRegister(operandSize,operand[0]);
+		disasm=DisassembleTypicalTwoOperands("MOV",op1,op2);
+		break;
+
 	case I486_OPCODE_MOV_FROM_SEG: //     0x8C,
 	case I486_OPCODE_MOV_TO_SEG: //       0x8E,
 	case I486_OPCODE_MOV_M_TO_AL: //      0xA0,
@@ -5381,8 +5385,6 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			clocksPassed=9;
 		}
 		break;
-	case I486_OPCODE_MOV_FROM_R: //       0x89, // 16/32 depends on OPSIZE_OVERRIDE
-	case I486_OPCODE_MOV_TO_R: //         0x8B, // 16/32 depends on OPSIZE_OVERRIDE
 	case I486_OPCODE_MOV_M_TO_AL: //      0xA0,
 	case I486_OPCODE_MOV_M_TO_EAX: //     0xA1, // 16/32 depends on OPSIZE_OVERRIDE
 	case I486_OPCODE_MOV_M_FROM_AL: //    0xA2,
@@ -5391,6 +5393,27 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_OPCODE_MOV_I_TO_RM: //      0xC7, // 16/32 depends on OPSIZE_OVERRIDE
 		Move(mem,inst.addressSize,inst.segOverride,op1,op2);
 		clocksPassed=1;
+		break;
+
+	case I486_OPCODE_MOV_FROM_R: //       0x89, // 16/32 depends on OPSIZE_OVERRIDE
+		{
+			auto regNum=inst.GetREG();
+			unsigned int value=(state.reg32[regNum]&operandSizeMask[inst.operandSize>>3]);
+			OperandValue src;
+			src.MakeByteWordOrDword(inst.operandSize,value);
+			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,src);
+			clocksPassed=1;
+		}
+		break;
+	case I486_OPCODE_MOV_TO_R: //         0x8B, // 16/32 depends on OPSIZE_OVERRIDE
+		{
+			auto nBytes=(inst.operandSize>>3);
+			auto regNum=inst.GetREG(); // Guaranteed to be between 0 and 7
+			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize/8);
+			state.reg32[regNum]&=operandSizeAndPattern[nBytes];
+			state.reg32[regNum]|=(unsigned int)(value.GetAsDword());
+			clocksPassed=1;
+		}
 		break;
 
 	case I486_OPCODE_MOV_FROM_R8: //      0x88,
