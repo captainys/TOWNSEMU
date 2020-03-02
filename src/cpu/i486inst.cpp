@@ -1155,7 +1155,6 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 		break;
 	case I486_OPCODE_MOV_TO_R8: //        0x8A,
 		op2.Decode(addressSize,8,operand);
-		op1.DecodeMODR_MForRegister(8,operand[0]);
 		break;
 	case I486_OPCODE_MOV_TO_R: //         0x8B, // 16/32 depends on OPSIZE_OVERRIDE
 		op2.Decode(addressSize,operandSize,operand);
@@ -2402,8 +2401,15 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 
 
 	case I486_OPCODE_MOV_FROM_R8: //      0x88,
-	case I486_OPCODE_MOV_FROM_R: //       0x89, // 16/32 depends on OPSIZE_OVERRIDE
+		op2.DecodeMODR_MForRegister(8,operand[0]);
+		disasm=DisassembleTypicalTwoOperands("MOV",op1,op2);
+		break;
 	case I486_OPCODE_MOV_TO_R8: //        0x8A,
+		op1.DecodeMODR_MForRegister(8,operand[0]);
+		disasm=DisassembleTypicalTwoOperands("MOV",op1,op2);
+		break;
+
+	case I486_OPCODE_MOV_FROM_R: //       0x89, // 16/32 depends on OPSIZE_OVERRIDE
 	case I486_OPCODE_MOV_TO_R: //         0x8B, // 16/32 depends on OPSIZE_OVERRIDE
 	case I486_OPCODE_MOV_FROM_SEG: //     0x8C,
 	case I486_OPCODE_MOV_TO_SEG: //       0x8E,
@@ -5376,7 +5382,6 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		break;
 	case I486_OPCODE_MOV_FROM_R: //       0x89, // 16/32 depends on OPSIZE_OVERRIDE
-	case I486_OPCODE_MOV_TO_R8: //        0x8A,
 	case I486_OPCODE_MOV_TO_R: //         0x8B, // 16/32 depends on OPSIZE_OVERRIDE
 	case I486_OPCODE_MOV_M_TO_AL: //      0xA0,
 	case I486_OPCODE_MOV_M_TO_EAX: //     0xA1, // 16/32 depends on OPSIZE_OVERRIDE
@@ -5395,6 +5400,15 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			OperandValue src;
 			src.MakeByte(value);
 			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,src);
+			clocksPassed=1;
+		}
+		break;
+	case I486_OPCODE_MOV_TO_R8: //        0x8A,
+		{
+			auto regNum=inst.GetREG(); // Guaranteed to be between 0 and 7
+			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,1);
+			state.reg32[regNum&3]&=reg8AndPattern[regNum];
+			state.reg32[regNum&3]|=((unsigned int)(value.GetAsByte())<<reg8Shift[regNum]);
 			clocksPassed=1;
 		}
 		break;
