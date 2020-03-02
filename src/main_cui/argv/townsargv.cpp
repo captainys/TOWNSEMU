@@ -48,7 +48,7 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		}
 		else if("-DEBUG"==ARG || "-DEBUGGER"==ARG)
 		{
-			autoStart=false;
+			debugger=true;
 			++i;
 		}
 		else if("-UNITTEST"==ARG)
