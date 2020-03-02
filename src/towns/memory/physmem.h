@@ -100,6 +100,8 @@ class TownsOsROMAccess : public TownsMemAccess
 {
 public:
 	virtual unsigned int FetchByte(unsigned int physAddr) const;
+	virtual unsigned int FetchWord(unsigned int physAddr) const;
+	virtual unsigned int FetchDword(unsigned int physAddr) const;
 	virtual void StoreByte(unsigned int physAddr,unsigned char data);
 };
 

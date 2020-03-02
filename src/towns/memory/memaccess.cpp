@@ -658,6 +658,34 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 	}
 	return 0xff;
 }
+/* virtual */ unsigned int TownsOsROMAccess::FetchWord(unsigned int physAddr) const
+{
+	physAddr-=0xC2000000;
+	if(physAddr+1<physMemPtr->dosRom.size())
+	{
+		auto *ROMPtr=physMemPtr->dosRom.data()+physAddr;
+		return ROMPtr[0]|(ROMPtr[1]<<8);
+	}
+	else
+	{
+		cpuPtr->Abort("Cross-Border Access to OS ROM");
+	}
+	return 0xffff;
+}
+/* virtual */ unsigned int TownsOsROMAccess::FetchDword(unsigned int physAddr) const
+{
+	physAddr-=0xC2000000;
+	if(physAddr+3<physMemPtr->dosRom.size())
+	{
+		auto *ROMPtr=physMemPtr->dosRom.data()+physAddr;
+		return ROMPtr[0]|(ROMPtr[1]<<8)|(ROMPtr[2]<<16)|(ROMPtr[3]<<24);
+	}
+	else
+	{
+		cpuPtr->Abort("Cross-Border Access to OS ROM");
+	}
+	return 0xffffffff;
+}
 /* virtual */ void TownsOsROMAccess::StoreByte(unsigned int physAddr,unsigned char data)
 {
 }
