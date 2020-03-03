@@ -23,11 +23,11 @@ def Run():
 		"-FD0",
 		os.path.join(DISKDIR,"V2.1L20.bin"),
 		"-CD",
-		os.path.join(THISDIR,"..","testdata","ISOIMG","TESTDISC.ISO"),
+		"D:/ISOImageSubset/TOSV2001.iso",
 		"-SYM",
 		"../symtables/V2.1L20_"+TOWNSTYPE+".txt",
 		"-DEBUG",
-		# "-PAUSE",
+		"-PAUSE",
 	]).wait()
 
 

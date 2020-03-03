@@ -483,15 +483,18 @@ int main(int ac,char *av[])
 	{
 		return 1;
 	}
-
-
-/*
-	const unsigned char test32_14[]={};
-	if(true!=TestDisassembly(32,32,,sizeof(test32_14),test32_14,towns,""))
+	const unsigned char test16_17[]={0x06,0x7E,0x05,0xA4,};
+	if(true!=TestDisassembly(16,16,0xC6,sizeof(test16_17),test16_17,towns,"MOV     BYTE PTR [057EH],A4H"))
 	{
 		return 1;
 	}
 
+/*
+	const unsigned char test16_17[]={};
+	if(true!=TestDisassembly(16,16,,sizeof(test16_17),test16_17,towns,""))
+	{
+		return 1;
+	}
 */
 
 

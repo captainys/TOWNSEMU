@@ -133,6 +133,16 @@ TownsCDROM::TownsCDROM(class FMTowns *townsPtr,class TownsPIC *PICPtr,class Town
 	case TOWNSIO_CDROM_TRANSFER_CTRL://     0x4C6, // [2] pp.227
 		state.DMATransfer=(0!=(data&0x10));
 		state.CPUTransfer=(0!=(data&0x08));
+		if(true==state.DMATransfer)
+		{
+			auto DMACh=DMACPtr->GetDMAChannel(TOWNSDMA_CDROM);
+			bool DMAAvailable=(nullptr!=DMACh && (0<DMACh->currentCount && 0xFFFFFFFF!=(DMACh->currentCount&0xFFFFFFFF)));
+			if(true==DMAAvailable && true!=state.DTSF)
+			{
+				state.DTSF=true;
+				townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+READ_SECTOR_TIME);
+			}
+		}
 		break;
 	case TOWNSIO_CDROM_SUBCODE_STATUS://    0x4CC,
 		// No write
@@ -430,14 +440,18 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 					state.SIRQ=true;
 					state.DEI=false;
 					state.DTSF=false;
-					townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+NOTIFICATION_TIME);
+
+					// I don't know if there is a possibility that DMA transfer flag (DTS) is set to true before this point.
+					// SYSROM of 2F and 2MX implies that DTS is like a trigger and should be set to true after everthing is set up.
+					// But, just in case if DMATransfer is already enabled.
+					if(true==state.DTSF)
+					{
+						state.DTSF=true;
+						townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+READ_SECTOR_TIME);
+					}
+					// Otherwise write to DTS should trigger the DMA transfer.
 				}
-				// Second State.  DMA available, but the transfer hasn't started.
-				else if(true==DMAAvailable && true==state.DMATransfer && true!=state.DTSF)
-				{
-					state.DTSF=true;
-					townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+READ_SECTOR_TIME);
-				}
+				// Second State.  DMA available, but the transfer hasn't started.  Wait for the CPU to write DTS=1.
 				// Third State.  Transfer done for a sector.
 				else if(true==DMAAvailable && true==state.DMATransfer && true==state.DTSF)
 				{
@@ -450,7 +464,7 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 					++state.readingSectorHSG;
 					townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+NOTIFICATION_TIME);
 					state.DMATransfer=false;
-					state.DTSF=false;  // Questionable.  Should I turn it off also?
+					state.DTSF=false;  // Should I turn it off also? -> Looks like I should.  Based on 2MX SYSROM FC00:00001CF7.  It waits for DTSF to clear.
 				}
 			}
 			else

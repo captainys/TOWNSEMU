@@ -39,12 +39,13 @@ xxH 01H xx xx  Probably Parameter Error
     What about drive-not-ready?
 
 My guess based on the Boot-ROM Disassembly:
-04H xx xx xx   Probably Seek done (After issuing 20H Seek, it waits for 00H No Error, and then 04H)
-00H 04 xx xx   CDROM BIOS re-shoots command A0H if CDROM returns this code.
-00H 08 xx xx   CDROM BIOS re-shoots command A0H if CDROM returns this code.
+04H xxH xx xx   Probably Seek done (After issuing 20H Seek, it waits for 00H No Error, and then 04H)
+00H 04H xx xx   CDROM BIOS re-shoots command A0H if CDROM returns this code.       (0b00000100)
+00H 08H xx xx   CDROM BIOS re-shoots command A0H if CDROM returns this code.       (0b00001000)
+00H 0DH xx xx   CDROM BIOS Checking (2ndByte)&0x0D and wait for it to be non zero. (0b00001101)
 
 Interpretation in the Linux for Towns source towns_cd.c (static void process_event(u_char st))
-00H 09H xx xx  Media change?
+00H 09H xx xx  Media change?                                                       (0b00001001)
 00H xx  xx xx  No error
 01H xx  xx xx  Command Accept Error
 22H xx  xx xx  Data Ready

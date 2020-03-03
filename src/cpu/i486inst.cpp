@@ -2440,8 +2440,13 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 	case I486_OPCODE_MOV_I8_TO_CH: //     0xB5,
 	case I486_OPCODE_MOV_I8_TO_DH: //     0xB6,
 	case I486_OPCODE_MOV_I8_TO_BH: //     0xB7,
-	case I486_OPCODE_MOV_I8_TO_RM8: //    0xC6,
 		op1.MakeByRegisterNumber(8,opCode&7);
+		op2.MakeImm8(*this);
+		disasm=DisassembleTypicalTwoOperands("MOV",op1,op2);
+		break;
+
+	case I486_OPCODE_MOV_I8_TO_RM8: //    0xC6,
+		op1.Decode(addressSize,8,operand);
 		op2.MakeImm8(*this);
 		disasm=DisassembleTypicalTwoOperands("MOV",op1,op2);
 		break;
