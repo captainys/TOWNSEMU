@@ -397,7 +397,12 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 		}
 		break;
 	case CDCMD_CDDASET://    0x81,
-		std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " not implemented yet." << std::endl;
+		if(0x20&state.cmd)
+		{
+			// I don't know what to do with this command.
+			// CDROM BIOS AH=52H fires command 0xA1 with parameters {07 FF 00 00 00 00 00 00}
+			SetStatusDriveNotReadyOrDiscChangedOrNoError();
+		}
 		break;
 	case CDCMD_CDDASTOP://   0x84,
 		if(true==state.CDDAPlaying)
@@ -406,9 +411,7 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 		}
 		else
 		{
-			StopCDDA();  // It sets next2ndByteOfStatusCode to 0x0D.
-			SetStatusNoError();
-			PushStatusCDDAStopDone();
+			StopCDDA();  // Already stopped, but it sets up status queue.
 		}
 		state.next2ndByteOfStatusCode=0x0D;
 		break;
@@ -619,5 +622,11 @@ void TownsCDROM::PushStatusCDDAStopDone(void)
 void TownsCDROM::StopCDDA(void)
 {
 	state.CDDAPlaying=false;
-	state.next2ndByteOfStatusCode=0x0D;
+	state.ClearStatusQueue();
+	if(true!=SetStatusDriveNotReadyOrDiscChanged())
+	{
+		SetStatusNoError();
+		PushStatusCDDAStopDone();
+		state.next2ndByteOfStatusCode=0x0D;  // Probably unnecessary.
+	}
 }
