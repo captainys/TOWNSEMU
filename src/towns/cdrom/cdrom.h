@@ -88,6 +88,7 @@ public:
 	{
 		READ_SECTOR_TIME= 5000000,  // Tentatively 5ms
 		NOTIFICATION_TIME=1000000,  // Tentatively 1ms
+		CDDASTOP_TIME    =1000000,  // Tentatively 1ms
 	};
 
 	// Reference [3] 
@@ -125,11 +126,16 @@ public:
 		bool enableSIRQ;
 		bool enableDEI;
 
+		bool CDDAPlaying=false;
+
 		bool cmdReceived;
 		unsigned char cmd;
 		int nParamQueue;
 		unsigned char paramQueue[8];
 		std::vector <unsigned char> statusQueue;
+
+		unsigned char next2ndByteOfStatusCode=0;
+		// IO.SYS V2.1L20 expects the second byte of NO-ERROR status code to be (0x0D&byte)!=0.
 
 		unsigned int readingSectorHSG,endSectorHSG;
 
@@ -195,6 +201,9 @@ private:
 	void SetStatusParameterError(void);
 	void SetStatusQueueForTOC(void);
 	void SetStatusDataReady(void);
+	void PushStatusCDDAStopDone(void);
+
+	void StopCDDA(void); // Placeholder for later.
 };
 
 

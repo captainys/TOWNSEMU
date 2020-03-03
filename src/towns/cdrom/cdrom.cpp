@@ -41,6 +41,10 @@ void TownsCDROM::State::Reset(void)
 	enableSIRQ=false;
 	enableDEI=false;
 	discChanged=false;
+
+	CDDAPlaying=false;
+
+	next2ndByteOfStatusCode=0;
 }
 
 void TownsCDROM::State::ResetMPU(void)
@@ -396,7 +400,17 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 		std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " not implemented yet." << std::endl;
 		break;
 	case CDCMD_CDDASTOP://   0x84,
-		std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " not implemented yet." << std::endl;
+		if(true==state.CDDAPlaying)
+		{
+			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+CDDASTOP_TIME);
+		}
+		else
+		{
+			StopCDDA();  // It sets next2ndByteOfStatusCode to 0x0D.
+			SetStatusNoError();
+			PushStatusCDDAStopDone();
+		}
+		state.next2ndByteOfStatusCode=0x0D;
 		break;
 	case CDCMD_CDDAPAUSE://  0x85,
 		std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " not implemented yet." << std::endl;
@@ -498,6 +512,11 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 			}
 		}
 		break;
+	case CDCMD_CDDASTOP:
+		StopCDDA();
+		SetStatusNoError();
+		PushStatusCDDAStopDone();
+		break;
 	}
 }
 void TownsCDROM::SetStatusDriveNotReadyOrDiscChangedOrNoError(void)
@@ -524,7 +543,8 @@ bool TownsCDROM::SetStatusDriveNotReadyOrDiscChanged(void)
 }
 void TownsCDROM::SetStatusNoError(void)
 {
-	state.PushStatusQueue(0,0,0,0);
+	state.PushStatusQueue(0,state.next2ndByteOfStatusCode,0,0);
+	state.next2ndByteOfStatusCode=0;
 }
 void TownsCDROM::SetStatusDriveNotReady(void)
 {
@@ -589,4 +609,15 @@ void TownsCDROM::SetStatusQueueForTOC(void)
 	                      DiscImage::BinToBCD(MSF.sec),
 	                      DiscImage::BinToBCD(MSF.frm));
 	}
+}
+
+void TownsCDROM::PushStatusCDDAStopDone(void)
+{
+	state.PushStatusQueue(0x11,0,0,0);
+}
+
+void TownsCDROM::StopCDDA(void)
+{
+	state.CDDAPlaying=false;
+	state.next2ndByteOfStatusCode=0x0D;
 }
