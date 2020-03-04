@@ -36,6 +36,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["DM"]=CMD_DUMP;
 	primaryCmdMap["STA"]=CMD_PRINT_STATUS;
 	primaryCmdMap["HIST"]=CMD_PRINT_HISTORY;
+	primaryCmdMap["SAVEHIST"]=CMD_SAVE_HISTORY;
 	primaryCmdMap["BP"]=CMD_ADD_BREAKPOINT;
 	primaryCmdMap["BC"]=CMD_DELETE_BREAKPOINT;
 	primaryCmdMap["BL"]=CMD_LIST_BREAKPOINTS;
@@ -178,6 +179,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Symbol table" << std::endl;
 	std::cout << "HIST" << std::endl;
 	std::cout << "  Log of CS:EIP.  Can specify number of steps.  Same as HIST command." << std::endl;
+	std::cout << "SAVEHIST filename.txt" << std::endl;
+	std::cout << "  Save CS:EIP Log to file." << std::endl;
 	std::cout << "GDT" << std::endl;
 	std::cout << "  Protected-Mode Global Descriptor Table" << std::endl;
 	std::cout << "LDT" << std::endl;
@@ -237,6 +240,9 @@ void TownsCommandInterpreter::PrintError(int errCode) const
 		break;
 	case ERROR_CANNOT_OPEN_FILE:
 		std::cout << "Error: Cannot open file." << std::endl;
+		break;
+	case ERROR_CANNOT_SAVE_FILE:
+		std::cout << "Error: Cannot save file." << std::endl;
 		break;
 	case ERROR_INCORRECT_FILE_SIZE:
 		std::cout << "Error: Incorrect File Size." << std::endl;
@@ -373,6 +379,12 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,Command &c
 		else
 		{
 			Execute_PrintHistory(towns,20);
+		}
+		break;
+	case CMD_SAVE_HISTORY:
+		if(2<=cmd.argv.size())
+		{
+			Execute_SaveHistory(towns,cmd.argv[1]);
 		}
 		break;
 	case CMD_PRINT_STATUS:
@@ -903,6 +915,33 @@ void TownsCommandInterpreter::Execute_PrintHistory(FMTowns &towns,unsigned int n
 			std::cout << "(" << cpputil::Itoa(iter->count) << ")";
 		}
 		std::cout << std::endl;
+	}
+}
+
+void TownsCommandInterpreter::Execute_SaveHistory(FMTowns &towns,const std::string &fName)
+{
+	std::ofstream ofp(fName);
+	if(ofp.is_open())
+	{
+		auto list=towns.debugger.GetCSEIPLog();
+		for(auto iter=list.rbegin(); iter!=list.rend(); ++iter)
+		{
+			ofp << cpputil::Ustox(iter->SEG) << ":" << cpputil::Uitox(iter->OFFSET);
+			ofp << " ";
+			ofp << "SS=" << cpputil::Ustox(iter->SS);
+			ofp << " ";
+			ofp << "ESP=" << cpputil::Uitox(iter->ESP);
+			if(1<iter->count)
+			{
+				ofp << "(" << cpputil::Itoa(iter->count) << ")";
+			}
+			ofp << std::endl;
+		}
+		ofp.close();
+	}
+	else
+	{
+		PrintError(ERROR_CANNOT_SAVE_FILE);
 	}
 }
 

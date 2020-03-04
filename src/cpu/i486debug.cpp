@@ -308,6 +308,11 @@ void i486Debugger::AfterRunOneInstruction(unsigned int clocksPassed,i486DX &cpu,
 	CheckForBreakPoints(cpu);
 }
 
+std::vector <i486Debugger::CSEIPLogType> i486Debugger::GetCSEIPLog(void)
+{
+	return GetCSEIPLog(CSEIPLog.size());
+}
+
 std::vector <i486Debugger::CSEIPLogType> i486Debugger::GetCSEIPLog(unsigned int steps)
 {
 	std::vector <CSEIPLogType> list;

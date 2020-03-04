@@ -77,6 +77,7 @@ public:
 	const std::vector <unsigned int> GetBreakOnIORead(void) const;
 	const std::vector <unsigned int> GetBreakOnIOWrite(void) const;
 
+	std::vector <CSEIPLogType> GetCSEIPLog(void);
 	std::vector <CSEIPLogType> GetCSEIPLog(unsigned int steps);
 
 	void SetOneTimeBreakPoint(unsigned int CS,unsigned int EIP);

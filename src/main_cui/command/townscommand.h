@@ -44,6 +44,7 @@ public:
 		CMD_DUMP,
 		CMD_PRINT_STATUS,
 		CMD_PRINT_HISTORY,
+		CMD_SAVE_HISTORY,
 
 		CMD_ADD_BREAKPOINT,
 		CMD_DELETE_BREAKPOINT,
@@ -121,6 +122,7 @@ public:
 		ERROR_TOO_FEW_ARGS,
 		ERROR_DUMP_TARGET_UNDEFINED,
 		ERROR_CANNOT_OPEN_FILE,
+		ERROR_CANNOT_SAVE_FILE,
 		ERROR_INCORRECT_FILE_SIZE,
 	};
 
@@ -163,6 +165,7 @@ public:
 	void Execute_Disassemble32(FMTowns &towns,Command &cmd);
 
 	void Execute_PrintHistory(FMTowns &towns,unsigned int n);
+	void Execute_SaveHistory(FMTowns &towns,const std::string &fName);
 
 	void Execute_AddSymbol(FMTowns &towns,Command &cmd);
 
