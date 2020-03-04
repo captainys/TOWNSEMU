@@ -1951,6 +1951,17 @@ public:
 	void RaiseException(int type,int code){state.exception=true;state.exceptionType=type;state.exceptionCode=code;};// Right now it's just a placeholder
 
 
+	/*! 80386 and 80486 apparently accepts REPNE in place for REP is used for INS,MOVS,OUTS,LODS,STOS.
+	    This inline function just make REPNE work as REP.
+	*/
+	inline unsigned int REPNEtoREP(unsigned int prefix)
+	{
+		// If prefix is 0xF2, it should be taken as 0xF3.
+		// If prefix is 0xF0, it shouldn't be taken as REP or REPNE.
+		return prefix|1;
+	}
+
+
 	/*! Check for REP.  Execute a string operation if the return value is true. 
 	    It returns true if no REP prefix.
 	*/
