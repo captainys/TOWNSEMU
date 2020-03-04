@@ -104,6 +104,7 @@ void TownsSound::State::ResetVariables(void)
 	case TOWNSIO_SOUND_PCM_INT_MASK://      0x4EA, // [2] pp.19,
 		break;
 	case TOWNSIO_SOUND_PCM_INT://           0x4EB, // [2] pp.19,
+		data=0; // No bank firing an interrupt at this time.
 		break;
 	case TOWNSIO_SOUND_PCM_ENV://           0x4F0, // [2] pp.19,
 		break;

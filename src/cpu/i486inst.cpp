@@ -271,6 +271,11 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		break;
 
 
+	case I486_OPCODE_BT_BTS_BTR_BTC_RM_I8:// 0FBA
+		offset+=FetchOperandRM(inst,seg,offset,mem);
+		FetchOperand8(inst,seg,offset,mem);
+		break;
+
 	case I486_OPCODE_BSF_R_RM://   0x0FBC,
 	case I486_OPCODE_BTC_RM_R://   0x0FBB,
 	case I486_OPCODE_BTS_RM_R://   0x0FAB,
@@ -937,6 +942,10 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 		break;
 
 
+	case I486_OPCODE_BT_BTS_BTR_BTC_RM_I8:// 0FBA
+		op1.Decode(addressSize,operandSize,operand);
+		break;
+
 	case I486_OPCODE_BSF_R_RM://   0x0FBC,
 		op1.DecodeMODR_MForRegister(operandSize,operand[0]);
 		op2.Decode(addressSize,operandSize,operand);
@@ -1581,6 +1590,30 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 
 	case I486_OPCODE_ARPL://       0x63,
 		disasm=DisassembleTypicalTwoOperands("ARPL",op1,op2);
+		break;
+
+
+	case I486_OPCODE_BT_BTS_BTR_BTC_RM_I8:// 0FBA
+		switch(GetREG())
+		{
+		case 4:
+			disasm="BT";
+			break;
+		case 5:
+			disasm="BTS";
+			break;
+		case 6:
+			disasm="BTR";
+			break;
+		case 7:
+			disasm="BTC";
+			break;
+		default:
+			disasm="?";
+			break;
+		}
+		op2.MakeImm8(*this);
+		disasm=DisassembleTypicalRM_I8(disasm,op1,op2);
 		break;
 
 

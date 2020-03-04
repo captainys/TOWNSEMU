@@ -402,6 +402,21 @@ int main(int ac,char *av[])
 		return 1;
 	}
 
+	const unsigned char test32_20a[]={0xC3};
+	if(true!=TestDisassembly(32,32,0x0FBB,sizeof(test32_20a),test32_20a,towns,"BTC     EBX,EAX"))
+	{
+		return 1;
+	}
+	const unsigned char test32_20b[]={0x23,0x00};
+	if(true!=TestDisassembly(32,32,0x0FBA,sizeof(test32_20b),test32_20b,towns,"BT      DWORD PTR [EBX],00H"))
+	{
+		return 1;
+	}
+	const unsigned char test32_20c[]={0x2B,0x01};
+	if(true!=TestDisassembly(32,32,0x0FBA,sizeof(test32_20c),test32_20c,towns,"BTS     DWORD PTR [EBX],01H"))
+	{
+		return 1;
+	}
 
 /*
 	const unsigned char test32_14[]={};
