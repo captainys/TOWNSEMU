@@ -272,6 +272,7 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 
 
 	case I486_OPCODE_BSF_R_RM://   0x0FBC,
+	case I486_OPCODE_BTC_RM_R://   0x0FBB,
 	case I486_OPCODE_BTS_RM_R://   0x0FAB,
 	case I486_OPCODE_BTR_RM_R://   0x0FB3,
 		FetchOperandRM(inst,seg,offset,mem);
@@ -943,6 +944,7 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 
 
 	case I486_OPCODE_BTS_RM_R://   0x0FAB,
+	case I486_OPCODE_BTC_RM_R://   0x0FBB,
 	case I486_OPCODE_BTR_RM_R://   0x0FB3,
 		op1.Decode(addressSize,operandSize,operand);
 		op2.DecodeMODR_MForRegister(operandSize,operand[0]);
@@ -1584,6 +1586,9 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 
 	case I486_OPCODE_BSF_R_RM://   0x0FBC,
 		disasm=DisassembleTypicalTwoOperands("BSF",op1,op2);
+		break;
+	case I486_OPCODE_BTC_RM_R://   0x0FBB,
+		disasm=DisassembleTypicalTwoOperands("BTC",op1,op2);
 		break;
 	case I486_OPCODE_BTS_RM_R://   0x0FAB,
 		disasm=DisassembleTypicalTwoOperands("BTS",op1,op2);
@@ -4063,6 +4068,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 
 
+	case I486_OPCODE_BTC_RM_R://   0x0FBB,
 	case I486_OPCODE_BTS_RM_R://   0x0FAB,
 		{
 			clocksPassed=(OPER_ADDR==op1.operandType ? 13 : 6);
@@ -4074,9 +4080,18 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				auto bit=(1<<bitOffset);
 				auto src=value2.GetAsDword();
 				SetCF(0!=(src&bit));
-				if(0==(src&bit))
+				if(I486_OPCODE_BTS_RM_R==inst.opCode)
 				{
-					src|=bit;
+					if(0==(src&bit))
+					{
+						src|=bit;
+						value2.SetDword(src);
+						StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+					}
+				}
+				else if(I486_OPCODE_BTC_RM_R==inst.opCode)
+				{
+					src^=bit;
 					value2.SetDword(src);
 					StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
 				}
