@@ -65,6 +65,7 @@ public:
 
 		CMD_CMOSLOAD,
 		CMD_CDLOAD,
+		CMD_CDOPENCLOSE,
 	};
 
 	enum

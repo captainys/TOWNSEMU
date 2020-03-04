@@ -2355,10 +2355,26 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 	case I486_OPCODE_LODSB://            0xAC,
 		disasm="LODSB   ";
 		disasm+=SegmentOverrideSIorESIString(segOverride,addressSize);
+		if(INST_PREFIX_REP==instPrefix)
+		{
+			disasm="REP "+disasm;
+		}
+		else if(INST_PREFIX_REPNE==instPrefix)
+		{
+			disasm="REPNE(!) "+disasm;
+		}
 		break;
 	case I486_OPCODE_LODS://             0xAD,
 		disasm=(16==operandSize ? "LODSW   " : "LODSD   ");
 		disasm+=SegmentOverrideSIorESIString(segOverride,addressSize);
+		if(INST_PREFIX_REP==instPrefix)
+		{
+			disasm="REP "+disasm;
+		}
+		else if(INST_PREFIX_REPNE==instPrefix)
+		{
+			disasm="REPNE(!) "+disasm;
+		}
 		break;
 
 
@@ -2479,6 +2495,10 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		{
 			disasm="REP "+disasm;
 		}
+		else if(INST_PREFIX_REPNE==instPrefix)
+		{
+			disasm="REPNE(!) "+disasm;
+		}
 		disasm+=SegmentOverrideSIorESIString(segOverride,addressSize);
 		break;
 	case I486_OPCODE_MOVS://             0xA5,
@@ -2486,6 +2506,10 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		if(INST_PREFIX_REP==instPrefix)
 		{
 			disasm="REP "+disasm;
+		}
+		else if(INST_PREFIX_REPNE==instPrefix)
+		{
+			disasm="REPNE(!) "+disasm;
 		}
 		disasm+=SegmentOverrideSIorESIString(segOverride,addressSize);
 		break;
@@ -2696,6 +2720,10 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		{
 			disasm="REP "+disasm;
 		}
+		else if(INST_PREFIX_REPNE==instPrefix)
+		{
+			disasm="REPNE(!) "+disasm;
+		}
 		break;
 	case I486_OPCODE_STOS://             0xAB,
 		if(16==operandSize)
@@ -2709,6 +2737,10 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		if(INST_PREFIX_REP==instPrefix)
 		{
 			disasm="REP "+disasm;
+		}
+		else if(INST_PREFIX_REPNE==instPrefix)
+		{
+			disasm="REPNE(!) "+disasm;
 		}
 		break;
 
@@ -2758,6 +2790,10 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		{
 			disasm="REP "+disasm;
 		}
+		else if(INST_PREFIX_REPNE==instPrefix)
+		{
+			disasm="REPNE(!) "+disasm;
+		}
 		disasm+=SegmentOverrideSIorESIString(segOverride,addressSize);
 		break;
 	case I486_OPCODE_OUTS://             0x6F,
@@ -2765,6 +2801,10 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		if(INST_PREFIX_REP==instPrefix)
 		{
 			disasm="REP "+disasm;
+		}
+		else if(INST_PREFIX_REPNE==instPrefix)
+		{
+			disasm="REPNE(!) "+disasm;
 		}
 		disasm+=SegmentOverrideSIorESIString(segOverride,addressSize);
 		break;

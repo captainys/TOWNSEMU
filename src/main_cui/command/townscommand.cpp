@@ -52,6 +52,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["LET"]=CMD_LET;
 	primaryCmdMap["CMOSLOAD"]=CMD_CMOSLOAD;
 	primaryCmdMap["CDLOAD"]=CMD_CDLOAD;
+	primaryCmdMap["CDOPENCLOSE"]=CMD_CDOPENCLOSE;
 
 	featureMap["CMDLOG"]=ENABLE_CMDLOG;
 	featureMap["AUTODISASM"]=ENABLE_DISASSEMBLE_EVERY_INST;
@@ -157,6 +158,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Load CMOS." << std::endl;
 	std::cout << "CDLOAD filename" << std::endl;
 	std::cout << "  Load CD-ROM image." << std::endl;
+	std::cout << "CDOPENCLOSE" << std::endl;
+	std::cout << "  Virtually open and close the internal CD-ROM drive." << std::endl;
 	std::cout << "CDROM" << std::endl;
 	std::cout << "  CD-ROM Status." << std::endl;
 
@@ -408,6 +411,9 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,Command &c
 
 	case CMD_CDLOAD:
 		Execute_CDLoad(towns,cmd);
+		break;
+	case CMD_CDOPENCLOSE:
+		towns.cdrom.state.discChanged=true;
 		break;
 	}
 }
