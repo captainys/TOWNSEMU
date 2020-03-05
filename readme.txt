@@ -9,3 +9,6 @@ Succeeed in booting into Towns OS V2.1 L30 command mode, and then running a test
 
 2020/02/26
 Major progress!  My Towns can read from ISO image!
+
+2020/03/04
+Major progress!  My Towns can boot from ISO image of Towns OS V2.1 L20 and can move mouse cursor with keys.
