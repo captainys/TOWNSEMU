@@ -4068,6 +4068,51 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 
 
+	case I486_OPCODE_BT_BTS_BTR_BTC_RM_I8:// 0FBA
+		{
+			clocksPassed=(OPER_ADDR==op1.operandType ? 8 : 6);
+			auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+			if(true!=state.exception)
+			{
+				auto bitOffset=inst.GetUimm8()&0x1F;
+				auto bit=(1<<bitOffset);
+				auto src=value1.GetAsDword();
+				SetCF(0!=(src&bit));
+				if(I486_OPCODE_BTS_RM_R==inst.opCode)
+				switch(inst.GetREG())
+				{
+				case 4: // BT (Bit Test)
+					break;
+				case 5: // BTS (Bit Test and Set)
+					if(0==(src&bit))
+					{
+						src|=bit;
+						value1.SetDword(src);
+						StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+					}
+					break;
+				case 6: // BTR (Bit Test and Reset)
+					{
+						clocksPassed=0;
+						// Not supported yet.
+					}
+					break;
+				case 7: // BTC (Bit Test and Complement)
+					{
+						clocksPassed=0;
+						// Stay conservative until I see one in tests.
+
+						src^=bit;
+						value1.SetDword(src);
+						StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+					}
+					break;
+				}
+			}
+		}
+		break;
+
+
 	case I486_OPCODE_BSF_R_RM://   0x0FBC,
 		{
 			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize/8);
@@ -4102,6 +4147,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 
 	case I486_OPCODE_BTC_RM_R://   0x0FBB,
+	case I486_OPCODE_BTR_RM_R://   0x0FB3,
 	case I486_OPCODE_BTS_RM_R://   0x0FAB,
 		{
 			clocksPassed=(OPER_ADDR==op1.operandType ? 13 : 6);
@@ -4118,15 +4164,24 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					if(0==(src&bit))
 					{
 						src|=bit;
-						value2.SetDword(src);
+						value1.SetDword(src);
 						StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
 					}
 				}
 				else if(I486_OPCODE_BTC_RM_R==inst.opCode)
 				{
 					src^=bit;
-					value2.SetDword(src);
+					value1.SetDword(src);
 					StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+				}
+				else if(I486_OPCODE_BTR_RM_R==inst.opCode)
+				{
+					if(0!=(src&bit))
+					{
+						src&=(~bit);
+						value1.SetDword(src);
+						StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+					}
 				}
 			}
 		}

@@ -22,7 +22,8 @@ def Run():
 		os.path.join(DISKDIR,"testset01.bin"),
 		"-SYM",
 		"../symtables/TESTSET01.txt",
-		"-UNITTEST",
+		"-PAUSE",
+		# "-UNITTEST",
 	]).wait()
 
 
