@@ -648,6 +648,22 @@ public:
 		static std::string SegmentOverrideSIorESIString(int segOverridePrefix,int addressSize);
 	};
 
+	/*! FM TOWNS BIOS uses:
+			MOV		AX,0110H
+			MOV		FS,AX
+			CALL	FAR PTR FS:[0040H]
+		for reading from a mouse.  That is a perfect opportunity for the emulator to
+		identify the operating system version.  The CPU class fires:
+			mouseBIOSInterceptorPtr->Intercept();
+		when indirect CALL to 0110:[0040H].
+	*/
+	class FMTownsMouseBiosInterceptor
+	{
+	public:
+		virtual void Intercept(void)=0;
+	};
+	FMTownsMouseBiosInterceptor *mouseBIOSInterceptorPtr=nullptr;
+
 	enum
 	{
 		OPER_UNDEFINED,
@@ -2221,6 +2237,23 @@ public:
 	*/
 	OperandValue EvaluateOperand(
 	    const Memory &mem,int addressSize,int segmentOverride,const Operand &op,int destinationBytes) const;
+
+
+	/*! Extract segment register and address offset from the OPER_ADDR type operand.
+	    It doesn't check the operand type.  Using it for a different operand type would crash the
+	    program.
+	*/
+	inline const SegmentRegister *ExtractSegmentAndOffset(unsigned int &offset,const Operand &op,unsigned int segmentOverride) const
+	{
+		offset=
+		   GetRegisterValue(op.baseReg)+
+		   (GetRegisterValue(op.indexReg)<<op.indexShift)+
+		   op.offset;
+
+		sregIndexToSregPtrTable[NUM_SEGMENT_REGISTERS]=baseRegisterToDefaultSegment[op.baseReg];
+		auto sregIndex=segPrefixToSregIndex[segmentOverride];
+		return sregIndexToSregPtrTable[sregIndex];
+	}
 
 
 	/*! Stores value to the destination described by the operand.

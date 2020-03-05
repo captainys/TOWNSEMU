@@ -4763,6 +4763,26 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					{
 						if(3==REG) // Call
 						{
+							/* What is this?
+							   FM TOWNS BIOS uses 
+									MOV		AX,0110H
+									MOV		FS,AX
+									CALL	FAR PTR FS:[0040H]
+								for reading from a mouse.  That is a perfect opportunity for the emulator to
+								identify the operating system version.  The CPU class fires:
+									mouseBIOSInterceptorPtr->Intercept();
+								when indirect CALL to 0110:[0040H].
+							*/
+							if(nullptr!=mouseBIOSInterceptorPtr)
+							{
+								unsigned int offset;
+								auto segPtr=ExtractSegmentAndOffset(offset,op1,inst.segOverride);
+								if(0x0110==segPtr->value && 0x0040==offset)
+								{
+									mouseBIOSInterceptorPtr->Intercept();
+								}
+							}
+
 							Push(mem,inst.operandSize,state.CS().value);
 							Push(mem,inst.operandSize,state.EIP+inst.numBytes);
 							if(true==enableCallStack)

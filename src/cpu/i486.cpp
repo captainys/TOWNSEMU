@@ -1786,14 +1786,9 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 		{
 			value.numBytes=destinationBytes;
 
-			sregIndexToSregPtrTable[NUM_SEGMENT_REGISTERS]=baseRegisterToDefaultSegment[op.baseReg];
-			auto sregIndex=segPrefixToSregIndex[segmentOverride];
-			SegmentRegister seg=*sregIndexToSregPtrTable[sregIndex];
+			unsigned int offset;
+			const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,op,segmentOverride);
 
-			unsigned int offset=
-			   GetRegisterValue(op.baseReg)+
-			   (GetRegisterValue(op.indexReg)<<op.indexShift)+
-			   op.offset;
 			if(addressSize==16)
 			{
 				offset&=0xFFFF;
