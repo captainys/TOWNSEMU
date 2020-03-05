@@ -103,6 +103,9 @@ public:
 		bool unitTestDone=false;
 		int returnCode=0;
 
+		unsigned int tbiosVersion;
+		int nextTBIOSCheckTime;
+
 		enum
 		{
 			VM2HOST_PARAM_QUEUE_LENGTH=256,
@@ -173,6 +176,37 @@ public:
 	FMTowns();
 
 	unsigned int MachineID(void) const;
+
+	/*! Returns four words in the TBIOS header located at:
+	        Physical Address:00100000
+	        Physical Address:00100008
+	        Physical Address:00100010
+	        Physical Address:00100018
+	    (In tbiosid.cpp)
+	*/
+	void GetTBIOSIdentifierStrings(std::string s[4]) const;
+
+	/*! Identifies TBIOS version.  (In tbiosid.cpp)
+	*/
+	unsigned int IdentifyTBIOS(void) const;
+
+	/*! Returns a string that corresponds to the TBIOS version for debugging.  (In tbiosid.cpp)
+	*/
+	const char *TBIOSIDENTtoString(unsigned int tbios) const;
+
+
+	/*! Adjust mouse return based on the mouse coordinate that Towns is thinking and mouse coordinate of the host.
+	    Returns true if it thinks it can control the mouse coordinate.  false otherwise.
+	    (In tbiosid.cpp)
+	*/
+	bool ControlMouse(int hostMouseX,int houstMouseY,unsigned int tbiosid);
+
+
+	/*! Returns the mouse coordinate that TBIOS is thinking.
+	    Returns false if it could not get the coordinate.
+	*/
+	bool GetMouseCoordinate(int &mx,int &my,unsigned int tbiosid) const;
+
 
 	bool CheckAbort(void) const;
 

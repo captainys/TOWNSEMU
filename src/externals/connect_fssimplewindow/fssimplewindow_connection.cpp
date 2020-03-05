@@ -135,7 +135,8 @@
 			p.button[0]=(0!=lb);
 			p.button[1]=(0!=rb);
 
-			if(FsGetKeyState(FSKEY_UP))
+			towns.ControlMouse(mx,my,towns.var.tbiosVersion);
+			/* if(FsGetKeyState(FSKEY_UP))
 			{
 				p.mouseMotion.y()=4;
 			}
@@ -150,7 +151,7 @@
 			else if(FsGetKeyState(FSKEY_RIGHT))
 			{
 				p.mouseMotion.x()=-4;
-			}
+			} */
 		}
 	}
 }

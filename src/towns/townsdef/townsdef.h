@@ -8,6 +8,8 @@ const int TOWNS_RENDERING_FREQUENCY=PER_SECOND/60;
 
 const unsigned int TOWNS_CMOS_SIZE=8192;
 
+const unsigned int TBIOS_ID_FREQUENCY=100;
+
 
 enum
 {
@@ -432,6 +434,11 @@ enum
 	TOWNS_VMIF_CMD_EXIT_VM=       0x03, // Exit the VM.  Return code taken from the data queu.
 };
 
+enum
+{
+	TBIOS_UNKNOWN,
+	TBIOS_V31L31,    // TBIOS that comes with Towns OS V2.1 L20
+};
 
 /* } */
 #endif

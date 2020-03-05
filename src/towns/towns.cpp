@@ -44,6 +44,9 @@ void FMTowns::Variable::Reset(void)
 	disassemblePointer.SEG=0;
 	disassemblePointer.OFFSET=0;
 
+	tbiosVersion=TBIOS_UNKNOWN;
+	nextTBIOSCheckTime=0;
+
 	nVM2HostParam=0;
 }
 
@@ -401,6 +404,22 @@ unsigned int FMTowns::RunOneInstruction(void)
 
 /* virtual */ void FMTowns::InterceptMouseBIOS(void)
 {
+	if(TBIOS_UNKNOWN==var.tbiosVersion)
+	{
+		if(0>=var.nextTBIOSCheckTime)
+		{
+			var.tbiosVersion=IdentifyTBIOS();
+			if(TBIOS_UNKNOWN==var.tbiosVersion)
+			{
+				var.nextTBIOSCheckTime=TBIOS_ID_FREQUENCY;
+			}
+			std::cout << "Identified TBIOS as: " << TBIOSIDENTtoString(var.tbiosVersion) << std::endl;
+		}
+		else
+		{
+			--var.nextTBIOSCheckTime;
+		}
+	}
 }
 
 void FMTowns::RunScheduledTasks(void)
