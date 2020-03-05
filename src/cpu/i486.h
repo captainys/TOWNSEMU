@@ -2196,6 +2196,10 @@ public:
 	    OF is only set if ctr==1.
 	    operandSize needs to be 16 or 32.
 	*/ 
+private:
+	template <unsigned int bitCount,unsigned int allBits,unsigned int signBit>
+	inline void ShrTemplate(unsigned int &value,unsigned int ctr);
+public:
 	void ShrWordOrDword(int operandSize,unsigned int &value,unsigned int ctr);
 	void ShrDword(unsigned int &value,unsigned int ctr);
 	void ShrWord(unsigned int &value,unsigned int ctr);

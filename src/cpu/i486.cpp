@@ -1738,6 +1738,28 @@ void i486DX::ShlByte(unsigned int &value,unsigned int ctr)
 		SetOF((prevValue&0x80)!=(value&0x80));
 	}
 }
+
+template <unsigned int bitCount,unsigned int maskBits,unsigned int signBit>
+inline void i486DX::ShrTemplate(unsigned int &value,unsigned int ctr)
+{
+	// OF CF ZF PF SF
+	SetCF(0!=(value&1));
+	ctr&=31;
+	if(1<ctr)
+	{
+		value&=maskBits;
+		value>>=ctr;
+	}
+	else if(1==ctr)
+	{
+		SetOF(false);
+		value&=maskBits;
+		value>>=1;
+	}
+	SetZF(0==value);
+	SetParityFlag(CheckParity(value&0xFF));
+	SetSignFlag(0!=(value&signBit));
+}
 void i486DX::ShrWordOrDword(int operandSize,unsigned int &value,unsigned int ctr)
 {
 	if(16==operandSize)
@@ -1751,46 +1773,15 @@ void i486DX::ShrWordOrDword(int operandSize,unsigned int &value,unsigned int ctr
 }
 void i486DX::ShrDword(unsigned int &value,unsigned int ctr)
 {
-	SetCF(0!=(value&1));
-	if(1<ctr)
-	{
-		value>>=ctr;
-	}
-	else if(1==ctr)
-	{
-		SetOF(false);
-		value>>=1;
-	}
+	ShrTemplate<32,0xffffffff,0x80000000>(value,ctr);
 }
 void i486DX::ShrWord(unsigned int &value,unsigned int ctr)
 {
-	SetCF(0!=(value&1));
-	if(1<ctr)
-	{
-		value&=0xffff;
-		value>>=ctr;
-	}
-	else if(1==ctr)
-	{
-		SetOF(false);
-		value&=0xffff;
-		value>>=1;
-	}
+	ShrTemplate<16,0xFFFF,0x8000>(value,ctr);
 }
 void i486DX::ShrByte(unsigned int &value,unsigned int ctr)
 {
-	SetCF(0!=(value&1));
-	if(1<ctr)
-	{
-		value&=0xff;
-		value>>=ctr;
-	}
-	else if(1==ctr)
-	{
-		SetOF(false);
-		value&=0xff;
-		value>>=1;
-	}
+	ShrTemplate<8,0xFF,0x80>(value,ctr);
 }
 
 
