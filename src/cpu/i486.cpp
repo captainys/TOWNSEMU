@@ -1679,6 +1679,28 @@ void i486DX::SarByte(unsigned int &value,unsigned int ctr)
 	value=value16;
 }
 
+template <unsigned int bitCount,unsigned int maskBits,unsigned int signBit>
+void i486DX::ShlTemplate(unsigned int &value,unsigned int ctr)
+{
+	// OF CF ZF PF SF
+	ctr&=31;
+	if(1<ctr)
+	{
+		value=(value<<(ctr-1));
+		SetCF(0!=(value&signBit));
+		value=(value<<1)&maskBits;
+	}
+	else if(1==ctr)
+	{
+		SetCF(0!=(value&0x8000));
+		auto prevValue=value;
+		value=(value<<1)&maskBits;
+		SetOF((prevValue&signBit)!=(value&signBit));
+	}
+	SetZF(0==value);
+	SetParityFlag(CheckParity(value&0xFF));
+	SetSignFlag(0!=(value&signBit));
+}
 void i486DX::ShlWordOrDword(int operandSize,unsigned int &value,unsigned int ctr)
 {
 	if(16==operandSize)
@@ -1692,51 +1714,15 @@ void i486DX::ShlWordOrDword(int operandSize,unsigned int &value,unsigned int ctr
 }
 void i486DX::ShlDword(unsigned int &value,unsigned int ctr)
 {
-	if(1<ctr)
-	{
-		value=(value<<(ctr-1));
-		SetCF(0!=(value&0x80000000));
-		value=(value<<1);
-	}
-	else if(1==ctr)
-	{
-		SetCF(0!=(value&0x80000000));
-		auto prevValue=value;
-		value=(value<<1);
-		SetOF((prevValue&0x80000000)!=(value&0x80000000));
-	}
+	ShlTemplate<32,0xFFFFFFFF,0x80000000>(value,ctr);
 }
 void i486DX::ShlWord(unsigned int &value,unsigned int ctr)
 {
-	if(1<ctr)
-	{
-		value=(value<<(ctr-1));
-		SetCF(0!=(value&0x8000));
-		value=(value<<1)&0xffff;
-	}
-	else if(1==ctr)
-	{
-		SetCF(0!=(value&0x8000));
-		auto prevValue=value;
-		value=(value<<1)&0xffff;
-		SetOF((prevValue&0x8000)!=(value&0x8000));
-	}
+	ShlTemplate<16,0xFFFF,0x8000>(value,ctr);
 }
 void i486DX::ShlByte(unsigned int &value,unsigned int ctr)
 {
-	if(1<ctr)
-	{
-		value=(value<<(ctr-1));
-		SetCF(0!=(value&0x80));
-		value=(value<<1)&0xff;
-	}
-	else if(1==ctr)
-	{
-		SetCF(0!=(value&0x80));
-		auto prevValue=value;
-		value=(value<<1)&0xff;
-		SetOF((prevValue&0x80)!=(value&0x80));
-	}
+	ShlTemplate<8,0xFF,0x80>(value,ctr);
 }
 
 template <unsigned int bitCount,unsigned int maskBits,unsigned int signBit>

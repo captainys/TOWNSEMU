@@ -2188,6 +2188,10 @@ public:
 	    OF is only set if ctr==1.
 	    operandSize needs to be 16 or 32.
 	*/ 
+private:
+	template <unsigned int bitCount,unsigned int allBits,unsigned int signBit>
+	void ShlTemplate(unsigned int &value,unsigned int ctr);
+public:
 	void ShlWordOrDword(int operandSize,unsigned int &value,unsigned int ctr);
 	void ShlDword(unsigned int &value,unsigned int ctr);
 	void ShlWord(unsigned int &value,unsigned int ctr);
