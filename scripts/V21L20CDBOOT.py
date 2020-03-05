@@ -25,7 +25,7 @@ def Run():
 		"-CD",
 		"D:/ISOImageSubset/TOSV2001.iso",
 		"-SYM",
-		"../symtables/V2.1L20_"+TOWNSTYPE+".txt",
+		"../symtables/V2.1L20CDBOOT_"+TOWNSTYPE+".txt",
 		"-DEBUG",
 		"-PAUSE",
 	]).wait()
