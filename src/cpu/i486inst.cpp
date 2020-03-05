@@ -4111,7 +4111,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{
 				auto bitOffset=value2.GetAsByte()&0x1F;
 				auto bit=(1<<bitOffset);
-				auto src=value2.GetAsDword();
+				auto src=value1.GetAsDword();
 				SetCF(0!=(src&bit));
 				if(I486_OPCODE_BTS_RM_R==inst.opCode)
 				{
