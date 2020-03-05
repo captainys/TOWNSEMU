@@ -32,11 +32,11 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 		}
 		if(true!=button[0])
 		{
-			data|=0x20;
+			data|=0x10;
 		}
 		if(true!=button[1])
 		{
-			data|=0x10;
+			data|=0x20;
 		}
 		if(MOUSE==device)
 		{

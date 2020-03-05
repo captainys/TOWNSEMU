@@ -137,19 +137,19 @@
 
 			if(FsGetKeyState(FSKEY_UP))
 			{
-				p.mouseMotion.y()=1;
+				p.mouseMotion.y()=4;
 			}
 			else if(FsGetKeyState(FSKEY_DOWN))
 			{
-				p.mouseMotion.y()=-1;
+				p.mouseMotion.y()=-4;
 			}
 			if(FsGetKeyState(FSKEY_LEFT))
 			{
-				p.mouseMotion.x()=1;
+				p.mouseMotion.x()=4;
 			}
 			else if(FsGetKeyState(FSKEY_RIGHT))
 			{
-				p.mouseMotion.x()=-1;
+				p.mouseMotion.x()=-4;
 			}
 		}
 	}
