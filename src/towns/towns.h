@@ -33,7 +33,7 @@
 // (3) Add as data member in FMTowns class.
 // (4) In FMTowns::FMTowns() add to allDevices.
 // (5) In FMTowns::FMTowns() add to io.
-class FMTowns : public Device
+class FMTowns : public Device, public i486DX::FMTownsMouseBiosInterceptor
 {
 public:
 	// I'm talking about 66MHz to 120MHz ball park.
@@ -193,6 +193,11 @@ public:
 
 	/*! Run one instruction and returns the number of clocks passed. */
 	unsigned int RunOneInstruction(void);
+
+	/*! This function will be called from the CPU when CALL FS:[0040H] where FS=0110H.
+	    It is an opportunity for the virtual machine to identify the operating-system version.
+	*/
+	virtual void InterceptMouseBIOS(void);
 
 	/*! Run scheduled tasks.
 	*/

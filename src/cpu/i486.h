@@ -660,7 +660,7 @@ public:
 	class FMTownsMouseBiosInterceptor
 	{
 	public:
-		virtual void Intercept(void)=0;
+		virtual void InterceptMouseBIOS(void)=0;
 	};
 	FMTownsMouseBiosInterceptor *mouseBIOSInterceptorPtr=nullptr;
 

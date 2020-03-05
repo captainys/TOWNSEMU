@@ -4779,7 +4779,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 								auto segPtr=ExtractSegmentAndOffset(offset,op1,inst.segOverride);
 								if(0x0110==segPtr->value && 0x0040==offset)
 								{
-									mouseBIOSInterceptorPtr->Intercept();
+									mouseBIOSInterceptorPtr->InterceptMouseBIOS();
 								}
 							}
 

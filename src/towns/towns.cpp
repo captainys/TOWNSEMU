@@ -66,6 +66,8 @@ FMTowns::FMTowns() :
 {
 	townsType=TOWNSTYPE_2_MX;
 
+	cpu.mouseBIOSInterceptorPtr=this;
+
 	debugger.ioLabel=FMTownsIOMap();
 
 	abort=false;
@@ -395,6 +397,10 @@ unsigned int FMTowns::RunOneInstruction(void)
 	var.disassemblePointer.OFFSET=cpu.state.EIP;
 
 	return clocksPassed;
+}
+
+/* virtual */ void FMTowns::InterceptMouseBIOS(void)
+{
 }
 
 void FMTowns::RunScheduledTasks(void)
