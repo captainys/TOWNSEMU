@@ -46,6 +46,9 @@ void FMTowns::Variable::Reset(void)
 
 	tbiosVersion=TBIOS_UNKNOWN;
 	nextTBIOSCheckTime=0;
+	TBIOS_physicalAddr=0;
+	MOS_work_linearAddr=0;
+	MOS_work_physicalAddr=0;
 
 	nVM2HostParam=0;
 }
@@ -408,7 +411,16 @@ unsigned int FMTowns::RunOneInstruction(void)
 	{
 		if(0>=var.nextTBIOSCheckTime)
 		{
-			var.tbiosVersion=IdentifyTBIOS();
+			if(0==cpu.GetAH())
+			{
+				var.MOS_work_linearAddr=cpu.state.GS().baseLinearAddr+cpu.GetEDI();
+				var.MOS_work_physicalAddr=cpu.LinearAddressToPhysicalAddress(var.MOS_work_linearAddr,mem);
+
+				i486DX::SegmentRegister CS;
+				cpu.LoadSegmentRegister(CS,0x110,mem);
+				var.TBIOS_physicalAddr=cpu.LinearAddressToPhysicalAddress(CS.baseLinearAddr,mem);
+			}
+			var.tbiosVersion=IdentifyTBIOS(var.TBIOS_physicalAddr);
 			if(TBIOS_UNKNOWN==var.tbiosVersion)
 			{
 				var.nextTBIOSCheckTime=TBIOS_ID_FREQUENCY;

@@ -437,6 +437,7 @@ enum
 enum
 {
 	TBIOS_UNKNOWN,
+	TBIOS_V31L23A,   // TBIOS that comes with Towns OS V1.1 L30
 	TBIOS_V31L31,    // TBIOS that comes with Towns OS V2.1 L20
 };
 

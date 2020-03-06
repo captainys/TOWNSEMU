@@ -105,6 +105,7 @@ public:
 
 		unsigned int tbiosVersion;
 		int nextTBIOSCheckTime;
+		unsigned int TBIOS_physicalAddr,MOS_work_linearAddr,MOS_work_physicalAddr;
 
 		enum
 		{
@@ -184,11 +185,11 @@ public:
 	        Physical Address:00100018
 	    (In tbiosid.cpp)
 	*/
-	void GetTBIOSIdentifierStrings(std::string s[4]) const;
+	void GetTBIOSIdentifierStrings(std::string s[4],unsigned int biosPhysicalBaseAddr) const;
 
 	/*! Identifies TBIOS version.  (In tbiosid.cpp)
 	*/
-	unsigned int IdentifyTBIOS(void) const;
+	unsigned int IdentifyTBIOS(unsigned int biosPhysicalBaseAddr) const;
 
 	/*! Returns a string that corresponds to the TBIOS version for debugging.  (In tbiosid.cpp)
 	*/
