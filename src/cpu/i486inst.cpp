@@ -361,6 +361,16 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 				FetchOperand8(inst,seg,offset,mem);
 				switch(Instruction::GetREG(MODR_M))
 				{
+				case 0:
+				case 1:
+				case 2:
+				case 3:
+				case 4:
+				case 5:
+				case 6:
+				case 7:
+				default:
+					break;
 				}
 			}
 		}
@@ -378,6 +388,16 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 				FetchOperand8(inst,seg,offset,mem); // Tentative.
 				switch(Instruction::GetREG(MODR_M))
 				{
+				case 0:
+				case 1:
+				case 2:
+				case 3:
+				case 4:
+				case 5:
+				case 6:
+				case 7:
+				default:
+					break;
 				}
 			}
 		}
@@ -4155,31 +4175,34 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize/8);
 			auto src=value.GetAsDword();
-			unsigned int bit=1;
-			unsigned int count;
-			for(count=0; count<inst.operandSize; ++count)
+			if(0==src)
 			{
-				if(0!=(src&bit))
-				{
-					break;
-				}
-			}
-			clocksPassed=6+count; // Real:6-42  ?? Why is it not 6+count ?? [1] pp. 26-31
-			if(OPER_ADDR==op2.operandType)
-			{
-				++clocksPassed;
-			}
-			if(count<inst.operandSize)
-			{
-				value.SetDword(count);
-				SetZF(false);
+				clocksPassed=6;
+				SetZF(true);
 			}
 			else
 			{
-				value.SetDword(0);
-				SetZF(true);
+				unsigned int bit=1;
+				unsigned int count;
+				for(count=0; count<inst.operandSize; ++count)
+				{
+					if(0!=(src&bit))
+					{
+						break;
+					}
+				}
+				clocksPassed=6+count; // Real:6-42  ?? Why is it not 6+count ?? [1] pp. 26-31
+				if(OPER_ADDR==op2.operandType)
+				{
+					++clocksPassed;
+				}
+				if(count<inst.operandSize)
+				{
+					value.SetDword(count);
+					SetZF(false);
+				}
+				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
 			}
-			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
 		}
 		break;
 	case I486_OPCODE_BSR_R_RM://   0x0FBD,
