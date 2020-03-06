@@ -280,6 +280,7 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		break;
 
 	case I486_OPCODE_BSF_R_RM://   0x0FBC,
+	case I486_OPCODE_BSR_R_RM://   0x0FBD,
 	case I486_OPCODE_BTC_RM_R://   0x0FBB,
 	case I486_OPCODE_BTS_RM_R://   0x0FAB,
 	case I486_OPCODE_BTR_RM_R://   0x0FB3,
@@ -953,6 +954,7 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 		break;
 
 	case I486_OPCODE_BSF_R_RM://   0x0FBC,
+	case I486_OPCODE_BSR_R_RM://   0x0FBD,
 		op1.DecodeMODR_MForRegister(operandSize,operand[0]);
 		op2.Decode(addressSize,operandSize,operand);
 		break;
@@ -1629,6 +1631,9 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 
 	case I486_OPCODE_BSF_R_RM://   0x0FBC,
 		disasm=DisassembleTypicalTwoOperands("BSF",op1,op2);
+		break;
+	case I486_OPCODE_BSR_R_RM://   0x0FBD,
+		disasm=DisassembleTypicalTwoOperands("BSR",op1,op2);
 		break;
 	case I486_OPCODE_BTC_RM_R://   0x0FBB,
 		disasm=DisassembleTypicalTwoOperands("BTC",op1,op2);
@@ -4177,7 +4182,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
 		}
 		break;
-
+	case I486_OPCODE_BSR_R_RM://   0x0FBD,
+		break;
 
 	case I486_OPCODE_BTC_RM_R://   0x0FBB,
 	case I486_OPCODE_BTR_RM_R://   0x0FB3,
