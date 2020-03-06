@@ -3636,7 +3636,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 						{
 							EDXEAX-=0x100000000LL;
 						}
-						EDXEAX*=multiplicand;
+						EDXEAX*=(long long int)multiplicand;
 
 						SetEAX(EDXEAX&0xFFFFFFFF);
 						SetEDX((EDXEAX>>32)&0xFFFFFFFF);
