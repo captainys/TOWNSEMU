@@ -19,13 +19,13 @@ public:
 		SYM_PROCEDURE,
 		SYM_JUMP_DESTINATION,
 		SYM_DATA,
-		SYM_COMMENT,
 	};
 
 	bool temporary;  // If true, it will not be saved to file.
 	unsigned int symType;
 	std::string return_type;
 	std::string label;
+	std::string inLineComment;
 	std::string param;
 	std::vector <std::string> info;
 
@@ -72,7 +72,9 @@ public:
 	const i486Symbol *Find(unsigned int SEG,unsigned int OFFSET) const;
 	const i486Symbol *Find(i486DX::FarPointer ptr) const;
 	i486Symbol *Update(i486DX::FarPointer ptr,const std::string &label);
+	i486Symbol *SetComment(i486DX::FarPointer ptr,const std::string &inLineComment);
 	bool Delete(i486DX::FarPointer ptr);
+	bool DeleteComment(i486DX::FarPointer ptr);
 	const std::map <i486DX::FarPointer,i486Symbol> &GetTable(void) const;
 
 	/*! Print if a symbol is defined for the SEG:OFFSET

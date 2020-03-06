@@ -16,6 +16,7 @@ void i486Symbol::CleanUp(void)
 	symType=SYM_ANY;
 	return_type="";
 	label="";
+	inLineComment="";
 	param="";
 	info.clear();
 }
@@ -113,6 +114,9 @@ bool i486SymbolTable::Load(std::istream &ifp)
 				case '*':
 					curPtr.MakeFromString(str.c_str()+2);
 					break;
+				case '#':
+					curSymbol.inLineComment=(str.c_str()+2);
+					break;
 				case 'r':
 				case 'R':
 					curSymbol.return_type=(str.c_str()+2);
@@ -157,6 +161,7 @@ bool i486SymbolTable::Save(std::ostream &ofp) const
 			ofp << "/begin0" << std::endl;
 			ofp << "T " << (int)(sym.symType) << std::endl;
 			ofp << "* " << ptr.Format() << std::endl;
+			ofp << "# " << sym.inLineComment << std::endl;
 			ofp << "R " << sym.return_type << std::endl;
 			ofp << "L " << sym.label  << std::endl;
 			ofp << "P " << sym.param <<  std::endl;
@@ -209,12 +214,28 @@ i486Symbol *i486SymbolTable::Update(i486DX::FarPointer ptr,const std::string &la
 	symbol.label=label;
 	return &symbol;
 }
+i486Symbol *i486SymbolTable::SetComment(i486DX::FarPointer ptr,const std::string &inLineComment)
+{
+	auto &symbol=symTable[ptr];
+	symbol.inLineComment=inLineComment;
+	return &symbol;
+}
 bool i486SymbolTable::Delete(i486DX::FarPointer ptr)
 {
 	auto iter=symTable.find(ptr);
 	if(symTable.end()!=iter)
 	{
 		symTable.erase(iter);
+		return true;
+	}
+	return false;
+}
+bool i486SymbolTable::DeleteComment(i486DX::FarPointer ptr)
+{
+	auto iter=symTable.find(ptr);
+	if(symTable.end()!=iter)
+	{
+		iter->second.inLineComment="";
 		return true;
 	}
 	return false;
