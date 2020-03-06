@@ -8,6 +8,42 @@ P
 % 0
 /end
 /begin0
+T 0
+* 00005359:000000F0
+# Why is this guy return 1?
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00005359:000000F5
+# Return Code 1.  Is it ok or not?
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00005359:00000100
+# Looks like the RUN386 is exiting inside this function.
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 4
+* 00005359:0000017B
+# 
+R 
+L RUN386:?JumpTable
+P 
+% 34
+/end
+/begin0
 T 1
 * 0000576B:0000000E
 # 
@@ -18,10 +54,46 @@ P
 /end
 /begin0
 T 1
+* 0000576B:00000022
+# 
+R 
+L RUN386:CLOSE_FILE
+P 
+% 0
+/end
+/begin0
+T 1
 * 0000576B:00000037
 # 
 R 
 L RUN386:FREAD
+P 
+% 0
+/end
+/begin0
+T 0
+* 0000576B:0000003A
+# BX=File Handle
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 0000576B:0000003D
+# CX=Number of bytes
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 0000576B:00000040
+# DS:DX=buffer pointer
+R 
+L 
 P 
 % 0
 /end
@@ -45,6 +117,42 @@ P
 /end
 /begin0
 T 0
+* 0000576B:0000006B
+# BX=File Handle
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 0000576B:0000006E
+# AL=Origin 00:SEEK_SET 01:SEEK_CUR 02:SEEK_END
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 0000576B:00000071
+# DX=Number of bytes(low)
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 0000576B:00000075
+# CX=Number of bytes(high)
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
 * 0000576B:0000007C
 # INT 21H AH=42H SEEK
 R 
@@ -58,6 +166,15 @@ T 0
 # INT 21H AH=30H GET_DOS_VERSION
 R 
 L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 0000576B:0000024C
+# 
+R 
+L RUN386:CPU Test. MUL R32
 P 
 % 0
 /end
@@ -85,6 +202,258 @@ T 1
 # 
 R 
 L RUN386:TEMPORARY_INT_6(UNDEFINED_INST)_HANDLER
+P 
+% 0
+/end
+/begin0
+T 0
+* 000059FD:00000016
+# .EXP Header Read Buffer (1E+5A bytes)
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 000059FD:00000022
+# Receive File Pointer
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 2
+* 000059FD:00000059
+# 
+R 
+L NO_ERROR_IN_HEADE_READING
+P 
+% 0
+/end
+/begin0
+T 0
+* 000059FD:00000072
+# SEEK_SET
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 000059FD:0000007F
+# File Pointer
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 2
+* 000059FD:00000203
+# 
+R 
+L Return 1;
+P 
+% 0
+/end
+/begin0
+T 1
+* 000059FD:0000020A
+# 
+R 
+L RUN386:? FUNCTION
+P 
+% 0
+/end
+/begin0
+T 2
+* 000059FD:00000265
+# 
+R 
+L RUN386:Return from INT 6 test
+P 
+% 0
+/end
+/begin0
+T 2
+* 000059FD:000004D9
+# 
+R 
+L Return 1;
+P 
+% 0
+/end
+/begin0
+T 1
+* 00005B24:00000943
+# 
+R 
+L RUN386:READ_EXP_HEADER
+P 
+% 0
+/end
+/begin0
+T 0
+* 00005B24:0000094C
+# INT 0 if stack overflow
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00005B24:0000094E
+# Stack frame 1E bytes for .EXP header.
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00005B24:0000096B
+# Return 1 (Prob:Cannot Open File)
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00005B24:00000982
+# Read first 1EH bytes of the .EXP
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00005B24:0000099F
+# 4D 5A='MZ'
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00005B24:000009B9
+# CX=SEEK_SET
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00005B24:000009FF
+# [BP+10H] is larger buffer for header?
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00005B24:00000A02
+# For TMENU.EXP run, DI=30F6
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 2
+* 00005B24:00000A8C
+# 
+R 
+L Return 0;
+P 
+% 0
+/end
+/begin0
+T 2
+* 00005B24:00000A90
+# 
+R 
+L FCLOSE_AND_RETURN_3
+P 
+% 0
+/end
+/begin0
+T 2
+* 00005B24:00000A9F
+# 
+R 
+L FCLOSE_AND_RETURN_5
+P 
+% 0
+/end
+/begin0
+T 2
+* 00005B24:00000AAF
+# 
+R 
+L Return AX;
+P 
+% 0
+/end
+/begin0
+T 0
+* 00005DD3:00000452
+# INT 21H AH=62H Get PSP address
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00005F89:00000004
+# 
+R 
+L RUN386:(PROB)Clean Up and Exit
+P 
+% 0
+/end
+/begin0
+T 1
+* 00005FA9:00000008
+# 
+R 
+L RUN386:NOP
+P 
+% 0
+/end
+/begin0
+T 1
+* 00005FD8:00000002
+# 
+R 
+L RUN386:CALL CALL INT 21H
+P 
+% 0
+/end
+/begin0
+T 1
+* 00005FD8:00000080
+# 
+R 
+L RUN386:EXIT() INT 21H AH=4CH
+P 
+% 0
+/end
+/begin0
+T 1
+* 000060F7:00000002
+# 
+R 
+L RUN386:CALL INT 21H
 P 
 % 0
 /end

@@ -3588,7 +3588,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{
 				clocksPassed=(OPER_ADDR==op1.operandType ? 42 : 13);
 				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,2);
-				unsigned long long EDXEAX=GetEAX()*value.GetAsDword();
+				unsigned long long EAX=GetEAX();
+				unsigned long long MUL=value.GetAsDword();
+				unsigned long long EDXEAX=EAX*MUL;
 				SetEAX(EDXEAX&0xffffffff);
 				SetEDX((EDXEAX>>32)&0xffffffff);
 				if(0!=(EDXEAX&0xffffffff00000000))
