@@ -3056,6 +3056,21 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		break;
 	}
 
+	{
+		auto *sym=symTable.Find(cs.value,eip);
+		if(nullptr!=sym && 0<sym->inLineComment.size())
+		{
+			for(auto i=disasm.size(); i<19; ++i)
+			{
+				disasm.push_back(' ');
+			}
+			disasm.push_back(' ');
+			disasm.push_back(';');
+			disasm.push_back(' ');
+			disasm+=sym->inLineComment;
+		}
+	}
+
 	return disasm;
 }
 

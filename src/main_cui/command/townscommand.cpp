@@ -887,6 +887,7 @@ void TownsCommandInterpreter::Execute_Disassemble(FMTowns &towns,Command &cmd)
 
 	i486DX::SegmentRegister seg;
 	farPtr.LoadSegmentRegister(seg,towns.cpu,towns.mem);
+	farPtr=towns.cpu.TranslateFarPointer(farPtr);
 	for(int i=0; i<16; ++i)
 	{
 		towns.debugger.GetSymTable().PrintIfAny(farPtr.SEG,farPtr.OFFSET);
@@ -912,6 +913,7 @@ void TownsCommandInterpreter::Execute_Disassemble16(FMTowns &towns,Command &cmd)
 
 	i486DX::SegmentRegister seg;
 	farPtr.LoadSegmentRegister(seg,towns.cpu,towns.mem);
+	farPtr=towns.cpu.TranslateFarPointer(farPtr);
 	for(int i=0; i<16; ++i)
 	{
 		auto inst=towns.cpu.FetchInstruction(seg,farPtr.OFFSET,towns.mem,16,16);
@@ -937,6 +939,7 @@ void TownsCommandInterpreter::Execute_Disassemble32(FMTowns &towns,Command &cmd)
 
 	i486DX::SegmentRegister seg;
 	farPtr.LoadSegmentRegister(seg,towns.cpu,towns.mem);
+	farPtr=towns.cpu.TranslateFarPointer(farPtr);
 	for(int i=0; i<16; ++i)
 	{
 		auto inst=towns.cpu.FetchInstruction(seg,farPtr.OFFSET,towns.mem,32,32);

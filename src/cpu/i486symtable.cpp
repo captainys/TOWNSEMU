@@ -274,6 +274,12 @@ std::vector <std::string> i486SymbolTable::GetList(bool returnType,bool label,bo
 
 		text.back()+=" ";
 		text.back()+=sym.Format(returnType,label,param);
+	
+		if(0<sym.inLineComment.size())
+		{
+			text.back()+=" ; ";
+			text.back()+=sym.inLineComment;
+		}
 	}
 	return text;
 }
