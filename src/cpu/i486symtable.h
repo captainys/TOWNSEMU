@@ -18,7 +18,12 @@ public:
 		SYM_ANY,
 		SYM_PROCEDURE,
 		SYM_JUMP_DESTINATION,
-		SYM_DATA,
+		SYM_DATA_LABEL,
+		SYM_RAW_DATA, // If disassembler hits this address, it just reads rawDataCount bytes and don't disassemble.
+		SYM_TABLE_WORD,
+		SYM_TABLE_DWORD,
+		SYM_TABLE_FWORD16,
+		SYM_TABLE_FWORD32,
 	};
 
 	bool temporary;  // If true, it will not be saved to file.
@@ -28,6 +33,7 @@ public:
 	std::string inLineComment;
 	std::string param;
 	std::vector <std::string> info;
+	unsigned int rawDataBytes;
 
 	// Format
 	// \begin0
@@ -76,6 +82,10 @@ public:
 	bool Delete(i486DX::FarPointer ptr);
 	bool DeleteComment(i486DX::FarPointer ptr);
 	const std::map <i486DX::FarPointer,i486Symbol> &GetTable(void) const;
+
+	/*! Returns the number of bytes if the address is marked as byte data, otherwize returns zero.
+	*/
+	unsigned int GetRawDataBytes(i486DX::FarPointer ptr) const;
 
 	/*! Print if a symbol is defined for the SEG:OFFSET
 	*/

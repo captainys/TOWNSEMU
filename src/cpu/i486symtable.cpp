@@ -19,6 +19,7 @@ void i486Symbol::CleanUp(void)
 	inLineComment="";
 	param="";
 	info.clear();
+	rawDataBytes=0;
 }
 std::string i486Symbol::Format(bool returnType,bool label,bool param) const
 {
@@ -71,10 +72,12 @@ bool i486SymbolTable::Load(std::istream &ifp)
 	// /begin0
 	// T 0/1/2,2  Type (0:Any 1:Procedure 2:Jump Destination 3:Data)
 	// * 000C:00004000  SEG:OFFSET
+	// # Inline Comment
 	// R void  Return-Type
 	// L main  Label
 	// P int argc,char *argv[]
 	// I Supplimental Info
+	// % Raw Data Byte Count
 	// /end
 
 	while(true!=ifp.eof())
@@ -133,6 +136,9 @@ bool i486SymbolTable::Load(std::istream &ifp)
 				case 'I':
 					curSymbol.info.push_back(str.c_str()+2);
 					break;
+				case '%':
+					curSymbol.rawDataBytes=cpputil::Atoi(str.c_str()+2);
+					break;
 				}
 			}
 		}
@@ -165,6 +171,7 @@ bool i486SymbolTable::Save(std::ostream &ofp) const
 			ofp << "R " << sym.return_type << std::endl;
 			ofp << "L " << sym.label  << std::endl;
 			ofp << "P " << sym.param <<  std::endl;
+			ofp << "% " << sym.rawDataBytes <<  std::endl;
 			for(auto &i : sym.info)
 			{
 				ofp << "I " << i <<  std::endl;
@@ -243,6 +250,20 @@ bool i486SymbolTable::DeleteComment(i486DX::FarPointer ptr)
 const std::map <i486DX::FarPointer,i486Symbol> &i486SymbolTable::GetTable(void) const
 {
 	return symTable;
+}
+
+unsigned int i486SymbolTable::GetRawDataBytes(i486DX::FarPointer ptr) const
+{
+	auto *sym=Find(ptr);
+	if(i486Symbol::SYM_RAW_DATA==sym->symType &&
+	   i486Symbol::SYM_TABLE_WORD==sym->symType &&
+	   i486Symbol::SYM_TABLE_DWORD==sym->symType &&
+	   i486Symbol::SYM_TABLE_FWORD16==sym->symType &&
+	   i486Symbol::SYM_TABLE_FWORD32==sym->symType)
+	{
+		return sym->rawDataBytes;
+	}
+	return 0;
 }
 
 void i486SymbolTable::PrintIfAny(unsigned int SEG,unsigned int OFFSET,bool returnType,bool label,bool param) const
