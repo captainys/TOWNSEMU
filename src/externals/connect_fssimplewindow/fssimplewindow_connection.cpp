@@ -135,7 +135,7 @@
 			p.button[0]=(0!=lb);
 			p.button[1]=(0!=rb);
 
-			towns.ControlMouse(mx,my,towns.var.tbiosVersion);
+			towns.ControlMouse(mx,my,towns.state.tbiosVersion);
 			/* if(FsGetKeyState(FSKEY_UP))
 			{
 				p.mouseMotion.y()=4;

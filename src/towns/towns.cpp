@@ -21,6 +21,12 @@ void FMTowns::State::Reset(void)
 {
 	clockBalance=0;
 
+	tbiosVersion=TBIOS_UNKNOWN;
+	TBIOS_physicalAddr=0;
+	MOS_work_linearAddr=0;
+	MOS_work_physicalAddr=0;
+	mouseBIOSActive=false;
+
 	serialROMBitCount=0;
 	lastSerialROMCommand=0;
 
@@ -43,12 +49,6 @@ void FMTowns::Variable::Reset(void)
 	nextRenderingTime=0;
 	disassemblePointer.SEG=0;
 	disassemblePointer.OFFSET=0;
-
-	tbiosVersion=TBIOS_UNKNOWN;
-	nextTBIOSCheckTime=0;
-	TBIOS_physicalAddr=0;
-	MOS_work_linearAddr=0;
-	MOS_work_physicalAddr=0;
 
 	nVM2HostParam=0;
 }
@@ -407,30 +407,23 @@ unsigned int FMTowns::RunOneInstruction(void)
 
 /* virtual */ void FMTowns::InterceptMouseBIOS(void)
 {
-	if(TBIOS_UNKNOWN==var.tbiosVersion)
+	if(0==cpu.GetAH())
 	{
-		if(0>=var.nextTBIOSCheckTime)
-		{
-			if(0==cpu.GetAH())
-			{
-				var.MOS_work_linearAddr=cpu.state.GS().baseLinearAddr+cpu.GetEDI();
-				var.MOS_work_physicalAddr=cpu.LinearAddressToPhysicalAddress(var.MOS_work_linearAddr,mem);
+		state.MOS_work_linearAddr=cpu.state.GS().baseLinearAddr+cpu.GetEDI();
+		state.MOS_work_physicalAddr=cpu.LinearAddressToPhysicalAddress(state.MOS_work_linearAddr,mem);
 
-				i486DX::SegmentRegister CS;
-				cpu.LoadSegmentRegister(CS,0x110,mem);
-				var.TBIOS_physicalAddr=cpu.LinearAddressToPhysicalAddress(CS.baseLinearAddr,mem);
-			}
-			var.tbiosVersion=IdentifyTBIOS(var.TBIOS_physicalAddr);
-			if(TBIOS_UNKNOWN==var.tbiosVersion)
-			{
-				var.nextTBIOSCheckTime=TBIOS_ID_FREQUENCY;
-			}
-			std::cout << "Identified TBIOS as: " << TBIOSIDENTtoString(var.tbiosVersion) << std::endl;
-		}
-		else
-		{
-			--var.nextTBIOSCheckTime;
-		}
+		i486DX::SegmentRegister CS;
+		cpu.LoadSegmentRegister(CS,0x110,mem);
+		state.TBIOS_physicalAddr=cpu.LinearAddressToPhysicalAddress(CS.baseLinearAddr,mem);
+		state.tbiosVersion=IdentifyTBIOS(state.TBIOS_physicalAddr);
+
+		state.mouseBIOSActive=true;
+
+		std::cout << "Identified TBIOS as: " << TBIOSIDENTtoString(state.tbiosVersion) << std::endl;
+	}
+	else if(1==cpu.GetAH())
+	{
+		state.mouseBIOSActive=false;
 	}
 }
 

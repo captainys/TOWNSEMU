@@ -90,6 +90,14 @@ public:
 		unsigned int lastSerialROMCommand;
 
 
+		/*! TBIOS version, TBIOS physical address (it should be contiguous in physical memory),
+		    Mouse work area pointer.  Captured upon MOS_start and MOS_end.
+		*/
+		unsigned int tbiosVersion;
+		bool mouseBIOSActive=false;
+		unsigned int TBIOS_physicalAddr,MOS_work_linearAddr,MOS_work_physicalAddr;
+
+
 		void PowerOn(void);
 		void Reset(void);
 	};
@@ -102,10 +110,6 @@ public:
 
 		bool unitTestDone=false;
 		int returnCode=0;
-
-		unsigned int tbiosVersion;
-		int nextTBIOSCheckTime;
-		unsigned int TBIOS_physicalAddr,MOS_work_linearAddr,MOS_work_physicalAddr;
 
 		enum
 		{
