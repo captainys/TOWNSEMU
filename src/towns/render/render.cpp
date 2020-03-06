@@ -35,8 +35,8 @@ void TownsRender::BuildImage(const TownsCRTC &crtc,const TownsPhysicalMemory &ph
 		crtc.MakePageLayerInfo(layer[0],0);
 		crtc.MakePageLayerInfo(layer[1],1);
 		auto priorityPage=crtc.GetPriorityPage();
-		Render(priorityPage,  layer[priorityPage]  ,crtc.state.palette,physMem.state.VRAM,false);
-		Render(1-priorityPage,layer[1-priorityPage],crtc.state.palette,physMem.state.VRAM,true);
+		Render(1-priorityPage,layer[1-priorityPage],crtc.state.palette,physMem.state.VRAM,false);
+		Render(priorityPage,  layer[priorityPage]  ,crtc.state.palette,physMem.state.VRAM,true);
 	}
 }
 void TownsRender::SetResolution(int wid,int hei)

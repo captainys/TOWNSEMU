@@ -687,6 +687,9 @@ std::vector <std::string> TownsCRTC::GetStatusText(void) const
 	text.back()+="PLT:";
 	text.back()+=cpputil::Ubtox((state.sifter[1]>>4)&3);
 
+	text.back()+="  Priority:";
+	text.back().push_back('0'+GetPriorityPage());
+
 
 	text.push_back(empty);
 	text.back()="Address Latch: ";
