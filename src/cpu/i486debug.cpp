@@ -48,72 +48,12 @@ public:
 
 void i486Debugger::SpecialDebugInfo::BeforeRunOneInstruction(i486Debugger &debugger,i486DX &cpu,Memory &mem,InOut &io,const i486DX::Instruction &inst)
 {
-	inTheTargetRange=true;
-	if(0x9B==inst.fwait)
-	{
-		//debugger.ExternalBreak("FWAIT Break");
-	}
-	if(cpu.state.CS().value==0)
-	{
-		debugger.ExternalBreak("SpecialBreak CS=0");
-	}
-	if(0==inst.opCode && 0==inst.operand[0])
-	{
-		std::cout << cpputil::Ustox(inst.opCode) << " " << cpputil::Ubtox(inst.operand[0]) << std::endl;
-		debugger.ExternalBreak("SpecialBreak opCode==0 && operand[0]==0");
-	}
-	if(cpu.state.CS().value==0x03A4)
-	{
-		if(cpu.state.EIP==0x0D18)
-		{
-			passCount=0;
-			int40HCount=0;
-			otherIntCount=0;
-			pass03A4_00000D26=0;
-		}
-		if(0x0D16<=cpu.state.EIP && cpu.state.EIP<=0x0D23)
-		{
-			inTheTargetRange=true;
-		}
-		if(0x0D26==cpu.state.EIP)
-		{
-			++pass03A4_00000D26;
-		}
-		if(0x0D1E==cpu.state.EIP)
-		{
-			++passCount;
-			if(20<=int40HCount)
-			{
-				std::cout << "Pass 3A4:D26=" << pass03A4_00000D26 << std::endl;
-				if(true==enableSpecialBreak3)
-				{
-					std::cout << "Pass 3A4:0D1E=" << passCount << std::endl;
-					//debugger.ExternalBreak("SpecialBreak3");
-					enableSpecialBreak3=false;
-				}
-			}
-		}
-		//if(0x0D25==cpu.state.EIP)
-		//{
-		//	std::cout << "Pass:" << passCount << std::endl;
-		//	std::cout << "INT40:" << int40HCount << std::endl;
-		//	std::cout << "INT4x:" << otherIntCount << std::endl;
-		//}
-	}
 }
 void i486Debugger::SpecialDebugInfo::AfterRunOneInstruction(i486Debugger &debugger,unsigned int clocksPassed,i486DX &cpu,Memory &mem,InOut &io,const i486DX::Instruction &inst)
 {
 }
 void i486Debugger::SpecialDebugInfo::Interrupt(i486Debugger &debugger,const i486DX &cpu,unsigned int INTNum,Memory &mem,unsigned int numInstBytes)
 {
-	if(0x40==INTNum)
-	{
-		++int40HCount;
-	}
-	else if(0x40<=INTNum && INTNum<=0x4F)
-	{
-		++otherIntCount;
-	}
 }
 void i486Debugger::SpecialDebugInfo::MemWrite(i486Debugger &debugger,const i486DX &cpu,const i486DX::SegmentRegister &seg,unsigned int offset,unsigned int linear,unsigned int physical,unsigned int data,unsigned int lengthInBytes)
 {
