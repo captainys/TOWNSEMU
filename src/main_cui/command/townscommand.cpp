@@ -48,6 +48,16 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["CBRKON"]=CMD_DONT_BREAK_ON;
 	primaryCmdMap["INTERRUPT"]=CMD_INTERRUPT;
 	primaryCmdMap["ADDSYM"]=CMD_ADD_SYMBOL;
+
+	primaryCmdMap["ADDLAB"]=CMD_ADD_LABEL;
+	primaryCmdMap["ADDLABEL"]=CMD_ADD_LABEL;
+	primaryCmdMap["ADDDLB"]=CMD_ADD_DATALABEL;
+	primaryCmdMap["ADDDATALABEL"]=CMD_ADD_DATALABEL;
+	primaryCmdMap["ADDREM"]=CMD_ADD_COMMENT;
+	primaryCmdMap["ADDCMT"]=CMD_ADD_COMMENT;
+	primaryCmdMap["DELSYM"]=CMD_DEL_SYMBOL;
+
+
 	primaryCmdMap["TYPE"]=CMD_TYPE_KEYBOARD;
 	primaryCmdMap["LET"]=CMD_LET;
 	primaryCmdMap["CMOSLOAD"]=CMD_CMOSLOAD;
@@ -122,7 +132,21 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "U32 addr" << std::endl;
 	std::cout << "  Unassemble (disassemble) as 32-bit operand size" << std::endl;
 	std::cout << "ADDSYM SEG:OFFSET label" << std::endl;
-	std::cout << "  Add symbol." << std::endl;
+	std::cout << "  Add a symbol.  An address can have one symbol,label, or data label, and one comment." << std::endl;
+	std::cout << "  If a symbol is added to an address that already has a symbol, label, or data label," << std::endl;
+	std::cout << "  the address's label, or data label will be overwritten as a symbol." << std::endl;
+	std::cout << "ADDLAB|ADDLABEL SEG:OFFSET label" << std::endl;
+	std::cout << "  Add a label.  An address can have one symbol,label, or data label, and one comment." << std::endl;
+	std::cout << "  If a symbol is added to an address that already has a symbol, label, or data label," << std::endl;
+	std::cout << "  the address's label, or data label will be overwritten as a label." << std::endl;
+	std::cout << "ADDDLB|ADDDATALABEL SEG:OFFSET label" << std::endl;
+	std::cout << "  Add a data label.  An address can have one symbol,label, or data label, and one comment." << std::endl;
+	std::cout << "  If a symbol is added to an address that already has a symbol, label, or data label," << std::endl;
+	std::cout << "  the address's label, or data label will be overwritten as a data label." << std::endl;
+	std::cout << "ADDREM|ADDCMT SEG:OFFSET label" << std::endl;
+	std::cout << "  Add a comment.  An address can have one symbol,label, or data label, and one comment." << std::endl;
+	std::cout << "DELSYM SEG:OFFSET label" << std::endl;
+	std::cout << "  Delete a symbol.  A symbol and comment associated with the address will be deleted." << std::endl;
 	std::cout << "PAUSE|PAU" << std::endl;
 	std::cout << "  Pause VM." << std::endl;
 	std::cout << "WAIT" << std::endl;
@@ -249,6 +273,12 @@ void TownsCommandInterpreter::PrintError(int errCode) const
 		break;
 	case ERROR_INCORRECT_FILE_SIZE:
 		std::cout << "Error: Incorrect File Size." << std::endl;
+		break;
+	case ERROR_SYMBOL_NOT_FOUND:
+		std::cout << "Error: Symbol/Comment not set for the address." << std::endl;
+		break;
+	case ERROR_COULD_NOT_DELETE_SYMBOL:
+		std::cout << "Error: Could not delete a symbol." << std::endl;
 		break;
 
 	default:
@@ -396,6 +426,18 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,Command &c
 
 	case CMD_ADD_SYMBOL:
 		Execute_AddSymbol(towns,cmd);
+		break;
+	case CMD_ADD_LABEL:
+		Execute_AddSymbol(towns,cmd);
+		break;
+	case CMD_ADD_DATALABEL:
+		Execute_AddSymbol(towns,cmd);
+		break;
+	case CMD_ADD_COMMENT:
+		Execute_AddSymbol(towns,cmd);
+		break;
+	case CMD_DEL_SYMBOL:
+		Execute_DelSymbol(towns,cmd);
 		break;
 
 	case CMD_TYPE_KEYBOARD:
@@ -956,8 +998,35 @@ void TownsCommandInterpreter::Execute_AddSymbol(FMTowns &towns,Command &cmd)
 	if(3<=cmd.argv.size())
 	{
 		auto &symTable=towns.debugger.GetSymTable();
-		symTable.Update(cmdutil::MakeFarPointer(cmd.argv[1]),cmd.argv[2]);
-		std::cout << "Added symbol " << cmd.argv[2] << std::endl;
+
+		switch(cmd.primaryCmd)
+		{
+		case CMD_ADD_SYMBOL:
+		case CMD_ADD_LABEL:
+		case CMD_ADD_DATALABEL:
+			{
+				auto *newSym=symTable.Update(cmdutil::MakeFarPointer(cmd.argv[1]),cmd.argv[2]);
+				switch(cmd.primaryCmd)
+				{
+				case CMD_ADD_SYMBOL:
+					newSym->symType=i486Symbol::SYM_PROCEDURE;
+					break;
+				case CMD_ADD_LABEL:
+					newSym->symType=i486Symbol::SYM_JUMP_DESTINATION;
+					break;
+				case CMD_ADD_DATALABEL:
+					newSym->symType=i486Symbol::SYM_DATA;
+					break;
+				}
+				std::cout << "Added symbol " << cmd.argv[2] << std::endl;
+		}
+			break;
+		case CMD_ADD_COMMENT:
+			symTable.SetComment(cmdutil::MakeFarPointer(cmd.argv[1]),cmd.argv[2]);
+			std::cout << "Added comment " << cmd.argv[2] << std::endl;
+			break;
+		}
+
 		if(true!=towns.debugger.GetSymTable().AutoSave())
 		{
 			std::cout << "Auto-Saving of Symbol Table Failed." << std::endl;
@@ -967,6 +1036,27 @@ void TownsCommandInterpreter::Execute_AddSymbol(FMTowns &towns,Command &cmd)
 	else
 	{
 		PrintError(ERROR_TOO_FEW_ARGS);
+	}
+}
+
+void TownsCommandInterpreter::Execute_DelSymbol(FMTowns &towns,Command &cmd)
+{
+	auto &symTable=towns.debugger.GetSymTable();
+	if(2<=cmd.argv.size())
+	{
+		auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1]);
+		if(true==symTable.Delete(farPtr))
+		{
+			std::cout << "Symbol&|Comment deleted." << std::endl;
+		}
+		else if(nullptr==symTable.Find(farPtr))
+		{
+			PrintError(ERROR_SYMBOL_NOT_FOUND);
+		}
+		else
+		{
+			PrintError(ERROR_COULD_NOT_DELETE_SYMBOL);
+		}
 	}
 }
 

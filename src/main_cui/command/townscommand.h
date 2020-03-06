@@ -58,6 +58,10 @@ public:
 		CMD_DISASM32,
 
 		CMD_ADD_SYMBOL,
+		CMD_ADD_LABEL,
+		CMD_ADD_DATALABEL,
+		CMD_ADD_COMMENT,
+		CMD_DEL_SYMBOL,
 
 		CMD_TYPE_KEYBOARD,
 
@@ -125,6 +129,8 @@ public:
 		ERROR_CANNOT_OPEN_FILE,
 		ERROR_CANNOT_SAVE_FILE,
 		ERROR_INCORRECT_FILE_SIZE,
+		ERROR_SYMBOL_NOT_FOUND,
+		ERROR_COULD_NOT_DELETE_SYMBOL,
 	};
 
 	class Command
@@ -169,6 +175,7 @@ public:
 	void Execute_SaveHistory(FMTowns &towns,const std::string &fName);
 
 	void Execute_AddSymbol(FMTowns &towns,Command &cmd);
+	void Execute_DelSymbol(FMTowns &towns,Command &cmd);
 
 	void Execute_TypeKeyboard(FMTowns &towns,Command &cmd);
 
