@@ -255,11 +255,12 @@ const std::map <i486DX::FarPointer,i486Symbol> &i486SymbolTable::GetTable(void) 
 unsigned int i486SymbolTable::GetRawDataBytes(i486DX::FarPointer ptr) const
 {
 	auto *sym=Find(ptr);
-	if(i486Symbol::SYM_RAW_DATA==sym->symType &&
-	   i486Symbol::SYM_TABLE_WORD==sym->symType &&
-	   i486Symbol::SYM_TABLE_DWORD==sym->symType &&
-	   i486Symbol::SYM_TABLE_FWORD16==sym->symType &&
-	   i486Symbol::SYM_TABLE_FWORD32==sym->symType)
+	if(nullptr!=sym &&
+	   (i486Symbol::SYM_RAW_DATA==sym->symType ||
+	    i486Symbol::SYM_TABLE_WORD==sym->symType ||
+	    i486Symbol::SYM_TABLE_DWORD==sym->symType ||
+	    i486Symbol::SYM_TABLE_FWORD16==sym->symType ||
+	    i486Symbol::SYM_TABLE_FWORD32==sym->symType))
 	{
 		return sym->rawDataBytes;
 	}

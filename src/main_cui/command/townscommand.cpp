@@ -55,6 +55,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["ADDDATALABEL"]=CMD_ADD_DATALABEL;
 	primaryCmdMap["ADDREM"]=CMD_ADD_COMMENT;
 	primaryCmdMap["ADDCMT"]=CMD_ADD_COMMENT;
+	primaryCmdMap["DEFRAW"]=CMD_DEF_RAW_BYTES;
 	primaryCmdMap["DELSYM"]=CMD_DEL_SYMBOL;
 
 
@@ -132,19 +133,21 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "U32 addr" << std::endl;
 	std::cout << "  Unassemble (disassemble) as 32-bit operand size" << std::endl;
 	std::cout << "ADDSYM SEG:OFFSET label" << std::endl;
-	std::cout << "  Add a symbol.  An address can have one symbol,label, or data label, and one comment." << std::endl;
+	std::cout << "  Add a symbol.  An address can have one symbol,label,data label, or data, and one comment." << std::endl;
 	std::cout << "  If a symbol is added to an address that already has a symbol, label, or data label," << std::endl;
 	std::cout << "  the address's label, or data label will be overwritten as a symbol." << std::endl;
 	std::cout << "ADDLAB|ADDLABEL SEG:OFFSET label" << std::endl;
-	std::cout << "  Add a label.  An address can have one symbol,label, or data label, and one comment." << std::endl;
+	std::cout << "  Add a label.  An address can have one symbol,label, or data label, or data and one comment." << std::endl;
 	std::cout << "  If a symbol is added to an address that already has a symbol, label, or data label," << std::endl;
 	std::cout << "  the address's label, or data label will be overwritten as a label." << std::endl;
 	std::cout << "ADDDLB|ADDDATALABEL SEG:OFFSET label" << std::endl;
-	std::cout << "  Add a data label.  An address can have one symbol,label, or data label, and one comment." << std::endl;
+	std::cout << "  Add a data label.  An address can have one symbol,label, or data label, or data and one comment." << std::endl;
 	std::cout << "  If a symbol is added to an address that already has a symbol, label, or data label," << std::endl;
 	std::cout << "  the address's label, or data label will be overwritten as a data label." << std::endl;
 	std::cout << "ADDREM|ADDCMT SEG:OFFSET label" << std::endl;
 	std::cout << "  Add a comment.  An address can have one symbol,label, or data label, and one comment." << std::endl;
+	std::cout << "DEFRAW SEG:OFFSET label numBytes" << std::endl;
+	std::cout << "  Define raw data bytes.  Disassembler will take this address as raw data." << std::endl;
 	std::cout << "DELSYM SEG:OFFSET label" << std::endl;
 	std::cout << "  Delete a symbol.  A symbol and comment associated with the address will be deleted." << std::endl;
 	std::cout << "PAUSE|PAU" << std::endl;
@@ -425,15 +428,10 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,Command &c
 		break;
 
 	case CMD_ADD_SYMBOL:
-		Execute_AddSymbol(towns,cmd);
-		break;
 	case CMD_ADD_LABEL:
-		Execute_AddSymbol(towns,cmd);
-		break;
 	case CMD_ADD_DATALABEL:
-		Execute_AddSymbol(towns,cmd);
-		break;
 	case CMD_ADD_COMMENT:
+	case CMD_DEF_RAW_BYTES:
 		Execute_AddSymbol(towns,cmd);
 		break;
 	case CMD_DEL_SYMBOL:
@@ -894,7 +892,7 @@ void TownsCommandInterpreter::Execute_Disassemble(FMTowns &towns,Command &cmd)
 		auto nRawBytes=towns.debugger.GetSymTable().GetRawDataBytes(farPtr);
 		if(0<nRawBytes)
 		{
-			std::cout << "(Data Bytes)";
+			std::cout << "(Data Bytes)" << std::endl;
 			farPtr.OFFSET+=nRawBytes;
 		}
 		else
@@ -929,7 +927,7 @@ void TownsCommandInterpreter::Execute_Disassemble16(FMTowns &towns,Command &cmd)
 		auto nRawBytes=towns.debugger.GetSymTable().GetRawDataBytes(farPtr);
 		if(0<nRawBytes)
 		{
-			std::cout << "(Data Bytes)";
+			std::cout << "(Data Bytes)" << std::endl;
 			farPtr.OFFSET+=nRawBytes;
 		}
 		else
@@ -964,7 +962,7 @@ void TownsCommandInterpreter::Execute_Disassemble32(FMTowns &towns,Command &cmd)
 		auto nRawBytes=towns.debugger.GetSymTable().GetRawDataBytes(farPtr);
 		if(0<nRawBytes)
 		{
-			std::cout << "(Data Bytes)";
+			std::cout << "(Data Bytes)" << std::endl;
 			farPtr.OFFSET+=nRawBytes;
 		}
 		else
@@ -1049,7 +1047,29 @@ void TownsCommandInterpreter::Execute_AddSymbol(FMTowns &towns,Command &cmd)
 					break;
 				}
 				std::cout << "Added symbol " << cmd.argv[2] << std::endl;
-		}
+			}
+			break;
+		case CMD_DEF_RAW_BYTES:
+			if(4<=cmd.argv.size())
+			{
+				auto numBytes=cpputil::Xtoi(cmd.argv[3].c_str());
+				if(0<numBytes)
+				{
+					auto *newSym=symTable.Update(cmdutil::MakeFarPointer(cmd.argv[1]),cmd.argv[2]);
+					newSym->symType=i486Symbol::SYM_RAW_DATA;
+					newSym->rawDataBytes=numBytes;
+					std::cout << "Added raw byte data " << cmd.argv[2] << std::endl;
+				}
+				else
+				{
+					std::cout << "Ignored 0-byte data " << cmd.argv[2] << std::endl;
+				}
+			}
+			else
+			{
+				PrintError(ERROR_TOO_FEW_ARGS);
+				return;
+			}
 			break;
 		case CMD_ADD_COMMENT:
 			symTable.SetComment(cmdutil::MakeFarPointer(cmd.argv[1]),cmd.argv[2]);

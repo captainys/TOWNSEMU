@@ -5,6 +5,7 @@ T 1
 R 
 L DISKBIOS:INT_93H_ENTRY
 P 
+% 0
 /end
 /begin0
 T 1
@@ -13,6 +14,7 @@ T 1
 R 
 L RUN386:OPEN_FILE
 P 
+% 0
 /end
 /begin0
 T 1
@@ -21,6 +23,7 @@ T 1
 R 
 L RUN386:FREAD
 P 
+% 0
 /end
 /begin0
 T 0
@@ -29,6 +32,7 @@ T 0
 R 
 L 
 P 
+% 0
 /end
 /begin0
 T 1
@@ -37,6 +41,7 @@ T 1
 R 
 L RUN386:SEEK
 P 
+% 0
 /end
 /begin0
 T 0
@@ -45,6 +50,7 @@ T 0
 R 
 L 
 P 
+% 0
 /end
 /begin0
 T 0
@@ -53,6 +59,7 @@ T 0
 R 
 L 
 P 
+% 0
 /end
 /begin0
 T 1
@@ -61,6 +68,16 @@ T 1
 R 
 L RUN386:TEST_INT_6(UNDEFINED_INSTRUCTION)
 P 
+% 0
+/end
+/begin0
+T 4
+* 0000576B:00001E48
+# 
+R 
+L Unused
+P 
+% 1
 /end
 /begin0
 T 1
@@ -69,4 +86,5 @@ T 1
 R 
 L RUN386:TEMPORARY_INT_6(UNDEFINED_INST)_HANDLER
 P 
+% 0
 /end
