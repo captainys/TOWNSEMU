@@ -889,15 +889,16 @@ void TownsCommandInterpreter::Execute_Disassemble(FMTowns &towns,Command &cmd)
 	for(int i=0; i<16; ++i)
 	{
 		towns.debugger.GetSymTable().PrintIfAny(farPtr.SEG,farPtr.OFFSET);
+		auto inst=towns.cpu.FetchInstruction(seg,farPtr.OFFSET,towns.mem);
 		auto nRawBytes=towns.debugger.GetSymTable().GetRawDataBytes(farPtr);
 		if(0<nRawBytes)
 		{
-			std::cout << "(Data Bytes)" << std::endl;
+			unsigned int unitBytes=1,segBytes=0,repeat=nRawBytes,chopOff=16;
+			std::cout << towns.cpu.DisassembleData(inst.addressSize,seg,farPtr.OFFSET,towns.mem,unitBytes,segBytes,repeat,chopOff) << std::endl;
 			farPtr.OFFSET+=nRawBytes;
 		}
 		else
 		{
-			auto inst=towns.cpu.FetchInstruction(seg,farPtr.OFFSET,towns.mem);
 			auto disasm=towns.cpu.Disassemble(inst,seg,farPtr.OFFSET,towns.mem,towns.debugger.GetSymTable());
 			std::cout << disasm << std::endl;
 			farPtr.OFFSET+=inst.numBytes;
@@ -924,15 +925,16 @@ void TownsCommandInterpreter::Execute_Disassemble16(FMTowns &towns,Command &cmd)
 	for(int i=0; i<16; ++i)
 	{
 		towns.debugger.GetSymTable().PrintIfAny(farPtr.SEG,farPtr.OFFSET);
+		auto inst=towns.cpu.FetchInstruction(seg,farPtr.OFFSET,towns.mem,16,16);
 		auto nRawBytes=towns.debugger.GetSymTable().GetRawDataBytes(farPtr);
 		if(0<nRawBytes)
 		{
-			std::cout << "(Data Bytes)" << std::endl;
+			unsigned int unitBytes=1,segBytes=0,repeat=nRawBytes,chopOff=16;
+			std::cout << towns.cpu.DisassembleData(inst.addressSize,seg,farPtr.OFFSET,towns.mem,unitBytes,segBytes,repeat,chopOff) << std::endl;
 			farPtr.OFFSET+=nRawBytes;
 		}
 		else
 		{
-			auto inst=towns.cpu.FetchInstruction(seg,farPtr.OFFSET,towns.mem,16,16);
 			auto disasm=towns.cpu.Disassemble(inst,seg,farPtr.OFFSET,towns.mem,towns.debugger.GetSymTable());
 			std::cout << disasm << std::endl;
 			farPtr.OFFSET+=inst.numBytes;
@@ -959,15 +961,16 @@ void TownsCommandInterpreter::Execute_Disassemble32(FMTowns &towns,Command &cmd)
 	for(int i=0; i<16; ++i)
 	{
 		towns.debugger.GetSymTable().PrintIfAny(farPtr.SEG,farPtr.OFFSET);
+		auto inst=towns.cpu.FetchInstruction(seg,farPtr.OFFSET,towns.mem,32,32); // Fetch it anyway to have inst.addressSize
 		auto nRawBytes=towns.debugger.GetSymTable().GetRawDataBytes(farPtr);
 		if(0<nRawBytes)
 		{
-			std::cout << "(Data Bytes)" << std::endl;
+			unsigned int unitBytes=1,segBytes=0,repeat=nRawBytes,chopOff=16;
+			std::cout << towns.cpu.DisassembleData(inst.addressSize,seg,farPtr.OFFSET,towns.mem,unitBytes,segBytes,repeat,chopOff) << std::endl;
 			farPtr.OFFSET+=nRawBytes;
 		}
 		else
 		{
-			auto inst=towns.cpu.FetchInstruction(seg,farPtr.OFFSET,towns.mem,32,32);
 			auto disasm=towns.cpu.Disassemble(inst,seg,farPtr.OFFSET,towns.mem,towns.debugger.GetSymTable());
 			std::cout << disasm << std::endl;
 			farPtr.OFFSET+=inst.numBytes;

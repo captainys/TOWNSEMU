@@ -965,6 +965,81 @@ std::string i486DX::Disassemble(const Instruction &inst,SegmentRegister seg,unsi
 	return disasm;
 }
 
+std::string i486DX::DisassembleData(unsigned int addressSize,SegmentRegister seg,unsigned int offset,const Memory &mem,unsigned int unitBytes,unsigned int segBytes,unsigned int repeat,unsigned int chopOff) const
+{
+	if(4<unitBytes)
+	{
+		return "4+ unit byte count not supported";
+	}
+	if(4<segBytes)
+	{
+		return "4+ segment byte count not supported";
+	}
+
+	std::string disasm;
+
+	unsigned int perLine;
+	if(1==unitBytes && 0==segBytes)
+	{
+		perLine=8;
+	}
+	else
+	{
+		perLine=1;
+	}
+	for(int i=0; i<repeat && i<chopOff; ++i)
+	{
+		if(0==i)
+		{
+			disasm+=cpputil::Ustox(seg.value);
+			disasm+=":";
+			disasm+=cpputil::Uitox(offset);
+			disasm+=" ";
+		}
+		else if(0==(i%perLine))
+		{
+			disasm+="              ";
+		}
+
+		if(1==unitBytes && 0==segBytes)
+		{
+			disasm+=cpputil::Ubtox(DebugFetchByte(addressSize,seg,offset,mem));
+			++offset;
+		}
+		else
+		{
+			unsigned char dword[4],segpart[4]={0,0,0,0};
+			for(int i=0; i<(int)unitBytes; ++i)
+			{
+				dword[i]=DebugFetchByte(addressSize,seg,offset,mem);
+				++offset;
+			}
+			for(int i=0; i<(int)segBytes; ++i)
+			{
+				segpart[i]=DebugFetchByte(addressSize,seg,offset,mem);
+				++offset;
+			}
+
+			if(0<segBytes)
+			{
+				disasm+=cpputil::Ubtox(segpart[1]);
+				disasm+=cpputil::Ubtox(segpart[0]);
+				disasm.push_back(':');
+			}
+			for(int i=unitBytes-1; 0<=i; --i)
+			{
+				disasm+=cpputil::Ubtox(dword[i]);
+			}
+		}
+
+		if(0==(i+1)%perLine)
+		{
+			disasm.push_back('\n');
+		}
+	}
+	return disasm;
+}
+
 void i486DX::Move(Memory &mem,int addressSize,int segmentOverride,const Operand &dst,const Operand &src)
 {
 	auto value=EvaluateOperand(mem,addressSize,segmentOverride,src,dst.GetSize());
@@ -2463,7 +2538,7 @@ unsigned int i486DX::DebugFetchWord(unsigned int addressSize,const SegmentRegist
 		addr=LinearAddressToPhysicalAddress(addr,mem);
 		if(0xFFC<(addr&0xfff)) // May hit the page boundary
 		{
-			return FetchByte(addressSize,seg,offset,mem)|(FetchByte(addressSize,seg,offset+1,mem)<<8);
+			return DebugFetchByte(addressSize,seg,offset,mem)|(DebugFetchByte(addressSize,seg,offset+1,mem)<<8);
 		}
 	}
 	auto returnValue=mem.FetchWord(addr);

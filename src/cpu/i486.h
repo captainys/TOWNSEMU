@@ -2054,6 +2054,10 @@ public:
 	*/
 	std::string Disassemble(const Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem,const class i486SymbolTable &symTable) const;
 
+	/*! Make a data line for disassembly.
+	    When it reaches chopOff, the rest will be shown as :.
+	*/
+	std::string DisassembleData(unsigned int addressSize,SegmentRegister seg,unsigned int offset,const Memory &mem,unsigned int unitBytes,unsigned int segBytes,unsigned int repeat,unsigned int chopOff) const;
 
 	/*! Get 8-bit register name from MODR_M. */
 	static std::string Get8BitRegisterNameFromMODR_M(unsigned char MOD_RM);
