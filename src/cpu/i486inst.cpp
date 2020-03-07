@@ -1099,7 +1099,6 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 		break;
 	case I486_OPCODE_INT://        0xCD,
 	case I486_OPCODE_INTO://       0xCE,
-		op1.MakeImm8(*this);
 		break;
 
 
@@ -2145,8 +2144,20 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		break;
 	case I486_OPCODE_INTO://        0xCD,
 	case I486_OPCODE_INT://        0xCD,
+		op1.MakeImm8(*this);
 		disasm=(I486_OPCODE_INT==opCode ? "INT" : "INTO");
 		disasm=DisassembleTypicalOneOperand(disasm,op1,8);
+		if(I486_OPCODE_INT==opCode)
+		{
+			auto label=symTable.GetINTLabel(GetUimm8());
+			if(""!=label)
+			{
+				disasm.push_back(' ');
+				disasm.push_back('(');
+				disasm+=label;
+				disasm.push_back(')');
+			}
+		}
 		break;
 
 

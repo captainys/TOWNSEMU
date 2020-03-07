@@ -684,10 +684,14 @@ void FMTowns::PrintStatus(void) const
 	symTable.AddINTFuncLabel(0xAF,0x04,"SJIS to JIS 2");
 	symTable.AddINTFuncLabel(0xAF,0x05,"Get Machine Info");
 
+	symTable.AddINTLabel(0xB0,"?Used in BIOS");
+
 	symTable.AddINTLabel(0x8E,"Exp-SysService");
 	symTable.AddINTFuncLabel(0x8E,0x00,"Get System Info");
 	symTable.AddINTFuncLabel(0x8E,0x01,"Printer Feeder Control");
 	symTable.AddINTFuncLabel(0x8E,0x02,"? Used in OAK1.SYS Init");
 	symTable.AddINTFuncLabel(0x8E,0x20,"(Prob)Get Available Protected-Mode Mem in KB");
 	symTable.AddINTFuncLabel(0x8E,0x21,"(Prob)Alloc Protected-Mode Mem in KB");
+
+	symTable.AddINTLabel(0xFD,"(Prob)Wait 1us");
 }
