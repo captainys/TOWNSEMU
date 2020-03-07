@@ -315,6 +315,10 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		break;
 
 
+	case I486_OPCODE_DAA://             0x27,
+		break;
+
+
 	case I486_OPCODE_DEC_EAX:
 	case I486_OPCODE_DEC_ECX:
 	case I486_OPCODE_DEC_EDX:
@@ -1009,6 +1013,10 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 
 	case I486_OPCODE_CMPSB://           0xA6,
 	case I486_OPCODE_CMPS://            0xA7,
+		break;
+
+
+	case I486_OPCODE_DAA://             0x27,
 		break;
 
 
@@ -1772,6 +1780,11 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 			disasm="REPNE "+disasm;
 		}
 		disasm+=SegmentOverrideSIorESIString(segOverride,addressSize);
+		break;
+
+
+	case I486_OPCODE_DAA://             0x27,
+		disasm="DAA";
 		break;
 
 
@@ -4394,6 +4407,35 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				}
 			}
 		}
+		break;
+
+
+	case I486_OPCODE_DAA://             0x27,
+		clocksPassed=2;
+		if(true==GetAF() || 9<(GetAL()&0x0F))
+		{
+			SetAL(GetAL()+6);
+			SetAuxCarryFlag(true);
+		}
+		else
+		{
+			SetAuxCarryFlag(false);
+		}
+		if(0x9F<GetAL() || true==GetCF())
+		{
+			SetAL(GetAL()+0x60);
+			SetCF(true);
+		}
+		else
+		{
+			SetCF(false);
+		}
+
+		if(nullptr!=debuggerPtr)
+		{
+			debuggerPtr->ExternalBreak("DAA not tested yet.");
+		}
+
 		break;
 
 

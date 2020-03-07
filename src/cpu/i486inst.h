@@ -122,6 +122,9 @@ enum
 	I486_OPCODE_CMPS=            0xA7,
 
 
+	I486_OPCODE_DAA=             0x27,
+
+
 	I486_OPCODE_DEC_EAX=    0x48, // 16/32 depends on OPSIZE_OVERRIDE
 	I486_OPCODE_DEC_ECX=    0x49, // 16/32 depends on OPSIZE_OVERRIDE
 	I486_OPCODE_DEC_EDX=    0x4A, // 16/32 depends on OPSIZE_OVERRIDE
