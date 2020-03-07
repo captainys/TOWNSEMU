@@ -955,7 +955,7 @@ std::string i486DX::Disassemble(const Instruction &inst,SegmentRegister seg,unsi
 
 	for(unsigned int i=0; i<inst.numBytes; ++i)
 	{
-		disasm+=cpputil::Ubtox(FetchByte(inst.addressSize,seg,offset+i,mem));
+		disasm+=cpputil::Ubtox(DebugFetchByte(inst.addressSize,seg,offset+i,mem));
 	}
 	disasm+=" ";
 

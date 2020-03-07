@@ -56,6 +56,7 @@ public:
 		CMD_DISASM,
 		CMD_DISASM16,
 		CMD_DISASM32,
+		CMD_TRANSLATE_ADDRESS,
 
 		CMD_ADD_SYMBOL,
 		CMD_ADD_LABEL,
@@ -168,6 +169,7 @@ public:
 	void Execute_BreakOn(FMTowns &towns,Command &cmd);
 	void Execute_ClearBreakOn(FMTowns &towns,Command &cmd);
 
+	void Execute_AddressTranslation(FMTowns &towns,Command &cmd);
 	void Execute_Disassemble(FMTowns &towns,Command &cmd);
 	void Execute_Disassemble16(FMTowns &towns,Command &cmd);
 	void Execute_Disassemble32(FMTowns &towns,Command &cmd);

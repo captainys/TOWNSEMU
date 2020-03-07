@@ -41,6 +41,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["BC"]=CMD_DELETE_BREAKPOINT;
 	primaryCmdMap["BL"]=CMD_LIST_BREAKPOINTS;
 	primaryCmdMap["T"]=CMD_RUN_ONE_INSTRUCTION;
+	primaryCmdMap["ADTR"]=CMD_TRANSLATE_ADDRESS;
 	primaryCmdMap["U"]=CMD_DISASM;
 	primaryCmdMap["U16"]=CMD_DISASM16;
 	primaryCmdMap["U32"]=CMD_DISASM32;
@@ -126,6 +127,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "INTERRUPT INTNum" << std::endl;
 	std::cout << "  Inject interrupt.  Same as CPU Instruction INT INTNum.  INTNum is hexadecimal." << std::endl;
 	std::cout << "  For example, INTERRUPT 4B will work same as INT 4BH." << std::endl;
+	std::cout << "ADTR SEG:OFFSET" << std::endl;
+	std::cout << "  Translate address to linear address and physical address." << std::endl;
 	std::cout << "U addr" << std::endl;
 	std::cout << "  Unassemble (disassemble)" << std::endl;
 	std::cout << "U16 addr" << std::endl;
@@ -348,6 +351,9 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,Command &c
 		{
 			PrintError(ERROR_TOO_FEW_ARGS);
 		}
+		break;
+	case CMD_TRANSLATE_ADDRESS:
+		Execute_AddressTranslation(towns,cmd);
 		break;
 	case CMD_DISASM:
 		Execute_Disassemble(towns,cmd);
@@ -870,6 +876,35 @@ void TownsCommandInterpreter::Execute_ClearBreakOn(FMTowns &towns,Command &cmd)
 	}
 }
 
+void TownsCommandInterpreter::Execute_AddressTranslation(FMTowns &towns,Command &cmd)
+{
+	if(2<=cmd.argv.size())
+	{
+		auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1]);
+		farPtr=towns.cpu.TranslateFarPointer(farPtr);
+		std::cout << farPtr.Format() << std::endl;
+
+		i486DX::SegmentRegister seg;
+		towns.cpu.LoadSegmentRegister(seg,farPtr.SEG,towns.mem);
+		auto linear=seg.baseLinearAddr+farPtr.OFFSET;
+		std::cout << "LINE:" << cpputil::Uitox(linear) << std::endl;
+
+		if(true==towns.cpu.PagingEnabled())
+		{
+			auto physical=towns.cpu.LinearAddressToPhysicalAddress(linear,towns.mem);
+			std::cout << "PHYS:" << cpputil::Uitox(physical) << std::endl;
+		}
+		else 
+		{
+			std::cout << "PHYS:" << cpputil::Uitox(linear) << std::endl;
+		}
+	}
+	else
+	{
+		PrintError(ERROR_TOO_FEW_ARGS);
+	}
+}
+
 void TownsCommandInterpreter::Execute_Disassemble(FMTowns &towns,Command &cmd)
 {
 	auto farPtr=towns.var.disassemblePointer;
@@ -991,7 +1026,7 @@ void TownsCommandInterpreter::Execute_PrintHistory(FMTowns &towns,unsigned int n
 		std::cout << "ESP=" << cpputil::Uitox(iter->ESP);
 		if(1<iter->count)
 		{
-			std::cout << "(" << cpputil::Itoa(iter->count) << ")";
+			std::cout << "(" << cpputil::Itoa((unsigned int)iter->count) << ")";
 		}
 		std::cout << std::endl;
 	}
@@ -1012,7 +1047,7 @@ void TownsCommandInterpreter::Execute_SaveHistory(FMTowns &towns,const std::stri
 			ofp << "ESP=" << cpputil::Uitox(iter->ESP);
 			if(1<iter->count)
 			{
-				ofp << "(" << cpputil::Itoa(iter->count) << ")";
+				ofp << "(" << cpputil::Itoa((unsigned int)iter->count) << ")";
 			}
 			ofp << std::endl;
 		}
