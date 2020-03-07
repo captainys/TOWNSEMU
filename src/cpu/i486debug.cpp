@@ -295,6 +295,7 @@ void i486Debugger::ClearBreakOnINT(void)
 
 std::vector <std::string> i486Debugger::GetCallStackText(const i486DX &cpu) const
 {
+	auto &symTable=GetSymTable();
 	std::vector <std::string> text;
 	for(auto &s : cpu.callStack)
 	{
@@ -308,7 +309,24 @@ std::vector <std::string> i486Debugger::GetCallStackText(const i486DX &cpu) cons
 			str+=cpputil::Ubtox((unsigned char)s.INTNum);
 			str+=",AX=";
 			str+=cpputil::Ustox(s.AX);
-			str+="H)";
+			str+="H";
+
+			auto INTLabel=symTable.GetINTLabel(s.INTNum);
+			auto INTFuncLabel=symTable.GetINTFuncLabel(s.INTNum,(s.AX>>8)&0xFF);
+			if(""!=INTLabel)
+			{
+				str.push_back(' ');
+				str+=INTLabel;
+			}
+			if(""!=INTFuncLabel)
+			{
+				if(""!=INTLabel)
+				{
+					str.push_back('.');
+				}
+				str+=INTFuncLabel;
+			}
+			str+=")";
 		}
 		text.push_back((std::string &&)str);
 	}

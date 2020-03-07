@@ -987,7 +987,7 @@ std::string i486DX::DisassembleData(unsigned int addressSize,SegmentRegister seg
 	{
 		perLine=1;
 	}
-	for(int i=0; i<repeat && i<chopOff; ++i)
+	for(unsigned int i=0; i<repeat && i<chopOff; ++i)
 	{
 		if(0==i)
 		{
