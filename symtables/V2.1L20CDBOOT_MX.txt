@@ -75,7 +75,7 @@ T 1
 * 00000110:00013B3C
 # 
 R 
-L SOUND:Write to IO:DX Twice
+L SOUND:Write AL to YM2612 Reg AH
 P 
 % 0
 /end
