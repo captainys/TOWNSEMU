@@ -14,10 +14,11 @@ i486DX::Instruction i486DX::FetchInstruction(const SegmentRegister &CS,unsigned 
 	inst.Clear();
 	inst.operandSize=defOperSize;
 	inst.addressSize=defAddrSize;
+	inst.codeAddressSize=defAddrSize;
 
 	// Question: Do prefixes need to be in the specific order INST_PREFIX->ADDRSIZE_OVERRIDE->OPSIZE_OVERRIDE->SEG_OVERRIDE?
 
-	unsigned int lastByte=FetchByte(defAddrSize,CS,offset+inst.numBytes++,mem);
+	unsigned int lastByte=FetchByte(inst.codeAddressSize,CS,offset+inst.numBytes++,mem);
 	for(;;) // While looking at prefixes.
 	{
 		switch(lastByte)
@@ -51,13 +52,13 @@ i486DX::Instruction i486DX::FetchInstruction(const SegmentRegister &CS,unsigned 
 		default:
 			goto PREFIX_DONE;
 		}
-		lastByte=FetchByte(inst.addressSize,CS,offset+inst.numBytes++,mem);
+		lastByte=FetchByte(inst.codeAddressSize,CS,offset+inst.numBytes++,mem);
 	}
 PREFIX_DONE:
 	inst.opCode=lastByte;
 	if(true==OpCodeNeedsOneMoreByte(inst.opCode))
 	{
-		lastByte=FetchByte(inst.addressSize,CS,offset+inst.numBytes++,mem);
+		lastByte=FetchByte(inst.codeAddressSize,CS,offset+inst.numBytes++,mem);
 		inst.opCode=(inst.opCode<<8)|lastByte;
 	}
 
@@ -66,30 +67,30 @@ PREFIX_DONE:
 	return inst;
 }
 
-unsigned int i486DX::FetchOperand8(Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+inline unsigned int i486DX::FetchOperand8(Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 {
-	auto byte=FetchByte(inst.addressSize,seg,offset++,mem);
+	auto byte=FetchByte(inst.codeAddressSize,seg,offset++,mem);
 	inst.operand[inst.operandLen++]=byte;
 	++inst.numBytes;
 	return 1;
 }
-unsigned int i486DX::PeekOperand8(unsigned int &operand,const Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+inline unsigned int i486DX::PeekOperand8(unsigned int &operand,const Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 {
-	operand=FetchByte(inst.addressSize,seg,offset,mem);
+	operand=FetchByte(inst.codeAddressSize,seg,offset,mem);
 	return 1;
 }
-unsigned int i486DX::FetchOperand16(Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+inline unsigned int i486DX::FetchOperand16(Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 {
-	unsigned int word=FetchWord(inst.addressSize,seg,offset,mem);
+	unsigned int word=FetchWord(inst.codeAddressSize,seg,offset,mem);
 	inst.operand[inst.operandLen  ]=word&0xff;
 	inst.operand[inst.operandLen+1]=(word>>8)&0xff;
 	inst.operandLen+=2;
 	inst.numBytes+=2;
 	return 2;
 }
-unsigned int i486DX::FetchOperand32(Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+inline unsigned int i486DX::FetchOperand32(Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 {
-	unsigned int dword=FetchDword(inst.addressSize,seg,offset,mem);
+	unsigned int dword=FetchDword(inst.codeAddressSize,seg,offset,mem);
 	inst.operand[inst.operandLen  ]=dword&0xff;
 	inst.operand[inst.operandLen+1]=(dword>>8)&0xff;
 	inst.operand[inst.operandLen+2]=(dword>>16)&0xff;
@@ -99,7 +100,7 @@ unsigned int i486DX::FetchOperand32(Instruction &inst,const SegmentRegister &seg
 	return 4;
 }
 
-unsigned int i486DX::FetchOperand16or32(Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+inline unsigned int i486DX::FetchOperand16or32(Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 {
 	if(16==inst.operandSize)
 	{

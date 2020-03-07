@@ -577,6 +577,7 @@ public:
 		unsigned int segOverride;
 		unsigned int operandSize;
 		unsigned int addressSize;
+		unsigned int codeAddressSize; // 2020/03/07 Turned out, I need to keep code-segment address size for fetching instructions.
 		unsigned int fwait;
 
 		unsigned int opCode;
@@ -2006,21 +2007,21 @@ private:
 	/*! Fetch an 8-bit operand.  Returns the number of bytes fetched.
 	    It pushes inst.operandLen and this->numBytes by 1 byte.
 	*/
-	unsigned int FetchOperand8(Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+	inline unsigned int FetchOperand8(Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
 	/*! Peek an 8-bit operand.  Returns the number of bytes fetched.
 	    It does not push inst.operandLen and this->numBytes by 1 byte.
 	*/
-	unsigned int PeekOperand8(unsigned int &operand,const Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+	inline unsigned int PeekOperand8(unsigned int &operand,const Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
 	/*! Fetch an 16-bit operand  Returns the number of bytes fetched..
 	*/
-	unsigned int FetchOperand16(Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+	inline unsigned int FetchOperand16(Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
 	/*! Fetch an 32-bit operand.  Returns the number of bytes fetched.
 	*/
-	unsigned int FetchOperand32(Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+	inline unsigned int FetchOperand32(Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
 	/*! Fetch an 16- or 32-bit operand.  Length fetched depends on inst.operandSize.
 	    Returns the number of bytes fetched.
 	*/
-	unsigned int FetchOperand16or32(Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+	inline unsigned int FetchOperand16or32(Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
 	/*! Fetch an operand defined by the RM byte.
 	    Returns the number of bytes fetched.
 	*/
