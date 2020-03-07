@@ -627,6 +627,24 @@ void FMTowns::PrintStatus(void) const
 
 /* static */ void FMTowns::MakeINTInfo(class i486SymbolTable &symTable)
 {
+	symTable.AddINTLabel(0x40,"Timer");
+	symTable.AddINTLabel(0x41,"Keyboard");
+	symTable.AddINTLabel(0x42,"RS232C");
+	symTable.AddINTLabel(0x43,"ExpRS232C");
+	symTable.AddINTLabel(0x44,"IO Board");
+	symTable.AddINTLabel(0x45,"IO Board");
+	symTable.AddINTLabel(0x46,"FloppyDisk");
+	symTable.AddINTLabel(0x47,"(PIC Bridge)");
+	symTable.AddINTLabel(0x48,"SCSI");
+	symTable.AddINTLabel(0x49,"CD-ROM");
+	symTable.AddINTLabel(0x4A,"IO Board");
+	symTable.AddINTLabel(0x4B,"VSYNC");
+	symTable.AddINTLabel(0x4C,"Printer");
+	symTable.AddINTLabel(0x4D,"FM/PCM");
+	symTable.AddINTLabel(0x4E,"IO Board");
+	symTable.AddINTLabel(0x4F,"Unused");
+
+
 	symTable.AddINTLabel(0x93,"Disk");
 	symTable.AddINTFuncLabel(0x93,0x00,"Set Mode");
 	symTable.AddINTFuncLabel(0x93,0x01,"Get Mode");
@@ -692,6 +710,23 @@ void FMTowns::PrintStatus(void) const
 	symTable.AddINTFuncLabel(0x8E,0x02,"? Used in OAK1.SYS Init");
 	symTable.AddINTFuncLabel(0x8E,0x20,"(Prob)Get Available Protected-Mode Mem in KB");
 	symTable.AddINTFuncLabel(0x8E,0x21,"(Prob)Alloc Protected-Mode Mem in KB");
+	// DOS Extender for Towns uses 0x8E,0x20 and 0x21 for allocating space for the Page Table
+	// 4A2A:00001CFF 9C                        PUSHF
+	// 4A2A:00001D00 FA                        CLI
+	// 4A2A:00001D01 B420                      MOV     AH,20H
+	// 4A2A:00001D03 CD8E                      INT     8EH
+	// 4A2A:00001D05 83F907                    CMP     CX,0007H    CX<=0040:0061 (Prob)Available 1K blocks
+	// 4A2A:00001D08 0F861800                  JBE     00001D24
+	// 4A2A:00001D0C B421                      MOV     AH,21H      CX=(Prob)Number of 1K blocks
+	// 4A2A:00001D0E CD8E                      INT     8EH
+	// 4A2A:00001D10 890EB31B                  MOV     [1BB3H],CX
+	// 4A2A:00001D14 893EB51B                  MOV     [1BB5H],DI
+	// 4A2A:00001D18 8916B71B                  MOV     [1BB7H],DX
+	// 4A2A:00001D1C 0AE4                      OR      AH,AH
+	// 4A2A:00001D1E 0F850200                  JNE     00001D24
+	// 4A2A:00001D22 9D                        POPF
+	// 4A2A:00001D23 C3                        RET
+
 
 	symTable.AddINTLabel(0xFD,"(Prob)Wait 1us");
 }

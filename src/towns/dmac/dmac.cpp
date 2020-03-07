@@ -291,11 +291,19 @@ std::vector <std::string> TownsDMAC::GetStateText(void) const
 	text.push_back(line);
 	text.back()="DMAC";
 
+	const std::string device[4]=
+	{
+		"FD    ",
+		"SCSI  ",
+		"PRN   ",
+		"CD-ROM",
+	};
+
 	for(auto &c : state.ch)
 	{
 		unsigned int channelId=(unsigned int)(&c-state.ch);
 		text.push_back(line);
-		text.back()="CH"+cpputil::Ubtox(channelId)+":";
+		text.back()="CH"+cpputil::Ubtox(channelId)+"("+device[channelId]+"):";
 		text.back()+=" MODE="+cpputil::Ubtox(c.modeCtrl);
 		text.back()+=" BASEAD="+cpputil::Uitox(c.baseAddr);
 		text.back()+=" CURRAD="+cpputil::Uitox(c.currentAddr);

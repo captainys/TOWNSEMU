@@ -320,6 +320,16 @@ void i486SymbolTable::AddINTFuncLabel(unsigned int INTNum,unsigned int AHorAX,co
 void i486SymbolTable::MakeDOSIntFuncLabel(void)
 {
 	AddINTLabel(0x2F,"MSCDEX");
+	AddINTFuncLabel(0x2F,0x15,"(Prob)Get File Sector Pos");
+	// Used in CONTROL.EXE for loading DRIVE_R.IMG
+	// 5844:00000800 BF0000                    MOV     DI,0000H
+	// 5844:00000803 BB0604                    MOV     BX,0406H  "\DRIVE_R.IMG"
+	// 5844:00000806 B91000                    MOV     CX,0010H
+	// 5844:00000809 B80F15                    MOV     AX,150FH
+	// 5844:0000080C CD2F                      INT     2FH (MSCDEX)
+	// 5844:0000080E 721A                      JB      0000082A
+	// Return:
+	//   [DI+4][DI+5][DI+6]  HSG Sector Address
 
 	AddINTLabel(0x21,"DOS");
 	AddINTFuncLabel(0x21,0x00,"Exit Program(OLD)");
