@@ -1,5 +1,266 @@
 /begin0
 T 1
+* 00000110:00000280
+# 
+R 
+L EGB:ENTRY
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000110:00002DD0
+# 
+R 
+L EGB:DrawRect
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000110:00002DD2
+# X1Y1
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000110:00002DDC
+# X2Y2
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000110:00003774
+# EAX=(X1,Y1)
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000110:0000377B
+# Compare X1 and X2
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000110:00003788
+# Compare Y1 and Y2
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000110:00003926
+# EDI=(X2,Y2)
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000110:0000392D
+# SI=Y2
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000110:00003931
+# DI=X2-X1
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000110:00003939
+# SI=Y2-Y1
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000110:0000396E
+# EDX=(X2-X1)^2
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000110:00003973
+# EAX=(Y2-Y1)^2
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000110:00003976
+# EAX=dx*dx+dy*dy
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000110:00003B04
+# 
+R 
+L EGB:DrawRect_?SubRoutine
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000110:0000411C
+# ? buffer.  Probably for clipping.
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000110:00004148
+# (Prob)EGB_work
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 2
+* 00000110:00004192
+# 
+R 
+L LOOP(0110:422E)
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000110:0000441C
+# Pointer to Xmin,Xmax
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000110:00004458
+# Source of AX to be MULed with BX
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000110:00004467
+# EAX may be broken by this point.
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000110:000044E0
+# Prob Xmin
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000110:000044E8
+# Prob Xmax
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000110:00004551
+# Pointer to Xmin,Xmax
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000110:00006043
+# 
+R 
+L EGB:MOVSDx4?
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000110:0000B074
+# 
+R 
+L EGB:CLAMP_Xmin_Xmax
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000110:0000B08A
+# Left X
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000110:0000B08F
+# Right X
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000110:0000B2AC
+# 
+R 
+L EGB:(Prob)SQRT?
+P 
+% 0
+/end
+/begin0
+T 1
 * 00000256:00000000
 # COMMENT TEST
 R 

@@ -3726,7 +3726,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					int DXAX=GetDX();
 					if(0!=(0x8000&DXAX))
 					{
-						DXAX-=10000LL;
+						DXAX-=0x10000LL;
 					}
 					DXAX<<=inst.operandSize;
 					DXAX|=GetAX();
@@ -3744,7 +3744,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					long long int EDXEAX=GetEDX();
 					if(0!=(0x80000000&EDXEAX))
 					{
-						EDXEAX-=100000000LL;
+						EDXEAX-=0x100000000LL;
 					}
 					EDXEAX<<=32;
 					EDXEAX|=GetEAX();
@@ -4172,26 +4172,45 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 
 	case I486_OPCODE_BSF_R_RM://   0x0FBC,
+	case I486_OPCODE_BSR_R_RM://   0x0FBD,
 		{
 			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize/8);
 			auto src=value.GetAsDword();
+			clocksPassed=(I486_OPCODE_BSF_R_RM==inst.opCode ? 6 : 7);
 			if(0==src)
 			{
-				clocksPassed=6;
 				SetZF(true);
 			}
 			else
 			{
-				unsigned int bit=1;
+				unsigned int bit;
 				unsigned int count;
-				for(count=0; count<inst.operandSize; ++count)
+				if(I486_OPCODE_BSF_R_RM==inst.opCode)
 				{
-					if(0!=(src&bit))
+					bit=1;
+					for(count=0; count<inst.operandSize; ++count)
 					{
-						break;
+						if(0!=(src&bit))
+						{
+							break;
+						}
+						bit<<=1;
 					}
+					clocksPassed+=count; // On actual CPU 6-42  ?? Why is it not 6+count ?? [1] pp. 26-31
 				}
-				clocksPassed=6+count; // Real:6-42  ?? Why is it not 6+count ?? [1] pp. 26-31
+				else // if(I486_OPCODE_BSR_R_RM==inst.opCode)
+				{
+					bit=(1<<(inst.operandSize-1));
+					for(count=inst.operandSize-1; 0!=bit; --count)
+					{
+						if(0!=(src&bit))
+						{
+							break;
+						}
+						bit>>=1;
+					}
+					clocksPassed+=count*2; // On actual CPU 6-103 clocks.
+				}
 				if(OPER_ADDR==op2.operandType)
 				{
 					++clocksPassed;
@@ -4204,8 +4223,6 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
 			}
 		}
-		break;
-	case I486_OPCODE_BSR_R_RM://   0x0FBD,
 		break;
 
 	case I486_OPCODE_BTC_RM_R://   0x0FBB,
@@ -4335,7 +4352,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		else // CDQ
 		{
-			SetEDX(0!=(GetAX()&0x80000000) ? 0xFFFFFFFF : 0);
+			SetEDX(0!=(GetEAX()&0x80000000) ? 0xFFFFFFFF : 0);
 		}
 		break;
 	case I486_OPCODE_CLC:
