@@ -146,14 +146,31 @@ std::vector <std::string> YM2612::GetStatusText(void) const
 	text.push_back(empty);
 	text.back()="TimerA Up=";
 	text.back().push_back(cpputil::BoolToChar(TimerAUp()));
-	text.back()+="  TimerB Up=";
+	text.back()+="  Count Preset=";
+	text.back()+=cpputil::Ustox((state.reg[REG_TIMER_A_COUNT_HIGH]<<2)|(state.reg[REG_TIMER_A_COUNT_LOW]&3));
+	text.back()+="  Internal Count/Threshold=";
+	text.back()+=cpputil::Uitox(state.timerCounter[0]&0xFFFFFFFF)+"/"+cpputil::Uitox(NTICK_TIMER_A);
+
+
+
+	text.push_back(empty);
+	text.back()+="TimerB Up=";
 	text.back().push_back(cpputil::BoolToChar(TimerBUp()));
+	text.back()+="  Count Preset=";
+	text.back()+=cpputil::Ustox(state.reg[REG_TIMER_B_COUNT]);
+	text.back()+="  Internal Count/Threshold=";
+	text.back()+=cpputil::Uitox(state.timerCounter[1]&0xFFFFFFFF)+"/"+cpputil::Uitox(NTICK_TIMER_B);
 
 	text.push_back(empty);
 	text.back()="Timer Control(Reg ";
 	text.back()+=cpputil::Ubtox(REG_TIMER_CONTROL);
 	text.back()+=")=";
 	text.back()+=cpputil::Ubtox(state.reg[REG_TIMER_CONTROL]);
+	text.back()+=" MODE:"+cpputil::Ubtox((state.reg[REG_TIMER_CONTROL]>>6)&3);
+	text.back()+=" RST:"+cpputil::Ubtox((state.reg[REG_TIMER_CONTROL]>>4)&3);
+	text.back()+=" ENA:"+cpputil::Ubtox((state.reg[REG_TIMER_CONTROL]>>2)&3);
+	text.back()+=" LOAD:"+cpputil::Ubtox(state.reg[REG_TIMER_CONTROL]&3);
+
 
 	return text;
 }

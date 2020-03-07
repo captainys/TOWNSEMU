@@ -44,11 +44,65 @@ P
 % 0
 /end
 /begin0
+T 1
+* 00000110:00013A2C
+# 
+R 
+L SOUND:Write to YM Register 27H Reset A Enable A Load A
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000110:00013A54
+# 
+R 
+L SOUND:Write to YM Register 27H Reset B Enable B Load B
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000110:00013A7C
+# 
+R 
+L SOUND:GET_YM2612_STATUS_IN_DL
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000110:00013B3C
+# 
+R 
+L SOUND:Write to IO:DX Twice
+P 
+% 0
+/end
+/begin0
 T 0
 * 00000110:00016980
 # 
 R 
 L MOUSEBIOS:INTERVAL_CALLBACK
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000110:000169C9
+# Jump if FLAG_A of YM2612 Status is 0
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000110:000169EA
+# Jump if FLAG_B of YM2612 Status is 0
+R 
+L 
 P 
 % 0
 /end
@@ -103,6 +157,15 @@ T 0
 # 
 R 
 L MOUSEBIOS:BUTTON_STATE
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000118:00000700
+# 
+R 
+L YM2612 register values
 P 
 % 0
 /end
