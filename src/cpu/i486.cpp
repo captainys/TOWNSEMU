@@ -2469,7 +2469,8 @@ void i486DX::PushCallStack(
 	    bool isInterrupt,unsigned short INTNum,unsigned short AX,
 	    unsigned int CR0,
 	    unsigned int fromCS,unsigned int fromEIP,unsigned int callOpCodeLength,
-	    unsigned int procCS,unsigned int procEIP)
+	    unsigned int procCS,unsigned int procEIP,
+	    const Memory &mem)
 {
 	callStack.push_back(MakeCallStack(isInterrupt,INTNum,AX,CR0,fromCS,fromEIP,callOpCodeLength,procCS,procEIP));
 	if(true==isInterrupt)
@@ -2478,9 +2479,11 @@ void i486DX::PushCallStack(
 		{
 			if(0==(CR0&1))  // Real Mode
 			{
+				callStack.back().str=DebugFetchString(16,state.DS(),GetDX(),mem);
 			}
 			else
 			{
+				callStack.back().str=DebugFetchString(32,state.DS(),GetEDX(),mem);
 			}
 		}
 	}
@@ -2617,6 +2620,21 @@ inline unsigned int i486DX::DebugFetchByteByLinearAddress(const Memory &mem,unsi
 	}
 	auto returnValue=mem.FetchByte(linearAddr);
 	return returnValue;
+}
+
+std::string i486DX::DebugFetchString(int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+{
+	std::string str;
+	for(int i=0; i<255; ++i)
+	{
+		auto c=DebugFetchByte(addressSize,seg,offset++,mem);
+		if(0==c)
+		{
+			break;
+		}
+		str.push_back(c);
+	}
+	return str;
 }
 
 /* static */ int i486DX::StrToReg(const std::string &regName)

@@ -993,7 +993,8 @@ public:
 	    bool isInterrupt,unsigned short INTNum,unsigned short AX,
 	    unsigned int CR0,
 	    unsigned int fromCS,unsigned int fromEIP,unsigned int callOpCodeLength,
-	    unsigned int procCS,unsigned int procEIP);
+	    unsigned int procCS,unsigned int procEIP,
+	    const Memory &mem);
 	/*! Pop an entry from call stack.
 	    Some interrupt handlers like INT B2H adds SP by 6 at the end to double-IRET from the service routine.
 	    To deal with irregular return, it compares return address and pops stack until CS:EIP matches the
@@ -1948,6 +1949,10 @@ public:
 	inline unsigned int DebugFetchByteWordOrDword(unsigned int operandSize,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
 	inline unsigned int DebugFetchByteByLinearAddress(const Memory &mem,unsigned int linearAddr) const;
 
+	/*! Fetch a C-string from the given address
+	*/
+	std::string DebugFetchString(int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+
 
 
 
@@ -2308,7 +2313,8 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 			    true,INTNum,GetAX(), // Is an interrupt
 			    state.GetCR(0),
 			    state.CS().value,state.EIP,numInstBytes,
-			    destCS,destIP);
+			    destCS,destIP,
+			    mem);
 		}
 		LoadSegmentRegisterRealMode(state.CS(),destCS);
 		state.EIP=destIP;
@@ -2348,7 +2354,8 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 				    true,INTNum,GetAX(), // Is an interrupt
 				    state.GetCR(0),
 				    state.CS().value,state.EIP,numInstBytes,
-				    desc.SEG,desc.OFFSET);
+				    desc.SEG,desc.OFFSET,
+				    mem);
 			}
 
 			SegmentRegister newCS;

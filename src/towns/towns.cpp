@@ -727,6 +727,16 @@ void FMTowns::PrintStatus(void) const
 	// 4A2A:00001D22 9D                        POPF
 	// 4A2A:00001D23 C3                        RET
 
+	// Information based on https://github.com/nabe-abk/free386/blob/master/doc-ja/dosext/coco_nsd.txt >>
+	symTable.AddINTFuncLabel(0x8E,0xC000,"COCO Install Check");
+	symTable.AddINTFuncLabel(0x8E,0xC002,"COCO?");
+	symTable.AddINTFuncLabel(0x8E,0xC003,"COCO Get Installed Drivers");
+	symTable.AddINTFuncLabel(0x8E,0xC005,"COCO Get ? in DS:DI");
+	symTable.AddINTFuncLabel(0x8E,0xC103,"COCO Get Installed Driver Info");
+	symTable.AddINTFuncLabel(0x8E,0xC104,"COCO Get NSD Driver Info");
+	symTable.AddINTFuncLabel(0x8E,0xC10C,"COCO?");
+	// Information based on https://github.com/nabe-abk/free386/blob/master/doc-ja/dosext/coco_nsd.txt <<
+
 
 	symTable.AddINTLabel(0xFD,"(Prob)Wait 1us");
 }

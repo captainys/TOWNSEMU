@@ -4310,7 +4310,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				    false,0xffff,0xffff,
 				    state.GetCR(0),
 				    state.CS().value,state.EIP,inst.numBytes,
-				    op1.seg,op1.offset);
+				    op1.seg,op1.offset,
+				    mem);
 			}
 
 			LoadSegmentRegister(state.CS(),op1.seg,mem);
@@ -4339,7 +4340,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					    false,0xffff,0xffff,
 					    state.GetCR(0),
 					    state.CS().value,state.EIP,inst.numBytes,
-					    state.CS().value,destin);
+					    state.CS().value,destin,
+					    mem);
 				}
 			}
 
@@ -4882,7 +4884,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 								    false,0xffff,0xffff,
 								    state.GetCR(0),
 								    state.CS().value,state.EIP,inst.numBytes,
-								    state.CS().value,value.GetAsDword());
+								    state.CS().value,value.GetAsDword(),
+								    mem);
 							}
 						}
 						state.EIP=(value.GetAsDword()&operandSizeMask[inst.operandSize>>3]);
@@ -4932,7 +4935,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 								    false,0xffff,0xffff,
 								    state.GetCR(0),
 								    state.CS().value,state.EIP,inst.numBytes,
-								    destSeg,destEIP);
+								    destSeg,destEIP,
+								    mem);
 							}
 						}
 						SetIPorEIP(inst.operandSize,value.GetAsDword());

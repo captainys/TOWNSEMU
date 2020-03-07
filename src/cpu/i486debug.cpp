@@ -312,7 +312,22 @@ std::vector <std::string> i486Debugger::GetCallStackText(const i486DX &cpu) cons
 			str+="H";
 
 			auto INTLabel=symTable.GetINTLabel(s.INTNum);
-			auto INTFuncLabel=symTable.GetINTFuncLabel(s.INTNum,(s.AX>>8)&0xFF);
+			auto INTFuncLabelAH=symTable.GetINTFuncLabel(s.INTNum,(s.AX>>8)&0xFF);
+			auto INTFuncLabelAX=symTable.GetINTFuncLabel(s.INTNum,s.AX);
+			std::string INTFuncLabel;
+			if(0<INTFuncLabelAH.size() && INTFuncLabelAX.size())
+			{
+				INTFuncLabel=INTFuncLabelAH+"|"+INTFuncLabelAX;
+			}
+			else if(0<INTFuncLabelAH.size())
+			{
+				INTFuncLabel=INTFuncLabelAH;
+			}
+			else if(0<INTFuncLabelAX.size())
+			{
+				INTFuncLabel=INTFuncLabelAX;
+			}
+
 			if(""!=INTLabel)
 			{
 				str.push_back(' ');
@@ -326,6 +341,13 @@ std::vector <std::string> i486Debugger::GetCallStackText(const i486DX &cpu) cons
 				}
 				str+=INTFuncLabel;
 			}
+
+			if(0<s.str.size())
+			{
+				str.push_back(' ');
+				str+=s.str;
+			}
+
 			str+=")";
 		}
 		text.push_back((std::string &&)str);
