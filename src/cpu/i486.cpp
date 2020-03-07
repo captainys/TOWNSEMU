@@ -2441,8 +2441,9 @@ bool i486DX::REPEorNECheck(unsigned int &clocksForRep,unsigned int instPrefix,un
 	return false;
 }
 
-i486DX::CallStack i486DX::MakeCallStack(
+inline i486DX::CallStack i486DX::MakeCallStack(
 	    bool isInterrupt,unsigned short INTNum,unsigned short AX,
+	    unsigned int CR0,
 	    unsigned int fromCS,unsigned int fromEIP,unsigned int callOpCodeLength,
 	    unsigned int procCS,unsigned int procEIP)
 {
@@ -2466,10 +2467,23 @@ i486DX::CallStack i486DX::MakeCallStack(
 }
 void i486DX::PushCallStack(
 	    bool isInterrupt,unsigned short INTNum,unsigned short AX,
+	    unsigned int CR0,
 	    unsigned int fromCS,unsigned int fromEIP,unsigned int callOpCodeLength,
 	    unsigned int procCS,unsigned int procEIP)
 {
-	callStack.push_back(MakeCallStack(isInterrupt,INTNum,AX,fromCS,fromEIP,callOpCodeLength,procCS,procEIP));
+	callStack.push_back(MakeCallStack(isInterrupt,INTNum,AX,CR0,fromCS,fromEIP,callOpCodeLength,procCS,procEIP));
+	if(true==isInterrupt)
+	{
+		if(0x21==INTNum && (0x3D00==(AX&0xFF00) || 0x4B00==(AX&0xFF00)))
+		{
+			if(0==(CR0&1))  // Real Mode
+			{
+			}
+			else
+			{
+			}
+		}
+	}
 }
 void i486DX::PopCallStack(unsigned int CS,unsigned int EIP)
 {

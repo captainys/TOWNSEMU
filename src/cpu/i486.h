@@ -966,10 +966,12 @@ public:
 	class CallStack
 	{
 	public:
+		unsigned int CR0;
 		unsigned short INTNum,AX;
 		unsigned int fromCS,fromEIP;
 		unsigned int callOpCodeLength;
 		unsigned int procCS,procEIP;
+		std::string str;  // File Name for INT 21H AH=3DH and 4BH
 	};
 	bool enableCallStack;
 	std::vector <CallStack> callStack;
@@ -979,8 +981,9 @@ public:
 	/*! Make a call-stack entry.
 	    INTNum and AX are valid only if isInterrupt is true.  Otherwise, give 0xffff for both.
 	*/
-	CallStack MakeCallStack(
+	inline CallStack MakeCallStack(
 	    bool isInterrupt,unsigned short INTNum,unsigned short AX,
+	    unsigned int CR0,
 	    unsigned int fromCS,unsigned int fromEIP,unsigned int callOpCodeLength,
 	    unsigned int procCS,unsigned int procEIP);
 	/*! Make a call-stack entry, and push to the call stack.
@@ -988,6 +991,7 @@ public:
 	*/
 	void PushCallStack(
 	    bool isInterrupt,unsigned short INTNum,unsigned short AX,
+	    unsigned int CR0,
 	    unsigned int fromCS,unsigned int fromEIP,unsigned int callOpCodeLength,
 	    unsigned int procCS,unsigned int procEIP);
 	/*! Pop an entry from call stack.
@@ -2302,6 +2306,7 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 		{
 			PushCallStack(
 			    true,INTNum,GetAX(), // Is an interrupt
+			    state.GetCR(0),
 			    state.CS().value,state.EIP,numInstBytes,
 			    destCS,destIP);
 		}
@@ -2341,6 +2346,7 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 			{
 				PushCallStack(
 				    true,INTNum,GetAX(), // Is an interrupt
+				    state.GetCR(0),
 				    state.CS().value,state.EIP,numInstBytes,
 				    desc.SEG,desc.OFFSET);
 			}
