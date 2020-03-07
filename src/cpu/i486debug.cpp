@@ -250,7 +250,7 @@ void i486Debugger::AfterRunOneInstruction(unsigned int clocksPassed,i486DX &cpu,
 
 std::vector <i486Debugger::CSEIPLogType> i486Debugger::GetCSEIPLog(void)
 {
-	return GetCSEIPLog(CSEIPLog.size());
+	return GetCSEIPLog((unsigned int)CSEIPLog.size());
 }
 
 std::vector <i486Debugger::CSEIPLogType> i486Debugger::GetCSEIPLog(unsigned int steps)

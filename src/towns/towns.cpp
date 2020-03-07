@@ -6,6 +6,7 @@
 #include "townsmap.h"
 #include "render.h"
 #include "outside_world.h"
+#include "i486symtable.h"
 
 
 
@@ -75,6 +76,8 @@ FMTowns::FMTowns() :
 	cpu.mouseBIOSInterceptorPtr=this;
 
 	debugger.ioLabel=FMTownsIOMap();
+	debugger.GetSymTable().MakeDOSIntFuncLabel();
+	MakeINTInfo(debugger.GetSymTable());
 
 	abort=false;
 	allDevices.push_back(&pic);
@@ -620,4 +623,71 @@ void FMTowns::PrintStatus(void) const
 		std::cout << debugger.externalBreakReason << std::endl;
 	}
 	PrintDisassembly();
+}
+
+/* static */ void FMTowns::MakeINTInfo(class i486SymbolTable &symTable)
+{
+	symTable.AddINTLabel(0x93,"Disk");
+	symTable.AddINTFuncLabel(0x93,0x00,"Set Mode");
+	symTable.AddINTFuncLabel(0x93,0x01,"Get Mode");
+	symTable.AddINTFuncLabel(0x93,0x02,"Get Status");
+	symTable.AddINTFuncLabel(0x93,0x03,"Restore");
+	symTable.AddINTFuncLabel(0x93,0x04,"Seek HSG");
+	symTable.AddINTFuncLabel(0x93,0x05,"Read HSG");
+	symTable.AddINTFuncLabel(0x93,0x14,"Seek MSF");
+	symTable.AddINTFuncLabel(0x93,0x15,"Read MSF");
+	symTable.AddINTFuncLabel(0x93,0x50,"CDDA Play");
+	symTable.AddINTFuncLabel(0x93,0x51,"Get Play Info");
+	symTable.AddINTFuncLabel(0x93,0x52,"CDDA Stop");
+	symTable.AddINTFuncLabel(0x93,0x53,"Get Play State");
+	symTable.AddINTFuncLabel(0x93,0x54,"Read TOC");
+	symTable.AddINTFuncLabel(0x93,0x55,"CDDA Pause");
+	symTable.AddINTFuncLabel(0x93,0x56,"CDDA Resume");
+
+	symTable.AddINTLabel(0x90,"Keyboard");
+	symTable.AddINTFuncLabel(0x90,0x00,"Init");
+	symTable.AddINTFuncLabel(0x90,0x01,"Config Buffer");
+	symTable.AddINTFuncLabel(0x90,0x02,"Set Code System");
+	symTable.AddINTFuncLabel(0x90,0x03,"Get Code System");
+	symTable.AddINTFuncLabel(0x90,0x04,"Set Lock");
+	symTable.AddINTFuncLabel(0x90,0x05,"Set Click Sound");
+	symTable.AddINTFuncLabel(0x90,0x06,"Clear Buffer");
+	symTable.AddINTFuncLabel(0x90,0x07,"Check Input");
+	symTable.AddINTFuncLabel(0x90,0x08,"Get Shift-Key State");
+	symTable.AddINTFuncLabel(0x90,0x09,"Inkey");
+	symTable.AddINTFuncLabel(0x90,0x0A,"Input Matrix");
+	symTable.AddINTFuncLabel(0x90,0x0B,"Push Key Code");
+	symTable.AddINTFuncLabel(0x90,0x0C,"Set PF Key INT");
+	symTable.AddINTFuncLabel(0x90,0x0D,"Get PF Key INT");
+	symTable.AddINTFuncLabel(0x90,0x0E,"Assign Key");
+	symTable.AddINTFuncLabel(0x90,0x0F,"Get Key Assignment");
+
+	symTable.AddINTLabel(0x94,"Printer");
+	symTable.AddINTLabel(0x96,"Calendar");
+	symTable.AddINTLabel(0x97,"Timer");
+	symTable.AddINTLabel(0x98,"Clock");
+	symTable.AddINTLabel(0x9B,"RS232C");
+	symTable.AddINTLabel(0x9E,"Beep");
+
+	symTable.AddINTLabel(0xAE,"INT-Manager");
+	symTable.AddINTFuncLabel(0xAE,0x00,"Set INT Data Block Addr");
+	symTable.AddINTFuncLabel(0xAE,0x01,"Get INT Data Block Addr");
+	symTable.AddINTFuncLabel(0xAE,0x02,"Set INT Mask");
+	symTable.AddINTFuncLabel(0xAE,0x03,"Get INT Mask");
+	symTable.AddINTFuncLabel(0xAE,0x04,"Get INT Data Block Table");
+
+	symTable.AddINTLabel(0xAF,"SysService");
+	symTable.AddINTFuncLabel(0xAF,0x00,"JIS to SJIS");
+	symTable.AddINTFuncLabel(0xAF,0x01,"SJIS to JIS");
+	symTable.AddINTFuncLabel(0xAF,0x02,"Get CPU Type");
+	symTable.AddINTFuncLabel(0xAF,0x03,"JIS to SJIS 2");
+	symTable.AddINTFuncLabel(0xAF,0x04,"SJIS to JIS 2");
+	symTable.AddINTFuncLabel(0xAF,0x05,"Get Machine Info");
+
+	symTable.AddINTLabel(0x8E,"Exp-SysService");
+	symTable.AddINTFuncLabel(0x8E,0x00,"Get System Info");
+	symTable.AddINTFuncLabel(0x8E,0x01,"Printer Feeder Control");
+	symTable.AddINTFuncLabel(0x8E,0x02,"? Used in OAK1.SYS Init");
+	symTable.AddINTFuncLabel(0x8E,0x20,"(Prob)Get Available Protected-Mode Mem in KB");
+	symTable.AddINTFuncLabel(0x8E,0x21,"(Prob)Alloc Protected-Mode Mem in KB");
 }

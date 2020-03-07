@@ -50,10 +50,27 @@ public:
 	std::string Format(bool returnType=false,bool label=true,bool param=true) const;
 };
 
+
+class i486INT
+{
+public:
+	std::string label;
+};
+
+
+class i486INTFunc
+{
+public:
+	std::string label;
+};
+
+
 class i486SymbolTable
 {
 private:
 	std::map <i486DX::FarPointer,i486Symbol> symTable;
+	std::map <unsigned int,i486INT> INTLabel;
+	std::map <unsigned int,i486INTFunc> INTFunc[256];
 public:
 	mutable std::string fName;
 
@@ -96,6 +113,28 @@ public:
 	std::pair <i486DX::FarPointer,i486Symbol> FindSymbolFromLabel(const std::string &label) const;
 
 	std::vector <std::string> GetList(bool returnType=false,bool label=true,bool param=true) const;
+
+	/*!
+	*/
+	void AddINTLabel(unsigned int INTNum,const std::string label);
+
+	/*!
+	*/
+	void AddINTFuncLabel(unsigned int INTNum,unsigned int AHorAX,const std::string label);
+
+
+	/*! It also register INT 2FH as MSCDEX.EXE
+	*/
+	void MakeDOSIntFuncLabel(void);
+
+
+	/*!
+	*/
+	std::string GetINTLabel(unsigned INTNum) const;
+
+	/*!
+	*/
+	std::string GetINTFuncLabel(unsigned INTNum,unsigned int AHorAX) const;
 };
 
 

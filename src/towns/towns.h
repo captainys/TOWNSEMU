@@ -304,6 +304,8 @@ public:
 	void PrintSound(void) const;
 
 	void PrintStatus(void) const;
+
+	static void MakeINTInfo(class i486SymbolTable &symTable);
 };
 
 
