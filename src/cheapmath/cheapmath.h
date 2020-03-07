@@ -25,30 +25,30 @@ class Vec2Template : public VectorTemplate <ComponentType,2>
 public:
 	inline ComponentType x(void) const
 	{
-		return v[0];
+		return this->v[0];
 	}
 	inline ComponentType y(void) const
 	{
-		return v[1];
+		return this->v[1];
 	}
 	inline ComponentType &x(void)
 	{
-		return v[0];
+		return this->v[0];
 	}
 	inline ComponentType &y(void)
 	{
-		return v[1];
+		return this->v[1];
 	}
 	inline void Set(ComponentType x,ComponentType y)
 	{
-		v[0]=x;
-		v[1]=y;
+		this->v[0]=x;
+		this->v[1]=y;
 	}
-	inline bool operator==(const VectorTemplate &incoming) const
+	inline bool operator==(const Vec2Template &incoming) const
 	{
 		return incoming.v[0]==this->v[0] && incoming.v[1]==this->v[1];
 	}
-	inline bool operator!=(const VectorTemplate &incoming) const
+	inline bool operator!=(const Vec2Template &incoming) const
 	{
 		return incoming.v[0]!=this->v[0] || incoming.v[1]!=this->v[1];
 	}
@@ -60,64 +60,64 @@ class Vec3Template : public VectorTemplate <ComponentType,3>
 public:
 	inline ComponentType x(void) const
 	{
-		return v[0];
+		return this->v[0];
 	}
 	inline ComponentType y(void) const
 	{
-		return v[1];
+		return this->v[1];
 	}
 	inline ComponentType z(void) const
 	{
-		return v[2];
+		return this->v[2];
 	}
 	inline ComponentType &x(void)
 	{
-		return v[0];
+		return this->v[0];
 	}
 	inline ComponentType &y(void)
 	{
-		return v[1];
+		return this->v[1];
 	}
 	inline ComponentType &z(void)
 	{
-		return v[2];
+		return this->v[2];
 	}
 
 	inline ComponentType r(void) const
 	{
-		return v[0];
+		return this->v[0];
 	}
 	inline ComponentType g(void) const
 	{
-		return v[1];
+		return this->v[1];
 	}
 	inline ComponentType b(void) const
 	{
-		return v[2];
+		return this->v[2];
 	}
 	inline ComponentType &r(void)
 	{
-		return v[0];
+		return this->v[0];
 	}
 	inline ComponentType &g(void)
 	{
-		return v[1];
+		return this->v[1];
 	}
 	inline ComponentType &b(void)
 	{
-		return v[2];
+		return this->v[2];
 	}
 	inline void Set(ComponentType x,ComponentType y,ComponentType z)
 	{
-		v[0]=x;
-		v[1]=y;
-		v[2]=z;
+		this->v[0]=x;
+		this->v[1]=y;
+		this->v[2]=z;
 	}
-	inline bool operator==(const VectorTemplate &incoming) const
+	inline bool operator==(const Vec3Template &incoming) const
 	{
 		return incoming.v[0]==this->v[0] && incoming.v[1]==this->v[1] && incoming.v[2]==this->v[2];
 	}
-	inline bool operator!=(const VectorTemplate &incoming) const
+	inline bool operator!=(const Vec3Template &incoming) const
 	{
 		return incoming.v[0]!=this->v[0] || incoming.v[1]!=this->v[1] || incoming.v[2]!=this->v[2];
 	}

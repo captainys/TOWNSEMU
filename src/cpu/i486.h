@@ -1564,7 +1564,7 @@ public:
 			{
 				DI+=operandSize/8;
 			}
-			state.EDI()=(state.EDI()&0xffff0000|(DI&0xffff));
+			state.EDI()=(state.EDI()&0xffff0000)|(DI&0xffff);
 		}
 		else
 		{
@@ -1593,7 +1593,7 @@ public:
 			{
 				SI+=operandSize/8;
 			}
-			state.ESI()=(state.ESI()&0xffff0000|(SI&0xffff));
+			state.ESI()=(state.ESI()&0xffff0000)|(SI&0xffff);
 		}
 		else
 		{

@@ -6563,12 +6563,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 						LoadSegmentRegisterQuiet(seg,selector,mem,false); // Force to read from GDT by setting isInRealMode=false
 						const unsigned char byteData[]=
 						{
-							 seg.limit    &0xff,
-							(seg.limit>>8)&0xff,
-							 seg.baseLinearAddr     &0xff,
-							(seg.baseLinearAddr>>8) &0xff,
-							(seg.baseLinearAddr>>16)&0xff,
-							(seg.baseLinearAddr>>24)&0xff,
+							(unsigned char)( seg.limit    &0xff),
+							(unsigned char)((seg.limit>>8)&0xff),
+							(unsigned char)( seg.baseLinearAddr     &0xff),
+							(unsigned char)((seg.baseLinearAddr>>8) &0xff),
+							(unsigned char)((seg.baseLinearAddr>>16)&0xff),
+							(unsigned char)((seg.baseLinearAddr>>24)&0xff),
 						};
 						LoadDescriptorTableRegister(state.LDTR,32,byteData);
 					}

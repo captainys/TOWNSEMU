@@ -3,6 +3,7 @@ import subprocess
 import shutil
 
 import build
+import sys
 
 TOWNSTYPE="MX"
 
@@ -15,10 +16,17 @@ DISKDIR=os.path.join(THISDIR,"..","..","TOWNSEMU_TEST","DISKIMG")
 
 
 
+def ExeExtension():
+	if sys.platform.startswith('win'):
+		return ".exe"
+	else:
+		return ""
+
+
 def Run():
 	os.chdir(BUILDDIR)
 	subprocess.Popen([
-		"./main_cui/main_cui.exe",
+		"./main_cui/main_cui"+ExeExtension(),
 		ROMDIR,
 		"-FD0",
 		os.path.join(DISKDIR,"V2.1L20.bin"),

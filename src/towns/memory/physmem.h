@@ -136,49 +136,49 @@ public:
 
 	virtual unsigned int FetchByte(unsigned int physAddr) const
 	{
-		if(true==breakOnRead && nullptr!=cpuPtr->debuggerPtr)
+		if(true==breakOnRead && nullptr!=this->cpuPtr->debuggerPtr)
 		{
-			cpuPtr->debuggerPtr->ExternalBreak("Memory Read");
+			this->cpuPtr->debuggerPtr->ExternalBreak("Memory Read");
 		}
 		return MemAccessClass::FetchByte(physAddr);
 	}
 	virtual unsigned int FetchWord(unsigned int physAddr) const
 	{
-		if(true==breakOnRead && nullptr!=cpuPtr->debuggerPtr)
+		if(true==breakOnRead && nullptr!=this->cpuPtr->debuggerPtr)
 		{
-			cpuPtr->debuggerPtr->ExternalBreak("Memory Read");
+			this->cpuPtr->debuggerPtr->ExternalBreak("Memory Read");
 		}
 		return MemAccessClass::FetchWord(physAddr);
 	}
 	virtual unsigned int FetchDword(unsigned int physAddr) const
 	{
-		if(true==breakOnRead && nullptr!=cpuPtr->debuggerPtr)
+		if(true==breakOnRead && nullptr!=this->cpuPtr->debuggerPtr)
 		{
-			cpuPtr->debuggerPtr->ExternalBreak("Memory Read");
+			this->cpuPtr->debuggerPtr->ExternalBreak("Memory Read");
 		}
 		return MemAccessClass::FetchDword(physAddr);
 	}
 	virtual void StoreByte(unsigned int physAddr,unsigned char data)
 	{
-		if(true==breakOnWrite && nullptr!=cpuPtr->debuggerPtr)
+		if(true==breakOnWrite && nullptr!=this->cpuPtr->debuggerPtr)
 		{
-			cpuPtr->debuggerPtr->ExternalBreak("Memory Write");
+			this->cpuPtr->debuggerPtr->ExternalBreak("Memory Write");
 		}
 		MemAccessClass::StoreByte(physAddr,data);
 	}
 	virtual void StoreWord(unsigned int physAddr,unsigned int data)
 	{
-		if(true==breakOnWrite && nullptr!=cpuPtr->debuggerPtr)
+		if(true==breakOnWrite && nullptr!=this->cpuPtr->debuggerPtr)
 		{
-			cpuPtr->debuggerPtr->ExternalBreak("Memory Write");
+			this->cpuPtr->debuggerPtr->ExternalBreak("Memory Write");
 		}
 		MemAccessClass::StoreWord(physAddr,data);
 	}
 	virtual void StoreDword(unsigned int physAddr,unsigned int data)
 	{
-		if(true==breakOnWrite && nullptr!=cpuPtr->debuggerPtr)
+		if(true==breakOnWrite && nullptr!=this->cpuPtr->debuggerPtr)
 		{
-			cpuPtr->debuggerPtr->ExternalBreak("Memory Write");
+			this->cpuPtr->debuggerPtr->ExternalBreak("Memory Write");
 		}
 		MemAccessClass::StoreDword(physAddr,data);
 	}

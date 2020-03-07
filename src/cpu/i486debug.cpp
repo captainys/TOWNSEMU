@@ -90,13 +90,13 @@ i486Debugger::i486Debugger()
 	symTablePtr=new i486SymbolTable;
 	breakOnIORead.resize(i486DX::I486_NUM_IOPORT);
 	breakOnIOWrite.resize(i486DX::I486_NUM_IOPORT);
-	for(auto &b : breakOnIORead)
+	for(auto iter=breakOnIORead.begin(); breakOnIORead.end()!=iter; ++iter)
 	{
-		b=false;
+		*iter=false;
 	}
-	for(auto &b : breakOnIOWrite)
+	for(auto iter=breakOnIOWrite.begin(); breakOnIOWrite.end()!=iter; ++iter)
 	{
-		b=false;
+		*iter=false;
 	}
 	CleanUp();
 }
