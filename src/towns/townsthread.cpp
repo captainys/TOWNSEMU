@@ -145,3 +145,12 @@ bool TownsThread::UnitTestDone(const FMTowns &towns)
 	}
 	return false;
 }
+
+
+////////////////////////////////////////////////////////////
+
+
+void TownsUIThread::Run(TownsThread *vmThread,FMTowns *towns,const TownsARGV *argv,Outside_World *outside_world)
+{
+	Main(*vmThread,*towns,*argv,*outside_world);
+}

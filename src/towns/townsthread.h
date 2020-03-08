@@ -51,6 +51,13 @@ public:
 	bool UnitTestDone(const FMTowns &towns);
 };
 
+class TownsUIThread
+{
+public:
+	void Run(TownsThread *vmThread,FMTowns *towns,const class TownsARGV *argv,Outside_World *outside_world);
+private:
+	virtual void Main(TownsThread &vmThread,FMTowns &towns,const class TownsARGV &argv,Outside_World &outside_world)=0;
+};
 
 /* } */
 #endif

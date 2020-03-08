@@ -15,23 +15,13 @@
 
 
 
-int Run(FMTowns &towns,const TownsARGV &argv,Outside_World &outside_world)
+class TownsCUIThread : public TownsUIThread
 {
-	TownsThread townsThread;
-	if(true==argv.autoStart)
-	{
-		if(true==argv.debugger)
-		{
-			townsThread.SetRunMode(TownsThread::RUNMODE_DEBUGGER);
-		}
-		else
-		{
-			townsThread.SetRunMode(TownsThread::RUNMODE_FREE);
-		}
-	}
+	virtual void Main(TownsThread &vmThread,FMTowns &towns,const TownsARGV &argv,Outside_World &outside_world);
+};
 
-	std::thread stdTownsThread(&TownsThread::Start,&townsThread,&towns,&outside_world);
-
+/* virtual */ void TownsCUIThread::Main(TownsThread &townsThread,FMTowns &towns,const TownsARGV &argv,Outside_World &outside_world)
+{
 	TownsCommandInterpreter cmdInterpreter;
 	for(;;)
 	{
@@ -81,8 +71,31 @@ int Run(FMTowns &towns,const TownsARGV &argv,Outside_World &outside_world)
 			}
 		}
 	}
+}
 
-	stdTownsThread.join();
+
+
+int Run(FMTowns &towns,const TownsARGV &argv,Outside_World &outside_world)
+{
+	TownsThread townsThread;
+	if(true==argv.autoStart)
+	{
+		if(true==argv.debugger)
+		{
+			townsThread.SetRunMode(TownsThread::RUNMODE_DEBUGGER);
+		}
+		else
+		{
+			townsThread.SetRunMode(TownsThread::RUNMODE_FREE);
+		}
+	}
+
+	TownsCUIThread cuiThread;
+
+	std::thread UIThread(&TownsCUIThread::Run,&cuiThread,&townsThread,&towns,&argv,&outside_world);
+	townsThread.Start(&towns,&outside_world);
+
+	UIThread.join();
 
 	return townsThread.returnCode;
 }
