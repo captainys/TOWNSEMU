@@ -108,7 +108,7 @@ public:
 		unsigned int freeRunTimerShift;
 		unsigned long long int nextRenderingTime;
 
-		bool unitTestDone=false;
+		bool powerOff=false;
 		int returnCode=0;
 
 		enum

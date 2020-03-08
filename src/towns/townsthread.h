@@ -16,8 +16,6 @@ private:
 	int runMode;
 
 public:
-	bool unitTestDone;
-	int returnCode;
 	mutable std::mutex vmLock,signalLock;
 
 	enum
@@ -44,11 +42,6 @@ public:
 	void SetRunMode(int runModevoid);
 
 	void PrintStatus(const FMTowns &towns) const;
-
-	/*! Returns true if (EDX=="TSUG" && EAX=="ARU!") (success) || (EDX=="FAIL" && EAX=="FAIL"))
-	    It also sets returnCode 0 (success) or 1 (fail).
-	*/
-	bool UnitTestDone(const FMTowns &towns);
 };
 
 class TownsUIThread

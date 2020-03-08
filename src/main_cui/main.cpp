@@ -46,7 +46,7 @@ class TownsCUIThread : public TownsUIThread
 		{
 			std::this_thread::sleep_for(std::chrono::milliseconds(10));
 			townsThread.vmLock.lock();
-			auto vmTerminate=townsThread.unitTestDone;
+			auto vmTerminate=towns.var.powerOff;
 			townsThread.vmLock.unlock();
 			if(true==vmTerminate)
 			{
@@ -97,7 +97,7 @@ int Run(FMTowns &towns,const TownsARGV &argv,Outside_World &outside_world)
 
 	UIThread.join();
 
-	return townsThread.returnCode;
+	return towns.var.returnCode;
 }
 
 bool Setup(FMTowns &towns,const TownsARGV &argv)

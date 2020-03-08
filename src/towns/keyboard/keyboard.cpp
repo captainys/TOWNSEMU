@@ -16,7 +16,7 @@ TownsKeyboard::TownsKeyboard(FMTowns *townsPtr,TownsPIC *picPtr)
 	this->picPtr=picPtr;
 
 	state.Reset();
-	afterReset=SEND_CD_AFTER_RESET;
+	afterReset=SEND_NONE_AFTER_RESET; // SEND_CD_AFTER_RESET;
 	nFifoFilled=0;
 }
 
