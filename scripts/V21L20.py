@@ -1,9 +1,9 @@
 import os
 import subprocess
 import shutil
+import sys
 
 import build
-import sys
 
 TOWNSTYPE="MX"
 
