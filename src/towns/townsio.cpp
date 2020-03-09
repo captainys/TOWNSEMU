@@ -6,6 +6,18 @@
 {
 	switch(ioport)
 	{
+	case TOWNSIO_POWER_CONTROL:
+		if(0!=(data&0x40))
+		{
+			var.powerOff=true;
+		}
+		break;
+	case TOWNSIO_RESET_REASON:
+		if(0!=(data&0x40))
+		{
+			var.powerOff=true;
+		}
+		break;
 	case TOWNSIO_SERIAL_ROM_CTRL://=        0x32,
 		if((0x60&data)==0x60 && (0x80&state.lastSerialROMCommand)!=0 && (0x80&data)==0)
 		{

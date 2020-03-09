@@ -27,6 +27,11 @@ int Xtoi(const char str[]);
 int Atoi(const char str[]);
 inline char FourBitToX(int i);
 
+void SeparatePathFile(std::string &path,std::string &file,const std::string &fName);
+
+long long int FileSize(const std::string &fName);
+
+
 char BoolToChar(bool f);
 
 std::string Uitox(unsigned int i);

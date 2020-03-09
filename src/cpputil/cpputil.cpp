@@ -412,6 +412,36 @@ inline char cpputil::FourBitToX(int i)
 	}
 }
 
+void cpputil::SeparatePathFile(std::string &path,std::string &file,const std::string &fName)
+{
+	long long int lastSeparator=-1;
+	for(long long int i=0; 0!=fName[i]; ++i)
+	{
+		if('/'==fName[i] || ':'==fName[i] || '\\'==fName[i])
+		{
+			lastSeparator=i;
+		}
+	}
+
+	path=fName;
+	path.resize(lastSeparator+1);
+	file=fName.data()+lastSeparator+1;
+}
+
+long long int cpputil::FileSize(const std::string &fName)
+{
+	std::vector <unsigned char> dat;
+	std::ifstream fp(fName,std::ifstream::binary);
+	if(true==fp.is_open())
+	{
+		fp.seekg(0,fp.end);
+		auto length=fp.tellg();
+		fp.close();
+		return length;
+	}
+	return 0;
+}
+
 char BoolToChar(bool f)
 {
 	return (true==f ? '1' : '0');

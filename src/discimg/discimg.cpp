@@ -61,6 +61,39 @@ DiscImage::DiscImage()
 {
 	CleanUp();
 }
+/* static */ const char *DiscImage::ErrorCodeToText(unsigned int errCode)
+{
+	switch(errCode)
+	{
+	case ERROR_NOERROR:
+		return "No error";
+	case ERROR_UNSUPPORTED:
+		return "Unsupported file format.";
+	case ERROR_CANNOT_OPEN:
+		return "Cannot open image file.";
+	case ERROR_NOT_YET_SUPPORTED:
+		return "File format not yet supported. (I'm working on it!)";
+	case ERROR_SECTOR_SIZE:
+		return "Binary size is not integer multiple of the sector length.";
+	case ERROR_TOO_FEW_ARGS:
+		return "Too few arguments.";
+	case ERROR_UNSUPPORTED_TRACK_TYPE:
+		return "Unsupported track type.";
+	case ERROR_SECTOR_LENGTH_NOT_GIVEN:
+		return "Sector length of the data track is not given.";
+	case ERROR_TRACK_INFO_WITHOTU_TRACK:
+		return "Track information is given without a track.";
+	case ERROR_INCOMPLETE_MSF:
+		return "Incomplete MM:SS:FF.";
+	case ERROR_BINARY_FILE_NOT_FOUND:
+		return "Image binary file not found.";
+	case ERROR_FIRST_TRACK_NOT_STARTING_AT_00_00_00:
+		return "First track not starting at 00:00:00";
+	case ERROR_BINARY_SIZE_NOT_SECTOR_TIMES_INTEGER:
+		return "Binary size is not integer multiple of sector lengths.";
+	}
+	return "Undefined error.";
+}
 void DiscImage::CleanUp(void)
 {
 	fileType=FILETYPE_NONE;
@@ -93,8 +126,8 @@ unsigned int DiscImage::OpenCUE(const std::string &fName)
 		return ERROR_CANNOT_OPEN;
 	}
 
+	CleanUp();
 	this->fName=fName;
-	this->binFName="";
 
 	// https://en.wikipedia.org/wiki/Cue_sheet_(computing)
 	enum
@@ -135,20 +168,166 @@ unsigned int DiscImage::OpenCUE(const std::string &fName)
 				}
 				break;
 			case CMD_TRACK:
+				if(3<=argv.size())
+				{
+					Track t;
+					cpputil::Capitalize(argv[2]);
+					if("AUDIO"==argv[2])
+					{
+						t.trackType=TRACK_AUDIO;
+						t.sectorLength=2352;
+					}
+					else if(true==cpputil::StrStartsWith(argv[2],"MODE1"))
+					{
+						t.trackType=TRACK_MODE1_DATA;
+						auto sectLenStr=cpputil::StrSkip(argv[2].c_str(),"/");
+						if(nullptr!=sectLenStr)
+						{
+							t.sectorLength=cpputil::Atoi(sectLenStr);
+						}
+						else
+						{
+							return ERROR_SECTOR_LENGTH_NOT_GIVEN;
+						}
+					}
+					tracks.push_back(t);
+				}
+				else
+				{
+					return ERROR_TOO_FEW_ARGS;
+				}
 				break;
 			case CMD_INDEX:
+				if(0==tracks.size())
+				{
+					return ERROR_TRACK_INFO_WITHOTU_TRACK;
+				}
+				if(3<=argv.size())
+				{
+					auto indexType=cpputil::Atoi(argv[1].c_str());
+					MinSecFrm msf;
+					if(true!=StrToMSF(msf,argv[2].c_str()))
+					{
+						return ERROR_INCOMPLETE_MSF;
+					}
+					if(0==indexType)
+					{
+						tracks.back().index00=msf;
+					}
+					else if(1==indexType)
+					{
+						tracks.back().start=msf;
+					}
+				}
+				else
+				{
+					return ERROR_TOO_FEW_ARGS;
+				}
 				break;
 			case CMD_PREGAP:
+				if(0==tracks.size())
+				{
+					return ERROR_TRACK_INFO_WITHOTU_TRACK;
+				}
+				if(2<=argv.size())
+				{
+					MinSecFrm msf;
+					if(true!=StrToMSF(msf,argv[1].c_str()))
+					{
+						return ERROR_INCOMPLETE_MSF;
+					}
+					tracks.back().preGap=msf;
+				}
+				else
+				{
+					return ERROR_TOO_FEW_ARGS;
+				}
 				break;
 			case CMD_POSTGAP:
+				if(0==tracks.size())
+				{
+					return ERROR_TRACK_INFO_WITHOTU_TRACK;
+				}
+				if(2<=argv.size())
+				{
+					MinSecFrm msf;
+					if(true!=StrToMSF(msf,argv[1].c_str()))
+					{
+						return ERROR_INCOMPLETE_MSF;
+					}
+					tracks.back().postGap=msf;
+				}
+				else
+				{
+					return ERROR_TOO_FEW_ARGS;
+				}
+				break;
+			default:
+				std::cout << "Unrecognized: " << line << std::endl;
 				break;
 			}
 		}
 	}
-
-
-	return ERROR_NOT_YET_SUPPORTED;
+	return OpenCUEPostProcess();
 }
+unsigned int DiscImage::OpenCUEPostProcess(void)
+{
+	if(0==tracks.size())
+	{
+		return ERROR_NOERROR;
+	}
+	if(MinSecFrm::Zero()!=tracks.front().start ||
+	   MinSecFrm::Zero()!=tracks.front().preGap ||
+	   MinSecFrm::Zero()!=tracks.front().index00)
+	{
+		return ERROR_FIRST_TRACK_NOT_STARTING_AT_00_00_00;
+	}
+
+	std::string path,file;
+	cpputil::SeparatePathFile(path,file,fName);
+	binFName=path+binFName;
+
+	auto binLength=cpputil::FileSize(binFName);
+	if(0==binLength)
+	{
+		return ERROR_BINARY_FILE_NOT_FOUND;
+	}
+
+	if(1==tracks.size())
+	{
+		unsigned int numSec=(unsigned int)binLength/tracks[0].sectorLength;
+		if(0!=(binLength%tracks[0].sectorLength))
+		{
+			return ERROR_BINARY_SIZE_NOT_SECTOR_TIMES_INTEGER;
+		}
+		--numSec;
+		tracks[0].end=HSGtoMSF(numSec);
+		tracks[0].locationInFile=0;
+	}
+	else
+	{
+		for(long long int i=1; i<(int)tracks.size(); ++i)
+		{
+			auto prevEndMSF=tracks[i].start-tracks[i].preGap;
+			auto prevEndHSG=MSFtoHSG(prevEndMSF);
+			tracks[i-1].end=HSGtoMSF(prevEndHSG-1);
+
+			auto prevNumSec=prevEndHSG-MSFtoHSG(tracks[i-1].start);
+			tracks[i].locationInFile=tracks[i-1].locationInFile+prevNumSec*tracks[i].sectorLength;
+		}
+		auto lastTrackBytes=binLength-tracks.back().locationInFile;
+		if(0!=(lastTrackBytes%tracks.back().sectorLength))
+		{
+			return ERROR_BINARY_SIZE_NOT_SECTOR_TIMES_INTEGER;
+		}
+		auto lastTrackNumSec=(binLength-tracks.back().locationInFile)/tracks.back().sectorLength;
+		auto lastSectorHSG=MSFtoHSG(tracks.back().start)+lastTrackNumSec-1;
+		tracks.back().end=HSGtoMSF((unsigned int)lastSectorHSG);
+	}
+
+	return ERROR_NOERROR;
+}
+
 unsigned int DiscImage::OpenISO(const std::string &fName)
 {
 	std::ifstream ifp;
@@ -244,7 +423,7 @@ std::vector <unsigned char> DiscImage::ReadSectorMODE1(unsigned int HSG,unsigned
 			{
 				unsigned int dataPointer=0;
 				char skipper[288];
-				for(int i=0; i<numSec; ++i)
+				for(int i=0; i<(int)numSec; ++i)
 				{
 					ifp.read(skipper,16);
 					ifp.read((char *)data.data()+dataPointer,MODE1_BYTES_PER_SECTOR);
@@ -255,4 +434,22 @@ std::vector <unsigned char> DiscImage::ReadSectorMODE1(unsigned int HSG,unsigned
 		}
 	}
 	return data;
+}
+
+/* static */ bool DiscImage::StrToMSF(MinSecFrm &msf,const char str[])
+{
+	msf.min=cpputil::Atoi(str);
+	str=cpputil::StrSkip(str,":");
+	if(nullptr==str)
+	{
+		return false;
+	}
+	msf.sec=cpputil::Atoi(str);
+	str=cpputil::StrSkip(str,":");
+	if(nullptr==str)
+	{
+		return false;
+	}
+	msf.frm=cpputil::Atoi(str);
+	return true;
 }

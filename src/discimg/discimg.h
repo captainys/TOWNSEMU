@@ -15,6 +15,14 @@ public:
 		ERROR_CANNOT_OPEN,
 		ERROR_NOT_YET_SUPPORTED,
 		ERROR_SECTOR_SIZE,
+		ERROR_TOO_FEW_ARGS,
+		ERROR_UNSUPPORTED_TRACK_TYPE,
+		ERROR_SECTOR_LENGTH_NOT_GIVEN,
+		ERROR_TRACK_INFO_WITHOTU_TRACK,
+		ERROR_INCOMPLETE_MSF,
+		ERROR_FIRST_TRACK_NOT_STARTING_AT_00_00_00,
+		ERROR_BINARY_FILE_NOT_FOUND,
+		ERROR_BINARY_SIZE_NOT_SECTOR_TIMES_INTEGER,
 	};
 	enum
 	{
@@ -22,23 +30,6 @@ public:
 		MODE1_BYTES_PER_SECTOR=2048,
 		RAW_BYTES_PER_SECTOR=2352,
 	};
-	static const char *ErrorCodeToText(unsigned int errCode)
-	{
-		switch(errCode)
-		{
-		case ERROR_NOERROR:
-			return "No error";
-		case ERROR_UNSUPPORTED:
-			return "Unsupported file format.";
-		case ERROR_CANNOT_OPEN:
-			return "Cannot open image file.";
-		case ERROR_NOT_YET_SUPPORTED:
-			return "File format not yet supported. (I'm working on it!)";
-		case ERROR_SECTOR_SIZE:
-			return "Binary size is not integer multiple of the sector length.";
-		}
-		return "Undefined error.";
-	}
 	enum
 	{
 		FILETYPE_NONE,
@@ -177,7 +168,7 @@ public:
 		unsigned long long int locationInFile=0;
 		mutable std::vector <unsigned char> dataCache;
 		MinSecFrm start,end;  // end must be 1-frame before the next track or the disc length.
-		MinSecFrm preGap,postGap;
+		MinSecFrm index00,preGap,postGap; // Wikipedia suggests index00 is preGap.
 
 		inline Track()
 		{
@@ -193,6 +184,7 @@ public:
 			end=MinSecFrm::Zero();
 			preGap=MinSecFrm::Zero();
 			postGap=MinSecFrm::Zero();
+			index00=MinSecFrm::Zero();
 		}
 	};
 	unsigned int fileType=FILETYPE_NONE;
@@ -204,9 +196,14 @@ public:
 
 
 	DiscImage();
+	static const char *ErrorCodeToText(unsigned int errCode);
 	void CleanUp(void);
 	unsigned int Open(const std::string &fName);
 	unsigned int OpenCUE(const std::string &fName);
+private:
+	unsigned int OpenCUEPostProcess(void);
+
+public:
 	unsigned int OpenISO(const std::string &fName);
 
 	/*! Returns the number of tracks.
@@ -227,6 +224,11 @@ public:
 	    it returns zero byte.
 	*/
 	std::vector <unsigned char> ReadSectorMODE1(unsigned int HSG,unsigned int numSec) const;
+
+
+	/*! Convert a string MM:SS:FF to MinSecFrm structure.
+	*/
+	static bool StrToMSF(MinSecFrm &msf,const char str[]);
 
 	static MinSecFrm HSGtoMSF(unsigned int HSG);
 	static unsigned int MSFtoHSG(MinSecFrm MSF);

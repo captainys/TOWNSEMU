@@ -138,6 +138,7 @@ FMTowns::FMTowns() :
 	io.AddDevice(&crtc,TOWNSIO_ANALOGPALETTE_GREEN);//= 0xFD96,
 
 
+	io.AddDevice(this,TOWNSIO_POWER_CONTROL);   //        0x22
 	io.AddDevice(this,TOWNSIO_SERIAL_ROM_CTRL); //        0x32,
 	io.AddDevice(this,TOWNSIO_FMR_RESOLUTION); // 0x400
 	io.AddDevice(this,TOWNSIO_VM_HOST_IF_CMD_STATUS);
