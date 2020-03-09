@@ -23,7 +23,7 @@ def ExeExtension():
 		return ""
 
 
-def Run():
+def Run(argv):
 	os.chdir(BUILDDIR)
 	subprocess.Popen([
 		"./main_cui/main_cui"+ExeExtension(),
@@ -36,10 +36,10 @@ def Run():
 		"../symtables/V2.1L20_"+TOWNSTYPE+".txt",
 		"-DEBUG",
 		# "-PAUSE",
-	]).wait()
+	]+argv).wait()
 
 
 
 if __name__=="__main__":
 	build.Run()
-	Run()
+	Run(sys.argv)
