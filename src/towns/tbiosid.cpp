@@ -21,6 +21,7 @@ void FMTowns::GetTBIOSIdentifierStrings(std::string s[4],unsigned int biosPhysic
 }
 
 /* Physical Memory Dump
+Towns OS V1.1 L10, V1.1 L20, TBIOS V31L22A
 0001F750                         56 33 31 4C 32 32 41 00|        V31L22A
 0001F760 38 39 2F 30 33 2F 30 38 74 6F 77 6E 73 00 00 00|89/03/08towns
 0001F770 74 62 69 6F 73 00 00 00 80 02 00 00 10 01 00 00|tbios
@@ -30,8 +31,16 @@ Towns OS V1.1 L30, TBIOS V31L23A
 0001F3E0 39 2F 32 31 74 6F 77 6E 73 00 00 00 74 62 69 6F|9/21towns   tbio
 0001F3F0 73 00 00 00 80 02 00 00 10 01 00 00 00 00 00 00|s
 
-Towns OS V2.1 L20, TBIOS V31L31
+Towns OS V2.1 L10B, TBIOS V31L31_91
+00100000 56 33 31 4C 33 31 00 00 39 31 2F 31 30 2F 30 35|V31L31  91/10/05
+00100010 74 6F 77 6E 73 00 00 00 74 62 69 6F 73 00 00 00|towns   tbios
+
+Towns OS V2.1 L20, TBIOS V31L31_92
 00100000 56 33 31 4C 33 31 00 00 39 32 2F 31 30 2F 31 36|V31L31  92/10/16
+00100010 74 6F 77 6E 73 00 00 00 74 62 69 6F 73 00 00 00|towns   tbios
+
+Towns OS V2.1 L31, TBIOS V31L35
+00100000 56 33 31 4C 33 35 00 00 39 33 2F 31 30 2F 31 35|V31L35  93/10/15
 00100010 74 6F 77 6E 73 00 00 00 74 62 69 6F 73 00 00 00|towns   tbios
 */
 unsigned int FMTowns::IdentifyTBIOS(unsigned int biosPhysicalBaseAddr) const
@@ -48,7 +57,20 @@ unsigned int FMTowns::IdentifyTBIOS(unsigned int biosPhysicalBaseAddr) const
 	}
 	if("V31L31"==s[0] && "towns"==s[2] && "tbios"==s[3])
 	{
-		return TBIOS_V31L31;
+		auto year=s[1];
+		year.resize(2);
+		if(year=="91")
+		{
+			return TBIOS_V31L31_91;
+		}
+		else if(year=="92")
+		{
+			return TBIOS_V31L31_92;
+		}
+	}
+	if("V31L35"==s[0] && "towns"==s[2] && "tbios"==s[3])
+	{
+		return TBIOS_V31L35;
 	}
 	return TBIOS_UNKNOWN;
 }
@@ -63,8 +85,10 @@ const char *FMTowns::TBIOSIDENTtoString(unsigned int tbios) const
 		return "TBIOS_V31L22A";
 	case TBIOS_V31L23A:
 		return "TBIOS_V31L23A";
-	case TBIOS_V31L31:
-		return "TBIOS_V31L31";
+	case TBIOS_V31L31_91:
+		return "TBIOS_V31L31_91";
+	case TBIOS_V31L31_92:
+		return "TBIOS_V31L31_92";
 	}
 }
 
@@ -136,7 +160,18 @@ bool FMTowns::GetMouseCoordinate(int &mx,int &my,unsigned int tbiosid) const
 		mx=(int)mem.FetchWord(state.MOS_work_physicalAddr+0x56);
 		my=(int)mem.FetchWord(state.MOS_work_physicalAddr+0x58);
 		return true;
-	case TBIOS_V31L31:
+	case TBIOS_V31L31_91:
+		// 0110:00011064 648A2D1C050000            MOV     CH,FS:[0000051CH]
+		// 0110:0001106B 648B156C050000            MOV     EDX,FS:[0000056CH]
+		// 0110:00011072 0FA4D310                  SHLD    EBX,EDX,10H
+		// 0110:00011076 886D1D                    MOV     [EBP+1DH],CH
+		// 0110:00011079 66895518                  MOV     [EBP+18H],DX
+		// 0110:0001107D 66895D14                  MOV     [EBP+14H],BX
+		// 0110:00011081 C3                        RET
+		mx=(int)mem.FetchWord(state.TBIOS_physicalAddr+0x56C);
+		my=(int)mem.FetchWord(state.TBIOS_physicalAddr+0x56E);
+		return true;
+	case TBIOS_V31L31_92:
 		// 0110:00011D50 268A2D28050000            MOV     CH,ES:[00000528H]
 		// 0110:00011D57 268B1510050000            MOV     EDX,ES:[00000510H]
 		// 0110:00011D5E 0FA4D310                  SHLD    EBX,EDX,10H
@@ -145,6 +180,19 @@ bool FMTowns::GetMouseCoordinate(int &mx,int &my,unsigned int tbiosid) const
 		// 0110:00011D69 66895D14                  MOV     [EBP+14H],BX
 		mx=(int)mem.FetchWord(state.TBIOS_physicalAddr+0x510);
 		my=(int)mem.FetchWord(state.TBIOS_physicalAddr+0x512);
+		return true;
+	case TBIOS_V31L35:
+		// 0110:00014B2B BF804A0100                MOV     EDI,00014A80H
+
+		// 0110:00014C94 8A6F1C                    MOV     CH,[EDI+1CH]
+		// 0110:00014C97 8B570C                    MOV     EDX,[EDI+0CH]
+		// 0110:00014C9A 0FA4D310                  SHLD    EBX,EDX,10H
+		// 0110:00014C9E 886D1D                    MOV     [EBP+1DH],CH
+		// 0110:00014CA1 66895518                  MOV     [EBP+18H],DX
+		// 0110:00014CA5 66895D14                  MOV     [EBP+14H],BX
+		// 0110:00014CA9 C3                        RET
+		mx=(int)mem.FetchWord(state.TBIOS_physicalAddr+0x14A80+0x0C);
+		my=(int)mem.FetchWord(state.TBIOS_physicalAddr+0x14A80+0x0E);
 		return true;
 	}
 	return false;
