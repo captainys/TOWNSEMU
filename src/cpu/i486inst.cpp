@@ -410,6 +410,10 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		break;
 
 
+	case I486_OPCODE_INSB://     0x6C,
+		break;
+
+
 	case I486_OPCODE_IN_AL_I8://=        0xE4,
 	case I486_OPCODE_IN_A_I8://=         0xE5,
 		FetchOperand8(inst,seg,offset,mem);
@@ -1053,6 +1057,10 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 	case I486_OPCODE_DEC_EBP:
 	case I486_OPCODE_DEC_ESI:
 	case I486_OPCODE_DEC_EDI:
+		break;
+
+
+	case I486_OPCODE_INSB://     0x6C,
 		break;
 
 
@@ -2022,6 +2030,19 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		else
 		{
 			disasm+=Reg32Str[opCode&7];
+		}
+		break;
+
+
+	case I486_OPCODE_INSB://     0x6C,
+		disasm="INSB";
+		if(INST_PREFIX_REP==instPrefix)
+		{
+			disasm="REP "+disasm;
+		}
+		else if(INST_PREFIX_REPNE==instPrefix)
+		{
+			disasm="REPNE(!) "+disasm;
 		}
 		break;
 
@@ -4630,6 +4651,21 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			auto value=state.EDI();
 			DecrementWithMask(value,operandSizeMask[nBytes],operandSizeSignBit[nBytes]);
 			state.EDI()=((state.EDI()&operandSizeAndPattern[nBytes])|value);
+		}
+		break;
+
+
+	case I486_OPCODE_INSB://     0x6C,
+		{
+			auto prefix=REPNEtoREP(inst.instPrefix);
+			if(true==REPCheck(clocksPassed,prefix,inst.addressSize))
+			{
+				auto ioRead=IOIn8(io,GetDX());
+				StoreByte(mem,inst.addressSize,state.ES(),state.EDI(),ioRead);
+				UpdateDIorEDIAfterStringOp(inst.addressSize,8);
+				EIPSetByInstruction=(INST_PREFIX_REP==prefix);
+				clocksPassed+=(IsInRealMode() ? 17 : 10); // Protected Mode 32 if CPL>IOPL
+			}
 		}
 		break;
 
