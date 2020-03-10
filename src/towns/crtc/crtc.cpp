@@ -153,6 +153,12 @@ unsigned char TownsCRTC::AnalogPalette::GetBlue(unsigned int PLT) const
 
 void TownsCRTC::State::Reset(void)
 {
+	DPMD=false;
+	for(auto &i : FMRPalette)
+	{
+		i=(&i-FMRPalette);
+	}
+
 	unsigned int defCRTCReg[32]=
 	{
 		0x0040,0x0320,0x0000,0x0000,0x035F,0x0000,0x0010,0x0000,0x036F,0x009C,0x031C,0x009C,0x031C,0x0040,0x0360,0x0040,
@@ -434,6 +440,19 @@ void TownsCRTC::MakePageLayerInfo(Layer &layer,unsigned char page) const
 		break;
 
 
+	case TOWNSIO_FMR_DIGITALPALETTE0:// 0xFD98,
+	case TOWNSIO_FMR_DIGITALPALETTE1:// 0xFD99,
+	case TOWNSIO_FMR_DIGITALPALETTE2:// 0xFD9A,
+	case TOWNSIO_FMR_DIGITALPALETTE3:// 0xFD9B,
+	case TOWNSIO_FMR_DIGITALPALETTE4:// 0xFD9C,
+	case TOWNSIO_FMR_DIGITALPALETTE5:// 0xFD9D,
+	case TOWNSIO_FMR_DIGITALPALETTE6:// 0xFD9E,
+	case TOWNSIO_FMR_DIGITALPALETTE7:// 0xFD9F,
+		state.FMRPalette[ioport&7]=(data&0x0F);
+		state.DPMD=true;
+		break;
+
+
 	case TOWNSIO_CRTC_ADDRESS://             0x440,
 		state.crtcAddrLatch=data&0x1f;
 		break;
@@ -453,7 +472,6 @@ void TownsCRTC::MakePageLayerInfo(Layer &layer,unsigned char page) const
 	case TOWNSIO_VIDEO_OUT_CTRL_DATA://=      0x44A,
 		state.sifter[state.sifterAddrLatch]=data;
 		break;
-
 
 	case TOWNSIO_MX_HIRES://            0x470,
 	case TOWNSIO_MX_VRAMSIZE://         0x471,
@@ -543,7 +561,14 @@ void TownsCRTC::MakePageLayerInfo(Layer &layer,unsigned char page) const
 		state.mxVideoOutCtrl[state.mxVideoOutCtrlAddrLatch+3]=(data>>24)&255;
 		break;
 	default:
-		Device::IOWriteWord(ioport,data); // Let it write 4 times.
+		// Analog-Palette Registers allow DWORD Access.
+		// Towns MENU V2.1 writes to palette like:
+		// 0110:000015C4 66BA94FD                  MOV     DX,FD94H
+		// 0110:000015C8 EF                        OUT     DX,EAX
+		// 0110:000015C9 8AC4                      MOV     AL,AH
+		// 0110:000015CB B292                      MOV     DL,92H
+		// 0110:000015CD EE                        OUT     DX,AL
+		Device::IOWriteDword(ioport,data); // Let it write 4 times.
 		break;
 	}
 }
@@ -567,6 +592,18 @@ void TownsCRTC::MakePageLayerInfo(Layer &layer,unsigned char page) const
 		break;
 
 
+	case TOWNSIO_FMR_DIGITALPALETTE0:// 0xFD98,
+	case TOWNSIO_FMR_DIGITALPALETTE1:// 0xFD99,
+	case TOWNSIO_FMR_DIGITALPALETTE2:// 0xFD9A,
+	case TOWNSIO_FMR_DIGITALPALETTE3:// 0xFD9B,
+	case TOWNSIO_FMR_DIGITALPALETTE4:// 0xFD9C,
+	case TOWNSIO_FMR_DIGITALPALETTE5:// 0xFD9D,
+	case TOWNSIO_FMR_DIGITALPALETTE6:// 0xFD9E,
+	case TOWNSIO_FMR_DIGITALPALETTE7:// 0xFD9F,
+		return state.FMRPalette[ioport&7];
+		break;
+
+
 	case TOWNSIO_CRTC_ADDRESS://             0x440,
 		break;
 	case TOWNSIO_CRTC_DATA_LOW://            0x442,
@@ -580,6 +617,10 @@ void TownsCRTC::MakePageLayerInfo(Layer &layer,unsigned char page) const
 		break;
 	case TOWNSIO_VIDEO_OUT_CTRL_DATA://=      0x44A,  Supposed to be write-only
 		data=state.sifter[state.sifterAddrLatch];
+		break;
+	case TOWNSIO_DPMD_SPRITEBUSY_SPRITEPAGE:
+		data|=(true==state.DPMD ? 0x80 : 0);
+		state.DPMD=false;
 		break;
 
 	case TOWNSIO_CRTC_DATA_HIGH://           0x443,

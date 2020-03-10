@@ -35,7 +35,7 @@ def Run(argv):
 		"-SYM",
 		"../symtables/V2.1L20_"+TOWNSTYPE+".txt",
 		"-DEBUG",
-		# "-PAUSE",
+		 "-PAUSE",
 	]+argv).wait()
 
 

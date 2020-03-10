@@ -123,6 +123,9 @@ public:
 		unsigned short crtcReg[32];
 		unsigned int crtcAddrLatch;
 
+		bool DPMD; // Digital-Palette Modify Flag
+		unsigned int FMRPalette[8];
+
 		unsigned char sifter[4];   // Is it really Sifter?  Isn't it Shifter? [2] pp.140
 		unsigned int sifterAddrLatch;
 

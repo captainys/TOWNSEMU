@@ -132,10 +132,20 @@ FMTowns::FMTowns() :
 	io.AddDevice(&crtc,TOWNSIO_HSYNC_VSYNC);//              0xFDA0,
 	io.AddDevice(&crtc,TOWNSIO_VIDEO_OUT_CTRL_ADDRESS);//   0x448,
 	io.AddDevice(&crtc,TOWNSIO_VIDEO_OUT_CTRL_DATA);//      0x44A,
+	io.AddDevice(&crtc,TOWNSIO_DPMD_SPRITEBUSY_SPRITEPAGE); // 0x44C
 	io.AddDevice(&crtc,TOWNSIO_ANALOGPALETTE_CODE);//=  0xFD90,
 	io.AddDevice(&crtc,TOWNSIO_ANALOGPALETTE_BLUE);//=  0xFD92,
 	io.AddDevice(&crtc,TOWNSIO_ANALOGPALETTE_RED);//=   0xFD94,
 	io.AddDevice(&crtc,TOWNSIO_ANALOGPALETTE_GREEN);//= 0xFD96,
+	io.AddDevice(&crtc,TOWNSIO_FMR_DIGITALPALETTE0);// 0xFD98,
+	io.AddDevice(&crtc,TOWNSIO_FMR_DIGITALPALETTE1);// 0xFD99,
+	io.AddDevice(&crtc,TOWNSIO_FMR_DIGITALPALETTE2);// 0xFD9A,
+	io.AddDevice(&crtc,TOWNSIO_FMR_DIGITALPALETTE3);// 0xFD9B,
+	io.AddDevice(&crtc,TOWNSIO_FMR_DIGITALPALETTE4);// 0xFD9C,
+	io.AddDevice(&crtc,TOWNSIO_FMR_DIGITALPALETTE5);// 0xFD9D,
+	io.AddDevice(&crtc,TOWNSIO_FMR_DIGITALPALETTE6);// 0xFD9E,
+	io.AddDevice(&crtc,TOWNSIO_FMR_DIGITALPALETTE7);// 0xFD9F,
+
 
 
 	io.AddDevice(this,TOWNSIO_POWER_CONTROL);   //        0x22
