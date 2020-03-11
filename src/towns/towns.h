@@ -46,6 +46,8 @@ public:
 	{
 		FREQUENCY_DEFAULT=66,              // MHz
 		FAST_DEVICE_POLLING_INTERVAL=100,  // Nano-seconds
+		RESET_REASON_SOFTWARE=1,
+		RESET_REASON_CPU=2,
 	};
 
 	virtual const char *DeviceName(void) const{return "FMTOWNS";}

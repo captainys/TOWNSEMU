@@ -228,6 +228,9 @@ void TownsPhysicalMemory::SetWaveRAMSize(long long int size)
 {
 	state.Reset();
 	SetSysRomMappingFlag(state.sysRomMapping);
+	SetDicROMMappingFlag(state.dicRom);
+	SetFMRVRAMMappingFlag(state.FMRVRAM);
+
 }
 
 void TownsPhysicalMemory::SetDICRAMSize(long long int size)
@@ -368,6 +371,7 @@ std::vector <std::string> TownsPhysicalMemory::GetStatusText(void) const
 	{
 		text.back()+="Main RAM";
 	}
+	text.back()+="  FMR VRAM Mask(000CFF81H)="+cpputil::Ubtox(state.FMRVRAMMask);
 
 	text.push_back(empty);
 	text.back()="D0000-EFFFF:";

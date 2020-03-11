@@ -11,6 +11,11 @@
 		{
 			var.powerOff=true;
 		}
+		if(0!=(data&1))
+		{
+			state.resetReason=RESET_REASON_SOFTWARE;
+			Reset();
+		}
 		break;
 	case TOWNSIO_RESET_REASON:
 		if(0!=(data&0x40))
