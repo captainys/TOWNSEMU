@@ -399,7 +399,7 @@ void i486Debugger::IOWrite(const i486DX &cpu,unsigned int ioport,unsigned int da
 		auto iter=ioLabel.find(ioport);
 		if(ioLabel.end()!=iter)
 		{
-			std::cout << "(" << iter->second << ")" << std::endl;
+			std::cout << "(" << iter->second << ")";
 		}
 		std::cout << std::endl;
 	}
@@ -420,7 +420,7 @@ void i486Debugger::IORead(const i486DX &cpu,unsigned int ioport,unsigned int dat
 		auto iter=ioLabel.find(ioport);
 		if(ioLabel.end()!=iter)
 		{
-			std::cout << "(" << iter->second << ")" << std::endl;
+			std::cout << "(" << iter->second << ")";
 		}
 		std::cout << std::endl;
 	}
