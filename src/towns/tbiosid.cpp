@@ -148,6 +148,56 @@ bool FMTowns::ControlMouse(int hostMouseX,int hostMouseY,unsigned int tbiosid)
 	return false;
 }
 
+void FMTowns::SetMouseButtonState(bool lButton,bool rButton)
+{
+	if(TownsEventLog::MODE_RECORDING==eventLog.mode)
+	{
+		int mx=0,my=0;
+		GetMouseCoordinate(mx,my,state.tbiosVersion);
+		for(auto &p : gameport.state.ports)
+		{
+			if(p.device==TownsGamePort::MOUSE)
+			{
+				if(p.button[0]!=lButton)
+				{
+					if(true==lButton)
+					{
+						eventLog.LogLeftButtonDown(state.townsTime,mx,my);
+					}
+					else
+					{
+						eventLog.LogLeftButtonUp(state.townsTime,mx,my);
+					}
+				}
+				if(p.button[1]!=rButton)
+				{
+					if(true==rButton)
+					{
+						eventLog.LogRightButtonDown(state.townsTime,mx,my);
+					}
+					else
+					{
+						eventLog.LogRightButtonUp(state.townsTime,mx,my);
+					}
+				}
+				p.button[0]=lButton;
+				p.button[1]=rButton;
+			}
+		}
+	}
+	else
+	{
+		for(auto &p : gameport.state.ports)
+		{
+			if(p.device==TownsGamePort::MOUSE)
+			{
+				p.button[0]=lButton;
+				p.button[1]=rButton;
+			}
+		}
+	}
+}
+
 bool FMTowns::GetMouseCoordinate(int &mx,int &my,unsigned int tbiosid) const
 {
 	switch(tbiosid)

@@ -88,6 +88,7 @@ FMTowns::FMTowns() :
 	townsType=TOWNSTYPE_2_MX;
 
 	cpu.mouseBIOSInterceptorPtr=this;
+	cpu.int21HInterceptorPtr=this;
 
 	debugger.ioLabel=FMTownsIOMap();
 	debugger.GetSymTable().MakeDOSIntFuncLabel();
@@ -437,6 +438,11 @@ unsigned int FMTowns::RunOneInstruction(void)
 {
 	if(0==cpu.GetAH())
 	{
+		if(TownsEventLog::MODE_RECORDING==eventLog.mode)
+		{
+			eventLog.LogMouseStart(state.townsTime);
+		}
+
 		state.MOS_work_linearAddr=cpu.state.GS().baseLinearAddr+cpu.GetEDI();
 		state.MOS_work_physicalAddr=cpu.LinearAddressToPhysicalAddress(state.MOS_work_linearAddr,mem);
 
@@ -451,7 +457,27 @@ unsigned int FMTowns::RunOneInstruction(void)
 	}
 	else if(1==cpu.GetAH())
 	{
+		if(TownsEventLog::MODE_RECORDING==eventLog.mode)
+		{
+			eventLog.LogMouseEnd(state.townsTime);
+		}
+
 		state.mouseBIOSActive=false;
+	}
+}
+
+/* virtual */ void FMTowns::InterceptINT21H(unsigned int AX,const std::string fName)
+{
+	if(TownsEventLog::MODE_RECORDING==eventLog.mode)
+	{
+		if(0x3D00==(AX&0xFF00))
+		{
+			eventLog.LogFileOpen(state.townsTime,fName);
+		}
+		else if(0x4B00==(AX&0xFF00))
+		{
+			eventLog.LogFileExec(state.townsTime,fName);
+		}
 	}
 }
 

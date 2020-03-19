@@ -142,32 +142,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 	int lb,mb,rb,mx,my;
 	FsGetMouseEvent(lb,mb,rb,mx,my);
-	for(auto &p : towns.gameport.state.ports)
-	{
-		if(p.device==TownsGamePort::MOUSE)
-		{
-			p.button[0]=(0!=lb);
-			p.button[1]=(0!=rb);
-
-			towns.ControlMouse(mx,my,towns.state.tbiosVersion);
-			/* if(FsGetKeyState(FSKEY_UP))
-			{
-				p.mouseMotion.y()=4;
-			}
-			else if(FsGetKeyState(FSKEY_DOWN))
-			{
-				p.mouseMotion.y()=-4;
-			}
-			if(FsGetKeyState(FSKEY_LEFT))
-			{
-				p.mouseMotion.x()=4;
-			}
-			else if(FsGetKeyState(FSKEY_RIGHT))
-			{
-				p.mouseMotion.x()=-4;
-			} */
-		}
-	}
+	towns.SetMouseButtonState((0!=lb),(0!=rb));
+	towns.ControlMouse(mx,my,towns.state.tbiosVersion);
 }
 /* virtual */ void FsSimpleWindowConnection::Render(const TownsRender::Image &img)
 {

@@ -679,6 +679,19 @@ public:
 	};
 	FMTownsMouseBiosInterceptor *mouseBIOSInterceptorPtr=nullptr;
 
+
+
+	/*! INT21HInterceptor will intercept DOS function calls (INT 21H) when call stack is enabled.
+	    For AH=3DH (fopen) and AH=4BH (load or exec), the file name will be given.
+	*/
+	class INT21HInterceptor
+	{
+	public:
+		virtual void InterceptINT21H(unsigned int AX,const std::string fName)=0;
+	};
+	INT21HInterceptor *int21HInterceptorPtr=nullptr;
+
+
 	enum
 	{
 		OPER_UNDEFINED,

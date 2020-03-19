@@ -39,6 +39,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "gameport.h"
 #include "timer.h"
 
+#include "eventlog.h"
+
 
 
 // Adding a device:
@@ -47,7 +49,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 // (3) Add as data member in FMTowns class.
 // (4) In FMTowns::FMTowns() add to allDevices.
 // (5) In FMTowns::FMTowns() add to io.
-class FMTowns : public Device, public i486DX::FMTownsMouseBiosInterceptor
+class FMTowns : public Device, public i486DX::FMTownsMouseBiosInterceptor, public i486DX::INT21HInterceptor
 {
 public:
 	// I'm talking about 66MHz to 120MHz ball park.
@@ -143,6 +145,7 @@ public:
 	State state;
 	i486DX cpu;
 	i486Debugger debugger;
+	TownsEventLog eventLog;
 	TownsPIC pic;
 	TownsRTC rtc;
 	TownsDMAC dmac;
@@ -223,6 +226,11 @@ public:
 	bool ControlMouse(int hostMouseX,int houstMouseY,unsigned int tbiosid);
 
 
+	/*! Set Mouse-Button State.
+	*/
+	void SetMouseButtonState(bool lButton,bool rButton);
+
+
 	/*! Returns the mouse coordinate that TBIOS is thinking.
 	    Returns false if it could not get the coordinate.
 	*/
@@ -253,6 +261,10 @@ public:
 	    It is an opportunity for the virtual machine to identify the operating-system version.
 	*/
 	virtual void InterceptMouseBIOS(void);
+
+	/*! This function will be called from the CPU in PushCallStack in response to INT 21H.
+	*/
+	virtual void InterceptINT21H(unsigned int AX,const std::string fName);
 
 	/*! Run scheduled tasks.
 	*/

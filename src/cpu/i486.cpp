@@ -2489,15 +2489,22 @@ void i486DX::PushCallStack(
 	callStack.push_back(MakeCallStack(isInterrupt,INTNum,AX,CR0,fromCS,fromEIP,callOpCodeLength,procCS,procEIP));
 	if(true==isInterrupt)
 	{
-		if(0x21==INTNum && (0x3D00==(AX&0xFF00) || 0x4B00==(AX&0xFF00)))
+		if(0x21==INTNum)
 		{
-			if(0==(CR0&1))  // Real Mode
+			if((0x3D00==(AX&0xFF00) || 0x4B00==(AX&0xFF00)))
 			{
-				callStack.back().str=DebugFetchString(16,state.DS(),GetDX(),mem);
+				if(0==(CR0&1))  // Real Mode
+				{
+					callStack.back().str=DebugFetchString(16,state.DS(),GetDX(),mem);
+				}
+				else
+				{
+					callStack.back().str=DebugFetchString(32,state.DS(),GetEDX(),mem);
+				}
 			}
-			else
+			if(nullptr!=int21HInterceptorPtr)
 			{
-				callStack.back().str=DebugFetchString(32,state.DS(),GetEDX(),mem);
+				int21HInterceptorPtr->InterceptINT21H(GetAX(),callStack.back().str);
 			}
 		}
 	}
