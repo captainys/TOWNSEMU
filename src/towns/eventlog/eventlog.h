@@ -19,6 +19,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 /* { */
 
 #include <list>
+#include <vector>
 #include <string>
 #include <chrono>
 #include "cheapmath.h"
@@ -51,6 +52,7 @@ public:
 	public:
 		std::chrono::time_point <std::chrono::system_clock>  t;
 		mutable std::chrono::time_point <std::chrono::system_clock> tPlayed;
+		long long int townsTime;
 		int eventType;
 		Vec2i mos;
 		std::string fName;
@@ -58,6 +60,7 @@ public:
 
 	int mode=MODE_NONE;
 	std::chrono::time_point <std::chrono::system_clock>  t0;
+	long long int townsTime0;
 	std::list <Event> events;
 
 
@@ -70,8 +73,13 @@ public:
 
 	/*! Sets t0 to std::chrono::system_clock::now().
 	*/
-	void Begin(void);
+	void BeginRecording(long long int townsTime);
 
+
+
+	/*!
+	*/
+	static std::string EventTypeToString(int evtType);
 
 
 	void LogMouseStart(long long int townsTime);
@@ -82,6 +90,8 @@ public:
 	void LogRightButtonUp(long long int townsTime,int mx,int my);
 	void LogFileOpen(long long int townsTime,std::string fName);
 	void LogFileExec(long long int townsTime,std::string fName);
+
+	std::vector <std::string> GetText(void) const;
 
 	bool SaveEventLog(std::string fName) const;
 	bool LoadEventLog(std::string fName);

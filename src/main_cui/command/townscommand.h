@@ -86,6 +86,8 @@ public:
 		CMD_CMOSLOAD,
 		CMD_CDLOAD,
 		CMD_CDOPENCLOSE,
+
+		CMD_SAVE_EVENTLOG,
 	};
 
 	enum
@@ -94,6 +96,7 @@ public:
 		ENABLE_CMDLOG,
 		ENABLE_DISASSEMBLE_EVERY_INST,
 		ENABLE_IOMONITOR,
+		ENABLE_EVENTLOG,
 	};
 
 	enum
@@ -117,6 +120,7 @@ public:
 		DUMP_MEMORY,
 		DUMP_CMOS,
 		DUMP_CDROM,
+		DUMP_EVENTLOG,
 	};
 
 	enum
@@ -190,6 +194,8 @@ public:
 
 	void Execute_PrintHistory(FMTowns &towns,unsigned int n);
 	void Execute_SaveHistory(FMTowns &towns,const std::string &fName);
+
+	void Execute_SaveEventLog(FMTowns &towns,const std::string &fName);
 
 	void Execute_AddSymbol(FMTowns &towns,Command &cmd);
 	void Execute_DelSymbol(FMTowns &towns,Command &cmd);

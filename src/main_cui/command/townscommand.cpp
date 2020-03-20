@@ -72,6 +72,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["ADDCMT"]=CMD_ADD_COMMENT;
 	primaryCmdMap["DEFRAW"]=CMD_DEF_RAW_BYTES;
 	primaryCmdMap["DELSYM"]=CMD_DEL_SYMBOL;
+	primaryCmdMap["SAVEEVT"]=CMD_SAVE_EVENTLOG;
 
 
 	primaryCmdMap["TYPE"]=CMD_TYPE_KEYBOARD;
@@ -83,6 +84,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	featureMap["CMDLOG"]=ENABLE_CMDLOG;
 	featureMap["AUTODISASM"]=ENABLE_DISASSEMBLE_EVERY_INST;
 	featureMap["IOMON"]=ENABLE_IOMONITOR;
+	featureMap["EVENTLOG"]=ENABLE_EVENTLOG;
 
 	dumpableMap["CALLSTACK"]=DUMP_CALLSTACK;
 	dumpableMap["CST"]=DUMP_CALLSTACK;
@@ -108,6 +110,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	dumpableMap["MEM"]=DUMP_MEMORY;
 	dumpableMap["CMOS"]=DUMP_CMOS;
 	dumpableMap["CDROM"]=DUMP_CDROM;
+	dumpableMap["EVENTLOG"]=DUMP_EVENTLOG;
 
 
 	breakEventMap["IWC1"]=   BREAK_ON_PIC_IWC1;
@@ -204,8 +207,10 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Load CD-ROM image." << std::endl;
 	std::cout << "CDOPENCLOSE" << std::endl;
 	std::cout << "  Virtually open and close the internal CD-ROM drive." << std::endl;
-	std::cout << "CDROM" << std::endl;
-	std::cout << "  CD-ROM Status." << std::endl;
+	std::cout << "SAVEHIST filename.txt" << std::endl;
+	std::cout << "  Save CS:EIP Log to file." << std::endl;
+	std::cout << "SAVEEVT filename.txt" << std::endl;
+	std::cout << "  Save Event Log to file." << std::endl;
 
 	std::cout << "" << std::endl;
 
@@ -216,6 +221,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Disassemble while running." << std::endl;
 	std::cout << "IOMON" << std::endl;
 	std::cout << "  IO Monitor." << std::endl;
+	std::cout << "EVENTLOG" << std::endl;
+	std::cout << "  Event Log." << std::endl;
 
 	std::cout << "" << std::endl;
 
@@ -226,8 +233,6 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Symbol table" << std::endl;
 	std::cout << "HIST" << std::endl;
 	std::cout << "  Log of CS:EIP.  Can specify number of steps.  Same as HIST command." << std::endl;
-	std::cout << "SAVEHIST filename.txt" << std::endl;
-	std::cout << "  Save CS:EIP Log to file." << std::endl;
 	std::cout << "GDT" << std::endl;
 	std::cout << "  Protected-Mode Global Descriptor Table" << std::endl;
 	std::cout << "LDT" << std::endl;
@@ -254,6 +259,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Memory Settings" << std::endl;
 	std::cout << "CMOS addr" << std::endl;
 	std::cout << "  CMOS RAM" << std::endl;
+	std::cout << "CDROM" << std::endl;
+	std::cout << "  CD-ROM Status." << std::endl;
 
 	std::cout << "" << std::endl;
 
@@ -442,6 +449,20 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,Command &c
 		{
 			Execute_SaveHistory(towns,cmd.argv[1]);
 		}
+		else
+		{
+			PrintError(ERROR_TOO_FEW_ARGS);
+		}
+		break;
+	case CMD_SAVE_EVENTLOG:
+		if(2<=cmd.argv.size())
+		{
+			Execute_SaveEventLog(towns,cmd.argv[1]);
+		}
+		else
+		{
+			PrintError(ERROR_TOO_FEW_ARGS);
+		}
 		break;
 	case CMD_PRINT_STATUS:
 		towns.PrintStatus();
@@ -502,6 +523,10 @@ void TownsCommandInterpreter::Execute_Enable(FMTowns &towns,Command &cmd)
 			towns.debugger.monitorIO=true;
 			std::cout << "IO_Monitor is ON." << std::endl;
 			break;
+		case ENABLE_EVENTLOG:
+			towns.eventLog.BeginRecording(towns.state.townsTime);
+			std::cout << "Event Logging is ON." << std::endl;
+			break;
 		}
 	}
 }
@@ -528,6 +553,10 @@ void TownsCommandInterpreter::Execute_Disable(FMTowns &towns,Command &cmd)
 		case ENABLE_IOMONITOR:
 			towns.debugger.monitorIO=false;
 			std::cout << "IO_Monitor is OFF." << std::endl;
+			break;
+		case ENABLE_EVENTLOG:
+			towns.eventLog.mode=TownsEventLog::MODE_NONE;
+			std::cout << "Event Logging is OFF." << std::endl;
 			break;
 		}
 	}
@@ -702,6 +731,12 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 			break;
 		case DUMP_CDROM:
 			for(auto str : towns.cdrom.GetStatusText())
+			{
+				std::cout << str << std::endl;
+			}
+			break;
+		case DUMP_EVENTLOG:
+			for(auto str : towns.eventLog.GetText())
 			{
 				std::cout << str << std::endl;
 			}
@@ -1071,6 +1106,12 @@ void TownsCommandInterpreter::Execute_SaveHistory(FMTowns &towns,const std::stri
 	{
 		PrintError(ERROR_CANNOT_SAVE_FILE);
 	}
+}
+
+void TownsCommandInterpreter::Execute_SaveEventLog(FMTowns &towns,const std::string &fName)
+{
+	std::cout << __FUNCTION__ << std::endl;
+	std::cout << "Not implemented yet." << std::endl;
 }
 
 void TownsCommandInterpreter::Execute_AddSymbol(FMTowns &towns,Command &cmd)
