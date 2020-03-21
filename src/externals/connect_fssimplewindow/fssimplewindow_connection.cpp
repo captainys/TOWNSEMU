@@ -140,10 +140,13 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 		}
 	}
 
-	int lb,mb,rb,mx,my;
-	FsGetMouseEvent(lb,mb,rb,mx,my);
-	towns.SetMouseButtonState((0!=lb),(0!=rb));
-	towns.ControlMouse(mx,my,towns.state.tbiosVersion);
+	if(towns.eventLog.mode!=TownsEventLog::MODE_PLAYBACK)
+	{
+		int lb,mb,rb,mx,my;
+		FsGetMouseEvent(lb,mb,rb,mx,my);
+		towns.SetMouseButtonState((0!=lb),(0!=rb));
+		towns.ControlMouse(mx,my,towns.state.tbiosVersion);
+	}
 }
 /* virtual */ void FsSimpleWindowConnection::Render(const TownsRender::Image &img)
 {

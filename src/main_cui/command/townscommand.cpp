@@ -73,6 +73,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["DEFRAW"]=CMD_DEF_RAW_BYTES;
 	primaryCmdMap["DELSYM"]=CMD_DEL_SYMBOL;
 	primaryCmdMap["SAVEEVT"]=CMD_SAVE_EVENTLOG;
+	primaryCmdMap["LOADEVT"]=CMD_LOAD_EVENTLOG;
 
 
 	primaryCmdMap["TYPE"]=CMD_TYPE_KEYBOARD;
@@ -462,6 +463,16 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,Command &c
 		else
 		{
 			PrintError(ERROR_TOO_FEW_ARGS);
+		}
+		break;
+	case CMD_LOAD_EVENTLOG:
+		if(true==towns.eventLog.LoadEventLog(cmd.argv[1]))
+		{
+			towns.eventLog.BeginPlayback();
+		}
+		else
+		{
+			PrintError(ERROR_CANNOT_OPEN_FILE);
 		}
 		break;
 	case CMD_PRINT_STATUS:
@@ -1110,8 +1121,10 @@ void TownsCommandInterpreter::Execute_SaveHistory(FMTowns &towns,const std::stri
 
 void TownsCommandInterpreter::Execute_SaveEventLog(FMTowns &towns,const std::string &fName)
 {
-	std::cout << __FUNCTION__ << std::endl;
-	std::cout << "Not implemented yet." << std::endl;
+	if(true!=towns.eventLog.SaveEventLog(fName))
+	{
+		PrintError(ERROR_CANNOT_SAVE_FILE);
+	}
 }
 
 void TownsCommandInterpreter::Execute_AddSymbol(FMTowns &towns,Command &cmd)

@@ -438,7 +438,7 @@ unsigned int FMTowns::RunOneInstruction(void)
 {
 	if(0==cpu.GetAH())
 	{
-		if(TownsEventLog::MODE_RECORDING==eventLog.mode)
+		if(TownsEventLog::MODE_RECORDING==eventLog.mode || TownsEventLog::MODE_PLAYBACK==eventLog.mode)
 		{
 			eventLog.LogMouseStart(state.townsTime);
 		}
@@ -457,7 +457,7 @@ unsigned int FMTowns::RunOneInstruction(void)
 	}
 	else if(1==cpu.GetAH())
 	{
-		if(TownsEventLog::MODE_RECORDING==eventLog.mode)
+		if(TownsEventLog::MODE_RECORDING==eventLog.mode || TownsEventLog::MODE_PLAYBACK==eventLog.mode)
 		{
 			eventLog.LogMouseEnd(state.townsTime);
 		}

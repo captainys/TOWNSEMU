@@ -88,6 +88,7 @@ public:
 		CMD_CDOPENCLOSE,
 
 		CMD_SAVE_EVENTLOG,
+		CMD_LOAD_EVENTLOG,
 	};
 
 	enum

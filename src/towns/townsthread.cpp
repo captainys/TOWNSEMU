@@ -58,6 +58,7 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 				townsPtr->CheckRenderingTimer(render,*outside_world);
 			}
 			outside_world->DevicePolling(*townsPtr);
+			townsPtr->eventLog.Interval(*townsPtr);
 			if(true==townsPtr->CheckAbort())
 			{
 				PrintStatus(*townsPtr);
@@ -86,6 +87,7 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 				}
 			}
 			outside_world->DevicePolling(*townsPtr);
+			townsPtr->eventLog.Interval(*townsPtr);
 			if(true==townsPtr->CheckAbort())
 			{
 				PrintStatus(*townsPtr);

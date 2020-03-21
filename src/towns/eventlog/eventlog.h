@@ -45,6 +45,7 @@ public:
 		EVT_TBIOS_MOS_END,
 		EVT_FILE_OPEN,  // INT 21H AH=3DH
 		EVT_FILE_EXEC,  // INT 21H AH=4BH
+	NUMBER_OF_EVENT_TYPES
 	};
 
 	class Event
@@ -59,6 +60,8 @@ public:
 	};
 
 	int mode=MODE_NONE;
+	std::list <Event>::iterator playbackPtr;
+	bool dontWaitFileEventInPlayback=true;
 	std::chrono::time_point <std::chrono::system_clock>  t0;
 	long long int townsTime0;
 	std::list <Event> events;
@@ -77,6 +80,30 @@ public:
 
 
 
+	/*!
+	*/
+	void BeginPlayback(void);
+private:
+	void SkipPlaybackFileEvent(void);
+
+
+
+public:
+	/*! Called from FMTownsThread.
+	*/
+	inline void Interval(class FMTowns &towns)
+	{
+		if(MODE_PLAYBACK==mode)
+		{
+			Playback(towns);
+		}
+	}
+private:
+	void Playback(class FMTowns &towns);
+
+
+
+public:
 	/*!
 	*/
 	static std::string EventTypeToString(int evtType);

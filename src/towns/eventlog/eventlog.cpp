@@ -14,6 +14,10 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 << LICENSE */
 
 
+#include <iostream>
+#include <fstream>
+#include <map>
+
 #include "eventlog.h"
 #include "cpputil.h"
 
@@ -35,6 +39,11 @@ void TownsEventLog::BeginRecording(long long int townsTime)
 	t0=std::chrono::system_clock::now();
 	townsTime0=townsTime;
 	mode=MODE_RECORDING;
+}
+void TownsEventLog::BeginPlayback(void)
+{
+	mode=MODE_PLAYBACK;
+	playbackPtr=events.begin();
 }
 /* static */ std::string TownsEventLog::EventTypeToString(int evtType)
 {
@@ -61,72 +70,142 @@ void TownsEventLog::BeginRecording(long long int townsTime)
 }
 
 
+void TownsEventLog::SkipPlaybackFileEvent(void)
+{
+	while(events.end()!=playbackPtr &&
+	      (EVT_FILE_OPEN==playbackPtr->eventType ||
+	       EVT_FILE_EXEC==playbackPtr->eventType))
+	{
+		if(events.begin()==playbackPtr)
+		{
+			playbackPtr->tPlayed=std::chrono::system_clock::now();
+		}
+		else
+		{
+			auto prevPtr=playbackPtr;
+			--prevPtr;
+			auto dt=(playbackPtr->t-prevPtr->t);
+			playbackPtr->tPlayed=prevPtr->tPlayed+dt;
+		}
+		++playbackPtr;
+	}
+}
 
 void TownsEventLog::LogMouseStart(long long int townsTime)
 {
-	events.push_back(Event());
-	events.back().t=std::chrono::system_clock::now();
-	events.back().townsTime=townsTime;
-	events.back().eventType=EVT_TBIOS_MOS_START;
+	const int eventType=EVT_TBIOS_MOS_START;
+	if(MODE_RECORDING==mode)
+	{
+		events.push_back(Event());
+		events.back().t=std::chrono::system_clock::now();
+		events.back().townsTime=townsTime;
+		events.back().eventType=eventType;
+	}
+	else if(MODE_PLAYBACK==mode && events.end()!=playbackPtr && eventType==playbackPtr->eventType)
+	{
+		playbackPtr->tPlayed=std::chrono::system_clock::now();
+		++playbackPtr;
+		if(true==dontWaitFileEventInPlayback)
+		{
+			SkipPlaybackFileEvent();
+		}
+	}
 }
 void TownsEventLog::LogMouseEnd(long long int townsTime)
 {
-	events.push_back(Event());
-	events.back().t=std::chrono::system_clock::now();
-	events.back().townsTime=townsTime;
-	events.back().eventType=EVT_TBIOS_MOS_END;
+	const int eventType=EVT_TBIOS_MOS_END;
+	if(MODE_RECORDING==mode)
+	{
+		events.push_back(Event());
+		events.back().t=std::chrono::system_clock::now();
+		events.back().townsTime=townsTime;
+		events.back().eventType=eventType;
+	}
+	else if(MODE_PLAYBACK==mode && events.end()!=playbackPtr && eventType==playbackPtr->eventType)
+	{
+		playbackPtr->tPlayed=std::chrono::system_clock::now();
+		++playbackPtr;
+		if(true==dontWaitFileEventInPlayback)
+		{
+			SkipPlaybackFileEvent();
+		}
+	}
 }
 void TownsEventLog::LogLeftButtonDown(long long int townsTime,int mx,int my)
 {
-	events.push_back(Event());
-	events.back().t=std::chrono::system_clock::now();
-	events.back().townsTime=townsTime;
-	events.back().eventType=EVT_LBUTTONDOWN;
-	events.back().mos[0]=mx;
-	events.back().mos[1]=my;
+	const int eventType=EVT_LBUTTONDOWN;
+	if(MODE_RECORDING==mode)
+	{
+		events.push_back(Event());
+		events.back().t=std::chrono::system_clock::now();
+		events.back().townsTime=townsTime;
+		events.back().eventType=eventType;
+		events.back().mos[0]=mx;
+		events.back().mos[1]=my;
+	}
 }
 void TownsEventLog::LogLeftButtonUp(long long int townsTime,int mx,int my)
 {
-	events.push_back(Event());
-	events.back().t=std::chrono::system_clock::now();
-	events.back().townsTime=townsTime;
-	events.back().eventType=EVT_LBUTTONUP;
-	events.back().mos[0]=mx;
-	events.back().mos[1]=my;
+	const int eventType=EVT_LBUTTONUP;
+	if(MODE_RECORDING==mode)
+	{
+		events.push_back(Event());
+		events.back().t=std::chrono::system_clock::now();
+		events.back().townsTime=townsTime;
+		events.back().eventType=eventType;
+		events.back().mos[0]=mx;
+		events.back().mos[1]=my;
+	}
 }
 void TownsEventLog::LogRightButtonDown(long long int townsTime,int mx,int my)
 {
-	events.push_back(Event());
-	events.back().t=std::chrono::system_clock::now();
-	events.back().townsTime=townsTime;
-	events.back().eventType=EVT_RBUTTONDOWN;
-	events.back().mos[0]=mx;
-	events.back().mos[1]=my;
+	const int eventType=EVT_RBUTTONDOWN;
+	if(MODE_RECORDING==mode)
+	{
+		events.push_back(Event());
+		events.back().t=std::chrono::system_clock::now();
+		events.back().townsTime=townsTime;
+		events.back().eventType=eventType;
+		events.back().mos[0]=mx;
+		events.back().mos[1]=my;
+	}
 }
 void TownsEventLog::LogRightButtonUp(long long int townsTime,int mx,int my)
 {
-	events.push_back(Event());
-	events.back().t=std::chrono::system_clock::now();
-	events.back().townsTime=townsTime;
-	events.back().eventType=EVT_RBUTTONDOWN;
-	events.back().mos[0]=mx;
-	events.back().mos[1]=my;
+	const int eventType=EVT_RBUTTONDOWN;
+	if(MODE_RECORDING==mode)
+	{
+		events.push_back(Event());
+		events.back().t=std::chrono::system_clock::now();
+		events.back().townsTime=townsTime;
+		events.back().eventType=eventType;
+		events.back().mos[0]=mx;
+		events.back().mos[1]=my;
+	}
 }
 void TownsEventLog::LogFileOpen(long long int townsTime,std::string fName)
 {
-	events.push_back(Event());
-	events.back().t=std::chrono::system_clock::now();
-	events.back().townsTime=townsTime;
-	events.back().eventType=EVT_FILE_OPEN;
-	events.back().fName=fName;
+	const int eventType=EVT_FILE_OPEN;
+	if(MODE_RECORDING==mode)
+	{
+		events.push_back(Event());
+		events.back().t=std::chrono::system_clock::now();
+		events.back().townsTime=townsTime;
+		events.back().eventType=eventType;
+		events.back().fName=fName;
+	}
 }
 void TownsEventLog::LogFileExec(long long int townsTime,std::string fName)
 {
-	events.push_back(Event());
-	events.back().t=std::chrono::system_clock::now();
-	events.back().townsTime=townsTime;
-	events.back().eventType=EVT_FILE_EXEC;
-	events.back().fName=fName;
+	const int eventType=EVT_FILE_EXEC;
+	if(MODE_RECORDING==mode)
+	{
+		events.push_back(Event());
+		events.back().t=std::chrono::system_clock::now();
+		events.back().townsTime=townsTime;
+		events.back().eventType=eventType;
+		events.back().fName=fName;
+	}
 }
 
 std::vector <std::string> TownsEventLog::GetText(void) const
@@ -167,4 +246,224 @@ std::vector <std::string> TownsEventLog::GetText(void) const
 		}
 	}
 	return text;
+}
+
+bool TownsEventLog::SaveEventLog(std::string fName) const
+{
+	std::ofstream ofp(fName);
+	if(ofp.is_open())
+	{
+		for(auto str : GetText())
+		{
+			ofp << str << std::endl;
+		}
+		ofp.close();
+		return true;
+	}
+	return false;
+}
+bool TownsEventLog::LoadEventLog(std::string fName)
+{
+	std::ifstream ifp(fName);
+	if(ifp.is_open())
+	{
+		std::map <std::string,int> strToEventType;
+		for(int i=0; i<NUMBER_OF_EVENT_TYPES; ++i)
+		{
+			strToEventType[EventTypeToString(i)]=i;
+		}
+
+		CleanUp();
+		t0=std::chrono::system_clock::now();
+
+		while(true!=ifp.eof())
+		{
+			std::string line;
+			std::getline(ifp,line);
+
+			std::vector <std::string> argv=cpputil::Parser(line.c_str());
+			if(0<argv.size())
+			{
+				if("EVT"==argv[0])
+				{
+					if(2<=argv.size())
+					{
+						events.push_back(Event());
+						events.back().eventType=strToEventType[argv[1]];
+					}
+					else
+					{
+						std::cout << "Too few arguments" << std::endl;
+						std::cout << "  " << line << std::endl;
+						return false;
+					}
+				}
+				else if("T"==argv[0])
+				{
+					if(2<=argv.size())
+					{
+						events.back().t=t0+std::chrono::milliseconds(cpputil::Atoi(argv[1].c_str()));
+					}
+					else
+					{
+						std::cout << "Too few arguments" << std::endl;
+						std::cout << "  " << line << std::endl;
+						return false;
+					}
+				}
+				else if("TWT"==argv[0])
+				{
+					if(2<=argv.size())
+					{
+						events.back().townsTime=cpputil::Atoi(argv[1].c_str());
+						events.back().townsTime*=1000000;
+					}
+					else
+					{
+						std::cout << "Too few arguments" << std::endl;
+						std::cout << "  " << line << std::endl;
+						return false;
+					}
+				}
+				else if("FNAME"==argv[0])
+				{
+					if(2<=argv.size())
+					{
+						events.back().fName=argv[1];
+					}
+					else
+					{
+						std::cout << "Too few arguments" << std::endl;
+						std::cout << "  " << line << std::endl;
+						return false;
+					}
+				}
+				else if("MOS"==argv[0])
+				{
+					if(3<=argv.size())
+					{
+						events.back().mos[0]=cpputil::Atoi(argv[1].c_str());
+						events.back().mos[1]=cpputil::Atoi(argv[2].c_str());
+					}
+					else
+					{
+						std::cout << "Too few arguments" << std::endl;
+						std::cout << "  " << line << std::endl;
+						return false;
+					}
+				}
+			}
+		}
+
+		ifp.close();
+		return true;
+	}
+	return false;
+}
+
+
+
+#include "towns.h"
+
+
+
+void TownsEventLog::Playback(class FMTowns &towns)
+{
+	if(MODE_PLAYBACK==mode)
+	{
+		if(true==dontWaitFileEventInPlayback)
+		{
+			SkipPlaybackFileEvent();
+		}
+
+		if(events.end()==playbackPtr)
+		{
+			mode=MODE_NONE;
+		}
+		else
+		{
+			decltype(playbackPtr->tPlayed) baseT;
+			decltype(playbackPtr->t-t0) dt;
+			if(events.begin()==playbackPtr)
+			{
+				dt=playbackPtr->t-t0;
+				baseT=t0;
+			}
+			else
+			{
+				auto prev=playbackPtr;
+				--prev;
+				dt=playbackPtr->t-prev->t;
+				baseT=prev->tPlayed;
+			}
+			auto now=std::chrono::system_clock::now();
+			auto tPassed=now-baseT;
+
+			switch(playbackPtr->eventType)
+			{
+			case EVT_LBUTTONDOWN:
+				if(dt/2<tPassed)
+				{
+					towns.ControlMouse(playbackPtr->mos.x(),playbackPtr->mos.y(),towns.state.tbiosVersion);
+					int mx,my;
+					towns.GetMouseCoordinate(mx,my,towns.state.tbiosVersion);
+					if(mx==playbackPtr->mos.x() && my==playbackPtr->mos.y() && dt<=tPassed)
+					{
+						towns.SetMouseButtonState(true,false);
+						playbackPtr->tPlayed=now;
+						++playbackPtr;
+					}
+				}
+				break;
+			case EVT_LBUTTONUP:
+				if(dt/2<tPassed)
+				{
+					towns.ControlMouse(playbackPtr->mos.x(),playbackPtr->mos.y(),towns.state.tbiosVersion);
+					int mx,my;
+					towns.GetMouseCoordinate(mx,my,towns.state.tbiosVersion);
+					if(mx==playbackPtr->mos.x() && my==playbackPtr->mos.y() && dt<=tPassed)
+					{
+						towns.SetMouseButtonState(false,false);
+						playbackPtr->tPlayed=now;
+						++playbackPtr;
+					}
+				}
+				break;
+			case EVT_RBUTTONDOWN:
+				if(dt/2<tPassed)
+				{
+					towns.ControlMouse(playbackPtr->mos.x(),playbackPtr->mos.y(),towns.state.tbiosVersion);
+					int mx,my;
+					towns.GetMouseCoordinate(mx,my,towns.state.tbiosVersion);
+					if(mx==playbackPtr->mos.x() && my==playbackPtr->mos.y() && dt<=tPassed)
+					{
+						towns.SetMouseButtonState(false,true);
+						playbackPtr->tPlayed=now;
+						++playbackPtr;
+					}
+				}
+				break;
+			case EVT_RBUTTONUP:
+				if(dt/2<tPassed)
+				{
+					towns.ControlMouse(playbackPtr->mos.x(),playbackPtr->mos.y(),towns.state.tbiosVersion);
+					int mx,my;
+					towns.GetMouseCoordinate(mx,my,towns.state.tbiosVersion);
+					if(mx==playbackPtr->mos.x() && my==playbackPtr->mos.y() && dt<=tPassed)
+					{
+						towns.SetMouseButtonState(false,false);
+						playbackPtr->tPlayed=now;
+						++playbackPtr;
+					}
+				}
+				break;
+
+			case EVT_TBIOS_MOS_START:
+			case EVT_TBIOS_MOS_END:
+			case EVT_FILE_OPEN:  // INT 21H AH=3DH
+			case EVT_FILE_EXEC:  // INT 21H AH=4BH
+				break;
+			}
+		}
+	}
 }
