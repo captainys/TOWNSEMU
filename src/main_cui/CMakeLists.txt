@@ -107,7 +107,35 @@ add_test(
 		-SYM
 		"${CMAKE_SOURCE_DIR}/../symtables/UNITTEST.txt"
 		-CD
-		"${CMAKE_CURRENT_SOURCE_DIR}/../../testdata/ISOIMG/TESTDISC.iso"
+		"${CMAKE_SOURCE_DIR}/../testdata/ISOIMG/TESTDISC.iso"
 		-UNITTEST
 )
 
+add_test(
+ 	NAME MX_V11L10_GUI
+	COMMAND 
+		main_cui 
+		"${CMAKE_SOURCE_DIR}/../../TOWNSEMU_TEST/ROM_MX"
+		-SYM
+		"${CMAKE_SOURCE_DIR}/../symtables/UNITTEST.txt"
+		-CD
+		"${DISC_IMAGE_DIR}/TOSV1.1L10.iso"
+		-EVTLOG
+		"${CMAKE_SOURCE_DIR}/../testdata/eventLog/V11L10TEST.txt"
+		-UNITTEST
+)
+
+
+add_test(
+ 	NAME MX_V21L31_GUI
+	COMMAND 
+		main_cui 
+		"${CMAKE_SOURCE_DIR}/../../TOWNSEMU_TEST/ROM_MX"
+		-SYM
+		"${CMAKE_SOURCE_DIR}/../symtables/UNITTEST.txt"
+		-CD
+		"${DISC_IMAGE_DIR}/TOSV2.1L31.iso"
+		-EVTLOG
+		"${CMAKE_SOURCE_DIR}/../testdata/eventLog/V21L31TEST.txt"
+		-UNITTEST
+)

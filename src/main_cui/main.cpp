@@ -158,6 +158,15 @@ bool Setup(FMTowns &towns,const TownsARGV &argv)
 		}
 	}
 
+	if(0<argv.playbackEventLogFName.size())
+	{
+		if(true==towns.eventLog.LoadEventLog(argv.playbackEventLogFName))
+		{
+			towns.eventLog.BeginPlayback();
+		}
+	}
+
+
 	towns.var.freeRunTimerShift=9;
 	std::cout << "**** For Testing Purpose Free-Running Timer is scaled up by 512.\n";
 

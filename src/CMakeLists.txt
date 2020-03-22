@@ -7,6 +7,8 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 
+set(DISC_IMAGE_DIR "D:/ISOImageSubset")
+
 
 enable_testing()
 

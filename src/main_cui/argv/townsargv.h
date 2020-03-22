@@ -26,6 +26,7 @@ public:
 	std::string cdImgFName;
 	std::string startUpScriptFName;
 	std::string symbolFName;
+	std::string playbackEventLogFName;
 
 	bool autoStart;
 	bool debugger;

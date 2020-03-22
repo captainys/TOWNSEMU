@@ -44,6 +44,8 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  CD-ROM image file name for the internal drive. ISO or CUE." << std::endl;
 	std::cout << "-SYM filename" << std::endl;
 	std::cout << "  Specify symbol file name." << std::endl;
+	std::cout << "-EVTLOG filename" << std::endl;
+	std::cout << "  Load and play-back event log." << std::endl;
 }
 
 bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
@@ -85,6 +87,11 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		else if("-SYM"==ARG && i+1<argc)
 		{
 			symbolFName=argv[i+1];
+			++i;
+		}
+		else if("-EVTLOG"==ARG && i+1<argc)
+		{
+			playbackEventLogFName=argv[i+1];
 			++i;
 		}
 		else

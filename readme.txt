@@ -100,8 +100,38 @@ FM TOWNSはMSXマウスを使用します。MSXマウスはマウスの移動量
 
 
 
+[Unit Tests]
+You need bootable floppy disk images/CD-ROM images to run unit tests.  My guess is it is ok to redistribute Towns OS bootable floppy disk images, but to be safe I am keeping them to myself.
+
+If you have an ISO image (track 0 image) of Towns OS V1.1 L10 or Towns OS V2.1 L31, you can run two tests by:
+
+(1) Configure the top-level CMakeLists.txt so that DISC_IMAGE_DIR points to the directory where you store your ISO images.
+(2) CMake and build everything.
+(3) Run either one of the following comman in the build directory.
+    ctest -R MX_V21L31_GUI
+    ctest -R MX_V11L10_GUI
+
+The tests are timing-sensitive, or the CPU needs to be reasonably fast.  If not, mouse-click may take place before wigets are ready, in which case, the test may not run all the way.
+
+ユニットテストを実行するには、起動可能なフロッピーディスクイメージまたはCD-ROMイメージが必要です。Towns OSでフォーマットした起動可能ディスクイメージは多分再配布しても良いと思いますが(多分富士通としては小さなソフトハウスなどがフロッピー版のソフトを販売するために使うことを想定していたのではないかと思うので)、一応、ディスクイメージは外に出してません。
+
+が、Towns OS V1.1 L10またはV2.1 L31のISOイメージ(トラック0のイメージ)があれば、GUIのテストだけ実行できます。
+
+(1) 最上位のCMakeLists.txtを修正して、DISC_IMAGE_DIRがISOイメージの場所を指すようにする。
+(2) CMakeを再度実行してからBuild。
+(3) 次のコマンドを実行。
+    ctest -R MX_V21L31_GUI
+    ctest -R MX_V11L10_GUI
+
+なお、タイミングに影響されるので遅いCPUだと多分途中から先に進まなくなって、テスト途中で止まる鴨しれません。
+
+
+
 
 [Revisions]
+2020/03/22
+Added unit tests for Towns OS GUI V1.1 L10 and V2.1 L31.
+
 2020/03/16
 Make it public.
 
