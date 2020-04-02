@@ -450,6 +450,91 @@ std::vector <unsigned char> DiscImage::ReadSectorMODE1(unsigned int HSG,unsigned
 	return data;
 }
 
+int DiscImage::GetTrackFromMSF(MinSecFrm MSF) const
+{
+	if(0<tracks.size())
+	{
+		int tLow=0,tHigh=(int)tracks.size()-1;
+		while(tLow!=tHigh)
+		{
+			auto tMid=(tLow+tHigh)/2;
+			if(MSF<tracks[tMid].start)
+			{
+				tHigh=tMid;
+			}
+			else if(tracks[tMid].end<MSF)
+			{
+				tLow=tMid;
+			}
+			else
+			{
+				return tMid+1;
+			}
+		}
+		return tLow+1;
+	}
+	return -1;
+}
+
+unsigned long long int DiscImage::GetFileLocationFromTrackAndMSF(int track,MinSecFrm MSF) const
+{
+	if(1<=track && track<=tracks.size())
+	{
+		--track;
+		auto HSG0=MSFtoHSG(tracks[track].start);
+		auto HSG=MSFtoHSG(MSF);
+		auto diff=HSG-HSG0;
+		return tracks[track].locationInFile+tracks[track].sectorLength*diff;
+	}
+	return 0;
+}
+
+std::vector <unsigned short> DiscImage::GetWave(MinSecFrm startMSF,MinSecFrm endMSF) const
+{
+	std::vector <unsigned short> wave;
+
+	std::ifstream ifp;
+	ifp.open(binFName,std::ios::binary);
+
+	if(ifp.is_open() && 0<tracks.size() && startMSF<endMSF)
+	{
+		auto startTrack=GetTrackFromMSF(startMSF);
+		auto endTrack=GetTrackFromMSF(endMSF);
+
+		if(endTrack<0)
+		{
+			endTrack=tracks.size();
+			endMSF=tracks.back().end;
+		}
+
+		--startTrack;
+		--endTrack;
+		for(auto track=startTrack; track<=endTrack; ++track)
+		{
+			if(TRACK_AUDIO!=tracks[track].trackType)
+			{
+				break;
+			}
+
+			auto MSFFrom=(tracks[track].start<startMSF ? startMSF : tracks[track].start);
+			auto MSFTo=(endMSF<tracks[track].end ? endMSF : tracks[track].end);
+			MSFTo.Increment();
+
+			auto locFrom=GetFileLocationFromTrackAndMSF(track+1,MSFFrom);
+			auto locTo=GetFileLocationFromTrackAndMSF(track+1,MSFTo);
+			auto readSize=(locTo-locFrom)+1;
+
+			ifp.seekg(locFrom,std::ios::beg);
+
+			auto curSize=wave.size();
+			wave.resize(wave.size()+readSize/sizeof(short));
+			ifp.read((char *)(wave.data()+curSize),readSize);
+		}
+	}
+
+	return wave;
+}
+
 /* static */ bool DiscImage::StrToMSF(MinSecFrm &msf,const char str[])
 {
 	msf.min=cpputil::Atoi(str);

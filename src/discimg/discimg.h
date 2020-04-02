@@ -77,6 +77,34 @@ public:
 			return (min<<16)|(sec<<8)|frm;
 		}
 
+		inline void Increment(void)
+		{
+			++this->frm;
+			if(75<=this->frm)
+			{
+				this->frm-=75;
+				++this->sec;
+			}
+			if(60<=this->sec)
+			{
+				this->sec-=60;
+				++this->min;
+			}
+		}
+		inline void Decrement(void)
+		{
+			--this->frm;
+			if(this->frm<0)
+			{
+				this->frm+=75;
+				--this->sec;
+			}
+			if(this->sec<0)
+			{
+				this->sec+=60;
+				--this->min;
+			}
+		}
 
 		inline void Add(const MinSecFrm incoming)
 		{
@@ -135,27 +163,27 @@ public:
 			return ret;
 		}
 
-		inline bool operator==(const MinSecFrm incoming)
+		inline bool operator==(const MinSecFrm incoming) const
 		{
 			return this->Encode()==incoming.Encode();
 		}
-		inline bool operator!=(const MinSecFrm incoming)
+		inline bool operator!=(const MinSecFrm incoming) const
 		{
 			return this->Encode()!=incoming.Encode();
 		}
-		inline bool operator>(const MinSecFrm incoming)
+		inline bool operator>(const MinSecFrm incoming) const
 		{
 			return this->Encode()>incoming.Encode();
 		}
-		inline bool operator<(const MinSecFrm incoming)
+		inline bool operator<(const MinSecFrm incoming) const
 		{
 			return this->Encode()<incoming.Encode();
 		}
-		inline bool operator>=(const MinSecFrm incoming)
+		inline bool operator>=(const MinSecFrm incoming) const
 		{
 			return this->Encode()>=incoming.Encode();
 		}
-		inline bool operator<=(const MinSecFrm incoming)
+		inline bool operator<=(const MinSecFrm incoming) const
 		{
 			return this->Encode()<=incoming.Encode();
 		}
@@ -238,6 +266,25 @@ public:
 	    it returns zero byte.
 	*/
 	std::vector <unsigned char> ReadSectorMODE1(unsigned int HSG,unsigned int numSec) const;
+
+
+	/*! Returns the track from MSF.
+	    Returns -1 if it is not on any track.
+	*/
+	int GetTrackFromMSF(MinSecFrm MSF) const;
+
+
+	/*! Returns the file location from track and MSF.
+	    Track number starts with 1.
+	*/
+	unsigned long long int GetFileLocationFromTrackAndMSF(int track,MinSecFrm MSF) const;
+
+
+	/*! Returns the 44KHz wave from start and end MSFs.
+	    Can be as large as 700MB.
+	*/
+	std::vector <unsigned short> GetWave(MinSecFrm startMSF,MinSecFrm endMSF) const;
+
 
 
 	/*! Convert a string MM:SS:FF to MinSecFrm structure.
