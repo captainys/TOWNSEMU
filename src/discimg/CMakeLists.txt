@@ -12,3 +12,15 @@ add_test(NAME DISCIMG_ISO COMMAND testiso ${CMAKE_CURRENT_SOURCE_DIR}/../../test
 add_executable(testcue testcue.cpp)
 target_link_libraries(testcue discimg)
 
+
+add_executable(bincue2wav bincue2wav.cpp)
+target_link_libraries(bincue2wav discimg yssimplesound cpputil)
+if(MSVC)
+	target_link_libraries(bincue2wav yssimplesound_dsound)
+elseif(APPLE)
+	find_library(COCOA_LIB Cocoa)
+	mark_as_advanced(COCOA_LIB)
+	target_link_libraries(bincue2wav yssimplesound_macosx ${COCOA_LIB})
+elseif(UNIX)
+	target_link_libraries(bincue2wav yssimplesound_linux_alsa)
+endif()

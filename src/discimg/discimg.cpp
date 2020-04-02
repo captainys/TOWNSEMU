@@ -22,6 +22,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 
 
+// Uncomment for verbose output.
+// #define DEBUG_DISCIMG
+
 /* static */ DiscImage::MinSecFrm DiscImage::MinSecFrm::Zero(void)
 {
 	MinSecFrm MSF;
@@ -396,6 +399,13 @@ unsigned int DiscImage::OpenCUEPostProcess(void)
 		layout.push_back(L);
 	}
 
+#ifdef DEBUG_DISCIMG
+	for(auto L : layout)
+	{
+		std::cout << "LAYOUT " << L.startHSG << " " << L.locationInFile << std::endl;
+	}
+#endif
+
 	return ERROR_NOERROR;
 }
 
@@ -546,9 +556,9 @@ unsigned long long int DiscImage::GetFileLocationFromTrackAndMSF(int track,MinSe
 	return 0;
 }
 
-std::vector <unsigned short> DiscImage::GetWave(MinSecFrm startMSF,MinSecFrm endMSF) const
+std::vector <unsigned char> DiscImage::GetWave(MinSecFrm startMSF,MinSecFrm endMSF) const
 {
-	std::vector <unsigned short> wave;
+	std::vector <unsigned char> wave;
 
 	std::ifstream ifp;
 	ifp.open(binFName,std::ios::binary);
@@ -557,6 +567,10 @@ std::vector <unsigned short> DiscImage::GetWave(MinSecFrm startMSF,MinSecFrm end
 	{
 		auto startHSG=startMSF.ToHSG();
 		auto endHSG=endMSF.ToHSG();
+
+	#ifdef DEBUG_DISCIMG
+		std::cout << "From " << startHSG << " To " << endHSG << " (" << endHSG-startHSG << ")" << std::endl;
+	#endif
 
 		for(int i=0; i<layout.size()-1; ++i)
 		{
@@ -575,6 +589,10 @@ std::vector <unsigned short> DiscImage::GetWave(MinSecFrm startMSF,MinSecFrm end
 			{
 				readFrom=layout[i].locationInFile+layout[i].sectorLength*(startHSG-layout[i].startHSG);
 			}
+			else
+			{
+				continue;
+			}
 
 			if(layout[i+1].startHSG<=endHSG)
 			{
@@ -582,7 +600,7 @@ std::vector <unsigned short> DiscImage::GetWave(MinSecFrm startMSF,MinSecFrm end
 			}
 			else
 			{
-				readTo=layout[i].locationInFile+layout[i].sectorLength*(startHSG-layout[i].startHSG);
+				readTo=layout[i].locationInFile+layout[i].sectorLength*(endHSG-layout[i].startHSG);
 				i=layout.size(); // Let it loop-out.
 			}
 
@@ -590,10 +608,14 @@ std::vector <unsigned short> DiscImage::GetWave(MinSecFrm startMSF,MinSecFrm end
 			{
 				auto readSize=(readTo-readFrom)&(~3);
 
+			#ifdef DEBUG_DISCIMG
+				std::cout << readFrom << " " << readTo << " " << readSize << " " << std::endl;
+			#endif
+
 				ifp.seekg(readFrom,std::ios::beg);
 
 				auto curSize=wave.size();
-				wave.resize(wave.size()+readSize/sizeof(short));
+				wave.resize(wave.size()+readSize);
 				ifp.read((char *)(wave.data()+curSize),readSize);
 			}
 		}

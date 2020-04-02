@@ -1,3 +1,4 @@
 add_subdirectory(connect_fssimplewindow)
 add_subdirectory(fssimplewindow/src)
+add_subdirectory(yssimplesound/src)
 add_subdirectory(d77)

@@ -306,7 +306,7 @@ public:
 	/*! Returns the 44KHz wave from start and end MSFs.
 	    Can be as large as 700MB.
 	*/
-	std::vector <unsigned short> GetWave(MinSecFrm startMSF,MinSecFrm endMSF) const;
+	std::vector <unsigned char> GetWave(MinSecFrm startMSF,MinSecFrm endMSF) const;
 
 
 

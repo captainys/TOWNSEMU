@@ -1,0 +1,21 @@
+2015/10/18
+  Started
+
+
+2015/10/19
+  現状の問題点。
+  Linux Alsaで、定期的にKeepPlayingを呼ばないと音が鳴らない。
+  が、マルチスレッドにすると、Underrunが起こる前に確実にバッファを埋められるかわからない。
+  そもそも、シングルコアのCPUだと絶望的。
+
+  Linux Alsa用ライブラリで、マルチスレッドにすると、YsSoundPlayer::SoundDataが先に消えたとき、落ちる可能性がある。
+  が、Windows用ライブラリは、YsSoundPlayer::SoundDataが先に無くならないと、落ちる。
+
+  YS Class Libraryを使って、SoundDataの管理をYsSoundPlayerに任せると簡単に解決するが、できれば、YS Class Libraryと独立して動かしたい。
+
+  DirectSound用ライブラリの、SoundDataのAPISpecificDataに、YsSoundPlayerへのリンクを持たせるという手があるが、そもそもDeleteされてしまったら
+  もはや、手も足も出ない。
+
+
+2017/12/01
+  Bug fix:  It was assuming a header block is shorter than 256, but it might not the case.
