@@ -116,6 +116,7 @@ void DiscImage::CleanUp(void)
 	binFName="";
 	num_sectors=0;
 	tracks.clear();
+	layout.clear();
 }
 unsigned int DiscImage::Open(const std::string &fName)
 {
@@ -339,6 +340,62 @@ unsigned int DiscImage::OpenCUEPostProcess(void)
 		tracks.back().end=HSGtoMSF((unsigned int)lastSectorHSG);
 	}
 
+	for(long long int i=0; i<tracks.size(); ++i)
+	{
+		DiscLayout L;
+		switch(tracks[i].trackType)
+		{
+		case TRACK_MODE1_DATA:
+		case TRACK_MODE2_DATA:
+			L.layoutType=LAYOUT_DATA;
+			break;
+		case TRACK_AUDIO:
+			L.layoutType=LAYOUT_AUDIO;
+			break;
+		}
+		L.numSectors=tracks[i].end.ToHSG()-tracks[i].start.ToHSG()+1;
+		L.sectorLength=tracks[i].sectorLength;
+		L.startHSG=tracks[i].start.ToHSG();
+		if(0==i)
+		{
+			L.locationInFile=0;
+			layout.push_back(L);
+		}
+		else
+		{
+			auto preGapInHSG=tracks[i].preGap.ToHSG();
+			if(0<preGapInHSG)
+			{
+				DiscLayout preGap;
+				preGap.layoutType=LAYOUT_GAP;
+				preGap.sectorLength=layout.back().sectorLength;
+				preGap.startHSG=tracks[i].start.ToHSG()-preGapInHSG;
+				preGap.numSectors=preGapInHSG;
+				preGap.locationInFile=layout.back().locationInFile+layout.back().sectorLength*layout.back().numSectors;
+				layout.push_back(preGap);
+			}
+			L.locationInFile=layout.back().locationInFile+layout.back().sectorLength*layout.back().numSectors;
+			layout.push_back(L);
+		}
+	}
+	{
+		DiscLayout L;
+		L.layoutType=LAYOUT_END;
+		L.sectorLength=0;
+		L.numSectors=0;
+		if(0<layout.size())
+		{
+			L.startHSG=layout.back().startHSG+layout.back().numSectors;
+			L.locationInFile=layout.back().locationInFile+layout.back().sectorLength*layout.back().numSectors;
+		}
+		else
+		{
+			L.startHSG=0;
+			L.locationInFile=0;
+		}
+		layout.push_back(L);
+	}
+
 	return ERROR_NOERROR;
 }
 
@@ -498,37 +555,47 @@ std::vector <unsigned short> DiscImage::GetWave(MinSecFrm startMSF,MinSecFrm end
 
 	if(ifp.is_open() && 0<tracks.size() && startMSF<endMSF)
 	{
-		auto startTrack=GetTrackFromMSF(startMSF);
-		auto endTrack=GetTrackFromMSF(endMSF);
+		auto startHSG=startMSF.ToHSG();
+		auto endHSG=endMSF.ToHSG();
 
-		if(endTrack<0)
+		for(int i=0; i<layout.size()-1; ++i)
 		{
-			endTrack=tracks.size();
-			endMSF=tracks.back().end;
-		}
+			unsigned long long int readFrom=0,readTo=0;
 
-		--startTrack;
-		--endTrack;
-		for(auto track=startTrack; track<=endTrack; ++track)
-		{
-			if(TRACK_AUDIO!=tracks[track].trackType)
+			if(startHSG<=layout[i].startHSG)
 			{
-				break;
+				if(LAYOUT_DATA==layout[i].layoutType)
+				{
+					wave.clear();
+					return wave;
+				}
+				readFrom=layout[i].locationInFile;
+			}
+			else if(startHSG<layout[i+1].startHSG)
+			{
+				readFrom=layout[i].locationInFile+layout[i].sectorLength*(startHSG-layout[i].startHSG);
 			}
 
-			auto MSFFrom=(tracks[track].start<startMSF ? startMSF : tracks[track].start);
-			auto MSFTo=(endMSF<tracks[track].end ? endMSF : tracks[track].end);
-			MSFTo.Increment();
+			if(layout[i+1].startHSG<=endHSG)
+			{
+				readTo=layout[i+1].locationInFile;
+			}
+			else
+			{
+				readTo=layout[i].locationInFile+layout[i].sectorLength*(startHSG-layout[i].startHSG);
+				i=layout.size(); // Let it loop-out.
+			}
 
-			auto locFrom=GetFileLocationFromTrackAndMSF(track+1,MSFFrom);
-			auto locTo=GetFileLocationFromTrackAndMSF(track+1,MSFTo);
-			auto readSize=(locTo-locFrom)+1;
+			if(readFrom<readTo)
+			{
+				auto readSize=(readTo-readFrom)&(~3);
 
-			ifp.seekg(locFrom,std::ios::beg);
+				ifp.seekg(readFrom,std::ios::beg);
 
-			auto curSize=wave.size();
-			wave.resize(wave.size()+readSize/sizeof(short));
-			ifp.read((char *)(wave.data()+curSize),readSize);
+				auto curSize=wave.size();
+				wave.resize(wave.size()+readSize/sizeof(short));
+				ifp.read((char *)(wave.data()+curSize),readSize);
+			}
 		}
 	}
 

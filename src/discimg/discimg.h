@@ -229,11 +229,34 @@ public:
 			index00=MinSecFrm::Zero();
 		}
 	};
+
+	enum
+	{
+		LAYOUT_DATA,
+		LAYOUT_AUDIO,
+		LAYOUT_GAP,
+		LAYOUT_END
+	};
+	/*! 
+	Turned out Track is not really good for finding location in file from HSG/MSF.
+	It is constructed in OpenCUEPostProcess.
+	*/
+	class DiscLayout
+	{
+	public:
+		int layoutType;
+		unsigned int sectorLength;
+		unsigned int startHSG;
+		unsigned int numSectors;
+		unsigned long long int locationInFile;
+	};
+
 	unsigned int fileType=FILETYPE_NONE;
 	unsigned long long int binFileSize=0;
 	std::string fName,binFName;
 	unsigned int num_sectors;
 	std::vector <Track> tracks;
+	std::vector <DiscLayout> layout;
 
 
 
