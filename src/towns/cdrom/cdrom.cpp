@@ -57,8 +57,6 @@ void TownsCDROM::State::Reset(void)
 	enableDEI=false;
 	discChanged=false;
 
-	CDDAPlaying=false;
-
 	next2ndByteOfStatusCode=0;
 }
 
@@ -458,13 +456,15 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 		}
 		break;
 	case CDCMD_CDDASTOP://   0x84,
-		if(true==state.CDDAPlaying)
+		if(nullptr!=OutsideWorld && true==OutsideWorld->CDDAIsPlaying())
 		{
 			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+CDDASTOP_TIME);
 		}
 		else
 		{
 			StopCDDA();  // Already stopped, but it sets up status queue.
+			SetStatusNoError();
+			PushStatusCDDAStopDone();
 		}
 		state.next2ndByteOfStatusCode=0x0D;
 		break;
@@ -731,7 +731,6 @@ void TownsCDROM::StopCDDA(void)
 	{
 		OutsideWorld->CDDAStop();
 	}
-	state.CDDAPlaying=false;
 	state.ClearStatusQueue();
 	if(true!=SetStatusDriveNotReadyOrDiscChanged())
 	{

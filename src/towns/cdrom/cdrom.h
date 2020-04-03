@@ -142,8 +142,6 @@ public:
 		bool enableSIRQ;
 		bool enableDEI;
 
-		bool CDDAPlaying=false;
-
 		bool cmdReceived;
 		unsigned char cmd;
 		int nParamQueue;
