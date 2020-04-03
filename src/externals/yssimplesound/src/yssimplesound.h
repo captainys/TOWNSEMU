@@ -126,6 +126,7 @@ private:
 	void StopAPISpecific(SoundData &dat);           // It is guaranteed that oneShot is not nullptr when called.
 	void KeepPlayingAPISpecific(void);
 	YSBOOL IsPlayingAPISpecific(const SoundData &dat) const;
+	double GetCurrentPositionAPISpecific(const SoundData &dat) const;
 	void SetVolumeAPISpecific(SoundData &dat,float vol);
 	// Written per API <<
 
@@ -165,6 +166,10 @@ public:
 	    all the way to the end.
 	*/
 	YSBOOL IsPlaying(const SoundData &dat) const;
+
+	/*! Returns the time into the sound in seconds.
+	*/
+	double GetCurrentPosition(const SoundData &dat) const;
 
 	/*! Changes the volume of play-back.
 	    The effect may be lagged.

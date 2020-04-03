@@ -170,11 +170,614 @@ P
 % 0
 /end
 /begin0
+T 0
+* 00000421:00000046
+# CDROM:[BP+12]=ES
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00000047
+# CDROM:[BP+10]=DS
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00000048
+# CDROM:[BP+0E]=DI
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00000049
+# CDROM:[BP+0C]=SI
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000004A
+# CDROM:[BP+0A]=BP
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000004B
+# CDROM:[BP+08]=DX
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000004C
+# CDROM:[BP+06]=CX
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000004D
+# CDROM:[BP+04]=BX
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000004E
+# CDROM:[BP+02]=AX
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000004F
+# CDROM:[BP+00]=FLAGS
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000000BD
+# 
+R 
+L DISKBIOS:BRANCH_TO_DEVICE
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000015AD
+# 
+R 
+L CDROM:BIOS_ENTRY
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00001609
+# 
+R 
+L CDROM:BRANCH_TO_FUNCTION
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000173F
+# 
+R 
+L CDROM:FUNCTION_AH=05_READ_SECTOR_HSG
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:0000196E
+# 
+R 
+L CDROM:AH=53H
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00001973
+# Incoming CH
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000197A
+# Incoming CL
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000019AE
+# CDROM:Incoming DS
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000019B1
+# CDROM:Incoming DI
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 2
+* 00000421:000019C1
+# 
+R 
+L CDROM:AL=0 Not Playing CDDA
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000019D3
+# CDROM:Incoming DS
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000019D6
+# CDROM:Incoming DI
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 2
+* 00000421:000019EA
+# 
+R 
+L CDROM:AL=1 Is Playing CDDA
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00001BD5
+# 
+R 
+L CDROM:PROBABLY_DRIVE_AND_MPU_RESET
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00001C83
+# 
+R 
+L CDROM:ISSUE_A0H(08,01)_THEN_3FH(02,00,0B,08)_SETUP_IRQ_DATA_BLOCK
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00001D5C
+# 
+R 
+L CDROM:READ_SECTOR_MAIN
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00001D75
+# 
+R 
+L CDROM:
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00002053
+# 
+R 
+L CDROM:MSF_TO_HSG
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00002077
+# 
+R 
+L CDROM:HSG_TO_MSF
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000020AC
+# 
+R 
+L CDROM:BIN_TO_BCD
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000020C5
+# 
+R 
+L CDROM:BCD_AL_TO_BIN_AL
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000020E8
+# 
+R 
+L CDROM:MODE2READ_2336(920H)_BYTES
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000020F4
+# 
+R 
+L CDROM:MODE1READ_2048(800H)_BYTES
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00002100
+# 
+R 
+L CDROM_RAWREAD_2340(924H)_BYTES
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000210C
+# 
+R 
+L CDROM:ISSUE_DATA_TRANSFER_COMMAND_WAIT_FOR_COMPLETION
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00002194
+# 
+R 
+L CDROM:READ_TOC
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000219E
+# 
+R 
+L CDROM:
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:000022A3
+# 
+R 
+L CDROM:Read CDDA Play State
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000022D7
+# 
+R 
+L CDROM:CHECK_STATUS_CONVERT_TO_ERROR_IF_NOT_SUBQ_17H_18H_19H
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00002401
+# 
+R 
+L CDROM:ISSUE_COMMAND_A0H_SETSTATE_WITH_STATUS_REQUEST
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00002408
+# 
+R 
+L CDROM:ISSUE_COMMAND_A0H_SETSTATE_WITH_STATUS_REQUEST
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00002411
+# 
+R 
+L CDROM:ISSUE_COMMAND_A4(CDDASTOP)_THEN_A0_WAIT_FOR_ERR_OR_(2NDBYTE&0DH)!=0
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00002451
+# 
+R 
+L CDROM:ISSUE_COMMAND_3FH_UNKNOWN_COMMAND
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00002473
+# 
+R 
+L CDROM_ISSUE_COMMAND_A1(CDDASET)
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000248F
+# 
+R 
+L CDROM:CHECK_STATUS_ERROR_IF_AL!=0_CHECK_SUBSEQUENT_STATUSCODE==AL
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000024C1
+# 
+R 
+L CDROM:CLEAR_8BYTES_FROM_DS:57FH
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000024D7
+# 
+R 
+L CDROM:CONVERT_8BYTES_TO_BCD_THEN_ISSUE_COMMAND_IN_DS:57EH
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000024DD
+# 
+R 
+L CDROM:CONVERT_1BYTE_TO_BCD_THEN_ISSUE_COMMAND_IN_DS:57EH
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000024E7
+# 
+R 
+L CDROM:CONVERT_PARAMS_TO_BCD_WAIT_DRY_THEN_ISSUE_COMMAND_IN_DS:57EH
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000251F
+# 
+R 
+L CDROM:IF_STATUS_REQ_THEN_READ_TO_DS:587H_OR_HARD_ERROR_21H_0DH
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00002565
+# 
+R 
+L CDROM:IF_AH==0_CLEAR_ERROR_CODE_IN_DS:568H
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000256E
+# 
+R 
+L CDROM:SETUP_DMA
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000025E2
+# 
+R 
+L CDROM:STATUS_BYTES_IN_587H_TO_BIOS_ERROR_AH_CX
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000026F6
+# 
+R 
+L CDROM:PROBABLY_CHECK_MEDIA_CHANGE_AND_CACHE_TOC_IF_CHANGED
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000275F
+# 
+R 
+L CDROM:CACHE_TOC_DS:564,565,567=1,MEDIA_CHANGED_ERROR
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000277C
+# 
+R 
+L CDROM:PROBABLY_CHECK_DRIVE_AND_MEDIA_STATUS
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000278A
+# CDROM:BH=1st Status Byte  BL=2nd Status Byte
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00002792
+# CDROM:Return Error if the first status byte is non-zero.
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 2
+* 00000421:000027CF
+# 
+R 
+L RETURN
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000027D2
+# 
+R 
+L CDROM:COPY_8BYTES_FROM_DS:57FH_TO_DS:599H
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000027DC
+# 
+R 
+L CDROM:COPY_8BYTES_FROM_DS:599H_TO_DS:57FH
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000027F3
+# 
+R 
+L CDROM:INT_FDH_CX=1EH_Probably_30us_WAIT
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000027FB
+# 
+R 
+L CDROM:SETUP_TIMER_FOR_TIMEOUT
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00002845
+# 
+R 
+L CDROM:TIMEOUT_TIMER_CALLBACK
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00002850
+# 
+R 
+L CDROM:INTERRUPT_HANDLER
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00002926
+# 
+R 
+L CDROM:Probably_CACHE_TOC_IN_INTERNAL_BUFFER
+P 
+% 0
+/end
+/begin0
 T 1
 * 00002A19:0000002C
 # 
 R 
 L ?:SHOOT INT E4H
+P 
+% 0
+/end
+/begin0
+T 1
+* FFFF0000:000015AD
+# 
+R 
+L INT 93H AL=C0H (CD-ROM)
 P 
 % 0
 /end

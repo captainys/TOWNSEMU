@@ -435,6 +435,14 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 	case CDCMD_SETSTATE://   0x80,
 		if(0x20&state.cmd)
 		{
+			if(nullptr!=OutsideWorld && true==OutsideWorld->CDDAIsPlaying())
+			{
+				state.next2ndByteOfStatusCode=0x03; // Prob: Response to A0H (80H+REQSTA), 00 03 xx xx means CDDA is playing.
+			}
+			else
+			{
+				state.next2ndByteOfStatusCode=0;
+			}
 			SetStatusDriveNotReadyOrDiscChangedOrNoError();
 		}
 		break;
@@ -458,7 +466,14 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 		state.next2ndByteOfStatusCode=0x0D;
 		break;
 	case CDCMD_CDDAPAUSE://  0x85,
-		std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " not implemented yet." << std::endl;
+		if(nullptr!=OutsideWorld)
+		{
+			OutsideWorld->CDDAPause();
+		}
+		if(0x20&state.cmd)
+		{
+			SetStatusDriveNotReadyOrDiscChangedOrNoError();
+		}
 		break;
 	case CDCMD_UNKNOWN2://   0x86,
 		std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " not implemented yet." << std::endl;
@@ -663,6 +678,10 @@ void TownsCDROM::PushStatusCDDAStopDone(void)
 
 void TownsCDROM::StopCDDA(void)
 {
+	if(nullptr!=OutsideWorld)
+	{
+		OutsideWorld->CDDAStop();
+	}
 	state.CDDAPlaying=false;
 	state.ClearStatusQueue();
 	if(true!=SetStatusDriveNotReadyOrDiscChanged())

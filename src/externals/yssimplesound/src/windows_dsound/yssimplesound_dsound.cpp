@@ -294,6 +294,17 @@ YSBOOL YsSoundPlayer::IsPlayingAPISpecific(const SoundData &dat) const
 	return YSFALSE;
 }
 
+double YsSoundPlayer::GetCurrentPositionAPISpecific(const SoundData &dat) const
+{
+	DWORD playCursor,writeCursor;
+	if(nullptr!=dat.api->dSoundBuf && DS_OK==dat.api->dSoundBuf->GetCurrentPosition(&playCursor,&writeCursor))
+	{
+		playCursor/=(dat.BytePerSample()*dat.GetNumChannel());
+		return ((double)playCursor)/(double)dat.PlayBackRate();
+	}
+	return 0.0;
+}
+
 void YsSoundPlayer::StopAPISpecific(SoundData &dat)
 {
 	if(nullptr!=dat.api->dSoundBuf)

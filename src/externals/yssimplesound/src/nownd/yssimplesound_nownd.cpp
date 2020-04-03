@@ -85,6 +85,10 @@ YSBOOL YsSoundPlayer::IsPlayingAPISpecific(const SoundData &) const
 {
 	return YSFALSE;
 }
+double YsSoundPlayer::GetCurrentPositionAPISpecific(const SoundData &) const
+{
+	return 0.0;
+}
 
 ////////////////////////////////////////////////////////////
 

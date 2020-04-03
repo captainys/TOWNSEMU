@@ -181,6 +181,11 @@ YSBOOL YsSoundPlayer::IsPlaying(const SoundData &dat) const
 	return IsPlayingAPISpecific(dat);
 }
 
+double YsSoundPlayer::GetCurrentPosition(const SoundData &dat) const
+{
+	return GetCurrentPositionAPISpecific(dat);
+}
+
 void YsSoundPlayer::SetVolume(SoundData &dat,float vol)
 {
 	dat.playBackVolume=vol;

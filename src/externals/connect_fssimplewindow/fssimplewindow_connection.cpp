@@ -35,6 +35,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	FsOpenWindow(0,0,640,480,1);
 	FsSetWindowTitle("FM Towns Emulator - TSUGARU");
 	soundPlayer.Start();
+	cddaStartHSG=0;
+
 }
 /* virtual */ void FsSimpleWindowConnection::Stop(void)
 {
@@ -183,18 +185,27 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	auto wave=discImg.GetWave(from,to);
 	cddaChannel.CreateFrom44100HzStereo(wave);
 	soundPlayer.PlayOneShot(cddaChannel);
+	cddaStartHSG=from.ToHSG();
 }
-/* virtual */ void FsSimpleWindowConnection::CDDAStop(const DiscImage &discImg,DiscImage::MinSecFrm from,DiscImage::MinSecFrm to)
+/* virtual */ void FsSimpleWindowConnection::CDDAStop(void)
 {
 	soundPlayer.Stop(cddaChannel);
 }
+/* virtual */ void FsSimpleWindowConnection::CDDAPause(void)
+{
+	soundPlayer.Stop(cddaChannel); // Tentatively just stop.
+}
 /* virtual */ bool FsSimpleWindowConnection::CDDAIsPlaying(void)
 {
-	return false;
+	return (YSTRUE==soundPlayer.IsPlaying(cddaChannel));
 }
 /* virtual */ DiscImage::MinSecFrm FsSimpleWindowConnection::CDDACurrentPosition(void)
 {
+	double sec=soundPlayer.GetCurrentPosition(cddaChannel);
+	unsigned long long secHSG=(unsigned long long)(sec*75.0);
+	unsigned long long posInDisc=secHSG+cddaStartHSG;
+
 	DiscImage::MinSecFrm msf;
-	msf.Set(0,0,0);
+	msf.FromHSG(posInDisc);
 	return msf;
 }

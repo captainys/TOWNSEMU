@@ -30,8 +30,10 @@ public:
 
 	YsSoundPlayer soundPlayer;
 	YsSoundPlayer::SoundData cddaChannel;
+	unsigned long long cddaStartHSG;
 	virtual void CDDAPlay(const DiscImage &discImg,DiscImage::MinSecFrm from,DiscImage::MinSecFrm to);
-	virtual void CDDAStop(const DiscImage &discImg,DiscImage::MinSecFrm from,DiscImage::MinSecFrm to);
+	virtual void CDDAStop(void);
+	virtual void CDDAPause(void);
 	virtual bool CDDAIsPlaying(void);
 	virtual DiscImage::MinSecFrm CDDACurrentPosition(void);
 };

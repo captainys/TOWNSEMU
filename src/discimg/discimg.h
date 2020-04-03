@@ -258,7 +258,12 @@ public:
 	std::vector <Track> tracks;
 	std::vector <DiscLayout> layout;
 
-
+	class TrackTime
+	{
+	public:
+		int track;  // First track=track 1.  Not 0-based.
+		MinSecFrm MSF;
+	};
 
 	DiscImage();
 	static const char *ErrorCodeToText(unsigned int errCode);
@@ -297,17 +302,15 @@ public:
 	int GetTrackFromMSF(MinSecFrm MSF) const;
 
 
-	/*! Returns the file location from track and MSF.
-	    Track number starts with 1.
-	*/
-	unsigned long long int GetFileLocationFromTrackAndMSF(int track,MinSecFrm MSF) const;
-
-
 	/*! Returns the 44KHz wave from start and end MSFs.
 	    Can be as large as 700MB.
 	*/
 	std::vector <unsigned char> GetWave(MinSecFrm startMSF,MinSecFrm endMSF) const;
 
+
+	/*! Returns track and in-track time from disc-time.
+	*/
+	TrackTime DiscTimeToTrackTime(MinSecFrm discMSF) const;
 
 
 	/*! Convert a string MM:SS:FF to MinSecFrm structure.

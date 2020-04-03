@@ -55,6 +55,8 @@ int main(void)
 	{
 		FsPollDevice();
 		sndPlayer.KeepPlaying();
+
+		printf("%lf\n",sndPlayer.GetCurrentPosition(data));
 	}
 
 	sndPlayer.End();

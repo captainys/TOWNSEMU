@@ -547,19 +547,6 @@ int DiscImage::GetTrackFromMSF(MinSecFrm MSF) const
 	return -1;
 }
 
-unsigned long long int DiscImage::GetFileLocationFromTrackAndMSF(int track,MinSecFrm MSF) const
-{
-	if(1<=track && track<=tracks.size())
-	{
-		--track;
-		auto HSG0=MSFtoHSG(tracks[track].start);
-		auto HSG=MSFtoHSG(MSF);
-		auto diff=HSG-HSG0;
-		return tracks[track].locationInFile+tracks[track].sectorLength*diff;
-	}
-	return 0;
-}
-
 std::vector <unsigned char> DiscImage::GetWave(MinSecFrm startMSF,MinSecFrm endMSF) const
 {
 	std::vector <unsigned char> wave;
@@ -626,6 +613,21 @@ std::vector <unsigned char> DiscImage::GetWave(MinSecFrm startMSF,MinSecFrm endM
 	}
 
 	return wave;
+}
+
+DiscImage::TrackTime DiscImage::DiscTimeToTrackTime(MinSecFrm discMSF) const
+{
+	TrackTime trackTime;
+	for(int i=0; i<tracks.size(); ++i)
+	{
+		if(tracks[i].start<=discMSF && discMSF<=tracks[i].end)
+		{
+			trackTime.track=i+1;
+			trackTime.MSF=discMSF-tracks[i].start;
+			break;
+		}
+	}
+	return trackTime;
 }
 
 /* static */ bool DiscImage::StrToMSF(MinSecFrm &msf,const char str[])

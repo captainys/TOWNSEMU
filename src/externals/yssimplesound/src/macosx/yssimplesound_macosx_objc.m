@@ -23,6 +23,7 @@ extern void YsSimpleSound_OSX_PlayBackground(struct YsNSSound *ptr);
 extern void YsSimpleSound_OSX_SetVolume(struct YsNSSound *ptr,float vol);
 extern void YsSimpleSound_OSX_Stop(struct YsNSSound *ptr);
 extern bool YsSimpleSound_OSX_IsPlaying(struct YsNSSound *ptr);
+extern double YsSimpleSound_OSX_GetCurrentPosition(struct YsNSSound *ptr);
 
 
 struct YsNSSound *YsSimpleSound_OSX_CreateSound(long long int size,const unsigned char wavByteData[])
@@ -124,4 +125,18 @@ bool YsSimpleSound_OSX_IsPlaying(struct YsNSSound *ptr)
 		}
 	}
 	return false;
+}
+
+double YsSimpleSound_OSX_GetCurrentPosition(struct YsNSSound *ptr)
+{
+	if(nil!=ptr)
+	{
+#if !__has_feature(objc_arc)
+		NSSound *snd=ptr->snd;
+#else
+		NSSound *snd=(__bridge NSSound *)(ptr->snd);
+#endif
+		return [snd currentTime];
+	}
+	return 0.0;
 }

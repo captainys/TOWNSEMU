@@ -11,6 +11,7 @@ extern "C" void YsSimpleSound_OSX_PlayBackground(struct YsNSSound *ptr);
 extern "C" void YsSimpleSound_OSX_SetVolume(struct YsNSSound *ptr,float vol);
 extern "C" void YsSimpleSound_OSX_Stop(struct YsNSSound *ptr);
 extern "C" bool YsSimpleSound_OSX_IsPlaying(struct YsNSSound *ptr);
+extern "C" double YsSimpleSound_OSX_GetCurrentPosition(struct YsNSSound *ptr);
 
 
 
@@ -116,6 +117,15 @@ YSBOOL YsSoundPlayer::IsPlayingAPISpecific(const SoundData &dat) const
 		return YSTRUE;
 	}
 	return YSFALSE;
+}
+
+double YsSoundPlayer::GetCurrentPositionAPISpecific(const SoundData &dat) const
+{
+	if(nullptr!=dat.api->sndPtr)
+	{
+		return YsSimpleSound_OSX_GetCurrentPosition(dat.api->sndPtr);
+	}
+	return 0.0;
 }
 
 void YsSoundPlayer::StopAPISpecific(SoundData &dat)

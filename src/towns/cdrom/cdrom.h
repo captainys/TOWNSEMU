@@ -36,6 +36,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 /*! 4-byte Status Code from CD-ROM Drive
 My guess based on the BIOS Disassembly:
 00H xx  xx xx  Probably No Error
+00H 03H xx xx  CDDA is playing
 07H ??         The BIOS is checking, but the meaning is unknown.
 xxH 01H xx xx  Probably Parameter Error
 21H 01H xx xx  Probably Parameter Error
