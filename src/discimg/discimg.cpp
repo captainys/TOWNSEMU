@@ -342,6 +342,10 @@ unsigned int DiscImage::OpenCUEPostProcess(void)
 		auto lastSectorHSG=MSFtoHSG(tracks.back().start)+lastTrackNumSec-1;
 		tracks.back().end=HSGtoMSF((unsigned int)lastSectorHSG);
 	}
+	if(0<tracks.size())
+	{
+		num_sectors=tracks.back().end.ToHSG();
+	}
 
 	for(long long int i=0; i<tracks.size(); ++i)
 	{
