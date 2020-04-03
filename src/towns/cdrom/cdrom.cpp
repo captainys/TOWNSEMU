@@ -332,12 +332,12 @@ unsigned int TownsCDROM::LoadDiscImage(const std::string &fName)
 }
 void TownsCDROM::ExecuteCDROMCommand(void)
 {
-	std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " |";
-	for(int i=0; i<8; ++i)
-	{
-		std::cout << cpputil::Ubtox(state.paramQueue[i]) << " ";
-	}
-	std::cout << std::endl;
+	// std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " |";
+	// for(int i=0; i<8; ++i)
+	// {
+	// 	std::cout << cpputil::Ubtox(state.paramQueue[i]) << " ";
+	// }
+	// std::cout << std::endl;
 
 	switch(state.cmd&0x9F)
 	{
@@ -475,14 +475,29 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 		}
 		if(0x20&state.cmd)
 		{
-			SetStatusDriveNotReadyOrDiscChangedOrNoError();
+			if(true!=SetStatusDriveNotReadyOrDiscChanged())
+			{
+				state.PushStatusQueue(0,0,0,0);
+				state.PushStatusQueue(0x12,0,0,0);
+			}
 		}
 		break;
 	case CDCMD_UNKNOWN2://   0x86,
 		std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " not implemented yet." << std::endl;
 		break;
 	case CDCMD_CDDARESUME:// 0x87,
-		std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " not implemented yet." << std::endl;
+		if(nullptr!=OutsideWorld)
+		{
+			OutsideWorld->CDDAResume();
+		}
+		if(0x20&state.cmd)
+		{
+			if(true!=SetStatusDriveNotReadyOrDiscChanged())
+			{
+				state.PushStatusQueue(0,0,0,0);
+				state.PushStatusQueue(0x13,0,0,0);
+			}
+		}
 		break;
 	}
 
@@ -695,8 +710,12 @@ void TownsCDROM::SetStatusSubQRead(void)
 	// 20H  discTimeBCD xx xx
 	state.PushStatusQueue(0,0,0,0);
 
+	DiscImage::MinSecFrm twoSec;
+	twoSec.Set(0,2,0);
+
 	auto discTime=OutsideWorld->CDDACurrentPosition();
 	auto trackTime=state.GetDisc().DiscTimeToTrackTime(discTime);
+	discTime+=twoSec;
 
 	state.PushStatusQueue(
 		0x18,

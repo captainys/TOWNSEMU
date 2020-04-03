@@ -193,7 +193,11 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 }
 /* virtual */ void FsSimpleWindowConnection::CDDAPause(void)
 {
-	soundPlayer.Stop(cddaChannel); // Tentatively just stop.
+	soundPlayer.Pause(cddaChannel);
+}
+/* virtual */ void FsSimpleWindowConnection::CDDAResume(void)
+{
+	soundPlayer.Resume(cddaChannel);
 }
 /* virtual */ bool FsSimpleWindowConnection::CDDAIsPlaying(void)
 {

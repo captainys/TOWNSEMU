@@ -34,6 +34,7 @@ public:
 	virtual void CDDAPlay(const DiscImage &discImg,DiscImage::MinSecFrm from,DiscImage::MinSecFrm to);
 	virtual void CDDAStop(void);
 	virtual void CDDAPause(void);
+	virtual void CDDAResume(void);
 	virtual bool CDDAIsPlaying(void);
 	virtual DiscImage::MinSecFrm CDDACurrentPosition(void);
 };

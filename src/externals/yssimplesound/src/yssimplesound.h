@@ -128,6 +128,8 @@ private:
 	YSBOOL IsPlayingAPISpecific(const SoundData &dat) const;
 	double GetCurrentPositionAPISpecific(const SoundData &dat) const;
 	void SetVolumeAPISpecific(SoundData &dat,float vol);
+	void PauseAPISpecific(SoundData &dat);
+	void ResumeAPISpecific(SoundData &dat);
 	// Written per API <<
 
 public:
@@ -151,6 +153,14 @@ public:
 	/*! Stops play-back.
 	*/
 	void Stop(SoundData &dat);
+
+	/*! Pause play-back.
+	*/
+	void Pause(SoundData &dat);
+
+	/*! Resume paused play-back.  If the play-back is not paused, this function does nothing.
+	*/
+	void Resume(SoundData &dat);
 
 	/*! Call this function reasonably short interval.
 	    This function is needed for continuous playing with Linux ALSA API.

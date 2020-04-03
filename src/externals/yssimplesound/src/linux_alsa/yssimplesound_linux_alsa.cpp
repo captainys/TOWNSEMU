@@ -587,6 +587,14 @@ void YsSoundPlayer::StopAPISpecific(SoundData &dat)
 	}
 }
 
+void YsSoundPlayer::PauseAPISpecific(SoundData &dat)
+{
+}
+
+void YsSoundPlayer::ResumeAPISpecific(SoundData &dat)
+{
+}
+
 ////////////////////////////////////////////////////////////
 
 YsSoundPlayer::SoundData::APISpecificDataPerSoundData::APISpecificDataPerSoundData()

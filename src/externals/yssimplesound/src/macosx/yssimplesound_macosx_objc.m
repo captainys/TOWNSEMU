@@ -22,6 +22,8 @@ extern void YsSimpleSound_OSX_PlayOneShot(struct YsNSSound *ptr);
 extern void YsSimpleSound_OSX_PlayBackground(struct YsNSSound *ptr);
 extern void YsSimpleSound_OSX_SetVolume(struct YsNSSound *ptr,float vol);
 extern void YsSimpleSound_OSX_Stop(struct YsNSSound *ptr);
+extern void YsSimpleSound_OSX_Pause(struct YsNSSound *ptr);
+extern void YsSimpleSound_OSX_Resume(struct YsNSSound *ptr);
 extern bool YsSimpleSound_OSX_IsPlaying(struct YsNSSound *ptr);
 extern double YsSimpleSound_OSX_GetCurrentPosition(struct YsNSSound *ptr);
 
@@ -108,6 +110,14 @@ void YsSimpleSound_OSX_Stop(struct YsNSSound *ptr)
 #endif
 		[snd stop];
 	}
+}
+
+void YsSimpleSound_OSX_Pause(struct YsNSSound *ptr)
+{
+}
+
+void YsSimpleSound_OSX_Resume(struct YsNSSound *ptr)
+{
 }
 
 bool YsSimpleSound_OSX_IsPlaying(struct YsNSSound *ptr)

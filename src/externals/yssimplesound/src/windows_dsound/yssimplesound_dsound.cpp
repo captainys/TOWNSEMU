@@ -294,6 +294,25 @@ YSBOOL YsSoundPlayer::IsPlayingAPISpecific(const SoundData &dat) const
 	return YSFALSE;
 }
 
+void YsSoundPlayer::PauseAPISpecific(SoundData &dat)
+{
+	if(nullptr!=dat.api->dSoundBuf)
+	{
+		dat.api->dSoundBuf->Stop();
+	}
+}
+void YsSoundPlayer::ResumeAPISpecific(SoundData &dat)
+{
+	if(nullptr==api->hWndMain && nullptr!=api->hOwnWnd)
+	{
+		api->RefetchMainWindowHandle();
+	}
+	if(nullptr!=dat.api->dSoundBuf)
+	{
+		dat.api->dSoundBuf->Play(0,0xc0000000,0);
+	}
+}
+
 double YsSoundPlayer::GetCurrentPositionAPISpecific(const SoundData &dat) const
 {
 	DWORD playCursor,writeCursor;

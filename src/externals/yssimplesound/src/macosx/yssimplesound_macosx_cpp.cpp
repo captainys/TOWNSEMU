@@ -10,6 +10,8 @@ extern "C" void YsSimpleSound_OSX_PlayOneShot(struct YsNSSound *ptr);
 extern "C" void YsSimpleSound_OSX_PlayBackground(struct YsNSSound *ptr);
 extern "C" void YsSimpleSound_OSX_SetVolume(struct YsNSSound *ptr,float vol);
 extern "C" void YsSimpleSound_OSX_Stop(struct YsNSSound *ptr);
+extern "C" void YsSimpleSound_OSX_Pause(struct YsNSSound *ptr);
+extern "C" void YsSimpleSound_OSX_Resume(struct YsNSSound *ptr);
 extern "C" bool YsSimpleSound_OSX_IsPlaying(struct YsNSSound *ptr);
 extern "C" double YsSimpleSound_OSX_GetCurrentPosition(struct YsNSSound *ptr);
 
@@ -133,6 +135,22 @@ void YsSoundPlayer::StopAPISpecific(SoundData &dat)
 	if(nullptr!=dat.api->sndPtr)
 	{
 		YsSimpleSound_OSX_Stop(dat.api->sndPtr);
+	}
+}
+
+void YsSoundPlayer::PauseAPISpecific(SoundData &dat)
+{
+	if(nullptr!=dat.api->sndPtr)
+	{
+		YsSimpleSound_OSX_Pause(dat.api->sndPtr);
+	}
+}
+
+void YsSoundPlayer::ResumeAPISpecific(SoundData &dat)
+{
+	if(nullptr!=dat.api->sndPtr)
+	{
+		YsSimpleSound_OSX_Resume(dat.api->sndPtr);
 	}
 }
 
