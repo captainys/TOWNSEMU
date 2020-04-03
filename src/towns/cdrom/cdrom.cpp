@@ -135,7 +135,7 @@ TownsCDROM::TownsCDROM(class FMTowns *townsPtr,class TownsPIC *PICPtr,class Town
 		state.enableDEI=(0!=(data&0x01));
 		break;
 	case TOWNSIO_CDROM_COMMAND_STATUS://    0x4C2, // [2] pp.224
-		std::cout << "CDROM Command " << cpputil::Ubtox(data) << std::endl;
+		// std::cout << "CDROM Command " << cpputil::Ubtox(data) << std::endl;
 		state.cmdReceived=true;
 		state.cmd=data;
 		if(true==debugBreakOnCommandWrite)
@@ -426,7 +426,10 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 		}
 		break;
 	case CDCMD_SUBQREAD://   0x06,
-		std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " not implemented yet." << std::endl;
+		if(0x20&state.cmd)
+		{
+			SetStatusSubQRead();
+		}
 		break;
 	case CDCMD_UNKNOWN1://   0x1F, // NOP and requst status? I guess?
 		std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " not implemented yet." << std::endl;
@@ -669,6 +672,52 @@ void TownsCDROM::SetStatusQueueForTOC(void)
 	                      DiscImage::BinToBCD(MSF.sec),
 	                      DiscImage::BinToBCD(MSF.frm));
 	}
+}
+
+void TownsCDROM::SetStatusSubQRead(void)
+{
+	if(true==SetStatusDriveNotReadyOrDiscChanged())
+	{
+		return;
+	}
+
+	if(nullptr==OutsideWorld)
+	{
+		SetStatusDriveNotReady();
+		return;
+	}
+
+	// From reverse-engineering of CD-ROM BIOS, it is most likely:
+	// 00 00 00 00  <- First return no error.
+	// 18H xx trkBCD xx
+	// 19H trkTimeBCD trkTimeBCD trkTimeBCD
+	// 19H xx discTimeBCD discTimeBCD
+	// 20H  discTimeBCD xx xx
+	state.PushStatusQueue(0,0,0,0);
+
+	auto discTime=OutsideWorld->CDDACurrentPosition();
+	auto trackTime=state.GetDisc().DiscTimeToTrackTime(discTime);
+
+	state.PushStatusQueue(
+		0x18,
+		0,
+		DiscImage::BinToBCD(trackTime.track),
+		0);
+	state.PushStatusQueue(
+		0x19,
+		DiscImage::BinToBCD(trackTime.MSF.min),
+		DiscImage::BinToBCD(trackTime.MSF.sec),
+		DiscImage::BinToBCD(trackTime.MSF.frm));
+	state.PushStatusQueue(
+		0x19,
+		0,
+		DiscImage::BinToBCD(discTime.min),
+		DiscImage::BinToBCD(discTime.sec));
+	state.PushStatusQueue(
+		0x20,
+		DiscImage::BinToBCD(discTime.frm),
+		0,
+		0);
 }
 
 void TownsCDROM::PushStatusCDDAStopDone(void)

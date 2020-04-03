@@ -220,6 +220,7 @@ private:
 	void SetStatusQueueForTOC(void);
 	void SetStatusDataReady(void);
 	void PushStatusCDDAStopDone(void);
+	void SetStatusSubQRead(void);
 
 	void StopCDDA(void); // Placeholder for later.
 };
