@@ -17,13 +17,23 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 /* { */
 
 #include "render.h"
+#include "discimg.h"
 
 class Outside_World
 {
 public:
-	virtual void OpenWindow(void)=0;
+	virtual void Start(void)=0;
+	virtual void Stop(void)=0;
 	virtual void DevicePolling(class FMTowns &towns)=0;
 	virtual void Render(const TownsRender::Image &img)=0;
+
+
+
+public:
+	virtual void CDDAPlay(const DiscImage &discImg,DiscImage::MinSecFrm from,DiscImage::MinSecFrm to)=0;
+	virtual void CDDAStop(const DiscImage &discImg,DiscImage::MinSecFrm from,DiscImage::MinSecFrm to)=0;
+	virtual bool CDDAIsPlaying(void)=0;
+	virtual DiscImage::MinSecFrm CDDACurrentPosition(void)=0;
 };
 
 

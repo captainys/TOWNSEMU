@@ -29,7 +29,7 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 	bool terminate=false;
 	this->townsPtr=townsPtr;
 
-	outside_world->OpenWindow();
+	outside_world->Start();
 
 	TownsRender render;
 	for(;true!=terminate;)
@@ -133,6 +133,8 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 	}
 
 	std::cout << "Ending Towns Thread." << std::endl;
+
+	outside_world->Stop();
 }
 
 int TownsThread::GetRunMode(void) const

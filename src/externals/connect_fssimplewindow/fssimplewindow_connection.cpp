@@ -30,10 +30,13 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 
 
-/* virtual */ void FsSimpleWindowConnection::OpenWindow(void)
+/* virtual */ void FsSimpleWindowConnection::Start(void)
 {
 	FsOpenWindow(0,0,640,480,1);
 	FsSetWindowTitle("FM Towns Emulator - TSUGARU");
+}
+/* virtual */ void FsSimpleWindowConnection::Stop(void)
+{
 }
 /* virtual */ void FsSimpleWindowConnection::DevicePolling(class FMTowns &towns)
 {
@@ -172,4 +175,20 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	glRasterPos2i(0,hei-1);
 	glDrawPixels(img.wid,img.hei,GL_RGBA,GL_UNSIGNED_BYTE,flip.data());
 	FsSwapBuffers();
+}
+/* virtual */ void FsSimpleWindowConnection::CDDAPlay(const DiscImage &discImg,DiscImage::MinSecFrm from,DiscImage::MinSecFrm to)
+{
+}
+/* virtual */ void FsSimpleWindowConnection::CDDAStop(const DiscImage &discImg,DiscImage::MinSecFrm from,DiscImage::MinSecFrm to)
+{
+}
+/* virtual */ bool FsSimpleWindowConnection::CDDAIsPlaying(void)
+{
+	return false;
+}
+/* virtual */ DiscImage::MinSecFrm FsSimpleWindowConnection::CDDACurrentPosition(void)
+{
+	DiscImage::MinSecFrm msf;
+	msf.Set(0,0,0);
+	return msf;
 }

@@ -1,3 +1,15 @@
-add_library(fssimplewindow_connection fssimplewindow_connection.h fssimplewindow_connection.cpp)
-target_link_libraries(fssimplewindow_connection outside_world fssimplewindow)
-target_include_directories(fssimplewindow_connection PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+set(TARGET_NAME fssimplewindow_connection)
+
+add_library(${TARGET_NAME} fssimplewindow_connection.h fssimplewindow_connection.cpp)
+target_link_libraries(${TARGET_NAME} outside_world fssimplewindow yssimplesound)
+target_include_directories(${TARGET_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+if(MSVC)
+	target_link_libraries(${TARGET_NAME} yssimplesound_dsound)
+elseif(APPLE)
+	find_library(COCOA_LIB Cocoa)
+	mark_as_advanced(COCOA_LIB)
+	target_link_libraries(${TARGET_NAME} yssimplesound_macosx ${COCOA_LIB})
+elseif(UNIX)
+	target_link_libraries(${TARGET_NAME} yssimplesound_linux_alsa)
+endif()

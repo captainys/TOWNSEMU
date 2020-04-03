@@ -21,9 +21,15 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 class FsSimpleWindowConnection : public Outside_World
 {
 public:
-	virtual void OpenWindow(void);
+	virtual void Start(void);
+	virtual void Stop(void);
 	virtual void DevicePolling(class FMTowns &towns);
 	virtual void Render(const TownsRender::Image &img);
+
+	virtual void CDDAPlay(const DiscImage &discImg,DiscImage::MinSecFrm from,DiscImage::MinSecFrm to);
+	virtual void CDDAStop(const DiscImage &discImg,DiscImage::MinSecFrm from,DiscImage::MinSecFrm to);
+	virtual bool CDDAIsPlaying(void);
+	virtual DiscImage::MinSecFrm CDDACurrentPosition(void);
 };
 
 /* } */
