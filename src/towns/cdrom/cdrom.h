@@ -88,6 +88,7 @@ private:
 	class FMTowns *townsPtr;
 	class TownsPIC *PICPtr;
 	class TownsDMAC *DMACPtr;
+	class Outside_World *OutsideWorld=nullptr;
 
 public:
 	enum
@@ -183,6 +184,8 @@ public:
 
 	virtual void PowerOn(void);
 	virtual void Reset(void);
+
+	void SetOutsideWorld(class Outside_World *outside_world);
 
 	virtual void IOWriteByte(unsigned int ioport,unsigned int data);
 	virtual unsigned int IOReadByte(unsigned int ioport);

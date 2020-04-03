@@ -17,6 +17,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 /* { */
 
 #include "outside_world.h"
+#include "yssimplesound.h"
 
 class FsSimpleWindowConnection : public Outside_World
 {
@@ -26,6 +27,9 @@ public:
 	virtual void DevicePolling(class FMTowns &towns);
 	virtual void Render(const TownsRender::Image &img);
 
+
+	YsSoundPlayer soundPlayer;
+	YsSoundPlayer::SoundData cddaChannel;
 	virtual void CDDAPlay(const DiscImage &discImg,DiscImage::MinSecFrm from,DiscImage::MinSecFrm to);
 	virtual void CDDAStop(const DiscImage &discImg,DiscImage::MinSecFrm from,DiscImage::MinSecFrm to);
 	virtual bool CDDAIsPlaying(void);

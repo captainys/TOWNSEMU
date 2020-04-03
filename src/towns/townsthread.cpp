@@ -28,6 +28,7 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 {
 	bool terminate=false;
 	this->townsPtr=townsPtr;
+	this->townsPtr->cdrom.SetOutsideWorld(outside_world);
 
 	outside_world->Start();
 

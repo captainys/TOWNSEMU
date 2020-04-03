@@ -18,6 +18,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "townsdef.h"
 #include "towns.h"
 #include "cpputil.h"
+#include "outside_world.h"
 
 
 
@@ -59,6 +60,11 @@ void TownsCDROM::State::Reset(void)
 	CDDAPlaying=false;
 
 	next2ndByteOfStatusCode=0;
+}
+
+void TownsCDROM::SetOutsideWorld(class Outside_World *outside_world)
+{
+	this->OutsideWorld=outside_world;
 }
 
 void TownsCDROM::State::ResetMPU(void)
@@ -389,7 +395,29 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 		std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " not implemented yet." << std::endl;
 		break;
 	case CDCMD_CDDAPLAY://   0x04,
-		std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " not implemented yet." << std::endl;
+		{
+			DiscImage::MinSecFrm msfBegin,msfEnd,twoSec;
+			twoSec.Set(0,2,0);
+
+			msfBegin.min=DiscImage::BCDToBin(state.paramQueue[0]);
+			msfBegin.sec=DiscImage::BCDToBin(state.paramQueue[1]);
+			msfBegin.frm=DiscImage::BCDToBin(state.paramQueue[2]);
+			msfBegin-=twoSec;
+
+			msfEnd.min=DiscImage::BCDToBin(state.paramQueue[3]);
+			msfEnd.sec=DiscImage::BCDToBin(state.paramQueue[4]);
+			msfEnd.frm=DiscImage::BCDToBin(state.paramQueue[5]);
+			msfEnd-=twoSec;
+
+			if(nullptr!=OutsideWorld)
+			{
+				OutsideWorld->CDDAPlay(state.GetDisc(),msfBegin,msfEnd);
+			}
+			if(0x20&state.cmd)
+			{
+				SetStatusDriveNotReadyOrDiscChangedOrNoError();
+			}
+		}
 		break;
 	case CDCMD_TOCREAD://    0x05,
 		if(0x20&state.cmd)

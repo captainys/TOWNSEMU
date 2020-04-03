@@ -34,9 +34,11 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 {
 	FsOpenWindow(0,0,640,480,1);
 	FsSetWindowTitle("FM Towns Emulator - TSUGARU");
+	soundPlayer.Start();
 }
 /* virtual */ void FsSimpleWindowConnection::Stop(void)
 {
+	soundPlayer.End();
 }
 /* virtual */ void FsSimpleWindowConnection::DevicePolling(class FMTowns &towns)
 {
@@ -178,9 +180,13 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 }
 /* virtual */ void FsSimpleWindowConnection::CDDAPlay(const DiscImage &discImg,DiscImage::MinSecFrm from,DiscImage::MinSecFrm to)
 {
+	auto wave=discImg.GetWave(from,to);
+	cddaChannel.CreateFrom44100HzStereo(wave);
+	soundPlayer.PlayOneShot(cddaChannel);
 }
 /* virtual */ void FsSimpleWindowConnection::CDDAStop(const DiscImage &discImg,DiscImage::MinSecFrm from,DiscImage::MinSecFrm to)
 {
+	soundPlayer.Stop(cddaChannel);
 }
 /* virtual */ bool FsSimpleWindowConnection::CDDAIsPlaying(void)
 {
