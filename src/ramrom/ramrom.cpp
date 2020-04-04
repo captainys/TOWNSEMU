@@ -37,6 +37,13 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	StoreByte(physAddr+2,(data>>16)&255);
 	StoreByte(physAddr+3,(data>>24)&255);
 }
+/* virtual */ MemoryAccess::ConstPointer MemoryAccess::GetReadAccessPointer(unsigned int physAddr) const
+{
+	ConstPointer ptr;
+	ptr.length=0;
+	ptr.ptr=nullptr;
+	return ptr;
+}
 
 
 ////////////////////////////////////////////////////////////

@@ -1945,6 +1945,19 @@ public:
 		}
 		return mem.FetchByte(linearAddr);
 	}
+	inline MemoryAccess::ConstPointer GetMemoryReadPointer(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+	{
+		if(true==AddressingMode16Bit(addressSize))
+		{
+			offset&=0xffff;
+		}
+		auto addr=seg.baseLinearAddr+offset;
+		if(true==PagingEnabled())
+		{
+			addr=LinearAddressToPhysicalAddress(addr,mem);
+		}
+		return mem.GetReadAccessPointer(addr);
+	}
 
 	/*! Store a byte.
 	*/

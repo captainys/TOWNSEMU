@@ -51,6 +51,8 @@ public:
 	virtual void StoreByte(unsigned int physAddr,unsigned char data);
 	virtual void StoreWord(unsigned int physAddr,unsigned int data);
 	virtual void StoreDword(unsigned int physAddr,unsigned int data);
+
+	virtual ConstPointer GetReadAccessPointer(unsigned int physAddr) const;
 };
 
 class TownsMappedSysROMAccess : public TownsMemAccess
@@ -62,6 +64,8 @@ public:
 	virtual void StoreByte(unsigned int physAddr,unsigned char data);
 	virtual void StoreWord(unsigned int physAddr,unsigned int data);
 	virtual void StoreDword(unsigned int physAddr,unsigned int data);
+
+	virtual ConstPointer GetReadAccessPointer(unsigned int physAddr) const;
 };
 
 class TownsFMRVRAMAccess : public TownsMemAccess
@@ -138,6 +142,8 @@ class TownsSysROMAccess : public TownsMemAccess
 public:
 	virtual unsigned int FetchByte(unsigned int physAddr) const;
 	virtual void StoreByte(unsigned int physAddr,unsigned char data);
+
+	virtual ConstPointer GetReadAccessPointer(unsigned int physAddr) const;
 };
 
 

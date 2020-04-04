@@ -131,6 +131,13 @@ void TownsMemAccess::SetCPUPointer(class i486DX *cpuPtr)
 		RAMPtr[0]=data&255;
 	}
 }
+/* virtual */ MemoryAccess::ConstPointer TownsMainRAMAccess::GetReadAccessPointer(unsigned int physAddr) const
+{
+	ConstPointer ptr;
+	ptr.ptr=physMemPtr->state.RAM.data()+physAddr;
+	ptr.length=4096-(physAddr&0xfff);
+	return ptr;
+}
 
 
 ////////////////////////////////////////////////////////////
@@ -182,6 +189,14 @@ void TownsMemAccess::SetCPUPointer(class i486DX *cpuPtr)
 	// ROM mode no writing
 }
 
+/* virtual */ MemoryAccess::ConstPointer TownsMappedSysROMAccess::GetReadAccessPointer(unsigned int physAddr) const
+{
+	ConstPointer ptr;
+	const unsigned int offset=physAddr-TOWNSADDR_SYSROM_MAP_BASE;
+	ptr.ptr=physMemPtr->sysRom.data()+TOWNSADDR_SYSROM_MAP_OFFSET_DIFFERENCE+offset;
+	ptr.length=1024-(physAddr&0x3ff);
+	return ptr;
+}
 
 ////////////////////////////////////////////////////////////
 
@@ -749,5 +764,12 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 {
 }
 
+/* virtual */ MemoryAccess::ConstPointer TownsSysROMAccess::GetReadAccessPointer(unsigned int physAddr) const
+{
+	ConstPointer ptr;
+	ptr.ptr=physMemPtr->sysRom.data()+(physAddr-0xFFFC0000);
+	ptr.length=4096-(physAddr&0xfff);
+	return ptr;
+}
 
 ////////////////////////////////////////////////////////////

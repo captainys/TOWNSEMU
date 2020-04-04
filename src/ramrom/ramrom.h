@@ -35,6 +35,36 @@ public:
 	virtual void StoreByte(unsigned int physAddr,unsigned char data)=0;
 	virtual void StoreWord(unsigned int physAddr,unsigned int data);
 	virtual void StoreDword(unsigned int physAddr,unsigned int data);
+
+	/*! Memory Access Pointer is for skipping segment and paging translation and directly accessing the memory.
+	    Not all memory range can be accessible by the MemoryAccess::Pointer.
+	    Therefore, the default behavior is returning an unaccessible pointer.
+
+		Due to paging, length must not cross 4K boundary.
+	*/
+	class ConstPointer
+	{
+	public:
+		unsigned int length;
+		const unsigned char *ptr;
+
+		/*! Reads a byte and move the pointer forward by one.
+		*/
+		inline unsigned char FetchByte(void)
+		{
+			auto byteData=*ptr;
+			++ptr;
+			--length;
+			return byteData;
+		}
+		/*! Reads a byte.
+		*/
+		inline unsigned char PeekByte(void) const
+		{
+			return *ptr;
+		}
+	};
+	virtual ConstPointer GetReadAccessPointer(unsigned int physAddr) const;
 };
 
 
@@ -89,6 +119,19 @@ public:
 			return memAccess->FetchDword(physAddr);
 		}
 		return 0xffffffff;
+	}
+
+	inline MemoryAccess::ConstPointer GetReadAccessPointer(unsigned int physAddr) const
+	{
+		auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
+		if(nullptr!=memAccess)
+		{
+			return memAccess->GetReadAccessPointer(physAddr);
+		}
+		MemoryAccess::ConstPointer ptr;
+		ptr.length=0;
+		ptr.ptr=nullptr;
+		return ptr;
 	}
 
 	inline void StoreByte(unsigned int physAddr,unsigned char data)
