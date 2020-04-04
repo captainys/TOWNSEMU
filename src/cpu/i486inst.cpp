@@ -32,7 +32,9 @@ i486DX::Instruction i486DX::FetchInstruction(const SegmentRegister &CS,unsigned 
 
 	// Question: Do prefixes need to be in the specific order INST_PREFIX->ADDRSIZE_OVERRIDE->OPSIZE_OVERRIDE->SEG_OVERRIDE?
 
-	unsigned int lastByte=FetchByte(inst.codeAddressSize,CS,offset+inst.numBytes++,mem);
+	auto ptr=GetMemoryReadPointer(inst.codeAddressSize,CS,offset+inst.numBytes,mem);
+
+	unsigned int lastByte=FetchInstructionByte(ptr,inst.codeAddressSize,CS,offset+inst.numBytes++,mem);
 	for(;;) // While looking at prefixes.
 	{
 		switch(lastByte)
@@ -66,69 +68,66 @@ i486DX::Instruction i486DX::FetchInstruction(const SegmentRegister &CS,unsigned 
 		default:
 			goto PREFIX_DONE;
 		}
-		lastByte=FetchByte(inst.codeAddressSize,CS,offset+inst.numBytes++,mem);
+		lastByte=FetchInstructionByte(ptr,inst.codeAddressSize,CS,offset+inst.numBytes++,mem);
 	}
 PREFIX_DONE:
 	inst.opCode=lastByte;
 	if(true==OpCodeNeedsOneMoreByte(inst.opCode))
 	{
-		lastByte=FetchByte(inst.codeAddressSize,CS,offset+inst.numBytes++,mem);
+		lastByte=FetchInstructionByte(ptr,inst.codeAddressSize,CS,offset+inst.numBytes++,mem);
 		inst.opCode=(inst.opCode<<8)|lastByte;
 	}
 
-	FetchOperand(inst,CS,offset+inst.numBytes,mem);
+	FetchOperand(inst,ptr,CS,offset+inst.numBytes,mem);
 
 	return inst;
 }
 
-inline unsigned int i486DX::FetchOperand8(Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+inline unsigned int i486DX::FetchOperand8(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 {
-	auto byte=FetchByte(inst.codeAddressSize,seg,offset++,mem);
-	inst.operand[inst.operandLen++]=byte;
+	inst.operand[inst.operandLen++]=FetchInstructionByte(ptr,inst.codeAddressSize,seg,offset,mem);
 	++inst.numBytes;
 	return 1;
 }
-inline unsigned int i486DX::PeekOperand8(unsigned int &operand,const Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+inline unsigned int i486DX::PeekOperand8(unsigned int &operand,const Instruction &inst,const MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 {
-	operand=FetchByte(inst.codeAddressSize,seg,offset,mem);
+	operand=PeekInstructionByte(ptr,inst.codeAddressSize,seg,offset,mem);
 	return 1;
 }
-inline unsigned int i486DX::FetchOperand16(Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+inline unsigned int i486DX::FetchOperand16(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 {
-	unsigned int word=FetchWord(inst.codeAddressSize,seg,offset,mem);
-	inst.operand[inst.operandLen  ]=word&0xff;
-	inst.operand[inst.operandLen+1]=(word>>8)&0xff;
+	inst.operand[inst.operandLen  ]=FetchInstructionByte(ptr,inst.codeAddressSize,seg,offset++,mem);
+	inst.operand[inst.operandLen+1]=FetchInstructionByte(ptr,inst.codeAddressSize,seg,offset++,mem);
 	inst.operandLen+=2;
 	inst.numBytes+=2;
 	return 2;
 }
-inline unsigned int i486DX::FetchOperand32(Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+inline unsigned int i486DX::FetchOperand32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 {
-	unsigned int dword=FetchDword(inst.codeAddressSize,seg,offset,mem);
-	inst.operand[inst.operandLen  ]=dword&0xff;
-	inst.operand[inst.operandLen+1]=(dword>>8)&0xff;
-	inst.operand[inst.operandLen+2]=(dword>>16)&0xff;
-	inst.operand[inst.operandLen+3]=(dword>>24)&0xff;
+	inst.operand[inst.operandLen  ]=FetchInstructionByte(ptr,inst.codeAddressSize,seg,offset++,mem);
+	inst.operand[inst.operandLen+1]=FetchInstructionByte(ptr,inst.codeAddressSize,seg,offset++,mem);
+	inst.operand[inst.operandLen+2]=FetchInstructionByte(ptr,inst.codeAddressSize,seg,offset++,mem);
+	inst.operand[inst.operandLen+3]=FetchInstructionByte(ptr,inst.codeAddressSize,seg,offset++,mem);
 	inst.operandLen+=4;
 	inst.numBytes+=4;
 	return 4;
 }
 
-inline unsigned int i486DX::FetchOperand16or32(Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+inline unsigned int i486DX::FetchOperand16or32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 {
 	if(16==inst.operandSize)
 	{
-		return FetchOperand16(inst,seg,offset,mem);
+		return FetchOperand16(inst,ptr,seg,offset,mem);
 	}
 	else // if(32==inst.operandSize)
 	{
-		return FetchOperand32(inst,seg,offset,mem);
+		return FetchOperand32(inst,ptr,seg,offset,mem);
 	}
 }
 
-unsigned int i486DX::FetchOperandRM(Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+unsigned int i486DX::FetchOperandRM(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 {
-	offset+=FetchOperand8(inst,seg,offset,mem);
+	offset+=FetchOperand8(inst,ptr,seg,offset,mem);
 
 	unsigned int numBytesFetched=1;
 	auto MODR_M=inst.operand[inst.operandLen-1];
@@ -140,15 +139,15 @@ unsigned int i486DX::FetchOperandRM(Instruction &inst,const SegmentRegister &seg
 	{
 		if(0b00==MOD && 0b110==R_M) // disp16
 		{
-			numBytesFetched+=FetchOperand16(inst,seg,offset,mem);
+			numBytesFetched+=FetchOperand16(inst,ptr,seg,offset,mem);
 		}
 		else if(0b01==MOD)
 		{
-			numBytesFetched+=FetchOperand8(inst,seg,offset,mem);
+			numBytesFetched+=FetchOperand8(inst,ptr,seg,offset,mem);
 		}
 		else if(0b10==MOD)
 		{
-			numBytesFetched+=FetchOperand16(inst,seg,offset,mem);
+			numBytesFetched+=FetchOperand16(inst,ptr,seg,offset,mem);
 		}
 	}
 	else // if(32==inst.addressSize)
@@ -157,7 +156,7 @@ unsigned int i486DX::FetchOperandRM(Instruction &inst,const SegmentRegister &seg
 		{
 			if(0b100==R_M) // SIB
 			{
-				FetchOperand8(inst,seg,offset,mem);
+				FetchOperand8(inst,ptr,seg,offset,mem);
 				++numBytesFetched;
 				++offset;
 
@@ -167,34 +166,34 @@ unsigned int i486DX::FetchOperandRM(Instruction &inst,const SegmentRegister &seg
 				// No base, [disp32+scaled_index]
 				if(5==BASE)
 				{
-					numBytesFetched+=FetchOperand32(inst,seg,offset,mem);
+					numBytesFetched+=FetchOperand32(inst,ptr,seg,offset,mem);
 				}
 			}
 			else if(0b101==R_M) // disp32
 			{
-				numBytesFetched+=FetchOperand32(inst,seg,offset,mem);
+				numBytesFetched+=FetchOperand32(inst,ptr,seg,offset,mem);
 			}
 		}
 		else if(0b01==MOD)
 		{
 			if(0b100==R_M) // SIB+disp8
 			{
-				FetchOperand8(inst,seg,offset,mem);
+				FetchOperand8(inst,ptr,seg,offset,mem);
 				++numBytesFetched;
 				++offset;
 			}
-			FetchOperand8(inst,seg,offset,mem);
+			FetchOperand8(inst,ptr,seg,offset,mem);
 			++numBytesFetched;
 		}
 		else if(0b10==MOD)
 		{
 			if(0b100==R_M) // SIB+disp32
 			{
-				FetchOperand8(inst,seg,offset,mem);
+				FetchOperand8(inst,ptr,seg,offset,mem);
 				++numBytesFetched;
 				++offset;
 			}
-			numBytesFetched+=FetchOperand32(inst,seg,offset,mem);
+			numBytesFetched+=FetchOperand32(inst,ptr,seg,offset,mem);
 		}
 	}
 
@@ -241,7 +240,7 @@ std::string i486DX::Instruction::SegmentOverrideString(int segOverridePrefix)
 	return str;
 }
 
-void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offset,const Memory &mem) const
+void i486DX::FetchOperand(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,int offset,const Memory &mem) const
 {
 	switch(inst.opCode)
 	{
@@ -250,48 +249,48 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 
 	case I486_OPCODE_C0_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_I8://0xC0,// ::ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
 	case I486_OPCODE_C1_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_I8:// 0xC1, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
-		offset+=FetchOperandRM(inst,seg,offset,mem);
-		FetchOperand8(inst,seg,offset,mem);
+		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
+		FetchOperand8(inst,ptr,seg,offset,mem);
 		break;
 	case I486_OPCODE_D0_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_1://0xD0, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
 	case I486_OPCODE_D1_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_1://0xD1, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
 	case I486_OPCODE_D3_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_CL://0xD2,// ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
 	case I486_OPCODE_D3_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_CL://0xD3, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
-		offset+=FetchOperandRM(inst,seg,offset,mem);
+		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
 		break;
 
 
 	case I486_OPCODE_F6_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF6
-		offset+=FetchOperandRM(inst,seg,offset,mem);
+		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
 		if(0==inst.GetREG()) // TEST RM8,I8
 		{
-			FetchOperand8(inst,seg,offset,mem);
+			FetchOperand8(inst,ptr,seg,offset,mem);
 		}
 		inst.operandSize=8;
 		break;
 	case I486_OPCODE_F7_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF7,
-		offset+=FetchOperandRM(inst,seg,offset,mem);
+		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
 		if(0==inst.GetREG()) // TEST RM8,I8
 		{
-			FetchOperand16or32(inst,seg,offset,mem);
+			FetchOperand16or32(inst,ptr,seg,offset,mem);
 		}
 		break;
 
 
 	case I486_OPCODE_AAD_ADX://    0xD5,
 	case I486_OPCODE_AAM_AMX://    0xD4,
-		FetchOperand8(inst,seg,offset,mem);
+		FetchOperand8(inst,ptr,seg,offset,mem);
 		break;
 
 
 	case I486_OPCODE_ARPL://       0x63,
-		FetchOperandRM(inst,seg,offset,mem);
+		FetchOperandRM(inst,ptr,seg,offset,mem);
 		break;
 
 
 	case I486_OPCODE_BT_BTS_BTR_BTC_RM_I8:// 0FBA
-		offset+=FetchOperandRM(inst,seg,offset,mem);
-		FetchOperand8(inst,seg,offset,mem);
+		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
+		FetchOperand8(inst,ptr,seg,offset,mem);
 		break;
 
 	case I486_OPCODE_BSF_R_RM://   0x0FBC,
@@ -300,18 +299,18 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 	case I486_OPCODE_BTC_RM_R://   0x0FBB,
 	case I486_OPCODE_BTS_RM_R://   0x0FAB,
 	case I486_OPCODE_BTR_RM_R://   0x0FB3,
-		FetchOperandRM(inst,seg,offset,mem);
+		FetchOperandRM(inst,ptr,seg,offset,mem);
 		break;
 
 
 	case I486_OPCODE_CALL_REL://   0xE8,
 	case I486_OPCODE_JMP_REL://          0xE9,   // cw or cd
-		FetchOperand16or32(inst,seg,offset,mem);
+		FetchOperand16or32(inst,ptr,seg,offset,mem);
 		break;
 	case I486_OPCODE_CALL_FAR://   0x9A,
 	case I486_OPCODE_JMP_FAR:
-		offset+=FetchOperand16or32(inst,seg,offset,mem);
-		FetchOperand16(inst,seg,offset,mem);
+		offset+=FetchOperand16or32(inst,ptr,seg,offset,mem);
+		FetchOperand16(inst,ptr,seg,offset,mem);
 		break;
 
 
@@ -347,8 +346,8 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 
 
 	case I486_OPCODE_ENTER://      0xC8,
-		offset+=FetchOperand16(inst,seg,offset,mem);
-		FetchOperand8(inst,seg,offset,mem);
+		offset+=FetchOperand16(inst,ptr,seg,offset,mem);
+		FetchOperand8(inst,ptr,seg,offset,mem);
 		break;
 
 
@@ -357,28 +356,28 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 	case I486_OPCODE_FPU_D9_FNSTCW_M16_FNSTENV_F2XM1_FXAM_FXCH_FXTRACT_FYL2X_FYL2XP1_FABS_:// 0xD9,
 		{
 			unsigned int MODR_M;
-			PeekOperand8(MODR_M,inst,seg,offset,mem);
+			PeekOperand8(MODR_M,inst,ptr,seg,offset,mem);
 			if(0xF0<=MODR_M && MODR_M<=0xFF)
 			{
-				FetchOperand8(inst,seg,offset,mem);
+				FetchOperand8(inst,ptr,seg,offset,mem);
 			}
 			else
 			{
-				FetchOperandRM(inst,seg,offset,mem);
+				FetchOperandRM(inst,ptr,seg,offset,mem);
 			}
 		}
 		break;
 	case I486_OPCODE_FPU_DB_FNINIT_FRSTOR://     0xDB, 
 		{
 			unsigned int MODR_M;
-			PeekOperand8(MODR_M,inst,seg,offset,mem);
+			PeekOperand8(MODR_M,inst,ptr,seg,offset,mem);
 			if(0xE3==MODR_M) // FNINIT
 			{
-				FetchOperand8(inst,seg,offset,mem);
+				FetchOperand8(inst,ptr,seg,offset,mem);
 			}
 			else
 			{
-				FetchOperand8(inst,seg,offset,mem);
+				FetchOperand8(inst,ptr,seg,offset,mem);
 				switch(Instruction::GetREG(MODR_M))
 				{
 				case 0:
@@ -398,14 +397,14 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 	case I486_OPCODE_FPU_DF_FNSTSW_AX://  0xDF,
 		{
 			unsigned int MODR_M;
-			PeekOperand8(MODR_M,inst,seg,offset,mem);
+			PeekOperand8(MODR_M,inst,ptr,seg,offset,mem);
 			if(0xE0==MODR_M) // FNSTSW
 			{
-				FetchOperand8(inst,seg,offset,mem);
+				FetchOperand8(inst,ptr,seg,offset,mem);
 			}
 			else
 			{
-				FetchOperand8(inst,seg,offset,mem); // Tentative.
+				FetchOperand8(inst,ptr,seg,offset,mem); // Tentative.
 				switch(Instruction::GetREG(MODR_M))
 				{
 				case 0:
@@ -430,7 +429,7 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 
 	case I486_OPCODE_IN_AL_I8://=        0xE4,
 	case I486_OPCODE_IN_A_I8://=         0xE5,
-		FetchOperand8(inst,seg,offset,mem);
+		FetchOperand8(inst,ptr,seg,offset,mem);
 		break;
 	case I486_OPCODE_IN_AL_DX://=        0xEC,
 	case I486_OPCODE_IN_A_DX://=         0xED,
@@ -438,22 +437,22 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 
 
 	case I486_OPCODE_IMUL_R_RM_I8://0x6B,
-		offset+=FetchOperandRM(inst,seg,offset,mem);
-		FetchOperand8(inst,seg,offset,mem);
+		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
+		FetchOperand8(inst,ptr,seg,offset,mem);
 		break;
 	case I486_OPCODE_IMUL_R_RM_IMM://0x69,
-		offset+=FetchOperandRM(inst,seg,offset,mem);
+		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
 		if(16==inst.operandSize)
 		{
-			FetchOperand16(inst,seg,offset,mem);
+			FetchOperand16(inst,ptr,seg,offset,mem);
 		}
 		else
 		{
-			FetchOperand32(inst,seg,offset,mem);
+			FetchOperand32(inst,ptr,seg,offset,mem);
 		}
 		break;
 	case I486_OPCODE_IMUL_R_RM://       0x0FAF,
-		FetchOperandRM(inst,seg,offset,mem);
+		FetchOperandRM(inst,ptr,seg,offset,mem);
 		break;
 
 
@@ -466,10 +465,10 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 
 
 	case I486_OPCODE_INC_DEC_R_M8:
-		FetchOperandRM(inst,seg,offset,mem);
+		FetchOperandRM(inst,ptr,seg,offset,mem);
 		break;
 	case I486_OPCODE_INC_DEC_CALL_CALLF_JMP_JMPF_PUSH:
-		FetchOperandRM(inst,seg,offset,mem);
+		FetchOperandRM(inst,ptr,seg,offset,mem);
 		break;
 	case I486_OPCODE_INC_EAX://    0x40, // 16/32 depends on OPSIZE_OVERRIDE
 	case I486_OPCODE_INC_ECX://    0x41, // 16/32 depends on OPSIZE_OVERRIDE
@@ -490,7 +489,7 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		break;
 	case I486_OPCODE_INT://        0xCD,
 	case I486_OPCODE_INTO://       0xCE,
-		FetchOperand8(inst,seg,offset,mem);
+		FetchOperand8(inst,ptr,seg,offset,mem);
 		break;
 
 
@@ -512,7 +511,7 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 	case I486_OPCODE_JGE_REL8:  // 0x7D,
 	case I486_OPCODE_JLE_REL8:  // 0x7E,
 	case I486_OPCODE_JG_REL8:   // 0x7F,
-		FetchOperand8(inst,seg,offset,mem);
+		FetchOperand8(inst,ptr,seg,offset,mem);
 		break;
 
 
@@ -546,27 +545,27 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 	// case I486_OPCODE_JPE_REL://   0x0F8A, Same as JP_REL
 	// case I486_OPCODE_JPO_REL://   0x0F8B, Same as JNP_REL
 	case I486_OPCODE_JS_REL://    0x0F88,
-		FetchOperand16or32(inst,seg,offset,mem);
+		FetchOperand16or32(inst,ptr,seg,offset,mem);
 		break;
 
 
 	case I486_OPCODE_BINARYOP_RM8_FROM_I8:
 	case I486_OPCODE_BINARYOP_RM8_FROM_I8_ALIAS:
-		offset+=FetchOperandRM(inst,seg,offset,mem);
-		FetchOperand8(inst,seg,offset,mem);
+		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
+		FetchOperand8(inst,ptr,seg,offset,mem);
 		break;
 	case I486_OPCODE_BINARYOP_R_FROM_I:
-		offset+=FetchOperandRM(inst,seg,offset,mem);
-		FetchOperand16or32(inst,seg,offset,mem);
+		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
+		FetchOperand16or32(inst,ptr,seg,offset,mem);
 		break;
 	case I486_OPCODE_BINARYOP_RM_FROM_SXI8:
-		offset+=FetchOperandRM(inst,seg,offset,mem);
-		FetchOperand8(inst,seg,offset,mem);
+		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
+		FetchOperand8(inst,ptr,seg,offset,mem);
 		break;
 
 
 	case I486_OPCODE_LGDT_LIDT_SGDT_SIDT:
-		FetchOperandRM(inst,seg,offset,mem);
+		FetchOperandRM(inst,ptr,seg,offset,mem);
 		if(4==inst.GetREG() || 6==inst.GetREG())
 		{
 			inst.operandSize=16;
@@ -579,7 +578,7 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 
 
 	case I486_OPCODE_LEA://=              0x8D,
-		FetchOperandRM(inst,seg,offset,mem);
+		FetchOperandRM(inst,ptr,seg,offset,mem);
 		break;
 
 
@@ -588,7 +587,7 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 	case I486_OPCODE_LES://              0xC4,
 	case I486_OPCODE_LFS://              0x0FB4,
 	case I486_OPCODE_LGS://              0x0FB5,
-		FetchOperandRM(inst,seg,offset,mem);
+		FetchOperandRM(inst,ptr,seg,offset,mem);
 		break;
 
 
@@ -600,12 +599,12 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 	case I486_OPCODE_LOOP://             0xE2,
 	case I486_OPCODE_LOOPE://            0xE1,
 	case I486_OPCODE_LOOPNE://           0xE0,
-		FetchOperand8(inst,seg,offset,mem);
+		FetchOperand8(inst,ptr,seg,offset,mem);
 		break;
 
 
 	case I486_OPCODE_LSL://              0x0F03,
-		FetchOperandRM(inst,seg,offset,mem);
+		FetchOperandRM(inst,ptr,seg,offset,mem);
 		break;
 
 
@@ -622,7 +621,7 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 	case I486_OPCODE_MOV_TO_R8: //        0x8A,
 		// Example:  8a 0e 16 00     MOV CL,[0016H]
 	case I486_OPCODE_MOV_TO_R: //         0x8B, // 16/32 depends on OPSIZE_OVERRIDE
-		FetchOperandRM(inst,seg,offset,mem);
+		FetchOperandRM(inst,ptr,seg,offset,mem);
 		break;
 
 
@@ -630,7 +629,7 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		// Example:  8c c6           MOV SI,ES
 		// Sreg: ES=0, CS=1, SS=2, DS=3, FD=4, GS=5 (OPCODE part of MODR_M)  [1] pp.26-10
 	case I486_OPCODE_MOV_TO_SEG: //       0x8E,
-		FetchOperandRM(inst,seg,offset,mem);
+		FetchOperandRM(inst,ptr,seg,offset,mem);
 		break;
 
 	case I486_OPCODE_MOV_M_TO_AL: //      0xA0, // 16/32 depends on ADDRESSSIZE_OVERRIDE
@@ -641,10 +640,10 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		{
 		default:
 		case 32:
-			FetchOperand32(inst,seg,offset,mem);
+			FetchOperand32(inst,ptr,seg,offset,mem);
 			break;
 		case 16:
-			FetchOperand16(inst,seg,offset,mem);
+			FetchOperand16(inst,ptr,seg,offset,mem);
 			break;
 		}
 		break;
@@ -657,7 +656,7 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 	case I486_OPCODE_MOV_I8_TO_CH: //     0xB5,
 	case I486_OPCODE_MOV_I8_TO_DH: //     0xB6,
 	case I486_OPCODE_MOV_I8_TO_BH: //     0xB7,
-		FetchOperand8(inst,seg,offset,mem);
+		FetchOperand8(inst,ptr,seg,offset,mem);
 		break;
 	case I486_OPCODE_MOV_I_TO_EAX: //   0xB8, // 16/32 depends on OPSIZE_OVERRIDE
 	case I486_OPCODE_MOV_I_TO_ECX: //   0xB9, // 16/32 depends on OPSIZE_OVERRIDE
@@ -667,15 +666,15 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 	case I486_OPCODE_MOV_I_TO_EBP: //   0xBD, // 16/32 depends on OPSIZE_OVERRIDE
 	case I486_OPCODE_MOV_I_TO_ESI: //   0xBE, // 16/32 depends on OPSIZE_OVERRIDE
 	case I486_OPCODE_MOV_I_TO_EDI: //   0xBF, // 16/32 depends on OPSIZE_OVERRIDE
-		FetchOperand16or32(inst,seg,offset,mem);
+		FetchOperand16or32(inst,ptr,seg,offset,mem);
 		break;
 	case I486_OPCODE_MOV_I8_TO_RM8: //    0xC6,
-		offset+=FetchOperandRM(inst,seg,offset,mem);
-		FetchOperand8(inst,seg,offset,mem);
+		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
+		FetchOperand8(inst,ptr,seg,offset,mem);
 		break;
 	case I486_OPCODE_MOV_I_TO_RM: //      0xC7, // 16/32 depends on OPSIZE_OVERRIDE
-		offset+=FetchOperandRM(inst,seg,offset,mem);
-		FetchOperand16or32(inst,seg,offset,mem);
+		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
+		FetchOperand16or32(inst,ptr,seg,offset,mem);
 		break;
 
 
@@ -687,7 +686,7 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 	case I486_OPCODE_MOV_TO_TR://        0x0F26,
 		inst.operandSize=32; // [1] pp.26-213 32bit operands are always used with these instructions, 
 		                     //      regardless of the opreand-size attribute.
-		FetchOperandRM(inst,seg,offset,mem);
+		FetchOperandRM(inst,ptr,seg,offset,mem);
 		break;
 
 
@@ -700,7 +699,7 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 	case I486_OPCODE_MOVSX_R32_RM16://=   0x0FBF,
 	case I486_OPCODE_MOVZX_R_RM8://=      0x0FB6,
 	case I486_OPCODE_MOVZX_R32_RM16://=   0x0FB7,
-		FetchOperandRM(inst,seg,offset,mem);
+		FetchOperandRM(inst,ptr,seg,offset,mem);
 		break;
 
 
@@ -710,7 +709,7 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 
 	case I486_OPCODE_OUT_I8_AL: //        0xE6,
 	case I486_OPCODE_OUT_I8_A: //         0xE7,
-		FetchOperand8(inst,seg,offset,mem);
+		FetchOperand8(inst,ptr,seg,offset,mem);
 		break;
 	case I486_OPCODE_OUT_DX_AL: //        0xEE,
 	case I486_OPCODE_OUT_DX_A: //         0xEF,
@@ -737,10 +736,10 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 	case I486_OPCODE_PUSH_EDI://         0x57,
 		break;
 	case I486_OPCODE_PUSH_I8://          0x6A,
-		FetchOperand8(inst,seg,offset,mem);
+		FetchOperand8(inst,ptr,seg,offset,mem);
 		break;
 	case I486_OPCODE_PUSH_I://           0x68,
-		FetchOperand16or32(inst,seg,offset,mem);
+		FetchOperand16or32(inst,ptr,seg,offset,mem);
 		break;
 	case I486_OPCODE_PUSH_CS://          0x0E,
 	case I486_OPCODE_PUSH_SS://          0x16,
@@ -752,7 +751,7 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 
 
 	case I486_OPCODE_POP_M://            0x8F,
-		FetchOperandRM(inst,seg,offset,mem);
+		FetchOperandRM(inst,ptr,seg,offset,mem);
 		break;
 	case I486_OPCODE_POP_EAX://          0x58,
 	case I486_OPCODE_POP_ECX://          0x59,
@@ -778,7 +777,7 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		break;
 	case I486_OPCODE_RET_I16://          0xC2,
 	case I486_OPCODE_RETF_I16://         0xCA,
-		FetchOperand16(inst,seg,offset,mem);
+		FetchOperand16(inst,ptr,seg,offset,mem);
 		break;
 
 
@@ -788,12 +787,12 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 
 	case I486_OPCODE_SHLD_RM_I8://       0x0FA4,
 	case I486_OPCODE_SHRD_RM_I8://       0x0FAC,
-		offset+=FetchOperandRM(inst,seg,offset,mem);
-		FetchOperand8(inst,seg,offset,mem);
+		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
+		FetchOperand8(inst,ptr,seg,offset,mem);
 		break;
 	case I486_OPCODE_SHLD_RM_CL://       0x0FA5,
 	case I486_OPCODE_SHRD_RM_CL://       0x0FAD,
-		FetchOperandRM(inst,seg,offset,mem);
+		FetchOperandRM(inst,ptr,seg,offset,mem);
 		break;
 
 
@@ -832,13 +831,13 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 	//I486_OPCODE_SETPO://            0x0F9B,
 	case I486_OPCODE_SETS://             0x0F98,
 	// I486_OPCODE_SETZ://             0x0F94,
-		FetchOperandRM(inst,seg,offset,mem);
+		FetchOperandRM(inst,ptr,seg,offset,mem);
 		inst.operandSize=8;
 		break;
 
 
 	case I486_OPCODE_SLDT_STR_LLDT_LTR_VERR_VERW://             0x0F00,
-		FetchOperandRM(inst,seg,offset,mem);
+		FetchOperandRM(inst,ptr,seg,offset,mem);
 		inst.operandSize=16;
 		break;
 
@@ -863,7 +862,7 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 	case  I486_OPCODE_SUB_AL_FROM_I8://  0x2C,
 	case I486_OPCODE_TEST_AL_FROM_I8://  0xA8,
 	case  I486_OPCODE_XOR_AL_FROM_I8:
-		FetchOperand8(inst,seg,offset,mem);
+		FetchOperand8(inst,ptr,seg,offset,mem);
 		break;
 	case  I486_OPCODE_ADC_A_FROM_I://    0x15,
 	case  I486_OPCODE_ADD_A_FROM_I://    0x05,
@@ -874,7 +873,7 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 	case  I486_OPCODE_SUB_A_FROM_I://    0x2D,
 	case I486_OPCODE_TEST_A_FROM_I://    0xA9,
 	case  I486_OPCODE_XOR_A_FROM_I:
-		FetchOperand16or32(inst,seg,offset,mem);
+		FetchOperand16or32(inst,ptr,seg,offset,mem);
 		break;
 	case  I486_OPCODE_ADC_RM8_FROM_R8:// 0x10,
 	case  I486_OPCODE_ADD_RM8_FROM_R8:// 0x00,
@@ -913,7 +912,7 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 	case I486_OPCODE_SBB_R_FROM_RM://   0x1B,
 	case I486_OPCODE_SUB_R_FROM_RM://   0x2B,
 	case I486_OPCODE_XOR_R_FROM_RM:
-		FetchOperandRM(inst,seg,offset,mem);
+		FetchOperandRM(inst,ptr,seg,offset,mem);
 		break;
 
 
@@ -928,7 +927,7 @@ void i486DX::FetchOperand(Instruction &inst,const SegmentRegister &seg,int offse
 		break;
 	case I486_OPCODE_XCHG_RM8_R8://      0x86,
 	case I486_OPCODE_XCHG_RM_R://        0x87,
-		FetchOperandRM(inst,seg,offset,mem);
+		FetchOperandRM(inst,ptr,seg,offset,mem);
 		break;
 
 

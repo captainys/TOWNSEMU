@@ -49,6 +49,7 @@ public:
 		const unsigned char *ptr;
 
 		/*! Reads a byte and move the pointer forward by one.
+		    It does not check length.  Calling function is responsible for checking it.
 		*/
 		inline unsigned char FetchByte(void)
 		{
@@ -56,6 +57,28 @@ public:
 			++ptr;
 			--length;
 			return byteData;
+		}
+		/*! Reads two bytes.
+		    It does not check length.  Calling function is responsible for checking it.
+		*/
+		inline void FetchTwoBytes(unsigned char buf[2])
+		{
+			buf[0]=ptr[0];
+			buf[1]=ptr[1];
+			ptr+=2;
+			length-=2;
+		}
+		/*! Reads two bytes.
+		    It does not check length.  Calling function is responsible for checking it.
+		*/
+		inline void FetchFourBytes(unsigned char buf[4])
+		{
+			buf[0]=ptr[0];
+			buf[1]=ptr[1];
+			buf[2]=ptr[2];
+			buf[3]=ptr[3];
+			ptr+=4;
+			length-=4;
 		}
 		/*! Reads a byte.
 		*/

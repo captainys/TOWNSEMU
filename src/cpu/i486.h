@@ -2047,25 +2047,25 @@ private:
 	/*! Fetch an 8-bit operand.  Returns the number of bytes fetched.
 	    It pushes inst.operandLen and this->numBytes by 1 byte.
 	*/
-	inline unsigned int FetchOperand8(Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+	inline unsigned int FetchOperand8(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
 	/*! Peek an 8-bit operand.  Returns the number of bytes fetched.
 	    It does not push inst.operandLen and this->numBytes by 1 byte.
 	*/
-	inline unsigned int PeekOperand8(unsigned int &operand,const Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+	inline unsigned int PeekOperand8(unsigned int &operand,const Instruction &inst,const MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
 	/*! Fetch an 16-bit operand  Returns the number of bytes fetched..
 	*/
-	inline unsigned int FetchOperand16(Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+	inline unsigned int FetchOperand16(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
 	/*! Fetch an 32-bit operand.  Returns the number of bytes fetched.
 	*/
-	inline unsigned int FetchOperand32(Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+	inline unsigned int FetchOperand32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
 	/*! Fetch an 16- or 32-bit operand.  Length fetched depends on inst.operandSize.
 	    Returns the number of bytes fetched.
 	*/
-	inline unsigned int FetchOperand16or32(Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+	inline unsigned int FetchOperand16or32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
 	/*! Fetch an operand defined by the RM byte.
 	    Returns the number of bytes fetched.
 	*/
-	unsigned int FetchOperandRM(Instruction &inst,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+	unsigned int FetchOperandRM(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
 	/*! Fetch operand(s) for the instruction.
 	The following instruction:
 	    I486_OPCODE_MOV_TO_CR://        0x220F,
@@ -2076,7 +2076,7 @@ private:
 	    I486_OPCODE_MOV_TO_TR://        0x260F,
 	always set 32 to inst.operandSize regardless of the preceding operand-size override, or default operand size.
 	*/
-	void FetchOperand(Instruction &inst,const SegmentRegister &seg,int offset,const Memory &mem) const;
+	void FetchOperand(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,int offset,const Memory &mem) const;
 
 public:
 	/*! Fetch an instruction from specific segment and offset.
@@ -2097,7 +2097,29 @@ public:
 	/*! Fetch an instruction from specific segment and offset with given default operand size and address size.
 	*/
 	Instruction FetchInstruction(const SegmentRegister &CS,unsigned int offset,const Memory &mem,unsigned int defOperSize,unsigned int defAddrSize) const;
-
+private:
+	inline unsigned int FetchInstructionByte(MemoryAccess::ConstPointer &ptr,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+	{
+		if(0<ptr.length)
+		{
+			return ptr.FetchByte();
+		}
+		else
+		{
+			return FetchByte(addressSize,seg,offset,mem);
+		}
+	}
+	inline unsigned int PeekInstructionByte(const MemoryAccess::ConstPointer &ptr,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+	{
+		if(0<ptr.length)
+		{
+			return ptr.PeekByte();
+		}
+		else
+		{
+			return FetchByte(addressSize,seg,offset,mem);
+		}
+	}
 
 public:
 	/*! Make a disassembly.
