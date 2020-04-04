@@ -2047,17 +2047,17 @@ private:
 	/*! Fetch an 8-bit operand.  Returns the number of bytes fetched.
 	    It pushes inst.operandLen and this->numBytes by 1 byte.
 	*/
-	inline unsigned int FetchOperand8(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+	inline void FetchOperand8(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
 	/*! Peek an 8-bit operand.  Returns the number of bytes fetched.
 	    It does not push inst.operandLen and this->numBytes by 1 byte.
 	*/
-	inline unsigned int PeekOperand8(unsigned int &operand,const Instruction &inst,const MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+	inline void PeekOperand8(unsigned int &operand,const Instruction &inst,const MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
 	/*! Fetch an 16-bit operand  Returns the number of bytes fetched..
 	*/
-	inline unsigned int FetchOperand16(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+	inline void FetchOperand16(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
 	/*! Fetch an 32-bit operand.  Returns the number of bytes fetched.
 	*/
-	inline unsigned int FetchOperand32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+	inline void FetchOperand32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
 	/*! Fetch an 16- or 32-bit operand.  Length fetched depends on inst.operandSize.
 	    Returns the number of bytes fetched.
 	*/

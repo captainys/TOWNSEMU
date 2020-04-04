@@ -83,51 +83,47 @@ PREFIX_DONE:
 	return inst;
 }
 
-inline unsigned int i486DX::FetchOperand8(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+inline void i486DX::FetchOperand8(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 {
 	inst.operand[inst.operandLen++]=FetchInstructionByte(ptr,inst.codeAddressSize,seg,offset,mem);
 	++inst.numBytes;
-	return 1;
 }
-inline unsigned int i486DX::PeekOperand8(unsigned int &operand,const Instruction &inst,const MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+inline void i486DX::PeekOperand8(unsigned int &operand,const Instruction &inst,const MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 {
 	operand=PeekInstructionByte(ptr,inst.codeAddressSize,seg,offset,mem);
-	return 1;
 }
-inline unsigned int i486DX::FetchOperand16(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+inline void i486DX::FetchOperand16(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 {
-	inst.operand[inst.operandLen  ]=FetchInstructionByte(ptr,inst.codeAddressSize,seg,offset++,mem);
-	inst.operand[inst.operandLen+1]=FetchInstructionByte(ptr,inst.codeAddressSize,seg,offset++,mem);
-	inst.operandLen+=2;
+	inst.operand[inst.operandLen++]=FetchInstructionByte(ptr,inst.codeAddressSize,seg,offset++,mem);
+	inst.operand[inst.operandLen++]=FetchInstructionByte(ptr,inst.codeAddressSize,seg,offset++,mem);
 	inst.numBytes+=2;
-	return 2;
 }
-inline unsigned int i486DX::FetchOperand32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+inline void i486DX::FetchOperand32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 {
-	inst.operand[inst.operandLen  ]=FetchInstructionByte(ptr,inst.codeAddressSize,seg,offset++,mem);
-	inst.operand[inst.operandLen+1]=FetchInstructionByte(ptr,inst.codeAddressSize,seg,offset++,mem);
-	inst.operand[inst.operandLen+2]=FetchInstructionByte(ptr,inst.codeAddressSize,seg,offset++,mem);
-	inst.operand[inst.operandLen+3]=FetchInstructionByte(ptr,inst.codeAddressSize,seg,offset++,mem);
-	inst.operandLen+=4;
+	inst.operand[inst.operandLen++]=FetchInstructionByte(ptr,inst.codeAddressSize,seg,offset++,mem);
+	inst.operand[inst.operandLen++]=FetchInstructionByte(ptr,inst.codeAddressSize,seg,offset++,mem);
+	inst.operand[inst.operandLen++]=FetchInstructionByte(ptr,inst.codeAddressSize,seg,offset++,mem);
+	inst.operand[inst.operandLen++]=FetchInstructionByte(ptr,inst.codeAddressSize,seg,offset++,mem);
 	inst.numBytes+=4;
-	return 4;
 }
 
 inline unsigned int i486DX::FetchOperand16or32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 {
 	if(16==inst.operandSize)
 	{
-		return FetchOperand16(inst,ptr,seg,offset,mem);
+		FetchOperand16(inst,ptr,seg,offset,mem);
+		return 2;
 	}
 	else // if(32==inst.operandSize)
 	{
-		return FetchOperand32(inst,ptr,seg,offset,mem);
+		FetchOperand32(inst,ptr,seg,offset,mem);
+		return 4;
 	}
 }
 
 unsigned int i486DX::FetchOperandRM(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 {
-	offset+=FetchOperand8(inst,ptr,seg,offset,mem);
+	FetchOperand8(inst,ptr,seg,offset++,mem);
 
 	unsigned int numBytesFetched=1;
 	auto MODR_M=inst.operand[inst.operandLen-1];
@@ -139,15 +135,18 @@ unsigned int i486DX::FetchOperandRM(Instruction &inst,MemoryAccess::ConstPointer
 	{
 		if(0b00==MOD && 0b110==R_M) // disp16
 		{
-			numBytesFetched+=FetchOperand16(inst,ptr,seg,offset,mem);
+			FetchOperand16(inst,ptr,seg,offset,mem);
+			numBytesFetched+=2;
 		}
 		else if(0b01==MOD)
 		{
-			numBytesFetched+=FetchOperand8(inst,ptr,seg,offset,mem);
+			FetchOperand8(inst,ptr,seg,offset,mem);
+			++numBytesFetched;
 		}
 		else if(0b10==MOD)
 		{
-			numBytesFetched+=FetchOperand16(inst,ptr,seg,offset,mem);
+			FetchOperand16(inst,ptr,seg,offset,mem);
+			numBytesFetched+=2;
 		}
 	}
 	else // if(32==inst.addressSize)
@@ -166,12 +165,14 @@ unsigned int i486DX::FetchOperandRM(Instruction &inst,MemoryAccess::ConstPointer
 				// No base, [disp32+scaled_index]
 				if(5==BASE)
 				{
-					numBytesFetched+=FetchOperand32(inst,ptr,seg,offset,mem);
+					FetchOperand32(inst,ptr,seg,offset,mem);
+					numBytesFetched+=4;
 				}
 			}
 			else if(0b101==R_M) // disp32
 			{
-				numBytesFetched+=FetchOperand32(inst,ptr,seg,offset,mem);
+				FetchOperand32(inst,ptr,seg,offset,mem);
+				numBytesFetched+=4;
 			}
 		}
 		else if(0b01==MOD)
@@ -193,7 +194,8 @@ unsigned int i486DX::FetchOperandRM(Instruction &inst,MemoryAccess::ConstPointer
 				++numBytesFetched;
 				++offset;
 			}
-			numBytesFetched+=FetchOperand32(inst,ptr,seg,offset,mem);
+			FetchOperand32(inst,ptr,seg,offset,mem);
+			numBytesFetched+=4;
 		}
 	}
 
@@ -346,7 +348,8 @@ void i486DX::FetchOperand(Instruction &inst,MemoryAccess::ConstPointer &ptr,cons
 
 
 	case I486_OPCODE_ENTER://      0xC8,
-		offset+=FetchOperand16(inst,ptr,seg,offset,mem);
+		FetchOperand16(inst,ptr,seg,offset,mem);
+		offset+=2;
 		FetchOperand8(inst,ptr,seg,offset,mem);
 		break;
 
