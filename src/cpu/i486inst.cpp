@@ -1017,7 +1017,6 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 
 	case I486_OPCODE_CALL_REL://   0xE8,
 	case I486_OPCODE_JMP_REL://          0xE9,   // cw or cd
-		op1.MakeImm8or16or32(*this,operandSize);
 		break;
 	case I486_OPCODE_CALL_FAR://   0x9A,
 	case I486_OPCODE_JMP_FAR:
