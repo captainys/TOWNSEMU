@@ -5416,7 +5416,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			}
 
 			auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,1);
-			auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,1);
+			auto value2=inst.GetUimm8();
 			if(true==state.exception)
 			{
 				break;
@@ -5427,28 +5427,28 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			switch(REG)
 			{
 			case 0:
-				AddByte(i,value2.GetAsDword());
+				AddByte(i,value2);
 				break;
 			case 1:
-				OrByte(i,value2.GetAsDword());
+				OrByte(i,value2);
 				break;
 			case 2:
-				AdcByte(i,value2.GetAsDword());
+				AdcByte(i,value2);
 				break;
 			case 3:
-				SbbByte(i,value2.GetAsDword());
+				SbbByte(i,value2);
 				break;
 			case 4:
-				AndByte(i,value2.GetAsDword());
+				AndByte(i,value2);
 				break;
 			case 5:
-				SubByte(i,value2.GetAsDword());
+				SubByte(i,value2);
 				break;
 			case 6:
-				XorByte(i,value2.GetAsDword());
+				XorByte(i,value2);
 				break;
 			case 7: // CMP
-				SubByte(i,value2.GetAsDword());
+				SubByte(i,value2);
 				break;
 			default:
 				Abort("Undefined REG for "+cpputil::Ubtox(inst.opCode));
