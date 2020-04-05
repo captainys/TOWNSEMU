@@ -328,95 +328,92 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 }
 /* virtual */ void TownsFMRVRAMAccess::StoreByte(unsigned int physAddr,unsigned char data)
 {
-	if(TOWNSADDR_FMR_VRAM_BASE<=physAddr && physAddr<TOWNSADDR_FMR_CVRAM_END)
+	const auto FMRAddr=physAddr-TOWNSADDR_FMR_VRAM_BASE;
+	if(FMRAddr<TOWNSADDR_FMR_VRAM_END-TOWNSADDR_FMR_VRAM_BASE)
 	{
-		if((TOWNS_MEMIO_1_LOW<=physAddr && physAddr<=TOWNS_MEMIO_1_HIGH) ||
-		   (TOWNS_MEMIO_2_LOW<=physAddr && physAddr<=TOWNS_MEMIO_2_HIGH))
+		// Assume screen mode 1 and 2.
+		//   Logical Resolution 640x819
+		//   Visible Resolution 640x400 or 640x200
+		// FMRVram 8pixels per byte, 640pixels=80bytes.
+		// TownsVRAM 2pixels per byte, 640pixels=320bytes.
+		// Just multiply 4 to get TownsVRAM address.
+		const auto VRAMAddr=(FMRAddr<<2)+physMemPtr->state.FMRVRAMWriteOffset;
+
+		unsigned char maskLow=(physMemPtr->state.FMRVRAMMask&0x0F);
+		auto maskHigh=(maskLow<<4);
+		auto andPtn=~(maskLow|maskHigh);
+
+		unsigned char bitTestHigh=0x40;
+		unsigned char bitTestLow=0x80;
+		for(int i=0; i<4; ++i)
 		{
-			switch(physAddr)
+			physMemPtr->state.VRAM[VRAMAddr+i]&=andPtn;
+			if(0!=(data&bitTestHigh))
 			{
-			case TOWNSMEMIO_MIX://                0x000CFF80, // Called Dummy [2] pp.22, pp.158
-				break;
-			case TOWNSMEMIO_FMR_GVRAMMASK://      0x000CFF81, // [2] pp.22,pp.159
-				physMemPtr->state.FMRVRAMMask=data;
-				break;
-			case TOWNSMEMIO_FMR_GVRAMDISPMODE://  0x000CFF82, // [2] pp.22,pp.158
-				physMemPtr->state.FMRDisplayMode=data;
-				break;
-			case TOWNSMEMIO_FMR_GVRAMPAGESEL://   0x000CFF83, // [2] pp.22,pp.159
-				physMemPtr->state.FMRVRAMWriteOffset=(0!=(data&0x10) ? 0x40000 : 0);
-				break;
-
-			case TOWNSMEMIO_FIRQ://               0x000CFF84, // [2] pp.22,pp.95 Always zero in FM TOWNS
-				break; // No write access
-
-			case TOWNSMEMIO_FMR_HSYNC_VSYNC://    0x000CFF86, // [2] pp.22,pp.160
-				break;
-
-			case TOWNSMEMIO_KANJI_JISCODE_HIGH:// 0x000CFF94,
-				physMemPtr->state.kanjiROMAccess.JISCodeHigh=data;
-				break;
-			case TOWNSMEMIO_KANJI_JISCODE_LOW://  0x000CFF95,
-				physMemPtr->state.kanjiROMAccess.JISCodeLow=data;
-				physMemPtr->state.kanjiROMAccess.row=0;
-				break;
-			case TOWNSMEMIO_KANJI_PTN_HIGH://     0x000CFF96,
-				// Write access enabled? [2] pp.95
-				break;
-			case TOWNSMEMIO_KANJI_PTN_LOW://      0x000CFF97,
-				// Write access enabled? [2] pp.95
-				break;
+				physMemPtr->state.VRAM[VRAMAddr+i]|=maskHigh;
 			}
+			if(0!=(data&bitTestLow))
+			{
+				physMemPtr->state.VRAM[VRAMAddr+i]|=maskLow;
+			}
+			bitTestHigh>>=2;
+			bitTestLow>>=2;
 		}
-		else if(TOWNSADDR_FMR_VRAM_BASE<=physAddr && physAddr<TOWNSADDR_FMR_VRAM_END)
+		if(true==breakOnFMRVRAMWrite &&
+		   nullptr!=cpuPtr &&
+		   nullptr!=cpuPtr->debuggerPtr)
 		{
-			// Assume screen mode 1 and 2.
-			//   Logical Resolution 640x819
-			//   Visible Resolution 640x400 or 640x200
-			// FMRVram 8pixels per byte, 640pixels=80bytes.
-			// TownsVRAM 2pixels per byte, 640pixels=320bytes.
-			// Just multiply 4 to get TownsVRAM address.
-			const auto FMRAddr=physAddr-TOWNSADDR_FMR_VRAM_BASE;
-			const auto VRAMAddr=(FMRAddr<<2)+physMemPtr->state.FMRVRAMWriteOffset;
-
-			unsigned char maskLow=(physMemPtr->state.FMRVRAMMask&0x0F);
-			auto maskHigh=(maskLow<<4);
-			auto andPtn=~(maskLow|maskHigh);
-
-			unsigned char bitTestHigh=0x40;
-			unsigned char bitTestLow=0x80;
-			for(int i=0; i<4; ++i)
-			{
-				physMemPtr->state.VRAM[VRAMAddr+i]&=andPtn;
-				if(0!=(data&bitTestHigh))
-				{
-					physMemPtr->state.VRAM[VRAMAddr+i]|=maskHigh;
-				}
-				if(0!=(data&bitTestLow))
-				{
-					physMemPtr->state.VRAM[VRAMAddr+i]|=maskLow;
-				}
-				bitTestHigh>>=2;
-				bitTestLow>>=2;
-			}
-			if(true==breakOnFMRVRAMWrite &&
-			   nullptr!=cpuPtr &&
-			   nullptr!=cpuPtr->debuggerPtr)
-			{
-				cpuPtr->debuggerPtr->ExternalBreak("FMRVRAM Write "+cpputil::Uitox(physAddr));
-			}
+			cpuPtr->debuggerPtr->ExternalBreak("FMRVRAM Write "+cpputil::Uitox(physAddr));
 		}
-		else if(TOWNSADDR_FMR_VRAM_END<=physAddr && physAddr<TOWNSADDR_FMR_CVRAM_END) // Except I/O.
+	}
+	else if((TOWNS_MEMIO_1_LOW<=physAddr && physAddr<=TOWNS_MEMIO_1_HIGH) ||
+	        (TOWNS_MEMIO_2_LOW<=physAddr && physAddr<=TOWNS_MEMIO_2_HIGH))
+	{
+		switch(physAddr)
 		{
-			if(true==breakOnCVRAMWrite &&
-			   nullptr!=cpuPtr &&
-			   nullptr!=cpuPtr->debuggerPtr)
-			{
-				cpuPtr->debuggerPtr->ExternalBreak("CVRAM Write "+cpputil::Uitox(physAddr));
-			}
-			physMemPtr->state.spriteRAM[physAddr-TOWNSADDR_FMR_VRAM_END]=data;
-			physMemPtr->state.TVRAMWrite=true;
+		case TOWNSMEMIO_MIX://                0x000CFF80, // Called Dummy [2] pp.22, pp.158
+			break;
+		case TOWNSMEMIO_FMR_GVRAMMASK://      0x000CFF81, // [2] pp.22,pp.159
+			physMemPtr->state.FMRVRAMMask=data;
+			break;
+		case TOWNSMEMIO_FMR_GVRAMDISPMODE://  0x000CFF82, // [2] pp.22,pp.158
+			physMemPtr->state.FMRDisplayMode=data;
+			break;
+		case TOWNSMEMIO_FMR_GVRAMPAGESEL://   0x000CFF83, // [2] pp.22,pp.159
+			physMemPtr->state.FMRVRAMWriteOffset=(0!=(data&0x10) ? 0x40000 : 0);
+			break;
+
+		case TOWNSMEMIO_FIRQ://               0x000CFF84, // [2] pp.22,pp.95 Always zero in FM TOWNS
+			break; // No write access
+
+		case TOWNSMEMIO_FMR_HSYNC_VSYNC://    0x000CFF86, // [2] pp.22,pp.160
+			break;
+
+		case TOWNSMEMIO_KANJI_JISCODE_HIGH:// 0x000CFF94,
+			physMemPtr->state.kanjiROMAccess.JISCodeHigh=data;
+			break;
+		case TOWNSMEMIO_KANJI_JISCODE_LOW://  0x000CFF95,
+			physMemPtr->state.kanjiROMAccess.JISCodeLow=data;
+			physMemPtr->state.kanjiROMAccess.row=0;
+			break;
+		case TOWNSMEMIO_KANJI_PTN_HIGH://     0x000CFF96,
+			// Write access enabled? [2] pp.95
+			break;
+		case TOWNSMEMIO_KANJI_PTN_LOW://      0x000CFF97,
+			// Write access enabled? [2] pp.95
+			break;
 		}
+	}
+	else if(TOWNSADDR_FMR_VRAM_END<=physAddr && physAddr<TOWNSADDR_FMR_CVRAM_END) // Except I/O.
+	{
+		if(true==breakOnCVRAMWrite &&
+		   nullptr!=cpuPtr &&
+		   nullptr!=cpuPtr->debuggerPtr)
+		{
+			cpuPtr->debuggerPtr->ExternalBreak("CVRAM Write "+cpputil::Uitox(physAddr));
+		}
+		physMemPtr->state.spriteRAM[physAddr-TOWNSADDR_FMR_VRAM_END]=data;
+		physMemPtr->state.TVRAMWrite=true;
 	}
 }
 /* virtual */ void TownsFMRVRAMAccess::StoreWord(unsigned int physAddr,unsigned int data)
