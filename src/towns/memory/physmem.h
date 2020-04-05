@@ -28,6 +28,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include "device.h"
 #include "ramrom.h"
+#include "townsdef.h"
 
 
 
@@ -96,15 +97,112 @@ public:
 	virtual void StoreByte(unsigned int physAddr,unsigned char data);
 };
 
-class TownsVRAMAccess : public TownsMemAccess
+template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END>
+class TownsVRAMAccessTemplate : public TownsMemAccess
 {
 public:
-	virtual unsigned int FetchByte(unsigned int physAddr) const;
-	virtual unsigned int FetchWord(unsigned int physAddr) const;
-	virtual unsigned int FetchDword(unsigned int physAddr) const;
-	virtual void StoreByte(unsigned int physAddr,unsigned char data);
-	virtual void StoreWord(unsigned int physAddr,unsigned int data);
-	virtual void StoreDword(unsigned int physAddr,unsigned int data);
+	virtual unsigned int FetchByte(unsigned int physAddr) const
+	{
+		auto &state=physMemPtr->state;
+		auto offset=physAddr-VRAMADDR_BASE;
+		if(offset<VRAMADDR_END-VRAMADDR_BASE)
+		{
+			return state.VRAM[offset];
+		}
+		return 0xff;
+	}
+	virtual unsigned int FetchWord(unsigned int physAddr) const
+	{
+		auto &state=physMemPtr->state;
+		auto offset=physAddr-VRAMADDR_BASE;
+		if(offset<VRAMADDR_END-VRAMADDR_BASE-1)
+		{
+			return state.VRAM[offset]|(state.VRAM[offset+1]<<8);
+		}
+		else if(offset<VRAMADDR_END-VRAMADDR_BASE)
+		{
+			return state.VRAM[offset];
+		}
+		return 0xffff;
+	}
+	virtual unsigned int FetchDword(unsigned int physAddr) const
+	{
+		auto &state=physMemPtr->state;
+		auto offset=physAddr-VRAMADDR_BASE;
+		if(offset<VRAMADDR_END-VRAMADDR_BASE-3)
+		{
+			return state.VRAM[offset]|
+			      (state.VRAM[offset+1]<<8)|
+			      (state.VRAM[offset+2]<<16)|
+			      (state.VRAM[offset+3]<<24);
+		}
+		else if(offset<VRAMADDR_END-VRAMADDR_BASE-2)
+		{
+			return state.VRAM[offset]|
+			      (state.VRAM[offset+1]<<8)|
+			      (state.VRAM[offset+2]<<16);
+		}
+		else if(offset<VRAMADDR_END-VRAMADDR_BASE-1)
+		{
+			return state.VRAM[offset]|
+			      (state.VRAM[offset+1]<<8);
+		}
+		else if(offset<VRAMADDR_END-VRAMADDR_BASE)
+		{
+			return state.VRAM[offset];
+		}
+		return 0xffffffff;
+	}
+	virtual void StoreByte(unsigned int physAddr,unsigned char data)
+	{
+		auto &state=physMemPtr->state;
+		auto offset=physAddr-VRAMADDR_BASE;
+		if(offset<VRAMADDR_END-VRAMADDR_BASE)
+		{
+			state.VRAM[offset]=data;
+		}
+	}
+	virtual void StoreWord(unsigned int physAddr,unsigned int data)
+	{
+		auto &state=physMemPtr->state;
+		auto offset=physAddr-VRAMADDR_BASE;
+		if(offset<VRAMADDR_END-VRAMADDR_BASE-1)
+		{
+			state.VRAM[offset  ]= data    &255;
+			state.VRAM[offset+1]=(data>>8)&255;
+		}
+		else if(offset<VRAMADDR_END-VRAMADDR_BASE)
+		{
+			state.VRAM[offset]=data;
+		}
+	}
+	virtual void StoreDword(unsigned int physAddr,unsigned int data)
+	{
+		auto &state=physMemPtr->state;
+		auto offset=physAddr-VRAMADDR_BASE;
+		if(offset<VRAMADDR_END-VRAMADDR_BASE-3)
+		{
+			state.VRAM[offset  ]= data     &255;
+			state.VRAM[offset+1]=(data>>8) &255;
+			state.VRAM[offset+2]=(data>>16)&255;
+			state.VRAM[offset+3]=(data>>24)&255;
+		}
+		else if(offset<VRAMADDR_END-VRAMADDR_BASE-2)
+		{
+			state.VRAM[offset  ]= data     &255;
+			state.VRAM[offset+1]=(data>>8) &255;
+			state.VRAM[offset+2]=(data>>16)&255;
+		}
+		else if(offset<VRAMADDR_END-VRAMADDR_BASE-1)
+		{
+			state.VRAM[offset  ]= data    &255;
+			state.VRAM[offset+1]=(data>>8)&255;
+		}
+		else if(offset<VRAMADDR_END-VRAMADDR_BASE)
+		{
+			state.VRAM[offset]=data;
+		}
+	}
 };
 
 class TownsSpriteRAMAccess : public TownsMemAccess
@@ -295,8 +393,20 @@ public:
 	TownsMappedDicROMandDicRAMAccess mappedDicROMandDicRAMAccess;
 	TownsNativeDicROMandDicRAMAccess nativeDicROMandDicRAMAccess;
 	TownsFontROMAccess fontROMAccess;
-	TownsVRAMAccess VRAMAccess;
-	TownsMemAccessDebug <TownsVRAMAccess> VRAMAccessDebug;
+
+	TownsVRAMAccessTemplate <TOWNSADDR_VRAM0_BASE        ,TOWNSADDR_VRAM0_END        > VRAMAccess0;
+	TownsVRAMAccessTemplate <TOWNSADDR_VRAM1_BASE        ,TOWNSADDR_VRAM1_END        > VRAMAccess1;
+	TownsVRAMAccessTemplate <TOWNSADDR_VRAM_HIGHRES0_BASE,TOWNSADDR_VRAM_HIGHRES0_END> VRAMAccessHighRes0;
+	TownsVRAMAccessTemplate <TOWNSADDR_VRAM_HIGHRES1_BASE,TOWNSADDR_VRAM_HIGHRES1_END> VRAMAccessHighRes1;
+	TownsVRAMAccessTemplate <TOWNSADDR_VRAM_HIGHRES2_BASE,TOWNSADDR_VRAM_HIGHRES2_END> VRAMAccessHighRes2;
+
+	TownsMemAccessDebug <TownsVRAMAccessTemplate <TOWNSADDR_VRAM0_BASE        ,TOWNSADDR_VRAM0_END        > > VRAMAccess0Debug;
+	TownsMemAccessDebug <TownsVRAMAccessTemplate <TOWNSADDR_VRAM1_BASE        ,TOWNSADDR_VRAM1_END        > > VRAMAccess1Debug;
+	TownsMemAccessDebug <TownsVRAMAccessTemplate <TOWNSADDR_VRAM_HIGHRES0_BASE,TOWNSADDR_VRAM_HIGHRES0_END> > VRAMAccessHighRes0Debug;
+	TownsMemAccessDebug <TownsVRAMAccessTemplate <TOWNSADDR_VRAM_HIGHRES1_BASE,TOWNSADDR_VRAM_HIGHRES1_END> > VRAMAccessHighRes1Debug;
+	TownsMemAccessDebug <TownsVRAMAccessTemplate <TOWNSADDR_VRAM_HIGHRES2_BASE,TOWNSADDR_VRAM_HIGHRES2_END> > VRAMAccessHighRes2Debug;
+
+
 	TownsSpriteRAMAccess spriteRAMAccess;
 	TownsOsROMAccess osROMAccess;
 	TownsWaveRAMAccess waveRAMAccess;

@@ -288,10 +288,26 @@ void TownsPhysicalMemory::SetUpMemoryAccess(void)
 		mem.AddAccess(&mainRAMAccess,0x00100000,(unsigned int)state.RAM.size()-1);
 	}
 
-	VRAMAccess.SetPhysicalMemoryPointer(this);
-	VRAMAccess.SetCPUPointer(&cpu);
-	VRAMAccessDebug.SetPhysicalMemoryPointer(this);
-	VRAMAccessDebug.SetCPUPointer(&cpu);
+	VRAMAccess0.SetPhysicalMemoryPointer(this);
+	VRAMAccess0.SetCPUPointer(&cpu);
+	VRAMAccess1.SetPhysicalMemoryPointer(this);
+	VRAMAccess1.SetCPUPointer(&cpu);
+	VRAMAccessHighRes0.SetPhysicalMemoryPointer(this);
+	VRAMAccessHighRes0.SetCPUPointer(&cpu);
+	VRAMAccessHighRes1.SetPhysicalMemoryPointer(this);
+	VRAMAccessHighRes1.SetCPUPointer(&cpu);
+	VRAMAccessHighRes2.SetPhysicalMemoryPointer(this);
+	VRAMAccessHighRes2.SetCPUPointer(&cpu);
+	VRAMAccess0Debug.SetPhysicalMemoryPointer(this);
+	VRAMAccess0Debug.SetCPUPointer(&cpu);
+	VRAMAccess1Debug.SetPhysicalMemoryPointer(this);
+	VRAMAccess1Debug.SetCPUPointer(&cpu);
+	VRAMAccessHighRes0Debug.SetPhysicalMemoryPointer(this);
+	VRAMAccessHighRes0Debug.SetCPUPointer(&cpu);
+	VRAMAccessHighRes1Debug.SetPhysicalMemoryPointer(this);
+	VRAMAccessHighRes1Debug.SetCPUPointer(&cpu);
+	VRAMAccessHighRes2Debug.SetPhysicalMemoryPointer(this);
+	VRAMAccessHighRes2Debug.SetCPUPointer(&cpu);
 	SetUpVRAMAccess(false,false);
 
 	spriteRAMAccess.SetPhysicalMemoryPointer(this);
@@ -320,17 +336,29 @@ void TownsPhysicalMemory::SetUpVRAMAccess(bool breakOnRead,bool breakOnWrite)
 	auto &mem=*memPtr;
 	if(true!=breakOnRead && true!=breakOnWrite)
 	{
-		mem.AddAccess(&VRAMAccess,TOWNSADDR_VRAM_BASE, TOWNSADDR_VRAM_END-1);
-		mem.AddAccess(&VRAMAccess,TOWNSADDR_VRAM2_BASE,TOWNSADDR_VRAM2_END-1);
-		mem.AddAccess(&VRAMAccess,0x82000000,0x83FFFFFF); // For IIMX High Resolution Access.
+		mem.AddAccess(&VRAMAccess0,TOWNSADDR_VRAM0_BASE,TOWNSADDR_VRAM0_END-1);
+		mem.AddAccess(&VRAMAccess1,TOWNSADDR_VRAM1_BASE,TOWNSADDR_VRAM1_END-1);
+		mem.AddAccess(&VRAMAccessHighRes0,TOWNSADDR_VRAM_HIGHRES0_BASE,TOWNSADDR_VRAM_HIGHRES0_END-1); // For IIMX High Resolution Access.
+		mem.AddAccess(&VRAMAccessHighRes1,TOWNSADDR_VRAM_HIGHRES1_BASE,TOWNSADDR_VRAM_HIGHRES1_END-1); // For IIMX High Resolution Access.
+		mem.AddAccess(&VRAMAccessHighRes2,TOWNSADDR_VRAM_HIGHRES2_BASE,TOWNSADDR_VRAM_HIGHRES2_END-1); // For IIMX High Resolution Access.
 	}
 	else
 	{
-		VRAMAccessDebug.breakOnRead=breakOnRead;
-		VRAMAccessDebug.breakOnWrite=breakOnWrite;
-		mem.AddAccess(&VRAMAccessDebug,TOWNSADDR_VRAM_BASE, TOWNSADDR_VRAM_END-1);
-		mem.AddAccess(&VRAMAccessDebug,TOWNSADDR_VRAM2_BASE,TOWNSADDR_VRAM2_END-1);
-		mem.AddAccess(&VRAMAccessDebug,0x82000000,0x83FFFFFF); // For IIMX High Resolution Access.
+		VRAMAccess0Debug.breakOnRead=breakOnRead;
+		VRAMAccess0Debug.breakOnWrite=breakOnWrite;
+		VRAMAccess1Debug.breakOnRead=breakOnRead;
+		VRAMAccess1Debug.breakOnWrite=breakOnWrite;
+		VRAMAccessHighRes0Debug.breakOnRead=breakOnRead;
+		VRAMAccessHighRes0Debug.breakOnWrite=breakOnWrite;
+		VRAMAccessHighRes1Debug.breakOnRead=breakOnRead;
+		VRAMAccessHighRes1Debug.breakOnWrite=breakOnWrite;
+		VRAMAccessHighRes2Debug.breakOnRead=breakOnRead;
+		VRAMAccessHighRes2Debug.breakOnWrite=breakOnWrite;
+		mem.AddAccess(&VRAMAccess0Debug,TOWNSADDR_VRAM0_BASE,TOWNSADDR_VRAM0_END-1);
+		mem.AddAccess(&VRAMAccess1Debug,TOWNSADDR_VRAM1_BASE,TOWNSADDR_VRAM1_END-1);
+		mem.AddAccess(&VRAMAccessHighRes0Debug,TOWNSADDR_VRAM_HIGHRES0_BASE,TOWNSADDR_VRAM_HIGHRES0_END-1); // For IIMX High Resolution Access.
+		mem.AddAccess(&VRAMAccessHighRes1Debug,TOWNSADDR_VRAM_HIGHRES1_BASE,TOWNSADDR_VRAM_HIGHRES1_END-1); // For IIMX High Resolution Access.
+		mem.AddAccess(&VRAMAccessHighRes2Debug,TOWNSADDR_VRAM_HIGHRES2_BASE,TOWNSADDR_VRAM_HIGHRES2_END-1); // For IIMX High Resolution Access.
 	}
 }
 
