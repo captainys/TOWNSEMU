@@ -125,7 +125,7 @@ bool Setup(FMTowns &towns,const TownsARGV &argv)
 
 	if(true!=towns.LoadROMImages(argv.ROMPath.c_str()))
 	{
-		std::cout << towns.physMem.abortReason << std::endl;
+		std::cout << towns.vmAbortReason << std::endl;
 		return false;
 	}
 	for(int drv=0; drv<2; ++drv)

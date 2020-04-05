@@ -6756,11 +6756,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 	}
 
-	if(true!=abort && 0==clocksPassed)
+	if(0==clocksPassed)
 	{
 		Abort("Clocks-Passed is not set.");
+		return 0;
 	}
-	if(true!=EIPSetByInstruction && true!=abort)
+	if(true!=EIPSetByInstruction)
 	{
 		state.EIP+=inst.numBytes;
 	}

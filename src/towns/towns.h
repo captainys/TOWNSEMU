@@ -68,9 +68,6 @@ public:
 
 	virtual const char *DeviceName(void) const{return "FMTOWNS";}
 
-	using Device::abort;
-	using Device::abortReason;
-
 	class State
 	{
 	public:

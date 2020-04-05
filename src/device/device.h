@@ -26,9 +26,6 @@ protected:
 	VMBase *vmPtr;
 
 public:
-	mutable bool abort;
-	mutable std::string abortReason;
-
 	const unsigned long long int TIME_NO_SCHEDULE=~0;
 
 	class CommonState

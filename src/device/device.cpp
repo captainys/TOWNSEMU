@@ -22,13 +22,11 @@ Device::Device(VMBase *vmPtr)
 	this->vmPtr=vmPtr;
 	commonState.deviceTime=0;
 	commonState.scheduleTime=TIME_NO_SCHEDULE;
-	abort=false;
 }
 
 void Device::Abort(const std::string &abortReason) const
 {
-	abort=true;
-	this->abortReason=abortReason;
+	vmPtr->Abort(DeviceName(),abortReason);
 }
 
 /* virtual */ void Device::PowerOn(void)

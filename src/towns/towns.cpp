@@ -96,7 +96,6 @@ FMTowns::FMTowns() :
 	debugger.GetSymTable().MakeDOSIntFuncLabel();
 	MakeINTInfo(debugger.GetSymTable());
 
-	abort=false;
 	allDevices.push_back(&pic);
 	allDevices.push_back(&dmac);
 	allDevices.push_back(&physMem);
@@ -359,8 +358,7 @@ bool FMTowns::LoadROMImages(const char dirName[])
 {
 	if(true!=physMem.LoadROMImages(dirName))
 	{
-		abort=true;
-		abortReason="Unable to load ROM images.";
+		Device::Abort("Unable to load ROM images.");
 		return false;
 	}
 	return true;
