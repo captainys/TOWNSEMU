@@ -307,7 +307,7 @@ public:
 
 
 
-	TownsPhysicalMemory(class i486DX *cpuPtr,class Memory *memPtr);
+	TownsPhysicalMemory(class FMTowns *townsPtr,class i486DX *cpuPtr,class Memory *memPtr);
 
 	bool LoadROMImages(const char dirName[]);
 

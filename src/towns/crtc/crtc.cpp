@@ -223,7 +223,7 @@ void TownsCRTC::ScreenModeCache::MakeFMRCompatible(void)
 ////////////////////////////////////////////////////////////
 
 
-TownsCRTC::TownsCRTC(class FMTowns *ptr)
+TownsCRTC::TownsCRTC(class FMTowns *ptr) : Device(ptr)
 {
 	townsPtr=ptr;
 	state.mxVideoOutCtrl.resize(0x10000);

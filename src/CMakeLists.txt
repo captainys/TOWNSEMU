@@ -16,6 +16,7 @@ add_subdirectory(cpputil)
 add_subdirectory(miscutil)
 add_subdirectory(cheapmath)
 
+add_subdirectory(vmbase)
 add_subdirectory(device)
 add_subdirectory(cpu)
 add_subdirectory(inout)

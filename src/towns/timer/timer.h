@@ -78,11 +78,7 @@ public:
 
 	State state;
 
-	TownsTimer(class FMTowns *townsPtr,class TownsPIC *picPtr)
-	{
-		this->townsPtr=townsPtr;
-		this->picPtr=picPtr;
-	}
+	TownsTimer(class FMTowns *townsPtr,class TownsPIC *picPtr);
 
 	virtual void PowerOn(void);
 	virtual void Reset(void);

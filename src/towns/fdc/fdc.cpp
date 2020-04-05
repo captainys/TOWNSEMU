@@ -85,7 +85,7 @@ void TownsFDC::State::Reset(void)
 ////////////////////////////////////////////////////////////
 
 
-TownsFDC::TownsFDC(class FMTowns *townsPtr,class TownsPIC *PICPtr,class TownsDMAC *DMACPtr)
+TownsFDC::TownsFDC(class FMTowns *townsPtr,class TownsPIC *PICPtr,class TownsDMAC *DMACPtr) : Device(townsPtr)
 {
 	this->townsPtr=townsPtr;
 	this->PICPtr=PICPtr;

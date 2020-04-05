@@ -1,5 +1,5 @@
 add_library(towns towns.h towns.cpp tbiosid.cpp townsio.cpp townsio.h townsvmif.cpp townsthread.cpp townsthread.h)
-target_link_libraries(towns cpu device inout ramrom townscdrom townssound townsgameport townstimer townsmem townskeyboard townsrtc townspic townsdmac townscrtc townsrender townsfdc d77 townsdef townseventlog outside_world)
+target_link_libraries(towns cpu vmbase device inout ramrom townscdrom townssound townsgameport townstimer townsmem townskeyboard townsrtc townspic townsdmac townscrtc townsrender townsfdc d77 townsdef townseventlog outside_world)
 target_include_directories(towns PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_subdirectory(outside_world)

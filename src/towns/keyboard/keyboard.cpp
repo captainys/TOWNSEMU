@@ -24,7 +24,7 @@ void TownsKeyboard::State::Reset(void)
 	IRQEnabled=false;
 	KBINT=false;
 }
-TownsKeyboard::TownsKeyboard(FMTowns *townsPtr,TownsPIC *picPtr)
+TownsKeyboard::TownsKeyboard(FMTowns *townsPtr,TownsPIC *picPtr) : Device(townsPtr)
 {
 	this->townsPtr=townsPtr;
 	this->picPtr=picPtr;

@@ -45,10 +45,7 @@ public:
 
 	State state;
 
-	TownsSound(class FMTowns *townsPtr)
-	{
-		this->townsPtr=townsPtr;
-	}
+	TownsSound(class FMTowns *townsPtr);
 
 	virtual void PowerOn(void);
 	virtual void Reset(void);

@@ -22,6 +22,10 @@ class CPU : public Device
 {
 public:
 	static const unsigned int twoToN[32];
+
+	CPU(VMBase *vmPtr) : Device(vmPtr)
+	{
+	}
 };
 
 /* } */

@@ -17,8 +17,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "device.h"
 
 
-Device::Device()
+Device::Device(VMBase *vmPtr)
 {
+	this->vmPtr=vmPtr;
 	commonState.deviceTime=0;
 	commonState.scheduleTime=TIME_NO_SCHEDULE;
 	abort=false;

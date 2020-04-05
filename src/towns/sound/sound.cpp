@@ -37,6 +37,10 @@ void TownsSound::State::ResetVariables(void)
 
 ////////////////////////////////////////////////////////////
 
+TownsSound::TownsSound(class FMTowns *townsPtr) : Device(townsPtr)
+{
+	this->townsPtr=townsPtr;
+}
 
 /* virtual */ void TownsSound::PowerOn(void)
 {

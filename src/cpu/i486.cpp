@@ -240,7 +240,7 @@ void i486DX::FarPointer::LoadSegmentRegister(SegmentRegister &seg,i486DX &cpu,co
 ////////////////////////////////////////////////////////////
 
 
-i486DX::i486DX()
+i486DX::i486DX(VMBase *vmPtr) : CPU(vmPtr)
 {
 	Reset();
 	enableCallStack=false;

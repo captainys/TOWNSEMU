@@ -56,13 +56,7 @@ public:
 
 	State state;
 
-	TownsGamePort(class FMTowns *townsPtr)
-	{
-		this->townsPtr=townsPtr;
-		state.ports[0].device=GAMEPAD;
-		state.ports[1].device=MOUSE;
-		state.PowerOn();
-	}
+	TownsGamePort(class FMTowns *townsPtr);
 
 	virtual void PowerOn(void);
 	virtual void Reset(void);

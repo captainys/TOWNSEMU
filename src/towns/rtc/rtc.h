@@ -59,10 +59,7 @@ public:
 
 	State state;
 
-	TownsRTC(class FMTowns *townsPtr)
-	{
-		this->townsPtr=townsPtr;
-	}
+	TownsRTC(class FMTowns *townsPtr);
 
 	virtual void PowerOn(void);
 	virtual void Reset(void);

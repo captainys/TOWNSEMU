@@ -49,7 +49,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 // (3) Add as data member in FMTowns class.
 // (4) In FMTowns::FMTowns() add to allDevices.
 // (5) In FMTowns::FMTowns() add to io.
-class FMTowns : public Device, public i486DX::FMTownsMouseBiosInterceptor, public i486DX::INT21HInterceptor
+class FMTowns : public VMBase, public Device, public i486DX::FMTownsMouseBiosInterceptor, public i486DX::INT21HInterceptor
 {
 public:
 	// I'm talking about 66MHz to 120MHz ball park.
@@ -236,8 +236,6 @@ public:
 	*/
 	bool GetMouseCoordinate(int &mx,int &my,unsigned int tbiosid) const;
 
-
-	bool CheckAbort(void) const;
 
 	/*! After constructing FMTowns class, call this function to specify where to look
 	    for the ROM images.

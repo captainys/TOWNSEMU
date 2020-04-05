@@ -1676,7 +1676,7 @@ public:
 
 	/*! Default constructor.  As you can see.
 	*/
-	i486DX();
+	i486DX(VMBase *vmPtr);
 
 	/*! Resets the CPU.
 	*/

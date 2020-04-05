@@ -15,6 +15,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <time.h>
 
 #include "device.h"
+#include "towns.h"
 #include "townsdef.h"
 #include "cpputil.h"
 #include "rtc.h"
@@ -36,6 +37,10 @@ void TownsRTC::State::Reset(void)
 
 ////////////////////////////////////////////////////////////
 
+TownsRTC::TownsRTC(class FMTowns *townsPtr) : Device(townsPtr)
+{
+	this->townsPtr=townsPtr;
+}
 
 /* virtual */ void TownsRTC::PowerOn(void)
 {

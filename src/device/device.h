@@ -18,8 +18,13 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include <string>
 
+#include "vmbase.h"
+
 class Device
 {
+protected:
+	VMBase *vmPtr;
+
 public:
 	mutable bool abort;
 	mutable std::string abortReason;
@@ -43,7 +48,7 @@ public:
 
 	CommonState commonState;
 
-	Device();
+	Device(VMBase *);
 
 	void Abort(const std::string &abortReason) const;
 

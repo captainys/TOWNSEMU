@@ -64,11 +64,7 @@ public:
 
 	bool debugBreakOnDMACRequest;
 
-	TownsDMAC(class FMTowns *townsPtr)
-	{
-		this->townsPtr=townsPtr;
-		debugBreakOnDMACRequest=false;
-	}
+	TownsDMAC(class FMTowns *townsPtr);
 
 	virtual void PowerOn(void);
 	virtual void Reset(void);

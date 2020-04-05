@@ -15,6 +15,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "physmem.h"
 #include "ramrom.h"
 #include "cpputil.h"
+#include "towns.h"
 #include "townsdef.h"
 #include "i486.h"
 #include "i486debug.h"
@@ -142,7 +143,7 @@ void TownsPhysicalMemory::State::Reset(void)
 	return data;
 }
 
-TownsPhysicalMemory::TownsPhysicalMemory(class i486DX *cpuPtr,class Memory *memPtr)
+TownsPhysicalMemory::TownsPhysicalMemory(class FMTowns *townsPtr,class i486DX *cpuPtr,class Memory *memPtr) : Device(townsPtr)
 {
 	takeJISCodeLog=false;
 	this->cpuPtr=cpuPtr;

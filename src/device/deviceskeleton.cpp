@@ -40,7 +40,7 @@ public:
 
 	State state;
 
-	DeviceSkeleton(class FMTowns *townsPtr)
+	DeviceSkeleton(class FMTowns *townsPtr) : Device(townsPtr)
 	{
 		this->townsPtr=townsPtr;
 	}

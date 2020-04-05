@@ -212,7 +212,7 @@ void TownsPIC::State::Reset(void)
 ////////////////////////////////////////////////////////////
 
 
-TownsPIC::TownsPIC(FMTowns *townsPtr)
+TownsPIC::TownsPIC(FMTowns *townsPtr) : Device(townsPtr)
 {
 	this->townsPtr=townsPtr;
 	state.Reset();

@@ -60,6 +60,12 @@ void TownsDMAC::State::Reset(void)
 
 ////////////////////////////////////////////////////////////
 
+TownsDMAC::TownsDMAC(class FMTowns *townsPtr) : Device(townsPtr)
+{
+	this->townsPtr=townsPtr;
+	debugBreakOnDMACRequest=false;
+}
+
 /* virtual */ void TownsDMAC::PowerOn(void)
 {
 	state.PowerOn();

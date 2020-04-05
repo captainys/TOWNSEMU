@@ -87,6 +87,13 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 
 ////////////////////////////////////////////////////////////
 
+TownsGamePort::TownsGamePort(class FMTowns *townsPtr) : Device(townsPtr)
+{
+	this->townsPtr=townsPtr;
+	state.ports[0].device=GAMEPAD;
+	state.ports[1].device=MOUSE;
+	state.PowerOn();
+}
 
 void TownsGamePort::State::PowerOn(void)
 {

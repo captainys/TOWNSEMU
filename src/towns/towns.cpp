@@ -73,7 +73,9 @@ void FMTowns::Variable::Reset(void)
 
 
 FMTowns::FMTowns() : 
-	physMem(&cpu,&mem),
+	Device(this),
+	cpu(this),
+	physMem(this,&cpu,&mem),
 	keyboard(this,&pic),
 	crtc(this),
 	pic(this),
@@ -351,35 +353,6 @@ unsigned int FMTowns::MachineID(void) const
 	}
 
 	return (highByte<<8)|lowByte;
-}
-
-bool FMTowns::CheckAbort(void) const
-{
-	bool ab=false;
-	if(true==abort)
-	{
-		std::cout << "FMTowns:" << abortReason << std::endl;
-		ab=true;
-	}
-	if(true==cpu.abort)
-	{
-		std::cout << cpu.DeviceName() << ':' << cpu.abortReason << std::endl;
-		ab=true;
-	}
-	if(true==physMem.abort)
-	{
-		std::cout << physMem.DeviceName() << ':' <<  physMem.abortReason << std::endl;
-		ab=true;
-	}
-	for(auto devPtr : allDevices)
-	{
-		if(true==devPtr->abort)
-		{
-			std::cout << devPtr->DeviceName() << ':' <<  devPtr->abortReason << std::endl;
-			ab=true;
-		}
-	}
-	return ab;
 }
 
 bool FMTowns::LoadROMImages(const char dirName[])
