@@ -403,7 +403,7 @@ void i486Debugger::IOWrite(const i486DX &cpu,unsigned int ioport,unsigned int da
 
 	if(true==breakOnIOWrite[ioport&(i486DX::I486_NUM_IOPORT-1)])
 	{
-		ExternalBreak("IOWrite "+cpputil::Uitox(ioport));
+		ExternalBreak("IOWrite Port:"+cpputil::Uitox(ioport)+" Value:"+cpputil::Ubtox(data));
 	}
 
 	if(true==monitorIO)
@@ -424,7 +424,7 @@ void i486Debugger::IORead(const i486DX &cpu,unsigned int ioport,unsigned int dat
 
 	if(true==breakOnIORead[ioport&(i486DX::I486_NUM_IOPORT-1)])
 	{
-		ExternalBreak("IORead "+cpputil::Uitox(ioport));
+		ExternalBreak("IORead Port:"+cpputil::Uitox(ioport)+" Value:"+cpputil::Ubtox(data));
 	}
 
 	if(true==monitorIO)

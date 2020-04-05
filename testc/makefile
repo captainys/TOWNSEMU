@@ -123,3 +123,11 @@ build\mos01.obj : mos01.c io.h vmif.h
 
 build\mos01.exp : build\mos01.obj build\io.obj build\vmif.obj
 	386link build\mos01.obj -exe build\mos01.exp @LIBS.LN
+
+
+
+build\timer.obj : timer.c io.h vmif.h
+	hcd386 timer.c -obj build\timer.obj
+
+build\timer.exp : build\timer.obj build\io.obj build\vmif.obj
+	386link build\timer.obj -exe build\timer.exp @LIBS.LN

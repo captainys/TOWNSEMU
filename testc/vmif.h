@@ -31,6 +31,7 @@ enum
 
 extern void TEST_FAILED(void);
 extern void TEST_SUCCEEDED(void);
+extern void TEST_DEBUG_BREAK(void);
 
 /* } */
 #endif
