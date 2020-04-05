@@ -121,10 +121,11 @@ void TownsRender::Render4Bit(const TownsCRTC::Layer &layer,const Vec3ub palette[
 	{
 		auto ZV=layer.zoom.y();
 		const auto ZH=layer.zoom.x();
-		int VRAMy=0;
+		int bytesPerLineTimesVRAMy=layer.VRAMOffset;
+		auto VRAMTop=VRAM.data()+VRAMAddr;
 		for(int y=0; y<layer.sizeOnMonitor.y(); ++y)
 		{
-			const unsigned char *src=VRAM.data()+VRAMAddr+((layer.VRAMOffset+layer.bytesPerLine*VRAMy)&layer.VScrollMask);
+			const unsigned char *src=VRAMTop+(bytesPerLineTimesVRAMy&layer.VScrollMask);
 			unsigned char *dst=rgba.data()+4*y*this->wid;
 			for(int x=0; x<layer.sizeOnMonitor.x(); x+=2)
 			{
@@ -158,7 +159,7 @@ void TownsRender::Render4Bit(const TownsCRTC::Layer &layer,const Vec3ub palette[
 			if(0==(--ZV))
 			{
 				ZV=layer.zoom.y();
-				++VRAMy;
+				bytesPerLineTimesVRAMy+=layer.bytesPerLine;
 			}
 		}
 	}
