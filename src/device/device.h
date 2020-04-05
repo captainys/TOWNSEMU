@@ -27,6 +27,8 @@ protected:
 
 public:
 	const unsigned long long int TIME_NO_SCHEDULE=~0;
+	int vmDeviceIndex=-1;  // Index to allDevices in the VM.
+	int vmPrevTaskScheduledDeviceIndex=-1,vmNextTaskScheduledDeviceIndex=-1;
 
 	class CommonState
 	{

@@ -163,7 +163,7 @@ public:
 
 	/*! Pointers of all devices (except *this) must be stored in allDevices.
 	*/
-	std::vector <Device *> allDevices;
+	using VMBase::allDevices;
 
 	/*! Pointers of the devices that requires very fast polling must be stored in this fastDevices.
 	    Such as YM2612 and PCM (TownsSound class).
@@ -263,15 +263,18 @@ public:
 
 	/*! Run scheduled tasks.
 	*/
-	void RunScheduledTasks(void);
+	inline void RunScheduledTasks(void)
+	{
+		VMBase::RunScheduledTasks(state.townsTime);
+	}
 
 	/*!
 	*/
-	void ScheduleDeviceCallBack(Device &dev,long long int timer);
+	using VMBase::ScheduleDeviceCallBack;
 
 	/*!
 	*/
-	void UnscheduleDeviceCallBack(Device &dev);
+	using VMBase::UnscheduleDeviceCallBack;
 
 	/*! Check nextFastDevicePollingTime and call RunScheduledTask function of the devices in fastDevices.
 	*/

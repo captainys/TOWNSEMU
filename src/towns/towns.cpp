@@ -107,6 +107,7 @@ FMTowns::FMTowns() :
 	allDevices.push_back(&gameport);
 	allDevices.push_back(&timer);
 	allDevices.push_back(&keyboard);
+	VMBase::CacheDeviceIndex();
 
 	fastDevices.push_back(&sound);
 	fastDevices.push_back(&timer);
@@ -450,31 +451,6 @@ unsigned int FMTowns::RunOneInstruction(void)
 			eventLog.LogFileExec(state.townsTime,fName);
 		}
 	}
-}
-
-void FMTowns::RunScheduledTasks(void)
-{
-	for(auto devPtr : allDevices)
-	{
-		if(devPtr->commonState.scheduleTime<=state.townsTime)
-		{
-			// Device may make another schedule in the call back.
-			// UnscheduleDeviceCallBack must not wipe a new schedule.
-			// Therefore, UnscheduleDeviceCallBack and then RunScheduledTask.
-			// Not the other way round.
-			UnscheduleDeviceCallBack(*devPtr);
-			devPtr->RunScheduledTask(state.townsTime);
-		}
-	}
-}
-
-void FMTowns::ScheduleDeviceCallBack(Device &dev,long long int timer)
-{
-	dev.commonState.scheduleTime=timer;
-}
-void FMTowns::UnscheduleDeviceCallBack(Device &dev)
-{
-	dev.commonState.scheduleTime=TIME_NO_SCHEDULE;
 }
 
 void FMTowns::RunFastDevicePolling(void)
