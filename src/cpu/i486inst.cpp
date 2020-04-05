@@ -1081,7 +1081,6 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 
 	case I486_OPCODE_IN_AL_I8://=        0xE4,
 	case I486_OPCODE_IN_A_I8://=         0xE5,
-		op1.MakeImm8(*this);
 		break;
 	case I486_OPCODE_IN_AL_DX://=        0xEC,
 	case I486_OPCODE_IN_A_DX://=         0xED,
@@ -2066,6 +2065,7 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		disasm="IN";
 		cpputil::ExtendString(disasm,8);
 		disasm+="AL,";
+		op1.MakeImm8(*this);
 		disasm+=op1.Disassemble();
 		break;
 	case I486_OPCODE_IN_A_I8://=         0xE5,
@@ -2079,6 +2079,7 @@ std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip
 		{
 			disasm+="EAX,";
 		}
+		op1.MakeImm8(*this);
 		disasm+=op1.Disassemble();
 		break;
 	case I486_OPCODE_IN_AL_DX://=        0xEC,

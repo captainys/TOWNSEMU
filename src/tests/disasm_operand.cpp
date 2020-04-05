@@ -47,7 +47,7 @@ bool TestDisassembly(
 	auto disasm=inst.Disassemble(seg,0,symTable);
 
 	// auto disasm=towns.cpu.DisassembleAddressing(addressSize,dataSize,operand);
-	std::cout << "Disassembled as: " << disasm << std::endl;
+	std::cout << "Disassembled as: [" << disasm << "]" << std::endl;
 	if(disasm!=correctDisasm)
 	{
 		std::cout << "Wrong disassembly!" << std::endl;
@@ -56,7 +56,7 @@ bool TestDisassembly(
 	return true;
 
 ERREND:
-	std::cout << "Correct Disassembly: " << correctDisasm << std::endl;
+	std::cout << "Correct Disassembly: [" << correctDisasm << "]" << std::endl;
 	std::cout << "Operands: ";
 	for(unsigned i=0; i<oplen; ++i)
 	{
@@ -514,6 +514,20 @@ int main(int ac,char *av[])
 	}
 	const unsigned char test16_17[]={0x06,0x7E,0x05,0xA4,};
 	if(true!=TestDisassembly(16,16,0xC6,sizeof(test16_17),test16_17,towns,"MOV     BYTE PTR [057EH],A4H"))
+	{
+		return 1;
+	}
+
+	const unsigned char test17[]={0x77};
+	if(true!=TestDisassembly(16,16,0xE4,sizeof(test17),test17,towns,"IN      AL,77H"))
+	{
+		return 1;
+	}
+	if(true!=TestDisassembly(16,16,0xE5,sizeof(test17),test17,towns,"IN      AX,77H"))
+	{
+		return 1;
+	}
+	if(true!=TestDisassembly(32,32,0xE5,sizeof(test17),test17,towns,"IN      EAX,77H"))
 	{
 		return 1;
 	}
