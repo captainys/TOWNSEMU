@@ -3418,11 +3418,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			case 6:// cpputil::Ubtox(opCode)+"?";
 				Abort("Undefined REG for "+cpputil::Ubtox(inst.opCode));
 				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
-				break;
+				return 0;
 			case 7:// "SAR";
 				Abort("C1 SAR not implemented yet.");
 				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
-				break;
+				return 0;
 			}
 			value.SetDword(i);
 			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
@@ -3480,7 +3480,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			case 6:// cpputil::Ubtox(opCode)+"?";
 				Abort("Undefined REG for "+cpputil::Ubtox(inst.opCode));
 				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
-				break;
+				return 0;
 			case 7:// "SAR";
 				SarByteWordOrDword(inst.operandSize,i,ctr);
 				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
@@ -3606,6 +3606,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				msg+=cpputil::Ubtox(inst.GetREG());
 				msg+=")";
 				Abort(msg);
+				return 0;
 			}
 			clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
 			break;
@@ -3827,7 +3828,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		default:
 			Abort("Undefined REG for "+cpputil::Ubtox(inst.opCode));
 			clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
-			break;
+			return 0;
 		}
 		break;
 
@@ -4166,6 +4167,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		else
 		{
 			Abort("AMX 0D Imm8(!=0x0A) may not be a 80486 instruction.");
+			return 0;
 		}
 		break;
 
@@ -4528,6 +4530,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				// Should this push inside while loop or outside?
 				// [2] pp.26-70's pseudo code is ambiguous.
 				Push(mem,inst.operandSize,framePtr);  // Should it be operandSize or addressSize?  Extremely confusing!
+				return 0;
 			}
 			if(16==inst.operandSize)
 			{
@@ -4812,6 +4815,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				else
 				{
 					Abort("What IMUL?");
+					return 0;
 				}
 				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
 				bool clearOFCF=false;
@@ -4880,7 +4884,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					break;
 				default:
 					Abort("Undefined REG for "+cpputil::Ubtox(inst.opCode));
-					break;
+					return 0;
 				}
 				value.SetDword(i);
 				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
@@ -5036,7 +5040,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				break;
 			default:
 				Abort("Undefined REG for "+cpputil::Ubtox(inst.opCode));
-				break;
+				return 0;
 			}
 		}
 		break;
@@ -5348,7 +5352,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				break;
 			default:
 				Abort("Unhandled Conditional Jump");
-				break;
+				return 0;
 			}
 
 			if(true==jumpCond)
@@ -5452,7 +5456,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				break;
 			default:
 				Abort("Undefined REG for "+cpputil::Ubtox(inst.opCode));
-				break;
+				return 0;
 			}
 			if(7!=REG) // Don't store a value if it is CMP
 			{
@@ -5511,7 +5515,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				break;
 			default:
 				Abort("Undefined REG for "+cpputil::Ubtox(inst.opCode));
-				break;
+				return 0;
 			}
 			if(7!=REG) // Don't store a value if it is CMP
 			{
@@ -5724,7 +5728,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			break;
 		default:
 			Abort("Undefined REG for "+cpputil::Ubtox(inst.opCode));
-			break;
+			return 0;
 		}
 		break;
 
@@ -6753,7 +6757,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 	default:
 		Abort("Undefined instruction or simply not supported yet.");
-		break;
+		return 0;
 	}
 
 	if(0==clocksPassed)
