@@ -2066,7 +2066,10 @@ private:
 	    Returns the number of bytes fetched.
 	*/
 	unsigned int FetchOperandRM(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
-	/*! Fetch operand(s) for the instruction.
+
+public:
+	/*! Made public for disassembly test.
+	    Fetch operand(s) for the instruction.
 	The following instruction:
 	    I486_OPCODE_MOV_TO_CR://        0x220F,
 	    I486_OPCODE_MOV_FROM_CR://      0x200F,

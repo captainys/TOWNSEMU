@@ -283,6 +283,12 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 			FetchOperand8(inst,ptr,seg,offset,mem);
 		}
 		inst.operandSize=8;
+
+		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
+		if(0==inst.GetREG()) // TEST RM,I
+		{
+			op2.MakeImm8or16or32(inst,inst.operandSize);
+		}
 		break;
 	case I486_OPCODE_F7_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF7,
 		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
@@ -290,23 +296,34 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 		{
 			FetchOperand16or32(inst,ptr,seg,offset,mem);
 		}
+
+		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
+		if(0==inst.GetREG()) // TEST RM,I
+		{
+			op2.MakeImm8or16or32(inst,inst.operandSize);
+		}
 		break;
 
 
 	case I486_OPCODE_AAD_ADX://    0xD5,
 	case I486_OPCODE_AAM_AMX://    0xD4,
 		FetchOperand8(inst,ptr,seg,offset,mem);
+		op1.MakeImm8(inst);
 		break;
 
 
 	case I486_OPCODE_ARPL://       0x63,
 		FetchOperandRM(inst,ptr,seg,offset,mem);
+		inst.operandSize=16;
+		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
+		op2.DecodeMODR_MForRegister(inst.operandSize,inst.operand[0]);
 		break;
 
 
 	case I486_OPCODE_BT_BTS_BTR_BTC_RM_I8:// 0FBA
 		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
 		FetchOperand8(inst,ptr,seg,offset,mem);
+		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 
 	case I486_OPCODE_BSF_R_RM://   0x0FBC,
@@ -962,33 +979,6 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 {
 	switch(opCode)
 	{
-	case I486_OPCODE_F6_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF6
-	case I486_OPCODE_F7_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF7,
-		op1.Decode(addressSize,operandSize,operand);
-		if(0==GetREG()) // TEST RM,I
-		{
-			op2.MakeImm8or16or32(*this,operandSize);
-		}
-		break;
-
-
-	case I486_OPCODE_AAD_ADX://    0xD5,
-	case I486_OPCODE_AAM_AMX://    0xD4,
-		op1.MakeImm8(*this);
-		break;
-
-
-	case I486_OPCODE_ARPL://       0x63,
-		operandSize=16;
-		op1.Decode(addressSize,operandSize,operand);
-		op2.DecodeMODR_MForRegister(operandSize,operand[0]);
-		break;
-
-
-	case I486_OPCODE_BT_BTS_BTR_BTC_RM_I8:// 0FBA
-		op1.Decode(addressSize,operandSize,operand);
-		break;
-
 	case I486_OPCODE_BSF_R_RM://   0x0FBC,
 	case I486_OPCODE_BSR_R_RM://   0x0FBD,
 		op1.DecodeMODR_MForRegister(operandSize,operand[0]);

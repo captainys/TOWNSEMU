@@ -27,7 +27,9 @@ bool TestDisassembly(
     unsigned int opCode,
     unsigned oplen,const unsigned char operand[],FMTowns &towns,const std::string &correctDisasm)
 {
+	i486DX cpu(nullptr);
 	i486DX::Instruction inst;
+	Memory dummyMem;
 
 	inst.Clear();
 	inst.addressSize=addressSize;
@@ -39,7 +41,11 @@ bool TestDisassembly(
 		inst.operand[i]=operand[i];
 	}
 
-	i486DX::Operand op1,op2; // Test temporarily broken.
+	i486DX::Operand op1,op2;
+	MemoryAccess::ConstPointer memAccPtr;
+	memAccPtr.length=oplen;
+	memAccPtr.ptr=operand;
+	cpu.FetchOperand(inst,op1,op2,memAccPtr,cpu.state.DS(),0,dummyMem);
 
 	i486DX::SegmentRegister seg;
 	seg.value=0;
