@@ -807,22 +807,58 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 	case I486_OPCODE_MOV_I8_TO_RM8: //    0xC6,
 		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
 		FetchOperand8(inst,ptr,seg,offset,mem);
+		op1.Decode(inst.addressSize,8,inst.operand);
+		op2.MakeImm8(inst);
 		break;
 	case I486_OPCODE_MOV_I_TO_RM: //      0xC7, // 16/32 depends on OPSIZE_OVERRIDE
 		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
 		FetchOperand16or32(inst,ptr,seg,offset,mem);
+		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
+		op2.MakeImm8or16or32(inst,inst.operandSize);
 		break;
 
 
 	case I486_OPCODE_MOV_TO_CR://        0x0F22,
-	case I486_OPCODE_MOV_FROM_CR://      0x0F20,
-	case I486_OPCODE_MOV_FROM_DR://      0x0F21,
+		inst.operandSize=32; // [1] pp.26-213 32bit operands are always used with these instructions, 
+		                     //      regardless of the opreand-size attribute.
+		FetchOperandRM(inst,ptr,seg,offset,mem);
+		op1.DecodeMODR_MForCRRegister(inst.operand[0]);
+		op2.Decode(inst.addressSize,32,inst.operand);
+		break;
 	case I486_OPCODE_MOV_TO_DR://        0x0F23,
-	case I486_OPCODE_MOV_FROM_TR://      0x0F24,
+		inst.operandSize=32; // [1] pp.26-213 32bit operands are always used with these instructions, 
+		                     //      regardless of the opreand-size attribute.
+		FetchOperandRM(inst,ptr,seg,offset,mem);
+		op1.DecodeMODR_MForDRRegister(inst.operand[0]);
+		op2.Decode(inst.addressSize,32,inst.operand);
+		break;
 	case I486_OPCODE_MOV_TO_TR://        0x0F26,
 		inst.operandSize=32; // [1] pp.26-213 32bit operands are always used with these instructions, 
 		                     //      regardless of the opreand-size attribute.
 		FetchOperandRM(inst,ptr,seg,offset,mem);
+		op1.DecodeMODR_MForTestRegister(inst.operand[0]);
+		op2.Decode(inst.addressSize,32,inst.operand);
+		break;
+	case I486_OPCODE_MOV_FROM_CR://      0x0F20,
+		inst.operandSize=32; // [1] pp.26-213 32bit operands are always used with these instructions, 
+		                     //      regardless of the opreand-size attribute.
+		FetchOperandRM(inst,ptr,seg,offset,mem);
+		op1.Decode(inst.addressSize,32,inst.operand);
+		op2.DecodeMODR_MForCRRegister(inst.operand[0]);
+		break;
+	case I486_OPCODE_MOV_FROM_DR://      0x0F21,
+		inst.operandSize=32; // [1] pp.26-213 32bit operands are always used with these instructions, 
+		                     //      regardless of the opreand-size attribute.
+		FetchOperandRM(inst,ptr,seg,offset,mem);
+		op1.Decode(inst.addressSize,32,inst.operand);
+		op2.DecodeMODR_MForDRRegister(inst.operand[0]);
+		break;
+	case I486_OPCODE_MOV_FROM_TR://      0x0F24,
+		inst.operandSize=32; // [1] pp.26-213 32bit operands are always used with these instructions, 
+		                     //      regardless of the opreand-size attribute.
+		FetchOperandRM(inst,ptr,seg,offset,mem);
+		op1.Decode(inst.addressSize,32,inst.operand);
+		op2.DecodeMODR_MForTestRegister(inst.operand[0]);
 		break;
 
 
@@ -1081,39 +1117,17 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 {
 	switch(opCode)
 	{
-	case I486_OPCODE_MOV_I8_TO_RM8: //    0xC6,
-		op1.Decode(addressSize,8,operand);
-		op2.MakeImm8(*this);
-		break;
-	case I486_OPCODE_MOV_I_TO_RM: //      0xC7, // 16/32 depends on OPSIZE_OVERRIDE
-		op1.Decode(addressSize,operandSize,operand);
-		op2.MakeImm8or16or32(*this,operandSize);
-		break;
-
-
 	case I486_OPCODE_MOV_TO_CR://        0x0F22,  Op1=CR, OP2=R32
-		op1.DecodeMODR_MForCRRegister(operand[0]);
-		op2.Decode(addressSize,32,operand);
 		break;
 	case I486_OPCODE_MOV_FROM_CR://      0x0F20,  Op1=R32, Op2=CR
-		op1.Decode(addressSize,32,operand);
-		op2.DecodeMODR_MForCRRegister(operand[0]);
 		break;
 	case I486_OPCODE_MOV_FROM_DR://      0x0F21,  Op1=R32, Op2=DR
-		op1.Decode(addressSize,32,operand);
-		op2.DecodeMODR_MForDRRegister(operand[0]);
 		break;
 	case I486_OPCODE_MOV_TO_DR://        0x0F23,  Op1=DR, Op2=R32
-		op1.DecodeMODR_MForDRRegister(operand[0]);
-		op2.Decode(addressSize,32,operand);
 		break;
 	case I486_OPCODE_MOV_FROM_TR://      0x0F24,  Op1=R32, Op2=TR  TR is a test register!  Not Task Register!  How confusing!
-		op1.Decode(addressSize,32,operand);
-		op2.DecodeMODR_MForTestRegister(operand[0]);
 		break;
 	case I486_OPCODE_MOV_TO_TR://        0x0F26,  Op1=TR, Op2=R32
-		op1.DecodeMODR_MForTestRegister(operand[0]);
-		op2.Decode(addressSize,32,operand);
 		break;
 
 
