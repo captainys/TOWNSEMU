@@ -21,10 +21,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 // Instruction-Set /digit means the real instruction depends on the REG bits of MODR/M byte (operand[0])
 //  (1) Add OPCODE enum.
 //  (2) Implement i486DX::FetchOperand
-//  (3) Implement i486DX::Instruction::DecodeOperand
-//  (4) Implement i486DX::Instruction::Disassemble
-//  (5) Implement i486DX::RunOneInstruction
-//  (6) Add disassembly test.
+//  (3) Implement i486DX::Instruction::Disassemble
+//  (4) Implement i486DX::RunOneInstruction
+//  (5) Add disassembly test.
 
 
 /*

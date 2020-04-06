@@ -607,11 +607,6 @@ public:
 			fwait=0;
 		}
 
-		/*! Decode operands.
-		    I think data size is operand size, but I am not 100% sure yet.
-		*/
-		void DecodeOperand(int addressSize,int operandSize,class Operand &op1,class Operand &op2) const;
-
 		std::string Disassemble(const Operand &op1,const Operand &op2,SegmentRegister reg,unsigned int offset,const class i486SymbolTable &symTable) const;
 	private:
 		/* operandSize is 8, 16, or 32 */
