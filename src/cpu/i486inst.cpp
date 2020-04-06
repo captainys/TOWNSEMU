@@ -1201,10 +1201,10 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		switch(opCode)
 		{
 		case I486_OPCODE_C0_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_I8://=0xC0,// ::ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
-			disasm=DisassembleTypicalRM8_I8(disasm,op1,op2);
+			disasm=DisassembleTypicalRM8_I8(disasm,op1,GetUimm8());
 			break;
 		case I486_OPCODE_C1_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_I8:// =0xC1, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
-			disasm=DisassembleTypicalRM_I8(disasm,op1,op2);
+			disasm=DisassembleTypicalRM_I8(disasm,op1,GetUimm8());
 			break;
 		case I486_OPCODE_D0_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_1://=0xD0, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
 		case I486_OPCODE_D1_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_1://=0xD1, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
@@ -1264,8 +1264,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 			disasm="?";
 			break;
 		}
-		op2.MakeImm8(*this);
-		disasm=DisassembleTypicalRM_I8(disasm,op1,op2);
+		disasm=DisassembleTypicalRM_I8(disasm,op1,GetUimm8());
 		break;
 
 
@@ -2764,23 +2763,23 @@ std::string i486DX::Instruction::DisassembleTypicalOneOperand(std::string inst,c
 	return disasm;
 }
 
-std::string i486DX::Instruction::DisassembleTypicalRM8_I8(std::string inst,const Operand &op1,const Operand &op2) const
+std::string i486DX::Instruction::DisassembleTypicalRM8_I8(std::string inst,const Operand &op1,unsigned int I8) const
 {
 	auto sizeQual=i486DX::Operand::GetSizeQualifierToDisassembly(op1,8);
 	auto segQual=i486DX::Operand::GetSegmentQualifierToDisassembly(segOverride,op1);
 	auto disasm=inst;
 	cpputil::ExtendString(disasm,8);
-	disasm+=sizeQual+segQual+op1.Disassemble()+","+op2.Disassemble();
+	disasm+=sizeQual+segQual+op1.Disassemble()+","+cpputil::Ubtox(I8)+"H";
 	return disasm;
 }
 
-std::string i486DX::Instruction::DisassembleTypicalRM_I8(std::string inst,const Operand &op1,const Operand &op2) const
+std::string i486DX::Instruction::DisassembleTypicalRM_I8(std::string inst,const Operand &op1,unsigned int I8) const
 {
 	auto sizeQual=i486DX::Operand::GetSizeQualifierToDisassembly(op1,operandSize);
 	auto segQual=i486DX::Operand::GetSegmentQualifierToDisassembly(segOverride,op1);
 	auto disasm=inst;
 	cpputil::ExtendString(disasm,8);
-	disasm+=sizeQual+segQual+op1.Disassemble()+","+op2.Disassemble();
+	disasm+=sizeQual+segQual+op1.Disassemble()+","+cpputil::Ubtox(I8)+"H";
 	return disasm;
 }
 

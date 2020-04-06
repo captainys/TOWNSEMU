@@ -611,8 +611,8 @@ public:
 	private:
 		/* operandSize is 8, 16, or 32 */
 		std::string DisassembleTypicalOneOperand(std::string inst,const Operand &op,int operandSize) const;
-		std::string DisassembleTypicalRM8_I8(std::string inst,const Operand &op1,const Operand &op2) const;
-		std::string DisassembleTypicalRM_I8(std::string inst,const Operand &op1,const Operand &op2) const;
+		std::string DisassembleTypicalRM8_I8(std::string inst,const Operand &op1,unsigned int I8) const;
+		std::string DisassembleTypicalRM_I8(std::string inst,const Operand &op1,unsigned int I8) const;
 		std::string DisassembleTypicalTwoOperands(std::string inst,const Operand &op1,const Operand &op2) const;
 
 
