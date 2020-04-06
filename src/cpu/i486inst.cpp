@@ -328,11 +328,17 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 
 	case I486_OPCODE_BSF_R_RM://   0x0FBC,
 	case I486_OPCODE_BSR_R_RM://   0x0FBD,
+		FetchOperandRM(inst,ptr,seg,offset,mem);
+		op1.DecodeMODR_MForRegister(inst.operandSize,inst.operand[0]);
+		op2.Decode(inst.addressSize,inst.operandSize,inst.operand);
+		break;
 	case I486_OPCODE_BT_R_RM://    0x0FA3,
 	case I486_OPCODE_BTC_RM_R://   0x0FBB,
 	case I486_OPCODE_BTS_RM_R://   0x0FAB,
 	case I486_OPCODE_BTR_RM_R://   0x0FB3,
 		FetchOperandRM(inst,ptr,seg,offset,mem);
+		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
+		op2.DecodeMODR_MForRegister(inst.operandSize,inst.operand[0]);
 		break;
 
 
@@ -344,6 +350,7 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 	case I486_OPCODE_JMP_FAR:
 		offset+=FetchOperand16or32(inst,ptr,seg,offset,mem);
 		FetchOperand16(inst,ptr,seg,offset,mem);
+		op1.DecodeFarAddr(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 
 
@@ -979,55 +986,6 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 {
 	switch(opCode)
 	{
-	case I486_OPCODE_BSF_R_RM://   0x0FBC,
-	case I486_OPCODE_BSR_R_RM://   0x0FBD,
-		op1.DecodeMODR_MForRegister(operandSize,operand[0]);
-		op2.Decode(addressSize,operandSize,operand);
-		break;
-
-
-	case I486_OPCODE_BT_R_RM: //   0x0FA3
-	case I486_OPCODE_BTS_RM_R://   0x0FAB,
-	case I486_OPCODE_BTC_RM_R://   0x0FBB,
-	case I486_OPCODE_BTR_RM_R://   0x0FB3,
-		op1.Decode(addressSize,operandSize,operand);
-		op2.DecodeMODR_MForRegister(operandSize,operand[0]);
-		break;
-
-
-	case I486_OPCODE_CALL_REL://   0xE8,
-	case I486_OPCODE_JMP_REL://          0xE9,   // cw or cd
-		break;
-	case I486_OPCODE_CALL_FAR://   0x9A,
-	case I486_OPCODE_JMP_FAR:
-		op1.DecodeFarAddr(addressSize,operandSize,operand);
-		break;
-
-
-	case I486_OPCODE_CBW_CWDE://        0x98,
-	case I486_OPCODE_CWD_CDQ://         0x99,
-	case I486_OPCODE_CLC:
-	case I486_OPCODE_CLD:
-	case I486_OPCODE_CLI:
-	case I486_OPCODE_CMC://        0xF5,
-		break;
-
-
-	case I486_OPCODE_CMPSB://           0xA6,
-	case I486_OPCODE_CMPS://            0xA7,
-		break;
-
-
-	case I486_OPCODE_DAA://             0x27,
-		break;
-
-
-	case I486_OPCODE_ENTER://      0xC8,
-		break;
-
-
-	case I486_OPCODE_FWAIT://      0x9B,
-		break;
 	case I486_OPCODE_FPU_D9_FNSTCW_M16_FNSTENV_F2XM1_FXAM_FXCH_FXTRACT_FYL2X_FYL2XP1_FABS_:// 0xD9,
 		if(0xF0<=operand[0] && operand[0]<=0xFF)
 		{
