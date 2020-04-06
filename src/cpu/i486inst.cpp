@@ -611,14 +611,28 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 	case I486_OPCODE_BINARYOP_RM8_FROM_I8_ALIAS:
 		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
 		FetchOperand8(inst,ptr,seg,offset,mem);
+		op1.Decode(inst.addressSize,8,inst.operand);
+		op2.MakeImm8(inst);
 		break;
 	case I486_OPCODE_BINARYOP_R_FROM_I:
 		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
 		FetchOperand16or32(inst,ptr,seg,offset,mem);
+		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
+		op2.MakeImm8or16or32(inst,inst.operandSize);
 		break;
 	case I486_OPCODE_BINARYOP_RM_FROM_SXI8:
 		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
 		FetchOperand8(inst,ptr,seg,offset,mem);
+		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
+		op2.MakeImm8(inst);
+		if(16==inst.operandSize)
+		{
+			op2.SignExtendImm(OPER_IMM16);
+		}
+		else
+		{
+			op2.SignExtendImm(OPER_IMM32);
+		}
 		break;
 
 
@@ -638,6 +652,8 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 
 	case I486_OPCODE_LEA://=              0x8D,
 		FetchOperandRM(inst,ptr,seg,offset,mem);
+		op1.DecodeMODR_MForRegister(inst.operandSize,inst.operand[0]);
+		op2.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 
 
@@ -647,6 +663,8 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 	case I486_OPCODE_LFS://              0x0FB4,
 	case I486_OPCODE_LGS://              0x0FB5,
 		FetchOperandRM(inst,ptr,seg,offset,mem);
+		op1.DecodeMODR_MForRegister(inst.operandSize,inst.operand[0]);
+		op2.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 
 
@@ -1004,60 +1022,6 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 {
 	switch(opCode)
 	{
-	case I486_OPCODE_BINARYOP_RM8_FROM_I8: //  0x80, // AND(REG=4), OR(REG=1), or XOR(REG=6) depends on the REG field of MODR/M
-	case I486_OPCODE_BINARYOP_RM8_FROM_I8_ALIAS:
-		op1.Decode(addressSize,8,operand);
-		op2.MakeImm8(*this);
-		break;
-	case I486_OPCODE_BINARYOP_R_FROM_I://     0x81,
-		op1.Decode(addressSize,operandSize,operand);
-		op2.MakeImm8or16or32(*this,operandSize);
-		break;
-	case I486_OPCODE_BINARYOP_RM_FROM_SXI8:// 0x83,
-		op1.Decode(addressSize,operandSize,operand);
-		op2.MakeImm8(*this);
-		if(16==operandSize)
-		{
-			op2.SignExtendImm(OPER_IMM16);
-		}
-		else
-		{
-			op2.SignExtendImm(OPER_IMM32);
-		}
-		break;
-
-
-	case I486_OPCODE_LAHF://=             0x9F,
-		break;
-
-
-	case I486_OPCODE_LEA://=              0x8D,
-		op1.DecodeMODR_MForRegister(operandSize,operand[0]);
-		op2.Decode(addressSize,operandSize,operand);
-		break;
-
-
-	case I486_OPCODE_LDS://              0xC5,
-	case I486_OPCODE_LSS://              0x0FB2,
-	case I486_OPCODE_LES://              0xC4,
-	case I486_OPCODE_LFS://              0x0FB4,
-	case I486_OPCODE_LGS://              0x0FB5,
-		op1.DecodeMODR_MForRegister(operandSize,operand[0]);
-		op2.Decode(addressSize,operandSize,operand);
-		break;
-
-
-	case I486_OPCODE_LODSB://            0xAC,
-	case I486_OPCODE_LODS://             0xAD,
-		break;
-
-
-	case I486_OPCODE_LOOP://             0xE2,
-	case I486_OPCODE_LOOPE://            0xE1,
-	case I486_OPCODE_LOOPNE://           0xE0,
-		break;
-
-
 	case I486_OPCODE_LSL://              0x0F03,
 		op1.DecodeMODR_MForRegister(operandSize,operand[0]);
 		op2.Decode(addressSize,operandSize,operand);
