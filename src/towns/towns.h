@@ -315,7 +315,7 @@ public:
 
 	// Following functions are for testing purposes.
 	unsigned int FetchByteCS_EIP(int offset) const;
-	i486DX::Instruction FetchInstruction(void) const;
+	i486DX::Instruction FetchInstruction(i486DX::Operand &op1,i486DX::Operand &op2) const;
 	std::vector <std::string> GetStackText(unsigned int numBytes) const;
 	void PrintStack(unsigned int numBytes) const;
 	void PrintDisassembly(void) const;

@@ -612,7 +612,7 @@ public:
 		*/
 		void DecodeOperand(int addressSize,int operandSize,class Operand &op1,class Operand &op2) const;
 
-		std::string Disassemble(SegmentRegister reg,unsigned int offset,const class i486SymbolTable &symTable) const;
+		std::string Disassemble(const Operand &op1,const Operand &op2,SegmentRegister reg,unsigned int offset,const class i486SymbolTable &symTable) const;
 	private:
 		/* operandSize is 8, 16, or 32 */
 		std::string DisassembleTypicalOneOperand(std::string inst,const Operand &op,int operandSize) const;
@@ -2006,9 +2006,9 @@ public:
 
 	/*! Fetch an instruction.
 	*/
-	inline Instruction FetchInstruction(const Memory &mem) const
+	inline Instruction FetchInstruction(Operand &op1,Operand &op2,const Memory &mem) const
 	{
-		return FetchInstruction(state.CS(),state.EIP,mem);
+		return FetchInstruction(op1,op2,state.CS(),state.EIP,mem);
 	}
 
 
@@ -2076,27 +2076,27 @@ private:
 	    I486_OPCODE_MOV_TO_TR://        0x260F,
 	always set 32 to inst.operandSize regardless of the preceding operand-size override, or default operand size.
 	*/
-	void FetchOperand(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,int offset,const Memory &mem) const;
+	void FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,int offset,const Memory &mem) const;
 
 public:
 	/*! Fetch an instruction from specific segment and offset.
 	*/
-	inline Instruction FetchInstruction(const SegmentRegister &CS,unsigned int offset,const Memory &mem) const
+	inline Instruction FetchInstruction(Operand &op1,Operand &op2,const SegmentRegister &CS,unsigned int offset,const Memory &mem) const
 	{
 		if(true==IsInRealMode())
 		{
-			return FetchInstruction(CS,offset,mem,16,16);
+			return FetchInstruction(op1,op2,CS,offset,mem,16,16);
 		}
 		else
 		{
 			// Default operandSize and addressSize depends on the D flag of the segment descriptor.
-			return FetchInstruction(CS,offset,mem,CS.operandSize,CS.addressSize);
+			return FetchInstruction(op1,op2,CS,offset,mem,CS.operandSize,CS.addressSize);
 		}
 	}
 
 	/*! Fetch an instruction from specific segment and offset with given default operand size and address size.
 	*/
-	Instruction FetchInstruction(const SegmentRegister &CS,unsigned int offset,const Memory &mem,unsigned int defOperSize,unsigned int defAddrSize) const;
+	Instruction FetchInstruction(Operand &op1,Operand &op2,const SegmentRegister &CS,unsigned int offset,const Memory &mem,unsigned int defOperSize,unsigned int defAddrSize) const;
 private:
 	inline unsigned int FetchInstructionByte(MemoryAccess::ConstPointer &ptr,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 	{
@@ -2124,7 +2124,7 @@ private:
 public:
 	/*! Make a disassembly.
 	*/
-	std::string Disassemble(const Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem,const class i486SymbolTable &symTable) const;
+	std::string Disassemble(const Instruction &inst,const Operand &op1,const Operand &op2,SegmentRegister seg,unsigned int offset,const Memory &mem,const class i486SymbolTable &symTable) const;
 
 	/*! Make a data line for disassembly.
 	    When it reaches chopOff, the rest will be shown as :.

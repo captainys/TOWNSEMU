@@ -39,12 +39,14 @@ bool TestDisassembly(
 		inst.operand[i]=operand[i];
 	}
 
+	i486DX::Operand op1,op2; // Test temporarily broken.
+
 	i486DX::SegmentRegister seg;
 	seg.value=0;
 	seg.baseLinearAddr=0;
 
 	i486SymbolTable symTable;
-	auto disasm=inst.Disassemble(seg,0,symTable);
+	auto disasm=inst.Disassemble(op1,op2,seg,0,symTable);
 
 	// auto disasm=towns.cpu.DisassembleAddressing(addressSize,dataSize,operand);
 	std::cout << "Disassembled as: [" << disasm << "]" << std::endl;

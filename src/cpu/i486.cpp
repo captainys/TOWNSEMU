@@ -959,7 +959,7 @@ unsigned int i486DX::Pop(Memory &mem,unsigned int operandSize)
 	return value;
 }
 
-std::string i486DX::Disassemble(const Instruction &inst,SegmentRegister seg,unsigned int offset,const Memory &mem,const class i486SymbolTable &symTable) const
+std::string i486DX::Disassemble(const Instruction &inst,const Operand &op1,const Operand &op2,SegmentRegister seg,unsigned int offset,const Memory &mem,const class i486SymbolTable &symTable) const
 {
 	std::string disasm;
 	disasm+=cpputil::Ustox(seg.value);
@@ -974,7 +974,7 @@ std::string i486DX::Disassemble(const Instruction &inst,SegmentRegister seg,unsi
 	disasm+=" ";
 
 	cpputil::ExtendString(disasm,40);
-	disasm+=inst.Disassemble(seg,offset,symTable);
+	disasm+=inst.Disassemble(op1,op2,seg,offset,symTable);
 
 	return disasm;
 }

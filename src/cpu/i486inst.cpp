@@ -22,7 +22,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 
 
-i486DX::Instruction i486DX::FetchInstruction(const SegmentRegister &CS,unsigned int offset,const Memory &mem,unsigned int defOperSize,unsigned int defAddrSize) const
+i486DX::Instruction i486DX::FetchInstruction(Operand &op1,Operand &op2,const SegmentRegister &CS,unsigned int offset,const Memory &mem,unsigned int defOperSize,unsigned int defAddrSize) const
 {
 	Instruction inst;
 	inst.Clear();
@@ -78,7 +78,7 @@ PREFIX_DONE:
 		inst.opCode=(inst.opCode<<8)|lastByte;
 	}
 
-	FetchOperand(inst,ptr,CS,offset+inst.numBytes,mem);
+	FetchOperand(inst,op1,op2,ptr,CS,offset+inst.numBytes,mem);
 
 	return inst;
 }
@@ -242,7 +242,7 @@ std::string i486DX::Instruction::SegmentOverrideString(int segOverridePrefix)
 	return str;
 }
 
-void i486DX::FetchOperand(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,int offset,const Memory &mem) const
+void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,int offset,const Memory &mem) const
 {
 	switch(inst.opCode)
 	{
@@ -1562,10 +1562,10 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 	}
 }
 
-std::string i486DX::Instruction::Disassemble(SegmentRegister cs,unsigned int eip,const i486SymbolTable &symTable) const
+std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand &op2In,SegmentRegister cs,unsigned int eip,const i486SymbolTable &symTable) const
 {
 	std::string disasm;
-	Operand op1,op2;
+	Operand op1=op1In,op2=op2In;
 	std::string op1SizeQual,op2SizeQual;
 	std::string op1SegQual,op2SegQual;
 
@@ -3346,13 +3346,13 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 	state.holdIRQ=false;
 
-	auto inst=FetchInstruction(state.CS(),state.EIP,mem);
+	Operand op1,op2;
+	auto inst=FetchInstruction(op1,op2,state.CS(),state.EIP,mem);
 	if(nullptr!=debuggerPtr)
 	{
 		debuggerPtr->BeforeRunOneInstruction(*this,mem,io,inst);
 	}
 
-	Operand op1,op2;
 	inst.DecodeOperand(inst.addressSize,inst.operandSize,op1,op2);
 
 	bool EIPSetByInstruction=false;

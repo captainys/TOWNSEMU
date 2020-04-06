@@ -248,8 +248,9 @@ void i486Debugger::BeforeRunOneInstruction(i486DX &cpu,Memory &mem,InOut &io,con
 
 	if(true==disassembleEveryStep && lastDisassembleAddr!=cseip)
 	{
-		auto inst=cpu.FetchInstruction(mem);
-		auto disasm=cpu.Disassemble(inst,cpu.state.CS(),cpu.state.EIP,mem,GetSymTable());
+		i486DX::Operand op1,op2;
+		auto inst=cpu.FetchInstruction(op1,op2,mem);
+		auto disasm=cpu.Disassemble(inst,op1,op2,cpu.state.CS(),cpu.state.EIP,mem,GetSymTable());
 		lastDisassembleAddr.SEG=cpu.state.CS().value;
 		lastDisassembleAddr.OFFSET=cpu.state.EIP;
 		std::cout << disasm << std::endl;
