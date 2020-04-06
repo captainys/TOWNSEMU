@@ -244,15 +244,25 @@ std::string i486DX::Instruction::SegmentOverrideString(int segOverridePrefix)
 
 void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,int offset,const Memory &mem) const
 {
+	op1.Clear();
+	op2.Clear();
+
 	switch(inst.opCode)
 	{
 	case I486_OPCODE_UNDEFINED_SHOOT_INT6:
 		break;
 
 	case I486_OPCODE_C0_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_I8://0xC0,// ::ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
+		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
+		FetchOperand8(inst,ptr,seg,offset,mem);
+		op1.Decode(inst.addressSize,8,inst.operand);
+		op2.MakeImm8(inst);
+		break;
 	case I486_OPCODE_C1_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_I8:// 0xC1, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
 		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
 		FetchOperand8(inst,ptr,seg,offset,mem);
+		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
+		op2.MakeImm8(inst);
 		break;
 	case I486_OPCODE_D0_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_1://0xD0, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
 	case I486_OPCODE_D1_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_1://0xD1, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
@@ -946,22 +956,8 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 
 void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand &op1,Operand &op2) const
 {
-	op1.Clear();
-	op2.Clear();
-
 	switch(opCode)
 	{
-	case I486_OPCODE_UNDEFINED_SHOOT_INT6:
-		break;
-
-	case I486_OPCODE_C0_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_I8://=0xC0,// ::ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
-		op1.Decode(addressSize,8,operand);
-		op2.MakeImm8(*this);
-		break;
-	case I486_OPCODE_C1_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_I8:// =0xC1, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
-		op1.Decode(addressSize,operandSize,operand);
-		op2.MakeImm8(*this);
-		break;
 	case I486_OPCODE_D0_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_1://=0xD0, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
 	case I486_OPCODE_D3_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_CL://0xD2,// ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
 		op1.Decode(addressSize,8,operand);
