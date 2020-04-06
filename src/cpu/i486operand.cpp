@@ -49,7 +49,7 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 			offsetBits=16;
 			numBytes=3;
 		}
-		else if(0b00==MOD || 0b01==MOD || 0b10==MOD)
+		else if(0b11!=MOD) // <=> if(0b00==MOD || 0b01==MOD || 0b10==MOD)
 		{
 			static const unsigned int R_M_to_BaseIndex[8][2]=
 			{
@@ -120,7 +120,7 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 			offsetBits=32;
 			numBytes=5;
 		}
-		else if(0b00==MOD || 0b01==MOD || 0b10==MOD)
+		else if(0b11!=MOD) // <=> if(0b00==MOD || 0b01==MOD || 0b10==MOD)
 		{
 			operandType=OPER_ADDR;
 			baseReg=REG_NULL;
