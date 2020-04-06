@@ -522,9 +522,11 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 
 	case I486_OPCODE_INC_DEC_R_M8:
 		FetchOperandRM(inst,ptr,seg,offset,mem);
+		op1.Decode(inst.addressSize,8,inst.operand);
 		break;
 	case I486_OPCODE_INC_DEC_CALL_CALLF_JMP_JMPF_PUSH:
 		FetchOperandRM(inst,ptr,seg,offset,mem);
+		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 	case I486_OPCODE_INC_EAX://    0x40, // 16/32 depends on OPSIZE_OVERRIDE
 	case I486_OPCODE_INC_ECX://    0x41, // 16/32 depends on OPSIZE_OVERRIDE
@@ -626,6 +628,7 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 		{
 			inst.operandSize=16;
 		}
+		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 
 
@@ -1001,60 +1004,6 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 {
 	switch(opCode)
 	{
-	case I486_OPCODE_INC_DEC_R_M8:
-		op1.Decode(addressSize,8,operand);
-		break;
-	case I486_OPCODE_INC_DEC_CALL_CALLF_JMP_JMPF_PUSH:
-		op1.Decode(addressSize,operandSize,operand);
-		break;
-	case I486_OPCODE_INC_EAX://    0x40, // 16/32 depends on OPSIZE_OVERRIDE
-	case I486_OPCODE_INC_ECX://    0x41, // 16/32 depends on OPSIZE_OVERRIDE
-	case I486_OPCODE_INC_EDX://    0x42, // 16/32 depends on OPSIZE_OVERRIDE
-	case I486_OPCODE_INC_EBX://    0x43, // 16/32 depends on OPSIZE_OVERRIDE
-	case I486_OPCODE_INC_ESP://    0x44, // 16/32 depends on OPSIZE_OVERRIDE
-	case I486_OPCODE_INC_EBP://    0x45, // 16/32 depends on OPSIZE_OVERRIDE
-	case I486_OPCODE_INC_ESI://    0x46, // 16/32 depends on OPSIZE_OVERRIDE
-	case I486_OPCODE_INC_EDI://    0x47, // 16/32 depends on OPSIZE_OVERRIDE
-		break;
-
-
-	case I486_OPCODE_INT3://       0xCC,
-		break;
-	case I486_OPCODE_INT://        0xCD,
-	case I486_OPCODE_INTO://       0xCE,
-		break;
-
-
-	case I486_OPCODE_IRET://   0xCF,
-		break;
-
-
-	case I486_OPCODE_JMP_REL8://         0xEB,   // cb
-	case I486_OPCODE_JO_REL8:   // 0x70,
-	case I486_OPCODE_JNO_REL8:  // 0x71,
-	case I486_OPCODE_JB_REL8:   // 0x72,
-	case I486_OPCODE_JAE_REL8:  // 0x73,
-	case I486_OPCODE_JE_REL8:   // 0x74,
-	case I486_OPCODE_JECXZ_REL8:// 0xE3,  // Depending on the operand size
-	case I486_OPCODE_JNE_REL8:  // 0x75,
-	case I486_OPCODE_JBE_REL8:  // 0x76,
-	case I486_OPCODE_JA_REL8:   // 0x77,
-	case I486_OPCODE_JS_REL8:   // 0x78,
-	case I486_OPCODE_JNS_REL8:  // 0x79,
-	case I486_OPCODE_JP_REL8:   // 0x7A,
-	case I486_OPCODE_JNP_REL8:  // 0x7B,
-	case I486_OPCODE_JL_REL8:   // 0x7C,
-	case I486_OPCODE_JGE_REL8:  // 0x7D,
-	case I486_OPCODE_JLE_REL8:  // 0x7E,
-	case I486_OPCODE_JG_REL8:   // 0x7F,
-		break;
-
-
-	case I486_OPCODE_LGDT_LIDT_SGDT_SIDT:
-		op1.Decode(addressSize,operandSize,operand);
-		break;
-
-
 	case I486_OPCODE_BINARYOP_RM8_FROM_I8: //  0x80, // AND(REG=4), OR(REG=1), or XOR(REG=6) depends on the REG field of MODR/M
 	case I486_OPCODE_BINARYOP_RM8_FROM_I8_ALIAS:
 		op1.Decode(addressSize,8,operand);
