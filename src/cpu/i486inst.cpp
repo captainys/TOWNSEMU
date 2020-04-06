@@ -868,10 +868,16 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 
 
 	case I486_OPCODE_MOVSX_R_RM8://=      0x0FBE,
-	case I486_OPCODE_MOVSX_R32_RM16://=   0x0FBF,
 	case I486_OPCODE_MOVZX_R_RM8://=      0x0FB6,
+		FetchOperandRM(inst,ptr,seg,offset,mem);
+		op1.DecodeMODR_MForRegister(inst.operandSize,inst.operand[0]);
+		op2.Decode(inst.addressSize,8,inst.operand);
+		break;
+	case I486_OPCODE_MOVSX_R32_RM16://=   0x0FBF,
 	case I486_OPCODE_MOVZX_R32_RM16://=   0x0FB7,
 		FetchOperandRM(inst,ptr,seg,offset,mem);
+		op1.DecodeMODR_MForRegister(32,inst.operand[0]);
+		op2.Decode(inst.addressSize,16,inst.operand);
 		break;
 
 
@@ -882,6 +888,7 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 	case I486_OPCODE_OUT_I8_AL: //        0xE6,
 	case I486_OPCODE_OUT_I8_A: //         0xE7,
 		FetchOperand8(inst,ptr,seg,offset,mem);
+		op1.MakeImm8(inst);
 		break;
 	case I486_OPCODE_OUT_DX_AL: //        0xEE,
 	case I486_OPCODE_OUT_DX_A: //         0xEF,
@@ -1117,116 +1124,22 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 {
 	switch(opCode)
 	{
-	case I486_OPCODE_MOV_TO_CR://        0x0F22,  Op1=CR, OP2=R32
-		break;
-	case I486_OPCODE_MOV_FROM_CR://      0x0F20,  Op1=R32, Op2=CR
-		break;
-	case I486_OPCODE_MOV_FROM_DR://      0x0F21,  Op1=R32, Op2=DR
-		break;
-	case I486_OPCODE_MOV_TO_DR://        0x0F23,  Op1=DR, Op2=R32
-		break;
-	case I486_OPCODE_MOV_FROM_TR://      0x0F24,  Op1=R32, Op2=TR  TR is a test register!  Not Task Register!  How confusing!
-		break;
-	case I486_OPCODE_MOV_TO_TR://        0x0F26,  Op1=TR, Op2=R32
-		break;
-
-
-	case I486_OPCODE_MOVSB://            0xA4,
-	case I486_OPCODE_MOVS://             0xA5,
-		break;
-
-
-	case I486_OPCODE_MOVSX_R_RM8://=      0x0FBE,
-	case I486_OPCODE_MOVZX_R_RM8://=      0x0FB6,
-		op1.DecodeMODR_MForRegister(operandSize,operand[0]);
-		op2.Decode(addressSize,8,operand);
-		break;
-	case I486_OPCODE_MOVSX_R32_RM16://=   0x0FBF,
-	case I486_OPCODE_MOVZX_R32_RM16://=   0x0FB7,
-		op1.DecodeMODR_MForRegister(32,operand[0]);
-		op2.Decode(addressSize,16,operand);
-		break;
-
-
-	case I486_OPCODE_NOP://              0x90,
-		break;
-
-
-	case I486_OPCODE_OUT_I8_AL: //        0xE6,
-	case I486_OPCODE_OUT_I8_A: //         0xE7,
-		op1.MakeImm8(*this);
-		break;
-	case I486_OPCODE_OUT_DX_AL: //        0xEE,
-	case I486_OPCODE_OUT_DX_A: //         0xEF,
-		break;
-
-
-	case I486_OPCODE_OUTSB://            0x6E,
-	case I486_OPCODE_OUTS://             0x6F,
-		break;
-
-
-	case I486_OPCODE_PUSHA://            0x60,
-	case I486_OPCODE_PUSHF://            0x9C,
-		break;
-
-
-	case I486_OPCODE_PUSH_EAX://         0x50,
-	case I486_OPCODE_PUSH_ECX://         0x51,
-	case I486_OPCODE_PUSH_EDX://         0x52,
-	case I486_OPCODE_PUSH_EBX://         0x53,
-	case I486_OPCODE_PUSH_ESP://         0x54,
-	case I486_OPCODE_PUSH_EBP://         0x55,
-	case I486_OPCODE_PUSH_ESI://         0x56,
-	case I486_OPCODE_PUSH_EDI://         0x57,
-		break;
 	case I486_OPCODE_PUSH_I8://          0x6A,
 		op1.MakeImm8(*this);
 		break;
 	case I486_OPCODE_PUSH_I://           0x68,
 		op1.MakeImm8or16or32(*this,operandSize);
 		break;
-	case I486_OPCODE_PUSH_CS://          0x0E,
-	case I486_OPCODE_PUSH_SS://          0x16,
-	case I486_OPCODE_PUSH_DS://          0x1E,
-	case I486_OPCODE_PUSH_ES://          0x06,
-	case I486_OPCODE_PUSH_FS://          0x0FA0,
-	case I486_OPCODE_PUSH_GS://          0x0FA8,
-		break;
 
 
 	case I486_OPCODE_POP_M://            0x8F,
 		op1.Decode(addressSize,operandSize,operand);
 		break;
-	case I486_OPCODE_POP_EAX://          0x58,
-	case I486_OPCODE_POP_ECX://          0x59,
-	case I486_OPCODE_POP_EDX://          0x5A,
-	case I486_OPCODE_POP_EBX://          0x5B,
-	case I486_OPCODE_POP_ESP://          0x5C,
-	case I486_OPCODE_POP_EBP://          0x5D,
-	case I486_OPCODE_POP_ESI://          0x5E,
-	case I486_OPCODE_POP_EDI://          0x5F,
-	case I486_OPCODE_POP_SS://           0x17,
-	case I486_OPCODE_POP_DS://           0x1F,
-	case I486_OPCODE_POP_ES://           0x07,
-	case I486_OPCODE_POP_FS://           0x0FA1,
-	case I486_OPCODE_POP_GS://           0x0FA9,
-
-	case I486_OPCODE_POPA://             0x61,
-	case I486_OPCODE_POPF://             0x9D,
-		break;
 
 
-	case I486_OPCODE_RET://              0xC3,
-	case I486_OPCODE_RETF://             0xCB,
-		break;
 	case I486_OPCODE_RET_I16://          0xC2,
 	case I486_OPCODE_RETF_I16://         0xCA,
 		op1.MakeImm16(*this);
-		break;
-
-
-	case I486_OPCODE_SAHF://=             0x9E,
 		break;
 
 
@@ -1236,11 +1149,6 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 	case I486_OPCODE_SHRD_RM_CL://       0x0FAD,
 		op1.Decode(addressSize,operandSize,operand);
 		op2.DecodeMODR_MForRegister(operandSize,operand[0]);
-		break;
-
-
-	case I486_OPCODE_SCASB://            0xAE,
-	case I486_OPCODE_SCAS://             0xAF,
 		break;
 
 
