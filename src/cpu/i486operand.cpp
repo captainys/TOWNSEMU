@@ -123,8 +123,6 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 		else if(0b11!=MOD) // <=> if(0b00==MOD || 0b01==MOD || 0b10==MOD)
 		{
 			operandType=OPER_ADDR;
-			baseReg=REG_NULL;
-			indexReg=REG_NULL;
 			// indexShift=0; Already cleared in Clear()
 			offset=0;
 			numBytes=1;
@@ -144,7 +142,7 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 				{
 					if(0b00==MOD) // disp32[index]
 					{
-						// No base
+						baseReg=REG_NULL;
 					}
 					else if(0b01==MOD || 0b10==MOD) // disp[EBP][index]
 					{
@@ -155,6 +153,10 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 				{
 					indexReg=REG_32BIT_REG_BASE+INDEX;
 					indexShift=SS;
+				}
+				else
+				{
+					indexReg=REG_NULL;
 				}
 
 				if((0==MOD && 5==BASE) || 0b10==MOD)
@@ -173,6 +175,7 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 			else
 			{
 				baseReg=REG_32BIT_REG_BASE+R_M;
+				indexReg=REG_NULL;
 				if(0b01==MOD) // 8-bit offset
 				{
 					offsetBits=8;
