@@ -406,6 +406,15 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 			{
 				FetchOperandRM(inst,ptr,seg,offset,mem);
 			}
+
+			if(0xF0<=inst.operand[0] && inst.operand[0]<=0xFF)
+			{
+				// Do nothing
+			}
+			else
+			{
+				op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
+			}
 		}
 		break;
 	case I486_OPCODE_FPU_DB_FNINIT_FRSTOR://     0xDB, 
@@ -480,6 +489,8 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 	case I486_OPCODE_IMUL_R_RM_I8://0x6B,
 		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
 		FetchOperand8(inst,ptr,seg,offset,mem);
+		op1.DecodeMODR_MForRegister(inst.operandSize,inst.operand[0]);
+		op2.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 	case I486_OPCODE_IMUL_R_RM_IMM://0x69,
 		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
@@ -491,9 +502,13 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 		{
 			FetchOperand32(inst,ptr,seg,offset,mem);
 		}
+		op1.DecodeMODR_MForRegister(inst.operandSize,inst.operand[0]);
+		op2.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 	case I486_OPCODE_IMUL_R_RM://       0x0FAF,
 		FetchOperandRM(inst,ptr,seg,offset,mem);
+		op1.DecodeMODR_MForRegister(inst.operandSize,inst.operand[0]);
+		op2.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 
 
@@ -986,61 +1001,6 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 {
 	switch(opCode)
 	{
-	case I486_OPCODE_FPU_D9_FNSTCW_M16_FNSTENV_F2XM1_FXAM_FXCH_FXTRACT_FYL2X_FYL2XP1_FABS_:// 0xD9,
-		if(0xF0<=operand[0] && operand[0]<=0xFF)
-		{
-			// Do nothing
-		}
-		else
-		{
-			op1.Decode(addressSize,operandSize,operand);
-		}
-		break;
-	case I486_OPCODE_FPU_DB_FNINIT_FRSTOR://     0xDB, 
-		break;
-	case I486_OPCODE_FPU_DF_FNSTSW_AX://  0xDF,
-		break;
-
-
-	case I486_OPCODE_DEC_EAX:
-	case I486_OPCODE_DEC_ECX:
-	case I486_OPCODE_DEC_EDX:
-	case I486_OPCODE_DEC_EBX:
-	case I486_OPCODE_DEC_ESP:
-	case I486_OPCODE_DEC_EBP:
-	case I486_OPCODE_DEC_ESI:
-	case I486_OPCODE_DEC_EDI:
-		break;
-
-
-	case I486_OPCODE_INSB://     0x6C,
-		break;
-
-
-	case I486_OPCODE_IN_AL_I8://=        0xE4,
-	case I486_OPCODE_IN_A_I8://=         0xE5,
-		break;
-	case I486_OPCODE_IN_AL_DX://=        0xEC,
-	case I486_OPCODE_IN_A_DX://=         0xED,
-		break;
-
-
-	case I486_OPCODE_IMUL_R_RM_I8://0x6B,
-	case I486_OPCODE_IMUL_R_RM_IMM://0x69,
-	case I486_OPCODE_IMUL_R_RM://       0x0FAF,
-		op1.DecodeMODR_MForRegister(operandSize,operand[0]);
-		op2.Decode(addressSize,operandSize,operand);
-		break;
-
-
-	case I486_OPCODE_LEAVE://            0xC9,
-		break;
-
-
-	case I486_OPCODE_HLT://        0xF4,
-		break;
-
-
 	case I486_OPCODE_INC_DEC_R_M8:
 		op1.Decode(addressSize,8,operand);
 		break;
