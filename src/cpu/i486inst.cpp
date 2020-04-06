@@ -682,6 +682,8 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 
 	case I486_OPCODE_LSL://              0x0F03,
 		FetchOperandRM(inst,ptr,seg,offset,mem);
+		op1.DecodeMODR_MForRegister(inst.operandSize,inst.operand[0]);
+		op2.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 
 
@@ -693,10 +695,16 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 
 		// Example:  8D 04 C1        LEA EAX,[ECX+EAX*8] In Protected Mode
 		// Example:  8D 04 41        LEA EAX,[ECX+EAX*2] In Protected Mode
+		FetchOperandRM(inst,ptr,seg,offset,mem);
+		break;
 	case I486_OPCODE_MOV_FROM_R: //       0x89, // 16/32 depends on OPSIZE_OVERRIDE
 		// Example:  89 26 3e 00     MOV [003EH],SP
+		FetchOperandRM(inst,ptr,seg,offset,mem);
+		break;
 	case I486_OPCODE_MOV_TO_R8: //        0x8A,
 		// Example:  8a 0e 16 00     MOV CL,[0016H]
+		FetchOperandRM(inst,ptr,seg,offset,mem);
+		break;
 	case I486_OPCODE_MOV_TO_R: //         0x8B, // 16/32 depends on OPSIZE_OVERRIDE
 		FetchOperandRM(inst,ptr,seg,offset,mem);
 		break;
@@ -705,13 +713,48 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 	case I486_OPCODE_MOV_FROM_SEG: //     0x8C,
 		// Example:  8c c6           MOV SI,ES
 		// Sreg: ES=0, CS=1, SS=2, DS=3, FD=4, GS=5 (OPCODE part of MODR_M)  [1] pp.26-10
+		FetchOperandRM(inst,ptr,seg,offset,mem);
+		break;
 	case I486_OPCODE_MOV_TO_SEG: //       0x8E,
 		FetchOperandRM(inst,ptr,seg,offset,mem);
 		break;
 
 	case I486_OPCODE_MOV_M_TO_AL: //      0xA0, // 16/32 depends on ADDRESSSIZE_OVERRIDE
+		switch(inst.addressSize)
+		{
+		default:
+		case 32:
+			FetchOperand32(inst,ptr,seg,offset,mem);
+			break;
+		case 16:
+			FetchOperand16(inst,ptr,seg,offset,mem);
+			break;
+		}
+		break;
 	case I486_OPCODE_MOV_M_TO_EAX: //     0xA1, // 16/32 depends on ADDRESSSIZE_OVERRIDE
+		switch(inst.addressSize)
+		{
+		default:
+		case 32:
+			FetchOperand32(inst,ptr,seg,offset,mem);
+			break;
+		case 16:
+			FetchOperand16(inst,ptr,seg,offset,mem);
+			break;
+		}
+		break;
 	case I486_OPCODE_MOV_M_FROM_AL: //    0xA2, // 16/32 depends on ADDRESSSIZE_OVERRIDE
+		switch(inst.addressSize)
+		{
+		default:
+		case 32:
+			FetchOperand32(inst,ptr,seg,offset,mem);
+			break;
+		case 16:
+			FetchOperand16(inst,ptr,seg,offset,mem);
+			break;
+		}
+		break;
 	case I486_OPCODE_MOV_M_FROM_EAX: //   0xA3, // 16/32 depends on ADDRESSSIZE_OVERRIDE
 		switch(inst.addressSize)
 		{
@@ -1022,12 +1065,6 @@ void i486DX::Instruction::DecodeOperand(int addressSize,int operandSize,Operand 
 {
 	switch(opCode)
 	{
-	case I486_OPCODE_LSL://              0x0F03,
-		op1.DecodeMODR_MForRegister(operandSize,operand[0]);
-		op2.Decode(addressSize,operandSize,operand);
-		break;
-
-
 	case I486_OPCODE_MOV_FROM_R8: //      0x88,
 		op1.Decode(addressSize,8,operand);
 		break;
