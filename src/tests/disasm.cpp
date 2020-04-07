@@ -138,6 +138,22 @@ int main(int ac,char *av[])
 		"66 F7 C1 000E", "TEST    CX,000EH",
 		"F7 C3 00000008","TEST    EBX,00000008H",
 
+		"B0 10","MOV     AL,10H",
+		"B7 20","MOV     BH,20H",
+		"B1 33","MOV     CL,33H",
+		"B2 44","MOV     DL,44H",
+
+		"C6 06 55",      "MOV     BYTE PTR [ESI],55H",
+		"C7 07 00001234","MOV     DWORD PTR [EDI],00001234H",
+
+		"B8 12345678",   "MOV     EAX,12345678H",
+		"66 BB 5678",    "MOV     BX,5678H",
+
+		"E4 10",   "IN      AL,10H",
+		"66 E5 12","IN      AX,12H",
+		"E5 77",   "IN      EAX,77H",
+
+		"CD 21",   "INT     21H",
 	};
 
 	for(int i=0; i<sizeof(test32_32)/sizeof(test32_32[0]); i+=2)

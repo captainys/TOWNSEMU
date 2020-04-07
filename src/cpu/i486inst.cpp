@@ -1641,8 +1641,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		disasm="IN";
 		cpputil::ExtendString(disasm,8);
 		disasm+="AL,";
-		op1.MakeImm8(*this);
-		disasm+=op1.Disassemble();
+		disasm+=cpputil::Ubtox(GetUimm8())+"H";
 		break;
 	case I486_OPCODE_IN_A_I8://=         0xE5,
 		disasm="IN";
@@ -1655,8 +1654,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		{
 			disasm+="EAX,";
 		}
-		op1.MakeImm8(*this);
-		disasm+=op1.Disassemble();
+		disasm+=cpputil::Ubtox(GetUimm8())+"H";
 		break;
 	case I486_OPCODE_IN_AL_DX://=        0xEC,
 		disasm="IN      AL,DX";
@@ -1763,9 +1761,8 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		break;
 	case I486_OPCODE_INTO://        0xCD,
 	case I486_OPCODE_INT://        0xCD,
-		op1.MakeImm8(*this);
 		disasm=(I486_OPCODE_INT==opCode ? "INT" : "INTO");
-		disasm=DisassembleTypicalOneOperand(disasm,op1,8);
+		disasm=DisassembleTypicalOneImm(disasm,GetUimm8(),8);
 		if(I486_OPCODE_INT==opCode)
 		{
 			auto label=symTable.GetINTLabel(GetUimm8());
@@ -2173,14 +2170,12 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 	case I486_OPCODE_MOV_I8_TO_DH: //     0xB6,
 	case I486_OPCODE_MOV_I8_TO_BH: //     0xB7,
 		op1.MakeByRegisterNumber(8,opCode&7);
-		op2.MakeImm8(*this);
-		disasm=DisassembleTypicalTwoOperands("MOV",op1,op2);
+		disasm=DisassembleTypicalOneOperandAndImm("MOV",op1,GetUimm8(),8);
 		break;
 
 	case I486_OPCODE_MOV_I8_TO_RM8: //    0xC6,
 		op1.Decode(addressSize,8,operand);
-		op2.MakeImm8(*this);
-		disasm=DisassembleTypicalTwoOperands("MOV",op1,op2);
+		disasm=DisassembleTypicalOneOperandAndImm("MOV",op1,GetUimm8(),8);
 		break;
 
 	case I486_OPCODE_MOV_I_TO_EAX: //     0xB8, // 16/32 depends on OPSIZE_OVERRIDE
@@ -2192,15 +2187,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 	case I486_OPCODE_MOV_I_TO_ESI: //     0xBE, // 16/32 depends on OPSIZE_OVERRIDE
 	case I486_OPCODE_MOV_I_TO_EDI: //     0xBF, // 16/32 depends on OPSIZE_OVERRIDE
 		op1.MakeByRegisterNumber(operandSize,opCode&7);
-		if(16==operandSize)
-		{
-			op2.MakeImm16(*this);
-		}
-		else
-		{
-			op2.MakeImm32(*this);
-		}
-		disasm=DisassembleTypicalTwoOperands("MOV",op1,op2);
+		disasm=DisassembleTypicalOneOperandAndImm("MOV",op1,GetUimm16or32(operandSize),operandSize);
 		break;
 
 
@@ -5110,7 +5097,19 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			}
 
 			auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
-			auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize/8);
+			unsigned int value2;
+			if(I486_OPCODE_BINARYOP_R_FROM_I==inst.opCode)
+			{
+				value2=inst.GetUimm16or32(inst.operandSize);
+			}
+			else
+			{
+				value2=inst.GetUimm8();
+				if(value2&0x80)
+				{
+					value2|=0xFFFFFF00;
+				}
+			}
 			if(true==state.exception)
 			{
 				break;
@@ -5121,28 +5120,28 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			switch(REG)
 			{
 			case 0:
-				AddWordOrDword(inst.operandSize,i,value2.GetAsDword());
+				AddWordOrDword(inst.operandSize,i,value2);
 				break;
 			case 1:
-				OrWordOrDword(inst.operandSize,i,value2.GetAsDword());
+				OrWordOrDword(inst.operandSize,i,value2);
 				break;
 			case 2:
-				AdcWordOrDword(inst.operandSize,i,value2.GetAsDword());
+				AdcWordOrDword(inst.operandSize,i,value2);
 				break;
 			case 3:
-				SbbWordOrDword(inst.operandSize,i,value2.GetAsDword());
+				SbbWordOrDword(inst.operandSize,i,value2);
 				break;
 			case 4:
-				AndWordOrDword(inst.operandSize,i,value2.GetAsDword());
+				AndWordOrDword(inst.operandSize,i,value2);
 				break;
 			case 5:
-				SubWordOrDword(inst.operandSize,i,value2.GetAsDword());
+				SubWordOrDword(inst.operandSize,i,value2);
 				break;
 			case 6:
-				XorWordOrDword(inst.operandSize,i,value2.GetAsDword());
+				XorWordOrDword(inst.operandSize,i,value2);
 				break;
 			case 7:
-				SubWordOrDword(inst.operandSize,i,value2.GetAsDword());
+				SubWordOrDword(inst.operandSize,i,value2);
 				break;
 			default:
 				Abort("Undefined REG for "+cpputil::Ubtox(inst.opCode));
