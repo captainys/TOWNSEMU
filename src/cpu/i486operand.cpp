@@ -39,7 +39,8 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 
 	if(16==addressSize)
 	{
-		if(0b00==MOD && 0b110==R_M)
+		/* As Specification
+		if(0b00==MOD && 0b110==R_M)                                     // CASE 0
 		{
 			operandType=OPER_ADDR;
 			baseReg=REG_NULL;
@@ -69,43 +70,112 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 			baseReg=R_M_to_BaseIndex[R_M][0];
 			indexReg=R_M_to_BaseIndex[R_M][1];
 
-			if(0b01==MOD)
+			if(0b01==MOD)                                             // CASE 1
 			{
 				offsetBits=8;
 				offset=cpputil::GetSignedByte(operand[1]);
 				numBytes=2;
 			}
-			else if(0b10==MOD)
+			else if(0b10==MOD)                                        // CASE 2
 			{
 				offsetBits=16;
 				offset=cpputil::GetSignedWord(operand+1);
 				numBytes=3;
 			}
-			else
+			else                                                      // CASE 3
 			{
 				offset=0;  // Tentative
 				offsetBits=16;
 				numBytes=1;
 			}
 		}
-		else
+		else                                                          // CASE 4
 		{
 			operandType=OPER_REG;
 			reg=R_M+(numBytesToBasicRegBase[dataSize>>3]);
-			/* Equivalent to:
-			if(8==dataSize)
-			{
-				reg=REG_8BIT_REG_BASE+R_M;
-			}
-			else if(16==dataSize)
-			{
-				reg=REG_16BIT_REG_BASE+R_M;
-			}
-			else if(32==dataSize)
-			{
-				reg=REG_32BIT_REG_BASE+R_M;
-			} */
+			// Equivalent to:
+			// if(8==dataSize)
+			// {
+			// 	reg=REG_8BIT_REG_BASE+R_M;
+			// }
+			// else if(16==dataSize)
+			// {
+			// 	reg=REG_16BIT_REG_BASE+R_M;
+			// }
+			// else if(32==dataSize)
+			// {
+			// 	reg=REG_32BIT_REG_BASE+R_M;
+			// }
 			numBytes=1;
+		}
+		*/
+
+		static const unsigned char caseTable[256]=
+		{
+			3,3,3,3,3,3,0,3,3,3,3,3,3,3,0,3,3,3,3,3,3,3,0,3,3,3,3,3,3,3,0,3,
+			3,3,3,3,3,3,0,3,3,3,3,3,3,3,0,3,3,3,3,3,3,3,0,3,3,3,3,3,3,3,0,3,
+			1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+			1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+			2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
+			2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
+			4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,
+			4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,
+		};
+		static const unsigned int R_M_to_BaseIndex[8][2]=
+		{
+			{REG_BX,REG_SI},
+			{REG_BX,REG_DI},
+			{REG_BP,REG_SI},
+			{REG_BP,REG_DI},
+			{REG_SI,REG_NULL},
+			{REG_DI,REG_NULL},
+			{REG_BP,REG_NULL},
+			{REG_BX,REG_NULL},
+		};
+
+		switch(caseTable[operand[0]])
+		{
+		case 0:
+			operandType=OPER_ADDR;
+			baseReg=REG_NULL;
+			indexReg=REG_NULL;
+			// indexShift=0; Already cleared in Clear()
+			offset=cpputil::GetSignedWord(operand+1);
+			offsetBits=16;
+			numBytes=3;
+			break;
+		case 1:
+			operandType=OPER_ADDR;
+			// indexShisft=0; Already cleared in Clear()
+			baseReg=R_M_to_BaseIndex[R_M][0];
+			indexReg=R_M_to_BaseIndex[R_M][1];
+			offsetBits=8;
+			offset=cpputil::GetSignedByte(operand[1]);
+			numBytes=2;
+			break;
+		case 2:
+			operandType=OPER_ADDR;
+			// indexShisft=0; Already cleared in Clear()
+			baseReg=R_M_to_BaseIndex[R_M][0];
+			indexReg=R_M_to_BaseIndex[R_M][1];
+			offsetBits=16;
+			offset=cpputil::GetSignedWord(operand+1);
+			numBytes=3;
+			break;
+		case 3:
+			operandType=OPER_ADDR;
+			// indexShisft=0; Already cleared in Clear()
+			baseReg=R_M_to_BaseIndex[R_M][0];
+			indexReg=R_M_to_BaseIndex[R_M][1];
+			offset=0;  // Tentative
+			offsetBits=16;
+			numBytes=1;
+			break;
+		case 4:
+			operandType=OPER_REG;
+			reg=R_M+(numBytesToBasicRegBase[dataSize>>3]);
+			numBytes=1;
+			break;
 		}
 	}
 	else // if(32==addressSize)
@@ -194,19 +264,19 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 		{
 			operandType=OPER_REG;
 			reg=R_M+(numBytesToBasicRegBase[dataSize>>3]);
-			/* Equivalent
-			if(8==dataSize)
-			{
-				reg=REG_8BIT_REG_BASE+R_M;
-			}
-			else if(16==dataSize)
-			{
-				reg=REG_16BIT_REG_BASE+R_M;
-			}
-			else if(32==dataSize)
-			{
-				reg=REG_32BIT_REG_BASE+R_M;
-			} */
+			//  Equivalent
+			// if(8==dataSize)
+			// {
+			// 	reg=REG_8BIT_REG_BASE+R_M;
+			// }
+			// else if(16==dataSize)
+			// {
+			// 	reg=REG_16BIT_REG_BASE+R_M;
+			// }
+			// else if(32==dataSize)
+			// {
+			// 	reg=REG_32BIT_REG_BASE+R_M;
+			// }
 			numBytes=1;
 		}
 	}
