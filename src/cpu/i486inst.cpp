@@ -126,31 +126,58 @@ unsigned int i486DX::FetchOperandRM(Instruction &inst,MemoryAccess::ConstPointer
 	FetchOperand8(inst,ptr,seg,offset++,mem);
 
 	unsigned int numBytesFetched=1;
-	auto MODR_M=inst.operand[inst.operandLen-1];
-	auto MOD=(MODR_M>>6)&3;
-	auto R_M=(MODR_M)&7;
 
 	// [1] Table 26-1, 26-2, 26-3, pp. 26-4,26-5,26-6
 	if(16==inst.addressSize)
 	{
-		if(0b00==MOD && 0b110==R_M) // disp16
+		/* As Specification
+		auto MODR_M=inst.operand[inst.operandLen-1];
+		auto MOD=(MODR_M>>6)&3;
+		auto R_M=(MODR_M)&7;
+		if(0b00==MOD && 0b110==R_M) // disp16             CASE 2
 		{
 			FetchOperand16(inst,ptr,seg,offset,mem);
 			numBytesFetched+=2;
 		}
-		else if(0b01==MOD)
+		else if(0b01==MOD)         //                     CASE 1
 		{
 			FetchOperand8(inst,ptr,seg,offset,mem);
 			++numBytesFetched;
 		}
-		else if(0b10==MOD)
+		else if(0b10==MOD)         //                     CASE 2
 		{
 			FetchOperand16(inst,ptr,seg,offset,mem);
 			numBytesFetched+=2;
+		} */
+
+		static const char table[256]=
+		{
+			0,0,0,0,0,0,2,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,2,0,
+			0,0,0,0,0,0,2,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,2,0,
+			1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+			1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+			2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
+			2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
+			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+		};
+		switch(table[inst.operand[inst.operandLen-1]])
+		{
+		case 2:
+			FetchOperand16(inst,ptr,seg,offset,mem);
+			numBytesFetched+=2;
+			break;
+		case 1:
+			FetchOperand8(inst,ptr,seg,offset,mem);
+			++numBytesFetched;
+			break;
 		}
 	}
 	else // if(32==inst.addressSize)
 	{
+		auto MODR_M=inst.operand[inst.operandLen-1];
+		auto MOD=(MODR_M>>6)&3;
+		auto R_M=(MODR_M)&7;
 		if(0b00==MOD)
 		{
 			if(0b100==R_M) // SIB
