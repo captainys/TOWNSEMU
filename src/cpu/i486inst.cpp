@@ -175,6 +175,7 @@ unsigned int i486DX::FetchOperandRM(Instruction &inst,MemoryAccess::ConstPointer
 	}
 	else // if(32==inst.addressSize)
 	{
+		/* As Specification
 		auto MODR_M=inst.operand[inst.operandLen-1];
 		auto MOD=(MODR_M>>6)&3;
 		auto R_M=(MODR_M)&7;
@@ -201,6 +202,7 @@ unsigned int i486DX::FetchOperandRM(Instruction &inst,MemoryAccess::ConstPointer
 				FetchOperand32(inst,ptr,seg,offset,mem);
 				numBytesFetched+=4;
 			}
+			// else                                          CASE 0
 		}
 		else if(0b01==MOD)
 		{
@@ -228,6 +230,61 @@ unsigned int i486DX::FetchOperandRM(Instruction &inst,MemoryAccess::ConstPointer
 				FetchOperand32(inst,ptr,seg,offset,mem);
 				numBytesFetched+=4;
 			}
+		}
+		// else                                              CASE 0
+		*/
+
+		const static unsigned char table[256]=
+		{
+			0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,
+			0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,
+			4,4,4,4,3,4,4,4,4,4,4,4,3,4,4,4,4,4,4,4,3,4,4,4,4,4,4,4,3,4,4,4,
+			4,4,4,4,3,4,4,4,4,4,4,4,3,4,4,4,4,4,4,4,3,4,4,4,4,4,4,4,3,4,4,4,
+			6,6,6,6,5,6,6,6,6,6,6,6,5,6,6,6,6,6,6,6,5,6,6,6,6,6,6,6,5,6,6,6,
+			6,6,6,6,5,6,6,6,6,6,6,6,5,6,6,6,6,6,6,6,5,6,6,6,6,6,6,6,5,6,6,6,
+			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+		};
+		switch(table[inst.operand[inst.operandLen-1]])
+		{
+		case 1:
+			{
+				FetchOperand8(inst,ptr,seg,offset,mem);
+				++numBytesFetched;
+				++offset;
+
+				auto SIB=inst.operand[inst.operandLen-1];
+				auto BASE=(SIB&7);
+				// Special case MOD=0b00 && BASE==5 [1] Table 26-4 pp.26-7
+				// No base, [disp32+scaled_index]
+				if(5==BASE)
+				{
+					FetchOperand32(inst,ptr,seg,offset,mem);
+					numBytesFetched+=4;
+				}
+			}
+			break;
+		case 2:
+			FetchOperand32(inst,ptr,seg,offset,mem);
+			numBytesFetched+=4;
+			break;
+		case 3:
+			FetchOperand16(inst,ptr,seg,offset,mem);
+			numBytesFetched+=2;
+			break;
+		case 4:
+			FetchOperand8(inst,ptr,seg,offset,mem);
+			++numBytesFetched;
+			break;
+		case 5:
+			FetchOperand8(inst,ptr,seg,offset,mem);
+			FetchOperand32(inst,ptr,seg,offset+1,mem);
+			numBytesFetched+=5;
+			break;
+		case 6:
+			FetchOperand32(inst,ptr,seg,offset,mem);
+			numBytesFetched+=4;
+			break;
 		}
 	}
 
