@@ -1041,7 +1041,6 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 	case I486_OPCODE_TEST_AL_FROM_I8://  0xA8,
 	case  I486_OPCODE_XOR_AL_FROM_I8:
 		FetchOperand8(inst,ptr,seg,offset,mem);
-		op1.MakeImm8(inst);
 		break;
 	case  I486_OPCODE_ADC_A_FROM_I://    0x15,
 	case  I486_OPCODE_ADD_A_FROM_I://    0x05,
@@ -1053,7 +1052,6 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 	case I486_OPCODE_TEST_A_FROM_I://    0xA9,
 	case  I486_OPCODE_XOR_A_FROM_I:
 		FetchOperand16or32(inst,ptr,seg,offset,mem);
-		op1.MakeImm8or16or32(inst,inst.operandSize);
 		break;
 	case  I486_OPCODE_ADC_RM8_FROM_R8:// 0x10,
 	case  I486_OPCODE_ADD_RM8_FROM_R8:// 0x00,
@@ -1459,16 +1457,16 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 
 
 	case I486_OPCODE_ADC_AL_FROM_I8:
-		disasm="ADC     AL,"+op1.Disassemble();
+		disasm="ADC     AL,"+cpputil::Ubtox(GetUimm8())+"H";
 		break;
 	case I486_OPCODE_ADC_A_FROM_I:
 		if(16==operandSize)
 		{
-			disasm="ADC     AX,"+op1.Disassemble();;
+			disasm="ADC     AX,"+cpputil::Ustox(GetUimm16())+"H";
 		}
 		else
 		{
-			disasm="ADC     EAX,"+op1.Disassemble();;
+			disasm="ADC     EAX,"+cpputil::Uitox(GetUimm32())+"H";
 		}
 		break;
 	case I486_OPCODE_ADC_RM8_FROM_R8:
@@ -1480,16 +1478,16 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 
 
 	case I486_OPCODE_ADD_AL_FROM_I8:
-		disasm="ADD     AL,"+op1.Disassemble();
+		disasm="ADD     AL,"+cpputil::Ubtox(GetUimm8())+"H";
 		break;
 	case I486_OPCODE_ADD_A_FROM_I:
 		if(16==operandSize)
 		{
-			disasm="ADD     AX,"+op1.Disassemble();;
+			disasm="ADD     AX,"+cpputil::Ustox(GetUimm16())+"H";
 		}
 		else
 		{
-			disasm="ADD     EAX,"+op1.Disassemble();;
+			disasm="ADD     EAX,"+cpputil::Uitox(GetUimm32())+"H";
 		}
 		break;
 	case I486_OPCODE_ADD_RM8_FROM_R8:
@@ -1501,16 +1499,16 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 
 
 	case I486_OPCODE_AND_AL_FROM_I8:
-		disasm="AND     AL,"+op1.Disassemble();
+		disasm="AND     AL,"+cpputil::Ubtox(GetUimm8())+"H";
 		break;
 	case I486_OPCODE_AND_A_FROM_I:
 		if(16==operandSize)
 		{
-			disasm="AND     AX,"+op1.Disassemble();;
+			disasm="AND     AX,"+cpputil::Ustox(GetUimm16())+"H";
 		}
 		else
 		{
-			disasm="AND     EAX,"+op1.Disassemble();;
+			disasm="AND     EAX,"+cpputil::Uitox(GetUimm32())+"H";
 		}
 		break;
 	case I486_OPCODE_AND_RM8_FROM_R8:
@@ -1522,16 +1520,16 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 
 
 	case I486_OPCODE_CMP_AL_FROM_I8:
-		disasm="CMP     AL,"+op1.Disassemble();
+		disasm="CMP     AL,"+cpputil::Ubtox(GetUimm8())+"H";
 		break;
 	case I486_OPCODE_CMP_A_FROM_I:
 		if(16==operandSize)
 		{
-			disasm="CMP     AX,"+op1.Disassemble();;
+			disasm="CMP     AX,"+cpputil::Ustox(GetUimm16())+"H";
 		}
 		else
 		{
-			disasm="CMP     EAX,"+op1.Disassemble();;
+			disasm="CMP     EAX,"+cpputil::Uitox(GetUimm32())+"H";
 		}
 		break;
 	case I486_OPCODE_CMP_RM8_FROM_R8:
@@ -1543,16 +1541,16 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 
 
 	case I486_OPCODE_SBB_AL_FROM_I8:
-		disasm="SBB     AL,"+op1.Disassemble();
+		disasm="SBB     AL,"+cpputil::Ubtox(GetUimm8())+"H";
 		break;
 	case I486_OPCODE_SBB_A_FROM_I:
 		if(16==operandSize)
 		{
-			disasm="SBB     AX,"+op1.Disassemble();;
+			disasm="SBB     AX,"+cpputil::Ustox(GetUimm16())+"H";
 		}
 		else
 		{
-			disasm="SBB     EAX,"+op1.Disassemble();;
+			disasm="SBB     EAX,"+cpputil::Uitox(GetUimm32())+"H";
 		}
 		break;
 	case I486_OPCODE_SBB_RM8_FROM_R8:
@@ -1564,16 +1562,16 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 
 
 	case I486_OPCODE_SUB_AL_FROM_I8:
-		disasm="SUB     AL,"+op1.Disassemble();
+		disasm="SUB     AL,"+cpputil::Ubtox(GetUimm8())+"H";
 		break;
 	case I486_OPCODE_SUB_A_FROM_I:
 		if(16==operandSize)
 		{
-			disasm="SUB     AX,"+op1.Disassemble();;
+			disasm="SUB     AX,"+cpputil::Ustox(GetUimm16())+"H";
 		}
 		else
 		{
-			disasm="SUB     EAX,"+op1.Disassemble();;
+			disasm="SUB     EAX,"+cpputil::Uitox(GetUimm32())+"H";
 		}
 		break;
 	case I486_OPCODE_SUB_RM8_FROM_R8:
@@ -1585,16 +1583,16 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 
 
 	case I486_OPCODE_TEST_AL_FROM_I8:
-		disasm="TEST    AL,"+op1.Disassemble();
+		disasm="TEST    AL,"+cpputil::Ubtox(GetUimm8())+"H";
 		break;
 	case I486_OPCODE_TEST_A_FROM_I:
 		if(16==operandSize)
 		{
-			disasm="TEST    AX,"+op1.Disassemble();;
+			disasm="TEST    AX,"+cpputil::Ustox(GetUimm16())+"H";
 		}
 		else
 		{
-			disasm="TEST    EAX,"+op1.Disassemble();;
+			disasm="TEST    EAX,"+cpputil::Uitox(GetUimm32())+"H";
 		}
 		break;
 	case I486_OPCODE_TEST_RM8_FROM_R8:
@@ -1985,37 +1983,112 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 
 	case I486_OPCODE_BINARYOP_RM8_FROM_I8://=  0x80, // AND(REG=4), OR(REG=1), or XOR(REG=6) depends on the REG field of MODR/M
 	case I486_OPCODE_BINARYOP_RM8_FROM_I8_ALIAS:
+		switch(GetREG())
+		{
+		case 0:
+			disasm=DisassembleTypicalOneOperandAndImm("ADD",op1,GetUimm8(),8);
+			break;
+		case 1:
+			disasm=DisassembleTypicalOneOperandAndImm("OR",op1,GetUimm8(),8);
+			break;
+		case 2:
+			disasm=DisassembleTypicalOneOperandAndImm("ADC",op1,GetUimm8(),8);
+			break;
+		case 3:
+			disasm=DisassembleTypicalOneOperandAndImm("SBB",op1,GetUimm8(),8);
+			break;
+		case 4:
+			disasm=DisassembleTypicalOneOperandAndImm("AND",op1,GetUimm8(),8);
+			break;
+		case 5:
+			disasm=DisassembleTypicalOneOperandAndImm("SUB",op1,GetUimm8(),8);
+			break;
+		case 6:
+			disasm=DisassembleTypicalOneOperandAndImm("XOR",op1,GetUimm8(),8);
+			break;
+		case 7:
+			disasm=DisassembleTypicalOneOperandAndImm("CMP",op1,GetUimm8(),8);
+			break;
+		default:
+			disasm=DisassembleTypicalOneOperandAndImm(cpputil::Ubtox(opCode)+"?",op1,GetUimm8(),8);
+			break;
+		}
+		break;
 	case I486_OPCODE_BINARYOP_R_FROM_I://=     0x81,
+		switch(GetREG())
+		{
+		case 0:
+			disasm=DisassembleTypicalOneOperandAndImm("ADD",op1,GetUimm16or32(operandSize),operandSize);
+			break;
+		case 1:
+			disasm=DisassembleTypicalOneOperandAndImm("OR",op1,GetUimm16or32(operandSize),operandSize);
+			break;
+		case 2:
+			disasm=DisassembleTypicalOneOperandAndImm("ADC",op1,GetUimm16or32(operandSize),operandSize);
+			break;
+		case 3:
+			disasm=DisassembleTypicalOneOperandAndImm("SBB",op1,GetUimm16or32(operandSize),operandSize);
+			break;
+		case 4:
+			disasm=DisassembleTypicalOneOperandAndImm("AND",op1,GetUimm16or32(operandSize),operandSize);
+			break;
+		case 5:
+			disasm=DisassembleTypicalOneOperandAndImm("SUB",op1,GetUimm16or32(operandSize),operandSize);
+			break;
+		case 6:
+			disasm=DisassembleTypicalOneOperandAndImm("XOR",op1,GetUimm16or32(operandSize),operandSize);
+			break;
+		case 7:
+			disasm=DisassembleTypicalOneOperandAndImm("CMP",op1,GetUimm16or32(operandSize),operandSize);
+			break;
+		default:
+			disasm=DisassembleTypicalOneOperandAndImm(cpputil::Ubtox(opCode)+"?",op1,GetUimm16or32(operandSize),operandSize);
+			break;
+		}
+		break;
 	case I486_OPCODE_BINARYOP_RM_FROM_SXI8://= 0x83,
 		switch(GetREG())
 		{
 		case 0:
-			disasm=DisassembleTypicalTwoOperands("ADD",op1,op2);
+			disasm=DisassembleTypicalOneOperand("ADD",op1,operandSize);
 			break;
 		case 1:
-			disasm=DisassembleTypicalTwoOperands("OR",op1,op2);
+			disasm=DisassembleTypicalOneOperand("OR",op1,operandSize);
 			break;
 		case 2:
-			disasm=DisassembleTypicalTwoOperands("ADC",op1,op2);
+			disasm=DisassembleTypicalOneOperand("ADC",op1,operandSize);
 			break;
 		case 3:
-			disasm=DisassembleTypicalTwoOperands("SBB",op1,op2);
+			disasm=DisassembleTypicalOneOperand("SBB",op1,operandSize);
 			break;
 		case 4:
-			disasm=DisassembleTypicalTwoOperands("AND",op1,op2);
+			disasm=DisassembleTypicalOneOperand("AND",op1,operandSize);
 			break;
 		case 5:
-			disasm=DisassembleTypicalTwoOperands("SUB",op1,op2);
+			disasm=DisassembleTypicalOneOperand("SUB",op1,operandSize);
 			break;
 		case 6:
-			disasm=DisassembleTypicalTwoOperands("XOR",op1,op2);
+			disasm=DisassembleTypicalOneOperand("XOR",op1,operandSize);
 			break;
 		case 7:
-			disasm=DisassembleTypicalTwoOperands("CMP",op1,op2);
+			disasm=DisassembleTypicalOneOperand("CMP",op1,operandSize);
 			break;
 		default:
-			disasm=DisassembleTypicalTwoOperands(cpputil::Ubtox(opCode)+"?",op1,op2);
+			disasm=DisassembleTypicalOneOperand(cpputil::Ubtox(opCode)+"?",op1,operandSize);
 			break;
+		}
+		{
+			short imm=GetUimm8();
+			if(0x80&imm)
+			{
+				imm-=0x100;
+				imm=-imm;
+				disasm+=",-"+cpputil::Ubtox((unsigned int)imm)+"H";
+			}
+			else
+			{
+				disasm+=","+cpputil::Ubtox((unsigned int)imm)+"H";
+			}
 		}
 		break;
 
@@ -2630,16 +2703,16 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 
 
 	case I486_OPCODE_OR_AL_FROM_I8:
-		disasm="OR      AL,"+op1.Disassemble();
+		disasm="OR      AL,"+cpputil::Ubtox(GetUimm8())+"H";
 		break;
 	case I486_OPCODE_OR_A_FROM_I:
 		if(16==operandSize)
 		{
-			disasm="OR      AX,"+op1.Disassemble();;
+			disasm="OR      AX,"+cpputil::Ustox(GetUimm16())+"H";
 		}
 		else
 		{
-			disasm="OR      EAX,"+op1.Disassemble();;
+			disasm="OR      EAX,"+cpputil::Uitox(GetUimm32())+"H";
 		}
 		break;
 	case I486_OPCODE_OR_RM8_FROM_R8:
@@ -2651,16 +2724,16 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 
 
 	case I486_OPCODE_XOR_AL_FROM_I8:
-		disasm="XOR     AL,"+op1.Disassemble();
+		disasm="XOR     AL,"+cpputil::Ubtox(GetUimm8())+"H";
 		break;
 	case I486_OPCODE_XOR_A_FROM_I:
 		if(16==operandSize)
 		{
-			disasm="XOR     AX,"+op1.Disassemble();;
+			disasm="XOR     AX,"+cpputil::Ustox(GetUimm16())+"H";
 		}
 		else
 		{
-			disasm="XOR     EAX,"+op1.Disassemble();;
+			disasm="XOR     EAX,"+cpputil::Uitox(GetUimm32())+"H";
 		}
 		break;
 	case I486_OPCODE_XOR_RM8_FROM_R8:
@@ -3462,13 +3535,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case  I486_OPCODE_XOR_AL_FROM_I8:
 		{
 			clocksPassed=1;
-			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,1);
-			if(true==state.exception)
-			{
-				break;
-			}
 			auto al=GetAL();
-			auto v=value.GetAsDword();
+			auto v=inst.GetUimm8();
 			switch(inst.opCode)
 			{
 			case I486_OPCODE_ADC_AL_FROM_I8://  0x14,
@@ -3514,13 +3582,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		clocksPassed=1;
 		if(16==inst.operandSize)
 		{
-			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
-			if(true==state.exception)
-			{
-				break;
-			}
 			auto ax=GetAX();
-			auto v=value.GetAsDword();
+			auto v=inst.GetUimm16();
 			switch(inst.opCode)
 			{
 			case I486_OPCODE_ADC_A_FROM_I://    0x15,
@@ -3555,13 +3618,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		else
 		{
-			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
-			if(true==state.exception)
-			{
-				break;
-			}
 			auto eax=GetEAX();
-			auto v=value.GetAsDword();
+			auto v=inst.GetUimm32();
 			switch(inst.opCode)
 			{
 			case I486_OPCODE_ADC_A_FROM_I://    0x15,
