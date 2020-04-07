@@ -698,9 +698,6 @@ public:
 		OPER_ADDR,    // BaseReg+IndexReg*IndexScaling+Offset
 		OPER_FARADDR,
 		OPER_REG,
-		OPER_IMM8,
-		OPER_IMM16,
-		OPER_IMM32,
 	};
 	class Operand
 	{
@@ -756,25 +753,11 @@ public:
 		/*! Decode operand and returns the number of bytes.
 		*/
 		void MakeByRegisterNumber(int dataSize,int regNum);
-		/*! Make Immediate. */
-		void MakeImm8(const Instruction &inst);
-		/*! Make Immediate. */
-		void MakeImm16(const Instruction &inst);
-		/*! Make Immediate. */
-		void MakeImm32(const Instruction &inst);
-		/*! Make Immediate 16 or 32.  Size depends on operandSize. */
-		void MakeImm8or16or32(const Instruction &inst,unsigned int operandSize);
 
 		/*! Make Simple Offset from segment base.  Like for MOV(A0H,A1H,A2H,A3H)
 		    Number of bytes evaluated will be inst.addressSize/8.
 		*/
 		void MakeSimpleAddressOffset(const Instruction &inst);
-
-		/*! Sign-Extend imm operand.  If it is applied to non-imm operand, it returns false.
-		    Current operand type must be OPER_IMM8 or OPER_IMM16.
-		    newOperaType must be OPER_IMM16 or OPER_IMM32.
-		*/
-		bool SignExtendImm(int newOperaType);
 
 		/*! Decode FAR address and returns the number of bytes used.
 		*/
@@ -790,11 +773,6 @@ public:
 		std::string DisassembleAsImm(int immSize) const;
 
 	public:
-		/*! Returns size qualifier if one of the operands is address.
-		*/
-		static void GetSizeQualifierToDisassembly(
-			std::string &op1Qual,std::string &op2Qual,const Operand &op1,const Operand &op2);
-
 		/*! Returns size qualifier if the operand is address.
 		*/
 		static std::string GetSizeQualifierToDisassembly(const Operand &op,int operandSize);

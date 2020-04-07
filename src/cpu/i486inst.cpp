@@ -2885,7 +2885,6 @@ std::string i486DX::Instruction::DisassembleTypicalTwoOperands(std::string inst,
 	std::string disasm=inst,op1SizeQual,op2SizeQual,op1SegQual,op2SegQual;
 	cpputil::ExtendString(disasm,8);
 
-	i486DX::Operand::GetSizeQualifierToDisassembly(op1SizeQual,op2SizeQual,op1,op2);
 	op1SegQual=i486DX::Operand::GetSegmentQualifierToDisassembly(segOverride,op1);
 	op2SegQual=i486DX::Operand::GetSegmentQualifierToDisassembly(segOverride,op2);
 	disasm+=op1SizeQual+op1SegQual+op1.Disassemble();

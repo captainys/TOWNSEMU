@@ -2172,22 +2172,6 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 			break;
 		}
 		break;
-	case OPER_IMM8:
-		value.numBytes=1;
-		value.byteData[0]=op.imm;
-		break;
-	case OPER_IMM16:
-		value.numBytes=2;
-		value.byteData[0]=(op.imm&255);
-		value.byteData[1]=((op.imm>>8)&255);
-		break;
-	case OPER_IMM32:
-		value.numBytes=4;
-		value.byteData[0]=(op.imm&255);
-		value.byteData[1]=((op.imm>>8)&255);
-		value.byteData[2]=((op.imm>>16)&255);
-		value.byteData[3]=((op.imm>>24)&255);
-		break;
 	}
 	return value;
 }
@@ -2416,11 +2400,6 @@ void i486DX::StoreOperandValue(
 			state.TEST[dst.reg-REG_TEST0]=cpputil::GetDword(value.byteData);
 			break;
 		}
-		break;
-	case OPER_IMM8:
-	case OPER_IMM16:
-	case OPER_IMM32:
-		Abort("Immediate value specified as a destination.");
 		break;
 	}
 }

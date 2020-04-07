@@ -263,37 +263,6 @@ void i486DX::Operand::MakeByRegisterNumber(int dataSize,int regNum)
 		break;
 	} */
 }
-void i486DX::Operand::MakeImm8(const Instruction &inst)
-{
-	operandType=OPER_IMM8;
-	this->imm=inst.GetUimm8();
-}
-void i486DX::Operand::MakeImm16(const Instruction &inst)
-{
-	operandType=OPER_IMM16;
-	this->imm=inst.GetUimm16();
-}
-void i486DX::Operand::MakeImm32(const Instruction &inst)
-{
-	operandType=OPER_IMM32;
-	this->imm=inst.GetUimm32();
-}
-void i486DX::Operand::MakeImm8or16or32(const Instruction &inst,unsigned int operandSize)
-{
-	switch(operandSize)
-	{
-	case 8:
-		MakeImm8(inst);
-		break;
-	case 16:
-		MakeImm16(inst);
-		break;
-	case 32:
-		MakeImm32(inst);
-		break;
-	}
-}
-
 void i486DX::Operand::MakeSimpleAddressOffset(const Instruction &inst)
 {
 	operandType=OPER_ADDR;
@@ -311,34 +280,6 @@ void i486DX::Operand::MakeSimpleAddressOffset(const Instruction &inst)
 		offset=cpputil::GetSignedWord(inst.operand+inst.operandLen-2);
 		break;
 	}
-}
-
-bool i486DX::Operand::SignExtendImm(int newOperaType)
-{
-	switch(operandType)
-	{
-	case OPER_IMM8:
-		imm&=255;
-		if(0!=(imm&0x80))
-		{
-			imm-=256;
-		}
-		break;
-	case OPER_IMM16:
-		imm&=65535;
-		if(0!=(imm&0x8000))
-		{
-			imm-=65536;
-		}
-		break;
-	default:
-		std::cout << "!!!! ERROR !!!!" << std::endl;
-		std::cout << "Cannot Sign-Extend a non IMM8 and non IMM16." << std::endl;
-		return false;
-	}
-
-	operandType=newOperaType;
-	return true;
 }
 
 unsigned int i486DX::Operand::DecodeFarAddr(int addressSize,int operandSize,const unsigned char operand[])
@@ -370,12 +311,6 @@ std::string i486DX::Operand::Disassemble(void) const
 		return DisassembleAsFarAddr();
 	case OPER_REG:
 		return DisassembleAsReg();
-	case OPER_IMM8:
-		return DisassembleAsImm(8);
-	case OPER_IMM16:
-		return DisassembleAsImm(16);
-	case OPER_IMM32:
-		return DisassembleAsImm(32);
 	}
 	return "(UndefinedOperandType?)";
 }
@@ -484,48 +419,6 @@ std::string i486DX::Operand::DisassembleAsImm(int immSize) const
 		return cpputil::Uitox(imm)+"H";
 	}
 }
-/* static */ void i486DX::Operand::GetSizeQualifierToDisassembly(
-			std::string &op1Qual,std::string &op2Qual,const Operand &op1,const Operand &op2)
-{
-	// If one of the two operands is IMM and the other is an address.
-	if((op1.operandType==OPER_IMM8 ||
-	    op1.operandType==OPER_IMM16 ||
-	    op1.operandType==OPER_IMM32) &&
-	    op2.operandType==OPER_ADDR)
-	{
-		switch(op1.operandType)
-		{
-		case OPER_IMM8:
-			op2Qual="BYTE PTR ";
-			break;
-		case OPER_IMM16:
-			op2Qual="WORD PTR ";
-			break;
-		case OPER_IMM32:
-			op2Qual="DWORD PTR ";
-			break;
-		}
-	}
-	else if((op2.operandType==OPER_IMM8 ||
-	    op2.operandType==OPER_IMM16 ||
-	    op2.operandType==OPER_IMM32) &&
-	    op1.operandType==OPER_ADDR)
-	{
-		switch(op2.operandType)
-		{
-		case OPER_IMM8:
-			op1Qual="BYTE PTR ";
-			break;
-		case OPER_IMM16:
-			op1Qual="WORD PTR ";
-			break;
-		case OPER_IMM32:
-			op1Qual="DWORD PTR ";
-			break;
-		}
-	}
-}
-
 /* static */ std::string i486DX::Operand::GetSizeQualifierToDisassembly(const Operand &op,int operandSize)
 {
 	if(op.operandType==OPER_ADDR)
@@ -578,12 +471,6 @@ unsigned int i486DX::Operand::GetSize(void) const
 		return 0;
 	case OPER_REG:
 		return i486DX::GetRegisterSize(reg);
-	case OPER_IMM8:
-		return 1;
-	case OPER_IMM16:
-		return 2;
-	case OPER_IMM32:
-		return 4;
 	}
 	return 0;
 }
