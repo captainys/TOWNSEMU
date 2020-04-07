@@ -601,27 +601,16 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
 		FetchOperand8(inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,8,inst.operand);
-		op2.MakeImm8(inst);
 		break;
 	case I486_OPCODE_BINARYOP_R_FROM_I:
 		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
 		FetchOperand16or32(inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
-		op2.MakeImm8or16or32(inst,inst.operandSize);
 		break;
 	case I486_OPCODE_BINARYOP_RM_FROM_SXI8:
 		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
 		FetchOperand8(inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
-		op2.MakeImm8(inst);
-		if(16==inst.operandSize)
-		{
-			op2.SignExtendImm(OPER_IMM16);
-		}
-		else
-		{
-			op2.SignExtendImm(OPER_IMM32);
-		}
 		break;
 
 
