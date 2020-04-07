@@ -866,7 +866,6 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 	case I486_OPCODE_OUT_I8_AL: //        0xE6,
 	case I486_OPCODE_OUT_I8_A: //         0xE7,
 		FetchOperand8(inst,ptr,seg,offset,mem);
-		op1.MakeImm8(inst);
 		break;
 	case I486_OPCODE_OUT_DX_AL: //        0xEE,
 	case I486_OPCODE_OUT_DX_A: //         0xEF,
@@ -2515,13 +2514,13 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 	case I486_OPCODE_OUT_I8_AL: //        0xE6,
 		disasm="OUT";
 		cpputil::ExtendString(disasm,8);
-		disasm+=op1.Disassemble();
+		disasm+=cpputil::Ubtox(GetUimm8())+"H";
 		disasm+=",AL";
 		break;
 	case I486_OPCODE_OUT_I8_A: //         0xE7,
 		disasm="OUT";
 		cpputil::ExtendString(disasm,8);
-		disasm+=op1.Disassemble();
+		disasm+=cpputil::Ubtox(GetUimm8())+"H";
 		if(16==operandSize)
 		{
 			disasm+=",AX";
