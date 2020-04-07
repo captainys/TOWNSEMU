@@ -2208,7 +2208,6 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 	case I486_OPCODE_MOV_M_TO_EAX: //     0xA1, // 16/32 depends on OPSIZE_OVERRIDE
 	case I486_OPCODE_MOV_M_FROM_AL: //    0xA2,
 	case I486_OPCODE_MOV_M_FROM_EAX: //   0xA3, // 16/32 depends on OPSIZE_OVERRIDE
-	case I486_OPCODE_MOV_I_TO_RM: //      0xC7, // 16/32 depends on OPSIZE_OVERRIDE
 
 	case I486_OPCODE_MOV_TO_CR://        0x0F22,
 	case I486_OPCODE_MOV_FROM_CR://      0x0F20,
@@ -2234,6 +2233,10 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 	case I486_OPCODE_MOV_I8_TO_RM8: //    0xC6,
 		op1.Decode(addressSize,8,operand);
 		disasm=DisassembleTypicalOneOperandAndImm("MOV",op1,GetUimm8(),8);
+		break;
+	case I486_OPCODE_MOV_I_TO_RM: //      0xC7, // 16/32 depends on OPSIZE_OVERRIDE
+		op1.Decode(addressSize,operandSize,operand);
+		disasm=DisassembleTypicalOneOperandAndImm("MOV",op1,GetUimm16or32(operandSize),operandSize);
 		break;
 
 	case I486_OPCODE_MOV_I_TO_EAX: //     0xB8, // 16/32 depends on OPSIZE_OVERRIDE
