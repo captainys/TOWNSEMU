@@ -308,7 +308,6 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 	case I486_OPCODE_AAD_ADX://    0xD5,
 	case I486_OPCODE_AAM_AMX://    0xD4,
 		FetchOperand8(inst,ptr,seg,offset,mem);
-		op1.MakeImm8(inst);
 		break;
 
 
@@ -1225,7 +1224,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		}
 		else
 		{
-			disasm=DisassembleTypicalOneOperand("ADX",op1,8);
+			disasm=DisassembleTypicalOneImm("ADX",GetUimm8(),8);
 		}
 		break;
 	case I486_OPCODE_AAM_AMX://    0xD4,
@@ -1235,7 +1234,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		}
 		else
 		{
-			disasm=DisassembleTypicalOneOperand("AMX",op1,8);
+			disasm=DisassembleTypicalOneImm("AMX",GetUimm8(),8);
 		}
 		break;
 
@@ -2760,6 +2759,26 @@ std::string i486DX::Instruction::DisassembleTypicalOneOperand(std::string inst,c
 	auto disasm=inst;
 	cpputil::ExtendString(disasm,8);
 	disasm+=sizeQual+segQual+op.Disassemble();
+	return disasm;
+}
+
+std::string i486DX::Instruction::DisassembleTypicalOneImm(std::string inst,unsigned int imm,int operandSize) const
+{
+	auto disasm=inst;
+	cpputil::ExtendString(disasm,8);
+	switch(operandSize)
+	{
+	case 8:
+		disasm+=cpputil::Ubtox(imm)+"H";
+		break;
+	case 16:
+		disasm+=cpputil::Ustox(imm)+"H";
+		break;
+	default:
+	case 32:
+		disasm+=cpputil::Uitox(imm)+"H";
+		break;
+	}
 	return disasm;
 }
 

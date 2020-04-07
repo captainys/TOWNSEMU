@@ -614,6 +614,7 @@ public:
 		std::string DisassembleTypicalRM8_I8(std::string inst,const Operand &op1,unsigned int I8) const;
 		std::string DisassembleTypicalRM_I8(std::string inst,const Operand &op1,unsigned int I8) const;
 		std::string DisassembleTypicalTwoOperands(std::string inst,const Operand &op1,const Operand &op2) const;
+		std::string DisassembleTypicalOneImm(std::string inst,unsigned int imm,int operandSize) const;
 
 
 	public:
