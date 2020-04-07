@@ -180,7 +180,7 @@ unsigned int i486DX::FetchOperandRM(Instruction &inst,MemoryAccess::ConstPointer
 		auto R_M=(MODR_M)&7;
 		if(0b00==MOD)
 		{
-			if(0b100==R_M) // SIB
+			if(0b100==R_M) // SIB                         // CASE 1
 			{
 				FetchOperand8(inst,ptr,seg,offset,mem);
 				++numBytesFetched;
@@ -196,7 +196,7 @@ unsigned int i486DX::FetchOperandRM(Instruction &inst,MemoryAccess::ConstPointer
 					numBytesFetched+=4;
 				}
 			}
-			else if(0b101==R_M) // disp32
+			else if(0b101==R_M) // disp32                    CASE 2
 			{
 				FetchOperand32(inst,ptr,seg,offset,mem);
 				numBytesFetched+=4;
@@ -204,25 +204,30 @@ unsigned int i486DX::FetchOperandRM(Instruction &inst,MemoryAccess::ConstPointer
 		}
 		else if(0b01==MOD)
 		{
-			if(0b100==R_M) // SIB+disp8
+			if(0b100==R_M) // SIB+disp8                      CASE 3
+			{
+				FetchOperand16(inst,ptr,seg,offset,mem);
+				numBytesFetched+=2;
+			}
+			else                                          // CASE 4
 			{
 				FetchOperand8(inst,ptr,seg,offset,mem);
 				++numBytesFetched;
-				++offset;
 			}
-			FetchOperand8(inst,ptr,seg,offset,mem);
-			++numBytesFetched;
 		}
 		else if(0b10==MOD)
 		{
-			if(0b100==R_M) // SIB+disp32
+			if(0b100==R_M) // SIB+disp32                     CASE 5
 			{
 				FetchOperand8(inst,ptr,seg,offset,mem);
-				++numBytesFetched;
-				++offset;
+				FetchOperand32(inst,ptr,seg,offset+1,mem);
+				numBytesFetched+=5;
 			}
-			FetchOperand32(inst,ptr,seg,offset,mem);
-			numBytesFetched+=4;
+			else                                          // CASE 6
+			{
+				FetchOperand32(inst,ptr,seg,offset,mem);
+				numBytesFetched+=4;
+			}
 		}
 	}
 
