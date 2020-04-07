@@ -256,13 +256,11 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
 		FetchOperand8(inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,8,inst.operand);
-		op2.MakeImm8(inst);
 		break;
 	case I486_OPCODE_C1_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_I8:// 0xC1, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
 		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
 		FetchOperand8(inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
-		op2.MakeImm8(inst);
 		break;
 	case I486_OPCODE_D0_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_1://0xD0, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
 	case I486_OPCODE_D3_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_CL://0xD2,// ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
