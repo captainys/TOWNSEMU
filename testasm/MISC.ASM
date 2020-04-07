@@ -79,7 +79,7 @@ CODE					SEGMENT
 						RET     0164H
 						; RETF    0164H
 
-						PUSH    00000164H
+						PUSH    DWORD PTR 00000164H
 						PUSH    64H
 
 						OUT     10H,AL
@@ -99,7 +99,9 @@ CODE					SEGMENT
 						XOR     BH,20H
 						CMP     BYTE PTR [EDI],98H
 
-
+						PUSH    68H
+						PUSH    DWORD PTR 00006809H
+						PUSH    WORD PTR 6809H
 
 CODE					ENDS
 

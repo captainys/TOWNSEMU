@@ -192,8 +192,8 @@ int main(int ac,char *av[])
 
 		"C2 0164       ","RET     0164H",
 		"CA 0164       ","RETF    0164H",
-		"68 00000164   ","PUSH    00000164H",
-		"6A 64         ","PUSH    64H",
+		"68 00000164   ","PUSH    DWORD PTR 00000164H",
+		"6A 64         ","PUSH    DWORD PTR 64H",
 		"E6 10         ","OUT     10H,AL",
 		"66 E7 12      ","OUT     12H,AX",
 		"E7 14         ","OUT     14H,EAX",
@@ -208,6 +208,12 @@ int main(int ac,char *av[])
 		"80 EB 10      ","SUB     BL,10H",
 		"80 F7 20      ","XOR     BH,20H",
 		"80 3F 98      ","CMP     BYTE PTR [EDI],98H",
+
+		"6A 68"      ,"PUSH    DWORD PTR 68H",
+		"66 6A 68"   ,"PUSH    WORD PTR 68H",
+		"68 00006809","PUSH    DWORD PTR 00006809H",
+		"66 68 6809" ,"PUSH    WORD PTR 6809H",
+
 	};
 
 	for(int i=0; i<sizeof(test32_32)/sizeof(test32_32[0]); i+=2)
