@@ -938,7 +938,6 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 	case I486_OPCODE_RET_I16://          0xC2,
 	case I486_OPCODE_RETF_I16://         0xCA,
 		FetchOperand16(inst,ptr,seg,offset,mem);
-		op1.MakeImm16(inst);
 		break;
 
 
@@ -2309,12 +2308,12 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 	case I486_OPCODE_RET_I16://          0xC2,
 		disasm="RET";
 		cpputil::ExtendString(disasm,8);
-		disasm+=op1.Disassemble();
+		disasm+=cpputil::Ustox(GetUimm16())+"H";
 		break;
 	case I486_OPCODE_RETF_I16://         0xCA,
 		disasm="RETF";
 		cpputil::ExtendString(disasm,8);
-		disasm+=op1.Disassemble();
+		disasm+=cpputil::Ustox(GetUimm16())+"H";
 		break;
 
 
