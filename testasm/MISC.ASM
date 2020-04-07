@@ -17,6 +17,10 @@ CODE					SEGMENT
 						AAD
 						AAM
 
+						TEST    DH,0CH
+						TEST    CX,000EH
+						TEST    EBX,00000008H
+
 
 CODE					ENDS
 

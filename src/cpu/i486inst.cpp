@@ -283,10 +283,6 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 		inst.operandSize=8;
 
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
-		if(0==inst.GetREG()) // TEST RM,I
-		{
-			op2.MakeImm8or16or32(inst,inst.operandSize);
-		}
 		break;
 	case I486_OPCODE_F7_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF7,
 		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
@@ -296,10 +292,6 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 		}
 
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
-		if(0==inst.GetREG()) // TEST RM,I
-		{
-			op2.MakeImm8or16or32(inst,inst.operandSize);
-		}
 		break;
 
 
@@ -1321,7 +1313,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		switch(GetREG())
 		{
 		case 0:
-			disasm=DisassembleTypicalTwoOperands("TEST",op1,op2);
+			disasm=DisassembleTypicalOneOperandAndImm("TEST",op1,GetUimm8or16or32(operandSize),operandSize);
 			break;
 		case 2:
 			disasm=DisassembleTypicalOneOperand("NOT",op1,operandSize);
@@ -2760,6 +2752,28 @@ std::string i486DX::Instruction::DisassembleTypicalOneOperand(std::string inst,c
 	return disasm;
 }
 
+std::string i486DX::Instruction::DisassembleTypicalOneOperandAndImm(std::string inst,const Operand &op,unsigned int imm,int operandSize) const
+{
+	auto sizeQual=i486DX::Operand::GetSizeQualifierToDisassembly(op,operandSize);
+	auto segQual=i486DX::Operand::GetSegmentQualifierToDisassembly(segOverride,op);
+	auto disasm=inst;
+	cpputil::ExtendString(disasm,8);
+	disasm+=sizeQual+segQual+op.Disassemble()+",";
+	switch(operandSize)
+	{
+	case 8:
+		disasm+=cpputil::Ubtox(imm)+"H";
+		break;
+	case 16:
+		disasm+=cpputil::Ustox(imm)+"H";
+		break;
+	default:
+		disasm+=cpputil::Uitox(imm)+"H";
+		break;
+	}
+	return disasm;
+}
+
 std::string i486DX::Instruction::DisassembleTypicalOneImm(std::string inst,unsigned int imm,int operandSize) const
 {
 	auto disasm=inst;
@@ -2830,6 +2844,21 @@ unsigned int i486DX::Instruction::GetUimm32(void) const
 unsigned int i486DX::Instruction::GetUimm16or32(unsigned int operandSize) const
 {
 	if(16==operandSize)
+	{
+		return GetUimm16();
+	}
+	else
+	{
+		return GetUimm32();
+	}
+}
+unsigned int i486DX::Instruction::GetUimm8or16or32(unsigned int operandSize) const
+{
+	if(8==operandSize)
+	{
+		return GetUimm8();
+	}
+	else if(16==operandSize)
 	{
 		return GetUimm16();
 	}
@@ -3221,9 +3250,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{
 				clocksPassed=(OPER_ADDR==op1.operandType ? 2 : 1);
 				auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
-				auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize/8);
+				auto value2=inst.GetUimm16or32(inst.operandSize);
 				unsigned int i1=value1.GetAsDword();
-				AndWordOrDword(inst.operandSize,i1,value2.GetAsDword());
+				AndWordOrDword(inst.operandSize,i1,value2);
 				SetCF(false);
 				SetOF(false);
 			}

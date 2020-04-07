@@ -133,6 +133,11 @@ int main(int ac,char *av[])
 		"D4 0A","AAM",
 		"D5 07","ADX     07H",   // Questionable
 		"D4 07","AMX     07H",   // Questionable
+
+		"F6 C6 0C",      "TEST    DH,0CH",
+		"66 F7 C1 000E", "TEST    CX,000EH",
+		"F7 C3 00000008","TEST    EBX,00000008H",
+
 	};
 
 	for(int i=0; i<sizeof(test32_32)/sizeof(test32_32[0]); i+=2)
