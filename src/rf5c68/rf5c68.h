@@ -4,6 +4,7 @@
 
 
 #include <vector>
+#include <string>
 
 class RF5C68
 {
@@ -27,7 +28,7 @@ public:
 		Channel ch[NUM_CHANNELS];
 
 		bool playing;          // Bit 7 of I/O 04F7H
-		unsigned char Bank;    // Bank x000H
+		unsigned short Bank;   // Bank x000H
 		unsigned char CB;      // Channel
 		unsigned char chOnOff; // I/O 04F8H
 	};
@@ -78,6 +79,12 @@ public:
 	{
 		return state.waveRAM[state.Bank+offset];
 	}
+
+	std::vector <std::string> GetStatusText(void) const;
+
+	/*! Make 19.2KHz signed 16-bit wave.
+	*/
+	std::vector <unsigned char> Make19KHzWave(unsigned int ch) const;
 };
 
 
