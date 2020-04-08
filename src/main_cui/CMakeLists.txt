@@ -126,7 +126,7 @@ add_test(
 )
 
 add_test(
- 	NAME MX_V11L30_GUI
+	NAME 2F_V11L30_GUI
 	COMMAND 
 		main_cui 
 		"${CMAKE_SOURCE_DIR}/../../TOWNSEMU_TEST/ROM_2F"
