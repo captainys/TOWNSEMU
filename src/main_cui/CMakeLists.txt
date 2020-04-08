@@ -125,6 +125,19 @@ add_test(
 		-UNITTEST
 )
 
+add_test(
+ 	NAME MX_V11L30_GUI
+	COMMAND 
+		main_cui 
+		"${CMAKE_SOURCE_DIR}/../../TOWNSEMU_TEST/ROM_2F"
+		-SYM
+		"${CMAKE_SOURCE_DIR}/../symtables/UNITTEST.txt"
+		-CD
+		"${DISC_IMAGE_DIR}/TOSV1.1L30.iso"
+		-EVTLOG
+		"${CMAKE_SOURCE_DIR}/../testdata/eventLog/V11L30TEST.txt"
+		-UNITTEST
+)
 
 add_test(
  	NAME MX_V21L31_GUI
