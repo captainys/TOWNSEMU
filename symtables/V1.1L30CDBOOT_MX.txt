@@ -1,0 +1,18 @@
+/begin0
+T 1
+* 00000110:00010250
+# 
+R 
+L MOUSEBIOS:Entry
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000110:00011170
+# 
+R 
+L SNDBIOS:Entry
+P 
+% 0
+/end
