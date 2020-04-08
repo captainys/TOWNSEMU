@@ -30,7 +30,7 @@ int main(int argc,char *argv[])
 				if(0<wave.size())
 				{
 					YsSoundPlayer::SoundData data;
-					data.CreateFrom44100HzStereo(wave);
+					data.CreateFromSigned16bitStereo(44100,wave);
 					auto wavFormat=data.MakeWavByteData();
 
 					std::string fName;

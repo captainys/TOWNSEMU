@@ -38,7 +38,7 @@ int main(void)
 	MakeWaveData(wave);
 
 	YsSoundPlayer::SoundData data;
-	data.CreateFrom44100HzStereo(wave);
+	data.CreateFromSigned16bitStereo(44100,wave);
 
 	if(data.GetNumSamplePerChannel()!=samplePerChannel)
 	{

@@ -317,13 +317,13 @@ static unsigned GetUnsignedShort(const unsigned char buf[])
 
 
 
-YSRESULT YsSoundPlayer::SoundData::CreateFrom44100HzStereo(std::vector <unsigned char> &wave)
+YSRESULT YsSoundPlayer::SoundData::CreateFromSigned16bitStereo(unsigned int samplingRate,std::vector <unsigned char> &wave)
 {
 	CleanUp();
 
 	stereo=YSTRUE;
 	bit=16;
-	rate=44100;
+	rate=samplingRate;
 	sizeInBytes=wave.size();
 	isSigned=YSTRUE;
 	playBackVolume=1.0;

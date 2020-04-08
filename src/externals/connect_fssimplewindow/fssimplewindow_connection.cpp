@@ -183,7 +183,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 /* virtual */ void FsSimpleWindowConnection::CDDAPlay(const DiscImage &discImg,DiscImage::MinSecFrm from,DiscImage::MinSecFrm to)
 {
 	auto wave=discImg.GetWave(from,to);
-	cddaChannel.CreateFrom44100HzStereo(wave);
+	cddaChannel.CreateFromSigned16bitStereo(44100,wave);
 	soundPlayer.PlayOneShot(cddaChannel);
 	cddaStartHSG=from.ToHSG();
 }
