@@ -65,6 +65,9 @@ public:
 	/*! Writes to LSL register. */
 	void WriteLSH(unsigned char value);
 
+	/*! Writes to ST register. */
+	void WriteST(unsigned char value);
+
 	/*! Writes to Wave RAM. */
 	inline void WriteWaveRAM(unsigned int offset,unsigned char value)
 	{

@@ -98,3 +98,7 @@ void RF5C68::WriteLSH(unsigned char value)
 	state.ch[state.CB].LS&=0xFF;
 	state.ch[state.CB].LS|=(value<<8);
 }
+void RF5C68::WriteST(unsigned char value)
+{
+	state.ch[state.CB].ST=value;
+}

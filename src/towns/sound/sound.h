@@ -23,6 +23,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "townsdef.h"
 #include "cpputil.h"
 #include "ym2612.h"
+#include "rf5c68.h"
 
 class TownsSound : public Device
 {
@@ -37,6 +38,8 @@ public:
 		YM2612 ym2612;
 		unsigned int muteFlag;
 		unsigned int addrLatch[2];
+
+		RF5C68 rf5c68;
 
 		void PowerOn(void);
 		void Reset(void);

@@ -21,7 +21,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "i486debug.h"
 
 
-
 void TownsPhysicalMemory::KanjiROMAccess::Reset()
 {
 	JISCodeHigh=0;
@@ -143,7 +142,7 @@ void TownsPhysicalMemory::State::Reset(void)
 	return data;
 }
 
-TownsPhysicalMemory::TownsPhysicalMemory(class FMTowns *townsPtr,class i486DX *cpuPtr,class Memory *memPtr) : Device(townsPtr)
+TownsPhysicalMemory::TownsPhysicalMemory(class FMTowns *townsPtr,class i486DX *cpuPtr,class Memory *memPtr,class RF5C68 *pcmPtr) : Device(townsPtr),waveRAMAccess(pcmPtr)
 {
 	takeJISCodeLog=false;
 	this->cpuPtr=cpuPtr;
@@ -324,7 +323,7 @@ void TownsPhysicalMemory::SetUpMemoryAccess(void)
 
 	waveRAMAccess.SetPhysicalMemoryPointer(this);
 	waveRAMAccess.SetCPUPointer(&cpu);
-	mem.AddAccess(&waveRAMAccess,0xC2200000,0xC2200FFF);
+	mem.AddAccess(&waveRAMAccess,TOWNSADDR_WAVERAM_WINDOW_BASE,TOWNSADDR_WAVERAM_WINDOW_END-1);
 
 	sysROMAccess.SetPhysicalMemoryPointer(this);
 	sysROMAccess.SetCPUPointer(&cpu);

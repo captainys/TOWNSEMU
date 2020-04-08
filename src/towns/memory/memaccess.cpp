@@ -557,13 +557,19 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 
 ////////////////////////////////////////////////////////////
 
+#include "rf5c68.h"
 
 /* virtual */ unsigned int TownsWaveRAMAccess::FetchByte(unsigned int physAddr) const
 {
-	return 0xff;
+	return pcmPtr->ReadWaveRAM(physAddr-TOWNSADDR_WAVERAM_WINDOW_BASE);
 }
 /* virtual */ void TownsWaveRAMAccess::StoreByte(unsigned int physAddr,unsigned char data)
 {
+	pcmPtr->WriteWaveRAM(physAddr-TOWNSADDR_WAVERAM_WINDOW_BASE,data);
+}
+TownsWaveRAMAccess::TownsWaveRAMAccess(class RF5C68 *pcmPtr)
+{
+	this->pcmPtr=pcmPtr;
 }
 
 

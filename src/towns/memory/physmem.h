@@ -233,6 +233,9 @@ class TownsWaveRAMAccess : public TownsMemAccess
 public:
 	virtual unsigned int FetchByte(unsigned int physAddr) const;
 	virtual void StoreByte(unsigned int physAddr,unsigned char data);
+
+	class RF5C68 *pcmPtr;
+	TownsWaveRAMAccess(class RF5C68 *pcmPtr);
 };
 
 class TownsSysROMAccess : public TownsMemAccess
@@ -417,7 +420,7 @@ public:
 
 
 
-	TownsPhysicalMemory(class FMTowns *townsPtr,class i486DX *cpuPtr,class Memory *memPtr);
+	TownsPhysicalMemory(class FMTowns *townsPtr,class i486DX *cpuPtr,class Memory *memPtr,class RF5C68 *pcmPtr);
 
 	bool LoadROMImages(const char dirName[]);
 

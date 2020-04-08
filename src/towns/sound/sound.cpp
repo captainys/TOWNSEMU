@@ -76,22 +76,41 @@ TownsSound::TownsSound(class FMTowns *townsPtr) : Device(townsPtr)
 	case TOWNSIO_SOUND_PCM_INT://           0x4EB, // [2] pp.19,
 		break;
 	case TOWNSIO_SOUND_PCM_ENV://           0x4F0, // [2] pp.19,
+		state.rf5c68.WriteENV(data);
 		break;
 	case TOWNSIO_SOUND_PCM_PAN://           0x4F1, // [2] pp.19,
+		state.rf5c68.WritePAN(data);
 		break;
 	case TOWNSIO_SOUND_PCM_FDL://           0x4F2, // [2] pp.19,
+		state.rf5c68.WriteFDL(data);
 		break;
 	case TOWNSIO_SOUND_PCM_FDH://           0x4F3, // [2] pp.19,
+		state.rf5c68.WriteFDH(data);
 		break;
 	case TOWNSIO_SOUND_PCM_LSL://           0x4F4, // [2] pp.19,
+		state.rf5c68.WriteLSL(data);
 		break;
 	case TOWNSIO_SOUND_PCM_LSH://           0x4F5, // [2] pp.19,
+		state.rf5c68.WriteLSH(data);
 		break;
 	case TOWNSIO_SOUND_PCM_ST://            0x4F6, // [2] pp.19,
+		state.rf5c68.WriteST(data);
 		break;
 	case TOWNSIO_SOUND_PCM_CTRL://          0x4F7, // [2] pp.19,
+		{
+			auto chStartPlay=state.rf5c68.WriteControl(data);
+			if(0!=chStartPlay)
+			{
+			}
+		}
 		break;
 	case TOWNSIO_SOUND_PCM_CH_ON_OFF://     0x4F8, // [2] pp.19,
+		{
+			auto chStartPlay=state.rf5c68.WriteChannelOnOff(data);
+			if(0!=chStartPlay)
+			{
+			}
+		}
 		break;
 	}
 }

@@ -75,7 +75,7 @@ void FMTowns::Variable::Reset(void)
 FMTowns::FMTowns() : 
 	Device(this),
 	cpu(this),
-	physMem(this,&cpu,&mem),
+	physMem(this,&cpu,&mem,&sound.state.rf5c68),
 	keyboard(this,&pic),
 	crtc(this),
 	pic(this),
