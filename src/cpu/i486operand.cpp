@@ -192,12 +192,13 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 		}
 		else if(0b11!=MOD) // <=> if(0b00==MOD || 0b01==MOD || 0b10==MOD)
 		{
-			operandType=OPER_ADDR;
-			// indexShift=0; Already cleared in Clear()
-			offset=0;
-			numBytes=1;
 			if(0b100==R_M) // Depends on SIB                               CASE 2
 			{
+				operandType=OPER_ADDR;
+				// indexShift=0; Already cleared in Clear()
+				offset=0;
+				numBytes=1;
+
 				auto SIB=operand[1];
 				auto SS=((SIB>>6)&3);
 				auto INDEX=((SIB>>3)&7);
@@ -244,23 +245,43 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 			}
 			else
 			{
-				baseReg=REG_32BIT_REG_BASE+R_M;
-				indexReg=REG_NULL;
 				if(0b01==MOD) // 8-bit offset                              CASE 3
 				{
+					operandType=OPER_ADDR;
+					// indexShift=0; Already cleared in Clear()
+
+					baseReg=REG_32BIT_REG_BASE+R_M;
+					indexReg=REG_NULL;
+
 					offsetBits=8;
 					offset=cpputil::GetSignedByte(operand[1]);
-					++numBytes;
+					numBytes=2;
 				}
 				else if(0b10==MOD) // 32-bit offset                        CASE 4
 				{
+					operandType=OPER_ADDR;
+					// indexShift=0; Already cleared in Clear()
+
+					baseReg=REG_32BIT_REG_BASE+R_M;
+					indexReg=REG_NULL;
+
 					offsetBits=32;
 					offset=cpputil::GetSignedDword(operand+1);
-					numBytes+=4;
+					numBytes=5;
+				}
+				else                                                    // CASE 5
+				{
+					operandType=OPER_ADDR;
+					// indexShift=0; Already cleared in Clear()
+					offset=0;
+					numBytes=1;
+
+					baseReg=REG_32BIT_REG_BASE+R_M;
+					indexReg=REG_NULL;
 				}
 			}
 		}
-		else if(0b11==MOD)                                              // CASE 5
+		else if(0b11==MOD)                                              // CASE 6
 		{
 			operandType=OPER_REG;
 			reg=R_M+(numBytesToBasicRegBase[dataSize>>3]);
