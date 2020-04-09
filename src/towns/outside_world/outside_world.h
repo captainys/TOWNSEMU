@@ -18,6 +18,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include "render.h"
 #include "discimg.h"
+#include "rf5c68.h"
+#include "townsdef.h"
 
 class Outside_World
 {
@@ -36,6 +38,13 @@ public:
 	virtual void CDDAResume(void)=0;
 	virtual bool CDDAIsPlaying(void)=0;
 	virtual DiscImage::MinSecFrm CDDACurrentPosition(void)=0;
+
+
+
+public:
+	virtual void PCMPlay(const RF5C68 &pcm,unsigned int ch)=0;
+	virtual void PCMPlayStop(int ch)=0;
+	virtual double PCMCurrentPosition(int ch)=0;
 };
 
 

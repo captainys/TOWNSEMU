@@ -37,6 +37,15 @@ public:
 	virtual void CDDAResume(void);
 	virtual bool CDDAIsPlaying(void);
 	virtual DiscImage::MinSecFrm CDDACurrentPosition(void);
+
+
+	YsSoundPlayer::SoundData PCMChannel[TOWNS_PCM_NUM_CHANNELS];
+	virtual void PCMPlay(const RF5C68 &pcm,unsigned int ch);
+	virtual void PCMPlayStop(int ch);
+	virtual double PCMCurrentPosition(int ch);
+
+
+	YsSoundPlayer::SoundData FMChannel[TOWNS_FM_NUM_CHANNELS];
 };
 
 /* } */
