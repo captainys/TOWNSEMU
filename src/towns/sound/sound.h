@@ -47,8 +47,10 @@ public:
 	};
 
 	State state;
+	class Outside_World *outside_world=nullptr;
 
 	TownsSound(class FMTowns *townsPtr);
+	void SetOutsideWorld(class Outside_World *outside_world);
 
 	virtual void PowerOn(void);
 	virtual void Reset(void);

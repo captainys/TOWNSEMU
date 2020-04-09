@@ -15,6 +15,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "townsdef.h"
 #include "sound.h"
 #include "towns.h"
+#include "outside_world.h"
 
 
 void TownsSound::State::PowerOn(void)
@@ -40,6 +41,10 @@ void TownsSound::State::ResetVariables(void)
 TownsSound::TownsSound(class FMTowns *townsPtr) : Device(townsPtr)
 {
 	this->townsPtr=townsPtr;
+}
+void TownsSound::SetOutsideWorld(class Outside_World *outside_world)
+{
+	this->outside_world=outside_world;
 }
 
 /* virtual */ void TownsSound::PowerOn(void)
@@ -99,16 +104,32 @@ TownsSound::TownsSound(class FMTowns *townsPtr) : Device(townsPtr)
 	case TOWNSIO_SOUND_PCM_CTRL://          0x4F7, // [2] pp.19,
 		{
 			auto chStartPlay=state.rf5c68.WriteControl(data);
-			if(0!=chStartPlay)
+			if(0!=chStartPlay && nullptr!=outside_world)
 			{
+printf("%s %d %02x\n",__FUNCTION__,__LINE__,chStartPlay);
+				for(unsigned int ch=0; ch<RF5C68::NUM_CHANNELS; ++ch)
+				{
+					if(0!=(chStartPlay&(1<<ch)))
+					{
+						outside_world->PCMPlay(state.rf5c68,ch);
+					}
+				}
 			}
 		}
 		break;
 	case TOWNSIO_SOUND_PCM_CH_ON_OFF://     0x4F8, // [2] pp.19,
 		{
 			auto chStartPlay=state.rf5c68.WriteChannelOnOff(data);
-			if(0!=chStartPlay)
+			if(0!=chStartPlay && nullptr!=outside_world)
 			{
+printf("%s %d %02x\n",__FUNCTION__,__LINE__,chStartPlay);
+				for(unsigned int ch=0; ch<RF5C68::NUM_CHANNELS; ++ch)
+				{
+					if(0!=(chStartPlay&(1<<ch)))
+					{
+						outside_world->PCMPlay(state.rf5c68,ch);
+					}
+				}
 			}
 		}
 		break;

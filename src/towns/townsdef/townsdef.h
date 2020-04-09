@@ -27,13 +27,6 @@ const unsigned int TBIOS_ID_FREQUENCY=100;
 
 enum
 {
-	TOWNS_PCM_NUM_CHANNELS=8,
-	TOWNS_FM_NUM_CHANNELS=6,
-};
-
-
-enum
-{
 	FMR_50_60,
 	FMR_50S,
 	FMR_70,

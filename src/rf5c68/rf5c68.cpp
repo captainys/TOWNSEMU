@@ -42,12 +42,12 @@ unsigned char RF5C68::WriteControl(unsigned char value)
 		state.Bank<<=12;
 	}
 
-	unsigned char chStartPlay=0xff; // Active LOW
+	unsigned char chStartPlay=0;
 	if(0x80&value)
 	{
 		if(true!=state.playing)
 		{
-			chStartPlay=~state.chOnOff;
+			chStartPlay=~state.chOnOff; // Active LOW
 		}
 		state.playing=true;
 	}
@@ -61,7 +61,7 @@ unsigned char RF5C68::WriteChannelOnOff(unsigned char value)
 {
 	if(true==state.playing)
 	{
-		auto chStartPlay=(state.chOnOff&(~value));
+		auto chStartPlay=(state.chOnOff&(~value)); // Active LOW
 		state.chOnOff=value;
 		return chStartPlay;
 	}
@@ -137,28 +137,31 @@ std::vector <unsigned char> RF5C68::Make19KHzWave(unsigned int chNum) const
 	auto &ch=state.ch[chNum];
 	std::vector <unsigned char> wave;
 
-	for(unsigned int startAddr=(ch.ST<<(10+8)); startAddr<(WAVERAM_SIZE<<10); startAddr+=ch.FD)
+	if(0<ch.FD)
 	{
-		auto data=state.waveRAM[startAddr>>10];
-		if(0xff==data)
+		for(unsigned int startAddr=(ch.ST<<(10+8)); startAddr<(WAVERAM_SIZE<<10); startAddr+=ch.FD)
 		{
-			break;
-		}
+			auto data=state.waveRAM[startAddr>>10];
+			if(0xff==data)
+			{
+				break;
+			}
 
-		char abs=(data&0x7F);
-		if(data&0x80)
-		{
-			abs=-abs;
-		}
+			char abs=(data&0x7F);
+			if(data&0x80)
+			{
+				abs=-abs;
+			}
 
-		wave.push_back(abs);
-		wave.push_back(abs);
-		wave.push_back(abs);
-		wave.push_back(abs);
+			wave.push_back(abs);
+			wave.push_back(abs);
+			wave.push_back(abs);
+			wave.push_back(abs);
 
-		if(0xff==data)
-		{
-			break;
+			if(0xff==data)
+			{
+				break;
+			}
 		}
 	}
 
