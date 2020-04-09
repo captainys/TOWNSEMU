@@ -237,5 +237,13 @@ void RF5C68::RenewIRQTimer(unsigned int chNum)
 void RF5C68::SetUpRepeat(unsigned int chNum)
 {
 	auto &ch=state.ch[chNum];
-	ch.startPtr=ch.LS;
+	if(true==ch.repeatAfterThisSegment)
+	{
+		ch.startPtr=ch.LS;
+	}
+	else
+	{
+		ch.startPtr+=0x1000;
+		ch.startPtr&=0xF000;
+	}
 }
