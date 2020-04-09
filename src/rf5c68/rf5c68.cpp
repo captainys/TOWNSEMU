@@ -35,7 +35,7 @@ void RF5C68::Clear(void)
 	state.IRQBankMask=0;
 }
 
-unsigned char RF5C68::WriteControl(unsigned char value)
+RF5C68::StartAndStopChannelBits RF5C68::WriteControl(unsigned char value)
 {
 	if(0x40&value)
 	{
@@ -48,34 +48,36 @@ unsigned char RF5C68::WriteControl(unsigned char value)
 		state.Bank<<=12;
 	}
 
-	unsigned char chStartPlay=0;
+	StartAndStopChannelBits startStop;
 	if(0x80&value)
 	{
 		if(true!=state.playing)
 		{
-			chStartPlay=~state.chOnOff; // Active LOW
+			startStop.chStartPlay=~state.chOnOff; // Active LOW
 		}
 		state.playing=true;
 	}
 	else
 	{
+		startStop.chStopPlay=~state.chOnOff; // Active LOW
 		state.playing=false;
 	}
-	return chStartPlay;
+	return startStop;
 }
-unsigned char RF5C68::WriteChannelOnOff(unsigned char value)
+RF5C68::StartAndStopChannelBits RF5C68::WriteChannelOnOff(unsigned char value)
 {
+	StartAndStopChannelBits startStop;
 	if(true==state.playing)
 	{
-		auto chStartPlay=(state.chOnOff&(~value)); // Active LOW
+		startStop.chStartPlay=(state.chOnOff&(~value)); // Active LOW:  prev==1(not playing) && now==0(playing)
 		state.chOnOff=value;
-		return chStartPlay;
 	}
 	else
 	{
+		startStop.chStopPlay=((~state.chOnOff)&value);  // Active Low:  prev==0(playing) && now==1(not playing)
 		state.chOnOff=value;
-		return 0;
 	}
+	return startStop;
 }
 void RF5C68::WriteIRQBankMask(unsigned char value)
 {
@@ -198,6 +200,10 @@ void RF5C68::PlayStarted(unsigned int chNum)
 		FD=1;
 	}
 	ch.IRQTimer=(double)len/(double)(ch.FD*FREQ);
+}
+
+void RF5C68::PlayStopped(unsigned int)
+{
 }
 
 void RF5C68::SetIRQ(unsigned int chNum)

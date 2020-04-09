@@ -52,6 +52,7 @@ public:
 	TownsSound(class FMTowns *townsPtr);
 	void SetOutsideWorld(class Outside_World *outside_world);
 	void PCMStartPlay(unsigned char chStartPlay);
+	void PCMStopPlay(unsigned char chStopPlay);
 
 	virtual void PowerOn(void);
 	virtual void Reset(void);

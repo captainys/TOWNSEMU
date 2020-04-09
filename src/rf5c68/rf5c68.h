@@ -30,6 +30,11 @@ public:
 		//    Play reached the end and came back to LS.
 		unsigned short startPtr;
 	};
+	class StartAndStopChannelBits
+	{
+	public:
+		unsigned chStartPlay=0,chStopPlay=0;
+	};
 	class State
 	{
 	public:
@@ -53,12 +58,12 @@ public:
 	/*! Writes to the control register.
 	    Returns channels that starts playing.
 	*/
-	unsigned char WriteControl(unsigned char value);
+	StartAndStopChannelBits WriteControl(unsigned char value);
 
 	/*! Writes to the channel on/off register.
 	    Returns channels that starts playing. 
 	*/
-	unsigned char WriteChannelOnOff(unsigned char value);
+	StartAndStopChannelBits WriteChannelOnOff(unsigned char value);
 
 	/*! Writes to the IRQ Bank mask register. */
 	void WriteIRQBankMask(unsigned char value);
@@ -105,6 +110,10 @@ public:
 	    This function sets IRQTimer for the channel.
 	*/
 	void PlayStarted(unsigned int ch);
+
+	/*! Notified from the controller that the play has stopped.
+	*/
+	void PlayStopped(unsigned int ch);
 
 	/*!
 	*/

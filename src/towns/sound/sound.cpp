@@ -57,6 +57,17 @@ void TownsSound::PCMStartPlay(unsigned char chStartPlay)
 		}
 	}
 }
+void TownsSound::PCMStopPlay(unsigned char chStopPlay)
+{
+	for(unsigned int ch=0; ch<RF5C68::NUM_CHANNELS; ++ch)
+	{
+		if(0!=(chStopPlay&(1<<ch)))
+		{
+			outside_world->PCMPlayStop(ch);
+			state.rf5c68.PlayStopped(ch);
+		}
+	}
+}
 
 /* virtual */ void TownsSound::PowerOn(void)
 {
@@ -115,19 +126,27 @@ void TownsSound::PCMStartPlay(unsigned char chStartPlay)
 		break;
 	case TOWNSIO_SOUND_PCM_CTRL://          0x4F7, // [2] pp.19,
 		{
-			auto chStartPlay=state.rf5c68.WriteControl(data);
-			if(0!=chStartPlay && nullptr!=outside_world)
+			auto startStop=state.rf5c68.WriteControl(data);
+			if(0!=startStop.chStartPlay && nullptr!=outside_world)
 			{
-				PCMStartPlay(chStartPlay);
+				PCMStartPlay(startStop.chStartPlay);
+			}
+			if(0!=startStop.chStopPlay && nullptr!=outside_world)
+			{
+				PCMStopPlay(startStop.chStopPlay);
 			}
 		}
 		break;
 	case TOWNSIO_SOUND_PCM_CH_ON_OFF://     0x4F8, // [2] pp.19,
 		{
-			auto chStartPlay=state.rf5c68.WriteChannelOnOff(data);
-			if(0!=chStartPlay && nullptr!=outside_world)
+			auto startStop=state.rf5c68.WriteChannelOnOff(data);
+			if(0!=startStop.chStartPlay && nullptr!=outside_world)
 			{
-				PCMStartPlay(chStartPlay);
+				PCMStartPlay(startStop.chStartPlay);
+			}
+			if(0!=startStop.chStopPlay && nullptr!=outside_world)
+			{
+				PCMStopPlay(startStop.chStopPlay);
 			}
 		}
 		break;
