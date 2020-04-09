@@ -217,7 +217,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 /* virtual */ void FsSimpleWindowConnection::PCMPlay(const RF5C68 &pcm,unsigned int ch)
 {
 	auto wave=pcm.Make19KHzWave(ch);
-	PCMChannel[ch].CreateFromSigned16bitStereo(44100,wave);
+	PCMChannel[ch].CreateFromSigned16bitStereo(RF5C68::FREQ,wave);
 	soundPlayer.PlayOneShot(PCMChannel[ch]);
 }
 /* virtual */ void FsSimpleWindowConnection::PCMPlayStop(int ch)
