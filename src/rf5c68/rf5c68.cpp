@@ -25,6 +25,7 @@ void RF5C68::Clear(void)
 		ch.IRQTimer=0.0;
 		ch.playingBank=0;
 		ch.startPtr=0;
+		ch.repeatAfterThisSegment=false;
 	}
 	state.playing=false;
 	state.Bank=0;
@@ -156,13 +157,16 @@ std::vector <unsigned char> RF5C68::Make19KHzWave(unsigned int chNum)
 	auto &ch=state.ch[chNum];
 	std::vector <unsigned char> wave;
 
+	ch.repeatAfterThisSegment=false;
 	if(0<ch.FD)
 	{
+		unsigned int endPtr=((ch.startPtr+0x1000)&(~0xfff));
 		for(unsigned int pcmAddr=(ch.startPtr<<FD_BIT_SHIFT); pcmAddr<(WAVERAM_SIZE<<FD_BIT_SHIFT); pcmAddr+=ch.FD)
 		{
 			auto data=state.waveRAM[pcmAddr>>FD_BIT_SHIFT];
 			if(0xff==data)
 			{
+				ch.repeatAfterThisSegment=true;
 				break;
 			}
 

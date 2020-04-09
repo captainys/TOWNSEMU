@@ -29,6 +29,7 @@ public:
 		//    Written to ST, or
 		//    Play reached the end and came back to LS.
 		unsigned short startPtr;
+		bool repeatAfterThisSegment;
 	};
 	class StartAndStopChannelBits
 	{
