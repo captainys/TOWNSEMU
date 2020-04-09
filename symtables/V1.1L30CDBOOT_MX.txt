@@ -16,3 +16,57 @@ L SNDBIOS:Entry
 P 
 % 0
 /end
+/begin0
+T 1
+* 00000110:00011304
+# 
+R 
+L SNDBIOS:AH=03H_SpecifyDestination
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000110:00011C14
+# 
+R 
+L SNDBIOS:AH=10H_Read_YM2612_StatusRegister
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000110:00012884
+# 
+R 
+L SNDBIOS:AH=28H_Get_PCM_VoiceMode_PlayState
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000110:00012B68
+# 
+R 
+L SNDBIOS:AH=51H_VoiceModeINTHandler
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000110:00013008
+# 
+R 
+L SNDBIOS:AH=2EH_PlayHighResVoiceMode
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000110:00013300
+# 
+R 
+L SNDBIOS:AH=50H_EnvelopeIntHandler
+P 
+% 0
+/end

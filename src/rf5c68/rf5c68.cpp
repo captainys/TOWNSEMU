@@ -139,6 +139,12 @@ std::vector <std::string> RF5C68::GetStatusText(void) const
 	s+="CHOnOff="+cpputil::Ubtox(state.chOnOff);
 	text.push_back(s);
 
+	s="IRQ=";
+	s+=(true==state.IRQ ? "1 " : "0 ");
+	s+="IRQBank="+cpputil::Ubtox(state.IRQBank)+" ";
+	s+="IRQBankMask="+cpputil::Ubtox(state.IRQBankMask)+" ";
+	text.push_back(s);
+
 	return text;
 }
 
