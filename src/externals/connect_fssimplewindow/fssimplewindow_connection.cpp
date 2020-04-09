@@ -214,7 +214,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	return msf;
 }
 
-/* virtual */ void FsSimpleWindowConnection::PCMPlay(const RF5C68 &pcm,unsigned int ch)
+/* virtual */ void FsSimpleWindowConnection::PCMPlay(RF5C68 &pcm,unsigned int ch)
 {
 	auto wave=pcm.Make19KHzWave(ch);
 	PCMChannel[ch].CreateFromSigned16bitStereo(RF5C68::FREQ,wave);

@@ -104,7 +104,7 @@ public:
 
 	/*! Make 19.2KHz signed 16-bit wave.
 	*/
-	std::vector <unsigned char> Make19KHzWave(unsigned int ch) const;
+	std::vector <unsigned char> Make19KHzWave(unsigned int ch);
 
 	/*! Notified from the controller that the play has started.
 	    This function sets IRQTimer for the channel.

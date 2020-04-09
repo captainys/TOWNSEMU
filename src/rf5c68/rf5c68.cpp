@@ -151,7 +151,7 @@ std::vector <std::string> RF5C68::GetStatusText(void) const
 	return text;
 }
 
-std::vector <unsigned char> RF5C68::Make19KHzWave(unsigned int chNum) const
+std::vector <unsigned char> RF5C68::Make19KHzWave(unsigned int chNum)
 {
 	auto &ch=state.ch[chNum];
 	std::vector <unsigned char> wave;
