@@ -25,8 +25,10 @@ public:
 		double IRQTimer;
 		unsigned char playingBank; // 00H to 0FH.  64KB/4K=16 banks.
 
-		// Set to true when hardware starts playing.
-		bool playStarted;
+		// StartPtr is set when:
+		//    Written to ST, or
+		//    Play reached the end and came back to LS.
+		unsigned short startPtr;
 	};
 	class State
 	{
@@ -111,6 +113,11 @@ public:
 	/*!
 	*/
 	void RenewIRQTimer(unsigned int ch);
+
+
+	/*!
+	*/
+	void SetUpRepeat(unsigned int chNum);
 };
 
 

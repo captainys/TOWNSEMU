@@ -24,7 +24,7 @@ void RF5C68::Clear(void)
 		ch.LS=0;
 		ch.IRQTimer=0.0;
 		ch.playingBank=0;
-		ch.playStarted=false;
+		ch.startPtr=0;
 	}
 	state.playing=false;
 	state.Bank=0;
@@ -112,6 +112,7 @@ void RF5C68::WriteLSH(unsigned char value)
 void RF5C68::WriteST(unsigned char value)
 {
 	state.ch[state.CB].ST=value;
+	state.ch[state.CB].startPtr=(value<<8);
 }
 
 std::vector <std::string> RF5C68::GetStatusText(void) const
@@ -155,9 +156,9 @@ std::vector <unsigned char> RF5C68::Make19KHzWave(unsigned int chNum) const
 
 	if(0<ch.FD)
 	{
-		for(unsigned int startAddr=(ch.ST<<(FD_BIT_SHIFT+8)); startAddr<(WAVERAM_SIZE<<FD_BIT_SHIFT); startAddr+=ch.FD)
+		for(unsigned int pcmAddr=(ch.startPtr<<FD_BIT_SHIFT); pcmAddr<(WAVERAM_SIZE<<FD_BIT_SHIFT); pcmAddr+=ch.FD)
 		{
-			auto data=state.waveRAM[startAddr>>FD_BIT_SHIFT];
+			auto data=state.waveRAM[pcmAddr>>FD_BIT_SHIFT];
 			if(0xff==data)
 			{
 				break;
@@ -186,10 +187,8 @@ std::vector <unsigned char> RF5C68::Make19KHzWave(unsigned int chNum) const
 
 void RF5C68::PlayStarted(unsigned int chNum)
 {
-printf("%s %d\n",__FUNCTION__,__LINE__);
 	auto &ch=state.ch[chNum];
-	ch.playingBank=(ch.ST>>4);
-	ch.playStarted=true;
+	ch.playingBank=(ch.startPtr>>12);
 
 	// How long does it take to play 4K samples?
 	const unsigned int len=(4096<<FD_BIT_SHIFT);
@@ -198,12 +197,11 @@ printf("%s %d\n",__FUNCTION__,__LINE__);
 	{
 		FD=1;
 	}
-	ch.IRQTimer=(double)len/(double)ch.FD;
+	ch.IRQTimer=(double)len/(double)(ch.FD*FREQ);
 }
 
 void RF5C68::SetIRQ(unsigned int chNum)
 {
-printf("%s %d\n",__FUNCTION__,__LINE__);
 	auto &ch=state.ch[chNum];
 	auto bank=(ch.playingBank>>1);
 	if(0!=((1<<bank)&state.IRQBankMask))
@@ -215,7 +213,6 @@ printf("%s %d\n",__FUNCTION__,__LINE__);
 
 void RF5C68::RenewIRQTimer(unsigned int chNum)
 {
-printf("%s %d\n",__FUNCTION__,__LINE__);
 	auto &ch=state.ch[chNum];
 	const unsigned int len=(4096<<FD_BIT_SHIFT);
 	unsigned int FD=ch.FD;
@@ -223,6 +220,12 @@ printf("%s %d\n",__FUNCTION__,__LINE__);
 	{
 		FD=1;
 	}
-	ch.IRQTimer+=(double)len/(double)ch.FD;
+	ch.IRQTimer+=(double)len/(double)(ch.FD*FREQ);
 	++ch.playingBank;
+}
+
+void RF5C68::SetUpRepeat(unsigned int chNum)
+{
+	auto &ch=state.ch[chNum];
+	ch.startPtr=ch.LS;
 }

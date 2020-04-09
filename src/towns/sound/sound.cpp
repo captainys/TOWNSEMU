@@ -46,6 +46,17 @@ void TownsSound::SetOutsideWorld(class Outside_World *outside_world)
 {
 	this->outside_world=outside_world;
 }
+void TownsSound::PCMStartPlay(unsigned char chStartPlay)
+{
+	for(unsigned int ch=0; ch<RF5C68::NUM_CHANNELS; ++ch)
+	{
+		if(0!=(chStartPlay&(1<<ch)))
+		{
+			outside_world->PCMPlay(state.rf5c68,ch);
+			state.rf5c68.PlayStarted(ch);
+		}
+	}
+}
 
 /* virtual */ void TownsSound::PowerOn(void)
 {
@@ -107,14 +118,7 @@ void TownsSound::SetOutsideWorld(class Outside_World *outside_world)
 			auto chStartPlay=state.rf5c68.WriteControl(data);
 			if(0!=chStartPlay && nullptr!=outside_world)
 			{
-				for(unsigned int ch=0; ch<RF5C68::NUM_CHANNELS; ++ch)
-				{
-					if(0!=(chStartPlay&(1<<ch)))
-					{
-						outside_world->PCMPlay(state.rf5c68,ch);
-						state.rf5c68.PlayStarted(ch);
-					}
-				}
+				PCMStartPlay(chStartPlay);
 			}
 		}
 		break;
@@ -123,14 +127,7 @@ void TownsSound::SetOutsideWorld(class Outside_World *outside_world)
 			auto chStartPlay=state.rf5c68.WriteChannelOnOff(data);
 			if(0!=chStartPlay && nullptr!=outside_world)
 			{
-				for(unsigned int ch=0; ch<RF5C68::NUM_CHANNELS; ++ch)
-				{
-					if(0!=(chStartPlay&(1<<ch)))
-					{
-						outside_world->PCMPlay(state.rf5c68,ch);
-						state.rf5c68.PlayStarted(ch);
-					}
-				}
+				PCMStartPlay(chStartPlay);
 			}
 		}
 		break;
@@ -210,24 +207,30 @@ void TownsSound::SetOutsideWorld(class Outside_World *outside_world)
 		for(unsigned int chNum=0; chNum<RF5C68::NUM_CHANNELS; ++chNum)
 		{
 			auto &ch=state.rf5c68.state.ch[chNum];
-			bool chPlaying=false;
-			if(0==(state.rf5c68.state.chOnOff&(1<<chNum)) &&  // Active LOW
-			   (ch.IRQTimer<=outside_world->PCMCurrentPosition(chNum) || 
-			    (true==ch.playStarted && true!=(chPlaying=outside_world->PCMChannelPlaying(chNum)))))
+			if(0==(state.rf5c68.state.chOnOff&(1<<chNum)))
 			{
-				state.rf5c68.SetIRQ(chNum);
-				state.rf5c68.RenewIRQTimer(chNum);
-				if(true!=chPlaying)
+				if(true!=outside_world->PCMChannelPlaying(chNum))
 				{
-					ch.playStarted=false;
+					// Play started, but it went all the way to the end of the buffer.
+					// Since RF5C68 does not stop automatically, it needs to play the next segment.
+					state.rf5c68.SetUpRepeat(chNum);
+					state.rf5c68.SetIRQ(chNum);
+					outside_world->PCMPlay(state.rf5c68,chNum);
+					state.rf5c68.PlayStarted(chNum);
+					IRQ=true;
 				}
-				IRQ=true;
+				else if(ch.IRQTimer<=outside_world->PCMCurrentPosition(chNum))
+				{
+					// Still playing, but reached to the timer.
+					state.rf5c68.SetIRQ(chNum);
+					state.rf5c68.RenewIRQTimer(chNum);
+					IRQ=true;
+				}
 			}
 		}
 	}
 	townsPtr->pic.SetInterruptRequestBit(TOWNSIRQ_SOUND,IRQ);
 }
-
 
 std::vector <std::string> TownsSound::GetStatusText(void) const
 {
