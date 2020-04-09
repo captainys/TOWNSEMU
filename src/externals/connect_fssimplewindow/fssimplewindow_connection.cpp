@@ -216,19 +216,19 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 /* virtual */ void FsSimpleWindowConnection::PCMPlay(const RF5C68 &pcm,unsigned int ch)
 {
-printf("%s %d %d\n",__FUNCTION__,__LINE__,ch);
 	auto wave=pcm.Make19KHzWave(ch);
-printf("%s %d\n",__FUNCTION__,__LINE__);
 	PCMChannel[ch].CreateFromSigned16bitStereo(44100,wave);
 	soundPlayer.PlayOneShot(PCMChannel[ch]);
 }
 /* virtual */ void FsSimpleWindowConnection::PCMPlayStop(int ch)
 {
-printf("%s %d\n",__FUNCTION__,__LINE__);
 	soundPlayer.Stop(PCMChannel[ch]);
+}
+/* virtual */ bool FsSimpleWindowConnection::PCMChannelPlaying(int ch)
+{
+	return YSTRUE==soundPlayer.IsPlaying(PCMChannel[ch]);
 }
 /* virtual */ double FsSimpleWindowConnection::PCMCurrentPosition(int ch)
 {
-printf("%s %d\n",__FUNCTION__,__LINE__);
 	return soundPlayer.GetCurrentPosition(PCMChannel[ch]);
 }

@@ -22,11 +22,17 @@ void RF5C68::Clear(void)
 		ch.ST=0;
 		ch.FD=0;
 		ch.LS=0;
+		ch.IRQTimer=0.0;
+		ch.playingBank=0;
+		ch.playStarted=false;
 	}
 	state.playing=false;
 	state.Bank=0;
 	state.CB=0;
 	state.chOnOff=0xff;  // Active LOW
+	state.IRQ=false;
+	state.IRQBank=0;
+	state.IRQBankMask=0;
 }
 
 unsigned char RF5C68::WriteControl(unsigned char value)
@@ -70,6 +76,10 @@ unsigned char RF5C68::WriteChannelOnOff(unsigned char value)
 		state.chOnOff=value;
 		return 0;
 	}
+}
+void RF5C68::WriteIRQBankMask(unsigned char value)
+{
+	state.IRQBankMask=value;
 }
 void RF5C68::WriteENV(unsigned char value)
 {
@@ -139,9 +149,9 @@ std::vector <unsigned char> RF5C68::Make19KHzWave(unsigned int chNum) const
 
 	if(0<ch.FD)
 	{
-		for(unsigned int startAddr=(ch.ST<<(10+8)); startAddr<(WAVERAM_SIZE<<10); startAddr+=ch.FD)
+		for(unsigned int startAddr=(ch.ST<<(FD_BIT_SHIFT+8)); startAddr<(WAVERAM_SIZE<<FD_BIT_SHIFT); startAddr+=ch.FD)
 		{
-			auto data=state.waveRAM[startAddr>>10];
+			auto data=state.waveRAM[startAddr>>FD_BIT_SHIFT];
 			if(0xff==data)
 			{
 				break;
@@ -166,4 +176,47 @@ std::vector <unsigned char> RF5C68::Make19KHzWave(unsigned int chNum) const
 	}
 
 	return wave;
+}
+
+void RF5C68::PlayStarted(unsigned int chNum)
+{
+printf("%s %d\n",__FUNCTION__,__LINE__);
+	auto &ch=state.ch[chNum];
+	ch.playingBank=(ch.ST>>4);
+	ch.playStarted=true;
+
+	// How long does it take to play 4K samples?
+	const unsigned int len=(4096<<FD_BIT_SHIFT);
+	unsigned int FD=ch.FD;
+	if(0==FD)
+	{
+		FD=1;
+	}
+	ch.IRQTimer=(double)len/(double)ch.FD;
+}
+
+void RF5C68::SetIRQ(unsigned int chNum)
+{
+printf("%s %d\n",__FUNCTION__,__LINE__);
+	auto &ch=state.ch[chNum];
+	auto bank=(ch.playingBank>>1);
+	if(0!=((1<<bank)&state.IRQBankMask))
+	{
+		state.IRQ=true;
+		state.IRQBank|=(1<<bank);
+	}
+}
+
+void RF5C68::RenewIRQTimer(unsigned int chNum)
+{
+printf("%s %d\n",__FUNCTION__,__LINE__);
+	auto &ch=state.ch[chNum];
+	const unsigned int len=(4096<<FD_BIT_SHIFT);
+	unsigned int FD=ch.FD;
+	if(0==FD)
+	{
+		FD=1;
+	}
+	ch.IRQTimer+=(double)len/(double)ch.FD;
+	++ch.playingBank;
 }

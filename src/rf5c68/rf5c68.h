@@ -12,7 +12,9 @@ public:
 	enum
 	{
 		WAVERAM_SIZE=65536,
-		NUM_CHANNELS=8
+		NUM_CHANNELS=8,
+		FREQ=19600,
+		FD_BIT_SHIFT=11,
 	};
 
 	class Channel
@@ -20,6 +22,11 @@ public:
 	public:
 		unsigned char ENV,PAN,ST;
 		unsigned short FD,LS;
+		double IRQTimer;
+		unsigned char playingBank; // 00H to 0FH.  64KB/4K=16 banks.
+
+		// Set to true when hardware starts playing.
+		bool playStarted;
 	};
 	class State
 	{
@@ -31,6 +38,9 @@ public:
 		unsigned short Bank;   // Bank x000H
 		unsigned char CB;      // Channel
 		unsigned char chOnOff; // I/O 04F8H
+
+		bool IRQ;
+		unsigned char IRQBank,IRQBankMask;
 	};
 	State state;
 
@@ -47,6 +57,9 @@ public:
 	    Returns channels that starts playing. 
 	*/
 	unsigned char WriteChannelOnOff(unsigned char value);
+
+	/*! Writes to the IRQ Bank mask register. */
+	void WriteIRQBankMask(unsigned char value);
 
 	/*! Writes to the ENV register. */
 	void WriteENV(unsigned char value);
@@ -85,6 +98,19 @@ public:
 	/*! Make 19.2KHz signed 16-bit wave.
 	*/
 	std::vector <unsigned char> Make19KHzWave(unsigned int ch) const;
+
+	/*! Notified from the controller that the play has started.
+	    This function sets IRQTimer for the channel.
+	*/
+	void PlayStarted(unsigned int ch);
+
+	/*!
+	*/
+	void SetIRQ(unsigned int ch);
+
+	/*!
+	*/
+	void RenewIRQTimer(unsigned int ch);
 };
 
 

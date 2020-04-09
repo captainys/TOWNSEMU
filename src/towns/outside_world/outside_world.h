@@ -44,6 +44,7 @@ public:
 public:
 	virtual void PCMPlay(const RF5C68 &pcm,unsigned int ch)=0;
 	virtual void PCMPlayStop(int ch)=0;
+	virtual bool PCMChannelPlaying(int ch)=0;
 	virtual double PCMCurrentPosition(int ch)=0;
 };
 

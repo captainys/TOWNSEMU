@@ -77,6 +77,7 @@ void TownsSound::SetOutsideWorld(class Outside_World *outside_world)
 	case TOWNSIO_SOUND_INT_REASON://        0x4E9, // [2] pp.19,
 		break;
 	case TOWNSIO_SOUND_PCM_INT_MASK://      0x4EA, // [2] pp.19,
+		state.rf5c68.WriteIRQBankMask(data);
 		break;
 	case TOWNSIO_SOUND_PCM_INT://           0x4EB, // [2] pp.19,
 		break;
@@ -106,12 +107,12 @@ void TownsSound::SetOutsideWorld(class Outside_World *outside_world)
 			auto chStartPlay=state.rf5c68.WriteControl(data);
 			if(0!=chStartPlay && nullptr!=outside_world)
 			{
-printf("%s %d %02x\n",__FUNCTION__,__LINE__,chStartPlay);
 				for(unsigned int ch=0; ch<RF5C68::NUM_CHANNELS; ++ch)
 				{
 					if(0!=(chStartPlay&(1<<ch)))
 					{
 						outside_world->PCMPlay(state.rf5c68,ch);
+						state.rf5c68.PlayStarted(ch);
 					}
 				}
 			}
@@ -122,12 +123,12 @@ printf("%s %d %02x\n",__FUNCTION__,__LINE__,chStartPlay);
 			auto chStartPlay=state.rf5c68.WriteChannelOnOff(data);
 			if(0!=chStartPlay && nullptr!=outside_world)
 			{
-printf("%s %d %02x\n",__FUNCTION__,__LINE__,chStartPlay);
 				for(unsigned int ch=0; ch<RF5C68::NUM_CHANNELS; ++ch)
 				{
 					if(0!=(chStartPlay&(1<<ch)))
 					{
 						outside_world->PCMPlay(state.rf5c68,ch);
+						state.rf5c68.PlayStarted(ch);
 					}
 				}
 			}
@@ -158,11 +159,22 @@ printf("%s %d %02x\n",__FUNCTION__,__LINE__,chStartPlay);
 		// Write Only
 		break;
 	case TOWNSIO_SOUND_INT_REASON://        0x4E9, // [2] pp.19,
+		data=0;
+		if(state.rf5c68.state.IRQ)
+		{
+			data|=0b1000;
+		}
+		if((state.ym2612.TimerAUp() || state.ym2612.TimerBUp()))
+		{
+			data|=0b0001;
+		}
 		break;
 	case TOWNSIO_SOUND_PCM_INT_MASK://      0x4EA, // [2] pp.19,
 		break;
 	case TOWNSIO_SOUND_PCM_INT://           0x4EB, // [2] pp.19,
-		data=0; // No bank firing an interrupt at this time.
+		data=state.rf5c68.state.IRQBank;
+		state.rf5c68.state.IRQBank=0;
+		state.rf5c68.state.IRQ=false;
 		break;
 	case TOWNSIO_SOUND_PCM_ENV://           0x4F0, // [2] pp.19,
 		break;
@@ -193,6 +205,26 @@ printf("%s %d %02x\n",__FUNCTION__,__LINE__,chStartPlay);
 	state.ym2612.Run(townsTime);
 
 	bool IRQ=(state.ym2612.TimerAUp() || state.ym2612.TimerBUp());
+	if(state.rf5c68.state.playing && nullptr!=outside_world)
+	{
+		for(unsigned int chNum=0; chNum<RF5C68::NUM_CHANNELS; ++chNum)
+		{
+			auto &ch=state.rf5c68.state.ch[chNum];
+			bool chPlaying=false;
+			if(0==(state.rf5c68.state.chOnOff&(1<<chNum)) &&  // Active LOW
+			   (ch.IRQTimer<=outside_world->PCMCurrentPosition(chNum) || 
+			    (true==ch.playStarted && true!=(chPlaying=outside_world->PCMChannelPlaying(chNum)))))
+			{
+				state.rf5c68.SetIRQ(chNum);
+				state.rf5c68.RenewIRQTimer(chNum);
+				if(true!=chPlaying)
+				{
+					ch.playStarted=false;
+				}
+				IRQ=true;
+			}
+		}
+	}
 	townsPtr->pic.SetInterruptRequestBit(TOWNSIRQ_SOUND,IRQ);
 }
 
