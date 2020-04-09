@@ -161,7 +161,7 @@ std::vector <unsigned char> RF5C68::Make19KHzWave(unsigned int chNum)
 	if(0<ch.FD)
 	{
 		unsigned int endPtr=((ch.startPtr+0x1000)&(~0xfff));
-		for(unsigned int pcmAddr=(ch.startPtr<<FD_BIT_SHIFT); pcmAddr<(WAVERAM_SIZE<<FD_BIT_SHIFT); pcmAddr+=ch.FD)
+		for(unsigned int pcmAddr=(ch.startPtr<<FD_BIT_SHIFT); pcmAddr<(endPtr<<FD_BIT_SHIFT); pcmAddr+=ch.FD)
 		{
 			auto data=state.waveRAM[pcmAddr>>FD_BIT_SHIFT];
 			if(0xff==data)
