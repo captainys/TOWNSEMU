@@ -122,12 +122,7 @@ public:
 
 	/*!
 	*/
-	void RenewIRQTimer(unsigned int ch);
-
-
-	/*!
-	*/
-	void SetUpRepeat(unsigned int chNum);
+	void SetUpNextSegment(unsigned int chNum);
 };
 
 

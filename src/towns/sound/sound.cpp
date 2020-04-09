@@ -232,17 +232,10 @@ void TownsSound::PCMStopPlay(unsigned char chStopPlay)
 				{
 					// Play started, but it went all the way to the end of the buffer.
 					// Since RF5C68 does not stop automatically, it needs to play the next segment.
-					state.rf5c68.SetUpRepeat(chNum);
+					state.rf5c68.SetUpNextSegment(chNum);
 					state.rf5c68.SetIRQ(chNum);
 					outside_world->PCMPlay(state.rf5c68,chNum);
 					state.rf5c68.PlayStarted(chNum);
-					IRQ=true;
-				}
-				else if(ch.IRQTimer<=outside_world->PCMCurrentPosition(chNum))
-				{
-					// Still playing, but reached to the timer.
-					state.rf5c68.SetIRQ(chNum);
-					state.rf5c68.RenewIRQTimer(chNum);
 					IRQ=true;
 				}
 			}

@@ -221,20 +221,7 @@ void RF5C68::SetIRQ(unsigned int chNum)
 	}
 }
 
-void RF5C68::RenewIRQTimer(unsigned int chNum)
-{
-	auto &ch=state.ch[chNum];
-	const unsigned int len=(4096<<FD_BIT_SHIFT);
-	unsigned int FD=ch.FD;
-	if(0==FD)
-	{
-		FD=1;
-	}
-	ch.IRQTimer+=(double)len/(double)(ch.FD*FREQ);
-	++ch.playingBank;
-}
-
-void RF5C68::SetUpRepeat(unsigned int chNum)
+void RF5C68::SetUpNextSegment(unsigned int chNum)
 {
 	auto &ch=state.ch[chNum];
 	if(true==ch.repeatAfterThisSegment)
