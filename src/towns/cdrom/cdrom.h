@@ -157,6 +157,11 @@ public:
 
 		bool discChanged;
 
+		// BIOS disassembly suggests that command A0H should return status:
+		//   00 00 00 00 07 00 00 00
+		// once CDDA play ended.
+		bool CDDAPlayStarted;
+
 	private:
 		DiscImage *imgPtr;
 	public:
@@ -219,6 +224,7 @@ private:
 	void SetStatusDataReady(void);
 	void PushStatusCDDAStopDone(void);
 	void SetStatusSubQRead(void);
+	void PushStatusCDDAPlayEnded(void);
 
 	void StopCDDA(void); // Placeholder for later.
 };

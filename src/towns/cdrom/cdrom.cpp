@@ -56,6 +56,7 @@ void TownsCDROM::State::Reset(void)
 	enableSIRQ=false;
 	enableDEI=false;
 	discChanged=false;
+	CDDAPlayStarted=false;
 
 	next2ndByteOfStatusCode=0;
 }
@@ -136,10 +137,6 @@ TownsCDROM::TownsCDROM(class FMTowns *townsPtr,class TownsPIC *PICPtr,class Town
 		// std::cout << "CDROM Command " << cpputil::Ubtox(data) << std::endl;
 		state.cmdReceived=true;
 		state.cmd=data;
-		if(true==debugBreakOnCommandWrite)
-		{
-			townsPtr->debugger.ExternalBreak("CDROM Command Write:"+cpputil::Ubtox(data));
-		}
 		break;
 	case TOWNSIO_CDROM_PARAMETER_DATA://    0x4C4, // [2] pp.224
 		if(8<=state.nParamQueue)
@@ -332,6 +329,17 @@ unsigned int TownsCDROM::LoadDiscImage(const std::string &fName)
 }
 void TownsCDROM::ExecuteCDROMCommand(void)
 {
+	if(true==debugBreakOnCommandWrite)
+	{
+		townsPtr->debugger.ExternalBreak("CDROM Command Exec");
+		std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " |";
+		for(int i=0; i<8; ++i)
+		{
+			std::cout << cpputil::Ubtox(state.paramQueue[i]) << " ";
+		}
+		std::cout << std::endl;
+	}
+
 	// std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " |";
 	// for(int i=0; i<8; ++i)
 	// {
@@ -410,6 +418,7 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 			if(nullptr!=OutsideWorld)
 			{
 				OutsideWorld->CDDAPlay(state.GetDisc(),msfBegin,msfEnd);
+				state.CDDAPlayStarted=true;
 			}
 			if(0x20&state.cmd)
 			{
@@ -436,7 +445,8 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 	case CDCMD_SETSTATE://   0x80,
 		if(0x20&state.cmd)
 		{
-			if(nullptr!=OutsideWorld && true==OutsideWorld->CDDAIsPlaying())
+			auto CDDAPlaying=OutsideWorld->CDDAIsPlaying();
+			if(nullptr!=OutsideWorld && true==CDDAPlaying)
 			{
 				state.next2ndByteOfStatusCode=0x03; // Prob: Response to A0H (80H+REQSTA), 00 03 xx xx means CDDA is playing.
 			}
@@ -445,6 +455,11 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 				state.next2ndByteOfStatusCode=0;
 			}
 			SetStatusDriveNotReadyOrDiscChangedOrNoError();
+			if(true==state.CDDAPlayStarted && true!=CDDAPlaying)
+			{
+				PushStatusCDDAPlayEnded();
+				state.CDDAPlayStarted=false;
+			}
 		}
 		break;
 	case CDCMD_CDDASET://    0x81,
@@ -742,6 +757,11 @@ void TownsCDROM::SetStatusSubQRead(void)
 void TownsCDROM::PushStatusCDDAStopDone(void)
 {
 	state.PushStatusQueue(0x11,0,0,0);
+}
+
+void TownsCDROM::PushStatusCDDAPlayEnded(void)
+{
+	state.PushStatusQueue(0x07,0,0,0);
 }
 
 void TownsCDROM::StopCDDA(void)

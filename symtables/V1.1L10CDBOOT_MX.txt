@@ -269,6 +269,123 @@ P
 % 0
 /end
 /begin0
+T 2
+* 00000256:000000C3
+# 
+R 
+L DISKBIOS:(Prob)Call_Device
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000256:00001657
+# 
+R 
+L CDROM:(Prob)Entry
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000256:00001C21
+# 
+R 
+L CDROM:(Prob)AH=50H_PlayCDDA
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000256:00001D0F
+# CDROM:[0031H]_IS_2ND_BYTE_OF_STATUS_BYTES
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000256:00001D1E
+# CDROM:07H=CDDAPlayDone?
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000256:0000209E
+# 
+R 
+L CDROM:BIN_TO_BCD
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000256:00002210
+# 
+R 
+L CDROM:WAIT_DRQ_PUSH6+2BYTE_PARAM[0034H]_ISSUECMD[0033H]()
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000256:00002407
+# 
+R 
+L CDROM:ISSUE_CMD_A0H_THEN_READ_STATUS_[003CH]
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000256:0000253B
+# 
+R 
+L CDROM:CLEAR_8BYTE_PARAM_BUFFER
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000256:0000253D
+# CDROM:This doesn't do anything.
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000256:0000255D
+# 
+R 
+L CDROM:WAIT_DRQ_PUSH8BYTE_PARAM[0034H]_ISSUECMD[0033H]
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000256:00002635
+# 
+R 
+L CDROM:WAIT_FOR_AND_READ_STATUS_TO[003CH]_IF_IRQ_CLEAR_IRQ
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000256:000027A5
+# 
+R 
+L CDROM:STATUS_BYTES_TO_BIOS_ERROR_CODE
+P 
+% 0
+/end
+/begin0
 T 0
 * 00005359:000000F0
 # Why is this guy return 1?
