@@ -78,6 +78,7 @@ FMTowns::FMTowns() :
 	physMem(this,&cpu,&mem,&sound.state.rf5c68),
 	keyboard(this,&pic),
 	crtc(this),
+	sprite(this),
 	pic(this),
 	dmac(this),
 	cdrom(this,&pic,&dmac),
@@ -100,6 +101,7 @@ FMTowns::FMTowns() :
 	allDevices.push_back(&dmac);
 	allDevices.push_back(&physMem);
 	allDevices.push_back(&crtc);
+	allDevices.push_back(&sprite);
 	allDevices.push_back(&fdc);
 	allDevices.push_back(&cdrom);
 	allDevices.push_back(&rtc);

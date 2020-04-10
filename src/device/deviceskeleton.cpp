@@ -40,10 +40,7 @@ public:
 
 	State state;
 
-	DeviceSkeleton(class FMTowns *townsPtr) : Device(townsPtr)
-	{
-		this->townsPtr=townsPtr;
-	}
+	DeviceSkeleton(class FMTowns *townsPtr);
 
 	virtual void PowerOn(void);
 	virtual void Reset(void);
@@ -53,6 +50,12 @@ public:
 	virtual unsigned int IOReadByte(unsigned int ioport);
 };
 
+#include "towns.h"
+
+DeviceSkeleton::DeviceSkeleton(class FMTowns *townsPtr) : Device(townsPtr)
+{
+	this->townsPtr=townsPtr;
+}
 /* virtual */ void DeviceSkeleton::PowerOn(void)
 {
 	state.PowerOn();

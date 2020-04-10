@@ -30,6 +30,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "dmac.h"
 #include "cdrom.h"
 #include "crtc.h"
+#include "sprite.h"
 #include "fdc.h"
 #include "rtc.h"
 #include "keyboard.h"
@@ -149,6 +150,7 @@ public:
 	TownsCDROM cdrom;
 	TownsPhysicalMemory physMem;
 	TownsCRTC crtc;
+	TownsSprite sprite;
 	TownsFDC fdc;
 	TownsKeyboard keyboard;
 	TownsSound sound;

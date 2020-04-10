@@ -170,7 +170,7 @@ void TownsCRTC::State::Reset(void)
 	DPMD=false;
 	for(auto &i : FMRPalette)
 	{
-		i=(&i-FMRPalette);
+		i=(unsigned int)(&i-FMRPalette);
 	}
 
 	unsigned int defCRTCReg[32]=
