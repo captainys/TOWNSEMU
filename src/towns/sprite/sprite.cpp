@@ -125,6 +125,44 @@ void TownsSprite::Render(unsigned char VRAMIn[],const unsigned char spriteRAM[])
 			// 16-color paletted sprite
 			const unsigned int paletteIndex=paletteInfo&PALETTE_INDEX_MASK;
 			auto pattenPtr=spriteRAM+(patternIndex<<7);
+			auto palettePtr=spriteRAM+(paletteIndex<<5);
+			auto srcPtr=spriteRAM+(patternIndex<<7);
+			if(dstX<256-SPRITE_DIMENSION && dstY<256-SPRITE_DIMENSION)
+			{
+				auto dstPtr=VRAMTop+SPRITE_VRAM_BYTES_PER_LINE*dstY;
+				for(unsigned int ptnY=0; ptnY<SPRITE_DIMENSION; ptnY+=yStep)
+				{
+					auto nextDstPtr=dstPtr+SPRITE_VRAM_BYTES_PER_LINE;
+					for(unsigned int ptnX=0; ptnX<SPRITE_DIMENSION; ptnX+=(xStep<<1))
+					{
+						unsigned int xTfm,yTfm;
+						Transform(xTfm,yTfm,ptnX,ptnY,ROT);
+
+						auto src=srcPtr+SPRITE_PTN16_BYTES_PER_LINE*ptnY+(ptnX>>1);
+						unsigned char pix4bit=(src[0]>>4);
+						const unsigned char *col=palettePtr+(pix4bit<<1);
+						if(0==(col[1]&0x80))
+						{
+							dstPtr[0]=col[0];
+							dstPtr[1]=col[1];
+						}
+						dstPtr+=2;
+
+						pix4bit=(src[0]&0x0F);
+						col=palettePtr+(pix4bit<<1);
+						if(0==(col[1]&0x80))
+						{
+							dstPtr[0]=col[0];
+							dstPtr[1]=col[1];
+						}
+						dstPtr+=2;
+					}
+					dstPtr=nextDstPtr;
+				}
+			}
+			else // Clipping not supported yet.
+			{
+			}
 		}
 		else
 		{
