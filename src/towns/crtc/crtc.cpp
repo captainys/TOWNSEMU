@@ -197,6 +197,9 @@ void TownsCRTC::State::Reset(void)
 	}
 	mxVideoOutCtrlAddrLatch=0;
 
+	showPage[0]=true;
+	showPage[1]=true;
+
 	palette.Reset();
 }
 
@@ -520,6 +523,18 @@ void TownsCRTC::MakePageLayerInfo(Layer &layer,unsigned char page) const
 		{
 			std::cout << "MX-VIDOUTCONTROL8[" << cpputil::Ustox(state.mxVideoOutCtrlAddrLatch+3) << "H]=" << cpputil::Ubtox(data) << "H" << std::endl;
 			state.mxVideoOutCtrl[state.mxVideoOutCtrlAddrLatch+3]=data;
+		}
+		break;
+	case TOWNSIO_HSYNC_VSYNC:  // Also CRT Output COntrol
+		if(InSinglePageMode())
+		{
+			state.showPage[0]=(0!=((data>>2)&3));
+			state.showPage[1]=state.showPage[0];
+		}
+		else
+		{
+			state.showPage[0]=(0!=((data>>2)&3));
+			state.showPage[1]=(0!=( data    &3));
 		}
 		break;
 	}

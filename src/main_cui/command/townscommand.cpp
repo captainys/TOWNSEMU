@@ -78,6 +78,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 
 	primaryCmdMap["TYPE"]=CMD_TYPE_KEYBOARD;
 	primaryCmdMap["LET"]=CMD_LET;
+	primaryCmdMap["CRTCPAGE"]=CMD_CRTC_PAGE;
 	primaryCmdMap["CMOSLOAD"]=CMD_CMOSLOAD;
 	primaryCmdMap["CDLOAD"]=CMD_CDLOAD;
 	primaryCmdMap["CDOPENCLOSE"]=CMD_CDOPENCLOSE;
@@ -202,6 +203,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Send keyboard codes." << std::endl;
 	std::cout << "LET register value" << std::endl;
 	std::cout << "  Load a register value." << std::endl;
+	std::cout << "CRTCPAGE 1|0 1|0" << std::endl;
+	std::cout << "  Turn on/off display page." << std::endl;
 	std::cout << "CMOSLOAD filename" << std::endl;
 	std::cout << "  Load CMOS." << std::endl;
 	std::cout << "CDLOAD filename" << std::endl;
@@ -496,6 +499,9 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,Command &c
 
 	case CMD_LET:
 		Execute_Let(towns,cmd);
+		break;
+	case CMD_CRTC_PAGE:
+		Execute_CRTCPage(towns,cmd);
 		break;
 	case CMD_CMOSLOAD:
 		Execute_CMOSLoad(towns,cmd);
@@ -1285,6 +1291,24 @@ void TownsCommandInterpreter::Execute_Let(FMTowns &towns,Command &cmd)
 		{
 			std::cout << "Cannot load a value to this register/flag." << std::endl;
 		}
+	}
+}
+
+void TownsCommandInterpreter::Execute_CRTCPage(FMTowns &towns,Command &cmd)
+{
+	if(cmd.argv.size()==2 && towns.crtc.InSinglePageMode())
+	{
+		towns.crtc.state.showPage[0]=(0!=cpputil::Atoi(cmd.argv[1].c_str()));
+		towns.crtc.state.showPage[1]=towns.crtc.state.showPage[0];
+	}
+	else if(3<=cmd.argv.size() && towns.crtc.InSinglePageMode())
+	{
+		towns.crtc.state.showPage[0]=(0!=cpputil::Atoi(cmd.argv[1].c_str()));
+		towns.crtc.state.showPage[1]=(0!=cpputil::Atoi(cmd.argv[2].c_str()));
+	}
+	else
+	{
+		PrintError(ERROR_TOO_FEW_ARGS);
 	}
 }
 

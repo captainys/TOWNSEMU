@@ -148,6 +148,8 @@ public:
 
 		AnalogPalette palette;
 
+		bool showPage[2];
+
 		void Reset(void);
 	};
 

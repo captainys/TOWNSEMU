@@ -1,5 +1,41 @@
 /begin0
 T 1
+* 00000110:00000280
+# 
+R 
+L EGB:Entry
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000110:000020E8
+# 
+R 
+L EGB:AH=24H_GET_BITMAP_PATTERN1
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000110:000020F8
+# 
+R 
+L EGB:AH=25H_PUT_BITMAP_PATTERN1
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000110:00002234
+# 
+R 
+L EGB:AH=28H_WRITE_GRAPHIC_CURSOR
+P 
+% 0
+/end
+/begin0
+T 1
 * 00000110:00010250
 # 
 R 

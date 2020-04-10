@@ -82,6 +82,7 @@ public:
 		CMD_TYPE_KEYBOARD,
 
 		CMD_LET,
+		CMD_CRTC_PAGE,
 
 		CMD_CMOSLOAD,
 		CMD_CDLOAD,
@@ -204,6 +205,8 @@ public:
 	void Execute_TypeKeyboard(FMTowns &towns,Command &cmd);
 
 	void Execute_Let(FMTowns &towns,Command &cmd);
+
+	void Execute_CRTCPage(FMTowns &towns,Command &cmd);
 
 	void Execute_CMOSLoad(FMTowns &towns,Command &cmd);
 	void Execute_CDLoad(FMTowns &towns,Command &cmd);
