@@ -136,6 +136,23 @@ private:
 	}
 
 public:
+	inline bool SPD0(void) const   // For CRTC I/O
+	{
+		return state.spriteBusy;
+	}
+
+	inline unsigned char WritingPage(void) const // For CRTC I/O
+	{
+		if(0!=(state.reg[REG_DISPLAY_PAGE]&0x10))
+		{
+			return 0;
+		}
+		else
+		{
+			return 1;
+		}
+	}
+
 	virtual void PowerOn(void);
 	virtual void Reset(void);
 

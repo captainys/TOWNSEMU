@@ -17,6 +17,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include "cpputil.h"
 #include "crtc.h"
+#include "sprite.h"
 #include "towns.h"
 #include "townsdef.h"
 
@@ -226,9 +227,10 @@ void TownsCRTC::ScreenModeCache::MakeFMRCompatible(void)
 ////////////////////////////////////////////////////////////
 
 
-TownsCRTC::TownsCRTC(class FMTowns *ptr) : Device(ptr)
+TownsCRTC::TownsCRTC(class FMTowns *ptr,TownsSprite *spritePtr) : Device(ptr)
 {
-	townsPtr=ptr;
+	this->townsPtr=ptr;
+	this->spritePtr=spritePtr;
 	state.mxVideoOutCtrl.resize(0x10000);
 	state.Reset();
 
@@ -663,8 +665,10 @@ void TownsCRTC::MakePageLayerInfo(Layer &layer,unsigned char page) const
 	case TOWNSIO_VIDEO_OUT_CTRL_DATA://=      0x44A,  Supposed to be write-only
 		data=state.sifter[state.sifterAddrLatch];
 		break;
-	case TOWNSIO_DPMD_SPRITEBUSY_SPRITEPAGE:
-		data|=(true==state.DPMD ? 0x80 : 0);
+	case TOWNSIO_DPMD_SPRITEBUSY_SPRITEPAGE: // 044CH  [2] pp.153
+		data=(true==state.DPMD ? 0x80 : 0);
+		data|=(true==spritePtr->SPD0() ? 2 : 0);
+		data|=spritePtr->WritingPage();
 		state.DPMD=false;
 		break;
 

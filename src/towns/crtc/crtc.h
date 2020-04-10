@@ -154,6 +154,7 @@ public:
 	};
 
 	class FMTowns *townsPtr;
+	class TownsSprite *spritePtr;
 	State state;
 
 	bool cached;   // At this time unused.
@@ -161,7 +162,7 @@ public:
 
 	virtual const char *DeviceName(void) const{return "CRTC";}
 
-	TownsCRTC(class FMTowns *ptr);
+	TownsCRTC(class FMTowns *ptr,class TownsSprite *spritePtr);
 
 	bool InVSYNC(const unsigned long long int townsTime) const;
 	bool InHSYNC(const unsigned long long int townsTime) const;

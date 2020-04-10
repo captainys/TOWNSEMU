@@ -77,7 +77,7 @@ FMTowns::FMTowns() :
 	cpu(this),
 	physMem(this,&cpu,&mem,&sound.state.rf5c68),
 	keyboard(this,&pic),
-	crtc(this),
+	crtc(this,&sprite),
 	sprite(this),
 	pic(this),
 	dmac(this),
@@ -219,6 +219,10 @@ FMTowns::FMTowns() :
 
 	io.AddDevice(&rtc,TOWNSIO_RTC_DATA);//                 0x70,
 	io.AddDevice(&rtc,TOWNSIO_RTC_COMMAND);//              0x80,
+
+
+	io.AddDevice(&sprite,TOWNSIO_SPRITE_ADDRESS);//           0x450, // [2] pp.128
+	io.AddDevice(&sprite,TOWNSIO_SPRITE_DATA);//              0x452, // [2] pp.128
 
 
 	io.AddDevice(&gameport,TOWNSIO_GAMEPORT_A_INPUT);  //0x4D0,
