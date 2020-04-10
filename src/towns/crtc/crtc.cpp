@@ -294,6 +294,21 @@ Vec2i TownsCRTC::GetPageZoom(unsigned char page) const
 	auto pageZoom=(state.crtcReg[REG_ZOOM]>>(8*page));
 	zoom.x()=(( pageZoom    &15)+1);
 	zoom.y()=(((pageZoom>>4)&15)+1);
+
+	// I'm not sure if this logic is correct.  This doesn't cover screen mode 16.
+	if(15==GetHorizontalFrequency())
+	{
+		if(true==InSinglePageMode())
+		{
+			zoom[0]/=2;
+		}
+		else
+		{
+			zoom[0]/=2;
+			zoom[1]*=2;
+		}
+	}
+
 	return zoom;
 }
 Vec2i TownsCRTC::GetPageOriginOnMonitor(unsigned char page) const
@@ -332,6 +347,7 @@ Vec2i TownsCRTC::GetPageSizeOnMonitor(unsigned char page) const
 	if(15==KHz)
 	{
 		wid/=2;
+		hei*=2;
 	}
 	if(0==state.crtcReg[REG_FO0+4*page])
 	{
