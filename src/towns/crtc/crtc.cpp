@@ -243,6 +243,19 @@ TownsCRTC::TownsCRTC(class FMTowns *ptr,TownsSprite *spritePtr) : Device(ptr)
 	cached=true;
 }
 
+void TownsCRTC::UpdateSpriteHardware(void)
+{
+	if(true==spritePtr->SpriteActive())
+	{
+		if(true==InSinglePageMode() ||
+		   16!=GetPageBitsPerPixel(1) ||
+		   512!=GetPageBytesPerLine(1))
+		{
+			spritePtr->Stop();
+		}
+	}
+}
+
 
 // Let's say 60 frames per sec.
 // 1 frame takes 16.7ms.
@@ -494,10 +507,12 @@ void TownsCRTC::MakePageLayerInfo(Layer &layer,unsigned char page) const
 	case TOWNSIO_CRTC_DATA_LOW://            0x442,
 		state.crtcReg[state.crtcAddrLatch]&=0xff00;
 		state.crtcReg[state.crtcAddrLatch]|=(data&0xff);
+		UpdateSpriteHardware();
 		break;
 	case TOWNSIO_CRTC_DATA_HIGH://           0x443,
 		state.crtcReg[state.crtcAddrLatch]&=0x00ff;
 		state.crtcReg[state.crtcAddrLatch]|=((data&0xff)<<8);
+		UpdateSpriteHardware();
 		break;
 
 
@@ -506,6 +521,7 @@ void TownsCRTC::MakePageLayerInfo(Layer &layer,unsigned char page) const
 		break;
 	case TOWNSIO_VIDEO_OUT_CTRL_DATA://=      0x44A,
 		state.sifter[state.sifterAddrLatch]=data;
+		UpdateSpriteHardware();
 		break;
 
 	case TOWNSIO_MX_HIRES://            0x470,

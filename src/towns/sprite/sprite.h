@@ -69,6 +69,8 @@ public:
 	class TownsPhysicalMemory *physMemPtr;
 
 	TownsSprite(class FMTowns *townsPtr,class TownsPhysicalMemory *physMemPtr);
+	void Start(void);
+	void Stop(void);
 
 	inline bool SpriteActive(void) const
 	{
@@ -82,6 +84,10 @@ public:
 			return MAX_NUM_SPRITE_INDEX;
 		}
 		return n;
+	}
+	inline unsigned int FirstSpriteIndex(void) const
+	{
+		return ((state.reg[REG_CONTROL1]<<8)|state.reg[REG_CONTROL0])&(MAX_NUM_SPRITE_INDEX-1);
 	}
 	inline unsigned int HOffset(void) const
 	{

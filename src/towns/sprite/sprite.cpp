@@ -38,7 +38,18 @@ TownsSprite::TownsSprite(class FMTowns *townsPtr,TownsPhysicalMemory *physMemPtr
 	this->townsPtr=townsPtr;
 	this->physMemPtr=physMemPtr;
 }
-
+void TownsSprite::Start(void)
+{
+	state.reg[REG_CONTROL1]|=0x80;
+	state.spriteBusy=false;
+	townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+SPRITE_IDLE_TIME);
+}
+void TownsSprite::Stop(void)
+{
+	state.reg[REG_CONTROL1]&=0x7F;
+	state.spriteBusy=false;
+	townsPtr->UnscheduleDeviceCallBack(*this);
+}
 /* virtual */ void TownsSprite::PowerOn(void)
 {
 	state.PowerOn();
@@ -62,12 +73,11 @@ TownsSprite::TownsSprite(class FMTowns *townsPtr,TownsPhysicalMemory *physMemPtr
 		{
 			if(0!=(0x80&data))
 			{
-				state.spriteBusy=false;
-				townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+SPRITE_IDLE_TIME);
+				Start();
 			}
 			else
 			{
-				townsPtr->UnscheduleDeviceCallBack(*this);
+				Stop();
 			}
 		}
 		break;
@@ -111,7 +121,7 @@ void TownsSprite::Render(unsigned char VRAMIn[],const unsigned char spriteRAM[])
 	}
 
 	auto xOffset=HOffset(),yOffset=VOffset();
-	for(unsigned int spriteIndex=0; spriteIndex<NumSpritesToDraw(); ++spriteIndex)
+	for(unsigned int spriteIndex=FirstSpriteIndex(); spriteIndex<MAX_NUM_SPRITE_INDEX; ++spriteIndex)
 	{
 		auto indexPtr=spriteRAM+SPRITERAM_INDEX_OFFSET+(spriteIndex<<3);
 
@@ -217,6 +227,7 @@ void TownsSprite::Render(unsigned char VRAMIn[],const unsigned char spriteRAM[])
 			else // Clipping not supported yet.
 			{
 			}
+			spriteIndex+=3;  // Uses 4 indices total.
 		}
 	}
 }
@@ -229,12 +240,12 @@ void TownsSprite::RunScheduledTask(unsigned long long int townsTime)
 		{
 			state.spriteBusy=true;
 			Render(physMemPtr->state.VRAM.data()+0x40000,physMemPtr->state.spriteRAM.data());
-			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+SPRITE_BUSY_TIME);
+			townsPtr->ScheduleDeviceCallBack(*this,townsTime+SPRITE_BUSY_TIME);
 		}
 		else
 		{
 			state.spriteBusy=false;
-			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+SPRITE_IDLE_TIME);
+			townsPtr->ScheduleDeviceCallBack(*this,townsTime+SPRITE_IDLE_TIME);
 		}
 	}
 }

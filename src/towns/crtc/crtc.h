@@ -164,6 +164,8 @@ public:
 
 	TownsCRTC(class FMTowns *ptr,class TownsSprite *spritePtr);
 
+	void UpdateSpriteHardware(void);
+
 	bool InVSYNC(const unsigned long long int townsTime) const;
 	bool InHSYNC(const unsigned long long int townsTime) const;
 

@@ -74,10 +74,10 @@ int main(void)
 	}
 
 	SPR_init();
-	SPR_display(1,16);  // SpriteActive, 16 sprites.
+	SPR_display(1,16);  // SpriteActive, 16 sprites.  Sprite index 1024-16 to 1023 will be rendered.
 	SPR_define(1,128,1,1,bmp); // 32K, ptnNum=128, 1x1, patternPtr
-	SPR_setAttribute(0,1,1,128,0); // index,1x1,attrib,paletteNum
-	SPR_setPosition(0,0,1,1,64,64);  // shrinkFlag,index,1x1,(64,64)
+	SPR_setAttribute(1020,1,1,128,0); // index,1x1,attrib,paletteNum
+	SPR_setPosition(0,1020,1,1,64,64);  // shrinkFlag,index,1x1,(64,64)
 
 	{
 		time_t t0=time(NULL);
