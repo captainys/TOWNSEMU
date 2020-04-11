@@ -1476,9 +1476,14 @@ inline void i486DX::RolTemplate(unsigned int &value,unsigned int ctr)
 	unsigned long long int mask=valueMask;
 	ctr&=countMask;
 	mask>>=(bitLength-ctr);
-	SetCF(0!=(value&signBit));
 	value=(value<<ctr)|((value>>(bitLength-ctr))&mask);
 	value&=valueMask;
+	SetCF(0!=ctr && 0!=(value&1));
+	if(1==ctr)
+	{
+		bool sgn=(0!=(value&signBit));
+		SetOF(sgn!=GetCF());
+	}
 }
 
 void i486DX::RolByteWordOrDword(int operandSize,unsigned int &value,unsigned int ctr)
@@ -1560,7 +1565,7 @@ inline void i486DX::RorTemplate(unsigned int &value,unsigned int ctr)
 	value&=allBits;
 	value>>=ctr;
 	value|=(rightBits<<(bitCount-ctr));
-	SetCF(0!=(value&signBit));
+	SetCF(0!=ctr && 0!=(value&signBit));
 	if(1==ctr)
 	{
 		SetOF((prevValue&signBit)!=(value&signBit));
@@ -1654,43 +1659,46 @@ void i486DX::RcrWordOrDword(int operandSize,unsigned int &value,unsigned int ctr
 }
 void i486DX::RcrDword(unsigned int &value,unsigned int ctr)
 {
+	if(1==ctr)
+	{
+		bool sgn=(0!=(value&0x80000000));
+		SetOF(sgn!=GetCF());
+	}
 	for(unsigned int i=0; i<ctr; ++i)
 	{
 		unsigned int highBit=(GetCF() ? 0x80000000 : 0);
 		SetCF(0!=(value&1));
 		value=(value>>1)|highBit;
 	}
-	if(1==ctr)
-	{
-		SetOF(false);
-	}
 }
 void i486DX::RcrWord(unsigned int &value,unsigned int ctr)
 {
 	value&=0xffff;
+	if(1==ctr)
+	{
+		bool sgn=(0!=(value&0x8000));
+		SetOF(sgn!=GetCF());
+	}
 	for(unsigned int i=0; i<ctr; ++i)
 	{
 		unsigned int highBit=(GetCF() ? 0x8000 : 0);
 		SetCF(0!=(value&1));
 		value=(value>>1)|highBit;
 	}
-	if(1==ctr)
-	{
-		SetOF(false);
-	}
 }
 void i486DX::RcrByte(unsigned int &value,unsigned int ctr)
 {
 	value&=0xff;
+	if(1==ctr)
+	{
+		bool sgn=(0!=(value&0x80));
+		SetOF(sgn!=GetCF());
+	}
 	for(unsigned int i=0; i<ctr; ++i)
 	{
 		unsigned int highBit=(GetCF() ? 0x80 : 0);
 		SetCF(0!=(value&1));
 		value=(value>>1)|highBit;
-	}
-	if(1==ctr)
-	{
-		SetOF(false);
 	}
 }
 
@@ -1773,15 +1781,14 @@ void i486DX::ShlTemplate(unsigned int &value,unsigned int ctr)
 {
 	// OF CF ZF PF SF
 	ctr&=31;
+	SetCF(0!=ctr && 0!=(value&(signBit>>(ctr-1))));
 	if(1<ctr)
 	{
 		value=(value<<(ctr-1));
-		SetCF(0!=(value&signBit));
 		value=(value<<1)&maskBits;
 	}
 	else if(1==ctr)
 	{
-		SetCF(0!=(value&0x8000));
 		auto prevValue=value;
 		value=(value<<1)&maskBits;
 		SetOF((prevValue&signBit)!=(value&signBit));
@@ -1818,8 +1825,8 @@ template <unsigned int bitCount,unsigned int maskBits,unsigned int signBit>
 inline void i486DX::ShrTemplate(unsigned int &value,unsigned int ctr)
 {
 	// OF CF ZF PF SF
-	SetCF(0!=(value&1));
 	ctr&=31;
+	SetCF(0!=ctr && 0!=(value&(1<<(ctr-1))));
 	if(1<ctr)
 	{
 		value&=maskBits;
@@ -1827,7 +1834,7 @@ inline void i486DX::ShrTemplate(unsigned int &value,unsigned int ctr)
 	}
 	else if(1==ctr)
 	{
-		SetOF(false);
+		SetOF(0!=(value&signBit));
 		value&=maskBits;
 		value>>=1;
 	}

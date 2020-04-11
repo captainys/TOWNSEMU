@@ -3205,9 +3205,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
 				return 0;
 			case 7:// "SAR";
-				Abort("C1 SAR not implemented yet.");
+				SarByte(i,ctr);
 				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
-				return 0;
+				break;
 			}
 			value.SetDword(i);
 			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
