@@ -227,7 +227,6 @@ void TownsSprite::Render(unsigned char VRAMIn[],const unsigned char spriteRAM[])
 			else // Clipping not supported yet.
 			{
 			}
-			spriteIndex+=3;  // Uses 4 indices total.
 		}
 	}
 }

@@ -132,6 +132,11 @@ The tests are timing-sensitive, or the CPU needs to be reasonably fast.  If not,
 
 
 # Revisions
+### 2020/04/11
+- Started CPU instruction tests.  Already captured and fixed numerous bugs in CPU cores.
+- Fixed sprite.
+- Towns ILLUSION works all the way without corrupted image!!!!
+
 ### 2020/04/10
 - At least the program doesn't crash or freeze when sprite is used.
 - Towns ILLUSION (Legendary DEMO that comes with Towns OS V1.1 L10) runs all the way, although the images are still corrupted.
