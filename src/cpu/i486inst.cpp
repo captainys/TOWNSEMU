@@ -3309,7 +3309,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				SetZF(0==i);
 				SetCF(0!=i);
 				i=-i;
-				SetSignFlag(i<0);
+				SetParityFlag(CheckParity(i&0xFF));
+				SetSignFlag(0!=(i&0x80));
 				value1.SetSignedDword(i);
 				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
 			}
@@ -3350,7 +3351,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					}
 					auto imul=AL*OP;
 					SetAX(imul&0xFFFF);
-					if(0==(imul&0xFF00) || 0xFF00==(imul&0xFF00))
+					if(0==(imul&0xFF80) || 0xFF80==(imul&0xFF80))
 					{
 						SetCF(false);
 						SetOF(false);
@@ -3377,6 +3378,37 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				{
 					unsigned int quo=GetAX()/value.byteData[0];
 					unsigned int rem=GetAX()%value.byteData[0];
+					SetAL(quo);
+					SetAH(rem);
+				}
+			}
+			break;
+		case 7: // IDIV
+			{
+				clocksPassed=20;
+				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+				if(0==value.byteData[0])
+				{
+					Interrupt(0,mem,0); // [1] pp.26-28
+					// I don't think INT 0 was issued unless division by zero.
+					// I thought it just overflew if quo didn't fit in the target register, am I wrong?
+				}
+				else
+				{
+					int ax=GetAX();
+					if(0!=(0x8000&ax))
+					{
+						ax-=0x10000;
+					}
+					int rm8=value.byteData[0];
+					if(0!=(rm8&0x80))
+					{
+						rm8-=0x100;
+					}
+					int quo=ax/rm8;
+					int rem=ax%rm8;
+					quo=(quo+0x10000)&0xff;
+					rem=(rem+0x10000)&0xff;
 					SetAL(quo);
 					SetAH(rem);
 				}
@@ -3440,6 +3472,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				SetCF(0!=i);
 				SetSignFlag(i<0);
 				value1.SetSignedDword(i);
+				SetParityFlag(CheckParity(i&0xFF));
 				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
 			}
 			break;

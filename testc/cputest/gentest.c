@@ -153,6 +153,66 @@ void GenBitShift(FILE *ofp)
 	}
 }
 
+extern void TEST_F6(unsigned int res[],unsigned int eax,unsigned int edx);
+
+void GenF6F7_NOT_NEG_MUL_IMUL_DIV_IDIV(FILE *ofp)
+{
+	int i;
+	fprintf(ofp,"unsigned int F6_8_8_TABLE[]={\n");
+	for(i=0; i<LEN(testNumberSrc8); ++i)
+	{
+		for(int j=0; j<LEN(testNumberSrc8); ++j)
+		{
+			int k;
+			unsigned int eax=testNumberSrc8[i];
+			unsigned int edx=testNumberSrc8[j];
+			unsigned int res[12];
+			TEST_F6(res,eax,edx);
+			fprintf(ofp,"\t0x%08x,0x%08x,\n",eax,edx);
+			fprintf(ofp,"\t");
+			for(k=0; k<6; ++k)
+			{
+				fprintf(ofp,"0x%08x,",res[k]);
+			}
+			fprintf(ofp,"\n");
+			fprintf(ofp,"\t");
+			for(k=6; k<12; ++k)
+			{
+				fprintf(ofp,"0x%08x,",res[k]);
+			}
+			fprintf(ofp,"\n");
+		}
+	}
+	fprintf(ofp,"};\n");
+
+	fprintf(ofp,"unsigned int F7_32_32_TABLE[]={\n");
+	for(i=0; i<LEN(testNumberSrc32); ++i)
+	{
+		for(int j=0; j<LEN(testNumberSrc32); ++j)
+		{
+			int k;
+			unsigned int eax=testNumberSrc8[i];
+			unsigned int edx=testNumberSrc8[j];
+			unsigned int res[12];
+			TEST_F7(res,eax,edx);
+			fprintf(ofp,"\t0x%08x,0x%08x,\n",eax,edx);
+			fprintf(ofp,"\t");
+			for(k=0; k<6; ++k)
+			{
+				fprintf(ofp,"0x%08x,",res[k]);
+			}
+			fprintf(ofp,"\n");
+			fprintf(ofp,"\t");
+			for(k=6; k<12; ++k)
+			{
+				fprintf(ofp,"0x%08x,",res[k]);
+			}
+			fprintf(ofp,"\n");
+		}
+	}
+	fprintf(ofp,"};\n");
+
+}
 
 int main(void)
 {
@@ -160,6 +220,7 @@ int main(void)
 	GenImulR32xR32Test(ofp);
 	GenMulR32xR32Test(ofp);
 	GenBitShift(ofp);
+	GenF6F7_NOT_NEG_MUL_IMUL_DIV_IDIV(ofp);
 	fclose(ofp);
 	return 0;
 }

@@ -12,10 +12,13 @@ build\gentest.OBJ : cputest\gentest.c
 build\imul.OBJ : cputest\imul.asm
 	386asm cputest\imul.asm -OBJECT build\imul.OBJ
 
+build\f6f7.OBJ : cputest\f6f7.asm
+	386asm cputest\f6f7.asm -OBJECT build\f6f7.OBJ
+
 build\bitshift.OBJ : cputest\bitshift.asm
 	386asm cputest\bitshift.asm -OBJECT build\bitshift.OBJ
 
-build\gentest.exp : build\gentest.OBJ build\imul.OBJ build\bitshift.OBJ
+build\gentest.exp : build\gentest.OBJ build\f6f7.OBJ build\imul.OBJ build\bitshift.OBJ
 	386link @cputest\gentest.LN
 
 cputest\TESTCASE.H : build\gentest.exp
@@ -24,7 +27,7 @@ cputest\TESTCASE.H : build\gentest.exp
 build\runtest.OBJ : cputest\runtest.c cputest\TESTCASE.H
 	hcd386 cputest\runtest.c -obj build\runtest.OBJ
 
-build\runtest.exp : build\runtest.OBJ build\imul.OBJ build\bitshift.OBJ
+build\runtest.exp : build\runtest.OBJ build\f6f7.OBJ build\imul.OBJ build\bitshift.OBJ
 	386link @cputest\runtest.LN
 
 

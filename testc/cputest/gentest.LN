@@ -1,4 +1,5 @@
 build\gentest.obj 
+build\f6f7.obj 
 build\imul.obj 
 build\bitshift.obj 
 -lib C:\hc386\small\hce.lib 

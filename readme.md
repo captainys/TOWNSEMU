@@ -36,7 +36,7 @@ At this point, all it can do is to start Towns MENU and run some programs.
 
 Not-all instructions of Intel 80486 processor have been implemented yet.  Towns OS didn't use task registers.  I have no plan on adding support for those registers.  Since the emulator works as a debugger, debug registers won't be supported, either.
 
-Sprites are not supported yet.
+Sprites are imcomplete.  I am trying to make sense of the sprite hardware registers, and how it communicates with CRTC.
 
 RF5C68 PCM Sound Generator support is very primitive.
 
@@ -52,7 +52,7 @@ Right now only 1.23MB floppy disk image is supported.  Not writeable yet.
 
 80486のすべてのインストラクションをエミュレートできてません。なお、Towns OSはタスク機能は使ってなかったと思われるので多分サポートしません。また、エミュレータがデバッガとして機能するのでデバッグ機能もサポートしない予定です。
 
-スプライトはまだ対応してません。
+スプライトは不完全です。というか、レジスタの内容とかどう解釈するのが正しいのか検討中。
 
 RF5C68 PCM音源の音は出ますが、まだ非常に限定的なサポートです。
 
@@ -132,6 +132,10 @@ The tests are timing-sensitive, or the CPU needs to be reasonably fast.  If not,
 
 
 # Revisions
+### 2020/04/10
+- At least the program doesn't crash or freeze when sprite is used.
+- Towns ILLUSION (Legendary DEMO that comes with Towns OS V1.1 L10) runs all the way, although the images are still corrupted.
+
 ### 2020/04/09
 - Primitive support for RF5C68 PCM Sound Generator Playback.
 - Roughly 25% speed up.
