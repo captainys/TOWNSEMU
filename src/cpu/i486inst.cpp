@@ -388,7 +388,9 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 	case I486_OPCODE_AAM_AMX://    0xD4,
 		FetchOperand8(inst,ptr,seg,offset,mem);
 		break;
-
+	case I486_OPCODE_AAS:
+		break;
+	
 
 	case I486_OPCODE_ARPL://       0x63,
 		FetchOperandRM(inst,ptr,seg,offset,mem);
@@ -1297,7 +1299,9 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 			disasm=DisassembleTypicalOneImm("AMX",GetUimm8(),8);
 		}
 		break;
-
+	case I486_OPCODE_AAS:
+		disasm="AAS";
+		break;
 
 	case I486_OPCODE_ARPL://       0x63,
 		disasm=DisassembleTypicalTwoOperands("ARPL",op1,op2);
@@ -4015,6 +4019,25 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		break;
 
+	case I486_OPCODE_AAS:
+		{ // BP 000C:0371
+			clocksPassed=3;
+			auto AL=GetAL();
+			if((AL&0x0F)>9 || true==GetAF())
+			{
+				SetAL((AL-6)&0x0F);
+				SetAH((GetAH()-1)&0xFF);
+				SetAuxCarryFlag(true);
+				SetCF(true);
+			}
+			else
+			{
+				SetAL(AL&0x0F); // [1] pp. 26-21 "In either case, the AL register is left with its top nibble set to 0."
+				SetAuxCarryFlag(false);
+				SetCF(false);
+			}
+		}
+		break;
 
 	case I486_OPCODE_ARPL://       0x63,
 		{

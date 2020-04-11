@@ -104,6 +104,8 @@ TEST_AAS				PROC
 						MOV		EAX,[EBP+12]
 
 						AND		EAX,0FFFFH
+						MOV		AH,5
+						DEC		AH		; Clear AF
 						AAS
 						PUSHFD
 						POP		EBX

@@ -70,6 +70,7 @@ enum
 
 	I486_OPCODE_AAM_AMX=    0xD4,
 	I486_OPCODE_AAD_ADX=    0xD5,
+	I486_OPCODE_AAS=        0x3F,
 
 
 	I486_OPCODE_ARPL=       0x63,

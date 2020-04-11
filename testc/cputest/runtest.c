@@ -362,5 +362,6 @@ int main(void)
 	RunF6F7_NOT_NEG_MUL_IMUL_DIV_IDIV();
 	RunF6F7_TEST_I();
 	RunAADAAMAAS();
+	printf("ARPL not covered.\n");
 	return 0;
 }
