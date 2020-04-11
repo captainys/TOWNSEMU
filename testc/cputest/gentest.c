@@ -245,7 +245,7 @@ void GenF6F7_TEST_R_I(FILE *ofp)
 	for(i=0; i<LEN(testNumberSrc32); ++i)
 	{
 		unsigned int res[16];
-		TEST_R8_I8(res,testNumberSrc32[i]);
+		TEST_R32_I32(res,testNumberSrc32[i]);
 		fprintf(ofp,"\t0x%08x,\n",testNumberSrc32[i]);
 		for(int j=0; j<16; ++j)
 		{
@@ -263,6 +263,39 @@ void GenF6F7_TEST_R_I(FILE *ofp)
 	fprintf(ofp,"};\n");
 }
 
+extern void TEST_AAD(unsigned int res[],unsigned int eax);
+extern void TEST_AAM(unsigned int res[],unsigned int eax);
+
+void GenAADAAM(FILE *ofp)
+{
+	int i,j;
+	fprintf(ofp,"unsigned int AAD_TABLE[]={\n");
+	for(i=0; i<16; ++i)
+	{
+		for(j=0; j<16; ++j)
+		{
+			unsigned int res[2];
+			unsigned int eax=i*256+j;
+			TEST_AAD(res,eax);
+			fprintf(ofp,"\t0x%08x,0x%08x,0x%08x,\n",eax,res[0],res[1]);
+		}
+	}
+	fprintf(ofp,"};\n");
+
+	fprintf(ofp,"unsigned int AAM_TABLE[]={\n");
+	for(i=0; i<16; ++i)
+	{
+		for(j=0; j<16; ++j)
+		{
+			unsigned int res[2];
+			unsigned int eax=i*16+j;
+			TEST_AAM(res,eax);
+			fprintf(ofp,"\t0x%08x,0x%08x,0x%08x,\n",eax,res[0],res[1]);
+		}
+	}
+	fprintf(ofp,"};\n");
+}
+
 int main(void)
 {
 	FILE *ofp=fopen("cputest/testcase.h","w");
@@ -271,6 +304,7 @@ int main(void)
 	GenBitShift(ofp);
 	GenF6F7_NOT_NEG_MUL_IMUL_DIV_IDIV(ofp);
 	GenF6F7_TEST_R_I(ofp);
+	GenAADAAM(ofp);
 	fclose(ofp);
 	return 0;
 }

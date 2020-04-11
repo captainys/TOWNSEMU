@@ -3977,7 +3977,21 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 
 	case I486_OPCODE_AAD_ADX://    0xD5,
-		// Not implemented yet.
+		if(0x0A==inst.GetUimm8())
+		{
+			clocksPassed=14;
+			auto AL=GetAH()*10+GetAL();
+			SetAL(AL);
+			SetAH(0);
+			SetZF(0==GetAX());
+			SetSignFlag(0!=(GetAL()&0x80));
+			SetParityFlag(CheckParity(AL));
+		}
+		else
+		{
+			Abort("ADX D5 Imm8(!=0x0A) may not be a 80486 instruction.");
+			return 0;
+		}
 		break;
 
 
@@ -3990,10 +4004,13 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			auto rem=AL%10;
 			SetAH(quo);
 			SetAL(rem);
+			SetZF(0==GetAL());   // ?
+			SetSignFlag(0!=(GetAH()&0x80));
+			SetParityFlag(CheckParity(GetAL()));
 		}
 		else
 		{
-			Abort("AMX 0D Imm8(!=0x0A) may not be a 80486 instruction.");
+			Abort("AMX D4 Imm8(!=0x0A) may not be a 80486 instruction.");
 			return 0;
 		}
 		break;

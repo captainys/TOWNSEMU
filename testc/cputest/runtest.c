@@ -256,7 +256,7 @@ int F6F7TestIErrorCheck(unsigned int ebx,unsigned int expected[],unsigned int re
 			fprintf(stderr,"Expected:\n");
 			for(x=0; x<16; ++x)
 			{
-				fprintf(stderr," %08x,",expected[x]);
+				fprintf(stderr," %08x",expected[x]);
 				if(7==x)
 				{
 					fprintf(stderr,"\n");
@@ -266,7 +266,7 @@ int F6F7TestIErrorCheck(unsigned int ebx,unsigned int expected[],unsigned int re
 			fprintf(stderr,"Returned:\n");
 			for(x=0; x<16; ++x)
 			{
-				fprintf(stderr," %08x,",res[x]);
+				fprintf(stderr," %08x",res[x]);
 				if(7==x)
 				{
 					fprintf(stderr,"\n");
@@ -298,9 +298,43 @@ int RunF6F7_TEST_I(void)
 	for(i=0; i<LEN(F7_TEST_I32_TABLE); i+=17)
 	{
 		unsigned *expected=F7_TEST_I32_TABLE+i+1;
-		TEST_R8_I8(res,F7_TEST_I32_TABLE[i]);
-		if(F6F7TestIErrorCheck(F6_TEST_I8_TABLE[i],expected,res))
+		TEST_R32_I32(res,F7_TEST_I32_TABLE[i]);
+		if(F6F7TestIErrorCheck(F7_TEST_I32_TABLE[i],expected,res))
 		{
+			return 1;
+		}
+	}
+}
+
+void TEST_AAD(unsigned int res[],unsigned int EAX);
+void TEST_AAM(unsigned int res[],unsigned int EAX);
+
+int RunAADAAM(void)
+{
+	int i;
+	printf("AAD_TABLE\n");
+	for(i=0; i<LEN(AAD_TABLE); i+=3)
+	{
+		unsigned res[2];
+		TEST_AAD(res,AAD_TABLE[i]);
+		if(res[0]!=AAD_TABLE[i+1] || res[1]!=AAD_TABLE[i+2])
+		{
+			printf("Error in AAD  EAX=%08xH\n",AAD_TABLE[i+0]);
+			printf("Expected: %08x %08x\n",AAD_TABLE[i+1],AAD_TABLE[i+2]);
+			printf("Returned: %08x %08x\n",res[0],res[1]);
+			return 1;
+		}
+	}
+	printf("AAM_TABLE\n");
+	for(i=0; i<LEN(AAM_TABLE); i+=3)
+	{
+		unsigned res[2];
+		TEST_AAM(res,AAM_TABLE[i]);
+		if(res[0]!=AAM_TABLE[i+1] || res[1]!=AAM_TABLE[i+2])
+		{
+			printf("Error in AAM  EAX=%08xH\n",AAM_TABLE[i]);
+			printf("Expected: %08x %08x\n",AAM_TABLE[i+1],AAM_TABLE[i+2]);
+			printf("Returned: %08x %08x\n",res[0],res[1]);
 			return 1;
 		}
 	}
@@ -313,5 +347,6 @@ int main(void)
 	RunBitShiftTest();
 	RunF6F7_NOT_NEG_MUL_IMUL_DIV_IDIV();
 	RunF6F7_TEST_I();
+	RunAADAAM();
 	return 0;
 }
