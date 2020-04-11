@@ -20,7 +20,7 @@ EFLAGS_OF				EQU		000000800H
 EFLAGS_NF				EQU		000004000H
 EFLAGS_RF				EQU		000010000H
 EFLAGS_VF				EQU		000020000H
-MUL_EFLAGS_MASK			EQU		EFLAGS_CF+EFLAGS_OF+EFLAGS_AF+EFLAGS_PF+EFLAGS_SF+EFLAGS_ZF
+MUL_EFLAGS_MASK			EQU		EFLAGS_CF+EFLAGS_OF		; i486 Processor Programmers Reference Manual states CF and OF are set.  SF, ZF, AF, and PF are undefined.
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
