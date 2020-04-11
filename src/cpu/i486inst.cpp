@@ -3465,7 +3465,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			else
 			{
 				clocksPassed=(OPER_ADDR==op1.operandType ? 42 : 13);
-				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,2);
+				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,4);
 				unsigned long long EAX=GetEAX();
 				unsigned long long MUL=value.GetAsDword();
 				unsigned long long EDXEAX=EAX*MUL;
@@ -3483,7 +3483,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				}
 			}
 			break;
-		case 5: // MUL
+		case 5: // IMUL
 			{
 				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
 				if(true==state.exception)
@@ -3505,6 +3505,18 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 						SetAX(DXAX&0xFFFF);
 						SetDX((DXAX>>16)&0xFFFF);
+
+						auto signExtCheck=DXAX&0xFFFF8000;
+						if(0==signExtCheck || signExtCheck==0xFFFF8000)
+						{
+							SetOF(false);
+							SetCF(false);
+						}
+						else
+						{
+							SetOF(true);
+							SetCF(true);
+						}
 					}
 					else
 					{
@@ -3518,6 +3530,18 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 						SetEAX(EDXEAX&0xFFFFFFFF);
 						SetEDX((EDXEAX>>32)&0xFFFFFFFF);
+
+						auto signExtCheck=EDXEAX&0xFFFFFFFF80000000LL;
+						if(0==signExtCheck || signExtCheck==0xFFFFFFFF80000000LL)
+						{
+							SetOF(false);
+							SetCF(false);
+						}
+						else
+						{
+							SetOF(true);
+							SetCF(true);
+						}
 					}
 				}
 			}

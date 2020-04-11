@@ -9,18 +9,25 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-EFLAGS_CF				EQU		000000001H
-EFLAGS_PF				EQU		000000004H
-EFLAGS_AF				EQU		000000010H
-EFLAGS_ZF				EQU		000000040H
-EFLAGS_SF				EQU		000000080H
-EFLAGS_TF				EQU		000000100H
-EFLAGS_DF				EQU		000000400H
-EFLAGS_OF				EQU		000000800H
-EFLAGS_NF				EQU		000004000H
-EFLAGS_RF				EQU		000010000H
-EFLAGS_VF				EQU		000020000H
+
+
+EFLAGS_CF   	   		EQU		00001H
+EFLAGS_PF   	  		EQU		00004H
+EFLAGS_AF  				EQU		00010H
+EFLAGS_ZF       		EQU		00040H
+EFLAGS_SF       		EQU		00080H
+EFLAGS_TRAP       		EQU		00100H
+EFLAGS_IF 				EQU		00200H
+EFLAGS_DF  				EQU		00400H
+EFLAGS_OF  	 			EQU		00800H
+EFLAGS_IOPL       		EQU		03000H
+EFLAGS_NF   	  		EQU		04000H
+EFLAGS_RF   	  		EQU		10000H
+EFLAGS_VF		  		EQU		20000H
+EFLAGS_ALIGN_CHECK		EQU		40000H
 MUL_EFLAGS_MASK			EQU		EFLAGS_CF+EFLAGS_OF		; i486 Processor Programmers Reference Manual states CF and OF are set.  SF, ZF, AF, and PF are undefined.
+
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
