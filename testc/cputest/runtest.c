@@ -354,6 +354,99 @@ int RunAADAAMAAS(void)
 	}
 }
 
+void BTX_R32_I8(unsigned int res[],unsigned int EBX);
+void BTX_R32_R32(unsigned int res[],unsigned int OP1,unsigned int OP2);
+
+int BTx_R32_I8_ErrorCheck(unsigned int EBX,const unsigned int expected[],const unsigned int returned[])
+{
+	const char *const inst[]={"BT","BTS","BTR","BTC"};
+	for(int i=0; i<4; ++i)
+	{
+		for(int j=0; j<16; ++j)
+		{
+			int I=i*16+j;
+			if(expected[I]!=returned[I])
+			{
+				int k;
+				printf("Error in %s\n",inst[i]);
+				printf("EBX: %08x\n",EBX);
+				printf("Expected:\n");
+				for(k=0; k<16; ++k)
+				{
+					printf("%08x ",expected[i*16+k]);
+					if(k==7)
+					{
+						printf("\n");
+					}
+				}
+				printf("\n");
+				printf("Returned:\n");
+				for(k=0; k<16; ++k)
+				{
+					printf("%08x ",returned[i*16+k]);
+					if(k==7)
+					{
+						printf("\n");
+					}
+				}
+				printf("\n");
+				return 1;
+			}
+		}
+	}
+	return 0;
+}
+
+int BTx_R32_R32_ErrorCheck(unsigned int OP1,unsigned int OP2,const unsigned int expected[],const unsigned int returned[])
+{
+	const char *const inst[]={"BT","BTS","BTR","BTC"};
+	for(int i=0; i<8; ++i)
+	{
+		if(expected[i]!=returned[i])
+		{
+			int k;
+			printf("Error in %s\n",inst[i/2]);
+			printf("OP1,OP2:  %08x %08x\n",OP1,OP2);
+			printf("Expected: %08x %08x\n",expected[i&~1],expected[(i&~1)+1]);
+			printf("Returned: %08x %08x\n",returned[i&~1],returned[(i&~1)+1]);
+			return 1;
+		}
+	}
+	return 0;
+}
+
+int RunBTx(void)
+{
+	int i;
+	printf("BT_BTS_BTR_BTC_I8\n");
+	for(i=0; i<LEN(BTX_I8_TABLE); i+=65)
+	{
+		unsigned int res[64];
+		unsigned int *expected=BTX_I8_TABLE+i+1;
+		unsigned int *table=BTX_I8_TABLE+i;
+		BTX_R32_I8(res,table[0]);
+		if(0!=BTx_R32_I8_ErrorCheck(table[0],expected,res))
+		{
+			return 1;
+		}
+	}
+
+	printf("BT_BTS_BTR_BTC_R32_R32\n");
+	for(i=0; i<LEN(BTX_R32_R32_TABLE); i+=10)
+	{
+		unsigned int res[8];
+		unsigned int *expected=BTX_R32_R32_TABLE+i+2;
+		unsigned int *table=BTX_R32_R32_TABLE+i;
+		BTX_R32_R32(res,table[0],table[1]);
+		if(0!=BTx_R32_R32_ErrorCheck(table[0],table[1],expected,res))
+		{
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
 int main(void)
 {
 	RunImulR32xR32Test();
@@ -362,6 +455,7 @@ int main(void)
 	RunF6F7_NOT_NEG_MUL_IMUL_DIV_IDIV();
 	RunF6F7_TEST_I();
 	RunAADAAMAAS();
+	RunBTx();
 	printf("ARPL not covered.\n");
 	return 0;
 }

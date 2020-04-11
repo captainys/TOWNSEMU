@@ -310,6 +310,56 @@ void GenAADAAMAAS(FILE *ofp)
 	fprintf(ofp,"};\n");
 }
 
+extern void BTX_R32_I8(unsigned int res[],unsigned int EBX);
+
+void GenBTx(FILE *ofp)
+{
+	int i;
+	unsigned int res[64];
+	fprintf(ofp,"unsigned int BTX_I8_TABLE[]={\n");
+	for(i=0; i<LEN(testNumberSrc32); ++i)
+	{
+		BTX_R32_I8(res,testNumberSrc32[i]);
+		fprintf(ofp,"\t0x%08x,\n",testNumberSrc32[i]);
+		for(int j=0; j<64; ++j)
+		{
+			if(0==(j%8))
+			{
+				fprintf(ofp,"\t");
+			}
+			fprintf(ofp,"0x%08x,",res[j]);
+			if(7==(j%8))
+			{
+				fprintf(ofp,"\n");
+			}
+		}
+	}
+	fprintf(ofp,"};\n");
+
+	fprintf(ofp,"unsigned int BTX_R32_R32_TABLE[]={\n");
+	for(i=0; i<LEN(testNumberSrc32); ++i)
+	{
+		for(int j=0; j<LEN(testNumberSrc32); ++j)
+		{
+			BTX_R32_R32(res,testNumberSrc32[i],testNumberSrc32[j]);
+			fprintf(ofp,"\t0x%08x,0x%08x,\n",testNumberSrc32[i],testNumberSrc32[j]);
+			for(int j=0; j<8; ++j)
+			{
+				if(0==(j%8))
+				{
+					fprintf(ofp,"\t");
+				}
+				fprintf(ofp,"0x%08x,",res[j]);
+				if(7==(j%8))
+				{
+					fprintf(ofp,"\n");
+				}
+			}
+		}
+	}
+	fprintf(ofp,"};\n");
+}
+
 int main(void)
 {
 	FILE *ofp=fopen("cputest/testcase.h","w");
@@ -319,6 +369,7 @@ int main(void)
 	GenF6F7_NOT_NEG_MUL_IMUL_DIV_IDIV(ofp);
 	GenF6F7_TEST_R_I(ofp);
 	GenAADAAMAAS(ofp);
+	GenBTx(ofp);
 	fclose(ofp);
 	return 0;
 }

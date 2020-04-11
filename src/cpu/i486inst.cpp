@@ -4072,7 +4072,6 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				auto bit=(1<<bitOffset);
 				auto src=value1.GetAsDword();
 				SetCF(0!=(src&bit));
-				if(I486_OPCODE_BTS_RM_R==inst.opCode)
 				switch(inst.GetREG())
 				{
 				case 4: // BT (Bit Test)
@@ -4086,16 +4085,15 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					}
 					break;
 				case 6: // BTR (Bit Test and Reset)
+					if(0!=(src&bit))
 					{
-						clocksPassed=0;
-						// Not supported yet.
+						src&=(~bit);
+						value1.SetDword(src);
+						StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
 					}
 					break;
 				case 7: // BTC (Bit Test and Complement)
 					{
-						clocksPassed=0;
-						// Stay conservative until I see one in tests.
-
 						src^=bit;
 						value1.SetDword(src);
 						StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
