@@ -265,8 +265,9 @@ void GenF6F7_TEST_R_I(FILE *ofp)
 
 extern void TEST_AAD(unsigned int res[],unsigned int eax);
 extern void TEST_AAM(unsigned int res[],unsigned int eax);
+extern void TEST_AAS(unsigned int res[],unsigned int eax);
 
-void GenAADAAM(FILE *ofp)
+void GenAADAAMAAS(FILE *ofp)
 {
 	int i,j;
 	fprintf(ofp,"unsigned int AAD_TABLE[]={\n");
@@ -294,6 +295,19 @@ void GenAADAAM(FILE *ofp)
 		}
 	}
 	fprintf(ofp,"};\n");
+
+	fprintf(ofp,"unsigned int AAS_TABLE[]={\n");
+	for(i=0; i<16; ++i)
+	{
+		for(j=0; j<16; ++j)
+		{
+			unsigned int res[2];
+			unsigned int eax=i*16+j;
+			TEST_AAS(res,eax);
+			fprintf(ofp,"\t0x%08x,0x%08x,0x%08x,\n",eax,res[0],res[1]);
+		}
+	}
+	fprintf(ofp,"};\n");
 }
 
 int main(void)
@@ -304,7 +318,7 @@ int main(void)
 	GenBitShift(ofp);
 	GenF6F7_NOT_NEG_MUL_IMUL_DIV_IDIV(ofp);
 	GenF6F7_TEST_R_I(ofp);
-	GenAADAAM(ofp);
+	GenAADAAMAAS(ofp);
 	fclose(ofp);
 	return 0;
 }

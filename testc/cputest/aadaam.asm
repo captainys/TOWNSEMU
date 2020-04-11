@@ -3,6 +3,7 @@
 
 						PUBLIC	TEST_AAD
 						PUBLIC	TEST_AAM
+						PUBLIC	TEST_AAS
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -86,6 +87,35 @@ TEST_AAM				PROC
 						POP		EBP
 						RET
 TEST_AAM				ENDP
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
+; void TEST_AAS(unsigned int res[],unsigned int eax)
+TEST_AAS				PROC
+						PUSH	EBP				; [EBP]=PrevEBP,  [EBP+4]=EIP,  [EIP+8]=ResultPtr,  [EIP+12]=EAX,  [EIP+16]=EDX
+						MOV		EBP,ESP
+						PUSHAD
+
+						MOV		EDI,[EBP+8]
+						MOV		EAX,[EBP+12]
+
+						AND		EAX,0FFFFH
+						AAS
+						PUSHFD
+						POP		EBX
+						AND		EBX,EFLAGS_CF+EFLAGS_AF
+
+						MOV		[EDI],EAX
+						MOV		[EDI+4],EBX
+
+						POPAD
+						POP		EBP
+						RET
+TEST_AAS				ENDP
 
 
 
