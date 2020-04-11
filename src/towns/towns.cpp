@@ -78,7 +78,7 @@ FMTowns::FMTowns() :
 	physMem(this,&cpu,&mem,&sound.state.rf5c68),
 	keyboard(this,&pic),
 	crtc(this,&sprite),
-	sprite(this),
+	sprite(this,&physMem),
 	pic(this),
 	dmac(this),
 	cdrom(this,&pic,&dmac),

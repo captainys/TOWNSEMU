@@ -21,6 +21,8 @@ public:
 		SPRITE_DIMENSION=16,
 		SPRITE_PTN32K_BYTES_PER_LINE=32,
 		SPRITE_PTN16_BYTES_PER_LINE=32,
+		SPRITE_BUSY_TIME= 1000000,         // 1/60 sec cycle?  16ms=16000us=16000000ns
+		SPRITE_IDLE_TIME=15000000,
 	};
 	enum
 	{
@@ -64,8 +66,9 @@ public:
 	};
 
 	State state;
+	class TownsPhysicalMemory *physMemPtr;
 
-	TownsSprite(class FMTowns *townsPtr);
+	TownsSprite(class FMTowns *townsPtr,class TownsPhysicalMemory *physMemPtr);
 
 	inline bool SpriteActive(void) const
 	{
@@ -94,6 +97,8 @@ public:
 	}
 
 
+	void RunScheduledTask(unsigned long long int townsTime);
+
 	void Render(unsigned char VRAM[],const unsigned char spriteRAM[]) const;
 private:
 	inline static void Transform(unsigned int &X,unsigned int &Y,unsigned int x,unsigned int y,unsigned char ROT)
@@ -103,6 +108,8 @@ private:
 		default:
 		case 0:
 			// No transformation
+			X=x;
+			Y=y;
 			break;
 		case 1:
 			X=x;

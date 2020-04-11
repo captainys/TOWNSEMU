@@ -16,6 +16,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "townsdef.h"
 #include "cpputil.h"
 #include "sprite.h"
+#include "physmem.h"
 
 
 
@@ -32,9 +33,10 @@ void TownsSprite::State::Reset(void)
 {
 }
 
-TownsSprite::TownsSprite(class FMTowns *townsPtr) : Device(townsPtr)
+TownsSprite::TownsSprite(class FMTowns *townsPtr,TownsPhysicalMemory *physMemPtr) : Device(townsPtr)
 {
 	this->townsPtr=townsPtr;
+	this->physMemPtr=physMemPtr;
 }
 
 /* virtual */ void TownsSprite::PowerOn(void)
@@ -56,6 +58,18 @@ TownsSprite::TownsSprite(class FMTowns *townsPtr) : Device(townsPtr)
 		break;
 	case TOWNSIO_SPRITE_DATA://              0x452, // [2] pp.128
 		state.reg[state.addressLatch]=data;
+		if(REG_CONTROL1==state.addressLatch)
+		{
+			if(0!=(0x80&data))
+			{
+				state.spriteBusy=false;
+				townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+SPRITE_IDLE_TIME);
+			}
+			else
+			{
+				townsPtr->UnscheduleDeviceCallBack(*this);
+			}
+		}
 		break;
 	}
 }
@@ -86,6 +100,16 @@ TownsSprite::TownsSprite(class FMTowns *townsPtr) : Device(townsPtr)
 void TownsSprite::Render(unsigned char VRAMIn[],const unsigned char spriteRAM[]) const
 {
 	unsigned char *VRAMTop=VRAMIn+SPRITE_HALF_VRAM_SIZE*DisplayPage();
+
+	// [2] pp.368 (Sprite BIOS AH=00H) tells, the top 2-lines of the VRAM page are VRAM-clear data.
+	//     So, apparently it is possible to clear the sprite page with non-0x8000 values.
+	//     FOr the time being, I just clear all VRAM with 0x8000
+	for(unsigned int offset=0; offset<0x20000; offset+=2)
+	{
+		VRAMTop[offset  ]=0;
+		VRAMTop[offset+1]=0x80;
+	}
+
 	auto xOffset=HOffset(),yOffset=VOffset();
 	for(unsigned int spriteIndex=0; spriteIndex<NumSpritesToDraw(); ++spriteIndex)
 	{
@@ -127,7 +151,7 @@ void TownsSprite::Render(unsigned char VRAMIn[],const unsigned char spriteRAM[])
 			auto pattenPtr=spriteRAM+(patternIndex<<7);
 			auto palettePtr=spriteRAM+(paletteIndex<<5);
 			auto srcPtr=spriteRAM+(patternIndex<<7);
-			if(dstX<256-SPRITE_DIMENSION && dstY<256-SPRITE_DIMENSION)
+			if(dstX<256-SPRITE_DIMENSION && 2<=dstY && dstY<256-SPRITE_DIMENSION)
 			{
 				auto dstPtr=VRAMTop+SPRITE_VRAM_BYTES_PER_LINE*dstY;
 				for(unsigned int ptnY=0; ptnY<SPRITE_DIMENSION; ptnY+=yStep)
@@ -138,7 +162,7 @@ void TownsSprite::Render(unsigned char VRAMIn[],const unsigned char spriteRAM[])
 						unsigned int xTfm,yTfm;
 						Transform(xTfm,yTfm,ptnX,ptnY,ROT);
 
-						auto src=srcPtr+SPRITE_PTN16_BYTES_PER_LINE*ptnY+(ptnX>>1);
+						auto src=srcPtr+SPRITE_PTN16_BYTES_PER_LINE*yTfm+(xTfm>>1);
 						unsigned char pix4bit=(src[0]>>4);
 						const unsigned char *col=palettePtr+(pix4bit<<1);
 						if(0==(col[1]&0x80))
@@ -169,9 +193,9 @@ void TownsSprite::Render(unsigned char VRAMIn[],const unsigned char spriteRAM[])
 			// 32768-color sprite
 			patternIndex&=(~3);
 			auto srcPtr=spriteRAM+(patternIndex<<7);
-			if(dstX<256-SPRITE_DIMENSION && dstY<256-SPRITE_DIMENSION)
+			if(dstX<256-SPRITE_DIMENSION && 2<=dstY && dstY<256-SPRITE_DIMENSION)
 			{
-				auto dstPtr=VRAMTop+SPRITE_VRAM_BYTES_PER_LINE*dstY;
+				auto dstPtr=VRAMTop+SPRITE_VRAM_BYTES_PER_LINE*dstY+(dstX<<1);
 				for(unsigned int ptnY=0; ptnY<SPRITE_DIMENSION; ptnY+=yStep)
 				{
 					auto nextDstPtr=dstPtr+SPRITE_VRAM_BYTES_PER_LINE;
@@ -179,8 +203,7 @@ void TownsSprite::Render(unsigned char VRAMIn[],const unsigned char spriteRAM[])
 					{
 						unsigned int xTfm,yTfm;
 						Transform(xTfm,yTfm,ptnX,ptnY,ROT);
-
-						auto src=srcPtr+SPRITE_PTN32K_BYTES_PER_LINE*ptnY+(ptnX<<1);
+						auto src=srcPtr+SPRITE_PTN32K_BYTES_PER_LINE*yTfm+(xTfm<<1);
 						if(0==(src[1]&0x80))
 						{
 							dstPtr[0]=src[0];
@@ -194,6 +217,24 @@ void TownsSprite::Render(unsigned char VRAMIn[],const unsigned char spriteRAM[])
 			else // Clipping not supported yet.
 			{
 			}
+		}
+	}
+}
+
+void TownsSprite::RunScheduledTask(unsigned long long int townsTime)
+{
+	if(true==SpriteActive())
+	{
+		if(true!=state.spriteBusy)
+		{
+			state.spriteBusy=true;
+			Render(physMemPtr->state.VRAM.data()+0x40000,physMemPtr->state.spriteRAM.data());
+			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+SPRITE_BUSY_TIME);
+		}
+		else
+		{
+			state.spriteBusy=false;
+			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+SPRITE_IDLE_TIME);
 		}
 	}
 }
