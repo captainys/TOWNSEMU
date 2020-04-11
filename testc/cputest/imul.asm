@@ -1,10 +1,10 @@
 						.386p
 						ASSUME	CS:CODE
 
-						EXPORT	TEST_IMUL_R32_R32
-						EXPORT	TEST_IMUL_R32_MUL
-						EXPORT	TEST_MUL_R32_R32
-						EXPORT	TEST_MUL_R32_MUL
+						PUBLIC	TEST_IMUL_R32_R32
+						PUBLIC	TEST_IMUL_R32_MEM
+						PUBLIC	TEST_MUL_R32_R32
+						PUBLIC	TEST_MUL_R32_MEM
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -35,6 +35,7 @@ CODE					SEGMENT
 TEST_IMUL_R32_R32		PROC
 						PUSH	EBP				; [EBP]=PrevEBP,  [EBP+4]=EIP,  [EIP+8]=ResultPtr,  [EIP+12]=EAX,  [EIP+16]=EDX
 						MOV		EBP,ESP
+						PUSHAD
 
 						MOV		EDI,[EBP+8]
 						MOV		EAX,[EBP+12]
@@ -49,6 +50,7 @@ TEST_IMUL_R32_R32		PROC
 						MOV		[EDI+4],EDX
 						MOV		[EDI+8],ECX
 
+						POPAD
 						POP		EBP
 						RET
 TEST_IMUL_R32_R32		ENDP
@@ -63,13 +65,14 @@ TEST_IMUL_R32_MEM		PROC
 						PUSH	EBP				; [EBP]=PrevEBP,  [EBP+4]=EIP,  [EIP+8]=ResultPtr,  [EIP+12]=EAX,  [EIP+16]=EDX
 						MOV		EBP,ESP
 						SUB		ESP,4
+						PUSHAD
 
 						MOV		EDI,[EBP+8]
 						MOV		EAX,[EBP+12]
 						MOV		EDX,[EBP+16]
 
-						MOV		[ESP],EDX
-						IMUL	DWORD PTR [ESP]
+						MOV		[EBP-4],EDX
+						IMUL	DWORD PTR [EBP-4]
 						PUSHFD
 						POP		ECX
 						AND		ECX,MUL_EFLAGS_MASK
@@ -78,6 +81,7 @@ TEST_IMUL_R32_MEM		PROC
 						MOV		[EDI+4],EDX
 						MOV		[EDI+8],ECX
 
+						POPAD
 						ADD		ESP,4
 						POP		EBP
 						RET
@@ -92,6 +96,7 @@ TEST_IMUL_R32_MEM		ENDP
 TEST_MUL_R32_R32		PROC
 						PUSH	EBP				; [EBP]=PrevEBP,  [EBP+4]=EIP,  [EIP+8]=ResultPtr,  [EIP+12]=EAX,  [EIP+16]=EDX
 						MOV		EBP,ESP
+						PUSHAD
 
 						MOV		EDI,[EBP+8]
 						MOV		EAX,[EBP+12]
@@ -106,6 +111,7 @@ TEST_MUL_R32_R32		PROC
 						MOV		[EDI+4],EDX
 						MOV		[EDI+8],ECX
 
+						POPAD
 						POP		EBP
 						RET
 TEST_MUL_R32_R32		ENDP
@@ -120,13 +126,14 @@ TEST_MUL_R32_MEM		PROC
 						PUSH	EBP				; [EBP]=PrevEBP,  [EBP+4]=EIP,  [EIP+8]=ResultPtr,  [EIP+12]=EAX,  [EIP+16]=EDX
 						MOV		EBP,ESP
 						SUB		ESP,4
+						PUSHAD
 
 						MOV		EDI,[EBP+8]
 						MOV		EAX,[EBP+12]
 						MOV		EDX,[EBP+16]
 
-						MOV		[ESP],EDX
-						MUL		DWORD PTR [ESP]
+						MOV		[EBP-4],EDX
+						MUL		DWORD PTR [EBP-4]
 						PUSHFD
 						POP		ECX
 						AND		ECX,MUL_EFLAGS_MASK
@@ -135,6 +142,7 @@ TEST_MUL_R32_MEM		PROC
 						MOV		[EDI+4],EDX
 						MOV		[EDI+8],ECX
 
+						POPAD
 						ADD		ESP,4
 						POP		EBP
 						RET

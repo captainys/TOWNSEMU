@@ -6,6 +6,24 @@ build\vmif.obj : vmif.c
 
 
 
+build\gentest.OBJ : cputest\gentest.c
+	hcd386 cputest\gentest.c -obj build\gentest.OBJ
+
+build\runtest.OBJ : cputest\runtest.c cputest\TESTCASE.H
+	hcd386 cputest\runtest.c -obj build\runtest.OBJ
+
+build\imul.OBJ : cputest\imul.asm
+	386asm cputest\imul.asm -OBJECT build\imul.OBJ
+
+build\gentest.exp : build\gentest.OBJ build\imul.OBJ
+	386link @cputest\gentest.LN
+
+build\runtest.exp : build\runtest.OBJ build\imul.OBJ
+	386link @cputest\runtest.LN
+
+
+
+
 build\FAIL.EXE : FAIL.ASM
 	MASM FAIL.ASM build\FAIL.OBJ build\FAIL.LST NUL
 	LINK build\FAIL.OBJ;
