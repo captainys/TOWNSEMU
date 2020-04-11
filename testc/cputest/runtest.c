@@ -242,13 +242,76 @@ int RunF6F7_NOT_NEG_MUL_IMUL_DIV_IDIV(void)
 	}
 }
 
+extern void TEST_R8_I8(unsigned int res[16],unsigned int ebx);
+extern void TEST_R32_I32(unsigned int res[16],unsigned int ebx);
+
+int F6F7TestIErrorCheck(unsigned int ebx,unsigned int expected[],unsigned int res[])
+{
+	for(int i=0; i<16; ++i)
+	{
+		if(expected[i]!=res[i])
+		{
+			int x;
+			fprintf(stderr,"Error in TEST R,I or R8,I8 ebx=%d\n",ebx);
+			fprintf(stderr,"Expected:\n");
+			for(x=0; x<16; ++x)
+			{
+				fprintf(stderr," %08x,",expected[x]);
+				if(7==x)
+				{
+					fprintf(stderr,"\n");
+				}
+			}
+			fprintf(stderr,"\n");
+			fprintf(stderr,"Returned:\n");
+			for(x=0; x<16; ++x)
+			{
+				fprintf(stderr," %08x,",res[x]);
+				if(7==x)
+				{
+					fprintf(stderr,"\n");
+				}
+			}
+			fprintf(stderr,"\n");
+			return 1;
+		}
+	}
+	return 0;
+}
+
+int RunF6F7_TEST_I(void)
+{
+	int i;
+	unsigned int res[16];
+	printf("F6_TEST_I8_TABLE\n");
+	for(i=0; i<LEN(F6_TEST_I8_TABLE); i+=17)
+	{
+		unsigned *expected=F6_TEST_I8_TABLE+i+1;
+		TEST_R8_I8(res,F6_TEST_I8_TABLE[i]);
+		if(F6F7TestIErrorCheck(F6_TEST_I8_TABLE[i],expected,res))
+		{
+			return 1;
+		}
+	}
+
+	printf("F7_TEST_I32_TABLE\n");
+	for(i=0; i<LEN(F7_TEST_I32_TABLE); i+=17)
+	{
+		unsigned *expected=F7_TEST_I32_TABLE+i+1;
+		TEST_R8_I8(res,F7_TEST_I32_TABLE[i]);
+		if(F6F7TestIErrorCheck(F6_TEST_I8_TABLE[i],expected,res))
+		{
+			return 1;
+		}
+	}
+}
+
 int main(void)
 {
 	RunImulR32xR32Test();
 	RunMulR32xR32Test();
 	RunBitShiftTest();
 	RunF6F7_NOT_NEG_MUL_IMUL_DIV_IDIV();
-	printf("F6 TEST R8,I8 not covered yet.\n");
-	printf("F7 TEST R,I not covered yet.\n");
+	RunF6F7_TEST_I();
 	return 0;
 }

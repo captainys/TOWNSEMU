@@ -214,6 +214,55 @@ void GenF6F7_NOT_NEG_MUL_IMUL_DIV_IDIV(FILE *ofp)
 
 }
 
+extern void TEST_R8_I8(unsigned int res[16],unsigned int ebx);
+extern void TEST_R32_I32(unsigned int res[16],unsigned int ebx);
+
+void GenF6F7_TEST_R_I(FILE *ofp)
+{
+	int i;
+	fprintf(ofp,"unsigned int F6_TEST_I8_TABLE[]={\n");
+	for(i=0; i<LEN(testNumberSrc8); ++i)
+	{
+		unsigned int res[16];
+		TEST_R8_I8(res,testNumberSrc8[i]);
+		fprintf(ofp,"\t0x%08x,\n",testNumberSrc8[i]);
+		for(int j=0; j<16; ++j)
+		{
+			if(0==(j%8))
+			{
+				fprintf(ofp,"\t");
+			}
+			fprintf(ofp,"0x%08x,",res[j]);
+			if(7==(j%8))
+			{
+				fprintf(ofp,"\n");
+			}
+		}
+	}
+	fprintf(ofp,"};\n");
+
+	fprintf(ofp,"unsigned int F7_TEST_I32_TABLE[]={\n");
+	for(i=0; i<LEN(testNumberSrc32); ++i)
+	{
+		unsigned int res[16];
+		TEST_R8_I8(res,testNumberSrc32[i]);
+		fprintf(ofp,"\t0x%08x,\n",testNumberSrc32[i]);
+		for(int j=0; j<16; ++j)
+		{
+			if(0==(j%8))
+			{
+				fprintf(ofp,"\t");
+			}
+			fprintf(ofp,"0x%08x,",res[j]);
+			if(7==(j%8))
+			{
+				fprintf(ofp,"\n");
+			}
+		}
+	}
+	fprintf(ofp,"};\n");
+}
+
 int main(void)
 {
 	FILE *ofp=fopen("cputest/testcase.h","w");
@@ -221,6 +270,7 @@ int main(void)
 	GenMulR32xR32Test(ofp);
 	GenBitShift(ofp);
 	GenF6F7_NOT_NEG_MUL_IMUL_DIV_IDIV(ofp);
+	GenF6F7_TEST_R_I(ofp);
 	fclose(ofp);
 	return 0;
 }
