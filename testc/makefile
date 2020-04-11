@@ -144,6 +144,14 @@ build\mos01.exp : build\mos01.obj build\io.obj build\vmif.obj
 
 
 
+build\sprite01.obj : sprite01.c io.h vmif.h
+	hcd386 sprite01.c -obj build\sprite01.obj
+
+build\sprite01.exp : build\sprite01.obj build\io.obj build\vmif.obj
+	386link build\sprite01.obj -exe build\sprite01.exp @LIBS.LN
+
+
+
 build\timer.obj : timer.c io.h vmif.h
 	hcd386 timer.c -obj build\timer.obj
 
