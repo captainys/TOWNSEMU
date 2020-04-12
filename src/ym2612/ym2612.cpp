@@ -16,6 +16,39 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 
 
+void YM2612::Slot::Clear(void)
+{
+	DT=0;
+	MULTI=0;
+	TL=0;
+	KS=0;
+	AR=0;
+	AM=0;
+	DR=0;
+	SR=0;
+	SL=0;
+	RR=0;
+	SSG_EG=0;
+}
+void YM2612::Channel::Clear()
+{
+	F_NUM=0;
+	BLOCK=0;
+	FB=0;
+	CONNECT=0;
+	L=0;
+	R=0;
+	AMS=0;
+	PMS=0;
+	usingSlot=0;
+	for(auto &s : slots)
+	{
+		s.Clear();
+	}
+}
+
+////////////////////////////////////////////////////////////
+
 void YM2612::State::PowerOn(void)
 {
 	Reset();
@@ -24,6 +57,18 @@ void YM2612::State::Reset(void)
 {
 	deviceTimeInNS=0;
 	lastTickTimeInNS=0;
+	for(auto &c : channels)
+	{
+		c.Clear();
+	}
+	for(auto &f : F_NUM_3CH)
+	{
+		f=0;
+	}
+	for(auto &b : BLOCK_3CH)
+	{
+		b=0;
+	}
 	for(auto &r : reg)
 	{
 		r=0;
@@ -57,6 +102,7 @@ void YM2612::Reset(void)
 }
 void YM2612::WriteRegister(unsigned int channelBase,unsigned int reg,unsigned int value)
 {
+	static const unsigned int slotTwist[4]={0,2,1,3};
 	reg&=255;
 	auto prev=state.reg[reg];
 	state.reg[reg]=value;
@@ -113,6 +159,115 @@ void YM2612::WriteRegister(unsigned int channelBase,unsigned int reg,unsigned in
 		if(value&0x20) // Reset Timer B Flag
 		{
 			state.timerUp[1]=false;
+		}
+	}
+	else if(REG_KEY_ON_OFF==reg)
+	{
+		static unsigned int chTwist[8]={0,1,2,255,3,4,5,255};
+		unsigned int ch=chTwist[value&7];
+		if(ch<6)
+		{
+			unsigned int slotFlag=((value>>4)&0x0F);
+
+			// Prob, this is the trigger to start playing.
+			// F-BASIC386 first writes SLOT=0 then SLOT=0x0F.
+			if(0==state.channels[ch].usingSlot && 0!=slotFlag)
+			{
+				// Play a tone
+			}
+			printf("Key On/Off CH:%d SLOT:%02X\n",ch,slotFlag);
+		}
+	}
+	else if(0xA8<=reg && reg<=0xAE) // Special 3CH F-Number/BLOCK
+	{
+		unsigned int slot=(reg&3);
+		if(slot<3)
+		{
+			if(reg<0xAC)
+			{
+				state.F_NUM_3CH[slot]&=0xFF00;
+				state.F_NUM_3CH[slot]|=value;
+			}
+			else
+			{
+				state.F_NUM_3CH[slot]&=0xFF;
+				state.F_NUM_3CH[slot]|=((value&7)<<8);
+				state.BLOCK_3CH[slot]=((value>>3)&7);
+			}
+		}
+	}
+	else if(0x30<=reg && reg<=0x9E) // Per Channel per slot
+	{
+		unsigned int ch=(reg&3);
+		if(ch<=2)
+		{
+			const unsigned int slot=slotTwist[((reg>>2)&3)];
+			ch+=channelBase;
+			switch(reg&0xF0)
+			{
+			case 0x30: // DT, MULTI
+				state.channels[ch].slots[slot].DT=((value>>4)&7);
+				state.channels[ch].slots[slot].MULTI=(value&15);
+				break;
+			case 0x40: // TL
+				state.channels[ch].slots[slot].TL=(value&0x7F);
+				break;
+			case 0x50: // KS,AR
+				state.channels[ch].slots[slot].KS=((value>>6)&3);
+				state.channels[ch].slots[slot].AR=(value&0x1F);
+				break;
+			case 0x60: // AM,DR
+				state.channels[ch].slots[slot].AM=((value>>7)&1);
+				state.channels[ch].slots[slot].DR=(value&0x1F);
+				break;
+			case 0x70: // SR
+				state.channels[ch].slots[slot].SR=(value&0x1F);
+				break;
+			case 0x80: // SL,RR
+				state.channels[ch].slots[slot].SL=((value>>4)&0x0F);
+				state.channels[ch].slots[slot].RR=(value&0x0F);
+				break;
+			case 0x90: // SSG-EG
+				state.channels[ch].slots[slot].SSG_EG=(value&0x0F);
+				break;
+			}
+		}
+	}
+	else if(0xA0<=reg && reg<=0xB6)
+	{
+		unsigned int ch=(reg&3);
+		if(ch<=2)
+		{
+			unsigned int slot=slotTwist[((reg>>2)&3)];
+			ch+=channelBase;
+			switch(reg&0xFC)
+			{
+			case 0xA0: // F-Number1
+				// [2] pp.211 Implies that writing to reg A0H to A2H triggers a tone to play.
+				//     When setting the note, first write BLOCK and high 3-bits of F-Number (F-Number2),
+				//     and then write lower 8-bits of F-Number (F-Number1).
+				//     Or, is it REG_KEY_ON_OFF?
+				state.channels[ch].F_NUM&=0xFF00;
+				state.channels[ch].F_NUM|=value;
+				printf("F-NUM1 CH:%d\n",ch);
+				break;
+			case 0xA4: // BLOCK,F-Number2
+				state.channels[ch].F_NUM&=0x00FF;
+				state.channels[ch].F_NUM|=((value&7)<<8);
+				state.channels[ch].BLOCK=((value>>3)&7);
+				printf("F-NUM2/BLOCK CH:%d\n",ch);
+				break;
+			case 0xB0: // FB, CONNECT
+				state.channels[ch].FB=((value>>3)&7);
+				state.channels[ch].CONNECT=(value&7);
+				break;
+			case 0xB4: // L,R,AMS,PMS
+				state.channels[ch].L=((value>>7)&1);
+				state.channels[ch].R=((value>>6)&1);
+				state.channels[ch].AMS=((value>>4)&3);
+				state.channels[ch].PMS=(value&7);
+				break;
+			}
 		}
 	}
 }

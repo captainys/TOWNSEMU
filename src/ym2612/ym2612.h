@@ -40,10 +40,11 @@ public:
 
 	enum
 	{
-		REG_TIMER_CONTROL=0x27,
 		REG_TIMER_A_COUNT_HIGH=0x24,
 		REG_TIMER_A_COUNT_LOW=0x25,
 		REG_TIMER_B_COUNT=0x26,
+		REG_TIMER_CONTROL=0x27,
+		REG_KEY_ON_OFF=0x28,
 	};
 
 	enum
@@ -61,11 +62,13 @@ public:
 		unsigned int DT,MULTI;
 		unsigned int TL;
 		unsigned int KS,AR;
-		bool AM;
+		unsigned int AM;
 		unsigned int DR;
 		unsigned int SR;
 		unsigned int SL,RR;
 		unsigned int SSG_EG;
+
+		void Clear(void);
 	};
 	class Channel
 	{
@@ -73,6 +76,10 @@ public:
 		unsigned int F_NUM,BLOCK;
 		unsigned int FB,CONNECT;
 		unsigned int L,R,AMS,PMS;
+		unsigned int usingSlot;
+		Slot slots[NUM_SLOTS];
+
+		void Clear();
 	};
 
 	class State
@@ -80,8 +87,8 @@ public:
 	public:
 		unsigned long long int deviceTimeInNS;
 		unsigned long long int lastTickTimeInNS;
-		Slot slots[NUM_SLOTS];
-		Channel channel[NUM_CHANNELS];
+		Channel channels[NUM_CHANNELS];
+		unsigned int F_NUM_3CH[3],BLOCK_3CH[3];
 		unsigned char reg[256];  // I guess only 0x21 to 0xB6 are used.
 		unsigned long long int timerCounter[2];
 		bool timerUp[2];
