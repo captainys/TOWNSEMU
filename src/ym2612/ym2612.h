@@ -34,6 +34,12 @@ public:
 
 	enum
 	{
+		NUM_SLOTS=4,
+		NUM_CHANNELS=6,
+	};
+
+	enum
+	{
 		REG_TIMER_CONTROL=0x27,
 		REG_TIMER_A_COUNT_HIGH=0x24,
 		REG_TIMER_A_COUNT_LOW=0x25,
@@ -49,11 +55,33 @@ public:
 		NTICK_TIMER_B= 256*TIMER_B_PER_TICK,
 	};
 
+	class Slot
+	{
+	public:
+		unsigned int DT,MULTI;
+		unsigned int TL;
+		unsigned int KS,AR;
+		bool AM;
+		unsigned int DR;
+		unsigned int SR;
+		unsigned int SL,RR;
+		unsigned int SSG_EG;
+	};
+	class Channel
+	{
+	public:
+		unsigned int F_NUM,BLOCK;
+		unsigned int FB,CONNECT;
+		unsigned int L,R,AMS,PMS;
+	};
+
 	class State
 	{
 	public:
 		unsigned long long int deviceTimeInNS;
 		unsigned long long int lastTickTimeInNS;
+		Slot slots[NUM_SLOTS];
+		Channel channel[NUM_CHANNELS];
 		unsigned char reg[256];  // I guess only 0x21 to 0xB6 are used.
 		unsigned long long int timerCounter[2];
 		bool timerUp[2];
@@ -69,8 +97,8 @@ public:
 	void PowerOn(void);
 	void Reset(void);
 
-	void WriteRegister(unsigned int reg,unsigned int value);
-	unsigned int ReadRegister(unsigned int reg) const;
+	void WriteRegister(unsigned int channelBase,unsigned int reg,unsigned int value);
+	unsigned int ReadRegister(unsigned int channelBase,unsigned int reg) const;
 
 	void Run(unsigned long long int systemTimeInNS);
 

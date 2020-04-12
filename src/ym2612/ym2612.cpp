@@ -55,7 +55,7 @@ void YM2612::Reset(void)
 {
 	state.Reset();
 }
-void YM2612::WriteRegister(unsigned int reg,unsigned int value)
+void YM2612::WriteRegister(unsigned int channelBase,unsigned int reg,unsigned int value)
 {
 	reg&=255;
 	auto prev=state.reg[reg];
@@ -116,7 +116,7 @@ void YM2612::WriteRegister(unsigned int reg,unsigned int value)
 		}
 	}
 }
-unsigned int YM2612::ReadRegister(unsigned int reg) const
+unsigned int YM2612::ReadRegister(unsigned int channelBase,unsigned int reg) const
 {
 	return state.reg[reg&255];
 }

@@ -524,6 +524,47 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 			}
 		}
 		break;
+	case I486_OPCODE_FPU_DD_FLD_FSAVE_FST_FNSTSW_M16_FFREE_FUCOM:
+		{
+			unsigned int MODR_M;
+			PeekOperand8(MODR_M,inst,ptr,seg,offset,mem);
+			if(0xD0==(MODR_M&0xF8)) // D0 11010xxx    [1] pp.151  0<=i<=7
+			{
+				FetchOperand8(inst,ptr,seg,offset,mem);   // FST
+			}
+			else if(0xD8==(MODR_M&0xF8)) // D8 11011xxx
+			{
+				FetchOperand8(inst,ptr,seg,offset,mem);   // FSTP
+			}
+			else if(0xC0==(MODR_M&0xF8)) // C0 11000xxx
+			{
+				FetchOperand8(inst,ptr,seg,offset,mem);   // FFREE
+			}
+			else if(0xE0==(MODR_M&0xF8) || 0xE1==(MODR_M&0xF8) || 0xE8==(MODR_M&0xF8) || 0xE9==(MODR_M&0xF8))
+			{
+				FetchOperand8(inst,ptr,seg,offset,mem);   // FUCOM
+			}
+			else
+			{
+				switch(Instruction::GetREG(MODR_M))
+				{
+				case 0:	// FLD m64real
+					break;
+				case 2: // FST m64real
+					break;
+				case 3: // FSTP m64real
+					break;
+				case 6: // FSAVE m94/108byte
+					break;
+				case 7: // FNSTSW m2byte
+					FetchOperandRM(inst,ptr,seg,offset,mem);
+					op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
+					break;
+				}
+			}
+		}
+		break;
+
 	case I486_OPCODE_FPU_DF_FNSTSW_AX://  0xDF,
 		{
 			unsigned int MODR_M;
@@ -1514,6 +1555,51 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		if(FPU_FWAIT==fwait)
 		{
 			disasm="FWAIT "+disasm;
+		}
+		break;
+	case I486_OPCODE_FPU_DD_FLD_FSAVE_FST_FNSTSW_M16_FFREE_FUCOM:
+		{
+			unsigned int MODR_M=operand[0];
+			if(0xD0==(MODR_M&0xF8)) // D0 11010xxx    [1] pp.151  0<=i<=7
+			{
+				disasm="?FPUINST";
+			}
+			else if(0xD8==(MODR_M&0xF8)) // D8 11011xxx
+			{
+				disasm="?FPUINST";
+			}
+			else if(0xC0==(MODR_M&0xF8)) // C0 11000xxx
+			{
+				disasm="?FPUINST";
+			}
+			else if(0xE0==(MODR_M&0xF8) || 0xE1==(MODR_M&0xF8) || 0xE8==(MODR_M&0xF8) || 0xE9==(MODR_M&0xF8))
+			{
+				disasm="?FPUINST";
+			}
+			else
+			{
+				switch(Instruction::GetREG(MODR_M))
+				{
+				case 0:	// FLD m64real
+					disasm="?FPUINST";
+					break;
+				case 2: // FST m64real
+					disasm="?FPUINST";
+					break;
+				case 3: // FSTP m64real
+					disasm="?FPUINST";
+					break;
+				case 6: // FSAVE m94/108byte
+					disasm="?FPUINST";
+					break;
+				case 7: // FNSTSW m2byte
+					disasm=DisassembleTypicalOneOperand("FNSTSW",op1,operandSize);
+					break;
+				default:
+					disasm="?FPUINST";
+					break;
+				}
+			}
 		}
 		break;
 	case I486_OPCODE_FPU_DF_FNSTSW_AX://  0xDF,
@@ -4451,6 +4537,47 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		else
 		{
+		}
+		break;
+	case I486_OPCODE_FPU_DD_FLD_FSAVE_FST_FNSTSW_M16_FFREE_FUCOM:
+		{
+			unsigned int MODR_M=inst.operand[0];
+			if(0xD0==(MODR_M&0xF8)) // D0 11010xxx    [1] pp.151  0<=i<=7
+			{
+			}
+			else if(0xD8==(MODR_M&0xF8)) // D8 11011xxx
+			{
+			}
+			else if(0xC0==(MODR_M&0xF8)) // C0 11000xxx
+			{
+			}
+			else if(0xE0==(MODR_M&0xF8) || 0xE1==(MODR_M&0xF8) || 0xE8==(MODR_M&0xF8) || 0xE9==(MODR_M&0xF8))
+			{
+			}
+			else
+			{
+				switch(Instruction::GetREG(MODR_M))
+				{
+				case 0:	// FLD m64real
+					break;
+				case 2: // FST m64real
+					break;
+				case 3: // FSTP m64real
+					break;
+				case 6: // FSAVE m94/108byte
+					break;
+				case 7: // FNSTSW m2byte
+					{
+						clocksPassed=3;
+						OperandValue value;
+						value.MakeWord(state.fpuState.GetStatusWord());
+						StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+					}
+					break;
+				default:
+					break;
+				}
+			}
 		}
 		break;
 	case I486_OPCODE_FPU_DF_FNSTSW_AX://  0xDF,
