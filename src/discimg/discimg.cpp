@@ -563,7 +563,7 @@ std::vector <unsigned char> DiscImage::GetWave(MinSecFrm startMSF,MinSecFrm endM
 		std::cout << "From " << startHSG << " To " << endHSG << " (" << endHSG-startHSG << ")" << std::endl;
 	#endif
 
-		for(int i=0; i<layout.size()-1; ++i)
+		for(int i=0; i+1<layout.size(); ++i)  // Condition i<layout.size()-1 will crash when layout.size()==0 because it is unsigned.
 		{
 			unsigned long long int readFrom=0,readTo=0;
 
