@@ -32,10 +32,23 @@ public:
 	// NATick counts up every 12 internal-clock ticks.
 	// NBTick counts up every 192 internal-clock ticks.
 
+	#define SINETABLE \
+		static const char sineTable[PHASE_STEPS]= { \
+			+0 ,+3 ,+6 ,+9 ,+12,+15,+17,+20,+22,+24,+26,+28,+29,+30,+31,+31, \
+			+32,+31,+31,+30,+29,+28,+26,+24,+22,+20,+17,+15,+12,+9 ,+6 ,+3 , \
+			+0 ,-3 ,-6 ,-9 ,-12,-15,-17,-20,-22,-24,-26,-28,-29,-30,-31,-31, \
+			-32,-31,-31,-30,-29,-28,-26,-24,-22,-20,-17,-15,-12,-9 ,-6 ,-3 , };
+
 	enum
 	{
 		NUM_SLOTS=4,
 		NUM_CHANNELS=6,
+
+		PHASE_STEPS=64,
+		PHASE_MASK=63,
+		UNSCALED_MAX=32,
+
+		WAVE_SAMPLING_RATE=22050,
 	};
 
 	enum
@@ -69,6 +82,32 @@ public:
 		unsigned int SSG_EG;
 
 		void Clear(void);
+
+		inline char UnscaledOutput(int phase) const
+		{
+			SINETABLE;
+			return sineTable[phase&PHASE_MASK];
+		}
+		inline char UnscaledOutput(int phase,unsigned int FB) const
+		{
+			SINETABLE;
+			if(0==FB)
+			{
+				return sineTable[phase&PHASE_MASK];
+			}
+			else
+			{
+				static const unsigned int rShift[8]={0,4,3,2,1,0,0,0};
+				static const unsigned int lShift[8]={0,0,0,0,0,0,1,2};
+
+				short o=sineTable[phase&PHASE_MASK];
+				short sign=(o&0xFF00);
+
+				// FB must be 0 to 7
+				o=(((o>>rShift[FB])|sign)<<lShift[FB]);
+				return sineTable[(phase+o)&PHASE_MASK];
+			}
+		}
 	};
 	class Channel
 	{
@@ -99,8 +138,17 @@ public:
 
 	State state;
 
+	unsigned int TLtoDB100[128];   // 100 times dB
+	unsigned int SLtoDB100[16];    // 100 times dB
+	unsigned char DBto127Scale[97]; // dB to 0 to 127 scale
+
 	YM2612();
 	~YM2612();
+private:
+	void MakeTLtoDB100(void);
+	void MakeSLtoDB100(void);
+	void MakeDBto127Scale(void);
+public:
 	void PowerOn(void);
 	void Reset(void);
 
@@ -115,6 +163,14 @@ public:
 	/*! Returns timer-up state of 
 	*/
 	bool TimerUp(unsigned int timerId) const;
+
+	/*!
+	*/
+	inline static unsigned int KSToRate(unsigned int KS,unsigned int BLOCK,unsigned int NOTE);
+
+	/*!
+	*/
+	std::vector <unsigned char> MakeWave(unsigned int ch) const;
 
 	std::vector <std::string> GetStatusText(void) const;
 };

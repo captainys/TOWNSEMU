@@ -52,11 +52,13 @@ std::string Uitox(unsigned int i);
 std::string Ustox(unsigned short i);
 std::string Ubtox(unsigned char i);
 std::string Uitoa(unsigned int i);
+std::string Uitoa(unsigned int i,unsigned minLen);
 
 std::string Itox(int i);
 std::string Stox(short i);
 std::string Btox(char i);
 std::string Itoa(int i);
+std::string Itoa(int i,unsigned minLen);
 
 void ExtendString(std::string &str,int minimumLength);
 

@@ -87,11 +87,73 @@ void YM2612::State::Reset(void)
 
 YM2612::YM2612()
 {
+	MakeTLtoDB100();
+	MakeSLtoDB100();
+	MakeDBto127Scale();
 	PowerOn();
 }
 YM2612::~YM2612()
 {
 }
+
+void YM2612::MakeTLtoDB100(void)
+{
+	const unsigned int bitDB[7]=
+	{
+		75,150,300,600,1200,2400,4800
+	};
+	for(unsigned int TL=0; TL<128; ++TL)
+	{
+		TLtoDB100[TL]=0;
+		unsigned char bit=1;
+		for(int c=0; c<7; ++c)
+		{
+			if(0!=(TL&bit))
+			{
+				TLtoDB100[TL]+=bitDB[c];
+			}
+			bit<<=1;
+		}
+	}
+}
+void YM2612::MakeSLtoDB100(void)
+{
+	const unsigned int bitDB[4]=
+	{
+		2400,1200,600,300
+	};
+	for(unsigned int SL=0; SL<16; ++SL)
+	{
+		SLtoDB100[SL]=0;
+		unsigned char bit=1;
+		for(int c=0; c<4; ++c)
+		{
+			if(0!=(SL&bit))
+			{
+				SLtoDB100[SL]+=bitDB[c];
+			}
+			bit<<=1;
+		}
+	}
+}
+void YM2612::MakeDBto127Scale(void)
+{
+	unsigned char src[97]=
+	{
+	  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+	  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+	  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+	  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,  1,  1,  2,  2,  2,  2,
+	  3,  3,  4,  4,  5,  5,  6,  7,  8,  8, 10, 11, 12, 14, 15, 17,
+	 20, 22, 25, 28, 31, 35, 40, 45, 50, 56, 63, 71, 80, 89,100,113,
+	127,
+	};
+	for(int i=0; i<97; ++i)
+	{
+		DBto127Scale[i]=src[i];
+	}
+}
+
 void YM2612::PowerOn(void)
 {
 	state.PowerOn();
@@ -347,6 +409,36 @@ std::vector <std::string> YM2612::GetStatusText(void) const
 
 	text.push_back(empty);
 	text.back()="YM2612";
+
+	for(int chNum=0; chNum<6; ++chNum)
+	{
+		auto &ch=state.channels[chNum];
+		text.push_back(empty);
+
+		text.back()="CH:"+cpputil::Itoa(chNum);
+		text.back()+="  F_NUM="+cpputil::Itoa(ch.F_NUM,5)+"  BLOCK="+cpputil::Itoa(ch.BLOCK);
+		text.back()+="  FB="+cpputil::Itoa(ch.FB)+"  CONNECT="+cpputil::Itoa(ch.CONNECT);
+		text.back()+="  L="+cpputil::Itoa(ch.L)+"  R="+cpputil::Itoa(ch.R);
+		text.back()+="  ActiveSlots="+cpputil::Ubtox(ch.usingSlot);
+
+		for(auto &slot : ch.slots)
+		{
+			text.push_back(empty);
+			text.back()+="SLOT:";
+			text.back()+="DT="+cpputil::Itoa(slot.DT);
+			text.back()+="  MULTI="+cpputil::Itoa(slot.MULTI,2);
+			text.back()+="  TL="+cpputil::Itoa(slot.TL,3)+"("+cpputil::Itoa(TLtoDB100[slot.TL]/100,2)+"dB)";
+			text.back()+="  KS="+cpputil::Itoa(slot.KS);
+			text.back()+="  AR="+cpputil::Itoa(slot.AR,2);
+			text.back()+="  AM="+cpputil::Itoa(slot.AM);
+			text.back()+="  DR="+cpputil::Itoa(slot.DR,2);
+			text.back()+="  SR="+cpputil::Itoa(slot.SR,2);
+			text.back()+="  SL="+cpputil::Itoa(slot.SL,2)+"("+cpputil::Itoa(SLtoDB100[slot.SL]/100,2)+"dB)";
+			text.back()+="  RR="+cpputil::Itoa(slot.RR,2);
+			text.back()+="  SSG_EG="+cpputil::Itoa(slot.SSG_EG);
+		}
+	}
+
 
 	text.push_back(empty);
 	text.back()="TimerA Up=";

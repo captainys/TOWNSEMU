@@ -135,6 +135,9 @@ void RF5C68::WriteST(unsigned char value)
 std::vector <std::string> RF5C68::GetStatusText(void) const
 {
 	std::vector <std::string> text;
+
+	text.push_back("RF5C68");
+
 	for(int ch=0; ch<NUM_CHANNELS; ++ch)
 	{
 		std::string s;

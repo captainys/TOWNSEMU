@@ -517,6 +517,21 @@ std::string cpputil::Uitoa(unsigned int i)
 	return s;
 }
 
+std::string cpputil::Uitoa(unsigned int i,unsigned minLen)
+{
+	std::string s=Itoa(i);
+	if(s.size()<minLen)
+	{
+		std::string space;
+		for(auto i=s.size(); i<minLen; ++i)
+		{
+			space.push_back(' ');
+		}
+		return space+s;
+	}
+	return s;
+}
+
 std::string cpputil::Itox(int i)
 {
 	if(0<=i)
@@ -567,6 +582,21 @@ std::string cpputil::Itoa(int i)
 		std::string sgnd="-";
 		return sgnd+Uitoa(-i);
 	}
+}
+
+std::string cpputil::Itoa(int i,unsigned minLen)
+{
+	std::string s=Itoa(i);
+	if(s.size()<minLen)
+	{
+		std::string space;
+		for(auto i=s.size(); i<minLen; ++i)
+		{
+			space.push_back(' ');
+		}
+		return space+s;
+	}
+	return s;
 }
 
 void cpputil::ExtendString(std::string &str,int minimumLength)
