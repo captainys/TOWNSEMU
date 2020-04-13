@@ -12,6 +12,8 @@ Redistribution and use in source and binary forms, with or without modification,
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 << LICENSE */
+#include <algorithm>
+
 #include "ym2612.h"
 
 
@@ -303,13 +305,52 @@ static unsigned int sustainDecayReleaseTime10to90Percent[64]=
 	// [2] pp.207 Table I-5-30
 	static const unsigned int RateTable[4*32]=
 	{
-		 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3,
-		 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6, 7, 7, 7, 7,
-		 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9,10,10,11,11,12,12,13,13,14,14,15,15,
-		 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31
+		 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3,  // KC<<3
+		 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6, 7, 7, 7, 7,  // KC<<2
+		 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9,10,10,11,11,12,12,13,13,14,14,15,15,  // KC<<1
+		 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31   // KC
 	};
 	unsigned int keyCode=((BLOCK<<2)|NOTE)&31;
 	return RateTable[KS*4+keyCode];
+}
+
+void YM2612::KeyOn(unsigned int chNum)
+{
+	auto &ch=state.channels[chNum];
+
+	const unsigned int toneDurationMS=1000; // Tentative    GetToneDuration(ch);
+	const unsigned int hertz=440;         // Tentative
+
+	state.playingCh|=(1<<chNum);
+	ch.playState=CH_PLAYING;
+	ch.toneDuration12=toneDurationMS;
+	ch.toneDuration12<<=12;
+	ch.microsec12=0;
+
+
+	// Formula [2] pp.204
+	unsigned int F11=((ch.F_NUM>>11)&1);
+	unsigned int F10=((ch.F_NUM>>10)&1);
+	unsigned int F9= ((ch.F_NUM>> 9)&1);
+	unsigned int F8= ((ch.F_NUM>> 8)&1);
+	unsigned int N3=(F11|(F10&F9&F8))|((~F11)&(F10|F9|F8));
+	unsigned int NOTE=(F11<<1)|N3;
+	unsigned int BLOCK_NOTE=(ch.BLOCK<<2)|NOTE;
+
+
+	for(auto &slot : ch.slots)
+	{
+		// Hz ranges 1 to roughly 8000.  PHASE_STEPS=32.  hertz*PHASE_STEPS=near 256K.
+		// 256K<<12=256K*4K=1024M=1G.  Fits in 32 bit.
+
+		// Phase runs hertz*PHASE_STEPS times per second.
+		//            hertz*PHASE_STEPS/WAVE_SAMPLING_RATE times per step.
+		// Phase 24 runs
+		//            0x1000000*hertz*PHASE_STEPS/WAVE_SAMPLING_RATE per step.
+		slot.phase12Step=((hertz*PHASE_STEPS)<<12)/WAVE_SAMPLING_RATE, // Should consider DETUNE.
+		CalculateEnvelope(slot.env,slot.RRCache,BLOCK_NOTE,slot);
+	};
+
 }
 
 std::vector <unsigned char> YM2612::MakeWave(unsigned int chNum) const
@@ -317,14 +358,12 @@ std::vector <unsigned char> YM2612::MakeWave(unsigned int chNum) const
 	auto &ch=state.channels[chNum];
 	std::vector <unsigned char> wave;
 
-	const unsigned int toneDuration=1000; // Tentative    GetToneDuration(ch);
-	const unsigned int hertz=440;         // Tentative
+	unsigned long long int numSamples=ch.toneDuration12;
+	numSamples*=WAVE_SAMPLING_RATE;
+	numSamples/=1000;
+	numSamples>>=12;
 
-	const unsigned int numSamples=toneDuration*WAVE_SAMPLING_RATE/1000;
-	unsigned int phase12[4]={0,0,0,0};        // phase>>12 gives the phase.  For each slot.
-	unsigned long long int microSec12=0; // 4096*microseconds
-
-	const unsigned int microSec12Step=4096000000/WAVE_SAMPLING_RATE;
+	const unsigned int microsec12Step=4096000000/WAVE_SAMPLING_RATE;
 	// Time runs 1/WAVE_SAMPLING_RATE seconds per step
 	//           1000/WAVE_SAMPLING_RATE milliseconds per step
 	//           1000000/WAVE_SAMPLING_RATE microseconds per step
@@ -333,49 +372,101 @@ std::vector <unsigned char> YM2612::MakeWave(unsigned int chNum) const
 	// If microSec12=4096*microseconds, tm runs
 	//           4096000000/WAVE_SAMPLING_RATE per step
 
-	const unsigned int phase12Step[4]=
+	auto microsec12=ch.microsec12;
+	unsigned int phase12[4]=
 	{
-		((hertz*PHASE_STEPS)<<12)/WAVE_SAMPLING_RATE, // Should consider DETUNE.
-		((hertz*PHASE_STEPS)<<12)/WAVE_SAMPLING_RATE,
-		((hertz*PHASE_STEPS)<<12)/WAVE_SAMPLING_RATE,
-		((hertz*PHASE_STEPS)<<12)/WAVE_SAMPLING_RATE
+		ch.slots[0].phase12,
+		ch.slots[1].phase12,
+		ch.slots[2].phase12,
+		ch.slots[3].phase12,
 	};
-	// hertz range 1 to 8000.  PHASE_STEPS=32.  hertz*PHASE_STEPS=near 256K.
-	// 256K<<12=256K*4K=1024M=1G.  Fits in 32 bit.
-
-	// Phase runs hertz*PHASE_STEPS times per second.
-	//            hertz*PHASE_STEPS/WAVE_SAMPLING_RATE times per step.
-	// Phase 24 runs
-	//            0x1000000*hertz*PHASE_STEPS/WAVE_SAMPLING_RATE per step.
-
-
-	for(int s=0; s<NUM_SLOTS; ++s)
-	{
-		// state.slots[s].CalculateEnvelope(env[i]);
-		// 
-	}
-
 
 	wave.resize(4*numSamples);
 	for(unsigned int i=0; i<numSamples; ++i)
 	{
-		const unsigned int microSec=microSec12/4096;
-
-		// Formula [2] pp.204
-		unsigned int F11=((ch.F_NUM>>11)&1);
-		unsigned int F10=((ch.F_NUM>>10)&1);
-		unsigned int F9= ((ch.F_NUM>> 9)&1);
-		unsigned int F8= ((ch.F_NUM>> 8)&1);
-		unsigned int N3=(F11|(F10&F9&F8))|((~F11)&(F10|F9|F8));
-		unsigned int NOTE=(F11<<1)|N3;
+		const unsigned int microsec=(unsigned int)(microsec12>>12);
 
 
-		phase12[0]+=phase12Step[0];
-		phase12[1]+=phase12Step[1];
-		phase12[2]+=phase12Step[2];
-		phase12[3]+=phase12Step[3];
-		microSec12+=microSec12Step;
+
+		phase12[0]+=ch.slots[0].phase12Step;
+		phase12[1]+=ch.slots[1].phase12Step;
+		phase12[2]+=ch.slots[2].phase12Step;
+		phase12[3]+=ch.slots[3].phase12Step;
+		microsec12+=microsec12Step;
 	}
 
+	ch.nextMicrosec12=microsec12;
+	ch.slots[0].nextPhase12=phase12[0];
+	ch.slots[1].nextPhase12=phase12[1];
+	ch.slots[2].nextPhase12=phase12[2];
+	ch.slots[3].nextPhase12=phase12[3];
+
 	return wave;
+}
+
+bool YM2612::CalculateEnvelope(unsigned int env[6],unsigned int &RR,unsigned int KC,const Slot &slot) const
+{
+	KC&=31;
+	unsigned int AR=slot.AR*2+(KC>>(3-slot.KS));
+	unsigned int DR=slot.DR*2+(KC>>(3-slot.KS));
+	unsigned int SR=slot.SR*2+(KC>>(3-slot.KS));
+	             RR=slot.RR*2+(KC>>(3-slot.KS));
+	AR=std::max(AR,63U);
+	DR=std::max(DR,63U);
+	SR=std::max(SR,63U);
+	RR=std::max(RR,63U);
+
+	if(AR<4)
+	{
+		goto NOTONE;
+	}
+
+	auto TLdB100=TLtoDB100[slot.TL];
+	auto SLdB100=SLtoDB100[slot.SL];
+
+	if(9600<=TLdB100)
+	{
+		goto NOTONE;
+	}
+
+	const unsigned int TLinv=9600-TLdB100;
+	const unsigned int SLinv=(SLdB100<TLinv ? TLinv-SLdB100 : 0);
+	const unsigned int TLampl=DBto127Scale[TLinv/100];
+	const unsigned int SLampl=DBto127Scale[SLinv/100];
+
+	env[1]=TLampl;
+	env[3]=SLampl;
+
+	unsigned long long int attackTime=attackTime0to96dB[AR]; // 1/100 milliseconds for jumping from 0 to 127 (96dB)
+	// If TLampl==127, it takes attackTime/100 milliseconds to reach TLampl.
+	attackTime*=TLampl;
+	env[0]=(unsigned int)(attackTime/12700);
+
+	unsigned long long int decayTime=sustainDecayReleaseTime0to96dB[DR];
+	decayTime*=(TLampl-SLampl);
+	env[2]=(unsigned int)(decayTime/12700);
+
+	unsigned long long int sustainTime=sustainDecayReleaseTime0to96dB[SR];
+	sustainTime*=SLampl;
+	sustainTime/=127;
+	if(sustainTime<TONE_CHOPOFF_MILLISEC*100)
+	{
+		env[4]=(unsigned int)(sustainTime/12700);
+	}
+	else
+	{
+		env[4]=TONE_CHOPOFF_MILLISEC;
+	}
+	env[5]=0;
+
+	return true;
+NOTONE:
+	env[0]=0;
+	env[1]=0;
+	env[2]=0;
+	env[3]=0;
+	env[4]=0;
+	env[5]=0;
+	RR=0;
+	return false;
 }

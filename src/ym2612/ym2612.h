@@ -48,6 +48,8 @@ public:
 		PHASE_MASK=63,
 		UNSCALED_MAX=32,
 
+		TONE_CHOPOFF_MILLISEC=4000,
+
 		WAVE_SAMPLING_RATE=22050,
 	};
 
@@ -69,6 +71,12 @@ public:
 		NTICK_TIMER_B= 256*TIMER_B_PER_TICK,
 	};
 
+	enum {
+		CH_IDLE=0,
+		CH_PLAYING=1,
+		CH_RELEASE=2,
+	};
+
 	class Slot
 	{
 	public:
@@ -80,6 +88,14 @@ public:
 		unsigned int SR;
 		unsigned int SL,RR;
 		unsigned int SSG_EG;
+
+		// Cache for wave-generation >>
+		unsigned int phase12;      // 5-bit phase=((phase>>12)&0x1F)
+		unsigned int phase12Step;  // Increment of phase12 per time step.
+		mutable unsigned int nextPhase12; // Cached in MakeWave
+		unsigned int env[6];       // Envelope
+		unsigned int RRCache;      // Calibrated Release Rate
+		// Cache for wave-generation <<
 
 		void Clear(void);
 
@@ -118,6 +134,13 @@ public:
 		unsigned int usingSlot;
 		Slot slots[NUM_SLOTS];
 
+		// Cache for wave-generation >>
+		unsigned int playState;
+		unsigned long long int toneDuration12;  // In (microsec<<12).
+		unsigned long long int microsec12;      // Microsec from start of a tone by (microsec12>>12)
+		mutable unsigned long long int nextMicrosec12; // Cached in MakeWave.
+		// Cache for wave-generation <<
+
 		void Clear();
 	};
 
@@ -131,6 +154,7 @@ public:
 		unsigned char reg[256];  // I guess only 0x21 to 0xB6 are used.
 		unsigned long long int timerCounter[2];
 		bool timerUp[2];
+		unsigned playingCh; // Bit 0 to 5.
 
 		void PowerOn(void);
 		void Reset(void);
@@ -168,9 +192,40 @@ public:
 	*/
 	inline static unsigned int KSToRate(unsigned int KS,unsigned int BLOCK,unsigned int NOTE);
 
+
+	/*! Cache parameters for calculating wave.
+	*/
+	void KeyOn(unsigned int ch);
+
 	/*!
 	*/
 	std::vector <unsigned char> MakeWave(unsigned int ch) const;
+
+	/*! 
+	*/
+	void NextWave(void);
+
+	/*! Change channel state to RELEASE.
+	*/
+	void KeyOff(unsigned int ch);
+
+
+	/*! BLOCK_NOTE is as calculated by [2] pp.204.  Isn't it just high-5 bits of BLOCK|F_NUM2?
+	    Return value:
+	       true    Envelope calculated
+	       false   Envelope not calculated. (AR==0)
+	    Envelope:
+	       env[0]  Duration for attack (in microseconds)
+	       env[1]  TL amplitude (0-127)
+	       env[2]  Duration for decay (in microseconds)
+	       env[3]  SL amplitude (0-127)
+	       env[4]  Duration after reaching SL.
+	       env[5]  Zero
+	    Release Rate:
+	       RR
+	*/
+	bool CalculateEnvelope(unsigned int env[6],unsigned int &RR,unsigned int BLOCK_NOTE,const Slot &slot) const;
+
 
 	std::vector <std::string> GetStatusText(void) const;
 };
