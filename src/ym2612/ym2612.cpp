@@ -163,8 +163,9 @@ void YM2612::Reset(void)
 {
 	state.Reset();
 }
-void YM2612::WriteRegister(unsigned int channelBase,unsigned int reg,unsigned int value)
+unsigned int YM2612::WriteRegister(unsigned int channelBase,unsigned int reg,unsigned int value)
 {
+	unsigned int chStartPlaying=65535;
 	static const unsigned int slotTwist[4]={0,2,1,3};
 	reg&=255;
 	auto prev=state.reg[reg];
@@ -237,8 +238,9 @@ void YM2612::WriteRegister(unsigned int channelBase,unsigned int reg,unsigned in
 			if(0==state.channels[ch].usingSlot && 0!=slotFlag)
 			{
 				// Play a tone
+				KeyOn(ch);
+				chStartPlaying=ch;
 			}
-			printf("Key On/Off CH:%d SLOT:%02X\n",ch,slotFlag);
 		}
 	}
 	else if(0xA8<=reg && reg<=0xAE) // Special 3CH F-Number/BLOCK
@@ -312,13 +314,11 @@ void YM2612::WriteRegister(unsigned int channelBase,unsigned int reg,unsigned in
 				//     Or, is it REG_KEY_ON_OFF?
 				state.channels[ch].F_NUM&=0xFF00;
 				state.channels[ch].F_NUM|=value;
-				printf("F-NUM1 CH:%d\n",ch);
 				break;
 			case 0xA4: // BLOCK,F-Number2
 				state.channels[ch].F_NUM&=0x00FF;
 				state.channels[ch].F_NUM|=((value&7)<<8);
 				state.channels[ch].BLOCK=((value>>3)&7);
-				printf("F-NUM2/BLOCK CH:%d\n",ch);
 				break;
 			case 0xB0: // FB, CONNECT
 				state.channels[ch].FB=((value>>3)&7);
@@ -333,6 +333,7 @@ void YM2612::WriteRegister(unsigned int channelBase,unsigned int reg,unsigned in
 			}
 		}
 	}
+	return chStartPlaying;
 }
 unsigned int YM2612::ReadRegister(unsigned int channelBase,unsigned int reg) const
 {

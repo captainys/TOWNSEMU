@@ -176,7 +176,10 @@ public:
 	void PowerOn(void);
 	void Reset(void);
 
-	void WriteRegister(unsigned int channelBase,unsigned int reg,unsigned int value);
+	/*! Writes to a register, and if a channel starts playing a tone, it calls KeyOn and returns between 0 to 5.
+	    65535 otherwise.
+	*/
+	unsigned int WriteRegister(unsigned int channelBase,unsigned int reg,unsigned int value);
 	unsigned int ReadRegister(unsigned int channelBase,unsigned int reg) const;
 
 	void Run(unsigned long long int systemTimeInNS);
@@ -225,6 +228,70 @@ public:
 	       RR
 	*/
 	bool CalculateEnvelope(unsigned int env[6],unsigned int &RR,unsigned int BLOCK_NOTE,const Slot &slot) const;
+
+
+
+	/*! Based on [2] Table I-5-37
+		BLOCK=4		    	Freq Ratio	Freq/Fnum
+		C5	523.3	1371	        	0.381692195
+		B4	493.9	1294	1.05952622	0.381684699
+		A4#	466.2	1222	1.059416559	0.381505728
+		A4	440  	1153	1.059545455	0.381613183
+		G4#	415.3	1088	1.059475078	0.381709559
+		G4	392  	1027	1.059438776	0.381694255
+		F4#	370 	969 	1.059459459	0.381836945
+		F4	349.2	915 	1.059564719	0.381639344
+		E4	329.6	864 	1.059466019	0.381481481
+		D4#	311.1	815 	1.05946641	0.381717791
+		D4	293.7	769 	1.059244127	0.381924577
+		C4#	277.2	726 	1.05952381	0.381818182
+
+		Average Freq/Fnum
+		0.381693162
+
+		BLOCK=7		Fnum*0.381693162* 8=Freq
+		BLOCK=6		Fnum*0.381693162* 4=Freq
+		BLOCK=5		Fnum*0.381693162* 2=Freq
+		BLOCK=4		Fnum*0.381693162   =Freq
+		BLOCK=3		Fnum*0.381693162/ 2=Freq
+		BLOCK=2		Fnum*0.381693162/ 4=Freq
+		BLOCK=1		Fnum*0.381693162/ 8=Freq
+		BLOCK=0		Fnum*0.381693162/16=Freq
+
+		F-Number Sampled from F-BASIC 386.
+		PLAY "O4A"  -> 1038 must correspond to 440Hz -> Ratio should be 0.423892100192678.
+	*/
+	inline unsigned int BLOCK_FNUM_to_FreqX16(unsigned int BLOCK,unsigned int FNUM)
+	{
+		/* Value based on [2]
+		static const unsigned int scale[8]=
+		{
+			(3817*16/10)/16,
+			(3817*16/10)/8,
+			(3817*16/10)/4,
+			(3817*16/10)/2,
+			(3817*16/10),
+			(3817*16/10)*2,
+			(3817*16/10)*4,
+			(3817*16/10)*8,
+		}; */
+		// Value based on the observation.
+		static const unsigned int scale[8]=
+		{
+			(423892    /1000),   // (4238*16/10)/16,
+			(423892  *2/1000),   // (4239*16/10)/8,
+			(423892  *4/1000),   // (4239*16/10)/4,
+			(423892  *8/1000),   // (4239*16/10)/2,
+			(423892 *16/1000),   // (4239*16/10),
+			(423892 *32/1000),   // (4239*16/10)*2,
+			(423892 *64/1000),   // (4239*16/10)*4,
+			(423892*128/1000),   // (4239*16/10)*8,
+		};
+		FNUM*=scale[BLOCK&7];
+		FNUM/=1000;
+		return FNUM;
+	}
+
 
 
 	std::vector <std::string> GetStatusText(void) const;

@@ -13,6 +13,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 << LICENSE */
 #include <algorithm>
+#include <iostream>
 
 #include "ym2612.h"
 
@@ -319,7 +320,9 @@ void YM2612::KeyOn(unsigned int chNum)
 	auto &ch=state.channels[chNum];
 
 	const unsigned int toneDurationMS=1000; // Tentative    GetToneDuration(ch);
-	const unsigned int hertz=440;         // Tentative
+	const unsigned int hertzX16=BLOCK_FNUM_to_FreqX16(ch.BLOCK,ch.F_NUM);
+
+printf("F_NUM %d Hertz %d\n",ch.F_NUM,hertzX16/16);
 
 	state.playingCh|=(1<<chNum);
 	ch.playState=CH_PLAYING;
@@ -347,7 +350,8 @@ void YM2612::KeyOn(unsigned int chNum)
 		//            hertz*PHASE_STEPS/WAVE_SAMPLING_RATE times per step.
 		// Phase 24 runs
 		//            0x1000000*hertz*PHASE_STEPS/WAVE_SAMPLING_RATE per step.
-		slot.phase12Step=((hertz*PHASE_STEPS)<<12)/WAVE_SAMPLING_RATE, // Should consider DETUNE.
+		slot.phase12Step=((hertzX16*PHASE_STEPS)<<8)/WAVE_SAMPLING_RATE; // Should consider DETUNE.
+		// (hertzX16*PHASE_STEP)<<8==hertz*PHASE_STEP*4096
 		CalculateEnvelope(slot.env,slot.RRCache,BLOCK_NOTE,slot);
 	};
 
@@ -407,14 +411,17 @@ std::vector <unsigned char> YM2612::MakeWave(unsigned int chNum) const
 bool YM2612::CalculateEnvelope(unsigned int env[6],unsigned int &RR,unsigned int KC,const Slot &slot) const
 {
 	KC&=31;
+
+std::cout << KC << "," << slot.KS << "," << (KC>>(3-slot.KS)) << ", ";
+
 	unsigned int AR=slot.AR*2+(KC>>(3-slot.KS));
 	unsigned int DR=slot.DR*2+(KC>>(3-slot.KS));
 	unsigned int SR=slot.SR*2+(KC>>(3-slot.KS));
 	             RR=slot.RR*2+(KC>>(3-slot.KS));
-	AR=std::max(AR,63U);
-	DR=std::max(DR,63U);
-	SR=std::max(SR,63U);
-	RR=std::max(RR,63U);
+	AR=std::min(AR,63U);
+	DR=std::min(DR,63U);
+	SR=std::min(SR,63U);
+	RR=std::min(RR,63U);
 
 	if(AR<4)
 	{
@@ -434,30 +441,48 @@ bool YM2612::CalculateEnvelope(unsigned int env[6],unsigned int &RR,unsigned int
 	const unsigned int TLampl=DBto127Scale[TLinv/100];
 	const unsigned int SLampl=DBto127Scale[SLinv/100];
 
+std::cout << "AR=" << AR << " DR=" << DR << " SR=" << SR << " TL=" << slot.TL  << " SL=" << slot.SL ;
+std::cout << " ";
+
 	env[1]=TLampl;
 	env[3]=SLampl;
-
-	unsigned long long int attackTime=attackTime0to96dB[AR]; // 1/100 milliseconds for jumping from 0 to 127 (96dB)
-	// If TLampl==127, it takes attackTime/100 milliseconds to reach TLampl.
-	attackTime*=TLampl;
-	env[0]=(unsigned int)(attackTime/12700);
-
-	unsigned long long int decayTime=sustainDecayReleaseTime0to96dB[DR];
-	decayTime*=(TLampl-SLampl);
-	env[2]=(unsigned int)(decayTime/12700);
-
-	unsigned long long int sustainTime=sustainDecayReleaseTime0to96dB[SR];
-	sustainTime*=SLampl;
-	sustainTime/=127;
-	if(sustainTime<TONE_CHOPOFF_MILLISEC*100)
-	{
-		env[4]=(unsigned int)(sustainTime/12700);
-	}
-	else
-	{
-		env[4]=TONE_CHOPOFF_MILLISEC;
-	}
 	env[5]=0;
+
+
+	// If, AR, DR, SR, and RR are really rates, the duration for attack, decay, and sustain should depend
+	// on the amplitude.  If the amplitude for total level is high, it should take longer to get to the level.
+	// Or, if it is the rate, the slope of the decay should be the same regardless of the TL amplitude.
+	// But, the value calculated from this assumption doesn't make sense at all.
+	// It rather makes sense if I take the number from the table without scaling by the amplitude.
+
+	env[0]=attackTime0to96dB[AR]/100;
+	env[2]=sustainDecayReleaseTime0to96dB[DR]/100;
+	env[4]=sustainDecayReleaseTime0to96dB[SR]/100;
+
+	// If it is really rate, the following code should better emulate, but doesn't look to be.
+	// unsigned long long int attackTime=attackTime0to96dB[AR]; // 1/100 milliseconds for jumping from 0 to 127 (96dB)
+	// // If TLampl==127, it takes attackTime/100 milliseconds to reach TLampl.
+	// attackTime*=TLampl;
+	// env[0]=(unsigned int)(attackTime/12700);
+
+	// unsigned long long int decayTime=sustainDecayReleaseTime0to96dB[DR];
+	// decayTime*=(TLampl-SLampl);
+	// env[2]=(unsigned int)(decayTime/12700);
+
+	// unsigned long long int sustainTime=sustainDecayReleaseTime0to96dB[SR];
+	// sustainTime*=SLampl;
+	// sustainTime/=127;
+	// if(sustainTime<TONE_CHOPOFF_MILLISEC*100)
+	// {
+	// 	env[4]=(unsigned int)(sustainTime/12700);
+	// }
+	// else
+	// {
+	// 	env[4]=TONE_CHOPOFF_MILLISEC;
+	// }
+
+for(int i=0; i<6; ++i){std::cout << env[i] << ",";}
+std::cout << std::endl;
 
 	return true;
 NOTONE:
