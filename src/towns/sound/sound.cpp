@@ -93,7 +93,7 @@ void TownsSound::PCMStopPlay(unsigned char chStopPlay)
 			if(ch<6)
 			{
 				auto wav=state.ym2612.MakeWave(ch);
-				// outside_world->FMStartPlay(ch,wav);
+				outside_world->FMPlay(ch,wav);
 			}
 		}
 		break;
@@ -106,7 +106,7 @@ void TownsSound::PCMStopPlay(unsigned char chStopPlay)
 			if(ch<6)
 			{
 				auto wav=state.ym2612.MakeWave(ch);
-				// outside_world->FMStartPlay(ch,wav);
+				outside_world->FMPlay(ch,wav);
 			}
 		}
 		break;

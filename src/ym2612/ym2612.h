@@ -96,74 +96,11 @@ public:
 
 		void Clear(void);
 
-		inline int UnscaledOutput(int phase) const
-		{
-			return sineTable[phase&PHASE_MASK];
-		}
-		inline int UnscaledOutput(int phase,unsigned int FB) const
-		{
-			if(0==FB)
-			{
-				return sineTable[phase&PHASE_MASK];
-			}
-			else
-			{
-				static const unsigned int rShift[8]={0,4,3,2,1,0,0,0};
-				static const unsigned int lShift[8]={0,0,0,0,0,0,1,2};
-
-				int o=sineTable[phase&PHASE_MASK];
-				int sign=(o&0xFF000000);
-
-				// FB must be 0 to 7
-				o=(((o<<lShift[FB])>>rShift[FB])|sign);
-				return sineTable[(phase+o)&PHASE_MASK];
-			}
-		}
-		inline int InterpolateEnvelope(unsigned int timeInMS) const
-		{
-			if(true!=InReleasePhase)
-			{
-				if(timeInMS<env[0])
-				{
-					return env[1]*timeInMS/env[0];
-				}
-				else
-				{
-					timeInMS-=env[0];
-					if(timeInMS<env[2])
-					{
-						return env[3]+(env[5]-env[3])*timeInMS/env[2];
-					}
-					else
-					{
-						timeInMS-=env[2];
-						if(timeInMS<env[4])
-						{
-							return env[5]-env[5]*timeInMS/env[4];
-						}
-					}
-				}
-				return 0;
-			}
-			else
-			{
-				return 0; // Not supported yet.
-			}
-		}
-		inline int EnvelopedOutput(int phase,unsigned int timeInMS,unsigned int FB) const
-		{
-			int env=InterpolateEnvelope(timeInMS);
-			lastAmplitudeCache=env;
-			int unscaledOut=UnscaledOutput(phase,FB);
-			return (unscaledOut*env)/4096;
-		}
-		inline int EnvelopedOutput(int phase,unsigned int timeInMS) const
-		{
-			int env=InterpolateEnvelope(timeInMS);
-			lastAmplitudeCache=env;
-			int unscaledOut=UnscaledOutput(phase);
-			return (unscaledOut*env)/4096;
-		}
+		inline int UnscaledOutput(int phase) const;
+		inline int UnscaledOutput(int phase,unsigned int FB) const;
+		inline int InterpolateEnvelope(unsigned int timeInMS) const;
+		inline int EnvelopedOutput(int phase,unsigned int timeInMS,unsigned int FB) const;
+		inline int EnvelopedOutput(int phase,unsigned int timeInMS) const;
 	};
 	class Channel
 	{
@@ -254,7 +191,7 @@ private:
 
 	/*!
 	*/
-	int CalculateAmplitude(int chNum,unsigned int timeInMS) const;
+	int CalculateAmplitude(int chNum,unsigned int timeInMS,const unsigned int slotPhase[4]) const;
 
 
 public:

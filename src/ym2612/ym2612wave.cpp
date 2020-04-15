@@ -299,7 +299,78 @@ static unsigned int sustainDecayReleaseTime10to90Percent[64]=
 152,
 };
 
+////////////////////////////////////////////////////////////
 
+inline int YM2612::Slot::UnscaledOutput(int phase) const
+{
+	return sineTable[phase&PHASE_MASK];
+}
+inline int YM2612::Slot::UnscaledOutput(int phase,unsigned int FB) const
+{
+	if(0==FB)
+	{
+		return sineTable[phase&PHASE_MASK];
+	}
+	else
+	{
+		static const unsigned int rShift[8]={0,4,3,2,1,0,0,0};
+		static const unsigned int lShift[8]={0,0,0,0,0,0,1,2};
+
+		int o=sineTable[phase&PHASE_MASK];
+		int sign=(o&0xFF000000);
+
+		// FB must be 0 to 7
+		o=(((o<<lShift[FB])>>rShift[FB])|sign);
+		return sineTable[(phase+o)&PHASE_MASK];
+	}
+}
+inline int YM2612::Slot::InterpolateEnvelope(unsigned int timeInMS) const
+{
+	if(true!=InReleasePhase)
+	{
+		if(timeInMS<env[0])
+		{
+			return env[1]*timeInMS/env[0];
+		}
+		else
+		{
+			timeInMS-=env[0];
+			if(timeInMS<env[2])
+			{
+				return env[3]+(env[5]-env[3])*timeInMS/env[2];
+			}
+			else
+			{
+				timeInMS-=env[2];
+				if(timeInMS<env[4])
+				{
+					return env[5]-env[5]*timeInMS/env[4];
+				}
+			}
+		}
+		return 0;
+	}
+	else
+	{
+		return 0; // Not supported yet.
+	}
+}
+inline int YM2612::Slot::EnvelopedOutput(int phase,unsigned int timeInMS,unsigned int FB) const
+{
+	int env=InterpolateEnvelope(timeInMS);
+	lastAmplitudeCache=env;
+	int unscaledOut=UnscaledOutput(phase,FB);
+	return (unscaledOut*env)/4096;
+}
+inline int YM2612::Slot::EnvelopedOutput(int phase,unsigned int timeInMS) const
+{
+	int env=InterpolateEnvelope(timeInMS);
+	lastAmplitudeCache=env;
+	int unscaledOut=UnscaledOutput(phase);
+	return (unscaledOut*env)/4096;
+}
+
+////////////////////////////////////////////////////////////
 
 /*static*/ inline unsigned int YM2612::KSToRate(unsigned int KS,unsigned int BLOCK,unsigned int NOTE)
 {
@@ -347,6 +418,7 @@ void YM2612::KeyOn(unsigned int chNum)
 	{
 		slot.InReleasePhase=false;
 		slot.lastAmplitudeCache=0;
+		slot.phase12=0;
 
 		// Hz ranges 1 to roughly 8000.  PHASE_STEPS=32.  hertz*PHASE_STEPS=near 256K.
 		// 256K<<12=256K*4K=1024M=1G.  Fits in 32 bit.
@@ -363,7 +435,7 @@ void YM2612::KeyOn(unsigned int chNum)
 		{
 			slot.phase12Step=((slot.MULTI*hertzX16*PHASE_STEPS)<<8)/WAVE_SAMPLING_RATE; // Should consider DETUNE.
 		}
-		// (hertzX16*PHASE_STEP)<<8==hertz*PHASE_STEP*4096
+		// (hertzX16*PHASE_STEPS)<<8==hertz*PHASE_STEPS*4096
 		CalculateEnvelope(slot.env,slot.RRCache,KC,slot);
 	};
 
@@ -406,7 +478,7 @@ std::vector <unsigned char> YM2612::MakeWave(unsigned int chNum) const
 	{
 		const unsigned int microsec=(unsigned int)(microsec12>>12);
 
-		auto ampl=CalculateAmplitude(chNum,microsec12>>12);
+		auto ampl=CalculateAmplitude(chNum,microsec/1000,phase12);  // Envelope takes milliseconds.
 		wave.push_back(ampl&255);
 		wave.push_back((ampl>>8)&255);
 		wave.push_back(ampl&255);
@@ -424,6 +496,12 @@ std::vector <unsigned char> YM2612::MakeWave(unsigned int chNum) const
 	ch.slots[1].nextPhase12=phase12[1];
 	ch.slots[2].nextPhase12=phase12[2];
 	ch.slots[3].nextPhase12=phase12[3];
+
+std::cout << (microsec12>>12) << "us " << std::endl;
+std::cout << phase12[0] << "," << (phase12[0]>>12)/PHASE_STEPS << "cycles" << std::endl;
+std::cout << phase12[1] << "," << (phase12[1]>>12)/PHASE_STEPS << "cycles" << std::endl;
+std::cout << phase12[2] << "," << (phase12[2]>>12)/PHASE_STEPS << "cycles" << std::endl;
+std::cout << phase12[3] << "," << (phase12[3]>>12)/PHASE_STEPS << "cycles" << std::endl;
 
 	return wave;
 }
@@ -551,12 +629,12 @@ NOTONE:
 	return false;
 }
 
-int YM2612::CalculateAmplitude(int chNum,unsigned int timeInMS) const
+int YM2612::CalculateAmplitude(int chNum,unsigned int timeInMS,const unsigned int slotPhase12[4]) const
 {
-	#define SLOTOUT_0(phaseShift,timeInMS) (0==(ch.usingSlot&1) ? 0 : ch.slots[0].EnvelopedOutput((ch.slots[0].phase12>>12)+phaseShift,timeInMS,ch.FB))
-	#define SLOTOUT_1(phaseShift,timeInMS) (0==(ch.usingSlot&2) ? 0 : ch.slots[1].EnvelopedOutput((ch.slots[1].phase12>>12)+phaseShift,timeInMS))
-	#define SLOTOUT_2(phaseShift,timeInMS) (0==(ch.usingSlot&4) ? 0 : ch.slots[2].EnvelopedOutput((ch.slots[2].phase12>>12)+phaseShift,timeInMS))
-	#define SLOTOUT_3(phaseShift,timeInMS) (0==(ch.usingSlot&8) ? 0 : ch.slots[3].EnvelopedOutput((ch.slots[3].phase12>>12)+phaseShift,timeInMS))
+	#define SLOTOUT_0(phaseShift,timeInMS) (0==(ch.usingSlot&1) ? 0 : ch.slots[0].EnvelopedOutput((slotPhase12[0]>>12)+phaseShift,timeInMS,ch.FB))
+	#define SLOTOUT_1(phaseShift,timeInMS) (0==(ch.usingSlot&2) ? 0 : ch.slots[1].EnvelopedOutput((slotPhase12[1]>>12)+phaseShift,timeInMS))
+	#define SLOTOUT_2(phaseShift,timeInMS) (0==(ch.usingSlot&4) ? 0 : ch.slots[2].EnvelopedOutput((slotPhase12[2]>>12)+phaseShift,timeInMS))
+	#define SLOTOUT_3(phaseShift,timeInMS) (0==(ch.usingSlot&8) ? 0 : ch.slots[3].EnvelopedOutput((slotPhase12[3]>>12)+phaseShift,timeInMS))
 
 	auto &ch=state.channels[chNum];
 	int s0out,s1out,s2out,s3out;
@@ -587,25 +665,25 @@ int YM2612::CalculateAmplitude(int chNum,unsigned int timeInMS) const
 		s0out=SLOTOUT_0(0,    timeInMS);
 		s1out=SLOTOUT_1(s0out,timeInMS);
 		s2out=SLOTOUT_2(0    ,timeInMS);
-		s3out=SLOTOUT_2(s2out,timeInMS);
+		s3out=SLOTOUT_3(s2out,timeInMS);
 		return (s1out+s3out)/2;
 	case 5:
 		s0out=SLOTOUT_0(0,    timeInMS);
 		s1out=SLOTOUT_1(s0out,timeInMS);
 		s2out=SLOTOUT_2(s0out,timeInMS);
-		s3out=SLOTOUT_2(s0out,timeInMS);
+		s3out=SLOTOUT_3(s0out,timeInMS);
 		return (s1out+s2out+s3out)/3;
 	case 6:
 		s0out=SLOTOUT_0(0,    timeInMS);
 		s1out=SLOTOUT_1(s0out,timeInMS);
 		s2out=SLOTOUT_2(0    ,timeInMS);
-		s3out=SLOTOUT_2(0    ,timeInMS);
+		s3out=SLOTOUT_3(0    ,timeInMS);
 		return (s1out+s2out+s3out)/3;
 	case 7:
 		s0out=SLOTOUT_0(0,timeInMS);
 		s1out=SLOTOUT_1(0,timeInMS);
 		s2out=SLOTOUT_2(0,timeInMS);
-		s3out=SLOTOUT_2(0,timeInMS);
+		s3out=SLOTOUT_3(0,timeInMS);
 		return (s0out+s1out+s2out+s3out)/4;
 	}
 }

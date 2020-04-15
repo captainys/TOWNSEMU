@@ -44,6 +44,12 @@ public:
 	virtual void PCMPlayStop(int ch);
 	virtual bool PCMChannelPlaying(int ch);
 	virtual double PCMCurrentPosition(int ch);
+
+
+	YsSoundPlayer::SoundData FMChannel[YM2612::NUM_CHANNELS];
+	virtual void FMPlay(unsigned int ch,std::vector <unsigned char> &wave);
+	virtual void FMPlayStop(int ch);
+	virtual void FMChannelPlaying(int ch);
 };
 
 /* } */

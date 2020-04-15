@@ -290,6 +290,8 @@ unsigned int YM2612::WriteRegister(unsigned int channelBase,unsigned int reg,uns
 				KeyOn(ch);
 				chStartPlaying=ch;
 			}
+
+			state.channels[ch].usingSlot=slotFlag;
 		}
 	}
 	else if(0xA8<=reg && reg<=0xAE) // Special 3CH F-Number/BLOCK

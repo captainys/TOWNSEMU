@@ -19,6 +19,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "render.h"
 #include "discimg.h"
 #include "rf5c68.h"
+#include "ym2612.h"
 #include "townsdef.h"
 
 class Outside_World
@@ -46,6 +47,13 @@ public:
 	virtual void PCMPlayStop(int ch)=0;
 	virtual bool PCMChannelPlaying(int ch)=0;
 	virtual double PCMCurrentPosition(int ch)=0;
+
+
+
+public:
+	virtual void FMPlay(unsigned int ch,std::vector <unsigned char> &wave)=0;
+	virtual void FMPlayStop(int ch)=0;
+	virtual void FMChannelPlaying(int ch)=0;
 };
 
 
