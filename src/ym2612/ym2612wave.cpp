@@ -345,6 +345,9 @@ void YM2612::KeyOn(unsigned int chNum)
 
 	for(auto &slot : ch.slots)
 	{
+		slot.InReleasePhase=false;
+		slot.lastAmplitudeCache=0;
+
 		// Hz ranges 1 to roughly 8000.  PHASE_STEPS=32.  hertz*PHASE_STEPS=near 256K.
 		// 256K<<12=256K*4K=1024M=1G.  Fits in 32 bit.
 
@@ -403,7 +406,11 @@ std::vector <unsigned char> YM2612::MakeWave(unsigned int chNum) const
 	{
 		const unsigned int microsec=(unsigned int)(microsec12>>12);
 
-
+		auto ampl=CalculateAmplitude(chNum,microsec12>>12);
+		wave.push_back(ampl&255);
+		wave.push_back((ampl>>8)&255);
+		wave.push_back(ampl&255);
+		wave.push_back((ampl>>8)&255);
 
 		phase12[0]+=ch.slots[0].phase12Step;
 		phase12[1]+=ch.slots[1].phase12Step;
@@ -542,4 +549,63 @@ NOTONE:
 	env[5]=0;
 	RR=0;
 	return false;
+}
+
+int YM2612::CalculateAmplitude(int chNum,unsigned int timeInMS) const
+{
+	#define SLOTOUT_0(phaseShift,timeInMS) (0==(ch.usingSlot&1) ? 0 : ch.slots[0].EnvelopedOutput((ch.slots[0].phase12>>12)+phaseShift,timeInMS,ch.FB))
+	#define SLOTOUT_1(phaseShift,timeInMS) (0==(ch.usingSlot&2) ? 0 : ch.slots[1].EnvelopedOutput((ch.slots[1].phase12>>12)+phaseShift,timeInMS))
+	#define SLOTOUT_2(phaseShift,timeInMS) (0==(ch.usingSlot&4) ? 0 : ch.slots[2].EnvelopedOutput((ch.slots[2].phase12>>12)+phaseShift,timeInMS))
+	#define SLOTOUT_3(phaseShift,timeInMS) (0==(ch.usingSlot&8) ? 0 : ch.slots[3].EnvelopedOutput((ch.slots[3].phase12>>12)+phaseShift,timeInMS))
+
+	auto &ch=state.channels[chNum];
+	int s0out,s1out,s2out,s3out;
+	switch(ch.CONNECT)
+	{
+	default:
+	case 0:
+		s0out=SLOTOUT_0(0,    timeInMS);
+		s1out=SLOTOUT_1(s0out,timeInMS);
+		s2out=SLOTOUT_2(s1out,timeInMS);
+		return SLOTOUT_3(s2out,timeInMS);
+	case 1:
+		s0out=SLOTOUT_0(0,timeInMS);
+		s1out=SLOTOUT_1(0,timeInMS);
+		s2out=SLOTOUT_2(s0out+s1out,timeInMS);
+		return SLOTOUT_3(s2out,timeInMS);
+	case 2:
+		s0out=SLOTOUT_0(0,timeInMS);
+		s1out=SLOTOUT_1(0,timeInMS);
+		s2out=SLOTOUT_2(s1out,timeInMS);
+		return SLOTOUT_3(s0out+s2out,timeInMS);
+	case 3:
+		s0out=SLOTOUT_0(0,    timeInMS);
+		s1out=SLOTOUT_1(s0out,timeInMS);
+		s2out=SLOTOUT_2(0    ,timeInMS);
+		return SLOTOUT_3(s1out+s2out,timeInMS);
+	case 4:
+		s0out=SLOTOUT_0(0,    timeInMS);
+		s1out=SLOTOUT_1(s0out,timeInMS);
+		s2out=SLOTOUT_2(0    ,timeInMS);
+		s3out=SLOTOUT_2(s2out,timeInMS);
+		return (s1out+s3out)/2;
+	case 5:
+		s0out=SLOTOUT_0(0,    timeInMS);
+		s1out=SLOTOUT_1(s0out,timeInMS);
+		s2out=SLOTOUT_2(s0out,timeInMS);
+		s3out=SLOTOUT_2(s0out,timeInMS);
+		return (s1out+s2out+s3out)/3;
+	case 6:
+		s0out=SLOTOUT_0(0,    timeInMS);
+		s1out=SLOTOUT_1(s0out,timeInMS);
+		s2out=SLOTOUT_2(0    ,timeInMS);
+		s3out=SLOTOUT_2(0    ,timeInMS);
+		return (s1out+s2out+s3out)/3;
+	case 7:
+		s0out=SLOTOUT_0(0,timeInMS);
+		s1out=SLOTOUT_1(0,timeInMS);
+		s2out=SLOTOUT_2(0,timeInMS);
+		s3out=SLOTOUT_2(0,timeInMS);
+		return (s0out+s1out+s2out+s3out)/4;
+	}
 }
