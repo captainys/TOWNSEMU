@@ -337,14 +337,14 @@ inline int YM2612::Slot::InterpolateEnvelope(unsigned int timeInMS) const
 			timeInMS-=env[0];
 			if(timeInMS<env[2])
 			{
-				return env[3]+(env[5]-env[3])*timeInMS/env[2];
+				return env[1]-(env[1]-env[3])*timeInMS/env[2];
 			}
 			else
 			{
 				timeInMS-=env[2];
 				if(timeInMS<env[4])
 				{
-					return env[5]-env[5]*timeInMS/env[4];
+					return env[3]-env[3]*timeInMS/env[4];
 				}
 			}
 		}
@@ -479,10 +479,10 @@ std::vector <unsigned char> YM2612::MakeWave(unsigned int chNum) const
 		const unsigned int microsec=(unsigned int)(microsec12>>12);
 
 		auto ampl=CalculateAmplitude(chNum,microsec/1000,phase12);  // Envelope takes milliseconds.
-		wave.push_back(ampl&255);
-		wave.push_back((ampl>>8)&255);
-		wave.push_back(ampl&255);
-		wave.push_back((ampl>>8)&255);
+		wave[i*4  ]=(ampl&255);
+		wave[i*4+1]=((ampl>>8)&255);
+		wave[i*4+2]=(ampl&255);
+		wave[i*4+3]=((ampl>>8)&255);
 
 		phase12[0]+=ch.slots[0].phase12Step;
 		phase12[1]+=ch.slots[1].phase12Step;
