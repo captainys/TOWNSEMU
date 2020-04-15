@@ -62,3 +62,7 @@ CRTC: TOWNSIO_HSYNC_VSYNC should calculate timing better.
 #2020/02/21
 ROL Instruction.  Forgetting to update carry.  That made me wonder if my interpretation of carry flag setting after Right-Shift is correct.
 
+
+
+#2020/04/14
+Freeze while running F-BASIC 386 V2.1 L20 sample Penguin Sprite Animation.

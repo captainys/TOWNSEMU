@@ -319,26 +319,28 @@ void YM2612::KeyOn(unsigned int chNum)
 {
 	auto &ch=state.channels[chNum];
 
-	const unsigned int toneDurationMS=1000; // Tentative    GetToneDuration(ch);
 	const unsigned int hertzX16=BLOCK_FNUM_to_FreqX16(ch.BLOCK,ch.F_NUM);
-
-printf("F_NUM %d Hertz %d\n",ch.F_NUM,hertzX16/16);
 
 	state.playingCh|=(1<<chNum);
 	ch.playState=CH_PLAYING;
-	ch.toneDuration12=toneDurationMS;
-	ch.toneDuration12<<=12;
 	ch.microsec12=0;
 
 
 	// Formula [2] pp.204
-	unsigned int F11=((ch.F_NUM>>11)&1);
-	unsigned int F10=((ch.F_NUM>>10)&1);
-	unsigned int F9= ((ch.F_NUM>> 9)&1);
-	unsigned int F8= ((ch.F_NUM>> 8)&1);
-	unsigned int N3=(F11|(F10&F9&F8))|((~F11)&(F10|F9|F8));
-	unsigned int NOTE=(F11<<1)|N3;
-	unsigned int BLOCK_NOTE=(ch.BLOCK<<2)|NOTE;
+	// There is an error.  F_NUM is 11bits.  There is no F11.
+	// Probably, F11, F10, F9, F8 should be read F10, F9, F8, F7.
+	//unsigned int F10=((ch.F_NUM>>10)&1);
+	//unsigned int F9= ((ch.F_NUM>> 9)&1);
+	//unsigned int F8= ((ch.F_NUM>> 8)&1);
+	//unsigned int F7=((ch.F_NUM>>11)&1);
+	//unsigned int N3=(F10&(F9|F8|F7))|((~F10)&F9&F8&F7);
+	//unsigned int NOTE=(F10<<1)|N3;
+	//unsigned int KC=(ch.BLOCK<<2)|NOTE;
+	// Doesn't make sense.
+
+	// SEGA Genesis Software Manaual tells KC is just top 5 bits of BLOCK|F_NUM2.
+	// Which makes more sense.
+	unsigned int KC=(ch.BLOCK<<2)|((ch.F_NUM>>9)&3);
 
 
 	for(auto &slot : ch.slots)
@@ -350,11 +352,22 @@ printf("F_NUM %d Hertz %d\n",ch.F_NUM,hertzX16/16);
 		//            hertz*PHASE_STEPS/WAVE_SAMPLING_RATE times per step.
 		// Phase 24 runs
 		//            0x1000000*hertz*PHASE_STEPS/WAVE_SAMPLING_RATE per step.
-		slot.phase12Step=((hertzX16*PHASE_STEPS)<<8)/WAVE_SAMPLING_RATE; // Should consider DETUNE.
+		if(0==slot.MULTI)
+		{
+			slot.phase12Step=((hertzX16*PHASE_STEPS)<<7)/WAVE_SAMPLING_RATE; // Should consider DETUNE.
+		}
+		else
+		{
+			slot.phase12Step=((slot.MULTI*hertzX16*PHASE_STEPS)<<8)/WAVE_SAMPLING_RATE; // Should consider DETUNE.
+		}
 		// (hertzX16*PHASE_STEP)<<8==hertz*PHASE_STEP*4096
-		CalculateEnvelope(slot.env,slot.RRCache,BLOCK_NOTE,slot);
+		CalculateEnvelope(slot.env,slot.RRCache,KC,slot);
 	};
 
+	ch.toneDuration12=CalculateToneDurationMilliseconds(chNum);
+	ch.toneDuration12<<=12;
+
+printf("%d BLOCK %03xH F_NUM %03xH Hertz %d Max Duration %d\n",KC,ch.BLOCK,ch.F_NUM,hertzX16/16,ch.toneDuration12>>12);
 }
 
 std::vector <unsigned char> YM2612::MakeWave(unsigned int chNum) const
@@ -408,6 +421,21 @@ std::vector <unsigned char> YM2612::MakeWave(unsigned int chNum) const
 	return wave;
 }
 
+unsigned int YM2612::CalculateToneDurationMilliseconds(unsigned int chNum) const
+{
+	unsigned int durationInMS=0;
+	auto &ch=state.channels[chNum];
+	for(int slotNum=0; slotNum<NUM_SLOTS; ++slotNum)
+	{
+		if(0!=connToOutChannel[ch.CONNECT][slotNum])
+		{
+			auto &slot=ch.slots[slotNum];
+			durationInMS=std::max(durationInMS,slot.env[0]+slot.env[2]+slot.env[4]);
+		}
+	}
+	return durationInMS;
+}
+
 bool YM2612::CalculateEnvelope(unsigned int env[6],unsigned int &RR,unsigned int KC,const Slot &slot) const
 {
 	KC&=31;
@@ -437,28 +465,47 @@ std::cout << KC << "," << slot.KS << "," << (KC>>(3-slot.KS)) << ", ";
 	}
 
 	const unsigned int TLinv=9600-TLdB100;
-	const unsigned int SLinv=(SLdB100<TLinv ? TLinv-SLdB100 : 0);
-	const unsigned int TLampl=DBto127Scale[TLinv/100];
-	const unsigned int SLampl=DBto127Scale[SLinv/100];
+	const unsigned int SLinv=9600-SLdB100;
+	const unsigned int TLampl=DB100to4095Scale[TLinv];
+	const unsigned int SLampl=DB100to4095Scale[SLinv];
 
 std::cout << "AR=" << AR << " DR=" << DR << " SR=" << SR << " TL=" << slot.TL  << " SL=" << slot.SL ;
 std::cout << " ";
 
 	env[1]=TLampl;
-	env[3]=SLampl;
+	env[3]=SLampl*TLampl/4095;
 	env[5]=0;
 
 
+	// After reading fmgen.c (Written by cisc, Author of M88 PC8801 emulator), it looks to be that
+	// the time for attack doesn't depend on the total level, but it takes time to raise 0dB to 96dB all the time.
+	// Then, the time for decay is based on SL only.  Just like dropping from 96dB to 96-dB(SL) dB.
+	// The secondary decay duration should also depend only on SL, the time for 96-dB(SL)dB to 0dB.
+	// The amplitude change is not linear, but I approximate by a linear function.  I may come back to the envelope
+	// generation once I get a good enough approximation.
+	unsigned long long int mul;
+	env[0]=attackTime0to96dB[AR]/100;
+	mul=SLdB100;
+	mul*=sustainDecayReleaseTime0to96dB[DR];
+	mul/=960000;
+	env[2]=(unsigned int)mul;
+	mul=9600-SLdB100;
+	mul*=sustainDecayReleaseTime0to96dB[SR];
+	mul/=960000;
+	env[4]=(unsigned int)mul;
+
+	// ?
 	// If, AR, DR, SR, and RR are really rates, the duration for attack, decay, and sustain should depend
 	// on the amplitude.  If the amplitude for total level is high, it should take longer to get to the level.
 	// Or, if it is the rate, the slope of the decay should be the same regardless of the TL amplitude.
 	// But, the value calculated from this assumption doesn't make sense at all.
 	// It rather makes sense if I take the number from the table without scaling by the amplitude.
 
-	env[0]=attackTime0to96dB[AR]/100;
-	env[2]=sustainDecayReleaseTime0to96dB[DR]/100;
-	env[4]=sustainDecayReleaseTime0to96dB[SR]/100;
+	// env[0]=attackTime0to96dB[AR]/100;
+	// env[2]=sustainDecayReleaseTime0to96dB[DR]/100;
+	// env[4]=sustainDecayReleaseTime0to96dB[SR]/100;
 
+	// ?
 	// If it is really rate, the following code should better emulate, but doesn't look to be.
 	// unsigned long long int attackTime=attackTime0to96dB[AR]; // 1/100 milliseconds for jumping from 0 to 127 (96dB)
 	// // If TLampl==127, it takes attackTime/100 milliseconds to reach TLampl.
@@ -482,6 +529,7 @@ std::cout << " ";
 	// }
 
 for(int i=0; i<6; ++i){std::cout << env[i] << ",";}
+std::cout << "  RR=" << RR << "(" << sustainDecayReleaseTime0to96dB[RR]/100 << ")";
 std::cout << std::endl;
 
 	return true;

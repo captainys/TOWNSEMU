@@ -12,6 +12,8 @@ Redistribution and use in source and binary forms, with or without modification,
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 << LICENSE */
+#include <math.h>
+
 #include "ym2612.h"
 
 
@@ -48,6 +50,23 @@ void YM2612::Channel::Clear()
 }
 
 ////////////////////////////////////////////////////////////
+
+/*static*/ int YM2612::sineTable[YM2612::PHASE_STEPS];
+/*static*/ unsigned int YM2612::TLtoDB100[128];   // 100 times dB
+/*static*/ unsigned int YM2612::SLtoDB100[16];    // 100 times dB
+/*static*/ unsigned int YM2612::DB100to4095Scale[9601]; // dB to 0 to 4095 scale
+/*static*/ unsigned int YM2612::DB100from4095Scale[4096]; // 0 to 4095 scale to dB
+/*static*/ const unsigned int YM2612::connToOutChannel[8][4]=
+{
+	{0,0,0,1},
+	{0,0,0,1},
+	{0,0,0,1},
+	{0,0,0,1},
+	{0,1,0,1},
+	{0,1,1,1},
+	{0,1,1,1},
+	{1,1,1,1},
+};
 
 void YM2612::State::PowerOn(void)
 {
@@ -88,15 +107,32 @@ void YM2612::State::Reset(void)
 
 YM2612::YM2612()
 {
+	MakeSineTable();
 	MakeTLtoDB100();
 	MakeSLtoDB100();
-	MakeDBto127Scale();
+	MakeDB100to4095Scale();
 	PowerOn();
 }
 YM2612::~YM2612()
 {
 }
 
+void YM2612::MakeSineTable(void)
+{
+	const double PI=3.14159265358979323;
+	for(int i=0; i<PHASE_STEPS; ++i)
+	{
+		double a=2.0*PI*(double)i/(double)PHASE_STEPS;
+		double s=sin(a);
+		s*=(double)(UNSCALED_MAX);
+		sineTable[i]=(int)s;
+		// printf("%+-6d,",(int)s);
+		// if(i%16==15)
+		// {
+		// 	printf("\n");
+		// }
+	}
+}
 void YM2612::MakeTLtoDB100(void)
 {
 	const unsigned int bitDB[7]=
@@ -137,21 +173,34 @@ void YM2612::MakeSLtoDB100(void)
 		}
 	}
 }
-void YM2612::MakeDBto127Scale(void)
+void YM2612::MakeDB100to4095Scale(void)
 {
-	unsigned char src[97]=
+	// To convert 0 to 96dB (log scale) to amplitude 0 to 4095,
+	//    dB=20*log10(C*amplitude)
+	//    96=20*log10(C*4095)
+	//    4.8=log10(C*4095)
+	//    10^4.8=C*4095
+	//    C=(10^4.8)/4095.0
+	const double C=pow(10.0,4.8)/4095.0;
+
+	//    dB=20*log10(C*amplitude)
+	//    log10(C*amplitude)=dB/20
+	//    10^(dB/20)=C*amplitude
+	//    amplitude=(10^(dB/20))/C
+
+	for(int i=0; i<=9600; ++i)
 	{
-	  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-	  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-	  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-	  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,  1,  1,  2,  2,  2,  2,
-	  3,  3,  4,  4,  5,  5,  6,  7,  8,  8, 10, 11, 12, 14, 15, 17,
-	 20, 22, 25, 28, 31, 35, 40, 45, 50, 56, 63, 71, 80, 89,100,113,
-	127,
-	};
-	for(int i=0; i<97; ++i)
+		double dB=(double)i/100.0;
+		DB100to4095Scale[i]=(unsigned int)pow(10.0,dB/20.0)/C;
+		// if(0==i%100)
+		// {
+		// 	printf("%4ddB -> %4d\n",i/100,DB100to4095Scale[i]);
+		// }
+	}
+	for(int i=0; i<4096; ++i)
 	{
-		DBto127Scale[i]=src[i];
+		double dB100=100.0*(20.0*log10(C*(double)i));
+		DB100from4095Scale[i]=(unsigned int)dB100;
 	}
 }
 

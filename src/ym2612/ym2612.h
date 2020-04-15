@@ -32,21 +32,14 @@ public:
 	// NATick counts up every 12 internal-clock ticks.
 	// NBTick counts up every 192 internal-clock ticks.
 
-	#define SINETABLE \
-		static const char sineTable[PHASE_STEPS]= { \
-			+0 ,+3 ,+6 ,+9 ,+12,+15,+17,+20,+22,+24,+26,+28,+29,+30,+31,+31, \
-			+32,+31,+31,+30,+29,+28,+26,+24,+22,+20,+17,+15,+12,+9 ,+6 ,+3 , \
-			+0 ,-3 ,-6 ,-9 ,-12,-15,-17,-20,-22,-24,-26,-28,-29,-30,-31,-31, \
-			-32,-31,-31,-30,-29,-28,-26,-24,-22,-20,-17,-15,-12,-9 ,-6 ,-3 , };
-
 	enum
 	{
 		NUM_SLOTS=4,
 		NUM_CHANNELS=6,
 
-		PHASE_STEPS=64,
-		PHASE_MASK=63,
-		UNSCALED_MAX=32,
+		PHASE_STEPS=4096,
+		PHASE_MASK=4095,
+		UNSCALED_MAX=2048,
 
 		TONE_CHOPOFF_MILLISEC=4000,
 
@@ -101,12 +94,10 @@ public:
 
 		inline char UnscaledOutput(int phase) const
 		{
-			SINETABLE;
 			return sineTable[phase&PHASE_MASK];
 		}
 		inline char UnscaledOutput(int phase,unsigned int FB) const
 		{
-			SINETABLE;
 			if(0==FB)
 			{
 				return sineTable[phase&PHASE_MASK];
@@ -162,16 +153,20 @@ public:
 
 	State state;
 
-	unsigned int TLtoDB100[128];   // 100 times dB
-	unsigned int SLtoDB100[16];    // 100 times dB
-	unsigned char DBto127Scale[97]; // dB to 0 to 127 scale
+	static int sineTable[PHASE_STEPS];
+	static unsigned int TLtoDB100[128];   // 100 times dB
+	static unsigned int SLtoDB100[16];    // 100 times dB
+	static unsigned int DB100to4095Scale[9601]; // dB to 0 to 4095 scale
+	static unsigned int DB100from4095Scale[4096]; // 4095 scale to dB
+	static const unsigned int connToOutChannel[8][4];
 
 	YM2612();
 	~YM2612();
 private:
+	void MakeSineTable(void);
 	void MakeTLtoDB100(void);
 	void MakeSLtoDB100(void);
-	void MakeDBto127Scale(void);
+	void MakeDB100to4095Scale(void);
 public:
 	void PowerOn(void);
 	void Reset(void);
@@ -203,7 +198,13 @@ public:
 	/*!
 	*/
 	std::vector <unsigned char> MakeWave(unsigned int ch) const;
+private:
+	/*! Returns the longest duration of the tone in milliseconds if no key off.
+	*/
+	unsigned int CalculateToneDurationMilliseconds(unsigned int chNum) const;
 
+
+public:
 	/*! 
 	*/
 	void NextWave(void);
