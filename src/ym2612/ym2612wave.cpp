@@ -372,20 +372,6 @@ inline int YM2612::Slot::EnvelopedOutput(int phase,unsigned int timeInMS) const
 
 ////////////////////////////////////////////////////////////
 
-/*static*/ inline unsigned int YM2612::KSToRate(unsigned int KS,unsigned int BLOCK,unsigned int NOTE)
-{
-	// [2] pp.207 Table I-5-30
-	static const unsigned int RateTable[4*32]=
-	{
-		 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3,  // KC<<3
-		 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6, 7, 7, 7, 7,  // KC<<2
-		 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9,10,10,11,11,12,12,13,13,14,14,15,15,  // KC<<1
-		 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31   // KC
-	};
-	unsigned int keyCode=((BLOCK<<2)|NOTE)&31;
-	return RateTable[KS*4+keyCode];
-}
-
 void YM2612::KeyOn(unsigned int chNum)
 {
 	auto &ch=state.channels[chNum];
@@ -420,21 +406,29 @@ void YM2612::KeyOn(unsigned int chNum)
 		slot.lastAmplitudeCache=0;
 		slot.phase12=0;
 
-		// Hz ranges 1 to roughly 8000.  PHASE_STEPS=32.  hertz*PHASE_STEPS=near 256K.
-		// 256K<<12=256K*4K=1024M=1G.  Fits in 32 bit.
+		// Hz ranges 1 to roughly 8000.  PHASE_STEPS=4096.  hertz*PHASE_STEPS=2^13*2^12=2^25. Fits in 32 bit.
 
 		// Phase runs hertz*PHASE_STEPS times per second.
 		//            hertz*PHASE_STEPS/WAVE_SAMPLING_RATE times per step.
-		// Phase 24 runs
-		//            0x1000000*hertz*PHASE_STEPS/WAVE_SAMPLING_RATE per step.
+		// Phase 12 runs
+		//            0x1000*hertz*PHASE_STEPS/WAVE_SAMPLING_RATE per step.
+		unsigned long long phase12Step;
 		if(0==slot.MULTI)
 		{
-			slot.phase12Step=((hertzX16*PHASE_STEPS)<<7)/WAVE_SAMPLING_RATE; // Should consider DETUNE.
+			phase12Step=hertzX16*PHASE_STEPS;
+			phase12Step<<=7;
+			phase12Step/=WAVE_SAMPLING_RATE;
 		}
 		else
 		{
-			slot.phase12Step=((slot.MULTI*hertzX16*PHASE_STEPS)<<8)/WAVE_SAMPLING_RATE; // Should consider DETUNE.
+			phase12Step=slot.MULTI*hertzX16*PHASE_STEPS;
+			phase12Step<<=8;
+			phase12Step/=WAVE_SAMPLING_RATE;
 		}
+		slot.phase12Step=(unsigned int)phase12Step;
+
+		 // Should consider DETUNE.
+
 		// (hertzX16*PHASE_STEPS)<<8==hertz*PHASE_STEPS*4096
 		CalculateEnvelope(slot.env,slot.RRCache,KC,slot);
 	};
@@ -631,10 +625,15 @@ NOTONE:
 
 int YM2612::CalculateAmplitude(int chNum,unsigned int timeInMS,const unsigned int slotPhase12[4]) const
 {
-	#define SLOTOUT_0(phaseShift,timeInMS) (0==(ch.usingSlot&1) ? 0 : ch.slots[0].EnvelopedOutput((slotPhase12[0]>>12)+phaseShift,timeInMS,ch.FB))
-	#define SLOTOUT_1(phaseShift,timeInMS) (0==(ch.usingSlot&2) ? 0 : ch.slots[1].EnvelopedOutput((slotPhase12[1]>>12)+phaseShift,timeInMS))
-	#define SLOTOUT_2(phaseShift,timeInMS) (0==(ch.usingSlot&4) ? 0 : ch.slots[2].EnvelopedOutput((slotPhase12[2]>>12)+phaseShift,timeInMS))
-	#define SLOTOUT_3(phaseShift,timeInMS) (0==(ch.usingSlot&8) ? 0 : ch.slots[3].EnvelopedOutput((slotPhase12[3]>>12)+phaseShift,timeInMS))
+	#define SLOTOUTEV_0(phaseShift,timeInMS) (0==(ch.usingSlot&1) ? 0 : ch.slots[0].EnvelopedOutput((slotPhase12[0]>>12)+phaseShift,timeInMS,ch.FB))
+	#define SLOTOUTEV_1(phaseShift,timeInMS) (0==(ch.usingSlot&2) ? 0 : ch.slots[1].EnvelopedOutput((slotPhase12[1]>>12)+phaseShift,timeInMS))
+	#define SLOTOUTEV_2(phaseShift,timeInMS) (0==(ch.usingSlot&4) ? 0 : ch.slots[2].EnvelopedOutput((slotPhase12[2]>>12)+phaseShift,timeInMS))
+	#define SLOTOUTEV_3(phaseShift,timeInMS) (0==(ch.usingSlot&8) ? 0 : ch.slots[3].EnvelopedOutput((slotPhase12[3]>>12)+phaseShift,timeInMS))
+
+	#define SLOTOUT_0(phaseShift,timeInMS) (0==(ch.usingSlot&1) ? 0 : ch.slots[0].UnscaledOutput((slotPhase12[0]>>12)+phaseShift,ch.FB))
+	#define SLOTOUT_1(phaseShift,timeInMS) (0==(ch.usingSlot&2) ? 0 : ch.slots[1].UnscaledOutput((slotPhase12[1]>>12)+phaseShift))
+	#define SLOTOUT_2(phaseShift,timeInMS) (0==(ch.usingSlot&4) ? 0 : ch.slots[2].UnscaledOutput((slotPhase12[2]>>12)+phaseShift))
+	#define SLOTOUT_3(phaseShift,timeInMS) (0==(ch.usingSlot&8) ? 0 : ch.slots[3].UnscaledOutput((slotPhase12[3]>>12)+phaseShift))
 
 	auto &ch=state.channels[chNum];
 	int s0out,s1out,s2out,s3out;
@@ -645,45 +644,46 @@ int YM2612::CalculateAmplitude(int chNum,unsigned int timeInMS,const unsigned in
 		s0out=SLOTOUT_0(0,    timeInMS);
 		s1out=SLOTOUT_1(s0out,timeInMS);
 		s2out=SLOTOUT_2(s1out,timeInMS);
-		return SLOTOUT_3(s2out,timeInMS);
+		return SLOTOUTEV_3(s2out,timeInMS)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX;
 	case 1:
 		s0out=SLOTOUT_0(0,timeInMS);
 		s1out=SLOTOUT_1(0,timeInMS);
 		s2out=SLOTOUT_2(s0out+s1out,timeInMS);
-		return SLOTOUT_3(s2out,timeInMS);
+		return SLOTOUTEV_3(s2out,timeInMS)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX;
 	case 2:
 		s0out=SLOTOUT_0(0,timeInMS);
 		s1out=SLOTOUT_1(0,timeInMS);
 		s2out=SLOTOUT_2(s1out,timeInMS);
-		return SLOTOUT_3(s0out+s2out,timeInMS);
+		return SLOTOUTEV_3(s0out+s2out,timeInMS)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX;
 	case 3:
 		s0out=SLOTOUT_0(0,    timeInMS);
 		s1out=SLOTOUT_1(s0out,timeInMS);
 		s2out=SLOTOUT_2(0    ,timeInMS);
-		return SLOTOUT_3(s1out+s2out,timeInMS);
+		return SLOTOUTEV_3(s1out+s2out,timeInMS)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX;
 	case 4:
 		s0out=SLOTOUT_0(0,    timeInMS);
-		s1out=SLOTOUT_1(s0out,timeInMS);
+		s1out=SLOTOUTEV_1(s0out,timeInMS);
 		s2out=SLOTOUT_2(0    ,timeInMS);
-		s3out=SLOTOUT_3(s2out,timeInMS);
-		return (s1out+s3out)/2;
+		s3out=SLOTOUTEV_3(s2out,timeInMS);
+		return ((s1out+s3out)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX)/2;
+		// Test only Slot 3 -> return SLOTOUTEV_3(0,timeInMS)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX;
 	case 5:
 		s0out=SLOTOUT_0(0,    timeInMS);
-		s1out=SLOTOUT_1(s0out,timeInMS);
-		s2out=SLOTOUT_2(s0out,timeInMS);
-		s3out=SLOTOUT_3(s0out,timeInMS);
-		return (s1out+s2out+s3out)/3;
+		s1out=SLOTOUTEV_1(s0out,timeInMS);
+		s2out=SLOTOUTEV_2(s0out,timeInMS);
+		s3out=SLOTOUTEV_3(s0out,timeInMS);
+		return ((s1out+s2out+s3out)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX)/3;
 	case 6:
 		s0out=SLOTOUT_0(0,    timeInMS);
-		s1out=SLOTOUT_1(s0out,timeInMS);
-		s2out=SLOTOUT_2(0    ,timeInMS);
-		s3out=SLOTOUT_3(0    ,timeInMS);
-		return (s1out+s2out+s3out)/3;
+		s1out=SLOTOUTEV_1(s0out,timeInMS);
+		s2out=SLOTOUTEV_2(0    ,timeInMS);
+		s3out=SLOTOUTEV_3(0    ,timeInMS);
+		return ((s1out+s2out+s3out)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX)/3;
 	case 7:
 		s0out=SLOTOUT_0(0,timeInMS);
-		s1out=SLOTOUT_1(0,timeInMS);
-		s2out=SLOTOUT_2(0,timeInMS);
-		s3out=SLOTOUT_3(0,timeInMS);
-		return (s0out+s1out+s2out+s3out)/4;
+		s1out=SLOTOUTEV_1(0,timeInMS);
+		s2out=SLOTOUTEV_2(0,timeInMS);
+		s3out=SLOTOUTEV_3(0,timeInMS);
+		return ((s0out+s1out+s2out+s3out)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX)/4;
 	}
 }

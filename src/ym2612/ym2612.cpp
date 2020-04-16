@@ -135,42 +135,16 @@ void YM2612::MakeSineTable(void)
 }
 void YM2612::MakeTLtoDB100(void)
 {
-	const unsigned int bitDB[7]=
-	{
-		75,150,300,600,1200,2400,4800
-	};
 	for(unsigned int TL=0; TL<128; ++TL)
 	{
-		TLtoDB100[TL]=0;
-		unsigned char bit=1;
-		for(int c=0; c<7; ++c)
-		{
-			if(0!=(TL&bit))
-			{
-				TLtoDB100[TL]+=bitDB[c];
-			}
-			bit<<=1;
-		}
+		TLtoDB100[TL]=TL*75;
 	}
 }
 void YM2612::MakeSLtoDB100(void)
 {
-	const unsigned int bitDB[4]=
-	{
-		2400,1200,600,300
-	};
 	for(unsigned int SL=0; SL<16; ++SL)
 	{
-		SLtoDB100[SL]=0;
-		unsigned char bit=1;
-		for(int c=0; c<4; ++c)
-		{
-			if(0!=(SL&bit))
-			{
-				SLtoDB100[SL]+=bitDB[c];
-			}
-			bit<<=1;
-		}
+		SLtoDB100[SL]=SL*300;
 	}
 }
 void YM2612::MakeDB100to4095Scale(void)

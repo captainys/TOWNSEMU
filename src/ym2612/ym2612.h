@@ -37,13 +37,15 @@ public:
 		NUM_SLOTS=4,
 		NUM_CHANNELS=6,
 
-		PHASE_STEPS=4096,
+		// Sine table
+		PHASE_STEPS=4096,      // 4096=360degrees
 		PHASE_MASK=4095,
 		UNSCALED_MAX=2048,
 
 		TONE_CHOPOFF_MILLISEC=4000,
 
 		WAVE_SAMPLING_RATE=22050,
+		WAVE_OUTPUT_AMPLITUDE_MAX=32767,
 	};
 
 	enum
@@ -171,11 +173,6 @@ public:
 	/*! Returns timer-up state of 
 	*/
 	bool TimerUp(unsigned int timerId) const;
-
-	/*!
-	*/
-	inline static unsigned int KSToRate(unsigned int KS,unsigned int BLOCK,unsigned int NOTE);
-
 
 	/*! Cache parameters for calculating wave.
 	*/
