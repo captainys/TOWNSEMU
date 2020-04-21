@@ -27,7 +27,10 @@ build\btx.OBJ : cputest\btx.asm
 build\bitshift.OBJ : cputest\bitshift.asm
 	386asm cputest\bitshift.asm -OBJECT build\bitshift.OBJ
 
-build\gentest.exp : build\gentest.OBJ build\f6f7.OBJ build\test_r_i.OBJ build\aadaam.OBJ build\btx.OBJ build\imul.OBJ build\bitshift.OBJ
+build\cbw_cwde.OBJ : cputest\cbw_cwde.asm
+	386asm cputest\cbw_cwde.asm -OBJECT build\cbw_cwde.OBJ
+
+build\gentest.exp : build\gentest.OBJ build\f6f7.OBJ build\test_r_i.OBJ build\aadaam.OBJ build\btx.OBJ build\imul.OBJ build\bitshift.OBJ build\cbw_cwde.OBJ
 	386link @cputest\gentest.LN
 
 cputest\TESTCASE.H : build\gentest.exp
@@ -36,7 +39,7 @@ cputest\TESTCASE.H : build\gentest.exp
 build\runtest.OBJ : cputest\runtest.c cputest\TESTCASE.H
 	run386 c:\hc386\bin\hcd386p cputest\runtest.c -obj build\runtest.OBJ
 
-build\runtest.exp : build\runtest.OBJ build\f6f7.OBJ build\test_r_i.OBJ build\aadaam.OBJ build\btx.OBJ build\imul.OBJ build\bitshift.OBJ
+build\runtest.exp : build\runtest.OBJ build\f6f7.OBJ build\test_r_i.OBJ build\aadaam.OBJ build\btx.OBJ build\imul.OBJ build\bitshift.OBJ build\cbw_cwde.OBJ
 	386link @cputest\runtest.LN
 
 

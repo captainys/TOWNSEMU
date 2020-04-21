@@ -5,6 +5,7 @@ build\aadaam.obj
 build\btx.obj 
 build\imul.obj 
 build\bitshift.obj 
+build\cbw_cwde.OBJ
 -lib C:\hc386\small\hce.lib 
 -lib C:\hc386\townslib\lib\tbios.lib 
 -exe build\gentest.exp

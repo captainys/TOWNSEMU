@@ -3,6 +3,33 @@
 extern void TEST_IMUL_R32_R32(unsigned int eax_edx_eflags[3],unsigned int eax,unsigned int edx);
 extern void TEST_MUL_R32_R32(unsigned int eax_edx_eflags[3],unsigned int eax,unsigned int edx);
 
+static unsigned int testNumberSrc16[]=
+{
+	0x0000,
+	0x0001,
+	0x0005,
+	0x0010,
+	0x0105,
+	0x1000,
+	0x7007,
+	0x0100,
+	0x0301,
+	0x0705,
+	0x0810,
+	0x0A05,
+	0x1C00,
+	0x7E07,
+	0x7FFF,
+	0x8000,
+	0x8707,
+	0x8000,
+	0x8FFF,
+	0x800B,
+	0xC00B,
+	0xB000,
+	0xA0BD,
+	0xFFFF,
+};
 static unsigned int testNumberSrc32[]=
 {
 	0x00000000,
@@ -20,7 +47,10 @@ static unsigned int testNumberSrc32[]=
 	0x7FFFFFFF,
 	0x80000000,
 	0x800B000B,
+	0xA0000000,
+	0xA00B000B,
 	0xB00B000B,
+	0xD00B000B,
 	0xF0000000,
 	0xFFFFFFFF,
 };
@@ -154,6 +184,7 @@ void GenBitShift(FILE *ofp)
 }
 
 extern void TEST_F6(unsigned int res[],unsigned int eax,unsigned int edx);
+extern void TEST_F7(unsigned int res[],unsigned int eax,unsigned int edx);
 
 void GenF6F7_NOT_NEG_MUL_IMUL_DIV_IDIV(FILE *ofp)
 {
@@ -311,6 +342,7 @@ void GenAADAAMAAS(FILE *ofp)
 }
 
 extern void BTX_R32_I8(unsigned int res[],unsigned int EBX);
+extern void BTX_R32_R32(unsigned int res[],unsigned int EBX,unsigned int ECX);
 
 void GenBTx(FILE *ofp)
 {
@@ -360,6 +392,47 @@ void GenBTx(FILE *ofp)
 	fprintf(ofp,"};\n");
 }
 
+extern void TEST_CBW(unsigned int *res,unsigned int eax);
+extern void TEST_CWDE(unsigned int *res,unsigned int eax);
+extern void TEST_CWD(unsigned int res[2],unsigned int eax,unsigned int edx);
+extern void TEST_CDQ(unsigned int res[2],unsigned int eax,unsigned int edx);
+
+void GenCBW_CWDE_CWD_CDQ(FILE *ofp)
+{
+	int i;
+	unsigned int res[2];
+	fprintf(ofp,"unsigned int CBW_TABLE[]={\n");
+	for(i=0; i<256; ++i)
+	{
+		TEST_CBW(res,i);
+		fprintf(ofp,"\t0x%08x,0x%08x,\n",i,res[0]);
+	}
+	fprintf(ofp,"};\n");
+
+	fprintf(ofp,"unsigned int CWDE_TABLE[]={\n");
+	for(i=0; i<LEN(testNumberSrc16); ++i)
+	{
+		TEST_CWDE(res,testNumberSrc16[i]);
+		fprintf(ofp,"\t0x%08x,0x%08x,\n",testNumberSrc16[i],res[0]);
+	}
+	fprintf(ofp,"};\n");
+
+	fprintf(ofp,"unsigned int CWD_TABLE[]={\n");
+	for(i=0; i<LEN(testNumberSrc16); ++i)
+	{
+		TEST_CWD(res,testNumberSrc16[i],testNumberSrc16[i]);
+		fprintf(ofp,"\t0x%08x,0x%08x,0x%08x,\n",testNumberSrc16[i],res[0],res[1]);
+	}
+	fprintf(ofp,"};\n");
+	fprintf(ofp,"unsigned int CDQ_TABLE[]={\n");
+	for(i=0; i<LEN(testNumberSrc32); ++i)
+	{
+		TEST_CDQ(res,testNumberSrc32[i],testNumberSrc32[i]);
+		fprintf(ofp,"\t0x%08x,0x%08x,0x%08x,\n",testNumberSrc32[i],res[0],res[1]);
+	}
+	fprintf(ofp,"};\n");
+}
+
 int main(void)
 {
 	FILE *ofp=fopen("cputest/testcase.h","w");
@@ -370,6 +443,7 @@ int main(void)
 	GenF6F7_TEST_R_I(ofp);
 	GenAADAAMAAS(ofp);
 	GenBTx(ofp);
+	GenCBW_CWDE_CWD_CDQ(ofp);
 	fclose(ofp);
 	return 0;
 }

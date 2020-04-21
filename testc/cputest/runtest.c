@@ -240,6 +240,7 @@ int RunF6F7_NOT_NEG_MUL_IMUL_DIV_IDIV(void)
 			return 1;
 		}
 	}
+	return 0;
 }
 
 extern void TEST_R8_I8(unsigned int res[16],unsigned int ebx);
@@ -304,6 +305,7 @@ int RunF6F7_TEST_I(void)
 			return 1;
 		}
 	}
+	return 0;
 }
 
 void TEST_AAD(unsigned int res[],unsigned int EAX);
@@ -352,6 +354,7 @@ int RunAADAAMAAS(void)
 			return 1;
 		}
 	}
+	return 0;
 }
 
 void BTX_R32_I8(unsigned int res[],unsigned int EBX);
@@ -404,7 +407,6 @@ int BTx_R32_R32_ErrorCheck(unsigned int OP1,unsigned int OP2,const unsigned int 
 	{
 		if(expected[i]!=returned[i])
 		{
-			int k;
 			printf("Error in %s\n",inst[i/2]);
 			printf("OP1,OP2:  %08x %08x\n",OP1,OP2);
 			printf("Expected: %08x %08x\n",expected[i&~1],expected[(i&~1)+1]);
@@ -447,6 +449,90 @@ int RunBTx(void)
 	return 0;
 }
 
+extern void TEST_CBW(unsigned int *res,unsigned int eax);
+extern void TEST_CWDE(unsigned int *res,unsigned int eax);
+extern void TEST_CWD(unsigned int res[2],unsigned int eax,unsigned int edx);
+extern void TEST_CDQ(unsigned int res[2],unsigned int eax,unsigned int edx);
+
+int CBW_CWDE_ErrorCheck(unsigned int input,unsigned int expected,unsigned int returned)
+{
+	if(expected!=returned)
+	{
+		printf("Error in CBW or CWDE\n");
+		printf("EAX     : %08x\n",input);
+		printf("Expected: %08x\n",expected);
+		printf("Returned: %08x\n",returned);
+		return 1;
+	}
+	return 0;
+}
+
+int CWD_CDQ_ErrorCheck(unsigned int input,unsigned int expected[2],unsigned int returned[2])
+{
+	if(expected[0]!=returned[0] || expected[1]!=returned[1])
+	{
+		printf("Error in CBW or CWDE\n");
+		printf("EAX     : %08x\n",input);
+		printf("Expected: %08x %08x\n",expected[0],expected[1]);
+		printf("Returned: %08x %08x\n",returned[0],returned[1]);
+		return 1;
+	}
+	return 0;
+}
+
+int RunCBW_CWDE_CWD_CDQ(void)
+{
+	int i;
+	unsigned int res[2];
+	printf("CBW_TABLE\n");
+	for(i=0; i<LEN(CBW_TABLE); i+=2)
+	{
+		unsigned int *table=CBW_TABLE+i;
+		unsigned int *expected=table+1;
+		TEST_CBW(res,table[0]);
+		if(0!=CBW_CWDE_ErrorCheck(table[0],*expected,res[0]))
+		{
+			return 1;
+		}
+	}
+	printf("CWDE_TABLE\n");
+	for(i=0; i<LEN(CWDE_TABLE); i+=2)
+	{
+		unsigned int *table=CWDE_TABLE+i;
+		unsigned int *expected=table+1;
+		TEST_CWDE(res,table[0]);
+		if(0!=CBW_CWDE_ErrorCheck(table[0],*expected,res[0]))
+		{
+			return 1;
+		}
+	}
+
+	printf("CWD_TABLE\n");
+	for(i=0; i<LEN(CWD_TABLE); i+=3)
+	{
+		unsigned int *table=CWD_TABLE+i;
+		unsigned int *expected=table+1;
+		TEST_CWD(res,table[0],table[0]);
+		if(0!=CWD_CDQ_ErrorCheck(table[0],expected,res))
+		{
+			return 1;
+		}
+	}
+
+	printf("CDQ_TABLE\n");
+	for(i=0; i<LEN(CDQ_TABLE); i+=3)
+	{
+		unsigned int *table=CDQ_TABLE+i;
+		unsigned int *expected=table+1;
+		TEST_CDQ(res,table[0],table[0]);
+		if(0!=CWD_CDQ_ErrorCheck(table[0],expected,res))
+		{
+			return 1;
+		}
+	}
+	return 0;
+}
+
 int main(void)
 {
 	RunImulR32xR32Test();
@@ -456,6 +542,7 @@ int main(void)
 	RunF6F7_TEST_I();
 	RunAADAAMAAS();
 	RunBTx();
+	RunCBW_CWDE_CWD_CDQ();
 	printf("ARPL not covered.\n");
 	return 0;
 }
