@@ -13,6 +13,7 @@ set(DISC_IMAGE_DIR "D:/ISOImageSubset")
 enable_testing()
 
 add_subdirectory(cpputil)
+add_subdirectory(lineparser)
 add_subdirectory(miscutil)
 add_subdirectory(cheapmath)
 

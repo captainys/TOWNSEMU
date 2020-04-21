@@ -84,6 +84,8 @@ public:
 		CMD_LET,
 		CMD_CRTC_PAGE,
 
+		CMD_CALCULATE,
+
 		CMD_CMOSLOAD,
 		CMD_CDLOAD,
 		CMD_CDOPENCLOSE,
@@ -185,6 +187,8 @@ public:
 	void Execute_ListBreakPoints(FMTowns &towns,Command &cmd);
 
 	void Execute_Dump(FMTowns &towns,Command &cmd);
+
+	void Execute_Calculate(FMTowns &towns,Command &cmd);
 
 	void Execute_BreakOn(FMTowns &towns,Command &cmd);
 	void Execute_ClearBreakOn(FMTowns &towns,Command &cmd);

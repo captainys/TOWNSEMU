@@ -20,6 +20,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "townscommandutil.h"
 #include "cpputil.h"
 #include "miscutil.h"
+#include "townslineparser.h"
 
 
 
@@ -74,7 +75,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["DELSYM"]=CMD_DEL_SYMBOL;
 	primaryCmdMap["SAVEEVT"]=CMD_SAVE_EVENTLOG;
 	primaryCmdMap["LOADEVT"]=CMD_LOAD_EVENTLOG;
-
+	primaryCmdMap["CALC"]=CMD_CALCULATE;
 
 	primaryCmdMap["TYPE"]=CMD_TYPE_KEYBOARD;
 	primaryCmdMap["LET"]=CMD_LET;
@@ -186,6 +187,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "PRINT info|PRI info|P info" << std::endl;
 	std::cout << "DUMP info|DM info" << std::endl;
 	std::cout << "  Print/Dump information." << std::endl;
+	std::cout << "CALC formula" << std::endl;
+	std::cout << "  Caluclate a value." << std::endl;
 	std::cout << "BP EIP|BRK EIP" << std::endl;
 	std::cout << "BP CS:EIP|BRK CS:EIP" << std::endl;
 	std::cout << "  Add a break point." << std::endl;
@@ -415,6 +418,10 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,Command &c
 
 	case CMD_DUMP:
 		Execute_Dump(towns,cmd);
+		break;
+
+	case CMD_CALCULATE:
+		Execute_Calculate(towns,cmd);
 		break;
 
 	case CMD_RUN_ONE_INSTRUCTION:
@@ -774,6 +781,24 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 		{
 			PrintError(ERROR_DUMP_TARGET_UNDEFINED);
 			return;
+		}
+	}
+}
+
+void TownsCommandInterpreter::Execute_Calculate(FMTowns &towns,Command &cmd)
+{
+	if(cmd.argv.size()<2)
+	{
+		PrintError(ERROR_TOO_FEW_ARGS);
+		return;
+	}
+	for(int i=1; i<cmd.argv.size(); ++i)
+	{
+		TownsLineParser parser(&towns.cpu);
+		if(true==parser.Analyze(cmd.argv[i]))
+		{
+			auto value=parser.Evaluate();
+			std::cout << cmd.argv[i] << "=" << value << "(" << cpputil::Uitox(value&0xFFFFFFFF) << ")" << std::endl;
 		}
 	}
 }
