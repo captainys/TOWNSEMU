@@ -167,6 +167,10 @@ void FMTowns::SetMouseButtonState(bool lButton,bool rButton)
 					else
 					{
 						eventLog.LogLeftButtonUp(state.townsTime,mx,my);
+						if(true==var.debugBreakOnLButtonUp)
+						{
+							debugger.ExternalBreak("Left Button Up");
+						}
 					}
 				}
 				if(p.button[1]!=rButton)
@@ -191,6 +195,10 @@ void FMTowns::SetMouseButtonState(bool lButton,bool rButton)
 		{
 			if(p.device==TownsGamePort::MOUSE)
 			{
+				if(true==var.debugBreakOnLButtonUp && p.button[0]!=lButton && true!=lButton)
+				{
+					debugger.ExternalBreak("Left Button Up");
+				}
 				p.button[0]=lButton;
 				p.button[1]=rButton;
 			}

@@ -828,11 +828,13 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 		// Example:  8c c6           MOV SI,ES
 		// Sreg: ES=0, CS=1, SS=2, DS=3, FD=4, GS=5 (OPCODE part of MODR_M)  [1] pp.26-10
 		FetchOperandRM(inst,ptr,seg,offset,mem);
+		inst.operandSize=16; // Force it to be 16-bit
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		op2.DecodeMODR_MForSegmentRegister(inst.operand[0]);
 		break;
 	case I486_OPCODE_MOV_TO_SEG: //       0x8E,
 		FetchOperandRM(inst,ptr,seg,offset,mem);
+		inst.operandSize=16; // Force it to be 16-bit
 		op2.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		op1.DecodeMODR_MForSegmentRegister(inst.operand[0]);
 		break;

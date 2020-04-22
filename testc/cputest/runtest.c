@@ -544,5 +544,6 @@ int main(void)
 	RunBTx();
 	RunCBW_CWDE_CWD_CDQ();
 	printf("ARPL not covered.\n");
+	printf("CALL and JMP not covered.\n");
 	return 0;
 }

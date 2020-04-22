@@ -127,6 +127,8 @@ public:
 		bool powerOff=false;
 		int returnCode=0;
 
+		bool debugBreakOnLButtonUp=false;
+
 		enum
 		{
 			VM2HOST_PARAM_QUEUE_LENGTH=256,

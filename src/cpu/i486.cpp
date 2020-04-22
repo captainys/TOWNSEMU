@@ -314,6 +314,10 @@ void i486DX::Reset(void)
 		cr0&=(~CR0_MATH_PRESENT);
 		SetCR(0,cr0);
 	}
+	// Better than leaving it uninitialized
+	SetCR(1,0);
+	SetCR(2,0);
+	SetCR(3,0);
 
 	for(auto &t : state.TEST)
 	{
