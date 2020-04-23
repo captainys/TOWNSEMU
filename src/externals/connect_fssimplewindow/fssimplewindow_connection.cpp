@@ -237,17 +237,20 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 {
 	FMChannel[ch].CreateFromSigned16bitStereo(YM2612::WAVE_SAMPLING_RATE,wave);
 
-	std::string fName;
-	fName="tone";
-	fName+=cpputil::Itoa(ch);
-	fName+=".wav";
-	auto waveFile=FMChannel[ch].MakeWavByteData();
-	cpputil::WriteBinaryFile(fName,waveFile.size(),waveFile.data());
+	// std::string fName;
+	// fName="tone";
+	// fName+=cpputil::Itoa(ch);
+	// fName+=".wav";
+	// auto waveFile=FMChannel[ch].MakeWavByteData();
+	// cpputil::WriteBinaryFile(fName,waveFile.size(),waveFile.data());
+
+	soundPlayer.PlayOneShot(FMChannel[ch]);
 }
 /* virtual */ void FsSimpleWindowConnection::FMPlayStop(int ch)
 {
 }
-/* virtual */ void FsSimpleWindowConnection::FMChannelPlaying(int ch)
+/* virtual */ bool FsSimpleWindowConnection::FMChannelPlaying(int ch)
 {
+	return YSTRUE==soundPlayer.IsPlaying(FMChannel[ch]);
 }
 

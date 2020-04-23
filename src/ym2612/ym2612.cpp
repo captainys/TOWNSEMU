@@ -88,6 +88,14 @@ void YM2612::State::Reset(void)
 	{
 		b=0;
 	}
+	for(auto &f : F_NUM_6CH)
+	{
+		f=0;
+	}
+	for(auto &b : BLOCK_6CH)
+	{
+		b=0;
+	}
 	for(auto &r : reg)
 	{
 		r=0;
@@ -273,16 +281,33 @@ unsigned int YM2612::WriteRegister(unsigned int channelBase,unsigned int reg,uns
 		unsigned int slot=(reg&3);
 		if(slot<3)
 		{
-			if(reg<0xAC)
+			if(0==channelBase)
 			{
-				state.F_NUM_3CH[slot]&=0xFF00;
-				state.F_NUM_3CH[slot]|=value;
+				if(reg<0xAC)
+				{
+					state.F_NUM_3CH[slot]&=0xFF00;
+					state.F_NUM_3CH[slot]|=value;
+				}
+				else
+				{
+					state.F_NUM_3CH[slot]&=0xFF;
+					state.F_NUM_3CH[slot]|=((value&7)<<8);
+					state.BLOCK_3CH[slot]=((value>>3)&7);
+				}
 			}
-			else
+			else if(3==channelBase)
 			{
-				state.F_NUM_3CH[slot]&=0xFF;
-				state.F_NUM_3CH[slot]|=((value&7)<<8);
-				state.BLOCK_3CH[slot]=((value>>3)&7);
+				if(reg<0xAC)
+				{
+					state.F_NUM_6CH[slot]&=0xFF00;
+					state.F_NUM_6CH[slot]|=value;
+				}
+				else
+				{
+					state.F_NUM_6CH[slot]&=0xFF;
+					state.F_NUM_6CH[slot]|=((value&7)<<8);
+					state.BLOCK_6CH[slot]=((value>>3)&7);
+				}
 			}
 		}
 	}

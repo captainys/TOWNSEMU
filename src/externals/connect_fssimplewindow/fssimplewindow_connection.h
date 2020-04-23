@@ -49,7 +49,7 @@ public:
 	YsSoundPlayer::SoundData FMChannel[YM2612::NUM_CHANNELS];
 	virtual void FMPlay(unsigned int ch,std::vector <unsigned char> &wave);
 	virtual void FMPlayStop(int ch);
-	virtual void FMChannelPlaying(int ch);
+	virtual bool FMChannelPlaying(int ch);
 };
 
 /* } */

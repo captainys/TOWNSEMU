@@ -53,7 +53,7 @@ public:
 public:
 	virtual void FMPlay(unsigned int ch,std::vector <unsigned char> &wave)=0;
 	virtual void FMPlayStop(int ch)=0;
-	virtual void FMChannelPlaying(int ch)=0;
+	virtual bool FMChannelPlaying(int ch)=0;
 };
 
 

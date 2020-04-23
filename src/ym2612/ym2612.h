@@ -130,6 +130,7 @@ public:
 		unsigned long long int lastTickTimeInNS;
 		Channel channels[NUM_CHANNELS];
 		unsigned int F_NUM_3CH[3],BLOCK_3CH[3];
+		unsigned int F_NUM_6CH[3],BLOCK_6CH[3];
 		unsigned char reg[256];  // I guess only 0x21 to 0xB6 are used.
 		unsigned long long int timerCounter[2];
 		bool timerUp[2];
