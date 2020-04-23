@@ -20,10 +20,10 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 static unsigned int attackTime0to96dB[64]= // 1/100ms
 {
-0,
-0,
-0,
-0,
+897024,//0,
+897024,//0,
+897024,//0,
+897024,//0,
 897024,
 897024,
 598016,
@@ -90,10 +90,10 @@ static unsigned int attackTime0to96dB[64]= // 1/100ms
 };
 static unsigned int sustainDecayReleaseTime0to96dB[64]= // 1/100ms
 {
-0,
-0,
-0,
-0,
+12398592,//0,
+12398592,//0,
+12398592,//0,
+12398592,//0,
 12398592,
 12398592,
 8265726,
