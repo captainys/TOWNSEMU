@@ -1,0 +1,45 @@
+/begin0
+T 2
+* 0000000C:0001A881
+# 
+R 
+L RETURN
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000110:00011B60
+# 
+R 
+L MOUSEBIOS:(Prob)MOS_rdpos
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000110:00017000
+# 
+R 
+L EGB:Entry
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000110:00017014
+# 
+R 
+L MOUSEBIOS:Entry
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000110:00017575
+# MOUSEBIOS:(Prob)Jump to function
+R 
+L 
+P 
+% 0
+/end
