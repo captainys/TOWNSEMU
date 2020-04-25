@@ -911,7 +911,7 @@ void i486DX::Push(Memory &mem,unsigned int operandSize,unsigned int value)
 	}
 	else
 	{
-		auto ESP=GetESP();
+		auto &ESP=state.ESP();
 		if(16==operandSize)
 		{
 			ESP-=2;
@@ -922,7 +922,6 @@ void i486DX::Push(Memory &mem,unsigned int operandSize,unsigned int value)
 			ESP-=4;
 			StoreDword(mem,addressSize,state.SS(),ESP,value);
 		}
-		SetESP(ESP);
 	}
 }
 
