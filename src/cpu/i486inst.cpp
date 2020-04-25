@@ -3401,8 +3401,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				SetZF(0==i);
 				SetCF(0!=i);
 				i=-i;
-				SetParityFlag(CheckParity(i&0xFF));
-				SetSignFlag(0!=(i&0x80));
+				SetPF(CheckParity(i&0xFF));
+				SetSF(0!=(i&0x80));
 				value1.SetSignedDword(i);
 				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
 			}
@@ -3562,9 +3562,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				i=-i;
 				SetZF(0==i);
 				SetCF(0!=i);
-				SetSignFlag(i<0);
+				SetSF(i<0);
 				value1.SetSignedDword(i);
-				SetParityFlag(CheckParity(i&0xFF));
+				SetPF(CheckParity(i&0xFF));
 				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
 			}
 			break;
@@ -4076,8 +4076,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			SetAL(AL);
 			SetAH(0);
 			SetZF(0==GetAX());
-			SetSignFlag(0!=(GetAL()&0x80));
-			SetParityFlag(CheckParity(AL));
+			SetSF(0!=(GetAL()&0x80));
+			SetPF(CheckParity(AL));
 		}
 		else
 		{
@@ -4097,8 +4097,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			SetAH(quo);
 			SetAL(rem);
 			SetZF(0==GetAL());   // ?
-			SetSignFlag(0!=(GetAH()&0x80));
-			SetParityFlag(CheckParity(GetAL()));
+			SetSF(0!=(GetAH()&0x80));
+			SetPF(CheckParity(GetAL()));
 		}
 		else
 		{
@@ -4115,13 +4115,13 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{
 				SetAL((AL-6)&0x0F);
 				SetAH((GetAH()-1)&0xFF);
-				SetAuxCarryFlag(true);
+				SetAF(true);
 				SetCF(true);
 			}
 			else
 			{
 				SetAL(AL&0x0F); // [1] pp. 26-21 "In either case, the AL register is left with its top nibble set to 0."
-				SetAuxCarryFlag(false);
+				SetAF(false);
 				SetCF(false);
 			}
 		}
@@ -4430,11 +4430,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		if(true==GetAF() || 9<(GetAL()&0x0F))
 		{
 			SetAL(GetAL()+6);
-			SetAuxCarryFlag(true);
+			SetAF(true);
 		}
 		else
 		{
-			SetAuxCarryFlag(false);
+			SetAF(false);
 		}
 		if(0x9F<GetAL() || true==GetCF())
 		{
@@ -6415,8 +6415,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					SetCF(0!=(concat&0x10000));
 					SetOF((concat&0x8000)!=(v1&0x8000));
 					SetZF(0==(concat&0xFFFF));
-					SetSignFlag(0!=(concat&0x8000));
-					SetParityFlag(CheckParity(concat&0xFF));
+					SetSF(0!=(concat&0x8000));
+					SetPF(CheckParity(concat&0xFF));
 				}
 				else
 				{
@@ -6428,8 +6428,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					SetCF(0!=(concat&0x100000000LL));
 					SetOF((concat&0x80000000)!=(v1&0x80000000));
 					SetZF(0==(concat&0xFFFFFFFF));
-					SetSignFlag(0!=(concat&0x80000000));
-					SetParityFlag(CheckParity(concat&0xFF));
+					SetSF(0!=(concat&0x80000000));
+					SetPF(CheckParity(concat&0xFF));
 				}
 				break;
 			case I486_OPCODE_SHRD_RM_I8://       0x0FAC,
@@ -6444,8 +6444,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
 					SetOF((concat&0x8000)!=(v1&0x8000));
 					SetZF(0==(concat&0xFFFF));
-					SetSignFlag(0!=(concat&0x8000));
-					SetParityFlag(CheckParity(concat&0xFF));
+					SetSF(0!=(concat&0x8000));
+					SetPF(CheckParity(concat&0xFF));
 				}
 				else
 				{
@@ -6458,8 +6458,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
 					SetOF((concat&0x80000000)!=(v1&0x80000000));
 					SetZF(0==(concat&0xFFFFFFFF));
-					SetSignFlag(0!=(concat&0x80000000));
-					SetParityFlag(CheckParity(concat&0xFF));
+					SetSF(0!=(concat&0x80000000));
+					SetPF(CheckParity(concat&0xFF));
 				}
 				break;
 			}

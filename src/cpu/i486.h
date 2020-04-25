@@ -1389,7 +1389,7 @@ public:
 		SetEFLAGSBit(flag,EFLAGS_OVERFLOW);
 	}
 
-	inline void SetSignFlag(bool flag)
+	inline void SetSF(bool flag)
 	{
 		SetEFLAGSBit(flag,EFLAGS_SIGN);
 	}
@@ -1402,12 +1402,12 @@ public:
 		SetEFLAGSBit(flag,EFLAGS_ZERO);
 	}
 
-	inline void SetAuxCarryFlag(bool flag)
+	inline void SetAF(bool flag)
 	{
 		SetEFLAGSBit(flag,EFLAGS_AUX_CARRY);
 	}
 
-	inline void SetParityFlag(bool flag)
+	inline void SetPF(bool flag)
 	{
 		SetEFLAGSBit(flag,EFLAGS_PARITY);
 	}

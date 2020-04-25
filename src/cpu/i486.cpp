@@ -1080,37 +1080,37 @@ void i486DX::DecrementDword(unsigned int &value)
 {
 	--value;
 	SetOF(value==0x7FFFFFFF);
-	SetSignFlag(0!=(value&0x80000000));
+	SetSF(0!=(value&0x80000000));
 	SetZF(0==value);
-	SetAuxCarryFlag(0x0F==(value&0x0F));
-	SetParityFlag(CheckParity(value&0xFF));
+	SetAF(0x0F==(value&0x0F));
+	SetPF(CheckParity(value&0xFF));
 }
 void i486DX::DecrementWord(unsigned int &value)
 {
 	value=((value-1)&0xFFFF);
 	SetOF(value==0x7FFF);
-	SetSignFlag(0!=(value&0x8000));
+	SetSF(0!=(value&0x8000));
 	SetZF(0==value);
-	SetAuxCarryFlag(0x0F==(value&0x0F));
-	SetParityFlag(CheckParity(value&0xFF));
+	SetAF(0x0F==(value&0x0F));
+	SetPF(CheckParity(value&0xFF));
 }
 void i486DX::DecrementByte(unsigned int &value)
 {
 	value=((value-1)&0xFF);
 	SetOF(value==0x7F);
-	SetSignFlag(0!=(value&0x80));
+	SetSF(0!=(value&0x80));
 	SetZF(0==value);
-	SetAuxCarryFlag(0x0F==(value&0x0F));
-	SetParityFlag(CheckParity(value&0xFF));
+	SetAF(0x0F==(value&0x0F));
+	SetPF(CheckParity(value&0xFF));
 }
 void i486DX::DecrementWithMask(unsigned int &value,unsigned int mask,unsigned int signBit)
 {
 	value=((value-1)&mask);
 	SetOF(signBit-1==value);
-	SetAuxCarryFlag(0x0F==(value&0x0F));
-	SetSignFlag(value&signBit);
+	SetAF(0x0F==(value&0x0F));
+	SetSF(value&signBit);
 	SetZF(0==value);
-	SetParityFlag(CheckParity(value&0xFF));
+	SetPF(CheckParity(value&0xFF));
 }
 
 void i486DX::IncrementWordOrDword(unsigned int operandSize,unsigned int &value)
@@ -1126,39 +1126,39 @@ void i486DX::IncrementWordOrDword(unsigned int operandSize,unsigned int &value)
 }
 void i486DX::IncrementDword(unsigned int &value)
 {
-	SetAuxCarryFlag(0x0F==(value&0x0F));
+	SetAF(0x0F==(value&0x0F));
 	++value;
 	SetOF(value==0x80000000);
-	SetSignFlag(0!=(value&0x80000000));
+	SetSF(0!=(value&0x80000000));
 	SetZF(0==value);
-	SetParityFlag(CheckParity(value&0xFF));
+	SetPF(CheckParity(value&0xFF));
 }
 void i486DX::IncrementWord(unsigned int &value)
 {
-	SetAuxCarryFlag(0x0F==(value&0x0F));
+	SetAF(0x0F==(value&0x0F));
 	value=(value+1)&0xffff;
 	SetOF(value==0x8000);
-	SetSignFlag(0!=(value&0x8000));
+	SetSF(0!=(value&0x8000));
 	SetZF(0==value);
-	SetParityFlag(CheckParity(value&0xFF));
+	SetPF(CheckParity(value&0xFF));
 }
 void i486DX::IncrementByte(unsigned int &value)
 {
-	SetAuxCarryFlag(0x0F==(value&0x0F));
+	SetAF(0x0F==(value&0x0F));
 	value=(value+1)&0xff;
 	SetOF(value==0x80);
-	SetSignFlag(0!=(value&0x80));
+	SetSF(0!=(value&0x80));
 	SetZF(0==value);
-	SetParityFlag(CheckParity(value&0xFF));
+	SetPF(CheckParity(value&0xFF));
 }
 void i486DX::IncrementWithMask(unsigned int &value,unsigned int mask,unsigned int signBit)
 {
-	SetAuxCarryFlag(0x0F==(value&0x0F));
+	SetAF(0x0F==(value&0x0F));
 	value=(value+1)&mask;
 	SetOF(value==signBit);
-	SetSignFlag(value&signBit);
+	SetSF(value&signBit);
 	SetZF(0==value);
-	SetParityFlag(CheckParity(value&0xFF));
+	SetPF(CheckParity(value&0xFF));
 }
 
 
@@ -1179,33 +1179,33 @@ void i486DX::AddDword(unsigned int &value1,unsigned int value2)
 	auto prevValue=value1&0xffffffff;
 	value1=(value1+value2)&0xffffffff;
 	SetOF((prevValue&0x80000000)==(value2&0x80000000) && (prevValue&0x80000000)!=(value1&0x80000000)); // Two sources have same sign, but the result sign is different.
-	SetSignFlag(0!=(value1&0x80000000));
+	SetSF(0!=(value1&0x80000000));
 	SetZF(0==value1);
-	SetAuxCarryFlag((prevValue&0x0F)<(value1&0x0F));
+	SetAF((prevValue&0x0F)<(value1&0x0F));
 	SetCF(value1<prevValue);
-	SetParityFlag(CheckParity(value1&0xFF));
+	SetPF(CheckParity(value1&0xFF));
 }
 void i486DX::AddWord(unsigned int &value1,unsigned int value2)
 {
 	auto prevValue=value1&0xffff;
 	value1=(value1+value2)&0xffff;
 	SetOF((prevValue&0x8000)==(value2&0x8000) && (prevValue&0x8000)!=(value1&0x8000)); // Two sources have same sign, but the result sign is different.
-	SetSignFlag(0!=(value1&0x8000));
+	SetSF(0!=(value1&0x8000));
 	SetZF(0==value1);
-	SetAuxCarryFlag((prevValue&0x0F)<(value1&0x0F));
+	SetAF((prevValue&0x0F)<(value1&0x0F));
 	SetCF(value1<prevValue);
-	SetParityFlag(CheckParity(value1&0xFF));
+	SetPF(CheckParity(value1&0xFF));
 }
 void i486DX::AddByte(unsigned int &value1,unsigned int value2)
 {
 	auto prevValue=value1&0xff;
 	value1=(value1+value2)&0xff;
 	SetOF((prevValue&0x80)==(value2&0x80) && (prevValue&0x80)!=(value1&0x80)); // Two sources have same sign, but the result sign is different.
-	SetSignFlag(0!=(value1&0x80));
+	SetSF(0!=(value1&0x80));
 	SetZF(0==value1);
-	SetAuxCarryFlag((prevValue&0x0F)<(value1&0x0F));
+	SetAF((prevValue&0x0F)<(value1&0x0F));
 	SetCF(value1<prevValue);
-	SetParityFlag(CheckParity(value1&0xFF));
+	SetPF(CheckParity(value1&0xFF));
 }
 void i486DX::AndWordOrDword(int operandSize,unsigned int &value1,unsigned int value2)
 {
@@ -1223,9 +1223,9 @@ void i486DX::AndDword(unsigned int &value1,unsigned int value2)
 	SetCF(false);
 	SetOF(false);
 	value1&=value2;
-	SetSignFlag(0!=(0x80000000&value1));
+	SetSF(0!=(0x80000000&value1));
 	SetZF(0==value1);
-	SetParityFlag(CheckParity(value1&0xFF));
+	SetPF(CheckParity(value1&0xFF));
 }
 void i486DX::AndWord(unsigned int &value1,unsigned int value2)
 {
@@ -1233,9 +1233,9 @@ void i486DX::AndWord(unsigned int &value1,unsigned int value2)
 	SetOF(false);
 	value1&=value2;
 	value1&=0xFFFF;
-	SetSignFlag(0!=(0x8000&value1));
+	SetSF(0!=(0x8000&value1));
 	SetZF(0==value1);
-	SetParityFlag(CheckParity(value1&0xFF));
+	SetPF(CheckParity(value1&0xFF));
 }
 void i486DX::AndByte(unsigned int &value1,unsigned int value2)
 {
@@ -1243,9 +1243,9 @@ void i486DX::AndByte(unsigned int &value1,unsigned int value2)
 	SetOF(false);
 	value1&=value2;
 	value1&=0xFF;
-	SetSignFlag(0!=(0x80&value1));
+	SetSF(0!=(0x80&value1));
 	SetZF(0==value1);
-	SetParityFlag(CheckParity(value1&0xFF));
+	SetPF(CheckParity(value1&0xFF));
 }
 void i486DX::SubByteWordOrDword(int operandSize,unsigned int &value1,unsigned int value2)
 {
@@ -1271,33 +1271,33 @@ void i486DX::SubDword(unsigned int &value1,unsigned int value2)
 	auto prevValue=value1&0xffffffff;
 	value1=(value1-value2)&0xffffffff;
 	SetOF((prevValue&0x80000000)!=(value2&0x80000000) && (prevValue&0x80000000)!=(value1&0x80000000)); // Source values have different signs, but the sign flipped.
-	SetSignFlag(0!=(value1&0x80000000));
+	SetSF(0!=(value1&0x80000000));
 	SetZF(0==value1);
-	SetAuxCarryFlag((prevValue&0xFF)>=0x10 && (value1&0xFF)<=0x10);
+	SetAF((prevValue&0xFF)>=0x10 && (value1&0xFF)<=0x10);
 	SetCF(value1>prevValue);
-	SetParityFlag(CheckParity(value1&0xFF));
+	SetPF(CheckParity(value1&0xFF));
 }
 void i486DX::SubWord(unsigned int &value1,unsigned int value2)
 {
 	auto prevValue=value1&0xffff;
 	value1=(value1-value2)&0xffff;
 	SetOF((prevValue&0x8000)!=(value2&0x8000) && (prevValue&0x8000)!=(value1&0x8000)); // Source values have different signs, but the sign flipped.
-	SetSignFlag(0!=(value1&0x8000));
+	SetSF(0!=(value1&0x8000));
 	SetZF(0==value1);
-	SetAuxCarryFlag((prevValue&0xFF)>=0x10 && (value1&0xFF)<=0x10);
+	SetAF((prevValue&0xFF)>=0x10 && (value1&0xFF)<=0x10);
 	SetCF(value1>prevValue);
-	SetParityFlag(CheckParity(value1&0xFF));
+	SetPF(CheckParity(value1&0xFF));
 }
 void i486DX::SubByte(unsigned int &value1,unsigned int value2)
 {
 	auto prevValue=value1&0xff;
 	value1=(value1-value2)&0xff;
 	SetOF((prevValue&0x80)!=(value2&0x80) && (prevValue&0x80)!=(value1&0x80)); // Source values have different signs, but the sign flipped.
-	SetSignFlag(0!=(value1&0x80));
+	SetSF(0!=(value1&0x80));
 	SetZF(0==value1);
-	SetAuxCarryFlag((prevValue&0xFF)>=0x10 && (value1&0xFF)<=0x10);
+	SetAF((prevValue&0xFF)>=0x10 && (value1&0xFF)<=0x10);
 	SetCF(value1>prevValue);
-	SetParityFlag(CheckParity(value1&0xFF));
+	SetPF(CheckParity(value1&0xFF));
 }
 void i486DX::AdcWordOrDword(int operandSize,unsigned int &value1,unsigned int value2)
 {
@@ -1316,11 +1316,11 @@ void i486DX::AdcDword(unsigned int &value1,unsigned int value2)
 	auto prevValue=value1&0xffffffff;
 	value1=(value1+value2+carry)&0xffffffff;
 	SetOF((prevValue&0x80000000)==(value2&0x80000000) && (prevValue&0x80000000)!=(value1&0x80000000)); // Two sources have same sign, but the result sign is different.
-	SetSignFlag(0!=(value1&0x80000000));
+	SetSF(0!=(value1&0x80000000));
 	SetZF(0==value1);
-	SetAuxCarryFlag((prevValue&0x0F)<(value1&0x0F));
+	SetAF((prevValue&0x0F)<(value1&0x0F));
 	SetCF(value1<prevValue);
-	SetParityFlag(CheckParity(value1&0xFF));
+	SetPF(CheckParity(value1&0xFF));
 }
 void i486DX::AdcWord(unsigned int &value1,unsigned int value2)
 {
@@ -1328,11 +1328,11 @@ void i486DX::AdcWord(unsigned int &value1,unsigned int value2)
 	auto prevValue=value1&0xffff;
 	value1=(value1+value2+carry)&0xffff;
 	SetOF((prevValue&0x8000)==(value2&0x8000) && (prevValue&0x8000)!=(value1&0x8000)); // Two sources have same sign, but the result sign is different.
-	SetSignFlag(0!=(value1&0x8000));
+	SetSF(0!=(value1&0x8000));
 	SetZF(0==value1);
-	SetAuxCarryFlag((prevValue&0x0F)<(value1&0x0F));
+	SetAF((prevValue&0x0F)<(value1&0x0F));
 	SetCF(value1<prevValue);
-	SetParityFlag(CheckParity(value1&0xFF));
+	SetPF(CheckParity(value1&0xFF));
 }
 void i486DX::AdcByte(unsigned int &value1,unsigned int value2)
 {
@@ -1340,11 +1340,11 @@ void i486DX::AdcByte(unsigned int &value1,unsigned int value2)
 	auto prevValue=value1&0xff;
 	value1=(value1+value2+carry)&0xff;
 	SetOF((prevValue&0x80)==(value2&0x80) && (prevValue&0x80)!=(value1&0x80)); // Two sources have same sign, but the result sign is different.
-	SetSignFlag(0!=(value1&0x80));
+	SetSF(0!=(value1&0x80));
 	SetZF(0==value1);
-	SetAuxCarryFlag((prevValue&0x0F)<(value1&0x0F));
+	SetAF((prevValue&0x0F)<(value1&0x0F));
 	SetCF(value1<prevValue);
-	SetParityFlag(CheckParity(value1&0xFF));
+	SetPF(CheckParity(value1&0xFF));
 }
 void i486DX::SbbWordOrDword(int operandSize,unsigned int &value1,unsigned int value2)
 {
@@ -1363,11 +1363,11 @@ void i486DX::SbbDword(unsigned int &value1,unsigned int value2)
 	auto prevValue=value1&0xffffffff;
 	value1=(value1-value2-carry)&0xffffffff;
 	SetOF((prevValue&0x80000000)!=(value2&0x80000000) && (prevValue&0x80000000)!=(value1&0x80000000)); // Source values have different signs, but the sign flipped.
-	SetSignFlag(0!=(value1&0x80000000));
+	SetSF(0!=(value1&0x80000000));
 	SetZF(0==value1);
-	SetAuxCarryFlag((prevValue&0xFF)>=0x10 && (value1&0xFF)<=0x10);
+	SetAF((prevValue&0xFF)>=0x10 && (value1&0xFF)<=0x10);
 	SetCF(value1>prevValue);
-	SetParityFlag(CheckParity(value1&0xFF));
+	SetPF(CheckParity(value1&0xFF));
 }
 void i486DX::SbbWord(unsigned int &value1,unsigned int value2)
 {
@@ -1375,11 +1375,11 @@ void i486DX::SbbWord(unsigned int &value1,unsigned int value2)
 	auto prevValue=value1&0xffff;
 	value1=(value1-value2-carry)&0xffff;
 	SetOF((prevValue&0x8000)!=(value2&0x8000) && (prevValue&0x8000)!=(value1&0x8000)); // Source values have different signs, but the sign flipped.
-	SetSignFlag(0!=(value1&0x8000));
+	SetSF(0!=(value1&0x8000));
 	SetZF(0==value1);
-	SetAuxCarryFlag((prevValue&0xFF)>=0x10 && (value1&0xFF)<=0x10);
+	SetAF((prevValue&0xFF)>=0x10 && (value1&0xFF)<=0x10);
 	SetCF(value1>prevValue);
-	SetParityFlag(CheckParity(value1&0xFF));
+	SetPF(CheckParity(value1&0xFF));
 }
 void i486DX::SbbByte(unsigned int &value1,unsigned int value2)
 {
@@ -1387,11 +1387,11 @@ void i486DX::SbbByte(unsigned int &value1,unsigned int value2)
 	auto prevValue=value1&0xff;
 	value1=(value1-value2-carry)&0xff;
 	SetOF((prevValue&0x80)!=(value2&0x80) && (prevValue&0x80)!=(value1&0x80)); // Source values have different signs, but the sign flipped.
-	SetSignFlag(0!=(value1&0x80));
+	SetSF(0!=(value1&0x80));
 	SetZF(0==value1);
-	SetAuxCarryFlag((prevValue&0xFF)>=0x10 && (value1&0xFF)<=0x10);
+	SetAF((prevValue&0xFF)>=0x10 && (value1&0xFF)<=0x10);
 	SetCF(value1>prevValue);
-	SetParityFlag(CheckParity(value1&0xFF));
+	SetPF(CheckParity(value1&0xFF));
 }
 void i486DX::OrWordOrDword(int operandSize,unsigned int &value1,unsigned int value2)
 {
@@ -1409,9 +1409,9 @@ void i486DX::OrDword(unsigned int &value1,unsigned int value2)
 	SetCF(false);
 	SetOF(false);
 	value1|=value2;
-	SetSignFlag(0!=(0x80000000&value1));
+	SetSF(0!=(0x80000000&value1));
 	SetZF(0==value1);
-	SetParityFlag(CheckParity(value1&0xFF));
+	SetPF(CheckParity(value1&0xFF));
 }
 void i486DX::OrWord(unsigned int &value1,unsigned int value2)
 {
@@ -1419,9 +1419,9 @@ void i486DX::OrWord(unsigned int &value1,unsigned int value2)
 	SetOF(false);
 	value1|=value2;
 	value1&=0xFFFF;
-	SetSignFlag(0!=(0x8000&value1));
+	SetSF(0!=(0x8000&value1));
 	SetZF(0==value1);
-	SetParityFlag(CheckParity(value1&0xFF));
+	SetPF(CheckParity(value1&0xFF));
 }
 void i486DX::OrByte(unsigned int &value1,unsigned int value2)
 {
@@ -1429,9 +1429,9 @@ void i486DX::OrByte(unsigned int &value1,unsigned int value2)
 	SetOF(false);
 	value1|=value2;
 	value1&=0xFF;
-	SetSignFlag(0!=(0x80&value1));
+	SetSF(0!=(0x80&value1));
 	SetZF(0==value1);
-	SetParityFlag(CheckParity(value1&0xFF));
+	SetPF(CheckParity(value1&0xFF));
 }
 void i486DX::XorWordOrDword(int operandSize,unsigned int &value1,unsigned int value2)
 {
@@ -1449,9 +1449,9 @@ void i486DX::XorDword(unsigned int &value1,unsigned int value2)
 	SetCF(false);
 	SetOF(false);
 	value1^=value2;
-	SetSignFlag(0!=(0x80000000&value1));
+	SetSF(0!=(0x80000000&value1));
 	SetZF(0==value1);
-	SetParityFlag(CheckParity(value1&0xFF));
+	SetPF(CheckParity(value1&0xFF));
 }
 void i486DX::XorWord(unsigned int &value1,unsigned int value2)
 {
@@ -1459,9 +1459,9 @@ void i486DX::XorWord(unsigned int &value1,unsigned int value2)
 	SetOF(false);
 	value1^=value2;
 	value1&=0xFFFF;
-	SetSignFlag(0!=(0x8000&value1));
+	SetSF(0!=(0x8000&value1));
 	SetZF(0==value1);
-	SetParityFlag(CheckParity(value1&0xFF));
+	SetPF(CheckParity(value1&0xFF));
 }
 void i486DX::XorByte(unsigned int &value1,unsigned int value2)
 {
@@ -1469,9 +1469,9 @@ void i486DX::XorByte(unsigned int &value1,unsigned int value2)
 	SetOF(false);
 	value1^=value2;
 	value1&=0xFF;
-	SetSignFlag(0!=(0x80&value1));
+	SetSF(0!=(0x80&value1));
 	SetZF(0==value1);
-	SetParityFlag(CheckParity(value1&0xFF));
+	SetPF(CheckParity(value1&0xFF));
 }
 
 template <unsigned int valueMask,unsigned int countMask,unsigned int bitLength,unsigned int signBit>
@@ -1733,8 +1733,8 @@ void i486DX::SarDword(unsigned int &value,unsigned int ctr)
 	value64>>=ctr;
 	value64&=0xFFFFFFFF;
 	SetZF(0==value64);
-	SetSignFlag(0!=(value64&0x80000000));
-	SetParityFlag(CheckParity(value64&0xFF));
+	SetSF(0!=(value64&0x80000000));
+	SetPF(CheckParity(value64&0xFF));
 	if(1==ctr)
 	{
 		SetOF(false);
@@ -1752,8 +1752,8 @@ void i486DX::SarWord(unsigned int &value,unsigned int ctr)
 	value32>>=ctr;
 	value32&=0xFFFF;
 	SetZF(0==value32);
-	SetSignFlag(0!=(value32&0x8000));
-	SetParityFlag(CheckParity(value32&0xFF));
+	SetSF(0!=(value32&0x8000));
+	SetPF(CheckParity(value32&0xFF));
 	if(1==ctr)
 	{
 		SetOF(false);
@@ -1771,8 +1771,8 @@ void i486DX::SarByte(unsigned int &value,unsigned int ctr)
 	value16>>=ctr;
 	value16&=0xFF;
 	SetZF(0==value16);
-	SetSignFlag(0!=(value16&0x80));
-	SetParityFlag(CheckParity(value16&0xFF));
+	SetSF(0!=(value16&0x80));
+	SetPF(CheckParity(value16&0xFF));
 	if(1==ctr)
 	{
 		SetOF(false);
@@ -1798,8 +1798,8 @@ void i486DX::ShlTemplate(unsigned int &value,unsigned int ctr)
 		SetOF((prevValue&signBit)!=(value&signBit));
 	}
 	SetZF(0==value);
-	SetParityFlag(CheckParity(value&0xFF));
-	SetSignFlag(0!=(value&signBit));
+	SetPF(CheckParity(value&0xFF));
+	SetSF(0!=(value&signBit));
 }
 void i486DX::ShlWordOrDword(int operandSize,unsigned int &value,unsigned int ctr)
 {
@@ -1843,8 +1843,8 @@ inline void i486DX::ShrTemplate(unsigned int &value,unsigned int ctr)
 		value>>=1;
 	}
 	SetZF(0==value);
-	SetParityFlag(CheckParity(value&0xFF));
-	SetSignFlag(0!=(value&signBit));
+	SetPF(CheckParity(value&0xFF));
+	SetSF(0!=(value&signBit));
 }
 void i486DX::ShrWordOrDword(int operandSize,unsigned int &value,unsigned int ctr)
 {
