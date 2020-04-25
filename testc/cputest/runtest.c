@@ -1,5 +1,7 @@
 #include <stdio.h>
+#include <string.h>
 
+#include "../vmif.h"
 #include "testcase.h"
 
 #define LEN(x) (sizeof(x)/sizeof(x[0]))
@@ -533,17 +535,31 @@ int RunCBW_CWDE_CWD_CDQ(void)
 	return 0;
 }
 
-int main(void)
+int main(int ac,char *av[])
 {
-	RunImulR32xR32Test();
-	RunMulR32xR32Test();
-	RunBitShiftTest();
-	RunF6F7_NOT_NEG_MUL_IMUL_DIV_IDIV();
-	RunF6F7_TEST_I();
-	RunAADAAMAAS();
-	RunBTx();
-	RunCBW_CWDE_CWD_CDQ();
+	int nFail=0;
+	nFail+=RunImulR32xR32Test();
+	nFail+=RunMulR32xR32Test();
+	nFail+=RunBitShiftTest();
+	nFail+=RunF6F7_NOT_NEG_MUL_IMUL_DIV_IDIV();
+	nFail+=RunF6F7_TEST_I();
+	nFail+=RunAADAAMAAS();
+	nFail+=RunBTx();
+	nFail+=RunCBW_CWDE_CWD_CDQ();
 	printf("ARPL not covered.\n");
 	printf("CALL and JMP not covered.\n");
+
+	if(2<=ac && (0==strcmp("-unit",av[1]) || 0==strcmp("-UNIT",av[1])))
+	{
+		if(0<nFail)
+		{
+			TEST_FAILED();
+		}
+		else
+		{
+			TEST_SUCCEEDED();
+		}
+	}
+
 	return 0;
 }
