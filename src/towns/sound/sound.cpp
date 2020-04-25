@@ -92,7 +92,7 @@ void TownsSound::PCMStopPlay(unsigned char chStopPlay)
 			auto ch=state.ym2612.WriteRegister(0,state.addrLatch[0],data);
 			if(ch<6)
 			{
-				auto wav=state.ym2612.MakeWave(ch);
+				auto wav=state.ym2612.MakeWave(ch,MILLISEC_PER_WAVE);
 				outside_world->FMPlay(ch,wav);
 			}
 		}
@@ -105,7 +105,7 @@ void TownsSound::PCMStopPlay(unsigned char chStopPlay)
 			auto ch=state.ym2612.WriteRegister(3,state.addrLatch[1],data);
 			if(ch<6)
 			{
-				auto wav=state.ym2612.MakeWave(ch);
+				auto wav=state.ym2612.MakeWave(ch,MILLISEC_PER_WAVE);
 				outside_world->FMPlay(ch,wav);
 			}
 		}
@@ -233,6 +233,20 @@ void TownsSound::PCMStopPlay(unsigned char chStopPlay)
 /* virtual */ void TownsSound::RunScheduledTask(unsigned long long int townsTime)
 {
 	state.ym2612.Run(townsTime);
+	if(0!=state.ym2612.state.playingCh)
+	{
+		for(int chNum=0; chNum<YM2612::NUM_CHANNELS; ++chNum)
+		{
+			if(0!=(state.ym2612.state.playingCh&(1<<chNum)) &&
+			   true!=outside_world->FMChannelPlaying(chNum))
+			{
+				state.ym2612.NextWave(chNum);
+				auto wav=state.ym2612.MakeWave(chNum,MILLISEC_PER_WAVE);
+				outside_world->FMPlay(chNum,wav);
+				state.ym2612.CheckToneDone(chNum);
+			}
+		}
+	}
 
 	bool IRQ=(state.ym2612.TimerAUp() || state.ym2612.TimerBUp());
 	if(state.rf5c68.state.playing && nullptr!=outside_world)

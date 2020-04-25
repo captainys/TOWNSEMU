@@ -272,6 +272,10 @@ unsigned int YM2612::WriteRegister(unsigned int channelBase,unsigned int reg,uns
 				KeyOn(ch);
 				chStartPlaying=ch;
 			}
+			else if(0!=state.channels[ch].usingSlot && 0==slotFlag)
+			{
+				KeyOff(ch);
+			}
 
 			state.channels[ch].usingSlot=slotFlag;
 		}

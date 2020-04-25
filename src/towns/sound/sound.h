@@ -30,6 +30,11 @@ class TownsSound : public Device
 private:
 	class FMTowns *townsPtr;
 public:
+	enum
+	{
+		MILLISEC_PER_WAVE=500,  // Should be made much shorter eventually.
+	};
+
 	virtual const char *DeviceName(void) const{return "SOUND";}
 
 	class State

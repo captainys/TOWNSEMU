@@ -44,7 +44,7 @@ public:
 
 		TONE_CHOPOFF_MILLISEC=4000,
 
-		WAVE_SAMPLING_RATE=22050,
+		WAVE_SAMPLING_RATE=44100,
 		WAVE_OUTPUT_AMPLITUDE_MAX=32767,
 	};
 
@@ -88,12 +88,13 @@ public:
 		unsigned int phase12;      // 5-bit phase=((phase>>12)&0x1F)
 		unsigned int phase12Step;  // Increment of phase12 per time step.
 		mutable unsigned int nextPhase12; // Cached in MakeWave
-		unsigned int env[6];       // Envelope
+		unsigned int env[6];       // Envelope: Amplitude is 0 to 4095 scale.
+		unsigned int envDurationCache; // in milliseconds
 		unsigned int RRCache;      // Calibrated Release Rate
 		bool InReleasePhase;
-		unsigned int ReleastStartTime;
+		unsigned int ReleaseStartTime,ReleaseEndTime;
 		unsigned int ReleaseStartAmplitude;
-		mutable unsigned int lastAmplitudeCache;
+		mutable unsigned int lastAmplitudeCache;  // 0 to 4095 scale.
 		// Cache for wave-generation <<
 
 		void Clear(void);
@@ -134,7 +135,7 @@ public:
 		unsigned char reg[256];  // I guess only 0x21 to 0xB6 are used.
 		unsigned long long int timerCounter[2];
 		bool timerUp[2];
-		unsigned playingCh; // Bit 0 to 5.
+		unsigned int playingCh; // Bit 0 to 5.
 
 		void PowerOn(void);
 		void Reset(void);
@@ -148,6 +149,14 @@ public:
 	static unsigned int DB100to4095Scale[9601]; // dB to 0 to 4095 scale
 	static unsigned int DB100from4095Scale[4096]; // 4095 scale to dB
 	static const unsigned int connToOutChannel[8][4];
+
+	struct ConnectionToOutputSlot
+	{
+		unsigned int nOutputSlots;
+		unsigned int slots[4];
+	};
+	static const struct ConnectionToOutputSlot connectionToOutputSlots[8];
+
 
 	YM2612();
 	~YM2612();
@@ -181,7 +190,7 @@ public:
 
 	/*!
 	*/
-	std::vector <unsigned char> MakeWave(unsigned int ch) const;
+	std::vector <unsigned char> MakeWave(unsigned int ch,unsigned long long int millisec) const;
 private:
 	/*! Returns the longest duration of the tone in milliseconds if no key off.
 	*/
@@ -195,11 +204,16 @@ private:
 public:
 	/*! 
 	*/
-	void NextWave(void);
+	void NextWave(unsigned int chNum);
 
 	/*! Change channel state to RELEASE.
 	*/
 	void KeyOff(unsigned int ch);
+
+
+	/*! Check if the tone is done, and update playingCh and playing state.
+	*/
+	void CheckToneDone(unsigned int chNum);
 
 
 	/*! BLOCK_NOTE is as calculated by [2] pp.204.  Isn't it just high-5 bits of BLOCK|F_NUM2?

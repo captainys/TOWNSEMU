@@ -299,6 +299,18 @@ static unsigned int sustainDecayReleaseTime10to90Percent[64]=
 152,
 };
 
+const struct YM2612::ConnectionToOutputSlot YM2612::connectionToOutputSlots[8]=
+{
+	{1,{3,-1,-1,-1}},
+	{1,{3,-1,-1,-1}},
+	{1,{3,-1,-1,-1}},
+	{1,{3,-1,-1,-1}},
+	{2,{1,3,-1,-1}},
+	{3,{1,2,3,-1}},
+	{3,{1,2,3,-1}},
+	{4,{0,1,2,3}},
+};
+
 ////////////////////////////////////////////////////////////
 
 inline int YM2612::Slot::UnscaledOutput(int phase) const
@@ -352,6 +364,14 @@ inline int YM2612::Slot::InterpolateEnvelope(unsigned int timeInMS) const
 	}
 	else
 	{
+		if(timeInMS<ReleaseEndTime && ReleaseStartTime<ReleaseEndTime)
+		{
+			auto diff=ReleaseEndTime-timeInMS;
+			auto amplitude=ReleaseStartAmplitude;
+			amplitude*=diff;
+			amplitude/=(ReleaseEndTime-ReleaseStartTime);
+			return amplitude;
+		}
 		return 0; // Not supported yet.
 	}
 }
@@ -431,6 +451,7 @@ void YM2612::KeyOn(unsigned int chNum)
 
 		// (hertzX16*PHASE_STEPS)<<8==hertz*PHASE_STEPS*4096
 		CalculateEnvelope(slot.env,slot.RRCache,KC,slot);
+		slot.envDurationCache=slot.env[0]+slot.env[2]+slot.env[4];
 	};
 
 	ch.toneDuration12=CalculateToneDurationMilliseconds(chNum);
@@ -439,16 +460,76 @@ void YM2612::KeyOn(unsigned int chNum)
 printf("%d BLOCK %03xH F_NUM %03xH Hertz %d Max Duration %d\n",KC,ch.BLOCK,ch.F_NUM,hertzX16/16,ch.toneDuration12>>12);
 }
 
-std::vector <unsigned char> YM2612::MakeWave(unsigned int chNum) const
+void YM2612::KeyOff(unsigned int chNum)
+{
+	if(0!=(state.playingCh&(1<<chNum)))
+	{
+		auto &ch=state.channels[chNum];
+		for(auto &slot : ch.slots)
+		{
+			if(true!=slot.InReleasePhase)
+			{
+				slot.InReleasePhase=true;
+				slot.ReleaseStartTime=(ch.microsec12>>12)/1000;
+				slot.ReleaseStartAmplitude=slot.lastAmplitudeCache;
+
+				auto lastDb100=DB100from4095Scale[slot.lastAmplitudeCache&4095]; // Just in case &4095, in 1/100ms.
+				auto releaseTime=sustainDecayReleaseTime0to96dB[std::min<unsigned int>(slot.RRCache,63)];
+				releaseTime*=lastDb100;
+				releaseTime/=960000;
+printf("Release Time=%d\nms\n",releaseTime);
+				slot.ReleaseEndTime=slot.ReleaseStartTime+releaseTime;
+			}
+		}
+	}
+}
+
+void YM2612::CheckToneDone(unsigned int chNum)
+{
+	auto &ch=state.channels[chNum];
+	if(CH_PLAYING!=ch.playState)
+	{
+		state.playingCh&=~(1<<chNum);
+	}
+	else
+	{
+		auto millisec=(ch.microsec12>>12)/1000;
+		bool slotStillPlaying=false;
+		for(int i=0; i<connectionToOutputSlots[ch.CONNECT].nOutputSlots; ++i)
+		{
+			auto &slot=ch.slots[connectionToOutputSlots[ch.CONNECT].slots[i]];
+			if(true==slot.InReleasePhase && millisec<slot.ReleaseEndTime)
+			{
+				slotStillPlaying=true;
+				break;;
+			}
+			else if(true!=slot.InReleasePhase && millisec<slot.envDurationCache)
+			{
+				slotStillPlaying=true;
+				break;;
+			}
+		}
+		if(true!=slotStillPlaying)
+		{
+			state.playingCh&=~(1<<chNum);
+			ch.playState=CH_IDLE;
+		}
+	}
+}
+
+std::vector <unsigned char> YM2612::MakeWave(unsigned int chNum,unsigned long long int millisec) const
 {
 	auto &ch=state.channels[chNum];
 	std::vector <unsigned char> wave;
 
-	unsigned long long int numSamples=ch.toneDuration12;
+	unsigned long long int requestedMicroSec12=millisec;
+	requestedMicroSec12<<=12;
+
+	unsigned long long int numSamples=std::min(requestedMicroSec12,ch.toneDuration12); // in millisec
 	numSamples*=WAVE_SAMPLING_RATE;
 	numSamples/=1000;
 	numSamples>>=12;
-
+std::cout << "Requested:" << requestedMicroSec12 << " ToneDuration:" << ch.toneDuration12 << std::endl;
 	const unsigned int microsec12Step=4096000000/WAVE_SAMPLING_RATE;
 	// Time runs 1/WAVE_SAMPLING_RATE seconds per step
 	//           1000/WAVE_SAMPLING_RATE milliseconds per step
@@ -498,6 +579,19 @@ std::cout << phase12[2] << "," << (phase12[2]>>12)/PHASE_STEPS << "cycles" << st
 std::cout << phase12[3] << "," << (phase12[3]>>12)/PHASE_STEPS << "cycles" << std::endl;
 
 	return wave;
+}
+
+void YM2612::NextWave(unsigned int chNum)
+{
+	auto &ch=state.channels[chNum];
+	if(CH_PLAYING==ch.playState)
+	{
+		ch.microsec12=ch.nextMicrosec12;
+		ch.slots[0].phase12=ch.slots[0].nextPhase12;
+		ch.slots[1].phase12=ch.slots[1].nextPhase12;
+		ch.slots[2].phase12=ch.slots[2].nextPhase12;
+		ch.slots[3].phase12=ch.slots[3].nextPhase12;
+	}
 }
 
 unsigned int YM2612::CalculateToneDurationMilliseconds(unsigned int chNum) const
