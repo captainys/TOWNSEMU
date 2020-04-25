@@ -2539,10 +2539,7 @@ void i486DX::DetachDebugger(void)
 */
 unsigned int i486DX::DebugFetchByte(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 {
-	if(true==AddressingMode16Bit(addressSize))
-	{
-		offset&=0xffff;
-	}
+	offset&=AddressMask((unsigned char)addressSize);
 	auto addr=seg.baseLinearAddr+offset;
 	if(true==PagingEnabled())
 	{
@@ -2556,10 +2553,7 @@ unsigned int i486DX::DebugFetchByte(unsigned int addressSize,const SegmentRegist
 */
 unsigned int i486DX::DebugFetchWord(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 {
-	if(true==AddressingMode16Bit(addressSize))
-	{
-		offset&=0xffff;
-	}
+	offset&=AddressMask((unsigned char)addressSize);
 	auto addr=seg.baseLinearAddr+offset;
 	if(true==PagingEnabled())
 	{
@@ -2577,10 +2571,7 @@ unsigned int i486DX::DebugFetchWord(unsigned int addressSize,const SegmentRegist
 */
 unsigned int i486DX::DebugFetchDword(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 {
-	if(true==AddressingMode16Bit(addressSize))
-	{
-		offset&=0xffff;
-	}
+	offset&=AddressMask((unsigned char)addressSize);
 	auto addr=seg.baseLinearAddr+offset;
 	if(true==PagingEnabled())
 	{

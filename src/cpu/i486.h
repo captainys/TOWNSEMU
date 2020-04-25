@@ -1740,19 +1740,18 @@ public:
 	*/
 	static unsigned int GetRegisterSize(int reg);
 
-	/*! Returns true if in 16-bit addressing mode.
+	/*! Returns a mask for addressing.
+	    If it is in real mode or 16-bit addressing, it returns 0xFFFF.
+	    If it is in 32-bit addressing, it returns 0xFFFFFFFF.
 	*/
-	inline bool AddressingMode16Bit(int addressSize) const
+	inline unsigned int AddressMask(unsigned char addressSize) const
 	{
 		if(true==IsInRealMode())
 		{
-			return true;
+			return 0xFFFF;
 		}
-		else
-		{
-			return (16==addressSize);
-		}
-		return false;
+		unsigned int mask=(1<<(addressSize-1));
+		return mask|(mask-1);
 	}
 
 
@@ -1836,10 +1835,7 @@ public:
 	*/
 	inline unsigned int FetchByte(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 	{
-		if(true==AddressingMode16Bit(addressSize))
-		{
-			offset&=0xffff;
-		}
+		offset&=AddressMask((unsigned char)addressSize);
 		auto addr=seg.baseLinearAddr+offset;
 		if(true==PagingEnabled())
 		{
@@ -1852,10 +1848,7 @@ public:
 	*/
 	inline unsigned int FetchWord(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 	{
-		if(true==AddressingMode16Bit(addressSize))
-		{
-			offset&=0xffff;
-		}
+		offset&=AddressMask((unsigned char)addressSize);
 		auto addr=seg.baseLinearAddr+offset;
 		if(true==PagingEnabled())
 		{
@@ -1872,10 +1865,7 @@ public:
 	*/
 	inline unsigned int FetchDword(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 	{
-		if(true==AddressingMode16Bit(addressSize))
-		{
-			offset&=0xffff;
-		}
+		offset&=AddressMask((unsigned char)addressSize);
 		auto addr=seg.baseLinearAddr+offset;
 		if(true==PagingEnabled())
 		{
@@ -1925,10 +1915,7 @@ public:
 	}
 	inline MemoryAccess::ConstPointer GetMemoryReadPointer(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 	{
-		if(true==AddressingMode16Bit(addressSize))
-		{
-			offset&=0xffff;
-		}
+		offset&=AddressMask((unsigned char)addressSize);
 		auto addr=seg.baseLinearAddr+offset;
 		if(true==PagingEnabled())
 		{
@@ -2421,10 +2408,7 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 
 inline void i486DX::StoreByte(Memory &mem,int addressSize,SegmentRegister seg,unsigned int offset,unsigned char byteData)
 {
-	if(true==AddressingMode16Bit(addressSize))
-	{
-		offset&=0xffff;
-	}
+	offset&=AddressMask((unsigned char)addressSize);
 	auto linearAddr=seg.baseLinearAddr+offset;
 	auto physicalAddr=linearAddr;
 	if(true==PagingEnabled())
@@ -2440,10 +2424,7 @@ inline void i486DX::StoreByte(Memory &mem,int addressSize,SegmentRegister seg,un
 
 inline void i486DX::StoreWord(Memory &mem,int addressSize,SegmentRegister seg,unsigned int offset,unsigned int data)
 {
-	if(true==AddressingMode16Bit(addressSize))
-	{
-		offset&=0xffff;
-	}
+	offset&=AddressMask((unsigned char)addressSize);
 	auto linearAddr=seg.baseLinearAddr+offset;
 	auto physicalAddr=linearAddr;
 	if(true==PagingEnabled())
@@ -2468,10 +2449,7 @@ inline void i486DX::StoreWord(Memory &mem,int addressSize,SegmentRegister seg,un
 }
 inline void i486DX::StoreDword(Memory &mem,int addressSize,SegmentRegister seg,unsigned int offset,unsigned int data)
 {
-	if(true==AddressingMode16Bit(addressSize))
-	{
-		offset&=0xffff;
-	}
+	offset&=AddressMask((unsigned char)addressSize);
 	auto linearAddr=seg.baseLinearAddr+offset;
 	auto physicalAddr=linearAddr;
 	if(true==PagingEnabled())
