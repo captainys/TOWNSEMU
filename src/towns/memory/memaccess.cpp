@@ -43,12 +43,7 @@ void TownsMemAccess::SetCPUPointer(class i486DX *cpuPtr)
 
 /* virtual */ unsigned int TownsMainRAMAccess::FetchByte(unsigned int physAddr) const
 {
-	auto &state=physMemPtr->state;
-	if(physAddr<state.RAM.size())
-	{
-		return state.RAM[physAddr];
-	}
-	return 0xff;
+	return physMemPtr->state.RAM[physAddr];
 }
 /* virtual */ unsigned int TownsMainRAMAccess::FetchWord(unsigned int physAddr) const
 {
@@ -84,11 +79,7 @@ void TownsMemAccess::SetCPUPointer(class i486DX *cpuPtr)
 }
 /* virtual */ void TownsMainRAMAccess::StoreByte(unsigned int physAddr,unsigned char data)
 {
-	auto &state=physMemPtr->state;
-	if(physAddr<state.RAM.size())
-	{
-		state.RAM[physAddr]=data;
-	}
+	physMemPtr->state.RAM[physAddr]=data;
 }
 /* virtual */ void TownsMainRAMAccess::StoreWord(unsigned int physAddr,unsigned int data)
 {
