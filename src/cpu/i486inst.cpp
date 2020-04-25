@@ -32,7 +32,7 @@ i486DX::Instruction i486DX::FetchInstruction(Operand &op1,Operand &op2,const Seg
 
 	// Question: Do prefixes need to be in the specific order INST_PREFIX->ADDRSIZE_OVERRIDE->OPSIZE_OVERRIDE->SEG_OVERRIDE?
 
-	auto ptr=GetMemoryReadPointer(inst.codeAddressSize,CS,offset+inst.numBytes,mem);
+	auto ptr=GetMemoryReadPointer(inst.codeAddressSize,CS,offset,mem);
 
 	unsigned int lastByte=FetchInstructionByte(ptr,inst.codeAddressSize,CS,offset+inst.numBytes++,mem);
 	for(;;) // While looking at prefixes.
