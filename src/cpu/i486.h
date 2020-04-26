@@ -371,6 +371,7 @@ public:
 		SystemAddressRegisterAndSelectorAndAttrib TR; // Is there only one TR or 8 TRs?
 	private:
 		unsigned int CR[4];
+		MemoryAccess::ConstPointer pageDirectoryCache; // This must be re-cached on state-load.
 	public:
 		unsigned int DR[8];
 		unsigned int TEST[8];

@@ -86,6 +86,12 @@ public:
 		{
 			return *ptr;
 		}
+
+		inline void Clear(void)
+		{
+			length=0;
+			ptr=nullptr;
+		}
 	};
 	virtual ConstPointer GetReadAccessPointer(unsigned int physAddr) const;
 };

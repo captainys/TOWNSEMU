@@ -318,6 +318,7 @@ void i486DX::Reset(void)
 	SetCR(1,0);
 	SetCR(2,0);
 	SetCR(3,0);
+	pageDirectoryCache.Clear();
 
 	for(auto &t : state.TEST)
 	{
