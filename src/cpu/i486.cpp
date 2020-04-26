@@ -946,7 +946,7 @@ unsigned int i486DX::Pop(Memory &mem,unsigned int operandSize)
 	}
 	else
 	{
-		auto ESP=GetESP();
+		auto &ESP=state.ESP();
 		if(16==operandSize)
 		{
 			value=FetchWord(addressSize,state.SS(),ESP,mem);
@@ -957,7 +957,6 @@ unsigned int i486DX::Pop(Memory &mem,unsigned int operandSize)
 			value=FetchDword(addressSize,state.SS(),ESP,mem);
 			ESP+=4;
 		}
-		SetESP(ESP);
 	}
 	return value;
 }
