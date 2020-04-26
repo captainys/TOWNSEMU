@@ -892,36 +892,19 @@ unsigned int i486DX::GetStackAddressingSize(void) const
 void i486DX::Push(Memory &mem,unsigned int operandSize,unsigned int value)
 {
 	auto addressSize=GetStackAddressingSize();
-	if(16==addressSize)
+	auto &ESP=state.ESP();
+	// When addressSize==16, ESP will be &ed with 0xFFFF in StoreWord/StoreDword.
+	// Also ESP crossing 16-bit boundary would be an exception if addressSize==16.
+	// I cannot check it here, but to run a valid application, it shouldn't happen.
+	if(16==operandSize)
 	{
-		auto SP=GetSP();
-		if(16==operandSize)
-		{
-			SP-=2;
-			SP&=65535;
-			StoreWord(mem,addressSize,state.SS(),SP,value);
-		}
-		else if(32==operandSize)
-		{
-			SP-=4;
-			SP&=65535;
-			StoreDword(mem,addressSize,state.SS(),SP,value);
-		}
-		SetSP(SP);
+		ESP-=2;
+		StoreWord(mem,addressSize,state.SS(),ESP,value);
 	}
-	else
+	else if(32==operandSize)
 	{
-		auto &ESP=state.ESP();
-		if(16==operandSize)
-		{
-			ESP-=2;
-			StoreWord(mem,addressSize,state.SS(),ESP,value);
-		}
-		else if(32==operandSize)
-		{
-			ESP-=4;
-			StoreDword(mem,addressSize,state.SS(),ESP,value);
-		}
+		ESP-=4;
+		StoreDword(mem,addressSize,state.SS(),ESP,value);
 	}
 }
 
@@ -929,34 +912,19 @@ unsigned int i486DX::Pop(Memory &mem,unsigned int operandSize)
 {
 	unsigned int value;
 	auto addressSize=GetStackAddressingSize();
-	if(16==addressSize)
+	auto &ESP=state.ESP();
+	// When addressSize==16, ESP will be &ed with 0xFFFF in StoreWord/StoreDword.
+	// Also ESP crossing 16-bit boundary would be an exception if addressSize==16.
+	// I cannot check it here, but to run a valid application, it shouldn't happen.
+	if(16==operandSize)
 	{
-		auto SP=GetSP();
-		if(16==operandSize)
-		{
-			value=FetchWord(addressSize,state.SS(),SP,mem);
-			SP+=2;
-		}
-		else if(32==operandSize)
-		{
-			value=FetchDword(addressSize,state.SS(),SP,mem);
-			SP+=4;
-		}
-		SetSP(SP); // SetSP does SP&=0xffff;
+		value=FetchWord(addressSize,state.SS(),ESP,mem);
+		ESP+=2;
 	}
-	else
+	else if(32==operandSize)
 	{
-		auto &ESP=state.ESP();
-		if(16==operandSize)
-		{
-			value=FetchWord(addressSize,state.SS(),ESP,mem);
-			ESP+=2;
-		}
-		else if(32==operandSize)
-		{
-			value=FetchDword(addressSize,state.SS(),ESP,mem);
-			ESP+=4;
-		}
+		value=FetchDword(addressSize,state.SS(),ESP,mem);
+		ESP+=4;
 	}
 	return value;
 }
