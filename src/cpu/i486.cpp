@@ -317,8 +317,7 @@ void i486DX::Reset(void)
 	// Better than leaving it uninitialized
 	SetCR(1,0);
 	SetCR(2,0);
-	SetCR(3,0);
-	pageDirectoryCache.Clear();
+	state.pageDirectoryCache.Clear();
 
 	for(auto &t : state.TEST)
 	{
@@ -2332,16 +2331,10 @@ void i486DX::StoreOperandValue(
 			Abort("i486DX::StoreOperandValue, I don't think IDTR can be an operand.");
 			break;
 		case REG_CR0:
-			SetCR(0,cpputil::GetDword(value.byteData));
-			break;
 		case REG_CR1:
-			SetCR(1,cpputil::GetDword(value.byteData));
-			break;
 		case REG_CR2:
-			SetCR(2,cpputil::GetDword(value.byteData));
-			break;
 		case REG_CR3:
-			SetCR(3,cpputil::GetDword(value.byteData));
+			Abort("i486DX::StoreOperandValue must not be used for CRx.");
 			break;
 		case REG_DR0:
 			state.DR[0]=cpputil::GetDword(value.byteData);

@@ -371,6 +371,7 @@ public:
 		SystemAddressRegisterAndSelectorAndAttrib TR; // Is there only one TR or 8 TRs?
 	private:
 		unsigned int CR[4];
+	public:
 		MemoryAccess::ConstPointer pageDirectoryCache; // This must be re-cached on state-load.
 	public:
 		unsigned int DR[8];
@@ -1630,7 +1631,18 @@ public:
 		state._SetCR(num,value);
 		if(3==num)
 		{
-			// RebuildPageTableCache();
+			Abort("CR3 must be set from SetCR(num,value,mem)");
+		}
+	}
+
+	/*! Write to Control Register.  If num==3, it builds Page Table cache.
+	*/
+	inline void SetCR(unsigned int num,unsigned int value,const Memory &mem)
+	{
+		state._SetCR(num,value);
+		if(3==num)
+		{
+			state.pageDirectoryCache=mem.GetReadAccessPointer(value&0xFFFFF000);
 		}
 	}
 
@@ -1789,9 +1801,17 @@ public:
 		unsigned int pageTableIndex=((linearAddr>>12)&1023);
 		unsigned int offset=(linearAddr&4095);
 
-		const unsigned int pageDirectoryPtr=state.GetCR(3)&0xFFFFF000;
-
-		unsigned int pageTableInfo=mem.FetchDword(pageDirectoryPtr+(pageDirectoryIndex<<2));
+		unsigned int pageTableInfo;
+		if(4096==state.pageDirectoryCache.length)
+		{
+			const auto ptr=state.pageDirectoryCache.ptr+(pageDirectoryIndex<<2);
+			pageTableInfo=(ptr[0]|(ptr[1]<<8)|(ptr[2]<<16)|(ptr[3]<<24));
+		}
+		else
+		{
+			const unsigned int pageDirectoryPtr=state.GetCR(3)&0xFFFFF000;
+			pageTableInfo=mem.FetchDword(pageDirectoryPtr+(pageDirectoryIndex<<2));
+		}
 		if(0==(pageTableInfo&1))
 		{
 			exceptionCode=EXCEPTION_PF;

@@ -5883,7 +5883,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 
 	case I486_OPCODE_MOV_TO_CR://        0x0F22,
-		Move(mem,inst.addressSize,inst.segOverride,op1,op2);
+		{
+			unsigned int MODR_M=inst.operand[0];
+			auto crNum=((MODR_M>>3)&3); // I think it should be &3 not &7.  Only CR0 to CR3.
+			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,4);
+			SetCR(crNum,value.GetAsDword(),mem);
+		}
 		clocksPassed=16;
 		break;
 	case I486_OPCODE_MOV_FROM_CR://      0x0F20,
