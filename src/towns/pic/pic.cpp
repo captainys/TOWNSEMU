@@ -171,7 +171,7 @@ unsigned int TownsPIC::I8259A::INTToGo(void) const
 	for(unsigned int pri=0; pri<7; ++pri)
 	{
 		auto INTNum=(highestPriorityInt+pri)&7;
-		if(0!=(IRR&(1<<INTNum)) && 0==(ISR&(1<<INTNum)))
+		if(0!=(IRR&(1<<INTNum)) && 0==(ISR&(1<<INTNum)) && 0==(OCW[0]&(1<<INTNum)))
 		{
 			return INTNum;
 		}
