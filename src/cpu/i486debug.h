@@ -70,6 +70,8 @@ public:
 	unsigned int breakOnINT;
 	bool stop;
 	bool monitorIO;
+	unsigned int monitorIOMin=0x0000;
+	unsigned int monitorIOMax=0xFFFF;
 	bool disassembleEveryStep;
 
 	CS_EIP lastDisassembleAddr;

@@ -227,8 +227,9 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Command log.  Saved to CMD.LOG." << std::endl;
 	std::cout << "AUTODISASM" << std::endl;
 	std::cout << "  Disassemble while running." << std::endl;
-	std::cout << "IOMON" << std::endl;
+	std::cout << "IOMON iopotMin ioportMax" << std::endl;
 	std::cout << "  IO Monitor." << std::endl;
+	std::cout << "  ioportMin and ioportMax are optional." << std::endl;
 	std::cout << "EVENTLOG" << std::endl;
 	std::cout << "  Event Log." << std::endl;
 
@@ -547,6 +548,21 @@ void TownsCommandInterpreter::Execute_Enable(FMTowns &towns,Command &cmd)
 		case ENABLE_IOMONITOR:
 			towns.debugger.monitorIO=true;
 			std::cout << "IO_Monitor is ON." << std::endl;
+			if(4<=cmd.argv.size())
+			{
+				towns.debugger.monitorIOMin=cpputil::Xtoi(cmd.argv[2].c_str());
+				towns.debugger.monitorIOMax=cpputil::Xtoi(cmd.argv[3].c_str());
+				std::cout << "Range:";
+				std::cout << cpputil::Ustox(towns.debugger.monitorIOMin);
+				std::cout << " to ";
+				std::cout << cpputil::Ustox(towns.debugger.monitorIOMax);
+				std::cout << std::endl;
+			}
+			else
+			{
+				towns.debugger.monitorIOMin=0x0000;
+				towns.debugger.monitorIOMax=0xFFFF;
+			}
 			break;
 		case ENABLE_EVENTLOG:
 			towns.eventLog.BeginRecording(towns.state.townsTime);

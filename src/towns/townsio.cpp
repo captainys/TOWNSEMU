@@ -36,6 +36,10 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 		{
 			var.powerOff=true;
 		}
+		if(0!=(data&0x01))
+		{
+			debugger.ExternalBreak("RESET(IO 0x20 Bit 0)");
+		}
 		break;
 	case TOWNSIO_SERIAL_ROM_CTRL://=        0x32,
 		if((0x60&data)==0x60 && (0x80&state.lastSerialROMCommand)!=0 && (0x80&data)==0)

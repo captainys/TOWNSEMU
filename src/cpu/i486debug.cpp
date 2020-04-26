@@ -407,7 +407,7 @@ void i486Debugger::IOWrite(const i486DX &cpu,unsigned int ioport,unsigned int da
 		ExternalBreak("IOWrite Port:"+cpputil::Uitox(ioport)+" Value:"+cpputil::Ubtox(data));
 	}
 
-	if(true==monitorIO)
+	if(true==monitorIO && monitorIOMin<=ioport && ioport<=monitorIOMax)
 	{
 		std::cout << cpputil::Ustox(cpu.state.CS().value) << ":" << cpputil::Uitox(cpu.state.EIP) << " ";
 		std::cout << "Write IO" << (lengthInBytes<<3) << ":[" << cpputil::Ustox(ioport) << "] " << cpputil::Ubtox(data);
@@ -428,7 +428,7 @@ void i486Debugger::IORead(const i486DX &cpu,unsigned int ioport,unsigned int dat
 		ExternalBreak("IORead Port:"+cpputil::Uitox(ioport)+" Value:"+cpputil::Ubtox(data));
 	}
 
-	if(true==monitorIO)
+	if(true==monitorIO && monitorIOMin<=ioport && ioport<=monitorIOMax)
 	{
 		std::cout << cpputil::Ustox(cpu.state.CS().value) << ":" << cpputil::Uitox(cpu.state.EIP) << " ";
 		std::cout << "Read IO" << (lengthInBytes<<3) << ":[" << cpputil::Ustox(ioport) << "] " << cpputil::Ubtox(data);
