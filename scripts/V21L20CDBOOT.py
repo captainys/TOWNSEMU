@@ -22,6 +22,8 @@ def Run():
 		ROMDIR,
 		"-FD0",
 		os.path.join(DISKDIR,"V2.1L20.bin"),
+		"-FD1",
+		os.path.join(DISKDIR,"BDrive.bin"),
 		"-CD",
 		"D:/ISOImageSubset/TownsOSV2.1L20.cue",
 		"-SYM",
