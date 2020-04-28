@@ -36,6 +36,10 @@ TownsKeyboard::TownsKeyboard(FMTowns *townsPtr,TownsPIC *picPtr) : Device(townsP
 
 void TownsKeyboard::PushFifo(unsigned char code1,unsigned char code2)
 {
+	if(true==debugBreakOnReturnKey && code2==TOWNS_JISKEY_RETURN)
+	{
+		this->townsPtr->debugger.ExternalBreak("Break on Enter Key");
+	}
 	if(nFifoFilled+1<FIFO_BUF_LEN)
 	{
 		fifoBuf[nFifoFilled  ]=code1;

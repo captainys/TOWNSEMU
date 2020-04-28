@@ -216,6 +216,14 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 			case TOWNSMEMIO_FMR_GVRAMDISPMODE://  0x000CFF82, // [2] pp.22,pp.158
 				break;
 			case TOWNSMEMIO_FMR_GVRAMPAGESEL://   0x000CFF83, // [2] pp.22,pp.159
+				if(0==physMemPtr->state.FMRVRAMWriteOffset)
+				{
+					return 0;
+				}
+				else
+				{
+					return 0x10;
+				}
 				break;
 
 			case TOWNSMEMIO_FIRQ://               0x000CFF84, // [2] pp.22,pp.95 Always zero in FM TOWNS

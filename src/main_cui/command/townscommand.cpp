@@ -132,6 +132,8 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	breakEventMap["VRAMRW"]=BREAK_ON_VRAMREADWRITE;
 	breakEventMap["CDCCMD"]=BREAK_ON_CDC_COMMAND;
 	breakEventMap["LBUTTONUP"]=BREAK_ON_LBUTTON_UP;
+	breakEventMap["RETKEY"]=BREAK_ON_RETURN_KEY;
+	breakEventMap["RETURNKEY"]=BREAK_ON_RETURN_KEY;
 }
 
 void TownsCommandInterpreter::PrintHelp(void) const
@@ -289,6 +291,9 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "VRAMR" << std::endl;
 	std::cout << "VRAMW" << std::endl;
 	std::cout << "VRAMRW" << std::endl;
+	std::cout << "LBUTTONUP" << std::endl;
+	std::cout << "RETKEY" << std::endl;
+	std::cout << "RETURNKEY" << std::endl;
 }
 
 void TownsCommandInterpreter::PrintError(int errCode) const
@@ -907,6 +912,9 @@ void TownsCommandInterpreter::Execute_BreakOn(FMTowns &towns,Command &cmd)
 		case BREAK_ON_LBUTTON_UP:
 			towns.var.debugBreakOnLButtonUp=true;
 			break;
+		case BREAK_ON_RETURN_KEY:
+			towns.keyboard.debugBreakOnReturnKey=true;
+			break;
 		}
 		std::cout << reason << " is ON." << std::endl;
 	}
@@ -984,6 +992,9 @@ void TownsCommandInterpreter::Execute_ClearBreakOn(FMTowns &towns,Command &cmd)
 			break;
 		case BREAK_ON_LBUTTON_UP:
 			towns.var.debugBreakOnLButtonUp=false;
+			break;
+		case BREAK_ON_RETURN_KEY:
+			towns.keyboard.debugBreakOnReturnKey=false;
 			break;
 		}
 		std::cout << iter->first << " is OFF." << std::endl;

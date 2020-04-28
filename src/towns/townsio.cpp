@@ -63,6 +63,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 			var.VM2HostParam[var.nVM2HostParam++]=data;
 		}
 		break;
+	case TOWNSIO_TIMER_1US_WAIT:
+		state.townsTime+=1000;
+		break;
 	}
 }
 /* virtual */ void FMTowns::IOWriteWord(unsigned int ioport,unsigned int data)
@@ -113,6 +116,11 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 		// Bit0 should always be 0.
 		// In FM-R, Bit3 is labeled as "160P".  Meaning unknown.
 		return 0xFE;
+
+	case TOWNSIO_TIMER_1US_WAIT:
+		// Supposed to be 1us wait when written.  But, mouse BIOS is often reading from this register.
+		state.townsTime+=1000;
+		break;
 	}
 	return 0xff;
 }

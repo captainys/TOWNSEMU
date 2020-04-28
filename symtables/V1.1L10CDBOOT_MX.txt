@@ -835,3 +835,21 @@ L RUN386:CALL INT 21H
 P 
 % 0
 /end
+/begin0
+T 1
+* 0000FC00:00001686
+# 
+R 
+L SYSROM:Read CMOS to Buffer
+P 
+% 0
+/end
+/begin0
+T 1
+* 0000FC00:0000170A
+# 
+R 
+L SYSROM:Clear CMOS
+P 
+% 0
+/end

@@ -59,6 +59,8 @@ public:
 	unsigned int nFifoFilled;
 	unsigned char fifoBuf[FIFO_BUF_LEN];
 
+	bool debugBreakOnReturnKey=false;
+
 	class FMTowns *townsPtr;
 	class TownsPIC *picPtr;
 
