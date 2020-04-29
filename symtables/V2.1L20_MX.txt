@@ -999,10 +999,28 @@ P
 /end
 /begin0
 T 1
+* 0000FFFB:00000000
+# 
+R 
+L SYSROM:RESET_VECTOR_REIPL
+P 
+% 0
+/end
+/begin0
+T 1
+* 0000FFFB:00000005
+# 
+R 
+L SYSROM:RESET_VECTOR_TOSV11
+P 
+% 0
+/end
+/begin0
+T 1
 * 0000FFFB:00000019
 # 
 R 
-L SYSROM:(PROB)RESET_VECTOR
+L SYSROM:(PROB)Service_Routine
 P 
 % 0
 /end

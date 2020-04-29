@@ -135,6 +135,10 @@ void i486Debugger::CleanUp(void)
 	stop=false;
 	breakOnINT=0xffff;
 	monitorIO=false;
+	for(auto &b : monitorIOports)
+	{
+		b=false;
+	}
 	disassembleEveryStep=false;
 	lastDisassembleAddr.Nullify();
 
@@ -407,7 +411,7 @@ void i486Debugger::IOWrite(const i486DX &cpu,unsigned int ioport,unsigned int da
 		ExternalBreak("IOWrite Port:"+cpputil::Uitox(ioport)+" Value:"+cpputil::Ubtox(data));
 	}
 
-	if(true==monitorIO && monitorIOMin<=ioport && ioport<=monitorIOMax)
+	if(true==monitorIO && true==monitorIOports[ioport&0xFFFF])
 	{
 		std::cout << cpputil::Ustox(cpu.state.CS().value) << ":" << cpputil::Uitox(cpu.state.EIP) << " ";
 		std::cout << "Write IO" << (lengthInBytes<<3) << ":[" << cpputil::Ustox(ioport) << "] " << cpputil::Ubtox(data);
@@ -428,7 +432,7 @@ void i486Debugger::IORead(const i486DX &cpu,unsigned int ioport,unsigned int dat
 		ExternalBreak("IORead Port:"+cpputil::Uitox(ioport)+" Value:"+cpputil::Ubtox(data));
 	}
 
-	if(true==monitorIO && monitorIOMin<=ioport && ioport<=monitorIOMax)
+	if(true==monitorIO && true==monitorIOports[ioport&0xFFFF])
 	{
 		std::cout << cpputil::Ustox(cpu.state.CS().value) << ":" << cpputil::Uitox(cpu.state.EIP) << " ";
 		std::cout << "Read IO" << (lengthInBytes<<3) << ":[" << cpputil::Ustox(ioport) << "] " << cpputil::Ubtox(data);
@@ -439,4 +443,40 @@ void i486Debugger::IORead(const i486DX &cpu,unsigned int ioport,unsigned int dat
 		}
 		std::cout << std::endl;
 	}
+}
+
+void i486Debugger::MonitorIO(unsigned short portMin,unsigned short portMax)
+{
+	for(auto p=portMin; p<=portMax; ++p)
+	{
+		monitorIOports[p]=true;
+		if(p==portMax) // In case portMax=0xffff
+		{
+			break;
+		}
+	}
+	monitorIO=AtLeastOneMonitorIOPortIsSet();
+}
+void i486Debugger::UnmonitorIO(unsigned short portMin,unsigned short portMax)
+{
+	for(auto p=portMin; p<=portMax; ++p)
+	{
+		monitorIOports[p]=false;
+		if(p==portMax) // In case portMax=0xffff
+		{
+			break;
+		}
+	}
+	monitorIO=AtLeastOneMonitorIOPortIsSet();
+}
+bool i486Debugger::AtLeastOneMonitorIOPortIsSet(void) const
+{
+	for(auto b : monitorIOports)
+	{
+		if(true==b)
+		{
+			return true;
+		}
+	}
+	return false;
 }

@@ -232,6 +232,7 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "IOMON iopotMin ioportMax" << std::endl;
 	std::cout << "  IO Monitor." << std::endl;
 	std::cout << "  ioportMin and ioportMax are optional." << std::endl;
+	std::cout << "  Can specify multiple range by enabling IOMON multiple times." << std::endl;
 	std::cout << "EVENTLOG" << std::endl;
 	std::cout << "  Event Log." << std::endl;
 
@@ -551,22 +552,21 @@ void TownsCommandInterpreter::Execute_Enable(FMTowns &towns,Command &cmd)
 			std::cout << "Disassemble_Every_Step is ON." << std::endl;
 			break;
 		case ENABLE_IOMONITOR:
-			towns.debugger.monitorIO=true;
 			std::cout << "IO_Monitor is ON." << std::endl;
 			if(4<=cmd.argv.size())
 			{
-				towns.debugger.monitorIOMin=cpputil::Xtoi(cmd.argv[2].c_str());
-				towns.debugger.monitorIOMax=cpputil::Xtoi(cmd.argv[3].c_str());
+				auto portMin=cpputil::Xtoi(cmd.argv[2].c_str());
+				auto portMax=cpputil::Xtoi(cmd.argv[3].c_str());
+				towns.debugger.MonitorIO(portMin,portMax);
 				std::cout << "Range:";
-				std::cout << cpputil::Ustox(towns.debugger.monitorIOMin);
+				std::cout << cpputil::Ustox(portMin);
 				std::cout << " to ";
-				std::cout << cpputil::Ustox(towns.debugger.monitorIOMax);
+				std::cout << cpputil::Ustox(portMax);
 				std::cout << std::endl;
 			}
 			else
 			{
-				towns.debugger.monitorIOMin=0x0000;
-				towns.debugger.monitorIOMax=0xFFFF;
+				towns.debugger.MonitorIO(0,0xFFFF);
 			}
 			break;
 		case ENABLE_EVENTLOG:
@@ -597,8 +597,23 @@ void TownsCommandInterpreter::Execute_Disable(FMTowns &towns,Command &cmd)
 			std::cout << "Disassemble_Every_Step is OFF." << std::endl;
 			break;
 		case ENABLE_IOMONITOR:
-			towns.debugger.monitorIO=false;
-			std::cout << "IO_Monitor is OFF." << std::endl;
+			if(4<=cmd.argv.size())
+			{
+				std::cout << "IO_Monitor is OFF for:" << std::endl;
+				auto portMin=cpputil::Xtoi(cmd.argv[2].c_str());
+				auto portMax=cpputil::Xtoi(cmd.argv[3].c_str());
+				towns.debugger.UnmonitorIO(portMin,portMax);
+				std::cout << "Range:";
+				std::cout << cpputil::Ustox(portMin);
+				std::cout << " to ";
+				std::cout << cpputil::Ustox(portMax);
+				std::cout << std::endl;
+			}
+			else
+			{
+				std::cout << "IO_Monitor is OFF" << std::endl;
+				towns.debugger.UnmonitorIO(0,0xFFFF);
+			}
 			break;
 		case ENABLE_EVENTLOG:
 			towns.eventLog.mode=TownsEventLog::MODE_NONE;

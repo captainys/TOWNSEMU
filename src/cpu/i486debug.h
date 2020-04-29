@@ -70,8 +70,7 @@ public:
 	unsigned int breakOnINT;
 	bool stop;
 	bool monitorIO;
-	unsigned int monitorIOMin=0x0000;
-	unsigned int monitorIOMax=0xFFFF;
+	bool monitorIOports[65536];
 	bool disassembleEveryStep;
 
 	CS_EIP lastDisassembleAddr;
@@ -147,6 +146,18 @@ public:
 	*/
 	void IORead(const i486DX &cpu,unsigned int ioport,unsigned int data,unsigned int lengthInBytes);
 
+	/*!
+	*/
+	void MonitorIO(unsigned short portMin,unsigned short portMax);
+
+	/*!
+	*/
+	void UnmonitorIO(unsigned short portMin,unsigned short portMax);
+private:
+	bool AtLeastOneMonitorIOPortIsSet(void) const;
+
+
+public:
 };
 
 template <>
