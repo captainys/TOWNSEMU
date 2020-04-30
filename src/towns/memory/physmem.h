@@ -460,11 +460,7 @@ public:
 
 	/*! 
 	*/
-	void SetSysRomMappingFlag(bool sysRomMapping);
-
-	/*!
-	*/
-	void SetDicROMMappingFlag(bool dicRomMapping);
+	void SetSysROMDicROMMappingFlag(bool sysRomMapping,bool dicRomMapping);
 
 	/*!
 	*/

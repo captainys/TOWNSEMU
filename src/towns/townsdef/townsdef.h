@@ -21,6 +21,7 @@ const int PER_SECOND=1000000000;  // Unit: Nano Seconds
 const int TOWNS_RENDERING_FREQUENCY=PER_SECOND/60;
 
 const unsigned int TOWNS_CMOS_SIZE=8192;
+const unsigned int TOWNS_WAVERAM_SIZE=65536;
 
 const unsigned int TBIOS_ID_FREQUENCY=100;
 

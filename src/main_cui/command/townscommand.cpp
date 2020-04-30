@@ -81,6 +81,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["LET"]=CMD_LET;
 	primaryCmdMap["CRTCPAGE"]=CMD_CRTC_PAGE;
 	primaryCmdMap["CMOSLOAD"]=CMD_CMOSLOAD;
+	primaryCmdMap["CMOSSAVE"]=CMD_CMOSSAVE;
 	primaryCmdMap["CDLOAD"]=CMD_CDLOAD;
 	primaryCmdMap["CDOPENCLOSE"]=CMD_CDOPENCLOSE;
 
@@ -213,6 +214,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Turn on/off display page." << std::endl;
 	std::cout << "CMOSLOAD filename" << std::endl;
 	std::cout << "  Load CMOS." << std::endl;
+	std::cout << "CMOSSAVE filename" << std::endl;
+	std::cout << "  Save CMOS." << std::endl;
 	std::cout << "CDLOAD filename" << std::endl;
 	std::cout << "  Load CD-ROM image." << std::endl;
 	std::cout << "CDOPENCLOSE" << std::endl;
@@ -520,6 +523,9 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,Command &c
 		break;
 	case CMD_CMOSLOAD:
 		Execute_CMOSLoad(towns,cmd);
+		break;
+	case CMD_CMOSSAVE:
+		Execute_CMOSSave(towns,cmd);
 		break;
 
 	case CMD_CDLOAD:
@@ -1407,7 +1413,24 @@ void TownsCommandInterpreter::Execute_CMOSLoad(FMTowns &towns,Command &cmd)
 		PrintError(ERROR_TOO_FEW_ARGS);
 	}
 }
-
+void TownsCommandInterpreter::Execute_CMOSSave(FMTowns &towns,Command &cmd)
+{
+	if(2<=cmd.argv.size())
+	{
+		if(true!=cpputil::WriteBinaryFile(cmd.argv[1],towns.physMem.state.DICRAM.size(),towns.physMem.state.DICRAM.data()))
+		{
+			PrintError(ERROR_CANNOT_SAVE_FILE);
+		}
+		else
+		{
+			std::cout << "Saved CMOS." << std::endl;
+		}
+	}
+	else
+	{
+		PrintError(ERROR_TOO_FEW_ARGS);
+	}
+}
 void TownsCommandInterpreter::Execute_CDLoad(FMTowns &towns,Command &cmd)
 {
 	if(2<=cmd.argv.size())

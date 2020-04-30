@@ -69,6 +69,8 @@ public:
 
 	virtual const char *DeviceName(void) const{return "FMTOWNS";}
 
+	static const unsigned char defCMOS[];
+
 	class State
 	{
 	public:

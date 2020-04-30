@@ -78,7 +78,7 @@ void TownsPhysicalMemory::State::Reset(void)
 	{
 		if(true==preventCMOSInitToSingleDriveMode)
 		{
-			if(0x328C==ioport)
+			/* if(0x328C==ioport)
 			{
 				std::cout << "Blocking Single Drive Mode " << cpputil::Ubtox(data) << "->" << "00H" << std::endl;
 				data=0;
@@ -87,7 +87,7 @@ void TownsPhysicalMemory::State::Reset(void)
 			{
 				std::cout << "Blocking Single Drive Mode " << cpputil::Ubtox(data) << "->" << "FAH" << std::endl;
 				data=0xFA;
-			}
+			} */
 		}
 		state.DICRAM[(ioport-TOWNSIO_CMOS_BASE)/2]=(unsigned char)(data&0xFF);
 		return;
@@ -99,8 +99,7 @@ void TownsPhysicalMemory::State::Reset(void)
 		SetFMRVRAMMappingFlag((0x80&data)==0);
 		break;
 	case TOWNSIO_SYSROM_DICROM: // 0x480
-		SetSysRomMappingFlag(0==(data&2));
-		SetDicROMMappingFlag(0!=(data&1));
+		SetSysROMDicROMMappingFlag(0==(data&2),0!=(data&1));
 		break;
 	case TOWNSIO_DICROM_BANK://              0x484, // [2] pp.92
 		state.DICROMBank=data&0x0F;
@@ -256,8 +255,7 @@ void TownsPhysicalMemory::SetWaveRAMSize(long long int size)
 /* virtual */ void TownsPhysicalMemory::Reset(void)
 {
 	state.Reset();
-	SetSysRomMappingFlag(state.sysRomMapping);
-	SetDicROMMappingFlag(state.dicRom);
+	SetSysROMDicROMMappingFlag(state.sysRomMapping,state.dicRom);
 	SetFMRVRAMMappingFlag(state.FMRVRAM);
 
 }
@@ -286,7 +284,6 @@ void TownsPhysicalMemory::SetUpMemoryAccess(void)
 
 	mappedDicROMandDicRAMAccess.SetPhysicalMemoryPointer(this);
 	mappedDicROMandDicRAMAccess.SetCPUPointer(&cpu);
-	SetDicROMMappingFlag(true);  // This will set up memory access for 0xD0000 to 0xEFFFF
 
 	nativeDicROMandDicRAMAccess.SetPhysicalMemoryPointer(this);
 	nativeDicROMandDicRAMAccess.SetCPUPointer(&cpu);
@@ -295,7 +292,7 @@ void TownsPhysicalMemory::SetUpMemoryAccess(void)
 
 	mappedSysROMAccess.SetPhysicalMemoryPointer(this);
 	mappedSysROMAccess.SetCPUPointer(&cpu);
-	SetSysRomMappingFlag(true);   // This will set up memory access for 0xF8000 to 0xFFFFF
+	SetSysROMDicROMMappingFlag(true,false);   // This will set up memory access for 0xF8000 to 0xFFFFF and 0xD0000 to 0xDFFFF
 
 	if(0x00100000<state.RAM.size())
 	{
@@ -376,27 +373,43 @@ void TownsPhysicalMemory::SetUpVRAMAccess(bool breakOnRead,bool breakOnWrite)
 	}
 }
 
-void TownsPhysicalMemory::SetSysRomMappingFlag(bool sysRomMapping)
+void TownsPhysicalMemory::SetSysROMDicROMMappingFlag(bool sysRomMapping,bool dicRomMapping)
 {
+	// The interpretation of 0480H is very difficult.
+	// On startup system rom does:
+	//	MOV	DX,0480H
+	//	IN	AL,DX
+	//	OR	AL,2
+	//	OUT DX,AL
+	// To disable system-ROM mapping (active low) before RAM test.  However, since it keeps bit0, if I interpret bit 0
+	// as controlling Dictionary ROM and CMOS RAM mapping to D0000H to DFFFFH, it doesn't clear Dictionary ROM and CMOS RAM
+	// mapping, and then destroys CMOS RAM during the memory test.
+	//
+	// Only interpretation that makes sense to me is:
+	//   0480H Bit1(active low)  Bit0         D0000     F8000
+	//         1(false)          0(false)     MainRAM   MainRAM
+	//         1(false)          1(true)      MainRAM   MainRAM
+	//         0(true)           0(false)     SysROM    MainRAM
+	//         0(true)           1(true)      SysROM    DicROM/CMOS
+	//
+	// I'll eventually test on the actual machine.
+
 	state.sysRomMapping=sysRomMapping;
-	if(true==sysRomMapping)
+	state.dicRom=dicRomMapping;
+
+	if(true==sysRomMapping && true==dicRomMapping)
 	{
 		memPtr->AddAccess(&mappedSysROMAccess,TOWNSADDR_SYSROM_MAP_BASE,TOWNSADDR_SYSROM_MAP_END-1);
+		memPtr->AddAccess(&mappedDicROMandDicRAMAccess,TOWNSADDR_FMR_DICROM_BASE,TOWNSADDR_BACKUP_RAM_END-1);
+	}
+	else if(true==sysRomMapping && true!=dicRomMapping)
+	{
+		memPtr->AddAccess(&mappedSysROMAccess,TOWNSADDR_SYSROM_MAP_BASE,TOWNSADDR_SYSROM_MAP_END-1);
+		memPtr->AddAccess(&mainRAMAccess,TOWNSADDR_FMR_DICROM_BASE,TOWNSADDR_BACKUP_RAM_END-1);
 	}
 	else
 	{
 		memPtr->AddAccess(&mainRAMAccess,TOWNSADDR_SYSROM_MAP_BASE,TOWNSADDR_SYSROM_MAP_END-1);
-	}
-}
-void TownsPhysicalMemory::SetDicROMMappingFlag(bool dicRomMapping)
-{
-	state.dicRom=dicRomMapping;
-	if(true==dicRomMapping)
-	{
-		memPtr->AddAccess(&mappedDicROMandDicRAMAccess,TOWNSADDR_FMR_DICROM_BASE,TOWNSADDR_BACKUP_RAM_END-1);
-	}
-	else
-	{
 		memPtr->AddAccess(&mainRAMAccess,TOWNSADDR_FMR_DICROM_BASE,TOWNSADDR_BACKUP_RAM_END-1);
 	}
 }

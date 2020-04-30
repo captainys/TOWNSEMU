@@ -86,6 +86,7 @@ public:
 
 		CMD_CALCULATE,
 
+		CMD_CMOSSAVE,
 		CMD_CMOSLOAD,
 		CMD_CDLOAD,
 		CMD_CDOPENCLOSE,
@@ -215,6 +216,7 @@ public:
 	void Execute_CRTCPage(FMTowns &towns,Command &cmd);
 
 	void Execute_CMOSLoad(FMTowns &towns,Command &cmd);
+	void Execute_CMOSSave(FMTowns &towns,Command &cmd);
 	void Execute_CDLoad(FMTowns &towns,Command &cmd);
 };
 
