@@ -723,6 +723,8 @@ bool TownsFDC::WriteFault(void) const
 		state.INUSE=(0!=(data&0x10));
 		state.driveSelectBit=(data&0x0F);
 		break;
+	case TOWNSIO_FDC_FDDV_EXT:
+		break;
 	case TOWNSIO_FDC_DRIVE_SWITCH://         0x20E, // [2] pp.253
 		// Let's disable it.
 		break;
@@ -744,10 +746,14 @@ bool TownsFDC::WriteFault(void) const
 		data=state.drive[DriveSelect()].dataReg;
 		break;
 	case TOWNSIO_FDC_DRIVE_STATUS_CONTROL:// 0x208, // [2] pp.253
-		data=5; // Bit0:Always 1   Bit2:3.5inch drive
+		data=1; // Bit0:Always 1 or DSKCHG?
 		data|=(DriveReady() ? 2 : 0);
+		data|=0b01100; // 3-mode drive. [2] pp.809
 		break;
 	case TOWNSIO_FDC_DRIVE_SELECT://         0x20C, // [2] pp.253
+		break;
+	case TOWNSIO_FDC_FDDV_EXT:
+		data=0x7F; // FDDV EXT=1: FDDV2-0
 		break;
 	case TOWNSIO_FDC_DRIVE_SWITCH://         0x20E, // [2] pp.253
 		data=(true!=state.driveSwitch ? 1 : 0);

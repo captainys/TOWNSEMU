@@ -181,6 +181,7 @@ enum
 	TOWNSIO_FDC_DATA=                 0x206, // [2] pp.253
 	TOWNSIO_FDC_DRIVE_STATUS_CONTROL= 0x208, // [2] pp.253
 	TOWNSIO_FDC_DRIVE_SELECT=         0x20C, // [2] pp.253
+	TOWNSIO_FDC_FDDV_EXT=             0x20D, // [2] pp.809
 	TOWNSIO_FDC_DRIVE_SWITCH=         0x20E, // [2] pp.253
 
 	TOWNSIO_FMR_RESOLUTION=           0x400, // [2] pp.91

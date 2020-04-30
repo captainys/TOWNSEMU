@@ -30,6 +30,8 @@ def Run(argv):
 		ROMDIR,
 		"-FD0",
 		os.path.join(DISKDIR,"V2.1L20.bin"),
+		"-FD1",
+		os.path.join(DISKDIR,"720KB.bin"),
 		"-CD",
 		os.path.join(THISDIR,"..","testdata","ISOIMG","TESTDISC.ISO"),
 		"-SYM",
