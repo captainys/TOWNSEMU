@@ -493,7 +493,7 @@ bool TownsFDC::SeekError(void) const
 }
 bool TownsFDC::CRCError(void) const
 {
-	return false;
+	return state.CRCError;
 }
 bool TownsFDC::IndexHole(void) const
 {
@@ -501,15 +501,15 @@ bool TownsFDC::IndexHole(void) const
 }
 bool TownsFDC::RecordType(void) const
 {
-	return false;
+	return state.recordType;
 }
 bool TownsFDC::RecordNotFound(void) const
 {
-	return false;
+	return state.recordNotFound;
 }
 bool TownsFDC::LostData(void) const
 {
-	return false;
+	return state.lostData;
 }
 bool TownsFDC::DataRequest(void) const
 {
@@ -527,6 +527,12 @@ bool TownsFDC::WriteFault(void) const
 {
 	auto &drv=state.drive[DriveSelect()];
 	auto diskPtr=GetDriveDisk(DriveSelect());
+
+	state.recordType=false;
+	state.recordNotFound=false;
+	state.CRCError=false;
+	state.lostData=false;
+
 	switch(state.lastCmd&0xF0)
 	{
 	case 0x00: // Restore
@@ -711,6 +717,8 @@ bool TownsFDC::WriteFault(void) const
 			}
 			else
 			{
+				MakeReady();
+				state.recordNotFound=true;
 			}
 		}
 		break;

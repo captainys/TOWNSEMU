@@ -107,6 +107,15 @@ P
 % 0
 /end
 /begin0
+T 1
+* 0000005D:0000020C
+# 
+R 
+L INT 46H(FDC)
+P 
+% 0
+/end
+/begin0
 T 0
 * 00000110:00005728
 # 
@@ -332,6 +341,15 @@ P
 % 0
 /end
 /begin0
+T 1
+* 00000421:0000053A
+# 
+R 
+L DISKBIOS:Get Drive-Status Structure Pointer in SI (AL=drive)
+P 
+% 0
+/end
+/begin0
 T 0
 * 00000421:0000069E
 # [044DH]=Error Code
@@ -415,7 +433,7 @@ P
 /begin0
 T 2
 * 00000421:00000873
-# 
+# DS:[0487H] is cleared in FDC IRQ.
 R 
 L Wait timer up or command finished
 P 
@@ -434,6 +452,33 @@ P
 T 0
 * 00000421:00000887
 # (Prob)Hard Error
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000008A1
+# DS:[0453H] is the zero-ext of last FDC status (I/O 0200H)
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000008A4
+# Clear INDEX/DRQ
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000008AC
+# Clear except NOTRDY,RECNOTFOUND,CRCERR,BUSY
 R 
 L 
 P 
@@ -639,6 +684,15 @@ P
 /end
 /begin0
 T 1
+* 00000421:00000C33
+# 
+R 
+L DISKBIOS:Zero-Ext Status Byte (I/O 200H) to DS:[453H], then FDC CMD D0H(abort).
+P 
+% 0
+/end
+/begin0
+T 1
 * 00000421:00000C4D
 # 
 R 
@@ -704,6 +758,24 @@ P
 T 0
 * 00000421:00000D89
 # [0443H] is timer-up flag. 80=Not yet  7F=Up
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00000D93
+# 
+R 
+L DISKBIOS:Floppy Disk IRQ Handler
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00000D97
+# (Prob)DS:[0457H]=Drive?
 R 
 L 
 P 

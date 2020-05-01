@@ -287,7 +287,7 @@ void i486SymbolTable::PrintIfAny(unsigned int SEG,unsigned int OFFSET,bool retur
 	ptr.SEG=SEG;
 	ptr.OFFSET=OFFSET;
 	auto *sym=Find(ptr);
-	if(nullptr!=sym)
+	if(nullptr!=sym && 0<sym->label.size())
 	{
 		std::cout << sym->Format(returnType,label,param) << std::endl;
 	}
