@@ -517,6 +517,11 @@ bool TownsFDC::DriveReady(void) const
 }
 bool TownsFDC::WriteProtected(void) const
 {
+	auto diskPtr=GetDriveDisk(DriveSelect());
+	if(nullptr!=diskPtr)
+	{
+		return diskPtr->IsWriteProtected();
+	}
 	return false; // Tentative.
 }
 bool TownsFDC::SeekError(void) const
