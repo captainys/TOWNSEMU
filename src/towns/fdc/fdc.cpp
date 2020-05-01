@@ -192,6 +192,38 @@ const TownsFDC::ImageFile *TownsFDC::GetDriveImageFile(int driveNum) const
 	return nullptr;
 }
 
+unsigned int TownsFDC::IdentifyDiskMediaType(const D77File::D77Disk *diskPtr) const
+{
+	unsigned int totalSize=0;
+	for(auto loc : diskPtr->AllTrack())
+	{
+		auto trk=diskPtr->GetTrack(loc.track,loc.side);
+		for(auto &sec : trk->sector)
+		{
+			totalSize+=(128<<sec.sizeShift);
+		}
+	}
+	totalSize/=1024;
+	unsigned int mediaType=MEDIA_UNKNOWN;
+	if(600<=totalSize && totalSize<680)
+	{
+		return MEDIA_2DD_640KB;
+	}
+	else if(680<=totalSize && totalSize<760)
+	{
+		return MEDIA_2DD_720KB;
+	}
+	else if(1200<=totalSize && totalSize<1300)
+	{
+		return MEDIA_2HD_1232KB;
+	}
+	else if(1400<=totalSize && totalSize<1500)
+	{
+		return MEDIA_2HD_1440KB;
+	}
+	return MEDIA_UNKNOWN;
+}
+
 ////////////////////////////////////////////////////////////
 
 
@@ -654,31 +686,8 @@ bool TownsFDC::WriteFault(void) const
 		townsPtr->UnscheduleDeviceCallBack(*this);
 		if(nullptr!=diskPtr)
 		{
-			unsigned int totalSize=0;
-			for(auto loc : diskPtr->AllTrack())
-			{
-				auto trk=diskPtr->GetTrack(loc.track,loc.side);
-				for(auto &sec : trk->sector)
-				{
-					totalSize+=(128<<sec.sizeShift);
-				}
-			}
-			totalSize/=1024;
-			unsigned int mediaType=MEDIA_UNKNOWN;
-			if(600<=totalSize && totalSize<800)
-			{
-				mediaType=MEDIA_2DD_640KB;
-			}
-			else if(1200<=totalSize && totalSize<1300)
-			{
-				mediaType=MEDIA_2HD_1232KB;
-			}
-			else if(1400<=totalSize && totalSize<1500)
-			{
-				mediaType=MEDIA_2HD_1440KB;
-			}
-
-			if(mediaType==GetDriveMeode())
+			auto mediaType=IdentifyDiskMediaType(diskPtr);
+			if(true==CheckMediaTypeAndDriveModeCompatible(mediaType,GetDriveMeode()))
 			{
 				// Copy CHRN and CRC CRC to DMA.
 				auto trkPtr=diskPtr->GetTrack(drv.trackPos,state.side);

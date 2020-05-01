@@ -74,6 +74,7 @@ public:
 			int lastSeekDir;   // For STEP command.
 			int imgFileNum;    // Pointer to imgFile.
 			int diskIndex;     // Disk Index in imgFile[imgFileNum]
+			int mediaType;
 
 			bool motor;
 			bool diskChange;
@@ -116,6 +117,29 @@ public:
 	const D77File::D77Disk *GetDriveDisk(int driveNum) const;
 	ImageFile *GetDriveImageFile(int driveNum);
 	const ImageFile *GetDriveImageFile(int driveNum) const;
+
+
+	/*! Identifies the disk type.
+	*/
+	unsigned int IdentifyDiskMediaType(const D77File::D77Disk *diskPtr) const;
+
+	/*! Returns true if disk media type and drive mode is compatible.
+	    Drive mode does not distinguish 720KB and 640KB modes.
+	    Both two parameters needs to be MEDIA_???.
+	*/
+	inline bool CheckMediaTypeAndDriveModeCompatible(unsigned int mediaType,unsigned int driveMode) const
+	{
+		if(MEDIA_2DD_720KB==mediaType)
+		{
+			mediaType=MEDIA_2DD_640KB;
+		}
+		if(MEDIA_2DD_720KB==driveMode)
+		{
+			driveMode=MEDIA_2DD_640KB;
+		}
+		return mediaType==driveMode;
+	}
+
 
 	void SendCommand(unsigned int data);
 
