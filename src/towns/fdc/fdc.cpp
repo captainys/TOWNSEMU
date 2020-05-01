@@ -58,6 +58,7 @@ void TownsFDC::State::Reset(void)
 		d.dataReg=0;       // Value in data register 0x06H
 		d.lastSeekDir=1;
 		d.motor=false;
+		d.diskChange=false;
 	}
 	driveSwitch=false;
 	driveSelectBit=1;      // Looks like A drive is selected by default.
@@ -133,6 +134,7 @@ bool TownsFDC::LoadRawBinary(unsigned int driveNum,const char fName[],bool verbo
 		imgFile[driveNum].fName=fName;
 		state.drive[driveNum].imgFileNum=driveNum;
 		state.drive[driveNum].diskIndex=0;
+		state.drive[driveNum].diskChange=true;
 		return true;
 	}
 	else
@@ -309,7 +311,8 @@ void TownsFDC::SendCommand(unsigned int cmd)
 			{
 				state.lastCmd=cmd;
 				state.busy=false;
-				return; // Don't update status.
+				state.lastStatus&=0xFE; // Bit0 must be cleared.
+				return;                 // Other bits stays the same.
 			}
 			state.busy=false;
 			break;
@@ -443,6 +446,27 @@ unsigned int TownsFDC::DriveSelect(void) const
 		return 3;
 	}
 	return 0;
+}
+
+unsigned int TownsFDC::GetDriveMeode(void) const
+{
+	if(true!=state.DDEN)
+	{
+		return MEDIA_SINGLE_DENSITY;
+	}
+	else if(true==state.HISPD && true==state.MODEB)
+	{
+		return MEDIA_2HD_1440KB;
+	}
+	else if(true==state.HISPD && true!=state.MODEB)
+	{
+		return MEDIA_2HD_1232KB;
+	}
+	else if(true!=state.HISPD)
+	{
+		return MEDIA_2DD_640KB;
+	}
+	return MEDIA_UNKNOWN;
 }
 
 void TownsFDC::MakeReady(void)
@@ -624,41 +648,71 @@ bool TownsFDC::WriteFault(void) const
 		townsPtr->UnscheduleDeviceCallBack(*this);
 		if(nullptr!=diskPtr)
 		{
-			// Copy CHRN and CRC CRC to DMA.
-			auto trkPtr=diskPtr->GetTrack(drv.trackPos,state.side);
-			if(nullptr!=trkPtr)
+			unsigned int totalSize=0;
+			for(auto loc : diskPtr->AllTrack())
 			{
-				if(trkPtr->sector.size()<=state.addrMarkReadCount)
+				auto trk=diskPtr->GetTrack(loc.track,loc.side);
+				for(auto &sec : trk->sector)
 				{
-					state.addrMarkReadCount=0;
+					totalSize+=(128<<sec.sizeShift);
 				}
-				auto &sector=trkPtr->sector[state.addrMarkReadCount];
+			}
+			totalSize/=1024;
+			unsigned int mediaType=MEDIA_UNKNOWN;
+			if(600<=totalSize && totalSize<800)
+			{
+				mediaType=MEDIA_2DD_640KB;
+			}
+			else if(1200<=totalSize && totalSize<1300)
+			{
+				mediaType=MEDIA_2HD_1232KB;
+			}
+			else if(1400<=totalSize && totalSize<1500)
+			{
+				mediaType=MEDIA_2HD_1440KB;
+			}
 
-				std::vector <unsigned char> CRHN_CRC=
+			if(mediaType==GetDriveMeode())
+			{
+				// Copy CHRN and CRC CRC to DMA.
+				auto trkPtr=diskPtr->GetTrack(drv.trackPos,state.side);
+				if(nullptr!=trkPtr)
 				{
-					sector.cylinder,
-					sector.head,
-					sector.sector,
-					sector.sizeShift,
-					0x7f, // How can I calculate CRC?
-					0x7f
-				};
-				auto DMACh=DMACPtr->GetDMAChannel(TOWNSDMA_FPD);
-				if(nullptr!=DMACh)
-				{
-					DMACPtr->DeviceToMemory(DMACh,CRHN_CRC);
-					MakeReady();
-				}
-				else
-				{
-					state.lostData=true;
-					MakeReady();
-				}
+					if(trkPtr->sector.size()<=state.addrMarkReadCount)
+					{
+						state.addrMarkReadCount=0;
+					}
+					auto &sector=trkPtr->sector[state.addrMarkReadCount];
 
-				++state.addrMarkReadCount;
+					std::vector <unsigned char> CRHN_CRC=
+					{
+						sector.cylinder,
+						sector.head,
+						sector.sector,
+						sector.sizeShift,
+						0x7f, // How can I calculate CRC?
+						0x7f
+					};
+					auto DMACh=DMACPtr->GetDMAChannel(TOWNSDMA_FPD);
+					if(nullptr!=DMACh)
+					{
+						DMACPtr->DeviceToMemory(DMACh,CRHN_CRC);
+						MakeReady();
+					}
+					else
+					{
+						state.lostData=true;
+						MakeReady();
+					}
+
+					++state.addrMarkReadCount;
+				}
+				MakeReady();
+			}
+			else
+			{
 			}
 		}
-		MakeReady();
 		break;
 	case 0xE0: // Read Track
 		townsPtr->UnscheduleDeviceCallBack(*this);
@@ -746,9 +800,11 @@ bool TownsFDC::WriteFault(void) const
 		data=state.drive[DriveSelect()].dataReg;
 		break;
 	case TOWNSIO_FDC_DRIVE_STATUS_CONTROL:// 0x208, // [2] pp.253
-		data=1; // Bit0:Always 1 or DSKCHG?
+		data=(true==state.drive[DriveSelect()].diskChange ? 1 : 0); // DSKCHG [2] pp.773
+		state.drive[DriveSelect()].diskChange=false;
 		data|=(DriveReady() ? 2 : 0);
-		data|=0b01100; // 3-mode drive. [2] pp.809
+		data|=0b01100; // 3-mode drive.      [2] pp.809
+		data|=0x80;    // 2 internal drives. [2] pp.773
 		break;
 	case TOWNSIO_FDC_DRIVE_SELECT://         0x20C, // [2] pp.253
 		break;

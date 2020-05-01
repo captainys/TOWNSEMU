@@ -161,11 +161,551 @@ P
 % 0
 /end
 /begin0
+T 1
+* 0000039A:00000458
+# 
+R 
+L Wait by I/O 006CH
+P 
+% 0
+/end
+/begin0
 T 0
 * 00000421:000000BD
 # 
 R 
 L DISKBIOS:BRANCH_TO_DEVICE
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000000E2
+# [BP+03H]=Incoming AH
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 2
+* 00000421:000000EB
+# 
+R 
+L DISKBIOS:Branch to Function
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:000001F8
+# 
+R 
+L DISKBIOS:AH=02H Get Disk Status
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00000205
+# [BP+06H]=Incoming CX
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00000209
+# [BP+02H]=Incoming AL
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000020C
+# Restore
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 2
+* 00000421:00000243
+# Track 0
+R 
+L DISKBIOS:(Prob)Find Media Type Loop?
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00000245
+# Side 0
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00000247
+# DS:[0040H-] Buffer for sector info.
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000024F
+# Read Address Marks
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00000251
+# DS:[044EH]=Error Code
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00000292
+# [BP+02H]=Incoming AL
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00000295
+# AL=Drive
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000002AE
+# Bit2:Double-Sided
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000002C6
+# [BP+8]=Outgoing DL
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:000002F3
+# 
+R 
+L DISKBIOS:(Prob)Cycle media type?
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:0000036C
+# 
+R 
+L DISKBIOS:AH=09H Read Sector Info
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000069E
+# [044DH]=Error Code
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000072A
+# (Prob)Device Number Error
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00000791
+# 
+R 
+L DISKBIOS:(Prob)Clear Timer [0441H] ?BL=02H?
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:0000079A
+# 
+R 
+L DISKBIOS:(Prob)Clear Timer [0440H] ?BL=02H?
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000007CE
+# (Prob)AL=Incoming AL
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00000858
+# Tentatively no error
+R 
+L DISKBIOS:Wait for DMA transfer
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000085E
+# Tentatively no error
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00000867
+# CS:0D17 is a callback function (7FH->DS:[0443H])
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000086A
+# (Prob)012CH=300 ticks
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 2
+* 00000421:00000873
+# 
+R 
+L Wait timer up or command finished
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00000881
+# (Prob)Error Details=Time Over
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00000887
+# (Prob)Hard Error
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000008CD
+# [044DH]=Error code
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000008EA
+# (Prob)[SI+02H]=Value written to I/O 020CH
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000093E
+# (Prob)[SI+0BH] is track.
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00000A56
+# 
+R 
+L DISKBIOS:(Prob)Reset MODE-B and HISPD for all drives.
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00000A59
+# (Prob)DS:[04D2H-] Pointers for drive-info structures.
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00000A8C
+# 
+R 
+L DISKBIOS:Wait drive ready
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00000A91
+# Jump if busy
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00000AEE
+# 
+R 
+L DISKBIOS:Issue FDC Command
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00000AF1
+# (Prob)[SI+03H] remembers last-issued FDC command.
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00000B97
+# 
+R 
+L DISKBIOS:Check Disk Change if [SI]==1
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00000BA8
+# 
+R 
+L DISKBIOS:Select Side([BP+09H])
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00000BB7
+# (Prob)[SI+01H] is value written to I/O 0208H
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00000BC5
+# 
+R 
+L DISKBIOS:Wait for 59us or 100us
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00000BD1
+# (Prob)Wait for 59(3BH) or 100(64H)us
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00000BDB
+# 
+R 
+L DISKBIOS:Read I/O 200H (FDC Status) in AL
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00000BE0
+# 
+R 
+L DISKBIOS:Read I/O 208H 3 times.
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00000BE7
+# 
+R 
+L DISKBIOS:Check DMA Error
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00000BF9
+# 
+R 
+L DISKBIOS:Write AL to I/O 0208H (Drive Control)
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00000BFE
+# 
+R 
+L DISKBIOS:Select Drive and Latch HISPD and MODE-B
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00000C0D
+# 
+R 
+L DISKBIOS:Unsel Drv, Select Drv,Latch MODE-B and HISPD, then Unsel Drv.
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00000C1A
+# 
+R 
+L DISKBIOS:Wait drv ready, Enable IRQ, then write command
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00000C22
+# (Prob)[SI+01H] remembers value written to I/O 0208H
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00000C4D
+# 
+R 
+L DISKBIOS:Write AL to I/O 202H (Track)
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00000C52
+# 
+R 
+L DISKBIOS:Write AL to I/O 206H (Data)
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00000C67
+# 
+R 
+L DISKBIOS:Setup DMA
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00000D17
+# 
+R 
+L DISKBIOS:Callback 7FH->0D47:[0443H]
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00000D21
+# 
+R 
+L DISKBIOS:Set up timer.
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00000D78
+# 
+R 
+L DISKBIOS:(Prob)Clear Timer
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00000D7D
+# [0443H] is timer-up flag. 80=Not yet  7F=Up
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00000D89
+# [0443H] is timer-up flag. 80=Not yet  7F=Up
+R 
+L 
 P 
 % 0
 /end
@@ -571,6 +1111,33 @@ T 0
 # 
 R 
 L ????:SHOOT_INT_93H
+P 
+% 0
+/end
+/begin0
+T 0
+* 00001048:0000362D
+# (Prob)Jump if 1.44MB?
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00001048:00003632
+# Jump if 2D/2DD
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 2
+* 00001048:00003697
+# 
+R 
+L (Prob)Error:Single-Sided Disk Not Supported
 P 
 % 0
 /end

@@ -40,6 +40,16 @@ public:
 		SECTOR_READ_WRITE_TIME=5000,  // In Nano Seconds.  Just arbitrary.  Need to make it real.
 		ADDRMARK_READ_TIME=5000,
 	};
+	enum
+	{
+		MEDIA_UNKNOWN=0,
+		MEDIA_2D=1,
+		MEDIA_2DD_640KB=2,
+		MEDIA_2DD_720KB=3,
+		MEDIA_2HD_1232KB=4,
+		MEDIA_2HD_1440KB=5,
+		MEDIA_SINGLE_DENSITY=0xFF,  // Not supported by TSUGARU.
+	};
 	class ImageFile
 	{
 	public:
@@ -66,6 +76,7 @@ public:
 			int diskIndex;     // Disk Index in imgFile[imgFileNum]
 
 			bool motor;
+			bool diskChange;
 		};
 
 		Drive drive[NUM_DRIVES];
@@ -110,7 +121,15 @@ public:
 
 	unsigned int CommandToCommandType(unsigned int cmd) const;
 	unsigned char MakeUpStatus(unsigned int cmd) const;
+
+	/*! Returns the selected drive.  Or zero(FD0) if no drive is selected.
+	*/
 	unsigned int DriveSelect(void) const;
+
+	/*! Returns media type the drive is configured for.
+	    Apparently the same FDC settings for 640KB and 720KB.  So, if it is set for 2DD, it returns MEDIA_2DD_640KB.
+	*/
+	unsigned int GetDriveMeode(void) const;
 
 	/*! Turns off BUSY flag.  Also if IRQ is not masked it raises IRR flag of PIC.
 	*/
