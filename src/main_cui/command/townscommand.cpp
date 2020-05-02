@@ -228,7 +228,7 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Save Event Log to file." << std::endl;
 	std::cout << "HOST2VM hostFileName vmFileName" << std::endl;
 	std::cout << "  Schedule Host to VM file transfer." << std::endl;
-	std::cout << "  File will be transferred when ftclient.exp is running." << std::endl;
+	std::cout << "  File will be transferred when FTCLIENT.EXP is running." << std::endl;
 	std::cout << "" << std::endl;
 
 	std::cout << "<< Features that can be enabled|disabled >>" << std::endl;
@@ -542,7 +542,14 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,Command &c
 	case CMD_HOST_TO_VM_FILE_TRANSFER:
 		if(3<=cmd.argv.size())
 		{
-			towns.var.ftfr.AddHostToVM(cmd.argv[1],cmd.argv[2]);
+			if(true==cpputil::FileExists(cmd.argv[1]))
+			{
+				towns.var.ftfr.AddHostToVM(cmd.argv[1],cmd.argv[2]);
+			}
+			else
+			{
+				std::cout << "File not found." << std::endl;
+			}
 		}
 		break;
 	}

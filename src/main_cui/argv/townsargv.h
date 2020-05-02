@@ -16,6 +16,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #define TOWNSARGV_IS_INCLUDED
 /* { */
 
+#include <string>
+#include <vector>
 #include "townsdef.h"
 
 class TownsARGV
@@ -27,6 +29,13 @@ public:
 	std::string startUpScriptFName;
 	std::string symbolFName;
 	std::string playbackEventLogFName;
+
+	class FileToSend
+	{
+	public:
+		std::string hostFName,vmFName;
+	};
+	std::vector <FileToSend> toSend;
 
 	bool autoStart;
 	bool debugger;

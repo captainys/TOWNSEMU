@@ -46,6 +46,9 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  Specify symbol file name." << std::endl;
 	std::cout << "-EVTLOG filename" << std::endl;
 	std::cout << "  Load and play-back event log." << std::endl;
+	std::cout << "-HOST2VM hostFileName vmFileName" << std::endl;
+	std::cout << "  Schedule Host to VM file transfer." << std::endl;
+	std::cout << "  File will be transferred when FTCLIENT.EXP is running." << std::endl;
 }
 
 bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
@@ -93,6 +96,22 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		{
 			playbackEventLogFName=argv[i+1];
 			++i;
+		}
+		else if("-HOST2VM"==ARG && i+2<argc)
+		{
+			if(true==cpputil::FileExists(argv[i+1]))
+			{
+				FileToSend f;
+				f.hostFName=argv[i+1];
+				f.vmFName=argv[i+2];
+				toSend.push_back(f);
+			}
+			else
+			{
+				std::cout << "File Not Found:" << argv[i+1] << std::endl;
+				return false;
+			}
+			i+=2;
 		}
 		else
 		{

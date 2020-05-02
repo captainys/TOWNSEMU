@@ -23,6 +23,17 @@ std::string cpputil::MakeFullPathName(std::string dirName,std::string fName)
 	return dirName+"/"+fName;
 }
 
+bool cpputil::FileExists(std::string fName)
+{
+	std::ifstream fp(fName,std::ifstream::binary);
+	if(true==fp.is_open())
+	{
+		fp.close();
+		return true;
+	}
+	return false;
+}
+
 std::vector <unsigned char> cpputil::ReadBinaryFile(std::string fName)
 {
 	std::vector <unsigned char> dat;

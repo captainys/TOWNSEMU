@@ -36,6 +36,11 @@ class TownsCUIThread : public TownsUIThread
 
 /* virtual */ void TownsCUIThread::Main(TownsThread &townsThread,FMTowns &towns,const TownsARGV &argv,Outside_World &outside_world)
 {
+	for(auto &ftfr : argv.toSend)
+	{
+		towns.var.ftfr.AddHostToVM(ftfr.hostFName,ftfr.vmFName);
+	}
+
 	TownsCommandInterpreter cmdInterpreter;
 	for(;;)
 	{
