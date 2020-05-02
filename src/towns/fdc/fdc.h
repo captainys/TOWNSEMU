@@ -92,7 +92,7 @@ public:
 		unsigned int lastCmd;
 		unsigned int lastStatus;
 
-		bool recordType,recordNotFound,CRCError,lostData;
+		bool recordType,recordNotFound,CRCError,lostData,writeFault;
 		unsigned int addrMarkReadCount;
 
 		long long int scheduleTime;
@@ -118,6 +118,7 @@ public:
 	ImageFile *GetDriveImageFile(int driveNum);
 	const ImageFile *GetDriveImageFile(int driveNum) const;
 
+	void SetWriteProtect(int driveNum,bool writeProtect);
 
 	/*! Identifies the disk type.
 	*/

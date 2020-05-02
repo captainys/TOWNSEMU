@@ -78,6 +78,7 @@ void TownsFDC::State::Reset(void)
 	recordNotFound=false;
 	CRCError=false;
 	lostData=false;
+	writeFault=false;
 
 	addrMarkReadCount=0;
 }
@@ -98,6 +99,7 @@ TownsFDC::TownsFDC(class FMTowns *townsPtr,class TownsPIC *PICPtr,class TownsDMA
 	{
 		d.imgFileNum=-1;
 		d.diskIndex=-1;
+		d.mediaType=MEDIA_UNKNOWN;
 	}
 	for(auto &i : imgFile)
 	{
@@ -134,6 +136,7 @@ bool TownsFDC::LoadRawBinary(unsigned int driveNum,const char fName[],bool verbo
 		imgFile[driveNum].fName=fName;
 		state.drive[driveNum].imgFileNum=driveNum;
 		state.drive[driveNum].diskIndex=0;
+		state.drive[driveNum].mediaType=IdentifyDiskMediaType(imgFile[driveNum].d77.GetDisk(0));
 		state.drive[driveNum].diskChange=true;
 		return true;
 	}
@@ -190,6 +193,22 @@ const TownsFDC::ImageFile *TownsFDC::GetDriveImageFile(int driveNum) const
 		}
 	}
 	return nullptr;
+}
+
+void TownsFDC::SetWriteProtect(int driveNum,bool writeProtect)
+{
+	auto diskPtr=GetDriveDisk(driveNum);
+	if(nullptr!=diskPtr)
+	{
+		if(true==writeProtect)
+		{
+			diskPtr->SetWriteProtected();
+		}
+		else
+		{
+			diskPtr->ClearWriteProtected();
+		}
+	}
 }
 
 unsigned int TownsFDC::IdentifyDiskMediaType(const D77File::D77Disk *diskPtr) const
@@ -252,6 +271,7 @@ void TownsFDC::SendCommand(unsigned int cmd)
 			state.recordNotFound=false;
 			state.CRCError=false;
 			state.lostData=false;
+			state.writeFault=false;
 			state.busy=true;
 			break;
 		case 0x10: // Seek
@@ -260,6 +280,7 @@ void TownsFDC::SendCommand(unsigned int cmd)
 			state.recordNotFound=false;
 			state.CRCError=false;
 			state.lostData=false;
+			state.writeFault=false;
 			state.busy=true;
 			break;
 		case 0x20: // Step?
@@ -269,6 +290,7 @@ void TownsFDC::SendCommand(unsigned int cmd)
 			state.recordNotFound=false;
 			state.CRCError=false;
 			state.lostData=false;
+			state.writeFault=false;
 			state.busy=true;
 			break;
 		case 0x40: // Step In
@@ -278,6 +300,7 @@ void TownsFDC::SendCommand(unsigned int cmd)
 			state.recordNotFound=false;
 			state.CRCError=false;
 			state.lostData=false;
+			state.writeFault=false;
 			state.busy=true;
 			break;
 		case 0x60: // Step Out
@@ -287,6 +310,7 @@ void TownsFDC::SendCommand(unsigned int cmd)
 			state.recordNotFound=false;
 			state.CRCError=false;
 			state.lostData=false;
+			state.writeFault=false;
 			state.busy=true;
 			break;
 
@@ -297,6 +321,7 @@ void TownsFDC::SendCommand(unsigned int cmd)
 			state.recordNotFound=false;
 			state.CRCError=false;
 			state.lostData=false;
+			state.writeFault=false;
 			state.busy=true;
 			break;
 		case 0xA0: // Write Data (Write Sector)
@@ -306,6 +331,7 @@ void TownsFDC::SendCommand(unsigned int cmd)
 			state.recordNotFound=false;
 			state.CRCError=false;
 			state.lostData=false;
+			state.writeFault=false;
 			state.busy=true;
 			break;
 
@@ -315,6 +341,7 @@ void TownsFDC::SendCommand(unsigned int cmd)
 			state.recordNotFound=false;
 			state.CRCError=false;
 			state.lostData=false;
+			state.writeFault=false;
 			state.busy=true;
 			break;
 		case 0xE0: // Read Track
@@ -322,6 +349,7 @@ void TownsFDC::SendCommand(unsigned int cmd)
 			state.recordNotFound=false;
 			state.CRCError=false;
 			state.lostData=false;
+			state.writeFault=false;
 			std::cout << __FUNCTION__ << std::endl;
 			std::cout << "Command " << cpputil::Ubtox(cmd) << " not supported yet." << std::endl;
 			break;
@@ -330,6 +358,7 @@ void TownsFDC::SendCommand(unsigned int cmd)
 			state.recordNotFound=false;
 			state.CRCError=false;
 			state.lostData=false;
+			state.writeFault=false;
 			std::cout << __FUNCTION__ << std::endl;
 			std::cout << "Command " << cpputil::Ubtox(cmd) << " not supported yet." << std::endl;
 			break;
@@ -339,6 +368,7 @@ void TownsFDC::SendCommand(unsigned int cmd)
 			state.recordNotFound=false;
 			state.CRCError=false;
 			state.lostData=false;
+			state.writeFault=false;
 			if(true==state.busy)
 			{
 				state.lastCmd=cmd;
@@ -554,7 +584,7 @@ bool TownsFDC::DataRequest(void) const
 }
 bool TownsFDC::WriteFault(void) const
 {
-	return false;
+	return state.writeFault;
 }
 
 
@@ -569,6 +599,7 @@ bool TownsFDC::WriteFault(void) const
 	state.recordNotFound=false;
 	state.CRCError=false;
 	state.lostData=false;
+	state.writeFault=false;
 
 	switch(state.lastCmd&0xF0)
 	{
@@ -648,27 +679,35 @@ bool TownsFDC::WriteFault(void) const
 		townsPtr->UnscheduleDeviceCallBack(*this); // Tentativelu
 		if(nullptr!=diskPtr)
 		{
-			auto secPtr=diskPtr->GetSector(drv.trackPos,state.side,drv.sectorReg);
-			if(nullptr!=secPtr)
+			if(true==CheckMediaTypeAndDriveModeCompatible(drv.mediaType,GetDriveMeode()))
 			{
-				auto DMACh=DMACPtr->GetDMAChannel(TOWNSDMA_FPD);
-				if(nullptr!=DMACh)
+				auto secPtr=diskPtr->GetSector(drv.trackPos,state.side,drv.sectorReg);
+				if(nullptr!=secPtr)
 				{
-					DMACPtr->DeviceToMemory(DMACh,secPtr->sectorData);
-					// What am I supposed to if error during DMA?
-					if(state.lastCmd&0x10 && diskPtr->GetSector(drv.trackPos,state.side,drv.sectorReg+1)) // Multi Record
+					auto DMACh=DMACPtr->GetDMAChannel(TOWNSDMA_FPD);
+					if(nullptr!=DMACh)
 					{
-						++drv.sectorReg;
-						townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+SECTOR_READ_WRITE_TIME);
+						DMACPtr->DeviceToMemory(DMACh,secPtr->sectorData);
+						// What am I supposed to if error during DMA?
+						if(state.lastCmd&0x10 && diskPtr->GetSector(drv.trackPos,state.side,drv.sectorReg+1)) // Multi Record
+						{
+							++drv.sectorReg;
+							townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+SECTOR_READ_WRITE_TIME);
+						}
+						else
+						{
+							MakeReady();
+						}
 					}
 					else
 					{
+						state.lostData=true;
 						MakeReady();
 					}
 				}
 				else
 				{
-					state.lostData=true;
+					state.recordNotFound=true;
 					MakeReady();
 				}
 			}
@@ -682,8 +721,57 @@ bool TownsFDC::WriteFault(void) const
 	case 0xA0: // Write Data (Write Sector)
 	case 0xB0: // Write Data (Write Sector)
 		townsPtr->UnscheduleDeviceCallBack(*this);
-		std::cout << __FUNCTION__ << std::endl;
-		std::cout << "Command " << cpputil::Ubtox(state.lastCmd) << " not supported yet." << std::endl;
+		if(nullptr!=diskPtr)
+		{
+			if(true==diskPtr->IsWriteProtected())
+			{
+				// Write protected.
+			}
+			else if(true==CheckMediaTypeAndDriveModeCompatible(drv.mediaType,GetDriveMeode()))
+			{
+				auto secPtr=diskPtr->GetSector(drv.trackPos,state.side,drv.sectorReg);
+				if(nullptr!=secPtr)
+				{
+					auto DMACh=DMACPtr->GetDMAChannel(TOWNSDMA_FPD);
+					if(nullptr!=DMACh)
+					{
+						auto toWrite=DMACPtr->MemoryToDevice(DMACh,(unsigned int)secPtr->sectorData.size());
+						if(toWrite.size()==secPtr->sectorData.size())
+						{
+							diskPtr->WriteSector(drv.trackPos,state.side,drv.sectorReg,toWrite.size(),toWrite.data());
+							diskPtr->SetModified();
+							if(state.lastCmd&0x10 && diskPtr->GetSector(drv.trackPos,state.side,drv.sectorReg+1)) // Multi Record
+							{
+								++drv.sectorReg;
+								townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+SECTOR_READ_WRITE_TIME);
+							}
+							else
+							{
+								MakeReady();
+							}
+						}
+						else
+						{
+							state.writeFault=true;
+							MakeReady();
+						}
+					}
+					else
+					{
+						state.lostData=true;
+						MakeReady();
+					}
+				}
+				else
+				{
+					state.recordNotFound=true;
+				}
+			}
+			else
+			{
+				state.recordNotFound=true;
+			}
+		}
 		MakeReady();
 		break;
 
@@ -691,8 +779,7 @@ bool TownsFDC::WriteFault(void) const
 		townsPtr->UnscheduleDeviceCallBack(*this);
 		if(nullptr!=diskPtr)
 		{
-			auto mediaType=IdentifyDiskMediaType(diskPtr);
-			if(true==CheckMediaTypeAndDriveModeCompatible(mediaType,GetDriveMeode()))
+			if(true==CheckMediaTypeAndDriveModeCompatible(drv.mediaType,GetDriveMeode()))
 			{
 				// Copy CHRN and CRC CRC to DMA.
 				auto trkPtr=diskPtr->GetTrack(drv.trackPos,state.side);
