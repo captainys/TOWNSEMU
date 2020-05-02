@@ -137,7 +137,7 @@ public:
 		};
 		std::vector <File> toSend;
 
-		void AddFile(std::string hostFName,std::string vmFName);
+		void AddHostToVM(std::string hostFName,std::string vmFName);
 	};
 
 	class Variable

@@ -36,6 +36,8 @@ void HOST_TO_VM(void)
 
 	while(0<sz)
 	{
+		VMFILE_READ_BATCH(buf);
+
 		unsigned int batchSize;
 		if(SPRITE_RAM_SIZE<sz)
 		{

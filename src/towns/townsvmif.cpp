@@ -113,3 +113,10 @@ void FMTowns::VMtoHostFileTransfer(void)
 		physMem.state.spriteRAM[0]=TOWNS_VMIF_TFR_END;
 	}
 }
+void FMTowns::VMHostFileTransfer::AddHostToVM(std::string hostFName,std::string vmFName)
+{
+	File f;
+	toSend.push_back(f);
+	toSend.back().hostFName=hostFName;
+	toSend.back().vmFName=vmFName;
+}

@@ -85,6 +85,8 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["CDLOAD"]=CMD_CDLOAD;
 	primaryCmdMap["CDOPENCLOSE"]=CMD_CDOPENCLOSE;
 
+	primaryCmdMap["HOST2VM"]=CMD_HOST_TO_VM_FILE_TRANSFER;
+
 	featureMap["CMDLOG"]=ENABLE_CMDLOG;
 	featureMap["AUTODISASM"]=ENABLE_DISASSEMBLE_EVERY_INST;
 	featureMap["IOMON"]=ENABLE_IOMONITOR;
@@ -224,7 +226,9 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Save CS:EIP Log to file." << std::endl;
 	std::cout << "SAVEEVT filename.txt" << std::endl;
 	std::cout << "  Save Event Log to file." << std::endl;
-
+	std::cout << "HOST2VM hostFileName vmFileName" << std::endl;
+	std::cout << "  Schedule Host to VM file transfer." << std::endl;
+	std::cout << "  File will be transferred when ftclient.exp is running." << std::endl;
 	std::cout << "" << std::endl;
 
 	std::cout << "<< Features that can be enabled|disabled >>" << std::endl;
@@ -533,6 +537,13 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,Command &c
 		break;
 	case CMD_CDOPENCLOSE:
 		towns.cdrom.state.discChanged=true;
+		break;
+
+	case CMD_HOST_TO_VM_FILE_TRANSFER:
+		if(3<=cmd.argv.size())
+		{
+			towns.var.ftfr.AddHostToVM(cmd.argv[1],cmd.argv[2]);
+		}
 		break;
 	}
 }

@@ -93,6 +93,8 @@ public:
 
 		CMD_SAVE_EVENTLOG,
 		CMD_LOAD_EVENTLOG,
+
+		CMD_HOST_TO_VM_FILE_TRANSFER,
 	};
 
 	enum
