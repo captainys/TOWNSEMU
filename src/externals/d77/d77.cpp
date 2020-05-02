@@ -1514,6 +1514,18 @@ std::vector <unsigned char> D77File::MakeRawImage(void) const
 	return bin;
 }
 
+bool D77File::IsModified(void) const
+{
+	for(auto &d : disk)
+	{
+		if(true==d.IsModified())
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 void D77File::PrintInfo(void) const
 {
 	int diskCount=0;

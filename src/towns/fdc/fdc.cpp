@@ -22,18 +22,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 void TownsFDC::ImageFile::SaveIfModified(void)
 {
-	bool modified=false;
-	for(int i=0; i<d77.GetNumDisk(); ++i)
-	{
-		auto diskPtr=d77.GetDisk(i);
-		if(true==diskPtr->IsModified())
-		{
-			modified=true;
-			break;
-		}
-	}
-
-	if(true==modified)
+	if(true==d77.IsModified())
 	{
 		std::vector <unsigned char> bin;
 		switch(fileType)
@@ -50,6 +39,10 @@ void TownsFDC::ImageFile::SaveIfModified(void)
 			if(true!=cpputil::WriteBinaryFile(fName,bin.size(),bin.data()))
 			{
 				std::cout << "Warning!  Floppy Disk Image could not be saved." << std::endl;
+			}
+			else
+			{
+				std::cout << "Auto-saved disk image:" << fName << std::endl;
 			}
 		}
 	}

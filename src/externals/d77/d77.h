@@ -417,6 +417,8 @@ public:
 	*/
 	std::vector <unsigned char> MakeRawImage(void) const;
 
+	bool IsModified(void) const;
+
 	void PrintInfo(void) const;
 
 	long long int GetNumDisk(void) const;
