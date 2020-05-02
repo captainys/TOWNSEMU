@@ -1465,6 +1465,8 @@ bool D77File::SetRawBinary(long long int nByte,const unsigned char byteData[],bo
 		}
 	}
 
+	diskPtr->ClearModified();
+
 	if(imgPtr!=nByte)
 	{
 		printf("%s %d\n",__FUNCTION__,__LINE__);
