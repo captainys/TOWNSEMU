@@ -28,6 +28,7 @@ void FMTowns::State::PowerOn(void)
 {
 	Reset();
 	townsTime=0;
+	nextSecondInTownsTime=PER_SECOND;
 	nextFastDevicePollingTime=FAST_DEVICE_POLLING_INTERVAL;
 	freq=FREQUENCY_DEFAULT;
 	resetReason=0;

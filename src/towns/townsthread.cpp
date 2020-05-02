@@ -123,6 +123,11 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 		{
 			runMode=RUNMODE_EXIT;
 		}
+		if(townsPtr->state.nextSecondInTownsTime<=townsPtr->state.townsTime)
+		{
+			townsPtr->state.nextSecondInTownsTime+=PER_SECOND;
+			townsPtr->fdc.SaveModifiedDiskImages();
+		}
 		vmLock.unlock();
 
 		if(RUNMODE_PAUSE==runModeCopy)
@@ -135,6 +140,7 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 	}
 
 	std::cout << "Ending Towns Thread." << std::endl;
+	townsPtr->fdc.SaveModifiedDiskImages();
 
 	outside_world->Stop();
 }

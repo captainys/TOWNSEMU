@@ -1493,6 +1493,27 @@ int D77File::CreateUnformatted(int nTrack,const char diskName[])
 	return (int)this->disk.size()-1;
 }
 
+std::vector <unsigned char> D77File::MakeD77Image(void) const
+{
+	std::vector <unsigned char> bin;
+	for(auto &d : disk)
+	{
+		auto diskBin=d.MakeD77Image();
+		bin.insert(bin.end(),diskBin.begin(),diskBin.end());
+	}
+	return bin;
+}
+std::vector <unsigned char> D77File::MakeRawImage(void) const
+{
+	std::vector <unsigned char> bin;
+	for(auto &d : disk)
+	{
+		auto diskBin=d.MakeRawImage();
+		bin.insert(bin.end(),diskBin.begin(),diskBin.end());
+	}
+	return bin;
+}
+
 void D77File::PrintInfo(void) const
 {
 	int diskCount=0;

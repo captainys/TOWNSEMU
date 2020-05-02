@@ -118,6 +118,8 @@ public:
 	ImageFile *GetDriveImageFile(int driveNum);
 	const ImageFile *GetDriveImageFile(int driveNum) const;
 
+	void SaveModifiedDiskImages(void);
+
 	void SetWriteProtect(int driveNum,bool writeProtect);
 
 	/*! Identifies the disk type.

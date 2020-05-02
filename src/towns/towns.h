@@ -86,6 +86,10 @@ public:
 		*/
 		unsigned long long int nextFastDevicePollingTime;
 
+		/*!
+		*/
+		unsigned long long int nextSecondInTownsTime=0;
+
 		/*! Number of clocks times 1000 since last update of townsTime.
 		    After running one instruction, townsTime may not be exactly the same
 		    as the real time (or whatever requested time.)

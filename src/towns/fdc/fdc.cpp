@@ -35,9 +35,23 @@ void TownsFDC::ImageFile::SaveIfModified(void)
 
 	if(true==modified)
 	{
-		std::cout << __FUNCTION__ << std::endl;
-		std::cout << "I'm supposed to save modified disk image." << std::endl;
-		std::cout << "But I haven't implemented yet." << std::endl;
+		std::vector <unsigned char> bin;
+		switch(fileType)
+		{
+		case IMGFILE_RAW:
+			bin=d77.MakeRawImage();
+			break;
+		case IMGFILE_D77:
+			bin=d77.MakeD77Image();
+			break;
+		}
+		if(0<bin.size())
+		{
+			if(true!=cpputil::WriteBinaryFile(fName,bin.size(),bin.data()))
+			{
+				std::cout << "Warning!  Floppy Disk Image could not be saved." << std::endl;
+			}
+		}
 	}
 
 	for(int i=0; i<d77.GetNumDisk(); ++i)
@@ -193,6 +207,14 @@ const TownsFDC::ImageFile *TownsFDC::GetDriveImageFile(int driveNum) const
 		}
 	}
 	return nullptr;
+}
+
+void TownsFDC::SaveModifiedDiskImages(void)
+{
+	for(auto &img : imgFile)
+	{
+		img.SaveIfModified();
+	}
 }
 
 void TownsFDC::SetWriteProtect(int driveNum,bool writeProtect)
