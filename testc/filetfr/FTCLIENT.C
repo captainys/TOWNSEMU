@@ -23,6 +23,8 @@ char fName[MAX_FILE_NAME];
 
 void HOST_TO_VM(void)
 {
+	printf("HOST TO VM\n");
+
 	unsigned int sz=0;
 	sz=buf[4]|(buf[5]<<8)|(buf[6]<<16)|buf[7]<<24;
 	printf("File Size:%u\n",sz);
@@ -60,6 +62,9 @@ void HOST_TO_VM(void)
 
 int main(void)
 {
+	printf("FM Towns Emulator TSUGARU\n");
+	printf("VM-HOST File Transfer Client\n");
+
 	int terminate=0;
 	while(0==terminate)
 	{

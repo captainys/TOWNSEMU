@@ -19,8 +19,8 @@ VMFILE_READ_BATCH		PROC
 						MOV		EBP,ESP
 						PUSHAD
 						PUSHFD
-
 						PUSH	ES
+
 						MOV		AX,SPRITERAM_SEGMENT
 						MOV		ES,AX
 
@@ -51,10 +51,11 @@ SPRITERAM_XCHG_LOOP:	MOV		EAX,ES:[ESI]
 						MOV		ES:[ESI],EBX
 						LEA		ESI,[ESI+4]
 						LEA		EDI,[EDI+4]
-						LOOP	SPRITERAM_SAVE_LOOP
+						LOOP	SPRITERAM_XCHG_LOOP
 
 
 
+						POP		ES
 						POPFD
 						POPAD
 						POP		EBP
