@@ -22,6 +22,7 @@ const int TOWNS_RENDERING_FREQUENCY=PER_SECOND/60;
 
 const unsigned int TOWNS_CMOS_SIZE=8192;
 const unsigned int TOWNS_WAVERAM_SIZE=65536;
+const unsigned int TOWNS_SPRITERAM_SIZE=128*1024;
 
 const unsigned int TBIOS_ID_FREQUENCY=100;
 

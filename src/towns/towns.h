@@ -124,6 +124,22 @@ public:
 		void Reset(void);
 	};
 
+	class VMHostFileTransfer
+	{
+	public:
+		class File
+		{
+		public:
+			bool started=false;
+			unsigned int offset=0;
+			std::string hostFName,vmFName;
+			std::vector <unsigned char> bin; // Loaded when transfer starts.
+		};
+		std::vector <File> toSend;
+
+		void AddFile(std::string hostFName,std::string vmFName);
+	};
+
 	class Variable
 	{
 	public:
@@ -141,6 +157,8 @@ public:
 		};
 		unsigned int nVM2HostParam;
 		unsigned char VM2HostParam[VM2HOST_PARAM_QUEUE_LENGTH];
+
+		VMHostFileTransfer ftfr;
 
 		i486DX::FarPointer disassemblePointer;
 		Variable();
@@ -320,7 +338,7 @@ public:
 
 	// VM<->Host Interface
 	void ProcessVMToHostCommand(unsigned int vmCmd,unsigned int paramLen,const unsigned char param[]);
-
+	void VMtoHostFileTransfer(void);
 
 
 	// Following functions are for testing purposes.

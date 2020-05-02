@@ -48,5 +48,68 @@ void FMTowns::ProcessVMToHostCommand(unsigned int vmCmd,unsigned int paramLen,co
 		var.powerOff=true;
 		var.returnCode=param[0];
 		break;
+	case TOWNS_VMIF_CMD_FILE_RXRDY:
+		VMtoHostFileTransfer();
+		break;
+	}
+}
+void FMTowns::VMtoHostFileTransfer(void)
+{
+	if(0<var.ftfr.toSend.size())
+	{
+		auto &file=var.ftfr.toSend[0];
+		if(true!=file.started)
+		{
+			file.started=true;
+			file.offset=0;
+
+			// 1st Batch
+			//   [0]     TOWNS_VMIF_TFR_HOST_TO_VM
+			//   [1..3]  Unused(Zero)
+			//   [4..7]  File Size
+			//   [8..63] Unused(Zero)
+			//   [64..]  File name in VM
+
+			file.bin=cpputil::ReadBinaryFile(file.hostFName);
+			auto fSize=file.bin.size();
+
+			for(auto &d : physMem.state.spriteRAM)
+			{
+				d=0;
+			}
+			physMem.state.spriteRAM[0]=TOWNS_VMIF_TFR_HOST_TO_VM;
+			physMem.state.spriteRAM[4]=( fSize     &255);
+			physMem.state.spriteRAM[5]=((fSize>> 8)&255);
+			physMem.state.spriteRAM[6]=((fSize>>16)&255);
+			physMem.state.spriteRAM[7]=((fSize>>24)&255);
+
+			for(int i=0; i<260 && i<file.vmFName.size(); ++i)
+			{
+				physMem.state.spriteRAM[64+i]=file.vmFName[i];
+			}
+		}
+		else
+		{
+			// 2nd Batch and on
+			//   File Contents
+
+			unsigned int sizeLeft=(unsigned int)file.bin.size()-file.offset;
+			unsigned int batchSize=(TOWNS_SPRITERAM_SIZE<sizeLeft ? TOWNS_SPRITERAM_SIZE : sizeLeft);
+
+			for(unsigned int i=0; i<batchSize; ++i)
+			{
+				physMem.state.spriteRAM[i]=file.bin[file.offset+i];
+			}
+
+			file.offset+=batchSize;
+			if(file.bin.size()<=file.offset)
+			{
+				var.ftfr.toSend.erase(var.ftfr.toSend.begin());
+			}
+		}
+	}
+	else
+	{
+		physMem.state.spriteRAM[0]=TOWNS_VMIF_TFR_END;
 	}
 }
