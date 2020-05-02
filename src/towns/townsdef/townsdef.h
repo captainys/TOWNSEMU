@@ -466,6 +466,16 @@ enum
 	TOWNS_VMIF_CMD_CAPTURE_CRTC=  0x01, // Capture CRTC. Followed by two bytes mode0, and mode1.
 	TOWNS_VMIF_CMD_PAUSE=         0x02, // Pause VM
 	TOWNS_VMIF_CMD_EXIT_VM=       0x03, // Exit the VM.  Return code taken from the data queu.
+
+	TOWNS_VMIF_CMD_FILE_RXRDY=    0x04, // File Transfer Ready to Read
+	TOWNS_VMIF_CMD_FILE_ACK=      0x05, // File Transfer 
+};
+
+enum
+{
+	TOWNS_VMIF_TFR_END=           0x00,
+	TOWNS_VMIF_TFR_HOST_TO_VM=    0x01,
+	TOWNS_VMIF_TFR_VM_TO_HOST=    0x02,
 };
 
 enum
