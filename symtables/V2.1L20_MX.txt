@@ -117,6 +117,15 @@ P
 /end
 /begin0
 T 0
+* 0000005D:0000028B
+# Jump to each interrupt
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
 * 00000110:00005728
 # 
 R 
@@ -801,6 +810,24 @@ P
 /end
 /begin0
 T 0
+* 00000421:000012E1
+# [0512H]=SCSI Command Pointer
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000012E4
+# [0514H]=SCSI Command Segment
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
 * 00000421:0000134B
 # [SI+02H]=0C32H
 R 
@@ -999,6 +1026,69 @@ P
 /end
 /begin0
 T 1
+* 00000421:0000146B
+# [051CH]=Command Counter
+R 
+L DISKBIOS:INT 48H Command Out Handler
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000146F
+# [SI]=0C30H
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00001472
+# [0512H]=SCSI Command Pointer
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00001483
+# [SI]=0C30H
+R 
+L DISKBIOS:INT 48H Status Handler
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00001486
+# [051AH]=Status byte?
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:0000148A
+# [SI]=0C30H
+R 
+L DISKBIOS:INT 48H Message-IN Handler
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000148D
+# [051BH]=Message byte?
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
 * 00000421:00001492
 # 
 R 
@@ -1048,6 +1138,51 @@ T 1
 # 
 R 
 L DISKBIOS:IF [0529H]!=80H THEN [0529H]=82H:Erase Timer
+P 
+% 0
+/end
+/begin0
+T 4
+* 00000421:0000150D
+# 
+R 
+L Jump Table for SCSI Phase
+P 
+% 16
+/end
+/begin0
+T 1
+* 00000421:0000151D
+# 
+R 
+L DISKBIOS:SCSI INT 48H Handler (CMD, STA, MSG-IN Phases)
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00001525
+# [SI+02H]=0C32H
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000152B
+# Jump if no REQ
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000152F
+# AL=IO|MSG|CD|0 Defines Phase [2] pp.263
+R 
+L 
 P 
 % 0
 /end

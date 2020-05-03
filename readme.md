@@ -9,7 +9,7 @@ PEB01130@nifty.com
 # Introduction
 It is an emulator of legendary Fujitsu FM TOWNS computer.  The goal is to emulate model II MX, which was the last computer I pledged allegiance.  Also I am trying to find and document undocumented features of FM TOWNS system as much as possible while writing the emulator.
 
-Have been tested on Windows 10 and macOS.  I'll try Linux when Windows and macOS version gets stable.
+Have been tested on Windows 10 and macOS.  I'll try Linux when Windows and macOS versions get stable.
 
 
 伝説の名機富士通FM TOWNSのエミュレータです。目標はモデルII MXを再現することです。FM TOWNS II MXは僕が最後に忠誠を誓った機種でした。また、開発と並行してFM TOWNSのシステムで未公開の機能を見つけて記録に残すことも目標にしています。
@@ -132,6 +132,12 @@ The tests are timing-sensitive, or the CPU needs to be reasonably fast.  If not,
 
 
 # Revisions
+### 2020/05/03
+- CPU core speed up.  Still not good enough for 486DX 66MHz.
+- Support 3-mode floppy disk read/write.
+- Very preliminary YM2612 support.
+- Added initial CMOS.
+
 ### 2020/04/11
 - Started CPU instruction tests.  Already captured and fixed numerous bugs in CPU cores.
 - Fixed sprite.
@@ -167,3 +173,45 @@ The tests are timing-sensitive, or the CPU needs to be reasonably fast.  If not,
 ### 2020/01/17
 - First line of code!
 
+
+
+# Mystery
+- Interpretation of I/O 480H
+
+[2] pp. 91 tells that:
+```
+I/O 0480H
+Bit 1: Select F8000H to FFFFFH mapping RAM or System-ROM (0:SysROM  1:RAM)
+Bit 0: RAM or CMOS (0:RAM  1:CMOS)
+```
+It doesn't tell where in the memory space Bit 0 is controlling.  From the memory map, it looks to be D0000 to DFFFF.  However, the boot ROM does not clear Bit 0 before memory test, which causes CMOS destruction upon restarting by ```REIPL.COM```.
+
+Only interpretation I can think of is:
+```
+Bit 1   Bit 0    F0000-FFFFF   D0000-DFFFF
+  0       0       SysROM        RAM
+  0       1       SysROM        CMOS
+  1       0       RAM           RAM
+  1       1       RAM           RAM
+```
+Eventually I'm going to write a test program and see the behavior on my actual FM Towns.
+
+
+# References
+[1] Intel i486TM Microprocessor Programmer's Reference Manual, Intel, 1990
+
+[2] Noriaki Chiba, FM TOWNS Technical Databook, 3rd Edition, ASCII, 1994
+
+[3] towns_cd.h, Linux for FM TOWNS source code.
+
+[4] X86 Opcode and Instruction Reference Home, http://ref.x86asm.net/coder32.html (As of February 9 2020)
+
+[5] Intel 80386 Programmre's Reference Manual, Intel, 1986
+
+[6] https://github.com/nabe-abk/free386/blob/master/doc-ja/dosext/coco_nsd.txt
+
+[7] http://www.ctyme.com/rbrown.htm
+
+[8] SEGA Genesis Software Manual
+
+[9] http://www.mit.edu/afs/sipb.mit.edu/contrib/doc/specs/protocol/scsi-2/s2-r10l.txt (As of May 3 2020)

@@ -6,3 +6,4 @@
 [6] https://github.com/nabe-abk/free386/blob/master/doc-ja/dosext/coco_nsd.txt
 [7] http://www.ctyme.com/rbrown.htm
 [8] SEGA Genesis Software Manual
+[9] http://www.mit.edu/afs/sipb.mit.edu/contrib/doc/specs/protocol/scsi-2/s2-r10l.txt (As of May 3 2020)
