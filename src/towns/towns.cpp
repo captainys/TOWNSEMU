@@ -84,6 +84,7 @@ FMTowns::FMTowns() :
 	dmac(this),
 	cdrom(this,&pic,&dmac),
 	fdc(this,&pic,&dmac),
+	scsi(this),
 	rtc(this),
 	sound(this),
 	gameport(this),
@@ -104,6 +105,7 @@ FMTowns::FMTowns() :
 	allDevices.push_back(&crtc);
 	allDevices.push_back(&sprite);
 	allDevices.push_back(&fdc);
+	allDevices.push_back(&scsi);
 	allDevices.push_back(&cdrom);
 	allDevices.push_back(&rtc);
 	allDevices.push_back(&sound);
@@ -149,6 +151,9 @@ FMTowns::FMTowns() :
 
 
 	// Individual I/O mappings >>>
+	io.AddDevice(&scsi,TOWNSIO_SCSI_DATA);           // 0xC30 [2] pp.263
+	io.AddDevice(&scsi,TOWNSIO_SCSI_STATUS_CONTROL); // 0xC32 [2] pp.262
+
 
 	io.AddDevice(&crtc,TOWNSIO_CRTC_ADDRESS);//             0x440,
 	io.AddDevice(&crtc,TOWNSIO_CRTC_DATA_LOW);//            0x442,

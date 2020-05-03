@@ -764,6 +764,15 @@ P
 % 0
 /end
 /begin0
+T 0
+* 00000F45:000007BD
+# (Prob)[538H] is SCSI device exist flag.
+R 
+L 
+P 
+% 0
+/end
+/begin0
 T 1
 * 00002A19:0000002C
 # 

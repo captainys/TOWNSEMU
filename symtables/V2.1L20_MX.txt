@@ -782,6 +782,285 @@ P
 % 0
 /end
 /begin0
+T 1
+* 00000421:0000126D
+# 
+R 
+L DISKBIOS:Set up timer
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000126E
+# Call back. IF [0529H]==80H THEN [0529H]=81H
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000134B
+# [SI+02H]=0C32H
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00001351
+# Jump if (MSG==1 || C/D==1(CMD/STA/MSG))
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00001355
+# Jump if REQ==0 (No Transfer Request)
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00001367
+# [SI+02H]=0C32H
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000136D
+# Jump if BUSY
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00001379
+# 
+R 
+L DISKBIOS:SCSI DMA Transfer
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000138B
+# [SI+0AH]=00A4H DMA Address Register Low
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00001391
+# [SI+0CH]=00A4H DMA Address Register High
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000013A5
+# [SI+08H]=00A2H DMA Count Register
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 2
+* 00000421:000013B5
+# 
+R 
+L Wait for DMA transfer end?
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000013BE
+# [SI+02H]=0C32H
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000013C5
+# Jump if Ready
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000013C9
+# Jump if MSG or CMD/STA/MSG
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000013EB
+# Jump if Ready
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000013EF
+# Jump if MSG or CMD/STA/MSG
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:0000140B
+# 
+R 
+L DISKBIOS:SCSI Wait Ready or TimeOut
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000140D
+# [SI+02H]=0C32H
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00001445
+# [0511H] is it SCSI ID bits?
+R 
+L DISKBIOS:(Prob)Set SCSI ID Bits and SEL
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00001450
+# [SI+04H]=0C30H
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00001456
+# [SI+02H]=0C32H
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000145C
+# Jump if BUSY
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00001464
+# [SI+04H]=0C30H
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00001492
+# 
+R 
+L DISKBIOS:SCSI Select DMA Channel
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00001498
+# 
+R 
+L DISKBIOS:SCSI Prepare DMA Not setting ADDR
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:000014AF
+# 
+R 
+L DISKBIOS:SCSI Set DMA Mode
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:000014CB
+# 
+R 
+L DISKBIOS:Wait SCSI BUSY or TimeOut
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000014DF
+# Jump if Ready (BUSY=0)
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:000014F9
+# 
+R 
+L DISKBIOS:IF [0529H]!=80H THEN [0529H]=82H:Erase Timer
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:0000153B
+# 
+R 
+L DISKBIOS:SCSI Timer Call Back. IF [0529H]==80H THEN [0529H]=81H
+P 
+% 0
+/end
+/begin0
 T 0
 * 00000421:000015AD
 # 

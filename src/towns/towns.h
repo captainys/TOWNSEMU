@@ -32,6 +32,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "crtc.h"
 #include "sprite.h"
 #include "fdc.h"
+#include "scsi.h"
 #include "rtc.h"
 #include "keyboard.h"
 #include "physmem.h"
@@ -178,6 +179,7 @@ public:
 	TownsCRTC crtc;
 	TownsSprite sprite;
 	TownsFDC fdc;
+	TownsSCSI scsi;
 	TownsKeyboard keyboard;
 	TownsSound sound;
 	TownsGamePort gameport;
