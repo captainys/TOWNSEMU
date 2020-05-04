@@ -9,11 +9,47 @@ private:
 public:
 	virtual const char *DeviceName(void) const{return "SCSI";}
 
+	enum
+	{
+		PHASE_BUSFREE,
+		PHASE_ARBITRATION,
+		PHASE_SELECTION,
+		PHASE_RESELECTION,
+		PHASE_MESSAGE_OUT,
+		PHASE_MESSAGE_IN,
+		PHASE_COMMAND,
+		PHASE_DATA_IN,
+		PHASE_DATA_OUT,
+		PHASE_STATUS,
+	};
+	enum
+	{
+		SCSIDEVICE_NONE,
+		SCSIDEVICE_HARDDISK,
+		SCSIDEVICE_CDROM,
+	};
+	enum
+	{
+		MAX_NUM_SCSIDEVICES=7,
+	};
+
+	class SCSIDevice
+	{
+	public:
+		unsigned int devType=SCSIDEVICE_NONE;
+	};
+
 	class State
 	{
 	public:
+		SCSIDevice dev[MAX_NUM_SCSIDEVICES];
+
 		bool REQ,I_O,MSG,C_D,BUSY,INT,PERR;
 		bool DMAE,SEL,ATN,IMSK,WEN;
+
+		unsigned int selId;
+		unsigned int phase=PHASE_BUSFREE;
+		unsigned int lastDataByte=0;
 
 		void PowerOn(void);
 		void Reset(void);
@@ -25,6 +61,10 @@ public:
 
 	virtual void PowerOn(void);
 	virtual void Reset(void);
+
+	void SetUpIO_MSG_CDfromPhase(void);
+	void EnterSelectionPhase(void);
+	void EndSelectionPhase(void);
 
 	virtual void IOWriteByte(unsigned int ioport,unsigned int data);
 

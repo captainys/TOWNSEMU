@@ -828,10 +828,37 @@ P
 /end
 /begin0
 T 0
+* 00000421:000012E7
+# [0516H]=(Prob)Data Destination Pointer
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000012EA
+# [0518H]=(Prob)Data Destination Segment
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
 * 00000421:0000134B
 # [SI+02H]=0C32H
 R 
 L 
+P 
+% 0
+/end
+/begin0
+T 2
+* 00000421:0000134F
+# 
+R 
+L DISKBIOS:SCSI Data Transfer Loop
 P 
 % 0
 /end
@@ -848,6 +875,15 @@ P
 T 0
 * 00000421:00001355
 # Jump if REQ==0 (No Transfer Request)
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00001357
+# MSG=0 && C/D==0 && REQ==1 to come here. (Data phase)
 R 
 L 
 P 
@@ -874,9 +910,18 @@ P
 /begin0
 T 1
 * 00000421:00001379
-# 
+# [0516H]=(Prob)Data Destination Pointer
 R 
 L DISKBIOS:SCSI DMA Transfer
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000137D
+# [0518H]=(Prob)Data Destination Segment
+R 
+L 
 P 
 % 0
 /end
@@ -1111,6 +1156,15 @@ T 1
 # 
 R 
 L DISKBIOS:SCSI Set DMA Mode
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:000014BA
+# 
+R 
+L DISKBIOS:SCSI (Prob)SEG:OFFSET to Physical Addr
 P 
 % 0
 /end

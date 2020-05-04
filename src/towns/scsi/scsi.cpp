@@ -45,6 +45,10 @@ void TownsSCSI::State::Reset(void)
 	ATN=false;
 	IMSK=false;
 	WEN=false;
+
+	selId=0;
+	phase=PHASE_BUSFREE;
+	lastDataByte=0;
 }
 
 
@@ -65,11 +69,79 @@ TownsSCSI::TownsSCSI(class FMTowns *townsPtr) : Device(townsPtr)
 {
 	state.Reset();
 }
+
+void TownsSCSI::SetUpIO_MSG_CDfromPhase(void)
+{
+	switch(state.phase)
+	{
+	case PHASE_BUSFREE:
+	case PHASE_ARBITRATION:
+	case PHASE_SELECTION:
+	case PHASE_RESELECTION:
+		// No change
+		break;
+	case PHASE_MESSAGE_OUT:
+		state.I_O=false;
+		state.MSG=true;
+		state.C_D=true;
+		break;
+	case PHASE_MESSAGE_IN:
+		state.I_O=true;
+		state.MSG=true;
+		state.C_D=true;
+		break;
+	case PHASE_COMMAND:
+		state.I_O=false;
+		state.MSG=false;
+		state.C_D=true;
+		break;
+	case PHASE_DATA_IN:
+		state.I_O=true;
+		state.MSG=false;
+		state.C_D=false;
+		break;
+	case PHASE_DATA_OUT:
+		state.I_O=false;
+		state.MSG=false;
+		state.C_D=false;
+		break;
+	case PHASE_STATUS:
+		state.I_O=true;
+		state.MSG=false;
+		state.C_D=true;
+		break;
+	}
+}
+void TownsSCSI::EnterSelectionPhase(void)
+{
+	for(unsigned int id=0; id<7; ++id)
+	{
+		if(0!=(state.lastDataByte&(1<<id)))
+		{
+			state.selId=id;
+			break;
+		}
+	}
+	state.phase=PHASE_SELECTION;
+	state.BUSY=true;
+	SetUpIO_MSG_CDfromPhase();
+}
+void TownsSCSI::EndSelectionPhase(void)
+{
+	if(PHASE_SELECTION==state.phase)
+	{
+		// SCSI2 Spec tells it should change to MESSAGE_IN phase.
+		state.phase=PHASE_MESSAGE_IN;
+		SetUpIO_MSG_CDfromPhase();
+	}
+}
+
 /* virtual */ void TownsSCSI::IOWriteByte(unsigned int ioport,unsigned int data)
 {
 	switch(ioport)
 	{
 	case TOWNSIO_SCSI_DATA: //            0xC30, // [2] pp.263
+		state.lastDataByte=data;
 		break;
 	case TOWNSIO_SCSI_STATUS_CONTROL: //  0xC32, // [2] pp.262
 		if(0!=(data&0x01)) // RST
@@ -80,9 +152,21 @@ TownsSCSI::TownsSCSI(class FMTowns *townsPtr) : Device(townsPtr)
 		{
 			state.DMAE=true;
 		}
-		if(0!=(data&0x04))
+		if(true!=state.BUSY)
 		{
-			state.SEL=true;
+			auto nextSEL=(0!=(data&0x04));
+			if(state.SEL!=nextSEL)
+			{
+				if(true==nextSEL)
+				{
+					EnterSelectionPhase();
+				}
+				else if(PHASE_SELECTION==state.phase)
+				{
+					EndSelectionPhase();
+				}
+				state.SEL=nextSEL;
+			}
 		}
 		if(0!=(data&0x08))
 		{
@@ -107,9 +191,12 @@ TownsSCSI::TownsSCSI(class FMTowns *townsPtr) : Device(townsPtr)
 }
 /* virtual */ unsigned int TownsSCSI::IOReadByte(unsigned int ioport)
 {
+return 0xff; // Disable SCSI.
 	switch(ioport)
 	{
 	case TOWNSIO_SCSI_DATA: //            0xC30, // [2] pp.263
+		{
+		}
 		break;
 	case TOWNSIO_SCSI_STATUS_CONTROL: //  0xC32, // [2] pp.262
 		{
