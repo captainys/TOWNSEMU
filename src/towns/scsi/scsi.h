@@ -2,6 +2,9 @@
 #define SCSI_IS_INCLUDED
 /* { */
 
+#include <vector>
+#include <string>
+
 class TownsSCSI : public Device
 {
 private:
@@ -62,6 +65,8 @@ public:
 	virtual void PowerOn(void);
 	virtual void Reset(void);
 
+	static std::string PhaseToStr(unsigned int phase);
+
 	void SetUpIO_MSG_CDfromPhase(void);
 	void EnterSelectionPhase(void);
 	void EndSelectionPhase(void);
@@ -69,6 +74,8 @@ public:
 	virtual void IOWriteByte(unsigned int ioport,unsigned int data);
 
 	virtual unsigned int IOReadByte(unsigned int ioport);
+
+	std::vector <std::string> GetStatusText(void) const;
 };
 
 /* } */

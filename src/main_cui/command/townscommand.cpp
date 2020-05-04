@@ -117,6 +117,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	dumpableMap["CMOS"]=DUMP_CMOS;
 	dumpableMap["CDROM"]=DUMP_CDROM;
 	dumpableMap["EVENTLOG"]=DUMP_EVENTLOG;
+	dumpableMap["SCSI"]=DUMP_SCSI;
 
 
 	breakEventMap["IWC1"]=   BREAK_ON_PIC_IWC1;
@@ -270,6 +271,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  DMA Controller." << std::endl;
 	std::cout << "FDC" << std::endl;
 	std::cout << "  Floppy Disk Controller." << std::endl;
+	std::cout << "SCSI" << std::endl;
+	std::cout << "  SCSI Controller." << std::endl;
 	std::cout << "CRTC" << std::endl;
 	std::cout << "  CRTC." << std::endl;
 	std::cout << "TIMER" << std::endl;
@@ -822,6 +825,12 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 			break;
 		case DUMP_EVENTLOG:
 			for(auto str : towns.eventLog.GetText())
+			{
+				std::cout << str << std::endl;
+			}
+			break;
+		case DUMP_SCSI:
+			for(auto str : towns.scsi.GetStatusText())
 			{
 				std::cout << str << std::endl;
 			}

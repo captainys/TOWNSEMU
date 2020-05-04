@@ -70,15 +70,47 @@ TownsSCSI::TownsSCSI(class FMTowns *townsPtr) : Device(townsPtr)
 	state.Reset();
 }
 
+/* static */ std::string TownsSCSI::PhaseToStr(unsigned int phase)
+{
+	switch(phase)
+	{
+	case PHASE_BUSFREE:
+		return "BUSFREE";
+	case PHASE_ARBITRATION:
+		return "ARBITRATION";
+	case PHASE_SELECTION:
+		return "SELECTION";
+	case PHASE_RESELECTION:
+		return "RESELECTION";
+	case PHASE_MESSAGE_OUT:
+		return "MESSAGE_OUT";
+	case PHASE_MESSAGE_IN:
+		return "MESSAGE_IN";
+	case PHASE_COMMAND:
+		return "COMMAND";
+	case PHASE_DATA_IN:
+		return "DATA_IN";
+	case PHASE_DATA_OUT:
+		return "DATA_OUT";
+	case PHASE_STATUS:
+		return "STATUS";
+	}
+	return "UNDEFINED";
+}
+
 void TownsSCSI::SetUpIO_MSG_CDfromPhase(void)
 {
 	switch(state.phase)
 	{
-	case PHASE_BUSFREE:
 	case PHASE_ARBITRATION:
 	case PHASE_SELECTION:
 	case PHASE_RESELECTION:
 		// No change
+		break;
+	case PHASE_BUSFREE:
+		state.I_O=false;
+		state.MSG=false;
+		state.C_D=false;
 		break;
 	case PHASE_MESSAGE_OUT:
 		state.I_O=false;
@@ -114,24 +146,29 @@ void TownsSCSI::SetUpIO_MSG_CDfromPhase(void)
 }
 void TownsSCSI::EnterSelectionPhase(void)
 {
-	for(unsigned int id=0; id<7; ++id)
+	for(unsigned int id=0; id<MAX_NUM_SCSIDEVICES; ++id)
 	{
-		if(0!=(state.lastDataByte&(1<<id)))
+		if(0!=(state.lastDataByte&(1<<id)) && SCSIDEVICE_NONE!=state.dev[id].devType)
 		{
 			state.selId=id;
-			break;
+			state.phase=PHASE_SELECTION;
+			state.BUSY=true;
+			SetUpIO_MSG_CDfromPhase();
+			return;
 		}
 	}
-	state.phase=PHASE_SELECTION;
-	state.BUSY=true;
+	// What's the correct way of handling no-device?
+	state.phase=PHASE_BUSFREE;
+	state.BUSY=false;
 	SetUpIO_MSG_CDfromPhase();
 }
 void TownsSCSI::EndSelectionPhase(void)
 {
 	if(PHASE_SELECTION==state.phase)
 	{
-		// SCSI2 Spec tells it should change to MESSAGE_IN phase.
-		state.phase=PHASE_MESSAGE_IN;
+		// SCSI2 Spec tells it should change to MESSAGE_OUT phase.
+		// Seriously?  FM Towns BIOS Looks to be waiting for the DATA phase.
+		state.phase=PHASE_MESSAGE_OUT;
 		SetUpIO_MSG_CDfromPhase();
 	}
 }
@@ -152,12 +189,11 @@ void TownsSCSI::EndSelectionPhase(void)
 		{
 			state.DMAE=true;
 		}
-		if(true!=state.BUSY)
 		{
 			auto nextSEL=(0!=(data&0x04));
 			if(state.SEL!=nextSEL)
 			{
-				if(true==nextSEL)
+				if(true==nextSEL && true!=state.BUSY)
 				{
 					EnterSelectionPhase();
 				}
@@ -191,7 +227,6 @@ void TownsSCSI::EndSelectionPhase(void)
 }
 /* virtual */ unsigned int TownsSCSI::IOReadByte(unsigned int ioport)
 {
-return 0xff; // Disable SCSI.
 	switch(ioport)
 	{
 	case TOWNSIO_SCSI_DATA: //            0xC30, // [2] pp.263
@@ -215,3 +250,33 @@ return 0xff; // Disable SCSI.
 	return 0xff;
 }
 
+std::vector <std::string> TownsSCSI::GetStatusText(void) const
+{
+	std::vector <std::string> text;
+
+	text.push_back("");
+	text.back()="PHASE:";
+	text.back()+=PhaseToStr(state.phase);
+
+	text.push_back("");
+	text.back()+="REQ:"+std::string(cpputil::BoolToNumberStr(state.REQ));
+	text.back()+=" I/O:"+std::string(cpputil::BoolToNumberStr(state.I_O));
+	text.back()+=" MSG:"+std::string(cpputil::BoolToNumberStr(state.MSG));
+	text.back()+=" C/D:"+std::string(cpputil::BoolToNumberStr(state.MSG));
+	text.back()+=" BUSY:"+std::string(cpputil::BoolToNumberStr(state.BUSY));
+	text.back()+=" INT:"+std::string(cpputil::BoolToNumberStr(state.INT));
+	text.back()+=" PERR:"+std::string(cpputil::BoolToNumberStr(state.PERR));
+
+	text.push_back("");
+	text.back()+="DMAE:"+std::string(cpputil::BoolToNumberStr(state.DMAE));
+	text.back()+=" SEL:"+std::string(cpputil::BoolToNumberStr(state.SEL));
+	text.back()+=" ATN:"+std::string(cpputil::BoolToNumberStr(state.ATN));
+	text.back()+=" IMSK:"+std::string(cpputil::BoolToNumberStr(state.IMSK));
+	text.back()+=" WEN:"+std::string(cpputil::BoolToNumberStr(state.WEN));
+
+	text.push_back("");
+	text.back()+="Selected SCSI ID:"+cpputil::Uitoa(state.selId);
+	text.back()+=" Last Data Byte:"+cpputil::Ubtox(state.lastDataByte)+"H";
+
+	return text;
+}

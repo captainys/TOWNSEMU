@@ -128,6 +128,7 @@ public:
 		DUMP_CMOS,
 		DUMP_CDROM,
 		DUMP_EVENTLOG,
+		DUMP_SCSI,
 	};
 
 	enum
