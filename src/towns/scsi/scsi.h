@@ -81,6 +81,8 @@ public:
 	public:
 		SCSIDevice dev[MAX_NUM_SCSIDEVICES];
 
+		bool deviceConnected=false;
+
 		unsigned int nCommandFilled=0;
 		unsigned char commandBuffer[MAX_NUM_COMMAND_BYTES];
 
@@ -103,6 +105,7 @@ public:
 	virtual void Reset(void);
 
 	bool LoadHardDiskImage(unsigned int scsiId,std::string fName);
+	bool LoadCDImage(unsigned int scsiId,std::string fName);
 
 	static std::string PhaseToStr(unsigned int phase);
 

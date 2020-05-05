@@ -12,6 +12,8 @@ Redistribution and use in source and binary forms, with or without modification,
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 << LICENSE */
+#include <iostream>
+
 #include "device.h"
 #include "townsdef.h"
 #include "cpputil.h"
@@ -83,9 +85,25 @@ bool TownsSCSI::LoadHardDiskImage(unsigned int scsiId,std::string fName)
 		auto fSize=cpputil::FileSize(fName);
 		if(0<fSize)
 		{
+			state.deviceConnected=true;
 			state.dev[scsiId].imageSize=fSize;
 			state.dev[scsiId].imageFName=fName;
 			state.dev[scsiId].devType=SCSIDEVICE_HARDDISK;
+			return true;
+		}
+	}
+	return false;
+}
+bool TownsSCSI::LoadCDImage(unsigned int scsiId,std::string fName)
+{
+	std::cout << "SCSI CD-ROM is not supported yet." << std::endl;
+	if(scsiId<MAX_NUM_SCSIDEVICES)
+	{
+		auto fSize=cpputil::FileSize(fName);
+		if(0<fSize)
+		{
+			state.deviceConnected=true;
+
 			return true;
 		}
 	}
@@ -199,6 +217,7 @@ void TownsSCSI::EnterCommandPhase(void)
 	state.phase=PHASE_COMMAND;
 	state.nCommandFilled=0;
 	state.REQ=true;
+	state.INT=true;
 	SetUpIO_MSG_CDfromPhase();
 	if(true==IRQEnabled())
 	{
@@ -215,10 +234,16 @@ void TownsSCSI::EnterDataInPhase(void)
 
 /* virtual */ void TownsSCSI::IOWriteByte(unsigned int ioport,unsigned int data)
 {
+	if(true!=state.deviceConnected)
+	{
+		return;
+	}
+
 	switch(ioport)
 	{
 	case TOWNSIO_SCSI_DATA: //            0xC30, // [2] pp.263
 		townsPtr->pic.SetInterruptRequestBit(TOWNSIRQ_SCSI,false);
+		state.INT=false;
 		state.lastDataByte=data;
 		ProcessPhaseData(data);
 		break;
@@ -269,10 +294,16 @@ void TownsSCSI::EnterDataInPhase(void)
 }
 /* virtual */ unsigned int TownsSCSI::IOReadByte(unsigned int ioport)
 {
+	if(true!=state.deviceConnected)
+	{
+		return 0xff;
+	}
+
 	switch(ioport)
 	{
 	case TOWNSIO_SCSI_DATA: //            0xC30, // [2] pp.263
 		townsPtr->pic.SetInterruptRequestBit(TOWNSIRQ_SCSI,false);
+		state.INT=false;
 		break;
 	case TOWNSIO_SCSI_STATUS_CONTROL: //  0xC32, // [2] pp.262
 		{
@@ -331,6 +362,7 @@ void TownsSCSI::ExecSCSICommand(void)
 	if(PHASE_COMMAND==state.phase)
 	{
 		state.REQ=true;
+		state.INT=true;
 		if(true==IRQEnabled())
 		{
 			townsPtr->pic.SetInterruptRequestBit(TOWNSIRQ_SCSI,true);
