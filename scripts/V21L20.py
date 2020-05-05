@@ -34,6 +34,8 @@ def Run(argv):
 		os.path.join(DISKDIR,"720KB.bin"),
 		"-CD",
 		os.path.join(THISDIR,"..","testdata","ISOIMG","TESTDISC.ISO"),
+		"-HD0",
+		os.path.join(DISKDIR,"hddimage.bin"),
 		"-SYM",
 		"../symtables/V2.1L20_"+TOWNSTYPE+".txt",
 		"-DEBUG",

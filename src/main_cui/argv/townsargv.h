@@ -30,6 +30,20 @@ public:
 	std::string symbolFName;
 	std::string playbackEventLogFName;
 
+	enum
+	{
+		SCSIIMAGE_HARDDISK,
+		SCSIIMAGE_CDROM
+	};
+	class SCSIImage
+	{
+	public:
+		unsigned int scsiID;
+		unsigned imageType;
+		std::string imgFName;
+	};
+	std::vector <SCSIImage> scsiImg;
+
 	class FileToSend
 	{
 	public:

@@ -149,6 +149,22 @@ bool Setup(FMTowns &towns,const TownsARGV &argv)
 		}
 	}
 
+	for(auto &scsi : argv.scsiImg)
+	{
+		if(scsi.imageType==TownsARGV::SCSIIMAGE_HARDDISK)
+		{
+			if(true!=towns.scsi.LoadHardDiskImage(scsi.scsiID,scsi.imgFName))
+			{
+				std::cout << "Failed to load hard disk image." << std::endl;
+			}
+		}
+		else if(scsi.imageType==TownsARGV::SCSIIMAGE_CDROM)
+		{
+			std::cout << "SCSI CD-ROM is not supported yet." << std::endl;
+		}
+	}
+
+
 	if(0<argv.symbolFName.size())
 	{
 		towns.debugger.GetSymTable().fName=argv.symbolFName;

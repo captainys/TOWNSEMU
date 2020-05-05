@@ -60,6 +60,12 @@ void TownsSCSI::State::Reset(void)
 TownsSCSI::TownsSCSI(class FMTowns *townsPtr) : Device(townsPtr)
 {
 	this->townsPtr=townsPtr;
+
+	for(auto &n : commandLength)
+	{
+		n=0;
+	}
+	commandLength[SCSICMD_INQUIRY]=6;
 }
 /* virtual */ void TownsSCSI::PowerOn(void)
 {
@@ -68,6 +74,22 @@ TownsSCSI::TownsSCSI(class FMTowns *townsPtr) : Device(townsPtr)
 /* virtual */ void TownsSCSI::Reset(void)
 {
 	state.Reset();
+}
+
+bool TownsSCSI::LoadHardDiskImage(unsigned int scsiId,std::string fName)
+{
+	if(scsiId<MAX_NUM_SCSIDEVICES)
+	{
+		auto fSize=cpputil::FileSize(fName);
+		if(0<fSize)
+		{
+			state.dev[scsiId].imageSize=fSize;
+			state.dev[scsiId].imageFName=fName;
+			state.dev[scsiId].devType=SCSIDEVICE_HARDDISK;
+			return true;
+		}
+	}
+	return false;
 }
 
 /* static */ std::string TownsSCSI::PhaseToStr(unsigned int phase)
@@ -162,14 +184,17 @@ void TownsSCSI::EnterSelectionPhase(void)
 	state.BUSY=false;
 	SetUpIO_MSG_CDfromPhase();
 }
-void TownsSCSI::EndSelectionPhase(void)
+void TownsSCSI::EnterCommandPhase(void)
 {
-	if(PHASE_SELECTION==state.phase)
+	// SCSI2 Spec tells it should change to MESSAGE_OUT phase.
+	// Seriously?  FM Towns BIOS Looks to be waiting for the COMMAND phase.
+	state.phase=PHASE_COMMAND;
+	state.nCommandFilled=0;
+	state.REQ=true;
+	SetUpIO_MSG_CDfromPhase();
+	if(true==IRQEnabled())
 	{
-		// SCSI2 Spec tells it should change to MESSAGE_OUT phase.
-		// Seriously?  FM Towns BIOS Looks to be waiting for the DATA phase.
-		state.phase=PHASE_MESSAGE_OUT;
-		SetUpIO_MSG_CDfromPhase();
+		townsPtr->pic.SetInterruptRequestBit(TOWNSIRQ_SCSI,true);
 	}
 }
 
@@ -179,6 +204,7 @@ void TownsSCSI::EndSelectionPhase(void)
 	{
 	case TOWNSIO_SCSI_DATA: //            0xC30, // [2] pp.263
 		state.lastDataByte=data;
+		ProcessPhaseData(data);
 		break;
 	case TOWNSIO_SCSI_STATUS_CONTROL: //  0xC32, // [2] pp.262
 		if(0!=(data&0x01)) // RST
@@ -197,9 +223,9 @@ void TownsSCSI::EndSelectionPhase(void)
 				{
 					EnterSelectionPhase();
 				}
-				else if(PHASE_SELECTION==state.phase)
+				else if(true!=nextSEL && PHASE_SELECTION==state.phase)
 				{
-					EndSelectionPhase();
+					EnterCommandPhase();
 				}
 				state.SEL=nextSEL;
 			}
@@ -231,6 +257,7 @@ void TownsSCSI::EndSelectionPhase(void)
 	{
 	case TOWNSIO_SCSI_DATA: //            0xC30, // [2] pp.263
 		{
+			townsPtr->pic.SetInterruptRequestBit(TOWNSIRQ_SCSI,false);
 		}
 		break;
 	case TOWNSIO_SCSI_STATUS_CONTROL: //  0xC32, // [2] pp.262
@@ -248,6 +275,40 @@ void TownsSCSI::EndSelectionPhase(void)
 		break;
 	}
 	return 0xff;
+}
+
+void TownsSCSI::ProcessPhaseData(unsigned int dataByte)
+{
+	if(PHASE_COMMAND==state.phase)
+	{
+		state.commandBuffer[state.nCommandFilled++]=(unsigned char)dataByte;
+		state.REQ=false;
+		if(0==commandLength[state.commandBuffer[0]])
+		{
+			Abort("Command Length not set for this command.");
+		}
+		else if(commandLength[state.commandBuffer[0]]<=state.nCommandFilled)
+		{
+			// Execute command
+			townsPtr->debugger.ExternalBreak("SCSI command.");
+		}
+		else
+		{
+			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+COMMAND_REQUEST_INTERVAL);
+		}
+	}
+}
+
+/* virtual */ void TownsSCSI::RunScheduledTask(unsigned long long int townsTime)
+{
+	if(PHASE_COMMAND==state.phase)
+	{
+		state.REQ=true;
+		if(true==IRQEnabled())
+		{
+			townsPtr->pic.SetInterruptRequestBit(TOWNSIRQ_SCSI,true);
+		}
+	}
 }
 
 std::vector <std::string> TownsSCSI::GetStatusText(void) const
@@ -277,6 +338,14 @@ std::vector <std::string> TownsSCSI::GetStatusText(void) const
 	text.push_back("");
 	text.back()+="Selected SCSI ID:"+cpputil::Uitoa(state.selId);
 	text.back()+=" Last Data Byte:"+cpputil::Ubtox(state.lastDataByte)+"H";
+
+	text.push_back("");
+	text.back()+="COMMAND BUFFER:";
+	for(int i=0; i<state.nCommandFilled; ++i)
+	{
+		text.back()+=" ";
+		text.back()+=cpputil::Ubtox(state.commandBuffer[i]);
+	}
 
 	return text;
 }

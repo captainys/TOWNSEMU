@@ -42,6 +42,10 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  Floppy disk image file name for Drive B." << std::endl;
 	std::cout << "-CD image-file-name" << std::endl;
 	std::cout << "  CD-ROM image file name for the internal drive. ISO or CUE." << std::endl;
+	std::cout << "-HD0 image-file-name" << std::endl;
+	std::cout << "  Hard-disk image file name.  Can be -HDx (0<=x<=6)" << std::endl;
+	std::cout << "-SCSICD0 image-file-name" << std::endl;
+	std::cout << "  SCSI CD-ROM image file name.  Can be -SCSICDx (0<=x<=6)" << std::endl;
 	std::cout << "-SYM filename" << std::endl;
 	std::cout << "  Specify symbol file name." << std::endl;
 	std::cout << "-EVTLOG filename" << std::endl;
@@ -85,6 +89,38 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		else if("-CD"==ARG && i+1<argc)
 		{
 			cdImgFName=argv[i+1];
+			++i;
+		}
+		else if(("-HD0"==ARG ||
+		         "-HD1"==ARG ||
+		         "-HD2"==ARG ||
+		         "-HD3"==ARG ||
+		         "-HD4"==ARG ||
+		         "-HD5"==ARG ||
+		         "-HD6"==ARG) &&
+		         i+1<argc)
+		{
+			SCSIImage scsi;
+			scsi.scsiID=ARG[3]-'0';
+			scsi.imageType=SCSIIMAGE_HARDDISK;
+			scsi.imgFName=argv[i+1];
+			scsiImg.push_back(scsi);
+			++i;
+		}
+		else if(("-SCSICD0"==ARG ||
+		         "-SCSICD1"==ARG ||
+		         "-SCSICD2"==ARG ||
+		         "-SCSICD3"==ARG ||
+		         "-SCSICD4"==ARG ||
+		         "-SCSICD5"==ARG ||
+		         "-SCSICD6"==ARG) &&
+		         i+1<argc)
+		{
+			SCSIImage scsi;
+			scsi.scsiID=ARG[7]-'0';
+			scsi.imageType=SCSIIMAGE_CDROM;
+			scsi.imgFName=argv[i+1];
+			scsiImg.push_back(scsi);
 			++i;
 		}
 		else if("-SYM"==ARG && i+1<argc)
