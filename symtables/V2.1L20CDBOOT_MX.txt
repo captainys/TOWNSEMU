@@ -268,6 +268,1106 @@ L DISKBIOS:BRANCH_TO_DEVICE
 P 
 % 0
 /end
+
+/begin0
+T 0
+* 00000421:000000E2
+# [BP+03H]=Incoming AH
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 2
+* 00000421:000000EB
+# 
+R 
+L DISKBIOS:Branch to Function
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:000001F8
+# 
+R 
+L DISKBIOS:AH=02H Get Disk Status
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00000205
+# [BP+06H]=Incoming CX
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00000209
+# [BP+02H]=Incoming AL
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000020C
+# Restore
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 2
+* 00000421:00000243
+# Track 0
+R 
+L DISKBIOS:(Prob)Find Media Type Loop?
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00000245
+# Side 0
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00000247
+# DS:[0040H-] Buffer for sector info.
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000024F
+# Read Address Marks
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00000251
+# DS:[044EH]=Error Code
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00000292
+# [BP+02H]=Incoming AL
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00000295
+# AL=Drive
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000002AE
+# Bit2:Double-Sided
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000002C6
+# [BP+8]=Outgoing DL
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:000002F3
+# 
+R 
+L DISKBIOS:(Prob)Cycle media type?
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:0000036C
+# 
+R 
+L DISKBIOS:AH=09H Read Sector Info
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:0000053A
+# 
+R 
+L DISKBIOS:Get Drive-Status Structure Pointer in SI (AL=drive)
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000069E
+# [044DH]=Error Code
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000072A
+# (Prob)Device Number Error
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00000791
+# 
+R 
+L DISKBIOS:(Prob)Clear Timer [0441H] ?BL=02H?
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:0000079A
+# 
+R 
+L DISKBIOS:(Prob)Clear Timer [0440H] ?BL=02H?
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000007CE
+# (Prob)AL=Incoming AL
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00000858
+# Tentatively no error
+R 
+L DISKBIOS:Wait for DMA transfer
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000085E
+# Tentatively no error
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00000867
+# CS:0D17 is a callback function (7FH->DS:[0443H])
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000086A
+# (Prob)012CH=300 ticks
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 2
+* 00000421:00000873
+# DS:[0487H] is cleared in FDC IRQ.
+R 
+L Wait timer up or command finished
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00000881
+# (Prob)Error Details=Time Over
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00000887
+# (Prob)Hard Error
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000008A1
+# DS:[0453H] is the zero-ext of last FDC status (I/O 0200H)
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000008A4
+# Clear INDEX/DRQ
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000008AC
+# Clear except NOTRDY,RECNOTFOUND,CRCERR,BUSY
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000008CD
+# [044DH]=Error code
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000008EA
+# (Prob)[SI+02H]=Value written to I/O 020CH
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000093E
+# (Prob)[SI+0BH] is track.
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00000A56
+# 
+R 
+L DISKBIOS:(Prob)Reset MODE-B and HISPD for all drives.
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00000A59
+# (Prob)DS:[04D2H-] Pointers for drive-info structures.
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00000A8C
+# 
+R 
+L DISKBIOS:Wait drive ready
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00000A91
+# Jump if busy
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00000AEE
+# 
+R 
+L DISKBIOS:Issue FDC Command
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00000AF1
+# (Prob)[SI+03H] remembers last-issued FDC command.
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00000B97
+# 
+R 
+L DISKBIOS:Check Disk Change if [SI]==1
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00000BA8
+# 
+R 
+L DISKBIOS:Select Side([BP+09H])
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00000BB7
+# (Prob)[SI+01H] is value written to I/O 0208H
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00000BC5
+# 
+R 
+L DISKBIOS:Wait for 59us or 100us
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00000BD1
+# (Prob)Wait for 59(3BH) or 100(64H)us
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00000BDB
+# 
+R 
+L DISKBIOS:Read I/O 200H (FDC Status) in AL
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00000BE0
+# 
+R 
+L DISKBIOS:Read I/O 208H 3 times.
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00000BE7
+# 
+R 
+L DISKBIOS:Check DMA Error
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00000BF9
+# 
+R 
+L DISKBIOS:Write AL to I/O 0208H (Drive Control)
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00000BFE
+# 
+R 
+L DISKBIOS:Select Drive and Latch HISPD and MODE-B
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00000C0D
+# 
+R 
+L DISKBIOS:Unsel Drv, Select Drv,Latch MODE-B and HISPD, then Unsel Drv.
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00000C1A
+# 
+R 
+L DISKBIOS:Wait drv ready, Enable IRQ, then write command
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00000C22
+# (Prob)[SI+01H] remembers value written to I/O 0208H
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00000C33
+# 
+R 
+L DISKBIOS:Zero-Ext Status Byte (I/O 200H) to DS:[453H], then FDC CMD D0H(abort).
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00000C4D
+# 
+R 
+L DISKBIOS:Write AL to I/O 202H (Track)
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00000C52
+# 
+R 
+L DISKBIOS:Write AL to I/O 206H (Data)
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00000C67
+# 
+R 
+L DISKBIOS:Setup DMA
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00000D17
+# 
+R 
+L DISKBIOS:Callback 7FH->0D47:[0443H]
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00000D21
+# 
+R 
+L DISKBIOS:Set up timer.
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00000D78
+# 
+R 
+L DISKBIOS:(Prob)Clear Timer
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00000D7D
+# [0443H] is timer-up flag. 80=Not yet  7F=Up
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00000D89
+# [0443H] is timer-up flag. 80=Not yet  7F=Up
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00000D93
+# 
+R 
+L DISKBIOS:Floppy Disk IRQ Handler
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00000D97
+# (Prob)DS:[0457H]=Drive?
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00001181
+# (Prob)AH=Status Byte
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00001186
+# (Prob)AL=Message Byte
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:0000126D
+# 
+R 
+L DISKBIOS:Set up timer
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000126E
+# Call back. IF [0529H]==80H THEN [0529H]=81H
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:000012D7
+# 
+R 
+L DISKBIOS:SCSI (Prob) Issue command, return result.
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000012E1
+# [0512H]=SCSI Command Pointer
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000012E4
+# [0514H]=SCSI Command Segment
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000012E7
+# [0516H]=(Prob)Data Destination Pointer
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000012EA
+# [0518H]=(Prob)Data Destination Segment
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000134B
+# [SI+02H]=0C32H
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 2
+* 00000421:0000134F
+# 
+R 
+L DISKBIOS:SCSI Data Transfer Loop
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00001351
+# Jump if (MSG==1 || C/D==1(CMD/STA/MSG))
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00001355
+# Jump if REQ==0 (No Transfer Request)
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00001357
+# MSG=0 && C/D==0 && REQ==1 to come here. (Data phase)
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00001367
+# [SI+02H]=0C32H
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000136D
+# Jump if BUSY
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000136F
+# (Prob)Status Byte
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00001373
+# (Prob)Message Byte
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00001379
+# [0516H]=(Prob)Data Destination Pointer
+R 
+L DISKBIOS:SCSI DMA Transfer
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000137D
+# [0518H]=(Prob)Data Destination Segment
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000138B
+# [SI+0AH]=00A4H DMA Address Register Low
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00001391
+# [SI+0CH]=00A4H DMA Address Register High
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000013A5
+# [SI+08H]=00A2H DMA Count Register
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 2
+* 00000421:000013B5
+# 
+R 
+L Wait for DMA transfer end?
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000013BE
+# [SI+02H]=0C32H
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000013C5
+# Jump if Ready
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000013C9
+# Jump if MSG or CMD/STA/MSG
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000013EB
+# Jump if Ready
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000013EF
+# Jump if MSG or CMD/STA/MSG
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:0000140B
+# 
+R 
+L DISKBIOS:SCSI Wait Ready or TimeOut
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000140D
+# [SI+02H]=0C32H
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00001445
+# [0511H] is it SCSI ID bits?
+R 
+L DISKBIOS:(Prob)Set SCSI ID Bits and SEL
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00001450
+# [SI+04H]=0C30H
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00001456
+# [SI+02H]=0C32H
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000145C
+# Jump if BUSY
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00001464
+# [SI+04H]=0C30H
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:0000146B
+# [051CH]=Command Counter
+R 
+L DISKBIOS:INT 48H Command Out Handler
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000146F
+# [SI]=0C30H
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00001472
+# [0512H]=SCSI Command Pointer
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00001483
+# [SI]=0C30H
+R 
+L DISKBIOS:INT 48H Status Handler
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00001486
+# [051AH]=Status byte?
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:0000148A
+# [SI]=0C30H
+R 
+L DISKBIOS:INT 48H Message-IN Handler
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000148D
+# [051BH]=Message byte?
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00001492
+# 
+R 
+L DISKBIOS:SCSI Select DMA Channel
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00001498
+# 
+R 
+L DISKBIOS:SCSI Prepare DMA Not setting ADDR
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:000014AF
+# 
+R 
+L DISKBIOS:SCSI Set DMA Mode
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:000014BA
+# 
+R 
+L DISKBIOS:SCSI (Prob)SEG:OFFSET to Physical Addr
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:000014CB
+# 
+R 
+L DISKBIOS:Wait SCSI BUSY or TimeOut
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000014DF
+# Jump if Ready (BUSY=0)
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:000014F9
+# 
+R 
+L DISKBIOS:IF [0529H]!=80H THEN [0529H]=82H:Erase Timer
+P 
+% 0
+/end
+/begin0
+T 4
+* 00000421:0000150D
+# 
+R 
+L Jump Table for SCSI Phase
+P 
+% 16
+/end
+/begin0
+T 1
+* 00000421:0000151D
+# 
+R 
+L DISKBIOS:SCSI INT 48H Handler (CMD, STA, MSG-IN Phases)
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00001525
+# [SI+02H]=0C32H
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000152B
+# Jump if no REQ
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000152F
+# AL=IO|MSG|CD|0 Defines Phase [2] pp.263
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:0000153B
+# 
+R 
+L DISKBIOS:SCSI Timer Call Back. IF [0529H]==80H THEN [0529H]=81H
+P 
+% 0
+/end
+
 /begin0
 T 0
 * 00000421:000015AD

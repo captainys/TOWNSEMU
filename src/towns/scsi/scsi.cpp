@@ -67,6 +67,7 @@ TownsSCSI::TownsSCSI(class FMTowns *townsPtr) : Device(townsPtr)
 	{
 		n=0;
 	}
+	commandLength[SCSICMD_TEST_UNIT_READY]=6;
 	commandLength[SCSICMD_INQUIRY]=6;
 }
 /* virtual */ void TownsSCSI::PowerOn(void)
@@ -219,10 +220,7 @@ void TownsSCSI::EnterCommandPhase(void)
 	state.REQ=true;
 	state.INT=true;
 	SetUpIO_MSG_CDfromPhase();
-	if(true==IRQEnabled())
-	{
-		townsPtr->pic.SetInterruptRequestBit(TOWNSIRQ_SCSI,true);
-	}
+	townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+COMMAND_DELAY);
 }
 void TownsSCSI::EnterDataInPhase(void)
 {
@@ -231,6 +229,23 @@ void TownsSCSI::EnterDataInPhase(void)
 	SetUpIO_MSG_CDfromPhase();
 	townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DATA_INTERVAL);
 }
+void TownsSCSI::EnterMessageInPhase(void)
+{
+	state.phase=PHASE_MESSAGE_IN;
+	state.REQ=true;
+	state.INT=true;
+	SetUpIO_MSG_CDfromPhase();
+	townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+MESSAGE_DELAY);
+}
+void TownsSCSI::EnterStatusPhase(void)
+{
+	state.phase=PHASE_STATUS;
+	state.REQ=true;
+	state.INT=true;
+	SetUpIO_MSG_CDfromPhase();
+	townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+MESSAGE_DELAY);
+}
+
 
 /* virtual */ void TownsSCSI::IOWriteByte(unsigned int ioport,unsigned int data)
 {
@@ -304,6 +319,7 @@ void TownsSCSI::EnterDataInPhase(void)
 	case TOWNSIO_SCSI_DATA: //            0xC30, // [2] pp.263
 		townsPtr->pic.SetInterruptRequestBit(TOWNSIRQ_SCSI,false);
 		state.INT=false;
+		return PhaseReturnData();
 		break;
 	case TOWNSIO_SCSI_STATUS_CONTROL: //  0xC32, // [2] pp.262
 		{
@@ -322,6 +338,21 @@ void TownsSCSI::EnterDataInPhase(void)
 	return 0xff;
 }
 
+unsigned char TownsSCSI::PhaseReturnData(void)
+{
+	if(PHASE_MESSAGE_IN==state.phase)
+	{
+		EnterStatusPhase();
+		return state.message;
+	}
+	else if(PHASE_STATUS==state.phase)
+	{
+		EnterBusFreePhase();
+		return state.status;
+	}
+	return 0xff;
+}
+
 void TownsSCSI::ProcessPhaseData(unsigned int dataByte)
 {
 	if(PHASE_COMMAND==state.phase)
@@ -330,7 +361,7 @@ void TownsSCSI::ProcessPhaseData(unsigned int dataByte)
 		state.REQ=false;
 		if(0==commandLength[state.commandBuffer[0]])
 		{
-			Abort("Command Length not set for this command.");
+			townsPtr->debugger.ExternalBreak("Command Length not set for this command.");
 		}
 		else if(commandLength[state.commandBuffer[0]]<=state.nCommandFilled)
 		{
@@ -351,6 +382,21 @@ void TownsSCSI::ExecSCSICommand(void)
 	case SCSICMD_INQUIRY:
 		EnterDataInPhase();
 		break;
+	case SCSICMD_TEST_UNIT_READY:
+		if(SCSIDEVICE_NONE!=state.dev[state.selId].devType)
+		{
+			state.status=STATUSCODE_GOOD;
+			state.message=0; // What am I supposed to return?
+			state.senseKey=SENSEKEY_NO_SENSE;
+		}
+		else
+		{
+			state.status=STATUSCODE_CHECK_CONDITION;
+			state.message=0; // What am I supposed to return?
+			state.senseKey=SENSEKEY_NOT_READY;
+		}
+		EnterMessageInPhase();
+		break;
 	default:
 		townsPtr->debugger.ExternalBreak("SCSI command not implemented yet.");
 		EnterBusFreePhase();
@@ -359,7 +405,9 @@ void TownsSCSI::ExecSCSICommand(void)
 }
 /* virtual */ void TownsSCSI::RunScheduledTask(unsigned long long int townsTime)
 {
-	if(PHASE_COMMAND==state.phase)
+	if(PHASE_COMMAND==state.phase ||
+	   PHASE_MESSAGE_IN==state.phase ||
+	   PHASE_STATUS==state.phase)
 	{
 		state.REQ=true;
 		state.INT=true;
@@ -377,6 +425,10 @@ void TownsSCSI::ExecSCSICommand(void)
 			switch(state.commandBuffer[0])
 			{
 			case SCSICMD_INQUIRY:
+				townsPtr->dmac.DeviceToMemory(DMACh,MakeInquiryData(state.selId));
+				state.status=0;
+				state.message=0;
+				EnterMessageInPhase();
 				break;
 			}
 		}
@@ -385,6 +437,116 @@ void TownsSCSI::ExecSCSICommand(void)
 			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DATA_INTERVAL);
 		}
 	}
+}
+
+std::vector <unsigned char> TownsSCSI::MakeInquiryData(int scsiId) const
+{
+	std::vector <unsigned char> dat;
+
+	// 8.2.5.1 Standard INQUIRY data
+	dat.resize(36);
+	switch(state.dev[scsiId].devType)
+	{
+	default:
+		dat[0]=0b01111111; // PeripheralQualifier(7,6,5)|PeriphefalDeviceType(4,3,2,1,0)
+		dat[1]=0; // RMB(7)|DeviceTypeModifier(6...0)
+		dat[2]=1; // SCSI-1
+		dat[3]=0; // SCSI-1 message format
+		dat[4]=0; // Additional length of the parameters? What parameter?
+		dat[5]=0; // Reserved
+		dat[6]=0; // Reserved
+		dat[7]=0; // RelAdr|WBus32|WBus16|Sync|Linked|Rsvd|CmdQue|SftRe
+		for(int i=8; i<36; ++i)
+		{
+			dat[i]=0;
+		}
+		break;
+	case SCSIDEVICE_HARDDISK:
+		dat[0]=0b00000000; // PeripheralQualifier(7,6,5)|PeriphefalDeviceType(4,3,2,1,0) Table 47
+		dat[1]=0; // RMB(7)|DeviceTypeModifier(6...0)
+		dat[2]=1; // SCSI-1
+		dat[3]=0; // SCSI-1 message format
+		dat[4]=0; // Additional length of the parameters? What parameter?
+		dat[5]=0; // Reserved
+		dat[6]=0; // Reserved
+		dat[7]=0; // RelAdr|WBus32|WBus16|Sync|Linked|Rsvd|CmdQue|SftRe
+
+		dat[ 8]='T';
+		dat[ 9]='S';
+		dat[10]='U';
+		dat[11]='G';
+		dat[12]='A';
+		dat[13]='R';
+		dat[14]='U';
+		dat[15]=0;
+
+		dat[16]='H';
+		dat[17]='A';
+		dat[18]='R';
+		dat[19]='D';
+		dat[20]='D';
+		dat[21]='I';
+		dat[22]='S';
+		dat[23]='K';
+		dat[24]=0;
+		dat[25]=0;
+		dat[26]=0;
+		dat[27]=0;
+		dat[28]=0;
+		dat[29]=0;
+		dat[30]=0;
+		dat[31]=0;
+
+		dat[32]=1;
+		dat[33]=0;
+		dat[34]=0;
+		dat[35]=0;
+		break;
+	case SCSIDEVICE_CDROM:
+		dat[0]=0b00000101; // Table 47
+		dat[1]=0b10000000; // RMB(7)|DeviceTypeModifier(6...0)
+		dat[2]=1; // SCSI-1
+		dat[3]=0; // SCSI-1 message format
+		dat[4]=0; // Additional length of the parameters? What parameter?
+		dat[5]=0; // Reserved
+		dat[6]=0; // Reserved
+		dat[7]=0; // RelAdr|WBus32|WBus16|Sync|Linked|Rsvd|CmdQue|SftRe
+
+		dat[ 8]='T';
+		dat[ 9]='S';
+		dat[10]='U';
+		dat[11]='G';
+		dat[12]='A';
+		dat[13]='R';
+		dat[14]='U';
+		dat[15]=0;
+
+		dat[16]='C';
+		dat[17]='D';
+		dat[18]='R';
+		dat[19]='O';
+		dat[20]='M';
+		dat[21]=0;
+		dat[22]=0;
+		dat[23]=0;
+		dat[24]=0;
+		dat[25]=0;
+		dat[26]=0;
+		dat[27]=0;
+		dat[28]=0;
+		dat[29]=0;
+		dat[30]=0;
+		dat[31]=0;
+
+		dat[32]=1;
+		dat[33]=0;
+		dat[34]=0;
+		dat[35]=0;
+
+		break;
+	}
+
+	return dat;
 }
 
 std::vector <std::string> TownsSCSI::GetStatusText(void) const

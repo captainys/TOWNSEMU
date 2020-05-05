@@ -16,6 +16,9 @@ public:
 	{
 		COMMAND_REQUEST_INTERVAL=500,
 		DATA_INTERVAL=500,
+		COMMAND_DELAY=500,
+		MESSAGE_DELAY=500,
+		STATUS_DELAY=500,
 	};
 
 	enum
@@ -46,6 +49,7 @@ public:
 	// [9] 7.2 Command descriptor block
 	enum
 	{
+		SCSICMD_TEST_UNIT_READY=0x00,  // [9] 8.2.16 TEST UNIT READY Command
 		SCSICMD_INQUIRY=0x12,
 		// When adding a support for command, don't forget to add commandLength[]= in the constructor.
 	};
@@ -64,6 +68,26 @@ public:
 		STATUSCODE_QUEUE_FULL                =0x28,
 	};
 
+	// [9] 8.2.14.3 Sense key and sense code definitions
+	enum
+	{
+		SENSEKEY_NO_SENSE         =0x00,
+		SENSEKEY_RECOVERED_ERROR  =0x01,
+		SENSEKEY_NOT_READY        =0x02,
+		SENSEKEY_MEDIUM_ERROR     =0x03,
+		SENSEKEY_HARDWARE_ERROR   =0x04,
+		SENSEKEY_ILLEGAL_REQUEST  =0x05,
+		SENSEKEY_UNIT_ATTENTION   =0x06,
+		SENSEKEY_DATA_PROTECT     =0x07,
+		SENSEKEY_BLANK_CHECK      =0x08,
+		SENSEKEY_VENDOR_SPECIFIC  =0x09,
+		SENSEKEY_COPY_ABORTED     =0x0A,
+		SENSEKEY_ABORTED_COMMAND  =0x0B,
+		SENSEKEY_EQUAL            =0x0C,
+		SENSEKEY_VOLUME_OVERFLOW  =0x0D,
+		SENSEKEY_MISCOMPARE       =0x0E,
+		SENSEKEY_RESERVED         =0x0F,
+	};
 
 
 	unsigned int commandLength[256];
@@ -92,6 +116,9 @@ public:
 		unsigned int selId;
 		unsigned int phase=PHASE_BUSFREE;
 		unsigned int lastDataByte=0;
+
+		unsigned char status=0,message=0;
+		unsigned int senseKey=0;
 
 		void PowerOn(void);
 		void Reset(void);
@@ -123,6 +150,8 @@ public:
 	void EnterSelectionPhase(void);
 	void EnterCommandPhase(void);
 	void EnterDataInPhase(void);
+	void EnterMessageInPhase(void);
+	void EnterStatusPhase(void);
 
 	virtual void IOWriteByte(unsigned int ioport,unsigned int data);
 
@@ -130,8 +159,11 @@ public:
 
 	virtual void RunScheduledTask(unsigned long long int townsTime);
 
+	unsigned char PhaseReturnData(void);
 	void ProcessPhaseData(unsigned int dataByte);
 	void ExecSCSICommand(void);
+
+	std::vector <unsigned char> MakeInquiryData(int scsiId) const;
 
 	std::vector <std::string> GetStatusText(void) const;
 };

@@ -791,6 +791,24 @@ P
 % 0
 /end
 /begin0
+T 0
+* 00000421:00001181
+# (Prob)AH=Status Byte
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00001186
+# (Prob)AL=Message Byte
+R 
+L 
+P 
+% 0
+/end
+/begin0
 T 1
 * 00000421:0000126D
 # 
@@ -805,6 +823,15 @@ T 0
 # Call back. IF [0529H]==80H THEN [0529H]=81H
 R 
 L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:000012D7
+# 
+R 
+L DISKBIOS:SCSI (Prob) Issue command, return result.
 P 
 % 0
 /end
@@ -902,6 +929,24 @@ P
 T 0
 * 00000421:0000136D
 # Jump if BUSY
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000136F
+# (Prob)Status Byte
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00001373
+# (Prob)Message Byte
 R 
 L 
 P 
