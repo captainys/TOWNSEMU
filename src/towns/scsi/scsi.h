@@ -15,6 +15,7 @@ public:
 	enum
 	{
 		COMMAND_REQUEST_INTERVAL=500,
+		DATA_INTERVAL=500,
 	};
 
 	enum
@@ -115,8 +116,10 @@ public:
 	}
 
 	void SetUpIO_MSG_CDfromPhase(void);
+	void EnterBusFreePhase(void);
 	void EnterSelectionPhase(void);
 	void EnterCommandPhase(void);
+	void EnterDataInPhase(void);
 
 	virtual void IOWriteByte(unsigned int ioport,unsigned int data);
 
@@ -125,6 +128,7 @@ public:
 	virtual void RunScheduledTask(unsigned long long int townsTime);
 
 	void ProcessPhaseData(unsigned int dataByte);
+	void ExecSCSICommand(void);
 
 	std::vector <std::string> GetStatusText(void) const;
 };

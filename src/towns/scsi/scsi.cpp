@@ -166,6 +166,14 @@ void TownsSCSI::SetUpIO_MSG_CDfromPhase(void)
 		break;
 	}
 }
+
+void TownsSCSI::EnterBusFreePhase(void)
+{
+	state.BUSY=false;
+	state.REQ=false;
+	state.phase=PHASE_BUSFREE;
+	SetUpIO_MSG_CDfromPhase();
+}
 void TownsSCSI::EnterSelectionPhase(void)
 {
 	for(unsigned int id=0; id<MAX_NUM_SCSIDEVICES; ++id)
@@ -197,12 +205,20 @@ void TownsSCSI::EnterCommandPhase(void)
 		townsPtr->pic.SetInterruptRequestBit(TOWNSIRQ_SCSI,true);
 	}
 }
+void TownsSCSI::EnterDataInPhase(void)
+{
+	state.phase=PHASE_DATA_IN;
+	state.REQ=true;
+	SetUpIO_MSG_CDfromPhase();
+	townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DATA_INTERVAL);
+}
 
 /* virtual */ void TownsSCSI::IOWriteByte(unsigned int ioport,unsigned int data)
 {
 	switch(ioport)
 	{
 	case TOWNSIO_SCSI_DATA: //            0xC30, // [2] pp.263
+		townsPtr->pic.SetInterruptRequestBit(TOWNSIRQ_SCSI,false);
 		state.lastDataByte=data;
 		ProcessPhaseData(data);
 		break;
@@ -256,9 +272,7 @@ void TownsSCSI::EnterCommandPhase(void)
 	switch(ioport)
 	{
 	case TOWNSIO_SCSI_DATA: //            0xC30, // [2] pp.263
-		{
-			townsPtr->pic.SetInterruptRequestBit(TOWNSIRQ_SCSI,false);
-		}
+		townsPtr->pic.SetInterruptRequestBit(TOWNSIRQ_SCSI,false);
 		break;
 	case TOWNSIO_SCSI_STATUS_CONTROL: //  0xC32, // [2] pp.262
 		{
@@ -291,6 +305,7 @@ void TownsSCSI::ProcessPhaseData(unsigned int dataByte)
 		{
 			// Execute command
 			townsPtr->debugger.ExternalBreak("SCSI command.");
+			ExecSCSICommand();
 		}
 		else
 		{
@@ -298,7 +313,19 @@ void TownsSCSI::ProcessPhaseData(unsigned int dataByte)
 		}
 	}
 }
-
+void TownsSCSI::ExecSCSICommand(void)
+{
+	switch(state.commandBuffer[0])
+	{
+	case SCSICMD_INQUIRY:
+		EnterDataInPhase();
+		break;
+	default:
+		townsPtr->debugger.ExternalBreak("SCSI command not implemented yet.");
+		EnterBusFreePhase();
+		break;
+	}
+}
 /* virtual */ void TownsSCSI::RunScheduledTask(unsigned long long int townsTime)
 {
 	if(PHASE_COMMAND==state.phase)
@@ -307,6 +334,23 @@ void TownsSCSI::ProcessPhaseData(unsigned int dataByte)
 		if(true==IRQEnabled())
 		{
 			townsPtr->pic.SetInterruptRequestBit(TOWNSIRQ_SCSI,true);
+		}
+	}
+	else if(PHASE_DATA_IN==state.phase)
+	{
+		auto DMACh=townsPtr->dmac.GetDMAChannel(TOWNSDMA_SCSI);
+		if(nullptr!=DMACh)
+		{
+			townsPtr->debugger.ExternalBreak("DATA Phase DMA Ready.");
+			switch(state.commandBuffer[0])
+			{
+			case SCSICMD_INQUIRY:
+				break;
+			}
+		}
+		else // DMA Not Ready check again after waiting for some period.
+		{
+			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DATA_INTERVAL);
 		}
 	}
 }
@@ -341,7 +385,7 @@ std::vector <std::string> TownsSCSI::GetStatusText(void) const
 
 	text.push_back("");
 	text.back()+="COMMAND BUFFER:";
-	for(int i=0; i<state.nCommandFilled; ++i)
+	for(unsigned int i=0; i<state.nCommandFilled; ++i)
 	{
 		text.back()+=" ";
 		text.back()+=cpputil::Ubtox(state.commandBuffer[i]);
