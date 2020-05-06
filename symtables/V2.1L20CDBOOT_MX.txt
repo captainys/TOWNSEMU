@@ -268,7 +268,6 @@ L DISKBIOS:BRANCH_TO_DEVICE
 P 
 % 0
 /end
-
 /begin0
 T 0
 * 00000421:000000E2
@@ -864,6 +863,33 @@ P
 % 0
 /end
 /begin0
+T 1
+* 00000421:00000E09
+# 
+R 
+L DISKBIOS:(Prob)Checking HDD Capacity?
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00000E36
+# BX|DX=HDD Capacity
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00000E41
+# BX|DX=HDD Capacity/256
+R 
+L 
+P 
+% 0
+/end
+/begin0
 T 0
 * 00000421:00001181
 # (Prob)AH=Status Byte
@@ -1367,7 +1393,6 @@ L DISKBIOS:SCSI Timer Call Back. IF [0529H]==80H THEN [0529H]=81H
 P 
 % 0
 /end
-
 /begin0
 T 0
 * 00000421:000015AD

@@ -632,14 +632,15 @@ std::vector <unsigned char> TownsSCSI::MakeReadCapacityData(int scsiId) const
 {
 	std::vector <unsigned char> dat;
 	dat.resize(8);
-	dat[0]=state.commandBuffer[2];
-	dat[1]=state.commandBuffer[3];
-	dat[2]=state.commandBuffer[4];
-	dat[3]=state.commandBuffer[5];
-	dat[4]=((state.dev[scsiId].imageSize>>24)&255);
-	dat[5]=((state.dev[scsiId].imageSize>>16)&255);
-	dat[6]=((state.dev[scsiId].imageSize>> 8)&255);
-	dat[7]=( state.dev[scsiId].imageSize     &255);
+	unsigned int numLBA=state.dev[scsiId].imageSize/HARDDISK_SECTOR_LENGTH;
+	dat[0]=((numLBA>>24)&255);
+	dat[1]=((numLBA>>16)&255);
+	dat[2]=((numLBA>> 8)&255);
+	dat[3]=( numLBA     &255);
+	dat[4]=0;
+	dat[5]=0;
+	dat[6]=((HARDDISK_SECTOR_LENGTH>>8)&255);
+	dat[7]= (HARDDISK_SECTOR_LENGTH    &255);
 	return dat;
 }
 
