@@ -52,6 +52,22 @@ std::vector <unsigned char> cpputil::ReadBinaryFile(std::string fName)
 	return dat;
 }
 
+std::vector <unsigned char> cpputil::ReadBinaryFile(std::string fName,long long int start,long long int length)
+{
+	std::vector <unsigned char> dat;
+	std::ifstream fp(fName,std::ifstream::binary);
+	if(true==fp.is_open())
+	{
+		fp.seekg(start,fp.beg);
+
+		dat.resize(length);
+		fp.read((char *)dat.data(),length);
+
+		fp.close();
+	}
+	return dat;
+}
+
 bool cpputil::WriteBinaryFile(const std::string &fName,unsigned long long length,const unsigned char dat[])
 {
 	std::ofstream fp(fName,std::ofstream::binary);

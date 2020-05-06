@@ -25,6 +25,7 @@ namespace cpputil
 std::string MakeFullPathName(std::string dirName,std::string fName);
 bool FileExists(std::string fName);
 std::vector <unsigned char> ReadBinaryFile(std::string fName);
+std::vector <unsigned char> ReadBinaryFile(std::string fName,long long int start,long long int length);
 bool WriteBinaryFile(const std::string &fName,unsigned long long length,const unsigned char dat[]);
 std::vector <std::string> Parser(const char str[]);
 const std::string &Capitalize(std::string &s);

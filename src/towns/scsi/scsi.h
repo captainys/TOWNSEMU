@@ -23,6 +23,11 @@ public:
 
 	enum
 	{
+		HARDDISK_SECTOR_LENGTH=512
+	};
+
+	enum
+	{
 		PHASE_BUSFREE,
 		PHASE_ARBITRATION,
 		PHASE_SELECTION,
@@ -49,8 +54,10 @@ public:
 	// [9] 7.2 Command descriptor block
 	enum
 	{
-		SCSICMD_TEST_UNIT_READY=0x00,  // [9] 8.2.16 TEST UNIT READY Command
-		SCSICMD_INQUIRY=0x12,
+		SCSICMD_TEST_UNIT_READY =0x00,  // [9] 8.2.16 TEST UNIT READY Command
+		SCSICMD_INQUIRY         =0x12,
+		SCSICMD_READ_CAPACITY   =0x25,  // [9] 9.2.7 READ CAPACITY command
+		SCSICMD_READ_10         =0x28,  // [9] 9.2.6 READ(10) command
 		// When adding a support for command, don't forget to add commandLength[]= in the constructor.
 	};
 
@@ -164,6 +171,7 @@ public:
 	void ExecSCSICommand(void);
 
 	std::vector <unsigned char> MakeInquiryData(int scsiId) const;
+	std::vector <unsigned char> MakeReadCapacityData(int scsiId) const;
 
 	std::vector <std::string> GetStatusText(void) const;
 };

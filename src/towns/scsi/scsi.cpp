@@ -68,7 +68,9 @@ TownsSCSI::TownsSCSI(class FMTowns *townsPtr) : Device(townsPtr)
 		n=0;
 	}
 	commandLength[SCSICMD_TEST_UNIT_READY]=6;
-	commandLength[SCSICMD_INQUIRY]=6;
+	commandLength[SCSICMD_INQUIRY]        =6;
+	commandLength[SCSICMD_READ_CAPACITY]  =10;
+	commandLength[SCSICMD_READ_10]        =10;
 }
 /* virtual */ void TownsSCSI::PowerOn(void)
 {
@@ -397,6 +399,49 @@ void TownsSCSI::ExecSCSICommand(void)
 		}
 		EnterMessageInPhase();
 		break;
+	case SCSICMD_READ_CAPACITY:
+		if(0!=(state.commandBuffer[8]&1) && // PMI bit on
+		   (0!=state.commandBuffer[2] ||
+		    0!=state.commandBuffer[3] ||
+		    0!=state.commandBuffer[4] ||
+		    0!=state.commandBuffer[5]))
+		{
+			state.senseKey=SENSEKEY_ILLEGAL_REQUEST;
+			state.status=STATUSCODE_CHECK_CONDITION;
+			state.message=0;
+			EnterMessageInPhase();
+		}
+		else if(SCSIDEVICE_HARDDISK==state.dev[state.selId].devType)
+		{
+			EnterDataInPhase();
+		}
+		// else if(SCSIDEVICE_CDROM==state.dev[state.selId].devType)
+		// {
+		// 	state.status=;
+		// 	state.message=0; // What am I supposed to return?
+		// 	state.senseKey=;
+		// }
+		else
+		{
+			state.senseKey=SENSEKEY_ILLEGAL_REQUEST;
+			state.status=STATUSCODE_CHECK_CONDITION;
+			state.message=0; // What am I supposed to return?
+			EnterMessageInPhase();
+		}
+		break;
+	case SCSICMD_READ_10:
+		if(SCSIDEVICE_HARDDISK==state.dev[state.selId].devType)
+		{
+			EnterDataInPhase();
+		}
+		else
+		{
+			state.senseKey=SENSEKEY_ILLEGAL_REQUEST;
+			state.status=STATUSCODE_CHECK_CONDITION;
+			state.message=0; // What am I supposed to return?
+			EnterMessageInPhase();
+		}
+		break;
 	default:
 		townsPtr->debugger.ExternalBreak("SCSI command not implemented yet.");
 		EnterBusFreePhase();
@@ -426,9 +471,43 @@ void TownsSCSI::ExecSCSICommand(void)
 			{
 			case SCSICMD_INQUIRY:
 				townsPtr->dmac.DeviceToMemory(DMACh,MakeInquiryData(state.selId));
-				state.status=0;
+				state.status=STATUSCODE_GOOD;
 				state.message=0;
 				EnterMessageInPhase();
+				break;
+			case SCSICMD_READ_CAPACITY:
+				townsPtr->dmac.DeviceToMemory(DMACh,MakeReadCapacityData(state.selId));
+				state.status=STATUSCODE_GOOD;
+				state.message=0;
+				EnterMessageInPhase();
+				townsPtr->debugger.ExternalBreak("SCSI Read Capacity Returned");
+				break;
+			case SCSICMD_READ_10:
+				if(SCSIDEVICE_HARDDISK==state.dev[state.selId].devType)
+				{
+					unsigned int LBA=(state.commandBuffer[2]<<24)|
+					                 (state.commandBuffer[3]<<16)|
+					                 (state.commandBuffer[4]<<8)|
+					                  state.commandBuffer[5];
+					unsigned int LEN=(state.commandBuffer[7]<<8)|
+					                  state.commandBuffer[8];
+					std::cout << "LBA:" << LBA << " LEN:" << LEN << std::endl;
+
+					LBA*=HARDDISK_SECTOR_LENGTH;
+					LEN*=HARDDISK_SECTOR_LENGTH;
+					townsPtr->dmac.DeviceToMemory(DMACh,cpputil::ReadBinaryFile(state.dev[state.selId].imageFName,LBA,LEN));
+					state.status=STATUSCODE_GOOD;
+					state.message=0;
+					EnterMessageInPhase();
+					townsPtr->debugger.ExternalBreak("Read 10 Returned.");
+				}
+				else
+				{
+					state.senseKey=SENSEKEY_ILLEGAL_REQUEST;
+					state.status=STATUSCODE_CHECK_CONDITION;
+					state.message=0; // What am I supposed to return?
+					EnterMessageInPhase();
+				}
 				break;
 			}
 		}
@@ -546,6 +625,21 @@ std::vector <unsigned char> TownsSCSI::MakeInquiryData(int scsiId) const
 		break;
 	}
 
+	return dat;
+}
+
+std::vector <unsigned char> TownsSCSI::MakeReadCapacityData(int scsiId) const
+{
+	std::vector <unsigned char> dat;
+	dat.resize(8);
+	dat[0]=state.commandBuffer[2];
+	dat[1]=state.commandBuffer[3];
+	dat[2]=state.commandBuffer[4];
+	dat[3]=state.commandBuffer[5];
+	dat[4]=((state.dev[scsiId].imageSize>>24)&255);
+	dat[5]=((state.dev[scsiId].imageSize>>16)&255);
+	dat[6]=((state.dev[scsiId].imageSize>> 8)&255);
+	dat[7]=( state.dev[scsiId].imageSize     &255);
 	return dat;
 }
 
