@@ -27,6 +27,7 @@ bool FileExists(std::string fName);
 std::vector <unsigned char> ReadBinaryFile(std::string fName);
 std::vector <unsigned char> ReadBinaryFile(std::string fName,long long int start,long long int length);
 bool WriteBinaryFile(const std::string &fName,unsigned long long length,const unsigned char dat[]);
+bool WriteBinaryFile(const std::string &fName,unsigned long long int start,unsigned long long length,const unsigned char dat[]);
 std::vector <std::string> Parser(const char str[]);
 const std::string &Capitalize(std::string &s);
 std::string Capitalize(const char s[]);

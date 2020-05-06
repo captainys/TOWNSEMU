@@ -13,6 +13,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 << LICENSE */
 #include <iostream>
+#include <algorithm>
 
 #include "device.h"
 #include "townsdef.h"
@@ -71,6 +72,7 @@ TownsSCSI::TownsSCSI(class FMTowns *townsPtr) : Device(townsPtr)
 	commandLength[SCSICMD_INQUIRY]        =6;
 	commandLength[SCSICMD_READ_CAPACITY]  =10;
 	commandLength[SCSICMD_READ_10]        =10;
+	commandLength[SCSICMD_WRITE_10]       =10;
 }
 /* virtual */ void TownsSCSI::PowerOn(void)
 {
@@ -227,6 +229,13 @@ void TownsSCSI::EnterCommandPhase(void)
 void TownsSCSI::EnterDataInPhase(void)
 {
 	state.phase=PHASE_DATA_IN;
+	state.REQ=true;
+	SetUpIO_MSG_CDfromPhase();
+	townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DATA_INTERVAL);
+}
+void TownsSCSI::EnterDataOutPhase(void)
+{
+	state.phase=PHASE_DATA_OUT;
 	state.REQ=true;
 	SetUpIO_MSG_CDfromPhase();
 	townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DATA_INTERVAL);
@@ -442,6 +451,19 @@ void TownsSCSI::ExecSCSICommand(void)
 			EnterMessageInPhase();
 		}
 		break;
+	case SCSICMD_WRITE_10:
+		if(SCSIDEVICE_HARDDISK==state.dev[state.selId].devType)
+		{
+			EnterDataOutPhase();
+		}
+		else
+		{
+			state.senseKey=SENSEKEY_ILLEGAL_REQUEST;
+			state.status=STATUSCODE_CHECK_CONDITION;
+			state.message=0; // What am I supposed to return?
+			EnterMessageInPhase();
+		}
+		break;
 	default:
 		townsPtr->debugger.ExternalBreak("SCSI command not implemented yet.");
 		EnterBusFreePhase();
@@ -466,7 +488,7 @@ void TownsSCSI::ExecSCSICommand(void)
 		auto DMACh=townsPtr->dmac.GetDMAChannel(TOWNSDMA_SCSI);
 		if(nullptr!=DMACh)
 		{
-			townsPtr->debugger.ExternalBreak("DATA Phase DMA Ready.");
+			townsPtr->debugger.ExternalBreak("DATA IN Phase DMA Ready.");
 			switch(state.commandBuffer[0])
 			{
 			case SCSICMD_INQUIRY:
@@ -508,6 +530,65 @@ void TownsSCSI::ExecSCSICommand(void)
 					state.message=0; // What am I supposed to return?
 					EnterMessageInPhase();
 				}
+				break;
+			default:
+				townsPtr->debugger.ExternalBreak("DATA IN Phase: Command Not Supported.");
+				break;
+			}
+		}
+		else // DMA Not Ready check again after waiting for some period.
+		{
+			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DATA_INTERVAL);
+		}
+	}
+	else if(PHASE_DATA_OUT==state.phase)
+	{
+		auto DMACh=townsPtr->dmac.GetDMAChannel(TOWNSDMA_SCSI);
+		if(nullptr!=DMACh)
+		{
+			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DATA_INTERVAL);
+			townsPtr->debugger.ExternalBreak("DATA OUT Phase DMA Ready.");
+			switch(state.commandBuffer[0])
+			{
+			case SCSICMD_WRITE_10:
+				if(SCSIDEVICE_HARDDISK==state.dev[state.selId].devType)
+				{
+					unsigned int LBA=(state.commandBuffer[2]<<24)|
+					                 (state.commandBuffer[3]<<16)|
+					                 (state.commandBuffer[4]<<8)|
+					                  state.commandBuffer[5];
+					unsigned int LEN=(state.commandBuffer[7]<<8)|
+					                  state.commandBuffer[8];
+					std::cout << "LBA:" << LBA << " LEN:" << LEN << std::endl;
+
+					LBA*=HARDDISK_SECTOR_LENGTH;
+					LEN*=HARDDISK_SECTOR_LENGTH;
+
+					auto toWrite=townsPtr->dmac.MemoryToDevice(DMACh,LEN);
+					if(true==cpputil::WriteBinaryFile(state.dev[state.selId].imageFName,LBA,std::min<unsigned int>(LEN,(unsigned int)toWrite.size()),toWrite.data()))
+					{
+						state.status=STATUSCODE_GOOD;
+						state.message=0;
+					}
+					else
+					{
+						state.senseKey=SENSEKEY_ILLEGAL_REQUEST;
+						state.status=STATUSCODE_CHECK_CONDITION;
+						state.message=0; // What am I supposed to return?
+					}
+					EnterMessageInPhase();
+					townsPtr->debugger.ExternalBreak("Write 10 Returned.");
+				}
+				else
+				{
+					state.senseKey=SENSEKEY_ILLEGAL_REQUEST;
+					state.status=STATUSCODE_CHECK_CONDITION;
+					state.message=0; // What am I supposed to return?
+					EnterMessageInPhase();
+				}
+				break;
+			default:
+				townsPtr->debugger.ExternalBreak("DATA OUT Phase: Command Not Supported.");
 				break;
 			}
 		}
@@ -632,7 +713,7 @@ std::vector <unsigned char> TownsSCSI::MakeReadCapacityData(int scsiId) const
 {
 	std::vector <unsigned char> dat;
 	dat.resize(8);
-	unsigned int numLBA=state.dev[scsiId].imageSize/HARDDISK_SECTOR_LENGTH;
+	unsigned long long int numLBA=state.dev[scsiId].imageSize/HARDDISK_SECTOR_LENGTH;
 	dat[0]=((numLBA>>24)&255);
 	dat[1]=((numLBA>>16)&255);
 	dat[2]=((numLBA>> 8)&255);

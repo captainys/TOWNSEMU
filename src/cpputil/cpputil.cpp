@@ -80,6 +80,19 @@ bool cpputil::WriteBinaryFile(const std::string &fName,unsigned long long length
 	return false;
 }
 
+bool cpputil::WriteBinaryFile(const std::string &fName,unsigned long long int start,unsigned long long length,const unsigned char dat[])
+{
+	std::fstream fp(fName,std::ios::binary|std::ios::in|std::ios::out);
+	if(true==fp.is_open())
+	{
+		fp.seekg(start,fp.beg);
+		fp.write((char *)dat,length);
+		fp.close();
+		return true;
+	}
+	return false;
+}
+
 std::vector <std::string> cpputil::Parser(const char str[])
 {
 	const int STATE_OUTSIDE=0,STATE_WORD=1,STATE_DOUBLEQUOTE=2;
