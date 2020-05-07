@@ -49,12 +49,38 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 ////////////////////////////////////////////////////////////
 
 
+/* virtual */ unsigned int NullMemoryAccess::FetchByte(unsigned int) const
+{
+	return 0xff;
+}
+/* virtual */ unsigned int NullMemoryAccess::FetchWord(unsigned int) const
+{
+	return 0xffff;
+}
+/* virtual */ unsigned int NullMemoryAccess::FetchDword(unsigned int) const
+{
+	return 0xffffffff;
+}
+/* virtual */ void NullMemoryAccess::StoreByte(unsigned int,unsigned char)
+{
+}
+/* virtual */ void NullMemoryAccess::StoreWord(unsigned int,unsigned int)
+{
+}
+/* virtual */ void NullMemoryAccess::StoreDword(unsigned int,unsigned int)
+{
+}
+
+
+////////////////////////////////////////////////////////////
+
+
 Memory::Memory()
 {
 	memAccessPtr.resize(1<<(32-GRANURALITY_SHIFT));
-	for(auto ptr : memAccessPtr)
+	for(auto &ptr : memAccessPtr)
 	{
-		ptr=nullptr;
+		ptr=&nullAccess;
 	}
 }
 

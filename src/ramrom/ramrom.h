@@ -98,6 +98,18 @@ public:
 
 
 
+class NullMemoryAccess : public MemoryAccess
+{
+public:
+	virtual unsigned int FetchByte(unsigned int physAddr) const;
+	virtual unsigned int FetchWord(unsigned int physAddr) const;
+	virtual unsigned int FetchDword(unsigned int physAddr) const;
+	virtual void StoreByte(unsigned int physAddr,unsigned char data);
+	virtual void StoreWord(unsigned int physAddr,unsigned int data);
+	virtual void StoreDword(unsigned int physAddr,unsigned int data);
+};
+
+
 /*! Memory class organizes MemoryAccess objects.
     Fetch and store requests will be directed to memory-access objects based on the 
     pointers stored in the 64KB slots.
@@ -106,6 +118,7 @@ class Memory
 {
 private:
 	std::vector <MemoryAccess *> memAccessPtr;
+	NullMemoryAccess nullAccess;
 	enum
 	{
 		GRANURALITY_SHIFT=12,
