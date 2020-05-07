@@ -35,16 +35,12 @@ bool TestDisassembly(
 	inst.addressSize=addressSize;
 	inst.operandSize=dataSize;
 	inst.opCode=opCode;
-	inst.operandLen=oplen;
-	for(unsigned int i=0; i<oplen; ++i)
-	{
-		inst.operand[i]=operand[i];
-	}
 
 	i486DX::Operand op1,op2;
 	MemoryAccess::ConstPointer memAccPtr;
 	memAccPtr.length=oplen;
 	memAccPtr.ptr=operand;
+	inst.operandLen=0;
 	cpu.FetchOperand(inst,op1,op2,memAccPtr,cpu.state.DS(),0,dummyMem);
 
 	i486DX::SegmentRegister seg;
