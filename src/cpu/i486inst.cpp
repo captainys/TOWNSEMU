@@ -3184,6 +3184,23 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		} \
 	}
 
+	#define CONDITIONALJUMP16OR32(jumpCond)  \
+	{ \
+		if(true==(jumpCond)) \
+		{ \
+			auto offset=inst.GetSimm16or32(inst.operandSize); \
+			auto destin=state.EIP+offset+inst.numBytes; \
+			destin&=operandSizeMask[inst.operandSize>>3]; \
+			state.EIP=destin; \
+			clocksPassed=3; \
+			EIPSetByInstruction=true; \
+		} \
+		else \
+		{ \
+			clocksPassed=1; \
+		} \
+	}
+
 	static const unsigned int reg8AndPattern[]=
 	{
 		0xFFFFFF00,   // AL
@@ -5245,106 +5262,66 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 
 	case I486_OPCODE_JA_REL://    0x0F87,
+		CONDITIONALJUMP16OR32(CondJA());
+		break;
 	case I486_OPCODE_JAE_REL://   0x0F83,
+		CONDITIONALJUMP16OR32(CondJAE());
+		break;
 	case I486_OPCODE_JB_REL://    0x0F82,
-	case I486_OPCODE_JBE_REL://   0x0F86,
 	// case I486_OPCODE_JC_REL://    0x0F82, Same as JB_REL
+		CONDITIONALJUMP16OR32(CondJB());
+		break;
+	case I486_OPCODE_JBE_REL://   0x0F86,
+		CONDITIONALJUMP16OR32(CondJBE());
+		break;
 	case I486_OPCODE_JE_REL://    0x0F84,
-	// case I486_OPCODE_JZ_REL://    0x0F84, Same as JZ_REL
+	// case I486_OPCODE_JZ_REL://    0x0F84, Same as JE_REL
+		CONDITIONALJUMP16OR32(CondJE());
+		break;
 	case I486_OPCODE_JG_REL://    0x0F8F,
+		CONDITIONALJUMP16OR32(CondJG());
+		break;
 	case I486_OPCODE_JGE_REL://   0x0F8D,
+		CONDITIONALJUMP16OR32(CondJGE());
+		break;
 	case I486_OPCODE_JL_REL://    0x0F8C,
+		CONDITIONALJUMP16OR32(CondJL());
+		break;
 	case I486_OPCODE_JLE_REL://   0x0F8E,
+		CONDITIONALJUMP16OR32(CondJLE());
+		break;
 	// case I486_OPCODE_JNA_REL://   0x0F86, Same as JBE_REL
 	// case I486_OPCODE_JNAE_REL://  0x0F82, Same as JB_REL
 	// case I486_OPCODE_JNB_REL://   0x0F83, Same as JAE_REL
 	// case I486_OPCODE_JNBE_REL://  0x0F87, Same as JA_REL
 	// case I486_OPCODE_JNC_REL://   0x0F83, Same as JAE_REL
 	case I486_OPCODE_JNE_REL://   0x0F85,
+		CONDITIONALJUMP16OR32(CondJNE());
+		break;
 	// case I486_OPCODE_JNG_REL://   0x0F8E, Same as JLE_REL
 	// case I486_OPCODE_JNGE_REL://  0x0F8C, Same as JL_REL
 	// case I486_OPCODE_JNL_REL://   0x0F8D, Same as JGE_REL
 	// case I486_OPCODE_JNLE_REL://  0x0F8F, Same as JG_REL
 	case I486_OPCODE_JNO_REL://   0x0F81,
+		CONDITIONALJUMP16OR32(CondJNO());
+		break;
 	case I486_OPCODE_JNP_REL://   0x0F8B,
+		CONDITIONALJUMP16OR32(CondJNP());
+		break;
 	case I486_OPCODE_JNS_REL://   0x0F89,
+		CONDITIONALJUMP16OR32(CondJNS());
+		break;
 	// case I486_OPCODE_JNZ_REL://   0x0F85, Same as JNE_REL
 	case I486_OPCODE_JO_REL://    0x0F80,
+		CONDITIONALJUMP16OR32(CondJO());
+		break;
 	case I486_OPCODE_JP_REL://    0x0F8A,
+		CONDITIONALJUMP16OR32(CondJP());
+		break;
 	// case I486_OPCODE_JPE_REL://   0x0F8A, Same as JP_REL
 	// case I486_OPCODE_JPO_REL://   0x0F8B, Same as JNP_REL
 	case I486_OPCODE_JS_REL://    0x0F88,
-		{
-			bool jumpCond=false;
-			switch(inst.opCode)
-			{
-			case I486_OPCODE_JO_REL:   // 0x70,
-				jumpCond=CondJO();
-				break;
-			case I486_OPCODE_JNO_REL:  // 0x71,
-				jumpCond=CondJNO();
-				break;
-			case I486_OPCODE_JB_REL:   // 0x72,
-				jumpCond=CondJB();
-				break;
-			case I486_OPCODE_JAE_REL:  // 0x73,
-				jumpCond=CondJAE();
-				break;
-			case I486_OPCODE_JE_REL:   // 0x74,
-				jumpCond=CondJE();
-				break;
-			case I486_OPCODE_JNE_REL:  // 0x75,
-				jumpCond=CondJNE();
-				break;
-			case I486_OPCODE_JBE_REL:  // 0x76,
-				jumpCond=CondJBE();
-				break;
-			case I486_OPCODE_JA_REL:   // 0x77,
-				jumpCond=CondJA();
-				break;
-			case I486_OPCODE_JS_REL:   // 0x78,
-				jumpCond=CondJS();
-				break;
-			case I486_OPCODE_JNS_REL:  // 0x79,
-				jumpCond=CondJNS();
-				break;
-			case I486_OPCODE_JP_REL:   // 0x7A,
-				jumpCond=CondJP();
-				break;
-			case I486_OPCODE_JNP_REL:  // 0x7B,
-				jumpCond=CondJNP();
-				break;
-			case I486_OPCODE_JL_REL:   // 0x7C,
-				jumpCond=CondJL();
-				break;
-			case I486_OPCODE_JGE_REL:  // 0x7D,
-				jumpCond=CondJGE();
-				break;
-			case I486_OPCODE_JLE_REL:  // 0x7E,
-				jumpCond=CondJLE();
-				break;
-			case I486_OPCODE_JG_REL:   // 0x7F,
-				jumpCond=CondJG();
-				break;
-			default:
-				Abort("Unhandled Conditional Jump");
-				return 0;
-			}
-
-			if(true==(jumpCond))
-			{
-				auto offset=inst.GetSimm16or32(inst.operandSize);
-				auto destin=state.EIP+offset+inst.numBytes;
-				destin&=operandSizeMask[inst.operandSize>>3];
-				state.EIP=destin;
-				clocksPassed=3;
-				EIPSetByInstruction=true;
-			}
-			else
-			{
-				clocksPassed=1;
-			}
-		}
+		CONDITIONALJUMP16OR32(CondJS());
 		break;
 
 
