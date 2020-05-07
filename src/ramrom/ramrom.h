@@ -136,71 +136,43 @@ public:
 	inline unsigned int FetchByte(unsigned int physAddr) const
 	{
 		auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-		if(nullptr!=memAccess)
-		{
-			return memAccess->FetchByte(physAddr);
-		}
-		return 0xff;
+		return memAccess->FetchByte(physAddr);
 	}
 
 	inline unsigned int FetchWord(unsigned int physAddr) const
 	{
 		auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-		if(nullptr!=memAccess)
-		{
-			return memAccess->FetchWord(physAddr);
-		}
-		return 0xffff;
+		return memAccess->FetchWord(physAddr);
 	}
 
 	inline unsigned int FetchDword(unsigned int physAddr) const
 	{
 		auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-		if(nullptr!=memAccess)
-		{
-			return memAccess->FetchDword(physAddr);
-		}
-		return 0xffffffff;
+		return memAccess->FetchDword(physAddr);
 	}
 
 	inline MemoryAccess::ConstPointer GetReadAccessPointer(unsigned int physAddr) const
 	{
 		auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-		if(nullptr!=memAccess)
-		{
-			return memAccess->GetReadAccessPointer(physAddr);
-		}
-		MemoryAccess::ConstPointer ptr;
-		ptr.length=0;
-		ptr.ptr=nullptr;
-		return ptr;
+		return memAccess->GetReadAccessPointer(physAddr);
 	}
 
 	inline void StoreByte(unsigned int physAddr,unsigned char data)
 	{
 		auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-		if(nullptr!=memAccess)
-		{
-			memAccess->StoreByte(physAddr,data);
-		}
+		memAccess->StoreByte(physAddr,data);
 	}
 
 	inline void StoreWord(unsigned int physAddr,unsigned int data)
 	{
 		auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-		if(nullptr!=memAccess)
-		{
-			memAccess->StoreWord(physAddr,data);
-		}
+		memAccess->StoreWord(physAddr,data);
 	}
 
 	inline void StoreDword(unsigned int physAddr,unsigned int data)
 	{
 		auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-		if(nullptr!=memAccess)
-		{
-			memAccess->StoreDword(physAddr,data);
-		}
+		memAccess->StoreDword(physAddr,data);
 	}
 };
 

@@ -76,9 +76,10 @@ void TownsPhysicalMemory::State::Reset(void)
 {
 	if(TOWNSIO_CMOS_BASE<=ioport && ioport<TOWNSIO_CMOS_END)
 	{
+		/* I'll try again.
 		if(true==preventCMOSInitToSingleDriveMode)
 		{
-			/* if(0x328C==ioport)
+			if(0x328C==ioport)
 			{
 				std::cout << "Blocking Single Drive Mode " << cpputil::Ubtox(data) << "->" << "00H" << std::endl;
 				data=0;
@@ -87,8 +88,8 @@ void TownsPhysicalMemory::State::Reset(void)
 			{
 				std::cout << "Blocking Single Drive Mode " << cpputil::Ubtox(data) << "->" << "FAH" << std::endl;
 				data=0xFA;
-			} */
-		}
+			}
+		} */
 		state.DICRAM[(ioport-TOWNSIO_CMOS_BASE)/2]=(unsigned char)(data&0xFF);
 		return;
 	}

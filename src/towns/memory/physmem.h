@@ -384,7 +384,7 @@ public:
 	};
 	unsigned char serialROM[SERIAL_ROM_LENGTH];
 
-	bool preventCMOSInitToSingleDriveMode=true;
+	// bool preventCMOSInitToSingleDriveMode=true;
 
 	bool takeJISCodeLog;
 	std::vector <unsigned char> JISCodeLog; // Log KanjiROM Read Access
