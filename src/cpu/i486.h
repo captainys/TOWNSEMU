@@ -1581,16 +1581,14 @@ public:
 		}
 		else
 		{
-			auto EDI=state.EDI();
 			if(true==GetDF())
 			{
-				EDI-=operandSize/8;
+				state.EDI()-=operandSize/8;
 			}
 			else
 			{
-				EDI+=operandSize/8;
+				state.EDI()+=operandSize/8;
 			}
-			state.EDI()=EDI;
 		}
 	}
 	inline void UpdateSIorESIAfterStringOp(unsigned int addressSize,unsigned int operandSize)
@@ -1610,19 +1608,49 @@ public:
 		}
 		else
 		{
-			auto ESI=state.ESI();
 			if(true==GetDF())
 			{
-				ESI-=operandSize/8;
+				state.ESI()-=operandSize/8;
 			}
 			else
 			{
-				ESI+=operandSize/8;
+				state.ESI()+=operandSize/8;
 			}
-			state.ESI()=ESI;
 		}
 	}
-
+	inline void UpdateESIandEDIAfterStringOp(unsigned int addressSize,unsigned int operandSize)
+	{
+		if(16==addressSize)
+		{
+			auto DI=state.EDI();
+			auto SI=state.ESI();
+			if(true==GetDF())
+			{
+				DI-=operandSize/8;
+				SI-=operandSize/8;
+			}
+			else
+			{
+				DI+=operandSize/8;
+				SI+=operandSize/8;
+			}
+			state.EDI()=(state.EDI()&0xffff0000)|(DI&0xffff);
+			state.ESI()=(state.ESI()&0xffff0000)|(SI&0xffff);
+		}
+		else
+		{
+			if(true==GetDF())
+			{
+				state.EDI()-=operandSize/8;
+				state.ESI()-=operandSize/8;
+			}
+			else
+			{
+				state.EDI()+=operandSize/8;
+				state.ESI()+=operandSize/8;
+			}
+		}
+	}
 
 	/*! Write to Control Register.  If num==3, it builds Page Table cache.
 	*/

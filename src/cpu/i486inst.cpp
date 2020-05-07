@@ -4413,8 +4413,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			if(true!=state.exception)
 			{
 				SubByteWordOrDword(inst.operandSize,data1,data2);
-				UpdateDIorEDIAfterStringOp(inst.addressSize,inst.operandSize);
-				UpdateSIorESIAfterStringOp(inst.addressSize,inst.operandSize);
+				UpdateESIandEDIAfterStringOp(inst.addressSize,inst.operandSize);
 				clocksPassed+=8;
 				if(true==REPEorNECheck(clocksPassed,inst.instPrefix,inst.addressSize))
 				{
@@ -5937,8 +5936,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
 				auto data=FetchWordOrDword(inst.operandSize,inst.addressSize,seg,state.ESI(),mem);
 				StoreWordOrDword(mem,inst.operandSize,inst.addressSize,state.ES(),state.EDI(),data);
-				UpdateSIorESIAfterStringOp(inst.addressSize,inst.operandSize);
-				UpdateDIorEDIAfterStringOp(inst.addressSize,inst.operandSize);
+				UpdateESIandEDIAfterStringOp(inst.addressSize,inst.operandSize);
 				EIPSetByInstruction=(INST_PREFIX_REP==prefix);
 				clocksPassed+=7;
 			}
