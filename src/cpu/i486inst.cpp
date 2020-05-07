@@ -5195,8 +5195,14 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		CONDITIONALJUMP8(CondJA());
 		break;
 	case I486_OPCODE_JS_REL8:   // 0x78,
+		CONDITIONALJUMP8(CondJS());
+		break;
 	case I486_OPCODE_JNS_REL8:  // 0x79,
+		CONDITIONALJUMP8(CondJNS());
+		break;
 	case I486_OPCODE_JP_REL8:   // 0x7A,
+		CONDITIONALJUMP8(CondJP());
+		break;
 	case I486_OPCODE_JNP_REL8:  // 0x7B,
 	case I486_OPCODE_JL_REL8:   // 0x7C,
 	case I486_OPCODE_JGE_REL8:  // 0x7D,
@@ -5209,15 +5215,6 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			bool jumpCond=false;
 			switch(inst.opCode)
 			{
-			case I486_OPCODE_JS_REL8:   // 0x78,
-				jumpCond=CondJS();
-				break;
-			case I486_OPCODE_JNS_REL8:  // 0x79,
-				jumpCond=CondJNS();
-				break;
-			case I486_OPCODE_JP_REL8:   // 0x7A,
-				jumpCond=CondJP();
-				break;
 			case I486_OPCODE_JNP_REL8:  // 0x7B,
 				jumpCond=CondJNP();
 				break;
