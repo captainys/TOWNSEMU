@@ -3169,6 +3169,21 @@ int i486DX::Instruction::GetSimm16or32(unsigned int operandSize) const
 
 unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 {
+	#define CONDITIONALJUMP8(jumpCond) \
+	{ \
+		if(true==jumpCond) \
+		{ \
+			auto offset=inst.GetSimm8(); \
+			state.EIP=((state.EIP+offset+inst.numBytes)&operandSizeMask[inst.operandSize>>3]); \
+			clocksPassed=3; \
+			EIPSetByInstruction=true; \
+		} \
+		else \
+		{ \
+			clocksPassed=1; \
+		} \
+	}
+
 	static const unsigned int reg8AndPattern[]=
 	{
 		0xFFFFFF00,   // AL
@@ -5136,10 +5151,25 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 
 	case I486_OPCODE_JMP_REL8://         0xEB,   // cb
+		{
+			auto offset=inst.GetSimm8();
+			state.EIP=((state.EIP+offset+inst.numBytes)&operandSizeMask[inst.operandSize>>3]);
+			clocksPassed=3;
+			EIPSetByInstruction=true;
+		}
+		break;
 	case I486_OPCODE_JO_REL8:   // 0x70,
+		CONDITIONALJUMP8(CondJO());
+		break;
 	case I486_OPCODE_JNO_REL8:  // 0x71,
+		CONDITIONALJUMP8(CondJNO());
+		break;
 	case I486_OPCODE_JB_REL8:   // 0x72,
+		CONDITIONALJUMP8(CondJB());
+		break;
 	case I486_OPCODE_JAE_REL8:  // 0x73,
+		CONDITIONALJUMP8(CondJAE());
+		break;
 	case I486_OPCODE_JE_REL8:   // 0x74,
 	case I486_OPCODE_JECXZ_REL8:// 0xE3,  // Depending on the operand size
 	case I486_OPCODE_JNE_REL8:  // 0x75,
@@ -5160,21 +5190,6 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			bool jumpCond=false;
 			switch(inst.opCode)
 			{
-			case I486_OPCODE_JMP_REL8://         0xEB,   // cb
-				jumpCond=true;
-				break;
-			case I486_OPCODE_JO_REL8:   // 0x70,
-				jumpCond=CondJO();
-				break;
-			case I486_OPCODE_JNO_REL8:  // 0x71,
-				jumpCond=CondJNO();
-				break;
-			case I486_OPCODE_JB_REL8:   // 0x72,
-				jumpCond=CondJB();
-				break;
-			case I486_OPCODE_JAE_REL8:  // 0x73,
-				jumpCond=CondJAE();
-				break;
 			case I486_OPCODE_JE_REL8:   // 0x74,
 				jumpCond=CondJE();
 				break;
