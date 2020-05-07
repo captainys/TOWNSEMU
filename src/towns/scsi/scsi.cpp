@@ -377,7 +377,10 @@ void TownsSCSI::ProcessPhaseData(unsigned int dataByte)
 		else if(commandLength[state.commandBuffer[0]]<=state.nCommandFilled)
 		{
 			// Execute command
-			townsPtr->debugger.ExternalBreak("SCSI command.");
+			if(true==breakOnSCSICommand)
+			{
+				townsPtr->debugger.ExternalBreak("SCSI Command.");
+			}
 			ExecSCSICommand();
 		}
 		else
@@ -488,7 +491,11 @@ void TownsSCSI::ExecSCSICommand(void)
 		auto DMACh=townsPtr->dmac.GetDMAChannel(TOWNSDMA_SCSI);
 		if(nullptr!=DMACh)
 		{
-			townsPtr->debugger.ExternalBreak("DATA IN Phase DMA Ready.");
+			if(true==breakOnDMATransfer)
+			{
+				townsPtr->debugger.ExternalBreak("SCSI DMA Transfer");
+			}
+
 			switch(state.commandBuffer[0])
 			{
 			case SCSICMD_INQUIRY:
@@ -502,7 +509,6 @@ void TownsSCSI::ExecSCSICommand(void)
 				state.status=STATUSCODE_GOOD;
 				state.message=0;
 				EnterMessageInPhase();
-				townsPtr->debugger.ExternalBreak("SCSI Read Capacity Returned");
 				break;
 			case SCSICMD_READ_10:
 				if(SCSIDEVICE_HARDDISK==state.dev[state.selId].devType)
@@ -513,7 +519,6 @@ void TownsSCSI::ExecSCSICommand(void)
 					                  state.commandBuffer[5];
 					unsigned int LEN=(state.commandBuffer[7]<<8)|
 					                  state.commandBuffer[8];
-					std::cout << "LBA:" << LBA << " LEN:" << LEN << std::endl;
 
 					LBA*=HARDDISK_SECTOR_LENGTH;
 					LEN*=HARDDISK_SECTOR_LENGTH;
@@ -521,7 +526,6 @@ void TownsSCSI::ExecSCSICommand(void)
 					state.status=STATUSCODE_GOOD;
 					state.message=0;
 					EnterMessageInPhase();
-					townsPtr->debugger.ExternalBreak("Read 10 Returned.");
 				}
 				else
 				{
@@ -546,8 +550,12 @@ void TownsSCSI::ExecSCSICommand(void)
 		auto DMACh=townsPtr->dmac.GetDMAChannel(TOWNSDMA_SCSI);
 		if(nullptr!=DMACh)
 		{
+			if(true==breakOnDMATransfer)
+			{
+				townsPtr->debugger.ExternalBreak("SCSI DMA Transfer");
+			}
+
 			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DATA_INTERVAL);
-			townsPtr->debugger.ExternalBreak("DATA OUT Phase DMA Ready.");
 			switch(state.commandBuffer[0])
 			{
 			case SCSICMD_WRITE_10:
@@ -559,7 +567,6 @@ void TownsSCSI::ExecSCSICommand(void)
 					                  state.commandBuffer[5];
 					unsigned int LEN=(state.commandBuffer[7]<<8)|
 					                  state.commandBuffer[8];
-					std::cout << "LBA:" << LBA << " LEN:" << LEN << std::endl;
 
 					LBA*=HARDDISK_SECTOR_LENGTH;
 					LEN*=HARDDISK_SECTOR_LENGTH;
@@ -577,7 +584,6 @@ void TownsSCSI::ExecSCSICommand(void)
 						state.message=0; // What am I supposed to return?
 					}
 					EnterMessageInPhase();
-					townsPtr->debugger.ExternalBreak("Write 10 Returned.");
 				}
 				else
 				{
