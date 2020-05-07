@@ -5331,14 +5331,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				return 0;
 			}
 
-			if(true==jumpCond)
+			if(true==(jumpCond))
 			{
 				auto offset=inst.GetSimm16or32(inst.operandSize);
 				auto destin=state.EIP+offset+inst.numBytes;
-				if(16==inst.operandSize)
-				{
-					destin&=0xffff;
-				}
+				destin&=operandSizeMask[inst.operandSize>>3];
 				state.EIP=destin;
 				clocksPassed=3;
 				EIPSetByInstruction=true;
