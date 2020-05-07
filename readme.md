@@ -32,6 +32,8 @@ ROMイメージは現在最高のFM TOWNSエミュレータとされているUNZ
 # LIMITATIONS
 At this point, all it can do is to start Towns MENU and run some programs.
 
+The biggest set back right now is its speed.  How other DOS emulators are running a CPU that fast?  Also it is not in sync with real time.  I'm working on it.
+
 80486 emulation is slow.  At this time, for every instruction, the CPU core is calcualting linear address, translating to physical address using page table.  Same for stack.  There is a large room for speed up.  Will be done down the road.
 
 Not-all instructions of Intel 80486 processor have been implemented yet.  Towns OS didn't use task registers.  I have no plan on adding support for those registers.  Since the emulator works as a debugger, debug registers won't be supported, either.
@@ -40,13 +42,14 @@ Sprites are imcomplete.  I am trying to make sense of the sprite hardware regist
 
 RF5C68 PCM Sound Generator support is very primitive.
 
-FM Sound Generators are not supported yet.(YM2612 timer is supported because it is used for some other purposes.)
+FM Sound Generators can play a tone, but since the VM is not in sync with the real time, it cannot play a music.  Also special mode for 3CH and 6CH is not supported, DETUNE, and other effects are not supported yet.(YM2612 timer is supported because it is used for some other purposes.)
 
-Right now only 1.23MB floppy disk image is supported.  Not writeable yet.
 
 
 
 現時点では、Towns MENUを起動して、その下のプログラムをいくつか起動できるだけです。
+
+現状最大の問題は、CPUのエミュレーションのスピードです。他のDOSエミュレータはどうやってるんだろう？それから、実時間とシンクロしてないので、ゲームとかまともにプレイできないと思います。今、そのへん調整中です。
 
 80486エミュレーションが遅いです。今のバージョンではすべてのインストラクションについて、線形アドレスを計算して、ページテーブルを参照して物理アドレスに変換というプロセスを通ってます。スタックも同じです。だから、かなりのスピードアップの余地があります。そのうちやります。
 
@@ -56,9 +59,8 @@ Right now only 1.23MB floppy disk image is supported.  Not writeable yet.
 
 RF5C68 PCM音源の音は出ますが、まだ非常に限定的なサポートです。
 
-FM音源もまだ対応してません。(YM2612のタイマーだけは他のいろんな機能で使っているので対応)
-
-フロッピーディスクは1.23Mフロッピーディスクの読み込みしか対応してません。
+FM音源は、一応音が出ますが、VMが実時間とシンクロしてないので音楽演奏になりません。また、基本的な発声しか対応してません。3CH, 6CHの特殊モードとかDETUNEとか現時点では無視されます。
+(YM2612のタイマーだけは他のいろんな機能で使っているので対応)
 
 
 
@@ -76,6 +78,11 @@ main_cui ROM_FILE_PATH -CD CD_IMAGE_FILE -FD0 FD0_IMAGE_FILE
 ```
 CD-image can be .ISO or .CUE.  Floppy-disk image can be raw-binary or .D77 file.  You can look into scripts sub-directories for samples of other options.
 
+You can see the help by typing:
+```
+main_cui -HELP
+```
+
 
 
 コマンドから起動します。
@@ -84,6 +91,10 @@ main_cui ROM_FILE_PATH -CD CD_IMAGE_FILE -FD0 FD0_IMAGE_FILE
 ```
 CD-imageは.ISOと.CUEに対応。ディスクイメージは.D77か生イメージファイルに対応。scriptsサブディレクトリ内にバッチ実行などの例題があるので、そっちも参照。ヘルプを書く時間が無い。
 
+また、次のようにタイプするとヘルプを表示します。英語ですが。
+```
+main_cui -HELP
+```
 
 
 
@@ -132,6 +143,9 @@ The tests are timing-sensitive, or the CPU needs to be reasonably fast.  If not,
 
 
 # Revisions
+### 2020/05/06
+- Preliminary support for SCSI Hard disks.  (Create a big binary filled with zeros and use -HD0 option.)
+
 ### 2020/05/03
 - CPU core speed up.  Still not good enough for 486DX 66MHz.
 - Support 3-mode floppy disk read/write.
