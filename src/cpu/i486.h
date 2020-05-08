@@ -661,13 +661,22 @@ public:
 		}
 
 		/*! Returns Unsigned Imm8 (last byte in the operand) after decoding. */
-		unsigned int GetUimm8(void) const;
+		inline unsigned int GetUimm8(void) const
+		{
+			return operand[operandLen-1];
+		}
 
 		/*! Returns Unsigned Imm16 (last 2 byte in the operand) after decoding. */
-		unsigned int GetUimm16(void) const;
+		inline unsigned int GetUimm16(void) const
+		{
+			return cpputil::GetWord(operand+operandLen-2);
+		}
 
 		/*! Returns Unsigned Imm32 (last 4 byte in the operand) after decoding. */
-		unsigned int GetUimm32(void) const;
+		inline unsigned int GetUimm32(void) const
+		{
+			return cpputil::GetDword(operand+operandLen-4);
+		}
 
 		/*! Returns Unsigned Imm16 or Imm32 after decoding. */
 		unsigned int GetUimm16or32(unsigned int operandSize) const;
@@ -676,13 +685,22 @@ public:
 		unsigned int GetUimm8or16or32(unsigned int operandSize) const;
 
 		/*! Returns Signed Imm8 (last byte in the operand) after decoding. */
-		int GetSimm8(void) const;
+		inline int GetSimm8(void) const
+		{
+			return cpputil::GetSignedByte(operand[operandLen-1]);
+		}
 
 		/*! Returns Signed Imm16 (last 2 byte in the operand) after decoding. */
-		int GetSimm16(void) const;
+		inline int GetSimm16(void) const
+		{
+			return cpputil::GetSignedWord(operand+operandLen-2);
+		}
 
 		/*! Returns Signed Imm32 (last 4 byte in the operand) after decoding. */
-		int GetSimm32(void) const;
+		inline int GetSimm32(void) const
+		{
+			return cpputil::GetSignedDword(operand+operandLen-4);
+		}
 
 		/*! Returns Signed Imm16 or Imm32 after decoding. */
 		int GetSimm16or32(unsigned int operandSize) const;
@@ -1448,6 +1466,10 @@ public:
 	inline void ClearCFOF(void)
 	{
 		state.EFLAGS&=(~(EFLAGS_CARRY|EFLAGS_OVERFLOW));
+	}
+	inline void SetCFOF(void)
+	{
+		state.EFLAGS|=(EFLAGS_CARRY|EFLAGS_OVERFLOW);
 	}
 
 	inline bool CheckParity(unsigned char lowByte)

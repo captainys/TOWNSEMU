@@ -3075,18 +3075,6 @@ std::string i486DX::Instruction::DisassembleTypicalTwoOperands(std::string inst,
 	return disasm;
 }
 
-unsigned int i486DX::Instruction::GetUimm8(void) const
-{
-	return operand[operandLen-1];
-}
-unsigned int i486DX::Instruction::GetUimm16(void) const
-{
-	return cpputil::GetWord(operand+operandLen-2);
-}
-unsigned int i486DX::Instruction::GetUimm32(void) const
-{
-	return cpputil::GetDword(operand+operandLen-4);
-}
 unsigned int i486DX::Instruction::GetUimm16or32(unsigned int operandSize) const
 {
 	if(16==operandSize)
@@ -3112,18 +3100,6 @@ unsigned int i486DX::Instruction::GetUimm8or16or32(unsigned int operandSize) con
 	{
 		return GetUimm32();
 	}
-}
-int i486DX::Instruction::GetSimm8(void) const
-{
-	return cpputil::GetSignedByte(operand[operandLen-1]);
-}
-int i486DX::Instruction::GetSimm16(void) const
-{
-	return cpputil::GetSignedWord(operand+operandLen-2);
-}
-int i486DX::Instruction::GetSimm32(void) const
-{
-	return cpputil::GetSignedDword(operand+operandLen-4);
 }
 int i486DX::Instruction::GetSimm16or32(unsigned int operandSize) const
 {
@@ -3447,13 +3423,15 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				SetAX(mul);
 				if(0!=(mul&0xff00))
 				{
-					SetCF(true);
-					SetOF(true);
+					SetCFOF();
+					//SetCF(true);
+					//SetOF(true);
 				}
 				else
 				{
-					SetCF(false);
-					SetOF(false);
+					ClearCFOF();
+					//SetCF(false);
+					//SetOF(false);
 				}
 			}
 			break;
@@ -3477,13 +3455,15 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					SetAX(imul&0xFFFF);
 					if(0==(imul&0xFF80) || 0xFF80==(imul&0xFF80))
 					{
-						SetCF(false);
-						SetOF(false);
+						ClearCFOF();
+						//SetCF(false);
+						//SetOF(false);
 					}
 					else
 					{
-						SetCF(true);
-						SetOF(true);
+						SetCFOF();
+						//SetCF(true);
+						//SetOF(true);
 					}
 				}
 			}
@@ -3563,8 +3543,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				auto value2=inst.GetUimm16or32(inst.operandSize);
 				unsigned int i1=value1.GetAsDword();
 				AndWordOrDword(inst.operandSize,i1,value2);
-				SetCF(false);
-				SetOF(false);
+				// SetCF(false); Done in AndWordOrDword
+				// SetOF(false);
 			}
 			break;
 		case 2: // NOT
@@ -3610,13 +3590,15 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				SetDX((DXAX>>16)&0xffff);
 				if(0!=(DXAX&0xffff0000))
 				{
-					SetCF(true);
-					SetOF(true);
+					SetCFOF();
+					//SetCF(true);
+					//SetOF(true);
 				}
 				else
 				{
-					SetCF(false);
-					SetOF(false);
+					ClearCFOF();
+					//SetCF(false);
+					//SetOF(false);
 				}
 			}
 			else
@@ -3630,13 +3612,15 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				SetEDX((EDXEAX>>32)&0xffffffff);
 				if(0!=(EDXEAX&0xffffffff00000000))
 				{
-					SetCF(true);
-					SetOF(true);
+					SetCFOF();
+					//SetCF(true);
+					//SetOF(true);
 				}
 				else
 				{
-					SetCF(false);
-					SetOF(false);
+					ClearCFOF();
+					//SetCF(false);
+					//SetOF(false);
 				}
 			}
 			break;
@@ -3666,13 +3650,15 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 						auto signExtCheck=DXAX&0xFFFF8000;
 						if(0==signExtCheck || signExtCheck==0xFFFF8000)
 						{
-							SetOF(false);
-							SetCF(false);
+							ClearCFOF();
+							//SetOF(false);
+							//SetCF(false);
 						}
 						else
 						{
-							SetOF(true);
-							SetCF(true);
+							SetCFOF();
+							//SetOF(true);
+							//SetCF(true);
 						}
 					}
 					else
@@ -3691,13 +3677,15 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 						auto signExtCheck=EDXEAX&0xFFFFFFFF80000000LL;
 						if(0==signExtCheck || signExtCheck==0xFFFFFFFF80000000LL)
 						{
-							SetOF(false);
-							SetCF(false);
+							ClearCFOF();
+							//SetOF(false);
+							//SetCF(false);
 						}
 						else
 						{
-							SetOF(true);
-							SetCF(true);
+							SetCFOF();
+							//SetOF(true);
+							//SetCF(true);
 						}
 					}
 				}
@@ -4858,8 +4846,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				}
 				if(true==clearOFCF)
 				{
-					SetCF(false);
-					SetOF(false);
+					ClearCFOF();
+					//SetCF(false);
+					//SetOF(false);
 				}
 			}
 		}
