@@ -70,16 +70,6 @@ const char *const i486DX::RegToStr[REG_TOTAL_NUMBER_OF_REGISTERS]=
 	"SI",
 	"DI",
 
-	"DUMMY",
-	"DUMMY",
-	"DUMMY",
-	"DUMMY",
-	"DUMMY",
-	"DUMMY",
-	"DUMMY",
-
-	"NULL_DUMMY",
-
 	"AL",
 	"CL",
 	"DL",

@@ -69,15 +69,15 @@ public:
 	enum
 	{
 		// Do not change the order below.  ExtractSegmentAndOffset assumes the order. >>
-		REG_NULL,         // [0] and [16] must be NULL
-		REG_EAX,          // [1] to [8] and [17] to [24] must be EAX to EDI, AX to DI
-		REG_ECX,          // 
-		REG_EDX,
-		REG_EBX,
-		REG_ESP,
-		REG_EBP,
-		REG_ESI,
-		REG_EDI,
+		REG_NULL,         // NULL_and_reg32[REG_NULL] must always be zero. (Initialized in the constructor.)
+		REG_EAX,          // NULL_and_reg32[REG_EAX to REG_EDI] must return corresponding register value.
+		REG_ECX,          // NULL_and_reg32[(REG_AX to REG_DI)&15] must return corresponding register value.
+		REG_EDX,          // ExtractSegmentAndOffset, EvaluateOperand, StoreOperandValue, and LEA instruction
+		REG_EBX,          // uses these assumptions.
+		REG_ESP,          // 
+		REG_EBP,          // 
+		REG_ESI,          // 
+		REG_EDI,          // 
 		REG_DUMMY01,      // Dummy01 to Dummy07 are for making REG_E??+16=REG_??.
 		REG_DUMMY02,
 		REG_DUMMY03,
@@ -95,16 +95,8 @@ public:
 		REG_BP,
 		REG_SI,
 		REG_DI,
-		REG_DUMMY08,      // Dummy08 to Dummy14 are for making REG_AX+16=REG_AL.
-		REG_DUMMY09,
-		REG_DUMMY10,
-		REG_DUMMY11,
-		REG_DUMMY12,
-		REG_DUMMY13,
-		REG_DUMMY14,
-
-		REG_NULL3,        // REG_NULL2 is for making REG_NULL+16=REG_NULL2.
 		// << Do not change the order above.  ExtractSegmentAndOffset assumes the order.
+
 		REG_AL,
 		REG_CL,
 		REG_DL,
