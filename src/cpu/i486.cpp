@@ -70,6 +70,16 @@ const char *const i486DX::RegToStr[REG_TOTAL_NUMBER_OF_REGISTERS]=
 	"SI",
 	"DI",
 
+	"DUMMY",
+	"DUMMY",
+	"DUMMY",
+	"DUMMY",
+	"DUMMY",
+	"DUMMY",
+	"DUMMY",
+
+	"NULL_DUMMY",
+
 	"AL",
 	"CL",
 	"DL",
@@ -1899,6 +1909,9 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 		Abort("Tried to evaluate FAR ADDRESS.");
 		break;
 	case OPER_REG:
+	case OPER_REG32:
+	case OPER_REG16:
+	case OPER_REG8:
 		switch(op.reg)
 		{
 		case REG_AL:
@@ -2213,6 +2226,9 @@ void i486DX::StoreOperandValue(
 		Abort("Tried to evaluate FAR ADDRESS.");
 		break;
 	case OPER_REG:
+	case OPER_REG32:
+	case OPER_REG16:
+	case OPER_REG8:
 		switch(dst.reg)
 		{
 		case REG_AL:

@@ -37,6 +37,16 @@ class i486DX : public CPU
 public:
 	#define NUM_BYTES_MASK static const unsigned int numBytesMask[5]={0,0xFF,0xFFFF,0xFFFFFF,0xFFFFFFFF};
 	#define NUM_BYTES_TO_BASIC_REG_BASE static const unsigned int numBytesToBasicRegBase[5]={REG_8BIT_REG_BASE,REG_8BIT_REG_BASE,REG_16BIT_REG_BASE,REG_16BIT_REG_BASE,REG_32BIT_REG_BASE};
+	#define NUM_BYTES_TO_REGISTER_OPERAND_TYPE \
+	static const unsigned int numBytesToRegisterOperandType[]= \
+	{ \
+		OPER_REG8, \
+		OPER_REG8, \
+		OPER_REG16, \
+		OPER_REG16, \
+		OPER_REG32, \
+	};
+
 
 	inline unsigned int BitToMask(unsigned char bit)
 	{
@@ -85,8 +95,16 @@ public:
 		REG_BP,
 		REG_SI,
 		REG_DI,
-		// << Do not change the order above.  ExtractSegmentAndOffset assumes the order.
+		REG_DUMMY08,      // Dummy08 to Dummy14 are for making REG_AX+16=REG_AL.
+		REG_DUMMY09,
+		REG_DUMMY10,
+		REG_DUMMY11,
+		REG_DUMMY12,
+		REG_DUMMY13,
+		REG_DUMMY14,
 
+		REG_NULL3,        // REG_NULL2 is for making REG_NULL+16=REG_NULL2.
+		// << Do not change the order above.  ExtractSegmentAndOffset assumes the order.
 		REG_AL,
 		REG_CL,
 		REG_DL,
@@ -725,13 +743,16 @@ public:
 		OPER_ADDR,    // BaseReg+IndexReg*IndexScaling+Offset
 		OPER_FARADDR,
 		OPER_REG,
+		OPER_REG32, // EAX,ECX,EDX,EBX,ESP,EBP,ESI,EDI
+		OPER_REG16, // AX,CX,DX,BX,SP,BP,SI,DI
+		OPER_REG8,  // AL,CL,DL,BL,AH,CH,DH,BH
 	};
 	class Operand
 	{
 	public:
 		int operandType;
 
-		// For OPER_REG operand type
+		// For OPER_REG* operand type
 		int reg;
 		// For OPER_IMM* operand type
 		int imm;

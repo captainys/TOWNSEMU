@@ -28,6 +28,7 @@ i486DX::Operand::Operand(int addressSize,int dataSize,const unsigned char operan
 unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned char operand[])
 {
 	NUM_BYTES_TO_BASIC_REG_BASE
+	NUM_BYTES_TO_REGISTER_OPERAND_TYPE
 
 	const auto MODR_M=operand[0];
 	const auto MOD=((MODR_M>>6)&3);
@@ -172,7 +173,7 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 			numBytes=1;
 			break;
 		case 4:
-			operandType=OPER_REG;
+			operandType=numBytesToRegisterOperandType[dataSize>>3];
 			reg=R_M+(numBytesToBasicRegBase[dataSize>>3]);
 			numBytes=1;
 			break;
@@ -409,7 +410,7 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 			indexReg=REG_NULL;
 			break;
 		case 6:
-			operandType=OPER_REG;
+			operandType=numBytesToRegisterOperandType[dataSize>>3];
 			reg=R_M+(numBytesToBasicRegBase[dataSize>>3]);
 			numBytes=1;
 			break;
@@ -450,8 +451,9 @@ void i486DX::Operand::DecodeMODR_MForTestRegister(unsigned char MODR_M)
 void i486DX::Operand::MakeByRegisterNumber(int dataSize,int regNum)
 {
 	NUM_BYTES_TO_BASIC_REG_BASE
+	NUM_BYTES_TO_REGISTER_OPERAND_TYPE
 
-	operandType=OPER_REG;
+	operandType=numBytesToRegisterOperandType[dataSize>>3];
 	reg=regNum+numBytesToBasicRegBase[dataSize>>3];
 
 	/* Equivalent
@@ -515,6 +517,9 @@ std::string i486DX::Operand::Disassemble(void) const
 	case OPER_FARADDR:
 		return DisassembleAsFarAddr();
 	case OPER_REG:
+	case OPER_REG8:
+	case OPER_REG16:
+	case OPER_REG32:
 		return DisassembleAsReg();
 	}
 	return "(UndefinedOperandType?)";
@@ -675,6 +680,9 @@ unsigned int i486DX::Operand::GetSize(void) const
 	case OPER_FARADDR:
 		return 0;
 	case OPER_REG:
+	case OPER_REG8:
+	case OPER_REG16:
+	case OPER_REG32:
 		return i486DX::GetRegisterSize(reg);
 	}
 	return 0;

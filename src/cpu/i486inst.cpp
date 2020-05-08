@@ -5496,7 +5496,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 	case I486_OPCODE_LEA://=              0x8D,
 		clocksPassed=1;
-		if(OPER_ADDR==op2.operandType && OPER_REG==op1.operandType)
+		if(OPER_ADDR==op2.operandType && 
+		  (OPER_REG==op1.operandType || OPER_REG32==op1.operandType || OPER_REG16==op1.operandType))
 		{
 			unsigned int offset=
 			   GetRegisterValue(op2.baseReg)+
