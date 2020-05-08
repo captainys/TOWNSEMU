@@ -1908,8 +1908,17 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 	case OPER_FARADDR:
 		Abort("Tried to evaluate FAR ADDRESS.");
 		break;
-	case OPER_REG:
 	case OPER_REG32:
+		{
+			unsigned int reg=state.NULL_and_reg32[op.reg];
+			value.numBytes=4;
+			value.byteData[0]=( reg     &255);
+			value.byteData[1]=((reg>> 8)&255);
+			value.byteData[2]=((reg>>16)&255);
+			value.byteData[3]=((reg>>24)&255);
+		}
+		break;
+	case OPER_REG:
 	case OPER_REG16:
 	case OPER_REG8:
 		switch(op.reg)
@@ -2225,9 +2234,17 @@ void i486DX::StoreOperandValue(
 	case OPER_FARADDR:
 		Abort("Tried to evaluate FAR ADDRESS.");
 		break;
-	case OPER_REG:
 	case OPER_REG32:
+		{
+			state.NULL_and_reg32[dst.reg]=
+				 value.byteData[0]   |
+				(value.byteData[1]<<8)|
+				(value.byteData[2]<<16)|
+				(value.byteData[3]<<24);
+		}
+		break;
 	case OPER_REG16:
+	case OPER_REG:
 	case OPER_REG8:
 		switch(dst.reg)
 		{
