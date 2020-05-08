@@ -1189,8 +1189,7 @@ void i486DX::AndWordOrDword(int operandSize,unsigned int &value1,unsigned int va
 }
 void i486DX::AndDword(unsigned int &value1,unsigned int value2)
 {
-	SetCF(false);
-	SetOF(false);
+	ClearCFOF();
 	value1&=value2;
 	SetSF(0!=(0x80000000&value1));
 	SetZF(0==value1);
@@ -1198,8 +1197,7 @@ void i486DX::AndDword(unsigned int &value1,unsigned int value2)
 }
 void i486DX::AndWord(unsigned int &value1,unsigned int value2)
 {
-	SetCF(false);
-	SetOF(false);
+	ClearCFOF();
 	value1&=value2;
 	value1&=0xFFFF;
 	SetSF(0!=(0x8000&value1));
@@ -1208,8 +1206,7 @@ void i486DX::AndWord(unsigned int &value1,unsigned int value2)
 }
 void i486DX::AndByte(unsigned int &value1,unsigned int value2)
 {
-	SetCF(false);
-	SetOF(false);
+	ClearCFOF();
 	value1&=value2;
 	value1&=0xFF;
 	SetSF(0!=(0x80&value1));
@@ -1906,41 +1903,31 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 			value.byteData[1]=((reg>> 8)&255);
 		}
 		break;
-	case OPER_REG:
 	case OPER_REG8:
+		{
+			unsigned int regIdx=op.reg-REG_AL;
+			unsigned int shift=(regIdx<<1)&8;
+			value.numBytes=1;
+			value.byteData[0]=((state.reg32()[regIdx&3]>>shift)&255);
+		}
+		break;
+	case OPER_SREG:
+		value.numBytes=2;
+		value.byteData[0]=( state.sreg[op.reg-REG_SEGMENT_REG_BASE].value&255);
+		value.byteData[1]=((state.sreg[op.reg-REG_SEGMENT_REG_BASE].value>>8)&255);
+		break;
+	case OPER_REG:
 		switch(op.reg)
 		{
 		case REG_AL:
-			value.numBytes=1;
-			value.byteData[0]=(state.EAX()&255);
-			break;
 		case REG_CL:
-			value.numBytes=1;
-			value.byteData[0]=(state.ECX()&255);
-			break;
 		case REG_BL:
-			value.numBytes=1;
-			value.byteData[0]=(state.EBX()&255);
-			break;
 		case REG_DL:
-			value.numBytes=1;
-			value.byteData[0]=(state.EDX()&255);
-			break;
 		case REG_AH:
-			value.numBytes=1;
-			value.byteData[0]=((state.EAX()>>8)&255);
-			break;
 		case REG_CH:
-			value.numBytes=1;
-			value.byteData[0]=((state.ECX()>>8)&255);
-			break;
 		case REG_BH:
-			value.numBytes=1;
-			value.byteData[0]=((state.EBX()>>8)&255);
-			break;
 		case REG_DH:
-			value.numBytes=1;
-			value.byteData[0]=((state.EDX()>>8)&255);
+			Abort("OPER_REG8 should be used for AL,CL,DL,BL,AH,CH,DH,BH");
 			break;
 
 		case REG_AX:
@@ -1981,34 +1968,12 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 			break;
 
 		case REG_ES:
-			value.numBytes=2;
-			value.byteData[0]=(state.ES().value&255);
-			value.byteData[1]=((state.ES().value>>8)&255);
-			break;
 		case REG_CS:
-			value.numBytes=2;
-			value.byteData[0]=(state.CS().value&255);
-			value.byteData[1]=((state.CS().value>>8)&255);
-			break;
 		case REG_SS:
-			value.numBytes=2;
-			value.byteData[0]=(state.SS().value&255);
-			value.byteData[1]=((state.SS().value>>8)&255);
-			break;
 		case REG_DS:
-			value.numBytes=2;
-			value.byteData[0]=(state.DS().value&255);
-			value.byteData[1]=((state.DS().value>>8)&255);
-			break;
 		case REG_FS:
-			value.numBytes=2;
-			value.byteData[0]=(state.FS().value&255);
-			value.byteData[1]=((state.FS().value>>8)&255);
-			break;
 		case REG_GS:
-			value.numBytes=2;
-			value.byteData[0]=(state.GS().value&255);
-			value.byteData[1]=((state.GS().value>>8)&255);
+			Abort("OPER_SREG should be used for AX,CX,DX,BX,SP,BP,SI,DI");
 			break;
 
 		case REG_GDT:
@@ -2162,41 +2127,34 @@ void i486DX::StoreOperandValue(
 				(value.byteData[1]<<8);
 		}
 		break;
-	case OPER_REG:
 	case OPER_REG8:
+		{
+			static const unsigned int highLowMask[2]=
+			{
+				0xFFFFFF00,
+				0xFFFF00FF,
+			};
+			unsigned int regIdx=dst.reg-REG_AL;
+			unsigned int highLow=regIdx>>2;
+			state.reg32()[regIdx&3]&=highLowMask[highLow];
+			state.reg32()[regIdx&3]|=(value.byteData[0]<<(highLow<<3));
+		}
+		break;
+	case OPER_SREG:
+		LoadSegmentRegister(state.sreg[dst.reg-REG_SEGMENT_REG_BASE],cpputil::GetWord(value.byteData),mem);
+		break;
+	case OPER_REG:
 		switch(dst.reg)
 		{
 		case REG_AL:
-			state.EAX()&=0xffffff00;
-			state.EAX()|=value.byteData[0];
-			break;
 		case REG_CL:
-			state.ECX()&=0xffffff00;
-			state.ECX()|=value.byteData[0];
-			break;
 		case REG_BL:
-			state.EBX()&=0xffffff00;
-			state.EBX()|=value.byteData[0];
-			break;
 		case REG_DL:
-			state.EDX()&=0xffffff00;
-			state.EDX()|=value.byteData[0];
-			break;
 		case REG_AH:
-			state.EAX()&=0xffff00ff;
-			state.EAX()|=(((unsigned int)value.byteData[0])<<8);
-			break;
 		case REG_CH:
-			state.ECX()&=0xffff00ff;
-			state.ECX()|=(((unsigned int)value.byteData[0])<<8);
-			break;
 		case REG_BH:
-			state.EBX()&=0xffff00ff;
-			state.EBX()|=(((unsigned int)value.byteData[0])<<8);
-			break;
 		case REG_DH:
-			state.EDX()&=0xffff00ff;
-			state.EDX()|=(((unsigned int)value.byteData[0])<<8);
+			Abort("OPER_REG8 should be used for AL,CL,DL,BL,AH,CH,DH,BH");
 			break;
 
 		case REG_AX:
@@ -2229,22 +2187,12 @@ void i486DX::StoreOperandValue(
 			break;
 
 		case REG_ES:
-			LoadSegmentRegister(state.ES(),cpputil::GetWord(value.byteData),mem);
-			break;
 		case REG_CS:
-			LoadSegmentRegister(state.CS(),cpputil::GetWord(value.byteData),mem);
-			break;
 		case REG_SS:
-			LoadSegmentRegister(state.SS(),cpputil::GetWord(value.byteData),mem);
-			break;
 		case REG_DS:
-			LoadSegmentRegister(state.DS(),cpputil::GetWord(value.byteData),mem);
-			break;
 		case REG_FS:
-			LoadSegmentRegister(state.FS(),cpputil::GetWord(value.byteData),mem);
-			break;
 		case REG_GS:
-			LoadSegmentRegister(state.GS(),cpputil::GetWord(value.byteData),mem);
+			Abort("OPER_SREG should be used for AX,CX,DX,BX,SP,BP,SI,DI");
 			break;
 
 		case REG_GDT:

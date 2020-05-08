@@ -3409,8 +3409,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
 				unsigned int byte=value.byteData[0];
 				AndByte(byte,inst.GetUimm8());
-				SetCF(false);
-				SetOF(false);
+				// SetCF(false); Done in AndByte
+				// SetOF(false); Done in AndByte
 			}
 			break;
 		case 2: // NOT

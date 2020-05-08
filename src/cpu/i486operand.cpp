@@ -427,7 +427,7 @@ void i486DX::Operand::DecodeMODR_MForRegister(int dataSize,unsigned char MODR_M)
 void i486DX::Operand::DecodeMODR_MForSegmentRegister(unsigned char MODR_M)
 {
 	auto REG_OPCODE=((MODR_M>>3)&7);
-	operandType=OPER_REG;
+	operandType=OPER_SREG;
 	reg=REG_SEGMENT_REG_BASE+REG_OPCODE;
 }
 void i486DX::Operand::DecodeMODR_MForCRRegister(unsigned char MODR_M)
@@ -517,6 +517,7 @@ std::string i486DX::Operand::Disassemble(void) const
 	case OPER_FARADDR:
 		return DisassembleAsFarAddr();
 	case OPER_REG:
+	case OPER_SREG:
 	case OPER_REG8:
 	case OPER_REG16:
 	case OPER_REG32:
@@ -680,6 +681,7 @@ unsigned int i486DX::Operand::GetSize(void) const
 	case OPER_FARADDR:
 		return 0;
 	case OPER_REG:
+	case OPER_SREG:
 	case OPER_REG8:
 	case OPER_REG16:
 	case OPER_REG32:

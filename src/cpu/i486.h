@@ -730,6 +730,7 @@ public:
 		OPER_REG32, // EAX,ECX,EDX,EBX,ESP,EBP,ESI,EDI
 		OPER_REG16, // AX,CX,DX,BX,SP,BP,SI,DI
 		OPER_REG8,  // AL,CL,DL,BL,AH,CH,DH,BH
+		OPER_SREG,  // ES,CS,SS,DS,FS,GS,
 	};
 	class Operand
 	{
@@ -1442,6 +1443,11 @@ public:
 	inline void SetPF(bool flag)
 	{
 		SetEFLAGSBit(flag,EFLAGS_PARITY);
+	}
+
+	inline void ClearCFOF(void)
+	{
+		state.EFLAGS&=(~(EFLAGS_CARRY|EFLAGS_OVERFLOW));
 	}
 
 	inline bool CheckParity(unsigned char lowByte)
