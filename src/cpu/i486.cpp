@@ -252,6 +252,9 @@ void i486DX::FarPointer::LoadSegmentRegister(SegmentRegister &seg,i486DX &cpu,co
 
 i486DX::i486DX(VMBase *vmPtr) : CPU(vmPtr)
 {
+	state.NULL_and_reg32[ 0]=0;
+	state.NULL_and_reg32[16]=0;
+
 	Reset();
 	enableCallStack=false;
 	debuggerPtr=nullptr;

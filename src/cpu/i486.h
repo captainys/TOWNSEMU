@@ -58,6 +58,7 @@ public:
 
 	enum
 	{
+		// Do not change the order below.  ExtractSegmentAndOffset assumes the order. >>
 		REG_NULL,         // [0] and [16] must be NULL
 		REG_EAX,          // [1] to [8] and [17] to [24] must be EAX to EDI, AX to DI
 		REG_ECX,          // 
@@ -84,6 +85,7 @@ public:
 		REG_BP,
 		REG_SI,
 		REG_DI,
+		// << Do not change the order above.  ExtractSegmentAndOffset assumes the order.
 
 		REG_AL,
 		REG_CL,
@@ -2358,12 +2360,16 @@ public:
 	/*! Extract segment register and address offset from the OPER_ADDR type operand.
 	    It doesn't check the operand type.  Using it for a different operand type would crash the
 	    program.
+
+	    offset will always be calculated from 32-bit registers.
+	    For example, even if base is REG_DI the base value is taken from EDI.
+	    offset must be masked appropriately depending on the address size.
 	*/
 	inline const SegmentRegister *ExtractSegmentAndOffset(unsigned int &offset,const Operand &op,unsigned int segmentOverride) const
 	{
 		offset=
-		   GetRegisterValue(op.baseReg)+
-		   (GetRegisterValue(op.indexReg)<<op.indexShift)+
+		    state.NULL_and_reg32[op.baseReg&15]+
+		   ((state.NULL_and_reg32[op.indexReg&15])<<op.indexShift)+
 		   op.offset;
 
 		sregIndexToSregPtrTable[NUM_SEGMENT_REGISTERS]=baseRegisterToDefaultSegment[op.baseReg];
