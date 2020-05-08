@@ -78,15 +78,16 @@ public:
 		REG_EBP,          // 
 		REG_ESI,          // 
 		REG_EDI,          // 
-		REG_DUMMY01,      // Dummy01 to Dummy07 are for making REG_E??+16=REG_??.
-		REG_DUMMY02,
-		REG_DUMMY03,
-		REG_DUMMY04,
-		REG_DUMMY05,
-		REG_DUMMY06,
-		REG_DUMMY07,
 
-		REG_NULL2,        // REG_NULL2 is for making REG_NULL+16=REG_NULL2.
+		REG_AL,          // To satisfy above condition, 8 registers are needed between REG_EDI and REG_AX.
+		REG_CL,          // 8-bit registers fit well for this space.
+		REG_DL,          // 
+		REG_BL,          // 
+		REG_AH,
+		REG_CH,
+		REG_DH,
+		REG_BH,
+
 		REG_AX,
 		REG_CX,
 		REG_DX,
@@ -96,15 +97,6 @@ public:
 		REG_SI,
 		REG_DI,
 		// << Do not change the order above.  ExtractSegmentAndOffset assumes the order.
-
-		REG_AL,
-		REG_CL,
-		REG_DL,
-		REG_BL,
-		REG_AH,
-		REG_CH,
-		REG_DH,
-		REG_BH,
 
 		REG_EIP,
 		REG_EFLAGS,
