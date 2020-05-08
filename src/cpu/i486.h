@@ -58,17 +58,24 @@ public:
 
 	enum
 	{
-		REG_NULL,
+		REG_NULL,         // [0] and [16] must be NULL
+		REG_EAX,          // [1] to [8] and [17] to [24] must be EAX to EDI, AX to DI
+		REG_ECX,          // 
+		REG_EDX,
+		REG_EBX,
+		REG_ESP,
+		REG_EBP,
+		REG_ESI,
+		REG_EDI,
+		REG_DUMMY01,      // Dummy01 to Dummy07 are for making REG_E??+16=REG_??.
+		REG_DUMMY02,
+		REG_DUMMY03,
+		REG_DUMMY04,
+		REG_DUMMY05,
+		REG_DUMMY06,
+		REG_DUMMY07,
 
-		REG_AL,
-		REG_CL,
-		REG_DL,
-		REG_BL,
-		REG_AH,
-		REG_CH,
-		REG_DH,
-		REG_BH,
-
+		REG_NULL2,        // REG_NULL2 is for making REG_NULL+16=REG_NULL2.
 		REG_AX,
 		REG_CX,
 		REG_DX,
@@ -78,14 +85,14 @@ public:
 		REG_SI,
 		REG_DI,
 
-		REG_EAX,
-		REG_ECX,
-		REG_EDX,
-		REG_EBX,
-		REG_ESP,
-		REG_EBP,
-		REG_ESI,
-		REG_EDI,
+		REG_AL,
+		REG_CL,
+		REG_DL,
+		REG_BL,
+		REG_AH,
+		REG_CH,
+		REG_DH,
+		REG_BH,
 
 		REG_EIP,
 		REG_EFLAGS,
@@ -280,87 +287,96 @@ public:
 	class State
 	{
 	public:
-		unsigned int reg32[8];
+		unsigned int NULL_and_reg32[9];
+
+		inline unsigned int *reg32(void)
+		{
+			return NULL_and_reg32+1;
+		}
+		inline const unsigned int *reg32(void) const
+		{
+			return NULL_and_reg32+1;
+		}
 
 		inline unsigned int EAX(void) const
 		{
-			return reg32[REG_EAX-REG_EAX];
+			return reg32()[REG_EAX-REG_EAX];
 		}
 		inline unsigned int EBX(void) const
 		{
-			return reg32[REG_EBX-REG_EAX];
+			return reg32()[REG_EBX-REG_EAX];
 		}
 		inline unsigned int ECX(void) const
 		{
-			return reg32[REG_ECX-REG_EAX];
+			return reg32()[REG_ECX-REG_EAX];
 		}
 		inline unsigned int EDX(void) const
 		{
-			return reg32[REG_EDX-REG_EAX];
+			return reg32()[REG_EDX-REG_EAX];
 		}
 		inline unsigned int ESI(void) const
 		{
-			return reg32[REG_ESI-REG_EAX];
+			return reg32()[REG_ESI-REG_EAX];
 		}
 		inline unsigned int EDI(void) const
 		{
-			return reg32[REG_EDI-REG_EAX];
+			return reg32()[REG_EDI-REG_EAX];
 		}
 		inline unsigned int EBP(void) const
 		{
-			return reg32[REG_EBP-REG_EAX];
+			return reg32()[REG_EBP-REG_EAX];
 		}
 		inline unsigned int ESP(void) const
 		{
-			return reg32[REG_ESP-REG_EAX];
+			return reg32()[REG_ESP-REG_EAX];
 		}
 		inline unsigned int &EAX(void)
 		{
-			return reg32[REG_EAX-REG_EAX];
+			return reg32()[REG_EAX-REG_EAX];
 		}
 		inline unsigned int &EBX(void)
 		{
-			return reg32[REG_EBX-REG_EAX];
+			return reg32()[REG_EBX-REG_EAX];
 		}
 		inline unsigned int &ECX(void)
 		{
-			return reg32[REG_ECX-REG_EAX];
+			return reg32()[REG_ECX-REG_EAX];
 		}
 		inline unsigned int &EDX(void)
 		{
-			return reg32[REG_EDX-REG_EAX];
+			return reg32()[REG_EDX-REG_EAX];
 		}
 		inline unsigned int &ESI(void)
 		{
-			return reg32[REG_ESI-REG_EAX];
+			return reg32()[REG_ESI-REG_EAX];
 		}
 		inline unsigned int SI(void)
 		{
-			return reg32[REG_ESI-REG_EAX]&0xffff;
+			return reg32()[REG_ESI-REG_EAX]&0xffff;
 		}
 		inline unsigned int &EDI(void)
 		{
-			return reg32[REG_EDI-REG_EAX];
+			return reg32()[REG_EDI-REG_EAX];
 		}
 		inline unsigned int DI(void)
 		{
-			return reg32[REG_EDI-REG_EAX]&0xffff;
+			return reg32()[REG_EDI-REG_EAX]&0xffff;
 		}
 		inline unsigned int &EBP(void)
 		{
-			return reg32[REG_EBP-REG_EAX];
+			return reg32()[REG_EBP-REG_EAX];
 		}
 		inline unsigned int BP(void)
 		{
-			return reg32[REG_EBP-REG_EAX]&0xffff;
+			return reg32()[REG_EBP-REG_EAX]&0xffff;
 		}
 		inline unsigned int &ESP(void)
 		{
-			return reg32[REG_ESP-REG_EAX];
+			return reg32()[REG_ESP-REG_EAX];
 		}
 		inline unsigned int SP(void)
 		{
-			return reg32[REG_ESP-REG_EAX]&0xffff;
+			return reg32()[REG_ESP-REG_EAX]&0xffff;
 		}
 
 		unsigned int EIP;
@@ -474,6 +490,7 @@ public:
 		bool exception;
 		unsigned int exceptionCode,exceptionType;
 	};
+
 	enum
 	{
 		EFLAGS_CARRY=      0x00001,

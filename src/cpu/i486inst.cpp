@@ -5759,7 +5759,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_OPCODE_MOV_FROM_R: //       0x89, // 16/32 depends on OPSIZE_OVERRIDE
 		{
 			auto regNum=inst.GetREG();
-			unsigned int value=(state.reg32[regNum]&operandSizeMask[inst.operandSize>>3]);
+			unsigned int value=(state.reg32()[regNum]&operandSizeMask[inst.operandSize>>3]);
 			OperandValue src;
 			src.MakeByteWordOrDword(inst.operandSize,value);
 			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,src);
@@ -5771,8 +5771,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			auto nBytes=(inst.operandSize>>3);
 			auto regNum=inst.GetREG(); // Guaranteed to be between 0 and 7
 			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize/8);
-			state.reg32[regNum]&=operandSizeAndPattern[nBytes];
-			state.reg32[regNum]|=(unsigned int)(value.GetAsDword());
+			state.reg32()[regNum]&=operandSizeAndPattern[nBytes];
+			state.reg32()[regNum]|=(unsigned int)(value.GetAsDword());
 			clocksPassed=1;
 		}
 		break;
@@ -5780,7 +5780,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_OPCODE_MOV_FROM_R8: //      0x88,
 		{
 			auto regNum=inst.GetREG(); // Guaranteed to be between 0 and 7
-			unsigned int value=(255&(state.reg32[regNum&3]>>reg8Shift[regNum]));
+			unsigned int value=(255&(state.reg32()[regNum&3]>>reg8Shift[regNum]));
 			OperandValue src;
 			src.MakeByte(value);
 			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,src);
@@ -5791,8 +5791,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			auto regNum=inst.GetREG(); // Guaranteed to be between 0 and 7
 			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,1);
-			state.reg32[regNum&3]&=reg8AndPattern[regNum];
-			state.reg32[regNum&3]|=((unsigned int)(value.GetAsByte())<<reg8Shift[regNum]);
+			state.reg32()[regNum&3]&=reg8AndPattern[regNum];
+			state.reg32()[regNum&3]|=((unsigned int)(value.GetAsByte())<<reg8Shift[regNum]);
 			clocksPassed=1;
 		}
 		break;
@@ -5804,7 +5804,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			auto regNum=inst.opCode&3;
 			auto imm=inst.GetUimm8();
-			state.reg32[regNum]=(state.reg32[regNum]&0xFFFFFF00)|imm;
+			state.reg32()[regNum]=(state.reg32()[regNum]&0xFFFFFF00)|imm;
 			clocksPassed=1;
 		}
 		break;
@@ -5815,7 +5815,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			auto regNum=inst.opCode&3;
 			auto imm=inst.GetUimm8();
-			state.reg32[regNum]=(state.reg32[regNum]&0xFFFF00FF)|(imm<<8);
+			state.reg32()[regNum]=(state.reg32()[regNum]&0xFFFF00FF)|(imm<<8);
 			clocksPassed=1;
 		}
 		break;
@@ -5832,7 +5832,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			auto nBytes=(inst.operandSize>>3);
 			auto regNum=inst.opCode&7;
 			auto imm=inst.GetUimm16or32(inst.operandSize);
-			state.reg32[regNum]=(state.reg32[regNum]&operandSizeAndPattern[nBytes])|imm;
+			state.reg32()[regNum]=(state.reg32()[regNum]&operandSizeAndPattern[nBytes])|imm;
 			clocksPassed=1;
 		}
 		break;
@@ -6081,7 +6081,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_OPCODE_PUSH_ESI://         0x56,
 	case I486_OPCODE_PUSH_EDI://         0x57,
 		clocksPassed=1;
-		Push(mem,inst.operandSize,state.reg32[(inst.opCode&7)]);
+		Push(mem,inst.operandSize,state.reg32()[(inst.opCode&7)]);
 		break;
 	case I486_OPCODE_PUSH_I8://          0x6A,
 		clocksPassed=1;
@@ -6688,16 +6688,16 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		if(16==inst.operandSize)
 		{
 			auto op1=GetAX();
-			auto op2=state.reg32[inst.opCode&7];
+			auto op2=state.reg32()[inst.opCode&7];
 			SetAX(op2);
-			state.reg32[inst.opCode&7]=(state.reg32[inst.opCode&7]&0xffff0000)|(op1&0xffff);
+			state.reg32()[inst.opCode&7]=(state.reg32()[inst.opCode&7]&0xffff0000)|(op1&0xffff);
 		}
 		else
 		{
 			auto op1=GetEAX();
-			auto op2=state.reg32[inst.opCode&7];
+			auto op2=state.reg32()[inst.opCode&7];
 			SetEAX(op2);
-			state.reg32[inst.opCode&7]=op1;
+			state.reg32()[inst.opCode&7]=op1;
 		}
 		break;
 	case I486_OPCODE_XCHG_RM8_R8://           0x86,
