@@ -1918,8 +1918,15 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 			value.byteData[3]=((reg>>24)&255);
 		}
 		break;
-	case OPER_REG:
 	case OPER_REG16:
+		{
+			unsigned int reg=state.NULL_and_reg32[op.reg&15];
+			value.numBytes=2;
+			value.byteData[0]=( reg     &255);
+			value.byteData[1]=((reg>> 8)&255);
+		}
+		break;
+	case OPER_REG:
 	case OPER_REG8:
 		switch(op.reg)
 		{
@@ -1957,101 +1964,25 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 			break;
 
 		case REG_AX:
-			value.numBytes=2;
-			value.byteData[0]=(state.EAX()&255);
-			value.byteData[1]=((state.EAX()>>8)&255);
-			break;
 		case REG_CX:
-			value.numBytes=2;
-			value.byteData[0]=(state.ECX()&255);
-			value.byteData[1]=((state.ECX()>>8)&255);
-			break;
 		case REG_DX:
-			value.numBytes=2;
-			value.byteData[0]=(state.EDX()&255);
-			value.byteData[1]=((state.EDX()>>8)&255);
-			break;
 		case REG_BX:
-			value.numBytes=2;
-			value.byteData[0]=(state.EBX()&255);
-			value.byteData[1]=((state.EBX()>>8)&255);
-			break;
 		case REG_SP:
-			value.numBytes=2;
-			value.byteData[0]=(state.ESP()&255);
-			value.byteData[1]=((state.ESP()>>8)&255);
-			break;
 		case REG_BP:
-			value.numBytes=2;
-			value.byteData[0]=(state.EBP()&255);
-			value.byteData[1]=((state.EBP()>>8)&255);
-			break;
 		case REG_SI:
-			value.numBytes=2;
-			value.byteData[0]=(state.ESI()&255);
-			value.byteData[1]=((state.ESI()>>8)&255);
-			break;
 		case REG_DI:
-			value.numBytes=2;
-			value.byteData[0]=(state.EDI()&255);
-			value.byteData[1]=((state.EDI()>>8)&255);
+			Abort("OPER_REG16 should be used for AX,CX,DX,BX,SP,BP,SI,DI");
 			break;
 
 		case REG_EAX:
-			value.numBytes=4;
-			value.byteData[0]=(state.EAX()&255);
-			value.byteData[1]=((state.EAX()>>8)&255);
-			value.byteData[2]=((state.EAX()>>16)&255);
-			value.byteData[3]=((state.EAX()>>24)&255);
-			break;
 		case REG_ECX:
-			value.numBytes=4;
-			value.byteData[0]=(state.ECX()&255);
-			value.byteData[1]=((state.ECX()>>8)&255);
-			value.byteData[2]=((state.ECX()>>16)&255);
-			value.byteData[3]=((state.ECX()>>24)&255);
-			break;
 		case REG_EDX:
-			value.numBytes=4;
-			value.byteData[0]=(state.EDX()&255);
-			value.byteData[1]=((state.EDX()>>8)&255);
-			value.byteData[2]=((state.EDX()>>16)&255);
-			value.byteData[3]=((state.EDX()>>24)&255);
-			break;
 		case REG_EBX:
-			value.numBytes=4;
-			value.byteData[0]=(state.EBX()&255);
-			value.byteData[1]=((state.EBX()>>8)&255);
-			value.byteData[2]=((state.EBX()>>16)&255);
-			value.byteData[3]=((state.EBX()>>24)&255);
-			break;
 		case REG_ESP:
-			value.numBytes=4;
-			value.byteData[0]=(state.ESP()&255);
-			value.byteData[1]=((state.ESP()>>8)&255);
-			value.byteData[2]=((state.ESP()>>16)&255);
-			value.byteData[3]=((state.ESP()>>24)&255);
-			break;
 		case REG_EBP:
-			value.numBytes=4;
-			value.byteData[0]=(state.EBP()&255);
-			value.byteData[1]=((state.EBP()>>8)&255);
-			value.byteData[2]=((state.EBP()>>16)&255);
-			value.byteData[3]=((state.EBP()>>24)&255);
-			break;
 		case REG_ESI:
-			value.numBytes=4;
-			value.byteData[0]=(state.ESI()&255);
-			value.byteData[1]=((state.ESI()>>8)&255);
-			value.byteData[2]=((state.ESI()>>16)&255);
-			value.byteData[3]=((state.ESI()>>24)&255);
-			break;
 		case REG_EDI:
-			value.numBytes=4;
-			value.byteData[0]=(state.EDI()&255);
-			value.byteData[1]=((state.EDI()>>8)&255);
-			value.byteData[2]=((state.EDI()>>16)&255);
-			value.byteData[3]=((state.EDI()>>24)&255);
+			Abort("OPER_REG32 should be used for AX,CX,DX,BX,SP,BP,SI,DI");
 			break;
 
 		case REG_EIP:
@@ -2244,6 +2175,13 @@ void i486DX::StoreOperandValue(
 		}
 		break;
 	case OPER_REG16:
+		{
+			state.NULL_and_reg32[dst.reg&15]&=0xFFFF0000;
+			state.NULL_and_reg32[dst.reg&15]|=
+				 value.byteData[0]    |
+				(value.byteData[1]<<8);
+		}
+		break;
 	case OPER_REG:
 	case OPER_REG8:
 		switch(dst.reg)
@@ -2282,61 +2220,25 @@ void i486DX::StoreOperandValue(
 			break;
 
 		case REG_AX:
-			state.EAX()&=0xffff0000;
-			state.EAX()|=cpputil::GetWord(value.byteData);
-			break;
 		case REG_CX:
-			state.ECX()&=0xffff0000;
-			state.ECX()|=cpputil::GetWord(value.byteData);
-			break;
 		case REG_DX:
-			state.EDX()&=0xffff0000;
-			state.EDX()|=cpputil::GetWord(value.byteData);
-			break;
 		case REG_BX:
-			state.EBX()&=0xffff0000;
-			state.EBX()|=cpputil::GetWord(value.byteData);
-			break;
 		case REG_SP:
-			state.ESP()&=0xffff0000;
-			state.ESP()|=cpputil::GetWord(value.byteData);
-			break;
 		case REG_BP:
-			state.EBP()&=0xffff0000;
-			state.EBP()|=cpputil::GetWord(value.byteData);
-			break;
 		case REG_SI:
-			state.ESI()&=0xffff0000;
-			state.ESI()|=cpputil::GetWord(value.byteData);
-			break;
 		case REG_DI:
-			state.EDI()&=0xffff0000;
-			state.EDI()|=cpputil::GetWord(value.byteData);
+			Abort("OPER_REG16 should be used for AX,CX,DX,BX,SP,BP,SI,DI");
 			break;
 
 		case REG_EAX:
-			state.EAX()=cpputil::GetDword(value.byteData);
-			break;
 		case REG_ECX:
-			state.ECX()=cpputil::GetDword(value.byteData);
-			break;
 		case REG_EDX:
-			state.EDX()=cpputil::GetDword(value.byteData);
-			break;
 		case REG_EBX:
-			state.EBX()=cpputil::GetDword(value.byteData);
-			break;
 		case REG_ESP:
-			state.ESP()=cpputil::GetDword(value.byteData);
-			break;
 		case REG_EBP:
-			state.EBP()=cpputil::GetDword(value.byteData);
-			break;
 		case REG_ESI:
-			state.ESI()=cpputil::GetDword(value.byteData);
-			break;
 		case REG_EDI:
-			state.EDI()=cpputil::GetDword(value.byteData);
+			Abort("OPER_REG32 should be used for AX,CX,DX,BX,SP,BP,SI,DI");
 			break;
 
 		case REG_EIP:

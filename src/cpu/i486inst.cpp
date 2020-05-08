@@ -3223,7 +3223,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		8,   // DH
 		8,   // BH
 	};
-	static const unsigned int operandSizeMask[]=
+	static const unsigned int operandSizeMask[]= // Same for addressSizeMask
 	{
 		0x00000000,  // 0
 		0x000000FF,  // (8>>3)
@@ -5497,16 +5497,13 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_OPCODE_LEA://=              0x8D,
 		clocksPassed=1;
 		if(OPER_ADDR==op2.operandType && 
-		  (OPER_REG==op1.operandType || OPER_REG32==op1.operandType || OPER_REG16==op1.operandType))
+		  (OPER_REG32==op1.operandType || OPER_REG16==op1.operandType))
 		{
 			unsigned int offset=
-			   GetRegisterValue(op2.baseReg)+
-			   (GetRegisterValue(op2.indexReg)<<op2.indexShift)+
+			    state.NULL_and_reg32[op2.baseReg&15]+
+			   (state.NULL_and_reg32[op2.indexReg&15]<<op2.indexShift)+
 			   op2.offset;
-			if(16==inst.addressSize)
-			{
-				offset&=0xFFFF;
-			}
+			offset&=operandSizeMask[inst.addressSize>>3];
 			OperandValue value;
 			value.MakeDword(offset);
 			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
