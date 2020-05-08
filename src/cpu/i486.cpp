@@ -1841,6 +1841,12 @@ void i486DX::ShrByte(unsigned int &value,unsigned int ctr)
 i486DX::OperandValue i486DX::EvaluateOperand(
     const Memory &mem,int addressSize,int segmentOverride,const Operand &op,int destinationBytes) const
 {
+	static const unsigned int addressMask[2]=
+	{
+		0x0000FFFF,
+		0xFFFFFFFF,
+	};
+
 	i486DX::OperandValue value;
 	value.numBytes=0;
 	switch(op.operandType)
@@ -1855,10 +1861,7 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 			unsigned int offset;
 			const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,op,segmentOverride);
 
-			if(addressSize==16)
-			{
-				offset&=0xFFFF;
-			}
+			offset&=addressMask[addressSize>>5];
 			switch(value.numBytes)
 			{
 			case 1:
@@ -2156,6 +2159,12 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 void i486DX::StoreOperandValue(
     const Operand &dst,Memory &mem,int addressSize,int segmentOverride,OperandValue value)
 {
+	static const unsigned int addressMask[2]=
+	{
+		0x0000FFFF,
+		0xFFFFFFFF,
+	};
+
 	switch(dst.operandType)
 	{
 	case OPER_UNDEFINED:
@@ -2163,18 +2172,10 @@ void i486DX::StoreOperandValue(
 		break;
 	case OPER_ADDR:
 		{
-			sregIndexToSregPtrTable[NUM_SEGMENT_REGISTERS]=baseRegisterToDefaultSegment[dst.baseReg];
-			auto sregIndex=segPrefixToSregIndex[segmentOverride];
-			SegmentRegister seg=*sregIndexToSregPtrTable[sregIndex];
+			unsigned int offset;
+			const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,dst,segmentOverride);
 
-			unsigned int offset=
-			   GetRegisterValue(dst.baseReg)+
-			   (GetRegisterValue(dst.indexReg)<<dst.indexShift)+
-			   dst.offset;
-			if(addressSize==16)
-			{
-				offset=offset&0xFFFF;
-			}
+			offset&=addressMask[addressSize>>5];
 			switch(value.numBytes)
 			{
 			case 1:
