@@ -1058,10 +1058,10 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 	case I486_OPCODE_PUSH_EDI://         0x57,
 		break;
 	case I486_OPCODE_PUSH_I8://          0x6A,
-		FetchOperand8(inst,ptr,seg,offset,mem);
+		FetchImm8(inst,ptr,seg,offset,mem);
 		break;
 	case I486_OPCODE_PUSH_I://           0x68,
-		FetchOperand16or32(inst,ptr,seg,offset,mem);
+		FetchImm16or32(inst,ptr,seg,offset,mem);
 		break;
 	case I486_OPCODE_PUSH_CS://          0x0E,
 	case I486_OPCODE_PUSH_SS://          0x16,
@@ -2819,12 +2819,12 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		if(16==operandSize)
 		{
 			disasm+="WORD PTR ";
-			disasm+=cpputil::Ubtox(GetUimm8())+"H";
+			disasm+=cpputil::Ubtox(EvalUimm8())+"H";
 		}
 		else
 		{
 			disasm+="DWORD PTR ";
-			disasm+=cpputil::Ubtox(GetUimm8())+"H";
+			disasm+=cpputil::Ubtox(EvalUimm8())+"H";
 		}
 		break;
 	case I486_OPCODE_PUSH_I://           0x68,
@@ -2832,12 +2832,12 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		if(16==operandSize)
 		{
 			disasm+="WORD PTR ";
-			disasm+=cpputil::Ustox(GetUimm16())+"H";
+			disasm+=cpputil::Ustox(EvalUimm16())+"H";
 		}
 		else
 		{
 			disasm+="DWORD PTR ";
-			disasm+=cpputil::Uitox(GetUimm32())+"H";
+			disasm+=cpputil::Uitox(EvalUimm32())+"H";
 		}
 		break;
 	case I486_OPCODE_PUSH_CS://          0x0E,
@@ -6095,11 +6095,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 	case I486_OPCODE_PUSH_I8://          0x6A,
 		clocksPassed=1;
-		Push(mem,inst.operandSize,inst.GetSimm8());
+		Push(mem,inst.operandSize,inst.EvalSimm8());
 		break;
 	case I486_OPCODE_PUSH_I://           0x68,
 		clocksPassed=1;
-		Push(mem,inst.operandSize,inst.GetSimm16or32(inst.operandSize));
+		Push(mem,inst.operandSize,inst.EvalSimm16or32(inst.operandSize));
 		break;
 	case I486_OPCODE_PUSH_CS://          0x0E,
 		Push(mem,inst.operandSize,state.CS().value);
