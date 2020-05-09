@@ -3243,6 +3243,19 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		} \
 	}
 
+	#define BINARYOP_AL_I8(func,update) \
+	{ \
+		clocksPassed=1; \
+		auto al=GetAL(); \
+		auto v=inst.GetUimm8(); \
+		(func)(al,v); \
+		if(true==update) \
+		{ \
+			SetAL(al); \
+		} \
+	}
+
+
 
 
 	static const unsigned int reg8AndPattern[]=
@@ -3854,53 +3867,34 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		break;
 
-
 	case  I486_OPCODE_ADC_AL_FROM_I8://  0x14,
-	case  I486_OPCODE_ADD_AL_FROM_I8://  0x04,
-	case  I486_OPCODE_AND_AL_FROM_I8://  0x24,
-	case  I486_OPCODE_CMP_AL_FROM_I8://  0x3C,
-	case   I486_OPCODE_OR_AL_FROM_I8://  0x0C,
-	case  I486_OPCODE_SBB_AL_FROM_I8://  0x1C,
-	case  I486_OPCODE_SUB_AL_FROM_I8://  0x2C,
-	case I486_OPCODE_TEST_AL_FROM_I8://  0xA8,
-	case  I486_OPCODE_XOR_AL_FROM_I8:
-		{
-			clocksPassed=1;
-			auto al=GetAL();
-			auto v=inst.GetUimm8();
-			switch(inst.opCode)
-			{
-			case I486_OPCODE_ADC_AL_FROM_I8://  0x14,
-				AdcByte(al,v);
-				break;
-			case I486_OPCODE_ADD_AL_FROM_I8://  0x04,
-				AddByte(al,v);
-				break;
-			case I486_OPCODE_AND_AL_FROM_I8://  0x24,
-			case I486_OPCODE_TEST_AL_FROM_I8://  0xA8,
-				AndByte(al,v);
-				break;
-			case  I486_OPCODE_SBB_AL_FROM_I8://  0x1C,
-				SbbByte(al,v);
-				break;
-			case I486_OPCODE_CMP_AL_FROM_I8://  0x3C,
-			case I486_OPCODE_SUB_AL_FROM_I8://  0x2C,
-				SubByte(al,v);
-				break;
-			case I486_OPCODE_OR_AL_FROM_I8://    0x0C,
-				OrByte(al,v);
-				break;
-			case I486_OPCODE_XOR_AL_FROM_I8:
-				XorByte(al,v);
-				break;
-			}
-			if(I486_OPCODE_TEST_AL_FROM_I8!=inst.opCode &&
-			   I486_OPCODE_CMP_AL_FROM_I8!=inst.opCode) // Don't actually update value if TEST or CMP.
-			{
-				SetAL(al);
-			}
-		}
+		BINARYOP_AL_I8(AdcByte,true);
 		break;
+	case  I486_OPCODE_ADD_AL_FROM_I8://  0x04,
+		BINARYOP_AL_I8(AddByte,true);
+		break;
+	case  I486_OPCODE_AND_AL_FROM_I8://  0x24,
+		BINARYOP_AL_I8(AndByte,true);
+		break;
+	case  I486_OPCODE_CMP_AL_FROM_I8://  0x3C,
+		BINARYOP_AL_I8(SubByte,false);
+		break;
+	case   I486_OPCODE_OR_AL_FROM_I8://  0x0C,
+		BINARYOP_AL_I8(OrByte,true);
+		break;
+	case  I486_OPCODE_SBB_AL_FROM_I8://  0x1C,
+		BINARYOP_AL_I8(SbbByte,true);
+		break;
+	case  I486_OPCODE_SUB_AL_FROM_I8://  0x2C,
+		BINARYOP_AL_I8(SubByte,true);
+		break;
+	case I486_OPCODE_TEST_AL_FROM_I8://  0xA8,
+		BINARYOP_AL_I8(AndByte,false);
+		break;
+	case  I486_OPCODE_XOR_AL_FROM_I8:
+		BINARYOP_AL_I8(XorByte,true);
+		break;
+
 	case  I486_OPCODE_ADC_A_FROM_I://    0x15,
 	case  I486_OPCODE_ADD_A_FROM_I://    0x05,
 	case  I486_OPCODE_AND_A_FROM_I://    0x25,
