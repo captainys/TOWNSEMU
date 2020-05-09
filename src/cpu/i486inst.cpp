@@ -5678,11 +5678,35 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		break;
 	case I486_OPCODE_MOV_M_TO_AL: //      0xA0,
+		{
+			clocksPassed=1;
+			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,1);
+			SetAL(value.byteData[0]);
+		}
+		break;
 	case I486_OPCODE_MOV_M_TO_EAX: //     0xA1, // 16/32 depends on OPSIZE_OVERRIDE
+		{
+			clocksPassed=1;
+			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,(inst.operandSize>>3));
+			state.EAX()&=operandSizeAndPattern[inst.operandSize>>3];
+			state.EAX()|=(value.GetAsDword()&operandSizeMask[inst.operandSize>>3]);
+		}
+		break;
 	case I486_OPCODE_MOV_M_FROM_AL: //    0xA2,
+		{
+			clocksPassed=1;
+			OperandValue value;
+			value.MakeByte(GetAL());
+			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+		}
+		break;
 	case I486_OPCODE_MOV_M_FROM_EAX: //   0xA3, // 16/32 depends on OPSIZE_OVERRIDE
-		Move(mem,inst.addressSize,inst.segOverride,op1,op2);
-		clocksPassed=1;
+		{
+			clocksPassed=1;
+			OperandValue value;
+			value.MakeByteWordOrDword(inst.operandSize,GetEAX());
+			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+		}
 		break;
 	case I486_OPCODE_MOV_I8_TO_RM8: //    0xC6,
 		{
