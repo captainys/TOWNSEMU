@@ -3193,7 +3193,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value); \
 	}
 
-	#define BINARYOP_RM_R(func,clock_for_addr,update,nBytes) \
+	#define BINARYOP_RM_R(func,clock_for_addr,update) \
 	{ \
 		if(op1.operandType==OPER_ADDR || op2.operandType==OPER_ADDR) \
 		{ \
@@ -3203,8 +3203,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{ \
 			clocksPassed=1; \
 		} \
-		auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,(nBytes)); \
-		auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,(nBytes)); \
+		auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,(inst.operandSize/8)); \
+		auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,(inst.operandSize/8)); \
 		if(true==state.exception) \
 		{ \
 			break; \
@@ -3212,6 +3212,31 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		auto i=value1.GetAsDword(); \
 		(func)(inst.operandSize,i,value2.GetAsDword()); \
 		if(true==(update)) \
+		{ \
+			value1.SetDword(i); \
+			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1); \
+		} \
+	}
+
+	#define BINARYOP_RM8_R8(func,clock_for_addr,update) \
+	{ \
+		if(op1.operandType==OPER_ADDR || op2.operandType==OPER_ADDR) \
+		{ \
+			clocksPassed=(clock_for_addr); \
+		} \
+		else \
+		{ \
+			clocksPassed=1; \
+		} \
+		auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,1); \
+		auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,1); \
+		if(true==state.exception) \
+		{ \
+			break; \
+		} \
+		auto i=value1.GetAsDword(); \
+		(func)(i,value2.GetAsDword()); \
+		if(true==update) \
 		{ \
 			value1.SetDword(i); \
 			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1); \
@@ -3960,141 +3985,109 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		break;
 	case  I486_OPCODE_ADC_RM8_FROM_R8:// 0x10,
+		BINARYOP_RM8_R8(AdcByte,3,true);
+		break;
 	case  I486_OPCODE_ADD_RM8_FROM_R8:// 0x00,
+		BINARYOP_RM8_R8(AddByte,3,true);
+		break;
 	case  I486_OPCODE_AND_RM8_FROM_R8:// 0x20,
+		BINARYOP_RM8_R8(AndByte,3,true);
+		break;
 	case  I486_OPCODE_CMP_RM8_FROM_R8:// 0x38,
+		BINARYOP_RM8_R8(SubByte,3,false);
+		break;
 	case   I486_OPCODE_OR_RM8_FROM_R8:// 0x08,
+		BINARYOP_RM8_R8(OrByte,3,true);
+		break;
 	case  I486_OPCODE_SBB_RM8_FROM_R8:// 0x18,
+		BINARYOP_RM8_R8(SbbByte,3,true);
+		break;
 	case  I486_OPCODE_SUB_RM8_FROM_R8:// 0x28,
+		BINARYOP_RM8_R8(SubByte,3,true);
+		break;
 	case  I486_OPCODE_XOR_RM8_FROM_R8:
+		BINARYOP_RM8_R8(XorByte,3,true);
+		break;
 	case I486_OPCODE_TEST_RM8_FROM_R8:// 0x84,
+		BINARYOP_RM8_R8(AndByte,2,false);
+		break;
 
 	case I486_OPCODE_ADC_R8_FROM_RM8:// 0x12,
-	case I486_OPCODE_ADD_R8_FROM_RM8:// 0x02,
-	case I486_OPCODE_AND_R8_FROM_RM8:// 0x22,
-	case I486_OPCODE_CMP_R8_FROM_RM8:// 0x3A,
-	case  I486_OPCODE_OR_R8_FROM_RM8:// 0x0A,
-	case I486_OPCODE_SBB_R8_FROM_RM8:// 0x1A,
-	case I486_OPCODE_SUB_R8_FROM_RM8:// 0x2A,
-	case I486_OPCODE_XOR_R8_FROM_RM8:
-		{
-			if(op1.operandType==OPER_ADDR || op2.operandType==OPER_ADDR)
-			{
-				if(I486_OPCODE_TEST_RM8_FROM_R8!=inst.opCode)
-				{
-					clocksPassed=3;
-				}
-				else
-				{
-					clocksPassed=2;
-				}
-			}
-			else
-			{
-				clocksPassed=1;
-			}
-
-			auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,1);
-			auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,1);
-			if(true==state.exception)
-			{
-				break;
-			}
-			auto i=value1.GetAsDword();
-			switch(inst.opCode)
-			{
-			case I486_OPCODE_ADC_RM8_FROM_R8:// 0x10,
-			case I486_OPCODE_ADC_R8_FROM_RM8:// 0x12,
-				AdcByte(i,value2.GetAsDword());
-				break;
-			case I486_OPCODE_ADD_RM8_FROM_R8:// 0x00,
-			case I486_OPCODE_ADD_R8_FROM_RM8:// 0x02,
-				AddByte(i,value2.GetAsDword());
-				break;
-			case I486_OPCODE_TEST_RM8_FROM_R8:// 0x84,
-			case  I486_OPCODE_AND_RM8_FROM_R8:// 0x20,
-			case  I486_OPCODE_AND_R8_FROM_RM8:// 0x22,
-				AndByte(i,value2.GetAsDword());
-				break;
-			case I486_OPCODE_SBB_RM8_FROM_R8:// 0x18,
-			case I486_OPCODE_SBB_R8_FROM_RM8:// 0x1A,
-				SbbByte(i,value2.GetAsDword());
-				break;
-			case I486_OPCODE_CMP_RM8_FROM_R8:// 0x38,
-			case I486_OPCODE_CMP_R8_FROM_RM8:// 0x3A,
-			case I486_OPCODE_SUB_RM8_FROM_R8:// 0x28,
-			case I486_OPCODE_SUB_R8_FROM_RM8:// 0x2A,
-				SubByte(i,value2.GetAsDword());
-				break;
-			case I486_OPCODE_OR_RM8_FROM_R8://   0x08,
-			case I486_OPCODE_OR_R8_FROM_RM8://   0x0A,
-				OrByte(i,value2.GetAsDword());
-				break;
-			case I486_OPCODE_XOR_RM8_FROM_R8:
-			case I486_OPCODE_XOR_R8_FROM_RM8:
-				XorByte(i,value2.GetAsDword());
-				break;
-			}
-			if(I486_OPCODE_TEST_RM8_FROM_R8!=inst.opCode &&
-			   I486_OPCODE_CMP_RM8_FROM_R8!=inst.opCode &&
-			   I486_OPCODE_CMP_R8_FROM_RM8!=inst.opCode)
-			{
-				value1.SetDword(i);
-				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
-			}
-		}
+		BINARYOP_RM8_R8(AdcByte,3,true);
 		break;
+	case I486_OPCODE_ADD_R8_FROM_RM8:// 0x02,
+		BINARYOP_RM8_R8(AddByte,3,true);
+		break;
+	case I486_OPCODE_AND_R8_FROM_RM8:// 0x22,
+		BINARYOP_RM8_R8(AndByte,3,true);
+		break;
+	case I486_OPCODE_CMP_R8_FROM_RM8:// 0x3A,
+		BINARYOP_RM8_R8(SubByte,3,false);
+		break;
+	case  I486_OPCODE_OR_R8_FROM_RM8:// 0x0A,
+		BINARYOP_RM8_R8(OrByte,3,true);
+		break;
+	case I486_OPCODE_SBB_R8_FROM_RM8:// 0x1A,
+		BINARYOP_RM8_R8(SbbByte,3,true);
+		break;
+	case I486_OPCODE_SUB_R8_FROM_RM8:// 0x2A,
+		BINARYOP_RM8_R8(SubByte,3,true);
+		break;
+	case I486_OPCODE_XOR_R8_FROM_RM8:
+		BINARYOP_RM8_R8(XorByte,3,true);
+		break;
+
 	case I486_OPCODE_ADC_RM_FROM_R://   0x11,
-		BINARYOP_RM_R(AdcWordOrDword,3,true,inst.operandSize/8);
+		BINARYOP_RM_R(AdcWordOrDword,3,true);
 		break;
 	case  I486_OPCODE_ADD_RM_FROM_R://   0x01,
-		BINARYOP_RM_R(AddWordOrDword,3,true,inst.operandSize/8);
+		BINARYOP_RM_R(AddWordOrDword,3,true);
 		break;
 	case  I486_OPCODE_AND_RM_FROM_R://   0x21,
-		BINARYOP_RM_R(AndWordOrDword,3,true,inst.operandSize/8);
+		BINARYOP_RM_R(AndWordOrDword,3,true);
 		break;
 	case  I486_OPCODE_CMP_RM_FROM_R://   0x39,
-		BINARYOP_RM_R(SubWordOrDword,3,false,inst.operandSize/8);
+		BINARYOP_RM_R(SubWordOrDword,3,false);
 		break;
 	case  I486_OPCODE_SBB_RM_FROM_R://   0x19,
-		BINARYOP_RM_R(SbbWordOrDword,3,true,inst.operandSize/8);
+		BINARYOP_RM_R(SbbWordOrDword,3,true);
 		break;
 	case  I486_OPCODE_SUB_RM_FROM_R://   0x29,
-		BINARYOP_RM_R(SubWordOrDword,3,true,inst.operandSize/8);
+		BINARYOP_RM_R(SubWordOrDword,3,true);
 		break;
 	case I486_OPCODE_TEST_RM_FROM_R://   0x85,
-		BINARYOP_RM_R(AndWordOrDword,1,false,inst.operandSize/8);
+		BINARYOP_RM_R(AndWordOrDword,1,false);
 		break;
 	case   I486_OPCODE_OR_RM_FROM_R://   0x09,
-		BINARYOP_RM_R(OrWordOrDword,3,true,inst.operandSize/8);
+		BINARYOP_RM_R(OrWordOrDword,3,true);
 		break;
 	case  I486_OPCODE_XOR_RM_FROM_R:
-		BINARYOP_RM_R(XorWordOrDword,3,true,inst.operandSize/8);
+		BINARYOP_RM_R(XorWordOrDword,3,true);
 		break;
 
 	case I486_OPCODE_ADC_R_FROM_RM://   0x13,
-		BINARYOP_RM_R(AdcWordOrDword,3,true,inst.operandSize/8);
+		BINARYOP_RM_R(AdcWordOrDword,3,true);
 		break;
 	case I486_OPCODE_ADD_R_FROM_RM://    0x03,
-		BINARYOP_RM_R(AddWordOrDword,3,true,inst.operandSize/8);
+		BINARYOP_RM_R(AddWordOrDword,3,true);
 		break;
 	case I486_OPCODE_AND_R_FROM_RM://    0x23,
-		BINARYOP_RM_R(AndWordOrDword,3,true,inst.operandSize/8);
+		BINARYOP_RM_R(AndWordOrDword,3,true);
 		break;
 	case I486_OPCODE_CMP_R_FROM_RM://    0x3B,
-		BINARYOP_RM_R(SubWordOrDword,3,false,inst.operandSize/8);
+		BINARYOP_RM_R(SubWordOrDword,3,false);
 		break;
 	case I486_OPCODE_SBB_R_FROM_RM://    0x1B,
-		BINARYOP_RM_R(SbbWordOrDword,3,true,inst.operandSize/8);
+		BINARYOP_RM_R(SbbWordOrDword,3,true);
 		break;
 	case I486_OPCODE_SUB_R_FROM_RM://    0x2B,
-		BINARYOP_RM_R(SubWordOrDword,3,true,inst.operandSize/8);
+		BINARYOP_RM_R(SubWordOrDword,3,true);
 		break;
 	case  I486_OPCODE_OR_R_FROM_RM://    0x0B,
-		BINARYOP_RM_R(OrWordOrDword,3,true,inst.operandSize/8);
+		BINARYOP_RM_R(OrWordOrDword,3,true);
 		break;
 	case I486_OPCODE_XOR_R_FROM_RM:
-		BINARYOP_RM_R(XorWordOrDword,3,true,inst.operandSize/8);
+		BINARYOP_RM_R(XorWordOrDword,3,true);
 		break;
 
 
