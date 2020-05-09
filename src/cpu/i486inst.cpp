@@ -458,7 +458,7 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 
 	case I486_OPCODE_CALL_REL://   0xE8,
 	case I486_OPCODE_JMP_REL://          0xE9,   // cw or cd
-		FetchOperand16or32(inst,ptr,seg,offset,mem);
+		FetchImm16or32(inst,ptr,seg,offset,mem);
 		break;
 	case I486_OPCODE_CALL_FAR://   0x9A,
 	case I486_OPCODE_JMP_FAR:
@@ -1433,7 +1433,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		disasm=(I486_OPCODE_JMP_REL==opCode ? "JMP" : "CALL");
 		cpputil::ExtendString(disasm,8);
 		{
-			auto offset=GetSimm16or32(operandSize);
+			auto offset=EvalSimm16or32(operandSize);
 			auto destin=eip+offset+numBytes;
 			disasm+=cpputil::Uitox(destin);
 
@@ -4317,7 +4317,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			clocksPassed=3;
 
-			auto offset=inst.GetSimm16or32(inst.operandSize);
+			auto offset=inst.EvalSimm16or32(inst.operandSize);
 			auto destin=state.EIP+offset+inst.numBytes;
 			if(16==inst.operandSize)
 			{
