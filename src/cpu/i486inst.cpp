@@ -3109,32 +3109,6 @@ std::string i486DX::Instruction::DisassembleTypicalTwoOperands(std::string inst,
 	return disasm;
 }
 
-unsigned int i486DX::Instruction::GetUimm16or32(unsigned int operandSize) const
-{
-	if(16==operandSize)
-	{
-		return GetUimm16();
-	}
-	else
-	{
-		return GetUimm32();
-	}
-}
-unsigned int i486DX::Instruction::GetUimm8or16or32(unsigned int operandSize) const
-{
-	if(8==operandSize)
-	{
-		return GetUimm8();
-	}
-	else if(16==operandSize)
-	{
-		return GetUimm16();
-	}
-	else
-	{
-		return GetUimm32();
-	}
-}
 int i486DX::Instruction::GetSimm16or32(unsigned int operandSize) const
 {
 	if(16==operandSize)

@@ -661,30 +661,6 @@ public:
 			return (MODR_M>>3)&7;
 		}
 
-		/*! Returns Unsigned Imm8 (last byte in the operand) after decoding. */
-		inline unsigned int GetUimm8(void) const
-		{
-			return operand[operandLen-1];
-		}
-
-		/*! Returns Unsigned Imm16 (last 2 byte in the operand) after decoding. */
-		inline unsigned int GetUimm16(void) const
-		{
-			return cpputil::GetWord(operand+operandLen-2);
-		}
-
-		/*! Returns Unsigned Imm32 (last 4 byte in the operand) after decoding. */
-		inline unsigned int GetUimm32(void) const
-		{
-			return cpputil::GetDword(operand+operandLen-4);
-		}
-
-		/*! Returns Unsigned Imm16 or Imm32 after decoding. */
-		unsigned int GetUimm16or32(unsigned int operandSize) const;
-
-		/*! Returns Unsigned Imm8 or Imm16 or Imm32 after decoding. */
-		unsigned int GetUimm8or16or32(unsigned int operandSize) const;
-
 		/*! Returns Signed Imm8 (last byte in the operand) after decoding. */
 		inline int GetSimm8(void) const
 		{
