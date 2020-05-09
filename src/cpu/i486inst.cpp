@@ -1100,7 +1100,7 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 		break;
 	case I486_OPCODE_RET_I16://          0xC2,
 	case I486_OPCODE_RETF_I16://         0xCA,
-		FetchOperand16(inst,ptr,seg,offset,mem);
+		FetchImm16(inst,ptr,seg,offset,mem);
 		break;
 
 
@@ -1111,7 +1111,7 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 	case I486_OPCODE_SHLD_RM_I8://       0x0FA4,
 	case I486_OPCODE_SHRD_RM_I8://       0x0FAC,
 		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
-		FetchOperand8(inst,ptr,seg,offset,mem);
+		FetchImm8(inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		op2.DecodeMODR_MForRegister(inst.operandSize,inst.operand[0]);
 		break;
@@ -2521,12 +2521,12 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 	case I486_OPCODE_RET_I16://          0xC2,
 		disasm="RET";
 		cpputil::ExtendString(disasm,8);
-		disasm+=cpputil::Ustox(GetUimm16())+"H";
+		disasm+=cpputil::Ustox(EvalUimm16())+"H";
 		break;
 	case I486_OPCODE_RETF_I16://         0xCA,
 		disasm="RETF";
 		cpputil::ExtendString(disasm,8);
-		disasm+=cpputil::Ustox(GetUimm16())+"H";
+		disasm+=cpputil::Ustox(EvalUimm16())+"H";
 		break;
 
 
@@ -2547,7 +2547,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 			}
 			else
 			{
-				count=cpputil::Ubtox(GetUimm8())+"H";
+				count=cpputil::Ubtox(EvalUimm8())+"H";
 			}
 			switch(opCode)
 			{
@@ -6312,7 +6312,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_OPCODE_RET_I16://          0xC2,
 		clocksPassed=5;
 		SetIPorEIP(inst.operandSize,Pop(mem,inst.operandSize));
-		state.ESP()+=inst.GetUimm16(); // Do I need to take &0xffff if address mode is 16? 
+		state.ESP()+=inst.EvalUimm16(); // Do I need to take &0xffff if address mode is 16? 
 		EIPSetByInstruction=true;
 		if(enableCallStack)
 		{
@@ -6330,7 +6330,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		SetIPorEIP(inst.operandSize,Pop(mem,inst.operandSize));
 		LoadSegmentRegister(state.CS(),Pop(mem,inst.operandSize),mem);
-		state.ESP()+=inst.GetUimm16(); // Do I need to take &0xffff if address mode is 16? 
+		state.ESP()+=inst.EvalUimm16(); // Do I need to take &0xffff if address mode is 16? 
 		EIPSetByInstruction=true;
 		if(enableCallStack)
 		{
@@ -6361,7 +6361,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			else
 			{
 				clocksPassed=2;
-				count=inst.GetUimm8()&0x1F;
+				count=inst.EvalUimm8()&0x1F;
 			}
 			if(OPER_ADDR==op1.operandType)
 			{
