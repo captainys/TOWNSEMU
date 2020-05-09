@@ -626,6 +626,7 @@ public:
 		unsigned int opCode;
 		unsigned int operandLen;
 		unsigned char operand[12];  // Is 8 bytes maximum?
+		unsigned char imm[6];       // Probably 4 bytes is good enough.
 
 		inline void Clear(void)
 		{
@@ -704,6 +705,72 @@ public:
 
 		/*! Returns Signed Imm16 or Imm32 after decoding. */
 		int GetSimm16or32(unsigned int operandSize) const;
+
+
+
+		/*! Returns Unsigned Imm8 (last byte in the operand) after decoding. */
+		inline unsigned int EvalUimm8(void) const
+		{
+			return imm[0];
+		}
+
+		/*! Returns Unsigned Imm16 (last 2 byte in the operand) after decoding. */
+		inline unsigned int EvalUimm16(void) const
+		{
+			return cpputil::GetWord(imm);
+		}
+
+		/*! Returns Unsigned Imm32 (last 4 byte in the operand) after decoding. */
+		inline unsigned int EvalUimm32(void) const
+		{
+			return cpputil::GetDword(imm);
+		}
+
+		/*! Returns Unsigned Imm8 or Imm16 or Imm32 after decoding. */
+		unsigned int EvalUimm8or16or32(unsigned int operandSize) const
+		{
+			static const unsigned int sizeMask[3]=
+			{
+				0x000000FF,
+				0x0000FFFF,
+				0xFFFFFFFF,
+			};
+			return (imm[0]|(imm[1]<<8)|(imm[2]<<16)|(imm[3]<<24))&sizeMask[operandSize>>4];
+		}
+
+		/*! Returns Signed Imm8 (last byte in the operand) after decoding. */
+		inline int EvalSimm8(void) const
+		{
+			return cpputil::GetSignedByte(imm[0]);
+		}
+
+		/*! Returns Signed Imm16 (last 2 byte in the operand) after decoding. */
+		inline int EvalSimm16(void) const
+		{
+			return cpputil::GetSignedWord(imm);
+		}
+
+		/*! Returns Signed Imm32 (last 4 byte in the operand) after decoding. */
+		inline int EvalSimm32(void) const
+		{
+			return cpputil::GetSignedDword(imm);
+		}
+
+		/*! Returns Signed Imm16 or Imm32 after decoding. */
+		int EvalSimm16or32(unsigned int operandSize) const
+		{
+			switch(operandSize)
+			{
+			case 8:
+				return EvalSimm8();
+			case 16:
+				return EvalSimm16();
+			default:
+				return EvalSimm32();
+			}
+		}
+
+
 
 		static std::string SegmentOverrideString(int segOverridePrefix);
 
@@ -2138,6 +2205,23 @@ private:
 	    Returns the number of bytes fetched.
 	*/
 	unsigned int FetchOperandRM(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+
+
+	/*! Fetch an 8-bit operand.
+	    It pushes inst.operandLen and this->numBytes by 1 byte.
+	*/
+	inline void FetchImm8(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+	/*! Fetch an 16-bit operand.
+	*/
+	inline void FetchImm16(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+	/*! Fetch an 32-bit operand.
+	*/
+	inline void FetchImm32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+	/*! Fetch an 16- or 32-bit operand.  Length fetched depends on inst.operandSize.
+	    Returns the number of bytes fetched.
+	*/
+	inline unsigned int FetchImm16or32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+
 
 public:
 	/*! Made public for disassembly test.

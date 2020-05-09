@@ -121,6 +121,40 @@ inline unsigned int i486DX::FetchOperand16or32(Instruction &inst,MemoryAccess::C
 	}
 }
 
+inline void i486DX::FetchImm8(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+{
+	inst.imm[0]=FetchInstructionByte(ptr,inst.codeAddressSize,seg,offset,mem);
+	++inst.numBytes;
+}
+inline void i486DX::FetchImm16(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+{
+	inst.imm[0]=FetchInstructionByte(ptr,inst.codeAddressSize,seg,offset++,mem);
+	inst.imm[1]=FetchInstructionByte(ptr,inst.codeAddressSize,seg,offset++,mem);
+	inst.numBytes+=2;
+}
+inline void i486DX::FetchImm32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+{
+	inst.imm[0]=FetchInstructionByte(ptr,inst.codeAddressSize,seg,offset++,mem);
+	inst.imm[1]=FetchInstructionByte(ptr,inst.codeAddressSize,seg,offset++,mem);
+	inst.imm[2]=FetchInstructionByte(ptr,inst.codeAddressSize,seg,offset++,mem);
+	inst.imm[3]=FetchInstructionByte(ptr,inst.codeAddressSize,seg,offset++,mem);
+	inst.numBytes+=4;
+}
+inline unsigned int i486DX::FetchImm16or32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+{
+	if(16==inst.operandSize)
+	{
+		FetchImm16(inst,ptr,seg,offset,mem);
+		return 2;
+	}
+	else // if(32==inst.operandSize)
+	{
+		FetchImm32(inst,ptr,seg,offset,mem);
+		return 4;
+	}
+}
+
+
 unsigned int i486DX::FetchOperandRM(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 {
 	FetchOperand8(inst,ptr,seg,offset++,mem);
@@ -343,12 +377,12 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 
 	case I486_OPCODE_C0_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_I8://0xC0,// ::ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
 		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
-		FetchOperand8(inst,ptr,seg,offset,mem);
+		FetchImm8(inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,8,inst.operand);
 		break;
 	case I486_OPCODE_C1_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_I8:// 0xC1, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
 		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
-		FetchOperand8(inst,ptr,seg,offset,mem);
+		FetchImm8(inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 	case I486_OPCODE_D0_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_1://0xD0, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
@@ -367,7 +401,7 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
 		if(0==inst.GetREG()) // TEST RM8,I8
 		{
-			FetchOperand8(inst,ptr,seg,offset,mem);
+			FetchImm8(inst,ptr,seg,offset,mem);
 		}
 		inst.operandSize=8;
 
@@ -377,7 +411,7 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
 		if(0==inst.GetREG()) // TEST RM8,I8
 		{
-			FetchOperand16or32(inst,ptr,seg,offset,mem);
+			FetchImm16or32(inst,ptr,seg,offset,mem);
 		}
 
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
@@ -1305,10 +1339,10 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		switch(opCode)
 		{
 		case I486_OPCODE_C0_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_I8://=0xC0,// ::ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
-			disasm=DisassembleTypicalRM8_I8(disasm,op1,GetUimm8());
+			disasm=DisassembleTypicalRM8_I8(disasm,op1,EvalUimm8());
 			break;
 		case I486_OPCODE_C1_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_I8:// =0xC1, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
-			disasm=DisassembleTypicalRM_I8(disasm,op1,GetUimm8());
+			disasm=DisassembleTypicalRM_I8(disasm,op1,EvalUimm8());
 			break;
 		case I486_OPCODE_D0_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_1://=0xD0, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
 		case I486_OPCODE_D1_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_1://=0xD1, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
@@ -1430,7 +1464,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		switch(GetREG())
 		{
 		case 0:
-			disasm=DisassembleTypicalOneOperandAndImm("TEST",op1,GetUimm8or16or32(operandSize),operandSize);
+			disasm=DisassembleTypicalOneOperandAndImm("TEST",op1,EvalUimm8or16or32(operandSize),operandSize);
 			break;
 		case 2:
 			disasm=DisassembleTypicalOneOperand("NOT",op1,operandSize);
@@ -3364,7 +3398,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			unsigned int ctr;
 			if(I486_OPCODE_C0_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_I8==inst.opCode)
 			{
-				ctr=inst.GetUimm8()&31; // [1] pp.26-243 Only bottom 5 bits are used.
+				ctr=inst.EvalUimm8()&31; // [1] pp.26-243 Only bottom 5 bits are used.
 			}
 			else if(I486_OPCODE_D3_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_CL==inst.opCode)
 			{
@@ -3426,7 +3460,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			unsigned int ctr=0;
 			if(I486_OPCODE_C1_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_I8==inst.opCode)
 			{
-				ctr=inst.GetUimm8()&31; // [1] pp.26-243 Only bottom 5 bits are used.
+				ctr=inst.EvalUimm8()&31; // [1] pp.26-243 Only bottom 5 bits are used.
 			}
 			else if(I486_OPCODE_D3_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_CL==inst.opCode)
 			{
@@ -3488,7 +3522,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				clocksPassed=(OPER_ADDR==op1.operandType ? 2 : 1);
 				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
 				unsigned int byte=value.byteData[0];
-				AndByte(byte,inst.GetUimm8());
+				AndByte(byte,inst.EvalUimm8());
 				// SetCF(false); Done in AndByte
 				// SetOF(false); Done in AndByte
 			}
@@ -3644,7 +3678,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{
 				clocksPassed=(OPER_ADDR==op1.operandType ? 2 : 1);
 				auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
-				auto value2=inst.GetUimm16or32(inst.operandSize);
+				auto value2=inst.EvalUimm8or16or32(inst.operandSize);
 				unsigned int i1=value1.GetAsDword();
 				AndWordOrDword(inst.operandSize,i1,value2);
 				// SetCF(false); Done in AndWordOrDword
