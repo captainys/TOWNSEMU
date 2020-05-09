@@ -3177,6 +3177,49 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		} \
 	}
 
+	#define SETxx(cond) \
+	{ \
+		OperandValue value; \
+		if(true==(cond)) \
+		{ \
+			value.MakeByte(1); \
+			clocksPassed=4; \
+		} \
+		else \
+		{ \
+			value.MakeByte(0); \
+			clocksPassed=3; \
+		} \
+		StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value); \
+	}
+
+	#define BINARYOP_RM_R(func,clock_for_addr,update,nBytes) \
+	{ \
+		if(op1.operandType==OPER_ADDR || op2.operandType==OPER_ADDR) \
+		{ \
+			clocksPassed=(clock_for_addr); \
+		} \
+		else \
+		{ \
+			clocksPassed=1; \
+		} \
+		auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,(nBytes)); \
+		auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,(nBytes)); \
+		if(true==state.exception) \
+		{ \
+			break; \
+		} \
+		auto i=value1.GetAsDword(); \
+		(func)(inst.operandSize,i,value2.GetAsDword()); \
+		if(true==(update)) \
+		{ \
+			value1.SetDword(i); \
+			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1); \
+		} \
+	}
+
+
+
 	static const unsigned int reg8AndPattern[]=
 	{
 		0xFFFFFF00,   // AL
@@ -4002,89 +4045,56 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		break;
 	case I486_OPCODE_ADC_RM_FROM_R://   0x11,
+		BINARYOP_RM_R(AdcWordOrDword,3,true,inst.operandSize/8);
+		break;
 	case  I486_OPCODE_ADD_RM_FROM_R://   0x01,
+		BINARYOP_RM_R(AddWordOrDword,3,true,inst.operandSize/8);
+		break;
 	case  I486_OPCODE_AND_RM_FROM_R://   0x21,
+		BINARYOP_RM_R(AndWordOrDword,3,true,inst.operandSize/8);
+		break;
 	case  I486_OPCODE_CMP_RM_FROM_R://   0x39,
+		BINARYOP_RM_R(SubWordOrDword,3,false,inst.operandSize/8);
+		break;
 	case  I486_OPCODE_SBB_RM_FROM_R://   0x19,
+		BINARYOP_RM_R(SbbWordOrDword,3,true,inst.operandSize/8);
+		break;
 	case  I486_OPCODE_SUB_RM_FROM_R://   0x29,
+		BINARYOP_RM_R(SubWordOrDword,3,true,inst.operandSize/8);
+		break;
 	case I486_OPCODE_TEST_RM_FROM_R://   0x85,
+		BINARYOP_RM_R(AndWordOrDword,1,false,inst.operandSize/8);
+		break;
 	case   I486_OPCODE_OR_RM_FROM_R://   0x09,
+		BINARYOP_RM_R(OrWordOrDword,3,true,inst.operandSize/8);
+		break;
 	case  I486_OPCODE_XOR_RM_FROM_R:
+		BINARYOP_RM_R(XorWordOrDword,3,true,inst.operandSize/8);
+		break;
 
 	case I486_OPCODE_ADC_R_FROM_RM://   0x13,
+		BINARYOP_RM_R(AdcWordOrDword,3,true,inst.operandSize/8);
+		break;
 	case I486_OPCODE_ADD_R_FROM_RM://    0x03,
+		BINARYOP_RM_R(AddWordOrDword,3,true,inst.operandSize/8);
+		break;
 	case I486_OPCODE_AND_R_FROM_RM://    0x23,
+		BINARYOP_RM_R(AndWordOrDword,3,true,inst.operandSize/8);
+		break;
 	case I486_OPCODE_CMP_R_FROM_RM://    0x3B,
+		BINARYOP_RM_R(SubWordOrDword,3,false,inst.operandSize/8);
+		break;
 	case I486_OPCODE_SBB_R_FROM_RM://    0x1B,
+		BINARYOP_RM_R(SbbWordOrDword,3,true,inst.operandSize/8);
+		break;
 	case I486_OPCODE_SUB_R_FROM_RM://    0x2B,
+		BINARYOP_RM_R(SubWordOrDword,3,true,inst.operandSize/8);
+		break;
 	case  I486_OPCODE_OR_R_FROM_RM://    0x0B,
+		BINARYOP_RM_R(OrWordOrDword,3,true,inst.operandSize/8);
+		break;
 	case I486_OPCODE_XOR_R_FROM_RM:
-		{
-			if(op1.operandType==OPER_ADDR || op2.operandType==OPER_ADDR)
-			{
-				if(I486_OPCODE_TEST_RM_FROM_R!=inst.opCode)
-				{
-					clocksPassed=3;
-				}
-				else
-				{
-					clocksPassed=2;
-				}
-			}
-			else
-			{
-				clocksPassed=1;
-			}
-
-			auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
-			auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize/8);
-			if(true==state.exception)
-			{
-				break;
-			}
-			auto i=value1.GetAsDword();
-			switch(inst.opCode)
-			{
-			case I486_OPCODE_ADC_RM_FROM_R://   0x11,
-			case I486_OPCODE_ADC_R_FROM_RM://   0x13,
-				AdcWordOrDword(inst.operandSize,i,value2.GetAsDword());
-				break;
-			case I486_OPCODE_ADD_RM_FROM_R://    0x01,
-			case I486_OPCODE_ADD_R_FROM_RM://    0x03,
-				AddWordOrDword(inst.operandSize,i,value2.GetAsDword());
-				break;
-			case  I486_OPCODE_AND_RM_FROM_R://   0x21,
-			case I486_OPCODE_TEST_RM_FROM_R://   0x85,
-			case  I486_OPCODE_AND_R_FROM_RM://   0x23,
-				AndWordOrDword(inst.operandSize,i,value2.GetAsDword());
-				break;
-			case  I486_OPCODE_SBB_RM_FROM_R://   0x19,
-			case I486_OPCODE_SBB_R_FROM_RM://    0x1B,
-				SbbWordOrDword(inst.operandSize,i,value2.GetAsDword());
-				break;
-			case I486_OPCODE_CMP_RM_FROM_R://    0x39,
-			case I486_OPCODE_CMP_R_FROM_RM://    0x3B,
-			case I486_OPCODE_SUB_RM_FROM_R://    0x29,
-			case I486_OPCODE_SUB_R_FROM_RM://    0x2B,
-				SubWordOrDword(inst.operandSize,i,value2.GetAsDword());
-				break;
-			case I486_OPCODE_OR_RM_FROM_R://     0x09,
-			case I486_OPCODE_OR_R_FROM_RM://     0x0B,
-				OrWordOrDword(inst.operandSize,i,value2.GetAsDword());
-				break;
-			case I486_OPCODE_XOR_RM_FROM_R:
-			case I486_OPCODE_XOR_R_FROM_RM:
-				XorWordOrDword(inst.operandSize,i,value2.GetAsDword());
-				break;
-			}
-			if(I486_OPCODE_TEST_RM_FROM_R!=inst.opCode &&
-			   I486_OPCODE_CMP_RM_FROM_R!=inst.opCode &&
-			   I486_OPCODE_CMP_R_FROM_RM!=inst.opCode)
-			{
-				value1.SetDword(i);
-				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
-			}
-		}
+		BINARYOP_RM_R(XorWordOrDword,3,true,inst.operandSize/8);
 		break;
 
 
@@ -6445,117 +6455,67 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 
 	case I486_OPCODE_SETA://             0x0F97,
+		SETxx(CondJA());
+		break;
 	case I486_OPCODE_SETAE://            0x0F93,
+		SETxx(CondJAE());
+		break;
 	case I486_OPCODE_SETB://             0x0F92,
+		SETxx(CondJB());
+		break;
 	case I486_OPCODE_SETBE://            0x0F96,
+		SETxx(CondJBE());
+		break;
 	// I486_OPCODE_SETC://             0x0F92,
 	case I486_OPCODE_SETE://             0x0F94,
+		SETxx(CondJE());
+		break;
 	case I486_OPCODE_SETG://             0x0F9F,
+		SETxx(CondJG());
+		break;
 	case I486_OPCODE_SETGE://            0x0F9D,
+		SETxx(CondJGE());
+		break;
 	case I486_OPCODE_SETL://             0x0F9C,
+		SETxx(CondJL());
+		break;
 	case I486_OPCODE_SETLE://            0x0F9E,
+		SETxx(CondJLE());
+		break;
 	//I486_OPCODE_SETNA://            0x0F96,
 	//I486_OPCODE_SETNAE://           0x0F92,
 	//I486_OPCODE_SETNB://            0x0F93,
 	//I486_OPCODE_SETNBE://           0x0F97,
 	//I486_OPCODE_SETNC://            0x0F93,
 	case I486_OPCODE_SETNE://            0x0F95,
+		SETxx(CondJNE());
+		break;
 	//I486_OPCODE_SETNG://            0x0F9E,
 	//I486_OPCODE_SETNGE://           0x0F9C,
 	//I486_OPCODE_SETNL://            0x0F9D,
 	//I486_OPCODE_SETNLE://           0x0F9F,
 	case I486_OPCODE_SETNO://            0x0F91,
+		SETxx(CondJNO());
+		break;
 	case I486_OPCODE_SETNP://            0x0F9B,
+		SETxx(CondJNP());
+		break;
 	case I486_OPCODE_SETNS://            0x0F99,
+		SETxx(CondJNS());
+		break;
 	// case I486_OPCODE_SETNZ://            0x0F95,
 	case I486_OPCODE_SETO://             0x0F90,
+		SETxx(CondJO());
+		break;
 	case I486_OPCODE_SETP://             0x0F9A,
+		SETxx(CondJP());
+		break;
 	//I486_OPCODE_SETPE://            0x0F9A,
 	//I486_OPCODE_SETPO://            0x0F9B,
 	case I486_OPCODE_SETS://             0x0F98,
-	// I486_OPCODE_SETZ://             0x0F94,
-		{
-			bool cond=false;
-			switch(inst.opCode)
-			{
-			case I486_OPCODE_SETA://             0x0F97,
-				cond=CondJA();
-				break;
-			case I486_OPCODE_SETAE://            0x0F93,
-				cond=CondJAE();
-				break;
-			case I486_OPCODE_SETB://             0x0F92,
-				cond=CondJB();
-				break;
-			case I486_OPCODE_SETBE://            0x0F96,
-				cond=CondJBE();
-				break;
-			// I486_OPCODE_SETC://             0x0F92,
-			case I486_OPCODE_SETE://             0x0F94,
-				cond=CondJE();
-				break;
-			case I486_OPCODE_SETG://             0x0F9F,
-				cond=CondJG();
-				break;
-			case I486_OPCODE_SETGE://            0x0F9D,
-				cond=CondJGE();
-				break;
-			case I486_OPCODE_SETL://             0x0F9C,
-				cond=CondJL();
-				break;
-			case I486_OPCODE_SETLE://            0x0F9E,
-				cond=CondJLE();
-				break;
-			//I486_OPCODE_SETNA://            0x0F96,
-			//I486_OPCODE_SETNAE://           0x0F92,
-			//I486_OPCODE_SETNB://            0x0F93,
-			//I486_OPCODE_SETNBE://           0x0F97,
-			//I486_OPCODE_SETNC://            0x0F93,
-			case I486_OPCODE_SETNE://            0x0F95,
-				cond=CondJNE();
-				break;
-			//I486_OPCODE_SETNG://            0x0F9E,
-			//I486_OPCODE_SETNGE://           0x0F9C,
-			//I486_OPCODE_SETNL://            0x0F9D,
-			//I486_OPCODE_SETNLE://           0x0F9F,
-			case I486_OPCODE_SETNO://            0x0F91,
-				cond=CondJNO();
-				break;
-			case I486_OPCODE_SETNP://            0x0F9B,
-				cond=CondJNP();
-				break;
-			case I486_OPCODE_SETNS://            0x0F99,
-				cond=CondJNS();
-				break;
-			//I486_OPCODE_SETNZ://            0x0F95,
-			case I486_OPCODE_SETO://             0x0F90,
-				cond=CondJO();
-				break;
-			case I486_OPCODE_SETP://             0x0F9A,
-				cond=CondJP();
-				break;
-			//I486_OPCODE_SETPE://            0x0F9A,
-			//I486_OPCODE_SETPO://            0x0F9B,
-			case I486_OPCODE_SETS://             0x0F98,
-				cond=CondJS();
-				break;
-			// I486_OPCODE_SETZ://             0x0F94,
-			}
-			OperandValue value;
-			if(true==cond)
-			{
-				value.MakeByte(1);
-				clocksPassed=4;
-			}
-			else
-			{
-				value.MakeByte(0);
-				clocksPassed=3;
-			}
-			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
-		}
+		SETxx(CondJS());
 		break;
-
+	// I486_OPCODE_SETZ://             0x0F94,
 
 	case I486_OPCODE_SLDT_STR_LLDT_LTR_VERR_VERW://             0x0F00,
 		switch(inst.GetREG())
