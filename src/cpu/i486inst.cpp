@@ -1031,7 +1031,7 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 
 	case I486_OPCODE_OUT_I8_AL: //        0xE6,
 	case I486_OPCODE_OUT_I8_A: //         0xE7,
-		FetchOperand8(inst,ptr,seg,offset,mem);
+		FetchImm8(inst,ptr,seg,offset,mem);
 		break;
 	case I486_OPCODE_OUT_DX_AL: //        0xEE,
 	case I486_OPCODE_OUT_DX_A: //         0xEF,
@@ -2730,13 +2730,13 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 	case I486_OPCODE_OUT_I8_AL: //        0xE6,
 		disasm="OUT";
 		cpputil::ExtendString(disasm,8);
-		disasm+=cpputil::Ubtox(GetUimm8())+"H";
+		disasm+=cpputil::Ubtox(EvalUimm8())+"H";
 		disasm+=",AL";
 		break;
 	case I486_OPCODE_OUT_I8_A: //         0xE7,
 		disasm="OUT";
 		cpputil::ExtendString(disasm,8);
-		disasm+=cpputil::Ubtox(GetUimm8())+"H";
+		disasm+=cpputil::Ubtox(EvalUimm8())+"H";
 		if(16==operandSize)
 		{
 			disasm+=",AX";
@@ -5965,7 +5965,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 
 	case I486_OPCODE_OUT_I8_AL: //        0xE6,
-		IOOut8(io,inst.operand[0],GetRegisterValue(REG_AL));
+		IOOut8(io,inst.EvalUimm8(),GetRegisterValue(REG_AL));
 		if(true==IsInRealMode())
 		{
 			clocksPassed=16;
@@ -5978,11 +5978,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_OPCODE_OUT_I8_A: //         0xE7,
 		if(16==inst.operandSize)
 		{
-			IOOut16(io,inst.operand[0],GetRegisterValue(REG_AX));
+			IOOut16(io,inst.EvalUimm8(),GetRegisterValue(REG_AX));
 		}
 		else
 		{
-			IOOut32(io,inst.operand[0],GetRegisterValue(REG_EAX));
+			IOOut32(io,inst.EvalUimm8(),GetRegisterValue(REG_EAX));
 		}
 		if(true==IsInRealMode())
 		{
@@ -5994,7 +5994,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		break;
 	case I486_OPCODE_OUT_DX_AL: //        0xEE,
-		IOOut8(io,GetRegisterValue(REG_DX),GetRegisterValue(REG_AL));
+		IOOut8(io,GetDX(),GetAL());
 		if(true==IsInRealMode())
 		{
 			clocksPassed=16;
@@ -6007,11 +6007,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_OPCODE_OUT_DX_A: //         0xEF,
 		if(16==inst.operandSize)
 		{
-			IOOut16(io,GetRegisterValue(REG_DX),GetRegisterValue(REG_AX));
+			IOOut16(io,GetDX(),GetAX());
 		}
 		else
 		{
-			IOOut32(io,GetRegisterValue(REG_DX),GetRegisterValue(REG_EAX));
+			IOOut32(io,GetDX(),GetEAX());
 		}
 		if(true==IsInRealMode())
 		{
