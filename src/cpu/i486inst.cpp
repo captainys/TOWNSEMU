@@ -634,7 +634,7 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 
 	case I486_OPCODE_IN_AL_I8://=        0xE4,
 	case I486_OPCODE_IN_A_I8://=         0xE5,
-		FetchOperand8(inst,ptr,seg,offset,mem);
+		FetchImm8(inst,ptr,seg,offset,mem);
 		break;
 	case I486_OPCODE_IN_AL_DX://=        0xEC,
 	case I486_OPCODE_IN_A_DX://=         0xED,
@@ -643,7 +643,7 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 
 	case I486_OPCODE_IMUL_R_RM_I8://0x6B,
 		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
-		FetchOperand8(inst,ptr,seg,offset,mem);
+		FetchImm8(inst,ptr,seg,offset,mem);
 		op1.DecodeMODR_MForRegister(inst.operandSize,inst.operand[0]);
 		op2.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
@@ -651,11 +651,11 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
 		if(16==inst.operandSize)
 		{
-			FetchOperand16(inst,ptr,seg,offset,mem);
+			FetchImm16(inst,ptr,seg,offset,mem);
 		}
 		else
 		{
-			FetchOperand32(inst,ptr,seg,offset,mem);
+			FetchImm32(inst,ptr,seg,offset,mem);
 		}
 		op1.DecodeMODR_MForRegister(inst.operandSize,inst.operand[0]);
 		op2.Decode(inst.addressSize,inst.operandSize,inst.operand);
@@ -1837,7 +1837,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		disasm="IN";
 		cpputil::ExtendString(disasm,8);
 		disasm+="AL,";
-		disasm+=cpputil::Ubtox(GetUimm8())+"H";
+		disasm+=cpputil::Ubtox(EvalUimm8())+"H";
 		break;
 	case I486_OPCODE_IN_A_I8://=         0xE5,
 		disasm="IN";
@@ -1850,7 +1850,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		{
 			disasm+="EAX,";
 		}
-		disasm+=cpputil::Ubtox(GetUimm8())+"H";
+		disasm+=cpputil::Ubtox(EvalUimm8())+"H";
 		break;
 	case I486_OPCODE_IN_AL_DX://=        0xEC,
 		disasm="IN      AL,DX";
@@ -1871,13 +1871,13 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		disasm="IMUL    ";
 		disasm+=op1.Disassemble()+",";
 		disasm+=op2.Disassemble()+",";
-		disasm+=cpputil::Itox(GetSimm8());
+		disasm+=cpputil::Itox(EvalSimm8());
 		break;
 	case I486_OPCODE_IMUL_R_RM_IMM://0x69,
 		disasm="IMUL    ";
 		disasm+=op1.Disassemble()+",";
 		disasm+=op2.Disassemble()+",";
-		disasm+=cpputil::Itox(GetSimm16or32(operandSize));
+		disasm+=cpputil::Itox(EvalSimm16or32(operandSize));
 		break;
 	case I486_OPCODE_IMUL_R_RM://       0x0FAF,
 		disasm=DisassembleTypicalTwoOperands("IMUL",op1,op2);
@@ -4703,7 +4703,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 	case I486_OPCODE_IN_AL_I8://=        0xE4,
 		{
-			auto ioRead=IOIn8(io,inst.operand[0]);
+			auto ioRead=IOIn8(io,inst.EvalUimm8());
 			if(true!=state.exception)
 			{
 				SetAL(ioRead);
@@ -4721,7 +4721,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_OPCODE_IN_A_I8://=         0xE5,
 		if(16==inst.operandSize)
 		{
-			auto ioRead=IOIn16(io,inst.operand[0]);
+			auto ioRead=IOIn16(io,inst.EvalUimm8());
 			if(true!=state.exception)
 			{
 				SetAX(ioRead);
@@ -4729,7 +4729,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		else
 		{
-			auto ioRead=IOIn32(io,inst.operand[0]);
+			auto ioRead=IOIn32(io,inst.EvalUimm8());
 			if(true!=state.exception)
 			{
 				SetEAX(ioRead);
@@ -4806,14 +4806,14 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				if(I486_OPCODE_IMUL_R_RM_I8==inst.opCode)
 				{
 					long long int i2=value2.GetAsSignedDword();
-					long long int i3=inst.GetSimm8();
+					long long int i3=inst.EvalSimm8();
 					result=i2*i3;
 					value1.SetSignedDword((int)result);
 				}
 				else if(I486_OPCODE_IMUL_R_RM_IMM==inst.opCode)
 				{
 					long long int i2=value2.GetAsSignedDword();
-					long long int i3=inst.GetSimm16or32(inst.operandSize);
+					long long int i3=inst.EvalSimm16or32(inst.operandSize);
 					result=i2*i3;
 					value1.SetSignedDword((int)result);
 				}

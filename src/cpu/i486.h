@@ -759,13 +759,12 @@ public:
 		/*! Returns Signed Imm16 or Imm32 after decoding. */
 		int EvalSimm16or32(unsigned int operandSize) const
 		{
-			switch(operandSize)
+			if(16==operandSize)
 			{
-			case 8:
-				return EvalSimm8();
-			case 16:
 				return EvalSimm16();
-			default:
+			}
+			else
+			{
 				return EvalSimm32();
 			}
 		}
