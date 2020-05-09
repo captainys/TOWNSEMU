@@ -625,8 +625,8 @@ public:
 
 		unsigned int opCode;
 		unsigned int operandLen;
-		unsigned char operand[12];  // Is 8 bytes maximum?
-		unsigned char imm[6];       // Probably 4 bytes is good enough.
+		unsigned char operand[12];  // Is 8 bytes maximum?  Maybe FPU instruction use up to 10 bytes.  I'll see.
+		unsigned char imm[4];       // Probably 4 bytes is good enough.
 
 		inline void Clear(void)
 		{

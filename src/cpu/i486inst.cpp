@@ -724,7 +724,7 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 	case I486_OPCODE_JGE_REL8:  // 0x7D,
 	case I486_OPCODE_JLE_REL8:  // 0x7E,
 	case I486_OPCODE_JG_REL8:   // 0x7F,
-		FetchOperand8(inst,ptr,seg,offset,mem);
+		FetchImm8(inst,ptr,seg,offset,mem);
 		break;
 
 
@@ -820,7 +820,7 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 	case I486_OPCODE_LOOP://             0xE2,
 	case I486_OPCODE_LOOPE://            0xE1,
 	case I486_OPCODE_LOOPNE://           0xE0,
-		FetchOperand8(inst,ptr,seg,offset,mem);
+		FetchImm8(inst,ptr,seg,offset,mem);
 		break;
 
 
@@ -2067,7 +2067,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		}
 		cpputil::ExtendString(disasm,8);
 		{
-			auto offset=GetSimm8();
+			auto offset=EvalSimm8();
 			auto destin=eip+offset+numBytes;
 			disasm+=cpputil::Uitox(destin);
 
@@ -3157,7 +3157,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	{ \
 		if(true==(jumpCond)) \
 		{ \
-			auto offset=inst.GetSimm8(); \
+			auto offset=inst.EvalSimm8(); \
 			state.EIP=((state.EIP+offset+inst.numBytes)&operandSizeMask[inst.operandSize>>3]); \
 			clocksPassed=3; \
 			EIPSetByInstruction=true; \
@@ -5131,7 +5131,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 	case I486_OPCODE_JMP_REL8://         0xEB,   // cb
 		{
-			auto offset=inst.GetSimm8();
+			auto offset=inst.EvalSimm8();
 			state.EIP=((state.EIP+offset+inst.numBytes)&operandSizeMask[inst.operandSize>>3]);
 			clocksPassed=3;
 			EIPSetByInstruction=true;
