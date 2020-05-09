@@ -3255,7 +3255,30 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		} \
 	}
 
-
+	#define BINARYOP_xAX_I(func16,func32,update) \
+	{ \
+		clocksPassed=1; \
+		if(16==inst.operandSize) \
+		{ \
+			auto ax=GetAX(); \
+			auto v=inst.GetUimm16(); \
+			(func16)(ax,v); \
+			if(true==update) \
+			{ \
+				SetAX(ax); \
+			} \
+		} \
+		else \
+		{ \
+			auto eax=GetEAX(); \
+			auto v=inst.GetUimm32(); \
+			(func32)(eax,v); \
+			if(true==update) \
+			{ \
+				SetEAX(eax); \
+			} \
+		} \
+	}
 
 
 	static const unsigned int reg8AndPattern[]=
@@ -3896,88 +3919,33 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 
 	case  I486_OPCODE_ADC_A_FROM_I://    0x15,
-	case  I486_OPCODE_ADD_A_FROM_I://    0x05,
-	case  I486_OPCODE_AND_A_FROM_I://    0x25,
-	case  I486_OPCODE_CMP_A_FROM_I://    0x3D,
-	case   I486_OPCODE_OR_A_FROM_I://    0x0D,
-	case  I486_OPCODE_SBB_A_FROM_I://    0x1D,
-	case  I486_OPCODE_SUB_A_FROM_I://    0x2D,
-	case I486_OPCODE_TEST_A_FROM_I://    0xA9,
-	case  I486_OPCODE_XOR_A_FROM_I:
-		clocksPassed=1;
-		if(16==inst.operandSize)
-		{
-			auto ax=GetAX();
-			auto v=inst.GetUimm16();
-			switch(inst.opCode)
-			{
-			case I486_OPCODE_ADC_A_FROM_I://    0x15,
-				AdcWord(ax,v);
-				break;
-			case I486_OPCODE_ADD_A_FROM_I://    0x05,
-				AddWord(ax,v);
-				break;
-			case I486_OPCODE_AND_A_FROM_I://    0x25,
-			case I486_OPCODE_TEST_A_FROM_I://    0xA9,
-				AndWord(ax,v);
-				break;
-			case  I486_OPCODE_SBB_A_FROM_I://    0x1D,
-				SbbWord(ax,v);
-				break;
-			case I486_OPCODE_CMP_A_FROM_I://    0x3D,
-			case I486_OPCODE_SUB_A_FROM_I://    0x2D,
-				SubWord(ax,v);
-				break;
-			case I486_OPCODE_OR_A_FROM_I://      0x0D,
-				OrWord(ax,v);
-				break;
-			case I486_OPCODE_XOR_A_FROM_I:
-				XorWord(ax,v);
-				break;
-			}
-			if(I486_OPCODE_TEST_A_FROM_I!=inst.opCode &&
-			   I486_OPCODE_CMP_A_FROM_I!=inst.opCode)
-			{
-				SetAX(ax);
-			}
-		}
-		else
-		{
-			auto eax=GetEAX();
-			auto v=inst.GetUimm32();
-			switch(inst.opCode)
-			{
-			case I486_OPCODE_ADC_A_FROM_I://    0x15,
-				AdcDword(eax,v);
-				break;
-			case I486_OPCODE_ADD_A_FROM_I://    0x05,
-				AddDword(eax,v);
-				break;
-			case I486_OPCODE_AND_A_FROM_I://    0x25,
-			case I486_OPCODE_TEST_A_FROM_I://    0xA9,
-				AndDword(eax,v);
-				break;
-			case  I486_OPCODE_SBB_A_FROM_I://    0x1D,
-				SbbDword(eax,v);
-				break;
-			case I486_OPCODE_CMP_A_FROM_I://    0x3D,
-			case I486_OPCODE_SUB_A_FROM_I://    0x2D,
-				SubDword(eax,v);
-				break;
-			case I486_OPCODE_OR_A_FROM_I://      0x0D,
-				OrDword(eax,v);
-				break;
-			case I486_OPCODE_XOR_A_FROM_I:
-				XorDword(eax,v);
-				break;
-			}
-			if(I486_OPCODE_TEST_A_FROM_I!=inst.opCode &&
-			   I486_OPCODE_CMP_A_FROM_I!=inst.opCode)
-			{
-				SetEAX(eax);
-			}
-		}
+		BINARYOP_xAX_I(AdcWord,AdcDword,true);
 		break;
+	case  I486_OPCODE_ADD_A_FROM_I://    0x05,
+		BINARYOP_xAX_I(AddWord,AddDword,true);
+		break;
+	case  I486_OPCODE_AND_A_FROM_I://    0x25,
+		BINARYOP_xAX_I(AndWord,AndDword,true);
+		break;
+	case  I486_OPCODE_CMP_A_FROM_I://    0x3D,
+		BINARYOP_xAX_I(SubWord,SubDword,false);
+		break;
+	case   I486_OPCODE_OR_A_FROM_I://    0x0D,
+		BINARYOP_xAX_I(OrWord,OrDword,true);
+		break;
+	case  I486_OPCODE_SBB_A_FROM_I://    0x1D,
+		BINARYOP_xAX_I(SbbWord,SbbDword,true);
+		break;
+	case  I486_OPCODE_SUB_A_FROM_I://    0x2D,
+		BINARYOP_xAX_I(SubWord,SubDword,true);
+		break;
+	case I486_OPCODE_TEST_A_FROM_I://    0xA9,
+		BINARYOP_xAX_I(AndWord,AndDword,false);
+		break;
+	case  I486_OPCODE_XOR_A_FROM_I:
+		BINARYOP_xAX_I(XorWord,XorDword,true);
+		break;
+
 	case  I486_OPCODE_ADC_RM8_FROM_R8:// 0x10,
 		BINARYOP_RM8_R8(AdcByte,3,true);
 		break;
