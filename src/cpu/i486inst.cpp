@@ -420,7 +420,7 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 
 	case I486_OPCODE_AAD_ADX://    0xD5,
 	case I486_OPCODE_AAM_AMX://    0xD4,
-		FetchOperand8(inst,ptr,seg,offset,mem);
+		FetchImm8(inst,ptr,seg,offset,mem);
 		break;
 	case I486_OPCODE_AAS:
 		break;
@@ -436,7 +436,7 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 
 	case I486_OPCODE_BT_BTS_BTR_BTC_RM_I8:// 0FBA
 		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
-		FetchOperand8(inst,ptr,seg,offset,mem);
+		FetchImm8(inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 
@@ -1357,23 +1357,23 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 
 
 	case I486_OPCODE_AAD_ADX://    0xD5,
-		if(0x0A==GetUimm8())
+		if(0x0A==EvalUimm8())
 		{
 			disasm="AAD";
 		}
 		else
 		{
-			disasm=DisassembleTypicalOneImm("ADX",GetUimm8(),8);
+			disasm=DisassembleTypicalOneImm("ADX",EvalUimm8(),8);
 		}
 		break;
 	case I486_OPCODE_AAM_AMX://    0xD4,
-		if(0x0A==GetUimm8())
+		if(0x0A==EvalUimm8())
 		{
 			disasm="AAM";
 		}
 		else
 		{
-			disasm=DisassembleTypicalOneImm("AMX",GetUimm8(),8);
+			disasm=DisassembleTypicalOneImm("AMX",EvalUimm8(),8);
 		}
 		break;
 	case I486_OPCODE_AAS:
@@ -1404,7 +1404,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 			disasm="?";
 			break;
 		}
-		disasm=DisassembleTypicalRM_I8(disasm,op1,GetUimm8());
+		disasm=DisassembleTypicalRM_I8(disasm,op1,EvalUimm8());
 		break;
 
 
@@ -4088,7 +4088,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 
 	case I486_OPCODE_AAD_ADX://    0xD5,
-		if(0x0A==inst.GetUimm8())
+		if(0x0A==inst.EvalUimm8())
 		{
 			clocksPassed=14;
 			auto AL=GetAH()*10+GetAL();
@@ -4107,7 +4107,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 
 	case I486_OPCODE_AAM_AMX://    0xD4,
-		if(0x0A==inst.GetUimm8())
+		if(0x0A==inst.EvalUimm8())
 		{
 			clocksPassed=15;
 			auto AL=GetAL();
@@ -4175,7 +4175,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
 			if(true!=state.exception)
 			{
-				auto bitOffset=inst.GetUimm8()&0x1F;
+				auto bitOffset=inst.EvalUimm8()&0x1F;
 				auto bit=(1<<bitOffset);
 				auto src=value1.GetAsDword();
 				SetCF(0!=(src&bit));
