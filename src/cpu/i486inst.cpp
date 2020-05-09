@@ -702,7 +702,7 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 		break;
 	case I486_OPCODE_INT://        0xCD,
 	case I486_OPCODE_INTO://       0xCE,
-		FetchOperand8(inst,ptr,seg,offset,mem);
+		FetchImm8(inst,ptr,seg,offset,mem);
 		break;
 
 
@@ -765,17 +765,17 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 	case I486_OPCODE_BINARYOP_RM8_FROM_I8:
 	case I486_OPCODE_BINARYOP_RM8_FROM_I8_ALIAS:
 		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
-		FetchOperand8(inst,ptr,seg,offset,mem);
+		FetchImm8(inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,8,inst.operand);
 		break;
 	case I486_OPCODE_BINARYOP_R_FROM_I:
 		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
-		FetchOperand16or32(inst,ptr,seg,offset,mem);
+		FetchImm16or32(inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 	case I486_OPCODE_BINARYOP_RM_FROM_SXI8:
 		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
-		FetchOperand8(inst,ptr,seg,offset,mem);
+		FetchImm8(inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 
@@ -1958,10 +1958,10 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 	case I486_OPCODE_INTO://        0xCD,
 	case I486_OPCODE_INT://        0xCD,
 		disasm=(I486_OPCODE_INT==opCode ? "INT" : "INTO");
-		disasm=DisassembleTypicalOneImm(disasm,GetUimm8(),8);
+		disasm=DisassembleTypicalOneImm(disasm,EvalUimm8(),8);
 		if(I486_OPCODE_INT==opCode)
 		{
-			auto label=symTable.GetINTLabel(GetUimm8());
+			auto label=symTable.GetINTLabel(EvalUimm8());
 			if(""!=label)
 			{
 				disasm.push_back(' ');
@@ -2184,31 +2184,31 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		switch(GetREG())
 		{
 		case 0:
-			disasm=DisassembleTypicalOneOperandAndImm("ADD",op1,GetUimm8(),8);
+			disasm=DisassembleTypicalOneOperandAndImm("ADD",op1,EvalUimm8(),8);
 			break;
 		case 1:
-			disasm=DisassembleTypicalOneOperandAndImm("OR",op1,GetUimm8(),8);
+			disasm=DisassembleTypicalOneOperandAndImm("OR",op1,EvalUimm8(),8);
 			break;
 		case 2:
-			disasm=DisassembleTypicalOneOperandAndImm("ADC",op1,GetUimm8(),8);
+			disasm=DisassembleTypicalOneOperandAndImm("ADC",op1,EvalUimm8(),8);
 			break;
 		case 3:
-			disasm=DisassembleTypicalOneOperandAndImm("SBB",op1,GetUimm8(),8);
+			disasm=DisassembleTypicalOneOperandAndImm("SBB",op1,EvalUimm8(),8);
 			break;
 		case 4:
-			disasm=DisassembleTypicalOneOperandAndImm("AND",op1,GetUimm8(),8);
+			disasm=DisassembleTypicalOneOperandAndImm("AND",op1,EvalUimm8(),8);
 			break;
 		case 5:
-			disasm=DisassembleTypicalOneOperandAndImm("SUB",op1,GetUimm8(),8);
+			disasm=DisassembleTypicalOneOperandAndImm("SUB",op1,EvalUimm8(),8);
 			break;
 		case 6:
-			disasm=DisassembleTypicalOneOperandAndImm("XOR",op1,GetUimm8(),8);
+			disasm=DisassembleTypicalOneOperandAndImm("XOR",op1,EvalUimm8(),8);
 			break;
 		case 7:
-			disasm=DisassembleTypicalOneOperandAndImm("CMP",op1,GetUimm8(),8);
+			disasm=DisassembleTypicalOneOperandAndImm("CMP",op1,EvalUimm8(),8);
 			break;
 		default:
-			disasm=DisassembleTypicalOneOperandAndImm(cpputil::Ubtox(opCode)+"?",op1,GetUimm8(),8);
+			disasm=DisassembleTypicalOneOperandAndImm(cpputil::Ubtox(opCode)+"?",op1,EvalUimm8(),8);
 			break;
 		}
 		break;
@@ -2216,31 +2216,31 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		switch(GetREG())
 		{
 		case 0:
-			disasm=DisassembleTypicalOneOperandAndImm("ADD",op1,GetUimm16or32(operandSize),operandSize);
+			disasm=DisassembleTypicalOneOperandAndImm("ADD",op1,EvalUimm8or16or32(operandSize),operandSize);
 			break;
 		case 1:
-			disasm=DisassembleTypicalOneOperandAndImm("OR",op1,GetUimm16or32(operandSize),operandSize);
+			disasm=DisassembleTypicalOneOperandAndImm("OR",op1,EvalUimm8or16or32(operandSize),operandSize);
 			break;
 		case 2:
-			disasm=DisassembleTypicalOneOperandAndImm("ADC",op1,GetUimm16or32(operandSize),operandSize);
+			disasm=DisassembleTypicalOneOperandAndImm("ADC",op1,EvalUimm8or16or32(operandSize),operandSize);
 			break;
 		case 3:
-			disasm=DisassembleTypicalOneOperandAndImm("SBB",op1,GetUimm16or32(operandSize),operandSize);
+			disasm=DisassembleTypicalOneOperandAndImm("SBB",op1,EvalUimm8or16or32(operandSize),operandSize);
 			break;
 		case 4:
-			disasm=DisassembleTypicalOneOperandAndImm("AND",op1,GetUimm16or32(operandSize),operandSize);
+			disasm=DisassembleTypicalOneOperandAndImm("AND",op1,EvalUimm8or16or32(operandSize),operandSize);
 			break;
 		case 5:
-			disasm=DisassembleTypicalOneOperandAndImm("SUB",op1,GetUimm16or32(operandSize),operandSize);
+			disasm=DisassembleTypicalOneOperandAndImm("SUB",op1,EvalUimm8or16or32(operandSize),operandSize);
 			break;
 		case 6:
-			disasm=DisassembleTypicalOneOperandAndImm("XOR",op1,GetUimm16or32(operandSize),operandSize);
+			disasm=DisassembleTypicalOneOperandAndImm("XOR",op1,EvalUimm8or16or32(operandSize),operandSize);
 			break;
 		case 7:
-			disasm=DisassembleTypicalOneOperandAndImm("CMP",op1,GetUimm16or32(operandSize),operandSize);
+			disasm=DisassembleTypicalOneOperandAndImm("CMP",op1,EvalUimm8or16or32(operandSize),operandSize);
 			break;
 		default:
-			disasm=DisassembleTypicalOneOperandAndImm(cpputil::Ubtox(opCode)+"?",op1,GetUimm16or32(operandSize),operandSize);
+			disasm=DisassembleTypicalOneOperandAndImm(cpputil::Ubtox(opCode)+"?",op1,EvalUimm8or16or32(operandSize),operandSize);
 			break;
 		}
 		break;
@@ -2276,7 +2276,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 			break;
 		}
 		{
-			short imm=GetUimm8();
+			short imm=EvalUimm8();
 			if(0x80&imm)
 			{
 				imm-=0x100;
@@ -5138,13 +5138,13 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 	case I486_OPCODE_INT://        0xCD,
 		clocksPassed=(IsInRealMode() ? 30 : 44);
-		Interrupt(inst.GetUimm8(),mem,2);
+		Interrupt(inst.EvalUimm8(),mem,2);
 		EIPSetByInstruction=true;
 		break;
 	case I486_OPCODE_INTO://       0xCE,
 		if(GetOF())
 		{
-			Interrupt(inst.GetUimm8(),mem,2);
+			Interrupt(inst.EvalUimm8(),mem,2);
 			EIPSetByInstruction=true;
 			clocksPassed=(IsInRealMode() ? 28 : 46);
 		}
@@ -5358,7 +5358,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			}
 
 			auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,1);
-			auto value2=inst.GetUimm8();
+			auto value2=inst.EvalUimm8();
 			if(true==state.exception)
 			{
 				break;
@@ -5420,11 +5420,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			unsigned int value2;
 			if(I486_OPCODE_BINARYOP_R_FROM_I==inst.opCode)
 			{
-				value2=inst.GetUimm16or32(inst.operandSize);
+				value2=inst.EvalUimm8or16or32(inst.operandSize);
 			}
 			else
 			{
-				value2=inst.GetUimm8();
+				value2=inst.EvalUimm8();
 				if(value2&0x80)
 				{
 					value2|=0xFFFFFF00;
