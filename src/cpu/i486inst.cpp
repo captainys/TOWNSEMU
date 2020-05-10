@@ -3734,10 +3734,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					{
 						clocksPassed=20; // 13-26.  I don't know exactly how to calculate it.
 						int DXAX=GetAX();
-						if((0x8000&DXAX)!=0)
-						{
-							DXAX-=0x10000;
-						}
+						DXAX=(DXAX&0x7FFF)-(DXAX&0x8000);
 						DXAX*=multiplicand;
 
 						SetAX(DXAX&0xFFFF);
@@ -3761,10 +3758,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					{
 						clocksPassed=30; // 13-42.  I don't know exactly how to calculate it.
 						long long int EDXEAX=GetEAX();
-						if((0x80000000&EDXEAX)!=0)
-						{
-							EDXEAX-=0x100000000LL;
-						}
+						EDXEAX=(EDXEAX&0x7FFFFFFF)-(EDXEAX&0x80000000);
 						EDXEAX*=(long long int)multiplicand;
 
 						SetEAX(EDXEAX&0xFFFFFFFF);
