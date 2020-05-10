@@ -877,56 +877,52 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 		switch(inst.addressSize)
 		{
 		default:
-		case 32:
-			FetchOperand32(inst,ptr,seg,offset,mem);
+			FetchImm32(inst,ptr,seg,offset,mem);
 			break;
 		case 16:
-			FetchOperand16(inst,ptr,seg,offset,mem);
+			FetchImm16(inst,ptr,seg,offset,mem);
 			break;
 		}
-		op2.MakeSimpleAddressOffset(inst);
+		op2.MakeSimpleAddressOffsetFromImm(inst);
 		op1.MakeByRegisterNumber(8,REG_AL-REG_8BIT_REG_BASE);
 		break;
 	case I486_OPCODE_MOV_M_TO_EAX: //     0xA1, // 16/32 depends on ADDRESSSIZE_OVERRIDE
 		switch(inst.addressSize)
 		{
 		default:
-		case 32:
-			FetchOperand32(inst,ptr,seg,offset,mem);
+			FetchImm32(inst,ptr,seg,offset,mem);
 			break;
 		case 16:
-			FetchOperand16(inst,ptr,seg,offset,mem);
+			FetchImm16(inst,ptr,seg,offset,mem);
 			break;
 		}
-		op2.MakeSimpleAddressOffset(inst);
+		op2.MakeSimpleAddressOffsetFromImm(inst);
 		op1.MakeByRegisterNumber(inst.operandSize,REG_AL-REG_8BIT_REG_BASE);
 		break;
 	case I486_OPCODE_MOV_M_FROM_AL: //    0xA2, // 16/32 depends on ADDRESSSIZE_OVERRIDE
 		switch(inst.addressSize)
 		{
 		default:
-		case 32:
-			FetchOperand32(inst,ptr,seg,offset,mem);
+			FetchImm32(inst,ptr,seg,offset,mem);
 			break;
 		case 16:
-			FetchOperand16(inst,ptr,seg,offset,mem);
+			FetchImm16(inst,ptr,seg,offset,mem);
 			break;
 		}
-		op1.MakeSimpleAddressOffset(inst);
+		op1.MakeSimpleAddressOffsetFromImm(inst);
 		op2.MakeByRegisterNumber(8,REG_AL-REG_8BIT_REG_BASE);
 		break;
 	case I486_OPCODE_MOV_M_FROM_EAX: //   0xA3, // 16/32 depends on ADDRESSSIZE_OVERRIDE
 		switch(inst.addressSize)
 		{
 		default:
-		case 32:
-			FetchOperand32(inst,ptr,seg,offset,mem);
+			FetchImm32(inst,ptr,seg,offset,mem);
 			break;
 		case 16:
-			FetchOperand16(inst,ptr,seg,offset,mem);
+			FetchImm16(inst,ptr,seg,offset,mem);
 			break;
 		}
-		op1.MakeSimpleAddressOffset(inst);
+		op1.MakeSimpleAddressOffsetFromImm(inst);
 		op2.MakeByRegisterNumber(inst.operandSize,REG_AL-REG_8BIT_REG_BASE);
 		break;
 
@@ -4301,30 +4297,35 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		break;
 	case I486_OPCODE_CALL_REL://   0xE8,
+		{
+			clocksPassed=3;
+
+			auto offset=inst.EvalSimm16or32(inst.operandSize);
+			auto destin=state.EIP+offset+inst.numBytes;
+			destin&=operandSizeMask[inst.operandSize>>3];
+
+			Push(mem,inst.operandSize,state.EIP+inst.numBytes);
+			if(true==enableCallStack)
+			{
+				PushCallStack(
+				    false,0xffff,0xffff,
+				    state.GetCR(0),
+				    state.CS().value,state.EIP,inst.numBytes,
+				    state.CS().value,destin,
+				    mem);
+			}
+
+			state.EIP=destin;
+			EIPSetByInstruction=true;
+		}
+		break;
 	case I486_OPCODE_JMP_REL://          0xE9,   // cw or cd
 		{
 			clocksPassed=3;
 
 			auto offset=inst.EvalSimm16or32(inst.operandSize);
 			auto destin=state.EIP+offset+inst.numBytes;
-			if(16==inst.operandSize)
-			{
-				destin&=0xffff;
-			}
-
-			if(I486_OPCODE_CALL_REL==inst.opCode) // Otherwise it is JMP.
-			{
-				Push(mem,inst.operandSize,state.EIP+inst.numBytes);
-				if(true==enableCallStack)
-				{
-					PushCallStack(
-					    false,0xffff,0xffff,
-					    state.GetCR(0),
-					    state.CS().value,state.EIP,inst.numBytes,
-					    state.CS().value,destin,
-					    mem);
-				}
-			}
+			destin&=operandSizeMask[inst.operandSize>>3];
 
 			state.EIP=destin;
 			EIPSetByInstruction=true;

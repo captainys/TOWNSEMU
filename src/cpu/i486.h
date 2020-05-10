@@ -829,7 +829,7 @@ public:
 		/*! Make Simple Offset from segment base.  Like for MOV(A0H,A1H,A2H,A3H)
 		    Number of bytes evaluated will be inst.addressSize/8.
 		*/
-		void MakeSimpleAddressOffset(const Instruction &inst);
+		void MakeSimpleAddressOffsetFromImm(const Instruction &inst);
 
 		/*! Decode FAR address and returns the number of bytes used.
 		*/

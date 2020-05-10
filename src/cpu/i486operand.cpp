@@ -470,7 +470,7 @@ void i486DX::Operand::MakeByRegisterNumber(int dataSize,int regNum)
 		break;
 	} */
 }
-void i486DX::Operand::MakeSimpleAddressOffset(const Instruction &inst)
+void i486DX::Operand::MakeSimpleAddressOffsetFromImm(const Instruction &inst)
 {
 	operandType=OPER_ADDR;
 	baseReg=REG_NULL;
@@ -481,10 +481,10 @@ void i486DX::Operand::MakeSimpleAddressOffset(const Instruction &inst)
 	{
 	default:
 	case 32:
-		offset=cpputil::GetSignedDword(inst.operand+inst.operandLen-4);
+		offset=inst.EvalSimm32();
 		break;
 	case 16:
-		offset=cpputil::GetSignedWord(inst.operand+inst.operandLen-2);
+		offset=inst.EvalSimm16();
 		break;
 	}
 }
