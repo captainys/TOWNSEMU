@@ -188,8 +188,7 @@ bool Setup(FMTowns &towns,const TownsARGV &argv)
 	}
 
 
-	towns.var.freeRunTimerShift=9;
-	std::cout << "**** For Testing Purpose Free-Running Timer is scaled up by 512.\n";
+	towns.var.freeRunTimerShift=0;
 
 	std::cout << "Loaded ROM Images.\n";
 

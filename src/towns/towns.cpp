@@ -415,10 +415,11 @@ unsigned int FMTowns::RunOneInstruction(void)
 	// Eg.  66MHz ->  66 clocks passed means 1 micro second.
 	//                clockBalance is 66000.
 	//                clockBalance/freq=1000.  1000 nano seconds.
-	auto passedInNanoSec=(state.clockBalance/state.freq);
+	auto FREQ=state.freq;
+	auto passedInNanoSec=(state.clockBalance/FREQ);
 	state.townsTime+=passedInNanoSec;
 	state.cpuTime+=passedInNanoSec;
-	state.clockBalance%=state.freq;
+	state.clockBalance%=FREQ;
 
 	var.disassemblePointer.SEG=cpu.state.CS().value;
 	var.disassemblePointer.OFFSET=cpu.state.EIP;
