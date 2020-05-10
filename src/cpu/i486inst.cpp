@@ -758,7 +758,7 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 	// case I486_OPCODE_JPE_REL://   0x0F8A, Same as JP_REL
 	// case I486_OPCODE_JPO_REL://   0x0F8B, Same as JNP_REL
 	case I486_OPCODE_JS_REL://    0x0F88,
-		FetchOperand16or32(inst,ptr,seg,offset,mem);
+		FetchImm16or32(inst,ptr,seg,offset,mem);
 		break;
 
 
@@ -2166,7 +2166,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		}
 		cpputil::ExtendString(disasm,8);
 		{
-			auto offset=GetSimm16or32(operandSize);
+			auto offset=EvalSimm16or32(operandSize);
 			auto destin=eip+offset+numBytes;
 			disasm+=cpputil::Uitox(destin);
 
@@ -3109,18 +3109,6 @@ std::string i486DX::Instruction::DisassembleTypicalTwoOperands(std::string inst,
 	return disasm;
 }
 
-int i486DX::Instruction::GetSimm16or32(unsigned int operandSize) const
-{
-	if(16==operandSize)
-	{
-		return GetSimm16();
-	}
-	else
-	{
-		return GetSimm32();
-	}
-}
-
 /* static */ std::string i486DX::Get8BitRegisterNameFromMODR_M(unsigned char MOD_RM)
 {
 	auto REG_OPCODE=((MOD_RM>>3)&7);
@@ -3172,7 +3160,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	{ \
 		if(true==(jumpCond)) \
 		{ \
-			auto offset=inst.GetSimm16or32(inst.operandSize); \
+			auto offset=inst.EvalSimm16or32(inst.operandSize); \
 			auto destin=state.EIP+offset+inst.numBytes; \
 			destin&=operandSizeMask[inst.operandSize>>3]; \
 			state.EIP=destin; \

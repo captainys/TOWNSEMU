@@ -661,27 +661,6 @@ public:
 			return (MODR_M>>3)&7;
 		}
 
-		/*! Returns Signed Imm8 (last byte in the operand) after decoding. */
-		inline int GetSimm8(void) const
-		{
-			return cpputil::GetSignedByte(operand[operandLen-1]);
-		}
-
-		/*! Returns Signed Imm16 (last 2 byte in the operand) after decoding. */
-		inline int GetSimm16(void) const
-		{
-			return cpputil::GetSignedWord(operand+operandLen-2);
-		}
-
-		/*! Returns Signed Imm32 (last 4 byte in the operand) after decoding. */
-		inline int GetSimm32(void) const
-		{
-			return cpputil::GetSignedDword(operand+operandLen-4);
-		}
-
-		/*! Returns Signed Imm16 or Imm32 after decoding. */
-		int GetSimm16or32(unsigned int operandSize) const;
-
 
 
 		/*! Returns Unsigned Imm8 (last byte in the operand) after decoding. */
