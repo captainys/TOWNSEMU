@@ -214,6 +214,13 @@ int main(int ac,char *av[])
 		"68 00006809","PUSH    DWORD PTR 00006809H",
 		"66 68 6809" ,"PUSH    WORD PTR 6809H",
 
+		"26 A0 01234567",   "MOV     AL,ES:[01234567H]",
+		"66 64 A1 01234567","MOV     AX,FS:[01234567H]",
+		"65 A1 01234567",   "MOV     EAX,GS:[01234567H]",
+		                               
+		"26 A2 01234567",   "MOV     ES:[01234567H],AL",
+		"66 64 A3 01234567","MOV     FS:[01234567H],AX",
+		"65 A3 01234567",   "MOV     GS:[01234567H],EAX",
 	};
 
 	for(int i=0; i<sizeof(test32_32)/sizeof(test32_32[0]); i+=2)
@@ -225,6 +232,27 @@ int main(int ac,char *av[])
 	}
 
 
+
+	const char *const test16_16[]=
+	{
+		"8B C2",      "MOV     AX,DX",
+		"8B D0",      "MOV     DX,AX",
+		"8A 80 1FFF", "MOV     AL,[BX+SI+1FFFH]",
+		"8A 83 2FFF", "MOV     AL,[BP+DI+2FFFH]",
+		"B9 5678",    "MOV     CX,5678H",
+		"BC 9876",    "MOV     SP,9876H",
+		"26 A0 4567", "MOV     AL,ES:[4567H]",
+		"2E A1 4567", "MOV     AX,CS:[4567H]",
+		"26 A2 4567", "MOV     ES:[4567H],AL",
+		"2E A3 4567", "MOV     CS:[4567H],AX",
+	};
+	for(int i=0; i<sizeof(test16_16)/sizeof(test16_16[0]); i+=2)
+	{
+		if(true!=TestDisassembly(16,16,test16_16[i],test16_16[i+1]))
+		{
+			return 1;
+		}
+	}
 
 
 
