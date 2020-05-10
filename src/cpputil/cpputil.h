@@ -78,10 +78,7 @@ inline unsigned int GetWord(const unsigned char byteData[])
 inline int GetSignedDword(const unsigned char byteData[])
 {
 	long long int dword=GetDword(byteData);
-	if(0x80000000<=dword)
-	{
-		dword-=0x100000000;
-	}
+	dword=(dword&0x7FFFFFFF)-(dword&0x80000000);
 	return (int)dword;
 }
 
@@ -89,19 +86,14 @@ inline int GetSignedDword(const unsigned char byteData[])
 inline int GetSignedWord(const unsigned char byteData[])
 {
 	int word=GetWord(byteData);
-	if(0x8000<=word)
-	{
-		word-=0x10000;
-	}
+	word=(word&0x7FFF)-(word&0x8000);
 	return word;
 }
 
-inline int GetSignedByte(const unsigned char byteData){
+inline int GetSignedByte(const unsigned char byteData)
+{
 	int byte=byteData;
-	if(0x80<=byteData)
-	{
-		byte-=0x100;
-	}
+	byte=(byte&0x7F)-(byte&0x80);
 	return byte;
 }
 
