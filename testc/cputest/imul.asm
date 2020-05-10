@@ -5,6 +5,7 @@
 						PUBLIC	TEST_IMUL_R32_MEM
 						PUBLIC	TEST_MUL_R32_R32
 						PUBLIC	TEST_MUL_R32_MEM
+						PUBLIC	TEST_IMUL_R32_R32_I8
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -157,6 +158,55 @@ TEST_MUL_R32_MEM		ENDP
 
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+IMUL_R32_R32_I8			MACRO	R1,R2,I8
+						MOV		R1,[EBP+12]
+						MOV		R2,[EBP+16]
+						IMUL	R1,R2,I8
+						PUSHFD
+						MOV		[EDI],R1
+						POP		EBX
+						AND		EBX,MUL_EFLAGS_MASK
+						MOV		[EDI+4],EBX
+						LEA		EDI,[EDI+8]
+						ENDM
+
+
+; void TEST_IMUL_R32_R32_I8(unsigned int res[32],unsigned int EAX,unsigned int EDX);
+TEST_IMUL_R32_R32_I8	PROC
+						PUSH	EBP				; [EBP]=PrevEBP,  [EBP+4]=EIP,  [EBP+8]=ResultPtr,  [EBP+12]=EAX,  [EBP+16]=EDX
+						MOV		EBP,ESP
+						SUB		ESP,4
+						PUSHAD
+
+						MOV		EDI,[EBP+8]
+						IMUL_R32_R32_I8		EAX,EBX,-128
+						IMUL_R32_R32_I8		EAX,EBX,-112
+						IMUL_R32_R32_I8		EAX,EBX,-96
+						IMUL_R32_R32_I8		EAX,EBX,-80
+						IMUL_R32_R32_I8		EAX,EBX,-64
+						IMUL_R32_R32_I8		EAX,EBX,-48
+						IMUL_R32_R32_I8		EAX,EBX,-32
+						IMUL_R32_R32_I8		EAX,EBX,-16
+						IMUL_R32_R32_I8		EAX,EBX, 0
+						IMUL_R32_R32_I8		EAX,EBX, 16
+						IMUL_R32_R32_I8		EAX,EBX, 32
+						IMUL_R32_R32_I8		EAX,EBX, 48
+						IMUL_R32_R32_I8		EAX,EBX, 64
+						IMUL_R32_R32_I8		EAX,EBX, 80
+						IMUL_R32_R32_I8		EAX,EBX, 96
+						IMUL_R32_R32_I8		EAX,EBX, 127
+
+						POPAD
+						ADD		ESP,4
+						POP		EBP
+						RET
+TEST_IMUL_R32_R32_I8	ENDP
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 

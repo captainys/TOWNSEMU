@@ -4793,20 +4793,24 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					return 0;
 				}
 				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
-				bool clearOFCF=false;
+				bool setOFCF=false;
 				switch(inst.operandSize)
 				{
 				case 8:
-					clearOFCF=(result<-128 || 127<result);
+					setOFCF=(result<-128 || 127<result);
 					break;
 				case 16:
-					clearOFCF=(result<-32768 || 32767<result);
+					setOFCF=(result<-32768 || 32767<result);
 					break;
 				case 32:
-					clearOFCF=(result<-0x80000000LL || 0x7FFFFFFFLL<result);
+					setOFCF=(result<-0x80000000LL || 0x7FFFFFFFLL<result);
 					break;
 				}
-				if(true==clearOFCF)
+				if(true==setOFCF)
+				{
+					SetCFOF();
+				}
+				else
 				{
 					ClearCFOF();
 					//SetCF(false);

@@ -108,6 +108,32 @@ void GenMulR32xR32Test(FILE *ofp)
 	fprintf(ofp,"};\n");
 }
 
+extern void TEST_IMUL_R32_R32_I8(unsigned int res[32],unsigned int EAX,unsigned int EDX);
+
+void GetnImulR32xR32xI8Test(FILE *ofp)
+{
+	unsigned int res[32];
+	fprintf(ofp,"unsigned int IMUL_32_32_I8_TABLE[]={\n");
+	for(int i=0; i<LEN(testNumberSrc32); ++i)
+	{
+		TEST_IMUL_R32_R32_I8(res,i,testNumberSrc32[i]);
+		fprintf(ofp,"\t0x%08x,0x%08x,\n",i,testNumberSrc32[i]);
+		for(int j=0; j<32; ++j)
+		{
+			if(0==(j%16))
+			{
+				fprintf(ofp,"\t");
+			}
+			fprintf(ofp,"0x%08x,",res[j]);
+			if(15==(j%16))
+			{
+				fprintf(ofp,"\n");
+			}
+		}
+	}
+	fprintf(ofp,"};\n");
+}
+
 extern C0_BITSHIFT_R8_I8(unsigned int res[16],unsigned int v0);
 extern C1_BITSHIFT_R_I8(unsigned int res[16],unsigned int v0);
 extern D3_BITSHIFT_R_CL(unsigned int res[16],unsigned int v0);
@@ -438,6 +464,7 @@ int main(void)
 	FILE *ofp=fopen("cputest/testcase.h","w");
 	GenImulR32xR32Test(ofp);
 	GenMulR32xR32Test(ofp);
+	GetnImulR32xR32xI8Test(ofp);
 	GenBitShift(ofp);
 	GenF6F7_NOT_NEG_MUL_IMUL_DIV_IDIV(ofp);
 	GenF6F7_TEST_R_I(ofp);

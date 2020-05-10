@@ -10,6 +10,7 @@ extern void TEST_IMUL_R32_R32(unsigned int eax_edx_eflags[3],unsigned int eax,un
 extern void TEST_IMUL_R32_MEM(unsigned int eax_edx_eflags[3],unsigned int eax,unsigned int edx);
 extern void TEST_MUL_R32_R32(unsigned int eax_edx_eflags[3],unsigned int eax,unsigned int edx);
 extern void TEST_MUL_R32_MEM(unsigned int eax_edx_eflags[3],unsigned int eax,unsigned int edx);
+extern void TEST_IMUL_R32_R32_I8(unsigned int res[32],unsigned int EAX,unsigned int EDX);
 
 int RunImulR32xR32Test(void)
 {
@@ -74,6 +75,48 @@ int RunMulR32xR32Test(void)
 			fprintf(stderr,"  Expected: %08x %08x %08x\n",MUL_32_32_TABLE[i+2],MUL_32_32_TABLE[i+3],MUL_32_32_TABLE[i+4]);
 			fprintf(stderr,"  Returned: %08x %08x %08x\n",eax_edx_eflags[0],eax_edx_eflags[1],eax_edx_eflags[2]);
 			return 1;
+		}
+	}
+	return 0;
+}
+
+int RunImulR32_R32xI8Test(void)
+{
+	printf("RunImulR32_R32xI8Test\n");
+
+	unsigned int res[32];
+	for(int i=0; i<sizeof(IMUL_32_32_I8_TABLE)/sizeof(IMUL_32_32_I8_TABLE[0]); i+=34)
+	{
+		TEST_IMUL_R32_R32_I8(res,IMUL_32_32_I8_TABLE[i],IMUL_32_32_I8_TABLE[i+1]);
+
+		unsigned int *ref=IMUL_32_32_I8_TABLE+i+2;
+		for(int j=0; j<32; ++j)
+		{
+			if(res[j]!=ref[j])
+			{
+				int k;
+				fprintf(stderr,"Error! IMUL(R32=R32*I8)\n");
+				fprintf(stderr,"%08x %08x\n",IMUL_32_32_I8_TABLE[i],IMUL_32_32_I8_TABLE[i+1]);
+				fprintf(stderr,"Expected:\n");
+				for(k=0; k<32; ++k)
+				{
+					fprintf(stderr,"%08x ",ref[k]);
+					if(k%16==15)
+					{
+						fprintf(stderr,"\n");
+					}
+				}
+				fprintf(stderr,"Returned:\n");
+				for(k=0; k<32; ++k)
+				{
+					fprintf(stderr,"%08x ",res[k]);
+					if(k%16==15)
+					{
+						fprintf(stderr,"\n");
+					}
+				}
+				return 1;
+			}
 		}
 	}
 	return 0;
@@ -540,6 +583,7 @@ int main(int ac,char *av[])
 	int nFail=0;
 	nFail+=RunImulR32xR32Test();
 	nFail+=RunMulR32xR32Test();
+	nFail+=RunImulR32_R32xI8Test();
 	nFail+=RunBitShiftTest();
 	nFail+=RunF6F7_NOT_NEG_MUL_IMUL_DIV_IDIV();
 	nFail+=RunF6F7_TEST_I();
