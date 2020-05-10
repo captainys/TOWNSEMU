@@ -33,9 +33,16 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 
 	outside_world->Start();
 
+	auto lastWallClockTime=std::chrono::high_resolution_clock::now();
+
 	TownsRender render;
 	for(;true!=terminate;)
 	{
+		auto wallClockTime=std::chrono::high_resolution_clock::now();
+		auto passed=std::chrono::duration_cast<std::chrono::nanoseconds>(wallClockTime-lastWallClockTime).count();
+		lastWallClockTime=wallClockTime;
+		townsPtr->state.wallClockTime+=passed;
+
 		int runModeCopy=0;
 
 		vmLock.lock();
@@ -50,7 +57,7 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 			townsPtr->cpu.DetachDebugger();
 			townsPtr->cpu.enableCallStack=false;
 			for(unsigned int clocksPassed=0; 
-			    clocksPassed<10000 && true!=townsPtr->CheckAbort();
+			    clocksPassed<NUM_CLOCKS_PER_TIME_SYNC && true!=townsPtr->CheckAbort();
 			    )
 			{
 				clocksPassed+=townsPtr->RunOneInstruction();
@@ -59,6 +66,8 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 				townsPtr->RunScheduledTasks();
 				townsPtr->CheckRenderingTimer(render,*outside_world);
 			}
+			AdjustRealTime(townsPtr,lastWallClockTime);
+
 			outside_world->DevicePolling(*townsPtr);
 			townsPtr->eventLog.Interval(*townsPtr);
 			if(true==townsPtr->CheckAbort())
@@ -72,7 +81,7 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 			townsPtr->cpu.AttachDebugger(&townsPtr->debugger);
 			townsPtr->cpu.enableCallStack=true;
 			for(unsigned int clocksPassed=0; 
-			    clocksPassed<10000 && true!=townsPtr->CheckAbort();
+			    clocksPassed<NUM_CLOCKS_PER_TIME_SYNC && true!=townsPtr->CheckAbort();
 			    )
 			{
 				clocksPassed+=townsPtr->RunOneInstruction();
@@ -88,6 +97,7 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 					break;
 				}
 			}
+			AdjustRealTime(townsPtr,lastWallClockTime);
 			outside_world->DevicePolling(*townsPtr);
 			townsPtr->eventLog.Interval(*townsPtr);
 			if(true==townsPtr->CheckAbort())
@@ -143,6 +153,34 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 	townsPtr->fdc.SaveModifiedDiskImages();
 
 	outside_world->Stop();
+}
+
+void TownsThread::AdjustRealTime(FMTowns *townsPtr,std::chrono::time_point<std::chrono::high_resolution_clock> lastWallClockTime)
+{
+	if(townsPtr->state.townsTime<townsPtr->state.wallClockTime) // VM lagging
+	{
+		townsPtr->state.townsTime=townsPtr->state.wallClockTime; // Let scheduled tasks fire in the next iteration.
+	}
+	else
+	{
+		if(true==townsPtr->state.noWait)
+		{
+			townsPtr->state.wallClockTime=townsPtr->state.townsTime;
+		}
+		else
+		{
+			auto toWait=townsPtr->state.townsTime-townsPtr->state.wallClockTime;
+			for(;;)
+			{
+				auto diff=std::chrono::high_resolution_clock::now()-lastWallClockTime;
+				if(toWait<=std::chrono::duration_cast<std::chrono::nanoseconds>(diff).count())
+				{
+					break;
+				}
+				townsPtr->RunFastDevicePolling();
+			}
+		}
+	}
 }
 
 int TownsThread::GetRunMode(void) const

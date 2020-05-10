@@ -17,6 +17,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 /* { */
 
 
+#include <chrono>
 #include <thread>
 #include <mutex>
 
@@ -34,6 +35,11 @@ public:
 
 	enum
 	{
+		NUM_CLOCKS_PER_TIME_SYNC=10000
+	};
+
+	enum
+	{
 		RUNMODE_PAUSE,
 		RUNMODE_FREE,
 		RUNMODE_DEBUGGER,
@@ -44,6 +50,10 @@ public:
 	TownsThread();
 
 	void Start(FMTowns *townsPtr,Outside_World *outside_world);
+private:
+	void AdjustRealTime(FMTowns *townsPtr,std::chrono::time_point<std::chrono::high_resolution_clock> lastWallClockTime);
+
+public:
 
 	/*! Returns the current run mode.
 	    The thread that calls this function must take vmLock before calling.

@@ -28,6 +28,8 @@ void FMTowns::State::PowerOn(void)
 {
 	Reset();
 	townsTime=0;
+	cpuTime=0;
+	wallClockTime=0;
 	nextSecondInTownsTime=PER_SECOND;
 	nextFastDevicePollingTime=FAST_DEVICE_POLLING_INTERVAL;
 	freq=FREQUENCY_DEFAULT;
@@ -413,7 +415,9 @@ unsigned int FMTowns::RunOneInstruction(void)
 	// Eg.  66MHz ->  66 clocks passed means 1 micro second.
 	//                clockBalance is 66000.
 	//                clockBalance/freq=1000.  1000 nano seconds.
-	state.townsTime+=(state.clockBalance/state.freq);
+	auto passedInNanoSec=(state.clockBalance/state.freq);
+	state.townsTime+=passedInNanoSec;
+	state.cpuTime+=passedInNanoSec;
 	state.clockBalance%=state.freq;
 
 	var.disassemblePointer.SEG=cpu.state.CS().value;

@@ -83,6 +83,23 @@ public:
 		*/
 		unsigned long long int townsTime;
 
+		/*! CPU time is calculated from the clock.
+		*/
+		long long int cpuTime;
+
+
+		/*! If noWait is false, and if townsTime goes ahead of wallClockTime, TownsThread waits until wallClockTime catches up with 
+		    the real time.
+		    If noWait is true, and if townsTime goes ahead of wallClockTime, TownsThread updates wallClockTime to townsTime, and does not wait.
+		*/
+		bool noWait=false;
+
+
+		/*! Wall-clock time is an accumuration of real-time for each iteration when the VM is not paused.
+		*/
+		long long int wallClockTime;
+
+
 		/*! 
 		*/
 		unsigned long long int nextFastDevicePollingTime;
@@ -101,6 +118,7 @@ public:
 		/*! Clock frequency in MHz.  Default is FREQUENCY_DEFAULT.
 		*/
 		long long int freq;
+
 
 		/*! Reset reason.
 		*/
