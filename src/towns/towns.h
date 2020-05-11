@@ -380,6 +380,8 @@ public:
 	void PrintStatus(void) const;
 
 	static void MakeINTInfo(class i486SymbolTable &symTable);
+
+	using VMBase::GetScheduledTasksText;
 };
 
 

@@ -55,6 +55,8 @@ public:
 	bool debugger;
 	bool interactive;
 
+	unsigned int freq=0;
+
 	TownsARGV();
 	void PrintHelp(void) const;
 	bool AnalyzeCommandParameter(int argc,char *argv[]);

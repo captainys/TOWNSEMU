@@ -129,6 +129,7 @@ public:
 		DUMP_CDROM,
 		DUMP_EVENTLOG,
 		DUMP_SCSI,
+		DUMP_SCHEDULE,
 	};
 
 	enum

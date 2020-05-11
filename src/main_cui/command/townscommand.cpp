@@ -118,6 +118,8 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	dumpableMap["CDROM"]=DUMP_CDROM;
 	dumpableMap["EVENTLOG"]=DUMP_EVENTLOG;
 	dumpableMap["SCSI"]=DUMP_SCSI;
+	dumpableMap["SCHED"]=DUMP_SCHEDULE;
+	dumpableMap["SCHEDULE"]=DUMP_SCHEDULE;
 
 
 	breakEventMap["IWC1"]=   BREAK_ON_PIC_IWC1;
@@ -283,6 +285,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  CMOS RAM" << std::endl;
 	std::cout << "CDROM" << std::endl;
 	std::cout << "  CD-ROM Status." << std::endl;
+	std::cout << "SCHED" << std::endl;
+	std::cout << "  Device call-back schedule." << std::endl;
 
 	std::cout << "" << std::endl;
 
@@ -831,6 +835,12 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 			break;
 		case DUMP_SCSI:
 			for(auto str : towns.scsi.GetStatusText())
+			{
+				std::cout << str << std::endl;
+			}
+			break;
+		case DUMP_SCHEDULE:
+			for(auto str: towns.GetScheduledTasksText())
 			{
 				std::cout << str << std::endl;
 			}

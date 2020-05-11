@@ -454,6 +454,8 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 			{
 				state.next2ndByteOfStatusCode=0;
 			}
+			state.ClearStatusQueue();
+			townsPtr->UnscheduleDeviceCallBack(*this);
 			SetStatusDriveNotReadyOrDiscChangedOrNoError();
 			if(true==state.CDDAPlayStarted && true!=CDDAPlaying)
 			{

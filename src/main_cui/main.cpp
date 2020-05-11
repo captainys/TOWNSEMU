@@ -164,6 +164,10 @@ bool Setup(FMTowns &towns,const TownsARGV &argv)
 		}
 	}
 
+	if(0!=argv.freq)
+	{
+		towns.state.freq=argv.freq;
+	}
 
 	if(0<argv.symbolFName.size())
 	{

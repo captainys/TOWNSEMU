@@ -36,6 +36,8 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  Start the machine with debugger enabled." << std::endl;
 	std::cout << "-UNITTEST" << std::endl;
 	std::cout << "  Let it run automatically to the end without taking control commands." << std::endl;
+	std::cout << "-FREQ frequency_in_MHz" << std::endl;
+	std::cout << "  Specify CPU frequency in Megahertz." << std::endl;
 	std::cout << "-FD0 filename" << std::endl;
 	std::cout << "  Floppy disk image file name for Drive A." << std::endl;
 	std::cout << "-FD1 filename" << std::endl;
@@ -75,6 +77,11 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		else if("-UNITTEST"==ARG)
 		{
 			interactive=false;
+		}
+		else if("-FREQ"==ARG && i+1<argc)
+		{
+			freq=cpputil::Atoi(argv[i+1]);
+			++i;
 		}
 		else if("-FD0"==ARG && i+1<argc)
 		{

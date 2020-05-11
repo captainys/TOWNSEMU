@@ -20,6 +20,8 @@ def Run():
 	subprocess.Popen([
 		"./main_cui/main_cui.exe",
 		ROMDIR,
+		#"-FREQ",
+		#"16",
 		"-FD0",
 		os.path.join(DISKDIR,"V2.1L20.bin"),
 		"-FD1",

@@ -14,6 +14,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 << LICENSE */
 #include "vmbase.h"
 #include "device.h"
+#include "cpputil.h"
 
 
 
@@ -105,4 +106,24 @@ void VMBase::Abort(std::string devName,std::string abortReason)
 	vmAbort=true;
 	vmAbortDeviceName=devName;
 	vmAbortReason=abortReason;
+}
+
+std::vector <std::string> VMBase::GetScheduledTasksText(void) const
+{
+	std::vector <std::string> text;
+	for(auto devIdx=dev0->vmNextTaskScheduledDeviceIndex; 0<=devIdx; devIdx=allDevices[devIdx]->vmNextTaskScheduledDeviceIndex)
+	{
+		auto ptr=allDevices[devIdx];
+
+		text.push_back("");
+		text.back()+=ptr->DeviceName();
+		text.back().push_back(' ');
+		while(text.back().size()<16)
+		{
+			text.back().push_back(' ');
+		}
+		text.back()+=cpputil::Uitoa(ptr->commonState.scheduleTime/1000000);
+		text.back()+="(ms)";
+	}
+	return text;
 }

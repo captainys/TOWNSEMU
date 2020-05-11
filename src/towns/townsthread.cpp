@@ -168,7 +168,7 @@ void TownsThread::AdjustRealTime(FMTowns *townsPtr,std::chrono::time_point<std::
 	}
 	else
 	{
-		if(true==townsPtr->state.noWait)
+		/* if(true==townsPtr->state.noWait)
 		{
 			townsPtr->state.wallClockTime=townsPtr->state.townsTime;
 		}
@@ -184,7 +184,7 @@ void TownsThread::AdjustRealTime(FMTowns *townsPtr,std::chrono::time_point<std::
 				}
 				townsPtr->RunFastDevicePolling();
 			}
-		}
+		} */
 	}
 }
 

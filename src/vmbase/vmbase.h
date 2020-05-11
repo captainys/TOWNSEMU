@@ -57,6 +57,8 @@ public:
 	{
 		return vmAbort;
 	}
+
+	std::vector <std::string> GetScheduledTasksText(void) const;
 };
 
 

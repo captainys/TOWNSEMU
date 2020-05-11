@@ -287,6 +287,51 @@ P
 % 0
 /end
 /begin0
+T 0
+* 00000256:000016A1
+# Clear outgoing CF
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000256:00001980
+# 
+R 
+L CDROM:(Prob)AH=05H Read Sector HSG
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000256:0000198F
+# Incoming AL
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000256:0000199D
+# Incoming CH
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000256:00001A40
+# [BP+04H]=Outgoing BX
+R 
+L 
+P 
+% 0
+/end
+/begin0
 T 1
 * 00000256:00001C21
 # 
@@ -315,10 +360,64 @@ P
 /end
 /begin0
 T 1
+* 00000256:00001FE8
+# 
+R 
+L CDROM:Check AL&0F0H=0C0H
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000256:00002087
+# 
+R 
+L CDROM:(Prob)HSG to MSF
+P 
+% 0
+/end
+/begin0
+T 1
 * 00000256:0000209E
 # 
 R 
 L CDROM:BIN_TO_BCD
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000256:00002156
+# 
+R 
+L CDROM:Issue Command 22H (Read Sector)
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000256:00002177
+# 22H=Data Ready
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 2
+* 00000256:00002193
+# 
+R 
+L WAIT_FOR_SRQ
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000256:000021A1
+# 21H=Error
+R 
+L 
 P 
 % 0
 /end
@@ -378,10 +477,91 @@ P
 /end
 /begin0
 T 1
+* 00000256:000026BA
+# 
+R 
+L CDROM:Set up DMA
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000256:000026C5
+# 
+R 
+L CDROM:(Prob)Set DMA Address
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000256:000026DC
+# 
+R 
+L CDROM:(Prob)Read DMA Address
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000256:000026F3
+# 
+R 
+L CDROM:Set up DMA
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000256:00002761
+# 
+R 
+L CDROM:Wait for DMA transfer start?
+P 
+% 0
+/end
+/begin0
+T 1
 * 00000256:000027A5
 # 
 R 
 L CDROM:STATUS_BYTES_TO_BIOS_ERROR_CODE
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000256:000028BC
+# 
+R 
+L CDROM:Command A0H
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000256:00002906
+# 
+R 
+L CDROM:(Prob)Wait 30us
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000A54:00003A03
+# CD-ROM BIOS Command Read Sector HSG
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000A54:00003B32
+# 
+R 
+L TOWNSCD:Issue CD-ROM BIOS Command
 P 
 % 0
 /end
