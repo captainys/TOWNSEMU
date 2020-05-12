@@ -930,31 +930,16 @@ public:
 		*/
 		inline int GetAsSignedDword(void) const
 		{
-			unsigned long long int uValue=GetAsDword();
-			switch(numBytes)
+			static const long long int ANDptn[]=
 			{
-			default:
-			case 4:
-				if(0x80000000&uValue)
-				{
-					uValue-=0x80000000;
-					uValue-=0x80000000;
-				}
-				break;
-			case 3:
-			case 2:
-				if(0x8000&uValue)
-				{
-					uValue-=0x10000;
-				}
-				break;
-			case 1:
-				if(0x80&uValue)
-				{
-					uValue-=0x100;
-				}
-				break;
-			}
+				0x0000007F,0x00000080,  // 0 byte
+				0x0000007F,0x00000080,  // 1 byte
+				0x00007FFF,0x00008000,  // 2 bytes
+				0x00007FFF,0x00008000,  // 3 bytes
+				0x7FFFFFFF,0x80000000,  // 4 bytes
+			};
+			long long int uValue=GetAsDword();
+			uValue=(uValue&ANDptn[numBytes<<1])-(uValue&ANDptn[(numBytes<<1)+1]);
 			return (int)uValue;
 		}
 

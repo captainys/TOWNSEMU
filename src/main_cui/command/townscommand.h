@@ -130,6 +130,7 @@ public:
 		DUMP_EVENTLOG,
 		DUMP_SCSI,
 		DUMP_SCHEDULE,
+		DUMP_TIME_BALANCE,
 	};
 
 	enum

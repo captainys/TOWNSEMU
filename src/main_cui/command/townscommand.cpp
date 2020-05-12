@@ -120,6 +120,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	dumpableMap["SCSI"]=DUMP_SCSI;
 	dumpableMap["SCHED"]=DUMP_SCHEDULE;
 	dumpableMap["SCHEDULE"]=DUMP_SCHEDULE;
+	dumpableMap["TIMEBALANCE"]=DUMP_TIME_BALANCE;
 
 
 	breakEventMap["IWC1"]=   BREAK_ON_PIC_IWC1;
@@ -843,6 +844,13 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 			for(auto str: towns.GetScheduledTasksText())
 			{
 				std::cout << str << std::endl;
+			}
+			break;
+		case DUMP_TIME_BALANCE:
+			for(unsigned int i=0; i<FMTowns::Variable::TIME_ADJUSTMENT_LOG_LEN; ++i)
+			{
+				std::cout << towns.var.timeAdjustLog[(towns.var.timeAdjustLogPtr+i+1)%FMTowns::Variable::TIME_ADJUSTMENT_LOG_LEN];
+				std::cout << std::endl;
 			}
 			break;
 		}

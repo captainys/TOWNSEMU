@@ -58,6 +58,10 @@ void FMTowns::State::Reset(void)
 FMTowns::Variable::Variable()
 {
 	freeRunTimerShift=0;
+	for(auto &t : timeAdjustLog)
+	{
+		t=0;
+	}
 	Reset();
 }
 

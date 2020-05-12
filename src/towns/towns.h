@@ -172,6 +172,13 @@ public:
 
 		enum
 		{
+			TIME_ADJUSTMENT_LOG_LEN=64
+		};
+		unsigned int timeAdjustLogPtr=0;
+		long long int timeAdjustLog[TIME_ADJUSTMENT_LOG_LEN];
+
+		enum
+		{
 			VM2HOST_PARAM_QUEUE_LENGTH=256,
 		};
 		unsigned int nVM2HostParam;

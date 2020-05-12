@@ -162,6 +162,9 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 
 void TownsThread::AdjustRealTime(FMTowns *townsPtr,std::chrono::time_point<std::chrono::high_resolution_clock> lastWallClockTime)
 {
+	townsPtr->var.timeAdjustLog[townsPtr->var.timeAdjustLogPtr]=townsPtr->state.townsTime-townsPtr->state.wallClockTime;
+	townsPtr->var.timeAdjustLogPtr=(townsPtr->var.timeAdjustLogPtr+1)&(FMTowns::Variable::TIME_ADJUSTMENT_LOG_LEN-1);
+
 	if(townsPtr->state.townsTime<townsPtr->state.wallClockTime) // VM lagging
 	{
 		// One option is to fast-forward townsTime to match wallClockTime by doing:
@@ -170,6 +173,9 @@ void TownsThread::AdjustRealTime(FMTowns *townsPtr,std::chrono::time_point<std::
 		// Then in the next iteration, scheduled tasks will fire all at once, which breaks some logic.
 		// Rather, want to let VM catch up by virtually spending longer time.
 		// The question is how?
+
+
+		townsPtr->state.wallClockTime=townsPtr->state.townsTime;
 	}
 	else
 	{
