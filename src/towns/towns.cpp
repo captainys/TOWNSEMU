@@ -642,6 +642,7 @@ void FMTowns::PrintSound(void) const
 void FMTowns::PrintStatus(void) const
 {
 	std::cout << "Towns TIME (Nano-Seconds): " << state.townsTime << std::endl;
+	std::cout << "Real Time (Nano-Seconds):  " << state.wallClockTime << std::endl;
 	cpu.PrintState();
 	PrintStack(32);
 	if(""!=debugger.externalBreakReason)

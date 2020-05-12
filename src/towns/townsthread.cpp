@@ -41,12 +41,17 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 		auto wallClockTime=std::chrono::high_resolution_clock::now();
 		auto passed=std::chrono::duration_cast<std::chrono::nanoseconds>(wallClockTime-lastWallClockTime).count();
 		lastWallClockTime=wallClockTime;
-		townsPtr->state.wallClockTime+=passed;
 
 		int runModeCopy=0;
 
 		vmLock.lock();
 		runModeCopy=runMode;
+
+		if(RUNMODE_PAUSE!=runMode)
+		{
+			townsPtr->state.wallClockTime+=passed;
+		}
+
 		switch(runMode)
 		{
 		case RUNMODE_PAUSE:
