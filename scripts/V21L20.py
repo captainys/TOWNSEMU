@@ -46,4 +46,4 @@ def Run(argv):
 
 if __name__=="__main__":
 	build.Run()
-	Run(sys.argv)
+	Run(sys.argv[1:])

@@ -448,11 +448,7 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 			auto CDDAPlaying=OutsideWorld->CDDAIsPlaying();
 			if(nullptr!=OutsideWorld && true==CDDAPlaying)
 			{
-				state.next2ndByteOfStatusCode=0x03; // Prob: Response to A0H (80H+REQSTA), 00 03 xx xx means CDDA is playing.
-			}
-			else
-			{
-				state.next2ndByteOfStatusCode=0;
+				state.next2ndByteOfStatusCode|=0x03; // Prob: Response to A0H (80H+REQSTA), 00 03 xx xx means CDDA is playing.
 			}
 			state.ClearStatusQueue();
 			townsPtr->UnscheduleDeviceCallBack(*this);

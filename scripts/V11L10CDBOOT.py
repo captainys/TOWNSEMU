@@ -1,6 +1,7 @@
 import os
 import subprocess
 import shutil
+import sys
 
 import build
 
@@ -15,7 +16,7 @@ DISKDIR=os.path.join(THISDIR,"..","..","TOWNSEMU_TEST","DISKIMG")
 
 
 
-def Run():
+def Run(argv):
 	os.chdir(BUILDDIR)
 	subprocess.Popen([
 		"./main_cui/main_cui.exe",
@@ -32,10 +33,10 @@ def Run():
 		"../symtables/V1.1L10CDBOOT_"+TOWNSTYPE+".txt",
 		"-DEBUG",
 		"-PAUSE",
-	]).wait()
+	]+argv).wait()
 
 
 
 if __name__=="__main__":
 	build.Run()
-	Run()
+	Run(sys.argv[1:])

@@ -360,6 +360,15 @@ P
 /end
 /begin0
 T 1
+* 00000256:00001D99
+# 
+R 
+L CDROM:AX=52C0H CDDA Stop
+P 
+% 0
+/end
+/begin0
+T 1
 * 00000256:00001FE8
 # 
 R 
