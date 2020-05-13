@@ -1372,8 +1372,9 @@ void i486DX::OrWordOrDword(int operandSize,unsigned int &value1,unsigned int val
 }
 void i486DX::OrDword(unsigned int &value1,unsigned int value2)
 {
-	SetCF(false);
-	SetOF(false);
+	ClearCFOF();
+	//SetCF(false);
+	//SetOF(false);
 	value1|=value2;
 	SetSF(0!=(0x80000000&value1));
 	SetZF(0==value1);
@@ -1381,8 +1382,9 @@ void i486DX::OrDword(unsigned int &value1,unsigned int value2)
 }
 void i486DX::OrWord(unsigned int &value1,unsigned int value2)
 {
-	SetCF(false);
-	SetOF(false);
+	ClearCFOF();
+	//SetCF(false);
+	//SetOF(false);
 	value1|=value2;
 	value1&=0xFFFF;
 	SetSF(0!=(0x8000&value1));
@@ -1391,8 +1393,9 @@ void i486DX::OrWord(unsigned int &value1,unsigned int value2)
 }
 void i486DX::OrByte(unsigned int &value1,unsigned int value2)
 {
-	SetCF(false);
-	SetOF(false);
+	ClearCFOF();
+	//SetCF(false);
+	//SetOF(false);
 	value1|=value2;
 	value1&=0xFF;
 	SetSF(0!=(0x80&value1));
@@ -1412,8 +1415,9 @@ void i486DX::XorWordOrDword(int operandSize,unsigned int &value1,unsigned int va
 }
 void i486DX::XorDword(unsigned int &value1,unsigned int value2)
 {
-	SetCF(false);
-	SetOF(false);
+	ClearCFOF();
+	//SetCF(false);
+	//SetOF(false);
 	value1^=value2;
 	SetSF(0!=(0x80000000&value1));
 	SetZF(0==value1);
@@ -1421,8 +1425,9 @@ void i486DX::XorDword(unsigned int &value1,unsigned int value2)
 }
 void i486DX::XorWord(unsigned int &value1,unsigned int value2)
 {
-	SetCF(false);
-	SetOF(false);
+	ClearCFOF();
+	//SetCF(false);
+	//SetOF(false);
 	value1^=value2;
 	value1&=0xFFFF;
 	SetSF(0!=(0x8000&value1));
@@ -1431,8 +1436,9 @@ void i486DX::XorWord(unsigned int &value1,unsigned int value2)
 }
 void i486DX::XorByte(unsigned int &value1,unsigned int value2)
 {
-	SetCF(false);
-	SetOF(false);
+	ClearCFOF();
+	//SetCF(false);
+	//SetOF(false);
 	value1^=value2;
 	value1&=0xFF;
 	SetSF(0!=(0x80&value1));

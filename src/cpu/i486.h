@@ -1189,25 +1189,26 @@ public:
 	}
 	inline unsigned int GetCXorECX(unsigned int bits) const
 	{
-		if(16==bits)
+		const static unsigned int mask[2]=
 		{
-			return GetCX();
-		}
-		else
-		{
-			return GetECX();
-		}
+			0x0000FFFF,
+			0xFFFFFFFF,
+		};
+		return GetECX()&mask[bits>>5];
 	}
 	inline void SetCXorECX(unsigned int bits,unsigned int newECX)
 	{
-		if(16==bits)
+		const static unsigned int mask[2]=
 		{
-			SetCX(newECX);
-		}
-		else
+			0x0000FFFF,
+			0xFFFFFFFF,
+		};
+		const static unsigned int ANDptn[2]=
 		{
-			SetECX(newECX);
-		}
+			0xFFFF0000,
+			0x00000000
+		};
+		SetECX((GetECX()&ANDptn[bits>>5])|(newECX&mask[bits>>5]));
 	}
 
 
