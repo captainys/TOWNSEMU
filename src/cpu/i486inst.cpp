@@ -4381,7 +4381,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 	case I486_OPCODE_CMPSB://           0xA6,
 	case I486_OPCODE_CMPS://            0xA7,
-		if(true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize))
+		for(int ctr=0;
+		    ctr<MAX_REP_BUNDLE_COUNT &&
+		    true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize);
+		    ++ctr)
 		{
 			auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
 			auto data1=FetchByteWordOrDword(inst.operandSize,inst.addressSize,seg,state.ESI(),mem);
@@ -4391,9 +4394,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				SubByteWordOrDword(inst.operandSize,data1,data2);
 				UpdateESIandEDIAfterStringOp(inst.addressSize,inst.operandSize);
 				clocksPassed+=8;
-				if(true==REPEorNECheck(clocksPassed,inst.instPrefix,inst.addressSize))
+				EIPSetByInstruction=REPEorNECheck(clocksPassed,inst.instPrefix,inst.addressSize);
+				if(true!=EIPSetByInstruction)
 				{
-					EIPSetByInstruction=true;
+					break;
 				}
 			}
 		}
@@ -5844,7 +5848,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		// REP/REPE/REPNE CX or ECX is chosen based on addressSize.
 		{
 			auto prefix=REPNEtoREP(inst.instPrefix);
-			if(true==REPCheck(clocksPassed,prefix,inst.addressSize))
+			for(int ctr=0;
+			    ctr<MAX_REP_BUNDLE_COUNT &&
+			    true==REPCheck(clocksPassed,prefix,inst.addressSize);
+			    ++ctr)
 			{
 				auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
 				auto data=FetchByte(inst.addressSize,seg,state.ESI(),mem);
@@ -5853,13 +5860,20 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				UpdateDIorEDIAfterStringOp(inst.addressSize,8);
 				EIPSetByInstruction=(INST_PREFIX_REP==prefix);
 				clocksPassed+=7;
+				if(true!=EIPSetByInstruction)
+				{
+					break;
+				}
 			}
 		}
 		break;
 	case I486_OPCODE_MOVS://             0xA5,
 		{
 			auto prefix=REPNEtoREP(inst.instPrefix);
-			if(true==REPCheck(clocksPassed,prefix,inst.addressSize))
+			for(int ctr=0;
+			    ctr<MAX_REP_BUNDLE_COUNT &&
+			    true==REPCheck(clocksPassed,prefix,inst.addressSize);
+			    ++ctr)
 			{
 				auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
 				auto data=FetchWordOrDword(inst.operandSize,inst.addressSize,seg,state.ESI(),mem);
@@ -5867,6 +5881,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				UpdateESIandEDIAfterStringOp(inst.addressSize,inst.operandSize);
 				EIPSetByInstruction=(INST_PREFIX_REP==prefix);
 				clocksPassed+=7;
+				if(true!=EIPSetByInstruction)
+				{
+					break;
+				}
 			}
 		}
 		break;
@@ -6399,30 +6417,38 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 
 	case I486_OPCODE_SCASB://            0xAE,
-		if(true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize))
+		for(int ctr=0;
+		    ctr<MAX_REP_BUNDLE_COUNT &&
+		    true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize);
+		    ++ctr)
 		{
 			auto data=FetchByte(inst.addressSize,state.ES(),state.EDI(),mem);
 			auto AL=GetAL();
 			SubByte(AL,data);
 			UpdateDIorEDIAfterStringOp(inst.addressSize,8);
 			clocksPassed+=6;
-			if(true==REPEorNECheck(clocksPassed,inst.instPrefix,inst.addressSize))
+			EIPSetByInstruction=REPEorNECheck(clocksPassed,inst.instPrefix,inst.addressSize);
+			if(true!=EIPSetByInstruction)
 			{
-				EIPSetByInstruction=true;
+				break;
 			}
 		}
 		break;
 	case I486_OPCODE_SCAS://             0xAF,
-		if(true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize))
+		for(int ctr=0;
+		    ctr<MAX_REP_BUNDLE_COUNT &&
+		    true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize);
+		    ++ctr)
 		{
 			auto data=FetchWordOrDword(inst.operandSize,inst.addressSize,state.ES(),state.EDI(),mem);
 			auto EAX=GetEAX();
 			SubWordOrDword(inst.operandSize,EAX,data);
 			UpdateDIorEDIAfterStringOp(inst.addressSize,inst.operandSize);
 			clocksPassed+=6;
-			if(true==REPEorNECheck(clocksPassed,inst.instPrefix,inst.addressSize))
+			EIPSetByInstruction=REPEorNECheck(clocksPassed,inst.instPrefix,inst.addressSize);
+			if(true!=EIPSetByInstruction)
 			{
-				EIPSetByInstruction=true;
+				break;
 			}
 		}
 		break;
@@ -6574,12 +6600,19 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		// REP/REPE/REPNE CX or ECX is chosen based on addressSize.
 		{
 			auto prefix=REPNEtoREP(inst.instPrefix);
-			if(true==REPCheck(clocksPassed,prefix,inst.addressSize))
+			for(int ctr=0; 
+			    ctr<MAX_REP_BUNDLE_COUNT && 
+			    true==REPCheck(clocksPassed,prefix,inst.addressSize);
+			    ++ctr)
 			{
 				StoreByte(mem,inst.addressSize,state.ES(),state.EDI(),GetAL());
 				UpdateDIorEDIAfterStringOp(inst.addressSize,8);
 				EIPSetByInstruction=(INST_PREFIX_REP==prefix);
 				clocksPassed+=5;
+				if(true!=EIPSetByInstruction)
+				{
+					break;
+				}
 			}
 		}
 		break;
@@ -6587,12 +6620,19 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		// REP/REPE/REPNE CX or ECX is chosen based on addressSize.
 		{
 			auto prefix=REPNEtoREP(inst.instPrefix);
-			if(true==REPCheck(clocksPassed,prefix,inst.addressSize))
+			for(int ctr=0;
+			    ctr<MAX_REP_BUNDLE_COUNT &&
+			    true==REPCheck(clocksPassed,prefix,inst.addressSize);
+			    ++ctr)
 			{
 				StoreWordOrDword(mem,inst.operandSize,inst.addressSize,state.ES(),state.EDI(),GetEAX());
 				UpdateDIorEDIAfterStringOp(inst.addressSize,inst.operandSize);
 				EIPSetByInstruction=(INST_PREFIX_REP==prefix);
 				clocksPassed+=5;
+				if(true!=EIPSetByInstruction)
+				{
+					break;
+				}
 			}
 		}
 		break;
