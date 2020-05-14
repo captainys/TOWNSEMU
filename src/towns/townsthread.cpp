@@ -47,9 +47,11 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 		vmLock.lock();
 		runModeCopy=runMode;
 
+		bool clockTicking=false;  // Will be made true if VM is running.
 		if(RUNMODE_PAUSE!=runMode)
 		{
 			townsPtr->state.wallClockTime+=passed;
+			clockTicking=true;
 		}
 
 		switch(runMode)
@@ -59,6 +61,7 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 			outside_world->DevicePolling(*townsPtr);
 			break;
 		case RUNMODE_FREE:
+			clockTicking=true;
 			townsPtr->cpu.DetachDebugger();
 			townsPtr->cpu.enableCallStack=false;
 			for(unsigned int clocksPassed=0; 
@@ -69,9 +72,8 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 				townsPtr->pic.ProcessIRQ(townsPtr->cpu,townsPtr->mem);
 				townsPtr->RunFastDevicePolling();
 				townsPtr->RunScheduledTasks();
-				townsPtr->CheckRenderingTimer(render,*outside_world);
 			}
-			AdjustRealTime(townsPtr,lastWallClockTime);
+			townsPtr->CheckRenderingTimer(render,*outside_world);
 
 			outside_world->DevicePolling(*townsPtr);
 			townsPtr->eventLog.Interval(*townsPtr);
@@ -83,6 +85,7 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 			}
 			break;
 		case RUNMODE_DEBUGGER:
+			clockTicking=true;
 			townsPtr->cpu.AttachDebugger(&townsPtr->debugger);
 			townsPtr->cpu.enableCallStack=true;
 			for(unsigned int clocksPassed=0; 
@@ -93,7 +96,6 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 				townsPtr->pic.ProcessIRQ(townsPtr->cpu,townsPtr->mem);
 				townsPtr->RunFastDevicePolling();
 				townsPtr->RunScheduledTasks();
-				townsPtr->CheckRenderingTimer(render,*outside_world);
 				if(true==townsPtr->debugger.stop)
 				{
 					PrintStatus(*townsPtr);
@@ -102,7 +104,7 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 					break;
 				}
 			}
-			AdjustRealTime(townsPtr,lastWallClockTime);
+			townsPtr->CheckRenderingTimer(render,*outside_world);
 			outside_world->DevicePolling(*townsPtr);
 			townsPtr->eventLog.Interval(*townsPtr);
 			if(true==townsPtr->CheckAbort())
@@ -152,6 +154,11 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 
 		signalLock.lock();
 		signalLock.unlock();
+
+		if(true==clockTicking)
+		{
+			AdjustRealTime(townsPtr,lastWallClockTime);
+		}
 	}
 
 	std::cout << "Ending Towns Thread." << std::endl;
