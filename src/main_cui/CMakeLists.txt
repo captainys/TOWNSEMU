@@ -135,6 +135,8 @@ add_test(
 		-EVTLOG
 		"${CMAKE_SOURCE_DIR}/../testdata/eventLog/V11L10TEST.txt"
 		-UNITTEST
+		-FREQ
+		20
 )
 
 add_test(

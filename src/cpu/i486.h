@@ -1447,7 +1447,6 @@ public:
 	{
 		SetEFLAGSBit(flag,EFLAGS_OVERFLOW);
 	}
-
 	inline void SetSF(bool flag)
 	{
 		SetEFLAGSBit(flag,EFLAGS_SIGN);
@@ -1460,16 +1459,83 @@ public:
 	{
 		SetEFLAGSBit(flag,EFLAGS_ZERO);
 	}
-
 	inline void SetAF(bool flag)
 	{
 		SetEFLAGSBit(flag,EFLAGS_AUX_CARRY);
 	}
-
 	inline void SetPF(bool flag)
 	{
 		SetEFLAGSBit(flag,EFLAGS_PARITY);
 	}
+
+
+	/*! RaiseFlag functions raises the flag if the parameter is true.
+	    But, will never clear the flag.
+	*/
+	inline void RaiseCF(bool flag)
+	{
+		if(true==flag)
+		{
+			state.EFLAGS|=EFLAGS_CARRY;
+		}
+	}
+	inline void RaiseDF(bool flag)
+	{
+		if(true==flag)
+		{
+			state.EFLAGS|=EFLAGS_DIRECTION;
+		}
+	}
+	inline void RaiseIF(bool flag)
+	{
+		if(true==flag)
+		{
+			state.EFLAGS|=EFLAGS_INT_ENABLE;
+		}
+	}
+	inline void RaiseOF(bool flag)
+	{
+		if(true==flag)
+		{
+			state.EFLAGS|=EFLAGS_OVERFLOW;
+		}
+	}
+	inline void RaiseSF(bool flag)
+	{
+		if(true==flag)
+		{
+			state.EFLAGS|=EFLAGS_SIGN;
+		}
+	}
+	inline void RaiseTF(bool flag)
+	{
+		if(true==flag)
+		{
+			state.EFLAGS|=EFLAGS_TRAP;
+		}
+	}
+	inline void RaiseZF(bool flag)
+	{
+		if(true==flag)
+		{
+			state.EFLAGS|=EFLAGS_ZERO;
+		}
+	}
+	inline void RaiseAF(bool flag)
+	{
+		if(true==flag)
+		{
+			state.EFLAGS|=EFLAGS_AUX_CARRY;
+		}
+	}
+	inline void RaisePF(bool flag)
+	{
+		if(true==flag)
+		{
+			state.EFLAGS|=EFLAGS_PARITY;
+		}
+	}
+
 
 	inline void ClearCFOF(void)
 	{

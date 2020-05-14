@@ -1147,34 +1147,58 @@ void i486DX::AddDword(unsigned int &value1,unsigned int value2)
 {
 	auto prevValue=value1&0xffffffff;
 	value1=(value1+value2)&0xffffffff;
-	SetOF((prevValue&0x80000000)==(value2&0x80000000) && (prevValue&0x80000000)!=(value1&0x80000000)); // Two sources have same sign, but the result sign is different.
-	SetSF(0!=(value1&0x80000000));
-	SetZF(0==value1);
-	SetAF((prevValue&0x0F)<(value1&0x0F));
-	SetCF(value1<prevValue);
-	SetPF(CheckParity(value1&0xFF));
+	state.EFLAGS&=~(
+		EFLAGS_OVERFLOW|
+		EFLAGS_SIGN|
+		EFLAGS_ZERO|
+		EFLAGS_AUX_CARRY|
+		EFLAGS_CARRY|
+		EFLAGS_PARITY
+	);
+	RaiseOF((prevValue&0x80000000)==(value2&0x80000000) && (prevValue&0x80000000)!=(value1&0x80000000)); // Two sources have same sign, but the result sign is different.
+	RaiseSF(0!=(value1&0x80000000));
+	RaiseZF(0==value1);
+	RaiseAF((prevValue&0x0F)<(value1&0x0F));
+	RaiseCF(value1<prevValue);
+	RaisePF(CheckParity(value1&0xFF));
 }
 void i486DX::AddWord(unsigned int &value1,unsigned int value2)
 {
 	auto prevValue=value1&0xffff;
 	value1=(value1+value2)&0xffff;
-	SetOF((prevValue&0x8000)==(value2&0x8000) && (prevValue&0x8000)!=(value1&0x8000)); // Two sources have same sign, but the result sign is different.
-	SetSF(0!=(value1&0x8000));
-	SetZF(0==value1);
-	SetAF((prevValue&0x0F)<(value1&0x0F));
-	SetCF(value1<prevValue);
-	SetPF(CheckParity(value1&0xFF));
+	state.EFLAGS&=~(
+		EFLAGS_OVERFLOW|
+		EFLAGS_SIGN|
+		EFLAGS_ZERO|
+		EFLAGS_AUX_CARRY|
+		EFLAGS_CARRY|
+		EFLAGS_PARITY
+	);
+	RaiseOF((prevValue&0x8000)==(value2&0x8000) && (prevValue&0x8000)!=(value1&0x8000)); // Two sources have same sign, but the result sign is different.
+	RaiseSF(0!=(value1&0x8000));
+	RaiseZF(0==value1);
+	RaiseAF((prevValue&0x0F)<(value1&0x0F));
+	RaiseCF(value1<prevValue);
+	RaisePF(CheckParity(value1&0xFF));
 }
 void i486DX::AddByte(unsigned int &value1,unsigned int value2)
 {
 	auto prevValue=value1&0xff;
 	value1=(value1+value2)&0xff;
-	SetOF((prevValue&0x80)==(value2&0x80) && (prevValue&0x80)!=(value1&0x80)); // Two sources have same sign, but the result sign is different.
-	SetSF(0!=(value1&0x80));
-	SetZF(0==value1);
-	SetAF((prevValue&0x0F)<(value1&0x0F));
-	SetCF(value1<prevValue);
-	SetPF(CheckParity(value1&0xFF));
+	state.EFLAGS&=~(
+		EFLAGS_OVERFLOW|
+		EFLAGS_SIGN|
+		EFLAGS_ZERO|
+		EFLAGS_AUX_CARRY|
+		EFLAGS_CARRY|
+		EFLAGS_PARITY
+	);
+	RaiseOF((prevValue&0x80)==(value2&0x80) && (prevValue&0x80)!=(value1&0x80)); // Two sources have same sign, but the result sign is different.
+	RaiseSF(0!=(value1&0x80));
+	RaiseZF(0==value1);
+	RaiseAF((prevValue&0x0F)<(value1&0x0F));
+	RaiseCF(value1<prevValue);
+	RaisePF(CheckParity(value1&0xFF));
 }
 void i486DX::AndWordOrDword(int operandSize,unsigned int &value1,unsigned int value2)
 {
@@ -1236,34 +1260,58 @@ void i486DX::SubDword(unsigned int &value1,unsigned int value2)
 {
 	auto prevValue=value1&0xffffffff;
 	value1=(value1-value2)&0xffffffff;
-	SetOF((prevValue&0x80000000)!=(value2&0x80000000) && (prevValue&0x80000000)!=(value1&0x80000000)); // Source values have different signs, but the sign flipped.
-	SetSF(0!=(value1&0x80000000));
-	SetZF(0==value1);
-	SetAF((prevValue&0xFF)>=0x10 && (value1&0xFF)<=0x10);
-	SetCF(value1>prevValue);
-	SetPF(CheckParity(value1&0xFF));
+	state.EFLAGS&=~(
+		EFLAGS_OVERFLOW|
+		EFLAGS_SIGN|
+		EFLAGS_ZERO|
+		EFLAGS_AUX_CARRY|
+		EFLAGS_CARRY|
+		EFLAGS_PARITY
+	);
+	RaiseOF((prevValue&0x80000000)!=(value2&0x80000000) && (prevValue&0x80000000)!=(value1&0x80000000)); // Source values have different signs, but the sign flipped.
+	RaiseSF(0!=(value1&0x80000000));
+	RaiseZF(0==value1);
+	RaiseAF((prevValue&0xFF)>=0x10 && (value1&0xFF)<=0x10);
+	RaiseCF(value1>prevValue);
+	RaisePF(CheckParity(value1&0xFF));
 }
 void i486DX::SubWord(unsigned int &value1,unsigned int value2)
 {
 	auto prevValue=value1&0xffff;
 	value1=(value1-value2)&0xffff;
-	SetOF((prevValue&0x8000)!=(value2&0x8000) && (prevValue&0x8000)!=(value1&0x8000)); // Source values have different signs, but the sign flipped.
-	SetSF(0!=(value1&0x8000));
-	SetZF(0==value1);
-	SetAF((prevValue&0xFF)>=0x10 && (value1&0xFF)<=0x10);
-	SetCF(value1>prevValue);
-	SetPF(CheckParity(value1&0xFF));
+	state.EFLAGS&=~(
+		EFLAGS_OVERFLOW|
+		EFLAGS_SIGN|
+		EFLAGS_ZERO|
+		EFLAGS_AUX_CARRY|
+		EFLAGS_CARRY|
+		EFLAGS_PARITY
+	);
+	RaiseOF((prevValue&0x8000)!=(value2&0x8000) && (prevValue&0x8000)!=(value1&0x8000)); // Source values have different signs, but the sign flipped.
+	RaiseSF(0!=(value1&0x8000));
+	RaiseZF(0==value1);
+	RaiseAF((prevValue&0xFF)>=0x10 && (value1&0xFF)<=0x10);
+	RaiseCF(value1>prevValue);
+	RaisePF(CheckParity(value1&0xFF));
 }
 void i486DX::SubByte(unsigned int &value1,unsigned int value2)
 {
 	auto prevValue=value1&0xff;
 	value1=(value1-value2)&0xff;
-	SetOF((prevValue&0x80)!=(value2&0x80) && (prevValue&0x80)!=(value1&0x80)); // Source values have different signs, but the sign flipped.
-	SetSF(0!=(value1&0x80));
-	SetZF(0==value1);
-	SetAF((prevValue&0xFF)>=0x10 && (value1&0xFF)<=0x10);
-	SetCF(value1>prevValue);
-	SetPF(CheckParity(value1&0xFF));
+	state.EFLAGS&=~(
+		EFLAGS_OVERFLOW|
+		EFLAGS_SIGN|
+		EFLAGS_ZERO|
+		EFLAGS_AUX_CARRY|
+		EFLAGS_CARRY|
+		EFLAGS_PARITY
+	);
+	RaiseOF((prevValue&0x80)!=(value2&0x80) && (prevValue&0x80)!=(value1&0x80)); // Source values have different signs, but the sign flipped.
+	RaiseSF(0!=(value1&0x80));
+	RaiseZF(0==value1);
+	RaiseAF((prevValue&0xFF)>=0x10 && (value1&0xFF)<=0x10);
+	RaiseCF(value1>prevValue);
+	RaisePF(CheckParity(value1&0xFF));
 }
 void i486DX::AdcWordOrDword(int operandSize,unsigned int &value1,unsigned int value2)
 {
@@ -1280,37 +1328,61 @@ void i486DX::AdcDword(unsigned int &value1,unsigned int value2)
 {
 	auto carry=(0!=(state.EFLAGS&EFLAGS_CARRY) ? 1 : 0);
 	auto prevValue=value1&0xffffffff;
+	state.EFLAGS&=~(
+		EFLAGS_OVERFLOW|
+		EFLAGS_SIGN|
+		EFLAGS_ZERO|
+		EFLAGS_AUX_CARRY|
+		EFLAGS_CARRY|
+		EFLAGS_PARITY
+	);
 	value1=(value1+value2+carry)&0xffffffff;
-	SetOF((prevValue&0x80000000)==(value2&0x80000000) && (prevValue&0x80000000)!=(value1&0x80000000)); // Two sources have same sign, but the result sign is different.
-	SetSF(0!=(value1&0x80000000));
-	SetZF(0==value1);
-	SetAF((prevValue&0x0F)<(value1&0x0F));
-	SetCF(value1<prevValue);
-	SetPF(CheckParity(value1&0xFF));
+	RaiseOF((prevValue&0x80000000)==(value2&0x80000000) && (prevValue&0x80000000)!=(value1&0x80000000)); // Two sources have same sign, but the result sign is different.
+	RaiseSF(0!=(value1&0x80000000));
+	RaiseZF(0==value1);
+	RaiseAF((prevValue&0x0F)<(value1&0x0F));
+	RaiseCF(value1<prevValue);
+	RaisePF(CheckParity(value1&0xFF));
 }
 void i486DX::AdcWord(unsigned int &value1,unsigned int value2)
 {
 	auto carry=(0!=(state.EFLAGS&EFLAGS_CARRY) ? 1 : 0);
 	auto prevValue=value1&0xffff;
 	value1=(value1+value2+carry)&0xffff;
-	SetOF((prevValue&0x8000)==(value2&0x8000) && (prevValue&0x8000)!=(value1&0x8000)); // Two sources have same sign, but the result sign is different.
-	SetSF(0!=(value1&0x8000));
-	SetZF(0==value1);
-	SetAF((prevValue&0x0F)<(value1&0x0F));
-	SetCF(value1<prevValue);
-	SetPF(CheckParity(value1&0xFF));
+	state.EFLAGS&=~(
+		EFLAGS_OVERFLOW|
+		EFLAGS_SIGN|
+		EFLAGS_ZERO|
+		EFLAGS_AUX_CARRY|
+		EFLAGS_CARRY|
+		EFLAGS_PARITY
+	);
+	RaiseOF((prevValue&0x8000)==(value2&0x8000) && (prevValue&0x8000)!=(value1&0x8000)); // Two sources have same sign, but the result sign is different.
+	RaiseSF(0!=(value1&0x8000));
+	RaiseZF(0==value1);
+	RaiseAF((prevValue&0x0F)<(value1&0x0F));
+	RaiseCF(value1<prevValue);
+	RaisePF(CheckParity(value1&0xFF));
 }
 void i486DX::AdcByte(unsigned int &value1,unsigned int value2)
 {
 	auto carry=(0!=(state.EFLAGS&EFLAGS_CARRY) ? 1 : 0);
 	auto prevValue=value1&0xff;
 	value1=(value1+value2+carry)&0xff;
-	SetOF((prevValue&0x80)==(value2&0x80) && (prevValue&0x80)!=(value1&0x80)); // Two sources have same sign, but the result sign is different.
-	SetSF(0!=(value1&0x80));
-	SetZF(0==value1);
-	SetAF((prevValue&0x0F)<(value1&0x0F));
-	SetCF(value1<prevValue);
-	SetPF(CheckParity(value1&0xFF));
+	state.EFLAGS&=~(
+		EFLAGS_OVERFLOW|
+		EFLAGS_SIGN|
+		EFLAGS_ZERO|
+		EFLAGS_AUX_CARRY|
+		EFLAGS_CARRY|
+		EFLAGS_PARITY
+	);
+	RaiseOF((prevValue&0x80)==(value2&0x80) && (prevValue&0x80)!=(value1&0x80)); // Two sources have same sign, but the result sign is different.
+	RaiseSF(0!=(value1&0x80));
+	RaiseZF(0==value1);
+	RaiseAF((prevValue&0x0F)<(value1&0x0F));
+	RaiseCF(value1<prevValue);
+	RaisePF(CheckParity(value1&0xFF));
 }
 void i486DX::SbbWordOrDword(int operandSize,unsigned int &value1,unsigned int value2)
 {
