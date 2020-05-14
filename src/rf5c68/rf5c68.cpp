@@ -197,11 +197,6 @@ std::vector <unsigned char> RF5C68::Make19KHzWave(unsigned int chNum)
 			wave.push_back(abs);
 			wave.push_back(abs);
 			wave.push_back(abs);
-
-			if(0xff==data)
-			{
-				break;
-			}
 		}
 	}
 
