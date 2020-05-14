@@ -97,16 +97,23 @@ class TownsCUIThread : public TownsUIThread
 int Run(FMTowns &towns,const TownsARGV &argv,Outside_World &outside_world)
 {
 	TownsThread townsThread;
+
+	if(true==argv.debugger)
+	{
+		towns.cpu.AttachDebugger(&towns.debugger);
+		towns.debugger.stop=false;
+		towns.cpu.enableCallStack=true;
+	}
+	else
+	{
+		towns.cpu.DetachDebugger();
+		towns.debugger.stop=false;
+		towns.cpu.enableCallStack=false;
+	}
+
 	if(true==argv.autoStart)
 	{
-		if(true==argv.debugger)
-		{
-			townsThread.SetRunMode(TownsThread::RUNMODE_DEBUGGER);
-		}
-		else
-		{
-			townsThread.SetRunMode(TownsThread::RUNMODE_FREE);
-		}
+		townsThread.SetRunMode(TownsThread::RUNMODE_RUN);
 	}
 
 	TownsCUIThread cuiThread;

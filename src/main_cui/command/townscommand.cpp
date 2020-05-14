@@ -381,7 +381,7 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,Command &c
 		break;
 	case CMD_RUN:
 		towns.debugger.ClearStopFlag();
-		thr.SetRunMode(TownsThread::RUNMODE_DEBUGGER);
+		thr.SetRunMode(TownsThread::RUNMODE_RUN);
 		if(1<cmd.argv.size())
 		{
 			auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1]);
@@ -428,7 +428,7 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,Command &c
 			auto s=towns.cpu.callStack.back();
 			towns.debugger.ClearStopFlag();
 			towns.debugger.SetOneTimeBreakPoint(s.fromCS,s.fromEIP+s.callOpCodeLength);
-			thr.SetRunMode(TownsThread::RUNMODE_DEBUGGER);
+			thr.SetRunMode(TownsThread::RUNMODE_RUN);
 		}
 		break;
 

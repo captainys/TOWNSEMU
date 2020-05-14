@@ -41,8 +41,7 @@ public:
 	enum
 	{
 		RUNMODE_PAUSE,
-		RUNMODE_FREE,
-		RUNMODE_DEBUGGER,
+		RUNMODE_RUN,
 		RUNMODE_ONE_INSTRUCTION, // Always with debugger.
 		RUNMODE_EXIT,
 	};

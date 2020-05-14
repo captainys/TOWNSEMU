@@ -55,36 +55,9 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 			townsPtr->ForceRender(render,*outside_world);
 			outside_world->DevicePolling(*townsPtr);
 			break;
-		case RUNMODE_FREE:
+		case RUNMODE_RUN:
 			townsPtr->state.wallClockTime+=passed;
 			clockTicking=true;
-			townsPtr->cpu.DetachDebugger();
-			townsPtr->cpu.enableCallStack=false;
-			for(unsigned int clocksPassed=0; 
-			    clocksPassed<NUM_CLOCKS_PER_TIME_SYNC && true!=townsPtr->CheckAbort();
-			    )
-			{
-				clocksPassed+=townsPtr->RunOneInstruction();
-				townsPtr->pic.ProcessIRQ(townsPtr->cpu,townsPtr->mem);
-				townsPtr->RunFastDevicePolling();
-				townsPtr->RunScheduledTasks();
-			}
-			townsPtr->CheckRenderingTimer(render,*outside_world);
-
-			outside_world->DevicePolling(*townsPtr);
-			townsPtr->eventLog.Interval(*townsPtr);
-			if(true==townsPtr->CheckAbort())
-			{
-				PrintStatus(*townsPtr);
-				std::cout << ">";
-				runMode=RUNMODE_PAUSE;
-			}
-			break;
-		case RUNMODE_DEBUGGER:
-			townsPtr->state.wallClockTime+=passed;
-			clockTicking=true;
-			townsPtr->cpu.AttachDebugger(&townsPtr->debugger);
-			townsPtr->cpu.enableCallStack=true;
 			for(unsigned int clocksPassed=0; 
 			    clocksPassed<NUM_CLOCKS_PER_TIME_SYNC && true!=townsPtr->CheckAbort();
 			    )
