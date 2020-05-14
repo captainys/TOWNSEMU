@@ -91,6 +91,8 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	featureMap["AUTODISASM"]=ENABLE_DISASSEMBLE_EVERY_INST;
 	featureMap["IOMON"]=ENABLE_IOMONITOR;
 	featureMap["EVENTLOG"]=ENABLE_EVENTLOG;
+	featureMap["DEBUGGER"]=ENABLE_DEBUGGER;
+	featureMap["DEBUG"]=ENABLE_DEBUGGER;
 
 	dumpableMap["CALLSTACK"]=DUMP_CALLSTACK;
 	dumpableMap["CST"]=DUMP_CALLSTACK;
@@ -246,6 +248,9 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Can specify multiple range by enabling IOMON multiple times." << std::endl;
 	std::cout << "EVENTLOG" << std::endl;
 	std::cout << "  Event Log." << std::endl;
+	std::cout << "DEBUGGER" << std::endl;
+	std::cout << "DEBUG" << std::endl;
+	std::cout << "  Debugger." << std::endl;
 
 	std::cout << "" << std::endl;
 
@@ -605,6 +610,10 @@ void TownsCommandInterpreter::Execute_Enable(FMTowns &towns,Command &cmd)
 			towns.eventLog.BeginRecording(towns.state.townsTime);
 			std::cout << "Event Logging is ON." << std::endl;
 			break;
+		case ENABLE_DEBUGGER:
+			towns.EnableDebugger();
+			std::cout << "Debugger is ON." << std::endl;
+			break;
 		}
 	}
 }
@@ -650,6 +659,10 @@ void TownsCommandInterpreter::Execute_Disable(FMTowns &towns,Command &cmd)
 		case ENABLE_EVENTLOG:
 			towns.eventLog.mode=TownsEventLog::MODE_NONE;
 			std::cout << "Event Logging is OFF." << std::endl;
+			break;
+		case ENABLE_DEBUGGER:
+			towns.DisableDebugger();
+			std::cout << "Debugger is OFF." << std::endl;
 			break;
 		}
 	}

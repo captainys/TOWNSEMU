@@ -369,6 +369,9 @@ public:
 
 
 	// Following functions are for testing purposes.
+	void EnableDebugger(void);
+	void DisableDebugger(void);
+
 	unsigned int FetchByteCS_EIP(int offset) const;
 	i486DX::Instruction FetchInstruction(i486DX::Operand &op1,i486DX::Operand &op2) const;
 	std::vector <std::string> GetStackText(unsigned int numBytes) const;

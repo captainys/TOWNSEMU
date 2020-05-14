@@ -100,15 +100,11 @@ int Run(FMTowns &towns,const TownsARGV &argv,Outside_World &outside_world)
 
 	if(true==argv.debugger)
 	{
-		towns.cpu.AttachDebugger(&towns.debugger);
-		towns.debugger.stop=false;
-		towns.cpu.enableCallStack=true;
+		towns.EnableDebugger();
 	}
 	else
 	{
-		towns.cpu.DetachDebugger();
-		towns.debugger.stop=false;
-		towns.cpu.enableCallStack=false;
+		towns.DisableDebugger();
 	}
 
 	if(true==argv.autoStart)

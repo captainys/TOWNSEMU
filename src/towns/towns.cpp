@@ -515,6 +515,18 @@ void FMTowns::ForceRender(class TownsRender &render,class Outside_World &world)
 
 ////////////////////////////////////////////////////////////
 
+void FMTowns::EnableDebugger(void)
+{
+	cpu.AttachDebugger(&debugger);
+	debugger.stop=false;
+	cpu.enableCallStack=true;
+}
+void FMTowns::DisableDebugger(void)
+{
+	cpu.DetachDebugger();
+	debugger.stop=false;
+	cpu.enableCallStack=false;
+}
 
 unsigned int FMTowns::FetchByteCS_EIP(int offset) const
 {
