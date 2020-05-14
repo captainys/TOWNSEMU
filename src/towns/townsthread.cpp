@@ -48,11 +48,6 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 		runModeCopy=runMode;
 
 		bool clockTicking=false;  // Will be made true if VM is running.
-		if(RUNMODE_PAUSE!=runMode)
-		{
-			townsPtr->state.wallClockTime+=passed;
-			clockTicking=true;
-		}
 
 		switch(runMode)
 		{
@@ -61,6 +56,7 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 			outside_world->DevicePolling(*townsPtr);
 			break;
 		case RUNMODE_FREE:
+			townsPtr->state.wallClockTime+=passed;
 			clockTicking=true;
 			townsPtr->cpu.DetachDebugger();
 			townsPtr->cpu.enableCallStack=false;
@@ -85,6 +81,7 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 			}
 			break;
 		case RUNMODE_DEBUGGER:
+			townsPtr->state.wallClockTime+=passed;
 			clockTicking=true;
 			townsPtr->cpu.AttachDebugger(&townsPtr->debugger);
 			townsPtr->cpu.enableCallStack=true;
