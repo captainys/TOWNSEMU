@@ -85,8 +85,6 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 			}
 			break;
 		case RUNMODE_ONE_INSTRUCTION:
-			townsPtr->cpu.AttachDebugger(&townsPtr->debugger);
-			townsPtr->cpu.enableCallStack=true;
 			if(true!=townsPtr->CheckAbort())
 			{
 				townsPtr->RunOneInstruction();

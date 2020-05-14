@@ -657,6 +657,10 @@ void FMTowns::PrintSound(void) const
 
 void FMTowns::PrintStatus(void) const
 {
+	if(nullptr!=cpu.debuggerPtr)
+	{
+		std::cout << "Debugger Enabled." << std::endl;
+	}
 	std::cout << "Towns TIME (Nano-Seconds): " << state.townsTime << std::endl;
 	std::cout << "Real Time (Nano-Seconds):  " << state.wallClockTime << std::endl;
 	cpu.PrintState();
