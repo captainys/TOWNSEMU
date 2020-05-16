@@ -190,7 +190,7 @@ void TownsSound::PCMStopPlay(unsigned char chStopPlay)
 		break;
 	case TOWNSIO_SOUND_INT_REASON://        0x4E9, // [2] pp.19,
 		data=0;
-		if(state.rf5c68.state.IRQ)
+		if(state.rf5c68.state.IRQ())
 		{
 			data|=0b1000;
 		}
@@ -204,7 +204,6 @@ void TownsSound::PCMStopPlay(unsigned char chStopPlay)
 	case TOWNSIO_SOUND_PCM_INT://           0x4EB, // [2] pp.19,
 		data=state.rf5c68.state.IRQBank;
 		state.rf5c68.state.IRQBank=0;
-		state.rf5c68.state.IRQ=false;
 		break;
 	case TOWNSIO_SOUND_PCM_ENV://           0x4F0, // [2] pp.19,
 		break;
@@ -264,11 +263,11 @@ void TownsSound::PCMStopPlay(unsigned char chStopPlay)
 					state.rf5c68.SetIRQ(chNum);
 					outside_world->PCMPlay(state.rf5c68,chNum);
 					state.rf5c68.PlayStarted(chNum);
-					IRQ=true;
 				}
 			}
 		}
 	}
+	IRQ|=state.rf5c68.state.IRQ();
 	townsPtr->pic.SetInterruptRequestBit(TOWNSIRQ_SOUND,IRQ);
 }
 

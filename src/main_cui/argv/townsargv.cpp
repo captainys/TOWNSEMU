@@ -61,7 +61,8 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 {
 	for(int i=1; i<argc; ++i)
 	{
-		std::string ARG=cpputil::Capitalize(argv[i]);
+		std::string ARG=argv[i];
+		cpputil::Capitalize(ARG);
 		if("-HELP"==ARG || "-H"==ARG || "-?"==ARG)
 		{
 			PrintHelp();

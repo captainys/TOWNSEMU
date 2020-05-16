@@ -45,7 +45,6 @@ void RF5C68::Clear(void)
 	state.Bank=0;
 	state.CB=0;
 	state.chOnOff=0xff;  // Active LOW
-	state.IRQ=false;
 	state.IRQBank=0;
 	state.IRQBankMask=0;
 }
@@ -161,7 +160,7 @@ std::vector <std::string> RF5C68::GetStatusText(void) const
 	text.push_back(s);
 
 	s="IRQ=";
-	s+=(true==state.IRQ ? "1 " : "0 ");
+	s+=(true==state.IRQ() ? "1 " : "0 ");
 	s+="IRQBank="+cpputil::Ubtox(state.IRQBank)+" ";
 	s+="IRQBankMask="+cpputil::Ubtox(state.IRQBankMask)+" ";
 	text.push_back(s);
@@ -228,7 +227,6 @@ void RF5C68::SetIRQ(unsigned int chNum)
 	auto bank=(ch.playingBank>>1);
 	if(0!=((1<<bank)&state.IRQBankMask))
 	{
-		state.IRQ=true;
 		state.IRQBank|=(1<<bank);
 	}
 }

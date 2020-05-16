@@ -236,7 +236,7 @@ void YsSoundPlayer::SetVolumeAPISpecific(SoundData &dat,float vol)
 		{
 			atten=DSBVOLUME_MIN;
 		}
-		printf("%d\n",atten);
+		// printf("%d\n",atten);
 		dat.api->dSoundBuf->SetVolume(atten);
 	}
 }
@@ -395,7 +395,7 @@ void YsSoundPlayer::SoundData::APISpecificDataPerSoundData::CreateBuffer(LPDIREC
 		if(dSoundBuf->Lock(0,0,(LPVOID *)&writeBuf1,&writeBufSize1,(LPVOID *)&writeBuf2,&writeBufSize2,DSBLOCK_ENTIREBUFFER)==DS_OK &&
 		   NULL!=writeBuf1)
 		{
-			printf("Buffer Locked\n");
+			// printf("Buffer Locked\n");
 
 			for(int i=0; i<(int)dat.SizeInByte() && i<(int)writeBufSize1; i++)
 			{

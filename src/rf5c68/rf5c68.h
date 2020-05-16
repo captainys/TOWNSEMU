@@ -61,7 +61,10 @@ public:
 		unsigned char CB;      // Channel
 		unsigned char chOnOff; // I/O 04F8H
 
-		bool IRQ;
+		inline bool IRQ() const
+		{
+			return 0!=IRQBank;
+		}
 		unsigned char IRQBank,IRQBankMask;
 	};
 	State state;
