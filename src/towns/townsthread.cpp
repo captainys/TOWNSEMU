@@ -24,7 +24,7 @@ TownsThread::TownsThread(void)
 	runMode=RUNMODE_PAUSE;
 }
 
-void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
+void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread)
 {
 	bool terminate=false;
 	this->townsPtr=townsPtr;
@@ -44,7 +44,6 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 
 		int runModeCopy=0;
 
-		vmLock.lock();
 		runModeCopy=runMode;
 
 		bool clockTicking=false;  // Will be made true if VM is running.
@@ -114,15 +113,15 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 			townsPtr->state.nextSecondInTownsTime+=PER_SECOND;
 			townsPtr->fdc.SaveModifiedDiskImages();
 		}
-		vmLock.unlock();
 
 		if(RUNMODE_PAUSE==runModeCopy)
 		{
 			std::this_thread::sleep_for(std::chrono::milliseconds(10));
 		}
 
-		signalLock.lock();
-		signalLock.unlock();
+		uiThread->uiLock.lock();
+		uiThread->ExecCommandQueue(*this,*townsPtr,outside_world);
+		uiThread->uiLock.unlock();
 
 		if(true==clockTicking)
 		{

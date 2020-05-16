@@ -16,6 +16,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <fstream>
 #include <thread>
 #include <chrono>
+#include <string>
+#include <chrono>
 
 #include "towns.h"
 #include "townsthread.h"
@@ -31,7 +33,14 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 class TownsCUIThread : public TownsUIThread
 {
+public:
+	using TownsUIThread::uiLock;
+	std::string cmdline;
+	TownsCommandInterpreter cmdInterpreter;
+	bool uiTerminate=false;
+
 	virtual void Main(TownsThread &vmThread,FMTowns &towns,const TownsARGV &argv,Outside_World &outside_world);
+	virtual void ExecCommandQueue(TownsThread &vmThread,FMTowns &towns,Outside_World *outside_world);
 };
 
 /* virtual */ void TownsCUIThread::Main(TownsThread &townsThread,FMTowns &towns,const TownsARGV &argv,Outside_World &outside_world)
@@ -41,54 +50,57 @@ class TownsCUIThread : public TownsUIThread
 		towns.var.ftfr.AddHostToVM(ftfr.hostFName,ftfr.vmFName);
 	}
 
-	TownsCommandInterpreter cmdInterpreter;
-	for(;;)
+	if(true==argv.interactive)
 	{
-		if(true==argv.interactive)
+		while(true!=uiTerminate)
 		{
 			std::string cmdline;
 			std::cout << ">";
 			std::getline(std::cin,cmdline);
 
-			auto cmd=cmdInterpreter.Interpret(cmdline);
-			townsThread.signalLock.lock();
-			townsThread.vmLock.lock();
-			cmdInterpreter.Execute(townsThread,towns,cmd);
-			townsThread.vmLock.unlock();
-			townsThread.signalLock.unlock();
-			if(TownsCommandInterpreter::CMD_QUIT==cmd.primaryCmd)
-			{
-				break;
-			}
-		}
-		else
-		{
-			std::this_thread::sleep_for(std::chrono::milliseconds(10));
-			townsThread.vmLock.lock();
-			auto vmTerminate=towns.var.powerOff;
-			townsThread.vmLock.unlock();
-			if(true==vmTerminate)
-			{
-				break;
-			}
-		}
+			uiLock.lock();
+			this->cmdline=cmdline;
+			uiLock.unlock();
 
-		if(true==cmdInterpreter.waitVM)
-		{
-			for(;;)
+			bool commandDone=false;
+			while(true!=commandDone)
 			{
-				unsigned int vmState;
-				townsThread.vmLock.lock();
-				vmState=townsThread.GetRunMode();
-				townsThread.vmLock.unlock();
-				if(TownsThread::RUNMODE_PAUSE==vmState ||
-				   TownsThread::RUNMODE_EXIT==vmState)
-				{
-					break;
-				}
 				std::this_thread::sleep_for(std::chrono::milliseconds(10));
+				uiLock.lock();
+				if(""==this->cmdline)
+				{
+					commandDone=true;
+				}
+				uiLock.unlock();
 			}
 		}
+	}
+}
+
+/* virtual */ void TownsCUIThread::ExecCommandQueue(TownsThread &townsThread,FMTowns &towns,Outside_World *outside_world)
+{
+	if(true==cmdInterpreter.waitVM)
+	{
+		unsigned int vmState;
+		vmState=townsThread.GetRunMode();
+		if(TownsThread::RUNMODE_PAUSE==vmState)
+		{
+			cmdInterpreter.waitVM=false;
+		}
+		else if(TownsThread::RUNMODE_EXIT==vmState)
+		{
+			uiTerminate=true;
+		}
+	}
+	else if(""!=this->cmdline)
+	{
+		auto cmd=cmdInterpreter.Interpret(this->cmdline);
+		cmdInterpreter.Execute(townsThread,towns,cmd);
+		if(TownsCommandInterpreter::CMD_QUIT==cmd.primaryCmd)
+		{
+			uiTerminate=true;
+		}
+		this->cmdline="";
 	}
 }
 
@@ -115,7 +127,7 @@ int Run(FMTowns &towns,const TownsARGV &argv,Outside_World &outside_world)
 	TownsCUIThread cuiThread;
 
 	std::thread UIThread(&TownsCUIThread::Run,&cuiThread,&townsThread,&towns,&argv,&outside_world);
-	townsThread.Start(&towns,&outside_world);
+	townsThread.Start(&towns,&outside_world,&cuiThread);
 
 	UIThread.join();
 

@@ -31,8 +31,6 @@ private:
 	int runMode;
 
 public:
-	mutable std::mutex vmLock,signalLock;
-
 	enum
 	{
 		NANOSECONDS_PER_TIME_SYNC=1000000,
@@ -48,7 +46,7 @@ public:
 
 	TownsThread();
 
-	void Start(FMTowns *townsPtr,Outside_World *outside_world);
+	void Start(FMTowns *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread);
 private:
 	void AdjustRealTime(FMTowns *townsPtr,std::chrono::time_point<std::chrono::high_resolution_clock> lastWallClockTime);
 
@@ -70,9 +68,20 @@ public:
 class TownsUIThread
 {
 public:
+	mutable std::mutex uiLock;
+
 	void Run(TownsThread *vmThread,FMTowns *towns,const class TownsARGV *argv,Outside_World *outside_world);
 private:
+	/*! Main function should only populate command queue, and not execute.
+	    Main thread will lock uiLock and then call ExecCommandQueue, where the UI commands should be executed.
+	*/
 	virtual void Main(TownsThread &vmThread,FMTowns &towns,const class TownsARGV &argv,Outside_World &outside_world)=0;
+
+public:
+	/*! ExecCommandQueue is called from the main thread.
+	    uiLock is owned by the main thread when ExecCommandQueue is called.
+	*/
+	virtual void ExecCommandQueue(TownsThread &vmThread,FMTowns &towns,Outside_World *outside_world)=0;
 };
 
 /* } */
