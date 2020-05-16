@@ -58,20 +58,21 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world)
 		case RUNMODE_RUN:
 			townsPtr->state.wallClockTime+=passed;
 			clockTicking=true;
-			for(unsigned int clocksPassed=0; 
-			    clocksPassed<NUM_CLOCKS_PER_TIME_SYNC && true!=townsPtr->CheckAbort();
-			    )
 			{
-				clocksPassed+=townsPtr->RunOneInstruction();
-				townsPtr->pic.ProcessIRQ(townsPtr->cpu,townsPtr->mem);
-				townsPtr->RunFastDevicePolling();
-				townsPtr->RunScheduledTasks();
-				if(true==townsPtr->debugger.stop)
+				auto nextTimeSync=townsPtr->state.townsTime+NANOSECONDS_PER_TIME_SYNC;
+				while(townsPtr->state.townsTime<nextTimeSync && true!=townsPtr->CheckAbort())
 				{
-					PrintStatus(*townsPtr);
-					std::cout << ">";
-					runMode=RUNMODE_PAUSE;
-					break;
+					townsPtr->RunOneInstruction();
+					townsPtr->pic.ProcessIRQ(townsPtr->cpu,townsPtr->mem);
+					townsPtr->RunFastDevicePolling();
+					townsPtr->RunScheduledTasks();
+					if(true==townsPtr->debugger.stop)
+					{
+						PrintStatus(*townsPtr);
+						std::cout << ">";
+						runMode=RUNMODE_PAUSE;
+						break;
+					}
 				}
 			}
 			townsPtr->CheckRenderingTimer(render,*outside_world);

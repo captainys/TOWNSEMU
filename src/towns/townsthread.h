@@ -35,7 +35,7 @@ public:
 
 	enum
 	{
-		NUM_CLOCKS_PER_TIME_SYNC=10000
+		NANOSECONDS_PER_TIME_SYNC=1000000,
 	};
 
 	enum
