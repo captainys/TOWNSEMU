@@ -43,6 +43,7 @@ void FMTowns::State::Reset(void)
 	MOS_work_linearAddr=0;
 	MOS_work_physicalAddr=0;
 	mouseBIOSActive=false;
+	mouseDisplayPage=0;
 
 	serialROMBitCount=0;
 	lastSerialROMCommand=0;
@@ -453,8 +454,14 @@ void FMTowns::ProcessSound(Outside_World *outside_world)
 		state.tbiosVersion=IdentifyTBIOS(state.TBIOS_physicalAddr);
 
 		state.mouseBIOSActive=true;
+		state.mouseDisplayPage=0;
 
 		std::cout << "Identified TBIOS as: " << TBIOSIDENTtoString(state.tbiosVersion) << std::endl;
+	}
+	else if(0x0E==cpu.GetAH())
+	{
+		state.mouseDisplayPage=cpu.GetAL();
+		std::cout << "Mouse Display Page: " << state.mouseDisplayPage << std::endl;
 	}
 	else if(1==cpu.GetAH())
 	{

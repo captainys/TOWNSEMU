@@ -134,6 +134,24 @@ bool FMTowns::ControlMouse(int hostMouseX,int hostMouseY,unsigned int tbiosid)
 	int mx,my;
 	if(true==GetMouseCoordinate(mx,my,tbiosid))
 	{
+		Vec2i zoom;
+		if(true==crtc.InSinglePageMode())
+		{
+			zoom=crtc.GetPageZoom(0);
+		}
+		else
+		{
+			zoom=crtc.GetPageZoom(state.mouseDisplayPage);
+		}
+		if(0<zoom.x())
+		{
+			hostMouseX/=zoom.x();
+		}
+		if(0<zoom.y())
+		{
+			hostMouseY/=zoom.y();
+		}
+
 		auto dx=ClampStep(hostMouseX-mx);
 		auto dy=ClampStep(hostMouseY-my);
 		for(auto &p : gameport.state.ports)

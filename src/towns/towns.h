@@ -131,6 +131,7 @@ public:
 		*/
 		unsigned int tbiosVersion;
 		bool mouseBIOSActive=false;
+		int mouseDisplayPage=0;
 		unsigned int TBIOS_physicalAddr,MOS_work_linearAddr,MOS_work_physicalAddr;
 
 
