@@ -228,6 +228,14 @@ bool TownsPhysicalMemory::LoadROMImages(const char dirName[])
 	return true;
 }
 
+void TownsPhysicalMemory::SetCMOS(const std::vector <unsigned char> &cmos)
+{
+	for(unsigned int i=0; i<TOWNS_CMOS_SIZE && i<cmos.size(); ++i)
+	{
+		state.DICRAM[i]=cmos[i];
+	}
+}
+
 void TownsPhysicalMemory::SetMainRAMSize(long long int size)
 {
 	state.RAM.resize(size);

@@ -426,6 +426,10 @@ public:
 
 	bool LoadROMImages(const char dirName[]);
 
+	/*! Set CMOS image.
+	*/
+	void SetCMOS(const std::vector <unsigned char> &cmos);
+
 	/*! Sets the main RAM size.
 	*/
 	void SetMainRAMSize(long long int size);
@@ -465,7 +469,6 @@ public:
 	/*!
 	*/
 	void SetFMRVRAMMappingFlag(bool FMRVRAMMapping);
-
 
 	virtual void IOWriteByte(unsigned int ioport,unsigned int data);
 	virtual unsigned int IOReadByte(unsigned int ioport);

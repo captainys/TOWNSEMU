@@ -209,12 +209,20 @@ bool Setup(FMTowns &towns,const TownsARGV &argv)
 
 	towns.var.freeRunTimerShift=0;
 
+	towns.var.CMOSFName=argv.CMOSFName;
+	if(0<argv.CMOSFName.size())
+	{
+		auto CMOSBinary=cpputil::ReadBinaryFile(argv.CMOSFName);
+		if(0<CMOSBinary.size())
+		{
+			towns.physMem.SetCMOS(CMOSBinary);
+		}
+	}
+
 	std::cout << "Loaded ROM Images.\n";
 
 	towns.Reset();
 	towns.physMem.takeJISCodeLog=true;
-	towns.io.EnableLog();
-	towns.cpu.enableCallStack=true;
 
 	std::cout << "Virtual Machine Reset.\n";
 

@@ -99,6 +99,11 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 			cdImgFName=argv[i+1];
 			++i;
 		}
+		else if("-CMOS"==ARG && i+1<argc)
+		{
+			CMOSFName=argv[i+1];
+			++i;
+		}
 		else if(("-HD0"==ARG ||
 		         "-HD1"==ARG ||
 		         "-HD2"==ARG ||
@@ -166,6 +171,7 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 			else
 			{
 				std::cout << "Undefined Option or Insufficient Parameters:" << argv[i] << std::endl;
+				return false;
 			}
 		}
 	}

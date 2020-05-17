@@ -182,6 +182,8 @@ public:
 
 		VMHostFileTransfer ftfr;
 
+		std::string CMOSFName;
+
 		i486DX::FarPointer disassemblePointer;
 		Variable();
 		void Reset(void);

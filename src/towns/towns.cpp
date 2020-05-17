@@ -531,12 +531,14 @@ void FMTowns::EnableDebugger(void)
 	cpu.AttachDebugger(&debugger);
 	debugger.stop=false;
 	cpu.enableCallStack=true;
+	io.EnableLog();
 }
 void FMTowns::DisableDebugger(void)
 {
 	cpu.DetachDebugger();
 	debugger.stop=false;
 	cpu.enableCallStack=false;
+	io.DisableLog();
 }
 
 unsigned int FMTowns::FetchByteCS_EIP(int offset) const
