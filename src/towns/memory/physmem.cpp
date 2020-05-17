@@ -163,6 +163,11 @@ TownsPhysicalMemory::TownsPhysicalMemory(class FMTowns *townsPtr,class i486DX *c
 	this->cpuPtr=cpuPtr;
 	this->memPtr=memPtr;
 
+	for(auto &b : state.DICRAM)
+	{
+		b=0;
+	}
+
 	// Just took from my 2MX.
 	unsigned char defSerialRom[SERIAL_ROM_LENGTH]=
 	{
@@ -267,15 +272,6 @@ void TownsPhysicalMemory::SetWaveRAMSize(long long int size)
 	SetSysROMDicROMMappingFlag(state.sysRomMapping,state.dicRom);
 	SetFMRVRAMMappingFlag(state.FMRVRAM);
 
-}
-
-void TownsPhysicalMemory::SetDICRAMSize(long long int size)
-{
-	state.DICRAM.resize(size);
-	for(auto &d : state.DICRAM)
-	{
-		d=0;
-	}
 }
 
 void TownsPhysicalMemory::SetUpMemoryAccess(void)

@@ -369,7 +369,7 @@ public:
 		std::vector <unsigned char> CVRAM;
 		std::vector <unsigned char> spriteRAM;
 		std::vector <unsigned char> waveRAM;
-		std::vector <unsigned char> DICRAM;
+		unsigned char DICRAM[TOWNS_CMOS_SIZE];
 
 		KanjiROMAccess kanjiROMAccess;
 

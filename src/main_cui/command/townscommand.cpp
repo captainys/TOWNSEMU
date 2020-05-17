@@ -1463,7 +1463,7 @@ void TownsCommandInterpreter::Execute_CMOSLoad(FMTowns &towns,Command &cmd)
 		{
 			PrintError(ERROR_INCORRECT_FILE_SIZE);
 		}
-		towns.physMem.state.DICRAM=dat;
+		towns.physMem.SetCMOS(dat);
 		std::cout << "Loaded CMOS." << std::endl;
 	}
 	else
@@ -1475,7 +1475,7 @@ void TownsCommandInterpreter::Execute_CMOSSave(FMTowns &towns,Command &cmd)
 {
 	if(2<=cmd.argv.size())
 	{
-		if(true!=cpputil::WriteBinaryFile(cmd.argv[1],towns.physMem.state.DICRAM.size(),towns.physMem.state.DICRAM.data()))
+		if(true!=cpputil::WriteBinaryFile(cmd.argv[1],TOWNS_CMOS_SIZE,towns.physMem.state.DICRAM))
 		{
 			PrintError(ERROR_CANNOT_SAVE_FILE);
 		}

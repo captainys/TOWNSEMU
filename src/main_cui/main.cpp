@@ -250,7 +250,7 @@ int main(int ac,char *av[])
 	}
 
 
-	FMTowns towns;
+	static FMTowns towns;
 	if(true!=Setup(towns,argv))
 	{
 		return 1;

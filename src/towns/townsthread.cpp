@@ -129,6 +129,14 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world,class Tow
 	std::cout << "Ending Towns Thread." << std::endl;
 	townsPtr->fdc.SaveModifiedDiskImages();
 
+	if(0<townsPtr->var.CMOSFName.size())
+	{
+		if(true!=cpputil::WriteBinaryFile(townsPtr->var.CMOSFName,TOWNS_CMOS_SIZE,townsPtr->physMem.state.DICRAM))
+		{
+			std::cout << "Failed to save CMOS." << std::endl;
+		}
+	}
+
 	outside_world->Stop();
 }
 
