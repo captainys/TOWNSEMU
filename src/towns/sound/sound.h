@@ -69,6 +69,10 @@ public:
 	virtual void RunScheduledTask(unsigned long long int townsTime);
 
 	std::vector <std::string> GetStatusText(void) const;
+
+	/*! Call this function periodically to continue sound playback.
+	*/
+	void ProcessSound(void);
 };
 
 /* } */

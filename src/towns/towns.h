@@ -81,7 +81,7 @@ public:
 		    A 64-bit integer should be able to hold decades.
 		    I think 64-bit is long enough.  So, I make it signed int.
 		*/
-		unsigned long long int townsTime;
+		long long int townsTime;
 
 		/*! CPU time is calculated from the clock.
 		*/
@@ -306,6 +306,10 @@ public:
 
 	/*! Run one instruction and returns the number of clocks passed. */
 	unsigned int RunOneInstruction(void);
+
+	/*! Process sound.
+	*/
+	void ProcessSound(Outside_World *outside_world);
 
 	/*! This function will be called from the CPU when CALL FS:[0040H] where FS=0110H.
 	    It is an opportunity for the virtual machine to identify the operating-system version.

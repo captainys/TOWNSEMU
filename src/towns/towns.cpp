@@ -431,6 +431,11 @@ unsigned int FMTowns::RunOneInstruction(void)
 	return clocksPassed;
 }
 
+void FMTowns::ProcessSound(Outside_World *outside_world)
+{
+	sound.ProcessSound();
+}
+
 /* virtual */ void FMTowns::InterceptMouseBIOS(void)
 {
 	if(0==cpu.GetAH())

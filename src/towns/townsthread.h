@@ -48,7 +48,7 @@ public:
 
 	void Start(FMTowns *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread);
 private:
-	void AdjustRealTime(FMTowns *townsPtr,std::chrono::time_point<std::chrono::high_resolution_clock> lastWallClockTime);
+	void AdjustRealTime(FMTowns *townsPtr);
 
 public:
 

@@ -232,6 +232,17 @@ void TownsSound::PCMStopPlay(unsigned char chStopPlay)
 /* virtual */ void TownsSound::RunScheduledTask(unsigned long long int townsTime)
 {
 	state.ym2612.Run(townsTime);
+	bool IRQ=(state.ym2612.TimerAUp() || state.ym2612.TimerBUp()) || state.rf5c68.state.IRQ();
+	townsPtr->pic.SetInterruptRequestBit(TOWNSIRQ_SOUND,IRQ);
+}
+
+std::vector <std::string> TownsSound::GetStatusText(void) const
+{
+	return state.ym2612.GetStatusText();
+}
+
+void TownsSound::ProcessSound(void)
+{
 	if(0!=state.ym2612.state.playingCh)
 	{
 		for(int chNum=0; chNum<YM2612::NUM_CHANNELS; ++chNum)
@@ -246,8 +257,6 @@ void TownsSound::PCMStopPlay(unsigned char chStopPlay)
 			}
 		}
 	}
-
-	bool IRQ=(state.ym2612.TimerAUp() || state.ym2612.TimerBUp());
 	if(state.rf5c68.state.playing && nullptr!=outside_world)
 	{
 		for(unsigned int chNum=0; chNum<RF5C68::NUM_CHANNELS; ++chNum)
@@ -267,11 +276,4 @@ void TownsSound::PCMStopPlay(unsigned char chStopPlay)
 			}
 		}
 	}
-	IRQ|=state.rf5c68.state.IRQ();
-	townsPtr->pic.SetInterruptRequestBit(TOWNSIRQ_SOUND,IRQ);
-}
-
-std::vector <std::string> TownsSound::GetStatusText(void) const
-{
-	return state.ym2612.GetStatusText();
 }

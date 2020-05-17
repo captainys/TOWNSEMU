@@ -74,6 +74,7 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world,class Tow
 					}
 				}
 			}
+			townsPtr->ProcessSound(outside_world);
 			townsPtr->CheckRenderingTimer(render,*outside_world);
 			outside_world->DevicePolling(*townsPtr);
 			townsPtr->eventLog.Interval(*townsPtr);
@@ -125,7 +126,7 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world,class Tow
 
 		if(true==clockTicking)
 		{
-			AdjustRealTime(townsPtr,lastWallClockTime);
+			AdjustRealTime(townsPtr);
 		}
 	}
 
@@ -135,7 +136,7 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world,class Tow
 	outside_world->Stop();
 }
 
-void TownsThread::AdjustRealTime(FMTowns *townsPtr,std::chrono::time_point<std::chrono::high_resolution_clock> lastWallClockTime)
+void TownsThread::AdjustRealTime(FMTowns *townsPtr)
 {
 	townsPtr->var.timeAdjustLog[townsPtr->var.timeAdjustLogPtr]=townsPtr->state.townsTime-townsPtr->state.wallClockTime;
 	townsPtr->var.timeAdjustLogPtr=(townsPtr->var.timeAdjustLogPtr+1)&(FMTowns::Variable::TIME_ADJUSTMENT_LOG_LEN-1);
@@ -154,16 +155,13 @@ void TownsThread::AdjustRealTime(FMTowns *townsPtr,std::chrono::time_point<std::
 	}
 	else
 	{
-		if(true==townsPtr->state.noWait)
+		if(true!=townsPtr->state.noWait)
 		{
-			townsPtr->state.wallClockTime=townsPtr->state.townsTime;
-		}
-		else
-		{
+			auto t0=std::chrono::high_resolution_clock::now();
 			auto toWait=townsPtr->state.townsTime-townsPtr->state.wallClockTime;
 			for(;;)
 			{
-				auto diff=std::chrono::high_resolution_clock::now()-lastWallClockTime;
+				auto diff=std::chrono::high_resolution_clock::now()-t0;
 				if(toWait<=std::chrono::duration_cast<std::chrono::nanoseconds>(diff).count())
 				{
 					break;
@@ -171,6 +169,9 @@ void TownsThread::AdjustRealTime(FMTowns *townsPtr,std::chrono::time_point<std::
 				townsPtr->RunFastDevicePolling();
 			}
 		}
+		// After the delay, wallClockTime should catch up with townsTime,
+		// both must be the same.
+		townsPtr->state.wallClockTime=townsPtr->state.townsTime;
 	}
 }
 
