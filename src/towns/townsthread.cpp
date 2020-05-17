@@ -33,14 +33,11 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world,class Tow
 
 	outside_world->Start();
 
-	auto lastWallClockTime=std::chrono::high_resolution_clock::now();
-
 	TownsRender render;
 	for(;true!=terminate;)
 	{
-		auto wallClockTime=std::chrono::high_resolution_clock::now();
-		auto passed=std::chrono::duration_cast<std::chrono::nanoseconds>(wallClockTime-lastWallClockTime).count();
-		lastWallClockTime=wallClockTime;
+		auto realTime0=std::chrono::high_resolution_clock::now();
+		auto townsTime0=townsPtr->state.townsTime;
 
 		int runModeCopy=0;
 
@@ -55,7 +52,6 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world,class Tow
 			outside_world->DevicePolling(*townsPtr);
 			break;
 		case RUNMODE_RUN:
-			townsPtr->state.wallClockTime+=passed;
 			clockTicking=true;
 			{
 				auto nextTimeSync=townsPtr->state.townsTime+NANOSECONDS_PER_TIME_SYNC;
@@ -126,7 +122,7 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world,class Tow
 
 		if(true==clockTicking)
 		{
-			AdjustRealTime(townsPtr);
+			AdjustRealTime(townsPtr,townsPtr->state.townsTime-townsTime0,realTime0,outside_world);
 		}
 	}
 
@@ -136,12 +132,14 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world,class Tow
 	outside_world->Stop();
 }
 
-void TownsThread::AdjustRealTime(FMTowns *townsPtr)
+void TownsThread::AdjustRealTime(FMTowns *townsPtr,long long int townsTimePassed,std::chrono::time_point<std::chrono::high_resolution_clock> time0,Outside_World *outside_world)
 {
-	townsPtr->var.timeAdjustLog[townsPtr->var.timeAdjustLogPtr]=townsPtr->state.townsTime-townsPtr->state.wallClockTime;
+	long long int realTimePassed=std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now()-time0).count();
+
+	townsPtr->var.timeAdjustLog[townsPtr->var.timeAdjustLogPtr]=townsTimePassed-realTimePassed;
 	townsPtr->var.timeAdjustLogPtr=(townsPtr->var.timeAdjustLogPtr+1)&(FMTowns::Variable::TIME_ADJUSTMENT_LOG_LEN-1);
 
-	if(townsPtr->state.townsTime<townsPtr->state.wallClockTime) // VM lagging
+	if(townsTimePassed<realTimePassed) // VM lagging
 	{
 		// One option is to fast-forward townsTime to match wallClockTime by doing:
 		// townsPtr->state.townsTime=townsPtr->state.wallClockTime;
@@ -149,29 +147,16 @@ void TownsThread::AdjustRealTime(FMTowns *townsPtr)
 		// Then in the next iteration, scheduled tasks will fire all at once, which breaks some logic.
 		// Rather, want to let VM catch up by virtually spending longer time.
 		// The question is how?
-
-
-		townsPtr->state.wallClockTime=townsPtr->state.townsTime;
 	}
 	else
 	{
 		if(true!=townsPtr->state.noWait)
 		{
-			auto t0=std::chrono::high_resolution_clock::now();
-			auto toWait=townsPtr->state.townsTime-townsPtr->state.wallClockTime;
-			for(;;)
+			while(std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now()-time0).count()<townsTimePassed)
 			{
-				auto diff=std::chrono::high_resolution_clock::now()-t0;
-				if(toWait<=std::chrono::duration_cast<std::chrono::nanoseconds>(diff).count())
-				{
-					break;
-				}
-				townsPtr->RunFastDevicePolling();
+				townsPtr->ProcessSound(outside_world);
 			}
 		}
-		// After the delay, wallClockTime should catch up with townsTime,
-		// both must be the same.
-		townsPtr->state.wallClockTime=townsPtr->state.townsTime;
 	}
 }
 
