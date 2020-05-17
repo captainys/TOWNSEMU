@@ -95,11 +95,6 @@ public:
 		bool noWait=false;
 
 
-		/*! Wall-clock time is an accumuration of real-time for each iteration when the VM is not paused.
-		*/
-		long long int wallClockTime;
-
-
 		/*! 
 		*/
 		unsigned long long int nextFastDevicePollingTime;

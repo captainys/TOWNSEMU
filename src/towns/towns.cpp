@@ -29,7 +29,6 @@ void FMTowns::State::PowerOn(void)
 	Reset();
 	townsTime=0;
 	cpuTime=0;
-	wallClockTime=0;
 	nextSecondInTownsTime=PER_SECOND;
 	nextFastDevicePollingTime=FAST_DEVICE_POLLING_INTERVAL;
 	freq=FREQUENCY_DEFAULT;
@@ -667,7 +666,6 @@ void FMTowns::PrintStatus(void) const
 		std::cout << "Debugger Enabled." << std::endl;
 	}
 	std::cout << "Towns TIME (Nano-Seconds): " << state.townsTime << std::endl;
-	std::cout << "Real Time (Nano-Seconds):  " << state.wallClockTime << std::endl;
 	cpu.PrintState();
 	PrintStack(32);
 	if(""!=debugger.externalBreakReason)
