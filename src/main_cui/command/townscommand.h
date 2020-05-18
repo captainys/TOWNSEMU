@@ -132,6 +132,7 @@ public:
 		DUMP_SCSI,
 		DUMP_SCHEDULE,
 		DUMP_TIME_BALANCE,
+		DUMP_SPRITE,
 	};
 
 	enum

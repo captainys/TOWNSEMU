@@ -172,6 +172,8 @@ public:
 	virtual void IOWriteByte(unsigned int ioport,unsigned int data);
 
 	virtual unsigned int IOReadByte(unsigned int ioport);
+
+	std::vector <std::string> GetStatusText(void) const;
 };
 
 /* } */

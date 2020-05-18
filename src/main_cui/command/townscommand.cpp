@@ -123,6 +123,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	dumpableMap["SCHED"]=DUMP_SCHEDULE;
 	dumpableMap["SCHEDULE"]=DUMP_SCHEDULE;
 	dumpableMap["TIMEBALANCE"]=DUMP_TIME_BALANCE;
+	dumpableMap["SPRITE"]=DUMP_SPRITE;
 
 
 	breakEventMap["IWC1"]=   BREAK_ON_PIC_IWC1;
@@ -293,6 +294,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  CD-ROM Status." << std::endl;
 	std::cout << "SCHED" << std::endl;
 	std::cout << "  Device call-back schedule." << std::endl;
+	std::cout << "SPRITE" << std::endl;
+	std::cout << "  Sprite status." << std::endl;
 
 	std::cout << "" << std::endl;
 
@@ -864,6 +867,12 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 			{
 				std::cout << towns.var.timeAdjustLog[(towns.var.timeAdjustLogPtr+i+1)%FMTowns::Variable::TIME_ADJUSTMENT_LOG_LEN];
 				std::cout << std::endl;
+			}
+			break;
+		case DUMP_SPRITE:
+			for(auto str : towns.sprite.GetStatusText())
+			{
+				std::cout << str << std::endl;
 			}
 			break;
 		}

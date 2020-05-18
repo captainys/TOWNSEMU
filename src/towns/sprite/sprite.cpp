@@ -248,3 +248,28 @@ void TownsSprite::RunScheduledTask(unsigned long long int townsTime)
 		}
 	}
 }
+
+std::vector <std::string> TownsSprite::GetStatusText(void) const
+{
+	std::vector <std::string> text;
+
+	text.push_back("");
+	text.back()="BUSY:";
+	text.back()+=(true==state.spriteBusy ? "1" : "0");
+	text.back()+=" ACTIVE:";
+	text.back()+=(true==SpriteActive() ? "1" : "0");
+	text.back()+=" #DRAW:";
+	text.back()+=cpputil::Itoa(NumSpritesToDraw());
+	text.back()+=" 1stINDEX:";
+	text.back()+=cpputil::Itoa(FirstSpriteIndex());
+
+	text.push_back("");
+	text.back()="HOFFSET:";
+	text.back()+=cpputil::Itoa(HOffset());
+	text.back()+=" VOFFSET:";
+	text.back()+=cpputil::Itoa(VOffset());
+	text.back()+=" DISPPAGE:";
+	text.back()+=cpputil::Itoa(DisplayPage());
+
+	return text;
+}
