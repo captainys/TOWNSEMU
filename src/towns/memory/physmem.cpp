@@ -292,8 +292,8 @@ void TownsPhysicalMemory::SetUpMemoryAccess(void)
 
 	nativeDicROMandDicRAMAccess.SetPhysicalMemoryPointer(this);
 	nativeDicROMandDicRAMAccess.SetCPUPointer(&cpu);
-	mem.AddAccess(&nativeDicROMandDicRAMAccess,0xC2080000,0xC20FFFFF);
-	mem.AddAccess(&nativeDicROMandDicRAMAccess,0xC2140000,0xC2141FFF);
+	mem.AddAccess(&nativeDicROMandDicRAMAccess,TOWNSADDR_NATIVE_DICROM_BASE,TOWNSADDR_NATIVE_DICROM_END-1);
+	mem.AddAccess(&nativeDicROMandDicRAMAccess,TOWNSADDR_NATIVE_CMOSRAM_BASE,TOWNSADDR_NATIVE_CMOSRAM_END-1);
 
 	mappedSysROMAccess.SetPhysicalMemoryPointer(this);
 	mappedSysROMAccess.SetCPUPointer(&cpu);
