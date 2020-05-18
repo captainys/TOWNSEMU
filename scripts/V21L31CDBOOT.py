@@ -26,6 +26,10 @@ def Run():
 		"D:/ISOImageSubset/TOSV2.1L31.iso",
 		"-SYM",
 		"../symtables/V2.1L31CDBOOT_"+TOWNSTYPE+".txt",
+		"-HD0",
+		os.path.join(DISKDIR,"hddimage.bin"),
+		"-CMOS",
+		"../testdata/CMOS.bin",
 		"-DEBUG",
 		"-PAUSE",
 	]).wait()

@@ -27,6 +27,10 @@ def Run(argv):
 		os.path.join(THISDIR,"..","testdata","ISOIMG","TESTDISC.ISO"),
 		"-SYM",
 		"../symtables/V2.1L20_"+TOWNSTYPE+".txt",
+		"-HD0",
+		os.path.join(DISKDIR,"hddimage.bin"),
+		"-CMOS",
+		"../testdata/CMOS.bin",
 		"-DEBUG",
 		"-PAUSE",
 	]+argv).wait()

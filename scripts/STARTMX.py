@@ -16,23 +16,26 @@ DISKDIR=os.path.join(THISDIR,"..","..","TOWNSEMU_TEST","DISKIMG")
 
 
 
+def ExeExtension():
+	if sys.platform.startswith('win'):
+		return ".exe"
+	else:
+		return ""
+
+
 def Run(argv):
 	os.chdir(BUILDDIR)
 	subprocess.Popen([
-		"./main_cui/main_cui.exe",
+		"./main_cui/main_cui"+ExeExtension(),
 		ROMDIR,
-		"-FD0",
-		os.path.join(DISKDIR,"V2.1L20.bin"),
-		"-CD",
-		"D:/ISOImageSubset/FB386CV2.1L10.iso",
 		"-SYM",
-		"../symtables/FB386CV2.1L10_"+TOWNSTYPE+".txt",
-		"-DEBUG",
+		"../symtables/V2.1L20_"+TOWNSTYPE+".txt",
 		"-HD0",
 		os.path.join(DISKDIR,"hddimage.bin"),
 		"-CMOS",
 		"../testdata/CMOS.bin",
-		# "-PAUSE",
+		"-DEBUG",
+		 "-PAUSE",
 	]+argv).wait()
 
 
