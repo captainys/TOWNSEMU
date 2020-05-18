@@ -131,7 +131,7 @@ FMTowns::FMTowns() :
 	physMem.SetWaveRAMSize(64*1024);
 	for(int i=0; i<TOWNS_CMOS_SIZE; ++i)
 	{
-		physMem.state.DICRAM[i]=defCMOS[i];
+		physMem.state.CMOSRAM[i]=defCMOS[i];
 	}
 
 	physMem.SetUpMemoryAccess();

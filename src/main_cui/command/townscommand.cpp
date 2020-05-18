@@ -822,7 +822,7 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 					for(int i=0; i<length; ++i)
 					{
 						// RAM.push_back((unsigned char)towns.ioRAM.state.RAM[addr+i]);
-						RAM.push_back(towns.physMem.state.DICRAM[addr+i]);
+						RAM.push_back(towns.physMem.state.CMOSRAM[addr+i]);
 					}
 					for(auto str : cpputil::MakeDump(addr,RAM.size(),RAM.data()))
 					{
@@ -1475,7 +1475,7 @@ void TownsCommandInterpreter::Execute_CMOSSave(FMTowns &towns,Command &cmd)
 {
 	if(2<=cmd.argv.size())
 	{
-		if(true!=cpputil::WriteBinaryFile(cmd.argv[1],TOWNS_CMOS_SIZE,towns.physMem.state.DICRAM))
+		if(true!=cpputil::WriteBinaryFile(cmd.argv[1],TOWNS_CMOS_SIZE,TOWNS_CMOS_SIZE,towns.physMem.state.CMOSRAM))
 		{
 			PrintError(ERROR_CANNOT_SAVE_FILE);
 		}

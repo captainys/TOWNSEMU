@@ -428,7 +428,7 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 ////////////////////////////////////////////////////////////
 
 
-/* virtual */ unsigned int TownsMappedDicROMandDicRAMAccess::FetchByte(unsigned int physAddr) const
+/* virtual */ unsigned int TownsMappedDICROMandCMOSRAMAccess::FetchByte(unsigned int physAddr) const
 {
 	if(TOWNSADDR_FMR_DICROM_BASE<=physAddr && physAddr<TOWNSADDR_FMR_DICROM_END) // Dic ROM
 	{
@@ -437,15 +437,15 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 	}
 	else if(TOWNSADDR_BACKUP_RAM_BASE<=physAddr && physAddr<TOWNSADDR_BACKUP_RAM_END) // 
 	{
-		return physMemPtr->state.DICRAM[physAddr-TOWNSADDR_BACKUP_RAM_BASE];
+		return physMemPtr->state.CMOSRAM[physAddr-TOWNSADDR_BACKUP_RAM_BASE];
 	}
 	return 0xFF;
 }
-/* virtual */ void TownsMappedDicROMandDicRAMAccess::StoreByte(unsigned int physAddr,unsigned char data)
+/* virtual */ void TownsMappedDICROMandCMOSRAMAccess::StoreByte(unsigned int physAddr,unsigned char data)
 {
 	if(TOWNSADDR_BACKUP_RAM_BASE<=physAddr && physAddr<TOWNSADDR_BACKUP_RAM_END) // 
 	{
-		physMemPtr->state.DICRAM[physAddr-TOWNSADDR_BACKUP_RAM_BASE]=data;
+		physMemPtr->state.CMOSRAM[physAddr-TOWNSADDR_BACKUP_RAM_BASE]=data;
 	}
 }
 
@@ -453,7 +453,7 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 ////////////////////////////////////////////////////////////
 
 
-/* virtual */ unsigned int TownsNativeDicROMandDicRAMAccess::FetchByte(unsigned int physAddr) const
+/* virtual */ unsigned int TownsNativeDICROMandCMOSRAMAccess::FetchByte(unsigned int physAddr) const
 {
 	auto &physMem=*physMemPtr;
 	if(0xC2080000<=physAddr && physAddr<=0xC20FFFFF)
@@ -462,16 +462,16 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 	}
 	else if(0xC2140000<=physAddr && physAddr<=0xC2141FFF)
 	{
-		return physMem.state.DICRAM[physAddr-0xC2140000];
+		return physMem.state.CMOSRAM[physAddr-0xC2140000];
 	}
 	return 0xff;
 }
-/* virtual */ void TownsNativeDicROMandDicRAMAccess::StoreByte(unsigned int physAddr,unsigned char data)
+/* virtual */ void TownsNativeDICROMandCMOSRAMAccess::StoreByte(unsigned int physAddr,unsigned char data)
 {
 	auto &physMem=*physMemPtr;
 	if(0xC2140000<=physAddr && physAddr<=0xC2141FFF)
 	{
-		physMem.state.DICRAM[physAddr-0xC2140000]=data;
+		physMem.state.CMOSRAM[physAddr-0xC2140000]=data;
 	}
 }
 

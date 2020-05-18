@@ -83,14 +83,14 @@ public:
 	virtual void StoreDword(unsigned int physAddr,unsigned int data);
 };
 
-class TownsMappedDicROMandDicRAMAccess : public TownsMemAccess
+class TownsMappedDICROMandCMOSRAMAccess : public TownsMemAccess
 {
 public:
 	virtual unsigned int FetchByte(unsigned int physAddr) const;
 	virtual void StoreByte(unsigned int physAddr,unsigned char data);
 };
 
-class TownsNativeDicROMandDicRAMAccess : public TownsMemAccess
+class TownsNativeDICROMandCMOSRAMAccess : public TownsMemAccess
 {
 public:
 	virtual unsigned int FetchByte(unsigned int physAddr) const;
@@ -369,7 +369,7 @@ public:
 		std::vector <unsigned char> CVRAM;
 		std::vector <unsigned char> spriteRAM;
 		std::vector <unsigned char> waveRAM;
-		unsigned char DICRAM[TOWNS_CMOS_SIZE];
+		unsigned char CMOSRAM[TOWNS_CMOS_SIZE];
 
 		KanjiROMAccess kanjiROMAccess;
 
@@ -395,8 +395,8 @@ public:
 	TownsMainRAMAccess mainRAMAccess;
 	TownsMappedSysROMAccess mappedSysROMAccess;
 	TownsFMRVRAMAccess FMRVRAMAccess;
-	TownsMappedDicROMandDicRAMAccess mappedDicROMandDicRAMAccess;
-	TownsNativeDicROMandDicRAMAccess nativeDicROMandDicRAMAccess;
+	TownsMappedDICROMandCMOSRAMAccess mappedDicROMandDicRAMAccess;
+	TownsNativeDICROMandCMOSRAMAccess nativeDicROMandDicRAMAccess;
 	TownsFontROMAccess fontROMAccess;
 
 	TownsVRAMAccessTemplate <TOWNSADDR_VRAM0_BASE        ,TOWNSADDR_VRAM0_END        > VRAMAccess0;
@@ -449,10 +449,6 @@ public:
 	/*! Sets the WaveRAM size.
 	*/
 	void SetWaveRAMSize(long long int size);
-
-	/*! Sets the DICRAM size.  Supposed to be 32768.
-	*/
-	void SetDICRAMSize(long long int size);
 
 	/*!
 	*/

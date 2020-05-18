@@ -90,7 +90,7 @@ void TownsPhysicalMemory::State::Reset(void)
 				data=0xFA;
 			}
 		} */
-		state.DICRAM[(ioport-TOWNSIO_CMOS_BASE)/2]=(unsigned char)(data&0xFF);
+		state.CMOSRAM[(ioport-TOWNSIO_CMOS_BASE)/2]=(unsigned char)(data&0xFF);
 		return;
 	}
 
@@ -120,7 +120,7 @@ void TownsPhysicalMemory::State::Reset(void)
 {
 	if(TOWNSIO_CMOS_BASE<=ioport && ioport<TOWNSIO_CMOS_END)
 	{
-		return state.DICRAM[(ioport-TOWNSIO_CMOS_BASE)/2];
+		return state.CMOSRAM[(ioport-TOWNSIO_CMOS_BASE)/2];
 	}
 
 	unsigned char data;
@@ -163,7 +163,7 @@ TownsPhysicalMemory::TownsPhysicalMemory(class FMTowns *townsPtr,class i486DX *c
 	this->cpuPtr=cpuPtr;
 	this->memPtr=memPtr;
 
-	for(auto &b : state.DICRAM)
+	for(auto &b : state.CMOSRAM)
 	{
 		b=0;
 	}
@@ -237,7 +237,7 @@ void TownsPhysicalMemory::SetCMOS(const std::vector <unsigned char> &cmos)
 {
 	for(unsigned int i=0; i<TOWNS_CMOS_SIZE && i<cmos.size(); ++i)
 	{
-		state.DICRAM[i]=cmos[i];
+		state.CMOSRAM[i]=cmos[i];
 	}
 }
 
