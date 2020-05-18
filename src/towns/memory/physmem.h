@@ -90,7 +90,14 @@ public:
 	virtual void StoreByte(unsigned int physAddr,unsigned char data);
 };
 
-class TownsNativeDICROMandCMOSRAMAccess : public TownsMemAccess
+class TownsNativeDICROMAccess : public TownsMemAccess
+{
+public:
+	virtual unsigned int FetchByte(unsigned int physAddr) const;
+	virtual void StoreByte(unsigned int physAddr,unsigned char data);
+};
+
+class TownsNativeCMOSRAMAccess : public TownsMemAccess
 {
 public:
 	virtual unsigned int FetchByte(unsigned int physAddr) const;
@@ -396,7 +403,8 @@ public:
 	TownsMappedSysROMAccess mappedSysROMAccess;
 	TownsFMRVRAMAccess FMRVRAMAccess;
 	TownsMappedDICROMandCMOSRAMAccess mappedDicROMandDicRAMAccess;
-	TownsNativeDICROMandCMOSRAMAccess nativeDicROMandDicRAMAccess;
+	TownsNativeDICROMAccess nativeDicROMAccess;
+	TownsNativeCMOSRAMAccess nativeCMOSRAMAccess;
 	TownsFontROMAccess fontROMAccess;
 
 	TownsVRAMAccessTemplate <TOWNSADDR_VRAM0_BASE        ,TOWNSADDR_VRAM0_END        > VRAMAccess0;

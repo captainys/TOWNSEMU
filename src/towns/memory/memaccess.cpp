@@ -453,26 +453,29 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 ////////////////////////////////////////////////////////////
 
 
-/* virtual */ unsigned int TownsNativeDICROMandCMOSRAMAccess::FetchByte(unsigned int physAddr) const
+/* virtual */ unsigned int TownsNativeDICROMAccess::FetchByte(unsigned int physAddr) const
 {
 	auto &physMem=*physMemPtr;
-	if(0xC2080000<=physAddr && physAddr<=0xC20FFFFF)
-	{
-		return physMem.dicRom[physAddr-0xC2080000];
-	}
-	else if(0xC2140000<=physAddr && physAddr<=0xC2141FFF)
-	{
-		return physMem.state.CMOSRAM[physAddr-0xC2140000];
-	}
-	return 0xff;
+	return physMem.dicRom[physAddr-TOWNSADDR_NATIVE_DICROM_BASE];
 }
-/* virtual */ void TownsNativeDICROMandCMOSRAMAccess::StoreByte(unsigned int physAddr,unsigned char data)
+/* virtual */ void TownsNativeDICROMAccess::StoreByte(unsigned int,unsigned char)
+{
+	// It's a ROM.
+}
+
+
+////////////////////////////////////////////////////////////
+
+
+/* virtual */ unsigned int TownsNativeCMOSRAMAccess::FetchByte(unsigned int physAddr) const
 {
 	auto &physMem=*physMemPtr;
-	if(0xC2140000<=physAddr && physAddr<=0xC2141FFF)
-	{
-		physMem.state.CMOSRAM[physAddr-0xC2140000]=data;
-	}
+	return physMem.state.CMOSRAM[physAddr-TOWNSADDR_NATIVE_CMOSRAM_BASE];
+}
+/* virtual */ void TownsNativeCMOSRAMAccess::StoreByte(unsigned int physAddr,unsigned char data)
+{
+	auto &physMem=*physMemPtr;
+	physMem.state.CMOSRAM[physAddr-TOWNSADDR_NATIVE_CMOSRAM_BASE]=data;
 }
 
 
