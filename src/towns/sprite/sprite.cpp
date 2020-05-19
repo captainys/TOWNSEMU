@@ -114,10 +114,10 @@ void TownsSprite::Render(unsigned char VRAMIn[],const unsigned char spriteRAM[])
 	// [2] pp.368 (Sprite BIOS AH=00H) tells, the top 2-lines of the VRAM page are VRAM-clear data.
 	//     So, apparently it is possible to clear the sprite page with non-0x8000 values.
 	//     FOr the time being, I just clear all VRAM with 0x8000
-	for(unsigned int offset=0; offset<0x20000; offset+=2)
+	for(unsigned int offset=SPRITE_VRAM_BYTES_PER_LINE*2; offset<0x20000; offset+=2)
 	{
-		VRAMTop[offset  ]=0;
-		VRAMTop[offset+1]=0x80;
+		VRAMTop[offset  ]=VRAMTop[ offset   &(SPRITE_VRAM_BYTES_PER_LINE*2-1)];
+		VRAMTop[offset+1]=VRAMTop[(offset+1)&(SPRITE_VRAM_BYTES_PER_LINE*2-1)];
 	}
 
 	auto xOffset=HOffset(),yOffset=VOffset();
@@ -166,25 +166,17 @@ void TownsSprite::Render(unsigned char VRAMIn[],const unsigned char spriteRAM[])
 				for(unsigned int ptnY=0; ptnY<SPRITE_DIMENSION; ptnY+=yStep)
 				{
 					auto nextDstPtr=dstPtr+SPRITE_VRAM_BYTES_PER_LINE;
-					for(unsigned int ptnX=0; ptnX<SPRITE_DIMENSION; ptnX+=(xStep<<1))
+					for(unsigned int ptnX=0; ptnX<SPRITE_DIMENSION; ptnX+=xStep)
 					{
 						unsigned int xTfm,yTfm;
 						Transform(xTfm,yTfm,ptnX,ptnY,ROT);
 
 						auto src=srcPtr+SPRITE_PTN16_BYTES_PER_LINE*yTfm+(xTfm>>1);
-						unsigned char pix4bit=(src[0]>>4);
-						const unsigned char *col=palettePtr+(pix4bit<<1);
-						if(0==(col[1]&0x80))
+						unsigned char shift=(xTfm&1)<<2;
+						unsigned char pix4bit=((src[0]>>shift)&0x0F);
+						if(0!=pix4bit)  // [2] pp.371 Sprite BIOS.  4bit all zero means through.
 						{
-							dstPtr[0]=col[0];
-							dstPtr[1]=col[1];
-						}
-						dstPtr+=2;
-
-						pix4bit=(src[0]&0x0F);
-						col=palettePtr+(pix4bit<<1);
-						if(0==(col[1]&0x80))
-						{
+							const unsigned char *col=palettePtr+(pix4bit<<1);
 							dstPtr[0]=col[0];
 							dstPtr[1]=col[1];
 						}
