@@ -134,12 +134,12 @@ private:
 			Y=x;
 			break;
 		case 5:
-			X=y;
-			Y=15-x;
-			break;
-		case 6:
 			X=15-y;
 			Y=x;
+			break;
+		case 6:
+			X=y;
+			Y=15-x;
 			break;
 		case 7:
 			X=15-y;
