@@ -75,6 +75,42 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 				break;
 			}
 		}
+		else if(GAMEPAD==device)
+		{
+			if(true==run)
+			{
+				data&=0b11110011;
+			}
+			if(true==right)
+			{
+				data&=0b11110111;
+			}
+			if(true==left)
+			{
+				data&=0b11111011;
+			}
+
+			if(true==pause)
+			{
+				data&=0b11111100;
+			}
+			if(true==down)
+			{
+				data&=0b11111101;
+			}
+			if(true==up)
+			{
+				data&=0b11111110;
+			}
+			if(true==button[0])
+			{
+				data&=0b11101111;
+			}
+			if(true==button[1])
+			{
+				data&=0b11011111;
+			}
+		}
 		else
 		{
 			data|=0x0F;
@@ -105,6 +141,10 @@ void TownsGamePort::State::Reset(void)
 		p.state=0;
 		p.button[0]=false;
 		p.button[1]=false;
+		p.left=false;
+		p.right=false;
+		p.up=false;
+		p.down=false;
 		p.COM=false;
 		p.mouseMotion.Set(0,0);
 		p.lastReadTime=0;

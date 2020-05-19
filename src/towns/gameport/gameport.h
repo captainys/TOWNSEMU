@@ -38,7 +38,7 @@ public:
 		int device;  // MOUSE, GAMEPAD, or CYBERSTICK
 		int state;
 		bool COM;
-		bool button[2];
+		bool button[2],left,right,up,down,run,pause;
 		Vec2i mouseMotion;
 		long long int lastReadTime;
 
