@@ -93,9 +93,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	case TOWNSIO_MACHINE_ID_HIGH://=        0x31,
 		return (MachineID()>>8)&0xFF;
 	case TOWNSIO_FREERUN_TIMER_LOW ://0x26,
-		return (state.townsTime<<var.freeRunTimerShift)&0xff;
+		return ( (state.townsTime/1000)<<var.freeRunTimerShift)&0xff;
 	case TOWNSIO_FREERUN_TIMER_HIGH://0x28,
-		return ((state.townsTime<<var.freeRunTimerShift)>>8)&0xff;
+		return (((state.townsTime/1000)<<var.freeRunTimerShift)>>8)&0xff;
 
 
 	case TOWNSIO_SERIAL_ROM_CTRL://=        0x32,
