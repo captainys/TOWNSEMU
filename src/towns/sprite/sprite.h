@@ -173,7 +173,7 @@ public:
 
 	virtual unsigned int IOReadByte(unsigned int ioport);
 
-	std::vector <std::string> GetStatusText(void) const;
+	std::vector <std::string> GetStatusText(const unsigned char spriteRAM[]) const;
 };
 
 /* } */

@@ -870,7 +870,7 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 			}
 			break;
 		case DUMP_SPRITE:
-			for(auto str : towns.sprite.GetStatusText())
+			for(auto str : towns.sprite.GetStatusText(towns.physMem.state.spriteRAM.data()))
 			{
 				std::cout << str << std::endl;
 			}

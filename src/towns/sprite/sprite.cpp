@@ -133,8 +133,8 @@ void TownsSprite::Render(unsigned char VRAMIn[],const unsigned char spriteRAM[])
 			(unsigned short)(indexPtr[6]|(indexPtr[7]<<8)),
 		};
 
-		unsigned int dstX=indexInfo[0];
-		unsigned int dstY=indexInfo[1];
+		unsigned int dstX=indexInfo[0]&511;
+		unsigned int dstY=indexInfo[1]&511;
 		const unsigned int attrib=indexInfo[2];
 		const unsigned int paletteInfo=indexInfo[3];
 
@@ -158,12 +158,11 @@ void TownsSprite::Render(unsigned char VRAMIn[],const unsigned char spriteRAM[])
 		{
 			// 16-color paletted sprite
 			const unsigned int paletteIndex=paletteInfo&PALETTE_INDEX_MASK;
-			auto pattenPtr=spriteRAM+(patternIndex<<7);
 			auto palettePtr=spriteRAM+(paletteIndex<<5);
 			auto srcPtr=spriteRAM+(patternIndex<<7);
 			if(dstX<256-SPRITE_DIMENSION && 2<=dstY && dstY<256-SPRITE_DIMENSION)
 			{
-				auto dstPtr=VRAMTop+SPRITE_VRAM_BYTES_PER_LINE*dstY;
+				auto dstPtr=VRAMTop+SPRITE_VRAM_BYTES_PER_LINE*dstY+(dstX<<1);
 				for(unsigned int ptnY=0; ptnY<SPRITE_DIMENSION; ptnY+=yStep)
 				{
 					auto nextDstPtr=dstPtr+SPRITE_VRAM_BYTES_PER_LINE;
@@ -249,9 +248,55 @@ void TownsSprite::RunScheduledTask(unsigned long long int townsTime)
 	}
 }
 
-std::vector <std::string> TownsSprite::GetStatusText(void) const
+std::vector <std::string> TownsSprite::GetStatusText(const unsigned char spriteRAM[]) const
 {
 	std::vector <std::string> text;
+
+	for(unsigned int spriteIndex=FirstSpriteIndex(); spriteIndex<MAX_NUM_SPRITE_INDEX; ++spriteIndex)
+	{
+		text.push_back("");
+		text.back()+="#";
+		text.back()+=cpputil::Itoa(spriteIndex);
+		while(text.back().size()<8)
+		{
+			text.back().push_back(' ');
+		}
+
+		auto indexPtr=spriteRAM+SPRITERAM_INDEX_OFFSET+(spriteIndex<<3);
+
+		const unsigned short indexInfo[4]=  // I hope the optimizer recognizes it.
+		{
+			(unsigned short)(indexPtr[0]|(indexPtr[1]<<8)),
+			(unsigned short)(indexPtr[2]|(indexPtr[3]<<8)),
+			(unsigned short)(indexPtr[4]|(indexPtr[5]<<8)),
+			(unsigned short)(indexPtr[6]|(indexPtr[7]<<8)),
+		};
+
+		text.back()+="(";
+		text.back()+=cpputil::Itoa(indexInfo[0]&511); // X
+		text.back()+=",";
+		text.back()+=cpputil::Itoa(indexInfo[1]&511); // Y
+		text.back()+=")";
+		while(text.back().size()<20)
+		{
+			text.back().push_back(' ');
+		}
+
+		text.back()+="PTN:";
+		text.back()+=cpputil::Itoa(indexInfo[2]&1023);
+		text.back()+=" ROT:";
+		text.back()+=cpputil::Itoa((indexInfo[2]>>12)&7);
+		text.back()+=" OFS:";
+		text.back()+=cpputil::Itoa((indexInfo[2]>>15)&1);
+
+		text.back()+=" CTEN:";
+		text.back()+=cpputil::Itoa((indexInfo[3]>>15)&1);
+		text.back()+=" HIDE:";
+		text.back()+=cpputil::Itoa((indexInfo[3]>>13)&1);
+		text.back()+=" PLT:";
+		text.back()+=cpputil::Itoa(indexInfo[3]&4095);
+	}
+
 
 	text.push_back("");
 	text.back()="BUSY:";
@@ -270,6 +315,7 @@ std::vector <std::string> TownsSprite::GetStatusText(void) const
 	text.back()+=cpputil::Itoa(VOffset());
 	text.back()+=" DISPPAGE:";
 	text.back()+=cpputil::Itoa(DisplayPage());
+
 
 	return text;
 }
