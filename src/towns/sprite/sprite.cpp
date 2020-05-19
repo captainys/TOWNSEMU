@@ -42,7 +42,7 @@ void TownsSprite::Start(void)
 {
 	state.reg[REG_CONTROL1]|=0x80;
 	state.spriteBusy=false;
-	townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+SPRITE_IDLE_TIME);
+	townsPtr->ScheduleDeviceCallBack(*this,townsPtr->crtc.NextVSYNCTime(townsPtr->state.townsTime));
 }
 void TownsSprite::Stop(void)
 {
@@ -50,6 +50,49 @@ void TownsSprite::Stop(void)
 	state.spriteBusy=false;
 	townsPtr->UnscheduleDeviceCallBack(*this);
 }
+
+unsigned int TownsSprite::NumSpritesActuallyDrawn(void) const
+{
+	auto *spriteRAM=townsPtr->physMem.state.spriteRAM.data();
+
+	unsigned int nDraw=0;
+	auto xOffset=HOffset(),yOffset=VOffset();
+	for(unsigned int spriteIndex=FirstSpriteIndex(); spriteIndex<MAX_NUM_SPRITE_INDEX; ++spriteIndex)
+	{
+		auto indexPtr=spriteRAM+SPRITERAM_INDEX_OFFSET+(spriteIndex<<3);
+
+		const unsigned short indexInfo[4]=  // I hope the optimizer recognizes it.
+		{
+			(unsigned short)(indexPtr[0]|(indexPtr[1]<<8)),
+			(unsigned short)(indexPtr[2]|(indexPtr[3]<<8)),
+			(unsigned short)(indexPtr[4]|(indexPtr[5]<<8)),
+			(unsigned short)(indexPtr[6]|(indexPtr[7]<<8)),
+		};
+
+		unsigned int dstX=indexInfo[0]&511;
+		unsigned int dstY=indexInfo[1]&511;
+		const unsigned int attrib=indexInfo[2];
+		const unsigned int paletteInfo=indexInfo[3];
+
+		if(0!=(paletteInfo&PALETTE_DISP))  // Active LOW
+		{
+			continue;
+		}
+
+		if(0!=(attrib&ATTR_OFFS))
+		{
+			dstX+=xOffset;
+			dstY+=yOffset;
+		}
+
+		if(dstX<256-SPRITE_DIMENSION && 2<=dstY && dstY<256-SPRITE_DIMENSION)
+		{
+			++nDraw;
+		}
+	}
+	return nDraw;
+}
+
 /* virtual */ void TownsSprite::PowerOn(void)
 {
 	state.PowerOn();
@@ -228,14 +271,18 @@ void TownsSprite::RunScheduledTask(unsigned long long int townsTime)
 	{
 		if(true!=state.spriteBusy)
 		{
+			// Formula in [2] pp. 369 (Sprite BIOS AH=01H) sugests that:
+			// The sprite busy starts at VSYNC and takes (32+(number of sprites drawn)*75) micro seconds.
+			unsigned long long int busyTime=32000+75000*NumSpritesActuallyDrawn();
+
 			state.spriteBusy=true;
 			Render(physMemPtr->state.VRAM.data()+0x40000,physMemPtr->state.spriteRAM.data());
-			townsPtr->ScheduleDeviceCallBack(*this,townsTime+SPRITE_BUSY_TIME);
+			townsPtr->ScheduleDeviceCallBack(*this,townsTime+busyTime);
 		}
 		else
 		{
 			state.spriteBusy=false;
-			townsPtr->ScheduleDeviceCallBack(*this,townsTime+SPRITE_IDLE_TIME);
+			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->crtc.NextVSYNCTime(townsTime));
 		}
 	}
 }
@@ -308,6 +355,9 @@ std::vector <std::string> TownsSprite::GetStatusText(const unsigned char spriteR
 	text.back()+=" DISPPAGE:";
 	text.back()+=cpputil::Itoa(DisplayPage());
 
+	text.push_back("");
+	text.back()="#ActuallyDrawn:";
+	text.back()+=cpputil::Itoa(NumSpritesActuallyDrawn());
 
 	return text;
 }

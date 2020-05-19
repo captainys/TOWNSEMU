@@ -21,8 +21,6 @@ public:
 		SPRITE_DIMENSION=16,
 		SPRITE_PTN32K_BYTES_PER_LINE=32,
 		SPRITE_PTN16_BYTES_PER_LINE=8,
-		SPRITE_BUSY_TIME= 1000000,         // 1/60 sec cycle?  16ms=16000us=16000000ns
-		SPRITE_IDLE_TIME=15000000,
 	};
 	enum
 	{
@@ -78,13 +76,10 @@ public:
 	}
 	inline unsigned int NumSpritesToDraw(void) const
 	{
-		unsigned int n=((state.reg[REG_CONTROL1]<<8)|state.reg[REG_CONTROL0])&(MAX_NUM_SPRITE_INDEX-1);
-		if(0==n)
-		{
-			return MAX_NUM_SPRITE_INDEX;
-		}
+		unsigned int n=MAX_NUM_SPRITE_INDEX-((state.reg[REG_CONTROL1]<<8)|state.reg[REG_CONTROL0])&(MAX_NUM_SPRITE_INDEX-1);
 		return n;
 	}
+	unsigned int NumSpritesActuallyDrawn(void) const;
 	inline unsigned int FirstSpriteIndex(void) const
 	{
 		return ((state.reg[REG_CONTROL1]<<8)|state.reg[REG_CONTROL0])&(MAX_NUM_SPRITE_INDEX-1);
