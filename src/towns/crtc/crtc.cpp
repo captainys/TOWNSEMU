@@ -329,23 +329,30 @@ Vec2i TownsCRTC::GetPageZoom(unsigned char page) const
 Vec2i TownsCRTC::GetPageOriginOnMonitor(unsigned char page) const
 {
 	int x0,y0;
+	static const int reg[4]=
+	{
+		REG_HDS0,REG_VDS0,
+		REG_HDS1,REG_VDS1,
+	};
+	auto HDS=reg[page*2];
+	auto VDS=reg[page*2+1];
 	switch(CLKSEL())
 	{
 	case 0:
-		x0=(state.crtcReg[REG_HDS0]-0x129)>>1;
-		y0=(state.crtcReg[REG_VDS0]-0x2a)>>1; // I'm not sure if I should divide by 2.  Will need experiments.
+		x0=(state.crtcReg[HDS]-0x129)>>1;
+		y0=(state.crtcReg[VDS]-0x2a)>>1; // I'm not sure if I should divide by 2.  Will need experiments.
 		break;
 	case 1:
-		x0=(state.crtcReg[REG_HDS0]-0xe7)>>1;
-		y0=(state.crtcReg[REG_VDS0]-0x2a)>>1; // I'm not sure if I should divide by 2.  Will need experiments.
+		x0=(state.crtcReg[HDS]-0xe7)>>1;
+		y0=(state.crtcReg[VDS]-0x2a)>>1; // I'm not sure if I should divide by 2.  Will need experiments.
 		break;
 	case 2:
-		x0=(state.crtcReg[REG_HDS0]-0x8a);
-		y0=(state.crtcReg[REG_VDS0]-0x46);
+		x0=(state.crtcReg[HDS]-0x8a);
+		y0=(state.crtcReg[VDS]-0x46);
 		break;
 	case 3:
-		x0=(state.crtcReg[REG_HDS0]-0x9c);
-		y0=(state.crtcReg[REG_VDS0]-0x40);
+		x0=(state.crtcReg[HDS]-0x9c);
+		y0=(state.crtcReg[VDS]-0x40);
 		break;
 	default:
 		x0=0;
