@@ -228,8 +228,33 @@ void TownsSprite::Render(unsigned char VRAMIn[],const unsigned char spriteRAM[])
 					dstPtr=nextDstPtr;
 				}
 			}
-			else // Clipping not supported yet.
+			else if((dstX<256 || 496<dstX) && (dstY<256 || 498<dstY))
 			{
+				for(unsigned int ptnY=0; ptnY<SPRITE_DIMENSION; ptnY+=yStep)
+				{
+					for(unsigned int ptnX=0; ptnX<SPRITE_DIMENSION; ptnX+=xStep)
+					{
+						unsigned int vramX=((dstX+ptnX)&511);
+						unsigned int vramY=((dstY+ptnY)&511);
+						if(vramX<256 && 2<vramY && vramY<256)
+						{
+							unsigned int xTfm,yTfm;
+							Transform(xTfm,yTfm,ptnX,ptnY,ROT);
+
+							auto src=srcPtr+SPRITE_PTN16_BYTES_PER_LINE*yTfm+(xTfm>>1);
+							auto dstPtr=VRAMTop+SPRITE_VRAM_BYTES_PER_LINE*vramY+(vramX<<1);
+
+							unsigned char shift=(xTfm&1)<<2;
+							unsigned char pix4bit=((src[0]>>shift)&0x0F);
+							if(0!=pix4bit)  // [2] pp.371 Sprite BIOS.  4bit all zero means through.
+							{
+								const unsigned char *col=palettePtr+(pix4bit<<1);
+								dstPtr[0]=col[0];
+								dstPtr[1]=col[1];
+							}
+						}
+					}
+				}
 			}
 		}
 		else
@@ -247,6 +272,7 @@ void TownsSprite::Render(unsigned char VRAMIn[],const unsigned char spriteRAM[])
 					{
 						unsigned int xTfm,yTfm;
 						Transform(xTfm,yTfm,ptnX,ptnY,ROT);
+
 						auto src=srcPtr+SPRITE_PTN32K_BYTES_PER_LINE*yTfm+(xTfm<<1);
 						if(0==(src[1]&0x80))
 						{
@@ -258,8 +284,30 @@ void TownsSprite::Render(unsigned char VRAMIn[],const unsigned char spriteRAM[])
 					dstPtr=nextDstPtr;
 				}
 			}
-			else // Clipping not supported yet.
+			else if((dstX<256 || 496<dstX) && (dstY<256 || 498<dstY))
 			{
+				for(unsigned int ptnY=0; ptnY<SPRITE_DIMENSION; ptnY+=yStep)
+				{
+					for(unsigned int ptnX=0; ptnX<SPRITE_DIMENSION; ptnX+=xStep)
+					{
+						unsigned int vramX=((dstX+ptnX)&511);
+						unsigned int vramY=((dstY+ptnY)&511);
+						if(vramX<256 && 2<vramY && vramY<256)
+						{
+							unsigned int xTfm,yTfm;
+							Transform(xTfm,yTfm,ptnX,ptnY,ROT);
+
+							auto src=srcPtr+SPRITE_PTN32K_BYTES_PER_LINE*yTfm+(xTfm<<1);
+							auto dstPtr=VRAMTop+SPRITE_VRAM_BYTES_PER_LINE*vramY+(vramX<<1);
+
+							if(0==(src[1]&0x80))
+							{
+								dstPtr[0]=src[0];
+								dstPtr[1]=src[1];
+							}
+						}
+					}
+				}
 			}
 		}
 	}
