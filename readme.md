@@ -38,8 +38,6 @@ The biggest set back right now is its speed.  How other DOS emulators are runnin
 
 Not-all instructions of Intel 80486 processor have been implemented yet.  Towns OS didn't use task registers.  I have no plan on adding support for those registers.  Since the emulator works as a debugger, debug registers won't be supported, either.
 
-Sprites are imcomplete.  I am trying to make sense of the sprite hardware registers, and how it communicates with CRTC.
-
 RF5C68 PCM Sound Generator support is very primitive.
 
 FM Sound Generators can play a tone, but since the VM is not in sync with the real time, it cannot play a music.  Also special mode for 3CH and 6CH is not supported, DETUNE, and other effects are not supported yet.(YM2612 timer is supported because it is used for some other purposes.)
@@ -54,8 +52,6 @@ FM Sound Generators can play a tone, but since the VM is not in sync with the re
 80486エミュレーションが遅いです。今のバージョンではすべてのインストラクションについて、線形アドレスを計算して、ページテーブルを参照して物理アドレスに変換というプロセスを通ってます。スタックも同じです。だから、かなりのスピードアップの余地があります。そのうちやります。
 
 80486のすべてのインストラクションをエミュレートできてません。なお、Towns OSはタスク機能は使ってなかったと思われるので多分サポートしません。また、エミュレータがデバッガとして機能するのでデバッグ機能もサポートしない予定です。
-
-スプライトは不完全です。というか、レジスタの内容とかどう解釈するのが正しいのか検討中。
 
 RF5C68 PCM音源の音は出ますが、まだ非常に限定的なサポートです。
 
@@ -143,6 +139,11 @@ The tests are timing-sensitive, or the CPU needs to be reasonably fast.  If not,
 
 
 # Revisions
+### 2020/05/19
+- Sprite emulation should be pretty good.
+- Game pad can be emulated by keyboard (-GAMEPORT0 option.  Use arrow keys and Z,X,A,S)
+- Afterburner II (SEGA, ported by CRI) is playable!  Sample boot script is Afterburner2.py.
+
 ### 2020/05/06
 - Preliminary support for SCSI Hard disks.  (Create a big binary filled with zeros and use -HD0 option.)
 
