@@ -224,11 +224,11 @@ void FMTowns::SetMouseButtonState(bool lButton,bool rButton)
 	}
 }
 
-void FMTowns::SetGamePadState(int port,bool button[2],bool left,bool right,bool up,bool down,bool run,bool pause)
+void FMTowns::SetGamePadState(int port,bool Abutton,bool Bbutton,bool left,bool right,bool up,bool down,bool run,bool pause)
 {
 	auto &p=gameport.state.ports[port&1];
-	p.button[0]=button[0];
-	p.button[1]=button[1];
+	p.button[0]=Abutton;
+	p.button[1]=Bbutton;
 	p.left =left;
 	p.right=right;
 	p.up   =up;

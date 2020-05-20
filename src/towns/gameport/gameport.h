@@ -29,7 +29,7 @@ public:
 	{
 		MOUSE,
 		GAMEPAD,
-		// CYBERSTICK,  Hope for the future versions.
+		CYBERSTICK,  // Hope for the future versions.
 	};
 
 	class Port

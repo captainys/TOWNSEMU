@@ -25,6 +25,12 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 class Outside_World
 {
 public:
+	// Mouse will be automatically identified by towns.gameport.
+	// Only game-pad emulation takes effect.
+	unsigned int gamePort[2];
+
+	Outside_World();
+
 	virtual void Start(void)=0;
 	virtual void Stop(void)=0;
 	virtual void DevicePolling(class FMTowns &towns)=0;

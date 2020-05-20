@@ -149,6 +149,29 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 	if(towns.eventLog.mode!=TownsEventLog::MODE_PLAYBACK)
 	{
+		for(unsigned int portId=0; portId<TOWNS_NUM_GAMEPORTS; ++portId)
+		{
+			switch(gamePort[portId])
+			{
+			default:
+				// Not implemented yet.
+				break;
+			case TOWNS_GAMEPORTEMU_KEYBOARD:
+				{
+					bool Abutton=(0!=FsGetKeyState(FSKEY_Z));
+					bool Bbutton=(0!=FsGetKeyState(FSKEY_X));
+					bool run=(0!=FsGetKeyState(FSKEY_A));
+					bool pause=(0!=FsGetKeyState(FSKEY_S));
+					bool left=(0!=FsGetKeyState(FSKEY_LEFT));
+					bool right=(0!=FsGetKeyState(FSKEY_RIGHT));
+					bool up=(0!=FsGetKeyState(FSKEY_UP));
+					bool down=(0!=FsGetKeyState(FSKEY_DOWN));
+					towns.SetGamePadState(portId,Abutton,Bbutton,left,right,up,down,run,pause);
+				}
+				break;
+			}
+		}
+
 		int lb,mb,rb,mx,my;
 		FsGetMouseEvent(lb,mb,rb,mx,my);
 		towns.SetMouseButtonState((0!=lb),(0!=rb));

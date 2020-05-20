@@ -134,7 +134,7 @@ int Run(FMTowns &towns,const TownsARGV &argv,Outside_World &outside_world)
 	return towns.var.returnCode;
 }
 
-bool Setup(FMTowns &towns,const TownsARGV &argv)
+bool Setup(FMTowns &towns,Outside_World *outside_world,const TownsARGV &argv)
 {
 	if(""==argv.ROMPath)
 	{
@@ -226,6 +226,25 @@ bool Setup(FMTowns &towns,const TownsARGV &argv)
 
 	std::cout << "Virtual Machine Reset.\n";
 
+	for(int i=0; i<TOWNS_NUM_GAMEPORTS; ++i)
+	{
+		outside_world->gamePort[i]=argv.gamePort[i];
+		switch(argv.gamePort[i])
+		{
+		case TOWNS_GAMEPORTEMU_NONE:
+			break;
+		case TOWNS_GAMEPORTEMU_MOUSE:
+			towns.gameport.state.ports[i].device=TownsGamePort::MOUSE;
+			break;
+		case TOWNS_GAMEPORTEMU_PHYSICAL_ANALOG:
+			towns.gameport.state.ports[i].device=TownsGamePort::CYBERSTICK;
+			break;
+		default:
+			towns.gameport.state.ports[i].device=TownsGamePort::GAMEPAD;
+			break;
+		}
+	}
+
 	return true;
 }
 
@@ -251,7 +270,8 @@ int main(int ac,char *av[])
 
 
 	static FMTowns towns;
-	if(true!=Setup(towns,argv))
+	Outside_World *outside_world=new FsSimpleWindowConnection;
+	if(true!=Setup(towns,outside_world,argv))
 	{
 		return 1;
 	}
@@ -272,6 +292,5 @@ int main(int ac,char *av[])
 		std::cout << cpputil::Ubtox(b) << std::endl;
 	}
 
-	Outside_World *outside_world=new FsSimpleWindowConnection ;
 	return Run(towns,argv,*outside_world);
 }

@@ -67,6 +67,9 @@ def DoRecursive(dirName):
 		if fName.startswith(".git"):
 			continue
 
+		if fName.startswith("external"):
+			continue
+
 		ful=os.path.join(dirName,fName)
 		if os.path.isdir(ful):
 			DoRecursive(ful)

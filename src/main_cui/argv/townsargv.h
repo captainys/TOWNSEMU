@@ -23,6 +23,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 class TownsARGV
 {
 public:
+	unsigned int gamePort[2];
+
 	std::string ROMPath;
 	std::string CMOSFName;
 	std::string fdImgFName[2];

@@ -44,16 +44,16 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 		{
 			data|=0x40;
 		}
-		if(true!=button[0])
-		{
-			data|=0x10;
-		}
-		if(true!=button[1])
-		{
-			data|=0x20;
-		}
 		if(MOUSE==device)
 		{
+			if(true!=button[0])
+			{
+				data|=0x10;
+			}
+			if(true!=button[1])
+			{
+				data|=0x20;
+			}
 			if(200000<(townsTime-lastReadTime))
 			{
 				state=0;
@@ -77,6 +77,7 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 		}
 		else if(GAMEPAD==device)
 		{
+			data|=0x3F;
 			if(true==run)
 			{
 				data&=0b11110011;
@@ -141,6 +142,8 @@ void TownsGamePort::State::Reset(void)
 		p.state=0;
 		p.button[0]=false;
 		p.button[1]=false;
+		p.run=false;
+		p.pause=false;
 		p.left=false;
 		p.right=false;
 		p.up=false;

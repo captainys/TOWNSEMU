@@ -283,7 +283,7 @@ public:
 
 	/*! Set Game-Pad State.  Called from Outside_World.
 	*/
-	void SetGamePadState(int port,bool button[2],bool left,bool right,bool up,bool down,bool run,bool pause);
+	void SetGamePadState(int port,bool Abutton,bool Bbutton,bool left,bool right,bool up,bool down,bool run,bool pause);
 
 
 	/*! Returns the mouse coordinate that TBIOS is thinking.

@@ -14,3 +14,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 << LICENSE */
 #include "outside_world.h"
 
+Outside_World::Outside_World()
+{
+	gamePort[0]=TOWNS_GAMEPORTEMU_NONE;
+	gamePort[1]=TOWNS_GAMEPORTEMU_NONE;
+}
