@@ -55,6 +55,7 @@ public:
 	enum
 	{
 		SCSICMD_TEST_UNIT_READY =0x00,  // [9] 8.2.16 TEST UNIT READY Command
+		SCSICMD_REZERO_UNIT     =0x01,  // [9] 9.2.13 REZERO UNIT command
 		SCSICMD_INQUIRY         =0x12,
 		SCSICMD_READ_CAPACITY   =0x25,  // [9] 9.2.7 READ CAPACITY command
 		SCSICMD_READ_10         =0x28,  // [9] 9.2.6 READ(10) command

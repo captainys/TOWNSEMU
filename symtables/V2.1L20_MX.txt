@@ -2141,6 +2141,78 @@ P
 % 0
 /end
 /begin0
+T 2
+* 0000FC00:0000298D
+# 
+R 
+L SCSI:WAIT_READY_LOOP
+P 
+% 0
+/end
+/begin0
+T 0
+* 0000FC00:00002995
+# Check REQ
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 0000FC00:00002997
+# Jump if no REQ
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 0000FC00:000029CC
+# Check BUSY flag (1==BUSY)
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 0000FC00:00002A92
+# 
+R 
+L SCSI:Write AH to DMA mode-control register.
+P 
+% 0
+/end
+/begin0
+T 1
+* 0000FC00:00002AD2
+# 
+R 
+L SYSROM:DX|BX to Physical Address
+P 
+% 0
+/end
+/begin0
+T 1
+* 0000FC00:00002AE4
+# 
+R 
+L SYSROM:Set DMA Address and Count
+P 
+% 0
+/end
+/begin0
+T 1
+* 0000FC00:00002B00
+# 
+R 
+L SYSROM:Enable (Unmask) DMA Channel 1
+P 
+% 0
+/end
+/begin0
 T 0
 * 0000FC00:00002ED2
 # 

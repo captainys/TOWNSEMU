@@ -69,6 +69,7 @@ TownsSCSI::TownsSCSI(class FMTowns *townsPtr) : Device(townsPtr)
 		n=0;
 	}
 	commandLength[SCSICMD_TEST_UNIT_READY]=6;
+	commandLength[SCSICMD_REZERO_UNIT]    =6;
 	commandLength[SCSICMD_INQUIRY]        =6;
 	commandLength[SCSICMD_READ_CAPACITY]  =10;
 	commandLength[SCSICMD_READ_10]        =10;
@@ -372,7 +373,7 @@ void TownsSCSI::ProcessPhaseData(unsigned int dataByte)
 		state.REQ=false;
 		if(0==commandLength[state.commandBuffer[0]])
 		{
-			townsPtr->debugger.ExternalBreak("Command Length not set for this command.");
+			townsPtr->debugger.ExternalBreak("SCSI Command Length not set for this command.");
 		}
 		else if(commandLength[state.commandBuffer[0]]<=state.nCommandFilled)
 		{
@@ -396,6 +397,10 @@ void TownsSCSI::ExecSCSICommand(void)
 	case SCSICMD_INQUIRY:
 		EnterDataInPhase();
 		break;
+	case SCSICMD_REZERO_UNIT:
+		// [9] 9.1.8 Seek and rezero
+		// "Some devices return GOOD status without attempting any action."
+		// Just let it do the same thing as TEST_UNIT_READY.
 	case SCSICMD_TEST_UNIT_READY:
 		if(SCSIDEVICE_NONE!=state.dev[state.selId].devType)
 		{
