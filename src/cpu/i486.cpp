@@ -2337,12 +2337,12 @@ bool i486DX::REPCheck(unsigned int &clocksPassed,unsigned int instPrefix,unsigne
 		auto counter=GetCXorECX(addressSize);
 		if(0==counter)
 		{
-			clocksPassed=5;
+			clocksPassed+=5;
 			return false;
 		}
 		--counter;
 		SetCXorECX(addressSize,counter);
-		clocksPassed=7;
+		clocksPassed+=7;
 	}
 	return true;
 }
