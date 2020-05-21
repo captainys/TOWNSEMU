@@ -132,6 +132,20 @@ TownsGamePort::TownsGamePort(class FMTowns *townsPtr) : Device(townsPtr)
 	state.PowerOn();
 }
 
+void TownsGamePort::BootSequenceStarted(void)
+{
+	state.bootKeyComb=BOOT_KEYCOMB_NONE;
+}
+void TownsGamePort::SetBootKeyCombination(unsigned int keyComb)
+{
+	if(BOOT_KEYCOMB_PAD_A==keyComb ||
+	   BOOT_KEYCOMB_PAD_B==keyComb ||
+	   BOOT_KEYCOMB_NONE==keyComb)
+	{
+		state.bootKeyComb=keyComb;
+	}
+}
+
 void TownsGamePort::State::PowerOn(void)
 {
 }
@@ -185,7 +199,18 @@ void TownsGamePort::State::Reset(void)
 	switch(ioport)
 	{
 	case TOWNSIO_GAMEPORT_A_INPUT://        0x4D0,
-		return state.ports[0].Read(townsPtr->state.townsTime);
+		if(BOOT_KEYCOMB_PAD_A==state.bootKeyComb)
+		{
+			return 0x2F;
+		}
+		else if(BOOT_KEYCOMB_PAD_B==state.bootKeyComb)
+		{
+			return 0x1F;
+		}
+		else
+		{
+			return state.ports[0].Read(townsPtr->state.townsTime);
+		}
 		break;
 	case TOWNSIO_GAMEPORT_B_INPUT://        0x4D2,
 		return state.ports[1].Read(townsPtr->state.townsTime);

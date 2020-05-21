@@ -61,8 +61,12 @@ void TownsKeyboard::BootSequenceStarted(void)
 }
 void TownsKeyboard::SetBootKeyCombination(unsigned int keyComb)
 {
-	state.bootKeyComb=keyComb;
-	state.bootKeyCombSequenceCounter=0;
+	if(BOOT_KEYCOMB_PAD_A!=keyComb &&
+	   BOOT_KEYCOMB_PAD_B!=keyComb)
+	{
+		state.bootKeyComb=keyComb;
+		state.bootKeyCombSequenceCounter=0;
+	}
 }
 
 /* virtual */ void TownsKeyboard::IOWriteByte(unsigned int ioport,unsigned int data)

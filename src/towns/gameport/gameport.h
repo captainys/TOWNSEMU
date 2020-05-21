@@ -17,6 +17,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 /* { */
 
 #include "cheapmath.h"
+#include "townsdef.h"
 
 class TownsGamePort : public Device
 {
@@ -49,6 +50,8 @@ public:
 	class State
 	{
 	public:
+		unsigned int bootKeyComb=BOOT_KEYCOMB_NONE;
+
 		Port ports[2];
 		void PowerOn(void);
 		void Reset(void);
@@ -57,6 +60,9 @@ public:
 	State state;
 
 	TownsGamePort(class FMTowns *townsPtr);
+
+	void BootSequenceStarted(void);
+	void SetBootKeyCombination(unsigned int keyComb);
 
 	virtual void PowerOn(void);
 	virtual void Reset(void);

@@ -412,6 +412,7 @@ void FMTowns::Reset(void)
 void FMTowns::NotifyDiskRead(void)
 {
 	keyboard.BootSequenceStarted();
+	gameport.BootSequenceStarted();
 }
 
 unsigned int FMTowns::RunOneInstruction(void)

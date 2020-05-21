@@ -220,6 +220,7 @@ bool Setup(FMTowns &towns,Outside_World *outside_world,const TownsARGV &argv)
 	}
 
 	towns.keyboard.SetBootKeyCombination(argv.bootKeyComb);
+	towns.gameport.SetBootKeyCombination(argv.bootKeyComb);
 
 	std::cout << "Loaded ROM Images.\n";
 
