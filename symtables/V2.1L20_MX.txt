@@ -1,4 +1,13 @@
 /begin0
+T 1
+* 00000010:000000C1
+# 
+R 
+L SYSROM:Native Mode Entry
+P 
+% 0
+/end
+/begin0
 T 2
 * 00000010:000003A5
 # 
@@ -49,6 +58,357 @@ T 1
 # 
 R 
 L SYSROM:(PROB)DRAW_MESSAGE_BY_NUMBER
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000010:00000B79
+# Setting One-Time Boot Device
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000010:00000B80
+# 4C00H=Keyboard Icon
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000010:00000BD2
+# 4A00H=JoyPad Icon
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000010:00000D2E
+# 4A00H=JoyPad Icon
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000010:000012F6
+# 
+R 
+L SYSROM:Machine Identification?
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000010:0000136C
+# 
+R 
+L SYSROM:Read Pad0 Trigger Bits in AL
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000010:00001415
+# 
+R 
+L SYSROM:(Prob)Draw Icon
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000010:00001D41
+# 
+R 
+L SYSROM:Get Keyboard State EBX=0b43210MNBVCXZLKJHGFDSAPOIUYTREWQ
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000010:00001DA4
+# Keyboard Command A1=Reset
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000010:00001DC1
+# 
+R 
+L SYSROM:(Prob)Get 16-bit Key code
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000010:00001DC6
+# DH=Incoming_AH
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000010:00001DC8
+# Keyboard Command A0=Undocumented
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000010:00001DD0
+# 1388H=5000
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000010:00001DDB
+# Keyboard Command A1=Reset
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000010:00001DFA
+# Check OBF (Keycode)
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000010:00001DFD
+# Jump if no keycode
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000010:00001E1E
+# Restore Incoming_AH
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000010:00001E26
+# 
+R 
+L SYSROM:Wait IBF ready, then Write Keyboard Command(AL)
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000010:00001E41
+# 
+R 
+L SYSROM:(Prob)Inkey AH=Keyboard Status 602H, AL=Keycode 600H
+P 
+% 0
+/end
+/begin0
+T 2
+* 00000010:00001E4B
+# 
+R 
+L Wait for Keyboard Buffer
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000010:00001E56
+# Keyboard Status
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000010:00001E5E
+# Check OBF (Output Buffer)
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000010:00001E81
+# 
+R 
+L SYSROM:Keycode to Flag|0b43210MNBVCXZLKJHGFDSAPOIUYTREWQ
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000010:00001E83
+# 11H='Q'
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000010:00001E87
+# 1AH='P'
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000010:00001E8B
+# Q->00H
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000010:00001E8F
+# 1EH='A'
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000010:00001E93
+# 26H='L'
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000010:00001E97
+# A->0AH
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000010:00001E9B
+# 2AH='Z'
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000010:00001E9F
+# 30H='M'
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000010:00001EA3
+# Z->13H
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000010:00001EA7
+# 0BH='0'
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000010:00001EAB
+# 0->1AH
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000010:00001EAF
+# 02H='1'
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000010:00001EB3
+# 05H='4'
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000010:00001EB7
+# 4->1EH
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000010:00001EDD
+# 
+R 
+L SYSROM:Wait
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000010:00001EFF
+# 
+R 
+L SYSROM:Wait by Freerun Timer
 P 
 % 0
 /end
@@ -1971,6 +2331,150 @@ P
 /end
 /begin0
 T 0
+* 0000FC00:00000365
+# Calling Get Keyboard State
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 0000FC00:000005CA
+# 5D00H='->' Icon. I've never seen it.
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 2
+* 0000FC00:0000060D
+# 
+R 
+L SYSROM:Boot Device Loop
+P 
+% 0
+/end
+/begin0
+T 0
+* 0000FC00:000006B6
+# 4200H=CD-ROM Icon
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 0000FC00:000006EC
+# 4700H=Hard Disk Icon
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 0000FC00:0000070E
+# 4000H=Floppy Disk Icon
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 0000FC00:00000718
+# 4600H=External Floppy Disk Icon
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 0000FC00:0000071E
+# (Prob)EDI=VRAM Pointer
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 0000FC00:0000072A
+# 13900H='0',13A00H='1'
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 0000FC00:0000077A
+# 
+R 
+L SYSROM:(Prob)Try One Boot Device
+P 
+% 0
+/end
+/begin0
+T 1
+* 0000FC00:00000786
+# 
+R 
+L SYSROM:Wait by Freerun Timer times C350H times.
+P 
+% 0
+/end
+/begin0
+T 0
+* 0000FC00:00000C53
+# 5100H=Clock Icon
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 0000FC00:00000F07
+# 
+R 
+L SYSROM:(Prob)Draw Icon
+P 
+% 0
+/end
+/begin0
+T 1
+* 0000FC00:00000F7A
+# 
+R 
+L SYSROM:(Prob)Call Native Mode Service Routine 0010:000000B7
+P 
+% 0
+/end
+/begin0
+T 1
+* 0000FC00:00000FB6
+# 
+R 
+L SYSROM:(Prob)Call Native Mode Service Routine 0010:000000CB
+P 
+% 0
+/end
+/begin0
+T 1
+* 0000FC00:00000FCA
+# 
+R 
+L SYSROM:(Prob)Memory Test
+P 
+% 0
+/end
+/begin0
+T 0
 * 0000FC00:00001773
 # 
 R 
@@ -2141,6 +2645,15 @@ P
 % 0
 /end
 /begin0
+T 1
+* 0000FC00:00001EB8
+# 
+R 
+L SYSROM:JMP FC00:1EDA
+P 
+% 0
+/end
+/begin0
 T 2
 * 0000FC00:0000298D
 # 
@@ -2181,7 +2694,7 @@ T 1
 * 0000FC00:00002A92
 # 
 R 
-L SCSI:Write AH to DMA mode-control register.
+L SYSROM:Write AH to DMA mode-control register.
 P 
 % 0
 /end
@@ -2245,6 +2758,15 @@ T 1
 # 
 R 
 L SYSROM:(PROB)Service_Routine
+P 
+% 0
+/end
+/begin0
+T 1
+* FFFF0000:00000000
+# 
+R 
+L NULL
 P 
 % 0
 /end
