@@ -560,6 +560,8 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 				// Third State.  Transfer done for a sector.
 				else if(true==DMAAvailable && true==state.DMATransfer && true==state.DTSF)
 				{
+					townsPtr->NotifyDiskRead();
+
 					auto data=state.GetDisc().ReadSectorMODE1(state.readingSectorHSG,1);
 					if(DMACh->currentCount+1<data.size())
 					{

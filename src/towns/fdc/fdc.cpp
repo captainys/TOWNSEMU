@@ -702,6 +702,8 @@ bool TownsFDC::WriteFault(void) const
 					auto DMACh=DMACPtr->GetDMAChannel(TOWNSDMA_FPD);
 					if(nullptr!=DMACh)
 					{
+						townsPtr->NotifyDiskRead();
+
 						DMACPtr->DeviceToMemory(DMACh,secPtr->sectorData);
 						// What am I supposed to if error during DMA?
 						if(state.lastCmd&0x10 && diskPtr->GetSector(drv.trackPos,state.side,drv.sectorReg+1)) // Multi Record

@@ -518,6 +518,8 @@ void TownsSCSI::ExecSCSICommand(void)
 			case SCSICMD_READ_10:
 				if(SCSIDEVICE_HARDDISK==state.dev[state.selId].devType)
 				{
+					townsPtr->NotifyDiskRead();
+
 					unsigned int LBA=(state.commandBuffer[2]<<24)|
 					                 (state.commandBuffer[3]<<16)|
 					                 (state.commandBuffer[4]<<8)|

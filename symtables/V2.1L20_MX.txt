@@ -144,6 +144,15 @@ P
 /end
 /begin0
 T 1
+* 00000010:00001DB1
+# 
+R 
+L SYSROM:Disable Keyboard IRQ and NMI
+P 
+% 0
+/end
+/begin0
+T 1
 * 00000010:00001DC1
 # 
 R 
@@ -256,6 +265,15 @@ T 0
 # Check OBF (Output Buffer)
 R 
 L 
+P 
+% 0
+/end
+/begin0
+T 2
+* 00000010:00001E6A
+# 
+R 
+L OBF=1 or TimeOut
 P 
 % 0
 /end

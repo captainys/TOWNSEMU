@@ -307,6 +307,17 @@ public:
 	*/
 	void Reset(void);
 
+	/*! This function is called when:
+	      Floppy-disk sector is read,
+	      CD-ROM sector is read, and
+	      Hard-disk sector is read.
+	    Can take it as an indication that the boot-sequence has started.
+	    If, temporary-boot device is selected by key-combination, this function can switch
+	    keyboard back to the normal state.
+	*/
+	void NotifyDiskRead(void);
+
+
 	/*! Run one instruction and returns the number of clocks passed. */
 	unsigned int RunOneInstruction(void);
 

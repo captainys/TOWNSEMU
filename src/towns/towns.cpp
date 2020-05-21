@@ -409,6 +409,11 @@ void FMTowns::Reset(void)
 	var.disassemblePointer.OFFSET=cpu.state.EIP;
 }
 
+void FMTowns::NotifyDiskRead(void)
+{
+	keyboard.BootSequenceStarted();
+}
+
 unsigned int FMTowns::RunOneInstruction(void)
 {
 	auto clocksPassed=cpu.RunOneInstruction(mem,io);

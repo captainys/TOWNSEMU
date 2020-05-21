@@ -23,6 +23,7 @@ void TownsKeyboard::State::Reset(void)
 {
 	IRQEnabled=false;
 	KBINT=false;
+	bootKeyCombSequenceCounter=0;
 }
 TownsKeyboard::TownsKeyboard(FMTowns *townsPtr,TownsPIC *picPtr) : Device(townsPtr)
 {
@@ -30,7 +31,7 @@ TownsKeyboard::TownsKeyboard(FMTowns *townsPtr,TownsPIC *picPtr) : Device(townsP
 	this->picPtr=picPtr;
 
 	state.Reset();
-	afterReset=SEND_NONE_AFTER_RESET; // SEND_CD_AFTER_RESET;
+	state.bootKeyComb=BOOT_KEYCOMB_NONE;
 	nFifoFilled=0;
 }
 
@@ -53,6 +54,17 @@ void TownsKeyboard::PushFifo(unsigned char code1,unsigned char code2)
 	}
 }
 
+void TownsKeyboard::BootSequenceStarted(void)
+{
+	state.bootKeyComb=BOOT_KEYCOMB_NONE;
+	state.bootKeyCombSequenceCounter=0;
+}
+void TownsKeyboard::SetBootKeyCombination(unsigned int keyComb)
+{
+	state.bootKeyComb=keyComb;
+	state.bootKeyCombSequenceCounter=0;
+}
+
 /* virtual */ void TownsKeyboard::IOWriteByte(unsigned int ioport,unsigned int data)
 {
 	switch(ioport)
@@ -66,7 +78,7 @@ void TownsKeyboard::PushFifo(unsigned char code1,unsigned char code2)
 			PushFifo(0xA0,0x7F);
 			// pp.235 and 
 			// Also based on Reverse Engineering of FM Towns IIMX System ROM
-			switch(afterReset)
+			/* switch(afterReset)
 			{
 			case SEND_CD_AFTER_RESET:
 				PushFifo(0xA0,0x2C);
@@ -92,7 +104,7 @@ void TownsKeyboard::PushFifo(unsigned char code1,unsigned char code2)
 				PushFifo(0xA0,0x21);
 				PushFifo(0xA0,0x02);
 				break;
-			}
+			} */
 		}
 		break;
 	case TOWNSIO_KEYBOARD_IRQ://        0x604, // [2] pp.236
@@ -107,25 +119,79 @@ void TownsKeyboard::PushFifo(unsigned char code1,unsigned char code2)
 	case TOWNSIO_KEYBOARD_DATA://       0x600, // [2] pp.234
 		picPtr->SetInterruptRequestBit(TOWNSIRQ_KEYBOARD,false);
 		state.KBINT=false;
-		if(0<nFifoFilled)
+		if(BOOT_KEYCOMB_NONE==state.bootKeyComb)
 		{
-			auto ret=fifoBuf[0];
-			for(int i=0; i<nFifoFilled-1; ++i)
+			if(0<nFifoFilled)
 			{
-				fifoBuf[i]=fifoBuf[i+1];
+				auto ret=fifoBuf[0];
+				for(int i=0; i<nFifoFilled-1; ++i)
+				{
+					fifoBuf[i]=fifoBuf[i+1];
+				}
+				--nFifoFilled;
+				if(0<nFifoFilled && true==state.IRQEnabled)
+				{
+					townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+KEY_REPEAT_INTERVAL);
+				}
+				return ret;
 			}
-			--nFifoFilled;
-			if(0<nFifoFilled && true==state.IRQEnabled)
-			{
-				townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+KEY_REPEAT_INTERVAL);
-			}
-			return ret;
 		}
 		else
 		{
-			return 0;
+			auto highLow=state.bootKeyCombSequenceCounter&1;
+			if(0==highLow)
+			{
+				return 0xA0;
+			}
+			auto num=(state.bootKeyCombSequenceCounter>>1);
+			if(0==num)
+			{
+				return 0x7F;
+			}
+			else
+			{
+				switch(state.bootKeyComb)
+				{
+				case BOOT_KEYCOMB_CD:
+					{
+						const unsigned char code[2]={0x2C,0x20};
+						return code[num%1];
+					}
+					break;
+				case BOOT_KEYCOMB_F0:
+					{
+						const unsigned char code[2]={0x21,0x0B};
+						return code[num%1];
+					}
+					break;
+				case BOOT_KEYCOMB_F1:
+					{
+						const unsigned char code[2]={0x21,0x02};
+						return code[num%1];
+					}
+					break;
+				case BOOT_KEYCOMB_F2:
+					break;
+				case BOOT_KEYCOMB_F3:
+					break;
+				case BOOT_KEYCOMB_H0:
+					break;
+				case BOOT_KEYCOMB_H1:
+					break;
+				case BOOT_KEYCOMB_H2:
+					break;
+				case BOOT_KEYCOMB_H3:
+					break;
+				case BOOT_KEYCOMB_H4:
+					break;
+				case BOOT_KEYCOMB_ICM:
+					break;
+				}
+			}
+			++state.bootKeyCombSequenceCounter;
 		}
-		break;
+		return 0;
+
 	case TOWNSIO_KEYBOARD_STATUS_CMD:// 0x602, // [2] pp.231
 		if(0<nFifoFilled)
 		{

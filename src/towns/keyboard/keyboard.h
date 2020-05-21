@@ -27,11 +27,31 @@ public:
 	};
 
 
+	enum
+	{
+		BOOT_KEYCOMB_NONE,
+		BOOT_KEYCOMB_CD,
+		BOOT_KEYCOMB_F0,
+		BOOT_KEYCOMB_F1,
+		BOOT_KEYCOMB_F2,
+		BOOT_KEYCOMB_F3,
+		BOOT_KEYCOMB_H0,
+		BOOT_KEYCOMB_H1,
+		BOOT_KEYCOMB_H2,
+		BOOT_KEYCOMB_H3,
+		BOOT_KEYCOMB_H4,
+		BOOT_KEYCOMB_ICM,
+	};
+
 	class State
 	{
 	public:
 		bool IRQEnabled;
 		bool KBINT;       // Bit 0 of I/O 604H
+
+		unsigned int bootKeyComb=BOOT_KEYCOMB_NONE;
+		unsigned int bootKeyCombSequenceCounter=0;
+
 		void Reset(void);
 	};
 
@@ -42,15 +62,6 @@ public:
 	};
 
 	State state;
-
-	enum
-	{
-		SEND_NONE_AFTER_RESET,
-		SEND_CD_AFTER_RESET,
-		SEND_F0_AFTER_RESET,
-		SEND_F1_AFTER_RESET,
-	};
-	unsigned int afterReset;
 
 	enum
 	{
@@ -65,6 +76,9 @@ public:
 	class TownsPIC *picPtr;
 
 	void PushFifo(unsigned char code1,unsigned char code2); // Always push a pair.
+
+	void BootSequenceStarted(void);
+	void SetBootKeyCombination(unsigned int keyComb);
 
 
 
