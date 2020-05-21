@@ -367,6 +367,7 @@ public:
 		unsigned int DICROMBank;
 		bool FMRVRAM;
 		bool TVRAMWrite;
+		bool ANKFont;
 		unsigned int FMRVRAMMask;
 		unsigned int FMRDisplayMode;
 		unsigned int FMRVRAMWriteOffset;

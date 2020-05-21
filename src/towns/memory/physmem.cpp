@@ -44,6 +44,7 @@ void TownsPhysicalMemory::State::Reset(void)
 	FMRDisplayMode=0x77; // [2] pp.158
 	FMRVRAMWriteOffset=0;
 	TVRAMWrite=false;
+	ANKFont=false;
 	kanjiROMAccess.Reset();
 
 	for(auto &c : RAM)
@@ -425,11 +426,11 @@ void TownsPhysicalMemory::SetFMRVRAMMappingFlag(bool FMRVRAMMapping)
 	state.FMRVRAM=FMRVRAMMapping;
 	if(true==FMRVRAMMapping)
 	{
-		memPtr->AddAccess(&FMRVRAMAccess,TOWNSADDR_FMR_VRAM_BASE,TOWNSADDR_FMR_CVRAM_END-1);
+		memPtr->AddAccess(&FMRVRAMAccess,TOWNSADDR_FMR_VRAM_BASE,TOWNSADDR_FMR_VRAM_CVRAM_FONT_END-1);
 	}
 	else
 	{
-		memPtr->AddAccess(&mainRAMAccess,TOWNSADDR_FMR_VRAM_BASE,TOWNSADDR_FMR_CVRAM_END-1);
+		memPtr->AddAccess(&mainRAMAccess,TOWNSADDR_FMR_VRAM_BASE,TOWNSADDR_FMR_VRAM_CVRAM_FONT_END-1);
 	}
 }
 
