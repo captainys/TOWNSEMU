@@ -440,6 +440,42 @@ P
 % 0
 /end
 /begin0
+T 0
+* 00000010:00001F44
+# CRTC Control?
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000010:00001F5C
+# (Prob)X
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000010:00001F6E
+# (Prob)Y
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000010:00001F7F
+# (Prob)Strlen
+R 
+L 
+P 
+% 0
+/end
+/begin0
 T 2
 * 00000010:00001F85
 # 
@@ -459,10 +495,64 @@ P
 /end
 /begin0
 T 2
+* 00000010:00001FD4
+# 
+R 
+L SYSROM:Draw Half Pitch Font
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000010:00001FD6
+# CB000H:Mapped Half-Pitch Font
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000010:00001FDF
+# AX=ASCIICode*16
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 2
 * 00000010:00001FF5
 # 
 R 
 L SYSROM:(PROB)DRAW_HALF_PITCH_FONT_LOOP
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000010:00002027
+# FDA0H CRT Output Control
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000010:00002031
+# 
+R 
+L SYSROM:CRTC Control?
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000010:0000219D
+# 
+R 
+L SYSROM:MA/MX HIGHRES Control
 P 
 % 0
 /end
@@ -481,6 +571,24 @@ T 1
 # 
 R 
 L SYSROM:(PROB)SJIS_TO_JIS
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000010:00002501
+# 
+R 
+L SYSROM:Check Shift-JIS or ASCII
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000010:0000251C
+# 
+R 
+L SYSROM:Accessing unknown I/O 479H-4FH
 P 
 % 0
 /end

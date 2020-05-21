@@ -109,6 +109,10 @@ void TownsKeyboard::SetBootKeyCombination(unsigned int keyComb)
 		break;
 	case TOWNSIO_KEYBOARD_IRQ://        0x604, // [2] pp.236
 		state.IRQEnabled=(0!=(data&1));
+		if(true==state.IRQEnabled && 0<nFifoFilled)
+		{
+			picPtr->SetInterruptRequestBit(TOWNSIRQ_KEYBOARD,true);
+		}
 		break;
 	}
 }
@@ -139,11 +143,12 @@ void TownsKeyboard::SetBootKeyCombination(unsigned int keyComb)
 		else
 		{
 			auto highLow=state.bootKeyCombSequenceCounter&1;
+			auto num=(state.bootKeyCombSequenceCounter>>1);
+			++state.bootKeyCombSequenceCounter;
 			if(0==highLow)
 			{
-				return 0xA0;
+				return (num<6 ? 0xA0 : 0xF0);
 			}
-			auto num=(state.bootKeyCombSequenceCounter>>1);
 			if(0==num)
 			{
 				return 0x7F;
@@ -155,19 +160,19 @@ void TownsKeyboard::SetBootKeyCombination(unsigned int keyComb)
 				case BOOT_KEYCOMB_CD:
 					{
 						const unsigned char code[2]={0x2C,0x20};
-						return code[num%1];
+						return code[num&1];
 					}
 					break;
 				case BOOT_KEYCOMB_F0:
 					{
 						const unsigned char code[2]={0x21,0x0B};
-						return code[num%1];
+						return code[num&1];
 					}
 					break;
 				case BOOT_KEYCOMB_F1:
 					{
 						const unsigned char code[2]={0x21,0x02};
-						return code[num%1];
+						return code[num&1];
 					}
 					break;
 				case BOOT_KEYCOMB_F2:
@@ -188,12 +193,11 @@ void TownsKeyboard::SetBootKeyCombination(unsigned int keyComb)
 					break;
 				}
 			}
-			++state.bootKeyCombSequenceCounter;
 		}
 		return 0;
 
 	case TOWNSIO_KEYBOARD_STATUS_CMD:// 0x602, // [2] pp.231
-		if(0<nFifoFilled)
+		if(0<nFifoFilled || BOOT_KEYCOMB_NONE!=state.bootKeyComb)
 		{
 			return 1; // Data (Keyboard -> CPU) Ready.
 		}

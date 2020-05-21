@@ -17,6 +17,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 /* { */
 
 #include "device.h"
+#include "townsdef.h"
 
 class TownsKeyboard : public Device
 {
@@ -24,23 +25,6 @@ public:
 	enum
 	{
 		KEY_REPEAT_INTERVAL=1666667, // 1000000000/600 nano secounds
-	};
-
-
-	enum
-	{
-		BOOT_KEYCOMB_NONE,
-		BOOT_KEYCOMB_CD,
-		BOOT_KEYCOMB_F0,
-		BOOT_KEYCOMB_F1,
-		BOOT_KEYCOMB_F2,
-		BOOT_KEYCOMB_F3,
-		BOOT_KEYCOMB_H0,
-		BOOT_KEYCOMB_H1,
-		BOOT_KEYCOMB_H2,
-		BOOT_KEYCOMB_H3,
-		BOOT_KEYCOMB_H4,
-		BOOT_KEYCOMB_ICM,
 	};
 
 	class State

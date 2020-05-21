@@ -24,6 +24,7 @@ class TownsARGV
 {
 public:
 	unsigned int gamePort[2];
+	unsigned int bootKeyComb=BOOT_KEYCOMB_NONE;
 
 	std::string ROMPath;
 	std::string CMOSFName;
