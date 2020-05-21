@@ -147,7 +147,7 @@ void TownsKeyboard::SetBootKeyCombination(unsigned int keyComb)
 			++state.bootKeyCombSequenceCounter;
 			if(0==highLow)
 			{
-				return (num<6 ? 0xA0 : 0xF0);
+				return (num<6 ? 0xA0 : 0xF0); // The longest one: 7F 'D' 'E' 'B' 'U' 'G'
 			}
 			if(0==num)
 			{
@@ -176,20 +176,58 @@ void TownsKeyboard::SetBootKeyCombination(unsigned int keyComb)
 					}
 					break;
 				case BOOT_KEYCOMB_F2:
+					{
+						const unsigned char code[2]={0x21,0x03};
+						return code[num&1];
+					}
 					break;
 				case BOOT_KEYCOMB_F3:
+					{
+						const unsigned char code[2]={0x21,0x04};
+						return code[num&1];
+					}
 					break;
 				case BOOT_KEYCOMB_H0:
+					{
+						const unsigned char code[2]={0x23,0x0B};
+						return code[num&1];
+					}
 					break;
 				case BOOT_KEYCOMB_H1:
+					{
+						const unsigned char code[2]={0x23,0x02};
+						return code[num&1];
+					}
 					break;
 				case BOOT_KEYCOMB_H2:
+					{
+						const unsigned char code[2]={0x23,0x03};
+						return code[num&1];
+					}
 					break;
 				case BOOT_KEYCOMB_H3:
+					{
+						const unsigned char code[2]={0x23,0x04};
+						return code[num&1];
+					}
 					break;
 				case BOOT_KEYCOMB_H4:
+					{
+						const unsigned char code[2]={0x23,0x05};
+						return code[num&1];
+					}
 					break;
 				case BOOT_KEYCOMB_ICM:
+					{
+						const unsigned char code[3]={0x18,0x2C,0x30};
+						return code[num%3];
+					}
+					break;
+				case BOOT_KEYCOMB_DEBUG:
+					{
+						const unsigned char code[5]={0x20,0x13,0x2E,0x17,0x22};
+						return code[num%5];
+					}
 					break;
 				}
 			}

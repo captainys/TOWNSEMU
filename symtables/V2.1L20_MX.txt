@@ -63,6 +63,24 @@ P
 /end
 /begin0
 T 0
+* 00000010:00000B16
+# ECX=Boot Key Combination
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000010:00000B5E
+# Check Boot Key Combination
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
 * 00000010:00000B79
 # Setting One-Time Boot Device
 R 
@@ -2459,6 +2477,15 @@ P
 T 0
 * 0000FC00:00000365
 # Calling Get Keyboard State
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 0000FC00:0000036A
+# Check Boot Key Combination 'DEBUG'
 R 
 L 
 P 
