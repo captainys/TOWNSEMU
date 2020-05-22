@@ -40,6 +40,13 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  Let it run automatically to the end without taking control commands." << std::endl;
 	std::cout << "-FREQ frequency_in_MHz" << std::endl;
 	std::cout << "  Specify CPU frequency in Megahertz." << std::endl;
+	std::cout << "-NOWAIT" << std::endl;
+	std::cout << "  VM never waits for real time when VM time runs ahead of the real time." << std::endl;
+	std::cout << "-YESWAIT" << std::endl;
+	std::cout << "  VM always waits for real time when VM time runs ahead of the real time." << std::endl;
+	std::cout << "-NOWAITBOOT" << std::endl;
+	std::cout << "  No wait during the memory test, and then VM waits for real time when" << std::endl;
+	std::cout << "  VM time runs ahead of the real time." << std::endl;
 	std::cout << "-FD0 filename" << std::endl;
 	std::cout << "  Floppy disk image file name for Drive A." << std::endl;
 	std::cout << "-FD1 filename" << std::endl;
@@ -88,6 +95,21 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		{
 			freq=cpputil::Atoi(argv[i+1]);
 			++i;
+		}
+		else if("-NOWAIT"==ARG)
+		{
+			noWait=true;
+			noWaitStandby=true;
+		}
+		else if("-YESWAIT"==ARG)
+		{
+			noWait=true;
+			noWaitStandby=true;
+		}
+		else if("-NOWAITBOOT"==ARG)
+		{
+			noWait=true;
+			noWaitStandby=false;
 		}
 		else if(("-GAMEPORT0"==ARG || "-GAMEPORT1"==ARG) && i+1<argc)
 		{

@@ -62,7 +62,7 @@ public:
 
 	enum
 	{
-		FREQUENCY_DEFAULT=66,              // MHz
+		FREQUENCY_DEFAULT=25,              // MHz
 		FAST_DEVICE_POLLING_INTERVAL=100,  // Nano-seconds
 		RESET_REASON_SOFTWARE=1,
 		RESET_REASON_CPU=2,
@@ -88,11 +88,11 @@ public:
 		long long int cpuTime;
 
 
-		/*! If noWait is false, and if townsTime goes ahead of wallClockTime, TownsThread waits until wallClockTime catches up with 
-		    the real time.
-		    If noWait is true, and if townsTime goes ahead of wallClockTime, TownsThread updates wallClockTime to townsTime, and does not wait.
+		/*! If noWait is false and if townsTime goes ahead of real time, VM will wait until real time catches up with the townsTime.
+		    By default noWait is true until the first disk read, when var.noWaitStandBy is copied to noWait.
+		    Default value of noWaitStandBy is false, in which case noWait will turn to false as soon as the first sector is read.
 		*/
-		bool noWait=false;
+		bool noWait=true;
 
 
 		/*! 
@@ -165,6 +165,10 @@ public:
 		int returnCode=0;
 
 		bool debugBreakOnLButtonUp=false;
+
+		/*! noWaitStandby will be copied to state.noWait on NotifyDiskRead().
+		*/
+		bool noWaitStandby=false;
 
 		enum
 		{

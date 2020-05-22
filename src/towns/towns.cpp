@@ -413,6 +413,7 @@ void FMTowns::NotifyDiskRead(void)
 {
 	keyboard.BootSequenceStarted();
 	gameport.BootSequenceStarted();
+	state.noWait=var.noWaitStandby;
 }
 
 unsigned int FMTowns::RunOneInstruction(void)
