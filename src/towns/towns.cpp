@@ -676,6 +676,13 @@ void FMTowns::PrintSound(void) const
 
 void FMTowns::PrintStatus(void) const
 {
+	if(true==VMBase::vmAbort)
+	{
+		std::cout << "VM Aborted!" << std::endl;
+		std::cout << "Device:" << vmAbortDeviceName << std::endl;
+		std::cout << "Reason:" << vmAbortReason << std::endl;
+	}
+
 	if(nullptr!=cpu.debuggerPtr)
 	{
 		std::cout << "Debugger Enabled." << std::endl;

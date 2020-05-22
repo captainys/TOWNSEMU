@@ -42,11 +42,14 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 		}
 		break;
 	case TOWNSIO_SERIAL_ROM_CTRL://=        0x32,
-		if((0x60&data)==0x60 && (0x80&state.lastSerialROMCommand)!=0 && (0x80&data)==0)
+		if((0x20&data)==0x00 && // Chip-Select==0 (Active Low)
+		   (0x80&state.lastSerialROMCommand)!=0 && 
+		   (0x80&data)==0)
 		{
 			state.serialROMBitCount=0;
 		}
-		else if((0xA0&data)==0x20 && (0x40&state.lastSerialROMCommand)==0 && (0x40&data)!=0)
+		else if((0xA0&data)==0x00 && // ID RESET==0, Chip-Select==0 (Active Low)
+		        (0x40&state.lastSerialROMCommand)==0 && (0x40&data)!=0)
 		{
 			state.serialROMBitCount=(state.serialROMBitCount+1)&255;
 		}
@@ -101,7 +104,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	case TOWNSIO_SERIAL_ROM_CTRL://=        0x32,
 		{
 			unsigned int data=(state.lastSerialROMCommand&0xC0);
-			unsigned int index=255-(state.serialROMBitCount>>3);
+			unsigned int index=TownsPhysicalMemory::SERIAL_ROM_LENGTH-1-(state.serialROMBitCount>>3);
 			unsigned int bit=(1<<(state.serialROMBitCount&7));
 			if(0!=(physMem.serialROM[index]&bit))
 			{
