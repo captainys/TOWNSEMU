@@ -12,6 +12,8 @@ Redistribution and use in source and binary forms, with or without modification,
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 << LICENSE */
+#include <iostream>
+
 #include "towns.h"
 #include "townsdef.h"
 #include "tbiosid.h"
@@ -45,6 +47,11 @@ Towns OS V1.1 L30, TBIOS V31L23A
 0001F3E0 39 2F 32 31 74 6F 77 6E 73 00 00 00 74 62 69 6F|9/21towns   tbio
 0001F3F0 73 00 00 00 80 02 00 00 10 01 00 00 00 00 00 00|s
 
+Towns OS V1.1 L30, TBIOS V31L31_90 (Free Software Collection 4)
+0001F3D0             56 33 31 4C 33 31 00 00 39 30 2F 31|    V31L31  90/1
+0001F3E0 31 2F 32 31 74 6F 77 6E 73 00 00 00 74 62 69 6F|1/21towns   tbio
+0001F3F0 73 00 00 00 80 02 00 00 10 01 00 00 00 00 00 00|s
+
 Towns OS V2.1 L10B, TBIOS V31L31_91
 00100000 56 33 31 4C 33 31 00 00 39 31 2F 31 30 2F 30 35|V31L31  91/10/05
 00100010 74 6F 77 6E 73 00 00 00 74 62 69 6F 73 00 00 00|towns   tbios
@@ -55,6 +62,10 @@ Towns OS V2.1 L20, TBIOS V31L31_92
 
 Towns OS V2.1 L31, TBIOS V31L35
 00100000 56 33 31 4C 33 35 00 00 39 33 2F 31 30 2F 31 35|V31L35  93/10/15
+00100010 74 6F 77 6E 73 00 00 00 74 62 69 6F 73 00 00 00|towns   tbios
+
+Towns OS V2.1 L50 TBIOS V31L35_94 (Free Software Collection 11)
+00100000 56 33 31 4C 33 35 00 00 39 34 2F 31 32 2F 30 33|V31L35  94/12/03
 00100010 74 6F 77 6E 73 00 00 00 74 62 69 6F 73 00 00 00|towns   tbios
 */
 unsigned int FMTowns::IdentifyTBIOS(unsigned int biosPhysicalBaseAddr) const
@@ -73,7 +84,11 @@ unsigned int FMTowns::IdentifyTBIOS(unsigned int biosPhysicalBaseAddr) const
 	{
 		auto year=s[1];
 		year.resize(2);
-		if(year=="91")
+		if("90"==year)
+		{
+			return TBIOS_V31L31_90;
+		}
+		else if(year=="91")
 		{
 			return TBIOS_V31L31_91;
 		}
@@ -84,8 +99,15 @@ unsigned int FMTowns::IdentifyTBIOS(unsigned int biosPhysicalBaseAddr) const
 	}
 	if("V31L35"==s[0] && "towns"==s[2] && "tbios"==s[3])
 	{
+		auto year=s[1];
+		year.resize(2);
+		if("94"==year)
+		{
+			return TBIOS_V31L35_94;
+		}
 		return TBIOS_V31L35;
 	}
+
 	return TBIOS_UNKNOWN;
 }
 const char *FMTowns::TBIOSIDENTtoString(unsigned int tbios) const
@@ -99,10 +121,16 @@ const char *FMTowns::TBIOSIDENTtoString(unsigned int tbios) const
 		return "TBIOS_V31L22A";
 	case TBIOS_V31L23A:
 		return "TBIOS_V31L23A";
+	case TBIOS_V31L31_90:
+		return "TBIOS_V31L31_90";
 	case TBIOS_V31L31_91:
 		return "TBIOS_V31L31_91";
 	case TBIOS_V31L31_92:
 		return "TBIOS_V31L31_92";
+	case TBIOS_V31L35:
+		return "TBIOS_V31L35";
+	case TBIOS_V31L35_94:
+		return "TBIOS_V31L35_94";
 	}
 }
 
@@ -263,6 +291,17 @@ bool FMTowns::GetMouseCoordinate(int &mx,int &my,unsigned int tbiosid) const
 		mx=(int)mem.FetchWord(state.MOS_work_physicalAddr+0x56);
 		my=(int)mem.FetchWord(state.MOS_work_physicalAddr+0x58);
 		return true;
+	case TBIOS_V31L31_90:
+		// 0110:000103B8 8A6F44                    MOV     CH,[EDI+44H]
+		// 0110:000103BB 8B5756                    MOV     EDX,[EDI+56H]
+		// 0110:000103BE 0FA4D310                  SHLD    EBX,EDX,10H
+		// 0110:000103C2 886D1D                    MOV     [EBP+1DH],CH
+		// 0110:000103C5 66895518                  MOV     [EBP+18H],DX
+		// 0110:000103C9 66895D14                  MOV     [EBP+14H],BX
+		// 0110:000103CD C3                        RET
+		mx=(int)mem.FetchWord(state.MOS_work_physicalAddr+0x56);
+		my=(int)mem.FetchWord(state.MOS_work_physicalAddr+0x58);
+		return true;
 	case TBIOS_V31L31_91:
 		// 0110:00011064 648A2D1C050000            MOV     CH,FS:[0000051CH]
 		// 0110:0001106B 648B156C050000            MOV     EDX,FS:[0000056CH]
@@ -296,6 +335,19 @@ bool FMTowns::GetMouseCoordinate(int &mx,int &my,unsigned int tbiosid) const
 		// 0110:00014CA9 C3                        RET
 		mx=(int)mem.FetchWord(state.TBIOS_physicalAddr+0x14A80+0x0C);
 		my=(int)mem.FetchWord(state.TBIOS_physicalAddr+0x14A80+0x0E);
+		return true;
+	case TBIOS_V31L35_94:
+		// 0110:000162C8 BF30620100                MOV     EDI,00016230H
+
+		// 0110:0001643C 8A6F1C                    MOV     CH,[EDI+1CH]
+		// 0110:0001643F 8B570C                    MOV     EDX,[EDI+0CH]
+		// 0110:00016442 0FA4D310                  SHLD    EBX,EDX,10H
+		// 0110:00016446 886D1D                    MOV     [EBP+1DH],CH
+		// 0110:00016449 66895518                  MOV     [EBP+18H],DX
+		// 0110:0001644D 66895D14                  MOV     [EBP+14H],BX
+		// 0110:00016451 C3                        RET
+		mx=(int)mem.FetchWord(state.TBIOS_physicalAddr+0x16230+0x0C);
+		my=(int)mem.FetchWord(state.TBIOS_physicalAddr+0x16230+0x0E);
 		return true;
 	}
 	return false;

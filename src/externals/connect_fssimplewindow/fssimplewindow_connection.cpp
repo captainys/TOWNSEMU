@@ -164,8 +164,16 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 					bool pause=(0!=FsGetKeyState(FSKEY_S));
 					bool left=(0!=FsGetKeyState(FSKEY_LEFT));
 					bool right=(0!=FsGetKeyState(FSKEY_RIGHT));
+					if(true==left && true==right)
+					{
+						right=false;
+					}
 					bool up=(0!=FsGetKeyState(FSKEY_UP));
 					bool down=(0!=FsGetKeyState(FSKEY_DOWN));
+					if(true==up && true==down)
+					{
+						down=false;
+					}
 					towns.SetGamePadState(portId,Abutton,Bbutton,left,right,up,down,run,pause);
 				}
 				break;
