@@ -223,6 +223,7 @@ bool Setup(FMTowns &towns,Outside_World *outside_world,const TownsARGV &argv)
 	towns.gameport.SetBootKeyCombination(argv.bootKeyComb);
 
 	towns.state.noWait=argv.noWait;
+	towns.state.pretend386DX=argv.pretend386DX;
 	towns.var.noWaitStandby=argv.noWaitStandby;
 
 	std::cout << "Loaded ROM Images.\n";

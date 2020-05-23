@@ -1907,6 +1907,105 @@ P
 % 0
 /end
 /begin0
+T 0
+* 00005844:00000BA0
+# DOS:Get Current Process ID (Get Current PSP)
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00005844:00000BFA
+# Jump by RETF
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00005A27:0000011B
+# DOS 4AH=Resize Memory Block
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00005A27:0000017A
+# (Prob)DS:SI=Param to RUN386.EXE
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00005A27:00000190
+# 'NO'
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00005A27:00000197
+# '87'
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00005A27:0000019F
+# '='
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00005A27:000001CF
+# DI is the (strlen(ExeFName)+1)&(~1)
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00005A27:000001E6
+# Copy file name to local var.
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00005A27:00000238
+# Print String
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00005A27:0000120C
+# 
+R 
+L CONTROL.EXE:Clear upper 16-bits of 32-bit registers.
+P 
+% 0
+/end
+/begin0
 T 1
 * FFFF0000:000015AD
 # 

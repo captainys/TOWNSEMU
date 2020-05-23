@@ -95,6 +95,18 @@ public:
 		bool noWait=true;
 
 
+		/*! If this flag is true, VM will report the CPU as 80386DX from I/O port 0030H.
+		    DOS Extender that comes with Towns OS V2.1L10 (Not V2.1L10B) blocks the execution
+		    unless the CPU is 80386DX or 80386SX.
+
+		    This flag needs to be set true to boot a software title based on V2.1L10.
+
+		    There is no such issue with V2.1L10B, and that's probably why we see few
+		    software titles that is running on V2.1L10.
+		*/
+		bool pretend386DX=false;
+
+
 		/*! 
 		*/
 		unsigned long long int nextFastDevicePollingTime;

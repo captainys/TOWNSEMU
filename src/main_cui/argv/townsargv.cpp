@@ -47,6 +47,9 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "-NOWAITBOOT" << std::endl;
 	std::cout << "  No wait during the memory test, and then VM waits for real time when" << std::endl;
 	std::cout << "  VM time runs ahead of the real time." << std::endl;
+	std::cout << "-CMOS filename" << std::endl;
+	std::cout << "  Specify CMOS (BIOS settings) file.  If you specify this option," << std::endl;
+	std::cout << "  CMOS settings will be saved automatically when closing the program." << std::endl;
 	std::cout << "-FD0 filename" << std::endl;
 	std::cout << "  Floppy disk image file name for Drive A." << std::endl;
 	std::cout << "-FD1 filename" << std::endl;
@@ -67,6 +70,13 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "-HOST2VM hostFileName vmFileName" << std::endl;
 	std::cout << "  Schedule Host to VM file transfer." << std::endl;
 	std::cout << "  File will be transferred when FTCLIENT.EXP is running." << std::endl;
+	std::cout << "-PRETEND386DX" << std::endl;
+	std::cout << "  With this option, VM will report CPU as 386DX from I/O port 0030H." << std::endl;
+	std::cout << "  DOS-Extender that comes with Towns OS V2.1L10 checks the CPU and" << std::endl;
+	std::cout << "  blocks if the CPU is not 386DX nor 386SX.  That is probably why" << std::endl;
+	std::cout << "  we see many software titles running on Towns OS V2.1L10B, but" << std::endl;
+	std::cout << "  not with V2.1L10.  This option is to start Towns OS V2.1L10-based" << std::endl;
+	std::cout << "  titles such as Free Software Collection 4 Disc B" << std::endl;
 }
 
 bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
@@ -280,6 +290,10 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 				return false;
 			}
 			i+=2;
+		}
+		else if("-PRETEND386DX"==ARG)
+		{
+			pretend386DX=true;
 		}
 		else
 		{

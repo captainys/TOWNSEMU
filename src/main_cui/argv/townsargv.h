@@ -62,6 +62,8 @@ public:
 	bool debugger;
 	bool interactive;
 
+	bool pretend386DX=false;
+
 	unsigned int freq=0;
 
 	TownsARGV();

@@ -324,6 +324,12 @@ unsigned int FMTowns::MachineID(void) const
 		break;
 	}
 
+	if(true==state.pretend386DX)
+	{
+		lowByte&=0xF8;
+		lowByte|=i80386;
+	}
+
 	switch(townsType)
 	{
 	case FMR_50_60:
