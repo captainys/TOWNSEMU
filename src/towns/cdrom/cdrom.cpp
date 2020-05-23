@@ -572,6 +572,7 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 					townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+NOTIFICATION_TIME);
 					state.DMATransfer=false;
 					state.DTSF=false;  // Should I turn it off also? -> Looks like I should.  Based on 2MX SYSROM FC00:00001CF7.  It waits for DTSF to clear.
+					state.DEI=true;
 				}
 			}
 			else
@@ -588,7 +589,7 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 				else
 				{
 					state.SIRQ=true;
-					state.DEI=false;
+					state.DEI=true;
 					state.DTSF=false;
 					state.DRY=true;
 					state.ClearStatusQueue();
