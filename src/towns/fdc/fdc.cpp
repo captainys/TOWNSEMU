@@ -973,20 +973,34 @@ bool TownsFDC::WriteFault(void) const
 								{
 									sector.sectorData[i]=dataPtr[i];
 								}
+								sectors.push_back(sector);
 								trackCapacity+=sectorSize;
 							}
+						}
+					}
+					auto newDiskMediaType=IdentifyDiskMediaTypeFromTrackCapacity(trackCapacity);
+					if(MEDIA_UNKNOWN!=newDiskMediaType)
+					{
+						drv.mediaType=newDiskMediaType;
+						switch(newDiskMediaType)
+						{
+						case MEDIA_2DD_640KB:
+						case MEDIA_2DD_720KB:
+							diskPtr->SetNumTrack(80);
+							break;
+						case MEDIA_2HD_1232KB:
+							diskPtr->SetNumTrack(77);
+							break;
+						case MEDIA_2HD_1440KB:
+							diskPtr->SetNumTrack(80);
+							break;
 						}
 					}
 					for(auto &s : sectors)
 					{
 						s.nSectorTrack=(unsigned short)sectors.size();
 					}
-					diskPtr->WriteTrack(drv.trackPos,state.side,(int)sectors.size(),sectors.data());
-					auto newDiskMediaType=IdentifyDiskMediaTypeFromTrackCapacity(trackCapacity);
-					if(MEDIA_UNKNOWN!=newDiskMediaType)
-					{
-						drv.mediaType=newDiskMediaType;
-					}
+					diskPtr->ForceWriteTrack(drv.trackPos,state.side,(int)sectors.size(),sectors.data());
 					state.writeFault=false;
 				}
 				else

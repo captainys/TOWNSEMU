@@ -295,6 +295,19 @@ public:
 		*/
 		bool WriteTrack(int trk,int sid,int nSec,const D77Disk::D77Sector sec[]);
 
+		/*! Write sectors to a track.
+		    This trk and side points to the physical location, not track and side numbers
+		    stored in the sector.
+		    If the track does not exist, it will increase the number of tracks before writing.
+		*/
+		bool ForceWriteTrack(int trk,int sid,int nSec,const D77Disk::D77Sector sec[]);
+
+		/*! Set Number of Tracks.
+		    It assumes each track has two sides.
+		    If nTrack==80, track 0 side 0 to track 79 side 1 will be available.
+		*/
+		void SetNumTrack(unsigned int nTrack);
+
 		/*! Add a sector to a track.
 		    This trk and side points to the physical location, not track and side numbers
 		    stored in the sector.

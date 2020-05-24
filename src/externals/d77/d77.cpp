@@ -847,6 +847,28 @@ bool D77File::D77Disk::WriteTrack(int trk,int sid,int nSec,const D77Disk::D77Sec
 	}
 	return false;
 }
+
+bool D77File::D77Disk::ForceWriteTrack(int trk,int sid,int nSec,const D77Disk::D77Sector sec[])
+{
+	if(true==IsWriteProtected())
+	{
+		return false;
+	}
+
+	auto trkId=trk*2+sid;
+	if(track.size()<=trkId)
+	{
+		track.resize(trkId+1);
+		SetModified();
+	}
+	return WriteTrack(trk,sid,nSec,sec);
+}
+
+void D77File::D77Disk::SetNumTrack(unsigned int nTrack)
+{
+	track.resize(nTrack*2);
+}
+
 bool D77File::D77Disk::AddSector(int trk,int sid,int secId,int secSize)
 {
 	if(true==IsWriteProtected())
