@@ -24,7 +24,7 @@ def ExeExtension():
 def Run():
 	os.chdir(BUILDDIR)
 	subprocess.Popen([
-		"./main_cui/main_cui"+ExeExtension(),
+		"./main_cui/Tsugaru_CUI"+ExeExtension(),
 		ROMDIR,
 		"-FD0",
 		os.path.join(DISKDIR,"testset01.bin"),

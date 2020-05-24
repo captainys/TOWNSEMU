@@ -16,10 +16,17 @@ DISKDIR=os.path.join(THISDIR,"..","..","TOWNSEMU_TEST","DISKIMG")
 
 
 
+def ExeExtension():
+	if sys.platform.startswith('win'):
+		return ".exe"
+	else:
+		return ""
+
+
 def Run(argv):
 	os.chdir(BUILDDIR)
 	subprocess.Popen([
-		"./main_cui/main_cui.exe",
+		"./main_cui/Tsugaru_CUI"+ExeExtension(),
 		ROMDIR,
 		#"-FREQ",
 		#"16",

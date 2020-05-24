@@ -2,6 +2,7 @@ import os
 import subprocess
 import shutil
 import sys
+import sys
 
 import build
 
@@ -26,7 +27,7 @@ def ExeExtension():
 def Run(argv):
 	os.chdir(BUILDDIR)
 	subprocess.Popen([
-		"./main_cui/main_cui"+ExeExtension(),
+		"./main_cui/Tsugaru_CUI"+ExeExtension(),
 		ROMDIR,
 		"-FD0",
 		os.path.join(DISKDIR,"V2.1L20.bin"),

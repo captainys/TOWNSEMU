@@ -1,5 +1,7 @@
-add_executable(main_cui MACOSX_BUNDLE main.cpp)
-target_link_libraries(main_cui 
+set(TARGET_NAME Tsugaru_CUI)
+
+add_executable(Tsugaru_CUI MACOSX_BUNDLE main.cpp)
+target_link_libraries(${TARGET_NAME} 
 	towns 
 	townscommand 
 	townsargv
@@ -14,7 +16,7 @@ add_subdirectory(argv)
 add_test(
  	NAME CPUTEST
 	COMMAND 
-		main_cui 
+		${TARGET_NAME} 
 		"${CMAKE_SOURCE_DIR}/../../TOWNSEMU_TEST/ROM_MX"
 		-FD0
 		"${CMAKE_SOURCE_DIR}/../../TOWNSEMU_TEST/DISKIMG/CPUTESTU.bin"
@@ -26,7 +28,7 @@ add_test(
 add_test(
  	NAME 2MX_V21L30
 	COMMAND 
-		main_cui 
+		${TARGET_NAME} 
 		"${CMAKE_SOURCE_DIR}/../../TOWNSEMU_TEST/ROM_MX"
 		-FD0
 		"${CMAKE_SOURCE_DIR}/../../TOWNSEMU_TEST/DISKIMG/testset01.bin"
@@ -38,7 +40,7 @@ add_test(
 add_test(
  	NAME 2F_V21L30
 	COMMAND 
-		main_cui 
+		${TARGET_NAME} 
 		"${CMAKE_SOURCE_DIR}/../../TOWNSEMU_TEST/ROM_2F"
 		-FD0
 		"${CMAKE_SOURCE_DIR}/../../TOWNSEMU_TEST/DISKIMG/testset01.bin"
@@ -50,7 +52,7 @@ add_test(
 add_test(
  	NAME MX_V21L20
 	COMMAND 
-		main_cui 
+		${TARGET_NAME} 
 		"${CMAKE_SOURCE_DIR}/../../TOWNSEMU_TEST/ROM_MX"
 		-FD0
 		"${CMAKE_SOURCE_DIR}/../../TOWNSEMU_TEST/DISKIMG/testset02.bin"
@@ -62,7 +64,7 @@ add_test(
 add_test(
  	NAME 2F_V21L20
 	COMMAND 
-		main_cui 
+		${TARGET_NAME} 
 		"${CMAKE_SOURCE_DIR}/../../TOWNSEMU_TEST/ROM_2F"
 		-FD0
 		"${CMAKE_SOURCE_DIR}/../../TOWNSEMU_TEST/DISKIMG/testset02.bin"
@@ -74,7 +76,7 @@ add_test(
 add_test(
  	NAME MX_DOSCOMMANDS
 	COMMAND 
-		main_cui 
+		${TARGET_NAME} 
 		"${CMAKE_SOURCE_DIR}/../../TOWNSEMU_TEST/ROM_MX"
 		-FD0
 		"${CMAKE_SOURCE_DIR}/../../TOWNSEMU_TEST/DISKIMG/testset03.bin"
@@ -86,7 +88,7 @@ add_test(
 add_test(
  	NAME 2F_DOSCOMMANDS
 	COMMAND 
-		main_cui 
+		${TARGET_NAME} 
 		"${CMAKE_SOURCE_DIR}/../../TOWNSEMU_TEST/ROM_2F"
 		-FD0
 		"${CMAKE_SOURCE_DIR}/../../TOWNSEMU_TEST/DISKIMG/testset03.bin"
@@ -98,7 +100,7 @@ add_test(
 add_test(
  	NAME 2F_CDROM_ISO_V21L20
 	COMMAND 
-		main_cui 
+		${TARGET_NAME} 
 		"${CMAKE_SOURCE_DIR}/../../TOWNSEMU_TEST/ROM_2F"
 		-FD0
 		"${CMAKE_SOURCE_DIR}/../../TOWNSEMU_TEST/DISKIMG/testcdV2.1L20.bin"
@@ -112,7 +114,7 @@ add_test(
 add_test(
  	NAME MX_CDROM_ISO_V21L30
 	COMMAND 
-		main_cui 
+		${TARGET_NAME} 
 		"${CMAKE_SOURCE_DIR}/../../TOWNSEMU_TEST/ROM_MX"
 		-FD0
 		"${CMAKE_SOURCE_DIR}/../../TOWNSEMU_TEST/DISKIMG/testcdV2.1L30.bin"
@@ -126,7 +128,7 @@ add_test(
 add_test(
  	NAME MX_V11L10_GUI
 	COMMAND 
-		main_cui 
+		${TARGET_NAME} 
 		"${CMAKE_SOURCE_DIR}/../../TOWNSEMU_TEST/ROM_MX"
 		-SYM
 		"${CMAKE_SOURCE_DIR}/../symtables/UNITTEST.txt"
@@ -142,7 +144,7 @@ add_test(
 add_test(
 	NAME 2F_V11L30_GUI
 	COMMAND 
-		main_cui 
+		${TARGET_NAME} 
 		"${CMAKE_SOURCE_DIR}/../../TOWNSEMU_TEST/ROM_2F"
 		-SYM
 		"${CMAKE_SOURCE_DIR}/../symtables/UNITTEST.txt"
@@ -156,7 +158,7 @@ add_test(
 add_test(
  	NAME 2F_V21L20_GUI
 	COMMAND 
-		main_cui 
+		${TARGET_NAME} 
 		"${CMAKE_SOURCE_DIR}/../../TOWNSEMU_TEST/ROM_2F"
 		-CD
 		"${DISC_IMAGE_DIR}/TownsOSV2.1L20.cue"
@@ -168,7 +170,7 @@ add_test(
 add_test(
  	NAME MX_V21L31_GUI
 	COMMAND 
-		main_cui 
+		${TARGET_NAME} 
 		"${CMAKE_SOURCE_DIR}/../../TOWNSEMU_TEST/ROM_MX"
 		-SYM
 		"${CMAKE_SOURCE_DIR}/../symtables/UNITTEST.txt"

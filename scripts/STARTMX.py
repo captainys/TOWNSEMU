@@ -26,7 +26,7 @@ def ExeExtension():
 def Run(argv):
 	os.chdir(BUILDDIR)
 	subprocess.Popen([
-		"./main_cui/main_cui"+ExeExtension(),
+		"./main_cui/Tsugaru_CUI"+ExeExtension(),
 		ROMDIR,
 		"-SYM",
 		"../symtables/V2.1L20_"+TOWNSTYPE+".txt",

@@ -1,6 +1,7 @@
 import os
 import subprocess
 import shutil
+import sys
 
 import build
 
@@ -13,10 +14,17 @@ DISKDIR=os.path.join(THISDIR,"..","..","TOWNSEMU_TEST","DISKIMG")
 
 
 
+def ExeExtension():
+	if sys.platform.startswith('win'):
+		return ".exe"
+	else:
+		return ""
+
+
 def Run():
 	os.chdir(BUILDDIR)
 	subprocess.Popen([
-		"./main_cui/main_cui.exe",
+		"./main_cui/Tsugaru_CUI"+ExeExtension(),
 		ROMDIR,
 		"-FD0",
 		os.path.join(DISKDIR,"testset02.bin"),
