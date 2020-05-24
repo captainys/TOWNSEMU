@@ -1,0 +1,23 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: mkdir
+      run: mkdir ci
+    - name: cmake
+      run: cmake ../src
+      working-directory: ./ci
+    - name: build
+      run: cmake --build . --config Release
+      working-directory: ./ci
