@@ -611,7 +611,9 @@ void TownsCommandInterpreter::Execute_Enable(FMTowns &towns,Command &cmd)
 			break;
 		case ENABLE_EVENTLOG:
 			towns.eventLog.BeginRecording(towns.state.townsTime);
+			towns.var.pauseOnPowerOff=true;
 			std::cout << "Event Logging is ON." << std::endl;
+			std::cout << "Pause on Power OFF is ON." << std::endl;
 			break;
 		case ENABLE_DEBUGGER:
 			towns.EnableDebugger();

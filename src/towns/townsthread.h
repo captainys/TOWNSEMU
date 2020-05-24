@@ -69,6 +69,7 @@ class TownsUIThread
 {
 public:
 	mutable std::mutex uiLock;
+	bool vmTerminated=false;
 
 	void Run(TownsThread *vmThread,FMTowns *towns,const class TownsARGV *argv,Outside_World *outside_world);
 private:

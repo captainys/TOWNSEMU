@@ -60,16 +60,24 @@ public:
 
 			uiLock.lock();
 			this->cmdline=cmdline;
+			if(true==this->vmTerminated)
+			{
+				uiTerminate=true;
+			}
 			uiLock.unlock();
 
 			bool commandDone=false;
-			while(true!=commandDone)
+			while(true!=commandDone && true!=uiTerminate)
 			{
 				std::this_thread::sleep_for(std::chrono::milliseconds(10));
 				uiLock.lock();
 				if(""==this->cmdline)
 				{
 					commandDone=true;
+				}
+				if(true==this->vmTerminated)
+				{
+					uiTerminate=true;
 				}
 				uiLock.unlock();
 			}

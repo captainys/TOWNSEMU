@@ -154,6 +154,18 @@ add_test(
 )
 
 add_test(
+ 	NAME 2F_V21L20_GUI
+	COMMAND 
+		main_cui 
+		"${CMAKE_SOURCE_DIR}/../../TOWNSEMU_TEST/ROM_2F"
+		-CD
+		"${DISC_IMAGE_DIR}/TownsOSV2.1L20.cue"
+		-EVTLOG
+		"${CMAKE_SOURCE_DIR}/../testdata/eventLog/V21L20TEST.txt"
+		-UNITTEST
+)
+
+add_test(
  	NAME MX_V21L31_GUI
 	COMMAND 
 		main_cui 

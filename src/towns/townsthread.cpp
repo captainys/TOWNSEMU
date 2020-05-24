@@ -103,7 +103,16 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world,class Tow
 		}
 		if(true==townsPtr->var.powerOff)
 		{
-			runMode=RUNMODE_EXIT;
+			if(true!=townsPtr->var.pauseOnPowerOff)
+			{
+				runMode=RUNMODE_EXIT;
+			}
+			else if(RUNMODE_PAUSE!=runMode)
+			{
+				PrintStatus(*townsPtr);
+				std::cout << ">";
+				runMode=RUNMODE_PAUSE;
+			}
 		}
 		if(townsPtr->state.nextSecondInTownsTime<=townsPtr->state.townsTime)
 		{
@@ -125,6 +134,10 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world,class Tow
 			AdjustRealTime(townsPtr,townsPtr->state.townsTime-townsTime0,realTime0,outside_world);
 		}
 	}
+
+	uiThread->uiLock.lock();
+	uiThread->vmTerminated=true;
+	uiThread->uiLock.unlock();
 
 	std::cout << "Ending Towns Thread." << std::endl;
 	townsPtr->fdc.SaveModifiedDiskImages();

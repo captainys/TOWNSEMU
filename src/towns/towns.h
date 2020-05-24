@@ -200,6 +200,10 @@ public:
 
 		std::string CMOSFName;
 
+		/*! If this flag is true, VM thread pauses, not closes on power off.
+		*/
+		bool pauseOnPowerOff=false;
+
 		i486DX::FarPointer disassemblePointer;
 		Variable();
 		void Reset(void);
