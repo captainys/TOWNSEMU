@@ -258,6 +258,32 @@ unsigned int TownsFDC::IdentifyDiskMediaType(const D77File::D77Disk *diskPtr) co
 	return MEDIA_UNKNOWN;
 }
 
+unsigned int TownsFDC::IdentifyDiskMediaTypeFromTrackCapacity(unsigned int trackCapacity) const
+{
+	// [10]
+	//   1232KB format 1024 bytes per sector,  8 sectors per track, 77 tracks
+	//   1440KB format  512 bytes per sector, 18 sectors per track, 80 tracks
+	//    640KB format  512 bytes per sector,  8 sectors per track, 80 tracks
+	//    720KB format  512 bytes per sector,  9 sectors per track, 80 tracks
+	if(1024*8==trackCapacity)
+	{
+		return MEDIA_2HD_1232KB;
+	}
+	else if(512*18==trackCapacity)
+	{
+		return MEDIA_2HD_1440KB;
+	}
+	else if(512*8==trackCapacity)
+	{
+		return MEDIA_2DD_640KB;
+	}
+	else if(512*9==trackCapacity)
+	{
+		return MEDIA_2DD_720KB;
+	}
+	return MEDIA_UNKNOWN;
+}
+
 ////////////////////////////////////////////////////////////
 
 
@@ -907,7 +933,8 @@ bool TownsFDC::WriteFault(void) const
 						break;
 					}
 					auto formatData=DMACPtr->MemoryToDevice(DMACh,len);
-					unsigned int C=0,H=0,R=0,N=0;
+					unsigned int C=0,H=0,R=0,N=0,trackCapacity=0;
+					std::vector <D77File::D77Disk::D77Sector> sectors;
 					for(unsigned int ptr=0; ptr<formatData.size()-4; ++ptr)
 					{
 						if((0xA1==formatData[ptr] &&
@@ -936,14 +963,31 @@ bool TownsFDC::WriteFault(void) const
 						         0xFB==formatData[ptr+3])) // Data Mark
 						{
 							auto dataPtr=formatData.data()+ptr+4;
-							auto sectorSize=128*(1<<N);
+							unsigned int sectorSize=128*(1<<N);
 							if(0xF7==dataPtr[sectorSize]) // CRC
 							{
 								std::cout << "Sector Data" << std::endl;
+								D77File::D77Disk::D77Sector sector;
+								sector.Make(C,H,R,sectorSize);
+								for(unsigned int i=0; i<sectorSize; ++i)
+								{
+									sector.sectorData[i]=dataPtr[i];
+								}
+								trackCapacity+=sectorSize;
 							}
 						}
 					}
-					townsPtr->debugger.ExternalBreak("Ready to format a track.");
+					for(auto &s : sectors)
+					{
+						s.nSectorTrack=(unsigned short)sectors.size();
+					}
+					diskPtr->WriteTrack(drv.trackPos,state.side,(int)sectors.size(),sectors.data());
+					auto newDiskMediaType=IdentifyDiskMediaTypeFromTrackCapacity(trackCapacity);
+					if(MEDIA_UNKNOWN!=newDiskMediaType)
+					{
+						drv.mediaType=newDiskMediaType;
+					}
+					state.writeFault=false;
 				}
 				else
 				{

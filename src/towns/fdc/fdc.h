@@ -123,9 +123,13 @@ public:
 
 	void SetWriteProtect(int driveNum,bool writeProtect);
 
-	/*! Identifies the disk type.
+	/*! Identifies the disk type based on the whole capacity.
 	*/
 	unsigned int IdentifyDiskMediaType(const D77File::D77Disk *diskPtr) const;
+
+	/*! Identifies the disk type based on the track capacity (sector_size*#sectors).
+	*/
+	unsigned int IdentifyDiskMediaTypeFromTrackCapacity(unsigned int trackCapacity) const;
 
 	/*! Returns true if disk media type and drive mode is compatible.
 	    Drive mode does not distinguish 720KB and 640KB modes.
