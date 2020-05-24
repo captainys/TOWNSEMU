@@ -369,13 +369,12 @@ void TownsFDC::SendCommand(unsigned int cmd)
 			std::cout << "Command " << cpputil::Ubtox(cmd) << " not supported yet." << std::endl;
 			break;
 		case 0xF0: // Write Track
+			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+WRITE_TRACK_TIME);
 			state.recordType=false;
 			state.recordNotFound=false;
 			state.CRCError=false;
 			state.lostData=false;
 			state.writeFault=false;
-			std::cout << __FUNCTION__ << std::endl;
-			std::cout << "Command " << cpputil::Ubtox(cmd) << " not supported yet." << std::endl;
 			break;
 
 		case 0xD0: // Force Interrupt
@@ -525,7 +524,7 @@ unsigned int TownsFDC::DriveSelect(void) const
 	return 0;
 }
 
-unsigned int TownsFDC::GetDriveMeode(void) const
+unsigned int TownsFDC::GetDriveMode(void) const
 {
 	if(true!=state.DDEN)
 	{
@@ -694,7 +693,7 @@ bool TownsFDC::WriteFault(void) const
 		townsPtr->UnscheduleDeviceCallBack(*this); // Tentativelu
 		if(nullptr!=diskPtr)
 		{
-			if(true==CheckMediaTypeAndDriveModeCompatible(drv.mediaType,GetDriveMeode()))
+			if(true==CheckMediaTypeAndDriveModeCompatible(drv.mediaType,GetDriveMode()))
 			{
 				auto secPtr=diskPtr->GetSector(drv.trackPos,state.side,drv.sectorReg);
 				if(nullptr!=secPtr)
@@ -744,7 +743,7 @@ bool TownsFDC::WriteFault(void) const
 			{
 				// Write protected.
 			}
-			else if(true==CheckMediaTypeAndDriveModeCompatible(drv.mediaType,GetDriveMeode()))
+			else if(true==CheckMediaTypeAndDriveModeCompatible(drv.mediaType,GetDriveMode()))
 			{
 				auto secPtr=diskPtr->GetSector(drv.trackPos,state.side,drv.sectorReg);
 				if(nullptr!=secPtr)
@@ -796,7 +795,7 @@ bool TownsFDC::WriteFault(void) const
 		townsPtr->UnscheduleDeviceCallBack(*this);
 		if(nullptr!=diskPtr)
 		{
-			if(true==CheckMediaTypeAndDriveModeCompatible(drv.mediaType,GetDriveMeode()))
+			if(true==CheckMediaTypeAndDriveModeCompatible(drv.mediaType,GetDriveMode()))
 			{
 				// Copy CHRN and CRC CRC to DMA.
 				auto trkPtr=diskPtr->GetTrack(drv.trackPos,state.side);
@@ -848,8 +847,78 @@ bool TownsFDC::WriteFault(void) const
 		break;
 	case 0xF0: // Write Track
 		townsPtr->UnscheduleDeviceCallBack(*this);
-		std::cout << __FUNCTION__ << std::endl;
-		std::cout << "Command " << cpputil::Ubtox(state.lastCmd) << " not supported yet." << std::endl;
+		if(nullptr!=diskPtr)
+		{
+			if(true==diskPtr->IsWriteProtected())
+			{
+				// Write protected.
+			}
+			else if(true==CheckMediaTypeAndDriveModeCompatibleForFormat(drv.mediaType,GetDriveMode()))
+			{
+				auto DMACh=DMACPtr->GetDMAChannel(TOWNSDMA_FPD);
+				if(nullptr!=DMACh)
+				{
+					// What's the length?
+					// Looks like Towns MENU makes 2DE0H bytes of data.
+					// [10]
+					//   1232KB format 1024 bytes per sector,  8 sectors per track, 77 tracks
+					//   1440KB format  512 bytes per sector, 18 sectors per track, 80 tracks
+					//    640KB format  512 bytes per sector,  8 sectors per track, 80 tracks
+					//    720KB format  512 bytes per sector,  9 sectors per track, 80 tracks
+					// [2] pp. 250
+					// From the index hole:
+					//    GAP        80 bytes 0x4E
+					//    SYNC       12 bytes 0x00
+					//    INDEX MARK  4 bytes 0xC2,0xC2,0xC2,0xFC (or 0xF6,0xF6,0xF6,0xFC)
+					//    GAP        50 bytes 0x4E
+					//    {
+					//    SYNC       12 bytes 0x00
+					//    ADDR MARK   4 bytes 0xA1,0xA1,0xA1,0xFE (or 0xF5,0xF5,0xF5,0xFE)
+					//    CHRN        4 bytes
+					//    CRC         2 bytes 0xF7 (Write 1 byte will become 2 bytes of CRC code)
+					//    GAP        22 bytes
+					//    SYNC       12 bytes
+					//    DATA Mark   4 bytes 0xA1,0xA1,0xA1,0xFB (or 0xF5,0xF5,0xF5,0xFB)
+					//    DATA        x bytes (x=128*(2^N))
+					//    CRC         2 bytes 0xF7 (Write 1 byte will become 2 bytes of CRC code)
+					//    GAP        54/84/116/108 bytes.
+					//    } times sectors
+					//    GAP        598/400/654/? bytes
+					// 1232KB format -> 80+12+4+50+(12+4+4+2+22+12+4+1024+2+116)*8+654=10416 (28B0H)
+					// 1440KB format -> 80+12+4+50+(12+4+4+2+22+12+4+512+2+108)*18+?=12422+? (3086H+?)
+					//  640KB format -> 80+12+4+50+(12+4+4+2+22+12+4+512+2+84)*8+598=6008 (1778H)
+					//  720KB format -> 80+12+4+50+(12+4+4+2+22+12+4+512+2+54)*9+400=6198 (1836H)
+
+					// 2HD -> Read 0x3286 bytes
+					// 2DD -> Read 0x1836 bytes
+
+					unsigned int len=0;
+					switch(GetDriveMode())
+					{
+					case MEDIA_2DD_640KB:
+					case MEDIA_2DD_720KB:
+						len=6198;
+						break;
+					case MEDIA_2HD_1232KB:
+						len=10416;
+						break;
+					case MEDIA_2HD_1440KB:
+						len=12934; // Assume ?=512
+						break;
+					}
+					auto toWrite=DMACPtr->MemoryToDevice(DMACh,len);
+					townsPtr->debugger.ExternalBreak("Ready to format a track.");
+				}
+				else
+				{
+					state.writeFault=true;
+				}
+			}
+			else
+			{
+				state.writeFault=true;
+			}
+		}
 		MakeReady();
 		break;
 

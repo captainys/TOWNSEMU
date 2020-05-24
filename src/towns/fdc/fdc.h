@@ -38,6 +38,7 @@ public:
 		SEEK_TIME=20000,        // In Nano Seconds.  Just arbitrary.  Need to make it real.
 		STEP_TIME=10000,
 		SECTOR_READ_WRITE_TIME=5000,  // In Nano Seconds.  Just arbitrary.  Need to make it real.
+		WRITE_TRACK_TIME=250000, // In Nano Seconds.
 		ADDRMARK_READ_TIME=5000,
 	};
 	enum
@@ -143,6 +144,31 @@ public:
 		return mediaType==driveMode;
 	}
 
+	/*! Returns true if disk media type and drive mode is compatible for formatting.
+	    1.23MB floppy disk can be formatted to 1.44MB.
+	    Both two parameters needs to be MEDIA_???.
+	*/
+	inline bool CheckMediaTypeAndDriveModeCompatibleForFormat(unsigned int mediaType,unsigned int driveMode) const
+	{
+		if(MEDIA_2DD_720KB==mediaType)
+		{
+			mediaType=MEDIA_2DD_640KB;
+		}
+		if(MEDIA_2HD_1440KB==mediaType)
+		{
+			mediaType=MEDIA_2HD_1232KB;
+		}
+		if(MEDIA_2DD_720KB==driveMode)
+		{
+			driveMode=MEDIA_2DD_640KB;
+		}
+		if(MEDIA_2HD_1440KB==driveMode)
+		{
+			driveMode=MEDIA_2HD_1232KB;
+		}
+		return mediaType==driveMode;
+	}
+
 
 	void SendCommand(unsigned int data);
 
@@ -156,7 +182,7 @@ public:
 	/*! Returns media type the drive is configured for.
 	    Apparently the same FDC settings for 640KB and 720KB.  So, if it is set for 2DD, it returns MEDIA_2DD_640KB.
 	*/
-	unsigned int GetDriveMeode(void) const;
+	unsigned int GetDriveMode(void) const;
 
 	/*! Turns off BUSY flag.  Also if IRQ is not masked it raises IRR flag of PIC.
 	*/
