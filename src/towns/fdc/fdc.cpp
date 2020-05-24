@@ -906,7 +906,43 @@ bool TownsFDC::WriteFault(void) const
 						len=12934; // Assume ?=512
 						break;
 					}
-					auto toWrite=DMACPtr->MemoryToDevice(DMACh,len);
+					auto formatData=DMACPtr->MemoryToDevice(DMACh,len);
+					unsigned int C=0,H=0,R=0,N=0;
+					for(unsigned int ptr=0; ptr<formatData.size()-4; ++ptr)
+					{
+						if((0xA1==formatData[ptr] &&
+						    0xA1==formatData[ptr+1] &&
+						    0xA1==formatData[ptr+2] &&
+						    0xFE==formatData[ptr+3]) ||
+						   (0xF5==formatData[ptr] &&
+						    0xF5==formatData[ptr+1] &&
+						    0xF5==formatData[ptr+2] &&
+						    0xFE==formatData[ptr+3])) // Address Mark
+						{
+							C=formatData[ptr+4];
+							H=formatData[ptr+5];
+							R=formatData[ptr+6];
+							N=formatData[ptr+7];
+							std::cout << "CHRN:" << C << " " << H << " " << R << " " << N << std::endl;
+							ptr+=7;
+						}
+						else if((0xA1==formatData[ptr] &&
+						         0xA1==formatData[ptr+1] &&
+						         0xA1==formatData[ptr+2] &&
+						         0xFB==formatData[ptr+3]) ||
+						        (0xF5==formatData[ptr] &&
+						         0xF5==formatData[ptr+1] &&
+						         0xF5==formatData[ptr+2] &&
+						         0xFB==formatData[ptr+3])) // Data Mark
+						{
+							auto dataPtr=formatData.data()+ptr+4;
+							auto sectorSize=128*(1<<N);
+							if(0xF7==dataPtr[sectorSize]) // CRC
+							{
+								std::cout << "Sector Data" << std::endl;
+							}
+						}
+					}
 					townsPtr->debugger.ExternalBreak("Ready to format a track.");
 				}
 				else
