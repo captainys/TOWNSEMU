@@ -68,7 +68,7 @@ public:
 
 	/*! Translates an ASCII code to a sequence of FM Towns Keyboard codes.
 	    Returns the number of bytes of the generated key codes either 2 or 0.
-	    For making it a key-press code, do keyCodeBuf[0]|=TOWNS_KEYFLAG_THUMBSHIFT_PRESS_OR_RELEASE.
+	    For making it a key-release code, do keyCodeBuf[0]|=TOWNS_KEYFLAG_THUMBSHIFT_RELEASE.
 	*/
 	static unsigned int TranslateChar(unsigned char keyCodeBuf[2],unsigned char c);
 private:

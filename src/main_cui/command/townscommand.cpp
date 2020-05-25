@@ -1400,14 +1400,14 @@ void TownsCommandInterpreter::Execute_TypeKeyboard(FMTowns &towns,Command &cmd)
 				unsigned char byteData[2];
 				if(0<TownsKeyboard::TranslateChar(byteData,cmd.cmdline[j]))
 				{
-					towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_PRESS_OR_RELEASE,byteData[1]);
-					towns.keyboard.PushFifo(byteData[0],byteData[1]);
+					towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_PRESS  ,byteData[1]);
+					towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_RELEASE,byteData[1]);
 				}
 			}
 			unsigned char byteData[2];
 			TownsKeyboard::TranslateChar(byteData,0x0D);
-			towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_PRESS_OR_RELEASE,byteData[1]);
-			towns.keyboard.PushFifo(byteData[0],byteData[1]);
+			towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_PRESS  ,byteData[1]);
+			towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_RELEASE,byteData[1]);
 			return;
 		}
 	}
