@@ -87,7 +87,31 @@ public:
 
 	virtual unsigned int IOReadByte(unsigned int ioport);
 
-	virtual void RunScheduledTask(unsigned long long int townsTime);
+	/*! Called from FMTowns::RunFastDevicePolling
+	*/
+	inline void TimerPolling(unsigned long long int townsTime)
+	{
+		if(0==state.lastTickTimeInNS)
+		{
+			state.lastTickTimeInNS=townsTime;
+		}
+		else if(state.lastTickTimeInNS+TICK_INTERVAL<=townsTime)
+		{
+			auto nTick=(townsTime-state.lastTickTimeInNS)/TICK_INTERVAL;
+			state.lastTickTimeInNS+=nTick*TICK_INTERVAL;
+
+			bool OUT[2]={state.channels[0].OUT,state.channels[1].OUT};
+			state.TickIn((unsigned int)nTick);
+			for(unsigned int ch=0; ch<2; ++ch)
+			{
+				if(true!=OUT[ch] && true==state.channels[ch].OUT)
+				{
+					state.TMOUT[ch]=true;
+				}
+			}
+			UpdatePICRequest();
+		}
+	}
 
 	void UpdatePICRequest(void) const;
 

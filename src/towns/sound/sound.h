@@ -66,7 +66,9 @@ public:
 
 	virtual unsigned int IOReadByte(unsigned int ioport);
 
-	virtual void RunScheduledTask(unsigned long long int townsTime);
+	/*! Called from FMTowns::RunFastDevicePolling.
+	*/
+	void SoundPolling(unsigned long long int townsTime);
 
 	std::vector <std::string> GetStatusText(void) const;
 

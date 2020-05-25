@@ -229,7 +229,7 @@ void TownsSound::PCMStopPlay(unsigned char chStopPlay)
 
 
 
-/* virtual */ void TownsSound::RunScheduledTask(unsigned long long int townsTime)
+void TownsSound::SoundPolling(unsigned long long int townsTime)
 {
 	state.ym2612.Run(townsTime);
 	bool IRQ=(state.ym2612.TimerAUp() || state.ym2612.TimerBUp()) || state.rf5c68.state.IRQ();

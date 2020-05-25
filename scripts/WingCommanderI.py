@@ -36,7 +36,7 @@ def Run(argv):
 		"-GAMEPORT0",
 		"KEY",
 		"-SYM",
-		"../../TOWNSEMU_TEST/symtables/TOR_"+TOWNSTYPE+".txt",
+		"../../TOWNSEMU_TEST/symtables/WC1_"+TOWNSTYPE+".txt",
 		"-HD0",
 		os.path.join(DISKDIR,"hddimage.bin"),
 		"-CMOS",

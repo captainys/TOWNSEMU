@@ -238,10 +238,6 @@ public:
 	*/
 	using VMBase::allDevices;
 
-	/*! Pointers of the devices that requires very fast polling must be stored in this fastDevices.
-	    Such as YM2612 and PCM (TownsSound class).
-	*/
-	std::vector <Device *> fastDevices;
 
 
 	// Conceptual execution model

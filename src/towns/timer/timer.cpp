@@ -302,30 +302,6 @@ TownsTimer::TownsTimer(class FMTowns *townsPtr,class TownsPIC *picPtr) : Device(
 	return data;
 }
 
-/* virtual */ void TownsTimer::RunScheduledTask(unsigned long long int townsTime)
-{
-	if(0==state.lastTickTimeInNS)
-	{
-		state.lastTickTimeInNS=townsTime;
-	}
-	else if(state.lastTickTimeInNS+TICK_INTERVAL<=townsTime)
-	{
-		auto nTick=(townsTime-state.lastTickTimeInNS)/TICK_INTERVAL;
-		state.lastTickTimeInNS+=nTick*TICK_INTERVAL;
-
-		bool OUT[2]={state.channels[0].OUT,state.channels[1].OUT};
-		state.TickIn((unsigned int)nTick);
-		for(unsigned int ch=0; ch<2; ++ch)
-		{
-			if(true!=OUT[ch] && true==state.channels[ch].OUT)
-			{
-				state.TMOUT[ch]=true;
-			}
-		}
-		UpdatePICRequest();
-	}
-}
-
 void TownsTimer::UpdatePICRequest(void) const
 {
 	auto IRQBit=((state.TMOUT[0] && state.TMMSK[0]) || (state.TMOUT[1] && state.TMMSK[1]));

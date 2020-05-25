@@ -120,9 +120,6 @@ FMTowns::FMTowns() :
 	allDevices.push_back(&keyboard);
 	VMBase::CacheDeviceIndex();
 
-	fastDevices.push_back(&sound);
-	fastDevices.push_back(&timer);
-
 	physMem.SetMainRAMSize(4*1024*1024);
 
 	physMem.SetVRAMSize(1024*1024);
@@ -505,10 +502,8 @@ void FMTowns::RunFastDevicePolling(void)
 {
 	if(state.nextFastDevicePollingTime<state.townsTime)
 	{
-		for(auto devPtr : fastDevices)
-		{
-			devPtr->RunScheduledTask(state.townsTime);
-		}
+		timer.TimerPolling(state.townsTime);
+		sound.SoundPolling(state.townsTime);
 		crtc.ProcessVSYNCIRQ(state.townsTime);
 		state.nextFastDevicePollingTime=state.townsTime+FAST_DEVICE_POLLING_INTERVAL;
 	}
