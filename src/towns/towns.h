@@ -178,6 +178,12 @@ public:
 
 		bool debugBreakOnLButtonUp=false;
 
+		/*! Enable/disable mouse integration.
+		    To disable mouse integration, set this flag false, and call DontControlMouse().
+		    To enable, set this flag true, then VM will respect the next ControlMouse and SetMouseButtonState functions and on.
+		*/
+		bool mouseIntegration=true;
+
 		/*! noWaitStandby will be copied to state.noWait on NotifyDiskRead().
 		*/
 		bool noWaitStandby=false;
@@ -287,12 +293,20 @@ public:
 
 	/*! Adjust mouse return based on the mouse coordinate that Towns is thinking and mouse coordinate of the host.
 	    Returns true if it thinks it can control the mouse coordinate.  false otherwise.
+	    This function is ignored if var.mouseIntegration=false;
 	    (In tbiosid.cpp)
 	*/
 	bool ControlMouse(int hostMouseX,int houstMouseY,unsigned int tbiosid);
 
 
+	/*! Make mouse motion reported to the VM (0,0).
+	    Once called, effective until next ControlMouse and var.mouseIntegration==true.
+	*/
+	void DontControlMouse(void);
+
+
 	/*! Set Mouse-Button State.  Called from Outside_World.
+	    This function is ignored if var.mouseIntegration=false;
 	*/
 	void SetMouseButtonState(bool lButton,bool rButton);
 

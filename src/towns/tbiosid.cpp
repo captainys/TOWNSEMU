@@ -160,7 +160,7 @@ static inline int ClampStep(int d)
 bool FMTowns::ControlMouse(int hostMouseX,int hostMouseY,unsigned int tbiosid)
 {
 	int mx,my;
-	if(true==GetMouseCoordinate(mx,my,tbiosid))
+	if(true==GetMouseCoordinate(mx,my,tbiosid) && true==var.mouseIntegration)
 	{
 		Vec2i zoom;
 		if(true==crtc.InSinglePageMode())
@@ -194,9 +194,20 @@ bool FMTowns::ControlMouse(int hostMouseX,int hostMouseY,unsigned int tbiosid)
 	return false;
 }
 
+void FMTowns::DontControlMouse(void)
+{
+	for(auto &p : gameport.state.ports)
+	{
+		if(p.device==TownsGamePort::MOUSE)
+		{
+			p.mouseMotion.Set(0,0);
+		}
+	}
+}
+
 void FMTowns::SetMouseButtonState(bool lButton,bool rButton)
 {
-	if(TownsEventLog::MODE_RECORDING==eventLog.mode)
+	if(TownsEventLog::MODE_RECORDING==eventLog.mode && true==var.mouseIntegration)
 	{
 		int mx=0,my=0;
 		GetMouseCoordinate(mx,my,state.tbiosVersion);

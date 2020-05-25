@@ -93,6 +93,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	featureMap["EVENTLOG"]=ENABLE_EVENTLOG;
 	featureMap["DEBUGGER"]=ENABLE_DEBUGGER;
 	featureMap["DEBUG"]=ENABLE_DEBUGGER;
+	featureMap["MOUSEINTEG"]=ENABLE_MOUSEINTEGRATION;
 
 	dumpableMap["CALLSTACK"]=DUMP_CALLSTACK;
 	dumpableMap["CST"]=DUMP_CALLSTACK;
@@ -252,6 +253,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "DEBUGGER" << std::endl;
 	std::cout << "DEBUG" << std::endl;
 	std::cout << "  Debugger." << std::endl;
+	std::cout << "MOUSEINTEG" << std::endl;
+	std::cout << "  Mouse Integration." << std::endl;
 
 	std::cout << "" << std::endl;
 
@@ -619,6 +622,10 @@ void TownsCommandInterpreter::Execute_Enable(FMTowns &towns,Command &cmd)
 			towns.EnableDebugger();
 			std::cout << "Debugger is ON." << std::endl;
 			break;
+		case ENABLE_MOUSEINTEGRATION:
+			towns.var.mouseIntegration=true;
+			std::cout << "Mouse Integration is Enabled." << std::endl;
+			break;
 		}
 	}
 }
@@ -668,6 +675,11 @@ void TownsCommandInterpreter::Execute_Disable(FMTowns &towns,Command &cmd)
 		case ENABLE_DEBUGGER:
 			towns.DisableDebugger();
 			std::cout << "Debugger is OFF." << std::endl;
+			break;
+		case ENABLE_MOUSEINTEGRATION:
+			towns.var.mouseIntegration=false;
+			towns.DontControlMouse();
+			std::cout << "Mouse Integration is Disabled." << std::endl;
 			break;
 		}
 	}
