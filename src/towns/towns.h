@@ -290,6 +290,13 @@ public:
 	*/
 	const char *TBIOSIDENTtoString(unsigned int tbios) const;
 
+	/*! Called back from CRTC when HST register is written.
+	    Probably it happens only once per application, and hopefully this function call
+	    will not stress the VM.
+	    Can be used for identifying an application.
+	*/
+	void OnCRTC_HST_Write(void);
+
 
 	/*! Adjust mouse return based on the mouse coordinate that Towns is thinking and mouse coordinate of the host.
 	    Returns true if it thinks it can control the mouse coordinate.  false otherwise.

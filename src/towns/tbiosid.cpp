@@ -110,6 +110,10 @@ unsigned int FMTowns::IdentifyTBIOS(unsigned int biosPhysicalBaseAddr) const
 
 	return TBIOS_UNKNOWN;
 }
+void FMTowns::OnCRTC_HST_Write(void)
+{
+	std::cout << "Write to CRTC-HST register." << std::endl;
+}
 const char *FMTowns::TBIOSIDENTtoString(unsigned int tbios) const
 {
 	switch(tbios)

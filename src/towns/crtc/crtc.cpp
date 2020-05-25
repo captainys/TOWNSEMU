@@ -526,11 +526,19 @@ void TownsCRTC::MakePageLayerInfo(Layer &layer,unsigned char page) const
 	case TOWNSIO_CRTC_DATA_LOW://            0x442,
 		state.crtcReg[state.crtcAddrLatch]&=0xff00;
 		state.crtcReg[state.crtcAddrLatch]|=(data&0xff);
+		if(REG_HST==state.crtcAddrLatch)
+		{
+			townsPtr->OnCRTC_HST_Write();
+		}
 		UpdateSpriteHardware();
 		break;
 	case TOWNSIO_CRTC_DATA_HIGH://           0x443,
 		state.crtcReg[state.crtcAddrLatch]&=0x00ff;
 		state.crtcReg[state.crtcAddrLatch]|=((data&0xff)<<8);
+		if(REG_HST==state.crtcAddrLatch)
+		{
+			townsPtr->OnCRTC_HST_Write();
+		}
 		UpdateSpriteHardware();
 		break;
 
@@ -605,6 +613,10 @@ void TownsCRTC::MakePageLayerInfo(Layer &layer,unsigned char page) const
 		break;
 	case TOWNSIO_CRTC_DATA_LOW://            0x442,
 		state.crtcReg[state.crtcAddrLatch]=(data&0xffff);
+		if(REG_HST==state.crtcAddrLatch)
+		{
+			townsPtr->OnCRTC_HST_Write();
+		}
 		break;
 	case TOWNSIO_CRTC_DATA_HIGH://           0x443,
 		break;
