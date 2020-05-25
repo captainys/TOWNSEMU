@@ -538,5 +538,11 @@ enum
 	TBIOS_V31L35_94, // TBIOS that comes with Towns OS V2.1 L50 (Free Software Collection 11)
 };
 
+enum
+{
+	TOWNS_APPSPECIFIC_NONE,
+	TOWNS_APPSPECIFIC_WINGCOMMANDER1,
+};
+
 /* } */
 #endif

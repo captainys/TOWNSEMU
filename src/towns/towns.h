@@ -146,6 +146,14 @@ public:
 		int mouseDisplayPage=0;
 		unsigned int TBIOS_physicalAddr,MOS_work_linearAddr,MOS_work_physicalAddr;
 
+		/*! Application-Specific Customization parameters.
+		    appSpecific_DS_BASE and appSpecific_CS_BASE will be captured in
+		    OnCRTC_HST_Write() if the CPU is in protected-mode.
+		*/
+		unsigned int appSpecificSetting=0;
+		unsigned int appSpecific_DS_BASE=0;
+		unsigned int appSpecific_CS_BASE=0;
+
 
 		void PowerOn(void);
 		void Reset(void);
