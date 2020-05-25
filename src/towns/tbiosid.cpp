@@ -113,6 +113,25 @@ unsigned int FMTowns::IdentifyTBIOS(unsigned int biosPhysicalBaseAddr) const
 void FMTowns::OnCRTC_HST_Write(void)
 {
 	std::cout << "Write to CRTC-HST register." << std::endl;
+	if(0!=(cpu.state.GetCR(0)&i486DX::CR0_PROTECTION_ENABLE))
+	{
+		switch(state.appSpecificSetting)
+		{
+		case TOWNS_APPSPECIFIC_WINGCOMMANDER1:
+			{
+				i486DX::SegmentRegister DS;
+				unsigned int exceptionType,exceptionCode;
+				cpu.LoadSegmentRegisterQuiet(DS,0x0014,mem,false);
+
+				state.appSpecific_WC1_MousePtrX=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x6EEDC,mem);
+				state.appSpecific_WC1_MousePtrY=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x6EEDE,mem);
+
+				std::cout << "  MousePointerX Physical Base=" << cpputil::Uitox(state.appSpecific_WC1_MousePtrX) << std::endl;
+				std::cout << "  MousePointerY Physical Base=" << cpputil::Uitox(state.appSpecific_WC1_MousePtrY) << std::endl;
+			}
+			break;
+		}
+	}
 }
 const char *FMTowns::TBIOSIDENTtoString(unsigned int tbios) const
 {
@@ -282,88 +301,101 @@ void FMTowns::SetGamePadState(int port,bool Abutton,bool Bbutton,bool left,bool 
 
 bool FMTowns::GetMouseCoordinate(int &mx,int &my,unsigned int tbiosid) const
 {
-	switch(tbiosid)
+	if(true==state.mouseBIOSActive)
 	{
-	case TBIOS_V31L22A:
-		// 0110:0000FA88 8A6F44                    MOV     CH,[EDI+44H]
-		// 0110:0000FA8B 8B5752                    MOV     EDX,[EDI+52H]
-		// 0110:0000FA8E 0FA4D310                  SHLD    EBX,EDX,10H
-		// 0110:0000FA92 886D1D                    MOV     [EBP+1DH],CH
-		// 0110:0000FA95 66895518                  MOV     [EBP+18H],DX
-		// 0110:0000FA99 66895D14                  MOV     [EBP+14H],BX
-		// 0110:0000FA9D C3                        RET
-		mx=(int)mem.FetchWord(state.MOS_work_physicalAddr+0x52);
-		my=(int)mem.FetchWord(state.MOS_work_physicalAddr+0x54);
-		return true;
-	case TBIOS_V31L23A:
-		// 0110:000103B8 8A6F44                    MOV     CH,[EDI+44H]
-		// 0110:000103BB 8B5756                    MOV     EDX,[EDI+56H]
-		// 0110:000103BE 0FA4D310                  SHLD    EBX,EDX,10H
-		// 0110:000103C2 886D1D                    MOV     [EBP+1DH],CH
-		// 0110:000103C5 66895518                  MOV     [EBP+18H],DX
-		// 0110:000103C9 66895D14                  MOV     [EBP+14H],BX
-		// 0110:000103CD C3                        RET
-		mx=(int)mem.FetchWord(state.MOS_work_physicalAddr+0x56);
-		my=(int)mem.FetchWord(state.MOS_work_physicalAddr+0x58);
-		return true;
-	case TBIOS_V31L31_90:
-		// 0110:000103B8 8A6F44                    MOV     CH,[EDI+44H]
-		// 0110:000103BB 8B5756                    MOV     EDX,[EDI+56H]
-		// 0110:000103BE 0FA4D310                  SHLD    EBX,EDX,10H
-		// 0110:000103C2 886D1D                    MOV     [EBP+1DH],CH
-		// 0110:000103C5 66895518                  MOV     [EBP+18H],DX
-		// 0110:000103C9 66895D14                  MOV     [EBP+14H],BX
-		// 0110:000103CD C3                        RET
-		mx=(int)mem.FetchWord(state.MOS_work_physicalAddr+0x56);
-		my=(int)mem.FetchWord(state.MOS_work_physicalAddr+0x58);
-		return true;
-	case TBIOS_V31L31_91:
-		// 0110:00011064 648A2D1C050000            MOV     CH,FS:[0000051CH]
-		// 0110:0001106B 648B156C050000            MOV     EDX,FS:[0000056CH]
-		// 0110:00011072 0FA4D310                  SHLD    EBX,EDX,10H
-		// 0110:00011076 886D1D                    MOV     [EBP+1DH],CH
-		// 0110:00011079 66895518                  MOV     [EBP+18H],DX
-		// 0110:0001107D 66895D14                  MOV     [EBP+14H],BX
-		// 0110:00011081 C3                        RET
-		mx=(int)mem.FetchWord(state.TBIOS_physicalAddr+0x56C);
-		my=(int)mem.FetchWord(state.TBIOS_physicalAddr+0x56E);
-		return true;
-	case TBIOS_V31L31_92:
-		// 0110:00011D50 268A2D28050000            MOV     CH,ES:[00000528H]
-		// 0110:00011D57 268B1510050000            MOV     EDX,ES:[00000510H]
-		// 0110:00011D5E 0FA4D310                  SHLD    EBX,EDX,10H
-		// 0110:00011D62 886D1D                    MOV     [EBP+1DH],CH
-		// 0110:00011D65 66895518                  MOV     [EBP+18H],DX
-		// 0110:00011D69 66895D14                  MOV     [EBP+14H],BX
-		mx=(int)mem.FetchWord(state.TBIOS_physicalAddr+0x510);
-		my=(int)mem.FetchWord(state.TBIOS_physicalAddr+0x512);
-		return true;
-	case TBIOS_V31L35:
-		// 0110:00014B2B BF804A0100                MOV     EDI,00014A80H
+		switch(tbiosid)
+		{
+		case TBIOS_V31L22A:
+			// 0110:0000FA88 8A6F44                    MOV     CH,[EDI+44H]
+			// 0110:0000FA8B 8B5752                    MOV     EDX,[EDI+52H]
+			// 0110:0000FA8E 0FA4D310                  SHLD    EBX,EDX,10H
+			// 0110:0000FA92 886D1D                    MOV     [EBP+1DH],CH
+			// 0110:0000FA95 66895518                  MOV     [EBP+18H],DX
+			// 0110:0000FA99 66895D14                  MOV     [EBP+14H],BX
+			// 0110:0000FA9D C3                        RET
+			mx=(int)mem.FetchWord(state.MOS_work_physicalAddr+0x52);
+			my=(int)mem.FetchWord(state.MOS_work_physicalAddr+0x54);
+			return true;
+		case TBIOS_V31L23A:
+			// 0110:000103B8 8A6F44                    MOV     CH,[EDI+44H]
+			// 0110:000103BB 8B5756                    MOV     EDX,[EDI+56H]
+			// 0110:000103BE 0FA4D310                  SHLD    EBX,EDX,10H
+			// 0110:000103C2 886D1D                    MOV     [EBP+1DH],CH
+			// 0110:000103C5 66895518                  MOV     [EBP+18H],DX
+			// 0110:000103C9 66895D14                  MOV     [EBP+14H],BX
+			// 0110:000103CD C3                        RET
+			mx=(int)mem.FetchWord(state.MOS_work_physicalAddr+0x56);
+			my=(int)mem.FetchWord(state.MOS_work_physicalAddr+0x58);
+			return true;
+		case TBIOS_V31L31_90:
+			// 0110:000103B8 8A6F44                    MOV     CH,[EDI+44H]
+			// 0110:000103BB 8B5756                    MOV     EDX,[EDI+56H]
+			// 0110:000103BE 0FA4D310                  SHLD    EBX,EDX,10H
+			// 0110:000103C2 886D1D                    MOV     [EBP+1DH],CH
+			// 0110:000103C5 66895518                  MOV     [EBP+18H],DX
+			// 0110:000103C9 66895D14                  MOV     [EBP+14H],BX
+			// 0110:000103CD C3                        RET
+			mx=(int)mem.FetchWord(state.MOS_work_physicalAddr+0x56);
+			my=(int)mem.FetchWord(state.MOS_work_physicalAddr+0x58);
+			return true;
+		case TBIOS_V31L31_91:
+			// 0110:00011064 648A2D1C050000            MOV     CH,FS:[0000051CH]
+			// 0110:0001106B 648B156C050000            MOV     EDX,FS:[0000056CH]
+			// 0110:00011072 0FA4D310                  SHLD    EBX,EDX,10H
+			// 0110:00011076 886D1D                    MOV     [EBP+1DH],CH
+			// 0110:00011079 66895518                  MOV     [EBP+18H],DX
+			// 0110:0001107D 66895D14                  MOV     [EBP+14H],BX
+			// 0110:00011081 C3                        RET
+			mx=(int)mem.FetchWord(state.TBIOS_physicalAddr+0x56C);
+			my=(int)mem.FetchWord(state.TBIOS_physicalAddr+0x56E);
+			return true;
+		case TBIOS_V31L31_92:
+			// 0110:00011D50 268A2D28050000            MOV     CH,ES:[00000528H]
+			// 0110:00011D57 268B1510050000            MOV     EDX,ES:[00000510H]
+			// 0110:00011D5E 0FA4D310                  SHLD    EBX,EDX,10H
+			// 0110:00011D62 886D1D                    MOV     [EBP+1DH],CH
+			// 0110:00011D65 66895518                  MOV     [EBP+18H],DX
+			// 0110:00011D69 66895D14                  MOV     [EBP+14H],BX
+			mx=(int)mem.FetchWord(state.TBIOS_physicalAddr+0x510);
+			my=(int)mem.FetchWord(state.TBIOS_physicalAddr+0x512);
+			return true;
+		case TBIOS_V31L35:
+			// 0110:00014B2B BF804A0100                MOV     EDI,00014A80H
 
-		// 0110:00014C94 8A6F1C                    MOV     CH,[EDI+1CH]
-		// 0110:00014C97 8B570C                    MOV     EDX,[EDI+0CH]
-		// 0110:00014C9A 0FA4D310                  SHLD    EBX,EDX,10H
-		// 0110:00014C9E 886D1D                    MOV     [EBP+1DH],CH
-		// 0110:00014CA1 66895518                  MOV     [EBP+18H],DX
-		// 0110:00014CA5 66895D14                  MOV     [EBP+14H],BX
-		// 0110:00014CA9 C3                        RET
-		mx=(int)mem.FetchWord(state.TBIOS_physicalAddr+0x14A80+0x0C);
-		my=(int)mem.FetchWord(state.TBIOS_physicalAddr+0x14A80+0x0E);
-		return true;
-	case TBIOS_V31L35_94:
-		// 0110:000162C8 BF30620100                MOV     EDI,00016230H
+			// 0110:00014C94 8A6F1C                    MOV     CH,[EDI+1CH]
+			// 0110:00014C97 8B570C                    MOV     EDX,[EDI+0CH]
+			// 0110:00014C9A 0FA4D310                  SHLD    EBX,EDX,10H
+			// 0110:00014C9E 886D1D                    MOV     [EBP+1DH],CH
+			// 0110:00014CA1 66895518                  MOV     [EBP+18H],DX
+			// 0110:00014CA5 66895D14                  MOV     [EBP+14H],BX
+			// 0110:00014CA9 C3                        RET
+			mx=(int)mem.FetchWord(state.TBIOS_physicalAddr+0x14A80+0x0C);
+			my=(int)mem.FetchWord(state.TBIOS_physicalAddr+0x14A80+0x0E);
+			return true;
+		case TBIOS_V31L35_94:
+			// 0110:000162C8 BF30620100                MOV     EDI,00016230H
 
-		// 0110:0001643C 8A6F1C                    MOV     CH,[EDI+1CH]
-		// 0110:0001643F 8B570C                    MOV     EDX,[EDI+0CH]
-		// 0110:00016442 0FA4D310                  SHLD    EBX,EDX,10H
-		// 0110:00016446 886D1D                    MOV     [EBP+1DH],CH
-		// 0110:00016449 66895518                  MOV     [EBP+18H],DX
-		// 0110:0001644D 66895D14                  MOV     [EBP+14H],BX
-		// 0110:00016451 C3                        RET
-		mx=(int)mem.FetchWord(state.TBIOS_physicalAddr+0x16230+0x0C);
-		my=(int)mem.FetchWord(state.TBIOS_physicalAddr+0x16230+0x0E);
-		return true;
+			// 0110:0001643C 8A6F1C                    MOV     CH,[EDI+1CH]
+			// 0110:0001643F 8B570C                    MOV     EDX,[EDI+0CH]
+			// 0110:00016442 0FA4D310                  SHLD    EBX,EDX,10H
+			// 0110:00016446 886D1D                    MOV     [EBP+1DH],CH
+			// 0110:00016449 66895518                  MOV     [EBP+18H],DX
+			// 0110:0001644D 66895D14                  MOV     [EBP+14H],BX
+			// 0110:00016451 C3                        RET
+			mx=(int)mem.FetchWord(state.TBIOS_physicalAddr+0x16230+0x0C);
+			my=(int)mem.FetchWord(state.TBIOS_physicalAddr+0x16230+0x0E);
+			return true;
+		}
+	}
+	else
+	{
+		switch(state.appSpecificSetting)
+		{
+		case TOWNS_APPSPECIFIC_WINGCOMMANDER1:
+			mx=(int)mem.FetchWord(state.appSpecific_WC1_MousePtrX);
+			my=(int)mem.FetchWord(state.appSpecific_WC1_MousePtrY);
+			return true;
+		}
 	}
 	return false;
 }

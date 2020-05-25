@@ -146,8 +146,10 @@ bool Setup(FMTowns &towns,Outside_World *outside_world,const TownsARGV &argv)
 {
 	if(""==argv.ROMPath)
 	{
-		std::cout << "Usage:\n";
-		std::cout << "main_cui rom_directory_name\n";
+		std::cout << "Usage:" << std::endl;
+		std::cout << "  Tsugaru_CUI rom_directory_name" << std::endl;
+		std::cout << "or," << std::endl;
+		std::cout << "  Tsugaru_CUI -HELP" << std::endl;
 		return false;
 	}
 
@@ -233,6 +235,7 @@ bool Setup(FMTowns &towns,Outside_World *outside_world,const TownsARGV &argv)
 	towns.state.noWait=argv.noWait;
 	towns.state.pretend386DX=argv.pretend386DX;
 	towns.var.noWaitStandby=argv.noWaitStandby;
+	towns.state.appSpecificSetting=argv.appSpecificSetting;
 
 	std::cout << "Loaded ROM Images.\n";
 

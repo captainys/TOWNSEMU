@@ -31,6 +31,8 @@ def Run(argv):
 		ROMDIR,
 		"-CD",
 		"E:/ISOImage/FM-TOWNS/WingCommanderI/WINGCOMMANDER.CUE",
+		"-APP",
+		"WINGCOMMANDER1",
 		"-FD0",
 		os.path.join(DISKDIR,"WC1Data.bin"),
 		"-GAMEPORT0",

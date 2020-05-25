@@ -77,6 +77,19 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  we see many software titles running on Towns OS V2.1L10B, but" << std::endl;
 	std::cout << "  not with V2.1L10.  This option is to start Towns OS V2.1L10-based" << std::endl;
 	std::cout << "  titles such as Free Software Collection 4 Disc B" << std::endl;
+	std::cout << "-APP title" << std::endl;
+	std::cout << "  Use application-specific customization." << std::endl;
+	std::cout << "  For the list of applications, start this program with" << std::endl;
+	std::cout << "   only -APP option." << std::endl;
+}
+
+void TownsARGV::PrintApplicationList(void) const
+{
+	std::cout << "Customization Available for:" << std::endl;
+	std::cout << "WC1 or WINGCOMMANDER1" << std::endl;
+	std::cout << "  Mouse-integration.  Wing Commander 1 uses its own mouse-reading" << std::endl;
+	std::cout << "  function instead of standard Towns MOUSE BIOS.  With this option" << std::endl;
+	std::cout << "  you can control mouse for selecting menus." << std::endl;
 }
 
 bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
@@ -88,6 +101,23 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		if("-HELP"==ARG || "-H"==ARG || "-?"==ARG)
 		{
 			PrintHelp();
+		}
+		else if("-APP"==ARG)
+		{
+			if(i+1<argc)
+			{
+				std::string APP=argv[i+1];
+				cpputil::Capitalize(APP);
+				if("WC1"==APP || "WINGCOMMANDER1"==APP)
+				{
+					appSpecificSetting=TOWNS_APPSPECIFIC_WINGCOMMANDER1;
+				}
+				++i;
+			}
+			else
+			{
+				PrintApplicationList();
+			}
 		}
 		else if("-PAUSE"==ARG)
 		{

@@ -66,8 +66,11 @@ public:
 
 	unsigned int freq=0;
 
+	unsigned int appSpecificSetting=0;
+
 	TownsARGV();
 	void PrintHelp(void) const;
+	void PrintApplicationList(void) const;
 	bool AnalyzeCommandParameter(int argc,char *argv[]);
 };
 
