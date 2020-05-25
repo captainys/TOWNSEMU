@@ -22,6 +22,10 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 class FsSimpleWindowConnection : public Outside_World
 {
 public:
+	unsigned int *FSKEYtoTownsKEY=nullptr;
+	FsSimpleWindowConnection();
+	~FsSimpleWindowConnection();
+
 	virtual void Start(void);
 	virtual void Stop(void);
 	virtual void DevicePolling(class FMTowns &towns);

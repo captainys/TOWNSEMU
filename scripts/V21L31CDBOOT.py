@@ -32,6 +32,8 @@ def Run():
 		os.path.join(DISKDIR,"V2.1L20.bin"),
 		"-CD",
 		"D:/ISOImageSubset/TOSV2.1L31.iso",
+		"-BOOTKEY",
+		"CD",
 		"-SYM",
 		"../symtables/V2.1L31CDBOOT_"+TOWNSTYPE+".txt",
 		"-HD0",
@@ -40,10 +42,10 @@ def Run():
 		"../testdata/CMOS.bin",
 		"-DEBUG",
 		"-PAUSE",
-	]).wait()
+	]+argv).wait()
 
 
 
 if __name__=="__main__":
-	build.Run()
+	build.Run(sys.argv[1:])
 	Run()
