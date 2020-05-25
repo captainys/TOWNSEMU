@@ -204,6 +204,18 @@ void TownsCRTC::State::Reset(void)
 	palette.Reset();
 }
 
+void TownsCRTC::TurnOffVSYNCIRQ(void)
+{
+	state.VSYNCIRQ=false;
+	townsPtr->pic.SetInterruptRequestBit(TOWNSIRQ_VSYNC,false);
+}
+
+void TownsCRTC::TurnOnVSYNCIRQ(void)
+{
+	state.VSYNCIRQ=true;
+	townsPtr->pic.SetInterruptRequestBit(TOWNSIRQ_VSYNC,true);
+}
+
 TownsCRTC::ScreenModeCache::ScreenModeCache()
 {
 	MakeFMRCompatible();
@@ -279,14 +291,6 @@ bool TownsCRTC::InHSYNC(const unsigned long long int townsTime) const
 		return (CRT_HORIZONTAL_DURATION<intoLine);
 	}
 	return false;
-}
-
-long long int TownsCRTC::NextVSYNCTime(long long int townsTime) const
-{
-	long long int mod=townsTime%VSYNC_CYCLE;
-	townsTime-=mod;
-	townsTime+=VSYNC_CYCLE;
-	return townsTime;
 }
 
 bool TownsCRTC::InSinglePageMode(void) const
@@ -585,6 +589,9 @@ void TownsCRTC::MakePageLayerInfo(Layer &layer,unsigned char page) const
 			state.showPage[0]=(0!=((data>>2)&3));
 			state.showPage[1]=(0!=( data    &3));
 		}
+		break;
+	case TOWNSIO_WRITE_TO_CLEAR_VSYNCIRQ:
+		TurnOffVSYNCIRQ();
 		break;
 	}
 }

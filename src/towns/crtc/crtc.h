@@ -134,6 +134,9 @@ public:
 	class State
 	{
 	public:
+		bool VSYNCIRQ=false;
+		bool VSYNC=false;
+
 		unsigned short crtcReg[32];
 		unsigned int crtcAddrLatch;
 
@@ -168,17 +171,47 @@ public:
 
 	enum
 	{
-		VSYNC_CYCLE=16700000,
+		VSYNC_CYCLE=          16700000,
 		CRT_VERTICAL_DURATION=15360000,
-		HSYNC_CYCLE=32000, // Not accurate.  Fixed at 31K
-		CRT_HORIZONTAL_DURATION=30000,
+		HSYNC_CYCLE=             32000, // Not accurate.  Fixed at 31K
+		CRT_HORIZONTAL_DURATION= 30000,
 	};
 
 	bool InVSYNC(const unsigned long long int townsTime) const;
 	bool InHSYNC(const unsigned long long int townsTime) const;
 
-	long long int NextVSYNCTime(long long int townsTime) const;
+	inline long long int NextVSYNCTime(long long int townsTime) const
+	{
+		long long int mod=townsTime%VSYNC_CYCLE;
+		townsTime-=mod;
+		townsTime+=VSYNC_CYCLE;
+		return townsTime;
+	}
+	inline void ProcessVSYNCIRQ(long long int townsTime)
+	{
+		long long int inCycle=townsTime%VSYNC_CYCLE;
+		if(true!=state.VSYNC)
+		{
+			if(CRT_VERTICAL_DURATION<=inCycle)
+			{
+				state.VSYNC=true;
+				TurnOnVSYNCIRQ();
+			}
+		}
+		else if(true==state.VSYNC)
+		{
+			if(inCycle<CRT_VERTICAL_DURATION)
+			{
+				state.VSYNC=false;
+				TurnOffVSYNCIRQ();
+			}
+		}
+	}
+private:
+	void TurnOffVSYNCIRQ(void);
+	void TurnOnVSYNCIRQ(void);
 
+public:
 	/*! [2] pp.152
 	*/
 	bool InSinglePageMode(void) const;

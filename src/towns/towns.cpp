@@ -509,6 +509,7 @@ void FMTowns::RunFastDevicePolling(void)
 		{
 			devPtr->RunScheduledTask(state.townsTime);
 		}
+		crtc.ProcessVSYNCIRQ(state.townsTime);
 		state.nextFastDevicePollingTime=state.townsTime+FAST_DEVICE_POLLING_INTERVAL;
 	}
 }
