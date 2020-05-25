@@ -478,7 +478,7 @@ void FMTowns::ProcessSound(Outside_World *outside_world)
 		{
 			eventLog.LogMouseEnd(state.townsTime);
 		}
-
+		std::cout << "Mouse BIOS stopped." << std::endl;
 		state.mouseBIOSActive=false;
 	}
 }
