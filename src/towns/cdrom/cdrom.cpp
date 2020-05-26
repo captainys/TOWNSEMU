@@ -450,7 +450,6 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 			{
 				state.next2ndByteOfStatusCode|=0x03; // Prob: Response to A0H (80H+REQSTA), 00 03 xx xx means CDDA is playing.
 			}
-			state.ClearStatusQueue();
 			townsPtr->UnscheduleDeviceCallBack(*this);
 			SetStatusDriveNotReadyOrDiscChangedOrNoError();
 			if(true==state.CDDAPlayStarted && true!=CDDAPlaying)
@@ -601,7 +600,6 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 							PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
 						}
 					}
-					townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+NOTIFICATION_TIME);
 				}
 			}
 		}
