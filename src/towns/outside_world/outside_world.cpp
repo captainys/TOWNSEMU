@@ -19,3 +19,7 @@ Outside_World::Outside_World()
 	gamePort[0]=TOWNS_GAMEPORTEMU_NONE;
 	gamePort[1]=TOWNS_GAMEPORTEMU_NONE;
 }
+void Outside_World::SetKeyboardMode(unsigned int mode)
+{
+	keyboardMode=mode;
+}

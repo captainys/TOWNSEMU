@@ -29,12 +29,28 @@ public:
 	// Only game-pad emulation takes effect.
 	unsigned int gamePort[2];
 
+	enum
+	{
+		KEYBOARD_MODE_DIRECT,
+		KEYBOARD_MODE_TRANSLATION
+	};
+	unsigned int keyboardMode=KEYBOARD_MODE_DIRECT;
+
+	enum
+	{
+		KEYBOARD_LAYOUT_US,
+		KEYBOARD_LAYOUT_JP,
+	};
+
 	Outside_World();
 
 	virtual void Start(void)=0;
 	virtual void Stop(void)=0;
 	virtual void DevicePolling(class FMTowns &towns)=0;
 	virtual void Render(const TownsRender::Image &img)=0;
+
+	void SetKeyboardMode(unsigned int mode);
+	virtual void SetKeyboardLayout(unsigned int layout)=0;
 
 
 

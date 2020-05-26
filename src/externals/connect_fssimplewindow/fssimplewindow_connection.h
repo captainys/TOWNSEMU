@@ -23,6 +23,7 @@ class FsSimpleWindowConnection : public Outside_World
 {
 public:
 	unsigned int *FSKEYtoTownsKEY=nullptr;
+	unsigned int *FSKEYState=nullptr;
 	FsSimpleWindowConnection();
 	~FsSimpleWindowConnection();
 
@@ -30,6 +31,8 @@ public:
 	virtual void Stop(void);
 	virtual void DevicePolling(class FMTowns &towns);
 	virtual void Render(const TownsRender::Image &img);
+
+	virtual void SetKeyboardLayout(unsigned int layout);
 
 
 	YsSoundPlayer soundPlayer;
