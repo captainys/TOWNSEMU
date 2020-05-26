@@ -153,7 +153,7 @@ public:
 	struct ConnectionToOutputSlot
 	{
 		unsigned int nOutputSlots;
-		unsigned int slots[4];
+		int slots[4];
 	};
 	static const struct ConnectionToOutputSlot connectionToOutputSlots[8];
 
