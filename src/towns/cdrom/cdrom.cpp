@@ -57,8 +57,6 @@ void TownsCDROM::State::Reset(void)
 	enableDEI=false;
 	discChanged=false;
 	CDDAPlayStarted=false;
-
-	next2ndByteOfStatusCode=0;
 }
 
 void TownsCDROM::SetOutsideWorld(class Outside_World *outside_world)
@@ -445,11 +443,7 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 	case CDCMD_SETSTATE://   0x80,
 		if(0x20&state.cmd)
 		{
-			auto CDDAPlaying=OutsideWorld->CDDAIsPlaying();
-			if(nullptr!=OutsideWorld && true==CDDAPlaying)
-			{
-				state.next2ndByteOfStatusCode|=0x03; // Prob: Response to A0H (80H+REQSTA), 00 03 xx xx means CDDA is playing.
-			}
+			bool CDDAPlaying=(nullptr!=OutsideWorld && true==OutsideWorld->CDDAIsPlaying());
 			townsPtr->UnscheduleDeviceCallBack(*this);
 			SetStatusDriveNotReadyOrDiscChangedOrNoError();
 			if(true==state.CDDAPlayStarted && true!=CDDAPlaying)
@@ -475,10 +469,7 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 		else
 		{
 			StopCDDA();  // Already stopped, but it sets up status queue.
-			SetStatusNoError();
-			PushStatusCDDAStopDone();
 		}
-		state.next2ndByteOfStatusCode=0x0D;
 		break;
 	case CDCMD_CDDAPAUSE://  0x85,
 		if(nullptr!=OutsideWorld)
@@ -605,9 +596,7 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 		}
 		break;
 	case CDCMD_CDDASTOP:
-		StopCDDA();
-		SetStatusNoError();
-		PushStatusCDDAStopDone();
+		StopCDDA();  // Status queue set in StopCDDA().
 		break;
 	}
 }
@@ -635,8 +624,12 @@ bool TownsCDROM::SetStatusDriveNotReadyOrDiscChanged(void)
 }
 void TownsCDROM::SetStatusNoError(void)
 {
-	state.PushStatusQueue(0,state.next2ndByteOfStatusCode,0,0);
-	state.next2ndByteOfStatusCode=0;
+	unsigned char next2ndByteOfStatusCode=0;
+	if(nullptr!=OutsideWorld && true==OutsideWorld->CDDAIsPlaying())
+	{
+		next2ndByteOfStatusCode=0x03; // Prob: Response to A0H (80H+REQSTA), 00 03 xx xx means CDDA is playing.
+	}
+	state.PushStatusQueue(0,next2ndByteOfStatusCode,0,0);
 }
 void TownsCDROM::SetStatusDriveNotReady(void)
 {
@@ -774,6 +767,6 @@ void TownsCDROM::StopCDDA(void)
 	{
 		SetStatusNoError();
 		PushStatusCDDAStopDone();
-		state.next2ndByteOfStatusCode=0x0D;  // Probably unnecessary.
+		state.PushStatusQueue(0,0x0D,0,0);
 	}
 }

@@ -148,9 +148,6 @@ public:
 		unsigned char paramQueue[8];
 		std::vector <unsigned char> statusQueue;
 
-		unsigned char next2ndByteOfStatusCode=0;
-		// IO.SYS V2.1L20 expects the second byte of NO-ERROR status code to be (0x0D&byte)!=0.
-
 		unsigned int readingSectorHSG,endSectorHSG;
 
 		bool DMATransfer,CPUTransfer; // Both are not supposed to be 1, but I/O can set it that way.
