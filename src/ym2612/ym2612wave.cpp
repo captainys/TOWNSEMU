@@ -626,7 +626,16 @@ std::cout << KC << "," << slot.KS << "," << (KC>>(3-slot.KS)) << ", ";
 
 	if(AR<4)
 	{
-		goto NOTONE;
+//NOTONE:
+		env[0]=0;
+		env[1]=0;
+		env[2]=0;
+		env[3]=0;
+		env[4]=0;
+		env[5]=0;
+		RR=0;
+		return false;
+//		goto NOTONE;
 	}
 
 	auto TLdB100=TLtoDB100[slot.TL];
@@ -634,7 +643,16 @@ std::cout << KC << "," << slot.KS << "," << (KC>>(3-slot.KS)) << ", ";
 
 	if(9600<=TLdB100)
 	{
-		goto NOTONE;
+//NOTONE:
+		env[0]=0;
+		env[1]=0;
+		env[2]=0;
+		env[3]=0;
+		env[4]=0;
+		env[5]=0;
+		RR=0;
+		return false;
+//		goto NOTONE;
 	}
 
 	const unsigned int TLinv=9600-TLdB100;
