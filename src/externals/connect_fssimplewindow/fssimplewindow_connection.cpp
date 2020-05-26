@@ -197,6 +197,10 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 			unsigned char byteData[2]={0,0};
 			switch(c)
 			{
+			case FSKEY_NUMLOCK:
+				towns.debugger.ExternalBreak("Num Lock Key");
+				break;
+
 			default:
 				byteData[1]=0;
 				break;

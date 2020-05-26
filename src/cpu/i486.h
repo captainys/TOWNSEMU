@@ -17,6 +17,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 /* { */
 
 #include <string>
+#include <iostream>
 
 #include "cpu.h"
 #include "ramrom.h"
