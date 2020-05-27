@@ -139,6 +139,11 @@ The tests are timing-sensitive, or the CPU needs to be reasonably fast.  If not,
 
 
 # Revisions
+### 2020/05/26
+- Mouse Integration for Wing Commander.  Need -APP WINGCOMMANDER1 option.
+- Fixed CDC.  Was pushing status code 06 00 00 00 twice after MODE1 Read.
+- Added disk-access indicators.  Changed FDC timing.
+
 ### 2020/05/23
 - Tested TownsOS boot and mouse integration with Freeware Collection 1-3, Free Software Collection 4-11.  Made corrections for Free Software Collection 4 Disc B and Free Software Collection 6.
 - Free Software Collection 4 Disc B uses Towns OS V2.1L10 (L10 with no mark).  DOS Extender that comes with Towns OS V2.1L10 blocks unless the CPU type identified by I/O port 0030H is 80386DX or 80386SX.  For this problem, I have added -PRETEND386DX option.
