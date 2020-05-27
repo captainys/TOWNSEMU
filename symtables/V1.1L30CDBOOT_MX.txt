@@ -358,3 +358,12 @@ L SNDBIOS:RETURN_AL=0DH_SOUND_HEADER_ERROR
 P 
 % 0
 /end
+/begin0
+T 1
+* 00000262:00002A0D
+# 
+R 
+L CDROM:IRQ Handler (Called from INT 49H Handler)
+P 
+% 0
+/end
