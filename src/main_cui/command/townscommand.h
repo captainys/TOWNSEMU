@@ -80,6 +80,7 @@ public:
 		CMD_DEL_SYMBOL,
 
 		CMD_TYPE_KEYBOARD,
+		CMD_KEYBOARD,
 
 		CMD_LET,
 		CMD_CRTC_PAGE,
@@ -166,6 +167,7 @@ public:
 		ERROR_INCORRECT_FILE_SIZE,
 		ERROR_SYMBOL_NOT_FOUND,
 		ERROR_COULD_NOT_DELETE_SYMBOL,
+		ERROR_UNDEFINED_KEYBOARD_MODE,
 	};
 
 	class Command
@@ -188,7 +190,7 @@ public:
 	/*! Executes a command.
 	    VM must be locked before calling.
 	*/
-	void Execute(TownsThread &thr,FMTowns &towns,Command &cmd);
+	void Execute(TownsThread &thr,FMTowns &towns,class Outside_World *outside_world,Command &cmd);
 
 	void Execute_Enable(FMTowns &towns,Command &cmd);
 	void Execute_Disable(FMTowns &towns,Command &cmd);

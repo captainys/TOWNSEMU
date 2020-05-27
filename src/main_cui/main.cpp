@@ -103,7 +103,7 @@ public:
 	else if(""!=this->cmdline)
 	{
 		auto cmd=cmdInterpreter.Interpret(this->cmdline);
-		cmdInterpreter.Execute(townsThread,towns,cmd);
+		cmdInterpreter.Execute(townsThread,towns,outside_world,cmd);
 		if(TownsCommandInterpreter::CMD_QUIT==cmd.primaryCmd)
 		{
 			uiTerminate=true;

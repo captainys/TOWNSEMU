@@ -64,6 +64,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["CBRKON"]=CMD_DONT_BREAK_ON;
 	primaryCmdMap["INTERRUPT"]=CMD_INTERRUPT;
 	primaryCmdMap["ADDSYM"]=CMD_ADD_SYMBOL;
+	primaryCmdMap["KEYBOARD"]=CMD_KEYBOARD;
 
 	primaryCmdMap["ADDLAB"]=CMD_ADD_LABEL;
 	primaryCmdMap["ADDLABEL"]=CMD_ADD_LABEL;
@@ -218,6 +219,12 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Clear break-on event." << std::endl;
 	std::cout << "TYPE characters" << std::endl;
 	std::cout << "  Send keyboard codes." << std::endl;
+	std::cout << "KEYBOARD keyboardMode" <<std::endl;
+	std::cout << "  Select TRANSLATE or DIRECT mode." << std::endl;
+	std::cout << "  TRANSLATE or TRANS mode will be good for typing commands, but" << std::endl;
+	std::cout << "  cannot sense key release correctly." << std::endl;
+	std::cout << "  DIRECT mode is good for games, but affected by the keyboard layout." << std::endl;
+	std::cout << "  US keyboard cannot type some of the characters." << std::endl;
 	std::cout << "LET register value" << std::endl;
 	std::cout << "  Load a register value." << std::endl;
 	std::cout << "CRTCPAGE 1|0 1|0" << std::endl;
@@ -348,6 +355,9 @@ void TownsCommandInterpreter::PrintError(int errCode) const
 	case ERROR_COULD_NOT_DELETE_SYMBOL:
 		std::cout << "Error: Could not delete a symbol." << std::endl;
 		break;
+	case ERROR_UNDEFINED_KEYBOARD_MODE:
+		std::cout << "Error: Undefined Keyboard Mode." << std::endl;
+		break;
 
 	default:
 		std::cout << "Error" << std::endl;
@@ -377,7 +387,7 @@ TownsCommandInterpreter::Command TownsCommandInterpreter::Interpret(const std::s
 	return cmd;
 }
 
-void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outside_World *outside_world,Command &cmd)
 {
 	switch(cmd.primaryCmd)
 	{
@@ -536,6 +546,25 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,Command &c
 
 	case CMD_TYPE_KEYBOARD:
 		Execute_TypeKeyboard(towns,cmd);
+		break;
+	case CMD_KEYBOARD:
+		if(nullptr!=outside_world)
+		{
+			std::string MODE=cmd.argv[1];
+			cpputil::Capitalize(MODE);
+			if("TRANS"==MODE || "TRANSLATE"==MODE)
+			{
+				outside_world->keyboardMode=Outside_World::KEYBOARD_MODE_TRANSLATION;
+			}
+			else if("DIRECT"==MODE)
+			{
+				outside_world->keyboardMode=Outside_World::KEYBOARD_MODE_DIRECT;
+			}
+			else
+			{
+				PrintError(ERROR_UNDEFINED_KEYBOARD_MODE);
+			}
+		}
 		break;
 
 	case CMD_LET:
