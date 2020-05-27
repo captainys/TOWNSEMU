@@ -1491,7 +1491,7 @@ void TownsCommandInterpreter::Execute_CRTCPage(FMTowns &towns,Command &cmd)
 		towns.crtc.state.showPage[0]=(0!=cpputil::Atoi(cmd.argv[1].c_str()));
 		towns.crtc.state.showPage[1]=towns.crtc.state.showPage[0];
 	}
-	else if(3<=cmd.argv.size() && towns.crtc.InSinglePageMode())
+	else if(3<=cmd.argv.size() && true!=towns.crtc.InSinglePageMode())
 	{
 		towns.crtc.state.showPage[0]=(0!=cpputil::Atoi(cmd.argv[1].c_str()));
 		towns.crtc.state.showPage[1]=(0!=cpputil::Atoi(cmd.argv[2].c_str()));
