@@ -37,13 +37,15 @@ int main(void)
 	// Save as .cpp
 	std::ofstream ofs;
 	ofs.open("../towns/outside_world/icons.cpp");
+
+	ofs << "#include" << '"' << "icons.h" << '"' << std::endl;
+
 	for(auto fName : files)
 	{
-		YsRawPngDecoder png;
-		fName+=".png";
-		png.Decode(fName.c_str());
-
 		ofs << "const unsigned char " << fName << "[]={" << std::endl;
+
+		YsRawPngDecoder png;
+		png.Decode((fName+".png").c_str());
 
 		for(int i=0; i<png.wid*png.hei; ++i)
 		{

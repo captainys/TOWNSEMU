@@ -34,12 +34,12 @@ public:
 	enum
 	{
 		NUM_DRIVES=4,
-		RESTORE_TIME=20000,     // In Nano Seconds.  Just arbitrary.  Need to make it real.
-		SEEK_TIME=20000,        // In Nano Seconds.  Just arbitrary.  Need to make it real.
-		STEP_TIME=10000,
-		SECTOR_READ_WRITE_TIME=5000,  // In Nano Seconds.  Just arbitrary.  Need to make it real.
-		WRITE_TRACK_TIME=250000, // In Nano Seconds.
-		ADDRMARK_READ_TIME=5000,
+		RESTORE_TIME=            1000000,  //  1ms in Nano Seconds.  Just took arbitrary.  Need to make it real.
+		SEEK_TIME=               1000000,  //  1ms in Nano Seconds.  Just took arbitrary.  Need to make it real.
+		STEP_TIME=               1000000,  //  1ms in Nano Seconds.  Just took arbitrary.  Need to make it real.
+		SECTOR_READ_WRITE_TIME=  1000000,  //  1ms in Nano Seconds.  Just took arbitrary.  Need to make it real.
+		WRITE_TRACK_TIME=        1000000,  //  1ms in Nano Seconds.  Just took arbitrary.  Need to make it real.
+		ADDRMARK_READ_TIME=      1000000,  //  5ms in Nano Seconds.  Just took arbitrary.  Need to make it real.
 	};
 	enum
 	{

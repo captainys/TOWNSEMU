@@ -42,17 +42,33 @@ public:
 		KEYBOARD_LAYOUT_JP,
 	};
 
+	enum
+	{
+		STATUS_WID=640,
+		STATUS_HEI=16
+	};
+	unsigned char *statusBitmap;
+	bool cdAccessLamp=false;
+	bool fdAccessLamp[4]={false,false,false,false};
+	bool scsiAccessLamp[6]={false,false,false,false,false,false};
+
 	Outside_World();
+	~Outside_World();
 
 	virtual void Start(void)=0;
 	virtual void Stop(void)=0;
 	virtual void DevicePolling(class FMTowns &towns)=0;
+	virtual void UpdateStatusBitmap(class FMTowns &towns)=0;
 	virtual void Render(const TownsRender::Image &img)=0;
 
 	void SetKeyboardMode(unsigned int mode);
 	virtual void SetKeyboardLayout(unsigned int layout)=0;
 
+	void Put16x16(int x0,int y0,const unsigned char icon16x16[]);
+	void Put16x16Invert(int x0,int y0,const unsigned char icon16x16[]);
 
+	void Put16x16Select(int x0,int y0,const unsigned char idleIcon16x16[],const unsigned char busyIcon16x16[],bool busy);
+	void Put16x16SelectInvert(int x0,int y0,const unsigned char idleIcon16x16[],const unsigned char busyIcon16x16[],bool busy);
 
 public:
 	virtual void CDDAPlay(const DiscImage &discImg,DiscImage::MinSecFrm from,DiscImage::MinSecFrm to)=0;

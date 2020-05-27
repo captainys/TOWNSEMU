@@ -515,6 +515,7 @@ bool FMTowns::CheckRenderingTimer(TownsRender &render,Outside_World &world)
 	{
 		render.BuildImage(crtc,physMem);
 		world.Render(render.GetImage());
+		world.UpdateStatusBitmap(*this);
 		var.nextRenderingTime=state.townsTime+TOWNS_RENDERING_FREQUENCY;
 		return true;
 	}
@@ -529,6 +530,7 @@ void FMTowns::SetUpVRAMAccess(bool breakOnRead,bool breakOnWrite)
 void FMTowns::ForceRender(class TownsRender &render,class Outside_World &world)
 {
 	render.BuildImage(crtc,physMem);
+	world.UpdateStatusBitmap(*this);
 	world.Render(render.GetImage());
 }
 

@@ -30,6 +30,7 @@ public:
 	virtual void Start(void);
 	virtual void Stop(void);
 	virtual void DevicePolling(class FMTowns &towns);
+	virtual void UpdateStatusBitmap(class FMTowns &towns);
 	virtual void Render(const TownsRender::Image &img);
 
 	virtual void SetKeyboardLayout(unsigned int layout);

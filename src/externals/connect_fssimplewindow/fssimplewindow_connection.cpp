@@ -27,6 +27,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 // *od *amn Windows headers! <<
 
 #include "towns.h"
+#include "icons.h"
 
 
 
@@ -52,11 +53,21 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 
 /* virtual */ void FsSimpleWindowConnection::Start(void)
 {
-	FsOpenWindow(0,0,640,480,1);
+	FsOpenWindow(0,0,640,480+STATUS_HEI,1);
 	FsSetWindowTitle("FM Towns Emulator - TSUGARU");
 	soundPlayer.Start();
 	cddaStartHSG=0;
 
+	// Make initial status bitmap
+	Put16x16Invert(0,15,CD_IDLE);
+	for(int fd=0; fd<2; ++fd)
+	{
+		Put16x16Invert(16+16*fd,15,FD_IDLE);
+	}
+	for(int hdd=0; hdd<6; ++hdd)
+	{
+		Put16x16Invert(48+16*hdd,15,HDD_IDLE);
+	}
 }
 /* virtual */ void FsSimpleWindowConnection::Stop(void)
 {
@@ -230,6 +241,37 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 		towns.ControlMouse(mx,my,towns.state.tbiosVersion);
 	}
 }
+/* virtual */ void FsSimpleWindowConnection::UpdateStatusBitmap(class FMTowns &towns)
+{
+	// Update Status Bitmap
+	{
+		bool busy=(true!=towns.cdrom.state.DRY);
+		if(cdAccessLamp!=busy)
+		{
+			Put16x16SelectInvert(0,15,CD_IDLE,CD_BUSY,busy);
+			cdAccessLamp=busy;
+		}
+	}
+	for(int fd=0; fd<2; ++fd)
+	{
+		bool busy=(fd==towns.fdc.DriveSelect() && true==towns.fdc.state.busy);
+		if(fdAccessLamp[fd]!=busy)
+		{
+			Put16x16SelectInvert(16+16*fd,15,FD_IDLE,FD_BUSY,busy);
+			fdAccessLamp[fd]=busy;
+		}
+	}
+	for(int hdd=0; hdd<6; ++hdd)
+	{
+		bool busy=(hdd==towns.scsi.state.selId && true==towns.scsi.state.BUSY);
+		if(scsiAccessLamp[hdd]!=busy)
+		{
+			Put16x16SelectInvert(48+16*hdd,15,HDD_IDLE,HDD_BUSY,busy);
+			scsiAccessLamp[hdd]=busy;
+		}
+	}
+
+}
 /* virtual */ void FsSimpleWindowConnection::Render(const TownsRender::Image &img)
 {
 	std::vector <unsigned char> flip;
@@ -251,8 +293,10 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glOrtho(0.0f,float(wid),float(hei),0.0f,-1,1);
-	glRasterPos2i(0,hei-1);
+	glRasterPos2i(0,img.hei-1);
 	glDrawPixels(img.wid,img.hei,GL_RGBA,GL_UNSIGNED_BYTE,flip.data());
+	glRasterPos2i(0,hei-1);
+	glDrawPixels(STATUS_WID,STATUS_HEI,GL_RGBA,GL_UNSIGNED_BYTE,statusBitmap);
 	FsSwapBuffers();
 }
 
