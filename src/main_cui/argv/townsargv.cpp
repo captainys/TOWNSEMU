@@ -32,6 +32,8 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "Usage:" << std::endl;
 	std::cout << "-HELP,-H,-?" << std::endl;
 	std::cout << "  Print Help." << std::endl;
+	std::cout << "-SCALE X" << std::endl;
+	std::cout << "  Screen scaling X percent." << std::endl;
 	std::cout << "-PAUSE" << std::endl;
 	std::cout << "  Machine state is PAUSE on start up." << std::endl;
 	std::cout << "-DEBUG,-DEBUGGER" << std::endl;
@@ -118,6 +120,19 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 			{
 				PrintApplicationList();
 			}
+		}
+		else if("-SCALE"==ARG && i+1<argc)
+		{
+			scaling=atoi(argv[i+1]);
+			if(scaling<SCALING_MIN)
+			{
+				scaling=SCALING_MIN;
+			}
+			else if(SCALING_MAX<scaling)
+			{
+				scaling=SCALING_MAX;
+			}
+			++i;
 		}
 		else if("-PAUSE"==ARG)
 		{

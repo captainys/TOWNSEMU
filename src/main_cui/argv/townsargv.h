@@ -68,6 +68,14 @@ public:
 
 	unsigned int appSpecificSetting=0;
 
+	enum
+	{
+		SCALING_DEFAULT=100,
+		SCALING_MIN=50,
+		SCALING_MAX=1000,
+	};
+	unsigned int scaling=100;
+
 	TownsARGV();
 	void PrintHelp(void) const;
 	void PrintApplicationList(void) const;

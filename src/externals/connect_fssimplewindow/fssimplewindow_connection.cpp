@@ -53,7 +53,10 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 
 /* virtual */ void FsSimpleWindowConnection::Start(void)
 {
-	FsOpenWindow(0,0,640,480+STATUS_HEI,1);
+	int wid=640*scaling/100;
+	int hei=480*scaling/100;
+
+	FsOpenWindow(0,0,wid,hei+STATUS_HEI,1);
 	FsSetWindowTitle("FM Towns Emulator - TSUGARU");
 	soundPlayer.Start();
 	cddaStartHSG=0;
@@ -237,6 +240,8 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 
 		int lb,mb,rb,mx,my;
 		FsGetMouseEvent(lb,mb,rb,mx,my);
+		mx=mx*100/scaling;
+		my=my*100/scaling;
 		towns.SetMouseButtonState((0!=lb),(0!=rb));
 		towns.ControlMouse(mx,my,towns.state.tbiosVersion);
 	}
@@ -293,10 +298,15 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glOrtho(0.0f,float(wid),float(hei),0.0f,-1,1);
-	glRasterPos2i(0,img.hei-1);
+
+	glPixelZoom((float)scaling/100.0f,(float)scaling/100.0f);
+	glRasterPos2i(0,(img.hei*scaling/100)-1);
 	glDrawPixels(img.wid,img.hei,GL_RGBA,GL_UNSIGNED_BYTE,flip.data());
+
 	glRasterPos2i(0,hei-1);
+	glPixelZoom(1,1);
 	glDrawPixels(STATUS_WID,STATUS_HEI,GL_RGBA,GL_UNSIGNED_BYTE,statusBitmap);
+
 	FsSwapBuffers();
 }
 

@@ -38,6 +38,8 @@ def Run(argv):
 		os.path.join(DISKDIR,"hddimage.bin"),
 		"-CMOS",
 		"../testdata/CMOS.bin",
+		"-SCALE",
+		"160",
 		# "-DEBUG",
 		# "-PAUSE",
 	]+argv).wait()

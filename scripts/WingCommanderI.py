@@ -45,6 +45,8 @@ def Run(argv):
 		"../testdata/CMOS.bin",
 		"-FREQ",
 		"16",
+		"-SCALE",
+		"160",
 		# "-DEBUG",
 		# "-PAUSE",
 	]+argv).wait()

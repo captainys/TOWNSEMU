@@ -51,6 +51,7 @@ public:
 	bool cdAccessLamp=false;
 	bool fdAccessLamp[4]={false,false,false,false};
 	bool scsiAccessLamp[6]={false,false,false,false,false,false};
+	unsigned int scaling=100; // In Percent
 
 	Outside_World();
 	~Outside_World();
