@@ -324,11 +324,18 @@ void TownsSprite::RunScheduledTask(unsigned long long int townsTime)
 			unsigned long long int busyTime=32000+75000*NumSpritesActuallyDrawn();
 
 			state.spriteBusy=true;
-			Render(physMemPtr->state.VRAM.data()+0x40000,physMemPtr->state.spriteRAM.data());
 			townsPtr->ScheduleDeviceCallBack(*this,townsTime+busyTime);
 		}
 		else
 		{
+			// The rendering timing can be:
+			// (1) Every time a window is re-drawn,
+			// (2) At the beginning of sprite-busy period, or
+			// (3) At the end of sprite-busy period.
+			// The CPU is not supposed to modify sprite during the sprite-busy period.
+			// However, some changes may be made not in time, then changes may be made during the sprite-busy period.
+			// Then, it is the safest to draw at the end of sprite-busy period.
+			Render(physMemPtr->state.VRAM.data()+0x40000,physMemPtr->state.spriteRAM.data());
 			state.spriteBusy=false;
 			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->crtc.NextVSYNCTime(townsTime));
 		}
