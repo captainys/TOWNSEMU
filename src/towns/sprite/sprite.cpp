@@ -230,12 +230,14 @@ void TownsSprite::Render(unsigned char VRAMIn[],const unsigned char spriteRAM[])
 			}
 			else if((dstX<256 || 496<dstX) && (dstY<256 || 498<dstY))
 			{
+				const int xBackShift=(0!=(attrib&ATTR_SUX) ? 1 : 0);
+				const int yBackShift=(0!=(attrib&ATTR_SUY) ? 1 : 0);
 				for(unsigned int ptnY=0; ptnY<SPRITE_DIMENSION; ptnY+=yStep)
 				{
 					for(unsigned int ptnX=0; ptnX<SPRITE_DIMENSION; ptnX+=xStep)
 					{
-						unsigned int vramX=((dstX+ptnX)&511);
-						unsigned int vramY=((dstY+ptnY)&511);
+						unsigned int vramX=((dstX+(ptnX>>xBackShift))&511);
+						unsigned int vramY=((dstY+(ptnY>>yBackShift))&511);
 						if(vramX<256 && 2<vramY && vramY<256)
 						{
 							unsigned int xTfm,yTfm;
@@ -286,12 +288,14 @@ void TownsSprite::Render(unsigned char VRAMIn[],const unsigned char spriteRAM[])
 			}
 			else if((dstX<256 || 496<dstX) && (dstY<256 || 498<dstY))
 			{
+				const int xBackShift=(0!=(attrib&ATTR_SUX) ? 1 : 0);
+				const int yBackShift=(0!=(attrib&ATTR_SUY) ? 1 : 0);
 				for(unsigned int ptnY=0; ptnY<SPRITE_DIMENSION; ptnY+=yStep)
 				{
 					for(unsigned int ptnX=0; ptnX<SPRITE_DIMENSION; ptnX+=xStep)
 					{
-						unsigned int vramX=((dstX+ptnX)&511);
-						unsigned int vramY=((dstY+ptnY)&511);
+						unsigned int vramX=((dstX+(ptnX>>xBackShift))&511);
+						unsigned int vramY=((dstY+(ptnY>>yBackShift))&511);
 						if(vramX<256 && 2<vramY && vramY<256)
 						{
 							unsigned int xTfm,yTfm;
