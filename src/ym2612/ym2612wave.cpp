@@ -311,6 +311,45 @@ const struct YM2612::ConnectionToOutputSlot YM2612::connectionToOutputSlots[8]=
 	{4,{0,1,2,3}},
 };
 
+static unsigned int detune1000Table[]=
+{
+	   0,   0,  48,  95,
+	   0,   0,  48,  95,
+	   0,   0,  48,  95,
+	   0,   0,  48,  95,
+	   0,  48,  95,  95,
+	   0,  48,  95, 143,
+	   0,  48,  95, 143,
+	   0,  48,  95, 143,
+	   0,  48,  95, 191,
+	   0,  48, 143, 191,
+
+	   0,  48, 143, 191,
+	   0,  48, 143, 238,
+	   0,  95, 191, 238,
+	   0,  95, 191, 286,
+	   0,  95, 191, 288,
+	   0,  95, 238, 334,
+	   0,  85, 238, 381, // 85?
+	   0, 143, 286, 381,
+	   0, 143, 298, 429,
+	   0, 143, 334, 477,
+
+	   0, 191, 381, 525,
+	   0, 191, 381, 572,
+	   0, 191, 429, 620,
+	   0, 238, 477, 668,
+	   0, 238, 525, 763,
+	   0, 286, 672, 811,
+	   0, 286, 520, 906,
+	   0, 334, 668, 354,
+	   0, 391, 763,1049,
+	   0, 391, 763,1049,
+
+	   0, 391, 763,1049,
+	   0, 391, 763,1049,
+};
+
 ////////////////////////////////////////////////////////////
 
 inline int YM2612::Slot::UnscaledOutput(int phase) const
@@ -406,15 +445,16 @@ void YM2612::KeyOn(unsigned int chNum)
 	// Formula [2] pp.204
 	// There is an error.  F_NUM is 11bits.  There is no F11.
 	// Probably, F11, F10, F9, F8 should be read F10, F9, F8, F7.
-	//unsigned int F10=((ch.F_NUM>>10)&1);
-	//unsigned int F9= ((ch.F_NUM>> 9)&1);
-	//unsigned int F8= ((ch.F_NUM>> 8)&1);
-	//unsigned int F7=((ch.F_NUM>>11)&1);
-	//unsigned int N3=(F10&(F9|F8|F7))|((~F10)&F9&F8&F7);
-	//unsigned int NOTE=(F10<<1)|N3;
-	//unsigned int KC=(ch.BLOCK<<2)|NOTE;
-	// Doesn't make sense.
+	unsigned int F10=((ch.F_NUM>>10)&1);
+	unsigned int F9= ((ch.F_NUM>> 9)&1);
+	unsigned int F8= ((ch.F_NUM>> 8)&1);
+	unsigned int F7=((ch.F_NUM>>11)&1);
+	unsigned int N3=(F10&(F9|F8|F7))|((~F10)&F9&F8&F7);
+	unsigned int NOTE=(F10<<1)|N3;
 
+	// Formulat in [2] pp.204 suggests:
+ 	//   unsigned int KC=(ch.BLOCK<<2)|NOTE;
+	// which doesn't make sense.
 	// SEGA Genesis Software Manaual tells KC is just top 5 bits of BLOCK|F_NUM2.
 	// Which makes more sense.
 	unsigned int KC=(ch.BLOCK<<2)|((ch.F_NUM>>9)&3);
@@ -427,6 +467,25 @@ void YM2612::KeyOn(unsigned int chNum)
 		slot.phase12=0;
 
 		// Hz ranges 1 to roughly 8000.  PHASE_STEPS=4096.  hertz*PHASE_STEPS=2^13*2^12=2^25. Fits in 32 bit.
+		long long int detuneStepContribution=0;
+		if(0!=slot.DT)
+		{
+			long long int hertz1000=detune1000Table[(ch.BLOCK<<4)+(NOTE<<2)+(slot.DT&3)];
+			detuneStepContribution=(hertz1000*PHASE_STEPS);
+			if(0==slot.MULTI)
+			{
+				detuneStepContribution*=slot.MULTI;
+			}
+			else
+			{
+				detuneStepContribution/=2;
+			}
+			detuneStepContribution/=1000;
+			if(0!=slot.DT&4)
+			{
+				detuneStepContribution=-detuneStepContribution;
+			}
+		}
 
 		// Phase runs hertz*PHASE_STEPS times per second.
 		//            hertz*PHASE_STEPS/WAVE_SAMPLING_RATE times per step.
@@ -437,6 +496,7 @@ void YM2612::KeyOn(unsigned int chNum)
 		{
 			phase12Step=hertzX16*PHASE_STEPS;
 			phase12Step<<=7;
+			phase12Step+=+detuneStepContribution;
 			phase12Step/=WAVE_SAMPLING_RATE;
 		}
 		else
