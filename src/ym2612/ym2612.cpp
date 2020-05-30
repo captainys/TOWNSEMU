@@ -109,6 +109,8 @@ void YM2612::State::Reset(void)
 		b=false;
 	}
 	playingCh=0;
+	LFO=0;
+	FREQCTRL=0;
 }
 
 ////////////////////////////////////////////////////////////
@@ -279,6 +281,11 @@ unsigned int YM2612::WriteRegister(unsigned int channelBase,unsigned int reg,uns
 
 			state.channels[ch].usingSlot=slotFlag;
 		}
+	}
+	else if(REG_LFO==reg)
+	{
+		state.LFO=(0!=(value&16));
+		state.FREQCTRL=value&7;
 	}
 	else if(0xA8<=reg && reg<=0xAE) // Special 3CH F-Number/BLOCK
 	{
@@ -475,6 +482,7 @@ std::vector <std::string> YM2612::GetStatusText(void) const
 		text.back()+="  F_NUM="+cpputil::Itoa(ch.F_NUM,5)+"  BLOCK="+cpputil::Itoa(ch.BLOCK);
 		text.back()+="  FB="+cpputil::Itoa(ch.FB)+"  CONNECT="+cpputil::Itoa(ch.CONNECT);
 		text.back()+="  L="+cpputil::Itoa(ch.L)+"  R="+cpputil::Itoa(ch.R);
+		text.back()+="  AMS="+cpputil::Itoa(ch.AMS)+"  PMS="+cpputil::Itoa(ch.PMS);
 		text.back()+="  ActiveSlots="+cpputil::Ubtox(ch.usingSlot);
 
 		for(auto &slot : ch.slots)
@@ -524,6 +532,11 @@ std::vector <std::string> YM2612::GetStatusText(void) const
 	text.back()+=" ENA:"+cpputil::Ubtox((state.reg[REG_TIMER_CONTROL]>>2)&3);
 	text.back()+=" LOAD:"+cpputil::Ubtox(state.reg[REG_TIMER_CONTROL]&3);
 
+	text.push_back("");
+	text.back()+="LFO:";
+	text.back()+=cpputil::BoolToStr(state.LFO);
+	text.back()+=" FREQ-CTRL:";
+	text.back()+=cpputil::Itoa(state.FREQCTRL);
 
 	return text;
 }

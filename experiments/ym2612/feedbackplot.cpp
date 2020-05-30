@@ -77,7 +77,7 @@ void MakePlot(int y[xRes],double dt,int FB)
 	y[0]=300;
 	for(double t=0.0; t<2.0; t+=dt)
 	{
-		double yValue=func(t,lastY,FB);
+		double yValue=func2(t,lastY,FB);
 		lastY=yValue;
 
 		int nextX=(int)(t*400.0);

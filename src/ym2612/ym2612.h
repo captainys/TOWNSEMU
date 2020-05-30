@@ -50,6 +50,7 @@ public:
 
 	enum
 	{
+		REG_LFO=0x22,
 		REG_TIMER_A_COUNT_HIGH=0x24,
 		REG_TIMER_A_COUNT_LOW=0x25,
 		REG_TIMER_B_COUNT=0x26,
@@ -127,6 +128,8 @@ public:
 	class State
 	{
 	public:
+		bool LFO;
+		unsigned int FREQCTRL;
 		unsigned long long int deviceTimeInNS;
 		unsigned long long int lastTickTimeInNS;
 		Channel channels[NUM_CHANNELS];

@@ -666,13 +666,11 @@ void FMTowns::PrintTimer(void) const
 
 void FMTowns::PrintSound(void) const
 {
-	std::cout << "YM2612" << std::endl;
-	for(auto str : sound.state.ym2612.GetStatusText())
+	for(auto str : sound.state.rf5c68.GetStatusText())
 	{
 		std::cout << str << std::endl;
 	}
-	std::cout << "RF5C68" << std::endl;
-	for(auto str : sound.state.rf5c68.GetStatusText())
+	for(auto str : sound.state.ym2612.GetStatusText())
 	{
 		std::cout << str << std::endl;
 	}
