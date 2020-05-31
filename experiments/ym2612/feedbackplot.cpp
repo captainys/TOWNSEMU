@@ -99,9 +99,21 @@ double func3(double t,int FB)
 		break;
 	}
 
+	int rangeMin,rangeMax;
+	if(fmod(t,1.0)<0.5)  // Limit range because there are two roots.
+	{
+		rangeMin=0;
+		rangeMax=2048;
+	}
+	else
+	{
+		rangeMin=-2048;
+		rangeMax=0;
+	}
+
 	double minErr=100.0;
 	double minY=-4096;
-	for(int i=-2048; i<=2048; ++i)
+	for(int i=rangeMin; i<=rangeMax; ++i)
 	{
 		double y=(double)i/(double)2048.0; // y should be -1.0 to 1.0
 		double err=fabs(y-sin(t*YsPi*2.0+beta*y));
@@ -113,6 +125,16 @@ double func3(double t,int FB)
 	}
 
 	return minY;
+}
+
+double func4(double t,int FB)
+{
+	double out=sin(t*YsPi*2.0);
+	for(int i=0; i<FB; ++i)
+	{
+		out=sin(t*YsPi*2.0+out);
+	}
+	return out;
 }
 
 const int xRes=800;
@@ -145,9 +167,18 @@ void MakePlot3(int y[xRes],double dummy,int FB)
 	}
 }
 
+void MakePlot4(int y[xRes],double dummy,int FB)
+{
+	for(int x=0; x<xRes; ++x)
+	{
+		double t=(double)x/(double)400.0;
+		y[x]=300-(int)(func4(t,FB)*200.0);
+	}
+}
+
 void PrintTable(void)
 {
-	for(int FB=1; FB<6; ++FB)
+	for(int FB=1; FB<8; ++FB)
 	{
 		printf("int FBTable%d[]={\n",FB);
 		for(int i=0; i<4096; ++i)
