@@ -1,5 +1,6 @@
 #include <fssimplewindow.h>
 #include <math.h>
+#include <iostream>
 
 
 
@@ -68,6 +69,52 @@ double func2(double t,double dummy,int FB)
 	return sin((t+fb)*YsPi*2.0);
 }
 
+double func3(double t,int FB)
+{
+	double beta=1.0;
+	switch(FB)
+	{
+	case 0:
+		beta=0;
+		break;
+	case 1:
+		beta/=16;
+		break;
+	case 2:
+		beta/=8;
+		break;
+	case 3:
+		beta/=4;
+		break;
+	case 4:
+		beta/=2;
+		break;
+	case 5:
+		break;
+	case 6:
+		beta*=2;
+		break;
+	case 7:
+		beta*=4;
+		break;
+	}
+
+	double minErr=100.0;
+	double minY=-4096;
+	for(int i=-2048; i<=2048; ++i)
+	{
+		double y=(double)i/(double)2048.0; // y should be -1.0 to 1.0
+		double err=fabs(y-sin(t*YsPi*2.0+beta*y));
+		if(err<minErr)
+		{
+			minErr=err;
+			minY=y;
+		}
+	}
+
+	return minY;
+}
+
 const int xRes=800;
 
 void MakePlot(int y[xRes],double dt,int FB)
@@ -89,13 +136,44 @@ void MakePlot(int y[xRes],double dt,int FB)
 	}
 }
 
+void MakePlot3(int y[xRes],double dummy,int FB)
+{
+	for(int x=0; x<xRes; ++x)
+	{
+		double t=(double)x/(double)400.0;
+		y[x]=300-(int)(func3(t,FB)*200.0);
+	}
+}
+
+void PrintTable(void)
+{
+	for(int FB=1; FB<6; ++FB)
+	{
+		printf("int FBTable%d[]={\n",FB);
+		for(int i=0; i<4096; ++i)
+		{
+			double t=(double)i/4096.0;
+			double value=func3(t,FB);
+			int iValue=(int)(value*2048.0);
+			printf("% 5d,",iValue);
+			if(0==(i+1)%16)
+			{
+				printf("\n");
+			}
+		}
+		printf("};\n");
+	}
+}
+
 int main(void)
 {
 	double dt=0.00001;
-	int FB=2;
+	int FB=0;
 
 	int y[xRes];
-	MakePlot(y,dt,FB);
+	MakePlot3(y,dt,FB);
+
+	PrintTable();
 
 	FsOpenWindow(0,0,800,600,1);
 	for(;;)
@@ -113,7 +191,7 @@ int main(void)
 			{
 				FB=7;
 			}
-			MakePlot(y,dt,FB);
+			MakePlot3(y,dt,FB);
 		}
 		else if(FSKEY_A==key)
 		{
@@ -122,7 +200,7 @@ int main(void)
 			{
 				FB=0;
 			}
-			MakePlot(y,dt,FB);
+			MakePlot3(y,dt,FB);
 		}
 
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
