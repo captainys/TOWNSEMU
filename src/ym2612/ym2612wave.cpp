@@ -2160,6 +2160,45 @@ static int FBTable7[]={
 -1257,-1258,-1259,-1259,-1260,-1260,-1261,-1262,-1262,-1263,-1263,-1264,-1265,-1265,-1266,-1266,
 };
 
+static unsigned int LFOCycleMicroSec[8]=
+{
+	100000000/ 398, // 1000000/ 3.98,
+	100000000/ 556, // 1000000/ 5.56,
+	100000000/ 602, // 1000000/ 6.02,
+	100000000/ 637, // 1000000/ 6.37,
+	100000000/ 688, // 1000000/ 6.88,
+	100000000/ 963, // 1000000/ 9.63,
+	100000000/4810, // 1000000/48.10,
+	100000000/7220  // 1000000/72.20
+};
+
+// Definition of cent.
+// https://ja.wikipedia.org/wiki/%E3%82%BB%E3%83%B3%E3%83%88_(%E9%9F%B3%E6%A5%BD)
+static int PMS16384Table[8]=
+{
+  0,
+ 32,// scale(3.400000)=1.001966, (1.001966-1.0)*16384.0=32
+ 63,// scale(6.700000)=1.003878, (1.003878-1.0)*16384.0=63
+ 94,// scale(10.000000)=1.005793, (1.005793-1.0)*16384.0=94
+133,// scale(14.000000)=1.008120, (1.008120-1.0)*16384.0=133
+190,// scale(20.000000)=1.011619, (1.011619-1.0)*16384.0=190
+382,// scale(40.000000)=1.023374, (1.023374-1.0)*16384.0=382
+774,// scale(80.000000)=1.047294, (1.047294-1.0)*16384.0=774
+};
+
+// dB=20log10(P/Pref)
+// 0=20log10(P/Pref) -> P/Pref=1.0
+// 1.4=20log10(P/Pref) -> 10^(1.4/20)=P/Pref -> 
+// 5.9=20log10(P/Pref) -> 10^(5.9/20)=P/Pref ->
+// 11.8=20log10(P/Pref) -> 10^(11.8/20)=P/Pref ->
+static int AMS4096Table[4]=
+{
+ 4096-4096,  // 1.0
+ 4812-4096,  // 1.1749
+ 8079-4096,  // 1.97242
+15935-4096, // 3.89045
+};
+
 ////////////////////////////////////////////////////////////
 
 inline int YM2612::Slot::UnscaledOutput(int phase) const
@@ -2296,7 +2335,7 @@ void YM2612::KeyOn(unsigned int chNum)
 				detuneStepContribution/=2;
 			}
 			detuneStepContribution/=1000;
-			if(0!=slot.DT&4)
+			if(0!=(slot.DT&4))
 			{
 				detuneStepContribution=-detuneStepContribution;
 			}
@@ -2427,17 +2466,53 @@ std::cout << "Requested:" << requestedMicroSec12 << " ToneDuration:" << ch.toneD
 	for(unsigned int i=0; i<numSamples; ++i)
 	{
 		const unsigned int microsec=(unsigned int)(microsec12>>12);
+		int PMSAdjustment[4]=
+		{
+			0,0,0,0
+		};
+		int AMSAdjustment[4]=
+		{
+			4096,4096,4096,4096
+		};
 
-		auto ampl=CalculateAmplitude(chNum,microsec/1000,phase12);  // Envelope takes milliseconds.
+		if(true==state.LFO)
+		{
+			unsigned long long int LFOPhase=microsec;
+			LFOPhase=LFOPhase*PHASE_STEPS/LFOCycleMicroSec[state.FREQCTRL];
+			/* The following PMS calculation is not correct.
+			   Change of frequency is too much, like more than 100 times wrong.
+			   I have a feeling that I need to take sampling rate into account.
+			if(0!=ch.PMS)
+			{
+				int PMSAdj=PMS16384Table[ch.PMS]*sineTable[LFOPhase&PHASE_MASK]/UNSCALED_MAX;
+				for(unsigned int i=0; i<connectionToOutputSlots[ch.CONNECT].nOutputSlots; ++i)
+				{
+					auto sl=connectionToOutputSlots[ch.CONNECT].slots[i];
+					PMSAdjustment[sl]=ch.slots[sl].phase12Step*PMSAdj/16384;
+				}
+			} */
+			{
+				for(unsigned int i=0; i<connectionToOutputSlots[ch.CONNECT].nOutputSlots; ++i)
+				{
+					auto sl=connectionToOutputSlots[ch.CONNECT].slots[i];
+					if(0!=ch.slots[sl].AM)
+					{
+						AMSAdjustment[sl]=4096+AMS4096Table[ch.AMS]*sineTable[LFOPhase&PHASE_MASK]/UNSCALED_MAX;
+					}
+				}
+			}
+		}
+
+		auto ampl=CalculateAmplitude(chNum,microsec/1000,phase12,AMSAdjustment);  // Envelope takes milliseconds.
 		wave[i*4  ]=(ampl&255);
 		wave[i*4+1]=((ampl>>8)&255);
 		wave[i*4+2]=(ampl&255);
 		wave[i*4+3]=((ampl>>8)&255);
 
-		phase12[0]+=ch.slots[0].phase12Step;
-		phase12[1]+=ch.slots[1].phase12Step;
-		phase12[2]+=ch.slots[2].phase12Step;
-		phase12[3]+=ch.slots[3].phase12Step;
+		phase12[0]+=ch.slots[0].phase12Step+PMSAdjustment[0];
+		phase12[1]+=ch.slots[1].phase12Step+PMSAdjustment[1];
+		phase12[2]+=ch.slots[2].phase12Step+PMSAdjustment[2];
+		phase12[3]+=ch.slots[3].phase12Step+PMSAdjustment[3];
 		microsec12+=microsec12Step;
 	}
 
@@ -2447,11 +2522,11 @@ std::cout << "Requested:" << requestedMicroSec12 << " ToneDuration:" << ch.toneD
 	ch.slots[2].nextPhase12=phase12[2];
 	ch.slots[3].nextPhase12=phase12[3];
 
-std::cout << (microsec12>>12) << "us " << std::endl;
-std::cout << phase12[0] << "," << (phase12[0]>>12)/PHASE_STEPS << "cycles" << std::endl;
-std::cout << phase12[1] << "," << (phase12[1]>>12)/PHASE_STEPS << "cycles" << std::endl;
-std::cout << phase12[2] << "," << (phase12[2]>>12)/PHASE_STEPS << "cycles" << std::endl;
-std::cout << phase12[3] << "," << (phase12[3]>>12)/PHASE_STEPS << "cycles" << std::endl;
+// std::cout << (microsec12>>12) << "us " << std::endl;
+// std::cout << phase12[0] << "," << (phase12[0]>>12)/PHASE_STEPS << "cycles" << std::endl;
+// std::cout << phase12[1] << "," << (phase12[1]>>12)/PHASE_STEPS << "cycles" << std::endl;
+// std::cout << phase12[2] << "," << (phase12[2]>>12)/PHASE_STEPS << "cycles" << std::endl;
+// std::cout << phase12[3] << "," << (phase12[3]>>12)/PHASE_STEPS << "cycles" << std::endl;
 
 	return wave;
 }
@@ -2493,7 +2568,7 @@ std::cout << KC << "," << slot.KS << "," << (KC>>(3-slot.KS)) << ", ";
 	unsigned int AR=slot.AR*2+(KC>>(3-slot.KS));
 	unsigned int DR=slot.DR*2+(KC>>(3-slot.KS));
 	unsigned int SR=slot.SR*2+(KC>>(3-slot.KS));
-	             RR=slot.RR*2+(KC>>(3-slot.KS));
+	             RR=(slot.RR*2+1)*2+(KC>>(3-slot.KS));  // [2] pp.206 Double RR and add 1.
 	AR=std::min(AR,63U);
 	DR=std::min(DR,63U);
 	SR=std::min(SR,63U);
@@ -2610,17 +2685,17 @@ NOTONE:
 	return false;
 }
 
-int YM2612::CalculateAmplitude(int chNum,unsigned int timeInMS,const unsigned int slotPhase12[4]) const
+int YM2612::CalculateAmplitude(int chNum,unsigned int timeInMS,const unsigned int slotPhase12[4],const int AMS4096[4]) const
 {
-	#define SLOTOUTEV_0(phaseShift,timeInMS) (0==(ch.usingSlot&1) ? 0 : ch.slots[0].EnvelopedOutput((slotPhase12[0]>>12)+phaseShift,timeInMS,ch.FB))
-	#define SLOTOUTEV_1(phaseShift,timeInMS) (0==(ch.usingSlot&2) ? 0 : ch.slots[1].EnvelopedOutput((slotPhase12[1]>>12)+phaseShift,timeInMS))
-	#define SLOTOUTEV_2(phaseShift,timeInMS) (0==(ch.usingSlot&4) ? 0 : ch.slots[2].EnvelopedOutput((slotPhase12[2]>>12)+phaseShift,timeInMS))
-	#define SLOTOUTEV_3(phaseShift,timeInMS) (0==(ch.usingSlot&8) ? 0 : ch.slots[3].EnvelopedOutput((slotPhase12[3]>>12)+phaseShift,timeInMS))
+	#define SLOTOUTEV_0(phaseShift,timeInMS) ((0==(ch.usingSlot&1) ? 0 : ch.slots[0].EnvelopedOutput((slotPhase12[0]>>12)+phaseShift,timeInMS,ch.FB))*AMS4096[0]/4096)
+	#define SLOTOUTEV_1(phaseShift,timeInMS) ((0==(ch.usingSlot&2) ? 0 : ch.slots[1].EnvelopedOutput((slotPhase12[1]>>12)+phaseShift,timeInMS))*AMS4096[1]/4096)
+	#define SLOTOUTEV_2(phaseShift,timeInMS) ((0==(ch.usingSlot&4) ? 0 : ch.slots[2].EnvelopedOutput((slotPhase12[2]>>12)+phaseShift,timeInMS))*AMS4096[2]/4096)
+	#define SLOTOUTEV_3(phaseShift,timeInMS) ((0==(ch.usingSlot&8) ? 0 : ch.slots[3].EnvelopedOutput((slotPhase12[3]>>12)+phaseShift,timeInMS))*AMS4096[3]/4096)
 
-	#define SLOTOUT_0(phaseShift,timeInMS) (0==(ch.usingSlot&1) ? 0 : ch.slots[0].UnscaledOutput((slotPhase12[0]>>12)+phaseShift,ch.FB))
-	#define SLOTOUT_1(phaseShift,timeInMS) (0==(ch.usingSlot&2) ? 0 : ch.slots[1].UnscaledOutput((slotPhase12[1]>>12)+phaseShift))
-	#define SLOTOUT_2(phaseShift,timeInMS) (0==(ch.usingSlot&4) ? 0 : ch.slots[2].UnscaledOutput((slotPhase12[2]>>12)+phaseShift))
-	#define SLOTOUT_3(phaseShift,timeInMS) (0==(ch.usingSlot&8) ? 0 : ch.slots[3].UnscaledOutput((slotPhase12[3]>>12)+phaseShift))
+	#define SLOTOUT_0(phaseShift,timeInMS) ((0==(ch.usingSlot&1) ? 0 : ch.slots[0].UnscaledOutput((slotPhase12[0]>>12)+phaseShift,ch.FB))*AMS4096[0]/4096)
+	#define SLOTOUT_1(phaseShift,timeInMS) ((0==(ch.usingSlot&2) ? 0 : ch.slots[1].UnscaledOutput((slotPhase12[1]>>12)+phaseShift))*AMS4096[1]/4096)
+	#define SLOTOUT_2(phaseShift,timeInMS) ((0==(ch.usingSlot&4) ? 0 : ch.slots[2].UnscaledOutput((slotPhase12[2]>>12)+phaseShift))*AMS4096[2]/4096)
+	#define SLOTOUT_3(phaseShift,timeInMS) ((0==(ch.usingSlot&8) ? 0 : ch.slots[3].UnscaledOutput((slotPhase12[3]>>12)+phaseShift))*AMS4096[3]/4096)
 
 	auto &ch=state.channels[chNum];
 	int s0out,s1out,s2out,s3out;

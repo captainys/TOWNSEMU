@@ -13,6 +13,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 << LICENSE */
 #include <math.h>
+#include <iostream>
 
 #include "ym2612.h"
 
@@ -284,7 +285,7 @@ unsigned int YM2612::WriteRegister(unsigned int channelBase,unsigned int reg,uns
 	}
 	else if(REG_LFO==reg)
 	{
-		state.LFO=(0!=(value&16));
+		state.LFO=(0!=(value&8));
 		state.FREQCTRL=value&7;
 	}
 	else if(0xA8<=reg && reg<=0xAE) // Special 3CH F-Number/BLOCK

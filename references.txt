@@ -8,3 +8,4 @@
 [8] SEGA Genesis Software Manual
 [9] http://www.mit.edu/afs/sipb.mit.edu/contrib/doc/specs/protocol/scsi-2/s2-r10l.txt (As of May 3 2020)
 [10] List of Floppy Disk Formats, https://en.wikipedia.org/wiki/List_of_floppy_disk_formats, (As of May 23 2020)
+[11] YM2608 OPNA Application Manual
