@@ -9,6 +9,24 @@ P
 /end
 /begin0
 T 1
+* 00000110:00000D20
+# 
+R 
+L EGB:Jump to Function
+P 
+% 0
+/end
+/begin0
+T 4
+* 00000110:00000D58
+# 
+R 
+L (Prob)EGB Jump Table?
+P 
+% 196
+/end
+/begin0
+T 1
 * 00000110:00011B60
 # 
 R 
@@ -35,9 +53,18 @@ P
 % 0
 /end
 /begin0
+T 1
+* 00000110:00017105
+# 
+R 
+L EGB:ActualEntry
+P 
+% 0
+/end
+/begin0
 T 0
 * 00000110:00017575
-# MOUSEBIOS:(Prob)Jump to function
+# EGB:(Prob)Jump to Function
 R 
 L 
 P 
