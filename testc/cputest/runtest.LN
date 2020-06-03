@@ -6,6 +6,7 @@ build\btx.obj
 build\imul.obj 
 build\bitshift.obj 
 build\cbw_cwde.OBJ
+build\adcsbbsp.OBJ
 build\io.obj
 build\vmif.obj
 -lib C:\hc386\small\hce.lib 

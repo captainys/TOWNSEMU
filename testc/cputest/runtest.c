@@ -578,6 +578,68 @@ int RunCBW_CWDE_CWD_CDQ(void)
 	return 0;
 }
 
+extern void TEST_ADC_SP1(unsigned int ret[2]);
+extern void TEST_ADC_SP2(unsigned int ret[2]);
+extern void TEST_ADC_SP3(unsigned int ret[2]);
+extern void TEST_ADC_SP4(unsigned int ret[2]);
+extern void TEST_ADC_SP5(unsigned int ret[2]);
+extern void TEST_ADC_SP6(unsigned int ret[2]);
+extern void TEST_ADC_SP7(unsigned int ret[2]);
+extern void TEST_ADC_SP8(unsigned int ret[2]);
+extern void TEST_SBB_SP1(unsigned int ret[2]);
+extern void TEST_SBB_SP2(unsigned int ret[2]);
+extern void TEST_SBB_SP3(unsigned int ret[2]);
+extern void TEST_SBB_SP4(unsigned int ret[2]);
+extern void TEST_SBB_SP5(unsigned int ret[2]);
+
+int RunADC_SBB_SpecialCaseTable(void)
+{
+	int i;
+	unsigned int res[64];
+
+	printf("ADC Special Cases\n");
+
+	TEST_ADC_SP1(res);
+	TEST_ADC_SP2(res+2);
+	TEST_ADC_SP3(res+4);
+	TEST_ADC_SP4(res+6);
+	TEST_ADC_SP5(res+8);
+	TEST_ADC_SP6(res+10);
+	TEST_ADC_SP7(res+12);
+	TEST_ADC_SP8(res+14);
+	for(i=0; i<16; ++i)
+	{
+		if(ADC_SP_TABLE[i]!=res[i])
+		{
+			printf("Error in ADC Special Case %d\n",i+1);
+			printf("Returned: %08x %08x\n",res[(i>>1)*2],res[(i>>1)*2+1]);
+			printf("Expected: %08x %08x\n",ADC_SP_TABLE[(i>>1)*2],ADC_SP_TABLE[(i>>1)*2+1]);
+			return 1;
+		}
+	}
+
+	printf("SBB Special Cases\n");
+
+	TEST_SBB_SP1(res);
+	TEST_SBB_SP2(res+2);
+	TEST_SBB_SP3(res+4);
+	TEST_SBB_SP4(res+6);
+	TEST_SBB_SP5(res+8);
+	for(i=0; i<10; ++i)
+	{
+		if(SBB_SP_TABLE[i]!=res[i])
+		{
+		if(ADC_SP_TABLE[i]!=res[i])
+		{
+			printf("Error in SBB Special Case %d\n",i+1);
+			printf("Returned: %08x %08x\n",res[(i>>1)*2],res[(i>>1)*2+1]);
+			printf("Expected: %08x %08x\n",SBB_SP_TABLE[(i>>1)*2],SBB_SP_TABLE[(i>>1)*2+1]);
+			return 1;
+		}
+		}
+	}
+}
+
 int main(int ac,char *av[])
 {
 	int nFail=0;
@@ -590,6 +652,7 @@ int main(int ac,char *av[])
 	nFail+=RunAADAAMAAS();
 	nFail+=RunBTx();
 	nFail+=RunCBW_CWDE_CWD_CDQ();
+	nFail+=RunADC_SBB_SpecialCaseTable();
 	printf("ARPL not covered.\n");
 	printf("CALL and JMP not covered.\n");
 

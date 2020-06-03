@@ -1,9 +1,315 @@
 /begin0
+T 0
+* 0000000C:0000537C
+# 2EH='.'
+R 
+L 
+P 
+% 0
+/end
+/begin0
 T 2
 * 0000000C:0001A881
 # 
 R 
 L RETURN
+P 
+% 0
+/end
+/begin0
+T 1
+* 0000000C:0002A5C8
+# 
+R 
+L FB386:(Prob)Add AL to a string buffer, DS:44C
+P 
+% 0
+/end
+/begin0
+T 1
+* 0000000C:00051C3C
+# 
+R 
+L Get one letter from float
+P 
+% 0
+/end
+/begin0
+T 0
+* 0000000C:00051C3D
+# ESI=10308
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 0000000C:00051C67
+# Writing to DS:[10310H]
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 0000000C:0005363C
+# 
+R 
+L FB386:(Prob)Float to String
+P 
+% 0
+/end
+/begin0
+T 0
+* 0000000C:00053667
+# ESI=Pointer to the string buffer.
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 2
+* 0000000C:00053693
+# 
+R 
+L ' 0'
+P 
+% 0
+/end
+/begin0
+T 0
+* 0000000C:00053780
+# 2DH='-'
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 0000000C:0005379B
+# 2DH='-'
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 0000000C:000537C1
+# 2EH='.'
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 0000000C:000537E0
+# 45H='E'
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 0000000C:000537E8
+# 44H='D'
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 0000000C:000537FC
+# 2DH='-'
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 0000000C:00053804
+# 2BH='+'
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 0000000C:0005389D
+# 30H='0'
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 0000000C:000538BD
+# 30H='0'
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 0000000C:000538E1
+# 2EH='.'
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 0000000C:00053936
+# 2EH='.'
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 2
+* 0000000C:0005395C
+# 
+R 
+L Return
+P 
+% 0
+/end
+/begin0
+T 0
+* 0000000C:00053961
+# C-String Termination
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 0000000C:00053970
+# 
+R 
+L FB386:(Prob)Get Sign of Float
+P 
+% 0
+/end
+/begin0
+T 1
+* 0000000C:00053AF0
+# 
+R 
+L FB386:Make string of integer part of float*10000
+P 
+% 0
+/end
+/begin0
+T 0
+* 0000000C:00053AF7
+# EDI=Destination Buffer
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 2
+* 0000000C:00053B04
+# 
+R 
+L Loop0
+P 
+% 0
+/end
+/begin0
+T 0
+* 0000000C:00053B23
+# '1'
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 2
+* 0000000C:00053B84
+# 
+R 
+L Loop1
+P 
+% 0
+/end
+/begin0
+T 0
+* 0000000C:00053B87
+# '5'
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 0000000C:00053B8A
+# Rounding?
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 2
+* 0000000C:00053BF0
+# 
+R 
+L Return
+P 
+% 0
+/end
+/begin0
+T 1
+* 0000000C:000620F0
+# 
+R 
+L FB386:Print One Letter at DS:[ESI]
+P 
+% 0
+/end
+/begin0
+T 0
+* 0000000C:00062164
+# FB386:(Prob)Function pointer to write one letter.
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 0000000C:00062240
+# 
+R 
+L FB386:Print One Letter AL=ASCII Code
+P 
+% 0
+/end
+/begin0
+T 1
+* 0000000C:000622C8
+# 
+R 
+L FB386:Transfer font to VRAM
 P 
 % 0
 /end

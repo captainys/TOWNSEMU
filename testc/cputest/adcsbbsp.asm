@@ -5,9 +5,15 @@
 						PUBLIC	TEST_ADC_SP2
 						PUBLIC	TEST_ADC_SP3
 						PUBLIC	TEST_ADC_SP4
+						PUBLIC	TEST_ADC_SP5
+						PUBLIC	TEST_ADC_SP6
+						PUBLIC	TEST_ADC_SP7
+						PUBLIC	TEST_ADC_SP8
 						PUBLIC	TEST_SBB_SP1
 						PUBLIC	TEST_SBB_SP2
 						PUBLIC	TEST_SBB_SP3
+						PUBLIC	TEST_SBB_SP4
+						PUBLIC	TEST_SBB_SP5
 
 ; Special cases ADC and SBB
 
@@ -162,6 +168,126 @@ TEST_ADC_SP4	ENDP
 
 
 
+TEST_ADC_SP5	PROC
+						PUSH	EBP		; [EBP]=PrevEBP,  [EBP+4]=EIP,  [EIP+8]=ResultPtr
+						MOV		EBP,ESP
+						PUSHAD
+
+						MOV		EDI,[EBP+8]
+
+						STC
+						MOV		EAX,07FFFFFFFH
+						MOV		ECX,0
+						ADC		EAX,ECX
+
+						PUSHFD
+						POP		ECX
+						AND		ECX,EFLAGS_OF+EFLAGS_SF+EFLAGS_ZF+EFLAGS_AF+EFLAGS_CF+EFLAGS_PF
+
+						MOV		[EDI],EAX
+						MOV		[EDI+4],ECX
+
+						POPAD
+						POP		EBP
+						RET
+TEST_ADC_SP5	ENDP
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
+TEST_ADC_SP6	PROC
+						PUSH	EBP		; [EBP]=PrevEBP,  [EBP+4]=EIP,  [EIP+8]=ResultPtr
+						MOV		EBP,ESP
+						PUSHAD
+
+						MOV		EDI,[EBP+8]
+
+						STC
+						MOV		EAX,0
+						MOV		ECX,07FFFFFFFH
+						ADC		EAX,ECX
+
+						PUSHFD
+						POP		ECX
+						AND		ECX,EFLAGS_OF+EFLAGS_SF+EFLAGS_ZF+EFLAGS_AF+EFLAGS_CF+EFLAGS_PF
+
+						MOV		[EDI],EAX
+						MOV		[EDI+4],ECX
+
+						POPAD
+						POP		EBP
+						RET
+TEST_ADC_SP6	ENDP
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
+TEST_ADC_SP7	PROC
+						PUSH	EBP		; [EBP]=PrevEBP,  [EBP+4]=EIP,  [EIP+8]=ResultPtr
+						MOV		EBP,ESP
+						PUSHAD
+
+						MOV		EDI,[EBP+8]
+
+						STC
+						MOV		EAX,0FH
+						MOV		ECX,0
+						ADC		EAX,ECX
+
+						PUSHFD
+						POP		ECX
+						AND		ECX,EFLAGS_OF+EFLAGS_SF+EFLAGS_ZF+EFLAGS_AF+EFLAGS_CF+EFLAGS_PF
+
+						MOV		[EDI],EAX
+						MOV		[EDI+4],ECX
+
+						POPAD
+						POP		EBP
+						RET
+TEST_ADC_SP7	ENDP
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
+TEST_ADC_SP8	PROC
+						PUSH	EBP		; [EBP]=PrevEBP,  [EBP+4]=EIP,  [EIP+8]=ResultPtr
+						MOV		EBP,ESP
+						PUSHAD
+
+						MOV		EDI,[EBP+8]
+
+						STC
+						MOV		EAX,0
+						MOV		ECX,0FH
+						ADC		EAX,ECX
+
+						PUSHFD
+						POP		ECX
+						AND		ECX,EFLAGS_OF+EFLAGS_SF+EFLAGS_ZF+EFLAGS_AF+EFLAGS_CF+EFLAGS_PF
+
+						MOV		[EDI],EAX
+						MOV		[EDI+4],ECX
+
+						POPAD
+						POP		EBP
+						RET
+TEST_ADC_SP8	ENDP
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
 TEST_SBB_SP1	PROC
 						PUSH	EBP		; [EBP]=PrevEBP,  [EBP+4]=EIP,  [EIP+8]=ResultPtr
 						MOV		EBP,ESP
@@ -245,6 +371,66 @@ TEST_SBB_SP3	PROC
 						POP		EBP
 						RET
 TEST_SBB_SP3	ENDP
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
+TEST_SBB_SP4	PROC
+						PUSH	EBP		; [EBP]=PrevEBP,  [EBP+4]=EIP,  [EIP+8]=ResultPtr
+						MOV		EBP,ESP
+						PUSHAD
+
+						MOV		EDI,[EBP+8]
+
+						STC
+						MOV		EAX,80000000H
+						MOV		ECX,0
+						SBB		EAX,ECX
+
+						PUSHFD
+						POP		ECX
+						AND		ECX,EFLAGS_OF+EFLAGS_SF+EFLAGS_ZF+EFLAGS_AF+EFLAGS_CF+EFLAGS_PF
+
+						MOV		[EDI],EAX
+						MOV		[EDI+4],ECX
+
+						POPAD
+						POP		EBP
+						RET
+TEST_SBB_SP4	ENDP
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
+TEST_SBB_SP5	PROC
+						PUSH	EBP		; [EBP]=PrevEBP,  [EBP+4]=EIP,  [EIP+8]=ResultPtr
+						MOV		EBP,ESP
+						PUSHAD
+
+						MOV		EDI,[EBP+8]
+
+						STC
+						MOV		EAX,10H
+						MOV		ECX,0
+						SBB		EAX,ECX
+
+						PUSHFD
+						POP		ECX
+						AND		ECX,EFLAGS_OF+EFLAGS_SF+EFLAGS_ZF+EFLAGS_AF+EFLAGS_CF+EFLAGS_PF
+
+						MOV		[EDI],EAX
+						MOV		[EDI+4],ECX
+
+						POPAD
+						POP		EBP
+						RET
+TEST_SBB_SP5	ENDP
 
 
 
