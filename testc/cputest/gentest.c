@@ -268,7 +268,6 @@ void GenF6F7_NOT_NEG_MUL_IMUL_DIV_IDIV(FILE *ofp)
 		}
 	}
 	fprintf(ofp,"};\n");
-
 }
 
 extern void TEST_R8_I8(unsigned int res[16],unsigned int ebx);
@@ -510,6 +509,79 @@ void GenADC_SBB_SpecialCaseTable(FILE *ofp)
 }
 
 
+void TEST_ADC_SBB_32(unsigned int res[8],unsigned int eax,unsigned int ecx);
+void TEST_ADC_SBB_16(unsigned int res[8],unsigned int eax,unsigned int ecx);
+void TEST_ADC_SBB_8(unsigned int res[8],unsigned int eax,unsigned int ecx);
+
+void GenADC_SBB(FILE *ofp)
+{
+	int i;
+	fprintf(ofp,"unsigned int ADC_SBB_8_TABLE[]={\n");
+	for(i=0; i<LEN(testNumberSrc8); ++i)
+	{
+		for(int j=0; j<LEN(testNumberSrc8); ++j)
+		{
+			int k;
+			unsigned int eax=testNumberSrc8[i];
+			unsigned int ecx=testNumberSrc8[j];
+			unsigned int res[8];
+			TEST_ADC_SBB_8(res,eax,ecx);
+			fprintf(ofp,"\t0x%08x,0x%08x,\n",eax,ecx);
+			fprintf(ofp,"\t");
+			for(k=0; k<8; ++k)
+			{
+				fprintf(ofp,"0x%08x,",res[k]);
+			}
+			fprintf(ofp,"\n");
+		}
+	}
+	fprintf(ofp,"};\n");
+
+	fprintf(ofp,"unsigned int ADC_SBB_16_TABLE[]={\n");
+	for(i=0; i<LEN(testNumberSrc16); ++i)
+	{
+		for(int j=0; j<LEN(testNumberSrc16); ++j)
+		{
+			int k;
+			unsigned int eax=testNumberSrc16[i];
+			unsigned int ecx=testNumberSrc16[j];
+			unsigned int res[8];
+			TEST_ADC_SBB_16(res,eax,ecx);
+			fprintf(ofp,"\t0x%08x,0x%08x,\n",eax,ecx);
+			fprintf(ofp,"\t");
+			for(k=0; k<8; ++k)
+			{
+				fprintf(ofp,"0x%08x,",res[k]);
+			}
+			fprintf(ofp,"\n");
+		}
+	}
+	fprintf(ofp,"};\n");
+
+	fprintf(ofp,"unsigned int ADC_SBB_32_TABLE[]={\n");
+	for(i=0; i<LEN(testNumberSrc32); ++i)
+	{
+		for(int j=0; j<LEN(testNumberSrc32); ++j)
+		{
+			int k;
+			unsigned int eax=testNumberSrc32[i];
+			unsigned int ecx=testNumberSrc32[j];
+			unsigned int res[8];
+			TEST_ADC_SBB_32(res,eax,ecx);
+			fprintf(ofp,"\t0x%08x,0x%08x,\n",eax,ecx);
+			fprintf(ofp,"\t");
+			for(k=0; k<8; ++k)
+			{
+				fprintf(ofp,"0x%08x,",res[k]);
+			}
+			fprintf(ofp,"\n");
+		}
+	}
+	fprintf(ofp,"};\n");
+}
+
+
+
 int main(void)
 {
 	FILE *ofp=fopen("cputest/testcase.h","w");
@@ -523,6 +595,7 @@ int main(void)
 	GenBTx(ofp);
 	GenCBW_CWDE_CWD_CDQ(ofp);
 	GenADC_SBB_SpecialCaseTable(ofp);
+	GenADC_SBB(ofp);
 	fclose(ofp);
 	return 0;
 }

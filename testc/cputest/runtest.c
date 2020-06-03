@@ -639,6 +639,100 @@ int RunADC_SBB_SpecialCaseTable(void)
 	return 0;
 }
 
+void TEST_ADC_SBB_32(unsigned int res[8],unsigned int eax,unsigned int ecx);
+void TEST_ADC_SBB_16(unsigned int res[8],unsigned int eax,unsigned int ecx);
+void TEST_ADC_SBB_8(unsigned int res[8],unsigned int eax,unsigned int ecx);
+
+int RunADC_SBB(void)
+{
+	int i,j;
+	printf("ADC_SBB_8_TABLE\n");
+	for(i=0; i<LEN(ADC_SBB_8_TABLE); i+=10)
+	{
+		unsigned int *testPtr=ADC_SBB_8_TABLE+i;
+		unsigned int *expected=testPtr+2;
+		unsigned int res[8];
+		TEST_ADC_SBB_8(res,testPtr[0],testPtr[1]);
+		for(j=0; j<8; ++j)
+		{
+			if(res[j]!=expected[j])
+			{
+				int k;
+				printf("Error in ADC SBB Test!\n");
+				printf("Expected:");
+				for(k=0; k<8; ++k)
+				{
+					printf(" %08x",expected[k]);
+				}
+				printf("Returned:");
+				for(k=0; k<8; ++k)
+				{
+					printf(" %08x",res[k]);
+				}
+				return 1;
+			}
+		}
+	}
+
+	printf("ADC_SBB_16_TABLE\n");
+	for(i=0; i<LEN(ADC_SBB_16_TABLE); i+=10)
+	{
+		unsigned int *testPtr=ADC_SBB_16_TABLE+i;
+		unsigned int *expected=testPtr+2;
+		unsigned int res[8];
+		TEST_ADC_SBB_16(res,testPtr[0],testPtr[1]);
+		for(j=0; j<8; ++j)
+		{
+			if(res[j]!=expected[j])
+			{
+				int k;
+				printf("Error in ADC SBB Test!\n");
+				printf("Expected:");
+				for(k=0; k<8; ++k)
+				{
+					printf(" %08x",expected[k]);
+				}
+				printf("Returned:");
+				for(k=0; k<8; ++k)
+				{
+					printf(" %08x",res[k]);
+				}
+				return 1;
+			}
+		}
+	}
+
+	printf("ADC_SBB_32_TABLE\n");
+	for(i=0; i<LEN(ADC_SBB_32_TABLE); i+=10)
+	{
+		unsigned int *testPtr=ADC_SBB_32_TABLE+i;
+		unsigned int *expected=testPtr+2;
+		unsigned int res[8];
+		TEST_ADC_SBB_32(res,testPtr[0],testPtr[1]);
+		for(j=0; j<8; ++j)
+		{
+			if(res[j]!=expected[j])
+			{
+				int k;
+				printf("Error in ADC SBB Test!\n");
+				printf("Expected:");
+				for(k=0; k<8; ++k)
+				{
+					printf(" %08x",expected[k]);
+				}
+				printf("Returned:");
+				for(k=0; k<8; ++k)
+				{
+					printf(" %08x",res[k]);
+				}
+				return 1;
+			}
+		}
+	}
+
+	return 0;
+}
+
 int main(int ac,char *av[])
 {
 	int nFail=0;
@@ -652,6 +746,7 @@ int main(int ac,char *av[])
 	nFail+=RunBTx();
 	nFail+=RunCBW_CWDE_CWD_CDQ();
 	nFail+=RunADC_SBB_SpecialCaseTable();
+	nFail+=RunADC_SBB();
 	printf("ARPL not covered.\n");
 	printf("CALL and JMP not covered.\n");
 

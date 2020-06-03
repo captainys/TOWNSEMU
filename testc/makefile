@@ -33,6 +33,9 @@ build\cbw_cwde.OBJ : cputest\cbw_cwde.asm
 build\adcsbbsp.OBJ : cputest\adcsbbsp.asm
 	386asm cputest\adcsbbsp.asm -OBJECT build\adcsbbsp.OBJ
 
+build\adcsbb.OBJ : cputest\adcsbb.asm
+	386asm cputest\adcsbb.asm -OBJECT build\adcsbb.OBJ
+
 build\gentest.exp : build\gentest.OBJ build\f6f7.OBJ build\test_r_i.OBJ build\aadaam.OBJ build\btx.OBJ build\imul.OBJ build\bitshift.OBJ build\cbw_cwde.OBJ build\adcsbbsp.OBJ
 	386link @cputest\gentest.LN
 
