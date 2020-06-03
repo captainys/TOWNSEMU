@@ -611,7 +611,7 @@ int RunADC_SBB_SpecialCaseTable(void)
 	{
 		if(ADC_SP_TABLE[i]!=res[i])
 		{
-			printf("Error in ADC Special Case %d\n",i+1);
+			printf("Error in ADC Special Case %d\n",(i>>1));
 			printf("Returned: %08x %08x\n",res[(i>>1)*2],res[(i>>1)*2+1]);
 			printf("Expected: %08x %08x\n",ADC_SP_TABLE[(i>>1)*2],ADC_SP_TABLE[(i>>1)*2+1]);
 			return 1;
@@ -629,13 +629,10 @@ int RunADC_SBB_SpecialCaseTable(void)
 	{
 		if(SBB_SP_TABLE[i]!=res[i])
 		{
-		if(ADC_SP_TABLE[i]!=res[i])
-		{
-			printf("Error in SBB Special Case %d\n",i+1);
+			printf("Error in SBB Special Case %d\n",(i>>1));
 			printf("Returned: %08x %08x\n",res[(i>>1)*2],res[(i>>1)*2+1]);
 			printf("Expected: %08x %08x\n",SBB_SP_TABLE[(i>>1)*2],SBB_SP_TABLE[(i>>1)*2+1]);
 			return 1;
-		}
 		}
 	}
 }

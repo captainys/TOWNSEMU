@@ -24,7 +24,7 @@ def ExeExtension():
 def Run(argv):
 	os.chdir(BUILDDIR)
 	subprocess.Popen([
-		"./main_cui/main_cui"+ExeExtension(),
+		"./main_cui/Tsugaru_CUI"+ExeExtension(),
 		ROMDIR,
 		"-FD0",
 		os.path.join(DISKDIR,"FILETFR.bin"),
@@ -36,7 +36,7 @@ def Run(argv):
 		"B:\RUNTEST.EXP",
 	]+argv).wait()
 	subprocess.Popen([
-		"./main_cui/main_cui"+ExeExtension(),
+		"./main_cui/Tsugaru_CUI"+ExeExtension(),
 		ROMDIR,
 		"-FD0",
 		os.path.join(DISKDIR,"FILETFR.bin"),
@@ -52,4 +52,4 @@ def Run(argv):
 
 
 if __name__=="__main__":
-	Run(sys.argv)
+	Run(sys.argv[1:])
