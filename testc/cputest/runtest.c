@@ -578,6 +578,7 @@ int RunCBW_CWDE_CWD_CDQ(void)
 	return 0;
 }
 
+extern void TEST_ADC_SP0(unsigned int ret[2]);
 extern void TEST_ADC_SP1(unsigned int ret[2]);
 extern void TEST_ADC_SP2(unsigned int ret[2]);
 extern void TEST_ADC_SP3(unsigned int ret[2]);
@@ -585,12 +586,11 @@ extern void TEST_ADC_SP4(unsigned int ret[2]);
 extern void TEST_ADC_SP5(unsigned int ret[2]);
 extern void TEST_ADC_SP6(unsigned int ret[2]);
 extern void TEST_ADC_SP7(unsigned int ret[2]);
-extern void TEST_ADC_SP8(unsigned int ret[2]);
+extern void TEST_SBB_SP0(unsigned int ret[2]);
 extern void TEST_SBB_SP1(unsigned int ret[2]);
 extern void TEST_SBB_SP2(unsigned int ret[2]);
 extern void TEST_SBB_SP3(unsigned int ret[2]);
 extern void TEST_SBB_SP4(unsigned int ret[2]);
-extern void TEST_SBB_SP5(unsigned int ret[2]);
 
 int RunADC_SBB_SpecialCaseTable(void)
 {
@@ -599,14 +599,14 @@ int RunADC_SBB_SpecialCaseTable(void)
 
 	printf("ADC Special Cases\n");
 
-	TEST_ADC_SP1(res);
-	TEST_ADC_SP2(res+2);
-	TEST_ADC_SP3(res+4);
-	TEST_ADC_SP4(res+6);
-	TEST_ADC_SP5(res+8);
-	TEST_ADC_SP6(res+10);
-	TEST_ADC_SP7(res+12);
-	TEST_ADC_SP8(res+14);
+	TEST_ADC_SP0(res);
+	TEST_ADC_SP1(res+2);
+	TEST_ADC_SP2(res+4);
+	TEST_ADC_SP3(res+6);
+	TEST_ADC_SP4(res+8);
+	TEST_ADC_SP5(res+10);
+	TEST_ADC_SP6(res+12);
+	TEST_ADC_SP7(res+14);
 	for(i=0; i<16; ++i)
 	{
 		if(ADC_SP_TABLE[i]!=res[i])
@@ -620,11 +620,11 @@ int RunADC_SBB_SpecialCaseTable(void)
 
 	printf("SBB Special Cases\n");
 
-	TEST_SBB_SP1(res);
-	TEST_SBB_SP2(res+2);
-	TEST_SBB_SP3(res+4);
-	TEST_SBB_SP4(res+6);
-	TEST_SBB_SP5(res+8);
+	TEST_SBB_SP0(res);
+	TEST_SBB_SP1(res+2);
+	TEST_SBB_SP2(res+4);
+	TEST_SBB_SP3(res+6);
+	TEST_SBB_SP4(res+8);
 	for(i=0; i<10; ++i)
 	{
 		if(SBB_SP_TABLE[i]!=res[i])
@@ -635,6 +635,8 @@ int RunADC_SBB_SpecialCaseTable(void)
 			return 1;
 		}
 	}
+
+	return 0;
 }
 
 int main(int ac,char *av[])

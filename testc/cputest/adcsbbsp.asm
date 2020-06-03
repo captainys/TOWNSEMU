@@ -1,6 +1,7 @@
 						.386p
 						ASSUME	CS:CODE
 
+						PUBLIC	TEST_ADC_SP0
 						PUBLIC	TEST_ADC_SP1
 						PUBLIC	TEST_ADC_SP2
 						PUBLIC	TEST_ADC_SP3
@@ -8,12 +9,11 @@
 						PUBLIC	TEST_ADC_SP5
 						PUBLIC	TEST_ADC_SP6
 						PUBLIC	TEST_ADC_SP7
-						PUBLIC	TEST_ADC_SP8
+						PUBLIC	TEST_SBB_SP0
 						PUBLIC	TEST_SBB_SP1
 						PUBLIC	TEST_SBB_SP2
 						PUBLIC	TEST_SBB_SP3
 						PUBLIC	TEST_SBB_SP4
-						PUBLIC	TEST_SBB_SP5
 
 ; Special cases ADC and SBB
 
@@ -48,7 +48,7 @@ CODE					SEGMENT
 
 
 
-TEST_ADC_SP1			PROC
+TEST_ADC_SP0			PROC
 						PUSH	EBP		; [EBP]=PrevEBP,  [EBP+4]=EIP,  [EIP+8]=ResultPtr
 						MOV		EBP,ESP
 						PUSHAD
@@ -70,7 +70,37 @@ TEST_ADC_SP1			PROC
 						POPAD
 						POP		EBP
 						RET
-TEST_ADC_SP1			ENDP
+TEST_ADC_SP0			ENDP
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
+TEST_ADC_SP1	PROC
+						PUSH	EBP		; [EBP]=PrevEBP,  [EBP+4]=EIP,  [EIP+8]=ResultPtr
+						MOV		EBP,ESP
+						PUSHAD
+
+						MOV		EDI,[EBP+8]
+
+						STC
+						MOV		EAX,0FFFFH
+						MOV		ECX,0FFFFFFFFH
+						ADC		EAX,ECX
+
+						PUSHFD
+						POP		ECX
+						AND		ECX,EFLAGS_OF+EFLAGS_SF+EFLAGS_ZF+EFLAGS_AF+EFLAGS_CF+EFLAGS_PF
+
+						MOV		[EDI],EAX
+						MOV		[EDI+4],ECX
+
+						POPAD
+						POP		EBP
+						RET
+TEST_ADC_SP1	ENDP
 
 
 
@@ -86,8 +116,8 @@ TEST_ADC_SP2	PROC
 						MOV		EDI,[EBP+8]
 
 						STC
-						MOV		EAX,0FFFFH
-						MOV		ECX,0FFFFFFFFH
+						MOV		EAX,0FFFFFFFFH
+						MOV		ECX,0
 						ADC		EAX,ECX
 
 						PUSHFD
@@ -116,8 +146,8 @@ TEST_ADC_SP3	PROC
 						MOV		EDI,[EBP+8]
 
 						STC
-						MOV		EAX,0FFFFFFFFH
-						MOV		ECX,0
+						MOV		EAX,0
+						MOV		ECX,0FFFFFFFFH
 						ADC		EAX,ECX
 
 						PUSHFD
@@ -146,8 +176,8 @@ TEST_ADC_SP4	PROC
 						MOV		EDI,[EBP+8]
 
 						STC
-						MOV		EAX,0
-						MOV		ECX,0FFFFFFFFH
+						MOV		EAX,07FFFFFFFH
+						MOV		ECX,0
 						ADC		EAX,ECX
 
 						PUSHFD
@@ -176,8 +206,8 @@ TEST_ADC_SP5	PROC
 						MOV		EDI,[EBP+8]
 
 						STC
-						MOV		EAX,07FFFFFFFH
-						MOV		ECX,0
+						MOV		EAX,0
+						MOV		ECX,07FFFFFFFH
 						ADC		EAX,ECX
 
 						PUSHFD
@@ -206,8 +236,8 @@ TEST_ADC_SP6	PROC
 						MOV		EDI,[EBP+8]
 
 						STC
-						MOV		EAX,0
-						MOV		ECX,07FFFFFFFH
+						MOV		EAX,0FH
+						MOV		ECX,0
 						ADC		EAX,ECX
 
 						PUSHFD
@@ -236,8 +266,8 @@ TEST_ADC_SP7	PROC
 						MOV		EDI,[EBP+8]
 
 						STC
-						MOV		EAX,0FH
-						MOV		ECX,0
+						MOV		EAX,0
+						MOV		ECX,0FH
 						ADC		EAX,ECX
 
 						PUSHFD
@@ -258,7 +288,7 @@ TEST_ADC_SP7	ENDP
 
 
 
-TEST_ADC_SP8	PROC
+TEST_SBB_SP0	PROC
 						PUSH	EBP		; [EBP]=PrevEBP,  [EBP+4]=EIP,  [EIP+8]=ResultPtr
 						MOV		EBP,ESP
 						PUSHAD
@@ -267,8 +297,8 @@ TEST_ADC_SP8	PROC
 
 						STC
 						MOV		EAX,0
-						MOV		ECX,0FH
-						ADC		EAX,ECX
+						MOV		ECX,0FFFFFFFFH
+						SBB		EAX,ECX
 
 						PUSHFD
 						POP		ECX
@@ -280,7 +310,7 @@ TEST_ADC_SP8	PROC
 						POPAD
 						POP		EBP
 						RET
-TEST_ADC_SP8	ENDP
+TEST_SBB_SP0	ENDP
 
 
 
@@ -296,8 +326,8 @@ TEST_SBB_SP1	PROC
 						MOV		EDI,[EBP+8]
 
 						STC
-						MOV		EAX,0
-						MOV		ECX,0FFFFFFFFH
+						MOV		EAX,1000
+						MOV		ECX,1000
 						SBB		EAX,ECX
 
 						PUSHFD
@@ -326,8 +356,8 @@ TEST_SBB_SP2	PROC
 						MOV		EDI,[EBP+8]
 
 						STC
-						MOV		EAX,1000
-						MOV		ECX,1000
+						MOV		EAX,0
+						MOV		ECX,0
 						SBB		EAX,ECX
 
 						PUSHFD
@@ -356,7 +386,7 @@ TEST_SBB_SP3	PROC
 						MOV		EDI,[EBP+8]
 
 						STC
-						MOV		EAX,0
+						MOV		EAX,80000000H
 						MOV		ECX,0
 						SBB		EAX,ECX
 
@@ -386,36 +416,6 @@ TEST_SBB_SP4	PROC
 						MOV		EDI,[EBP+8]
 
 						STC
-						MOV		EAX,80000000H
-						MOV		ECX,0
-						SBB		EAX,ECX
-
-						PUSHFD
-						POP		ECX
-						AND		ECX,EFLAGS_OF+EFLAGS_SF+EFLAGS_ZF+EFLAGS_AF+EFLAGS_CF+EFLAGS_PF
-
-						MOV		[EDI],EAX
-						MOV		[EDI+4],ECX
-
-						POPAD
-						POP		EBP
-						RET
-TEST_SBB_SP4	ENDP
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-
-TEST_SBB_SP5	PROC
-						PUSH	EBP		; [EBP]=PrevEBP,  [EBP+4]=EIP,  [EIP+8]=ResultPtr
-						MOV		EBP,ESP
-						PUSHAD
-
-						MOV		EDI,[EBP+8]
-
-						STC
 						MOV		EAX,10H
 						MOV		ECX,0
 						SBB		EAX,ECX
@@ -430,7 +430,7 @@ TEST_SBB_SP5	PROC
 						POPAD
 						POP		EBP
 						RET
-TEST_SBB_SP5	ENDP
+TEST_SBB_SP4	ENDP
 
 
 
