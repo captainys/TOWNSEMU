@@ -234,9 +234,21 @@ public:
 	       RR
 	*/
 	bool CalculateEnvelope(unsigned int env[6],unsigned int &RR,unsigned int BLOCK_NOTE,const Slot &slot) const;
+private:
+	inline bool NoTone(unsigned int env[6],unsigned int &RR) const
+	{
+		env[0]=0;
+		env[1]=0;
+		env[2]=0;
+		env[3]=0;
+		env[4]=0;
+		env[5]=0;
+		RR=0;
+		return false;
+	}
 
 
-
+public:
 	/*! Based on [2] Table I-5-37
 		BLOCK=4		    	Freq Ratio	Freq/Fnum
 		C5	523.3	1371	        	0.381692195

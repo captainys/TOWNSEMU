@@ -2479,18 +2479,16 @@ std::cout << "Requested:" << requestedMicroSec12 << " ToneDuration:" << ch.toneD
 		{
 			unsigned long long int LFOPhase=microsec;
 			LFOPhase=LFOPhase*PHASE_STEPS/LFOCycleMicroSec[state.FREQCTRL];
-			/* The following PMS calculation is not correct.
-			   Change of frequency is too much, like more than 100 times wrong.
-			   I have a feeling that I need to take sampling rate into account.
 			if(0!=ch.PMS)
 			{
 				int PMSAdj=PMS16384Table[ch.PMS]*sineTable[LFOPhase&PHASE_MASK]/UNSCALED_MAX;
 				for(unsigned int i=0; i<connectionToOutputSlots[ch.CONNECT].nOutputSlots; ++i)
 				{
 					auto sl=connectionToOutputSlots[ch.CONNECT].slots[i];
-					PMSAdjustment[sl]=ch.slots[sl].phase12Step*PMSAdj/16384;
+					int signedStep=ch.slots[sl].phase12Step;
+					PMSAdjustment[sl]=signedStep*PMSAdj/16384;
 				}
-			} */
+			}
 			{
 				for(unsigned int i=0; i<connectionToOutputSlots[ch.CONNECT].nOutputSlots; ++i)
 				{
@@ -2576,16 +2574,7 @@ std::cout << KC << "," << slot.KS << "," << (KC>>(3-slot.KS)) << ", ";
 
 	if(AR<4)
 	{
-//NOTONE:
-		env[0]=0;
-		env[1]=0;
-		env[2]=0;
-		env[3]=0;
-		env[4]=0;
-		env[5]=0;
-		RR=0;
-		return false;
-//		goto NOTONE;
+		return NoTone(env,RR);
 	}
 
 	auto TLdB100=TLtoDB100[slot.TL];
@@ -2593,16 +2582,7 @@ std::cout << KC << "," << slot.KS << "," << (KC>>(3-slot.KS)) << ", ";
 
 	if(9600<=TLdB100)
 	{
-//NOTONE:
-		env[0]=0;
-		env[1]=0;
-		env[2]=0;
-		env[3]=0;
-		env[4]=0;
-		env[5]=0;
-		RR=0;
-		return false;
-//		goto NOTONE;
+		return NoTone(env,RR);
 	}
 
 	const unsigned int TLinv=9600-TLdB100;
@@ -2674,15 +2654,6 @@ std::cout << "  RR=" << RR << "(" << sustainDecayReleaseTime0to96dB[RR]/100 << "
 std::cout << std::endl;
 
 	return true;
-NOTONE:
-	env[0]=0;
-	env[1]=0;
-	env[2]=0;
-	env[3]=0;
-	env[4]=0;
-	env[5]=0;
-	RR=0;
-	return false;
 }
 
 int YM2612::CalculateAmplitude(int chNum,unsigned int timeInMS,const unsigned int slotPhase12[4],const int AMS4096[4]) const
