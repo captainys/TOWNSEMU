@@ -232,6 +232,7 @@ void TownsSCSI::EnterDataInPhase(void)
 {
 	state.phase=PHASE_DATA_IN;
 	state.REQ=true;
+	state.bytesTransferred=0;
 	SetUpIO_MSG_CDfromPhase();
 	townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DATA_INTERVAL);
 }
@@ -239,6 +240,7 @@ void TownsSCSI::EnterDataOutPhase(void)
 {
 	state.phase=PHASE_DATA_OUT;
 	state.REQ=true;
+	state.bytesTransferred=0;
 	SetUpIO_MSG_CDfromPhase();
 	townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DATA_INTERVAL);
 }
@@ -537,10 +539,22 @@ void TownsSCSI::ExecSCSICommand(void)
 
 					LBA*=HARDDISK_SECTOR_LENGTH;
 					LEN*=HARDDISK_SECTOR_LENGTH;
-					townsPtr->dmac.DeviceToMemory(DMACh,cpputil::ReadBinaryFile(state.dev[state.selId].imageFName,LBA,LEN));
-					state.status=STATUSCODE_GOOD;
-					state.message=0;
-					EnterMessageInPhase();
+					state.bytesTransferred+=townsPtr->dmac.DeviceToMemory(
+					    DMACh,
+					    cpputil::ReadBinaryFile(
+					        state.dev[state.selId].imageFName,
+					        LBA+state.bytesTransferred,
+					        LEN-state.bytesTransferred));
+					if(LEN<=state.bytesTransferred)
+					{
+						state.status=STATUSCODE_GOOD;
+						state.message=0;
+						EnterMessageInPhase();
+					}
+					else
+					{
+						townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DATA_INTERVAL);
+					}
 				}
 				else
 				{
@@ -586,11 +600,22 @@ void TownsSCSI::ExecSCSICommand(void)
 					LBA*=HARDDISK_SECTOR_LENGTH;
 					LEN*=HARDDISK_SECTOR_LENGTH;
 
-					auto toWrite=townsPtr->dmac.MemoryToDevice(DMACh,LEN);
-					if(true==cpputil::WriteBinaryFile(state.dev[state.selId].imageFName,LBA,std::min<unsigned int>(LEN,(unsigned int)toWrite.size()),toWrite.data()))
+					auto toWrite=townsPtr->dmac.MemoryToDevice(DMACh,LEN-state.bytesTransferred);
+					if(true==cpputil::WriteBinaryFile(
+					    state.dev[state.selId].imageFName,
+					    LBA+state.bytesTransferred,
+					    std::min<unsigned int>(LEN-state.bytesTransferred,(unsigned int)toWrite.size()),toWrite.data()))
 					{
-						state.status=STATUSCODE_GOOD;
-						state.message=0;
+						state.bytesTransferred+=toWrite.size();
+						if(LEN<=state.bytesTransferred)
+						{
+							state.status=STATUSCODE_GOOD;
+							state.message=0;
+						}
+						else
+						{
+							townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DATA_INTERVAL);
+						}
 					}
 					else
 					{

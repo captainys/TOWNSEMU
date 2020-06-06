@@ -121,6 +121,7 @@ public:
 
 		unsigned int nCommandFilled=0;
 		unsigned char commandBuffer[MAX_NUM_COMMAND_BYTES];
+		unsigned int bytesTransferred=0;
 
 		bool REQ,I_O,MSG,C_D,BUSY,INT,PERR;
 		bool DMAE,SEL,ATN,IMSK,WEN;
