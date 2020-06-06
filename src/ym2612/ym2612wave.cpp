@@ -2270,17 +2270,19 @@ inline int YM2612::Slot::InterpolateEnvelope(unsigned int timeInMS) const
 }
 inline int YM2612::Slot::EnvelopedOutput(int phase,unsigned int timeInMS,unsigned int FB) const
 {
-	int env=InterpolateEnvelope(timeInMS);
-	lastAmplitudeCache=env;
+	int dB=InterpolateEnvelope(timeInMS);
+	unsigned int ampl=DB100to4095Scale[dB];
+	lastAmplitudeCache=ampl;
 	int unscaledOut=UnscaledOutput(phase,FB);
-	return (unscaledOut*env)/4096;
+	return (unscaledOut*ampl)/4096;
 }
 inline int YM2612::Slot::EnvelopedOutput(int phase,unsigned int timeInMS) const
 {
-	int env=InterpolateEnvelope(timeInMS);
-	lastAmplitudeCache=env;
+	int dB=InterpolateEnvelope(timeInMS);
+	unsigned int ampl=DB100to4095Scale[dB];
+	lastAmplitudeCache=ampl;
 	int unscaledOut=UnscaledOutput(phase);
-	return (unscaledOut*env)/4096;
+	return (unscaledOut*ampl)/4096;
 }
 
 ////////////////////////////////////////////////////////////
@@ -2486,7 +2488,7 @@ std::cout << "Requested:" << requestedMicroSec12 << " ToneDuration:" << ch.toneD
 				{
 					auto sl=connectionToOutputSlots[ch.CONNECT].slots[i];
 					int signedStep=ch.slots[sl].phase12Step;
-					PMSAdjustment[sl]=signedStep*PMSAdj/16384;
+					PMSAdjustment[sl]=signedStep*PMSAdj/16384/2;
 				}
 			}
 			{
@@ -2586,15 +2588,13 @@ std::cout << KC << "," << slot.KS << "," << (KC>>(3-slot.KS)) << ", ";
 	}
 
 	const unsigned int TLinv=9600-TLdB100;
-	const unsigned int SLinv=9600-SLdB100;
-	const unsigned int TLampl=DB100to4095Scale[TLinv];
-	const unsigned int SLampl=DB100to4095Scale[SLinv];
 
 std::cout << "AR=" << AR << " DR=" << DR << " SR=" << SR << " TL=" << slot.TL  << " SL=" << slot.SL ;
 std::cout << " ";
 
-	env[1]=TLampl;
-	env[3]=SLampl*TLampl/4095;
+	// Ealier I was linearly interpolating the amplitude, but maybe it is linear in dB scale.
+	env[1]=TLinv;
+	env[3]=(SLdB100<TLinv ? TLinv-SLdB100 : 0);
 	env[5]=0;
 
 
