@@ -44,6 +44,7 @@ void TownsDMAC::State::Reset(void)
 		c.baseAddr=0;
 		c.currentAddr=0;
 		c.modeCtrl=0;
+		c.terminalCount=false;
 	}
 
 	bitSize=16;
@@ -235,6 +236,22 @@ TownsDMAC::TownsDMAC(class FMTowns *townsPtr) : Device(townsPtr)
 	case TOWNSIO_DMAC_MODE_CONTROL://        0xAA,
 		break;
 	case TOWNSIO_DMAC_STATUS://              0xAB,
+		{
+			unsigned int data=0;
+			data|=(state.ch[0].terminalCount ? 0x01 : 0);
+			data|=(state.ch[1].terminalCount ? 0x02 : 0);
+			data|=(state.ch[2].terminalCount ? 0x04 : 0);
+			data|=(state.ch[3].terminalCount ? 0x08 : 0);
+			// data|=(state.ch[0].request ? 0x10 : 0);
+			// data|=(state.ch[1].request ? 0x20 : 0);
+			// data|=(state.ch[2].request ? 0x40 : 0);
+			// data|=(state.ch[3].request ? 0x80 : 0);
+			state.ch[0].terminalCount=false;
+			state.ch[1].terminalCount=false;
+			state.ch[2].terminalCount=false;
+			state.ch[3].terminalCount=false;
+			return data;
+		}
 		break;
 	case TOWNSIO_DMAC_TEMPORARY_REG_LOW://   0xAC,
 		break;
@@ -271,11 +288,17 @@ unsigned int TownsDMAC::DeviceToMemory(State::Channel *DMACh,const std::vector <
 {
 	unsigned int i;
 	auto &mem=townsPtr->mem;
+
 	for(i=0; i<data.size() && 0<=DMACh->currentCount && DMACh->currentCount<=DMACh->baseCount; ++i)
 	{
 		mem.StoreByte(DMACh->currentAddr,data[i]);
 		++DMACh->currentAddr;
 		--DMACh->currentCount;
+	}
+
+	if(DMACh->baseCount<DMACh->currentCount)
+	{
+		DMACh->terminalCount=true;
 	}
 	if(DMACh->currentCount+1==0 && true==DMACh->AUTI()) // :-(  Maybe I should use signed integer for counts.
 	{
@@ -294,6 +317,10 @@ std::vector <unsigned char> TownsDMAC::MemoryToDevice(State::Channel *DMACh,unsi
 		data[i]=mem.FetchByte(DMACh->currentAddr);
 		++DMACh->currentAddr;
 		--DMACh->currentCount;
+	}
+	if(DMACh->baseCount<DMACh->currentCount)
+	{
+		DMACh->terminalCount=true;
 	}
 	data.resize(i);
 	if(DMACh->currentCount+1==0 && true==DMACh->AUTI()) // :-(  Maybe I should use signed integer for counts.

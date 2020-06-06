@@ -1089,6 +1089,15 @@ P
 /end
 /begin0
 T 0
+* 00000421:0000139A
+# Don't cross 64KB boundary. (Why?)
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
 * 00000421:000013A5
 # [SI+08H]=00A2H DMA Count Register
 R 

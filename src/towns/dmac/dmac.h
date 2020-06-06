@@ -44,6 +44,8 @@ public:
 			unsigned int currentAddr;  // 00A4 to 00A7
 			unsigned char modeCtrl;    // 00AA
 
+			bool terminalCount;        // 00AB
+
 			bool AUTI(void) const; // Auto re-initialize
 		};
 
