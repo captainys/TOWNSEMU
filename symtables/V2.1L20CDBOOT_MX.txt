@@ -2007,6 +2007,105 @@ P
 /end
 /begin0
 T 1
+* 0000FC00:00002A99
+# 
+R 
+L SYSROM:(Prob)Read SCSI Sector(s)
+P 
+% 0
+/end
+/begin0
+T 0
+* 0000FC00:00002AA9
+# ABH=DMA Status
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 0000FC00:00002AB1
+# C32H=SCSI Status
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 0000FC00:00002AB7
+# Jump if not in Data Phase
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 0000FC00:00002ABB
+# Jump if Busy
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 0000FC00:00002AC5
+# C32H=SCSI Status
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 0000FC00:00002AC9
+# SCSI Busy?
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 0000FC00:00002ACB
+# Jump if not Busy
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 0000FC00:00002ACD
+# Checking Phase
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 0000FC00:00002ACF
+# Loop if in Data Phase
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 0000FC00:00002AE4
+# 
+R 
+L SYSROM:Set DMA Address=CH:BX Count=FFFFH
+P 
+% 0
+/end
+/begin0
+T 1
 * FFFF0000:000015AD
 # 
 R 

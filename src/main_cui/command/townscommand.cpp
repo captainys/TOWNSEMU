@@ -146,6 +146,8 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	breakEventMap["LBUTTONUP"]=BREAK_ON_LBUTTON_UP;
 	breakEventMap["RETKEY"]=BREAK_ON_RETURN_KEY;
 	breakEventMap["RETURNKEY"]=BREAK_ON_RETURN_KEY;
+	breakEventMap["SCSICMD"]=BREAK_ON_SCSI_COMMAND;
+	breakEventMap["SCSIDMA"]=BREAK_ON_SCSI_DMA_TRANSFER;
 }
 
 void TownsCommandInterpreter::PrintHelp(void) const
@@ -328,6 +330,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "LBUTTONUP" << std::endl;
 	std::cout << "RETKEY" << std::endl;
 	std::cout << "RETURNKEY" << std::endl;
+	std::cout << "SCSICMD" << std::endl;
+	std::cout << "SCSIDMA" << std::endl;
 }
 
 void TownsCommandInterpreter::PrintError(int errCode) const
@@ -1046,6 +1050,12 @@ void TownsCommandInterpreter::Execute_BreakOn(FMTowns &towns,Command &cmd)
 		case BREAK_ON_RETURN_KEY:
 			towns.keyboard.debugBreakOnReturnKey=true;
 			break;
+		case BREAK_ON_SCSI_COMMAND:
+			towns.scsi.breakOnSCSICommand=true;
+			break;
+		case BREAK_ON_SCSI_DMA_TRANSFER:
+			towns.scsi.breakOnDMATransfer=true;
+			break;
 		}
 		std::cout << reason << " is ON." << std::endl;
 	}
@@ -1126,6 +1136,12 @@ void TownsCommandInterpreter::Execute_ClearBreakOn(FMTowns &towns,Command &cmd)
 			break;
 		case BREAK_ON_RETURN_KEY:
 			towns.keyboard.debugBreakOnReturnKey=false;
+			break;
+		case BREAK_ON_SCSI_COMMAND:
+			towns.scsi.breakOnSCSICommand=false;
+			break;
+		case BREAK_ON_SCSI_DMA_TRANSFER:
+			towns.scsi.breakOnDMATransfer=false;
 			break;
 		}
 		std::cout << iter->first << " is OFF." << std::endl;

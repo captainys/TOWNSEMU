@@ -71,6 +71,7 @@ TownsSCSI::TownsSCSI(class FMTowns *townsPtr) : Device(townsPtr)
 	commandLength[SCSICMD_TEST_UNIT_READY]=6;
 	commandLength[SCSICMD_REZERO_UNIT]    =6;
 	commandLength[SCSICMD_INQUIRY]        =6;
+	commandLength[SCSICMD_PREVENT_REMOVAL]=6;
 	commandLength[SCSICMD_READ_CAPACITY]  =10;
 	commandLength[SCSICMD_READ_10]        =10;
 	commandLength[SCSICMD_WRITE_10]       =10;
@@ -380,7 +381,11 @@ void TownsSCSI::ProcessPhaseData(unsigned int dataByte)
 			// Execute command
 			if(true==breakOnSCSICommand)
 			{
-				townsPtr->debugger.ExternalBreak("SCSI Command.");
+				std::string msg;
+				msg="SCSI Command (";
+				msg+=cpputil::Ubtox(state.commandBuffer[0]);
+				msg+="H)";
+				townsPtr->debugger.ExternalBreak(msg);
 			}
 			ExecSCSICommand();
 		}
@@ -397,6 +402,9 @@ void TownsSCSI::ExecSCSICommand(void)
 	case SCSICMD_INQUIRY:
 		EnterDataInPhase();
 		break;
+	case SCSICMD_PREVENT_REMOVAL:
+		// I just ignore this command, and let it return STATUSCODE_GOOD by falling down to SCSICMD_TEST_UNIT_READY.
+		// (state.commandBuffer[4]&1)==1 means Prevent, or 0 Allow.
 	case SCSICMD_REZERO_UNIT:
 		// [9] 9.1.8 Seek and rezero
 		// "Some devices return GOOD status without attempting any action."
