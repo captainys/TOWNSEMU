@@ -84,6 +84,7 @@ public:
 	    Returns number of bytes written to memory.
 	*/
 	unsigned int DeviceToMemory(State::Channel *DMACh,const std::vector <unsigned char> &dat);
+	unsigned int DeviceToMemory(State::Channel *DMACh,unsigned long long len,const unsigned char dat[]);
 	/*! Transfer data from memory to device.
 	    Returns number of bytes read from memory.
 	*/

@@ -701,7 +701,6 @@ bool TownsFDC::WriteFault(void) const
 		break;
 	case 0x60: // Step Out
 	case 0x70: // Step Out
-		
 		MakeReady();
 		--drv.trackPos;
 		if(drv.trackPos<0)
@@ -729,7 +728,12 @@ bool TownsFDC::WriteFault(void) const
 					{
 						townsPtr->NotifyDiskRead();
 
-						DMACPtr->DeviceToMemory(DMACh,secPtr->sectorData);
+						auto bytesTransferred=DMACPtr->DeviceToMemory(DMACh,secPtr->sectorData);
+						if(secPtr->sectorData.size()!=bytesTransferred)
+						{
+							Abort("Not all sector data was transferred by DMA (FD->Mem).");
+						}
+
 						// What am I supposed to if error during DMA?
 						if(state.lastCmd&0x10 && diskPtr->GetSector(drv.trackPos,state.side,drv.sectorReg+1)) // Multi Record
 						{
@@ -794,6 +798,9 @@ bool TownsFDC::WriteFault(void) const
 						}
 						else
 						{
+							{
+								Abort("Not all sector data was transferred by DMA (Mem->FD).");
+							}
 							state.writeFault=true;
 							MakeReady();
 						}

@@ -514,16 +514,42 @@ void TownsSCSI::ExecSCSICommand(void)
 			switch(state.commandBuffer[0])
 			{
 			case SCSICMD_INQUIRY:
-				townsPtr->dmac.DeviceToMemory(DMACh,MakeInquiryData(state.selId));
-				state.status=STATUSCODE_GOOD;
-				state.message=0;
-				EnterMessageInPhase();
+				{
+					auto data=MakeInquiryData(state.selId);
+					state.bytesTransferred+=townsPtr->dmac.DeviceToMemory(
+					    DMACh,
+					    data.size()-state.bytesTransferred,
+					    data.data()+state.bytesTransferred);
+					if(data.size()<=state.bytesTransferred)
+					{
+						state.status=STATUSCODE_GOOD;
+						state.message=0;
+						EnterMessageInPhase();
+					}
+					else
+					{
+						townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DATA_INTERVAL);
+					}
+				}
 				break;
 			case SCSICMD_READ_CAPACITY:
-				townsPtr->dmac.DeviceToMemory(DMACh,MakeReadCapacityData(state.selId));
-				state.status=STATUSCODE_GOOD;
-				state.message=0;
-				EnterMessageInPhase();
+				{
+					auto data=MakeReadCapacityData(state.selId);
+					state.bytesTransferred+=townsPtr->dmac.DeviceToMemory(
+					    DMACh,
+					    data.size()-state.bytesTransferred,
+					    data.data()+state.bytesTransferred);
+					if(data.size()<=state.bytesTransferred)
+					{
+						state.status=STATUSCODE_GOOD;
+						state.message=0;
+						EnterMessageInPhase();
+					}
+					else
+					{
+						townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DATA_INTERVAL);
+					}
+				}
 				break;
 			case SCSICMD_READ_10:
 				if(SCSIDEVICE_HARDDISK==state.dev[state.selId].devType)

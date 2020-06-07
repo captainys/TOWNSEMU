@@ -286,10 +286,14 @@ const TownsDMAC::State::Channel *TownsDMAC::GetDMAChannel(unsigned int ch) const
 
 unsigned int TownsDMAC::DeviceToMemory(State::Channel *DMACh,const std::vector <unsigned char> &data)
 {
+	return DeviceToMemory(DMACh,data.size(),data.data());
+}
+unsigned int TownsDMAC::DeviceToMemory(State::Channel *DMACh,unsigned long long len,const unsigned char data[])
+{
 	unsigned int i;
 	auto &mem=townsPtr->mem;
 
-	for(i=0; i<data.size() && 0<=DMACh->currentCount && DMACh->currentCount<=DMACh->baseCount; ++i)
+	for(i=0; i<len && 0<=DMACh->currentCount && DMACh->currentCount<=DMACh->baseCount; ++i)
 	{
 		mem.StoreByte(DMACh->currentAddr,data[i]);
 		++DMACh->currentAddr;
