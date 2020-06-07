@@ -1117,7 +1117,7 @@ P
 /begin0
 T 0
 * 00000421:000013BE
-# [SI+02H]=0C32H
+# [SI+02H]=0C32H SCSI Status
 R 
 L 
 P 

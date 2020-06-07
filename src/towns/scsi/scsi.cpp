@@ -604,7 +604,8 @@ void TownsSCSI::ExecSCSICommand(void)
 					if(true==cpputil::WriteBinaryFile(
 					    state.dev[state.selId].imageFName,
 					    LBA+state.bytesTransferred,
-					    std::min<unsigned int>(LEN-state.bytesTransferred,(unsigned int)toWrite.size()),toWrite.data()))
+					    (unsigned int)toWrite.size(),
+					    toWrite.data()))
 					{
 						state.bytesTransferred+=toWrite.size();
 						if(LEN<=state.bytesTransferred)

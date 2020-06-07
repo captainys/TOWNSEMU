@@ -5,7 +5,7 @@ import sys
 
 import build
 
-TOWNSTYPE="2F"
+TOWNSTYPE="MX"
 
 THISFILE=os.path.realpath(__file__)
 THISDIR=os.path.dirname(THISFILE)
