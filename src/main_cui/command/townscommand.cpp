@@ -85,6 +85,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["CMOSSAVE"]=CMD_CMOSSAVE;
 	primaryCmdMap["CDLOAD"]=CMD_CDLOAD;
 	primaryCmdMap["CDOPENCLOSE"]=CMD_CDOPENCLOSE;
+	primaryCmdMap["FDLOAD"]=CMD_FDLOAD;
 
 	primaryCmdMap["HOST2VM"]=CMD_HOST_TO_VM_FILE_TRANSFER;
 
@@ -239,6 +240,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Load CD-ROM image." << std::endl;
 	std::cout << "CDOPENCLOSE" << std::endl;
 	std::cout << "  Virtually open and close the internal CD-ROM drive." << std::endl;
+	std::cout << "FDLOAD 0/1 filename" << std::endl;
+	std::cout << "  Load FD image.  The number 0 or 1 is the drive number.  Can also be A or B." << std::endl;
 	std::cout << "SAVEHIST filename.txt" << std::endl;
 	std::cout << "  Save CS:EIP Log to file." << std::endl;
 	std::cout << "SAVEEVT filename.txt" << std::endl;
@@ -589,6 +592,9 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 		break;
 	case CMD_CDOPENCLOSE:
 		towns.cdrom.state.discChanged=true;
+		break;
+	case CMD_FDLOAD:
+		Execute_FDLoad(towns,cmd);
 		break;
 
 	case CMD_HOST_TO_VM_FILE_TRANSFER:
@@ -1343,6 +1349,10 @@ void TownsCommandInterpreter::Execute_SaveEventLog(FMTowns &towns,const std::str
 	{
 		PrintError(ERROR_CANNOT_SAVE_FILE);
 	}
+	else
+	{
+		std::cout << "Saved Event Log." << std::endl;
+	}
 }
 
 void TownsCommandInterpreter::Execute_AddSymbol(FMTowns &towns,Command &cmd)
@@ -1570,6 +1580,29 @@ void TownsCommandInterpreter::Execute_CDLoad(FMTowns &towns,Command &cmd)
 		else
 		{
 			std::cout << "Load Error:" << DiscImage::ErrorCodeToText(errCode) << std::endl;
+		}
+	}
+}
+void TownsCommandInterpreter::Execute_FDLoad(FMTowns &towns,Command &cmd)
+{
+	if(3<=cmd.argv.size())
+	{
+		int drv=0;
+		if('0'==cmd.argv[1][0] || 'A'==cmd.argv[1][0] || 'a'==cmd.argv[1][0])
+		{
+			drv=0;
+		}
+		else if('1'==cmd.argv[1][0] || 'B'==cmd.argv[1][0] || 'b'==cmd.argv[1][0])
+		{
+			drv=1;
+		}
+		if(true==towns.fdc.LoadRawBinary(drv,cmd.argv[2].c_str(),false))
+		{
+			std::cout << "Loaded FD image." << std::endl;
+		}
+		else
+		{
+			std::cout << "Failed to load FD image." << std::endl;
 		}
 	}
 }

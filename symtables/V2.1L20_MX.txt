@@ -854,6 +854,15 @@ P
 % 0
 /end
 /begin0
+T 0
+* 00000421:000003BE
+# DSKCHG flag
+R 
+L 
+P 
+% 0
+/end
+/begin0
 T 1
 * 00000421:0000053A
 # 

@@ -91,6 +91,7 @@ public:
 		CMD_CMOSLOAD,
 		CMD_CDLOAD,
 		CMD_CDOPENCLOSE,
+		CMD_FDLOAD,
 
 		CMD_SAVE_EVENTLOG,
 		CMD_LOAD_EVENTLOG,
@@ -230,6 +231,7 @@ public:
 	void Execute_CMOSLoad(FMTowns &towns,Command &cmd);
 	void Execute_CMOSSave(FMTowns &towns,Command &cmd);
 	void Execute_CDLoad(FMTowns &towns,Command &cmd);
+	void Execute_FDLoad(FMTowns &towns,Command &cmd);
 };
 
 

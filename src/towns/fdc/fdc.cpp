@@ -1041,6 +1041,7 @@ bool TownsFDC::WriteFault(void) const
 		// During the start-up, System ROM writes 0FEH to this register,
 		// which is not listed in the data sheet of MB
 		SendCommand(data);
+		state.drive[DriveSelect()].diskChange=false; // Is this the right timing to erase diskChange flag?
 		PICPtr->SetInterruptRequestBit(TOWNSIRQ_FDC,false);
 		if(true==debugBreakOnCommandWrite)
 		{
@@ -1097,7 +1098,14 @@ bool TownsFDC::WriteFault(void) const
 		break;
 	case TOWNSIO_FDC_DRIVE_STATUS_CONTROL:// 0x208, // [2] pp.253
 		data=(true==state.drive[DriveSelect()].diskChange ? 1 : 0); // DSKCHG [2] pp.773
-		state.drive[DriveSelect()].diskChange=false;
+		// Disk BIOS reads FD status like:
+		// 0421:00000BE0 BA0802                    MOV     DX,0208H
+		// 0421:00000BE3 EC                        IN      AL,DX
+		// 0421:00000BE4 EC                        IN      AL,DX
+		// 0421:00000BE5 EC                        IN      AL,DX
+		// 0421:00000BE6 C3                        RET
+		// Therefore, the timing to clear DSKCHG flag is not status-read.
+		// Maybe when a command is written?
 		data|=(DriveReady() ? 2 : 0);
 		data|=0b01100; // 3-mode drive.      [2] pp.809
 		data|=0x80;    // 2 internal drives. [2] pp.773
