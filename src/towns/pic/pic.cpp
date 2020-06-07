@@ -338,6 +338,17 @@ std::vector <std::string> TownsPIC::GetStateText(void) const
 
 		text.push_back(newline);
 		text.back()="OCW1="+cpputil::Ubtox(i8259A.OCW[0]);
+		for(unsigned int irq=0; irq<8; ++irq)
+		{
+			if(0==(i8259A.OCW[0]&(1<<irq)))
+			{
+				text.back()+=" IRQ";
+				text.back()+=cpputil::Ubtox(i*8+irq);
+				text.back()+="H(";
+				text.back()+=cpputil::Ubtox(0x40+i*8+irq);
+				text.back()+="H)";
+			}
+		}
 
 		text.push_back(newline);
 		text.back()="OCW2="+cpputil::Ubtox(i8259A.OCW[1]);
