@@ -20,7 +20,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <vector>
 #include "townsdef.h"
 
-class TownsARGV
+
+class TownsStartParameters
 {
 public:
 	unsigned int gamePort[2];
@@ -76,6 +77,12 @@ public:
 	};
 	unsigned int scaling=100;
 
+	TownsStartParameters();
+};
+
+class TownsARGV : public TownsStartParameters
+{
+public:
 	TownsARGV();
 	void PrintHelp(void) const;
 	void PrintApplicationList(void) const;

@@ -13,19 +13,30 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 << LICENSE */
 #include <iostream>
+#include <fstream>
 
 #include "townsargv.h"
 #include "cpputil.h"
 
 
 
-TownsARGV::TownsARGV()
+TownsStartParameters::TownsStartParameters()
 {
 	gamePort[0]=TOWNS_GAMEPORTEMU_NONE;
 	gamePort[1]=TOWNS_GAMEPORTEMU_MOUSE;
 	autoStart=true;
 	debugger=false;
 	interactive=true;
+}
+
+
+
+////////////////////////////////////////////////////////////
+
+
+
+TownsARGV::TownsARGV()
+{
 }
 void TownsARGV::PrintHelp(void) const
 {
@@ -83,6 +94,10 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  Use application-specific customization." << std::endl;
 	std::cout << "  For the list of applications, start this program with" << std::endl;
 	std::cout << "   only -APP option." << std::endl;
+	std::cout << "-GENFD filename.bin size_in_KB" << std::endl;
+	std::cout << "  Create a new floppy image.  size_in_KB must be 1232, 1440, 640, or 720." << std::endl;
+	std::cout << "-GENHD filename.bin size_in_MB" << std::endl;
+	std::cout << "  Create a new harddisk image." << std::endl;
 }
 
 void TownsARGV::PrintApplicationList(void) const
@@ -339,6 +354,59 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		else if("-PRETEND386DX"==ARG)
 		{
 			pretend386DX=true;
+		}
+		else if("-GENFD"==ARG && i+2<argc)
+		{
+			std::string fName=argv[i+1];
+			unsigned int KB=cpputil::Atoi(argv[i+2]);
+			if(1232==KB || 1440==KB || 720==KB || 640==KB)
+			{
+				std::vector <unsigned char> zero;
+				zero.resize(KB*1024);
+				for(auto &z : zero)
+				{
+					z=0;
+				}
+				if(true!=cpputil::WriteBinaryFile(fName,zero.size(),zero.data()))
+				{
+					std::cout << "Failed to write file: " << fName << std::endl;
+					return false;
+				}
+			}
+			else
+			{
+				std::cout << "Unsupported floppy-disk size: " << KB << std::endl;
+				std::cout << "Must be 1232, 1440, 720, or 640" << std::endl;
+				return false;
+			}
+			i+=2;
+		}
+		else if("-GENHD"==ARG && i+2<argc)
+		{
+			std::string fName=argv[i+1];
+			unsigned int MB=cpputil::Atoi(argv[i+2]);
+			std::vector <unsigned char> zero;
+			zero.resize(1024*1024);
+			for(auto &z : zero)
+			{
+				z=0;
+			}
+			std::ofstream fp(fName,std::ofstream::binary);
+			if(true==fp.is_open())
+			{
+				while(0!=MB)
+				{
+					fp.write((char *)zero.data(),zero.size());
+					--MB;
+				}
+				fp.close();
+			}
+			else
+			{
+				std::cout << "Failed to write file: " << fName << std::endl;
+				return false;
+			}
+			i+=2;
 		}
 		else
 		{
