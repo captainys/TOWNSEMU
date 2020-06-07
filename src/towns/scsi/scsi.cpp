@@ -612,10 +612,12 @@ void TownsSCSI::ExecSCSICommand(void)
 						{
 							state.status=STATUSCODE_GOOD;
 							state.message=0;
+							EnterMessageInPhase();
 						}
 						else
 						{
 							townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DATA_INTERVAL);
+							// Continue Data-Out Phase.
 						}
 					}
 					else
@@ -623,8 +625,8 @@ void TownsSCSI::ExecSCSICommand(void)
 						state.senseKey=SENSEKEY_ILLEGAL_REQUEST;
 						state.status=STATUSCODE_CHECK_CONDITION;
 						state.message=0; // What am I supposed to return?
+						EnterMessageInPhase();
 					}
-					EnterMessageInPhase();
 				}
 				else
 				{
