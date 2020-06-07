@@ -198,3 +198,21 @@ add_test(
 		H0
 		-UNITTEST
 )
+
+add_test(
+ 	NAME 2F_V21L20_HDDBOOT
+	COMMAND 
+		${TARGET_NAME} 
+		"${CMAKE_SOURCE_DIR}/../../TOWNSEMU_TEST/ROM_2F"
+		-SYM
+		"${CMAKE_SOURCE_DIR}/../symtables/UNITTEST.txt"
+		-CMOS
+		"${CMAKE_SOURCE_DIR}/../testdata/CMOS_HD0.BIN"
+		-HD0
+		"${CMAKE_SOURCE_DIR}/../../TOWNSEMU_TEST/DISKIMG/V21L20HDD_MIN.bin"
+		-EVTLOG
+		"${CMAKE_SOURCE_DIR}/../testdata/eventLog/V21L20_HDDBOOT.txt"
+		-BOOTKEY
+		H0
+		-UNITTEST
+)

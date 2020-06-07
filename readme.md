@@ -139,6 +139,10 @@ The tests are timing-sensitive, or the CPU needs to be reasonably fast.  If not,
 
 
 # Revisions
+### 2020/06/07
+- Improvement in YM2612 emulation.  Still different, but getting similar.  (Struggling to make sense of envelope calculation.)
+- Fixed hard-disk read/write.  Now can install TownsOS in a hard-disk image, and boot from it.
+
 ### 2020/05/26
 - Mouse Integration for Wing Commander.  Need -APP WINGCOMMANDER1 option.
 - Fixed CDC.  Was pushing status code 06 00 00 00 twice after MODE1 Read.
@@ -239,3 +243,7 @@ Eventually I'm going to write a test program and see the behavior on my actual F
 [8] SEGA Genesis Software Manual
 
 [9] http://www.mit.edu/afs/sipb.mit.edu/contrib/doc/specs/protocol/scsi-2/s2-r10l.txt (As of May 3 2020)
+
+[10] List of Floppy Disk Formats, https://en.wikipedia.org/wiki/List_of_floppy_disk_formats, (As of May 23 2020)
+
+[11] YM2608 OPNA Application Manual
