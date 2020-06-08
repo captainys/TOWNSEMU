@@ -298,6 +298,26 @@ void TownsPIC::SetInterruptRequestBit(unsigned int intNum,bool request)
 
 std::vector <std::string> TownsPIC::GetStateText(void) const
 {
+	const std::string devices[]=
+	{
+		"Timer",
+		"Keyboard",
+		"RS232C",
+		"Exp RS232C",
+		"I/O Exp",
+		"I/O Exp",
+		"FD",
+		"",
+		"SCSI",
+		"CDROM",
+		"I/O Exp",
+		"VSYNC",
+		"PRN",
+		"Sound",
+		"I/O Exp",
+		"Reserved",
+	};
+
 	std::vector <std::string> text;
 	for(int i=0; i<2; ++i)
 	{
@@ -342,11 +362,13 @@ std::vector <std::string> TownsPIC::GetStateText(void) const
 		{
 			if(0==(i8259A.OCW[0]&(1<<irq)))
 			{
-				text.back()+=" IRQ";
+				text.back()+=" ";
 				text.back()+=cpputil::Ubtox(i*8+irq);
 				text.back()+="H(";
 				text.back()+=cpputil::Ubtox(0x40+i*8+irq);
-				text.back()+="H)";
+				text.back()+="H:";
+				text.back()+=devices[i*8+irq];
+				text.back()+=")";
 			}
 		}
 
