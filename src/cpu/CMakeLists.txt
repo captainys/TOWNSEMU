@@ -9,6 +9,8 @@ i486inst.cpp
 i486operand.cpp
 i486debug.h
 i486debug.cpp
+i486debugmemaccess.h
+i486debugmemaccess.cpp
 i486symtable.h
 i486symtable.cpp
 )

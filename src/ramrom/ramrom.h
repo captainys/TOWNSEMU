@@ -29,6 +29,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 class MemoryAccess
 {
 public:
+	bool isRedirector=false;
+
 	virtual unsigned int FetchByte(unsigned int physAddr) const=0;
 	virtual unsigned int FetchWord(unsigned int physAddr) const;
 	virtual unsigned int FetchDword(unsigned int physAddr) const;
@@ -112,7 +114,7 @@ public:
 
 /*! Memory class organizes MemoryAccess objects.
     Fetch and store requests will be directed to memory-access objects based on the 
-    pointers stored in the 64KB slots.
+    pointers stored in the 4KB slots.
 */
 class Memory
 {
@@ -121,10 +123,15 @@ private:
 	NullMemoryAccess nullAccess;
 	enum
 	{
-		GRANURALITY_SHIFT=12,
+		GRANURALITY_SHIFT=12,  // 4KB slot.
 	};
 
 public:
+	enum
+	{
+		MEMORY_ACCESS_SLOT_SIZE=(1<<GRANURALITY_SHIFT),
+	};
+
 	Memory();
 
 	/*! Register memory-access object for physical address physAddrLow to physAddrHigh.
