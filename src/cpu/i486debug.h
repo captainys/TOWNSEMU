@@ -92,8 +92,10 @@ public:
 
 	void AddBreakOnIORead(unsigned int ioport);
 	void RemoveBreakOnIORead(unsigned int ioport);
+	void RemoveBreakOnIORead(void);
 	void AddBreakOnIOWrite(unsigned int ioport);
 	void RemoveBreakOnIOWrite(unsigned int ioport);
+	void RemoveBreakOnIOWrite(void);
 	const std::vector <unsigned int> GetBreakOnIORead(void) const;
 	const std::vector <unsigned int> GetBreakOnIOWrite(void) const;
 

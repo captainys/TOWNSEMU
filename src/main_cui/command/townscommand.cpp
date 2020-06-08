@@ -16,6 +16,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <iostream>
 #include <fstream>
 
+#include "i486debugmemaccess.h"
+
 #include "townscommand.h"
 #include "townscommandutil.h"
 #include "cpputil.h"
@@ -150,6 +152,10 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	breakEventMap["RETURNKEY"]=BREAK_ON_RETURN_KEY;
 	breakEventMap["SCSICMD"]=BREAK_ON_SCSI_COMMAND;
 	breakEventMap["SCSIDMA"]=BREAK_ON_SCSI_DMA_TRANSFER;
+	breakEventMap["MEMREAD"]=BREAK_ON_MEM_READ;
+	breakEventMap["MEMR"]=BREAK_ON_MEM_READ;
+	breakEventMap["MEMWRITE"]=BREAK_ON_MEM_WRITE;
+	breakEventMap["MEMW"]=BREAK_ON_MEM_WRITE;
 }
 
 void TownsCommandInterpreter::PrintHelp(void) const
@@ -338,6 +344,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "RETURNKEY" << std::endl;
 	std::cout << "SCSICMD" << std::endl;
 	std::cout << "SCSIDMA" << std::endl;
+	std::cout << "MEMREAD physAddr" << std::endl;
+	std::cout << "MEMWRITE physAddr" << std::endl;
 }
 
 void TownsCommandInterpreter::PrintError(int errCode) const
@@ -1066,6 +1074,28 @@ void TownsCommandInterpreter::Execute_BreakOn(FMTowns &towns,Command &cmd)
 		case BREAK_ON_SCSI_DMA_TRANSFER:
 			towns.scsi.breakOnDMATransfer=true;
 			break;
+		case BREAK_ON_MEM_READ:
+			if(3<=cmd.argv.size())
+			{
+				i486DebugMemoryAccess::SetBreakOnMemRead(towns.mem,towns.debugger,cpputil::Xtoi(cmd.argv[2].c_str()));
+			}
+			else
+			{
+				PrintError(ERROR_TOO_FEW_ARGS);
+				return;
+			}
+			break;
+		case BREAK_ON_MEM_WRITE:
+			if(3<=cmd.argv.size())
+			{
+				i486DebugMemoryAccess::SetBreakOnMemWrite(towns.mem,towns.debugger,cpputil::Xtoi(cmd.argv[2].c_str()));
+			}
+			else
+			{
+				PrintError(ERROR_TOO_FEW_ARGS);
+				return;
+			}
+			break;
 		}
 		std::cout << reason << " is ON." << std::endl;
 	}
@@ -1119,7 +1149,7 @@ void TownsCommandInterpreter::Execute_ClearBreakOn(FMTowns &towns,Command &cmd)
 			}
 			else
 			{
-				PrintError(ERROR_TOO_FEW_ARGS);
+				towns.debugger.RemoveBreakOnIORead();
 			}
 			break;
 		case BREAK_ON_IOWRITE:
@@ -1130,7 +1160,7 @@ void TownsCommandInterpreter::Execute_ClearBreakOn(FMTowns &towns,Command &cmd)
 			}
 			else
 			{
-				PrintError(ERROR_TOO_FEW_ARGS);
+				towns.debugger.RemoveBreakOnIOWrite();
 			}
 			break;
 		case BREAK_ON_VRAMREAD:
@@ -1152,6 +1182,26 @@ void TownsCommandInterpreter::Execute_ClearBreakOn(FMTowns &towns,Command &cmd)
 			break;
 		case BREAK_ON_SCSI_DMA_TRANSFER:
 			towns.scsi.breakOnDMATransfer=false;
+			break;
+		case BREAK_ON_MEM_READ:
+			if(3<=cmd.argv.size())
+			{
+				i486DebugMemoryAccess::ClearBreakOnMemRead(towns.mem,cpputil::Xtoi(cmd.argv[2].c_str()));
+			}
+			else
+			{
+				i486DebugMemoryAccess::ClearBreakOnMemRead(towns.mem);
+			}
+			break;
+		case BREAK_ON_MEM_WRITE:
+			if(3<=cmd.argv.size())
+			{
+				i486DebugMemoryAccess::ClearBreakOnMemWrite(towns.mem,cpputil::Xtoi(cmd.argv[2].c_str()));
+			}
+			else
+			{
+				i486DebugMemoryAccess::ClearBreakOnMemWrite(towns.mem);
+			}
 			break;
 		}
 		std::cout << iter->first << " is OFF." << std::endl;

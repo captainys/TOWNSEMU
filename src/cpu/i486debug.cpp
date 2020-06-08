@@ -196,6 +196,13 @@ void i486Debugger::RemoveBreakOnIORead(unsigned int ioport)
 {
 	breakOnIORead[ioport%(i486DX::I486_NUM_IOPORT)]=false;
 }
+void i486Debugger::RemoveBreakOnIORead(void)
+{
+	for(unsigned int i=0; i<i486DX::I486_NUM_IOPORT; ++i)
+	{
+		breakOnIORead[i]=false;
+	}
+}
 void i486Debugger::AddBreakOnIOWrite(unsigned int ioport)
 {
 	breakOnIOWrite[ioport%(i486DX::I486_NUM_IOPORT)]=true;
@@ -203,6 +210,13 @@ void i486Debugger::AddBreakOnIOWrite(unsigned int ioport)
 void i486Debugger::RemoveBreakOnIOWrite(unsigned int ioport)
 {
 	breakOnIOWrite[ioport%(i486DX::I486_NUM_IOPORT)]=false;
+}
+void i486Debugger::RemoveBreakOnIOWrite(void)
+{
+	for(unsigned int i=0; i<i486DX::I486_NUM_IOPORT; ++i)
+	{
+		breakOnIOWrite[i]=false;
+	}
 }
 const std::vector <unsigned int> i486Debugger::GetBreakOnIORead(void) const
 {
