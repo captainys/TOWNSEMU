@@ -102,7 +102,6 @@ i486Debugger::i486Debugger()
 {
 	specialDebugInfo=new SpecialDebugInfo;
 	symTablePtr=new i486SymbolTable;
-	ioTablePtr=new std::map <unsigned int,std::string>;
 	breakOnIORead.resize(i486DX::I486_NUM_IOPORT);
 	breakOnIOWrite.resize(i486DX::I486_NUM_IOPORT);
 	for(auto iter=breakOnIORead.begin(); breakOnIORead.end()!=iter; ++iter)
@@ -119,7 +118,6 @@ i486Debugger::~i486Debugger()
 {
 	delete specialDebugInfo;
 	delete symTablePtr;
-	delete ioTablePtr;
 }
 
 i486SymbolTable &i486Debugger::GetSymTable(void)
@@ -132,11 +130,11 @@ const i486SymbolTable &i486Debugger::GetSymTable(void) const
 }
 std::map <unsigned int,std::string> &i486Debugger::GetIOTable(void)
 {
-	return *ioTablePtr;
+	return ioLabel;
 }
 const std::map <unsigned int,std::string> &i486Debugger::GetIOTable(void) const
 {
-	return *ioTablePtr;
+	return ioLabel;
 }
 
 void i486Debugger::CleanUp(void)

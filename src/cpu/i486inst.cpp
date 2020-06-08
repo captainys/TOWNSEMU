@@ -1834,6 +1834,15 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		cpputil::ExtendString(disasm,8);
 		disasm+="AL,";
 		disasm+=cpputil::Ubtox(EvalUimm8())+"H";
+		{
+			auto found=ioTable.find(EvalUimm8());
+			if(ioTable.end()!=found)
+			{
+				disasm+=" (";
+				disasm+=found->second;
+				disasm+=")";
+			}
+		}
 		break;
 	case I486_OPCODE_IN_A_I8://=         0xE5,
 		disasm="IN";
@@ -1847,6 +1856,15 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 			disasm+="EAX,";
 		}
 		disasm+=cpputil::Ubtox(EvalUimm8())+"H";
+		{
+			auto found=ioTable.find(EvalUimm8());
+			if(ioTable.end()!=found)
+			{
+				disasm+=" (";
+				disasm+=found->second;
+				disasm+=")";
+			}
+		}
 		break;
 	case I486_OPCODE_IN_AL_DX://=        0xEC,
 		disasm="IN      AL,DX";
@@ -2728,6 +2746,15 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		cpputil::ExtendString(disasm,8);
 		disasm+=cpputil::Ubtox(EvalUimm8())+"H";
 		disasm+=",AL";
+		{
+			auto found=ioTable.find(EvalUimm8());
+			if(ioTable.end()!=found)
+			{
+				disasm+=" (";
+				disasm+=found->second;
+				disasm+=")";
+			}
+		}
 		break;
 	case I486_OPCODE_OUT_I8_A: //         0xE7,
 		disasm="OUT";
@@ -2740,6 +2767,15 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		else
 		{
 			disasm+=",EAX";
+		}
+		{
+			auto found=ioTable.find(EvalUimm8());
+			if(ioTable.end()!=found)
+			{
+				disasm+=" (";
+				disasm+=found->second;
+				disasm+=")";
+			}
 		}
 		break;
 	case I486_OPCODE_OUT_DX_AL: //        0xEE,
