@@ -63,6 +63,13 @@ public:
 	i486SymbolTable &GetSymTable(void);
 	const i486SymbolTable &GetSymTable(void) const;
 
+private:
+	std::map <unsigned int,std::string> *ioTablePtr;
+public:
+	std::map <unsigned int,std::string> &GetIOTable(void);
+	const std::map <unsigned int,std::string> &GetIOTable(void) const;
+
+
 	class SpecialDebugInfo;
 	SpecialDebugInfo *specialDebugInfo;
 

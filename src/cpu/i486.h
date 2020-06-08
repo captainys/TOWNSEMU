@@ -16,6 +16,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #define I486_IS_INCLUDED
 /* { */
 
+#include <map>
 #include <string>
 #include <iostream>
 
@@ -639,7 +640,7 @@ public:
 			fwait=0;
 		}
 
-		std::string Disassemble(const Operand &op1,const Operand &op2,SegmentRegister reg,unsigned int offset,const class i486SymbolTable &symTable) const;
+		std::string Disassemble(const Operand &op1,const Operand &op2,SegmentRegister reg,unsigned int offset,const class i486SymbolTable &symTable,const std::map <unsigned int,std::string> &ioTable) const;
 	private:
 		/* operandSize is 8, 16, or 32 */
 		std::string DisassembleTypicalOneOperand(std::string inst,const Operand &op,int operandSize) const;
@@ -2291,7 +2292,7 @@ private:
 public:
 	/*! Make a disassembly.
 	*/
-	std::string Disassemble(const Instruction &inst,const Operand &op1,const Operand &op2,SegmentRegister seg,unsigned int offset,const Memory &mem,const class i486SymbolTable &symTable) const;
+	std::string Disassemble(const Instruction &inst,const Operand &op1,const Operand &op2,SegmentRegister seg,unsigned int offset,const Memory &mem,const class i486SymbolTable &symTable,const std::map <unsigned int,std::string> &ioTable) const;
 
 	/*! Make a data line for disassembly.
 	    When it reaches chopOff, the rest will be shown as :.

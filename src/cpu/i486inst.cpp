@@ -1286,7 +1286,7 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 	}
 }
 
-std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand &op2In,SegmentRegister cs,unsigned int eip,const i486SymbolTable &symTable) const
+std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand &op2In,SegmentRegister cs,unsigned int eip,const i486SymbolTable &symTable,const std::map <unsigned int,std::string> &ioTable) const
 {
 	std::string disasm;
 	Operand op1=op1In,op2=op2In;

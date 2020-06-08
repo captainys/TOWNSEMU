@@ -588,7 +588,7 @@ void FMTowns::PrintDisassembly(void) const
 {
 	i486DX::Operand op1,op2;
 	auto inst=FetchInstruction(op1,op2);
-	auto disasm=cpu.Disassemble(inst,op1,op2,cpu.state.CS(),cpu.state.EIP,mem,debugger.GetSymTable());
+	auto disasm=cpu.Disassemble(inst,op1,op2,cpu.state.CS(),cpu.state.EIP,mem,debugger.GetSymTable(),debugger.GetIOTable());
 	std::cout << disasm << std::endl;
 }
 

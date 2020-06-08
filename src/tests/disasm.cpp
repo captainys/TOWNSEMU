@@ -13,6 +13,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 << LICENSE */
 #include <iostream>
+#include <map>
 #include <string>
 
 #include "cpputil.h"
@@ -70,8 +71,9 @@ bool TestDisassembly(unsigned int operandSize,unsigned int addressSize,long long
 
 	i486DX::Operand op1,op2;
 	i486SymbolTable emptySymTable;
+	std::map <unsigned int,std::string> emptyIOTable;
 	auto inst=cpu.FetchInstruction(op1,op2,cpu.state.CS(),cpu.state.EIP,mem,cpu.state.CS().operandSize,cpu.state.CS().addressSize);
-	auto disasm=inst.Disassemble(op1,op2,cpu.state.CS(),cpu.state.EIP,emptySymTable);
+	auto disasm=inst.Disassemble(op1,op2,cpu.state.CS(),cpu.state.EIP,emptySymTable,emptyIOTable);
 
 	std::cout << "Disassembled as: [" << disasm << "]" << std::endl;
 	if(disasm!=correctDisasm)

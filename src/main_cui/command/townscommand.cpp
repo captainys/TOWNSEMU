@@ -1214,7 +1214,7 @@ void TownsCommandInterpreter::Execute_Disassemble(FMTowns &towns,Command &cmd)
 		}
 		else
 		{
-			auto disasm=towns.cpu.Disassemble(inst,op1,op2,seg,farPtr.OFFSET,towns.mem,towns.debugger.GetSymTable());
+			auto disasm=towns.cpu.Disassemble(inst,op1,op2,seg,farPtr.OFFSET,towns.mem,towns.debugger.GetSymTable(),towns.debugger.GetIOTable());
 			std::cout << disasm << std::endl;
 			farPtr.OFFSET+=inst.numBytes;
 		}
@@ -1252,7 +1252,7 @@ void TownsCommandInterpreter::Execute_Disassemble16(FMTowns &towns,Command &cmd)
 		}
 		else
 		{
-			auto disasm=towns.cpu.Disassemble(inst,op1,op2,seg,farPtr.OFFSET,towns.mem,towns.debugger.GetSymTable());
+			auto disasm=towns.cpu.Disassemble(inst,op1,op2,seg,farPtr.OFFSET,towns.mem,towns.debugger.GetSymTable(),towns.debugger.GetIOTable());
 			std::cout << disasm << std::endl;
 			farPtr.OFFSET+=inst.numBytes;
 		}
@@ -1290,7 +1290,7 @@ void TownsCommandInterpreter::Execute_Disassemble32(FMTowns &towns,Command &cmd)
 		}
 		else
 		{
-			auto disasm=towns.cpu.Disassemble(inst,op1,op2,seg,farPtr.OFFSET,towns.mem,towns.debugger.GetSymTable());
+			auto disasm=towns.cpu.Disassemble(inst,op1,op2,seg,farPtr.OFFSET,towns.mem,towns.debugger.GetSymTable(),towns.debugger.GetIOTable());
 			std::cout << disasm << std::endl;
 			farPtr.OFFSET+=inst.numBytes;
 		}
@@ -1301,6 +1301,7 @@ void TownsCommandInterpreter::Execute_Disassemble32(FMTowns &towns,Command &cmd)
 void TownsCommandInterpreter::Execute_PrintHistory(FMTowns &towns,unsigned int n)
 {
 	auto list=towns.debugger.GetCSEIPLog(n);
+	auto &symTable=towns.debugger.GetSymTable();
 	for(auto iter=list.rbegin(); iter!=list.rend(); ++iter)
 	{
 		std::cout << cpputil::Ustox(iter->SEG) << ":" << cpputil::Uitox(iter->OFFSET);
@@ -1312,6 +1313,11 @@ void TownsCommandInterpreter::Execute_PrintHistory(FMTowns &towns,unsigned int n
 		{
 			std::cout << "(" << cpputil::Itoa((unsigned int)iter->count) << ")";
 		}
+		auto symbolPtr=symTable.Find(iter->SEG,iter->OFFSET);
+		if(nullptr!=symbolPtr)
+		{
+			std::cout << " " << symbolPtr->Format();
+		}
 		std::cout << std::endl;
 	}
 }
@@ -1322,6 +1328,7 @@ void TownsCommandInterpreter::Execute_SaveHistory(FMTowns &towns,const std::stri
 	if(ofp.is_open())
 	{
 		auto list=towns.debugger.GetCSEIPLog();
+		auto &symTable=towns.debugger.GetSymTable();
 		for(auto iter=list.rbegin(); iter!=list.rend(); ++iter)
 		{
 			ofp << cpputil::Ustox(iter->SEG) << ":" << cpputil::Uitox(iter->OFFSET);
@@ -1332,6 +1339,11 @@ void TownsCommandInterpreter::Execute_SaveHistory(FMTowns &towns,const std::stri
 			if(1<iter->count)
 			{
 				ofp << "(" << cpputil::Itoa((unsigned int)iter->count) << ")";
+			}
+			auto symbolPtr=symTable.Find(iter->SEG,iter->OFFSET);
+			if(nullptr!=symbolPtr)
+			{
+				ofp << " " << symbolPtr->Format();
 			}
 			ofp << std::endl;
 		}

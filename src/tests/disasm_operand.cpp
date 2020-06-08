@@ -13,6 +13,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 << LICENSE */
 #include <iostream>
+#include <map>
 #include <string>
 
 #include "towns.h"
@@ -48,7 +49,8 @@ bool TestDisassembly(
 	seg.baseLinearAddr=0;
 
 	i486SymbolTable symTable;
-	auto disasm=inst.Disassemble(op1,op2,seg,0,symTable);
+	std::map <unsigned int,std::string> ioTable;
+	auto disasm=inst.Disassemble(op1,op2,seg,0,symTable,ioTable);
 
 	// auto disasm=towns.cpu.DisassembleAddressing(addressSize,dataSize,operand);
 	std::cout << "Disassembled as: [" << disasm << "]" << std::endl;
