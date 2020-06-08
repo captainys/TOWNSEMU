@@ -26,7 +26,7 @@ class i486DebugMemoryAccess : public MemoryAccess
 public:
 	i486Debugger *debuggerPtr;
 	unsigned int physAddrTop;
-	MemoryAccess *redirectPtr;
+	using MemoryAccess::memAccessChain;
 
 	bool breakOnRead[Memory::MEMORY_ACCESS_SLOT_SIZE];
 	bool breakOnWrite[Memory::MEMORY_ACCESS_SLOT_SIZE];
@@ -46,6 +46,12 @@ public:
 	virtual void StoreByte(unsigned int physAddr,unsigned char data);
 	virtual void StoreWord(unsigned int physAddr,unsigned int data);
 	virtual void StoreDword(unsigned int physAddr,unsigned int data);
+	virtual ConstPointer GetReadAccessPointer(unsigned int physAddr) const;
+
+	static void SetBreakOnMemRead(Memory &mem,i486Debugger &debugger,unsigned int physAddr);
+	static void ClearBreakOnMemRead(Memory &mem,i486Debugger &debugger,unsigned int physAddr);
+	static void SetBreakOnMemWrite(Memory &mem,i486Debugger &debugger,unsigned int physAddr);
+	static void ClearBreakOnMemWrite(Memory &mem,i486Debugger &debugger,unsigned int physAddr);
 };
 
 /* } */

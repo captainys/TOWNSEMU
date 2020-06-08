@@ -29,7 +29,15 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 class MemoryAccess
 {
 public:
-	bool isRedirector=false;
+	/*! For debugging memory read/write, a debug memory-access object may be inserted
+	    between Memory class and a specific memory-access object.
+
+	    memAccessChain is to tell Memory class that a memory-access object is inserted.
+
+	    AddAccess function only changes the terminal memory-access object, if a memory-access
+	    object is inserted.
+	*/
+	MemoryAccess *memAccessChain=nullptr;
 
 	virtual unsigned int FetchByte(unsigned int physAddr) const=0;
 	virtual unsigned int FetchWord(unsigned int physAddr) const;
@@ -138,6 +146,14 @@ public:
 	    Ex.  AddAccess(&low1MBAccess,0x00000000,0x000FFFFF);
 	*/
 	void AddAccess(MemoryAccess *memAccess,unsigned int physAddrLow,unsigned int physAddrHigh);
+
+	/*! Register memory-access object for the window that the physical address resides.
+	*/
+	void SetAccessObject(MemoryAccess *memAccess,unsigned int physAddr);
+
+	/*! Returns memory access pointer for the given physical address.
+	*/
+	MemoryAccess *GetAccessObject(unsigned int physAddr);
 
 
 	inline unsigned int FetchByte(unsigned int physAddr) const

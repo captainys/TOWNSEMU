@@ -97,6 +97,28 @@ void Memory::AddAccess(MemoryAccess *memAccess,unsigned int physAddrLow,unsigned
 	auto high=physAddrHigh>>GRANURALITY_SHIFT;
 	for(auto i=low; i<=high; ++i)
 	{
-		memAccessPtr[i]=memAccess;
+		if(nullptr==memAccessPtr[i]->memAccessChain)
+		{
+			memAccessPtr[i]=memAccess;
+		}
+		else
+		{
+			auto ptr=memAccessPtr[i];
+			while(nullptr!=ptr->memAccessChain->memAccessChain)
+			{
+				ptr=ptr->memAccessChain;
+			}
+			ptr->memAccessChain=memAccess;
+		}
 	}
+}
+void Memory::SetAccessObject(MemoryAccess *memAccess,unsigned int physAddr)
+{
+	auto slot=physAddr>>GRANURALITY_SHIFT;
+	memAccessPtr[slot]=memAccess;
+}
+MemoryAccess *Memory::GetAccessObject(unsigned int physAddr)
+{
+	auto slot=physAddr>>GRANURALITY_SHIFT;
+	return memAccessPtr[slot];
 }

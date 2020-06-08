@@ -20,9 +20,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 i486DebugMemoryAccess::i486DebugMemoryAccess(i486Debugger &debugger,unsigned int physAddrTop)
 {
-	this->isRedirector=true;
 	this->debuggerPtr=&debugger;
-	this->physAddrTop=physAddrTop;
+	this->physAddrTop=physAddrTop&(~(Memory::MEMORY_ACCESS_SLOT_SIZE-1));
 	for(unsigned int i=0; i<Memory::MEMORY_ACCESS_SLOT_SIZE; ++i)
 	{
 		breakOnRead[i]=false;
@@ -94,7 +93,7 @@ void i486DebugMemoryAccess::ClearBreakOnWrite(unsigned int physAddr)
 		msg+="]";
 		debuggerPtr->ExternalBreak(msg);
 	}
-	return redirectPtr->FetchByte(physAddr);
+	return memAccessChain->FetchByte(physAddr);
 }
 /* virtual */ unsigned int i486DebugMemoryAccess::FetchWord(unsigned int physAddr) const
 {
@@ -107,7 +106,7 @@ void i486DebugMemoryAccess::ClearBreakOnWrite(unsigned int physAddr)
 		msg+="]";
 		debuggerPtr->ExternalBreak(msg);
 	}
-	return redirectPtr->FetchWord(physAddr);
+	return memAccessChain->FetchWord(physAddr);
 }
 /* virtual */ unsigned int i486DebugMemoryAccess::FetchDword(unsigned int physAddr) const
 {
@@ -122,7 +121,7 @@ void i486DebugMemoryAccess::ClearBreakOnWrite(unsigned int physAddr)
 		msg+="]";
 		debuggerPtr->ExternalBreak(msg);
 	}
-	return redirectPtr->FetchDword(physAddr);
+	return memAccessChain->FetchDword(physAddr);
 }
 /* virtual */ void i486DebugMemoryAccess::StoreByte(unsigned int physAddr,unsigned char data)
 {
@@ -134,7 +133,7 @@ void i486DebugMemoryAccess::ClearBreakOnWrite(unsigned int physAddr)
 		msg+="]";
 		debuggerPtr->ExternalBreak(msg);
 	}
-	redirectPtr->StoreByte(physAddr,data);
+	memAccessChain->StoreByte(physAddr,data);
 }
 /* virtual */ void i486DebugMemoryAccess::StoreWord(unsigned int physAddr,unsigned int data)
 {
@@ -147,7 +146,7 @@ void i486DebugMemoryAccess::ClearBreakOnWrite(unsigned int physAddr)
 		msg+="]";
 		debuggerPtr->ExternalBreak(msg);
 	}
-	redirectPtr->StoreWord(physAddr,data);
+	memAccessChain->StoreWord(physAddr,data);
 }
 /* virtual */ void i486DebugMemoryAccess::StoreDword(unsigned int physAddr,unsigned int data)
 {
@@ -162,5 +161,52 @@ void i486DebugMemoryAccess::ClearBreakOnWrite(unsigned int physAddr)
 		msg+="]";
 		debuggerPtr->ExternalBreak(msg);
 	}
-	redirectPtr->StoreDword(physAddr,data);
+	memAccessChain->StoreDword(physAddr,data);
+}
+/* virtual */ MemoryAccess::ConstPointer i486DebugMemoryAccess::GetReadAccessPointer(unsigned int physAddr) const
+{
+	return memAccessChain->GetReadAccessPointer(physAddr);
+}
+
+/* static */ void i486DebugMemoryAccess::SetBreakOnMemRead(Memory &mem,i486Debugger &debugger,unsigned int physAddr)
+{
+	auto *curMemAccess=mem.GetAccessObject(physAddr);
+	i486DebugMemoryAccess *debugMemAccess=dynamic_cast <i486DebugMemoryAccess *>(curMemAccess);
+	if(nullptr==debugMemAccess)
+	{
+		debugMemAccess=new i486DebugMemoryAccess(debugger,physAddr);
+		debugMemAccess->memAccessChain=curMemAccess;
+	}
+	debugMemAccess->SetBreakOnRead(physAddr);
+	mem.SetAccessObject(debugMemAccess,physAddr);
+}
+/* static */ void i486DebugMemoryAccess::ClearBreakOnMemRead(Memory &mem,i486Debugger &debugger,unsigned int physAddr)
+{
+	auto *curMemAccess=mem.GetAccessObject(physAddr);
+	i486DebugMemoryAccess *debugMemAccess=dynamic_cast <i486DebugMemoryAccess *>(curMemAccess);
+	if(nullptr!=debugMemAccess)
+	{
+		debugMemAccess->ClearBreakOnRead(physAddr);
+	}
+}
+/* static */ void i486DebugMemoryAccess::SetBreakOnMemWrite(Memory &mem,i486Debugger &debugger,unsigned int physAddr)
+{
+	auto *curMemAccess=mem.GetAccessObject(physAddr);
+	i486DebugMemoryAccess *debugMemAccess=dynamic_cast <i486DebugMemoryAccess *>(curMemAccess);
+	if(nullptr==debugMemAccess)
+	{
+		debugMemAccess=new i486DebugMemoryAccess(debugger,physAddr);
+		debugMemAccess->memAccessChain=curMemAccess;
+	}
+	debugMemAccess->SetBreakOnWrite(physAddr);
+	mem.SetAccessObject(debugMemAccess,physAddr);
+}
+/* static */ void i486DebugMemoryAccess::ClearBreakOnMemWrite(Memory &mem,i486Debugger &debugger,unsigned int physAddr)
+{
+	auto *curMemAccess=mem.GetAccessObject(physAddr);
+	i486DebugMemoryAccess *debugMemAccess=dynamic_cast <i486DebugMemoryAccess *>(curMemAccess);
+	if(nullptr!=debugMemAccess)
+	{
+		debugMemAccess->ClearBreakOnWrite(physAddr);
+	}
 }
