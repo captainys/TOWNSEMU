@@ -219,7 +219,14 @@ bool Setup(FMTowns &towns,Outside_World *outside_world,const TownsARGV &argv)
 
 	towns.var.freeRunTimerShift=0;
 
-	towns.var.CMOSFName=argv.CMOSFName;
+	if(true==argv.autoSaveCMOS)
+	{
+		towns.var.CMOSFName=argv.CMOSFName;
+	}
+	else
+	{
+		towns.var.CMOSFName="";
+	}
 	if(0<argv.CMOSFName.size())
 	{
 		auto CMOSBinary=cpputil::ReadBinaryFile(argv.CMOSFName);

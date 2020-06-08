@@ -32,6 +32,7 @@ public:
 
 	std::string ROMPath;
 	std::string CMOSFName;
+	bool autoSaveCMOS=true; // If this flag is false, CMOSFName will not be copied to FMTowns::Variable.
 	std::string fdImgFName[2];
 	std::string cdImgFName;
 	std::string startUpScriptFName;
@@ -59,9 +60,9 @@ public:
 	};
 	std::vector <FileToSend> toSend;
 
-	bool autoStart;
-	bool debugger;
-	bool interactive;
+	bool autoStart=true;
+	bool debugger=false;
+	bool interactive=true;
 
 	bool pretend386DX=false;
 

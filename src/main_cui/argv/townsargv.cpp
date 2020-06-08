@@ -24,9 +24,6 @@ TownsStartParameters::TownsStartParameters()
 {
 	gamePort[0]=TOWNS_GAMEPORTEMU_NONE;
 	gamePort[1]=TOWNS_GAMEPORTEMU_MOUSE;
-	autoStart=true;
-	debugger=false;
-	interactive=true;
 }
 
 
@@ -63,6 +60,8 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "-CMOS filename" << std::endl;
 	std::cout << "  Specify CMOS (BIOS settings) file.  If you specify this option," << std::endl;
 	std::cout << "  CMOS settings will be saved automatically when closing the program." << std::endl;
+	std::cout << "-DONTAUTOSAVECMOS" << std::endl;
+	std::cout << "  This option will prevent VM from saving CMOS file on exit." << std::endl;
 	std::cout << "-FD0 filename" << std::endl;
 	std::cout << "  Floppy disk image file name for Drive A." << std::endl;
 	std::cout << "-FD1 filename" << std::endl;
@@ -219,6 +218,10 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		{
 			CMOSFName=argv[i+1];
 			++i;
+		}
+		else if("-DONTAUTOSAVECMOS"==ARG)
+		{
+			autoSaveCMOS=false;
 		}
 		else if(("-HD0"==ARG ||
 		         "-HD1"==ARG ||

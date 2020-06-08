@@ -23,6 +23,7 @@ add_test(
 		-SYM
 		"${CMAKE_SOURCE_DIR}/../symtables/UNITTEST.txt"
 		-UNITTEST
+		-DONTAUTOSAVECMOS
 )
 
 add_test(
@@ -35,6 +36,7 @@ add_test(
 		-SYM
 		"${CMAKE_SOURCE_DIR}/../symtables/UNITTEST.txt"
 		-UNITTEST
+		-DONTAUTOSAVECMOS
 )
 
 add_test(
@@ -47,6 +49,7 @@ add_test(
 		-SYM
 		"${CMAKE_SOURCE_DIR}/../symtables/UNITTEST.txt"
 		-UNITTEST
+		-DONTAUTOSAVECMOS
 )
 
 add_test(
@@ -59,6 +62,7 @@ add_test(
 		-SYM
 		"${CMAKE_SOURCE_DIR}/../symtables/UNITTEST.txt"
 		-UNITTEST
+		-DONTAUTOSAVECMOS
 )
 
 add_test(
@@ -71,6 +75,7 @@ add_test(
 		-SYM
 		"${CMAKE_SOURCE_DIR}/../symtables/UNITTEST.txt"
 		-UNITTEST
+		-DONTAUTOSAVECMOS
 )
 
 add_test(
@@ -83,6 +88,7 @@ add_test(
 		-SYM
 		"${CMAKE_SOURCE_DIR}/../symtables/UNITTEST.txt"
 		-UNITTEST
+		-DONTAUTOSAVECMOS
 )
 
 add_test(
@@ -95,6 +101,7 @@ add_test(
 		-SYM
 		"${CMAKE_SOURCE_DIR}/../symtables/UNITTEST.txt"
 		-UNITTEST
+		-DONTAUTOSAVECMOS
 )
 
 add_test(
@@ -109,6 +116,7 @@ add_test(
 		-CD
 		"${CMAKE_SOURCE_DIR}/../testdata/ISOIMG/TESTDISC.iso"
 		-UNITTEST
+		-DONTAUTOSAVECMOS
 )
 
 add_test(
@@ -123,6 +131,7 @@ add_test(
 		-CD
 		"${CMAKE_SOURCE_DIR}/../testdata/ISOIMG/TESTDISC.iso"
 		-UNITTEST
+		-DONTAUTOSAVECMOS
 )
 
 add_test(
@@ -139,6 +148,7 @@ add_test(
 		-UNITTEST
 		-FREQ
 		20
+		-DONTAUTOSAVECMOS
 )
 
 add_test(
@@ -153,6 +163,7 @@ add_test(
 		-EVTLOG
 		"${CMAKE_SOURCE_DIR}/../testdata/eventLog/V11L30TEST.txt"
 		-UNITTEST
+		-DONTAUTOSAVECMOS
 )
 
 add_test(
@@ -165,6 +176,7 @@ add_test(
 		-EVTLOG
 		"${CMAKE_SOURCE_DIR}/../testdata/eventLog/V21L20TEST.txt"
 		-UNITTEST
+		-DONTAUTOSAVECMOS
 )
 
 add_test(
@@ -179,6 +191,7 @@ add_test(
 		-EVTLOG
 		"${CMAKE_SOURCE_DIR}/../testdata/eventLog/V21L31TEST.txt"
 		-UNITTEST
+		-DONTAUTOSAVECMOS
 )
 
 add_test(
@@ -197,6 +210,7 @@ add_test(
 		-BOOTKEY
 		H0
 		-UNITTEST
+		-DONTAUTOSAVECMOS
 )
 
 add_test(
@@ -215,4 +229,5 @@ add_test(
 		-BOOTKEY
 		H0
 		-UNITTEST
+		-DONTAUTOSAVECMOS
 )
