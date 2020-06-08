@@ -586,7 +586,7 @@ void TownsCRTC::MakePageLayerInfo(Layer &layer,unsigned char page) const
 			state.mxVideoOutCtrl[state.mxVideoOutCtrlAddrLatch+3]=data;
 		}
 		break;
-	case TOWNSIO_HSYNC_VSYNC:  // Also CRT Output COntrol
+	case TOWNSIO_HSYNC_VSYNC:  // 0xFDA0 Also CRT Output COntrol
 		if(InSinglePageMode())
 		{
 			state.showPage[0]=(0!=((data>>2)&3));
@@ -598,7 +598,7 @@ void TownsCRTC::MakePageLayerInfo(Layer &layer,unsigned char page) const
 			state.showPage[1]=(0!=( data    &3));
 		}
 		break;
-	case TOWNSIO_WRITE_TO_CLEAR_VSYNCIRQ:
+	case TOWNSIO_WRITE_TO_CLEAR_VSYNCIRQ:// 0x5CA
 		TurnOffVSYNCIRQ();
 		break;
 	}

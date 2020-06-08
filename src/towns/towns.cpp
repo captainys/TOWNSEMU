@@ -176,7 +176,7 @@ FMTowns::FMTowns() :
 	io.AddDevice(&crtc,TOWNSIO_FMR_DIGITALPALETTE5);// 0xFD9D,
 	io.AddDevice(&crtc,TOWNSIO_FMR_DIGITALPALETTE6);// 0xFD9E,
 	io.AddDevice(&crtc,TOWNSIO_FMR_DIGITALPALETTE7);// 0xFD9F,
-
+	io.AddDevice(&crtc,TOWNSIO_WRITE_TO_CLEAR_VSYNCIRQ); // 0x5CA
 
 
 	io.AddDevice(this,TOWNSIO_POWER_CONTROL);   //        0x22
