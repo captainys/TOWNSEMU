@@ -41,6 +41,7 @@ public:
 	};
 
 	bool temporary;  // If true, it will not be saved to file.
+	bool immIsIOAddr; // If true, disassembler should take Imm operand as an IO-port address.
 	unsigned int symType;
 	std::string return_type;
 	std::string label;
@@ -110,6 +111,11 @@ public:
 	const i486Symbol *Find(i486DX::FarPointer ptr) const;
 	i486Symbol *Update(i486DX::FarPointer ptr,const std::string &label);
 	i486Symbol *SetComment(i486DX::FarPointer ptr,const std::string &inLineComment);
+
+	/*! Disassembler should take IMM operand at the given address as an IO-port address.
+	*/
+	i486Symbol *SetImmIsIOPort(i486DX::FarPointer ptr);
+
 	bool Delete(i486DX::FarPointer ptr);
 	bool DeleteComment(i486DX::FarPointer ptr);
 	const std::map <i486DX::FarPointer,i486Symbol> &GetTable(void) const;

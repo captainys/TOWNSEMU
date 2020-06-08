@@ -2455,15 +2455,18 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 	case I486_OPCODE_MOV_I8_TO_BH: //     0xB7,
 		op1.MakeByRegisterNumber(8,opCode&7);
 		disasm=DisassembleTypicalOneOperandAndImm("MOV",op1,EvalUimm8(),8);
+		disasm+=DisassembleIOLabel(cs.value,eip,symTable,ioTable,EvalUimm8());
 		break;
 
 	case I486_OPCODE_MOV_I8_TO_RM8: //    0xC6,
 		op1.Decode(addressSize,8,operand);
 		disasm=DisassembleTypicalOneOperandAndImm("MOV",op1,EvalUimm8(),8);
+		disasm+=DisassembleIOLabel(cs.value,eip,symTable,ioTable,EvalUimm8());
 		break;
 	case I486_OPCODE_MOV_I_TO_RM: //      0xC7, // 16/32 depends on OPSIZE_OVERRIDE
 		op1.Decode(addressSize,operandSize,operand);
 		disasm=DisassembleTypicalOneOperandAndImm("MOV",op1,EvalUimm8or16or32(operandSize),operandSize);
+		disasm+=DisassembleIOLabel(cs.value,eip,symTable,ioTable,EvalUimm8or16or32(operandSize));
 		break;
 
 	case I486_OPCODE_MOV_I_TO_EAX: //     0xB8, // 16/32 depends on OPSIZE_OVERRIDE
@@ -2476,6 +2479,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 	case I486_OPCODE_MOV_I_TO_EDI: //     0xBF, // 16/32 depends on OPSIZE_OVERRIDE
 		op1.MakeByRegisterNumber(operandSize,opCode&7);
 		disasm=DisassembleTypicalOneOperandAndImm("MOV",op1,EvalUimm8or16or32(operandSize),operandSize);
+		disasm+=DisassembleIOLabel(cs.value,eip,symTable,ioTable,EvalUimm8or16or32(operandSize));
 		break;
 
 
@@ -3138,6 +3142,23 @@ std::string i486DX::Instruction::DisassembleTypicalTwoOperands(std::string inst,
 	disasm.push_back(',');
 	disasm+=op2SizeQual+op2SegQual+op2.Disassemble();
 
+	return disasm;
+}
+
+std::string i486DX::Instruction::DisassembleIOLabel(unsigned int CS,unsigned int EIP,const i486SymbolTable &symTable,const std::map <unsigned int,std::string> &ioTable,unsigned int imm) const
+{
+	std::string disasm;
+	auto symbolPtr=symTable.Find(CS,EIP);
+	if(nullptr!=symbolPtr && true==symbolPtr->immIsIOAddr)
+	{
+		auto found=ioTable.find(imm);
+		if(ioTable.end()!=found)
+		{
+			disasm+=" (";
+			disasm+=found->second;
+			disasm+=")";
+		}
+	}
 	return disasm;
 }
 

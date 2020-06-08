@@ -1,0 +1,108 @@
+/begin0
+T 1
+* 00000421:000012D7
+# 
+R 
+L DISKBIOS:(Prob)Read/Write Multiple Sectors
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000134B
+# SCSI State
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000134F
+# Data Phase?
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:00001355
+# Jump if no REQUEST
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000136A
+# SCSI State
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:0000136D
+# Jump if SCSI Busy
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 00000421:00001379
+# 
+R 
+L DISKBIOS:(Prob)Write SCSI Sectors DMA
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000013BE
+# SCSI State
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000013C3
+# Busy?
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000013C7
+# Data Phase?
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 0
+* 00000421:000013CE
+# (Prob)Jump if DMA Count Up
+R 
+L 
+P 
+% 0
+/end
+/begin0
+T 1
+* 0000AF37:000003A1
+# 
+R 
+L MSDOS.SYS(?):Read CONFIG.SYS
+P 
+% 0
+/end

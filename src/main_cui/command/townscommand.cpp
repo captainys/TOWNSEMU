@@ -74,6 +74,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["ADDCMT"]=CMD_ADD_COMMENT;
 	primaryCmdMap["DEFRAW"]=CMD_DEF_RAW_BYTES;
 	primaryCmdMap["DELSYM"]=CMD_DEL_SYMBOL;
+	primaryCmdMap["IMMISIO"]=CMD_IMM_IS_IOPORT;
 	primaryCmdMap["SAVEEVT"]=CMD_SAVE_EVENTLOG;
 	primaryCmdMap["LOADEVT"]=CMD_LOAD_EVENTLOG;
 	primaryCmdMap["CALC"]=CMD_CALCULATE;
@@ -189,6 +190,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Add a comment.  An address can have one symbol,label, or data label, and one comment." << std::endl;
 	std::cout << "DEFRAW SEG:OFFSET label numBytes" << std::endl;
 	std::cout << "  Define raw data bytes.  Disassembler will take this address as raw data." << std::endl;
+	std::cout << "IMMISIO SEG:OFFSET" << std::endl;
+	std::cout << "  Take Imm operand of the address as IO-port address." << std::endl;
 	std::cout << "DELSYM SEG:OFFSET label" << std::endl;
 	std::cout << "  Delete a symbol.  A symbol and comment associated with the address will be deleted." << std::endl;
 	std::cout << "PAUSE|PAU" << std::endl;
@@ -545,6 +548,7 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 	case CMD_ADD_DATALABEL:
 	case CMD_ADD_COMMENT:
 	case CMD_DEF_RAW_BYTES:
+	case CMD_IMM_IS_IOPORT:
 		Execute_AddSymbol(towns,cmd);
 		break;
 	case CMD_DEL_SYMBOL:
@@ -1369,7 +1373,7 @@ void TownsCommandInterpreter::Execute_SaveEventLog(FMTowns &towns,const std::str
 
 void TownsCommandInterpreter::Execute_AddSymbol(FMTowns &towns,Command &cmd)
 {
-	if(3<=cmd.argv.size())
+	if(3<=cmd.argv.size() || (2<=cmd.argv.size() && CMD_IMM_IS_IOPORT==cmd.primaryCmd))
 	{
 		auto &symTable=towns.debugger.GetSymTable();
 
@@ -1420,6 +1424,9 @@ void TownsCommandInterpreter::Execute_AddSymbol(FMTowns &towns,Command &cmd)
 		case CMD_ADD_COMMENT:
 			symTable.SetComment(cmdutil::MakeFarPointer(cmd.argv[1]),cmd.argv[2]);
 			std::cout << "Added comment " << cmd.argv[2] << std::endl;
+			break;
+		case CMD_IMM_IS_IOPORT:
+			symTable.SetImmIsIOPort(cmdutil::MakeFarPointer(cmd.argv[1]));
 			break;
 		}
 

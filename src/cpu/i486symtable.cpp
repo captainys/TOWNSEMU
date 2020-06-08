@@ -27,6 +27,7 @@ i486Symbol::i486Symbol()
 void i486Symbol::CleanUp(void)
 {
 	temporary=false;
+	immIsIOAddr=false;
 	symType=SYM_ANY;
 	return_type="";
 	label="";
@@ -92,6 +93,7 @@ bool i486SymbolTable::Load(std::istream &ifp)
 	// P int argc,char *argv[]
 	// I Supplimental Info
 	// % Raw Data Byte Count
+	// M 0/1 immIsIOAddr flag
 	// /end
 
 	while(true!=ifp.eof())
@@ -153,6 +155,10 @@ bool i486SymbolTable::Load(std::istream &ifp)
 				case '%':
 					curSymbol.rawDataBytes=cpputil::Atoi(str.c_str()+2);
 					break;
+				case 'm':
+				case 'M':
+					curSymbol.immIsIOAddr=(0!=cpputil::Atoi(str.c_str()+2));
+					break;
 				}
 			}
 		}
@@ -186,6 +192,7 @@ bool i486SymbolTable::Save(std::ostream &ofp) const
 			ofp << "L " << sym.label  << std::endl;
 			ofp << "P " << sym.param <<  std::endl;
 			ofp << "% " << sym.rawDataBytes <<  std::endl;
+			ofp << "M " << (sym.immIsIOAddr ? "1" : "0") << std::endl;
 			for(auto &i : sym.info)
 			{
 				ofp << "I " << i <<  std::endl;
@@ -239,6 +246,12 @@ i486Symbol *i486SymbolTable::SetComment(i486DX::FarPointer ptr,const std::string
 {
 	auto &symbol=symTable[ptr];
 	symbol.inLineComment=inLineComment;
+	return &symbol;
+}
+i486Symbol *i486SymbolTable::SetImmIsIOPort(i486DX::FarPointer ptr)
+{
+	auto &symbol=symTable[ptr];
+	symbol.immIsIOAddr=true;
 	return &symbol;
 }
 bool i486SymbolTable::Delete(i486DX::FarPointer ptr)

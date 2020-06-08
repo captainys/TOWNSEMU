@@ -650,6 +650,7 @@ public:
 		std::string DisassembleTypicalTwoOperands(std::string inst,const Operand &op1,const Operand &op2) const;
 		std::string DisassembleTypicalOneImm(std::string inst,unsigned int imm,int operandSize) const;
 
+		std::string DisassembleIOLabel(unsigned int CS,unsigned int EIP,const i486SymbolTable &symTable,const std::map <unsigned int,std::string> &ioTable,unsigned int imm) const;
 
 	public:
 		/*! Returns REG of MODR/M byte from the first byte of operand internally
