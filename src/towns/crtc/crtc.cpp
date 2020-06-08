@@ -360,11 +360,11 @@ Vec2i TownsCRTC::GetPageOriginOnMonitor(unsigned char page) const
 		break;
 	case 2:
 		x0=(state.crtcReg[HDS]-0x8a);
-		y0=(state.crtcReg[VDS]-0x46);
+		y0=(state.crtcReg[VDS]-0x46)>>1;
 		break;
 	case 3:
 		x0=(state.crtcReg[HDS]-0x9c);
-		y0=(state.crtcReg[VDS]-0x40);
+		y0=(state.crtcReg[VDS]-0x40)>>1;
 		break;
 	default:
 		x0=0;
@@ -829,6 +829,9 @@ std::vector <std::string> TownsCRTC::GetStatusText(void) const
 
 	text.back()+="  Priority:";
 	text.back().push_back('0'+GetPriorityPage());
+
+	text.back()+="  CLKSEL:";
+	text.back().push_back('0'+(state.crtcReg[REG_CR1]&3));
 
 
 	text.push_back(empty);
