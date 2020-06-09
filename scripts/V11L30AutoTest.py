@@ -38,6 +38,7 @@ def Run():
 		os.path.join(DISKDIR,"hddimage.bin"),
 		"-CMOS",
 		"../testdata/CMOS.bin",
+		"-DONTAUTOSAVECMOS",
 		"-EVTLOG",
 		os.path.join(THISDIR,"../testdata/eventLog/V11L30TEST.txt"),
 		"-UNITTEST",

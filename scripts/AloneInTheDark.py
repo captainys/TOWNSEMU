@@ -40,6 +40,7 @@ def Run(argv):
 		os.path.join(DISKDIR,"hddimage.bin"),
 		"-CMOS",
 		"../testdata/CMOS.bin",
+		"-DONTAUTOSAVECMOS",
 		"-SCALE",
 		"160",
 		# "-DEBUG",

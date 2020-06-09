@@ -23,7 +23,7 @@ def ExeExtension():
 		return ""
 
 
-def Run():
+def Run(argv):
 	os.chdir(BUILDDIR)
 	subprocess.Popen([
 		"./main_cui/Tsugaru_CUI"+ExeExtension(),
@@ -40,6 +40,7 @@ def Run():
 		os.path.join(DISKDIR,"hddimage.bin"),
 		"-CMOS",
 		"../testdata/CMOS.bin",
+		"-DONTAUTOSAVECMOS",
 		"-DEBUG",
 		"-PAUSE",
 	]+argv).wait()
@@ -47,5 +48,5 @@ def Run():
 
 
 if __name__=="__main__":
-	build.Run(sys.argv[1:])
-	Run()
+	build.Run()
+	Run(sys.argv[1:])

@@ -34,12 +34,11 @@ def Run():
 		"../symtables/V2.1L30"+TOWNSTYPE+".txt",
 		"-HD0",
 		os.path.join(DISKDIR,"hddimage.bin"),
-		"-CMOS",
-		"../testdata/CMOS.bin",
 		"-HD0",
 		os.path.join(DISKDIR,"hddimage.bin"),
 		"-CMOS",
 		"../testdata/CMOS.bin",
+		"-DONTAUTOSAVECMOS",
 		"-DEBUG",
 		"-PAUSE",
 	]).wait()

@@ -42,6 +42,7 @@ def Run(argv):
 		"../testdata/CMOS.bin",
 		"-SYM",
 		"../symtables/V1.1L10CDBOOT_"+TOWNSTYPE+".txt",
+		"-DONTAUTOSAVECMOS",
 		"-DEBUG",
 		"-PAUSE",
 	]+argv).wait()

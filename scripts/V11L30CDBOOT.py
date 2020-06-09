@@ -38,6 +38,7 @@ def Run():
 		os.path.join(DISKDIR,"hddimage.bin"),
 		"-CMOS",
 		"../testdata/CMOS.bin",
+		"-DONTAUTOSAVECMOS",
 		"-DEBUG",
 		"-PAUSE",
 	]).wait()

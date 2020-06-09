@@ -34,12 +34,8 @@ def Run(argv):
 		"KEY",
 		"-SYM",
 		"../../TOWNSEMU_TEST/symtables/GF2_"+TOWNSTYPE+".txt",
-		"-HD0",
-		os.path.join(DISKDIR,"hddimage.bin"),
-		"-CMOS",
-		"../testdata/CMOS.bin",
-		"-DEBUG",
-		# "-PAUSE",
+		#"-DEBUG",
+		#"-PAUSE",
 	]+argv).wait()
 
 

@@ -40,6 +40,7 @@ def Run(argv):
 		os.path.join(DISKDIR,"hddimage.bin"),
 		"-CMOS",
 		"../testdata/CMOS.bin",
+		"-DONTAUTOSAVECMOS",
 		"-SYM",
 		"../symtables/V1.1L10CDBOOT_"+TOWNSTYPE+".txt",
 		"-DEBUG",
