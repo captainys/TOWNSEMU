@@ -167,7 +167,7 @@ public:
 		Vec3ub v;
 		v.v[0]=x;
 		v.v[1]=y;
-		v.v[3]=z;
+		v.v[2]=z;
 		return v;
 	}
 

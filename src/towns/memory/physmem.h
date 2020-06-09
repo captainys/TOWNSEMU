@@ -108,108 +108,12 @@ template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END>
 class TownsVRAMAccessTemplate : public TownsMemAccess
 {
 public:
-	virtual unsigned int FetchByte(unsigned int physAddr) const
-	{
-		auto &state=physMemPtr->state;
-		auto offset=physAddr-VRAMADDR_BASE;
-		if(offset<VRAMADDR_END-VRAMADDR_BASE)
-		{
-			return state.VRAM[offset];
-		}
-		return 0xff;
-	}
-	virtual unsigned int FetchWord(unsigned int physAddr) const
-	{
-		auto &state=physMemPtr->state;
-		auto offset=physAddr-VRAMADDR_BASE;
-		if(offset<VRAMADDR_END-VRAMADDR_BASE-1)
-		{
-			return state.VRAM[offset]|(state.VRAM[offset+1]<<8);
-		}
-		else if(offset<VRAMADDR_END-VRAMADDR_BASE)
-		{
-			return state.VRAM[offset];
-		}
-		return 0xffff;
-	}
-	virtual unsigned int FetchDword(unsigned int physAddr) const
-	{
-		auto &state=physMemPtr->state;
-		auto offset=physAddr-VRAMADDR_BASE;
-		if(offset<VRAMADDR_END-VRAMADDR_BASE-3)
-		{
-			return state.VRAM[offset]|
-			      (state.VRAM[offset+1]<<8)|
-			      (state.VRAM[offset+2]<<16)|
-			      (state.VRAM[offset+3]<<24);
-		}
-		else if(offset<VRAMADDR_END-VRAMADDR_BASE-2)
-		{
-			return state.VRAM[offset]|
-			      (state.VRAM[offset+1]<<8)|
-			      (state.VRAM[offset+2]<<16);
-		}
-		else if(offset<VRAMADDR_END-VRAMADDR_BASE-1)
-		{
-			return state.VRAM[offset]|
-			      (state.VRAM[offset+1]<<8);
-		}
-		else if(offset<VRAMADDR_END-VRAMADDR_BASE)
-		{
-			return state.VRAM[offset];
-		}
-		return 0xffffffff;
-	}
-	virtual void StoreByte(unsigned int physAddr,unsigned char data)
-	{
-		auto &state=physMemPtr->state;
-		auto offset=physAddr-VRAMADDR_BASE;
-		if(offset<VRAMADDR_END-VRAMADDR_BASE)
-		{
-			state.VRAM[offset]=data;
-		}
-	}
-	virtual void StoreWord(unsigned int physAddr,unsigned int data)
-	{
-		auto &state=physMemPtr->state;
-		auto offset=physAddr-VRAMADDR_BASE;
-		if(offset<VRAMADDR_END-VRAMADDR_BASE-1)
-		{
-			state.VRAM[offset  ]= data    &255;
-			state.VRAM[offset+1]=(data>>8)&255;
-		}
-		else if(offset<VRAMADDR_END-VRAMADDR_BASE)
-		{
-			state.VRAM[offset]=data;
-		}
-	}
-	virtual void StoreDword(unsigned int physAddr,unsigned int data)
-	{
-		auto &state=physMemPtr->state;
-		auto offset=physAddr-VRAMADDR_BASE;
-		if(offset<VRAMADDR_END-VRAMADDR_BASE-3)
-		{
-			state.VRAM[offset  ]= data     &255;
-			state.VRAM[offset+1]=(data>>8) &255;
-			state.VRAM[offset+2]=(data>>16)&255;
-			state.VRAM[offset+3]=(data>>24)&255;
-		}
-		else if(offset<VRAMADDR_END-VRAMADDR_BASE-2)
-		{
-			state.VRAM[offset  ]= data     &255;
-			state.VRAM[offset+1]=(data>>8) &255;
-			state.VRAM[offset+2]=(data>>16)&255;
-		}
-		else if(offset<VRAMADDR_END-VRAMADDR_BASE-1)
-		{
-			state.VRAM[offset  ]= data    &255;
-			state.VRAM[offset+1]=(data>>8)&255;
-		}
-		else if(offset<VRAMADDR_END-VRAMADDR_BASE)
-		{
-			state.VRAM[offset]=data;
-		}
-	}
+	virtual unsigned int FetchByte(unsigned int physAddr) const;
+	virtual unsigned int FetchWord(unsigned int physAddr) const;
+	virtual unsigned int FetchDword(unsigned int physAddr) const;
+	virtual void StoreByte(unsigned int physAddr,unsigned char data);
+	virtual void StoreWord(unsigned int physAddr,unsigned int data);
+	virtual void StoreDword(unsigned int physAddr,unsigned int data);
 };
 
 class TownsSpriteRAMAccess : public TownsMemAccess
@@ -484,6 +388,115 @@ public:
 	std::vector <std::string> GetStatusText(void) const;
 };
 
+
+template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END>
+unsigned int TownsVRAMAccessTemplate <VRAMADDR_BASE,VRAMADDR_END>::FetchByte(unsigned int physAddr) const
+{
+	auto &state=physMemPtr->state;
+	auto offset=physAddr-VRAMADDR_BASE;
+	if(offset<VRAMADDR_END-VRAMADDR_BASE)
+	{
+		return state.VRAM[offset];
+	}
+	return 0xff;
+}
+template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END>
+unsigned int TownsVRAMAccessTemplate <VRAMADDR_BASE,VRAMADDR_END>::FetchWord(unsigned int physAddr) const
+{
+	auto &state=physMemPtr->state;
+	auto offset=physAddr-VRAMADDR_BASE;
+	if(offset<VRAMADDR_END-VRAMADDR_BASE-1)
+	{
+		return state.VRAM[offset]|(state.VRAM[offset+1]<<8);
+	}
+	else if(offset<VRAMADDR_END-VRAMADDR_BASE)
+	{
+		return state.VRAM[offset];
+	}
+	return 0xffff;
+}
+template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END>
+unsigned int TownsVRAMAccessTemplate <VRAMADDR_BASE,VRAMADDR_END>::FetchDword(unsigned int physAddr) const
+{
+	auto &state=physMemPtr->state;
+	auto offset=physAddr-VRAMADDR_BASE;
+	if(offset<VRAMADDR_END-VRAMADDR_BASE-3)
+	{
+		return state.VRAM[offset]|
+				(state.VRAM[offset+1]<<8)|
+				(state.VRAM[offset+2]<<16)|
+				(state.VRAM[offset+3]<<24);
+	}
+	else if(offset<VRAMADDR_END-VRAMADDR_BASE-2)
+	{
+		return state.VRAM[offset]|
+				(state.VRAM[offset+1]<<8)|
+				(state.VRAM[offset+2]<<16);
+	}
+	else if(offset<VRAMADDR_END-VRAMADDR_BASE-1)
+	{
+		return state.VRAM[offset]|
+				(state.VRAM[offset+1]<<8);
+	}
+	else if(offset<VRAMADDR_END-VRAMADDR_BASE)
+	{
+		return state.VRAM[offset];
+	}
+	return 0xffffffff;
+}
+template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END>
+void TownsVRAMAccessTemplate <VRAMADDR_BASE,VRAMADDR_END>::StoreByte(unsigned int physAddr,unsigned char data)
+{
+	auto &state=physMemPtr->state;
+	auto offset=physAddr-VRAMADDR_BASE;
+	if(offset<VRAMADDR_END-VRAMADDR_BASE)
+	{
+		state.VRAM[offset]=data;
+	}
+}
+template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END>
+void TownsVRAMAccessTemplate <VRAMADDR_BASE,VRAMADDR_END>::StoreWord(unsigned int physAddr,unsigned int data)
+{
+	auto &state=physMemPtr->state;
+	auto offset=physAddr-VRAMADDR_BASE;
+	if(offset<VRAMADDR_END-VRAMADDR_BASE-1)
+	{
+		state.VRAM[offset  ]= data    &255;
+		state.VRAM[offset+1]=(data>>8)&255;
+	}
+	else if(offset<VRAMADDR_END-VRAMADDR_BASE)
+	{
+		state.VRAM[offset]=data;
+	}
+}
+template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END>
+void TownsVRAMAccessTemplate <VRAMADDR_BASE,VRAMADDR_END>::StoreDword(unsigned int physAddr,unsigned int data)
+{
+	auto &state=physMemPtr->state;
+	auto offset=physAddr-VRAMADDR_BASE;
+	if(offset<VRAMADDR_END-VRAMADDR_BASE-3)
+	{
+		state.VRAM[offset  ]= data     &255;
+		state.VRAM[offset+1]=(data>>8) &255;
+		state.VRAM[offset+2]=(data>>16)&255;
+		state.VRAM[offset+3]=(data>>24)&255;
+	}
+	else if(offset<VRAMADDR_END-VRAMADDR_BASE-2)
+	{
+		state.VRAM[offset  ]= data     &255;
+		state.VRAM[offset+1]=(data>>8) &255;
+		state.VRAM[offset+2]=(data>>16)&255;
+	}
+	else if(offset<VRAMADDR_END-VRAMADDR_BASE-1)
+	{
+		state.VRAM[offset  ]= data    &255;
+		state.VRAM[offset+1]=(data>>8)&255;
+	}
+	else if(offset<VRAMADDR_END-VRAMADDR_BASE)
+	{
+		state.VRAM[offset]=data;
+	}
+}
 
 /* } */
 #endif
