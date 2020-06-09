@@ -339,143 +339,223 @@ Translate address to linear address and physical address.  Address needs to be s
 ```
 U SEG:Offset
 ```
-  Unassemble (disassemble)
+Unassemble (disassemble)  If you omit the address, it starts disassembly from the last instruction pointer, then last disassembly location.
+
+指定アドレスから逆アセンブルします。アドレスを省略した場合は、最後に実行した箇所から、次に最後に逆アセンブルした箇所から逆アセンブルします。
+
 ```
 U16 SEG:Offset
 ```
-  Unassemble (disassemble) as 16-bit operand size
+Unassemble (disassemble) as 16-bit operand size
+
+16ビットオペランドサイズで逆アセンブルします。
+
 ```
 U32 SEG:Offset
 ```
-  Unassemble (disassemble) as 32-bit operand size
+Unassemble (disassemble) as 32-bit operand size
+
+32ビットオペランドサイズで逆アセンブルします。
+
 ```
 ADDSYM SEG:OFFSET label
 ```
-  Add a symbol.  An address can have one symbol,label,data label, or data, and one comment.
-  If a symbol is added to an address that already has a symbol, label, or data label,
-  the address's label, or data label will be overwritten as a symbol.
+Add a symbol.  An address can have one symbol,label,data label, or data, and one comment.  If a symbol is added to an address that already has a symbol, label, or data label, the address's label, or data label will be overwritten as a symbol.  Symbols will be shown in disasembly.  If you specify -SYM option when starting the program, symbol information will be automatically saved in the specified.
+
+指定アドレスにシンボルを追加します。追加したシンボルは逆アセンブル時に表示されます。起動時に-SYMオプションを追加した場合は、シンボル情報は指定のファイルに自動的に保存されます。
+
 ```
 ADDLAB SEG:OFFSET label
 ADDLABEL SEG:OFFSET label
 ```
-  Add a label.  An address can have one symbol,label, or data label, or data and one comment.
-  If a symbol is added to an address that already has a symbol, label, or data label,
-  the address's label, or data label will be overwritten as a label.
+Add a label.  An address can have one symbol,label, or data label, or data and one comment.  If a symbol is added to an address that already has a symbol, label, or data label, the address's label, or data label will be overwritten as a label.  If you specify -SYM option when starting the program, symbol information will be automatically saved in the specified.
+
+指定アドレスにラベルを追加します。追加したラベルは逆アセンブル時に表示されます。起動時に-SYMオプションを追加した場合は、シンボル情報は指定のファイルに自動的に保存されます。
+
 ```
 ADDDLB SEG:OFFSET label
 ADDDATALABEL SEG:OFFSET label
 ```
-  Add a data label.  An address can have one symbol,label, or data label, or data and one comment.
-  If a symbol is added to an address that already has a symbol, label, or data label,
-  the address's label, or data label will be overwritten as a data label.
+Add a data label.  An address can have one symbol,label, or data label, or data and one comment.  If a symbol is added to an address that already has a symbol, label, or data label, the address's label, or data label will be overwritten as a data label.
+
+指定アドレスにデータラベルを追加します。
+
+
+
 ```
 ADDREM SEG:OFFSET label
 ADDCMT SEG:OFFSET label
 ```
-  Add a comment.  An address can have one symbol,label, or data label, and one comment.
+Add a comment.  An address can have one symbol,label, or data label, and one comment.
+
+コメントを追加します。追加したコメントは逆アセンブル時に表示されます。
+
 ```
 DEFRAW SEG:OFFSET label numBytes
 ```
-  Define raw data bytes.  Disassembler will take this address as raw data.
+Define raw data bytes.  Disassembler will take this address as raw data.  For example, when jump table is written in CS, defining raw bytes can prevent disassembly break down.
+
+指定アドレスから指定バイト数をデータとして扱います。例えば、CSにジャンプテーブルが書いてある場合など、ジャンプテーブル付近で逆アセンブルが崩れることを防止することができます。
+
 ```
 IMMISIO SEG:OFFSET
 ```
-  Take Imm operand of the address as IO-port address.
+Take Imm operand of the address as IO-port address.  If the disassembly at the specified address is ```MOV DX,0???H```, and if the I/O address is has a known functionality, disassembly will show I/O label as comment.
+
+指定アドレスのインストラクションのImmオペランドをIOアドレスとして逆アセンブルします。例えば、指定アドレスの逆アセンブルが```MOV DX,0???H```で、I/Oアドレスの機能がわかっている場合、逆アセンブルのコメントにI/Oアドレスのラベルを表示します。
+
+
 ```
 DELSYM SEG:OFFSET label
 ```
-  Delete a symbol.  A symbol and comment associated with the address will be deleted.
+Delete a symbol, label, comment, etc. assigned at the address.  A symbol and comment associated with the address will be deleted.
+
+指定アドレスに割り当てられたシンボル、ラベル、コメント等を削除します。
+
 ```
 WAIT
 ```
-  Wait until VM becomes PAUSE state.
+Wait until VM becomes PAUSE state by reaching a break point or break condition.
+
+ブレークポイントやブレークコンディションによってVMが一時停止するまで待ちます。
+
 ```
 ENA feature
 ENABLE feature
 ```
-  Enable a feature.
+Enable a feature.  See below for the features that can be enabled or disabled.
+
+機能を有効化します。  有効化・無効化できる機能に関しては下の章を参照してください。ところでMark Downってドキュメント内にリンク張れないのか。というか、リンク張る方法というの試したけどリンクにならないし。全然だめだね。
+
 ```
 DIS feature
 DISABLE feature
 ```
-  Disable a feature.
+Disable a feature.
+
+機能を無効化します。
+
 ```
 PRINT info
 PRI info
 P info
-DUMP info|DM info
+DUMP info
+DM info
 ```
-  Print/Dump information.
+Print/Dump information.  See below for the information that can be printed.
+
+情報を表示します。表示可能な情報については以下の章を参照してください。
+
 ```
 CALC formula
 ```
-  Caluclate a value.
+Caluclate a formula.  Other commands takes hexadecimal numbers, but in this command, you need to write like 0xABCD or ABCDH to describe a hexadecimal number.  Otherwise the number is taken as decimal number.
+
+値を計算します。これ以外のコマンドについて、数値は原則として16進数で指定しますが、この機能では16進数は0xABCDまたはABCDHのように書きます。0xまたはHがないばあいは10進数として扱います。
+
 ```
 BP EIP
 BRK EIP
 BP CS:EIP
 BRK CS:EIP
 ```
-  Add a break point.
+Add a break point.
+
+ブレークポイントを追加します。
+
 ```
 BC Num
 ```
-  Delete a break point.
-  Num is the number printed by PRINT BRK.
-  BC * to erase all break points.
+Delete a break point.  ```Num``` is the number printed by ```BL```.  ```BC *``` to erase all break points.
+
+ブレークポイントを削除します。```Num```には```BL```コマンドで表示される番号を指定します。```BC *```とタイプするとすべてのブレークポイントを削除します。
+
 ```
 BL
 ```
-  List break points.
+List break points.
+
+ブレークポイントのリストを表示します。
+
 ```
-BRKON
+BRKON event
 ```
-  Break on event.
+Break on event.  See below section for the events that can break.
+
+ブレークするイベントを指定します。指定可能なイベントについては以下の章を参照してください。
+
 ```
-CBRKON
+CBRKON event
 ```
-  Clear break-on event.
+Clear break-on event.
+
+ブレークイベントを削除します。
+
 ```
 TYPE characters
 ```
-  Send keyboard codes.
+Send keyboard codes.
+
+キーコードを送信します。
+
 ```
 KEYBOARD keyboardMode
 ```
-  Select TRANSLATE or DIRECT mode.
-  TRANSLATE or TRANS mode will be good for typing commands, but
-  cannot sense key release correctly.
-  DIRECT mode is good for games, but affected by the keyboard layout.
-  US keyboard cannot type some of the characters.
+Select ```TRANSLATE``` or ```DIRECT``` mode.  ```TRANSLATE``` or ```TRANS``` mode translate a typed character to FM Towns keycode, therefore you can type with US keyboard or Japanese keyboard.  It is good for typing commands, but cannot sense key release correctly.  ```DIRECT``` mode is good for games, but affected by the keyboard layout.  US keyboard cannot type some of the characters if you are using non-Japanese keyboard.
+
+```TRANSLATE```モードまたは```DIRECT```モードを選びます。```TRANSLATE```モード(```TRANS```と省略も可)では、キーボードが日本語キーボードだろうが英語キーボードだろうがタイプした文字をFM Townsのキーコードに変換して送信するので基本的に使ってるキーボード通りにタイプできます。が、FM-7のようにキーリリースを検出できない、というか1文字タイプしたらリリースしたことになってしまうのでゲームなどには向きません。```DIRECT```モードでは文字の変換をしない代わりにキーリリースを正しく送信します。が、英語キーボードだとタイプできない文字があります。日本語キーボードも試してないからタイプできないキーがあるかも。
+
+
 ```
 LET register value
 ```
-  Load a register value.
+Load a register value.
+
+レジスタの値を変更します。
+
 ```
 CRTCPAGE 1|0 1|0
 ```
-  Turn on/off display page.
+Turn on/off display page.
+
+ディスプレイの表示ページをそれぞれオン・オフします。
+
 ```
 CMOSLOAD filename
 ```
-  Load CMOS.
+Load CMOS.
+
+CMOSデータを読み込みます。
+
 ```
 CMOSSAVE filename
 ```
-  Save CMOS.
+Save CMOS.
+
+CMOSデータを保存します。
+
 ```
 SAVEHIST filename.txt
 ```
-  Save CS:EIP Log to file.
+Save CS:EIP Log to file.  Tsugaru records last 65536 steps of CS:EIP.
+
+「津軽」は過去65536ステップのCS:EIPを記録しています。その記録をファイルに保存します。
+
 ```
 SAVEEVT filename.txt
 ```
-  Save Event Log to file.
+Save Event Log to file.  I made it for  unit testing.  Probably not very useful for general purposes.
+
+イベントログを保存します。ユニットテスト作成用に作ったので一般用とにはあまり役に立たないと思います。
+
 ```
 HOST2VM hostFileName vmFileName
 ```
-  Schedule Host to VM file transfer.
-  File will be transferred when FTCLIENT.EXP is running.
+Schedule Host to VM file transfer.  File will be transferred when FTCLIENT.EXP is running.
+
+ホストからVMへのファイル転送をスケジュールします。FTCLIENT.EXPを実行したときにファイルが転送されます。
+
+
 
 ## Features that can be enabled/disabled
 ## 有効化/無効化できる機能
