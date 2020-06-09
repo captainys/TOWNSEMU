@@ -167,6 +167,15 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Quit." << std::endl;
 	std::cout << "RUN|RUN EIP|RUN CS:EIP" << std::endl;
 	std::cout << "  Run.  Can specify temporary break point." << std::endl;
+	std::cout << "CDLOAD filename" << std::endl;
+	std::cout << "  Load CD-ROM image." << std::endl;
+	std::cout << "CDOPENCLOSE" << std::endl;
+	std::cout << "  Virtually open and close the internal CD-ROM drive." << std::endl;
+	std::cout << "FDLOAD 0/1 filename" << std::endl;
+	std::cout << "  Load FD image.  The number 0 or 1 is the drive number.  Can also be A or B." << std::endl;
+	std::cout << "PAUSE|PAU" << std::endl;
+	std::cout << "  Pause VM." << std::endl;
+
 	std::cout << "T" << std::endl;
 	std::cout << "  Trace.  Run one instruction." << std::endl;
 	std::cout << "INTERRUPT INTNum" << std::endl;
@@ -200,8 +209,6 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Take Imm operand of the address as IO-port address." << std::endl;
 	std::cout << "DELSYM SEG:OFFSET label" << std::endl;
 	std::cout << "  Delete a symbol.  A symbol and comment associated with the address will be deleted." << std::endl;
-	std::cout << "PAUSE|PAU" << std::endl;
-	std::cout << "  Pause VM." << std::endl;
 	std::cout << "WAIT" << std::endl;
 	std::cout << "  Wait until VM becomes PAUSE state." << std::endl;
 	std::cout << "RET|RTS" << std::endl;
@@ -245,12 +252,6 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Load CMOS." << std::endl;
 	std::cout << "CMOSSAVE filename" << std::endl;
 	std::cout << "  Save CMOS." << std::endl;
-	std::cout << "CDLOAD filename" << std::endl;
-	std::cout << "  Load CD-ROM image." << std::endl;
-	std::cout << "CDOPENCLOSE" << std::endl;
-	std::cout << "  Virtually open and close the internal CD-ROM drive." << std::endl;
-	std::cout << "FDLOAD 0/1 filename" << std::endl;
-	std::cout << "  Load FD image.  The number 0 or 1 is the drive number.  Can also be A or B." << std::endl;
 	std::cout << "SAVEHIST filename.txt" << std::endl;
 	std::cout << "  Save CS:EIP Log to file." << std::endl;
 	std::cout << "SAVEEVT filename.txt" << std::endl;
