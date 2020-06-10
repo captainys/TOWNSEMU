@@ -68,9 +68,11 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  Floppy disk image file name for Drive B." << std::endl;
 	std::cout << "-CD image-file-name" << std::endl;
 	std::cout << "  CD-ROM image file name for the internal drive. ISO or CUE." << std::endl;
-	std::cout << "-GAMEPORT0 KEY|PHYS|NONE" << std::endl;
-	std::cout << "-GAMEPORT1 KEY|PHYS|NONE" << std::endl;
+	std::cout << "-GAMEPORT0 KEY|PHYSx|ANAx|NONE" << std::endl;
+	std::cout << "-GAMEPORT1 KEY|PHYSx|ANAx|NONE" << std::endl;
 	std::cout << "  Specify game-port emulation.  By keyboard (Arrow,Z,X,A,S), or physical gamepad." << std::endl;
+	std::cout << "  PHYS0,PHYS1,PHYS2,PHYS3 use physical game pad direction button (or hat switch) as up/down/left/right." << std::endl;
+	std::cout << "  ANA0,ANA1,ANA2,ANA3 use physical game pad analog stick as up/down/left/right." << std::endl;
 	std::cout << "-HD0 image-file-name" << std::endl;
 	std::cout << "  Hard-disk image file name.  Can be -HDx (0<=x<=6)" << std::endl;
 	std::cout << "-SCSICD0 image-file-name" << std::endl;
@@ -189,9 +191,17 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 			{
 				gamePort[portId]=TOWNS_GAMEPORTEMU_KEYBOARD;
 			}
-			else if("PHYS"==DEV)
+			else if("PHYS0"==DEV || "PHYS1"==DEV || "PHYS2"==DEV || "PHYS3"==DEV)
 			{
-				gamePort[portId]=TOWNS_GAMEPORTEMU_PHYSICAL;
+				gamePort[portId]=TOWNS_GAMEPORTEMU_PHYSICAL0+(DEV[4]-'0');
+			}
+			else if("ANA0"==DEV || "ANA1"==DEV || "ANA2"==DEV || "ANA3"==DEV)
+			{
+				gamePort[portId]=TOWNS_GAMEPORTEMU_ANALOG0+(DEV[3]-'0');
+			}
+			else if("CYBER0"==DEV || "CYBER1"==DEV || "CYBER2"==DEV || "CYBER3"==DEV)
+			{
+				gamePort[portId]=TOWNS_GAMEPORTEMU_PHYSICAL0_AS_CYBERSTICK+(DEV[5]-'0');
 			}
 			else if("NONE"==DEV)
 			{

@@ -28,7 +28,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include "towns.h"
 #include "icons.h"
-
+#include "ysgamepad.h"
 
 
 FsSimpleWindowConnection::FsSimpleWindowConnection()
@@ -233,6 +233,65 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 						down=false;
 					}
 					towns.SetGamePadState(portId,Abutton,Bbutton,left,right,up,down,run,pause);
+				}
+				break;
+			case TOWNS_GAMEPORTEMU_PHYSICAL0:
+			case TOWNS_GAMEPORTEMU_PHYSICAL1:
+			case TOWNS_GAMEPORTEMU_PHYSICAL2:
+			case TOWNS_GAMEPORTEMU_PHYSICAL3:
+			case TOWNS_GAMEPORTEMU_PHYSICAL4:
+			case TOWNS_GAMEPORTEMU_PHYSICAL5:
+			case TOWNS_GAMEPORTEMU_PHYSICAL6:
+			case TOWNS_GAMEPORTEMU_PHYSICAL7:
+				if(true!=gamePadInitialized)
+				{
+					YsGamePadInitialize();
+					gamePadInitialized=true;
+				}
+				{
+					int padId=gamePort[portId]-TOWNS_GAMEPORTEMU_PHYSICAL0;
+					struct YsGamePadReading reading;
+					YsGamePadRead(&reading,padId);
+					towns.SetGamePadState(
+					    portId,
+					    reading.buttons[0],
+					    reading.buttons[1],
+					    reading.dirs[0].upDownLeftRight[2],
+					    reading.dirs[0].upDownLeftRight[3],
+					    reading.dirs[0].upDownLeftRight[0],
+					    reading.dirs[0].upDownLeftRight[1],
+					    reading.buttons[2],
+					    reading.buttons[3]);
+				}
+				break;
+			case TOWNS_GAMEPORTEMU_ANALOG0:
+			case TOWNS_GAMEPORTEMU_ANALOG1:
+			case TOWNS_GAMEPORTEMU_ANALOG2:
+			case TOWNS_GAMEPORTEMU_ANALOG3:
+			case TOWNS_GAMEPORTEMU_ANALOG4:
+			case TOWNS_GAMEPORTEMU_ANALOG5:
+			case TOWNS_GAMEPORTEMU_ANALOG6:
+			case TOWNS_GAMEPORTEMU_ANALOG7:
+				if(true!=gamePadInitialized)
+				{
+					YsGamePadInitialize();
+					gamePadInitialized=true;
+				}
+				{
+					int padId=gamePort[portId]-TOWNS_GAMEPORTEMU_ANALOG0;
+					struct YsGamePadReading reading;
+					YsGamePadRead(&reading,padId);
+					YsGamdPadTranslateAnalogToDigital(&reading.dirs[0],reading.axes[0],reading.axes[1]);
+					towns.SetGamePadState(
+					    portId,
+					    reading.buttons[0],
+					    reading.buttons[1],
+					    reading.dirs[0].upDownLeftRight[2],
+					    reading.dirs[0].upDownLeftRight[3],
+					    reading.dirs[0].upDownLeftRight[0],
+					    reading.dirs[0].upDownLeftRight[1],
+					    reading.buttons[2],
+					    reading.buttons[3]);
 				}
 				break;
 			}

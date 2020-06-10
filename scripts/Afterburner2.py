@@ -31,7 +31,7 @@ def Run(argv):
 		"-CD",
 		"E:/ISOImage/FM-TOWNS/AfterburnerII/AFTER_BURNER.CUE",
 		"-GAMEPORT0",
-		"KEY",
+		"PHYS0",
 		"-SYM",
 		"../../TOWNSEMU_TEST/symtables/AB2_"+TOWNSTYPE+".txt",
 		"-SCALE",

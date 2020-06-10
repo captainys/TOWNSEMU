@@ -147,12 +147,20 @@ CD-ROM image file name for the internal drive. ISO or CUE.
 内蔵CD-ROMドライブのCDイメージファイルを指定します。ISOまたはCUEファイルを指定します。
 
 ```
--GAMEPORT0 KEY|PHYS|NONE
--GAMEPORT1 KEY|PHYS|NONE
+-GAMEPORT0 KEY|PHYSx|ANAx|NONE
+-GAMEPORT1 KEY|PHYSx|ANAx|NONE
 ```
-Specify game-port emulation.  By keyboard (↑↓←→,Z,X,A,S), or physical gamepad.  (I haven't implemented physical gamepad yet.  It's planned.)
+Specify game-port emulation.  By keyboard (↑↓←→,Z,X,A,S), or physical gamepad.
 
-ジョイパッドのエミュレーションを指定します。KEYを指定するとキーボードでエミュレート(↑↓←→,Z,X,A,S)、またはPHYSを指定するとPCに接続されてジョイスティックを使います。(なお、PC接続のジョイスティックはまだ実装してないので予定)
+PHYS0,PHYS1,PHYS2, and PHYS3 use game-pad direction button (or hat switch) as up/down/left/right.
+
+ANA0,ANA1,ANA2, and ANA3 use game-pad analog stick 0 as up/down/left/right.
+
+ジョイパッドのエミュレーションを指定します。KEYを指定するとキーボードでエミュレート(↑↓←→,Z,X,A,S)、またはPHYSを指定するとPCに接続されてジョイスティックを使います。
+
+PHYS0,PHYS1,PHYS2,PHYS3を指定するとゲームパッドの方向ボタン(またはハットスイッチ)を方向ボタンとして使います。
+
+ANA0,ANA1,ANA2,ANA3を指定するとゲームパッドのアナログスティック0を方向ボタンとして使います。
 
 ```
 -HD0 image-file-name

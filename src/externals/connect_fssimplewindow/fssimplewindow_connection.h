@@ -22,6 +22,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 class FsSimpleWindowConnection : public Outside_World
 {
 public:
+	bool gamePadInitialized=false;
 	unsigned int *FSKEYtoTownsKEY=nullptr;
 	unsigned int *FSKEYState=nullptr;
 	FsSimpleWindowConnection();
