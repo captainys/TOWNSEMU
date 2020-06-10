@@ -140,6 +140,20 @@ Floppy disk image file name for Drive B.
 ドライブ1のフロッピーディスクイメージファイルを指定します。
 
 ```
+-FD0WP,-FD1WP
+```
+Write protect floppy disk.
+
+フロッピーディスクイメージを書き込み禁止にします。
+
+```
+-FD0UP,-FD1UP
+```
+Write unprotect floppy disk.
+
+フロッピーディスクイメージを書き込み可にします。
+
+```
 -CD image-file-name
 ```
 CD-ROM image file name for the internal drive. ISO or CUE.

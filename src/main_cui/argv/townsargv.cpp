@@ -66,6 +66,10 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  Floppy disk image file name for Drive A." << std::endl;
 	std::cout << "-FD1 filename" << std::endl;
 	std::cout << "  Floppy disk image file name for Drive B." << std::endl;
+	std::cout << "-FD0WP,-FD1WP" << std::endl;
+	std::cout << "  Write protect floppy disk." << std::endl;
+	std::cout << "-FD0UP,-FD1UP" << std::endl;
+	std::cout << "  Write un-protect floppy disk." << std::endl;
 	std::cout << "-CD image-file-name" << std::endl;
 	std::cout << "  CD-ROM image file name for the internal drive. ISO or CUE." << std::endl;
 	std::cout << "-GAMEPORT0 KEY|PHYSx|ANAx|NONE" << std::endl;
@@ -218,6 +222,22 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		{
 			fdImgFName[1]=argv[i+1];
 			++i;
+		}
+		else if("-FD0WP"==ARG)
+		{
+			fdImgWriteProtect[0]=true;
+		}
+		else if("-FD1WP"==ARG)
+		{
+			fdImgWriteProtect[1]=true;
+		}
+		else if("-FD0UP"==ARG)
+		{
+			fdImgWriteProtect[0]=false;
+		}
+		else if("-FD1UP"==ARG)
+		{
+			fdImgWriteProtect[1]=false;
 		}
 		else if("-CD"==ARG && i+1<argc)
 		{

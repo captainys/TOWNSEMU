@@ -34,6 +34,7 @@ public:
 	std::string CMOSFName;
 	bool autoSaveCMOS=true; // If this flag is false, CMOSFName will not be copied to FMTowns::Variable.
 	std::string fdImgFName[2];
+	bool fdImgWriteProtect[2]={false,false};
 	std::string cdImgFName;
 	std::string startUpScriptFName;
 	std::string symbolFName;

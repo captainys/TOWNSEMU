@@ -163,6 +163,7 @@ bool Setup(FMTowns &towns,Outside_World *outside_world,const TownsARGV &argv)
 		if(""!=argv.fdImgFName[drv])
 		{
 			towns.fdc.LoadRawBinary(drv,argv.fdImgFName[drv].c_str());
+			towns.fdc.SetWriteProtect(drv,argv.fdImgWriteProtect[drv]);
 		}
 	}
 	if(""!=argv.cdImgFName)
