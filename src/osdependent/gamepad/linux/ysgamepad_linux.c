@@ -1,8 +1,17 @@
+#include <stdio.h>
+#include <sys/ioctl.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <sys/poll.h>
+#include <sys/stat.h>
+#include <dirent.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include "../ysgamepad.h"
 
 
 
-#define MAX_NUM_GAMEPAD 2
+#define MAX_NUM_GAMEPADS 8
 
 struct GamepadInfo
 {
@@ -17,13 +26,12 @@ static const int PadAxisRead=2;
 
 struct GamepadCache
 {
-public:
 	int fd;
 	int lastAxis; // Most likely hat is the last two.
 	struct YsGamePadReading reading;
 };
 
-static struct GamepadCache cache[MAX_NUM_GAMEPAD];
+static struct GamepadCache cache[MAX_NUM_GAMEPADS];
 
 static void Update(struct GamepadCache *cachePtr)
 {
@@ -43,11 +51,11 @@ static void Update(struct GamepadCache *cachePtr)
 		{
 			if((gp.tp&PadButtonRead) && gp.n<YSGAMEPAD_MAX_NUM_BUTTONS)
 			{
-				cachePtr->reading.button[gp.n]=gp.v;
+				cachePtr->reading.buttons[gp.n]=gp.v;
 			}
-			if((gp.tp&PadAxisRead) && gp.n<YSGAME_PAD_MAX_NUM_AXES)
+			if((gp.tp&PadAxisRead) && gp.n<YSGAMEPAD_MAX_NUM_AXES)
 			{
-				cachePtr->reading.axis[gp.n]=(float)gp.v/(float)32768.0f;
+				cachePtr->reading.axes[gp.n]=(float)gp.v/(float)32768.0f;
 			}
 
 			if(gp.tp&PadAxisRead && cachePtr->lastAxis<gp.n)
@@ -56,12 +64,12 @@ static void Update(struct GamepadCache *cachePtr)
 			}
 			if((gp.tp&PadAxisRead) && gp.n==cachePtr->lastAxis-1)
 			{
-				if(0<gp.v)
+				if(gp.v<0)
 				{
 					cachePtr->reading.dirs[0].upDownLeftRight[2]=1;
 					cachePtr->reading.dirs[0].upDownLeftRight[3]=0;
 				}
-				else if(gp.v<0)
+				else if(0<gp.v)
 				{
 					cachePtr->reading.dirs[0].upDownLeftRight[2]=0;
 					cachePtr->reading.dirs[0].upDownLeftRight[3]=1;
@@ -74,12 +82,12 @@ static void Update(struct GamepadCache *cachePtr)
 			}
 			if((gp.tp&PadAxisRead) && gp.n==cachePtr->lastAxis)
 			{
-				if(0<gp.v)
+				if(gp.v<0)
 				{
 					cachePtr->reading.dirs[0].upDownLeftRight[0]=1;
 					cachePtr->reading.dirs[0].upDownLeftRight[1]=0;
 				}
-				else if(gp.v<0)
+				else if(0<gp.v)
 				{
 					cachePtr->reading.dirs[0].upDownLeftRight[0]=0;
 					cachePtr->reading.dirs[0].upDownLeftRight[1]=1;
@@ -96,7 +104,7 @@ static void Update(struct GamepadCache *cachePtr)
 
 void YsGamePadInitialize(void)
 {
-	for(int gamepadId=0; gamepadId<MAX_NUM_GAMEPAD; ++gamepadId)
+	for(int gamepadId=0; gamepadId<MAX_NUM_GAMEPADS; ++gamepadId)
 	{
 		char fn[256];
 		sprintf(fn,"/dev/input/js%d",gamepadId);
@@ -113,14 +121,19 @@ void YsGamePadInitialize(void)
 
 		if(0<=cache[gamepadId].fd)
 		{
+			printf("xyz %d\n",gamepadId);
 			Update(&cache[gamepadId]);
+			cache[gamepadId].reading.dirs[0].upDownLeftRight[0]=0;
+			cache[gamepadId].reading.dirs[0].upDownLeftRight[1]=0;
+			cache[gamepadId].reading.dirs[0].upDownLeftRight[2]=0;
+			cache[gamepadId].reading.dirs[0].upDownLeftRight[3]=0;
 		}
 	}
 }
 
 void YsGamePadTerminate(void)
 {
-	for(int gamepadId=0; gamepadId<MAX_NUM_GAMEPAD; ++gamepadId)
+	for(int gamepadId=0; gamepadId<MAX_NUM_GAMEPADS; ++gamepadId)
 	{
 		if(0<=cache[gamepadId].fd)
 		{
@@ -140,6 +153,13 @@ int YsGamePadGetNumDevices(void)
 
 void YsGamePadRead(struct YsGamePadReading *reading,int gamePadId)
 {
-	gamePadId;
-	YsGamePadClear(reading);
+	if(gamePadId<MAX_NUM_GAMEPADS)
+	{
+		Update(&cache[gamePadId]);
+		*reading=cache[gamePadId].reading;
+	}
+	else
+	{
+		YsGamePadClear(reading);
+	}
 }

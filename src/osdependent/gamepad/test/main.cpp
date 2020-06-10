@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <math.h>
 #include "ysgamepad.h"
 #include "fssimplewindow.h"
@@ -98,6 +99,7 @@ int main(void)
 	YsGamePadInitialize();
 	YsGamePadWaitReady();
 
+	int padId=0;
 	for(;;)
 	{
 		FsPollDevice();
@@ -107,8 +109,19 @@ int main(void)
 			break;
 		}
 
+		if(FSKEY_UP==key)
+		{
+			++padId;
+			printf("Pad ID %d\n",padId);
+		}
+		if(FSKEY_DOWN==key)
+		{
+			--padId;
+			printf("Pad ID %d\n",padId);
+		}
+		
 		YsGamePadReading reading;
-		YsGamePadRead(&reading,0);
+		YsGamePadRead(&reading,padId);
 
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 		Draw(reading);
