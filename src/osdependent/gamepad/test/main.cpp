@@ -12,7 +12,7 @@ void DrawCircle(int cx,int cy,int rad)
 		double ang=(YsPi*2.0*(double)i)/64.0;
 		double c=cos(ang);
 		double s=sin(ang);
-		glVertex2d((double)cx+c*(double)rad,(double)cx+s*(double)rad);
+		glVertex2d((double)cx+c*(double)rad,(double)cy+s*(double)rad);
 	}
 	glEnd();
 }
@@ -27,7 +27,7 @@ void DrawDirection(int cx,int cy,int rad,struct YsGamePadDirectionButton dir)
 	{
 		dy=-rad;
 	}
-	else if(dir.upDownLeftRight[1])
+	if(dir.upDownLeftRight[1])
 	{
 		dy=rad;
 	}
@@ -45,9 +45,45 @@ void DrawDirection(int cx,int cy,int rad,struct YsGamePadDirectionButton dir)
 	glEnd();
 }
 
+void DrawAxis(int cx,int cy,int rad,float x,float y)
+{
+	glColor3ub(0,0,0);
+	DrawCircle(cx,cy,rad);
+
+	float x0=(float)cx+(int)(rad*x);
+	float y0=(float)cy+(int)(rad*y);
+	glBegin(GL_TRIANGLE_FAN);
+	glVertex2f(x0-5,y0);
+	glVertex2f(x0,y0-5);
+	glVertex2f(x0+5,y0);
+	glVertex2f(x0,y0+5);
+	glEnd();
+}
+
 void Draw(struct YsGamePadReading &reading)
 {
 	DrawDirection(200,150,50,reading.dirs[0]);
+
+	for(int i=0; i<YSGAMEPAD_MAX_NUM_BUTTONS; ++i)
+	{
+		if(0!=reading.buttons[i])
+		{
+			glBegin(GL_TRIANGLE_FAN);
+		}
+		else
+		{
+			glBegin(GL_LINE_LOOP);
+		}
+		int x0=200+i*50;
+		int y0=450;
+		glVertex2i(x0   ,y0);
+		glVertex2i(x0+40,y0);
+		glVertex2i(x0+40,y0+40);
+		glVertex2i(x0   ,y0+40);
+		glEnd();
+	}
+	DrawAxis(250,250,50,reading.axes[0],reading.axes[1]);
+	DrawAxis(450,250,50,reading.axes[2],reading.axes[3]);
 }
 
 int main(void)
