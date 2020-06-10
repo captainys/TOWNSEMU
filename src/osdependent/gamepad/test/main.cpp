@@ -83,6 +83,11 @@ void Draw(struct YsGamePadReading &reading)
 		glEnd();
 	}
 	DrawAxis(250,250,50,reading.axes[0],reading.axes[1]);
+	{
+		YsGamePadDirectionButton dir;
+		YsGamdPadTranslateAnalogToDigital(&dir,reading.axes[0],reading.axes[1]);
+		DrawDirection(250,250,50,dir);
+	}
 	DrawAxis(450,250,50,reading.axes[2],reading.axes[3]);
 }
 

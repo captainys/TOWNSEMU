@@ -28,6 +28,7 @@ void YsGamePadWaitReady(void);
 int YsGamePadGetNumDevices(void);
 void YsGamePadRead(struct YsGamePadReading *reading,int gamePadId);
 void YsGamePadClear(struct YsGamePadReading *reading);
+void YsGamdPadTranslateAnalogToDigital(struct YsGamePadDirectionButton *dir,float x,float y);
 
 #ifdef __cplusplus
 }
