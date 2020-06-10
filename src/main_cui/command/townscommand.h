@@ -92,7 +92,12 @@ public:
 		CMD_CMOSLOAD,
 		CMD_CDLOAD,
 		CMD_CDOPENCLOSE,
-		CMD_FDLOAD,
+		CMD_FD0LOAD,
+		CMD_FD0WRITEPROTECT,
+		CMD_FD0WRITEUNPROTECT,
+		CMD_FD1LOAD,
+		CMD_FD1WRITEPROTECT,
+		CMD_FD1WRITEUNPROTECT,
 
 		CMD_SAVE_EVENTLOG,
 		CMD_LOAD_EVENTLOG,
@@ -234,7 +239,7 @@ public:
 	void Execute_CMOSLoad(FMTowns &towns,Command &cmd);
 	void Execute_CMOSSave(FMTowns &towns,Command &cmd);
 	void Execute_CDLoad(FMTowns &towns,Command &cmd);
-	void Execute_FDLoad(FMTowns &towns,Command &cmd);
+	void Execute_FDLoad(int drv,FMTowns &towns,Command &cmd);
 };
 
 

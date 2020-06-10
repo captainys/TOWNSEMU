@@ -88,7 +88,12 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["CMOSSAVE"]=CMD_CMOSSAVE;
 	primaryCmdMap["CDLOAD"]=CMD_CDLOAD;
 	primaryCmdMap["CDOPENCLOSE"]=CMD_CDOPENCLOSE;
-	primaryCmdMap["FDLOAD"]=CMD_FDLOAD;
+	primaryCmdMap["FD0LOAD"]=CMD_FD0LOAD;
+	primaryCmdMap["FD0WP"]=CMD_FD0WRITEPROTECT;
+	primaryCmdMap["FD0UP"]=CMD_FD0WRITEUNPROTECT;
+	primaryCmdMap["FD1LOAD"]=CMD_FD1LOAD;
+	primaryCmdMap["FD1WP"]=CMD_FD1WRITEPROTECT;
+	primaryCmdMap["FD1UP"]=CMD_FD1WRITEUNPROTECT;
 
 	primaryCmdMap["HOST2VM"]=CMD_HOST_TO_VM_FILE_TRANSFER;
 
@@ -171,8 +176,15 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Load CD-ROM image." << std::endl;
 	std::cout << "CDOPENCLOSE" << std::endl;
 	std::cout << "  Virtually open and close the internal CD-ROM drive." << std::endl;
-	std::cout << "FDLOAD 0/1 filename" << std::endl;
-	std::cout << "  Load FD image.  The number 0 or 1 is the drive number.  Can also be A or B." << std::endl;
+	std::cout << "FD0LOAD filename" << std::endl;
+	std::cout << "FD1LOAD filename" << std::endl;
+	std::cout << "  Load FD image.  The number 0 or 1 is the drive number." << std::endl;
+	std::cout << "FD0WP" << std::endl;
+	std::cout << "FD1WP" << std::endl;
+	std::cout << "  Write protect floppy disk." << std::endl;
+	std::cout << "FD0UP" << std::endl;
+	std::cout << "FD1UP" << std::endl;
+	std::cout << "  Write un-protect floppy disk." << std::endl;
 	std::cout << "PAUSE|PAU" << std::endl;
 	std::cout << "  Pause VM." << std::endl;
 
@@ -606,9 +618,25 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 	case CMD_CDOPENCLOSE:
 		towns.cdrom.state.discChanged=true;
 		break;
-	case CMD_FDLOAD:
-		Execute_FDLoad(towns,cmd);
+	case CMD_FD0LOAD:
+		Execute_FDLoad(0,towns,cmd);
 		break;
+	case CMD_FD1LOAD:
+		Execute_FDLoad(1,towns,cmd);
+		break;
+	case CMD_FD0WRITEPROTECT:
+		towns.fdc.SetWriteProtect(0,true);
+		break;
+	case CMD_FD0WRITEUNPROTECT:
+		towns.fdc.SetWriteProtect(0,false);
+		break;
+	case CMD_FD1WRITEPROTECT:
+		towns.fdc.SetWriteProtect(1,true);
+		break;
+	case CMD_FD1WRITEUNPROTECT:
+		towns.fdc.SetWriteProtect(1,false);
+		break;
+
 
 	case CMD_HOST_TO_VM_FILE_TRANSFER:
 		if(3<=cmd.argv.size())
@@ -1653,19 +1681,10 @@ void TownsCommandInterpreter::Execute_CDLoad(FMTowns &towns,Command &cmd)
 		}
 	}
 }
-void TownsCommandInterpreter::Execute_FDLoad(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_FDLoad(int drv,FMTowns &towns,Command &cmd)
 {
-	if(3<=cmd.argv.size())
+	if(2<=cmd.argv.size())
 	{
-		int drv=0;
-		if('0'==cmd.argv[1][0] || 'A'==cmd.argv[1][0] || 'a'==cmd.argv[1][0])
-		{
-			drv=0;
-		}
-		else if('1'==cmd.argv[1][0] || 'B'==cmd.argv[1][0] || 'b'==cmd.argv[1][0])
-		{
-			drv=1;
-		}
 		if(true==towns.fdc.LoadRawBinary(drv,cmd.argv[2].c_str(),false))
 		{
 			std::cout << "Loaded FD image." << std::endl;

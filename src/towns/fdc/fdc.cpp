@@ -215,6 +215,10 @@ void TownsFDC::SetWriteProtect(int driveNum,bool writeProtect)
 	auto diskPtr=GetDriveDisk(driveNum);
 	if(nullptr!=diskPtr)
 	{
+		// Change of write-protection is not a modification for RAW image.
+		// Write-protection is a flag in .D77.
+		// Therefore, when it is a RAW image, it shouldn't change the modified flag.
+		bool isModified=diskPtr->IsModified();
 		if(true==writeProtect)
 		{
 			diskPtr->SetWriteProtected();
@@ -222,6 +226,14 @@ void TownsFDC::SetWriteProtect(int driveNum,bool writeProtect)
 		else
 		{
 			diskPtr->ClearWriteProtected();
+		}
+		auto imgFilePtr=GetDriveImageFile(driveNum);
+		if(nullptr!=imgFilePtr && IMGFILE_RAW==imgFilePtr->fileType)
+		{
+			if(true!=isModified)
+			{
+				diskPtr->ClearModified();
+			}
 		}
 	}
 }

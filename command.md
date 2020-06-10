@@ -295,11 +295,30 @@ Virtually open and close the internal CD-ROM drive.
 内蔵CD-ROMのイメージはそのままで、いったん蓋を開いて閉じたことにします。
 
 ```
-FDLOAD 0/1 filename
+FD0LOAD filename
+FD1LOAD filename
 ```
-Load FD image.  The number 0 or 1 is the drive number.  Can also be A or B.
+Load FD image.  The number 0 or 1 is the drive number.
 
-フロッピーディスクイメージを指定します。0または1でドライブを指定します。(AまたはBでも可)
+フロッピーディスクイメージを指定します。0または1でドライブを指定します。
+
+```
+FD0WP
+FD1WP
+```
+Write-protect floppy disk.
+
+フロッピーディスクを書き込み禁止にします。
+
+```
+FD0UP
+FD1UP
+```
+
+Write un-protect floppy disk.
+
+フロッピーディスクを書き込み可能にします。
+
 
 ```
 PAUSE
