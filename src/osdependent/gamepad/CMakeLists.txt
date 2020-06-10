@@ -23,3 +23,5 @@ endif()
 add_library(${TARGET_NAME} ${SRCS})
 target_link_libraries(${TARGET_NAME} ${DEPEND_LIB})
 target_include_directories(${TARGET_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+add_subdirectory(test)
