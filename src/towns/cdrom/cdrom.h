@@ -161,11 +161,16 @@ public:
 		// the last frame given at the time of CDDA Play command, CDDA must take three states:
 		//    IDLE, PLAYING, STOPPING
 		// while stopping, the virtual CD-ROM pretends that CDDA is playing the last frame.
+
+		// BIOS disassembly suggests that command A0H should return status:
+		//   00 00 00 00 07 00 00 00
+		// once CDDA play ended.  For this purpose, the CDDA must have an additional state ENDED.
 		enum
 		{
 			CDDA_IDLE,
 			CDDA_PLAYING,
 			CDDA_STOPPING,
+			CDDA_ENDED,
 		};
 		enum
 		{
@@ -174,11 +179,6 @@ public:
 		unsigned int CDDAState=CDDA_IDLE;
 		long long int nextCDDAPollingTime=0;
 		DiscImage::MinSecFrm CDDAEndTime;
-
-		// BIOS disassembly suggests that command A0H should return status:
-		//   00 00 00 00 07 00 00 00
-		// once CDDA play ended.
-		bool CDDAPlayStarted;
 
 	private:
 		DiscImage *imgPtr;
@@ -218,7 +218,7 @@ public:
 private:
 	void UpdateCDDAStateInternal(long long int townsTime,Outside_World &outside_world);
 public:
-	inline bool CDDAPlaying(void) const
+	inline bool CDDAIsPlaying(void) const
 	{
 		return (State::CDDA_PLAYING==state.CDDAState || State::CDDA_STOPPING==state.CDDAState);
 	}

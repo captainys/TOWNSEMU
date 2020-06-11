@@ -56,7 +56,9 @@ void TownsCDROM::State::Reset(void)
 	enableSIRQ=false;
 	enableDEI=false;
 	discChanged=false;
-	CDDAPlayStarted=false;
+	CDDAState=CDDA_IDLE;
+	nextCDDAPollingTime=0;
+	CDDAEndTime.Set(0,2,0);
 }
 
 void TownsCDROM::SetOutsideWorld(class Outside_World *outside_world)
@@ -76,7 +78,7 @@ void TownsCDROM::UpdateCDDAStateInternal(long long int townsTime,Outside_World &
 	}
 	else if(State::CDDA_STOPPING==state.CDDAState)
 	{
-		state.CDDAState=State::CDDA_IDLE;
+		state.CDDAState=State::CDDA_ENDED;
 	}
 }
 
@@ -332,6 +334,26 @@ std::vector <std::string> TownsCDROM::GetStatusText(void) const
 	text.back()+="  enableDEI:";
 	text.back()+=(true==state.enableDEI ? "1" : "0");
 
+	text.push_back("CDDA:");
+	switch(state.CDDAState)
+	{
+	case State::CDDA_IDLE:
+		text.back()+="IDLE";
+		break;
+	case State::CDDA_PLAYING:
+		text.back()+="PLAYING";
+		break;
+	case State::CDDA_STOPPING:
+		text.back()+="STOPPING";
+		break;
+	case State::CDDA_ENDED:
+		text.back()+="ENDED";
+		break;
+	default:
+		text.back()+="!!Undefined!!";
+		break;
+	}
+
 	return text;
 }
 
@@ -432,7 +454,8 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 			if(nullptr!=OutsideWorld)
 			{
 				OutsideWorld->CDDAPlay(state.GetDisc(),msfBegin,msfEnd);
-				state.CDDAPlayStarted=true;
+				state.CDDAState=State::CDDA_PLAYING;
+				state.CDDAEndTime=msfEnd;
 			}
 			if(0x20&state.cmd)
 			{
@@ -459,13 +482,12 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 	case CDCMD_SETSTATE://   0x80,
 		if(0x20&state.cmd)
 		{
-			bool CDDAPlaying=(nullptr!=OutsideWorld && true==OutsideWorld->CDDAIsPlaying());
 			townsPtr->UnscheduleDeviceCallBack(*this);
 			SetStatusDriveNotReadyOrDiscChangedOrNoError();
-			if(true==state.CDDAPlayStarted && true!=CDDAPlaying)
+			if(State::CDDA_ENDED==state.CDDAState)
 			{
 				PushStatusCDDAPlayEnded();
-				state.CDDAPlayStarted=false;
+				state.CDDAState=State::CDDA_IDLE;
 			}
 		}
 		break;
@@ -478,7 +500,7 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 		}
 		break;
 	case CDCMD_CDDASTOP://   0x84,
-		if(nullptr!=OutsideWorld && true==OutsideWorld->CDDAIsPlaying())
+		if(true==CDDAIsPlaying())
 		{
 			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+CDDASTOP_TIME);
 		}
@@ -496,6 +518,7 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 		{
 			if(true!=SetStatusDriveNotReadyOrDiscChanged())
 			{
+				state.CDDAState=State::CDDA_IDLE;
 				state.PushStatusQueue(0,0,0,0);
 				state.PushStatusQueue(0x12,0,0,0);
 			}
@@ -641,7 +664,7 @@ bool TownsCDROM::SetStatusDriveNotReadyOrDiscChanged(void)
 void TownsCDROM::SetStatusNoError(void)
 {
 	unsigned char next2ndByteOfStatusCode=0;
-	if(nullptr!=OutsideWorld && true==OutsideWorld->CDDAIsPlaying())
+	if(true==CDDAIsPlaying())
 	{
 		next2ndByteOfStatusCode=0x03; // Prob: Response to A0H (80H+REQSTA), 00 03 xx xx means CDDA is playing.
 	}
@@ -733,10 +756,22 @@ void TownsCDROM::SetStatusSubQRead(void)
 	// 20H  discTimeBCD xx xx
 	state.PushStatusQueue(0,0,0,0);
 
-	DiscImage::MinSecFrm twoSec;
+	DiscImage::MinSecFrm twoSec,discTime;
 	twoSec.Set(0,2,0);
 
-	auto discTime=OutsideWorld->CDDACurrentPosition();
+	if(State::CDDA_PLAYING==state.CDDAState)
+	{
+		discTime=OutsideWorld->CDDACurrentPosition();
+		if(state.CDDAEndTime<discTime)
+		{
+			discTime=state.CDDAEndTime;
+		}
+	}
+	else
+	{
+		discTime=state.CDDAEndTime;
+	}
+
 	auto trackTime=state.GetDisc().DiscTimeToTrackTime(discTime);
 	discTime+=twoSec;
 
@@ -781,6 +816,7 @@ void TownsCDROM::StopCDDA(void)
 	state.ClearStatusQueue();
 	if(true!=SetStatusDriveNotReadyOrDiscChanged())
 	{
+		state.CDDAState=State::CDDA_ENDED;
 		SetStatusNoError();
 		PushStatusCDDAStopDone();
 		state.PushStatusQueue(0,0x0D,0,0);
