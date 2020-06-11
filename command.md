@@ -603,138 +603,205 @@ Schedule Host to VM file transfer.  File will be transferred when FTCLIENT.EXP i
 ```
 CMDLOG
 ```
-  Command log.  Saved to CMD.LOG.
+Command log.  Saved to CMD.LOG.
+
+コマンドログ。CMD.LOGに保存されます。
+
 ```
 AUTODISASM
 ```
-  Disassemble while running.
+Disassemble while running.
+
+逆アセンブルを表示しながら実行します。
+
 ```
 IOMON iopotMin ioportMax
 ```
-  IO Monitor.
-  ioportMin and ioportMax are optional.
-  Can specify multiple range by enabling IOMON multiple times.
+IO Monitor.  ioportMin and ioportMax are optional.  Can specify multiple range by enabling IOMON multiple times.
+
+IOモニタ。ioportMin, ioportMaxを省略するとすべてのI/Oアクセスをモニタします。
+
 ```
 EVENTLOG
 ```
-  Event Log.
+Event Log.
+
+イベントログ。
+
 ```
 DEBUGGER
 DEBUG
 ```
-  Debugger.
+Debugger.
+
+デバッガ。
+
 ```
 MOUSEINTEG
 ```
-  Mouse Integration.
+Mouse Integration.
+
+マウスインテグレーション。
 
 ## Information that can be printed
 ## プリントできる情報
 ```
 CALLSTACK|CST
 ```
-  Call Stack
+Call Stack
+
+コールスタック。
+
 ```
 SYM
 ```
-  Symbol table
+Symbol table
+
+シンボルテーブル。
+
+
 ```
 HIST
 ```
-  Log of CS:EIP.  Can specify number of steps.  Same as HIST command.
+Log of CS:EIP.  Can specify number of steps.  Same as HIST command.
+
+直近のインストラクションポインタのヒストリ。
+
+
 ```
 GDT
 ```
-  Protected-Mode Global Descriptor Table
+Protected-Mode Global Descriptor Table
+
 ```
 LDT
 ```
-  Protected-Mode Local Descriptor Table
+Protected-Mode Local Descriptor Table
+
 ```
 IDT
 ```
-  Protected-Mode Interrupt Descriptor Table
+Protected-Mode Interrupt Descriptor Table
+
 ```
 RIDT
 ```
-  Real-mode Interrupt Descriptor Tables
+Real-mode Interrupt Descriptor Tables
+
 ```
 BREAKPOINT
 BRK
 ```
-  Break Points
+Break Points
+
 ```
 STATUS
 STATE
 STA
 S
 ```
-  Current status.  Same as STA command.
+Current status.  Same as STA command.
+
+CPUステータス。
+
 ```
 PIC
 ```
-  Pilot-In-Command. No!  Programmable Interrupt Controller.
+Pilot-In-Command. No!  Programmable Interrupt Controller.
+
 ```
 DMA
 DMAC
 ```
-  DMA Controller.
+DMA Controller.
+
 ```
 FDC
 ```
-  Floppy Disk Controller.
+Floppy Disk Controller.
+
 ```
 SCSI
 ```
-  SCSI Controller.
+SCSI Controller.
+
 ```
 CRTC
 ```
-  CRTC.
+CRTC.
+
 ```
 TIMER
 ```
-  Interval Timer (i8253)
+Interval Timer (i8253)
+
 ```
 MEM
 ```
-  Memory Settings
+Memory Settings
+
 ```
 CMOS addr
 ```
-  CMOS RAM
+CMOS RAM
+
 ```
 CDROM
 ```
-  CD-ROM Status.
+CD-ROM Status.
+
 ```
 SCHED
 ```
-  Device call-back schedule.
+Device call-back schedule.
+
 ```
 SPRITE
 ```
-  Sprite status.
+Sprite status.
 
 ## Event that can break
+The parameters that can be given to ```BRKON``` and ```CBRKON``` commands.  When the event is detected, the VM breaks after finishing the instruction.  To see the instruction that was executing at the time of the event, use ```HIST``` command.
+
+```BRKON```と```CBRKON```で指定できるイベントです。イベントが発生すると、CPUのインストラクションの実行後にブレークします。イベント発生時に実行していたインストラクションポインタを知るには```HIST```コマンドを使ってください。
+
 ```
-IWC1
+ICW1
+ICW4
 ```
-```
-IWC4
-```
+Break on write to ICW1 or ICW4 of PIC.
+
+PICのICW1またはICW4への書き込みでブレーク。
+
 ```
 DMACREQ
 ```
+Break on DMAC request.
+
+DMACリクエストでブレーク。
+
 ```
 FDCCMD
 ```
+Break on Floppy-disk controller command.
+
+フロッピーディスクコントローラのコマンドでブレーク。
+
 ```
 CDCCMD
 ```
+Break on internal CD-ROM controller command.
+
+内蔵CD-ROMコントローラのコマンドでブレーク。
+
+
 ```
 INT n
 ```
+Break on interrupt.  n is a hexadecimal number.
+
+割り込み発生でブレーク。nは16進数で指定。
+
 ```
 RDCVRAM
 ```
@@ -765,23 +832,45 @@ VRAMRW
 ```
 LBUTTONUP
 ```
+Break on left-button up.
+
+左ボタンリリースでブレーク。
+
 ```
 RETKEY
-```
-```
 RETURNKEY
 ```
+Break on return-key press.
+
+リターンキーでブレーク。
+
 ```
 SCSICMD
 ```
+Break on SCSI command.
+
+SCSI commandでブレーク。
+
 ```
 SCSIDMA
 ```
+Break on SCSI DMA transfer.
+
+SCSI DMA転送でブレーク。
+
+
 ```
 MEMREAD physAddr
 MEMR physAddr
 ```
+Break on memory read.  The address is physicall address.  Use ```ADTR``` command to translate SEGMENT:ADDRESS to physical address.
+
+メモリ読み込みでブレーク。アドレスは物理アドレスで指定。```ADTR```コマンドでセグメント:アドレスから物理アドレスに変換できます。
+
 ```
 MEMWRITE physAddr
 MEMW physAddr
 ```
+Break on memory write.  The address is physicall address.  Use ```ADTR``` command to translate SEGMENT:ADDRESS to physical address.
+
+メモリ書き込みでブレーク。アドレスは物理アドレスで指定。```ADTR```コマンドでセグメント:アドレスから物理アドレスに変換できます。

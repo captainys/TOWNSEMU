@@ -137,8 +137,8 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	dumpableMap["SPRITE"]=DUMP_SPRITE;
 
 
-	breakEventMap["IWC1"]=   BREAK_ON_PIC_IWC1;
-	breakEventMap["IWC4"]=   BREAK_ON_PIC_IWC4;
+	breakEventMap["ICW1"]=   BREAK_ON_PIC_IWC1;
+	breakEventMap["ICW4"]=   BREAK_ON_PIC_IWC4;
 	breakEventMap["DMACREQ"]=BREAK_ON_DMAC_REQUEST;
 	breakEventMap["FDCCMD"]= BREAK_ON_FDC_COMMAND;
 	breakEventMap["INT"]=    BREAK_ON_INT;
@@ -337,8 +337,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "" << std::endl;
 
 	std::cout << "<< Event that can break >>" << std::endl;
-	std::cout << "IWC1" << std::endl;
-	std::cout << "IWC4" << std::endl;
+	std::cout << "ICW1" << std::endl;
+	std::cout << "ICW4" << std::endl;
 	std::cout << "DMACREQ" << std::endl;
 	std::cout << "FDCCMD" << std::endl;
 	std::cout << "CDCCMD" << std::endl;
