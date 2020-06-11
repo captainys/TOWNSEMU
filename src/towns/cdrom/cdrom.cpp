@@ -64,6 +64,22 @@ void TownsCDROM::SetOutsideWorld(class Outside_World *outside_world)
 	this->OutsideWorld=outside_world;
 }
 
+void TownsCDROM::UpdateCDDAStateInternal(long long int townsTime,Outside_World &outside_world)
+{
+	state.nextCDDAPollingTime=townsTime+State::CDDA_POLLING_INTERVAL;
+	if(State::CDDA_PLAYING==state.CDDAState)
+	{
+		if(true!=OutsideWorld->CDDAIsPlaying())
+		{
+			state.CDDAState=State::CDDA_STOPPING;
+		}
+	}
+	else if(State::CDDA_STOPPING==state.CDDAState)
+	{
+		state.CDDAState=State::CDDA_IDLE;
+	}
+}
+
 void TownsCDROM::State::ResetMPU(void)
 {
 	SIRQ=false; // 4C0H bit 7

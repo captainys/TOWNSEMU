@@ -154,6 +154,27 @@ public:
 
 		bool discChanged;
 
+
+		// RAYXANBER waits until the CDDA playing time reaches track 15 during the "DATAWEST" logo screen.
+		// However, .WAV file takes slightly less time to finish, and the playing time returned from CD-ROM
+		// does not reach track 15.  To make sure the virtual CD-ROM reports the last playing time reaching
+		// the last frame given at the time of CDDA Play command, CDDA must take three states:
+		//    IDLE, PLAYING, STOPPING
+		// while stopping, the virtual CD-ROM pretends that CDDA is playing the last frame.
+		enum
+		{
+			CDDA_IDLE,
+			CDDA_PLAYING,
+			CDDA_STOPPING,
+		};
+		enum
+		{
+			CDDA_POLLING_INTERVAL=1000000000/75, // 1 frame = 1/75 second.
+		};
+		unsigned int CDDAState=CDDA_IDLE;
+		long long int nextCDDAPollingTime=0;
+		DiscImage::MinSecFrm CDDAEndTime;
+
 		// BIOS disassembly suggests that command A0H should return status:
 		//   00 00 00 00 07 00 00 00
 		// once CDDA play ended.
@@ -187,6 +208,20 @@ public:
 	virtual void Reset(void);
 
 	void SetOutsideWorld(class Outside_World *outside_world);
+	inline void UpdateCDDAState(long long int townsTime,Outside_World &outside_world)
+	{
+		if(state.nextCDDAPollingTime<townsTime)
+		{
+			UpdateCDDAStateInternal(townsTime,outside_world);
+		}
+	}
+private:
+	void UpdateCDDAStateInternal(long long int townsTime,Outside_World &outside_world);
+public:
+	inline bool CDDAPlaying(void) const
+	{
+		return (State::CDDA_PLAYING==state.CDDAState || State::CDDA_STOPPING==state.CDDAState);
+	}
 
 	virtual void IOWriteByte(unsigned int ioport,unsigned int data);
 	virtual unsigned int IOReadByte(unsigned int ioport);
