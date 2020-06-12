@@ -2566,3 +2566,55 @@ std::string i486DX::DebugFetchString(int addressSize,const SegmentRegister &seg,
 	}
 	return REG_NULL;
 }
+
+void i486DX::DebugStoreByte(Memory &mem,int addressSize,SegmentRegister seg,unsigned int offset,unsigned char byteData)
+{
+	offset&=AddressMask((unsigned char)addressSize);
+	auto linearAddr=seg.baseLinearAddr+offset;
+	auto physicalAddr=linearAddr;
+	if(true==PagingEnabled())
+	{
+		unsigned int exceptionType,exceptionCode;
+		physicalAddr=LinearAddressToPhysicalAddress(exceptionType,exceptionCode,linearAddr,mem);
+	}
+	return mem.StoreByte(physicalAddr,byteData);
+}
+
+void i486DX::DebugStoreWord(Memory &mem,int addressSize,SegmentRegister seg,unsigned int offset,unsigned int data)
+{
+	offset&=AddressMask((unsigned char)addressSize);
+	auto linearAddr=seg.baseLinearAddr+offset;
+	auto physicalAddr=linearAddr;
+	if(true==PagingEnabled())
+	{
+		unsigned int exceptionType,exceptionCode;
+		physicalAddr=LinearAddressToPhysicalAddress(exceptionType,exceptionCode,linearAddr,mem);
+		if(0xFFE<(physicalAddr&0xfff)) // May hit the page boundary
+		{
+			StoreByte(mem,addressSize,seg,offset  , data    &255);// May hit the page boundary. Don't use StoreWord
+			StoreByte(mem,addressSize,seg,offset+1,(data>>8)&255);// May hit the page boundary. Don't use StoreWord
+			return;
+		}
+	}
+	mem.StoreWord(physicalAddr,data);
+}
+void i486DX::DebugStoreDword(Memory &mem,int addressSize,SegmentRegister seg,unsigned int offset,unsigned int data)
+{
+	offset&=AddressMask((unsigned char)addressSize);
+	auto linearAddr=seg.baseLinearAddr+offset;
+	auto physicalAddr=linearAddr;
+	if(true==PagingEnabled())
+	{
+		unsigned int exceptionType,exceptionCode;
+		physicalAddr=LinearAddressToPhysicalAddress(exceptionType,exceptionCode,linearAddr,mem);
+		if(0xFFC<(physicalAddr&0xfff)) // May hit the page boundary
+		{
+			StoreByte(mem,addressSize,seg,offset  , data     &255);
+			StoreByte(mem,addressSize,seg,offset+1,(data>> 8)&255);// May hit the page boundary. Don't use StoreDword
+			StoreByte(mem,addressSize,seg,offset+2,(data>>16)&255);// May hit the page boundary. Don't use StoreDword
+			StoreByte(mem,addressSize,seg,offset+3,(data>>24)&255);// May hit the page boundary. Don't use StoreDword
+			return;
+		}
+	}
+	mem.StoreDword(physicalAddr,data);
+}

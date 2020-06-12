@@ -84,6 +84,11 @@ public:
 		CMD_KEYBOARD,
 
 		CMD_LET,
+		CMD_EDIT_MEMORY_BYTE,
+		CMD_EDIT_MEMORY_WORD,
+		CMD_EDIT_MEMORY_DWORD,
+		CMD_REPLACE,
+
 		CMD_CRTC_PAGE,
 
 		CMD_CALCULATE,
@@ -233,6 +238,8 @@ public:
 	void Execute_TypeKeyboard(FMTowns &towns,Command &cmd);
 
 	void Execute_Let(FMTowns &towns,Command &cmd);
+	void Execute_EditMemory(FMTowns &towns,Command &cmd,unsigned int numBytes);
+	void Execute_Replace(FMTowns &towns,Command &cmd);
 
 	void Execute_CRTCPage(FMTowns &towns,Command &cmd);
 

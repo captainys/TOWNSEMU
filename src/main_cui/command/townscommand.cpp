@@ -83,6 +83,12 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 
 	primaryCmdMap["TYPE"]=CMD_TYPE_KEYBOARD;
 	primaryCmdMap["LET"]=CMD_LET;
+	primaryCmdMap["EMB"]=CMD_EDIT_MEMORY_BYTE;
+	primaryCmdMap["EMW"]=CMD_EDIT_MEMORY_WORD;
+	primaryCmdMap["EMD"]=CMD_EDIT_MEMORY_DWORD;
+	primaryCmdMap["REPLACE"]=CMD_REPLACE;
+
+
 	primaryCmdMap["CRTCPAGE"]=CMD_CRTC_PAGE;
 	primaryCmdMap["CMOSLOAD"]=CMD_CMOSLOAD;
 	primaryCmdMap["CMOSSAVE"]=CMD_CMOSSAVE;
@@ -258,6 +264,12 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  US keyboard cannot type some of the characters." << std::endl;
 	std::cout << "LET register value" << std::endl;
 	std::cout << "  Load a register value." << std::endl;
+	std::cout << "EMB seg:offset data" <<std::endl;
+	std::cout << "EMW seg:offset data" <<std::endl;
+	std::cout << "EMD seg:offset data" <<std::endl;
+	std::cout << "  Edit memory byte/word/dword respectively." << std::endl;
+	std::cout << "REPLACE hexadecimal-data hexadecimal-data" << std::endl;
+	std::cout << "  Replace in main memory." << std::endl;
 	std::cout << "CRTCPAGE 1|0 1|0" << std::endl;
 	std::cout << "  Turn on/off display page." << std::endl;
 	std::cout << "CMOSLOAD filename" << std::endl;
@@ -602,6 +614,19 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 	case CMD_LET:
 		Execute_Let(towns,cmd);
 		break;
+	case CMD_EDIT_MEMORY_BYTE:
+		Execute_EditMemory(towns,cmd,1);
+		break;
+	case CMD_EDIT_MEMORY_WORD:
+		Execute_EditMemory(towns,cmd,2);
+		break;
+	case CMD_EDIT_MEMORY_DWORD:
+		Execute_EditMemory(towns,cmd,4);
+		break;
+	case CMD_REPLACE:
+		Execute_Replace(towns,cmd);
+		break;
+
 	case CMD_CRTC_PAGE:
 		Execute_CRTCPage(towns,cmd);
 		break;
@@ -1613,14 +1638,71 @@ void TownsCommandInterpreter::Execute_Let(FMTowns &towns,Command &cmd)
 		   i486DX::REG_EBP==reg
 		)
 		{
-			towns.cpu.SetRegisterValue(reg,cpputil::Xtoi(cmd.argv[2].c_str()));
-			std::cout << "Loaded register value." << std::endl;
+			TownsLineParserHexadecimal parser(&towns.cpu);
+			if(true==parser.Analyze(cmd.argv[2]))
+			{
+				towns.cpu.SetRegisterValue(reg,parser.Evaluate());
+				std::cout << "Loaded register value." << std::endl;
+			}
 		}
 		else
 		{
 			std::cout << "Cannot load a value to this register/flag." << std::endl;
 		}
 	}
+}
+
+void TownsCommandInterpreter::Execute_EditMemory(FMTowns &towns,Command &cmd,unsigned int numBytes)
+{
+	if(3<=cmd.argv.size())
+	{
+		auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.cpu);
+		if(farPtr.SEG==i486DX::FarPointer::NO_SEG)
+		{
+			farPtr.SEG=towns.cpu.state.DS().value;
+		}
+		TownsLineParserHexadecimal parser(&towns.cpu);
+		if(true==parser.Analyze(cmd.argv[2]))
+		{
+			if((farPtr.SEG&0xFFFF0000)==i486DX::FarPointer::PHYS_ADDR)
+			{
+				switch(numBytes)
+				{
+				case 1:
+					towns.mem.StoreByte(farPtr.OFFSET,parser.Evaluate());
+					break;
+				case 2:
+					towns.mem.StoreWord(farPtr.OFFSET,parser.Evaluate());
+					break;
+				case 4:
+					towns.mem.StoreDword(farPtr.OFFSET,parser.Evaluate());
+					break;
+				}
+			}
+			else
+			{
+				i486DX::SegmentRegister seg;
+				farPtr.LoadSegmentRegister(seg,towns.cpu,towns.mem);
+				switch(numBytes)
+				{
+				case 1:
+					towns.cpu.DebugStoreByte(towns.mem,32,seg,farPtr.OFFSET,parser.Evaluate());
+					break;
+				case 2:
+					towns.cpu.DebugStoreWord(towns.mem,32,seg,farPtr.OFFSET,parser.Evaluate());
+					break;
+				case 4:
+					towns.cpu.DebugStoreDword(towns.mem,32,seg,farPtr.OFFSET,parser.Evaluate());
+					break;
+				}
+			}
+			std::cout << "Stored value to memory." << std::endl;
+		}
+	}
+}
+void TownsCommandInterpreter::Execute_Replace(FMTowns &towns,Command &cmd)
+{
+	std::cout << "Not implemented yet." << std::endl;
 }
 
 void TownsCommandInterpreter::Execute_CRTCPage(FMTowns &towns,Command &cmd)
