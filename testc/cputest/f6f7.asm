@@ -214,7 +214,9 @@ TEST_F7					PROC
 						MOV		EBX,[ESP+4];
 						XOR		EDX,EDX
 						
-						OR		EBX,1 ; Force it to be non-zero
+						OR		EBX,1 ; Force it to be non-zero, no IDIV overflow for 0x80000000
+						OR		EAX,1 ; No -0x80000000 to avoid overflow
+						CDQ
 						IDIV	EBX
 						PUSHFD
 						POP		EBX
