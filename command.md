@@ -22,7 +22,11 @@ Print help.
 ```
 If FM TOWNS ROM image files are stored in ```E:/ROM_MX``` directory, boot from disc image ```E:/ISOImage/AfterburnerII/AFTER_BURNER.CUE```.  Game pad 0 is emulated by keyboard (A,S,Z,X,↑↓←→), and Window size is scaled up to 160%.
 
+If you have a physical game pad, you can use ```PHYS0```, ```PHYS1```, ```PHYS2```, or ```PHYS3``` in place for ```KEY```.  Or, in case your game pad reports direction button as the analog input, use ```ANA0```,```ANA1```, ```ANA2``` or ```ANA3```.
+
 FM TOWNSのROMイメージが```E:/ROM_MX```のとき、ディスクイメージ```E:/ISOImage/AFTER_BURNER.CUE```から起動します。ジョイパッド0はキーボードエミュレーション (A,S,Z,X,↑↓←→)、ウィンドウは160%にスケールアップされます。
+
+USBやBluetooth接続のゲームパッドがある場合は、```KEY````の代わりに```PHYS0```, ```PHYS1```, ```PHYS2```, または ```PHYS3```を指定すると使えます。また、十字ボタンをハットスイッチではなくアナログレバーとして扱うゲームパッドの場合は、```ANA0```,```ANA1```,```ANA2```,```ANA3```を指定することで利用できます。
 
 ```
 ./Tsugaru_CUI E:/ROM_MX -CD E:/ISOImage/AUGUSTA.CUE -FD0 E:/ISOImage/AUGUSTAFD.bin -SCALE 160

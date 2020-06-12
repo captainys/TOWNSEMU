@@ -21,3 +21,10 @@ jobs:
     - name: build
       run: cmake --build . --config Release
       working-directory: ./ci
+    - name: make_zip
+      run: cmake -E copy ./main_cui/Release/Tsugaru_CUI.exe .
+      run: cmake -E copy ../readme.md .
+      run: cmake -E copy ../command.md .
+      run: cmake -E tar cvf windows_binary_latest.zip --format=zip Tsugaru_CUI.exe readme.md command.md
+      working-directory: ./ci
+

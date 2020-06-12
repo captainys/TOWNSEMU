@@ -79,6 +79,8 @@ You can see the help by typing:
 main_cui -HELP
 ```
 
+I add some command samples below.  Please see also command.md
+
 
 
 コマンドから起動します。
@@ -91,6 +93,45 @@ CD-imageは.ISOと.CUEに対応。ディスクイメージは.D77か生イメー
 ```
 main_cui -HELP
 ```
+
+以下に起動コマンドの例をいくつか挙げます。command.mdファイルも参照してください。
+
+
+
+
+# Command-Line Examples
+```
+.\Tsugaru_CUI.exe -HELP
+```
+Print help.
+
+ヘルプを表示します。
+
+```
+./Tsugaru_CUI E:/ROM_MX -CD E:/ISOImage/AFTER_BURNER.CUE -GAMEPORT0 KEY -SCALE 160
+```
+If FM TOWNS ROM image files are stored in ```E:/ROM_MX``` directory, boot from disc image ```E:/ISOImage/AfterburnerII/AFTER_BURNER.CUE```.  Game pad 0 is emulated by keyboard (A,S,Z,X,↑↓←→), and Window size is scaled up to 160%.
+
+If you have a physical game pad, you can use ```PHYS0```, ```PHYS1```, ```PHYS2```, or ```PHYS3``` in place for ```KEY```.  Or, in case your game pad reports direction button as the analog input, use ```ANA0```,```ANA1```, ```ANA2``` or ```ANA3```.
+
+FM TOWNSのROMイメージが```E:/ROM_MX```のとき、ディスクイメージ```E:/ISOImage/AFTER_BURNER.CUE```から起動します。ジョイパッド0はキーボードエミュレーション (A,S,Z,X,↑↓←→)、ウィンドウは160%にスケールアップされます。
+
+USBやBluetooth接続のゲームパッドがある場合は、```KEY````の代わりに```PHYS0```, ```PHYS1```, ```PHYS2```, または ```PHYS3```を指定すると使えます。また、十字ボタンをハットスイッチではなくアナログレバーとして扱うゲームパッドの場合は、```ANA0```,```ANA1```,```ANA2```,```ANA3```を指定することで利用できます。
+
+```
+./Tsugaru_CUI E:/ROM_MX -CD E:/ISOImage/AUGUSTA.CUE -FD0 E:/ISOImage/AUGUSTAFD.bin -SCALE 160
+```
+IF FM TOWNS ROM image files are in ```E:/ROM_MX``` directory, boot from disc image ```E:/ISOImage/AUGUSTA.CUE``` and floppy-disk image ```E:/ISOImage/AUGUSTAFD.bin``` in drive A.  Window is scaled up to 160%.
+
+FM TOWNSのROMイメージが```E:/ROM_MX```のとき、CDイメージ```E:/ISOImage/AUGUSTA.CUE```とドライブAのフロッピーディスクイメージ```E:/ISOImage/AUGUSTAFD.bin```から起動します。ウィンドウは160%にスケールアップされます。
+
+```
+./Tsugaru_CUI E:/ROM_MX -CMOS ./CMOS.BIN -CD E:/ISOImage/TownsOSV2.1L20.cue
+```
+If FM TOWNS ROM image files are stored in E:/ROM_MX, and CMOS file (BIOS Settings in the DOS terminology) is ./CMOS.BIN, boot from disc image ```E:/ISOImage/TownsOSV2.1L20.cue```  If ```./CMOS.BIN``` does not exist, it is created when the program is closed by Q (Quit) command.  If the program is forced to close by window-close button, the file won't be created.
+
+FM TOWNSのROMイメージが```E:/ROM_MX```で、CMOSファイル(DOSで言うところのBIOS設定)が```./CMOS.BIN```のとき、ディスクイメージ```E:/ISOIMage/TownsOSV2.1L20.cue```からシステムを起動します。```./CMOS.BIN```が存在しない場合、コンソールコマンドのQ (Quit) コマンドで終了したとき、新たに```CMOS.BIN```を作成します。ウィンドウを閉じて強制終了した場合はファイルはできません。
+
 
 
 
@@ -139,6 +180,9 @@ The tests are timing-sensitive, or the CPU needs to be reasonably fast.  If not,
 
 
 # Revisions
+### 2020/06/12
+- Better CDDA emulation, preliminary support for electric volume registers, fixed BT MEM,R instruction.  Confirmed RAYXANBER can start game play!
+
 ### 2020/06/07
 - Improvement in YM2612 emulation.  Still different, but getting similar.  (Struggling to make sense of envelope calculation.)
 - Fixed hard-disk read/write.  Now can install TownsOS in a hard-disk image, and boot from it.
