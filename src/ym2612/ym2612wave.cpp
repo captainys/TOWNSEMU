@@ -18,6 +18,11 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "ym2612.h"
 
 
+
+// #define YM2612_DEBUGOUTPUT
+
+
+
 static unsigned int attackTime0to96dB[64]= // 1/100ms
 {
 897024,//0,
@@ -2372,8 +2377,9 @@ void YM2612::KeyOn(unsigned int chNum)
 
 	ch.toneDuration12=CalculateToneDurationMilliseconds(chNum);
 	ch.toneDuration12<<=12;
-
-printf("%d BLOCK %03xH F_NUM %03xH Hertz %d Max Duration %d\n",KC,ch.BLOCK,ch.F_NUM,hertzX16/16,ch.toneDuration12>>12);
+#ifdef YM2612_DEBUGOUTPUT
+	printf("%d BLOCK %03xH F_NUM %03xH Hertz %d Max Duration %d\n",KC,ch.BLOCK,ch.F_NUM,hertzX16/16,ch.toneDuration12>>12);
+#endif
 }
 
 void YM2612::KeyOff(unsigned int chNum)
@@ -2393,7 +2399,9 @@ void YM2612::KeyOff(unsigned int chNum)
 				auto releaseTime=sustainDecayReleaseTime0to96dB[std::min<unsigned int>(slot.RRCache,63)];
 				releaseTime*=lastDb100;
 				releaseTime/=960000;
-printf("Release Time=%d\nms\n",releaseTime);
+			#ifdef YM2612_DEBUGOUTPUT
+				printf("Release Time=%d\nms\n",releaseTime);
+			#endif
 				slot.ReleaseEndTime=slot.ReleaseStartTime+releaseTime;
 			}
 		}
@@ -2445,7 +2453,9 @@ std::vector <unsigned char> YM2612::MakeWave(unsigned int chNum,unsigned long lo
 	numSamples*=WAVE_SAMPLING_RATE;
 	numSamples/=1000;
 	numSamples>>=12;
-std::cout << "Requested:" << requestedMicroSec12 << " ToneDuration:" << ch.toneDuration12 << std::endl;
+#ifdef YM2612_DEBUGOUTPUT
+	std::cout << "Requested:" << requestedMicroSec12 << " ToneDuration:" << ch.toneDuration12 << std::endl;
+#endif
 	const unsigned int microsec12Step=4096000000/WAVE_SAMPLING_RATE;
 	// Time runs 1/WAVE_SAMPLING_RATE seconds per step
 	//           1000/WAVE_SAMPLING_RATE milliseconds per step
@@ -2563,7 +2573,9 @@ bool YM2612::CalculateEnvelope(unsigned int env[6],unsigned int &RR,unsigned int
 {
 	KC&=31;
 
-std::cout << KC << "," << slot.KS << "," << (KC>>(3-slot.KS)) << ", ";
+#ifdef YM2612_DEBUGOUTPUT
+	std::cout << KC << "," << slot.KS << "," << (KC>>(3-slot.KS)) << ", ";
+#endif
 
 	unsigned int AR=slot.AR*2+(KC>>(3-slot.KS));
 	unsigned int DR=slot.DR*2+(KC>>(3-slot.KS));
@@ -2589,8 +2601,10 @@ std::cout << KC << "," << slot.KS << "," << (KC>>(3-slot.KS)) << ", ";
 
 	const unsigned int TLinv=9600-TLdB100;
 
-std::cout << "AR=" << AR << " DR=" << DR << " SR=" << SR << " TL=" << slot.TL  << " SL=" << slot.SL ;
-std::cout << " ";
+#ifdef YM2612_DEBUGOUTPUT
+	std::cout << "AR=" << AR << " DR=" << DR << " SR=" << SR << " TL=" << slot.TL  << " SL=" << slot.SL ;
+	std::cout << " ";
+#endif
 
 	// Ealier I was linearly interpolating the amplitude, but maybe it is linear in dB scale.
 	env[1]=TLinv;
@@ -2649,9 +2663,11 @@ std::cout << " ";
 	// 	env[4]=TONE_CHOPOFF_MILLISEC;
 	// }
 
-for(int i=0; i<6; ++i){std::cout << env[i] << ",";}
-std::cout << "  RR=" << RR << "(" << sustainDecayReleaseTime0to96dB[RR]/100 << ")";
-std::cout << std::endl;
+#ifdef YM2612_DEBUGOUTPUT
+	for(int i=0; i<6; ++i){std::cout << env[i] << ",";}
+	std::cout << "  RR=" << RR << "(" << sustainDecayReleaseTime0to96dB[RR]/100 << ")";
+	std::cout << std::endl;
+#endif
 
 	return true;
 }
