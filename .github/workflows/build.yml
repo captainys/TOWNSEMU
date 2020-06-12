@@ -28,4 +28,9 @@ jobs:
           cmake -E copy ../command.md .
           cmake -E tar cvf windows_binary_latest.zip --format=zip Tsugaru_CUI.exe readme.md command.md
       working-directory: ./ci
+    - name: upload_to_artifact
+      uses: actions/upload-artifact@v1
+      with:
+          name:Windows-Binary
+          path:ci/windows_binary_latest.zip
 
