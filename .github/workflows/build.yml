@@ -81,7 +81,7 @@ jobs:
       working-directory: ./ci_macos
     - name: make_zip
       run: |
-          cmake -E copy_directory ./main_cui/Tsugaru_CUI.app .
+          cmake -E copy_directory ./main_cui/Tsugaru_CUI.app ./Tsugaru_CUI.app
           cmake -E copy ../readme.md .
           cmake -E copy ../command.md .
           cmake -E tar cvf macos_binary_latest.zip --format=zip Tsugaru_CUI.app readme.md command.md
