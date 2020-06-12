@@ -4279,8 +4279,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_OPCODE_BTC_RM_R://   0x0FBB,
 	case I486_OPCODE_BTR_RM_R://   0x0FB3,
 	case I486_OPCODE_BTS_RM_R://   0x0FAB,
+		if(OPER_ADDR!=op1.operandType)
 		{
-			clocksPassed=(OPER_ADDR==op1.operandType ? 13 : 6);
+			clocksPassed=6;
 			auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
 			auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize/8);
 			if(true!=state.exception)
@@ -4312,6 +4313,46 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 						src&=(~bit);
 						value1.SetDword(src);
 						StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+					}
+				}
+			}
+		}
+		else // if(OPER_ADDR==op1.operandType)
+		{
+			clocksPassed=13;
+			auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize/8);
+			unsigned bitCount=value2.GetAsDword();
+
+			unsigned int offset;
+			auto &seg=*ExtractSegmentAndOffset(offset,op1,inst.segOverride);
+			offset+=(bitCount>>3);
+
+			unsigned int src=FetchByte(inst.addressSize,seg,offset,mem);
+			if(true!=state.exception)
+			{
+				auto bitOffset=bitCount&7;
+				auto bit=(1<<bitOffset);
+				SetCF(0!=(src&bit));
+				// Nothing more to do for I486_OPCODE_BT_R_RM
+				if(I486_OPCODE_BTS_RM_R==inst.opCode)
+				{
+					if(0==(src&bit))
+					{
+						src|=bit;
+						StoreByte(mem,inst.addressSize,seg,offset,src);
+					}
+				}
+				else if(I486_OPCODE_BTC_RM_R==inst.opCode)
+				{
+					src^=bit;
+					StoreByte(mem,inst.addressSize,seg,offset,src);
+				}
+				else if(I486_OPCODE_BTR_RM_R==inst.opCode)
+				{
+					if(0!=(src&bit))
+					{
+						src&=(~bit);
+						StoreByte(mem,inst.addressSize,seg,offset,src);
 					}
 				}
 			}
