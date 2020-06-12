@@ -27,3 +27,38 @@ jobs:
           cmake -E tar cvf windows_binary_latest.zip --format=zip Tsugaru_CUI.exe readme.md command.md
       working-directory: ./ci
 
+
+
+  build-linux:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: mkdir
+      run: mkdir ci_ubuntu
+    - name: install-OpenGL
+      run: sudo apt-get install libglu1-mesa-dev mesa-common-dev
+    - name: cmake
+      run: cmake ../src -DCMAKE_BUILD_TYPE=Release
+      working-directory: ./ci_ubuntu
+    - name: build
+      run: cmake --build .
+      working-directory: ./ci_ubuntu
+
+
+
+  build-macos:
+
+    runs-on: macos-10.15
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: mkdir
+      run: mkdir ci_macos
+    - name: cmake
+      run: cmake ../src -DCMAKE_BUILD_TYPE=Release
+      working-directory: ./ci_macos
+    - name: build
+      run: cmake --build .
+      working-directory: ./ci_macos
