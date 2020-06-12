@@ -101,6 +101,7 @@ public:
 		REG_DI,
 		// << Do not change the order above.  ExtractSegmentAndOffset assumes the order.
 
+		REG_IP,
 		REG_EIP,
 		REG_EFLAGS,
 

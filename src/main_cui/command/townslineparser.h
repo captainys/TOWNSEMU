@@ -7,8 +7,16 @@
 class TownsLineParser : public LineParser
 {
 public:
-	class i486DX *cpuPtr;
-	TownsLineParser(class i486DX *);
+	const class i486DX *cpuPtr;
+	TownsLineParser(const class i486DX *);
+	virtual long long int EvaluateRawNumber(const std::string &str) const;
+};
+
+class TownsLineParserHexadecimal : public LineParser
+{
+public:
+	const class i486DX *cpuPtr;
+	TownsLineParserHexadecimal(const class i486DX *);
 	virtual long long int EvaluateRawNumber(const std::string &str) const;
 };
 

@@ -2,13 +2,15 @@
 #include "townslineparser.h"
 #include "cpputil.h"
 
-TownsLineParser::TownsLineParser(class i486DX *cpuPtr)
+TownsLineParser::TownsLineParser(const class i486DX *cpuPtr)
 {
 	this->cpuPtr=cpuPtr;
 }
 /* virtual */ long long int TownsLineParser::EvaluateRawNumber(const std::string &str) const
 {
-	auto reg=cpuPtr->StrToReg(str);
+	std::string cap=str;
+	cpputil::Capitalize(cap);
+	auto reg=cpuPtr->StrToReg(cap);
 	if(i486DX::REG_NULL!=reg)
 	{
 		return cpuPtr->GetRegisterValue(reg);
@@ -19,3 +21,21 @@ TownsLineParser::TownsLineParser(class i486DX *cpuPtr)
 	}
 }
 
+TownsLineParserHexadecimal::TownsLineParserHexadecimal(const class i486DX *cpuPtr)
+{
+	this->cpuPtr=cpuPtr;
+}
+/* virtual */ long long int TownsLineParserHexadecimal::EvaluateRawNumber(const std::string &str) const
+{
+	std::string cap=str;
+	cpputil::Capitalize(cap);
+	auto reg=cpuPtr->StrToReg(cap);
+	if(i486DX::REG_NULL!=reg)
+	{
+		return cpuPtr->GetRegisterValue(reg);
+	}
+	else
+	{
+		return cpputil::Xtoi(str.c_str());
+	}
+}

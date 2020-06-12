@@ -436,7 +436,7 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 		thr.SetRunMode(TownsThread::RUNMODE_RUN);
 		if(1<cmd.argv.size())
 		{
-			auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1]);
+			auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.cpu);
 			if(farPtr.SEG==i486DX::FarPointer::NO_SEG)
 			{
 				farPtr.SEG=towns.cpu.state.CS().value;
@@ -780,7 +780,7 @@ void TownsCommandInterpreter::Execute_AddBreakPoint(FMTowns &towns,Command &cmd)
 	}
 	else
 	{
-		auto farPtr=towns.cpu.TranslateFarPointer(cmdutil::MakeFarPointer(cmd.argv[1]));
+		auto farPtr=towns.cpu.TranslateFarPointer(cmdutil::MakeFarPointer(cmd.argv[1],towns.cpu));
 		towns.debugger.AddBreakPoint(farPtr);
 	}
 }
@@ -973,7 +973,7 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 	}
 	else
 	{
-		auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1]);
+		auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.cpu);
 		if(i486DX::FarPointer::NO_SEG!=farPtr.SEG)
 		{
 			for(auto str : miscutil::MakeMemDump(towns.cpu,towns.mem,farPtr,256,/*shiftJIS*/false))
@@ -1241,7 +1241,7 @@ void TownsCommandInterpreter::Execute_AddressTranslation(FMTowns &towns,Command 
 {
 	if(2<=cmd.argv.size())
 	{
-		auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1]);
+		auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.cpu);
 		farPtr=towns.cpu.TranslateFarPointer(farPtr);
 		std::cout << farPtr.Format() << std::endl;
 
@@ -1271,7 +1271,7 @@ void TownsCommandInterpreter::Execute_Disassemble(FMTowns &towns,Command &cmd)
 	auto farPtr=towns.var.disassemblePointer;
 	if(2<=cmd.argv.size())
 	{
-		farPtr=cmdutil::MakeFarPointer(cmd.argv[1]);
+		farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.cpu);
 		if((farPtr.SEG&0xFFFF0000)==i486DX::FarPointer::PHYS_ADDR)
 		{
 			std::cout << "Disassembly cannot be from Physical address." << std::endl;
@@ -1309,7 +1309,7 @@ void TownsCommandInterpreter::Execute_Disassemble16(FMTowns &towns,Command &cmd)
 	auto farPtr=towns.var.disassemblePointer;
 	if(2<=cmd.argv.size())
 	{
-		farPtr=cmdutil::MakeFarPointer(cmd.argv[1]);
+		farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.cpu);
 		if((farPtr.SEG&0xFFFF0000)==i486DX::FarPointer::PHYS_ADDR)
 		{
 			std::cout << "Disassembly cannot be from Physical address." << std::endl;
@@ -1347,7 +1347,7 @@ void TownsCommandInterpreter::Execute_Disassemble32(FMTowns &towns,Command &cmd)
 	auto farPtr=towns.var.disassemblePointer;
 	if(2<=cmd.argv.size())
 	{
-		farPtr=cmdutil::MakeFarPointer(cmd.argv[1]);
+		farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.cpu);
 		if((farPtr.SEG&0xFFFF0000)==i486DX::FarPointer::PHYS_ADDR)
 		{
 			std::cout << "Disassembly cannot be from Physical address." << std::endl;
@@ -1462,7 +1462,9 @@ void TownsCommandInterpreter::Execute_AddSymbol(FMTowns &towns,Command &cmd)
 		case CMD_ADD_LABEL:
 		case CMD_ADD_DATALABEL:
 			{
-				auto *newSym=symTable.Update(cmdutil::MakeFarPointer(cmd.argv[1]),cmd.argv[2]);
+				auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.cpu);
+				farPtr=towns.cpu.TranslateFarPointer(farPtr);
+				auto *newSym=symTable.Update(farPtr,cmd.argv[2]);
 				switch(cmd.primaryCmd)
 				{
 				case CMD_ADD_SYMBOL:
@@ -1484,7 +1486,9 @@ void TownsCommandInterpreter::Execute_AddSymbol(FMTowns &towns,Command &cmd)
 				auto numBytes=cpputil::Xtoi(cmd.argv[3].c_str());
 				if(0<numBytes)
 				{
-					auto *newSym=symTable.Update(cmdutil::MakeFarPointer(cmd.argv[1]),cmd.argv[2]);
+					auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.cpu);
+					farPtr=towns.cpu.TranslateFarPointer(farPtr);
+					auto *newSym=symTable.Update(farPtr,cmd.argv[2]);
 					newSym->symType=i486Symbol::SYM_RAW_DATA;
 					newSym->rawDataBytes=numBytes;
 					std::cout << "Added raw byte data " << cmd.argv[2] << std::endl;
@@ -1501,11 +1505,19 @@ void TownsCommandInterpreter::Execute_AddSymbol(FMTowns &towns,Command &cmd)
 			}
 			break;
 		case CMD_ADD_COMMENT:
-			symTable.SetComment(cmdutil::MakeFarPointer(cmd.argv[1]),cmd.argv[2]);
-			std::cout << "Added comment " << cmd.argv[2] << std::endl;
+			{
+				auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.cpu);
+				farPtr=towns.cpu.TranslateFarPointer(farPtr);
+				symTable.SetComment(farPtr,cmd.argv[2]);
+				std::cout << "Added comment " << cmd.argv[2] << std::endl;
+			}
 			break;
 		case CMD_IMM_IS_IOPORT:
-			symTable.SetImmIsIOPort(cmdutil::MakeFarPointer(cmd.argv[1]));
+			{
+				auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.cpu);
+				farPtr=towns.cpu.TranslateFarPointer(farPtr);
+				symTable.SetImmIsIOPort(farPtr);
+			}
 			break;
 		}
 
@@ -1526,7 +1538,8 @@ void TownsCommandInterpreter::Execute_DelSymbol(FMTowns &towns,Command &cmd)
 	auto &symTable=towns.debugger.GetSymTable();
 	if(2<=cmd.argv.size())
 	{
-		auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1]);
+		auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.cpu);
+		farPtr=towns.cpu.TranslateFarPointer(farPtr);
 		if(true==symTable.Delete(farPtr))
 		{
 			std::cout << "Symbol&|Comment deleted." << std::endl;
@@ -1570,7 +1583,9 @@ void TownsCommandInterpreter::Execute_Let(FMTowns &towns,Command &cmd)
 {
 	if(3<=cmd.argv.size())
 	{
-		auto reg=towns.cpu.StrToReg(cmd.argv[1]);
+		std::string cap=cmd.argv[1];
+		cpputil::Capitalize(cap);
+		auto reg=towns.cpu.StrToReg(cap);
 		if(
 		   i486DX::REG_AL==reg ||
 		   i486DX::REG_AH==reg ||

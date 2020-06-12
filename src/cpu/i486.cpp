@@ -69,6 +69,7 @@ const char *const i486DX::RegToStr[REG_TOTAL_NUMBER_OF_REGISTERS]=
 	"SI",
 	"DI",
 
+	"IP",
 	"EIP",
 	"EFLAGS",
 

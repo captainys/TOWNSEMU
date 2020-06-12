@@ -26,7 +26,7 @@ namespace cmdutil
 	    If no segment is given, SEG member of i486DX::FarPointer will be set to
 	    i486DX::FarPointer::NO_SEG.
 	*/
-	i486DX::FarPointer MakeFarPointer(const std::string &str);
+	i486DX::FarPointer MakeFarPointer(const std::string &str,const i486DX &cpu);
 
 	/*! Print prompt.
 	*/

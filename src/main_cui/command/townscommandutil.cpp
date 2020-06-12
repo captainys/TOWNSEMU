@@ -15,14 +15,41 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <iostream>
 
 #include "townscommandutil.h"
+#include "townslineparser.h"
 #include "cpputil.h"
 
 
 
-i486DX::FarPointer cmdutil::MakeFarPointer(const std::string &str)
+i486DX::FarPointer cmdutil::MakeFarPointer(const std::string &str,const i486DX &cpu)
 {
 	i486DX::FarPointer ptr;
 	ptr.MakeFromString(str);
+
+	// To allow description like EAX+EDI*2+10, discard offset part from MakeFromString and re-calculate.
+	const char *offsetPtr=nullptr;
+	for(int i=0; i<str.size(); ++i)
+	{
+		if(':'==str[i])
+		{
+			offsetPtr=str.c_str()+i+1;
+			break;
+		}
+	}
+	if(nullptr==offsetPtr)
+	{
+		offsetPtr=str.c_str();
+	}
+	TownsLineParserHexadecimal parser(&cpu);
+	if(true==parser.Analyze(offsetPtr))
+	{
+		ptr.OFFSET=parser.Evaluate();
+	}
+	else
+	{
+		std::cout << "Error in offset description." << std::endl;
+		ptr.OFFSET=0;
+	}
+
 	return ptr;
 }
 
