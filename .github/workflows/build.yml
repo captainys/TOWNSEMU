@@ -5,32 +5,32 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
+  build-windows:
 
     runs-on: windows-latest
 
     steps:
     - uses: actions/checkout@v2
     - name: mkdir
-      run: mkdir ci
+      run: mkdir ci_windows
     - name: cmake
       run: cmake ../src
-      working-directory: ./ci
+      working-directory: ./ci_windows
     - name: build
       run: cmake --build . --config Release
-      working-directory: ./ci
+      working-directory: ./ci_windows
     - name: make_zip
       run: |
           cmake -E copy ./main_cui/Release/Tsugaru_CUI.exe .
           cmake -E copy ../readme.md .
           cmake -E copy ../command.md .
           cmake -E tar cvf windows_binary_latest.zip --format=zip Tsugaru_CUI.exe readme.md command.md
-      working-directory: ./ci
+      working-directory: ./ci_windows
     - name: upload_to_artifact
       uses: actions/upload-artifact@v1
       with:
           name: Windows-Binary
-          path: ci/windows_binary_latest.zip
+          path: ci_windows/windows_binary_latest.zip
 
 
 
@@ -62,5 +62,34 @@ jobs:
       with:
           name: Ubuntu-Binary
           path: ci_ubuntu/ubuntu_binary_latest.zip
+
+
+
+  build-macos:
+
+    runs-on: macos-10.15
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: mkdir
+      run: mkdir ci_macos
+    - name: cmake
+      run: cmake ../src -DCMAKE_BUILD_TYPE=Release
+      working-directory: ./ci_macos
+    - name: build
+      run: cmake --build .
+      working-directory: ./ci_macos
+    - name: make_zip
+      run: |
+          cmake -E copy_directory ./main_cui/Tsugaru_CUI.app .
+          cmake -E copy ../readme.md .
+          cmake -E copy ../command.md .
+          cmake -E tar cvf macos_binary_latest.zip --format=zip Tsugaru_CUI.app readme.md command.md
+      working-directory: ./ci_macos
+    - name: upload_to_artifact
+      uses: actions/upload-artifact@v1
+      with:
+          name: Macos-Binary
+          path: ci_macos/macos_binary_latest.zip
 
 
