@@ -487,7 +487,10 @@ void LineParser::GroupByOperator(Term *current,const char *const op[])
 			current->child->next=opPtr;
 			opPtr->prev=current->child;
 		}
-		current=current->next;
+		else
+		{
+			current=current->next;
+		}
 	}
 }
 
