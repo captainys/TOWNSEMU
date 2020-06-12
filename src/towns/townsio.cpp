@@ -69,6 +69,25 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	case TOWNSIO_TIMER_1US_WAIT:
 		state.townsTime+=1000;
 		break;
+
+	case TOWNSIO_ELEVOL_1_DATA: //           0x4E0, // [2] pp.18, pp.174
+		state.eleVol1[state.eleVol1ChLatch].vol=(data&0x3f);
+		break;
+	case TOWNSIO_ELEVOL_1_COM: //            0x4E1, // [2] pp.18, pp.174
+		state.eleVol1ChLatch=data&3;
+		state.eleVol1[state.eleVol1ChLatch].EN=(0!=(data&4));
+		state.eleVol1[state.eleVol1ChLatch].C0=(0!=(data&8));
+		state.eleVol1[state.eleVol1ChLatch].C32=(0!=(data&16));
+		break;
+	case TOWNSIO_ELEVOL_2_DATA: //           0x4E2, // [2] pp.18, pp.174
+		state.eleVol2[state.eleVol2ChLatch].vol=(data&0x3f);
+		break;
+	case TOWNSIO_ELEVOL_2_COM: //            0x4E3, // [2] pp.18, pp.174
+		state.eleVol2ChLatch=data&3;
+		state.eleVol2[state.eleVol2ChLatch].EN=(0!=(data&4));
+		state.eleVol2[state.eleVol2ChLatch].C0=(0!=(data&8));
+		state.eleVol2[state.eleVol2ChLatch].C32=(0!=(data&16));
+		break;
 	}
 }
 /* virtual */ void FMTowns::IOWriteWord(unsigned int ioport,unsigned int data)
@@ -123,6 +142,32 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	case TOWNSIO_TIMER_1US_WAIT:
 		// Supposed to be 1us wait when written.  But, mouse BIOS is often reading from this register.
 		state.townsTime+=1000;
+		break;
+
+	case TOWNSIO_ELEVOL_1_DATA: //           0x4E0, // [2] pp.18, pp.174
+		return state.eleVol1[state.eleVol1ChLatch].vol;
+	case TOWNSIO_ELEVOL_1_COM: //            0x4E1, // [2] pp.18, pp.174
+		{
+			unsigned int data=0;
+			data|=state.eleVol1ChLatch;
+			data|=(state.eleVol1[state.eleVol1ChLatch].EN ? 4 : 0);
+			data|=(state.eleVol1[state.eleVol1ChLatch].C0 ? 8 : 0);
+			data|=(state.eleVol1[state.eleVol1ChLatch].C32 ? 16 : 0);
+			return data;
+		}
+		break;
+	case TOWNSIO_ELEVOL_2_DATA: //           0x4E2, // [2] pp.18, pp.174
+		return state.eleVol2[state.eleVol2ChLatch].vol;
+		break;
+	case TOWNSIO_ELEVOL_2_COM: //            0x4E3, // [2] pp.18, pp.174
+		{
+			unsigned int data=0;
+			data|=state.eleVol2ChLatch;
+			data|=(state.eleVol2[state.eleVol2ChLatch].EN ? 4 : 0);
+			data|=(state.eleVol2[state.eleVol2ChLatch].C0 ? 8 : 0);
+			data|=(state.eleVol2[state.eleVol2ChLatch].C32 ? 16 : 0);
+			return data;
+		}
 		break;
 	}
 	return 0xff;

@@ -268,9 +268,9 @@ TownsPIC::TownsPIC(FMTowns *townsPtr) : Device(townsPtr)
 		switch(state.i8259A[0].OCW[2]&3) // [2] pp.65
 		{
 		case 2:
-			return state.i8259A[0].IRR;
+			return state.i8259A[0].IRR|(0!=state.i8259A[1].IRR ? 0x80 : 0);
 		case 3:
-			return state.i8259A[0].ISR;
+			return state.i8259A[0].ISR|(0!=state.i8259A[1].ISR ? 0x80 : 0);
 		}
 		break;
 	case TOWNSIO_PIC_PRIMARY_ICW2_3_4_OCW://  0x02,

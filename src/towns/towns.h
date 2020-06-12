@@ -138,6 +138,18 @@ public:
 		unsigned int lastSerialROMCommand;
 
 
+		/*! Electric Volume
+		*/
+		unsigned int eleVol1ChLatch=0,eleVol2ChLatch=0;
+		class ElectricVolume
+		{
+		public:
+			bool EN=true,C32=false,C0=false;
+			unsigned int vol=31;
+		};
+		ElectricVolume eleVol1[4],eleVol2[4];
+
+
 		/*! TBIOS version, TBIOS physical address (it should be contiguous in physical memory),
 		    Mouse work area pointer.  Captured upon MOS_start and MOS_end.
 		*/

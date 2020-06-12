@@ -184,6 +184,11 @@ FMTowns::FMTowns() :
 	io.AddDevice(this,TOWNSIO_FMR_RESOLUTION); // 0x400
 	io.AddDevice(this,TOWNSIO_VM_HOST_IF_CMD_STATUS);
 	io.AddDevice(this,TOWNSIO_VM_HOST_IF_DATA);
+	io.AddDevice(this,TOWNSIO_ELEVOL_1_DATA); //           0x4E0, // [2] pp.18, pp.174
+	io.AddDevice(this,TOWNSIO_ELEVOL_1_COM); //            0x4E1, // [2] pp.18, pp.174
+	io.AddDevice(this,TOWNSIO_ELEVOL_2_DATA); //           0x4E2, // [2] pp.18, pp.174
+	io.AddDevice(this,TOWNSIO_ELEVOL_2_COM); //            0x4E3, // [2] pp.18, pp.174
+
 
 
 	io.AddDevice(&pic,TOWNSIO_PIC_PRIMARY_ICW1);//          0x00
