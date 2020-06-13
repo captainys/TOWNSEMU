@@ -66,6 +66,7 @@ void TownsFDC::State::Reset(void)
 		d.lastSeekDir=1;
 		d.motor=false;
 		d.diskChange=false;
+		d.pretendDriveNotReadyCount=0;
 	}
 	driveSwitch=false;
 	driveSelectBit=1;      // Looks like A drive is selected by default.
@@ -90,6 +91,11 @@ void TownsFDC::State::Reset(void)
 	addrMarkReadCount=0;
 }
 
+void TownsFDC::State::Drive::DiskChanged(void)
+{
+	diskChange=true;
+	pretendDriveNotReadyCount=1;
+}
 
 ////////////////////////////////////////////////////////////
 
@@ -145,7 +151,7 @@ bool TownsFDC::LoadRawBinary(unsigned int driveNum,const char fName[],bool verbo
 		state.drive[driveNum].imgFileNum=driveNum;
 		state.drive[driveNum].diskIndex=0;
 		state.drive[driveNum].mediaType=IdentifyDiskMediaType(imgFile[driveNum].d77.GetDisk(0));
-		state.drive[driveNum].diskChange=true;
+		state.drive[driveNum].DiskChanged();
 		return true;
 	}
 	else
@@ -601,6 +607,11 @@ bool TownsFDC::DriveReady(void) const
 {
 	if(0!=state.driveSelectBit && nullptr!=GetDriveDisk(DriveSelect()))
 	{
+		if(0<state.drive[DriveSelect()].pretendDriveNotReadyCount)
+		{
+			--state.drive[DriveSelect()].pretendDriveNotReadyCount;
+			return false;
+		}
 		return true;
 	}
 	return false;

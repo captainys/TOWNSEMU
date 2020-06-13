@@ -79,6 +79,9 @@ public:
 
 			bool motor;
 			bool diskChange;
+			mutable int pretendDriveNotReadyCount=0;
+
+			void DiskChanged(void);
 		};
 
 		Drive drive[NUM_DRIVES];
