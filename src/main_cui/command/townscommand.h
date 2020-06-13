@@ -98,9 +98,11 @@ public:
 		CMD_CDLOAD,
 		CMD_CDOPENCLOSE,
 		CMD_FD0LOAD,
+		CMD_FD0EJECT,
 		CMD_FD0WRITEPROTECT,
 		CMD_FD0WRITEUNPROTECT,
 		CMD_FD1LOAD,
+		CMD_FD1EJECT,
 		CMD_FD1WRITEPROTECT,
 		CMD_FD1WRITEUNPROTECT,
 
@@ -247,6 +249,7 @@ public:
 	void Execute_CMOSSave(FMTowns &towns,Command &cmd);
 	void Execute_CDLoad(FMTowns &towns,Command &cmd);
 	void Execute_FDLoad(int drv,FMTowns &towns,Command &cmd);
+	void Execute_FDEject(int drv,FMTowns &towns,Command &cmd);
 };
 
 

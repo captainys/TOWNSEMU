@@ -114,6 +114,7 @@ public:
 	TownsFDC(class FMTowns *townsPtr,class TownsPIC *PICPtr,class TownsDMAC *dmacPtr);
 
 	bool LoadRawBinary(unsigned int driveNum,const char fName[],bool verbose=true);
+	void Eject(unsigned int driveNum);
 	D77File::D77Disk *GetDriveDisk(int driveNum);
 	const D77File::D77Disk *GetDriveDisk(int driveNum) const;
 	ImageFile *GetDriveImageFile(int driveNum);

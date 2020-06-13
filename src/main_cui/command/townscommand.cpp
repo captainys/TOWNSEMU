@@ -95,9 +95,11 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["CDLOAD"]=CMD_CDLOAD;
 	primaryCmdMap["CDOPENCLOSE"]=CMD_CDOPENCLOSE;
 	primaryCmdMap["FD0LOAD"]=CMD_FD0LOAD;
+	primaryCmdMap["FD0EJECT"]=CMD_FD0EJECT;
 	primaryCmdMap["FD0WP"]=CMD_FD0WRITEPROTECT;
 	primaryCmdMap["FD0UP"]=CMD_FD0WRITEUNPROTECT;
 	primaryCmdMap["FD1LOAD"]=CMD_FD1LOAD;
+	primaryCmdMap["FD1EJECT"]=CMD_FD1EJECT;
 	primaryCmdMap["FD1WP"]=CMD_FD1WRITEPROTECT;
 	primaryCmdMap["FD1UP"]=CMD_FD1WRITEUNPROTECT;
 
@@ -185,6 +187,9 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "FD0LOAD filename" << std::endl;
 	std::cout << "FD1LOAD filename" << std::endl;
 	std::cout << "  Load FD image.  The number 0 or 1 is the drive number." << std::endl;
+	std::cout << "FD0EJECT" << std::endl;
+	std::cout << "FD1EJECT" << std::endl;
+	std::cout << "  Eject FD." << std::endl;
 	std::cout << "FD0WP" << std::endl;
 	std::cout << "FD1WP" << std::endl;
 	std::cout << "  Write protect floppy disk." << std::endl;
@@ -648,6 +653,12 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 		break;
 	case CMD_FD1LOAD:
 		Execute_FDLoad(1,towns,cmd);
+		break;
+	case CMD_FD0EJECT:
+		Execute_FDEject(0,towns,cmd);
+		break;
+	case CMD_FD1EJECT:
+		Execute_FDEject(1,towns,cmd);
 		break;
 	case CMD_FD0WRITEPROTECT:
 		towns.fdc.SetWriteProtect(0,true);
@@ -1791,4 +1802,10 @@ void TownsCommandInterpreter::Execute_FDLoad(int drv,FMTowns &towns,Command &cmd
 			std::cout << "Failed to load FD image." << std::endl;
 		}
 	}
+}
+
+void TownsCommandInterpreter::Execute_FDEject(int drv,FMTowns &towns,Command &cmd)
+{
+	towns.fdc.Eject(drv);
+	std::cout << "Ejected Floppy Drive " << drv << std::endl;
 }

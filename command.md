@@ -307,6 +307,14 @@ Load FD image.  The number 0 or 1 is the drive number.
 フロッピーディスクイメージを指定します。0または1でドライブを指定します。
 
 ```
+FD0EJECT
+FD1EJECT
+```
+Eject FD.
+
+フロッピーディスクを取り出します。
+
+```
 FD0WP
 FD1WP
 ```

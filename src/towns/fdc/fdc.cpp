@@ -153,6 +153,12 @@ bool TownsFDC::LoadRawBinary(unsigned int driveNum,const char fName[],bool verbo
 	}
 }
 
+void TownsFDC::Eject(unsigned int driveNum)
+{
+	state.drive[driveNum].imgFileNum=-1;
+	state.drive[driveNum].diskIndex=-1;
+}
+
 D77File::D77Disk *TownsFDC::GetDriveDisk(int driveNum)
 {
 	if(0<=driveNum && driveNum<NUM_DRIVES)
