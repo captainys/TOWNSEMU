@@ -203,6 +203,22 @@ bool FMTowns::ControlMouse(int hostMouseX,int hostMouseY,unsigned int tbiosid)
 			hostMouseY/=zoom.y();
 		}
 
+		// 2020/06/13
+		// SuperDAISENRYAKU uses mouse with VRAM offset=3BC00H.
+		// This offset makes towns mouse cursor appear 32 pixels down from the Windows mouse cursor.
+		// VRAM offset needs to be taken into account.
+		{
+			auto VRAMoffset=crtc.GetPageVRAMAddressOffset(state.mouseDisplayPage);
+			auto bytesPerLine=crtc.GetPageBytesPerLine(state.mouseDisplayPage);
+			if(0!=bytesPerLine)
+			{
+				unsigned int VRAMHeight=0x40000/bytesPerLine;
+				hostMouseY+=VRAMoffset/bytesPerLine;
+				hostMouseY%=VRAMHeight;
+			}
+			// At this time it only takes vertical displacement into account.
+		}
+
 		auto dx=ClampStep(hostMouseX-mx);
 		auto dy=ClampStep(hostMouseY-my);
 		for(auto &p : gameport.state.ports)
