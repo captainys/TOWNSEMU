@@ -1793,7 +1793,7 @@ void TownsCommandInterpreter::Execute_FDLoad(int drv,FMTowns &towns,Command &cmd
 {
 	if(2<=cmd.argv.size())
 	{
-		if(true==towns.fdc.LoadRawBinary(drv,cmd.argv[2].c_str(),false))
+		if(true==towns.fdc.LoadRawBinary(drv,cmd.argv[1].c_str(),false))
 		{
 			std::cout << "Loaded FD image." << std::endl;
 		}

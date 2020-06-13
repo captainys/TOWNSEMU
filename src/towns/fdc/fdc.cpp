@@ -132,6 +132,7 @@ bool TownsFDC::LoadRawBinary(unsigned int driveNum,const char fName[],bool verbo
 		{
 			d.imgFileNum=-1;
 			d.diskIndex=-1;
+			d.mediaType=MEDIA_UNKNOWN;
 		}
 	}
 
@@ -157,6 +158,7 @@ void TownsFDC::Eject(unsigned int driveNum)
 {
 	state.drive[driveNum].imgFileNum=-1;
 	state.drive[driveNum].diskIndex=-1;
+	state.drive[driveNum].mediaType=MEDIA_UNKNOWN;
 }
 
 D77File::D77Disk *TownsFDC::GetDriveDisk(int driveNum)
