@@ -151,6 +151,9 @@ void TownsTimer::State::TickIn(unsigned int nTick)
 {
 	for(int ch=0; ch<NUM_CHANNELS_ACTUAL; ++ch)
 	{
+		// What to do when counterInitialValue==0?
+		// [12] Source code of Artane's FM Towns emulator project https://github.com/Artanejp
+		// It suggests to take it as 65536.  I follow Artane's implementation.
 		auto &CH=channels[ch];
 		auto increment=nTick*CH.increment;
 		switch(CH.mode)
@@ -159,7 +162,7 @@ void TownsTimer::State::TickIn(unsigned int nTick)
 			if(CH.counter<=increment)
 			{
 				CH.OUT=true;
-				CH.counter=CH.counterInitialValue;
+				CH.counter=(0!=CH.counterInitialValue ? CH.counterInitialValue : 65535);
 			}
 			else
 			{
@@ -171,7 +174,7 @@ void TownsTimer::State::TickIn(unsigned int nTick)
 			if(CH.counter<=increment)
 			{
 				CH.OUT=(true==CH.OUT ? false : true);
-				CH.counter=CH.counterInitialValue;
+				CH.counter=(0!=CH.counterInitialValue ? CH.counterInitialValue : 65535);
 			}
 			else
 			{

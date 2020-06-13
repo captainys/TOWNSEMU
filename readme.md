@@ -291,3 +291,5 @@ Eventually I'm going to write a test program and see the behavior on my actual F
 [10] List of Floppy Disk Formats, https://en.wikipedia.org/wiki/List_of_floppy_disk_formats, (As of May 23 2020)
 
 [11] YM2608 OPNA Application Manual
+
+[12] Source code of Artane's FM Towns emulator project https://github.com/Artanejp
