@@ -62,8 +62,8 @@ public:
 
 	enum
 	{
-		FREQUENCY_DEFAULT=25,              // MHz
-		FAST_DEVICE_POLLING_INTERVAL=100,  // Nano-seconds
+		FREQUENCY_DEFAULT=25,                 // MHz
+		FAST_DEVICE_POLLING_INTERVAL=100000,  // Nano-seconds
 		RESET_REASON_SOFTWARE=1,
 		RESET_REASON_CPU=2,
 	};
@@ -404,9 +404,18 @@ public:
 	*/
 	using VMBase::UnscheduleDeviceCallBack;
 
+private:
+	void RunFastDevicePollingInternal(void);
+public:
 	/*! Check nextFastDevicePollingTime and call RunScheduledTask function of the devices in fastDevices.
 	*/
-	void RunFastDevicePolling(void);
+	inline void RunFastDevicePolling(void)
+	{
+		if(state.nextFastDevicePollingTime<state.townsTime)
+		{
+			RunFastDevicePollingInternal();
+		}
+	}
 
 	/*! Check Rendering Timer and render if townsTime catches up with the timer.
 	    It will increment rendering timer.

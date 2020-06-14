@@ -503,15 +503,12 @@ void FMTowns::ProcessSound(Outside_World *outside_world)
 	}
 }
 
-void FMTowns::RunFastDevicePolling(void)
+void FMTowns::RunFastDevicePollingInternal(void)
 {
-	if(state.nextFastDevicePollingTime<state.townsTime)
-	{
-		timer.TimerPolling(state.townsTime);
-		sound.SoundPolling(state.townsTime);
-		crtc.ProcessVSYNCIRQ(state.townsTime);
-		state.nextFastDevicePollingTime=state.townsTime+FAST_DEVICE_POLLING_INTERVAL;
-	}
+	timer.TimerPolling(state.townsTime);
+	sound.SoundPolling(state.townsTime);
+	crtc.ProcessVSYNCIRQ(state.townsTime);
+	state.nextFastDevicePollingTime=state.townsTime+FAST_DEVICE_POLLING_INTERVAL;
 }
 
 bool FMTowns::CheckRenderingTimer(TownsRender &render,Outside_World &world)
