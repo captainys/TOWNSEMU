@@ -62,8 +62,8 @@ public:
 
 	enum
 	{
-		FREQUENCY_DEFAULT=25,                 // MHz
-		FAST_DEVICE_POLLING_INTERVAL=100000,  // Nano-seconds
+		FREQUENCY_DEFAULT=25,                // MHz
+		FAST_DEVICE_POLLING_INTERVAL=10000,  // Nano-seconds
 		RESET_REASON_SOFTWARE=1,
 		RESET_REASON_CPU=2,
 	};

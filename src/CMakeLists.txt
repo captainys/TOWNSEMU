@@ -9,6 +9,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(DISC_IMAGE_DIR "D:/ISOImageSubset")
 
+add_compile_definitions(YS_LITTLE_ENDIAN)
 
 enable_testing()
 

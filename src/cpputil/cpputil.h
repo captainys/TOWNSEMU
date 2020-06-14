@@ -67,12 +67,20 @@ void ExtendString(std::string &str,int minimumLength);
 
 inline unsigned int GetDword(const unsigned char byteData[])
 {
+#ifdef YS_LITTLE_ENDIAN
+	return *((unsigned int *)byteData);
+#else
 	return byteData[0]|(byteData[1]<<8)|(byteData[2]<<16)|(byteData[3]<<24);
+#endif
 }
 
 inline unsigned int GetWord(const unsigned char byteData[])
 {
+#ifdef YS_LITTLE_ENDIAN
+	return *((unsigned short *)byteData);
+#else
 	return byteData[0]|(byteData[1]<<8);
+#endif
 }
 
 inline int GetSignedDword(const unsigned char byteData[])
@@ -81,7 +89,6 @@ inline int GetSignedDword(const unsigned char byteData[])
 	dword=(dword&0x7FFFFFFF)-(dword&0x80000000);
 	return (int)dword;
 }
-
 
 inline int GetSignedWord(const unsigned char byteData[])
 {
@@ -97,7 +104,27 @@ inline int GetSignedByte(const unsigned char byteData)
 	return byte;
 }
 
+inline void PutDword(unsigned char byteData[],unsigned int data)
+{
+#ifdef YS_LITTLE_ENDIAN
+	*((unsigned int *)byteData)=data;
+#else
+	byteData[0]= data     &0xff;
+	byteData[1]=(data>> 8)&0xff;
+	byteData[2]=(data>>16)&0xff;
+	byteData[3]=(data>>24)&0xff;
+#endif
+}
 
+inline void PutWord(unsigned char byteData[],unsigned short data)
+{
+#ifdef YS_LITTLE_ENDIAN
+	*((unsigned short *)byteData)=data;
+#else
+	byteData[0]= data     &0xff;
+	byteData[1]=(data>> 8)&0xff;
+#endif
+}
 
 char BoolToChar(bool flag);
 const char *BoolToNumberStr(bool flag);
