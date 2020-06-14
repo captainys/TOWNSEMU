@@ -279,12 +279,12 @@ void TownsCRTC::UpdateSpriteHardware(void)
 // Also should take HSYNC into account.
 bool TownsCRTC::InVSYNC(const unsigned long long int townsTime) const
 {
-	auto intoFrame=townsTime%VSYNC_CYCLE;
+	unsigned int intoFrame=((unsigned long long)townsTime)%VSYNC_CYCLE;
 	return  (CRT_VERTICAL_DURATION<intoFrame);
 }
 bool TownsCRTC::InHSYNC(const unsigned long long int townsTime) const
 {
-	auto intoFrame=townsTime%VSYNC_CYCLE;
+	unsigned int intoFrame=((unsigned long long)townsTime)%VSYNC_CYCLE;
 	if(intoFrame<CRT_VERTICAL_DURATION)
 	{
 		auto intoLine=intoFrame%HSYNC_CYCLE;

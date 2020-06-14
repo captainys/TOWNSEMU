@@ -171,9 +171,11 @@ public:
 
 	enum
 	{
-		VSYNC_CYCLE=          16700000,
+		// VSYNC_CYCLE is 1670000, but it is close enough to 0x1000000(16777216)
+		VSYNC_CYCLE=         0x1000000,
 		CRT_VERTICAL_DURATION=15360000,
-		HSYNC_CYCLE=             32000, // Not accurate.  Fixed at 31K
+		// HSYNC_CYCLE should be 32000, but it is close enough to 0x8000(32768)
+		HSYNC_CYCLE=            0x8000, // Not accurate.  Fixed at 31K
 		CRT_HORIZONTAL_DURATION= 30000,
 	};
 
