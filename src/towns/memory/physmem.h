@@ -23,6 +23,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #undef REG_NONE
 #endif
 
+#include "cpputil.h"
 #include "i486.h"
 #include "i486debug.h"
 
@@ -407,7 +408,7 @@ unsigned int TownsVRAMAccessTemplate <VRAMADDR_BASE,VRAMADDR_END>::FetchWord(uns
 	auto offset=physAddr-VRAMADDR_BASE;
 	if(offset<VRAMADDR_END-VRAMADDR_BASE-1)
 	{
-		return state.VRAM[offset]|(state.VRAM[offset+1]<<8);
+		return cpputil::GetWord(state.VRAM.data()+offset);
 	}
 	else if(offset<VRAMADDR_END-VRAMADDR_BASE)
 	{
@@ -422,10 +423,7 @@ unsigned int TownsVRAMAccessTemplate <VRAMADDR_BASE,VRAMADDR_END>::FetchDword(un
 	auto offset=physAddr-VRAMADDR_BASE;
 	if(offset<VRAMADDR_END-VRAMADDR_BASE-3)
 	{
-		return state.VRAM[offset]|
-				(state.VRAM[offset+1]<<8)|
-				(state.VRAM[offset+2]<<16)|
-				(state.VRAM[offset+3]<<24);
+		return cpputil::GetDword(state.VRAM.data()+offset);
 	}
 	else if(offset<VRAMADDR_END-VRAMADDR_BASE-2)
 	{
@@ -435,8 +433,7 @@ unsigned int TownsVRAMAccessTemplate <VRAMADDR_BASE,VRAMADDR_END>::FetchDword(un
 	}
 	else if(offset<VRAMADDR_END-VRAMADDR_BASE-1)
 	{
-		return state.VRAM[offset]|
-				(state.VRAM[offset+1]<<8);
+		return cpputil::GetWord(state.VRAM.data()+offset);
 	}
 	else if(offset<VRAMADDR_END-VRAMADDR_BASE)
 	{
@@ -461,8 +458,7 @@ void TownsVRAMAccessTemplate <VRAMADDR_BASE,VRAMADDR_END>::StoreWord(unsigned in
 	auto offset=physAddr-VRAMADDR_BASE;
 	if(offset<VRAMADDR_END-VRAMADDR_BASE-1)
 	{
-		state.VRAM[offset  ]= data    &255;
-		state.VRAM[offset+1]=(data>>8)&255;
+		cpputil::PutWord(state.VRAM.data()+offset,(unsigned short)data);
 	}
 	else if(offset<VRAMADDR_END-VRAMADDR_BASE)
 	{
@@ -476,10 +472,7 @@ void TownsVRAMAccessTemplate <VRAMADDR_BASE,VRAMADDR_END>::StoreDword(unsigned i
 	auto offset=physAddr-VRAMADDR_BASE;
 	if(offset<VRAMADDR_END-VRAMADDR_BASE-3)
 	{
-		state.VRAM[offset  ]= data     &255;
-		state.VRAM[offset+1]=(data>>8) &255;
-		state.VRAM[offset+2]=(data>>16)&255;
-		state.VRAM[offset+3]=(data>>24)&255;
+		cpputil::PutDword(state.VRAM.data()+offset,data);
 	}
 	else if(offset<VRAMADDR_END-VRAMADDR_BASE-2)
 	{
@@ -489,8 +482,7 @@ void TownsVRAMAccessTemplate <VRAMADDR_BASE,VRAMADDR_END>::StoreDword(unsigned i
 	}
 	else if(offset<VRAMADDR_END-VRAMADDR_BASE-1)
 	{
-		state.VRAM[offset  ]= data    &255;
-		state.VRAM[offset+1]=(data>>8)&255;
+		cpputil::PutWord(state.VRAM.data()+offset,(unsigned short)data);
 	}
 	else if(offset<VRAMADDR_END-VRAMADDR_BASE)
 	{

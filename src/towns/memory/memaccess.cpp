@@ -102,7 +102,7 @@ void TownsMemAccess::SetCPUPointer(class i486DX *cpuPtr)
 	auto ROMPtr=physMemPtr->sysRom.data()+TOWNSADDR_SYSROM_MAP_OFFSET_DIFFERENCE+offset;
 	if(offset<TOWNSADDR_SYSROM_MAP_SIZE-1)
 	{
-		return ROMPtr[0]|(ROMPtr[1]<<8);
+		return cpputil::GetWord(ROMPtr);
 	}
 	cpuPtr->Abort("Cross-Border WORD access to Mapped SYSROM");
 	return 0xFFFFFFFF;
@@ -113,7 +113,7 @@ void TownsMemAccess::SetCPUPointer(class i486DX *cpuPtr)
 	auto ROMPtr=physMemPtr->sysRom.data()+TOWNSADDR_SYSROM_MAP_OFFSET_DIFFERENCE+offset;
 	if(offset<TOWNSADDR_SYSROM_MAP_SIZE-3)
 	{
-		return ROMPtr[0]|(ROMPtr[1]<<8)|(ROMPtr[2]<<16)|(ROMPtr[3]<<24);
+		return cpputil::GetDword(ROMPtr);;
 	}
 	cpuPtr->Abort("Cross-Border DWORD access to Mapped SYSROM");
 	return 0xFFFFFFFF;
