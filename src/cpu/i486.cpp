@@ -791,12 +791,14 @@ i486DX::OperandValue i486DX::DescriptorTableToOperandValue(const SystemAddressRe
 {
 	OperandValue operaValue;
 	operaValue.numBytes=6;
-	operaValue.byteData[0]=reg.limit&0xFF;
-	operaValue.byteData[1]=(reg.limit>>8)&0xFF;
-	operaValue.byteData[2]=reg.linearBaseAddr&0xFF;
-	operaValue.byteData[3]=(reg.linearBaseAddr>>8)&0xFF;
-	operaValue.byteData[4]=(reg.linearBaseAddr>>16)&0xFF;
-	operaValue.byteData[5]=(reg.linearBaseAddr>>24)&0xFF;
+	cpputil::PutWord(operaValue.byteData,reg.limit);
+	//operaValue.byteData[0]=reg.limit&0xFF;
+	//operaValue.byteData[1]=(reg.limit>>8)&0xFF;
+	cpputil::PutDword(operaValue.byteData+2,reg.linearBaseAddr);
+	//operaValue.byteData[2]=reg.linearBaseAddr&0xFF;
+	//operaValue.byteData[3]=(reg.linearBaseAddr>>8)&0xFF;
+	//operaValue.byteData[4]=(reg.linearBaseAddr>>16)&0xFF;
+	//operaValue.byteData[5]=(reg.linearBaseAddr>>24)&0xFF;
 	if(16==operandSize)
 	{
 		operaValue.byteData[5]=0;
@@ -1968,18 +1970,14 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 		{
 			unsigned int reg=state.NULL_and_reg32[op.reg];
 			value.numBytes=4;
-			value.byteData[0]=( reg     &255);
-			value.byteData[1]=((reg>> 8)&255);
-			value.byteData[2]=((reg>>16)&255);
-			value.byteData[3]=((reg>>24)&255);
+			cpputil::PutDword(value.byteData,reg);
 		}
 		break;
 	case OPER_REG16:
 		{
 			unsigned int reg=state.NULL_and_reg32[op.reg&15];
 			value.numBytes=2;
-			value.byteData[0]=( reg     &255);
-			value.byteData[1]=((reg>> 8)&255);
+			cpputil::PutWord(value.byteData,reg);
 		}
 		break;
 	case OPER_REG8:
@@ -1992,8 +1990,7 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 		break;
 	case OPER_SREG:
 		value.numBytes=2;
-		value.byteData[0]=( state.sreg[op.reg-REG_SEGMENT_REG_BASE].value&255);
-		value.byteData[1]=((state.sreg[op.reg-REG_SEGMENT_REG_BASE].value>>8)&255);
+		cpputil::PutWord(value.byteData,state.sreg[op.reg-REG_SEGMENT_REG_BASE].value);
 		break;
 	case OPER_REG:
 		switch(op.reg)
@@ -2031,19 +2028,17 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 			Abort("OPER_REG32 should be used for AX,CX,DX,BX,SP,BP,SI,DI");
 			break;
 
+		case REG_IP:
+			value.numBytes=2;
+			cpputil::PutWord(value.byteData,state.EIP);
+			break;
 		case REG_EIP:
 			value.numBytes=4;
-			value.byteData[0]=(state.EIP&255);
-			value.byteData[1]=((state.EIP>>8)&255);
-			value.byteData[2]=((state.EIP>>16)&255);
-			value.byteData[3]=((state.EIP>>24)&255);
+			cpputil::PutDword(value.byteData,state.EIP);
 			break;
 		case REG_EFLAGS:
 			value.numBytes=4;
-			value.byteData[0]=(state.EFLAGS&255);
-			value.byteData[1]=((state.EFLAGS>>8)&255);
-			value.byteData[2]=((state.EFLAGS>>16)&255);
-			value.byteData[3]=((state.EFLAGS>>24)&255);
+			cpputil::PutDword(value.byteData,state.EFLAGS);
 			break;
 
 		case REG_ES:
@@ -2105,10 +2100,7 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 		case REG_CR2:
 		case REG_CR3:
 			value.numBytes=4;
-			value.byteData[0]=( state.GetCR(op.reg-REG_CR0)&255);
-			value.byteData[1]=((state.GetCR(op.reg-REG_CR0)>>8)&255);
-			value.byteData[2]=((state.GetCR(op.reg-REG_CR0)>>16)&255);
-			value.byteData[3]=((state.GetCR(op.reg-REG_CR0)>>24)&255);
+			cpputil::PutDword(value.byteData,state.GetCR(op.reg-REG_CR0));
 			break;
 
 		case REG_DR0:
@@ -2120,10 +2112,7 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 		case REG_DR6:
 		case REG_DR7:
 			value.numBytes=4;
-			value.byteData[0]=( state.DR[op.reg-REG_DR0]&255);
-			value.byteData[1]=((state.DR[op.reg-REG_DR0]>>8)&255);
-			value.byteData[2]=((state.DR[op.reg-REG_DR0]>>16)&255);
-			value.byteData[3]=((state.DR[op.reg-REG_DR0]>>24)&255);
+			cpputil::PutDword(value.byteData,state.DR[op.reg-REG_DR0]);
 			break;
 
 		case REG_TEST0:
@@ -2135,10 +2124,7 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 		case REG_TEST6:
 		case REG_TEST7:
 			value.numBytes=4;
-			value.byteData[0]=(state.TEST[op.reg-REG_TEST0])&255;
-			value.byteData[1]=(state.TEST[op.reg-REG_TEST0]>>8)&255;
-			value.byteData[2]=(state.TEST[op.reg-REG_TEST0]>>16)&255;
-			value.byteData[3]=(state.TEST[op.reg-REG_TEST0]>>24)&255;
+			cpputil::PutDword(value.byteData,state.TEST[op.reg-REG_TEST0]);
 			break;
 		}
 		break;
@@ -2191,19 +2177,13 @@ void i486DX::StoreOperandValue(
 		break;
 	case OPER_REG32:
 		{
-			state.NULL_and_reg32[dst.reg]=
-				 value.byteData[0]   |
-				(value.byteData[1]<<8)|
-				(value.byteData[2]<<16)|
-				(value.byteData[3]<<24);
+			state.NULL_and_reg32[dst.reg]=cpputil::GetDword(value.byteData);
 		}
 		break;
 	case OPER_REG16:
 		{
 			state.NULL_and_reg32[dst.reg&15]&=0xFFFF0000;
-			state.NULL_and_reg32[dst.reg&15]|=
-				 value.byteData[0]    |
-				(value.byteData[1]<<8);
+			state.NULL_and_reg32[dst.reg&15]|=cpputil::GetWord(value.byteData);
 		}
 		break;
 	case OPER_REG8:
