@@ -60,7 +60,10 @@ public:
 
 	enum
 	{
-		TICK_DURATION_IN_NS=1667,
+		// FM Towns Technical Databook tells internal clock frequency is 600KHz.
+		// Which is 1667ns per clock.
+		// However, actual measurement suggests it is 690KHz, which makes 1449ns per clock.
+		TICK_DURATION_IN_NS=1449,
 		TIMER_A_PER_TICK=12,
 		TIMER_B_PER_TICK=192,
 		NTICK_TIMER_A=1024*TIMER_A_PER_TICK,

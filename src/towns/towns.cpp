@@ -28,6 +28,8 @@ void FMTowns::State::PowerOn(void)
 {
 	Reset();
 	townsTime=0;
+	audioTime=0;
+	audioTime0=0;
 	cpuTime=0;
 	nextSecondInTownsTime=PER_SECOND;
 	nextFastDevicePollingTime=FAST_DEVICE_POLLING_INTERVAL;
@@ -436,6 +438,7 @@ unsigned int FMTowns::RunOneInstruction(void)
 	auto FREQ=state.freq;
 	auto passedInNanoSec=(state.clockBalance/FREQ);
 	state.townsTime+=passedInNanoSec;
+	state.audioTime+=passedInNanoSec;
 	state.cpuTime+=passedInNanoSec;
 	state.clockBalance%=FREQ;
 
@@ -506,7 +509,7 @@ void FMTowns::ProcessSound(Outside_World *outside_world)
 void FMTowns::RunFastDevicePollingInternal(void)
 {
 	timer.TimerPolling(state.townsTime);
-	sound.SoundPolling(state.townsTime);
+	sound.SoundPolling(state.audioTime);
 	crtc.ProcessVSYNCIRQ(state.townsTime);
 	state.nextFastDevicePollingTime=state.townsTime+FAST_DEVICE_POLLING_INTERVAL;
 }

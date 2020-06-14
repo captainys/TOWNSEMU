@@ -158,6 +158,9 @@ void TownsThread::AdjustRealTime(FMTowns *townsPtr,long long int townsTimePassed
 {
 	long long int realTimePassed=std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now()-time0).count();
 
+	townsPtr->state.audioTime0+=realTimePassed;
+	townsPtr->state.audioTime=townsPtr->state.audioTime0;
+
 	townsPtr->var.timeAdjustLog[townsPtr->var.timeAdjustLogPtr]=townsTimePassed-realTimePassed;
 	townsPtr->var.timeAdjustLogPtr=(townsPtr->var.timeAdjustLogPtr+1)&(FMTowns::Variable::TIME_ADJUSTMENT_LOG_LEN-1);
 

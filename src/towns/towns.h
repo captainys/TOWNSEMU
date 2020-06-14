@@ -87,6 +87,11 @@ public:
 		*/
 		long long int cpuTime;
 
+		/*! Time used for audio.
+		    audioTime0 is used for recording time points between iteration.
+		*/
+		long long int audioTime,audioTime0;
+
 
 		/*! If noWait is false and if townsTime goes ahead of real time, VM will wait until real time catches up with the townsTime.
 		    By default noWait is true until the first disk read, when var.noWaitStandBy is copied to noWait.
