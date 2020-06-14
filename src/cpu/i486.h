@@ -695,7 +695,7 @@ public:
 				0x0000FFFF,
 				0xFFFFFFFF,
 			};
-			return (imm[0]|(imm[1]<<8)|(imm[2]<<16)|(imm[3]<<24))&sizeMask[operandSize>>4];
+			return cpputil::GetDword(imm)&sizeMask[operandSize>>4];
 		}
 
 		/*! Returns Signed Imm8 (last byte in the operand) after decoding. */
@@ -896,8 +896,7 @@ public:
 				0xFFFFFFFF,
 				0xFFFFFFFF,
 			};
-			unsigned int dword=(byteData[3]<<24)|(byteData[2]<<16)|(byteData[1]<<8)|byteData[0];
-			return dword&numBytesMask[numBytes];
+			return cpputil::GetDword(byteData)&numBytesMask[numBytes];
 		}
 		/*! Returns a value as an unsigned byte.
 		    It won't evaluate beyond numBytes.
@@ -926,7 +925,7 @@ public:
 				0x0000FFFF,
 			};
 
-			unsigned int word=(byteData[1]<<8)|byteData[0];
+			unsigned int word=cpputil::GetWord(byteData);
 			word&=numBytesMask[numBytes];
 			return word;
 		}
@@ -954,10 +953,7 @@ public:
 		*/
 		inline void SetDword(unsigned int dword)
 		{
-			byteData[0]=(dword&255);
-			byteData[1]=((dword>>8)&255);
-			byteData[2]=((dword>>16)&255);
-			byteData[3]=((dword>>24)&255);
+			cpputil::PutDword(byteData,dword);
 		}
 
 		/*! SetWord does not change numBytes.
@@ -966,8 +962,7 @@ public:
 		*/
 		inline void SetWord(unsigned int word)
 		{
-			byteData[0]=(word&255);
-			byteData[1]=((word>>8)&255);
+			cpputil::PutWord(byteData,word);
 		}
 
 		inline void SetSignedDword(int dword)
@@ -989,10 +984,7 @@ public:
 		inline void MakeDword(unsigned int dword)
 		{
 			numBytes=4;
-			byteData[0]=(dword&255);
-			byteData[1]=((dword>>8)&255);
-			byteData[2]=((dword>>16)&255);
-			byteData[3]=((dword>>24)&255);
+			cpputil::PutDword(byteData,dword);
 		}
 		/*! MakeWord makes a 2-byte long OperandValue.
 		    It updates numByte to 2.
@@ -1000,8 +992,7 @@ public:
 		inline void MakeWord(unsigned int word)
 		{
 			numBytes=2;
-			byteData[0]=(word&255);
-			byteData[1]=((word>>8)&255);
+			cpputil::PutWord(byteData,word);
 		}
 		/*! MakeByte makes a 1-byte long OperandValue.
 		    It updates numByte to 1.
@@ -1015,10 +1006,7 @@ public:
 		inline void MakeByteWordOrDword(unsigned int operandSize,unsigned int value)
 		{
 			numBytes=(operandSize>>3);
-			byteData[0]=( value     &255);
-			byteData[1]=((value>>8) &255);
-			byteData[2]=((value>>16)&255);
-			byteData[3]=((value>>24)&255);
+			cpputil::PutDword(byteData,value);
 		}
 
 		/*! Get Segment part of FWORD PTR, which is last two bytes of the byte data.
@@ -1963,7 +1951,7 @@ public:
 		if(4096==state.pageDirectoryCache.length)
 		{
 			const auto ptr=state.pageDirectoryCache.ptr+(pageDirectoryIndex<<2);
-			pageTableInfo=(ptr[0]|(ptr[1]<<8)|(ptr[2]<<16)|(ptr[3]<<24));
+			pageTableInfo=cpputil::GetDword(ptr);
 		}
 		else
 		{
