@@ -60,6 +60,7 @@ public:
 	};
 
 	int mode=MODE_NONE;
+	bool received_MOS_start=false,received_MOS_end=false;
 	std::list <Event>::iterator playbackPtr;
 	bool dontWaitFileEventInPlayback=true;
 	std::chrono::time_point <std::chrono::system_clock>  t0;

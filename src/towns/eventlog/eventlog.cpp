@@ -76,6 +76,7 @@ void TownsEventLog::SkipPlaybackFileEvent(void)
 	      (EVT_FILE_OPEN==playbackPtr->eventType ||
 	       EVT_FILE_EXEC==playbackPtr->eventType))
 	{
+		std::cout << "Skipped " << EventTypeToString(playbackPtr->eventType) << ":" << playbackPtr->fName << std::endl;
 		if(events.begin()==playbackPtr)
 		{
 			playbackPtr->tPlayed=std::chrono::system_clock::now();
@@ -101,14 +102,9 @@ void TownsEventLog::LogMouseStart(long long int townsTime)
 		events.back().townsTime=townsTime;
 		events.back().eventType=eventType;
 	}
-	else if(MODE_PLAYBACK==mode && events.end()!=playbackPtr && eventType==playbackPtr->eventType)
+	else if(MODE_PLAYBACK==mode)
 	{
-		playbackPtr->tPlayed=std::chrono::system_clock::now();
-		++playbackPtr;
-		if(true==dontWaitFileEventInPlayback)
-		{
-			SkipPlaybackFileEvent();
-		}
+		received_MOS_start=true;
 	}
 }
 void TownsEventLog::LogMouseEnd(long long int townsTime)
@@ -121,14 +117,9 @@ void TownsEventLog::LogMouseEnd(long long int townsTime)
 		events.back().townsTime=townsTime;
 		events.back().eventType=eventType;
 	}
-	else if(MODE_PLAYBACK==mode && events.end()!=playbackPtr && eventType==playbackPtr->eventType)
+	else if(MODE_PLAYBACK==mode)
 	{
-		playbackPtr->tPlayed=std::chrono::system_clock::now();
-		++playbackPtr;
-		if(true==dontWaitFileEventInPlayback)
-		{
-			SkipPlaybackFileEvent();
-		}
+		received_MOS_end=true;
 	}
 }
 void TownsEventLog::LogLeftButtonDown(long long int townsTime,int mx,int my)
@@ -401,6 +392,22 @@ void TownsEventLog::Playback(class FMTowns &towns)
 
 			switch(playbackPtr->eventType)
 			{
+			case EVT_TBIOS_MOS_START:
+				if(true==received_MOS_start)
+				{
+					received_MOS_start=false;
+					playbackPtr->tPlayed=now;
+					++playbackPtr;
+				}
+				break;
+			case EVT_TBIOS_MOS_END:
+				if(true==received_MOS_end)
+				{
+					received_MOS_end=false;
+					playbackPtr->tPlayed=now;
+					++playbackPtr;
+				}
+				break;
 			case EVT_LBUTTONDOWN:
 				if(dt/2<tPassed)
 				{
@@ -409,6 +416,7 @@ void TownsEventLog::Playback(class FMTowns &towns)
 					towns.GetMouseCoordinate(mx,my,towns.state.tbiosVersion);
 					if(mx==playbackPtr->mos.x() && my==playbackPtr->mos.y() && dt<=tPassed)
 					{
+						std::cout << "EVT_LBUTTONDOWN" << std::endl;
 						towns.SetMouseButtonState(true,false);
 						playbackPtr->tPlayed=now;
 						++playbackPtr;
@@ -423,6 +431,7 @@ void TownsEventLog::Playback(class FMTowns &towns)
 					towns.GetMouseCoordinate(mx,my,towns.state.tbiosVersion);
 					if(mx==playbackPtr->mos.x() && my==playbackPtr->mos.y() && dt<=tPassed)
 					{
+						std::cout << "EVT_LBUTTONUP" << std::endl;
 						towns.SetMouseButtonState(false,false);
 						playbackPtr->tPlayed=now;
 						++playbackPtr;
@@ -437,6 +446,7 @@ void TownsEventLog::Playback(class FMTowns &towns)
 					towns.GetMouseCoordinate(mx,my,towns.state.tbiosVersion);
 					if(mx==playbackPtr->mos.x() && my==playbackPtr->mos.y() && dt<=tPassed)
 					{
+						std::cout << "EVT_RBUTTONDOWN" << std::endl;
 						towns.SetMouseButtonState(false,true);
 						playbackPtr->tPlayed=now;
 						++playbackPtr;
@@ -451,6 +461,7 @@ void TownsEventLog::Playback(class FMTowns &towns)
 					towns.GetMouseCoordinate(mx,my,towns.state.tbiosVersion);
 					if(mx==playbackPtr->mos.x() && my==playbackPtr->mos.y() && dt<=tPassed)
 					{
+						std::cout << "EVT_RBUTTONUP" << std::endl;
 						towns.SetMouseButtonState(false,false);
 						playbackPtr->tPlayed=now;
 						++playbackPtr;
@@ -458,8 +469,6 @@ void TownsEventLog::Playback(class FMTowns &towns)
 				}
 				break;
 
-			case EVT_TBIOS_MOS_START:
-			case EVT_TBIOS_MOS_END:
 			case EVT_FILE_OPEN:  // INT 21H AH=3DH
 			case EVT_FILE_EXEC:  // INT 21H AH=4BH
 				break;
