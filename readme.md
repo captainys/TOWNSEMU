@@ -180,6 +180,12 @@ The tests are timing-sensitive, or the CPU needs to be reasonably fast.  If not,
 
 
 # Revisions
+### 2020/06/15
+- Added separate timer for audio.  Super DAISENRYAKU BGM plays better.  Still need more work in YM2612 emulation.
+- Changed the internal clock frequency of YM2612 from 600KHz to 690KHz.  FM Towns Technical Databook [2] tells it is 600KHz, but somehow 690KHz is giving me more accurate timing.
+- Fixed CDC.  Was reporting number of tracks as binary.  It should be in BCD.  TOWNS ILLUSION runs again.  This time it needs to start from BIN/CUE.  It stopps in the middle if you start from ISO.
+- Speed up in CPU emulation.
+
 ### 2020/06/12
 - Better CDDA emulation, preliminary support for electric volume registers, fixed BT MEM,R instruction.  Confirmed RAYXANBER can start game play!
 
