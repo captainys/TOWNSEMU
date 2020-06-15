@@ -2282,6 +2282,32 @@ private:
 			return FetchByte(addressSize,seg,offset,mem);
 		}
 	}
+	inline void FetchInstructionTwoBytes(unsigned char buf[2],MemoryAccess::ConstPointer &ptr,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+	{
+		if(2<=ptr.length)
+		{
+			ptr.FetchTwoBytes(buf);
+		}
+		else
+		{
+			buf[0]=FetchByte(addressSize,seg,offset  ,mem);
+			buf[1]=FetchByte(addressSize,seg,offset+1,mem);
+		}
+	}
+	inline void FetchInstructionFourBytes(unsigned char buf[4],MemoryAccess::ConstPointer &ptr,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+	{
+		if(4<=ptr.length)
+		{
+			ptr.FetchFourBytes(buf);
+		}
+		else
+		{
+			buf[0]=FetchByte(addressSize,seg,offset  ,mem);
+			buf[1]=FetchByte(addressSize,seg,offset+1,mem);
+			buf[2]=FetchByte(addressSize,seg,offset+2,mem);
+			buf[3]=FetchByte(addressSize,seg,offset+3,mem);
+		}
+	}
 
 public:
 	/*! Make a disassembly.

@@ -186,13 +186,16 @@ bool FMTowns::ControlMouse(int hostMouseX,int hostMouseY,unsigned int tbiosid)
 	if(true==GetMouseCoordinate(mx,my,tbiosid) && true==var.mouseIntegration)
 	{
 		Vec2i zoom;
+		unsigned int VRAMSize;
 		if(true==crtc.InSinglePageMode())
 		{
 			zoom=crtc.GetPageZoom(0);
+			VRAMSize=0x80000;
 		}
 		else
 		{
 			zoom=crtc.GetPageZoom(state.mouseDisplayPage);
+			VRAMSize=0x40000;
 		}
 		if(0<zoom.x())
 		{
@@ -212,7 +215,7 @@ bool FMTowns::ControlMouse(int hostMouseX,int hostMouseY,unsigned int tbiosid)
 			auto bytesPerLine=crtc.GetPageBytesPerLine(state.mouseDisplayPage);
 			if(0!=bytesPerLine)
 			{
-				unsigned int VRAMHeight=0x40000/bytesPerLine;
+				unsigned int VRAMHeight=VRAMSize/bytesPerLine;
 				hostMouseY+=VRAMoffset/bytesPerLine;
 				hostMouseY%=VRAMHeight;
 			}
