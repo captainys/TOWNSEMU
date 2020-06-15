@@ -233,6 +233,14 @@ public:
 		*/
 		bool pauseOnPowerOff=false;
 
+
+		/*! When CS:EIP is powerOffAt, the VM immediately quits with exit(0);
+		    The instruction pointer must be a break point, and the debugger must be enabled for this feature.
+		    For unit testing.
+		*/
+		i486DX::FarPointer powerOffAt;
+
+
 		i486DX::FarPointer disassemblePointer;
 		Variable();
 		void Reset(void);

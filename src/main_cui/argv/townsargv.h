@@ -65,6 +65,9 @@ public:
 	bool debugger=false;
 	bool interactive=true;
 
+	bool powerOffAtBreakPoint=false;
+	std::string powerOffAt;
+
 	bool pretend386DX=false;
 
 	unsigned int freq=0;

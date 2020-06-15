@@ -63,6 +63,14 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world,class Tow
 					townsPtr->RunScheduledTasks();
 					if(true==townsPtr->debugger.stop)
 					{
+						if(townsPtr->cpu.state.CS().value==townsPtr->var.powerOffAt.SEG &&
+						   townsPtr->cpu.state.EIP==townsPtr->var.powerOffAt.OFFSET)
+						{
+							std::cout << "Break at the power-off point." << std::endl;
+							std::cout << "Normal termination of a unit testing." << std::endl;
+							townsPtr->var.powerOff=true;
+							break;
+						}
 						PrintStatus(*townsPtr);
 						std::cout << ">";
 						runMode=RUNMODE_PAUSE;

@@ -35,7 +35,7 @@ def Run(argv):
 		"-FD1",
 		os.path.join(DISKDIR,"BDrive.bin"),
 		"-CD",
-		"D:/ISOImageSubset/TownsOSV1.1L10.cue",
+		"D:/TownsISO/TownsOSV1.1L10.cue",
 		"-HD0",
 		os.path.join(DISKDIR,"hddimage.bin"),
 		"-CMOS",

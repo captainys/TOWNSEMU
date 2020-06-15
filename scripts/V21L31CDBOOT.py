@@ -31,7 +31,7 @@ def Run(argv):
 		"-FD0",
 		os.path.join(DISKDIR,"V2.1L20.bin"),
 		"-CD",
-		"D:/ISOImageSubset/TOSV2.1L31.iso",
+		"D:/TownsISO/TOSV2.1L31.iso",
 		"-BOOTKEY",
 		"CD",
 		"-SYM",

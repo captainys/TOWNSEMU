@@ -166,6 +166,12 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		{
 			interactive=false;
 		}
+		else if("-POWEROFFAT"==ARG && i+1<argc)
+		{
+			powerOffAtBreakPoint=true;
+			powerOffAt=argv[i+1];
+			++i;
+		}
 		else if("-FREQ"==ARG && i+1<argc)
 		{
 			freq=cpputil::Atoi(argv[i+1]);

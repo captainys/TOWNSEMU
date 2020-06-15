@@ -245,6 +245,12 @@ bool Setup(FMTowns &towns,Outside_World *outside_world,const TownsARGV &argv)
 	towns.var.noWaitStandby=argv.noWaitStandby;
 	towns.state.appSpecificSetting=argv.appSpecificSetting;
 
+	if(true==argv.powerOffAtBreakPoint)
+	{
+		towns.var.powerOffAt.MakeFromString(argv.powerOffAt);
+		towns.debugger.AddBreakPoint(towns.var.powerOffAt);
+	}
+
 	std::cout << "Loaded ROM Images.\n";
 
 	towns.Reset();

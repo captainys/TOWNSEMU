@@ -31,7 +31,7 @@ def Run():
 		"-FD0",
 		os.path.join(DISKDIR,"V2.1L20.bin"),
 		"-CD",
-		"D:/ISOImageSubset/TOSV1.1L30.iso",
+		"D:/TownsISO/TOSV1.1L30.iso",
 		"-SYM",
 		"../symtables/V1.1L30CDBOOT_"+TOWNSTYPE+".txt",
 		"-HD0",
