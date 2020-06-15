@@ -297,11 +297,30 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 			}
 		}
 
+		int wid,hei;
+		FsGetWindowSize(wid,hei);
+
 		int lb,mb,rb,mx,my;
 		FsGetMouseEvent(lb,mb,rb,mx,my);
 		mx=mx*100/scaling;
 		my=my*100/scaling;
 		towns.SetMouseButtonState((0!=lb),(0!=rb));
+		if(mx<0)
+		{
+			mx=0;
+		}
+		else if(wid<=mx)
+		{
+			mx=wid-1;
+		}
+		if(my<0)
+		{
+			my=0;
+		}
+		else if(hei<=my)
+		{
+			my=hei-1;
+		}
 		towns.ControlMouse(mx,my,towns.state.tbiosVersion);
 	}
 }

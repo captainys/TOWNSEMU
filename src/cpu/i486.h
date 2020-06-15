@@ -2290,6 +2290,8 @@ private:
 		}
 		else
 		{
+			// See comment in FetchInstructionFourBytes for why ptr.length needs to be cleared.
+			ptr.length=0;
 			buf[0]=FetchByte(addressSize,seg,offset  ,mem);
 			buf[1]=FetchByte(addressSize,seg,offset+1,mem);
 		}
@@ -2302,6 +2304,18 @@ private:
 		}
 		else
 		{
+			// ptr.length should be cleared.
+			// Or, the following instruction:
+			//   000C:0000BFFA 66C705F85700001300        MOV     WORD PTR [000057F8H],0013H
+			// was interpreted as:
+			//   000C:0000BFFA 66C705F85700001300        MOV     WORD PTR [000057F8H],57F8H
+			// Why?  At CS:EIP==000C:BFFAH, ConstPointer has 7 more bytes to go, but it runs out
+			// before reading 000057F8.  So, ConstPointer was leaving 3 bytes when the
+			// address offset was fetched.  Then, subsequent FetchInstructionTwoBytes saw
+			// ConstPointer having 3 more bytes, and took from the ConstPointer.
+			// This problem can be avoided by clearing ptr.length.
+			// It happens only at the 4KB border, therefore little performance penalty.
+			ptr.length=0;
 			buf[0]=FetchByte(addressSize,seg,offset  ,mem);
 			buf[1]=FetchByte(addressSize,seg,offset+1,mem);
 			buf[2]=FetchByte(addressSize,seg,offset+2,mem);
