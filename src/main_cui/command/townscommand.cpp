@@ -359,6 +359,7 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "DMACREQ" << std::endl;
 	std::cout << "FDCCMD" << std::endl;
 	std::cout << "CDCCMD" << std::endl;
+	std::cout << "CDCCMD cmdValueInHex" << std::endl;
 	std::cout << "INT n" << std::endl;
 	std::cout << "RDCVRAM" << std::endl;
 	std::cout << "WRCVRAM" << std::endl;
@@ -1126,6 +1127,14 @@ void TownsCommandInterpreter::Execute_BreakOn(FMTowns &towns,Command &cmd)
 			break;
 		case BREAK_ON_CDC_COMMAND:
 			towns.cdrom.debugBreakOnCommandWrite=true;
+			if(3<=cmd.argv.size())
+			{
+				towns.cdrom.debugBreakOnSpecificCommand=cpputil::Xtoi(cmd.argv[2].c_str());
+			}
+			else
+			{
+				towns.cdrom.debugBreakOnSpecificCommand=0xFFFF;
+			}
 			break;
 		case BREAK_ON_LBUTTON_UP:
 			towns.var.debugBreakOnLButtonUp=true;

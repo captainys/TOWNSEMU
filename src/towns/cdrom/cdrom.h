@@ -199,6 +199,11 @@ public:
 	State state;
 	bool debugBreakOnCommandWrite=false;
 
+	// If debugBreakOnCommandWrite==true and 0xffff!=debugBreakOnSpecificCommand,
+	// it breaks the VM only if a specific command is sent.
+	// debugBreakOnSpecificCommand is ignored if debugBreakOnCommandWrite!=true.
+	unsigned int debugBreakOnSpecificCommand=0xffff;
+
 	virtual const char *DeviceName(void) const{return "CDROM";}
 
 	TownsCDROM(class FMTowns *townsPtr,class TownsPIC *PICPtr,class TownsDMAC *DMACPtr);

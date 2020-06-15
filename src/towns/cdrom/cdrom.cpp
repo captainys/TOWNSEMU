@@ -367,13 +367,21 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 {
 	if(true==debugBreakOnCommandWrite)
 	{
-		townsPtr->debugger.ExternalBreak("CDROM Command Exec");
-		std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " |";
-		for(int i=0; i<8; ++i)
+		bool commandTypeCheck=true;
+		if(0xFFFF!=debugBreakOnSpecificCommand && (state.cmd&0x9F)!=(debugBreakOnSpecificCommand&0x9F))
 		{
-			std::cout << cpputil::Ubtox(state.paramQueue[i]) << " ";
+			commandTypeCheck=false;
 		}
-		std::cout << std::endl;
+		if(true==commandTypeCheck)
+		{
+			townsPtr->debugger.ExternalBreak("CDROM Command Exec");
+			std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " |";
+			for(int i=0; i<8; ++i)
+			{
+				std::cout << cpputil::Ubtox(state.paramQueue[i]) << " ";
+			}
+			std::cout << std::endl;
+		}
 	}
 
 	// std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " |";
@@ -710,7 +718,7 @@ void TownsCDROM::SetStatusQueueForTOC(void)
 	state.PushStatusQueue(0x17,1,0,0);
 
 	state.PushStatusQueue(0x16,0,0,0);
-	state.PushStatusQueue(0x17,disc.GetNumTracks(),0,0);
+	state.PushStatusQueue(0x17,DiscImage::BinToBCD(disc.GetNumTracks()),0,0);
 
 	auto length=DiscImage::HSGtoMSF(disc.GetNumSectors()+DiscImage::HSG_BASE-1); // Prob -1
 	state.PushStatusQueue(0x16,0,0,0);
