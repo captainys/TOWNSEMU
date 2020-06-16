@@ -54,7 +54,7 @@ public:
 	void BeforeRunOneInstruction(i486Debugger &debugger,i486DX &cpu,Memory &mem,InOut &io,const i486DX::Instruction &inst);
 	void AfterRunOneInstruction(i486Debugger &debugger,unsigned int clocksPassed,i486DX &cpu,Memory &mem,InOut &io,const i486DX::Instruction &inst);
 	void Interrupt(i486Debugger &debugger,const i486DX &cpu,unsigned int INTNum,Memory &mem,unsigned int numInstBytes);
-	void MemWrite(i486Debugger &debugger,const i486DX &cpu,const i486DX::SegmentRegister &seg,unsigned int offset,unsigned int linear,unsigned int physical,unsigned int data,unsigned int lengthInBytes);
+
 	void IOWrite(i486Debugger &debugger,const i486DX &cpu,unsigned int ioport,unsigned int data,unsigned int lengthInBytes);
 	void IORead(i486Debugger &debugger,const i486DX &cpu,unsigned int ioport,unsigned int data,unsigned int lengthInBytes);
 	std::vector <std::string> GetText(void) const;
@@ -68,16 +68,6 @@ void i486Debugger::SpecialDebugInfo::AfterRunOneInstruction(i486Debugger &debugg
 }
 void i486Debugger::SpecialDebugInfo::Interrupt(i486Debugger &debugger,const i486DX &cpu,unsigned int INTNum,Memory &mem,unsigned int numInstBytes)
 {
-}
-void i486Debugger::SpecialDebugInfo::MemWrite(i486Debugger &debugger,const i486DX &cpu,const i486DX::SegmentRegister &seg,unsigned int offset,unsigned int linear,unsigned int physical,unsigned int data,unsigned int lengthInBytes)
-{
-/*	unsigned DS=0x2F87;
-	unsigned OFFSET1=0x1751,OFFSET2=0x1755;
-	auto phys1=DS*0x10+OFFSET1,phys2=DS*0x10+OFFSET2;
-	if(0x00461==physical || 0x3F000==physical || phys1==physical || phys2==physical)
-	{
-		debugger.ExternalBreak("Special Break Mem Write "+cpputil::Uitox(physical));
-	} */
 }
 void i486Debugger::SpecialDebugInfo::IOWrite(i486Debugger &debugger,const i486DX &cpu,unsigned int ioport,unsigned int data,unsigned int lengthInBytes)
 {
@@ -424,11 +414,6 @@ void i486Debugger::Interrupt(const i486DX &cpu,unsigned int INTNum,Memory &mem,u
 		str+=cpputil::Ubtox(INTNum);
 		ExternalBreak(str);
 	}
-}
-
-void i486Debugger::MemWrite(const i486DX &cpu,const i486DX::SegmentRegister &seg,unsigned int offset,unsigned int linear,unsigned int physical,unsigned int data,unsigned int lengthInBytes)
-{
-	specialDebugInfo->MemWrite(*this,cpu,seg,offset,linear,physical,data,lengthInBytes);
 }
 
 void i486Debugger::IOWrite(const i486DX &cpu,unsigned int ioport,unsigned int data,unsigned int lengthInBytes)

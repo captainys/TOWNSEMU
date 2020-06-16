@@ -2653,10 +2653,6 @@ inline void i486DX::StoreByte(Memory &mem,int addressSize,SegmentRegister seg,un
 	{
 		physicalAddr=LinearAddressToPhysicalAddress(linearAddr,mem);
 	}
-	if(nullptr!=debuggerPtr)
-	{
-		debuggerPtr->MemWrite(*this,seg,offset,linearAddr,physicalAddr,byteData,1);
-	}
 	return mem.StoreByte(physicalAddr,byteData);
 }
 
@@ -2670,18 +2666,10 @@ inline void i486DX::StoreWord(Memory &mem,int addressSize,SegmentRegister seg,un
 		physicalAddr=LinearAddressToPhysicalAddress(linearAddr,mem);
 		if(0xFFE<(physicalAddr&0xfff)) // May hit the page boundary
 		{
-			if(nullptr!=debuggerPtr)
-			{
-				debuggerPtr->MemWrite(*this,seg,offset,linearAddr,physicalAddr,data,2);
-			}
 			StoreByte(mem,addressSize,seg,offset  , data    &255);// May hit the page boundary. Don't use StoreWord
 			StoreByte(mem,addressSize,seg,offset+1,(data>>8)&255);// May hit the page boundary. Don't use StoreWord
 			return;
 		}
-	}
-	if(nullptr!=debuggerPtr)
-	{
-		debuggerPtr->MemWrite(*this,seg,offset,linearAddr,physicalAddr,data,2);
 	}
 	mem.StoreWord(physicalAddr,data);
 }
@@ -2695,20 +2683,12 @@ inline void i486DX::StoreDword(Memory &mem,int addressSize,SegmentRegister seg,u
 		physicalAddr=LinearAddressToPhysicalAddress(linearAddr,mem);
 		if(0xFFC<(physicalAddr&0xfff)) // May hit the page boundary
 		{
-			if(nullptr!=debuggerPtr)
-			{
-				debuggerPtr->MemWrite(*this,seg,offset,linearAddr,physicalAddr,data,4);
-			}
 			StoreByte(mem,addressSize,seg,offset  , data     &255);
 			StoreByte(mem,addressSize,seg,offset+1,(data>> 8)&255);// May hit the page boundary. Don't use StoreDword
 			StoreByte(mem,addressSize,seg,offset+2,(data>>16)&255);// May hit the page boundary. Don't use StoreDword
 			StoreByte(mem,addressSize,seg,offset+3,(data>>24)&255);// May hit the page boundary. Don't use StoreDword
 			return;
 		}
-	}
-	if(nullptr!=debuggerPtr)
-	{
-		debuggerPtr->MemWrite(*this,seg,offset,linearAddr,physicalAddr,data,4);
 	}
 	mem.StoreDword(physicalAddr,data);
 }

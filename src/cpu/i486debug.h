@@ -141,10 +141,6 @@ public:
 	*/
 	void Interrupt(const i486DX &cpu,unsigned int INTNum,Memory &mem,unsigned int numInstBytes);
 
-	/*! Called from i486DX when memory is written.
-	*/
-	void MemWrite(const i486DX &cpu,const i486DX::SegmentRegister &seg,unsigned int offset,unsigned int linear,unsigned int physical,unsigned int data,unsigned int lengthInBytes);
-
 	/*! Called from i486DX class when data is written to I/O.
 	*/
 	void IOWrite(const i486DX &cpu,unsigned int ioport,unsigned int data,unsigned int lengthInBytes);
