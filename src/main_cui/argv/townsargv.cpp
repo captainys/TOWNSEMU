@@ -184,8 +184,8 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		}
 		else if("-YESWAIT"==ARG)
 		{
-			noWait=true;
-			noWaitStandby=true;
+			noWait=false;
+			noWaitStandby=false;
 		}
 		else if("-NOWAITBOOT"==ARG)
 		{
