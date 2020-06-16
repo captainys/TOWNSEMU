@@ -359,9 +359,28 @@ std::vector <std::string> TownsCDROM::GetStatusText(void) const
 
 unsigned int TownsCDROM::LoadDiscImage(const std::string &fName)
 {
-	auto return_value=state.GetDisc().Open(fName);
+	std::string ext=cpputil::GetExtension(fName.c_str());
+	cpputil::Capitalize(ext);
+	if(".BIN"==ext || ".IMG"==ext)
+	{
+		std::string cueFName=cpputil::RemoveExtension(fName.c_str());
+		cueFName+=".CUE";
+		if(DiscImage::ERROR_NOERROR==state.GetDisc().Open(cueFName))
+		{
+			state.discChanged=true;
+			return true;
+		}
+		cueFName=cpputil::RemoveExtension(fName.c_str());
+		cueFName+=".cue";
+		if(DiscImage::ERROR_NOERROR==state.GetDisc().Open(cueFName))
+		{
+			state.discChanged=true;
+			return true;
+		}
+	}
+
 	state.discChanged=true;
-	return return_value;
+	return state.GetDisc().Open(fName);
 }
 void TownsCDROM::ExecuteCDROMCommand(void)
 {
