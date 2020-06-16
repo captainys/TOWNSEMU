@@ -137,11 +137,22 @@ void TownsRender::Render4Bit(const TownsCRTC::Layer &layer,const Vec3ub palette[
 		const auto ZH=layer.zoom.x();
 		int bytesPerLineTimesVRAMy=layer.VRAMOffset;
 		auto VRAMTop=VRAM.data()+VRAMAddr;
-		for(int y=0; y<layer.sizeOnMonitor.y(); ++y)
+
+		int xStart=0,yStart=0;
+		if(layer.originOnMonitor.y()<0)
+		{
+			yStart=-layer.originOnMonitor.y();
+		}
+		if(layer.originOnMonitor.x()<0)
+		{
+			xStart=-layer.originOnMonitor.x();
+		}
+
+		for(int y=yStart; y<layer.sizeOnMonitor.y(); ++y)
 		{
 			const unsigned char *src=VRAMTop+(bytesPerLineTimesVRAMy&layer.VScrollMask);
 			unsigned char *dst=rgba.data()+4*y*this->wid;
-			for(int x=0; x<layer.sizeOnMonitor.x(); x+=2)
+			for(int x=xStart; x<layer.sizeOnMonitor.x(); x+=2)
 			{
 				unsigned char vrambyte=*src;
 				unsigned char pix=(vrambyte&0x0f);
@@ -187,15 +198,26 @@ void TownsRender::Render8Bit(const TownsCRTC::Layer &layer,const Vec3ub palette[
 	const unsigned int VRAMVScrollMask=layer.VScrollMask;
 	unsigned int lineVRAMOffset=0;
 	auto ZV=layer.zoom.y();
-	for(int y=0; y<layer.sizeOnMonitor.y() && y+layer.originOnMonitor.y()<this->hei; ++y)
+
+	int xStart=0,yStart=0;
+	if(layer.originOnMonitor.y()<0)
 	{
-		auto X=  layer.originOnMonitor.x();
-		auto Y=y+layer.originOnMonitor.y();
+		yStart=-layer.originOnMonitor.y();
+	}
+	if(layer.originOnMonitor.x()<0)
+	{
+		xStart=-layer.originOnMonitor.x();
+	}
+
+	for(int y=yStart; y<layer.sizeOnMonitor.y() && y+layer.originOnMonitor.y()<this->hei; ++y)
+	{
+		auto X=  layer.originOnMonitor.x()+xStart;
+		auto Y=y+layer.originOnMonitor.y()+yStart;
 		unsigned char *dst=rgba.data()+4*(Y*this->wid+X);
 
 		unsigned int inLineVRAMOffset=0;
 		auto ZH=layer.zoom.x();
-		for(int x=0; x<layer.sizeOnMonitor.x() && x+layer.originOnMonitor.x()<this->wid && inLineVRAMOffset<layer.bytesPerLine; x++)
+		for(int x=xStart; x<layer.sizeOnMonitor.x() && x+layer.originOnMonitor.x()<this->wid && inLineVRAMOffset<layer.bytesPerLine; x++)
 		{
 			unsigned int VRAMAddr=lineVRAMOffset+((inLineVRAMOffset+VRAMOffsetHorizontal)&VRAMHScrollMask);
 			VRAMAddr=VRAMBase+((VRAMAddr+VRAMOffsetVertical)&VRAMVScrollMask);
@@ -231,15 +253,26 @@ void TownsRender::Render16Bit(const TownsCRTC::Layer &layer,const std::vector <u
 	const unsigned int VRAMVScrollMask=layer.VScrollMask;
 	unsigned int lineVRAMOffset=0;
 	auto ZV=layer.zoom.y();
-	for(int y=0; y<layer.sizeOnMonitor.y() && y+layer.originOnMonitor.y()<this->hei; ++y)
+
+	int xStart=0,yStart=0;
+	if(layer.originOnMonitor.y()<0)
 	{
-		auto X=  layer.originOnMonitor.x();
-		auto Y=y+layer.originOnMonitor.y();
+		yStart=-layer.originOnMonitor.y();
+	}
+	if(layer.originOnMonitor.x()<0)
+	{
+		xStart=-layer.originOnMonitor.x();
+	}
+
+	for(int y=yStart; y<layer.sizeOnMonitor.y() && y+layer.originOnMonitor.y()<this->hei; ++y)
+	{
+		auto X=  layer.originOnMonitor.x()+xStart;
+		auto Y=y+layer.originOnMonitor.y()+yStart;
 		unsigned char *dst=rgba.data()+4*(Y*this->wid+X);
 
 		unsigned int inLineVRAMOffset=0;
 		auto ZH=layer.zoom.x();
-		for(int x=0; x<layer.sizeOnMonitor.x() && x+layer.originOnMonitor.x()<this->wid && inLineVRAMOffset<layer.bytesPerLine; x++)
+		for(int x=xStart; x<layer.sizeOnMonitor.x() && x+layer.originOnMonitor.x()<this->wid && inLineVRAMOffset<layer.bytesPerLine; x++)
 		{
 			unsigned int VRAMAddr=lineVRAMOffset+((inLineVRAMOffset+VRAMOffsetHorizontal)&VRAMHScrollMask);
 			VRAMAddr=VRAMBase+((VRAMAddr+VRAMOffsetVertical)&VRAMVScrollMask);
