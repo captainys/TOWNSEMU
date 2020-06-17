@@ -137,6 +137,7 @@ enum
 
 
 	I486_OPCODE_DAA=             0x27,
+	I486_OPCODE_DAS=             0x2F,
 
 
 	I486_OPCODE_DEC_EAX=    0x48, // 16/32 depends on OPSIZE_OVERRIDE

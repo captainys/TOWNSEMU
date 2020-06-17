@@ -481,6 +481,7 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 
 
 	case I486_OPCODE_DAA://             0x27,
+	case I486_OPCODE_DAS://             0x2F,
 		break;
 
 
@@ -1531,6 +1532,9 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 
 	case I486_OPCODE_DAA://             0x27,
 		disasm="DAA";
+		break;
+	case I486_OPCODE_DAS://             0x2F,
+		disasm="DAS";
 		break;
 
 
@@ -4518,14 +4522,35 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			SetCF(false);
 		}
-
-		if(nullptr!=debuggerPtr)
-		{
-			debuggerPtr->ExternalBreak("DAA not tested yet.");
-		}
-
+		SetZF(0==GetAL());
+		SetSF(0!=(GetAL()&0x80));
+		SetPF(CheckParity(GetAL()));
 		break;
 
+	case I486_OPCODE_DAS://             0x2F,
+		clocksPassed=2;
+		if(true==GetAF() || 9<(GetAL()&0x0F))
+		{
+			SetAL(GetAL()-6);
+			SetAF(true);
+		}
+		else
+		{
+			SetAF(false);
+		}
+		if(0x9F<GetAL() || true==GetCF())
+		{
+			SetAL(GetAL()-0x60);
+			SetCF(true);
+		}
+		else
+		{
+			SetCF(false);
+		}
+		SetZF(0==GetAL());
+		SetSF(0!=(GetAL()&0x80));
+		SetPF(CheckParity(GetAL()));
+		break;
 
 	case I486_OPCODE_ENTER://      0xC8,
 		{

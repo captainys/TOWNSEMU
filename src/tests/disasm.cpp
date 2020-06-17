@@ -223,6 +223,9 @@ int main(int ac,char *av[])
 		"26 A2 01234567",   "MOV     ES:[01234567H],AL",
 		"66 64 A3 01234567","MOV     FS:[01234567H],AX",
 		"65 A3 01234567",   "MOV     GS:[01234567H],EAX",
+
+		"27", "DAA",
+		"2F", "DAS",
 	};
 
 	for(int i=0; i<sizeof(test32_32)/sizeof(test32_32[0]); i+=2)
@@ -247,6 +250,8 @@ int main(int ac,char *av[])
 		"2E A1 4567", "MOV     AX,CS:[4567H]",
 		"26 A2 4567", "MOV     ES:[4567H],AL",
 		"2E A3 4567", "MOV     CS:[4567H],AX",
+		"27", "DAA",
+		"2F", "DAS",
 	};
 	for(int i=0; i<sizeof(test16_16)/sizeof(test16_16[0]); i+=2)
 	{

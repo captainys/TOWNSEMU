@@ -71,6 +71,28 @@ static unsigned int testNumberSrc8[]=
 	0xF0,
 	0xFF,
 };
+static unsigned int testNumberSrc8BCD[]=
+{
+	0x00,
+	0x01,
+	0x03,
+	0x07,
+	0x10,
+	0x11,
+	0x17,
+	0x21,
+	0x47,
+	0x49,
+	0x50,
+	0x51,
+	0x79,
+	0x80,
+	0x85,
+	0x90,
+	0x95,
+	0x97,
+	0x99,
+};
 static unsigned char dataSrc[256]=
 {
 0x29,0x23,0xbe,0x84,0xe1,0x6c,0xd6,0xae,0x52,0x90,0x49,0xf1,0xf1,0xbb,0xe9,0xeb,
@@ -643,10 +665,10 @@ void GenDAADAS(FILE *ofp)
 		for(j=0; j<LEN(testNumberSrc8); ++j)
 		{
 			fprintf(ofp,"0x%02x,0x%02x,0x%04x,0x%04x,\n",
-			    testNumberSrc8[i],
-			    testNumberSrc8[j],
-			    TEST_DAA(testNumberSrc8[i],testNumberSrc8[j]),
-			    TEST_DAS(testNumberSrc8[i],testNumberSrc8[j]));
+			    testNumberSrc8BCD[i],
+			    testNumberSrc8BCD[j],
+			    TEST_DAA(testNumberSrc8BCD[i],testNumberSrc8BCD[j]),
+			    TEST_DAS(testNumberSrc8BCD[i],testNumberSrc8BCD[j]));
 		}
 	}
 	fprintf(ofp,"};\n");
