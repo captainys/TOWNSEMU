@@ -184,7 +184,7 @@ void PrintTable(void)
 		for(int i=0; i<4096; ++i)
 		{
 			double t=(double)i/4096.0;
-			double value=func3(t,FB);
+			double value=func4(t,FB);
 			int iValue=(int)(value*2048.0);
 			printf("% 5d,",iValue);
 			if(0==(i+1)%16)
@@ -196,13 +196,15 @@ void PrintTable(void)
 	}
 }
 
+#define PLOTFUNC MakePlot4
+
 int main(void)
 {
 	double dt=0.00001;
 	int FB=0;
 
 	int y[xRes];
-	MakePlot3(y,dt,FB);
+	PLOTFUNC(y,dt,FB);
 
 	PrintTable();
 
@@ -222,7 +224,7 @@ int main(void)
 			{
 				FB=7;
 			}
-			MakePlot3(y,dt,FB);
+			PLOTFUNC(y,dt,FB);
 		}
 		else if(FSKEY_A==key)
 		{
@@ -231,7 +233,7 @@ int main(void)
 			{
 				FB=0;
 			}
-			MakePlot3(y,dt,FB);
+			PLOTFUNC(y,dt,FB);
 		}
 
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
