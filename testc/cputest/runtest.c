@@ -792,15 +792,17 @@ int RunBT_MEM_R(void)
 	return (0<errCount ? 1 : 0);
 }
 
+extern int TEST_AAA(unsigned int eax,unsigned int edx);
 extern int TEST_DAS(unsigned int eax,unsigned int edx);
 extern int TEST_DAA(unsigned int eax,unsigned int edx);
 
 int RunDAA_DAS(void)
 {
 	int i;
-	printf("DAA_DAS_TABLE\n");
-	for(i=0; i+3<LEN(DAA_DAS_TABLE); i+=4)
+	printf("AAA_DAA_DAS_TABLE\n");
+	for(i=0; i+3<LEN(DAA_DAS_TABLE); i+=5)
 	{
+		unsigned int resAAA=TEST_AAA(DAA_DAS_TABLE[i],DAA_DAS_TABLE[i+1]);
 		unsigned int resDAA=TEST_DAA(DAA_DAS_TABLE[i],DAA_DAS_TABLE[i+1]);
 		unsigned int resDAS=TEST_DAS(DAA_DAS_TABLE[i],DAA_DAS_TABLE[i+1]);
 		if(resDAA!=DAA_DAS_TABLE[i+2])
@@ -815,6 +817,13 @@ int RunDAA_DAS(void)
 			printf("DAS error!\n");
 			printf("Returned: %08x\n",resDAS);
 			printf("[%d] %08x,%08x,%08x\n",i/4,DAA_DAS_TABLE[i],DAA_DAS_TABLE[i+1],DAA_DAS_TABLE[i+3]);
+			return 1;
+		}
+		if(resAAA!=DAA_DAS_TABLE[i+4])
+		{
+			printf("DAA error!\n");
+			printf("Returned: %08x\n",resAAA);
+			printf("[%d] %08x,%08x,%08x\n",i/4,DAA_DAS_TABLE[i],DAA_DAS_TABLE[i+1],DAA_DAS_TABLE[i+2]);
 			return 1;
 		}
 	}

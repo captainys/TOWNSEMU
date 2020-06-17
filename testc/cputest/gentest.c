@@ -653,6 +653,7 @@ void GenBT_MEM_R(FILE *ofp)
 	fprintf(ofp,"};\n");
 }
 
+extern int TEST_AAA(unsigned int eax,unsigned int edx);
 extern int TEST_DAS(unsigned int eax,unsigned int edx);
 extern int TEST_DAA(unsigned int eax,unsigned int edx);
 
@@ -664,11 +665,12 @@ void GenDAADAS(FILE *ofp)
 	{
 		for(j=0; j<LEN(testNumberSrc8); ++j)
 		{
-			fprintf(ofp,"0x%02x,0x%02x,0x%04x,0x%04x,\n",
+			fprintf(ofp,"0x%02x,0x%02x,0x%04x,0x%04x,0x%04x,\n",
 			    testNumberSrc8BCD[i],
 			    testNumberSrc8BCD[j],
 			    TEST_DAA(testNumberSrc8BCD[i],testNumberSrc8BCD[j]),
-			    TEST_DAS(testNumberSrc8BCD[i],testNumberSrc8BCD[j]));
+			    TEST_DAS(testNumberSrc8BCD[i],testNumberSrc8BCD[j]),
+			    TEST_AAA(testNumberSrc8BCD[i],testNumberSrc8BCD[j]));
 		}
 	}
 	fprintf(ofp,"};\n");

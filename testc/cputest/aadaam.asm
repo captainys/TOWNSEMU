@@ -1,6 +1,7 @@
 						.386p
 						ASSUME	CS:CODE
 
+						PUBLIC	TEST_AAA
 						PUBLIC	TEST_AAD
 						PUBLIC	TEST_AAM
 						PUBLIC	TEST_AAS
@@ -31,6 +32,38 @@ EFLAGS_ALIGN_CHECK		EQU		40000H
 
 
 CODE					SEGMENT
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
+; int TEST_AAA(unsigned int eax,unsigned int edx);
+TEST_AAA				PROC
+						PUSH	EBP				; [EBP]=PrevEBP,  [EBP+4]=EIP,  [EIP+8]=EAX,  [EIP+12]=EDX
+						MOV		EBP,ESP
+						PUSHAD
+
+						MOV		EAX,[EBP+8]
+						MOV		EDX,[EBP+12]
+
+						ADD		EAX,EDX
+						AAA
+						PUSHFD
+						POP		EBX
+						AND		EBX,EFLAGS_OF+EFLAGS_SF+EFLAGS_ZF+EFLAGS_PF+EFLAGS_CF+EFLAGS_AF
+
+						MOV		AH,BL
+						AND		EAX,0FFFFH
+
+						MOV		[EBP+8],EAX
+						POPAD
+						MOV		EAX,[EBP+8]
+						POP		EBP
+						RET
+TEST_AAA				ENDP
+
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
