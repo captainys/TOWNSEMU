@@ -631,6 +631,28 @@ void GenBT_MEM_R(FILE *ofp)
 	fprintf(ofp,"};\n");
 }
 
+extern int TEST_DAS(unsigned int eax,unsigned int edx);
+extern int TEST_DAA(unsigned int eax,unsigned int edx);
+
+void GenDAADAS(FILE *ofp)
+{
+	int i,j;
+	fprintf(ofp,"unsigned int DAA_DAS_TABLE[]={\n");
+	for(i=0; i<LEN(testNumberSrc8); ++i)
+	{
+		for(j=0; j<LEN(testNumberSrc8); ++j)
+		{
+			fprintf(ofp,"0x%02x,0x%02x,0x%04x,0x%04x,\n",
+			    testNumberSrc8[i],
+			    testNumberSrc8[j],
+			    TEST_DAA(testNumberSrc8[i],testNumberSrc8[j]),
+			    TEST_DAS(testNumberSrc8[i],testNumberSrc8[j]));
+		}
+	}
+	fprintf(ofp,"};\n");
+}
+
+
 int main(void)
 {
 	FILE *ofp=fopen("cputest/testcase.h","w");
@@ -646,6 +668,7 @@ int main(void)
 	GenADC_SBB_SpecialCaseTable(ofp);
 	GenADC_SBB(ofp);
 	GenBT_MEM_R(ofp);
+	GenDAADAS(ofp);
 	fclose(ofp);
 	return 0;
 }

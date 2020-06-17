@@ -792,6 +792,35 @@ int RunBT_MEM_R(void)
 	return (0<errCount ? 1 : 0);
 }
 
+extern int TEST_DAS(unsigned int eax,unsigned int edx);
+extern int TEST_DAA(unsigned int eax,unsigned int edx);
+
+int RunDAA_DAS(void)
+{
+	int i;
+	printf("DAA_DAS_TABLE\n");
+	for(i=0; i+3<LEN(DAA_DAS_TABLE); i+=4)
+	{
+		unsigned int resDAA=TEST_DAA(DAA_DAS_TABLE[i],DAA_DAS_TABLE[i+1]);
+		unsigned int resDAS=TEST_DAS(DAA_DAS_TABLE[i],DAA_DAS_TABLE[i+1]);
+		if(resDAA!=DAA_DAS_TABLE[i+2])
+		{
+			printf("DAA error!\n");
+			printf("Returned: %08x\n",resDAA);
+			printf("[%d] %08x,%08x,%08x\n",i/4,DAA_DAS_TABLE[i],DAA_DAS_TABLE[i+1],DAA_DAS_TABLE[i+2]);
+			return 1;
+		}
+		if(resDAS!=DAA_DAS_TABLE[i+3])
+		{
+			printf("DAS error!\n");
+			printf("Returned: %08x\n",resDAS);
+			printf("[%d] %08x,%08x,%08x\n",i/4,DAA_DAS_TABLE[i],DAA_DAS_TABLE[i+1],DAA_DAS_TABLE[i+3]);
+			return 1;
+		}
+	}
+	return 0;
+}
+
 int main(int ac,char *av[])
 {
 	int nFail=0;
@@ -807,6 +836,7 @@ int main(int ac,char *av[])
 	nFail+=RunCBW_CWDE_CWD_CDQ();
 	nFail+=RunADC_SBB_SpecialCaseTable();
 	nFail+=RunADC_SBB();
+	nFail+=RunDAA_DAS();
 	printf("ARPL not covered.\n");
 	printf("CALL and JMP not covered.\n");
 
