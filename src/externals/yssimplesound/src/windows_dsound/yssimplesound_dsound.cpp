@@ -381,7 +381,10 @@ void YsSoundPlayer::SoundData::APISpecificDataPerSoundData::CreateBuffer(LPDIREC
 
 	DSBUFFERDESC desc;
 	desc.dwSize=sizeof(desc);
-	desc.dwFlags=DSBCAPS_CTRLVOLUME|DSBCAPS_LOCDEFER;
+	// Finally!  I found it!
+	// https://stackoverflow.com/questions/25829935/play-background-music-with-directsound
+	// I can play sound when the window loses focus!
+	desc.dwFlags=DSBCAPS_CTRLVOLUME|DSBCAPS_LOCDEFER|DSBCAPS_GLOBALFOCUS;
 	desc.dwBufferBytes=dat.SizeInByte();
 	desc.dwReserved=0;
 	desc.lpwfxFormat=&fmt;
