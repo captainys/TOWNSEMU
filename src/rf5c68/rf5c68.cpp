@@ -84,10 +84,6 @@ RF5C68::StartAndStopChannelBits RF5C68::WriteChannelOnOff(unsigned char value)
 	if(true==state.playing)
 	{
 		startStop.chStartPlay=(state.chOnOff&(~value)); // Active LOW:  prev==1(not playing) && now==0(playing)
-		state.chOnOff=value;
-	}
-	else
-	{
 		startStop.chStopPlay=((~state.chOnOff)&value);  // Active Low:  prev==0(playing) && now==1(not playing)
 		state.chOnOff=value;
 	}
@@ -217,8 +213,10 @@ void RF5C68::PlayStarted(unsigned int chNum)
 	ch.IRQTimer=(double)len/(double)(ch.FD*FREQ);
 }
 
-void RF5C68::PlayStopped(unsigned int)
+void RF5C68::PlayStopped(unsigned int chNum)
 {
+	auto &ch=state.ch[chNum];
+	ch.startPtr=(ch.ST<<8);
 }
 
 void RF5C68::SetIRQ(unsigned int chNum)
