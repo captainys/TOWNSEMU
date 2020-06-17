@@ -414,6 +414,9 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 		break;
 
 
+	case I486_OPCODE_AAA: // 0x37
+		break;
+
 	case I486_OPCODE_AAD_ADX://    0xD5,
 	case I486_OPCODE_AAM_AMX://    0xD4,
 		FetchImm8(inst,ptr,seg,offset,mem);
@@ -1348,6 +1351,9 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		}
 		break;
 
+	case I486_OPCODE_AAA: // 0x37
+		disasm="AAA";
+		break;
 
 	case I486_OPCODE_AAD_ADX://    0xD5,
 		if(0x0A==EvalUimm8())
@@ -4095,6 +4101,24 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		BINARYOP_RM_R(XorWordOrDword,3,true);
 		break;
 
+
+	case I486_OPCODE_AAA: // 0x37
+		clocksPassed=3;
+		if(9<(GetAL()&0x0f) || true==GetAF())
+		{
+			auto AL=((GetAL()+6)&0x0F);
+			auto AH=(GetAH()+1);
+			SetAX((AH<<8)|AL);
+			SetCF(true);
+			SetAF(true);
+		}
+		else
+		{
+			SetAL(GetAL()&0x0F);
+			SetCF(false);
+			SetAF(false);
+		}
+		break;
 
 	case I486_OPCODE_AAD_ADX://    0xD5,
 		if(0x0A==inst.EvalUimm8())

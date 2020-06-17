@@ -224,6 +224,7 @@ int main(int ac,char *av[])
 		"66 64 A3 01234567","MOV     FS:[01234567H],AX",
 		"65 A3 01234567",   "MOV     GS:[01234567H],EAX",
 
+		"37", "AAA",
 		"27", "DAA",
 		"2F", "DAS",
 	};
@@ -250,6 +251,7 @@ int main(int ac,char *av[])
 		"2E A1 4567", "MOV     AX,CS:[4567H]",
 		"26 A2 4567", "MOV     ES:[4567H],AL",
 		"2E A3 4567", "MOV     CS:[4567H],AX",
+		"37", "AAA",
 		"27", "DAA",
 		"2F", "DAS",
 	};

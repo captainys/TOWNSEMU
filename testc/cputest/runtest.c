@@ -821,9 +821,9 @@ int RunDAA_DAS(void)
 		}
 		if(resAAA!=DAA_DAS_TABLE[i+4])
 		{
-			printf("DAA error!\n");
+			printf("AAA error!\n");
 			printf("Returned: %08x\n",resAAA);
-			printf("[%d] %08x,%08x,%08x\n",i/4,DAA_DAS_TABLE[i],DAA_DAS_TABLE[i+1],DAA_DAS_TABLE[i+2]);
+			printf("[%d] %08x,%08x,%08x\n",i/4,DAA_DAS_TABLE[i],DAA_DAS_TABLE[i+1],DAA_DAS_TABLE[i+4]);
 			return 1;
 		}
 	}
