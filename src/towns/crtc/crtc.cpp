@@ -657,6 +657,33 @@ void TownsCRTC::MakePageLayerInfo(Layer &layer,unsigned char page) const
 		state.mxVideoOutCtrl[state.mxVideoOutCtrlAddrLatch+2]=(data>>16)&255;
 		state.mxVideoOutCtrl[state.mxVideoOutCtrlAddrLatch+3]=(data>>24)&255;
 		break;
+
+	case TOWNSIO_ANALOGPALETTE_CODE://=  0xFD90,
+		{
+			const unsigned char code=data&0xFF;
+			const unsigned char blue=(data>>16)&0xFF;
+			state.palette.codeLatch=code;
+			state.palette.SetBlue(blue,(state.sifter[1]>>4)&3);
+			chaseHQPalette.AddCodeAndBlue(code,blue);
+		}
+		break;
+	case TOWNSIO_ANALOGPALETTE_BLUE://=  0xFD92,
+		state.palette.SetBlue(data&0xFF,(state.sifter[1]>>4)&3);
+		state.palette.SetRed((data>>16)&0xFF,(state.sifter[1]>>4)&3);
+		break;
+	case TOWNSIO_ANALOGPALETTE_RED://=   0xFD94,
+		{
+			const unsigned char red=data&0xFF;
+			const unsigned char green=(data>>16)&0xFF;
+			state.palette.SetRed(red,(state.sifter[1]>>4)&3);
+			state.palette.SetGreen(green,(state.sifter[1]>>4)&3);
+			chaseHQPalette.SetRedAndGreen(red,green);
+		}
+		break;
+	case TOWNSIO_ANALOGPALETTE_GREEN://= 0xFD96,
+		state.palette.SetGreen(data&0xFF,(state.sifter[1]>>4)&3);
+		break;
+
 	default:
 		// Analog-Palette Registers allow DWORD Access.
 		// Towns MENU V2.1 writes to palette like:
@@ -896,6 +923,10 @@ std::vector <std::string> TownsCRTC::GetStatusText(void) const
 			text.back().push_back(' ');
 		}
 	}
+
+	text.push_back(empty);
+	text.back()+="VSYNC:";
+	text.back()+=cpputil::BoolToChar(state.VSYNC);
 
 	return text;
 }

@@ -156,6 +156,51 @@ public:
 		void Reset(void);
 	};
 
+	/* For CHASE HQ (VING).
+	   CHASE HQ does extraordinary.  It uses 16-color (4bit-color) mode for background, but it updates
+	   palette for every HSYNC and virtually making it 24-bit color.  In fact, until FM Towns II MX,
+	   the maximum number of simultaneou colors is officially 32768 (15-bit) colors.  However, this
+	   technique actually draws more colors than official maximum number of colors.  Genius!
+
+	   This class only care when palette is updated by OUT DX,EAX.
+	*/
+	class ChaseHQPalette
+	{
+	public:
+		enum
+		{
+			MAX_PALETTE_UPDATE_COUNT=512*16
+		};
+		unsigned int lastPaletteUpdateCount=0;
+		unsigned int paletteUpdateCount=0;
+		unsigned char paletteLog[MAX_PALETTE_UPDATE_COUNT*4];
+
+		inline void NextFrame(void)
+		{
+			lastPaletteUpdateCount=paletteUpdateCount;
+			paletteUpdateCount=0;
+		}
+		inline void AddCodeAndBlue(unsigned char code,unsigned char blue)
+		{
+			if(paletteUpdateCount<MAX_PALETTE_UPDATE_COUNT)
+			{
+				paletteLog[(paletteUpdateCount<<2)  ]=code;
+				paletteLog[(paletteUpdateCount<<2)+1]=blue;
+				++paletteUpdateCount;
+			}
+		}
+		inline void SetRedAndGreen(unsigned char red,unsigned char green)
+		{
+			if(0<paletteUpdateCount && paletteUpdateCount<=MAX_PALETTE_UPDATE_COUNT)
+			{
+				auto idx=(paletteUpdateCount-1)<<2;
+				paletteLog[idx+2]=red;
+				paletteLog[idx+3]=green;
+			}
+		}
+	};
+	ChaseHQPalette chaseHQPalette;
+
 	class FMTowns *townsPtr;
 	class TownsSprite *spritePtr;
 	State state;
@@ -189,14 +234,18 @@ public:
 		townsTime+=VSYNC_CYCLE;
 		return townsTime;
 	}
-	inline void ProcessVSYNCIRQ(long long int townsTime)
+	inline void ProcessVSYNCIRQ(unsigned long long int townsTime)
 	{
-		long long int inCycle=townsTime%VSYNC_CYCLE;
+		unsigned long long int inCycle=townsTime%VSYNC_CYCLE;
 		if(true!=state.VSYNC)
 		{
 			if(CRT_VERTICAL_DURATION<=inCycle)
 			{
 				state.VSYNC=true;
+				/* ChaseHQ Resets the palette for sky-color inside VSYNC IRQ Handler.
+				   Start recording here to get first 16 palettes for sky color, next 16 buildings, and the last road.
+				*/
+				chaseHQPalette.NextFrame();
 				TurnOnVSYNCIRQ();
 			}
 		}

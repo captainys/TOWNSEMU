@@ -54,8 +54,8 @@ public:
 	*/
 	Image GetImage(void) const;
 
-	void Render(unsigned int page,const TownsCRTC::Layer &layer,const TownsCRTC::AnalogPalette &palette,const std::vector <unsigned char> &VRAM,bool transparent);
-	void Render4Bit(const TownsCRTC::Layer &layer,const Vec3ub palette[16],const std::vector <unsigned char> &VRAM,bool transparent);
+	void Render(unsigned int page,const TownsCRTC::Layer &layer,const TownsCRTC::AnalogPalette &palette,const TownsCRTC::ChaseHQPalette &chaseHQ,const std::vector <unsigned char> &VRAM,bool transparent);
+	void Render4Bit(const TownsCRTC::Layer &layer,const Vec3ub palette[16],const TownsCRTC::ChaseHQPalette &chaseHQPalette,const std::vector <unsigned char> &VRAM,bool transparent);
 	void Render8Bit(const TownsCRTC::Layer &layer,const Vec3ub palette[256],const std::vector <unsigned char> &VRAM,bool transparent);
 	void Render16Bit(const TownsCRTC::Layer &layer,const std::vector <unsigned char> &VRAM,bool transparent);
 };

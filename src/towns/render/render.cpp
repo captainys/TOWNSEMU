@@ -41,7 +41,7 @@ void TownsRender::BuildImage(const TownsCRTC &crtc,const TownsPhysicalMemory &ph
 	{
 		TownsCRTC::Layer layer;
 		crtc.MakePageLayerInfo(layer,0);
-		Render(0,layer,crtc.state.palette,physMem.state.VRAM,false);
+		Render(0,layer,crtc.state.palette,crtc.chaseHQPalette,physMem.state.VRAM,false);
 	}
 	else
 	{
@@ -51,7 +51,7 @@ void TownsRender::BuildImage(const TownsCRTC &crtc,const TownsPhysicalMemory &ph
 		auto priorityPage=crtc.GetPriorityPage();
 		if(true==crtc.state.showPage[1-priorityPage])
 		{
-			Render(1-priorityPage,layer[1-priorityPage],crtc.state.palette,physMem.state.VRAM,false);
+			Render(1-priorityPage,layer[1-priorityPage],crtc.state.palette,crtc.chaseHQPalette,physMem.state.VRAM,false);
 		}
 		else
 		{
@@ -63,7 +63,7 @@ void TownsRender::BuildImage(const TownsCRTC &crtc,const TownsPhysicalMemory &ph
 		}
 		if(true==crtc.state.showPage[priorityPage])
 		{
-			Render(priorityPage,  layer[priorityPage]  ,crtc.state.palette,physMem.state.VRAM,true);
+			Render(priorityPage,  layer[priorityPage]  ,crtc.state.palette,crtc.chaseHQPalette,physMem.state.VRAM,true);
 		}
 	}
 }
@@ -82,12 +82,18 @@ TownsRender::Image TownsRender::GetImage(void) const
 	img.rgba=this->rgba.data();
 	return img;
 }
-void TownsRender::Render(unsigned int page,const TownsCRTC::Layer &layer,const TownsCRTC::AnalogPalette &palette,const std::vector <unsigned char> &VRAM,bool transparent)
+void TownsRender::Render(
+    unsigned int page,
+    const TownsCRTC::Layer &layer,
+    const TownsCRTC::AnalogPalette &palette,
+    const TownsCRTC::ChaseHQPalette &chaseHQPalette,
+    const std::vector <unsigned char> &VRAM,
+    bool transparent)
 {
 	switch(layer.bitsPerPixel)
 	{
 	case 4:
-		Render4Bit(layer,palette.plt16[page&1],VRAM,transparent);
+		Render4Bit(layer,palette.plt16[page&1],chaseHQPalette,VRAM,transparent);
 		break;
 	case 8:
 		Render8Bit(layer,palette.plt256,VRAM,transparent);
@@ -97,7 +103,12 @@ void TownsRender::Render(unsigned int page,const TownsCRTC::Layer &layer,const T
 		break;
 	}
 }
-void TownsRender::Render4Bit(const TownsCRTC::Layer &layer,const Vec3ub palette[16],const std::vector <unsigned char> &VRAM,bool transparent)
+void TownsRender::Render4Bit(
+    const TownsCRTC::Layer &layer,
+    const Vec3ub palette[16],
+    const TownsCRTC::ChaseHQPalette &chaseHQPalette,
+    const std::vector <unsigned char> &VRAM,
+    bool transparent)
 {
 	const unsigned int VRAMAddr=layer.VRAMAddr;
 
@@ -132,6 +143,8 @@ void TownsRender::Render4Bit(const TownsCRTC::Layer &layer,const Vec3ub palette[
 		}
 	}
 	else */
+
+	if(47!=chaseHQPalette.lastPaletteUpdateCount) // ChaseHQ updates palette 47 times between VSYNC
 	{
 		auto ZV=layer.zoom.y();
 		const auto ZH=layer.zoom.x();
@@ -175,6 +188,101 @@ void TownsRender::Render4Bit(const TownsCRTC::Layer &layer,const Vec3ub palette[
 						dst[0]=palette[pix][0];
 						dst[1]=palette[pix][1];
 						dst[2]=palette[pix][2];
+						dst[3]=255;
+					}
+					dst+=4;
+				}
+				++src;
+			}
+			if(0==(--ZV))
+			{
+				ZV=layer.zoom.y();
+				bytesPerLineTimesVRAMy+=layer.bytesPerLine;
+			}
+		}
+	}
+	else // For ChaseHQ special: If 16-color mode, and palette changed more than 40 times in one frame.
+	{
+		// Roughly 98:46:95
+		// std::cout << "ChaseHQ Special" << " " << chaseHQPalette.lastPaletteUpdateCount << std::endl;
+
+		Vec3ub paletteUpdate[16];
+		for(int i=0; i<16; ++i)
+		{
+			paletteUpdate[i]=palette[i];
+		}
+
+		for(int i=0; i<16; ++i) // Sky
+		{
+			unsigned int code=chaseHQPalette.paletteLog[i<<2];
+			paletteUpdate[code&0x0F][0]=chaseHQPalette.paletteLog[(i<<2)+2];   // BRG->RGB
+			paletteUpdate[code&0x0F][1]=chaseHQPalette.paletteLog[(i<<2)+3];   // BRG->RGB
+			paletteUpdate[code&0x0F][2]=chaseHQPalette.paletteLog[(i<<2)+1];   // BRG->RGB
+		}
+
+		auto ZV=layer.zoom.y();
+		const auto ZH=layer.zoom.x();
+		int bytesPerLineTimesVRAMy=layer.VRAMOffset;
+		auto VRAMTop=VRAM.data()+VRAMAddr;
+
+		int xStart=0,yStart=0;
+		if(layer.originOnMonitor.y()<0)
+		{
+			yStart=-layer.originOnMonitor.y();
+		}
+		if(layer.originOnMonitor.x()<0)
+		{
+			xStart=-layer.originOnMonitor.x();
+		}
+
+		for(int y=yStart; y<layer.sizeOnMonitor.y(); ++y)
+		{
+			if(196==y)
+			{
+				for(int i=16; i<32; ++i) // Buildings
+				{
+					unsigned int code=chaseHQPalette.paletteLog[i<<2];
+					paletteUpdate[code&0x0F][0]=chaseHQPalette.paletteLog[(i<<2)+2];   // BRG->RGB
+					paletteUpdate[code&0x0F][1]=chaseHQPalette.paletteLog[(i<<2)+3];   // BRG->RGB
+					paletteUpdate[code&0x0F][2]=chaseHQPalette.paletteLog[(i<<2)+1];   // BRG->RGB
+				}
+			}
+			if(288==y)
+			{
+				for(int i=32; i<47; ++i) // Road
+				{
+					unsigned int code=chaseHQPalette.paletteLog[i<<2];
+					paletteUpdate[code&0x0F][0]=chaseHQPalette.paletteLog[(i<<2)+2];   // BRG->RGB
+					paletteUpdate[code&0x0F][1]=chaseHQPalette.paletteLog[(i<<2)+3];   // BRG->RGB
+					paletteUpdate[code&0x0F][2]=chaseHQPalette.paletteLog[(i<<2)+1];   // BRG->RGB
+				}
+			}
+
+			const unsigned char *src=VRAMTop+(bytesPerLineTimesVRAMy&layer.VScrollMask);
+			unsigned char *dst=rgba.data()+4*y*this->wid;
+			for(int x=xStart; x<layer.sizeOnMonitor.x(); x+=2)
+			{
+				unsigned char vrambyte=*src;
+				unsigned char pix=(vrambyte&0x0f);
+				for(int i=0; i<ZH; ++i)
+				{
+					if(0!=pix ||true!=transparent)
+					{
+						dst[0]=paletteUpdate[pix][0];
+						dst[1]=paletteUpdate[pix][1];
+						dst[2]=paletteUpdate[pix][2];
+						dst[3]=255;
+					}
+					dst+=4;
+				}
+				pix=(vrambyte&0xf0)>>4;
+				for(int i=0; i<ZH; ++i)
+				{
+					if(0!=pix ||true!=transparent)
+					{
+						dst[0]=paletteUpdate[pix][0];
+						dst[1]=paletteUpdate[pix][1];
+						dst[2]=paletteUpdate[pix][2];
 						dst[3]=255;
 					}
 					dst+=4;
