@@ -541,6 +541,9 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 		{
 			OutsideWorld->CDDAPause();
 		}
+		// Fix for ChaseHQ.
+		// CDDAState must be reset to IDLE regardless of the Status Request.
+		// ChaseHQ was issuing CDDAPAUSE command without Status Request flag.
 		state.CDDAState=State::CDDA_IDLE;
 		if(0x20&state.cmd)
 		{
@@ -850,6 +853,7 @@ void TownsCDROM::StopCDDA(void)
 	}
 	else
 	{
+		// See fix for ChaseHQ in CDDAPAUSE.
 		state.CDDAState=State::CDDA_IDLE;
 	}
 }
