@@ -809,10 +809,12 @@ Break on internal CD-ROM controller command.
 
 ```
 INT n
+INT n AH=hh
+INT n AX=hhhh
 ```
-Break on interrupt.  n is a hexadecimal number.
+Break on interrupt.  n is a hexadecimal number.  Can specify specific value of AH or AX as a breaking condition.
 
-割り込み発生でブレーク。nは16進数で指定。
+割り込み発生でブレーク。nは16進数で指定。特定のAHまたはAXの値でブレークするような指定も可能。
 
 ```
 RDCVRAM

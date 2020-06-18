@@ -72,7 +72,24 @@ public:
 	SpecialDebugInfo *specialDebugInfo;
 
 
-	unsigned int breakOnINT;
+	class BreakOnINTCondition
+	{
+	public:
+		enum
+		{
+			NUM_INTERRUPTS=256
+		};
+		enum
+		{
+			COND_NEVER,
+			COND_ALWAYS,
+			COND_AH,
+			COND_AX
+		};
+		unsigned short cond=COND_NEVER;
+		unsigned short condValue=0;
+	};
+	BreakOnINTCondition breakOnINT[BreakOnINTCondition::NUM_INTERRUPTS];
 	bool stop;
 	bool monitorIO;
 	bool monitorIOports[65536];
@@ -119,10 +136,13 @@ public:
 	/*! Break on INT
 	*/
 	void SetBreakOnINT(unsigned int IRQNum);
+	void SetBreakOnINTwithAH(unsigned int IRQNum,unsigned int AH);
+	void SetBreakOnINTwithAX(unsigned int IRQNum,unsigned int AX);
 
 	/*! Clear break on INT
 	*/
 	void ClearBreakOnINT(void);
+	void ClearBreakOnINT(unsigned int INTNum);
 
 	/*! Return formatted call-stack text.
 	*/

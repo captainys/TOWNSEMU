@@ -131,7 +131,7 @@ void i486Debugger::CleanUp(void)
 {
 	breakPoints.clear();
 	stop=false;
-	breakOnINT=0xffff;
+	ClearBreakOnINT();
 	monitorIO=false;
 	for(auto &b : monitorIOports)
 	{
@@ -316,12 +316,30 @@ void i486Debugger::CheckForBreakPoints(i486DX &cpu)
 
 void i486Debugger::SetBreakOnINT(unsigned int INTNum)
 {
-	breakOnINT=INTNum;
+	breakOnINT[INTNum&(BreakOnINTCondition::NUM_INTERRUPTS-1)].cond=BreakOnINTCondition::COND_ALWAYS;
+}
+void i486Debugger::SetBreakOnINTwithAH(unsigned int INTNum,unsigned int AH)
+{
+	breakOnINT[INTNum&(BreakOnINTCondition::NUM_INTERRUPTS-1)].cond=BreakOnINTCondition::COND_AH;
+	breakOnINT[INTNum&(BreakOnINTCondition::NUM_INTERRUPTS-1)].condValue=AH;
+}
+void i486Debugger::SetBreakOnINTwithAX(unsigned int INTNum,unsigned int AX)
+{
+	breakOnINT[INTNum&(BreakOnINTCondition::NUM_INTERRUPTS-1)].cond=BreakOnINTCondition::COND_AX;
+	breakOnINT[INTNum&(BreakOnINTCondition::NUM_INTERRUPTS-1)].condValue=AX;
 }
 
 void i486Debugger::ClearBreakOnINT(void)
 {
-	breakOnINT=0xffffffff;
+	for(int i=0; i<BreakOnINTCondition::NUM_INTERRUPTS; ++i)
+	{
+		breakOnINT[i].cond=BreakOnINTCondition::COND_NEVER;
+	}
+}
+
+void i486Debugger::ClearBreakOnINT(unsigned int INTNum)
+{
+	breakOnINT[INTNum&(BreakOnINTCondition::NUM_INTERRUPTS-1)].cond=BreakOnINTCondition::COND_NEVER;
 }
 
 std::vector <std::string> i486Debugger::GetCallStackText(const i486DX &cpu) const
@@ -408,11 +426,38 @@ void i486Debugger::ClearStopFlag(void)
 void i486Debugger::Interrupt(const i486DX &cpu,unsigned int INTNum,Memory &mem,unsigned int numInstBytes)
 {
 	specialDebugInfo->Interrupt(*this,cpu,INTNum,mem,numInstBytes);
-	if(breakOnINT==INTNum)
+	if(breakOnINT[INTNum&0xFF].cond!=BreakOnINTCondition::COND_NEVER)
 	{
-		std::string str("Break on INT ");
-		str+=cpputil::Ubtox(INTNum);
-		ExternalBreak(str);
+		switch(breakOnINT[INTNum&0xFF].cond)
+		{
+		case BreakOnINTCondition::COND_ALWAYS:
+			{
+				std::string str("Break on INT ");
+				str+=cpputil::Ubtox(INTNum);
+				ExternalBreak(str);
+			}
+			break;
+		case BreakOnINTCondition::COND_AH:
+			if(cpu.GetAH()==breakOnINT[INTNum&0xFF].condValue)
+			{
+				std::string str("Break on INT ");
+				str+=cpputil::Ubtox(INTNum);
+				str+=" AH=";
+				str+=cpputil::Ubtox((unsigned char)breakOnINT[INTNum&0xFF].condValue);
+				ExternalBreak(str);
+			}
+			break;
+		case BreakOnINTCondition::COND_AX:
+			if(cpu.GetAX()==breakOnINT[INTNum&0xFF].condValue)
+			{
+				std::string str("Break on INT ");
+				str+=cpputil::Ubtox(INTNum);
+				str+=" AX=";
+				str+=cpputil::Ustox(breakOnINT[INTNum&0xFF].condValue);
+				ExternalBreak(str);
+			}
+			break;
+		}
 	}
 }
 

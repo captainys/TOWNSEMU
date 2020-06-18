@@ -361,6 +361,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "CDCCMD" << std::endl;
 	std::cout << "CDCCMD cmdValueInHex" << std::endl;
 	std::cout << "INT n" << std::endl;
+	std::cout << "INT n AH=hh" << std::endl;
+	std::cout << "INT n AX=hhhh" << std::endl;
 	std::cout << "RDCVRAM" << std::endl;
 	std::cout << "WRCVRAM" << std::endl;
 	std::cout << "RDFMRVRAM" << std::endl;
@@ -724,6 +726,14 @@ void TownsCommandInterpreter::Execute_Enable(FMTowns &towns,Command &cmd)
 				std::cout << cpputil::Ustox(portMax);
 				std::cout << std::endl;
 			}
+			else if(3<=cmd.argv.size())
+			{
+				auto port=cpputil::Xtoi(cmd.argv[2].c_str());
+				towns.debugger.MonitorIO(port,port);
+				std::cout << "Port:";
+				std::cout << cpputil::Ustox(port);
+				std::cout << std::endl;
+			}
 			else
 			{
 				towns.debugger.MonitorIO(0,0xFFFF);
@@ -777,6 +787,14 @@ void TownsCommandInterpreter::Execute_Disable(FMTowns &towns,Command &cmd)
 				std::cout << cpputil::Ustox(portMin);
 				std::cout << " to ";
 				std::cout << cpputil::Ustox(portMax);
+				std::cout << std::endl;
+			}
+			else if(3<=cmd.argv.size())
+			{
+				auto port=cpputil::Xtoi(cmd.argv[2].c_str());
+				towns.debugger.UnmonitorIO(port,port);
+				std::cout << "Port:";
+				std::cout << cpputil::Ustox(port);
 				std::cout << std::endl;
 			}
 			else
@@ -1075,6 +1093,21 @@ void TownsCommandInterpreter::Execute_BreakOn(FMTowns &towns,Command &cmd)
 			if(3<=cmd.argv.size())
 			{
 				towns.debugger.SetBreakOnINT(cpputil::Xtoi(cmd.argv[2].c_str()));
+				if(4<=cmd.argv.size())
+				{
+					std::string cond=cmd.argv[3];
+					cpputil::Capitalize(cond);
+					if('A'==cond[0] && 'H'==cond[1] && '='==cond[2])
+					{
+						unsigned int AH=cpputil::Xtoi(cond.c_str()+3);
+						towns.debugger.SetBreakOnINTwithAH(cpputil::Xtoi(cmd.argv[2].c_str()),AH);
+					}
+					else if('A'==cond[0] && 'X'==cond[1] && '='==cond[2])
+					{
+						unsigned int AX=cpputil::Xtoi(cond.c_str()+3);
+						towns.debugger.SetBreakOnINTwithAX(cpputil::Xtoi(cmd.argv[2].c_str()),AX);
+					}
+				}
 			}
 			else
 			{
@@ -1095,7 +1128,20 @@ void TownsCommandInterpreter::Execute_BreakOn(FMTowns &towns,Command &cmd)
 			towns.physMem.FMRVRAMAccess.breakOnFMRVRAMWrite=true;
 			break;
 		case BREAK_ON_IOREAD:
-			if(3<=cmd.argv.size())
+			if(4<=cmd.argv.size())
+			{
+				auto portMin=cpputil::Xtoi(cmd.argv[2].c_str());
+				auto portMax=cpputil::Xtoi(cmd.argv[3].c_str());
+				for(unsigned int ioport=portMin; ioport<portMax; ++ioport)
+				{
+					towns.debugger.AddBreakOnIORead(ioport);
+				}
+				std::cout << "Range:";
+				std::cout << cpputil::Ustox(portMin);
+				std::cout << " to ";
+				std::cout << cpputil::Ustox(portMax);
+			}
+			else if(3<=cmd.argv.size())
 			{
 				auto ioport=cpputil::Xtoi(cmd.argv[2].c_str());
 				towns.debugger.AddBreakOnIORead(ioport);
@@ -1106,10 +1152,26 @@ void TownsCommandInterpreter::Execute_BreakOn(FMTowns &towns,Command &cmd)
 			}
 			break;
 		case BREAK_ON_IOWRITE:
-			if(3<=cmd.argv.size())
+			if(4<=cmd.argv.size())
+			{
+				auto portMin=cpputil::Xtoi(cmd.argv[2].c_str());
+				auto portMax=cpputil::Xtoi(cmd.argv[3].c_str());
+				for(unsigned int ioport=portMin; ioport<portMax; ++ioport)
+				{
+					towns.debugger.AddBreakOnIOWrite(ioport);
+				}
+				std::cout << "Range:";
+				std::cout << cpputil::Ustox(portMin);
+				std::cout << " to ";
+				std::cout << cpputil::Ustox(portMax);
+			}
+			else if(3<=cmd.argv.size())
 			{
 				auto ioport=cpputil::Xtoi(cmd.argv[2].c_str());
 				towns.debugger.AddBreakOnIOWrite(ioport);
+				std::cout << "Port:";
+				std::cout << cpputil::Ustox(ioport);
+				std::cout << std::endl;
 			}
 			else
 			{
@@ -1201,7 +1263,14 @@ void TownsCommandInterpreter::Execute_ClearBreakOn(FMTowns &towns,Command &cmd)
 			towns.fdc.debugBreakOnCommandWrite=false;
 			break;
 		case BREAK_ON_INT:
-			towns.debugger.ClearBreakOnINT();
+			if(3<=cmd.argv.size())
+			{
+				towns.debugger.ClearBreakOnINT(cpputil::Xtoi(cmd.argv[2].c_str()));
+			}
+			else
+			{
+				towns.debugger.ClearBreakOnINT();
+			}
 			break;
 		case BREAK_ON_FMRVRAM_READ:
 			towns.physMem.FMRVRAMAccess.breakOnFMRVRAMRead=false;
@@ -1216,7 +1285,20 @@ void TownsCommandInterpreter::Execute_ClearBreakOn(FMTowns &towns,Command &cmd)
 			towns.physMem.FMRVRAMAccess.breakOnCVRAMWrite=false;
 			break;
 		case BREAK_ON_IOREAD:
-			if(3<=cmd.argv.size())
+			if(4<=cmd.argv.size())
+			{
+				auto portMin=cpputil::Xtoi(cmd.argv[2].c_str());
+				auto portMax=cpputil::Xtoi(cmd.argv[3].c_str());
+				for(unsigned int ioport=portMin; ioport<portMax; ++ioport)
+				{
+					towns.debugger.RemoveBreakOnIORead(ioport);
+				}
+				std::cout << "Range:";
+				std::cout << cpputil::Ustox(portMin);
+				std::cout << " to ";
+				std::cout << cpputil::Ustox(portMax);
+			}
+			else if(3<=cmd.argv.size())
 			{
 				auto ioport=cpputil::Xtoi(cmd.argv[2].c_str());
 				towns.debugger.RemoveBreakOnIORead(ioport);
@@ -1227,10 +1309,26 @@ void TownsCommandInterpreter::Execute_ClearBreakOn(FMTowns &towns,Command &cmd)
 			}
 			break;
 		case BREAK_ON_IOWRITE:
-			if(3<=cmd.argv.size())
+			if(4<=cmd.argv.size())
+			{
+				auto portMin=cpputil::Xtoi(cmd.argv[2].c_str());
+				auto portMax=cpputil::Xtoi(cmd.argv[3].c_str());
+				for(unsigned int ioport=portMin; ioport<portMax; ++ioport)
+				{
+					towns.debugger.RemoveBreakOnIOWrite(ioport);
+				}
+				std::cout << "Range:";
+				std::cout << cpputil::Ustox(portMin);
+				std::cout << " to ";
+				std::cout << cpputil::Ustox(portMax);
+			}
+			else if(3<=cmd.argv.size())
 			{
 				auto ioport=cpputil::Xtoi(cmd.argv[2].c_str());
 				towns.debugger.RemoveBreakOnIOWrite(ioport);
+				std::cout << "Port:";
+				std::cout << cpputil::Ustox(ioport);
+				std::cout << std::endl;
 			}
 			else
 			{

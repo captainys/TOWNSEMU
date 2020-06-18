@@ -541,11 +541,11 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 		{
 			OutsideWorld->CDDAPause();
 		}
+		state.CDDAState=State::CDDA_IDLE;
 		if(0x20&state.cmd)
 		{
 			if(true!=SetStatusDriveNotReadyOrDiscChanged())
 			{
-				state.CDDAState=State::CDDA_IDLE;
 				state.PushStatusQueue(0,0,0,0);
 				state.PushStatusQueue(0x12,0,0,0);
 			}
@@ -847,5 +847,9 @@ void TownsCDROM::StopCDDA(void)
 		SetStatusNoError();
 		PushStatusCDDAStopDone();
 		state.PushStatusQueue(0,0x0D,0,0);
+	}
+	else
+	{
+		state.CDDAState=State::CDDA_IDLE;
 	}
 }
