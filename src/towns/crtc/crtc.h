@@ -329,6 +329,7 @@ public:
 
 	std::vector <std::string> GetStatusText(void) const;
 	std::vector <std::string> GetPageStatusText(int page) const;
+	std::vector <std::string> GetPaletteText(void) const;
 };
 
 

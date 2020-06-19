@@ -827,15 +827,14 @@ Vec2i TownsCRTC::GetRenderSize(void) const
 std::vector <std::string> TownsCRTC::GetStatusText(void) const
 {
 	std::vector <std::string> text;
-	std::string empty;
 
-	text.push_back(empty);
+	text.push_back("");
 	text.back()="Registers:";
 	for(int i=0; i<sizeof(state.crtcReg)/sizeof(state.crtcReg[0]); ++i)
 	{
 		if(0==i%16)
 		{
-			text.push_back(empty);
+			text.push_back("");
 			text.back()+="REG";
 			text.back()+=cpputil::Ubtox(i);
 			text.back()+=":";
@@ -844,7 +843,7 @@ std::vector <std::string> TownsCRTC::GetStatusText(void) const
 		text.back()+=cpputil::Ustox(state.crtcReg[i]);
 	}
 
-	text.push_back(empty);
+	text.push_back("");
 	text.back()="Sifters (Isn't it Shifter?):";
 	for(int i=0; i<2; ++i)
 	{
@@ -861,7 +860,7 @@ std::vector <std::string> TownsCRTC::GetStatusText(void) const
 	text.back().push_back('0'+(state.crtcReg[REG_CR1]&3));
 
 
-	text.push_back(empty);
+	text.push_back("");
 	text.back()="Address Latch: ";
 	text.back()+=cpputil::Uitox(state.crtcAddrLatch)+"H";
 
@@ -871,12 +870,12 @@ std::vector <std::string> TownsCRTC::GetStatusText(void) const
 		(unsigned int)((state.crtcReg[REG_CR0]>>2)&3),
 	};
 
-	text.push_back(empty);
+	text.push_back("");
 	text.back()="CL0:"+cpputil::Itoa(CL[0])+"  CL1:"+cpputil::Itoa(CL[1]);
 
 	if(true==InSinglePageMode())
 	{
-		text.push_back(empty);
+		text.push_back("");
 		text.back()="Single-Page Mode.  ";
 
 		auto pageStat0=GetPageStatusText(0);
@@ -884,7 +883,7 @@ std::vector <std::string> TownsCRTC::GetStatusText(void) const
 	}
 	else
 	{
-		text.push_back(empty);
+		text.push_back("");
 		text.back()="2-Page Mode.  ";
 
 		auto pageStat0=GetPageStatusText(0);
@@ -894,37 +893,7 @@ std::vector <std::string> TownsCRTC::GetStatusText(void) const
 		text.insert(text.end(),pageStat1.begin(),pageStat1.end());
 	}
 
-	text.push_back(empty);
-	text.back()+="16-Color Palette";
-	for(int page=0; page<2; ++page)
-	{
-		text.push_back(empty);
-		text.back()+="Page";
-		text.back().push_back((char)('0'+page));
-		text.back().push_back(':');
-		for(int i=0; i<16; ++i)
-		{
-			text.back()+=cpputil::Ubtox(state.palette.plt16[page][i][0]);
-			text.back()+=cpputil::Ubtox(state.palette.plt16[page][i][1]);
-			text.back()+=cpputil::Ubtox(state.palette.plt16[page][i][2]);
-			text.back().push_back(' ');
-		}
-	}
-	text.push_back(empty);
-	text.back()+="256-Color Palette";
-	for(int i=0; i<256; i+=16)
-	{
-		text.push_back(empty);
-		for(int j=0; j<16; ++j)
-		{
-			text.back()+=cpputil::Ubtox(state.palette.plt256[i+j][0]);
-			text.back()+=cpputil::Ubtox(state.palette.plt256[i+j][1]);
-			text.back()+=cpputil::Ubtox(state.palette.plt256[i+j][2]);
-			text.back().push_back(' ');
-		}
-	}
-
-	text.push_back(empty);
+	text.push_back("");
 	text.back()+="VSYNC:";
 	text.back()+=cpputil::BoolToChar(state.VSYNC);
 
@@ -937,27 +906,63 @@ std::vector <std::string> TownsCRTC::GetPageStatusText(int page) const
 	MakePageLayerInfo(layer,page);
 
 	std::vector <std::string> text;
-	std::string empty;
 
-	text.push_back(empty);
+	text.push_back("");
 	text.back()="Page "+cpputil::Itoa(page);
 
-	text.push_back(empty);
+	text.push_back("");
 	text.back()+="Top-Left:("+cpputil::Itoa(layer.originOnMonitor.x())+","+cpputil::Itoa(layer.originOnMonitor.y())+")  ";
 	text.back()+="Display Size:("+cpputil::Itoa(layer.sizeOnMonitor.x())+","+cpputil::Itoa(layer.sizeOnMonitor.y())+")";
 
-	text.push_back(empty);
+	text.push_back("");
 	text.back()+=cpputil::Itoa(layer.bitsPerPixel)+"-bit color";
 
-	text.push_back(empty);
+	text.push_back("");
 	text.back()+="VRAM Base="+cpputil::Uitox(layer.VRAMAddr);
 	text.back()+="  Offset="+cpputil::Uitox(layer.VRAMOffset);
 
-	text.push_back(empty);
+	text.push_back("");
 	text.back()+="BytesPerLine="+cpputil::Uitox(layer.bytesPerLine);
 
-	text.push_back(empty);
+	text.push_back("");
 	text.back()+="Zoom=("+cpputil::Uitox(layer.zoom.x())+","+cpputil::Uitox(layer.zoom.y())+")";
+
+	return text;
+}
+
+std::vector <std::string> TownsCRTC::GetPaletteText(void) const
+{
+	std::vector <std::string> text;
+
+	text.push_back("");
+	text.back()+="16-Color Palette";
+	for(int page=0; page<2; ++page)
+	{
+		text.push_back("");
+		text.back()+="Page";
+		text.back().push_back((char)('0'+page));
+		text.back().push_back(':');
+		for(int i=0; i<16; ++i)
+		{
+			text.back()+=cpputil::Ubtox(state.palette.plt16[page][i][0]);
+			text.back()+=cpputil::Ubtox(state.palette.plt16[page][i][1]);
+			text.back()+=cpputil::Ubtox(state.palette.plt16[page][i][2]);
+			text.back().push_back(' ');
+		}
+	}
+	text.push_back("");
+	text.back()+="256-Color Palette";
+	for(int i=0; i<256; i+=16)
+	{
+		text.push_back("");
+		for(int j=0; j<16; ++j)
+		{
+			text.back()+=cpputil::Ubtox(state.palette.plt256[i+j][0]);
+			text.back()+=cpputil::Ubtox(state.palette.plt256[i+j][1]);
+			text.back()+=cpputil::Ubtox(state.palette.plt256[i+j][2]);
+			text.back().push_back(' ');
+		}
+	}
 
 	return text;
 }

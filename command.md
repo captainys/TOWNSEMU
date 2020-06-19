@@ -743,6 +743,11 @@ CRTC
 CRTC.
 
 ```
+PALETTE
+```
+Palette.
+
+```
 TIMER
 ```
 Interval Timer (i8253)
