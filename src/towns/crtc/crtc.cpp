@@ -827,19 +827,56 @@ Vec2i TownsCRTC::GetRenderSize(void) const
 std::vector <std::string> TownsCRTC::GetStatusText(void) const
 {
 	std::vector <std::string> text;
+	const char *const regLabel[]=
+	{
+		"HSW1",
+		"HSW2",
+		"----",
+		"----",
+		"HST ",
+		"VST1",
+		"VST2",
+		"EET ",
+		"VST ",
+		"HDS0",
+		"HDE0",
+		"HDS1",
+		"HDE1",
+		"VDS0",
+		"VDE0",
+		"VDS1",
+		"VDE1",
+		"FA0 ",
+		"HAJ0",
+		"FO0 ",
+		"LO0 ",
+		"FA1 ",
+		"HAJ1",
+		"FO1 ",
+		"LO1 ",
+		"EHAJ",
+		"EVAJ",
+		"ZOOM",
+		"CR0 ",
+		"CR1 ",
+		"FR  ",
+		"CR2 ",
+	};
 
 	text.push_back("");
 	text.back()="Registers:";
 	for(int i=0; i<sizeof(state.crtcReg)/sizeof(state.crtcReg[0]); ++i)
 	{
-		if(0==i%16)
+		if(0==i%8)
 		{
 			text.push_back("");
-			text.back()+="REG";
-			text.back()+=cpputil::Ubtox(i);
-			text.back()+=":";
 		}
-		text.back()+=" ";
+		else
+		{
+			text.back()+=" ";
+		}
+		text.back()+=regLabel[i];
+		text.back()+=":";
 		text.back()+=cpputil::Ustox(state.crtcReg[i]);
 	}
 
