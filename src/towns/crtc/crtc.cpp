@@ -363,13 +363,34 @@ Vec2i TownsCRTC::GetPageOriginOnMonitor(unsigned char page) const
 		y0=(state.crtcReg[VDS]-0x46)>>1;
 		break;
 	case 3:
-		x0=(state.crtcReg[HDS]-0x9c);
-		y0=(state.crtcReg[VDS]-0x40)>>1;
+		// VING Games use CLKSEL=3 with HST=0x029D, making it 31KHz mode, in which case around 0x40 is the left-edge of the monitor, and
+		// 0x46 is the top-edge.
+		// TBIOS exclusively uses CLKSEL=3 for 24KHz mode, in which case 0x9C is the left-edge of the monitor, and
+		// 0x40 is the top-edge.
+		// I still don't know the correct way to calculate he origin on the monitor.  I make an ad-hoc fix for the time being.
+		if(0x29D!=state.crtcReg[REG_HST])
+		{
+			x0=(state.crtcReg[HDS]-0x9c);
+			y0=(state.crtcReg[VDS]-0x40)>>1;
+		}
+		else
+		{
+			x0=(state.crtcReg[HDS]-0x40);
+			y0=(state.crtcReg[VDS]-0x46)>>1;
+		}
 		break;
 	default:
 		x0=0;
 		y0=0;
 		break;
+	}
+	if(x0<0)
+	{
+		x0=0;
+	}
+	if(y0<0)
+	{
+		y0=0;
 	}
 	return Vec2i::Make(x0,y0);
 }
