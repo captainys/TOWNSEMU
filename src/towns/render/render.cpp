@@ -165,7 +165,7 @@ void TownsRender::Render4Bit(
 		{
 			const unsigned char *src=VRAMTop+(bytesPerLineTimesVRAMy&layer.VScrollMask);
 			unsigned char *dst=rgba.data()+4*y*this->wid;
-			for(int x=xStart; x<layer.sizeOnMonitor.x(); x+=2)
+			for(int x=xStart; x<layer.sizeOnMonitor.x()+xStart; x+=2*ZH)
 			{
 				unsigned char vrambyte=*src;
 				unsigned char pix=(vrambyte&0x0f);
@@ -260,7 +260,7 @@ void TownsRender::Render4Bit(
 
 			const unsigned char *src=VRAMTop+(bytesPerLineTimesVRAMy&layer.VScrollMask);
 			unsigned char *dst=rgba.data()+4*y*this->wid;
-			for(int x=xStart; x<layer.sizeOnMonitor.x(); x+=2)
+			for(int x=xStart; x<layer.sizeOnMonitor.x()+xStart; x+=2*ZH)
 			{
 				unsigned char vrambyte=*src;
 				unsigned char pix=(vrambyte&0x0f);
