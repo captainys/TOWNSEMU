@@ -41,7 +41,13 @@ Vertical VRAM-coverage size (in pixels) that is mapped to the vertical page size
 CLKSEL
   0 and 1 are for 15KHz modes.
   2 is for 31KHz modes.
-  3 is for 24KHz modes.
+  3 is for 24KHz modes. (VING titles use CLKSEL=3, but making it 31KHz by adjusting HST)
+
+ [2] pp.149
+  CLKSEL=0 BaseClock=28.6363MHz
+  CLKSEL=1 BaseClock=24.5454MHz
+  CLKSEL=2 BaseClock=25.175MHz
+  CLKSEL=3 BaseClock=21.0525MHz
 */
 
 
