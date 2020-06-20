@@ -2425,10 +2425,12 @@ void YM2612::KeyOff(unsigned int chNum)
 				auto releaseTime=sustainDecayReleaseTime0to96dB[std::min<unsigned int>(slot.RRCache,63)];
 				releaseTime*=lastDb100;
 				releaseTime/=960000;
-			#ifdef YM2612_DEBUGOUTPUT
-				printf("Release Time=%d\nms\n",releaseTime);
-			#endif
 				slot.ReleaseEndTime=slot.ReleaseStartTime+releaseTime;
+			#ifdef YM2612_DEBUGOUTPUT
+				std::cout << "Release Time " << releaseTime << "ms  " << 
+				             "Start " << slot.ReleaseStartTime << "ms  " << 
+				             "End " << slot.ReleaseEndTime << "ms" << std::endl;
+			#endif
 			}
 		}
 	}
