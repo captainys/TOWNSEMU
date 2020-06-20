@@ -57,6 +57,8 @@ void YM2612::Channel::Clear()
 /*static*/ unsigned int YM2612::SLtoDB100[16];    // 100 times dB
 /*static*/ unsigned int YM2612::DB100to4095Scale[9601]; // dB to 0 to 4095 scale
 /*static*/ unsigned int YM2612::DB100from4095Scale[4096]; // 0 to 4095 scale to dB
+/*static*/ unsigned int YM2612::linear4096to9600[4097]; // Linear 4096 scale to 9600 scale
+/*static*/ unsigned int YM2612::linear9600to4096[9601]; // Linear 9600 scale to 4096 scale
 /*static*/ const unsigned int YM2612::connToOutChannel[8][4]=
 {
 	{0,0,0,1},
@@ -122,6 +124,7 @@ YM2612::YM2612()
 	MakeTLtoDB100();
 	MakeSLtoDB100();
 	MakeDB100to4095Scale();
+	MakeLinearScaleTable();
 	PowerOn();
 }
 YM2612::~YM2612()
@@ -186,6 +189,17 @@ void YM2612::MakeDB100to4095Scale(void)
 	{
 		double dB100=100.0*(20.0*log10(C*(double)i));
 		DB100from4095Scale[i]=(unsigned int)dB100;
+	}
+}
+void YM2612::MakeLinearScaleTable(void)
+{
+	for(unsigned int i=0; i<=4096; ++i)
+	{
+		linear4096to9600[i]=i*9600/4096;
+	}
+	for(unsigned int i=0; i<=9600; ++i)
+	{
+		linear9600to4096[i]=i*4096/9600;
 	}
 }
 

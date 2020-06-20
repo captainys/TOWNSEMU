@@ -107,8 +107,12 @@ public:
 		// phaseShift is input from the upstream slot.
 		inline int UnscaledOutput(int phase,int phaseShift) const;
 		inline int UnscaledOutput(int phase,int phaseShift,unsigned int FB) const;
+		// Apply Envelope as Db.  Output is amplitude 4096 scale.
 		inline int EnvelopedOutputDb(int phase,int phaseShift,unsigned int timeInMS,unsigned int FB) const;
 		inline int EnvelopedOutputDb(int phase,int phaseShift,unsigned int timeInMS) const;
+		// Apply Envelope as Linear (9600 as 1.0).  Output is amplitude 4096 scale.
+		inline int EnvelopedOutputLn(int phase,int phaseShift,unsigned int timeInMS,unsigned int FB) const;
+		inline int EnvelopedOutputLn(int phase,int phaseShift,unsigned int timeInMS) const;
 		// DB scale: 0 to 9600
 		inline int InterpolateEnvelope(unsigned int timeInMS) const;
 	};
@@ -157,6 +161,8 @@ public:
 	static unsigned int SLtoDB100[16];    // 100 times dB
 	static unsigned int DB100to4095Scale[9601]; // dB to 0 to 4095 scale
 	static unsigned int DB100from4095Scale[4096]; // 4095 scale to dB
+	static unsigned int linear4096to9600[4097]; // Linear 4096 scale to 9600 scale
+	static unsigned int linear9600to4096[9601]; // Linear 9600 scale to 4096 scale
 	static const unsigned int connToOutChannel[8][4];
 	static int MULTITable[16];
 
@@ -175,6 +181,7 @@ private:
 	void MakeTLtoDB100(void);
 	void MakeSLtoDB100(void);
 	void MakeDB100to4095Scale(void);
+	void MakeLinearScaleTable(void);
 public:
 	void PowerOn(void);
 	void Reset(void);
