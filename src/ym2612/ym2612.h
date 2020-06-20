@@ -92,7 +92,7 @@ public:
 		unsigned int phase12;      // 5-bit phase=((phase>>12)&0x1F)
 		unsigned int phase12Step;  // Increment of phase12 per time step.
 		mutable unsigned int nextPhase12; // Cached in MakeWave
-		unsigned int env[6];       // Envelope: Amplitude is 0 to 4095 scale.
+		unsigned int env[6];       // Envelope: Db100 scale.  0 to 9600.
 		unsigned int envDurationCache; // in milliseconds
 		unsigned int RRCache;      // Calibrated Release Rate
 		bool InReleasePhase;
@@ -106,8 +106,8 @@ public:
 		inline int UnscaledOutput(int phase) const;
 		inline int UnscaledOutput(int phase,unsigned int FB) const;
 		inline int InterpolateEnvelope(unsigned int timeInMS) const;
-		inline int EnvelopedOutput(int phase,unsigned int timeInMS,unsigned int FB) const;
-		inline int EnvelopedOutput(int phase,unsigned int timeInMS) const;
+		inline int EnvelopedOutputDb(int phase,unsigned int timeInMS,unsigned int FB) const;
+		inline int EnvelopedOutputDb(int phase,unsigned int timeInMS) const;
 	};
 	class Channel
 	{
@@ -155,6 +155,7 @@ public:
 	static unsigned int DB100to4095Scale[9601]; // dB to 0 to 4095 scale
 	static unsigned int DB100from4095Scale[4096]; // 4095 scale to dB
 	static const unsigned int connToOutChannel[8][4];
+	static int MULTITable[16];
 
 	struct ConnectionToOutputSlot
 	{

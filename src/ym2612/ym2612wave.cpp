@@ -22,6 +22,25 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 // #define YM2612_DEBUGOUTPUT
 
 
+/*static*/ int YM2612::MULTITable[16]= // Multiple x2.
+{
+	1,
+	2,
+	4,
+	6,
+	8,
+	10,
+	12,
+	14,
+	16,
+	18,
+	20,
+	22,
+	24,
+	26,
+	28,
+	30,
+};
 
 static unsigned int attackTime0to96dB[64]= // 1/100ms
 {
@@ -2278,7 +2297,7 @@ inline int YM2612::Slot::InterpolateEnvelope(unsigned int timeInMS) const
 		return 0; // Not supported yet.
 	}
 }
-inline int YM2612::Slot::EnvelopedOutput(int phase,unsigned int timeInMS,unsigned int FB) const
+inline int YM2612::Slot::EnvelopedOutputDb(int phase,unsigned int timeInMS,unsigned int FB) const
 {
 	int dB=InterpolateEnvelope(timeInMS);
 	unsigned int ampl=DB100to4095Scale[dB];
@@ -2286,7 +2305,7 @@ inline int YM2612::Slot::EnvelopedOutput(int phase,unsigned int timeInMS,unsigne
 	int unscaledOut=UnscaledOutput(phase,FB);
 	return (unscaledOut*ampl)/4096;
 }
-inline int YM2612::Slot::EnvelopedOutput(int phase,unsigned int timeInMS) const
+inline int YM2612::Slot::EnvelopedOutputDb(int phase,unsigned int timeInMS) const
 {
 	int dB=InterpolateEnvelope(timeInMS);
 	unsigned int ampl=DB100to4095Scale[dB];
@@ -2338,14 +2357,6 @@ void YM2612::KeyOn(unsigned int chNum)
 		{
 			long long int hertz1000=detune1000Table[(ch.BLOCK<<4)+(NOTE<<2)+(slot.DT&3)];
 			detuneStepContribution=(hertz1000*PHASE_STEPS);
-			if(0==slot.MULTI)
-			{
-				detuneStepContribution*=slot.MULTI;
-			}
-			else
-			{
-				detuneStepContribution/=2;
-			}
 			detuneStepContribution/=1000;
 			if(0!=(slot.DT&4))
 			{
@@ -2358,19 +2369,9 @@ void YM2612::KeyOn(unsigned int chNum)
 		// Phase 12 runs
 		//            0x1000*hertz*PHASE_STEPS/WAVE_SAMPLING_RATE per step.
 		unsigned long long phase12Step;
-		if(0==slot.MULTI)
-		{
-			phase12Step=hertzX16*PHASE_STEPS;
-			phase12Step<<=7;
-			phase12Step+=+detuneStepContribution;
-			phase12Step/=WAVE_SAMPLING_RATE;
-		}
-		else
-		{
-			phase12Step=slot.MULTI*hertzX16*PHASE_STEPS;
-			phase12Step<<=8;
-			phase12Step/=WAVE_SAMPLING_RATE;
-		}
+		phase12Step=MULTITable[slot.MULTI]*hertzX16*PHASE_STEPS; // 2X from MULTITable, 16X from hertzX16
+		phase12Step<<=7;                                         // 128X  Overall 2x16x128=4096X
+		phase12Step/=WAVE_SAMPLING_RATE;
 		slot.phase12Step=(unsigned int)phase12Step;
 
 		 // Should consider DETUNE.
@@ -2682,10 +2683,10 @@ bool YM2612::CalculateEnvelope(unsigned int env[6],unsigned int &RR,unsigned int
 
 int YM2612::CalculateAmplitude(int chNum,unsigned int timeInMS,const unsigned int slotPhase12[4],const int AMS4096[4]) const
 {
-	#define SLOTOUTEV_0(phaseShift,timeInMS) ((0==(ch.usingSlot&1) ? 0 : ch.slots[0].EnvelopedOutput((slotPhase12[0]>>12)+phaseShift,timeInMS,ch.FB))*AMS4096[0]/4096)
-	#define SLOTOUTEV_1(phaseShift,timeInMS) ((0==(ch.usingSlot&2) ? 0 : ch.slots[1].EnvelopedOutput((slotPhase12[1]>>12)+phaseShift,timeInMS))*AMS4096[1]/4096)
-	#define SLOTOUTEV_2(phaseShift,timeInMS) ((0==(ch.usingSlot&4) ? 0 : ch.slots[2].EnvelopedOutput((slotPhase12[2]>>12)+phaseShift,timeInMS))*AMS4096[2]/4096)
-	#define SLOTOUTEV_3(phaseShift,timeInMS) ((0==(ch.usingSlot&8) ? 0 : ch.slots[3].EnvelopedOutput((slotPhase12[3]>>12)+phaseShift,timeInMS))*AMS4096[3]/4096)
+	#define SLOTOUTEV_Db_0(phaseShift,timeInMS) ((0==(ch.usingSlot&1) ? 0 : ch.slots[0].EnvelopedOutputDb((slotPhase12[0]>>12)+phaseShift,timeInMS,ch.FB))*AMS4096[0]/4096)
+	#define SLOTOUTEV_Db_1(phaseShift,timeInMS) ((0==(ch.usingSlot&2) ? 0 : ch.slots[1].EnvelopedOutputDb((slotPhase12[1]>>12)+phaseShift,timeInMS))*AMS4096[1]/4096)
+	#define SLOTOUTEV_Db_2(phaseShift,timeInMS) ((0==(ch.usingSlot&4) ? 0 : ch.slots[2].EnvelopedOutputDb((slotPhase12[2]>>12)+phaseShift,timeInMS))*AMS4096[2]/4096)
+	#define SLOTOUTEV_Db_3(phaseShift,timeInMS) ((0==(ch.usingSlot&8) ? 0 : ch.slots[3].EnvelopedOutputDb((slotPhase12[3]>>12)+phaseShift,timeInMS))*AMS4096[3]/4096)
 
 	#define SLOTOUT_0(phaseShift,timeInMS) ((0==(ch.usingSlot&1) ? 0 : ch.slots[0].UnscaledOutput((slotPhase12[0]>>12)+phaseShift,ch.FB))*AMS4096[0]/4096)
 	#define SLOTOUT_1(phaseShift,timeInMS) ((0==(ch.usingSlot&2) ? 0 : ch.slots[1].UnscaledOutput((slotPhase12[1]>>12)+phaseShift))*AMS4096[1]/4096)
@@ -2701,46 +2702,46 @@ int YM2612::CalculateAmplitude(int chNum,unsigned int timeInMS,const unsigned in
 		s0out=SLOTOUT_0(0,    timeInMS);
 		s1out=SLOTOUT_1(s0out,timeInMS);
 		s2out=SLOTOUT_2(s1out,timeInMS);
-		return SLOTOUTEV_3(s2out,timeInMS)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX;
+		return SLOTOUTEV_Db_3(s2out,timeInMS)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX;
 	case 1:
 		s0out=SLOTOUT_0(0,timeInMS);
 		s1out=SLOTOUT_1(0,timeInMS);
 		s2out=SLOTOUT_2(s0out+s1out,timeInMS);
-		return SLOTOUTEV_3(s2out,timeInMS)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX;
+		return SLOTOUTEV_Db_3(s2out,timeInMS)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX;
 	case 2:
 		s0out=SLOTOUT_0(0,timeInMS);
 		s1out=SLOTOUT_1(0,timeInMS);
 		s2out=SLOTOUT_2(s1out,timeInMS);
-		return SLOTOUTEV_3(s0out+s2out,timeInMS)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX;
+		return SLOTOUTEV_Db_3(s0out+s2out,timeInMS)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX;
 	case 3:
 		s0out=SLOTOUT_0(0,    timeInMS);
 		s1out=SLOTOUT_1(s0out,timeInMS);
 		s2out=SLOTOUT_2(0    ,timeInMS);
-		return SLOTOUTEV_3(s1out+s2out,timeInMS)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX;
+		return SLOTOUTEV_Db_3(s1out+s2out,timeInMS)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX;
 	case 4:
 		s0out=SLOTOUT_0(0,    timeInMS);
-		s1out=SLOTOUTEV_1(s0out,timeInMS);
+		s1out=SLOTOUTEV_Db_1(s0out,timeInMS);
 		s2out=SLOTOUT_2(0    ,timeInMS);
-		s3out=SLOTOUTEV_3(s2out,timeInMS);
+		s3out=SLOTOUTEV_Db_3(s2out,timeInMS);
 		return ((s1out+s3out)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX)/2;
-		// Test only Slot 3 -> return SLOTOUTEV_3(0,timeInMS)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX;
+		// Test only Slot 3 -> return SLOTOUTEV_Db_3(0,timeInMS)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX;
 	case 5:
 		s0out=SLOTOUT_0(0,    timeInMS);
-		s1out=SLOTOUTEV_1(s0out,timeInMS);
-		s2out=SLOTOUTEV_2(s0out,timeInMS);
-		s3out=SLOTOUTEV_3(s0out,timeInMS);
+		s1out=SLOTOUTEV_Db_1(s0out,timeInMS);
+		s2out=SLOTOUTEV_Db_2(s0out,timeInMS);
+		s3out=SLOTOUTEV_Db_3(s0out,timeInMS);
 		return ((s1out+s2out+s3out)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX)/3;
 	case 6:
 		s0out=SLOTOUT_0(0,    timeInMS);
-		s1out=SLOTOUTEV_1(s0out,timeInMS);
-		s2out=SLOTOUTEV_2(0    ,timeInMS);
-		s3out=SLOTOUTEV_3(0    ,timeInMS);
+		s1out=SLOTOUTEV_Db_1(s0out,timeInMS);
+		s2out=SLOTOUTEV_Db_2(0    ,timeInMS);
+		s3out=SLOTOUTEV_Db_3(0    ,timeInMS);
 		return ((s1out+s2out+s3out)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX)/3;
 	case 7:
 		s0out=SLOTOUT_0(0,timeInMS);
-		s1out=SLOTOUTEV_1(0,timeInMS);
-		s2out=SLOTOUTEV_2(0,timeInMS);
-		s3out=SLOTOUTEV_3(0,timeInMS);
+		s1out=SLOTOUTEV_Db_1(0,timeInMS);
+		s2out=SLOTOUTEV_Db_2(0,timeInMS);
+		s3out=SLOTOUTEV_Db_3(0,timeInMS);
 		return ((s0out+s1out+s2out+s3out)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX)/4;
 	}
 }
