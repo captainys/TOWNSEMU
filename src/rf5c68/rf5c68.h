@@ -120,7 +120,7 @@ public:
 
 	std::vector <std::string> GetStatusText(void) const;
 
-	/*! Make 19.2KHz signed 16-bit wave.
+	/*! Make 19.2KHz signed 16-bit Stereo wave.
 	*/
 	std::vector <unsigned char> Make19KHzWave(unsigned int ch);
 

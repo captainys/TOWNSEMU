@@ -2479,6 +2479,9 @@ std::vector <unsigned char> YM2612::MakeWave(unsigned int chNum,unsigned long lo
 		ch.slots[3].phase12,
 	};
 
+	unsigned int LeftANDPtn=(0!=ch.L ? ~0 : 0);
+	unsigned int RightANDPtn=(0!=ch.R ? ~0 : 0);
+
 	wave.resize(4*numSamples);
 	for(unsigned int i=0; i<numSamples; ++i)
 	{
@@ -2519,10 +2522,10 @@ std::vector <unsigned char> YM2612::MakeWave(unsigned int chNum,unsigned long lo
 		}
 
 		auto ampl=CalculateAmplitude(chNum,microsec/1000,phase12,AMSAdjustment);  // Envelope takes milliseconds.
-		wave[i*4  ]=(ampl&255);
-		wave[i*4+1]=((ampl>>8)&255);
-		wave[i*4+2]=(ampl&255);
-		wave[i*4+3]=((ampl>>8)&255);
+		wave[i*4  ]=(LeftANDPtn&(ampl&255));
+		wave[i*4+1]=(LeftANDPtn&((ampl>>8)&255));
+		wave[i*4+2]=(RightANDPtn&(ampl&255));
+		wave[i*4+3]=(RightANDPtn&((ampl>>8)&255));
 
 		phase12[0]+=ch.slots[0].phase12Step+PMSAdjustment[0];
 		phase12[1]+=ch.slots[1].phase12Step+PMSAdjustment[1];

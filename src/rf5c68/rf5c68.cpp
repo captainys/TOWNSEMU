@@ -170,6 +170,11 @@ std::vector <unsigned char> RF5C68::Make19KHzWave(unsigned int chNum)
 	auto &ch=state.ch[chNum];
 	std::vector <unsigned char> wave;
 
+	unsigned int Lvol=(ch.PAN&0x0F);
+	unsigned int Rvol=((ch.PAN>>4)&0x0F);
+	Lvol=(Lvol*ch.ENV)>>4;
+	Rvol=(Rvol*ch.ENV)>>4;
+
 	ch.repeatAfterThisSegment=false;
 	if(0<ch.FD)
 	{
@@ -183,16 +188,20 @@ std::vector <unsigned char> RF5C68::Make19KHzWave(unsigned int chNum)
 				break;
 			}
 
-			char abs=(data&0x7F);
+			unsigned int L=(data&0x7F);
+			unsigned int R=L;
+			L*=Lvol;
+			R*=Rvol;
 			if(data&0x80)
 			{
-				abs=-abs;
+				L=-L;
+				R=-R;
 			}
 
-			wave.push_back(abs);
-			wave.push_back(abs);
-			wave.push_back(abs);
-			wave.push_back(abs);
+			wave.push_back(L&0xFF);
+			wave.push_back((L>>8)&0xFF);
+			wave.push_back(R&0xFF);
+			wave.push_back((R>>8)&0xFF);
 		}
 	}
 
