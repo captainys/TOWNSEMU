@@ -830,6 +830,26 @@ int RunDAA_DAS(void)
 	return 0;
 }
 
+extern unsigned int TEST_MOV_A_TO_M(void);
+extern unsigned int TEST_MOV_M_TO_A(void);
+
+int RunMOV_M_TO_A_A_TO_M(void)
+{
+	printf("MOV A TO M\n");
+	if(0!=TEST_MOV_A_TO_M())
+	{
+		printf("Error in MOV A TO M\n");
+		return 1;
+	}
+	printf("MOV M TO A\n");
+	if(0!=TEST_MOV_M_TO_A())
+	{
+		printf("Error in MOV A TO M\n");
+		return 1;
+	}
+	return 0;
+}
+
 int main(int ac,char *av[])
 {
 	int nFail=0;
@@ -846,6 +866,7 @@ int main(int ac,char *av[])
 	nFail+=RunADC_SBB_SpecialCaseTable();
 	nFail+=RunADC_SBB();
 	nFail+=RunDAA_DAS();
+	nFail+=RunMOV_M_TO_A_A_TO_M();
 	printf("ARPL not covered.\n");
 	printf("CALL and JMP not covered.\n");
 

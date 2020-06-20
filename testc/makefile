@@ -42,7 +42,10 @@ build\bt_mem_r.OBJ : cputest\bt_mem_r.asm
 build\daadas.OBJ : cputest\daadas.asm
 	386asm cputest\daadas.asm -OBJECT build\daadas.OBJ
 
-build\gentest.exp : build\gentest.OBJ build\f6f7.OBJ build\test_r_i.OBJ build\aadaam.OBJ build\btx.OBJ build\imul.OBJ build\bitshift.OBJ build\cbw_cwde.OBJ build\adcsbbsp.OBJ build\bt_mem_r.OBJ build\daadas.OBJ
+build\mov.OBJ : cputest\mov.asm
+	386asm cputest\mov.asm -OBJECT build\mov.OBJ
+
+build\gentest.exp : build\gentest.OBJ build\f6f7.OBJ build\test_r_i.OBJ build\aadaam.OBJ build\btx.OBJ build\imul.OBJ build\bitshift.OBJ build\cbw_cwde.OBJ build\adcsbbsp.OBJ build\bt_mem_r.OBJ build\daadas.OBJ build\mov.OBJ
 	386link @cputest\gentest.LN
 
 cputest\TESTCASE.H : build\gentest.exp
@@ -51,7 +54,7 @@ cputest\TESTCASE.H : build\gentest.exp
 build\runtest.OBJ : cputest\runtest.c cputest\TESTCASE.H io.h vmif.h
 	run386 c:\hc386\bin\hcd386p cputest\runtest.c -obj build\runtest.OBJ
 
-build\runtest.exp : build\io.obj build\vmif.obj build\runtest.OBJ build\f6f7.OBJ build\test_r_i.OBJ build\aadaam.OBJ build\btx.OBJ build\imul.OBJ build\bitshift.OBJ build\cbw_cwde.OBJ build\adcsbbsp.OBJ build\bt_mem_r.OBJ build\daadas.OBJ
+build\runtest.exp : build\io.obj build\vmif.obj build\runtest.OBJ build\f6f7.OBJ build\test_r_i.OBJ build\aadaam.OBJ build\btx.OBJ build\imul.OBJ build\bitshift.OBJ build\cbw_cwde.OBJ build\adcsbbsp.OBJ build\bt_mem_r.OBJ build\daadas.OBJ build\mov.OBJ
 	386link @cputest\runtest.LN
 
 

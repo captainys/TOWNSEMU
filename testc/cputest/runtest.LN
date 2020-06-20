@@ -10,6 +10,7 @@ build\adcsbb.OBJ
 build\adcsbbsp.OBJ
 build\bt_mem_r.OBJ
 build\daadas.obj 
+build\mov.obj
 build\io.obj
 build\vmif.obj
 -lib C:\hc386\small\hce.lib 
