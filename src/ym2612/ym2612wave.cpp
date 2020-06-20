@@ -2465,6 +2465,10 @@ void YM2612::CheckToneDone(unsigned int chNum)
 		{
 			state.playingCh&=~(1<<chNum);
 			ch.playState=CH_IDLE;
+			for(auto &s : ch.slots)
+			{
+				s.InReleasePhase=false;
+			}
 		}
 	}
 }
@@ -2705,22 +2709,30 @@ bool YM2612::CalculateEnvelope(unsigned int env[6],unsigned int &RR,unsigned int
 
 int YM2612::CalculateAmplitude(int chNum,unsigned int timeInMS,const unsigned int slotPhase12[4],const int AMS4096[4]) const
 {
-	#define SLOTOUTEV_Db_0(phaseShift,timeInMS) ((0==(ch.usingSlot&1) ? 0 : ch.slots[0].EnvelopedOutputDb((slotPhase12[0]>>12),phaseShift,timeInMS,ch.FB))*AMS4096[0]/4096)
-	#define SLOTOUTEV_Db_1(phaseShift,timeInMS) ((0==(ch.usingSlot&2) ? 0 : ch.slots[1].EnvelopedOutputDb((slotPhase12[1]>>12),phaseShift,timeInMS))*AMS4096[1]/4096)
-	#define SLOTOUTEV_Db_2(phaseShift,timeInMS) ((0==(ch.usingSlot&4) ? 0 : ch.slots[2].EnvelopedOutputDb((slotPhase12[2]>>12),phaseShift,timeInMS))*AMS4096[2]/4096)
-	#define SLOTOUTEV_Db_3(phaseShift,timeInMS) ((0==(ch.usingSlot&8) ? 0 : ch.slots[3].EnvelopedOutputDb((slotPhase12[3]>>12),phaseShift,timeInMS))*AMS4096[3]/4096)
-
-	#define SLOTOUTEV_Ln_0(phaseShift,timeInMS) ((0==(ch.usingSlot&1) ? 0 : ch.slots[0].EnvelopedOutputLn((slotPhase12[0]>>12),phaseShift,timeInMS,ch.FB))*AMS4096[0]/4096)
-	#define SLOTOUTEV_Ln_1(phaseShift,timeInMS) ((0==(ch.usingSlot&2) ? 0 : ch.slots[1].EnvelopedOutputLn((slotPhase12[1]>>12),phaseShift,timeInMS))*AMS4096[1]/4096)
-	#define SLOTOUTEV_Ln_2(phaseShift,timeInMS) ((0==(ch.usingSlot&4) ? 0 : ch.slots[2].EnvelopedOutputLn((slotPhase12[2]>>12),phaseShift,timeInMS))*AMS4096[2]/4096)
-	#define SLOTOUTEV_Ln_3(phaseShift,timeInMS) ((0==(ch.usingSlot&8) ? 0 : ch.slots[3].EnvelopedOutputLn((slotPhase12[3]>>12),phaseShift,timeInMS))*AMS4096[3]/4096)
-
-	#define SLOTOUT_0(phaseShift,timeInMS) ((0==(ch.usingSlot&1) ? 0 : ch.slots[0].UnscaledOutput((slotPhase12[0]>>12),phaseShift,ch.FB))*AMS4096[0]/4096)
-	#define SLOTOUT_1(phaseShift,timeInMS) ((0==(ch.usingSlot&2) ? 0 : ch.slots[1].UnscaledOutput((slotPhase12[1]>>12),phaseShift))*AMS4096[1]/4096)
-	#define SLOTOUT_2(phaseShift,timeInMS) ((0==(ch.usingSlot&4) ? 0 : ch.slots[2].UnscaledOutput((slotPhase12[2]>>12),phaseShift))*AMS4096[2]/4096)
-	#define SLOTOUT_3(phaseShift,timeInMS) ((0==(ch.usingSlot&8) ? 0 : ch.slots[3].UnscaledOutput((slotPhase12[3]>>12),phaseShift))*AMS4096[3]/4096)
-
 	auto &ch=state.channels[chNum];
+	bool slotActive[4]=
+	{
+		0!=(ch.usingSlot&1) || ch.slots[0].InReleasePhase,
+		0!=(ch.usingSlot&2) || ch.slots[1].InReleasePhase,
+		0!=(ch.usingSlot&4) || ch.slots[2].InReleasePhase,
+		0!=(ch.usingSlot&8) || ch.slots[3].InReleasePhase,
+	};
+
+	#define SLOTOUTEV_Db_0(phaseShift,timeInMS) ((true!=slotActive[0] ? 0 : ch.slots[0].EnvelopedOutputDb((slotPhase12[0]>>12),phaseShift,timeInMS,ch.FB))*AMS4096[0]/4096)
+	#define SLOTOUTEV_Db_1(phaseShift,timeInMS) ((true!=slotActive[1] ? 0 : ch.slots[1].EnvelopedOutputDb((slotPhase12[1]>>12),phaseShift,timeInMS))*AMS4096[1]/4096)
+	#define SLOTOUTEV_Db_2(phaseShift,timeInMS) ((true!=slotActive[2] ? 0 : ch.slots[2].EnvelopedOutputDb((slotPhase12[2]>>12),phaseShift,timeInMS))*AMS4096[2]/4096)
+	#define SLOTOUTEV_Db_3(phaseShift,timeInMS) ((true!=slotActive[3] ? 0 : ch.slots[3].EnvelopedOutputDb((slotPhase12[3]>>12),phaseShift,timeInMS))*AMS4096[3]/4096)
+
+	#define SLOTOUTEV_Ln_0(phaseShift,timeInMS) ((true!=slotActive[0] ? 0 : ch.slots[0].EnvelopedOutputLn((slotPhase12[0]>>12),phaseShift,timeInMS,ch.FB))*AMS4096[0]/4096)
+	#define SLOTOUTEV_Ln_1(phaseShift,timeInMS) ((true!=slotActive[1] ? 0 : ch.slots[1].EnvelopedOutputLn((slotPhase12[1]>>12),phaseShift,timeInMS))*AMS4096[1]/4096)
+	#define SLOTOUTEV_Ln_2(phaseShift,timeInMS) ((true!=slotActive[2] ? 0 : ch.slots[2].EnvelopedOutputLn((slotPhase12[2]>>12),phaseShift,timeInMS))*AMS4096[2]/4096)
+	#define SLOTOUTEV_Ln_3(phaseShift,timeInMS) ((true!=slotActive[3] ? 0 : ch.slots[3].EnvelopedOutputLn((slotPhase12[3]>>12),phaseShift,timeInMS))*AMS4096[3]/4096)
+
+	#define SLOTOUT_0(phaseShift,timeInMS) ((true!=slotActive[0] ? 0 : ch.slots[0].UnscaledOutput((slotPhase12[0]>>12),phaseShift,ch.FB))*AMS4096[0]/4096)
+	#define SLOTOUT_1(phaseShift,timeInMS) ((true!=slotActive[1] ? 0 : ch.slots[1].UnscaledOutput((slotPhase12[1]>>12),phaseShift))*AMS4096[1]/4096)
+	#define SLOTOUT_2(phaseShift,timeInMS) ((true!=slotActive[2] ? 0 : ch.slots[2].UnscaledOutput((slotPhase12[2]>>12),phaseShift))*AMS4096[2]/4096)
+	#define SLOTOUT_3(phaseShift,timeInMS) ((true!=slotActive[3] ? 0 : ch.slots[3].UnscaledOutput((slotPhase12[3]>>12),phaseShift))*AMS4096[3]/4096)
+
 	int s0out,s1out,s2out,s3out;
 	switch(ch.CONNECT)
 	{
