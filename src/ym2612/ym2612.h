@@ -103,11 +103,14 @@ public:
 
 		void Clear(void);
 
-		inline int UnscaledOutput(int phase) const;
-		inline int UnscaledOutput(int phase,unsigned int FB) const;
+		// phase is from the phaseGenerator*MULTI,DETUNE,PMS
+		// phaseShift is input from the upstream slot.
+		inline int UnscaledOutput(int phase,int phaseShift) const;
+		inline int UnscaledOutput(int phase,int phaseShift,unsigned int FB) const;
+		inline int EnvelopedOutputDb(int phase,int phaseShift,unsigned int timeInMS,unsigned int FB) const;
+		inline int EnvelopedOutputDb(int phase,int phaseShift,unsigned int timeInMS) const;
+		// DB scale: 0 to 9600
 		inline int InterpolateEnvelope(unsigned int timeInMS) const;
-		inline int EnvelopedOutputDb(int phase,unsigned int timeInMS,unsigned int FB) const;
-		inline int EnvelopedOutputDb(int phase,unsigned int timeInMS) const;
 	};
 	class Channel
 	{
