@@ -2265,32 +2265,32 @@ inline int YM2612::Slot::UnscaledOutput(int phase,int phaseShift,unsigned int FB
 inline int YM2612::Slot::EnvelopedOutputDb(int phase,int phaseShift,unsigned int timeInMS,unsigned int FB) const
 {
 	int dB=InterpolateEnvelope(timeInMS);
+	lastDb100Cache=dB;
 	unsigned int ampl=DB100to4095Scale[dB];
-	lastAmplitudeCache=ampl;
 	int unscaledOut=UnscaledOutput(phase,phaseShift,FB);
 	return (unscaledOut*ampl)/4096;
 }
 inline int YM2612::Slot::EnvelopedOutputDb(int phase,int phaseShift,unsigned int timeInMS) const
 {
 	int dB=InterpolateEnvelope(timeInMS);
+	lastDb100Cache=dB;
 	unsigned int ampl=DB100to4095Scale[dB];
-	lastAmplitudeCache=ampl;
 	int unscaledOut=UnscaledOutput(phase,phaseShift);
 	return (unscaledOut*ampl)/4096;
 }
 inline int YM2612::Slot::EnvelopedOutputLn(int phase,int phaseShift,unsigned int timeInMS,unsigned int FB) const
 {
 	int env=InterpolateEnvelope(timeInMS);
+	lastDb100Cache=env;
 	unsigned int ampl=linear9600to4096[env];
-	lastAmplitudeCache=ampl;
 	int unscaledOut=UnscaledOutput(phase,phaseShift,FB);
 	return (unscaledOut*ampl)/4096;
 }
 inline int YM2612::Slot::EnvelopedOutputLn(int phase,int phaseShift,unsigned int timeInMS) const
 {
 	int env=InterpolateEnvelope(timeInMS);
+	lastDb100Cache=env;
 	unsigned int ampl=linear9600to4096[env];
-	lastAmplitudeCache=ampl;
 	int unscaledOut=UnscaledOutput(phase,phaseShift);
 	return (unscaledOut*ampl)/4096;
 }
@@ -2325,10 +2325,10 @@ inline int YM2612::Slot::InterpolateEnvelope(unsigned int timeInMS) const
 		if(timeInMS<ReleaseEndTime && ReleaseStartTime<ReleaseEndTime)
 		{
 			auto diff=ReleaseEndTime-timeInMS;
-			auto amplitude=ReleaseStartAmplitude;
-			amplitude*=diff;
-			amplitude/=(ReleaseEndTime-ReleaseStartTime);
-			return amplitude;
+			auto Db100=ReleaseStartDb100;
+			Db100*=diff;
+			Db100/=(ReleaseEndTime-ReleaseStartTime);
+			return Db100;
 		}
 		return 0; // Not supported yet.
 	}
@@ -2368,7 +2368,7 @@ void YM2612::KeyOn(unsigned int chNum)
 	for(auto &slot : ch.slots)
 	{
 		slot.InReleasePhase=false;
-		slot.lastAmplitudeCache=0;
+		slot.lastDb100Cache=0;
 		slot.phase12=0;
 
 		// Hz ranges 1 to roughly 8000.  PHASE_STEPS=4096.  hertz*PHASE_STEPS=2^13*2^12=2^25. Fits in 32 bit.
@@ -2419,11 +2419,10 @@ void YM2612::KeyOff(unsigned int chNum)
 			{
 				slot.InReleasePhase=true;
 				slot.ReleaseStartTime=(ch.microsec12>>12)/1000;
-				slot.ReleaseStartAmplitude=slot.lastAmplitudeCache;
+				slot.ReleaseStartDb100=slot.lastDb100Cache;
 
-				auto lastDb100=DB100from4095Scale[slot.lastAmplitudeCache&4095]; // Just in case &4095, in 1/100ms.
 				auto releaseTime=sustainDecayReleaseTime0to96dB[std::min<unsigned int>(slot.RRCache,63)];
-				releaseTime*=lastDb100;
+				releaseTime*=slot.lastDb100Cache;
 				releaseTime/=960000;
 				slot.ReleaseEndTime=slot.ReleaseStartTime+releaseTime;
 			#ifdef YM2612_DEBUGOUTPUT

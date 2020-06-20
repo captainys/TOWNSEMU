@@ -97,8 +97,8 @@ public:
 		unsigned int RRCache;      // Calibrated Release Rate
 		bool InReleasePhase;
 		unsigned int ReleaseStartTime,ReleaseEndTime;
-		unsigned int ReleaseStartAmplitude;
-		mutable unsigned int lastAmplitudeCache;  // 0 to 4095 scale.
+		unsigned int ReleaseStartDb100;
+		mutable unsigned int lastDb100Cache;  // 0 to 9600 scale.
 		// Cache for wave-generation <<
 
 		void Clear(void);
