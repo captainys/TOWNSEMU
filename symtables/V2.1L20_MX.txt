@@ -3139,6 +3139,46 @@ P
 M 0
 /end
 /begin0
+T 1
+* 0000FC00:00002293
+# 
+R 
+L SYSROM:Set up DMA Address
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000FC00:000022B0
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 0
+* 0000FC00:000022BC
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 0
+* 0000FC00:00002405
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
 T 2
 * 0000FC00:0000298D
 # 
