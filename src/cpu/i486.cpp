@@ -246,6 +246,14 @@ i486DX::i486DX(VMBase *vmPtr) : CPU(vmPtr)
 	state.NULL_and_reg32[ 0]=0;
 	state.NULL_and_reg32[16]=0;
 
+	stackAddressSizePointer[0]=&sixteen;
+	stackAddressSizePointer[1]=&state.sreg[REG_SS-REG_SEGMENT_REG_BASE].addressSize;
+
+	CSOperandSizePointer[0]=&sixteen;
+	CSOperandSizePointer[1]=&state.sreg[REG_CS-REG_SEGMENT_REG_BASE].operandSize;
+	CSAddressSizePointer[0]=&sixteen;
+	CSAddressSizePointer[1]=&state.sreg[REG_CS-REG_SEGMENT_REG_BASE].addressSize;
+
 	Reset();
 	enableCallStack=false;
 	debuggerPtr=nullptr;
@@ -878,19 +886,6 @@ i486DX::OperandValue i486DX::DescriptorTableToOperandValue(const SystemAddressRe
 	case REG_TEST6:
 	case REG_TEST7:
 		return 4;
-	}
-	return 0;
-}
-
-unsigned int i486DX::GetStackAddressingSize(void) const
-{
-	if(true==IsInRealMode())
-	{
-		return 16;
-	}
-	else
-	{
-		return state.SS().addressSize;
 	}
 	return 0;
 }

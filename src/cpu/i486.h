@@ -1890,6 +1890,11 @@ public:
 	{
 		return (0==(state.GetCR(0)&CR0_PROTECTION_ENABLE));
 	}
+	inline unsigned int Return0InRealMode1InProtectedMode(void) const
+	{
+		// CR0_PROTECTION_ENABLE is 1.
+		return state.GetCR(0)&CR0_PROTECTION_ENABLE;
+	}
 
 	/*! Returns a register value. 
 	*/
@@ -1922,8 +1927,18 @@ public:
 
 	/*! Returns the addressing size (16 or 32) of the stack segment.
 	*/
-	unsigned int GetStackAddressingSize(void) const;
+	inline unsigned int GetStackAddressingSize(void) const
+	{
+		return *stackAddressSizePointer[Return0InRealMode1InProtectedMode()];
+	}
+private:
+	unsigned int sixteen=16;
+	/* Set in the constructore.  stackAddressSizePointer[0] points to sixteen.
+	   stackAddressSizePointer[1] points to SS.addressSize.
+	*/
+	unsigned int *stackAddressSizePointer[2];
 
+public:
 	/*! Returns true if Paging is enabled.
 	*/
 	inline bool PagingEnabled(void) const
@@ -2245,17 +2260,18 @@ public:
 	*/
 	inline Instruction FetchInstruction(Operand &op1,Operand &op2,const SegmentRegister &CS,unsigned int offset,const Memory &mem) const
 	{
-		if(true==IsInRealMode())
-		{
-			return FetchInstruction(op1,op2,CS,offset,mem,16,16);
-		}
-		else
-		{
-			// Default operandSize and addressSize depends on the D flag of the segment descriptor.
-			return FetchInstruction(op1,op2,CS,offset,mem,CS.operandSize,CS.addressSize);
-		}
+		const unsigned int operandSize=*CSOperandSizePointer[Return0InRealMode1InProtectedMode()];
+		const unsigned int addressSize=*CSAddressSizePointer[Return0InRealMode1InProtectedMode()];
+		return FetchInstruction(op1,op2,CS,offset,mem,operandSize,addressSize);
 	}
+private:
+	/* Set in the constructor. CS******SizePointer[0] points to sixteen, and
+	   CS******SizePointer[1] points to CS.******Size.
+	*/
+	unsigned int *CSOperandSizePointer[2];
+	unsigned int *CSAddressSizePointer[2];
 
+public:
 	/*! Fetch an instruction from specific segment and offset with given default operand size and address size.
 	*/
 	Instruction FetchInstruction(Operand &op1,Operand &op2,const SegmentRegister &CS,unsigned int offset,const Memory &mem,unsigned int defOperSize,unsigned int defAddrSize) const;
