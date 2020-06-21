@@ -24,6 +24,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "ramrom.h"
 #include "inout.h"
 #include "cpputil.h"
+#include "i486inst.h"
 
 // References
 // [1]  i486 Processor Programmers Reference Manual
@@ -61,6 +62,15 @@ public:
 	static const char *const Reg32Str[8];
 	static const char *const Sreg[8];
 	static const bool ParityTable[256];
+
+	/* opCodeRenumberTable is for making a single jump table for switch-case statement.
+	   Visual C++ makes multiple jump tables for one switch-case statement if the case numbers 
+	   are sparse.  Ends up checking number range for each jump table before branching.
+	   To avoid this blunder, numbers must be crunched into one sequence.
+	   opCodeRenumberTable is to map instruction code to one sequence of numbers.
+	     I486_OPCODE_xxxx to I486_RENUMBER_xxxx
+	*/
+	static unsigned short opCodeRenumberTable[I486_OPCODE_MAX+1];
 
 	enum
 	{
@@ -1820,7 +1830,11 @@ public:
 	/*! Default constructor.  As you can see.
 	*/
 	i486DX(VMBase *vmPtr);
+private:
+	void MakeOpCodeRenumberTable(void);
 
+
+public:
 	/*! Resets the CPU.
 	*/
 	void Reset(void);

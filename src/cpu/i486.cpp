@@ -254,6 +254,8 @@ i486DX::i486DX(VMBase *vmPtr) : CPU(vmPtr)
 	CSAddressSizePointer[0]=&sixteen;
 	CSAddressSizePointer[1]=&state.sreg[REG_CS-REG_SEGMENT_REG_BASE].addressSize;
 
+	MakeOpCodeRenumberTable();
+
 	Reset();
 	enableCallStack=false;
 	debuggerPtr=nullptr;
