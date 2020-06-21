@@ -2101,6 +2101,9 @@ public:
 		}
 		return mem.FetchByte(linearAddr);
 	}
+
+	/*! Returns const memory-access pointer (Read-Access Pointer) from SEG:OFFSET.
+	*/
 	inline MemoryAccess::ConstPointer GetMemoryReadPointer(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 	{
 		offset&=AddressMask((unsigned char)addressSize);
@@ -2110,6 +2113,20 @@ public:
 			addr=LinearAddressToPhysicalAddress(addr,mem);
 		}
 		return mem.GetReadAccessPointer(addr);
+	}
+
+	/*! Returns const memory-access pointer (Read-Access Pointer) from the linear address.
+	*/
+	inline MemoryAccess::ConstPointer GetMemoryReadPointerLinearAddr(unsigned int linearAddr,const Memory &mem) const
+	{
+		if(true==PagingEnabled())
+		{
+			return mem.GetReadAccessPointer(LinearAddressToPhysicalAddress(linearAddr,mem));
+		}
+		else
+		{
+			return mem.GetReadAccessPointer(linearAddr);
+		}
 	}
 
 	/*! Store a byte.

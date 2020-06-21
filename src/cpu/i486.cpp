@@ -681,17 +681,25 @@ inline void i486DX::LoadSegmentRegisterQuiet(SegmentRegister &reg,unsigned int v
 		}
 		DTLinearBaseAddr+=(8*INDEX);
 
-		const unsigned char rawDesc[8]=
+		unsigned char rawDescBuf[8];
+		const unsigned char *rawDesc;
+		auto memAccPtr=GetMemoryReadPointerLinearAddr(DTLinearBaseAddr,mem);
+		if(8<=memAccPtr.length)
 		{
-			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr),
-			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+1),
-			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+2),
-			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+3),
-			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+4),
-			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+5),
-			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+6),
-			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+7)
-		};
+			rawDesc=memAccPtr.ptr;
+		}
+		else
+		{
+			rawDesc=rawDescBuf;
+			rawDescBuf[0]=(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr);
+			rawDescBuf[1]=(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+1);
+			rawDescBuf[2]=(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+2);
+			rawDescBuf[3]=(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+3);
+			rawDescBuf[4]=(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+4);
+			rawDescBuf[5]=(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+5);
+			rawDescBuf[6]=(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+6);
+			rawDescBuf[7]=(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+7);
+		}
 
 		// Sample GDT from WRHIGH.ASM
 		//	DB		0FFH,0FFH	; Segment Limit (0-15)
