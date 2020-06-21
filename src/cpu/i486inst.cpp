@@ -894,8 +894,6 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 			FetchImm16(inst,ptr,seg,offset,mem);
 			break;
 		}
-		op2.MakeSimpleAddressOffsetFromImm(inst);
-		op1.MakeByRegisterNumber(inst.operandSize,REG_AL-REG_8BIT_REG_BASE);
 		break;
 	case I486_OPCODE_MOV_M_FROM_AL: //    0xA2, // 16/32 depends on ADDRESSSIZE_OVERRIDE
 		switch(inst.addressSize)
@@ -2438,10 +2436,14 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		op1.MakeByRegisterNumber(8,REG_AL-REG_8BIT_REG_BASE);
 		disasm=DisassembleTypicalTwoOperands("MOV",op1,op2);
 		break;
+	case I486_OPCODE_MOV_M_TO_EAX: //     0xA1, // 16/32 depends on OPSIZE_OVERRIDE
+		op2.MakeSimpleAddressOffsetFromImm(*this);
+		op1.MakeByRegisterNumber(operandSize,REG_AL-REG_8BIT_REG_BASE);
+		disasm=DisassembleTypicalTwoOperands("MOV",op1,op2);
+		break;
 
 	case I486_OPCODE_MOV_FROM_SEG: //     0x8C,
 	case I486_OPCODE_MOV_TO_SEG: //       0x8E,
-	case I486_OPCODE_MOV_M_TO_EAX: //     0xA1, // 16/32 depends on OPSIZE_OVERRIDE
 	case I486_OPCODE_MOV_M_FROM_AL: //    0xA2,
 	case I486_OPCODE_MOV_M_FROM_EAX: //   0xA3, // 16/32 depends on OPSIZE_OVERRIDE
 
