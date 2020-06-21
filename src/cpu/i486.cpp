@@ -700,8 +700,8 @@ inline void i486DX::LoadSegmentRegisterQuiet(SegmentRegister &reg,unsigned int v
 		//	DB		11000111B	; G=1, DB=1, (Unused)=0, A=0, LIMIT 16-19=0011
 		//	DB		0			; Base Address 24-31
 
-		unsigned int segLimit=rawDesc[0]|(rawDesc[1]<<8)|((rawDesc[6]&0x0F)<<16);
-		unsigned int segBase=rawDesc[2]|(rawDesc[3]<<8)|(rawDesc[4]<<16)|(rawDesc[7]<<24);
+		unsigned int segLimit=cpputil::GetWord(rawDesc+0)|((rawDesc[6]&0x0F)<<16);
+		unsigned int segBase=cpputil::GetWord(rawDesc+2)|(rawDesc[4]<<16)|(rawDesc[7]<<24);
 		if((0x80&rawDesc[6])==0) // G==0
 		{
 			reg.limit=segLimit;
