@@ -905,8 +905,6 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 			FetchImm16(inst,ptr,seg,offset,mem);
 			break;
 		}
-		op1.MakeSimpleAddressOffsetFromImm(inst);
-		op2.MakeByRegisterNumber(8,REG_AL-REG_8BIT_REG_BASE);
 		break;
 	case I486_OPCODE_MOV_M_FROM_EAX: //   0xA3, // 16/32 depends on ADDRESSSIZE_OVERRIDE
 		switch(inst.addressSize)
@@ -918,8 +916,6 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 			FetchImm16(inst,ptr,seg,offset,mem);
 			break;
 		}
-		op1.MakeSimpleAddressOffsetFromImm(inst);
-		op2.MakeByRegisterNumber(inst.operandSize,REG_AL-REG_8BIT_REG_BASE);
 		break;
 
 	case I486_OPCODE_MOV_I8_TO_AL: //     0xB0,
@@ -2441,11 +2437,19 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		op1.MakeByRegisterNumber(operandSize,REG_AL-REG_8BIT_REG_BASE);
 		disasm=DisassembleTypicalTwoOperands("MOV",op1,op2);
 		break;
+	case I486_OPCODE_MOV_M_FROM_AL: //    0xA2,
+		op1.MakeSimpleAddressOffsetFromImm(*this);
+		op2.MakeByRegisterNumber(8,REG_AL-REG_8BIT_REG_BASE);
+		disasm=DisassembleTypicalTwoOperands("MOV",op1,op2);
+		break;
+	case I486_OPCODE_MOV_M_FROM_EAX: //   0xA3, // 16/32 depends on OPSIZE_OVERRIDE
+		op1.MakeSimpleAddressOffsetFromImm(*this);
+		op2.MakeByRegisterNumber(operandSize,REG_AL-REG_8BIT_REG_BASE);
+		disasm=DisassembleTypicalTwoOperands("MOV",op1,op2);
+		break;
 
 	case I486_OPCODE_MOV_FROM_SEG: //     0x8C,
 	case I486_OPCODE_MOV_TO_SEG: //       0x8E,
-	case I486_OPCODE_MOV_M_FROM_AL: //    0xA2,
-	case I486_OPCODE_MOV_M_FROM_EAX: //   0xA3, // 16/32 depends on OPSIZE_OVERRIDE
 
 	case I486_OPCODE_MOV_TO_CR://        0x0F22,
 	case I486_OPCODE_MOV_FROM_CR://      0x0F20,
@@ -5843,17 +5847,15 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_OPCODE_MOV_M_FROM_AL: //    0xA2,
 		{
 			clocksPassed=1;
-			OperandValue value;
-			value.MakeByte(GetAL());
-			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+			auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
+			StoreByte(mem,inst.addressSize,seg,inst.EvalUimm32(),GetAL());
 		}
 		break;
 	case I486_OPCODE_MOV_M_FROM_EAX: //   0xA3, // 16/32 depends on OPSIZE_OVERRIDE
 		{
 			clocksPassed=1;
-			OperandValue value;
-			value.MakeByteWordOrDword(inst.operandSize,GetEAX());
-			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+			auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
+			StoreWordOrDword(mem,inst.operandSize,inst.addressSize,seg,inst.EvalUimm32(),GetEAX());
 		}
 		break;
 	case I486_OPCODE_MOV_I8_TO_RM8: //    0xC6,
