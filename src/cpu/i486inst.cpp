@@ -6095,7 +6095,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 
 	case I486_OPCODE_OUT_I8_AL: //        0xE6,
-		IOOut8(io,inst.EvalUimm8(),GetRegisterValue(REG_AL));
+		IOOut8(io,inst.EvalUimm8(),GetAL());
 		if(true==IsInRealMode())
 		{
 			clocksPassed=16;
@@ -6108,11 +6108,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_OPCODE_OUT_I8_A: //         0xE7,
 		if(16==inst.operandSize)
 		{
-			IOOut16(io,inst.EvalUimm8(),GetRegisterValue(REG_AX));
+			IOOut16(io,inst.EvalUimm8(),GetAX());
 		}
 		else
 		{
-			IOOut32(io,inst.EvalUimm8(),GetRegisterValue(REG_EAX));
+			IOOut32(io,inst.EvalUimm8(),GetEAX());
 		}
 		if(true==IsInRealMode())
 		{
