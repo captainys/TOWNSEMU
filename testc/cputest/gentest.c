@@ -676,6 +676,39 @@ void GenDAADAS(FILE *ofp)
 	fprintf(ofp,"};\n");
 }
 
+void TEST_SHLD_SHRD32(unsigned int res[6],unsigned int EAX,unsigned int EDX,unsigned int ECX);
+void TEST_SHLD_SHRD16(unsigned int res[6],unsigned int EAX,unsigned int EDX,unsigned int ECX);
+
+void GenSHLDSHRD(FILE *ofp)
+{
+	int i,j;
+	fprintf(ofp,"unsigned int SHLD_SHRD32[]={\n");
+	for(i=0; i+1<LEN(testNumberSrc32); ++i)
+	{
+		for(j=0; j<LEN(testNumberSrc8); ++j)
+		{
+			unsigned int res[6];
+			fprintf(ofp,"0x%08x,0x%08x,0x%08x,\n",testNumberSrc32[i],testNumberSrc32[i+1],testNumberSrc8[j]);
+			TEST_SHLD_SHRD32(res,testNumberSrc32[i],testNumberSrc32[i+1],testNumberSrc8[j]);
+			fprintf(ofp,"0x%08x,0x%08x,0x%08x,0x%08x,0x%08x,0x%08x,\n",res[0],res[1],res[2],res[3],res[4],res[5]);
+		}
+	}
+	fprintf(ofp,"};\n");
+
+	fprintf(ofp,"unsigned int SHLD_SHRD16[]={\n");
+	for(i=0; i+1<LEN(testNumberSrc16); ++i)
+	{
+		for(j=0; j<LEN(testNumberSrc8); ++j)
+		{
+			unsigned int res[6];
+			unsigned int CL=(testNumberSrc8[j]&~16); // i486 Programmers Reference pp.26-264 R/M and flags undefined if count>=OperaSize
+			fprintf(ofp,"0x%08x,0x%08x,0x%08x,\n",testNumberSrc16[i],testNumberSrc16[i+1],CL);
+			TEST_SHLD_SHRD16(res,testNumberSrc16[i],testNumberSrc16[i+1],CL);
+			fprintf(ofp,"0x%08x,0x%08x,0x%08x,0x%08x,0x%08x,0x%08x,\n",res[0],res[1],res[2],res[3],res[4],res[5]);
+		}
+	}
+	fprintf(ofp,"};\n");
+}
 
 int main(void)
 {
@@ -693,6 +726,7 @@ int main(void)
 	GenADC_SBB(ofp);
 	GenBT_MEM_R(ofp);
 	GenDAADAS(ofp);
+	GenSHLDSHRD(ofp);
 	fclose(ofp);
 	return 0;
 }

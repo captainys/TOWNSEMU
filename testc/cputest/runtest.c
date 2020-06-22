@@ -850,6 +850,55 @@ int RunMOV_M_TO_A_A_TO_M(void)
 	return 0;
 }
 
+extern void TEST_SHLD_SHRD32(unsigned int res[6],unsigned int EAX,unsigned int EDX,unsigned int ECX);
+extern void TEST_SHLD_SHRD16(unsigned int res[6],unsigned int EAX,unsigned int EDX,unsigned int ECX);
+
+int RunSHLD_SHRD(void)
+{
+	int i;
+	unsigned int res[6];
+
+	printf("SHLD_SHRD32\n");
+	for(i=0; i<LEN(SHLD_SHRD32); i+=9)
+	{
+		int j;
+		unsigned int *truth=SHLD_SHRD32+i+3;
+		TEST_SHLD_SHRD32(res,SHLD_SHRD32[i],SHLD_SHRD32[i+1],SHLD_SHRD32[i+2]);
+		for(j=0; j<6; ++j)
+		{
+			if(truth[j]!=res[j])
+			{
+				printf("Error!\n");
+				printf("Source %08x %08x %08x\n",SHLD_SHRD32[i],SHLD_SHRD32[i+1],SHLD_SHRD32[i+2]);
+				printf("Returned %08x %08x %08x %08x %08x %08x\n",res[0],res[1],res[2],res[3],res[4],res[5]);
+				printf("Correct  %08x %08x %08x %08x %08x %08x\n",truth[0],truth[1],truth[2],truth[3],truth[4],truth[5]);
+				return 1;
+			}
+		}
+	}
+
+	printf("SHLD_SHRD16\n");
+	for(i=0; i<LEN(SHLD_SHRD16); i+=9)
+	{
+		int j;
+		unsigned int *truth=SHLD_SHRD16+i+3;
+		TEST_SHLD_SHRD16(res,SHLD_SHRD16[i],SHLD_SHRD16[i+1],SHLD_SHRD16[i+2]);
+		for(j=0; j<6; ++j)
+		{
+			if(truth[j]!=res[j])
+			{
+				printf("Error!\n");
+				printf("Source %08x %08x %08x\n",SHLD_SHRD16[i],SHLD_SHRD16[i+1],SHLD_SHRD16[i+2]);
+				printf("Returned %08x %08x %08x %08x %08x %08x\n",res[0],res[1],res[2],res[3],res[4],res[5]);
+				printf("Correct  %08x %08x %08x %08x %08x %08x\n",truth[0],truth[1],truth[2],truth[3],truth[4],truth[5]);
+				return 1;
+			}
+		}
+	}
+
+	return 0;
+}
+
 int main(int ac,char *av[])
 {
 	int nFail=0;
@@ -867,6 +916,7 @@ int main(int ac,char *av[])
 	nFail+=RunADC_SBB();
 	nFail+=RunDAA_DAS();
 	nFail+=RunMOV_M_TO_A_A_TO_M();
+	nFail+=RunSHLD_SHRD();
 	printf("ARPL not covered.\n");
 	printf("CALL and JMP not covered.\n");
 

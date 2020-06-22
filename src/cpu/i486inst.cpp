@@ -6812,71 +6812,74 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{
 				++clocksPassed;
 			}
-			auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
-			auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize/8);
-
-			unsigned long long int concat;
-			switch(opCodeRenumberTable[inst.opCode])
+			if(0!=count)
 			{
-			case I486_RENUMBER_SHLD_RM_I8://       0x0FA4,
-			case I486_RENUMBER_SHLD_RM_CL://       0x0FA5,
-				if(16==inst.operandSize)
+				auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+				auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize/8);
+
+				unsigned long long int concat;
+				switch(opCodeRenumberTable[inst.opCode])
 				{
-					auto v1=value1.GetAsWord();
-					concat=(v1<<16)|value2.GetAsWord();
-					concat>>=(16-count);
-					value1.MakeWord(concat&0xFFFF);
-					StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
-					SetCF(0!=(concat&0x10000));
-					SetOF((concat&0x8000)!=(v1&0x8000));
-					SetZF(0==(concat&0xFFFF));
-					SetSF(0!=(concat&0x8000));
-					SetPF(CheckParity(concat&0xFF));
+				case I486_RENUMBER_SHLD_RM_I8://       0x0FA4,
+				case I486_RENUMBER_SHLD_RM_CL://       0x0FA5,
+					if(16==inst.operandSize)
+					{
+						auto v1=value1.GetAsWord();
+						concat=(v1<<16)|value2.GetAsWord();
+						concat>>=(16-count);
+						value1.MakeWord(concat&0xFFFF);
+						StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+						SetCF(0!=(concat&0x10000));
+						SetOF((concat&0x8000)!=(v1&0x8000));
+						SetZF(0==(concat&0xFFFF));
+						SetSF(0!=(concat&0x8000));
+						SetPF(CheckParity(concat&0xFF));
+					}
+					else
+					{
+						unsigned long long int v1=value1.GetAsDword();
+						concat=(v1<<32)|value2.GetAsDword();
+						concat>>=(32-count);
+						value1.MakeDword(concat&0xFFFFFFFF);
+						StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+						SetCF(0!=(concat&0x100000000LL));
+						SetOF((concat&0x80000000)!=(v1&0x80000000));
+						SetZF(0==(concat&0xFFFFFFFF));
+						SetSF(0!=(concat&0x80000000));
+						SetPF(CheckParity(concat&0xFF));
+					}
+					break;
+				case I486_RENUMBER_SHRD_RM_I8://       0x0FAC,
+				case I486_RENUMBER_SHRD_RM_CL://       0x0FAD,
+					if(16==inst.operandSize)
+					{
+						auto v1=value1.GetAsWord();
+						concat=(value2.GetAsWord()<<16)|v1;
+						SetCF(0!=count && 0!=(concat&(1LL<<(count-1))));
+						concat>>=count;
+						value1.MakeWord(concat&0xffff);
+						StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+						SetOF((concat&0x8000)!=(v1&0x8000));
+						SetZF(0==(concat&0xFFFF));
+						SetSF(0!=(concat&0x8000));
+						SetPF(CheckParity(concat&0xFF));
+					}
+					else
+					{
+						unsigned long long int v1=value1.GetAsDword();
+						concat=value2.GetAsDword();
+						concat=(concat<<32)|v1;
+						SetCF(0!=count && 0!=(concat&(1LL<<(count-1))));
+						concat>>=count;
+						value1.MakeDword(concat&0xffffffff);
+						StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+						SetOF((concat&0x80000000)!=(v1&0x80000000));
+						SetZF(0==(concat&0xFFFFFFFF));
+						SetSF(0!=(concat&0x80000000));
+						SetPF(CheckParity(concat&0xFF));
+					}
+					break;
 				}
-				else
-				{
-					unsigned long long int v1=value1.GetAsDword();
-					concat=(v1<<32)|value2.GetAsDword();
-					concat>>=(32-count);
-					value1.MakeDword(concat&0xFFFFFFFF);
-					StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
-					SetCF(0!=(concat&0x100000000LL));
-					SetOF((concat&0x80000000)!=(v1&0x80000000));
-					SetZF(0==(concat&0xFFFFFFFF));
-					SetSF(0!=(concat&0x80000000));
-					SetPF(CheckParity(concat&0xFF));
-				}
-				break;
-			case I486_RENUMBER_SHRD_RM_I8://       0x0FAC,
-			case I486_RENUMBER_SHRD_RM_CL://       0x0FAD,
-				if(16==inst.operandSize)
-				{
-					auto v1=value1.GetAsWord();
-					concat=(value2.GetAsWord()<<16)|v1;
-					SetCF(0!=count && 0!=(concat&(1LL<<(count-1))));
-					concat>>=count;
-					value1.MakeWord(concat&0xffff);
-					StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
-					SetOF((concat&0x8000)!=(v1&0x8000));
-					SetZF(0==(concat&0xFFFF));
-					SetSF(0!=(concat&0x8000));
-					SetPF(CheckParity(concat&0xFF));
-				}
-				else
-				{
-					unsigned long long int v1=value1.GetAsDword();
-					concat=value2.GetAsDword();
-					concat=(concat<<32)|v1;
-					SetCF(0!=count && 0!=(concat&(1LL<<(count-1))));
-					concat>>=count;
-					value1.MakeDword(concat&0xffffffff);
-					StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
-					SetOF((concat&0x80000000)!=(v1&0x80000000));
-					SetZF(0==(concat&0xFFFFFFFF));
-					SetSF(0!=(concat&0x80000000));
-					SetPF(CheckParity(concat&0xFF));
-				}
-				break;
 			}
 		}
 		break;
