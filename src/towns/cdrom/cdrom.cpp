@@ -754,7 +754,8 @@ void TownsCDROM::SetStatusQueueForTOC(void)
 		unsigned char secondByte=(trk.trackType==DiscImage::TRACK_AUDIO ? 0 : 0x40);
 		state.PushStatusQueue(0x16,secondByte,0,0);
 
-		auto HSG=DiscImage::MSFtoHSG(trk.start);
+		// F29 Retaliator is expecting trk.start+trk.preGap.
+		auto HSG=DiscImage::MSFtoHSG(trk.start+trk.preGap);
 		HSG+=DiscImage::HSG_BASE;
 		auto MSF=DiscImage::HSGtoMSF(HSG);
 

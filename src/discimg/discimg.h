@@ -127,12 +127,6 @@ public:
 			Add(incoming);
 			return *this;
 		}
-		inline MinSecFrm operator+(const MinSecFrm incoming)
-		{
-			auto ret=*this;
-			ret.Add(incoming);
-			return ret;
-		}
 
 
 		inline void Sub(const MinSecFrm incoming)
@@ -323,7 +317,11 @@ public:
 	static unsigned int BCDToBin(unsigned int bin);
 };
 
-
+inline DiscImage::MinSecFrm operator+(DiscImage::MinSecFrm l,DiscImage::MinSecFrm r)
+{
+	l+=r;
+	return l;
+}
 
 /* } */
 #endif
