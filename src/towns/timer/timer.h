@@ -50,7 +50,7 @@ public:
 			unsigned short counter,counterInitialValue;
 			unsigned short latchedCounter;
 			unsigned short increment;
-			bool OUT;
+			bool OUT,counting;
 			mutable bool latched,bcd;
 
 			unsigned int RL;
@@ -69,6 +69,7 @@ public:
 
 		void Latch(unsigned int ch);
 		unsigned short ReadLatchedCounter(unsigned int ch) const;
+		void SetChannelMode(unsigned int ch,unsigned int mode);
 		void SetChannelCounter(unsigned int ch,unsigned int value);
 		unsigned int ReadChannelCounter(unsigned int ch); // accessLow may flip.  Not to be const.
 		void ProcessControlCommand(unsigned int ch,unsigned int cmd);

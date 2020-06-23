@@ -32,6 +32,7 @@ void TownsTimer::State::Reset(void)
 		ch.lastCmd=0;
 		ch.counterInitialValue=0;
 		ch.counter=0;
+		ch.counting=false;
 		ch.latchedCounter=0;
 		ch.increment=1;
 		ch.bcd=false;
@@ -74,11 +75,19 @@ void TownsTimer::State::SetChannelCounter(unsigned int ch,unsigned int value)
 	{
 		CH.counterInitialValue&=0xff00;
 		CH.counterInitialValue|=(value&0xff);
+		if(0==CH.mode)
+		{
+			CH.counting=false;
+		}
 	}
 	else
 	{
 		CH.counterInitialValue&=0xff;
 		CH.counterInitialValue|=((value&0xff)<<8);
+		if(0==CH.mode)
+		{
+			CH.counting=true;
+		}
 	}
 	switch(CH.mode)
 	{
@@ -101,6 +110,21 @@ void TownsTimer::State::SetChannelCounter(unsigned int ch,unsigned int value)
 		CH.accessLow=(true==CH.accessLow ? false : true);
 	}
 }
+
+void TownsTimer::State::SetChannelMode(unsigned int ch,unsigned int mode)
+{
+	auto &CH=channels[ch&7];
+	CH.mode=mode;
+	if(0==mode)
+	{
+		CH.counting=false;
+	}
+	else
+	{
+		CH.counting=true;
+	}
+}
+
 unsigned int TownsTimer::State::ReadChannelCounter(unsigned int ch) // accessLow may flip.  Not to be const.
 {
 	unsigned int data=0;
@@ -155,32 +179,35 @@ void TownsTimer::State::TickIn(unsigned int nTick)
 		// [12] Source code of Artane's FM Towns emulator project https://github.com/Artanejp
 		// It suggests to take it as 65536.  I follow Artane's implementation.
 		auto &CH=channels[ch];
-		auto increment=nTick*CH.increment;
-		switch(CH.mode)
+		if(true==CH.counting)
 		{
-		case 0:
-			if(CH.counter<=increment)
+			auto increment=nTick*CH.increment;
+			switch(CH.mode)
 			{
-				CH.OUT=true;
-				CH.counter=(0!=CH.counterInitialValue ? CH.counterInitialValue : 65535);
+			case 0:
+				if(CH.counter<=increment)
+				{
+					CH.OUT=true;
+					CH.counter=(0!=CH.counterInitialValue ? CH.counterInitialValue : 65535);
+				}
+				else
+				{
+					CH.counter-=increment;
+				}
+				break;
+			case 3:
+				increment*=2;
+				if(CH.counter<=increment)
+				{
+					CH.OUT=(true==CH.OUT ? false : true);
+					CH.counter=(0!=CH.counterInitialValue ? CH.counterInitialValue : 65535);
+				}
+				else
+				{
+					CH.counter-=increment;
+				}
+				break;
 			}
-			else
-			{
-				CH.counter-=increment;
-			}
-			break;
-		case 3:
-			increment*=2;
-			if(CH.counter<=increment)
-			{
-				CH.OUT=(true==CH.OUT ? false : true);
-				CH.counter=(0!=CH.counterInitialValue ? CH.counterInitialValue : 65535);
-			}
-			else
-			{
-				CH.counter-=increment;
-			}
-			break;
 		}
 	}
 }
@@ -208,12 +235,12 @@ TownsTimer::TownsTimer(class FMTowns *townsPtr,class TownsPIC *picPtr) : Device(
 	//   Confirmed MOD=3 is written to channel 0.
 	//   How come?  My only guess is that FM Towns is not directly using OUT signal from i8253.
 	//   Instead it probably uses rising edge of OUT to flip TM1OUT/SOUND to 1.
-	state.channels[0].mode=3;
-	state.channels[1].mode=0;
-	state.channels[2].mode=3;
-	state.channels[3].mode=3;
-	state.channels[4].mode=3;
-	state.channels[5].mode=3;
+	state.SetChannelMode(0,3);
+	state.SetChannelMode(1,0);
+	state.SetChannelMode(2,3);
+	state.SetChannelMode(3,3);
+	state.SetChannelMode(4,3);
+	state.SetChannelMode(5,3);
 
 	state.channels[4].increment=4;  // Only channel 4 counts up 1.2288MHz.  Others 307.2KHz.
 }
