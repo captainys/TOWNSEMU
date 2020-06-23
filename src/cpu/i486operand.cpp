@@ -554,7 +554,23 @@ std::string i486DX::Operand::DisassembleAsAddr(void) const
 		empty=false;
 	}
 
-	if(0!=offset)
+	if(REG_NULL==baseReg && REG_NULL==indexReg)
+	{
+		switch(offsetBits)
+		{
+		case 8:
+			disasm+=cpputil::Ubtox(offset);
+			break;
+		case 16:
+			disasm+=cpputil::Ustox(offset);
+			break;
+		default:
+			disasm+=cpputil::Uitox(offset);
+			break;
+		}
+		disasm.push_back('H');
+	}
+	else if(0!=offset)
 	{
 		if(true!=empty && 0<=offset)
 		{
@@ -570,22 +586,6 @@ std::string i486DX::Operand::DisassembleAsAddr(void) const
 			break;
 		default:
 			disasm+=cpputil::Itox(offset);
-			break;
-		}
-		disasm.push_back('H');
-	}
-	else if(REG_NULL==baseReg && REG_NULL==indexReg)
-	{
-		switch(offsetBits)
-		{
-		case 8:
-			disasm+=cpputil::Ubtox(offset);
-			break;
-		case 16:
-			disasm+=cpputil::Ustox(offset);
-			break;
-		default:
-			disasm+=cpputil::Uitox(offset);
 			break;
 		}
 		disasm.push_back('H');

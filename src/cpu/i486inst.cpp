@@ -370,10 +370,10 @@ i486DX::Instruction i486DX::FetchInstruction(Operand &op1,Operand &op2,const Seg
 			break;
 
 		case OPSIZE_OVERRIDE:
-			inst.operandSize^=48;
+			inst.operandSize=defOperSize^48;
 			break;
 		case ADDRSIZE_OVERRIDE:
-			inst.addressSize^=48;
+			inst.addressSize=defAddrSize^48;
 			break;
 
 		case FPU_FWAIT:
