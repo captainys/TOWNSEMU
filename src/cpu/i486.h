@@ -1178,17 +1178,17 @@ public:
 	inline void SetCX(unsigned int value)
 	{
 		state.ECX()&=0xffff0000;
-		state.ECX()|=value;
+		state.ECX()|=(value&0xFFFF);
 	}
 	inline void SetCL(unsigned int value)
 	{
 		state.ECX()&=0xffffff00;
-		state.ECX()|=value;
+		state.ECX()|=(value&0xFF);
 	}
 	inline void SetCH(unsigned int value)
 	{
 		state.ECX()&=0xffff00ff;
-		state.ECX()|=(value<<8);
+		state.ECX()|=((value&0xFF)<<8);
 	}
 	inline unsigned int GetCXorECX(unsigned int bits) const
 	{
@@ -1238,17 +1238,17 @@ public:
 	inline void SetDX(unsigned int value)
 	{
 		state.EDX()&=0xffff0000;
-		state.EDX()|=value;
+		state.EDX()|=(value&0xFFFF);
 	}
 	inline void SetDL(unsigned int value)
 	{
 		state.EDX()&=0xffffff00;
-		state.EDX()|=value;
+		state.EDX()|=(value&0xFF);
 	}
 	inline void SetDH(unsigned int value)
 	{
 		state.EDX()&=0xffff00ff;
-		state.EDX()|=(value<<8);
+		state.EDX()|=((value&0xFF)<<8);
 	}
 
 	inline unsigned int GetSI(void) const
