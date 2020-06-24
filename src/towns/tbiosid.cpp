@@ -110,6 +110,91 @@ unsigned int FMTowns::IdentifyTBIOS(unsigned int biosPhysicalBaseAddr) const
 
 	return TBIOS_UNKNOWN;
 }
+
+unsigned int FMTowns::FindTBIOSMouseInfoOffset(unsigned int tbiosVersion,unsigned int biosPhysicalBaseAddr) const
+{
+	switch(tbiosVersion)
+	{
+	case TBIOS_V31L35:
+		{
+			// 0110:00014B2B BF804A0100                MOV     EDI,00014A80H
+
+			// 0110:00014C94 8A6F1C                    MOV     CH,[EDI+1CH]
+			// 0110:00014C97 8B570C                    MOV     EDX,[EDI+0CH]
+			// 0110:00014C9A 0FA4D310                  SHLD    EBX,EDX,10H
+			// 0110:00014C9E 886D1D                    MOV     [EBP+1DH],CH
+			// 0110:00014CA1 66895518                  MOV     [EBP+18H],DX
+			// 0110:00014CA5 66895D14                  MOV     [EBP+14H],BX
+			// 0110:00014CA9 C3                        RET
+
+			const int dist=0x14C94-0x14B2B;
+			const unsigned char rdposCode[]=
+			{
+				0x8A,0x6F,0x1C,0x8B,0x57,0x0C,0x0F,0xA4,0xD3,0x10,0x88,0x6D,0x1D,0x66,0x89,0x55,0x18,0x66,0x89,0x5D,0x14,0xC3,
+			};
+			for(unsigned int ptr=0; ptr<0x30000; ++ptr)
+			{
+				if(0xBF==mem.FetchByte(biosPhysicalBaseAddr+ptr))
+				{
+					bool match=true;
+					for(int j=0; j<sizeof(rdposCode); ++j)
+					{
+						if(rdposCode[j]!=mem.FetchByte(biosPhysicalBaseAddr+ptr+dist+j))
+						{
+							match=false;
+							break;
+						}
+					}
+					if(true==match)
+					{
+						return mem.FetchDword(biosPhysicalBaseAddr+ptr+1);
+					}
+				}
+			}
+		}
+		break;
+	case TBIOS_V31L35_94:
+		{
+			// 0110:000162C8 BF30620100                MOV     EDI,00016230H
+
+			// 0110:0001643C 8A6F1C                    MOV     CH,[EDI+1CH]
+			// 0110:0001643F 8B570C                    MOV     EDX,[EDI+0CH]
+			// 0110:00016442 0FA4D310                  SHLD    EBX,EDX,10H
+			// 0110:00016446 886D1D                    MOV     [EBP+1DH],CH
+			// 0110:00016449 66895518                  MOV     [EBP+18H],DX
+			// 0110:0001644D 66895D14                  MOV     [EBP+14H],BX
+			// 0110:00016451 C3                        RET
+
+			const int dist=0x1643C-0x162C8;
+			const unsigned char rdposCode[]=
+			{
+				0x8A,0x6F,0x1C,0x8B,0x57,0x0C,0x0F,0xA4,0xD3,0x10,0x88,0x6D,0x1D,0x66,0x89,0x55,0x18,0x66,0x89,0x5D,0x14,0xC3,
+			};
+			for(unsigned int ptr=0; ptr<0x30000; ++ptr)
+			{
+				if(0xBF==mem.FetchByte(biosPhysicalBaseAddr+ptr))
+				{
+					bool match=true;
+					for(int j=0; j<sizeof(rdposCode); ++j)
+					{
+						if(rdposCode[j]!=mem.FetchByte(biosPhysicalBaseAddr+ptr+dist+j))
+						{
+							match=false;
+							break;
+						}
+					}
+					if(true==match)
+					{
+						return mem.FetchDword(biosPhysicalBaseAddr+ptr+1);
+					}
+				}
+			}
+		}
+		break;
+	}
+	return 0;
+}
+
 void FMTowns::OnCRTC_HST_Write(void)
 {
 	std::cout << "Write to CRTC-HST register." << std::endl;
@@ -388,8 +473,8 @@ bool FMTowns::GetMouseCoordinate(int &mx,int &my,unsigned int tbiosid) const
 			// 0110:00014CA1 66895518                  MOV     [EBP+18H],DX
 			// 0110:00014CA5 66895D14                  MOV     [EBP+14H],BX
 			// 0110:00014CA9 C3                        RET
-			mx=(int)mem.FetchWord(state.TBIOS_physicalAddr+0x14A80+0x0C);
-			my=(int)mem.FetchWord(state.TBIOS_physicalAddr+0x14A80+0x0E);
+			mx=(int)mem.FetchWord(state.TBIOS_physicalAddr+state.TBIOS_mouseInfoOffset+0x0C);
+			my=(int)mem.FetchWord(state.TBIOS_physicalAddr+state.TBIOS_mouseInfoOffset+0x0E);
 			return true;
 		case TBIOS_V31L35_94:
 			// 0110:000162C8 BF30620100                MOV     EDI,00016230H
@@ -401,8 +486,8 @@ bool FMTowns::GetMouseCoordinate(int &mx,int &my,unsigned int tbiosid) const
 			// 0110:00016449 66895518                  MOV     [EBP+18H],DX
 			// 0110:0001644D 66895D14                  MOV     [EBP+14H],BX
 			// 0110:00016451 C3                        RET
-			mx=(int)mem.FetchWord(state.TBIOS_physicalAddr+0x16230+0x0C);
-			my=(int)mem.FetchWord(state.TBIOS_physicalAddr+0x16230+0x0E);
+			mx=(int)mem.FetchWord(state.TBIOS_physicalAddr+state.TBIOS_mouseInfoOffset+0x0C);
+			my=(int)mem.FetchWord(state.TBIOS_physicalAddr+state.TBIOS_mouseInfoOffset+0x0E);
 			return true;
 		}
 	}

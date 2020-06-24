@@ -161,7 +161,10 @@ public:
 		unsigned int tbiosVersion;
 		bool mouseBIOSActive=false;
 		int mouseDisplayPage=0;
-		unsigned int TBIOS_physicalAddr,MOS_work_linearAddr,MOS_work_physicalAddr;
+		unsigned int TBIOS_physicalAddr=0;
+		unsigned int TBIOS_mouseInfoOffset=0;
+		unsigned int MOS_work_linearAddr=0;
+		unsigned int MOS_work_physicalAddr=0;
 
 		/*! Application-Specific Customization parameters.
 		*/
@@ -316,6 +319,10 @@ public:
 	/*! Identifies TBIOS version.  (In tbiosid.cpp)
 	*/
 	unsigned int IdentifyTBIOS(unsigned int biosPhysicalBaseAddr) const;
+
+
+	unsigned int FindTBIOSMouseInfoOffset(unsigned int tbiosVersion,unsigned int biosPhysicalBaseAddr) const;
+
 
 	/*! Returns a string that corresponds to the TBIOS version for debugging.  (In tbiosid.cpp)
 	*/

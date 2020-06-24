@@ -471,6 +471,7 @@ void FMTowns::ProcessSound(Outside_World *outside_world)
 		cpu.LoadSegmentRegister(CS,0x110,mem);
 		state.TBIOS_physicalAddr=cpu.LinearAddressToPhysicalAddress(CS.baseLinearAddr,mem);
 		state.tbiosVersion=IdentifyTBIOS(state.TBIOS_physicalAddr);
+		state.TBIOS_mouseInfoOffset=FindTBIOSMouseInfoOffset(state.tbiosVersion,state.TBIOS_physicalAddr);
 
 		state.mouseBIOSActive=true;
 		state.mouseDisplayPage=0;
