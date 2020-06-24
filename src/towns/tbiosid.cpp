@@ -347,6 +347,10 @@ void FMTowns::SetMouseButtonState(bool lButton,bool rButton)
 					if(true==lButton)
 					{
 						eventLog.LogLeftButtonDown(state.townsTime,mx,my);
+						if(true==var.debugBreakOnLButtonDown)
+						{
+							debugger.ExternalBreak("Left Button Down");
+						}
 					}
 					else
 					{

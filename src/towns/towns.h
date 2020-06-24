@@ -203,6 +203,7 @@ public:
 		int returnCode=0;
 
 		bool debugBreakOnLButtonUp=false;
+		bool debugBreakOnLButtonDown=false;
 
 		/*! Enable/disable mouse integration.
 		    To disable mouse integration, set this flag false, and call DontControlMouse().

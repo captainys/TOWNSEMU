@@ -162,6 +162,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	breakEventMap["VRAMRW"]=BREAK_ON_VRAMREADWRITE;
 	breakEventMap["CDCCMD"]=BREAK_ON_CDC_COMMAND;
 	breakEventMap["LBUTTONUP"]=BREAK_ON_LBUTTON_UP;
+	breakEventMap["LBUTTONDOWN"]=BREAK_ON_LBUTTON_DOWN;
 	breakEventMap["RETKEY"]=BREAK_ON_RETURN_KEY;
 	breakEventMap["RETURNKEY"]=BREAK_ON_RETURN_KEY;
 	breakEventMap["SCSICMD"]=BREAK_ON_SCSI_COMMAND;
@@ -376,6 +377,7 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "VRAMW" << std::endl;
 	std::cout << "VRAMRW" << std::endl;
 	std::cout << "LBUTTONUP" << std::endl;
+	std::cout << "LBUTTONDOWN" << std::endl;
 	std::cout << "RETKEY" << std::endl;
 	std::cout << "RETURNKEY" << std::endl;
 	std::cout << "SCSICMD" << std::endl;
@@ -1210,6 +1212,9 @@ void TownsCommandInterpreter::Execute_BreakOn(FMTowns &towns,Command &cmd)
 		case BREAK_ON_LBUTTON_UP:
 			towns.var.debugBreakOnLButtonUp=true;
 			break;
+		case BREAK_ON_LBUTTON_DOWN:
+			towns.var.debugBreakOnLButtonDown=true;
+			break;
 		case BREAK_ON_RETURN_KEY:
 			towns.keyboard.debugBreakOnReturnKey=true;
 			break;
@@ -1354,6 +1359,9 @@ void TownsCommandInterpreter::Execute_ClearBreakOn(FMTowns &towns,Command &cmd)
 			break;
 		case BREAK_ON_LBUTTON_UP:
 			towns.var.debugBreakOnLButtonUp=false;
+			break;
+		case BREAK_ON_LBUTTON_DOWN:
+			towns.var.debugBreakOnLButtonDown=false;
 			break;
 		case BREAK_ON_RETURN_KEY:
 			towns.keyboard.debugBreakOnReturnKey=false;

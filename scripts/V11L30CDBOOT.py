@@ -23,7 +23,7 @@ def ExeExtension():
 		return ""
 
 
-def Run():
+def Run(argv):
 	os.chdir(BUILDDIR)
 	subprocess.Popen([
 		"./main_cui/Tsugaru_CUI"+ExeExtension(),
@@ -41,10 +41,10 @@ def Run():
 		"-DONTAUTOSAVECMOS",
 		"-DEBUG",
 		"-PAUSE",
-	]).wait()
+	]+argv).wait()
 
 
 
 if __name__=="__main__":
 	build.Run()
-	Run()
+	Run(sys.argv[1:])
