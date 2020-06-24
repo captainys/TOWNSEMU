@@ -1104,17 +1104,17 @@ public:
 	inline void SetAX(unsigned int value)
 	{
 		state.EAX()&=0xffff0000;
-		state.EAX()|=value;
+		state.EAX()|=(value&0xFFFF);
 	}
 	inline void SetAL(unsigned int value)
 	{
 		state.EAX()&=0xffffff00;
-		state.EAX()|=value;
+		state.EAX()|=(value&0xFF);
 	}
 	inline void SetAH(unsigned int value)
 	{
 		state.EAX()&=0xffff00ff;
-		state.EAX()|=(value<<8);
+		state.EAX()|=((value&0xFF)<<8);
 	}
 
 
@@ -1141,17 +1141,17 @@ public:
 	inline void SetBX(unsigned int value)
 	{
 		state.EBX()&=0xffff0000;
-		state.EBX()|=value;
+		state.EBX()|=(value&0xFFFF);
 	}
 	inline void SetBL(unsigned int value)
 	{
 		state.EBX()&=0xffffff00;
-		state.EBX()|=value;
+		state.EBX()|=(value&0xFF);
 	}
 	inline void SetBH(unsigned int value)
 	{
 		state.EBX()&=0xffff00ff;
-		state.EBX()|=(value<<8);
+		state.EBX()|=((value&0xFF)<<8);
 	}
 
 
