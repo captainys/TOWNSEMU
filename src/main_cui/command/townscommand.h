@@ -150,6 +150,7 @@ public:
 		DUMP_SCHEDULE,
 		DUMP_TIME_BALANCE,
 		DUMP_SPRITE,
+		DUMP_MOUSE,
 	};
 
 	enum

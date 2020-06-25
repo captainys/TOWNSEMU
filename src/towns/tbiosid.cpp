@@ -268,6 +268,8 @@ static inline int ClampStep(int d)
 bool FMTowns::ControlMouse(int hostMouseX,int hostMouseY,unsigned int tbiosid)
 {
 	int mx,my;
+	var.lastKnownMouseX=hostMouseX;
+	var.lastKnownMouseY=hostMouseY;
 	if(true==GetMouseCoordinate(mx,my,tbiosid) && true==var.mouseIntegration)
 	{
 		Vec2i zoom;
@@ -383,6 +385,10 @@ void FMTowns::SetMouseButtonState(bool lButton,bool rButton)
 		{
 			if(p.device==TownsGamePort::MOUSE)
 			{
+				if(true==var.debugBreakOnLButtonDown && p.button[0]!=lButton && true==lButton)
+				{
+					debugger.ExternalBreak("Left Button Down");
+				}
 				if(true==var.debugBreakOnLButtonUp && p.button[0]!=lButton && true!=lButton)
 				{
 					debugger.ExternalBreak("Left Button Up");

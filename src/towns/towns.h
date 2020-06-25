@@ -245,6 +245,9 @@ public:
 		i486DX::FarPointer powerOffAt;
 
 
+		int lastKnownMouseX=0,lastKnownMouseY=0;
+
+
 		i486DX::FarPointer disassemblePointer;
 		Variable();
 		void Reset(void);
@@ -483,6 +486,7 @@ public:
 	std::vector <std::string> GetRealModeIntVectorsText(void) const;
 	void DumpRealModeIntVectors(void) const;
 	std::vector <std::string> GetCallStackText(void) const;
+	std::vector <std::string> GetMouseStatusText(void) const;
 	void PrintCallStack(void) const;
 	void PrintPIC(void) const;
 	void PrintDMAC(void) const;

@@ -115,6 +115,34 @@ void TownsPhysicalMemory::State::Reset(void)
 	case TOWNSIO_FMR_VRAMPAGESEL:
 		state.FMRVRAMWriteOffset=(0!=(data&0x10) ? 0x40000 : 0);
 		break;
+
+	case TOWNSIO_VRAMACCESSCTRL_ADDR: //      0x458, // [2] pp.17,pp.112
+		state.nativeVRAMMaskRegisterLatch=data&1; // [2] pp.112 suggests lower 2 bits are effectve, but actually just 1.
+		break;
+	case TOWNSIO_VRAMACCESSCTRL_DATA_LOW: //  0x45A, // [2] pp.17,pp.112
+		{
+			auto prevMask=cpputil::GetDword(state.nativeVRAMMask);
+			state.nativeVRAMMask[(state.nativeVRAMMaskRegisterLatch<<1)  ]=data&255;
+			state.nativeVRAMMask[(state.nativeVRAMMaskRegisterLatch<<1)+4]=data&255;
+			auto newMask=cpputil::GetDword(state.nativeVRAMMask);
+			if(prevMask!=newMask && (0xffffffff==prevMask || 0xffffffff==newMask))
+			{
+				EnableOrDisableNativeVRAMMask();
+			}
+		}
+		break;
+	case TOWNSIO_VRAMACCESSCTRL_DATA_HIGH: // 0x45B, // [2] pp.17,pp.112
+		{
+			auto prevMask=cpputil::GetDword(state.nativeVRAMMask);
+			state.nativeVRAMMask[(state.nativeVRAMMaskRegisterLatch<<1)+1]=data&255;
+			state.nativeVRAMMask[(state.nativeVRAMMaskRegisterLatch<<1)+5]=data&255;
+			auto newMask=cpputil::GetDword(state.nativeVRAMMask);
+			if(prevMask!=newMask && (0xffffffff==prevMask || 0xffffffff==newMask))
+			{
+				EnableOrDisableNativeVRAMMask();
+			}
+		}
+		break;
 	}
 }
 /* virtual */ unsigned int TownsPhysicalMemory::IOReadByte(unsigned int ioport)
@@ -154,6 +182,12 @@ void TownsPhysicalMemory::State::Reset(void)
 		return (unsigned int)(state.RAM.size()/(1024*1024));
 	case TOWNSIO_FMR_VRAMMASK: // 0xFF81
 		return state.FMRVRAMMask;
+	case TOWNSIO_VRAMACCESSCTRL_ADDR: //      0x458, // [2] pp.17,pp.112
+		return state.nativeVRAMMaskRegisterLatch;
+	case TOWNSIO_VRAMACCESSCTRL_DATA_LOW: //  0x45A, // [2] pp.17,pp.112
+		return state.nativeVRAMMask[(state.nativeVRAMMaskRegisterLatch<<1)  ];
+	case TOWNSIO_VRAMACCESSCTRL_DATA_HIGH: // 0x45B, // [2] pp.17,pp.112
+		return state.nativeVRAMMask[(state.nativeVRAMMaskRegisterLatch<<1)+1];
 	}
 	return data;
 }
@@ -321,6 +355,18 @@ void TownsPhysicalMemory::SetUpMemoryAccess(void)
 	VRAMAccessHighRes1.SetCPUPointer(&cpu);
 	VRAMAccessHighRes2.SetPhysicalMemoryPointer(this);
 	VRAMAccessHighRes2.SetCPUPointer(&cpu);
+
+	VRAMAccessWithMask0.SetPhysicalMemoryPointer(this);
+	VRAMAccessWithMask0.SetCPUPointer(&cpu);
+	VRAMAccessWithMask1.SetPhysicalMemoryPointer(this);
+	VRAMAccessWithMask1.SetCPUPointer(&cpu);
+	VRAMAccessWithMaskHighRes0.SetPhysicalMemoryPointer(this);
+	VRAMAccessWithMaskHighRes0.SetCPUPointer(&cpu);
+	VRAMAccessWithMaskHighRes1.SetPhysicalMemoryPointer(this);
+	VRAMAccessWithMaskHighRes1.SetCPUPointer(&cpu);
+	VRAMAccessWithMaskHighRes2.SetPhysicalMemoryPointer(this);
+	VRAMAccessWithMaskHighRes2.SetCPUPointer(&cpu);
+
 	VRAMAccess0Debug.SetPhysicalMemoryPointer(this);
 	VRAMAccess0Debug.SetCPUPointer(&cpu);
 	VRAMAccess1Debug.SetPhysicalMemoryPointer(this);
@@ -438,6 +484,27 @@ void TownsPhysicalMemory::SetFMRVRAMMappingFlag(bool FMRVRAMMapping)
 	}
 }
 
+void TownsPhysicalMemory::EnableOrDisableNativeVRAMMask(void)
+{
+	auto &mem=*memPtr;
+	if(0xffffffff==cpputil::GetDword(state.nativeVRAMMask))
+	{
+		mem.AddAccess(&VRAMAccess0,TOWNSADDR_VRAM0_BASE,TOWNSADDR_VRAM0_END-1);
+		mem.AddAccess(&VRAMAccess1,TOWNSADDR_VRAM1_BASE,TOWNSADDR_VRAM1_END-1);
+		mem.AddAccess(&VRAMAccessHighRes0,TOWNSADDR_VRAM_HIGHRES0_BASE,TOWNSADDR_VRAM_HIGHRES0_END-1); // For IIMX High Resolution Access.
+		mem.AddAccess(&VRAMAccessHighRes1,TOWNSADDR_VRAM_HIGHRES1_BASE,TOWNSADDR_VRAM_HIGHRES1_END-1); // For IIMX High Resolution Access.
+		mem.AddAccess(&VRAMAccessHighRes2,TOWNSADDR_VRAM_HIGHRES2_BASE,TOWNSADDR_VRAM_HIGHRES2_END-1); // For IIMX High Resolution Access.
+	}
+	else
+	{
+		mem.AddAccess(&VRAMAccessWithMask0,TOWNSADDR_VRAM0_BASE,TOWNSADDR_VRAM0_END-1);
+		mem.AddAccess(&VRAMAccessWithMask1,TOWNSADDR_VRAM1_BASE,TOWNSADDR_VRAM1_END-1);
+		mem.AddAccess(&VRAMAccessWithMaskHighRes0,TOWNSADDR_VRAM_HIGHRES0_BASE,TOWNSADDR_VRAM_HIGHRES0_END-1); // For IIMX High Resolution Access.
+		mem.AddAccess(&VRAMAccessWithMaskHighRes1,TOWNSADDR_VRAM_HIGHRES1_BASE,TOWNSADDR_VRAM_HIGHRES1_END-1); // For IIMX High Resolution Access.
+		mem.AddAccess(&VRAMAccessWithMaskHighRes2,TOWNSADDR_VRAM_HIGHRES2_BASE,TOWNSADDR_VRAM_HIGHRES2_END-1); // For IIMX High Resolution Access.
+	}
+}
+
 std::vector <std::string> TownsPhysicalMemory::GetStatusText(void) const
 {
 	std::vector <std::string> text;
@@ -478,6 +545,10 @@ std::vector <std::string> TownsPhysicalMemory::GetStatusText(void) const
 	{
 		text.back()+="Main RAM";
 	}
+
+	text.push_back("");
+	text.back()="Native VRAM Mask:";
+	text.back()+=cpputil::Uitox(cpputil::GetDword(state.nativeVRAMMask));
 
 	return text;
 }

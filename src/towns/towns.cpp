@@ -228,6 +228,10 @@ FMTowns::FMTowns() :
 	io.AddDevice(&physMem,TOWNSIO_FMR_VRAMDISPLAYMODE);
 	io.AddDevice(&physMem,TOWNSIO_FMR_VRAMPAGESEL);
 	io.AddDevice(&physMem,TOWNSIO_TVRAM_WRITE);
+	io.AddDevice(&physMem,TOWNSIO_VRAMACCESSCTRL_ADDR); //      0x458, // [2] pp.17,pp.112
+	io.AddDevice(&physMem,TOWNSIO_VRAMACCESSCTRL_DATA_LOW); //  0x45A, // [2] pp.17,pp.112
+	io.AddDevice(&physMem,TOWNSIO_VRAMACCESSCTRL_DATA_HIGH); // 0x45B, // [2] pp.17,pp.112
+
 
 
 	io.AddDevice(&cdrom,TOWNSIO_CDROM_MASTER_CTRL_STATUS);
@@ -705,6 +709,62 @@ void FMTowns::PrintStatus(void) const
 		std::cout << debugger.externalBreakReason << std::endl;
 	}
 	PrintDisassembly();
+}
+
+std::vector <std::string> FMTowns::GetMouseStatusText(void) const
+{
+	std::vector <std::string> text;
+
+	text.push_back("");
+	text.back()+="Raw Coord (1X scale): (";
+	text.back()+=cpputil::Itoa(var.lastKnownMouseX);
+	text.back()+=",";
+	text.back()+=cpputil::Itoa(var.lastKnownMouseY);
+	text.back()+=")";
+
+	unsigned int VRAMSize=(crtc.InSinglePageMode() ? 0x80000 : 0x40000);
+
+	for(unsigned int page=0; page<(crtc.InSinglePageMode() ? 1 : 2); ++page)
+	{
+		text.push_back("");
+		text.back()+="On Page "+cpputil::Ubtox(page);
+
+		auto zoom=crtc.GetPageZoom(page);
+		auto mx=var.lastKnownMouseX;
+		auto my=var.lastKnownMouseY;
+		if(0<zoom.x())
+		{
+			mx/=zoom.x();
+		}
+		if(0<zoom.y())
+		{
+			my/=zoom.y();
+		}
+
+		auto VRAMoffset=crtc.GetPageVRAMAddressOffset(state.mouseDisplayPage);
+		auto bytesPerLine=crtc.GetPageBytesPerLine(state.mouseDisplayPage);
+		if(0!=bytesPerLine)
+		{
+			unsigned int VRAMHeight=VRAMSize/bytesPerLine;
+			mx+=VRAMoffset/bytesPerLine;
+			my%=VRAMHeight;
+		}
+
+		text.push_back("");
+		text.back()+="(";
+		text.back()+=cpputil::Itoa(mx);
+		text.back()+=",";
+		text.back()+=cpputil::Itoa(my);
+		text.back()+=")  ";
+
+		unsigned int VRAMAddr=0x40000*page;
+		VRAMAddr+=bytesPerLine*my;
+		VRAMAddr+=crtc.GetPageBitsPerPixel(page)*mx/8;
+		text.back()+=cpputil::Uitox(VRAMAddr);
+		text.back()+="H";
+	}
+
+	return text;
 }
 
 /* static */ void FMTowns::MakeINTInfo(class i486SymbolTable &symTable)

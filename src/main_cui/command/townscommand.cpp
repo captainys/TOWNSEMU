@@ -144,6 +144,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	dumpableMap["SCHEDULE"]=DUMP_SCHEDULE;
 	dumpableMap["TIMEBALANCE"]=DUMP_TIME_BALANCE;
 	dumpableMap["SPRITE"]=DUMP_SPRITE;
+	dumpableMap["MOUSE"]=DUMP_MOUSE;
 
 
 	breakEventMap["ICW1"]=   BREAK_ON_PIC_IWC1;
@@ -354,6 +355,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Device call-back schedule." << std::endl;
 	std::cout << "SPRITE" << std::endl;
 	std::cout << "  Sprite status." << std::endl;
+	std::cout << "MOUSE" << std::endl;
+	std::cout << "  Mouse status." << std::endl;
 
 	std::cout << "" << std::endl;
 
@@ -1031,6 +1034,12 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 			break;
 		case DUMP_SPRITE:
 			for(auto str : towns.sprite.GetStatusText(towns.physMem.state.spriteRAM.data()))
+			{
+				std::cout << str << std::endl;
+			}
+			break;
+		case DUMP_MOUSE:
+			for(auto str : towns.GetMouseStatusText())
 			{
 				std::cout << str << std::endl;
 			}

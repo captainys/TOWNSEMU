@@ -117,6 +117,15 @@ public:
 	virtual void StoreDword(unsigned int physAddr,unsigned int data);
 };
 
+template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END>
+class TownsVRAMAccessWithMaskTemplate : public TownsVRAMAccessTemplate <VRAMADDR_BASE,VRAMADDR_END>
+{
+public:
+	virtual void StoreByte(unsigned int physAddr,unsigned char data);
+	virtual void StoreWord(unsigned int physAddr,unsigned int data);
+	virtual void StoreDword(unsigned int physAddr,unsigned int data);
+};
+
 class TownsSpriteRAMAccess : public TownsMemAccess
 {
 public:
@@ -277,6 +286,9 @@ public:
 		unsigned int FMRDisplayMode;
 		unsigned int FMRVRAMWriteOffset;
 
+		unsigned int nativeVRAMMaskRegisterLatch=0;
+		unsigned char nativeVRAMMask[8]={0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff}; // Repeat twice for faster access.
+
 		std::vector <unsigned char> RAM;
 		std::vector <unsigned char> VRAM;
 		std::vector <unsigned char> CVRAM;
@@ -318,6 +330,12 @@ public:
 	TownsVRAMAccessTemplate <TOWNSADDR_VRAM_HIGHRES0_BASE,TOWNSADDR_VRAM_HIGHRES0_END> VRAMAccessHighRes0;
 	TownsVRAMAccessTemplate <TOWNSADDR_VRAM_HIGHRES1_BASE,TOWNSADDR_VRAM_HIGHRES1_END> VRAMAccessHighRes1;
 	TownsVRAMAccessTemplate <TOWNSADDR_VRAM_HIGHRES2_BASE,TOWNSADDR_VRAM_HIGHRES2_END> VRAMAccessHighRes2;
+
+	TownsVRAMAccessWithMaskTemplate <TOWNSADDR_VRAM0_BASE        ,TOWNSADDR_VRAM0_END        > VRAMAccessWithMask0;
+	TownsVRAMAccessWithMaskTemplate <TOWNSADDR_VRAM1_BASE        ,TOWNSADDR_VRAM1_END        > VRAMAccessWithMask1;
+	TownsVRAMAccessWithMaskTemplate <TOWNSADDR_VRAM_HIGHRES0_BASE,TOWNSADDR_VRAM_HIGHRES0_END> VRAMAccessWithMaskHighRes0;
+	TownsVRAMAccessWithMaskTemplate <TOWNSADDR_VRAM_HIGHRES1_BASE,TOWNSADDR_VRAM_HIGHRES1_END> VRAMAccessWithMaskHighRes1;
+	TownsVRAMAccessWithMaskTemplate <TOWNSADDR_VRAM_HIGHRES2_BASE,TOWNSADDR_VRAM_HIGHRES2_END> VRAMAccessWithMaskHighRes2;
 
 	TownsMemAccessDebug <TownsVRAMAccessTemplate <TOWNSADDR_VRAM0_BASE        ,TOWNSADDR_VRAM0_END        > > VRAMAccess0Debug;
 	TownsMemAccessDebug <TownsVRAMAccessTemplate <TOWNSADDR_VRAM1_BASE        ,TOWNSADDR_VRAM1_END        > > VRAMAccess1Debug;
@@ -379,6 +397,15 @@ public:
 	/*!
 	*/
 	void SetFMRVRAMMappingFlag(bool FMRVRAMMapping);
+
+	/*! Enable or disable Native VRAM Mask depending on the mask.
+	    It resets VRAM access objects.
+	    Called from IOWriteByte when native VRAM mask changes from/to 0xFFFFFFFF.
+	    VRAM Access Mask is a rarely used feature, and always keeping it enabled poses a serious performance hit.
+	    VRAM access object must only consider when the mask is not 0xFFFFFFFF.
+	    Solution is making two sets of VRAM-access objects one without mask and one with mask, and switching only when necessary.
+	*/
+	void EnableOrDisableNativeVRAMMask(void);
 
 	virtual void IOWriteByte(unsigned int ioport,unsigned int data);
 	virtual unsigned int IOReadByte(unsigned int ioport);
@@ -487,6 +514,48 @@ void TownsVRAMAccessTemplate <VRAMADDR_BASE,VRAMADDR_END>::StoreDword(unsigned i
 	else if(offset<VRAMADDR_END-VRAMADDR_BASE)
 	{
 		state.VRAM[offset]=data;
+	}
+}
+
+
+
+template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END>
+void TownsVRAMAccessWithMaskTemplate<VRAMADDR_BASE,VRAMADDR_END>::StoreByte(unsigned int physAddr,unsigned char data)
+{
+	auto &state=physMemPtr->state;
+	auto offset=physAddr-VRAMADDR_BASE;
+	if(offset<VRAMADDR_END-VRAMADDR_BASE)
+	{
+		unsigned char mask=physMemPtr->state.nativeVRAMMask[physAddr&3];
+		unsigned char nega=~mask;
+		state.VRAM[offset]&=nega;
+		state.VRAM[offset]|=(data&mask);
+	}
+}
+template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END>
+void TownsVRAMAccessWithMaskTemplate<VRAMADDR_BASE,VRAMADDR_END>::StoreWord(unsigned int physAddr,unsigned int data)
+{
+	auto &state=physMemPtr->state;
+	auto offset=physAddr-VRAMADDR_BASE;
+	if(offset<VRAMADDR_END-VRAMADDR_BASE-1)
+	{
+		unsigned short mask=cpputil::GetWord(physMemPtr->state.nativeVRAMMask+(physAddr&3));
+		unsigned short nega=~mask;
+		unsigned short vram=cpputil::GetWord(state.VRAM.data()+offset);
+		cpputil::PutWord(state.VRAM.data()+offset,(unsigned short)((vram&nega)|(data&mask)));
+	}
+}
+template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END>
+void TownsVRAMAccessWithMaskTemplate<VRAMADDR_BASE,VRAMADDR_END>::StoreDword(unsigned int physAddr,unsigned int data)
+{
+	auto &state=physMemPtr->state;
+	auto offset=physAddr-VRAMADDR_BASE;
+	if(offset<VRAMADDR_END-VRAMADDR_BASE-3)
+	{
+		unsigned int mask=cpputil::GetDword(physMemPtr->state.nativeVRAMMask+(physAddr&3));
+		unsigned int nega=~mask;
+		unsigned int vram=cpputil::GetDword(state.VRAM.data()+offset);
+		cpputil::PutDword(state.VRAM.data()+offset,(vram&nega)|(data&mask));
 	}
 }
 
