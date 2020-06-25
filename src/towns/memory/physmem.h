@@ -522,11 +522,11 @@ void TownsVRAMAccessTemplate <VRAMADDR_BASE,VRAMADDR_END>::StoreDword(unsigned i
 template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END>
 void TownsVRAMAccessWithMaskTemplate<VRAMADDR_BASE,VRAMADDR_END>::StoreByte(unsigned int physAddr,unsigned char data)
 {
-	auto &state=physMemPtr->state;
+	auto &state=this->physMemPtr->state;
 	auto offset=physAddr-VRAMADDR_BASE;
 	if(offset<VRAMADDR_END-VRAMADDR_BASE)
 	{
-		unsigned char mask=physMemPtr->state.nativeVRAMMask[physAddr&3];
+		unsigned char mask=state.nativeVRAMMask[physAddr&3];
 		unsigned char nega=~mask;
 		state.VRAM[offset]&=nega;
 		state.VRAM[offset]|=(data&mask);
@@ -535,11 +535,11 @@ void TownsVRAMAccessWithMaskTemplate<VRAMADDR_BASE,VRAMADDR_END>::StoreByte(unsi
 template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END>
 void TownsVRAMAccessWithMaskTemplate<VRAMADDR_BASE,VRAMADDR_END>::StoreWord(unsigned int physAddr,unsigned int data)
 {
-	auto &state=physMemPtr->state;
+	auto &state=this->physMemPtr->state;
 	auto offset=physAddr-VRAMADDR_BASE;
 	if(offset<VRAMADDR_END-VRAMADDR_BASE-1)
 	{
-		unsigned short mask=cpputil::GetWord(physMemPtr->state.nativeVRAMMask+(physAddr&3));
+		unsigned short mask=cpputil::GetWord(state.nativeVRAMMask+(physAddr&3));
 		unsigned short nega=~mask;
 		unsigned short vram=cpputil::GetWord(state.VRAM.data()+offset);
 		cpputil::PutWord(state.VRAM.data()+offset,(unsigned short)((vram&nega)|(data&mask)));
@@ -548,11 +548,11 @@ void TownsVRAMAccessWithMaskTemplate<VRAMADDR_BASE,VRAMADDR_END>::StoreWord(unsi
 template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END>
 void TownsVRAMAccessWithMaskTemplate<VRAMADDR_BASE,VRAMADDR_END>::StoreDword(unsigned int physAddr,unsigned int data)
 {
-	auto &state=physMemPtr->state;
+	auto &state=this->physMemPtr->state;
 	auto offset=physAddr-VRAMADDR_BASE;
 	if(offset<VRAMADDR_END-VRAMADDR_BASE-3)
 	{
-		unsigned int mask=cpputil::GetDword(physMemPtr->state.nativeVRAMMask+(physAddr&3));
+		unsigned int mask=cpputil::GetDword(state.nativeVRAMMask+(physAddr&3));
 		unsigned int nega=~mask;
 		unsigned int vram=cpputil::GetDword(state.VRAM.data()+offset);
 		cpputil::PutDword(state.VRAM.data()+offset,(vram&nega)|(data&mask));
