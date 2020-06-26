@@ -359,3 +359,19 @@ add_test(
 		000C:0000263B
 		-DONTAUTOSAVECMOS
 )
+
+add_test(
+ 	NAME F29_AUTODEMO
+	COMMAND
+		${TARGET_NAME}
+		"${CMAKE_SOURCE_DIR}/../../TOWNSEMU_TEST/ROM_MX"
+		-CD
+		"${DISC_IMAGE_DIR}/F29Retaliator.cue"
+		-EVTLOG
+		"${CMAKE_SOURCE_DIR}/../testdata/eventLog/f29autodemo.txt"
+		-DEBUG
+		-UNITTEST
+		-POWEROFFAT
+		0044:00001077
+		-DONTAUTOSAVECMOS
+)

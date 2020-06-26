@@ -65,6 +65,8 @@ void TownsEventLog::BeginPlayback(void)
 		return "FILE_OPEN";
 	case EVT_FILE_EXEC:  // INT 21H AH=4BH
 		return "FILE_EXEC";
+	case EVT_KEYCODE:
+		return "KEYCODE";
 	};
 	return "?";
 }
@@ -198,6 +200,19 @@ void TownsEventLog::LogFileExec(long long int townsTime,std::string fName)
 		events.back().fName=fName;
 	}
 }
+void TownsEventLog::LogKeyCode(long long int townsTime,unsigned char keyCode1,unsigned char keyCode2)
+{
+	const int eventType=EVT_KEYCODE;
+	if(MODE_RECORDING==mode)
+	{
+		events.push_back(Event());
+		events.back().t=std::chrono::system_clock::now();
+		events.back().townsTime=townsTime;
+		events.back().eventType=eventType;
+		events.back().keyCode[0]=keyCode1;
+		events.back().keyCode[1]=keyCode2;
+	}
+}
 
 std::vector <std::string> TownsEventLog::GetText(void) const
 {
@@ -233,6 +248,12 @@ std::vector <std::string> TownsEventLog::GetText(void) const
 		case EVT_FILE_EXEC:  // INT 21H AH=4BH
 			text.push_back("FNAME ");
 			text.back()+=e.fName;
+			break;
+		case EVT_KEYCODE:
+			text.push_back("KEYCODE ");
+			text.back()+=cpputil::Ubtox(e.keyCode[0]);
+			text.back()+=" ";
+			text.back()+=cpputil::Ubtox(e.keyCode[1]);
 			break;
 		}
 	}
@@ -335,6 +356,20 @@ bool TownsEventLog::LoadEventLog(std::string fName)
 					{
 						events.back().mos[0]=cpputil::Atoi(argv[1].c_str());
 						events.back().mos[1]=cpputil::Atoi(argv[2].c_str());
+					}
+					else
+					{
+						std::cout << "Too few arguments" << std::endl;
+						std::cout << "  " << line << std::endl;
+						return false;
+					}
+				}
+				else if("KEYCODE"==argv[0])
+				{
+					if(3<=argv.size())
+					{
+						events.back().keyCode[0]=cpputil::Xtoi(argv[1].c_str());
+						events.back().keyCode[1]=cpputil::Xtoi(argv[2].c_str());
 					}
 					else
 					{
@@ -471,6 +506,15 @@ void TownsEventLog::Playback(class FMTowns &towns)
 
 			case EVT_FILE_OPEN:  // INT 21H AH=3DH
 			case EVT_FILE_EXEC:  // INT 21H AH=4BH
+				break;
+
+			case EVT_KEYCODE:
+				if(dt<=tPassed)
+				{
+					towns.keyboard.PushFifo(playbackPtr->keyCode[0],playbackPtr->keyCode[1]);
+					playbackPtr->tPlayed=now;
+					++playbackPtr;
+				}
 				break;
 			}
 		}

@@ -45,6 +45,7 @@ public:
 		EVT_TBIOS_MOS_END,
 		EVT_FILE_OPEN,  // INT 21H AH=3DH
 		EVT_FILE_EXEC,  // INT 21H AH=4BH
+		EVT_KEYCODE,
 	NUMBER_OF_EVENT_TYPES
 	};
 
@@ -57,6 +58,7 @@ public:
 		int eventType;
 		Vec2i mos;
 		std::string fName;
+		unsigned char keyCode[2];
 	};
 
 	int mode=MODE_NONE;
@@ -118,6 +120,7 @@ public:
 	void LogRightButtonUp(long long int townsTime,int mx,int my);
 	void LogFileOpen(long long int townsTime,std::string fName);
 	void LogFileExec(long long int townsTime,std::string fName);
+	void LogKeyCode(long long int townsTime,unsigned char keyCode1,unsigned char keyCode2);
 
 	std::vector <std::string> GetText(void) const;
 
