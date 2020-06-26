@@ -150,6 +150,66 @@ M 0
 /end
 /begin0
 T 1
+* 0000000C:0000CF5A
+# 
+R 
+L CDPLAYER:Monitor Current Position
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 0000000C:0000CF91
+# 
+R 
+L CDPLAYER:Copy Playing Track and In-Track Time
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000000C:0000CFA6
+# CDPLAYER:Playing Track
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000000C:0000CFB9
+# CDPLAYER:In-Track Time
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 0000000C:0000D21B
+# 
+R 
+L CDPLAYER:INT 93H AX=53C0H Read SubQ
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 0000000C:0000D23C
+# 
+R 
+L CDPLAYER:BIOS error to ? error code
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
 * 00000110:00000280
 # 
 R 
@@ -834,6 +894,16 @@ T 2
 # 
 R 
 L CDROM:Return with error code
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00000256:000023FF
+# 
+R 
+L ERREND
 P 
 % 0
 M 0

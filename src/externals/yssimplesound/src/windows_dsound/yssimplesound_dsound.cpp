@@ -386,6 +386,10 @@ void YsSoundPlayer::SoundData::APISpecificDataPerSoundData::CreateBuffer(LPDIREC
 	// I can play sound when the window loses focus!
 	desc.dwFlags=DSBCAPS_CTRLVOLUME|DSBCAPS_LOCDEFER|DSBCAPS_GLOBALFOCUS;
 	desc.dwBufferBytes=dat.SizeInByte();
+	if(DSBSIZE_MAX<desc.dwBufferBytes)
+	{
+		desc.dwBufferBytes=DSBSIZE_MAX;
+	}
 	desc.dwReserved=0;
 	desc.lpwfxFormat=&fmt;
 	desc.guid3DAlgorithm=GUID_NULL;
