@@ -1,7 +1,7 @@
 set(TARGET_NAME "Tsugaru_GUI")
 set(IS_LIBRARY_PROJECT 0)
 set(EXE_TYPE MACOSX_BUNDLE)
-set(LIB_DEPENDENCY fslazywindow ysgl fsguilib fsguilib_gl2 townsdef townsprofile)
+set(LIB_DEPENDENCY fslazywindow ysgl fsguilib fsguifiledialog fsguilib_gl1 townsdef townsprofile)
 set(INCLUDE_DEPENDENCY)
 set(OWN_HEADER_PATH .)
 set(SINGLE_TARGET 1)
@@ -162,12 +162,15 @@ set(SRCS
 ${platform_SRCS}
 fsguiapp.cpp
 fsguimain.cpp
+profiledlg.h
+profiledlg.cpp
 singleton.cpp
 )
 
 set(HEADERS
 ${platform_HEADERS}
 fsguiapp.h
+profiledlg.h
 )
 
 

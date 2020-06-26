@@ -63,6 +63,7 @@ public:
 	virtual void Draw(void);
 	virtual bool NeedRedraw(void) const;
 	virtual bool MustTerminate(void) const;
+	virtual long long int GetMinimumSleepPerInterval(void) const;
 };
 
 FsLazyWindowApplication::FsLazyWindowApplication()
@@ -171,3 +172,7 @@ FsLazyWindowApplication *FsLazyWindowApplication::currentApplication=nullptr;
 	return FsLazyWindowApplication::currentApplication;
 }
 
+/* virtual */ long long int FsLazyWindowApplication::GetMinimumSleepPerInterval(void) const
+{
+	return 60;
+}

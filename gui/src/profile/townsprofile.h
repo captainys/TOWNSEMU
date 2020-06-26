@@ -20,6 +20,7 @@ public:
 	std::string FDImgFile[2][NUM_STANDBY_FDIMG];
 	std::string SCSIImgFile[MAX_NUM_SCSI_DEVICE];
 	unsigned int bootKeyComb=BOOT_KEYCOMB_NONE;
+	bool autoStart;
 
 	void CleanUp(void);
 	std::vector <std::string> Serialize(void) const;

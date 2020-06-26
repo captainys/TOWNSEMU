@@ -53,6 +53,7 @@ FsGuiMainCanvas::FsGuiMainCanvas()
 {
 	appMustTerminate=YSFALSE;
 	mainMenu=nullptr;
+	profileDlg=new ProfileDialog;
 }
 
 FsGuiMainCanvas::~FsGuiMainCanvas()
@@ -60,6 +61,7 @@ FsGuiMainCanvas::~FsGuiMainCanvas()
 	// The following two lines ensure that all self-destructive dialogs are cleaned. 2015/03/18
 	RemoveDialogAll();
 	PerformScheduledDeletion();
+	delete profileDlg;
 
 	DeleteMainMenu();
 }
@@ -67,6 +69,8 @@ FsGuiMainCanvas::~FsGuiMainCanvas()
 void FsGuiMainCanvas::Initialize(int argc,char *argv[])
 {
 	MakeMainMenu();
+	profileDlg->Make();
+	AddDialog(profileDlg);
 
 	YsDisregardVariable(argc);
 	YsDisregardVariable(argv);

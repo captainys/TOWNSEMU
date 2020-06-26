@@ -32,6 +32,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* { */
 
 #include <fsgui.h>
+#include "profiledlg.h"
 
 class FsGuiMainCanvas : public FsGuiCanvas
 {
@@ -61,6 +62,7 @@ public:
 	//   (2) Add an initialization in the constructor of the aplication.
 	//   (3) Add deletion in the destructor of the application.
 	//   (4) Add RemoveDialog in Edit_ClearUIIMode
+	ProfileDialog *profileDlg;
 
 
 	// [Modal dialogs]
