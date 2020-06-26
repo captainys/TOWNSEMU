@@ -5,6 +5,8 @@
 #include <vector>
 #include <string>
 
+#include "townsdef.h"
+
 class TownsProfile
 {
 public:
