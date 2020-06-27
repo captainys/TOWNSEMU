@@ -87,7 +87,7 @@ FsLazyWindowApplication::~FsLazyWindowApplication()
 {
 	opt.x0=0;
 	opt.y0=0;
-	opt.wid=1280;
+	opt.wid=960;
 	opt.hei=400;
 }
 

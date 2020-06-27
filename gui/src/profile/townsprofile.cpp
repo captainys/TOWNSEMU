@@ -6,6 +6,10 @@
 
 
 
+TownsProfile::TownsProfile()
+{
+	CleanUp();
+}
 void TownsProfile::CleanUp(void)
 {
 	ROMDir="";
@@ -17,6 +21,14 @@ void TownsProfile::CleanUp(void)
 	for(auto &f : FDImgFile[1])
 	{
 		f="";
+	}
+	for(auto &wp : FDWriteProtect[0])
+	{
+		wp=false;
+	}
+	for(auto &wp : FDWriteProtect[1])
+	{
+		wp=false;
 	}
 	for(auto &f : SCSIImgFile)
 	{
@@ -53,6 +65,13 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 			text.back().push_back('\"');
 			text.back()+=FDImgFile[i][j];
 			text.back().push_back('\"');
+
+			text.push_back("FDWPROT_ ");
+			text.back().push_back('0'+i);
+			text.back().push_back(' ');
+			text.back().push_back('0'+j);
+			text.back().push_back(' ');
+			text.back().push_back(FDWriteProtect[i][j] ? '1' : '0');
 		}
 	}
 	for(int i=0; i<MAX_NUM_SCSI_DEVICE; ++i)
@@ -118,6 +137,18 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 				if(0<=drive && drive<2 && 0<=fileNum && fileNum<NUM_STANDBY_FDIMG)
 				{
 					FDImgFile[drive][fileNum]=argv[3].c_str();
+				}
+			}
+		}
+		else if(0==argv[0].STRCMP("FDWPROT_"))
+		{
+			if(4<=argv.size())
+			{
+				int drive=argv[1].Atoi();
+				int fileNum=argv[2].Atoi();
+				if(0<=drive && drive<2 && 0<=fileNum && fileNum<NUM_STANDBY_FDIMG)
+				{
+					FDWriteProtect[drive][fileNum]=(0!=argv[3].Atoi());
 				}
 			}
 		}

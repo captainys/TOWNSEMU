@@ -18,6 +18,7 @@ public:
 	std::string ROMDir;
 	std::string CDImgFile;
 	std::string FDImgFile[2][NUM_STANDBY_FDIMG];
+	bool FDWriteProtect[2][NUM_STANDBY_FDIMG];
 	std::string SCSIImgFile[MAX_NUM_SCSI_DEVICE];
 	unsigned int bootKeyComb=BOOT_KEYCOMB_NONE;
 	unsigned int gamePort[2]={TOWNS_GAMEPORTEMU_PHYSICAL0,TOWNS_GAMEPORTEMU_MOUSE};
@@ -26,6 +27,7 @@ public:
 
 	std::string errorMsg;
 
+	TownsProfile();
 	void CleanUp(void);
 	std::vector <std::string> Serialize(void) const;
 	bool Deserialize(const std::vector <std::string> &text);

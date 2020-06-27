@@ -15,6 +15,7 @@ public:
 	enum
 	{
 		PATH_LENGTH=1024,
+		PATH_SHOW=64,
 		NUM_GAMEPORT_CHOICE=5
 	};
 
@@ -57,8 +58,9 @@ public:
 
 	FsGuiStatic *profileFNameTxt;
 
-	FsGuiButton *ROMDirBtn,*CDImgBtn,*FDImgBtn[TownsProfile::NUM_STANDBY_FDIMG],*HDImgBtn[TownsProfile::MAX_NUM_SCSI_DEVICE];
-	FsGuiTextBox *ROMDirTxt,*CDImgTxt,*FDImgTxt[TownsProfile::NUM_STANDBY_FDIMG],*HDImgTxt[TownsProfile::MAX_NUM_SCSI_DEVICE];
+	FsGuiButton *ROMDirBtn,*CDImgBtn,*FDImgBtn[2][TownsProfile::NUM_STANDBY_FDIMG],*HDImgBtn[TownsProfile::MAX_NUM_SCSI_DEVICE];
+	FsGuiButton *FDWriteProtBtn[2][TownsProfile::NUM_STANDBY_FDIMG];
+	FsGuiTextBox *ROMDirTxt,*CDImgTxt,*FDImgTxt[2][TownsProfile::NUM_STANDBY_FDIMG],*HDImgTxt[TownsProfile::MAX_NUM_SCSI_DEVICE];
 	FsGuiButton *gamePortBtn[2][NUM_GAMEPORT_CHOICE]; // None, Pad0, Pad1, Keybord Emulation, Mouse,
 	FsGuiButton *bootKeyBtn[15];
 	FsGuiTextBox *scrnScaleTxt;
