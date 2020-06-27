@@ -7,6 +7,12 @@
 
 #ifdef _WIN32
 	#include <windows.h>
+#else
+	#include <string>
+	#include <vector>
+	#include <iostream>
+	#include <unistd.h>
+	#include <sys/types.h>
 #endif
 
 class Subprocess
@@ -20,6 +26,9 @@ private:
 
 	PROCESS_INFORMATION procInfo;
 #else
+	int parToChd[2];
+	int chdToPar[2];
+	pid_t procId;
 #endif
 
 public:

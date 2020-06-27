@@ -145,7 +145,16 @@ bool Subprocess::Send(const std::string &str)
 		// Experiment indicates that it must not send '\0'.
 		// Sub-process that receives '\0' will not get any more data.
 		DWORD writeSize;
-		return (0!=WriteFile(subprocStdinW,(char *)str.c_str(),str.size(),&writeSize,nullptr));
+		if(str.back()=='\n')
+		{
+			return (0!=WriteFile(subprocStdinW,(char *)str.c_str(),str.size(),&writeSize,nullptr));
+		}
+		else
+		{
+			auto copy=str;
+			copy.push_back('\n');
+			return (0!=WriteFile(subprocStdinW,(char *)copy.c_str(),copy.size(),&writeSize,nullptr));
+		}
 	}
 	return false;
 }
@@ -177,6 +186,10 @@ bool Subprocess::Receive(std::string &str)
 				break;
 			}
 		}
+	}
+	if(0<str.size() && '\n'==str.back())
+	{
+		str.pop_back();
 	}
 	return received;
 }
