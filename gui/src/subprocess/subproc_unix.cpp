@@ -1,3 +1,5 @@
+#include <sys/wait.h>
+#include <poll.h>
 #include "subproc.h"
 
 Subprocess::Subprocess()
@@ -15,8 +17,19 @@ void Subprocess::CleanUp(void)
 	// How can I force terminate the process?
 }
 
-bool Subprocess::StartProc(const std::vector <std::string> &argv,bool usePipe=true)
+bool Subprocess::StartProc(const std::vector <std::string> &argv,bool usePipe)
 {
+	if(-1==pipe(parToChd) || -1==pipe(chdToPar))
+	{
+		printf("Failed to create pipes.\n");
+		return false;
+	}
+
+	// parToChd[0]  Reading end of parent to child.  Must be open in child, closed in parent.
+	// parToChd[1]  Writing end of parent to child.  Must be open in parent, closed in child.
+	// chdToPar[0]  Reading end of child to parent.  Must be open in parent, closed in child.
+	// chdToPar[1]  Writing end of child to parent.  Must be open in child, closed in parent.
+
 	procId=fork();
 	if(procId<0)
 	{
@@ -28,6 +41,7 @@ bool Subprocess::StartProc(const std::vector <std::string> &argv,bool usePipe=tr
 		// Parent process
 		close(parToChd[0]);
 		close(chdToPar[1]);
+		return true;
 	}
 	else
 	{
@@ -37,11 +51,19 @@ bool Subprocess::StartProc(const std::vector <std::string> &argv,bool usePipe=tr
 
 		dup2(parToChd[0],STDIN_FILENO);
 		dup2(chdToPar[1],STDOUT_FILENO);
-		dup2(chdToPar[2],STDERR_FILENO);
+		dup2(chdToPar[1],STDERR_FILENO);
 		close(parToChd[0]);
-		close(chdToPar[2]);
-		####system("./child");
+		close(chdToPar[1]);
+
+		std::vector <char *> execargv;
+		for(auto arg : argv)
+		{
+			execargv.push_back((char *)arg.c_str());
+		}
+		execargv.push_back(nullptr);
+		execv(argv[0].c_str(),execargv.data());
 	}
+	return true;
 }
 
 bool Subprocess::SubprocRunning(void) const
@@ -69,7 +91,7 @@ void Subprocess::TerminateSubprocess(void)
 	{
 		kill(procId,SIGKILL);
 	}
-	prodId=-1;
+	procId=-1;
 }
 
 
@@ -90,12 +112,12 @@ bool Subprocess::Send(const std::string &str)
 bool Subprocess::Receive(std::string &str)
 {
 	bool received=false;
-	std::string str;
 
+	str="";
 	for(;;)
 	{
 		struct pollfd pfd;
-		pfd.fd=listeningSocket;
+		pfd.fd=chdToPar[0];
 		pfd.events=POLLIN;
 		pfd.revents=0;
 		if(poll(&pfd,1,1)>=1)
@@ -103,9 +125,16 @@ bool Subprocess::Receive(std::string &str)
 			const int buflen=256;
 			char readBuf[buflen+1];
 			auto s=read(chdToPar[0],readBuf,buflen);
-			readBuf[s]=0; // Just in case.
-			str+=readBuf;
-			received=true;
+			if(0<s)
+			{
+				readBuf[s]=0; // Just in case.
+				str+=readBuf;
+				received=true;
+			}
+			else
+			{
+				break;
+			}
 		}
 		else
 		{
