@@ -1,6 +1,12 @@
 #include "profiledlg.h"
+#include "fsguiapp.h"
 
 
+
+ProfileDialog::ProfileDialog(FsGuiMainCanvas *canvasPtr)
+{
+	this->canvasPtr=canvasPtr;
+}
 
 void ProfileDialog::Make(void)
 {
@@ -155,6 +161,10 @@ void ProfileDialog::Make(void)
 			label.push_back('0'+i);
 			Browse(label,HDImgTxt[i],L".BIN",L".HDD");
 		}
+	}
+	if(runBtn==btn)
+	{
+		canvasPtr->Run();
 	}
 }
 void ProfileDialog::OnSelectROMFile(FsGuiDialog *dlg,int returnCode)

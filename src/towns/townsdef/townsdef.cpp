@@ -70,11 +70,11 @@ unsigned int TownsStrToKeyComb(std::string str)
 	{
 		return BOOT_KEYCOMB_DEBUG;
 	}
-	if("PAD_A"==str || "pad_a"==str)
+	if("PADA"==str || "pada"==str)
 	{
 		return BOOT_KEYCOMB_PAD_A;
 	}
-	if("PAD_B"==str || "pad_b"==str)
+	if("PADB"==str || "padb"==str)
 	{
 		return BOOT_KEYCOMB_PAD_B;
 	}
@@ -112,9 +112,9 @@ std::string TownsKeyCombToStr(unsigned int keycomb)
 	case BOOT_KEYCOMB_DEBUG:
 		return "DEBUG";
 	case BOOT_KEYCOMB_PAD_A:
-		return "PAD_A";
+		return "PADA";
 	case BOOT_KEYCOMB_PAD_B:
-		return "PAD_B";
+		return "PADB";
 	}
 	return "NONE";
 }
@@ -129,103 +129,103 @@ unsigned int TownsStrToGamePortEmu(std::string str)
 	{
 		return TOWNS_GAMEPORTEMU_MOUSE;
 	}
-	if("KEYBOARD"==str || "keyboard"==str)
+	if("KEY"==str || "key"==str)
 	{
 		return TOWNS_GAMEPORTEMU_KEYBOARD;
 	}
-	if("PHYSICAL0"==str || "physical0"==str)
+	if("PHYS0"==str || "phys0"==str)
 	{
 		return TOWNS_GAMEPORTEMU_PHYSICAL0;
 	}
-	if("PHYSICAL1"==str || "physical1"==str)
+	if("PHYS1"==str || "phys1"==str)
 	{
 		return TOWNS_GAMEPORTEMU_PHYSICAL1;
 	}
-	if("PHYSICAL2"==str || "physical2"==str)
+	if("PHYS2"==str || "phys2"==str)
 	{
 		return TOWNS_GAMEPORTEMU_PHYSICAL2;
 	}
-	if("PHYSICAL3"==str || "physical3"==str)
+	if("PHYS3"==str || "phys3"==str)
 	{
 		return TOWNS_GAMEPORTEMU_PHYSICAL3;
 	}
-	if("PHYSICAL4"==str || "physical4"==str)
+	if("PHYS4"==str || "phys4"==str)
 	{
 		return TOWNS_GAMEPORTEMU_PHYSICAL4;
 	}
-	if("PHYSICAL5"==str || "physical5"==str)
+	if("PHYS5"==str || "phys5"==str)
 	{
 		return TOWNS_GAMEPORTEMU_PHYSICAL5;
 	}
-	if("PHYSICAL6"==str || "physical6"==str)
+	if("PHYS6"==str || "phys6"==str)
 	{
 		return TOWNS_GAMEPORTEMU_PHYSICAL6;
 	}
-	if("PHYSICAL7"==str || "physical7"==str)
+	if("PHYS7"==str || "phys7"==str)
 	{
 		return TOWNS_GAMEPORTEMU_PHYSICAL7;
 	}
-	if("ANALOG0"==str || "analog0"==str)
+	if("ANA0"==str || "ana0"==str)
 	{
 		return TOWNS_GAMEPORTEMU_ANALOG0;
 	}
-	if("ANALOG1"==str || "analog1"==str)
+	if("ANA1"==str || "ana1"==str)
 	{
 		return TOWNS_GAMEPORTEMU_ANALOG1;
 	}
-	if("ANALOG2"==str || "analog2"==str)
+	if("ANA2"==str || "ana2"==str)
 	{
 		return TOWNS_GAMEPORTEMU_ANALOG2;
 	}
-	if("ANALOG3"==str || "analog3"==str)
+	if("ANA3"==str || "ana3"==str)
 	{
 		return TOWNS_GAMEPORTEMU_ANALOG3;
 	}
-	if("ANALOG4"==str || "analog4"==str)
+	if("ANA4"==str || "ana4"==str)
 	{
 		return TOWNS_GAMEPORTEMU_ANALOG4;
 	}
-	if("ANALOG5"==str || "analog5"==str)
+	if("ANA5"==str || "ana5"==str)
 	{
 		return TOWNS_GAMEPORTEMU_ANALOG5;
 	}
-	if("ANALOG6"==str || "analog6"==str)
+	if("ANA6"==str || "ana6"==str)
 	{
 		return TOWNS_GAMEPORTEMU_ANALOG6;
 	}
-	if("ANALOG7"==str || "analog7"==str)
+	if("ANA7"==str || "ana7"==str)
 	{
 		return TOWNS_GAMEPORTEMU_ANALOG7;
 	}
-	if("PHYSICAL0_AS_CYBERSTICK"==str || "physical0_as_cyberstick"==str)
+	if("PHYS0CYB"==str || "phys0cyb"==str)
 	{
 		return TOWNS_GAMEPORTEMU_PHYSICAL0_AS_CYBERSTICK;
 	}
-	if("PHYSICAL1_AS_CYBERSTICK"==str || "physical1_as_cyberstick"==str)
+	if("PHYS1CYB"==str || "phys1cyb"==str)
 	{
 		return TOWNS_GAMEPORTEMU_PHYSICAL1_AS_CYBERSTICK;
 	}
-	if("PHYSICAL2_AS_CYBERSTICK"==str || "physical2_as_cyberstick"==str)
+	if("PHYS2CYB"==str || "phys2cyb"==str)
 	{
 		return TOWNS_GAMEPORTEMU_PHYSICAL2_AS_CYBERSTICK;
 	}
-	if("PHYSICAL3_AS_CYBERSTICK"==str || "physical3_as_cyberstick"==str)
+	if("PHYS3CYB"==str || "phys3cyb"==str)
 	{
 		return TOWNS_GAMEPORTEMU_PHYSICAL3_AS_CYBERSTICK;
 	}
-	if("PHYSICAL4_AS_CYBERSTICK"==str || "physical4_as_cyberstick"==str)
+	if("PHYS4CYB"==str || "phys4cyb"==str)
 	{
 		return TOWNS_GAMEPORTEMU_PHYSICAL4_AS_CYBERSTICK;
 	}
-	if("PHYSICAL5_AS_CYBERSTICK"==str || "physical5_as_cyberstick"==str)
+	if("PHYS5CYB"==str || "phys5cyb"==str)
 	{
 		return TOWNS_GAMEPORTEMU_PHYSICAL5_AS_CYBERSTICK;
 	}
-	if("PHYSICAL6_AS_CYBERSTICK"==str || "physical6_as_cyberstick"==str)
+	if("PHYS6CYB"==str || "phys6cyb"==str)
 	{
 		return TOWNS_GAMEPORTEMU_PHYSICAL6_AS_CYBERSTICK;
 	}
-	if("PHYSICAL7_AS_CYBERSTICK"==str || "physical7_as_cyberstick"==str)
+	if("PHYS7CYB"==str || "phys7cyb"==str)
 	{
 		return TOWNS_GAMEPORTEMU_PHYSICAL7_AS_CYBERSTICK;
 	}
@@ -241,55 +241,55 @@ std::string TownsGamePortEmuToStr(unsigned int emu)
 	case TOWNS_GAMEPORTEMU_MOUSE:
 		return "MOUSE";
 	case TOWNS_GAMEPORTEMU_KEYBOARD:
-		return "KEYBOARD";
+		return "KEY";
 	case TOWNS_GAMEPORTEMU_PHYSICAL0:
-		return "PHYSICAL0";
+		return "PHYS0";
 	case TOWNS_GAMEPORTEMU_PHYSICAL1:
-		return "PHYSICAL1";
+		return "PHYS1";
 	case TOWNS_GAMEPORTEMU_PHYSICAL2:
-		return "PHYSICAL2";
+		return "PHYS2";
 	case TOWNS_GAMEPORTEMU_PHYSICAL3:
-		return "PHYSICAL3";
+		return "PHYS3";
 	case TOWNS_GAMEPORTEMU_PHYSICAL4:
-		return "PHYSICAL4";
+		return "PHYS4";
 	case TOWNS_GAMEPORTEMU_PHYSICAL5:
-		return "PHYSICAL5";
+		return "PHYS5";
 	case TOWNS_GAMEPORTEMU_PHYSICAL6:
-		return "PHYSICAL6";
+		return "PHYS6";
 	case TOWNS_GAMEPORTEMU_PHYSICAL7:
-		return "PHYSICAL7";
+		return "PHYS7";
 	case TOWNS_GAMEPORTEMU_ANALOG0:
-		return "ANALOG0";
+		return "ANA0";
 	case TOWNS_GAMEPORTEMU_ANALOG1:
-		return "ANALOG1";
+		return "ANA1";
 	case TOWNS_GAMEPORTEMU_ANALOG2:
-		return "ANALOG2";
+		return "ANA2";
 	case TOWNS_GAMEPORTEMU_ANALOG3:
-		return "ANALOG3";
+		return "ANA3";
 	case TOWNS_GAMEPORTEMU_ANALOG4:
-		return "ANALOG4";
+		return "ANA4";
 	case TOWNS_GAMEPORTEMU_ANALOG5:
-		return "ANALOG5";
+		return "ANA5";
 	case TOWNS_GAMEPORTEMU_ANALOG6:
-		return "ANALOG6";
+		return "ANA6";
 	case TOWNS_GAMEPORTEMU_ANALOG7:
-		return "ANALOG7";
+		return "ANA7";
 	case TOWNS_GAMEPORTEMU_PHYSICAL0_AS_CYBERSTICK:
-		return "PHYSICAL0_AS_CYBERSTICK";
+		return "PHYS0CYB";
 	case TOWNS_GAMEPORTEMU_PHYSICAL1_AS_CYBERSTICK:
-		return "PHYSICAL1_AS_CYBERSTICK";
+		return "PHYS1CYB";
 	case TOWNS_GAMEPORTEMU_PHYSICAL2_AS_CYBERSTICK:
-		return "PHYSICAL2_AS_CYBERSTICK";
+		return "PHYS2CYB";
 	case TOWNS_GAMEPORTEMU_PHYSICAL3_AS_CYBERSTICK:
-		return "PHYSICAL3_AS_CYBERSTICK";
+		return "PHYS3CYB";
 	case TOWNS_GAMEPORTEMU_PHYSICAL4_AS_CYBERSTICK:
-		return "PHYSICAL4_AS_CYBERSTICK";
+		return "PHYS4CYB";
 	case TOWNS_GAMEPORTEMU_PHYSICAL5_AS_CYBERSTICK:
-		return "PHYSICAL5_AS_CYBERSTICK";
+		return "PHYS5CYB";
 	case TOWNS_GAMEPORTEMU_PHYSICAL6_AS_CYBERSTICK:
-		return "PHYSICAL6_AS_CYBERSTICK";
+		return "PHYS6CYB";
 	case TOWNS_GAMEPORTEMU_PHYSICAL7_AS_CYBERSTICK:
-		return "PHYSICAL7_AS_CYBERSTICK";
+		return "PHYS7CYB";
 	}
 	return "NONE";
 }

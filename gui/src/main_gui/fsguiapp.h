@@ -107,6 +107,15 @@ public:
 	*/
 	void Draw(void);
 
+
+	/*! Start Tsugaru_CUI with the profile set in the profileDlg.
+	*/
+	void Run(void);
+private:
+	void ReallyRun(void);
+
+
+
 private:
 	// [Menu pointers for check marks]
 	void File_SaveDefaultProfile(FsGuiPopUpMenuItem *);

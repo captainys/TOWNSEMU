@@ -50,6 +50,8 @@ public:
 		//TOWNS_GAMEPORTEMU_PHYSICAL7_AS_CYBERSTICK,
 	};
 
+	class FsGuiMainCanvas *canvasPtr;
+
 	FsGuiTabControl *tab;
 
 	FsGuiButton *ROMDirBtn,*CDImgBtn,*FDImgBtn[TownsProfile::NUM_STANDBY_FDIMG],*HDImgBtn[TownsProfile::MAX_NUM_SCSI_DEVICE];
@@ -58,6 +60,8 @@ public:
 	FsGuiButton *bootKeyBtn[15];
 	FsGuiButton *autoStartBtn;
 	FsGuiButton *runBtn;
+
+	ProfileDialog(FsGuiMainCanvas *canvasPtr);
 
 	void Make(void);
 	virtual void OnButtonClick(FsGuiButton *btn);

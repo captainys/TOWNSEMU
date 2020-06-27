@@ -27,6 +27,8 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //////////////////////////////////////////////////////////// */
 
+#include <iostream>
+
 #include <ysclass.h>
 #include <ysport.h>
 #include <yscompilerwarning.h>
@@ -54,7 +56,7 @@ FsGuiMainCanvas::FsGuiMainCanvas()
 {
 	appMustTerminate=YSFALSE;
 	mainMenu=nullptr;
-	profileDlg=new ProfileDialog;
+	profileDlg=new ProfileDialog(this);
 }
 
 FsGuiMainCanvas::~FsGuiMainCanvas()
@@ -191,6 +193,24 @@ void FsGuiMainCanvas::Draw(void)
 	FsGuiCanvas::Show();
 
 	FsSwapBuffers();
+}
+
+
+
+void FsGuiMainCanvas::Run(void)
+{
+	// Warn if the VM is already running.
+	ReallyRun();
+}
+
+void FsGuiMainCanvas::ReallyRun(void)
+{
+	auto profile=profileDlg->GetProfile();
+	auto argv=profile.MakeArgv();
+	for(auto arg : argv)
+	{
+		std::cout << arg << std::endl;
+	}
 }
 
 

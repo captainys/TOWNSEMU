@@ -162,5 +162,50 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 std::vector <std::string> TownsProfile::MakeArgv(void) const
 {
 	std::vector <std::string> argv;
+
+	argv.push_back("Tsugaru_CUI.exe");
+
+	argv.push_back(ROMDir);
+
+	if(""!=CDImgFile)
+	{
+		argv.push_back("-CD");
+		argv.push_back(CDImgFile);
+	}
+
+	if(""!=FDImgFile[0][0])
+	{
+		argv.push_back("-FD0");
+		argv.push_back(FDImgFile[0][0]);
+	}
+	if(""!=FDImgFile[1][0])
+	{
+		argv.push_back("-FD1");
+		argv.push_back(FDImgFile[1][0]);
+	}
+
+	for(int scsiId=0; scsiId<MAX_NUM_SCSI_DEVICE; ++scsiId)
+	{
+		if(""!=SCSIImgFile[scsiId])
+		{
+			argv.push_back("-HD");
+			argv.back().push_back('0'+scsiId);
+			argv.push_back(SCSIImgFile[scsiId]);
+		}
+	}
+
+	if(BOOT_KEYCOMB_NONE!=bootKeyComb)
+	{
+		argv.push_back("-BOOTKEY");
+		argv.push_back(TownsKeyCombToStr(bootKeyComb));
+	}
+
+	for(int i=0; i<2; ++i)
+	{
+		argv.push_back("-GAMEPORT");
+		argv.back().push_back('0'+i);
+		argv.push_back(TownsGamePortEmuToStr(gamePort[i]));
+	}
+
 	return argv;
 }
