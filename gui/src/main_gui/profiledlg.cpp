@@ -47,6 +47,7 @@ void ProfileDialog::Make(void)
 	gamePortBtn[0][3]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"Emulation by Keyboard(ASZX and arrow)",YSFALSE);
 	gamePortBtn[0][4]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"Mouse",YSFALSE);
 	SetRadioButtonGroup(5,gamePortBtn[0]);
+	gamePortBtn[0][1]->SetCheck(YSTRUE);
 
 	AddStaticText(0,FSKEY_NULL,"Game Port 1:",YSTRUE);
 	gamePortBtn[1][0]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"None",YSFALSE);
@@ -55,6 +56,7 @@ void ProfileDialog::Make(void)
 	gamePortBtn[1][3]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"Emulation by Keyboard(ASZX and arrow)",YSFALSE);
 	gamePortBtn[1][4]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"Mouse",YSFALSE);
 	SetRadioButtonGroup(5,gamePortBtn[1]);
+	gamePortBtn[1][4]->SetCheck(YSTRUE);
 
 	AddStaticText(0,FSKEY_NULL,"Boot Option:",YSTRUE);
 	bootKeyBtn[ 0]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"None",YSFALSE);
@@ -175,6 +177,18 @@ TownsProfile ProfileDialog::GetProfile(void) const
 	profile.SCSIImgFile[3]=HDImgTxt[3]->GetString().data();
 	profile.SCSIImgFile[4]=HDImgTxt[4]->GetString().data();
 	profile.SCSIImgFile[5]=HDImgTxt[5]->GetString().data();
+
+	for(int gameport=0; gameport<2; ++gameport)
+	{
+		for(int i=0; i<NUM_GAMEPORT_CHOICE; ++i)
+		{
+			if(YSTRUE==gamePortBtn[gameport][i]->GetCheck())
+			{
+				profile.gamePort[gameport]=gamePortChoice[i];
+			}
+		}
+	}
+
 	profile.bootKeyComb=BOOT_KEYCOMB_NONE;
 	for(int i=0; i<sizeof(bootKeyBtn)/sizeof(bootKeyBtn[0]); ++i)
 	{
@@ -208,6 +222,21 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 	{
 		str.SetUTF8String(profile.SCSIImgFile[i].data());
 		HDImgTxt[i]->SetText(str);
+	}
+
+	for(int gameport=0; gameport<2; ++gameport)
+	{
+		for(int i=0; i<NUM_GAMEPORT_CHOICE; ++i)
+		{
+			if(gamePortChoice[i]==profile.gamePort[gameport])
+			{
+				gamePortBtn[gameport][i]->SetCheck(YSTRUE);
+			}
+			else
+			{
+				gamePortBtn[gameport][i]->SetCheck(YSFALSE);
+			}
+		}
 	}
 
 	for(int i=0; i<sizeof(bootKeyBtn)/sizeof(bootKeyBtn[0]); ++i)

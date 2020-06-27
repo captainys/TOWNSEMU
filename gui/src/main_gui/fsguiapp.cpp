@@ -28,6 +28,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //////////////////////////////////////////////////////////// */
 
 #include <ysclass.h>
+#include <ysport.h>
 #include <yscompilerwarning.h>
 #include <ysgl.h>
 
@@ -70,6 +71,7 @@ void FsGuiMainCanvas::Initialize(int argc,char *argv[])
 {
 	MakeMainMenu();
 	profileDlg->Make();
+	LoadProfile(GetDefaultProfileFileName());
 	AddDialog(profileDlg);
 
 	YsDisregardVariable(argc);
@@ -83,10 +85,12 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 	mainMenu->Initialize();
 	mainMenu->SetIsPullDownMenu(YSTRUE);
 
-	FsGuiPopUpMenuItem *fileMenu=mainMenu->AddTextItem(0,FSKEY_F,L"File");
-	FsGuiPopUpMenu *fileSubMenu=fileMenu->GetSubMenu();
-
-	fileSubMenu->AddTextItem(0,FSKEY_X,L"Exit")->BindCallBack(&THISCLASS::File_Exit,this);
+	{
+		auto *fileSubMenu=mainMenu->AddTextItem(0,FSKEY_F,L"File")->GetSubMenu();
+		fileSubMenu->AddTextItem(0,FSKEY_NULL,L"Save as Default")->BindCallBack(&THISCLASS::File_SaveDefaultProfile,this);
+		fileSubMenu->AddTextItem(0,FSKEY_NULL,L"Reload Default")->BindCallBack(&THISCLASS::File_ReloadDefaultProfile,this);
+		fileSubMenu->AddTextItem(0,FSKEY_X,L"Exit")->BindCallBack(&THISCLASS::File_Exit,this);
+	}
 
 	SetMainMenu(mainMenu);
 }
@@ -187,6 +191,77 @@ void FsGuiMainCanvas::Draw(void)
 	FsGuiCanvas::Show();
 
 	FsSwapBuffers();
+}
+
+
+
+////////////////////////////////////////////////////////////
+
+
+
+void FsGuiMainCanvas::File_SaveDefaultProfile(FsGuiPopUpMenuItem *)
+{
+	auto dlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialogWithPayload<YsWString> >();
+	dlg->payload=L""; // Not used.
+	dlg->Make(L"Overwrite Default",L"Are you sure?",L"Yes",L"No");
+	dlg->BindCloseModalCallBack(&FsGuiMainCanvas::File_SaveDefaultConfirm,this);
+	AttachModalDialog(dlg);
+}
+void FsGuiMainCanvas::File_SaveDefaultConfirm(FsGuiDialog *dlg,int returnCode)
+{
+	auto fdlg=dynamic_cast <FsGuiMessageBoxDialogWithPayload<YsWString> *>(dlg);
+	if(nullptr!=fdlg && (int)YSOK==returnCode)
+	{
+		SaveProfile(GetDefaultProfileFileName());
+	}
+}
+void FsGuiMainCanvas::File_ReloadDefaultProfile(FsGuiPopUpMenuItem *)
+{
+	LoadProfile(GetDefaultProfileFileName());
+}
+
+void FsGuiMainCanvas::SaveProfile(YsWString fName) const
+{
+	auto profile=profileDlg->GetProfile();
+	YsFileIO::File fp(fName,"w");
+	auto outStream=fp.OutStream();
+	for(auto str : profile.Serialize())
+	{
+		outStream.Printf("%s\n",str.c_str());
+	}
+	fp.Fclose();
+}
+void FsGuiMainCanvas::LoadProfile(YsWString fName)
+{
+	std::vector <std::string> text;
+
+	YsFileIO::File fp(fName,"r");
+	auto inStream=fp.InStream();
+	YsString str;
+	while(YSTRUE!=inStream.EndOfFile())
+	{
+		text.push_back(inStream.Fgets().c_str());
+	}
+	TownsProfile profile;
+	if(true==profile.Deserialize(text))
+	{
+		profileDlg->SetProfile(profile);
+	}
+	else
+	{
+		auto dlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialog>();
+		YsWString errMsg;
+		errMsg.SetUTF8String(profile.errorMsg.c_str());
+		dlg->Make(L"Profile Load Error",errMsg,L"OK",nullptr);
+		AttachModalDialog(dlg);
+	}
+}
+
+YsWString FsGuiMainCanvas::GetDefaultProfileFileName(void) const
+{
+	YsWString ful;
+	ful.MakeFullPathName(YsSpecialPath::GetUserDocDirW(),L"Tsugaru_Default.txt");
+	return ful;
 }
 
 

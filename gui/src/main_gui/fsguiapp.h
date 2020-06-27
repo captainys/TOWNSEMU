@@ -109,7 +109,13 @@ public:
 
 private:
 	// [Menu pointers for check marks]
+	void File_SaveDefaultProfile(FsGuiPopUpMenuItem *);
+	void File_SaveDefaultConfirm(FsGuiDialog *dlg,int returnCode);
+	void File_ReloadDefaultProfile(FsGuiPopUpMenuItem *);
+	YsWString GetDefaultProfileFileName(void) const;
 
+	void SaveProfile(YsWString fName) const;
+	void LoadProfile(YsWString fName);
 
 	// [Menu call-backs]
 	/*! Sample call-back functions.

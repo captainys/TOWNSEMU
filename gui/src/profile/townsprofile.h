@@ -20,11 +20,17 @@ public:
 	std::string FDImgFile[2][NUM_STANDBY_FDIMG];
 	std::string SCSIImgFile[MAX_NUM_SCSI_DEVICE];
 	unsigned int bootKeyComb=BOOT_KEYCOMB_NONE;
+	unsigned int gamePort[2]={TOWNS_GAMEPORTEMU_PHYSICAL0,TOWNS_GAMEPORTEMU_MOUSE};
 	bool autoStart;
+
+	std::string errorMsg;
 
 	void CleanUp(void);
 	std::vector <std::string> Serialize(void) const;
 	bool Deserialize(const std::vector <std::string> &text);
+
+	/*! The first arg will be "Tsugaru_CUI".  Should be replaced with the full-path name.
+	*/
 	std::vector <std::string> MakeArgv(void) const;
 };
 

@@ -17,6 +17,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 /* { */
 
 
+#include <string>
+
+
 const int PER_SECOND=1000000000;  // Unit: Nano Seconds
 const int TOWNS_RENDERING_FREQUENCY=PER_SECOND/60;
 
@@ -506,6 +509,9 @@ enum
 	BOOT_KEYCOMB_PAD_B,
 };
 
+unsigned int TownsStrToKeyComb(std::string str);
+std::string TownsKeyCombToStr(unsigned int keycomb);
+
 enum
 {
 	TOWNS_GAMEPORTEMU_NONE,
@@ -536,6 +542,9 @@ enum
 	TOWNS_GAMEPORTEMU_PHYSICAL6_AS_CYBERSTICK,
 	TOWNS_GAMEPORTEMU_PHYSICAL7_AS_CYBERSTICK,
 };
+
+unsigned int TownsStrToGamePortEmu(std::string str);
+std::string TownsGamePortEmuToStr(unsigned int emu);
 
 enum
 {
