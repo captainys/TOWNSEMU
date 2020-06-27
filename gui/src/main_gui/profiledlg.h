@@ -50,6 +50,8 @@ public:
 		//TOWNS_GAMEPORTEMU_PHYSICAL7_AS_CYBERSTICK,
 	};
 
+	FsGuiTabControl *tab;
+
 	FsGuiButton *ROMDirBtn,*CDImgBtn,*FDImgBtn[TownsProfile::NUM_STANDBY_FDIMG],*HDImgBtn[TownsProfile::MAX_NUM_SCSI_DEVICE];
 	FsGuiTextBox *ROMDirTxt,*CDImgTxt,*FDImgTxt[TownsProfile::NUM_STANDBY_FDIMG],*HDImgTxt[TownsProfile::MAX_NUM_SCSI_DEVICE];
 	FsGuiButton *gamePortBtn[2][NUM_GAMEPORT_CHOICE]; // None, Pad0, Pad1, Keybord Emulation, Mouse,
