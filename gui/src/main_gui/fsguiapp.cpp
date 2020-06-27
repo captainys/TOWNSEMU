@@ -99,6 +99,15 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 		fileSubMenu->AddTextItem(0,FSKEY_X,L"Exit")->BindCallBack(&THISCLASS::File_Exit,this);
 	}
 
+	{
+		auto *townsSubMenu=mainMenu->AddTextItem(0,FSKEY_T,L"FM TOWNS")->GetSubMenu();
+		townsSubMenu->AddTextItem(0,FSKEY_S,L"Start Virtual Machine")->BindCallBack(&THISCLASS::VM_Start,this);
+		townsSubMenu->AddTextItem(0,FSKEY_NULL,L"Start and Close GUI")->BindCallBack(&THISCLASS::VM_StartAndCloseGUI,this);
+		townsSubMenu->AddTextItem(0,FSKEY_Q,L"Power Off")->BindCallBack(&THISCLASS::VM_PowerOff,this);
+		townsSubMenu->AddTextItem(0,FSKEY_P,L"Pause")->BindCallBack(&THISCLASS::VM_Pause,this);
+		townsSubMenu->AddTextItem(0,FSKEY_R,L"Resume")->BindCallBack(&THISCLASS::VM_Resume,this);
+	}
+
 	SetMainMenu(mainMenu);
 }
 
@@ -111,6 +120,22 @@ void FsGuiMainCanvas::DeleteMainMenu(void)
 void FsGuiMainCanvas::OnInterval(void)
 {
 	FsGuiCanvas::Interval();
+
+	if(true==subproc.SubprocRunning())
+	{
+		for(;;)
+		{
+			std::string str;
+			if(true==subproc.Receive(str))
+			{
+				VMLog.push_back(str);
+			}
+			else
+			{
+				break;
+			}
+		}
+	}
 
 	{
 		int key;
@@ -228,7 +253,7 @@ void FsGuiMainCanvas::ReallyRun(void)
 			L"OK",nullptr);
 		AttachModalDialog(msgDlg);
 	}
-	else if(true!=subproc.StartProc(argv,/*usePipe=*/false))
+	else if(true!=subproc.StartProc(argv,/*usePipe=*/true))
 	{
 		YsWString msg;
 		msg.SetUTF8String(subproc.errMsg.c_str());
@@ -257,6 +282,19 @@ std::string FsGuiMainCanvas::FindTsugaruCUI(void) const
 	}
 
 	return "";
+}
+
+
+
+////////////////////////////////////////////////////////////
+
+
+
+void FsGuiMainCanvas::VM_Not_Running_Error(void)
+{
+	auto dlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialog>();
+	dlg->Make(L"Error!",L"Virtual Machine is not runnnig.",L"OK",nullptr);
+	AttachModalDialog(dlg);
 }
 
 
@@ -447,3 +485,43 @@ void FsGuiMainCanvas::File_Exit_ReallyExit(void)
 
 ////////////////////////////////////////////////////////////
 
+void FsGuiMainCanvas::VM_Start(FsGuiPopUpMenuItem *)
+{
+}
+void FsGuiMainCanvas::VM_StartAndCloseGUI(FsGuiPopUpMenuItem *)
+{
+}
+void FsGuiMainCanvas::VM_PowerOff(FsGuiPopUpMenuItem *)
+{
+	if(true==subproc.SubprocRunning())
+	{
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+void FsGuiMainCanvas::VM_Pause(FsGuiPopUpMenuItem *)
+{
+	if(true==subproc.SubprocRunning())
+	{
+		subproc.Send("PAU\n");
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+void FsGuiMainCanvas::VM_Resume(FsGuiPopUpMenuItem *)
+{
+	if(true==subproc.SubprocRunning())
+	{
+		subproc.Send("RUN\n");
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+
+////////////////////////////////////////////////////////////

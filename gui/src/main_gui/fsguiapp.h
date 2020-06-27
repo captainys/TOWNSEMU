@@ -57,6 +57,7 @@ private:
 public:
 	// [Core data structure]
 	Subprocess subproc;
+	std::vector <std::string> VMLog;
 
 
 	// [Modeless dialogs]
@@ -142,6 +143,17 @@ private:
 	void File_Exit(FsGuiPopUpMenuItem *);
 	void File_Exit_ConfirmExitCallBack(FsGuiDialog *,int);
 	void File_Exit_ReallyExit(void);
+
+
+
+	void VM_Start(FsGuiPopUpMenuItem *);
+	void VM_StartAndCloseGUI(FsGuiPopUpMenuItem *);
+	void VM_PowerOff(FsGuiPopUpMenuItem *);
+	void VM_Pause(FsGuiPopUpMenuItem *);
+	void VM_Resume(FsGuiPopUpMenuItem *);
+
+
+	void VM_Not_Running_Error(void);
 };
 
 /* } */

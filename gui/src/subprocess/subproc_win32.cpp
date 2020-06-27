@@ -88,8 +88,6 @@ bool Subprocess::StartProc(const std::vector <std::string> &argv,bool usePipe)
 		cmdline.push_back('\"');
 	}
 
-std::cout << cmdline << std::endl;
-
 	STARTUPINFO startInfo;
 	ZeroMemory(&procInfo,sizeof(procInfo));
 	ZeroMemory(&startInfo,sizeof(startInfo));
@@ -123,7 +121,12 @@ std::cout << cmdline << std::endl;
 bool Subprocess::SubprocEnded(void) const
 {
 	DWORD exitCode;
-	return (0==GetExitCodeProcess(procInfo.hProcess,&exitCode) || STILL_ACTIVE!=exitCode);
+	return (nullptr==procInfo.hProcess || 0==GetExitCodeProcess(procInfo.hProcess,&exitCode) || STILL_ACTIVE!=exitCode);
+}
+
+bool Subprocess::SubprocRunning(void) const
+{
+	return !SubprocEnded();
 }
 
 void Subprocess::TerminateSubprocess(void)
@@ -165,7 +168,7 @@ bool Subprocess::Receive(std::string &str)
 			char readBuf[buflen+1]={0};
 			if(0!=ReadFile(subprocStdoutR,readBuf,buflen,&nReceived,nullptr) && 0<nReceived)
 			{
-				readBuf[nReceived+1]=0;  // Be absolutely sure.
+				readBuf[nReceived]=0;  // Be absolutely sure.
 				str+=readBuf;
 				received=true;
 			}

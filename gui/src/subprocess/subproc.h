@@ -29,6 +29,7 @@ public:
 	~Subprocess();
 	void CleanUp(void);
 	bool StartProc(const std::vector <std::string> &argv,bool usePipe=true);
+	bool SubprocRunning(void) const;
 	bool SubprocEnded(void) const;
 	void TerminateSubprocess(void);
 
