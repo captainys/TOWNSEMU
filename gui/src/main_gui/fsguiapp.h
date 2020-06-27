@@ -157,6 +157,26 @@ private:
 	void VM_PowerOffConfirm(FsGuiDialog *dlg,int returnCode);
 	void VM_Pause(FsGuiPopUpMenuItem *);
 	void VM_Resume(FsGuiPopUpMenuItem *);
+
+
+
+	void CD_SelectImageFile(FsGuiPopUpMenuItem *);
+	void CD_ImageFileSelected(FsGuiDialog *dlg,int returnCode);
+	void CD_Eject(FsGuiPopUpMenuItem *);
+
+	FsGuiPopUpMenuItem *FD0_writeProtectMenu,*FD0_writeUnprotectMenu;
+	void FD0_SelectImageFile(FsGuiPopUpMenuItem *);
+	void FD0_ImageFileSelected(FsGuiDialog *dlg,int returnCode);
+	void FD0_WriteProtect(FsGuiPopUpMenuItem *);
+	void FD0_WriteUnprotect(FsGuiPopUpMenuItem *);
+	void FD0_Eject(FsGuiPopUpMenuItem *);
+
+	FsGuiPopUpMenuItem *FD1_writeProtectMenu,*FD1_writeUnprotectMenu;
+	void FD1_SelectImageFile(FsGuiPopUpMenuItem *);
+	void FD1_ImageFileSelected(FsGuiDialog *dlg,int returnCode);
+	void FD1_WriteProtect(FsGuiPopUpMenuItem *);
+	void FD1_WriteUnprotect(FsGuiPopUpMenuItem *);
+	void FD1_Eject(FsGuiPopUpMenuItem *);
 };
 
 /* } */

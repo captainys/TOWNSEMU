@@ -90,22 +90,47 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 	mainMenu->SetIsPullDownMenu(YSTRUE);
 
 	{
-		auto *fileSubMenu=mainMenu->AddTextItem(0,FSKEY_F,L"File")->GetSubMenu();
-		fileSubMenu->AddTextItem(0,FSKEY_O,L"Open Profile")->BindCallBack(&THISCLASS::File_OpenProfile,this);
-		fileSubMenu->AddTextItem(0,FSKEY_S,L"Save Profile")->BindCallBack(&THISCLASS::File_SaveProfile,this);
-		fileSubMenu->AddTextItem(0,FSKEY_A,L"Save Profile As")->BindCallBack(&THISCLASS::File_SaveProfileAs,this);
-		fileSubMenu->AddTextItem(0,FSKEY_NULL,L"Save as Default")->BindCallBack(&THISCLASS::File_SaveDefaultProfile,this);
-		fileSubMenu->AddTextItem(0,FSKEY_NULL,L"Reload Default")->BindCallBack(&THISCLASS::File_ReloadDefaultProfile,this);
-		fileSubMenu->AddTextItem(0,FSKEY_X,L"Exit")->BindCallBack(&THISCLASS::File_Exit,this);
+		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_F,L"File")->GetSubMenu();
+		subMenu->AddTextItem(0,FSKEY_O,L"Open Profile")->BindCallBack(&THISCLASS::File_OpenProfile,this);
+		subMenu->AddTextItem(0,FSKEY_S,L"Save Profile")->BindCallBack(&THISCLASS::File_SaveProfile,this);
+		subMenu->AddTextItem(0,FSKEY_A,L"Save Profile As")->BindCallBack(&THISCLASS::File_SaveProfileAs,this);
+		subMenu->AddTextItem(0,FSKEY_NULL,L"Save as Default")->BindCallBack(&THISCLASS::File_SaveDefaultProfile,this);
+		subMenu->AddTextItem(0,FSKEY_NULL,L"Reload Default")->BindCallBack(&THISCLASS::File_ReloadDefaultProfile,this);
+		subMenu->AddTextItem(0,FSKEY_X,L"Exit")->BindCallBack(&THISCLASS::File_Exit,this);
 	}
 
 	{
-		auto *townsSubMenu=mainMenu->AddTextItem(0,FSKEY_T,L"FM TOWNS")->GetSubMenu();
-		townsSubMenu->AddTextItem(0,FSKEY_S,L"Start Virtual Machine")->BindCallBack(&THISCLASS::VM_Start,this);
-		townsSubMenu->AddTextItem(0,FSKEY_NULL,L"Start and Close GUI")->BindCallBack(&THISCLASS::VM_StartAndCloseGUI,this);
-		townsSubMenu->AddTextItem(0,FSKEY_Q,L"Power Off")->BindCallBack(&THISCLASS::VM_PowerOff,this);
-		townsSubMenu->AddTextItem(0,FSKEY_P,L"Pause")->BindCallBack(&THISCLASS::VM_Pause,this);
-		townsSubMenu->AddTextItem(0,FSKEY_R,L"Resume")->BindCallBack(&THISCLASS::VM_Resume,this);
+		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_T,L"FM TOWNS")->GetSubMenu();
+		subMenu->AddTextItem(0,FSKEY_S,L"Start Virtual Machine")->BindCallBack(&THISCLASS::VM_Start,this);
+		subMenu->AddTextItem(0,FSKEY_NULL,L"Start and Close GUI")->BindCallBack(&THISCLASS::VM_StartAndCloseGUI,this);
+		subMenu->AddTextItem(0,FSKEY_Q,L"Power Off")->BindCallBack(&THISCLASS::VM_PowerOff,this);
+		subMenu->AddTextItem(0,FSKEY_P,L"Pause")->BindCallBack(&THISCLASS::VM_Pause,this);
+		subMenu->AddTextItem(0,FSKEY_R,L"Resume")->BindCallBack(&THISCLASS::VM_Resume,this);
+	}
+
+	{
+		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_C,L"CD-ROM")->GetSubMenu();
+		subMenu->AddTextItem(0,FSKEY_S,L"Select CD Image")->BindCallBack(&THISCLASS::CD_SelectImageFile,this);
+	}
+
+	{
+		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_0,L"FD0")->GetSubMenu();
+		subMenu->AddTextItem(0,FSKEY_S,L"Select FD Image")->BindCallBack(&THISCLASS::FD0_SelectImageFile,this);
+		FD0_writeProtectMenu=subMenu->AddTextItem(0,FSKEY_P,L"Write Protect");
+		FD0_writeProtectMenu->BindCallBack(&THISCLASS::FD0_WriteProtect,this);
+		FD0_writeUnprotectMenu=subMenu->AddTextItem(0,FSKEY_U,L"Write Unprotect");
+		FD0_writeUnprotectMenu->BindCallBack(&THISCLASS::FD0_WriteUnprotect,this);
+		subMenu->AddTextItem(0,FSKEY_J,L"Eject")->BindCallBack(&THISCLASS::FD0_Eject,this);
+	}
+
+	{
+		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_1,L"FD1")->GetSubMenu();
+		subMenu->AddTextItem(0,FSKEY_S,L"Select FD Image")->BindCallBack(&THISCLASS::FD1_SelectImageFile,this);
+		FD1_writeProtectMenu=subMenu->AddTextItem(0,FSKEY_P,L"Write Protect");
+		FD1_writeProtectMenu->BindCallBack(&THISCLASS::FD1_WriteProtect,this);
+		FD1_writeUnprotectMenu=subMenu->AddTextItem(0,FSKEY_U,L"Write Unprotect");
+		FD1_writeUnprotectMenu->BindCallBack(&THISCLASS::FD1_WriteUnprotect,this);
+		subMenu->AddTextItem(0,FSKEY_J,L"Eject")->BindCallBack(&THISCLASS::FD1_Eject,this);
 	}
 
 	SetMainMenu(mainMenu);
@@ -129,6 +154,7 @@ void FsGuiMainCanvas::OnInterval(void)
 			if(true==subproc.Receive(str))
 			{
 				VMLog.push_back(str);
+				std::cout << str;
 			}
 			else
 			{
@@ -600,3 +626,212 @@ void FsGuiMainCanvas::VM_Resume(FsGuiPopUpMenuItem *)
 }
 
 ////////////////////////////////////////////////////////////
+
+void FsGuiMainCanvas::CD_SelectImageFile(FsGuiPopUpMenuItem *)
+{
+	if(true==subproc.SubprocRunning())
+	{
+		auto fdlg=FsGuiDialog::CreateSelfDestructiveDialog<FsGuiFileDialog>();
+		fdlg->Initialize();
+		fdlg->mode=FsGuiFileDialog::MODE_OPEN;
+		fdlg->multiSelect=YSFALSE;
+		fdlg->title.Set(L"Open CD Image");
+		fdlg->fileExtensionArray.Append(L".CUE");
+		fdlg->fileExtensionArray.Append(L".ISO");
+		fdlg->defaultFileName=profileDlg->CDImgTxt->GetWString();
+		fdlg->BindCloseModalCallBack(&THISCLASS::CD_ImageFileSelected,this);
+		AttachModalDialog(fdlg);
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+void FsGuiMainCanvas::CD_ImageFileSelected(FsGuiDialog *dlg,int returnCode)
+{
+	auto fdlg=dynamic_cast <FsGuiFileDialog *>(dlg);
+	if(nullptr!=fdlg && (int)YSOK==returnCode)
+	{
+		YsWString fName=fdlg->selectedFileArray[0];
+		YsString utf8;
+		utf8.EncodeUTF8(fName.data());
+
+		std::string cmd="CDLOAD ";
+		cmd.push_back('\"');
+		cmd+=utf8.c_str();
+		cmd.push_back('\"');
+		cmd.push_back('\n');
+		subproc.Send(cmd);
+	}
+}
+
+void FsGuiMainCanvas::CD_Eject(FsGuiPopUpMenuItem *)
+{
+	if(true==subproc.SubprocRunning())
+	{
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+
+void FsGuiMainCanvas::FD0_SelectImageFile(FsGuiPopUpMenuItem *)
+{
+	if(true==subproc.SubprocRunning())
+	{
+		auto fdlg=FsGuiDialog::CreateSelfDestructiveDialog<FsGuiFileDialog>();
+		fdlg->Initialize();
+		fdlg->mode=FsGuiFileDialog::MODE_OPEN;
+		fdlg->multiSelect=YSFALSE;
+		fdlg->title.Set(L"Open FD0 Image");
+		fdlg->fileExtensionArray.Append(L".BIN");
+		// fdlg->fileExtensionArray.Append(L".D77");
+		fdlg->defaultFileName=profileDlg->FDImgTxt[0][0]->GetWString();
+		fdlg->BindCloseModalCallBack(&THISCLASS::FD0_ImageFileSelected,this);
+		AttachModalDialog(fdlg);
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+void FsGuiMainCanvas::FD0_ImageFileSelected(FsGuiDialog *dlg,int returnCode)
+{
+	auto fdlg=dynamic_cast <FsGuiFileDialog *>(dlg);
+	if(nullptr!=fdlg && (int)YSOK==returnCode)
+	{
+		auto fName=fdlg->selectedFileArray[0];
+		YsString utf8;
+		utf8.EncodeUTF8(fName.data());
+
+		std::string cmd="FD0LOAD ";
+		cmd.push_back('\"');
+		cmd+=utf8.c_str();
+		cmd.push_back('\"');
+		cmd.push_back('\n');
+		subproc.Send(cmd);
+
+		FD0_writeProtectMenu->SetCheck(YSFALSE);
+		FD0_writeUnprotectMenu->SetCheck(YSTRUE);
+	}
+}
+void FsGuiMainCanvas::FD0_WriteProtect(FsGuiPopUpMenuItem *)
+{
+	if(true==subproc.SubprocRunning())
+	{
+		subproc.Send("FD0WP\n");
+		FD0_writeProtectMenu->SetCheck(YSTRUE);
+		FD0_writeUnprotectMenu->SetCheck(YSFALSE);
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+void FsGuiMainCanvas::FD0_WriteUnprotect(FsGuiPopUpMenuItem *)
+{
+	if(true==subproc.SubprocRunning())
+	{
+		subproc.Send("FD0UP\n");
+		FD0_writeProtectMenu->SetCheck(YSFALSE);
+		FD0_writeUnprotectMenu->SetCheck(YSTRUE);
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+void FsGuiMainCanvas::FD0_Eject(FsGuiPopUpMenuItem *)
+{
+	if(true==subproc.SubprocRunning())
+	{
+		subproc.Send("FD0EJECT\n");
+		FD0_writeProtectMenu->SetCheck(YSFALSE);
+		FD0_writeUnprotectMenu->SetCheck(YSTRUE);
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+
+void FsGuiMainCanvas::FD1_SelectImageFile(FsGuiPopUpMenuItem *)
+{
+	if(true==subproc.SubprocRunning())
+	{
+		auto fdlg=FsGuiDialog::CreateSelfDestructiveDialog<FsGuiFileDialog>();
+		fdlg->Initialize();
+		fdlg->mode=FsGuiFileDialog::MODE_OPEN;
+		fdlg->multiSelect=YSFALSE;
+		fdlg->title.Set(L"Open FD1 Image");
+		fdlg->fileExtensionArray.Append(L".BIN");
+		// fdlg->fileExtensionArray.Append(L".D77");
+		fdlg->defaultFileName=profileDlg->FDImgTxt[1][0]->GetWString();
+		fdlg->BindCloseModalCallBack(&THISCLASS::FD1_ImageFileSelected,this);
+		AttachModalDialog(fdlg);
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+void FsGuiMainCanvas::FD1_ImageFileSelected(FsGuiDialog *dlg,int returnCode)
+{
+	auto fdlg=dynamic_cast <FsGuiFileDialog *>(dlg);
+	if(nullptr!=fdlg && (int)YSOK==returnCode)
+	{
+		auto fName=fdlg->selectedFileArray[0];
+		YsString utf8;
+		utf8.EncodeUTF8(fName.data());
+
+		std::string cmd="FD1LOAD ";
+		cmd.push_back('\"');
+		cmd+=utf8.c_str();
+		cmd.push_back('\"');
+		cmd.push_back('\n');
+		subproc.Send(cmd);
+
+		FD1_writeProtectMenu->SetCheck(YSFALSE);
+		FD1_writeUnprotectMenu->SetCheck(YSTRUE);
+	}
+}
+void FsGuiMainCanvas::FD1_WriteProtect(FsGuiPopUpMenuItem *)
+{
+	if(true==subproc.SubprocRunning())
+	{
+		subproc.Send("FD1WP\n");
+		FD1_writeProtectMenu->SetCheck(YSTRUE);
+		FD1_writeUnprotectMenu->SetCheck(YSFALSE);
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+void FsGuiMainCanvas::FD1_WriteUnprotect(FsGuiPopUpMenuItem *)
+{
+	if(true==subproc.SubprocRunning())
+	{
+		subproc.Send("FD1UP\n");
+		FD1_writeProtectMenu->SetCheck(YSFALSE);
+		FD1_writeUnprotectMenu->SetCheck(YSTRUE);
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+void FsGuiMainCanvas::FD1_Eject(FsGuiPopUpMenuItem *)
+{
+	if(true==subproc.SubprocRunning())
+	{
+		subproc.Send("FD1EJECT\n");
+		FD1_writeProtectMenu->SetCheck(YSFALSE);
+		FD1_writeUnprotectMenu->SetCheck(YSTRUE);
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
