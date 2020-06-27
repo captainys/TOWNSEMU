@@ -447,6 +447,10 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 			}
 			i+=2;
 		}
+		else if("-WINDOWSHIFT"==ARG)
+		{
+			windowShift=true;
+		}
 		else
 		{
 			if(1==i)

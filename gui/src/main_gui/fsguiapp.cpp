@@ -154,7 +154,7 @@ void FsGuiMainCanvas::OnInterval(void)
 			if(true==subproc.Receive(str))
 			{
 				VMLog.push_back(str);
-				std::cout << str;
+				std::cout << "VM:" << str;
 			}
 			else
 			{

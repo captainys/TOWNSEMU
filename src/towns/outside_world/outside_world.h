@@ -25,6 +25,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 class Outside_World
 {
 public:
+	bool windowShift=false;
+
 	// Mouse will be automatically identified by towns.gameport.
 	// Only game-pad emulation takes effect.
 	unsigned int gamePort[2];

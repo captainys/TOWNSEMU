@@ -285,6 +285,7 @@ bool Setup(FMTowns &towns,Outside_World *outside_world,const TownsARGV &argv)
 	}
 
 	outside_world->scaling=argv.scaling;
+	outside_world->windowShift=argv.windowShift;
 
 	return true;
 }

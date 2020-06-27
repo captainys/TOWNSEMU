@@ -218,6 +218,8 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 		argv.back().pop_back();
 	}
 
+	argv.push_back("-WINDOWSHIFT");
+
 	if(""!=CDImgFile)
 	{
 		argv.push_back("-CD");

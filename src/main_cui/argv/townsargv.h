@@ -27,6 +27,8 @@ public:
 	unsigned int gamePort[2];
 	unsigned int bootKeyComb=BOOT_KEYCOMB_NONE;
 
+	bool windowShift=false;
+
 	bool noWait=true;
 	bool noWaitStandby=false;
 

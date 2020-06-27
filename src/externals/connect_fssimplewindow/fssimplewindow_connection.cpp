@@ -56,7 +56,13 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 	int wid=640*scaling/100;
 	int hei=480*scaling/100;
 
-	FsOpenWindow(0,0,wid,hei+STATUS_HEI,1);
+	int winY0=0;
+	if(true==windowShift)
+	{
+		winY0=48;
+	}
+
+	FsOpenWindow(0,winY0,wid,hei+STATUS_HEI,1);
 	FsSetWindowTitle("FM Towns Emulator - TSUGARU");
 	soundPlayer.Start();
 	cddaStartHSG=0;
