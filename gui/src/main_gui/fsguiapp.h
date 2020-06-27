@@ -33,6 +33,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <fsgui.h>
 #include "profiledlg.h"
+#include "subproc.h"
 
 class FsGuiMainCanvas : public FsGuiCanvas
 {
@@ -55,6 +56,7 @@ private:
 
 public:
 	// [Core data structure]
+	Subprocess subproc;
 
 
 	// [Modeless dialogs]

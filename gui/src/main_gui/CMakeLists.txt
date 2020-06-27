@@ -1,7 +1,7 @@
 set(TARGET_NAME "Tsugaru_GUI")
 set(IS_LIBRARY_PROJECT 0)
 set(EXE_TYPE MACOSX_BUNDLE)
-set(LIB_DEPENDENCY fslazywindow ysgl fsguilib fsguifiledialog fsguilib_gl1 ysport townsdef townsprofile)
+set(LIB_DEPENDENCY fslazywindow ysgl fsguilib fsguifiledialog fsguilib_gl1 ysport subproc townsdef townsprofile)
 set(INCLUDE_DEPENDENCY)
 set(OWN_HEADER_PATH .)
 set(SINGLE_TARGET 1)

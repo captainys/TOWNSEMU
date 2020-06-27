@@ -1,3 +1,4 @@
+#include <iostream>
 #include <windows.h>
 #include "subproc.h"
 
@@ -55,7 +56,7 @@ void Subprocess::CleanUp(void)
 
 	errMsg="";
 }
-bool Subprocess::StartProc(const std::vector <std::string> &argv)
+bool Subprocess::StartProc(const std::vector <std::string> &argv,bool usePipe)
 {
 	SECURITY_ATTRIBUTES secAttr;
 	ZeroMemory(&secAttr,sizeof(secAttr));
@@ -87,6 +88,8 @@ bool Subprocess::StartProc(const std::vector <std::string> &argv)
 		cmdline.push_back('\"');
 	}
 
+std::cout << cmdline << std::endl;
+
 	STARTUPINFO startInfo;
 	ZeroMemory(&procInfo,sizeof(procInfo));
 	ZeroMemory(&startInfo,sizeof(startInfo));
@@ -94,7 +97,10 @@ bool Subprocess::StartProc(const std::vector <std::string> &argv)
 	startInfo.hStdError=subprocStdoutW;
 	startInfo.hStdOutput=subprocStdoutW;
 	startInfo.hStdInput=subprocStdinR;
-	startInfo.dwFlags|=STARTF_USESTDHANDLES;
+	if(true==usePipe)
+	{
+		startInfo.dwFlags|=STARTF_USESTDHANDLES;
+	}
 
 	if(0==CreateProcess(nullptr,(char *)cmdline.c_str(),nullptr,nullptr,TRUE,0,nullptr,nullptr,&startInfo,&procInfo))
 	{

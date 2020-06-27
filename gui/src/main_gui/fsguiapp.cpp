@@ -66,6 +66,8 @@ FsGuiMainCanvas::~FsGuiMainCanvas()
 	PerformScheduledDeletion();
 	delete profileDlg;
 
+	subproc.TerminateSubprocess();
+
 	DeleteMainMenu();
 }
 
@@ -210,6 +212,17 @@ void FsGuiMainCanvas::ReallyRun(void)
 	for(auto arg : argv)
 	{
 		std::cout << arg << std::endl;
+	}
+	argv[0]="./Tsugaru_CUI.exe";
+	if(true!=subproc.StartProc(argv,/*usePipe=*/false))
+	{
+		YsWString msg;
+		msg.SetUTF8String(subproc.errMsg.c_str());
+
+		auto msgDlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialog>();
+		msgDlg->Make(L"Error",msg,L"OK",nullptr);
+		msgDlg->BindCloseModalCallBack(&THISCLASS::File_Exit_ConfirmExitCallBack,this);
+		AttachModalDialog(msgDlg);
 	}
 }
 

@@ -20,7 +20,14 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 std::string cpputil::MakeFullPathName(std::string dirName,std::string fName)
 {
-	return dirName+"/"+fName;
+	if(dirName.back()=='\\' || dirName.back()=='/')
+	{
+		return dirName+fName;
+	}
+	else
+	{
+		return dirName+"/"+fName;
+	}
 }
 
 bool cpputil::FileExists(std::string fName)

@@ -2,6 +2,8 @@
 #define SUBPROC_IS_INCLUDED
 /* { */
 
+#include <string>
+#include <vector>
 
 #ifdef _WIN32
 	#include <windows.h>
@@ -26,7 +28,7 @@ public:
 	Subprocess();
 	~Subprocess();
 	void CleanUp(void);
-	bool StartProc(const std::vector <std::string> &argv);
+	bool StartProc(const std::vector <std::string> &argv,bool usePipe=true);
 	bool SubprocEnded(void) const;
 	void TerminateSubprocess(void);
 

@@ -166,6 +166,10 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 	argv.push_back("Tsugaru_CUI.exe");
 
 	argv.push_back(ROMDir);
+	if(0<argv.back().size() && (argv.back().back()=='/' || argv.back().back()=='\\'))
+	{
+		argv.back().pop_back();
+	}
 
 	if(""!=CDImgFile)
 	{
