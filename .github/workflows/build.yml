@@ -27,7 +27,7 @@ jobs:
     - name: build_gui
       run: |
           cmake ../src
-          cmake --build main_gui --config Release
+          cmake --build main_gui --config Release --target Tsugaru_GUI
       working-directory: ./gui/build
     - name: make_zip
       run: |
