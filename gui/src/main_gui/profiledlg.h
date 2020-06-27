@@ -58,6 +58,7 @@ public:
 	FsGuiTextBox *ROMDirTxt,*CDImgTxt,*FDImgTxt[TownsProfile::NUM_STANDBY_FDIMG],*HDImgTxt[TownsProfile::MAX_NUM_SCSI_DEVICE];
 	FsGuiButton *gamePortBtn[2][NUM_GAMEPORT_CHOICE]; // None, Pad0, Pad1, Keybord Emulation, Mouse,
 	FsGuiButton *bootKeyBtn[15];
+	FsGuiTextBox *scrnScaleTxt;
 	FsGuiButton *autoStartBtn;
 	FsGuiButton *runBtn;
 

@@ -1,3 +1,5 @@
+#include <string>
+#include <sstream>
 #include <ysclass.h>
 
 #include "townsprofile.h"
@@ -22,9 +24,11 @@ void TownsProfile::CleanUp(void)
 	}
 	bootKeyComb=BOOT_KEYCOMB_NONE;
 	autoStart=false;
+	screenScaling=150;
 }
 std::vector <std::string> TownsProfile::Serialize(void) const
 {
+	std::ostringstream sstream;
 	std::vector <std::string> text;
 
 	text.push_back("ROMDIR__ ");
@@ -71,6 +75,10 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 
 	text.push_back("AUTOSTAR ");
 	text.back()+=(autoStart ? "1" : "0");
+
+	sstream.str()="";
+	sstream << "SCALING_ " << screenScaling;
+	text.push_back(sstream.str());
 
 	return text;
 }
@@ -149,6 +157,13 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 				}
 			}
 		}
+		else if(0==argv[0].STRCMP("SCALING_"))
+		{
+			if(2<=argv.size())
+			{
+				screenScaling=argv[1].Atoi();
+			}
+		}
 		else
 		{
 			errorMsg="Unrecognized keyword:";
@@ -161,6 +176,7 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 }
 std::vector <std::string> TownsProfile::MakeArgv(void) const
 {
+	std::ostringstream sstream;
 	std::vector <std::string> argv;
 
 	argv.push_back("Tsugaru_CUI.exe");
@@ -209,6 +225,23 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 		argv.push_back("-GAMEPORT");
 		argv.back().push_back('0'+i);
 		argv.push_back(TownsGamePortEmuToStr(gamePort[i]));
+	}
+
+	if(100!=screenScaling)
+	{
+		auto screenScalingFix=screenScaling;
+		if(screenScalingFix<30)
+		{
+			screenScalingFix=30;
+		}
+		else if(500<screenScalingFix)
+		{
+			screenScalingFix=400;
+		}
+		argv.push_back("-SCALE");
+		sstream.str()="";
+		sstream << screenScalingFix;
+		argv.push_back(sstream.str());
 	}
 
 	return argv;

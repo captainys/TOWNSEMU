@@ -33,6 +33,9 @@ void ProfileDialog::Make(void)
 		FDImgBtn[1]=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"FD1:",YSTRUE);
 		FDImgTxt[1]=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",nShowPath,YSFALSE);
 
+		scrnScaleTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,L"Scaling(%):",4,YSTRUE);
+		scrnScaleTxt->SetInteger(100);
+
 		EndAddTabItem();
 	}
 
@@ -244,6 +247,8 @@ TownsProfile ProfileDialog::GetProfile(void) const
 	}
 	profile.autoStart=(YSTRUE==autoStartBtn->GetCheck());
 
+	profile.screenScaling=scrnScaleTxt->GetInteger();
+
 	return profile;
 }
 void ProfileDialog::SetProfile(const TownsProfile &profile)
@@ -303,4 +308,6 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 	{
 		autoStartBtn->SetCheck(YSFALSE);
 	}
+
+	scrnScaleTxt->SetInteger(profile.screenScaling);
 }

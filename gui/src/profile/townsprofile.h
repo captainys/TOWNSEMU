@@ -21,6 +21,7 @@ public:
 	std::string SCSIImgFile[MAX_NUM_SCSI_DEVICE];
 	unsigned int bootKeyComb=BOOT_KEYCOMB_NONE;
 	unsigned int gamePort[2]={TOWNS_GAMEPORTEMU_PHYSICAL0,TOWNS_GAMEPORTEMU_MOUSE};
+	unsigned screenScaling=150;
 	bool autoStart;
 
 	std::string errorMsg;
