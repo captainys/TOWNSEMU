@@ -12,6 +12,8 @@ void ProfileDialog::Make(void)
 {
 	const int nShowPath=80;
 
+	profileFNameTxt=AddStaticText(0,FSKEY_NULL,L"",YSFALSE);
+
 	tab=AddTabControl(0,FSKEY_NULL,YSTRUE);
 
 	int mainTabId=0;
@@ -22,18 +24,23 @@ void ProfileDialog::Make(void)
 
 		ROMDirBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"ROM dir:",YSTRUE);
 		ROMDirTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",nShowPath,YSFALSE);
+		ROMDirTxt->SetLengthLimit(PATH_LENGTH);
 		AddStaticText(0,FSKEY_NULL,"(When browsing for the ROM dir, please select one of the ROM files.)",YSTRUE);
 
 		CDImgBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"CD Image:",YSTRUE);
 		CDImgTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",nShowPath,YSFALSE);
+		CDImgTxt->SetLengthLimit(PATH_LENGTH);
 
 		FDImgBtn[0]=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"FD0:",YSTRUE);
 		FDImgTxt[0]=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",nShowPath,YSFALSE);
+		FDImgTxt[0]->SetLengthLimit(PATH_LENGTH);
 
 		FDImgBtn[1]=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"FD1:",YSTRUE);
 		FDImgTxt[1]=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",nShowPath,YSFALSE);
+		FDImgTxt[1]->SetLengthLimit(PATH_LENGTH);
 
 		scrnScaleTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,L"Scaling(%):",4,YSTRUE);
+		scrnScaleTxt->SetLengthLimit(PATH_LENGTH);
 		scrnScaleTxt->SetInteger(100);
 
 		EndAddTabItem();
@@ -45,24 +52,31 @@ void ProfileDialog::Make(void)
 
 		HDImgBtn[0]=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"HD0:",YSTRUE);
 		HDImgTxt[0]=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",nShowPath,YSFALSE);
+		HDImgTxt[0]->SetLengthLimit(PATH_LENGTH);
 
 		HDImgBtn[1]=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"HD1:",YSTRUE);
 		HDImgTxt[1]=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",nShowPath,YSFALSE);
+		HDImgTxt[1]->SetLengthLimit(PATH_LENGTH);
 
 		HDImgBtn[2]=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"HD2:",YSTRUE);
 		HDImgTxt[2]=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",nShowPath,YSFALSE);
+		HDImgTxt[2]->SetLengthLimit(PATH_LENGTH);
 
 		HDImgBtn[3]=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"HD3:",YSTRUE);
 		HDImgTxt[3]=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",nShowPath,YSFALSE);
+		HDImgTxt[3]->SetLengthLimit(PATH_LENGTH);
 
 		HDImgBtn[4]=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"HD4:",YSTRUE);
 		HDImgTxt[4]=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",nShowPath,YSFALSE);
+		HDImgTxt[4]->SetLengthLimit(PATH_LENGTH);
 
 		HDImgBtn[5]=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"HD5:",YSTRUE);
 		HDImgTxt[5]=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",nShowPath,YSFALSE);
+		HDImgTxt[5]->SetLengthLimit(PATH_LENGTH);
 
 		HDImgBtn[6]=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"HD6:",YSTRUE);
 		HDImgTxt[6]=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",nShowPath,YSFALSE);
+		HDImgTxt[6]->SetLengthLimit(PATH_LENGTH);
 
 		EndAddTabItem();
 	}

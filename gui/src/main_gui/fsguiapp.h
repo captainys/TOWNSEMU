@@ -115,7 +115,7 @@ public:
 	void Run(void);
 private:
 	void ReallyRun(void);
-
+	std::string FindTsugaruCUI(void) const;
 
 
 private:
@@ -124,9 +124,17 @@ private:
 	void File_SaveDefaultConfirm(FsGuiDialog *dlg,int returnCode);
 	void File_ReloadDefaultProfile(FsGuiPopUpMenuItem *);
 	YsWString GetDefaultProfileFileName(void) const;
+	YsWString GetTsugaruProfileDir(void) const;
 
 	void SaveProfile(YsWString fName) const;
 	void LoadProfile(YsWString fName);
+
+	void File_SaveProfile(FsGuiPopUpMenuItem *);
+	void File_OpenProfile(FsGuiPopUpMenuItem *);
+	void File_OpenProfile_FileSelected(FsGuiDialog *dlg,int returnCode);
+	void File_SaveProfileAs(FsGuiPopUpMenuItem *);
+	void File_SaveProfileAs_FileSelected(FsGuiDialog *dlg,int returnCode);
+	void File_SaveProfileAs_OverwriteConfirm(FsGuiDialog *dlg,int returnCode);
 
 	// [Menu call-backs]
 	/*! Sample call-back functions.

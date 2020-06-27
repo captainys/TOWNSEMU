@@ -14,6 +14,7 @@ public:
 
 	enum
 	{
+		PATH_LENGTH=1024,
 		NUM_GAMEPORT_CHOICE=5
 	};
 
@@ -53,6 +54,8 @@ public:
 	class FsGuiMainCanvas *canvasPtr;
 
 	FsGuiTabControl *tab;
+
+	FsGuiStatic *profileFNameTxt;
 
 	FsGuiButton *ROMDirBtn,*CDImgBtn,*FDImgBtn[TownsProfile::NUM_STANDBY_FDIMG],*HDImgBtn[TownsProfile::MAX_NUM_SCSI_DEVICE];
 	FsGuiTextBox *ROMDirTxt,*CDImgTxt,*FDImgTxt[TownsProfile::NUM_STANDBY_FDIMG],*HDImgTxt[TownsProfile::MAX_NUM_SCSI_DEVICE];

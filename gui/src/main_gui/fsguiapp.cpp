@@ -91,6 +91,9 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 
 	{
 		auto *fileSubMenu=mainMenu->AddTextItem(0,FSKEY_F,L"File")->GetSubMenu();
+		fileSubMenu->AddTextItem(0,FSKEY_O,L"Open Profile")->BindCallBack(&THISCLASS::File_OpenProfile,this);
+		fileSubMenu->AddTextItem(0,FSKEY_S,L"Save Profile")->BindCallBack(&THISCLASS::File_SaveProfile,this);
+		fileSubMenu->AddTextItem(0,FSKEY_A,L"Save Profile As")->BindCallBack(&THISCLASS::File_SaveProfileAs,this);
 		fileSubMenu->AddTextItem(0,FSKEY_NULL,L"Save as Default")->BindCallBack(&THISCLASS::File_SaveDefaultProfile,this);
 		fileSubMenu->AddTextItem(0,FSKEY_NULL,L"Reload Default")->BindCallBack(&THISCLASS::File_ReloadDefaultProfile,this);
 		fileSubMenu->AddTextItem(0,FSKEY_X,L"Exit")->BindCallBack(&THISCLASS::File_Exit,this);
@@ -213,17 +216,47 @@ void FsGuiMainCanvas::ReallyRun(void)
 	{
 		std::cout << arg << std::endl;
 	}
-	argv[0]="./Tsugaru_CUI.exe";
-	if(true!=subproc.StartProc(argv,/*usePipe=*/false))
+	argv[0]=FindTsugaruCUI();
+	if(0==argv[0].size())
+	{
+		auto msgDlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialog>();
+		msgDlg->Make(
+		    L"Error",
+			L"Cannot find Tsugaru CUI module.\n"
+			L"Tsugaru CUI module must be in the same directory\n"
+			L"as the GUI module.",
+			L"OK",nullptr);
+		AttachModalDialog(msgDlg);
+	}
+	else if(true!=subproc.StartProc(argv,/*usePipe=*/false))
 	{
 		YsWString msg;
 		msg.SetUTF8String(subproc.errMsg.c_str());
 
 		auto msgDlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialog>();
 		msgDlg->Make(L"Error",msg,L"OK",nullptr);
-		msgDlg->BindCloseModalCallBack(&THISCLASS::File_Exit_ConfirmExitCallBack,this);
 		AttachModalDialog(msgDlg);
 	}
+}
+
+std::string FsGuiMainCanvas::FindTsugaruCUI(void) const
+{
+	YsWString exeFile(L"Tsugaru_CUI");
+#ifdef _WIN32
+	exeFile.Append(L".exe");
+#endif
+	YsWString exePath=YsSpecialPath::GetProgramBaseDirW();
+
+	YsWString ful;
+	ful.MakeFullPathName(exePath,exeFile);
+	if(YSTRUE==YsFileIO::CheckFileExist(ful))
+	{
+		YsString utf8;
+		utf8.EncodeUTF8(ful.data());
+		return utf8.c_str();
+	}
+
+	return "";
 }
 
 
@@ -253,6 +286,83 @@ void FsGuiMainCanvas::File_ReloadDefaultProfile(FsGuiPopUpMenuItem *)
 	LoadProfile(GetDefaultProfileFileName());
 }
 
+void FsGuiMainCanvas::File_SaveProfile(FsGuiPopUpMenuItem *)
+{
+	auto fName=profileDlg->profileFNameTxt->GetWText();
+	if(fName==GetDefaultProfileFileName())
+	{
+		File_SaveDefaultProfile(nullptr);
+	}
+	else
+	{
+		SaveProfile(fName);
+	}
+}
+void FsGuiMainCanvas::File_OpenProfile(FsGuiPopUpMenuItem *)
+{
+	auto fdlg=FsGuiDialog::CreateSelfDestructiveDialog<FsGuiFileDialog>();
+	fdlg->Initialize();
+	fdlg->mode=FsGuiFileDialog::MODE_OPEN;
+	fdlg->multiSelect=YSFALSE;
+	fdlg->title.Set(L"Open Profile");
+	fdlg->fileExtensionArray.Append(L".Tsugaru");
+	fdlg->defaultFileName=profileDlg->profileFNameTxt->GetWText();
+	fdlg->BindCloseModalCallBack(&THISCLASS::File_OpenProfile_FileSelected,this);
+	AttachModalDialog(fdlg);
+}
+void FsGuiMainCanvas::File_OpenProfile_FileSelected(FsGuiDialog *dlg,int returnCode)
+{
+	auto fdlg=dynamic_cast <FsGuiFileDialog *>(dlg);
+	if(nullptr!=fdlg && (int)YSOK==returnCode)
+	{
+		profileDlg->profileFNameTxt->SetText(fdlg->selectedFileArray[0]);
+		LoadProfile(fdlg->selectedFileArray[0]);
+	}
+}
+void FsGuiMainCanvas::File_SaveProfileAs(FsGuiPopUpMenuItem *)
+{
+	auto fdlg=FsGuiDialog::CreateSelfDestructiveDialog<FsGuiFileDialog>();
+	fdlg->Initialize();
+	fdlg->mode=FsGuiFileDialog::MODE_SAVE;
+	fdlg->multiSelect=YSFALSE;
+	fdlg->title.Set(L"Save Profile As");
+	fdlg->fileExtensionArray.Append(L".Tsugaru");
+	fdlg->defaultFileName=profileDlg->profileFNameTxt->GetWText();
+	fdlg->BindCloseModalCallBack(&THISCLASS::File_SaveProfileAs_FileSelected,this);
+	AttachModalDialog(fdlg);
+}
+void FsGuiMainCanvas::File_SaveProfileAs_FileSelected(FsGuiDialog *dlg,int returnCode)
+{
+	auto fdlg=dynamic_cast <FsGuiFileDialog *>(dlg);
+	if(nullptr!=fdlg && (int)YSOK==returnCode)
+	{
+		auto fName=fdlg->selectedFileArray[0];
+		if(YSTRUE==YsFileIO::CheckFileExist(fName))
+		{
+			auto dlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialogWithPayload<YsWString> >();
+			dlg->payload=fName;
+			dlg->Make(L"Overwrite Default",L"Are you sure?",L"Yes",L"No");
+			dlg->BindCloseModalCallBack(&FsGuiMainCanvas::File_SaveProfileAs_OverwriteConfirm,this);
+			AttachModalDialog(dlg);
+		}
+		else
+		{
+			profileDlg->profileFNameTxt->SetText(fdlg->selectedFileArray[0]);
+			SaveProfile(fName);
+		}
+	}
+}
+void FsGuiMainCanvas::File_SaveProfileAs_OverwriteConfirm(FsGuiDialog *dlgIn,int returnCode)
+{
+	auto dlg=dynamic_cast <FsGuiMessageBoxDialogWithPayload<YsWString> *>(dlgIn);
+	if(nullptr!=dlg && (int)YSOK==returnCode)
+	{
+		profileDlg->profileFNameTxt->SetText(dlg->payload);
+		SaveProfile(dlg->payload);
+	}
+}
+
+
 void FsGuiMainCanvas::SaveProfile(YsWString fName) const
 {
 	auto profile=profileDlg->GetProfile();
@@ -268,33 +378,46 @@ void FsGuiMainCanvas::LoadProfile(YsWString fName)
 {
 	std::vector <std::string> text;
 
+	profileDlg->profileFNameTxt->SetText(fName);
+
 	YsFileIO::File fp(fName,"r");
-	auto inStream=fp.InStream();
-	YsString str;
-	while(YSTRUE!=inStream.EndOfFile())
+	if(fp!=nullptr)
 	{
-		text.push_back(inStream.Fgets().c_str());
-	}
-	TownsProfile profile;
-	if(true==profile.Deserialize(text))
-	{
-		profileDlg->SetProfile(profile);
-	}
-	else
-	{
-		auto dlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialog>();
-		YsWString errMsg;
-		errMsg.SetUTF8String(profile.errorMsg.c_str());
-		dlg->Make(L"Profile Load Error",errMsg,L"OK",nullptr);
-		AttachModalDialog(dlg);
+		auto inStream=fp.InStream();
+		YsString str;
+		while(YSTRUE!=inStream.EndOfFile())
+		{
+			text.push_back(inStream.Fgets().c_str());
+		}
+		TownsProfile profile;
+		if(true==profile.Deserialize(text))
+		{
+			profileDlg->SetProfile(profile);
+		}
+		else
+		{
+			auto dlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialog>();
+			YsWString errMsg;
+			errMsg.SetUTF8String(profile.errorMsg.c_str());
+			dlg->Make(L"Profile Load Error",errMsg,L"OK",nullptr);
+			AttachModalDialog(dlg);
+		}
 	}
 }
 
 YsWString FsGuiMainCanvas::GetDefaultProfileFileName(void) const
 {
 	YsWString ful;
-	ful.MakeFullPathName(YsSpecialPath::GetUserDocDirW(),L"Tsugaru_Default.txt");
+	ful.MakeFullPathName(GetTsugaruProfileDir(),L"Tsugaru_Default.Tsugaru");
 	return ful;
+}
+
+YsWString FsGuiMainCanvas::GetTsugaruProfileDir(void) const
+{
+	YsWString path;
+	path.MakeFullPathName(YsSpecialPath::GetUserDocDirW(),L"Tsugaru_TOWNS");
+	YsFileIO::MkDir(path);
+	return path;
 }
 
 
