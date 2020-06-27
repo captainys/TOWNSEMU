@@ -133,6 +133,12 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 		subMenu->AddTextItem(0,FSKEY_J,L"Eject")->BindCallBack(&THISCLASS::FD1_Eject,this);
 	}
 
+	{
+		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_H,L"Help")->GetSubMenu();
+		subMenu->AddTextItem(0,FSKEY_H,L"Help")->BindCallBack(&THISCLASS::Help_Help,this);
+		subMenu->AddTextItem(0,FSKEY_A,L"About")->BindCallBack(&THISCLASS::Help_About,this);
+	}
+
 	SetMainMenu(mainMenu);
 }
 
@@ -834,4 +840,25 @@ void FsGuiMainCanvas::FD1_Eject(FsGuiPopUpMenuItem *)
 	{
 		VM_Not_Running_Error();
 	}
+}
+void FsGuiMainCanvas::Help_About(FsGuiPopUpMenuItem *)
+{
+	auto msgDlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialog>();
+	const wchar_t *msg=
+	    L"FM TOWNS Emulator Tsugaru\n"
+	    L"Developed by CaptainYS\n"
+	    L"http://www.ysflight.com\n"
+	    L"PEB01130@nifty.com\n"
+	    L"\n";
+	msgDlg->Make(L"About Tsugaru",msg,L"OK",nullptr);
+	AttachModalDialog(msgDlg);
+}
+void FsGuiMainCanvas::Help_Help(FsGuiPopUpMenuItem *)
+{
+	auto msgDlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialog>();
+	msgDlg->Make(
+	    L"HELP",
+	    L"(To be written)",
+	    L"OK",nullptr);
+	AttachModalDialog(msgDlg);
 }

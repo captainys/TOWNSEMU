@@ -177,6 +177,11 @@ private:
 	void FD1_WriteProtect(FsGuiPopUpMenuItem *);
 	void FD1_WriteUnprotect(FsGuiPopUpMenuItem *);
 	void FD1_Eject(FsGuiPopUpMenuItem *);
+
+
+
+	void Help_About(FsGuiPopUpMenuItem *);
+	void Help_Help(FsGuiPopUpMenuItem *);
 };
 
 /* } */
