@@ -80,3 +80,154 @@ void ProfileDialog::Make(void)
 	Fit();
 	SetArrangeType(FSDIALOG_ARRANGE_TOP_LEFT);
 }
+
+/* virtual */ void ProfileDialog::OnButtonClick(FsGuiButton *btn)
+{
+	if(ROMDirBtn==btn)
+	{
+		YsString def;
+		def.MakeFullPathName(ROMDirTxt->GetString(),"FMT_SYS.ROM");
+
+		auto fdlg=FsGuiDialog::CreateSelfDestructiveDialog<FsGuiFileDialog>();
+		fdlg->Initialize();
+		fdlg->mode=FsGuiFileDialog::MODE_OPEN;
+		fdlg->multiSelect=YSFALSE;
+		fdlg->title.Set(L"Select a ROM file (like FMT_SYS.ROM)");
+		fdlg->fileExtensionArray.Append(L".ROM");
+		fdlg->defaultFileName.SetUTF8String(def);
+		fdlg->BindCloseModalCallBack(&THISCLASS::OnSelectROMFile,this);
+		AttachModalDialog(fdlg);
+	}
+	if(CDImgBtn==btn)
+	{
+		Browse(L"CD Image",CDImgTxt,L".CUE",L".ISO");
+	}
+	for(int i=0; i<sizeof(FDImgBtn)/sizeof(FDImgBtn[0]); ++i)
+	{
+		if(FDImgBtn[i]==btn)
+		{
+			YsWString label(L"Floppy Drive ");
+			label.push_back('0'+i);
+			Browse(label,FDImgTxt[i],L".BIN",nullptr); // ,L".D77"
+		}
+	}
+	for(int i=0; i<sizeof(HDImgBtn)/sizeof(HDImgBtn[0]); ++i)
+	{
+		if(HDImgBtn[i]==btn)
+		{
+			YsWString label(L"SCSI HDD ");
+			label.push_back('0'+i);
+			Browse(label,HDImgTxt[i],L".BIN",L".HDD");
+		}
+	}
+}
+void ProfileDialog::OnSelectROMFile(FsGuiDialog *dlg,int returnCode)
+{
+	auto fdlg=dynamic_cast <FsGuiFileDialog *>(dlg);
+	if((int)YSOK==returnCode && nullptr!=fdlg)
+	{
+		YsWString ful(fdlg->selectedFileArray[0]);
+		YsWString pth,fil;
+		ful.SeparatePathFile(pth,fil);
+		ROMDirTxt->SetText(pth);
+	}
+}
+void ProfileDialog::Browse(const wchar_t label[],FsGuiTextBox *txt,const wchar_t ext0[],const wchar_t ext1[])
+{
+	nowBrowsingTxt=txt;
+
+	YsString def=ROMDirTxt->GetString();
+
+	auto fdlg=FsGuiDialog::CreateSelfDestructiveDialog<FsGuiFileDialog>();
+	fdlg->Initialize();
+	fdlg->mode=FsGuiFileDialog::MODE_OPEN;
+	fdlg->multiSelect=YSFALSE;
+	fdlg->title.Set(label);
+	fdlg->fileExtensionArray.Append(ext0);
+	if(nullptr!=ext1)
+	{
+		fdlg->fileExtensionArray.Append(ext1);
+	}
+	fdlg->defaultFileName.SetUTF8String(def);
+	fdlg->BindCloseModalCallBack(&THISCLASS::OnSelectFile,this);
+	AttachModalDialog(fdlg);
+}
+void ProfileDialog::OnSelectFile(FsGuiDialog *dlg,int returnCode)
+{
+	auto fdlg=dynamic_cast <FsGuiFileDialog *>(dlg);
+	if((int)YSOK==returnCode && nullptr!=fdlg)
+	{
+		nowBrowsingTxt->SetText(fdlg->selectedFileArray[0]);
+	}
+}
+
+TownsProfile ProfileDialog::GetProfile(void) const
+{
+	TownsProfile profile;
+
+	profile.ROMDir=ROMDirTxt->GetString().data();
+	profile.CDImgFile=CDImgTxt->GetString().data();
+	profile.FDImgFile[0][0]=FDImgTxt[0]->GetString().data();
+	profile.FDImgFile[1][0]=FDImgTxt[1]->GetString().data();
+	profile.SCSIImgFile[0]=HDImgTxt[0]->GetString().data();
+	profile.SCSIImgFile[1]=HDImgTxt[1]->GetString().data();
+	profile.SCSIImgFile[2]=HDImgTxt[2]->GetString().data();
+	profile.SCSIImgFile[3]=HDImgTxt[3]->GetString().data();
+	profile.SCSIImgFile[4]=HDImgTxt[4]->GetString().data();
+	profile.SCSIImgFile[5]=HDImgTxt[5]->GetString().data();
+	profile.bootKeyComb=BOOT_KEYCOMB_NONE;
+	for(int i=0; i<sizeof(bootKeyBtn)/sizeof(bootKeyBtn[0]); ++i)
+	{
+		if(YSTRUE==bootKeyBtn[i]->GetCheck())
+		{
+			profile.bootKeyComb=i;
+			break;
+		}
+	}
+	profile.autoStart=(YSTRUE==autoStartBtn->GetCheck());
+
+	return profile;
+}
+void ProfileDialog::SetProfile(const TownsProfile &profile)
+{
+	YsWString str;
+
+	str.SetUTF8String(profile.ROMDir.data());
+	ROMDirTxt->SetText(str);
+
+	str.SetUTF8String(profile.CDImgFile.data());
+	CDImgTxt->SetText(str);
+
+	str.SetUTF8String(profile.FDImgFile[0][0].data());
+	FDImgTxt[0]->SetText(str);
+
+	str.SetUTF8String(profile.FDImgFile[1][0].data());
+	FDImgTxt[1]->SetText(str);
+
+	for(int i=0; i<TownsProfile::MAX_NUM_SCSI_DEVICE; ++i)
+	{
+		str.SetUTF8String(profile.SCSIImgFile[i].data());
+		HDImgTxt[i]->SetText(str);
+	}
+
+	for(int i=0; i<sizeof(bootKeyBtn)/sizeof(bootKeyBtn[0]); ++i)
+	{
+		if(i==profile.bootKeyComb)
+		{
+			bootKeyBtn[i]->SetCheck(YSTRUE);
+		}
+		else
+		{
+			bootKeyBtn[i]->SetCheck(YSFALSE);
+		}
+	}
+
+	if(true==profile.autoStart)
+	{
+		autoStartBtn->SetCheck(YSTRUE);
+	}
+	else
+	{
+		autoStartBtn->SetCheck(YSFALSE);
+	}
+}
