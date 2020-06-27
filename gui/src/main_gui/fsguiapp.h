@@ -115,12 +115,20 @@ public:
 	*/
 	void Run(void);
 private:
-	void ReallyRun(void);
+	bool ReallyRun(bool usePipe=true);
 	std::string FindTsugaruCUI(void) const;
+	std::vector <YsWString> CheckMissingROMFiles(void) const;
 
 
 private:
 	// [Menu pointers for check marks]
+
+	// [Menu call-backs]
+	/*! Sample call-back functions.
+	*/
+	void VM_Not_Running_Error(void);
+	void VM_Already_Running_Error(void);
+
 	void File_SaveDefaultProfile(FsGuiPopUpMenuItem *);
 	void File_SaveDefaultConfirm(FsGuiDialog *dlg,int returnCode);
 	void File_ReloadDefaultProfile(FsGuiPopUpMenuItem *);
@@ -137,9 +145,6 @@ private:
 	void File_SaveProfileAs_FileSelected(FsGuiDialog *dlg,int returnCode);
 	void File_SaveProfileAs_OverwriteConfirm(FsGuiDialog *dlg,int returnCode);
 
-	// [Menu call-backs]
-	/*! Sample call-back functions.
-	*/
 	void File_Exit(FsGuiPopUpMenuItem *);
 	void File_Exit_ConfirmExitCallBack(FsGuiDialog *,int);
 	void File_Exit_ReallyExit(void);
@@ -149,11 +154,9 @@ private:
 	void VM_Start(FsGuiPopUpMenuItem *);
 	void VM_StartAndCloseGUI(FsGuiPopUpMenuItem *);
 	void VM_PowerOff(FsGuiPopUpMenuItem *);
+	void VM_PowerOffConfirm(FsGuiDialog *dlg,int returnCode);
 	void VM_Pause(FsGuiPopUpMenuItem *);
 	void VM_Resume(FsGuiPopUpMenuItem *);
-
-
-	void VM_Not_Running_Error(void);
 };
 
 /* } */

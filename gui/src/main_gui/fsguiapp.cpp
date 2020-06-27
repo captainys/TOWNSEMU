@@ -233,8 +233,30 @@ void FsGuiMainCanvas::Run(void)
 	ReallyRun();
 }
 
-void FsGuiMainCanvas::ReallyRun(void)
+bool FsGuiMainCanvas::ReallyRun(bool usePipe)
 {
+	if(subproc.SubprocRunning())
+	{
+		VM_Already_Running_Error();
+		return false;
+	}
+
+	auto missing=CheckMissingROMFiles();
+	if(0<missing.size())
+	{
+		YsWString msg;
+		msg=L"Missing ROM files:";
+		for(auto fName : missing)
+		{
+			msg+=L" ";
+			msg+=fName;
+		}
+		auto msgDlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialog>();
+		msgDlg->Make(L"Error",msg,L"OK",nullptr);
+		AttachModalDialog(msgDlg);
+		return false;
+	}
+
 	auto profile=profileDlg->GetProfile();
 	auto argv=profile.MakeArgv();
 	for(auto arg : argv)
@@ -252,8 +274,9 @@ void FsGuiMainCanvas::ReallyRun(void)
 			L"as the GUI module.",
 			L"OK",nullptr);
 		AttachModalDialog(msgDlg);
+		return false;
 	}
-	else if(true!=subproc.StartProc(argv,/*usePipe=*/true))
+	else if(true!=subproc.StartProc(argv,usePipe))
 	{
 		YsWString msg;
 		msg.SetUTF8String(subproc.errMsg.c_str());
@@ -261,7 +284,9 @@ void FsGuiMainCanvas::ReallyRun(void)
 		auto msgDlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialog>();
 		msgDlg->Make(L"Error",msg,L"OK",nullptr);
 		AttachModalDialog(msgDlg);
+		return false;
 	}
+	return true;
 }
 
 std::string FsGuiMainCanvas::FindTsugaruCUI(void) const
@@ -284,6 +309,29 @@ std::string FsGuiMainCanvas::FindTsugaruCUI(void) const
 	return "";
 }
 
+std::vector <YsWString> FsGuiMainCanvas::CheckMissingROMFiles(void) const
+{
+	std::vector <YsWString> missing;
+	const YsWString ROMFName[]=
+	{
+		L"FMT_DIC.ROM",
+		L"FMT_DOS.ROM",
+		L"FMT_F20.ROM",
+		L"FMT_FNT.ROM",
+		L"FMT_SYS.ROM",
+	};
+	YsWString path=profileDlg->ROMDirTxt->GetWString();
+	for(auto file : ROMFName)
+	{
+		YsWString ful;
+		ful.MakeFullPathName(path,file);
+		if(YSTRUE!=YsFileIO::CheckFileExist(ful))
+		{
+			missing.push_back(file);
+		}
+	}
+	return missing;
+}
 
 
 ////////////////////////////////////////////////////////////
@@ -294,6 +342,17 @@ void FsGuiMainCanvas::VM_Not_Running_Error(void)
 {
 	auto dlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialog>();
 	dlg->Make(L"Error!",L"Virtual Machine is not runnnig.",L"OK",nullptr);
+	AttachModalDialog(dlg);
+}
+
+void FsGuiMainCanvas::VM_Already_Running_Error(void)
+{
+	auto dlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialog>();
+	dlg->Make(
+	    L"Error!",
+	    L"Virtual Machine is already runnnig.\n"
+	    L"Close the Virtual Machine before starting a new session.",
+	    L"OK",nullptr);
 	AttachModalDialog(dlg);
 }
 
@@ -487,18 +546,34 @@ void FsGuiMainCanvas::File_Exit_ReallyExit(void)
 
 void FsGuiMainCanvas::VM_Start(FsGuiPopUpMenuItem *)
 {
+	Run();
 }
 void FsGuiMainCanvas::VM_StartAndCloseGUI(FsGuiPopUpMenuItem *)
 {
+	if(true==ReallyRun())
+	{
+		exit(1);
+	}
 }
 void FsGuiMainCanvas::VM_PowerOff(FsGuiPopUpMenuItem *)
 {
 	if(true==subproc.SubprocRunning())
 	{
+		auto msgDlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialog>();
+		msgDlg->Make(L"Confirm Power Off?",L"Power Off?",L"Yes",L"No");
+		msgDlg->BindCloseModalCallBack(&THISCLASS::VM_PowerOffConfirm,this);
+		AttachModalDialog(msgDlg);
 	}
 	else
 	{
 		VM_Not_Running_Error();
+	}
+}
+void FsGuiMainCanvas::VM_PowerOffConfirm(FsGuiDialog *dlg,int returnCode)
+{
+	if((int)YSOK==returnCode)
+	{
+		subproc.Send("Q\n");
 	}
 }
 void FsGuiMainCanvas::VM_Pause(FsGuiPopUpMenuItem *)
