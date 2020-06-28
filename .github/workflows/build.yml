@@ -110,7 +110,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Copy Binaries
     - uses: actions/download-artifact@v2
       with:
         name: Windows-Binary
