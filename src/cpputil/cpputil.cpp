@@ -116,7 +116,7 @@ std::vector <std::string> cpputil::Parser(const char str[])
 				curStr="";
 				state=STATE_DOUBLEQUOTE;
 			}
-			else if(' '!=str[i] && '\t'!=str[i])
+			else if(' '!=str[i] && '\t'!=str[i] && '\n'!=str[i] && '\r'!=str[i])
 			{
 				curStr.push_back(str[i]);
 				state=STATE_WORD;
@@ -125,9 +125,9 @@ std::vector <std::string> cpputil::Parser(const char str[])
 		}
 		else if(STATE_WORD==state)
 		{
-			if(' '==str[i] || '\t'==str[i] || 0==str[i+1])
+			if(' '==str[i] || '\t'==str[i] || '\n'==str[i] || '\r'==str[i] || 0==str[i+1])
 			{
-				if(' '!=str[i] && '\t'!=str[i])
+				if(' '!=str[i] && '\t'!=str[i] && '\n'!=str[i] && '\r'!=str[i])
 				{
 					curStr.push_back(str[i]);
 				}
