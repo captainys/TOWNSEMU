@@ -79,7 +79,7 @@ jobs:
     - name: make_zip
       run: |
           cmake -E copy ./main_cui/Tsugaru_CUI .
-          cmake -E copy ../gui/build/main_gui/Release/Tsugaru_GUI .
+          cmake -E copy ../gui/build/main_gui/Tsugaru_GUI .
           cmake -E copy ../readme.md .
           cmake -E copy ../command.md .
           cmake -E tar cvf ubuntu_binary_latest.zip --format=zip Tsugaru_CUI Tsugaru_GUI readme.md command.md
