@@ -6,6 +6,8 @@ on:
 
 jobs:
   creare-release:
+    runs-on: ubuntu-latest
+
     name: Create Release
     steps:
       - name: Create Test Release
