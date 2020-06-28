@@ -37,11 +37,11 @@ jobs:
           cmake -E copy ../command.md .
           cmake -E tar cvf windows_binary_latest.zip --format=zip Tsugaru_CUI.exe Tsugaru_GUI.exe readme.md command.md
       working-directory: ./ci_windows
-#    - name: upload_to_artifact
-#      uses: actions/upload-artifact@v1
-#      with:
-#          name: Windows-Binary
-#          path: ci_windows/windows_binary_latest.zip
+    - name: upload_to_artifact
+      uses: actions/upload-artifact@v1
+      with:
+          name: Windows-Binary
+          path: ci_windows/windows_binary_latest.zip
 
 
 
@@ -68,11 +68,11 @@ jobs:
           cmake -E copy ../command.md .
           cmake -E tar cvf ubuntu_binary_latest.zip --format=zip Tsugaru_CUI readme.md command.md
       working-directory: ./ci_ubuntu
-#    - name: upload_to_artifact
-#      uses: actions/upload-artifact@v1
-#      with:
-#          name: Ubuntu-Binary
-#          path: ci_ubuntu/ubuntu_binary_latest.zip
+    - name: upload_to_artifact
+      uses: actions/upload-artifact@v1
+      with:
+          name: Ubuntu-Binary
+          path: ci_ubuntu/ubuntu_binary_latest.zip
 
 
 
@@ -97,10 +97,33 @@ jobs:
           cmake -E copy ../command.md .
           cmake -E tar cvf macos_binary_latest.zip --format=zip Tsugaru_CUI.app readme.md command.md
       working-directory: ./ci_macos
-#    - name: upload_to_artifact
-#      uses: actions/upload-artifact@v1
-#      with:
-#          name: Macos-Binary
-#          path: ci_macos/macos_binary_latest.zip
+    - name: upload_to_artifact
+      uses: actions/upload-artifact@v1
+      with:
+          name: Macos-Binary
+          path: ci_macos/macos_binary_latest.zip
 
+
+  after-build:
+
+    runs-on: ubuntu-latest
+    needs: [build-windows, build-linux, build-macos]
+
+    - name: Copy Binaries
+    - uses: actions/download-artifact@v2
+      with:
+        name: Windows-Binary
+
+    - uses: actions/download-artifact@v2
+      with:
+        name: Ubuntu-Binary
+
+    - uses: actions/download-artifact@v2
+      with:
+        name: Macos-Binary
+
+    - name: Verify files
+      run: ls -l
+
+      # From here, I need to create a release.
 
