@@ -105,9 +105,9 @@ jobs:
 
 
   after-build:
+    needs: [build-windows, build-linux, build-macos]
 
     runs-on: ubuntu-latest
-    needs: [build-windows, build-linux, build-macos]
 
     - name: Copy Binaries
     - uses: actions/download-artifact@v2
