@@ -157,5 +157,47 @@ jobs:
     - name: Verify files
       run: ls -l
 
-      # From here, I need to create a release.
+	# https://github.com/actions/upload-release-asset
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Auto Release ${{ github.ref }}
+        draft: false
+        prerelease: true
+    - name: Upload Windows Binary
+      id: upload-release-asset 
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./windows_binary_latest.zip
+        asset_name: windows_binary_latest.zip
+        asset_content_type: application/zip
+
+    - name: Upload Ubuntu Binary
+      id: upload-release-asset 
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./ubuntu_binary_latest.zip
+        asset_name: ubuntu_binary_latest.zip
+        asset_content_type: application/zip
+
+    - name: Upload macOS Binary
+      id: upload-release-asset 
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./macos_binary_latest.zip
+        asset_name: macos_binary_latest.zip
+        asset_content_type: application/zip
 
