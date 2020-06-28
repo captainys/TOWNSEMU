@@ -106,12 +106,26 @@ jobs:
     - name: build
       run: cmake --build .
       working-directory: ./ci_macos
+
+    - name: mkdir_gui
+      run: mkdir build
+      working-directory: ./gui
+    - name: checkout_gui
+      run: git clone https://github.com/captainys/public.git
+      working-directory: ./gui/src
+    - name: build_gui
+      run: |
+          cmake ../src -DCMAKE_BUILD_TYPE=Release
+          cmake --build main_gui --config Release --target Tsugaru_GUI
+      working-directory: ./gui/build
+
     - name: make_zip
       run: |
-          cmake -E copy_directory ./main_cui/Tsugaru_CUI.app ./Tsugaru_CUI.app
+          cmake -E copy_directory ../gui/build/main_gui/Tsugaru_GUI.app ./Tsugaru_GUI.app
+          cmake -E copy main_cui/Tsugaru_CUI.app/Contents/MacOS/Tsugaru_CUI Tsugaru_GUI.app/Contents/MacOS/.
           cmake -E copy ../readme.md .
           cmake -E copy ../command.md .
-          cmake -E tar cvf macos_binary_latest.zip --format=zip Tsugaru_CUI.app readme.md command.md
+          cmake -E tar cvf macos_binary_latest.zip --format=zip Tsugaru_GUI.app readme.md command.md
       working-directory: ./ci_macos
     - name: upload_to_artifact
       uses: actions/upload-artifact@v1
