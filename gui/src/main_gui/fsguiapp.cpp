@@ -341,6 +341,16 @@ std::string FsGuiMainCanvas::FindTsugaruCUI(void) const
 		return utf8.c_str();
 	}
 
+	YsWString pth,fil;
+	YsSpecialPath::GetProgramFileNameW().SeparatePathFile(pth,fil);
+	ful.MakeFullPathName(pth,exeFile);
+	if(YSTRUE==YsFileIO::CheckFileExist(ful))
+	{
+		YsString utf8;
+		utf8.EncodeUTF8(ful.data());
+		return utf8.c_str();
+	}
+
 	return "";
 }
 

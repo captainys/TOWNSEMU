@@ -1,3 +1,4 @@
+#include <signal.h>
 #include <sys/wait.h>
 #include <poll.h>
 #include "subproc.h"
