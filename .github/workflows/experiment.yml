@@ -1,5 +1,9 @@
 name: Workflow Test
 
+on:
+  push:
+    branches: [ master ]
+
 jobs:
   creare-release:
     name: Create Release
