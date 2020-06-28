@@ -169,7 +169,7 @@ jobs:
         draft: false
         prerelease: true
     - name: Upload Windows Binary
-      id: upload-release-asset 
+      id: upload-windows-binary
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -180,7 +180,7 @@ jobs:
         asset_content_type: application/zip
 
     - name: Upload Ubuntu Binary
-      id: upload-release-asset 
+      id: upload-ubuntu-binary
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -191,7 +191,7 @@ jobs:
         asset_content_type: application/zip
 
     - name: Upload macOS Binary
-      id: upload-release-asset 
+      id: upload-macOS-binary
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
