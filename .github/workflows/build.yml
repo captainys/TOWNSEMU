@@ -27,7 +27,7 @@ jobs:
     - name: build_gui
       run: |
           cmake ../src
-          cmake --build main_gui --config Release --target Tsugaru_GUI
+          cmake --build . --config Release --target Tsugaru_GUI
       working-directory: ./gui/build
     - name: make_zip
       run: |
@@ -59,14 +59,28 @@ jobs:
       run: cmake ../src -DCMAKE_BUILD_TYPE=Release
       working-directory: ./ci_ubuntu
     - name: build
-      run: cmake --build .
+      run: cmake --build . --config Release --target Tsugaru_GUI
       working-directory: ./ci_ubuntu
+
+    - name: mkdir_gui
+      run: mkdir build
+      working-directory: ./gui
+    - name: checkout_gui
+      run: git clone https://github.com/captainys/public.git
+      working-directory: ./gui/src
+    - name: build_gui
+      run: |
+          cmake ../src -DCMAKE_BUILD_TYPE=Release
+          cmake --build main_gui --config Release --target Tsugaru_GUI
+      working-directory: ./gui/build
+
     - name: make_zip
       run: |
           cmake -E copy ./main_cui/Tsugaru_CUI .
+          cmake -E copy ../gui/build/main_gui/Release/Tsugaru_GUI.exe .
           cmake -E copy ../readme.md .
           cmake -E copy ../command.md .
-          cmake -E tar cvf ubuntu_binary_latest.zip --format=zip Tsugaru_CUI readme.md command.md
+          cmake -E tar cvf ubuntu_binary_latest.zip --format=zip Tsugaru_CUI Tsugaru_GUI readme.md command.md
       working-directory: ./ci_ubuntu
     - name: upload_to_artifact
       uses: actions/upload-artifact@v1
