@@ -44,7 +44,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //          fsguilib_gl2 fsgui3d_gl2
 //       to
 //          fsguilib_gl1 fsgui3d_gl1
-#define DONT_USE_FIXED_FUNCTION_PIPELINE
+//#define DONT_USE_FIXED_FUNCTION_PIPELINE
 
 
 
@@ -240,7 +240,7 @@ void FsGuiMainCanvas::Draw(void)
 #ifndef DONT_USE_FIXED_FUNCTION_PIPELINE
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(0.0,(double)viewport[2],(double)viewport[3],0.0,-1.0,1.0);
+	glOrtho(0.0,(double)wid,(double)hei,0.0,-1.0,1.0);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 #endif
@@ -291,11 +291,12 @@ bool FsGuiMainCanvas::ReallyRun(bool usePipe)
 
 	auto profile=profileDlg->GetProfile();
 	auto argv=profile.MakeArgv();
+	argv[0]=FindTsugaruCUI();
 	for(auto arg : argv)
 	{
 		std::cout << arg << std::endl;
 	}
-	argv[0]=FindTsugaruCUI();
+
 	if(0==argv[0].size())
 	{
 		auto msgDlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialog>();

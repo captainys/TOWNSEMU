@@ -13,7 +13,7 @@ void ProfileDialog::Make(void)
 {
 	const int nShowPath=PATH_SHOW;
 
-	profileFNameTxt=AddStaticText(0,FSKEY_NULL,L"",YSFALSE);
+	profileFNameTxt=AddStaticText(0,FSKEY_NULL,L"PROFILE",YSFALSE);
 
 	tab=AddTabControl(0,FSKEY_NULL,YSTRUE);
 
