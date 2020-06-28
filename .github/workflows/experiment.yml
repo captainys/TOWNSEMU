@@ -20,4 +20,4 @@ jobs:
           release_name: Test
           body:
           draft: false
-          prelease: true
+          prerelease: true
