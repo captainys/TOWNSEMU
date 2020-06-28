@@ -88,7 +88,7 @@ FsLazyWindowApplication::~FsLazyWindowApplication()
 	opt.x0=0;
 	opt.y0=0;
 	opt.wid=960;
-	opt.hei=400;
+	opt.hei=512;
 }
 
 /* virtual */ void FsLazyWindowApplication::Initialize(int ac,char *av[])

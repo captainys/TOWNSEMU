@@ -292,6 +292,8 @@ bool FsGuiMainCanvas::ReallyRun(bool usePipe)
 	auto profile=profileDlg->GetProfile();
 	auto argv=profile.MakeArgv();
 	argv[0]=FindTsugaruCUI();
+	argv.push_back("-CMOS");
+	argv.push_back(GetCMOSFileName());
 	for(auto arg : argv)
 	{
 		std::cout << arg << std::endl;
@@ -340,6 +342,15 @@ std::string FsGuiMainCanvas::FindTsugaruCUI(void) const
 	}
 
 	return "";
+}
+
+std::string FsGuiMainCanvas::GetCMOSFileName(void) const
+{
+	YsWString ful;
+	ful.MakeFullPathName(GetTsugaruProfileDir(),L"CMOS.DAT");
+	YsString utf8;
+	utf8.EncodeUTF8(ful.data());
+	return utf8.c_str();
 }
 
 std::vector <YsWString> FsGuiMainCanvas::CheckMissingROMFiles(void) const

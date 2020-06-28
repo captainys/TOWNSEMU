@@ -118,6 +118,7 @@ private:
 	bool ReallyRun(bool usePipe=true);
 	std::string FindTsugaruCUI(void) const;
 	std::vector <YsWString> CheckMissingROMFiles(void) const;
+	std::string GetCMOSFileName(void) const;
 
 
 private:
