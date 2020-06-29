@@ -226,11 +226,13 @@ void TownsCRTC::ScreenModeCache::MakeFMRCompatible(void)
 	numLayers=2;
 
 	layer[0].VRAMAddr=0;
+	layer[0].VRAMHSkipBytes=0;
 	layer[0].bitsPerPixel=4;
 	layer[0].sizeOnMonitor=Vec2i::Make(640,400);
 	layer[0].bytesPerLine=320;
 
 	layer[1].VRAMAddr=0x40000;
+	layer[1].VRAMHSkipBytes=0;
 	layer[1].bitsPerPixel=4;
 	layer[1].sizeOnMonitor=Vec2i::Make(640,400);
 	layer[1].bytesPerLine=512;
@@ -394,6 +396,21 @@ Vec2i TownsCRTC::GetPageOriginOnMonitor(unsigned char page) const
 	}
 	return Vec2i::Make(x0,y0);
 }
+unsigned int TownsCRTC::GetVRAMHSkip1X(unsigned char page) const
+{
+	static const unsigned int regs[2][2]=
+	{
+		{REG_HAJ0,REG_HDS0},
+		{REG_HAJ1,REG_HDS1},
+	};
+	int HAJ=state.crtcReg[regs[page][0]];
+	int HDS=state.crtcReg[regs[page][1]];
+	if(HAJ<HDS)
+	{
+		return (HDS-HAJ);
+	}
+	return 0;
+}
 Vec2i TownsCRTC::GetPageSizeOnMonitor(unsigned char page) const
 {
 	auto KHz=GetHorizontalFrequency();
@@ -491,6 +508,8 @@ void TownsCRTC::MakePageLayerInfo(Layer &layer,unsigned char page) const
 	layer.VRAMAddr=0x40000*page;
 	layer.VRAMOffset=GetPageVRAMAddressOffset(page);
 	layer.bytesPerLine=GetPageBytesPerLine(page);
+	layer.VRAMHSkipBytes=(((GetVRAMHSkip1X(page)/layer.zoom.x())*layer.bitsPerPixel)>>3);
+
 
 	if(512==layer.bytesPerLine || 1024==layer.bytesPerLine)
 	{

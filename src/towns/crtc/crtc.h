@@ -100,6 +100,7 @@ public:
 		unsigned int VRAMAddr;
 		unsigned int VRAMOffset;
 		Vec2i originOnMonitor;
+		unsigned int VRAMHSkipBytes;
 		Vec2i sizeOnMonitor;
 		Vec2i VRAMCoverage1X;
 		Vec2i zoom;
@@ -282,6 +283,22 @@ public:
 	/*! Returns the page display origin on the monitor in VGA (640x480) coordinate.
 	*/
 	Vec2i GetPageOriginOnMonitor(unsigned char page) const;
+	/*! It is my guess.  The rectangle in which the image is drawn is defined only by
+	    HDSx, VDSx, HDEx, and VDEx.  But, what about HAJx?  FM TOWNS Technical Guidebook [2]
+	    fell short of explaining the meaning of HAJx.
+
+	    From my observation, probably it is what happens.
+
+	    CRTC starts scanning VRAM after HAJx*clocks after falling edge of HSYNC.
+	    But, it really starts drawing at HDSx.  If this interpretation is correct
+	    VRAM bytes for
+	       (HDSx-HAJx)
+	    pixels in 1x scale should be skipped for each line.  The number of bytes 
+	    skipped should be:
+	       (HDSx-HAJx)*bytesPerPixel/zoomX
+	    This function returns (HDSx-HAJx).
+	*/
+	unsigned int GetVRAMHSkip1X(unsigned char page) const;
 	/*! Returns width and height of the page display size in VGA (640x480) coordinate.
 	*/
 	Vec2i GetPageSizeOnMonitor(unsigned char page) const;
