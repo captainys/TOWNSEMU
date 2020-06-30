@@ -15,6 +15,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <algorithm>
 #include <iostream>
 #include <fstream>
+#include <vector>
 
 #include "i486debugmemaccess.h"
 
@@ -65,6 +66,9 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["BRKON"]=CMD_BREAK_ON;
 	primaryCmdMap["CBRKON"]=CMD_DONT_BREAK_ON;
 	primaryCmdMap["INTERRUPT"]=CMD_INTERRUPT;
+	primaryCmdMap["MKMEMFILTER"]=CMD_MAKE_MEMORY_FILTER;
+	primaryCmdMap["UPDMEMFILTER"]=CMD_UPDATE_MEMORY_FILTER;
+
 	primaryCmdMap["ADDSYM"]=CMD_ADD_SYMBOL;
 	primaryCmdMap["KEYBOARD"]=CMD_KEYBOARD;
 
@@ -207,6 +211,13 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "INTERRUPT INTNum" << std::endl;
 	std::cout << "  Inject interrupt.  Same as CPU Instruction INT INTNum.  INTNum is hexadecimal." << std::endl;
 	std::cout << "  For example, INTERRUPT 4B will work same as INT 4BH." << std::endl;
+
+	std::cout << "MKMEMFILTER byteData" << std::endl;
+	std::cout << "  Make memory filter.  Memory filter caches physical addresses that has the given value." << std::endl;
+	std::cout << "UPDMEMFILTER byteData" << std::endl;
+	std::cout << "  Update memory filter.  Physical addresses that does not have the given value" << std::endl;
+	std::cout << "  are deleted from the memory filter." << std::endl;
+
 	std::cout << "ADTR SEG:OFFSET" << std::endl;
 	std::cout << "  Translate address to linear address and physical address." << std::endl;
 	std::cout << "U addr" << std::endl;
@@ -482,6 +493,13 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 		{
 			PrintError(ERROR_TOO_FEW_ARGS);
 		}
+		break;
+
+	case CMD_MAKE_MEMORY_FILTER:
+		Execute_MakeMemoryFilter(towns,cmd);
+		break;
+	case CMD_UPDATE_MEMORY_FILTER:
+		Execute_UpdateMemoryFilter(towns,cmd);
 		break;
 	case CMD_TRANSLATE_ADDRESS:
 		Execute_AddressTranslation(towns,cmd);
@@ -1941,4 +1959,55 @@ void TownsCommandInterpreter::Execute_FDEject(int drv,FMTowns &towns,Command &cm
 {
 	towns.fdc.Eject(drv);
 	std::cout << "Ejected Floppy Drive " << drv << std::endl;
+}
+
+void TownsCommandInterpreter::Execute_MakeMemoryFilter(FMTowns &towns,Command &cmd)
+{
+	if(2<=cmd.argv.size())
+	{
+		auto byteData=cpputil::Xtoi(cmd.argv[1].c_str());
+		memFilter.clear();
+
+		unsigned int physAddr=0;
+		for(auto memByte : towns.physMem.state.RAM)
+		{
+			if(memByte==byteData)
+			{
+				memFilter.insert(physAddr);
+			}
+			++physAddr;
+		}
+
+		std::cout << memFilter.size() << " occurrences" << std::endl;
+	}
+	else
+	{
+		PrintError(ERROR_TOO_FEW_ARGS);
+	}
+}
+void TownsCommandInterpreter::Execute_UpdateMemoryFilter(FMTowns &towns,Command &cmd)
+{
+	if(2<=cmd.argv.size())
+	{
+		auto byteData=cpputil::Xtoi(cmd.argv[1].c_str());
+
+		std::vector <decltype(memFilter.begin())> toErase;
+
+		for(auto iter=memFilter.begin(); memFilter.end()!=iter; ++iter)
+		{
+			if(byteData!=towns.physMem.state.RAM[*iter])
+			{
+				toErase.push_back(iter);
+			}
+		}
+		for(auto er : toErase)
+		{
+			memFilter.erase(er);
+		}
+		std::cout << memFilter.size() << " occurrences" << std::endl;
+	}
+	else
+	{
+		PrintError(ERROR_TOO_FEW_ARGS);
+	}
 }

@@ -18,6 +18,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include <vector>
 #include <string>
+#include <set>
 #include <unordered_map>
 
 #include "towns.h"
@@ -31,6 +32,8 @@ private:
 	std::unordered_map <std::string,unsigned int> featureMap;
 	std::unordered_map <std::string,unsigned int> dumpableMap;
 	std::unordered_map <std::string,unsigned int> breakEventMap;
+
+	std::set <unsigned int> memFilter;
 
 public:
 	enum
@@ -47,6 +50,9 @@ public:
 		CMD_WAIT,
 
 		CMD_INTERRUPT,
+
+		CMD_MAKE_MEMORY_FILTER,
+		CMD_UPDATE_MEMORY_FILTER,
 
 		CMD_RETURN_FROM_PROCEDURE,
 
@@ -253,6 +259,9 @@ public:
 	void Execute_CDLoad(FMTowns &towns,Command &cmd);
 	void Execute_FDLoad(int drv,FMTowns &towns,Command &cmd);
 	void Execute_FDEject(int drv,FMTowns &towns,Command &cmd);
+
+	void Execute_MakeMemoryFilter(FMTowns &towns,Command &cmd);
+	void Execute_UpdateMemoryFilter(FMTowns &towns,Command &cmd);
 };
 
 
