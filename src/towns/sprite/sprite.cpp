@@ -352,47 +352,8 @@ std::vector <std::string> TownsSprite::GetStatusText(const unsigned char spriteR
 
 	for(unsigned int spriteIndex=FirstSpriteIndex(); spriteIndex<MAX_NUM_SPRITE_INDEX; ++spriteIndex)
 	{
-		text.push_back("");
-		text.back()+="#";
-		text.back()+=cpputil::Itoa(spriteIndex);
-		while(text.back().size()<8)
-		{
-			text.back().push_back(' ');
-		}
-
-		auto indexPtr=spriteRAM+SPRITERAM_INDEX_OFFSET+(spriteIndex<<3);
-
-		const unsigned short indexInfo[4]=  // I hope the optimizer recognizes it.
-		{
-			(unsigned short)(indexPtr[0]|(indexPtr[1]<<8)),
-			(unsigned short)(indexPtr[2]|(indexPtr[3]<<8)),
-			(unsigned short)(indexPtr[4]|(indexPtr[5]<<8)),
-			(unsigned short)(indexPtr[6]|(indexPtr[7]<<8)),
-		};
-
-		text.back()+="(";
-		text.back()+=cpputil::Itoa(indexInfo[0]&511); // X
-		text.back()+=",";
-		text.back()+=cpputil::Itoa(indexInfo[1]&511); // Y
-		text.back()+=")";
-		while(text.back().size()<20)
-		{
-			text.back().push_back(' ');
-		}
-
-		text.back()+="PTN:";
-		text.back()+=cpputil::Itoa(indexInfo[2]&1023);
-		text.back()+=" ROT:";
-		text.back()+=cpputil::Itoa((indexInfo[2]>>12)&7);
-		text.back()+=" OFS:";
-		text.back()+=cpputil::Itoa((indexInfo[2]>>15)&1);
-
-		text.back()+=" CTEN:";
-		text.back()+=cpputil::Itoa((indexInfo[3]>>15)&1);
-		text.back()+=" HIDE:";
-		text.back()+=cpputil::Itoa((indexInfo[3]>>13)&1);
-		text.back()+=" PLT:";
-		text.back()+=cpputil::Itoa(indexInfo[3]&4095);
+		auto oneSprite=GetStatusTextOneSprite(spriteRAM,spriteIndex);
+		text.insert(text.end(),oneSprite.begin(),oneSprite.end());
 	}
 
 
@@ -417,6 +378,99 @@ std::vector <std::string> TownsSprite::GetStatusText(const unsigned char spriteR
 	text.push_back("");
 	text.back()="#ActuallyDrawn:";
 	text.back()+=cpputil::Itoa(NumSpritesActuallyDrawn());
+
+	return text;
+}
+
+std::vector <std::string> TownsSprite::GetStatusTextOneSprite(const unsigned char spriteRAM[],int spriteIndex) const
+{
+	std::vector <std::string> text;
+
+	text.push_back("");
+	text.back()+="#";
+	text.back()+=cpputil::Itoa(spriteIndex);
+	while(text.back().size()<8)
+	{
+		text.back().push_back(' ');
+	}
+
+	auto indexPtr=spriteRAM+SPRITERAM_INDEX_OFFSET+(spriteIndex<<3);
+	unsigned int physAddr=TOWNSADDR_SPRITERAM_BASE+SPRITERAM_INDEX_OFFSET+(spriteIndex<<3);
+
+	const unsigned short indexInfo[4]=  // I hope the optimizer recognizes it.
+	{
+		(unsigned short)(indexPtr[0]|(indexPtr[1]<<8)),
+		(unsigned short)(indexPtr[2]|(indexPtr[3]<<8)),
+		(unsigned short)(indexPtr[4]|(indexPtr[5]<<8)),
+		(unsigned short)(indexPtr[6]|(indexPtr[7]<<8)),
+	};
+
+	text.back()+="(";
+	text.back()+=cpputil::Itoa(indexInfo[0]&511); // X
+	text.back()+=",";
+	text.back()+=cpputil::Itoa(indexInfo[1]&511); // Y
+	text.back()+=")";
+	while(text.back().size()<20)
+	{
+		text.back().push_back(' ');
+	}
+
+	text.back()+="PTN:";
+	text.back()+=cpputil::Itoa(indexInfo[2]&1023);
+	text.back()+=" ROT:";
+	text.back()+=cpputil::Itoa((indexInfo[2]>>12)&7);
+	text.back()+=" OFS:";
+	text.back()+=cpputil::Itoa((indexInfo[2]>>15)&1);
+
+	text.back()+=" CTEN:";
+	text.back()+=cpputil::Itoa((indexInfo[3]>>15)&1);
+	text.back()+=" HIDE:";
+	text.back()+=cpputil::Itoa((indexInfo[3]>>13)&1);
+	text.back()+=" PLT:";
+	text.back()+=cpputil::Itoa(indexInfo[3]&4095);
+
+	text.back()+=" PHYSADDR:";
+	text.back()+=cpputil::Uitox(physAddr);
+
+	return text;
+}
+
+std::vector <std::string> TownsSprite::GetStatusTextSpriteAt(const unsigned char spriteRAM[],int x,int y) const
+{
+	std::vector <std::string> text;
+
+	for(unsigned int spriteIndex=FirstSpriteIndex(); spriteIndex<MAX_NUM_SPRITE_INDEX; ++spriteIndex)
+	{
+		auto indexPtr=spriteRAM+SPRITERAM_INDEX_OFFSET+(spriteIndex<<3);
+
+		const unsigned short indexInfo[4]=  // I hope the optimizer recognizes it.
+		{
+			(unsigned short)(indexPtr[0]|(indexPtr[1]<<8)),
+			(unsigned short)(indexPtr[2]|(indexPtr[3]<<8)),
+			(unsigned short)(indexPtr[4]|(indexPtr[5]<<8)),
+			(unsigned short)(indexPtr[6]|(indexPtr[7]<<8)),
+		};
+
+		auto x0=indexInfo[0]&511; // X
+		auto y0=indexInfo[1]&511; // Y
+
+		const unsigned int attrib=indexInfo[2];
+
+		if(0!=(attrib&ATTR_OFFS))
+		{
+			x0+=HOffset();
+			y0+=VOffset();
+		}
+
+		int wid=16/(0!=(attrib&ATTR_SUX) ? 2 : 1);
+		int hei=16/(0!=(attrib&ATTR_SUY) ? 2 : 1);
+
+		if(x0<=x && x<x0+wid && y0<=y && y<y0+hei)
+		{
+			auto oneSprite=GetStatusTextOneSprite(spriteRAM,spriteIndex);
+			text.insert(text.end(),oneSprite.begin(),oneSprite.end());
+		}
+	}
 
 	return text;
 }

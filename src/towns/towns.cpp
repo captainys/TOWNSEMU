@@ -730,8 +730,10 @@ std::vector <std::string> FMTowns::GetMouseStatusText(void) const
 		text.back()+="On Page "+cpputil::Ubtox(page);
 
 		auto zoom=crtc.GetPageZoom(page);
-		auto mx=var.lastKnownMouseX;
-		auto my=var.lastKnownMouseY;
+		auto topLeft1X=crtc.GetPageOriginOnMonitor(page);
+
+		auto mx=var.lastKnownMouseX-topLeft1X.x();
+		auto my=var.lastKnownMouseY-topLeft1X.y();
 		if(0<zoom.x())
 		{
 			mx/=zoom.x();
@@ -741,8 +743,8 @@ std::vector <std::string> FMTowns::GetMouseStatusText(void) const
 			my/=zoom.y();
 		}
 
-		auto VRAMoffset=crtc.GetPageVRAMAddressOffset(state.mouseDisplayPage);
-		auto bytesPerLine=crtc.GetPageBytesPerLine(state.mouseDisplayPage);
+		auto VRAMoffset=crtc.GetPageVRAMAddressOffset(page);
+		auto bytesPerLine=crtc.GetPageBytesPerLine(page);
 		if(0!=bytesPerLine)
 		{
 			unsigned int VRAMHeight=VRAMSize/bytesPerLine;

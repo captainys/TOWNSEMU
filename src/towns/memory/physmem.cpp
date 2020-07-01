@@ -381,7 +381,7 @@ void TownsPhysicalMemory::SetUpMemoryAccess(void)
 
 	spriteRAMAccess.SetPhysicalMemoryPointer(this);
 	spriteRAMAccess.SetCPUPointer(&cpu);
-	mem.AddAccess(&spriteRAMAccess,0x81000000,0x8101FFFF);
+	mem.AddAccess(&spriteRAMAccess,TOWNSADDR_SPRITERAM_BASE,TOWNSADDR_SPRITERAM_END-1);
 
 	osROMAccess.SetPhysicalMemoryPointer(this);
 	osROMAccess.SetCPUPointer(&cpu);

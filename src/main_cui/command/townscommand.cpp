@@ -148,6 +148,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	dumpableMap["SCHEDULE"]=DUMP_SCHEDULE;
 	dumpableMap["TIMEBALANCE"]=DUMP_TIME_BALANCE;
 	dumpableMap["SPRITE"]=DUMP_SPRITE;
+	dumpableMap["SPRITEAT"]=DUMP_SPRITE_AT;
 	dumpableMap["MOUSE"]=DUMP_MOUSE;
 
 
@@ -366,6 +367,9 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Device call-back schedule." << std::endl;
 	std::cout << "SPRITE" << std::endl;
 	std::cout << "  Sprite status." << std::endl;
+	std::cout << "SPRITEAT x y" << std::endl;
+	std::cout << "  Status of the sprite at coordinate x y." << std::endl;
+	std::cout << "  x and y are in decimal, not in hexadecimal." << std::endl;
 	std::cout << "MOUSE" << std::endl;
 	std::cout << "  Mouse status." << std::endl;
 
@@ -1054,6 +1058,21 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 			for(auto str : towns.sprite.GetStatusText(towns.physMem.state.spriteRAM.data()))
 			{
 				std::cout << str << std::endl;
+			}
+			break;
+		case DUMP_SPRITE_AT:
+			if(4<=cmd.argv.size())
+			{
+				auto x=cpputil::Atoi(cmd.argv[2].c_str());
+				auto y=cpputil::Atoi(cmd.argv[3].c_str());
+				for(auto str : towns.sprite.GetStatusTextSpriteAt(towns.physMem.state.spriteRAM.data(),x,y))
+				{
+					std::cout << str << std::endl;
+				}
+			}
+			else
+			{
+				PrintError(ERROR_TOO_FEW_ARGS);
 			}
 			break;
 		case DUMP_MOUSE:
