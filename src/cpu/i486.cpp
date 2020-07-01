@@ -2152,8 +2152,43 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 	return value;
 }
 
+i486DX::OperandValue i486DX::EvaluateOperand8(
+    const Memory &mem,int addressSize,int segmentOverride,const Operand &op) const
+{
+	static const unsigned int addressMask[2]=
+	{
+		0x0000FFFF,
+		0xFFFFFFFF,
+	};
+
+	i486DX::OperandValue value;
+	value.numBytes=1;
+	switch(op.operandType)
+	{
+	default:
+		Abort("Tried to evaluate non 8-bit operand with EvaluateOperand8.");
+		break;
+	case OPER_ADDR:
+		{
+			unsigned int offset;
+			const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,op,segmentOverride);
+			offset&=addressMask[addressSize>>5];
+			value.byteData[0]=FetchByte(addressSize,seg,offset,mem);
+		}
+		break;
+	case OPER_REG8:
+		{
+			unsigned int regIdx=op.reg-REG_AL;
+			unsigned int shift=(regIdx<<1)&8;
+			value.byteData[0]=((state.reg32()[regIdx&3]>>shift)&255);
+		}
+		break;
+	}
+	return value;
+}
+
 void i486DX::StoreOperandValue(
-    const Operand &dst,Memory &mem,int addressSize,int segmentOverride,OperandValue value)
+    const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value)
 {
 	static const unsigned int addressMask[2]=
 	{
@@ -2326,6 +2361,44 @@ void i486DX::StoreOperandValue(
 		case REG_TEST7:
 			state.TEST[dst.reg-REG_TEST0]=cpputil::GetDword(value.byteData);
 			break;
+		}
+		break;
+	}
+}
+
+void i486DX::StoreOperandValue8(
+    const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value)
+{
+	static const unsigned int addressMask[2]=
+	{
+		0x0000FFFF,
+		0xFFFFFFFF,
+	};
+
+	switch(dst.operandType)
+	{
+	default:
+		Abort("Tried to store value to a non 8-bit operand with StoreOperandValue8.");
+		break;
+	case OPER_ADDR:
+		{
+			unsigned int offset;
+			const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,dst,segmentOverride);
+			offset&=addressMask[addressSize>>5];
+			StoreByte(mem,addressSize,seg,offset,value.byteData[0]);
+		}
+		break;
+	case OPER_REG8:
+		{
+			static const unsigned int highLowMask[2]=
+			{
+				0xFFFFFF00,
+				0xFFFF00FF,
+			};
+			unsigned int regIdx=dst.reg-REG_AL;
+			unsigned int highLow=regIdx>>2;
+			state.reg32()[regIdx&3]&=highLowMask[highLow];
+			state.reg32()[regIdx&3]|=(value.byteData[0]<<(highLow<<3));
 		}
 		break;
 	}

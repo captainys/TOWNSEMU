@@ -2563,6 +2563,11 @@ public:
 	OperandValue EvaluateOperand(
 	    const Memory &mem,int addressSize,int segmentOverride,const Operand &op,int destinationBytes) const;
 
+	/*! Evaluate operand as an 8-bit operand.
+	*/
+	OperandValue EvaluateOperand8(
+	    const Memory &mem,int addressSize,int segmentOverride,const Operand &op) const;
+
 
 	/*! Extract segment register and address offset from the OPER_ADDR type operand.
 	    It doesn't check the operand type.  Using it for a different operand type would crash the
@@ -2589,8 +2594,11 @@ public:
 	    If the destination is memory, the number of bytes stored depends on numByte member of OperandValue.
 	    If the destination is a register, the number of bytes stored depends on the size of the register.
 	*/
-	void StoreOperandValue(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,OperandValue value);
+	void StoreOperandValue(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value);
 
+	/*! Store value to an 8-bit operand.
+	*/
+	void StoreOperandValue8(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value);
 
 	/*! Returns override-segment for the prefix.  Returns default DS.
 	*/
