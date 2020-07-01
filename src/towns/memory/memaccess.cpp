@@ -441,12 +441,31 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 	auto &state=physMemPtr->state;
 	return state.spriteRAM[physAddr-0x81000000];
 }
+/* virtual */ unsigned int TownsSpriteRAMAccess::FetchWord(unsigned int physAddr) const
+{
+	auto &state=physMemPtr->state;
+	return cpputil::GetWord(state.spriteRAM.data()+physAddr-0x81000000);
+}
+/* virtual */ unsigned int TownsSpriteRAMAccess::FetchDword(unsigned int physAddr) const
+{
+	auto &state=physMemPtr->state;
+	return cpputil::GetDword(state.spriteRAM.data()+physAddr-0x81000000);
+}
 /* virtual */ void TownsSpriteRAMAccess::StoreByte(unsigned int physAddr,unsigned char data)
 {
 	auto &state=physMemPtr->state;
 	state.spriteRAM[physAddr-0x81000000]=data;
 }
-
+/* virtual */ void TownsSpriteRAMAccess::StoreWord(unsigned int physAddr,unsigned int data)
+{
+	auto &state=physMemPtr->state;
+	cpputil::PutWord(state.spriteRAM.data()+physAddr-0x81000000,data);
+}
+/* virtual */ void TownsSpriteRAMAccess::StoreDword(unsigned int physAddr,unsigned int data)
+{
+	auto &state=physMemPtr->state;
+	cpputil::PutDword(state.spriteRAM.data()+physAddr-0x81000000,data);
+}
 
 ////////////////////////////////////////////////////////////
 

@@ -1221,29 +1221,44 @@ void i486DX::AndWordOrDword(int operandSize,unsigned int &value1,unsigned int va
 }
 void i486DX::AndDword(unsigned int &value1,unsigned int value2)
 {
-	ClearCFOF();
 	value1&=value2;
-	SetSF(0!=(0x80000000&value1));
-	SetZF(0==value1);
-	SetPF(CheckParity(value1&0xFF));
+	state.EFLAGS&=~(
+		EFLAGS_CARRY|
+		EFLAGS_OVERFLOW|
+		EFLAGS_SIGN|
+		EFLAGS_ZERO|
+		EFLAGS_PARITY);
+	RaiseSF(0!=(0x80000000&value1));
+	RaiseZF(0==value1);
+	RaisePF(CheckParity(value1&0xFF));
 }
 void i486DX::AndWord(unsigned int &value1,unsigned int value2)
 {
-	ClearCFOF();
 	value1&=value2;
 	value1&=0xFFFF;
-	SetSF(0!=(0x8000&value1));
-	SetZF(0==value1);
-	SetPF(CheckParity(value1&0xFF));
+	state.EFLAGS&=~(
+		EFLAGS_CARRY|
+		EFLAGS_OVERFLOW|
+		EFLAGS_SIGN|
+		EFLAGS_ZERO|
+		EFLAGS_PARITY);
+	RaiseSF(0!=(0x8000&value1));
+	RaiseZF(0==value1);
+	RaisePF(CheckParity(value1&0xFF));
 }
 void i486DX::AndByte(unsigned int &value1,unsigned int value2)
 {
-	ClearCFOF();
 	value1&=value2;
 	value1&=0xFF;
-	SetSF(0!=(0x80&value1));
-	SetZF(0==value1);
-	SetPF(CheckParity(value1&0xFF));
+	state.EFLAGS&=~(
+		EFLAGS_CARRY|
+		EFLAGS_OVERFLOW|
+		EFLAGS_SIGN|
+		EFLAGS_ZERO|
+		EFLAGS_PARITY);
+	RaiseSF(0!=(0x80&value1));
+	RaiseZF(0==value1);
+	RaisePF(CheckParity(value1&0xFF));
 }
 void i486DX::SubByteWordOrDword(int operandSize,unsigned int &value1,unsigned int value2)
 {

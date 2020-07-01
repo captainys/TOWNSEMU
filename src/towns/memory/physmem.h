@@ -130,7 +130,11 @@ class TownsSpriteRAMAccess : public TownsMemAccess
 {
 public:
 	virtual unsigned int FetchByte(unsigned int physAddr) const;
+	virtual unsigned int FetchWord(unsigned int physAddr) const;
+	virtual unsigned int FetchDword(unsigned int physAddr) const;
 	virtual void StoreByte(unsigned int physAddr,unsigned char data);
+	virtual void StoreWord(unsigned int physAddr,unsigned int data);
+	virtual void StoreDword(unsigned int physAddr,unsigned int data);
 };
 
 class TownsOsROMAccess : public TownsMemAccess
