@@ -1517,7 +1517,7 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 	case I486_RENUMBER_TEST_RM8_FROM_R8:// 0x84,
 	case I486_RENUMBER_XOR_RM8_FROM_R8:
 		FetchOperandRM(inst,ptr,seg,offset,mem);
-		op2.DecodeMODR_MForRegister(8,inst.operand[0]);
+		// op2.DecodeMODR_MForRegister(8,inst.operand[0]);
 		op1.Decode(inst.addressSize,8,inst.operand);
 		break;
 
@@ -1544,7 +1544,7 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 	case I486_RENUMBER_SUB_R8_FROM_RM8:// 0x2A,
 	case I486_RENUMBER_XOR_R8_FROM_RM8:
 		FetchOperandRM(inst,ptr,seg,offset,mem);
-		op1.DecodeMODR_MForRegister(8,inst.operand[0]);
+		// op1.DecodeMODR_MForRegister(8,inst.operand[0]);
 		op2.Decode(inst.addressSize,8,inst.operand);
 		break;
 
@@ -1977,8 +1977,14 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		}
 		break;
 	case I486_OPCODE_ADC_RM8_FROM_R8:
-	case I486_OPCODE_ADC_RM_FROM_R:
+		op2.DecodeMODR_MForRegister(8,operand[0]);
+		disasm=DisassembleTypicalTwoOperands("ADC",op1,op2);
+		break;
 	case I486_OPCODE_ADC_R8_FROM_RM8:
+		op1.DecodeMODR_MForRegister(8,operand[0]);
+		disasm=DisassembleTypicalTwoOperands("ADC",op1,op2);
+		break;
+	case I486_OPCODE_ADC_RM_FROM_R:
 	case I486_OPCODE_ADC_R_FROM_RM:
 		disasm=DisassembleTypicalTwoOperands("ADC",op1,op2);
 		break;
@@ -1998,8 +2004,14 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		}
 		break;
 	case I486_OPCODE_ADD_RM8_FROM_R8:
-	case I486_OPCODE_ADD_RM_FROM_R:
+		op2.DecodeMODR_MForRegister(8,operand[0]);
+		disasm=DisassembleTypicalTwoOperands("ADD",op1,op2);
+		break;
 	case I486_OPCODE_ADD_R8_FROM_RM8:
+		op1.DecodeMODR_MForRegister(8,operand[0]);
+		disasm=DisassembleTypicalTwoOperands("ADD",op1,op2);
+		break;
+	case I486_OPCODE_ADD_RM_FROM_R:
 	case I486_OPCODE_ADD_R_FROM_RM:
 		disasm=DisassembleTypicalTwoOperands("ADD",op1,op2);
 		break;
@@ -2019,8 +2031,14 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		}
 		break;
 	case I486_OPCODE_AND_RM8_FROM_R8:
-	case I486_OPCODE_AND_RM_FROM_R:
+		op2.DecodeMODR_MForRegister(8,operand[0]);
+		disasm=DisassembleTypicalTwoOperands("AND",op1,op2);
+		break;
 	case I486_OPCODE_AND_R8_FROM_RM8:
+		op1.DecodeMODR_MForRegister(8,operand[0]);
+		disasm=DisassembleTypicalTwoOperands("AND",op1,op2);
+		break;
+	case I486_OPCODE_AND_RM_FROM_R:
 	case I486_OPCODE_AND_R_FROM_RM:
 		disasm=DisassembleTypicalTwoOperands("AND",op1,op2);
 		break;
@@ -2040,8 +2058,14 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		}
 		break;
 	case I486_OPCODE_CMP_RM8_FROM_R8:
-	case I486_OPCODE_CMP_RM_FROM_R:
+		op2.DecodeMODR_MForRegister(8,operand[0]);
+		disasm=DisassembleTypicalTwoOperands("CMP",op1,op2);
+		break;
 	case I486_OPCODE_CMP_R8_FROM_RM8:
+		op1.DecodeMODR_MForRegister(8,operand[0]);
+		disasm=DisassembleTypicalTwoOperands("CMP",op1,op2);
+		break;
+	case I486_OPCODE_CMP_RM_FROM_R:
 	case I486_OPCODE_CMP_R_FROM_RM:
 		disasm=DisassembleTypicalTwoOperands("CMP",op1,op2);
 		break;
@@ -2061,8 +2085,14 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		}
 		break;
 	case I486_OPCODE_SBB_RM8_FROM_R8:
-	case I486_OPCODE_SBB_RM_FROM_R:
+		op2.DecodeMODR_MForRegister(8,operand[0]);
+		disasm=DisassembleTypicalTwoOperands("SBB",op1,op2);
+		break;
 	case I486_OPCODE_SBB_R8_FROM_RM8:
+		op1.DecodeMODR_MForRegister(8,operand[0]);
+		disasm=DisassembleTypicalTwoOperands("SBB",op1,op2);
+		break;
+	case I486_OPCODE_SBB_RM_FROM_R:
 	case I486_OPCODE_SBB_R_FROM_RM:
 		disasm=DisassembleTypicalTwoOperands("SBB",op1,op2);
 		break;
@@ -2082,8 +2112,14 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		}
 		break;
 	case I486_OPCODE_SUB_RM8_FROM_R8:
-	case I486_OPCODE_SUB_RM_FROM_R:
+		op2.DecodeMODR_MForRegister(8,operand[0]);
+		disasm=DisassembleTypicalTwoOperands("SUB",op1,op2);
+		break;
 	case I486_OPCODE_SUB_R8_FROM_RM8:
+		op1.DecodeMODR_MForRegister(8,operand[0]);
+		disasm=DisassembleTypicalTwoOperands("SUB",op1,op2);
+		break;
+	case I486_OPCODE_SUB_RM_FROM_R:
 	case I486_OPCODE_SUB_R_FROM_RM:
 		disasm=DisassembleTypicalTwoOperands("SUB",op1,op2);
 		break;
@@ -2103,6 +2139,9 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		}
 		break;
 	case I486_OPCODE_TEST_RM8_FROM_R8:
+		op2.DecodeMODR_MForRegister(8,operand[0]);
+		disasm=DisassembleTypicalTwoOperands("TEST",op1,op2);
+		break;
 	case I486_OPCODE_TEST_RM_FROM_R:
 		disasm=DisassembleTypicalTwoOperands("TEST",op1,op2);
 		break;
@@ -3303,8 +3342,14 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		}
 		break;
 	case I486_OPCODE_OR_RM8_FROM_R8:
-	case I486_OPCODE_OR_RM_FROM_R:
+		op2.DecodeMODR_MForRegister(8,operand[0]);
+		disasm=DisassembleTypicalTwoOperands("OR",op1,op2);
+		break;
 	case I486_OPCODE_OR_R8_FROM_RM8:
+		op1.DecodeMODR_MForRegister(8,operand[0]);
+		disasm=DisassembleTypicalTwoOperands("OR",op1,op2);
+		break;
+	case I486_OPCODE_OR_RM_FROM_R:
 	case I486_OPCODE_OR_R_FROM_RM:
 		disasm=DisassembleTypicalTwoOperands("OR",op1,op2);
 		break;
@@ -3324,8 +3369,14 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		}
 		break;
 	case I486_OPCODE_XOR_RM8_FROM_R8:
-	case I486_OPCODE_XOR_RM_FROM_R:
+		op2.DecodeMODR_MForRegister(8,operand[0]);
+		disasm=DisassembleTypicalTwoOperands("XOR",op1,op2);
+		break;
 	case I486_OPCODE_XOR_R8_FROM_RM8:
+		op1.DecodeMODR_MForRegister(8,operand[0]);
+		disasm=DisassembleTypicalTwoOperands("XOR",op1,op2);
+		break;
+	case I486_OPCODE_XOR_RM_FROM_R:
 	case I486_OPCODE_XOR_R_FROM_RM:
 		disasm=DisassembleTypicalTwoOperands("XOR",op1,op2);
 		break;
@@ -3607,14 +3658,15 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{ \
 			clocksPassed=1; \
 		} \
+		unsigned int reg=REG_AL+inst.GetREG(); \
 		auto value1=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op1); \
-		auto value2=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op2); \
+		auto value2=GetRegisterValue8(reg); \
 		if(true==state.exception) \
 		{ \
 			break; \
 		} \
 		auto i=value1.GetAsDword(); \
-		(func)(i,value2.GetAsDword()); \
+		(func)(i,value2); \
 		if(true==update) \
 		{ \
 			value1.SetDword(i); \
@@ -3632,18 +3684,17 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{ \
 			clocksPassed=1; \
 		} \
-		auto value1=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op1); \
+		unsigned int reg=REG_AL+inst.GetREG(); \
+		auto value1=GetRegisterValue8(reg); \
 		auto value2=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op2); \
 		if(true==state.exception) \
 		{ \
 			break; \
 		} \
-		auto i=value1.GetAsDword(); \
-		(func)(i,value2.GetAsDword()); \
+		(func)(value1,value2.GetAsDword()); \
 		if(true==update) \
 		{ \
-			value1.SetDword(i); \
-			StoreOperandValue8(op1,mem,inst.addressSize,inst.segOverride,value1); \
+			SetRegisterValue8(reg,value1); \
 		} \
 	}
 
