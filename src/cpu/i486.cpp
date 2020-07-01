@@ -2002,10 +2002,8 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 		break;
 	case OPER_REG8:
 		{
-			unsigned int regIdx=op.reg-REG_AL;
-			unsigned int shift=(regIdx<<1)&8;
 			value.numBytes=1;
-			value.byteData[0]=((state.reg32()[regIdx&3]>>shift)&255);
+			value.byteData[0]=GetRegisterValue8(op.reg);
 		}
 		break;
 	case OPER_SREG:
@@ -2177,11 +2175,7 @@ i486DX::OperandValue i486DX::EvaluateOperand8(
 		}
 		break;
 	case OPER_REG8:
-		{
-			unsigned int regIdx=op.reg-REG_AL;
-			unsigned int shift=(regIdx<<1)&8;
-			value.byteData[0]=((state.reg32()[regIdx&3]>>shift)&255);
-		}
+		value.byteData[0]=GetRegisterValue8(op.reg);
 		break;
 	}
 	return value;
@@ -2242,17 +2236,7 @@ void i486DX::StoreOperandValue(
 		}
 		break;
 	case OPER_REG8:
-		{
-			static const unsigned int highLowMask[2]=
-			{
-				0xFFFFFF00,
-				0xFFFF00FF,
-			};
-			unsigned int regIdx=dst.reg-REG_AL;
-			unsigned int highLow=regIdx>>2;
-			state.reg32()[regIdx&3]&=highLowMask[highLow];
-			state.reg32()[regIdx&3]|=(value.byteData[0]<<(highLow<<3));
-		}
+		SetRegisterValue8(dst.reg,value.byteData[0]);
 		break;
 	case OPER_SREG:
 		LoadSegmentRegister(state.sreg[dst.reg-REG_SEGMENT_REG_BASE],cpputil::GetWord(value.byteData),mem);
@@ -2389,17 +2373,7 @@ void i486DX::StoreOperandValue8(
 		}
 		break;
 	case OPER_REG8:
-		{
-			static const unsigned int highLowMask[2]=
-			{
-				0xFFFFFF00,
-				0xFFFF00FF,
-			};
-			unsigned int regIdx=dst.reg-REG_AL;
-			unsigned int highLow=regIdx>>2;
-			state.reg32()[regIdx&3]&=highLowMask[highLow];
-			state.reg32()[regIdx&3]|=(value.byteData[0]<<(highLow<<3));
-		}
+		SetRegisterValue8(dst.reg,value.byteData[0]);
 		break;
 	}
 }

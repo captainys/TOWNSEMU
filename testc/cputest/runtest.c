@@ -899,6 +899,100 @@ int RunSHLD_SHRD(void)
 	return 0;
 }
 
+
+
+void BINARYOP_REG_REG(unsigned int res[72],unsigned int eax,unsigned int edx);
+void BINARYOP_REG_MEM(unsigned int res[72],unsigned int eax,unsigned int edx);
+void BINARYOP_MEM_REG(unsigned int res[72],unsigned int eax,unsigned int edx);
+
+int RunBinaryOp(void)
+{
+	const char *const inst[]=
+	{
+		"ADC",
+		"ADD",
+		"AND",
+		"CMP",
+		"OR",
+		"SBB",
+		"SUB",
+		"XOR",
+	};
+	const int bit[]=
+	{
+		32,16,8
+	};
+	int i;
+
+	printf("BINARYOP_REG_REG\n");
+	for(i=0; i<LEN(BINARYOP_TABLE); i+=74)
+	{
+		unsigned int received[72];
+		const unsigned int *truth=BINARYOP_TABLE+i+2;
+		const unsigned int eax=BINARYOP_TABLE[i];
+		const unsigned int edx=BINARYOP_TABLE[i+1];
+		BINARYOP_REG_REG(received,eax,edx);
+		for(int j=0; j<72; ++j)
+		{
+			if(received[j]!=truth[j])
+			{
+				printf("Error!\n");
+				printf("i=%d, j=%d, Instruction %s, Bit=%d\n",i,j,inst[(j%24)/3],bit[j/24]);
+				printf("OP1=%08x  OP2=%08x\n",eax,edx);
+				printf("Received: %08x %08x %08x\n",received[(j/3)*3],received[(j/3)*3+1],received[(j/3)*3+2]);
+				printf("Correct:  %08x %08x %08x\n",truth[(j/3)*3],truth[(j/3)*3+1],truth[(j/3)*3+2]);
+				return 1;
+			}
+		}
+	}
+
+	printf("BINARYOP_REG_MEM\n");
+	for(i=0; i<LEN(BINARYOP_TABLE); i+=74)
+	{
+		unsigned int received[72];
+		const unsigned int *truth=BINARYOP_TABLE+i+2;
+		const unsigned int eax=BINARYOP_TABLE[i];
+		const unsigned int edx=BINARYOP_TABLE[i+1];
+		BINARYOP_REG_MEM(received,eax,edx);
+		for(int j=0; j<72; ++j)
+		{
+			if(received[j]!=truth[j])
+			{
+				printf("Error!\n");
+				printf("i=%d, j=%d, Instruction %s, Bit=%d\n",i,j,inst[(j%24)/3],bit[j/24]);
+				printf("OP1=%08x  OP2=%08x\n",eax,edx);
+				printf("Received: %08x %08x %08x\n",received[(j/3)*3],received[(j/3)*3+1],received[(j/3)*3+2]);
+				printf("Correct:  %08x %08x %08x\n",truth[(j/3)*3],truth[(j/3)*3+1],truth[(j/3)*3+2]);
+				return 1;
+			}
+		}
+	}
+
+	printf("BINARYOP_MEM_REG\n");
+	for(i=0; i<LEN(BINARYOP_TABLE); i+=74)
+	{
+		unsigned int received[72];
+		const unsigned int *truth=BINARYOP_TABLE+i+2;
+		const unsigned int eax=BINARYOP_TABLE[i];
+		const unsigned int edx=BINARYOP_TABLE[i+1];
+		BINARYOP_MEM_REG(received,eax,edx);
+		for(int j=0; j<72; ++j)
+		{
+			if(received[j]!=truth[j])
+			{
+				printf("Error!\n");
+				printf("i=%d, j=%d, Instruction %s, Bit=%d\n",i,j,inst[(j%24)/3],bit[j/24]);
+				printf("OP1=%08x  OP2=%08x\n",eax,edx);
+				printf("Received: %08x %08x %08x\n",received[(j/3)*3],received[(j/3)*3+1],received[(j/3)*3+2]);
+				printf("Correct:  %08x %08x %08x\n",truth[(j/3)*3],truth[(j/3)*3+1],truth[(j/3)*3+2]);
+				return 1;
+			}
+		}
+	}
+
+	return 0;
+}
+
 int main(int ac,char *av[])
 {
 	int nFail=0;
@@ -917,6 +1011,7 @@ int main(int ac,char *av[])
 	nFail+=RunDAA_DAS();
 	nFail+=RunMOV_M_TO_A_A_TO_M();
 	nFail+=RunSHLD_SHRD();
+	nFail+=RunBinaryOp();
 	printf("ARPL not covered.\n");
 	printf("CALL and JMP not covered.\n");
 

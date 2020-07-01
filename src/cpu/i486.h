@@ -1914,11 +1914,20 @@ public:
 	*/
 	inline unsigned int GetRegisterValue(int reg) const;
 
+	/*! Returns an 8-bit register value.
+	    May crash if reg is not REG_AL,REG_BL,REG_CL,REG_DL,REG_AH,REG_BH,REG_CH,REG_DH.
+	*/
+	inline unsigned int GetRegisterValue8(int reg) const;
+
 	/*! Sets a register value.
 	    reg can be conventional registers only.
 	    Trying to set a value to other registers with this function will Abort the VM.
 	*/
 	inline void SetRegisterValue(unsigned int reg,unsigned int value);
+
+	/*! Sets an 8-bit register value.
+	    May crash if reg is not REG_AL,REG_BL,REG_CL,REG_DL,REG_AH,REG_BH,REG_CH,REG_DH. */
+	inline void SetRegisterValue8(unsigned int reg,unsigned char value);
 
 	/*! Returns a register size in number of bytes. 
 	*/
@@ -2927,6 +2936,13 @@ inline unsigned int i486DX::GetRegisterValue(int reg) const
 	return 0;
 }
 
+inline unsigned int i486DX::GetRegisterValue8(int reg) const
+{
+	unsigned int regIdx=reg-REG_AL;
+	unsigned int shift=(regIdx<<1)&8;
+	return ((state.reg32()[regIdx&3]>>shift)&255);
+}
+
 inline void i486DX::SetRegisterValue(unsigned int reg,unsigned int value)
 {
 	switch(reg)
@@ -3010,6 +3026,19 @@ inline void i486DX::SetRegisterValue(unsigned int reg,unsigned int value)
 		Abort("SetRegisterValue function is not suppose to be used for this register.");
 		break;
 	}
+}
+
+inline void i486DX::SetRegisterValue8(unsigned int reg,unsigned char value)
+{
+	static const unsigned int highLowMask[2]=
+	{
+		0xFFFFFF00,
+		0xFFFF00FF,
+	};
+	unsigned int regIdx=reg-REG_AL;
+	unsigned int highLow=regIdx>>2;
+	state.reg32()[regIdx&3]&=highLowMask[highLow];
+	state.reg32()[regIdx&3]|=(value<<(highLow<<3));
 }
 
 /* } */

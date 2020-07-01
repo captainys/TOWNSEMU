@@ -710,6 +710,32 @@ void GenSHLDSHRD(FILE *ofp)
 	fprintf(ofp,"};\n");
 }
 
+void BINARYOP_REG_MEM(unsigned int res[72],unsigned int eax,unsigned int edx);
+void GenBINARYOP(FILE *ofp)
+{
+	fprintf(ofp,"unsigned int BINARYOP_TABLE[]={\n");
+	for(int i=0; i<LEN(testNumberSrc32); ++i)
+	{
+		for(int j=0; j<LEN(testNumberSrc32); ++j)
+		{
+			unsigned int eax=testNumberSrc32[i];
+			unsigned int edx=testNumberSrc32[j];
+			unsigned int res[72];
+			BINARYOP_REG_MEM(res,eax,edx);
+			fprintf(ofp,"0x%08x,0x%08x,\n",eax,edx);
+			for(int k=0; k<72; ++k)
+			{
+				fprintf(ofp,"0x%08x,",res[k]);
+				if(0==((k+1)&7))
+				{
+					fprintf(ofp,"\n");
+				}
+			}
+		}
+	}
+	fprintf(ofp,"};\n");
+}
+
 int main(void)
 {
 	FILE *ofp=fopen("cputest/testcase.h","w");
@@ -727,6 +753,7 @@ int main(void)
 	GenBT_MEM_R(ofp);
 	GenDAADAS(ofp);
 	GenSHLDSHRD(ofp);
+	GenBINARYOP(ofp);
 	fclose(ofp);
 	return 0;
 }

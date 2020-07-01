@@ -12,6 +12,7 @@ build\bt_mem_r.OBJ
 build\daadas.obj 
 build\mov.obj
 build\shldshrd.obj
+build\binaryop.obj
 build\io.obj
 build\vmif.obj
 -lib C:\hc386\small\hce.lib 

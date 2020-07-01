@@ -3622,6 +3622,31 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		} \
 	}
 
+	#define BINARYOP_R8_RM8(func,clock_for_addr,update) \
+	{ \
+		if(op1.operandType==OPER_ADDR || op2.operandType==OPER_ADDR) \
+		{ \
+			clocksPassed=(clock_for_addr); \
+		} \
+		else \
+		{ \
+			clocksPassed=1; \
+		} \
+		auto value1=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op1); \
+		auto value2=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op2); \
+		if(true==state.exception) \
+		{ \
+			break; \
+		} \
+		auto i=value1.GetAsDword(); \
+		(func)(i,value2.GetAsDword()); \
+		if(true==update) \
+		{ \
+			value1.SetDword(i); \
+			StoreOperandValue8(op1,mem,inst.addressSize,inst.segOverride,value1); \
+		} \
+	}
+
 	#define BINARYOP_AL_I8(func,update) \
 	{ \
 		clocksPassed=1; \
@@ -4348,28 +4373,28 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 
 	case I486_RENUMBER_ADC_R8_FROM_RM8:// 0x12,
-		BINARYOP_RM8_R8(AdcByte,3,true);
+		BINARYOP_R8_RM8(AdcByte,3,true);
 		break;
 	case I486_RENUMBER_ADD_R8_FROM_RM8:// 0x02,
-		BINARYOP_RM8_R8(AddByte,3,true);
+		BINARYOP_R8_RM8(AddByte,3,true);
 		break;
 	case I486_RENUMBER_AND_R8_FROM_RM8:// 0x22,
-		BINARYOP_RM8_R8(AndByte,3,true);
+		BINARYOP_R8_RM8(AndByte,3,true);
 		break;
 	case I486_RENUMBER_CMP_R8_FROM_RM8:// 0x3A,
-		BINARYOP_RM8_R8(SubByte,3,false);
+		BINARYOP_R8_RM8(SubByte,3,false);
 		break;
 	case I486_RENUMBER_OR_R8_FROM_RM8:// 0x0A,
-		BINARYOP_RM8_R8(OrByte,3,true);
+		BINARYOP_R8_RM8(OrByte,3,true);
 		break;
 	case I486_RENUMBER_SBB_R8_FROM_RM8:// 0x1A,
-		BINARYOP_RM8_R8(SbbByte,3,true);
+		BINARYOP_R8_RM8(SbbByte,3,true);
 		break;
 	case I486_RENUMBER_SUB_R8_FROM_RM8:// 0x2A,
-		BINARYOP_RM8_R8(SubByte,3,true);
+		BINARYOP_R8_RM8(SubByte,3,true);
 		break;
 	case I486_RENUMBER_XOR_R8_FROM_RM8:
-		BINARYOP_RM8_R8(XorByte,3,true);
+		BINARYOP_R8_RM8(XorByte,3,true);
 		break;
 
 	case I486_RENUMBER_ADC_RM_FROM_R://   0x11,
