@@ -3607,8 +3607,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{ \
 			clocksPassed=1; \
 		} \
-		auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,1); \
-		auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,1); \
+		auto value1=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op1); \
+		auto value2=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op2); \
 		if(true==state.exception) \
 		{ \
 			break; \
@@ -3618,7 +3618,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		if(true==update) \
 		{ \
 			value1.SetDword(i); \
-			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1); \
+			StoreOperandValue8(op1,mem,inst.addressSize,inst.segOverride,value1); \
 		} \
 	}
 
@@ -3738,7 +3738,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_RENUMBER_D0_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_1://0xD0, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
 	case I486_RENUMBER_D3_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_CL://0xD2,// ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
 		{
-			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,1);
+			auto value=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op1);
 			auto i=value.GetAsDword();
 			unsigned int ctr;
 			if(I486_OPCODE_C0_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_I8==inst.opCode)
@@ -5315,7 +5315,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 	case I486_RENUMBER_INC_DEC_R_M8:
 		{
-			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,1);
+			auto value=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op1);
 			if(true!=state.exception)
 			{
 				auto i=value.GetAsDword();
@@ -5789,7 +5789,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				clocksPassed=1;
 			}
 
-			auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,1);
+			auto value1=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op1);
 			auto value2=inst.EvalUimm8();
 			if(true==state.exception)
 			{
@@ -6231,7 +6231,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_RENUMBER_MOV_TO_R8: //        0x8A,
 		{
 			auto regNum=inst.GetREG(); // Guaranteed to be between 0 and 7
-			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,1);
+			auto value=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op2);
 			state.reg32()[regNum&3]&=reg8AndPattern[regNum];
 			state.reg32()[regNum&3]|=((unsigned int)(value.GetAsByte())<<reg8Shift[regNum]);
 			clocksPassed=1;
@@ -6360,7 +6360,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_RENUMBER_MOVZX_R_RM8://=      0x0FB6, 8bit to 16or32bit
 		{
 			clocksPassed=3;
-			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,1);
+			auto value=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op2);
 			if(true!=state.exception)
 			{
 				value.numBytes=4;
@@ -7133,8 +7133,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_RENUMBER_XCHG_RM8_R8://           0x86,
 		clocksPassed=(OPER_ADDR==op1.operandType ? 5 : 3);
 		{
-			auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,1);
-			auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,1);
+			auto value1=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op1);
+			auto value2=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op2);
 			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value2);
 			StoreOperandValue(op2,mem,inst.addressSize,inst.segOverride,value1);
 		}
