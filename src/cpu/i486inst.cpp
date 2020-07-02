@@ -43,8 +43,8 @@ void i486DX::MakeOpCodeRenumberTable(void)
 	opCodeRenumberTable[I486_OPCODE_INC_DEC_CALL_CALLF_JMP_JMPF_PUSH ]=I486_RENUMBER_INC_DEC_CALL_CALLF_JMP_JMPF_PUSH;
 	opCodeRenumberTable[I486_OPCODE_LGDT_LIDT_SGDT_SIDT]=I486_RENUMBER_LGDT_LIDT_SGDT_SIDT;
 	opCodeRenumberTable[I486_OPCODE_AAA]=I486_RENUMBER_AAA;
-	opCodeRenumberTable[I486_OPCODE_AAM_AMX]=I486_RENUMBER_AAM_AMX;
-	opCodeRenumberTable[I486_OPCODE_AAD_ADX]=I486_RENUMBER_AAD_ADX;
+	opCodeRenumberTable[I486_OPCODE_AAM]=I486_RENUMBER_AAM;
+	opCodeRenumberTable[I486_OPCODE_AAD]=I486_RENUMBER_AAD;
 	opCodeRenumberTable[I486_OPCODE_AAS]=I486_RENUMBER_AAS;
 	opCodeRenumberTable[I486_OPCODE_ARPL]=I486_RENUMBER_ARPL;
 	opCodeRenumberTable[I486_OPCODE_BT_BTS_BTR_BTC_RM_I8]=I486_RENUMBER_BT_BTS_BTR_BTC_RM_I8;
@@ -732,8 +732,8 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 	case I486_RENUMBER_AAA: // 0x37
 		break;
 
-	case I486_RENUMBER_AAD_ADX://    0xD5,
-	case I486_RENUMBER_AAM_AMX://    0xD4,
+	case I486_RENUMBER_AAD://    0xD5,
+	case I486_RENUMBER_AAM://    0xD4,
 		FetchImm8(inst,ptr,seg,offset,mem);
 		break;
 	case I486_RENUMBER_AAS:
@@ -1662,24 +1662,24 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		disasm="AAA";
 		break;
 
-	case I486_OPCODE_AAD_ADX://    0xD5,
+	case I486_OPCODE_AAD://    0xD5,
 		if(0x0A==EvalUimm8())
 		{
 			disasm="AAD";
 		}
 		else
 		{
-			disasm=DisassembleTypicalOneImm("ADX",EvalUimm8(),8);
+			disasm=DisassembleTypicalOneImm("AAD",EvalUimm8(),8);
 		}
 		break;
-	case I486_OPCODE_AAM_AMX://    0xD4,
+	case I486_OPCODE_AAM://    0xD4,
 		if(0x0A==EvalUimm8())
 		{
 			disasm="AAM";
 		}
 		else
 		{
-			disasm=DisassembleTypicalOneImm("AMX",EvalUimm8(),8);
+			disasm=DisassembleTypicalOneImm("AAM",EvalUimm8(),8);
 		}
 		break;
 	case I486_OPCODE_AAS:
@@ -4520,42 +4520,28 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		break;
 
-	case I486_RENUMBER_AAD_ADX://    0xD5,
-		if(0x0A==inst.EvalUimm8())
+	case I486_RENUMBER_AAD://    0xD5,
 		{
 			clocksPassed=14;
-			auto AL=GetAH()*10+GetAL();
+			auto AL=GetAH()*inst.EvalUimm8()+GetAL();
 			SetAL(AL);
 			SetAH(0);
 			SetZF(0==GetAX());
 			SetSF(0!=(GetAL()&0x80));
 			SetPF(CheckParity(AL));
 		}
-		else
-		{
-			Abort("ADX D5 Imm8(!=0x0A) may not be a 80486 instruction.");
-			return 0;
-		}
 		break;
-
-
-	case I486_RENUMBER_AAM_AMX://    0xD4,
-		if(0x0A==inst.EvalUimm8())
+	case I486_RENUMBER_AAM://    0xD4,
 		{
 			clocksPassed=15;
 			auto AL=GetAL();
-			auto quo=AL/10;
-			auto rem=AL%10;
+			auto quo=AL/inst.EvalUimm8();
+			auto rem=AL%inst.EvalUimm8();
 			SetAH(quo);
 			SetAL(rem);
 			SetZF(0==GetAL());   // ?
 			SetSF(0!=(GetAH()&0x80));
 			SetPF(CheckParity(GetAL()));
-		}
-		else
-		{
-			Abort("AMX D4 Imm8(!=0x0A) may not be a 80486 instruction.");
-			return 0;
 		}
 		break;
 

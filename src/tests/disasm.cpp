@@ -133,8 +133,8 @@ int main(int ac,char *av[])
 
 		"D5 0A","AAD",
 		"D4 0A","AAM",
-		"D5 07","ADX     07H",   // Questionable
-		"D4 07","AMX     07H",   // Questionable
+		"D5 07","AAD     07H",   // Questionable
+		"D4 07","AAM     07H",   // Questionable
 
 		"F6 C6 0C",      "TEST    DH,0CH",
 		"66 F7 C1 000E", "TEST    CX,000EH",
