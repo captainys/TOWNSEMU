@@ -640,30 +640,29 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 			}
 			else
 			{
+				state.DRY=true;
+				state.ClearStatusQueue();
+				state.DTSF=false;
+				state.DEI=true;
+
 				if(true==state.enableDEI)
 				{
-					state.DEI=true;
-					state.SIRQ=false;
-					state.DTSF=false;
-					state.DRY=true;
 					PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
 					// No more interrupt.  End of transfer.
 				}
-				else
+
+				if(0!=(state.cmd&CMDFLAG_STATUS_REQUEST))
 				{
 					state.SIRQ=true;
-					state.DEI=true;
-					state.DTSF=false;
-					state.DRY=true;
-					state.ClearStatusQueue();
-					if(0!=(state.cmd&CMDFLAG_STATUS_REQUEST))
+					SetStatusReadDone();
+					if(0!=(state.cmd&CMDFLAG_IRQ) && true==state.enableSIRQ)
 					{
-						SetStatusReadDone();
-						if(0!=(state.cmd&CMDFLAG_IRQ) && true==state.enableSIRQ)
-						{
-							PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
-						}
+						PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
 					}
+				}
+				else
+				{
+					state.SIRQ=false;
 				}
 			}
 		}
