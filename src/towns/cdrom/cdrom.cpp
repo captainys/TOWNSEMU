@@ -667,6 +667,12 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 					state.DMATransfer=false;
 					state.DTSF=false;  // Should I turn it off also? -> Looks like I should.  Based on 2MX SYSROM FC00:00001CF7.  It waits for DTSF to clear.
 					state.DEI=true;
+
+					if(true==state.enableDEI)
+					{
+						PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
+						// No more interrupt.  End of transfer.
+					}
 				}
 			}
 			else
@@ -674,13 +680,7 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 				state.DRY=true;
 				state.ClearStatusQueue();
 				state.DTSF=false;
-				state.DEI=true;
-
-				if(true==state.enableDEI)
-				{
-					PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
-					// No more interrupt.  End of transfer.
-				}
+				// state.DEI=true;
 
 				if(0!=(state.cmd&CMDFLAG_STATUS_REQUEST))
 				{
