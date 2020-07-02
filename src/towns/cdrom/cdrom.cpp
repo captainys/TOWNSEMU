@@ -410,6 +410,8 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 	// }
 	// std::cout << std::endl;
 
+	state.delayedSIRQ=false;
+
 	switch(state.cmd&0x9F)
 	{
 	case CDCMD_SEEK://       0x00,
@@ -450,11 +452,28 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 			{
 				state.readingSectorHSG-=150;
 				state.endSectorHSG-=150;
-				townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+READ_SECTOR_TIME);
-				// Should I immediately return No-Error status before starting transfer?
-				// BIOS is not checking it immediately.
-				// 2F Boot ROM _IS_ checking it immediately.
-				SetStatusNoError();
+				if(0!=(CMDFLAG_STATUS_REQUEST&state.cmd))
+				{
+					// Should I immediately return No-Error status before starting transfer?
+					// BIOS is not checking it immediately.
+					// 2F Boot ROM _IS_ checking it immediately.
+					SetStatusNoError();
+					if(true==state.enableSIRQ)
+					{
+						SetDelayedSIRQ(
+						    townsPtr->state.townsTime+DELAYED_STATUS_IRQ_TIME,
+						    townsPtr->state.townsTime+DELAYED_STATUS_IRQ_TIME+READ_SECTOR_TIME);
+					}
+					else
+					{
+						townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+READ_SECTOR_TIME);
+					}
+				}
+				else
+				{
+					townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+READ_SECTOR_TIME);
+				}
+
 				state.DRY=false;
 				state.DTSF=false;
 			}
@@ -584,6 +603,18 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 }
 /* virtual */ void TownsCDROM::RunScheduledTask(unsigned long long int townsTime)
 {
+	if(true==state.delayedSIRQ)
+	{
+		state.delayedSIRQ=false;
+		if(this->TIME_NO_SCHEDULE!=state.nextScheduleTimeAfterDelayedSIRQ)
+		{
+			state.SIRQ=true;
+			PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
+			townsPtr->ScheduleDeviceCallBack(*this,state.nextScheduleTimeAfterDelayedSIRQ);
+		}
+		return;
+	}
+
 	switch(state.cmd&0x9F)
 	{
 	case CDCMD_MODE1READ://  0x02,
@@ -860,6 +891,13 @@ void TownsCDROM::StopCDDA(void)
 		// See fix for ChaseHQ in CDDAPAUSE.
 		state.CDDAState=State::CDDA_IDLE;
 	}
+}
+
+void TownsCDROM::SetDelayedSIRQ(long long int delayedSIRQTime,long long int nextScheduleTime)
+{
+	state.delayedSIRQ=true;
+	state.nextScheduleTimeAfterDelayedSIRQ=nextScheduleTime;
+	townsPtr->ScheduleDeviceCallBack(*this,delayedSIRQTime);
 }
 
 void TownsCDROM::SetSIRQ_IRR(void)

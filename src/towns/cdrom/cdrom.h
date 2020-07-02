@@ -102,9 +102,10 @@ public:
 
 	enum
 	{
-		READ_SECTOR_TIME= 5000000,  // Tentatively 5ms
-		NOTIFICATION_TIME=1000000,  // Tentatively 1ms
-		CDDASTOP_TIME    =1000000,  // Tentatively 1ms
+		DELAYED_STATUS_IRQ_TIME=  50000,  // Tentatively 50us
+		READ_SECTOR_TIME=       5000000,  // Tentatively  5ms
+		NOTIFICATION_TIME=      1000000,  // Tentatively  1ms
+		CDDASTOP_TIME=          1000000,  // Tentatively  1ms
 	};
 
 	// Reference [3] 
@@ -154,6 +155,19 @@ public:
 
 		bool discChanged;
 
+
+		// Fractal Engine Demo does the following:
+		// (1) Issue command 62H (MODE1READ+SIRQ Request+Status Request),
+		// (2) Clear SIRQ and DEI, and then
+		// (3) Wait for SIRQ.
+		// It is a near coding error. (1) and (2) must happen in the reverse order.
+		// It was working only because SIRQ from (1) comes with a delay, and
+		// comes after (2).  If the CD-ROM drive had been much faster, the program
+		// won't run because SIRQ from (1) is cleared in (2), and (3) will wait
+		// for an IRQ forever.
+		// To emulate this, I need to introduce delayed status IRQ.
+		bool delayedSIRQ=false;
+		long long int nextScheduleTimeAfterDelayedSIRQ=0;
 
 		// RAYXANBER waits until the CDDA playing time reaches track 15 during the "DATAWEST" logo screen.
 		// However, .WAV file takes slightly less time to finish, and the playing time returned from CD-ROM
@@ -264,6 +278,10 @@ private:
 	void PushStatusCDDAPlayEnded(void);
 
 	void StopCDDA(void); // Placeholder for later.
+
+	/* Set up delayed SIRQ.  See comment about delayedSIRQ flag above.
+	*/
+	void SetDelayedSIRQ(long long int delayedSIRQTime,long long int nextScheduleTime);
 
 	/* Turn on IRR flag if status queue is not empty.
 	*/
