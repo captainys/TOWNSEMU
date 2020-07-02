@@ -120,7 +120,7 @@ public:
 		CDCMD_SUBQREAD=   0x06,
 		CDCMD_UNKNOWN1=   0x1F, // NOP and requst status? I guess?
 
-		CDCMD_SETSTATE=   0x80,
+		CDCMD_SETSTATE=   0x80, // Linux for FM TOWNS source label this as "SETSTATE" but isn't it "GETSTATE"?
 		CDCMD_CDDASET=    0x81,
 		CDCMD_CDDASTOP=   0x84,
 		CDCMD_CDDAPAUSE=  0x85,
@@ -264,6 +264,10 @@ private:
 	void PushStatusCDDAPlayEnded(void);
 
 	void StopCDDA(void); // Placeholder for later.
+
+	/* Turn on IRR flag if status queue is not empty.
+	*/
+	void SetSIRQ_IRR(void);
 };
 
 

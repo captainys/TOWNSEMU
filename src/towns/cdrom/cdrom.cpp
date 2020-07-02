@@ -413,7 +413,7 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 	switch(state.cmd&0x9F)
 	{
 	case CDCMD_SEEK://       0x00,
-		if(0x20&state.cmd)
+		if(CMDFLAG_STATUS_REQUEST&state.cmd)
 		{
 			if(true!=SetStatusDriveNotReadyOrDiscChanged())
 			{
@@ -484,20 +484,20 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 				state.CDDAState=State::CDDA_PLAYING;
 				state.CDDAEndTime=msfEnd;
 			}
-			if(0x20&state.cmd)
+			if(CMDFLAG_STATUS_REQUEST&state.cmd)
 			{
 				SetStatusDriveNotReadyOrDiscChangedOrNoError();
 			}
 		}
 		break;
 	case CDCMD_TOCREAD://    0x05,
-		if(0x20&state.cmd)
+		if(CMDFLAG_STATUS_REQUEST&state.cmd)
 		{
 			SetStatusQueueForTOC();
 		}
 		break;
 	case CDCMD_SUBQREAD://   0x06,
-		if(0x20&state.cmd)
+		if(CMDFLAG_STATUS_REQUEST&state.cmd)
 		{
 			SetStatusSubQRead();
 		}
@@ -507,7 +507,7 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 		break;
 
 	case CDCMD_SETSTATE://   0x80,
-		if(0x20&state.cmd)
+		if(CMDFLAG_STATUS_REQUEST&state.cmd)
 		{
 			townsPtr->UnscheduleDeviceCallBack(*this);
 			SetStatusDriveNotReadyOrDiscChangedOrNoError();
@@ -516,10 +516,14 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 				PushStatusCDDAPlayEnded();
 				state.CDDAState=State::CDDA_IDLE;
 			}
+			if(CMDFLAG_IRQ&state.cmd)
+			{
+				SetSIRQ_IRR();
+			}
 		}
 		break;
 	case CDCMD_CDDASET://    0x81,
-		if(0x20&state.cmd)
+		if(CMDFLAG_STATUS_REQUEST&state.cmd)
 		{
 			// I don't know what to do with this command.
 			// CDROM BIOS AH=52H fires command 0xA1 with parameters {07 FF 00 00 00 00 00 00}
@@ -545,7 +549,7 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 		// CDDAState must be reset to IDLE regardless of the Status Request.
 		// ChaseHQ was issuing CDDAPAUSE command without Status Request flag.
 		state.CDDAState=State::CDDA_IDLE;
-		if(0x20&state.cmd)
+		if(CMDFLAG_STATUS_REQUEST&state.cmd)
 		{
 			if(true!=SetStatusDriveNotReadyOrDiscChanged())
 			{
@@ -562,7 +566,7 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 		{
 			OutsideWorld->CDDAResume();
 		}
-		if(0x20&state.cmd)
+		if(CMDFLAG_STATUS_REQUEST&state.cmd)
 		{
 			if(true!=SetStatusDriveNotReadyOrDiscChanged())
 			{
@@ -856,5 +860,14 @@ void TownsCDROM::StopCDDA(void)
 	{
 		// See fix for ChaseHQ in CDDAPAUSE.
 		state.CDDAState=State::CDDA_IDLE;
+	}
+}
+
+void TownsCDROM::SetSIRQ_IRR(void)
+{
+	if(0<state.statusQueue.size())
+	{
+		state.SIRQ=true;
+		PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
 	}
 }
