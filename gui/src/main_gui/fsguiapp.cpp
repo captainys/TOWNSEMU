@@ -310,6 +310,18 @@ bool FsGuiMainCanvas::ReallyRun(bool usePipe)
 	argv[0]=FindTsugaruCUI();
 	argv.push_back("-CMOS");
 	argv.push_back(GetCMOSFileName());
+
+
+	for(auto &arg : argv)
+	{
+		YsWString utf16;
+		utf16.SetUTF8String(arg.c_str());
+		YsString sysEncode;
+		YsUnicodeToSystemEncoding(sysEncode,utf16);
+		arg=sysEncode.c_str();
+	}
+
+
 	for(auto arg : argv)
 	{
 		std::cout << arg << std::endl;
@@ -791,8 +803,7 @@ void FsGuiMainCanvas::CD_ImageFileSelected(FsGuiDialog *dlg,int returnCode)
 	{
 		YsWString fName=fdlg->selectedFileArray[0];
 		YsString utf8;
-		utf8.EncodeUTF8(fName.data());
-
+		YsUnicodeToSystemEncoding(utf8,fName);
 		std::string cmd="CDLOAD ";
 		cmd.push_back('\"');
 		cmd+=utf8.c_str();
@@ -840,7 +851,7 @@ void FsGuiMainCanvas::FD0_ImageFileSelected(FsGuiDialog *dlg,int returnCode)
 	{
 		auto fName=fdlg->selectedFileArray[0];
 		YsString utf8;
-		utf8.EncodeUTF8(fName.data());
+		YsUnicodeToSystemEncoding(utf8,fName);
 
 		std::string cmd="FD0LOAD ";
 		cmd.push_back('\"');
@@ -920,7 +931,7 @@ void FsGuiMainCanvas::FD1_ImageFileSelected(FsGuiDialog *dlg,int returnCode)
 	{
 		auto fName=fdlg->selectedFileArray[0];
 		YsString utf8;
-		utf8.EncodeUTF8(fName.data());
+		YsUnicodeToSystemEncoding(utf8,fName);
 
 		std::string cmd="FD1LOAD ";
 		cmd.push_back('\"');

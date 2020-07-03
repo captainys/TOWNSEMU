@@ -320,11 +320,33 @@ unsigned int DiscImage::OpenCUEPostProcess(void)
 		return ERROR_FIRST_TRACK_NOT_STARTING_AT_00_00_00;
 	}
 
-	std::string path,file;
-	cpputil::SeparatePathFile(path,file,fName);
-	binFName=path+binFName;
 
-	auto binLength=cpputil::FileSize(binFName);
+	std::vector <std::string> binFileCandidate;
+	{
+		std::string path,file;
+		cpputil::SeparatePathFile(path,file,fName);
+		binFileCandidate.push_back(path+binFName);
+	}
+	{
+		std::string base=cpputil::RemoveExtension(fName.c_str());
+		binFileCandidate.push_back(base+".BIN");
+		binFileCandidate.push_back(base+".IMG");
+		binFileCandidate.push_back(base+".bin");
+		binFileCandidate.push_back(base+".img");
+		binFileCandidate.push_back(base+".Bin");
+		binFileCandidate.push_back(base+".Img");
+	}
+	binFName="";
+	unsigned int binLength=0;
+	for(auto fn : binFileCandidate)
+	{
+		binLength=cpputil::FileSize(fn);
+		if(0<binLength)
+		{
+			binFName=fn;
+			break;
+		}
+	}
 	if(0==binLength)
 	{
 		return ERROR_BINARY_FILE_NOT_FOUND;
