@@ -129,6 +129,25 @@ unsigned int DiscImage::Open(const std::string &fName)
 	{
 		return OpenCUE(fName);
 	}
+	if(".BIN"==ext)
+	{
+		auto withoutExt=cpputil::RemoveExtension(fName.c_str());
+		auto cue=withoutExt+".cue";
+		auto CUE=withoutExt+".CUE";
+		auto Cue=withoutExt+".Cue";
+		if(cpputil::FileExists(cue))
+		{
+			return OpenCUE(cue);
+		}
+		if(cpputil::FileExists(CUE))
+		{
+			return OpenCUE(CUE);
+		}
+		if(cpputil::FileExists(Cue))
+		{
+			return OpenCUE(Cue);
+		}
+	}
 	if(".ISO"==ext)
 	{
 		return OpenISO(fName);
