@@ -28,6 +28,10 @@ void ProfileDialog::Make(void)
 		ROMDirTxt->SetLengthLimit(PATH_LENGTH);
 		AddStaticText(0,FSKEY_NULL,"(When browsing for the ROM dir, please select one of the ROM files.)",YSTRUE);
 
+		CPUFreqTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"CPU Speed (MHz)",4,YSTRUE);
+		CPUFreqTxt->SetInteger(25);
+		AddStaticText(0,FSKEY_NULL,"(Too-fast frequency rather slows down VM)",YSFALSE);
+
 		CDImgBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"CD Image:",YSTRUE);
 		CDImgTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",nShowPath,YSFALSE);
 		CDImgTxt->SetLengthLimit(PATH_LENGTH);
@@ -137,7 +141,7 @@ void ProfileDialog::Make(void)
 	tab->SelectCurrentTab(mainTabId);
 
 	runBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"START",YSTRUE);
-	autoStartBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Auto Start (Applicable to Default Profile only)",YSFALSE);
+	autoStartBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Auto Start (Start VM as soon as the profile is loaded)",YSFALSE);
 
 	Fit();
 	SetArrangeType(FSDIALOG_ARRANGE_TOP_LEFT);
@@ -232,6 +236,7 @@ TownsProfile ProfileDialog::GetProfile(void) const
 	TownsProfile profile;
 
 	profile.ROMDir=ROMDirTxt->GetString().data();
+	profile.freq=CPUFreqTxt->GetInteger();
 	profile.CDImgFile=CDImgTxt->GetString().data();
 	profile.FDImgFile[0][0]=FDImgTxt[0][0]->GetString().data();
 	profile.FDWriteProtect[0][0]=(YSTRUE==FDWriteProtBtn[0][0]->GetCheck());
@@ -276,6 +281,8 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 
 	str.SetUTF8String(profile.ROMDir.data());
 	ROMDirTxt->SetText(str);
+
+	CPUFreqTxt->SetInteger(profile.freq);
 
 	str.SetUTF8String(profile.CDImgFile.data());
 	CDImgTxt->SetText(str);

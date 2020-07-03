@@ -109,6 +109,8 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 
 	primaryCmdMap["HOST2VM"]=CMD_HOST_TO_VM_FILE_TRANSFER;
 
+	primaryCmdMap["FREQ"]=CMD_FREQUENCY;
+
 	featureMap["CMDLOG"]=ENABLE_CMDLOG;
 	featureMap["AUTODISASM"]=ENABLE_DISASSEMBLE_EVERY_INST;
 	featureMap["IOMON"]=ENABLE_IOMONITOR;
@@ -188,6 +190,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Quit." << std::endl;
 	std::cout << "RUN|RUN EIP|RUN CS:EIP" << std::endl;
 	std::cout << "  Run.  Can specify temporary break point." << std::endl;
+	std::cout << "FREQ frequency_in_MHz" << std::endl;
+	std::cout << "  Change frequency.  Minimum 1MHz." << std::endl;
 	std::cout << "CDLOAD filename" << std::endl;
 	std::cout << "  Load CD-ROM image." << std::endl;
 	std::cout << "CDOPENCLOSE" << std::endl;
@@ -637,10 +641,12 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 			if("TRANS"==MODE || "TRANSLATE"==MODE)
 			{
 				outside_world->keyboardMode=Outside_World::KEYBOARD_MODE_TRANSLATION;
+				std::cout << "Keyboard TRANSLATION Mode" << std::endl;
 			}
 			else if("DIRECT"==MODE)
 			{
 				outside_world->keyboardMode=Outside_World::KEYBOARD_MODE_DIRECT;
+				std::cout << "Keyboard DIRECT Mode" << std::endl;
 			}
 			else
 			{
@@ -705,7 +711,22 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 	case CMD_FD1WRITEUNPROTECT:
 		towns.fdc.SetWriteProtect(1,false);
 		break;
-
+	case CMD_FREQUENCY:
+		if(2<=cmd.argv.size())
+		{
+			int MHz=cpputil::Atoi(cmd.argv[1].c_str());
+			if(MHz<1)
+			{
+				MHz=1;
+			}
+			towns.state.freq=MHz;
+			std::cout << "Set CPU frequency to " << MHz << "MHz." << std::endl;
+		}
+		else
+		{
+			PrintError(ERROR_TOO_FEW_ARGS);
+		}
+		break;
 
 	case CMD_HOST_TO_VM_FILE_TRANSFER:
 		if(3<=cmd.argv.size())

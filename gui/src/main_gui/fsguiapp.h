@@ -159,6 +159,15 @@ private:
 	void VM_Pause(FsGuiPopUpMenuItem *);
 	void VM_Resume(FsGuiPopUpMenuItem *);
 
+	void VM_1MHz(FsGuiPopUpMenuItem *);
+	void VM_4MHz(FsGuiPopUpMenuItem *);
+	void VM_8MHz(FsGuiPopUpMenuItem *);
+	void VM_12MHz(FsGuiPopUpMenuItem *);
+	void VM_16MHz(FsGuiPopUpMenuItem *);
+	void VM_25MHz(FsGuiPopUpMenuItem *);
+
+	void VM_Keyboard_Direct(FsGuiPopUpMenuItem *);
+	void VM_Keyboard_Translation(FsGuiPopUpMenuItem *);
 
 
 	void CD_SelectImageFile(FsGuiPopUpMenuItem *);

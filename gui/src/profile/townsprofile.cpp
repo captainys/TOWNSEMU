@@ -37,6 +37,7 @@ void TownsProfile::CleanUp(void)
 	bootKeyComb=BOOT_KEYCOMB_NONE;
 	autoStart=false;
 	screenScaling=150;
+	freq=25;
 }
 std::vector <std::string> TownsProfile::Serialize(void) const
 {
@@ -95,7 +96,11 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 	text.push_back("AUTOSTAR ");
 	text.back()+=(autoStart ? "1" : "0");
 
-	sstream.str()="";
+	sstream.str("");
+	sstream << "FREQUENC " << freq;
+	text.push_back(sstream.str());
+
+	sstream.str("");
 	sstream << "SCALING_ " << screenScaling;
 	text.push_back(sstream.str());
 
@@ -195,6 +200,17 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 				screenScaling=argv[1].Atoi();
 			}
 		}
+		else if(0==argv[0].STRCMP("FREQUENC"))
+		{
+			if(2<=argv.size())
+			{
+				freq=argv[1].Atoi();
+				if(freq<1)
+				{
+					freq=1;
+				}
+			}
+		}
 		else
 		{
 			errorMsg="Unrecognized keyword:";
@@ -272,8 +288,16 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 			screenScalingFix=400;
 		}
 		argv.push_back("-SCALE");
-		sstream.str()="";
+		sstream.str("");
 		sstream << screenScalingFix;
+		argv.push_back(sstream.str());
+	}
+
+	if(1<=freq)
+	{
+		argv.push_back("-FREQ");
+		sstream.str("");
+		sstream << freq;
 		argv.push_back(sstream.str());
 	}
 

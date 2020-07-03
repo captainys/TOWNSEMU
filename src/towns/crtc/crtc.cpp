@@ -606,27 +606,27 @@ void TownsCRTC::MakePageLayerInfo(Layer &layer,unsigned char page) const
 		state.mxVideoOutCtrlAddrLatch=((state.mxVideoOutCtrlAddrLatch&0x00ff)|((data<<8)&0xff));
 		break;
 	case TOWNSIO_MX_IMGOUT_ADDR_D0://   0x474,
-		std::cout << "MX-VIDOUTCONTROL8[" << cpputil::Ustox(state.mxVideoOutCtrlAddrLatch) << "H]=" << cpputil::Ubtox(data) << "H" << std::endl;
+		// std::cout << "MX-VIDOUTCONTROL8[" << cpputil::Ustox(state.mxVideoOutCtrlAddrLatch) << "H]=" << cpputil::Ubtox(data) << "H" << std::endl;
 		state.mxVideoOutCtrl[state.mxVideoOutCtrlAddrLatch]=data;
 		break;
 	case TOWNSIO_MX_IMGOUT_ADDR_D1://   0x475,
 		if(state.mxVideoOutCtrlAddrLatch+1<state.mxVideoOutCtrl.size())
 		{
-			std::cout << "MX-VIDOUTCONTROL8[" << cpputil::Ustox(state.mxVideoOutCtrlAddrLatch+1) << "H]=" << cpputil::Ubtox(data) << "H" << std::endl;
+			// std::cout << "MX-VIDOUTCONTROL8[" << cpputil::Ustox(state.mxVideoOutCtrlAddrLatch+1) << "H]=" << cpputil::Ubtox(data) << "H" << std::endl;
 			state.mxVideoOutCtrl[state.mxVideoOutCtrlAddrLatch+1]=data;
 		}
 		break;
 	case TOWNSIO_MX_IMGOUT_ADDR_D2://   0x476,
 		if(state.mxVideoOutCtrlAddrLatch+2<state.mxVideoOutCtrl.size())
 		{
-			std::cout << "MX-VIDOUTCONTROL8[" << cpputil::Ustox(state.mxVideoOutCtrlAddrLatch+2) << "H]=" << cpputil::Ubtox(data) << "H" << std::endl;
+			// std::cout << "MX-VIDOUTCONTROL8[" << cpputil::Ustox(state.mxVideoOutCtrlAddrLatch+2) << "H]=" << cpputil::Ubtox(data) << "H" << std::endl;
 			state.mxVideoOutCtrl[state.mxVideoOutCtrlAddrLatch+2]=data;
 		}
 		break;
 	case TOWNSIO_MX_IMGOUT_ADDR_D3://   0x477,
 		if(state.mxVideoOutCtrlAddrLatch+3<state.mxVideoOutCtrl.size())
 		{
-			std::cout << "MX-VIDOUTCONTROL8[" << cpputil::Ustox(state.mxVideoOutCtrlAddrLatch+3) << "H]=" << cpputil::Ubtox(data) << "H" << std::endl;
+			// std::cout << "MX-VIDOUTCONTROL8[" << cpputil::Ustox(state.mxVideoOutCtrlAddrLatch+3) << "H]=" << cpputil::Ubtox(data) << "H" << std::endl;
 			state.mxVideoOutCtrl[state.mxVideoOutCtrlAddrLatch+3]=data;
 		}
 		break;
@@ -680,7 +680,7 @@ void TownsCRTC::MakePageLayerInfo(Layer &layer,unsigned char page) const
 		state.mxVideoOutCtrlAddrLatch=(data&0xffff);
 		break;
 	case TOWNSIO_MX_IMGOUT_ADDR_D0://   0x474,
-		std::cout << "MX-VIDOUTCONTROL16[" << cpputil::Ustox(state.mxVideoOutCtrlAddrLatch) << "H]=" << cpputil::Ustox(data) << "H" << std::endl;
+		// std::cout << "MX-VIDOUTCONTROL16[" << cpputil::Ustox(state.mxVideoOutCtrlAddrLatch) << "H]=" << cpputil::Ustox(data) << "H" << std::endl;
 		state.mxVideoOutCtrl[state.mxVideoOutCtrlAddrLatch]=data;
 		state.mxVideoOutCtrl[state.mxVideoOutCtrlAddrLatch+1]=(data>>8)&255;
 		break;
@@ -695,7 +695,7 @@ void TownsCRTC::MakePageLayerInfo(Layer &layer,unsigned char page) const
 	switch(ioport)
 	{
 	case TOWNSIO_MX_IMGOUT_ADDR_D0://   0x474,
-		std::cout << "MX-VIDOUTCONTROL32[" << cpputil::Ustox(state.mxVideoOutCtrlAddrLatch) << "H]=" << cpputil::Uitox(data) << "H" << std::endl;
+		// std::cout << "MX-VIDOUTCONTROL32[" << cpputil::Ustox(state.mxVideoOutCtrlAddrLatch) << "H]=" << cpputil::Uitox(data) << "H" << std::endl;
 		state.mxVideoOutCtrl[state.mxVideoOutCtrlAddrLatch]=data;
 		state.mxVideoOutCtrl[state.mxVideoOutCtrlAddrLatch+1]=(data>>8)&255;
 		state.mxVideoOutCtrl[state.mxVideoOutCtrlAddrLatch+2]=(data>>16)&255;

@@ -116,6 +116,8 @@ public:
 		CMD_LOAD_EVENTLOG,
 
 		CMD_HOST_TO_VM_FILE_TRANSFER,
+
+		CMD_FREQUENCY,
 	};
 
 	enum

@@ -106,6 +106,22 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 		subMenu->AddTextItem(0,FSKEY_Q,L"Power Off")->BindCallBack(&THISCLASS::VM_PowerOff,this);
 		subMenu->AddTextItem(0,FSKEY_P,L"Pause")->BindCallBack(&THISCLASS::VM_Pause,this);
 		subMenu->AddTextItem(0,FSKEY_R,L"Resume")->BindCallBack(&THISCLASS::VM_Resume,this);
+
+		{
+			auto *freqSubMenu=subMenu->AddTextItem(0,FSKEY_F,L"CPU Frequency")->AddSubMenu();
+			freqSubMenu->AddTextItem(0,FSKEY_1,L"1MHz")->BindCallBack(&THISCLASS::VM_1MHz,this);
+			freqSubMenu->AddTextItem(0,FSKEY_4,L"4MHz")->BindCallBack(&THISCLASS::VM_4MHz,this);
+			freqSubMenu->AddTextItem(0,FSKEY_8,L"8MHz")->BindCallBack(&THISCLASS::VM_8MHz,this);
+			freqSubMenu->AddTextItem(0,FSKEY_2,L"12MHz")->BindCallBack(&THISCLASS::VM_12MHz,this);
+			freqSubMenu->AddTextItem(0,FSKEY_6,L"16MHz")->BindCallBack(&THISCLASS::VM_16MHz,this);
+			freqSubMenu->AddTextItem(0,FSKEY_5,L"25MHz")->BindCallBack(&THISCLASS::VM_25MHz,this);
+		}
+
+		{
+			auto *keyboardSubMenu=subMenu->AddTextItem(0,FSKEY_K,L"Keyboard Mode")->AddSubMenu();
+			keyboardSubMenu->AddTextItem(0,FSKEY_D,L"Direct (for Gaming)")->BindCallBack(&THISCLASS::VM_Keyboard_Direct,this);
+			keyboardSubMenu->AddTextItem(0,FSKEY_T,L"Translation (for Typing)")->BindCallBack(&THISCLASS::VM_Keyboard_Translation,this);
+		}
 	}
 
 	{
@@ -544,6 +560,10 @@ void FsGuiMainCanvas::LoadProfile(YsWString fName)
 		if(true==profile.Deserialize(text))
 		{
 			profileDlg->SetProfile(profile);
+			if(true==profile.autoStart)
+			{
+				VM_Start(nullptr);
+			}
 		}
 		else
 		{
@@ -646,6 +666,95 @@ void FsGuiMainCanvas::VM_Resume(FsGuiPopUpMenuItem *)
 	if(true==subproc.SubprocRunning())
 	{
 		subproc.Send("RUN\n");
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+void FsGuiMainCanvas::VM_1MHz(FsGuiPopUpMenuItem *)
+{
+	if(true==subproc.SubprocRunning())
+	{
+		subproc.Send("FREQ 1\n");
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+void FsGuiMainCanvas::VM_4MHz(FsGuiPopUpMenuItem *)
+{
+	if(true==subproc.SubprocRunning())
+	{
+		subproc.Send("FREQ 4\n");
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+void FsGuiMainCanvas::VM_8MHz(FsGuiPopUpMenuItem *)
+{
+	if(true==subproc.SubprocRunning())
+	{
+		subproc.Send("FREQ 8\n");
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+void FsGuiMainCanvas::VM_12MHz(FsGuiPopUpMenuItem *)
+{
+	if(true==subproc.SubprocRunning())
+	{
+		subproc.Send("FREQ 12\n");
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+void FsGuiMainCanvas::VM_16MHz(FsGuiPopUpMenuItem *)
+{
+	if(true==subproc.SubprocRunning())
+	{
+		subproc.Send("FREQ 16\n");
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+void FsGuiMainCanvas::VM_25MHz(FsGuiPopUpMenuItem *)
+{
+	if(true==subproc.SubprocRunning())
+	{
+		subproc.Send("FREQ 25\n");
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+
+void FsGuiMainCanvas::VM_Keyboard_Direct(FsGuiPopUpMenuItem *)
+{
+	if(true==subproc.SubprocRunning())
+	{
+		subproc.Send("KEYBOARD DIRECT\n");
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+void FsGuiMainCanvas::VM_Keyboard_Translation(FsGuiPopUpMenuItem *)
+{
+	if(true==subproc.SubprocRunning())
+	{
+		subproc.Send("KEYBOARD TRANS\n");
 	}
 	else
 	{

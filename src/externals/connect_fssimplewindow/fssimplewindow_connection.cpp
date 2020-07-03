@@ -209,6 +209,9 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 			}
 			FSKEYState[key]=sta;
 		}
+		while(0!=FsInkeyChar())
+		{
+		}
 	}
 
 	if(towns.eventLog.mode!=TownsEventLog::MODE_PLAYBACK)
