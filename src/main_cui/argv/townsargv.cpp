@@ -112,6 +112,13 @@ void TownsARGV::PrintApplicationList(void) const
 	std::cout << "  Mouse-integration.  Wing Commander 1 uses its own mouse-reading" << std::endl;
 	std::cout << "  function instead of standard Towns MOUSE BIOS.  With this option" << std::endl;
 	std::cout << "  you can control mouse for selecting menus." << std::endl;
+	std::cout << "SUPERDAISEN" << std::endl;
+	std::cout << "  Super Daisenryaku for FM TOWNS is, I believe, the best port among" << std::endl;
+	std::cout << "  the port for all other platforms.  However, especially at higher" << std::endl;
+	std::cout << "  frequency, it has an usability issue, which is the map scrolls" << std::endl;
+	std::cout << "  too fast while holding the mouse button down." << std::endl;
+	std::cout << "  To counter this issue, the VM slows down to 4MHz while the mouse" << std::endl;
+	std::cout << "  left button is down." << std::endl;
 }
 
 bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
@@ -133,6 +140,10 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 				if("WC1"==APP || "WINGCOMMANDER1"==APP)
 				{
 					appSpecificSetting=TOWNS_APPSPECIFIC_WINGCOMMANDER1;
+				}
+				else if("SUPERDAISEN"==APP)
+				{
+					appSpecificSetting=TOWNS_APPSPECIFIC_SUPERDAISEN;
 				}
 				++i;
 			}

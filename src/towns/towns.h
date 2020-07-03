@@ -215,6 +215,15 @@ public:
 		*/
 		bool noWaitStandby=false;
 
+		/*! Back up of frequency.  Super Daisenryaku for FM Towns is, I believe, is the best among ports.
+		    However, especially at higher-than-16MHz clock frequency, the map scrolls too fast.
+		    To make it more playable, an application-specific option is added to reduce frequency to 2MHz
+		    while mouse button is held down.  To recover the frequency when the mouse button is up,
+		    the original frequency is saved in frequencyBackup.
+		*/
+		unsigned int frequencyBackup=0;
+
+
 		enum
 		{
 			TIME_ADJUSTMENT_LOG_LEN=64
