@@ -137,14 +137,7 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 			{
 				std::string APP=argv[i+1];
 				cpputil::Capitalize(APP);
-				if("WC1"==APP || "WINGCOMMANDER1"==APP)
-				{
-					appSpecificSetting=TOWNS_APPSPECIFIC_WINGCOMMANDER1;
-				}
-				else if("SUPERDAISEN"==APP)
-				{
-					appSpecificSetting=TOWNS_APPSPECIFIC_SUPERDAISEN;
-				}
+				appSpecificSetting=TownsStrToApp(APP);
 				++i;
 			}
 			else

@@ -293,3 +293,28 @@ std::string TownsGamePortEmuToStr(unsigned int emu)
 	}
 	return "NONE";
 }
+
+unsigned int TownsStrToApp(std::string str)
+{
+	if("WINGCOMMANDER1"==str || "WC1"==str)
+	{
+		return TOWNS_APPSPECIFIC_WINGCOMMANDER1;
+	}
+	if("SUPERDAISEN"==str)
+	{
+		return TOWNS_APPSPECIFIC_SUPERDAISEN;
+	}
+	return TOWNS_APPSPECIFIC_NONE;
+}
+std::string TownsAppToStr(unsigned int i)
+{
+	switch(i)
+	{
+	default:
+		return "NONE";
+	case TOWNS_APPSPECIFIC_WINGCOMMANDER1:
+		return "WINGCOMMANDER1";
+	case TOWNS_APPSPECIFIC_SUPERDAISEN:
+		return "SUPERDAISEN";
+	}
+}

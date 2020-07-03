@@ -28,6 +28,8 @@ public:
 
 	std::string errorMsg;
 
+	unsigned int appSpecificAugmentation=TOWNS_APPSPECIFIC_NONE;
+
 	TownsProfile();
 	void CleanUp(void);
 	std::vector <std::string> Serialize(void) const;

@@ -38,6 +38,7 @@ void TownsProfile::CleanUp(void)
 	autoStart=false;
 	screenScaling=150;
 	freq=25;
+	appSpecificAugmentation=TOWNS_APPSPECIFIC_NONE;
 }
 std::vector <std::string> TownsProfile::Serialize(void) const
 {
@@ -102,6 +103,10 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 
 	sstream.str("");
 	sstream << "SCALING_ " << screenScaling;
+	text.push_back(sstream.str());
+
+	sstream.str("");
+	sstream << "APPSPEC_ " << TownsAppToStr(appSpecificAugmentation);
 	text.push_back(sstream.str());
 
 	return text;
@@ -211,6 +216,13 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 				}
 			}
 		}
+		else if(0==argv[0].STRCMP("APPSPEC_"))
+		{
+			if(2<=argv.size())
+			{
+				appSpecificAugmentation=TownsStrToApp(argv[1].c_str());
+			}
+		}
 		else
 		{
 			errorMsg="Unrecognized keyword:";
@@ -300,6 +312,13 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 		sstream << freq;
 		argv.push_back(sstream.str());
 	}
+
+	if(TOWNS_APPSPECIFIC_NONE!=appSpecificAugmentation)
+	{
+		argv.push_back("-APP");
+		argv.push_back(TownsAppToStr(appSpecificAugmentation));
+	}
+
 
 	return argv;
 }

@@ -138,6 +138,21 @@ void ProfileDialog::Make(void)
 		EndAddTabItem();
 	}
 
+	{
+		auto tabId=AddTab(tab,"Application");
+		BeginAddTabItem(tab,tabId);
+
+		AddStaticText(0,FSKEY_NULL,L"Application-Specific Augmentation",YSTRUE);
+		appSpecificAugDrp=AddEmptyDropList(0,FSKEY_NULL,"",10,40,40,YSTRUE);
+		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_NONE).c_str(),YSTRUE);
+		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_WINGCOMMANDER1).c_str(),YSFALSE);
+		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_SUPERDAISEN).c_str(),YSFALSE);
+
+		appSpecificExplanation=AddStaticText(0,FSKEY_NULL,L"",YSTRUE);
+
+		EndAddTabItem();
+	}
+
 	tab->SelectCurrentTab(mainTabId);
 
 	runBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"START",YSTRUE);
@@ -145,6 +160,40 @@ void ProfileDialog::Make(void)
 
 	Fit();
 	SetArrangeType(FSDIALOG_ARRANGE_TOP_LEFT);
+}
+
+/* virtual */ void ProfileDialog::OnDropListSelChange(FsGuiDropList *drp,int prevSel)
+{
+	if(appSpecificAugDrp==drp)
+	{
+		auto str=appSpecificAugDrp->GetSelectedString();
+		auto app=TownsStrToApp(str.c_str());
+		switch(app)
+		{
+		case TOWNS_APPSPECIFIC_NONE:
+			appSpecificExplanation->SetText("");
+			break;
+		case TOWNS_APPSPECIFIC_WINGCOMMANDER1:
+			appSpecificExplanation->SetText(
+			    "Mouse Integration for Wing Commander 1\n"
+				"Wing Commander 1 for FM TOWNS uses its own function\n"
+				"instead of the Mouse BIOS to read mouse status.\n"
+				"To send mouse data correctly, Tsugasu needs to\n"
+				"know that it is running Wing Commander 1."
+			);
+			break;
+		case TOWNS_APPSPECIFIC_SUPERDAISEN:
+			appSpecificExplanation->SetText(
+				"Super Daisenryaku for FM TOWNS is, I believe,\n"
+				"the best port among all other ports.  However,\n"
+				"it has a usability issue at higher CPU frequency.\n"
+				"It scrolls too fast.  To counter this issue,\n"
+				"Tsugaru can slow down the CPU to 2MHz while\n"
+				"mouse left button is held down.\n"
+			);
+			break;
+		}
+	}
 }
 
 /* virtual */ void ProfileDialog::OnButtonClick(FsGuiButton *btn)
@@ -191,6 +240,7 @@ void ProfileDialog::Make(void)
 		canvasPtr->Run();
 	}
 }
+
 void ProfileDialog::OnSelectROMFile(FsGuiDialog *dlg,int returnCode)
 {
 	auto fdlg=dynamic_cast <FsGuiFileDialog *>(dlg);
@@ -273,6 +323,8 @@ TownsProfile ProfileDialog::GetProfile(void) const
 
 	profile.screenScaling=scrnScaleTxt->GetInteger();
 
+	profile.appSpecificAugmentation=TownsStrToApp(appSpecificAugDrp->GetSelectedString().c_str());
+
 	return profile;
 }
 void ProfileDialog::SetProfile(const TownsProfile &profile)
@@ -338,4 +390,7 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 	}
 
 	scrnScaleTxt->SetInteger(profile.screenScaling);
+
+	appSpecificAugDrp->SelectByString(TownsAppToStr(profile.appSpecificAugmentation).c_str(),YSTRUE);
+
 }

@@ -68,9 +68,15 @@ public:
 	FsGuiTextBox *CPUFreqTxt;
 	FsGuiButton *runBtn;
 
+	FsGuiDropList *appSpecificAugDrp;
+	FsGuiStatic *appSpecificExplanation;
+
 	ProfileDialog(FsGuiMainCanvas *canvasPtr);
 
 	void Make(void);
+
+	virtual void OnDropListSelChange(FsGuiDropList *drp,int prevSel);
+
 	virtual void OnButtonClick(FsGuiButton *btn);
 	void OnSelectROMFile(FsGuiDialog *dlg,int returnCode);
 
