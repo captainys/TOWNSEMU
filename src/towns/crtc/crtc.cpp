@@ -343,26 +343,30 @@ Vec2i TownsCRTC::GetPageZoom(unsigned char page) const
 Vec2i TownsCRTC::GetPageOriginOnMonitor(unsigned char page) const
 {
 	int x0,y0;
-	static const int reg[4]=
+	static const int reg[6]=
 	{
-		REG_HDS0,REG_VDS0,
-		REG_HDS1,REG_VDS1,
+		REG_HDS0,REG_HAJ0,REG_VDS0,
+		REG_HDS1,REG_HAJ1,REG_VDS1,
 	};
-	auto HDS=reg[page*2];
-	auto VDS=reg[page*2+1];
+	/* Emerald Dragon uses HDS0<HAJ0.
+	   If my interpretation is correct, CRTC won't start scanning VRAM until reaching HAJ0,
+	   making the left-edge be at HAJ0, not HDS0.
+	*/
+	auto HDS=std::max(state.crtcReg[reg[page*3]],state.crtcReg[reg[page*3+1]]);
+	auto VDS=state.crtcReg[reg[page*3+2]];
 	switch(CLKSEL())
 	{
 	case 0:
-		x0=(state.crtcReg[HDS]-0x129)>>1;
-		y0=(state.crtcReg[VDS]-0x2a)>>1; // I'm not sure if I should divide by 2.  Will need experiments.
+		x0=(HDS-0x129)>>1;
+		y0=(VDS-0x2a)>>1; // I'm not sure if I should divide by 2.  Will need experiments.
 		break;
 	case 1:
-		x0=(state.crtcReg[HDS]-0xe7)>>1;
-		y0=(state.crtcReg[VDS]-0x2a)>>1; // I'm not sure if I should divide by 2.  Will need experiments.
+		x0=(HDS-0xe7)>>1;
+		y0=(VDS-0x2a)>>1; // I'm not sure if I should divide by 2.  Will need experiments.
 		break;
 	case 2:
-		x0=(state.crtcReg[HDS]-0x8a);
-		y0=(state.crtcReg[VDS]-0x46)>>1;
+		x0=(HDS-0x8a);
+		y0=(VDS-0x46)>>1;
 		break;
 	case 3:
 		// VING Games use CLKSEL=3 with HST=0x029D, making it 31KHz mode, in which case around 0x40 is the left-edge of the monitor, and
@@ -372,13 +376,13 @@ Vec2i TownsCRTC::GetPageOriginOnMonitor(unsigned char page) const
 		// I still don't know the correct way to calculate he origin on the monitor.  I make an ad-hoc fix for the time being.
 		if(0x29D!=state.crtcReg[REG_HST])
 		{
-			x0=(state.crtcReg[HDS]-0x9c);
-			y0=(state.crtcReg[VDS]-0x40)>>1;
+			x0=(HDS-0x9c);
+			y0=(VDS-0x40)>>1;
 		}
 		else
 		{
-			x0=(state.crtcReg[HDS]-0x40);
-			y0=(state.crtcReg[VDS]-0x46)>>1;
+			x0=(HDS-0x40);
+			y0=(VDS-0x46)>>1;
 		}
 		break;
 	default:
