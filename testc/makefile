@@ -210,3 +210,14 @@ build\timer.obj : timer.c io.h vmif.h
 
 build\timer.exp : build\timer.obj build\io.obj build\vmif.obj
 	386link build\timer.obj -exe build\timer.exp @LIBS.LN
+
+
+
+build\vramtest.obj : vram\vramtest.asm
+	386asm vram\vramtest.asm -OBJECT build\vramtest.obj
+
+build\vram.OBJ : vram\vram.c
+	hcd386 vram\vram.c -obj build\vram.OBJ
+
+build\vramtest.exp : build\vram.OBJ build\vramtest.OBJ vram\vramtest.ln
+	386link @vram\vramtest.LN
