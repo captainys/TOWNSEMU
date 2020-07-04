@@ -105,7 +105,7 @@ public:
 	virtual void StoreByte(unsigned int physAddr,unsigned char data);
 };
 
-template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END,class OFFSETTRANS>
+template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END>
 class TownsVRAMAccessTemplate : public TownsMemAccess
 {
 public:
@@ -117,8 +117,34 @@ public:
 	virtual void StoreDword(unsigned int physAddr,unsigned int data);
 };
 
-template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END,class OFFSETTRANS>
-class TownsVRAMAccessWithMaskTemplate : public TownsVRAMAccessTemplate <VRAMADDR_BASE,VRAMADDR_END,OFFSETTRANS>
+template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END>
+class TownsVRAMAccessWithMaskTemplate : public TownsVRAMAccessTemplate <VRAMADDR_BASE,VRAMADDR_END>
+{
+public:
+	virtual void StoreByte(unsigned int physAddr,unsigned char data);
+	virtual void StoreWord(unsigned int physAddr,unsigned int data);
+	virtual void StoreDword(unsigned int physAddr,unsigned int data);
+};
+
+template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END>
+class TownsSinglePageVRAMAccessTemplate : public TownsMemAccess
+{
+public:
+	static inline unsigned int SinglePageOffsetToLinearOffset(unsigned int offset)
+	{
+		return ((offset&4)<<16)|((offset&0x7fff8)>>1)|(offset&3);
+	};
+
+	virtual unsigned int FetchByte(unsigned int physAddr) const;
+	virtual unsigned int FetchWord(unsigned int physAddr) const;
+	virtual unsigned int FetchDword(unsigned int physAddr) const;
+	virtual void StoreByte(unsigned int physAddr,unsigned char data);
+	virtual void StoreWord(unsigned int physAddr,unsigned int data);
+	virtual void StoreDword(unsigned int physAddr,unsigned int data);
+};
+
+template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END>
+class TownsSinglePageVRAMAccessWithMaskTemplate : public TownsSinglePageVRAMAccessTemplate <VRAMADDR_BASE,VRAMADDR_END>
 {
 public:
 	virtual void StoreByte(unsigned int physAddr,unsigned char data);
@@ -329,39 +355,24 @@ public:
 	TownsNativeCMOSRAMAccess nativeCMOSRAMAccess;
 	TownsFontROMAccess fontROMAccess;
 
-	class VRAM0Trans // 80000000H to 80080000H
-	{
-	public:
-		inline static void Trans(unsigned int &)
-		{
-		}
-	};
-	class VRAM1Trans // 80100000H to 80180000H
-	{
-	public:
-		inline static void Trans(unsigned int &offset)
-		{
-			offset=((offset&4)<<16)|((offset&0x7fff8)>>1)|(offset&3);
-		};
-	};
 
-	TownsVRAMAccessTemplate <TOWNSADDR_VRAM0_BASE        ,TOWNSADDR_VRAM0_END        ,VRAM0Trans> VRAMAccess0;
-	TownsVRAMAccessTemplate <TOWNSADDR_VRAM1_BASE        ,TOWNSADDR_VRAM1_END        ,VRAM1Trans> VRAMAccess1;
-	TownsVRAMAccessTemplate <TOWNSADDR_VRAM_HIGHRES0_BASE,TOWNSADDR_VRAM_HIGHRES0_END,VRAM0Trans> VRAMAccessHighRes0;
-	TownsVRAMAccessTemplate <TOWNSADDR_VRAM_HIGHRES1_BASE,TOWNSADDR_VRAM_HIGHRES1_END,VRAM0Trans> VRAMAccessHighRes1;
-	TownsVRAMAccessTemplate <TOWNSADDR_VRAM_HIGHRES2_BASE,TOWNSADDR_VRAM_HIGHRES2_END,VRAM0Trans> VRAMAccessHighRes2;
+	TownsVRAMAccessTemplate           <TOWNSADDR_VRAM0_BASE        ,TOWNSADDR_VRAM0_END        > VRAMAccess0;
+	TownsSinglePageVRAMAccessTemplate <TOWNSADDR_VRAM1_BASE        ,TOWNSADDR_VRAM1_END        > VRAMAccess1;
+	TownsVRAMAccessTemplate           <TOWNSADDR_VRAM_HIGHRES0_BASE,TOWNSADDR_VRAM_HIGHRES0_END> VRAMAccessHighRes0;
+	TownsVRAMAccessTemplate           <TOWNSADDR_VRAM_HIGHRES1_BASE,TOWNSADDR_VRAM_HIGHRES1_END> VRAMAccessHighRes1;
+	TownsVRAMAccessTemplate           <TOWNSADDR_VRAM_HIGHRES2_BASE,TOWNSADDR_VRAM_HIGHRES2_END> VRAMAccessHighRes2;
 
-	TownsVRAMAccessWithMaskTemplate <TOWNSADDR_VRAM0_BASE        ,TOWNSADDR_VRAM0_END        ,VRAM0Trans> VRAMAccessWithMask0;
-	TownsVRAMAccessWithMaskTemplate <TOWNSADDR_VRAM1_BASE        ,TOWNSADDR_VRAM1_END        ,VRAM1Trans> VRAMAccessWithMask1;
-	TownsVRAMAccessWithMaskTemplate <TOWNSADDR_VRAM_HIGHRES0_BASE,TOWNSADDR_VRAM_HIGHRES0_END,VRAM0Trans> VRAMAccessWithMaskHighRes0;
-	TownsVRAMAccessWithMaskTemplate <TOWNSADDR_VRAM_HIGHRES1_BASE,TOWNSADDR_VRAM_HIGHRES1_END,VRAM0Trans> VRAMAccessWithMaskHighRes1;
-	TownsVRAMAccessWithMaskTemplate <TOWNSADDR_VRAM_HIGHRES2_BASE,TOWNSADDR_VRAM_HIGHRES2_END,VRAM0Trans> VRAMAccessWithMaskHighRes2;
+	TownsVRAMAccessWithMaskTemplate           <TOWNSADDR_VRAM0_BASE        ,TOWNSADDR_VRAM0_END        > VRAMAccessWithMask0;
+	TownsSinglePageVRAMAccessWithMaskTemplate <TOWNSADDR_VRAM1_BASE        ,TOWNSADDR_VRAM1_END        > VRAMAccessWithMask1;
+	TownsVRAMAccessWithMaskTemplate           <TOWNSADDR_VRAM_HIGHRES0_BASE,TOWNSADDR_VRAM_HIGHRES0_END> VRAMAccessWithMaskHighRes0;
+	TownsVRAMAccessWithMaskTemplate           <TOWNSADDR_VRAM_HIGHRES1_BASE,TOWNSADDR_VRAM_HIGHRES1_END> VRAMAccessWithMaskHighRes1;
+	TownsVRAMAccessWithMaskTemplate           <TOWNSADDR_VRAM_HIGHRES2_BASE,TOWNSADDR_VRAM_HIGHRES2_END> VRAMAccessWithMaskHighRes2;
 
-	TownsMemAccessDebug <TownsVRAMAccessTemplate <TOWNSADDR_VRAM0_BASE        ,TOWNSADDR_VRAM0_END        ,VRAM0Trans> > VRAMAccess0Debug;
-	TownsMemAccessDebug <TownsVRAMAccessTemplate <TOWNSADDR_VRAM1_BASE        ,TOWNSADDR_VRAM1_END        ,VRAM1Trans> > VRAMAccess1Debug;
-	TownsMemAccessDebug <TownsVRAMAccessTemplate <TOWNSADDR_VRAM_HIGHRES0_BASE,TOWNSADDR_VRAM_HIGHRES0_END,VRAM0Trans> > VRAMAccessHighRes0Debug;
-	TownsMemAccessDebug <TownsVRAMAccessTemplate <TOWNSADDR_VRAM_HIGHRES1_BASE,TOWNSADDR_VRAM_HIGHRES1_END,VRAM0Trans> > VRAMAccessHighRes1Debug;
-	TownsMemAccessDebug <TownsVRAMAccessTemplate <TOWNSADDR_VRAM_HIGHRES2_BASE,TOWNSADDR_VRAM_HIGHRES2_END,VRAM0Trans> > VRAMAccessHighRes2Debug;
+	TownsMemAccessDebug <TownsVRAMAccessTemplate           <TOWNSADDR_VRAM0_BASE        ,TOWNSADDR_VRAM0_END         > > VRAMAccess0Debug;
+	TownsMemAccessDebug <TownsSinglePageVRAMAccessTemplate <TOWNSADDR_VRAM1_BASE        ,TOWNSADDR_VRAM1_END         > > VRAMAccess1Debug;
+	TownsMemAccessDebug <TownsVRAMAccessTemplate           <TOWNSADDR_VRAM_HIGHRES0_BASE,TOWNSADDR_VRAM_HIGHRES0_END > > VRAMAccessHighRes0Debug;
+	TownsMemAccessDebug <TownsVRAMAccessTemplate           <TOWNSADDR_VRAM_HIGHRES1_BASE,TOWNSADDR_VRAM_HIGHRES1_END > > VRAMAccessHighRes1Debug;
+	TownsMemAccessDebug <TownsVRAMAccessTemplate           <TOWNSADDR_VRAM_HIGHRES2_BASE,TOWNSADDR_VRAM_HIGHRES2_END > > VRAMAccessHighRes2Debug;
 
 
 	TownsSpriteRAMAccess spriteRAMAccess;
@@ -437,24 +448,22 @@ public:
 };
 
 
-template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END,class OFFSETTRANS>
-unsigned int TownsVRAMAccessTemplate <VRAMADDR_BASE,VRAMADDR_END,OFFSETTRANS>::FetchByte(unsigned int physAddr) const
+template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END>
+unsigned int TownsVRAMAccessTemplate <VRAMADDR_BASE,VRAMADDR_END>::FetchByte(unsigned int physAddr) const
 {
 	auto &state=physMemPtr->state;
 	auto offset=physAddr-VRAMADDR_BASE;
-	OFFSETTRANS::Trans(offset);
 	if(offset<VRAMADDR_END-VRAMADDR_BASE)
 	{
 		return state.VRAM[offset];
 	}
 	return 0xff;
 }
-template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END,class OFFSETTRANS>
-unsigned int TownsVRAMAccessTemplate <VRAMADDR_BASE,VRAMADDR_END,OFFSETTRANS>::FetchWord(unsigned int physAddr) const
+template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END>
+unsigned int TownsVRAMAccessTemplate <VRAMADDR_BASE,VRAMADDR_END>::FetchWord(unsigned int physAddr) const
 {
 	auto &state=physMemPtr->state;
 	auto offset=physAddr-VRAMADDR_BASE;
-	OFFSETTRANS::Trans(offset);
 	if(offset<VRAMADDR_END-VRAMADDR_BASE-1)
 	{
 		return cpputil::GetWord(state.VRAM.data()+offset);
@@ -465,12 +474,11 @@ unsigned int TownsVRAMAccessTemplate <VRAMADDR_BASE,VRAMADDR_END,OFFSETTRANS>::F
 	}
 	return 0xffff;
 }
-template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END,class OFFSETTRANS>
-unsigned int TownsVRAMAccessTemplate <VRAMADDR_BASE,VRAMADDR_END,OFFSETTRANS>::FetchDword(unsigned int physAddr) const
+template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END>
+unsigned int TownsVRAMAccessTemplate <VRAMADDR_BASE,VRAMADDR_END>::FetchDword(unsigned int physAddr) const
 {
 	auto &state=physMemPtr->state;
 	auto offset=physAddr-VRAMADDR_BASE;
-	OFFSETTRANS::Trans(offset);
 	if(offset<VRAMADDR_END-VRAMADDR_BASE-3)
 	{
 		return cpputil::GetDword(state.VRAM.data()+offset);
@@ -491,23 +499,21 @@ unsigned int TownsVRAMAccessTemplate <VRAMADDR_BASE,VRAMADDR_END,OFFSETTRANS>::F
 	}
 	return 0xffffffff;
 }
-template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END,class OFFSETTRANS>
-void TownsVRAMAccessTemplate <VRAMADDR_BASE,VRAMADDR_END,OFFSETTRANS>::StoreByte(unsigned int physAddr,unsigned char data)
+template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END>
+void TownsVRAMAccessTemplate <VRAMADDR_BASE,VRAMADDR_END>::StoreByte(unsigned int physAddr,unsigned char data)
 {
 	auto &state=physMemPtr->state;
 	auto offset=physAddr-VRAMADDR_BASE;
-	OFFSETTRANS::Trans(offset);
 	if(offset<VRAMADDR_END-VRAMADDR_BASE)
 	{
 		state.VRAM[offset]=data;
 	}
 }
-template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END,class OFFSETTRANS>
-void TownsVRAMAccessTemplate <VRAMADDR_BASE,VRAMADDR_END,OFFSETTRANS>::StoreWord(unsigned int physAddr,unsigned int data)
+template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END>
+void TownsVRAMAccessTemplate <VRAMADDR_BASE,VRAMADDR_END>::StoreWord(unsigned int physAddr,unsigned int data)
 {
 	auto &state=physMemPtr->state;
 	auto offset=physAddr-VRAMADDR_BASE;
-	OFFSETTRANS::Trans(offset);
 	if(offset<VRAMADDR_END-VRAMADDR_BASE-1)
 	{
 		cpputil::PutWord(state.VRAM.data()+offset,(unsigned short)data);
@@ -517,12 +523,11 @@ void TownsVRAMAccessTemplate <VRAMADDR_BASE,VRAMADDR_END,OFFSETTRANS>::StoreWord
 		state.VRAM[offset]=data;
 	}
 }
-template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END,class OFFSETTRANS>
-void TownsVRAMAccessTemplate <VRAMADDR_BASE,VRAMADDR_END,OFFSETTRANS>::StoreDword(unsigned int physAddr,unsigned int data)
+template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END>
+void TownsVRAMAccessTemplate <VRAMADDR_BASE,VRAMADDR_END>::StoreDword(unsigned int physAddr,unsigned int data)
 {
 	auto &state=physMemPtr->state;
 	auto offset=physAddr-VRAMADDR_BASE;
-	OFFSETTRANS::Trans(offset);
 	if(offset<VRAMADDR_END-VRAMADDR_BASE-3)
 	{
 		cpputil::PutDword(state.VRAM.data()+offset,data);
@@ -545,12 +550,11 @@ void TownsVRAMAccessTemplate <VRAMADDR_BASE,VRAMADDR_END,OFFSETTRANS>::StoreDwor
 
 
 
-template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END,class OFFSETTRANS>
-void TownsVRAMAccessWithMaskTemplate<VRAMADDR_BASE,VRAMADDR_END,OFFSETTRANS>::StoreByte(unsigned int physAddr,unsigned char data)
+template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END>
+void TownsVRAMAccessWithMaskTemplate<VRAMADDR_BASE,VRAMADDR_END>::StoreByte(unsigned int physAddr,unsigned char data)
 {
 	auto &state=this->physMemPtr->state;
 	auto offset=physAddr-VRAMADDR_BASE;
-	OFFSETTRANS::Trans(offset);
 	if(offset<VRAMADDR_END-VRAMADDR_BASE)
 	{
 		unsigned char mask=state.nativeVRAMMask[physAddr&3];
@@ -559,12 +563,11 @@ void TownsVRAMAccessWithMaskTemplate<VRAMADDR_BASE,VRAMADDR_END,OFFSETTRANS>::St
 		state.VRAM[offset]|=(data&mask);
 	}
 }
-template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END,class OFFSETTRANS>
-void TownsVRAMAccessWithMaskTemplate<VRAMADDR_BASE,VRAMADDR_END,OFFSETTRANS>::StoreWord(unsigned int physAddr,unsigned int data)
+template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END>
+void TownsVRAMAccessWithMaskTemplate<VRAMADDR_BASE,VRAMADDR_END>::StoreWord(unsigned int physAddr,unsigned int data)
 {
 	auto &state=this->physMemPtr->state;
 	auto offset=physAddr-VRAMADDR_BASE;
-	OFFSETTRANS::Trans(offset);
 	if(offset<VRAMADDR_END-VRAMADDR_BASE-1)
 	{
 		unsigned short mask=cpputil::GetWord(state.nativeVRAMMask+(physAddr&3));
@@ -573,18 +576,161 @@ void TownsVRAMAccessWithMaskTemplate<VRAMADDR_BASE,VRAMADDR_END,OFFSETTRANS>::St
 		cpputil::PutWord(state.VRAM.data()+offset,(unsigned short)((vram&nega)|(data&mask)));
 	}
 }
-template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END,class OFFSETTRANS>
-void TownsVRAMAccessWithMaskTemplate<VRAMADDR_BASE,VRAMADDR_END,OFFSETTRANS>::StoreDword(unsigned int physAddr,unsigned int data)
+template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END>
+void TownsVRAMAccessWithMaskTemplate<VRAMADDR_BASE,VRAMADDR_END>::StoreDword(unsigned int physAddr,unsigned int data)
 {
 	auto &state=this->physMemPtr->state;
 	auto offset=physAddr-VRAMADDR_BASE;
-	OFFSETTRANS::Trans(offset);
 	if(offset<VRAMADDR_END-VRAMADDR_BASE-3)
 	{
 		unsigned int mask=cpputil::GetDword(state.nativeVRAMMask+(physAddr&3));
 		unsigned int nega=~mask;
 		unsigned int vram=cpputil::GetDword(state.VRAM.data()+offset);
 		cpputil::PutDword(state.VRAM.data()+offset,(vram&nega)|(data&mask));
+	}
+}
+
+////////////////////////////////////////////////////////////
+
+template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END>
+unsigned int TownsSinglePageVRAMAccessTemplate <VRAMADDR_BASE,VRAMADDR_END>::FetchByte(unsigned int physAddr) const
+{
+	auto &state=physMemPtr->state;
+	auto offset=SinglePageOffsetToLinearOffset(physAddr-VRAMADDR_BASE);
+	return state.VRAM[offset];
+}
+template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END>
+unsigned int TownsSinglePageVRAMAccessTemplate <VRAMADDR_BASE,VRAMADDR_END>::FetchWord(unsigned int physAddr) const
+{
+	auto &state=physMemPtr->state;
+	auto offset=physAddr-VRAMADDR_BASE;
+	if(0==(offset&1))
+	{
+		offset=SinglePageOffsetToLinearOffset(offset);
+		return cpputil::GetWord(state.VRAM.data()+offset);
+	}
+	return 
+	    state.VRAM[SinglePageOffsetToLinearOffset(offset)]|
+	   (state.VRAM[SinglePageOffsetToLinearOffset(offset+1)]<<8);
+}
+template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END>
+unsigned int TownsSinglePageVRAMAccessTemplate <VRAMADDR_BASE,VRAMADDR_END>::FetchDword(unsigned int physAddr) const
+{
+	auto &state=physMemPtr->state;
+	auto offset=physAddr-VRAMADDR_BASE;
+	if(0==(offset&3))
+	{
+		offset=SinglePageOffsetToLinearOffset(offset);
+		return cpputil::GetDword(state.VRAM.data()+offset);
+	}
+	return 
+	    state.VRAM[SinglePageOffsetToLinearOffset(offset)]|
+	   (state.VRAM[SinglePageOffsetToLinearOffset(offset+1)]<<8)|
+	   (state.VRAM[SinglePageOffsetToLinearOffset(offset+2)]<<16)|
+	   (state.VRAM[SinglePageOffsetToLinearOffset(offset+3)]<<24);
+}
+template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END>
+void TownsSinglePageVRAMAccessTemplate <VRAMADDR_BASE,VRAMADDR_END>::StoreByte(unsigned int physAddr,unsigned char data)
+{
+	auto &state=physMemPtr->state;
+	auto offset=SinglePageOffsetToLinearOffset(physAddr-VRAMADDR_BASE);
+	state.VRAM[offset]=data;
+}
+template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END>
+void TownsSinglePageVRAMAccessTemplate <VRAMADDR_BASE,VRAMADDR_END>::StoreWord(unsigned int physAddr,unsigned int data)
+{
+	auto &state=physMemPtr->state;
+	auto offset=physAddr-VRAMADDR_BASE;
+	if(0==(offset&1))
+	{
+		offset=SinglePageOffsetToLinearOffset(offset);
+		cpputil::PutWord(state.VRAM.data()+offset,(unsigned short)data);
+	}
+	else
+	{
+		state.VRAM[SinglePageOffsetToLinearOffset(offset)]  =( data    &255);
+		state.VRAM[SinglePageOffsetToLinearOffset(offset+1)]=((data>>8)&255);
+	}
+}
+template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END>
+void TownsSinglePageVRAMAccessTemplate <VRAMADDR_BASE,VRAMADDR_END>::StoreDword(unsigned int physAddr,unsigned int data)
+{
+	auto &state=physMemPtr->state;
+	auto offset=physAddr-VRAMADDR_BASE;
+	if(0==(offset&3))
+	{
+		offset=SinglePageOffsetToLinearOffset(offset);
+		cpputil::PutDword(state.VRAM.data()+offset,data);
+	}
+	else
+	{
+		state.VRAM[SinglePageOffsetToLinearOffset(offset)]  =( data     &255);
+		state.VRAM[SinglePageOffsetToLinearOffset(offset+1)]=((data>> 8)&255);
+		state.VRAM[SinglePageOffsetToLinearOffset(offset+2)]=((data>>16)&255);
+		state.VRAM[SinglePageOffsetToLinearOffset(offset+3)]=((data>>24)&255);
+	}
+}
+
+
+
+template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END>
+void TownsSinglePageVRAMAccessWithMaskTemplate<VRAMADDR_BASE,VRAMADDR_END>::StoreByte(unsigned int physAddr,unsigned char data)
+{
+	auto &state=this->physMemPtr->state;
+	auto offset=physAddr-VRAMADDR_BASE;
+	offset=SinglePageOffsetToLinearOffset(offset);
+
+	unsigned char mask=state.nativeVRAMMask[physAddr&3];
+	unsigned char nega=~mask;
+	state.VRAM[offset]&=nega;
+	state.VRAM[offset]|=(data&mask);
+}
+template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END>
+void TownsSinglePageVRAMAccessWithMaskTemplate<VRAMADDR_BASE,VRAMADDR_END>::StoreWord(unsigned int physAddr,unsigned int data)
+{
+	auto &state=this->physMemPtr->state;
+	auto offset=physAddr-VRAMADDR_BASE;
+	if(0==(offset&1))
+	{
+		offset=SinglePageOffsetToLinearOffset(offset);
+		unsigned short mask=cpputil::GetWord(state.nativeVRAMMask+(physAddr&3));
+		unsigned short nega=~mask;
+		unsigned short vram=cpputil::GetWord(state.VRAM.data()+offset);
+		cpputil::PutWord(state.VRAM.data()+offset,(unsigned short)((vram&nega)|(data&mask)));
+	}
+	else
+	{
+		data&=cpputil::GetWord(state.nativeVRAMMask+(physAddr&3));
+		state.VRAM[SinglePageOffsetToLinearOffset(offset)  ]&=   state.nativeVRAMMask[(physAddr&3)  ];
+		state.VRAM[SinglePageOffsetToLinearOffset(offset)  ]|=((~state.nativeVRAMMask[(physAddr&3)  ])&(data&255));
+		state.VRAM[SinglePageOffsetToLinearOffset(offset+1)]&=   state.nativeVRAMMask[(physAddr&3)+1];
+		state.VRAM[SinglePageOffsetToLinearOffset(offset+1)]|=((~state.nativeVRAMMask[(physAddr&3)+1])&((data>>8)&255));
+	}
+}
+template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END>
+void TownsSinglePageVRAMAccessWithMaskTemplate<VRAMADDR_BASE,VRAMADDR_END>::StoreDword(unsigned int physAddr,unsigned int data)
+{
+	auto &state=this->physMemPtr->state;
+	auto offset=physAddr-VRAMADDR_BASE;
+	if(0==(offset&3))
+	{
+		offset=SinglePageOffsetToLinearOffset(offset);
+		unsigned int mask=cpputil::GetDword(state.nativeVRAMMask+(physAddr&3));
+		unsigned int nega=~mask;
+		unsigned int vram=cpputil::GetDword(state.VRAM.data()+offset);
+		cpputil::PutDword(state.VRAM.data()+offset,(vram&nega)|(data&mask));
+	}
+	else
+	{
+		data&=cpputil::GetDword(state.nativeVRAMMask+(physAddr&3));
+		state.VRAM[SinglePageOffsetToLinearOffset(offset)  ]&=   state.nativeVRAMMask[(physAddr&3)  ];
+		state.VRAM[SinglePageOffsetToLinearOffset(offset)  ]|=((~state.nativeVRAMMask[(physAddr&3)  ])& (data     &255));
+		state.VRAM[SinglePageOffsetToLinearOffset(offset+1)]&=   state.nativeVRAMMask[(physAddr&3)+1];
+		state.VRAM[SinglePageOffsetToLinearOffset(offset+1)]|=((~state.nativeVRAMMask[(physAddr&3)+1])&((data>> 8)&255));
+		state.VRAM[SinglePageOffsetToLinearOffset(offset+2)]&=   state.nativeVRAMMask[(physAddr&3)+2];
+		state.VRAM[SinglePageOffsetToLinearOffset(offset+2)]|=((~state.nativeVRAMMask[(physAddr&3)+2])&((data>>16)&255));
+		state.VRAM[SinglePageOffsetToLinearOffset(offset+3)]&=   state.nativeVRAMMask[(physAddr&3)+3];
+		state.VRAM[SinglePageOffsetToLinearOffset(offset+3)]|=((~state.nativeVRAMMask[(physAddr&3)+3])&((data>>24)&255));
 	}
 }
 
