@@ -1,0 +1,140 @@
+/begin0
+T 1
+* 0000000C:0002325C
+# 
+R 
+L TownsMENU:(Prob)Draw Progress Bar
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000000C:00023274
+# EGB Draw Rect
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 0000000C:000236A4
+# 
+R 
+L TownsMENU:Call EGB AH=03H Set Viewport, Call EGB for incoming EAX,ESI, then reset viewport
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00000110:0000C5E4
+# ES=Destination Segment
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00000110:0000C5FF
+# EAX=Value to be written to VRAM
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00000110:0000C603
+# X1
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00000110:0000C606
+# X2
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00000110:0000C60A
+# Y1
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00000110:0000C60E
+# Y2
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00000110:0000C615
+# EAX=Bytes per line
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00000110:0000C61F
+# Destination-Page VRAM Top
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00000110:0000C626
+# Bit depth?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00000110:0000C6C1
+# [ESP] Count for ?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00000110:0000C6F9
+# EAX=Value to be written to VRAM
+R 
+L 
+P 
+% 0
+M 0
+/end

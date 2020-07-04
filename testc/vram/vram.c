@@ -14,29 +14,45 @@ int main(void)
 	unsigned int offset;
 
 	fp=fopen("result.txt","w");
-	for(offset=0; offset<0x100; ++offset)
+	for(offset=0; offset<0x200; ++offset)
 	{
 		unsigned int mapped;
 		CLEAR_VRAM();
 		WRITE_TO_VRAM1(offset);
 		mapped=SEARCH_VRAM3();
-		fprintf(fp,"%06x->%06x\n",offset,mapped);
+		fprintf(fp,"0x%06x,0x%06x,\n",offset,mapped);
 	}
-	for(offset=0x40000; offset<0x40100; ++offset)
+	for(offset=0x26000; offset<0x26200; ++offset)
 	{
 		unsigned int mapped;
 		CLEAR_VRAM();
 		WRITE_TO_VRAM1(offset);
 		mapped=SEARCH_VRAM3();
-		fprintf(fp,"%06x->%06x\n",offset,mapped);
+		fprintf(fp,"0x%06x,0x%06x,\n",offset,mapped);
 	}
-	for(offset=0; offset<VRAM_SIZE; offset+=0x100)
+	for(offset=0x40000; offset<0x40200; ++offset)
 	{
 		unsigned int mapped;
 		CLEAR_VRAM();
 		WRITE_TO_VRAM1(offset);
 		mapped=SEARCH_VRAM3();
-		fprintf(fp,"%06x->%06x\n",offset,mapped);
+		fprintf(fp,"0x%06x,0x%06x,\n",offset,mapped);
+	}
+	for(offset=0x66000; offset<0x66200; ++offset)
+	{
+		unsigned int mapped;
+		CLEAR_VRAM();
+		WRITE_TO_VRAM1(offset);
+		mapped=SEARCH_VRAM3();
+		fprintf(fp,"0x%06x,0x%06x,\n",offset,mapped);
+	}
+	for(offset=0; offset<VRAM_SIZE; offset+=0x10)
+	{
+		unsigned int mapped;
+		CLEAR_VRAM();
+		WRITE_TO_VRAM1(offset);
+		mapped=SEARCH_VRAM3();
+		fprintf(fp,"0x%06x,0x%06x,\n",offset,mapped);
 	}
 	fclose(fp);
 
