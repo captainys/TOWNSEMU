@@ -219,6 +219,26 @@ P
 M 0
 /end
 /begin0
+T 0
+* 00000110:00000295
+# EGB:(Prob)Jump to function
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00000110:000021C4
+# 
+R 
+L EGB:(Prob)Get VRAM bytes in rect
+P 
+% 0
+M 0
+/end
+/begin0
 T 1
 * 00000110:00002DD0
 # 
@@ -494,6 +514,36 @@ T 1
 # 
 R 
 L EGB:(Prob)SQRT?
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00000110:0000F910
+# 
+R 
+L MouseBIOS:Entry
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00000110:00010302
+# Mouse BIOS Calling EGB Box-Read
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00000110:00010304
+# DS:ESI is param block. Ptr,DS,x1,y1,x2,y2
+R 
+L 
 P 
 % 0
 M 0

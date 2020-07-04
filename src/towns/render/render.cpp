@@ -41,7 +41,7 @@ void TownsRender::BuildImage(const TownsCRTC &crtc,const TownsPhysicalMemory &ph
 	{
 		TownsCRTC::Layer layer;
 		crtc.MakePageLayerInfo(layer,0);
-		Render(0,layer,crtc.state.palette,crtc.chaseHQPalette,physMem.state.VRAM,false);
+		Render<VRAM1Trans>(0,layer,crtc.state.palette,crtc.chaseHQPalette,physMem.state.VRAM,false);
 	}
 	else
 	{
@@ -51,7 +51,7 @@ void TownsRender::BuildImage(const TownsCRTC &crtc,const TownsPhysicalMemory &ph
 		auto priorityPage=crtc.GetPriorityPage();
 		if(true==crtc.state.showPage[1-priorityPage])
 		{
-			Render(1-priorityPage,layer[1-priorityPage],crtc.state.palette,crtc.chaseHQPalette,physMem.state.VRAM,false);
+			Render<VRAM0Trans>(1-priorityPage,layer[1-priorityPage],crtc.state.palette,crtc.chaseHQPalette,physMem.state.VRAM,false);
 		}
 		else
 		{
@@ -63,7 +63,7 @@ void TownsRender::BuildImage(const TownsCRTC &crtc,const TownsPhysicalMemory &ph
 		}
 		if(true==crtc.state.showPage[priorityPage])
 		{
-			Render(priorityPage,  layer[priorityPage]  ,crtc.state.palette,crtc.chaseHQPalette,physMem.state.VRAM,true);
+			Render<VRAM0Trans>(priorityPage,  layer[priorityPage]  ,crtc.state.palette,crtc.chaseHQPalette,physMem.state.VRAM,true);
 		}
 	}
 }
@@ -82,6 +82,8 @@ TownsRender::Image TownsRender::GetImage(void) const
 	img.rgba=this->rgba.data();
 	return img;
 }
+
+template <class OFFSETTRANS>
 void TownsRender::Render(
     unsigned int page,
     const TownsCRTC::Layer &layer,
@@ -93,16 +95,17 @@ void TownsRender::Render(
 	switch(layer.bitsPerPixel)
 	{
 	case 4:
-		Render4Bit(layer,palette.plt16[page&1],chaseHQPalette,VRAM,transparent);
+		Render4Bit<OFFSETTRANS>(layer,palette.plt16[page&1],chaseHQPalette,VRAM,transparent);
 		break;
 	case 8:
-		Render8Bit(layer,palette.plt256,VRAM,transparent);
+		Render8Bit<OFFSETTRANS>(layer,palette.plt256,VRAM,transparent);
 		break;
 	case 16:
-		Render16Bit(layer,VRAM,transparent);
+		Render16Bit<OFFSETTRANS>(layer,VRAM,transparent);
 		break;
 	}
 }
+template <class OFFSETTRANS>
 void TownsRender::Render4Bit(
     const TownsCRTC::Layer &layer,
     const Vec3ub palette[16],
@@ -155,7 +158,9 @@ void TownsRender::Render4Bit(
 		{
 			const int Y=y+layer.originOnMonitor.y();
 			const int X=  layer.originOnMonitor.x();
-			const unsigned char *src=VRAMTop+(bytesPerLineTimesVRAMy&layer.VScrollMask);
+			unsigned int VRAMAddr=(bytesPerLineTimesVRAMy&layer.VScrollMask);
+			OFFSETTRANS::Trans(VRAMAddr);
+			const unsigned char *src=VRAMTop+VRAMAddr;
 			unsigned char *dst=rgba.data()+4*(Y*this->wid+X);
 			for(int x=0; x<layer.sizeOnMonitor.x() && x+layer.originOnMonitor.x()<this->wid; x+=2*ZH)
 			{
@@ -243,7 +248,9 @@ void TownsRender::Render4Bit(
 				}
 			}
 
-			const unsigned char *src=VRAMTop+(bytesPerLineTimesVRAMy&layer.VScrollMask);
+			unsigned int VRAMAddr=(bytesPerLineTimesVRAMy&layer.VScrollMask);
+			OFFSETTRANS::Trans(VRAMAddr);
+			const unsigned char *src=VRAMTop+VRAMAddr;
 			unsigned char *dst=rgba.data()+4*(Y*this->wid+X);
 			for(int x=0; x<layer.sizeOnMonitor.x() && x+layer.originOnMonitor.x()<this->wid; x+=2*ZH)
 			{
@@ -282,6 +289,7 @@ void TownsRender::Render4Bit(
 		}
 	}
 }
+template <class OFFSETTRANS>
 void TownsRender::Render8Bit(const TownsCRTC::Layer &layer,const Vec3ub palette[256],const std::vector <unsigned char> &VRAM,bool transparent)
 {
 	unsigned int VRAMBase=layer.VRAMAddr+layer.VRAMHSkipBytes;
@@ -304,6 +312,7 @@ void TownsRender::Render8Bit(const TownsCRTC::Layer &layer,const Vec3ub palette[
 		{
 			unsigned int VRAMAddr=lineVRAMOffset+((inLineVRAMOffset+VRAMOffsetHorizontal)&VRAMHScrollMask);
 			VRAMAddr=VRAMBase+((VRAMAddr+VRAMOffsetVertical)&VRAMVScrollMask);
+			OFFSETTRANS::Trans(VRAMAddr);
 
 			unsigned char col8=VRAM[VRAMAddr];
 			if(true!=transparent || 0!=col8)
@@ -327,6 +336,7 @@ void TownsRender::Render8Bit(const TownsCRTC::Layer &layer,const Vec3ub palette[
 		}
 	}
 }
+template <class OFFSETTRANS>
 void TownsRender::Render16Bit(const TownsCRTC::Layer &layer,const std::vector <unsigned char> &VRAM,bool transparent)
 {
 	unsigned int VRAMBase=layer.VRAMAddr+layer.VRAMHSkipBytes;
@@ -349,6 +359,7 @@ void TownsRender::Render16Bit(const TownsCRTC::Layer &layer,const std::vector <u
 		{
 			unsigned int VRAMAddr=lineVRAMOffset+((inLineVRAMOffset+VRAMOffsetHorizontal)&VRAMHScrollMask);
 			VRAMAddr=VRAMBase+((VRAMAddr+VRAMOffsetVertical)&VRAMVScrollMask);
+			OFFSETTRANS::Trans(VRAMAddr);
 
 			unsigned short col16=VRAM[VRAMAddr]|(VRAM[VRAMAddr+1]<<8);
 			if(true!=transparent || 0==(col16&0x8000))

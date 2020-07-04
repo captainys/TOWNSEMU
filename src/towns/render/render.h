@@ -54,9 +54,29 @@ public:
 	*/
 	Image GetImage(void) const;
 
+	class VRAM0Trans // 80000000H to 80080000H
+	{
+	public:
+		inline static void Trans(unsigned int &)
+		{
+		}
+	};
+	class VRAM1Trans // 80100000H to 80180000H
+	{
+	public:
+		inline static void Trans(unsigned int &offset)
+		{
+			offset=((offset&4)<<16)|((offset&0x7fff8)>>1)|(offset&3);
+		};
+	};
+
+	template <class OFFSETTRANS>
 	void Render(unsigned int page,const TownsCRTC::Layer &layer,const TownsCRTC::AnalogPalette &palette,const TownsCRTC::ChaseHQPalette &chaseHQ,const std::vector <unsigned char> &VRAM,bool transparent);
+	template <class OFFSETTRANS>
 	void Render4Bit(const TownsCRTC::Layer &layer,const Vec3ub palette[16],const TownsCRTC::ChaseHQPalette &chaseHQPalette,const std::vector <unsigned char> &VRAM,bool transparent);
+	template <class OFFSETTRANS>
 	void Render8Bit(const TownsCRTC::Layer &layer,const Vec3ub palette[256],const std::vector <unsigned char> &VRAM,bool transparent);
+	template <class OFFSETTRANS>
 	void Render16Bit(const TownsCRTC::Layer &layer,const std::vector <unsigned char> &VRAM,bool transparent);
 };
 

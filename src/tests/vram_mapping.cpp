@@ -1,7 +1,7 @@
 #include <iostream>
 #include "cpputil.h"
 
-inline unsigned int VRAM1toVRAM2(unsigned int offset) // For rendering single-page mode
+inline unsigned int VRAM1toVRAM2(unsigned int offset) // 
 {
 	return ((offset&0x40000)>>16)|((offset&0x3fffc)<<1)|(offset&3);
 }
