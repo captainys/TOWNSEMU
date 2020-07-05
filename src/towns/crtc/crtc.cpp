@@ -113,7 +113,7 @@ void TownsCRTC::AnalogPalette::SetBlue(unsigned char v,unsigned int PLT)
 
 unsigned char TownsCRTC::AnalogPalette::Get16(unsigned int page,unsigned int component) const
 {
-	return plt16[page][codeLatch&0x0F][component];
+	return plt16[page][codeLatch&0x0F][component]&0xF0;
 }
 unsigned char TownsCRTC::AnalogPalette::Get256(unsigned int component) const
 {
