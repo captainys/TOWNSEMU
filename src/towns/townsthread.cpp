@@ -131,6 +131,7 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world,class Tow
 
 		if(RUNMODE_PAUSE==runModeCopy)
 		{
+			townsPtr->fdc.SaveModifiedDiskImages();
 			std::this_thread::sleep_for(std::chrono::milliseconds(10));
 		}
 
