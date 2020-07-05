@@ -385,7 +385,7 @@ unsigned int DiscImage::OpenCUEPostProcess(void)
 	}
 	if(0<tracks.size())
 	{
-		num_sectors=tracks.back().end.ToHSG();
+		num_sectors=tracks.back().end.ToHSG()+1;  // LastSectorNumber+1
 	}
 
 	for(long long int i=0; i<tracks.size(); ++i)

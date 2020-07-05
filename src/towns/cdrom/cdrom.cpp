@@ -776,7 +776,7 @@ void TownsCDROM::SetStatusQueueForTOC(void)
 	state.PushStatusQueue(0x16,0,0,0);
 	state.PushStatusQueue(0x17,DiscImage::BinToBCD(disc.GetNumTracks()),0,0);
 
-	auto length=DiscImage::HSGtoMSF(disc.GetNumSectors()+DiscImage::HSG_BASE-1); // Prob -1
+	auto length=DiscImage::HSGtoMSF(disc.GetNumSectors()+DiscImage::HSG_BASE);
 	state.PushStatusQueue(0x16,0,0,0);
 	state.PushStatusQueue(0x17,
 	                      DiscImage::BinToBCD(length.min),
