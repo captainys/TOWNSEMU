@@ -221,3 +221,11 @@ build\vram.OBJ : vram\vram.c
 
 build\vramtest.exp : build\vram.OBJ build\vramtest.OBJ vram\vramtest.ln
 	386link @vram\vramtest.LN
+
+
+
+build\readtoc.obj : cdrom\readtoc.c
+	hcd386 cdrom\readtoc.c -obj build\readtoc.OBJ
+
+build\readtoc.exp : build\readtoc.OBJ build\io.OBJ
+	386link @cdrom\readtoc.LN
