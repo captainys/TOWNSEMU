@@ -158,7 +158,13 @@ public:
 
 		AnalogPalette palette;
 
-		bool showPage[2];
+		bool showPageFDA0[2];
+		bool showPage0448[2];
+
+		inline bool ShowPage(int page) const
+		{
+			return (showPageFDA0[page] && showPage0448[page]);
+		}
 
 		void Reset(void);
 	};

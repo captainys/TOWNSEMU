@@ -198,8 +198,11 @@ void TownsCRTC::State::Reset(void)
 	}
 	mxVideoOutCtrlAddrLatch=0;
 
-	showPage[0]=true;
-	showPage[1]=true;
+	showPageFDA0[0]=true;
+	showPageFDA0[1]=true;
+
+	showPage0448[0]=true;
+	showPage0448[1]=true;
 
 	palette.Reset();
 }
@@ -592,6 +595,19 @@ void TownsCRTC::MakePageLayerInfo(Layer &layer,unsigned char page) const
 		break;
 	case TOWNSIO_VIDEO_OUT_CTRL_DATA://=      0x44A,
 		state.sifter[state.sifterAddrLatch]=data;
+		if(0==state.sifterAddrLatch)
+		{
+			if(InSinglePageMode())
+			{
+				state.showPage0448[0]=(0!=(data&0x08));
+				state.showPage0448[1]=false;
+			}
+			else
+			{
+				state.showPage0448[0]=(0!=(data&0x01));
+				state.showPage0448[1]=(0!=(data&0x04));
+			}
+		}
 		UpdateSpriteHardware();
 		break;
 
@@ -633,13 +649,13 @@ void TownsCRTC::MakePageLayerInfo(Layer &layer,unsigned char page) const
 	case TOWNSIO_HSYNC_VSYNC:  // 0xFDA0 Also CRT Output COntrol
 		if(InSinglePageMode())
 		{
-			state.showPage[0]=(0!=((data>>2)&3));
-			state.showPage[1]=state.showPage[0];
+			state.showPageFDA0[0]=(0!=((data>>2)&3));
+			state.showPageFDA0[1]=state.showPageFDA0[0];
 		}
 		else
 		{
-			state.showPage[0]=(0!=((data>>2)&3));
-			state.showPage[1]=(0!=( data    &3));
+			state.showPageFDA0[0]=(0!=((data>>2)&3));
+			state.showPageFDA0[1]=(0!=( data    &3));
 		}
 		break;
 	case TOWNSIO_WRITE_TO_CLEAR_VSYNCIRQ:// 0x5CA
@@ -950,6 +966,7 @@ std::vector <std::string> TownsCRTC::GetStatusText(void) const
 		(unsigned int)( state.crtcReg[REG_CR0]&3),
 		(unsigned int)((state.crtcReg[REG_CR0]>>2)&3),
 	};
+	const unsigned int PMODE=((state.crtcReg[REG_CR0]>>4)&1);
 
 	text.push_back("");
 	text.back()="CL0:"+cpputil::Itoa(CL[0])+"  CL1:"+cpputil::Itoa(CL[1]);
@@ -977,6 +994,14 @@ std::vector <std::string> TownsCRTC::GetStatusText(void) const
 	text.push_back("");
 	text.back()+="VSYNC:";
 	text.back()+=cpputil::BoolToChar(state.VSYNC);
+
+	text.push_back("");
+	text.back()+="Show Page (FDA0H):";
+	text.back()+=cpputil::Itoa(state.showPageFDA0[0])+" "+cpputil::Itoa(state.showPageFDA0[1]);
+
+	text.push_back("");
+	text.back()+="Show Page (0448H):";
+	text.back()+=cpputil::Itoa(state.sifter[0]&3)+" "+cpputil::Itoa((state.sifter[0]>>2)&3);
 
 	return text;
 }

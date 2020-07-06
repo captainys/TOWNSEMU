@@ -39,9 +39,12 @@ void TownsRender::BuildImage(const TownsCRTC &crtc,const TownsPhysicalMemory &ph
 
 	if(true==crtc.InSinglePageMode())
 	{
-		TownsCRTC::Layer layer;
-		crtc.MakePageLayerInfo(layer,0);
-		Render<VRAM1Trans>(0,layer,crtc.state.palette,crtc.chaseHQPalette,physMem.state.VRAM,false);
+		if(true==crtc.state.ShowPage(0))
+		{
+			TownsCRTC::Layer layer;
+			crtc.MakePageLayerInfo(layer,0);
+			Render<VRAM1Trans>(0,layer,crtc.state.palette,crtc.chaseHQPalette,physMem.state.VRAM,false);
+		}
 	}
 	else
 	{
@@ -49,7 +52,7 @@ void TownsRender::BuildImage(const TownsCRTC &crtc,const TownsPhysicalMemory &ph
 		crtc.MakePageLayerInfo(layer[0],0);
 		crtc.MakePageLayerInfo(layer[1],1);
 		auto priorityPage=crtc.GetPriorityPage();
-		if(true==crtc.state.showPage[1-priorityPage])
+		if(true==crtc.state.ShowPage(1-priorityPage))
 		{
 			Render<VRAM0Trans>(1-priorityPage,layer[1-priorityPage],crtc.state.palette,crtc.chaseHQPalette,physMem.state.VRAM,false);
 		}
@@ -61,7 +64,7 @@ void TownsRender::BuildImage(const TownsCRTC &crtc,const TownsPhysicalMemory &ph
 				rgbaPtr[i]=0;
 			}
 		}
-		if(true==crtc.state.showPage[priorityPage])
+		if(true==crtc.state.ShowPage(priorityPage))
 		{
 			Render<VRAM0Trans>(priorityPage,  layer[priorityPage]  ,crtc.state.palette,crtc.chaseHQPalette,physMem.state.VRAM,true);
 		}

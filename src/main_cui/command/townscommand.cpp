@@ -1909,15 +1909,19 @@ void TownsCommandInterpreter::Execute_Replace(FMTowns &towns,Command &cmd)
 
 void TownsCommandInterpreter::Execute_CRTCPage(FMTowns &towns,Command &cmd)
 {
-	if(cmd.argv.size()==2 && towns.crtc.InSinglePageMode())
+	if(2<=cmd.argv.size() && towns.crtc.InSinglePageMode())
 	{
-		towns.crtc.state.showPage[0]=(0!=cpputil::Atoi(cmd.argv[1].c_str()));
-		towns.crtc.state.showPage[1]=towns.crtc.state.showPage[0];
+		towns.crtc.state.showPageFDA0[0]=(0!=cpputil::Atoi(cmd.argv[1].c_str()));
+		towns.crtc.state.showPageFDA0[1]=towns.crtc.state.showPageFDA0[0];
+		towns.crtc.state.showPage0448[0]=towns.crtc.state.showPageFDA0[0];
+		towns.crtc.state.showPage0448[1]=towns.crtc.state.showPageFDA0[1];
 	}
 	else if(3<=cmd.argv.size() && true!=towns.crtc.InSinglePageMode())
 	{
-		towns.crtc.state.showPage[0]=(0!=cpputil::Atoi(cmd.argv[1].c_str()));
-		towns.crtc.state.showPage[1]=(0!=cpputil::Atoi(cmd.argv[2].c_str()));
+		towns.crtc.state.showPageFDA0[0]=(0!=cpputil::Atoi(cmd.argv[1].c_str()));
+		towns.crtc.state.showPageFDA0[1]=(0!=cpputil::Atoi(cmd.argv[2].c_str()));
+		towns.crtc.state.showPage0448[0]=towns.crtc.state.showPageFDA0[0];
+		towns.crtc.state.showPage0448[1]=towns.crtc.state.showPageFDA0[1];
 	}
 	else
 	{
