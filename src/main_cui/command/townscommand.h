@@ -115,6 +115,8 @@ public:
 		CMD_SAVE_EVENTLOG,
 		CMD_LOAD_EVENTLOG,
 
+		CMD_SAVE_YM2612LOG,
+
 		CMD_HOST_TO_VM_FILE_TRANSFER,
 
 		CMD_FREQUENCY,
@@ -129,6 +131,7 @@ public:
 		ENABLE_EVENTLOG,
 		ENABLE_DEBUGGER,
 		ENABLE_MOUSEINTEGRATION,
+		ENABLE_YM2612_LOG,
 	};
 
 	enum
@@ -160,6 +163,7 @@ public:
 		DUMP_SPRITE,
 		DUMP_SPRITE_AT,
 		DUMP_MOUSE,
+		DUMP_YM2612_LOG,
 	};
 
 	enum
@@ -265,6 +269,8 @@ public:
 
 	void Execute_MakeMemoryFilter(FMTowns &towns,Command &cmd);
 	void Execute_UpdateMemoryFilter(FMTowns &towns,Command &cmd);
+
+	void Execute_SaveYM2612Log(FMTowns &towns,std::string fName);
 };
 
 

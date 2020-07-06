@@ -83,6 +83,8 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["IMMISIO"]=CMD_IMM_IS_IOPORT;
 	primaryCmdMap["SAVEEVT"]=CMD_SAVE_EVENTLOG;
 	primaryCmdMap["LOADEVT"]=CMD_LOAD_EVENTLOG;
+	primaryCmdMap["SAVEYM2612LOG"]=CMD_SAVE_YM2612LOG;
+
 	primaryCmdMap["CALC"]=CMD_CALCULATE;
 
 	primaryCmdMap["TYPE"]=CMD_TYPE_KEYBOARD;
@@ -118,6 +120,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	featureMap["DEBUGGER"]=ENABLE_DEBUGGER;
 	featureMap["DEBUG"]=ENABLE_DEBUGGER;
 	featureMap["MOUSEINTEG"]=ENABLE_MOUSEINTEGRATION;
+	featureMap["YM2612LOG"]=ENABLE_YM2612_LOG;
 
 	dumpableMap["CALLSTACK"]=DUMP_CALLSTACK;
 	dumpableMap["CST"]=DUMP_CALLSTACK;
@@ -152,6 +155,8 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	dumpableMap["SPRITE"]=DUMP_SPRITE;
 	dumpableMap["SPRITEAT"]=DUMP_SPRITE_AT;
 	dumpableMap["MOUSE"]=DUMP_MOUSE;
+	dumpableMap["YM2612LOG"]=DUMP_YM2612_LOG;
+
 
 
 	breakEventMap["ICW1"]=   BREAK_ON_PIC_IWC1;
@@ -325,6 +330,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Debugger." << std::endl;
 	std::cout << "MOUSEINTEG" << std::endl;
 	std::cout << "  Mouse Integration." << std::endl;
+	std::cout << "YM2612LOG" << std::endl;
+	std::cout << "  YM2612 register-write log. (Previous log is cleared)" << std::endl;
 
 	std::cout << "" << std::endl;
 
@@ -376,6 +383,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  x and y are in decimal, not in hexadecimal." << std::endl;
 	std::cout << "MOUSE" << std::endl;
 	std::cout << "  Mouse status." << std::endl;
+	std::cout << "YM2612LOG" << std::endl;
+	std::cout << "  YM2612 register-write log." << std::endl;
 
 	std::cout << "" << std::endl;
 
@@ -614,6 +623,16 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 			PrintError(ERROR_CANNOT_OPEN_FILE);
 		}
 		break;
+	case CMD_SAVE_YM2612LOG:
+		if(2<=cmd.argv.size())
+		{
+			Execute_SaveYM2612Log(towns,cmd.argv[1]);
+		}
+		else
+		{
+			PrintError(ERROR_TOO_FEW_ARGS);
+		}
+		break;
 	case CMD_PRINT_STATUS:
 		towns.PrintStatus();
 		break;
@@ -804,6 +823,11 @@ void TownsCommandInterpreter::Execute_Enable(FMTowns &towns,Command &cmd)
 			towns.var.mouseIntegration=true;
 			std::cout << "Mouse Integration is Enabled." << std::endl;
 			break;
+		case ENABLE_YM2612_LOG:
+			towns.sound.state.ym2612.takeRegLog=true;
+			towns.sound.state.ym2612.regWriteLog.clear();
+			std::cout << "YM2612 register write log is Enabled." << std::endl;
+			break;
 		}
 	}
 }
@@ -866,6 +890,10 @@ void TownsCommandInterpreter::Execute_Disable(FMTowns &towns,Command &cmd)
 			towns.var.mouseIntegration=false;
 			towns.DontControlMouse();
 			std::cout << "Mouse Integration is Disabled." << std::endl;
+			break;
+		case ENABLE_YM2612_LOG:
+			towns.sound.state.ym2612.takeRegLog=false;
+			std::cout << "YM2612 register write log is Disabled." << std::endl;
 			break;
 		}
 	}
@@ -1100,6 +1128,14 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 			for(auto str : towns.GetMouseStatusText())
 			{
 				std::cout << str << std::endl;
+			}
+			break;
+		case DUMP_YM2612_LOG:
+			for(auto rwl : towns.sound.state.ym2612.regWriteLog)
+			{
+				std::cout << "0x" << cpputil::Ubtox(rwl.chBase) << "," <<
+				             "0x" << cpputil::Ubtox(rwl.reg) << "," <<
+				             "0x" << cpputil::Ubtox(rwl.data) << "," << "//(" << rwl.count << ")" << std::endl;
 			}
 			break;
 		}
@@ -2053,5 +2089,25 @@ void TownsCommandInterpreter::Execute_UpdateMemoryFilter(FMTowns &towns,Command 
 	else
 	{
 		PrintError(ERROR_TOO_FEW_ARGS);
+	}
+}
+
+void TownsCommandInterpreter::Execute_SaveYM2612Log(FMTowns &towns,std::string fName)
+{
+	std::ofstream ofp(fName);
+	if(ofp.is_open())
+	{
+		for(auto rwl : towns.sound.state.ym2612.regWriteLog)
+		{
+			ofp << "0x" << cpputil::Ubtox(rwl.chBase) << "," <<
+			       "0x" << cpputil::Ubtox(rwl.reg) << "," <<
+			       "0x" << cpputil::Ubtox(rwl.data) << "," << "//(" << rwl.count << ")" << std::endl;
+		}
+		ofp.close();
+		std::cout << "Saved " << fName << std::endl;
+	}
+	else
+	{
+		PrintError(ERROR_CANNOT_SAVE_FILE);
 	}
 }

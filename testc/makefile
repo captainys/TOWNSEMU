@@ -229,3 +229,10 @@ build\readtoc.obj : cdrom\readtoc.c
 
 build\readtoc.exp : build\readtoc.OBJ build\io.OBJ
 	386link @cdrom\readtoc.LN
+
+
+build\ym2612FB.obj : ym2612FB.c
+	hcd386 ym2612FB.c -obj build\ym2612FB.OBJ
+
+build\ym2612FB.exp : build\ym2612FB.OBJ build\io.OBJ
+	386link build\ym2612FB.obj -exe build\ym2612FB.exp @LIBS.LN

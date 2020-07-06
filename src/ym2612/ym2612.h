@@ -174,6 +174,16 @@ public:
 	static const struct ConnectionToOutputSlot connectionToOutputSlots[8];
 
 
+	class RegWriteLog
+	{
+	public:
+		unsigned char chBase,reg,data;
+		unsigned int count=1;
+	};
+	bool takeRegLog=false;
+	std::vector <RegWriteLog> regWriteLog;
+
+
 	YM2612();
 	~YM2612();
 private:

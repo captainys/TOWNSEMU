@@ -213,6 +213,25 @@ void YM2612::Reset(void)
 }
 unsigned int YM2612::WriteRegister(unsigned int channelBase,unsigned int reg,unsigned int value)
 {
+	if(true==takeRegLog)
+	{
+		RegWriteLog rwl;
+		rwl.chBase=(unsigned char)channelBase;
+		rwl.reg=(unsigned char)reg;
+		rwl.data=(unsigned char)value;
+		rwl.count=1;
+		if(0<regWriteLog.size() &&
+		   regWriteLog.back().chBase==rwl.chBase &&
+		   regWriteLog.back().reg==rwl.reg &&
+		   regWriteLog.back().data==rwl.data)
+		{
+			++regWriteLog.back().count;
+		}
+		else
+		{
+			regWriteLog.push_back(rwl);
+		}
+	}
 	unsigned int chStartPlaying=65535;
 	static const unsigned int slotTwist[4]={0,2,1,3};
 	reg&=255;
