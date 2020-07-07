@@ -5,6 +5,7 @@
 
 
 const double YsPi=3.14159265;
+double adjust=1.0;
 
 double func1(double t,double lastValue,int FB)
 {
@@ -34,7 +35,8 @@ double func1(double t,double lastValue,int FB)
 		lastValue*=4;
 		break;
 	}
-	return sin((t+lastValue)*YsPi*2.0);
+	lastValue*=adjust;
+	return sin(t*YsPi*2.0+lastValue*YsPi);
 }
 
 double func2(double t,double dummy,int FB)
@@ -216,11 +218,17 @@ void PrintTable(void)
 	}
 }
 
-#define PLOTFUNC MakePlot3
+#define PLOTFUNC MakePlot1
 
 int main(void)
 {
-	double dt=0.00001;
+	// dt: Relative to one wave cycle.
+	//     440Hz -> cycle=0.002272727272... second
+	//     If YM2612 internal frequency is 600KHz as explained in FM Towns Technical Databook,
+	//     (1/600K)/0.02272727272=(1/600K)*440=440/600K=0.000733
+	//     If it is 690KHz as my obbservation,
+	//     440/690K=0.000638
+	double dt=0.000638;
 	int FB=0;
 
 	int y[xRes];
@@ -245,6 +253,7 @@ int main(void)
 				FB=7;
 			}
 			PLOTFUNC(y,dt,FB);
+			printf("FB %d\n",FB);
 		}
 		else if(FSKEY_A==key)
 		{
@@ -254,7 +263,45 @@ int main(void)
 				FB=0;
 			}
 			PLOTFUNC(y,dt,FB);
+			printf("FB %d\n",FB);
 		}
+		else if(FSKEY_W==key)
+		{
+			dt*=2.0;
+			printf("%lf\n",dt);
+			PLOTFUNC(y,dt,FB);
+		}
+		else if(FSKEY_S==key)
+		{
+			dt/=2.0;
+			printf("%lf\n",dt);
+			PLOTFUNC(y,dt,FB);
+		}
+		else if(FSKEY_E==key)
+		{
+			dt*=1.1;
+			printf("%lf\n",dt);
+			PLOTFUNC(y,dt,FB);
+		}
+		else if(FSKEY_D==key)
+		{
+			dt/=1.1;
+			printf("%lf\n",dt);
+			PLOTFUNC(y,dt,FB);
+		}
+		else if(FSKEY_R==key)
+		{
+			adjust+=0.025;
+			PLOTFUNC(y,dt,FB);
+			printf("Adjust %lf\n",adjust);
+		}
+		else if(FSKEY_F==key)
+		{
+			adjust-=0.025;
+			PLOTFUNC(y,dt,FB);
+			printf("Adjust %lf\n",adjust);
+		}
+
 
 		int wid,hei;
 		FsGetWindowSize(wid,hei);
@@ -267,6 +314,12 @@ int main(void)
 			glVertex2i(x,y[x]);
 		}
 		glEnd();
+
+		glBegin(GL_LINES);
+		glVertex2i(wid/2,0);
+		glVertex2i(wid/2,hei);
+		glEnd();
+
 		FsSwapBuffers();
 	}
 	return 0;
