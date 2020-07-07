@@ -179,7 +179,7 @@ void YM2612::MakeDB100to4095Scale(void)
 	for(int i=0; i<=9600; ++i)
 	{
 		double dB=(double)i/100.0;
-		DB100to4095Scale[i]=(unsigned int)pow(10.0,dB/20.0)/C;
+		DB100to4095Scale[i]=(unsigned int)(pow(10.0,dB/20.0)/C);
 		// if(0==i%100)
 		// {
 		// 	printf("%4ddB -> %4d\n",i/100,DB100to4095Scale[i]);

@@ -129,7 +129,9 @@ public:
 		unsigned int playState;
 		unsigned long long int toneDuration12;  // In (microsec<<12).
 		unsigned long long int microsec12;      // Microsec from start of a tone by (microsec12>>12)
+		int lastSlot0Out;
 		mutable unsigned long long int nextMicrosec12; // Cached in MakeWave.
+		mutable int lastSlot0OutForNextWave;           // For calculating feedback.
 		// Cache for wave-generation <<
 
 		void Clear();
@@ -223,9 +225,9 @@ private:
 	*/
 	unsigned int CalculateToneDurationMilliseconds(unsigned int chNum) const;
 
-	/*!
+	/*! lastSlot0Out is input/output.  Needed for calculating feedback.
 	*/
-	int CalculateAmplitude(int chNum,unsigned int timeInMS,const unsigned int slotPhase[4],const int AMS4096[4]) const;
+	int CalculateAmplitude(int chNum,unsigned int timeInMS,const unsigned int slotPhase[4],const int AMS4096[4],int &lastSlot0Out) const;
 
 
 public:

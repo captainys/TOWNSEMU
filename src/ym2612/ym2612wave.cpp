@@ -2609,6 +2609,7 @@ void YM2612::KeyOn(unsigned int chNum)
 	state.playingCh|=(1<<chNum);
 	ch.playState=CH_PLAYING;
 	ch.microsec12=0;
+	ch.lastSlot0Out=0;
 
 
 	// Formula [2] pp.204
@@ -2768,6 +2769,7 @@ std::vector <unsigned char> YM2612::MakeWave(unsigned int chNum,unsigned long lo
 		ch.slots[2].phase12,
 		ch.slots[3].phase12,
 	};
+	int lastSlot0Out=ch.lastSlot0Out;
 
 	unsigned int LeftANDPtn=(0!=ch.L ? ~0 : 0);
 	unsigned int RightANDPtn=(0!=ch.R ? ~0 : 0);
@@ -2811,7 +2813,7 @@ std::vector <unsigned char> YM2612::MakeWave(unsigned int chNum,unsigned long lo
 			}
 		}
 
-		auto ampl=CalculateAmplitude(chNum,microsec/1000,phase12,AMSAdjustment);  // Envelope takes milliseconds.
+		auto ampl=CalculateAmplitude(chNum,microsec/1000,phase12,AMSAdjustment,lastSlot0Out);  // Envelope takes milliseconds.
 		wave[i*4  ]=(LeftANDPtn&(ampl&255));
 		wave[i*4+1]=(LeftANDPtn&((ampl>>8)&255));
 		wave[i*4+2]=(RightANDPtn&(ampl&255));
@@ -2825,6 +2827,7 @@ std::vector <unsigned char> YM2612::MakeWave(unsigned int chNum,unsigned long lo
 	}
 
 	ch.nextMicrosec12=microsec12;
+	ch.lastSlot0OutForNextWave=lastSlot0Out;
 	ch.slots[0].nextPhase12=phase12[0];
 	ch.slots[1].nextPhase12=phase12[1];
 	ch.slots[2].nextPhase12=phase12[2];
@@ -2845,6 +2848,7 @@ void YM2612::NextWave(unsigned int chNum)
 	if(CH_PLAYING==ch.playState)
 	{
 		ch.microsec12=ch.nextMicrosec12;
+		ch.lastSlot0Out=ch.lastSlot0OutForNextWave;
 		ch.slots[0].phase12=ch.slots[0].nextPhase12;
 		ch.slots[1].phase12=ch.slots[1].nextPhase12;
 		ch.slots[2].phase12=ch.slots[2].nextPhase12;
@@ -2970,7 +2974,7 @@ bool YM2612::CalculateEnvelope(unsigned int env[6],unsigned int &RR,unsigned int
 	return true;
 }
 
-int YM2612::CalculateAmplitude(int chNum,unsigned int timeInMS,const unsigned int slotPhase12[4],const int AMS4096[4]) const
+int YM2612::CalculateAmplitude(int chNum,unsigned int timeInMS,const unsigned int slotPhase12[4],const int AMS4096[4],int &lastSlot0Out) const
 {
 	auto &ch=state.channels[chNum];
 	bool slotActive[4]=
@@ -3002,26 +3006,31 @@ int YM2612::CalculateAmplitude(int chNum,unsigned int timeInMS,const unsigned in
 	default:
 	case 0:
 		s0out=SLOTOUTEV_Ln_0(0,    timeInMS);
+		lastSlot0Out=s0out;
 		s1out=SLOTOUTEV_Ln_1(s0out,timeInMS);
 		s2out=SLOTOUTEV_Ln_2(s1out,timeInMS);
 		return SLOTOUTEV_Db_3(s2out,timeInMS)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX;
 	case 1:
 		s0out=SLOTOUTEV_Ln_0(0,timeInMS);
+		lastSlot0Out=s0out;
 		s1out=SLOTOUTEV_Ln_1(0,timeInMS);
 		s2out=SLOTOUTEV_Ln_2(s0out+s1out,timeInMS);
 		return SLOTOUTEV_Db_3(s2out,timeInMS)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX;
 	case 2:
 		s0out=SLOTOUTEV_Ln_0(0,timeInMS);
+		lastSlot0Out=s0out;
 		s1out=SLOTOUTEV_Ln_1(0,timeInMS);
 		s2out=SLOTOUTEV_Ln_2(s1out,timeInMS);
 		return SLOTOUTEV_Db_3(s0out+s2out,timeInMS)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX;
 	case 3:
 		s0out=SLOTOUTEV_Ln_0(0,    timeInMS);
+		lastSlot0Out=s0out;
 		s1out=SLOTOUTEV_Ln_1(s0out,timeInMS);
 		s2out=SLOTOUTEV_Ln_2(0    ,timeInMS);
 		return SLOTOUTEV_Db_3(s1out+s2out,timeInMS)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX;
 	case 4:
 		s0out=SLOTOUTEV_Ln_0(0,    timeInMS);
+		lastSlot0Out=s0out;
 		s1out=SLOTOUTEV_Db_1(s0out,timeInMS);
 		s2out=SLOTOUTEV_Ln_2(0    ,timeInMS);
 		s3out=SLOTOUTEV_Db_3(s2out,timeInMS);
@@ -3029,18 +3038,21 @@ int YM2612::CalculateAmplitude(int chNum,unsigned int timeInMS,const unsigned in
 		// Test only Slot 3 -> return SLOTOUTEV_Db_3(0,timeInMS)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX;
 	case 5:
 		s0out=SLOTOUTEV_Ln_0(0,    timeInMS);
+		lastSlot0Out=s0out;
 		s1out=SLOTOUTEV_Db_1(s0out,timeInMS);
 		s2out=SLOTOUTEV_Db_2(s0out,timeInMS);
 		s3out=SLOTOUTEV_Db_3(s0out,timeInMS);
 		return ((s1out+s2out+s3out)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX)/3;
 	case 6:
 		s0out=SLOTOUTEV_Ln_0(0,    timeInMS);
+		lastSlot0Out=s0out;
 		s1out=SLOTOUTEV_Db_1(s0out,timeInMS);
 		s2out=SLOTOUTEV_Db_2(0    ,timeInMS);
 		s3out=SLOTOUTEV_Db_3(0    ,timeInMS);
 		return ((s1out+s2out+s3out)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX)/3;
 	case 7:
 		s0out=SLOTOUTEV_Ln_0(0,timeInMS);
+		lastSlot0Out=s0out;
 		s1out=SLOTOUTEV_Db_1(0,timeInMS);
 		s2out=SLOTOUTEV_Db_2(0,timeInMS);
 		s3out=SLOTOUTEV_Db_3(0,timeInMS);
