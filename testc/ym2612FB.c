@@ -1,5 +1,6 @@
 #include <time.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "io.h"
 
 // Set up channel 1 for FB=2, MT=1
@@ -199,16 +200,25 @@ void WriteYM2612RegisterCH1to3(unsigned char reg,unsigned char data)
 	IOWriteByte(IO_YM2612_DATA_CH0_2,data);
 }
 
-int main(void)
+int main(int ac,char *av[])
 {
 	int i;
 	unsigned int FB=4,CONNECT=7,MULTI=3;
+
+	if(2<=ac)
+	{
+		FB=atoi(av[1]);
+	}
+	if(3<=ac)
+	{
+		MULTI=atoi(av[2]);
+	}
 
 	for(i=0; i<sizeof(sample)/sizeof(sample[0]); i+=3)
 	{
 		if(0==sample[i])
 		{
-			if(0x30==sample[i+1])
+			if(0x31==sample[i+1])
 			{
 				WriteYM2612RegisterCH1to3(sample[i+1],(sample[i+2]&0xF0)|MULTI);
 			}
@@ -219,12 +229,7 @@ int main(void)
 		}
 	}
 
-	WriteYM2612RegisterCH1to3(0x40,0);
-	WriteYM2612RegisterCH1to3(0x44,127);
-	WriteYM2612RegisterCH1to3(0x48,127);
-	WriteYM2612RegisterCH1to3(0x4C,127);
-
-	WriteYM2612RegisterCH1to3(0xB0,(FB<<3)|CONNECT);
+	WriteYM2612RegisterCH1to3(0xB1,(FB<<3)|CONNECT);  // Ch1 not CH0
 
 	time_t t0=time(NULL);
 	while(t0==time(NULL))

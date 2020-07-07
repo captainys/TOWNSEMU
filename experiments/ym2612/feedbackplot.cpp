@@ -6,7 +6,7 @@
 
 const double YsPi=3.14159265;
 
-double func(double t,double lastValue,int FB)
+double func1(double t,double lastValue,int FB)
 {
 	switch(FB)
 	{
@@ -69,6 +69,7 @@ double func2(double t,double dummy,int FB)
 	return sin((t+fb)*YsPi*2.0);
 }
 
+// Based on YM2608 OPNA Application Manual Section 2-1 Equation (3)
 double func3(double t,int FB)
 {
 	double beta=1.0;
@@ -139,7 +140,26 @@ double func4(double t,int FB)
 
 const int xRes=800;
 
-void MakePlot(int y[xRes],double dt,int FB)
+void MakePlot1(int y[xRes],double dt,int FB)
+{
+	double lastY=0.0;
+	int prevX=0;
+	y[0]=300;
+	for(double t=0.0; t<2.0; t+=dt)
+	{
+		double yValue=func1(t,lastY,FB);
+		lastY=yValue;
+
+		int nextX=(int)(t*400.0);
+		if(nextX!=prevX && nextX<xRes)
+		{
+			y[nextX]=300-(int)(yValue*200.0);
+			prevX=nextX;
+		}
+	}
+}
+
+void MakePlot2(int y[xRes],double dt,int FB)
 {
 	double lastY=0.0;
 	int prevX=0;
@@ -196,7 +216,7 @@ void PrintTable(void)
 	}
 }
 
-#define PLOTFUNC MakePlot4
+#define PLOTFUNC MakePlot3
 
 int main(void)
 {
@@ -206,7 +226,7 @@ int main(void)
 	int y[xRes];
 	PLOTFUNC(y,dt,FB);
 
-	PrintTable();
+	// PrintTable();
 
 	FsOpenWindow(0,0,800,600,1);
 	for(;;)
@@ -235,6 +255,10 @@ int main(void)
 			}
 			PLOTFUNC(y,dt,FB);
 		}
+
+		int wid,hei;
+		FsGetWindowSize(wid,hei);
+		glViewport(0,0,wid,hei);
 
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 		glBegin(GL_LINE_STRIP);
