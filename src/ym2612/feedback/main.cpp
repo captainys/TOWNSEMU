@@ -226,6 +226,7 @@ int main(void)
 	//     (1/600K)/0.02272727272=(1/600K)*440=440/600K=0.000733 seconds.
 	//     If it is 690KHz as my obbservation,
 	//     440/690K=0.000638 seconds.
+	// 1.5K?  No way!  Am I calculating wrong?
 
 	// PrintTable();
 
@@ -268,39 +269,27 @@ int main(void)
 		}
 		else if(FSKEY_W==key)
 		{
-			dt*=2.0;
-			printf("%lf\n",dt);
+			ym2612.initialFeedbackUpdateCycle++;
+			printf("%d\n",ym2612.initialFeedbackUpdateCycle);
 			wave=MakeSample(ym2612,CONNECT,FB,MULTI);
 		}
 		else if(FSKEY_S==key)
 		{
-			dt/=2.0;
-			printf("%lf\n",dt);
+			ym2612.initialFeedbackUpdateCycle--;
+			printf("%d\n",ym2612.initialFeedbackUpdateCycle);
 			wave=MakeSample(ym2612,CONNECT,FB,MULTI);
 		}
 		else if(FSKEY_E==key)
 		{
-			dt*=1.1;
-			printf("%lf\n",dt);
-			wave=MakeSample(ym2612,CONNECT,FB,MULTI);
 		}
 		else if(FSKEY_D==key)
 		{
-			dt/=1.1;
-			printf("%lf\n",dt);
-			wave=MakeSample(ym2612,CONNECT,FB,MULTI);
 		}
 		else if(FSKEY_R==key)
 		{
-			adjust+=0.025;
-			printf("Adjust %lf\n",adjust);
-			wave=MakeSample(ym2612,CONNECT,FB,MULTI);
 		}
 		else if(FSKEY_F==key)
 		{
-			adjust-=0.025;
-			printf("Adjust %lf\n",adjust);
-			wave=MakeSample(ym2612,CONNECT,FB,MULTI);
 		}
 
 

@@ -2499,13 +2499,24 @@ inline int YM2612::Slot::UnscaledOutput(int phase,int phaseShift) const
 	//phaseShift>>=1;
 	return sineTable[(phase+phaseShift)&PHASE_MASK];
 }
-inline int YM2612::Slot::UnscaledOutput(int phase,int phaseShift,unsigned int FB) const
+inline int YM2612::Slot::UnscaledOutput(int phase,int phaseShift,unsigned int FB,int lastSlot0Out) const
 {
+	if(0!=FB)
+	{
+		static const int FBScaleTable[]=
+		{
+			0,1,2,4,8,16,32,64
+		};
+		phase+=(lastSlot0Out*FBScaleTable[FB]/64);  // Supposed to be /16, but it doesn't agree with the observation.
+	}
+	return sineTable[(phase+phaseShift)&PHASE_MASK];
+
+	// The table method works ok for FB=0 to 5, but not for FB=6 and FB=7.
 	// FBTables are based on the formula on YM2608 application manual Section 2-1 Equation (3).
 	// Formula for YM2612 is not available, but should be same.
 	//phaseShift*=MULTITable[this->MULTI];
 	//phaseShift>>=1;
-	switch(FB)
+	/* switch(FB)
 	{
 	case 1:
 		return FBTable1[(phase+phaseShift)&PHASE_MASK];
@@ -2523,14 +2534,14 @@ inline int YM2612::Slot::UnscaledOutput(int phase,int phaseShift,unsigned int FB
 		return FBTable7[(phase+phaseShift)&PHASE_MASK];
 	default:
 		return sineTable[(phase+phaseShift)&PHASE_MASK];
-	}
+	} */
 }
-inline int YM2612::Slot::EnvelopedOutputDb(int phase,int phaseShift,unsigned int timeInMS,unsigned int FB) const
+inline int YM2612::Slot::EnvelopedOutputDb(int phase,int phaseShift,unsigned int timeInMS,unsigned int FB,int lastSlot0Out) const
 {
 	int dB=InterpolateEnvelope(timeInMS);
 	lastDb100Cache=dB;
 	unsigned int ampl=DB100to4095Scale[dB];
-	int unscaledOut=UnscaledOutput(phase,phaseShift,FB);
+	int unscaledOut=UnscaledOutput(phase,phaseShift,FB,lastSlot0Out);
 	return (unscaledOut*ampl)/4096;
 }
 inline int YM2612::Slot::EnvelopedOutputDb(int phase,int phaseShift,unsigned int timeInMS) const
@@ -2541,12 +2552,12 @@ inline int YM2612::Slot::EnvelopedOutputDb(int phase,int phaseShift,unsigned int
 	int unscaledOut=UnscaledOutput(phase,phaseShift);
 	return (unscaledOut*ampl)/4096;
 }
-inline int YM2612::Slot::EnvelopedOutputLn(int phase,int phaseShift,unsigned int timeInMS,unsigned int FB) const
+inline int YM2612::Slot::EnvelopedOutputLn(int phase,int phaseShift,unsigned int timeInMS,unsigned int FB,int lastSlot0Out) const
 {
 	int env=InterpolateEnvelope(timeInMS);
 	lastDb100Cache=env;
 	unsigned int ampl=linear9600to4096[env];
-	int unscaledOut=UnscaledOutput(phase,phaseShift,FB);
+	int unscaledOut=UnscaledOutput(phase,phaseShift,FB,lastSlot0Out);
 	return (unscaledOut*ampl)/4096;
 }
 inline int YM2612::Slot::EnvelopedOutputLn(int phase,int phaseShift,unsigned int timeInMS) const
@@ -2610,6 +2621,7 @@ void YM2612::KeyOn(unsigned int chNum)
 	ch.playState=CH_PLAYING;
 	ch.microsec12=0;
 	ch.lastSlot0Out=0;
+	ch.feedbackUpdateCycle=initialFeedbackUpdateCycle;
 
 
 	// Formula [2] pp.204
@@ -2770,6 +2782,7 @@ std::vector <unsigned char> YM2612::MakeWave(unsigned int chNum,unsigned long lo
 		ch.slots[3].phase12,
 	};
 	int lastSlot0Out=ch.lastSlot0Out;
+	int feedbackUpdateCycle=ch.feedbackUpdateCycle;
 
 	unsigned int LeftANDPtn=(0!=ch.L ? ~0 : 0);
 	unsigned int RightANDPtn=(0!=ch.R ? ~0 : 0);
@@ -2813,7 +2826,15 @@ std::vector <unsigned char> YM2612::MakeWave(unsigned int chNum,unsigned long lo
 			}
 		}
 
-		auto ampl=CalculateAmplitude(chNum,microsec/1000,phase12,AMSAdjustment,lastSlot0Out);  // Envelope takes milliseconds.
+		auto s0Out=lastSlot0Out;
+		auto ampl=CalculateAmplitude(chNum,microsec/1000,phase12,AMSAdjustment,s0Out);  // Envelope takes milliseconds.
+		--feedbackUpdateCycle;
+		if(feedbackUpdateCycle<=0)
+		{
+			feedbackUpdateCycle=initialFeedbackUpdateCycle;
+			lastSlot0Out=s0Out;
+		}
+
 		wave[i*4  ]=(LeftANDPtn&(ampl&255));
 		wave[i*4+1]=(LeftANDPtn&((ampl>>8)&255));
 		wave[i*4+2]=(RightANDPtn&(ampl&255));
@@ -2828,6 +2849,7 @@ std::vector <unsigned char> YM2612::MakeWave(unsigned int chNum,unsigned long lo
 
 	ch.nextMicrosec12=microsec12;
 	ch.lastSlot0OutForNextWave=lastSlot0Out;
+	ch.nextFeedbackUpdateCycle=feedbackUpdateCycle;
 	ch.slots[0].nextPhase12=phase12[0];
 	ch.slots[1].nextPhase12=phase12[1];
 	ch.slots[2].nextPhase12=phase12[2];
@@ -2849,6 +2871,7 @@ void YM2612::NextWave(unsigned int chNum)
 	{
 		ch.microsec12=ch.nextMicrosec12;
 		ch.lastSlot0Out=ch.lastSlot0OutForNextWave;
+		ch.feedbackUpdateCycle=ch.nextFeedbackUpdateCycle;
 		ch.slots[0].phase12=ch.slots[0].nextPhase12;
 		ch.slots[1].phase12=ch.slots[1].nextPhase12;
 		ch.slots[2].phase12=ch.slots[2].nextPhase12;
@@ -2985,17 +3008,17 @@ int YM2612::CalculateAmplitude(int chNum,unsigned int timeInMS,const unsigned in
 		0!=(ch.usingSlot&8) || ch.slots[3].InReleasePhase,
 	};
 
-	#define SLOTOUTEV_Db_0(phaseShift,timeInMS) ((true!=slotActive[0] ? 0 : ch.slots[0].EnvelopedOutputDb((slotPhase12[0]>>12),phaseShift,timeInMS,ch.FB))*AMS4096[0]/4096)
+	#define SLOTOUTEV_Db_0(phaseShift,timeInMS) ((true!=slotActive[0] ? 0 : ch.slots[0].EnvelopedOutputDb((slotPhase12[0]>>12),phaseShift,timeInMS,ch.FB,lastSlot0Out))*AMS4096[0]/4096)
 	#define SLOTOUTEV_Db_1(phaseShift,timeInMS) ((true!=slotActive[1] ? 0 : ch.slots[1].EnvelopedOutputDb((slotPhase12[1]>>12),phaseShift,timeInMS))*AMS4096[1]/4096)
 	#define SLOTOUTEV_Db_2(phaseShift,timeInMS) ((true!=slotActive[2] ? 0 : ch.slots[2].EnvelopedOutputDb((slotPhase12[2]>>12),phaseShift,timeInMS))*AMS4096[2]/4096)
 	#define SLOTOUTEV_Db_3(phaseShift,timeInMS) ((true!=slotActive[3] ? 0 : ch.slots[3].EnvelopedOutputDb((slotPhase12[3]>>12),phaseShift,timeInMS))*AMS4096[3]/4096)
 
-	#define SLOTOUTEV_Ln_0(phaseShift,timeInMS) ((true!=slotActive[0] ? 0 : ch.slots[0].EnvelopedOutputLn((slotPhase12[0]>>12),phaseShift,timeInMS,ch.FB))*AMS4096[0]/4096)
+	#define SLOTOUTEV_Ln_0(phaseShift,timeInMS) ((true!=slotActive[0] ? 0 : ch.slots[0].EnvelopedOutputLn((slotPhase12[0]>>12),phaseShift,timeInMS,ch.FB,lastSlot0Out))*AMS4096[0]/4096)
 	#define SLOTOUTEV_Ln_1(phaseShift,timeInMS) ((true!=slotActive[1] ? 0 : ch.slots[1].EnvelopedOutputLn((slotPhase12[1]>>12),phaseShift,timeInMS))*AMS4096[1]/4096)
 	#define SLOTOUTEV_Ln_2(phaseShift,timeInMS) ((true!=slotActive[2] ? 0 : ch.slots[2].EnvelopedOutputLn((slotPhase12[2]>>12),phaseShift,timeInMS))*AMS4096[2]/4096)
 	#define SLOTOUTEV_Ln_3(phaseShift,timeInMS) ((true!=slotActive[3] ? 0 : ch.slots[3].EnvelopedOutputLn((slotPhase12[3]>>12),phaseShift,timeInMS))*AMS4096[3]/4096)
 
-	#define SLOTOUT_0(phaseShift,timeInMS) ((true!=slotActive[0] ? 0 : ch.slots[0].UnscaledOutput((slotPhase12[0]>>12),phaseShift,ch.FB))*AMS4096[0]/4096)
+	#define SLOTOUT_0(phaseShift,timeInMS) ((true!=slotActive[0] ? 0 : ch.slots[0].UnscaledOutput((slotPhase12[0]>>12),phaseShift,ch.FB,lastSlot0Out))*AMS4096[0]/4096)
 	#define SLOTOUT_1(phaseShift,timeInMS) ((true!=slotActive[1] ? 0 : ch.slots[1].UnscaledOutput((slotPhase12[1]>>12),phaseShift))*AMS4096[1]/4096)
 	#define SLOTOUT_2(phaseShift,timeInMS) ((true!=slotActive[2] ? 0 : ch.slots[2].UnscaledOutput((slotPhase12[2]>>12),phaseShift))*AMS4096[2]/4096)
 	#define SLOTOUT_3(phaseShift,timeInMS) ((true!=slotActive[3] ? 0 : ch.slots[3].UnscaledOutput((slotPhase12[3]>>12),phaseShift))*AMS4096[3]/4096)
@@ -3034,7 +3057,7 @@ int YM2612::CalculateAmplitude(int chNum,unsigned int timeInMS,const unsigned in
 		s1out=SLOTOUTEV_Db_1(s0out,timeInMS);
 		s2out=SLOTOUTEV_Ln_2(0    ,timeInMS);
 		s3out=SLOTOUTEV_Db_3(s2out,timeInMS);
-		return ((s1out+s3out)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX)/2;
+		return ((s1out+s3out)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX);
 		// Test only Slot 3 -> return SLOTOUTEV_Db_3(0,timeInMS)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX;
 	case 5:
 		s0out=SLOTOUTEV_Ln_0(0,    timeInMS);
@@ -3042,20 +3065,20 @@ int YM2612::CalculateAmplitude(int chNum,unsigned int timeInMS,const unsigned in
 		s1out=SLOTOUTEV_Db_1(s0out,timeInMS);
 		s2out=SLOTOUTEV_Db_2(s0out,timeInMS);
 		s3out=SLOTOUTEV_Db_3(s0out,timeInMS);
-		return ((s1out+s2out+s3out)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX)/3;
+		return ((s1out+s2out+s3out)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX);
 	case 6:
 		s0out=SLOTOUTEV_Ln_0(0,    timeInMS);
 		lastSlot0Out=s0out;
 		s1out=SLOTOUTEV_Db_1(s0out,timeInMS);
 		s2out=SLOTOUTEV_Db_2(0    ,timeInMS);
 		s3out=SLOTOUTEV_Db_3(0    ,timeInMS);
-		return ((s1out+s2out+s3out)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX)/3;
+		return ((s1out+s2out+s3out)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX);
 	case 7:
-		s0out=SLOTOUTEV_Ln_0(0,timeInMS);
-		lastSlot0Out=s0out;
+		lastSlot0Out=SLOTOUTEV_Ln_0(0,timeInMS);
+		s0out=SLOTOUTEV_Db_0(0,timeInMS);
 		s1out=SLOTOUTEV_Db_1(0,timeInMS);
 		s2out=SLOTOUTEV_Db_2(0,timeInMS);
 		s3out=SLOTOUTEV_Db_3(0,timeInMS);
-		return ((s0out+s1out+s2out+s3out)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX)/4;
+		return ((s0out+s1out+s2out+s3out)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX);
 	}
 }

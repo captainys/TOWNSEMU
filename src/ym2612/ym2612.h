@@ -106,16 +106,19 @@ public:
 		// phase is from the phaseGenerator*MULTI,DETUNE,PMS
 		// phaseShift is input from the upstream slot.
 		inline int UnscaledOutput(int phase,int phaseShift) const;
-		inline int UnscaledOutput(int phase,int phaseShift,unsigned int FB) const;
+		inline int UnscaledOutput(int phase,int phaseShift,unsigned int FB,int lastSlot0Out) const;
 		// Apply Envelope as Db.  Output is amplitude 4096 scale.
-		inline int EnvelopedOutputDb(int phase,int phaseShift,unsigned int timeInMS,unsigned int FB) const;
+		inline int EnvelopedOutputDb(int phase,int phaseShift,unsigned int timeInMS,unsigned int FB,int lastSlot0Out) const;
 		inline int EnvelopedOutputDb(int phase,int phaseShift,unsigned int timeInMS) const;
 		// Apply Envelope as Linear (9600 as 1.0).  Output is amplitude 4096 scale.
-		inline int EnvelopedOutputLn(int phase,int phaseShift,unsigned int timeInMS,unsigned int FB) const;
+		inline int EnvelopedOutputLn(int phase,int phaseShift,unsigned int timeInMS,unsigned int FB,int lastSlot0Out) const;
 		inline int EnvelopedOutputLn(int phase,int phaseShift,unsigned int timeInMS) const;
 		// DB scale: 0 to 9600
 		inline int InterpolateEnvelope(unsigned int timeInMS) const;
 	};
+
+	int initialFeedbackUpdateCycle=1;
+
 	class Channel
 	{
 	public:
@@ -125,6 +128,10 @@ public:
 		unsigned int usingSlot;
 		Slot slots[NUM_SLOTS];
 
+		// Observation suggests that the output from SLOT0 with FB=6 and 7 depends on
+		// the frequency in which the lastSlot0Out is updated.
+		int feedbackUpdateCycle=3;
+
 		// Cache for wave-generation >>
 		unsigned int playState;
 		unsigned long long int toneDuration12;  // In (microsec<<12).
@@ -132,6 +139,7 @@ public:
 		int lastSlot0Out;
 		mutable unsigned long long int nextMicrosec12; // Cached in MakeWave.
 		mutable int lastSlot0OutForNextWave;           // For calculating feedback.
+		mutable int nextFeedbackUpdateCycle;
 		// Cache for wave-generation <<
 
 		void Clear();
