@@ -41,6 +41,14 @@ public:
 		bool COM;
 		bool button[2],left,right,up,down,run,pause;
 		Vec2i mouseMotion;
+
+		// Once CPU starts reading the mouse, mouseMotion should stay the same.
+		// If the value changes after 4-bits of the motion x or y is read before
+		// the rest 4-bits, it would mess up the pointer.
+		// To prevent this situation, mouseMotion is copied to mouseMotionCopy
+		// when the first 4-bit of DX is sent to the CPU.
+		Vec2i mouseMotionCopy;
+
 		long long int lastReadTime;
 
 		void Write(bool COM,bool T1,bool T2);

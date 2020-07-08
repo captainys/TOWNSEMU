@@ -61,16 +61,17 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 			switch(state)
 			{
 			case 0:
-				data|=((mouseMotion.x()>>4)&0x0F);
+				mouseMotionCopy=mouseMotion;
+				data|=((mouseMotionCopy.x()>>4)&0x0F);
 				break;
 			case 1:
-				data|=((mouseMotion.x()   )&0x0F);
+				data|=((mouseMotionCopy.x()   )&0x0F);
 				break;
 			case 2:
-				data|=((mouseMotion.y()>>4)&0x0F);
+				data|=((mouseMotionCopy.y()>>4)&0x0F);
 				break;
 			case 3:
-				data|=((mouseMotion.y()   )&0x0F);
+				data|=((mouseMotionCopy.y()   )&0x0F);
 				mouseMotion.Set(0,0);
 				break;
 			}
