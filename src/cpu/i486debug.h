@@ -90,7 +90,7 @@ public:
 		unsigned short condValue=0;
 	};
 	BreakOnINTCondition breakOnINT[BreakOnINTCondition::NUM_INTERRUPTS];
-	bool stop;
+	mutable bool stop;
 	bool monitorIO;
 	bool monitorIOports[65536];
 	bool disassembleEveryStep;

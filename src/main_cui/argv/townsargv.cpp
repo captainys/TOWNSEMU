@@ -109,7 +109,7 @@ void TownsARGV::PrintApplicationList(void) const
 {
 	std::cout << "Customization Available for:" << std::endl;
 	std::cout << "WC1 or WINGCOMMANDER1" << std::endl;
-	std::cout << "  Mouse-integration.  Wing Commander 1 uses its own mouse-reading" << std::endl;
+	std::cout << "  Mouse integration.  Wing Commander 1 uses its own mouse-reading" << std::endl;
 	std::cout << "  function instead of standard Towns MOUSE BIOS.  With this option" << std::endl;
 	std::cout << "  you can control mouse for selecting menus." << std::endl;
 	std::cout << "SUPERDAISEN" << std::endl;
@@ -119,6 +119,8 @@ void TownsARGV::PrintApplicationList(void) const
 	std::cout << "  too fast while holding the mouse button down." << std::endl;
 	std::cout << "  To counter this issue, the VM slows down to 4MHz while the mouse" << std::endl;
 	std::cout << "  left button is down." << std::endl;
+	std::cout << "LEMMINGS" << std::endl;
+	std::cout << "  Mouse integration." << std::endl;
 }
 
 bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])

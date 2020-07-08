@@ -585,6 +585,7 @@ enum
 	TOWNS_APPSPECIFIC_NONE,
 	TOWNS_APPSPECIFIC_WINGCOMMANDER1,
 	TOWNS_APPSPECIFIC_SUPERDAISEN,
+	TOWNS_APPSPECIFIC_LEMMINGS,
 };
 unsigned int TownsStrToApp(std::string str);
 std::string TownsAppToStr(unsigned int i);

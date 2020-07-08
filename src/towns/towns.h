@@ -169,8 +169,8 @@ public:
 		/*! Application-Specific Customization parameters.
 		*/
 		unsigned int appSpecificSetting=0;
-		unsigned int appSpecific_WC1_MousePtrX=0;
-		unsigned int appSpecific_WC1_MousePtrY=0;
+		unsigned int appSpecific_MousePtrX=0;
+		unsigned int appSpecific_MousePtrY=0;
 
 
 		void PowerOn(void);
