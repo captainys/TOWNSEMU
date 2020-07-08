@@ -678,7 +678,7 @@ void TownsSinglePageVRAMAccessWithMaskTemplate<VRAMADDR_BASE,VRAMADDR_END>::Stor
 {
 	auto &state=this->physMemPtr->state;
 	auto offset=physAddr-VRAMADDR_BASE;
-	offset=SinglePageOffsetToLinearOffset(offset);
+	offset=this->SinglePageOffsetToLinearOffset(offset);
 
 	unsigned char mask=state.nativeVRAMMask[physAddr&3];
 	unsigned char nega=~mask;
@@ -692,7 +692,7 @@ void TownsSinglePageVRAMAccessWithMaskTemplate<VRAMADDR_BASE,VRAMADDR_END>::Stor
 	auto offset=physAddr-VRAMADDR_BASE;
 	if(0==(offset&1))
 	{
-		offset=SinglePageOffsetToLinearOffset(offset);
+		offset=this->SinglePageOffsetToLinearOffset(offset);
 		unsigned short mask=cpputil::GetWord(state.nativeVRAMMask+(physAddr&3));
 		unsigned short nega=~mask;
 		unsigned short vram=cpputil::GetWord(state.VRAM.data()+offset);
@@ -701,10 +701,10 @@ void TownsSinglePageVRAMAccessWithMaskTemplate<VRAMADDR_BASE,VRAMADDR_END>::Stor
 	else
 	{
 		data&=cpputil::GetWord(state.nativeVRAMMask+(physAddr&3));
-		state.VRAM[SinglePageOffsetToLinearOffset(offset)  ]&=   state.nativeVRAMMask[(physAddr&3)  ];
-		state.VRAM[SinglePageOffsetToLinearOffset(offset)  ]|=((~state.nativeVRAMMask[(physAddr&3)  ])&(data&255));
-		state.VRAM[SinglePageOffsetToLinearOffset(offset+1)]&=   state.nativeVRAMMask[(physAddr&3)+1];
-		state.VRAM[SinglePageOffsetToLinearOffset(offset+1)]|=((~state.nativeVRAMMask[(physAddr&3)+1])&((data>>8)&255));
+		state.VRAM[this->SinglePageOffsetToLinearOffset(offset)  ]&=   state.nativeVRAMMask[(physAddr&3)  ];
+		state.VRAM[this->SinglePageOffsetToLinearOffset(offset)  ]|=((~state.nativeVRAMMask[(physAddr&3)  ])&(data&255));
+		state.VRAM[this->SinglePageOffsetToLinearOffset(offset+1)]&=   state.nativeVRAMMask[(physAddr&3)+1];
+		state.VRAM[this->SinglePageOffsetToLinearOffset(offset+1)]|=((~state.nativeVRAMMask[(physAddr&3)+1])&((data>>8)&255));
 	}
 }
 template <const unsigned int VRAMADDR_BASE,const unsigned int VRAMADDR_END>
@@ -714,7 +714,7 @@ void TownsSinglePageVRAMAccessWithMaskTemplate<VRAMADDR_BASE,VRAMADDR_END>::Stor
 	auto offset=physAddr-VRAMADDR_BASE;
 	if(0==(offset&3))
 	{
-		offset=SinglePageOffsetToLinearOffset(offset);
+		offset=this->SinglePageOffsetToLinearOffset(offset);
 		unsigned int mask=cpputil::GetDword(state.nativeVRAMMask+(physAddr&3));
 		unsigned int nega=~mask;
 		unsigned int vram=cpputil::GetDword(state.VRAM.data()+offset);
@@ -723,14 +723,14 @@ void TownsSinglePageVRAMAccessWithMaskTemplate<VRAMADDR_BASE,VRAMADDR_END>::Stor
 	else
 	{
 		data&=cpputil::GetDword(state.nativeVRAMMask+(physAddr&3));
-		state.VRAM[SinglePageOffsetToLinearOffset(offset)  ]&=   state.nativeVRAMMask[(physAddr&3)  ];
-		state.VRAM[SinglePageOffsetToLinearOffset(offset)  ]|=((~state.nativeVRAMMask[(physAddr&3)  ])& (data     &255));
-		state.VRAM[SinglePageOffsetToLinearOffset(offset+1)]&=   state.nativeVRAMMask[(physAddr&3)+1];
-		state.VRAM[SinglePageOffsetToLinearOffset(offset+1)]|=((~state.nativeVRAMMask[(physAddr&3)+1])&((data>> 8)&255));
-		state.VRAM[SinglePageOffsetToLinearOffset(offset+2)]&=   state.nativeVRAMMask[(physAddr&3)+2];
-		state.VRAM[SinglePageOffsetToLinearOffset(offset+2)]|=((~state.nativeVRAMMask[(physAddr&3)+2])&((data>>16)&255));
-		state.VRAM[SinglePageOffsetToLinearOffset(offset+3)]&=   state.nativeVRAMMask[(physAddr&3)+3];
-		state.VRAM[SinglePageOffsetToLinearOffset(offset+3)]|=((~state.nativeVRAMMask[(physAddr&3)+3])&((data>>24)&255));
+		state.VRAM[this->SinglePageOffsetToLinearOffset(offset)  ]&=   state.nativeVRAMMask[(physAddr&3)  ];
+		state.VRAM[this->SinglePageOffsetToLinearOffset(offset)  ]|=((~state.nativeVRAMMask[(physAddr&3)  ])& (data     &255));
+		state.VRAM[this->SinglePageOffsetToLinearOffset(offset+1)]&=   state.nativeVRAMMask[(physAddr&3)+1];
+		state.VRAM[this->SinglePageOffsetToLinearOffset(offset+1)]|=((~state.nativeVRAMMask[(physAddr&3)+1])&((data>> 8)&255));
+		state.VRAM[this->SinglePageOffsetToLinearOffset(offset+2)]&=   state.nativeVRAMMask[(physAddr&3)+2];
+		state.VRAM[this->SinglePageOffsetToLinearOffset(offset+2)]|=((~state.nativeVRAMMask[(physAddr&3)+2])&((data>>16)&255));
+		state.VRAM[this->SinglePageOffsetToLinearOffset(offset+3)]&=   state.nativeVRAMMask[(physAddr&3)+3];
+		state.VRAM[this->SinglePageOffsetToLinearOffset(offset+3)]|=((~state.nativeVRAMMask[(physAddr&3)+3])&((data>>24)&255));
 	}
 }
 
