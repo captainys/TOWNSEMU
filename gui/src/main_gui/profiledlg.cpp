@@ -147,6 +147,7 @@ void ProfileDialog::Make(void)
 		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_NONE).c_str(),YSTRUE);
 		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_WINGCOMMANDER1).c_str(),YSFALSE);
 		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_SUPERDAISEN).c_str(),YSFALSE);
+		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_LEMMINGS).c_str(),YSFALSE);
 
 		appSpecificExplanation=AddStaticText(0,FSKEY_NULL,L"",YSTRUE);
 
@@ -190,6 +191,15 @@ void ProfileDialog::Make(void)
 				"It scrolls too fast.  To counter this issue,\n"
 				"Tsugaru can slow down the CPU to 2MHz while\n"
 				"mouse left button is held down.\n"
+			);
+			break;
+		case TOWNS_APPSPECIFIC_LEMMINGS:
+			appSpecificExplanation->SetText(
+				"Mouse Integration for Lemmings\n"
+				"Like Wing Commander 1, Lemmings uses its own\n"
+				"mouse-reading function.  This option enables\n"
+				"control by mouse in Lemmings.\n"
+				"Cursor trembles a little bit.\n"
 			);
 			break;
 		}
