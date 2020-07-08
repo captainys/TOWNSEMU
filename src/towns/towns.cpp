@@ -748,7 +748,7 @@ std::vector <std::string> FMTowns::GetMouseStatusText(void) const
 		if(0!=bytesPerLine)
 		{
 			unsigned int VRAMHeight=VRAMSize/bytesPerLine;
-			mx+=VRAMoffset/bytesPerLine;
+			my+=VRAMoffset/bytesPerLine;
 			my%=VRAMHeight;
 		}
 
@@ -764,6 +764,17 @@ std::vector <std::string> FMTowns::GetMouseStatusText(void) const
 		VRAMAddr+=crtc.GetPageBitsPerPixel(page)*mx/8;
 		text.back()+=cpputil::Uitox(VRAMAddr);
 		text.back()+="H";
+	}
+
+	for(unsigned int p=0; p<2; ++p)
+	{
+		if(TownsGamePort::MOUSE==gameport.state.ports[p].device)
+		{
+			text.push_back("PORT:");
+			text.back()+=cpputil::Itoa(p);
+			text.back()+=("  Read State:");
+			text.back()+=cpputil::Itoa(gameport.state.ports[p].state);
+		}
 	}
 
 	return text;

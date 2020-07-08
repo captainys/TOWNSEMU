@@ -281,6 +281,7 @@ static inline int ClampStep(int d)
 bool FMTowns::ControlMouse(int hostMouseX,int hostMouseY,unsigned int tbiosid)
 {
 	int mx,my;
+	int slowDownRange=0;
 	var.lastKnownMouseX=hostMouseX;
 	var.lastKnownMouseY=hostMouseY;
 	if(true==GetMouseCoordinate(mx,my,tbiosid) && true==var.mouseIntegration)
@@ -306,10 +307,27 @@ bool FMTowns::ControlMouse(int hostMouseX,int hostMouseY,unsigned int tbiosid)
 			hostMouseY/=zoom.y();
 		}
 
+		// 2020/07/08
+		// Lemmings uses double-buffering.  In TBIOS, mouse pointer is influenced by the VRAM offset.
+		// However, in Lemmings the mouse pointer is distance from top-left corner of the monitor
+		// regardless of the VRAM offset.  Therefore, the transformation needs to be skipped.
+		// Also internally-stored X coordinate looks to be half of the actual coordinate.
+		bool considerVRAMOffset=true;
+		switch(state.appSpecificSetting)
+		{
+		case TOWNS_APPSPECIFIC_LEMMINGS:
+			considerVRAMOffset=false;
+			hostMouseX*=zoom.x();
+			hostMouseX/=2;
+			slowDownRange=4;
+			break;
+		}
+
 		// 2020/06/13
 		// SuperDAISENRYAKU uses mouse with VRAM offset=3BC00H.
 		// This offset makes towns mouse cursor appear 32 pixels down from the Windows mouse cursor.
 		// VRAM offset needs to be taken into account.
+		if(true==considerVRAMOffset)
 		{
 			auto VRAMoffset=crtc.GetPageVRAMAddressOffset(state.mouseDisplayPage);
 			auto bytesPerLine=crtc.GetPageBytesPerLine(state.mouseDisplayPage);
@@ -324,6 +342,28 @@ bool FMTowns::ControlMouse(int hostMouseX,int hostMouseY,unsigned int tbiosid)
 
 		auto dx=ClampStep(hostMouseX-mx);
 		auto dy=ClampStep(hostMouseY-my);
+		if(-slowDownRange<=dx && dx<=slowDownRange)
+		{
+			if(dx<0)
+			{
+				dx=-1;
+			}
+			else if(0<dx)
+			{
+				dx=1;
+			}
+		}
+		if(-slowDownRange<=dy && dy<=slowDownRange)
+		{
+			if(dy<0)
+			{
+				dy=-1;
+			}
+			else if(0<dy)
+			{
+				dy=1;
+			}
+		}
 		for(auto &p : gameport.state.ports)
 		{
 			if(p.device==TownsGamePort::MOUSE)
@@ -543,8 +583,8 @@ bool FMTowns::GetMouseCoordinate(int &mx,int &my,unsigned int tbiosid) const
 		case TOWNS_APPSPECIFIC_LEMMINGS:
 			{
 				auto debugStop=debugger.stop; // FetchWord may break due to MEMR.
-				mx=(int)mem.FetchWord(state.appSpecific_MousePtrX)*2;
-				my=(int)mem.FetchWord(state.appSpecific_MousePtrY)*2;
+				mx=(int)mem.FetchWord(state.appSpecific_MousePtrX);
+				my=(int)mem.FetchWord(state.appSpecific_MousePtrY);
 				debugger.stop=debugStop;
 			}
 			return true;
