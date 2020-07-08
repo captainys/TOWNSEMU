@@ -2999,6 +2999,11 @@ bool YM2612::CalculateEnvelope(unsigned int env[6],unsigned int &RR,unsigned int
 
 int YM2612::CalculateAmplitude(int chNum,unsigned int timeInMS,const unsigned int slotPhase12[4],const int AMS4096[4],int &lastSlot0Out) const
 {
+	if(true==channelMute[chNum])
+	{
+		return 0;
+	}
+
 	auto &ch=state.channels[chNum];
 	bool slotActive[4]=
 	{

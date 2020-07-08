@@ -84,6 +84,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["SAVEEVT"]=CMD_SAVE_EVENTLOG;
 	primaryCmdMap["LOADEVT"]=CMD_LOAD_EVENTLOG;
 	primaryCmdMap["SAVEYM2612LOG"]=CMD_SAVE_YM2612LOG;
+	primaryCmdMap["FMCH"]=CMD_YM2612_CH_ON_OFF;
 
 	primaryCmdMap["CALC"]=CMD_CALCULATE;
 
@@ -385,6 +386,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Mouse status." << std::endl;
 	std::cout << "YM2612LOG" << std::endl;
 	std::cout << "  YM2612 register-write log." << std::endl;
+	std::cout << "FMCH 0/1 0/1 0/1 0/1 0/1 0/1" << std::endl;
+	std::cout << "  Mute/Unmute YM2612 channels." << std::endl;
 
 	std::cout << "" << std::endl;
 
@@ -627,6 +630,22 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 		if(2<=cmd.argv.size())
 		{
 			Execute_SaveYM2612Log(towns,cmd.argv[1]);
+		}
+		else
+		{
+			PrintError(ERROR_TOO_FEW_ARGS);
+		}
+		break;
+	case CMD_YM2612_CH_ON_OFF:
+		if(7<=cmd.argv.size())
+		{
+			towns.sound.state.ym2612.channelMute[0]=(0==cpputil::Atoi(cmd.argv[1].c_str()));
+			towns.sound.state.ym2612.channelMute[1]=(0==cpputil::Atoi(cmd.argv[2].c_str()));
+			towns.sound.state.ym2612.channelMute[2]=(0==cpputil::Atoi(cmd.argv[3].c_str()));
+			towns.sound.state.ym2612.channelMute[3]=(0==cpputil::Atoi(cmd.argv[4].c_str()));
+			towns.sound.state.ym2612.channelMute[4]=(0==cpputil::Atoi(cmd.argv[5].c_str()));
+			towns.sound.state.ym2612.channelMute[5]=(0==cpputil::Atoi(cmd.argv[6].c_str()));
+			std::cout << "Set YM2612 chnanle mute/unmute" << std::endl;
 		}
 		else
 		{

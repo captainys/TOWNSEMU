@@ -165,6 +165,7 @@ public:
 	};
 
 	State state;
+	bool channelMute[NUM_CHANNELS]={false,false,false,false,false,false};
 
 	static int sineTable[PHASE_STEPS];
 	static unsigned int TLtoDB100[128];   // 100 times dB
