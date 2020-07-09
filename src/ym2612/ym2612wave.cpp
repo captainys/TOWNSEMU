@@ -699,7 +699,9 @@ inline int YM2612::Slot::UnscaledOutput(int phase,int phaseShift,unsigned int FB
 		{
 			0,1,2,4,8,16,32,64
 		};
-		phase+=(lastSlot0Out*FBScaleTable[FB]/16);
+		// lastSlotOut=1.0=>4096   4096=>2PI
+		// To make it 4PI at FB=4, must divide by 32.
+		phase+=(lastSlot0Out*FBScaleTable[FB]/32);
 	}
 	return sineTable[(phase+(phaseShift*4))&PHASE_MASK];
 }
@@ -1246,8 +1248,8 @@ int YM2612::CalculateAmplitude(int chNum,unsigned int timeInMS,const unsigned in
 		s3out=SLOTOUTEV_Db_3(0    ,timeInMS);
 		return ((s1out+s2out+s3out)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX);
 	case 7:
-		lastSlot0Out=SLOTOUTEV_Db_0(0,timeInMS);
 		s0out=SLOTOUTEV_Db_0(0,timeInMS);
+		lastSlot0Out=s0out;
 		s1out=SLOTOUTEV_Db_1(0,timeInMS);
 		s2out=SLOTOUTEV_Db_2(0,timeInMS);
 		s3out=SLOTOUTEV_Db_3(0,timeInMS);

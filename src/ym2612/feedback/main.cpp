@@ -3,6 +3,7 @@
 
 #include "fssimplewindow.h"
 #include "ym2612.h"
+#include <yssimplesound.h>
 
 
 
@@ -201,21 +202,19 @@ void SetUpYM(YM2612 &ym2612,int CONNECT,int FB,int MULTI)
 
 void StartTone(YM2612 &ym2612)
 {
-	ym2612.WriteRegister(0,0x28,0xF1); // Start Tone CH1
+	ym2612.WriteRegister(0,0x28,0xF0); // Start Tone CH1
 }
 
 void StopTone(YM2612 &ym2612)
 {
-	ym2612.WriteRegister(0,0x28,0x01); // Stop Tone CH1
+	ym2612.WriteRegister(0,0x28,0x00); // Stop Tone CH1
 }
 
-std::vector <unsigned char> MakeSample(YM2612 &ym2612,int CONNECT,int FB,int MULTI,int TL)
+std::vector <unsigned char> MakeSample(YM2612 &ym2612)
 {
-	SetUpYM(ym2612,CONNECT,FB,MULTI);
-	ym2612.WriteRegister(0,0x41,TL);
-	StartTone(ym2612);
-	auto wave=ym2612.MakeWave(1,100); // 100ms
-	StopTone(ym2612);
+	ym2612.KeyOn(0);
+	auto wave=ym2612.MakeWave(0,100); // 100ms
+	ym2612.KeyOff(0);
 	return wave;
 }
 
@@ -231,67 +230,116 @@ int main(void)
 
 	// PrintTable();
 
-	int FB=0;
-	int CONNECT=7;
-	int MULTI=1;
-	int TL=15;
-	double adjust=1.0;
-	double dt=0.000638;
 	YM2612 ym2612;
-	std::vector <unsigned char> wave=MakeSample(ym2612,CONNECT,FB,MULTI,TL);
+
+	ym2612.state.LFO=false;
+
+	ym2612.state.channels[0].F_NUM=924;
+	ym2612.state.channels[0].BLOCK=3;
+	ym2612.state.channels[0].FB=0;
+	ym2612.state.channels[0].CONNECT=5;
+	ym2612.state.channels[0].L=1;
+	ym2612.state.channels[0].R=1;
+	ym2612.state.channels[0].AMS=0;
+	ym2612.state.channels[0].PMS=0;
+	ym2612.state.channels[0].usingSlot=0x0F;
+
+	ym2612.state.channels[0].slots[0].DT=0;
+	ym2612.state.channels[0].slots[0].MULTI=0;
+	ym2612.state.channels[0].slots[0].TL=26;
+	ym2612.state.channels[0].slots[0].KS=0;
+	ym2612.state.channels[0].slots[0].AR=31;
+	ym2612.state.channels[0].slots[0].AM=0;
+	ym2612.state.channels[0].slots[0].DR=10;
+	ym2612.state.channels[0].slots[0].SR= 0;
+	ym2612.state.channels[0].slots[0].SL= 2;
+	ym2612.state.channels[0].slots[0].RR= 5;
+	ym2612.state.channels[0].slots[0].SSG_EG=0;
+
+	for(int s=1; s<4; ++s)
+	{
+		ym2612.state.channels[0].slots[s].DT=0;
+		ym2612.state.channels[0].slots[s].MULTI= 1;
+		ym2612.state.channels[0].slots[s].TL= 11;
+		ym2612.state.channels[0].slots[s].KS=0;
+		ym2612.state.channels[0].slots[s].AR=21;
+		ym2612.state.channels[0].slots[s].AM=0;
+		ym2612.state.channels[0].slots[s].DR=31;
+		ym2612.state.channels[0].slots[s].SR= 0;
+		ym2612.state.channels[0].slots[s].SL= 0;
+		ym2612.state.channels[0].slots[s].RR=10;
+		ym2612.state.channels[0].slots[s].SSG_EG=0;
+	}
+
+	std::vector <unsigned char> wave=MakeSample(ym2612);
+
+	YsSoundPlayer sndPlayer;
+	sndPlayer.Start();
+
+	YsSoundPlayer::SoundData data;
 
 	FsOpenWindow(0,0,800,600,1);
 	for(;;)
 	{
 		FsPollDevice();
+		sndPlayer.KeepPlaying();
+
 		auto key=FsInkey();
 		if(FSKEY_ESC==key)
 		{
 			break;
 		}
+
+		if(FSKEY_SPACE==key)
+		{
+			wave=MakeSample(ym2612);
+			data.CreateFromSigned16bitStereo(44100,wave);
+			sndPlayer.PlayOneShot(data);
+			wave=MakeSample(ym2612);
+		}
+
 		if(FSKEY_Q==key)
 		{
-			++FB;
-			if(7<FB)
+			++ym2612.state.channels[0].FB;
+			if(7<ym2612.state.channels[0].FB)
 			{
-				FB=7;
+				ym2612.state.channels[0].FB=7;
 			}
-			printf("FB %d\n",FB);
-			wave=MakeSample(ym2612,CONNECT,FB,MULTI,TL);
+			printf("FB %d\n",ym2612.state.channels[0].FB);
+			wave=MakeSample(ym2612);
 		}
 		else if(FSKEY_A==key)
 		{
-			--FB;
-			if(FB<0)
+			if(ym2612.state.channels[0].FB>0)
 			{
-				FB=0;
+				--ym2612.state.channels[0].FB;
 			}
-			printf("FB %d\n",FB);
-			wave=MakeSample(ym2612,CONNECT,FB,MULTI,TL);
+			printf("FB %d\n",ym2612.state.channels[0].FB);
+			wave=MakeSample(ym2612);
 		}
 		else if(FSKEY_W==key)
 		{
 			ym2612.initialFeedbackUpdateCycle++;
 			printf("%d\n",ym2612.initialFeedbackUpdateCycle);
-			wave=MakeSample(ym2612,CONNECT,FB,MULTI,TL);
+			wave=MakeSample(ym2612);
 		}
 		else if(FSKEY_S==key)
 		{
 			ym2612.initialFeedbackUpdateCycle--;
 			printf("%d\n",ym2612.initialFeedbackUpdateCycle);
-			wave=MakeSample(ym2612,CONNECT,FB,MULTI,TL);
+			wave=MakeSample(ym2612);
 		}
 		else if(FSKEY_E==key)
 		{
-			++TL;
-			printf("%d\n",TL);
-			wave=MakeSample(ym2612,CONNECT,FB,MULTI,TL);
+			++ym2612.state.channels[0].slots[0].TL;
+			printf("TL %d\n",ym2612.state.channels[0].slots[0].TL);
+			wave=MakeSample(ym2612);
 		}
 		else if(FSKEY_D==key)
 		{
-			--TL;
-			printf("%d\n",TL);
-			wave=MakeSample(ym2612,CONNECT,FB,MULTI,TL);
+			--ym2612.state.channels[0].slots[0].TL;
+			printf("TL %d\n",ym2612.state.channels[0].slots[0].TL);
+			wave=MakeSample(ym2612);
 		}
 		else if(FSKEY_R==key)
 		{
@@ -326,6 +374,8 @@ int main(void)
 
 		FsSwapBuffers();
 	}
+
+	sndPlayer.End();
 
 	return 0;
 }
