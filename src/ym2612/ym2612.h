@@ -130,7 +130,7 @@ public:
 
 		// Observation suggests that the output from SLOT0 with FB=6 and 7 depends on
 		// the frequency in which the lastSlot0Out is updated.
-		int feedbackUpdateCycle=3;
+		int feedbackUpdateCycle=2;
 
 		// Cache for wave-generation >>
 		unsigned int playState;
