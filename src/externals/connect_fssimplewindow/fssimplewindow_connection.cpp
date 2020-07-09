@@ -311,6 +311,14 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 
 		int lb,mb,rb,mx,my;
 		FsGetMouseEvent(lb,mb,rb,mx,my);
+		if(mx<0)
+		{
+			mx=0;
+		}
+		if(my<0)
+		{
+			my=0;
+		}
 		mx=mx*100/scaling;
 		my=my*100/scaling;
 		towns.SetMouseButtonState((0!=lb),(0!=rb));
