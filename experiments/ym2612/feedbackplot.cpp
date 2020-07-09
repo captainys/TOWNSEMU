@@ -24,7 +24,7 @@ double func1(double t,double lastValue,int FB)
 		lastValue/=4;
 		break;
 	case 4:
-		lastValue/=2;
+		lastValue/=2;   // Oscillation
 		break;
 	case 5:
 		break;
@@ -37,38 +37,6 @@ double func1(double t,double lastValue,int FB)
 	}
 	lastValue*=adjust;
 	return sin(t*YsPi*2.0+lastValue*YsPi);
-}
-
-double func2(double t,double dummy,int FB)
-{
-	double fb=sin(t*YsPi*2.0);
-	switch(FB)
-	{
-	case 0:
-		fb=0;
-		break;
-	case 1:
-		fb/=16;
-		break;
-	case 2:
-		fb/=8;
-		break;
-	case 3:
-		fb/=4;
-		break;
-	case 4:
-		fb/=2;
-		break;
-	case 5:
-		break;
-	case 6:
-		fb*=2;
-		break;
-	case 7:
-		fb*=4;
-		break;
-	}
-	return sin((t+fb)*YsPi*2.0);
 }
 
 // Based on YM2608 OPNA Application Manual Section 2-1 Equation (3)
@@ -130,53 +98,22 @@ double func3(double t,int FB)
 	return minY;
 }
 
-double func4(double t,int FB)
-{
-	double out=sin(t*YsPi*2.0);
-	for(int i=0; i<FB; ++i)
-	{
-		out=sin(t*YsPi*2.0+out);
-	}
-	return out;
-}
+const int xRes=8000;
 
-const int xRes=800;
-
-void MakePlot1(int y[xRes],double dt,int FB)
+void MakePlot1(double T[xRes],double y[xRes],double lastY[xRes],double dt,int FB)
 {
-	double lastY=0.0;
+	double prevY=0.0;
 	int prevX=0;
-	y[0]=300;
-	for(double t=0.0; t<2.0; t+=dt)
+	double t=0;
+	y[0]=0.0;
+	for(int x=0; x<xRes; ++x)
 	{
-		double yValue=func1(t,lastY,FB);
-		lastY=yValue;
-
-		int nextX=(int)(t*400.0);
-		if(nextX!=prevX && nextX<xRes)
-		{
-			y[nextX]=300-(int)(yValue*200.0);
-			prevX=nextX;
-		}
-	}
-}
-
-void MakePlot2(int y[xRes],double dt,int FB)
-{
-	double lastY=0.0;
-	int prevX=0;
-	y[0]=300;
-	for(double t=0.0; t<2.0; t+=dt)
-	{
-		double yValue=func2(t,lastY,FB);
-		lastY=yValue;
-
-		int nextX=(int)(t*400.0);
-		if(nextX!=prevX && nextX<xRes)
-		{
-			y[nextX]=300-(int)(yValue*200.0);
-			prevX=nextX;
-		}
+		double yValue=func1(t,prevY,FB);
+		T[x]=t;
+		y[x]=yValue;
+		lastY[x]=prevY;
+		prevY=yValue;
+		t+=dt;
 	}
 }
 
@@ -189,36 +126,7 @@ void MakePlot3(int y[xRes],double dummy,int FB)
 	}
 }
 
-void MakePlot4(int y[xRes],double dummy,int FB)
-{
-	for(int x=0; x<xRes; ++x)
-	{
-		double t=(double)x/(double)400.0;
-		y[x]=300-(int)(func4(t,FB)*200.0);
-	}
-}
-
-void PrintTable(void)
-{
-	for(int FB=1; FB<8; ++FB)
-	{
-		printf("int FBTable%d[]={\n",FB);
-		for(int i=0; i<4096; ++i)
-		{
-			double t=(double)i/4096.0;
-			double value=func4(t,FB);
-			int iValue=(int)(value*2048.0);
-			printf("% 5d,",iValue);
-			if(0==(i+1)%16)
-			{
-				printf("\n");
-			}
-		}
-		printf("};\n");
-	}
-}
-
-#define PLOTFUNC MakePlot1
+#define PLOTFUNC(t,y,lastY,dt,FB) MakePlot1(t,y,lastY,dt,FB);
 
 int main(void)
 {
@@ -231,14 +139,20 @@ int main(void)
 	double dt=0.000638;
 	int FB=0;
 
-	int y[xRes];
-	PLOTFUNC(y,dt,FB);
+	int redlineX=0;
+
+	double t[xRes],y[xRes],lastY[xRes];
+	PLOTFUNC(t,y,lastY,dt,FB);
 
 	// PrintTable();
+
+	int x0=0;
 
 	FsOpenWindow(0,0,800,600,1);
 	for(;;)
 	{
+		auto prevRedlineX=redlineX;
+
 		FsPollDevice();
 		auto key=FsInkey();
 		if(FSKEY_ESC==key)
@@ -252,7 +166,7 @@ int main(void)
 			{
 				FB=7;
 			}
-			PLOTFUNC(y,dt,FB);
+			PLOTFUNC(t,y,lastY,dt,FB);
 			printf("FB %d\n",FB);
 		}
 		else if(FSKEY_A==key)
@@ -262,44 +176,74 @@ int main(void)
 			{
 				FB=0;
 			}
-			PLOTFUNC(y,dt,FB);
+			PLOTFUNC(t,y,lastY,dt,FB);
 			printf("FB %d\n",FB);
 		}
 		else if(FSKEY_W==key)
 		{
 			dt*=2.0;
 			printf("%lf\n",dt);
-			PLOTFUNC(y,dt,FB);
+			PLOTFUNC(t,y,lastY,dt,FB);
 		}
 		else if(FSKEY_S==key)
 		{
 			dt/=2.0;
 			printf("%lf\n",dt);
-			PLOTFUNC(y,dt,FB);
+			PLOTFUNC(t,y,lastY,dt,FB);
 		}
 		else if(FSKEY_E==key)
 		{
 			dt*=1.1;
 			printf("%lf\n",dt);
-			PLOTFUNC(y,dt,FB);
+			PLOTFUNC(t,y,lastY,dt,FB);
 		}
 		else if(FSKEY_D==key)
 		{
 			dt/=1.1;
 			printf("%lf\n",dt);
-			PLOTFUNC(y,dt,FB);
+			PLOTFUNC(t,y,lastY,dt,FB);
 		}
 		else if(FSKEY_R==key)
 		{
 			adjust+=0.025;
-			PLOTFUNC(y,dt,FB);
+			PLOTFUNC(t,y,lastY,dt,FB);
 			printf("Adjust %lf\n",adjust);
 		}
 		else if(FSKEY_F==key)
 		{
 			adjust-=0.025;
-			PLOTFUNC(y,dt,FB);
+			PLOTFUNC(t,y,lastY,dt,FB);
 			printf("Adjust %lf\n",adjust);
+		}
+		else if(FSKEY_DOT==key)
+		{
+			++redlineX;
+		}
+		else if(FSKEY_COMMA==key)
+		{
+			--redlineX;
+		}
+
+
+		int lb,mb,rb,mx,my;
+		FsGetMouseEvent(lb,mb,rb,mx,my);
+		if(0!=lb)
+		{
+			redlineX=mx;
+		}
+
+		if(prevRedlineX!=redlineX)
+		{
+			auto XX=redlineX+x0;
+			if(0<=XX && XX<xRes)
+			{
+				const double C[]=
+				{
+					0.0,1.0/16.0,1.0/8.0,1.0/4.0,1.0/2.0,1.0,2.0,4.0
+				};
+				printf("i=%d  t=%lf  Y=%lf  LastY=%lf  sin(%.4lfPI)=sin(%.4lf+%.4lf)\n",
+				    XX,t[XX],y[XX],lastY[XX],(t[XX]*2.0+C[FB&7]*lastY[XX]),t[XX]*2.0,C[FB&7]*lastY[XX]);
+			}
 		}
 
 
@@ -307,18 +251,33 @@ int main(void)
 		FsGetWindowSize(wid,hei);
 		glViewport(0,0,wid,hei);
 
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		glOrtho(0,wid-1,hei-1,0,-1,1);
+
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+
+		glColor3ub(0,0,0);
 		glBegin(GL_LINE_STRIP);
-		for(int x=0; x<xRes; ++x)
+		for(int x=0; x<wid; ++x)
 		{
-			glVertex2i(x,y[x]);
+			auto XX=x+x0;
+			if(0<=XX && XX<xRes)
+			{
+				glVertex2i(x,300-(hei/2)*y[XX]);
+			}
 		}
 		glEnd();
 
 		glBegin(GL_LINES);
+		glColor3ub(0,0,0);
 		glVertex2i(wid/2,0);
 		glVertex2i(wid/2,hei);
+		glColor3ub(255,0,0);
+		glVertex2i(redlineX,0);
+		glVertex2i(redlineX,hei);
 		glEnd();
+
 
 		FsSwapBuffers();
 	}

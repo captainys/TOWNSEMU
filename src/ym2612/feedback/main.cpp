@@ -209,9 +209,10 @@ void StopTone(YM2612 &ym2612)
 	ym2612.WriteRegister(0,0x28,0x01); // Stop Tone CH1
 }
 
-std::vector <unsigned char> MakeSample(YM2612 &ym2612,int CONNECT,int FB,int MULTI)
+std::vector <unsigned char> MakeSample(YM2612 &ym2612,int CONNECT,int FB,int MULTI,int TL)
 {
 	SetUpYM(ym2612,CONNECT,FB,MULTI);
+	ym2612.WriteRegister(0,0x41,TL);
 	StartTone(ym2612);
 	auto wave=ym2612.MakeWave(1,100); // 100ms
 	StopTone(ym2612);
@@ -233,10 +234,11 @@ int main(void)
 	int FB=0;
 	int CONNECT=7;
 	int MULTI=1;
+	int TL=15;
 	double adjust=1.0;
 	double dt=0.000638;
 	YM2612 ym2612;
-	std::vector <unsigned char> wave=MakeSample(ym2612,CONNECT,FB,MULTI);
+	std::vector <unsigned char> wave=MakeSample(ym2612,CONNECT,FB,MULTI,TL);
 
 	FsOpenWindow(0,0,800,600,1);
 	for(;;)
@@ -255,7 +257,7 @@ int main(void)
 				FB=7;
 			}
 			printf("FB %d\n",FB);
-			wave=MakeSample(ym2612,CONNECT,FB,MULTI);
+			wave=MakeSample(ym2612,CONNECT,FB,MULTI,TL);
 		}
 		else if(FSKEY_A==key)
 		{
@@ -265,25 +267,31 @@ int main(void)
 				FB=0;
 			}
 			printf("FB %d\n",FB);
-			wave=MakeSample(ym2612,CONNECT,FB,MULTI);
+			wave=MakeSample(ym2612,CONNECT,FB,MULTI,TL);
 		}
 		else if(FSKEY_W==key)
 		{
 			ym2612.initialFeedbackUpdateCycle++;
 			printf("%d\n",ym2612.initialFeedbackUpdateCycle);
-			wave=MakeSample(ym2612,CONNECT,FB,MULTI);
+			wave=MakeSample(ym2612,CONNECT,FB,MULTI,TL);
 		}
 		else if(FSKEY_S==key)
 		{
 			ym2612.initialFeedbackUpdateCycle--;
 			printf("%d\n",ym2612.initialFeedbackUpdateCycle);
-			wave=MakeSample(ym2612,CONNECT,FB,MULTI);
+			wave=MakeSample(ym2612,CONNECT,FB,MULTI,TL);
 		}
 		else if(FSKEY_E==key)
 		{
+			++TL;
+			printf("%d\n",TL);
+			wave=MakeSample(ym2612,CONNECT,FB,MULTI,TL);
 		}
 		else if(FSKEY_D==key)
 		{
+			--TL;
+			printf("%d\n",TL);
+			wave=MakeSample(ym2612,CONNECT,FB,MULTI,TL);
 		}
 		else if(FSKEY_R==key)
 		{

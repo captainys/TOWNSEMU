@@ -2495,9 +2495,12 @@ static int AMS4096Table[4]=
 
 inline int YM2612::Slot::UnscaledOutput(int phase,int phaseShift) const
 {
+	// phaseShift is input from the upstream slot.
+	// -4096 to 4096.  4096 should be counted as 8pi, therefore 4x.
+
 	//phaseShift*=MULTITable[this->MULTI];
 	//phaseShift>>=1;
-	return sineTable[(phase+phaseShift)&PHASE_MASK];
+	return sineTable[(phase+(phaseShift*4))&PHASE_MASK];
 }
 inline int YM2612::Slot::UnscaledOutput(int phase,int phaseShift,unsigned int FB,int lastSlot0Out) const
 {
@@ -2509,7 +2512,7 @@ inline int YM2612::Slot::UnscaledOutput(int phase,int phaseShift,unsigned int FB
 		};
 		phase+=(lastSlot0Out*FBScaleTable[FB]/64);  // Supposed to be /16, but it doesn't agree with the observation.
 	}
-	return sineTable[(phase+phaseShift)&PHASE_MASK];
+	return sineTable[(phase+(phaseShift*4))&PHASE_MASK];
 
 	// The table method works ok for FB=0 to 5, but not for FB=6 and FB=7.
 	// FBTables are based on the formula on YM2608 application manual Section 2-1 Equation (3).
@@ -3033,53 +3036,53 @@ int YM2612::CalculateAmplitude(int chNum,unsigned int timeInMS,const unsigned in
 	{
 	default:
 	case 0:
-		s0out=SLOTOUTEV_Ln_0(0,    timeInMS);
-		lastSlot0Out=s0out;
-		s1out=SLOTOUTEV_Ln_1(s0out,timeInMS);
-		s2out=SLOTOUTEV_Ln_2(s1out,timeInMS);
-		return SLOTOUTEV_Db_3(s2out,timeInMS)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX;
-	case 1:
-		s0out=SLOTOUTEV_Ln_0(0,timeInMS);
-		lastSlot0Out=s0out;
-		s1out=SLOTOUTEV_Ln_1(0,timeInMS);
-		s2out=SLOTOUTEV_Ln_2(s0out+s1out,timeInMS);
-		return SLOTOUTEV_Db_3(s2out,timeInMS)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX;
-	case 2:
-		s0out=SLOTOUTEV_Ln_0(0,timeInMS);
-		lastSlot0Out=s0out;
-		s1out=SLOTOUTEV_Ln_1(0,timeInMS);
-		s2out=SLOTOUTEV_Ln_2(s1out,timeInMS);
-		return SLOTOUTEV_Db_3(s0out+s2out,timeInMS)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX;
-	case 3:
-		s0out=SLOTOUTEV_Ln_0(0,    timeInMS);
-		lastSlot0Out=s0out;
-		s1out=SLOTOUTEV_Ln_1(s0out,timeInMS);
-		s2out=SLOTOUTEV_Ln_2(0    ,timeInMS);
-		return SLOTOUTEV_Db_3(s1out+s2out,timeInMS)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX;
-	case 4:
-		s0out=SLOTOUTEV_Ln_0(0,    timeInMS);
+		s0out=SLOTOUTEV_Db_0(0,    timeInMS);
 		lastSlot0Out=s0out;
 		s1out=SLOTOUTEV_Db_1(s0out,timeInMS);
-		s2out=SLOTOUTEV_Ln_2(0    ,timeInMS);
+		s2out=SLOTOUTEV_Db_2(s1out,timeInMS);
+		return SLOTOUTEV_Db_3(s2out,timeInMS)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX;
+	case 1:
+		s0out=SLOTOUTEV_Db_0(0,timeInMS);
+		lastSlot0Out=s0out;
+		s1out=SLOTOUTEV_Db_1(0,timeInMS);
+		s2out=SLOTOUTEV_Db_2(s0out+s1out,timeInMS);
+		return SLOTOUTEV_Db_3(s2out,timeInMS)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX;
+	case 2:
+		s0out=SLOTOUTEV_Db_0(0,timeInMS);
+		lastSlot0Out=s0out;
+		s1out=SLOTOUTEV_Db_1(0,timeInMS);
+		s2out=SLOTOUTEV_Db_2(s1out,timeInMS);
+		return SLOTOUTEV_Db_3(s0out+s2out,timeInMS)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX;
+	case 3:
+		s0out=SLOTOUTEV_Db_0(0,    timeInMS);
+		lastSlot0Out=s0out;
+		s1out=SLOTOUTEV_Db_1(s0out,timeInMS);
+		s2out=SLOTOUTEV_Db_2(0    ,timeInMS);
+		return SLOTOUTEV_Db_3(s1out+s2out,timeInMS)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX;
+	case 4:
+		s0out=SLOTOUTEV_Db_0(0,    timeInMS);
+		lastSlot0Out=s0out;
+		s1out=SLOTOUTEV_Db_1(s0out,timeInMS);
+		s2out=SLOTOUTEV_Db_2(0    ,timeInMS);
 		s3out=SLOTOUTEV_Db_3(s2out,timeInMS);
 		return ((s1out+s3out)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX);
 		// Test only Slot 3 -> return SLOTOUTEV_Db_3(0,timeInMS)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX;
 	case 5:
-		s0out=SLOTOUTEV_Ln_0(0,    timeInMS);
+		s0out=SLOTOUTEV_Db_0(0,    timeInMS);
 		lastSlot0Out=s0out;
 		s1out=SLOTOUTEV_Db_1(s0out,timeInMS);
 		s2out=SLOTOUTEV_Db_2(s0out,timeInMS);
 		s3out=SLOTOUTEV_Db_3(s0out,timeInMS);
 		return ((s1out+s2out+s3out)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX);
 	case 6:
-		s0out=SLOTOUTEV_Ln_0(0,    timeInMS);
+		s0out=SLOTOUTEV_Db_0(0,    timeInMS);
 		lastSlot0Out=s0out;
 		s1out=SLOTOUTEV_Db_1(s0out,timeInMS);
 		s2out=SLOTOUTEV_Db_2(0    ,timeInMS);
 		s3out=SLOTOUTEV_Db_3(0    ,timeInMS);
 		return ((s1out+s2out+s3out)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX);
 	case 7:
-		lastSlot0Out=SLOTOUTEV_Ln_0(0,timeInMS);
+		lastSlot0Out=SLOTOUTEV_Db_0(0,timeInMS);
 		s0out=SLOTOUTEV_Db_0(0,timeInMS);
 		s1out=SLOTOUTEV_Db_1(0,timeInMS);
 		s2out=SLOTOUTEV_Db_2(0,timeInMS);
