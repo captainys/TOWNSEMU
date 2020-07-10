@@ -325,7 +325,11 @@ void TownsSprite::RunScheduledTask(unsigned long long int townsTime)
 		{
 			// Formula in [2] pp. 369 (Sprite BIOS AH=01H) sugests that:
 			// The sprite busy starts at VSYNC and takes (32+(number of sprites drawn)*75) micro seconds.
-			unsigned long long int busyTime=32000+75000*NumSpritesActuallyDrawn();
+			// unsigned long long int busyTime=32000+75000*NumSpritesActuallyDrawn();
+
+			// Should it be NumSpritesToDraw()?
+			// Afterburner2 speeds up when number of visible sprites decreases.
+			unsigned long long int busyTime=32000+75000*NumSpritesToDraw();
 
 			state.spriteBusy=true;
 			townsPtr->ScheduleDeviceCallBack(*this,townsTime+busyTime);
