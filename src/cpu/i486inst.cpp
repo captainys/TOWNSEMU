@@ -338,7 +338,9 @@ void i486DX::MakeOpCodeRenumberTable(void)
 
 
 void i486DX::FetchInstruction(
-   Instruction &inst,Operand &op1,Operand &op2,const SegmentRegister &CS,unsigned int offset,const Memory &mem,unsigned int defOperSize,unsigned int defAddrSize) const
+   MemoryAccess::ConstMemoryWindow &memWin,
+   Instruction &inst,Operand &op1,Operand &op2,
+   const SegmentRegister &CS,unsigned int offset,const Memory &mem,unsigned int defOperSize,unsigned int defAddrSize) const
 {
 	inst.Clear();
 	inst.operandSize=defOperSize;
@@ -3571,7 +3573,7 @@ std::string i486DX::Instruction::DisassembleIOLabel(unsigned int CS,unsigned int
 }
 
 
-unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
+unsigned int i486DX::RunOneInstruction(MemoryAccess::ConstMemoryWindow &CSEIPWindow,Memory &mem,InOut &io)
 {
 	#define CONDITIONALJUMP8(jumpCond) \
 	{ \
@@ -3792,7 +3794,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 	Instruction inst;
 	Operand op1,op2;
-	FetchInstruction(inst,op1,op2,state.CS(),state.EIP,mem);
+	FetchInstruction(CSEIPWindow,inst,op1,op2,state.CS(),state.EIP,mem);
 	if(nullptr!=debuggerPtr)
 	{
 		debuggerPtr->BeforeRunOneInstruction(*this,mem,io,inst);

@@ -103,6 +103,44 @@ public:
 			ptr=nullptr;
 		}
 	};
+
+	/*! Memory window is a 4K memory block that can be accessed by a pointer.
+	    Not all memory area can be accessed through the memory window.
+	    It should be 1-page length, which is 4KB.
+	    And it should not cross 4KB border of the physical memory.
+
+		The default behavior is just return a memory window with ptr=nullptr (inaccessible).
+	*/
+	class ConstMemoryWindow
+	{
+	public:
+		enum
+		{
+			MEMORY_WINDOW_SIZE=4096
+		};
+
+		/*! Linear address should be filled by the CPU.
+		*/
+		unsigned int linearAddrBase;
+
+		/*! Pointer to the memory window.
+		    If the memory area cannot be accessed through a pointer, it is nullptr.
+		*/
+		const unsigned char *ptr=nullptr;
+
+		inline void CleanUp(void)
+		{
+			linearAddrBase=0;
+			ptr=nullptr;
+		}
+
+		inline bool IsLinearAddressInRange(unsigned int addr) const
+		{
+			return (linearAddrBase<=addr && addr<linearAddrBase+MEMORY_WINDOW_SIZE);
+		}
+	};
+
+	virtual ConstMemoryWindow GetConstMemoryWindow(unsigned int physAddr) const;
 	virtual ConstPointer GetReadAccessPointer(unsigned int physAddr) const;
 };
 
@@ -176,6 +214,12 @@ public:
 	{
 		auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
 		return memAccess->FetchDword(physAddr);
+	}
+
+	inline MemoryAccess::ConstMemoryWindow GetConstMemoryWindow(unsigned int physAddr) const
+	{
+		auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
+		return memAccess->GetConstMemoryWindow(physAddr);
 	}
 
 	inline MemoryAccess::ConstPointer GetReadAccessPointer(unsigned int physAddr) const

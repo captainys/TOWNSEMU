@@ -2203,9 +2203,9 @@ public:
 
 	/*! Fetch an instruction.
 	*/
-	inline void FetchInstruction(Instruction &inst,Operand &op1,Operand &op2,const Memory &mem) const
+	inline void FetchInstruction(MemoryAccess::ConstMemoryWindow &memWin,Instruction &inst,Operand &op1,Operand &op2,const Memory &mem) const
 	{
-		return FetchInstruction(inst,op1,op2,state.CS(),state.EIP,mem);
+		return FetchInstruction(memWin,inst,op1,op2,state.CS(),state.EIP,mem);
 	}
 
 
@@ -2298,11 +2298,11 @@ public:
 public:
 	/*! Fetch an instruction from specific segment and offset.
 	*/
-	inline void FetchInstruction(Instruction &inst,Operand &op1,Operand &op2,const SegmentRegister &CS,unsigned int offset,const Memory &mem) const
+	inline void FetchInstruction(MemoryAccess::ConstMemoryWindow &memWin,Instruction &inst,Operand &op1,Operand &op2,const SegmentRegister &CS,unsigned int offset,const Memory &mem) const
 	{
 		const unsigned int operandSize=*CSOperandSizePointer[Return0InRealMode1InProtectedMode()];
 		const unsigned int addressSize=*CSAddressSizePointer[Return0InRealMode1InProtectedMode()];
-		return FetchInstruction(inst,op1,op2,CS,offset,mem,operandSize,addressSize);
+		return FetchInstruction(memWin,inst,op1,op2,CS,offset,mem,operandSize,addressSize);
 	}
 private:
 	/* Set in the constructor. CS******SizePointer[0] points to sixteen, and
@@ -2314,7 +2314,10 @@ private:
 public:
 	/*! Fetch an instruction from specific segment and offset with given default operand size and address size.
 	*/
-	void FetchInstruction(Instruction &inst,Operand &op1,Operand &op2,const SegmentRegister &CS,unsigned int offset,const Memory &mem,unsigned int defOperSize,unsigned int defAddrSize) const;
+	void FetchInstruction(
+	    MemoryAccess::ConstMemoryWindow &memWin,
+	    Instruction &inst,Operand &op1,Operand &op2,
+	    const SegmentRegister &CS,unsigned int offset,const Memory &mem,unsigned int defOperSize,unsigned int defAddrSize) const;
 private:
 	inline unsigned int FetchInstructionByte(MemoryAccess::ConstPointer &ptr,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 	{
@@ -2400,7 +2403,7 @@ public:
 
 
 	/*! Run one instruction and returns number of clocks. */
-	unsigned int RunOneInstruction(Memory &mem,InOut &io);
+	unsigned int RunOneInstruction(MemoryAccess::ConstMemoryWindow &CSEIPWindow,Memory &mem,InOut &io);
 
 
 	/*! Move source operand to destination operand.  

@@ -72,8 +72,9 @@ bool TestDisassembly(unsigned int operandSize,unsigned int addressSize,long long
 	i486DX::Instruction inst;
 	i486DX::Operand op1,op2;
 	i486SymbolTable emptySymTable;
+	MemoryAccess::ConstMemoryWindow memWin;
 	std::map <unsigned int,std::string> emptyIOTable;
-	cpu.FetchInstruction(inst,op1,op2,cpu.state.CS(),cpu.state.EIP,mem,cpu.state.CS().operandSize,cpu.state.CS().addressSize);
+	cpu.FetchInstruction(memWin,inst,op1,op2,cpu.state.CS(),cpu.state.EIP,mem,cpu.state.CS().operandSize,cpu.state.CS().addressSize);
 	auto disasm=inst.Disassemble(op1,op2,cpu.state.CS(),cpu.state.EIP,emptySymTable,emptyIOTable);
 
 	std::cout << "Disassembled as: [" << disasm << "]" << std::endl;

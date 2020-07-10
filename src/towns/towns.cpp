@@ -434,7 +434,7 @@ void FMTowns::NotifyDiskRead(void)
 
 unsigned int FMTowns::RunOneInstruction(void)
 {
-	auto clocksPassed=cpu.RunOneInstruction(mem,io);
+	auto clocksPassed=cpu.RunOneInstruction(state.CSEIPMemWin,mem,io);
 	state.clockBalance+=clocksPassed*1000;
 
 	// Since last update, clockBalance*1000/freq nano seconds have passed.
@@ -596,7 +596,8 @@ void FMTowns::PrintDisassembly(void) const
 {
 	i486DX::Instruction inst;
 	i486DX::Operand op1,op2;
-	cpu.FetchInstruction(inst,op1,op2,mem);
+	MemoryAccess::ConstMemoryWindow emptyMemWin;
+	cpu.FetchInstruction(emptyMemWin,inst,op1,op2,mem);
 	auto disasm=cpu.Disassemble(inst,op1,op2,cpu.state.CS(),cpu.state.EIP,mem,debugger.GetSymTable(),debugger.GetIOTable());
 	std::cout << disasm << std::endl;
 }
