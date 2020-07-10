@@ -337,9 +337,9 @@ void i486DX::MakeOpCodeRenumberTable(void)
 
 
 
-i486DX::Instruction i486DX::FetchInstruction(Operand &op1,Operand &op2,const SegmentRegister &CS,unsigned int offset,const Memory &mem,unsigned int defOperSize,unsigned int defAddrSize) const
+void i486DX::FetchInstruction(
+   Instruction &inst,Operand &op1,Operand &op2,const SegmentRegister &CS,unsigned int offset,const Memory &mem,unsigned int defOperSize,unsigned int defAddrSize) const
 {
-	Instruction inst;
 	inst.Clear();
 	inst.operandSize=defOperSize;
 	inst.addressSize=defAddrSize;
@@ -394,8 +394,6 @@ PREFIX_DONE:
 	}
 
 	FetchOperand(inst,op1,op2,ptr,CS,offset+inst.numBytes,mem);
-
-	return inst;
 }
 
 inline void i486DX::FetchOperand8(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
@@ -3792,8 +3790,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 	state.holdIRQ=false;
 
+	Instruction inst;
 	Operand op1,op2;
-	auto inst=FetchInstruction(op1,op2,state.CS(),state.EIP,mem);
+	FetchInstruction(inst,op1,op2,state.CS(),state.EIP,mem);
 	if(nullptr!=debuggerPtr)
 	{
 		debuggerPtr->BeforeRunOneInstruction(*this,mem,io,inst);

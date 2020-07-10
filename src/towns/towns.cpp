@@ -568,10 +568,6 @@ unsigned int FMTowns::FetchByteCS_EIP(int offset) const
 	return cpu.FetchInstructionByte(offset,mem);
 }
 
-i486DX::Instruction FMTowns::FetchInstruction(i486DX::Operand &op1,i486DX::Operand &op2) const
-{
-	return cpu.FetchInstruction(op1,op2,mem);
-}
 std::vector <std::string> FMTowns::GetStackText(unsigned int numBytes) const
 {
 	std::vector <std::string> text;
@@ -598,8 +594,9 @@ void FMTowns::PrintStack(unsigned int numBytes) const
 }
 void FMTowns::PrintDisassembly(void) const
 {
+	i486DX::Instruction inst;
 	i486DX::Operand op1,op2;
-	auto inst=FetchInstruction(op1,op2);
+	cpu.FetchInstruction(inst,op1,op2,mem);
 	auto disasm=cpu.Disassemble(inst,op1,op2,cpu.state.CS(),cpu.state.EIP,mem,debugger.GetSymTable(),debugger.GetIOTable());
 	std::cout << disasm << std::endl;
 }
