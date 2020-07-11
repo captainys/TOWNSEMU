@@ -54,6 +54,7 @@ public:
 	virtual void StoreWord(unsigned int physAddr,unsigned int data);
 	virtual void StoreDword(unsigned int physAddr,unsigned int data);
 
+	virtual ConstMemoryWindow GetConstMemoryWindow(unsigned int physAddr) const;
 	virtual ConstPointer GetReadAccessPointer(unsigned int physAddr) const;
 };
 
@@ -67,6 +68,7 @@ public:
 	virtual void StoreWord(unsigned int physAddr,unsigned int data);
 	virtual void StoreDword(unsigned int physAddr,unsigned int data);
 
+	virtual ConstMemoryWindow GetConstMemoryWindow(unsigned int physAddr) const;
 	virtual ConstPointer GetReadAccessPointer(unsigned int physAddr) const;
 };
 
@@ -195,6 +197,7 @@ public:
 	virtual unsigned int FetchByte(unsigned int physAddr) const;
 	virtual void StoreByte(unsigned int physAddr,unsigned char data);
 
+	virtual ConstMemoryWindow GetConstMemoryWindow(unsigned int physAddr) const;
 	virtual ConstPointer GetReadAccessPointer(unsigned int physAddr) const;
 };
 

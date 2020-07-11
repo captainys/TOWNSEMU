@@ -121,7 +121,7 @@ public:
 
 		/*! Linear address should be filled by the CPU.
 		*/
-		unsigned int linearAddrBase;
+		unsigned int linearBaseAddr=0;
 
 		/*! Pointer to the memory window.
 		    If the memory area cannot be accessed through a pointer, it is nullptr.
@@ -130,13 +130,33 @@ public:
 
 		inline void CleanUp(void)
 		{
-			linearAddrBase=0;
+			linearBaseAddr=0;
 			ptr=nullptr;
 		}
 
 		inline bool IsLinearAddressInRange(unsigned int addr) const
 		{
-			return (linearAddrBase<=addr && addr<linearAddrBase+MEMORY_WINDOW_SIZE);
+			return (linearBaseAddr<=addr && addr<linearBaseAddr+MEMORY_WINDOW_SIZE);
+		}
+
+		/*! Returns a memory-access pointer from this window.
+		    In this case, physical or linear doesn't matter.
+		    Higher than 12th bit will be masked anyway.
+		*/
+		inline ConstPointer GetReadAccessPointer(unsigned int addr) const
+		{
+			ConstPointer ptr;
+			if(nullptr!=this->ptr)
+			{
+				ptr.ptr=this->ptr+(addr&0xfff);
+				ptr.length=MEMORY_WINDOW_SIZE-(addr&0xfff);
+			}
+			else
+			{
+				ptr.length=0;
+				ptr.ptr=nullptr;
+			}
+			return ptr;
 		}
 	};
 

@@ -21,6 +21,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "i486symtable.h"
 
 
+// #define VERIFY_MEMORY_WINDOW
+
+
 /*static*/ unsigned short i486DX::opCodeRenumberTable[I486_OPCODE_MAX+1];
 
 void i486DX::MakeOpCodeRenumberTable(void)
@@ -349,7 +352,25 @@ void i486DX::FetchInstruction(
 
 	// Question: Do prefixes need to be in the specific order INST_PREFIX->ADDRSIZE_OVERRIDE->OPSIZE_OVERRIDE->SEG_OVERRIDE?
 
-	auto ptr=GetMemoryReadPointer(inst.codeAddressSize,CS,offset,mem);
+	auto CSEIPLinear=CS.baseLinearAddr+offset;
+	if(nullptr==memWin.ptr || true!=memWin.IsLinearAddressInRange(CSEIPLinear))
+	{
+		memWin=GetConstMemoryWindow(inst.codeAddressSize,CS,offset,mem);
+	}
+	auto ptr=memWin.GetReadAccessPointer(CSEIPLinear);
+
+#ifdef VERIFY_MEMORY_WINDOW
+	auto testMemWin=GetConstMemoryWindow(inst.codeAddressSize,CS,offset,mem);
+	if(testMemWin.linearBaseAddr!=memWin.linearBaseAddr || testMemWin.ptr!=memWin.ptr)
+	{
+		std::cout << "Memory Window Test failed!" << std::endl;
+		std::cout << "Retained Memory Window Linear Addr: " << cpputil::Uitox(memWin.linearBaseAddr) << std::endl;
+		std::cout << "CS:EIP Memory Window Linear Addr:   " << cpputil::Uitox(testMemWin.linearBaseAddr) << std::endl;
+		std::cout << "Pointer Diff " << cpputil::Uitox(memWin.ptr-testMemWin.ptr) << std::endl;
+		Abort("Memory Cache Failed.");
+		return;
+	}
+#endif
 
 	unsigned int lastByte=FetchInstructionByte(ptr,inst.codeAddressSize,CS,offset+inst.numBytes++,mem);
 	for(;;) // While looking at prefixes.

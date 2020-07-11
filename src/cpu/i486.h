@@ -2125,6 +2125,21 @@ public:
 		return mem.FetchByte(linearAddr);
 	}
 
+	/*! Returns const memory window from SEG:OFFSET.
+	*/
+	inline MemoryAccess::ConstMemoryWindow GetConstMemoryWindow(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+	{
+		offset&=AddressMask((unsigned char)addressSize);
+		auto addr=seg.baseLinearAddr+offset;
+		if(true==PagingEnabled())
+		{
+			addr=LinearAddressToPhysicalAddress(addr,mem);
+		}
+		auto memWin=mem.GetConstMemoryWindow(addr);
+		memWin.linearBaseAddr=(addr&(~0xfff));
+		return memWin;
+	}
+
 	/*! Returns const memory-access pointer (Read-Access Pointer) from SEG:OFFSET.
 	*/
 	inline MemoryAccess::ConstPointer GetMemoryReadPointer(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
