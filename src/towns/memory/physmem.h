@@ -76,6 +76,7 @@ class TownsFMRVRAMAccess : public TownsMemAccess
 {
 public:
 	class TownsCRTC *crtcPtr;
+	class FMTowns *townsPtr; // Need townsTime for getting HSYNC.
 
 	bool breakOnFMRVRAMWrite,breakOnFMRVRAMRead;
 	bool breakOnCVRAMWrite,breakOnCVRAMRead;

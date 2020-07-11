@@ -21,6 +21,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "memaccess.h"
 #include "townsdef.h"
 #include "crtc.h"
+#include "towns.h"
 
 
 TownsMemAccess::TownsMemAccess()
@@ -192,6 +193,14 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 			return 0;
 
 		case TOWNSMEMIO_FMR_HSYNC_VSYNC://    0x000CFF86, // [2] pp.22,pp.160
+			{
+				bool VSYNC=crtcPtr->InVSYNC(townsPtr->state.townsTime);
+				bool HSYNC=crtcPtr->InHSYNC(townsPtr->state.townsTime);
+				unsigned char data=0;
+				data|=(VSYNC ? 4 : 0);
+				data|=(HSYNC ? 0x80 : 0);
+				return data;
+			}
 			break;
 
 		case TOWNSMEMIO_KANJI_JISCODE_HIGH:// 0x000CFF94,
