@@ -2130,13 +2130,14 @@ public:
 	inline MemoryAccess::ConstMemoryWindow GetConstMemoryWindow(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 	{
 		offset&=AddressMask((unsigned char)addressSize);
-		auto addr=seg.baseLinearAddr+offset;
+		auto linearAddr=seg.baseLinearAddr+offset;
+		auto physAddr=linearAddr;
 		if(true==PagingEnabled())
 		{
-			addr=LinearAddressToPhysicalAddress(addr,mem);
+			physAddr=LinearAddressToPhysicalAddress(linearAddr,mem);
 		}
-		auto memWin=mem.GetConstMemoryWindow(addr);
-		memWin.linearBaseAddr=(addr&(~0xfff));
+		auto memWin=mem.GetConstMemoryWindow(physAddr);
+		memWin.linearBaseAddr=(linearAddr&(~0xfff));
 		return memWin;
 	}
 
