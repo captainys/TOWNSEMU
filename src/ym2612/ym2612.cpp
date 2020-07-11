@@ -120,6 +120,8 @@ void YM2612::State::Reset(void)
 
 YM2612::YM2612()
 {
+	std::cout << "YM2612 Emulator for Tsugaru [Tsugaru-Ben]" << std::endl;
+
 	MakeSineTable();
 	MakeTLtoDB100();
 	MakeSLtoDB100();

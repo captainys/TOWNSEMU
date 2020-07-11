@@ -685,11 +685,15 @@ static int AMS4096Table[4]=
 inline int YM2612::Slot::UnscaledOutput(int phase,int phaseShift) const
 {
 	// phaseShift is input from the upstream slot.
-	// -4096 to 4096.  4096 should be counted as 8pi, therefore 4x.
+	// -4096 to 4096.  4096 should be counted as 8pi.
+	// UNSCALED_MAX is 2048. therefore 8x.
 
 	//phaseShift*=MULTITable[this->MULTI];
 	//phaseShift>>=1;
-	return sineTable[(phase+(phaseShift*4))&PHASE_MASK];
+
+	//                     8.0       * (2PI / 2)     /   1.0
+	const int outputScale=SLOTOUT_TO_NPI*(PHASE_STEPS/2)/UNSCALED_MAX;
+	return sineTable[(phase+(phaseShift*outputScale))&PHASE_MASK];
 }
 inline int YM2612::Slot::UnscaledOutput(int phase,int phaseShift,unsigned int FB,int lastSlot0Out) const
 {
@@ -703,7 +707,9 @@ inline int YM2612::Slot::UnscaledOutput(int phase,int phaseShift,unsigned int FB
 		// To make it 4PI at FB=4, must divide by 32.
 		phase+=(lastSlot0Out*FBScaleTable[FB]/32);
 	}
-	return sineTable[(phase+(phaseShift*4))&PHASE_MASK];
+	//                     8.0       * (2PI / 2)     /   1.0
+	const int outputScale=SLOTOUT_TO_NPI*(PHASE_STEPS/2)/UNSCALED_MAX;
+	return sineTable[(phase+(phaseShift*outputScale))&PHASE_MASK];
 }
 inline int YM2612::Slot::EnvelopedOutputDb(int phase,int phaseShift,unsigned int timeInMS,unsigned int FB,int lastSlot0Out) const
 {

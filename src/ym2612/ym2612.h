@@ -20,6 +20,15 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <string>
 
 
+
+/*******************************************************************************
+
+    YM2612 Emulator for Tsugaru:  Tsugaru-Ben
+
+*******************************************************************************/
+
+
+
 /*! G** D*** I*!  I didn't realize data sheet of YM2612 is not available today!
 */
 class YM2612
@@ -41,6 +50,7 @@ public:
 		PHASE_STEPS=4096,      // 4096=360degrees
 		PHASE_MASK=4095,
 		UNSCALED_MAX=2048,
+		SLOTOUT_TO_NPI=8,         // 1.0 output from an upstream slot is 8PI.
 
 		TONE_CHOPOFF_MILLISEC=4000,
 
