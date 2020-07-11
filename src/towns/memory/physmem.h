@@ -75,6 +75,8 @@ public:
 class TownsFMRVRAMAccess : public TownsMemAccess
 {
 public:
+	class TownsCRTC *crtcPtr;
+
 	bool breakOnFMRVRAMWrite,breakOnFMRVRAMRead;
 	bool breakOnCVRAMWrite,breakOnCVRAMRead;
 	TownsFMRVRAMAccess();
@@ -316,7 +318,6 @@ public:
 		bool TVRAMWrite;
 		bool ANKFont;
 		unsigned int FMRVRAMMask;
-		unsigned int FMRDisplayMode;
 		unsigned int FMRVRAMWriteOffset;
 
 		unsigned int nativeVRAMMaskRegisterLatch=0;

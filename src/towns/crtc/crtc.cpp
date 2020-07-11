@@ -198,6 +198,9 @@ void TownsCRTC::State::Reset(void)
 	}
 	mxVideoOutCtrlAddrLatch=0;
 
+	FMRVRAMDisplayMode[0]=0x0F;
+	FMRVRAMDisplayMode[1]=0x0F;
+
 	showPageFDA0[0]=true;
 	showPageFDA0[1]=true;
 
@@ -534,6 +537,13 @@ void TownsCRTC::MakePageLayerInfo(Layer &layer,unsigned char page) const
 	{
 		layer.VScrollMask=0x3FFFF;
 	}
+}
+
+void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
+{
+	auto disp=((data>>2)&8)|(data&7);
+	auto page=((data>>4)&1);
+	state.FMRVRAMDisplayMode[page]=disp;
 }
 
 /* virtual */ void TownsCRTC::IOWriteByte(unsigned int ioport,unsigned int data)
@@ -1003,6 +1013,9 @@ std::vector <std::string> TownsCRTC::GetStatusText(void) const
 	text.back()+="Show Page (0448H):";
 	text.back()+=cpputil::Itoa(state.sifter[0]&3)+" "+cpputil::Itoa((state.sifter[0]>>2)&3);
 
+	text.push_back("");
+	text.back()+="FMR VRAM Display Mode:"+cpputil::Ubtox(state.FMRVRAMDisplayMode[0])+" "+cpputil::Ubtox(state.FMRVRAMDisplayMode[1]);
+
 	return text;
 }
 
@@ -1041,6 +1054,20 @@ std::vector <std::string> TownsCRTC::GetPaletteText(void) const
 	std::vector <std::string> text;
 
 	text.push_back("");
+	text.back()+="256-Color Palette";
+	for(int i=0; i<256; i+=16)
+	{
+		text.push_back("");
+		for(int j=0; j<16; ++j)
+		{
+			text.back()+=cpputil::Ubtox(state.palette.plt256[i+j][0]);
+			text.back()+=cpputil::Ubtox(state.palette.plt256[i+j][1]);
+			text.back()+=cpputil::Ubtox(state.palette.plt256[i+j][2]);
+			text.back().push_back(' ');
+		}
+	}
+
+	text.push_back("");
 	text.back()+="16-Color Palette";
 	for(int page=0; page<2; ++page)
 	{
@@ -1053,19 +1080,6 @@ std::vector <std::string> TownsCRTC::GetPaletteText(void) const
 			text.back()+=cpputil::Ubtox(state.palette.plt16[page][i][0]);
 			text.back()+=cpputil::Ubtox(state.palette.plt16[page][i][1]);
 			text.back()+=cpputil::Ubtox(state.palette.plt16[page][i][2]);
-			text.back().push_back(' ');
-		}
-	}
-	text.push_back("");
-	text.back()+="256-Color Palette";
-	for(int i=0; i<256; i+=16)
-	{
-		text.push_back("");
-		for(int j=0; j<16; ++j)
-		{
-			text.back()+=cpputil::Ubtox(state.palette.plt256[i+j][0]);
-			text.back()+=cpputil::Ubtox(state.palette.plt256[i+j][1]);
-			text.back()+=cpputil::Ubtox(state.palette.plt256[i+j][2]);
 			text.back().push_back(' ');
 		}
 	}

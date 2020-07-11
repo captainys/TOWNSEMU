@@ -136,6 +136,7 @@ FMTowns::FMTowns() :
 	}
 
 	physMem.SetUpMemoryAccess();
+	physMem.FMRVRAMAccess.crtcPtr=&this->crtc;
 
 	// Free-run counter since FM TOWNS 2UG [2] pp.801
 	// Didn't it exist since the first model FM TOWNS 2?

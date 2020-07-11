@@ -1278,6 +1278,7 @@ void TownsCommandInterpreter::Execute_BreakOn(FMTowns &towns,Command &cmd)
 			{
 				auto ioport=cpputil::Xtoi(cmd.argv[2].c_str());
 				towns.debugger.AddBreakOnIORead(ioport);
+				std::cout << "Port:" << cpputil::Uitox(ioport) << std::endl;
 			}
 			else
 			{
@@ -1302,9 +1303,7 @@ void TownsCommandInterpreter::Execute_BreakOn(FMTowns &towns,Command &cmd)
 			{
 				auto ioport=cpputil::Xtoi(cmd.argv[2].c_str());
 				towns.debugger.AddBreakOnIOWrite(ioport);
-				std::cout << "Port:";
-				std::cout << cpputil::Ustox(ioport);
-				std::cout << std::endl;
+				std::cout << "Port:" << cpputil::Ustox(ioport) << std::endl;
 			}
 			else
 			{
@@ -1347,9 +1346,26 @@ void TownsCommandInterpreter::Execute_BreakOn(FMTowns &towns,Command &cmd)
 			towns.scsi.breakOnDMATransfer=true;
 			break;
 		case BREAK_ON_MEM_READ:
-			if(3<=cmd.argv.size())
+			if(4<=cmd.argv.size())
+			{
+				unsigned int addr0=cpputil::Xtoi(cmd.argv[2].c_str());
+				unsigned int addr1=cpputil::Xtoi(cmd.argv[3].c_str());
+				if(addr1<addr0)
+				{
+					std::swap(addr0,addr1);
+				}
+				for(auto addr=addr0; addr<=addr1; ++addr)
+				{
+					i486DebugMemoryAccess::SetBreakOnMemRead(towns.mem,towns.debugger,addr);
+				}
+				std::cout << "Break on Memory Read" << std::endl;
+				std::cout << "  from PHYS:" << cpputil::Uitox(addr0) << std::endl;
+				std::cout << "  to PHYS:  " << cpputil::Uitox(addr1) << std::endl;
+			}
+			else if(3<=cmd.argv.size())
 			{
 				i486DebugMemoryAccess::SetBreakOnMemRead(towns.mem,towns.debugger,cpputil::Xtoi(cmd.argv[2].c_str()));
+				std::cout << "Break on Memory Read PHYS:" << cpputil::Uitox(cpputil::Xtoi(cmd.argv[2].c_str())) << std::endl;
 			}
 			else
 			{
@@ -1358,9 +1374,26 @@ void TownsCommandInterpreter::Execute_BreakOn(FMTowns &towns,Command &cmd)
 			}
 			break;
 		case BREAK_ON_MEM_WRITE:
-			if(3<=cmd.argv.size())
+			if(4<=cmd.argv.size())
+			{
+				unsigned int addr0=cpputil::Xtoi(cmd.argv[2].c_str());
+				unsigned int addr1=cpputil::Xtoi(cmd.argv[3].c_str());
+				if(addr1<addr0)
+				{
+					std::swap(addr0,addr1);
+				}
+				for(auto addr=addr0; addr<=addr1; ++addr)
+				{
+					i486DebugMemoryAccess::SetBreakOnMemWrite(towns.mem,towns.debugger,addr);
+				}
+				std::cout << "Break on Memory Write" << std::endl;
+				std::cout << "  from PHYS:" << cpputil::Uitox(addr0) << std::endl;
+				std::cout << "  to PHYS:  " << cpputil::Uitox(addr1) << std::endl;
+			}
+			else if(3<=cmd.argv.size())
 			{
 				i486DebugMemoryAccess::SetBreakOnMemWrite(towns.mem,towns.debugger,cpputil::Xtoi(cmd.argv[2].c_str()));
+				std::cout << "Break on Memory Write PHYS:" << cpputil::Uitox(cpputil::Xtoi(cmd.argv[2].c_str())) << std::endl;
 			}
 			else
 			{
@@ -1432,12 +1465,13 @@ void TownsCommandInterpreter::Execute_ClearBreakOn(FMTowns &towns,Command &cmd)
 				std::cout << "Range:";
 				std::cout << cpputil::Ustox(portMin);
 				std::cout << " to ";
-				std::cout << cpputil::Ustox(portMax);
+				std::cout << cpputil::Ustox(portMax) << std::endl;
 			}
 			else if(3<=cmd.argv.size())
 			{
 				auto ioport=cpputil::Xtoi(cmd.argv[2].c_str());
 				towns.debugger.RemoveBreakOnIORead(ioport);
+				std::cout << "Port:" << cpputil::Uitox(ioport) << std::endl;
 			}
 			else
 			{
@@ -1456,15 +1490,13 @@ void TownsCommandInterpreter::Execute_ClearBreakOn(FMTowns &towns,Command &cmd)
 				std::cout << "Range:";
 				std::cout << cpputil::Ustox(portMin);
 				std::cout << " to ";
-				std::cout << cpputil::Ustox(portMax);
+				std::cout << cpputil::Ustox(portMax) << std::endl;
 			}
 			else if(3<=cmd.argv.size())
 			{
 				auto ioport=cpputil::Xtoi(cmd.argv[2].c_str());
 				towns.debugger.RemoveBreakOnIOWrite(ioport);
-				std::cout << "Port:";
-				std::cout << cpputil::Ustox(ioport);
-				std::cout << std::endl;
+				std::cout << "Port:" << cpputil::Ustox(ioport) << std::endl;
 			}
 			else
 			{
@@ -1495,23 +1527,59 @@ void TownsCommandInterpreter::Execute_ClearBreakOn(FMTowns &towns,Command &cmd)
 			towns.scsi.breakOnDMATransfer=false;
 			break;
 		case BREAK_ON_MEM_READ:
-			if(3<=cmd.argv.size())
+			if(4<=cmd.argv.size())
+			{
+				unsigned int addr0=cpputil::Xtoi(cmd.argv[2].c_str());
+				unsigned int addr1=cpputil::Xtoi(cmd.argv[3].c_str());
+				if(addr1<addr0)
+				{
+					std::swap(addr0,addr1);
+				}
+				for(auto addr=addr0; addr<=addr1; ++addr)
+				{
+					i486DebugMemoryAccess::ClearBreakOnMemRead(towns.mem,addr);
+				}
+				std::cout << "Clear Break on Memory Read" << std::endl;
+				std::cout << "  from PHYS:" << cpputil::Uitox(addr0) << std::endl;
+				std::cout << "  to PHYS:  " << cpputil::Uitox(addr1) << std::endl;
+			}
+			else if(3<=cmd.argv.size())
 			{
 				i486DebugMemoryAccess::ClearBreakOnMemRead(towns.mem,cpputil::Xtoi(cmd.argv[2].c_str()));
+				std::cout << "Clear Break on Memory Read:" << cpputil::Uitox(cpputil::Xtoi(cmd.argv[2].c_str())) << std::endl;
 			}
 			else
 			{
 				i486DebugMemoryAccess::ClearBreakOnMemRead(towns.mem);
+				std::cout << "Clear All Break on Memory Read" << std::endl;
 			}
 			break;
 		case BREAK_ON_MEM_WRITE:
-			if(3<=cmd.argv.size())
+			if(4<=cmd.argv.size())
+			{
+				unsigned int addr0=cpputil::Xtoi(cmd.argv[2].c_str());
+				unsigned int addr1=cpputil::Xtoi(cmd.argv[3].c_str());
+				if(addr1<addr0)
+				{
+					std::swap(addr0,addr1);
+				}
+				for(auto addr=addr0; addr<=addr1; ++addr)
+				{
+					i486DebugMemoryAccess::ClearBreakOnMemWrite(towns.mem,addr);
+				}
+				std::cout << "Clear Break on Memory Write" << std::endl;
+				std::cout << "  from PHYS:" << cpputil::Uitox(addr0) << std::endl;
+				std::cout << "  to PHYS:  " << cpputil::Uitox(addr1) << std::endl;
+			}
+			else if(3<=cmd.argv.size())
 			{
 				i486DebugMemoryAccess::ClearBreakOnMemWrite(towns.mem,cpputil::Xtoi(cmd.argv[2].c_str()));
+				std::cout << "Clear Break on Memory Write:" << cpputil::Uitox(cpputil::Xtoi(cmd.argv[2].c_str())) << std::endl;
 			}
 			else
 			{
 				i486DebugMemoryAccess::ClearBreakOnMemWrite(towns.mem);
+				std::cout << "Clear All Break on Memory Write" << std::endl;
 			}
 			break;
 		}

@@ -41,7 +41,6 @@ void TownsPhysicalMemory::State::Reset(void)
 	DICROMBank=0;
 	FMRVRAM=true; // [2] pp.91
 	FMRVRAMMask=0x0F; // [2] pp.159
-	FMRDisplayMode=0x77; // [2] pp.158
 	FMRVRAMWriteOffset=0;
 	TVRAMWrite=false;
 	ANKFont=false;
@@ -110,7 +109,7 @@ void TownsPhysicalMemory::State::Reset(void)
 		state.FMRVRAMMask=data;
 		break;
 	case TOWNSIO_FMR_VRAMDISPLAYMODE:
-		state.FMRDisplayMode=data;
+		FMRVRAMAccess.crtcPtr->MEMIOWriteFMRVRAMDisplayMode(data);
 		break;
 	case TOWNSIO_FMR_VRAMPAGESEL:
 		state.FMRVRAMWriteOffset=(0!=(data&0x10) ? 0x40000 : 0);

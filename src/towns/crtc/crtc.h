@@ -158,6 +158,7 @@ public:
 
 		AnalogPalette palette;
 
+		unsigned int FMRVRAMDisplayMode[2]={0x77,0x77};
 		bool showPageFDA0[2];
 		bool showPage0448[2];
 
@@ -329,6 +330,8 @@ public:
 	*/
 	void MakePageLayerInfo(Layer &layer,unsigned char page) const;
 
+
+	void MEMIOWriteFMRVRAMDisplayMode(unsigned char data);	// [2] pp.158
 
 	virtual void IOWriteByte(unsigned int ioport,unsigned int data);
 	virtual void IOWriteWord(unsigned int ioport,unsigned int data); // Default behavior calls IOWriteByte twice

@@ -17,10 +17,10 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 
 
+#include "cpputil.h"
 #include "memaccess.h"
 #include "townsdef.h"
-#include "cpputil.h"
-
+#include "crtc.h"
 
 
 TownsMemAccess::TownsMemAccess()
@@ -339,10 +339,17 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 			physMemPtr->state.FMRVRAMMask=data;
 			break;
 		case TOWNSMEMIO_FMR_GVRAMDISPMODE://  0x000CFF82, // [2] pp.22,pp.158
-			physMemPtr->state.FMRDisplayMode=data;
+			crtcPtr->MEMIOWriteFMRVRAMDisplayMode(data);
 			break;
 		case TOWNSMEMIO_FMR_GVRAMPAGESEL://   0x000CFF83, // [2] pp.22,pp.159
-			physMemPtr->state.FMRVRAMWriteOffset=(0!=(data&0x10) ? 0x40000 : 0);
+			// Looks like I was interpreting the definition of FM-R Graphics VRAM 'PAGE' wrong.
+			// I thought PAGEs mapps to LAYERs, but after reading Artane.'s FM TOWNS emulator source,
+			// FM-R Graphics VRAM PAGE0 maps to upper half or VRAM LAYER0, and PAGE1 lower half.
+			// It makes sense because [2] pp. 155 Section 4.9.2 tells that FMR50 compatible mode
+			// uses screen layer0 for graphics and layer1 for text.  So, 'page' and 'layer' are
+			// different.
+			// Credit to Artane.!  Thanks!
+			physMemPtr->state.FMRVRAMWriteOffset=(0!=(data&0x10) ? 0x20000 : 0);
 			break;
 
 		case TOWNSMEMIO_FIRQ://               0x000CFF84, // [2] pp.22,pp.95 Always zero in FM TOWNS
