@@ -411,6 +411,7 @@ unsigned int YM2612::WriteRegister(unsigned int channelBase,unsigned int reg,uns
 				//     Or, is it REG_KEY_ON_OFF?
 				state.channels[ch].F_NUM&=0xFF00;
 				state.channels[ch].F_NUM|=value;
+				UpdatePhase12StepSlot(state.channels[ch]);
 				break;
 			case 0xA4: // BLOCK,F-Number2
 				state.channels[ch].F_NUM&=0x00FF;

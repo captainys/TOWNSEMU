@@ -836,28 +836,42 @@ void YM2612::KeyOn(unsigned int chNum)
 			}
 		}
 
-		// Phase runs hertz*PHASE_STEPS times per second.
-		//            hertz*PHASE_STEPS/WAVE_SAMPLING_RATE times per step.
-		// Phase 12 runs
-		//            0x1000*hertz*PHASE_STEPS/WAVE_SAMPLING_RATE per step.
-		unsigned long long phase12Step;
-		phase12Step=MULTITable[slot.MULTI]*hertzX16*PHASE_STEPS; // 2X from MULTITable, 16X from hertzX16
-		phase12Step<<=7;                                         // 128X  Overall 2x16x128=4096X
-		phase12Step/=WAVE_SAMPLING_RATE;
-		slot.phase12Step=(unsigned int)phase12Step;
+		UpdatePhase12StepSlot(slot,hertzX16);
 
 		 // Should consider DETUNE.
 
 		// (hertzX16*PHASE_STEPS)<<8==hertz*PHASE_STEPS*4096
 		CalculateEnvelope(slot.env,slot.RRCache,KC,slot);
 		slot.envDurationCache=slot.env[0]+slot.env[2]+slot.env[4];
-	};
+	}
 
 	ch.toneDuration12=CalculateToneDurationMilliseconds(chNum);
 	ch.toneDuration12<<=12;
 #ifdef YM2612_DEBUGOUTPUT
 	printf("%d BLOCK %03xH F_NUM %03xH Hertz %d Max Duration %d\n",KC,ch.BLOCK,ch.F_NUM,hertzX16/16,ch.toneDuration12>>12);
 #endif
+}
+
+void YM2612::UpdatePhase12StepSlot(Slot &slot,const unsigned int hertzX16)
+{
+	// Phase runs hertz*PHASE_STEPS times per second.
+	//            hertz*PHASE_STEPS/WAVE_SAMPLING_RATE times per step.
+	// Phase 12 runs
+	//            0x1000*hertz*PHASE_STEPS/WAVE_SAMPLING_RATE per step.
+	unsigned long long phase12Step;
+	phase12Step=MULTITable[slot.MULTI]*hertzX16*PHASE_STEPS; // 2X from MULTITable, 16X from hertzX16
+	phase12Step<<=7;                                         // 128X  Overall 2x16x128=4096X
+	phase12Step/=WAVE_SAMPLING_RATE;
+	slot.phase12Step=(unsigned int)phase12Step;
+}
+
+void YM2612::UpdatePhase12StepSlot(Channel &ch)
+{
+	const unsigned int hertzX16=BLOCK_FNUM_to_FreqX16(ch.BLOCK,ch.F_NUM);
+	for(auto &slot : ch.slots)
+	{
+		UpdatePhase12StepSlot(slot,hertzX16);
+	};
 }
 
 void YM2612::KeyOff(unsigned int chNum)

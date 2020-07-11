@@ -236,6 +236,14 @@ public:
 	*/
 	void KeyOn(unsigned int ch);
 
+	/*! Update phase update (times 2^12) per step for slot.
+	*/
+	void UpdatePhase12StepSlot(Slot &slot,const unsigned int hertzX16);
+
+	/*! Update phase update (times 2^12) per step for channel.
+	*/
+	void UpdatePhase12StepSlot(Channel &ch);
+
 	/*!
 	*/
 	std::vector <unsigned char> MakeWave(unsigned int ch,unsigned long long int millisec) const;
