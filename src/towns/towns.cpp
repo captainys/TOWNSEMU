@@ -294,6 +294,7 @@ unsigned int FMTowns::MachineID(void) const
 	const int i80486SX=2;
 	const int i80486DX=2;
 	const int i80386SX=3;
+	const int Pentium=2;  // Thanks, WINDY!
 
 	unsigned int lowByte=0,highByte=0;
 
@@ -330,7 +331,10 @@ unsigned int FMTowns::MachineID(void) const
 	case TOWNSTYPE_2_MX:
 	case TOWNSTYPE_2_ME:
 	case TOWNSTYPE_2_MF_FRESH:
-		lowByte=i80486DX; // [2] pp.826
+		lowByte=i80486DX;
+		break;
+	case TOWNSTYPE_2_HC:
+		lowByte=Pentium;
 		break;
 	}
 
@@ -386,6 +390,9 @@ unsigned int FMTowns::MachineID(void) const
 		break;
 	case TOWNSTYPE_2_MF_FRESH:
 		highByte=0xF; // [2] pp.826
+		break;
+	case TOWNSTYPE_2_HC:
+		highByte=0x11; // Thanks, WINDY!
 		break;
 	}
 
