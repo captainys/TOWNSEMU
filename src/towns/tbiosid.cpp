@@ -232,10 +232,10 @@ void FMTowns::OnCRTC_HST_Write(void)
 			{
 				i486DX::SegmentRegister DS;
 				unsigned int exceptionType,exceptionCode;
-				cpu.LoadSegmentRegisterQuiet(DS,0x0014,mem,false);
+				cpu.LoadSegmentRegisterQuiet(DS,0x0118,mem,false);
 
-				state.appSpecific_MousePtrX=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0xC1330,mem);
-				state.appSpecific_MousePtrY=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0xC1332,mem);
+				state.appSpecific_MousePtrX=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x15E60+0x0C,mem);
+				state.appSpecific_MousePtrY=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x15E60+0x0E,mem);
 
 				std::cout << "  MousePointerX Physical Base=" << cpputil::Uitox(state.appSpecific_MousePtrX) << std::endl;
 				std::cout << "  MousePointerY Physical Base=" << cpputil::Uitox(state.appSpecific_MousePtrY) << std::endl;
@@ -586,10 +586,17 @@ bool FMTowns::GetMouseCoordinate(int &mx,int &my,unsigned int tbiosid) const
 		switch(state.appSpecificSetting)
 		{
 		case TOWNS_APPSPECIFIC_WINGCOMMANDER1:
-		case TOWNS_APPSPECIFIC_STRIKECOMMANDER:
 			{
 				auto debugStop=debugger.stop; // FetchWord may break due to MEMR.
 				mx=(int)mem.FetchWord(state.appSpecific_MousePtrX);
+				my=(int)mem.FetchWord(state.appSpecific_MousePtrY);
+				debugger.stop=debugStop;
+			}
+			return true;
+		case TOWNS_APPSPECIFIC_STRIKECOMMANDER:
+			{
+				auto debugStop=debugger.stop; // FetchWord may break due to MEMR.
+				mx=(int)mem.FetchWord(state.appSpecific_MousePtrX)/2;
 				my=(int)mem.FetchWord(state.appSpecific_MousePtrY);
 				debugger.stop=debugStop;
 			}

@@ -31,6 +31,15 @@ public:
 	// Only game-pad emulation takes effect.
 	unsigned int gamePort[2];
 
+	// Pause mouse integration until mouse cursor is moved.
+	// Strike Commander controls the view direction with mouse, and press F1 to reset.
+	// The program moves the mouse coordinate to the center of the window when F1 is pressed.
+	// However, with mouse integration turned on, the mouse coordinate moves back to wherever
+	// host mouse cursor is located, and the view changes again.  To prevent it,
+	// Mouse Integration should be paused until mouse is moved.
+	bool pauseMouseIntegration=false;
+	int lastMx,lastMy;
+
 	enum
 	{
 		KEYBOARD_MODE_DIRECT,
@@ -72,6 +81,14 @@ public:
 
 	void Put16x16Select(int x0,int y0,const unsigned char idleIcon16x16[],const unsigned char busyIcon16x16[],bool busy);
 	void Put16x16SelectInvert(int x0,int y0,const unsigned char idleIcon16x16[],const unsigned char busyIcon16x16[],bool busy);
+
+	/*! Implementation should call this function for each inkey for application-specific augmentation to work correctly.
+	*/
+	void ProcessInkey(class FMTowns &towns,int townsKey);
+
+	/*! Implementation should call this function for each mouse reading for application-specific augmentation to work correctly.
+	*/
+	void ProcessMouse(class FMTowns &towns,int lb,int mb,int rb,int mx,int my);
 
 public:
 	virtual void CDDAPlay(const DiscImage &discImg,DiscImage::MinSecFrm from,DiscImage::MinSecFrm to)=0;

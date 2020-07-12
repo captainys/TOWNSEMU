@@ -14,6 +14,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 << LICENSE */
 #include "outside_world.h"
 
+#include "towns.h"
+
 Outside_World::Outside_World()
 {
 	gamePort[0]=TOWNS_GAMEPORTEMU_NONE;
@@ -47,6 +49,28 @@ void Outside_World::Put16x16(int x0,int y0,const unsigned char icon16x16[])
 		dstPtr+=STATUS_WID*4;
 	}
 }
+void Outside_World::ProcessInkey(class FMTowns &towns,int townsKey)
+{
+	if(TOWNS_APPSPECIFIC_STRIKECOMMANDER==towns.state.appSpecificSetting && TOWNS_JISKEY_PF01==townsKey)
+	{
+		pauseMouseIntegration=true;
+	}
+}
+void Outside_World::ProcessMouse(class FMTowns &towns,int lb,int mb,int rb,int mx,int my)
+{
+	if(TOWNS_APPSPECIFIC_STRIKECOMMANDER==towns.state.appSpecificSetting && true==pauseMouseIntegration)
+	{
+		int dx=lastMx-mx;
+		int dy=lastMy-my;
+		if(dx<-4 || 4<dx || dy<-4 || 4<dy)
+		{
+			pauseMouseIntegration=false;
+		}
+	}
+	lastMx=mx;
+	lastMy=my;
+}
+
 void Outside_World::Put16x16Invert(int x0,int y0,const unsigned char icon16x16[])
 {
 	auto dstPtr=statusBitmap+(STATUS_WID*y0+x0)*4;

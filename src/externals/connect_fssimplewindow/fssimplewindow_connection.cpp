@@ -108,6 +108,7 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 		}
 		while(0!=(c=FsInkey()))
 		{
+			this->ProcessInkey(towns,FSKEYtoTownsKEY[c]);
 			unsigned char byteData[2]={0,0};
 			switch(c)
 			{
@@ -175,6 +176,7 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 		while(0!=(c=FsInkey()))
 		{
 			unsigned char byteData=0;
+			this->ProcessInkey(towns,FSKEYtoTownsKEY[c]);
 			switch(c)
 			{
 			case FSKEY_NUMLOCK:
@@ -308,37 +310,44 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 
 		int wid,hei;
 		FsGetWindowSize(wid,hei);
-
 		int lb,mb,rb,mx,my;
 		FsGetMouseEvent(lb,mb,rb,mx,my);
-		if(mx<0)
+		this->ProcessMouse(towns,lb,mb,rb,mx,my);
+		if(true!=pauseMouseIntegration)
 		{
-			mx=0;
+			if(mx<0)
+			{
+				mx=0;
+			}
+			if(my<0)
+			{
+				my=0;
+			}
+			mx=mx*100/scaling;
+			my=my*100/scaling;
+			towns.SetMouseButtonState((0!=lb),(0!=rb));
+			if(mx<0)
+			{
+				mx=0;
+			}
+			else if(wid<=mx)
+			{
+				mx=wid-1;
+			}
+			if(my<0)
+			{
+				my=0;
+			}
+			else if(hei<=my)
+			{
+				my=hei-1;
+			}
+			towns.ControlMouse(mx,my,towns.state.tbiosVersion);
 		}
-		if(my<0)
+		else
 		{
-			my=0;
+			towns.DontControlMouse();
 		}
-		mx=mx*100/scaling;
-		my=my*100/scaling;
-		towns.SetMouseButtonState((0!=lb),(0!=rb));
-		if(mx<0)
-		{
-			mx=0;
-		}
-		else if(wid<=mx)
-		{
-			mx=wid-1;
-		}
-		if(my<0)
-		{
-			my=0;
-		}
-		else if(hei<=my)
-		{
-			my=hei-1;
-		}
-		towns.ControlMouse(mx,my,towns.state.tbiosVersion);
 	}
 }
 /* virtual */ void FsSimpleWindowConnection::UpdateStatusBitmap(class FMTowns &towns)
