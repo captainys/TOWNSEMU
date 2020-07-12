@@ -50,6 +50,8 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  Let it run automatically to the end without taking control commands." << std::endl;
 	std::cout << "-FREQ frequency_in_MHz" << std::endl;
 	std::cout << "  Specify CPU frequency in Megahertz." << std::endl;
+	std::cout << "-MEMSIZE memory_size_in_MB" << std::endl;
+	std::cout << "  Specify main RAM size in mega bytes.  Max 64." << std::endl;
 	std::cout << "-NOWAIT" << std::endl;
 	std::cout << "  VM never waits for real time when VM time runs ahead of the real time." << std::endl;
 	std::cout << "-YESWAIT" << std::endl;
@@ -181,6 +183,11 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		else if("-FREQ"==ARG && i+1<argc)
 		{
 			freq=cpputil::Atoi(argv[i+1]);
+			++i;
+		}
+		else if("-MEMSIZE"==ARG && i+1<argc)
+		{
+			memSizeInMB=cpputil::Atoi(argv[i+1]);
 			++i;
 		}
 		else if("-NOWAIT"==ARG)

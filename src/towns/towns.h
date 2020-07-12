@@ -437,6 +437,11 @@ public:
 		VMBase::RunScheduledTasks(state.townsTime);
 	}
 
+	/*! Set main RAM size.  Can change it only before starting the VM.
+	    VM probably will crash if you do this after starting.
+	*/
+	void SetMainRAMSize(long long int size);
+
 	/*!
 	*/
 	using VMBase::ScheduleDeviceCallBack;

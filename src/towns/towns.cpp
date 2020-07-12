@@ -548,6 +548,13 @@ void FMTowns::SetUpVRAMAccess(bool breakOnRead,bool breakOnWrite)
 	physMem.SetUpVRAMAccess(breakOnRead,breakOnWrite);
 }
 
+void FMTowns::SetMainRAMSize(long long int size)
+{
+	physMem.SetMainRAMSize(size);
+	mem.RemoveAccess(physMem.state.RAM.size()-1,0x7FFFFFFF);
+	mem.AddAccess(&physMem.mainRAMAccess,0x00100000,physMem.state.RAM.size()-1);
+}
+
 void FMTowns::ForceRender(class TownsRender &render,class Outside_World &world)
 {
 	render.BuildImage(crtc,physMem);

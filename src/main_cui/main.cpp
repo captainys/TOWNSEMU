@@ -195,6 +195,16 @@ bool Setup(FMTowns &towns,Outside_World *outside_world,const TownsARGV &argv)
 		towns.state.freq=argv.freq;
 	}
 
+	if(0!=argv.memSizeInMB)
+	{
+		int megabyte=argv.memSizeInMB;
+		if(64<megabyte)
+		{
+			megabyte=64;
+		}
+		towns.SetMainRAMSize(megabyte*1024*1024);
+	}
+
 	if(0<argv.symbolFName.size())
 	{
 		towns.debugger.GetSymTable().fName=argv.symbolFName;

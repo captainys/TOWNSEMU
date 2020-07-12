@@ -72,6 +72,8 @@ public:
 
 	bool pretend386DX=false;
 
+	unsigned int memSizeInMB=0;
+
 	unsigned int freq=0;
 
 	unsigned int appSpecificSetting=0;

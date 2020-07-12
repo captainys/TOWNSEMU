@@ -207,6 +207,10 @@ public:
 	*/
 	void AddAccess(MemoryAccess *memAccess,unsigned int physAddrLow,unsigned int physAddrHigh);
 
+	/*! Remove memory access.
+	*/
+	void RemoveAccess(unsigned int physAddrLow,unsigned int physAddrHigh);
+
 	/*! Register memory-access object for the window that the physical address resides.
 	    It disregards the memory-access object chain.  If the chain exists, entire
 	    chain is replaced with the incoming memory-access object.

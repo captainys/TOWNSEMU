@@ -281,6 +281,11 @@ void TownsPhysicalMemory::SetCMOS(const std::vector <unsigned char> &cmos)
 
 void TownsPhysicalMemory::SetMainRAMSize(long long int size)
 {
+	size&=0xFFF00000;
+	if(size<0x100000) // Minimum 1MB.
+	{
+		size=0x100000;
+	}
 	state.RAM.resize(size);
 }
 

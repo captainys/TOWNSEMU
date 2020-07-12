@@ -118,6 +118,15 @@ void Memory::AddAccess(MemoryAccess *memAccess,unsigned int physAddrLow,unsigned
 		}
 	}
 }
+void Memory::RemoveAccess(unsigned int physAddrLow,unsigned int physAddrHigh)
+{
+	auto low=physAddrLow>>GRANURALITY_SHIFT;
+	auto high=physAddrHigh>>GRANURALITY_SHIFT;
+	for(auto i=low; i<=high; ++i)
+	{
+		memAccessPtr[i]=&nullAccess;
+	}
+}
 void Memory::SetAccessObject(MemoryAccess *memAccess,unsigned int physAddr)
 {
 	auto slot=physAddr>>GRANURALITY_SHIFT;

@@ -399,6 +399,7 @@ public:
 	void SetCMOS(const std::vector <unsigned char> &cmos);
 
 	/*! Sets the main RAM size.
+	    Don't call this function directly.  Call FMTowns::SetMainRAMSize, which will call this function from inside.
 	*/
 	void SetMainRAMSize(long long int size);
 
