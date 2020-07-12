@@ -25,6 +25,7 @@ public:
 	unsigned screenScaling=150;
 	bool autoStart;
 	unsigned int freq=25;
+	unsigned int memSizeInMB=4;
 
 	std::string errorMsg;
 

@@ -145,9 +145,10 @@ void ProfileDialog::Make(void)
 		AddStaticText(0,FSKEY_NULL,L"Application-Specific Augmentation",YSTRUE);
 		appSpecificAugDrp=AddEmptyDropList(0,FSKEY_NULL,"",10,40,40,YSTRUE);
 		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_NONE).c_str(),YSTRUE);
-		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_WINGCOMMANDER1).c_str(),YSFALSE);
-		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_SUPERDAISEN).c_str(),YSFALSE);
 		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_LEMMINGS).c_str(),YSFALSE);
+		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_STRIKECOMMANDER).c_str(),YSFALSE);
+		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_SUPERDAISEN).c_str(),YSFALSE);
+		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_WINGCOMMANDER1).c_str(),YSFALSE);
 
 		appSpecificExplanation=AddStaticText(0,FSKEY_NULL,L"",YSTRUE);
 
@@ -181,6 +182,15 @@ void ProfileDialog::Make(void)
 				"instead of the Mouse BIOS to read mouse status.\n"
 				"To send mouse data correctly, Tsugasu needs to\n"
 				"know that it is running Wing Commander 1."
+			);
+			break;
+		case TOWNS_APPSPECIFIC_STRIKECOMMANDER:
+			appSpecificExplanation->SetText(
+			    "Mouse Integration for Strike Commander\n"
+				"Strike Commander uses hybrid of own function and TBIOS\n"
+				"for reading mouse.\n"
+				"Mouse Integration is activated once you press an arrow key.\n"
+				"Also minimum RAM size is set to 8.\n"
 			);
 			break;
 		case TOWNS_APPSPECIFIC_SUPERDAISEN:

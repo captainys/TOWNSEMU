@@ -142,6 +142,10 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 				std::string APP=argv[i+1];
 				cpputil::Capitalize(APP);
 				appSpecificSetting=TownsStrToApp(APP);
+				if(TOWNS_APPSPECIFIC_STRIKECOMMANDER==appSpecificSetting && memSizeInMB<8)
+				{
+					memSizeInMB=8;
+				}
 				++i;
 			}
 			else

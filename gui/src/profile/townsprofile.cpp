@@ -102,6 +102,10 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 	text.push_back(sstream.str());
 
 	sstream.str("");
+	sstream << "MEMSIZE_ " << memSizeInMB;
+	text.push_back(sstream.str());
+
+	sstream.str("");
 	sstream << "SCALING_ " << screenScaling;
 	text.push_back(sstream.str());
 
@@ -216,6 +220,21 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 				}
 			}
 		}
+		else if(0==argv[0].STRCMP("MEMSIZE_"))
+		{
+			if(2<=argv.size())
+			{
+				memSizeInMB=argv[1].Atoi();
+				if(memSizeInMB<1)
+				{
+					memSizeInMB=1;
+				}
+				else if(64<memSizeInMB)
+				{
+					memSizeInMB=64;
+				}
+			}
+		}
 		else if(0==argv[0].STRCMP("APPSPEC_"))
 		{
 			if(2<=argv.size())
@@ -313,12 +332,20 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 		argv.push_back(sstream.str());
 	}
 
+	if(0!=memSizeInMB)
+	{
+		argv.push_back("-MEMSIZE");
+		sstream.str("");
+		sstream << (memSizeInMB);
+		argv.push_back(sstream.str());
+	}
+
+	// Reminder to myself: App-Specific Augmentation must come at the very end.
 	if(TOWNS_APPSPECIFIC_NONE!=appSpecificAugmentation)
 	{
 		argv.push_back("-APP");
 		argv.push_back(TownsAppToStr(appSpecificAugmentation));
 	}
-
 
 	return argv;
 }
