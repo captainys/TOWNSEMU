@@ -32,6 +32,9 @@ void ProfileDialog::Make(void)
 		CPUFreqTxt->SetInteger(25);
 		AddStaticText(0,FSKEY_NULL,"(Too-fast frequency rather slows down VM)",YSFALSE);
 
+		RAMSizeTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"RAM (MB)",4,YSFALSE);
+		RAMSizeTxt->SetInteger(4);
+
 		CDImgBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"CD Image:",YSTRUE);
 		CDImgTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",nShowPath,YSFALSE);
 		CDImgTxt->SetLengthLimit(PATH_LENGTH);
@@ -307,6 +310,7 @@ TownsProfile ProfileDialog::GetProfile(void) const
 
 	profile.ROMDir=ROMDirTxt->GetString().data();
 	profile.freq=CPUFreqTxt->GetInteger();
+	profile.memSizeInMB=RAMSizeTxt->GetInteger();
 	profile.CDImgFile=CDImgTxt->GetString().data();
 	profile.FDImgFile[0][0]=FDImgTxt[0][0]->GetString().data();
 	profile.FDWriteProtect[0][0]=(YSTRUE==FDWriteProtBtn[0][0]->GetCheck());
@@ -355,6 +359,8 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 	ROMDirTxt->SetText(str);
 
 	CPUFreqTxt->SetInteger(profile.freq);
+
+	RAMSizeTxt->SetInteger(profile.memSizeInMB);
 
 	str.SetUTF8String(profile.CDImgFile.data());
 	CDImgTxt->SetText(str);

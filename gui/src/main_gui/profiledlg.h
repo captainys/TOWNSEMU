@@ -65,7 +65,7 @@ public:
 	FsGuiButton *bootKeyBtn[15];
 	FsGuiTextBox *scrnScaleTxt;
 	FsGuiButton *autoStartBtn;
-	FsGuiTextBox *CPUFreqTxt;
+	FsGuiTextBox *CPUFreqTxt,*RAMSizeTxt;
 	FsGuiButton *runBtn;
 
 	FsGuiDropList *appSpecificAugDrp;
