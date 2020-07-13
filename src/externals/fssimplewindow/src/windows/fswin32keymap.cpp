@@ -1,17 +1,3 @@
-/* LICENSE>>
-Copyright 2020 Soji Yamakawa (CaptainYS, http://www.ysflight.com)
-
-Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-
-3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-<< LICENSE */
 /* ////////////////////////////////////////////////////////////
 
 File Name: fswin32keymap.cpp
@@ -176,11 +162,14 @@ FsWin32KeyMapper::FsWin32KeyMapper()
 	AddKeyMapping(FSKEY_TENMINUS,            VK_SUBTRACT);
 	AddKeyMapping(FSKEY_TENPLUS,             VK_ADD);
 	AddKeyMapping(FSKEY_TENENTER,            0 /* Unassignable */);
-	AddKeyMapping(FSKEY_CONTEXT,             0 /* Unassignable */);
+	AddKeyMapping(FSKEY_CONTEXT,             VK_APPS);
 
 	AddKeyMapping(FSKEY_CONVERT,             VK_CONVERT);
 	AddKeyMapping(FSKEY_NONCONVERT,          VK_NONCONVERT);
 	AddKeyMapping(FSKEY_KANA,                VK_KANA);       // Japanese JIS Keyboard Only => Win32 VK_KANA
+	AddKeyMapping(FSKEY_COLON,               VK_OEM_1);      // Japanese JIS Keyboard Only => Win32 VK_OEM_1
+	AddKeyMapping(FSKEY_AT,                  VK_OEM_3);      // Japanese JIS Keyboard Only => Win32 VK_OEM_3
+	AddKeyMapping(FSKEY_RO,                  VK_OEM_102);    // Japanese JIS Keyboard Only => Win32 VK_OEM_102
 
 	AddKeyMapping(FSKEY_LEFT_CTRL,           VK_LCONTROL);
 	AddKeyMapping(FSKEY_RIGHT_CTRL,          VK_RCONTROL);

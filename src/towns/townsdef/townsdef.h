@@ -493,6 +493,8 @@ enum
 	TOWNS_JISKEY_NUM_RETURN=      0x45,
 	TOWNS_JISKEY_NUM_0=           0x46,
 	TOWNS_JISKEY_NUM_000=         0x4A,
+
+	TOWNS_JISKEY_ALT=             0x5C, // Thanks, WINDY!
 };
 
 enum

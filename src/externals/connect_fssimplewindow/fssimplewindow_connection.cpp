@@ -501,12 +501,15 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 	FSKEYtoTownsKEY[FSKEY_TENENTER]=    TOWNS_JISKEY_NUM_RETURN;
 	FSKEYtoTownsKEY[FSKEY_WHEELUP]=     TOWNS_JISKEY_UP;
 	FSKEYtoTownsKEY[FSKEY_WHEELDOWN]=   TOWNS_JISKEY_DOWN;
-	FSKEYtoTownsKEY[FSKEY_CONTEXT]=     TOWNS_JISKEY_NULL; // Can assign something later.
+	FSKEYtoTownsKEY[FSKEY_CONTEXT]=     TOWNS_JISKEY_ALT; // Can assign something later.
 
 	// Japanese keyboard
 	FSKEYtoTownsKEY[FSKEY_CONVERT]=     TOWNS_JISKEY_CONVERT;
 	FSKEYtoTownsKEY[FSKEY_NONCONVERT]=  TOWNS_JISKEY_NO_CONVERT;
 	FSKEYtoTownsKEY[FSKEY_KANA]=        TOWNS_JISKEY_KATAKANA;
+	// FSKEYtoTownsKEY[FSKEY_COLON]=       TOWNS_JISKEY_COLON; // Need to switch with single quote
+	FSKEYtoTownsKEY[FSKEY_AT]=          TOWNS_JISKEY_AT;
+	FSKEYtoTownsKEY[FSKEY_RO]=          TOWNS_JISKEY_DOUBLEQUOTE;
 
 	// The following key codes won't be returned by FsInkey()
 	// These may return non zero for FsGetKeyState
