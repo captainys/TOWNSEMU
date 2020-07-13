@@ -162,7 +162,7 @@ void FsXCreateKeyMapping(void)
 	FsXAddKeyMapping(FSKEY_BACKSLASH,           XK_backslash);
 	FsXAddKeyMapping(FSKEY_CAPSLOCK,            0);
 	FsXAddKeyMapping(FSKEY_SEMICOLON,           ';');
-	// FsXAddKeyMapping(FSKEY_COLON,               ':');
+	FsXAddKeyMapping(FSKEY_COLON,               ':');
 	FsXAddKeyMapping(FSKEY_SINGLEQUOTE,         '\'');
 	FsXAddKeyMapping(FSKEY_ENTER,               XK_Return);
 	FsXAddKeyMapping(FSKEY_SHIFT,               XK_Shift_L);
@@ -198,6 +198,11 @@ void FsXCreateKeyMapping(void)
 	FsXAddKeyMapping(FSKEY_TENMINUS,            XK_KP_Subtract);
 	FsXAddKeyMapping(FSKEY_TENPLUS,             XK_KP_Add);
 	FsXAddKeyMapping(FSKEY_TENENTER,            XK_KP_Enter);
+
+	FsXAddKeyMapping(FSKEY_CONVERT,             XK_Henkan);
+	FsXAddKeyMapping(FSKEY_NONCONVERT,          XK_Muhenkan);
+	FsXAddKeyMapping(FSKEY_KANA,                XK_Kana_Lock);
+	FsXAddKeyMapping(FSKEY_CONTEXT,             XK_Menu);
 
 
 	FsXAddKeysymToCharMapping(XK_space,         ' ');
@@ -292,7 +297,7 @@ void FsXCreateKeyMapping(void)
 	FsXAddKeysymToCharMapping(XK_backslash,     '\\');
 	FsXAddKeysymToCharMapping(XK_bar,           '|');
 	FsXAddKeysymToCharMapping(XK_semicolon,     ';');
-	FsXAddKeysymToCharMapping(XK_colon,         ';');
+	FsXAddKeysymToCharMapping(XK_colon,         ':');
 	FsXAddKeysymToCharMapping(XK_apostrophe,    '\'');
 	FsXAddKeysymToCharMapping(XK_quotedbl,      '\"');
 	FsXAddKeysymToCharMapping(XK_comma,         ',');
