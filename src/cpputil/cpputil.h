@@ -131,6 +131,20 @@ const char *BoolToNumberStr(bool flag);
 
 std::vector <std::string> MakeDump(unsigned int printAddr,long long int size,const unsigned char data[]);
 
+
+template <class T>
+bool Match(long long int len,const T dat1[],const T dat2[])
+{
+	for(long long int i=0; i<len; ++i)
+	{
+		if(dat1[i]!=dat2[i])
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
 };
 
 /* } */

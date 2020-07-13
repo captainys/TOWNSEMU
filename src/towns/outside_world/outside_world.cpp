@@ -12,6 +12,8 @@ Redistribution and use in source and binary forms, with or without modification,
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 << LICENSE */
+#include <iostream>
+
 #include "outside_world.h"
 
 #include "towns.h"
@@ -51,21 +53,39 @@ void Outside_World::Put16x16(int x0,int y0,const unsigned char icon16x16[])
 }
 void Outside_World::ProcessInkey(class FMTowns &towns,int townsKey)
 {
-	if(TOWNS_APPSPECIFIC_STRIKECOMMANDER==towns.state.appSpecificSetting && TOWNS_JISKEY_PF01==townsKey)
-	{
-		pauseMouseIntegration=true;
-	}
 }
 void Outside_World::ProcessMouse(class FMTowns &towns,int lb,int mb,int rb,int mx,int my)
 {
-	if(TOWNS_APPSPECIFIC_STRIKECOMMANDER==towns.state.appSpecificSetting && true==pauseMouseIntegration)
+	towns.SetMouseButtonState((0!=lb),(0!=rb));
+	if(true==mouseIntegrationActive)
+	{
+		int diffX,diffY;
+		towns.ControlMouse(diffX,diffY,mx,my,towns.state.tbiosVersion);
+		if(0==diffX && 0==diffY)
+		{
+			--mouseStationaryCount;
+			if(mouseStationaryCount<=0)
+			{
+				mouseIntegrationActive=false;
+				// std::cout << "Mouse Integration Paused" << std::endl;
+			}
+		}
+		else
+		{
+			mouseStationaryCount=MOUSE_STATIONARY_COUNT;
+		}
+	}
+	else
 	{
 		int dx=lastMx-mx;
 		int dy=lastMy-my;
-		if(dx<-4 || 4<dx || dy<-4 || 4<dy)
+		if(0!=dx || 0!=dy)
 		{
-			pauseMouseIntegration=false;
+			// std::cout << "Mouse Integration Active" << std::endl;
+			mouseIntegrationActive=true;
+			mouseStationaryCount=MOUSE_STATIONARY_COUNT;
 		}
+		towns.DontControlMouse();
 	}
 	lastMx=mx;
 	lastMy=my;

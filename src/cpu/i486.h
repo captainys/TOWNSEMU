@@ -2017,6 +2017,10 @@ public:
 		return physicalAddr;
 	}
 
+	/*! Convert physicall address to the first-matching linear address.
+	    For debugging purpose only.
+	*/
+	unsigned int PhysicalAddressToLinearAddress(unsigned physAddr,const Memory &mem) const;
 
 	/*!
 	*/

@@ -361,8 +361,11 @@ public:
 	    Returns true if it thinks it can control the mouse coordinate.  false otherwise.
 	    This function is ignored if var.mouseIntegration=false;
 	    (In tbiosid.cpp)
+	    If parameters diffX and diffY are given, it returns the difference between 
+	    current mouse coordinate in the VM and the host mouse coordinate.
 	*/
 	bool ControlMouse(int hostMouseX,int houstMouseY,unsigned int tbiosid);
+	bool ControlMouse(int &diffX,int &diffY,int hostMouseX,int houstMouseY,unsigned int tbiosid);
 
 
 	/*! Make mouse motion reported to the VM (0,0).

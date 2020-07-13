@@ -68,6 +68,8 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["INTERRUPT"]=CMD_INTERRUPT;
 	primaryCmdMap["MKMEMFILTER"]=CMD_MAKE_MEMORY_FILTER;
 	primaryCmdMap["UPDMEMFILTER"]=CMD_UPDATE_MEMORY_FILTER;
+	primaryCmdMap["FIND"]=CMD_FIND;
+	primaryCmdMap["FINDS"]=CMD_FIND_STRING;
 
 	primaryCmdMap["ADDSYM"]=CMD_ADD_SYMBOL;
 	primaryCmdMap["KEYBOARD"]=CMD_KEYBOARD;
@@ -228,6 +230,15 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "UPDMEMFILTER byteData" << std::endl;
 	std::cout << "  Update memory filter.  Physical addresses that does not have the given value" << std::endl;
 	std::cout << "  are deleted from the memory filter." << std::endl;
+
+	std::cout << "FIND bytedata" << std::endl;
+	std::cout << "  Find byte sequence in main RAM and VRAM." << std::endl;
+	std::cout << "  bytedata can be written like 01020304 for 32-bit value." << std::endl;
+	std::cout << "  Also can be mixed like 88 6809 0a0B0C." << std::endl;
+	std::cout << "  If you type only six digits, it is taken as 24-bit value." << std::endl;
+
+	std::cout << "FINDS string" << std::endl;
+	std::cout << "  Find a string in main RAM and VRAM." << std::endl;
 
 	std::cout << "ADTR SEG:OFFSET" << std::endl;
 	std::cout << "  Translate address to linear address and physical address." << std::endl;
@@ -448,6 +459,9 @@ void TownsCommandInterpreter::PrintError(int errCode) const
 	case ERROR_UNDEFINED_KEYBOARD_MODE:
 		std::cout << "Error: Undefined Keyboard Mode." << std::endl;
 		break;
+	case ERROR_NO_DATA_GIVEN:
+		std::cout << "Error: No data given." << std::endl;
+		break;
 
 	default:
 		std::cout << "Error" << std::endl;
@@ -521,6 +535,14 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 	case CMD_UPDATE_MEMORY_FILTER:
 		Execute_UpdateMemoryFilter(towns,cmd);
 		break;
+
+	case CMD_FIND:
+		Execute_Search_Bytes(towns,cmd);
+		break;
+	case CMD_FIND_STRING:
+		Execute_Search_String(towns,cmd);
+		break;
+
 	case CMD_TRANSLATE_ADDRESS:
 		Execute_AddressTranslation(towns,cmd);
 		break;
@@ -2203,4 +2225,127 @@ void TownsCommandInterpreter::Execute_SaveYM2612Log(FMTowns &towns,std::string f
 	{
 		PrintError(ERROR_CANNOT_SAVE_FILE);
 	}
+}
+
+void TownsCommandInterpreter::Execute_Search_Bytes(FMTowns &towns,Command &cmd)
+{
+	std::vector <unsigned char> bytes;
+	for(int i=1; i<cmd.argv.size(); ++i)
+	{
+		auto arg=cmd.argv[i];
+		char hex[3]={0,0,0};
+		for(int j=arg.size()-1; 0<=j; --j)
+		{
+			if('h'==arg[j] || 'H'==arg[j])
+			{
+				continue;
+			}
+			if(1==j && arg[0]=='0' && (arg[1]=='x' || arg[1]=='X'))
+			{
+				break;
+			}
+
+			if(0==hex[1])
+			{
+				hex[1]=arg[j];
+				if(0==j)
+				{
+					bytes.push_back(cpputil::Xtoi(hex+1));
+					hex[0]=0;
+					hex[1]=0;
+				}
+			}
+			else
+			{
+				hex[0]=arg[j];
+				bytes.push_back(cpputil::Xtoi(hex));
+				hex[0]=0;
+				hex[1]=0;
+			}
+		}
+	}
+	return Execute_Search_ByteSequence(towns,bytes);
+}
+void TownsCommandInterpreter::Execute_Search_String(FMTowns &towns,Command &cmd)
+{
+	if(2<=cmd.argv.size())
+	{
+		for(unsigned int i=1; i<cmd.argv.size(); ++i)
+		{
+			std::vector <unsigned char> bytes;
+			for(auto c : cmd.argv[i])
+			{
+				bytes.push_back(c);
+			}
+			std::cout << "Searching: " << cmd.argv[i] << std::endl;
+			Execute_Search_ByteSequence(towns,bytes);
+		}
+	}
+	else
+	{
+		PrintError(ERROR_TOO_FEW_ARGS);
+	}
+}
+
+void TownsCommandInterpreter::Execute_Search_ByteSequence(FMTowns &towns,const std::vector <unsigned char> &bytes)
+{
+	if(0==bytes.size())
+	{
+		PrintError(ERROR_NO_DATA_GIVEN);
+		return;
+	}
+	std::cout << "Search is limited in the main RAM and VRAM only." << std::endl;
+
+	int maxCount=100;
+	for(unsigned int addr=0; addr+bytes.size()<=towns.physMem.state.RAM.size(); ++addr)
+	{
+		if(true==cpputil::Match(bytes.size(),bytes.data(),towns.physMem.state.RAM.data()+addr))
+		{
+			FoundAt(towns,addr);
+		}
+	}
+	for(unsigned int addr=0; addr+bytes.size()<=towns.physMem.state.VRAM.size(); ++addr)
+	{
+		if(true==cpputil::Match(bytes.size(),bytes.data(),towns.physMem.state.VRAM.data()+addr))
+		{
+			FoundAt(towns,TOWNSADDR_VRAM0_BASE+addr);
+			if(--maxCount<=0)
+			{
+				std::cout << "Reached maximum count." << std::endl;
+			}
+		}
+	}
+}
+
+void TownsCommandInterpreter::FoundAt(FMTowns &towns,unsigned int physAddr)
+{
+	auto linearAddr=towns.cpu.PhysicalAddressToLinearAddress(physAddr,towns.mem);
+	std::cout << "Found at PHYS:" << cpputil::Uitox(physAddr) << "  LINEAR:" << cpputil::Uitox(linearAddr) << std::endl;
+	FoundAt("CS:",towns.cpu.state.CS().baseLinearAddr,linearAddr);
+	FoundAt("DS:",towns.cpu.state.DS().baseLinearAddr,linearAddr);
+	FoundAt("SS:",towns.cpu.state.SS().baseLinearAddr,linearAddr);
+	FoundAt("ES:",towns.cpu.state.SS().baseLinearAddr,linearAddr);
+	if(true!=towns.cpu.IsInRealMode() && 0x000C!=towns.cpu.state.CS().value)
+	{
+		i486DX::SegmentRegister seg;
+		towns.cpu.LoadSegmentRegisterQuiet(seg,0x000c,towns.mem,false);
+		FoundAt("000C:",seg.baseLinearAddr,linearAddr);
+	}
+	if(true!=towns.cpu.IsInRealMode() && 0x0014!=towns.cpu.state.DS().value)
+	{
+		i486DX::SegmentRegister seg;
+		towns.cpu.LoadSegmentRegisterQuiet(seg,0x0014,towns.mem,false);
+		FoundAt("0014:",seg.baseLinearAddr,linearAddr);
+	}
+	if(true!=towns.cpu.IsInRealMode())
+	{
+		i486DX::SegmentRegister seg;
+		towns.cpu.LoadSegmentRegisterQuiet(seg,0x0110,towns.mem,false);
+		FoundAt("0110:",seg.baseLinearAddr,linearAddr);
+	}
+}
+
+void TownsCommandInterpreter::FoundAt(std::string segLabel,unsigned int linearBase,unsigned int linearAddr)
+{
+	std::cout << segLabel << cpputil::Uitox(linearAddr-linearBase) << std::endl;
 }

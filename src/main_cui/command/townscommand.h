@@ -54,6 +54,9 @@ public:
 		CMD_MAKE_MEMORY_FILTER,
 		CMD_UPDATE_MEMORY_FILTER,
 
+		CMD_FIND,
+		CMD_FIND_STRING,
+
 		CMD_RETURN_FROM_PROCEDURE,
 
 		CMD_ENABLE,
@@ -203,6 +206,7 @@ public:
 		ERROR_SYMBOL_NOT_FOUND,
 		ERROR_COULD_NOT_DELETE_SYMBOL,
 		ERROR_UNDEFINED_KEYBOARD_MODE,
+		ERROR_NO_DATA_GIVEN,
 	};
 
 	class Command
@@ -272,6 +276,12 @@ public:
 	void Execute_UpdateMemoryFilter(FMTowns &towns,Command &cmd);
 
 	void Execute_SaveYM2612Log(FMTowns &towns,std::string fName);
+
+	void Execute_Search_Bytes(FMTowns &towns,Command &cmd);
+	void Execute_Search_String(FMTowns &towns,Command &cmd);
+	void Execute_Search_ByteSequence(FMTowns &towns,const std::vector <unsigned char> &bytes);
+	void FoundAt(FMTowns &towns,unsigned int physAddr);
+	void FoundAt(std::string segLabel,unsigned int linearBase,unsigned int linearAddr);
 };
 
 

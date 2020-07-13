@@ -37,8 +37,15 @@ public:
 	// However, with mouse integration turned on, the mouse coordinate moves back to wherever
 	// host mouse cursor is located, and the view changes again.  To prevent it,
 	// Mouse Integration should be paused until mouse is moved.
-	bool pauseMouseIntegration=false;
-	int lastMx,lastMy;
+	// To more generalize, mouse integration is turned on when mouse moves, and pauses
+	// when the mouse cursor in the VM is stationary at the host's mouse coordinate for
+	// several steps, it pauses again.
+	enum
+	{
+		MOUSE_STATIONARY_COUNT=4
+	};
+	bool mouseIntegrationActive=false;
+	int lastMx,lastMy,mouseStationaryCount=MOUSE_STATIONARY_COUNT;
 
 	enum
 	{

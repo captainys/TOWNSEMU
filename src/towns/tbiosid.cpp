@@ -293,6 +293,11 @@ static inline int ClampStep(int d)
 
 bool FMTowns::ControlMouse(int hostMouseX,int hostMouseY,unsigned int tbiosid)
 {
+	int diffX,diffY;
+	return ControlMouse(diffX,diffY,hostMouseX,hostMouseY,tbiosid);
+}
+bool FMTowns::ControlMouse(int &diffX,int &diffY,int hostMouseX,int hostMouseY,unsigned int tbiosid)
+{
 	int mx,my;
 	int slowDownRange=0;
 	var.lastKnownMouseX=hostMouseX;
@@ -353,8 +358,10 @@ bool FMTowns::ControlMouse(int hostMouseX,int hostMouseY,unsigned int tbiosid)
 			// At this time it only takes vertical displacement into account.
 		}
 
-		auto dx=ClampStep(hostMouseX-mx);
-		auto dy=ClampStep(hostMouseY-my);
+		diffX=hostMouseX-mx;
+		diffY=hostMouseY-my;
+		auto dx=ClampStep(diffX);
+		auto dy=ClampStep(diffY);
 		if(-slowDownRange<=dx && dx<=slowDownRange)
 		{
 			if(dx<0)

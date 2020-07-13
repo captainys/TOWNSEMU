@@ -312,42 +312,26 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 		FsGetWindowSize(wid,hei);
 		int lb,mb,rb,mx,my;
 		FsGetMouseEvent(lb,mb,rb,mx,my);
+		if(mx<0)
+		{
+			mx=0;
+		}
+		else if(wid<=mx)
+		{
+			mx=wid-1;
+		}
+		if(my<0)
+		{
+			my=0;
+		}
+		else if(hei<=my)
+		{
+			my=hei-1;
+		}
+		mx=mx*100/scaling;
+		my=my*100/scaling;
+
 		this->ProcessMouse(towns,lb,mb,rb,mx,my);
-		if(true!=pauseMouseIntegration)
-		{
-			if(mx<0)
-			{
-				mx=0;
-			}
-			if(my<0)
-			{
-				my=0;
-			}
-			mx=mx*100/scaling;
-			my=my*100/scaling;
-			towns.SetMouseButtonState((0!=lb),(0!=rb));
-			if(mx<0)
-			{
-				mx=0;
-			}
-			else if(wid<=mx)
-			{
-				mx=wid-1;
-			}
-			if(my<0)
-			{
-				my=0;
-			}
-			else if(hei<=my)
-			{
-				my=hei-1;
-			}
-			towns.ControlMouse(mx,my,towns.state.tbiosVersion);
-		}
-		else
-		{
-			towns.DontControlMouse();
-		}
 	}
 }
 /* virtual */ void FsSimpleWindowConnection::UpdateStatusBitmap(class FMTowns &towns)
@@ -490,12 +474,12 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 	FSKEYtoTownsKEY[FSKEY_NUMLOCK]=     TOWNS_JISKEY_NULL; // Can assign something later.
 	FSKEYtoTownsKEY[FSKEY_TILDA]=       TOWNS_JISKEY_NULL;
 	FSKEYtoTownsKEY[FSKEY_MINUS]=       TOWNS_JISKEY_MINUS;
-	FSKEYtoTownsKEY[FSKEY_PLUS]=        TOWNS_JISKEY_NUM_PLUS;
+	FSKEYtoTownsKEY[FSKEY_PLUS]=        TOWNS_JISKEY_HAT;
 	FSKEYtoTownsKEY[FSKEY_LBRACKET]=    TOWNS_JISKEY_LEFT_SQ_BRACKET;
 	FSKEYtoTownsKEY[FSKEY_RBRACKET]=    TOWNS_JISKEY_RIGHT_SQ_BRACKET;
 	FSKEYtoTownsKEY[FSKEY_BACKSLASH]=   TOWNS_JISKEY_BACKSLASH;
 	FSKEYtoTownsKEY[FSKEY_SEMICOLON]=   TOWNS_JISKEY_SEMICOLON;
-	FSKEYtoTownsKEY[FSKEY_SINGLEQUOTE]= TOWNS_JISKEY_AT;  // Should be reviewed.
+	FSKEYtoTownsKEY[FSKEY_SINGLEQUOTE]= TOWNS_JISKEY_COLON;
 	FSKEYtoTownsKEY[FSKEY_COMMA]=       TOWNS_JISKEY_COMMA;
 	FSKEYtoTownsKEY[FSKEY_DOT]=         TOWNS_JISKEY_DOT;
 	FSKEYtoTownsKEY[FSKEY_SLASH]=       TOWNS_JISKEY_SLASH;
