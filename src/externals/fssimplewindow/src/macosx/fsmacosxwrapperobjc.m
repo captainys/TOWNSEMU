@@ -130,13 +130,13 @@ static int FsNormalKeyCode[256]=
 	FSKEY_7,           // 55
 	FSKEY_8,           // 56
 	FSKEY_9,           // 57
-	FSKEY_SEMICOLON,   // 58
-	0,                 // 59
+	FSKEY_COLON,       // 58
+	FSKEY_SEMICOLON,   // 59
 	0,                 // 60
 	0,                 // 61
 	0,                 // 62
 	0,                 // 63
-	0,                 // 64
+	FSKEY_AT,          // 64
 	FSKEY_A,           // 65
 	FSKEY_B,           // 66
 	FSKEY_C,           // 67
@@ -385,7 +385,7 @@ static int FsSpecialKeyCode[256]=
 	FSKEY_PAUSEBREAK,   // 50
 	0,                  // 51 Reset
 	0,                  // 52 Stop
-	0,                  // 53 Menu
+	FSKEY_CONTEXT,      // 53 Menu 0x35
 	0,                  // 54 User
 	0,                  // 55 System
 	FSKEY_PRINTSCRN,    // 56
