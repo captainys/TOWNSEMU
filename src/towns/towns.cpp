@@ -443,7 +443,7 @@ void FMTowns::NotifyDiskRead(void)
 
 unsigned int FMTowns::RunOneInstruction(void)
 {
-	auto clocksPassed=cpu.RunOneInstruction(state.CSEIPMemWin,mem,io);
+	auto clocksPassed=cpu.RunOneInstruction(mem,io);
 	state.clockBalance+=clocksPassed*1000;
 
 	// Since last update, clockBalance*1000/freq nano seconds have passed.

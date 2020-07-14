@@ -112,14 +112,6 @@ public:
 		bool pretend386DX=false;
 
 
-		/*! Memory window used for fetching instructions.
-		    Updated in RunOneInstruction from cpu.FetchInstruction.
-		    When state is loaded (when the functionality is ready), it must be
-		    cleared after loading a state.  It just works as a cache.
-		*/
-		MemoryAccess::ConstMemoryWindow CSEIPMemWin;
-
-
 		/*! 
 		*/
 		long long int nextFastDevicePollingTime;

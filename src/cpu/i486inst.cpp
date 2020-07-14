@@ -3594,7 +3594,7 @@ std::string i486DX::Instruction::DisassembleIOLabel(unsigned int CS,unsigned int
 }
 
 
-unsigned int i486DX::RunOneInstruction(MemoryAccess::ConstMemoryWindow &CSEIPWindow,Memory &mem,InOut &io)
+unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 {
 	#define CONDITIONALJUMP8(jumpCond) \
 	{ \
@@ -3815,7 +3815,7 @@ unsigned int i486DX::RunOneInstruction(MemoryAccess::ConstMemoryWindow &CSEIPWin
 
 	Instruction inst;
 	Operand op1,op2;
-	FetchInstruction(CSEIPWindow,inst,op1,op2,state.CS(),state.EIP,mem);
+	FetchInstruction(state.CSEIPWindow,inst,op1,op2,state.CS(),state.EIP,mem);
 	if(nullptr!=debuggerPtr)
 	{
 		debuggerPtr->BeforeRunOneInstruction(*this,mem,io,inst);

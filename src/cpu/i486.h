@@ -407,6 +407,7 @@ public:
 		unsigned int CR[4];
 	public:
 		MemoryAccess::ConstPointer pageDirectoryCache; // This must be re-cached on state-load.
+		MemoryAccess::ConstMemoryWindow CSEIPWindow;   // This must be cleared on state-load.
 	public:
 		unsigned int DR[8];
 		unsigned int TEST[8];
@@ -2423,7 +2424,7 @@ public:
 
 
 	/*! Run one instruction and returns number of clocks. */
-	unsigned int RunOneInstruction(MemoryAccess::ConstMemoryWindow &CSEIPWindow,Memory &mem,InOut &io);
+	unsigned int RunOneInstruction(Memory &mem,InOut &io);
 
 
 	/*! Move source operand to destination operand.  
