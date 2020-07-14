@@ -3,3 +3,4 @@ target_link_libraries(ym2612 cpputil)
 target_include_directories(ym2612 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_subdirectory(tonetest)
+add_subdirectory(vgmplayer)
