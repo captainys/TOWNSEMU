@@ -408,6 +408,7 @@ public:
 	public:
 		MemoryAccess::ConstPointer pageDirectoryCache; // This must be re-cached on state-load.
 		MemoryAccess::ConstMemoryWindow CSEIPWindow;   // This must be cleared on state-load.
+		MemoryAccess::MemoryWindow SSESPWindow;         // This must be cleared on state-load.
 	public:
 		unsigned int DR[8];
 		unsigned int TEST[8];

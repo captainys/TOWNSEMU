@@ -902,28 +902,90 @@ i486DX::OperandValue i486DX::DescriptorTableToOperandValue(const SystemAddressRe
 
 void i486DX::Push(Memory &mem,unsigned int operandSize,unsigned int value)
 {
+	NUM_BYTES_MASK;
 	auto addressSize=GetStackAddressingSize();
 	auto &ESP=state.ESP();
+
+	unsigned int bytesToStore=(operandSize>>3);
+	ESP-=bytesToStore;
+
+	unsigned int linearAddr=state.SS().baseLinearAddr+(ESP&(numBytesMask[addressSize>>3]));
+	if((linearAddr&(MemoryAccess::MEMORY_WINDOW_SIZE-1))<=(MemoryAccess::MEMORY_WINDOW_SIZE-bytesToStore))
+	{
+		if(nullptr==state.SSESPWindow.ptr || true!=state.SSESPWindow.IsLinearAddressInRange(linearAddr))
+		{
+			auto physAddr=linearAddr;
+			if(true==PagingEnabled())
+			{
+				physAddr=LinearAddressToPhysicalAddress(linearAddr,mem);
+			}
+			state.SSESPWindow=mem.GetMemoryWindow(physAddr);
+			state.SSESPWindow.linearBaseAddr=(linearAddr&(~(MemoryAccess::MEMORY_WINDOW_SIZE-1)));
+		}
+		if(nullptr!=state.SSESPWindow.ptr && true==state.SSESPWindow.IsLinearAddressInRange(linearAddr))
+		{
+			if(16==operandSize)
+			{
+				cpputil::PutWord(state.SSESPWindow.ptr+(linearAddr&(MemoryAccess::MEMORY_WINDOW_SIZE-1)),value);
+			}
+			else if(32==operandSize)
+			{
+				cpputil::PutDword(state.SSESPWindow.ptr+(linearAddr&(MemoryAccess::MEMORY_WINDOW_SIZE-1)),value);
+			}
+			return;
+		}
+	}
+
 	// When addressSize==16, ESP will be &ed with 0xFFFF in StoreWord/StoreDword.
 	// Also ESP crossing 16-bit boundary would be an exception if addressSize==16.
 	// I cannot check it here, but to run a valid application, it shouldn't happen.
 	if(16==operandSize)
 	{
-		ESP-=2;
 		StoreWord(mem,addressSize,state.SS(),ESP,value);
 	}
 	else if(32==operandSize)
 	{
-		ESP-=4;
 		StoreDword(mem,addressSize,state.SS(),ESP,value);
 	}
 }
 
 unsigned int i486DX::Pop(Memory &mem,unsigned int operandSize)
 {
+	NUM_BYTES_MASK;
 	unsigned int value;
 	auto addressSize=GetStackAddressingSize();
 	auto &ESP=state.ESP();
+	unsigned int bytesToPop=(operandSize>>3);
+
+
+	unsigned int linearAddr=state.SS().baseLinearAddr+(ESP&(numBytesMask[addressSize>>3]));
+	if((linearAddr&(MemoryAccess::MEMORY_WINDOW_SIZE-1))<=(MemoryAccess::MEMORY_WINDOW_SIZE-bytesToPop))
+	{
+		if(nullptr==state.SSESPWindow.ptr || true!=state.SSESPWindow.IsLinearAddressInRange(linearAddr))
+		{
+			auto physAddr=linearAddr;
+			if(true==PagingEnabled())
+			{
+				physAddr=LinearAddressToPhysicalAddress(linearAddr,mem);
+			}
+			state.SSESPWindow=mem.GetMemoryWindow(physAddr);
+			state.SSESPWindow.linearBaseAddr=(linearAddr&(~(MemoryAccess::MEMORY_WINDOW_SIZE-1)));
+		}
+		if(nullptr!=state.SSESPWindow.ptr && true==state.SSESPWindow.IsLinearAddressInRange(linearAddr))
+		{
+			ESP+=bytesToPop;
+			if(16==operandSize)
+			{
+				return cpputil::GetWord(state.SSESPWindow.ptr+(linearAddr&(MemoryAccess::MEMORY_WINDOW_SIZE-1)));
+			}
+			else if(32==operandSize)
+			{
+				return cpputil::GetDword(state.SSESPWindow.ptr+(linearAddr&(MemoryAccess::MEMORY_WINDOW_SIZE-1)));
+			}
+		}
+	}
+
+
 	// When addressSize==16, ESP will be &ed with 0xFFFF in StoreWord/StoreDword.
 	// Also ESP crossing 16-bit boundary would be an exception if addressSize==16.
 	// I cannot check it here, but to run a valid application, it shouldn't happen.

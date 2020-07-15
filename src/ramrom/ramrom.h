@@ -47,7 +47,7 @@ public:
 	virtual void StoreDword(unsigned int physAddr,unsigned int data);
 
 	/*! Memory Access Pointer is for skipping segment and paging translation and directly accessing the memory.
-	    Not all memory range can be accessible by the MemoryAccess::Pointer.
+	    Not all memory range can be accessible by the MemoryAccess::Pointer, memory-mapped I/O for example.
 	    Therefore, the default behavior is returning an unaccessible pointer.
 
 		Due to paging, length must not cross 4K boundary.
@@ -104,8 +104,13 @@ public:
 		}
 	};
 
+	enum
+	{
+		MEMORY_WINDOW_SIZE=4096
+	};
+
 	/*! Memory window is a 4K memory block that can be accessed by a pointer.
-	    Not all memory area can be accessed through the memory window.
+	    Not all memory area can be accessed through the memory window, memory-mapped I/O for example.
 	    It should be 1-page length, which is 4KB.
 	    And it should not cross 4KB border of the physical memory.
 
@@ -114,11 +119,6 @@ public:
 	class ConstMemoryWindow
 	{
 	public:
-		enum
-		{
-			MEMORY_WINDOW_SIZE=4096
-		};
-
 		/*! Linear address should be filled by the CPU.
 		*/
 		unsigned int linearBaseAddr=0;
@@ -160,7 +160,42 @@ public:
 		}
 	};
 
+	/*! Memory window is a 4K memory block that can be accessed by a pointer.
+	    Not all memory area can be accessed through the memory window, memory-mapped I/O for example.
+	    It should be 1-page length, which is 4KB.
+	    And it should not cross 4KB border of the physical memory.
+
+	    ROM can be accessed from ConstMemoryWindow, but not from MemoryWindow.
+	    RAM can be accessed from ConstMemoryWindow and from MemoryWindow.
+
+		The default behavior is just return a memory window with ptr=nullptr (inaccessible).
+	*/
+	class MemoryWindow
+	{
+	public:
+		/*! Linear address should be filled by the CPU.
+		*/
+		unsigned int linearBaseAddr=0;
+
+		/*! Pointer to the memory window.
+		    If the memory area cannot be accessed through a pointer, it is nullptr.
+		*/
+		unsigned char *ptr=nullptr;
+
+		inline void CleanUp(void)
+		{
+			linearBaseAddr=0;
+			ptr=nullptr;
+		}
+
+		inline bool IsLinearAddressInRange(unsigned int addr) const
+		{
+			return (linearBaseAddr<=addr && addr<linearBaseAddr+MEMORY_WINDOW_SIZE);
+		}
+	};
+
 	virtual ConstMemoryWindow GetConstMemoryWindow(unsigned int physAddr) const;
+	virtual MemoryWindow GetMemoryWindow(unsigned int physAddr);
 	virtual ConstPointer GetReadAccessPointer(unsigned int physAddr) const;
 };
 
@@ -245,7 +280,11 @@ public:
 		auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
 		return memAccess->GetConstMemoryWindow(physAddr);
 	}
-
+	inline MemoryAccess::MemoryWindow GetMemoryWindow(unsigned int physAddr)
+	{
+		auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
+		return memAccess->GetMemoryWindow(physAddr);
+	}
 	inline MemoryAccess::ConstPointer GetReadAccessPointer(unsigned int physAddr) const
 	{
 		auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];

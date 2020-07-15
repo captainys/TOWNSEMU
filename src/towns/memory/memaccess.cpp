@@ -80,6 +80,12 @@ void TownsMemAccess::SetCPUPointer(class i486DX *cpuPtr)
 	memWin.ptr=physMemPtr->state.RAM.data()+(physAddr&(~0xfff));
 	return memWin;
 }
+/* virtual */ MemoryAccess::MemoryWindow TownsMainRAMAccess::GetMemoryWindow(unsigned int physAddr)
+{
+	MemoryAccess::MemoryWindow memWin;
+	memWin.ptr=physMemPtr->state.RAM.data()+(physAddr&(~0xfff));
+	return memWin;
+}
 /* virtual */ MemoryAccess::ConstPointer TownsMainRAMAccess::GetReadAccessPointer(unsigned int physAddr) const
 {
 	ConstPointer ptr;

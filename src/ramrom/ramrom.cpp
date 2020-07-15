@@ -43,6 +43,12 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	window.ptr=nullptr;
 	return window;
 }
+/* virtual */ MemoryAccess::MemoryWindow MemoryAccess::GetMemoryWindow(unsigned int physAddr)
+{
+	MemoryWindow window;
+	window.ptr=nullptr;
+	return window;
+}
 /* virtual */ MemoryAccess::ConstPointer MemoryAccess::GetReadAccessPointer(unsigned int physAddr) const
 {
 	ConstPointer ptr;

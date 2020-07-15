@@ -55,6 +55,7 @@ public:
 	virtual void StoreDword(unsigned int physAddr,unsigned int data);
 
 	virtual ConstMemoryWindow GetConstMemoryWindow(unsigned int physAddr) const;
+	virtual MemoryWindow GetMemoryWindow(unsigned int physAddr);
 	virtual ConstPointer GetReadAccessPointer(unsigned int physAddr) const;
 };
 
