@@ -102,6 +102,10 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 	text.push_back(sstream.str());
 
 	sstream.str("");
+	sstream << "CATCHUPT " << (true==catchUpRealTime ? 1 : 0);
+	text.push_back(sstream.str());
+
+	sstream.str("");
 	sstream << "MEMSIZE_ " << memSizeInMB;
 	text.push_back(sstream.str());
 
@@ -235,6 +239,13 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 				}
 			}
 		}
+		else if(0==argv[0].STRCMP("CATCHUPT"))
+		{
+			if(2<=argv.size())
+			{
+				catchUpRealTime=(0!=argv[1].Atoi());
+			}
+		}
 		else if(0==argv[0].STRCMP("APPSPEC_"))
 		{
 			if(2<=argv.size())
@@ -330,6 +341,11 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 		sstream.str("");
 		sstream << freq;
 		argv.push_back(sstream.str());
+	}
+
+	if(true!=catchUpRealTime)
+	{
+		argv.push_back("-NOCATCHUPREALTIME");
 	}
 
 	if(0!=memSizeInMB)

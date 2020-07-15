@@ -142,6 +142,13 @@ void ProfileDialog::Make(void)
 	}
 
 	{
+		auto tabId=AddTab(tab,"Advanced");
+		BeginAddTabItem(tab,tabId);
+		catchUpRealTimeBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Catch Up Real Time (Recommended OFF for ChaseHQ)",YSTRUE);
+		EndAddTabItem();
+	}
+
+	{
 		auto tabId=AddTab(tab,"Application");
 		BeginAddTabItem(tab,tabId);
 
@@ -343,6 +350,9 @@ TownsProfile ProfileDialog::GetProfile(void) const
 			break;
 		}
 	}
+
+	profile.catchUpRealTime=(YSTRUE==catchUpRealTimeBtn->GetCheck());
+
 	profile.autoStart=(YSTRUE==autoStartBtn->GetCheck());
 
 	profile.screenScaling=scrnScaleTxt->GetInteger();
@@ -404,6 +414,15 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 		{
 			bootKeyBtn[i]->SetCheck(YSFALSE);
 		}
+	}
+
+	if(true==profile.catchUpRealTime)
+	{
+		catchUpRealTimeBtn->SetCheck(YSTRUE);
+	}
+	else
+	{
+		catchUpRealTimeBtn->SetCheck(YSFALSE);
 	}
 
 	if(true==profile.autoStart)

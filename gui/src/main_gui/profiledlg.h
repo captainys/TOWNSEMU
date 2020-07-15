@@ -66,6 +66,7 @@ public:
 	FsGuiTextBox *scrnScaleTxt;
 	FsGuiButton *autoStartBtn;
 	FsGuiTextBox *CPUFreqTxt,*RAMSizeTxt;
+	FsGuiButton *catchUpRealTimeBtn;
 	FsGuiButton *runBtn;
 
 	FsGuiDropList *appSpecificAugDrp;

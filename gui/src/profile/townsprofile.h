@@ -31,6 +31,8 @@ public:
 
 	unsigned int appSpecificAugmentation=TOWNS_APPSPECIFIC_NONE;
 
+	bool catchUpRealTime=true;
+
 	TownsProfile();
 	void CleanUp(void);
 	std::vector <std::string> Serialize(void) const;
