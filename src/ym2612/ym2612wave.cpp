@@ -20,6 +20,18 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 
 
+inline void WordOp_Add(unsigned char *ptr,short value)
+{
+#ifdef YS_LITTLE_ENDIAN
+	*((short *)ptr)+=value;
+#else
+	std::swap(ptr[0],ptr[1]);
+	*((short *)ptr)+=value;
+	std::swap(ptr[0],ptr[1]);
+#endif
+}
+
+
 // #define YM2612_DEBUGOUTPUT
 
 
@@ -1039,10 +1051,8 @@ long long int YM2612::MakeWaveForNSamples(unsigned char wave[],unsigned int chNu
 			lastSlot0Out=s0Out;
 		}
 
-		wave[i*4  ]=(LeftANDPtn&(ampl&255));
-		wave[i*4+1]=(LeftANDPtn&((ampl>>8)&255));
-		wave[i*4+2]=(RightANDPtn&(ampl&255));
-		wave[i*4+3]=(RightANDPtn&((ampl>>8)&255));
+		WordOp_Add(wave+i*4  ,LeftANDPtn&ampl);
+		WordOp_Add(wave+i*4+2,RightANDPtn&ampl);
 
 		phase12[0]+=ch.slots[0].phase12Step+PMSAdjustment[0];
 		phase12[1]+=ch.slots[1].phase12Step+PMSAdjustment[1];
