@@ -80,17 +80,15 @@ public:
 		    And, a 32-bit integer is good for 4,000,000,000 nano seconds = 4 seconds.
 		    A 64-bit integer should be able to hold decades.
 		    I think 64-bit is long enough.  So, I make it signed int.
+
+			townsTime0 is used for real-time adjustment in TownsThread.
 		*/
-		long long int townsTime;
+		long long int townsTime,townsTime0;
 
 		/*! CPU time is calculated from the clock.
 		*/
 		long long int cpuTime;
 
-		/*! Time used for audio.
-		    audioTime0 is used for recording time points between iteration.
-		*/
-		long long int audioTime,audioTime0;
 
 
 		/*! If noWait is false and if townsTime goes ahead of real time, VM will wait until real time catches up with the townsTime.
@@ -245,6 +243,17 @@ public:
 		/*! If this flag is true, VM thread pauses, not closes on power off.
 		*/
 		bool pauseOnPowerOff=false;
+
+
+		/*! If this flag is true, and if VM lags behind the real time, townsTime will be fast-forwarded to 
+		    catch up with the real time.  It will force interrupts fired up roughly real time.  However,
+		    timing-sensitive application may break because all of a sudden multiple devices becomes active
+		    and raise IRR simultaneously.  Like ChaseHQ will get flicker if this flag is true.
+
+		    Setting this flag false can prevent timing break down.  However, interrupts will lag, and 
+		    the execution may become slower.
+		*/
+		bool catchUpRealTime=true;
 
 
 		/*! When CS:EIP is powerOffAt, the VM immediately quits with exit(0);

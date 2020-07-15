@@ -255,6 +255,8 @@ bool Setup(FMTowns &towns,Outside_World *outside_world,const TownsARGV &argv)
 	towns.var.noWaitStandby=argv.noWaitStandby;
 	towns.state.appSpecificSetting=argv.appSpecificSetting;
 
+	towns.var.catchUpRealTime=argv.catchUpRealTime;
+
 	if(true==argv.powerOffAtBreakPoint)
 	{
 		towns.var.powerOffAt.MakeFromString(argv.powerOffAt);

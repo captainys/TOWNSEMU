@@ -178,6 +178,16 @@ void TownsThread::AdjustRealTime(FMTowns *townsPtr,long long int townsTimePassed
 		// Then in the next iteration, scheduled tasks will fire all at once, which breaks some logic.
 		// Rather, want to let VM catch up by virtually spending longer time.
 		// The question is how?
+
+		if(true==townsPtr->var.catchUpRealTime)
+		{
+			townsPtr->state.townsTime0+=realTimePassed;
+			townsPtr->state.townsTime=townsPtr->state.townsTime0;
+		}
+		else
+		{
+			townsPtr->state.townsTime0=townsPtr->state.townsTime;
+		}
 	}
 	else
 	{
@@ -189,10 +199,9 @@ void TownsThread::AdjustRealTime(FMTowns *townsPtr,long long int townsTimePassed
 				townsPtr->ProcessSound(outside_world);
 			}
 		}
+		townsPtr->state.townsTime0+=realTimePassed;
+		townsPtr->state.townsTime=townsPtr->state.townsTime0;
 	}
-
-	townsPtr->state.audioTime0+=realTimePassed;
-	townsPtr->state.audioTime=townsPtr->state.audioTime0;
 }
 
 int TownsThread::GetRunMode(void) const

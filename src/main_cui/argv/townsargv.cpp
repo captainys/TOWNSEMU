@@ -59,6 +59,12 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "-NOWAITBOOT" << std::endl;
 	std::cout << "  No wait during the memory test, and then VM waits for real time when" << std::endl;
 	std::cout << "  VM time runs ahead of the real time." << std::endl;
+	std::cout << "-NOCATCHUPREALTIME" << std::endl;
+	std::cout << "  By default, when VM lags behind the real time, the VM timer is fast-forwarded to catch" << std::endl;
+	std::cout << "  up with the real time.  This will play YM2612 BGMs roughly correct timing." << std::endl;
+	std::cout << "  However, it may break time-sensitive applications.  Like ChaseHQ flickers." << std::endl;
+	std::cout << "  To prevent such break down, this option will prevent VM timer from fast-forwarded" << std::endl;
+	std::cout << "  when VM lags.  In return, the execution may become slower." << std::endl;
 	std::cout << "-CMOS filename" << std::endl;
 	std::cout << "  Specify CMOS (BIOS settings) file.  If you specify this option," << std::endl;
 	std::cout << "  CMOS settings will be saved automatically when closing the program." << std::endl;
@@ -208,6 +214,10 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		{
 			noWait=true;
 			noWaitStandby=false;
+		}
+		else if("-NOCATCHUPREALTIME"==ARG)
+		{
+			catchUpRealTime=false;
 		}
 		else if(("-GAMEPORT0"==ARG || "-GAMEPORT1"==ARG) && i+1<argc)
 		{
