@@ -32,7 +32,7 @@ private:
 public:
 	enum
 	{
-		MILLISEC_PER_WAVE=100,  // Should be made much shorter eventually.
+		MILLISEC_PER_WAVE=20,  // Should be made shorter eventually.
 	};
 
 	virtual const char *DeviceName(void) const{return "SOUND";}

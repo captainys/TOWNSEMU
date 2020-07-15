@@ -246,6 +246,10 @@ public:
 
 	/*! Sampling rate is defined by WAVE_SAMPLING_RATE.
 	*/
+	std::vector <unsigned char> MakeWaveAllChannels(unsigned long long int millisec) const;
+
+	/*! Sampling rate is defined by WAVE_SAMPLING_RATE.
+	*/
 	std::vector <unsigned char> MakeWave(unsigned int ch,unsigned long long int millisec) const;
 
 	/*! Adds a wave to the buffer, and returns the number of samples (number_of_bytes_filled/4).
@@ -267,6 +271,10 @@ public:
 	*/
 	void NextWave(unsigned int chNum);
 
+	/*!
+	*/
+	void NextWaveAllChannels(void);
+
 	/*! Change channel state to RELEASE.
 	*/
 	void KeyOff(unsigned int ch);
@@ -275,6 +283,11 @@ public:
 	/*! Check if the tone is done, and update playingCh and playing state.
 	*/
 	void CheckToneDone(unsigned int chNum);
+
+
+	/*! Check if the tone is done, and update playingCh and playing state.
+	*/
+	void CheckToneDoneAllChannels(void);
 
 
 	/*! BLOCK_NOTE is as calculated by [2] pp.204.  Isn't it just high-5 bits of BLOCK|F_NUM2?

@@ -89,12 +89,7 @@ void TownsSound::PCMStopPlay(unsigned char chStopPlay)
 		break;
 	case TOWNSIO_SOUND_DATA0://             0x4DA, // [2] pp.18,
 		{
-			auto ch=state.ym2612.WriteRegister(0,state.addrLatch[0],data);
-			if(ch<6)
-			{
-				auto wav=state.ym2612.MakeWave(ch,MILLISEC_PER_WAVE);
-				outside_world->FMPlay(ch,wav);
-			}
+			state.ym2612.WriteRegister(0,state.addrLatch[0],data);
 		}
 		break;
 	case TOWNSIO_SOUND_ADDRESS1://          0x4DC, // [2] pp.18,
@@ -102,12 +97,7 @@ void TownsSound::PCMStopPlay(unsigned char chStopPlay)
 		break;
 	case TOWNSIO_SOUND_DATA1://             0x4DE, // [2] pp.18,
 		{
-			auto ch=state.ym2612.WriteRegister(3,state.addrLatch[1],data);
-			if(ch<6)
-			{
-				auto wav=state.ym2612.MakeWave(ch,MILLISEC_PER_WAVE);
-				outside_world->FMPlay(ch,wav);
-			}
+			state.ym2612.WriteRegister(3,state.addrLatch[1],data);
 		}
 		break;
 	case TOWNSIO_SOUND_INT_REASON://        0x4E9, // [2] pp.19,
@@ -245,17 +235,27 @@ void TownsSound::ProcessSound(void)
 {
 	if(0!=state.ym2612.state.playingCh)
 	{
-		for(int chNum=0; chNum<YM2612::NUM_CHANNELS; ++chNum)
+		if(0!=state.ym2612.state.playingCh && true!=outside_world->FMChannelPlaying(0))
 		{
-			if(0!=(state.ym2612.state.playingCh&(1<<chNum)) &&
-			   true!=outside_world->FMChannelPlaying(chNum))
-			{
-				state.ym2612.NextWave(chNum);
-				auto wav=state.ym2612.MakeWave(chNum,MILLISEC_PER_WAVE);
-				outside_world->FMPlay(chNum,wav);
-				state.ym2612.CheckToneDone(chNum);
-			}
+			state.ym2612.NextWaveAllChannels();
+			auto wav=state.ym2612.MakeWaveAllChannels(MILLISEC_PER_WAVE);
+			outside_world->FMPlay(0,wav);
+			state.ym2612.CheckToneDoneAllChannels();
 		}
+
+		// Ch by Ch method >>
+		// for(int chNum=0; chNum<YM2612::NUM_CHANNELS; ++chNum)
+		// {
+		// 	if(0!=(state.ym2612.state.playingCh&(1<<chNum)) &&
+		// 	   true!=outside_world->FMChannelPlaying(chNum))
+		// 	{
+		// 		state.ym2612.NextWave(chNum);
+		// 		auto wav=state.ym2612.MakeWave(chNum,MILLISEC_PER_WAVE);
+		// 		outside_world->FMPlay(chNum,wav);
+		// 		state.ym2612.CheckToneDone(chNum);
+		// 	}
+		// }
+		// Ch by Ch method <<
 	}
 	if(state.rf5c68.state.playing && nullptr!=outside_world)
 	{

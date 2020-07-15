@@ -959,6 +959,35 @@ void YM2612::CheckToneDone(unsigned int chNum)
 	}
 }
 
+void YM2612::CheckToneDoneAllChannels(void)
+{
+	for(unsigned int chNum=0; chNum<NUM_CHANNELS; ++chNum)
+	{
+		CheckToneDone(chNum);
+	}
+}
+
+std::vector <unsigned char> YM2612::MakeWaveAllChannels(unsigned long long int millisec) const
+{
+	std::vector <unsigned char> wave;
+
+	unsigned long long int numSamples=(millisec<<12);
+	numSamples*=WAVE_SAMPLING_RATE;
+	numSamples/=1000;
+	numSamples>>=12;
+
+	wave.resize(4*numSamples);
+	std::memset(wave.data(),0,wave.size());
+	for(unsigned int chNum=0; chNum<NUM_CHANNELS; ++chNum)
+	{
+		if(0!=(state.playingCh&(1<<chNum)))
+		{
+			MakeWaveForNSamples(wave.data(),chNum,numSamples);
+		}
+	}
+	return wave;
+}
+
 std::vector <unsigned char> YM2612::MakeWave(unsigned int chNum,unsigned long long int millisec) const
 {
 	std::vector <unsigned char> wave;
@@ -1090,6 +1119,14 @@ void YM2612::NextWave(unsigned int chNum)
 		ch.slots[1].phase12=ch.slots[1].nextPhase12;
 		ch.slots[2].phase12=ch.slots[2].nextPhase12;
 		ch.slots[3].phase12=ch.slots[3].nextPhase12;
+	}
+}
+
+void YM2612::NextWaveAllChannels(void)
+{
+	for(int chNum=0; chNum<NUM_CHANNELS; ++chNum)
+	{
+		NextWave(chNum);
 	}
 }
 
