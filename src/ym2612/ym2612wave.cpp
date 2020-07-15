@@ -850,6 +850,14 @@ void YM2612::KeyOn(unsigned int chNum)
 #ifdef YM2612_DEBUGOUTPUT
 	printf("%d BLOCK %03xH F_NUM %03xH Hertz %d Max Duration %d\n",KC,ch.BLOCK,ch.F_NUM,hertzX16/16,ch.toneDuration12>>12);
 #endif
+
+	ch.nextMicrosec12=ch.microsec12;
+	ch.lastSlot0OutForNextWave=ch.lastSlot0Out;
+	ch.nextFeedbackUpdateCycle=ch.feedbackUpdateCycle;
+	ch.slots[0].nextPhase12=ch.slots[0].phase12;
+	ch.slots[1].nextPhase12=ch.slots[1].phase12;
+	ch.slots[2].nextPhase12=ch.slots[2].phase12;
+	ch.slots[3].nextPhase12=ch.slots[3].phase12;
 }
 
 void YM2612::UpdatePhase12StepSlot(Slot &slot,const unsigned int hertzX16)
