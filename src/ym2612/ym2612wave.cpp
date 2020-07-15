@@ -14,6 +14,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 << LICENSE */
 #include <algorithm>
 #include <iostream>
+#include <cstring>
 
 #include "ym2612.h"
 
@@ -948,19 +949,23 @@ void YM2612::CheckToneDone(unsigned int chNum)
 
 std::vector <unsigned char> YM2612::MakeWave(unsigned int chNum,unsigned long long int millisec) const
 {
-	auto &ch=state.channels[chNum];
 	std::vector <unsigned char> wave;
 
-	unsigned long long int requestedMicroSec12=millisec;
-	requestedMicroSec12<<=12;
-
-	unsigned long long int numSamples=std::min(requestedMicroSec12,ch.toneDuration12); // in millisec
+	unsigned long long int numSamples=(millisec<<12);
 	numSamples*=WAVE_SAMPLING_RATE;
 	numSamples/=1000;
 	numSamples>>=12;
-#ifdef YM2612_DEBUGOUTPUT
-	std::cout << "Requested:" << requestedMicroSec12 << " ToneDuration:" << ch.toneDuration12 << std::endl;
-#endif
+
+	wave.resize(4*numSamples);
+	std::memset(wave.data(),0,wave.size());
+	MakeWaveForNSamples(wave.data(),chNum,numSamples);
+	return wave;
+}
+
+long long int YM2612::MakeWaveForNSamples(unsigned char wave[],unsigned int chNum,unsigned long long int numSamples) const
+{
+	auto &ch=state.channels[chNum];
+
 	const unsigned int microsec12Step=4096000000/WAVE_SAMPLING_RATE;
 	// Time runs 1/WAVE_SAMPLING_RATE seconds per step
 	//           1000/WAVE_SAMPLING_RATE milliseconds per step
@@ -984,8 +989,10 @@ std::vector <unsigned char> YM2612::MakeWave(unsigned int chNum,unsigned long lo
 	unsigned int LeftANDPtn=(0!=ch.L ? ~0 : 0);
 	unsigned int RightANDPtn=(0!=ch.R ? ~0 : 0);
 
-	wave.resize(4*numSamples);
-	for(unsigned int i=0; i<numSamples; ++i)
+	unsigned int i;
+	unsigned long long int toneDurationMicrosec12=ch.toneDuration12;
+	toneDurationMicrosec12*=1000;
+	for(i=0; i<numSamples && microsec12<toneDurationMicrosec12; ++i)
 	{
 		const unsigned int microsec=(unsigned int)(microsec12>>12);
 		int PMSAdjustment[4]=
@@ -1058,7 +1065,7 @@ std::vector <unsigned char> YM2612::MakeWave(unsigned int chNum,unsigned long lo
 // std::cout << phase12[2] << "," << (phase12[2]>>12)/PHASE_STEPS << "cycles" << std::endl;
 // std::cout << phase12[3] << "," << (phase12[3]>>12)/PHASE_STEPS << "cycles" << std::endl;
 
-	return wave;
+	return i;
 }
 
 void YM2612::NextWave(unsigned int chNum)

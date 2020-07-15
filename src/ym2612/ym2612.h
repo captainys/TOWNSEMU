@@ -55,7 +55,7 @@ public:
 		TONE_CHOPOFF_MILLISEC=4000,
 
 		WAVE_SAMPLING_RATE=44100,
-		WAVE_OUTPUT_AMPLITUDE_MAX=8192,
+		WAVE_OUTPUT_AMPLITUDE_MAX=4096,
 	};
 
 	enum
@@ -244,9 +244,14 @@ public:
 	*/
 	void UpdatePhase12StepSlot(Channel &ch);
 
-	/*!
+	/*! Sampling rate is defined by WAVE_SAMPLING_RATE.
 	*/
 	std::vector <unsigned char> MakeWave(unsigned int ch,unsigned long long int millisec) const;
+
+	/*! Adds a wave to the buffer, and returns the number of samples (number_of_bytes_filled/4).
+	    Sampling rate is defined by WAVE_SAMPLING_RATE.
+	*/
+	long long int MakeWaveForNSamples(unsigned char wavBuf[],unsigned int chNum,unsigned long long int numSamplesRequested) const;
 private:
 	/*! Returns the longest duration of the tone in milliseconds if no key off.
 	*/
