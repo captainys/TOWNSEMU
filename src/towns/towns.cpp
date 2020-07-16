@@ -63,7 +63,7 @@ FMTowns::Variable::Variable()
 	{
 		t=0;
 	}
-	powerOffAt.SEG=0;
+	powerOffAt.SEG=0xFFFF0000;
 	powerOffAt.OFFSET=0;
 	Reset();
 }
