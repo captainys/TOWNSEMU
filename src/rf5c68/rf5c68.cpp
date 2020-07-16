@@ -179,7 +179,12 @@ std::vector <unsigned char> RF5C68::Make19KHzWave(unsigned int chNum)
 	if(0<ch.FD)
 	{
 		unsigned int endPtr=((ch.startPtr+0x1000)&(~0xfff));
-		for(unsigned int pcmAddr=(ch.startPtr<<FD_BIT_SHIFT); pcmAddr<(endPtr<<FD_BIT_SHIFT); pcmAddr+=ch.FD)
+		unsigned int startAddr=(ch.startPtr<<FD_BIT_SHIFT);
+		unsigned int endAddr=(endPtr<<FD_BIT_SHIFT);
+		unsigned int count=(endAddr-startAddr+ch.FD-1)/ch.FD;
+		wave.resize(count*4);
+		auto wavePtr=wave.data();
+		for(unsigned int pcmAddr=startAddr; pcmAddr<endAddr; pcmAddr+=ch.FD)
 		{
 			auto data=state.waveRAM[pcmAddr>>FD_BIT_SHIFT];
 			if(0xff==data)
@@ -198,10 +203,11 @@ std::vector <unsigned char> RF5C68::Make19KHzWave(unsigned int chNum)
 				R=-R;
 			}
 
-			wave.push_back(L&0xFF);
-			wave.push_back((L>>8)&0xFF);
-			wave.push_back(R&0xFF);
-			wave.push_back((R>>8)&0xFF);
+			wavePtr[0]=(L&0xFF);
+			wavePtr[1]=((L>>8)&0xFF);
+			wavePtr[2]=(R&0xFF);
+			wavePtr[3]=((R>>8)&0xFF);
+			wavePtr+=4;
 		}
 	}
 
