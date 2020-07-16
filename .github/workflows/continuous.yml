@@ -51,7 +51,9 @@ jobs:
     - name: mkdir
       run: mkdir ci_ubuntu
     - name: install-OpenGL
-      run: sudo apt-get install mesa-common-dev mesa-utils
+      run: |
+      sudo apt-get update
+      sudo apt-get install libglu1-mesa-dev mesa-common-dev
     - name: install-ALSA
       run: sudo apt-get install libasound2 libasound2-dev
     - name: cmake
