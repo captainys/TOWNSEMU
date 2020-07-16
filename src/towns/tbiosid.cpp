@@ -60,11 +60,11 @@ Towns OS V2.1 L20, TBIOS V31L31_92
 00100000 56 33 31 4C 33 31 00 00 39 32 2F 31 30 2F 31 36|V31L31  92/10/16
 00100010 74 6F 77 6E 73 00 00 00 74 62 69 6F 73 00 00 00|towns   tbios
 
-Towns OS V2.1 L31, TBIOS V31L35
+Towns OS V2.1 L30/L31, TBIOS V31L35
 00100000 56 33 31 4C 33 35 00 00 39 33 2F 31 30 2F 31 35|V31L35  93/10/15
 00100010 74 6F 77 6E 73 00 00 00 74 62 69 6F 73 00 00 00|towns   tbios
 
-Towns OS V2.1 L50 TBIOS V31L35_94 (Free Software Collection 11)
+Towns OS V2.1 L50 TBIOS V31L35 (Free Software Collection 11)
 00100000 56 33 31 4C 33 35 00 00 39 34 2F 31 32 2F 30 33|V31L35  94/12/03
 00100010 74 6F 77 6E 73 00 00 00 74 62 69 6F 73 00 00 00|towns   tbios
 */
@@ -99,12 +99,6 @@ unsigned int FMTowns::IdentifyTBIOS(unsigned int biosPhysicalBaseAddr) const
 	}
 	if("V31L35"==s[0] && "towns"==s[2] && "tbios"==s[3])
 	{
-		auto year=s[1];
-		year.resize(2);
-		if("94"==year)
-		{
-			return TBIOS_V31L35_94;
-		}
 		return TBIOS_V31L35;
 	}
 
@@ -117,6 +111,18 @@ unsigned int FMTowns::FindTBIOSMouseInfoOffset(unsigned int tbiosVersion,unsigne
 	{
 	case TBIOS_V31L35:
 		{
+			// TownsOS V2.1 L30
+			// 0110:00014A8B BFE0490100                MOV     EDI,000149E0H			
+
+			// 0110:00014C00 8A6F1C                    MOV     CH,[EDI+1CH]
+			// 0110:00014C03 8B570C                    MOV     EDX,[EDI+0CH]
+			// 0110:00014C06 0FA4D310                  SHLD    EBX,EDX,10H
+			// 0110:00014C0A 886D1D                    MOV     [EBP+1DH],CH
+			// 0110:00014C0D 66895518                  MOV     [EBP+18H],DX
+			// 0110:00014C11 66895D14                  MOV     [EBP+14H],BX
+			// 0110:00014C15 C3                        RET
+
+			// TownsOS V2.1 L31
 			// 0110:00014B2B BF804A0100                MOV     EDI,00014A80H
 
 			// 0110:00014C94 8A6F1C                    MOV     CH,[EDI+1CH]
@@ -127,34 +133,7 @@ unsigned int FMTowns::FindTBIOSMouseInfoOffset(unsigned int tbiosVersion,unsigne
 			// 0110:00014CA5 66895D14                  MOV     [EBP+14H],BX
 			// 0110:00014CA9 C3                        RET
 
-			const int dist=0x14C94-0x14B2B;
-			const unsigned char rdposCode[]=
-			{
-				0x8A,0x6F,0x1C,0x8B,0x57,0x0C,0x0F,0xA4,0xD3,0x10,0x88,0x6D,0x1D,0x66,0x89,0x55,0x18,0x66,0x89,0x5D,0x14,0xC3,
-			};
-			for(unsigned int ptr=0; ptr<0x30000; ++ptr)
-			{
-				if(0xBF==mem.FetchByte(biosPhysicalBaseAddr+ptr))
-				{
-					bool match=true;
-					for(int j=0; j<sizeof(rdposCode); ++j)
-					{
-						if(rdposCode[j]!=mem.FetchByte(biosPhysicalBaseAddr+ptr+dist+j))
-						{
-							match=false;
-							break;
-						}
-					}
-					if(true==match)
-					{
-						return mem.FetchDword(biosPhysicalBaseAddr+ptr+1);
-					}
-				}
-			}
-		}
-		break;
-	case TBIOS_V31L35_94:
-		{
+			// TownsOS V2.1 L50
 			// 0110:000162C8 BF30620100                MOV     EDI,00016230H
 
 			// 0110:0001643C 8A6F1C                    MOV     CH,[EDI+1CH]
@@ -165,7 +144,12 @@ unsigned int FMTowns::FindTBIOSMouseInfoOffset(unsigned int tbiosVersion,unsigne
 			// 0110:0001644D 66895D14                  MOV     [EBP+14H],BX
 			// 0110:00016451 C3                        RET
 
-			const int dist=0x1643C-0x162C8;
+			const int distCandidates[]=
+			{
+				0x14C00-0x14A8B, // V2.1 L30
+				0x14C94-0x14B2B, // V2.1 L31
+				0x1643C-0x162C8, // V2.1 L50
+			};
 			const unsigned char rdposCode[]=
 			{
 				0x8A,0x6F,0x1C,0x8B,0x57,0x0C,0x0F,0xA4,0xD3,0x10,0x88,0x6D,0x1D,0x66,0x89,0x55,0x18,0x66,0x89,0x5D,0x14,0xC3,
@@ -174,18 +158,47 @@ unsigned int FMTowns::FindTBIOSMouseInfoOffset(unsigned int tbiosVersion,unsigne
 			{
 				if(0xBF==mem.FetchByte(biosPhysicalBaseAddr+ptr))
 				{
-					bool match=true;
-					for(int j=0; j<sizeof(rdposCode); ++j)
+					for(int dist : distCandidates)
 					{
-						if(rdposCode[j]!=mem.FetchByte(biosPhysicalBaseAddr+ptr+dist+j))
+						bool match=true;
+						for(int j=0; j<sizeof(rdposCode); ++j)
 						{
-							match=false;
-							break;
+							if(rdposCode[j]!=mem.FetchByte(biosPhysicalBaseAddr+ptr+dist+j))
+							{
+								match=false;
+								break;
+							}
+						}
+						if(true==match)
+						{
+							return mem.FetchDword(biosPhysicalBaseAddr+ptr+1);
 						}
 					}
-					if(true==match)
+				}
+			}
+
+			// None of the above?
+			// This may support V2.1L40
+			for(unsigned int ptr=0; ptr<0x30000; ++ptr)
+			{
+				bool match=true;
+				for(int j=0; j<sizeof(rdposCode); ++j)
+				{
+					if(rdposCode[j]!=mem.FetchByte(biosPhysicalBaseAddr+ptr+j))
 					{
-						return mem.FetchDword(biosPhysicalBaseAddr+ptr+1);
+						match=false;
+						break;
+					}
+				}
+				if(true==match)
+				{
+					while(0<ptr)
+					{
+						--ptr;
+						if(0xBF==mem.FetchByte(biosPhysicalBaseAddr+ptr))
+						{
+							return mem.FetchDword(biosPhysicalBaseAddr+ptr+1);
+						}
 					}
 				}
 			}
@@ -263,8 +276,6 @@ const char *FMTowns::TBIOSIDENTtoString(unsigned int tbios) const
 		return "TBIOS_V31L31_92";
 	case TBIOS_V31L35:
 		return "TBIOS_V31L35";
-	case TBIOS_V31L35_94:
-		return "TBIOS_V31L35_94";
 	}
 }
 
@@ -561,6 +572,7 @@ bool FMTowns::GetMouseCoordinate(int &mx,int &my,unsigned int tbiosid) const
 			my=(int)mem.FetchWord(state.TBIOS_physicalAddr+0x512);
 			return true;
 		case TBIOS_V31L35:
+			// V2.1 L31
 			// 0110:00014B2B BF804A0100                MOV     EDI,00014A80H
 
 			// 0110:00014C94 8A6F1C                    MOV     CH,[EDI+1CH]
@@ -570,10 +582,8 @@ bool FMTowns::GetMouseCoordinate(int &mx,int &my,unsigned int tbiosid) const
 			// 0110:00014CA1 66895518                  MOV     [EBP+18H],DX
 			// 0110:00014CA5 66895D14                  MOV     [EBP+14H],BX
 			// 0110:00014CA9 C3                        RET
-			mx=(int)mem.FetchWord(state.TBIOS_physicalAddr+state.TBIOS_mouseInfoOffset+0x0C);
-			my=(int)mem.FetchWord(state.TBIOS_physicalAddr+state.TBIOS_mouseInfoOffset+0x0E);
-			return true;
-		case TBIOS_V31L35_94:
+
+			// V2.1 L50
 			// 0110:000162C8 BF30620100                MOV     EDI,00016230H
 
 			// 0110:0001643C 8A6F1C                    MOV     CH,[EDI+1CH]
