@@ -56,6 +56,7 @@ public:
 
 		CMD_FIND,
 		CMD_FIND_STRING,
+		CMD_FIND_CALLER,
 
 		CMD_RETURN_FROM_PROCEDURE,
 
@@ -282,6 +283,8 @@ public:
 	void Execute_Search_ByteSequence(FMTowns &towns,const std::vector <unsigned char> &bytes);
 	void FoundAt(FMTowns &towns,unsigned int physAddr);
 	void FoundAt(std::string segLabel,unsigned int linearBase,unsigned int linearAddr);
+
+	void Execute_Find_Caller(FMTowns &towns,Command &cmd);
 };
 
 

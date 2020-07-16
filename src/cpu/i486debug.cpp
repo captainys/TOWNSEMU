@@ -541,3 +541,104 @@ bool i486Debugger::AtLeastOneMonitorIOPortIsSet(void) const
 	}
 	return false;
 }
+
+std::vector <unsigned int> i486Debugger::FindCaller(unsigned int procAddr,const i486DX::SegmentRegister &seg,const i486DX &cpu,const Memory &mem)
+{
+	std::vector <unsigned int> caller;
+
+	unsigned int limit=0;
+	if(cpu.IsInRealMode())
+	{
+		limit=0xFFFF;
+	}
+	else
+	{
+		limit=seg.limit;
+	}
+
+	MemoryAccess::ConstMemoryWindow memWindow;
+	memWindow.ptr=nullptr;
+	for(unsigned int EIP=0; EIP<limit; ++EIP)
+	{
+		if(0==(EIP&0x7FFF))
+		{
+			std::cout << "Searching..." << cpputil::Uitox(EIP) << std::endl;
+		}
+		i486DX::Instruction inst;
+		i486DX::Operand op1,op2;
+		cpu.FetchInstruction(memWindow,inst,op1,op2,seg,EIP,mem);
+		switch(inst.opCode)
+		{
+		case I486_OPCODE_CALL_FAR://   0x9A,
+		case I486_OPCODE_JMP_FAR://          0xEA,   // cd or cp
+			{
+				op1.DecodeFarAddr(inst.addressSize,inst.operandSize,inst.operand);
+				if(op1.offset==procAddr)
+				{
+					caller.push_back(EIP);
+				}
+			}
+			break;
+		case I486_OPCODE_INC_DEC_CALL_CALLF_JMP_JMPF_PUSH ://0xFF, // INC(REG=0),DEC(REG=1),CALL(REG=2),CALLF(REG=3),JMP(REG=4),JMPF(REG=5),PUSH(REG=6)
+			// Call indirect.
+			break;
+
+		case I486_OPCODE_JMP_REL8://         0xEB,   // cb
+		case I486_OPCODE_JECXZ_REL8://0xE3,  // Depending on the operand size
+		case I486_OPCODE_JA_REL8://   0x77,
+		case I486_OPCODE_JAE_REL8://  0x73,
+		case I486_OPCODE_JB_REL8://   0x72,
+		case I486_OPCODE_JBE_REL8://  0x76,
+		case I486_OPCODE_JE_REL8://   0x74,
+		case I486_OPCODE_JG_REL8://   0x7F,
+		case I486_OPCODE_JGE_REL8://  0x7D,
+		case I486_OPCODE_JL_REL8://   0x7C,
+		case I486_OPCODE_JLE_REL8://  0x7E,
+		case I486_OPCODE_JNE_REL8://  0x75,
+		case I486_OPCODE_JNO_REL8://  0x71,
+		case I486_OPCODE_JNP_REL8://  0x7B,
+		case I486_OPCODE_JNS_REL8://  0x79,
+		case I486_OPCODE_JO_REL8://   0x70,
+		case I486_OPCODE_JP_REL8://   0x7A,
+		case I486_OPCODE_JS_REL8://   0x78,
+			{
+				auto offset=inst.EvalSimm8();
+				auto destin=EIP+offset+inst.numBytes;
+				if(procAddr==destin)
+				{
+					caller.push_back(EIP);
+				}
+			}
+			break;
+		case I486_OPCODE_JMP_REL://          0xE9,   // cw or cd
+		case I486_OPCODE_JA_REL://    0x0F87,
+		case I486_OPCODE_JAE_REL://   0x0F83,
+		case I486_OPCODE_JB_REL://    0x0F82,
+		case I486_OPCODE_JBE_REL://   0x0F86,
+		case I486_OPCODE_JE_REL://    0x0F84,
+		case I486_OPCODE_JG_REL://    0x0F8F,
+		case I486_OPCODE_JGE_REL://   0x0F8D,
+		case I486_OPCODE_JL_REL://    0x0F8C,
+		case I486_OPCODE_JLE_REL://   0x0F8E,
+		case I486_OPCODE_JNE_REL://   0x0F85,
+		case I486_OPCODE_JNO_REL://   0x0F81,
+		case I486_OPCODE_JNP_REL://   0x0F8B,
+		case I486_OPCODE_JNS_REL://   0x0F89,
+		case I486_OPCODE_JO_REL://    0x0F80,
+		case I486_OPCODE_JP_REL://    0x0F8A,
+		case I486_OPCODE_JS_REL://    0x0F88,
+		case I486_OPCODE_CALL_REL://   0xE8,
+			{
+				auto offset=inst.EvalSimm16or32(inst.operandSize);
+				auto destin=EIP+offset+inst.numBytes;
+				if(procAddr==destin)
+				{
+					caller.push_back(EIP);
+				}
+			}
+			break;
+		}
+	}
+
+	return caller;
+}

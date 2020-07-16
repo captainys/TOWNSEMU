@@ -181,6 +181,7 @@ private:
 
 
 public:
+	std::vector <unsigned int> FindCaller(unsigned int procAddr,const i486DX::SegmentRegister &seg,const i486DX &cpu,const Memory &mem);
 };
 
 template <>

@@ -70,6 +70,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["UPDMEMFILTER"]=CMD_UPDATE_MEMORY_FILTER;
 	primaryCmdMap["FIND"]=CMD_FIND;
 	primaryCmdMap["FINDS"]=CMD_FIND_STRING;
+	primaryCmdMap["FINDCALLER"]=CMD_FIND_CALLER;
 
 	primaryCmdMap["ADDSYM"]=CMD_ADD_SYMBOL;
 	primaryCmdMap["KEYBOARD"]=CMD_KEYBOARD;
@@ -239,6 +240,11 @@ void TownsCommandInterpreter::PrintHelp(void) const
 
 	std::cout << "FINDS string" << std::endl;
 	std::cout << "  Find a string in main RAM and VRAM." << std::endl;
+
+	std::cout << "FINDCALLER offset" << std::endl;
+	std::cout << "  Find JMP rel8, JMP rel, CALL rel, CALLF, Jcc instructions within the current CS" << std::endl;
+	std::cout << "  that jump to the given offset." << std::endl;
+	std::cout << "  Currently it will miss indirect jump/call." << std::endl;
 
 	std::cout << "ADTR SEG:OFFSET" << std::endl;
 	std::cout << "  Translate address to linear address and physical address." << std::endl;
@@ -541,6 +547,9 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 		break;
 	case CMD_FIND_STRING:
 		Execute_Search_String(towns,cmd);
+		break;
+	case CMD_FIND_CALLER:
+		Execute_Find_Caller(towns,cmd);
 		break;
 
 	case CMD_TRANSLATE_ADDRESS:
@@ -2348,4 +2357,30 @@ void TownsCommandInterpreter::FoundAt(FMTowns &towns,unsigned int physAddr)
 void TownsCommandInterpreter::FoundAt(std::string segLabel,unsigned int linearBase,unsigned int linearAddr)
 {
 	std::cout << segLabel << cpputil::Uitox(linearAddr-linearBase) << std::endl;
+}
+
+void TownsCommandInterpreter::Execute_Find_Caller(FMTowns &towns,Command &cmd)
+{
+	if(2<=cmd.argv.size())
+	{
+		auto procAddr=cpputil::Xtoi(cmd.argv[1].c_str());
+		for(auto callerAddr : towns.debugger.FindCaller(procAddr,towns.cpu.state.CS(),towns.cpu,towns.mem))
+		{
+			auto &seg=towns.cpu.state.CS();
+
+			i486DX::Instruction inst;
+			i486DX::Operand op1,op2;
+			MemoryAccess::ConstMemoryWindow emptyMemWin;
+
+			towns.debugger.GetSymTable().PrintIfAny(seg.value,callerAddr);
+			towns.cpu.FetchInstruction(emptyMemWin,inst,op1,op2,seg,callerAddr,towns.mem);
+
+			auto disasm=towns.cpu.Disassemble(inst,op1,op2,seg,callerAddr,towns.mem,towns.debugger.GetSymTable(),towns.debugger.GetIOTable());
+			std::cout << disasm << std::endl;
+		}
+	}
+	else
+	{
+		PrintError(ERROR_TOO_FEW_ARGS);
+	}
 }
