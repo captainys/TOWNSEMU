@@ -44,7 +44,7 @@ jobs:
 
   build-linux:
 
-    runs-on: ubuntu-16.04.5    # Github VMs Ubuntu 18.x is broken and cannot install OpenGL.
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
