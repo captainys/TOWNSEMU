@@ -98,7 +98,7 @@ public:
 	void ProcessMouse(class FMTowns &towns,int lb,int mb,int rb,int mx,int my);
 
 public:
-	virtual void CDDAPlay(const DiscImage &discImg,DiscImage::MinSecFrm from,DiscImage::MinSecFrm to)=0;
+	virtual void CDDAPlay(const DiscImage &discImg,DiscImage::MinSecFrm from,DiscImage::MinSecFrm to,bool repeat)=0;
 	virtual void CDDAStop(void)=0;
 	virtual void CDDAPause(void)=0;
 	virtual void CDDAResume(void)=0;

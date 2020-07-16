@@ -521,11 +521,18 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 	FSKEYtoTownsKEY[FSKEY_RIGHT_ALT]=   TOWNS_JISKEY_NULL;
 }
 
-/* virtual */ void FsSimpleWindowConnection::CDDAPlay(const DiscImage &discImg,DiscImage::MinSecFrm from,DiscImage::MinSecFrm to)
+/* virtual */ void FsSimpleWindowConnection::CDDAPlay(const DiscImage &discImg,DiscImage::MinSecFrm from,DiscImage::MinSecFrm to,bool repeat)
 {
 	auto wave=discImg.GetWave(from,to);
 	cddaChannel.CreateFromSigned16bitStereo(44100,wave);
-	soundPlayer.PlayOneShot(cddaChannel);
+	if(true==repeat)
+	{
+		soundPlayer.PlayBackground(cddaChannel);
+	}
+	else
+	{
+		soundPlayer.PlayOneShot(cddaChannel);
+	}
 	cddaStartHSG=from.ToHSG();
 }
 /* virtual */ void FsSimpleWindowConnection::CDDAStop(void)

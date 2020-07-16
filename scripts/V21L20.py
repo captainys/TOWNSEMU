@@ -34,16 +34,19 @@ def Run(argv):
 		"-FD1",
 		os.path.join(DISKDIR,"720KB.bin"),
 		"-CD",
-		os.path.join(THISDIR,"..","testdata","ISOIMG","TESTDISC.ISO"),
+		# os.path.join(THISDIR,"..","testdata","ISOIMG","TESTDISC.ISO"),
+		"D:/TownsISO/AFTER_BURNER.BIN",
 		"-SYM",
 		"../symtables/V2.1L20_"+TOWNSTYPE+".txt",
 		"-HD0",
 		os.path.join(DISKDIR,"hddimage.bin"),
 		"-CMOS",
 		"../testdata/CMOS.bin",
+		"-BOOTKEY",
+		"F0",
 		"-DONTAUTOSAVECMOS",
 		"-DEBUG",
-		 "-PAUSE",
+		# "-PAUSE",
 	]+argv).wait()
 
 

@@ -499,7 +499,8 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 
 			if(nullptr!=OutsideWorld)
 			{
-				OutsideWorld->CDDAPlay(state.GetDisc(),msfBegin,msfEnd);
+				bool repeat=(1==state.paramQueue[6]); // Should I say 0!= ?
+				OutsideWorld->CDDAPlay(state.GetDisc(),msfBegin,msfEnd,repeat);
 				state.CDDAState=State::CDDA_PLAYING;
 				state.CDDAEndTime=msfEnd;
 			}

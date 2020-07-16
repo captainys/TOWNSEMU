@@ -236,3 +236,21 @@ build\ym2612FB.obj : ym2612FB.c
 
 build\ym2612FB.exp : build\ym2612FB.OBJ build\io.OBJ
 	386link build\ym2612FB.obj -exe build\ym2612FB.exp @LIBS.LN
+
+
+
+build\repeat.obj : cdrom\repeat.asm
+	MASM cdrom\repeat.ASM build\repeat.OBJ build\repeat.LST NUL
+
+build\repeat.exe : build\repeat.OBJ
+	LINK build\repeat.OBJ;
+	COPY repeat.EXE build\.
+	DEL repeat.EXE
+
+build\cdda.obj : cdrom\cdda.asm
+	MASM cdrom\cdda.ASM build\cdda.OBJ build\cdda.LST NUL
+
+build\cdda.exe : build\cdda.OBJ
+	LINK build\cdda.OBJ;
+	COPY cdda.EXE build\.
+	DEL cdda.EXE
