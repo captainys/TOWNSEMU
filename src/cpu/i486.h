@@ -2054,6 +2054,14 @@ public:
 	{
 		offset&=AddressMask((unsigned char)addressSize);
 		auto addr=seg.baseLinearAddr+offset;
+
+		if(&seg==&state.SS() && 
+		   nullptr!=state.SSESPWindow.ptr &&
+		   true==state.SSESPWindow.IsLinearAddressInRange(addr))
+		{
+			return state.SSESPWindow.ptr[addr&(MemoryAccess::MEMORY_WINDOW_SIZE-1)];
+		}
+
 		if(true==PagingEnabled())
 		{
 			addr=LinearAddressToPhysicalAddress(addr,mem);
@@ -2067,6 +2075,18 @@ public:
 	{
 		offset&=AddressMask((unsigned char)addressSize);
 		auto addr=seg.baseLinearAddr+offset;
+
+		if(&seg==&state.SS() && 
+		   nullptr!=state.SSESPWindow.ptr &&
+		   true==state.SSESPWindow.IsLinearAddressInRange(addr))
+		{
+			unsigned int low12bits=(addr&(MemoryAccess::MEMORY_WINDOW_SIZE-1));
+			if(low12bits<=MemoryAccess::MEMORY_WINDOW_SIZE-2)
+			{
+				return cpputil::GetWord(state.SSESPWindow.ptr+low12bits);
+			}
+		}
+
 		if(true==PagingEnabled())
 		{
 			addr=LinearAddressToPhysicalAddress(addr,mem);
@@ -2084,6 +2104,18 @@ public:
 	{
 		offset&=AddressMask((unsigned char)addressSize);
 		auto addr=seg.baseLinearAddr+offset;
+
+		if(&seg==&state.SS() && 
+		   nullptr!=state.SSESPWindow.ptr &&
+		   true==state.SSESPWindow.IsLinearAddressInRange(addr))
+		{
+			unsigned int low12bits=(addr&(MemoryAccess::MEMORY_WINDOW_SIZE-1));
+			if(low12bits<=MemoryAccess::MEMORY_WINDOW_SIZE-4)
+			{
+				return cpputil::GetDword(state.SSESPWindow.ptr+low12bits);
+			}
+		}
+
 		if(true==PagingEnabled())
 		{
 			addr=LinearAddressToPhysicalAddress(addr,mem);
@@ -2737,6 +2769,15 @@ inline void i486DX::StoreByte(Memory &mem,int addressSize,SegmentRegister seg,un
 {
 	offset&=AddressMask((unsigned char)addressSize);
 	auto linearAddr=seg.baseLinearAddr+offset;
+
+	if(&seg==&state.SS() && 
+	   nullptr!=state.SSESPWindow.ptr &&
+	   true==state.SSESPWindow.IsLinearAddressInRange(linearAddr))
+	{
+		state.SSESPWindow.ptr[linearAddr&(MemoryAccess::MEMORY_WINDOW_SIZE-1)]=byteData;
+		return;
+	}
+
 	auto physicalAddr=linearAddr;
 	if(true==PagingEnabled())
 	{
@@ -2749,6 +2790,19 @@ inline void i486DX::StoreWord(Memory &mem,int addressSize,SegmentRegister seg,un
 {
 	offset&=AddressMask((unsigned char)addressSize);
 	auto linearAddr=seg.baseLinearAddr+offset;
+
+	if(&seg==&state.SS() && 
+	   nullptr!=state.SSESPWindow.ptr &&
+	   true==state.SSESPWindow.IsLinearAddressInRange(linearAddr))
+	{
+		unsigned int low12bits=(linearAddr&(MemoryAccess::MEMORY_WINDOW_SIZE-1));
+		if(low12bits<=MemoryAccess::MEMORY_WINDOW_SIZE-2)
+		{
+			cpputil::PutWord(state.SSESPWindow.ptr+low12bits,data);
+			return;
+		}
+	}
+
 	auto physicalAddr=linearAddr;
 	if(true==PagingEnabled())
 	{
@@ -2766,6 +2820,19 @@ inline void i486DX::StoreDword(Memory &mem,int addressSize,SegmentRegister seg,u
 {
 	offset&=AddressMask((unsigned char)addressSize);
 	auto linearAddr=seg.baseLinearAddr+offset;
+
+	if(&seg==&state.SS() && 
+	   nullptr!=state.SSESPWindow.ptr &&
+	   true==state.SSESPWindow.IsLinearAddressInRange(linearAddr))
+	{
+		unsigned int low12bits=(linearAddr&(MemoryAccess::MEMORY_WINDOW_SIZE-1));
+		if(low12bits<=MemoryAccess::MEMORY_WINDOW_SIZE-4)
+		{
+			cpputil::PutDword(state.SSESPWindow.ptr+low12bits,data);
+			return;
+		}
+	}
+
 	auto physicalAddr=linearAddr;
 	if(true==PagingEnabled())
 	{
