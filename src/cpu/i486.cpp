@@ -138,7 +138,8 @@ void i486DX::FarPointer::MakeFromString(const std::string &str)
 	{
 		if(':'==str[i])
 		{
-			this->OFFSET=cpputil::Xtoi(str.data()+i+1);
+			auto offsetPtr=str.data()+i+1;
+			this->OFFSET=cpputil::Xtoi(offsetPtr);
 
 			auto segPart=str;
 			segPart.resize(i);
@@ -183,6 +184,13 @@ void i486DX::FarPointer::MakeFromString(const std::string &str)
 			{
 				this->SEG=cpputil::Xtoi(str.data());
 			}
+
+			if('*'==*offsetPtr)
+			{
+				this->SEG&=0xFFFF;
+				this->SEG|=SEG_WILDCARD;
+			}
+
 			return;
 		}
 	}

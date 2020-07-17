@@ -102,6 +102,10 @@ i486Debugger::i486Debugger()
 	{
 		*iter=false;
 	}
+	for(auto &CS : breakOnCS)
+	{
+		CS=false;
+	}
 	CleanUp();
 }
 i486Debugger::~i486Debugger()
@@ -153,23 +157,41 @@ void i486Debugger::CleanUp(void)
 }
 void i486Debugger::AddBreakPoint(CS_EIP bp)
 {
-	auto iter=breakPoints.find(bp);
-	if(breakPoints.end()==iter)
+	if((bp.SEG&i486DX::FarPointer::SPECIAL_SEG_MASK)==i486DX::FarPointer::SEG_WILDCARD)
 	{
-		breakPoints.insert(bp);
+		breakOnCS[bp.SEG&0xFFFF]=true;
+	}
+	else
+	{
+		auto iter=breakPoints.find(bp);
+		if(breakPoints.end()==iter)
+		{
+			breakPoints.insert(bp);
+		}
 	}
 }
 void i486Debugger::RemoveBreakPoint(CS_EIP bp)
 {
-	auto iter=breakPoints.find(bp);
-	if(breakPoints.end()!=iter)
+	if((bp.SEG&i486DX::FarPointer::SPECIAL_SEG_MASK)==i486DX::FarPointer::SEG_WILDCARD)
 	{
-		breakPoints.erase(iter);
+		breakOnCS[bp.SEG&0xFFFF]=false;
+	}
+	else
+	{
+		auto iter=breakPoints.find(bp);
+		if(breakPoints.end()!=iter)
+		{
+			breakPoints.erase(iter);
+		}
 	}
 }
 void i486Debugger::ClearBreakPoints(void)
 {
 	breakPoints.clear();
+	for(auto &CS : breakOnCS)
+	{
+		CS=false;
+	}
 }
 std::vector <i486Debugger::CS_EIP> i486Debugger::GetBreakPoints(void) const
 {
@@ -306,6 +328,10 @@ void i486Debugger::CheckForBreakPoints(i486DX &cpu)
 	cseip.OFFSET=cpu.state.EIP;
 
 	if(breakPoints.find(cseip)!=breakPoints.end())
+	{
+		stop=true;
+	}
+	if(breakOnCS[cseip.SEG])
 	{
 		stop=true;
 	}

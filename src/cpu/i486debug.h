@@ -35,6 +35,7 @@ public:
 	typedef i486DX::FarPointer CS_EIP;
 
 	std::set <CS_EIP> breakPoints;
+	bool breakOnCS[65536];
 	std::vector <bool> breakOnIORead,breakOnIOWrite;
 	CS_EIP oneTimeBreakPoint;
 	std::string externalBreakReason;
