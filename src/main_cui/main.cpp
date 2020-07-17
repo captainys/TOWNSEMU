@@ -330,21 +330,5 @@ int main(int ac,char *av[])
 		return 1;
 	}
 
-	unsigned int eightBytesCSEIP[8]=
-	{
-		towns.FetchByteCS_EIP(0),
-		towns.FetchByteCS_EIP(1),
-		towns.FetchByteCS_EIP(2),
-		towns.FetchByteCS_EIP(3),
-		towns.FetchByteCS_EIP(4),
-		towns.FetchByteCS_EIP(5),
-		towns.FetchByteCS_EIP(6),
-		towns.FetchByteCS_EIP(7)
-	};
-	for(auto b : eightBytesCSEIP)
-	{
-		std::cout << cpputil::Ubtox(b) << std::endl;
-	}
-
 	return Run(towns,argv,*outside_world);
 }

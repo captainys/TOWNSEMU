@@ -504,7 +504,6 @@ public:
 	void EnableDebugger(void);
 	void DisableDebugger(void);
 
-	unsigned int FetchByteCS_EIP(int offset) const;
 	std::vector <std::string> GetStackText(unsigned int numBytes) const;
 	void PrintStack(unsigned int numBytes) const;
 	void PrintDisassembly(void) const;

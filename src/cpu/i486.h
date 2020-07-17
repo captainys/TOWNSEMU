@@ -2136,7 +2136,7 @@ public:
 	    Function name is left as FetchWordOrDword temporarily for the time being.
 	    Will be unified to FetchByteWordOrDword in the future.
 	*/
-	inline unsigned int FetchWordOrDword(unsigned int operandSize,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+	inline unsigned int FetchWordOrDword(unsigned int operandSize,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
 	{
 		switch(operandSize)
 		{
@@ -2149,7 +2149,7 @@ public:
 			return FetchDword(addressSize,seg,offset,mem);
 		}
 	}
-	inline unsigned int FetchByteWordOrDword(unsigned int operandSize,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+	inline unsigned int FetchByteWordOrDword(unsigned int operandSize,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
 	{
 		return FetchWordOrDword(operandSize,addressSize,seg,offset,mem);
 	}
@@ -2271,7 +2271,7 @@ public:
 
 	/*! Fetch a byte from CS:[EIP+offset].
 	*/
-	inline unsigned int FetchInstructionByte(unsigned int offset,const Memory &mem) const
+	inline unsigned int FetchInstructionByte(unsigned int offset,const Memory &mem)
 	{
 		return FetchByte(state.CS().addressSize,state.CS(),state.EIP+offset,mem);
 	}
@@ -2375,17 +2375,17 @@ private:
 	/*! Fetch an 8-bit operand.
 	    It pushes inst.operandLen and this->numBytes by 1 byte.
 	*/
-	inline void FetchImm8(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+	inline void FetchImm8(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem);
 	/*! Fetch an 16-bit operand.
 	*/
-	inline void FetchImm16(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+	inline void FetchImm16(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem);
 	/*! Fetch an 32-bit operand.
 	*/
-	inline void FetchImm32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+	inline void FetchImm32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem);
 	/*! Fetch an 16- or 32-bit operand.  Length fetched depends on inst.operandSize.
 	    Returns the number of bytes fetched.
 	*/
-	inline unsigned int FetchImm16or32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+	inline unsigned int FetchImm16or32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem);
 
 	/*! Fetch an 8-bit operand.
 	    It pushes inst.operandLen and this->numBytes by 1 byte.
@@ -2469,7 +2469,7 @@ public:
 	    const SegmentRegister &CS,unsigned int offset,const Memory &mem,unsigned int defOperSize,unsigned int defAddrSize) const;
 
 private:
-	inline unsigned int FetchInstructionByte(MemoryAccess::ConstPointer &ptr,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+	inline unsigned int FetchInstructionByte(MemoryAccess::ConstPointer &ptr,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
 	{
 		if(0<ptr.length)
 		{
@@ -2480,7 +2480,7 @@ private:
 			return FetchByte(addressSize,seg,offset,mem);
 		}
 	}
-	inline unsigned int PeekInstructionByte(const MemoryAccess::ConstPointer &ptr,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+	inline unsigned int PeekInstructionByte(const MemoryAccess::ConstPointer &ptr,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
 	{
 		if(0<ptr.length)
 		{
@@ -2491,7 +2491,7 @@ private:
 			return FetchByte(addressSize,seg,offset,mem);
 		}
 	}
-	inline void FetchInstructionTwoBytes(unsigned char buf[2],MemoryAccess::ConstPointer &ptr,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+	inline void FetchInstructionTwoBytes(unsigned char buf[2],MemoryAccess::ConstPointer &ptr,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
 	{
 		if(2<=ptr.length)
 		{
@@ -2505,7 +2505,7 @@ private:
 			buf[1]=FetchByte(addressSize,seg,offset+1,mem);
 		}
 	}
-	inline void FetchInstructionFourBytes(unsigned char buf[4],MemoryAccess::ConstPointer &ptr,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+	inline void FetchInstructionFourBytes(unsigned char buf[4],MemoryAccess::ConstPointer &ptr,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
 	{
 		if(4<=ptr.length)
 		{

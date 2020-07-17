@@ -577,11 +577,6 @@ void FMTowns::DisableDebugger(void)
 	io.DisableLog();
 }
 
-unsigned int FMTowns::FetchByteCS_EIP(int offset) const
-{
-	return cpu.FetchInstructionByte(offset,mem);
-}
-
 std::vector <std::string> FMTowns::GetStackText(unsigned int numBytes) const
 {
 	std::vector <std::string> text;

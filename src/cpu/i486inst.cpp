@@ -651,22 +651,22 @@ inline unsigned int i486DX::DebugFetchOperand16or32(Instruction &inst,MemoryAcce
 
 
 
-inline void i486DX::FetchImm8(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+inline void i486DX::FetchImm8(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
 {
 	inst.imm[0]=FetchInstructionByte(ptr,inst.codeAddressSize,seg,offset,mem);
 	++inst.numBytes;
 }
-inline void i486DX::FetchImm16(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+inline void i486DX::FetchImm16(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
 {
 	FetchInstructionTwoBytes(inst.imm,ptr,inst.codeAddressSize,seg,offset,mem);
 	inst.numBytes+=2;
 }
-inline void i486DX::FetchImm32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+inline void i486DX::FetchImm32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
 {
 	FetchInstructionFourBytes(inst.imm,ptr,inst.codeAddressSize,seg,offset,mem);
 	inst.numBytes+=4;
 }
-inline unsigned int i486DX::FetchImm16or32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+inline unsigned int i486DX::FetchImm16or32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
 {
 	if(16==inst.operandSize)
 	{
