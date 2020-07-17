@@ -2337,7 +2337,7 @@ private:
 	inline unsigned int FetchImm16or32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
 
 
-public:
+private:
 	/*! Made public for disassembly test.
 	    Fetch operand(s) for the instruction.
 	The following instruction:
@@ -2348,8 +2348,12 @@ public:
 	    I486_OPCODE_MOV_FROM_TR://      0x240F,
 	    I486_OPCODE_MOV_TO_TR://        0x260F,
 	always set 32 to inst.operandSize regardless of the preceding operand-size override, or default operand size.
+
+	    Made a template function to make const-version (for debugging) and non-const version (for real)
+	    with minimum code duplicate.
 	*/
-	void FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,int offset,const Memory &mem) const;
+	template <class CPUCLASS,class FUNCCLASS>
+	static void FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &op2,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,int offset,const Memory &mem);
 
 public:
 	/*! Fetch an instruction from specific segment and offset.

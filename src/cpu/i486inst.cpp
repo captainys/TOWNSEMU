@@ -408,14 +408,6 @@ public:
 	{
 		return cpu.FetchImm16or32(inst,ptr,seg,offset,mem);
 	}
-
-	inline static void FetchOperand(
-		CPUCLASS &cpu,
-		i486DX::Instruction &inst,Operand &op1,Operand &op2,
-		MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,int offset,const Memory &mem)
-	{
-		return cpu.FetchOperand(inst,op1,op2,ptr,seg,offset,mem);
-	}
 };
 template <class CPUCLASS,class FUNCCLASS>
 class i486DX::FetchInstructionClass
@@ -498,8 +490,7 @@ public:
 			lastByte=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,CS,offset+inst.numBytes++,mem);
 			inst.opCode=(inst.opCode<<8)|lastByte;
 		}
-
-		FUNCCLASS::FetchOperand(cpu,inst,op1,op2,ptr,CS,offset+inst.numBytes,mem);
+		CPUCLASS::FetchOperand<CPUCLASS,RealFetchInstructionFunctions>(cpu,inst,op1,op2,ptr,CS,offset+inst.numBytes,mem);
 	}
 };
 
@@ -803,7 +794,8 @@ std::string i486DX::Instruction::SegmentOverrideString(int segOverridePrefix)
 	return str;
 }
 
-void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,int offset,const Memory &mem) const
+template <class CPUCLASS,class FUNCCLASS>
+void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &op2,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,int offset,const Memory &mem)
 {
 	op1.Clear();
 	op2.Clear();
@@ -814,42 +806,42 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 		break;
 
 	case I486_RENUMBER_C0_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_I8://0xC0,// ::ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
-		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
-		FetchImm8(inst,ptr,seg,offset,mem);
+		offset+=FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchImm8(cpu,inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,8,inst.operand);
 		break;
 	case I486_RENUMBER_C1_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_I8:// 0xC1, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
-		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
-		FetchImm8(inst,ptr,seg,offset,mem);
+		offset+=FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchImm8(cpu,inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 	case I486_RENUMBER_D0_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_1://0xD0, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
 	case I486_RENUMBER_D3_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_CL://0xD2,// ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
-		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
+		offset+=FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,8,inst.operand);
 		break;
 	case I486_RENUMBER_D1_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_1://0xD1, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
 	case I486_RENUMBER_D3_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_CL://0xD3, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
-		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
+		offset+=FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 
 
 	case I486_RENUMBER_F6_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF6
-		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
+		offset+=FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
 		if(0==inst.GetREG()) // TEST RM8,I8
 		{
-			FetchImm8(inst,ptr,seg,offset,mem);
+			FUNCCLASS::FetchImm8(cpu,inst,ptr,seg,offset,mem);
 		}
 		inst.operandSize=8;
 
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 	case I486_RENUMBER_F7_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF7,
-		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
+		offset+=FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
 		if(0==inst.GetREG()) // TEST RM8,I8
 		{
-			FetchImm16or32(inst,ptr,seg,offset,mem);
+			FUNCCLASS::FetchImm16or32(cpu,inst,ptr,seg,offset,mem);
 		}
 
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
@@ -861,14 +853,14 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 
 	case I486_RENUMBER_AAD://    0xD5,
 	case I486_RENUMBER_AAM://    0xD4,
-		FetchImm8(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchImm8(cpu,inst,ptr,seg,offset,mem);
 		break;
 	case I486_RENUMBER_AAS:
 		break;
 	
 
 	case I486_RENUMBER_ARPL://       0x63,
-		FetchOperandRM(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
 		inst.operandSize=16;
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		op2.DecodeMODR_MForRegister(inst.operandSize,inst.operand[0]);
@@ -876,14 +868,14 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 
 
 	case I486_RENUMBER_BT_BTS_BTR_BTC_RM_I8:// 0FBA
-		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
-		FetchImm8(inst,ptr,seg,offset,mem);
+		offset+=FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchImm8(cpu,inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 
 	case I486_RENUMBER_BSF_R_RM://   0x0FBC,
 	case I486_RENUMBER_BSR_R_RM://   0x0FBD,
-		FetchOperandRM(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
 		op1.DecodeMODR_MForRegister(inst.operandSize,inst.operand[0]);
 		op2.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
@@ -891,7 +883,7 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 	case I486_RENUMBER_BTC_RM_R://   0x0FBB,
 	case I486_RENUMBER_BTS_RM_R://   0x0FAB,
 	case I486_RENUMBER_BTR_RM_R://   0x0FB3,
-		FetchOperandRM(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		op2.DecodeMODR_MForRegister(inst.operandSize,inst.operand[0]);
 		break;
@@ -899,12 +891,12 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 
 	case I486_RENUMBER_CALL_REL://   0xE8,
 	case I486_RENUMBER_JMP_REL://          0xE9,   // cw or cd
-		FetchImm16or32(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchImm16or32(cpu,inst,ptr,seg,offset,mem);
 		break;
 	case I486_RENUMBER_CALL_FAR://   0x9A,
 	case I486_RENUMBER_JMP_FAR:
-		offset+=FetchOperand16or32(inst,ptr,seg,offset,mem);
-		FetchOperand16(inst,ptr,seg,offset,mem);
+		offset+=FUNCCLASS::FetchOperand16or32(cpu,inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchOperand16(cpu,inst,ptr,seg,offset,mem);
 		op1.DecodeFarAddr(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 
@@ -942,9 +934,9 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 
 
 	case I486_RENUMBER_ENTER://      0xC8,
-		FetchOperand16(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchOperand16(cpu,inst,ptr,seg,offset,mem);
 		offset+=2;
-		FetchOperand8(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset,mem);
 		break;
 
 
@@ -953,14 +945,14 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 	case I486_RENUMBER_FPU_D9_FNSTCW_M16_FNSTENV_F2XM1_FXAM_FXCH_FXTRACT_FYL2X_FYL2XP1_FABS_:// 0xD9,
 		{
 			unsigned int MODR_M;
-			PeekOperand8(MODR_M,inst,ptr,seg,offset,mem);
+			FUNCCLASS::PeekOperand8(cpu,MODR_M,inst,ptr,seg,offset,mem);
 			if(0xF0<=MODR_M && MODR_M<=0xFF)
 			{
-				FetchOperand8(inst,ptr,seg,offset,mem);
+				FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset,mem);
 			}
 			else
 			{
-				FetchOperandRM(inst,ptr,seg,offset,mem);
+				FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
 			}
 
 			if(0xF0<=inst.operand[0] && inst.operand[0]<=0xFF)
@@ -976,14 +968,14 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 	case I486_RENUMBER_FPU_DB_FNINIT_FRSTOR://     0xDB, 
 		{
 			unsigned int MODR_M;
-			PeekOperand8(MODR_M,inst,ptr,seg,offset,mem);
+			FUNCCLASS::PeekOperand8(cpu,MODR_M,inst,ptr,seg,offset,mem);
 			if(0xE3==MODR_M) // FNINIT
 			{
-				FetchOperand8(inst,ptr,seg,offset,mem);
+				FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset,mem);
 			}
 			else
 			{
-				FetchOperand8(inst,ptr,seg,offset,mem);
+				FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset,mem);
 				switch(Instruction::GetREG(MODR_M))
 				{
 				case 0:
@@ -1003,22 +995,22 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 	case I486_RENUMBER_FPU_DD_FLD_FSAVE_FST_FNSTSW_M16_FFREE_FUCOM:
 		{
 			unsigned int MODR_M;
-			PeekOperand8(MODR_M,inst,ptr,seg,offset,mem);
+			FUNCCLASS::PeekOperand8(cpu,MODR_M,inst,ptr,seg,offset,mem);
 			if(0xD0==(MODR_M&0xF8)) // D0 11010xxx    [1] pp.151  0<=i<=7
 			{
-				FetchOperand8(inst,ptr,seg,offset,mem);   // FST
+				FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset,mem);   // FST
 			}
 			else if(0xD8==(MODR_M&0xF8)) // D8 11011xxx
 			{
-				FetchOperand8(inst,ptr,seg,offset,mem);   // FSTP
+				FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset,mem);   // FSTP
 			}
 			else if(0xC0==(MODR_M&0xF8)) // C0 11000xxx
 			{
-				FetchOperand8(inst,ptr,seg,offset,mem);   // FFREE
+				FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset,mem);   // FFREE
 			}
 			else if(0xE0==(MODR_M&0xF8) || 0xE1==(MODR_M&0xF8) || 0xE8==(MODR_M&0xF8) || 0xE9==(MODR_M&0xF8))
 			{
-				FetchOperand8(inst,ptr,seg,offset,mem);   // FUCOM
+				FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset,mem);   // FUCOM
 			}
 			else
 			{
@@ -1033,7 +1025,7 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 				case 6: // FSAVE m94/108byte
 					break;
 				case 7: // FNSTSW m2byte
-					FetchOperandRM(inst,ptr,seg,offset,mem);
+					FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
 					op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 					break;
 				}
@@ -1044,14 +1036,14 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 	case I486_RENUMBER_FPU_DF_FNSTSW_AX://  0xDF,
 		{
 			unsigned int MODR_M;
-			PeekOperand8(MODR_M,inst,ptr,seg,offset,mem);
+			FUNCCLASS::PeekOperand8(cpu,MODR_M,inst,ptr,seg,offset,mem);
 			if(0xE0==MODR_M) // FNSTSW
 			{
-				FetchOperand8(inst,ptr,seg,offset,mem);
+				FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset,mem);
 			}
 			else
 			{
-				FetchOperand8(inst,ptr,seg,offset,mem); // Tentative.
+				FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset,mem); // Tentative.
 				switch(Instruction::GetREG(MODR_M))
 				{
 				case 0:
@@ -1076,7 +1068,7 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 
 	case I486_RENUMBER_IN_AL_I8://=        0xE4,
 	case I486_RENUMBER_IN_A_I8://=         0xE5,
-		FetchImm8(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchImm8(cpu,inst,ptr,seg,offset,mem);
 		break;
 	case I486_RENUMBER_IN_AL_DX://=        0xEC,
 	case I486_RENUMBER_IN_A_DX://=         0xED,
@@ -1084,26 +1076,26 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 
 
 	case I486_RENUMBER_IMUL_R_RM_I8://0x6B,
-		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
-		FetchImm8(inst,ptr,seg,offset,mem);
+		offset+=FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchImm8(cpu,inst,ptr,seg,offset,mem);
 		op1.DecodeMODR_MForRegister(inst.operandSize,inst.operand[0]);
 		op2.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 	case I486_RENUMBER_IMUL_R_RM_IMM://0x69,
-		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
+		offset+=FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
 		if(16==inst.operandSize)
 		{
-			FetchImm16(inst,ptr,seg,offset,mem);
+			FUNCCLASS::FetchImm16(cpu,inst,ptr,seg,offset,mem);
 		}
 		else
 		{
-			FetchImm32(inst,ptr,seg,offset,mem);
+			FUNCCLASS::FetchImm32(cpu,inst,ptr,seg,offset,mem);
 		}
 		op1.DecodeMODR_MForRegister(inst.operandSize,inst.operand[0]);
 		op2.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 	case I486_RENUMBER_IMUL_R_RM://       0x0FAF,
-		FetchOperandRM(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
 		op1.DecodeMODR_MForRegister(inst.operandSize,inst.operand[0]);
 		op2.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
@@ -1118,11 +1110,11 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 
 
 	case I486_RENUMBER_INC_DEC_R_M8:
-		FetchOperandRM(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,8,inst.operand);
 		break;
 	case I486_RENUMBER_INC_DEC_CALL_CALLF_JMP_JMPF_PUSH:
-		FetchOperandRM(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 	case I486_RENUMBER_INC_EAX://    0x40, // 16/32 depends on OPSIZE_OVERRIDE
@@ -1144,7 +1136,7 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 		break;
 	case I486_RENUMBER_INT://        0xCD,
 	case I486_RENUMBER_INTO://       0xCE,
-		FetchImm8(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchImm8(cpu,inst,ptr,seg,offset,mem);
 		break;
 
 
@@ -1166,7 +1158,7 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 	case I486_RENUMBER_JGE_REL8:  // 0x7D,
 	case I486_RENUMBER_JLE_REL8:  // 0x7E,
 	case I486_RENUMBER_JG_REL8:   // 0x7F,
-		FetchImm8(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchImm8(cpu,inst,ptr,seg,offset,mem);
 		break;
 
 
@@ -1200,30 +1192,30 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 	// case I486_RENUMBER_JPE_REL://   0x0F8A, Same as JP_REL
 	// case I486_RENUMBER_JPO_REL://   0x0F8B, Same as JNP_REL
 	case I486_RENUMBER_JS_REL://    0x0F88,
-		FetchImm16or32(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchImm16or32(cpu,inst,ptr,seg,offset,mem);
 		break;
 
 
 	case I486_RENUMBER_BINARYOP_RM8_FROM_I8:
 	case I486_RENUMBER_BINARYOP_RM8_FROM_I8_ALIAS:
-		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
-		FetchImm8(inst,ptr,seg,offset,mem);
+		offset+=FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchImm8(cpu,inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,8,inst.operand);
 		break;
 	case I486_RENUMBER_BINARYOP_R_FROM_I:
-		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
-		FetchImm16or32(inst,ptr,seg,offset,mem);
+		offset+=FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchImm16or32(cpu,inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 	case I486_RENUMBER_BINARYOP_RM_FROM_SXI8:
-		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
-		FetchImm8(inst,ptr,seg,offset,mem);
+		offset+=FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchImm8(cpu,inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 
 
 	case I486_RENUMBER_LGDT_LIDT_SGDT_SIDT:
-		FetchOperandRM(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
 		if(4==inst.GetREG() || 6==inst.GetREG())
 		{
 			inst.operandSize=16;
@@ -1237,7 +1229,7 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 
 
 	case I486_RENUMBER_LEA://=              0x8D,
-		FetchOperandRM(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
 		op1.DecodeMODR_MForRegister(inst.operandSize,inst.operand[0]);
 		op2.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
@@ -1248,7 +1240,7 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 	case I486_RENUMBER_LES://              0xC4,
 	case I486_RENUMBER_LFS://              0x0FB4,
 	case I486_RENUMBER_LGS://              0x0FB5,
-		FetchOperandRM(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
 		op1.DecodeMODR_MForRegister(inst.operandSize,inst.operand[0]);
 		op2.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
@@ -1262,12 +1254,12 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 	case I486_RENUMBER_LOOP://             0xE2,
 	case I486_RENUMBER_LOOPE://            0xE1,
 	case I486_RENUMBER_LOOPNE://           0xE0,
-		FetchImm8(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchImm8(cpu,inst,ptr,seg,offset,mem);
 		break;
 
 
 	case I486_RENUMBER_LSL://              0x0F03,
-		FetchOperandRM(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
 		op1.DecodeMODR_MForRegister(inst.operandSize,inst.operand[0]);
 		op2.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
@@ -1281,21 +1273,21 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 
 		// Example:  8D 04 C1        LEA EAX,[ECX+EAX*8] In Protected Mode
 		// Example:  8D 04 41        LEA EAX,[ECX+EAX*2] In Protected Mode
-		FetchOperandRM(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,8,inst.operand);
 		break;
 	case I486_RENUMBER_MOV_FROM_R: //       0x89, // 16/32 depends on OPSIZE_OVERRIDE
 		// Example:  89 26 3e 00     MOV [003EH],SP
-		FetchOperandRM(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 	case I486_RENUMBER_MOV_TO_R8: //        0x8A,
 		// Example:  8a 0e 16 00     MOV CL,[0016H]
-		FetchOperandRM(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
 		op2.Decode(inst.addressSize,8,inst.operand);
 		break;
 	case I486_RENUMBER_MOV_TO_R: //         0x8B, // 16/32 depends on OPSIZE_OVERRIDE
-		FetchOperandRM(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
 		op2.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 
@@ -1303,13 +1295,13 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 	case I486_RENUMBER_MOV_FROM_SEG: //     0x8C,
 		// Example:  8c c6           MOV SI,ES
 		// Sreg: ES=0, CS=1, SS=2, DS=3, FD=4, GS=5 (OPCODE part of MODR_M)  [1] pp.26-10
-		FetchOperandRM(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
 		inst.operandSize=16; // Force it to be 16-bit
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		op2.DecodeMODR_MForSegmentRegister(inst.operand[0]);
 		break;
 	case I486_RENUMBER_MOV_TO_SEG: //       0x8E,
-		FetchOperandRM(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
 		inst.operandSize=16; // Force it to be 16-bit
 		op2.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		op1.DecodeMODR_MForSegmentRegister(inst.operand[0]);
@@ -1319,10 +1311,10 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 		switch(inst.addressSize)
 		{
 		default:
-			FetchImm32(inst,ptr,seg,offset,mem);
+			FUNCCLASS::FetchImm32(cpu,inst,ptr,seg,offset,mem);
 			break;
 		case 16:
-			FetchImm16(inst,ptr,seg,offset,mem);
+			FUNCCLASS::FetchImm16(cpu,inst,ptr,seg,offset,mem);
 			break;
 		}
 		break;
@@ -1330,10 +1322,10 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 		switch(inst.addressSize)
 		{
 		default:
-			FetchImm32(inst,ptr,seg,offset,mem);
+			FUNCCLASS::FetchImm32(cpu,inst,ptr,seg,offset,mem);
 			break;
 		case 16:
-			FetchImm16(inst,ptr,seg,offset,mem);
+			FUNCCLASS::FetchImm16(cpu,inst,ptr,seg,offset,mem);
 			break;
 		}
 		break;
@@ -1341,10 +1333,10 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 		switch(inst.addressSize)
 		{
 		default:
-			FetchImm32(inst,ptr,seg,offset,mem);
+			FUNCCLASS::FetchImm32(cpu,inst,ptr,seg,offset,mem);
 			break;
 		case 16:
-			FetchImm16(inst,ptr,seg,offset,mem);
+			FUNCCLASS::FetchImm16(cpu,inst,ptr,seg,offset,mem);
 			break;
 		}
 		break;
@@ -1352,10 +1344,10 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 		switch(inst.addressSize)
 		{
 		default:
-			FetchImm32(inst,ptr,seg,offset,mem);
+			FUNCCLASS::FetchImm32(cpu,inst,ptr,seg,offset,mem);
 			break;
 		case 16:
-			FetchImm16(inst,ptr,seg,offset,mem);
+			FUNCCLASS::FetchImm16(cpu,inst,ptr,seg,offset,mem);
 			break;
 		}
 		break;
@@ -1368,7 +1360,7 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 	case I486_RENUMBER_MOV_I8_TO_CH: //     0xB5,
 	case I486_RENUMBER_MOV_I8_TO_DH: //     0xB6,
 	case I486_RENUMBER_MOV_I8_TO_BH: //     0xB7,
-		FetchImm8(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchImm8(cpu,inst,ptr,seg,offset,mem);
 		break;
 	case I486_RENUMBER_MOV_I_TO_EAX: //   0xB8, // 16/32 depends on OPSIZE_OVERRIDE
 	case I486_RENUMBER_MOV_I_TO_ECX: //   0xB9, // 16/32 depends on OPSIZE_OVERRIDE
@@ -1378,16 +1370,16 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 	case I486_RENUMBER_MOV_I_TO_EBP: //   0xBD, // 16/32 depends on OPSIZE_OVERRIDE
 	case I486_RENUMBER_MOV_I_TO_ESI: //   0xBE, // 16/32 depends on OPSIZE_OVERRIDE
 	case I486_RENUMBER_MOV_I_TO_EDI: //   0xBF, // 16/32 depends on OPSIZE_OVERRIDE
-		FetchImm16or32(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchImm16or32(cpu,inst,ptr,seg,offset,mem);
 		break;
 	case I486_RENUMBER_MOV_I8_TO_RM8: //    0xC6,
-		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
-		FetchImm8(inst,ptr,seg,offset,mem);
+		offset+=FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchImm8(cpu,inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,8,inst.operand);
 		break;
 	case I486_RENUMBER_MOV_I_TO_RM: //      0xC7, // 16/32 depends on OPSIZE_OVERRIDE
-		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
-		FetchImm16or32(inst,ptr,seg,offset,mem);
+		offset+=FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchImm16or32(cpu,inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 
@@ -1395,42 +1387,42 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 	case I486_RENUMBER_MOV_TO_CR://        0x0F22,
 		inst.operandSize=32; // [1] pp.26-213 32bit operands are always used with these instructions, 
 		                     //      regardless of the opreand-size attribute.
-		FetchOperandRM(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
 		op1.DecodeMODR_MForCRRegister(inst.operand[0]);
 		op2.Decode(inst.addressSize,32,inst.operand);
 		break;
 	case I486_RENUMBER_MOV_TO_DR://        0x0F23,
 		inst.operandSize=32; // [1] pp.26-213 32bit operands are always used with these instructions, 
 		                     //      regardless of the opreand-size attribute.
-		FetchOperandRM(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
 		op1.DecodeMODR_MForDRRegister(inst.operand[0]);
 		op2.Decode(inst.addressSize,32,inst.operand);
 		break;
 	case I486_RENUMBER_MOV_TO_TR://        0x0F26,
 		inst.operandSize=32; // [1] pp.26-213 32bit operands are always used with these instructions, 
 		                     //      regardless of the opreand-size attribute.
-		FetchOperandRM(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
 		op1.DecodeMODR_MForTestRegister(inst.operand[0]);
 		op2.Decode(inst.addressSize,32,inst.operand);
 		break;
 	case I486_RENUMBER_MOV_FROM_CR://      0x0F20,
 		inst.operandSize=32; // [1] pp.26-213 32bit operands are always used with these instructions, 
 		                     //      regardless of the opreand-size attribute.
-		FetchOperandRM(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,32,inst.operand);
 		op2.DecodeMODR_MForCRRegister(inst.operand[0]);
 		break;
 	case I486_RENUMBER_MOV_FROM_DR://      0x0F21,
 		inst.operandSize=32; // [1] pp.26-213 32bit operands are always used with these instructions, 
 		                     //      regardless of the opreand-size attribute.
-		FetchOperandRM(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,32,inst.operand);
 		op2.DecodeMODR_MForDRRegister(inst.operand[0]);
 		break;
 	case I486_RENUMBER_MOV_FROM_TR://      0x0F24,
 		inst.operandSize=32; // [1] pp.26-213 32bit operands are always used with these instructions, 
 		                     //      regardless of the opreand-size attribute.
-		FetchOperandRM(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,32,inst.operand);
 		op2.DecodeMODR_MForTestRegister(inst.operand[0]);
 		break;
@@ -1443,13 +1435,13 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 
 	case I486_RENUMBER_MOVSX_R_RM8://=      0x0FBE,
 	case I486_RENUMBER_MOVZX_R_RM8://=      0x0FB6,
-		FetchOperandRM(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
 		op1.DecodeMODR_MForRegister(inst.operandSize,inst.operand[0]);
 		op2.Decode(inst.addressSize,8,inst.operand);
 		break;
 	case I486_RENUMBER_MOVSX_R32_RM16://=   0x0FBF,
 	case I486_RENUMBER_MOVZX_R32_RM16://=   0x0FB7,
-		FetchOperandRM(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
 		op1.DecodeMODR_MForRegister(32,inst.operand[0]);
 		op2.Decode(inst.addressSize,16,inst.operand);
 		break;
@@ -1461,7 +1453,7 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 
 	case I486_RENUMBER_OUT_I8_AL: //        0xE6,
 	case I486_RENUMBER_OUT_I8_A: //         0xE7,
-		FetchImm8(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchImm8(cpu,inst,ptr,seg,offset,mem);
 		break;
 	case I486_RENUMBER_OUT_DX_AL: //        0xEE,
 	case I486_RENUMBER_OUT_DX_A: //         0xEF,
@@ -1488,10 +1480,10 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 	case I486_RENUMBER_PUSH_EDI://         0x57,
 		break;
 	case I486_RENUMBER_PUSH_I8://          0x6A,
-		FetchImm8(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchImm8(cpu,inst,ptr,seg,offset,mem);
 		break;
 	case I486_RENUMBER_PUSH_I://           0x68,
-		FetchImm16or32(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchImm16or32(cpu,inst,ptr,seg,offset,mem);
 		break;
 	case I486_RENUMBER_PUSH_CS://          0x0E,
 	case I486_RENUMBER_PUSH_SS://          0x16,
@@ -1503,7 +1495,7 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 
 
 	case I486_RENUMBER_POP_M://            0x8F,
-		FetchOperandRM(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 	case I486_RENUMBER_POP_EAX://          0x58,
@@ -1530,7 +1522,7 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 		break;
 	case I486_RENUMBER_RET_I16://          0xC2,
 	case I486_RENUMBER_RETF_I16://         0xCA,
-		FetchImm16(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchImm16(cpu,inst,ptr,seg,offset,mem);
 		break;
 
 
@@ -1540,14 +1532,14 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 
 	case I486_RENUMBER_SHLD_RM_I8://       0x0FA4,
 	case I486_RENUMBER_SHRD_RM_I8://       0x0FAC,
-		offset+=FetchOperandRM(inst,ptr,seg,offset,mem);
-		FetchImm8(inst,ptr,seg,offset,mem);
+		offset+=FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchImm8(cpu,inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		op2.DecodeMODR_MForRegister(inst.operandSize,inst.operand[0]);
 		break;
 	case I486_RENUMBER_SHLD_RM_CL://       0x0FA5,
 	case I486_RENUMBER_SHRD_RM_CL://       0x0FAD,
-		FetchOperandRM(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		op2.DecodeMODR_MForRegister(inst.operandSize,inst.operand[0]);
 		break;
@@ -1588,14 +1580,14 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 	//I486_OPCODE_SETPO://            0x0F9B,
 	case I486_RENUMBER_SETS://             0x0F98,
 	// I486_OPCODE_SETZ://             0x0F94,
-		FetchOperandRM(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
 		inst.operandSize=8;
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 
 
 	case I486_RENUMBER_SLDT_STR_LLDT_LTR_VERR_VERW://             0x0F00,
-		FetchOperandRM(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
 		inst.operandSize=16;
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
@@ -1621,7 +1613,7 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 	case I486_RENUMBER_SUB_AL_FROM_I8://  0x2C,
 	case I486_RENUMBER_TEST_AL_FROM_I8://  0xA8,
 	case I486_RENUMBER_XOR_AL_FROM_I8:
-		FetchImm8(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchImm8(cpu,inst,ptr,seg,offset,mem);
 		break;
 	case I486_RENUMBER_ADC_A_FROM_I://    0x15,
 	case I486_RENUMBER_ADD_A_FROM_I://    0x05,
@@ -1632,7 +1624,7 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 	case I486_RENUMBER_SUB_A_FROM_I://    0x2D,
 	case I486_RENUMBER_TEST_A_FROM_I://    0xA9,
 	case I486_RENUMBER_XOR_A_FROM_I:
-		FetchImm16or32(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchImm16or32(cpu,inst,ptr,seg,offset,mem);
 		break;
 	case I486_RENUMBER_ADC_RM8_FROM_R8:// 0x10,
 	case I486_RENUMBER_ADD_RM8_FROM_R8:// 0x00,
@@ -1643,7 +1635,7 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 	case I486_RENUMBER_SUB_RM8_FROM_R8:// 0x28,
 	case I486_RENUMBER_TEST_RM8_FROM_R8:// 0x84,
 	case I486_RENUMBER_XOR_RM8_FROM_R8:
-		FetchOperandRM(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
 		// op2.DecodeMODR_MForRegister(8,inst.operand[0]);
 		op1.Decode(inst.addressSize,8,inst.operand);
 		break;
@@ -1657,7 +1649,7 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 	case I486_RENUMBER_SUB_RM_FROM_R://   0x29,
 	case I486_RENUMBER_TEST_RM_FROM_R://   0x85,
 	case I486_RENUMBER_XOR_RM_FROM_R:
-		FetchOperandRM(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
 		op2.DecodeMODR_MForRegister(inst.operandSize,inst.operand[0]);
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
@@ -1670,7 +1662,7 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 	case I486_RENUMBER_SBB_R8_FROM_RM8:// 0x1A,
 	case I486_RENUMBER_SUB_R8_FROM_RM8:// 0x2A,
 	case I486_RENUMBER_XOR_R8_FROM_RM8:
-		FetchOperandRM(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
 		// op1.DecodeMODR_MForRegister(8,inst.operand[0]);
 		op2.Decode(inst.addressSize,8,inst.operand);
 		break;
@@ -1683,7 +1675,7 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 	case I486_RENUMBER_SBB_R_FROM_RM://   0x1B,
 	case I486_RENUMBER_SUB_R_FROM_RM://   0x2B,
 	case I486_RENUMBER_XOR_R_FROM_RM:
-		FetchOperandRM(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
 		op1.DecodeMODR_MForRegister(inst.operandSize,inst.operand[0]);
 		op2.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
@@ -1699,12 +1691,12 @@ void i486DX::FetchOperand(Instruction &inst,Operand &op1,Operand &op2,MemoryAcce
 		// No operand
 		break;
 	case I486_RENUMBER_XCHG_RM8_R8://      0x86,
-		FetchOperandRM(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,8,inst.operand);
 		op2.DecodeMODR_MForRegister(8,inst.operand[0]);
 		break;
 	case I486_RENUMBER_XCHG_RM_R://        0x87,
-		FetchOperandRM(inst,ptr,seg,offset,mem);
+		FUNCCLASS::FetchOperandRM(cpu,inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		op2.DecodeMODR_MForRegister(inst.operandSize,inst.operand[0]);
 		break;
