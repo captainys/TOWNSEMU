@@ -4276,6 +4276,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				}
 				else if(0==denom)
 				{
+					clocksPassed=40;
 					Interrupt(0,mem,0); // [1] pp.26-28
 					// I don't think INT 0 was issued unless division by zero.
 					// I thought it just overflew if quo didn't fit in the target register, am I wrong?
@@ -4312,6 +4313,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				}
 				else if(0==denom)
 				{
+					clocksPassed=40;
 					Interrupt(0,mem,0); // [1] pp.26-28
 					// I don't think INT 0 was issued unless division by zero.
 					// I thought it just overflew if quo didn't fit in the target register, am I wrong?
