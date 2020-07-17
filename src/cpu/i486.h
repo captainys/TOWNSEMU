@@ -2361,6 +2361,11 @@ public:
 		return FetchInstruction(memWin,inst,op1,op2,CS,offset,mem,operandSize,addressSize);
 	}
 private:
+	class DebugFetchInstructionFunctions;
+	class RealFetchInstructionFunctions;
+	template <class CPUCLASS,class FUNCCLASS>
+	class FetchInstructionClass;
+private:
 	/* Set in the constructor. CS******SizePointer[0] points to sixteen, and
 	   CS******SizePointer[1] points to CS.******Size.
 	*/
