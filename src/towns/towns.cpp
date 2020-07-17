@@ -611,7 +611,7 @@ void FMTowns::PrintDisassembly(void) const
 	i486DX::Instruction inst;
 	i486DX::Operand op1,op2;
 	MemoryAccess::ConstMemoryWindow emptyMemWin;
-	cpu.FetchInstruction(emptyMemWin,inst,op1,op2,mem);
+	cpu.DebugFetchInstruction(emptyMemWin,inst,op1,op2,mem);
 	auto disasm=cpu.Disassemble(inst,op1,op2,cpu.state.CS(),cpu.state.EIP,mem,debugger.GetSymTable(),debugger.GetIOTable());
 	std::cout << disasm << std::endl;
 }

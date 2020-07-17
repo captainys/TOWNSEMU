@@ -2166,8 +2166,9 @@ public:
 	}
 
 	/*! Returns const memory window from SEG:OFFSET.
+	    This may raise page fault depending on SEG:OFFSET.
 	*/
-	inline MemoryAccess::ConstMemoryWindow GetConstMemoryWindow(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+	inline MemoryAccess::ConstMemoryWindow GetConstMemoryWindow(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
 	{
 		offset&=AddressMask((unsigned char)addressSize);
 		auto linearAddr=seg.baseLinearAddr+offset;
@@ -2175,6 +2176,24 @@ public:
 		if(true==PagingEnabled())
 		{
 			physAddr=LinearAddressToPhysicalAddress(linearAddr,mem);
+		}
+		auto memWin=mem.GetConstMemoryWindow(physAddr);
+		memWin.linearBaseAddr=(linearAddr&(~0xfff));
+		return memWin;
+	}
+
+	/*! Returns const memory window from SEG:OFFSET.
+	    It will not change the state of the CPU including exceptions.
+	*/
+	inline MemoryAccess::ConstMemoryWindow DebugGetConstMemoryWindow(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+	{
+		offset&=AddressMask((unsigned char)addressSize);
+		auto linearAddr=seg.baseLinearAddr+offset;
+		auto physAddr=linearAddr;
+		if(true==PagingEnabled())
+		{
+			unsigned int type,code;
+			physAddr=LinearAddressToPhysicalAddress(type,code,linearAddr,mem);
 		}
 		auto memWin=mem.GetConstMemoryWindow(physAddr);
 		memWin.linearBaseAddr=(linearAddr&(~0xfff));
@@ -2258,10 +2277,18 @@ public:
 	}
 
 	/*! Fetch an instruction.
+	    This function may raise page fault.
 	*/
-	inline void FetchInstruction(MemoryAccess::ConstMemoryWindow &memWin,Instruction &inst,Operand &op1,Operand &op2,const Memory &mem) const
+	inline void FetchInstruction(MemoryAccess::ConstMemoryWindow &memWin,Instruction &inst,Operand &op1,Operand &op2,const Memory &mem)
 	{
 		return FetchInstruction(memWin,inst,op1,op2,state.CS(),state.EIP,mem);
+	}
+	/*! Fetch an instruction.
+	    It will not affect the CPU state.
+	*/
+	inline void DebugFetchInstruction(MemoryAccess::ConstMemoryWindow &memWin,Instruction &inst,Operand &op1,Operand &op2,const Memory &mem) const
+	{
+		return DebugFetchInstruction(memWin,inst,op1,op2,state.CS(),state.EIP,mem);
 	}
 
 
@@ -2300,25 +2327,49 @@ private:
 	/*! Fetch an 8-bit operand.  Returns the number of bytes fetched.
 	    It pushes inst.operandLen and this->numBytes by 1 byte.
 	*/
-	inline void FetchOperand8(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+	inline void FetchOperand8(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem);
 	/*! Peek an 8-bit operand.  Returns the number of bytes fetched.
 	    It does not push inst.operandLen and this->numBytes by 1 byte.
 	*/
-	inline void PeekOperand8(unsigned int &operand,const Instruction &inst,const MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+	inline void PeekOperand8(unsigned int &operand,const Instruction &inst,const MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem);
 	/*! Fetch an 16-bit operand  Returns the number of bytes fetched..
 	*/
-	inline void FetchOperand16(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+	inline void FetchOperand16(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem);
 	/*! Fetch an 32-bit operand.  Returns the number of bytes fetched.
 	*/
-	inline void FetchOperand32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+	inline void FetchOperand32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem);
 	/*! Fetch an 16- or 32-bit operand.  Length fetched depends on inst.operandSize.
 	    Returns the number of bytes fetched.
 	*/
-	inline unsigned int FetchOperand16or32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+	inline unsigned int FetchOperand16or32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem);
+
+
+	/*! Fetch an 8-bit operand.  Returns the number of bytes fetched.
+	    It pushes inst.operandLen and this->numBytes by 1 byte.
+	*/
+	inline void DebugFetchOperand8(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+	/*! Peek an 8-bit operand.  Returns the number of bytes fetched.
+	    It does not push inst.operandLen and this->numBytes by 1 byte.
+	*/
+	inline void DebugPeekOperand8(unsigned int &operand,const Instruction &inst,const MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+	/*! Fetch an 16-bit operand  Returns the number of bytes fetched..
+	*/
+	inline void DebugFetchOperand16(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+	/*! Fetch an 32-bit operand.  Returns the number of bytes fetched.
+	*/
+	inline void DebugFetchOperand32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+	/*! Fetch an 16- or 32-bit operand.  Length fetched depends on inst.operandSize.
+	    Returns the number of bytes fetched.
+	*/
+	inline unsigned int DebugFetchOperand16or32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+
+
+
 	/*! Fetch an operand defined by the RM byte.
 	    Returns the number of bytes fetched.
 	*/
-	unsigned int FetchOperandRM(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+	template <class CPUCLASS,class FUNCCLASS>
+	inline static unsigned int FetchOperandRM(CPUCLASS &cpu,Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem);
 
 
 	/*! Fetch an 8-bit operand.
@@ -2335,6 +2386,22 @@ private:
 	    Returns the number of bytes fetched.
 	*/
 	inline unsigned int FetchImm16or32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+
+	/*! Fetch an 8-bit operand.
+	    It pushes inst.operandLen and this->numBytes by 1 byte.
+	*/
+	inline void DebugFetchImm8(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+	/*! Fetch an 16-bit operand.
+	*/
+	inline void DebugFetchImm16(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+	/*! Fetch an 32-bit operand.
+	*/
+	inline void DebugFetchImm32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+	/*! Fetch an 16- or 32-bit operand.  Length fetched depends on inst.operandSize.
+	    Returns the number of bytes fetched.
+	*/
+	inline unsigned int DebugFetchImm16or32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+
 
 
 private:
@@ -2358,11 +2425,20 @@ private:
 public:
 	/*! Fetch an instruction from specific segment and offset.
 	*/
-	inline void FetchInstruction(MemoryAccess::ConstMemoryWindow &memWin,Instruction &inst,Operand &op1,Operand &op2,const SegmentRegister &CS,unsigned int offset,const Memory &mem) const
+	inline void FetchInstruction(MemoryAccess::ConstMemoryWindow &memWin,Instruction &inst,Operand &op1,Operand &op2,const SegmentRegister &CS,unsigned int offset,const Memory &mem)
 	{
 		const unsigned int operandSize=*CSOperandSizePointer[Return0InRealMode1InProtectedMode()];
 		const unsigned int addressSize=*CSAddressSizePointer[Return0InRealMode1InProtectedMode()];
 		return FetchInstruction(memWin,inst,op1,op2,CS,offset,mem,operandSize,addressSize);
+	}
+	/*! Fetch an instruction from specific segment and offset.
+	    It will not affect the CPU state including exceptions.
+	*/
+	inline void DebugFetchInstruction(MemoryAccess::ConstMemoryWindow &memWin,Instruction &inst,Operand &op1,Operand &op2,const SegmentRegister &CS,unsigned int offset,const Memory &mem) const
+	{
+		const unsigned int operandSize=*CSOperandSizePointer[Return0InRealMode1InProtectedMode()];
+		const unsigned int addressSize=*CSAddressSizePointer[Return0InRealMode1InProtectedMode()];
+		return DebugFetchInstruction(memWin,inst,op1,op2,CS,offset,mem,operandSize,addressSize);
 	}
 private:
 	class DebugFetchInstructionFunctions;
@@ -2382,7 +2458,16 @@ public:
 	void FetchInstruction(
 	    MemoryAccess::ConstMemoryWindow &memWin,
 	    Instruction &inst,Operand &op1,Operand &op2,
+	    const SegmentRegister &CS,unsigned int offset,const Memory &mem,unsigned int defOperSize,unsigned int defAddrSize);
+
+	/*! Fetch an instruction from specific segment and offset with given default operand size and address size.
+	    It will not affect the CPU status including exceptions.
+	*/
+	void DebugFetchInstruction(
+	    MemoryAccess::ConstMemoryWindow &memWin,
+	    Instruction &inst,Operand &op1,Operand &op2,
 	    const SegmentRegister &CS,unsigned int offset,const Memory &mem,unsigned int defOperSize,unsigned int defAddrSize) const;
+
 private:
 	inline unsigned int FetchInstructionByte(MemoryAccess::ConstPointer &ptr,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 	{

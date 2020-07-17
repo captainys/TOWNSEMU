@@ -289,7 +289,7 @@ void i486Debugger::BeforeRunOneInstruction(i486DX &cpu,Memory &mem,InOut &io,con
 		i486DX::Instruction inst;
 		i486DX::Operand op1,op2;
 		MemoryAccess::ConstMemoryWindow emptyMemWindow;
-		cpu.FetchInstruction(emptyMemWindow,inst,op1,op2,mem);
+		cpu.DebugFetchInstruction(emptyMemWindow,inst,op1,op2,mem);
 		auto disasm=cpu.Disassemble(inst,op1,op2,cpu.state.CS(),cpu.state.EIP,mem,GetSymTable(),GetIOTable());
 		lastDisassembleAddr.SEG=cpu.state.CS().value;
 		lastDisassembleAddr.OFFSET=cpu.state.EIP;
@@ -592,7 +592,7 @@ std::vector <unsigned int> i486Debugger::FindCaller(unsigned int procAddr,const 
 		}
 		i486DX::Instruction inst;
 		i486DX::Operand op1,op2;
-		cpu.FetchInstruction(memWindow,inst,op1,op2,seg,EIP,mem);
+		cpu.DebugFetchInstruction(memWindow,inst,op1,op2,seg,EIP,mem);
 		switch(inst.opCode)
 		{
 		case I486_OPCODE_CALL_FAR://   0x9A,
