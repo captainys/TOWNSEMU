@@ -12,6 +12,8 @@ Redistribution and use in source and binary forms, with or without modification,
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 << LICENSE */
+#include <cstring>
+#include "cpputil.h"
 #include "render.h"
 
 
@@ -157,14 +159,15 @@ void TownsRender::Render4Bit(
 		int bytesPerLineTimesVRAMy=layer.VRAMOffset;
 		auto VRAMTop=VRAM.data()+VRAMAddr+layer.VRAMHSkipBytes;
 
-		for(int y=0; y<layer.sizeOnMonitor.y() && y+layer.originOnMonitor.y()<this->hei; ++y)
+		for(int y=0; y<layer.sizeOnMonitor.y() && y+layer.originOnMonitor.y()<this->hei; y+=ZV)
 		{
 			const int Y=y+layer.originOnMonitor.y();
 			const int X=  layer.originOnMonitor.x();
 			unsigned int VRAMAddr=(bytesPerLineTimesVRAMy&layer.VScrollMask);
 			OFFSETTRANS::Trans(VRAMAddr);
 			const unsigned char *src=VRAMTop+VRAMAddr;
-			unsigned char *dst=rgba.data()+4*(Y*this->wid+X);
+			unsigned char *dstLine=rgba.data()+4*(Y*this->wid+X);
+			auto dst=dstLine;
 			for(int x=0; x<layer.sizeOnMonitor.x() && x+layer.originOnMonitor.x()<this->wid; x+=2*ZH)
 			{
 				unsigned char vrambyte=*src;
@@ -194,11 +197,15 @@ void TownsRender::Render4Bit(
 				}
 				++src;
 			}
-			if(0==(--ZV))
+
+			auto copyPtr=dstLine+(4*this->wid);
+			for(unsigned int zv=1; zv<ZV; ++zv)
 			{
-				ZV=layer.zoom.y();
-				bytesPerLineTimesVRAMy+=layer.bytesPerLine;
+				std::memcpy(copyPtr,dstLine,dst-dstLine);
+				copyPtr+=(4*this->wid);
 			}
+
+			bytesPerLineTimesVRAMy+=layer.bytesPerLine;
 		}
 	}
 	else // For ChaseHQ special: If 16-color mode, and palette changed more than 40 times in one frame.
@@ -225,7 +232,7 @@ void TownsRender::Render4Bit(
 		int bytesPerLineTimesVRAMy=layer.VRAMOffset;
 		auto VRAMTop=VRAM.data()+VRAMAddr+layer.VRAMHSkipBytes;
 
-		for(int y=0; y<layer.sizeOnMonitor.y() && y+layer.originOnMonitor.y()<this->hei; ++y)
+		for(int y=0; y<layer.sizeOnMonitor.y() && y+layer.originOnMonitor.y()<this->hei; y+=ZV)
 		{
 			const int Y=y+layer.originOnMonitor.y();
 			const int X=  layer.originOnMonitor.x();
@@ -254,7 +261,8 @@ void TownsRender::Render4Bit(
 			unsigned int VRAMAddr=(bytesPerLineTimesVRAMy&layer.VScrollMask);
 			OFFSETTRANS::Trans(VRAMAddr);
 			const unsigned char *src=VRAMTop+VRAMAddr;
-			unsigned char *dst=rgba.data()+4*(Y*this->wid+X);
+			unsigned char *dstLine=rgba.data()+4*(Y*this->wid+X);
+			auto dst=dstLine;
 			for(int x=0; x<layer.sizeOnMonitor.x() && x+layer.originOnMonitor.x()<this->wid; x+=2*ZH)
 			{
 				unsigned char vrambyte=*src;
@@ -284,11 +292,15 @@ void TownsRender::Render4Bit(
 				}
 				++src;
 			}
-			if(0==(--ZV))
+
+			auto copyPtr=dstLine+(4*this->wid);
+			for(unsigned int zv=1; zv<ZV; ++zv)
 			{
-				ZV=layer.zoom.y();
-				bytesPerLineTimesVRAMy+=layer.bytesPerLine;
+				std::memcpy(copyPtr,dstLine,dst-dstLine);
+				copyPtr+=(4*this->wid);
 			}
+
+			bytesPerLineTimesVRAMy+=layer.bytesPerLine;
 		}
 	}
 }
@@ -303,11 +315,12 @@ void TownsRender::Render8Bit(const TownsCRTC::Layer &layer,const Vec3ub palette[
 	unsigned int lineVRAMOffset=0;
 	auto ZV=layer.zoom.y();
 
-	for(int y=0; y<layer.sizeOnMonitor.y() && y+layer.originOnMonitor.y()<this->hei; ++y)
+	for(int y=0; y<layer.sizeOnMonitor.y() && y+layer.originOnMonitor.y()<this->hei; y+=ZV)
 	{
 		auto X=  layer.originOnMonitor.x();
 		auto Y=y+layer.originOnMonitor.y();
-		unsigned char *dst=rgba.data()+4*(Y*this->wid+X);
+		unsigned char *dstLine=rgba.data()+4*(Y*this->wid+X);
+		auto dst=dstLine;
 
 		unsigned int inLineVRAMOffset=0;
 		auto ZH=layer.zoom.x();
@@ -332,11 +345,15 @@ void TownsRender::Render8Bit(const TownsCRTC::Layer &layer,const Vec3ub palette[
 				++inLineVRAMOffset;
 			}
 		}
-		if(0==(--ZV))
+
+		auto copyPtr=dstLine+(4*this->wid);
+		for(unsigned int zv=1; zv<ZV; ++zv)
 		{
-			ZV=layer.zoom.y();
-			lineVRAMOffset+=layer.bytesPerLine;
+			std::memcpy(copyPtr,dstLine,dst-dstLine);
+			copyPtr+=(4*this->wid);
 		}
+
+		lineVRAMOffset+=layer.bytesPerLine;
 	}
 }
 template <class OFFSETTRANS>
@@ -350,11 +367,12 @@ void TownsRender::Render16Bit(const TownsCRTC::Layer &layer,const std::vector <u
 	unsigned int lineVRAMOffset=0;
 	auto ZV=layer.zoom.y();
 
-	for(int y=0; y<layer.sizeOnMonitor.y() && y+layer.originOnMonitor.y()<this->hei; ++y)
+	for(int y=0; y<layer.sizeOnMonitor.y() && y+layer.originOnMonitor.y()<this->hei; y+=ZV)
 	{
 		auto X=  layer.originOnMonitor.x();
 		auto Y=y+layer.originOnMonitor.y();
-		unsigned char *dst=rgba.data()+4*(Y*this->wid+X);
+		unsigned char *dstLine=rgba.data()+4*(Y*this->wid+X);
+		auto dst=dstLine;
 
 		unsigned int inLineVRAMOffset=0;
 		auto ZH=layer.zoom.x();
@@ -364,7 +382,7 @@ void TownsRender::Render16Bit(const TownsCRTC::Layer &layer,const std::vector <u
 			VRAMAddr=VRAMBase+((VRAMAddr+VRAMOffsetVertical)&VRAMVScrollMask);
 			OFFSETTRANS::Trans(VRAMAddr);
 
-			unsigned short col16=VRAM[VRAMAddr]|(VRAM[VRAMAddr+1]<<8);
+			unsigned short col16=cpputil::GetWord(VRAM.data()+VRAMAddr);
 			if(true!=transparent || 0==(col16&0x8000))
 			{
 				dst[0]=((col16&0b000001111100000)>>5);
@@ -382,10 +400,14 @@ void TownsRender::Render16Bit(const TownsCRTC::Layer &layer,const std::vector <u
 				inLineVRAMOffset+=2;
 			}
 		}
-		if(0==(--ZV))
+
+		auto copyPtr=dstLine+(4*this->wid);
+		for(unsigned int zv=1; zv<ZV; ++zv)
 		{
-			ZV=layer.zoom.y();
-			lineVRAMOffset+=layer.bytesPerLine;
+			std::memcpy(copyPtr,dstLine,dst-dstLine);
+			copyPtr+=(4*this->wid);
 		}
+
+		lineVRAMOffset+=layer.bytesPerLine;
 	}
 }
