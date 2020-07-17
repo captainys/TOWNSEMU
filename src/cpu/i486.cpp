@@ -452,14 +452,14 @@ std::vector <std::string> i486DX::GetGDTText(const Memory &mem) const
 		unsigned int DTLinearBaseAddr=state.GDTR.linearBaseAddr+selector;
 		const unsigned char rawDesc[8]=
 		{
-			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr),
-			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+1),
-			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+2),
-			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+3),
-			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+4),
-			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+5),
-			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+6),
-			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+7)
+			(unsigned char)DebugFetchByteByLinearAddress(mem,DTLinearBaseAddr),
+			(unsigned char)DebugFetchByteByLinearAddress(mem,DTLinearBaseAddr+1),
+			(unsigned char)DebugFetchByteByLinearAddress(mem,DTLinearBaseAddr+2),
+			(unsigned char)DebugFetchByteByLinearAddress(mem,DTLinearBaseAddr+3),
+			(unsigned char)DebugFetchByteByLinearAddress(mem,DTLinearBaseAddr+4),
+			(unsigned char)DebugFetchByteByLinearAddress(mem,DTLinearBaseAddr+5),
+			(unsigned char)DebugFetchByteByLinearAddress(mem,DTLinearBaseAddr+6),
+			(unsigned char)DebugFetchByteByLinearAddress(mem,DTLinearBaseAddr+7)
 		};
 
 		// Sample GDT from WRHIGH.ASM
@@ -525,14 +525,14 @@ std::vector <std::string> i486DX::GetLDTText(const Memory &mem) const
 		unsigned int DTLinearBaseAddr=state.LDTR.linearBaseAddr+selector;
 		const unsigned char rawDesc[8]=
 		{
-			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr),
-			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+1),
-			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+2),
-			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+3),
-			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+4),
-			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+5),
-			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+6),
-			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+7)
+			(unsigned char)DebugFetchByteByLinearAddress(mem,DTLinearBaseAddr),
+			(unsigned char)DebugFetchByteByLinearAddress(mem,DTLinearBaseAddr+1),
+			(unsigned char)DebugFetchByteByLinearAddress(mem,DTLinearBaseAddr+2),
+			(unsigned char)DebugFetchByteByLinearAddress(mem,DTLinearBaseAddr+3),
+			(unsigned char)DebugFetchByteByLinearAddress(mem,DTLinearBaseAddr+4),
+			(unsigned char)DebugFetchByteByLinearAddress(mem,DTLinearBaseAddr+5),
+			(unsigned char)DebugFetchByteByLinearAddress(mem,DTLinearBaseAddr+6),
+			(unsigned char)DebugFetchByteByLinearAddress(mem,DTLinearBaseAddr+7)
 		};
 
 		// Sample LDT from WRHIGH.ASM
