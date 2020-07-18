@@ -251,27 +251,27 @@ void TownsSound::ProcessSound(void)
 	}
 	if(state.rf5c68.state.playing && nullptr!=outside_world)
 	{
-		for(unsigned int chNum=0; chNum<RF5C68::NUM_CHANNELS; ++chNum)
+		std::vector <unsigned char> wave;
+		const unsigned int numSamples=MILLISEC_PER_WAVE*RF5C68::SAMPLING_RATE/1000;
+		wave.resize(numSamples*4);
+		std::memset(wave.data(),0,wave.size());
+
+		if(true!=outside_world->PCMChannelPlaying(0))
 		{
-			auto &ch=state.rf5c68.state.ch[chNum];
-			if(0==(state.rf5c68.state.chOnOff&(1<<chNum)))
+			for(unsigned int chNum=0; chNum<RF5C68::NUM_CHANNELS; ++chNum)
 			{
+				auto &ch=state.rf5c68.state.ch[chNum];
 				if(true==ch.IRQAfterThisPlayBack)
 				{
 					state.rf5c68.SetIRQBank(ch.IRQBank);
 					ch.IRQAfterThisPlayBack=false;
 				}
-				if(true!=outside_world->PCMChannelPlaying(chNum))
+				if(0==(state.rf5c68.state.chOnOff&(1<<chNum)))
 				{
-					// Play started, but it went all the way to the end of the buffer.
-					// Since RF5C68 does not stop automatically, it needs to play the next segment.
-					std::vector <unsigned char> wave;
-					const unsigned int numSamples=MILLISEC_PER_WAVE*RF5C68::SAMPLING_RATE/1000;
-					wave.resize(numSamples*4);
-					state.rf5c68.MakeWaveForNumSamples(wave.data(),chNum,numSamples);
-					outside_world->PCMPlay(chNum,wave);
+					state.rf5c68.AddWaveForNumSamples(wave.data(),chNum,numSamples);
 				}
 			}
+			outside_world->PCMPlay(0,wave);
 		}
 	}
 }
