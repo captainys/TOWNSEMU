@@ -25,10 +25,13 @@ class RF5C68
 public:
 	enum
 	{
+		SAMPLING_RATE=19800,
 		WAVERAM_SIZE=65536,
 		NUM_CHANNELS=8,
-		FREQ=19600,
+		FREQ=19800,
 		FD_BIT_SHIFT=11,
+		BANK_SHIFT=12, // 2^12 bytes per bank.
+		LOOP_STOP_CODE=0xFF,
 	};
 
 	class Channel
@@ -44,6 +47,9 @@ public:
 		//    Play reached the end and came back to LS.
 		unsigned short playPtr;
 		bool repeatAfterThisSegment;
+
+		bool IRQAfterThisPlayBack=false;
+		unsigned short IRQBank=0;
 	};
 	class StartAndStopChannelBits
 	{
@@ -123,6 +129,18 @@ public:
 	/*! Make 19.2KHz signed 16-bit Stereo wave.
 	*/
 	std::vector <unsigned char> Make19KHzWave(unsigned int ch);
+
+	/*! Make 19.2KHz signed 16-bit Stereo wave for requested samples.
+	    Returns actual number of samples filled in the buffer.  Number of bytes will be return-value*4.
+	    Buffer must be long enough for numSamples*4.
+	*/
+	unsigned int MakeWaveForNumSamples(unsigned char waveBuf[],unsigned int chNum,unsigned int numSamples);
+
+	/*! Add 19.2KHz signed 16-bit Stereo wave for requested samples.
+	    Returns actual number of samples filled in the buffer.  Number of bytes will be return-value*4.
+	    Buffer must be long enough for numSamples*4.
+	*/
+	unsigned int AddWaveForNumSamples(unsigned char waveBuf[],unsigned int chNum,unsigned int numSamples);
 
 	/*! Notified from the controller that the play has started.
 	    This function sets IRQTimer for the channel.

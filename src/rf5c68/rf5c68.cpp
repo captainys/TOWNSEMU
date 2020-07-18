@@ -13,6 +13,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 << LICENSE */
 #include <iostream>
+#include <cstring>
 #include "rf5c68.h"
 #include "cpputil.h"
 
@@ -41,6 +42,9 @@ void RF5C68::Clear(void)
 		ch.playingBank=0;
 		ch.playPtr=0;
 		ch.repeatAfterThisSegment=false;
+
+		ch.IRQAfterThisPlayBack=false;
+		ch.IRQBank=0;
 	}
 	state.playing=false;
 	state.Bank=0;
@@ -191,12 +195,15 @@ std::vector <unsigned char> RF5C68::Make19KHzWave(unsigned int chNum)
 			// 2020/07/18
 			// Adding ch.FD to pcmAddr may skip a byte.
 			// However, it should not skip a loop-stop byte.
-			for(auto scanAddr=(pcmAddr>>FD_BIT_SHIFT); scanAddr<((pcmAddr+ch.FD)>>FD_BIT_SHIFT); ++scanAddr)
+			for(auto scanAddr=(pcmAddr>>FD_BIT_SHIFT); 
+			    scanAddr<WAVERAM_SIZE &&
+			    scanAddr<((pcmAddr+ch.FD)>>FD_BIT_SHIFT); 
+			    ++scanAddr)
 			{
 				if(0xff==state.waveRAM[scanAddr])
 				{
 					ch.repeatAfterThisSegment=true;
-					break;
+					goto ENDLOOP;
 				}
 			}
 
@@ -216,9 +223,99 @@ std::vector <unsigned char> RF5C68::Make19KHzWave(unsigned int chNum)
 			wavePtr[3]=((R>>8)&0xFF);
 			wavePtr+=4;
 		}
+	ENDLOOP:
+		;
 	}
 
 	return wave;
+}
+
+unsigned int RF5C68::MakeWaveForNumSamples(unsigned char waveBuf[],unsigned int chNum,unsigned int numSamples)
+{
+	std::memset(waveBuf,0,numSamples*4);
+	return AddWaveForNumSamples(waveBuf,chNum,numSamples);
+}
+unsigned int RF5C68::AddWaveForNumSamples(unsigned char waveBuf[],unsigned int chNum,unsigned int numSamples)
+{
+	unsigned int nFilled=0;
+
+	auto &ch=state.ch[chNum];
+
+	unsigned int Lvol=(ch.PAN&0x0F);
+	unsigned int Rvol=((ch.PAN>>4)&0x0F);
+	Lvol=(Lvol*ch.ENV)>>4;
+	Rvol=(Rvol*ch.ENV)>>4;
+
+	ch.repeatAfterThisSegment=false;
+	if(0<ch.FD)
+	{
+		unsigned int pcmAddr=(ch.playPtr<<FD_BIT_SHIFT);;
+		auto wavePtr=waveBuf;
+
+		while(nFilled<numSamples)
+		{
+			auto data=state.waveRAM[pcmAddr>>FD_BIT_SHIFT];
+
+			bool loopStop=(LOOP_STOP_CODE==data);
+			if(true!=loopStop)
+			{
+				int L=(data&0x7F);
+				int R=L;
+				L*=Lvol;
+				R*=Rvol;
+				if(data&0x80)
+				{
+					L=-L;
+					R=-R;
+				}
+
+				wavePtr[0]=(L&0xFF);
+				wavePtr[1]=((L>>8)&0xFF);
+				wavePtr[2]=(R&0xFF);
+				wavePtr[3]=((R>>8)&0xFF);
+				wavePtr+=4;
+
+				++nFilled;
+
+				auto prevBank=((pcmAddr>>FD_BIT_SHIFT>>BANK_SHIFT)&0x0F);
+				pcmAddr+=ch.FD;
+				auto bank=((pcmAddr>>FD_BIT_SHIFT>>BANK_SHIFT)&0x0F);
+				if(prevBank!=bank)
+				{
+					ch.IRQAfterThisPlayBack=true;
+					ch.IRQBank=prevBank;
+					if(0==bank)
+					{
+						pcmAddr=0;
+					}
+				}
+
+				// If a loop-stop code is between this byte and the next byte, it should be caught.
+				for(auto scanAddr=(pcmAddr>>FD_BIT_SHIFT);
+	   			    scanAddr<WAVERAM_SIZE && scanAddr<((pcmAddr+ch.FD)>>FD_BIT_SHIFT);
+				    ++scanAddr)
+				{
+					if(LOOP_STOP_CODE==state.waveRAM[scanAddr])
+					{
+						loopStop=true;
+						break;
+					}
+				}
+			}
+
+			if(true==loopStop)
+			{
+				pcmAddr=(ch.LS<<FD_BIT_SHIFT);
+				if(LOOP_STOP_CODE==state.waveRAM[pcmAddr>>FD_BIT_SHIFT]) // Infinite Loop
+				{
+					break;
+				}
+			}
+		}
+
+		ch.playPtr=(pcmAddr>>FD_BIT_SHIFT);
+	}
+	return nFilled;
 }
 
 void RF5C68::PlayStarted(unsigned int chNum)
