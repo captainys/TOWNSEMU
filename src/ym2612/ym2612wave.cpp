@@ -1065,7 +1065,7 @@ long long int YM2612::MakeWaveForNSamples(unsigned char wave[],unsigned int chNu
 					auto sl=connectionToOutputSlots[ch.CONNECT].slots[i];
 					if(0!=ch.slots[sl].AM)
 					{
-						AMSAdjustment[sl]=4096+AMS4096Table[ch.AMS]*sineTable[LFOPhase&PHASE_MASK]/UNSCALED_MAX;
+						AMSAdjustment[sl]=4096+(AMS4096Table[ch.AMS]*sineTable[LFOPhase&PHASE_MASK])/(UNSCALED_MAX*UNSCALED_MAX);
 					}
 				}
 			}
