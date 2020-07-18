@@ -2222,20 +2222,6 @@ public:
 		return memWin;
 	}
 
-	/*! Returns const memory-access pointer (Read-Access Pointer) from the linear address.
-	*/
-	inline MemoryAccess::ConstPointer GetMemoryReadPointerLinearAddr(unsigned int linearAddr,const Memory &mem) const
-	{
-		if(true==PagingEnabled())
-		{
-			return mem.GetReadAccessPointer(LinearAddressToPhysicalAddress(linearAddr,mem));
-		}
-		else
-		{
-			return mem.GetReadAccessPointer(linearAddr);
-		}
-	}
-
 	/*! Store a byte.
 	*/
 	inline void StoreByte(Memory &mem,int addressSize,SegmentRegister seg,unsigned int offset,unsigned char data);
