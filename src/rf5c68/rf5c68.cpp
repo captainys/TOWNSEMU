@@ -218,8 +218,8 @@ unsigned int RF5C68::AddWaveForNumSamples(unsigned char waveBuf[],unsigned int c
 				int R=L;
 				L*=Lvol;
 				R*=Rvol;
-				L>>=4;
-				R>>=4;
+				L>>=3;
+				R>>=3;
 				if(data&0x80)
 				{
 					L=-L;

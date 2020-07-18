@@ -79,6 +79,18 @@ NOTE計算式。F11って書いてあるけどF-Numberは11ビットだから最
 
 
 
+## pp.212
+### 表I-5-37
+そもそもMMLの書き方としてA4と書いてあるのは変で、多分O4Aと書きたかったのではないか。
+
+この表だとO4Aに対応するF-Numberは1153のはずだが、F-BASIC386で
+```
+PLAY "O4A"
+```
+とするとF-Numberは1038が書き込まれる。Sega Genesis Software Manual (Supplementary Index page 16) では"A"に対応するF-Numberは1037とある。当初ベースクロックが違うのかと思ってたけど多分FM TOWNSテクニカルデータブックの間違い。
+
+
+
 ## pp.257
 ### 表I-7-27 ドライブコントロールレジスタ
 
