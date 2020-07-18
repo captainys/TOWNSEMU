@@ -19,6 +19,19 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 
 
+inline void WordOp_Add(unsigned char *ptr,short value)
+{
+#ifdef YS_LITTLE_ENDIAN
+	*((short *)ptr)+=value;
+#else
+	std::swap(ptr[0],ptr[1]);
+	*((short *)ptr)+=value;
+	std::swap(ptr[0],ptr[1]);
+#endif
+}
+
+
+
 RF5C68::RF5C68()
 {
 	state.waveRAM.resize(WAVERAM_SIZE);
@@ -185,7 +198,7 @@ unsigned int RF5C68::AddWaveForNumSamples(unsigned char waveBuf[],unsigned int c
 
 	unsigned int Lvol=(ch.PAN&0x0F);
 	unsigned int Rvol=((ch.PAN>>4)&0x0F);
-	Lvol=(Lvol*ch.ENV)>>4;
+	Lvol=(Lvol*ch.ENV)>>4;   // Lvol(in) max=15, ENV max=255,  Lvol(in)*ENV max~=4096   Lvol(out)~=(4096>>4)=256
 	Rvol=(Rvol*ch.ENV)>>4;
 
 	ch.repeatAfterThisSegment=false;
@@ -205,16 +218,17 @@ unsigned int RF5C68::AddWaveForNumSamples(unsigned char waveBuf[],unsigned int c
 				int R=L;
 				L*=Lvol;
 				R*=Rvol;
+				L>>=4;
+				R>>=4;
 				if(data&0x80)
 				{
 					L=-L;
 					R=-R;
 				}
 
-				wavePtr[0]=(L&0xFF);
-				wavePtr[1]=((L>>8)&0xFF);
-				wavePtr[2]=(R&0xFF);
-				wavePtr[3]=((R>>8)&0xFF);
+
+				WordOp_Add(wavePtr  ,L);
+				WordOp_Add(wavePtr+2,R);
 				wavePtr+=4;
 
 				++nFilled;
