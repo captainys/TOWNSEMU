@@ -693,10 +693,10 @@ inline void i486DX::LoadSegmentRegisterQuiet(SegmentRegister &reg,unsigned int v
 
 		unsigned char rawDescBuf[8];
 		const unsigned char *rawDesc;
-		auto memAccPtr=GetMemoryReadPointerLinearAddr(DTLinearBaseAddr,mem);
-		if(8<=memAccPtr.length)
+		auto memWin=DebugGetConstMemoryWindowFromLinearAddress(DTLinearBaseAddr,mem);
+		if(nullptr!=memWin.ptr && (DTLinearBaseAddr&(MemoryAccess::MEMORY_WINDOW_SIZE-1))<=(MemoryAccess::MEMORY_WINDOW_SIZE-8))
 		{
-			rawDesc=memAccPtr.ptr;
+			rawDesc=memWin.ptr+(DTLinearBaseAddr&(MemoryAccess::MEMORY_WINDOW_SIZE-1));
 		}
 		else
 		{

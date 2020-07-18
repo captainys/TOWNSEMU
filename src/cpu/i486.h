@@ -2178,6 +2178,14 @@ public:
 	{
 		offset&=AddressMask((unsigned char)addressSize);
 		auto linearAddr=seg.baseLinearAddr+offset;
+		return GetConstMemoryWindowFromLinearAddress(linearAddr,mem);
+	}
+
+	/*! Returns const memory window from a linear address.
+	    This may raise page fault depending on SEG:OFFSET.
+	*/
+	inline MemoryAccess::ConstMemoryWindow GetConstMemoryWindowFromLinearAddress(unsigned int linearAddr,const Memory &mem)
+	{
 		auto physAddr=linearAddr;
 		if(true==PagingEnabled())
 		{
@@ -2195,6 +2203,14 @@ public:
 	{
 		offset&=AddressMask((unsigned char)addressSize);
 		auto linearAddr=seg.baseLinearAddr+offset;
+		return DebugGetConstMemoryWindowFromLinearAddress(linearAddr,mem);
+	}
+
+	/*! Returns const memory window from a linear address.
+	    It will not change the state of the CPU including exceptions.
+	*/
+	inline MemoryAccess::ConstMemoryWindow DebugGetConstMemoryWindowFromLinearAddress(unsigned int linearAddr,const Memory &mem) const
+	{
 		auto physAddr=linearAddr;
 		if(true==PagingEnabled())
 		{
@@ -2204,19 +2220,6 @@ public:
 		auto memWin=mem.GetConstMemoryWindow(physAddr);
 		memWin.linearBaseAddr=(linearAddr&(~0xfff));
 		return memWin;
-	}
-
-	/*! Returns const memory-access pointer (Read-Access Pointer) from SEG:OFFSET.
-	*/
-	inline MemoryAccess::ConstPointer GetMemoryReadPointer(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
-	{
-		offset&=AddressMask((unsigned char)addressSize);
-		auto addr=seg.baseLinearAddr+offset;
-		if(true==PagingEnabled())
-		{
-			addr=LinearAddressToPhysicalAddress(addr,mem);
-		}
-		return mem.GetReadAccessPointer(addr);
 	}
 
 	/*! Returns const memory-access pointer (Read-Access Pointer) from the linear address.
