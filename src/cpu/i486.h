@@ -2261,8 +2261,8 @@ public:
 	*/
 	unsigned int DebugFetchDword(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
 	unsigned int DebugFetchWordOrDword(unsigned int operandSize,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
-	inline unsigned int DebugFetchByteWordOrDword(unsigned int operandSize,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
-	inline unsigned int DebugFetchByteByLinearAddress(const Memory &mem,unsigned int linearAddr) const;
+	unsigned int DebugFetchByteWordOrDword(unsigned int operandSize,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+	unsigned int DebugFetchByteByLinearAddress(const Memory &mem,unsigned int linearAddr) const;
 	void DebugStoreByte(Memory &mem,int addressSize,SegmentRegister seg,unsigned int offset,unsigned char data);
 	void DebugStoreWord(Memory &mem,int addressSize,SegmentRegister seg,unsigned int offset,unsigned int data);
 	void DebugStoreDword(Memory &mem,int addressSize,SegmentRegister seg,unsigned int offset,unsigned int data);

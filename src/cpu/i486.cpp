@@ -2711,14 +2711,14 @@ unsigned int i486DX::DebugFetchWordOrDword(unsigned int operandSize,unsigned int
 		return DebugFetchDword(addressSize,seg,offset,mem);
 	}
 }
-inline unsigned int i486DX::DebugFetchByteWordOrDword(unsigned int operandSize,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+unsigned int i486DX::DebugFetchByteWordOrDword(unsigned int operandSize,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 {
 	return DebugFetchWordOrDword(operandSize,addressSize,seg,offset,mem);
 }
 
 /*! Fetch a byte by linear address for debugging.  It won't change exception status.
 */
-inline unsigned int i486DX::DebugFetchByteByLinearAddress(const Memory &mem,unsigned int linearAddr) const
+unsigned int i486DX::DebugFetchByteByLinearAddress(const Memory &mem,unsigned int linearAddr) const
 {
 	if(true==PagingEnabled())
 	{
