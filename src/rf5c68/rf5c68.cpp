@@ -305,6 +305,11 @@ unsigned int RF5C68::AddWaveForNumSamples(unsigned char waveBuf[],unsigned int c
 
 			if(true==loopStop)
 			{
+				// Should it fire an IRQ on loop-stop?
+				auto bank=((pcmAddr>>FD_BIT_SHIFT>>BANK_SHIFT)&0x0F);
+				ch.IRQAfterThisPlayBack=true;
+				ch.IRQBank=bank;
+
 				pcmAddr=(ch.LS<<FD_BIT_SHIFT);
 				if(LOOP_STOP_CODE==state.waveRAM[pcmAddr>>FD_BIT_SHIFT]) // Infinite Loop
 				{
@@ -342,7 +347,12 @@ void RF5C68::PlayStopped(unsigned int chNum)
 void RF5C68::SetIRQ(unsigned int chNum)
 {
 	auto &ch=state.ch[chNum];
-	auto bank=(ch.playingBank>>1);
+	SetIRQBank(ch.playingBank);
+}
+
+void RF5C68::SetIRQBank(unsigned int bank)
+{
+	bank>>=1;
 	if(0!=((1<<bank)&state.IRQBankMask))
 	{
 		state.IRQBank|=(1<<bank);

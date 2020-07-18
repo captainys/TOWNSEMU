@@ -50,6 +50,7 @@ public:
 
 	YsSoundPlayer::SoundData PCMChannel[RF5C68::NUM_CHANNELS];
 	virtual void PCMPlay(RF5C68 &pcm,unsigned int ch);
+	virtual void PCMPlay(unsigned int ch,std::vector <unsigned char > &wave);
 	virtual void PCMPlayStop(int ch);
 	virtual bool PCMChannelPlaying(int ch);
 	virtual double PCMCurrentPosition(int ch);

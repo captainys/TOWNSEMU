@@ -155,6 +155,10 @@ public:
 	*/
 	void SetIRQ(unsigned int ch);
 
+	/*! Raise IRQ flag of the bank.
+	*/
+	void SetIRQBank(unsigned int bank);
+
 	/*!
 	*/
 	void SetUpNextSegment(unsigned int chNum);

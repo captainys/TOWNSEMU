@@ -568,6 +568,11 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 	PCMChannel[ch].CreateFromSigned16bitStereo(RF5C68::FREQ,wave);
 	soundPlayer.PlayOneShot(PCMChannel[ch]);
 }
+/* virtual */ void FsSimpleWindowConnection::PCMPlay(unsigned int ch,std::vector <unsigned char > &wave)
+{
+	PCMChannel[ch].CreateFromSigned16bitStereo(RF5C68::FREQ,wave);
+	soundPlayer.PlayOneShot(PCMChannel[ch]);
+}
 /* virtual */ void FsSimpleWindowConnection::PCMPlayStop(int ch)
 {
 	soundPlayer.Stop(PCMChannel[ch]);
