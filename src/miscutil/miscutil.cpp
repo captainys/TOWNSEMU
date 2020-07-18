@@ -144,7 +144,7 @@ std::vector <std::string> miscutil::MakeMemDump(const i486DX &cpu,const Memory &
 		}
 		else
 		{
-			cpu.LoadSegmentRegisterQuiet(seg,ptr.SEG,mem,cpu.IsInRealMode());
+			cpu.DebugLoadSegmentRegister(seg,ptr.SEG,mem,cpu.IsInRealMode());
 			segTxt=cpputil::Ustox(ptr.SEG);
 		}
 		for(auto addr0=lineStart; addr0<=lineEnd; addr0+=16)

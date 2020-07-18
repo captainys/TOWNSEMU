@@ -664,84 +664,119 @@ void i486DX::PrintIDT(const Memory &mem) const
 	}
 }
 
-inline void i486DX::LoadSegmentRegisterQuiet(SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode) const
+
+class i486DX::LoadSegmentRegisterClass
 {
-	if(true==isInRealMode)
+public:
+	static inline unsigned int FetchByteByLinearAddress(i486DX &cpu,const Memory &mem,unsigned int linearAddr)
 	{
-		reg.value=value;
-		reg.baseLinearAddr=(value<<4);
-		reg.addressSize=16;
-		reg.operandSize=16;
-		reg.limit=0xffff;
+		return cpu.FetchByteByLinearAddress(mem,linearAddr);
 	}
-	else
+	static inline MemoryAccess::ConstMemoryWindow GetConstMemoryWindowFromLinearAddress(i486DX &cpu,unsigned int linearAddr,const Memory &mem)
 	{
-		auto RPL=(value&3);
-		auto TI=(0!=(value&4));
-		auto INDEX=(value>>3)&0b0001111111111111;
-
-		unsigned int DTLinearBaseAddr=0;
-		if(0==TI)
+		return cpu.GetConstMemoryWindowFromLinearAddress(linearAddr,mem);
+	}
+};
+class i486DX::DebugLoadSegmentRegisterClass
+{
+public:
+	static inline unsigned int FetchByteByLinearAddress(const i486DX &cpu,const Memory &mem,unsigned int linearAddr)
+	{
+		return cpu.DebugFetchByteByLinearAddress(mem,linearAddr);
+	}
+	static inline MemoryAccess::ConstMemoryWindow GetConstMemoryWindowFromLinearAddress(const i486DX &cpu,unsigned int linearAddr,const Memory &mem)
+	{
+		return cpu.DebugGetConstMemoryWindowFromLinearAddress(linearAddr,mem);
+	}
+};
+template <class CPUCLASS,class FUNC>
+class i486DX::LoadSegmentRegisterTemplate
+{
+public:
+	inline static void LoadSegmentRegister(CPUCLASS &cpu,SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode)
+	{
+		if(true==isInRealMode)
 		{
-			DTLinearBaseAddr=state.GDTR.linearBaseAddr;
-		}
-		else
-		{
-			DTLinearBaseAddr=state.LDTR.linearBaseAddr;
-		}
-		DTLinearBaseAddr+=(8*INDEX);
-
-		unsigned char rawDescBuf[8];
-		const unsigned char *rawDesc;
-		auto memWin=DebugGetConstMemoryWindowFromLinearAddress(DTLinearBaseAddr,mem);
-		if(nullptr!=memWin.ptr && (DTLinearBaseAddr&(MemoryAccess::MEMORY_WINDOW_SIZE-1))<=(MemoryAccess::MEMORY_WINDOW_SIZE-8))
-		{
-			rawDesc=memWin.ptr+(DTLinearBaseAddr&(MemoryAccess::MEMORY_WINDOW_SIZE-1));
-		}
-		else
-		{
-			rawDesc=rawDescBuf;
-			rawDescBuf[0]=(unsigned char)DebugFetchByteByLinearAddress(mem,DTLinearBaseAddr);
-			rawDescBuf[1]=(unsigned char)DebugFetchByteByLinearAddress(mem,DTLinearBaseAddr+1);
-			rawDescBuf[2]=(unsigned char)DebugFetchByteByLinearAddress(mem,DTLinearBaseAddr+2);
-			rawDescBuf[3]=(unsigned char)DebugFetchByteByLinearAddress(mem,DTLinearBaseAddr+3);
-			rawDescBuf[4]=(unsigned char)DebugFetchByteByLinearAddress(mem,DTLinearBaseAddr+4);
-			rawDescBuf[5]=(unsigned char)DebugFetchByteByLinearAddress(mem,DTLinearBaseAddr+5);
-			rawDescBuf[6]=(unsigned char)DebugFetchByteByLinearAddress(mem,DTLinearBaseAddr+6);
-			rawDescBuf[7]=(unsigned char)DebugFetchByteByLinearAddress(mem,DTLinearBaseAddr+7);
-		}
-
-		// Sample GDT from WRHIGH.ASM
-		//	DB		0FFH,0FFH	; Segment Limit (0-15)
-		//	DB		0,0,010H		; Base Address 0-23
-		//	DB		10010010B	; P=1, DPL=00, S=1, TYPE=0010
-		//	DB		11000111B	; G=1, DB=1, (Unused)=0, A=0, LIMIT 16-19=0011
-		//	DB		0			; Base Address 24-31
-
-		unsigned int segLimit=cpputil::GetWord(rawDesc+0)|((rawDesc[6]&0x0F)<<16);
-		unsigned int segBase=cpputil::GetWord(rawDesc+2)|(rawDesc[4]<<16)|(rawDesc[7]<<24);
-		if((0x80&rawDesc[6])==0) // G==0
-		{
-			reg.limit=segLimit;
-		}
-		else
-		{
-			reg.limit=(segLimit+1)*4096-1;
-		}
-		reg.baseLinearAddr=segBase;
-		reg.value=value;
-
-		if((0x40&rawDesc[6])==0) // D==0
-		{
+			reg.value=value;
+			reg.baseLinearAddr=(value<<4);
 			reg.addressSize=16;
 			reg.operandSize=16;
+			reg.limit=0xffff;
 		}
 		else
 		{
-			reg.addressSize=32;
-			reg.operandSize=32;
+			auto RPL=(value&3);
+			auto TI=(0!=(value&4));
+			auto INDEX=(value>>3)&0b0001111111111111;
+
+			unsigned int DTLinearBaseAddr=0;
+			if(0==TI)
+			{
+				DTLinearBaseAddr=cpu.state.GDTR.linearBaseAddr;
+			}
+			else
+			{
+				DTLinearBaseAddr=cpu.state.LDTR.linearBaseAddr;
+			}
+			DTLinearBaseAddr+=(8*INDEX);
+
+			unsigned char rawDescBuf[8];
+			const unsigned char *rawDesc;
+			auto memWin=FUNC::GetConstMemoryWindowFromLinearAddress(cpu,DTLinearBaseAddr,mem);
+			if(nullptr!=memWin.ptr && (DTLinearBaseAddr&(MemoryAccess::MEMORY_WINDOW_SIZE-1))<=(MemoryAccess::MEMORY_WINDOW_SIZE-8))
+			{
+				rawDesc=memWin.ptr+(DTLinearBaseAddr&(MemoryAccess::MEMORY_WINDOW_SIZE-1));
+			}
+			else
+			{
+				rawDesc=rawDescBuf;
+				rawDescBuf[0]=(unsigned char)FUNC::FetchByteByLinearAddress(cpu,mem,DTLinearBaseAddr);
+				rawDescBuf[1]=(unsigned char)FUNC::FetchByteByLinearAddress(cpu,mem,DTLinearBaseAddr+1);
+				rawDescBuf[2]=(unsigned char)FUNC::FetchByteByLinearAddress(cpu,mem,DTLinearBaseAddr+2);
+				rawDescBuf[3]=(unsigned char)FUNC::FetchByteByLinearAddress(cpu,mem,DTLinearBaseAddr+3);
+				rawDescBuf[4]=(unsigned char)FUNC::FetchByteByLinearAddress(cpu,mem,DTLinearBaseAddr+4);
+				rawDescBuf[5]=(unsigned char)FUNC::FetchByteByLinearAddress(cpu,mem,DTLinearBaseAddr+5);
+				rawDescBuf[6]=(unsigned char)FUNC::FetchByteByLinearAddress(cpu,mem,DTLinearBaseAddr+6);
+				rawDescBuf[7]=(unsigned char)FUNC::FetchByteByLinearAddress(cpu,mem,DTLinearBaseAddr+7);
+			}
+
+			// Sample GDT from WRHIGH.ASM
+			//	DB		0FFH,0FFH	; Segment Limit (0-15)
+			//	DB		0,0,010H		; Base Address 0-23
+			//	DB		10010010B	; P=1, DPL=00, S=1, TYPE=0010
+			//	DB		11000111B	; G=1, DB=1, (Unused)=0, A=0, LIMIT 16-19=0011
+			//	DB		0			; Base Address 24-31
+
+			unsigned int segLimit=cpputil::GetWord(rawDesc+0)|((rawDesc[6]&0x0F)<<16);
+			unsigned int segBase=cpputil::GetWord(rawDesc+2)|(rawDesc[4]<<16)|(rawDesc[7]<<24);
+			if((0x80&rawDesc[6])==0) // G==0
+			{
+				reg.limit=segLimit;
+			}
+			else
+			{
+				reg.limit=(segLimit+1)*4096-1;
+			}
+			reg.baseLinearAddr=segBase;
+			reg.value=value;
+
+			if((0x40&rawDesc[6])==0) // D==0
+			{
+				reg.addressSize=16;
+				reg.operandSize=16;
+			}
+			else
+			{
+				reg.addressSize=32;
+				reg.operandSize=32;
+			}
 		}
 	}
+};
+
+void i486DX::DebugLoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode) const
+{
+	LoadSegmentRegisterTemplate<const i486DX,DebugLoadSegmentRegisterClass>::LoadSegmentRegister(*this,reg,value,mem,IsInRealMode());
 }
 
 void i486DX::LoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem)
@@ -750,7 +785,16 @@ void i486DX::LoadSegmentRegister(SegmentRegister &reg,unsigned int value,const M
 	{
 		state.holdIRQ=true;
 	}
-	LoadSegmentRegisterQuiet(reg,value,mem,IsInRealMode());
+	LoadSegmentRegisterTemplate<i486DX,LoadSegmentRegisterClass>::LoadSegmentRegister(*this,reg,value,mem,IsInRealMode());
+}
+
+void i486DX::LoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode)
+{
+	if(&reg==&state.SS())
+	{
+		state.holdIRQ=true;
+	}
+	LoadSegmentRegisterTemplate<i486DX,LoadSegmentRegisterClass>::LoadSegmentRegister(*this,reg,value,mem,isInRealMode);
 }
 
 void i486DX::LoadSegmentRegisterRealMode(SegmentRegister &reg,unsigned int value)

@@ -1881,6 +1881,13 @@ public:
 	/*! Print LDT. */
 	void PrintLDT(const Memory &mem) const;
 
+private:
+	class LoadSegmentRegisterClass;
+	class DebugLoadSegmentRegisterClass;
+	template <class CPUCLASS,class FUNC>
+	class LoadSegmentRegisterTemplate;
+public:
+
 	/*! Loads a segment register.
 	    If reg is SS, it raise holdIRQ flag.
 	    How the segment linear base address is set depends on the CPU mode,
@@ -1888,6 +1895,10 @@ public:
 	    Therefore it needs a reference to memory.
 	*/
 	void LoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem);
+
+	/*! It works the same as LoadSegmentRegister function except it takes isInRealMode flag from the outside.
+	*/
+	void LoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode);
 
 	/*! Loads a segment register in real mode.
 	    If reg is SS, it raise holdIRQ flag.
@@ -1898,7 +1909,7 @@ public:
 	    It does not rely on the current CPU state, instead isInRealMode is given as a parameter.
 	    Even if reg==SS, it does not update holdIRQ flag.
 	*/
-	inline void LoadSegmentRegisterQuiet(SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode) const;
+	void DebugLoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode) const;
 
 	/*! Loads limit and linear base address to a descriptor table register.
 	    How many bytes are loaded depends on operand size.  [1] 26-194.

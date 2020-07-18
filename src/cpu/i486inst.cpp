@@ -6438,7 +6438,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			auto selectorValue=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize/8); // What to do with high 16 bits?
 			auto selector=selectorValue.GetAsWord();
 			SegmentRegister seg;
-			LoadSegmentRegisterQuiet(seg,selector,mem,false);
+			LoadSegmentRegister(seg,selector,mem,false);
 			OperandValue limit;
 			limit.MakeDword(seg.limit);
 			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,limit);
@@ -7345,7 +7345,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					else
 					{
 						SegmentRegister seg;
-						LoadSegmentRegisterQuiet(seg,selector,mem,false); // Force to read from GDT by setting isInRealMode=false
+						LoadSegmentRegister(seg,selector,mem,false); // Force to read from GDT by setting isInRealMode=false
 						const unsigned char byteData[]=
 						{
 							(unsigned char)( seg.limit    &0xff),

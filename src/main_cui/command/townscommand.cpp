@@ -2337,19 +2337,19 @@ void TownsCommandInterpreter::FoundAt(FMTowns &towns,unsigned int physAddr)
 	if(true!=towns.cpu.IsInRealMode() && 0x000C!=towns.cpu.state.CS().value)
 	{
 		i486DX::SegmentRegister seg;
-		towns.cpu.LoadSegmentRegisterQuiet(seg,0x000c,towns.mem,false);
+		towns.cpu.DebugLoadSegmentRegister(seg,0x000c,towns.mem,false);
 		FoundAt("000C:",seg.baseLinearAddr,linearAddr);
 	}
 	if(true!=towns.cpu.IsInRealMode() && 0x0014!=towns.cpu.state.DS().value)
 	{
 		i486DX::SegmentRegister seg;
-		towns.cpu.LoadSegmentRegisterQuiet(seg,0x0014,towns.mem,false);
+		towns.cpu.DebugLoadSegmentRegister(seg,0x0014,towns.mem,false);
 		FoundAt("0014:",seg.baseLinearAddr,linearAddr);
 	}
 	if(true!=towns.cpu.IsInRealMode())
 	{
 		i486DX::SegmentRegister seg;
-		towns.cpu.LoadSegmentRegisterQuiet(seg,0x0110,towns.mem,false);
+		towns.cpu.DebugLoadSegmentRegister(seg,0x0110,towns.mem,false);
 		FoundAt("0110:",seg.baseLinearAddr,linearAddr);
 	}
 }
