@@ -42,7 +42,7 @@ std::vector <std::string> miscutil::MakeMemDump(const i486DX &cpu,const Memory &
 				}
 				else
 				{
-					str+=" "+cpputil::Ubtox(cpu.FetchByteByLinearAddress(mem,addr));
+					str+=" "+cpputil::Ubtox(cpu.DebugFetchByteByLinearAddress(mem,addr));
 				}
 			}
 			str.push_back('|');
@@ -55,7 +55,7 @@ std::vector <std::string> miscutil::MakeMemDump(const i486DX &cpu,const Memory &
 				}
 				else
 				{
-					auto byte=cpu.FetchByteByLinearAddress(mem,addr);
+					auto byte=cpu.DebugFetchByteByLinearAddress(mem,addr);
 					if(byte<' ' || (true!=shiftJIS && 0x80<=byte))
 					{
 						str.push_back(' ');
@@ -163,7 +163,7 @@ std::vector <std::string> miscutil::MakeMemDump(const i486DX &cpu,const Memory &
 				}
 				else
 				{
-					str+=" "+cpputil::Ubtox(cpu.FetchByte(addressSize,seg,addr,mem));
+					str+=" "+cpputil::Ubtox(cpu.DebugFetchByte(addressSize,seg,addr,mem));
 				}
 			}
 			str.push_back('|');

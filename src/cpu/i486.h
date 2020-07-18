@@ -1897,8 +1897,14 @@ public:
 	void LoadDescriptorTableRegister(SystemAddressRegister &reg,int operandSize,const unsigned char byteData[]);
 
 	/*! Retrieve Interrupt Descriptor from the current IDT.
+	    It could raise page fault.
 	*/
-	InterruptDescriptor GetInterruptDescriptor(unsigned int INTNum,const Memory &mem) const;
+	InterruptDescriptor GetInterruptDescriptor(unsigned int INTNum,const Memory &mem);
+
+	/*! Retrieve Interrupt Descriptor from the current IDT.
+	    This will not change the CPU state including exceptions.
+	*/
+	InterruptDescriptor DebugGetInterruptDescriptor(unsigned int INTNum,const Memory &mem) const;
 
 	/*! Make an OperandValue from a descriptor table register.
 	*/
@@ -2052,7 +2058,7 @@ public:
 
 	/*! Fetch a byte. 
 	*/
-	inline unsigned int FetchByte(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+	inline unsigned int FetchByte(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
 	{
 		offset&=AddressMask((unsigned char)addressSize);
 		auto addr=seg.baseLinearAddr+offset;
@@ -2073,7 +2079,7 @@ public:
 
 	/*! Fetch a dword.
 	*/
-	inline unsigned int FetchWord(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+	inline unsigned int FetchWord(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
 	{
 		offset&=AddressMask((unsigned char)addressSize);
 		auto addr=seg.baseLinearAddr+offset;
@@ -2102,7 +2108,7 @@ public:
 
 	/*! Fetch a dword.
 	*/
-	inline unsigned int FetchDword(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+	inline unsigned int FetchDword(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
 	{
 		offset&=AddressMask((unsigned char)addressSize);
 		auto addr=seg.baseLinearAddr+offset;
@@ -2156,7 +2162,7 @@ public:
 
 	/*! Fetch a byte by linear address.
 	*/
-	inline unsigned int FetchByteByLinearAddress(const Memory &mem,unsigned int linearAddr) const
+	inline unsigned int FetchByteByLinearAddress(const Memory &mem,unsigned int linearAddr)
 	{
 		if(true==PagingEnabled())
 		{
@@ -2202,7 +2208,7 @@ public:
 
 	/*! Returns const memory-access pointer (Read-Access Pointer) from SEG:OFFSET.
 	*/
-	inline MemoryAccess::ConstPointer GetMemoryReadPointer(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+	inline MemoryAccess::ConstPointer GetMemoryReadPointer(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
 	{
 		offset&=AddressMask((unsigned char)addressSize);
 		auto addr=seg.baseLinearAddr+offset;
@@ -2723,12 +2729,12 @@ public:
 		In which case returned OperandValue will return correct value for GetAsDword, GetAsWord, and GetFwordSegment.
 	*/
 	OperandValue EvaluateOperand(
-	    const Memory &mem,int addressSize,int segmentOverride,const Operand &op,int destinationBytes) const;
+	    const Memory &mem,int addressSize,int segmentOverride,const Operand &op,int destinationBytes);
 
 	/*! Evaluate operand as an 8-bit operand.
 	*/
 	OperandValue EvaluateOperand8(
-	    const Memory &mem,int addressSize,int segmentOverride,const Operand &op) const;
+	    const Memory &mem,int addressSize,int segmentOverride,const Operand &op);
 
 
 	/*! Extract segment register and address offset from the OPER_ADDR type operand.

@@ -591,7 +591,7 @@ std::vector <std::string> i486DX::GetIDTText(const Memory &mem) const
 	text.back()="Limit="+cpputil::Uitox(state.IDTR.limit);
 	for(unsigned int offset=0; offset<state.IDTR.limit && offset<0x800; offset+=8)
 	{
-		auto desc=GetInterruptDescriptor(offset/8,mem);
+		auto desc=DebugGetInterruptDescriptor(offset/8,mem);
 		text.push_back(empty);
 		text.back()=cpputil::Ubtox(offset/8);
 		text.back()+=":";
@@ -701,14 +701,14 @@ inline void i486DX::LoadSegmentRegisterQuiet(SegmentRegister &reg,unsigned int v
 		else
 		{
 			rawDesc=rawDescBuf;
-			rawDescBuf[0]=(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr);
-			rawDescBuf[1]=(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+1);
-			rawDescBuf[2]=(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+2);
-			rawDescBuf[3]=(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+3);
-			rawDescBuf[4]=(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+4);
-			rawDescBuf[5]=(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+5);
-			rawDescBuf[6]=(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+6);
-			rawDescBuf[7]=(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+7);
+			rawDescBuf[0]=(unsigned char)DebugFetchByteByLinearAddress(mem,DTLinearBaseAddr);
+			rawDescBuf[1]=(unsigned char)DebugFetchByteByLinearAddress(mem,DTLinearBaseAddr+1);
+			rawDescBuf[2]=(unsigned char)DebugFetchByteByLinearAddress(mem,DTLinearBaseAddr+2);
+			rawDescBuf[3]=(unsigned char)DebugFetchByteByLinearAddress(mem,DTLinearBaseAddr+3);
+			rawDescBuf[4]=(unsigned char)DebugFetchByteByLinearAddress(mem,DTLinearBaseAddr+4);
+			rawDescBuf[5]=(unsigned char)DebugFetchByteByLinearAddress(mem,DTLinearBaseAddr+5);
+			rawDescBuf[6]=(unsigned char)DebugFetchByteByLinearAddress(mem,DTLinearBaseAddr+6);
+			rawDescBuf[7]=(unsigned char)DebugFetchByteByLinearAddress(mem,DTLinearBaseAddr+7);
 		}
 
 		// Sample GDT from WRHIGH.ASM
@@ -779,7 +779,7 @@ void i486DX::LoadDescriptorTableRegister(SystemAddressRegister &reg,int operandS
 	}
 }
 
-i486DX::InterruptDescriptor i486DX::GetInterruptDescriptor(unsigned int INTNum,const Memory &mem) const
+i486DX::InterruptDescriptor i486DX::GetInterruptDescriptor(unsigned int INTNum,const Memory &mem)
 {
 	InterruptDescriptor desc;
 	if(8*INTNum<state.IDTR.limit)
@@ -796,6 +796,40 @@ i486DX::InterruptDescriptor i486DX::GetInterruptDescriptor(unsigned int INTNum,c
 			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+5),
 			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+6),
 			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+7)
+		};
+		desc.SEG=rawDesc[2]|(rawDesc[3]<<8);
+		desc.OFFSET= (unsigned int)rawDesc[0]
+		           |((unsigned int)rawDesc[1]<<8)
+		           |((unsigned int)rawDesc[6]<<16)
+		           |((unsigned int)rawDesc[7]<<24);
+		desc.flags=  (unsigned short)rawDesc[4]
+		           |((unsigned short)rawDesc[5]<<8);
+	}
+	else
+	{
+		desc.SEG=FarPointer::NO_SEG;
+		desc.OFFSET=0;
+	}
+	return desc;
+}
+
+i486DX::InterruptDescriptor i486DX::DebugGetInterruptDescriptor(unsigned int INTNum,const Memory &mem) const
+{
+	InterruptDescriptor desc;
+	if(8*INTNum<state.IDTR.limit)
+	{
+		auto DTLinearBaseAddr=state.IDTR.linearBaseAddr;
+		DTLinearBaseAddr+=(8*INTNum);
+		const unsigned char rawDesc[8]=
+		{
+			(unsigned char)DebugFetchByteByLinearAddress(mem,DTLinearBaseAddr),
+			(unsigned char)DebugFetchByteByLinearAddress(mem,DTLinearBaseAddr+1),
+			(unsigned char)DebugFetchByteByLinearAddress(mem,DTLinearBaseAddr+2),
+			(unsigned char)DebugFetchByteByLinearAddress(mem,DTLinearBaseAddr+3),
+			(unsigned char)DebugFetchByteByLinearAddress(mem,DTLinearBaseAddr+4),
+			(unsigned char)DebugFetchByteByLinearAddress(mem,DTLinearBaseAddr+5),
+			(unsigned char)DebugFetchByteByLinearAddress(mem,DTLinearBaseAddr+6),
+			(unsigned char)DebugFetchByteByLinearAddress(mem,DTLinearBaseAddr+7)
 		};
 		desc.SEG=rawDesc[2]|(rawDesc[3]<<8);
 		desc.OFFSET= (unsigned int)rawDesc[0]
@@ -2045,7 +2079,7 @@ void i486DX::ShrByte(unsigned int &value,unsigned int ctr)
 
 
 i486DX::OperandValue i486DX::EvaluateOperand(
-    const Memory &mem,int addressSize,int segmentOverride,const Operand &op,int destinationBytes) const
+    const Memory &mem,int addressSize,int segmentOverride,const Operand &op,int destinationBytes)
 {
 	static const unsigned int addressMask[2]=
 	{
@@ -2256,7 +2290,7 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 }
 
 i486DX::OperandValue i486DX::EvaluateOperand8(
-    const Memory &mem,int addressSize,int segmentOverride,const Operand &op) const
+    const Memory &mem,int addressSize,int segmentOverride,const Operand &op)
 {
 	static const unsigned int addressMask[2]=
 	{
@@ -2625,7 +2659,8 @@ unsigned int i486DX::DebugFetchWord(unsigned int addressSize,const SegmentRegist
 	auto addr=seg.baseLinearAddr+offset;
 	if(true==PagingEnabled())
 	{
-		addr=LinearAddressToPhysicalAddress(addr,mem);
+		unsigned int type,code;
+		addr=LinearAddressToPhysicalAddress(type,code,addr,mem);
 		if(0xFFC<(addr&0xfff)) // May hit the page boundary
 		{
 			return DebugFetchByte(addressSize,seg,offset,mem)|(DebugFetchByte(addressSize,seg,offset+1,mem)<<8);
@@ -2643,14 +2678,15 @@ unsigned int i486DX::DebugFetchDword(unsigned int addressSize,const SegmentRegis
 	auto addr=seg.baseLinearAddr+offset;
 	if(true==PagingEnabled())
 	{
-		addr=LinearAddressToPhysicalAddress(addr,mem);
+		unsigned int type,code;
+		addr=LinearAddressToPhysicalAddress(type,code,addr,mem);
 		if(0xFF8<(addr&0xfff)) // May hit the page boundary
 		{
 			auto returnValue=
-			     FetchByte(addressSize,seg,offset,mem)
-			   |(FetchByte(addressSize,seg,offset+1,mem)<<8)
-			   |(FetchByte(addressSize,seg,offset+2,mem)<<16)
-			   |(FetchByte(addressSize,seg,offset+3,mem)<<24);
+			     DebugFetchByte(addressSize,seg,offset,mem)
+			   |(DebugFetchByte(addressSize,seg,offset+1,mem)<<8)
+			   |(DebugFetchByte(addressSize,seg,offset+2,mem)<<16)
+			   |(DebugFetchByte(addressSize,seg,offset+3,mem)<<24);
 			return returnValue;
 		}
 	}
@@ -2686,7 +2722,8 @@ inline unsigned int i486DX::DebugFetchByteByLinearAddress(const Memory &mem,unsi
 {
 	if(true==PagingEnabled())
 	{
-		linearAddr=LinearAddressToPhysicalAddress(linearAddr,mem);
+		unsigned int type,code;
+		linearAddr=LinearAddressToPhysicalAddress(type,code,linearAddr,mem);
 	}
 	auto returnValue=mem.FetchByte(linearAddr);
 	return returnValue;
