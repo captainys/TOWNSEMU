@@ -196,7 +196,6 @@ public:
 
 	virtual ConstMemoryWindow GetConstMemoryWindow(unsigned int physAddr) const;
 	virtual MemoryWindow GetMemoryWindow(unsigned int physAddr);
-	virtual ConstPointer GetReadAccessPointer(unsigned int physAddr) const;
 };
 
 
@@ -284,11 +283,6 @@ public:
 	{
 		auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
 		return memAccess->GetMemoryWindow(physAddr);
-	}
-	inline MemoryAccess::ConstPointer GetReadAccessPointer(unsigned int physAddr) const
-	{
-		auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-		return memAccess->GetReadAccessPointer(physAddr);
 	}
 
 	inline void StoreByte(unsigned int physAddr,unsigned char data)

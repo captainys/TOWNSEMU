@@ -178,10 +178,6 @@ void i486DebugMemoryAccess::ClearBreakOnWrite(unsigned int physAddr)
 	}
 	memAccessChain->StoreDword(physAddr,data);
 }
-/* virtual */ MemoryAccess::ConstPointer i486DebugMemoryAccess::GetReadAccessPointer(unsigned int physAddr) const
-{
-	return memAccessChain->GetReadAccessPointer(physAddr);
-}
 
 /* static */ void i486DebugMemoryAccess::SetBreakOnMemRead(Memory &mem,i486Debugger &debugger,unsigned int physAddr)
 {

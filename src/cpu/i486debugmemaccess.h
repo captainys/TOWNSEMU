@@ -46,7 +46,6 @@ public:
 	virtual void StoreByte(unsigned int physAddr,unsigned char data);
 	virtual void StoreWord(unsigned int physAddr,unsigned int data);
 	virtual void StoreDword(unsigned int physAddr,unsigned int data);
-	virtual ConstPointer GetReadAccessPointer(unsigned int physAddr) const;
 
 	static void SetBreakOnMemRead(Memory &mem,i486Debugger &debugger,unsigned int physAddr);
 	static void ClearBreakOnMemRead(Memory &mem,unsigned int physAddr);

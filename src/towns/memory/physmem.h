@@ -56,7 +56,6 @@ public:
 
 	virtual ConstMemoryWindow GetConstMemoryWindow(unsigned int physAddr) const;
 	virtual MemoryWindow GetMemoryWindow(unsigned int physAddr);
-	virtual ConstPointer GetReadAccessPointer(unsigned int physAddr) const;
 };
 
 class TownsMappedSysROMAccess : public TownsMemAccess
@@ -70,7 +69,6 @@ public:
 	virtual void StoreDword(unsigned int physAddr,unsigned int data);
 
 	virtual ConstMemoryWindow GetConstMemoryWindow(unsigned int physAddr) const;
-	virtual ConstPointer GetReadAccessPointer(unsigned int physAddr) const;
 };
 
 class TownsFMRVRAMAccess : public TownsMemAccess
@@ -202,7 +200,6 @@ public:
 	virtual void StoreByte(unsigned int physAddr,unsigned char data);
 
 	virtual ConstMemoryWindow GetConstMemoryWindow(unsigned int physAddr) const;
-	virtual ConstPointer GetReadAccessPointer(unsigned int physAddr) const;
 };
 
 

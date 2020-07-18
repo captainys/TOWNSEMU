@@ -1802,7 +1802,16 @@ public:
 		state._SetCR(num,value);
 		if(3==num)
 		{
-			state.pageDirectoryCache=mem.GetReadAccessPointer(value&0xFFFFF000);
+			auto memWin=mem.GetConstMemoryWindow(value&0xFFFFF000);
+			if(nullptr!=memWin.ptr)
+			{
+				state.pageDirectoryCache=memWin.GetReadAccessPointer(value&0xFFFFF000);
+			}
+			else
+			{
+				state.pageDirectoryCache.ptr=nullptr;
+				state.pageDirectoryCache.length=0;
+			}
 		}
 	}
 
