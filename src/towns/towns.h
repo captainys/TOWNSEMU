@@ -80,14 +80,21 @@ public:
 		    And, a 32-bit integer is good for 4,000,000,000 nano seconds = 4 seconds.
 		    A 64-bit integer should be able to hold decades.
 		    I think 64-bit is long enough.  So, I make it signed int.
-
-			townsTime0 is used for real-time adjustment in TownsThread.
 		*/
-		long long int townsTime,townsTime0;
+		long long int townsTime;
 
 		/*! CPU time is calculated from the clock.
 		*/
 		long long int cpuTime;
+
+		/*! Nanoseconds VM is lagging behind the real time.
+		*/
+		long long int timeDeficit=0;
+
+		enum
+		{
+			CATCHUP_PER_INSTRUCTION=1024, // Nanoseconds catch-up per instruction.  Must be 2^n.
+		};
 
 
 

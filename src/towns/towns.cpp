@@ -28,7 +28,6 @@ void FMTowns::State::PowerOn(void)
 {
 	Reset();
 	townsTime=0;
-	townsTime0=0;
 	cpuTime=0;
 	nextSecondInTownsTime=PER_SECOND;
 	nextFastDevicePollingTime=FAST_DEVICE_POLLING_INTERVAL;
@@ -452,6 +451,11 @@ unsigned int FMTowns::RunOneInstruction(void)
 	auto FREQ=state.freq;
 	auto passedInNanoSec=(state.clockBalance/FREQ);
 	state.townsTime+=passedInNanoSec;
+	if(0<state.timeDeficit)
+	{
+		state.townsTime+=State::CATCHUP_PER_INSTRUCTION;
+		state.timeDeficit-=State::CATCHUP_PER_INSTRUCTION;
+	}
 	state.cpuTime+=passedInNanoSec;
 	state.clockBalance%=FREQ;
 

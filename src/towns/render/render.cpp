@@ -159,7 +159,8 @@ void TownsRender::Render4Bit(
 		int bytesPerLineTimesVRAMy=layer.VRAMOffset;
 		auto VRAMTop=VRAM.data()+VRAMAddr+layer.VRAMHSkipBytes;
 
-		for(int y=0; y<layer.sizeOnMonitor.y() && y+layer.originOnMonitor.y()<this->hei; y+=ZV)
+		auto bottomY=this->hei-ZV;
+		for(int y=0; y<layer.sizeOnMonitor.y() && y+layer.originOnMonitor.y()<=bottomY; y+=ZV)
 		{
 			const int Y=y+layer.originOnMonitor.y();
 			const int X=  layer.originOnMonitor.x();
@@ -232,7 +233,8 @@ void TownsRender::Render4Bit(
 		int bytesPerLineTimesVRAMy=layer.VRAMOffset;
 		auto VRAMTop=VRAM.data()+VRAMAddr+layer.VRAMHSkipBytes;
 
-		for(int y=0; y<layer.sizeOnMonitor.y() && y+layer.originOnMonitor.y()<this->hei; y+=ZV)
+		auto bottomY=this->hei-ZV;
+		for(int y=0; y<layer.sizeOnMonitor.y() && y+layer.originOnMonitor.y()<=bottomY; y+=ZV)
 		{
 			const int Y=y+layer.originOnMonitor.y();
 			const int X=  layer.originOnMonitor.x();
@@ -315,7 +317,8 @@ void TownsRender::Render8Bit(const TownsCRTC::Layer &layer,const Vec3ub palette[
 	unsigned int lineVRAMOffset=0;
 	auto ZV=layer.zoom.y();
 
-	for(int y=0; y<layer.sizeOnMonitor.y() && y+layer.originOnMonitor.y()<this->hei; y+=ZV)
+	auto bottomY=this->hei-ZV;
+	for(int y=0; y<layer.sizeOnMonitor.y() && y+layer.originOnMonitor.y()<=bottomY; y+=ZV)
 	{
 		auto X=  layer.originOnMonitor.x();
 		auto Y=y+layer.originOnMonitor.y();
@@ -367,7 +370,8 @@ void TownsRender::Render16Bit(const TownsCRTC::Layer &layer,const std::vector <u
 	unsigned int lineVRAMOffset=0;
 	auto ZV=layer.zoom.y();
 
-	for(int y=0; y<layer.sizeOnMonitor.y() && y+layer.originOnMonitor.y()<this->hei; y+=ZV)
+	auto bottomY=this->hei-ZV;
+	for(int y=0; y<layer.sizeOnMonitor.y() && y+layer.originOnMonitor.y()<=bottomY; y+=ZV)
 	{
 		auto X=  layer.originOnMonitor.x();
 		auto Y=y+layer.originOnMonitor.y();
