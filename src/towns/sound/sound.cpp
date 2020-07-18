@@ -48,14 +48,6 @@ void TownsSound::SetOutsideWorld(class Outside_World *outside_world)
 }
 void TownsSound::PCMStartPlay(unsigned char chStartPlay)
 {
-	for(unsigned int ch=0; ch<RF5C68::NUM_CHANNELS; ++ch)
-	{
-		if(0!=(chStartPlay&(1<<ch)))
-		{
-			outside_world->PCMPlay(state.rf5c68,ch);
-			state.rf5c68.PlayStarted(ch);
-		}
-	}
 }
 void TownsSound::PCMStopPlay(unsigned char chStopPlay)
 {
@@ -133,7 +125,7 @@ void TownsSound::PCMStopPlay(unsigned char chStopPlay)
 			auto startStop=state.rf5c68.WriteControl(data);
 			if(0!=startStop.chStartPlay && nullptr!=outside_world)
 			{
-				// PCMStartPlay(startStop.chStartPlay);
+				PCMStartPlay(startStop.chStartPlay);
 			}
 			if(0!=startStop.chStopPlay && nullptr!=outside_world)
 			{
@@ -146,7 +138,7 @@ void TownsSound::PCMStopPlay(unsigned char chStopPlay)
 			auto startStop=state.rf5c68.WriteChannelOnOff(data);
 			if(0!=startStop.chStartPlay && nullptr!=outside_world)
 			{
-				// PCMStartPlay(startStop.chStartPlay);
+				PCMStartPlay(startStop.chStartPlay);
 			}
 			if(0!=startStop.chStopPlay && nullptr!=outside_world)
 			{
@@ -278,7 +270,6 @@ void TownsSound::ProcessSound(void)
 					wave.resize(numSamples*4);
 					state.rf5c68.MakeWaveForNumSamples(wave.data(),chNum,numSamples);
 					outside_world->PCMPlay(chNum,wave);
-					state.rf5c68.PlayStarted(chNum);
 				}
 			}
 		}

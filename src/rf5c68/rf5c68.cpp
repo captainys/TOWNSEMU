@@ -38,8 +38,6 @@ void RF5C68::Clear(void)
 		ch.ST=0;
 		ch.FD=0;
 		ch.LS=0;
-		ch.IRQTimer=0.0;
-		ch.playingBank=0;
 		ch.playPtr=0;
 		ch.repeatAfterThisSegment=false;
 
@@ -169,67 +167,6 @@ std::vector <std::string> RF5C68::GetStatusText(void) const
 	return text;
 }
 
-std::vector <unsigned char> RF5C68::Make19KHzWave(unsigned int chNum)
-{
-	auto &ch=state.ch[chNum];
-	std::vector <unsigned char> wave;
-
-	unsigned int Lvol=(ch.PAN&0x0F);
-	unsigned int Rvol=((ch.PAN>>4)&0x0F);
-	Lvol=(Lvol*ch.ENV)>>4;
-	Rvol=(Rvol*ch.ENV)>>4;
-
-	ch.repeatAfterThisSegment=false;
-	if(0<ch.FD)
-	{
-		unsigned int endPtr=((ch.playPtr+0x1000)&(~0xfff));
-		unsigned int startAddr=(ch.playPtr<<FD_BIT_SHIFT);
-		unsigned int endAddr=(endPtr<<FD_BIT_SHIFT);
-		unsigned int count=(endAddr-startAddr+ch.FD-1)/ch.FD;
-		wave.resize(count*4);
-		auto wavePtr=wave.data();
-		for(unsigned int pcmAddr=startAddr; pcmAddr<endAddr; pcmAddr+=ch.FD)
-		{
-			auto data=state.waveRAM[pcmAddr>>FD_BIT_SHIFT];
-
-			// 2020/07/18
-			// Adding ch.FD to pcmAddr may skip a byte.
-			// However, it should not skip a loop-stop byte.
-			for(auto scanAddr=(pcmAddr>>FD_BIT_SHIFT); 
-			    scanAddr<WAVERAM_SIZE &&
-			    scanAddr<((pcmAddr+ch.FD)>>FD_BIT_SHIFT); 
-			    ++scanAddr)
-			{
-				if(0xff==state.waveRAM[scanAddr])
-				{
-					ch.repeatAfterThisSegment=true;
-					goto ENDLOOP;
-				}
-			}
-
-			int L=(data&0x7F);
-			int R=L;
-			L*=Lvol;
-			R*=Rvol;
-			if(data&0x80)
-			{
-				L=-L;
-				R=-R;
-			}
-
-			wavePtr[0]=(L&0xFF);
-			wavePtr[1]=((L>>8)&0xFF);
-			wavePtr[2]=(R&0xFF);
-			wavePtr[3]=((R>>8)&0xFF);
-			wavePtr+=4;
-		}
-	ENDLOOP:
-		;
-	}
-
-	return wave;
-}
-
 unsigned int RF5C68::MakeWaveForNumSamples(unsigned char waveBuf[],unsigned int chNum,unsigned int numSamples)
 {
 	std::memset(waveBuf,0,numSamples*4);
@@ -237,6 +174,11 @@ unsigned int RF5C68::MakeWaveForNumSamples(unsigned char waveBuf[],unsigned int 
 }
 unsigned int RF5C68::AddWaveForNumSamples(unsigned char waveBuf[],unsigned int chNum,unsigned int numSamples)
 {
+	if(0!=(state.chOnOff&(1<<chNum)))
+	{
+		return 0;
+	}
+
 	unsigned int nFilled=0;
 
 	auto &ch=state.ch[chNum];
@@ -323,31 +265,10 @@ unsigned int RF5C68::AddWaveForNumSamples(unsigned char waveBuf[],unsigned int c
 	return nFilled;
 }
 
-void RF5C68::PlayStarted(unsigned int chNum)
-{
-	auto &ch=state.ch[chNum];
-	ch.playingBank=(ch.playPtr>>12);
-
-	// How long does it take to play 4K samples?
-	const unsigned int len=(4096<<FD_BIT_SHIFT);
-	unsigned int FD=ch.FD;
-	if(0==FD)
-	{
-		FD=1;
-	}
-	ch.IRQTimer=(double)len/(double)(ch.FD*FREQ);
-}
-
 void RF5C68::PlayStopped(unsigned int chNum)
 {
 	auto &ch=state.ch[chNum];
 	ch.playPtr=(ch.ST<<8);
-}
-
-void RF5C68::SetIRQ(unsigned int chNum)
-{
-	auto &ch=state.ch[chNum];
-	SetIRQBank(ch.playingBank);
 }
 
 void RF5C68::SetIRQBank(unsigned int bank)

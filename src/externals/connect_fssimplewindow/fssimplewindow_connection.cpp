@@ -562,12 +562,6 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 	return msf;
 }
 
-/* virtual */ void FsSimpleWindowConnection::PCMPlay(RF5C68 &pcm,unsigned int ch)
-{
-	auto wave=pcm.Make19KHzWave(ch);
-	PCMChannel[ch].CreateFromSigned16bitStereo(RF5C68::FREQ,wave);
-	soundPlayer.PlayOneShot(PCMChannel[ch]);
-}
 /* virtual */ void FsSimpleWindowConnection::PCMPlay(unsigned int ch,std::vector <unsigned char > &wave)
 {
 	PCMChannel[ch].CreateFromSigned16bitStereo(RF5C68::FREQ,wave);

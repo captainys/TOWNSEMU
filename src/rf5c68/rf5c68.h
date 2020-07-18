@@ -39,8 +39,6 @@ public:
 	public:
 		unsigned char ENV,PAN,ST;
 		unsigned short FD,LS;
-		double IRQTimer;
-		unsigned char playingBank; // 00H to 0FH.  64KB/4K=16 banks.
 
 		// playPtr is set when:
 		//    Written to ST, or
@@ -49,7 +47,7 @@ public:
 		bool repeatAfterThisSegment;
 
 		bool IRQAfterThisPlayBack=false;
-		unsigned short IRQBank=0;
+		unsigned short IRQBank=0; // 00H to 0FH.  64KB/4K=16 banks.
 	};
 	class StartAndStopChannelBits
 	{
@@ -126,10 +124,6 @@ public:
 
 	std::vector <std::string> GetStatusText(void) const;
 
-	/*! Make 19.2KHz signed 16-bit Stereo wave.
-	*/
-	std::vector <unsigned char> Make19KHzWave(unsigned int ch);
-
 	/*! Make 19.2KHz signed 16-bit Stereo wave for requested samples.
 	    Returns actual number of samples filled in the buffer.  Number of bytes will be return-value*4.
 	    Buffer must be long enough for numSamples*4.
@@ -142,20 +136,11 @@ public:
 	*/
 	unsigned int AddWaveForNumSamples(unsigned char waveBuf[],unsigned int chNum,unsigned int numSamples);
 
-	/*! Notified from the controller that the play has started.
-	    This function sets IRQTimer for the channel.
-	*/
-	void PlayStarted(unsigned int ch);
-
 	/*! Notified from the controller that the play has stopped.
 	*/
 	void PlayStopped(unsigned int ch);
 
-	/*!
-	*/
-	void SetIRQ(unsigned int ch);
-
-	/*! Raise IRQ flag of the bank.
+	/*! Raise IRQ flag of the bank.  Bank must be 0 to 0FH.
 	*/
 	void SetIRQBank(unsigned int bank);
 
