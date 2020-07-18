@@ -39,7 +39,7 @@ void RF5C68::Clear(void)
 		ch.LS=0;
 		ch.IRQTimer=0.0;
 		ch.playingBank=0;
-		ch.startPtr=0;
+		ch.playPtr=0;
 		ch.repeatAfterThisSegment=false;
 	}
 	state.playing=false;
@@ -125,7 +125,7 @@ void RF5C68::WriteLSH(unsigned char value)
 void RF5C68::WriteST(unsigned char value)
 {
 	state.ch[state.CB].ST=value;
-	state.ch[state.CB].startPtr=(value<<8);
+	state.ch[state.CB].playPtr=(value<<8);
 }
 
 std::vector <std::string> RF5C68::GetStatusText(void) const
@@ -178,8 +178,8 @@ std::vector <unsigned char> RF5C68::Make19KHzWave(unsigned int chNum)
 	ch.repeatAfterThisSegment=false;
 	if(0<ch.FD)
 	{
-		unsigned int endPtr=((ch.startPtr+0x1000)&(~0xfff));
-		unsigned int startAddr=(ch.startPtr<<FD_BIT_SHIFT);
+		unsigned int endPtr=((ch.playPtr+0x1000)&(~0xfff));
+		unsigned int startAddr=(ch.playPtr<<FD_BIT_SHIFT);
 		unsigned int endAddr=(endPtr<<FD_BIT_SHIFT);
 		unsigned int count=(endAddr-startAddr+ch.FD-1)/ch.FD;
 		wave.resize(count*4);
@@ -224,7 +224,7 @@ std::vector <unsigned char> RF5C68::Make19KHzWave(unsigned int chNum)
 void RF5C68::PlayStarted(unsigned int chNum)
 {
 	auto &ch=state.ch[chNum];
-	ch.playingBank=(ch.startPtr>>12);
+	ch.playingBank=(ch.playPtr>>12);
 
 	// How long does it take to play 4K samples?
 	const unsigned int len=(4096<<FD_BIT_SHIFT);
@@ -239,7 +239,7 @@ void RF5C68::PlayStarted(unsigned int chNum)
 void RF5C68::PlayStopped(unsigned int chNum)
 {
 	auto &ch=state.ch[chNum];
-	ch.startPtr=(ch.ST<<8);
+	ch.playPtr=(ch.ST<<8);
 }
 
 void RF5C68::SetIRQ(unsigned int chNum)
@@ -257,11 +257,11 @@ void RF5C68::SetUpNextSegment(unsigned int chNum)
 	auto &ch=state.ch[chNum];
 	if(true==ch.repeatAfterThisSegment)
 	{
-		ch.startPtr=ch.LS;
+		ch.playPtr=ch.LS;
 	}
 	else
 	{
-		ch.startPtr+=0x1000;
-		ch.startPtr&=0xF000;
+		ch.playPtr+=0x1000;
+		ch.playPtr&=0xF000;
 	}
 }
