@@ -187,14 +187,21 @@ std::vector <unsigned char> RF5C68::Make19KHzWave(unsigned int chNum)
 		for(unsigned int pcmAddr=startAddr; pcmAddr<endAddr; pcmAddr+=ch.FD)
 		{
 			auto data=state.waveRAM[pcmAddr>>FD_BIT_SHIFT];
-			if(0xff==data)
+
+			// 2020/07/18
+			// Adding ch.FD to pcmAddr may skip a byte.
+			// However, it should not skip a loop-stop byte.
+			for(auto scanAddr=(pcmAddr>>FD_BIT_SHIFT); scanAddr<((pcmAddr+ch.FD)>>FD_BIT_SHIFT); ++scanAddr)
 			{
-				ch.repeatAfterThisSegment=true;
-				break;
+				if(0xff==state.waveRAM[scanAddr])
+				{
+					ch.repeatAfterThisSegment=true;
+					break;
+				}
 			}
 
-			unsigned int L=(data&0x7F);
-			unsigned int R=L;
+			int L=(data&0x7F);
+			int R=L;
 			L*=Lvol;
 			R*=Rvol;
 			if(data&0x80)
@@ -256,10 +263,5 @@ void RF5C68::SetUpNextSegment(unsigned int chNum)
 	{
 		ch.startPtr+=0x1000;
 		ch.startPtr&=0xF000;
-		// For ChaseHQ.  Is it correct?
-		if(0==ch.startPtr)
-		{
-			ch.startPtr=ch.LS;
-		}
 	}
 }
