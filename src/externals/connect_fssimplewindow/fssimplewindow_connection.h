@@ -48,17 +48,16 @@ public:
 	virtual DiscImage::MinSecFrm CDDACurrentPosition(void);
 
 
-	YsSoundPlayer::SoundData PCMChannel[RF5C68::NUM_CHANNELS];
-	virtual void PCMPlay(unsigned int ch,std::vector <unsigned char > &wave);
-	virtual void PCMPlayStop(int ch);
-	virtual bool PCMChannelPlaying(int ch);
-	virtual double PCMCurrentPosition(int ch);
+	YsSoundPlayer::SoundData PCMChannel;
+	virtual void PCMPlay(std::vector <unsigned char > &wave);
+	virtual void PCMPlayStop(void);
+	virtual bool PCMChannelPlaying(void);
 
 
-	YsSoundPlayer::SoundData FMChannel[YM2612::NUM_CHANNELS];
-	virtual void FMPlay(unsigned int ch,std::vector <unsigned char> &wave);
-	virtual void FMPlayStop(int ch);
-	virtual bool FMChannelPlaying(int ch);
+	YsSoundPlayer::SoundData FMChannel;
+	virtual void FMPlay(std::vector <unsigned char> &wave);
+	virtual void FMPlayStop(void);
+	virtual bool FMChannelPlaying(void);
 };
 
 /* } */

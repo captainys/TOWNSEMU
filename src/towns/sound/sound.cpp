@@ -55,7 +55,6 @@ void TownsSound::PCMStopPlay(unsigned char chStopPlay)
 	{
 		if(0!=(chStopPlay&(1<<ch)))
 		{
-			outside_world->PCMPlayStop(ch);
 			state.rf5c68.PlayStopped(ch);
 		}
 	}
@@ -227,27 +226,13 @@ void TownsSound::ProcessSound(void)
 {
 	if(0!=state.ym2612.state.playingCh)
 	{
-		if(0!=state.ym2612.state.playingCh && true!=outside_world->FMChannelPlaying(0))
+		if(0!=state.ym2612.state.playingCh && true!=outside_world->FMChannelPlaying())
 		{
 			state.ym2612.NextWaveAllChannels();
 			auto wav=state.ym2612.MakeWaveAllChannels(MILLISEC_PER_WAVE);
-			outside_world->FMPlay(0,wav);
+			outside_world->FMPlay(wav);
 			state.ym2612.CheckToneDoneAllChannels();
 		}
-
-		// Ch by Ch method >>
-		// for(int chNum=0; chNum<YM2612::NUM_CHANNELS; ++chNum)
-		// {
-		// 	if(0!=(state.ym2612.state.playingCh&(1<<chNum)) &&
-		// 	   true!=outside_world->FMChannelPlaying(chNum))
-		// 	{
-		// 		state.ym2612.NextWave(chNum);
-		// 		auto wav=state.ym2612.MakeWave(chNum,MILLISEC_PER_WAVE);
-		// 		outside_world->FMPlay(chNum,wav);
-		// 		state.ym2612.CheckToneDone(chNum);
-		// 	}
-		// }
-		// Ch by Ch method <<
 	}
 	if(state.rf5c68.state.playing && nullptr!=outside_world)
 	{
@@ -256,7 +241,7 @@ void TownsSound::ProcessSound(void)
 		wave.resize(numSamples*4);
 		std::memset(wave.data(),0,wave.size());
 
-		if(true!=outside_world->PCMChannelPlaying(0))
+		if(true!=outside_world->PCMChannelPlaying())
 		{
 			for(unsigned int chNum=0; chNum<RF5C68::NUM_CHANNELS; ++chNum)
 			{
@@ -271,7 +256,7 @@ void TownsSound::ProcessSound(void)
 					state.rf5c68.AddWaveForNumSamples(wave.data(),chNum,numSamples);
 				}
 			}
-			outside_world->PCMPlay(0,wave);
+			outside_world->PCMPlay(wave);
 		}
 	}
 }

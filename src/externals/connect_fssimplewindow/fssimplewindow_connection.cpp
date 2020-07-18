@@ -562,27 +562,23 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 	return msf;
 }
 
-/* virtual */ void FsSimpleWindowConnection::PCMPlay(unsigned int ch,std::vector <unsigned char > &wave)
+/* virtual */ void FsSimpleWindowConnection::PCMPlay(std::vector <unsigned char > &wave)
 {
-	PCMChannel[ch].CreateFromSigned16bitStereo(RF5C68::FREQ,wave);
-	soundPlayer.PlayOneShot(PCMChannel[ch]);
+	PCMChannel.CreateFromSigned16bitStereo(RF5C68::FREQ,wave);
+	soundPlayer.PlayOneShot(PCMChannel);
 }
-/* virtual */ void FsSimpleWindowConnection::PCMPlayStop(int ch)
+/* virtual */ void FsSimpleWindowConnection::PCMPlayStop(void)
 {
-	soundPlayer.Stop(PCMChannel[ch]);
+	soundPlayer.Stop(PCMChannel);
 }
-/* virtual */ bool FsSimpleWindowConnection::PCMChannelPlaying(int ch)
+/* virtual */ bool FsSimpleWindowConnection::PCMChannelPlaying(void)
 {
-	return YSTRUE==soundPlayer.IsPlaying(PCMChannel[ch]);
-}
-/* virtual */ double FsSimpleWindowConnection::PCMCurrentPosition(int ch)
-{
-	return soundPlayer.GetCurrentPosition(PCMChannel[ch]);
+	return YSTRUE==soundPlayer.IsPlaying(PCMChannel);
 }
 
-/* virtual */ void FsSimpleWindowConnection::FMPlay(unsigned int ch,std::vector <unsigned char> &wave)
+/* virtual */ void FsSimpleWindowConnection::FMPlay(std::vector <unsigned char> &wave)
 {
-	FMChannel[ch].CreateFromSigned16bitStereo(YM2612::WAVE_SAMPLING_RATE,wave);
+	FMChannel.CreateFromSigned16bitStereo(YM2612::WAVE_SAMPLING_RATE,wave);
 
 	// std::string fName;
 	// fName="tone";
@@ -591,13 +587,13 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 	// auto waveFile=FMChannel[ch].MakeWavByteData();
 	// cpputil::WriteBinaryFile(fName,waveFile.size(),waveFile.data());
 
-	soundPlayer.PlayOneShot(FMChannel[ch]);
+	soundPlayer.PlayOneShot(FMChannel);
 }
-/* virtual */ void FsSimpleWindowConnection::FMPlayStop(int ch)
+/* virtual */ void FsSimpleWindowConnection::FMPlayStop(void)
 {
 }
-/* virtual */ bool FsSimpleWindowConnection::FMChannelPlaying(int ch)
+/* virtual */ bool FsSimpleWindowConnection::FMChannelPlaying(void)
 {
-	return YSTRUE==soundPlayer.IsPlaying(FMChannel[ch]);
+	return YSTRUE==soundPlayer.IsPlaying(FMChannel);
 }
 

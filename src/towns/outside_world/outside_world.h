@@ -108,17 +108,16 @@ public:
 
 
 public:
-	virtual void PCMPlay(unsigned int ch,std::vector <unsigned char > &wave)=0;
-	virtual void PCMPlayStop(int ch)=0;
-	virtual bool PCMChannelPlaying(int ch)=0;
-	virtual double PCMCurrentPosition(int ch)=0;
+	virtual void PCMPlay(std::vector <unsigned char > &wave)=0;
+	virtual void PCMPlayStop(void)=0;
+	virtual bool PCMChannelPlaying(void)=0;
 
 
 
 public:
-	virtual void FMPlay(unsigned int ch,std::vector <unsigned char> &wave)=0;
-	virtual void FMPlayStop(int ch)=0;
-	virtual bool FMChannelPlaying(int ch)=0;
+	virtual void FMPlay(std::vector <unsigned char> &wave)=0;
+	virtual void FMPlayStop(void)=0;
+	virtual bool FMChannelPlaying(void)=0;
 };
 
 
