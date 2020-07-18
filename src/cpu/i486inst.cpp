@@ -545,7 +545,7 @@ public:
 			lastByte=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,CS,offset+inst.numBytes++,mem);
 			inst.opCode=(inst.opCode<<8)|lastByte;
 		}
-		CPUCLASS::FetchOperand<CPUCLASS,FUNCCLASS>(cpu,inst,op1,op2,ptr,CS,offset+inst.numBytes,mem);
+		CPUCLASS::template FetchOperand<CPUCLASS,FUNCCLASS>(cpu,inst,op1,op2,ptr,CS,offset+inst.numBytes,mem);
 	}
 };
 
