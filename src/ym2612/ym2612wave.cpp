@@ -728,7 +728,7 @@ inline int YM2612::Slot::EnvelopedOutputDb(int phase,int phaseShift,unsigned int
 {
 	int dB=InterpolateEnvelope(timeInMS);
 	lastDb100Cache=dB;
-	unsigned int ampl=DB100to4095Scale[dB];
+	int ampl=DB100to4095Scale[dB];
 	int unscaledOut=UnscaledOutput(phase,phaseShift,FB,lastSlot0Out);
 	return (unscaledOut*ampl)/4096;
 }
@@ -736,7 +736,7 @@ inline int YM2612::Slot::EnvelopedOutputDb(int phase,int phaseShift,unsigned int
 {
 	int dB=InterpolateEnvelope(timeInMS);
 	lastDb100Cache=dB;
-	unsigned int ampl=DB100to4095Scale[dB];
+	int ampl=DB100to4095Scale[dB];
 	int unscaledOut=UnscaledOutput(phase,phaseShift);
 	return (unscaledOut*ampl)/4096;
 }
@@ -744,7 +744,7 @@ inline int YM2612::Slot::EnvelopedOutputLn(int phase,int phaseShift,unsigned int
 {
 	int env=InterpolateEnvelope(timeInMS);
 	lastDb100Cache=env;
-	unsigned int ampl=linear9600to4096[env];
+	int ampl=linear9600to4096[env];
 	int unscaledOut=UnscaledOutput(phase,phaseShift,FB,lastSlot0Out);
 	return (unscaledOut*ampl)/4096;
 }
@@ -752,7 +752,7 @@ inline int YM2612::Slot::EnvelopedOutputLn(int phase,int phaseShift,unsigned int
 {
 	int env=InterpolateEnvelope(timeInMS);
 	lastDb100Cache=env;
-	unsigned int ampl=linear9600to4096[env];
+	int ampl=linear9600to4096[env];
 	int unscaledOut=UnscaledOutput(phase,phaseShift);
 	return (unscaledOut*ampl)/4096;
 }
@@ -1065,7 +1065,7 @@ long long int YM2612::MakeWaveForNSamples(unsigned char wave[],unsigned int chNu
 					auto sl=connectionToOutputSlots[ch.CONNECT].slots[i];
 					if(0!=ch.slots[sl].AM)
 					{
-						AMSAdjustment[sl]=4096+(AMS4096Table[ch.AMS]*sineTable[LFOPhase&PHASE_MASK])/(UNSCALED_MAX*UNSCALED_MAX);
+						AMSAdjustment[sl]=4096+(AMS4096Table[ch.AMS]*sineTable[LFOPhase&PHASE_MASK])/UNSCALED_MAX;
 					}
 				}
 			}
