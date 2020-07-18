@@ -2689,7 +2689,8 @@ unsigned int i486DX::DebugFetchByte(unsigned int addressSize,const SegmentRegist
 	auto addr=seg.baseLinearAddr+offset;
 	if(true==PagingEnabled())
 	{
-		addr=LinearAddressToPhysicalAddress(addr,mem);
+		unsigned int type,code;
+		addr=LinearAddressToPhysicalAddress(type,code,addr,mem);
 	}
 	auto returnValue=mem.FetchByte(addr);
 	return returnValue;

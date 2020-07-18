@@ -2028,8 +2028,8 @@ public:
 		}
 		if(0==(pageTableInfo&1))
 		{
-			exceptionCode=EXCEPTION_PF;
-			exceptionType=0;
+			exceptionType=EXCEPTION_PF;
+			exceptionCode=0;
 			return 0;
 		}
 
@@ -2037,8 +2037,8 @@ public:
 		unsigned int pageInfo=mem.FetchDword(pageTablePtr+(pageTableIndex<<2));
 		if(0==(pageInfo&1))
 		{
-			exceptionCode=EXCEPTION_PF;
-			exceptionType=0;
+			exceptionType=EXCEPTION_PF;
+			exceptionCode=0;
 			return 0;
 		}
 
@@ -2054,14 +2054,14 @@ public:
 
 	/*!
 	*/
-	inline unsigned long LinearAddressToPhysicalAddress(unsigned int linearAddr,const Memory &mem) const
+	inline unsigned long LinearAddressToPhysicalAddress(unsigned int linearAddr,const Memory &mem)
 	{
 		unsigned int exceptionType,exceptionCode;
 		auto physicalAddr=LinearAddressToPhysicalAddress(exceptionType,exceptionCode,linearAddr,mem);
 		if(EXCEPTION_NONE!=exceptionType)
 		{
-		// 	RaiseException(exceptionType,exceptionCode);
-		// 	return 0;
+			RaiseException(exceptionType,exceptionCode);
+			return 0;
 		}
 		return physicalAddr;
 	}
@@ -2309,7 +2309,12 @@ public:
 
 	/*! Raise an exception. 
 	*/
-	void RaiseException(int type,int code){state.exception=true;state.exceptionType=type;state.exceptionCode=code;};// Right now it's just a placeholder
+	void RaiseException(int type,int code)
+	{
+		state.exception=true;
+		state.exceptionType=type;
+		state.exceptionCode=code;
+	}
 
 
 	/*! 80386 and 80486 apparently accepts REPNE in place for REP is used for INS,MOVS,OUTS,LODS,STOS.

@@ -7508,6 +7508,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 	if(nullptr!=debuggerPtr)
 	{
+		if(true==state.exception)
+		{
+			debuggerPtr->ExternalBreak("Exception!");
+		}
 		debuggerPtr->AfterRunOneInstruction(clocksPassed,*this,mem,io,inst);
 	}
 
