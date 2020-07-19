@@ -1121,7 +1121,6 @@ unsigned int i486DX::Pop(Memory &mem,unsigned int operandSize)
 
 unsigned int i486DX::PhysicalAddressToLinearAddress(unsigned physAddr,const Memory &mem) const
 {
-printf("%s %d\n",__FUNCTION__,__LINE__);
 	if(true==IsInRealMode() || true!=PagingEnabled())
 	{
 		return physAddr;
