@@ -50,6 +50,7 @@ public:
 		CMD_WAIT,
 
 		CMD_INTERRUPT,
+		CMD_EXCEPTION,
 
 		CMD_MAKE_MEMORY_FILTER,
 		CMD_UPDATE_MEMORY_FILTER,
@@ -275,6 +276,8 @@ public:
 
 	void Execute_MakeMemoryFilter(FMTowns &towns,Command &cmd);
 	void Execute_UpdateMemoryFilter(FMTowns &towns,Command &cmd);
+
+	void Execute_Exception(FMTowns &towns,Command &cmd);
 
 	void Execute_SaveYM2612Log(FMTowns &towns,std::string fName);
 

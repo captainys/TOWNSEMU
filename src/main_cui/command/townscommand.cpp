@@ -66,6 +66,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["BRKON"]=CMD_BREAK_ON;
 	primaryCmdMap["CBRKON"]=CMD_DONT_BREAK_ON;
 	primaryCmdMap["INTERRUPT"]=CMD_INTERRUPT;
+	primaryCmdMap["EXCEPTION"]=CMD_EXCEPTION;
 	primaryCmdMap["MKMEMFILTER"]=CMD_MAKE_MEMORY_FILTER;
 	primaryCmdMap["UPDMEMFILTER"]=CMD_UPDATE_MEMORY_FILTER;
 	primaryCmdMap["FIND"]=CMD_FIND;
@@ -225,6 +226,10 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "INTERRUPT INTNum" << std::endl;
 	std::cout << "  Inject interrupt.  Same as CPU Instruction INT INTNum.  INTNum is hexadecimal." << std::endl;
 	std::cout << "  For example, INTERRUPT 4B will work same as INT 4BH." << std::endl;
+
+	std::cout << "EXCEPTION Type" << std::endl;
+	std::cout << "  Intentionally cause an exception." << std::endl;
+	std::cout << "  Type can be GENERAL, PAGEFAULT, or DIVISION." << std::endl;
 
 	std::cout << "MKMEMFILTER byteData" << std::endl;
 	std::cout << "  Make memory filter.  Memory filter caches physical addresses that has the given value." << std::endl;
@@ -533,6 +538,9 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 		{
 			PrintError(ERROR_TOO_FEW_ARGS);
 		}
+		break;
+	case CMD_EXCEPTION:
+		Execute_Exception(towns,cmd);
 		break;
 
 	case CMD_MAKE_MEMORY_FILTER:
@@ -2377,6 +2385,38 @@ void TownsCommandInterpreter::Execute_Find_Caller(FMTowns &towns,Command &cmd)
 
 			auto disasm=towns.cpu.Disassemble(inst,op1,op2,seg,callerAddr,towns.mem,towns.debugger.GetSymTable(),towns.debugger.GetIOTable());
 			std::cout << disasm << std::endl;
+		}
+	}
+	else
+	{
+		PrintError(ERROR_TOO_FEW_ARGS);
+	}
+}
+
+void TownsCommandInterpreter::Execute_Exception(FMTowns &towns,Command &cmd)
+{
+	if(2<=cmd.argv.size())
+	{
+		auto typeStr=cmd.argv[1];
+		cpputil::Capitalize(typeStr);
+		if("GENERAL"==typeStr)
+		{
+			std::cout << "Not supported yet" << std::endl;
+		}
+		else if("PAGEFAULT"==typeStr)
+		{
+			towns.cpu.Interrupt(i486DX::INT_PAGE_FAULT,towns.mem,0);
+			towns.cpu.Push(towns.mem,32,0);
+			towns.PrintStatus();
+		}
+		else if("DIVISION"==typeStr)
+		{
+			towns.cpu.Interrupt(i486DX::INT_DIVISION_BY_ZERO,towns.mem,0);
+			towns.PrintStatus();
+		}
+		else
+		{
+			std::cout << "What exception?" << std::endl;
 		}
 	}
 	else
