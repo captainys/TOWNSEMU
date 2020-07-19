@@ -1359,14 +1359,14 @@ void TownsCommandInterpreter::Execute_BreakOn(FMTowns &towns,Command &cmd)
 			towns.SetUpVRAMAccess(true,true);
 			break;
 		case BREAK_ON_CDC_COMMAND:
-			towns.cdrom.debugBreakOnCommandWrite=true;
+			towns.cdrom.var.debugBreakOnCommandWrite=true;
 			if(3<=cmd.argv.size())
 			{
-				towns.cdrom.debugBreakOnSpecificCommand=cpputil::Xtoi(cmd.argv[2].c_str());
+				towns.cdrom.var.debugBreakOnSpecificCommand=cpputil::Xtoi(cmd.argv[2].c_str());
 			}
 			else
 			{
-				towns.cdrom.debugBreakOnSpecificCommand=0xFFFF;
+				towns.cdrom.var.debugBreakOnSpecificCommand=0xFFFF;
 			}
 			break;
 		case BREAK_ON_LBUTTON_UP:
@@ -1548,7 +1548,7 @@ void TownsCommandInterpreter::Execute_ClearBreakOn(FMTowns &towns,Command &cmd)
 			towns.SetUpVRAMAccess(false,false);
 			break;
 		case BREAK_ON_CDC_COMMAND:
-			towns.cdrom.debugBreakOnCommandWrite=false;
+			towns.cdrom.var.debugBreakOnCommandWrite=false;
 			break;
 		case BREAK_ON_LBUTTON_UP:
 			towns.var.debugBreakOnLButtonUp=false;

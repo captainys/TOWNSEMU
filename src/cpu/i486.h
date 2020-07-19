@@ -2083,6 +2083,12 @@ public:
 		offset&=AddressMask((unsigned char)addressSize);
 		auto addr=seg.baseLinearAddr+offset;
 
+		if(seg.limit<offset)
+		{
+			RaiseException(EXCEPTION_GP,0);
+			return 0;
+		}
+
 		if(&seg==&state.SS() && 
 		   nullptr!=state.SSESPWindow.ptr &&
 		   true==state.SSESPWindow.IsLinearAddressInRange(addr))
@@ -2103,6 +2109,12 @@ public:
 	{
 		offset&=AddressMask((unsigned char)addressSize);
 		auto addr=seg.baseLinearAddr+offset;
+
+		if(seg.limit<offset+1)
+		{
+			RaiseException(EXCEPTION_GP,0);
+			return 0;
+		}
 
 		if(&seg==&state.SS() && 
 		   nullptr!=state.SSESPWindow.ptr &&
@@ -2132,6 +2144,12 @@ public:
 	{
 		offset&=AddressMask((unsigned char)addressSize);
 		auto addr=seg.baseLinearAddr+offset;
+
+		if(seg.limit<offset+3)
+		{
+			RaiseException(EXCEPTION_GP,0);
+			return 0;
+		}
 
 		if(&seg==&state.SS() && 
 		   nullptr!=state.SSESPWindow.ptr &&

@@ -153,6 +153,8 @@ TownsCDROM::TownsCDROM(class FMTowns *townsPtr,class TownsPIC *PICPtr,class Town
 		// std::cout << "CDROM Command " << cpputil::Ubtox(data) << std::endl;
 		state.cmdReceived=true;
 		state.cmd=data;
+		var.lastCmdIssuedAt.SEG=townsPtr->cpu.state.CS().value;
+		var.lastCmdIssuedAt.OFFSET=townsPtr->cpu.state.EIP;
 		break;
 	case TOWNSIO_CDROM_PARAMETER_DATA://    0x4C4, // [2] pp.224
 		if(8<=state.nParamQueue)
@@ -164,6 +166,8 @@ TownsCDROM::TownsCDROM(class FMTowns *townsPtr,class TownsPIC *PICPtr,class Town
 			state.nParamQueue=PARAM_QUEUE_LEN-1;
 		}
 		state.paramQueue[state.nParamQueue++]=data;
+		var.lastParamWrittenAt.SEG=townsPtr->cpu.state.CS().value;
+		var.lastParamWrittenAt.OFFSET=townsPtr->cpu.state.EIP;
 		break;
 	case TOWNSIO_CDROM_TRANSFER_CTRL://     0x4C6, // [2] pp.227
 		state.DMATransfer=(0!=(data&0x10));
@@ -296,11 +300,22 @@ std::vector <std::string> TownsCDROM::GetStatusText(void) const
 	}
 
 
+	text.push_back("Last Command Param:");
+	for(int i=0; i<8; ++i)
+	{
+		text.back()+=cpputil::Ubtox(var.lastParam[i])+" ";
+	}
+
 	text.push_back("Param Queue (Towns->CD):");
 	for(int i=0; i<state.nParamQueue; ++i)
 	{
 		text.back()+=cpputil::Ubtox(state.paramQueue[i])+" ";
 	}
+
+	text.push_back("Last Command Issued At:");
+	text.back()+=var.lastCmdIssuedAt.Format();
+	text.back()+="   Last Parameter Written At:";
+	text.back()+=var.lastParamWrittenAt.Format();
 
 	text.push_back("Reading Sector(HSG):");
 	text.back()+=cpputil::Itoa(state.readingSectorHSG);
@@ -384,10 +399,10 @@ unsigned int TownsCDROM::LoadDiscImage(const std::string &fName)
 }
 void TownsCDROM::ExecuteCDROMCommand(void)
 {
-	if(true==debugBreakOnCommandWrite)
+	if(true==var.debugBreakOnCommandWrite)
 	{
 		bool commandTypeCheck=true;
-		if(0xFFFF!=debugBreakOnSpecificCommand && (state.cmd&0x9F)!=(debugBreakOnSpecificCommand&0x9F))
+		if(0xFFFF!=var.debugBreakOnSpecificCommand && (state.cmd&0x9F)!=(var.debugBreakOnSpecificCommand&0x9F))
 		{
 			commandTypeCheck=false;
 		}
@@ -409,6 +424,11 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 	// 	std::cout << cpputil::Ubtox(state.paramQueue[i]) << " ";
 	// }
 	// std::cout << std::endl;
+
+	for(int i=0; i<8; ++i)
+	{
+		var.lastParam[i]=state.paramQueue[i];
+	}
 
 	state.delayedSIRQ=false;
 

@@ -22,6 +22,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "discimg.h"
 #include "device.h"
 #include "townsdef.h"
+#include "i486.h"
 
 /*! Disassembly of some game titles suggested that the command can be issued like:
       Push parameter queue -> and then send command, or
@@ -210,13 +211,25 @@ public:
 		void ResetMPU(void);
 	};
 
-	State state;
-	bool debugBreakOnCommandWrite=false;
+	class Variables
+	{
+	public:
+		// For debugging purposes
+		unsigned char lastParam[8]={0,0,0,0,0,0,0,0};
+		// For debugging purposes
+		i486DX::FarPointer lastCmdIssuedAt;
+		i486DX::FarPointer lastParamWrittenAt;
 
-	// If debugBreakOnCommandWrite==true and 0xffff!=debugBreakOnSpecificCommand,
-	// it breaks the VM only if a specific command is sent.
-	// debugBreakOnSpecificCommand is ignored if debugBreakOnCommandWrite!=true.
-	unsigned int debugBreakOnSpecificCommand=0xffff;
+		bool debugBreakOnCommandWrite=false;
+
+		// If debugBreakOnCommandWrite==true and 0xffff!=debugBreakOnSpecificCommand,
+		// it breaks the VM only if a specific command is sent.
+		// debugBreakOnSpecificCommand is ignored if debugBreakOnCommandWrite!=true.
+		unsigned int debugBreakOnSpecificCommand=0xffff;
+	};
+
+	State state;
+	Variables var;
 
 	virtual const char *DeviceName(void) const{return "CDROM";}
 
