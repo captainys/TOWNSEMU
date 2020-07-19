@@ -2316,6 +2316,30 @@ public:
 		state.exceptionCode=code;
 	}
 
+	enum
+	{
+		INT_DIVISION_BY_ZERO=0,
+		INT_DEBUG_EXCEPTION=1,
+		INT_NMI=2,
+		INT_BREAKPOINT=3,
+		INT_INTO_OVERFLOW=4,
+		INT_BOUND_RANGE_EXCEEDED=5,
+		INT_INVALID_OPCODE=6,
+		INT_DEVICE_NOT_AVAILABLE=7,
+		INT_DOUBLE_FAULT=8,
+		INT_INVALID_TASK_STATE_SEGMENT=10,
+		INT_SEGMENT_NOT_PRESENT=11,
+		INT_STACK_FAULT=12,
+		INT_GENERAL_PROTECTION=13,
+		INT_PAGE_FAULT=14,
+		INT_FLOATING_POINT_ERROR=16,
+		INT_ALIGNMENT_CHECK=17
+	};
+
+	/*! Jump to an appropriate exception handler.
+	    Also clear state.exception.
+	*/
+	void HandleException(bool wasReadOp,Memory &mem);
 
 	/*! 80386 and 80486 apparently accepts REPNE in place for REP is used for INS,MOVS,OUTS,LODS,STOS.
 	    This inline function just make REPNE work as REP.

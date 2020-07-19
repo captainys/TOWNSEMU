@@ -351,6 +351,41 @@ void i486DX::Reset(void)
 	state.exception=false;
 }
 
+void i486DX::HandleException(bool wasReadOp,Memory &mem)
+{
+	/* Should add a flag.
+	if(nullptr!=debuggerPtr)
+	{
+		debuggerPtr->ExternalBreak("Exception!");
+	} */
+
+if(state.EIP==0x00001FE4)
+{
+	Abort("??");
+}
+
+	switch(state.exceptionType)
+	{
+	case EXCEPTION_PF:
+		Interrupt(INT_PAGE_FAULT,mem,0);
+		Push(mem,32,(wasReadOp ? 0 : 2));
+		break;
+	case EXCEPTION_GP:
+		Abort("GP handling not implemented yet.");
+		break;
+	case EXCEPTION_UD:
+		Abort("UD handling not implemented yet.");
+		break;
+	case EXCEPTION_SS:
+		Abort("SS handling not implemented yet.");
+		break;
+	default:
+		Abort("Undefined exception.");
+		break;
+	}
+	state.exception=false;
+}
+
 std::vector <std::string> i486DX::GetStateText(void) const
 {
 	std::vector <std::string> text;

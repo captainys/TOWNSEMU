@@ -4060,7 +4060,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	switch(opCodeRenumberTable[inst.opCode])
 	{
 	case I486_RENUMBER_UNDEFINED_SHOOT_INT6:
-		Interrupt(6,mem,0);
+		Interrupt(INT_INVALID_OPCODE,mem,0);
 		EIPSetByInstruction=true;
 		clocksPassed=26;  // ? How many clocks should I use?
 		break;
@@ -6308,9 +6308,18 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			if(true==REPCheck(clocksPassed,prefix,inst.addressSize))
 			{
 				auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
-				SetAL(FetchByte(inst.addressSize,seg,state.ESI(),mem));
-				UpdateSIorESIAfterStringOp(inst.addressSize,8);
-				EIPSetByInstruction=(INST_PREFIX_REP==prefix);
+				auto newAL=FetchByte(inst.addressSize,seg,state.ESI(),mem);
+				if(true!=state.exception)
+				{
+					SetAL(newAL);
+					UpdateSIorESIAfterStringOp(inst.addressSize,8);
+					EIPSetByInstruction=(INST_PREFIX_REP==prefix);
+				}
+				else
+				{
+					HandleException(true,mem);
+					EIPSetByInstruction=true;
+				}
 				clocksPassed+=5;
 			}
 		}
@@ -6321,16 +6330,25 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			if(true==REPCheck(clocksPassed,prefix,inst.addressSize))
 			{
 				auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
-				if(16==inst.operandSize)
+				unsigned int newEAX=FetchWordOrDword(inst.operandSize,inst.addressSize,seg,state.ESI(),mem);
+				if(true!=state.exception)
 				{
-					SetAX(FetchWord(inst.addressSize,seg,state.ESI(),mem));
+					if(16==inst.operandSize)
+					{
+						SetAX(FetchWord(inst.addressSize,seg,state.ESI(),mem));
+					}
+					else
+					{
+						SetEAX(FetchDword(inst.addressSize,seg,state.ESI(),mem));
+					}
+					UpdateSIorESIAfterStringOp(inst.addressSize,inst.operandSize);
+					EIPSetByInstruction=(INST_PREFIX_REP==prefix);
 				}
 				else
 				{
-					SetEAX(FetchDword(inst.addressSize,seg,state.ESI(),mem));
+					HandleException(true,mem);
+					EIPSetByInstruction=true;
 				}
-				UpdateSIorESIAfterStringOp(inst.addressSize,inst.operandSize);
-				EIPSetByInstruction=(INST_PREFIX_REP==prefix);
 				clocksPassed+=5;
 			}
 		}
@@ -7394,9 +7412,18 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			    ++ctr)
 			{
 				StoreByte(mem,inst.addressSize,state.ES(),state.EDI(),GetAL());
-				UpdateDIorEDIAfterStringOp(inst.addressSize,8);
-				EIPSetByInstruction=(INST_PREFIX_REP==prefix);
 				clocksPassed+=5;
+				if(true!=state.exception)
+				{
+					UpdateDIorEDIAfterStringOp(inst.addressSize,8);
+					EIPSetByInstruction=(INST_PREFIX_REP==prefix);
+				}
+				else
+				{
+					HandleException(false,mem);
+					EIPSetByInstruction=true;
+					break;
+				}
 				if(true!=EIPSetByInstruction)
 				{
 					break;
@@ -7414,9 +7441,18 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			    ++ctr)
 			{
 				StoreWordOrDword(mem,inst.operandSize,inst.addressSize,state.ES(),state.EDI(),GetEAX());
-				UpdateDIorEDIAfterStringOp(inst.addressSize,inst.operandSize);
-				EIPSetByInstruction=(INST_PREFIX_REP==prefix);
 				clocksPassed+=5;
+				if(true!=state.exception)
+				{
+					UpdateDIorEDIAfterStringOp(inst.addressSize,inst.operandSize);
+					EIPSetByInstruction=(INST_PREFIX_REP==prefix);
+				}
+				else
+				{
+					HandleException(false,mem);
+					EIPSetByInstruction=true;
+					break;
+				}
 				if(true!=EIPSetByInstruction)
 				{
 					break;
@@ -7510,7 +7546,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	{
 		if(true==state.exception)
 		{
-			debuggerPtr->ExternalBreak("Exception!");
+			Abort("Unhandled exception!");
 		}
 		debuggerPtr->AfterRunOneInstruction(clocksPassed,*this,mem,io,inst);
 	}
