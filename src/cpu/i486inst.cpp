@@ -6659,12 +6659,21 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
 				auto data=FetchByte(inst.addressSize,seg,state.ESI(),mem);
 				StoreByte(mem,inst.addressSize,state.ES(),state.EDI(),data);
-				UpdateSIorESIAfterStringOp(inst.addressSize,8);
-				UpdateDIorEDIAfterStringOp(inst.addressSize,8);
-				EIPSetByInstruction=(INST_PREFIX_REP==prefix);
 				clocksPassed+=7;
-				if(true!=EIPSetByInstruction)
+				if(true!=state.exception)
 				{
+					UpdateSIorESIAfterStringOp(inst.addressSize,8);
+					UpdateDIorEDIAfterStringOp(inst.addressSize,8);
+					EIPSetByInstruction=(INST_PREFIX_REP==prefix);
+					if(true!=EIPSetByInstruction)
+					{
+						break;
+					}
+				}
+				else
+				{
+					HandleException(true,mem);
+					EIPSetByInstruction=true;
 					break;
 				}
 			}
