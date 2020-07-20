@@ -107,6 +107,7 @@ public:
 		READ_SECTOR_TIME=       5000000,  // Tentatively  5ms  1X CD-ROM should be 1second/75frames=13.3ms per sector
 		NOTIFICATION_TIME=      1000000,  // Tentatively  1ms
 		CDDASTOP_TIME=          1000000,  // Tentatively  1ms
+		SEEK_TIME=             50000000,  // Tentatively 50ms  I know the real one is much slower.
 	};
 
 	// Reference [3] 

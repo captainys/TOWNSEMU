@@ -435,16 +435,13 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 	switch(state.cmd&0x9F)
 	{
 	case CDCMD_SEEK://       0x00,
-		if(CMDFLAG_STATUS_REQUEST&state.cmd)
-		{
-			if(true!=SetStatusDriveNotReadyOrDiscChanged())
-			{
-				SetStatusNoError();
-				state.PushStatusQueue(4,0,0,0);
-				// Probably status code 4 means Seek Done.
-				// FM Towns 2F BIOS waits for No Error (00H) and then waits for 04H after issuing command 20H Seek.
-			}
-		}
+		// state.DRY=false;
+		// I think I should make DRY=false here.
+		// However, Fractal Engine Demo gets incredibly slow if I do so.
+		// Interestingly, without doing so, Fractal Engine Demo does not issue a 
+		// command before SEEK is completed. (Why?)
+		state.delayedSIRQ=true;
+		townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DELAYED_STATUS_IRQ_TIME);
 		break;
 	case CDCMD_MODE2READ://  0x01,
 		std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " not implemented yet." << std::endl;
@@ -624,21 +621,64 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 }
 /* virtual */ void TownsCDROM::RunScheduledTask(unsigned long long int townsTime)
 {
-	if(true==state.delayedSIRQ)
-	{
-		state.delayedSIRQ=false;
-		if(this->TIME_NO_SCHEDULE!=state.nextScheduleTimeAfterDelayedSIRQ)
-		{
-			state.SIRQ=true;
-			PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
-			townsPtr->ScheduleDeviceCallBack(*this,state.nextScheduleTimeAfterDelayedSIRQ);
-		}
-		return;
-	}
-
 	switch(state.cmd&0x9F)
 	{
+	case CDCMD_SEEK://       0x00,
+		if(true==state.delayedSIRQ)
+		{
+			state.delayedSIRQ=false;
+			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+SEEK_TIME);
+			state.ClearStatusQueue();
+			if(CMDFLAG_STATUS_REQUEST&state.cmd)
+			{
+				if(true!=SetStatusDriveNotReadyOrDiscChanged())
+				{
+					SetStatusNoError();
+					// Probably status code 4 means Seek Done.
+					// FM Towns 2F BIOS waits for No Error (00H) and then waits for 04H after issuing command 20H Seek.
+
+					if(0!=(CMDFLAG_IRQ&state.cmd))
+					{
+						PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
+						state.SIRQ=true;
+					}
+				}
+			}
+		}
+		else
+		{
+			// I think I should not push status queue in here unless 0!=(CMDFLAG_STATUS_REQUEST&state.cmd),
+			// and same for IRR flag of PIC unless 0!=(CMDFLAG_IRQ&state.cmd).
+			// However, Fractal Engine Demo expect Status Queue and IRR from command 00H.
+			//
+			// Command 00H looks to be from a coding error.  Pretty much a CDC command in 
+			// DS:[27E4H] was cleared from the previous command execution.  Then the same byte
+			// is used for the next command before a value is written.
+			//
+			// One very strange coding error that Fractal Engine Demo has is it writes the
+			// command before clearing SIRQ and DEI from the previous command.
+			// Probably, very probably, because the SIRQ from previous command (62H) is not cleared
+			// when 00H is shot, the command may have inherited STATUS request and IRQ flag from
+			// the previous command.
+			state.PushStatusQueue(4,0,0,0);
+			PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
+			state.SIRQ=true;
+			// state.DRY=true;  See comment in ExecuteCDROMCommand
+		}
+		break;
+
 	case CDCMD_MODE1READ://  0x02,
+		if(true==state.delayedSIRQ)
+		{
+			state.delayedSIRQ=false;
+			if(this->TIME_NO_SCHEDULE!=state.nextScheduleTimeAfterDelayedSIRQ)
+			{
+				state.SIRQ=true;
+				PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
+				townsPtr->ScheduleDeviceCallBack(*this,state.nextScheduleTimeAfterDelayedSIRQ);
+			}
+			return;
+		}
 		{
 			if(state.readingSectorHSG<=state.endSectorHSG) // Have more data.
 			{
