@@ -151,6 +151,11 @@ TownsCDROM::TownsCDROM(class FMTowns *townsPtr,class TownsPIC *PICPtr,class Town
 		break;
 	case TOWNSIO_CDROM_COMMAND_STATUS://    0x4C2, // [2] pp.224
 		// std::cout << "CDROM Command " << cpputil::Ubtox(data) << std::endl;
+		if(true==state.SIRQ) // If a new command is sent before clearing the previous command.
+		{
+			// For Fractal Engine Demo.
+			data|=(state.cmd&0x60);
+		}
 		state.cmdReceived=true;
 		state.cmd=data;
 		var.lastCmdIssuedAt.SEG=townsPtr->cpu.state.CS().value;
