@@ -154,6 +154,7 @@ TownsCDROM::TownsCDROM(class FMTowns *townsPtr,class TownsPIC *PICPtr,class Town
 		if(true==state.SIRQ) // If a new command is sent before clearing the previous command.
 		{
 			// For Fractal Engine Demo.
+			// Only explanation I can imagine why command 00H returns the state and shoots an IRQ.
 			data|=(state.cmd&0x60);
 		}
 		state.cmdReceived=true;
@@ -440,13 +441,16 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 	switch(state.cmd&0x9F)
 	{
 	case CDCMD_SEEK://       0x00,
-		// state.DRY=false;
 		// I think I should make DRY=false here.
 		// However, Fractal Engine Demo gets incredibly slow if I do so.
 		// Interestingly, without doing so, Fractal Engine Demo does not issue a 
 		// command before SEEK is completed. (Why?)
-		state.delayedSIRQ=true;
-		townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DELAYED_STATUS_IRQ_TIME);
+		// state.DRY=false;
+		if(0!=(state.cmd&CMDFLAG_STATUS_REQUEST))
+		{
+			state.delayedSIRQ=true;
+			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DELAYED_STATUS_IRQ_TIME);
+		}
 		break;
 	case CDCMD_MODE2READ://  0x01,
 		std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " not implemented yet." << std::endl;
@@ -628,24 +632,19 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 	switch(state.cmd&0x9F)
 	{
 	case CDCMD_SEEK://       0x00,
+		// delayedSIRQ is used in CDCMD_SEEK only when 0!=(state.cmd&CMDFLAG_STATUS_REQUEST)
 		if(true==state.delayedSIRQ)
 		{
 			state.delayedSIRQ=false;
 			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+SEEK_TIME);
 			state.ClearStatusQueue();
-			if(CMDFLAG_STATUS_REQUEST&state.cmd)
+			if(true!=SetStatusDriveNotReadyOrDiscChanged())
 			{
-				if(true!=SetStatusDriveNotReadyOrDiscChanged())
+				SetStatusNoError();
+				if(0!=(CMDFLAG_IRQ&state.cmd))
 				{
-					SetStatusNoError();
-					// Probably status code 4 means Seek Done.
-					// FM Towns 2F BIOS waits for No Error (00H) and then waits for 04H after issuing command 20H Seek.
-
-					if(0!=(CMDFLAG_IRQ&state.cmd))
-					{
-						PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
-						state.SIRQ=true;
-					}
+					PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
+					state.SIRQ=true;
 				}
 			}
 		}
@@ -659,15 +658,31 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 			// DS:[27E4H] was cleared from the previous command execution.  Then the same byte
 			// is used for the next command before a value is written.
 			//
+			// My guess is that the following two instructinons:
+			//
+			// 000C:00001986 A0E4270000                MOV     AL,[000027E4H]
+			// 000C:0000198B EE                        OUT     DX,AL
+			//
+			// should be something like:
+			//		MOV		AL,060H
+			//		MOV		[000027E4H],AL
+			//		OUT		DX,AL
+			//
 			// One very strange coding error that Fractal Engine Demo has is it writes the
 			// command before clearing SIRQ and DEI from the previous command.
 			// Probably, very probably, because the SIRQ from previous command (62H) is not cleared
 			// when 00H is shot, the command may have inherited STATUS request and IRQ flag from
 			// the previous command.
+
+			// Probably status code 4 means Seek Done.
+			// FM Towns 2F BIOS waits for No Error (00H) and then waits for 04H after issuing command 20H Seek.
 			state.PushStatusQueue(4,0,0,0);
-			PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
-			state.SIRQ=true;
-			// state.DRY=true;  See comment in ExecuteCDROMCommand
+			state.DRY=true;  
+			if(0!=(CMDFLAG_IRQ&state.cmd))
+			{
+				PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
+				state.SIRQ=true;
+			}
 		}
 		break;
 
