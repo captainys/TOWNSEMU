@@ -6569,8 +6569,16 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			auto regNum=inst.GetREG(); // Guaranteed to be between 0 and 7
 			auto value=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op2);
-			state.reg32()[regNum&3]&=reg8AndPattern[regNum];
-			state.reg32()[regNum&3]|=((unsigned int)(value.GetAsByte())<<reg8Shift[regNum]);
+			if(true!=state.exception)
+			{
+				state.reg32()[regNum&3]&=reg8AndPattern[regNum];
+				state.reg32()[regNum&3]|=((unsigned int)(value.GetAsByte())<<reg8Shift[regNum]);
+			}
+			else
+			{
+				HandleException(true,mem);
+				EIPSetByInstruction=true;
+			}
 			clocksPassed=1;
 		}
 		break;
@@ -6690,11 +6698,20 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
 				auto data=FetchWordOrDword(inst.operandSize,inst.addressSize,seg,state.ESI(),mem);
 				StoreWordOrDword(mem,inst.operandSize,inst.addressSize,state.ES(),state.EDI(),data);
-				UpdateESIandEDIAfterStringOp(inst.addressSize,inst.operandSize);
-				EIPSetByInstruction=(INST_PREFIX_REP==prefix);
 				clocksPassed+=7;
-				if(true!=EIPSetByInstruction)
+				if(true!=state.exception)
 				{
+					UpdateESIandEDIAfterStringOp(inst.addressSize,inst.operandSize);
+					EIPSetByInstruction=(INST_PREFIX_REP==prefix);
+					if(true!=EIPSetByInstruction)
+					{
+						break;
+					}
+				}
+				else
+				{
+					HandleException(true,mem);
+					EIPSetByInstruction=true;
 					break;
 				}
 			}
@@ -6723,6 +6740,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					value.byteData[3]=0xff;
 				}
 				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+			}
+			else
+			{
+				HandleException(true,mem);
+				EIPSetByInstruction=true;
 			}
 		}
 		break;

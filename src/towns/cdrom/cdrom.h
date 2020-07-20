@@ -293,10 +293,6 @@ private:
 
 	void StopCDDA(void); // Placeholder for later.
 
-	/* Set up delayed SIRQ.  See comment about delayedSIRQ flag above.
-	*/
-	void SetDelayedSIRQ(long long int delayedSIRQTime,long long int nextScheduleTime);
-
 	/* Turn on IRR flag if status queue is not empty.
 	*/
 	void SetSIRQ_IRR(void);

@@ -477,9 +477,8 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 					SetStatusNoError();
 					if(true==state.enableSIRQ)
 					{
-						SetDelayedSIRQ(
-						    townsPtr->state.townsTime+DELAYED_STATUS_IRQ_TIME,
-						    townsPtr->state.townsTime+DELAYED_STATUS_IRQ_TIME+READ_SECTOR_TIME);
+						state.delayedSIRQ=true;
+						townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DELAYED_STATUS_IRQ_TIME);
 					}
 					else
 					{
@@ -671,14 +670,11 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 		if(true==state.delayedSIRQ)
 		{
 			state.delayedSIRQ=false;
-			if(this->TIME_NO_SCHEDULE!=state.nextScheduleTimeAfterDelayedSIRQ)
-			{
-				state.SIRQ=true;
-				PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
-				townsPtr->ScheduleDeviceCallBack(*this,state.nextScheduleTimeAfterDelayedSIRQ);
-			}
-			return;
+			state.SIRQ=true;
+			PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
+			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+READ_SECTOR_TIME);
 		}
+		else
 		{
 			if(state.readingSectorHSG<=state.endSectorHSG) // Have more data.
 			{
@@ -952,13 +948,6 @@ void TownsCDROM::StopCDDA(void)
 		// See fix for ChaseHQ in CDDAPAUSE.
 		state.CDDAState=State::CDDA_IDLE;
 	}
-}
-
-void TownsCDROM::SetDelayedSIRQ(long long int delayedSIRQTime,long long int nextScheduleTime)
-{
-	state.delayedSIRQ=true;
-	state.nextScheduleTimeAfterDelayedSIRQ=nextScheduleTime;
-	townsPtr->ScheduleDeviceCallBack(*this,delayedSIRQTime);
 }
 
 void TownsCDROM::SetSIRQ_IRR(void)
