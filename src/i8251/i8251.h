@@ -60,13 +60,13 @@ public:
 	public:
 		/*! i8251 class will call this function to see if the client is ready to receive a byte.
 		*/
-		virtual bool TxRDY(void) const=0;
+		virtual bool TxRDY(void)=0;
 
 		/*! i8251 class will call this function when a data is written from the VM.
 		    This function is called when the VM writes a byte to the data register.
 		    It can happen regardless of TxRDY.
 		*/
-		virtual void Tx(unsigned char data) const=0;
+		virtual void Tx(unsigned char data)=0;
 
 		/*! i8251 class will call when the VM sets stop bits.
 		    stopBits is one of STOPBITS_NONE, STOPBITS_1, STOPBITS_1HALF, or STOPBITS_2.
@@ -92,7 +92,7 @@ public:
 
 		/*! It should return true if there is a data transmitted from the host to VM.
 		*/
-		virtual bool RxRDY(void) const=0;
+		virtual bool RxRDY(void)=0;
 
 		/*! It should return a data transmitted from the host to VM.
 		    This function is called when the VM reads the data bus of i8251 regardless of RxRDY.
@@ -101,7 +101,7 @@ public:
 
 		/*!
 		*/
-		virtual bool DSR(void) const=0;
+		virtual bool DSR(void)=0;
 	};
 
 	class State
