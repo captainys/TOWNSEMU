@@ -23,6 +23,10 @@ target_link_libraries(townsnewdevice device cpputil towns townsdef)
 target_include_directories(townsnewdevice PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 */
 
+/*
+	allDevices.push_back(newDevice);
+*/
+
 
 class DeviceSkeleton : public Device
 {

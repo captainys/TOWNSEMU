@@ -40,6 +40,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "sound.h"
 #include "gameport.h"
 #include "timer.h"
+#include "serialport.h"
 
 #include "eventlog.h"
 
@@ -296,6 +297,7 @@ public:
 	TownsSound sound;
 	TownsGamePort gameport;
 	TownsTimer timer;
+	TownsSerialPort serialport;
 	// Machine State <<
 
 	unsigned int townsType;
