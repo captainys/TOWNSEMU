@@ -2479,6 +2479,16 @@ void TownsCommandInterpreter::Execute_XMODEMfromVM(FMTowns &towns,Command &cmd)
 {
 	if(2<=cmd.argv.size())
 	{
+		if(towns.serialport.state.intel8251.clientPtr==&towns.serialport.defaultClient)
+		{
+			towns.serialport.defaultClient.SetUpXMODEMfromVM(cmd.argv[1]);
+			std::cout << "Ready to receive " << cmd.argv[1] << std::endl;
+			std::cout << "(XMODEM upload must be started before this command in FM TOWNS)" << std::endl;
+		}
+		else
+		{
+			std::cout << "Default serial-port client is not in charge." << std::endl;
+		}
 	}
 	else
 	{
