@@ -355,15 +355,15 @@ void TownsSCSI::EnterStatusPhase(void)
 
 unsigned char TownsSCSI::PhaseReturnData(void)
 {
-	if(PHASE_MESSAGE_IN==state.phase)
+	if(PHASE_STATUS==state.phase)
 	{
-		EnterStatusPhase();
-		return state.message;
+		EnterMessageInPhase();
+		return state.status;
 	}
-	else if(PHASE_STATUS==state.phase)
+	else if(PHASE_MESSAGE_IN==state.phase)
 	{
 		EnterBusFreePhase();
-		return state.status;
+		return state.message;
 	}
 	return 0xff;
 }
@@ -424,7 +424,7 @@ void TownsSCSI::ExecSCSICommand(void)
 			state.message=0; // What am I supposed to return?
 			state.senseKey=SENSEKEY_NOT_READY;
 		}
-		EnterMessageInPhase();
+		EnterStatusPhase();
 		break;
 	case SCSICMD_READ_CAPACITY:
 		if(0!=(state.commandBuffer[8]&1) && // PMI bit on
@@ -436,7 +436,7 @@ void TownsSCSI::ExecSCSICommand(void)
 			state.senseKey=SENSEKEY_ILLEGAL_REQUEST;
 			state.status=STATUSCODE_CHECK_CONDITION;
 			state.message=0;
-			EnterMessageInPhase();
+			EnterStatusPhase();
 		}
 		else if(SCSIDEVICE_HARDDISK==state.dev[state.selId].devType)
 		{
@@ -453,7 +453,7 @@ void TownsSCSI::ExecSCSICommand(void)
 			state.senseKey=SENSEKEY_ILLEGAL_REQUEST;
 			state.status=STATUSCODE_CHECK_CONDITION;
 			state.message=0; // What am I supposed to return?
-			EnterMessageInPhase();
+			EnterStatusPhase();
 		}
 		break;
 	case SCSICMD_READ_10:
@@ -466,7 +466,7 @@ void TownsSCSI::ExecSCSICommand(void)
 			state.senseKey=SENSEKEY_ILLEGAL_REQUEST;
 			state.status=STATUSCODE_CHECK_CONDITION;
 			state.message=0; // What am I supposed to return?
-			EnterMessageInPhase();
+			EnterStatusPhase();
 		}
 		break;
 	case SCSICMD_WRITE_10:
@@ -479,7 +479,7 @@ void TownsSCSI::ExecSCSICommand(void)
 			state.senseKey=SENSEKEY_ILLEGAL_REQUEST;
 			state.status=STATUSCODE_CHECK_CONDITION;
 			state.message=0; // What am I supposed to return?
-			EnterMessageInPhase();
+			EnterStatusPhase();
 		}
 		break;
 	default:
@@ -524,7 +524,7 @@ void TownsSCSI::ExecSCSICommand(void)
 					{
 						state.status=STATUSCODE_GOOD;
 						state.message=0;
-						EnterMessageInPhase();
+						EnterStatusPhase();
 					}
 					else
 					{
@@ -543,7 +543,7 @@ void TownsSCSI::ExecSCSICommand(void)
 					{
 						state.status=STATUSCODE_GOOD;
 						state.message=0;
-						EnterMessageInPhase();
+						EnterStatusPhase();
 					}
 					else
 					{
@@ -575,7 +575,7 @@ void TownsSCSI::ExecSCSICommand(void)
 					{
 						state.status=STATUSCODE_GOOD;
 						state.message=0;
-						EnterMessageInPhase();
+						EnterStatusPhase();
 					}
 					else
 					{
@@ -587,7 +587,7 @@ void TownsSCSI::ExecSCSICommand(void)
 					state.senseKey=SENSEKEY_ILLEGAL_REQUEST;
 					state.status=STATUSCODE_CHECK_CONDITION;
 					state.message=0; // What am I supposed to return?
-					EnterMessageInPhase();
+					EnterStatusPhase();
 				}
 				break;
 			default:
@@ -638,7 +638,7 @@ void TownsSCSI::ExecSCSICommand(void)
 						{
 							state.status=STATUSCODE_GOOD;
 							state.message=0;
-							EnterMessageInPhase();
+							EnterStatusPhase();
 						}
 						else
 						{
@@ -651,7 +651,7 @@ void TownsSCSI::ExecSCSICommand(void)
 						state.senseKey=SENSEKEY_ILLEGAL_REQUEST;
 						state.status=STATUSCODE_CHECK_CONDITION;
 						state.message=0; // What am I supposed to return?
-						EnterMessageInPhase();
+						EnterStatusPhase();
 					}
 				}
 				else
@@ -659,7 +659,7 @@ void TownsSCSI::ExecSCSICommand(void)
 					state.senseKey=SENSEKEY_ILLEGAL_REQUEST;
 					state.status=STATUSCODE_CHECK_CONDITION;
 					state.message=0; // What am I supposed to return?
-					EnterMessageInPhase();
+					EnterStatusPhase();
 				}
 				break;
 			default:
