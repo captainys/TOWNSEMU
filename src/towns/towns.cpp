@@ -288,6 +288,8 @@ FMTowns::FMTowns() :
 
 	io.AddDevice(&serialport,TOWNSIO_RS232C_STATUS_COMMAND); // 0xA02, // [2] pp.269
 	io.AddDevice(&serialport,TOWNSIO_RS232C_DATA); //           0xA00, // [2] pp.274
+	io.AddDevice(&serialport,TOWNSIO_RS232C_INT_REASON); //     0xA06, // [2] pp.275
+	io.AddDevice(&serialport,TOWNSIO_RS232C_INT_CONTROL); //    0xA08, // [2] pp.276
 
 
 	PowerOn();

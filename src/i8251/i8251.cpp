@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "i8251.h"
 
 
@@ -132,6 +134,7 @@ void i8251::Update(long long int newVMTime)
 	if(true==state.TxEN && state.lastTxTime+state.nanoSecondsPerByte<newVMTime)
 	{
 		state.TxRDY=true;
+		state.TxEMPTY=true;
 	}
 	if(true==state.RxEN && state.lastRxTime+state.nanoSecondsPerByte<newVMTime)
 	{
@@ -165,4 +168,8 @@ bool i8251::DSR(void) const
 		return clientPtr->DSR();
 	}
 	return false;
+}
+bool i8251::SYNDET(void) const
+{
+	return state.SYNDET;
 }

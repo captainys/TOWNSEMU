@@ -126,6 +126,10 @@ public:
 		CMD_HOST_TO_VM_FILE_TRANSFER,
 
 		CMD_FREQUENCY,
+
+		CMD_XMODEM_CLEAR,
+		CMD_XMODEM_TO_VM,
+		CMD_XMODEM_FROM_VM,
 	};
 
 	enum
@@ -288,6 +292,9 @@ public:
 	void FoundAt(std::string segLabel,unsigned int linearBase,unsigned int linearAddr);
 
 	void Execute_Find_Caller(FMTowns &towns,Command &cmd);
+
+	void Execute_XMODEMtoVM(FMTowns &towns,Command &cmd);
+	void Execute_XMODEMfromVM(FMTowns &towns,Command &cmd);
 };
 
 

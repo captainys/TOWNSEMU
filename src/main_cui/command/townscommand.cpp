@@ -118,6 +118,10 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 
 	primaryCmdMap["FREQ"]=CMD_FREQUENCY;
 
+	primaryCmdMap["XMODEMCLR"]=CMD_XMODEM_CLEAR;
+	primaryCmdMap["XMODEMTOVM"]=CMD_XMODEM_TO_VM;
+	primaryCmdMap["XMODEMFROMVM"]=CMD_XMODEM_FROM_VM;
+
 	featureMap["CMDLOG"]=ENABLE_CMDLOG;
 	featureMap["AUTODISASM"]=ENABLE_DISASSEMBLE_EVERY_INST;
 	featureMap["IOMON"]=ENABLE_IOMONITOR;
@@ -220,6 +224,15 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Write un-protect floppy disk." << std::endl;
 	std::cout << "PAUSE|PAU" << std::endl;
 	std::cout << "  Pause VM." << std::endl;
+
+	std::cout << "XMODEMTOVM filename" << std::endl;
+	std::cout << "  File transfer to the VM with XMODEM.  Type this command first," << std::endl;
+	std::cout << "  then start XMODEM in FM TOWNS application." << std::endl;
+	std::cout << "XMODEMFROMVM filename" << std::endl;
+	std::cout << "  File transfer from the VM with XMODEM.  Start XMODEM in FM TOWNS application," << std::endl;
+	std::cout << "  and then type this command." << std::endl;
+	std::cout << "XMODEMCLR" << std::endl;
+	std::cout << "  Cancel XMODEM file transfer." << std::endl;
 
 	std::cout << "T" << std::endl;
 	std::cout << "  Trace.  Run one instruction." << std::endl;
@@ -817,6 +830,16 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 				std::cout << "File not found." << std::endl;
 			}
 		}
+		break;
+
+	case CMD_XMODEM_TO_VM:
+		Execute_XMODEMtoVM(towns,cmd);
+		break;
+	case CMD_XMODEM_FROM_VM:
+		Execute_XMODEMfromVM(towns,cmd);
+		break;
+	case CMD_XMODEM_CLEAR:
+		towns.serialport.defaultClient.ClearXMODEM();
 		break;
 	}
 }
@@ -2418,6 +2441,44 @@ void TownsCommandInterpreter::Execute_Exception(FMTowns &towns,Command &cmd)
 		{
 			std::cout << "What exception?" << std::endl;
 		}
+	}
+	else
+	{
+		PrintError(ERROR_TOO_FEW_ARGS);
+	}
+}
+void TownsCommandInterpreter::Execute_XMODEMtoVM(FMTowns &towns,Command &cmd)
+{
+	if(2<=cmd.argv.size())
+	{
+		auto dat=cpputil::ReadBinaryFile(cmd.argv[1]);
+		if(0==dat.size())
+		{
+			PrintError(ERROR_CANNOT_OPEN_FILE);
+		}
+		else
+		{
+			if(towns.serialport.state.intel8251.clientPtr==&towns.serialport.defaultClient)
+			{
+				towns.serialport.defaultClient.SetUpXMODEMtoVM(dat);
+				std::cout << "Ready to send " << cmd.argv[1] << std::endl;
+				std::cout << "Start XMODEM in FM TOWNS!" << std::endl;
+			}
+			else
+			{
+				std::cout << "Default serial-port client is not in charge." << std::endl;
+			}
+		}
+	}
+	else
+	{
+		PrintError(ERROR_TOO_FEW_ARGS);
+	}
+}
+void TownsCommandInterpreter::Execute_XMODEMfromVM(FMTowns &towns,Command &cmd)
+{
+	if(2<=cmd.argv.size())
+	{
 	}
 	else
 	{

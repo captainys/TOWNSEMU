@@ -113,7 +113,7 @@ public:
 		bool immediatelyAfterReset=true;
 
 		// Must depend on the baud rate, but the emulator can prescribe here.
-		unsigned int nanoSecondsPerByte=8583; // 8583:Roubnly 1M bps.  Emulator can do anything.
+		unsigned int nanoSecondsPerByte=10000; // 10000:Roughly 1M bps. (1startBit+8bit+1stopBit)*1000000000ns/(1Mbps) Emulator can do anything.
 
 		// Baud rate for recording VM setting.
 		unsigned int baudRate=19200;
@@ -165,6 +165,7 @@ public:
 	bool TxRDY(void) const;
 	bool TxEMPTY(void) const;
 	bool DSR(void) const;
+	bool SYNDET(void) const;
 };
 
 /* } */
