@@ -5,6 +5,20 @@
 #include <vector>
 #include <string>
 
+/*
+Phase and I/O [0xC32] read
+ PHASE_BUSFREE:       C_D=0x10  MSG=0x20  I_O=0x40     I/O [0xC32]  0x0*
+ PHASE_DATA_OUT:      C_D=0x10  MSG=0x20  I_O=0x40     I/O [0xC32]  0x0*
+ PHASE_COMMAND:       C_D=0x10  MSG=0x20  I_O=0x40     I/O [0xC32]  0x1*
+                                                                   (0x2*)
+ PHASE_MESSAGE_OUT:   C_D=0x10  MSG=0x20  I_O=0x40     I/O [0xC32]  0x3*
+ PHASE_DATA_IN:       C_D=0x10  MSG=0x20  I_O=0x40     I/O [0xC32]  0x4*
+ PHASE_STATUS:        C_D=0x10  MSG=0x20  I_O=0x40     I/O [0xC32]  0x5*
+                                                                   (0x6*)
+ PHASE_MESSAGE_IN:    C_D=0x10  MSG=0x20  I_O=0x40     I/O [0xC32]  0x7*
+*/
+
+
 class TownsSCSI : public Device
 {
 private:
