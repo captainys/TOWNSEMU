@@ -1856,6 +1856,10 @@ public:
 	*/
 	std::vector <std::string> GetStateText(void) const;
 
+	/*! Returns the segment register text.
+	*/
+	std::vector <std::string> GetSegRegText(void) const;
+
 	/*! Returns GDT text.
 	*/
 	std::vector <std::string> GetGDTText(const Memory &mem) const;
@@ -1969,10 +1973,12 @@ public:
 	*/
 	inline unsigned int AddressMask(unsigned char addressSize) const
 	{
-		if(true==IsInRealMode())
-		{
-			return 0xFFFF;
-		}
+		// Segment limit may be beyond 64K in real mode.  According to https://wiki.osdev.org/Unreal_Mode
+		// See also LoadSegmentRegisterRealMode and LoadSegmentRegister
+		//if(true==IsInRealMode())
+		//{
+		//	return 0xFFFF;
+		//}
 		unsigned int mask=(1<<(addressSize-1));
 		return mask|(mask-1);
 	}

@@ -310,6 +310,13 @@ void i486DX::Reset(void)
 	LoadSegmentRegisterRealMode(state.FS(),RESET_FS);
 	LoadSegmentRegisterRealMode(state.GS(),RESET_GS);
 
+	state.CS().limit=0xffff;
+	state.SS().limit=0xffff;
+	state.DS().limit=0xffff;
+	state.ES().limit=0xffff;
+	state.FS().limit=0xffff;
+	state.GS().limit=0xffff;
+
 	state.GDTR.linearBaseAddr=RESET_GDTRBASE;
 	state.GDTR.limit=RESET_GDTRLIMIT;
 
@@ -465,6 +472,52 @@ std::vector <std::string> i486DX::GetStateText(void) const
 	{
 		text.push_back("HOLD IRQ for 1 Instruction");
 	}
+
+	return text;
+}
+
+std::vector <std::string> i486DX::GetSegRegText(void) const
+{
+	std::vector <std::string> text;
+
+	text.push_back(
+	     "CS="+cpputil::Ustox(state.CS().value)
+	    +"(LIN:"+cpputil::Uitox(state.CS().baseLinearAddr)
+	    +" LMT:"+cpputil::Uitox(state.CS().limit)
+	    +")"
+	    +"  "
+	     "DS="+cpputil::Ustox(state.DS().value)
+	    +"(LIN:"+cpputil::Uitox(state.DS().baseLinearAddr)
+	    +" LMT:"+cpputil::Uitox(state.DS().limit)
+	    +")"
+	    +"  "
+	    );
+
+	text.push_back(
+	     "ES="+cpputil::Ustox(state.ES().value)
+	    +"(LIN:"+cpputil::Uitox(state.ES().baseLinearAddr)
+	    +" LMT:"+cpputil::Uitox(state.ES().limit)
+	    +")"
+	    +"  "
+	     "FS="+cpputil::Ustox(state.FS().value)
+	    +"(LIN:"+cpputil::Uitox(state.FS().baseLinearAddr)
+	    +" LMT:"+cpputil::Uitox(state.FS().limit)
+	    +")"
+	    +"  "
+	    );
+
+	text.push_back(
+	     "GS="+cpputil::Ustox(state.GS().value)
+	    +"(LIN:"+cpputil::Uitox(state.GS().baseLinearAddr)
+	    +" LMT:"+cpputil::Uitox(state.GS().limit)
+	    +")"
+	    +"  "
+	    +"SS="+cpputil::Ustox(state.SS().value)
+	    +"(LIN:"+cpputil::Uitox(state.SS().baseLinearAddr)
+	    +" LMT:"+cpputil::Uitox(state.SS().limit)
+	    +")"
+	    +"  "
+	    );
 
 	return text;
 }
@@ -732,7 +785,7 @@ public:
 			reg.baseLinearAddr=(value<<4);
 			reg.addressSize=16;
 			reg.operandSize=16;
-			reg.limit=0xffff;
+			// reg.limit=0xffff;   Surprisingly, reg.limit isn't affected!?  According to https://wiki.osdev.org/Unreal_Mode
 		}
 		else
 		{
@@ -838,7 +891,7 @@ void i486DX::LoadSegmentRegisterRealMode(SegmentRegister &reg,unsigned int value
 	reg.baseLinearAddr=(value<<4);
 	reg.addressSize=16;
 	reg.operandSize=16;
-	reg.limit=0xffff;
+	// reg.limit=0xffff;  Surprisingly, reg.limit isn't affected!?  According to https://wiki.osdev.org/Unreal_Mode
 }
 
 void i486DX::LoadDescriptorTableRegister(SystemAddressRegister &reg,int operandSize,const unsigned char byteData[])
