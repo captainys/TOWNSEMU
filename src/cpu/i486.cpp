@@ -374,7 +374,10 @@ void i486DX::HandleException(bool wasReadOp,Memory &mem)
 		break;
 	case EXCEPTION_GP:
 		Interrupt(INT_GENERAL_PROTECTION,mem,0);
-		Push(mem,32,0);
+		if(true!=IsInRealMode()) // As HIMEM.SYS's expectation.
+		{
+			Push(mem,32,0);
+		}
 		break;
 	case EXCEPTION_UD:
 		Abort("UD handling not implemented yet.");

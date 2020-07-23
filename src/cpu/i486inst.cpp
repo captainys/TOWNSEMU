@@ -6304,6 +6304,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_RENUMBER_LODSB://            0xAC,
 		// REP/REPE/REPNE CX or ECX is chosen based on addressSize.
 		{
+			auto ECX=state.ECX();
 			auto prefix=REPNEtoREP(inst.instPrefix);
 			if(true==REPCheck(clocksPassed,prefix,inst.addressSize))
 			{
@@ -6317,15 +6318,18 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				}
 				else
 				{
+					SetECX(ECX);
 					HandleException(true,mem);
 					EIPSetByInstruction=true;
 				}
 				clocksPassed+=5;
+				ECX=state.ECX();
 			}
 		}
 		break;
 	case I486_RENUMBER_LODS://             0xAD,
 		{
+			auto ECX=state.ECX();
 			auto prefix=REPNEtoREP(inst.instPrefix);
 			if(true==REPCheck(clocksPassed,prefix,inst.addressSize))
 			{
@@ -6346,10 +6350,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				}
 				else
 				{
+					SetECX(ECX);
 					HandleException(true,mem);
 					EIPSetByInstruction=true;
 				}
 				clocksPassed+=5;
+				ECX=state.ECX();
 			}
 		}
 		break;
@@ -6658,6 +6664,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_RENUMBER_MOVSB://            0xA4,
 		// REP/REPE/REPNE CX or ECX is chosen based on addressSize.
 		{
+			auto ECX=state.ECX();
 			auto prefix=REPNEtoREP(inst.instPrefix);
 			for(int ctr=0;
 			    ctr<MAX_REP_BUNDLE_COUNT &&
@@ -6680,15 +6687,18 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				}
 				else
 				{
+					SetECX(ECX);
 					HandleException(true,mem);
 					EIPSetByInstruction=true;
 					break;
 				}
+				ECX=state.ECX();
 			}
 		}
 		break;
 	case I486_RENUMBER_MOVS://             0xA5,
 		{
+			auto ECX=state.ECX();
 			auto prefix=REPNEtoREP(inst.instPrefix);
 			for(int ctr=0;
 			    ctr<MAX_REP_BUNDLE_COUNT &&
@@ -6710,10 +6720,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				}
 				else
 				{
+					SetECX(ECX);
 					HandleException(true,mem);
 					EIPSetByInstruction=true;
 					break;
 				}
+				ECX=state.ECX();
 			}
 		}
 		break;
@@ -7409,7 +7421,15 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				}
 			}
 			break;
-		case 3: // 
+		case 3: // LTR
+			{
+				std::cout << "LTR instruction not supported yet." << std::endl;
+				std::cout << "Therefore EMM386.EXE unavailable at this time." << std::endl;
+				// I need to correct implementation of task behavior to support EMM386.EXE
+				//auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize);
+				//state.SetTR(value.GetAsDword());
+				//clocksPassed=20;
+			}
 			break;
 		case 4: // "VERR"
 			break;
@@ -7436,6 +7456,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_RENUMBER_STOSB://            0xAA,
 		// REP/REPE/REPNE CX or ECX is chosen based on addressSize.
 		{
+			auto ECX=state.ECX();
 			auto prefix=REPNEtoREP(inst.instPrefix);
 			for(int ctr=0; 
 			    ctr<MAX_REP_BUNDLE_COUNT && 
@@ -7451,6 +7472,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				}
 				else
 				{
+					SetECX(ECX);
 					HandleException(false,mem);
 					EIPSetByInstruction=true;
 					break;
@@ -7460,11 +7482,13 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					break;
 				}
 			}
+			ECX=state.ECX();
 		}
 		break;
 	case I486_RENUMBER_STOS://             0xAB,
 		// REP/REPE/REPNE CX or ECX is chosen based on addressSize.
 		{
+			auto ECX=state.ECX();
 			auto prefix=REPNEtoREP(inst.instPrefix);
 			for(int ctr=0;
 			    ctr<MAX_REP_BUNDLE_COUNT &&
@@ -7480,6 +7504,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				}
 				else
 				{
+					SetECX(ECX);
 					HandleException(false,mem);
 					EIPSetByInstruction=true;
 					break;
@@ -7488,6 +7513,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				{
 					break;
 				}
+				ECX=state.ECX();
 			}
 		}
 		break;

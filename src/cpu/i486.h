@@ -498,6 +498,13 @@ public:
 			CR[num]=value;
 		}
 
+		/*! TR value is not respected though.
+		*/
+		inline void SetTR(unsigned int value)
+		{
+			TR.selector=value;
+		}
+
 
 
 		FPUState fpuState;
