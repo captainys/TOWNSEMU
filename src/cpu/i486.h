@@ -205,6 +205,11 @@ public:
 	public:
 		unsigned short selector;
 	};
+	enum
+	{
+		TSS_OFFSET_ESP0=0x04,
+		TSS_OFFSET_SS0= 0x08,
+	};
 	class TaskRegister : public SegmentRegister
 	{
 	public:
@@ -2883,14 +2888,6 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 	}
 	else
 	{
-		if(0!=(state.EFLAGS&EFLAGS_VIRTUAL86))
-		{
-			Abort("Interrupt-From-V86-Mode not implemented yet.");
-			// See INT instruction of [1].
-			// state.EFLAGS&=~(EFLAGS_VIRTUAL86|EFLAGS_TASK);
-			return;
-		}
-
 		auto desc=GetInterruptDescriptor(INTNum,mem);
 		if(FarPointer::NO_SEG!=desc.SEG)
 		{
@@ -2926,15 +2923,50 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 				    mem);
 			}
 
-			SegmentRegister newCS;
-			LoadSegmentRegister(newCS,desc.SEG,mem);
-			Push(mem,gateOperandSize,state.EFLAGS);
-			Push(mem,gateOperandSize,state.CS().value);
-			Push(mem,gateOperandSize,state.EIP+numInstBytes);
-			SetIPorEIP(gateOperandSize,desc.OFFSET);
-			state.CS()=newCS;
-			SetIF(false);
-			SetTF(false);
+			if(0==(state.EFLAGS&EFLAGS_VIRTUAL86))
+			{
+				SegmentRegister newCS;
+				LoadSegmentRegister(newCS,desc.SEG,mem);
+				Push(mem,gateOperandSize,state.EFLAGS);
+				Push(mem,gateOperandSize,state.CS().value);
+				Push(mem,gateOperandSize,state.EIP+numInstBytes);
+				SetIPorEIP(gateOperandSize,desc.OFFSET);
+				state.CS()=newCS;
+				SetIF(false);
+				SetTF(false);
+			}
+			else // Interrupt from Virtual86 mode
+			{
+				if(debuggerPtr)
+				{
+					debuggerPtr->ExternalBreak("Interrupt-From-V86-Mode not implemented yet.");
+				}
+
+				// INT instruction of [1].
+				auto TempEFLAGS=state.EFLAGS;
+				auto TempSS=state.SS();
+				auto TempESP=state.ESP();
+				state.EFLAGS&=~(EFLAGS_VIRTUAL86|EFLAGS_TRAP);
+				// if(fromInterruptGate)
+				{
+					state.EFLAGS&=~EFLAGS_INT_ENABLE;
+				}
+				// Is TR always 32-bit address size?
+				LoadSegmentRegister(state.SS(),FetchWord(32,state.TR,TSS_OFFSET_SS0,mem),mem);
+				state.ESP()=FetchDword(32,state.TR,TSS_OFFSET_ESP0,mem);
+				Push(mem,32,state.GS().value);
+				Push(mem,32,state.FS().value);
+				Push(mem,32,state.DS().value);
+				Push(mem,32,state.ES().value);
+				Push(mem,32,TempSS.value);
+				Push(mem,32,TempESP);
+				Push(mem,32,TempEFLAGS);
+				Push(mem,32,state.CS().value);
+				Push(mem,32,state.EIP+numInstBytes);
+
+				SetIPorEIP(gateOperandSize,desc.OFFSET);
+				LoadSegmentRegister(state.CS(),desc.SEG,mem);
+			}
 		}
 		else
 		{
