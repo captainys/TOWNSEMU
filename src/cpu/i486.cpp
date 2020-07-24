@@ -327,9 +327,9 @@ void i486DX::Reset(void)
 	state.LDTR.limit=RESET_LDTRLIMIT;
 	state.LDTR.selector=RESET_LDTRSELECTOR;
 
-	state.TR.linearBaseAddr=RESET_TRBASE;
+	state.TR.baseLinearAddr=RESET_TRBASE;
 	state.TR.limit=RESET_TRLIMIT;
-	state.TR.selector=RESET_TRSELECTOR;
+	state.TR.value=RESET_TRSELECTOR;
 	state.TR.attrib=RESET_TRATTRIB;
 
 	state.DR[7]=RESET_DR7;
@@ -719,6 +719,50 @@ std::vector <std::string> i486DX::GetIDTText(const Memory &mem) const
 	return text;
 }
 
+std::vector <std::string> i486DX::GetTSSText(const Memory &mem) const
+{
+	std::vector <std::string> text;
+
+	unsigned int addrSize=32;
+
+	text.push_back("");
+	text.back()+="TR="+cpputil::Ustox(state.TR.value)+" TR Linear Base Addr="+cpputil::Uitox(state.TR.baseLinearAddr);
+
+	text.push_back("");
+	text.back()+="LINK(OLD TSS SELECTOR)="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,0,mem));
+
+	text.push_back("");
+	text.back()+="SS0:ESP0="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,8,mem))+":"+cpputil::Uitox(DebugFetchWord(addrSize,state.TR,4,mem));
+	text.push_back("");
+	text.back()+="SS1:ESP1="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,0x10,mem))+":"+cpputil::Uitox(DebugFetchDword(addrSize,state.TR,0x0C,mem));
+	text.push_back("");
+	text.back()+="SS2:ESP2="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,0x18,mem))+":"+cpputil::Uitox(DebugFetchDword(addrSize,state.TR,0x14,mem));
+	text.push_back("");
+	text.back()+="CS:EIP="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,0x4C,mem))+":"+cpputil::Uitox(DebugFetchDword(addrSize,state.TR,0x20,mem));
+	text.push_back("");
+	text.back()+="EFLAGS="+cpputil::Uitox(DebugFetchDword(addrSize,state.TR,0x24,mem));
+	text.push_back("");
+	text.back()+="EAX="+cpputil::Uitox(DebugFetchDword(addrSize,state.TR,0x28,mem))+" ECX="+cpputil::Uitox(DebugFetchDword(addrSize,state.TR,0x2C,mem));
+	text.push_back("");
+	text.back()+="EDX="+cpputil::Uitox(DebugFetchDword(addrSize,state.TR,0x30,mem))+" EBX="+cpputil::Uitox(DebugFetchDword(addrSize,state.TR,0x34,mem));
+	text.push_back("");
+	text.back()+="ESP="+cpputil::Uitox(DebugFetchDword(addrSize,state.TR,0x38,mem))+" EBP="+cpputil::Uitox(DebugFetchDword(addrSize,state.TR,0x3C,mem));
+	text.push_back("");
+	text.back()+="ESI="+cpputil::Uitox(DebugFetchDword(addrSize,state.TR,0x40,mem))+" EDI="+cpputil::Uitox(DebugFetchDword(addrSize,state.TR,0x44,mem));
+	text.push_back("");
+	text.back()+="ES="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,0x48,mem))+" SS="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,0x50,mem));
+	text.push_back("");
+	text.back()+="DS="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,0x54,mem))+" FS="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,0x58,mem));
+	text.push_back("");
+	text.back()+="GS="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,0x5C,mem));
+	text.push_back("");
+	text.back()+="LDT="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,0x60,mem));
+	text.push_back("");
+	text.back()+="IOMAP.T="+cpputil::Uitox(DebugFetchDword(addrSize,state.TR,0x64,mem));
+
+	return text;
+}
+
 void i486DX::PrintState(void) const
 {
 	for(auto &str : GetStateText())
@@ -782,7 +826,7 @@ class i486DX::LoadSegmentRegisterTemplate
 public:
 	inline static void LoadSegmentRegister(CPUCLASS &cpu,SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode)
 	{
-		if(true==isInRealMode)
+		if(true==isInRealMode || 0!=(i486DX::EFLAGS_VIRTUAL86&cpu.state.EFLAGS))
 		{
 			reg.value=value;
 			reg.baseLinearAddr=(value<<4);
@@ -895,6 +939,11 @@ void i486DX::LoadSegmentRegisterRealMode(SegmentRegister &reg,unsigned int value
 	reg.addressSize=16;
 	reg.operandSize=16;
 	// reg.limit=0xffff;  Surprisingly, reg.limit isn't affected!?  According to https://wiki.osdev.org/Unreal_Mode
+}
+
+void i486DX::LoadTaskRegister(unsigned int value,const Memory &mem)
+{
+	LoadSegmentRegister(state.TR,value,mem);
 }
 
 void i486DX::LoadDescriptorTableRegister(SystemAddressRegister &reg,int operandSize,const unsigned char byteData[])
@@ -2359,17 +2408,6 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 			break;
 		case REG_TR:
 			Abort("i486DX::EvaluateOperand, Check TR Byte Order");
-			value.numBytes=10;
-			value.byteData[0]=(state.TR.linearBaseAddr&255);
-			value.byteData[1]=((state.TR.linearBaseAddr>>8)&255);
-			value.byteData[2]=((state.TR.linearBaseAddr>>16)&255);
-			value.byteData[3]=((state.TR.linearBaseAddr>>24)&255);
-			value.byteData[4]=(state.TR.limit&255);
-			value.byteData[5]=((state.TR.limit>>8)&255);
-			value.byteData[6]=(state.TR.selector&255);
-			value.byteData[7]=((state.TR.selector>>8)&255);
-			value.byteData[8]=(state.TR.attrib&255);
-			value.byteData[9]=((state.TR.attrib>>8)&255);
 			break;
 		case REG_IDTR:
 			Abort("i486DX::EvaluateOperand, Check IDTR Byte Order");

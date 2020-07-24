@@ -7100,38 +7100,65 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 	case I486_RENUMBER_IRET://   0xCF,
 	case I486_RENUMBER_RETF://             0xCB,
-		if(I486_OPCODE_RETF==inst.opCode)
 		{
-			if(true==IsInRealMode())
+			if(I486_OPCODE_RETF==inst.opCode)
 			{
-				clocksPassed=13;
+				if(true==IsInRealMode())
+				{
+					clocksPassed=13;
+				}
+				else
+				{
+					clocksPassed=18;
+				}
 			}
 			else
 			{
-				clocksPassed=18;
+				if(true==IsInRealMode())
+				{
+					clocksPassed=15;
+				}
+				else
+				{
+					clocksPassed=36;
+				}
 			}
-		}
-		else
-		{
-			if(true==IsInRealMode())
 			{
-				clocksPassed=15;
+				SetIPorEIP(inst.operandSize,Pop(mem,inst.operandSize));
+				auto segRegValue=Pop(mem,inst.operandSize);
+				if(I486_OPCODE_IRET==inst.opCode)
+				{
+					auto prevVMFlag=state.EFLAGS&EFLAGS_VIRTUAL86;
+					SetFLAGSorEFLAGS(inst.operandSize,Pop(mem,inst.operandSize));
+					if(true!=IsInRealMode())
+					{
+						// if(state.EFLAGS&EFLAGS_NESTED)
+						//{
+						//	TaskReturn
+						//}
+						// else
+						if(0==prevVMFlag && 0!=(state.EFLAGS&EFLAGS_VIRTUAL86)) // Stack-Return-To-V86
+						{
+							auto TempESP=Pop(mem,inst.operandSize);
+							auto TempSS=Pop(mem,inst.operandSize);
+							LoadSegmentRegister(state.ES(),Pop(mem,inst.operandSize),mem);
+							LoadSegmentRegister(state.DS(),Pop(mem,inst.operandSize),mem);
+							LoadSegmentRegister(state.FS(),Pop(mem,inst.operandSize),mem);
+							LoadSegmentRegister(state.GS(),Pop(mem,inst.operandSize),mem);
+							state.ESP()&=operandSizeAndPattern[inst.operandSize>>3];
+							state.ESP()|=(TempESP&operandSizeMask[inst.operandSize>>3]);
+							LoadSegmentRegister(state.SS(),TempSS,mem);
+						}
+					}
+				}
+				// IRET to Virtual86 mode requires EFLAGS be loaded before the segment register.
+				LoadSegmentRegister(state.CS(),segRegValue,mem);
+				EIPSetByInstruction=true;
+				if(enableCallStack)
+				{
+					PopCallStack(state.CS().value,state.EIP);
+				}
 			}
-			else
-			{
-				clocksPassed=36;
-			}
-		}
-		SetIPorEIP(inst.operandSize,Pop(mem,inst.operandSize));
-		LoadSegmentRegister(state.CS(),Pop(mem,inst.operandSize),mem);
-		if(I486_OPCODE_IRET==inst.opCode)
-		{
-			SetFLAGSorEFLAGS(inst.operandSize,Pop(mem,inst.operandSize));
-		}
-		EIPSetByInstruction=true;
-		if(enableCallStack)
-		{
-			PopCallStack(state.CS().value,state.EIP);
 		}
 		break;
 	case I486_RENUMBER_RET_I16://          0xC2,
@@ -7381,7 +7408,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{
 				clocksPassed=(OPER_ADDR==op1.operandType ? 3 : 2);
 				OperandValue value;
-				value.MakeWord(state.TR.selector);
+				value.MakeWord(state.TR.value);
 				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
 			}
 			break;
@@ -7423,12 +7450,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			break;
 		case 3: // LTR
 			{
-				std::cout << "LTR instruction not supported yet." << std::endl;
-				std::cout << "Therefore EMM386.EXE unavailable at this time." << std::endl;
 				// I need to correct implementation of task behavior to support EMM386.EXE
-				//auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize);
-				//state.SetTR(value.GetAsDword());
-				//clocksPassed=20;
+				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize);
+				LoadTaskRegister(value.GetAsDword(),mem);
+				clocksPassed=20;
 			}
 			break;
 		case 4: // "VERR"

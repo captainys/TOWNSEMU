@@ -150,6 +150,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	dumpableMap["GDT"]=DUMP_GDT;
 	dumpableMap["LDT"]=DUMP_LDT;
 	dumpableMap["IDT"]=DUMP_IDT;
+	dumpableMap["TSS"]=DUMP_TSS;
 	dumpableMap["SOUND"]=DUMP_SOUND;
 	dumpableMap["RIDT"]=DUMP_REAL_MODE_INT_VECTOR;
 	dumpableMap["SYM"]=DUMP_SYMBOL_TABLE;
@@ -384,6 +385,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Protected-Mode Local Descriptor Table" << std::endl;
 	std::cout << "IDT" << std::endl;
 	std::cout << "  Protected-Mode Interrupt Descriptor Table" << std::endl;
+	std::cout << "TSS" << std::endl;
+	std::cout << "  Task State Segment" << std::endl;
 	std::cout << "RIDT" << std::endl;
 	std::cout << "  Real-mode Interrupt Descriptor Tables" << std::endl;
 	std::cout << "BREAKPOINT|BRK" << std::endl;
@@ -1076,6 +1079,12 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 			break;
 		case DUMP_IDT:
 			towns.cpu.PrintIDT(towns.mem);
+			break;
+		case DUMP_TSS:
+			for(auto str : towns.cpu.GetTSSText(towns.mem))
+			{
+				std::cout << str << std::endl;
+			}
 			break;
 		case DUMP_SOUND:
 			towns.PrintSound();

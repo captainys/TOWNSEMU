@@ -205,10 +205,10 @@ public:
 	public:
 		unsigned short selector;
 	};
-	class SystemAddressRegisterAndSelectorAndAttrib : public SystemAddressRegisterAndSelector
+	class TaskRegister : public SegmentRegister
 	{
 	public:
-		unsigned short attrib;
+		unsigned int attrib;  // Should it keep attribute?
 	};
 	class FarPointer
 	{
@@ -404,7 +404,7 @@ public:
 		SegmentRegister sreg[6];
 		SystemAddressRegister GDTR,IDTR;
 		SystemAddressRegisterAndSelector LDTR;
-		SystemAddressRegisterAndSelectorAndAttrib TR; // Is there only one TR or 8 TRs?
+		TaskRegister TR;
 	private:
 		unsigned int CR[4];
 	public:
@@ -497,15 +497,6 @@ public:
 		{
 			CR[num]=value;
 		}
-
-		/*! TR value is not respected though.
-		*/
-		inline void SetTR(unsigned int value)
-		{
-			TR.selector=value;
-		}
-
-
 
 		FPUState fpuState;
 
@@ -1879,6 +1870,10 @@ public:
 	*/
 	std::vector <std::string> GetIDTText(const Memory &mem) const;
 
+	/*! Return Task Status Segment text.
+	*/
+	std::vector <std::string> GetTSSText(const Memory &mem) const;
+
 	/*! Print state.
 	*/
 	void PrintState(void) const;
@@ -1915,6 +1910,10 @@ public:
 	    If reg is SS, it raise holdIRQ flag.
 	*/
 	void LoadSegmentRegisterRealMode(SegmentRegister &reg,unsigned int value);
+
+	/*! Load Task Register.
+	*/
+	void LoadTaskRegister(unsigned int value,const Memory &mem);
 
 	/*! Loads a segment register.
 	    It does not rely on the current CPU state, instead isInRealMode is given as a parameter.
@@ -2884,6 +2883,14 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 	}
 	else
 	{
+		if(0!=(state.EFLAGS&EFLAGS_VIRTUAL86))
+		{
+			Abort("Interrupt-From-V86-Mode not implemented yet.");
+			// See INT instruction of [1].
+			// state.EFLAGS&=~(EFLAGS_VIRTUAL86|EFLAGS_TASK);
+			return;
+		}
+
 		auto desc=GetInterruptDescriptor(INTNum,mem);
 		if(FarPointer::NO_SEG!=desc.SEG)
 		{
