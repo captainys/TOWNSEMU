@@ -43,6 +43,7 @@ public:
 	std::string startUpScriptFName;
 	std::string symbolFName;
 	std::string playbackEventLogFName;
+	std::string keyMapFName;
 
 	enum
 	{

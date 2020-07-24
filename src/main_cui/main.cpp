@@ -246,6 +246,26 @@ bool Setup(FMTowns &towns,Outside_World *outside_world,const TownsARGV &argv)
 			towns.physMem.SetCMOS(CMOSBinary);
 		}
 	}
+	if(""!=argv.keyMapFName)
+	{
+		std::ifstream ifp(argv.keyMapFName);
+		if(ifp.is_open())
+		{
+			std::vector <std::string> text;
+			while(true!=ifp.eof())
+			{
+				std::string str;
+				std::getline(ifp,str);
+				text.push_back(str);
+			}
+			outside_world->LoadKeyMappingFromText(text);
+		}
+		else
+		{
+			std::cout << "Cannot load key-mapping file." << std::endl;
+			return false;
+		}
+	}
 
 	towns.keyboard.SetBootKeyCombination(argv.bootKeyComb);
 	towns.gameport.SetBootKeyCombination(argv.bootKeyComb);

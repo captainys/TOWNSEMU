@@ -68,6 +68,8 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "-CMOS filename" << std::endl;
 	std::cout << "  Specify CMOS (BIOS settings) file.  If you specify this option," << std::endl;
 	std::cout << "  CMOS settings will be saved automatically when closing the program." << std::endl;
+	std::cout << "-KEYMAP filename" << std::endl;
+	std::cout << "  Load Key-Mapping file." << std::endl;
 	std::cout << "-DONTAUTOSAVECMOS" << std::endl;
 	std::cout << "  This option will prevent VM from saving CMOS file on exit." << std::endl;
 	std::cout << "-FD0 filename" << std::endl;
@@ -280,6 +282,11 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		else if("-CMOS"==ARG && i+1<argc)
 		{
 			CMOSFName=argv[i+1];
+			++i;
+		}
+		else if("-KEYMAP"==ARG && i+1<argc)
+		{
+			keyMapFName=argv[i+1];
 			++i;
 		}
 		else if("-DONTAUTOSAVECMOS"==ARG)
