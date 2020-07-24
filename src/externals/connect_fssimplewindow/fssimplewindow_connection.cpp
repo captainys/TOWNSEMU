@@ -26,6 +26,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #endif
 // *od *amn Windows headers! <<
 
+#include "cpputil.h"
 #include "towns.h"
 #include "icons.h"
 #include "ysgamepad.h"
@@ -50,6 +51,39 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 	delete [] FSKEYState;
 }
 
+/* virtual */ std::vector <std::string> FsSimpleWindowConnection::MakeKeyMappingText(void) const
+{
+	std::vector <std::string> text;
+	for(int i=0; i<FSKEY_NUM_KEYCODE; ++i)
+	{
+		text.push_back("");
+		text.back()+=FsKeyCodeToString(i);
+		text.back()+=" ";
+		while(text.back().size()<24)
+		{
+			text.back()+=" ";
+		}
+		text.back()+=TownsKeyCodeToStr(FSKEYtoTownsKEY[i]);
+	}
+	return text;
+}
+/* virtual */ void FsSimpleWindowConnection::LoadKeyMappingFromText(const std::vector <std::string> &text)
+{
+	for(int i=0; i<FSKEY_NUM_KEYCODE; ++i)
+	{
+		FSKEYtoTownsKEY[i]=TOWNS_JISKEY_NULL;
+	}
+	for(auto str : text)
+	{
+		auto argv=cpputil::Parser(str.c_str());
+		if(2==argv.size())
+		{
+			auto fsKey=FsStringToKeyCode(argv[0].c_str());
+			auto townsKey=TownsStrToKeyCode(argv[1]);
+			FSKEYtoTownsKEY[fsKey]=townsKey;
+		}
+	}
+}
 
 /* virtual */ void FsSimpleWindowConnection::Start(void)
 {
@@ -400,6 +434,10 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 
 /* virtual */ void FsSimpleWindowConnection::SetKeyboardLayout(unsigned int layout)
 {
+	for(int i=0; i<FSKEY_NUM_KEYCODE; ++i)
+	{
+		FSKEYtoTownsKEY[i]=TOWNS_JISKEY_NULL;
+	}
 	FSKEYtoTownsKEY[FSKEY_NULL]=        TOWNS_JISKEY_NULL;
 	FSKEYtoTownsKEY[FSKEY_SPACE]=       TOWNS_JISKEY_SPACE;
 	FSKEYtoTownsKEY[FSKEY_0]=           TOWNS_JISKEY_0;

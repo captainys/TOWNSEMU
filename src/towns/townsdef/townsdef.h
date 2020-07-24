@@ -501,6 +501,8 @@ enum
 
 	TOWNS_JISKEY_ALT=             0x5C, // Thanks, WINDY!
 };
+std::string TownsKeyCodeToStr(unsigned int keycode);
+unsigned int TownsStrToKeyCode(std::string str);
 
 enum
 {

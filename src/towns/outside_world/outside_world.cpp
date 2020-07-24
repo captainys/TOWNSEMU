@@ -127,3 +127,14 @@ void Outside_World::Put16x16SelectInvert(int x0,int y0,const unsigned char idleI
 		Put16x16Invert(x0,y0,idleIcon16x16);
 	}
 }
+
+/* virtual */ std::vector <std::string> Outside_World::MakeKeyMappingText(void) const
+{
+	std::vector <std::string> text;
+	std::cout << __FUNCTION__ << " is not implemented in this environment." << std::endl;
+	return text;
+}
+/* virtual */ void Outside_World::LoadKeyMappingFromText(const std::vector <std::string> &text)
+{
+	std::cout << __FUNCTION__ << " is not implemented in this environment." << std::endl;
+}

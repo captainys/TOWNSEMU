@@ -28,6 +28,9 @@ public:
 	FsSimpleWindowConnection();
 	~FsSimpleWindowConnection();
 
+	virtual std::vector <std::string> MakeKeyMappingText(void) const;
+	virtual void LoadKeyMappingFromText(const std::vector <std::string> &text);
+
 	virtual void Start(void);
 	virtual void Stop(void);
 	virtual void DevicePolling(class FMTowns &towns);

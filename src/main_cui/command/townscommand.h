@@ -120,6 +120,9 @@ public:
 		CMD_SAVE_EVENTLOG,
 		CMD_LOAD_EVENTLOG,
 
+		CMD_SAVE_KEYMAP,
+		CMD_LOAD_KEYMAP,
+
 		CMD_SAVE_YM2612LOG,
 		CMD_YM2612_CH_ON_OFF,
 
@@ -285,6 +288,9 @@ public:
 	void Execute_Exception(FMTowns &towns,Command &cmd);
 
 	void Execute_SaveYM2612Log(FMTowns &towns,std::string fName);
+
+	void Execute_SaveKeyMap(const Outside_World &outside_world,const Command &cmd);
+	void Execute_LoadKeyMap(Outside_World &outside_world,const Command &cmd);
 
 	void Execute_Search_Bytes(FMTowns &towns,Command &cmd);
 	void Execute_Search_String(FMTowns &towns,Command &cmd);

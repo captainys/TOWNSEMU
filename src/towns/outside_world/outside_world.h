@@ -16,6 +16,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #define OUTSIDE_WORLD_IS_INCLUDED
 /* { */
 
+#include <vector>
+#include <string>
+
 #include "render.h"
 #include "discimg.h"
 #include "rf5c68.h"
@@ -96,6 +99,9 @@ public:
 	/*! Implementation should call this function for each mouse reading for application-specific augmentation to work correctly.
 	*/
 	void ProcessMouse(class FMTowns &towns,int lb,int mb,int rb,int mx,int my);
+
+	virtual std::vector <std::string> MakeKeyMappingText(void) const;
+	virtual void LoadKeyMappingFromText(const std::vector <std::string> &text);
 
 public:
 	virtual void CDDAPlay(const DiscImage &discImg,DiscImage::MinSecFrm from,DiscImage::MinSecFrm to,bool repeat)=0;

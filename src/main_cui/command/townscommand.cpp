@@ -87,6 +87,10 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["IMMISIO"]=CMD_IMM_IS_IOPORT;
 	primaryCmdMap["SAVEEVT"]=CMD_SAVE_EVENTLOG;
 	primaryCmdMap["LOADEVT"]=CMD_LOAD_EVENTLOG;
+
+	primaryCmdMap["SAVEKEYMAP"]=CMD_SAVE_KEYMAP;
+	primaryCmdMap["LOADKEYMAP"]=CMD_LOAD_KEYMAP;
+
 	primaryCmdMap["SAVEYM2612LOG"]=CMD_SAVE_YM2612LOG;
 	primaryCmdMap["FMCH"]=CMD_YM2612_CH_ON_OFF;
 
@@ -346,6 +350,11 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Save CS:EIP Log to file." << std::endl;
 	std::cout << "SAVEEVT filename.txt" << std::endl;
 	std::cout << "  Save Event Log to file." << std::endl;
+
+	std::cout << "SAVEKEYMAP filename.txt" << std::endl;
+	std::cout << "LOADKEYMAP filename.txt" << std::endl;
+	std::cout << "  Save/Load key-mapping in a text file." << std::endl;
+
 	std::cout << "HOST2VM hostFileName vmFileName" << std::endl;
 	std::cout << "  Schedule Host to VM file transfer." << std::endl;
 	std::cout << "  File will be transferred when FTCLIENT.EXP is running." << std::endl;
@@ -680,6 +689,12 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 		{
 			PrintError(ERROR_CANNOT_OPEN_FILE);
 		}
+		break;
+	case CMD_SAVE_KEYMAP:
+		Execute_SaveKeyMap(*outside_world,cmd);
+		break;
+	case CMD_LOAD_KEYMAP:
+		Execute_LoadKeyMap(*outside_world,cmd);
 		break;
 	case CMD_SAVE_YM2612LOG:
 		if(2<=cmd.argv.size())
@@ -2497,6 +2512,57 @@ void TownsCommandInterpreter::Execute_XMODEMfromVM(FMTowns &towns,Command &cmd)
 		else
 		{
 			std::cout << "Default serial-port client is not in charge." << std::endl;
+		}
+	}
+	else
+	{
+		PrintError(ERROR_TOO_FEW_ARGS);
+	}
+}
+void TownsCommandInterpreter::Execute_SaveKeyMap(const Outside_World &outside_world,const Command &cmd)
+{
+	if(2<=cmd.argv.size())
+	{
+		std::ofstream ofp(cmd.argv[1]);
+		if(ofp.is_open())
+		{
+			for(auto str : outside_world.MakeKeyMappingText())
+			{
+				ofp << str << std::endl;
+			}
+			ofp.close();
+			std::cout << "Saveed " << cmd.argv[1] << std::endl;
+		}
+		else
+		{
+			PrintError(ERROR_CANNOT_SAVE_FILE);
+		}
+	}
+	else
+	{
+		PrintError(ERROR_TOO_FEW_ARGS);
+	}
+}
+void TownsCommandInterpreter::Execute_LoadKeyMap(Outside_World &outside_world,const Command &cmd)
+{
+	if(2<=cmd.argv.size())
+	{
+		std::ifstream ifp(cmd.argv[1]);
+		if(ifp.is_open())
+		{
+			std::vector <std::string> text;
+			while(true!=ifp.eof())
+			{
+				std::string str;
+				std::getline(ifp,str);
+				text.push_back(str);
+			}
+			outside_world.LoadKeyMappingFromText(text);
+			std::cout << "Loaded " << cmd.argv[1] << std::endl;
+		}
+		else
+		{
+			PrintError(ERROR_CANNOT_OPEN_FILE);
 		}
 	}
 	else
