@@ -170,6 +170,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	dumpableMap["SPRITEAT"]=DUMP_SPRITE_AT;
 	dumpableMap["MOUSE"]=DUMP_MOUSE;
 	dumpableMap["YM2612LOG"]=DUMP_YM2612_LOG;
+	dumpableMap["SEGREG"]=DUMP_SEGMENT_REGISTER_DETAILS;
 
 
 
@@ -398,6 +399,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Task State Segment" << std::endl;
 	std::cout << "RIDT" << std::endl;
 	std::cout << "  Real-mode Interrupt Descriptor Tables" << std::endl;
+	std::cout << "SEGREG" << std::endl;
+	std::cout << "  Segment-register details" << std::endl;
 	std::cout << "BREAKPOINT|BRK" << std::endl;
 	std::cout << "  Break Points"<<std::endl;
 	std::cout << "STATUS|STATE|STA|S"<<std::endl;
@@ -1241,6 +1244,12 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 				std::cout << "0x" << cpputil::Ubtox(rwl.chBase) << "," <<
 				             "0x" << cpputil::Ubtox(rwl.reg) << "," <<
 				             "0x" << cpputil::Ubtox(rwl.data) << "," << "//(" << rwl.count << ")" << std::endl;
+			}
+			break;
+		case DUMP_SEGMENT_REGISTER_DETAILS:
+			for(auto str : towns.cpu.GetSegRegText())
+			{
+				std::cout << str << std::endl;
 			}
 			break;
 		}

@@ -2907,7 +2907,7 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 				{
 					unsigned int Ibit=2;
 					unsigned int EXTbit=0; // 1 if external interrupt source.
-					RaiseException(EXCEPTION_ND,INTNum*8+Ibit+EXTbit); // EXT -> [1] 9-8 Error Code
+					RaiseException(EXCEPTION_GP,INTNum*8+Ibit+EXTbit); // EXT -> [1] 9-8 Error Code
 					HandleException(false,mem);  // <- This will shoot INT 0BH
 				}
 				return;
@@ -2947,11 +2947,6 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 			}
 			else // Interrupt from Virtual86 mode
 			{
-				if(debuggerPtr)
-				{
-					debuggerPtr->ExternalBreak("Interrupt-From-V86-Mode not implemented yet.");
-				}
-
 				// INT instruction of [1].
 				auto TempEFLAGS=state.EFLAGS;
 				auto TempSS=state.SS();

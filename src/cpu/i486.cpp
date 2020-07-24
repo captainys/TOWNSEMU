@@ -13,6 +13,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 << LICENSE */
 #include <iostream>
+#include <algorithm>
 
 #include "cpputil.h"
 #include "i486.h"
@@ -682,7 +683,8 @@ std::vector <std::string> i486DX::GetIDTText(const Memory &mem) const
 	std::string empty;
 
 	text.push_back(empty);
-	text.back()="Limit="+cpputil::Uitox(state.IDTR.limit);
+	text.back()+="IDT at Linear Address="+cpputil::Uitox(state.IDTR.linearBaseAddr);
+	text.back()+="  Limit="+cpputil::Uitox(state.IDTR.limit);
 	for(unsigned int offset=0; offset<state.IDTR.limit && offset<0x800; offset+=8)
 	{
 		auto desc=DebugGetInterruptDescriptor(offset/8,mem);
@@ -840,6 +842,7 @@ public:
 			reg.addressSize=16;
 			reg.operandSize=16;
 			// reg.limit=0xffff;   Surprisingly, reg.limit isn't affected!?  According to https://wiki.osdev.org/Unreal_Mode
+			reg.limit=std::max<unsigned int>(reg.limit,0xffff);
 		}
 		else
 		{
