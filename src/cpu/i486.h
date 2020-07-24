@@ -626,6 +626,7 @@ public:
 	{
 		EXCEPTION_NONE,
 		EXCEPTION_GP,
+		EXCEPTION_ND,
 		EXCEPTION_UD,
 		EXCEPTION_SS,
 		EXCEPTION_PF
@@ -2898,8 +2899,17 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 			switch(type)
 			{
 			default:
-				errMsg="Unsupported Interrupt Descriptor Type:"+cpputil::Ubtox(type);
-				Abort(errMsg);
+				if(true==state.exception && EXCEPTION_ND==state.exceptionType)
+				{
+					Abort("Infinite NO_PRESENT exception.");
+				}
+				else
+				{
+					unsigned int Ibit=2;
+					unsigned int EXTbit=0; // 1 if external interrupt source.
+					RaiseException(EXCEPTION_ND,INTNum*8+Ibit+EXTbit); // EXT -> [1] 9-8 Error Code
+					HandleException(false,mem);  // <- This will shoot INT 0BH
+				}
 				return;
 			case 0b0110:
 				Abort("286 16-bit INT gate not supported");

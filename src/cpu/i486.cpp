@@ -379,6 +379,13 @@ void i486DX::HandleException(bool wasReadOp,Memory &mem)
 			Push(mem,32,0);
 		}
 		break;
+	case EXCEPTION_ND:
+		Interrupt(INT_SEGMENT_NOT_PRESENT,mem,0);
+		if(true!=IsInRealMode())
+		{
+			Push(mem,32,state.exceptionCode);
+		}
+		break;
 	case EXCEPTION_UD:
 		Abort("UD handling not implemented yet.");
 		break;
