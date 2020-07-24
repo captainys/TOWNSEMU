@@ -377,7 +377,7 @@ void i486DX::HandleException(bool wasReadOp,Memory &mem)
 		Interrupt(INT_GENERAL_PROTECTION,mem,0);
 		if(true!=IsInRealMode()) // As HIMEM.SYS's expectation.
 		{
-			Push(mem,32,0);
+			Push(mem,32,state.exceptionCode);
 		}
 		break;
 	case EXCEPTION_ND:
