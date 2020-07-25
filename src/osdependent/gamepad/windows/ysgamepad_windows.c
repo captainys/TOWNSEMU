@@ -46,7 +46,7 @@ void YsGamePadRead(struct YsGamePadReading *reading,int gamePadId)
 	JOYINFOEX joy;
 	joy.dwSize=sizeof(joy);
 	joy.dwFlags=JOY_RETURNALL /*|JOY_RETURNRAWDATA */;
-	if(joyGetPosEx(gamePadId,&joy)==JOYERR_NOERROR)
+	if(gamePadId<numDev && joyGetPosEx(gamePadId,&joy)==JOYERR_NOERROR)
 	{
 		reading->axes[0]=ScaleAxis((float)joy.dwXpos,(float)joyCaps[gamePadId].wXmin,(float)joyCaps[gamePadId].wXmax);
 		reading->axes[1]=ScaleAxis((float)joy.dwYpos,(float)joyCaps[gamePadId].wYmin,(float)joyCaps[gamePadId].wYmax);
