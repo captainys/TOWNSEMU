@@ -462,6 +462,7 @@ void i486Debugger::Interrupt(const i486DX &cpu,unsigned int INTNum,Memory &mem,u
 			{
 				std::string str("Break on INT ");
 				str+=cpputil::Ubtox(INTNum);
+				str+=INTExplanation(cpu,INTNum,mem);
 				ExternalBreak(str);
 			}
 			break;
@@ -472,6 +473,7 @@ void i486Debugger::Interrupt(const i486DX &cpu,unsigned int INTNum,Memory &mem,u
 				str+=cpputil::Ubtox(INTNum);
 				str+=" AH=";
 				str+=cpputil::Ubtox((unsigned char)breakOnINT[INTNum&0xFF].condValue);
+				str+=INTExplanation(cpu,INTNum,mem);
 				ExternalBreak(str);
 			}
 			break;
@@ -482,11 +484,48 @@ void i486Debugger::Interrupt(const i486DX &cpu,unsigned int INTNum,Memory &mem,u
 				str+=cpputil::Ubtox(INTNum);
 				str+=" AX=";
 				str+=cpputil::Ustox(breakOnINT[INTNum&0xFF].condValue);
+				str+=" "+INTExplanation(cpu,INTNum,mem);
 				ExternalBreak(str);
 			}
 			break;
 		}
 	}
+}
+
+std::string i486Debugger::INTExplanation(const i486DX &cpu,unsigned int INTNum,Memory &mem) const
+{
+	auto &symTable=GetSymTable();
+	auto INTLabel=symTable.GetINTLabel(INTNum);
+	if(0x21==INTNum)
+	{
+		auto INTFuncLabelAH=symTable.GetINTFuncLabel(INTNum,(cpu.GetAH()));
+		auto INTFuncLabelAX=symTable.GetINTFuncLabel(INTNum,cpu.GetAX());
+		if(0<INTFuncLabelAH.size() && INTFuncLabelAX.size())
+		{
+			INTLabel+=" "+INTFuncLabelAH+"|"+INTFuncLabelAX;
+		}
+		else if(0<INTFuncLabelAH.size())
+		{
+			INTLabel+=" "+INTFuncLabelAH;
+		}
+		else if(0<INTFuncLabelAX.size())
+		{
+			INTLabel+=" "+INTFuncLabelAX;
+		}
+
+		if((0x3D00==(cpu.GetAX()&0xFF00) || 0x4B00==(cpu.GetAX()&0xFF00)))
+		{
+			if(true==cpu.IsInRealMode())  // Real Mode
+			{
+				INTLabel+=" "+cpu.DebugFetchString(16,cpu.state.DS(),cpu.GetDX(),mem);
+			}
+			else
+			{
+				INTLabel+=" "+cpu.DebugFetchString(32,cpu.state.DS(),cpu.GetEDX(),mem);
+			}
+		}
+	}
+	return INTLabel;
 }
 
 void i486Debugger::IOWrite(const i486DX &cpu,unsigned int ioport,unsigned int data,unsigned int lengthInBytes)
