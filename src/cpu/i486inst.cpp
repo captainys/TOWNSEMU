@@ -6555,8 +6555,16 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			auto nBytes=(inst.operandSize>>3);
 			auto regNum=inst.GetREG(); // Guaranteed to be between 0 and 7
 			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize/8);
-			state.reg32()[regNum]&=operandSizeAndPattern[nBytes];
-			state.reg32()[regNum]|=(unsigned int)(value.GetAsDword());
+			if(true!=state.exception)
+			{
+				state.reg32()[regNum]&=operandSizeAndPattern[nBytes];
+				state.reg32()[regNum]|=(unsigned int)(value.GetAsDword());
+			}
+			else
+			{
+				HandleException(true,mem);
+				EIPSetByInstruction=true;
+			}
 			clocksPassed=1;
 		}
 		break;
