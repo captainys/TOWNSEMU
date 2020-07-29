@@ -120,6 +120,16 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 {
 	FsPollDevice();
 
+	bool gamePadEmulation=false; // Emulate a gamepad with keyboard?
+	for(unsigned int portId=0; portId<TOWNS_NUM_GAMEPORTS; ++portId)
+	{
+		if(TOWNS_GAMEPORTEMU_KEYBOARD==gamePort[portId])
+		{
+			gamePadEmulation=true;
+			break;
+		}
+	}
+
 	// For the time translation mode only.
 	// if(true==keyTranslationMode)
 	if(KEYBOARD_MODE_TRANSLATION==keyboardMode)
@@ -218,6 +228,19 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 				break;
 
 			default:
+				if(true==gamePadEmulation &&
+				   (FSKEY_Z==c ||
+				    FSKEY_X==c ||
+				    FSKEY_A==c ||
+				    FSKEY_S==c ||
+				    FSKEY_LEFT==c ||
+				    FSKEY_RIGHT==c ||
+				    FSKEY_UP==c ||
+				    FSKEY_DOWN==c))
+				{
+					break;
+				}
+
 				byteData|=(0!=FsGetKeyState(FSKEY_CTRL) ? TOWNS_KEYFLAG_CTRL : 0);
 				byteData|=(0!=FsGetKeyState(FSKEY_SHIFT) ? TOWNS_KEYFLAG_SHIFT : 0);
 				if(0!=FSKEYState[c])
@@ -234,6 +257,19 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 		}
 		for(int key=FSKEY_NULL; key<FSKEY_NUM_KEYCODE; ++key)
 		{
+			if(true==gamePadEmulation &&
+			   (FSKEY_Z==key ||
+			    FSKEY_X==key ||
+			    FSKEY_A==key ||
+			    FSKEY_S==key ||
+			    FSKEY_LEFT==key ||
+			    FSKEY_RIGHT==key ||
+			    FSKEY_UP==key ||
+			    FSKEY_DOWN==key))
+			{
+				continue;
+			}
+
 			unsigned char byteData=0;
 			auto sta=FsGetKeyState(key);
 			if(0!=FSKEYtoTownsKEY[key] && 0!=FSKEYState[key] && 0==sta)

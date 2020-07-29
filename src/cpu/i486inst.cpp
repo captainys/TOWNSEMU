@@ -6547,6 +6547,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			OperandValue src;
 			src.MakeByteWordOrDword(inst.operandSize,value);
 			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,src);
+			if(true==state.exception)
+			{
+				HandleException(true,mem);
+				EIPSetByInstruction=true;
+			}
 			clocksPassed=1;
 		}
 		break;
@@ -6803,6 +6808,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					value.byteData[3]=0xff;
 				}
 				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+			}
+			else
+			{
+				HandleException(true,mem);
+				EIPSetByInstruction=true;
 			}
 		}
 		break;
@@ -7459,6 +7469,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					else if(0!=TI) // Pointing LDT
 					{
 						RaiseException(EXCEPTION_GP,selector); // [1] pp.26-199
+						HandleException(false,mem);
+						EIPSetByInstruction=true;
 					}
 					else
 					{

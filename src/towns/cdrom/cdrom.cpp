@@ -441,16 +441,9 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 	switch(state.cmd&0x9F)
 	{
 	case CDCMD_SEEK://       0x00,
-		// I think I should make DRY=false here.
-		// However, Fractal Engine Demo gets incredibly slow if I do so.
-		// Interestingly, without doing so, Fractal Engine Demo does not issue a 
-		// command before SEEK is completed. (Why?)
-		// state.DRY=false;
-		if(0!=(state.cmd&CMDFLAG_STATUS_REQUEST))
-		{
-			state.delayedSIRQ=true;
-			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DELAYED_STATUS_IRQ_TIME);
-		}
+		state.DRY=false;
+		state.delayedSIRQ=true;
+		townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DELAYED_STATUS_IRQ_TIME);
 		break;
 	case CDCMD_MODE2READ://  0x01,
 		std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " not implemented yet." << std::endl;
@@ -612,16 +605,20 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 		// delayedSIRQ is used in CDCMD_SEEK only when 0!=(state.cmd&CMDFLAG_STATUS_REQUEST)
 		if(true==state.delayedSIRQ)
 		{
+			state.DRY=true;  
 			state.delayedSIRQ=false;
 			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+SEEK_TIME);
 			state.ClearStatusQueue();
-			if(true!=SetStatusDriveNotReadyOrDiscChanged())
+			if(0!=(state.cmd&CMDFLAG_STATUS_REQUEST))
 			{
-				SetStatusNoError();
-				if(0!=(CMDFLAG_IRQ&state.cmd))
+				if(true!=SetStatusDriveNotReadyOrDiscChanged())
 				{
-					PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
-					state.SIRQ=true;
+					SetStatusNoError();
+					if(0!=(CMDFLAG_IRQ&state.cmd))
+					{
+						PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
+						state.SIRQ=true;
+					}
 				}
 			}
 		}
@@ -653,12 +650,14 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 
 			// Probably status code 4 means Seek Done.
 			// FM Towns 2F BIOS waits for No Error (00H) and then waits for 04H after issuing command 20H Seek.
-			state.PushStatusQueue(4,0,0,0);
-			state.DRY=true;  
-			if(0!=(CMDFLAG_IRQ&state.cmd))
+			if(0!=(state.cmd&CMDFLAG_STATUS_REQUEST))
 			{
-				PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
-				state.SIRQ=true;
+				state.PushStatusQueue(4,0,0,0);
+				if(0!=(CMDFLAG_IRQ&state.cmd))
+				{
+					PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
+					state.SIRQ=true;
+				}
 			}
 		}
 		break;
