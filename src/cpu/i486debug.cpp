@@ -461,7 +461,7 @@ void i486Debugger::Interrupt(const i486DX &cpu,unsigned int INTNum,Memory &mem,u
 		case BreakOnINTCondition::COND_ALWAYS:
 			{
 				std::string str("Break on INT ");
-				str+=cpputil::Ubtox(INTNum);
+				str+=cpputil::Ubtox(INTNum)+" ";
 				str+=INTExplanation(cpu,INTNum,mem);
 				ExternalBreak(str);
 			}
@@ -472,7 +472,7 @@ void i486Debugger::Interrupt(const i486DX &cpu,unsigned int INTNum,Memory &mem,u
 				std::string str("Break on INT ");
 				str+=cpputil::Ubtox(INTNum);
 				str+=" AH=";
-				str+=cpputil::Ubtox((unsigned char)breakOnINT[INTNum&0xFF].condValue);
+				str+=cpputil::Ubtox((unsigned char)breakOnINT[INTNum&0xFF].condValue)+" ";
 				str+=INTExplanation(cpu,INTNum,mem);
 				ExternalBreak(str);
 			}
@@ -483,7 +483,7 @@ void i486Debugger::Interrupt(const i486DX &cpu,unsigned int INTNum,Memory &mem,u
 				std::string str("Break on INT ");
 				str+=cpputil::Ubtox(INTNum);
 				str+=" AX=";
-				str+=cpputil::Ustox(breakOnINT[INTNum&0xFF].condValue);
+				str+=cpputil::Ustox(breakOnINT[INTNum&0xFF].condValue)+" ";
 				str+=" "+INTExplanation(cpu,INTNum,mem);
 				ExternalBreak(str);
 			}

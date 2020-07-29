@@ -508,32 +508,9 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 		std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " not implemented yet." << std::endl;
 		break;
 	case CDCMD_CDDAPLAY://   0x04,
-		{
-			DiscImage::MinSecFrm msfBegin,msfEnd,twoSec;
-			twoSec.Set(0,2,0);
-
-			msfBegin.min=DiscImage::BCDToBin(state.paramQueue[0]);
-			msfBegin.sec=DiscImage::BCDToBin(state.paramQueue[1]);
-			msfBegin.frm=DiscImage::BCDToBin(state.paramQueue[2]);
-			msfBegin-=twoSec;
-
-			msfEnd.min=DiscImage::BCDToBin(state.paramQueue[3]);
-			msfEnd.sec=DiscImage::BCDToBin(state.paramQueue[4]);
-			msfEnd.frm=DiscImage::BCDToBin(state.paramQueue[5]);
-			msfEnd-=twoSec;
-
-			if(nullptr!=OutsideWorld)
-			{
-				bool repeat=(1==state.paramQueue[6]); // Should I say 0!= ?
-				OutsideWorld->CDDAPlay(state.GetDisc(),msfBegin,msfEnd,repeat);
-				state.CDDAState=State::CDDA_PLAYING;
-				state.CDDAEndTime=msfEnd;
-			}
-			if(CMDFLAG_STATUS_REQUEST&state.cmd)
-			{
-				SetStatusDriveNotReadyOrDiscChangedOrNoError();
-			}
-		}
+		state.DRY=false;
+		state.delayedSIRQ=true;
+		townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DELAYED_STATUS_IRQ_TIME);
 		break;
 	case CDCMD_TOCREAD://    0x05,
 		if(CMDFLAG_STATUS_REQUEST&state.cmd)
@@ -771,6 +748,43 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 				else
 				{
 					state.SIRQ=false;
+				}
+			}
+		}
+		break;
+	case CDCMD_CDDAPLAY:
+		if(true==state.delayedSIRQ)
+		{
+			state.delayedSIRQ=false;
+			state.DRY=true;
+
+			DiscImage::MinSecFrm msfBegin,msfEnd,twoSec;
+			twoSec.Set(0,2,0);
+
+			msfBegin.min=DiscImage::BCDToBin(state.paramQueue[0]);
+			msfBegin.sec=DiscImage::BCDToBin(state.paramQueue[1]);
+			msfBegin.frm=DiscImage::BCDToBin(state.paramQueue[2]);
+			msfBegin-=twoSec;
+
+			msfEnd.min=DiscImage::BCDToBin(state.paramQueue[3]);
+			msfEnd.sec=DiscImage::BCDToBin(state.paramQueue[4]);
+			msfEnd.frm=DiscImage::BCDToBin(state.paramQueue[5]);
+			msfEnd-=twoSec;
+
+			if(nullptr!=OutsideWorld)
+			{
+				bool repeat=(1==state.paramQueue[6]); // Should I say 0!= ?
+				OutsideWorld->CDDAPlay(state.GetDisc(),msfBegin,msfEnd,repeat);
+				state.CDDAState=State::CDDA_PLAYING;
+				state.CDDAEndTime=msfEnd;
+			}
+			if(CMDFLAG_STATUS_REQUEST&state.cmd)
+			{
+				SetStatusDriveNotReadyOrDiscChangedOrNoError();
+				state.SIRQ=true;
+				if(0!=(state.cmd&CMDFLAG_IRQ) && true==state.enableSIRQ)
+				{
+					PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
 				}
 			}
 		}

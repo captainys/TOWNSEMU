@@ -6639,16 +6639,32 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 
 	case I486_RENUMBER_MOV_TO_CR://        0x0F22,
+		if(0==(state.EFLAGS&EFLAGS_VIRTUAL86))
 		{
 			unsigned int MODR_M=inst.operand[0];
 			auto crNum=((MODR_M>>3)&3); // I think it should be &3 not &7.  Only CR0 to CR3.
 			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,4);
 			SetCR(crNum,value.GetAsDword(),mem);
 		}
+		else
+		{
+			RaiseException(EXCEPTION_GP,0);
+			HandleException(false,mem);
+			EIPSetByInstruction=true;
+		}
 		clocksPassed=16;
 		break;
 	case I486_RENUMBER_MOV_FROM_CR://      0x0F20,
-		Move(mem,inst.addressSize,inst.segOverride,op1,op2);
+		if(0==(state.EFLAGS&EFLAGS_VIRTUAL86))
+		{
+			Move(mem,inst.addressSize,inst.segOverride,op1,op2);
+		}
+		else
+		{
+			RaiseException(EXCEPTION_GP,0);
+			HandleException(false,mem);
+			EIPSetByInstruction=true;
+		}
 		clocksPassed=4;
 		break;
 	case I486_RENUMBER_MOV_FROM_DR://      0x0F21,
@@ -7092,7 +7108,13 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 
 	case I486_RENUMBER_POPF://             0x9D,
-		SetFLAGSorEFLAGS(inst.operandSize,Pop(mem,inst.operandSize));
+		{
+			// VM and RF flags must be preserved.
+			unsigned int EFLAGS=Pop(mem,inst.operandSize);
+			EFLAGS&=~(EFLAGS_RESUME|EFLAGS_VIRTUAL86);
+			EFLAGS|= (state.EFLAGS&(EFLAGS_RESUME|EFLAGS_VIRTUAL86));
+			SetFLAGSorEFLAGS(inst.operandSize,EFLAGS);
+		}
 		clocksPassed=(IsInRealMode() ? 9 : 6);
 		break;
 
