@@ -152,14 +152,15 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 		}
 		while(0!=(c=FsInkey()))
 		{
+			if(PAUSE_KEY_CODE==c)
+			{
+				this->pauseKey=true;
+			}
+
 			this->ProcessInkey(towns,FSKEYtoTownsKEY[c]);
 			unsigned char byteData[2]={0,0};
 			switch(c)
 			{
-			case FSKEY_NUMLOCK:
-				towns.debugger.ExternalBreak("Num Lock Key");
-				break;
-
 			default:
 				byteData[1]=0;
 				break;
@@ -221,12 +222,13 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 		{
 			unsigned char byteData=0;
 			this->ProcessInkey(towns,FSKEYtoTownsKEY[c]);
+			if(PAUSE_KEY_CODE==c)
+			{
+				this->pauseKey=true;
+			}
+
 			switch(c)
 			{
-			case FSKEY_NUMLOCK:
-				towns.debugger.ExternalBreak("Num Lock Key");
-				break;
-
 			default:
 				if(true==gamePadEmulation &&
 				   (FSKEY_Z==c ||

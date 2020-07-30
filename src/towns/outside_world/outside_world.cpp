@@ -51,6 +51,12 @@ void Outside_World::Put16x16(int x0,int y0,const unsigned char icon16x16[])
 		dstPtr+=STATUS_WID*4;
 	}
 }
+bool Outside_World::PauseKeyPressed(void)
+{
+	auto flag=pauseKey;
+	pauseKey=false;
+	return flag;
+}
 void Outside_World::ProcessInkey(class FMTowns &towns,int townsKey)
 {
 }

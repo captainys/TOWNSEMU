@@ -73,6 +73,7 @@ public:
 	bool fdAccessLamp[4]={false,false,false,false};
 	bool scsiAccessLamp[6]={false,false,false,false,false,false};
 	unsigned int scaling=100; // In Percent
+	bool pauseKey=false;
 
 	Outside_World();
 	~Outside_World();
@@ -85,6 +86,10 @@ public:
 
 	void SetKeyboardMode(unsigned int mode);
 	virtual void SetKeyboardLayout(unsigned int layout)=0;
+
+	/*! Return pauseKey flag.  The flag is clear after this function.
+	*/
+	bool PauseKeyPressed(void);
 
 	void Put16x16(int x0,int y0,const unsigned char icon16x16[]);
 	void Put16x16Invert(int x0,int y0,const unsigned char icon16x16[]);

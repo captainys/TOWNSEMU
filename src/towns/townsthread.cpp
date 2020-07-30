@@ -50,6 +50,10 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world,class Tow
 		case RUNMODE_PAUSE:
 			townsPtr->ForceRender(render,*outside_world);
 			outside_world->DevicePolling(*townsPtr);
+			if(true==outside_world->PauseKeyPressed())
+			{
+				runMode=RUNMODE_RUN;
+			}
 			break;
 		case RUNMODE_RUN:
 			clockTicking=true;
@@ -83,7 +87,7 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world,class Tow
 			townsPtr->CheckRenderingTimer(render,*outside_world);
 			outside_world->DevicePolling(*townsPtr);
 			townsPtr->eventLog.Interval(*townsPtr);
-			if(true==townsPtr->CheckAbort())
+			if(true==townsPtr->CheckAbort() || outside_world->PauseKeyPressed())
 			{
 				PrintStatus(*townsPtr);
 				std::cout << ">";

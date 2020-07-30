@@ -22,6 +22,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 class FsSimpleWindowConnection : public Outside_World
 {
 public:
+	#define PAUSE_KEY_CODE FSKEY_SCROLLLOCK
+
 	bool gamePadInitialized=false;
 	unsigned int *FSKEYtoTownsKEY=nullptr;
 	unsigned int *FSKEYState=nullptr;
