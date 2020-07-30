@@ -42,7 +42,7 @@ FM Sound Generators is becoming more realistic, but still not all functionalitie
 
 
 
-エミュレーションはかなりよくなってきて、自分で20以上のゲームタイトルがプレイ可能なことを確認しました。また、ユーザによる動作確認もWikiに上がってきています。(https://wiki3.jp/fmtowns/page/10)WikiはWINDYさんがセットアップしてくださいました。ありがとうございます。
+エミュレーションはかなりよくなってきて、自分で20以上のゲームタイトルがプレイ可能なことを確認しました。また、ユーザによる動作確認もWikiに上がってきています。(https://wiki3.jp/fmtowns/page/10) WikiはWINDYさんがセットアップしてくださいました。ありがとうございます。
 
 80486エミュレーションは速くなってきましたが、まだ遅いです。今のバージョンだとCore i7 3GHzで実行して80486 25～28MHz相当のスピードです。まだスピードアップの余地があるので、そのうちやります。
 
@@ -122,7 +122,7 @@ If you have a physical game pad, you can use ```PHYS0```, ```PHYS1```, ```PHYS2`
 
 FM TOWNSのROMイメージが```E:/ROM_MX```のとき、ディスクイメージ```E:/ISOImage/AFTER_BURNER.CUE```から起動します。ジョイパッド0はキーボードエミュレーション (A,S,Z,X,↑↓←→)、ウィンドウは160%にスケールアップされます。
 
-USBやBluetooth接続のゲームパッドがある場合は、```KEY````の代わりに```PHYS0```, ```PHYS1```, ```PHYS2```, または ```PHYS3```を指定すると使えます。また、十字ボタンをハットスイッチではなくアナログレバーとして扱うゲームパッドの場合は、```ANA0```,```ANA1```,```ANA2```,```ANA3```を指定することで利用できます。
+USBやBluetooth接続のゲームパッドがある場合は、`KEY`の代わりに`PHYS0`, `PHYS1`, `PHYS2`, または `PHYS3`を指定すると使えます。また、十字ボタンをハットスイッチではなくアナログレバーとして扱うゲームパッドの場合は、`ANA0`,`ANA1`,`ANA2`,`ANA3`を指定することで利用できます。
 
 ```
 ./Tsugaru_CUI E:/ROM_MX -CD E:/ISOImage/AUGUSTA.CUE -FD0 E:/ISOImage/AUGUSTAFD.bin -SCALE 160
