@@ -528,7 +528,22 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 			SetStatusDriveNotReadyOrDiscChangedOrNoError();
 			if(State::CDDA_ENDED==state.CDDAState)
 			{
-				PushStatusCDDAPlayEnded();
+				// 2020/07/30
+				// Vain Dream crashes when CD BIOS Call AX=53C0H returns an error because the BIOS is expecting
+				// status 00 00 00 00, but this PushStatusCDDAPlayEnded() pushes 07 00 00 00.
+				// The retry code jumps to 4600:0084
+				//     4600:0084 1E                        PUSH    DS
+				//     4600:0085 8CC8                      MOV     AX,CS
+				// However, it should really jump to 4600:0085.  By jumping to 4600:0084, PUSH DS moves SP
+				// by two bytes, and the subsequent RETF fails to return to the correct address.
+				//
+				// Vain Dream runs by commenting out PushStatusCDDAPlayEnded() below.  But,
+				// in the past I saw something (presumably one version of CD-ROM BIOS) was expecting
+				// 07 00 00 00 status after CDDA is done, but I cannot find it
+				//
+				// Maybe subsequent to CDDA Stop command?
+
+				// PushStatusCDDAPlayEnded();
 				state.CDDAState=State::CDDA_IDLE;
 			}
 			if(CMDFLAG_IRQ&state.cmd)
