@@ -265,14 +265,15 @@ TownsCRTC::TownsCRTC(class FMTowns *ptr,TownsSprite *spritePtr) : Device(ptr)
 
 void TownsCRTC::UpdateSpriteHardware(void)
 {
-	if(true==spritePtr->SpriteActive())
+	if(true==InSinglePageMode() ||
+	   16!=GetPageBitsPerPixel(1) ||
+	   512!=GetPageBytesPerLine(1))
 	{
-		if(true==InSinglePageMode() ||
-		   16!=GetPageBitsPerPixel(1) ||
-		   512!=GetPageBytesPerLine(1))
-		{
-			spritePtr->Stop();
-		}
+		spritePtr->state.screenModeAcceptsSprite=false;
+	}
+	else
+	{
+		spritePtr->state.screenModeAcceptsSprite=true;
 	}
 }
 

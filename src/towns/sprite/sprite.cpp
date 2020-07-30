@@ -28,6 +28,7 @@ void TownsSprite::State::PowerOn(void)
 		r=0;
 	}
 	spriteBusy=false;
+	screenModeAcceptsSprite=false;
 }
 void TownsSprite::State::Reset(void)
 {
@@ -319,7 +320,7 @@ void TownsSprite::Render(unsigned char VRAMIn[],const unsigned char spriteRAM[])
 
 void TownsSprite::RunScheduledTask(unsigned long long int townsTime)
 {
-	if(true==SpriteActive())
+	if(true==SPEN())
 	{
 		if(true!=state.spriteBusy)
 		{
@@ -343,7 +344,10 @@ void TownsSprite::RunScheduledTask(unsigned long long int townsTime)
 			// The CPU is not supposed to modify sprite during the sprite-busy period.
 			// However, some changes may be made not in time, then changes may be made during the sprite-busy period.
 			// Then, it is the safest to draw at the end of sprite-busy period.
-			Render(physMemPtr->state.VRAM.data()+0x40000,physMemPtr->state.spriteRAM.data());
+			if(true==state.screenModeAcceptsSprite)
+			{
+				Render(physMemPtr->state.VRAM.data()+0x40000,physMemPtr->state.spriteRAM.data());
+			}
 			state.spriteBusy=false;
 			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->crtc.NextVSYNCTime(townsTime));
 		}
@@ -364,8 +368,10 @@ std::vector <std::string> TownsSprite::GetStatusText(const unsigned char spriteR
 	text.push_back("");
 	text.back()="BUSY:";
 	text.back()+=(true==state.spriteBusy ? "1" : "0");
-	text.back()+=" ACTIVE:";
-	text.back()+=(true==SpriteActive() ? "1" : "0");
+	text.back()+=" SPEN:";
+	text.back()+=(0!=(state.reg[REG_CONTROL1]&0x80) ? "1" : "0");
+	text.back()+=" Screen Mode Accepts Sprite:";
+	text.back()+=(true==state.screenModeAcceptsSprite ? "1" : "0");
 	text.back()+=" #DRAW:";
 	text.back()+=cpputil::Itoa(NumSpritesToDraw());
 	text.back()+=" 1stINDEX:";

@@ -59,6 +59,7 @@ public:
 		unsigned char addressLatch;
 		unsigned char reg[NUM_REGS];
 		bool spriteBusy;
+		bool screenModeAcceptsSprite;
 
 		void PowerOn(void);
 		void Reset(void);
@@ -71,9 +72,13 @@ public:
 	void Start(void);
 	void Stop(void);
 
-	inline bool SpriteActive(void) const
+	inline bool SPEN(void) const
 	{
 		return 0!=(state.reg[REG_CONTROL1]&0x80);
+	}
+	inline bool SpriteActive(void) const
+	{
+		return true==SPEN() && true==state.screenModeAcceptsSprite;
 	}
 	inline unsigned int NumSpritesToDraw(void) const
 	{
