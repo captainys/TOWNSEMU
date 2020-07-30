@@ -168,6 +168,9 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	dumpableMap["TIMEBALANCE"]=DUMP_TIME_BALANCE;
 	dumpableMap["SPRITE"]=DUMP_SPRITE;
 	dumpableMap["SPRITEAT"]=DUMP_SPRITE_AT;
+	dumpableMap["SPRPAL"]=DUMP_SPRITE_PALETTE;
+	dumpableMap["SPRPTN4"]=DUMP_SPRITE_PATTERN_4BIT;
+	dumpableMap["SPRPTN16"]=DUMP_SPRITE_PATTERN_16BIT;
 	dumpableMap["MOUSE"]=DUMP_MOUSE;
 	dumpableMap["YM2612LOG"]=DUMP_YM2612_LOG;
 	dumpableMap["SEGREG"]=DUMP_SEGMENT_REGISTER_DETAILS;
@@ -432,6 +435,12 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "SPRITEAT x y" << std::endl;
 	std::cout << "  Status of the sprite at coordinate x y." << std::endl;
 	std::cout << "  x and y are in decimal, not in hexadecimal." << std::endl;
+	std::cout << "SPRPAL paletteIndex" << std::endl;
+	std::cout << "  Sprite Palette" << std::endl;
+	std::cout << "SPRPTN4 patternIndex" << std::endl;
+	std::cout << "  Sprite Pattern as 4-bit Sprite." << std::endl;
+	std::cout << "SPRPTN16 patternIndex" << std::endl;
+	std::cout << "  Sprite Pattern as 16-bit Sprite." << std::endl;
 	std::cout << "MOUSE" << std::endl;
 	std::cout << "  Mouse status." << std::endl;
 	std::cout << "YM2612LOG" << std::endl;
@@ -1223,6 +1232,48 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 				auto x=cpputil::Atoi(cmd.argv[2].c_str());
 				auto y=cpputil::Atoi(cmd.argv[3].c_str());
 				for(auto str : towns.sprite.GetStatusTextSpriteAt(towns.physMem.state.spriteRAM.data(),x,y))
+				{
+					std::cout << str << std::endl;
+				}
+			}
+			else
+			{
+				PrintError(ERROR_TOO_FEW_ARGS);
+			}
+			break;
+		case DUMP_SPRITE_PALETTE:
+			if(3<=cmd.argv.size())
+			{
+				auto palIdx=cpputil::Atoi(cmd.argv[2].c_str());
+				for(auto str : towns.sprite.GetPaletteText(palIdx,towns.physMem.state.spriteRAM.data()))
+				{
+					std::cout << str << std::endl;
+				}
+			}
+			else
+			{
+				PrintError(ERROR_TOO_FEW_ARGS);
+			}
+			break;
+		case DUMP_SPRITE_PATTERN_4BIT:
+			if(3<=cmd.argv.size())
+			{
+				auto palIdx=cpputil::Atoi(cmd.argv[2].c_str());
+				for(auto str : towns.sprite.GetPattern4BitText(palIdx,towns.physMem.state.spriteRAM.data()))
+				{
+					std::cout << str << std::endl;
+				}
+			}
+			else
+			{
+				PrintError(ERROR_TOO_FEW_ARGS);
+			}
+			break;
+		case DUMP_SPRITE_PATTERN_16BIT:
+			if(3<=cmd.argv.size())
+			{
+				auto palIdx=cpputil::Atoi(cmd.argv[2].c_str());
+				for(auto str : towns.sprite.GetPattern16BitText(palIdx,towns.physMem.state.spriteRAM.data()))
 				{
 					std::cout << str << std::endl;
 				}

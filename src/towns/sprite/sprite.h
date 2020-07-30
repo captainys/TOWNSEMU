@@ -21,6 +21,7 @@ public:
 		SPRITE_DIMENSION=16,
 		SPRITE_PTN32K_BYTES_PER_LINE=32,
 		SPRITE_PTN16_BYTES_PER_LINE=8,
+		SPRITE_PALETTE_NUM_COLORS=16,
 	};
 	enum
 	{
@@ -168,9 +169,15 @@ public:
 
 	virtual unsigned int IOReadByte(unsigned int ioport);
 
+	/*! Debugging Purpose Only
+	*/
 	std::vector <std::string> GetStatusText(const unsigned char spriteRAM[]) const;
 	std::vector <std::string> GetStatusTextOneSprite(const unsigned char spriteRAM[],int spriteIndex) const;
 	std::vector <std::string> GetStatusTextSpriteAt(const unsigned char spriteRAM[],int x,int y) const;
+	std::vector <unsigned int> GetPalette(unsigned int palIdx,const unsigned char spriteRAM[]) const;
+	std::vector <std::string> GetPaletteText(unsigned int palIdx,const unsigned char spriteRAM[]) const;
+	std::vector <std::string> GetPattern4BitText(unsigned int ptnIdx,const unsigned char spriteRAM[]) const;
+	std::vector <std::string> GetPattern16BitText(unsigned int ptnIdx,const unsigned char spriteRAM[]) const;
 };
 
 /* } */

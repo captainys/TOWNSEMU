@@ -478,3 +478,77 @@ std::vector <std::string> TownsSprite::GetStatusTextSpriteAt(const unsigned char
 
 	return text;
 }
+
+std::vector <unsigned int> TownsSprite::GetPalette(unsigned int palIdx,const unsigned char spriteRAM[]) const
+{
+	auto palettePtr=spriteRAM+(palIdx<<5);
+
+	std::vector <unsigned int> palVal;
+	palVal.resize(16);
+	for(int i=0; i<SPRITE_PALETTE_NUM_COLORS; ++i)
+	{
+		palVal[i]=(palettePtr[i]|(palettePtr[i+1]<<8));
+	}
+	return palVal;
+}
+std::vector <std::string> TownsSprite::GetPaletteText(unsigned int palIdx,const unsigned char spriteRAM[]) const
+{
+	std::vector <std::string> text;
+	auto palVal=GetPalette(palIdx,spriteRAM);
+	for(int i=0; i<SPRITE_PALETTE_NUM_COLORS; ++i)
+	{
+		if(0==i%16)
+		{
+			text.push_back("");
+		}
+		else
+		{
+			text.back().push_back(' ');
+		}
+		text.back()+=cpputil::Ustox(palVal[i]);
+	}
+	return text;
+}
+std::vector <std::string> TownsSprite::GetPattern4BitText(unsigned int ptnIdx,const unsigned char spriteRAM[]) const
+{
+	std::vector <std::string> text;
+	auto srcPtr=spriteRAM+(ptnIdx<<7);
+	for(int i=0; i<SPRITE_DIMENSION*SPRITE_DIMENSION; ++i)
+	{
+		if(0==i%16)
+		{
+			text.push_back("");
+		}
+		auto col=srcPtr[i/2];
+		auto shift=4*(i&1);
+		col=((col>>shift)&0x0F);
+		if(col<10)
+		{
+			text.back().push_back('0'+col);
+		}
+		else
+		{
+			text.back().push_back('A'-10+col);
+		}
+	}
+	return text;
+}
+std::vector <std::string> TownsSprite::GetPattern16BitText(unsigned int ptnIdx,const unsigned char spriteRAM[]) const
+{
+	std::vector <std::string> text;
+	auto srcPtr=spriteRAM+(ptnIdx<<7);
+	for(int i=0; i<SPRITE_DIMENSION*SPRITE_DIMENSION; ++i)
+	{
+		if(0==i%16)
+		{
+			text.push_back("");
+		}
+		else
+		{
+			text.back().push_back(' ');
+		}
+		auto col=(srcPtr[i*2]|(srcPtr[i*2+1]<<8));
+		text.back()+=cpputil::Ustox(col);
+	}
+	return text;
+}
