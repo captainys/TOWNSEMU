@@ -162,8 +162,13 @@ bool Setup(FMTowns &towns,Outside_World *outside_world,const TownsARGV &argv)
 	{
 		if(""!=argv.fdImgFName[drv])
 		{
-			towns.fdc.LoadRawBinary(drv,argv.fdImgFName[drv].c_str());
-			towns.fdc.SetWriteProtect(drv,argv.fdImgWriteProtect[drv]);
+			towns.fdc.LoadD77orRAW(drv,argv.fdImgFName[drv].c_str());
+			if(true==argv.fdImgWriteProtect[drv])
+			{
+				// D77 image may have write-protect switch.
+				// Enable write protect only when specified by the parameter.
+				towns.fdc.SetWriteProtect(drv,true);
+			}
 		}
 	}
 	if(""!=argv.cdImgFName)

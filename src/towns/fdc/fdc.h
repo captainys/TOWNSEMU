@@ -116,7 +116,19 @@ public:
 
 	TownsFDC(class FMTowns *townsPtr,class TownsPIC *PICPtr,class TownsDMAC *dmacPtr);
 
+	bool LoadD77orRAW(unsigned int driveNum,const char fName[],bool verbose=true);
+
+	bool LoadD77(unsigned int driveNum,const char fName[],bool verbose=true);
 	bool LoadRawBinary(unsigned int driveNum,const char fName[],bool verbose=true);
+
+	/*! D77 image can have multiple disks in one file.
+	    diskIdx is for pointing a disk in the multiple-disk D77 image.
+	*/
+	void LinkDiskImageToDrive(int imgIndex,int diskIdx,int driveNum);
+private:
+	void SaveIfModifiedAndUnlinkDiskImage(unsigned int imgIndex);
+
+public:
 	void Eject(unsigned int driveNum);
 	D77File::D77Disk *GetDriveDisk(int driveNum);
 	const D77File::D77Disk *GetDriveDisk(int driveNum) const;

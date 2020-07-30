@@ -120,10 +120,24 @@ TownsFDC::TownsFDC(class FMTowns *townsPtr,class TownsPIC *PICPtr,class TownsDMA
 	}
 }
 
+bool TownsFDC::LoadD77orRAW(unsigned int driveNum,const char fNameIn[],bool verbose)
+{
+	auto ext=cpputil::GetExtension(fNameIn);
+	cpputil::Capitalize(ext);
+	if(".D77"==ext || ".D88"==ext)
+	{
+		return LoadD77(driveNum,fNameIn,verbose);
+	}
+	else
+	{
+		return LoadRawBinary(driveNum,fNameIn,verbose);
+	}
+}
 
-bool TownsFDC::LoadRawBinary(unsigned int driveNum,const char fName[],bool verbose)
+bool TownsFDC::LoadD77(unsigned int driveNum,const char fName[],bool verbose)
 {
 	driveNum&=3;
+	auto imgIdx=driveNum;
 
 	auto bin=cpputil::ReadBinaryFile(fName);
 	if(0==bin.size())
@@ -131,33 +145,69 @@ bool TownsFDC::LoadRawBinary(unsigned int driveNum,const char fName[],bool verbo
 		return false;
 	}
 
-	// First unlink any drive pointing to the disk image
-	for(auto &d : state.drive)
-	{
-		if(d.imgFileNum==driveNum)
-		{
-			d.imgFileNum=-1;
-			d.diskIndex=-1;
-			d.mediaType=MEDIA_UNKNOWN;
-		}
-	}
+	SaveIfModifiedAndUnlinkDiskImage(imgIdx);
 
-	imgFile[driveNum].SaveIfModified();
-
-	if(true==imgFile[driveNum].d77.SetRawBinary(bin,verbose))
+	imgFile[imgIdx].d77.SetData(bin,verbose);
+	if(0<imgFile[imgIdx].d77.GetNumDisk())
 	{
-		imgFile[driveNum].fileType=IMGFILE_RAW;
-		imgFile[driveNum].fName=fName;
-		state.drive[driveNum].imgFileNum=driveNum;
-		state.drive[driveNum].diskIndex=0;
-		state.drive[driveNum].mediaType=IdentifyDiskMediaType(imgFile[driveNum].d77.GetDisk(0));
-		state.drive[driveNum].DiskChanged();
+		imgFile[imgIdx].fileType=IMGFILE_D77;
+		imgFile[imgIdx].fName=fName;
+		LinkDiskImageToDrive(imgIdx,0,driveNum);
 		return true;
 	}
 	else
 	{
 		return false;
 	}
+}
+
+bool TownsFDC::LoadRawBinary(unsigned int driveNum,const char fName[],bool verbose)
+{
+	driveNum&=3;
+	auto imgIdx=driveNum;
+
+	auto bin=cpputil::ReadBinaryFile(fName);
+	if(0==bin.size())
+	{
+		return false;
+	}
+
+	SaveIfModifiedAndUnlinkDiskImage(imgIdx);
+
+	if(true==imgFile[imgIdx].d77.SetRawBinary(bin,verbose))
+	{
+		imgFile[imgIdx].fileType=IMGFILE_RAW;
+		imgFile[imgIdx].fName=fName;
+		LinkDiskImageToDrive(imgIdx,0,driveNum);
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+void TownsFDC::LinkDiskImageToDrive(int imgIdx,int diskIdx,int driveNum)
+{
+	state.drive[driveNum].imgFileNum=imgIdx;
+	state.drive[driveNum].diskIndex=diskIdx;
+	state.drive[driveNum].mediaType=IdentifyDiskMediaType(imgFile[driveNum].d77.GetDisk(diskIdx));
+	state.drive[driveNum].DiskChanged();
+}
+
+void TownsFDC::SaveIfModifiedAndUnlinkDiskImage(unsigned int imgIndex)
+{
+	// First unlink any drive pointing to the disk image
+	for(auto &d : state.drive)
+	{
+		if(d.imgFileNum==imgIndex)
+		{
+			d.imgFileNum=-1;
+			d.diskIndex=-1;
+			d.mediaType=MEDIA_UNKNOWN;
+		}
+	}
+	imgFile[imgIndex].SaveIfModified();
 }
 
 void TownsFDC::Eject(unsigned int driveNum)
