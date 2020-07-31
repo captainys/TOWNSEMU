@@ -5627,8 +5627,15 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 
 	case I486_RENUMBER_HLT://        0xF4,
+		if(0==(state.EFLAGS&EFLAGS_VIRTUAL86))
+		{
+			state.halt=true;
+		}
+		else
+		{
+			RaiseException(EXCEPTION_GP,0);
+		}
 		clocksPassed=4;
-		state.halt=true;
 		break;
 
 
