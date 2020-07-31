@@ -306,6 +306,7 @@ unsigned int TownsDMAC::DeviceToMemory(State::Channel *DMACh,unsigned long long 
 	}
 	if(DMACh->currentCount+1==0 && true==DMACh->AUTI()) // :-(  Maybe I should use signed integer for counts.
 	{
+		DMACh->currentAddr=DMACh->baseAddr;
 		DMACh->currentCount=DMACh->baseCount;
 	}
 	return i;
@@ -329,6 +330,7 @@ std::vector <unsigned char> TownsDMAC::MemoryToDevice(State::Channel *DMACh,unsi
 	data.resize(i);
 	if(DMACh->currentCount+1==0 && true==DMACh->AUTI()) // :-(  Maybe I should use signed integer for counts.
 	{
+		DMACh->currentAddr=DMACh->baseAddr;
 		DMACh->currentCount=DMACh->baseCount;
 	}
 	return data;
