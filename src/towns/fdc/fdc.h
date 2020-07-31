@@ -226,6 +226,7 @@ public:
 	virtual void Reset(void);
 
 	std::vector <std::string> GetStatusText(void) const;
+	static std::string FDCCommandToExplanation(unsigned char cmd);
 };
 
 

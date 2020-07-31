@@ -1126,7 +1126,7 @@ bool TownsFDC::WriteFault(void) const
 		PICPtr->SetInterruptRequestBit(TOWNSIRQ_FDC,false);
 		if(true==debugBreakOnCommandWrite)
 		{
-			townsPtr->debugger.ExternalBreak("FDC Command Write "+cpputil::Ubtox(data));
+			townsPtr->debugger.ExternalBreak("FDC Command Write "+cpputil::Ubtox(data)+" "+FDCCommandToExplanation(data));
 		}
 		break;
 	case TOWNSIO_FDC_TRACK://                0x202, // [2] pp.253
@@ -1270,8 +1270,61 @@ std::vector <std::string> TownsFDC::GetStatusText(void) const
 	text.push_back(line);
 	text.back()="Last CMD:";
 	text.back()+=cpputil::Ubtox(state.lastCmd);
+	text.back()+=" ";
+	text.back()+=FDCCommandToExplanation(state.lastCmd);
 	text.back()+=" STATUS:";
 	text.back()+=cpputil::Ubtox(state.lastStatus);
 
 	return text;
+}
+
+/* static */ std::string TownsFDC::FDCCommandToExplanation(unsigned char cmd)
+{
+	std::string str;
+	switch(cmd&0xF0)
+	{
+	case 0x00: // Restore
+		str="Restore";
+		break;
+	case 0x10: // Seek
+		str="Seek";
+		break;
+	case 0x20: // Step?
+	case 0x30: // Step?
+		str="Step";
+		break;
+	case 0x40: // Step In
+	case 0x50: // Step In
+		str="Step_In";
+		break;
+	case 0x60: // Step Out
+	case 0x70: // Step Out
+		str="Step_Out";
+		break;
+
+	case 0x80: // Read Data (Read Sector)
+	case 0x90: // Read Data (Read Sector)
+		str="Read_Sector";
+		break;
+	case 0xA0: // Write Data (Write Sector)
+	case 0xB0: // Write Data (Write Sector)
+		str="Write_Sector";
+		break;
+
+	case 0xC0: // Read Address
+		str="Read_Address";
+		break;
+	case 0xE0: // Read Track
+		str="Read_Track";
+		break;
+	case 0xF0: // Write Track
+		str="Write_Track";
+		break;
+
+	default:
+	case 0xD0: // Force Interrupt
+		str="Force_Interrupt";
+		break;
+	}
+	return str;
 }

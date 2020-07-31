@@ -39,6 +39,8 @@ void TownsRender::BuildImage(const TownsCRTC &crtc,const TownsPhysicalMemory &ph
 		// Cache crtc setting.
 	}
 
+	std::memset(rgba.data(),0,rgba.size());
+
 	if(true==crtc.InSinglePageMode())
 	{
 		if(true==crtc.state.ShowPage(0))
@@ -57,14 +59,6 @@ void TownsRender::BuildImage(const TownsCRTC &crtc,const TownsPhysicalMemory &ph
 		if(true==crtc.state.ShowPage(1-priorityPage))
 		{
 			Render<VRAM0Trans>(1-priorityPage,layer[1-priorityPage],crtc.state.palette,crtc.chaseHQPalette,physMem.state.VRAM,false);
-		}
-		else
-		{
-			auto *rgbaPtr=rgba.data();
-			for(int i=0; i<rgba.size(); ++i) // Hope the optimizer realizes it is zero fill.
-			{
-				rgbaPtr[i]=0;
-			}
 		}
 		if(true==crtc.state.ShowPage(priorityPage))
 		{
