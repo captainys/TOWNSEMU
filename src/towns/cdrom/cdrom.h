@@ -248,6 +248,26 @@ public:
 			UpdateCDDAStateInternal(townsTime,outside_world);
 		}
 	}
+	static inline bool StatusRequestBit(unsigned char cmd)
+	{
+		// Status request bit is supposed to be bit 5 of the command according to [2] pp.225.
+
+		// Fractal Engine Demo issues command 00H (Seek without STATUS REQUEST Bit and IRQ Bit),
+		// and still expects to get SRQ and IRQ.  This 00H may not be intended, and may happen to be working.
+
+		// Shadow of the Beast issues command 02H (MODE1READ), again without STATUS REQUEST.
+		// This is intended.  I am positive.  And then it waits for the Data Ready status (22H 0 0 0).
+		// At this time, I am leaning toward Status Request bit of the CDC command has no effect.
+		// Or, "Command Status" and other status may be different, and of course such information is
+		// undocumented, and I need to make a guess.
+
+		// However, totally disregarding this flag and always return status will prevent ChaseHQ from starting.
+		// ChaseHQ issues command C1H (CDDASET) and expects no status is reported.
+
+		// At the end of day, the reaction to this STATUS REQUEST bit may need to be different for different command.
+
+		return (0!=(cmd&CMDFLAG_STATUS_REQUEST)); // This interpretation of [2] prevents Shadow of the Beast from starting.
+	}
 private:
 	void UpdateCDDAStateInternal(long long int townsTime,Outside_World &outside_world);
 public:

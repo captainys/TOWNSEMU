@@ -471,21 +471,18 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 			{
 				state.readingSectorHSG-=150;
 				state.endSectorHSG-=150;
-				if(0!=(CMDFLAG_STATUS_REQUEST&state.cmd))
+
+				// Shadow of the Beast issues command 02H and expects status to be returned.
+				// Probably MODE2READ command needs to disregard STATUS REQUEST bit.
+
+				// Should I immediately return No-Error status before starting transfer?
+				// BIOS is not checking it immediately.
+				// 2F Boot ROM _IS_ checking it immediately.
+				SetStatusNoError();
+				if(true==state.enableSIRQ)
 				{
-					// Should I immediately return No-Error status before starting transfer?
-					// BIOS is not checking it immediately.
-					// 2F Boot ROM _IS_ checking it immediately.
-					SetStatusNoError();
-					if(true==state.enableSIRQ)
-					{
-						state.delayedSIRQ=true;
-						townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DELAYED_STATUS_IRQ_TIME);
-					}
-					else
-					{
-						townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+READ_SECTOR_TIME);
-					}
+					state.delayedSIRQ=true;
+					townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DELAYED_STATUS_IRQ_TIME);
 				}
 				else
 				{
@@ -506,13 +503,13 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 		townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DELAYED_STATUS_IRQ_TIME);
 		break;
 	case CDCMD_TOCREAD://    0x05,
-		if(CMDFLAG_STATUS_REQUEST&state.cmd)
+		if(true==StatusRequestBit(state.cmd))
 		{
 			SetStatusQueueForTOC();
 		}
 		break;
 	case CDCMD_SUBQREAD://   0x06,
-		if(CMDFLAG_STATUS_REQUEST&state.cmd)
+		if(true==StatusRequestBit(state.cmd))
 		{
 			SetStatusSubQRead();
 		}
@@ -522,7 +519,7 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 		break;
 
 	case CDCMD_SETSTATE://   0x80,
-		if(CMDFLAG_STATUS_REQUEST&state.cmd)
+		if(true==StatusRequestBit(state.cmd))
 		{
 			townsPtr->UnscheduleDeviceCallBack(*this);
 			SetStatusDriveNotReadyOrDiscChangedOrNoError();
@@ -553,7 +550,10 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 		}
 		break;
 	case CDCMD_CDDASET://    0x81,
-		if(CMDFLAG_STATUS_REQUEST&state.cmd)
+		// ChaseHQ issues command 0xC1 and expects no status is returned.
+		// Therefore this command should not return status if STATUS-REQUEST bit is off.
+		// It still compares the 1st status byte ang 0x08, but the meaning is unknown.
+		if(true==StatusRequestBit(state.cmd))
 		{
 			// I don't know what to do with this command.
 			// CDROM BIOS AH=52H fires command 0xA1 with parameters {07 FF 00 00 00 00 00 00}
@@ -579,7 +579,7 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 		// CDDAState must be reset to IDLE regardless of the Status Request.
 		// ChaseHQ was issuing CDDAPAUSE command without Status Request flag.
 		state.CDDAState=State::CDDA_IDLE;
-		if(CMDFLAG_STATUS_REQUEST&state.cmd)
+		if(true==StatusRequestBit(state.cmd))
 		{
 			if(true!=SetStatusDriveNotReadyOrDiscChanged())
 			{
@@ -596,7 +596,7 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 		{
 			OutsideWorld->CDDAResume();
 		}
-		if(CMDFLAG_STATUS_REQUEST&state.cmd)
+		if(true==StatusRequestBit(state.cmd))
 		{
 			if(true!=SetStatusDriveNotReadyOrDiscChanged())
 			{
@@ -617,14 +617,14 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 	switch(state.cmd&0x9F)
 	{
 	case CDCMD_SEEK://       0x00,
-		// delayedSIRQ is used in CDCMD_SEEK only when 0!=(state.cmd&CMDFLAG_STATUS_REQUEST)
+		// delayedSIRQ is used in CDCMD_SEEK only when true==StatusRequestBit(state.cmd)
 		if(true==state.delayedSIRQ)
 		{
 			state.DRY=true;  
 			state.delayedSIRQ=false;
 			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+SEEK_TIME);
 			state.ClearStatusQueue();
-			if(0!=(state.cmd&CMDFLAG_STATUS_REQUEST))
+			if(true==StatusRequestBit(state.cmd))
 			{
 				if(true!=SetStatusDriveNotReadyOrDiscChanged())
 				{
@@ -639,7 +639,7 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 		}
 		else
 		{
-			// I think I should not push status queue in here unless 0!=(CMDFLAG_STATUS_REQUEST&state.cmd),
+			// I think I should not push status queue in here unless true==StatusRequestBit(state.cmd),
 			// and same for IRR flag of PIC unless 0!=(CMDFLAG_IRQ&state.cmd).
 			// However, Fractal Engine Demo expect Status Queue and IRR from command 00H.
 			//
@@ -665,7 +665,7 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 
 			// Probably status code 4 means Seek Done.
 			// FM Towns 2F BIOS waits for No Error (00H) and then waits for 04H after issuing command 20H Seek.
-			if(0!=(state.cmd&CMDFLAG_STATUS_REQUEST))
+			if(true==StatusRequestBit(state.cmd))
 			{
 				state.PushStatusQueue(4,0,0,0);
 				if(0!=(CMDFLAG_IRQ&state.cmd))
@@ -696,14 +696,15 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 				if(true!=DMAAvailable || true!=state.DMATransfer)
 				{
 					state.ClearStatusQueue();
-					if(0!=(state.cmd&CMDFLAG_STATUS_REQUEST))
+
+					// See above comment about Shadow of the Beast for why not checking STATUS REQUEST bit for setting status.
+					SetStatusDataReady();
+
+					if(true==StatusRequestBit(state.cmd) && 0!=(state.cmd&CMDFLAG_IRQ) && true==state.enableSIRQ)
 					{
-						SetStatusDataReady();
-						if(0!=(state.cmd&CMDFLAG_IRQ) && true==state.enableSIRQ)
-						{
-							PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
-						}
+						PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
 					}
+
 					state.SIRQ=true;
 					state.DEI=false;
 					state.DTSF=false;
@@ -748,12 +749,13 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 				state.DRY=true;
 				state.ClearStatusQueue();
 				state.DTSF=false;
-				// state.DEI=true;
 
-				if(0!=(state.cmd&CMDFLAG_STATUS_REQUEST))
+				// See above comment about Shadow of the Beast for why not checking STATUS REQUEST bit for setting status.
+				SetStatusReadDone();
+
+				if(true==StatusRequestBit(state.cmd))
 				{
 					state.SIRQ=true;
-					SetStatusReadDone();
 					if(0!=(state.cmd&CMDFLAG_IRQ) && true==state.enableSIRQ)
 					{
 						PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
@@ -792,7 +794,7 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 				state.CDDAState=State::CDDA_PLAYING;
 				state.CDDAEndTime=msfEnd;
 			}
-			if(CMDFLAG_STATUS_REQUEST&state.cmd)
+			if(true==StatusRequestBit(state.cmd))
 			{
 				SetStatusDriveNotReadyOrDiscChangedOrNoError();
 				state.SIRQ=true;
