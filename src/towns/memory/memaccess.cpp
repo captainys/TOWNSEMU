@@ -226,8 +226,8 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 		auto shift=(physMemPtr->state.FMRVRAMMask>>6)&3;
 		unsigned char andPtnHigh=(0x10<<shift);
 		unsigned char andPtnLow=(1<<shift);
-		unsigned char orPtnHigh=0x80;
-		unsigned char orPtnLow=0x40;
+		unsigned char orPtnHigh=0x40;
+		unsigned char orPtnLow=0x80;
 		unsigned char data=0;
 		for(int i=0; i<4; ++i)
 		{
