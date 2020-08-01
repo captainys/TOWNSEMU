@@ -767,7 +767,8 @@ std::vector <std::string> i486DX::GetTSSText(const Memory &mem) const
 	text.push_back("");
 	text.back()+="LDT="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,0x60,mem));
 	text.push_back("");
-	text.back()+="IOMAP.T="+cpputil::Uitox(DebugFetchDword(addrSize,state.TR,0x64,mem));
+	text.back()+="T="+cpputil::Ustox(DebugFetchDword(addrSize,state.TR,0x64,mem));
+	text.back()+="  I/O MAP Base="+cpputil::Ustox(DebugFetchDword(addrSize,state.TR,0x66,mem));
 
 	return text;
 }
