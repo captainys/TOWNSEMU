@@ -2856,12 +2856,12 @@ public:
 	/*! Test I/O-read exception, and RaiseException and HandleException if needed.
 	    Returns true if an exception was raised.
 	*/
-	bool TakeIOReadException(unsigned int ioport,unsigned int accessSize,const Memory &mem);
+	inline bool TakeIOReadException(unsigned int ioport,unsigned int accessSize,Memory &mem);
 
 	/*! Test I/O-write exception, and RaiseException and HandleException if needed.
 	    Returns true if an exception was raised.
 	*/
-	bool TakeIOWriteException(unsigned int ioport,unsigned int accessSize,const Memory &mem);
+	inline bool TakeIOWriteException(unsigned int ioport,unsigned int accessSize,Memory &mem);
 
 	/*! Return true if I/O access is permitted in I/O Map of TSS.
 	    It could raise exception.
@@ -3366,6 +3366,34 @@ inline void i486DX::SetRegisterValue8(unsigned int reg,unsigned char value)
 	unsigned int highLow=regIdx>>2;
 	state.reg32()[regIdx&3]&=highLowMask[highLow];
 	state.reg32()[regIdx&3]|=(value<<(highLow<<3));
+}
+
+inline bool i486DX::TakeIOReadException(unsigned int ioport,unsigned int accessSize,Memory &mem)
+{
+	if(0!=(state.EFLAGS&EFLAGS_VIRTUAL86))
+	{
+		if(true!=TestIOMapPermission(state.TR,ioport,accessSize,mem))
+		{
+			RaiseException(EXCEPTION_GP,0);
+			HandleException(true,mem);
+			return true;
+		}
+	}
+	return false;
+}
+
+inline bool i486DX::TakeIOWriteException(unsigned int ioport,unsigned int accessSize,Memory &mem)
+{
+	if(0!=(state.EFLAGS&EFLAGS_VIRTUAL86))
+	{
+		if(true!=TestIOMapPermission(state.TR,ioport,accessSize,mem))
+		{
+			RaiseException(EXCEPTION_GP,0);
+			HandleException(false,mem);
+			return true;
+		}
+	}
+	return false;
 }
 
 /* } */
