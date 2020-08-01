@@ -155,6 +155,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	dumpableMap["LDT"]=DUMP_LDT;
 	dumpableMap["IDT"]=DUMP_IDT;
 	dumpableMap["TSS"]=DUMP_TSS;
+	dumpableMap["TSSIOMAP"]=DUMP_TSS_IOMAP;
 	dumpableMap["SOUND"]=DUMP_SOUND;
 	dumpableMap["RIDT"]=DUMP_REAL_MODE_INT_VECTOR;
 	dumpableMap["SYM"]=DUMP_SYMBOL_TABLE;
@@ -400,6 +401,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Protected-Mode Interrupt Descriptor Table" << std::endl;
 	std::cout << "TSS" << std::endl;
 	std::cout << "  Task State Segment" << std::endl;
+	std::cout << "TSSIOMAP" << std::endl;
+	std::cout << "  I/O Map in Task State Segment" << std::endl;
 	std::cout << "RIDT" << std::endl;
 	std::cout << "  Real-mode Interrupt Descriptor Tables" << std::endl;
 	std::cout << "SEGREG" << std::endl;
@@ -1111,6 +1114,34 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 			for(auto str : towns.cpu.GetTSSText(towns.mem))
 			{
 				std::cout << str << std::endl;
+			}
+			break;
+		case DUMP_TSS_IOMAP:
+			{
+				bool prevPermitted=towns.cpu.DebugTestIOMapPermission(towns.cpu.state.TR,0,0,towns.mem);
+				unsigned int nBlocked=0;
+				unsigned int lastFlip=0;
+				for(unsigned int ioport=0; ioport<0x1000; ++ioport)
+				{
+					bool permitted=towns.cpu.DebugTestIOMapPermission(towns.cpu.state.TR,ioport,ioport,towns.mem);
+					if(prevPermitted!=permitted)
+					{
+						if(true!=prevPermitted)
+						{
+							std::cout << "Blocked:";
+							if(lastFlip+1<ioport)
+							{
+								std::cout << cpputil::Ustox(lastFlip) << " to " << cpputil::Ustox(ioport-1) << std::endl;
+							}
+							else
+							{
+								std::cout << cpputil::Ustox(lastFlip) << std::endl;
+							}
+						}
+						lastFlip=ioport;
+					}
+					prevPermitted=permitted;
+				}
 			}
 			break;
 		case DUMP_SOUND:
