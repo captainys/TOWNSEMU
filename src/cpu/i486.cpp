@@ -545,6 +545,8 @@ std::vector <std::string> i486DX::GetGDTText(const Memory &mem) const
 	for(unsigned int selector=0; selector<state.GDTR.limit; selector+=8)
 	{
 		unsigned int DTLinearBaseAddr=state.GDTR.linearBaseAddr+selector;
+		unsigned int excType,excCode;
+		unsigned int DTPhysicalAddr=LinearAddressToPhysicalAddress(excType,excCode,DTLinearBaseAddr,mem);
 		const unsigned char rawDesc[8]=
 		{
 			(unsigned char)DebugFetchByteByLinearAddress(mem,DTLinearBaseAddr),
@@ -587,18 +589,23 @@ std::vector <std::string> i486DX::GetGDTText(const Memory &mem) const
 			operandSize=32;
 		}
 
-		std::string empty;
-		text.push_back(empty);
+		text.push_back("");
 		text.back()+=cpputil::Ustox(selector);
 		text.back()+=":";
-		text.back()+="Lin-Base=";
+		text.back()+="LnBase=";
 		text.back()+=cpputil::Uitox(segBase);
-		text.back()+="  Limit=";
+		text.back()+=" Lim=";
 		text.back()+=cpputil::Uitox(segLimit);
-		text.back()+="  OperSize=";
+		text.back()+=" OpSz=";
 		text.back()+=cpputil::Ubtox(operandSize);
-		text.back()+="H  AddrSize=";
+		text.back()+="H AdSz=";
 		text.back()+=cpputil::Ubtox(addressSize);
+		text.back()+="H ";
+		text.back()+="Type=";
+		text.back()+=cpputil::Ubtox(rawDesc[5]&15);
+		text.back()+="H ";
+		text.back()+="@ PHYS:";
+		text.back()+=cpputil::Uitox(DTPhysicalAddr);
 		text.back()+="H";
 	}
 	return text;
@@ -618,6 +625,8 @@ std::vector <std::string> i486DX::GetLDTText(const Memory &mem) const
 	for(unsigned int selector=0; selector<state.LDTR.limit; selector+=8)
 	{
 		unsigned int DTLinearBaseAddr=state.LDTR.linearBaseAddr+selector;
+		unsigned int excType,excCode;
+		unsigned int DTPhysicalAddr=LinearAddressToPhysicalAddress(excType,excCode,DTLinearBaseAddr,mem);
 		const unsigned char rawDesc[8]=
 		{
 			(unsigned char)DebugFetchByteByLinearAddress(mem,DTLinearBaseAddr),
@@ -664,14 +673,20 @@ std::vector <std::string> i486DX::GetLDTText(const Memory &mem) const
 		text.push_back(empty);
 		text.back()+=cpputil::Ustox(selector|4);
 		text.back()+=":";
-		text.back()+="Lin-Base=";
+		text.back()+="LiBase=";
 		text.back()+=cpputil::Uitox(segBase);
-		text.back()+="  Limit=";
+		text.back()+=" Lim=";
 		text.back()+=cpputil::Uitox(segLimit);
-		text.back()+="  OperSize=";
+		text.back()+=" OpSz=";
 		text.back()+=cpputil::Ubtox(operandSize);
-		text.back()+="H  AddrSize=";
+		text.back()+="H AdSz=";
 		text.back()+=cpputil::Ubtox(addressSize);
+		text.back()+="H ";
+		text.back()+="Type=";
+		text.back()+=cpputil::Ubtox(rawDesc[5]&15);
+		text.back()+="H ";
+		text.back()+="@ PHYS:";
+		text.back()+=cpputil::Uitox(DTPhysicalAddr);
 		text.back()+="H";
 	}
 	return text;
