@@ -315,12 +315,19 @@ public:
 	static unsigned int MSFtoHSG(MinSecFrm MSF);
 	static unsigned int BinToBCD(unsigned int bin);
 	static unsigned int BCDToBin(unsigned int bin);
+	inline static MinSecFrm MakeMSF(unsigned int min,unsigned int sec,unsigned int frm);
 };
 
 inline DiscImage::MinSecFrm operator+(DiscImage::MinSecFrm l,DiscImage::MinSecFrm r)
 {
 	l+=r;
 	return l;
+}
+inline DiscImage::MinSecFrm DiscImage::MakeMSF(unsigned int min,unsigned int sec,unsigned int frm)
+{
+	MinSecFrm msf;
+	msf.Set(min,sec,frm);
+	return msf;
 }
 
 /* } */

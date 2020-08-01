@@ -774,18 +774,18 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 			state.delayedSIRQ=false;
 			state.DRY=true;
 
-			DiscImage::MinSecFrm msfBegin,msfEnd,twoSec;
-			twoSec.Set(0,2,0);
+			DiscImage::MinSecFrm msfBegin,msfEnd;
+			auto offset=DiscImage::MakeMSF(0,4,0);
 
 			msfBegin.min=DiscImage::BCDToBin(state.paramQueue[0]);
 			msfBegin.sec=DiscImage::BCDToBin(state.paramQueue[1]);
 			msfBegin.frm=DiscImage::BCDToBin(state.paramQueue[2]);
-			msfBegin-=twoSec;
+			msfBegin-=offset;
 
 			msfEnd.min=DiscImage::BCDToBin(state.paramQueue[3]);
 			msfEnd.sec=DiscImage::BCDToBin(state.paramQueue[4]);
 			msfEnd.frm=DiscImage::BCDToBin(state.paramQueue[5]);
-			msfEnd-=twoSec;
+			msfEnd-=offset;
 
 			if(nullptr!=OutsideWorld)
 			{
@@ -895,8 +895,10 @@ void TownsCDROM::SetStatusQueueForTOC(void)
 		unsigned char secondByte=(trk.trackType==DiscImage::TRACK_AUDIO ? 0 : 0x40);
 		state.PushStatusQueue(0x16,secondByte,0,0);
 
-		// F29 Retaliator is expecting trk.start+trk.preGap.
-		auto HSG=DiscImage::MSFtoHSG(trk.start+trk.preGap);
+		// F29 Retaliator is expecting trk.start+trk.preGap (2 seconds).
+		// Actually, probably what I should do is add 2 seconds to all the tracks,
+		// and then subtract 2 seconds when play back.
+		auto HSG=DiscImage::MSFtoHSG(trk.start+DiscImage::MakeMSF(0,2,0));
 		HSG+=DiscImage::HSG_BASE;
 		auto MSF=DiscImage::HSGtoMSF(HSG);
 
