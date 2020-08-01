@@ -21,11 +21,26 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 inline void WordOp_Add(unsigned char *ptr,short value)
 {
-#ifdef YS_LITTLE_ENDIAN
-	*((short *)ptr)+=value;
-#else
+#ifndef YS_LITTLE_ENDIAN
 	std::swap(ptr[0],ptr[1]);
-	*((short *)ptr)+=value;
+#endif
+
+	int i=*((short *)ptr);
+	i+=value;
+	if(i<-32767)
+	{
+		*((short *)ptr)=-32767;
+	}
+	else if(32767<i)
+	{
+		*((short *)ptr)=32767;
+	}
+	else
+	{
+		*((short *)ptr)=i;
+	}
+
+#ifndef YS_LITTLE_ENDIAN
 	std::swap(ptr[0],ptr[1]);
 #endif
 }
@@ -198,8 +213,8 @@ unsigned int RF5C68::AddWaveForNumSamples(unsigned char waveBuf[],unsigned int c
 
 	unsigned int Lvol=(ch.PAN&0x0F);
 	unsigned int Rvol=((ch.PAN>>4)&0x0F);
-	Lvol=(Lvol*ch.ENV)>>4;   // Lvol(in) max=15, ENV max=255,  Lvol(in)*ENV max~=4096   Lvol(out)~=(4096>>4)=256
-	Rvol=(Rvol*ch.ENV)>>4;
+	Lvol=(Lvol*ch.ENV);   // Lvol max=15, ENV max=255,  Lvol*ENV max~=4096
+	Rvol=(Rvol*ch.ENV);
 
 	ch.repeatAfterThisSegment=false;
 	if(0<ch.FD)
