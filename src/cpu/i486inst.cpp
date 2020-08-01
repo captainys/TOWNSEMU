@@ -7146,65 +7146,68 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		break;
 	case I486_RENUMBER_IRET://   0xCF,
-	case I486_RENUMBER_RETF://             0xCB,
 		{
-			if(I486_OPCODE_RETF==inst.opCode)
+			auto prevVMFlag=state.EFLAGS&EFLAGS_VIRTUAL86;
+			if(true==IsInRealMode())
 			{
-				if(true==IsInRealMode())
-				{
-					clocksPassed=13;
-				}
-				else
-				{
-					clocksPassed=18;
-				}
+				clocksPassed=15;
 			}
 			else
 			{
-				if(true==IsInRealMode())
+				clocksPassed=36;
+			}
+
+			SetIPorEIP(inst.operandSize,Pop(mem,inst.operandSize));
+			auto segRegValue=Pop(mem,inst.operandSize);
+
+			SetFLAGSorEFLAGS(inst.operandSize,Pop(mem,inst.operandSize));
+			if(true!=IsInRealMode())
+			{
+				// if(state.EFLAGS&EFLAGS_NESTED)
+				//{
+				//	TaskReturn
+				//}
+				// else
+				if(0==prevVMFlag && 0!=(state.EFLAGS&EFLAGS_VIRTUAL86)) // Stack-Return-To-V86
 				{
-					clocksPassed=15;
-				}
-				else
-				{
-					clocksPassed=36;
+					auto TempESP=Pop(mem,inst.operandSize);
+					auto TempSS=Pop(mem,inst.operandSize);
+					LoadSegmentRegister(state.ES(),Pop(mem,inst.operandSize),mem);
+					LoadSegmentRegister(state.DS(),Pop(mem,inst.operandSize),mem);
+					LoadSegmentRegister(state.FS(),Pop(mem,inst.operandSize),mem);
+					LoadSegmentRegister(state.GS(),Pop(mem,inst.operandSize),mem);
+					state.ESP()&=operandSizeAndPattern[inst.operandSize>>3];
+					state.ESP()|=(TempESP&operandSizeMask[inst.operandSize>>3]);
+					LoadSegmentRegister(state.SS(),TempSS,mem);
 				}
 			}
+
+			// IRET to Virtual86 mode requires EFLAGS be loaded before the segment register.
+			LoadSegmentRegister(state.CS(),segRegValue,mem);
+			EIPSetByInstruction=true;
+			if(enableCallStack)
 			{
-				SetIPorEIP(inst.operandSize,Pop(mem,inst.operandSize));
-				auto segRegValue=Pop(mem,inst.operandSize);
-				if(I486_OPCODE_IRET==inst.opCode)
-				{
-					auto prevVMFlag=state.EFLAGS&EFLAGS_VIRTUAL86;
-					SetFLAGSorEFLAGS(inst.operandSize,Pop(mem,inst.operandSize));
-					if(true!=IsInRealMode())
-					{
-						// if(state.EFLAGS&EFLAGS_NESTED)
-						//{
-						//	TaskReturn
-						//}
-						// else
-						if(0==prevVMFlag && 0!=(state.EFLAGS&EFLAGS_VIRTUAL86)) // Stack-Return-To-V86
-						{
-							auto TempESP=Pop(mem,inst.operandSize);
-							auto TempSS=Pop(mem,inst.operandSize);
-							LoadSegmentRegister(state.ES(),Pop(mem,inst.operandSize),mem);
-							LoadSegmentRegister(state.DS(),Pop(mem,inst.operandSize),mem);
-							LoadSegmentRegister(state.FS(),Pop(mem,inst.operandSize),mem);
-							LoadSegmentRegister(state.GS(),Pop(mem,inst.operandSize),mem);
-							state.ESP()&=operandSizeAndPattern[inst.operandSize>>3];
-							state.ESP()|=(TempESP&operandSizeMask[inst.operandSize>>3]);
-							LoadSegmentRegister(state.SS(),TempSS,mem);
-						}
-					}
-				}
-				// IRET to Virtual86 mode requires EFLAGS be loaded before the segment register.
-				LoadSegmentRegister(state.CS(),segRegValue,mem);
-				EIPSetByInstruction=true;
-				if(enableCallStack)
-				{
-					PopCallStack(state.CS().value,state.EIP);
-				}
+				PopCallStack(state.CS().value,state.EIP);
+			}
+		}
+		break;
+	case I486_RENUMBER_RETF://             0xCB,
+		{
+			if(true==IsInRealMode())
+			{
+				clocksPassed=13;
+			}
+			else
+			{
+				clocksPassed=18;
+			}
+			SetIPorEIP(inst.operandSize,Pop(mem,inst.operandSize));
+			auto segRegValue=Pop(mem,inst.operandSize);
+			LoadSegmentRegister(state.CS(),segRegValue,mem);
+			EIPSetByInstruction=true;
+			if(enableCallStack)
+			{
+				PopCallStack(state.CS().value,state.EIP);
 			}
 		}
 		break;
