@@ -499,9 +499,8 @@ unsigned int TownsCRTC::GetPriorityPage(void) const
 }
 unsigned int TownsCRTC::GetPageBytesPerLine(unsigned char page) const
 {
-	auto FOx=state.crtcReg[REG_FO0+page*4];
 	auto LOx=state.crtcReg[REG_LO0+page*4];
-	auto numBytes=((LOx-FOx)*4)&0xFFFF;
+	auto numBytes=LOx*4;   // Why did I think it was (LOx-FOx)*4?
 	if(true==InSinglePageMode())
 	{
 		numBytes*=2;
