@@ -501,7 +501,7 @@ unsigned int TownsCRTC::GetPageBytesPerLine(unsigned char page) const
 {
 	auto FOx=state.crtcReg[REG_FO0+page*4];
 	auto LOx=state.crtcReg[REG_LO0+page*4];
-	auto numBytes=(LOx-FOx)*4;
+	auto numBytes=((LOx-FOx)*4)&0xFFFF;
 	if(true==InSinglePageMode())
 	{
 		numBytes*=2;
@@ -934,11 +934,51 @@ std::vector <std::string> TownsCRTC::GetStatusText(void) const
 		"CR2 ",
 	};
 
+	const unsigned int regTable[]=
+	{
+		REG_HSW1, //   0x00,
+		REG_VST1, //   0x05,
+		REG_HDS0, //   0x09,
+		REG_HDE0, //   0x0A,
+		REG_VDS0, //   0x0D,
+		REG_VDE0, //   0x0E,
+		REG_FA0, //    0x11,
+		REG_HAJ0, //   0x12,
+		REG_FO0, //    0x13,
+		REG_LO0, //    0x14,
+
+
+		REG_HSW2, //   0x01,
+		REG_VST2, //   0x06,
+		REG_HDS1, //   0x0B,
+		REG_HDE1, //   0x0C,
+		REG_VDS1, //   0x0F,
+		REG_VDE1, //   0x10,
+		REG_FA1, //    0x15,
+		REG_HAJ1, //   0x16,
+		REG_FO1, //    0x17,
+		REG_LO1, //    0x18,
+
+		REG_HST, //    0x04,
+		REG_EET, //    0x07,
+		REG_VST, //    0x08,
+		REG_EHAJ, //   0x19,
+		REG_EVAJ, //   0x1A,
+		REG_ZOOM, //   0x1B,
+		REG_CR0, //    0x1C,
+		REG_CR1, //    0x1D,
+		REG_CR2, //    0x1F,
+		REG_FR, //     0x1E,
+
+		REG_UNUSED1, //0x02,
+		REG_UNUSED2, //0x03,
+	};
+
 	text.push_back("");
 	text.back()="Registers:";
-	for(int i=0; i<sizeof(state.crtcReg)/sizeof(state.crtcReg[0]); ++i)
+	for(int i=0; i<sizeof(regTable)/sizeof(regTable[0]); ++i)
 	{
-		if(0==i%8)
+		if(0==i%10)
 		{
 			text.push_back("");
 		}
@@ -946,9 +986,10 @@ std::vector <std::string> TownsCRTC::GetStatusText(void) const
 		{
 			text.back()+=" ";
 		}
-		text.back()+=regLabel[i];
+		auto idx=regTable[i];
+		text.back()+=regLabel[idx];
 		text.back()+=":";
-		text.back()+=cpputil::Ustox(state.crtcReg[i]);
+		text.back()+=cpputil::Ustox(state.crtcReg[idx]);
 	}
 
 	text.push_back("");
