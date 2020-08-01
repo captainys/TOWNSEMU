@@ -5438,24 +5438,17 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			auto prefix=REPNEtoREP(inst.instPrefix);
 			if(true==REPCheck(clocksPassed,prefix,inst.addressSize))
 			{
+				clocksPassed+=(IsInRealMode() ? 17 : 10); // Protected Mode 32 if CPL>IOPL
 				auto ioRead=IOIn8(io,GetDX());
 				StoreByte(mem,inst.addressSize,state.ES(),state.EDI(),ioRead);
 				UpdateDIorEDIAfterStringOp(inst.addressSize,8);
 				EIPSetByInstruction=(INST_PREFIX_REP==prefix);
-				clocksPassed+=(IsInRealMode() ? 17 : 10); // Protected Mode 32 if CPL>IOPL
 			}
 		}
 		break;
 
 
 	case I486_RENUMBER_IN_AL_I8://=        0xE4,
-		{
-			auto ioRead=IOIn8(io,inst.EvalUimm8());
-			if(true!=state.exception)
-			{
-				SetAL(ioRead);
-			}
-		}
 		if(true==IsInRealMode())
 		{
 			clocksPassed=14;
@@ -5464,8 +5457,23 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			clocksPassed=8; // 28 if CPL>IOPL
 		}
+		{
+			auto ioRead=IOIn8(io,inst.EvalUimm8());
+			if(true!=state.exception)
+			{
+				SetAL(ioRead);
+			}
+		}
 		break;
 	case I486_RENUMBER_IN_A_I8://=         0xE5,
+		if(true==IsInRealMode())
+		{
+			clocksPassed=14;
+		}
+		else
+		{
+			clocksPassed=8; // 28 if CPL>IOPL
+		}
 		if(16==inst.operandSize)
 		{
 			auto ioRead=IOIn16(io,inst.EvalUimm8());
@@ -5482,6 +5490,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				SetEAX(ioRead);
 			}
 		}
+		break;
+	case I486_RENUMBER_IN_AL_DX://=        0xEC,
 		if(true==IsInRealMode())
 		{
 			clocksPassed=14;
@@ -5490,8 +5500,6 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			clocksPassed=8; // 28 if CPL>IOPL
 		}
-		break;
-	case I486_RENUMBER_IN_AL_DX://=        0xEC,
 		{
 			auto ioRead=IOIn8(io,GetDX());
 			if(true!=state.exception)
@@ -5499,6 +5507,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				SetAL(ioRead);
 			}
 		}
+		break;
+	case I486_RENUMBER_IN_A_DX://=         0xED,
 		if(true==IsInRealMode())
 		{
 			clocksPassed=14;
@@ -5507,8 +5517,6 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			clocksPassed=8; // 28 if CPL>IOPL
 		}
-		break;
-	case I486_RENUMBER_IN_A_DX://=         0xED,
 		if(16==inst.operandSize)
 		{
 			auto ioRead=IOIn16(io,GetDX());
@@ -5524,14 +5532,6 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{
 				SetEAX(ioRead);
 			}
-		}
-		if(true==IsInRealMode())
-		{
-			clocksPassed=14;
-		}
-		else
-		{
-			clocksPassed=8; // 28 if CPL>IOPL
 		}
 		break;
 
@@ -6831,7 +6831,6 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 
 	case I486_RENUMBER_OUT_I8_AL: //        0xE6,
-		IOOut8(io,inst.EvalUimm8(),GetAL());
 		if(true==IsInRealMode())
 		{
 			clocksPassed=16;
@@ -6840,8 +6839,17 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			clocksPassed=11; // 31 if CPL>IOPL
 		}
+		IOOut8(io,inst.EvalUimm8(),GetAL());
 		break;
 	case I486_RENUMBER_OUT_I8_A: //         0xE7,
+		if(true==IsInRealMode())
+		{
+			clocksPassed=16;
+		}
+		else
+		{
+			clocksPassed=11; // 31 if CPL>IOPL
+		}
 		if(16==inst.operandSize)
 		{
 			IOOut16(io,inst.EvalUimm8(),GetAX());
@@ -6850,17 +6858,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			IOOut32(io,inst.EvalUimm8(),GetEAX());
 		}
-		if(true==IsInRealMode())
-		{
-			clocksPassed=16;
-		}
-		else
-		{
-			clocksPassed=11; // 31 if CPL>IOPL
-		}
 		break;
 	case I486_RENUMBER_OUT_DX_AL: //        0xEE,
-		IOOut8(io,GetDX(),GetAL());
 		if(true==IsInRealMode())
 		{
 			clocksPassed=16;
@@ -6869,8 +6868,17 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			clocksPassed=10; // 30 if CPL>IOPL
 		}
+		IOOut8(io,GetDX(),GetAL());
 		break;
 	case I486_RENUMBER_OUT_DX_A: //         0xEF,
+		if(true==IsInRealMode())
+		{
+			clocksPassed=16;
+		}
+		else
+		{
+			clocksPassed=10; // 30 if CPL>IOPL
+		}
 		if(16==inst.operandSize)
 		{
 			IOOut16(io,GetDX(),GetAX());
@@ -6878,14 +6886,6 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		else
 		{
 			IOOut32(io,GetDX(),GetEAX());
-		}
-		if(true==IsInRealMode())
-		{
-			clocksPassed=16;
-		}
-		else
-		{
-			clocksPassed=10; // 30 if CPL>IOPL
 		}
 		break;
 
@@ -6896,11 +6896,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			auto prefix=REPNEtoREP(inst.instPrefix);
 			if(true==REPCheck(clocksPassed,prefix,inst.addressSize))
 			{
+				clocksPassed+=(IsInRealMode() ? 17 : 10); // Protected Mode 32 if CPL>IOPL
 				auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
 				IOOut8(io,GetDX(),FetchByte(inst.addressSize,seg,state.ESI(),mem));
 				UpdateSIorESIAfterStringOp(inst.addressSize,8);
 				EIPSetByInstruction=(INST_PREFIX_REP==prefix);
-				clocksPassed+=(IsInRealMode() ? 17 : 10); // Protected Mode 32 if CPL>IOPL
 			}
 		}
 		break;
@@ -6909,6 +6909,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			auto prefix=REPNEtoREP(inst.instPrefix);
 			if(true==REPCheck(clocksPassed,prefix,inst.addressSize))
 			{
+				clocksPassed+=(IsInRealMode() ? 17 : 10); // Protected Mode 32 if CPL>IOPL
 				auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
 				if(16==inst.operandSize)
 				{
@@ -6920,7 +6921,6 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				}
 				UpdateSIorESIAfterStringOp(inst.addressSize,inst.operandSize);
 				EIPSetByInstruction=(INST_PREFIX_REP==prefix);
-				clocksPassed+=(IsInRealMode() ? 17 : 10); // Protected Mode 32 if CPL>IOPL
 			}
 		}
 		break;

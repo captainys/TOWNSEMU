@@ -1118,12 +1118,12 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 			break;
 		case DUMP_TSS_IOMAP:
 			{
-				bool prevPermitted=towns.cpu.DebugTestIOMapPermission(towns.cpu.state.TR,0,0,towns.mem);
+				bool prevPermitted=towns.cpu.DebugTestIOMapPermission(towns.cpu.state.TR,0,1,towns.mem);
 				unsigned int nBlocked=0;
 				unsigned int lastFlip=0;
 				for(unsigned int ioport=0; ioport<0x1000; ++ioport)
 				{
-					bool permitted=towns.cpu.DebugTestIOMapPermission(towns.cpu.state.TR,ioport,ioport,towns.mem);
+					bool permitted=towns.cpu.DebugTestIOMapPermission(towns.cpu.state.TR,ioport,1,towns.mem);
 					if(prevPermitted!=permitted)
 					{
 						if(true!=prevPermitted)

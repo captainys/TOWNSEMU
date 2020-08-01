@@ -2988,10 +2988,10 @@ void i486DX::DebugStoreDword(Memory &mem,int addressSize,SegmentRegister seg,uns
 	mem.StoreDword(physicalAddr,data);
 }
 
-bool i486DX::TestIOMapPermission(const SegmentRegister &TR,unsigned int ioMin,unsigned int ioMax,const Memory &mem)
+bool i486DX::TestIOMapPermission(const SegmentRegister &TR,unsigned int ioMin,unsigned int accessSize,const Memory &mem)
 {
 	unsigned int IOMapOffset0=FetchWord(32,TR,0x66,mem);
-	for(auto ioport=ioMin; ioport<=ioMax; ++ioport)
+	for(auto ioport=ioMin; ioport<ioMin+accessSize; ++ioport)
 	{
 		unsigned int IOMapOffset=IOMapOffset0+(ioport>>3);
 		unsigned int IOMapBit=(1<<(ioport&7));
@@ -3006,10 +3006,10 @@ bool i486DX::TestIOMapPermission(const SegmentRegister &TR,unsigned int ioMin,un
 	}
 	return true;
 }
-bool i486DX::DebugTestIOMapPermission(const SegmentRegister &TR,unsigned int ioMin,unsigned int ioMax,const Memory &mem) const
+bool i486DX::DebugTestIOMapPermission(const SegmentRegister &TR,unsigned int ioMin,unsigned int accessSize,const Memory &mem) const
 {
 	unsigned int IOMapOffset0=DebugFetchWord(32,TR,0x66,mem);
-	for(auto ioport=ioMin; ioport<=ioMax; ++ioport)
+	for(auto ioport=ioMin; ioport<ioMin+accessSize; ++ioport)
 	{
 		unsigned int IOMapOffset=IOMapOffset0+(ioport>>3);
 		unsigned int IOMapBit=(1<<(ioport&7));

@@ -2853,17 +2853,25 @@ public:
 
 	static int StrToReg(const std::string &regName);
 
-	/*! Return true if I/O access is permitted in I/O Map of TSS.
-	    Port tested includes ioMax (ioMin<=port_tested<=ioMax).
-	    It could raise exception.
+	/*! Test I/O-read exception, and RaiseException and HandleException if needed.
+	    Returns true if an exception was raised.
 	*/
-	bool TestIOMapPermission(const SegmentRegister &TR,unsigned int ioMin,unsigned int ioMax,const Memory &mem);
+	bool TakeIOReadException(unsigned int ioport,unsigned int accessSize,const Memory &mem);
+
+	/*! Test I/O-write exception, and RaiseException and HandleException if needed.
+	    Returns true if an exception was raised.
+	*/
+	bool TakeIOWriteException(unsigned int ioport,unsigned int accessSize,const Memory &mem);
 
 	/*! Return true if I/O access is permitted in I/O Map of TSS.
-	    Port tested includes ioMax (ioMin<=port_tested<=ioMax).
+	    It could raise exception.
+	*/
+	bool TestIOMapPermission(const SegmentRegister &TR,unsigned int ioMin,unsigned int accessSize,const Memory &mem);
+
+	/*! Return true if I/O access is permitted in I/O Map of TSS.
 	    It will not raise an exception.  It is for debugging purpose.
 	*/
-	bool DebugTestIOMapPermission(const SegmentRegister &TR,unsigned int ioMin,unsigned int ioMax,const Memory &mem) const;
+	bool DebugTestIOMapPermission(const SegmentRegister &TR,unsigned int ioMin,unsigned int accessSize,const Memory &mem) const;
 };
 
 
