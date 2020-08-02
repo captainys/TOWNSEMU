@@ -179,6 +179,23 @@ unsigned int TownsPIC::I8259A::INTToGo(void) const
 	return 0xffffffff;
 }
 
+bool TownsPIC::I8259A::HigherPriorityINTIsInService(unsigned int INTNum) const
+{
+	for(unsigned int pri=0; pri<7; ++pri)
+	{
+		auto higherINTNum=(highestPriorityInt+pri)&7;
+		if(higherINTNum==INTNum)
+		{
+			break;
+		}
+		if(0!=(ISR&(1<<higherINTNum)))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 void TownsPIC::I8259A::FireIRQ(i486DX &cpu,Memory &mem,unsigned int INTToGo)
 {
 	// What should I do in AEOI mode?

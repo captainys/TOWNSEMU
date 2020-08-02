@@ -39,6 +39,14 @@ public:
 			TRIGGER_EDGE,
 			TRIGGER_LEVEL
 		};
+		enum
+		{
+			ICW4_MUPM=    0x01,
+			ICW4_AEOI_BIT=0x02,
+			ICW4_MS_BIT=  0x04,
+			ICW4_BUF_BIT= 0x08,
+			ICW4_SFNM_BIT=0x10,
+		};
 
 		unsigned char IRR,ISR,IMR;
 		unsigned char OCW[3];
@@ -111,6 +119,15 @@ public:
 		*/
 		unsigned int INTToGo(void) const;
 
+		/*! Returns true if SFNM bit of ICW4 is set.
+		*/
+		inline bool SpecialFullyNestedMode(void) const
+		{
+			return 0!=(ICW[3]&ICW4_SFNM_BIT);
+		}
+
+		bool HigherPriorityINTIsInService(unsigned int INTNum) const;
+
 		/*! Fires an IRQ.  This function should be called after IRQ mask checked, and CPU's IF checked.
 		    This function just fires up an IRQ without checking anything.
 		*/
@@ -162,6 +179,13 @@ public:
 			}
 			if(INTToGo<8)
 			{
+				if(true==state.i8259A[chip].SpecialFullyNestedMode())
+				{
+					if(true==state.i8259A[chip].HigherPriorityINTIsInService(INTToGo))
+					{
+						return;
+					}
+				}
 				state.i8259A[chip].FireIRQ(cpu,mem,INTToGo);
 				if(nullptr!=cpu.debuggerPtr)
 				{
