@@ -748,18 +748,18 @@ std::vector <std::string> FMTowns::GetMouseStatusText(void) const
 		text.push_back("");
 		text.back()+="On Page "+cpputil::Ubtox(page);
 
-		auto zoom=crtc.GetPageZoom(page);
+		auto zoom2x=crtc.GetPageZoom2X(page);
 		auto topLeft1X=crtc.GetPageOriginOnMonitor(page);
 
 		auto mx=var.lastKnownMouseX-topLeft1X.x();
 		auto my=var.lastKnownMouseY-topLeft1X.y();
-		if(0<zoom.x())
+		if(0<zoom2x.x())
 		{
-			mx/=zoom.x();
+			mx=mx*2/zoom2x.x();
 		}
-		if(0<zoom.y())
+		if(0<zoom2x.y())
 		{
-			my/=zoom.y();
+			my=my*2/zoom2x.y();
 		}
 
 		auto VRAMoffset=crtc.GetPageVRAMAddressOffset(page);

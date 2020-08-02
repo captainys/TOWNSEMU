@@ -324,29 +324,6 @@ unsigned int TownsCRTC::GetBaseClockScaler(void) const
 	auto SCSEL=state.crtcReg[REG_CR1]&0x0C;
 	return (SCSEL>>1)+2;
 }
-Vec2i TownsCRTC::GetPageZoom(unsigned char page) const
-{
-	Vec2i zoom;
-	auto pageZoom=(state.crtcReg[REG_ZOOM]>>(8*page));
-	zoom.x()=(( pageZoom    &15)+1);
-	zoom.y()=(((pageZoom>>4)&15)+1);
-
-	// I'm not sure if this logic is correct.  This doesn't cover screen mode 16.
-	if(15==GetHorizontalFrequency())
-	{
-		if(true==InSinglePageMode())
-		{
-			zoom[0]/=2;
-		}
-		else
-		{
-			zoom[0]/=2;
-			zoom[1]*=2;
-		}
-	}
-
-	return zoom;
-}
 Vec2i TownsCRTC::GetPageZoom2X(unsigned char page) const
 {
 	Vec2i zoom;
