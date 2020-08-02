@@ -415,7 +415,7 @@ void TownsCDROM::BreakOnCommandCheck(const char phase[])
 		}
 		if(true==commandTypeCheck)
 		{
-			std::string msg="CDROM Command Exec";
+			std::string msg="CDROM Command ";
 			msg+=phase;
 			townsPtr->debugger.ExternalBreak(msg);
 			std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " |";
@@ -835,7 +835,11 @@ void TownsCDROM::SetStatusNoError(void)
 	unsigned char next2ndByteOfStatusCode=0;
 	if(true==CDDAIsPlaying())
 	{
-		next2ndByteOfStatusCode=0x03; // Prob: Response to A0H (80H+REQSTA), 00 03 xx xx means CDDA is playing.
+		next2ndByteOfStatusCode=0x03;
+		// Prob: Response to A0H (80H+REQSTA), 00 03 xx xx means CDDA is playing.
+		// Confirmed: Shadow of the Beast 2 checks the 2nd byte to be 03 for verifying that the CDDA started playing.
+		//    000C:0006F30B 80FC03                    CMP     AH,03H
+		//    000C:0006F30E 75ED                      JNE     0006F2FD
 	}
 	state.PushStatusQueue(0,next2ndByteOfStatusCode,0,0);
 }
