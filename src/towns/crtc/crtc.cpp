@@ -1117,10 +1117,10 @@ std::vector <std::string> TownsCRTC::GetPageStatusText(int page) const
 
 	text.push_back("");
 	text.back()+="Zoom=(";
-	text.back()+=cpputil::Uitox(layer.zoom2x.x()/2);
+	text.back()+=cpputil::Itoa(layer.zoom2x.x()/2);
 	text.back()+=((layer.zoom2x.x()&1) ? ".5" : "");
 	text.back()+=",";
-	text.back()+=cpputil::Uitox(layer.zoom2x.y()/2);
+	text.back()+=cpputil::Itoa(layer.zoom2x.y()/2);
 	text.back()+=((layer.zoom2x.y()&1) ? ".5" : "");
 	text.back()+=")";
 
