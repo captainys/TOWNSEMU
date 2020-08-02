@@ -133,6 +133,8 @@ public:
 		CMD_XMODEM_CLEAR,
 		CMD_XMODEM_TO_VM,
 		CMD_XMODEM_FROM_VM,
+
+		CMD_SPECIAL_DEBUG,
 	};
 
 	enum
@@ -307,6 +309,8 @@ public:
 
 	void Execute_XMODEMtoVM(FMTowns &towns,Command &cmd);
 	void Execute_XMODEMfromVM(FMTowns &towns,Command &cmd);
+
+	void Execute_SpecialDebug(FMTowns &towns,Command &cmd);
 };
 
 

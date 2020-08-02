@@ -126,6 +126,8 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["XMODEMTOVM"]=CMD_XMODEM_TO_VM;
 	primaryCmdMap["XMODEMFROMVM"]=CMD_XMODEM_FROM_VM;
 
+	primaryCmdMap["SPECIALDEBUG"]=CMD_SPECIAL_DEBUG;
+
 	featureMap["CMDLOG"]=ENABLE_CMDLOG;
 	featureMap["AUTODISASM"]=ENABLE_DISASSEMBLE_EVERY_INST;
 	featureMap["IOMON"]=ENABLE_IOMONITOR;
@@ -873,6 +875,10 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 		break;
 	case CMD_XMODEM_CLEAR:
 		towns.serialport.defaultClient.ClearXMODEM();
+		break;
+
+	case CMD_SPECIAL_DEBUG:
+		Execute_SpecialDebug(towns,cmd);
 		break;
 	}
 }
@@ -2660,4 +2666,9 @@ void TownsCommandInterpreter::Execute_LoadKeyMap(Outside_World &outside_world,co
 	{
 		PrintError(ERROR_TOO_FEW_ARGS);
 	}
+}
+
+void TownsCommandInterpreter::Execute_SpecialDebug(FMTowns &towns,Command &cmd)
+{
+	std::cout << "Currently nothing happens with special debugging command." << std::endl;
 }
