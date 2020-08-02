@@ -503,10 +503,18 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 		townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DELAYED_STATUS_IRQ_TIME);
 		break;
 	case CDCMD_TOCREAD://    0x05,
+		// Shadow of the Beast 2 issues command 05H (STATUS_REQUEST=0) and expects to get 0x16 status byte immediately
+		// without No-Error status.  (It probably is what STATUS_REQUEST bit means).
+		state.statusQueue.clear();
 		if(true==StatusRequestBit(state.cmd))
 		{
-			SetStatusQueueForTOC();
+			if(true==SetStatusDriveNotReadyOrDiscChanged())
+			{
+				return;
+			}
+			SetStatusNoError();
 		}
+		SetStatusQueueForTOC();
 		break;
 	case CDCMD_SUBQREAD://   0x06,
 		if(true==StatusRequestBit(state.cmd))
@@ -867,15 +875,7 @@ void TownsCDROM::SetStatusDataReady(void)
 }
 void TownsCDROM::SetStatusQueueForTOC(void)
 {
-	if(true==SetStatusDriveNotReadyOrDiscChanged())
-	{
-		return;
-	}
 	auto &disc=state.GetDisc();
-
-	state.statusQueue.clear();
-
-	SetStatusNoError();
 
 	// Based on Shadow of the Beast reverse engineering,
 	// first status pair should be 0x16 xx 0xA0 xx, 0x17 first-track xx xx
