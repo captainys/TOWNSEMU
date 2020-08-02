@@ -1,0 +1,6 @@
+1. cd src
+2. git clone https://github.com/captainys/public.git
+3. mkdir build
+4. cd build
+5. cmake ../src
+6. cmake --build main_gui (You may need additional parameters depending on your environment)
