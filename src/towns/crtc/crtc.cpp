@@ -541,13 +541,11 @@ void TownsCRTC::MakePageLayerInfo(Layer &layer,unsigned char page) const
 	layer.originOnMonitor=GetPageOriginOnMonitor(page);
 	layer.sizeOnMonitor=GetPageSizeOnMonitor(page);
 	layer.VRAMCoverage1X=GetPageVRAMCoverageSize1X(page);
-	layer.zoom=GetPageZoom2X(page);
-	layer.zoom[0]/=2;
-	layer.zoom[1]/=2;
+	layer.zoom2x=GetPageZoom2X(page);
 	layer.VRAMAddr=0x40000*page;
 	layer.VRAMOffset=GetPageVRAMAddressOffset(page);
 	layer.bytesPerLine=GetPageBytesPerLine(page);
-	layer.VRAMHSkipBytes=(((GetVRAMHSkip1X(page)/layer.zoom.x())*layer.bitsPerPixel)>>3);
+	layer.VRAMHSkipBytes=(((GetVRAMHSkip1X(page)*2/layer.zoom2x.x())*layer.bitsPerPixel)>>3);
 
 
 	if(512==layer.bytesPerLine || 1024==layer.bytesPerLine)
@@ -1118,7 +1116,13 @@ std::vector <std::string> TownsCRTC::GetPageStatusText(int page) const
 	text.back()+="BytesPerLine="+cpputil::Uitox(layer.bytesPerLine);
 
 	text.push_back("");
-	text.back()+="Zoom=("+cpputil::Uitox(layer.zoom.x())+","+cpputil::Uitox(layer.zoom.y())+")";
+	text.back()+="Zoom=(";
+	text.back()+=cpputil::Uitox(layer.zoom2x.x()/2);
+	text.back()+=((layer.zoom2x.x()&1) ? ".5" : "");
+	text.back()+=",";
+	text.back()+=cpputil::Uitox(layer.zoom2x.y()/2);
+	text.back()+=((layer.zoom2x.y()&1) ? ".5" : "");
+	text.back()+=")";
 
 	return text;
 }

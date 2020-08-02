@@ -148,8 +148,8 @@ void TownsRender::Render4Bit(
 
 	if(47!=chaseHQPalette.lastPaletteUpdateCount) // ChaseHQ updates palette 47 times between VSYNC
 	{
-		auto ZV=layer.zoom.y();
-		const auto ZH=layer.zoom.x();
+		auto ZV=layer.zoom2x.y()/2;
+		const auto ZH=layer.zoom2x.x()/2;
 		int bytesPerLineTimesVRAMy=layer.VRAMOffset;
 		auto VRAMTop=VRAM.data()+VRAMAddr+layer.VRAMHSkipBytes;
 
@@ -222,8 +222,8 @@ void TownsRender::Render4Bit(
 			paletteUpdate[code&0x0F][2]=chaseHQPalette.paletteLog[(i<<2)+1];   // BRG->RGB
 		}
 
-		auto ZV=layer.zoom.y();
-		const auto ZH=layer.zoom.x();
+		auto ZV=layer.zoom2x.y()/2;
+		const auto ZH=layer.zoom2x.x()/2;
 		int bytesPerLineTimesVRAMy=layer.VRAMOffset;
 		auto VRAMTop=VRAM.data()+VRAMAddr+layer.VRAMHSkipBytes;
 
@@ -309,7 +309,7 @@ void TownsRender::Render8Bit(const TownsCRTC::Layer &layer,const Vec3ub palette[
 	const unsigned int VRAMHScrollMask=layer.HScrollMask;
 	const unsigned int VRAMVScrollMask=layer.VScrollMask;
 	unsigned int lineVRAMOffset=0;
-	auto ZV=layer.zoom.y();
+	auto ZV=layer.zoom2x.y()/2;
 
 	auto bottomY=this->hei-ZV;
 	for(int y=0; y<layer.sizeOnMonitor.y() && y+layer.originOnMonitor.y()<=bottomY; y+=ZV)
@@ -320,7 +320,7 @@ void TownsRender::Render8Bit(const TownsCRTC::Layer &layer,const Vec3ub palette[
 		auto dst=dstLine;
 
 		unsigned int inLineVRAMOffset=0;
-		auto ZH=layer.zoom.x();
+		auto ZH=layer.zoom2x.x()/2;
 		for(int x=0; x<layer.sizeOnMonitor.x() && x+layer.originOnMonitor.x()<this->wid && inLineVRAMOffset<layer.bytesPerLine; x++)
 		{
 			unsigned int VRAMAddr=lineVRAMOffset+((inLineVRAMOffset+VRAMOffsetHorizontal)&VRAMHScrollMask);
@@ -338,7 +338,7 @@ void TownsRender::Render8Bit(const TownsCRTC::Layer &layer,const Vec3ub palette[
 			dst+=4;
 			if(0==(--ZH))
 			{
-				ZH=layer.zoom.x();
+				ZH=layer.zoom2x.x()/2;
 				++inLineVRAMOffset;
 			}
 		}
@@ -362,7 +362,7 @@ void TownsRender::Render16Bit(const TownsCRTC::Layer &layer,const std::vector <u
 	const unsigned int VRAMHScrollMask=layer.HScrollMask;
 	const unsigned int VRAMVScrollMask=layer.VScrollMask;
 	unsigned int lineVRAMOffset=0;
-	auto ZV=layer.zoom.y();
+	auto ZV=layer.zoom2x.y()/2;
 
 	auto bottomY=this->hei-ZV;
 	for(int y=0; y<layer.sizeOnMonitor.y() && y+layer.originOnMonitor.y()<=bottomY; y+=ZV)
@@ -373,7 +373,7 @@ void TownsRender::Render16Bit(const TownsCRTC::Layer &layer,const std::vector <u
 		auto dst=dstLine;
 
 		unsigned int inLineVRAMOffset=0;
-		auto ZH=layer.zoom.x();
+		auto ZH=layer.zoom2x.x()/2;
 		for(int x=0; x<layer.sizeOnMonitor.x() && x+layer.originOnMonitor.x()<this->wid && inLineVRAMOffset<layer.bytesPerLine; x++)
 		{
 			unsigned int VRAMAddr=lineVRAMOffset+((inLineVRAMOffset+VRAMOffsetHorizontal)&VRAMHScrollMask);
@@ -394,7 +394,7 @@ void TownsRender::Render16Bit(const TownsCRTC::Layer &layer,const std::vector <u
 			dst+=4;
 			if(0==(--ZH))
 			{
-				ZH=layer.zoom.x();
+				ZH=layer.zoom2x.x()/2;
 				inLineVRAMOffset+=2;
 			}
 		}

@@ -103,7 +103,7 @@ public:
 		unsigned int VRAMHSkipBytes;
 		Vec2i sizeOnMonitor;
 		Vec2i VRAMCoverage1X;
-		Vec2i zoom;
+		Vec2i zoom2x;
 		unsigned int bytesPerLine;
 
 		unsigned int HScrollMask,VScrollMask;
