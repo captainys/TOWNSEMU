@@ -293,6 +293,10 @@ public:
 	*/
 	void ExecuteCDROMCommand(void);
 
+	void DelayedCommandExecution(unsigned long long int townsTime);
+
+	void BreakOnCommandCheck(const char phase[]);
+
 	/*! Call-back from FMTowns class.
 	*/
 	void RunScheduledTask(unsigned long long int townsTime);

@@ -403,7 +403,8 @@ unsigned int TownsCDROM::LoadDiscImage(const std::string &fName)
 	state.discChanged=true;
 	return state.GetDisc().Open(fName);
 }
-void TownsCDROM::ExecuteCDROMCommand(void)
+
+void TownsCDROM::BreakOnCommandCheck(const char phase[])
 {
 	if(true==var.debugBreakOnCommandWrite)
 	{
@@ -414,7 +415,9 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 		}
 		if(true==commandTypeCheck)
 		{
-			townsPtr->debugger.ExternalBreak("CDROM Command Exec");
+			std::string msg="CDROM Command Exec";
+			msg+=phase;
+			townsPtr->debugger.ExternalBreak(msg);
 			std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " |";
 			for(int i=0; i<8; ++i)
 			{
@@ -423,27 +426,48 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 			std::cout << std::endl;
 		}
 	}
+}
 
-	// std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " |";
-	// for(int i=0; i<8; ++i)
-	// {
-	// 	std::cout << cpputil::Ubtox(state.paramQueue[i]) << " ";
-	// }
-	// std::cout << std::endl;
+void TownsCDROM::ExecuteCDROMCommand(void)
+{
+	BreakOnCommandCheck("Write");
+	state.DRY=false;
+	state.delayedSIRQ=true;
+	townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DELAYED_STATUS_IRQ_TIME);
+}
+
+void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
+{
+	BreakOnCommandCheck("Exec");
+
+	state.DRY=true; // Tentative
+	state.delayedSIRQ=false;
 
 	for(int i=0; i<8; ++i)
 	{
 		var.lastParam[i]=state.paramQueue[i];
 	}
 
-	state.delayedSIRQ=false;
-
 	switch(state.cmd&0x9F)
 	{
 	case CDCMD_SEEK://       0x00,
-		state.DRY=false;
-		state.delayedSIRQ=true;
-		townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DELAYED_STATUS_IRQ_TIME);
+		{
+			state.DRY=true;  // Apparently CDC can take command while the head is moving.
+			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+SEEK_TIME);
+			state.ClearStatusQueue();
+			if(true==StatusRequestBit(state.cmd))
+			{
+				if(true!=SetStatusDriveNotReadyOrDiscChanged())
+				{
+					SetStatusNoError();
+					if(0!=(CMDFLAG_IRQ&state.cmd))
+					{
+						PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
+						state.SIRQ=true;
+					}
+				}
+			}
+		}
 		break;
 	case CDCMD_MODE2READ://  0x01,
 		std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " not implemented yet." << std::endl;
@@ -481,13 +505,10 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 				SetStatusNoError();
 				if(true==state.enableSIRQ)
 				{
-					state.delayedSIRQ=true;
-					townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DELAYED_STATUS_IRQ_TIME);
+					state.SIRQ=true;
+					PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
 				}
-				else
-				{
-					townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+READ_SECTOR_TIME);
-				}
+				townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+READ_SECTOR_TIME);
 
 				state.DRY=false;
 				state.DTSF=false;
@@ -498,9 +519,39 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 		std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " not implemented yet." << std::endl;
 		break;
 	case CDCMD_CDDAPLAY://   0x04,
-		state.DRY=false;
-		state.delayedSIRQ=true;
-		townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DELAYED_STATUS_IRQ_TIME);
+		{
+			state.DRY=true;
+
+			DiscImage::MinSecFrm msfBegin,msfEnd;
+			auto offset=DiscImage::MakeMSF(0,4,0);
+
+			msfBegin.min=DiscImage::BCDToBin(state.paramQueue[0]);
+			msfBegin.sec=DiscImage::BCDToBin(state.paramQueue[1]);
+			msfBegin.frm=DiscImage::BCDToBin(state.paramQueue[2]);
+			msfBegin-=offset;
+
+			msfEnd.min=DiscImage::BCDToBin(state.paramQueue[3]);
+			msfEnd.sec=DiscImage::BCDToBin(state.paramQueue[4]);
+			msfEnd.frm=DiscImage::BCDToBin(state.paramQueue[5]);
+			msfEnd-=offset;
+
+			if(nullptr!=OutsideWorld)
+			{
+				bool repeat=(1==state.paramQueue[6]); // Should I say 0!= ?
+				OutsideWorld->CDDAPlay(state.GetDisc(),msfBegin,msfEnd,repeat);
+				state.CDDAState=State::CDDA_PLAYING;
+				state.CDDAEndTime=msfEnd;
+			}
+			if(true==StatusRequestBit(state.cmd))
+			{
+				SetStatusDriveNotReadyOrDiscChangedOrNoError();
+				state.SIRQ=true;
+				if(0!=(state.cmd&CMDFLAG_IRQ) && true==state.enableSIRQ)
+				{
+					PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
+				}
+			}
+		}
 		break;
 	case CDCMD_TOCREAD://    0x05,
 		// Shadow of the Beast 2 issues command 05H (STATUS_REQUEST=0) and expects to get 0x16 status byte immediately
@@ -617,35 +668,19 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 
 	state.cmdReceived=false;
 	state.nParamQueue=0;
-
-	// Tentatively Drive Not Ready.
 }
+
 /* virtual */ void TownsCDROM::RunScheduledTask(unsigned long long int townsTime)
 {
+	if(true==state.delayedSIRQ)
+	{
+		DelayedCommandExecution(townsTime);
+		return;
+	}
+
 	switch(state.cmd&0x9F)
 	{
 	case CDCMD_SEEK://       0x00,
-		// delayedSIRQ is used in CDCMD_SEEK only when true==StatusRequestBit(state.cmd)
-		if(true==state.delayedSIRQ)
-		{
-			state.DRY=true;  
-			state.delayedSIRQ=false;
-			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+SEEK_TIME);
-			state.ClearStatusQueue();
-			if(true==StatusRequestBit(state.cmd))
-			{
-				if(true!=SetStatusDriveNotReadyOrDiscChanged())
-				{
-					SetStatusNoError();
-					if(0!=(CMDFLAG_IRQ&state.cmd))
-					{
-						PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
-						state.SIRQ=true;
-					}
-				}
-			}
-		}
-		else
 		{
 			// I think I should not push status queue in here unless true==StatusRequestBit(state.cmd),
 			// and same for IRR flag of PIC unless 0!=(CMDFLAG_IRQ&state.cmd).
@@ -686,14 +721,6 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 		break;
 
 	case CDCMD_MODE1READ://  0x02,
-		if(true==state.delayedSIRQ)
-		{
-			state.delayedSIRQ=false;
-			state.SIRQ=true;
-			PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
-			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+READ_SECTOR_TIME);
-		}
-		else
 		{
 			if(state.readingSectorHSG<=state.endSectorHSG) // Have more data.
 			{
@@ -772,43 +799,6 @@ void TownsCDROM::ExecuteCDROMCommand(void)
 				else
 				{
 					state.SIRQ=false;
-				}
-			}
-		}
-		break;
-	case CDCMD_CDDAPLAY:
-		if(true==state.delayedSIRQ)
-		{
-			state.delayedSIRQ=false;
-			state.DRY=true;
-
-			DiscImage::MinSecFrm msfBegin,msfEnd;
-			auto offset=DiscImage::MakeMSF(0,4,0);
-
-			msfBegin.min=DiscImage::BCDToBin(state.paramQueue[0]);
-			msfBegin.sec=DiscImage::BCDToBin(state.paramQueue[1]);
-			msfBegin.frm=DiscImage::BCDToBin(state.paramQueue[2]);
-			msfBegin-=offset;
-
-			msfEnd.min=DiscImage::BCDToBin(state.paramQueue[3]);
-			msfEnd.sec=DiscImage::BCDToBin(state.paramQueue[4]);
-			msfEnd.frm=DiscImage::BCDToBin(state.paramQueue[5]);
-			msfEnd-=offset;
-
-			if(nullptr!=OutsideWorld)
-			{
-				bool repeat=(1==state.paramQueue[6]); // Should I say 0!= ?
-				OutsideWorld->CDDAPlay(state.GetDisc(),msfBegin,msfEnd,repeat);
-				state.CDDAState=State::CDDA_PLAYING;
-				state.CDDAEndTime=msfEnd;
-			}
-			if(true==StatusRequestBit(state.cmd))
-			{
-				SetStatusDriveNotReadyOrDiscChangedOrNoError();
-				state.SIRQ=true;
-				if(0!=(state.cmd&CMDFLAG_IRQ) && true==state.enableSIRQ)
-				{
-					PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
 				}
 			}
 		}
