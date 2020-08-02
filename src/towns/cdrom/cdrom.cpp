@@ -877,23 +877,32 @@ void TownsCDROM::SetStatusQueueForTOC(void)
 
 	SetStatusNoError();
 
-	state.PushStatusQueue(0x16,0,0,0);
+	// Based on Shadow of the Beast reverse engineering,
+	// first status pair should be 0x16 xx 0xA0 xx, 0x17 first-track xx xx
+	state.PushStatusQueue(0x16,0,0xA0,0);
 	state.PushStatusQueue(0x17,1,0,0);
 
-	state.PushStatusQueue(0x16,0,0,0);
+	// Based on Shadow of the Beast reverse engineering,
+	// second status pair should be 0x16 xx 0xA1 xx, 0x17 NumberOfTracksBCD xx xx
+	state.PushStatusQueue(0x16,0,0xA1,0);
 	state.PushStatusQueue(0x17,DiscImage::BinToBCD(disc.GetNumTracks()),0,0);
 
+	// Based on Shadow of the Beast reverse engineering,
+	// third status pair should be 0x16 xx 0xA2 xx, 0x17 (disc length)
 	auto length=DiscImage::HSGtoMSF(disc.GetNumSectors()+DiscImage::HSG_BASE);
-	state.PushStatusQueue(0x16,0,0,0);
+	state.PushStatusQueue(0x16,0,0xA2,0);
 	state.PushStatusQueue(0x17,
 	                      DiscImage::BinToBCD(length.min),
 	                      DiscImage::BinToBCD(length.sec),
 	                      DiscImage::BinToBCD(length.frm));
 
+	// Shadow of the Beast looks to be expecting:
+	//   0x16 TrackType (TrackNumberBCD) xx
+	int trkNum=1;
 	for(auto &trk : disc.GetTracks())
 	{
 		unsigned char secondByte=(trk.trackType==DiscImage::TRACK_AUDIO ? 0 : 0x40);
-		state.PushStatusQueue(0x16,secondByte,0,0);
+		state.PushStatusQueue(0x16,secondByte,DiscImage::BinToBCD(trkNum),0);
 
 		// F29 Retaliator is expecting trk.start+trk.preGap (2 seconds).
 		// Actually, probably what I should do is add 2 seconds to all the tracks,
@@ -906,6 +915,8 @@ void TownsCDROM::SetStatusQueueForTOC(void)
 	                      DiscImage::BinToBCD(MSF.min),
 	                      DiscImage::BinToBCD(MSF.sec),
 	                      DiscImage::BinToBCD(MSF.frm));
+
+		++trkNum;
 	}
 }
 
