@@ -401,6 +401,14 @@ Vec2i TownsCRTC::GetPageOriginOnMonitor(unsigned char page) const
 		y0=0;
 		break;
 	}
+
+	// Probably >>
+	if(15==GetHorizontalFrequency())
+	{
+		y0<<=1;
+	}
+	// Probably <<
+
 	if(x0<0)
 	{
 		x0=0;
