@@ -2884,6 +2884,8 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 		debuggerPtr->Interrupt(*this,INTNum,mem,numInstBytes);
 	}
 
+	state.halt=false;
+
 	if(IsInRealMode())
 	{
 		Push(mem,16,state.EFLAGS&0xFFFF);

@@ -974,6 +974,10 @@ std::vector <std::string> TownsCRTC::GetStatusText(void) const
 	};
 
 	text.push_back("");
+	text.back()=cpputil::Itoa(GetHorizontalFrequency());
+	text.back()+="KHz";
+
+	text.push_back("");
 	text.back()="Registers:";
 	for(int i=0; i<sizeof(regTable)/sizeof(regTable[0]); ++i)
 	{
