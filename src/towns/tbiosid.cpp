@@ -315,25 +315,25 @@ bool FMTowns::ControlMouse(int &diffX,int &diffY,int hostMouseX,int hostMouseY,u
 	var.lastKnownMouseY=hostMouseY;
 	if(true==GetMouseCoordinate(mx,my,tbiosid) && true==var.mouseIntegration)
 	{
-		Vec2i zoom;
+		Vec2i zoom2x;
 		unsigned int VRAMSize;
 		if(true==crtc.InSinglePageMode())
 		{
-			zoom=crtc.GetPageZoom(0);
+			zoom2x=crtc.GetPageZoom2X(0);
 			VRAMSize=0x80000;
 		}
 		else
 		{
-			zoom=crtc.GetPageZoom(state.mouseDisplayPage);
+			zoom2x=crtc.GetPageZoom2X(state.mouseDisplayPage);
 			VRAMSize=0x40000;
 		}
-		if(0<zoom.x())
+		if(0<zoom2x.x())
 		{
-			hostMouseX/=zoom.x();
+			hostMouseX=hostMouseX*2/zoom2x.x();
 		}
-		if(0<zoom.y())
+		if(0<zoom2x.y())
 		{
-			hostMouseY/=zoom.y();
+			hostMouseY=hostMouseY*2/zoom2x.y();
 		}
 
 		// 2020/07/08
@@ -346,8 +346,8 @@ bool FMTowns::ControlMouse(int &diffX,int &diffY,int hostMouseX,int hostMouseY,u
 		{
 		case TOWNS_APPSPECIFIC_LEMMINGS:
 			considerVRAMOffset=false;
-			hostMouseX*=zoom.x();
-			hostMouseX/=2;
+			hostMouseX*=zoom2x.x();
+			hostMouseX/=4;
 			slowDownRange=4;
 			break;
 		}
