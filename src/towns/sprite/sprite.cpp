@@ -47,6 +47,18 @@ void TownsSprite::Start(void)
 }
 void TownsSprite::Stop(void)
 {
+	// Shadow of the Beast stops sprite while the sprite state is busy.
+	// Presumably the program is taking its own timing since VSYNC to make sure the sprites are drawn.
+	// However, Tsugaru's sprite is not fully in sync with VSYNC, and it makes the screen stop updating.
+	// The workaround is to check spriteBusy, SPEN, and screenModeAcceptsSprite flags, and
+	// render if the sprite was stopped in the middle of busy period.
+	//
+	// For this purpose, this function needs to be able to see SPEN flag.  Therefore, IOWrite function
+	// should update state.reg[REG_CONTROL1] after Stop() function if SPEN bit is cleared.
+	if(true==state.spriteBusy && true==SPEN() && true==state.screenModeAcceptsSprite)
+	{
+		Render(physMemPtr->state.VRAM.data()+0x40000,physMemPtr->state.spriteRAM.data());
+	}
 	state.reg[REG_CONTROL1]&=0x7F;
 	state.spriteBusy=false;
 	townsPtr->UnscheduleDeviceCallBack(*this);
@@ -112,7 +124,6 @@ unsigned int TownsSprite::NumSpritesActuallyDrawn(void) const
 		state.addressLatch=data&7;
 		break;
 	case TOWNSIO_SPRITE_DATA://              0x452, // [2] pp.128
-		state.reg[state.addressLatch]=data;
 		if(REG_CONTROL1==state.addressLatch)
 		{
 			if(0!=(0x80&data))
@@ -124,6 +135,9 @@ unsigned int TownsSprite::NumSpritesActuallyDrawn(void) const
 				Stop();
 			}
 		}
+		// Register data must be updated after Stop() function for Shadow of the Beast.
+		// See explanation in Stop() function.
+		state.reg[state.addressLatch]=data;
 		break;
 	}
 }
