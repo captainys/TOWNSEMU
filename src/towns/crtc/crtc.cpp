@@ -347,6 +347,33 @@ Vec2i TownsCRTC::GetPageZoom(unsigned char page) const
 
 	return zoom;
 }
+Vec2i TownsCRTC::GetPageZoom2X(unsigned char page) const
+{
+	Vec2i zoom;
+	auto pageZoom=(state.crtcReg[REG_ZOOM]>>(8*page));
+	zoom.x()=(( pageZoom    &15)+1);
+	zoom.y()=(((pageZoom>>4)&15)+1);
+
+	// I'm not sure if this logic is correct.  This doesn't cover screen mode 16.
+	if(15==GetHorizontalFrequency())
+	{
+		if(true==InSinglePageMode())
+		{
+			zoom[1]*=2;
+		}
+		else
+		{
+			zoom[1]*=4;
+		}
+	}
+	else
+	{
+		zoom[0]*=2;
+		zoom[1]*=2;
+	}
+
+	return zoom;
+}
 Vec2i TownsCRTC::GetPageOriginOnMonitor(unsigned char page) const
 {
 	int x0,y0;
@@ -514,7 +541,9 @@ void TownsCRTC::MakePageLayerInfo(Layer &layer,unsigned char page) const
 	layer.originOnMonitor=GetPageOriginOnMonitor(page);
 	layer.sizeOnMonitor=GetPageSizeOnMonitor(page);
 	layer.VRAMCoverage1X=GetPageVRAMCoverageSize1X(page);
-	layer.zoom=GetPageZoom(page);
+	layer.zoom=GetPageZoom2X(page);
+	layer.zoom[0]/=2;
+	layer.zoom[1]/=2;
 	layer.VRAMAddr=0x40000*page;
 	layer.VRAMOffset=GetPageVRAMAddressOffset(page);
 	layer.bytesPerLine=GetPageBytesPerLine(page);

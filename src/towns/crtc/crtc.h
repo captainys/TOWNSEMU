@@ -287,6 +287,13 @@ public:
 	/*! Returns scaling.  Between 1 to 4 in each axis. 
 	*/
 	Vec2i GetPageZoom(unsigned char page) const;
+
+	/*! Returns scaling.  Between 2 to 8 in each axis.
+	    It returns 2 times of actual zoom rate.
+	    Since CRTC may scale a pixel up by 1.5, 2.5, 3.5.... times, 1X scale zoom rate cannot represent accurate zoom.
+	*/
+	Vec2i GetPageZoom2X(unsigned char page) const;
+
 	/*! Returns the page display origin on the monitor in VGA (640x480) coordinate.
 	*/
 	Vec2i GetPageOriginOnMonitor(unsigned char page) const;
