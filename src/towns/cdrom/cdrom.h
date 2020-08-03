@@ -222,6 +222,8 @@ public:
 		i486DX::FarPointer lastParamWrittenAt;
 
 		bool debugBreakOnCommandWrite=false;
+		bool debugBreakOnDEI=false;
+		bool debugBreakOnDataReady=false;
 
 		// If debugBreakOnCommandWrite==true and 0xffff!=debugBreakOnSpecificCommand,
 		// it breaks the VM only if a specific command is sent.

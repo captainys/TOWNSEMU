@@ -732,6 +732,11 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 				{
 					state.ClearStatusQueue();
 
+					if(true==var.debugBreakOnDataReady)
+					{
+						townsPtr->debugger.ExternalBreak("CD-ROM Data Ready");
+					}
+
 					// See above comment about Shadow of the Beast for why not checking STATUS REQUEST bit for setting status.
 					SetStatusDataReady();
 
@@ -771,6 +776,11 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 					state.DMATransfer=false;
 					state.DTSF=false;  // Should I turn it off also? -> Looks like I should.  Based on 2MX SYSROM FC00:00001CF7.  It waits for DTSF to clear.
 					state.DEI=true;
+
+					if(true==var.debugBreakOnDEI)
+					{
+						townsPtr->debugger.ExternalBreak("CD-ROM DMA End Interrupt");
+					}
 
 					if(true==state.enableDEI)
 					{

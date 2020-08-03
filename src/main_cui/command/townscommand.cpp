@@ -195,6 +195,8 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	breakEventMap["VRAMW"]=BREAK_ON_VRAMWRITE;
 	breakEventMap["VRAMRW"]=BREAK_ON_VRAMREADWRITE;
 	breakEventMap["CDCCMD"]=BREAK_ON_CDC_COMMAND;
+	breakEventMap["CDCDEI"]=BREAK_ON_CDC_DEI;
+	breakEventMap["CDCDATAREADY"]=BREAK_ON_CDC_DATAREADY;
 	breakEventMap["LBUTTONUP"]=BREAK_ON_LBUTTON_UP;
 	breakEventMap["LBUTTONDOWN"]=BREAK_ON_LBUTTON_DOWN;
 	breakEventMap["RETKEY"]=BREAK_ON_RETURN_KEY;
@@ -462,6 +464,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "FDCCMD" << std::endl;
 	std::cout << "CDCCMD" << std::endl;
 	std::cout << "CDCCMD cmdValueInHex" << std::endl;
+	std::cout << "CDCDEI" << std::endl;
+	std::cout << "CDCDATAREADY" << std::endl;
 	std::cout << "INT n" << std::endl;
 	std::cout << "INT n AH=hh" << std::endl;
 	std::cout << "INT n AX=hhhh" << std::endl;
@@ -1513,6 +1517,12 @@ void TownsCommandInterpreter::Execute_BreakOn(FMTowns &towns,Command &cmd)
 				towns.cdrom.var.debugBreakOnSpecificCommand=0xFFFF;
 			}
 			break;
+		case BREAK_ON_CDC_DEI:
+			towns.cdrom.var.debugBreakOnDEI=true;
+			break;
+		case BREAK_ON_CDC_DATAREADY:
+			towns.cdrom.var.debugBreakOnDataReady=true;
+			break;
 		case BREAK_ON_LBUTTON_UP:
 			towns.var.debugBreakOnLButtonUp=true;
 			break;
@@ -1693,6 +1703,12 @@ void TownsCommandInterpreter::Execute_ClearBreakOn(FMTowns &towns,Command &cmd)
 			break;
 		case BREAK_ON_CDC_COMMAND:
 			towns.cdrom.var.debugBreakOnCommandWrite=false;
+			break;
+		case BREAK_ON_CDC_DEI:
+			towns.cdrom.var.debugBreakOnDEI=false;
+			break;
+		case BREAK_ON_CDC_DATAREADY:
+			towns.cdrom.var.debugBreakOnDataReady=false;
 			break;
 		case BREAK_ON_LBUTTON_UP:
 			towns.var.debugBreakOnLButtonUp=false;
