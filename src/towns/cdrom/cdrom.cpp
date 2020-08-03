@@ -749,15 +749,7 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 					state.DEI=false;
 					state.DTSF=false;
 
-					// I don't know if there is a possibility that DMA transfer flag (DTS) is set to true before this point.
-					// SYSROM of 2F and 2MX implies that DTS is like a trigger and should be set to true after everthing is set up.
-					// But, just in case if DMATransfer is already enabled.
-					if(true==state.DTSF)
-					{
-						state.DTSF=true;
-						townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+READ_SECTOR_TIME);
-					}
-					// Otherwise write to DTS should trigger the DMA transfer.
+					// Write to DTS (state.DMATransfer) should trigger the DMA transfer.
 				}
 				// Second State.  DMA available, but the transfer hasn't started.  Wait for the CPU to write DTS=1.
 				// Third State.  Transfer done for a sector.
