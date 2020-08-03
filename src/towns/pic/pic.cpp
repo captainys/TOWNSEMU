@@ -166,6 +166,12 @@ void TownsPIC::I8259A::SetInterruptRequestBit(unsigned int intNum,bool request)
 	}
 }
 
+bool TownsPIC::I8259A::GetInterruptRequestBit(unsigned int intNum) const
+{
+	unsigned int bit=(1<<intNum);
+	return 0!=(IRR&bit);
+}
+
 unsigned int TownsPIC::I8259A::INTToGo(void) const
 {
 	for(unsigned int pri=0; pri<7; ++pri)
@@ -311,6 +317,12 @@ void TownsPIC::SetInterruptRequestBit(unsigned int intNum,bool request)
 {
 	int unit=(0!=(intNum&0x08) ? 1 : 0);
 	state.i8259A[unit].SetInterruptRequestBit(intNum&7,request);
+}
+
+bool TownsPIC::GetInterruptRequestBit(unsigned int intNum) const
+{
+	int unit=(0!=(intNum&0x08) ? 1 : 0);
+	return state.i8259A[unit].GetInterruptRequestBit(intNum&7);
 }
 
 std::vector <std::string> TownsPIC::GetStateText(void) const

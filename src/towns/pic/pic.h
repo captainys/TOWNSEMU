@@ -114,6 +114,10 @@ public:
 		*/
 		void SetInterruptRequestBit(unsigned int intNum,bool request);
 
+		/*!
+		*/
+		bool GetInterruptRequestBit(unsigned int intNum) const;
+
 		/*! Returns the highest-priority INT (0 to 7) that IRR is on and ISR is off.
 		    If no INT is ready to go, it returns 0xffffffff.
 		*/
@@ -159,6 +163,8 @@ public:
 	    To clear an IRR bit, request is false.
 	*/
 	void SetInterruptRequestBit(unsigned int intNum,bool request);
+
+	bool GetInterruptRequestBit(unsigned int intNum) const;
 
 	std::vector <std::string> GetStateText(void) const;
 
