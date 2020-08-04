@@ -180,6 +180,7 @@ TownsCDROM::TownsCDROM(class FMTowns *townsPtr,class TownsPIC *PICPtr,class Town
 		state.CPUTransfer=(0!=(data&0x08));
 		if(true==state.DMATransfer)
 		{
+			state.WaitForDTS=false;
 			auto DMACh=DMACPtr->GetDMAChannel(TOWNSDMA_CDROM);
 			bool DMAAvailable=(nullptr!=DMACh && (0<DMACh->currentCount && 0xFFFFFFFF!=(DMACh->currentCount&0xFFFFFFFF)));
 			if(true==DMAAvailable && true!=state.DTSF)
@@ -512,6 +513,7 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 
 				state.DRY=false;
 				state.DTSF=false;
+				state.WaitForDTS=false;
 			}
 		}
 		break;
@@ -727,9 +729,76 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 				auto DMACh=DMACPtr->GetDMAChannel(TOWNSDMA_CDROM);
 				bool DMAAvailable=(nullptr!=DMACh && (0<DMACh->currentCount && 0xFFFFFFFF!=(DMACh->currentCount&0xFFFFFFFF)));
 
+				if(true==state.WaitForDTS)
+				{
+					// I was avoiding to implement LOST DATA because I thought correctly written program won't cuase LOST DATA.
+					// However, looks like Shadow of the Beast 2 is intentionally causing lost data in the following procedure:
+					//
+					//     Loop to clear CD status bytes:
+					//     000C:0006E918 D0E8                      SHR     AL,1
+					//     000C:0006E91A 7312                      JAE     0006E92E  Jump if not SRQ
+					//     000C:0006E91C B2C2                      MOV     DL,C2H
+					//     000C:0006E91E EC                        IN      AL,DX     Clear status bytes
+					//     000C:0006E91F C1C808                    ROR     EAX,08H
+					//     000C:0006E922 EC                        IN      AL,DX     Clear status bytes
+					//     000C:0006E923 C1C808                    ROR     EAX,08H
+					//     000C:0006E926 EC                        IN      AL,DX     Clear status bytes
+					//     000C:0006E927 C1C808                    ROR     EAX,08H
+					//     000C:0006E92A EC                        IN      AL,DX     Clear status bytes
+					//     000C:0006E92B C1C808                    ROR     EAX,08H
+					//     000C:0006E92E 66BAC004                  MOV     DX,04C0H
+					//     000C:0006E932 EC                        IN      AL,DX
+					//     000C:0006E933 B0C0                      MOV     AL,C0H    Clear SIRQ and DEI
+					//     000C:0006E935 EE                        OUT     DX,AL
+					//     000C:0006E936 B2C0                      MOV     DL,C0H
+					//     Procedure Entry:
+					//     000C:0006E938 EC                        IN      AL,DX
+					//     000C:0006E939 D0E8                      SHR     AL,1
+					//     000C:0006E93B 75DB                      JNE     0006E918 { Loop to clear CD status bytes:}
+					//     000C:0006E93D 73F7                      JAE     0006E936
+					//     000C:0006E93F C3                        RET
+					//
+					// This procedure is called when the user presses a game-pad button in the event scene after the menu.
+					// The event scene looks to be rendered using a similar technique used in the Fractal Engine.
+					// The program needs to abort the rendering by aborting the CDC command, and it did it by just
+					// clearing DEI and SIRQ and status bytes.  It is a violent way of terminating a command, but
+					// if it is what it does, I need to emulate lost data.
+
+					// Means DMA was not set up in time.
+					state.ClearStatusQueue();
+					state.PushStatusQueue(0x21,0x0F,0,0); // Abnormal termination.  I don't know which error to return.
+					if(true==StatusRequestBit(state.cmd) && 0!=(state.cmd&CMDFLAG_IRQ) && true==state.enableSIRQ)
+					{
+						PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
+					}
+					state.DRY=true;
+					state.SIRQ=false;
+					state.DEI=false;
+					state.DTSF=false;
+					state.STSF=false;
+					std::cout << "MODE1READ time out." << std::endl;
+					return;
+				}
+
 				// Initial State.  CPU doesn't know data ready, therefore does not make DMAC available.
 				if(true!=DMAAvailable || true!=state.DMATransfer)
 				{
+					if(true==PICPtr->GetInterruptRequestBit(TOWNSIRQ_CDROM))
+					{
+						// If the previous IRR hasn't been consumed, check back again after STATUS_CHECKBACK_TIME.
+						// This interpretation is most likely wrong.  But, Shadow of the Beast 2's CD-ROM IRQ handler
+						// is expecting alternating SIRQ(Data Ready) and DEI, and missing one DEI due to IF=0 will
+						// put it into the infinite DRY-wait loop.
+						// Two changes to deal with this issue.  One is LOSTDATA_TIMEOUT.  Make sure if the CPU
+						// doesn't read an available data in time, just let it time out, and DRY=1.
+						// Also, let Data Ready on hold if the previous IRR hasn't been consumed.
+						// Actually IRR should be an output pin from CDC and input pin of PIC.
+						// Therefore, CDC owns IRR.  So, it is entirely possible that CDC waits next Data Ready
+						// until the previous IRR from DEI is consumed.
+						townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+STATUS_CHECKBACK_TIME);
+						return;
+					}
+
 					state.ClearStatusQueue();
 
 					if(true==var.debugBreakOnDataReady)
@@ -750,6 +819,9 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 					state.DTSF=false;
 
 					// Write to DTS (state.DMATransfer) should trigger the DMA transfer.
+					// If the CPU does not do so before the LOSTDATA_TIMEOUT, abort the command.
+					state.WaitForDTS=true;
+					townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+LOSTDATA_TIMEOUT);
 				}
 				// Second State.  DMA available, but the transfer hasn't started.  Wait for the CPU to write DTS=1.
 				// Third State.  Transfer done for a sector.

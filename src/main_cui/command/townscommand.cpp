@@ -94,6 +94,9 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["SAVEYM2612LOG"]=CMD_SAVE_YM2612LOG;
 	primaryCmdMap["FMCH"]=CMD_YM2612_CH_ON_OFF;
 
+	primaryCmdMap["FMVOL"]=CMD_FMVOL;
+	primaryCmdMap["PCMVOL"]=CMD_PCMVOL;
+
 	primaryCmdMap["CALC"]=CMD_CALCULATE;
 
 	primaryCmdMap["TYPE"]=CMD_TYPE_KEYBOARD;
@@ -388,6 +391,11 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "YM2612LOG" << std::endl;
 	std::cout << "  YM2612 register-write log. (Previous log is cleared)" << std::endl;
 
+	std::cout << "FMVOL volume" << std::endl;
+	std::cout << "  Set FM (YM2612) volume.  0 to 8192.  Default value is 4096." << std::endl;
+	std::cout << "PCMVOL volume" << std::endl;
+	std::cout << "  Set PCM (RF5C68) volume.  0 to 8192.  Default value is 4096." << std::endl;
+
 	std::cout << "" << std::endl;
 
 	std::cout << "<< Information that can be printed >>" << std::endl;
@@ -518,6 +526,9 @@ void TownsCommandInterpreter::PrintError(int errCode) const
 		break;
 	case ERROR_NO_DATA_GIVEN:
 		std::cout << "Error: No data given." << std::endl;
+		break;
+	case ERROR_WRONG_PARAMETER:
+		std::cout << "Error: Wrong parameter." << std::endl;
 		break;
 
 	default:
@@ -743,6 +754,38 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 			PrintError(ERROR_TOO_FEW_ARGS);
 		}
 		break;
+
+	case CMD_FMVOL:
+		if(2<=cmd.argv.size())
+		{
+			int vol=cpputil::Atoi(cmd.argv[1].c_str());
+			if(vol<0 || 8192<vol)
+			{
+				PrintError(ERROR_WRONG_PARAMETER);
+			}
+			towns.sound.state.ym2612.state.volume=vol;
+		}
+		else
+		{
+			PrintError(ERROR_TOO_FEW_ARGS);
+		}
+		break;
+	case CMD_PCMVOL:
+		if(2<=cmd.argv.size())
+		{
+			int vol=cpputil::Atoi(cmd.argv[1].c_str());
+			if(vol<0 || 8192<vol)
+			{
+				PrintError(ERROR_WRONG_PARAMETER);
+			}
+			towns.sound.state.rf5c68.state.volume=vol;
+		}
+		else
+		{
+			PrintError(ERROR_TOO_FEW_ARGS);
+		}
+		break;
+
 	case CMD_PRINT_STATUS:
 		towns.PrintStatus();
 		break;

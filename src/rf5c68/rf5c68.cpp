@@ -213,8 +213,8 @@ unsigned int RF5C68::AddWaveForNumSamples(unsigned char waveBuf[],unsigned int c
 
 	unsigned int Lvol=(ch.PAN&0x0F);
 	unsigned int Rvol=((ch.PAN>>4)&0x0F);
-	Lvol=(Lvol*ch.ENV);   // Lvol max=15, ENV max=255,  Lvol*ENV max~=4096
-	Rvol=(Rvol*ch.ENV);
+	Lvol=(Lvol*ch.ENV)*state.volume/(15*255);   // Lvol max=15, ENV max=255
+	Rvol=(Rvol*ch.ENV)*state.volume/(15*255);
 
 	ch.repeatAfterThisSegment=false;
 	if(0<ch.FD)

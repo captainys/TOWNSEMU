@@ -108,6 +108,8 @@ public:
 		NOTIFICATION_TIME=      1000000,  // Tentatively   1ms
 		CDDASTOP_TIME=          1000000,  // Tentatively   1ms
 		SEEK_TIME=            100000000,  // Tentatively 100ms
+		LOSTDATA_TIMEOUT=     100000000,  // Tentatively 100ms. I don't think the CDC had a large FIFO buffer back in 1989. The real time-out should have been much shorter.
+		STATUS_CHECKBACK_TIME=  1000000,
 	};
 
 	// Reference [3] 
@@ -154,6 +156,7 @@ public:
 		unsigned int readingSectorHSG,endSectorHSG;
 
 		bool DMATransfer,CPUTransfer; // Both are not supposed to be 1, but I/O can set it that way.
+		bool WaitForDTS;
 
 		bool discChanged;
 
@@ -169,7 +172,6 @@ public:
 		// for an IRQ forever.
 		// To emulate this, I need to introduce delayed status IRQ.
 		bool delayedSIRQ=false;
-		long long int nextScheduleTimeAfterDelayedSIRQ=0;
 
 		// RAYXANBER waits until the CDDA playing time reaches track 15 during the "DATAWEST" logo screen.
 		// However, .WAV file takes slightly less time to finish, and the playing time returned from CD-ROM

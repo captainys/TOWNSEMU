@@ -113,6 +113,9 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  Create a new floppy image.  size_in_KB must be 1232, 1440, 640, or 720." << std::endl;
 	std::cout << "-GENHD filename.bin size_in_MB" << std::endl;
 	std::cout << "  Create a new harddisk image." << std::endl;
+	std::cout << "-FMVOL volume" << std::endl;
+	std::cout << "-PCMVOL volume" << std::endl;
+	std::cout << "  Specify FM/PCM volume.  Volume will be rounded to 0 to 8192." << std::endl;
 }
 
 void TownsARGV::PrintApplicationList(void) const
@@ -484,6 +487,34 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		else if("-WINDOWSHIFT"==ARG)
 		{
 			windowShift=true;
+		}
+		else if("-FMVOL"==ARG && 1+i<argc)
+		{
+			int vol=cpputil::Atoi(argv[i+1]);
+			if(vol<0)
+			{
+				vol=0;
+			}
+			if(8192<vol)
+			{
+				vol=8192;
+			}
+			fmVol=vol;
+			++i;
+		}
+		else if("-PCMVOL"==ARG && 1+i<argc)
+		{
+			int vol=cpputil::Atoi(argv[i+1]);
+			if(vol<0)
+			{
+				vol=0;
+			}
+			if(8192<vol)
+			{
+				vol=8192;
+			}
+			pcmVol=vol;
+			++i;
 		}
 		else
 		{

@@ -55,7 +55,7 @@ public:
 		TONE_CHOPOFF_MILLISEC=4000,
 
 		WAVE_SAMPLING_RATE=44100,
-		WAVE_OUTPUT_AMPLITUDE_MAX=4096,
+		WAVE_OUTPUT_AMPLITUDE_MAX_DEFAULT=4096,
 	};
 
 	enum
@@ -169,6 +169,8 @@ public:
 		unsigned long long int timerCounter[2];
 		bool timerUp[2];
 		unsigned int playingCh; // Bit 0 to 5.
+
+		int volume=WAVE_OUTPUT_AMPLITUDE_MAX_DEFAULT;
 
 		void PowerOn(void);
 		void Reset(void);

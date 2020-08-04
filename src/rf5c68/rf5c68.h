@@ -32,6 +32,7 @@ public:
 		FD_BIT_SHIFT=11,
 		BANK_SHIFT=12, // 2^12 bytes per bank.
 		LOOP_STOP_CODE=0xFF,
+		WAVE_OUTPUT_AMPLITUDE_MAX_DEFAULT=4096,
 	};
 
 	class Channel
@@ -70,6 +71,8 @@ public:
 			return 0!=IRQBank;
 		}
 		unsigned char IRQBank,IRQBankMask;
+
+		int volume=WAVE_OUTPUT_AMPLITUDE_MAX_DEFAULT;
 	};
 	State state;
 

@@ -22,14 +22,30 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 inline void WordOp_Add(unsigned char *ptr,short value)
 {
-#ifdef YS_LITTLE_ENDIAN
-	*((short *)ptr)+=value;
-#else
+#ifndef YS_LITTLE_ENDIAN
 	std::swap(ptr[0],ptr[1]);
-	*((short *)ptr)+=value;
+#endif
+
+	int i=*((short *)ptr);
+	i+=value;
+	if(i<-32767)
+	{
+		*((short *)ptr)=-32767;
+	}
+	else if(32767<i)
+	{
+		*((short *)ptr)=32767;
+	}
+	else
+	{
+		*((short *)ptr)=i;
+	}
+
+#ifndef YS_LITTLE_ENDIAN
 	std::swap(ptr[0],ptr[1]);
 #endif
 }
+
 
 
 // #define YM2612_DEBUGOUTPUT
@@ -1288,53 +1304,53 @@ int YM2612::CalculateAmplitude(int chNum,unsigned int timeInMS,const unsigned in
 		lastSlot0Out=s0out;
 		s1out=SLOTOUTEV_Db_1(s0out,timeInMS);
 		s2out=SLOTOUTEV_Db_2(s1out,timeInMS);
-		return SLOTOUTEV_Db_3(s2out,timeInMS)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX;
+		return SLOTOUTEV_Db_3(s2out,timeInMS)*state.volume/UNSCALED_MAX;
 	case 1:
 		s0out=SLOTOUTEV_Db_0(0,timeInMS);
 		lastSlot0Out=s0out;
 		s1out=SLOTOUTEV_Db_1(0,timeInMS);
 		s2out=SLOTOUTEV_Db_2(s0out+s1out,timeInMS);
-		return SLOTOUTEV_Db_3(s2out,timeInMS)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX;
+		return SLOTOUTEV_Db_3(s2out,timeInMS)*state.volume/UNSCALED_MAX;
 	case 2:
 		s0out=SLOTOUTEV_Db_0(0,timeInMS);
 		lastSlot0Out=s0out;
 		s1out=SLOTOUTEV_Db_1(0,timeInMS);
 		s2out=SLOTOUTEV_Db_2(s1out,timeInMS);
-		return SLOTOUTEV_Db_3(s0out+s2out,timeInMS)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX;
+		return SLOTOUTEV_Db_3(s0out+s2out,timeInMS)*state.volume/UNSCALED_MAX;
 	case 3:
 		s0out=SLOTOUTEV_Db_0(0,    timeInMS);
 		lastSlot0Out=s0out;
 		s1out=SLOTOUTEV_Db_1(s0out,timeInMS);
 		s2out=SLOTOUTEV_Db_2(0    ,timeInMS);
-		return SLOTOUTEV_Db_3(s1out+s2out,timeInMS)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX;
+		return SLOTOUTEV_Db_3(s1out+s2out,timeInMS)*state.volume/UNSCALED_MAX;
 	case 4:
 		s0out=SLOTOUTEV_Db_0(0,    timeInMS);
 		lastSlot0Out=s0out;
 		s1out=SLOTOUTEV_Db_1(s0out,timeInMS);
 		s2out=SLOTOUTEV_Db_2(0    ,timeInMS);
 		s3out=SLOTOUTEV_Db_3(s2out,timeInMS);
-		return ((s1out+s3out)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX);
-		// Test only Slot 3 -> return SLOTOUTEV_Db_3(0,timeInMS)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX;
+		return ((s1out+s3out)*state.volume/UNSCALED_MAX);
+		// Test only Slot 3 -> return SLOTOUTEV_Db_3(0,timeInMS)*state.volume/UNSCALED_MAX;
 	case 5:
 		s0out=SLOTOUTEV_Db_0(0,    timeInMS);
 		lastSlot0Out=s0out;
 		s1out=SLOTOUTEV_Db_1(s0out,timeInMS);
 		s2out=SLOTOUTEV_Db_2(s0out,timeInMS);
 		s3out=SLOTOUTEV_Db_3(s0out,timeInMS);
-		return ((s1out+s2out+s3out)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX);
+		return ((s1out+s2out+s3out)*state.volume/UNSCALED_MAX);
 	case 6:
 		s0out=SLOTOUTEV_Db_0(0,    timeInMS);
 		lastSlot0Out=s0out;
 		s1out=SLOTOUTEV_Db_1(s0out,timeInMS);
 		s2out=SLOTOUTEV_Db_2(0    ,timeInMS);
 		s3out=SLOTOUTEV_Db_3(0    ,timeInMS);
-		return ((s1out+s2out+s3out)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX);
+		return ((s1out+s2out+s3out)*state.volume/UNSCALED_MAX);
 	case 7:
 		s0out=SLOTOUTEV_Db_0(0,timeInMS);
 		lastSlot0Out=s0out;
 		s1out=SLOTOUTEV_Db_1(0,timeInMS);
 		s2out=SLOTOUTEV_Db_2(0,timeInMS);
 		s3out=SLOTOUTEV_Db_3(0,timeInMS);
-		return ((s0out+s1out+s2out+s3out)*WAVE_OUTPUT_AMPLITUDE_MAX/UNSCALED_MAX);
+		return ((s0out+s1out+s2out+s3out)*state.volume/UNSCALED_MAX);
 	}
 }

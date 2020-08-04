@@ -282,6 +282,15 @@ bool Setup(FMTowns &towns,Outside_World *outside_world,const TownsARGV &argv)
 
 	towns.var.catchUpRealTime=argv.catchUpRealTime;
 
+	if(0<=argv.fmVol)
+	{
+		towns.sound.state.ym2612.state.volume=argv.fmVol;
+	}
+	if(0<=argv.pcmVol)
+	{
+		towns.sound.state.rf5c68.state.volume=argv.fmVol;
+	}
+
 	if(true==argv.powerOffAtBreakPoint)
 	{
 		towns.var.powerOffAt.MakeFromString(argv.powerOffAt);
