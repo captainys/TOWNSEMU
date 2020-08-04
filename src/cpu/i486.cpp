@@ -245,8 +245,6 @@ void i486DX::FarPointer::LoadSegmentRegister(SegmentRegister &seg,i486DX &cpu,co
 	}
 }
 
-
-
 ////////////////////////////////////////////////////////////
 
 
@@ -849,7 +847,46 @@ template <class CPUCLASS,class FUNC>
 class i486DX::LoadSegmentRegisterTemplate
 {
 public:
-	inline static void LoadSegmentRegister(CPUCLASS &cpu,SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode)
+	unsigned char rawDescBuf[8];
+	const unsigned char *rawDesc;
+
+	inline void LoadProtectedModeDescriptor(CPUCLASS &cpu,unsigned int value,const Memory &mem)
+	{
+		auto RPL=(value&3);
+		auto TI=(0!=(value&4));
+		auto INDEX=(value>>3)&0b0001111111111111;
+
+		unsigned int DTLinearBaseAddr=0;
+		if(0==TI)
+		{
+			DTLinearBaseAddr=cpu.state.GDTR.linearBaseAddr;
+		}
+		else
+		{
+			DTLinearBaseAddr=cpu.state.LDTR.linearBaseAddr;
+		}
+		DTLinearBaseAddr+=(8*INDEX);
+
+		auto memWin=FUNC::GetConstMemoryWindowFromLinearAddress(cpu,DTLinearBaseAddr,mem);
+		if(nullptr!=memWin.ptr && (DTLinearBaseAddr&(MemoryAccess::MEMORY_WINDOW_SIZE-1))<=(MemoryAccess::MEMORY_WINDOW_SIZE-8))
+		{
+			rawDesc=memWin.ptr+(DTLinearBaseAddr&(MemoryAccess::MEMORY_WINDOW_SIZE-1));
+		}
+		else
+		{
+			rawDesc=rawDescBuf;
+			rawDescBuf[0]=(unsigned char)FUNC::FetchByteByLinearAddress(cpu,mem,DTLinearBaseAddr);
+			rawDescBuf[1]=(unsigned char)FUNC::FetchByteByLinearAddress(cpu,mem,DTLinearBaseAddr+1);
+			rawDescBuf[2]=(unsigned char)FUNC::FetchByteByLinearAddress(cpu,mem,DTLinearBaseAddr+2);
+			rawDescBuf[3]=(unsigned char)FUNC::FetchByteByLinearAddress(cpu,mem,DTLinearBaseAddr+3);
+			rawDescBuf[4]=(unsigned char)FUNC::FetchByteByLinearAddress(cpu,mem,DTLinearBaseAddr+4);
+			rawDescBuf[5]=(unsigned char)FUNC::FetchByteByLinearAddress(cpu,mem,DTLinearBaseAddr+5);
+			rawDescBuf[6]=(unsigned char)FUNC::FetchByteByLinearAddress(cpu,mem,DTLinearBaseAddr+6);
+			rawDescBuf[7]=(unsigned char)FUNC::FetchByteByLinearAddress(cpu,mem,DTLinearBaseAddr+7);
+		}
+	}
+
+	inline unsigned int LoadSegmentRegister(CPUCLASS &cpu,SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode)
 	{
 		if(true==isInRealMode || 0!=(i486DX::EFLAGS_VIRTUAL86&cpu.state.EFLAGS))
 		{
@@ -859,43 +896,11 @@ public:
 			reg.operandSize=16;
 			// reg.limit=0xffff;   Surprisingly, reg.limit isn't affected!?  According to https://wiki.osdev.org/Unreal_Mode
 			reg.limit=std::max<unsigned int>(reg.limit,0xffff);
+			return 0xFFFFFFFF;
 		}
 		else
 		{
-			auto RPL=(value&3);
-			auto TI=(0!=(value&4));
-			auto INDEX=(value>>3)&0b0001111111111111;
-
-			unsigned int DTLinearBaseAddr=0;
-			if(0==TI)
-			{
-				DTLinearBaseAddr=cpu.state.GDTR.linearBaseAddr;
-			}
-			else
-			{
-				DTLinearBaseAddr=cpu.state.LDTR.linearBaseAddr;
-			}
-			DTLinearBaseAddr+=(8*INDEX);
-
-			unsigned char rawDescBuf[8];
-			const unsigned char *rawDesc;
-			auto memWin=FUNC::GetConstMemoryWindowFromLinearAddress(cpu,DTLinearBaseAddr,mem);
-			if(nullptr!=memWin.ptr && (DTLinearBaseAddr&(MemoryAccess::MEMORY_WINDOW_SIZE-1))<=(MemoryAccess::MEMORY_WINDOW_SIZE-8))
-			{
-				rawDesc=memWin.ptr+(DTLinearBaseAddr&(MemoryAccess::MEMORY_WINDOW_SIZE-1));
-			}
-			else
-			{
-				rawDesc=rawDescBuf;
-				rawDescBuf[0]=(unsigned char)FUNC::FetchByteByLinearAddress(cpu,mem,DTLinearBaseAddr);
-				rawDescBuf[1]=(unsigned char)FUNC::FetchByteByLinearAddress(cpu,mem,DTLinearBaseAddr+1);
-				rawDescBuf[2]=(unsigned char)FUNC::FetchByteByLinearAddress(cpu,mem,DTLinearBaseAddr+2);
-				rawDescBuf[3]=(unsigned char)FUNC::FetchByteByLinearAddress(cpu,mem,DTLinearBaseAddr+3);
-				rawDescBuf[4]=(unsigned char)FUNC::FetchByteByLinearAddress(cpu,mem,DTLinearBaseAddr+4);
-				rawDescBuf[5]=(unsigned char)FUNC::FetchByteByLinearAddress(cpu,mem,DTLinearBaseAddr+5);
-				rawDescBuf[6]=(unsigned char)FUNC::FetchByteByLinearAddress(cpu,mem,DTLinearBaseAddr+6);
-				rawDescBuf[7]=(unsigned char)FUNC::FetchByteByLinearAddress(cpu,mem,DTLinearBaseAddr+7);
-			}
+			LoadProtectedModeDescriptor(cpu,value,mem);
 
 			// Sample GDT from WRHIGH.ASM
 			//	DB		0FFH,0FFH	; Segment Limit (0-15)
@@ -927,31 +932,47 @@ public:
 				reg.addressSize=32;
 				reg.operandSize=32;
 			}
+			return cpputil::GetDword(rawDesc+4);
 		}
+	}
+
+	inline i486DX::FarPointer GetCallGate(CPUCLASS &cpu,unsigned int value,const Memory &mem)
+	{
+		LoadProtectedModeDescriptor(cpu,value,mem);
+
+		// i486 Programmer's Reference Manual pp.6-11 Figure 6-5 Call Gate
+		// What is "COUNT" used for?
+		i486DX::FarPointer ptr;
+		ptr.SEG=(rawDesc[2]|(rawDesc[3]<<8));
+		ptr.OFFSET=(rawDesc[0]|(rawDesc[1]<<8)|(rawDesc[6]<<16)|(rawDesc[7]<<24));
+		return ptr;
 	}
 };
 
-void i486DX::DebugLoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode) const
+unsigned int i486DX::DebugLoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode) const
 {
-	LoadSegmentRegisterTemplate<const i486DX,DebugLoadSegmentRegisterClass>::LoadSegmentRegister(*this,reg,value,mem,IsInRealMode());
+	LoadSegmentRegisterTemplate<const i486DX,DebugLoadSegmentRegisterClass> loader;
+	return loader.LoadSegmentRegister(*this,reg,value,mem,IsInRealMode());
 }
 
-void i486DX::LoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem)
+unsigned int i486DX::LoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem)
 {
 	if(&reg==&state.SS())
 	{
 		state.holdIRQ=true;
 	}
-	LoadSegmentRegisterTemplate<i486DX,LoadSegmentRegisterClass>::LoadSegmentRegister(*this,reg,value,mem,IsInRealMode());
+	LoadSegmentRegisterTemplate<i486DX,LoadSegmentRegisterClass> loader;
+	return loader.LoadSegmentRegister(*this,reg,value,mem,IsInRealMode());
 }
 
-void i486DX::LoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode)
+unsigned i486DX::LoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode)
 {
 	if(&reg==&state.SS())
 	{
 		state.holdIRQ=true;
 	}
-	LoadSegmentRegisterTemplate<i486DX,LoadSegmentRegisterClass>::LoadSegmentRegister(*this,reg,value,mem,isInRealMode);
+	LoadSegmentRegisterTemplate<i486DX,LoadSegmentRegisterClass> loader;
+	return loader.LoadSegmentRegister(*this,reg,value,mem,isInRealMode);
 }
 
 void i486DX::LoadSegmentRegisterRealMode(SegmentRegister &reg,unsigned int value)
@@ -983,6 +1004,17 @@ void i486DX::LoadDescriptorTableRegister(SystemAddressRegister &reg,int operandS
 	{
 		reg.linearBaseAddr=byteData[2]|(byteData[3]<<8)|(byteData[4]<<16)|(byteData[5]<<24);
 	}
+}
+
+i486DX::FarPointer i486DX::GetCallGate(unsigned int selector,const Memory &mem)
+{
+	LoadSegmentRegisterTemplate<i486DX,LoadSegmentRegisterClass> loader;
+	return loader.GetCallGate(*this,selector,mem);
+}
+i486DX::FarPointer i486DX::DebugGetCallGate(unsigned int selector,const Memory &mem) const
+{
+	LoadSegmentRegisterTemplate<const i486DX,DebugLoadSegmentRegisterClass> loader;
+	return loader.GetCallGate(*this,selector,mem);
 }
 
 i486DX::InterruptDescriptor i486DX::GetInterruptDescriptor(unsigned int INTNum,const Memory &mem)

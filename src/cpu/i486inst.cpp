@@ -5050,8 +5050,24 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				    mem);
 			}
 
-			LoadSegmentRegister(state.CS(),op1.seg,mem);
-			state.EIP=op1.offset;
+			auto descHighword=LoadSegmentRegister(state.CS(),op1.seg,mem);
+			auto descType=(descHighword&0x0f00);
+			if(descType==(DESC_TYPE_16BIT_CALL_GATE<<8) ||
+			   descType==(DESC_TYPE_32BIT_CALL_GATE<<8))
+			{
+				auto ptr=GetCallGate(op1.seg,mem);
+				if(descType==(DESC_TYPE_16BIT_CALL_GATE<<8))
+				{
+					ptr.OFFSET&=0xFFFF;
+				}
+				LoadSegmentRegister(state.CS(),ptr.SEG,mem);
+				state.EIP=ptr.OFFSET;
+				clocksPassed=35;
+			}
+			else
+			{
+				state.EIP=op1.offset;
+			}
 			EIPSetByInstruction=true;
 		}
 		break;
@@ -5800,7 +5816,13 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 							}
 						}
 						SetIPorEIP(inst.operandSize,value.GetAsDword());
-						LoadSegmentRegister(state.CS(),value.GetFwordSegment(),mem);
+						auto descHighword=LoadSegmentRegister(state.CS(),value.GetFwordSegment(),mem);
+						auto descType=(descHighword&0x0f00);
+						if(descType==(DESC_TYPE_16BIT_CALL_GATE<<8) ||
+						   descType==(DESC_TYPE_32BIT_CALL_GATE<<8))
+						{
+							Abort("CALLF/JMPF to Gate");
+						}
 						EIPSetByInstruction=true;
 					}
 					if(3==REG) // CALLF Indirect
@@ -6121,7 +6143,13 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				}
 				break;
 			}
-			LoadSegmentRegister(state.CS(),op1.seg,mem);
+			auto descHighword=LoadSegmentRegister(state.CS(),op1.seg,mem);
+			auto descType=(descHighword&0x0f00);
+			if(descType==(DESC_TYPE_16BIT_CALL_GATE<<8) ||
+			   descType==(DESC_TYPE_32BIT_CALL_GATE<<8))
+			{
+				Abort("JMPF to Gate");
+			}
 			state.EIP=op1.offset;
 			EIPSetByInstruction=true;
 		}

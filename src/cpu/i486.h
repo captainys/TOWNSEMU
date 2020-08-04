@@ -1899,23 +1899,42 @@ private:
 	template <class CPUCLASS,class FUNC>
 	class LoadSegmentRegisterTemplate;
 public:
+	enum
+	{
+		DESC_TYPE_16BIT_CALL_GATE=0x04,
+		DESC_TYPE_32BIT_CALL_GATE=0x0C,
+	};
 
 	/*! Loads a segment register.
 	    If reg is SS, it raise holdIRQ flag.
 	    How the segment linear base address is set depends on the CPU mode,
 	    and in the protected mode, it needs to look at GDT and LDT.
 	    Therefore it needs a reference to memory.
+
+		It returns the upper-4 bytes of the descriptor.  In real mode, it always returns 0xFFFFFFFF.
 	*/
-	void LoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem);
+	unsigned int LoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem);
 
 	/*! It works the same as LoadSegmentRegister function except it takes isInRealMode flag from the outside.
+
+		It returns the upper-4 bytes of the descriptor.  In real mode, it always returns 0xFFFFFFFF.
 	*/
-	void LoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode);
+	unsigned int LoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode);
 
 	/*! Loads a segment register in real mode.
 	    If reg is SS, it raise holdIRQ flag.
 	*/
 	void LoadSegmentRegisterRealMode(SegmentRegister &reg,unsigned int value);
+
+	/*! Get Call Gate.
+	    This function may raise exception.
+	*/
+	FarPointer GetCallGate(unsigned int selector,const Memory &mem);
+
+	/*! Get Call Gate.
+	    This function will not raise exception.
+	*/
+	FarPointer DebugGetCallGate(unsigned int selector,const Memory &mem) const;
 
 	/*! Load Task Register.
 	*/
@@ -1924,8 +1943,10 @@ public:
 	/*! Loads a segment register.
 	    It does not rely on the current CPU state, instead isInRealMode is given as a parameter.
 	    Even if reg==SS, it does not update holdIRQ flag.
+
+		It returns the upper-4 bytes of the descriptor.  In real mode, it always returns 0xFFFFFFFF.
 	*/
-	void DebugLoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode) const;
+	unsigned int DebugLoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode) const;
 
 	/*! Loads limit and linear base address to a descriptor table register.
 	    How many bytes are loaded depends on operand size.  [1] 26-194.
