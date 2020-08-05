@@ -241,6 +241,23 @@ void FMTowns::OnCRTC_HST_Write(void)
 				std::cout << "  MousePointerY Physical Base=" << cpputil::Uitox(state.appSpecific_MousePtrY) << std::endl;
 			}
 			break;
+		case TOWNS_APPSPECIFIC_LEMMINGS2:
+			// CS=009C(LIN:00423000)  DS=005C(LIN:00411000)  ES=005C(LIN:00411000)
+			// FS=005C(LIN:00411000)  GS=0014(LIN:00400000)  SS=005C(LIN:00411000)
+			// 009C:00003C41 660305002E0000            ADD     AX,[00002E00H] ; (Prob)DS:[2E00H]=X
+			// 009C:00003C98 66A3FE2D0000              MOV     [00002DFEH],AX ; (Prob)DS:[2DFEH]=Y
+			{
+				i486DX::SegmentRegister DS;
+				unsigned int exceptionType,exceptionCode;
+				cpu.DebugLoadSegmentRegister(DS,0x005C,mem,false);
+
+				state.appSpecific_MousePtrX=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x2DFE,mem);
+				state.appSpecific_MousePtrY=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x2E00,mem);
+
+				std::cout << "  MousePointerX Physical Base=" << cpputil::Uitox(state.appSpecific_MousePtrX) << std::endl;
+				std::cout << "  MousePointerY Physical Base=" << cpputil::Uitox(state.appSpecific_MousePtrY) << std::endl;
+			}
+			break;
 		case TOWNS_APPSPECIFIC_STRIKECOMMANDER:
 			{
 				i486DX::SegmentRegister DS;
@@ -349,6 +366,18 @@ bool FMTowns::ControlMouse(int &diffX,int &diffY,int hostMouseX,int hostMouseY,u
 			hostMouseX*=zoom2x.x();
 			hostMouseX/=4;
 			slowDownRange=4;
+			break;
+		case TOWNS_APPSPECIFIC_LEMMINGS2:
+			hostMouseY-=20;
+			if(hostMouseY<-8)
+			{
+				hostMouseY=-8;
+			}
+			hostMouseX+=8;
+			if(327==hostMouseX)
+			{
+				hostMouseX=328; // Otherwise cannot scroll to the right
+			}
 			break;
 		}
 
@@ -619,6 +648,7 @@ bool FMTowns::GetMouseCoordinate(int &mx,int &my,unsigned int tbiosid) const
 			}
 			return true;
 		case TOWNS_APPSPECIFIC_LEMMINGS:
+		case TOWNS_APPSPECIFIC_LEMMINGS2:
 			{
 				auto debugStop=debugger.stop; // FetchWord may break due to MEMR.
 				mx=(int)mem.FetchWord(state.appSpecific_MousePtrX);
