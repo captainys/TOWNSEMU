@@ -576,7 +576,20 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 		}
 		break;
 	case CDCMD_UNKNOWN1://   0x1F, // NOP and requst status? I guess?
-		std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " not implemented yet." << std::endl;
+		std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " function unknown." << std::endl;
+		std::cout << "Currently just return no-error status." << std::endl;
+		if(true==StatusRequestBit(state.cmd))
+		{
+			if(true==SetStatusDriveNotReadyOrDiscChanged())
+			{
+				return;
+			}
+			SetStatusNoError();
+			if(CMDFLAG_IRQ&state.cmd)
+			{
+				SetSIRQ_IRR();
+			}
+		}
 		break;
 
 	case CDCMD_SETSTATE://   0x80,
