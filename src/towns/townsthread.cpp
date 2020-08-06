@@ -53,6 +53,7 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world,class Tow
 			if(true==outside_world->PauseKeyPressed())
 			{
 				runMode=RUNMODE_RUN;
+				townsPtr->debugger.stop=false;
 			}
 			break;
 		case RUNMODE_RUN:
