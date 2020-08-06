@@ -275,13 +275,61 @@ void i486Debugger::BeforeRunOneInstruction(i486DX &cpu,Memory &mem,InOut &io,con
 	CSEIPLog[CSEIPLogPtr].ESP=cpu.state.ESP();
 	CSEIPLog[CSEIPLogPtr].count=1;
 	auto &prevCSEIPLog=CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK)&CSEIP_LOG_MASK];
-	if(prevCSEIPLog!=CSEIPLog[CSEIPLogPtr])
+	if(prevCSEIPLog==CSEIPLog[CSEIPLogPtr])
 	{
-		CSEIPLogPtr=(CSEIPLogPtr+1)&CSEIP_LOG_MASK;
+		++prevCSEIPLog.count;
+	}
+	else if(CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK-2)&CSEIP_LOG_MASK]==CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK)&CSEIP_LOG_MASK] &&
+	        CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK-1)&CSEIP_LOG_MASK]==CSEIPLog[CSEIPLogPtr])
+	{
+		// CSEIP_LOG_MASK=length-1
+		// Pattern like:
+		//    BUSYWAIT:  TEST DS:[12345H],00H
+		//               JNE BUSYWAIT
+		// In that case execution should be:
+		//    BUSYWAIT:  TEST DS:[12345H],00H      CSEIPLog[currentPtr+CSEIP_LOG_MASK-2]
+		//               JNE BUSYWAIT              CSEIPLog[currentPtr+CSEIP_LOG_MASK-1]
+		//    BUSYWAIT:  TEST DS:[12345H],00H      CSEIPLog[currentPtr+CSEIP_LOG_MASK]
+		//               JNE BUSYWAIT              CSEIPLog[currentPtr]
+		++CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK-2)&CSEIP_LOG_MASK].count;
+		++CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK-1)&CSEIP_LOG_MASK].count;
+		CSEIPLogPtr=(CSEIPLogPtr+CSEIP_LOG_MASK-0)&CSEIP_LOG_MASK;
+	}
+	else if(CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK-4)&CSEIP_LOG_MASK]==CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK-1)&CSEIP_LOG_MASK] &&
+	        CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK-3)&CSEIP_LOG_MASK]==CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK)&CSEIP_LOG_MASK] &&
+	        CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK-2)&CSEIP_LOG_MASK]==CSEIPLog[CSEIPLogPtr])
+	{
+		// CSEIP_LOG_MASK=length-1
+		// Pattern like:
+		//    BUSYWAIT:  IN  AL,IOPORT
+		//               TEST AL,1
+		//               JNE BUSYWAIT
+		// In that case execution should be:
+		//    BUSYWAIT:  IN AL,IOPORT              CSEIPLog[currentPtr+CSEIP_LOG_MASK-4]
+		//               TEST AL,1                 CSEIPLog[currentPtr+CSEIP_LOG_MASK-3]
+		//               JNE BUSYWAIT              CSEIPLog[currentPtr+CSEIP_LOG_MASK-2]
+		//    BUSYWAIT:  TEST DS:[12345H],00H      CSEIPLog[currentPtr+CSEIP_LOG_MASK-1]
+		//               TEST AL,1                 CSEIPLog[currentPtr+CSEIP_LOG_MASK]
+		//               JNE BUSYWAIT              CSEIPLog[currentPtr]
+		++CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK-4)&CSEIP_LOG_MASK].count;
+		++CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK-3)&CSEIP_LOG_MASK].count;
+		++CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK-2)&CSEIP_LOG_MASK].count;
+		CSEIPLogPtr=(CSEIPLogPtr+CSEIP_LOG_MASK-1)&CSEIP_LOG_MASK;
+	}
+	else if(CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK-6)&CSEIP_LOG_MASK]==CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK-2)&CSEIP_LOG_MASK] &&
+	        CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK-5)&CSEIP_LOG_MASK]==CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK-1)&CSEIP_LOG_MASK] &&
+	        CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK-4)&CSEIP_LOG_MASK]==CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK)&CSEIP_LOG_MASK] &&
+	        CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK-3)&CSEIP_LOG_MASK]==CSEIPLog[CSEIPLogPtr])
+	{
+		++CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK-6)&CSEIP_LOG_MASK].count;
+		++CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK-5)&CSEIP_LOG_MASK].count;
+		++CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK-4)&CSEIP_LOG_MASK].count;
+		++CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK-3)&CSEIP_LOG_MASK].count;
+		CSEIPLogPtr=(CSEIPLogPtr+CSEIP_LOG_MASK-2)&CSEIP_LOG_MASK;
 	}
 	else
 	{
-		++prevCSEIPLog.count;
+		CSEIPLogPtr=(CSEIPLogPtr+1)&CSEIP_LOG_MASK;
 	}
 
 	if(true==disassembleEveryStep && lastDisassembleAddr!=cseip)
