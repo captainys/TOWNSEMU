@@ -824,6 +824,7 @@ bool TownsFDC::WriteFault(void) const
 						else
 						{
 							MakeReady();
+							DMACPtr->SetDMATransferEnd(TOWNSDMA_FPD);
 						}
 					}
 					else
@@ -875,6 +876,7 @@ bool TownsFDC::WriteFault(void) const
 							else
 							{
 								MakeReady();
+								DMACPtr->SetDMATransferEnd(TOWNSDMA_FPD);
 							}
 						}
 						else

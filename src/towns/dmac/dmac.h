@@ -80,6 +80,10 @@ public:
 	State::Channel *GetDMAChannel(unsigned int ch);
 	const State::Channel *GetDMAChannel(unsigned int ch) const;
 
+	/*! Emulate ~END signal input to 71071.
+	*/
+	void SetDMATransferEnd(unsigned int chNum);
+
 	/*! Transfer data from device to memory.
 	    Returns number of bytes written to memory.
 	*/

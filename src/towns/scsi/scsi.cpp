@@ -520,6 +520,7 @@ void TownsSCSI::ExecSCSICommand(void)
 					    DMACh,
 					    data.size()-state.bytesTransferred,
 					    data.data()+state.bytesTransferred);
+					townsPtr->dmac.SetDMATransferEnd(TOWNSDMA_SCSI);
 					if(data.size()<=state.bytesTransferred)
 					{
 						state.status=STATUSCODE_GOOD;
@@ -539,6 +540,7 @@ void TownsSCSI::ExecSCSICommand(void)
 					    DMACh,
 					    data.size()-state.bytesTransferred,
 					    data.data()+state.bytesTransferred);
+					townsPtr->dmac.SetDMATransferEnd(TOWNSDMA_SCSI);
 					if(data.size()<=state.bytesTransferred)
 					{
 						state.status=STATUSCODE_GOOD;
@@ -571,6 +573,7 @@ void TownsSCSI::ExecSCSICommand(void)
 					        state.dev[state.selId].imageFName,
 					        LBA+state.bytesTransferred,
 					        LEN-state.bytesTransferred));
+					townsPtr->dmac.SetDMATransferEnd(TOWNSDMA_SCSI);
 					if(LEN<=state.bytesTransferred)
 					{
 						state.status=STATUSCODE_GOOD;
@@ -627,6 +630,7 @@ void TownsSCSI::ExecSCSICommand(void)
 					LEN*=HARDDISK_SECTOR_LENGTH;
 
 					auto toWrite=townsPtr->dmac.MemoryToDevice(DMACh,LEN-state.bytesTransferred);
+					townsPtr->dmac.SetDMATransferEnd(TOWNSDMA_SCSI);
 					if(true==cpputil::WriteBinaryFile(
 					    state.dev[state.selId].imageFName,
 					    LBA+state.bytesTransferred,

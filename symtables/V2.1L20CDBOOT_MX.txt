@@ -230,6 +230,66 @@ M 0
 /end
 /begin0
 T 0
+* 000003A4:00001579
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 0
+* 000003A4:0000157E
+# BUSY?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 000003A4:00001582
+# MSG or C/D?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 000003A4:00001586
+# DMA Terminal Count or End?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 000003A4:00001592
+# Turn off SCSI DMA Channel
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 000003A4:000015A1
+# BUSY?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
 * 000003A4:00001734
 # 
 R 

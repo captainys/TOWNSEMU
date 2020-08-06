@@ -848,6 +848,7 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 						data.resize(DMACh->currentCount+1);
 					}
 					DMACPtr->DeviceToMemory(DMACh,data);
+					DMACPtr->SetDMATransferEnd(TOWNSDMA_CDROM);
 					++state.readingSectorHSG;
 					townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+NOTIFICATION_TIME);
 					state.DMATransfer=false;

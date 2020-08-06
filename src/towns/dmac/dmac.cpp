@@ -100,6 +100,7 @@ TownsDMAC::TownsDMAC(class FMTowns *townsPtr) : Device(townsPtr)
 	case TOWNSIO_DMAC_COUNT_LOW://           0xA2,
 		state.ch[state.SELCH].currentCount&=0xff00;
 		state.ch[state.SELCH].currentCount|=(data&0xff);
+		state.ch[state.SELCH].terminalCount=false; // Probably
 		if(true!=state.BASE)
 		{
 			state.ch[state.SELCH].baseCount=state.ch[state.SELCH].currentCount;
@@ -108,6 +109,7 @@ TownsDMAC::TownsDMAC(class FMTowns *townsPtr) : Device(townsPtr)
 	case TOWNSIO_DMAC_COUNT_HIGH://          0xA3,
 		state.ch[state.SELCH].currentCount&=0xff;
 		state.ch[state.SELCH].currentCount|=((data&0xff)<<8);
+		state.ch[state.SELCH].terminalCount=false; // Probably
 		if(true!=state.BASE)
 		{
 			state.ch[state.SELCH].baseCount=state.ch[state.SELCH].currentCount;
@@ -282,6 +284,11 @@ const TownsDMAC::State::Channel *TownsDMAC::GetDMAChannel(unsigned int ch) const
 		return &state.ch[ch];
 	}
 	return nullptr;
+}
+
+void TownsDMAC::SetDMATransferEnd(unsigned int chNum)
+{
+	state.ch[chNum].terminalCount=true;
 }
 
 unsigned int TownsDMAC::DeviceToMemory(State::Channel *DMACh,const std::vector <unsigned char> &data)
