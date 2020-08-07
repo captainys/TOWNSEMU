@@ -357,7 +357,7 @@ void i486DX::Reset(void)
 	state.exception=false;
 }
 
-void i486DX::HandleException(bool wasReadOp,Memory &mem)
+void i486DX::HandleException(bool wasReadOp,Memory &mem,unsigned int numInstBytesForCallStack)
 {
 	/* Should add a flag.
 	if(nullptr!=debuggerPtr)
@@ -368,18 +368,18 @@ void i486DX::HandleException(bool wasReadOp,Memory &mem)
 	switch(state.exceptionType)
 	{
 	case EXCEPTION_PF:
-		Interrupt(INT_PAGE_FAULT,mem,0,0);
+		Interrupt(INT_PAGE_FAULT,mem,0,numInstBytesForCallStack);
 		Push(mem,32,(wasReadOp ? 0 : 2));
 		break;
 	case EXCEPTION_GP:
-		Interrupt(INT_GENERAL_PROTECTION,mem,0,0);
+		Interrupt(INT_GENERAL_PROTECTION,mem,0,numInstBytesForCallStack);
 		if(true!=IsInRealMode()) // As HIMEM.SYS's expectation.
 		{
 			Push(mem,32,state.exceptionCode);
 		}
 		break;
 	case EXCEPTION_ND:
-		Interrupt(INT_SEGMENT_NOT_PRESENT,mem,0,0);
+		Interrupt(INT_SEGMENT_NOT_PRESENT,mem,0,numInstBytesForCallStack);
 		if(true!=IsInRealMode())
 		{
 			Push(mem,32,state.exceptionCode);

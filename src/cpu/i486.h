@@ -2405,8 +2405,10 @@ public:
 
 	/*! Jump to an appropriate exception handler.
 	    Also clear state.exception.
+
+	    See Interrupt() function for numInstBytes.
 	*/
-	void HandleException(bool wasReadOp,Memory &mem);
+	void HandleException(bool wasReadOp,Memory &mem,unsigned int numInstBytesForCallStack);
 
 	/*! 80386 and 80486 apparently accepts REPNE in place for REP is used for INS,MOVS,OUTS,LODS,STOS.
 	    This inline function just make REPNE work as REP.
@@ -2887,12 +2889,12 @@ public:
 	/*! Test I/O-read exception, and RaiseException and HandleException if needed.
 	    Returns true if an exception was raised.
 	*/
-	inline bool TakeIOReadException(unsigned int ioport,unsigned int accessSize,Memory &mem);
+	inline bool TakeIOReadException(unsigned int ioport,unsigned int accessSize,Memory &mem,unsigned int numInstBytes);
 
 	/*! Test I/O-write exception, and RaiseException and HandleException if needed.
 	    Returns true if an exception was raised.
 	*/
-	inline bool TakeIOWriteException(unsigned int ioport,unsigned int accessSize,Memory &mem);
+	inline bool TakeIOWriteException(unsigned int ioport,unsigned int accessSize,Memory &mem,unsigned int numInstBytes);
 
 	/*! Return true if I/O access is permitted in I/O Map of TSS.
 	    It could raise exception.
@@ -2961,7 +2963,7 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 					unsigned int Ibit=2;
 					unsigned int EXTbit=0; // 1 if external interrupt source.
 					RaiseException(EXCEPTION_GP,INTNum*8+Ibit+EXTbit); // EXT -> [1] 9-8 Error Code
-					HandleException(false,mem);  // <- This will shoot INT 0BH
+					HandleException(false,mem,numInstBytesForCallStack);  // <- This will shoot INT 0BH
 				}
 				return;
 			case 0b0110:
@@ -3401,28 +3403,28 @@ inline void i486DX::SetRegisterValue8(unsigned int reg,unsigned char value)
 	state.reg32()[regIdx&3]|=(value<<(highLow<<3));
 }
 
-inline bool i486DX::TakeIOReadException(unsigned int ioport,unsigned int accessSize,Memory &mem)
+inline bool i486DX::TakeIOReadException(unsigned int ioport,unsigned int accessSize,Memory &mem,unsigned int numInstBytes)
 {
 	if(0!=(state.EFLAGS&EFLAGS_VIRTUAL86))
 	{
 		if(true!=TestIOMapPermission(state.TR,ioport,accessSize,mem))
 		{
 			RaiseException(EXCEPTION_GP,0);
-			HandleException(true,mem);
+			HandleException(true,mem,numInstBytes);
 			return true;
 		}
 	}
 	return false;
 }
 
-inline bool i486DX::TakeIOWriteException(unsigned int ioport,unsigned int accessSize,Memory &mem)
+inline bool i486DX::TakeIOWriteException(unsigned int ioport,unsigned int accessSize,Memory &mem,unsigned int numInstBytes)
 {
 	if(0!=(state.EFLAGS&EFLAGS_VIRTUAL86))
 	{
 		if(true!=TestIOMapPermission(state.TR,ioport,accessSize,mem))
 		{
 			RaiseException(EXCEPTION_GP,0);
-			HandleException(false,mem);
+			HandleException(false,mem,numInstBytes);
 			return true;
 		}
 	}
