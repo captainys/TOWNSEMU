@@ -578,13 +578,17 @@ void TownsSCSI::ExecSCSICommand(void)
 
 					LBA*=HARDDISK_SECTOR_LENGTH;
 					LEN*=HARDDISK_SECTOR_LENGTH;
-					state.bytesTransferred+=townsPtr->dmac.DeviceToMemory(
+					auto bytesTransferred=townsPtr->dmac.DeviceToMemory(
 					    DMACh,
 					    cpputil::ReadBinaryFile(
 					        state.dev[state.selId].imageFName,
 					        LBA+state.bytesTransferred,
 					        LEN-state.bytesTransferred));
-					townsPtr->dmac.SetDMATransferEnd(TOWNSDMA_SCSI);
+					if(0<bytesTransferred)
+					{
+						state.bytesTransferred+=bytesTransferred;
+						townsPtr->dmac.SetDMATransferEnd(TOWNSDMA_SCSI);
+					}
 					if(LEN<=state.bytesTransferred)
 					{
 						state.status=STATUSCODE_GOOD;
@@ -641,32 +645,40 @@ void TownsSCSI::ExecSCSICommand(void)
 					LEN*=HARDDISK_SECTOR_LENGTH;
 
 					auto toWrite=townsPtr->dmac.MemoryToDevice(DMACh,LEN-state.bytesTransferred);
-					townsPtr->dmac.SetDMATransferEnd(TOWNSDMA_SCSI);
-					if(true==cpputil::WriteBinaryFile(
-					    state.dev[state.selId].imageFName,
-					    LBA+state.bytesTransferred,
-					    (unsigned int)toWrite.size(),
-					    toWrite.data()))
+					if(0==toWrite.size())
 					{
-						state.bytesTransferred+=toWrite.size();
-						if(LEN<=state.bytesTransferred)
-						{
-							state.status=STATUSCODE_GOOD;
-							state.message=0;
-							EnterStatusPhase();
-						}
-						else
-						{
-							townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DATA_INTERVAL);
-							// Continue Data-Out Phase.
-						}
+						townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DATA_INTERVAL);
+						// Continue Data-Out Phase.
 					}
 					else
 					{
-						state.senseKey=SENSEKEY_ILLEGAL_REQUEST;
-						state.status=STATUSCODE_CHECK_CONDITION;
-						state.message=0; // What am I supposed to return?
-						EnterStatusPhase();
+						townsPtr->dmac.SetDMATransferEnd(TOWNSDMA_SCSI);
+						if(true==cpputil::WriteBinaryFile(
+						    state.dev[state.selId].imageFName,
+						    LBA+state.bytesTransferred,
+						    (unsigned int)toWrite.size(),
+						    toWrite.data()))
+						{
+							state.bytesTransferred+=toWrite.size();
+							if(LEN<=state.bytesTransferred)
+							{
+								state.status=STATUSCODE_GOOD;
+								state.message=0;
+								EnterStatusPhase();
+							}
+							else
+							{
+								townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DATA_INTERVAL);
+								// Continue Data-Out Phase.
+							}
+						}
+						else
+						{
+							state.senseKey=SENSEKEY_ILLEGAL_REQUEST;
+							state.status=STATUSCODE_CHECK_CONDITION;
+							state.message=0; // What am I supposed to return?
+							EnterStatusPhase();
+						}
 					}
 				}
 				else

@@ -299,22 +299,23 @@ unsigned int TownsDMAC::DeviceToMemory(State::Channel *DMACh,unsigned long long 
 {
 	unsigned int i;
 	auto &mem=townsPtr->mem;
-
 	for(i=0; i<len && 0<=DMACh->currentCount && DMACh->currentCount<=DMACh->baseCount; ++i)
 	{
 		mem.StoreByte(DMACh->currentAddr,data[i]);
 		++DMACh->currentAddr;
 		--DMACh->currentCount;
 	}
-
-	if(DMACh->baseCount<DMACh->currentCount)
+	if(0<i)
 	{
-		DMACh->terminalCount=true;
-	}
-	if(DMACh->currentCount+1==0 && true==DMACh->AUTI()) // :-(  Maybe I should use signed integer for counts.
-	{
-		DMACh->currentAddr=DMACh->baseAddr;
-		DMACh->currentCount=DMACh->baseCount;
+		if(DMACh->baseCount<DMACh->currentCount)
+		{
+			DMACh->terminalCount=true;
+		}
+		if(DMACh->currentCount+1==0 && true==DMACh->AUTI()) // :-(  Maybe I should use signed integer for counts.
+		{
+			DMACh->currentAddr=DMACh->baseAddr;
+			DMACh->currentCount=DMACh->baseCount;
+		}
 	}
 	return i;
 }
@@ -330,15 +331,18 @@ std::vector <unsigned char> TownsDMAC::MemoryToDevice(State::Channel *DMACh,unsi
 		++DMACh->currentAddr;
 		--DMACh->currentCount;
 	}
-	if(DMACh->baseCount<DMACh->currentCount)
-	{
-		DMACh->terminalCount=true;
-	}
 	data.resize(i);
-	if(DMACh->currentCount+1==0 && true==DMACh->AUTI()) // :-(  Maybe I should use signed integer for counts.
+	if(0<i)
 	{
-		DMACh->currentAddr=DMACh->baseAddr;
-		DMACh->currentCount=DMACh->baseCount;
+		if(DMACh->baseCount<DMACh->currentCount)
+		{
+			DMACh->terminalCount=true;
+		}
+		if(DMACh->currentCount+1==0 && true==DMACh->AUTI()) // :-(  Maybe I should use signed integer for counts.
+		{
+			DMACh->currentAddr=DMACh->baseAddr;
+			DMACh->currentCount=DMACh->baseCount;
+		}
 	}
 	return data;
 }
