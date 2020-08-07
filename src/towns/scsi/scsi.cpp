@@ -399,6 +399,17 @@ void TownsSCSI::ProcessPhaseData(unsigned int dataByte)
 }
 void TownsSCSI::ExecSCSICommand(void)
 {
+	if(true==monitorSCSICmd)
+	{
+		std::cout << "SCSI Cmd:";
+		for(int i=0; i<state.nCommandFilled; ++i)
+		{
+			std::cout << " " << cpputil::Ubtox(state.commandBuffer[i]);
+		}
+		std::cout << " @ ";
+		std::cout << cpputil::Ustox(townsPtr->cpu.state.CS().value) << ":";
+		std::cout << cpputil::Uitox(townsPtr->cpu.state.EIP) << std::endl;
+	}
 	switch(state.commandBuffer[0])
 	{
 	case SCSICMD_INQUIRY:

@@ -152,6 +152,7 @@ public:
 	};
 
 	State state;
+	bool monitorSCSICmd=false;
 
 	TownsSCSI(class FMTowns *townsPtr);
 

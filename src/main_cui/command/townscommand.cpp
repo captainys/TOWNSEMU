@@ -134,6 +134,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	featureMap["CMDLOG"]=ENABLE_CMDLOG;
 	featureMap["AUTODISASM"]=ENABLE_DISASSEMBLE_EVERY_INST;
 	featureMap["IOMON"]=ENABLE_IOMONITOR;
+	featureMap["SCSIMON"]=ENABLE_SCSICMDMONITOR;
 	featureMap["EVENTLOG"]=ENABLE_EVENTLOG;
 	featureMap["DEBUGGER"]=ENABLE_DEBUGGER;
 	featureMap["DEBUG"]=ENABLE_DEBUGGER;
@@ -381,6 +382,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  IO Monitor." << std::endl;
 	std::cout << "  ioportMin and ioportMax are optional." << std::endl;
 	std::cout << "  Can specify multiple range by enabling IOMON multiple times." << std::endl;
+	std::cout << "SCSIMON" << std::endl;
+	std::cout <<"   SCSI command monitor." << std::endl;
 	std::cout << "EVENTLOG" << std::endl;
 	std::cout << "  Event Log." << std::endl;
 	std::cout << "DEBUGGER" << std::endl;
@@ -976,6 +979,9 @@ void TownsCommandInterpreter::Execute_Enable(FMTowns &towns,Command &cmd)
 				towns.debugger.MonitorIO(0,0xFFFF);
 			}
 			break;
+		case ENABLE_SCSICMDMONITOR:
+			towns.scsi.monitorSCSICmd=true;
+			break;
 		case ENABLE_EVENTLOG:
 			towns.eventLog.BeginRecording(towns.state.townsTime);
 			towns.var.pauseOnPowerOff=true;
@@ -1044,6 +1050,9 @@ void TownsCommandInterpreter::Execute_Disable(FMTowns &towns,Command &cmd)
 				std::cout << "IO_Monitor is OFF" << std::endl;
 				towns.debugger.UnmonitorIO(0,0xFFFF);
 			}
+			break;
+		case ENABLE_SCSICMDMONITOR:
+			towns.scsi.monitorSCSICmd=false;
 			break;
 		case ENABLE_EVENTLOG:
 			towns.eventLog.mode=TownsEventLog::MODE_NONE;
