@@ -1831,8 +1831,18 @@ public:
 		For INT, INTO it should be 2.
 		For INT3, it should be 1.
 		For interrupt by exception, it should be 0 to allow re-try.
+
+		numInstBytes is divided into numInstBytesFoReturn and numInstBytesForCallStack.
+		The two values should be equal excpet when INT is from an exception.
+		The exception handler may correct the exception source and return to the same instruction that caused the exception,
+		or may handle what the instruction meant to do and return to the next instruction.
+		In that situation, numInstBytesForReturn should be zero, and numInstBytesForCallStack should be the
+		number of instruction-bytes that caused the exception.
+
+		numInstBytesForReturn should be the number of instruction bytes that caused an interrupt, or zero if it is from PIC or exception.
+		numInstBytesForCallStack should be the number of instruction bytes that caused an interrupt, or zero if it is from PIC.
 	*/
-	inline void Interrupt(unsigned int intNum,Memory &mem,unsigned int numInstBytes);
+	inline void Interrupt(unsigned int intNum,Memory &mem,unsigned int numInstBytesForReturn,unsigned int numInstBytesForCallStack);
 	inline void IOOut8(InOut &io,unsigned int ioport,unsigned int data);
 	inline void IOOut16(InOut &io,unsigned int ioport,unsigned int data);
 	inline void IOOut32(InOut &io,unsigned int ioport,unsigned int data);
@@ -2898,11 +2908,11 @@ public:
 
 #include "i486debug.h"
 
-inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numInstBytes)
+inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numInstBytesForReturn,unsigned int numInstBytesForCallStack)
 {
 	if(nullptr!=debuggerPtr)
 	{
-		debuggerPtr->Interrupt(*this,INTNum,mem,numInstBytes);
+		debuggerPtr->Interrupt(*this,INTNum,mem,numInstBytesForReturn);
 	}
 
 	state.halt=false;
@@ -2911,7 +2921,7 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 	{
 		Push(mem,16,state.EFLAGS&0xFFFF);
 		Push(mem,16,state.CS().value);
-		Push(mem,16,state.EIP+numInstBytes);
+		Push(mem,16,state.EIP+numInstBytesForReturn);
 
 		auto intVecAddr=(INTNum&0xFF)*4;
 		auto destIP=mem.FetchWord(intVecAddr);
@@ -2921,7 +2931,7 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 			PushCallStack(
 			    true,INTNum,GetAX(), // Is an interrupt
 			    state.GetCR(0),
-			    state.CS().value,state.EIP,numInstBytes,
+			    state.CS().value,state.EIP,numInstBytesForCallStack,
 			    destCS,destIP,
 			    mem);
 		}
@@ -2971,7 +2981,7 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 				PushCallStack(
 				    true,INTNum,GetAX(), // Is an interrupt
 				    state.GetCR(0),
-				    state.CS().value,state.EIP,numInstBytes,
+				    state.CS().value,state.EIP,numInstBytesForCallStack,
 				    desc.SEG,desc.OFFSET,
 				    mem);
 			}
@@ -2982,7 +2992,7 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 				LoadSegmentRegister(newCS,desc.SEG,mem);
 				Push(mem,gateOperandSize,state.EFLAGS);
 				Push(mem,gateOperandSize,state.CS().value);
-				Push(mem,gateOperandSize,state.EIP+numInstBytes);
+				Push(mem,gateOperandSize,state.EIP+numInstBytesForReturn);
 				SetIPorEIP(gateOperandSize,desc.OFFSET);
 				state.CS()=newCS;
 				SetIF(false);
@@ -3010,7 +3020,7 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 				Push(mem,32,TempESP);
 				Push(mem,32,TempEFLAGS);
 				Push(mem,32,state.CS().value);
-				Push(mem,32,state.EIP+numInstBytes);
+				Push(mem,32,state.EIP+numInstBytesForReturn);
 
 				SetIPorEIP(gateOperandSize,desc.OFFSET);
 				LoadSegmentRegister(state.CS(),desc.SEG,mem);

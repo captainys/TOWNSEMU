@@ -4060,7 +4060,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	switch(opCodeRenumberTable[inst.opCode])
 	{
 	case I486_RENUMBER_UNDEFINED_SHOOT_INT6:
-		Interrupt(INT_INVALID_OPCODE,mem,0);
+		Interrupt(INT_INVALID_OPCODE,mem,0,0);
 		EIPSetByInstruction=true;
 		clocksPassed=26;  // ? How many clocks should I use?
 		break;
@@ -4288,7 +4288,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
 				if(0==value.byteData[0])
 				{
-					Interrupt(0,mem,0); // [1] pp.26-28
+					Interrupt(0,mem,0,0); // [1] pp.26-28
 					// I don't think INT 0 was issued unless division by zero.
 					// I thought it just overflew if quo didn't fit in the target register, am I wrong?
 				}
@@ -4307,7 +4307,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
 				if(0==value.byteData[0])
 				{
-					Interrupt(0,mem,0); // [1] pp.26-28
+					Interrupt(0,mem,0,0); // [1] pp.26-28
 					// I don't think INT 0 was issued unless division by zero.
 					// I thought it just overflew if quo didn't fit in the target register, am I wrong?
 				}
@@ -4510,7 +4510,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				else if(0==denom)
 				{
 					clocksPassed=40;
-					Interrupt(0,mem,0); // [1] pp.26-28
+					Interrupt(0,mem,0,0); // [1] pp.26-28
 					// I don't think INT 0 was issued unless division by zero.
 					// I thought it just overflew if quo didn't fit in the target register, am I wrong?
 				}
@@ -4547,7 +4547,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				else if(0==denom)
 				{
 					clocksPassed=40;
-					Interrupt(0,mem,0); // [1] pp.26-28
+					Interrupt(0,mem,0,0); // [1] pp.26-28
 					// I don't think INT 0 was issued unless division by zero.
 					// I thought it just overflew if quo didn't fit in the target register, am I wrong?
 				}
@@ -5937,19 +5937,19 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 
 	case I486_RENUMBER_INT3://       0xCC,
-		Interrupt(3,mem,1);
+		Interrupt(3,mem,1,1);
 		EIPSetByInstruction=true;
 		clocksPassed=26;
 		break;
 	case I486_RENUMBER_INT://        0xCD,
 		clocksPassed=(IsInRealMode() ? 30 : 44);
-		Interrupt(inst.EvalUimm8(),mem,2);
+		Interrupt(inst.EvalUimm8(),mem,2,2);
 		EIPSetByInstruction=true;
 		break;
 	case I486_RENUMBER_INTO://       0xCE,
 		if(GetOF())
 		{
-			Interrupt(inst.EvalUimm8(),mem,2);
+			Interrupt(inst.EvalUimm8(),mem,2,2);
 			EIPSetByInstruction=true;
 			clocksPassed=(IsInRealMode() ? 28 : 46);
 		}
@@ -6447,7 +6447,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{
 				if(IsInRealMode())
 				{
-					Interrupt(6,mem,0);
+					Interrupt(6,mem,0,0);
 					EIPSetByInstruction=true;
 				}
 				else
@@ -6480,7 +6480,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{
 				if(IsInRealMode())
 				{
-					Interrupt(6,mem,0);
+					Interrupt(6,mem,0,0);
 					EIPSetByInstruction=true;
 				}
 				else

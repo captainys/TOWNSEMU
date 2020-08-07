@@ -588,7 +588,7 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 	case CMD_INTERRUPT:
 		if(1<cmd.argv.size())
 		{
-			towns.cpu.Interrupt(cpputil::Xtoi(cmd.argv[1].c_str()),towns.mem,0);
+			towns.cpu.Interrupt(cpputil::Xtoi(cmd.argv[1].c_str()),towns.mem,0,0);
 			towns.PrintStatus();
 		}
 		else
@@ -2608,13 +2608,13 @@ void TownsCommandInterpreter::Execute_Exception(FMTowns &towns,Command &cmd)
 		}
 		else if("PAGEFAULT"==typeStr)
 		{
-			towns.cpu.Interrupt(i486DX::INT_PAGE_FAULT,towns.mem,0);
+			towns.cpu.Interrupt(i486DX::INT_PAGE_FAULT,towns.mem,0,0);
 			towns.cpu.Push(towns.mem,32,0);
 			towns.PrintStatus();
 		}
 		else if("DIVISION"==typeStr)
 		{
-			towns.cpu.Interrupt(i486DX::INT_DIVISION_BY_ZERO,towns.mem,0);
+			towns.cpu.Interrupt(i486DX::INT_DIVISION_BY_ZERO,towns.mem,0,0);
 			towns.PrintStatus();
 		}
 		else

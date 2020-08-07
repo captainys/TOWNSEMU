@@ -368,18 +368,18 @@ void i486DX::HandleException(bool wasReadOp,Memory &mem)
 	switch(state.exceptionType)
 	{
 	case EXCEPTION_PF:
-		Interrupt(INT_PAGE_FAULT,mem,0);
+		Interrupt(INT_PAGE_FAULT,mem,0,0);
 		Push(mem,32,(wasReadOp ? 0 : 2));
 		break;
 	case EXCEPTION_GP:
-		Interrupt(INT_GENERAL_PROTECTION,mem,0);
+		Interrupt(INT_GENERAL_PROTECTION,mem,0,0);
 		if(true!=IsInRealMode()) // As HIMEM.SYS's expectation.
 		{
 			Push(mem,32,state.exceptionCode);
 		}
 		break;
 	case EXCEPTION_ND:
-		Interrupt(INT_SEGMENT_NOT_PRESENT,mem,0);
+		Interrupt(INT_SEGMENT_NOT_PRESENT,mem,0,0);
 		if(true!=IsInRealMode())
 		{
 			Push(mem,32,state.exceptionCode);
@@ -2835,7 +2835,11 @@ void i486DX::PopCallStack(unsigned int CS,unsigned int EIP)
 		bool match=false;
 		for(auto iter=callStack.rbegin(); iter!=callStack.rend(); ++iter)
 		{
-			if(CS==iter->fromCS && EIP==iter->fromEIP+iter->callOpCodeLength)
+			// Interrupt caused by an exception may return to the same CS:EIP that caused the exception,
+			// or the exception handler may process what the instruction meant to do and return to the
+			// next instruction.  Therefore, CS:EIP needs to be checked against return pointer, and
+			// one instruction after the return pointer.
+			if(CS==iter->fromCS && (EIP==iter->fromEIP+iter->callOpCodeLength || EIP==iter->fromEIP))
 			{
 				match=true;
 				break;
