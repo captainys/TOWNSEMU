@@ -365,6 +365,8 @@ void i486DX::HandleException(bool wasReadOp,Memory &mem,unsigned int numInstByte
 		debuggerPtr->ExternalBreak("Exception!");
 	} */
 
+	// Only some of the exceptions push error code onto the stack.
+	// See Section 9.9 of i486 Programmer's Reference Manual for the information.
 	switch(state.exceptionType)
 	{
 	case EXCEPTION_PF:
@@ -386,7 +388,7 @@ void i486DX::HandleException(bool wasReadOp,Memory &mem,unsigned int numInstByte
 		}
 		break;
 	case EXCEPTION_UD:
-		Abort("UD handling not implemented yet.");
+		Interrupt(INT_INVALID_OPCODE,mem,0,numInstBytesForCallStack);
 		break;
 	case EXCEPTION_SS:
 		Abort("SS handling not implemented yet.");

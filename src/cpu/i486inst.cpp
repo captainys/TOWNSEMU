@@ -4825,6 +4825,14 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_RENUMBER_ARPL://       0x63,
 		{
 			clocksPassed=9;
+			if(0!=(state.EFLAGS&EFLAGS_VIRTUAL86))
+			{
+				RaiseException(EXCEPTION_UD,0);
+				HandleException(true,mem,inst.numBytes);
+				EIPSetByInstruction=true;
+				break;
+			}
+
 			auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
 			auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize/8);
 			auto dst=value1.GetAsWord();
