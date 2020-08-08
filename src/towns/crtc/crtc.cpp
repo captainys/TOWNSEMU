@@ -680,6 +680,8 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 			state.showPageFDA0[1]=(0!=( data    &3));
 		}
 		break;
+	case TOWNSIO_FMR_HSYNC_VSYNC: // 0xFF86
+		break;
 	case TOWNSIO_WRITE_TO_CLEAR_VSYNCIRQ:// 0x5CA
 		TurnOffVSYNCIRQ();
 		break;
@@ -891,6 +893,11 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 	case TOWNSIO_HSYNC_VSYNC:
 		data= (true==InVSYNC(townsPtr->state.townsTime) ? 1 : 0)
 		     |(true==InHSYNC(townsPtr->state.townsTime) ? 2 : 0);
+		break;
+	case TOWNSIO_FMR_HSYNC_VSYNC: // 0xFF86
+		data= (true==InVSYNC(townsPtr->state.townsTime) ? 0x04 : 0)
+		     |(true==InHSYNC(townsPtr->state.townsTime) ? 0x80 : 0)
+		     |0x10;
 		break;
 	}
 	return data;

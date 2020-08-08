@@ -318,6 +318,9 @@ enum
 	TOWNSIO_FMR_VRAMPAGESEL=     0xFF83, 
 	// Not official.  But, since FMR_VRAMMASK is also mapped to I/O FF81H, FF83H may be too.
 
+	// The 4th Unit Series ACT4 Zero uses FF86 for HSYNC and VSYNC.
+	TOWNSIO_FMR_HSYNC_VSYNC=     0xFF86,
+
 	// 0x2000 to 0x2FFF must be open for testing for Fujitsu's internal development.
 	// [2] pp.12
 	// I take two addresses for VM-Host communication.
