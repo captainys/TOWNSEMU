@@ -647,8 +647,17 @@ void TownsSCSI::ExecSCSICommand(void)
 					auto toWrite=townsPtr->dmac.MemoryToDevice(DMACh,LEN-state.bytesTransferred);
 					if(0==toWrite.size())
 					{
-						townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DATA_INTERVAL);
-						// Continue Data-Out Phase.
+						if(LEN<=state.bytesTransferred) // DOS6 installer sends LEN==0.
+						{
+							state.status=STATUSCODE_GOOD;
+							state.message=0;
+							EnterStatusPhase();
+						}
+						else
+						{
+							townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DATA_INTERVAL);
+							// Continue Data-Out Phase.
+						}
 					}
 					else
 					{
