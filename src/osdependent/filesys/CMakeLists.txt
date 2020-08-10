@@ -3,9 +3,9 @@ set(TARGET_NAME filesys)
 if(MSVC)
 	set(SRCS filesys_win.cpp)
 elseif(APPLE)
-	set(SRCS filesys_null.cpp)
+	set(SRCS filesys_unix.cpp)
 elseif(UNIX)
-	set(SRCS filesys_null.cpp)
+	set(SRCS filesys_unix.cpp)
 else()
 	set(SRCS filesys_null.cpp)
 endif()
@@ -23,6 +23,12 @@ if(MSVC)
 	 	NAME FILESYS_TEST COMMAND filesys_test "${CMAKE_CURRENT_SOURCE_DIR}" "."
 	)
 elseif(APPLE)
+	add_test(
+	 	NAME FILESYS_TEST COMMAND filesys_test "${CMAKE_CURRENT_SOURCE_DIR}" "."
+	)
 elseif(UNIX)
+	add_test(
+	 	NAME FILESYS_TEST COMMAND filesys_test "${CMAKE_CURRENT_SOURCE_DIR}" "."
+	)
 else()
 endif()
