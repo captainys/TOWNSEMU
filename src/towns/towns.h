@@ -41,6 +41,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "gameport.h"
 #include "timer.h"
 #include "serialport.h"
+#include "vndrv.h"
 
 #include "eventlog.h"
 
@@ -298,6 +299,7 @@ public:
 	TownsGamePort gameport;
 	TownsTimer timer;
 	TownsSerialPort serialport;
+	TownsVnDrv vndrv;
 	// Machine State <<
 
 	unsigned int townsType;
