@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 
-set(DISC_IMAGE_DIR "D:/TownsISO")
+set(DISC_IMAGE_DIR "C:/D/TownsISO")
 
 add_compile_definitions(YS_LITTLE_ENDIAN)
 
