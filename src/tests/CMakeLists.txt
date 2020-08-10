@@ -8,4 +8,4 @@ add_test(NAME disasm_addr COMMAND disasm_addr)
 
 add_executable(vram_mapping vram_mapping.cpp)
 target_link_libraries(vram_mapping cpputil)
-add_test(NAME vram_mapping COMMAND disasm_operand)
+add_test(NAME vram_mapping COMMAND vram_mapping)

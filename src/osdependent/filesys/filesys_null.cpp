@@ -8,7 +8,7 @@ FileSys::FileSys()
 FileSys::~FileSys()
 {
 }
-FileSys::DirectoryEntry FileSys::FindFirst(void)
+FileSys::DirectoryEntry FileSys::FindFirst(std::string subDir)
 {
 	DirectoryEntry ent;
 	return ent;

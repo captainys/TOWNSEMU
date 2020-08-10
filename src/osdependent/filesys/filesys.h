@@ -11,6 +11,7 @@ class FileSys
 public:
 	class FindContext;
 
+	FindContext *context=nullptr;
 	bool linked=false;
 	std::string hostPath;
 
@@ -19,11 +20,12 @@ public:
 	public:
 		bool endOfDir=false;
 		bool isDir=false;
+		unsigned long long int length=0;
 		std::string fName;
 	};
 	FileSys();
 	~FileSys();
-	DirectoryEntry FindFirst(void);
+	DirectoryEntry FindFirst(std::string subDir);
 	DirectoryEntry FindNext(void);
 };
 
