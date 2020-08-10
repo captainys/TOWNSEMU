@@ -1,7 +1,9 @@
 						ASSUME	CS:CODE
 
 						PUBLIC	IOWriteByte
+						PUBLIC	IOWriteWord
 						PUBLIC	IOReadByte
+						PUBLIC	IOReadWord
 
 CODE					SEGMENT
 

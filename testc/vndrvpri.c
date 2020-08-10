@@ -26,6 +26,7 @@ int main(void)
 	{
 		data[i]=i;
 	}
+	IOWriteByte(TOWNSIO_VNDRV_ENABLE,ENABLE_CODE);
 	VNDRV_PRINT("AUX Command Test");
 	VNDRV_DUMP(data,sizeof(data));
 	return 0;

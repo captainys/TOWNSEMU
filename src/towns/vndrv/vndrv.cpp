@@ -107,7 +107,7 @@ TownsVnDrv::TownsVnDrv(class FMTowns *townsPtr) : Device(townsPtr)
 	switch(ioport)
 	{
 	case TOWNSIO_VNDRV_APICHECK://       0x2F10,
-		return ~state.lastAPICheckWrite&0xFF;
+		return (~state.lastAPICheckWrite)&0xFF;
 	case TOWNSIO_VNDRV_APICHECK+1://       0x2F10,
 		return (~state.lastAPICheckWrite>>8)&0xFF;
 	case TOWNSIO_VNDRV_ENABLE://         0x2F12,
@@ -121,19 +121,16 @@ TownsVnDrv::TownsVnDrv(class FMTowns *townsPtr) : Device(townsPtr)
 }
 /* virtual */ unsigned int TownsVnDrv::IOReadWord(unsigned int ioport)
 {
-	if(true==state.enabled)
+	switch(ioport)
 	{
-		switch(ioport)
-		{
-		case TOWNSIO_VNDRV_APICHECK://       0x2F10,
-			return ~state.lastAPICheckWrite;
-		case TOWNSIO_VNDRV_ENABLE://         0x2F12,
-			return (state.enabled ? ENABLE_CODE : DISABLE_CODE);
-		case TOWNSIO_VNDRV_COMMAND://        0x2F14,
-			break;
-		case TOWNSIO_VNDRV_AUXCOMMAND://     0x2F18,
-			break;
-		}
+	case TOWNSIO_VNDRV_APICHECK://       0x2F10,
+		return ~state.lastAPICheckWrite;
+	case TOWNSIO_VNDRV_ENABLE://         0x2F12,
+		return (state.enabled ? ENABLE_CODE : DISABLE_CODE);
+	case TOWNSIO_VNDRV_COMMAND://        0x2F14,
+		break;
+	case TOWNSIO_VNDRV_AUXCOMMAND://     0x2F18,
+		break;
 	}
 	return 0xffff;
 }
@@ -173,6 +170,7 @@ void TownsVnDrv::ExecAuxCommand(unsigned int cmd)
 						break;
 					}
 					str.push_back(data);
+					++i;
 				}
 				std::cout << str << std::endl; // Should I line-break?
 			}

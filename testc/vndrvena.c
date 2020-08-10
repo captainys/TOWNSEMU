@@ -21,6 +21,8 @@ int main(void)
 		if(x!=y)
 		{
 			printf("VNDRV I/O Presence Check Failed.\n");
+			printf("Written: %08x\n",x);
+			printf("~Read:   %08x\n",y);
 			return 1;
 		}
 	}
@@ -29,13 +31,13 @@ int main(void)
 		IOWriteWord(TOWNSIO_VNDRV_ENABLE,ENABLE_CODE);
 		if(ENABLE_CODE!=IOReadWord(TOWNSIO_VNDRV_ENABLE))
 		{
-			printf("VNDRV Enabled Byte-Read Failed.\n");
+			printf("VNDRV Enabled Word-Read Failed.\n");
 			return 1;
 		}
 		IOWriteWord(TOWNSIO_VNDRV_ENABLE,DISABLE_CODE);
 		if(DISABLE_CODE!=IOReadWord(TOWNSIO_VNDRV_ENABLE))
 		{
-			printf("VNDRV Enabled Byte-Read Failed.\n");
+			printf("VNDRV Enabled Word-Read Failed.\n");
 			return 1;
 		}
 		IOWriteByte(TOWNSIO_VNDRV_ENABLE,ENABLE_CODE);
@@ -53,6 +55,7 @@ int main(void)
 	}
 
 	IOWriteByte(TOWNSIO_VNDRV_ENABLE,ENABLE_CODE);
+	printf("VNDRV Enable Check Passed.\n");
 
 	return 0;
 }

@@ -254,3 +254,27 @@ build\cdda.exe : build\cdda.OBJ
 	LINK build\cdda.OBJ;
 	COPY cdda.EXE build\.
 	DEL cdda.EXE
+
+
+
+build\vndrvtst.obj : vndrvtst.asm
+	386asm vndrvtst.asm -OBJECT build\vndrvtst.obj
+
+build\vndrvbrk.obj : vndrvbrk.c
+	hcd386 vndrvbrk.c -obj build\vndrvbrk.obj
+
+build\vndrvena.obj : vndrvena.c
+	hcd386 vndrvena.c -obj build\vndrvena.obj
+
+build\vndrvpri.obj : vndrvpri.c
+	hcd386 vndrvpri.c -obj build\vndrvpri.obj
+
+build\vndrvbrk.exp : build\vndrvbrk.obj
+	386link build\vndrvbrk.obj build\vndrvtst.obj @LIBS.LN
+
+build\vndrvena.exp : build\vndrvena.obj
+	386link build\vndrvena.obj build\vndrvtst.obj @LIBS.LN
+
+build\vndrvpri.exp : build\vndrvpri.obj
+	386link build\vndrvpri.obj build\vndrvtst.obj @LIBS.LN
+
