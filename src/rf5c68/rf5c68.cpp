@@ -116,8 +116,8 @@ RF5C68::StartAndStopChannelBits RF5C68::WriteChannelOnOff(unsigned char value)
 	{
 		startStop.chStartPlay=(state.chOnOff&(~value)); // Active LOW:  prev==1(not playing) && now==0(playing)
 		startStop.chStopPlay=((~state.chOnOff)&value);  // Active Low:  prev==0(playing) && now==1(not playing)
-		state.chOnOff=value;
 	}
+	state.chOnOff=value;
 	return startStop;
 }
 void RF5C68::WriteIRQBankMask(unsigned char value)
