@@ -107,9 +107,9 @@ TownsVnDrv::TownsVnDrv(class FMTowns *townsPtr) : Device(townsPtr)
 	switch(ioport)
 	{
 	case TOWNSIO_VNDRV_APICHECK://       0x2F10,
-		return state.lastAPICheckWrite&0xFF;
+		return ~state.lastAPICheckWrite&0xFF;
 	case TOWNSIO_VNDRV_APICHECK+1://       0x2F10,
-		return (state.lastAPICheckWrite>>8)&0xFF;
+		return (~state.lastAPICheckWrite>>8)&0xFF;
 	case TOWNSIO_VNDRV_ENABLE://         0x2F12,
 		return (state.enabled ? ENABLE_CODE : DISABLE_CODE);
 	case TOWNSIO_VNDRV_COMMAND://        0x2F14,
@@ -126,7 +126,7 @@ TownsVnDrv::TownsVnDrv(class FMTowns *townsPtr) : Device(townsPtr)
 		switch(ioport)
 		{
 		case TOWNSIO_VNDRV_APICHECK://       0x2F10,
-			return state.lastAPICheckWrite;
+			return ~state.lastAPICheckWrite;
 		case TOWNSIO_VNDRV_ENABLE://         0x2F12,
 			return (state.enabled ? ENABLE_CODE : DISABLE_CODE);
 		case TOWNSIO_VNDRV_COMMAND://        0x2F14,

@@ -16,6 +16,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #define IO_H_IS_INCLUDED
 
 extern void IOWriteByte(unsigned int ioport,unsigned int byteData);
+extern void IOWriteWord(unsigned int ioport,unsigned int byteData);
 extern unsigned int IOReadByte(unsigned int ioport);
+extern unsigned int IOReadWord(unsigned int ioport);
 
 #endif
