@@ -27,6 +27,7 @@ public:
 	bool pretend386DX=false;
 	unsigned int freq=25;
 	unsigned int memSizeInMB=4;
+	unsigned int mouseIntegrationSpeed=128;
 
 	std::string errorMsg;
 

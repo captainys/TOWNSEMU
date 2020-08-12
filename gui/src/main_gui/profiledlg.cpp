@@ -115,6 +115,12 @@ void ProfileDialog::Make(void)
 		SetRadioButtonGroup(5,gamePortBtn[1]);
 		gamePortBtn[1][4]->SetCheck(YSTRUE);
 
+		AddStaticText(0,FSKEY_NULL,"Mouse-Integration Speed",YSTRUE);
+		AddStaticText(0,FSKEY_NULL,"(Try slowing down if mouse-cursor jumps around)",YSTRUE);
+		AddStaticText(0,FSKEY_NULL,"Slow",YSTRUE);
+		mouseIntegSpdSlider=AddHorizontalSlider(0,FSKEY_NULL,20,32.0,256.0,YSFALSE);
+		AddStaticText(0,FSKEY_NULL,"Fast",YSFALSE);
+
 		EndAddTabItem();
 	}
 
@@ -353,6 +359,8 @@ TownsProfile ProfileDialog::GetProfile(void) const
 		}
 	}
 
+	profile.mouseIntegrationSpeed=(int)(mouseIntegSpdSlider->GetScaledValue());
+
 	profile.bootKeyComb=BOOT_KEYCOMB_NONE;
 	for(int i=0; i<sizeof(bootKeyBtn)/sizeof(bootKeyBtn[0]); ++i)
 	{
@@ -417,6 +425,8 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 			}
 		}
 	}
+	mouseIntegSpdSlider->SetPositionByScaledValue((double)profile.mouseIntegrationSpeed);
+
 
 	for(int i=0; i<sizeof(bootKeyBtn)/sizeof(bootKeyBtn[0]); ++i)
 	{

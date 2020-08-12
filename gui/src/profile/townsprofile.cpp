@@ -121,6 +121,10 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 	sstream << "RUNAS386 " << (true==pretend386DX ? 1 : 0);
 	text.push_back(sstream.str());
 
+	sstream.str("");
+	sstream << "MOUSESPD " << mouseIntegrationSpeed;
+	text.push_back(sstream.str());
+
 	return text;
 }
 bool TownsProfile::Deserialize(const std::vector <std::string> &text)
@@ -264,6 +268,13 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 				pretend386DX=(0!=argv[1].Atoi());
 			}
 		}
+		else if(0==argv[0].STRCMP("MOUSESPD"))
+		{
+			if(2<=argv.size())
+			{
+				mouseIntegrationSpeed=argv[1].Atoi();
+			}
+		}
 		else
 		{
 			errorMsg="Unrecognized keyword:";
@@ -378,6 +389,11 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 	{
 		argv.push_back("-PRETEND386DX");
 	}
+
+	argv.push_back("-MOUSEINTEGSPD");
+	sstream.str("");
+	sstream << mouseIntegrationSpeed;
+	argv.push_back(sstream.str());
 
 	return argv;
 }
