@@ -273,7 +273,7 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 				return physMemPtr->fontRom[TOWNSADDR_FMR_ANK16_MAP+physAddr-TOWNSADDR_FMR_ANK16_BASE];
 			}
 		}
-		else if(TOWNSADDR_FMR_CVRAM_BASE<=physAddr && physAddr<physAddr<TOWNSADDR_FMR_KVRAM_END)
+		else if(TOWNSADDR_FMR_CVRAM_BASE<=physAddr && physAddr<TOWNSADDR_FMR_KVRAM_END)
 		{
 			return physMemPtr->state.spriteRAM[physAddr-TOWNSADDR_FMR_CVRAM_BASE];
 		}
