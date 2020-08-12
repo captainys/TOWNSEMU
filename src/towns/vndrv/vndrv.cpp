@@ -209,6 +209,10 @@ void TownsVnDrv::ExecPrimaryCommand(unsigned int cmd)
 					}
 					subDir.push_back(c);
 				}
+				{
+					// For better security, I should simplify subDir and make sure it doesn't go outside of the hostPath.
+				}
+
 				std::cout << "VNDRV Request FIND_FIRST " << drvNum << " " << subDir << std::endl;
 				auto dirEnt=drvPtr->FindFirst(subDir);
 				if(true==dirEnt.endOfDir)
@@ -228,9 +232,11 @@ void TownsVnDrv::ExecPrimaryCommand(unsigned int cmd)
 				if(nullptr==drvPtr)
 				{
 					townsPtr->cpu.SetAX(TOWNS_VNDRV_ERR_PATH_NOT_FOUND);
-					std::cout << "VNDRV Request FIND_FIRST " << drvNum << " doesn't exist." << std::endl;
+					std::cout << "VNDRV Request FIND_NEXT " << drvNum << " doesn't exist." << std::endl;
 					break;
 				}
+
+				std::cout << "VNDRV Request FIND_NEXT " << drvNum << std::endl;
 				auto dirEnt=drvPtr->FindNext();
 				if(true==dirEnt.endOfDir)
 				{

@@ -269,12 +269,17 @@ build\vndrvena.obj : vndrvena.c
 build\vndrvpri.obj : vndrvpri.c
 	hcd386 vndrvpri.c -obj build\vndrvpri.obj
 
-build\vndrvbrk.exp : build\vndrvbrk.obj
+build\vndrvdir.obj : vndrvdir.c
+	hcd386 vndrvdir.c -obj build\vndrvdir.obj
+
+build\vndrvbrk.exp : build\vndrvbrk.obj  build\vndrvtst.obj
 	386link build\vndrvbrk.obj build\vndrvtst.obj @LIBS.LN
 
-build\vndrvena.exp : build\vndrvena.obj
+build\vndrvena.exp : build\vndrvena.obj  build\vndrvtst.obj
 	386link build\vndrvena.obj build\vndrvtst.obj @LIBS.LN
 
-build\vndrvpri.exp : build\vndrvpri.obj
+build\vndrvpri.exp : build\vndrvpri.obj  build\vndrvtst.obj
 	386link build\vndrvpri.obj build\vndrvtst.obj @LIBS.LN
 
+build\vndrvdir.exp : build\vndrvdir.obj  build\vndrvtst.obj
+	386link build\vndrvdir.obj build\vndrvtst.obj @LIBS.LN

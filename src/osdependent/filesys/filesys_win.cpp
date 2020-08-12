@@ -46,7 +46,12 @@ FileSys::DirectoryEntry FileSys::FindFirst(std::string subDir)
 		FindClose(context->hFind);
 	}
 
-	auto path=hostPath+"/"+subDir+"/*.*";
+	auto path=hostPath;
+	if(""!=subDir && "/"!=subDir && "\\"!=subDir)
+	{
+		path+=std::string("/")+subDir;
+	}
+	path+="/*.*";
 
 	WIN32_FIND_DATAA fd;
 	context->hFind=FindFirstFileA(path.c_str(),&fd);
