@@ -37,12 +37,12 @@ FileSys::DirectoryEntry FileSys::FindContext::Read(std::string hostPath) const
 			ent.fName=de->d_name;
 			if(S_IFDIR==(st.st_mode&S_IFMT))
 			{
-				ent.isDir=true;
+				ent.attr|=ATTR_DIR;
 				ent.length=0;
 			}
 			else
 			{
-				ent.isDir=false;
+				ent.attr&=~ATTR_DIR;
 				ent.length=st.st_size;
 			}
 		}

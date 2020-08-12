@@ -39,6 +39,50 @@ TownsVnDrv::TownsVnDrv(class FMTowns *townsPtr) : Device(townsPtr)
 {
 	this->townsPtr=townsPtr;
 }
+
+template <class FileSysType>
+/* static */ typename FileSysType *TownsVnDrv::GetSharedDirTemplate(unsigned int drvNum,unsigned int NLink,FileSysType sharedDir[])
+{
+	for(unsigned int i=0; i<NLink; ++i)
+	{
+		auto &dir=sharedDir[i];
+		if(true==dir.linked)
+		{
+			if(0==drvNum)
+			{
+				return &dir;
+			}
+			else
+			{
+				--drvNum;
+			}
+		}
+	}
+	return nullptr;
+}
+
+FileSys *TownsVnDrv::GetSharedDir(unsigned int drvNum)
+{
+	return GetSharedDirTemplate<FileSys>(drvNum,MAX_NUM_SHARED_DIRECTORY,sharedDir);
+}
+const FileSys *TownsVnDrv::GetSharedDir(unsigned int drvNum) const
+{
+	return GetSharedDirTemplate<const FileSys>(drvNum,MAX_NUM_SHARED_DIRECTORY,sharedDir);
+}
+
+const unsigned int TownsVnDrv::NumDrives(void) const
+{
+	unsigned int n=0;
+	for(auto &dir : sharedDir)
+	{
+		if(true==dir.linked)
+		{
+			++n;
+		}
+	}
+	return n;
+}
+
 /* virtual */ void TownsVnDrv::PowerOn(void)
 {
 	state.PowerOn();
@@ -141,10 +185,62 @@ void TownsVnDrv::ExecPrimaryCommand(unsigned int cmd)
 		switch((cmd>>8)&0xFF)
 		{
 		case TOWNS_VNDRV_CMD_GET_DRIVES://   0x00,
+			townsPtr->cpu.SetAL(NumDrives());
 			break;
 		case TOWNS_VNDRV_CMD_FIND_FIRST://   0x1B,
+			{
+				auto drvNum=(cmd&0xFF);
+				auto drvPtr=GetSharedDir(drvNum);
+				if(nullptr==drvPtr)
+				{
+					townsPtr->cpu.SetAX(TOWNS_VNDRV_ERR_PATH_NOT_FOUND);
+					std::cout << "VNDRV Request FIND_FIRST " << drvNum << " doesn't exist." << std::endl;
+					break;
+				}
+
+				std::string subDir;
+				auto ESI=townsPtr->cpu.state.ESI();
+				for(;;)
+				{
+					auto c=townsPtr->cpu.DebugFetchByte(32,townsPtr->cpu.state.FS(),ESI++,townsPtr->mem);
+					if(0==c)
+					{
+						break;
+					}
+					subDir.push_back(c);
+				}
+				std::cout << "VNDRV Request FIND_FIRST " << drvNum << " " << subDir << std::endl;
+				auto dirEnt=drvPtr->FindFirst(subDir);
+				if(true==dirEnt.endOfDir)
+				{
+					townsPtr->cpu.SetAX(TOWNS_VNDRV_ERR_FILE_NOT_FOUND);
+					std::cout << "File not found" << std::endl;
+					break;
+				}
+				townsPtr->cpu.SetAX(TOWNS_VNDRV_ERR_NO_ERROR);
+				StoreDirEnt(dirEnt);
+			}
 			break;
 		case TOWNS_VNDRV_CMD_FIND_NEXT://    0x1C,
+			{
+				auto drvNum=(cmd&0xFF);
+				auto drvPtr=GetSharedDir(drvNum);
+				if(nullptr==drvPtr)
+				{
+					townsPtr->cpu.SetAX(TOWNS_VNDRV_ERR_PATH_NOT_FOUND);
+					std::cout << "VNDRV Request FIND_FIRST " << drvNum << " doesn't exist." << std::endl;
+					break;
+				}
+				auto dirEnt=drvPtr->FindNext();
+				if(true==dirEnt.endOfDir)
+				{
+					townsPtr->cpu.SetAX(TOWNS_VNDRV_ERR_NO_MORE_FILES);
+					std::cout << "File not found" << std::endl;
+					break;
+				}
+				townsPtr->cpu.SetAX(TOWNS_VNDRV_ERR_NO_ERROR);
+				StoreDirEnt(dirEnt);
+			}
 			break;
 		}
 	}
@@ -186,6 +282,100 @@ void TownsVnDrv::ExecAuxCommand(unsigned int cmd)
 				}
 			}
 			break;
+		case TOWNS_VNDRV_AUXCMD_MEMDUMP_LINEAR://     0x0B,
+			{
+				i486DX::FarPointer ptr;
+				ptr.SEG=i486DX::FarPointer::LINEAR_ADDR;
+				ptr.OFFSET=townsPtr->cpu.state.EBX();
+				for(auto line : miscutil::MakeMemDump(townsPtr->cpu,townsPtr->mem,ptr,townsPtr->cpu.state.ECX(),/*shiftJIS=*/true))
+				{
+					std::cout << line << std::endl;
+				}
+			}
+			break;
+		case TOWNS_VNDRV_AUXCMD_MEMDUMP_PHYSICAL://   0x0C,
+			{
+				i486DX::FarPointer ptr;
+				ptr.SEG=i486DX::FarPointer::PHYS_ADDR;
+				ptr.OFFSET=townsPtr->cpu.state.EBX();
+				for(auto line : miscutil::MakeMemDump(townsPtr->cpu,townsPtr->mem,ptr,townsPtr->cpu.state.ECX(),/*shiftJIS=*/true))
+				{
+					std::cout << line << std::endl;
+				}
+			}
+			break;
 		}
 	}
+}
+
+void TownsVnDrv::StoreDirEnt(const FileSys::DirectoryEntry &dirEnt)
+{
+	auto &GS=townsPtr->cpu.state.GS();
+	auto EDI=townsPtr->cpu.state.EDI();
+	townsPtr->cpu.DebugStoreByte(townsPtr->mem,32,GS,EDI,dirEnt.attr);
+
+	unsigned int timeStamp=0;
+	timeStamp|=((dirEnt.year-1980)<<25);
+	timeStamp|=(dirEnt.month<<21);
+	timeStamp|=(dirEnt.day<<16);
+	timeStamp|=(dirEnt.hours<<11);
+	timeStamp|=(dirEnt.minutes<<5);
+	timeStamp|=(dirEnt.seconds>>1);
+
+	townsPtr->cpu.DebugStoreDword(townsPtr->mem,32,GS,EDI+1,timeStamp);
+	townsPtr->cpu.DebugStoreDword(townsPtr->mem,32,GS,EDI+5,(unsigned int)dirEnt.length);
+
+	char file8_3[12];
+	for(auto &c : file8_3)
+	{
+		c=0;
+	}
+	if("."==dirEnt.fName || ".."==dirEnt.fName)
+	{
+		for(int i=0; i<dirEnt.fName.size(); ++i)
+		{
+			file8_3[i]=dirEnt.fName[i];
+		}
+	}
+	else
+	{
+		int dst=0,state=0;  // State 0:Before Extension  1:Extension
+		for(auto c : dirEnt.fName)
+		{
+			if(0==state)
+			{
+				if('.'==c)
+				{
+					file8_3[dst++]='.';
+					state=1;
+				}
+				else if(dst<8)
+				{
+					file8_3[dst++]=c;
+				}
+			}
+			else
+			{
+				if('.'==c)
+				{
+					file8_3[ 8]='.';
+					dst=8;
+				}
+				else if(dst<12)
+				{
+					file8_3[dst++]=c;
+				}
+			}
+		}
+		for(dst=dst; dst<sizeof(file8_3); ++dst)
+		{
+			file8_3[dst]=0;
+		}
+	}
+
+	for(int i=0; i<12; ++i)
+	{
+		townsPtr->cpu.DebugStoreByte(townsPtr->mem,32,GS,EDI+9+i,file8_3[i]);
+	}
+	townsPtr->cpu.DebugStoreByte(townsPtr->mem,32,GS,EDI+9+12,0);
 }

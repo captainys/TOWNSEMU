@@ -14,8 +14,11 @@ public:
 	enum
 	{
 		DISABLE_CODE=0,
-		ENABLE_CODE=1
+		ENABLE_CODE=1,
+		MAX_NUM_SHARED_DIRECTORY=8,
 	};
+
+	FileSys sharedDir[MAX_NUM_SHARED_DIRECTORY];
 
 	class State
 	{
@@ -31,6 +34,13 @@ public:
 
 	TownsVnDrv(class FMTowns *townsPtr);
 
+	template <class FileSysType>
+	static typename FileSysType *GetSharedDirTemplate(unsigned int drvNum,unsigned int NLink,FileSysType sharedDir[]);
+	FileSys *GetSharedDir(unsigned int drvNum);
+	const FileSys *GetSharedDir(unsigned int drvNum) const;
+
+	const unsigned int NumDrives(void) const;
+
 	virtual void PowerOn(void);
 	virtual void Reset(void);
 
@@ -42,6 +52,7 @@ public:
 
 	void ExecPrimaryCommand(unsigned int cmd);
 	void ExecAuxCommand(unsigned int cmd);
+	void StoreDirEnt(const FileSys::DirectoryEntry &dirEnt);
 };
 
 /* } */

@@ -8,6 +8,10 @@
 
 class FileSys
 {
+private:
+	// Make it uncopyable.
+	FileSys(const FileSys &incoming);
+	FileSys &operator=(const FileSys &incoming);
 public:
 	class FindContext;
 
@@ -15,12 +19,23 @@ public:
 	bool linked=false;
 	std::string hostPath;
 
+	enum
+	{
+		ATTR_ARCHIVE= 0x20,
+		ATTR_DIR=     0x10,
+		ATTR_VOLUME=  0x08,
+		ATTR_SYSTEM=  0x04,
+		ATTR_HIDDEN=  0x02,
+		ATTR_READONLY=0x01,
+	};
+
 	class DirectoryEntry
 	{
 	public:
 		bool endOfDir=false;
-		bool isDir=false;
 		unsigned long long int length=0;
+		unsigned int attr=0;
+		unsigned int year=2004,month=06,day=13,hours=00,minutes=00,seconds=00;
 		std::string fName;
 	};
 	FileSys();

@@ -15,12 +15,12 @@ public:
 	ent.fName=fd.cFileName;
 	if(0==(FILE_ATTRIBUTE_DIRECTORY&fd.dwFileAttributes))
 	{
-		ent.isDir=false;
+		ent.attr&=~ATTR_DIR;
 		ent.length=((unsigned long long)fd.nFileSizeHigh<<32)+fd.nFileSizeLow;
 	}
 	else
 	{
-		ent.isDir=true;
+		ent.attr|=ATTR_DIR;
 		ent.length=0;
 	}
 }
