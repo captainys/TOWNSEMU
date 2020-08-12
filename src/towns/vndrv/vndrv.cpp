@@ -41,7 +41,7 @@ TownsVnDrv::TownsVnDrv(class FMTowns *townsPtr) : Device(townsPtr)
 }
 
 template <class FileSysType>
-/* static */ typename FileSysType *TownsVnDrv::GetSharedDirTemplate(unsigned int drvNum,unsigned int NLink,FileSysType sharedDir[])
+/* static */ typename FileSysType TownsVnDrv::GetSharedDirTemplate(unsigned int drvNum,unsigned int NLink,FileSysType sharedDir)
 {
 	for(unsigned int i=0; i<NLink; ++i)
 	{
@@ -63,11 +63,11 @@ template <class FileSysType>
 
 FileSys *TownsVnDrv::GetSharedDir(unsigned int drvNum)
 {
-	return GetSharedDirTemplate<FileSys>(drvNum,MAX_NUM_SHARED_DIRECTORIES,sharedDir);
+	return GetSharedDirTemplate<FileSys *>(drvNum,MAX_NUM_SHARED_DIRECTORIES,sharedDir);
 }
 const FileSys *TownsVnDrv::GetSharedDir(unsigned int drvNum) const
 {
-	return GetSharedDirTemplate<const FileSys>(drvNum,MAX_NUM_SHARED_DIRECTORIES,sharedDir);
+	return GetSharedDirTemplate<const FileSys *>(drvNum,MAX_NUM_SHARED_DIRECTORIES,sharedDir);
 }
 
 const unsigned int TownsVnDrv::NumDrives(void) const
