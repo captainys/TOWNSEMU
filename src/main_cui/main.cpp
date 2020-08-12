@@ -330,6 +330,12 @@ bool Setup(FMTowns &towns,Outside_World *outside_world,const TownsARGV &argv)
 		}
 	}
 
+	for(auto i=0; i<argv.sharedDir.size() && i<TownsVnDrv::MAX_NUM_SHARED_DIRECTORIES; ++i)
+	{
+		towns.vndrv.sharedDir[i].hostPath=argv.sharedDir[i];
+		towns.vndrv.sharedDir[i].linked=true;
+	}
+
 	outside_world->scaling=argv.scaling;
 	outside_world->windowShift=argv.windowShift;
 

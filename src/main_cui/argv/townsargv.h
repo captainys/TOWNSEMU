@@ -45,6 +45,8 @@ public:
 	std::string playbackEventLogFName;
 	std::string keyMapFName;
 
+	std::vector <std::string> sharedDir;
+
 	int fmVol=-1,pcmVol=-1;
 
 	enum

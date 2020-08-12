@@ -15,10 +15,10 @@ public:
 	{
 		DISABLE_CODE=0,
 		ENABLE_CODE=1,
-		MAX_NUM_SHARED_DIRECTORY=8,
+		MAX_NUM_SHARED_DIRECTORIES=8,
 	};
 
-	FileSys sharedDir[MAX_NUM_SHARED_DIRECTORY];
+	FileSys sharedDir[MAX_NUM_SHARED_DIRECTORIES];
 
 	class State
 	{

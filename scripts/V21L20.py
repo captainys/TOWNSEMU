@@ -45,6 +45,8 @@ def Run(argv):
 		"-BOOTKEY",
 		"F0",
 		"-DONTAUTOSAVECMOS",
+		"-SHAREDDIR",
+		THISDIR,
 		"-DEBUG",
 		# "-PAUSE",
 	]+argv).wait()
