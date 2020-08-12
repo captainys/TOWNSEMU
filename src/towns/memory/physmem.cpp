@@ -142,6 +142,23 @@ void TownsPhysicalMemory::State::Reset(void)
 			}
 		}
 		break;
+
+	case TOWNSIO_KANJI_JISCODE_HIGH://  0xFF94,
+		state.kanjiROMAccess.JISCodeHigh=data;
+		break;
+	case TOWNSIO_KANJI_JISCODE_LOW://   0xFF95,
+		state.kanjiROMAccess.JISCodeLow=data;
+		state.kanjiROMAccess.row=0;
+		break;
+	case TOWNSIO_KANJI_PTN_HIGH://      0xFF96,
+		// Write access enabled? [2] pp.95
+		break;
+	case TOWNSIO_KANJI_PTN_LOW://       0xFF97,
+		// Write access enabled? [2] pp.95
+		break;
+	case TOWNSIO_KVRAM_OR_ANKFONT://    0xFF99,
+		state.ANKFont=(0!=(data&1));
+		break;
 	}
 }
 /* virtual */ unsigned int TownsPhysicalMemory::IOReadByte(unsigned int ioport)
@@ -187,6 +204,32 @@ void TownsPhysicalMemory::State::Reset(void)
 		return state.nativeVRAMMask[(state.nativeVRAMMaskRegisterLatch<<1)  ];
 	case TOWNSIO_VRAMACCESSCTRL_DATA_HIGH: // 0x45B, // [2] pp.17,pp.112
 		return state.nativeVRAMMask[(state.nativeVRAMMaskRegisterLatch<<1)+1];
+
+	case TOWNSIO_KANJI_JISCODE_HIGH://  0xFF94,
+		break;
+	case TOWNSIO_KANJI_JISCODE_LOW://   0xFF95,
+		break;
+	case TOWNSIO_KANJI_PTN_HIGH://      0xFF96,
+		{
+			auto ROMCode=(state.kanjiROMAccess.FontROMCode())&8191;
+			return fontRom[32*ROMCode+state.kanjiROMAccess.row*2];
+		}
+		break;
+	case TOWNSIO_KANJI_PTN_LOW://       0xFF97,
+		if(true==takeJISCodeLog && 0==state.kanjiROMAccess.row)
+		{
+			JISCodeLog.push_back(state.kanjiROMAccess.JISCodeHigh);
+			JISCodeLog.push_back(state.kanjiROMAccess.JISCodeLow);
+		}
+		{
+			auto ROMCode=state.kanjiROMAccess.FontROMCode()&8191;
+			auto byteData=fontRom[32*ROMCode+state.kanjiROMAccess.row*2+1];
+			state.kanjiROMAccess.row=(state.kanjiROMAccess.row+1)&0x0F;
+			return byteData;
+		}
+		break;
+	case TOWNSIO_KVRAM_OR_ANKFONT://    0xFF99,
+		break;
 	}
 	return data;
 }

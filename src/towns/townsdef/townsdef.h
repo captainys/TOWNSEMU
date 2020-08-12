@@ -321,6 +321,12 @@ enum
 	// The 4th Unit Series ACT4 Zero uses FF86 for HSYNC and VSYNC.
 	TOWNSIO_FMR_HSYNC_VSYNC=     0xFF86,
 
+	TOWNSIO_KANJI_JISCODE_HIGH=  0xFF94,
+	TOWNSIO_KANJI_JISCODE_LOW=   0xFF95,
+	TOWNSIO_KANJI_PTN_HIGH=      0xFF96,
+	TOWNSIO_KANJI_PTN_LOW=       0xFF97,
+	TOWNSIO_KVRAM_OR_ANKFONT=    0xFF99,
+
 	// 0x2000 to 0x2FFF must be open for testing for Fujitsu's internal development.
 	// [2] pp.12
 	// I take two addresses for VM-Host communication.
