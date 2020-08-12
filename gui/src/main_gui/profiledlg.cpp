@@ -53,6 +53,8 @@ void ProfileDialog::Make(void)
 		scrnScaleTxt->SetLengthLimit(PATH_LENGTH);
 		scrnScaleTxt->SetInteger(100);
 
+		pretend386DXBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Pretend 80386DX",YSTRUE);
+
 		EndAddTabItem();
 	}
 
@@ -363,6 +365,8 @@ TownsProfile ProfileDialog::GetProfile(void) const
 
 	profile.catchUpRealTime=(YSTRUE==catchUpRealTimeBtn->GetCheck());
 
+	profile.pretend386DX=(YSTRUE==pretend386DXBtn->GetCheck());
+
 	profile.autoStart=(YSTRUE==autoStartBtn->GetCheck());
 
 	profile.screenScaling=scrnScaleTxt->GetInteger();
@@ -433,6 +437,15 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 	else
 	{
 		catchUpRealTimeBtn->SetCheck(YSFALSE);
+	}
+
+	if(true==profile.pretend386DX)
+	{
+		pretend386DXBtn->SetCheck(YSTRUE);
+	}
+	else
+	{
+		pretend386DXBtn->SetCheck(YSFALSE);
 	}
 
 	if(true==profile.autoStart)

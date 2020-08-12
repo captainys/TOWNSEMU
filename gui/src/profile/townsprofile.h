@@ -24,6 +24,7 @@ public:
 	unsigned int gamePort[2]={TOWNS_GAMEPORTEMU_PHYSICAL0,TOWNS_GAMEPORTEMU_MOUSE};
 	unsigned screenScaling=150;
 	bool autoStart;
+	bool pretend386DX=false;
 	unsigned int freq=25;
 	unsigned int memSizeInMB=4;
 

@@ -68,6 +68,7 @@ public:
 	FsGuiTextBox *CPUFreqTxt,*RAMSizeTxt;
 	FsGuiButton *catchUpRealTimeBtn;
 	FsGuiButton *runBtn;
+	FsGuiButton *pretend386DXBtn;
 
 	FsGuiDropList *appSpecificAugDrp;
 	FsGuiStatic *appSpecificExplanation;

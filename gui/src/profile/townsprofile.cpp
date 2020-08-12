@@ -117,6 +117,10 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 	sstream << "APPSPEC_ " << TownsAppToStr(appSpecificAugmentation);
 	text.push_back(sstream.str());
 
+	sstream.str("");
+	sstream << "RUNAS386 " << (true==pretend386DX ? 1 : 0);
+	text.push_back(sstream.str());
+
 	return text;
 }
 bool TownsProfile::Deserialize(const std::vector <std::string> &text)
@@ -251,6 +255,13 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 			if(2<=argv.size())
 			{
 				appSpecificAugmentation=TownsStrToApp(argv[1].c_str());
+			}
+		}
+		else if(0==argv[0].STRCMP("RUNAS386"))
+		{
+			if(2<=argv.size())
+			{
+				pretend386DX=(0!=argv[1].Atoi());
 			}
 		}
 		else
