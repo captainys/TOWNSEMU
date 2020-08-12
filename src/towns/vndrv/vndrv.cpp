@@ -190,11 +190,12 @@ void TownsVnDrv::ExecPrimaryCommand(unsigned int cmd)
 		case TOWNS_VNDRV_CMD_FIND_FIRST://   0x1B,
 			{
 				auto drvNum=(cmd&0xFF);
+				std::cout << "VNDRV Request FIND_FIRST " << drvNum << std::endl;
 				auto drvPtr=GetSharedDir(drvNum);
 				if(nullptr==drvPtr)
 				{
 					townsPtr->cpu.SetAX(TOWNS_VNDRV_ERR_PATH_NOT_FOUND);
-					std::cout << "VNDRV Request FIND_FIRST " << drvNum << " doesn't exist." << std::endl;
+					std::cout << "Path doesn't exist." << std::endl;
 					break;
 				}
 
@@ -211,9 +212,24 @@ void TownsVnDrv::ExecPrimaryCommand(unsigned int cmd)
 				}
 				{
 					// For better security, I should simplify subDir and make sure it doesn't go outside of the hostPath.
+					cpputil::SimplifyPath(subDir);
+					bool violation=false;
+					for(int i=0; i+1<subDir.size(); ++i)
+					{
+						if(subDir[i]=='.' && subDir[i+1]=='.') // Don't allow ".." to be in the path.
+						{
+							townsPtr->cpu.SetAX(TOWNS_VNDRV_ERR_PATH_NOT_FOUND);
+							violation=true;
+							break;
+						}
+					}
+					if(true==violation)
+					{
+						std::cout << "Path violation." << subDir << std::endl;
+						break;
+					}
 				}
 
-				std::cout << "VNDRV Request FIND_FIRST " << drvNum << " " << subDir << std::endl;
 				auto dirEnt=drvPtr->FindFirst(subDir);
 				if(true==dirEnt.endOfDir)
 				{
@@ -228,15 +244,15 @@ void TownsVnDrv::ExecPrimaryCommand(unsigned int cmd)
 		case TOWNS_VNDRV_CMD_FIND_NEXT://    0x1C,
 			{
 				auto drvNum=(cmd&0xFF);
+				std::cout << "VNDRV Request FIND_NEXT " << std::endl;
 				auto drvPtr=GetSharedDir(drvNum);
 				if(nullptr==drvPtr)
 				{
 					townsPtr->cpu.SetAX(TOWNS_VNDRV_ERR_PATH_NOT_FOUND);
-					std::cout << "VNDRV Request FIND_NEXT " << drvNum << " doesn't exist." << std::endl;
+					std::cout << "Path doesn't exist." << std::endl;
 					break;
 				}
 
-				std::cout << "VNDRV Request FIND_NEXT " << drvNum << std::endl;
 				auto dirEnt=drvPtr->FindNext();
 				if(true==dirEnt.endOfDir)
 				{

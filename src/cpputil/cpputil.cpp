@@ -489,6 +489,74 @@ void cpputil::SeparatePathFile(std::string &path,std::string &file,const std::st
 	file=fName.data()+lastSeparator+1;
 }
 
+void cpputil::SimplifyPath(std::string &path)
+{
+	std::vector <std::string> pathBreakDown;
+	char separator='/';
+	{
+		int state=0;
+		std::string current;
+		for(auto c : path)
+		{
+			if(0==state)
+			{
+				if(c=='/' || c=='\\')
+				{
+					separator=c;
+					pathBreakDown.push_back((std::string &&)current);
+					current="";
+					state=1;
+				}
+				else
+				{
+					current.push_back(c);
+				}
+			}
+			else if(1==state)
+			{
+				if('/'!=c && '\\'!=c)
+				{
+					current.push_back(c);
+					state=0;
+				}
+			}
+		}
+		if(""!=current)
+		{
+			pathBreakDown.push_back((std::string &&)current);
+		}
+	}
+	int i=0;
+	while(i<pathBreakDown.size())
+	{
+		if("."==pathBreakDown[i])
+		{
+			pathBreakDown.erase(pathBreakDown.begin()+i);
+		}
+		else if(".."==pathBreakDown[i] && 0<i)
+		{
+			pathBreakDown.erase(pathBreakDown.begin()+i-1);
+			pathBreakDown.erase(pathBreakDown.begin()+i-1);
+			--i;
+		}
+		else
+		{
+			++i;
+		}
+	}
+
+	path="";
+	for(auto &p : pathBreakDown)
+	{
+		path+=p;
+		path.push_back(separator);
+	}
+	if(""!=path)
+	{
+		path.pop_back();
+	}
+}
+
 long long int cpputil::FileSize(const std::string &fName)
 {
 	std::vector <unsigned char> dat;
