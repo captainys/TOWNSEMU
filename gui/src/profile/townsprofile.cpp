@@ -374,5 +374,10 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 		argv.push_back(TownsAppToStr(appSpecificAugmentation));
 	}
 
+	if(true==pretend386DX)
+	{
+		argv.push_back("-PRETEND386DX");
+	}
+
 	return argv;
 }
