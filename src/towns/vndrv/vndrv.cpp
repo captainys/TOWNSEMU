@@ -40,10 +40,9 @@ TownsVnDrv::TownsVnDrv(class FMTowns *townsPtr) : Device(townsPtr)
 	this->townsPtr=townsPtr;
 }
 
-template <class FileSysType>
-/* static */ typename FileSysType TownsVnDrv::GetSharedDirTemplate(unsigned int drvNum,unsigned int NLink,FileSysType sharedDir)
+FileSys *TownsVnDrv::GetSharedDir(unsigned int drvNum)
 {
-	for(unsigned int i=0; i<NLink; ++i)
+	for(unsigned int i=0; i<MAX_NUM_SHARED_DIRECTORIES; ++i)
 	{
 		auto &dir=sharedDir[i];
 		if(true==dir.linked)
@@ -60,14 +59,24 @@ template <class FileSysType>
 	}
 	return nullptr;
 }
-
-FileSys *TownsVnDrv::GetSharedDir(unsigned int drvNum)
-{
-	return GetSharedDirTemplate(drvNum,MAX_NUM_SHARED_DIRECTORIES,sharedDir);
-}
 const FileSys *TownsVnDrv::GetSharedDir(unsigned int drvNum) const
 {
-	return GetSharedDirTemplate(drvNum,MAX_NUM_SHARED_DIRECTORIES,sharedDir);
+	for(unsigned int i=0; i<MAX_NUM_SHARED_DIRECTORIES; ++i)
+	{
+		auto &dir=sharedDir[i];
+		if(true==dir.linked)
+		{
+			if(0==drvNum)
+			{
+				return &dir;
+			}
+			else
+			{
+				--drvNum;
+			}
+		}
+	}
+	return nullptr;
 }
 
 const unsigned int TownsVnDrv::NumDrives(void) const

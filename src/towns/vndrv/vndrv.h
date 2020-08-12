@@ -34,8 +34,6 @@ public:
 
 	TownsVnDrv(class FMTowns *townsPtr);
 
-	template <class FileSysType>
-	static typename FileSysType GetSharedDirTemplate(unsigned int drvNum,unsigned int NLink,FileSysType sharedDir);
 	FileSys *GetSharedDir(unsigned int drvNum);
 	const FileSys *GetSharedDir(unsigned int drvNum) const;
 
