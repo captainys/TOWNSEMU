@@ -107,6 +107,9 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  we see many software titles running on Towns OS V2.1L10B, but" << std::endl;
 	std::cout << "  not with V2.1L10.  This option is to start Towns OS V2.1L10-based" << std::endl;
 	std::cout << "  titles such as Free Software Collection 4 Disc B" << std::endl;
+	std::cout << "-MOUSEINTEGSPD speed" << std::endl;
+	std::cout << "  Set mouse-integration speed.  If mouse jumps around, you can try setting lower value." << std::endl;
+	std::cout << "  Minimum is 32, and maximum is 256.  Default is 128." << std::endl;
 	std::cout << "-APP title" << std::endl;
 	std::cout << "  Use application-specific customization." << std::endl;
 	std::cout << "  For the list of applications, start this program with" << std::endl;
@@ -186,6 +189,19 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		else if("-SHAREDDIR"==ARG && i+1<argc)
 		{
 			sharedDir.push_back(argv[i+1]);
+			++i;
+		}
+		else if("-MOUSEINTEGSPD"==ARG && i+1<argc)
+		{
+			mouseIntegrationSpeed=cpputil::Atoi(argv[i+1]);
+			if(mouseIntegrationSpeed<32)
+			{
+				mouseIntegrationSpeed=32;
+			}
+			else if(256<mouseIntegrationSpeed)
+			{
+				mouseIntegrationSpeed=256;
+			}
 			++i;
 		}
 		else if("-DEBUG"==ARG || "-DEBUGGER"==ARG)

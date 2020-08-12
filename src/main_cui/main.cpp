@@ -275,6 +275,7 @@ bool Setup(FMTowns &towns,Outside_World *outside_world,const TownsARGV &argv)
 	towns.keyboard.SetBootKeyCombination(argv.bootKeyComb);
 	towns.gameport.SetBootKeyCombination(argv.bootKeyComb);
 
+	towns.state.mouseIntegrationSpeed=argv.mouseIntegrationSpeed;
 	towns.state.noWait=argv.noWait;
 	towns.state.pretend386DX=argv.pretend386DX;
 	towns.var.noWaitStandby=argv.noWaitStandby;

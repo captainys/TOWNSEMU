@@ -319,6 +319,34 @@ static inline int ClampStep(int d)
 	return d;
 }
 
+static inline int ScaleStep(int d,int scale256)
+{
+	return d*scale256/256;
+
+	/*! Strictly spcaking, the following code should be more correct.
+	    But, the above code makes mouse cursor less shaky.
+	if(0==d)
+	{
+		return d;
+	}
+	else
+	{
+		auto dd=d*scale256/256;
+		if(0==dd)
+		{
+			if(0<d)
+			{
+				return 1;
+			}
+			else
+			{
+				return -1;
+			}
+		}
+		return dd;
+	} */
+}
+
 bool FMTowns::ControlMouse(int hostMouseX,int hostMouseY,unsigned int tbiosid)
 {
 	int diffX,diffY;
@@ -400,8 +428,8 @@ bool FMTowns::ControlMouse(int &diffX,int &diffY,int hostMouseX,int hostMouseY,u
 
 		diffX=hostMouseX-mx;
 		diffY=hostMouseY-my;
-		auto dx=ClampStep(diffX);
-		auto dy=ClampStep(diffY);
+		auto dx=ScaleStep(ClampStep(diffX),state.mouseIntegrationSpeed);
+		auto dy=ScaleStep(ClampStep(diffY),state.mouseIntegrationSpeed);
 		if(-slowDownRange<=dx && dx<=slowDownRange)
 		{
 			if(dx<0)

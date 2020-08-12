@@ -83,6 +83,8 @@ public:
 
 	unsigned int freq=0;
 
+	unsigned int mouseIntegrationSpeed=128;
+
 	unsigned int appSpecificSetting=0;
 
 	enum
