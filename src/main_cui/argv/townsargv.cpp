@@ -109,7 +109,7 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  titles such as Free Software Collection 4 Disc B" << std::endl;
 	std::cout << "-MOUSEINTEGSPD speed" << std::endl;
 	std::cout << "  Set mouse-integration speed.  If mouse jumps around, you can try setting lower value." << std::endl;
-	std::cout << "  Minimum is 32, and maximum is 256.  Default is 128." << std::endl;
+	std::cout << "  Minimum is 32, and maximum is 256.  Default is 256 (fastest)." << std::endl;
 	std::cout << "-APP title" << std::endl;
 	std::cout << "  Use application-specific customization." << std::endl;
 	std::cout << "  For the list of applications, start this program with" << std::endl;
