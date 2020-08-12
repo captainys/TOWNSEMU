@@ -525,6 +525,7 @@ std::vector <std::string> TownsPhysicalMemory::GetStatusText(void) const
 		text.back()+="Main RAM";
 	}
 	text.back()+="  FMR VRAM Mask(000CFF81H)="+cpputil::Ubtox(state.FMRVRAMMask);
+	text.back()+="  FMR VRAM Read/Write Offset="+cpputil::Uitox(state.FMRVRAMWriteOffset);
 
 	text.push_back(empty);
 	text.back()="D0000-EFFFF:";

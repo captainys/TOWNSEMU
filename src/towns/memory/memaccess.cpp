@@ -350,6 +350,10 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 			// different.
 			// Credit to Artane.!  Thanks!
 			physMemPtr->state.FMRVRAMWriteOffset=(0!=(data&0x10) ? 0x20000 : 0);
+
+			// Should I also change the Layer-1 Offset?
+			// Looks like I should.
+			townsPtr->crtc.state.crtcReg[TownsCRTC::REG_FA0]=physMemPtr->state.FMRVRAMWriteOffset/4;
 			break;
 
 		case TOWNSMEMIO_FIRQ://               0x000CFF84, // [2] pp.22,pp.95 Always zero in FM TOWNS
