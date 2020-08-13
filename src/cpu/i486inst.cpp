@@ -50,6 +50,7 @@ void i486DX::MakeOpCodeRenumberTable(void)
 	opCodeRenumberTable[I486_OPCODE_AAD]=I486_RENUMBER_AAD;
 	opCodeRenumberTable[I486_OPCODE_AAS]=I486_RENUMBER_AAS;
 	opCodeRenumberTable[I486_OPCODE_ARPL]=I486_RENUMBER_ARPL;
+	opCodeRenumberTable[I486_OPCODE_BOUND]=I486_RENUMBER_BOUND;
 	opCodeRenumberTable[I486_OPCODE_BT_BTS_BTR_BTC_RM_I8]=I486_RENUMBER_BT_BTS_BTR_BTC_RM_I8;
 	opCodeRenumberTable[I486_OPCODE_BSF_R_RM]=I486_RENUMBER_BSF_R_RM;
 	opCodeRenumberTable[I486_OPCODE_BSR_R_RM]=I486_RENUMBER_BSR_R_RM;
@@ -1002,6 +1003,12 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 		break;
 
 
+	case I486_RENUMBER_BOUND: // 0x62
+		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
+		op2.Decode(inst.addressSize,inst.operandSize,inst.operand);
+		break;
+
+
 	case I486_RENUMBER_BT_BTS_BTR_BTC_RM_I8:// 0FBA
 		offset+=FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		FUNCCLASS::FetchImm8(cpu,inst,ptr,seg,offset,mem);
@@ -1942,6 +1949,11 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 
 	case I486_OPCODE_ARPL://       0x63,
 		disasm=DisassembleTypicalTwoOperands("ARPL",op1,op2);
+		break;
+
+	case I486_OPCODE_BOUND: // 0x62
+		op1.DecodeMODR_MForRegister(operandSize,operand[0]);
+		disasm=DisassembleTypicalTwoOperands("BOUND",op1,op2);
 		break;
 
 
@@ -4289,6 +4301,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				if(0==value.byteData[0])
 				{
 					Interrupt(0,mem,0,0); // [1] pp.26-28
+					EIPSetByInstruction=true;
 					// I don't think INT 0 was issued unless division by zero.
 					// I thought it just overflew if quo didn't fit in the target register, am I wrong?
 				}
@@ -4308,6 +4321,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				if(0==value.byteData[0])
 				{
 					Interrupt(0,mem,0,0); // [1] pp.26-28
+					EIPSetByInstruction=true;
 					// I don't think INT 0 was issued unless division by zero.
 					// I thought it just overflew if quo didn't fit in the target register, am I wrong?
 				}
@@ -4511,6 +4525,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				{
 					clocksPassed=40;
 					Interrupt(0,mem,0,0); // [1] pp.26-28
+					EIPSetByInstruction=true;
 					// I don't think INT 0 was issued unless division by zero.
 					// I thought it just overflew if quo didn't fit in the target register, am I wrong?
 				}
@@ -4548,6 +4563,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				{
 					clocksPassed=40;
 					Interrupt(0,mem,0,0); // [1] pp.26-28
+					EIPSetByInstruction=true;
 					// I don't think INT 0 was issued unless division by zero.
 					// I thought it just overflew if quo didn't fit in the target register, am I wrong?
 				}
@@ -4848,6 +4864,30 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			else
 			{
 				SetZF(true);
+			}
+		}
+		break;
+
+
+	case I486_RENUMBER_BOUND: // 0x62
+		{
+			if(OPER_ADDR==op2.operandType)
+			{
+			}
+			else
+			{
+				if(IsInRealMode() || 0!=(state.EFLAGS&EFLAGS_VIRTUAL86))
+				{
+					Interrupt(6,mem,0,0);
+					EIPSetByInstruction=true;
+				}
+				else
+				{
+					RaiseException(EXCEPTION_UD,0);
+					HandleException(true,mem,inst.numBytes);
+					EIPSetByInstruction=true;
+					break;
+				}
 			}
 		}
 		break;
