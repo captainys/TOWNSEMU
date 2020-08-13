@@ -4871,8 +4871,43 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 	case I486_RENUMBER_BOUND: // 0x62
 		{
+			clocksPassed=7;
 			if(OPER_ADDR==op2.operandType)
 			{
+				unsigned int offset;
+				auto &seg=*ExtractSegmentAndOffset(offset,op2,inst.segOverride);
+				int min,max,idx;
+				if(16==inst.operandSize)
+				{
+					unsigned int reg=REG_AX+inst.GetREG();
+					unsigned int i=GetRegisterValue(reg);
+					idx=(i&0x7FFF)-(i&0x8000);
+
+					int MIN,MAX;
+					MIN=FetchWord(inst.addressSize,seg,offset  ,mem);
+					MAX=FetchWord(inst.addressSize,seg,offset+2,mem);
+
+					min=(MIN&0x7FFF)-(MIN&0x8000);
+					max=(MAX&0x7FFF)-(MAX&0x8000);
+				}
+				else
+				{
+					unsigned int reg=REG_EAX+inst.GetREG();
+					unsigned int i=GetRegisterValue(reg);
+					idx=(i&0x7FFFFFFF)-(i&0x80000000);
+
+					int MIN,MAX;
+					MIN=FetchDword(inst.addressSize,seg,offset  ,mem);
+					MAX=FetchDword(inst.addressSize,seg,offset+4,mem);
+
+					min=(MIN&0x7FFFFFFF)-(MIN&0x80000000);
+					max=(MAX&0x7FFFFFFF)-(MAX&0x80000000);
+				}
+				if(idx<min || max<idx)
+				{
+					Interrupt(5,mem,0,0); // inst.numBytes,inst.numBytes ?
+					EIPSetByInstruction=true;
+				}
 			}
 			else
 			{
@@ -7645,6 +7680,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				if(true==IsInRealMode())
 				{
 					Interrupt(6,mem,0,0);
+					EIPSetByInstruction=true;
 				}
 				else if(0!=(state.EFLAGS&EFLAGS_VIRTUAL86))
 				{
@@ -7675,6 +7711,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				if(true==IsInRealMode())
 				{
 					Interrupt(6,mem,0,0);
+					EIPSetByInstruction=true;
 				}
 				else if(0!=(state.EFLAGS&EFLAGS_VIRTUAL86))
 				{
