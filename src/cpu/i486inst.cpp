@@ -7600,8 +7600,52 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			}
 			break;
 		case 4: // "VERR"
+			{
+				clocksPassed=11;
+				if(true==IsInRealMode())
+				{
+					Interrupt(6,mem,0,0);
+				}
+				else if(0!=(state.EFLAGS&EFLAGS_VIRTUAL86))
+				{
+					RaiseException(EXCEPTION_UD,0);
+					HandleException(true,mem,inst.numBytes);
+					EIPSetByInstruction=true;
+					break;
+				}
+				else
+				{
+					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,16);
+					SegmentRegister seg;
+					auto fourBytes=LoadSegmentRegister(seg,value.GetAsWord(),mem,false);
+					// Should check four bytes.
+					SetZF(true); // If readable.
+				}
+			}
 			break;
 		case 5: // "VERW"
+			{
+				clocksPassed=11;
+				if(true==IsInRealMode())
+				{
+					Interrupt(6,mem,0,0);
+				}
+				else if(0!=(state.EFLAGS&EFLAGS_VIRTUAL86))
+				{
+					RaiseException(EXCEPTION_UD,0);
+					HandleException(true,mem,inst.numBytes);
+					EIPSetByInstruction=true;
+					break;
+				}
+				else
+				{
+					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,16);
+					SegmentRegister seg;
+					auto fourBytes=LoadSegmentRegister(seg,value.GetAsWord(),mem,false);
+					// Should check four bytes.
+					SetZF(true); // If writable.
+				}
+			}
 			break;
 		}
 		break;
