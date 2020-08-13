@@ -7611,15 +7611,21 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					RaiseException(EXCEPTION_UD,0);
 					HandleException(true,mem,inst.numBytes);
 					EIPSetByInstruction=true;
-					break;
 				}
 				else
 				{
 					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,16);
 					SegmentRegister seg;
 					auto fourBytes=LoadSegmentRegister(seg,value.GetAsWord(),mem,false);
-					// Should check four bytes.
-					SetZF(true); // If readable.
+					auto type=((fourBytes>>8)&0xF);
+					if(type<8 || 10==type || 11==type || 14==type || 15==type) // i486 Programmer's Reference Manual 5.2.3 Segment Descriptors Table 5-1 pp.5-12
+					{
+						SetZF(true); // If readable.
+					}
+					else
+					{
+						SetZF(false); // If readable.
+					}
 				}
 			}
 			break;
@@ -7635,15 +7641,21 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					RaiseException(EXCEPTION_UD,0);
 					HandleException(true,mem,inst.numBytes);
 					EIPSetByInstruction=true;
-					break;
 				}
 				else
 				{
 					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,16);
 					SegmentRegister seg;
 					auto fourBytes=LoadSegmentRegister(seg,value.GetAsWord(),mem,false);
-					// Should check four bytes.
-					SetZF(true); // If writable.
+					auto type=((fourBytes>>8)&0xF);
+					if(2==type || 3==type || 6==type || 7==type) // i486 Programmer's Reference Manual 5.2.3 Segment Descriptors Table 5-1 pp.5-12
+					{
+						SetZF(true); // If writable.
+					}
+					else
+					{
+						SetZF(false); // If writable.
+					}
 				}
 			}
 			break;
