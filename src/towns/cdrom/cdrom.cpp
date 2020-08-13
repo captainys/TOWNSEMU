@@ -933,7 +933,8 @@ void TownsCDROM::SetStatusNoError(void)
 }
 void TownsCDROM::SetStatusDriveNotReady(void)
 {
-	state.PushStatusQueue(0x21,7,0,0);
+	// BIOS Disassembly suggests Drive-Not-Ready is 00 09 xx xx.  V2.1 L20 0421:277C
+	state.PushStatusQueue(0,9,0,0);
 }
 void TownsCDROM::SetStatusDiscChanged(void)
 {

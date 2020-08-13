@@ -38,6 +38,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 My guess based on the BIOS Disassembly:
 00H xx  xx xx  Probably No Error
 00H 03H xx xx  CDDA is playing
+00H 09H xx xx  Drive Not Ready   Towns OS V2.1 L20 CD-ROM BIOS 0421:277C
 07H ??         The BIOS is checking, but the meaning is unknown.
 xxH 01H xx xx  Probably Parameter Error
 21H 01H xx xx  Probably Parameter Error
@@ -53,6 +54,7 @@ xxH 01H xx xx  Probably Parameter Error
 21H 0DH xx xx  Probably Hard Error
 21H 08H        Probably Media Changed
     What about drive-not-ready?
+00H 08H xx xx  Seems to be also media-changed.  Towns OS V2.1 L20 CD-ROM BIOS 0421:277C
 
 My guess based on the Boot-ROM Disassembly:
 04H xxH xx xx   Probably Seek done (After issuing 20H Seek, it waits for 00H No Error, and then 04H)
@@ -78,7 +80,7 @@ Interpretation in the Linux for Towns source towns_cd.c (static void process_eve
 19H            SUBQ Read2
 20H            SUBQ Read3
 21H 05H        Read Audio Track
-21H 07H        Drive Not Ready
+21H 07H        Drive Not Ready   <- This is probably wrong.  CD-ROM BIOS returns media error for 21 07 xx xx.
 21H 08H        Media Changed
 21H 0FH        Retry?
 */

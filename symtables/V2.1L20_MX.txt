@@ -2319,6 +2319,16 @@ P
 M 0
 /end
 /begin0
+T 1
+* 00000421:000025AE
+# 
+R 
+L CDROM:Disk Changed or Drive Not Ready
+P 
+% 0
+M 0
+/end
+/begin0
 T 0
 * 00000421:000025E2
 # 
