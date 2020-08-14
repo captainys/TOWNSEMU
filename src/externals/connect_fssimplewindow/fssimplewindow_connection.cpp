@@ -301,6 +301,7 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 
 	if(towns.eventLog.mode!=TownsEventLog::MODE_PLAYBACK)
 	{
+		bool mouseEmulationByAnalogAxis=false;
 		for(unsigned int portId=0; portId<TOWNS_NUM_GAMEPORTS; ++portId)
 		{
 			switch(gamePort[portId])
@@ -388,33 +389,64 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 					    reading.buttons[3]);
 				}
 				break;
+			case TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG0:
+			case TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG1:
+			case TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG2:
+			case TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG3:
+			case TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG4:
+			case TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG5:
+			case TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG6:
+			case TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG7:
+				{
+					if(true!=gamePadInitialized)
+					{
+						YsGamePadInitialize();
+						gamePadInitialized=true;
+					}
+					{
+						const double maxSpeed=20.0;
+
+						mouseEmulationByAnalogAxis=true;
+						int padId=gamePort[portId]-TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG0;
+						struct YsGamePadReading reading;
+						YsGamePadRead(&reading,padId);
+						float dx=reading.axes[0]*maxSpeed;
+						float dy=reading.axes[1]*maxSpeed;
+						towns.SetMouseMotion(portId,-dx,-dy);
+						towns.SetMouseButtonState(0!=reading.buttons[0],0!=reading.buttons[1]);
+					}
+				}
+				break;
 			}
 		}
 
-		int wid,hei;
-		FsGetWindowSize(wid,hei);
-		int lb,mb,rb,mx,my;
-		FsGetMouseEvent(lb,mb,rb,mx,my);
-		if(mx<0)
+		if(mouseEmulationByAnalogAxis!=true)
 		{
-			mx=0;
-		}
-		else if(wid<=mx)
-		{
-			mx=wid-1;
-		}
-		if(my<0)
-		{
-			my=0;
-		}
-		else if(hei<=my)
-		{
-			my=hei-1;
-		}
-		mx=mx*100/scaling;
-		my=my*100/scaling;
+			int wid,hei;
+			FsGetWindowSize(wid,hei);
+			int lb,mb,rb,mx,my;
+			FsGetMouseEvent(lb,mb,rb,mx,my);
+			if(mx<0)
+			{
+				mx=0;
+			}
+			else if(wid<=mx)
+			{
+				mx=wid-1;
+			}
+			if(my<0)
+			{
+				my=0;
+			}
+			else if(hei<=my)
+			{
+				my=hei-1;
+			}
+			mx=mx*100/scaling;
+			my=my*100/scaling;
 
-		this->ProcessMouse(towns,lb,mb,rb,mx,my);
+			this->ProcessMouse(towns,lb,mb,rb,mx,my);
+		}
 	}
 }
 /* virtual */ void FsSimpleWindowConnection::UpdateStatusBitmap(class FMTowns &towns)

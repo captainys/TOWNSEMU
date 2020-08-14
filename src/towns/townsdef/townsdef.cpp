@@ -230,6 +230,40 @@ unsigned int TownsStrToGamePortEmu(std::string str)
 	{
 		return TOWNS_GAMEPORTEMU_PHYSICAL7_AS_CYBERSTICK;
 	}
+
+	if("ANA0MOUSE"==str || "ana0mouse"==str)
+	{
+		return TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG0;
+	}
+	if("ANA1MOUSE"==str || "ana1mouse"==str)
+	{
+		return TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG1;
+	}
+	if("ANA2MOUSE"==str || "ana2mouse"==str)
+	{
+		return TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG2;
+	}
+	if("ANA3MOUSE"==str || "ana3mouse"==str)
+	{
+		return TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG3;
+	}
+	if("ANA4MOUSE"==str || "ana4mouse"==str)
+	{
+		return TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG4;
+	}
+	if("ANA5MOUSE"==str || "ana5mouse"==str)
+	{
+		return TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG5;
+	}
+	if("ANA6MOUSE"==str || "ana6mouse"==str)
+	{
+		return TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG6;
+	}
+	if("ANA7MOUSE"==str || "ana7mouse"==str)
+	{
+		return TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG7;
+	}
+
 	return TOWNS_GAMEPORTEMU_NONE;
 }
 
@@ -291,6 +325,23 @@ std::string TownsGamePortEmuToStr(unsigned int emu)
 		return "PHYS6CYB";
 	case TOWNS_GAMEPORTEMU_PHYSICAL7_AS_CYBERSTICK:
 		return "PHYS7CYB";
+
+	case TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG0:
+		return "ANA0MOUSE";
+	case TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG1:
+		return "ANA1MOUSE";
+	case TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG2:
+		return "ANA2MOUSE";
+	case TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG3:
+		return "ANA3MOUSE";
+	case TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG4:
+		return "ANA4MOUSE";
+	case TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG5:
+		return "ANA5MOUSE";
+	case TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG6:
+		return "ANA6MOUSE";
+	case TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG7:
+		return "ANA7MOUSE";
 	}
 	return "NONE";
 }

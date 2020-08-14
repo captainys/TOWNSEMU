@@ -33,7 +33,7 @@ def Run(argv):
 		"-FD1",
 		os.path.join(DISKDIR,"BDrive.bin"),
 		"-CD",
-		"D:/TownsISO/TownsOSV2.1L20.cue",
+		"C:/D/TownsISO/TownsOSV2.1L20.cue",
 		"-SYM",
 		"../symtables/V2.1L20CDBOOT_"+TOWNSTYPE+".txt",
 		"-HD0",

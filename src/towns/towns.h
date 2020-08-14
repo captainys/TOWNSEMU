@@ -398,6 +398,11 @@ public:
 	void SetGamePadState(int port,bool Abutton,bool Bbutton,bool left,bool right,bool up,bool down,bool run,bool pause);
 
 
+	/*!
+	*/
+	void SetMouseMotion(int port,int dx,int dy);
+
+
 	/*! Returns the mouse coordinate that TBIOS is thinking.
 	    Returns false if it could not get the coordinate.
 	*/

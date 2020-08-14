@@ -568,6 +568,12 @@ void FMTowns::SetGamePadState(int port,bool Abutton,bool Bbutton,bool left,bool 
 	p.pause=pause;
 }
 
+void FMTowns::SetMouseMotion(int port,int dx,int dy)
+{
+	auto &p=gameport.state.ports[port&1];
+	p.mouseMotion.Set(dx,dy);
+}
+
 bool FMTowns::GetMouseCoordinate(int &mx,int &my,unsigned int tbiosid) const
 {
 	if(true==state.mouseBIOSActive)
