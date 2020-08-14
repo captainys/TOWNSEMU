@@ -78,7 +78,7 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 		}
 		else if(GAMEPAD==device)
 		{
-			data|=0x3F;
+			data|=0x7F;
 			if(true==run)
 			{
 				data&=0b11110011;
