@@ -98,22 +98,30 @@ void ProfileDialog::Make(void)
 		BeginAddTabItem(tab,tabId);
 
 		AddStaticText(0,FSKEY_NULL,"Game Port 0:",YSTRUE);
-		gamePortBtn[0][0]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"None",YSFALSE);
-		gamePortBtn[0][1]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"GamePad0",YSFALSE);
-		gamePortBtn[0][2]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"GamePad1",YSFALSE);
-		gamePortBtn[0][3]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"Emulation by Keyboard(ASZX and arrow)",YSFALSE);
-		gamePortBtn[0][4]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"Mouse",YSFALSE);
-		SetRadioButtonGroup(5,gamePortBtn[0]);
+		gamePortBtn[0][ 0]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"None",YSTRUE);
+		gamePortBtn[0][ 1]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"GamePad0",YSFALSE);
+		gamePortBtn[0][ 2]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"GamePad1",YSFALSE);
+		gamePortBtn[0][ 3]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"Emulation by Keyboard(ASZX and arrow)",YSFALSE);
+		gamePortBtn[0][ 4]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"Mouse",YSFALSE);
+		gamePortBtn[0][ 5]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"Mouse by Pad0",YSTRUE);
+		gamePortBtn[0][ 6]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"Mouse by Pad1",YSFALSE);
+		gamePortBtn[0][ 7]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"Mouse by Analog0",YSFALSE);
+		gamePortBtn[0][ 8]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"Mouse by Analog1",YSFALSE);
+		SetRadioButtonGroup(NUM_GAMEPORT_CHOICE,gamePortBtn[0]);
 		gamePortBtn[0][1]->SetCheck(YSTRUE);
 
 		AddStaticText(0,FSKEY_NULL,"Game Port 1:",YSTRUE);
-		gamePortBtn[1][0]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"None",YSFALSE);
-		gamePortBtn[1][1]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"GamePad0",YSFALSE);
-		gamePortBtn[1][2]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"GamePad1",YSFALSE);
-		gamePortBtn[1][3]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"Emulation by Keyboard(ASZX and arrow)",YSFALSE);
-		gamePortBtn[1][4]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"Mouse",YSFALSE);
-		SetRadioButtonGroup(5,gamePortBtn[1]);
-		gamePortBtn[1][4]->SetCheck(YSTRUE);
+		gamePortBtn[1][ 0]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"None",YSTRUE);
+		gamePortBtn[1][ 1]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"GamePad0",YSFALSE);
+		gamePortBtn[1][ 2]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"GamePad1",YSFALSE);
+		gamePortBtn[1][ 3]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"Emulation by Keyboard(ASZX and arrow)",YSFALSE);
+		gamePortBtn[1][ 4]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"Mouse",YSFALSE);
+		gamePortBtn[1][ 5]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"Mouse by Pad0",YSTRUE);
+		gamePortBtn[1][ 6]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"Mouse by Pad1",YSFALSE);
+		gamePortBtn[1][ 7]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"Mouse by Analog0",YSFALSE);
+		gamePortBtn[1][ 8]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"Mouse by Analog1",YSFALSE);
+		SetRadioButtonGroup(NUM_GAMEPORT_CHOICE,gamePortBtn[1]);
+		gamePortBtn[1][5]->SetCheck(YSTRUE);
 
 		AddStaticText(0,FSKEY_NULL,"Mouse-Integration Speed",YSTRUE);
 		AddStaticText(0,FSKEY_NULL,"(Try slowing down if mouse-cursor jumps around)",YSTRUE);
