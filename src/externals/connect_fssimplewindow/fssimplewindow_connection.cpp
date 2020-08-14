@@ -389,6 +389,74 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 					    reading.buttons[3]);
 				}
 				break;
+			case TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL0:
+			case TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL1:
+			case TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL2:
+			case TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL3:
+			case TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL4:
+			case TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL5:
+			case TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL6:
+			case TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL7:
+				{
+					if(true!=gamePadInitialized)
+					{
+						YsGamePadInitialize();
+						gamePadInitialized=true;
+					}
+					{
+						const int accel=1;
+						const int maxSpeed=100;
+						const int div=20;
+
+						mouseEmulationByAnalogAxis=true;
+						int padId=gamePort[portId]-TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL0;
+						struct YsGamePadReading reading;
+						YsGamePadRead(&reading,padId);
+						if(0!=reading.dirs[0].upDownLeftRight[0])
+						{
+							mouseDY+=accel;
+						}
+						else if(0!=reading.dirs[0].upDownLeftRight[1])
+						{
+							mouseDY-=accel;
+						}
+						else
+						{
+							mouseDY=0;
+						}
+						if(mouseDY<-maxSpeed)
+						{
+							mouseDY=-maxSpeed;
+						}
+						if(mouseDY>maxSpeed)
+						{
+							mouseDY=maxSpeed;
+						}
+						if(0!=reading.dirs[0].upDownLeftRight[2])
+						{
+							mouseDX+=accel;
+						}
+						else if(0!=reading.dirs[0].upDownLeftRight[3])
+						{
+							mouseDX-=accel;
+						}
+						else
+						{
+							mouseDX=0;
+						}
+						if(mouseDX<-maxSpeed)
+						{
+							mouseDX=-maxSpeed;
+						}
+						if(mouseDX>maxSpeed)
+						{
+							mouseDX=maxSpeed;
+						}
+						towns.SetMouseMotion(portId,mouseDX/10,mouseDY/10);
+						towns.SetMouseButtonState(0!=reading.buttons[0],0!=reading.buttons[1]);
+					}
+				}
+				break;
 			case TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG0:
 			case TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG1:
 			case TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG2:

@@ -231,6 +231,39 @@ unsigned int TownsStrToGamePortEmu(std::string str)
 		return TOWNS_GAMEPORTEMU_PHYSICAL7_AS_CYBERSTICK;
 	}
 
+	if("PHYS0MOUSE"==str || "phys0mouse"==str)
+	{
+		return TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL0;
+	}
+	if("PHYS1MOUSE"==str || "phys1mouse"==str)
+	{
+		return TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL1;
+	}
+	if("PHYS2MOUSE"==str || "phys2mouse"==str)
+	{
+		return TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL2;
+	}
+	if("PHYS3MOUSE"==str || "phys3mouse"==str)
+	{
+		return TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL3;
+	}
+	if("PHYS4MOUSE"==str || "phys4mouse"==str)
+	{
+		return TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL4;
+	}
+	if("PHYS5MOUSE"==str || "phys5mouse"==str)
+	{
+		return TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL5;
+	}
+	if("PHYS6MOUSE"==str || "phys6mouse"==str)
+	{
+		return TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL6;
+	}
+	if("PHYS7MOUSE"==str || "phys7mouse"==str)
+	{
+		return TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL7;
+	}
+
 	if("ANA0MOUSE"==str || "ana0mouse"==str)
 	{
 		return TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG0;
@@ -325,6 +358,23 @@ std::string TownsGamePortEmuToStr(unsigned int emu)
 		return "PHYS6CYB";
 	case TOWNS_GAMEPORTEMU_PHYSICAL7_AS_CYBERSTICK:
 		return "PHYS7CYB";
+
+	case TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL0:
+		return "PHYS0MOUSE";
+	case TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL1:
+		return "PHYS1MOUSE";
+	case TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL2:
+		return "PHYS2MOUSE";
+	case TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL3:
+		return "PHYS3MOUSE";
+	case TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL4:
+		return "PHYS4MOUSE";
+	case TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL5:
+		return "PHYS5MOUSE";
+	case TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL6:
+		return "PHYS6MOUSE";
+	case TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL7:
+		return "PHYS7MOUSE";
 
 	case TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG0:
 		return "ANA0MOUSE";

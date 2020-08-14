@@ -30,6 +30,10 @@ public:
 	FsSimpleWindowConnection();
 	~FsSimpleWindowConnection();
 
+	// For mouse emulation by pad digital axes.
+	int mouseDX=0,mouseDY=0;
+
+
 	virtual std::vector <std::string> MakeKeyMappingText(void) const;
 	virtual void LoadKeyMappingFromText(const std::vector <std::string> &text);
 
