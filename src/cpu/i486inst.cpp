@@ -63,6 +63,7 @@ void i486DX::MakeOpCodeRenumberTable(void)
 	opCodeRenumberTable[I486_OPCODE_CLC]=I486_RENUMBER_CLC;
 	opCodeRenumberTable[I486_OPCODE_CLD]=I486_RENUMBER_CLD;
 	opCodeRenumberTable[I486_OPCODE_CLI]=I486_RENUMBER_CLI;
+	opCodeRenumberTable[I486_OPCODE_CLTS]=I486_RENUMBER_CLTS;
 	opCodeRenumberTable[I486_OPCODE_CMC]=I486_RENUMBER_CMC;
 	opCodeRenumberTable[I486_OPCODE_ADC_AL_FROM_I8]=I486_RENUMBER_ADC_AL_FROM_I8;
 	opCodeRenumberTable[I486_OPCODE_ADC_A_FROM_I]=I486_RENUMBER_ADC_A_FROM_I;
@@ -1049,6 +1050,7 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 	case I486_RENUMBER_CLD:
 	case I486_RENUMBER_CLI:
 	case I486_RENUMBER_CMC://        0xF5,
+	case I486_RENUMBER_CLTS: // 0x0F06
 		break;
 
 
@@ -2077,6 +2079,9 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		break;
 	case I486_OPCODE_CLI:
 		disasm="CLI";
+		break;
+	case I486_OPCODE_CLTS:
+		disasm="CLTS";
 		break;
 	case I486_OPCODE_CMC://        0xF5,
 		disasm="CMC";
@@ -5234,6 +5239,14 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_RENUMBER_CLI:
 		state.EFLAGS&=(~EFLAGS_INT_ENABLE);
 		clocksPassed=2;
+		break;
+	case I486_RENUMBER_CLTS:
+		{
+			clocksPassed=7;
+			auto CR0=state.GetCR(0);
+			CR0&=(~CR0_TASK_SWITCHED);
+			SetCR(0,CR0);
+		}
 		break;
 
 

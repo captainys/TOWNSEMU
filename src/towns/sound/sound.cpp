@@ -156,15 +156,16 @@ void TownsSound::PCMStopPlay(unsigned char chStopPlay)
 	case TOWNSIO_SOUND_MUTE://              0x4D5, // [2] pp.18,
 		data=state.muteFlag;
 		break;
+	case TOWNSIO_SOUND_ADDRESS1://          0x4DC, // [2] pp.18,
+		// Supposed to be Write Only
+		// Sim City 2000 is waiting for bit7 of this byte to clear.
+		// If address bus bit2 is not checked, it should return the same value as 4D8.
 	case TOWNSIO_SOUND_STATUS_ADDRESS0://   0x4D8, // [2] pp.18,
 		data=0b01111100;
 		data|=(true==state.ym2612.TimerAUp() ? 1 : 0);
 		data|=(true==state.ym2612.TimerBUp() ? 2 : 0);
 		break;
 	case TOWNSIO_SOUND_DATA0://             0x4DA, // [2] pp.18,
-		// Write Only
-		break;
-	case TOWNSIO_SOUND_ADDRESS1://          0x4DC, // [2] pp.18,
 		// Write Only
 		break;
 	case TOWNSIO_SOUND_DATA1://             0x4DE, // [2] pp.18,
