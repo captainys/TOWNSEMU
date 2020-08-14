@@ -405,7 +405,7 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 					}
 					{
 						const int accel=1;
-						const int maxSpeed=100;
+						const int maxSpeed=60;
 						const int div=20;
 
 						mouseEmulationByAnalogAxis=true;
@@ -452,7 +452,7 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 						{
 							mouseDX=maxSpeed;
 						}
-						towns.SetMouseMotion(portId,mouseDX/10,mouseDY/10);
+						towns.SetMouseMotion(portId,mouseDX/div,mouseDY/div);
 						towns.SetMouseButtonState(0!=reading.buttons[0],0!=reading.buttons[1]);
 					}
 				}

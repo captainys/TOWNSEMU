@@ -54,7 +54,7 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 			{
 				data|=0x20;
 			}
-			if(200000<(townsTime-lastReadTime))
+			if(MOUSEREAD_RESET_TIMEOUT<(townsTime-lastReadTime))
 			{
 				state=0;
 			}

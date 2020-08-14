@@ -31,6 +31,7 @@ public:
 		MOUSE,
 		GAMEPAD,
 		CYBERSTICK,  // Hope for the future versions.
+		MOUSEREAD_RESET_TIMEOUT=1000000,
 	};
 
 	class Port
