@@ -224,7 +224,8 @@ unsigned int RF5C68::AddWaveForNumSamples(unsigned char waveBuf[],unsigned int c
 
 		while(nFilled<numSamples)
 		{
-			auto data=state.waveRAM[pcmAddr>>FD_BIT_SHIFT];
+			auto readAddr=(pcmAddr>>FD_BIT_SHIFT);
+			auto data=state.waveRAM[readAddr];
 
 			bool loopStop=(LOOP_STOP_CODE==data);
 			if(true!=loopStop)
@@ -268,6 +269,7 @@ unsigned int RF5C68::AddWaveForNumSamples(unsigned char waveBuf[],unsigned int c
 				{
 					if(LOOP_STOP_CODE==state.waveRAM[scanAddr&(WAVERAM_SIZE-1)])
 					{
+						readAddr=(scanAddr&(WAVERAM_SIZE-1));
 						loopStop=true;
 						break;
 					}
@@ -277,9 +279,17 @@ unsigned int RF5C68::AddWaveForNumSamples(unsigned char waveBuf[],unsigned int c
 			if(true==loopStop)
 			{
 				// Should it fire an IRQ on loop-stop?
-				auto bank=((pcmAddr>>FD_BIT_SHIFT>>BANK_SHIFT)&0x0F);
-				ch.IRQAfterThisPlayBack=true;
-				ch.IRQBank=bank;
+				// Not firing IRQ on loopStop breaks Strike Commander voice (in fact, it will wait for IRQ forever).
+				// Firing IRQ will overrun wave-data of Sim City 2000.
+				// Probably, IRQ should be fired when RF5C68 reads the last byte of the bank.  If there is no loop stop, it is
+				// just crossing the bank border.
+				// But, also it should fire IRQ when the loop stop is at 0x?FFF.  This condition seems to be correct.
+				if(0xFFF==(readAddr&0xFFF))
+				{
+					auto bank=((pcmAddr>>FD_BIT_SHIFT>>BANK_SHIFT)&0x0F);
+					ch.IRQAfterThisPlayBack=true;
+					ch.IRQBank=bank;
+				}
 
 				pcmAddr=(ch.LS<<FD_BIT_SHIFT);
 				if(LOOP_STOP_CODE==state.waveRAM[pcmAddr>>FD_BIT_SHIFT]) // Infinite Loop
