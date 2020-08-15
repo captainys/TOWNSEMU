@@ -266,7 +266,7 @@ unsigned int RF5C68::AddWaveForNumSamples(unsigned char waveBuf[],unsigned int c
 	   			    scanAddr<WAVERAM_SIZE && scanAddr<((pcmAddr+ch.FD)>>FD_BIT_SHIFT);
 				    ++scanAddr)
 				{
-					if(LOOP_STOP_CODE==state.waveRAM[scanAddr])
+					if(LOOP_STOP_CODE==state.waveRAM[scanAddr&(WAVERAM_SIZE-1)])
 					{
 						loopStop=true;
 						break;
