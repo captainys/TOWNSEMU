@@ -7763,6 +7763,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 	case I486_RENUMBER_STI://              0xFB,
 		SetIF(true);
+		// i486 Programmer's Reference Manual says:
+		// The processor then responds to the external interrupts after executing the next instruction
+		// if the next instruction allows the IF flag to remain enabled.
+		// Therefore, STI behaves like substituting a value to SS register, which holds an IRQ for the
+		// next instruction.
+		state.holdIRQ=true;
 		clocksPassed=5;
 		break;
 
