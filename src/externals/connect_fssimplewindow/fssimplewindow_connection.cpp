@@ -120,13 +120,18 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 {
 	FsPollDevice();
 
-	bool gamePadEmulation=false; // Emulate a gamepad with keyboard?
+	bool gamePadEmulationByKey=false; // Emulate a gamepad with keyboard
+	bool mouseEmulationByNumPad=false; // Emulate mouse with keyboard numpad
 	for(unsigned int portId=0; portId<TOWNS_NUM_GAMEPORTS; ++portId)
 	{
-		if(TOWNS_GAMEPORTEMU_KEYBOARD==gamePort[portId])
+		if(TOWNS_GAMEPORTEMU_KEYBOARD==gamePort[portId] ||
+		   TOWNS_GAMEPORTEMU_MOUSE_BY_KEY==gamePort[portId])
 		{
-			gamePadEmulation=true;
-			break;
+			gamePadEmulationByKey=true;
+		}
+		if(TOWNS_GAMEPORTEMU_MOUSE_BY_NUMPAD==gamePort[portId])
+		{
+			mouseEmulationByNumPad=true;
 		}
 	}
 
@@ -230,7 +235,7 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 			switch(c)
 			{
 			default:
-				if(true==gamePadEmulation &&
+				if(true==gamePadEmulationByKey &&
 				   (FSKEY_Z==c ||
 				    FSKEY_X==c ||
 				    FSKEY_A==c ||
@@ -239,6 +244,22 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 				    FSKEY_RIGHT==c ||
 				    FSKEY_UP==c ||
 				    FSKEY_DOWN==c))
+				{
+					break;
+				}
+				if(true==mouseEmulationByNumPad &&
+				   (FSKEY_TEN0==c ||
+				    FSKEY_TEN1==c ||
+				    FSKEY_TEN2==c ||
+				    FSKEY_TEN3==c ||
+				    FSKEY_TEN4==c ||
+				    FSKEY_TEN5==c ||
+				    FSKEY_TEN6==c ||
+				    FSKEY_TEN7==c ||
+				    FSKEY_TEN8==c ||
+				    FSKEY_TEN9==c ||
+				    FSKEY_TENSTAR==c ||
+				    FSKEY_TENSLASH==c))
 				{
 					break;
 				}
@@ -266,7 +287,7 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 		}
 		for(int key=FSKEY_NULL; key<FSKEY_NUM_KEYCODE; ++key)
 		{
-			if(true==gamePadEmulation &&
+			if(true==gamePadEmulationByKey &&
 			   (FSKEY_Z==key ||
 			    FSKEY_X==key ||
 			    FSKEY_A==key ||
@@ -275,6 +296,22 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 			    FSKEY_RIGHT==key ||
 			    FSKEY_UP==key ||
 			    FSKEY_DOWN==key))
+			{
+				continue;
+			}
+			if(true==mouseEmulationByNumPad &&
+			   (FSKEY_TEN0==key ||
+			    FSKEY_TEN1==key ||
+			    FSKEY_TEN2==key ||
+			    FSKEY_TEN3==key ||
+			    FSKEY_TEN4==key ||
+			    FSKEY_TEN5==key ||
+			    FSKEY_TEN6==key ||
+			    FSKEY_TEN7==key ||
+			    FSKEY_TEN8==key ||
+			    FSKEY_TEN9==key ||
+			    FSKEY_TENSTAR==key ||
+			    FSKEY_TENSLASH==key))
 			{
 				continue;
 			}
@@ -389,6 +426,9 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 					    reading.buttons[3]);
 				}
 				break;
+
+			case TOWNS_GAMEPORTEMU_MOUSE_BY_KEY:
+			case TOWNS_GAMEPORTEMU_MOUSE_BY_NUMPAD:
 			case TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL0:
 			case TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL1:
 			case TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL2:
@@ -398,25 +438,57 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 			case TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL6:
 			case TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL7:
 				{
-					if(true!=gamePadInitialized)
+					if(TOWNS_GAMEPORTEMU_MOUSE_BY_KEY!=gamePort[portId] &&
+					   TOWNS_GAMEPORTEMU_MOUSE_BY_NUMPAD!=gamePort[portId] &&
+					   true!=gamePadInitialized)
 					{
 						YsGamePadInitialize();
 						gamePadInitialized=true;
 					}
 					{
 						const int accel=1;
-						const int maxSpeed=60;
+						const int maxSpeed=80;
 						const int div=20;
 
+						bool upDownLeftRight[4]={false,false,false,false};
+						bool button[2]={false,false};
+
 						mouseEmulationByAnalogAxis=true;
-						int padId=gamePort[portId]-TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL0;
-						struct YsGamePadReading reading;
-						YsGamePadRead(&reading,padId);
-						if(0!=reading.dirs[0].upDownLeftRight[0])
+						if(TOWNS_GAMEPORTEMU_MOUSE_BY_KEY==gamePort[portId])
+						{
+							upDownLeftRight[0]=(0!=FsGetKeyState(FSKEY_UP));
+							upDownLeftRight[1]=(0!=FsGetKeyState(FSKEY_DOWN));
+							upDownLeftRight[2]=(0!=FsGetKeyState(FSKEY_LEFT));
+							upDownLeftRight[3]=(0!=FsGetKeyState(FSKEY_RIGHT));
+							button[0]=(0!=FsGetKeyState(FSKEY_Z));
+							button[1]=(0!=FsGetKeyState(FSKEY_X));
+						}
+						else if(TOWNS_GAMEPORTEMU_MOUSE_BY_NUMPAD==gamePort[portId])
+						{
+							upDownLeftRight[0]=(0!=FsGetKeyState(FSKEY_TEN7) || 0!=FsGetKeyState(FSKEY_TEN8) || 0!=FsGetKeyState(FSKEY_TEN9));
+							upDownLeftRight[1]=(0!=FsGetKeyState(FSKEY_TEN1) || 0!=FsGetKeyState(FSKEY_TEN2) || 0!=FsGetKeyState(FSKEY_TEN3));
+							upDownLeftRight[2]=(0!=FsGetKeyState(FSKEY_TEN1) || 0!=FsGetKeyState(FSKEY_TEN4) || 0!=FsGetKeyState(FSKEY_TEN7));
+							upDownLeftRight[3]=(0!=FsGetKeyState(FSKEY_TEN3) || 0!=FsGetKeyState(FSKEY_TEN6) || 0!=FsGetKeyState(FSKEY_TEN9));
+							button[0]=(0!=FsGetKeyState(FSKEY_TENSLASH));
+							button[1]=(0!=FsGetKeyState(FSKEY_TENSTAR));
+						}
+						else
+						{
+							struct YsGamePadReading reading;
+							int padId=gamePort[portId]-TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL0;
+							YsGamePadRead(&reading,padId);
+							upDownLeftRight[0]=(0!=reading.dirs[0].upDownLeftRight[0]);
+							upDownLeftRight[1]=(0!=reading.dirs[0].upDownLeftRight[1]);
+							upDownLeftRight[2]=(0!=reading.dirs[0].upDownLeftRight[2]);
+							upDownLeftRight[3]=(0!=reading.dirs[0].upDownLeftRight[3]);
+							button[0]=(0!=reading.buttons[0]);
+							button[1]=(0!=reading.buttons[1]);
+						}
+						if(true==upDownLeftRight[0])
 						{
 							mouseDY+=accel;
 						}
-						else if(0!=reading.dirs[0].upDownLeftRight[1])
+						else if(true==upDownLeftRight[1])
 						{
 							mouseDY-=accel;
 						}
@@ -432,11 +504,11 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 						{
 							mouseDY=maxSpeed;
 						}
-						if(0!=reading.dirs[0].upDownLeftRight[2])
+						if(0!=true==upDownLeftRight[2])
 						{
 							mouseDX+=accel;
 						}
-						else if(0!=reading.dirs[0].upDownLeftRight[3])
+						else if(0!=true==upDownLeftRight[3])
 						{
 							mouseDX-=accel;
 						}
@@ -453,7 +525,7 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 							mouseDX=maxSpeed;
 						}
 						towns.SetMouseMotion(portId,mouseDX/div,mouseDY/div);
-						towns.SetMouseButtonState(0!=reading.buttons[0],0!=reading.buttons[1]);
+						towns.SetMouseButtonState(button[0],button[1]);
 					}
 				}
 				break;

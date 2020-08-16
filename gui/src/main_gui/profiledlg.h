@@ -70,7 +70,7 @@ public:
 	FsGuiButton *ROMDirBtn,*CDImgBtn,*FDImgBtn[2][TownsProfile::NUM_STANDBY_FDIMG],*HDImgBtn[TownsProfile::MAX_NUM_SCSI_DEVICE];
 	FsGuiButton *FDWriteProtBtn[2][TownsProfile::NUM_STANDBY_FDIMG];
 	FsGuiTextBox *ROMDirTxt,*CDImgTxt,*FDImgTxt[2][TownsProfile::NUM_STANDBY_FDIMG],*HDImgTxt[TownsProfile::MAX_NUM_SCSI_DEVICE];
-	FsGuiButton *gamePortBtn[2][NUM_GAMEPORT_CHOICE]; // None, Pad0, Pad1, Keybord Emulation, Mouse,
+	FsGuiDropList *gamePortDrp[2]; // None, Pad0, Pad1, Keybord Emulation, Mouse,
 	FsGuiSlider *mouseIntegSpdSlider;
 	FsGuiButton *bootKeyBtn[15];
 	FsGuiTextBox *scrnScaleTxt;

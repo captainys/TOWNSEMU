@@ -97,35 +97,28 @@ void ProfileDialog::Make(void)
 		auto tabId=AddTab(tab,"GamePort");
 		BeginAddTabItem(tab,tabId);
 
-		AddStaticText(0,FSKEY_NULL,"Game Port 0:",YSTRUE);
-		gamePortBtn[0][ 0]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"None",YSTRUE);
-		gamePortBtn[0][ 1]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"GamePad0",YSFALSE);
-		gamePortBtn[0][ 2]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"GamePad1",YSFALSE);
-		gamePortBtn[0][ 3]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"Emulation by Keyboard(ASZX and arrow)",YSFALSE);
-		gamePortBtn[0][ 4]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"Mouse",YSFALSE);
-		gamePortBtn[0][ 5]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"Mouse by Key",YSTRUE);
-		gamePortBtn[0][ 6]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"Mouse by NumPad",YSFALSE);
-		gamePortBtn[0][ 5]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"Mouse by Pad0",YSFALSE);
-		gamePortBtn[0][ 6]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"Mouse by Pad1",YSFALSE);
-		gamePortBtn[0][ 7]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"Mouse by Analog0",YSFALSE);
-		gamePortBtn[0][ 8]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"Mouse by Analog1",YSFALSE);
-		SetRadioButtonGroup(NUM_GAMEPORT_CHOICE,gamePortBtn[0]);
-		gamePortBtn[0][1]->SetCheck(YSTRUE);
+		for(int i=0; i<2; ++i)
+		{
+			std::string label="Game Port ";
+			label.push_back('0'+i);
+			label.push_back(':');
 
-		AddStaticText(0,FSKEY_NULL,"Game Port 1:",YSTRUE);
-		gamePortBtn[1][ 0]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"None",YSTRUE);
-		gamePortBtn[1][ 1]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"GamePad0",YSFALSE);
-		gamePortBtn[1][ 2]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"GamePad1",YSFALSE);
-		gamePortBtn[1][ 3]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"Emulation by Keyboard(ASZX and arrow)",YSFALSE);
-		gamePortBtn[1][ 4]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"Mouse",YSFALSE);
-		gamePortBtn[0][ 5]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"Mouse by Key",YSTRUE);
-		gamePortBtn[0][ 6]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"Mouse by NumPad",YSFALSE);
-		gamePortBtn[1][ 5]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"Mouse by Pad0",YSFALSE);
-		gamePortBtn[1][ 6]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"Mouse by Pad1",YSFALSE);
-		gamePortBtn[1][ 7]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"Mouse by Analog0",YSFALSE);
-		gamePortBtn[1][ 8]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"Mouse by Analog1",YSFALSE);
-		SetRadioButtonGroup(NUM_GAMEPORT_CHOICE,gamePortBtn[1]);
-		gamePortBtn[1][4]->SetCheck(YSTRUE);
+			AddStaticText(0,FSKEY_NULL,label.c_str(),YSTRUE);
+			gamePortDrp[i]=AddEmptyDropList(0,FSKEY_NULL,"",20,40,40,YSTRUE);
+			gamePortDrp[i]->AddString("None",YSTRUE);
+			gamePortDrp[i]->AddString("GamePad0",YSFALSE);
+			gamePortDrp[i]->AddString("GamePad1",YSFALSE);
+			gamePortDrp[i]->AddString("Emulation by Keyboard(Arrow and ASZX)",YSFALSE);
+			gamePortDrp[i]->AddString("Mouse",YSFALSE);
+			gamePortDrp[i]->AddString("Mouse by Key (Arrow and ZX)",YSTRUE);
+			gamePortDrp[i]->AddString("Mouse by NumPad (NUMKEY and /*)",YSFALSE);
+			gamePortDrp[i]->AddString("Mouse by Pad0",YSFALSE);
+			gamePortDrp[i]->AddString("Mouse by Pad1",YSFALSE);
+			gamePortDrp[i]->AddString("Mouse by Analog0",YSFALSE);
+			gamePortDrp[i]->AddString("Mouse by Analog1",YSFALSE);
+		}
+		gamePortDrp[0]->Select(1);
+		gamePortDrp[1]->Select(4);
 
 		AddStaticText(0,FSKEY_NULL,"Mouse-Integration Speed",YSTRUE);
 		AddStaticText(0,FSKEY_NULL,"(Try slowing down if mouse-cursor jumps around)",YSTRUE);
@@ -362,13 +355,8 @@ TownsProfile ProfileDialog::GetProfile(void) const
 
 	for(int gameport=0; gameport<2; ++gameport)
 	{
-		for(int i=0; i<NUM_GAMEPORT_CHOICE; ++i)
-		{
-			if(YSTRUE==gamePortBtn[gameport][i]->GetCheck())
-			{
-				profile.gamePort[gameport]=gamePortChoice[i];
-			}
-		}
+		auto sel=gamePortDrp[gameport]->GetSelection();
+		profile.gamePort[gameport]=gamePortChoice[sel];
 	}
 
 	profile.mouseIntegrationSpeed=(int)(mouseIntegSpdSlider->GetScaledValue());
@@ -429,11 +417,7 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 		{
 			if(gamePortChoice[i]==profile.gamePort[gameport])
 			{
-				gamePortBtn[gameport][i]->SetCheck(YSTRUE);
-			}
-			else
-			{
-				gamePortBtn[gameport][i]->SetCheck(YSFALSE);
+				gamePortDrp[gameport]->Select(i);
 			}
 		}
 	}
