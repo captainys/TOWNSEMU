@@ -525,7 +525,7 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 			state.DRY=true;
 
 			DiscImage::MinSecFrm msfBegin,msfEnd;
-			auto offset=DiscImage::MakeMSF(0,4,0);
+			auto offset=DiscImage::MakeMSF(0,2,0);
 
 			msfBegin.min=DiscImage::BCDToBin(state.paramQueue[0]);
 			msfBegin.sec=DiscImage::BCDToBin(state.paramQueue[1]);
@@ -990,7 +990,14 @@ void TownsCDROM::SetStatusQueueForTOC(void)
 		// F29 Retaliator is expecting trk.start+trk.preGap (2 seconds).
 		// Actually, probably what I should do is add 2 seconds to all the tracks,
 		// and then subtract 2 seconds when play back.
-		auto HSG=DiscImage::MSFtoHSG(trk.start+DiscImage::MakeMSF(0,2,0));
+
+		// Advantage Tennis doesn't like it.
+		// It seems that I need to return trk.start+trk.preGap, and then
+		// subtract 2 seconds when play back.
+
+		// Only problem: Wing Commander intro skips first two seconds.
+
+		auto HSG=DiscImage::MSFtoHSG(trk.start+trk.preGap);
 		HSG+=DiscImage::HSG_BASE;
 		auto MSF=DiscImage::HSGtoMSF(HSG);
 
