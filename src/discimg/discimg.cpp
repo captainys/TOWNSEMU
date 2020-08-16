@@ -422,6 +422,7 @@ unsigned int DiscImage::OpenCUEPostProcess(void)
 				preGap.locationInFile=layout.back().locationInFile+layout.back().sectorLength*layout.back().numSectors;
 				layout.push_back(preGap);
 			}
+			L.startHSG+=preGapInHSG;
 			L.locationInFile=layout.back().locationInFile+layout.back().sectorLength*layout.back().numSectors;
 			layout.push_back(L);
 		}
