@@ -56,6 +56,10 @@ xxH 01H xx xx  Probably Parameter Error
     What about drive-not-ready?
 00H 08H xx xx  Seems to be also media-changed.  Towns OS V2.1 L20 CD-ROM BIOS 0421:277C
 
+00H 01H xx xx  Probably CDDA Paused?  Reponse to command A0H.  INT 93H AX=55C0H returns AH=22H (already paused)
+               if CDC returns 00 01 xx xx on command A0H.
+
+
 My guess based on the Boot-ROM Disassembly:
 04H xxH xx xx   Probably Seek done (After issuing 20H Seek, it waits for 00H No Error, and then 04H)
 00H 04H xx xx   CDROM BIOS re-shoots command A0H if CDROM returns this code.       (0b00000100)
@@ -189,6 +193,7 @@ public:
 		{
 			CDDA_IDLE,
 			CDDA_PLAYING,
+			CDDA_PAUSED,
 			CDDA_STOPPING,
 			CDDA_ENDED,
 		};

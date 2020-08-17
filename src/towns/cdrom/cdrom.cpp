@@ -365,6 +365,9 @@ std::vector <std::string> TownsCDROM::GetStatusText(void) const
 	case State::CDDA_PLAYING:
 		text.back()+="PLAYING";
 		break;
+	case State::CDDA_PAUSED:
+		text.back()+="PAUSED";
+		break;
 	case State::CDDA_STOPPING:
 		text.back()+="STOPPING";
 		break;
@@ -652,12 +655,12 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 		// Fix for ChaseHQ.
 		// CDDAState must be reset to IDLE regardless of the Status Request.
 		// ChaseHQ was issuing CDDAPAUSE command without Status Request flag.
-		state.CDDAState=State::CDDA_IDLE;
+		state.CDDAState=State::CDDA_PAUSED;
 		if(true==StatusRequestBit(state.cmd))
 		{
 			if(true!=SetStatusDriveNotReadyOrDiscChanged())
 			{
-				state.PushStatusQueue(0,0,0,0);
+				state.PushStatusQueue(0,0x01,0,0);  // 2nd byte=01 means PAUSED.
 				state.PushStatusQueue(0x12,0,0,0);
 			}
 		}
@@ -921,10 +924,23 @@ bool TownsCDROM::SetStatusDriveNotReadyOrDiscChanged(void)
 void TownsCDROM::SetStatusNoError(void)
 {
 	unsigned char next2ndByteOfStatusCode=0;
-	if(true==CDDAIsPlaying())
+	if(State::CDDA_PAUSED==state.CDDAState)
+	{
+		// Probably: Response to A0H, 00 01 xx xx means CDDA is paused.
+		// 0256:00001F01 A03100                    MOV     AL,[0031H]   // Second byte of the status code, if the first byte is 00H
+		// 0256:00001F04 3C01                      CMP     AL,01H
+		// 0256:00001F06 7408                      JE      00001F10
+		// 0256:00001F08 E83006                    CALL    0000253B
+		// 0256:00001F0B E8EF05                    CALL    000024FD { ()}
+		// 0256:00001F0E EB02                      JMP     00001F12
+		// 0256:00001F10 B422                      MOV     AH,22H   // Already-Paused Error.
+		// 0256:00001F12 C3                        RET
+		next2ndByteOfStatusCode=0x01;
+	}
+	else if(true==CDDAIsPlaying())
 	{
 		next2ndByteOfStatusCode=0x03;
-		// Prob: Response to A0H (80H+REQSTA), 00 03 xx xx means CDDA is playing.
+		// Probably: Response to A0H (80H+REQSTA), 00 03 xx xx means CDDA is playing.
 		// Confirmed: Shadow of the Beast 2 checks the 2nd byte to be 03 for verifying that the CDDA started playing.
 		//    000C:0006F30B 80FC03                    CMP     AH,03H
 		//    000C:0006F30E 75ED                      JNE     0006F2FD
