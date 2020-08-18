@@ -802,6 +802,10 @@ std::vector <std::string> FMTowns::GetMouseStatusText(void) const
 		{
 			text.push_back("PORT:");
 			text.back()+=cpputil::Itoa(p);
+			text.back()+=("  Motion:");
+			text.back()+=cpputil::Itoa(gameport.state.ports[p].mouseMotion.x());
+			text.back()+=(",");
+			text.back()+=cpputil::Itoa(gameport.state.ports[p].mouseMotion.y());
 			text.back()+=("  Read State:");
 			text.back()+=cpputil::Itoa(gameport.state.ports[p].state);
 		}
