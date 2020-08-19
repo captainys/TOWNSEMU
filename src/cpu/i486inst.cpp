@@ -7359,6 +7359,17 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					state.ESP()|=(TempESP&operandSizeMask[inst.operandSize>>3]);
 					LoadSegmentRegister(state.SS(),TempSS,mem);
 				}
+
+				// The pseudo code in i486 Programmer's Reference Manual suggests that IRET in VM86 mode will cause #GP(0).
+				// The textual explanation in i486 Programmer's Reference Manual tells IRET will cause #GP(0) if IOPL<3.
+				// i486 Programmer's Reference Manual also says IRETD can be used to enter VM86 mode.  However,
+				// Figure 23-2 (pp. 23-5) clearly indicates that IRETD cannot be used to exit VM86 mode.
+				// G**d D**n it!  What should I believe?
+				// For the time being, I make sure IRETD won't exit VM86 mode.
+				if(0!=prevVMFlag)
+				{
+					state.EFLAGS|=EFLAGS_VIRTUAL86;
+				}
 			}
 
 			// IRET to Virtual86 mode requires EFLAGS be loaded before the segment register.
