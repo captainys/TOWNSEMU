@@ -39,7 +39,7 @@ public:
 	public:
 		int device;  // MOUSE, GAMEPAD, or CYBERSTICK
 		int state;
-		bool COM;
+		bool COM=false,TRIG[2]={false,false}; // COM/TRIG from CPU.
 		bool button[2],left,right,up,down,run,pause;
 		Vec2i mouseMotion;
 

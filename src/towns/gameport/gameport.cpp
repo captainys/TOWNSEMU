@@ -32,8 +32,10 @@ void TownsGamePort::Port::Write(bool COM,bool T1,bool T2)
 		{
 			state=(state+1)&3;
 		}
-		this->COM=COM;
 	}
+	this->COM=COM;
+	this->TRIG[0]=T1;
+	this->TRIG[1]=T2;
 }
 unsigned char TownsGamePort::Port::Read(long long int townsTime)
 {
@@ -78,7 +80,7 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 		}
 		else if(GAMEPAD==device)
 		{
-			data|=0x7F;
+			data|=0x3F;
 			if(true==run)
 			{
 				data&=0b11110011;

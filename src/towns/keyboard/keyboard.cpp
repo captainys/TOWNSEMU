@@ -89,6 +89,7 @@ void TownsKeyboard::SetBootKeyCombination(unsigned int keyComb)
 		if(0xA0==data) // RESET pp.232
 		{
 			state.Reset();
+			nFifoFilled=0;
 			PushFifo(0xA0,0x7F);
 			// pp.235 and 
 			// Also based on Reverse Engineering of FM Towns IIMX System ROM
