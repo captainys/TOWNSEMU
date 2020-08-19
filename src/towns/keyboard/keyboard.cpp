@@ -80,7 +80,13 @@ void TownsKeyboard::SetBootKeyCombination(unsigned int keyComb)
 	case TOWNSIO_KEYBOARD_DATA://       0x600, // [2] pp.234
 		break;
 	case TOWNSIO_KEYBOARD_STATUS_CMD:// 0x602, // [2] pp.231
-		if(0xA1==data) // RESET pp.232
+		// [2] FM Towns Technical Data Book pp.232 Table I-7-3 lists command A1 as reset.
+		// But, SYSROM sends command A0 then A1.  Command A0 is not listed in the table.
+		// SYSROM sends command A0 then A1, and expects return A0,7F from the keyboard.
+		// Keyboard BIOS sends command A1 then A1, and not expecting any return.
+		// Probably command A0 is hard reset, and A1 is soft reset, and the keyboard
+		// returns A0,7F after hard reset?
+		if(0xA0==data) // RESET pp.232
 		{
 			state.Reset();
 			PushFifo(0xA0,0x7F);
@@ -114,6 +120,15 @@ void TownsKeyboard::SetBootKeyCombination(unsigned int keyComb)
 				break;
 			} */
 		}
+		else if(0xA1==data)
+		{
+			if(0xA0!=state.lastCmd) // Don't clear fifo buffer if it is A0,A1 from SYSROM.
+			{
+				state.Reset();
+				nFifoFilled=0;
+			}
+		}
+		state.lastCmd=data;
 		break;
 	case TOWNSIO_KEYBOARD_IRQ://        0x604, // [2] pp.236
 		state.IRQEnabled=(0!=(data&1));

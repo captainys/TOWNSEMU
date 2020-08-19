@@ -36,6 +36,8 @@ public:
 		unsigned int bootKeyComb=BOOT_KEYCOMB_NONE;
 		unsigned int bootKeyCombSequenceCounter=0;
 
+		unsigned char lastCmd=0;
+
 		void Reset(void);
 	};
 
