@@ -7309,6 +7309,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			unsigned int EFLAGS=Pop(mem,inst.operandSize);
 			EFLAGS&=~(EFLAGS_RESUME|EFLAGS_VIRTUAL86);
 			EFLAGS|= (state.EFLAGS&(EFLAGS_RESUME|EFLAGS_VIRTUAL86));
+			EFLAGS&=EFLAGS_MASK;
+			EFLAGS|=EFLAGS_ALWAYS_ON;
 			SetFLAGSorEFLAGS(inst.operandSize,EFLAGS);
 		}
 		clocksPassed=(IsInRealMode() ? 9 : 6);
@@ -7364,13 +7366,15 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				// The textual explanation in i486 Programmer's Reference Manual tells IRET will cause #GP(0) if IOPL<3.
 				// i486 Programmer's Reference Manual also says IRETD can be used to enter VM86 mode.  However,
 				// Figure 23-2 (pp. 23-5) clearly indicates that IRETD cannot be used to exit VM86 mode.
-				// G**d D**n it!  What should I believe?
+				// G*d D**n it!  What should I believe?
 				// For the time being, I make sure IRETD won't exit VM86 mode.
 				if(0!=prevVMFlag)
 				{
 					state.EFLAGS|=EFLAGS_VIRTUAL86;
 				}
 			}
+			state.EFLAGS&=EFLAGS_MASK;
+			state.EFLAGS|=EFLAGS_ALWAYS_ON;
 
 			// IRET to Virtual86 mode requires EFLAGS be loaded before the segment register.
 			LoadSegmentRegister(state.CS(),segRegValue,mem);
