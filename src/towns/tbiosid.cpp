@@ -64,7 +64,7 @@ Towns OS V2.1 L20A, TBIOS V31L31_93
 00100000 56 33 31 4C 33 31 00 00 39 33 2F 30 31 2F 30 37|V31L31  93/01/07
 00100010 74 6F 77 6E 73 00 00 00 74 62 69 6F 73 00 00 00|towns   tbios
 
-Towns OS V2.1 L30/L31, TBIOS V31L35
+Towns OS V2.1 L30/L31/L40, TBIOS V31L35
 00100000 56 33 31 4C 33 35 00 00 39 33 2F 31 30 2F 31 35|V31L35  93/10/15
 00100010 74 6F 77 6E 73 00 00 00 74 62 69 6F 73 00 00 00|towns   tbios
 
@@ -141,6 +141,17 @@ unsigned int FMTowns::FindTBIOSMouseInfoOffset(unsigned int tbiosVersion,unsigne
 			// 0110:00014CA5 66895D14                  MOV     [EBP+14H],BX
 			// 0110:00014CA9 C3                        RET
 
+			// TownsOS V2.1 L40
+			// 0110:00016288 BFF0610100                MOV     EDI,000161F0H
+
+			// 0110:000163FC 8A6F1C                    MOV     CH,[EDI+1CH]
+			// 0110:000163FF 8B570C                    MOV     EDX,[EDI+0CH]
+			// 0110:00016402 0FA4D310                  SHLD    EBX,EDX,10H
+			// 0110:00016406 886D1D                    MOV     [EBP+1DH],CH
+			// 0110:00016409 66895518                  MOV     [EBP+18H],DX
+			// 0110:0001640D 66895D14                  MOV     [EBP+14H],BX
+			// 0110:00016411 C3                        RET
+
 			// TownsOS V2.1 L50
 			// 0110:000162C8 BF30620100                MOV     EDI,00016230H
 
@@ -156,7 +167,8 @@ unsigned int FMTowns::FindTBIOSMouseInfoOffset(unsigned int tbiosVersion,unsigne
 			{
 				0x14C00-0x14A8B, // V2.1 L30
 				0x14C94-0x14B2B, // V2.1 L31
-				0x1643C-0x162C8, // V2.1 L50
+				372, // V2.1 L40  0x163FC-0x16288
+				     // V2.1 L50  0x1643C-0x162C8
 			};
 			const unsigned char rdposCode[]=
 			{
@@ -186,7 +198,6 @@ unsigned int FMTowns::FindTBIOSMouseInfoOffset(unsigned int tbiosVersion,unsigne
 			}
 
 			// None of the above?
-			// This may support V2.1L40
 			for(unsigned int ptr=0; ptr<0x30000; ++ptr)
 			{
 				bool match=true;
