@@ -29,7 +29,7 @@ def Run(argv):
 		"./main_cui/Tsugaru_CUI"+ExeExtension(),
 		ROMDIR,
 		"-CD",
-		"D:/TownsISO/AFTER_BURNER.CUE",
+		"c:/D/TownsISO/AFTER_BURNER.CUE",
 		"-GAMEPORT0",
 		"PHYS0",
 		"-SYM",

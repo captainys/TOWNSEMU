@@ -108,6 +108,8 @@ void ProfileDialog::Make(void)
 			gamePortDrp[i]->AddString("None",YSTRUE);
 			gamePortDrp[i]->AddString("GamePad0",YSFALSE);
 			gamePortDrp[i]->AddString("GamePad1",YSFALSE);
+			gamePortDrp[i]->AddString("GamePad0 (Analog Axes as Direction)",YSFALSE);
+			gamePortDrp[i]->AddString("GamePad1 (Analog Axes as Direction)",YSFALSE);
 			gamePortDrp[i]->AddString("Emulation by Keyboard(Arrow and ASZX)",YSFALSE);
 			gamePortDrp[i]->AddString("Mouse",YSFALSE);
 			gamePortDrp[i]->AddString("Mouse by Key (Arrow and ZX)",YSTRUE);
@@ -118,7 +120,7 @@ void ProfileDialog::Make(void)
 			gamePortDrp[i]->AddString("Mouse by Analog1",YSFALSE);
 		}
 		gamePortDrp[0]->Select(1);
-		gamePortDrp[1]->Select(4);
+		gamePortDrp[1]->Select(6);
 
 		AddStaticText(0,FSKEY_NULL,"Mouse-Integration Speed",YSTRUE);
 		AddStaticText(0,FSKEY_NULL,"(Try slowing down if mouse-cursor jumps around)",YSTRUE);
