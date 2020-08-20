@@ -60,6 +60,10 @@ Towns OS V2.1 L20, TBIOS V31L31_92
 00100000 56 33 31 4C 33 31 00 00 39 32 2F 31 30 2F 31 36|V31L31  92/10/16
 00100010 74 6F 77 6E 73 00 00 00 74 62 69 6F 73 00 00 00|towns   tbios
 
+Towns OS V2.1 L20A, TBIOS V31L31_93
+00100000 56 33 31 4C 33 31 00 00 39 33 2F 30 31 2F 30 37|V31L31  93/01/07
+00100010 74 6F 77 6E 73 00 00 00 74 62 69 6F 73 00 00 00|towns   tbios
+
 Towns OS V2.1 L30/L31, TBIOS V31L35
 00100000 56 33 31 4C 33 35 00 00 39 33 2F 31 30 2F 31 35|V31L35  93/10/15
 00100010 74 6F 77 6E 73 00 00 00 74 62 69 6F 73 00 00 00|towns   tbios
@@ -95,6 +99,10 @@ unsigned int FMTowns::IdentifyTBIOS(unsigned int biosPhysicalBaseAddr) const
 		else if(year=="92")
 		{
 			return TBIOS_V31L31_92;
+		}
+		else if(year=="93")
+		{
+			return TBIOS_V31L31_93;
 		}
 	}
 	if("V31L35"==s[0] && "towns"==s[2] && "tbios"==s[3])
@@ -291,6 +299,8 @@ const char *FMTowns::TBIOSIDENTtoString(unsigned int tbios) const
 		return "TBIOS_V31L31_91";
 	case TBIOS_V31L31_92:
 		return "TBIOS_V31L31_92";
+	case TBIOS_V31L31_93:
+		return "TBIOS_V31L31_93";
 	case TBIOS_V31L35:
 		return "TBIOS_V31L35";
 	}
@@ -625,6 +635,7 @@ bool FMTowns::GetMouseCoordinate(int &mx,int &my,unsigned int tbiosid) const
 			my=(int)mem.FetchWord(state.TBIOS_physicalAddr+0x56E);
 			return true;
 		case TBIOS_V31L31_92:
+		case TBIOS_V31L31_93:
 			// 0110:00011D50 268A2D28050000            MOV     CH,ES:[00000528H]
 			// 0110:00011D57 268B1510050000            MOV     EDX,ES:[00000510H]
 			// 0110:00011D5E 0FA4D310                  SHLD    EBX,EDX,10H

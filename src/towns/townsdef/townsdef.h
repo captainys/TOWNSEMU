@@ -636,6 +636,7 @@ enum
 	TBIOS_V31L31_90, // TBIOS that comes with Towns OS V1.1 L30
 	TBIOS_V31L31_91, // TBIOS that comes with Towns OS V2.1 L10B
 	TBIOS_V31L31_92, // TBIOS that comes with Towns OS V2.1 L20
+	TBIOS_V31L31_93, // TBIOS that comes with Towns OS V2.1 L20A
 	TBIOS_V31L35,    // TBIOS that comes with Towns OS V2.1 L30,L31,L50(Free Software Collection 11)
 };
 
