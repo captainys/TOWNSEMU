@@ -20,18 +20,23 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 
 
-void TownsGamePort::Port::Write(bool COM,bool T1,bool T2)
+void TownsGamePort::Port::Write(long long int townsTime,bool COM,bool T1,bool T2)
 {
 	if(MOUSE==device)
 	{
-		if((0==state || 2==state) && true!=COM)
+		if(MOUSEREAD_RESET_TIMEOUT<(townsTime-lastAccessTime))
+		{
+			state=MOUSESTATE_IDLE;
+		}
+		if((MOUSESTATE_XHIGH==state || MOUSESTATE_YHIGH==state) && true!=COM)
 		{
 			++state;
 		}
-		else if((1==state || 3==state) && true==COM)
+		else if((MOUSESTATE_XLOW==state || MOUSESTATE_YLOW==state || MOUSESTATE_IDLE==state) && true==COM)
 		{
-			state=(state+1)&3;
+			state=(state+1)%NUM_MOUSESTATE;
 		}
+		lastAccessTime=townsTime;
 	}
 	this->COM=COM;
 	this->TRIG[0]=T1;
@@ -48,6 +53,10 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 		}
 		if(MOUSE==device)
 		{
+			if(MOUSEREAD_RESET_TIMEOUT<(townsTime-lastAccessTime))
+			{
+				state=MOUSESTATE_IDLE;
+			}
 			if(true!=button[0])
 			{
 				data|=0x10;
@@ -56,25 +65,24 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 			{
 				data|=0x20;
 			}
-			if(MOUSEREAD_RESET_TIMEOUT<(townsTime-lastReadTime))
-			{
-				state=0;
-			}
 			switch(state)
 			{
-			case 0:
+			case MOUSESTATE_XHIGH:
 				mouseMotionCopy=mouseMotion;
 				data|=((mouseMotionCopy.x()>>4)&0x0F);
 				break;
-			case 1:
+			case MOUSESTATE_XLOW:
 				data|=((mouseMotionCopy.x()   )&0x0F);
 				break;
-			case 2:
+			case MOUSESTATE_YHIGH:
 				data|=((mouseMotionCopy.y()>>4)&0x0F);
 				break;
-			case 3:
+			case MOUSESTATE_YLOW:
 				data|=((mouseMotionCopy.y()   )&0x0F);
 				mouseMotion.Set(0,0);
+				break;
+			case MOUSESTATE_IDLE:
+				data|=0x0F;
 				break;
 			}
 		}
@@ -120,7 +128,7 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 			data|=0x0F;
 		}
 	}
-	lastReadTime=townsTime;
+	lastAccessTime=townsTime;
 	return data;
 }
 
@@ -167,7 +175,7 @@ void TownsGamePort::State::Reset(void)
 		p.down=false;
 		p.COM=false;
 		p.mouseMotion.Set(0,0);
-		p.lastReadTime=0;
+		p.lastAccessTime=0;
 	}
 }
 
@@ -192,8 +200,8 @@ void TownsGamePort::State::Reset(void)
 	case TOWNSIO_GAMEPORT_B_INPUT://        0x4D2,
 		break;
 	case TOWNSIO_GAMEPORT_OUTPUT://         0x4D6,
-		state.ports[0].Write(0!=(data&0x10),0!=(data&0x01),0!=(data&0x02));
-		state.ports[1].Write(0!=(data&0x20),0!=(data&0x04),0!=(data&0x08));
+		state.ports[0].Write(townsPtr->state.townsTime,0!=(data&0x10),0!=(data&0x01),0!=(data&0x02));
+		state.ports[1].Write(townsPtr->state.townsTime,0!=(data&0x20),0!=(data&0x04),0!=(data&0x08));
 		break;
 	}
 }

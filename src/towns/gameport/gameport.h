@@ -34,6 +34,17 @@ public:
 		MOUSEREAD_RESET_TIMEOUT=1000000,
 	};
 
+	enum
+	{
+		MOUSESTATE_IDLE,
+		MOUSESTATE_XHIGH,
+		MOUSESTATE_XLOW,
+		MOUSESTATE_YHIGH,
+		MOUSESTATE_YLOW,
+
+	NUM_MOUSESTATE,
+	};
+
 	class Port
 	{
 	public:
@@ -50,9 +61,9 @@ public:
 		// when the first 4-bit of DX is sent to the CPU.
 		Vec2i mouseMotionCopy;
 
-		long long int lastReadTime;
+		long long int lastAccessTime;
 
-		void Write(bool COM,bool T1,bool T2);
+		void Write(long long int townsTime,bool COM,bool T1,bool T2);
 		unsigned char Read(long long int townsTime); // Reading last coordinate should reset motion.  Not a const.
 	};
 
