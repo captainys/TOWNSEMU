@@ -150,10 +150,10 @@ TownsRTC::TownsRTC(class FMTowns *townsPtr) : Device(townsPtr)
 				data|=(tm->tm_mday/10);
 				break;
 			case REG_MONTH://9
-				data|=(tm->tm_mon%10);
+				data|=((tm->tm_mon+1)%10);
 				break;
 			case REG_10MONTH://0x0A
-				data|=(tm->tm_mon/10);
+				data|=((tm->tm_mon+1)/10);
 				break;
 			case REG_YEAR://0x0B
 				data|=(tm->tm_year%10);
