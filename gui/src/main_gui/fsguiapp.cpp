@@ -35,6 +35,9 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ysgl.h>
 
 #include "fsguiapp.h"
+#include "cpputil.h"
+#include "d77.h"
+#include "diskimg.h"
 
 
 
@@ -96,6 +99,16 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 		subMenu->AddTextItem(0,FSKEY_A,L"Save Profile As")->BindCallBack(&THISCLASS::File_SaveProfileAs,this);
 		subMenu->AddTextItem(0,FSKEY_NULL,L"Save as Default")->BindCallBack(&THISCLASS::File_SaveDefaultProfile,this);
 		subMenu->AddTextItem(0,FSKEY_NULL,L"Reload Default")->BindCallBack(&THISCLASS::File_ReloadDefaultProfile,this);
+
+		{
+			auto subSubMenu=subMenu->AddTextItem(0,FSKEY_N,L"New")->AddSubMenu();
+			subSubMenu->AddTextItem(0,FSKEY_NULL,L"1232KB Floppy Disk Image")->BindCallBack(&THISCLASS::File_New_1232KB,this);
+			subSubMenu->AddTextItem(0,FSKEY_NULL,L"1440KB Floppy Disk Image")->BindCallBack(&THISCLASS::File_New_1440KB,this);
+			subSubMenu->AddTextItem(0,FSKEY_NULL,L"640KB Floppy Disk Image")->BindCallBack(&THISCLASS::File_New_640KB,this);
+			subSubMenu->AddTextItem(0,FSKEY_NULL,L"720KB Floppy Disk Image")->BindCallBack(&THISCLASS::File_New_720KB,this);
+			subSubMenu->AddTextItem(0,FSKEY_NULL,L"Hard-Disk Image")->BindCallBack(&THISCLASS::File_New_HDD,this);
+		}
+
 		subMenu->AddTextItem(0,FSKEY_X,L"Exit")->BindCallBack(&THISCLASS::File_Exit,this);
 	}
 
@@ -626,6 +639,151 @@ void FsGuiMainCanvas::File_Exit_ConfirmExitCallBack(FsGuiDialog *,int returnValu
 void FsGuiMainCanvas::File_Exit_ReallyExit(void)
 {
 	this->appMustTerminate=YSTRUE;
+}
+
+void FsGuiMainCanvas::File_New_1232KB(FsGuiPopUpMenuItem *)
+{
+	genFloppyDisk=true;
+	genDiskSize=1232;
+
+	auto fdlg=FsGuiDialog::CreateSelfDestructiveDialog<FsGuiFileDialog>();
+	fdlg->Initialize();
+	fdlg->mode=FsGuiFileDialog::MODE_SAVE;
+	fdlg->multiSelect=YSFALSE;
+	fdlg->title.Set(L"Create 1232KB Disk Image");
+	fdlg->fileExtensionArray.Append(L".BIN");
+	fdlg->fileExtensionArray.Append(L".D77");
+	fdlg->defaultFileName=profileDlg->profileFNameTxt->GetWText();
+	fdlg->BindCloseModalCallBack(&THISCLASS::File_New_FileSelected,this);
+	AttachModalDialog(fdlg);
+}
+void FsGuiMainCanvas::File_New_1440KB(FsGuiPopUpMenuItem *)
+{
+	genFloppyDisk=true;
+	genDiskSize=1440;
+
+	auto fdlg=FsGuiDialog::CreateSelfDestructiveDialog<FsGuiFileDialog>();
+	fdlg->Initialize();
+	fdlg->mode=FsGuiFileDialog::MODE_SAVE;
+	fdlg->multiSelect=YSFALSE;
+	fdlg->title.Set(L"Create 1440KB Disk Image");
+	fdlg->fileExtensionArray.Append(L".BIN");
+	fdlg->fileExtensionArray.Append(L".D77");
+	fdlg->defaultFileName=profileDlg->profileFNameTxt->GetWText();
+	fdlg->BindCloseModalCallBack(&THISCLASS::File_New_FileSelected,this);
+	AttachModalDialog(fdlg);
+}
+void FsGuiMainCanvas::File_New_720KB(FsGuiPopUpMenuItem *)
+{
+	genFloppyDisk=true;
+	genDiskSize=720;
+
+	auto fdlg=FsGuiDialog::CreateSelfDestructiveDialog<FsGuiFileDialog>();
+	fdlg->Initialize();
+	fdlg->mode=FsGuiFileDialog::MODE_SAVE;
+	fdlg->multiSelect=YSFALSE;
+	fdlg->title.Set(L"Create 720KB Disk Image");
+	fdlg->fileExtensionArray.Append(L".BIN");
+	fdlg->fileExtensionArray.Append(L".D77");
+	fdlg->defaultFileName=profileDlg->profileFNameTxt->GetWText();
+	fdlg->BindCloseModalCallBack(&THISCLASS::File_New_FileSelected,this);
+	AttachModalDialog(fdlg);
+}
+void FsGuiMainCanvas::File_New_640KB(FsGuiPopUpMenuItem *)
+{
+	genFloppyDisk=true;
+	genDiskSize=640;
+
+	auto fdlg=FsGuiDialog::CreateSelfDestructiveDialog<FsGuiFileDialog>();
+	fdlg->Initialize();
+	fdlg->mode=FsGuiFileDialog::MODE_SAVE;
+	fdlg->multiSelect=YSFALSE;
+	fdlg->title.Set(L"Create 640KB Disk Image");
+	fdlg->fileExtensionArray.Append(L".BIN");
+	fdlg->fileExtensionArray.Append(L".D77");
+	fdlg->defaultFileName=profileDlg->profileFNameTxt->GetWText();
+	fdlg->BindCloseModalCallBack(&THISCLASS::File_New_FileSelected,this);
+	AttachModalDialog(fdlg);
+}
+void FsGuiMainCanvas::File_New_HDD(FsGuiPopUpMenuItem *)
+{
+	genFloppyDisk=false;
+}
+void FsGuiMainCanvas::File_New_HDD_SizeSelected(FsGuiDialog *dlg,int returnCode)
+{
+}
+void FsGuiMainCanvas::File_New_FileSelected(FsGuiDialog *dlg,int returnCode)
+{
+	auto fdlg=dynamic_cast <FsGuiFileDialog *>(dlg);
+	if(nullptr!=fdlg && (int)YSOK==returnCode)
+	{
+		auto fName=fdlg->selectedFileArray[0];
+		if(YSTRUE==YsFileIO::CheckFileExist(fName))
+		{
+			auto dlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialog>();
+			dlg->Make(L"File Already Exists",L"File Already Exists.  It does not overwrite a file.",L"OK",nullptr);
+			AttachModalDialog(dlg);
+		}
+		else
+		{
+			if(true==genFloppyDisk)
+			{
+				std::vector <unsigned char> img;
+
+				switch(genDiskSize)
+				{
+				case 1232:
+					img=Get1232KBFloppyDiskImage();
+					break;
+				case 1440:
+					img=Get1440KBFloppyDiskImage();
+					break;
+				case 720:
+					img=Get720KBFloppyDiskImage();
+					break;
+				case 640:
+					img=Get640KBFloppyDiskImage();
+					break;
+				}
+
+				auto ext=fName.GetExtension();
+				if(0==ext.STRCMP(L".D77"))
+				{
+					D77File d77;
+					d77.SetRawBinary(img);
+					img=d77.MakeD77Image();
+				}
+
+				bool result=false;
+				YsFileIO::File ofp(fName,"wb");
+				if(nullptr!=ofp.Fp())
+				{
+					auto wroteSize=fwrite(img.data(),1,img.size(),ofp.Fp());
+					if(wroteSize==img.size())
+					{
+						result=true;
+					}
+					ofp.Fclose();
+				}
+
+				if(true!=result)
+				{
+					auto dlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialog>();
+					dlg->Make(L"Error",L"Failed to write file.",L"OK",nullptr);
+					AttachModalDialog(dlg);
+				}
+				else
+				{
+					auto dlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialog>();
+					dlg->Make(L"Success.",L"Created a disk image.",L"OK",nullptr);
+					AttachModalDialog(dlg);
+				}
+			}
+			else
+			{
+			}
+		}
+	}
 }
 
 ////////////////////////////////////////////////////////////

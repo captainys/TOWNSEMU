@@ -151,6 +151,18 @@ private:
 	void File_Exit_ReallyExit(void);
 
 
+	bool genFloppyDisk=true;
+	unsigned int genDiskSize=0;
+	void File_New_1232KB(FsGuiPopUpMenuItem *);
+	void File_New_1440KB(FsGuiPopUpMenuItem *);
+	void File_New_720KB(FsGuiPopUpMenuItem *);
+	void File_New_640KB(FsGuiPopUpMenuItem *);
+
+	void File_New_HDD(FsGuiPopUpMenuItem *);
+	void File_New_HDD_SizeSelected(FsGuiDialog *dlg,int returnCode);
+
+	void File_New_FileSelected(FsGuiDialog *dlg,int returnCode);
+
 
 	void VM_Start(FsGuiPopUpMenuItem *);
 	void VM_StartAndCloseGUI(FsGuiPopUpMenuItem *);
