@@ -17,6 +17,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include "townsargv.h"
 #include "cpputil.h"
+#include "diskimg.h"
+#include "d77.h"
 
 
 
@@ -445,16 +447,41 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 			unsigned int KB=cpputil::Atoi(argv[i+2]);
 			if(1232==KB || 1440==KB || 720==KB || 640==KB)
 			{
-				std::vector <unsigned char> zero;
-				zero.resize(KB*1024);
-				for(auto &z : zero)
+				std::vector <unsigned char> img;
+
+				switch(KB)
 				{
-					z=0;
+				case 1232:
+					img=Get1232KBFloppyDiskImage();
+					break;
+				case 1440:
+					img=Get1440KBFloppyDiskImage();
+					break;
+				case 720:
+					img=Get720KBFloppyDiskImage();
+					break;
+				case 640:
+					img=Get640KBFloppyDiskImage();
+					break;
 				}
-				if(true!=cpputil::WriteBinaryFile(fName,zero.size(),zero.data()))
+
+				auto ext=cpputil::GetExtension(fName.c_str());
+				cpputil::Capitalize(ext);
+				if("D77"==ext)
+				{
+					D77File d77;
+					d77.SetRawBinary(img);
+					img=d77.MakeD77Image();
+				}
+
+				if(true!=cpputil::WriteBinaryFile(fName,img.size(),img.data()))
 				{
 					std::cout << "Failed to write file: " << fName << std::endl;
 					return false;
+				}
+				else
+				{
+					std::cout << "Created FD Image: " << fName << std::endl;
 				}
 			}
 			else
@@ -484,7 +511,8 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 					--MB;
 				}
 				fp.close();
-			}
+				std::cout << "Created HD Image: " << fName << std::endl;
+		}
 			else
 			{
 				std::cout << "Failed to write file: " << fName << std::endl;
