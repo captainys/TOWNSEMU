@@ -32,7 +32,8 @@ private:
 public:
 	enum
 	{
-		MILLISEC_PER_WAVE=20,  // Should be made shorter eventually.
+		FM_MILLISEC_PER_WAVE=20,
+		PCM_MILLISEC_PER_WAVE=10,  // Looks like time resolution of Wave Playback of Direct Sound is 10ms.
 	};
 
 	virtual const char *DeviceName(void) const{return "SOUND";}

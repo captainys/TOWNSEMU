@@ -231,7 +231,7 @@ void TownsSound::ProcessSound(void)
 		if(0!=state.ym2612.state.playingCh && true!=outside_world->FMChannelPlaying())
 		{
 			state.ym2612.NextWaveAllChannels();
-			auto wav=state.ym2612.MakeWaveAllChannels(MILLISEC_PER_WAVE);
+			auto wav=state.ym2612.MakeWaveAllChannels(FM_MILLISEC_PER_WAVE);
 			outside_world->FMPlay(wav);
 			state.ym2612.CheckToneDoneAllChannels();
 		}
@@ -241,7 +241,7 @@ void TownsSound::ProcessSound(void)
 		if(true!=outside_world->PCMChannelPlaying())
 		{
 			std::vector <unsigned char> wave;
-			const unsigned int numSamples=MILLISEC_PER_WAVE*RF5C68::SAMPLING_RATE/1000;
+			const unsigned int numSamples=PCM_MILLISEC_PER_WAVE*RF5C68::SAMPLING_RATE/1000;
 			wave.resize(numSamples*4);
 
 			for(unsigned int chNum=0; chNum<RF5C68::NUM_CHANNELS; ++chNum)
