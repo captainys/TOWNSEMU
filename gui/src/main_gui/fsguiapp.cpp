@@ -708,9 +708,41 @@ void FsGuiMainCanvas::File_New_640KB(FsGuiPopUpMenuItem *)
 void FsGuiMainCanvas::File_New_HDD(FsGuiPopUpMenuItem *)
 {
 	genFloppyDisk=false;
+	auto dlg=FsGuiDialog::CreateSelfDestructiveDialog<FsGuiInputNumberDialog>();
+	dlg->Make(
+		20.0,0,
+	    L"Create HDD Image",L"Specify Size in MB",L"",
+	    L"OK",L"Cancel");
+	dlg->BindCloseModalCallBack(&THISCLASS::File_New_HDD_SizeSelected,this);
+	AttachModalDialog(dlg);
 }
 void FsGuiMainCanvas::File_New_HDD_SizeSelected(FsGuiDialog *dlg,int returnCode)
 {
+	auto numDlg=dynamic_cast <FsGuiInputNumberDialog *>(dlg);
+	if(nullptr!=numDlg && (int)YSOK==returnCode)
+	{
+		int MB=(int)numDlg->GetNumber();
+		if(MB<1 || 1024<MB)
+		{
+			auto dlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialog>();
+			dlg->Make(L"Error",L"The number needs to be between 1 and 1024.",L"OK",nullptr);
+			AttachModalDialog(dlg);
+		}
+		else
+		{
+			genDiskSize=MB;
+			auto fdlg=FsGuiDialog::CreateSelfDestructiveDialog<FsGuiFileDialog>();
+			fdlg->Initialize();
+			fdlg->mode=FsGuiFileDialog::MODE_SAVE;
+			fdlg->multiSelect=YSFALSE;
+			fdlg->title.Set(L"Create Hard Disk Image");
+			fdlg->fileExtensionArray.Append(L".HDI");
+			fdlg->fileExtensionArray.Append(L".HD");
+			fdlg->defaultFileName=profileDlg->profileFNameTxt->GetWText();
+			fdlg->BindCloseModalCallBack(&THISCLASS::File_New_FileSelected,this);
+			AttachModalDialog(fdlg);
+		}
+	}
 }
 void FsGuiMainCanvas::File_New_FileSelected(FsGuiDialog *dlg,int returnCode)
 {
@@ -775,12 +807,46 @@ void FsGuiMainCanvas::File_New_FileSelected(FsGuiDialog *dlg,int returnCode)
 				else
 				{
 					auto dlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialog>();
-					dlg->Make(L"Success.",L"Created a disk image.",L"OK",nullptr);
+					dlg->Make(L"Success.",L"Created a floppy disk image.",L"OK",nullptr);
 					AttachModalDialog(dlg);
 				}
 			}
 			else
 			{
+				bool result=false;
+				YsFileIO::File ofp(fName,"wb");
+				if(nullptr!=ofp.Fp())
+				{
+					long long int wroteSize=0;
+					std::vector <unsigned char> zero;
+					zero.resize(1024*1024);
+					for(auto &z : zero)
+					{
+						z=0;
+					}
+					for(unsigned int i=0; i<genDiskSize; ++i)
+					{
+						wroteSize+=fwrite(zero.data(),1,zero.size(),ofp.Fp());
+					}
+					if(wroteSize==1024*1024*genDiskSize)
+					{
+						result=true;
+					}
+					ofp.Fclose();
+				}
+
+				if(true!=result)
+				{
+					auto dlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialog>();
+					dlg->Make(L"Error",L"Failed to write file.",L"OK",nullptr);
+					AttachModalDialog(dlg);
+				}
+				else
+				{
+					auto dlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialog>();
+					dlg->Make(L"Success.",L"Created a hard disk image.",L"OK",nullptr);
+					AttachModalDialog(dlg);
+				}
 			}
 		}
 	}
