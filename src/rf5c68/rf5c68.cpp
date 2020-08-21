@@ -197,6 +197,7 @@ unsigned int RF5C68::MakeWaveForNumSamples(unsigned char waveBuf[],unsigned int 
 {
 	std::memset(waveBuf,0,numSamples*4);
 
+	unsigned int numPlayingCh=0,playingCh[NUM_CHANNELS];
 	unsigned int LvolCh[NUM_CHANNELS],RvolCh[NUM_CHANNELS],pcmAddr[NUM_CHANNELS];
 	for(unsigned int chNum=0; chNum<NUM_CHANNELS; ++chNum)
 	{
@@ -207,98 +208,95 @@ unsigned int RF5C68::MakeWaveForNumSamples(unsigned char waveBuf[],unsigned int 
 		RvolCh[chNum]=(RvolCh[chNum]*ch.ENV)*state.volume/(15*255);
 		pcmAddr[chNum]=(ch.playPtr<<FD_BIT_SHIFT);;
 		ch.repeatAfterThisSegment=false;
-	}
 
-	// Copy chOnOff so that the loop will ignore the channel once the channel hits loop-stop to the same location.
-	auto chOnOff=state.chOnOff;
+		if(0<ch.FD && 0==(state.chOnOff&(1<<chNum)))
+		{
+			playingCh[numPlayingCh++]=chNum;
+		}
+	}
 
 	unsigned int nFilled=0;
 	auto wavePtr=waveBuf;
 	while(nFilled<numSamples)
 	{
 		int Lout=0,Rout=0;
-		for(unsigned int chNum=0; chNum<NUM_CHANNELS; ++chNum)
+		for(int i=numPlayingCh-1; 0<=i; --i)
 		{
-			if(0!=(chOnOff&(1<<chNum)))
-			{
-				continue;
-			}
+			auto chNum=playingCh[i];
 
 			auto &ch=state.ch[chNum];
 			unsigned int Lvol=LvolCh[chNum];
 			unsigned int Rvol=RvolCh[chNum];
 
-			if(0<ch.FD)
+			auto readAddr=(pcmAddr[chNum]>>FD_BIT_SHIFT);
+			auto data=state.waveRAM[readAddr];
+
+			bool loopStop=(LOOP_STOP_CODE==data);
+			if(true!=loopStop)
 			{
-				auto readAddr=(pcmAddr[chNum]>>FD_BIT_SHIFT);
-				auto data=state.waveRAM[readAddr];
-
-				bool loopStop=(LOOP_STOP_CODE==data);
-				if(true!=loopStop)
+				int L=(data&0x7F);
+				int R=L;
+				L*=Lvol;
+				R*=Rvol;
+				L>>=3;
+				R>>=3;
+				if(data&0x80)
 				{
-					int L=(data&0x7F);
-					int R=L;
-					L*=Lvol;
-					R*=Rvol;
-					L>>=3;
-					R>>=3;
-					if(data&0x80)
-					{
-						L=-L;
-						R=-R;
-					}
+					L=-L;
+					R=-R;
+				}
 
-					Lout+=L;
-					Rout+=R;
+				Lout+=L;
+				Rout+=R;
 
-					auto prevBank=((pcmAddr[chNum]>>FD_BIT_SHIFT>>BANK_SHIFT)&0x0F);
-					pcmAddr[chNum]+=ch.FD;
-					auto bank=((pcmAddr[chNum]>>FD_BIT_SHIFT>>BANK_SHIFT)&0x0F);
-					if(prevBank!=bank)
+				auto prevBank=((pcmAddr[chNum]>>FD_BIT_SHIFT>>BANK_SHIFT)&0x0F);
+				pcmAddr[chNum]+=ch.FD;
+				auto bank=((pcmAddr[chNum]>>FD_BIT_SHIFT>>BANK_SHIFT)&0x0F);
+				if(prevBank!=bank)
+				{
+					ch.IRQAfterThisPlayBack=true;
+					ch.IRQBank=prevBank;
+					if(0==bank)
 					{
-						ch.IRQAfterThisPlayBack=true;
-						ch.IRQBank=prevBank;
-						if(0==bank)
-						{
-							pcmAddr[chNum]=0;
-						}
-					}
-
-					// If a loop-stop code is between this byte and the next byte, it should be caught.
-					for(auto scanAddr=(pcmAddr[chNum]>>FD_BIT_SHIFT);
-					    scanAddr<WAVERAM_SIZE && scanAddr<((pcmAddr[chNum]+ch.FD)>>FD_BIT_SHIFT);
-					    ++scanAddr)
-					{
-						if(LOOP_STOP_CODE==state.waveRAM[scanAddr&(WAVERAM_SIZE-1)])
-						{
-							readAddr=(scanAddr&(WAVERAM_SIZE-1));
-							loopStop=true;
-							break;
-						}
+						pcmAddr[chNum]=0;
 					}
 				}
 
-				if(true==loopStop)
+				// If a loop-stop code is between this byte and the next byte, it should be caught.
+				for(auto scanAddr=(pcmAddr[chNum]>>FD_BIT_SHIFT);
+				    scanAddr<WAVERAM_SIZE && scanAddr<((pcmAddr[chNum]+ch.FD)>>FD_BIT_SHIFT);
+				    ++scanAddr)
 				{
-					// Should it fire an IRQ on loop-stop?
-					// Not firing IRQ on loopStop breaks Strike Commander voice (in fact, it will wait for IRQ forever).
-					// Firing IRQ will overrun wave-data of Sim City 2000.
-					// Probably, IRQ should be fired when RF5C68 reads the last byte of the bank.  If there is no loop stop, it is
-					// just crossing the bank border.
-					// But, also it should fire IRQ when the loop stop is at 0x?FFF.  This condition seems to be correct.
-					if(0xFFF==(readAddr&0xFFF))
+					if(LOOP_STOP_CODE==state.waveRAM[scanAddr&(WAVERAM_SIZE-1)])
 					{
-						auto bank=((pcmAddr[chNum]>>FD_BIT_SHIFT>>BANK_SHIFT)&0x0F);
-						ch.IRQAfterThisPlayBack=true;
-						ch.IRQBank=bank;
+						readAddr=(scanAddr&(WAVERAM_SIZE-1));
+						loopStop=true;
+						break;
 					}
+				}
+			}
 
-					pcmAddr[chNum]=(ch.LS<<FD_BIT_SHIFT);
-					if(LOOP_STOP_CODE==state.waveRAM[pcmAddr[chNum]>>FD_BIT_SHIFT]) // Infinite Loop
-					{
-						chOnOff|=(1<<chNum);
-						goto NEXTCHANNEL;
-					}
+			if(true==loopStop)
+			{
+				// Should it fire an IRQ on loop-stop?
+				// Not firing IRQ on loopStop breaks Strike Commander voice (in fact, it will wait for IRQ forever).
+				// Firing IRQ will overrun wave-data of Sim City 2000.
+				// Probably, IRQ should be fired when RF5C68 reads the last byte of the bank.  If there is no loop stop, it is
+				// just crossing the bank border.
+				// But, also it should fire IRQ when the loop stop is at 0x?FFF.  This condition seems to be correct.
+				if(0xFFF==(readAddr&0xFFF))
+				{
+					auto bank=((pcmAddr[chNum]>>FD_BIT_SHIFT>>BANK_SHIFT)&0x0F);
+					ch.IRQAfterThisPlayBack=true;
+					ch.IRQBank=bank;
+				}
+
+				pcmAddr[chNum]=(ch.LS<<FD_BIT_SHIFT);
+				if(LOOP_STOP_CODE==state.waveRAM[pcmAddr[chNum]>>FD_BIT_SHIFT]) // Infinite Loop
+				{
+					playingCh[i]=playingCh[numPlayingCh-1];
+					--numPlayingCh;
+					goto NEXTCHANNEL;
 				}
 			}
 		NEXTCHANNEL:
