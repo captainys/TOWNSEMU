@@ -466,9 +466,10 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 				}
 
 				auto ext=cpputil::GetExtension(fName.c_str());
-				cpputil::Capitalize(ext);
-				if("D77"==ext)
+				auto EXT=cpputil::Capitalize(ext);
+				if(".D77"==EXT)
 				{
+					std::cout << "Making D77 disk image." << std::endl;
 					D77File d77;
 					d77.SetRawBinary(img);
 					img=d77.MakeD77Image();

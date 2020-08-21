@@ -147,6 +147,7 @@ bool TownsFDC::LoadD77(unsigned int driveNum,const char fName[],bool verbose)
 
 	SaveIfModifiedAndUnlinkDiskImage(imgIdx);
 
+	imgFile[imgIdx].d77.CleanUp();
 	imgFile[imgIdx].d77.SetData(bin,verbose);
 	if(0<imgFile[imgIdx].d77.GetNumDisk())
 	{
@@ -174,6 +175,7 @@ bool TownsFDC::LoadRawBinary(unsigned int driveNum,const char fName[],bool verbo
 
 	SaveIfModifiedAndUnlinkDiskImage(imgIdx);
 
+	imgFile[imgIdx].d77.CleanUp();
 	if(true==imgFile[imgIdx].d77.SetRawBinary(bin,verbose))
 	{
 		imgFile[imgIdx].fileType=IMGFILE_RAW;
@@ -189,9 +191,10 @@ bool TownsFDC::LoadRawBinary(unsigned int driveNum,const char fName[],bool verbo
 
 void TownsFDC::LinkDiskImageToDrive(int imgIdx,int diskIdx,int driveNum)
 {
+printf(" > %d %d\n",imgIdx,diskIdx);
 	state.drive[driveNum].imgFileNum=imgIdx;
 	state.drive[driveNum].diskIndex=diskIdx;
-	state.drive[driveNum].mediaType=IdentifyDiskMediaType(imgFile[driveNum].d77.GetDisk(diskIdx));
+	state.drive[driveNum].mediaType=IdentifyDiskMediaType(imgFile[imgIdx].d77.GetDisk(diskIdx));
 	state.drive[driveNum].DiskChanged();
 }
 
