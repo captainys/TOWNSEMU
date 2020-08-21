@@ -232,9 +232,8 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 				this->pauseKey=true;
 			}
 
-			switch(c)
+			if(TOWNS_JISKEY_NULL!=FSKEYtoTownsKEY[c])
 			{
-			default:
 				if(true==gamePadEmulationByKey &&
 				   (FSKEY_Z==c ||
 				    FSKEY_X==c ||
@@ -282,7 +281,6 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 				// Therefore, turn it 1 upon inkey, and turn it off if FsGetKeyState detects key release.
 				// Don't turn it on by FsGetKeyState.
 				FSKEYState[c]=1;
-				break;
 			}
 		}
 		for(int key=FSKEY_NULL; key<FSKEY_NUM_KEYCODE; ++key)
