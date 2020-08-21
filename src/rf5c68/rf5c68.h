@@ -131,13 +131,7 @@ public:
 	    Returns actual number of samples filled in the buffer.  Number of bytes will be return-value*4.
 	    Buffer must be long enough for numSamples*4.
 	*/
-	unsigned int MakeWaveForNumSamples(unsigned char waveBuf[],unsigned int chNum,unsigned int numSamples);
-
-	/*! Add 19.2KHz signed 16-bit Stereo wave for requested samples.
-	    Returns actual number of samples filled in the buffer.  Number of bytes will be return-value*4.
-	    Buffer must be long enough for numSamples*4.
-	*/
-	unsigned int AddWaveForNumSamples(unsigned char waveBuf[],unsigned int chNum,unsigned int numSamples);
+	unsigned int MakeWaveForNumSamples(unsigned char waveBuf[],unsigned int numSamples);
 
 	/*! Notified from the controller that the play has stopped.
 	*/

@@ -238,13 +238,12 @@ void TownsSound::ProcessSound(void)
 	}
 	if(state.rf5c68.state.playing && nullptr!=outside_world)
 	{
-		std::vector <unsigned char> wave;
-		const unsigned int numSamples=MILLISEC_PER_WAVE*RF5C68::SAMPLING_RATE/1000;
-		wave.resize(numSamples*4);
-		std::memset(wave.data(),0,wave.size());
-
 		if(true!=outside_world->PCMChannelPlaying())
 		{
+			std::vector <unsigned char> wave;
+			const unsigned int numSamples=MILLISEC_PER_WAVE*RF5C68::SAMPLING_RATE/1000;
+			wave.resize(numSamples*4);
+
 			for(unsigned int chNum=0; chNum<RF5C68::NUM_CHANNELS; ++chNum)
 			{
 				auto &ch=state.rf5c68.state.ch[chNum];
@@ -253,11 +252,9 @@ void TownsSound::ProcessSound(void)
 					state.rf5c68.SetIRQBank(ch.IRQBank);
 					ch.IRQAfterThisPlayBack=false;
 				}
-				if(0==(state.rf5c68.state.chOnOff&(1<<chNum)))
-				{
-					state.rf5c68.AddWaveForNumSamples(wave.data(),chNum,numSamples);
-				}
 			}
+
+			state.rf5c68.MakeWaveForNumSamples(wave.data(),numSamples);
 			outside_world->PCMPlay(wave);
 		}
 	}
