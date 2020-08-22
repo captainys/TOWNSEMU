@@ -24,19 +24,14 @@ void TownsGamePort::Port::Write(long long int townsTime,bool COM,bool T1,bool T2
 {
 	if(MOUSE==device)
 	{
-		if(MOUSEREAD_RESET_TIMEOUT<(townsTime-lastAccessTime))
-		{
-			state=MOUSESTATE_IDLE;
-		}
 		if((MOUSESTATE_XHIGH==state || MOUSESTATE_YHIGH==state) && true!=COM)
 		{
 			++state;
 		}
-		else if((MOUSESTATE_XLOW==state || MOUSESTATE_YLOW==state || MOUSESTATE_IDLE==state) && true==COM)
+		else if((MOUSESTATE_XLOW==state || MOUSESTATE_YLOW==state) && true==COM)
 		{
 			state=(state+1)%NUM_MOUSESTATE;
 		}
-		lastAccessTime=townsTime;
 	}
 	this->COM=COM;
 	this->TRIG[0]=T1;
@@ -55,7 +50,7 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 		{
 			if(MOUSEREAD_RESET_TIMEOUT<(townsTime-lastAccessTime))
 			{
-				state=MOUSESTATE_IDLE;
+				state=MOUSESTATE_XHIGH;
 			}
 			if(true!=button[0])
 			{
@@ -81,7 +76,7 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 				data|=((mouseMotionCopy.y()   )&0x0F);
 				mouseMotion.Set(0,0);
 				break;
-			case MOUSESTATE_IDLE:
+			default:
 				data|=0x0F;
 				break;
 			}
