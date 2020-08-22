@@ -191,7 +191,6 @@ bool TownsFDC::LoadRawBinary(unsigned int driveNum,const char fName[],bool verbo
 
 void TownsFDC::LinkDiskImageToDrive(int imgIdx,int diskIdx,int driveNum)
 {
-printf(" > %d %d\n",imgIdx,diskIdx);
 	state.drive[driveNum].imgFileNum=imgIdx;
 	state.drive[driveNum].diskIndex=diskIdx;
 	state.drive[driveNum].mediaType=IdentifyDiskMediaType(imgFile[imgIdx].d77.GetDisk(diskIdx));
