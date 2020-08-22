@@ -232,7 +232,7 @@ public:
 	{
 		// VSYNC_CYCLE is 1670000, but it is close enough to 0x1000000(16777216)
 		VSYNC_CYCLE=         0x1000000,
-		CRT_VERTICAL_DURATION=15360000,
+		CRT_VERTICAL_DURATION=15360000, // Time CRTC spends for drawing.  VSYNC_CYCLE-CRT_VERTICAL_DURATION gives duration of VSYNC.
 		// HSYNC_CYCLE should be 32000, but it is close enough to 0x8000(32768)
 		HSYNC_CYCLE=            0x8000, // Not accurate.  Fixed at 31K
 		CRT_HORIZONTAL_DURATION= 30000,
@@ -247,6 +247,10 @@ public:
 		townsTime-=mod;
 		townsTime+=VSYNC_CYCLE;
 		return townsTime;
+	}
+	inline long long int NextVSYNCEndTime(long long int townsTime) const
+	{
+		return NextVSYNCTime(townsTime)+VSYNC_CYCLE-CRT_VERTICAL_DURATION;
 	}
 	inline void ProcessVSYNCIRQ(unsigned long long int townsTime)
 	{
