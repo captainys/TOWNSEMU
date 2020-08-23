@@ -191,8 +191,6 @@ std::vector <std::string> RF5C68::GetStatusText(void) const
 
 unsigned int RF5C68::MakeWaveForNumSamples(unsigned char waveBuf[],unsigned int numSamples)
 {
-	std::memset(waveBuf,0,numSamples*4);
-
 	unsigned int numPlayingCh=0,playingCh[NUM_CHANNELS];
 	unsigned int LvolCh[NUM_CHANNELS],RvolCh[NUM_CHANNELS],pcmAddr[NUM_CHANNELS];
 	for(unsigned int chNum=0; chNum<NUM_CHANNELS; ++chNum)
@@ -213,7 +211,7 @@ unsigned int RF5C68::MakeWaveForNumSamples(unsigned char waveBuf[],unsigned int 
 
 	unsigned int nFilled=0;
 	auto wavePtr=waveBuf;
-	while(nFilled<numSamples)
+	while(nFilled<numSamples && 0<numPlayingCh)
 	{
 		int Lout=0,Rout=0;
 		for(int i=numPlayingCh-1; 0<=i; --i)
@@ -305,6 +303,8 @@ unsigned int RF5C68::MakeWaveForNumSamples(unsigned char waveBuf[],unsigned int 
 		wavePtr+=4;
 		++nFilled;
 	}
+
+	std::memset(waveBuf+nFilled*4,0,(numSamples-nFilled)*4);
 
 	for(unsigned int chNum=0; chNum<NUM_CHANNELS; ++chNum)
 	{

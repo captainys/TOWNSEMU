@@ -525,6 +525,10 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 		break;
 	case CDCMD_CDDAPLAY://   0x04,
 		{
+			// I realized ChaseHQ go into infinite loop unless Status Queue is cleared.
+			// I'm wondering if I should do the same for all other commands.
+			state.ClearStatusQueue();
+
 			state.DRY=true;
 
 			DiscImage::MinSecFrm msfBegin,msfEnd;
