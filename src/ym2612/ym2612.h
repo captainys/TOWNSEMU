@@ -250,19 +250,20 @@ public:
 	*/
 	std::vector <unsigned char> MakeWaveAllChannels(unsigned long long int millisec) const;
 
-	/*! Sampling rate is defined by WAVE_SAMPLING_RATE.
+	/*! For debugging purpose.  Make wave for a specific channel.
 	*/
 	std::vector <unsigned char> MakeWave(unsigned int ch,unsigned long long int millisec) const;
 
+public:
 	/*! Adds a wave to the buffer, and returns the number of samples (number_of_bytes_filled/4).
 	    Sampling rate is defined by WAVE_SAMPLING_RATE.
 	*/
-	long long int MakeWaveForNSamples(unsigned char wavBuf[],unsigned int chNum,unsigned long long int numSamplesRequested) const;
+	long long int MakeWaveForNSamples(unsigned char wavBuf[],unsigned int nPlayingCh,unsigned int playingCh[],unsigned long long int numSamplesRequested) const;
 private:
 	class WithLFO;
 	class WithoutLFO;
 	template <class LFO>
-	long long int MakeWaveForNSamplesTemplate(unsigned char wavBuf[],unsigned int chNum,unsigned long long int numSamplesRequested) const;
+	long long int MakeWaveForNSamplesTemplate(unsigned char wavBuf[],unsigned int nPlayingCh,unsigned int playingCh[],unsigned long long int numSamplesRequested) const;
 
 	/*! Returns the longest duration of the tone in milliseconds if no key off.
 	*/

@@ -21,10 +21,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 inline void WordOp_Set(unsigned char *ptr,int value)
 {
-#ifndef YS_LITTLE_ENDIAN
-	std::swap(ptr[0],ptr[1]);
-#endif
-
 	if(value<-32767)
 	{
 		*((short *)ptr)=-32767;

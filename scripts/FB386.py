@@ -31,7 +31,7 @@ def Run(argv):
 		"-FD0",
 		os.path.join(DISKDIR,"V2.1L20.bin"),
 		"-CD",
-		"D:/TownsISO/FB386CV2.1L10.iso",
+		"C:/D/TownsISO/FB386CV2.1L10.iso",
 		"-SYM",
 		"../symtables/FB386CV2.1L10_"+TOWNSTYPE+".txt",
 		"-DEBUG",

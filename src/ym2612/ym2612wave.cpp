@@ -20,25 +20,19 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 
 
-inline void WordOp_Add(unsigned char *ptr,short value)
+inline void WordOp_Set(unsigned char *ptr,short value)
 {
-#ifndef YS_LITTLE_ENDIAN
-	std::swap(ptr[0],ptr[1]);
-#endif
-
-	int i=*((short *)ptr);
-	i+=value;
-	if(i<-32767)
+	if(value<-32767)
 	{
 		*((short *)ptr)=-32767;
 	}
-	else if(32767<i)
+	else if(32767<value)
 	{
 		*((short *)ptr)=32767;
 	}
 	else
 	{
-		*((short *)ptr)=i;
+		*((short *)ptr)=value;
 	}
 
 #ifndef YS_LITTLE_ENDIAN
@@ -994,17 +988,21 @@ std::vector <unsigned char> YM2612::MakeWaveAllChannels(unsigned long long int m
 
 	wave.resize(4*numSamples);
 	std::memset(wave.data(),0,wave.size());
+
+	unsigned int nPlayingCh=0;
+	unsigned int playingCh[NUM_CHANNELS];
 	for(unsigned int chNum=0; chNum<NUM_CHANNELS; ++chNum)
 	{
 		if(0!=(state.playingCh&(1<<chNum)))
 		{
-			MakeWaveForNSamples(wave.data(),chNum,numSamples);
+			playingCh[nPlayingCh++]=chNum;
 		}
 	}
+	MakeWaveForNSamples(wave.data(),nPlayingCh,playingCh,numSamples);
 	return wave;
 }
 
-std::vector <unsigned char> YM2612::MakeWave(unsigned int chNum,unsigned long long int millisec) const
+std::vector <unsigned char> YM2612::MakeWave(unsigned int ch,unsigned long long int millisec) const
 {
 	std::vector <unsigned char> wave;
 
@@ -1015,7 +1013,9 @@ std::vector <unsigned char> YM2612::MakeWave(unsigned int chNum,unsigned long lo
 
 	wave.resize(4*numSamples);
 	std::memset(wave.data(),0,wave.size());
-	MakeWaveForNSamples(wave.data(),chNum,numSamples);
+
+	unsigned int playingCh[1]={ch};
+	MakeWaveForNSamples(wave.data(),1,playingCh,numSamples);
 	return wave;
 }
 
@@ -1058,10 +1058,8 @@ public:
 };
 
 template <class LFOClass>
-long long int YM2612::MakeWaveForNSamplesTemplate(unsigned char wave[],unsigned int chNum,unsigned long long int numSamples) const
+long long int YM2612::MakeWaveForNSamplesTemplate(unsigned char wave[],unsigned int nPlayingCh,unsigned int playingCh[],unsigned long long int numSamples) const
 {
-	auto &ch=state.channels[chNum];
-
 	const unsigned int microsec12Step=4096000000/WAVE_SAMPLING_RATE;
 	// Time runs 1/WAVE_SAMPLING_RATE seconds per step
 	//           1000/WAVE_SAMPLING_RATE milliseconds per step
@@ -1071,63 +1069,90 @@ long long int YM2612::MakeWaveForNSamplesTemplate(unsigned char wave[],unsigned 
 	// If microSec12=4096*microseconds, tm runs
 	//           4096000000/WAVE_SAMPLING_RATE per step
 
-	auto microsec12=ch.microsec12;
-	unsigned int phase12[4]=
+	unsigned long long int microsec12[NUM_CHANNELS];
+	unsigned int phase12[NUM_CHANNELS][NUM_SLOTS];
+	int lastSlot0Out[NUM_CHANNELS];
+	int feedbackUpdateCycle[NUM_CHANNELS];
+	unsigned int LeftANDPtn[NUM_CHANNELS];
+	unsigned int RightANDPtn[NUM_CHANNELS];
+	unsigned long long int toneDurationMicrosec12[NUM_CHANNELS];
+
+	for(unsigned int chNum=0; chNum<NUM_CHANNELS; ++chNum)
 	{
-		ch.slots[0].phase12,
-		ch.slots[1].phase12,
-		ch.slots[2].phase12,
-		ch.slots[3].phase12,
-	};
-	int lastSlot0Out=ch.lastSlot0Out;
-	int feedbackUpdateCycle=ch.feedbackUpdateCycle;
-
-	unsigned int LeftANDPtn=(0!=ch.L ? ~0 : 0);
-	unsigned int RightANDPtn=(0!=ch.R ? ~0 : 0);
-
-	unsigned int i;
-	unsigned long long int toneDurationMicrosec12=ch.toneDuration12;
-	toneDurationMicrosec12*=1000;
-	for(i=0; i<numSamples && microsec12<toneDurationMicrosec12; ++i)
-	{
-		const unsigned int microsec=(unsigned int)(microsec12>>12);
-		int PMSAdjustment[4]=
-		{
-			0,0,0,0
-		};
-		int AMSAdjustment[4]=
-		{
-			4096,4096,4096,4096
-		};
-
-		LFOClass::CalculateLFO(AMSAdjustment,PMSAdjustment,state.FREQCTRL,ch);
-
-		auto s0Out=lastSlot0Out;
-		auto ampl=CalculateAmplitude(chNum,microsec/1000,phase12,AMSAdjustment,s0Out);  // Envelope takes milliseconds.
-		--feedbackUpdateCycle;
-		if(feedbackUpdateCycle<=0)
-		{
-			feedbackUpdateCycle=initialFeedbackUpdateCycle;
-			lastSlot0Out=s0Out;
-		}
-
-		WordOp_Add(wave+i*4  ,LeftANDPtn&ampl);
-		WordOp_Add(wave+i*4+2,RightANDPtn&ampl);
-
-		phase12[0]+=ch.slots[0].phase12Step+PMSAdjustment[0];
-		phase12[1]+=ch.slots[1].phase12Step+PMSAdjustment[1];
-		phase12[2]+=ch.slots[2].phase12Step+PMSAdjustment[2];
-		phase12[3]+=ch.slots[3].phase12Step+PMSAdjustment[3];
-		microsec12+=microsec12Step;
+		auto &ch=state.channels[chNum];
+		microsec12[chNum]=ch.microsec12;
+		phase12[chNum][0]=ch.slots[0].phase12;
+		phase12[chNum][1]=ch.slots[1].phase12;
+		phase12[chNum][2]=ch.slots[2].phase12;
+		phase12[chNum][3]=ch.slots[3].phase12;
+		lastSlot0Out[chNum]=ch.lastSlot0Out;
+		feedbackUpdateCycle[chNum]=ch.feedbackUpdateCycle;
+		LeftANDPtn[chNum]=(0!=ch.L ? ~0 : 0);
+		RightANDPtn[chNum]=(0!=ch.R ? ~0 : 0);
+		toneDurationMicrosec12[chNum]=ch.toneDuration12;
+		toneDurationMicrosec12[chNum]*=1000;
 	}
 
-	ch.nextMicrosec12=microsec12;
-	ch.lastSlot0OutForNextWave=lastSlot0Out;
-	ch.nextFeedbackUpdateCycle=feedbackUpdateCycle;
-	ch.slots[0].nextPhase12=phase12[0];
-	ch.slots[1].nextPhase12=phase12[1];
-	ch.slots[2].nextPhase12=phase12[2];
-	ch.slots[3].nextPhase12=phase12[3];
+	unsigned int i;
+	for(i=0; i<numSamples && 0<nPlayingCh; ++i)
+	{
+		int leftOut=0,rightOut=0;
+		for(int j=nPlayingCh-1; 0<=j; --j)
+		{
+			auto chNum=playingCh[j];
+			auto &ch=state.channels[chNum];
+			if(toneDurationMicrosec12[chNum]<=microsec12[chNum])
+			{
+				playingCh[j]=playingCh[nPlayingCh-1];
+				--nPlayingCh;
+				break;
+			}
+
+			const unsigned int microsec=(unsigned int)(microsec12[chNum]>>12);
+			int PMSAdjustment[4]=
+			{
+				0,0,0,0
+			};
+			int AMSAdjustment[4]=
+			{
+				4096,4096,4096,4096
+			};
+
+			LFOClass::CalculateLFO(AMSAdjustment,PMSAdjustment,state.FREQCTRL,ch);
+
+			auto s0Out=lastSlot0Out[chNum];
+			auto ampl=CalculateAmplitude(chNum,microsec/1000,phase12[chNum],AMSAdjustment,s0Out);  // Envelope takes milliseconds.
+			--feedbackUpdateCycle[chNum];
+			if(feedbackUpdateCycle[chNum]<=0)
+			{
+				feedbackUpdateCycle[chNum]=initialFeedbackUpdateCycle;
+				lastSlot0Out[chNum]=s0Out;
+			}
+
+			leftOut+=(LeftANDPtn[chNum]&ampl);
+			rightOut+=(RightANDPtn[chNum]&ampl);
+
+			phase12[chNum][0]+=ch.slots[0].phase12Step+PMSAdjustment[0];
+			phase12[chNum][1]+=ch.slots[1].phase12Step+PMSAdjustment[1];
+			phase12[chNum][2]+=ch.slots[2].phase12Step+PMSAdjustment[2];
+			phase12[chNum][3]+=ch.slots[3].phase12Step+PMSAdjustment[3];
+			microsec12[chNum]+=microsec12Step;
+		}
+		WordOp_Set(wave+i*4  ,leftOut);
+		WordOp_Set(wave+i*4+2,rightOut);
+	}
+
+	for(unsigned int chNum=0; chNum<NUM_CHANNELS; ++chNum)
+	{
+		auto &ch=state.channels[chNum];
+		ch.nextMicrosec12=microsec12[chNum];
+		ch.lastSlot0OutForNextWave=lastSlot0Out[chNum];
+		ch.nextFeedbackUpdateCycle=feedbackUpdateCycle[chNum];
+		ch.slots[0].nextPhase12=phase12[chNum][0];
+		ch.slots[1].nextPhase12=phase12[chNum][1];
+		ch.slots[2].nextPhase12=phase12[chNum][2];
+		ch.slots[3].nextPhase12=phase12[chNum][3];
+	}
 
 // std::cout << (microsec12>>12) << "us " << std::endl;
 // std::cout << phase12[0] << "," << (phase12[0]>>12)/PHASE_STEPS << "cycles" << std::endl;
@@ -1138,15 +1163,15 @@ long long int YM2612::MakeWaveForNSamplesTemplate(unsigned char wave[],unsigned 
 	return i;
 }
 
-long long int YM2612::MakeWaveForNSamples(unsigned char wave[],unsigned int chNum,unsigned long long int numSamples) const
+long long int YM2612::MakeWaveForNSamples(unsigned char wave[],unsigned int nPlayingCh,unsigned int playingCh[],unsigned long long int numSamples) const
 {
 	if(true==state.LFO)
 	{
-		return MakeWaveForNSamplesTemplate <WithLFO> (wave,chNum,numSamples);
+		return MakeWaveForNSamplesTemplate <WithLFO> (wave,nPlayingCh,playingCh,numSamples);
 	}
 	else
 	{
-		return MakeWaveForNSamplesTemplate <WithoutLFO> (wave,chNum,numSamples);
+		return MakeWaveForNSamplesTemplate <WithoutLFO> (wave,nPlayingCh,playingCh,numSamples);
 	}
 }
 
