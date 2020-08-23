@@ -987,7 +987,6 @@ std::vector <unsigned char> YM2612::MakeWaveAllChannels(unsigned long long int m
 	numSamples>>=12;
 
 	wave.resize(4*numSamples);
-	std::memset(wave.data(),0,wave.size());
 
 	unsigned int nPlayingCh=0;
 	unsigned int playingCh[NUM_CHANNELS];
@@ -1012,7 +1011,6 @@ std::vector <unsigned char> YM2612::MakeWave(unsigned int ch,unsigned long long 
 	numSamples>>=12;
 
 	wave.resize(4*numSamples);
-	std::memset(wave.data(),0,wave.size());
 
 	unsigned int playingCh[1]={ch};
 	MakeWaveForNSamples(wave.data(),1,playingCh,numSamples);
@@ -1141,6 +1139,8 @@ long long int YM2612::MakeWaveForNSamplesTemplate(unsigned char wave[],unsigned 
 		WordOp_Set(wave+i*4  ,leftOut);
 		WordOp_Set(wave+i*4+2,rightOut);
 	}
+
+	std::memset(wave+i*4,0,(numSamples-i)*4);
 
 	for(unsigned int chNum=0; chNum<NUM_CHANNELS; ++chNum)
 	{
