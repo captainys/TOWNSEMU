@@ -259,6 +259,11 @@ public:
 	*/
 	long long int MakeWaveForNSamples(unsigned char wavBuf[],unsigned int chNum,unsigned long long int numSamplesRequested) const;
 private:
+	class WithLFO;
+	class WithoutLFO;
+	template <class LFO>
+	long long int MakeWaveForNSamplesTemplate(unsigned char wavBuf[],unsigned int chNum,unsigned long long int numSamplesRequested) const;
+
 	/*! Returns the longest duration of the tone in milliseconds if no key off.
 	*/
 	unsigned int CalculateToneDurationMilliseconds(unsigned int chNum) const;

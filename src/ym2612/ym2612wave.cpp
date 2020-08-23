@@ -1019,7 +1019,46 @@ std::vector <unsigned char> YM2612::MakeWave(unsigned int chNum,unsigned long lo
 	return wave;
 }
 
-long long int YM2612::MakeWaveForNSamples(unsigned char wave[],unsigned int chNum,unsigned long long int numSamples) const
+class YM2612::WithLFO
+{
+public:
+	static inline void CalculateLFO(int AMSAdjustment[4],int PMSAdjustment[4],long long int microsec,unsigned int FREQCTRL,const Channel &ch)
+	{
+		unsigned long long int LFOPhase=microsec;
+		LFOPhase=LFOPhase*PHASE_STEPS/LFOCycleMicroSec[FREQCTRL];
+		if(0!=ch.PMS)
+		{
+			int PMSAdj=PMS16384Table[ch.PMS]*sineTable[LFOPhase&PHASE_MASK]/UNSCALED_MAX;
+			for(unsigned int i=0; i<connectionToOutputSlots[ch.CONNECT].nOutputSlots; ++i)
+			{
+				auto sl=connectionToOutputSlots[ch.CONNECT].slots[i];
+				int signedStep=ch.slots[sl].phase12Step;
+				PMSAdjustment[sl]=signedStep*PMSAdj/16384/2;
+			}
+		}
+		{
+			for(unsigned int i=0; i<connectionToOutputSlots[ch.CONNECT].nOutputSlots; ++i)
+			{
+				auto sl=connectionToOutputSlots[ch.CONNECT].slots[i];
+				if(0!=ch.slots[sl].AM)
+				{
+					AMSAdjustment[sl]=4096+(AMS4096Table[ch.AMS]*sineTable[LFOPhase&PHASE_MASK])/UNSCALED_MAX;
+				}
+			}
+		}
+	}
+};
+
+class YM2612::WithoutLFO
+{
+public:
+	static inline void CalculateLFO(int AMSAdjustment[4],int PMSAdjustment[4],long long int microsec,unsigned int FREQCTRL,const Channel &ch)
+	{
+	}
+};
+
+template <class LFOClass>
+long long int YM2612::MakeWaveForNSamplesTemplate(unsigned char wave[],unsigned int chNum,unsigned long long int numSamples) const
 {
 	auto &ch=state.channels[chNum];
 
@@ -1061,31 +1100,7 @@ long long int YM2612::MakeWaveForNSamples(unsigned char wave[],unsigned int chNu
 			4096,4096,4096,4096
 		};
 
-		if(true==state.LFO)
-		{
-			unsigned long long int LFOPhase=microsec;
-			LFOPhase=LFOPhase*PHASE_STEPS/LFOCycleMicroSec[state.FREQCTRL];
-			if(0!=ch.PMS)
-			{
-				int PMSAdj=PMS16384Table[ch.PMS]*sineTable[LFOPhase&PHASE_MASK]/UNSCALED_MAX;
-				for(unsigned int i=0; i<connectionToOutputSlots[ch.CONNECT].nOutputSlots; ++i)
-				{
-					auto sl=connectionToOutputSlots[ch.CONNECT].slots[i];
-					int signedStep=ch.slots[sl].phase12Step;
-					PMSAdjustment[sl]=signedStep*PMSAdj/16384/2;
-				}
-			}
-			{
-				for(unsigned int i=0; i<connectionToOutputSlots[ch.CONNECT].nOutputSlots; ++i)
-				{
-					auto sl=connectionToOutputSlots[ch.CONNECT].slots[i];
-					if(0!=ch.slots[sl].AM)
-					{
-						AMSAdjustment[sl]=4096+(AMS4096Table[ch.AMS]*sineTable[LFOPhase&PHASE_MASK])/UNSCALED_MAX;
-					}
-				}
-			}
-		}
+		LFOClass::CalculateLFO(AMSAdjustment,PMSAdjustment,microsec,state.FREQCTRL,ch);
 
 		auto s0Out=lastSlot0Out;
 		auto ampl=CalculateAmplitude(chNum,microsec/1000,phase12,AMSAdjustment,s0Out);  // Envelope takes milliseconds.
@@ -1121,6 +1136,18 @@ long long int YM2612::MakeWaveForNSamples(unsigned char wave[],unsigned int chNu
 // std::cout << phase12[3] << "," << (phase12[3]>>12)/PHASE_STEPS << "cycles" << std::endl;
 
 	return i;
+}
+
+long long int YM2612::MakeWaveForNSamples(unsigned char wave[],unsigned int chNum,unsigned long long int numSamples) const
+{
+	if(true==state.LFO)
+	{
+		return MakeWaveForNSamplesTemplate <WithLFO> (wave,chNum,numSamples);
+	}
+	else
+	{
+		return MakeWaveForNSamplesTemplate <WithoutLFO> (wave,chNum,numSamples);
+	}
 }
 
 void YM2612::NextWave(unsigned int chNum)
