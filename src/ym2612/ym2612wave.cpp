@@ -1022,9 +1022,9 @@ std::vector <unsigned char> YM2612::MakeWave(unsigned int chNum,unsigned long lo
 class YM2612::WithLFO
 {
 public:
-	static inline void CalculateLFO(int AMSAdjustment[4],int PMSAdjustment[4],long long int microsec,unsigned int FREQCTRL,const Channel &ch)
+	static inline void CalculateLFO(int AMSAdjustment[4],int PMSAdjustment[4],unsigned int FREQCTRL,const Channel &ch)
 	{
-		unsigned long long int LFOPhase=microsec;
+		unsigned long long int LFOPhase=(ch.microsec12>>12);
 		LFOPhase=LFOPhase*PHASE_STEPS/LFOCycleMicroSec[FREQCTRL];
 		if(0!=ch.PMS)
 		{
@@ -1052,7 +1052,7 @@ public:
 class YM2612::WithoutLFO
 {
 public:
-	static inline void CalculateLFO(int AMSAdjustment[4],int PMSAdjustment[4],long long int microsec,unsigned int FREQCTRL,const Channel &ch)
+	static inline void CalculateLFO(int AMSAdjustment[4],int PMSAdjustment[4],unsigned int FREQCTRL,const Channel &ch)
 	{
 	}
 };
@@ -1100,7 +1100,7 @@ long long int YM2612::MakeWaveForNSamplesTemplate(unsigned char wave[],unsigned 
 			4096,4096,4096,4096
 		};
 
-		LFOClass::CalculateLFO(AMSAdjustment,PMSAdjustment,microsec,state.FREQCTRL,ch);
+		LFOClass::CalculateLFO(AMSAdjustment,PMSAdjustment,state.FREQCTRL,ch);
 
 		auto s0Out=lastSlot0Out;
 		auto ampl=CalculateAmplitude(chNum,microsec/1000,phase12,AMSAdjustment,s0Out);  // Envelope takes milliseconds.
