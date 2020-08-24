@@ -245,12 +245,12 @@ public:
 	{
 		long long int mod=townsTime%VSYNC_CYCLE;
 		townsTime-=mod;
-		townsTime+=VSYNC_CYCLE;
+		townsTime+=VSYNC_CYCLE-(VSYNC_CYCLE-CRT_VERTICAL_DURATION);
 		return townsTime;
 	}
 	inline long long int NextVSYNCEndTime(long long int townsTime) const
 	{
-		return NextVSYNCTime(townsTime)+VSYNC_CYCLE-CRT_VERTICAL_DURATION;
+		return NextVSYNCTime(townsTime)+(VSYNC_CYCLE-CRT_VERTICAL_DURATION);
 	}
 	inline void ProcessVSYNCIRQ(unsigned long long int townsTime)
 	{

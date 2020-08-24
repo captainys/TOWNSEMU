@@ -553,7 +553,7 @@ void FMTowns::RunFastDevicePollingInternal(void)
 
 bool FMTowns::CheckRenderingTimer(TownsRender &render,Outside_World &world)
 {
-	if(var.nextRenderingTime<=state.townsTime)
+	if(var.nextRenderingTime<=state.townsTime && true!=crtc.InVSYNC(state.townsTime))
 	{
 		render.BuildImage(crtc,physMem);
 		world.Render(render.GetImage());

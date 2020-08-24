@@ -363,7 +363,7 @@ void TownsSprite::RunScheduledTask(unsigned long long int townsTime)
 				Render(physMemPtr->state.VRAM.data()+0x40000,physMemPtr->state.spriteRAM.data());
 			}
 			state.spriteBusy=false;
-			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->crtc.NextVSYNCEndTime(townsTime));
+			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->crtc.NextVSYNCEndTime(townsTime)+SPRITE_SCREEN_CLEAR_TIME);
 		}
 	}
 }
