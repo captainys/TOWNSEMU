@@ -1048,7 +1048,7 @@ i486DX::InterruptDescriptor i486DX::GetInterruptDescriptor(unsigned int INTNum,c
 		}
 
 		desc.SEG=cpputil::GetWord(rawDesc+2);
-		desc.OFFSET=cpputil::GetWord(rawDesc+0)|(cppUtil::GetWord(rawDesc+6)<<16);
+		desc.OFFSET=cpputil::GetWord(rawDesc+0)|(cpputil::GetWord(rawDesc+6)<<16);
 		desc.flags=cpputil::GetWord(rawDesc+4);
 	}
 	else
