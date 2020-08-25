@@ -31,6 +31,8 @@ add_subdirectory(ym2612)
 add_subdirectory(rf5c68)
 add_subdirectory(i8251)
 
+add_subdirectory(customstick)
+
 add_subdirectory(towns)
 
 add_subdirectory(tests)
