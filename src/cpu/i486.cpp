@@ -1026,24 +1026,30 @@ i486DX::InterruptDescriptor i486DX::GetInterruptDescriptor(unsigned int INTNum,c
 	{
 		auto DTLinearBaseAddr=state.IDTR.linearBaseAddr;
 		DTLinearBaseAddr+=(8*INTNum);
-		const unsigned char rawDesc[8]=
+
+		const unsigned char *rawDesc;
+		unsigned char rawDescBuf[8];
+		auto memWin=GetConstMemoryWindowFromLinearAddress(DTLinearBaseAddr,mem);
+		if(nullptr!=memWin.ptr && (DTLinearBaseAddr&(MemoryAccess::MEMORY_WINDOW_SIZE-1))<=(MemoryAccess::MEMORY_WINDOW_SIZE-8))
 		{
-			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr),
-			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+1),
-			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+2),
-			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+3),
-			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+4),
-			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+5),
-			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+6),
-			(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+7)
-		};
-		desc.SEG=rawDesc[2]|(rawDesc[3]<<8);
-		desc.OFFSET= (unsigned int)rawDesc[0]
-		           |((unsigned int)rawDesc[1]<<8)
-		           |((unsigned int)rawDesc[6]<<16)
-		           |((unsigned int)rawDesc[7]<<24);
-		desc.flags=  (unsigned short)rawDesc[4]
-		           |((unsigned short)rawDesc[5]<<8);
+			rawDesc=memWin.ptr+(DTLinearBaseAddr&(MemoryAccess::MEMORY_WINDOW_SIZE-1));
+		}
+		else
+		{
+			rawDesc=rawDescBuf;
+			rawDescBuf[0]=(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr);
+			rawDescBuf[1]=(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+1);
+			rawDescBuf[2]=(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+2);
+			rawDescBuf[3]=(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+3);
+			rawDescBuf[4]=(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+4);
+			rawDescBuf[5]=(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+5);
+			rawDescBuf[6]=(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+6);
+			rawDescBuf[7]=(unsigned char)FetchByteByLinearAddress(mem,DTLinearBaseAddr+7);
+		}
+
+		desc.SEG=cpputil::GetWord(rawDesc+2);
+		desc.OFFSET=cpputil::GetWord(rawDesc+0)|(cppUtil::GetWord(rawDesc+6)<<16);
+		desc.flags=cpputil::GetWord(rawDesc+4);
 	}
 	else
 	{
