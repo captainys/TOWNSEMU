@@ -908,7 +908,19 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 
 Vec2i TownsCRTC::GetRenderSize(void) const
 {
-	return Vec2i::Make(640,480);
+	unsigned int hei=480; // Height still has errors.  Some 320x240 mode returns 320x880 size.
+	if(InSinglePageMode())
+	{
+		auto dim=GetPageSizeOnMonitor(0);
+		return Vec2i::Make(std::max(640,dim.x()),hei);
+	}
+	else
+	{
+		auto dim0=GetPageSizeOnMonitor(0);
+		auto dim1=GetPageSizeOnMonitor(1);
+		auto wid=std::max(dim0.x(),dim1.x());
+		return Vec2i::Make(std::max(640,wid),hei);
+	}
 }
 
 std::vector <std::string> TownsCRTC::GetStatusText(void) const

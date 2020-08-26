@@ -97,6 +97,8 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 	}
 
 	FsOpenWindow(0,winY0,wid,hei+STATUS_HEI,1);
+	this->winWid=640;
+	this->winHei=480;
 	FsSetWindowTitle("FM Towns Emulator - TSUGARU");
 	soundPlayer.Start();
 	cddaStartHSG=0;
@@ -620,6 +622,20 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 }
 /* virtual */ void FsSimpleWindowConnection::Render(const TownsRender::Image &img)
 {
+	if(this->winWid!=img.wid)  // Height is not correct yet   :-P
+	{
+		this->winWid=img.wid;
+		sinceLastResize=10;
+	}
+	else if(0<sinceLastResize)
+	{
+		--sinceLastResize;
+		if(0==sinceLastResize)
+		{
+			FsResizeWindow(this->winWid*scaling/100,this->winHei*scaling/100+STATUS_HEI);
+		}
+	}
+
 	std::vector <unsigned char> flip;
 	flip.resize(img.wid*img.hei*4);
 
