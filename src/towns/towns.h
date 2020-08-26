@@ -172,6 +172,7 @@ public:
 		unsigned int TBIOS_mouseInfoOffset=0;
 		unsigned int MOS_work_linearAddr=0;
 		unsigned int MOS_work_physicalAddr=0;
+		unsigned int MOS_pulsePerPixelH=8,MOS_pulsePerPixelV=8;
 		int mouseIntegrationSpeed=256;
 
 		/*! Application-Specific Customization parameters.

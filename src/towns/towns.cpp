@@ -512,6 +512,16 @@ void FMTowns::ProcessSound(Outside_World *outside_world)
 
 		std::cout << "Identified TBIOS as: " << TBIOSIDENTtoString(state.tbiosVersion) << std::endl;
 	}
+	else if(0x04==cpu.GetAH()) // Set Position
+	{
+		// std::cout << "Set Mouse Position:" << cpu.GetDX() << "," << cpu.GetBX() << std::endl;
+	}
+	else if(0x0C==cpu.GetAH()) // Set Pulse per Pixel
+	{
+		// std::cout << "Set Pulse per Pixel:" << cpu.GetDH() << "," << cpu.GetDL() << std::endl;
+		state.MOS_pulsePerPixelH=cpu.GetDH();
+		state.MOS_pulsePerPixelV=cpu.GetDL();
+	}
 	else if(0x0E==cpu.GetAH())
 	{
 		state.mouseDisplayPage=cpu.GetAL();
