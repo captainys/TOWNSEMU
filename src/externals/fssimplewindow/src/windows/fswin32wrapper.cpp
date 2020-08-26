@@ -253,6 +253,21 @@ void FsOpenWindow(const FsOpenWindowOption &opt)
 	}
 }
 
+void FsResizeWindow(int newWid,int newHei)
+{
+	RECT rc;
+	GetClientRect(fsWin32Internal.hWnd,&rc);
+	rc.right =(unsigned long)(rc.left+newWid-1);
+	rc.bottom=(unsigned long)(rc.top +newHei-1);
+	AdjustWindowRect(&rc,WINSTYLE,FALSE);
+	newWid=rc.right -rc.left+1;
+	newHei=rc.bottom-rc.top +1;
+
+	GetWindowRect(fsWin32Internal.hWnd,&rc);
+
+	MoveWindow(fsWin32Internal.hWnd,rc.left,rc.top,newWid,newHei,TRUE);
+}
+
 int FsCheckWindowOpen(void)
 {
 	if(nullptr!=fsWin32Internal.hWnd)
@@ -487,6 +502,18 @@ void FsGetMouseState(int &lb,int &mb,int &rb,int &mx,int &my)
 		lb=0;
 		mb=0;
 		rb=0;
+	}
+}
+
+void FsSetMousePosition(int mx,int my)
+{
+	if(true==FsWin32IsWindowActive())
+	{
+		POINT cur;
+		cur.x=mx;
+		cur.y=my;
+		ClientToScreen(fsWin32Internal.hWnd,&cur);
+		SetCursorPos(cur.x,cur.y);
 	}
 }
 

@@ -7,6 +7,8 @@ set(SUB_FOLDER "lib")
 set(REALLY_NEED_CPP11 0)    # Setting 1 will enable use of C++11 libraries, but lose compatibility with OSX 10.6.
 set(OWN_HEADER_PATH .)
 
+add_subdirectory(tests)
+
 # Linking framework based on http://www.cmake.org/Wiki/CMake:HowToUseExistingOSXFrameworks
 
 if(APPLE)

@@ -319,6 +319,11 @@ void FsOpenWindow(const FsOpenWindowOption &opt)
 	return;
 }
 
+void FsResizeWindow(int newWid,int newHei)
+{
+	XResizeWindow(ysXDsp,ysXWnd,newWid,newHei);
+	XFlush(ysXDsp);
+}
 
 int FsCheckWindowOpen(void)
 {
@@ -408,8 +413,15 @@ static void ForceMoveWindow(Display *dsp,Window &wnd,int goalX,int goalY)
 
 void FsGetWindowSize(int &wid,int &hei)
 {
-	wid=ysXWid;
-	hei=ysXHei;
+	//wid=ysXWid;
+	//hei=ysXHei;
+	Window root_return;
+	int x_return,y_return;
+	unsigned int width_return,height_return;
+	unsigned int border_width_return,depth_return;
+	XGetGeometry(ysXDsp,ysXWnd,&root_return,&x_return,&y_return,&width_return,&height_return,&border_width_return,&depth_return);
+	wid=width_return;
+	hei=height_return;
 }
 
 void FsGetWindowPosition(int &x0,int &y0)
@@ -895,6 +907,14 @@ void FsGetMouseState(int &lb,int &mb,int &rb,int &mx,int &my)
 	lb=lastKnownLb;
 	mb=lastKnownMb;
 	rb=lastKnownRb;
+}
+
+void FsSetMousePosition(int mx,int my)
+{
+	// This should move the mouse cursor to the given location.
+	// However, it doesn't in VirtualBox.
+	// This function may no longer implemented.
+	XWarpPointer(ysXDsp,ysXWnd,ysXWnd,0,0,ysXWid,ysXHei,mx,my);
 }
 
 int FsGetMouseEvent(int &lb,int &mb,int &rb,int &mx,int &my)

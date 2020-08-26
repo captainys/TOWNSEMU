@@ -91,6 +91,7 @@ public:
 		REG_CR2=    0x1F,
 	};
 
+	static const unsigned int CLKSELtoHz[4];
 	unsigned int CLKSELtoFreq[4];
 
 	class Layer
@@ -358,10 +359,10 @@ public:
 	}
 	inline unsigned int GetHorizontalFrequency(void) const
 	{
-		auto freq=CLKSELtoFreq[CLKSEL()];
+		auto Hz=CLKSELtoHz[CLKSEL()];
 		if(0<state.crtcReg[REG_HST])
 		{
-			return freq/state.crtcReg[REG_HST];
+			return (Hz/state.crtcReg[REG_HST])/1000;
 		}
 		return 31; // Just make it 31KHz.  Not to crash.
 	}

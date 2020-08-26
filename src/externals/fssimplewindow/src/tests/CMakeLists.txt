@@ -1,0 +1,3 @@
+add_executable(test_resize MACOSX_BUNDLE test_resize.cpp)
+target_link_libraries(test_resize fssimplewindow)
+add_test(NAME FsSimpleWindow_Resize COMMAND test_resize)

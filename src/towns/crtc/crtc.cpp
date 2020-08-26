@@ -23,6 +23,14 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 
 
+const unsigned int TownsCRTC::CLKSELtoHz[4]=
+{
+	28636300,   // 28636KHz
+	24545400,   // 24545KHz
+	25175000,   // 25175KHz
+	21052500,   // 21052KHz
+};
+
 void TownsCRTC::AnalogPalette::Reset(void)
 {
 	codeLatch=0;
@@ -254,11 +262,6 @@ TownsCRTC::TownsCRTC(class FMTowns *ptr,TownsSprite *spritePtr) : Device(ptr)
 	state.mxVideoOutCtrl.resize(0x10000);
 	state.Reset();
 
-	CLKSELtoFreq[0]=28636; // 28636KHz
-	CLKSELtoFreq[1]=24545; // 24545KHz
-	CLKSELtoFreq[2]=25175; // 25175KHz
-	CLKSELtoFreq[3]=21052; // 21052KHz
-
 	// Tentatively
 	cached=true;
 }
@@ -310,19 +313,12 @@ bool TownsCRTC::InSinglePageMode(void) const
 unsigned int TownsCRTC::GetBaseClockFreq(void) const
 {
 	auto CLKSEL=state.crtcReg[REG_CR1]&3;
-	static const unsigned int freqTable[4]=
-	{
-		28636300,
-		24545400,
-		25175000,
-		21052500,
-	};
-	return freqTable[CLKSEL];
+	return CLKSELtoHz[CLKSEL];
 }
 unsigned int TownsCRTC::GetBaseClockScaler(void) const
 {
-	auto SCSEL=state.crtcReg[REG_CR1]&0x0C;
-	return (SCSEL>>1)+2;
+	auto SCSEL=(state.crtcReg[REG_CR1]&0x0C)>>2;
+	return (SCSEL+1)*2;
 }
 Vec2i TownsCRTC::GetPageZoom2X(unsigned char page) const
 {
@@ -1032,6 +1028,12 @@ std::vector <std::string> TownsCRTC::GetStatusText(void) const
 	text.back()+="  CLKSEL:";
 	text.back().push_back('0'+(state.crtcReg[REG_CR1]&3));
 
+	text.back()+="  SCSEL:";
+	text.back().push_back('0'+((state.crtcReg[REG_CR1]&0x0C)>>2));
+	text.back()+="("+cpputil::Ubtox(GetBaseClockScaler())+"x)";
+
+	text.back()+="  PM:";
+	text.back()+=cpputil::Ustox(state.crtcReg[REG_CR2]&0x1ff);
 
 	text.push_back("");
 	text.back()="Address Latch: ";

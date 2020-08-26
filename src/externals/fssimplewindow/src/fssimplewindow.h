@@ -327,6 +327,11 @@ void FsOpenWindow(const FsOpenWindowOption &openWindowOption);
 int FsCheckWindowOpen(void);
 
 
+/*!
+*/
+void FsResizeWindow(int newWid,int newHei);
+
+
 void FsCloseWindow(void);
 void FsMaximizeWindow(void);
 void FsUnmaximizeWindow(void);
@@ -392,6 +397,11 @@ long long int FsPassedTime(void);
 long long int FsSubSecondTimer(void);
 void FsGetMouseState(int &lb,int &mb,int &rb,int &mx,int &my);
 int FsGetMouseEvent(int &lb,int &mb,int &rb,int &mx,int &my);
+
+/*! Move mouse cursor relative to the window.
+    May not work in Linux.
+*/
+void FsSetMousePosition(int mx,int my);
 void FsSwapBuffers(void);
 int FsInkey(void);
 int FsInkeyChar(void);

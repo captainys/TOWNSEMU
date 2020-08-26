@@ -1412,10 +1412,6 @@ void FsOpenWindowC(int x0,int y0,int wid,int hei,int useDoubleBuffer,int useMult
 
 	[NSApp finishLaunching];
 
-
-printf("%s %d\n",__FUNCTION__,__LINE__);
-
-
 	NSRect contRect;
 	contRect=NSMakeRect(x0,y0,wid,hei);
 	
@@ -1436,8 +1432,6 @@ printf("%s %d\n",__FUNCTION__,__LINE__);
 	{
 		[ysWnd setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
 	}
-
-printf("%s %d\n",__FUNCTION__,__LINE__);
 
 	int nFormatAttrib=0;
 	NSOpenGLPixelFormatAttribute formatAttrib[64]={0};
@@ -1500,7 +1494,6 @@ printf("%s %d\n",__FUNCTION__,__LINE__);
 	YsAddMenu();
 
 #if !__has_feature(objc_arc)
-
 	[pool release];
 #endif
 
@@ -1531,6 +1524,17 @@ printf("%s %d\n",__FUNCTION__,__LINE__);
 	// To counter the hostility, I need to re-make OpenGL context current
 	// from time to time.
 	FsMakeCurrentC();
+}
+
+void FsResizeWindowC(int wid,int hei)
+{
+	NSRect viewRect=[ysView frame];
+	viewRect.size.width=wid;
+	viewRect.size.height=hei;
+
+	[ysWnd setContentSize:viewRect.size];
+
+	[ysView setFrame:viewRect];
 }
 
 void FsGetWindowSizeC(int *wid,int *hei)
@@ -1585,11 +1589,11 @@ void FsPollDeviceC(void)
 		{
             if([event type]==NSRightMouseDown)
             {
-                printf("R mouse down event\n");
+                // printf("R mouse down event\n");
             }
             else if([event type]==NSLeftMouseDown)
             {
-                printf("L mouse down event\n");
+                // printf("L mouse down event\n");
             }
 
             [NSApp sendEvent:event];
@@ -1699,6 +1703,31 @@ void FsMouseC(int *lb,int *mb,int *rb,int *mx,int *my)
 	rect=[ysView frame];
 	*mx=loc.x;
 	*my=rect.size.height-1-loc.y;
+}
+
+void FsSetMousePositionC(int mx,int my)
+{
+	if([ysWnd isKeyWindow])
+	{
+		NSPoint newPos;
+
+		NSRect rect;
+		rect=[ysView frame];
+		my=rect.size.height-1-my;
+
+		newPos.x=mx;
+		newPos.y=my;
+		newPos=[ysView convertPoint:newPos toView:nil];
+		newPos=[ysWnd convertBaseToScreen:newPos];
+
+		// Quartz uses (0,0) as top-left.  The right way.
+		// Cocoa uses (0,0) as bottom-left.  The wrong way.
+		// I need to convert from the wrong way to the right way.
+		NSRect scrnRect=ysWnd.screen.frame;
+		newPos.y=scrnRect.size.height-1-newPos.y;
+
+		CGWarpMouseCursorPosition(newPos);
+	}
 }
 
 int FsGetMouseEventC(int *lb,int *mb,int *rb,int *mx,int *my)

@@ -37,6 +37,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "fssimplewindow.h"
 
 extern "C" void FsOpenWindowC(int x0,int y0,int wid,int hei,int useDoubleBuffer,int useMultiSampleBuffer,int fullScreen,const char windowName[]);
+extern "C" void FsResizeWindowC(int wid,int hei);
 extern "C" void FsGetWindowSizeC(int *wid,int *hei);
 extern "C" void FsGetWindowPositionC(int *wid,int *hei);
 extern "C" void FsMaximizeWindowC(void);
@@ -47,6 +48,7 @@ extern "C" void FsSleepC(int ms);
 extern "C" int FsPassedTimeC(void);
 extern "C" long long int FsSubSecondTimerC(void);
 extern "C" void FsMouseC(int *lb,int *mb,int *rb,int *mx,int *my);
+extern "C" void FsSetMousePositionC(int mx,int my);
 extern "C" int FsGetMouseEventC(int *lb,int *mb,int *rb,int *mx,int *my);
 extern "C" void FsSwapBufferC(void);
 extern "C" int FsInkeyC(void);
@@ -91,6 +93,11 @@ void FsOpenWindow(const FsOpenWindowOption &opt)
 	{
 		(*fsAfterWindowCreationCallBack)(fsAfterWindowCreationCallBackParam);
 	}
+}
+
+void FsResizeWindow(int wid,int hei)
+{
+	FsResizeWindowC(wid,hei);
 }
 
 int FsCheckWindowOpen(void)
@@ -165,6 +172,11 @@ long long int FsPassedTime(void)
 long long int FsSubSecondTimer(void)
 {
 	return FsSubSecondTimerC();
+}
+
+void FsSetMousePosition(int mx,int my)
+{
+	FsSetMousePositionC(mx,my);
 }
 
 void FsGetMouseState(int &lb,int &mb,int &rb,int &mx,int &my)
