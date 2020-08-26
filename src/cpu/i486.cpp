@@ -127,6 +127,8 @@ false,true, true, false,true, false,false,true, true, false,false,true, false,tr
 true, false,false,true, false,true, true, false,false,true, true, false,true, false,false,true,
 };
 
+bool i486DX::IsPrefix[256];
+
 std::string i486DX::FarPointer::Format(void) const
 {
 	return cpputil::Uitox(SEG)+":"+cpputil::Uitox(OFFSET);
@@ -292,6 +294,24 @@ i486DX::i486DX(VMBase *vmPtr) : CPU(vmPtr)
 	segPrefixToSregIndex[SEG_OVERRIDE_ES]=REG_ES-REG_SEGMENT_REG_BASE;
 	segPrefixToSregIndex[SEG_OVERRIDE_FS]=REG_FS-REG_SEGMENT_REG_BASE;
 	segPrefixToSregIndex[SEG_OVERRIDE_GS]=REG_GS-REG_SEGMENT_REG_BASE;
+
+	for(auto &b : IsPrefix)
+	{
+		b=false;
+	}
+	IsPrefix[INST_PREFIX_REP]=true;
+	IsPrefix[INST_PREFIX_REPNE]=true;
+	IsPrefix[INST_PREFIX_LOCK]=true;
+	IsPrefix[SEG_OVERRIDE_CS]=true;
+	IsPrefix[SEG_OVERRIDE_SS]=true;
+	IsPrefix[SEG_OVERRIDE_DS]=true;
+	IsPrefix[SEG_OVERRIDE_ES]=true;
+	IsPrefix[SEG_OVERRIDE_FS]=true;
+	IsPrefix[SEG_OVERRIDE_GS]=true;
+	IsPrefix[OPSIZE_OVERRIDE]=true;
+	IsPrefix[ADDRSIZE_OVERRIDE]=true;
+	IsPrefix[FPU_FWAIT]=true;
+
 }
 
 void i486DX::Reset(void)

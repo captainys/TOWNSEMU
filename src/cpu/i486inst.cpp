@@ -505,7 +505,7 @@ public:
 	#endif
 
 		unsigned int lastByte=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,CS,offset+inst.numBytes++,mem);
-		for(;;) // While looking at prefixes.
+		while(true==i486DX::IsPrefix[lastByte])
 		{
 			switch(lastByte)
 			{
