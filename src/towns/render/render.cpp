@@ -148,13 +148,17 @@ void TownsRender::Render4Bit(
 
 	if(47!=chaseHQPalette.lastPaletteUpdateCount) // ChaseHQ updates palette 47 times between VSYNC
 	{
-		auto ZV=layer.zoom2x.y()/2;
+		auto ZV0=layer.zoom2x.y()/2;
+		auto ZV=ZV0;
 		const int ZH[2]={layer.zoom2x.x()/2,(layer.zoom2x.x()+1)/2};  // For x.5 times zoom rate.
 		int bytesPerLineTimesVRAMy=layer.VRAMOffset;
 		auto VRAMTop=VRAM.data()+VRAMAddr+layer.VRAMHSkipBytes;
 
-		auto bottomY=this->hei-ZV;
-		for(int y=0; y<layer.sizeOnMonitor.y() && y+layer.originOnMonitor.y()<=bottomY; y+=ZV)
+		// yStep should be 1 if transparent.
+		// If transparnet==true, there is a possibility that memcpy overwrites background pixels.
+		unsigned int yStep=(true!=transparent ? ZV : 1);
+		auto bottomY=this->hei-yStep;
+		for(int y=0; y<layer.sizeOnMonitor.y() && y+layer.originOnMonitor.y()<=bottomY; y+=yStep)
 		{
 			const int Y=y+layer.originOnMonitor.y();
 			const int X=  layer.originOnMonitor.x();
@@ -193,14 +197,25 @@ void TownsRender::Render4Bit(
 				++src;
 			}
 
-			auto copyPtr=dstLine+(4*this->wid);
-			for(unsigned int zv=1; zv<ZV; ++zv)
+			if(1<yStep)
 			{
-				std::memcpy(copyPtr,dstLine,dst-dstLine);
-				copyPtr+=(4*this->wid);
+				auto copyPtr=dstLine+(4*this->wid);
+				for(unsigned int zv=1; zv<yStep; ++zv)
+				{
+					std::memcpy(copyPtr,dstLine,dst-dstLine);
+					copyPtr+=(4*this->wid);
+				}
+				bytesPerLineTimesVRAMy+=layer.bytesPerLine;
 			}
-
-			bytesPerLineTimesVRAMy+=layer.bytesPerLine;
+			else
+			{
+				--ZV;
+				if(0==ZV)
+				{
+					ZV=ZV0;
+					bytesPerLineTimesVRAMy+=layer.bytesPerLine;
+				}
+			}
 		}
 	}
 	else // For ChaseHQ special: If 16-color mode, and palette changed more than 40 times in one frame.
@@ -366,10 +381,14 @@ void TownsRender::Render16Bit(const TownsCRTC::Layer &layer,const std::vector <u
 	const unsigned int VRAMVScrollMask=layer.VScrollMask;
 	unsigned int lineVRAMOffset=0;
 	const int ZHsrc[2]={layer.zoom2x.x()/2,(layer.zoom2x.x()+1)/2};  // For x.5 times zoom rate.
-	auto ZV=layer.zoom2x.y()/2;
+	auto ZV0=layer.zoom2x.y()/2;
+	auto ZV=ZV0;
 
-	auto bottomY=this->hei-ZV;
-	for(int y=0; y<layer.sizeOnMonitor.y() && y+layer.originOnMonitor.y()<=bottomY; y+=ZV)
+	// yStep should be 1 if transparent.
+	// If transparnet==true, there is a possibility that memcpy overwrites background pixels.
+	unsigned int yStep=(true!=transparent ? ZV0 : 1);
+	auto bottomY=this->hei-yStep;
+	for(int y=0; y<layer.sizeOnMonitor.y() && y+layer.originOnMonitor.y()<=bottomY; y+=yStep)
 	{
 		auto X=  layer.originOnMonitor.x();
 		auto Y=y+layer.originOnMonitor.y();
@@ -405,13 +424,24 @@ void TownsRender::Render16Bit(const TownsCRTC::Layer &layer,const std::vector <u
 			}
 		}
 
-		auto copyPtr=dstLine+(4*this->wid);
-		for(unsigned int zv=1; zv<ZV; ++zv)
+		if(1<yStep)
 		{
-			std::memcpy(copyPtr,dstLine,dst-dstLine);
-			copyPtr+=(4*this->wid);
+			auto copyPtr=dstLine+(4*this->wid);
+			for(unsigned int zv=1; zv<yStep; ++zv)
+			{
+				std::memcpy(copyPtr,dstLine,dst-dstLine);
+				copyPtr+=(4*this->wid);
+			}
+			lineVRAMOffset+=layer.bytesPerLine;
 		}
-
-		lineVRAMOffset+=layer.bytesPerLine;
+		else
+		{
+			--ZV;
+			if(0==ZV)
+			{
+				ZV=ZV0;
+				lineVRAMOffset+=layer.bytesPerLine;
+			}
+		}
 	}
 }
