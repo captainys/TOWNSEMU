@@ -339,6 +339,12 @@ Vec2i TownsCRTC::GetPageZoom2X(unsigned char page) const
 			zoom[1]*=4;
 		}
 	}
+	else if(3==CLKSEL() && 0x29D==state.crtcReg[REG_HST])
+	{
+		// VING games use this settings.  Apparently zoom-x needs to be interpreted as 4+(pageZoom&15).
+		zoom[0]=4+(pageZoom&15);
+		zoom[1]*=2;
+	}
 	else
 	{
 		zoom[0]*=2;
@@ -368,7 +374,17 @@ Vec2i TownsCRTC::GetPageOriginOnMonitor(unsigned char page) const
 		y0=(VDS-0x2a)>>1; // I'm not sure if I should divide by 2.  Will need experiments.
 		break;
 	case 1:
-		x0=(HDS-0xe7)>>1;
+		if(0x31F==state.crtcReg[REG_HST])
+		{
+			// RAGNAROK in Free Software Collection 10 uses this setting.
+			// It is unknown if any other programs use the same setting at this time.
+			// This interpretation still leaves the layer_1 16 pixels left of where it should be.
+			x0=(HDS-0x8A)>>1;
+		}
+		else
+		{
+			x0=(HDS-0xe7)>>1;
+		}
 		y0=(VDS-0x2a)>>1; // I'm not sure if I should divide by 2.  Will need experiments.
 		break;
 	case 2:
@@ -376,7 +392,7 @@ Vec2i TownsCRTC::GetPageOriginOnMonitor(unsigned char page) const
 		y0=(VDS-0x46)>>1;
 		break;
 	case 3:
-		// VING Games use CLKSEL=3 with HST=0x029D, making it 31KHz mode, in which case around 0x40 is the left-edge of the monitor, and
+		// VING Games use CLKSEL=3 with HST=0x029D, making it 31KHz mode, in which case around 0x8A is the left-edge of the monitor, and
 		// 0x46 is the top-edge.
 		// TBIOS exclusively uses CLKSEL=3 for 24KHz mode, in which case 0x9C is the left-edge of the monitor, and
 		// 0x40 is the top-edge.
@@ -388,7 +404,7 @@ Vec2i TownsCRTC::GetPageOriginOnMonitor(unsigned char page) const
 		}
 		else
 		{
-			x0=(HDS-0x40);
+			x0=(HDS-0x8A);
 			y0=(VDS-0x46)>>1;
 		}
 		break;
@@ -439,6 +455,12 @@ Vec2i TownsCRTC::GetPageSizeOnMonitor(unsigned char page) const
 	{
 		wid/=2;
 		hei*=2;
+	}
+	else if(3==CLKSEL() && 0x29D==state.crtcReg[REG_HST]) // VING Setting
+	{
+		auto zoom=GetPageZoom2X(page);
+		wid*=zoom.x();
+		wid/=4;
 	}
 	if(0==state.crtcReg[REG_FO0+4*page])
 	{
