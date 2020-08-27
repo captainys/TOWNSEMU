@@ -289,8 +289,13 @@ bool TownsPhysicalMemory::LoadROMImages(const char dirName[])
 	font20Rom=cpputil::ReadBinaryFile(fName);
 	if(512*1024!=font20Rom.size())
 	{
-		Abort("Cannot read FMT_F20.ROM or incorrect file size.");
-		return false;
+		std::cout << "Cannot read FMT_F20.ROM or incorrect file size." << std::endl;
+		std::cout << "Filling with all 0FFHs." << std::endl;
+		font20Rom.resize(512*1024);
+		for(auto &b : font20Rom)
+		{
+			b=0xff;
+		}
 	}
 
 	fName=cpputil::MakeFullPathName(dirName,"FMT_DIC.ROM");
