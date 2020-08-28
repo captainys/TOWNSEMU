@@ -593,6 +593,14 @@ void FMTowns::ForceRender(class TownsRender &render,class Outside_World &world)
 	world.Render(render.GetImage());
 }
 
+unsigned int FMTowns::GetEleVolCDLeft(void) const
+{
+	return state.eleVol[TOWNS_ELEVOL_FOR_CD][TOWNS_ELEVOL_CD_LEFT].vol;
+}
+unsigned int FMTowns::GetEleVolCDRight(void) const
+{
+	return state.eleVol[TOWNS_ELEVOL_FOR_CD][TOWNS_ELEVOL_CD_RIGHT].vol;
+}
 ////////////////////////////////////////////////////////////
 
 void FMTowns::EnableDebugger(void)

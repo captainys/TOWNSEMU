@@ -152,14 +152,14 @@ public:
 
 		/*! Electric Volume
 		*/
-		unsigned int eleVol1ChLatch=0,eleVol2ChLatch=0;
 		class ElectricVolume
 		{
 		public:
 			bool EN=true,C32=false,C0=false;
 			unsigned int vol=31;
 		};
-		ElectricVolume eleVol1[4],eleVol2[4];
+		ElectricVolume eleVol[2][4];
+		unsigned int eleVolChLatch[2]={0,0};
 
 
 		/*! TBIOS version, TBIOS physical address (it should be contiguous in physical memory),
@@ -510,6 +510,11 @@ public:
 	virtual unsigned int IOReadByte(unsigned int ioport);
 	virtual unsigned int IOReadWord(unsigned int ioport);
 	virtual unsigned int IOReadDword(unsigned int ioport);
+
+
+	/*! Electric Volume.  Returns 31 when max level.  0 when -32dB. */
+	unsigned int GetEleVolCDLeft(void) const;
+	unsigned int GetEleVolCDRight(void) const;
 
 
 
