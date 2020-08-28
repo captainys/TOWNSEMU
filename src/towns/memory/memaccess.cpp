@@ -552,6 +552,20 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 {
 }
 
+////////////////////////////////////////////////////////////
+
+/* virtual */ unsigned int TownsFont20ROMAccess::FetchByte(unsigned int physAddr) const
+{
+	physAddr-=TOWNSADDR_FONT20_BASE;
+	if(physAddr<physMemPtr->font20Rom.size())
+	{
+		return physMemPtr->font20Rom[physAddr];
+	}
+	return 0xff;
+}
+/* virtual */ void TownsFont20ROMAccess::StoreByte(unsigned int physAddr,unsigned char data)
+{
+}
 
 ////////////////////////////////////////////////////////////
 

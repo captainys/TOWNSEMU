@@ -183,6 +183,13 @@ public:
 	virtual void StoreByte(unsigned int physAddr,unsigned char data);
 };
 
+class TownsFont20ROMAccess : public TownsMemAccess
+{
+public:
+	virtual unsigned int FetchByte(unsigned int physAddr) const;
+	virtual void StoreByte(unsigned int physAddr,unsigned char data);
+};
+
 class TownsWaveRAMAccess : public TownsMemAccess
 {
 public:
@@ -380,6 +387,7 @@ public:
 
 	TownsSpriteRAMAccess spriteRAMAccess;
 	TownsOsROMAccess osROMAccess;
+	TownsFont20ROMAccess font20ROMAccess;
 	TownsWaveRAMAccess waveRAMAccess;
 	TownsSysROMAccess sysROMAccess;
 

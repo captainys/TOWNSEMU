@@ -443,6 +443,10 @@ void TownsPhysicalMemory::SetUpMemoryAccess(void)
 	fontROMAccess.SetCPUPointer(&cpu);
 	mem.AddAccess(&fontROMAccess,0xC2100000,0xC213FFFF);
 
+	font20ROMAccess.SetPhysicalMemoryPointer(this);
+	font20ROMAccess.SetCPUPointer(&cpu);
+	mem.AddAccess(&font20ROMAccess,TOWNSADDR_FONT20_BASE,TOWNSADDR_FONT20_END-1);
+
 	waveRAMAccess.SetPhysicalMemoryPointer(this);
 	waveRAMAccess.SetCPUPointer(&cpu);
 	mem.AddAccess(&waveRAMAccess,TOWNSADDR_WAVERAM_WINDOW_BASE,TOWNSADDR_WAVERAM_WINDOW_END-1);
