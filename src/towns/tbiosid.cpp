@@ -456,6 +456,18 @@ bool FMTowns::ControlMouse(int &diffX,int &diffY,int hostMouseX,int hostMouseY,u
 
 		diffX=hostMouseX-mx;
 		diffY=hostMouseY-my;
+
+		if(state.MOS_pulsePerPixelH<8)
+		{
+			diffX*=state.MOS_pulsePerPixelH;
+			diffX/=8;
+		}
+		if(state.MOS_pulsePerPixelV<8)
+		{
+			diffY*=state.MOS_pulsePerPixelV;
+			diffY/=8;
+		}
+
 		auto dx=ScaleStep(ClampStep(diffX),state.mouseIntegrationSpeed);
 		auto dy=ScaleStep(ClampStep(diffY),state.mouseIntegrationSpeed);
 		if(-slowDownRange<=dx && dx<=slowDownRange)
