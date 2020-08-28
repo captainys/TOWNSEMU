@@ -794,9 +794,31 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 	FSKEYtoTownsKEY[FSKEY_RIGHT_ALT]=   TOWNS_JISKEY_NULL;
 }
 
-/* virtual */ void FsSimpleWindowConnection::CDDAPlay(const DiscImage &discImg,DiscImage::MinSecFrm from,DiscImage::MinSecFrm to,bool repeat)
+/* virtual */ void FsSimpleWindowConnection::CDDAPlay(const DiscImage &discImg,DiscImage::MinSecFrm from,DiscImage::MinSecFrm to,bool repeat,unsigned int leftLevel,unsigned int rightLevel)
 {
+	if(256<leftLevel)
+	{
+		leftLevel=256;
+	}
+	if(256<rightLevel)
+	{
+		rightLevel=256;
+	}
 	auto wave=discImg.GetWave(from,to);
+	if(leftLevel<256 || rightLevel<256)
+	{
+		for(long long int i=0; i+3<wave.size(); i+=4)
+		{
+			int left= cpputil::GetWord(wave.data()+i);
+			int right=cpputil::GetWord(wave.data()+i+2);;
+			left= (left &0x7FFF)-(left &0x8000);
+			right=(right&0x7FFF)-(right&0x8000);
+			left= left *leftLevel /256;
+			right=right*rightLevel/256;
+			cpputil::PutWord(wave.data()+i  ,left);
+			cpputil::PutWord(wave.data()+i+2,right);
+		}
+	}
 	cddaChannel.CreateFromSigned16bitStereo(44100,wave);
 	if(true==repeat)
 	{

@@ -109,7 +109,9 @@ public:
 	virtual void LoadKeyMappingFromText(const std::vector <std::string> &text);
 
 public:
-	virtual void CDDAPlay(const DiscImage &discImg,DiscImage::MinSecFrm from,DiscImage::MinSecFrm to,bool repeat)=0;
+	/*! Left level and right level can be 0 to 256.  Value above 256 will be rounded to 256.
+	*/
+	virtual void CDDAPlay(const DiscImage &discImg,DiscImage::MinSecFrm from,DiscImage::MinSecFrm to,bool repeat,unsigned int leftLevel,unsigned int rightLevel)=0;
 	virtual void CDDAStop(void)=0;
 	virtual void CDDAPause(void)=0;
 	virtual void CDDAResume(void)=0;
