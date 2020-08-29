@@ -379,7 +379,7 @@ Vec2i TownsCRTC::GetPageOriginOnMonitor(unsigned char page) const
 			// RAGNAROK in Free Software Collection 10 uses this setting.
 			// It is unknown if any other programs use the same setting at this time.
 			// This interpretation still leaves the layer_1 16 pixels left of where it should be.
-			x0=(HDS-0x8A)>>1;
+			x0=(HDS-0x8A);  // Looks like no division-by-2 in 31KHz mode.
 		}
 		else
 		{
