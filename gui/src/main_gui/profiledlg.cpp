@@ -175,6 +175,7 @@ void ProfileDialog::Make(void)
 		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_STRIKECOMMANDER).c_str(),YSFALSE);
 		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_SUPERDAISEN).c_str(),YSFALSE);
 		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_WINGCOMMANDER1).c_str(),YSFALSE);
+		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_WINGCOMMANDER2).c_str(),YSFALSE);
 
 		appSpecificExplanation=AddStaticText(0,FSKEY_NULL,L"",YSTRUE);
 
@@ -208,6 +209,15 @@ void ProfileDialog::Make(void)
 				"instead of the Mouse BIOS to read mouse status.\n"
 				"To send mouse data correctly, Tsugasu needs to\n"
 				"know that it is running Wing Commander 1."
+			);
+			break;
+		case TOWNS_APPSPECIFIC_WINGCOMMANDER2:
+			appSpecificExplanation->SetText(
+			    "Mouse Integration for Wing Commander 2\n"
+				"Wing Commander 2 for FM TOWNS uses its own function\n"
+				"instead of the Mouse BIOS to read mouse status.\n"
+				"To send mouse data correctly, Tsugasu needs to\n"
+				"know that it is running Wing Commander 2."
 			);
 			break;
 		case TOWNS_APPSPECIFIC_STRIKECOMMANDER:
