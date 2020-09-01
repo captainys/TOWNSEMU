@@ -13,11 +13,20 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 << LICENSE */
 #include <iostream>
+#include <algorithm>
 
 #include "towns.h"
 #include "townsdef.h"
 #include "tbiosid.h"
 
+// For Wing Commander 2 mouse integration.
+// Looks like DS is page aligned.
+const unsigned int WC2_EVENTQUEUE_LENGTH=100;
+const unsigned int WC2_EVENTQUEUE_BASE_ADDR=  0x3CC;
+const unsigned int WC2_EVENTQUEUE_OFFSET=     0x3CC-WC2_EVENTQUEUE_BASE_ADDR;
+const unsigned int WC2_EVENTQUEUE_LAST_OFFSET=0x6E4-WC2_EVENTQUEUE_BASE_ADDR;
+const unsigned int WC2_EVENTQUEUE_READ_PTR=   0x6EC-WC2_EVENTQUEUE_BASE_ADDR;
+const unsigned int WC2_EVENTQUEUE_FILLED=     0x6F4-WC2_EVENTQUEUE_BASE_ADDR;
 
 void FMTowns::GetTBIOSIdentifierStrings(std::string s[4],unsigned int biosPhysicalBaseAddr) const
 {
@@ -255,9 +264,11 @@ void FMTowns::OnCRTC_HST_Write(void)
 
 				state.appSpecific_MousePtrX=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x4B060,mem);
 				state.appSpecific_MousePtrY=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x4B064,mem);
+				state.appSpecific_WC2_EventQueueBaseAddr=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+WC2_EVENTQUEUE_BASE_ADDR,mem);
 
 				std::cout << "  MousePointerX Physical Base=" << cpputil::Uitox(state.appSpecific_MousePtrX) << std::endl;
 				std::cout << "  MousePointerY Physical Base=" << cpputil::Uitox(state.appSpecific_MousePtrY) << std::endl;
+				std::cout << "  Event Queue Base Physical Base=" << cpputil::Uitox(state.appSpecific_WC2_EventQueueBaseAddr) << std::endl;
 			}
 			break;
 		case TOWNS_APPSPECIFIC_LEMMINGS:
@@ -720,11 +731,45 @@ bool FMTowns::GetMouseCoordinate(int &mx,int &my,unsigned int tbiosid) const
 		switch(state.appSpecificSetting)
 		{
 		case TOWNS_APPSPECIFIC_WINGCOMMANDER1:
+			{
+				auto debugStop=debugger.stop; // FetchWord may break due to MEMR.
+				mx=(int)mem.FetchWord(state.appSpecific_MousePtrX);
+				my=(int)mem.FetchWord(state.appSpecific_MousePtrY);
+				debugger.stop=debugStop;
+			}
+			return true;
 		case TOWNS_APPSPECIFIC_WINGCOMMANDER2:
 			{
 				auto debugStop=debugger.stop; // FetchWord may break due to MEMR.
 				mx=(int)mem.FetchWord(state.appSpecific_MousePtrX);
 				my=(int)mem.FetchWord(state.appSpecific_MousePtrY);
+
+				unsigned int nQueueFilled=std::min(WC2_EVENTQUEUE_LENGTH,mem.FetchWord(state.appSpecific_WC2_EventQueueBaseAddr+WC2_EVENTQUEUE_FILLED));
+				unsigned int queueReadPtr=mem.FetchDword(state.appSpecific_WC2_EventQueueBaseAddr+WC2_EVENTQUEUE_READ_PTR);
+				queueReadPtr-=WC2_EVENTQUEUE_BASE_ADDR;
+				for(unsigned int i=0; i<nQueueFilled; ++i)
+				{
+					unsigned int event=mem.FetchDword(state.appSpecific_WC2_EventQueueBaseAddr+queueReadPtr);
+					if(0x01000000==(event&0xFF000000)) // Mouse event
+					{
+						// unsigned int buttons=(event>>16)&0xFF;
+						int deltaX=(event>>8)&0xFF;
+						int deltaY=(event&0xFF);
+						deltaX=(deltaX&0x7F)-(deltaX&0x80);
+						deltaY=(deltaY&0x7F)-(deltaY&0x80);
+						mx-=deltaX;
+						my-=deltaY;
+					}
+					if(WC2_EVENTQUEUE_LAST_OFFSET<=queueReadPtr)
+					{
+						queueReadPtr=0;
+					}
+					else
+					{
+						queueReadPtr+=8;
+					}
+				}
+
 				debugger.stop=debugStop;
 			}
 			return true;

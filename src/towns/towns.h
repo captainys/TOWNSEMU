@@ -180,6 +180,7 @@ public:
 		unsigned int appSpecificSetting=0;
 		unsigned int appSpecific_MousePtrX=0;
 		unsigned int appSpecific_MousePtrY=0;
+		unsigned int appSpecific_WC2_EventQueueBaseAddr=0;  // DS:03CCH
 
 
 		void PowerOn(void);
