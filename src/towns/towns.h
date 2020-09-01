@@ -181,7 +181,7 @@ public:
 		unsigned int appSpecific_MousePtrX=0;
 		unsigned int appSpecific_MousePtrY=0;
 		unsigned int appSpecific_WC2_EventQueueBaseAddr=0;  // DS:03CCH
-
+		bool appSpecific_HoldMouseIntegration=false;
 
 		void PowerOn(void);
 		void Reset(void);
@@ -370,6 +370,13 @@ public:
 	    Can be used for identifying an application.
 	*/
 	void OnCRTC_HST_Write(void);
+
+
+	/*! Called back from CDROM when CDDA starts playing.
+	    Can be used as a cue for identifying an application.
+	    Will be called regardless of success or failure to start playing.
+	*/
+	void OnCDDAStart(void);
 
 
 	/*! Adjust mouse return based on the mouse coordinate that Towns is thinking and mouse coordinate of the host.

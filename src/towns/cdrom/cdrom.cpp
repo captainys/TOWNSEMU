@@ -570,6 +570,8 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 					PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
 				}
 			}
+
+			townsPtr->OnCDDAStart();
 		}
 		break;
 	case CDCMD_TOCREAD://    0x05,

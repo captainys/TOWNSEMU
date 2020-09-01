@@ -265,6 +265,7 @@ void FMTowns::OnCRTC_HST_Write(void)
 				state.appSpecific_MousePtrX=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x4B060,mem);
 				state.appSpecific_MousePtrY=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x4B064,mem);
 				state.appSpecific_WC2_EventQueueBaseAddr=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+WC2_EVENTQUEUE_BASE_ADDR,mem);
+				state.appSpecific_HoldMouseIntegration=true;
 
 				std::cout << "  MousePointerX Physical Base=" << cpputil::Uitox(state.appSpecific_MousePtrX) << std::endl;
 				std::cout << "  MousePointerY Physical Base=" << cpputil::Uitox(state.appSpecific_MousePtrY) << std::endl;
@@ -317,6 +318,20 @@ void FMTowns::OnCRTC_HST_Write(void)
 		}
 	}
 }
+
+void FMTowns::OnCDDAStart(void)
+{
+	switch(state.appSpecificSetting)
+	{
+	case TOWNS_APPSPECIFIC_WINGCOMMANDER2:
+		// Wing Commander 2 requires mouse deltas need to be zero while the program detects a mouse.
+		// CDDA will start after the mouse-presence check is done.
+		// It is a good timing to enable mouse integration.
+		state.appSpecific_HoldMouseIntegration=false;
+		break;
+	}
+}
+
 const char *FMTowns::TBIOSIDENTtoString(unsigned int tbios) const
 {
 	switch(tbios)
@@ -399,6 +414,21 @@ bool FMTowns::ControlMouse(int hostMouseX,int hostMouseY,unsigned int tbiosid)
 }
 bool FMTowns::ControlMouse(int &diffX,int &diffY,int hostMouseX,int hostMouseY,unsigned int tbiosid)
 {
+	// Wing Commander 2 requires mouse deltas to be zero until the mouse-presence check is done.
+	if(true!=state.mouseBIOSActive &&
+	   TOWNS_APPSPECIFIC_WINGCOMMANDER2==state.appSpecificSetting &&
+	   true==state.appSpecific_HoldMouseIntegration)
+	{
+		for(auto &p : gameport.state.ports)
+		{
+			if(p.device==TownsGamePort::MOUSE)
+			{
+				p.mouseMotion.Set(0,0);
+			}
+		}
+		return true;
+	}
+
 	int mx,my;
 	int slowDownRange=0;
 	var.lastKnownMouseX=hostMouseX;
@@ -410,9 +440,16 @@ bool FMTowns::ControlMouse(int &diffX,int &diffY,int hostMouseX,int hostMouseY,u
 
 		Vec2i zoom2x;
 		unsigned int VRAMSize;
-		if(true==crtc.InSinglePageMode())
+		if(true!=state.mouseBIOSActive &&
+		   TOWNS_APPSPECIFIC_WINGCOMMANDER2==state.appSpecificSetting)
 		{
-			origin=crtc.GetPageOriginOnMonitor(state.mouseDisplayPage);
+			origin=crtc.GetPageOriginOnMonitor(0);
+			zoom2x.Set(4,4);
+			VRAMSize=0x80000;
+		}
+		else if(true==crtc.InSinglePageMode())
+		{
+			origin=crtc.GetPageOriginOnMonitor(0);
 			zoom2x=crtc.GetPageZoom2X(0);
 			VRAMSize=0x80000;
 		}
