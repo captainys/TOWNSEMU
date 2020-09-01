@@ -135,7 +135,11 @@ void TownsARGV::PrintApplicationList(void) const
 	std::cout << "WC1 or WINGCOMMANDER1" << std::endl;
 	std::cout << "  Mouse integration.  Wing Commander 1 uses its own mouse-reading" << std::endl;
 	std::cout << "  function instead of standard Towns MOUSE BIOS.  With this option" << std::endl;
-	std::cout << "  you can control mouse for selecting menus." << std::endl;
+	std::cout << "  you can control mouse for selecting menus.." << std::endl;
+	std::cout << "WC2 or WINGCOMMANDER2" << std::endl;
+	std::cout << "  Mouse integration." << std::endl;
+	std::cout << "STRIKECOMMANDER" << std::endl;
+	std::cout << "  Mouse integration." << std::endl;
 	std::cout << "SUPERDAISEN" << std::endl;
 	std::cout << "  Super Daisenryaku for FM TOWNS is, I believe, the best port among" << std::endl;
 	std::cout << "  the port for all other platforms.  However, especially at higher" << std::endl;
@@ -144,6 +148,8 @@ void TownsARGV::PrintApplicationList(void) const
 	std::cout << "  To counter this issue, the VM slows down to 4MHz while the mouse" << std::endl;
 	std::cout << "  left button is down." << std::endl;
 	std::cout << "LEMMINGS" << std::endl;
+	std::cout << "  Mouse integration." << std::endl;
+	std::cout << "LEMMINGS2" << std::endl;
 	std::cout << "  Mouse integration." << std::endl;
 }
 
