@@ -20,7 +20,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 
 
-void TownsGamePort::Port::Write(long long int townsTime,bool COM,bool T1,bool T2)
+void TownsGamePort::Port::Write(long long int townsTime,bool COM,unsigned char TRIG)
 {
 	if(MOUSE==device)
 	{
@@ -34,8 +34,7 @@ void TownsGamePort::Port::Write(long long int townsTime,bool COM,bool T1,bool T2
 		}
 	}
 	this->COM=COM;
-	this->TRIG[0]=T1;
-	this->TRIG[1]=T2;
+	this->TRIG=TRIG;
 }
 unsigned char TownsGamePort::Port::Read(long long int townsTime)
 {
@@ -80,6 +79,7 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 				data|=0x0F;
 				break;
 			}
+			data&=(0xCF|(TRIG<<4));
 		}
 		else if(GAMEPAD==device)
 		{
@@ -117,6 +117,7 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 			{
 				data&=0b11011111;
 			}
+			data&=(0xCF|(TRIG<<4));
 		}
 		else
 		{
@@ -195,8 +196,8 @@ void TownsGamePort::State::Reset(void)
 	case TOWNSIO_GAMEPORT_B_INPUT://        0x4D2,
 		break;
 	case TOWNSIO_GAMEPORT_OUTPUT://         0x4D6,
-		state.ports[0].Write(townsPtr->state.townsTime,0!=(data&0x10),0!=(data&0x01),0!=(data&0x02));
-		state.ports[1].Write(townsPtr->state.townsTime,0!=(data&0x20),0!=(data&0x04),0!=(data&0x08));
+		state.ports[0].Write(townsPtr->state.townsTime,0!=(data&0x10), data    &3);
+		state.ports[1].Write(townsPtr->state.townsTime,0!=(data&0x20),(data>>2)&3);
 		break;
 	}
 }

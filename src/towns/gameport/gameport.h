@@ -49,7 +49,8 @@ public:
 	public:
 		int device;  // MOUSE, GAMEPAD, or CYBERSTICK
 		int state;
-		bool COM=false,TRIG[2]={false,false}; // COM/TRIG from CPU.
+		bool COM=false;       // COM from CPU.
+		unsigned char TRIG=3; // TRIG from CPU.
 		bool button[2],left,right,up,down,run,pause;
 		Vec2i mouseMotion;
 
@@ -62,7 +63,7 @@ public:
 
 		long long int lastAccessTime;
 
-		void Write(long long int townsTime,bool COM,bool T1,bool T2);
+		void Write(long long int townsTime,bool COM,unsigned char TRIG);
 		unsigned char Read(long long int townsTime); // Reading last coordinate should reset motion.  Not a const.
 	};
 
