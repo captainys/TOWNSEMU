@@ -416,6 +416,10 @@ unsigned int TownsStrToApp(std::string str)
 	{
 		return TOWNS_APPSPECIFIC_WINGCOMMANDER1;
 	}
+	if("WINGCOMMANDER2"==str || "WC2"==str)
+	{
+		return TOWNS_APPSPECIFIC_WINGCOMMANDER2;
+	}
 	if("SUPERDAISEN"==str)
 	{
 		return TOWNS_APPSPECIFIC_SUPERDAISEN;
@@ -442,6 +446,8 @@ std::string TownsAppToStr(unsigned int i)
 		return "NONE";
 	case TOWNS_APPSPECIFIC_WINGCOMMANDER1:
 		return "WINGCOMMANDER1";
+	case TOWNS_APPSPECIFIC_WINGCOMMANDER2:
+		return "WINGCOMMANDER2";
 	case TOWNS_APPSPECIFIC_SUPERDAISEN:
 		return "SUPERDAISEN";
 	case TOWNS_APPSPECIFIC_LEMMINGS:
