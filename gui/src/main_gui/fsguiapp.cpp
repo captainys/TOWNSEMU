@@ -140,6 +140,8 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 	{
 		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_C,L"CD-ROM")->GetSubMenu();
 		subMenu->AddTextItem(0,FSKEY_S,L"Select CD Image")->BindCallBack(&THISCLASS::CD_SelectImageFile,this);
+		subMenu->AddTextItem(0,FSKEY_C,L"Open and Close CD drive")->BindCallBack(&THISCLASS::CD_OpenClose,this);
+		subMenu->AddTextItem(0,FSKEY_B,L"Stop CDDA")->BindCallBack(&THISCLASS::CD_CDDAStop,this);
 	}
 
 	{
@@ -1041,6 +1043,28 @@ void FsGuiMainCanvas::CD_Eject(FsGuiPopUpMenuItem *)
 {
 	if(true==subproc.SubprocRunning())
 	{
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+void FsGuiMainCanvas::CD_OpenClose(FsGuiPopUpMenuItem *)
+{
+	if(true==subproc.SubprocRunning())
+	{
+		subproc.Send("CDOPENCLOSE\n");
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+void FsGuiMainCanvas::CD_CDDAStop(FsGuiPopUpMenuItem *)
+{
+	if(true==subproc.SubprocRunning())
+	{
+		subproc.Send("CDDASTOP\n");
 	}
 	else
 	{

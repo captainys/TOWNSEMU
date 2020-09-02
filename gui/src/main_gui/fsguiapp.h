@@ -185,6 +185,8 @@ private:
 	void CD_SelectImageFile(FsGuiPopUpMenuItem *);
 	void CD_ImageFileSelected(FsGuiDialog *dlg,int returnCode);
 	void CD_Eject(FsGuiPopUpMenuItem *);
+	void CD_OpenClose(FsGuiPopUpMenuItem *);
+	void CD_CDDAStop(FsGuiPopUpMenuItem *);
 
 	FsGuiPopUpMenuItem *FD0_writeProtectMenu,*FD0_writeUnprotectMenu;
 	void FD0_SelectImageFile(FsGuiPopUpMenuItem *);
