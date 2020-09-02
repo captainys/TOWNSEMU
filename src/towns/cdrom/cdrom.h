@@ -326,8 +326,12 @@ private:
 	void SetStatusSubQRead(void);
 	void PushStatusCDDAPlayEnded(void);
 
-	void StopCDDA(void); // Placeholder for later.
+public:
+	/*! As it says.  This function can now also be called from the command module.
+	*/
+	void StopCDDA(void);
 
+private:
 	/* Turn on IRR flag if status queue is not empty.
 	*/
 	void SetSIRQ_IRR(void);

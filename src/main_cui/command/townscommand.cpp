@@ -112,6 +112,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["CMOSSAVE"]=CMD_CMOSSAVE;
 	primaryCmdMap["CDLOAD"]=CMD_CDLOAD;
 	primaryCmdMap["CDOPENCLOSE"]=CMD_CDOPENCLOSE;
+	primaryCmdMap["CDDASTOP"]=CMD_CDDASTOP;
 	primaryCmdMap["FD0LOAD"]=CMD_FD0LOAD;
 	primaryCmdMap["FD0EJECT"]=CMD_FD0EJECT;
 	primaryCmdMap["FD0WP"]=CMD_FD0WRITEPROTECT;
@@ -228,6 +229,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Load CD-ROM image." << std::endl;
 	std::cout << "CDOPENCLOSE" << std::endl;
 	std::cout << "  Virtually open and close the internal CD-ROM drive." << std::endl;
+	std::cout << "CDDASTOP" << std::endl;
+	std::cout << "  Stop CDDA" << std::endl;
 	std::cout << "FD0LOAD filename" << std::endl;
 	std::cout << "FD1LOAD filename" << std::endl;
 	std::cout << "  Load FD image.  The number 0 or 1 is the drive number." << std::endl;
@@ -860,7 +863,11 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 		Execute_CDLoad(towns,cmd);
 		break;
 	case CMD_CDOPENCLOSE:
+		towns.cdrom.StopCDDA();
 		towns.cdrom.state.discChanged=true;
+		break;
+	case CMD_CDDASTOP:
+		towns.cdrom.StopCDDA();
 		break;
 	case CMD_FD0LOAD:
 		Execute_FDLoad(0,towns,cmd);
