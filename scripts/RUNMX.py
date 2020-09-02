@@ -33,6 +33,8 @@ def Run(argv):
 		"../symtables/RUN"+TOWNSTYPE+".txt",
 		"-HD0",
 		os.path.join(DISKDIR,"hddimage.bin"),
+		"-HD1",
+		os.path.join(DISKDIR,"40MB.h1"),
 		"-CMOS",
 		"../testdata/CMOS.bin",
 		#"-DONTAUTOSAVECMOS",
