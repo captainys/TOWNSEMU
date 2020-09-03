@@ -572,7 +572,7 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 				{
 					float dx=reading.axes[0]-lastJoystickPos[0];
 					float dy=reading.axes[1]-lastJoystickPos[1];
-					if(0.1F<=fabs(dx) || 0.1F<=fabs(dy))
+					if(dx<=-0.1F || 0.1F<=dx || dy<=-0.1F || 0.1F<=dy)
 					{
 						mouseByFlightstickEnabled=true;
 						lastMousePosForSwitchBackToNormalMode[0]=mx;
