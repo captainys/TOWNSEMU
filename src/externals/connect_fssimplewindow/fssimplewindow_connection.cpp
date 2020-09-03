@@ -562,28 +562,76 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 
 		if(mouseEmulationByAnalogAxis!=true)
 		{
-			int wid,hei;
-			FsGetWindowSize(wid,hei);
+			struct YsGamePadReading reading;
 			int lb,mb,rb,mx,my;
 			FsGetMouseEvent(lb,mb,rb,mx,my);
-			if(mx<0)
+			if(true==mouseByFlightstickAvailable && 0<=mouseByFlightstickPhysicalId)
 			{
-				mx=0;
+				YsGamePadRead(&reading,mouseByFlightstickPhysicalId);
+				if(true!=mouseByFlightstickEnabled)
+				{
+					float dx=reading.axes[0]-lastJoystickPos[0];
+					float dy=reading.axes[1]-lastJoystickPos[1];
+					if(0.1F<=fabs(dx) || 0.1F<=fabs(dy))
+					{
+						mouseByFlightstickEnabled=true;
+						lastMousePosForSwitchBackToNormalMode[0]=mx;
+						lastMousePosForSwitchBackToNormalMode[1]=my;
+					}
+				}
+				else
+				{
+					int dx=mx-lastMousePosForSwitchBackToNormalMode[0];
+					int dy=my-lastMousePosForSwitchBackToNormalMode[1];
+					if(dx<-10 || 10<dx || dy<-10 || 10<dy)
+					{
+						mouseByFlightstickEnabled=false;
+						lastJoystickPos[0]=reading.axes[0];
+						lastJoystickPos[1]=reading.axes[1];
+					}
+				}
 			}
-			else if(wid<=mx)
+
+			if(true==mouseByFlightstickEnabled)
 			{
-				mx=wid-1;
+				float fx=reading.axes[0]*mouseByFlightstickScaleX;
+				float fy=reading.axes[1]*mouseByFlightstickScaleY;
+				mx=mouseByFlightstickCenterX+(int)fx;
+				my=mouseByFlightstickCenterY+(int)fy;
+				lb=reading.buttons[0];
+				rb=reading.buttons[1];
+				if(mx<0)
+				{
+					mx=0;
+				}
+				if(my<0)
+				{
+					my=0;
+				}
 			}
-			if(my<0)
+			else
 			{
-				my=0;
+				int wid,hei;
+				FsGetWindowSize(wid,hei);
+				if(mx<0)
+				{
+					mx=0;
+				}
+				else if(wid<=mx)
+				{
+					mx=wid-1;
+				}
+				if(my<0)
+				{
+					my=0;
+				}
+				else if(hei<=my)
+				{
+					my=hei-1;
+				}
+				mx=mx*100/scaling;
+				my=my*100/scaling;
 			}
-			else if(hei<=my)
-			{
-				my=hei-1;
-			}
-			mx=mx*100/scaling;
-			my=my*100/scaling;
 
 			this->ProcessMouse(towns,lb,mb,rb,mx,my);
 		}

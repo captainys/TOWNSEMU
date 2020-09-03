@@ -14,6 +14,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 << LICENSE */
 #include <iostream>
 #include <fstream>
+#include <stdlib.h>
 
 #include "townsargv.h"
 #include "cpputil.h"
@@ -95,6 +96,14 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  NUMPADMOUSE use NUMPAD number keys and /* keys for mouse cursor and buttons." << std::endl;
 	std::cout << "  PHYS0MOUSE,PHYS1MOUSE,PHYS2MOUSE,PHYS3MOUSE use physical game pad digital axis for mouse." << std::endl;
 	std::cout << "  ANA0MOUSE,ANA1MOUSE,ANA2MOUSE,ANA3MOUSE use physical game pad analog axis for mouse." << std::endl;
+	std::cout << "-FLIGHTMOUSE physIdx cx cy wid hei" << std::endl;
+	std::cout << "  Wing Commander and Strike Commander series let you control your fighter by mouse." << std::endl;
+	std::cout << "  This option virtually move mouse coordinate by physical joystick so that you can" << std::endl;
+	std::cout << "  control your fighter easier." << std::endl;
+	std::cout << "  Recommended (assuming your joystick is joystick #0):" << std::endl;
+	std::cout << "    Wing Commander 2   -FLIGHTMOUSE 0 320 135 400 300" << std::endl;
+	std::cout << "    Strike Commander   -FLIGHTMOUSE 0 320 200 400 300" << std::endl;
+	std::cout << "  (Joystick ID, button ID starts with 0)" << std::endl;
 	std::cout << "-HD0 image-file-name" << std::endl;
 	std::cout << "  Hard-disk image file name.  Can be -HDx (0<=x<=6)" << std::endl;
 	std::cout << "-SCSICD0 image-file-name" << std::endl;
@@ -266,6 +275,16 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 			cpputil::Capitalize(DEV);
 			gamePort[portId]=TownsStrToGamePortEmu(DEV);
 			++i;
+		}
+		else if("-FLIGHTMOUSE"==ARG && i+5<argc)
+		{
+			mouseByFlightstickAvailable=true;
+			mouseByFlightstickPhysicalId=cpputil::Atoi(argv[i+1]);
+			mouseByFlightstickCenterX=cpputil::Atoi(argv[i+2]);
+			mouseByFlightstickCenterY=cpputil::Atoi(argv[i+3]);
+			mouseByFlightstickScaleX=atof(argv[i+4]);
+			mouseByFlightstickScaleY=atof(argv[i+5]);
+			i+=5;
 		}
 		else if("-FD0"==ARG && i+1<argc)
 		{

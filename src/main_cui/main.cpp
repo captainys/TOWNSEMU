@@ -358,6 +358,13 @@ bool Setup(FMTowns &towns,Outside_World *outside_world,const TownsARGV &argv)
 	outside_world->scaling=argv.scaling;
 	outside_world->windowShift=argv.windowShift;
 
+	outside_world->mouseByFlightstickAvailable=argv.mouseByFlightstickAvailable;
+	outside_world->mouseByFlightstickPhysicalId=argv.mouseByFlightstickPhysicalId;
+	outside_world->mouseByFlightstickCenterX=argv.mouseByFlightstickCenterX;
+	outside_world->mouseByFlightstickCenterY=argv.mouseByFlightstickCenterY;
+	outside_world->mouseByFlightstickScaleX=argv.mouseByFlightstickScaleX;
+	outside_world->mouseByFlightstickScaleY=argv.mouseByFlightstickScaleY;
+
 	return true;
 }
 

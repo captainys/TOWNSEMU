@@ -50,6 +50,16 @@ public:
 	bool mouseIntegrationActive=false;
 	int lastMx,lastMy,mouseStationaryCount=MOUSE_STATIONARY_COUNT;
 
+	// Wing Commander and Strike Commander series can be configured to use mouse as joystick.
+	bool mouseByFlightstickAvailable=false;
+	bool mouseByFlightstickEnabled=false;
+	int mouseByFlightstickPhysicalId=-1;  // Physical joystick ID.
+	int mouseByFlightstickRecalibrateButton=-1; // Recalibrate button
+	int mouseByFlightstickCenterX,mouseByFlightstickCenterY;
+	float mouseByFlightstickScaleX,mouseByFlightstickScaleY;
+	float lastJoystickPos[2]={0.0F,0.0F};
+	int lastMousePosForSwitchBackToNormalMode[2]={0,0};
+
 	enum
 	{
 		KEYBOARD_MODE_DIRECT,

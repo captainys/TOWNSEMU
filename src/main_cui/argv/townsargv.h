@@ -49,6 +49,12 @@ public:
 
 	int fmVol=-1,pcmVol=-1;
 
+	bool mouseByFlightstickAvailable=false;
+	int mouseByFlightstickPhysicalId=-1;  // Physical joystick ID.
+	int mouseByFlightstickRecalibrateButton=-1;
+	int mouseByFlightstickCenterX=320,mouseByFlightstickCenterY=200;
+	float mouseByFlightstickScaleX=320,mouseByFlightstickScaleY=200;
+
 	enum
 	{
 		SCSIIMAGE_HARDDISK,
