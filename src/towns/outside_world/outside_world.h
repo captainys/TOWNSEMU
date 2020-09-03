@@ -56,9 +56,27 @@ public:
 	int mouseByFlightstickPhysicalId=-1;  // Physical joystick ID.
 	int mouseByFlightstickRecalibrateButton=-1; // Recalibrate button
 	int mouseByFlightstickCenterX,mouseByFlightstickCenterY;
+	float mouseByFlightstickZeroZoneX=0.0F,mouseByFlightstickZeroZoneY=0.0F;
 	float mouseByFlightstickScaleX,mouseByFlightstickScaleY;
 	float lastJoystickPos[2]={0.0F,0.0F};
 	int lastMousePosForSwitchBackToNormalMode[2]={0,0};
+
+	inline float ApplyZeroZone(float rawInput,float zeroZone)
+	{
+		if(rawInput<-zeroZone)
+		{
+			return rawInput+zeroZone;
+		}
+		else if(zeroZone<=rawInput)
+		{
+			return rawInput-zeroZone;
+		}
+		else
+		{
+			return 0.0;
+		}
+	}
+
 
 	enum
 	{

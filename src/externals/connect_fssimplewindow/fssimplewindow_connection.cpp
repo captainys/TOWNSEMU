@@ -594,8 +594,12 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 
 			if(true==mouseByFlightstickEnabled)
 			{
-				float fx=reading.axes[0]*mouseByFlightstickScaleX;
-				float fy=reading.axes[1]*mouseByFlightstickScaleY;
+				float fx=reading.axes[0];
+				float fy=reading.axes[1];
+				fx=ApplyZeroZone(fx,mouseByFlightstickZeroZoneX);
+				fy=ApplyZeroZone(fy,mouseByFlightstickZeroZoneY);
+				fx*=mouseByFlightstickScaleX;
+                fy*=mouseByFlightstickScaleY;
 				mx=mouseByFlightstickCenterX+(int)fx;
 				my=mouseByFlightstickCenterY+(int)fy;
 				lb=reading.buttons[0];

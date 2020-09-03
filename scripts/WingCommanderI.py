@@ -48,7 +48,7 @@ def Run(argv):
 		"16",
 		"-SCALE",
 		"160",
-		"-FLIGHTMOUSE","1","0","0","400","300",
+		"-FLIGHTMOUSE","1","0","0","400","300","0",
 		# "-DEBUG",
 		# "-PAUSE",
 	]+argv).wait()
