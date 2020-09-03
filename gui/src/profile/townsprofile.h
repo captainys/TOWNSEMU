@@ -29,6 +29,13 @@ public:
 	unsigned int memSizeInMB=4;
 	unsigned int mouseIntegrationSpeed=256;
 
+	bool mouseByFlightstickAvailable=false;
+	int mouseByFlightstickPhysicalId=-1;  // Physical joystick ID.
+	int mouseByFlightstickCenterX=320,mouseByFlightstickCenterY=200;
+	int mouseByFlightstickZeroZonePercent=0;
+	int mouseByFlightstickScaleX=500,mouseByFlightstickScaleY=400;
+
+
 	std::string errorMsg;
 
 	unsigned int appSpecificAugmentation=TOWNS_APPSPECIFIC_NONE;

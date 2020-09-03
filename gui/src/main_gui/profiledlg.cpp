@@ -164,6 +164,42 @@ void ProfileDialog::Make(void)
 	}
 
 	{
+		auto tabId=AddTab(tab,"Mouse by Flight Joystick");
+		BeginAddTabItem(tab,tabId);
+		flightMouseEnableBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Use Mouse by Flight Joystick",YSTRUE);
+
+		AddStaticText(0,FSKEY_NULL,"JoystickID:",YSTRUE);
+		flightMousePhysIdTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",3,YSFALSE);
+
+		AddStaticText(0,FSKEY_NULL,"CX:",YSTRUE);
+		flightMouseCenterXTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",5,YSFALSE);
+		AddStaticText(0,FSKEY_NULL,"CY:",YSFALSE);
+		flightMouseCenterYTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",5,YSFALSE);
+
+		AddStaticText(0,FSKEY_NULL,"ScaleX:",YSFALSE);
+		flightMouseScaleXTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",5,YSFALSE);
+		AddStaticText(0,FSKEY_NULL,"ScaleY:",YSFALSE);
+		flightMouseScaleYTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",5,YSFALSE);
+
+		AddStaticText(0,FSKEY_NULL,"DeadZone(%):",YSFALSE);
+		flightMouseDeadZoneTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",5,YSFALSE);
+
+		AddStaticText(0,FSKEY_NULL,"Recommended:",YSTRUE);
+		flightMouseWC1=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"Wing Commander",YSFALSE);
+		flightMouseWC2=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"Wing Commander2",YSFALSE);
+		flightMouseSTCM=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"Strike Commander",YSFALSE);
+
+		AddStaticText(0,FSKEY_NULL,
+			"Games like Wing Commander and Strike Commander let you control your fighter by mouse.\n"
+			"This feature translates joystick to mouse coordinate and let you fly using a flight joystick device.\n"
+			"Need to be used with Application-Specific Augmentation if the application is not\n"
+			"using TBIOS for reading mouse."
+		,YSTRUE);
+
+		EndAddTabItem();
+	}
+
+	{
 		auto tabId=AddTab(tab,"Application");
 		BeginAddTabItem(tab,tabId);
 
@@ -304,6 +340,34 @@ void ProfileDialog::Make(void)
 	{
 		canvasPtr->Run();
 	}
+
+	if(flightMouseWC1==btn)
+	{
+		flightMouseEnableBtn->SetCheck(YSTRUE);
+		flightMouseCenterXTxt->SetInteger(320);
+		flightMouseCenterYTxt->SetInteger(135);
+		flightMouseScaleXTxt->SetInteger(400);
+		flightMouseScaleYTxt->SetInteger(300);
+		appSpecificAugDrp->SelectByString(TownsAppToStr(TOWNS_APPSPECIFIC_WINGCOMMANDER1).c_str());
+	}
+	if(flightMouseWC2==btn)
+	{
+		flightMouseEnableBtn->SetCheck(YSTRUE);
+		flightMouseCenterXTxt->SetInteger(320);
+		flightMouseCenterYTxt->SetInteger(135);
+		flightMouseScaleXTxt->SetInteger(400);
+		flightMouseScaleYTxt->SetInteger(300);
+		appSpecificAugDrp->SelectByString(TownsAppToStr(TOWNS_APPSPECIFIC_WINGCOMMANDER2).c_str());
+	}
+	if(flightMouseSTCM==btn)
+	{
+		flightMouseEnableBtn->SetCheck(YSTRUE);
+		flightMouseCenterXTxt->SetInteger(320);
+		flightMouseCenterYTxt->SetInteger(200);
+		flightMouseScaleXTxt->SetInteger(400);
+		flightMouseScaleYTxt->SetInteger(300);
+		appSpecificAugDrp->SelectByString(TownsAppToStr(TOWNS_APPSPECIFIC_STRIKECOMMANDER).c_str());
+	}
 }
 
 void ProfileDialog::OnSelectROMFile(FsGuiDialog *dlg,int returnCode)
@@ -393,6 +457,15 @@ TownsProfile ProfileDialog::GetProfile(void) const
 
 	profile.appSpecificAugmentation=TownsStrToApp(appSpecificAugDrp->GetSelectedString().c_str());
 
+
+	profile.mouseByFlightstickAvailable=(YSTRUE==flightMouseEnableBtn->GetCheck());
+	profile.mouseByFlightstickPhysicalId=flightMousePhysIdTxt->GetInteger();
+	profile.mouseByFlightstickCenterX=flightMouseCenterXTxt->GetInteger();
+	profile.mouseByFlightstickCenterY=flightMouseCenterYTxt->GetInteger();
+	profile.mouseByFlightstickScaleX=flightMouseScaleXTxt->GetInteger();
+	profile.mouseByFlightstickScaleY=flightMouseScaleYTxt->GetInteger();
+	profile.mouseByFlightstickZeroZonePercent=flightMouseDeadZoneTxt->GetInteger();
+
 	return profile;
 }
 void ProfileDialog::SetProfile(const TownsProfile &profile)
@@ -479,4 +552,11 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 
 	appSpecificAugDrp->SelectByString(TownsAppToStr(profile.appSpecificAugmentation).c_str(),YSTRUE);
 
+	flightMouseEnableBtn->SetCheck(profile.mouseByFlightstickAvailable ? YSTRUE : YSFALSE);
+	flightMousePhysIdTxt->SetInteger(profile.mouseByFlightstickPhysicalId);
+	flightMouseCenterXTxt->SetInteger(profile.mouseByFlightstickCenterX);
+	flightMouseCenterYTxt->SetInteger(profile.mouseByFlightstickCenterY);
+	flightMouseScaleXTxt->SetInteger(profile.mouseByFlightstickScaleX);
+	flightMouseScaleYTxt->SetInteger(profile.mouseByFlightstickScaleY);
+	flightMouseDeadZoneTxt->SetInteger(profile.mouseByFlightstickZeroZonePercent);
 }

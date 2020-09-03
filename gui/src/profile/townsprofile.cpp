@@ -125,6 +125,26 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 	sstream << "MOUSESPD " << mouseIntegrationSpeed;
 	text.push_back(sstream.str());
 
+	sstream.str("");
+	sstream << "FLTMOUSE " << (mouseByFlightstickAvailable ? 1 : 0);
+	text.push_back(sstream.str());
+
+	sstream.str("");
+	sstream << "FLTMOSID " << mouseByFlightstickPhysicalId;
+	text.push_back(sstream.str());
+
+	sstream.str("");
+	sstream << "FLTMOSCT " << mouseByFlightstickCenterX << " " << mouseByFlightstickCenterY;
+	text.push_back(sstream.str());
+
+	sstream.str("");
+	sstream << "FLTMOSSC " << mouseByFlightstickScaleX << " " << mouseByFlightstickScaleY;
+	text.push_back(sstream.str());
+
+	sstream.str("");
+	sstream << "FLTMOSZZ " << mouseByFlightstickZeroZonePercent;
+	text.push_back(sstream.str());
+
 	return text;
 }
 bool TownsProfile::Deserialize(const std::vector <std::string> &text)
@@ -275,6 +295,43 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 				mouseIntegrationSpeed=argv[1].Atoi();
 			}
 		}
+		else if(0==argv[0].STRCMP("FLTMOUSE"))
+		{
+			if(2<=argv.size())
+			{
+				mouseByFlightstickAvailable=(0!=argv[1].Atoi());
+			}
+		}
+		else if(0==argv[0].STRCMP("FLTMOSID"))
+		{
+			if(2<=argv.size())
+			{
+				mouseByFlightstickPhysicalId=argv[1].Atoi();
+			}
+		}
+		else if(0==argv[0].STRCMP("FLTMOSCT"))
+		{
+			if(3<=argv.size())
+			{
+				mouseByFlightstickCenterX=argv[1].Atoi();
+				mouseByFlightstickCenterY=argv[2].Atoi();
+			}
+		}
+		else if(0==argv[0].STRCMP("FLTMOSSC"))
+		{
+			if(3<=argv.size())
+			{
+				mouseByFlightstickScaleX=argv[1].Atoi();
+				mouseByFlightstickScaleY=argv[2].Atoi();
+			}
+		}
+		else if(0==argv[0].STRCMP("FLTMOSZZ"))
+		{
+			if(2<=argv.size())
+			{
+				mouseByFlightstickZeroZonePercent=argv[1].Atoi();
+			}
+		}
 		else
 		{
 			errorMsg="Unrecognized keyword:";
@@ -394,6 +451,35 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 	sstream.str("");
 	sstream << mouseIntegrationSpeed;
 	argv.push_back(sstream.str());
+
+	if(true==mouseByFlightstickAvailable)
+	{
+		argv.push_back("-FLIGHTMOUSE");
+
+		sstream.str("");
+		sstream << mouseByFlightstickPhysicalId;
+		argv.push_back(sstream.str());
+
+		sstream.str("");
+		sstream << mouseByFlightstickCenterX;
+		argv.push_back(sstream.str());
+
+		sstream.str("");
+		sstream << mouseByFlightstickCenterY;
+		argv.push_back(sstream.str());
+
+		sstream.str("");
+		sstream << mouseByFlightstickScaleX;
+		argv.push_back(sstream.str());
+
+		sstream.str("");
+		sstream << mouseByFlightstickScaleY;
+		argv.push_back(sstream.str());
+
+		sstream.str("");
+		sstream << mouseByFlightstickZeroZonePercent;
+		argv.push_back(sstream.str());
+	}
 
 	return argv;
 }

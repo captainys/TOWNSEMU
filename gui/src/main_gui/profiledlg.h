@@ -84,6 +84,17 @@ public:
 	FsGuiButton *runBtn;
 	FsGuiButton *pretend386DXBtn;
 
+	FsGuiButton *flightMouseEnableBtn;
+	FsGuiTextBox *flightMousePhysIdTxt;
+	FsGuiTextBox *flightMouseCenterXTxt;
+	FsGuiTextBox *flightMouseCenterYTxt;
+	FsGuiTextBox *flightMouseScaleXTxt;
+	FsGuiTextBox *flightMouseScaleYTxt;
+	FsGuiTextBox *flightMouseDeadZoneTxt;
+	FsGuiButton *flightMouseWC1,*flightMouseWC2,*flightMouseSTCM;
+
+
+
 	FsGuiDropList *appSpecificAugDrp;
 	FsGuiStatic *appSpecificExplanation;
 
