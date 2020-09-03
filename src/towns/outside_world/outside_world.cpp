@@ -17,6 +17,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "outside_world.h"
 
 #include "towns.h"
+#include "townsdef.h"
 
 Outside_World::Outside_World()
 {
@@ -95,6 +96,23 @@ void Outside_World::ProcessMouse(class FMTowns &towns,int lb,int mb,int rb,int m
 	}
 	lastMx=mx;
 	lastMy=my;
+}
+void Outside_World::ProcessAppSpecific(class FMTowns &towns)
+{
+	if(TOWNS_APPSPECIFIC_WINGCOMMANDER1==towns.state.appSpecificSetting)
+	{
+		auto debugStop=towns.debugger.stop; // FetchWord may break due to MEMR.
+		this->mouseByFlightstickCenterX=2*(int)towns.mem.FetchWord(towns.state.appSpecific_MousePtrX+4);
+		this->mouseByFlightstickCenterY=2*(int)towns.mem.FetchWord(towns.state.appSpecific_MousePtrY+4);
+		towns.debugger.stop=debugStop;
+	}
+	else if(TOWNS_APPSPECIFIC_WINGCOMMANDER2==towns.state.appSpecificSetting)
+	{
+		auto debugStop=towns.debugger.stop; // FetchWord may break due to MEMR.
+		this->mouseByFlightstickCenterX=2*(int)towns.mem.FetchWord(towns.state.appSpecific_MousePtrX+8);
+		this->mouseByFlightstickCenterY=2*(int)towns.mem.FetchWord(towns.state.appSpecific_MousePtrY+8);
+		towns.debugger.stop=debugStop;
+	}
 }
 
 void Outside_World::Put16x16Invert(int x0,int y0,const unsigned char icon16x16[])

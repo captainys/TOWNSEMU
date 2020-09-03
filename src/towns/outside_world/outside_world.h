@@ -115,6 +115,10 @@ public:
 	*/
 	void ProcessMouse(class FMTowns &towns,int lb,int mb,int rb,int mx,int my);
 
+	/*! Right now it updates mouse neutral position for Wing Commander 1 if app-specific augumentation is enabled.
+	*/
+	void ProcessAppSpecific(class FMTowns &towns);
+
 	virtual std::vector <std::string> MakeKeyMappingText(void) const;
 	virtual void LoadKeyMappingFromText(const std::vector <std::string> &text);
 

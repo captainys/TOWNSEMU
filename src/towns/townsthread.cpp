@@ -86,6 +86,7 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world,class Tow
 			townsPtr->ProcessSound(outside_world);
 			townsPtr->cdrom.UpdateCDDAState(townsPtr->state.townsTime,*outside_world);
 			townsPtr->CheckRenderingTimer(render,*outside_world);
+			outside_world->ProcessAppSpecific(*townsPtr);
 			outside_world->DevicePolling(*townsPtr);
 			townsPtr->eventLog.Interval(*townsPtr);
 			if(true==townsPtr->CheckAbort() || outside_world->PauseKeyPressed())
