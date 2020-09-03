@@ -1,3 +1,4 @@
+#include <cstdio>
 #include <vector>
 
 #include <fssimplewindow.h>
