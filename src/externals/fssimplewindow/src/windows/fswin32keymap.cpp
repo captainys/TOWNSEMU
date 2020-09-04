@@ -126,7 +126,7 @@ FsWin32KeyMapper::FsWin32KeyMapper()
 	AddKeyMapping(FSKEY_RBRACKET,            VK_OEM_6);
 	AddKeyMapping(FSKEY_BACKSLASH,           VK_OEM_5);
 	AddKeyMapping(FSKEY_CAPSLOCK,            VK_CAPITAL);
-	AddKeyMapping(FSKEY_SEMICOLON,           VK_OEM_1);
+	AddKeyMapping(FSKEY_SEMICOLON,           VK_OEM_1);   // 186(0x00BA)
 	AddKeyMapping(FSKEY_SINGLEQUOTE,         VK_OEM_7);
 	AddKeyMapping(FSKEY_ENTER,               VK_RETURN);
 	AddKeyMapping(FSKEY_SHIFT,               VK_SHIFT);
@@ -167,7 +167,6 @@ FsWin32KeyMapper::FsWin32KeyMapper()
 	AddKeyMapping(FSKEY_CONVERT,             VK_CONVERT);
 	AddKeyMapping(FSKEY_NONCONVERT,          VK_NONCONVERT);
 	AddKeyMapping(FSKEY_KANA,                VK_KANA);       // Japanese JIS Keyboard Only
-	AddKeyMapping(FSKEY_COLON,               VK_OEM_1);      // Japanese JIS Keyboard Only
 	AddKeyMapping(FSKEY_ZENKAKU,             VK_KANJI);      // Japanese JIS Keyboard ONly
 	AddKeyMapping(FSKEY_RO,                  VK_OEM_102);    // Japanese JIS Keyboard Only (Immediate left of right-shift)
 

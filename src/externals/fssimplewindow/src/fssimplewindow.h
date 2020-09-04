@@ -176,7 +176,6 @@ enum
 	FSKEY_CONVERT,
 	FSKEY_NONCONVERT,
 	FSKEY_KANA,       // Japanese JIS Keyboard Only => Win32 VK_KANA
-	FSKEY_COLON,      // Japanese JIS Keyboard Only => Win32 VK_OEM_1
 	FSKEY_RO,         // Japanese JIS Keyboard Only => Win32 VK_OEM_102
 	FSKEY_ZENKAKU,    // Japanese JIS Keyboard Only => Full Pitch/Half Pitch
 
@@ -194,6 +193,9 @@ FSKEY_NUM_KEYCODE
 
 // Japanese JIS Keyboard @ is mapped to Tilda of US keyboard.
 #define FSKEY_AT FSKEY_TILDA
+
+// Japanese JIS Keyboard : is mapped to ' of US keyboard.
+#define FSKEY_COLON FSKEY_SINGLEQUOTE
 
 #endif
 

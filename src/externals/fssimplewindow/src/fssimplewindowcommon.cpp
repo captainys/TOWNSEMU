@@ -230,7 +230,6 @@ static const char *const keyCodeToStr[]=
 	"CONVERT",
 	"NONCONVERT",
 	"KANA",       // Japanese JIS Keyboard Only => Win32 VK_KANA
-	"COLON",      // Japanese JIS Keyboard Only => Win32 VK_OEM_1
 	"RO",         // Japanese JIS Keyboard Only => Win32 VK_OEM_102
 	"ZENKAKU",    // Japanese JIS Keyboard Only => Full Pitch/Half Pitch
 
@@ -269,6 +268,10 @@ int FsStringToKeyCode(const char str[])
 		{
 			upper[i]=upper[i]+'A'-'a';
 		}
+	}
+	if(0==strcmp("COLON",upper))
+	{
+		return FSKEY_COLON;
 	}
 	for(int i=0; i<FSKEY_NUM_KEYCODE; ++i)
 	{
