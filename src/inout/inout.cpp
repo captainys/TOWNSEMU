@@ -25,7 +25,7 @@ InOut::InOut()
 	ioMap.resize(NUM_IO_ADDR);
 	for(auto &devPtr : ioMap)
 	{
-		devPtr=nullptr;
+		devPtr=&nullDev;
 	}
 }
 void InOut::EnableLog(void)
@@ -59,12 +59,7 @@ void InOut::AddDevice(Device *devPtr,unsigned int ioPort)
 
 unsigned int InOut::In8(unsigned int port)
 {
-	unsigned int value=0xff;
-
-	if(port<NUM_IO_ADDR && nullptr!=ioMap[port])
-	{
-		value=ioMap[port]->IOReadByte(port);
-	}
+	unsigned int value=ioMap[port&IO_ADDR_MASK]->IOReadByte(port&IO_ADDR_MASK);
 
 	// Read from appropriate device..
 	if(true==takeLog)
@@ -80,12 +75,7 @@ unsigned int InOut::In8(unsigned int port)
 
 unsigned int InOut::In16(unsigned int port)
 {
-	unsigned int value=0xffff;
-
-	if(port<NUM_IO_ADDR && nullptr!=ioMap[port])
-	{
-		value=ioMap[port]->IOReadWord(port);
-	}
+	unsigned int value=ioMap[port&IO_ADDR_MASK]->IOReadWord(port&IO_ADDR_MASK);
 
 	if(true==takeLog)
 	{
@@ -100,12 +90,7 @@ unsigned int InOut::In16(unsigned int port)
 
 unsigned int InOut::In32(unsigned int port)
 {
-	unsigned int value=0xffffffff;
-
-	if(port<NUM_IO_ADDR && nullptr!=ioMap[port])
-	{
-		value=ioMap[port]->IOReadDword(port);
-	}
+	unsigned int value=ioMap[port&IO_ADDR_MASK]->IOReadDword(port&IO_ADDR_MASK);
 
 	if(true==takeLog)
 	{
@@ -120,10 +105,7 @@ unsigned int InOut::In32(unsigned int port)
 
 void InOut::Out8(unsigned int port,unsigned int value)
 {
-	if(port<NUM_IO_ADDR && nullptr!=ioMap[port])
-	{
-		ioMap[port]->IOWriteByte(port,value);
-	}
+	ioMap[port&IO_ADDR_MASK]->IOWriteByte(port&IO_ADDR_MASK,value);
 
 	if(true==takeLog)
 	{
@@ -136,10 +118,7 @@ void InOut::Out8(unsigned int port,unsigned int value)
 }
 void InOut::Out16(unsigned int port,unsigned int value)
 {
-	if(port<NUM_IO_ADDR && nullptr!=ioMap[port])
-	{
-		ioMap[port]->IOWriteWord(port,value);
-	}
+	ioMap[port&IO_ADDR_MASK]->IOWriteWord(port&IO_ADDR_MASK,value);
 
 	if(true==takeLog)
 	{
@@ -152,10 +131,7 @@ void InOut::Out16(unsigned int port,unsigned int value)
 }
 void InOut::Out32(unsigned int port,unsigned int value)
 {
-	if(port<NUM_IO_ADDR && nullptr!=ioMap[port])
-	{
-		ioMap[port]->IOWriteDword(port,value);
-	}
+	ioMap[port&IO_ADDR_MASK]->IOWriteDword(port&IO_ADDR_MASK,value);
 
 	if(true==takeLog)
 	{

@@ -25,9 +25,23 @@ class InOut
 protected:
 	enum
 	{
-		NUM_IO_ADDR=0x10000
+		NUM_IO_ADDR=0x10000,
+		IO_ADDR_MASK=0xFFFF,
 	};
 	std::vector <Device *> ioMap;
+
+	class NullDevice : public Device
+	{
+	public:
+		inline NullDevice(void) : Device(nullptr)
+		{
+		}
+		virtual const char *Device::DeviceName(void) const
+		{
+			return "DummyDevice";
+		}
+	};
+	NullDevice nullDev;
 
 public:
 	class IOLog
