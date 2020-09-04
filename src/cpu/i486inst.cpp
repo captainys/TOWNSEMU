@@ -6851,12 +6851,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			auto ECX=state.ECX();
 			auto prefix=REPNEtoREP(inst.instPrefix);
+			auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
 			for(int ctr=0;
 			    ctr<MAX_REP_BUNDLE_COUNT &&
 			    true==REPCheck(clocksPassed,prefix,inst.addressSize);
 			    ++ctr)
 			{
-				auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
 				auto data=FetchByte(inst.addressSize,seg,state.ESI(),mem);
 				StoreByte(mem,inst.addressSize,state.ES(),state.EDI(),data);
 				clocksPassed+=7;
@@ -6885,12 +6885,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			auto ECX=state.ECX();
 			auto prefix=REPNEtoREP(inst.instPrefix);
+			auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
 			for(int ctr=0;
 			    ctr<MAX_REP_BUNDLE_COUNT &&
 			    true==REPCheck(clocksPassed,prefix,inst.addressSize);
 			    ++ctr)
 			{
-				auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
 				auto data=FetchWordOrDword(inst.operandSize,inst.addressSize,seg,state.ESI(),mem);
 				StoreWordOrDword(mem,inst.operandSize,inst.addressSize,state.ES(),state.EDI(),data);
 				clocksPassed+=7;
@@ -7816,8 +7816,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				{
 					break;
 				}
+				ECX=state.ECX();
 			}
-			ECX=state.ECX();
 		}
 		break;
 	case I486_RENUMBER_STOS://             0xAB,
