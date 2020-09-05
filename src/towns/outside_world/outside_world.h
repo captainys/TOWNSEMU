@@ -28,6 +28,14 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 class Outside_World
 {
 public:
+	class VirtualKey
+	{
+	public:
+		unsigned int townsKey=0;
+		int physicalId=-1;
+		unsigned int button=0;
+	};
+
 	bool windowShift=false;
 
 	// Mouse will be automatically identified by towns.gameport.
@@ -63,6 +71,11 @@ public:
 
 	int strikeCommanderThrottlePhysicalId=-1;
 	int strikeCommanderThrottleAxis=2;  // Typically flight-stick's throttle axis is the 3rd axis (#2 axis).
+
+
+	/*! Virtual Keys.
+	*/
+	std::vector <VirtualKey> virtualKeys;
 
 
 	/*! Cache of game-pad indices that needs to be updated in polling.
@@ -124,6 +137,8 @@ public:
 
 	void SetKeyboardMode(unsigned int mode);
 	virtual void SetKeyboardLayout(unsigned int layout)=0;
+
+	void AddVirtualKey(unsigned int townsKey,int physicalId,unsigned int button);
 
 	/*! Return pauseKey flag.  The flag is clear after this function.
 	*/

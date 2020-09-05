@@ -38,6 +38,14 @@ void Outside_World::SetKeyboardMode(unsigned int mode)
 {
 	keyboardMode=mode;
 }
+void Outside_World::AddVirtualKey(unsigned int townsKey,int physicalId,unsigned int button)
+{
+	VirtualKey vk;
+	vk.townsKey=townsKey;
+	vk.physicalId=physicalId;
+	vk.button=button;
+	virtualKeys.push_back(vk);
+}
 void Outside_World::Put16x16(int x0,int y0,const unsigned char icon16x16[])
 {
 	auto dstPtr=statusBitmap+(STATUS_WID*y0+x0)*4;
@@ -212,6 +220,10 @@ void Outside_World::Put16x16SelectInvert(int x0,int y0,const unsigned char idleI
 			UseGamePad(padType-TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG0);
 			break;
 		}
+	}
+	for(auto &vk : virtualKeys)
+	{
+		UseGamePad(vk.physicalId);
 	}
 	if(true==mouseByFlightstickAvailable && 0<=mouseByFlightstickPhysicalId)
 	{
