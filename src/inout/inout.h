@@ -30,8 +30,19 @@ protected:
 	};
 	std::vector <Device *> ioMap;
 
-	class NullDevice;
-	NullDevice *nullDev;
+	class NullDevice : public Device
+	{
+	public:
+		inline NullDevice(void) : Device(nullptr)
+		{
+		}
+		virtual const char *DeviceName(void) const
+		{
+			return "DummyDevice";
+		}
+	};
+
+	NullDevice nullDev;
 
 public:
 	class IOLog

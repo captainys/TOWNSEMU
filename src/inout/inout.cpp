@@ -19,32 +19,17 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 
 
-class InOut::NullDevice : public Device
-{
-public:
-	inline NullDevice(void) : Device(nullptr)
-	{
-	}
-	virtual const char *Device::DeviceName(void) const
-	{
-		return "DummyDevice";
-	}
-};
-
 InOut::InOut()
 {
-	nullDev=new NullDevice;
 	takeLog=false;
 	ioMap.resize(NUM_IO_ADDR);
 	for(auto &devPtr : ioMap)
 	{
-		devPtr=nullDev;
+		devPtr=&nullDev;
 	}
 }
 InOut::~InOut()
 {
-	delete nullDev;
-	nullDev=nullptr;
 }
 void InOut::EnableLog(void)
 {
