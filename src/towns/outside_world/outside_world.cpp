@@ -162,3 +162,71 @@ void Outside_World::Put16x16SelectInvert(int x0,int y0,const unsigned char idleI
 {
 	std::cout << __FUNCTION__ << " is not implemented in this environment." << std::endl;
 }
+
+/* virtual */ void Outside_World::CacheGamePadIndicesThatNeedUpdates(void)
+{
+	gameDevsNeedUpdateCached=true;
+	gamePadsNeedUpdate.clear();
+	for(auto padType : gamePort)
+	{
+		switch(padType)
+		{
+		case TOWNS_GAMEPORTEMU_PHYSICAL0:
+		case TOWNS_GAMEPORTEMU_PHYSICAL1:
+		case TOWNS_GAMEPORTEMU_PHYSICAL2:
+		case TOWNS_GAMEPORTEMU_PHYSICAL3:
+		case TOWNS_GAMEPORTEMU_PHYSICAL4:
+		case TOWNS_GAMEPORTEMU_PHYSICAL5:
+		case TOWNS_GAMEPORTEMU_PHYSICAL6:
+		case TOWNS_GAMEPORTEMU_PHYSICAL7:
+			UseGamePad(padType-TOWNS_GAMEPORTEMU_PHYSICAL0);
+			break;
+		case TOWNS_GAMEPORTEMU_ANALOG0:
+		case TOWNS_GAMEPORTEMU_ANALOG1:
+		case TOWNS_GAMEPORTEMU_ANALOG2:
+		case TOWNS_GAMEPORTEMU_ANALOG3:
+		case TOWNS_GAMEPORTEMU_ANALOG4:
+		case TOWNS_GAMEPORTEMU_ANALOG5:
+		case TOWNS_GAMEPORTEMU_ANALOG6:
+		case TOWNS_GAMEPORTEMU_ANALOG7:
+			UseGamePad(padType-TOWNS_GAMEPORTEMU_ANALOG0);
+			break;
+		case TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL0:
+		case TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL1:
+		case TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL2:
+		case TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL3:
+		case TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL4:
+		case TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL5:
+		case TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL6:
+		case TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL7:
+			UseGamePad(padType-TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL0);
+			break;
+		case TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG0:
+		case TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG1:
+		case TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG2:
+		case TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG3:
+		case TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG4:
+		case TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG5:
+		case TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG6:
+		case TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG7:
+			UseGamePad(padType-TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG0);
+			break;
+		}
+	}
+	if(true==mouseByFlightstickAvailable && 0<=mouseByFlightstickPhysicalId)
+	{
+		UseGamePad(mouseByFlightstickPhysicalId);
+	}
+	if(0<=strikeCommanderThrottlePhysicalId)
+	{
+		UseGamePad(strikeCommanderThrottlePhysicalId);
+	}
+}
+
+void Outside_World::UseGamePad(unsigned int gamePadIndex)
+{
+	if(gamePadsNeedUpdate.end()==std::find(gamePadsNeedUpdate.begin(),gamePadsNeedUpdate.end(),gamePadIndex))
+	{
+		gamePadsNeedUpdate.push_back(gamePadIndex);
+	}
+}

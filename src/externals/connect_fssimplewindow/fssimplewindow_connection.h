@@ -18,6 +18,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include "outside_world.h"
 #include "yssimplesound.h"
+#include "ysgamepad.h"
+#include <vector>
 
 class FsSimpleWindowConnection : public Outside_World
 {
@@ -29,6 +31,8 @@ public:
 	unsigned int *FSKEYState=nullptr;
 	FsSimpleWindowConnection();
 	~FsSimpleWindowConnection();
+
+	std::vector <struct YsGamePadReading> gamePads,prevGamePads;
 
 	// For mouse emulation by pad digital axes.
 	int mouseDX=0,mouseDY=0;
@@ -43,6 +47,7 @@ public:
 	virtual void Start(void);
 	virtual void Stop(void);
 	virtual void DevicePolling(class FMTowns &towns);
+	void PollGamePads(void);
 	virtual void UpdateStatusBitmap(class FMTowns &towns);
 	virtual void Render(const TownsRender::Image &img);
 

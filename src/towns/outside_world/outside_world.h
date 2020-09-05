@@ -61,6 +61,16 @@ public:
 	float lastJoystickPos[2]={0.0F,0.0F};
 	int lastMousePosForSwitchBackToNormalMode[2]={0,0};
 
+	int strikeCommanderThrottlePhysicalId=-1;
+	int strikeCommanderThrottleAxis=2;  // Typically flight-stick's throttle axis is the 3rd axis (#2 axis).
+
+
+	/*! Cache of game-pad indices that needs to be updated in polling.
+	*/
+	std::vector <unsigned int> gamePadsNeedUpdate;
+	bool gameDevsNeedUpdateCached=false;
+
+
 	inline float ApplyZeroZone(float rawInput,float zeroZone)
 	{
 		if(rawInput<-zeroZone)
@@ -139,6 +149,21 @@ public:
 
 	virtual std::vector <std::string> MakeKeyMappingText(void) const;
 	virtual void LoadKeyMappingFromText(const std::vector <std::string> &text);
+
+
+	/*! Cache gamePadsNeedUpdate member.
+	    Reading game pad may not be the fastest function to call, and therefore reading same game pad multiple times
+	    in one polling should be avoided.
+	    This function caches which game pads needs to be updated.
+	    If the sub-class overloads this function, call Outside_World::CacheGamePadIndicesThatNeedUpdates, and then
+	    add an ID by calling UseGamePad function..
+	*/
+	virtual void CacheGamePadIndicesThatNeedUpdates(void);
+
+	/*! Call this function to cache game pad index that needs to be updated every polling.
+	*/
+	void UseGamePad(unsigned int gamePadIndex);
+
 
 public:
 	/*! Left level and right level can be 0 to 256.  Value above 256 will be rounded to 256.

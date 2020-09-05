@@ -367,6 +367,8 @@ bool Setup(FMTowns &towns,Outside_World *outside_world,const TownsARGV &argv)
 	outside_world->mouseByFlightstickScaleX=argv.mouseByFlightstickScaleX;
 	outside_world->mouseByFlightstickScaleY=argv.mouseByFlightstickScaleY;
 
+	outside_world->CacheGamePadIndicesThatNeedUpdates();
+
 	return true;
 }
 

@@ -44,6 +44,24 @@ FsSimpleWindowConnection::FsSimpleWindowConnection()
 	{
 		FSKEYState[i]=0;
 	}
+
+	if(true!=gamePadInitialized)
+	{
+		YsGamePadInitialize();
+		gamePadInitialized=true;
+	}
+
+	auto nGameDevs=YsGamePadGetNumDevices();
+	if(0<nGameDevs)
+	{
+		gamePads.resize(nGameDevs);
+		prevGamePads.resize(nGameDevs);
+		for(unsigned int i=0; i<nGameDevs; ++i)
+		{
+			YsGamePadRead(&gamePads[i],i);
+			prevGamePads[i]=gamePads[i];
+		}
+	}
 }
 FsSimpleWindowConnection::~FsSimpleWindowConnection()
 {
@@ -121,6 +139,7 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 /* virtual */ void FsSimpleWindowConnection::DevicePolling(class FMTowns &towns)
 {
 	FsPollDevice();
+	PollGamePads();
 
 	bool gamePadEmulationByKey=false; // Emulate a gamepad with keyboard
 	bool mouseEmulationByNumPad=false; // Emulate mouse with keyboard numpad
@@ -382,18 +401,20 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 				}
 				{
 					int padId=gamePort[portId]-TOWNS_GAMEPORTEMU_PHYSICAL0;
-					struct YsGamePadReading reading;
-					YsGamePadRead(&reading,padId);
-					towns.SetGamePadState(
-					    portId,
-					    reading.buttons[0],
-					    reading.buttons[1],
-					    reading.dirs[0].upDownLeftRight[2],
-					    reading.dirs[0].upDownLeftRight[3],
-					    reading.dirs[0].upDownLeftRight[0],
-					    reading.dirs[0].upDownLeftRight[1],
-					    reading.buttons[2],
-					    reading.buttons[3]);
+					if(0<=padId && padId<gamePads.size())
+					{
+						auto &reading=gamePads[padId];
+						towns.SetGamePadState(
+						    portId,
+						    reading.buttons[0],
+						    reading.buttons[1],
+						    reading.dirs[0].upDownLeftRight[2],
+						    reading.dirs[0].upDownLeftRight[3],
+						    reading.dirs[0].upDownLeftRight[0],
+						    reading.dirs[0].upDownLeftRight[1],
+						    reading.buttons[2],
+						    reading.buttons[3]);
+					}
 				}
 				break;
 			case TOWNS_GAMEPORTEMU_ANALOG0:
@@ -411,19 +432,21 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 				}
 				{
 					int padId=gamePort[portId]-TOWNS_GAMEPORTEMU_ANALOG0;
-					struct YsGamePadReading reading;
-					YsGamePadRead(&reading,padId);
-					YsGamdPadTranslateAnalogToDigital(&reading.dirs[0],reading.axes[0],reading.axes[1]);
-					towns.SetGamePadState(
-					    portId,
-					    reading.buttons[0],
-					    reading.buttons[1],
-					    reading.dirs[0].upDownLeftRight[2],
-					    reading.dirs[0].upDownLeftRight[3],
-					    reading.dirs[0].upDownLeftRight[0],
-					    reading.dirs[0].upDownLeftRight[1],
-					    reading.buttons[2],
-					    reading.buttons[3]);
+					if(0<=padId && padId<gamePads.size())
+					{
+						auto &reading=gamePads[padId];
+						YsGamdPadTranslateAnalogToDigital(&reading.dirs[0],reading.axes[0],reading.axes[1]);
+						towns.SetGamePadState(
+						    portId,
+						    reading.buttons[0],
+						    reading.buttons[1],
+						    reading.dirs[0].upDownLeftRight[2],
+						    reading.dirs[0].upDownLeftRight[3],
+						    reading.dirs[0].upDownLeftRight[0],
+						    reading.dirs[0].upDownLeftRight[1],
+						    reading.buttons[2],
+						    reading.buttons[3]);
+					}
 				}
 				break;
 
@@ -474,15 +497,17 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 						}
 						else
 						{
-							struct YsGamePadReading reading;
 							int padId=gamePort[portId]-TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL0;
-							YsGamePadRead(&reading,padId);
-							upDownLeftRight[0]=(0!=reading.dirs[0].upDownLeftRight[0]);
-							upDownLeftRight[1]=(0!=reading.dirs[0].upDownLeftRight[1]);
-							upDownLeftRight[2]=(0!=reading.dirs[0].upDownLeftRight[2]);
-							upDownLeftRight[3]=(0!=reading.dirs[0].upDownLeftRight[3]);
-							button[0]=(0!=reading.buttons[0]);
-							button[1]=(0!=reading.buttons[1]);
+							if(0<=padId && padId<gamePads.size())
+							{
+								const auto &reading=gamePads[padId];
+								upDownLeftRight[0]=(0!=reading.dirs[0].upDownLeftRight[0]);
+								upDownLeftRight[1]=(0!=reading.dirs[0].upDownLeftRight[1]);
+								upDownLeftRight[2]=(0!=reading.dirs[0].upDownLeftRight[2]);
+								upDownLeftRight[3]=(0!=reading.dirs[0].upDownLeftRight[3]);
+								button[0]=(0!=reading.buttons[0]);
+								button[1]=(0!=reading.buttons[1]);
+							}
 						}
 						if(true==upDownLeftRight[0])
 						{
@@ -548,12 +573,14 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 
 						mouseEmulationByAnalogAxis=true;
 						int padId=gamePort[portId]-TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG0;
-						struct YsGamePadReading reading;
-						YsGamePadRead(&reading,padId);
-						float dx=reading.axes[0]*maxSpeed;
-						float dy=reading.axes[1]*maxSpeed;
-						towns.SetMouseMotion(portId,-dx,-dy);
-						towns.SetMouseButtonState(0!=reading.buttons[0],0!=reading.buttons[1]);
+						if(0<=padId && padId<gamePads.size())
+						{
+							const auto &reading=gamePads[padId];
+							float dx=reading.axes[0]*maxSpeed;
+							float dy=reading.axes[1]*maxSpeed;
+							towns.SetMouseMotion(portId,-dx,-dy);
+							towns.SetMouseButtonState(0!=reading.buttons[0],0!=reading.buttons[1]);
+						}
 					}
 				}
 				break;
@@ -565,9 +592,9 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 			struct YsGamePadReading reading;
 			int lb,mb,rb,mx,my;
 			FsGetMouseEvent(lb,mb,rb,mx,my);
-			if(true==mouseByFlightstickAvailable && 0<=mouseByFlightstickPhysicalId)
+			if(true==mouseByFlightstickAvailable && 0<=mouseByFlightstickPhysicalId && mouseByFlightstickPhysicalId<gamePads.size())
 			{
-				YsGamePadRead(&reading,mouseByFlightstickPhysicalId);
+				reading=gamePads[mouseByFlightstickPhysicalId];
 				if(true!=mouseByFlightstickEnabled)
 				{
 					float dx=reading.axes[0]-lastJoystickPos[0];
@@ -638,6 +665,21 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 			}
 
 			this->ProcessMouse(towns,lb,mb,rb,mx,my);
+		}
+	}
+}
+void FsSimpleWindowConnection::PollGamePads(void)
+{
+	if(true!=Outside_World::gameDevsNeedUpdateCached)
+	{
+		std::cout << "Squawk!  Game Devices that need updates not cached!" << std::endl;
+	}
+	for(auto padId : Outside_World::gamePadsNeedUpdate)
+	{
+		if(padId<gamePads.size())
+		{
+			prevGamePads[padId]=gamePads[padId];
+			YsGamePadRead(&gamePads[padId],padId);
 		}
 	}
 }
