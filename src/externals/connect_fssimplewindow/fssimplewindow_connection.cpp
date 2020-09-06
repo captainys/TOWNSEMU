@@ -156,6 +156,24 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 		}
 	}
 
+	for(auto vk : virtualKeys)
+	{
+		if(0<=vk.physicalId && vk.physicalId<gamePads.size())
+		{
+			if(prevGamePads[vk.physicalId].buttons[vk.button]!=gamePads[vk.physicalId].buttons[vk.button])
+			{
+				if(0!=gamePads[vk.physicalId].buttons[vk.button])
+				{
+					towns.keyboard.PushFifo(TOWNS_KEYFLAG_PRESS  ,vk.townsKey);
+				}
+				else
+				{
+					towns.keyboard.PushFifo(TOWNS_KEYFLAG_RELEASE,vk.townsKey);
+				}
+			}
+		}
+	}
+
 	// For the time translation mode only.
 	// if(true==keyTranslationMode)
 	if(KEYBOARD_MODE_TRANSLATION==keyboardMode)
