@@ -164,12 +164,42 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 			{
 				if(0!=gamePads[vk.physicalId].buttons[vk.button])
 				{
-					towns.keyboard.PushFifo(TOWNS_KEYFLAG_PRESS  ,vk.townsKey);
+					towns.keyboard.PushFifo(TOWNS_KEYFLAG_JIS_PRESS  ,vk.townsKey);
 				}
 				else
 				{
-					towns.keyboard.PushFifo(TOWNS_KEYFLAG_RELEASE,vk.townsKey);
+					towns.keyboard.PushFifo(TOWNS_KEYFLAG_JIS_RELEASE,vk.townsKey);
 				}
+			}
+		}
+	}
+
+
+	// Strike Commander throttle control.
+	if(0<=strikeCommanderThrottlePhysicalId && strikeCommanderThrottlePhysicalId<gamePads.size())
+	{
+		if(prevGamePads[strikeCommanderThrottlePhysicalId].axes[strikeCommanderThrottleAxis]!=
+		   gamePads[strikeCommanderThrottlePhysicalId].axes[strikeCommanderThrottleAxis])
+		{
+			int prev=(1.0F-prevGamePads[strikeCommanderThrottlePhysicalId].axes[strikeCommanderThrottleAxis])*5.0F;
+			int now=(1.0F-gamePads[strikeCommanderThrottlePhysicalId].axes[strikeCommanderThrottleAxis])*5.0F;
+			if(prev!=now)
+			{
+				unsigned int key;
+				if(now<0)
+				{
+					key=TOWNS_JISKEY_1;
+				}
+				else if(0<=now && now<9)
+				{
+					key=TOWNS_JISKEY_1+now;
+				}
+				else
+				{
+					key=TOWNS_JISKEY_0;
+				}
+				towns.keyboard.PushFifo(TOWNS_KEYFLAG_JIS_PRESS  ,key);
+				towns.keyboard.PushFifo(TOWNS_KEYFLAG_JIS_RELEASE,key);
 			}
 		}
 	}

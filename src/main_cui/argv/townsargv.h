@@ -24,6 +24,14 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 class TownsStartParameters
 {
 public:
+	class VirtualKey
+	{
+	public:
+		std::string townsKey;
+		int physicalId;
+		unsigned int button;
+	};
+
 	unsigned int gamePort[2];
 	unsigned int bootKeyComb=BOOT_KEYCOMB_NONE;
 
@@ -47,6 +55,8 @@ public:
 
 	std::vector <std::string> sharedDir;
 
+	std::vector <VirtualKey> virtualKeys;
+
 	int fmVol=-1,pcmVol=-1;
 
 	bool mouseByFlightstickAvailable=false;
@@ -54,6 +64,9 @@ public:
 	int mouseByFlightstickCenterX=320,mouseByFlightstickCenterY=200;
 	float mouseByFlightstickZeroZoneX=0.0F,mouseByFlightstickZeroZoneY=0.0F;
 	float mouseByFlightstickScaleX=320.0F,mouseByFlightstickScaleY=200.0F;
+
+	int strikeCommanderThrottlePhysicalId=-1;
+	int strikeCommanderThrottleAxis=3;
 
 	enum
 	{

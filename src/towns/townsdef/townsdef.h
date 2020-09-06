@@ -628,8 +628,9 @@ enum
 	TOWNS_VMIF_CMD_PAUSE=         0x02, // Pause VM
 	TOWNS_VMIF_CMD_EXIT_VM=       0x03, // Exit the VM.  Return code taken from the data queu.
 
-	TOWNS_VMIF_CMD_FILE_RXRDY=    0x04, // File Transfer Ready to Read
+	TOWNS_VMIF_CMD_FILE_RXRDY=    0x04, // File Transfer Ready to Read (Ready to receive data in Sprite RAM)
 	TOWNS_VMIF_CMD_FILE_ACK=      0x05, // File Transfer 
+	TOWNS_VMIF_CMD_FILE_TXRDY=    0x06, // File Transfer Ready to Send (Data is in Sprite RAM)
 };
 
 enum

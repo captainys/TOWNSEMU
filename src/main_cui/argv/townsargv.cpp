@@ -104,6 +104,10 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "    Wing Commander 2   -FLIGHTMOUSE 0 320 135 400 300 3" << std::endl;
 	std::cout << "    Strike Commander   -FLIGHTMOUSE 0 320 200 400 300 3" << std::endl;
 	std::cout << "  (Joystick ID, button ID starts with 0)" << std::endl;
+	std::cout << "-VIRTKEY townsKey gamePadPhysicalId button" << std::endl;
+	std::cout << "  Assign a virtual key to a gamepad button." << std::endl;
+	std::cout << "-STCMTHR physicalId axis" << std::endl;
+	std::cout << "  Assign a joystick analog axis to Strike Commander throttle." << std::endl;
 	std::cout << "-HD0 image-file-name" << std::endl;
 	std::cout << "  Hard-disk image file name.  Can be -HDx (0<=x<=6)" << std::endl;
 	std::cout << "-SCSICD0 image-file-name" << std::endl;
@@ -287,6 +291,21 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 			mouseByFlightstickZeroZoneX=atof(argv[i+6])/100.0F;
 			mouseByFlightstickZeroZoneY=mouseByFlightstickZeroZoneX;
 			i+=6;
+		}
+		else if("-VIRTKEY"==ARG && i+3<argc)
+		{
+			VirtualKey vk;
+			vk.townsKey=argv[i+1];
+			vk.physicalId=cpputil::Atoi(argv[i+2]);
+			vk.button=cpputil::Atoi(argv[i+3]);
+			virtualKeys.push_back(vk);
+			i+=3;
+		}
+		else if("-STCMTHR"==ARG && i+2<argc)
+		{
+			strikeCommanderThrottlePhysicalId=cpputil::Atoi(argv[i+1]);
+			strikeCommanderThrottleAxis=cpputil::Atoi(argv[i+2]);
+			i+=2;
 		}
 		else if("-FD0"==ARG && i+1<argc)
 		{

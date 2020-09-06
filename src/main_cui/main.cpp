@@ -355,6 +355,22 @@ bool Setup(FMTowns &towns,Outside_World *outside_world,const TownsARGV &argv)
 		towns.vndrv.sharedDir[i].linked=true;
 	}
 
+	for(auto vk : argv.virtualKeys)
+	{
+		auto townsKey=TownsStrToKeyCode(vk.townsKey);
+		if(TOWNS_JISKEY_NULL==townsKey)
+		{
+			townsKey=TownsStrToKeyCode("TOWNS_JISKEY_"+vk.townsKey);
+		}
+		if(TOWNS_JISKEY_NULL!=townsKey)
+		{
+			outside_world->AddVirtualKey(townsKey,vk.physicalId,vk.button);
+		}
+	}
+
+	outside_world->strikeCommanderThrottlePhysicalId=argv.strikeCommanderThrottlePhysicalId;
+	outside_world->strikeCommanderThrottleAxis=argv.strikeCommanderThrottleAxis;
+
 	outside_world->scaling=argv.scaling;
 	outside_world->windowShift=argv.windowShift;
 

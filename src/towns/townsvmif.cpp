@@ -49,11 +49,12 @@ void FMTowns::ProcessVMToHostCommand(unsigned int vmCmd,unsigned int paramLen,co
 		var.returnCode=param[0];
 		break;
 	case TOWNS_VMIF_CMD_FILE_RXRDY:
-		VMtoHostFileTransfer();
+	case TOWNS_VMIF_CMD_FILE_TXRDY:
+		VMHostFileTransfer();
 		break;
 	}
 }
-void FMTowns::VMtoHostFileTransfer(void)
+void FMTowns::VMHostFileTransfer(void)
 {
 	if(0<var.ftfr.toSend.size())
 	{
@@ -108,6 +109,59 @@ void FMTowns::VMtoHostFileTransfer(void)
 			}
 		}
 	}
+	else if(0<var.ftfr.toRecv.size())
+	{
+		auto &file=var.ftfr.toRecv[0];
+		if(true!=file.started)
+		{
+			file.started=true;
+			file.offset=0;
+
+			// 1st Batch
+			//   [0]     TOWNS_VMIF_TFR_VM_TO_HOST
+			//   [1..3]  Unused(Zero)
+			//   [4..7]  File Size
+			//   [8..63] Unused(Zero)
+			//   [64..]  File name in VM
+
+			for(auto &d : physMem.state.spriteRAM)
+			{
+				d=0;
+			}
+			physMem.state.spriteRAM[0]=TOWNS_VMIF_TFR_VM_TO_HOST;
+			for(int i=0; i<260 && i<file.vmFName.size(); ++i)
+			{
+				physMem.state.spriteRAM[64+i]=file.vmFName[i];
+			}
+		}
+		else
+		{
+			// 2nd Batch and on
+			//   File Contents
+			if(2==physMem.state.spriteRAM[0])
+			{
+				std::cout << "Read error in VM." << std::endl;
+				var.ftfr.toRecv.erase(var.ftfr.toRecv.begin());
+				return;
+			}
+
+			unsigned int batchSize=cpputil::GetDword(physMem.state.spriteRAM.data()+4);
+			for(unsigned int i=0; i<batchSize; ++i)
+			{
+				file.bin.push_back(physMem.state.spriteRAM[8+i]);
+			}
+
+			if(1==physMem.state.spriteRAM[0])
+			{
+				std::cout << "File finished.  " << file.bin.size() << " bytes." << std::endl;
+				if(0==cpputil::WriteBinaryFile(file.hostFName,file.bin.size(),file.bin.data()))
+				{
+					std::cout << "File Write Error: " << file.hostFName << std::endl;
+				}
+				var.ftfr.toRecv.erase(var.ftfr.toRecv.begin());
+			}
+		}
+	}
 	else
 	{
 		physMem.state.spriteRAM[0]=TOWNS_VMIF_TFR_END;
@@ -119,4 +173,11 @@ void FMTowns::VMHostFileTransfer::AddHostToVM(std::string hostFName,std::string 
 	toSend.push_back(f);
 	toSend.back().hostFName=hostFName;
 	toSend.back().vmFName=vmFName;
+}
+void FMTowns::VMHostFileTransfer::AddVMToHost(std::string vmFName,std::string hostFName)
+{
+	File f;
+	toRecv.push_back(f);
+	toRecv.back().hostFName=hostFName;
+	toRecv.back().vmFName=vmFName;
 }

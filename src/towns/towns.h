@@ -199,8 +199,10 @@ public:
 			std::vector <unsigned char> bin; // Loaded when transfer starts.
 		};
 		std::vector <File> toSend;
+		std::vector <File> toRecv;
 
 		void AddHostToVM(std::string hostFName,std::string vmFName);
+		void AddVMToHost(std::string vmFName,std::string hostFName);
 	};
 
 	class Variable
@@ -528,7 +530,7 @@ public:
 
 	// VM<->Host Interface
 	void ProcessVMToHostCommand(unsigned int vmCmd,unsigned int paramLen,const unsigned char param[]);
-	void VMtoHostFileTransfer(void);
+	void VMHostFileTransfer(void);
 
 
 	// Following functions are for testing purposes.

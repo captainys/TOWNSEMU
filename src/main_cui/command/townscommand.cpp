@@ -123,6 +123,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["FD1UP"]=CMD_FD1WRITEUNPROTECT;
 
 	primaryCmdMap["HOST2VM"]=CMD_HOST_TO_VM_FILE_TRANSFER;
+	primaryCmdMap["VM2HOST"]=CMD_VM_TO_HOST_FILE_TRANSFER;
 
 	primaryCmdMap["FREQ"]=CMD_FREQUENCY;
 
@@ -373,7 +374,12 @@ void TownsCommandInterpreter::PrintHelp(void) const
 
 	std::cout << "HOST2VM hostFileName vmFileName" << std::endl;
 	std::cout << "  Schedule Host to VM file transfer." << std::endl;
-	std::cout << "  File will be transferred when FTCLIENT.EXP is running." << std::endl;
+	std::cout << "  File will be transferred when FTCLIENT.EXP is executed." << std::endl;
+	std::cout << "" << std::endl;
+
+	std::cout << "VM2HOST vmFileName hostFileName" << std::endl;
+	std::cout << "  Schedule VM to Host file transfer." << std::endl;
+	std::cout << "  File will be transferred when FTCLIENT.EXP is executed." << std::endl;
 	std::cout << "" << std::endl;
 
 	std::cout << "<< Features that can be enabled|disabled >>" << std::endl;
@@ -916,11 +922,23 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 			if(true==cpputil::FileExists(cmd.argv[1]))
 			{
 				towns.var.ftfr.AddHostToVM(cmd.argv[1],cmd.argv[2]);
+				std::cout << "Schedule Host to VM Tranfer" << std::endl;
+				std::cout << "From: " << cmd.argv[1] << std::endl;
+				std::cout << "To:   " << cmd.argv[2] << std::endl;
 			}
 			else
 			{
 				std::cout << "File not found." << std::endl;
 			}
+		}
+		break;
+	case CMD_VM_TO_HOST_FILE_TRANSFER:
+		if(3<=cmd.argv.size())
+		{
+			towns.var.ftfr.AddVMToHost(cmd.argv[1],cmd.argv[2]);
+			std::cout << "Schedule VM to Host Tranfer" << std::endl;
+			std::cout << "From: " << cmd.argv[1] << std::endl;
+			std::cout << "To:   " << cmd.argv[2] << std::endl;
 		}
 		break;
 
