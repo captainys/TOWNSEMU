@@ -1,5 +1,4 @@
 build\tfrio.obj
 build\ftclient.obj
 -lib C:\hc386\small\hce.lib 
--exe build\FTCLIENT.EXP
 -stack 16384

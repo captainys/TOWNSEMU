@@ -65,17 +65,6 @@ build\runtest.exp : build\io.obj build\vmif.obj build\runtest.OBJ build\f6f7.OBJ
 
 
 
-build\tfrio.obj : filetfr\TFRIO.ASM
-	386asm filetfr\TFRIO.ASM -OBJECT build\tfrio.OBJ
-
-build\ftclient.obj : filetfr\FTCLIENT.C
-	hcd386 filetfr\FTCLIENT.C -obj build\ftclient.obj
-
-build\ftclient.exp : build\io.obj build\vmif.obj build\tfrio.obj build\ftclient.obj filetfr\FTCLIENT.LN
-	386link @filetfr\FTCLIENT.LN
-
-
-
 
 build\FAIL.EXE : FAIL.ASM
 	MASM FAIL.ASM build\FAIL.OBJ build\FAIL.LST NUL
