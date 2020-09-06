@@ -71,7 +71,7 @@ build\tfrio.obj : filetfr\TFRIO.ASM
 build\ftclient.obj : filetfr\FTCLIENT.C
 	hcd386 filetfr\FTCLIENT.C -obj build\ftclient.obj
 
-build\ftclient.exp : build\io.obj build\vmif.obj build\tfrio.obj build\ftclient.obj
+build\ftclient.exp : build\io.obj build\vmif.obj build\tfrio.obj build\ftclient.obj filetfr\FTCLIENT.LN
 	386link @filetfr\FTCLIENT.LN
 
 
