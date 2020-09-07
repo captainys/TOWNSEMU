@@ -237,8 +237,13 @@ void Outside_World::Put16x16SelectInvert(int x0,int y0,const unsigned char idleI
 
 void Outside_World::UseGamePad(unsigned int gamePadIndex)
 {
-	if(gamePadsNeedUpdate.end()==std::find(gamePadsNeedUpdate.begin(),gamePadsNeedUpdate.end(),gamePadIndex))
+	// G*d D**n useless std::find.
+	for(auto i : gamePadsNeedUpdate)
 	{
-		gamePadsNeedUpdate.push_back(gamePadIndex);
+		if(i==gamePadIndex)
+		{
+			return;
+		}
 	}
+	gamePadsNeedUpdate.push_back(gamePadIndex);
 }
