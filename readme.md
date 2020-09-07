@@ -154,6 +154,49 @@ FM TOWNSはMSXマウスを使用します。MSXマウスはマウスの移動量
 
 
 
+# VM<->Host File Transfer
+When you want to transfer a large file between the VM and the Host, follow the steps below.  (You need to use CUI.)
+
+1. Type command ```VM2HOST vmfile hostfile``` or ```HOST2VM hostfile vmfile```.  These commands schedule file transfer.  If you want to transfer multiple files, type commands multiple times.
+2. In VM, start FTCLIENT.EXP (like ```run386 -nocrt FTCLIENT.EXP``` in the command mode)
+
+Then the files will be transferred.  FTCLIENT.EXP can be found in ```townsapp/exp``` subdirectory.
+
+How to transfer FTCLIENT.EXP to the VM?  It is slow, but Tsugaru also supports XMODEM.  Start a terminal program in Tsugaru, type ```XMODEMTOVM filename``` in the CUI, and then start XMODEM transfer in the terminal in Tsugaru.
+
+
+VMとホスト間でファイルを転送したい場合、次の手順で操作してください。CUIで実行する必要があります。
+
+1. コマンド ```VM2HOST vmfile hostfile```または```HOST2VM hostfile vmfile```をタイプする。これらのコマンドはファイル転送を予約する。複数ファイルを転送したい場合は、コマンドを複数回タイプする。
+2. VM上でFTCLIENT.EXPを実行する。(コマンドモードに降りて ```run386 -nocrt FTCLIENT.EXP```とタイプ)
+
+この手順で予約したファイルが転送されます。FTCLIENT.EXPは```townsapp/exp```サブディレクトリにあります。
+
+えー、どうやってFTCLIENT.EXPをVMに転送するかは、遅いですがXMODEMが使えます。津軽上でWINK2みたいなターミナルを開いておいて、津軽のCUIで```XMODEMTOVM filename```みたいにタイプしてから、津軽上のターミナルでXMODEM転送を開始してください。
+
+
+
+# Flight Joystick to Mouse Translation
+Wing Commander 1 and Strike Commander (not Strike Commander Plus) for FM TOWNS did not support analog joystick.  The player had choice between fly by mouse or fly by keyboard, which was a major frustration.  Especially, Wing Commander for FM TOWNS comes with Orchestra BGM by CDDA.  It was the BEST Wing Commander port of all.  Only thing missing was analog joystick.  Tsugaru offers a redemption.  With the option 
+```
+-FLIGHTMOUSE joystickId centerX centerY scaleX scaleY zeroZoneInPercent
+```
+Tsugaru translates flight joystick input to mouse input.  It is also exposed in GUI.  It makes Wing Commander and Strike Commander so much more easy to fly.  joystickID is you know what it is.  centerX and centerY specifies screen coordinate (in 640x480 scale) where mouse cursor should be when the joystick is neutral.  scaleX and scaleY specifies how large a deflection in screen scale the mouse cursor should travel when the stick is moved all the way.  Actually majority of the analog joysticks doesn't deflect to 1.0.  Usually stops at 0.9 or so.  So, specifying larger scaleX and scaleY is recommended, or your fighter will maneuver real slow.  zeroZoneInPercent specifies zero zone (or dead zone) of the joyostick.
+
+To use it with Wing Commander or Strike Commander, you also need to enable application-specific augumentation for the program.
+
+
+FM TOWNS用Wing Commander 1、Strike Commanderはアナログジョイスティックをサポートしませんでした。プレイヤーはマウスかキーボードかどちらかで操縦しなくてはなりませんでした。とくにWing Commander 1はFM TOWNS版はCDDAによるオーケストラのBGMがついていて、他のどの移植版よりもこの一点で最高の移植と思うのですが、アナログスティック非対応だけが心残りでした。津軽はこの当時の恨みを晴らす機能を提供します。まさに江戸の恨みを青森で。コマンドオプション（GUIからも指定可)で、
+```
+-FLIGHTMOUSE joystickId centerX centerY scaleX scaleY zeroZoneInPercent
+```
+joystickIdはそのまんまで、centerX,centerYはジョイスティックが中立位置のときマウス座標をどこに置くかで、scaleX,scaleYはジョイスティックの入力が1.0のときマウス座標をどれだけ動かすかの設定です。zeroZoneInPercentはジョイスティックの遊びをパーセントで指定します。なお、ジョイスティックは結構精一杯押したり引いたりしても値が1.0まで上がりません。scaleX,scaleYは大きめの値を指定しておいた方が楽です。
+
+なお、Wing CommanderまたはStrike Commanderで使用するには、このオプションに加えてApplication Specific Augumentationを有効にする必要があります。
+
+
+
+
 # Unit Tests
 You need bootable floppy disk images/CD-ROM images to run unit tests.  My guess is it is ok to redistribute Towns OS bootable floppy disk images, but to be safe I am keeping them to myself.
 
@@ -186,6 +229,9 @@ The tests are timing-sensitive, or the CPU needs to be reasonably fast.  If not,
 
 
 # Revisions
+### 2020/09/06
+- I lost track of what I added or improved.  But, I can say I clear-confirmed Wing Commander 1 and Strike Commander  :-)
+
 ### 2020/07/11
 - YM2612 emulator for Tsugaru (Tsugaru-Ben) is becoming much better than earlier version.  Super DAISENRYAKU intro music and Emerald Dragon BGM sound very similar to actual YM2612.
 - I lost track of what changes I made since 6/15.  Please see git commit log!
