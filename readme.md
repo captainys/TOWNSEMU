@@ -155,24 +155,45 @@ FM TOWNSはMSXマウスを使用します。MSXマウスはマウスの移動量
 
 
 # VM<->Host File Transfer
-When you want to transfer a large file between the VM and the Host, follow the steps below.  (You need to use CUI.)
+When you need to transfer files between the VM and the host, if the file size is small, you can use a conventional disk-image tool to transfer files via a disk image.  If the file does not fit a disk, there are two ways to transfer a file between the VM and the host.
+
+## Using XMODEM
+To transfer a file from the host to the VM, follow the following steps:
+
+1. In Tsugaru CUI, type ```XMODEMTOVM filename``` (```filename``` is the file that you want to send to the VM).
+2. Start a terminal program in the VM and start XMODEM transfer.  I have confirmed with a popular free text editor called WINK2, which has a terminal mode.
+
+To transfer a file from the VM to the host, follow the following steps:
+
+1. Start a terminal program in the VM and start XMODEM transfer.
+2. In Tsugaru CUI, type ```XMODEMFROMVM filename```.
+
+
+XMODEMを使ってホストからVMにファイルを転送するには、次のステップで操作してください:
+
+1. 津軽CUIモードで、```XMODEMTOVM filename``` (```filename```は転送するファイル名)とコマンドを入力。
+2. VM上でターミナルソフト (WINK2の通信モードなど) を起動してXMODEMのファイル転送を開始する。
+
+XMODEMを使ってVMからホストにファイルを転送するには、次のステップで操作してください:
+
+1. VM上でターミナルソフトを起動してXMODEMのファイル転送を開始する。
+2. 津軽CUIモードで、```XMODEMFROMVM filename```とコマンドを入力。
+
+
+## Using Tsugaru File Transfer Protocol (TFTP)
+XMODEM works, but it sends 1 byte at a time, and slow.  You can transfer a file much faster using TFTP by the following steps.  You need to use Tsugaru CUI.  You need to transfer FTCLIENT.EXP to the VM.   You can do it once with XMODEM or use a conventional disk-image tools such as EDITDISK.
 
 1. Type command ```VM2HOST vmfile hostfile``` or ```HOST2VM hostfile vmfile```.  These commands schedule file transfer.  If you want to transfer multiple files, type commands multiple times.
 2. In VM, start FTCLIENT.EXP (like ```run386 -nocrt FTCLIENT.EXP``` in the command mode)
 
 Then the files will be transferred.  FTCLIENT.EXP can be found in ```townsapp/exp``` subdirectory.
 
-How to transfer FTCLIENT.EXP to the VM?  It is slow, but Tsugaru also supports XMODEM.  Start a terminal program in Tsugaru, type ```XMODEMTOVM filename``` in the CUI, and then start XMODEM transfer in the terminal in Tsugaru.
-
-
-VMとホスト間でファイルを転送したい場合、次の手順で操作してください。CUIで実行する必要があります。
+XMODEMは機能しますが、1バイト単位でファイルを転送するので、遅いです。より高速にVMとホスト間でファイルを転送したい場合、次の手順で操作してください。CUIで実行する必要があります。FTCLIENT.EXPをVMに転送しておく必要がありますが、XMODEMを使うか、あるいはEDITDISKなどのディスクイメージツールを利用してください。
 
 1. コマンド ```VM2HOST vmfile hostfile```または```HOST2VM hostfile vmfile```をタイプする。これらのコマンドはファイル転送を予約する。複数ファイルを転送したい場合は、コマンドを複数回タイプする。
 2. VM上でFTCLIENT.EXPを実行する。(コマンドモードに降りて ```run386 -nocrt FTCLIENT.EXP```とタイプ)
 
 この手順で予約したファイルが転送されます。FTCLIENT.EXPは```townsapp/exp```サブディレクトリにあります。
-
-えー、どうやってFTCLIENT.EXPをVMに転送するかは、遅いですがXMODEMが使えます。津軽上でWINK2みたいなターミナルを開いておいて、津軽のCUIで```XMODEMTOVM filename```みたいにタイプしてから、津軽上のターミナルでXMODEM転送を開始してください。
 
 
 
