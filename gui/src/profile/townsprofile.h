@@ -35,6 +35,10 @@ public:
 	int mouseByFlightstickZeroZonePercent=0;
 	int mouseByFlightstickScaleX=500,mouseByFlightstickScaleY=400;
 
+	bool useStrikeCommanderThrottleAxis=false;
+	int strikeCommanderThrottlePhysicalId=-1;
+	unsigned int strikeCommanderThrottleAxis=3;
+
 
 	std::string errorMsg;
 

@@ -145,6 +145,16 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 	sstream << "FLTMOSZZ " << mouseByFlightstickZeroZonePercent;
 	text.push_back(sstream.str());
 
+
+	sstream.str("");
+	sstream << "USESCTHR " << (useStrikeCommanderThrottleAxis ? 1 : 0);
+	text.push_back(sstream.str());
+
+	sstream.str("");
+	sstream << "SCTHRAXS " << strikeCommanderThrottlePhysicalId << " " << strikeCommanderThrottleAxis;
+	text.push_back(sstream.str());
+
+
 	return text;
 }
 bool TownsProfile::Deserialize(const std::vector <std::string> &text)
@@ -332,6 +342,21 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 				mouseByFlightstickZeroZonePercent=argv[1].Atoi();
 			}
 		}
+		else if(0==argv[0].STRCMP("USESCTHR"))
+		{
+			if(2<=argv.size())
+			{
+				useStrikeCommanderThrottleAxis=(0!=argv[1].Atoi());
+			}
+		}
+		else if(0==argv[0].STRCMP("SCTHRAXS"))
+		{
+			if(3<=argv.size())
+			{
+				strikeCommanderThrottlePhysicalId=argv[1].Atoi();
+				strikeCommanderThrottleAxis=argv[2].Atoi();
+			}
+		}
 		else
 		{
 			errorMsg="Unrecognized keyword:";
@@ -478,6 +503,19 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 
 		sstream.str("");
 		sstream << mouseByFlightstickZeroZonePercent;
+		argv.push_back(sstream.str());
+	}
+
+	if(true==useStrikeCommanderThrottleAxis)
+	{
+		argv.push_back("-STCMTHR");
+
+		sstream.str("");
+		sstream << strikeCommanderThrottlePhysicalId;
+		argv.push_back(sstream.str());
+
+		sstream.str("");
+		sstream << strikeCommanderThrottleAxis;
 		argv.push_back(sstream.str());
 	}
 
