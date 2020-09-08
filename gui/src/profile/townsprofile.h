@@ -37,7 +37,7 @@ public:
 
 	bool useStrikeCommanderThrottleAxis=false;
 	int strikeCommanderThrottlePhysicalId=-1;
-	unsigned int strikeCommanderThrottleAxis=3;
+	unsigned int strikeCommanderThrottleAxis=2;
 
 
 	std::string errorMsg;

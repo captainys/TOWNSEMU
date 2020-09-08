@@ -166,10 +166,19 @@ void ProfileDialog::Make(void)
 	{
 		auto tabId=AddTab(tab,"Mouse by Flight Joystick");
 		BeginAddTabItem(tab,tabId);
+
 		flightMouseEnableBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Use Mouse by Flight Joystick",YSTRUE);
 
 		AddStaticText(0,FSKEY_NULL,"JoystickID:",YSTRUE);
-		flightMousePhysIdTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",3,YSFALSE);
+		flightMousePhysIdDrp=AddEmptyDropList(0,FSKEY_NULL,"",8,4,4,YSFALSE);
+		flightMousePhysIdDrp->AddString("0",YSTRUE);
+		flightMousePhysIdDrp->AddString("1",YSFALSE);
+		flightMousePhysIdDrp->AddString("2",YSFALSE);
+		flightMousePhysIdDrp->AddString("3",YSFALSE);
+		flightMousePhysIdDrp->AddString("4",YSFALSE);
+		flightMousePhysIdDrp->AddString("5",YSFALSE);
+		flightMousePhysIdDrp->AddString("6",YSFALSE);
+		flightMousePhysIdDrp->AddString("7",YSFALSE);
 
 		AddStaticText(0,FSKEY_NULL,"CX:",YSTRUE);
 		flightMouseCenterXTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",5,YSFALSE);
@@ -194,6 +203,35 @@ void ProfileDialog::Make(void)
 			"This feature translates joystick to mouse coordinate and let you fly using a flight joystick device.\n"
 			"Need to be used with Application-Specific Augmentation if the application is not\n"
 			"using TBIOS for reading mouse."
+		,YSTRUE);
+
+
+		strikeCommanderThrottleEnableBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Use Throttle Axis for Strike Commander",YSTRUE);
+
+		AddStaticText(0,FSKEY_NULL,"JoystickID:",YSTRUE);
+		strikeCommanderThrottlePhysIdDrp=AddEmptyDropList(0,FSKEY_NULL,"",8,4,4,YSFALSE);
+		strikeCommanderThrottlePhysIdDrp->AddString("0",YSTRUE);
+		strikeCommanderThrottlePhysIdDrp->AddString("1",YSFALSE);
+		strikeCommanderThrottlePhysIdDrp->AddString("2",YSFALSE);
+		strikeCommanderThrottlePhysIdDrp->AddString("3",YSFALSE);
+		strikeCommanderThrottlePhysIdDrp->AddString("4",YSFALSE);
+		strikeCommanderThrottlePhysIdDrp->AddString("5",YSFALSE);
+		strikeCommanderThrottlePhysIdDrp->AddString("6",YSFALSE);
+		strikeCommanderThrottlePhysIdDrp->AddString("7",YSFALSE);
+
+		AddStaticText(0,FSKEY_NULL,"Axis:",YSFALSE);
+		strikeCommanderThrottlePhysIdDrp=AddEmptyDropList(0,FSKEY_NULL,"",8,4,4,YSFALSE);
+		strikeCommanderThrottlePhysIdDrp->AddString("0",YSFALSE);
+		strikeCommanderThrottlePhysIdDrp->AddString("1",YSFALSE);
+		strikeCommanderThrottlePhysIdDrp->AddString("2",YSTRUE);
+		strikeCommanderThrottlePhysIdDrp->AddString("3",YSFALSE);
+		strikeCommanderThrottlePhysIdDrp->AddString("4",YSFALSE);
+		strikeCommanderThrottlePhysIdDrp->AddString("5",YSFALSE);
+		strikeCommanderThrottlePhysIdDrp->AddString("6",YSFALSE);
+		strikeCommanderThrottlePhysIdDrp->AddString("7",YSFALSE);
+
+		AddStaticText(0,FSKEY_NULL,
+			"This option translates physical throttle axis movement to 1,2,3,...,9,0 keys."
 		,YSTRUE);
 
 		EndAddTabItem();
@@ -459,12 +497,18 @@ TownsProfile ProfileDialog::GetProfile(void) const
 
 
 	profile.mouseByFlightstickAvailable=(YSTRUE==flightMouseEnableBtn->GetCheck());
-	profile.mouseByFlightstickPhysicalId=flightMousePhysIdTxt->GetInteger();
+	profile.mouseByFlightstickPhysicalId=flightMousePhysIdDrp->GetSelection();
 	profile.mouseByFlightstickCenterX=flightMouseCenterXTxt->GetInteger();
 	profile.mouseByFlightstickCenterY=flightMouseCenterYTxt->GetInteger();
 	profile.mouseByFlightstickScaleX=flightMouseScaleXTxt->GetInteger();
 	profile.mouseByFlightstickScaleY=flightMouseScaleYTxt->GetInteger();
 	profile.mouseByFlightstickZeroZonePercent=flightMouseDeadZoneTxt->GetInteger();
+
+
+	profile.useStrikeCommanderThrottleAxis=(YSTRUE==strikeCommanderThrottleEnableBtn->GetCheck());
+	profile.strikeCommanderThrottlePhysicalId=strikeCommanderThrottlePhysIdDrp->GetSelection();
+	profile.strikeCommanderThrottleAxis=strikeCommanderThrottlePhysIdDrp->GetSelection();
+
 
 	return profile;
 }
@@ -553,10 +597,14 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 	appSpecificAugDrp->SelectByString(TownsAppToStr(profile.appSpecificAugmentation).c_str(),YSTRUE);
 
 	flightMouseEnableBtn->SetCheck(profile.mouseByFlightstickAvailable ? YSTRUE : YSFALSE);
-	flightMousePhysIdTxt->SetInteger(profile.mouseByFlightstickPhysicalId);
+	flightMousePhysIdDrp->Select(profile.mouseByFlightstickPhysicalId);
 	flightMouseCenterXTxt->SetInteger(profile.mouseByFlightstickCenterX);
 	flightMouseCenterYTxt->SetInteger(profile.mouseByFlightstickCenterY);
 	flightMouseScaleXTxt->SetInteger(profile.mouseByFlightstickScaleX);
 	flightMouseScaleYTxt->SetInteger(profile.mouseByFlightstickScaleY);
 	flightMouseDeadZoneTxt->SetInteger(profile.mouseByFlightstickZeroZonePercent);
+
+	strikeCommanderThrottleEnableBtn->SetCheck(profile.useStrikeCommanderThrottleAxis ? YSTRUE : YSFALSE);
+	strikeCommanderThrottlePhysIdDrp->Select(profile.strikeCommanderThrottlePhysicalId);
+	strikeCommanderThrottlePhysIdDrp->Select(profile.strikeCommanderThrottleAxis);
 }

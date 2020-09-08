@@ -85,13 +85,17 @@ public:
 	FsGuiButton *pretend386DXBtn;
 
 	FsGuiButton *flightMouseEnableBtn;
-	FsGuiTextBox *flightMousePhysIdTxt;
+	FsGuiDropList *flightMousePhysIdDrp;
 	FsGuiTextBox *flightMouseCenterXTxt;
 	FsGuiTextBox *flightMouseCenterYTxt;
 	FsGuiTextBox *flightMouseScaleXTxt;
 	FsGuiTextBox *flightMouseScaleYTxt;
 	FsGuiTextBox *flightMouseDeadZoneTxt;
 	FsGuiButton *flightMouseWC1,*flightMouseWC2,*flightMouseSTCM;
+
+	FsGuiButton *strikeCommanderThrottleEnableBtn;
+	FsGuiDropList *strikeCommanderThrottlePhysIdDrp;
+	FsGuiDropList *strikeCommanderThrottleAxisDrp;
 
 
 
