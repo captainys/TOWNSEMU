@@ -39,6 +39,19 @@ public:
 	int strikeCommanderThrottlePhysicalId=-1;
 	unsigned int strikeCommanderThrottleAxis=2;
 
+	class VirtualKey
+	{
+	public:
+		unsigned int townsKey;
+		int physId=-1;
+		unsigned int button;
+	};
+	enum
+	{
+		MAX_NUM_VIRTUALKEYS=8
+	};
+	VirtualKey virtualKeys[MAX_NUM_VIRTUALKEYS];
+
 
 	std::string errorMsg;
 

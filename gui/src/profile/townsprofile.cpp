@@ -3,6 +3,7 @@
 #include <ysclass.h>
 
 #include "townsprofile.h"
+#include "townsdef.h"
 
 
 
@@ -34,11 +35,37 @@ void TownsProfile::CleanUp(void)
 	{
 		f="";
 	}
+
+	gamePort[0]=TOWNS_GAMEPORTEMU_PHYSICAL0;
+	gamePort[1]=TOWNS_GAMEPORTEMU_MOUSE;
+
 	bootKeyComb=BOOT_KEYCOMB_NONE;
 	autoStart=false;
 	screenScaling=150;
+	pretend386DX=false;
 	freq=25;
 	appSpecificAugmentation=TOWNS_APPSPECIFIC_NONE;
+
+	memSizeInMB=4;
+	mouseIntegrationSpeed=256;
+
+	mouseByFlightstickAvailable=false;
+	mouseByFlightstickPhysicalId=-1;
+	mouseByFlightstickCenterX=320,mouseByFlightstickCenterY=200;
+	mouseByFlightstickZeroZonePercent=0;
+	mouseByFlightstickScaleX=500,mouseByFlightstickScaleY=400;
+
+	useStrikeCommanderThrottleAxis=false;
+	strikeCommanderThrottlePhysicalId=-1;
+	strikeCommanderThrottleAxis=2;
+
+	for(auto &vk : virtualKeys)
+	{
+		vk.townsKey=0;
+		vk.physId=-1;
+	}
+
+	catchUpRealTime=true;
 }
 std::vector <std::string> TownsProfile::Serialize(void) const
 {
@@ -154,12 +181,22 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 	sstream << "SCTHRAXS " << strikeCommanderThrottlePhysicalId << " " << strikeCommanderThrottleAxis;
 	text.push_back(sstream.str());
 
+	for(auto vk : virtualKeys)
+	{
+		if(0!=vk.townsKey && 0<=vk.physId)
+		{
+			sstream.str("");
+			sstream << "VIRTUKEY " << TownsKeyCodeToStr(vk.townsKey) << " " << vk.physId << " " << vk.button;
+			text.push_back(sstream.str());
+		}
+	}
 
 	return text;
 }
 bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 {
 	CleanUp();
+	unsigned int nVirtualKey=0;
 	for(auto &cppstr : text)
 	{
 		YsString str(cppstr.data());
@@ -357,6 +394,16 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 				strikeCommanderThrottleAxis=argv[2].Atoi();
 			}
 		}
+		else if(0==argv[0].STRCMP("VIRTUKEY"))
+		{
+			if(3<=argv.size() && nVirtualKey<MAX_NUM_VIRTUALKEYS)
+			{
+				virtualKeys[nVirtualKey].townsKey=TownsStrToKeyCode(argv[1].c_str());
+				virtualKeys[nVirtualKey].physId=argv[2].Atoi();
+				virtualKeys[nVirtualKey].button=argv[3].Atoi();
+				++nVirtualKey;
+			}
+		}
 		else
 		{
 			errorMsg="Unrecognized keyword:";
@@ -517,6 +564,23 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 		sstream.str("");
 		sstream << strikeCommanderThrottleAxis;
 		argv.push_back(sstream.str());
+	}
+
+	for(auto vk : virtualKeys)
+	{
+		if(0<=vk.physId && 0!=vk.townsKey)
+		{
+			argv.push_back("-VIRTKEY");
+			argv.push_back(TownsKeyCodeToStr(vk.townsKey));
+
+			sstream.str("");
+			sstream << vk.physId;
+			argv.push_back(sstream.str());
+
+			sstream.str("");
+			sstream << vk.button;
+			argv.push_back(sstream.str());
+		}
 	}
 
 	return argv;
