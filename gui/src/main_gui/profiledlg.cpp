@@ -132,6 +132,58 @@ void ProfileDialog::Make(void)
 	}
 
 	{
+		auto tabId=AddTab(tab,"Virtual Keys");
+		BeginAddTabItem(tab,tabId);
+
+		for(int row=0; row<TownsProfile::MAX_NUM_VIRTUALKEYS; ++row)
+		{
+			virtualKeyTownsKeyDrp[row]=AddEmptyDropList(0,FSKEY_NULL,"",20,20,20,YSTRUE);
+			virtualKeyTownsKeyDrp[row]->AddString("(None)",YSTRUE);
+			for(int townsKey=0; townsKey<256; ++townsKey)
+			{
+				auto str=TownsKeyCodeToStr(townsKey);
+				auto reverse=TownsStrToKeyCode(str);
+				if(TOWNS_JISKEY_NULL!=reverse)
+				{
+					virtualKeyTownsKeyDrp[row]->AddString(str.c_str(),YSFALSE);
+				}
+			}
+
+			AddStaticText(0,FSKEY_NULL,"JoystickID:",YSFALSE);
+			virtualKeyPhysIdDrp[row]=AddEmptyDropList(0,FSKEY_NULL,"",8,4,4,YSFALSE);
+			virtualKeyPhysIdDrp[row]->AddString("0",YSTRUE);
+			virtualKeyPhysIdDrp[row]->AddString("1",YSFALSE);
+			virtualKeyPhysIdDrp[row]->AddString("2",YSFALSE);
+			virtualKeyPhysIdDrp[row]->AddString("3",YSFALSE);
+			virtualKeyPhysIdDrp[row]->AddString("4",YSFALSE);
+			virtualKeyPhysIdDrp[row]->AddString("5",YSFALSE);
+			virtualKeyPhysIdDrp[row]->AddString("6",YSFALSE);
+			virtualKeyPhysIdDrp[row]->AddString("7",YSFALSE);
+
+			AddStaticText(0,FSKEY_NULL,"Button:",YSFALSE);
+			virtualKeyButtonDrp[row]=AddEmptyDropList(0,FSKEY_NULL,"",8,4,4,YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("0",YSTRUE);
+			virtualKeyButtonDrp[row]->AddString("1",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("2",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("3",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("4",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("5",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("6",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("7",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("8",YSTRUE);
+			virtualKeyButtonDrp[row]->AddString("9",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("10",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("11",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("12",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("13",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("14",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("15",YSFALSE);
+		}
+
+		EndAddTabItem();
+	}
+
+	{
 		auto tabId=AddTab(tab,"Boot");
 		BeginAddTabItem(tab,tabId);
 
@@ -510,6 +562,15 @@ TownsProfile ProfileDialog::GetProfile(void) const
 	profile.strikeCommanderThrottleAxis=strikeCommanderThrottlePhysIdDrp->GetSelection();
 
 
+	for(int row=0; row<TownsProfile::MAX_NUM_VIRTUALKEYS; ++row)
+	{
+		auto townsKeyStr=virtualKeyTownsKeyDrp[row]->GetSelectedString();
+		profile.virtualKeys[row].townsKey=TownsStrToKeyCode(townsKeyStr.c_str());
+		profile.virtualKeys[row].physId=virtualKeyPhysIdDrp[row]->GetSelection();
+		profile.virtualKeys[row].button=virtualKeyButtonDrp[row]->GetSelection();
+	}
+
+
 	return profile;
 }
 void ProfileDialog::SetProfile(const TownsProfile &profile)
@@ -607,4 +668,15 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 	strikeCommanderThrottleEnableBtn->SetCheck(profile.useStrikeCommanderThrottleAxis ? YSTRUE : YSFALSE);
 	strikeCommanderThrottlePhysIdDrp->Select(profile.strikeCommanderThrottlePhysicalId);
 	strikeCommanderThrottlePhysIdDrp->Select(profile.strikeCommanderThrottleAxis);
+
+
+	for(int row=0; row<TownsProfile::MAX_NUM_VIRTUALKEYS; ++row)
+	{
+		auto townsKeyStr=TownsKeyCodeToStr(profile.virtualKeys[row].townsKey);
+		virtualKeyTownsKeyDrp[row]->Select(0);
+		virtualKeyTownsKeyDrp[row]->SelectByString(townsKeyStr.c_str(),YSFALSE);
+
+		virtualKeyPhysIdDrp[row]->Select(profile.virtualKeys[row].physId);
+		virtualKeyButtonDrp[row]->Select(profile.virtualKeys[row].button);
+	}
 }

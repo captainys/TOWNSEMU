@@ -48,7 +48,7 @@ public:
 	};
 	enum
 	{
-		MAX_NUM_VIRTUALKEYS=8
+		MAX_NUM_VIRTUALKEYS=10,
 	};
 	VirtualKey virtualKeys[MAX_NUM_VIRTUALKEYS];
 
