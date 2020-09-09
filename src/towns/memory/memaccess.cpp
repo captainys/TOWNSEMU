@@ -187,7 +187,7 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 			{
 				bool VSYNC=crtcPtr->InVSYNC(townsPtr->state.townsTime);
 				bool HSYNC=crtcPtr->InHSYNC(townsPtr->state.townsTime);
-				unsigned char data=0;
+				unsigned char data=0x10;  // Bit4 is always 1.
 				data|=(VSYNC ? 4 : 0);
 				data|=(HSYNC ? 0x80 : 0);
 				return data;

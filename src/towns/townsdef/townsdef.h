@@ -17,19 +17,21 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 /* { */
 
 
-#include <string>
+#ifdef __cplusplus
+	#include <string>
 
+	const int PER_SECOND=1000000000;  // Unit: Nano Seconds
+	const int TOWNS_RENDERING_FREQUENCY=PER_SECOND/60;
 
-const int PER_SECOND=1000000000;  // Unit: Nano Seconds
-const int TOWNS_RENDERING_FREQUENCY=PER_SECOND/60;
+	const unsigned int TOWNS_CMOS_SIZE=8192;
+	const unsigned int TOWNS_WAVERAM_SIZE=65536;
+	const unsigned int TOWNS_SPRITERAM_SIZE=128*1024;
 
-const unsigned int TOWNS_CMOS_SIZE=8192;
-const unsigned int TOWNS_WAVERAM_SIZE=65536;
-const unsigned int TOWNS_SPRITERAM_SIZE=128*1024;
+	const unsigned int TBIOS_ID_FREQUENCY=100;
 
-const unsigned int TBIOS_ID_FREQUENCY=100;
+	const unsigned int TOWNS_NUM_GAMEPORTS=2;
+#endif
 
-const unsigned int TOWNS_NUM_GAMEPORTS=2;
 
 
 enum
@@ -541,8 +543,11 @@ enum
 
 	TOWNS_JISKEY_ALT=             0x5C, // Thanks, WINDY!
 };
-std::string TownsKeyCodeToStr(unsigned int keycode);
-unsigned int TownsStrToKeyCode(std::string str);
+
+#ifdef __cplusplus
+	std::string TownsKeyCodeToStr(unsigned int keycode);
+	unsigned int TownsStrToKeyCode(std::string str);
+#endif
 
 enum
 {
@@ -563,8 +568,10 @@ enum
 	BOOT_KEYCOMB_PAD_B,
 };
 
-unsigned int TownsStrToKeyComb(std::string str);
-std::string TownsKeyCombToStr(unsigned int keycomb);
+#ifdef __cplusplus
+	unsigned int TownsStrToKeyComb(std::string str);
+	std::string TownsKeyCombToStr(unsigned int keycomb);
+#endif
 
 enum
 {
@@ -615,8 +622,10 @@ enum
 	TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG7,
 };
 
-unsigned int TownsStrToGamePortEmu(std::string str);
-std::string TownsGamePortEmuToStr(unsigned int emu);
+#ifdef __cplusplus
+	unsigned int TownsStrToGamePortEmu(std::string str);
+	std::string TownsGamePortEmuToStr(unsigned int emu);
+#endif
 
 enum
 {
@@ -677,8 +686,11 @@ enum
 	TOWNS_APPSPECIFIC_LEMMINGS2,
 	TOWNS_APPSPECIFIC_STRIKECOMMANDER,
 };
-unsigned int TownsStrToApp(std::string str);
-std::string TownsAppToStr(unsigned int i);
+
+#ifdef __cplusplus
+	unsigned int TownsStrToApp(std::string str);
+	std::string TownsAppToStr(unsigned int i);
+#endif
 
 /* } */
 #endif

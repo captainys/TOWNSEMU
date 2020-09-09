@@ -109,6 +109,7 @@ FMTowns::FMTowns() :
 	debugger.GetSymTable().MakeDOSIntFuncLabel();
 	MakeINTInfo(debugger.GetSymTable());
 
+	allDevices.push_back(this);
 	allDevices.push_back(&pic);
 	allDevices.push_back(&dmac);
 	allDevices.push_back(&physMem);
@@ -434,7 +435,10 @@ void FMTowns::PowerOn(void)
 	cpu.PowerOn();
 	for(auto devPtr : allDevices)
 	{
-		devPtr->PowerOn();
+		if(devPtr!=this)
+		{
+			devPtr->PowerOn();
+		}
 	}
 }
 void FMTowns::Reset(void)
@@ -444,7 +448,10 @@ void FMTowns::Reset(void)
 	cpu.Reset();
 	for(auto devPtr : allDevices)
 	{
-		devPtr->Reset();
+		if(devPtr!=this)
+		{
+			devPtr->Reset();
+		}
 	}
 
 	var.disassemblePointer.SEG=cpu.state.CS().value;

@@ -520,6 +520,7 @@ public:
 	virtual unsigned int IOReadByte(unsigned int ioport);
 	virtual unsigned int IOReadWord(unsigned int ioport);
 	virtual unsigned int IOReadDword(unsigned int ioport);
+	virtual void RunScheduledTask(unsigned long long int townsTime);
 
 
 	/*! Electric Volume.  Returns 31 when max level.  0 when -32dB. */

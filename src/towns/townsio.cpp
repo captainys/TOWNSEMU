@@ -39,6 +39,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 		if(0!=(data&0x01))
 		{
 			debugger.ExternalBreak("RESET(IO 0x20 Bit 0)");
+			ScheduleDeviceCallBack(*this,state.townsTime+1);
+			state.resetReason=RESET_REASON_SOFTWARE;
 		}
 		break;
 	case TOWNSIO_SERIAL_ROM_CTRL://=        0x32,
@@ -184,4 +186,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 /* virtual */ unsigned int FMTowns::IOReadDword(unsigned int ioport)
 {
 	return Device::IOReadWord(ioport);
+}
+/* virtual */ void FMTowns::RunScheduledTask(unsigned long long int townsTime)
+{
+	cpu.Reset();
 }
