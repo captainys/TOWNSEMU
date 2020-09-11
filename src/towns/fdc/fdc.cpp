@@ -814,7 +814,8 @@ bool TownsFDC::WriteFault(void) const
 						auto bytesTransferred=DMACPtr->DeviceToMemory(DMACh,secPtr->sectorData);
 						if(secPtr->sectorData.size()!=bytesTransferred)
 						{
-							Abort("Not all sector data was transferred by DMA (FD->Mem).");
+							std::cout << "Warning: Not all sector data was transferred by DMA (FD->Mem)." << std::endl;
+							std::cout << "Tsugaru does not support resume DMA from middle of a sector." << std::endl;
 						}
 
 						// What am I supposed to if error during DMA?
