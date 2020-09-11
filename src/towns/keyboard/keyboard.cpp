@@ -82,7 +82,9 @@ void TownsKeyboard::SetBootKeyCombination(unsigned int keyComb)
 		// Seems to have the same effect as reset command to the command register. (Tested on TOWNS II MX with JIS Keyboard)
 		if(0xA1==data || 0xA2==data)
 		{
-			state.Reset();
+			// Looks like Writing A1 or A2 to keyboard data will return B0 7F E8 25, but not reset the keyboard controller.
+			// If it resets, F-29 Retaliator won't start (probably because keyboard INT is disabled in state.Reset()).
+			// state.Reset();
 			nFifoFilled=0;
 			PushFifo(0xB0,0x7F);
 			PushFifo(0xE8,0x25);
