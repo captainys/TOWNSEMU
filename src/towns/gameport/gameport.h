@@ -28,6 +28,7 @@ public:
 
 	enum
 	{
+		NONE,
 		MOUSE,
 		GAMEPAD,
 		CYBERSTICK,  // Hope for the future versions.

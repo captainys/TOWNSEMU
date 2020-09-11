@@ -86,10 +86,6 @@ void VM_TO_HOST(void)
 {
 	printf("VM TO HOST\n");
 
-	unsigned int sz=0;
-	sz=buf[4]|(buf[5]<<8)|(buf[6]<<16)|buf[7]<<24;
-	printf("File Size:%u\n",sz);
-
 	strncpy(fName,(char *)buf+64,MAX_FILE_NAME);
 	printf("File Name:%s\n",fName);
 
@@ -109,9 +105,12 @@ void VM_TO_HOST(void)
 		return;
 	}
 
+	unsigned int totalRead=0;
 	for(;;)
 	{
 		unsigned int readSize=fread(buf+8,1,SPRITE_RAM_SIZE-8,ifp);
+		totalRead+=readSize;
+		printf("Sending: %d\r",totalRead);
 
 		buf[1]=0;
 		buf[2]=0;
@@ -129,6 +128,7 @@ void VM_TO_HOST(void)
 			VMFILE_WRITE_BATCH(buf);
 		}
 	}
+	printf("\n");
 
 	if(NULL!=ifp)
 	{

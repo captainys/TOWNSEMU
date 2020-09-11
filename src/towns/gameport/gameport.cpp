@@ -39,90 +39,88 @@ void TownsGamePort::Port::Write(long long int townsTime,bool COM,unsigned char T
 unsigned char TownsGamePort::Port::Read(long long int townsTime)
 {
 	unsigned char data=0;
-	if(GAMEPAD==device || MOUSE==device)
+	if(true==COM)
 	{
-		if(true==COM)
+		data|=0x40;
+	}
+	if(MOUSE==device)
+	{
+		if(MOUSEREAD_RESET_TIMEOUT<(townsTime-lastAccessTime))
 		{
-			data|=0x40;
+			state=MOUSESTATE_XHIGH;
 		}
-		if(MOUSE==device)
+		if(true!=button[0])
 		{
-			if(MOUSEREAD_RESET_TIMEOUT<(townsTime-lastAccessTime))
-			{
-				state=MOUSESTATE_XHIGH;
-			}
-			if(true!=button[0])
-			{
-				data|=0x10;
-			}
-			if(true!=button[1])
-			{
-				data|=0x20;
-			}
-			switch(state)
-			{
-			case MOUSESTATE_XHIGH:
-				mouseMotionCopy=mouseMotion;
-				data|=((mouseMotionCopy.x()>>4)&0x0F);
-				break;
-			case MOUSESTATE_XLOW:
-				data|=((mouseMotionCopy.x()   )&0x0F);
-				break;
-			case MOUSESTATE_YHIGH:
-				data|=((mouseMotionCopy.y()>>4)&0x0F);
-				break;
-			case MOUSESTATE_YLOW:
-				data|=((mouseMotionCopy.y()   )&0x0F);
-				mouseMotion.Set(0,0);
-				break;
-			default:
-				data|=0x0F;
-				break;
-			}
-			data&=(0xCF|(TRIG<<4));
+			data|=0x10;
 		}
-		else if(GAMEPAD==device)
+		if(true!=button[1])
 		{
-			data|=0x3F;
-			if(true==run)
-			{
-				data&=0b11110011;
-			}
-			if(true==right)
-			{
-				data&=0b11110111;
-			}
-			if(true==left)
-			{
-				data&=0b11111011;
-			}
-
-			if(true==pause)
-			{
-				data&=0b11111100;
-			}
-			if(true==down)
-			{
-				data&=0b11111101;
-			}
-			if(true==up)
-			{
-				data&=0b11111110;
-			}
-			if(true==button[0])
-			{
-				data&=0b11101111;
-			}
-			if(true==button[1])
-			{
-				data&=0b11011111;
-			}
-			data&=(0xCF|(TRIG<<4));
+			data|=0x20;
 		}
-		else
+		switch(state)
 		{
+		case MOUSESTATE_XHIGH:
+			mouseMotionCopy=mouseMotion;
+			data|=((mouseMotionCopy.x()>>4)&0x0F);
+			break;
+		case MOUSESTATE_XLOW:
+			data|=((mouseMotionCopy.x()   )&0x0F);
+			break;
+		case MOUSESTATE_YHIGH:
+			data|=((mouseMotionCopy.y()>>4)&0x0F);
+			break;
+		case MOUSESTATE_YLOW:
+			data|=((mouseMotionCopy.y()   )&0x0F);
+			mouseMotion.Set(0,0);
+			break;
+		default:
 			data|=0x0F;
+			break;
 		}
+		data&=(0xCF|(TRIG<<4));
+	}
+	else if(GAMEPAD==device)
+	{
+		data|=0x3F;
+		if(true==run)
+		{
+			data&=0b11110011;
+		}
+		if(true==right)
+		{
+			data&=0b11110111;
+		}
+		if(true==left)
+		{
+			data&=0b11111011;
+		}
+
+		if(true==pause)
+		{
+			data&=0b11111100;
+		}
+		if(true==down)
+		{
+			data&=0b11111101;
+		}
+		if(true==up)
+		{
+			data&=0b11111110;
+		}
+		if(true==button[0])
+		{
+			data&=0b11101111;
+		}
+		if(true==button[1])
+		{
+			data&=0b11011111;
+		}
+		data&=(0xCF|(TRIG<<4));
+	}
+	else // if(NONE==device)
+	{
+		data|=0x3F;
+		data&=(0xCF|(TRIG<<4));
 	}
 	lastAccessTime=townsTime;
 	return data;

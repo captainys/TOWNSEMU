@@ -311,6 +311,7 @@ bool Setup(FMTowns &towns,Outside_World *outside_world,const TownsARGV &argv)
 		switch(argv.gamePort[i])
 		{
 		case TOWNS_GAMEPORTEMU_NONE:
+			towns.gameport.state.ports[i].device=TownsGamePort::NONE;
 			break;
 		case TOWNS_GAMEPORTEMU_MOUSE:
 		case TOWNS_GAMEPORTEMU_MOUSE_BY_KEY:

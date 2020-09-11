@@ -931,6 +931,26 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 				std::cout << "File not found." << std::endl;
 			}
 		}
+		else if(2<=cmd.argv.size())
+		{
+			if(true==cpputil::FileExists(cmd.argv[1]))
+			{
+				std::string p,file;
+				cpputil::SeparatePathFile(p,file,cmd.argv[1]);
+				towns.var.ftfr.AddHostToVM(cmd.argv[1],file);
+				std::cout << "Schedule Host to VM Tranfer" << std::endl;
+				std::cout << "From: " << cmd.argv[1] << std::endl;
+				std::cout << "To:   " << file << std::endl;
+			}
+			else
+			{
+				std::cout << "File not found." << std::endl;
+			}
+		}
+		else
+		{
+			PrintError(ERROR_TOO_FEW_ARGS);
+		}
 		break;
 	case CMD_VM_TO_HOST_FILE_TRANSFER:
 		if(3<=cmd.argv.size())
@@ -939,6 +959,19 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 			std::cout << "Schedule VM to Host Tranfer" << std::endl;
 			std::cout << "From: " << cmd.argv[1] << std::endl;
 			std::cout << "To:   " << cmd.argv[2] << std::endl;
+		}
+		else if(2<=cmd.argv.size())
+		{
+			std::string p,file;
+			cpputil::SeparatePathFile(p,file,cmd.argv[1]);
+			towns.var.ftfr.AddVMToHost(cmd.argv[1],file);
+			std::cout << "Schedule VM to Host Tranfer" << std::endl;
+			std::cout << "From: " << cmd.argv[1] << std::endl;
+			std::cout << "To:   " << file << std::endl;
+		}
+		else
+		{
+			PrintError(ERROR_TOO_FEW_ARGS);
 		}
 		break;
 

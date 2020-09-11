@@ -80,54 +80,46 @@ void TownsKeyboard::SetBootKeyCombination(unsigned int keyComb)
 	case TOWNSIO_KEYBOARD_DATA://       0x600, // [2] pp.234
 		break;
 	case TOWNSIO_KEYBOARD_STATUS_CMD:// 0x602, // [2] pp.231
+		//Observation from FM Towns II MX with JIS Keyboard (9/11/2020)
+		//Command Write(I/O 0602H)  ->  Read (I/O 0600H)
+		//     A1                       B0 7F E8 25
+		//     A1 A1                    B0 7F
+		//     A0 A1                    B0 7F E8 25
+		//     A0                       B0 7F E8 25 00 00 00 ......
+
 		// [2] FM Towns Technical Data Book pp.232 Table I-7-3 lists command A1 as reset.
 		// But, SYSROM sends command A0 then A1.  Command A0 is not listed in the table.
 		// SYSROM sends command A0 then A1, and expects return A0,7F from the keyboard.
 		// Keyboard BIOS sends command A1 then A1, and not expecting any return.
 		// Probably command A0 is hard reset, and A1 is soft reset, and the keyboard
 		// returns A0,7F after hard reset?
-		if(0xA0==data) // RESET pp.232
+
+		// Rewrite based on the observation
+		if(0xA1==state.lastCmd && 0xA1==data)
 		{
 			state.Reset();
 			nFifoFilled=0;
-			PushFifo(0xA0,0x7F);
-			// pp.235 and 
-			// Also based on Reverse Engineering of FM Towns IIMX System ROM
-			/* switch(afterReset)
-			{
-			case SEND_CD_AFTER_RESET:
-				PushFifo(0xA0,0x2C);
-				PushFifo(0xA0,0x20);
-				PushFifo(0xA0,0x2C);
-				PushFifo(0xA0,0x20);
-				PushFifo(0xA0,0x2C);
-				PushFifo(0xA0,0x20);
-				break;
-			case SEND_F0_AFTER_RESET:
-				PushFifo(0xA0,0x21);
-				PushFifo(0xA0,0x0B);
-				PushFifo(0xA0,0x21);
-				PushFifo(0xA0,0x0B);
-				PushFifo(0xA0,0x21);
-				PushFifo(0xA0,0x0B);
-				break;
-			case SEND_F1_AFTER_RESET:
-				PushFifo(0xA0,0x21);
-				PushFifo(0xA0,0x02);
-				PushFifo(0xA0,0x21);
-				PushFifo(0xA0,0x02);
-				PushFifo(0xA0,0x21);
-				PushFifo(0xA0,0x02);
-				break;
-			} */
+			PushFifo(0xB0,0x7F);
+		}
+		else if(0xA0==state.lastCmd && 0xA1==data)
+		{
+			state.Reset();
+			nFifoFilled=0;
+			PushFifo(0xB0,0x7F);
+			PushFifo(0xE8,0x25);
+		}
+		else if(0xA0==data)
+		{
+			state.Reset();
+			nFifoFilled=0;
+			PushFifo(0xB0,0x7F);
+			PushFifo(0xE8,0x25);
 		}
 		else if(0xA1==data)
 		{
-			if(0xA0!=state.lastCmd) // Don't clear fifo buffer if it is A0,A1 from SYSROM.
-			{
-				state.Reset();
-				nFifoFilled=0;
-			}
+			state.Reset();
+			nFifoFilled=0;
+			PushFifo(0xB0,0x7F);
 		}
 		state.lastCmd=data;
 		break;
