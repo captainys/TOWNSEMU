@@ -7,6 +7,8 @@
 					PUBLIC	A1A1
 					PUBLIC	A1
 					PUBLIC	A0
+					PUBLIC	A1TODATA
+					PUBLIC	A2TODATA
 
 
 
@@ -144,6 +146,60 @@ A0						PROC
 						POP		EBP
 						RET
 A0						ENDP
+
+
+
+A1TODATA				PROC
+						PUSH	EBP
+						MOV		EBP,ESP
+						PUSH	ECX
+						PUSH	EBX
+						PUSH	EDX
+						PUSH	EDI
+						CLI
+
+						MOV		DX,0600H
+						MOV		AL,0A1H
+						OUT		DX,AL
+
+						MOV		EDI,[EBP+8]
+						CALL	READ
+
+						STI
+						POP		EDI
+						POP		EDX
+						POP		EBX
+						POP		ECX
+						POP		EBP
+						RET
+A1TODATA				ENDP
+
+
+
+A2TODATA				PROC
+						PUSH	EBP
+						MOV		EBP,ESP
+						PUSH	ECX
+						PUSH	EBX
+						PUSH	EDX
+						PUSH	EDI
+						CLI
+
+						MOV		DX,0600H
+						MOV		AL,0A2H
+						OUT		DX,AL
+
+						MOV		EDI,[EBP+8]
+						CALL	READ
+
+						STI
+						POP		EDI
+						POP		EDX
+						POP		EBX
+						POP		ECX
+						POP		EBP
+						RET
+A2TODATA				ENDP
 
 
 

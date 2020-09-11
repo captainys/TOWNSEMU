@@ -19,6 +19,24 @@ int main(void)
 	int i,n;
 	unsigned char res[128];
 
+
+	n=A1TODATA(res);
+	printf("  A1 TO DATA->\n",res);
+	for(i=0; i<32; ++i)
+	{
+		printf("%02x ",res[i]);
+	}
+	printf("\n");
+
+	n=A2TODATA(res);
+	printf("  A2 TO DATA->\n",res);
+	for(i=0; i<32; ++i)
+	{
+		printf("%02x ",res[i]);
+	}
+	printf("\n");
+
+
 	n=A1(res);
 	printf("  A1->\n",res);
 	for(i=0; i<n; ++i)
@@ -45,6 +63,23 @@ int main(void)
 
 	n=A0(res);
 	printf("  A0->\n",res);
+	for(i=0; i<32; ++i)
+	{
+		printf("%02x ",res[i]);
+	}
+	printf("\n");
+
+
+	n=A1TODATA(res);
+	printf("  A1 TO DATA->\n",res);
+	for(i=0; i<32; ++i)
+	{
+		printf("%02x ",res[i]);
+	}
+	printf("\n");
+
+	n=A2TODATA(res);
+	printf("  A2 TO DATA->\n",res);
 	for(i=0; i<32; ++i)
 	{
 		printf("%02x ",res[i]);

@@ -78,6 +78,15 @@ void TownsKeyboard::SetBootKeyCombination(unsigned int keyComb)
 	switch(ioport)
 	{
 	case TOWNSIO_KEYBOARD_DATA://       0x600, // [2] pp.234
+		// FM-OASYS and Keyboard BIOS writes A1, A2 to data register.
+		// Seems to have the same effect as reset command to the command register. (Tested on TOWNS II MX with JIS Keyboard)
+		if(0xA1==data || 0xA2==data)
+		{
+			state.Reset();
+			nFifoFilled=0;
+			PushFifo(0xB0,0x7F);
+			PushFifo(0xE8,0x25);
+		}
 		break;
 	case TOWNSIO_KEYBOARD_STATUS_CMD:// 0x602, // [2] pp.231
 		//Observation from FM Towns II MX with JIS Keyboard (9/11/2020)
