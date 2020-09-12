@@ -71,6 +71,7 @@ TownsSCSI::TownsSCSI(class FMTowns *townsPtr) : Device(townsPtr)
 	commandLength[SCSICMD_TEST_UNIT_READY]=6;
 	commandLength[SCSICMD_REZERO_UNIT]    =6;
 	commandLength[SCSICMD_READ_6]         =6;
+	commandLength[SCSICMD_WRITE_6]        =6;
 	commandLength[SCSICMD_INQUIRY]        =6;
 	commandLength[SCSICMD_PREVENT_REMOVAL]=6;
 	commandLength[SCSICMD_READ_CAPACITY]  =10;
@@ -479,6 +480,7 @@ void TownsSCSI::ExecSCSICommand(void)
 			EnterStatusPhase();
 		}
 		break;
+	case SCSICMD_WRITE_6:
 	case SCSICMD_WRITE_10:
 		if(SCSIDEVICE_HARDDISK==state.dev[state.selId].devType)
 		{
@@ -647,15 +649,31 @@ void TownsSCSI::ExecSCSICommand(void)
 			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DATA_INTERVAL);
 			switch(state.commandBuffer[0])
 			{
+			case SCSICMD_WRITE_6:
 			case SCSICMD_WRITE_10:
 				if(SCSIDEVICE_HARDDISK==state.dev[state.selId].devType)
 				{
-					unsigned int LBA=(state.commandBuffer[2]<<24)|
-					                 (state.commandBuffer[3]<<16)|
-					                 (state.commandBuffer[4]<<8)|
-					                  state.commandBuffer[5];
-					unsigned int LEN=(state.commandBuffer[7]<<8)|
-					                  state.commandBuffer[8];
+					unsigned int LBA,LEN;
+					if(state.commandBuffer[0]==SCSICMD_WRITE_10)
+					{
+						LBA=(state.commandBuffer[2]<<24)|
+						    (state.commandBuffer[3]<<16)|
+						    (state.commandBuffer[4]<<8)|
+						     state.commandBuffer[5];
+						LEN=(state.commandBuffer[7]<<8)|
+						     state.commandBuffer[8];
+					}
+					else
+					{
+						LBA=((state.commandBuffer[1]&0x1F)<<16)|
+						    (state.commandBuffer[2]<<8)|
+						     state.commandBuffer[3];
+						LEN= state.commandBuffer[4];
+						if(0==LEN)
+						{
+							LEN=256;
+						}
+					}
 
 					LBA*=HARDDISK_SECTOR_LENGTH;
 					LEN*=HARDDISK_SECTOR_LENGTH;

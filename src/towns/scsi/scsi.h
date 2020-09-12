@@ -71,6 +71,7 @@ public:
 		SCSICMD_TEST_UNIT_READY =0x00,  // [9] 8.2.16 TEST UNIT READY Command
 		SCSICMD_REZERO_UNIT     =0x01,  // [9] 9.2.13 REZERO UNIT command
 		SCSICMD_READ_6          =0x08,  // [9] 9.2.5 READ(6) command
+		SCSICMD_WRITE_6         =0x0A,  // [9] 9.2.20 WRITE(6) command
 		SCSICMD_INQUIRY         =0x12,
 		SCSICMD_PREVENT_REMOVAL =0x1E,  // [9] 9.2.4 PREVENT ALLOW MEDIUM REMOVAL command
 		SCSICMD_READ_CAPACITY   =0x25,  // [9] 9.2.7 READ CAPACITY command
