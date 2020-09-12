@@ -38,7 +38,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 		}
 		if(0!=(data&0x01))
 		{
-			debugger.ExternalBreak("RESET(IO 0x20 Bit 0)");
 			ScheduleDeviceCallBack(*this,state.townsTime+1);
 			state.resetReason=RESET_REASON_SOFTWARE;
 		}

@@ -70,6 +70,7 @@ TownsSCSI::TownsSCSI(class FMTowns *townsPtr) : Device(townsPtr)
 	}
 	commandLength[SCSICMD_TEST_UNIT_READY]=6;
 	commandLength[SCSICMD_REZERO_UNIT]    =6;
+	commandLength[SCSICMD_READ_6]         =6;
 	commandLength[SCSICMD_INQUIRY]        =6;
 	commandLength[SCSICMD_PREVENT_REMOVAL]=6;
 	commandLength[SCSICMD_READ_CAPACITY]  =10;
@@ -304,20 +305,17 @@ void TownsSCSI::EnterStatusPhase(void)
 		if(0!=(data&0x08))
 		{
 		}
-		if(0!=(data&0x10))
-		{
-			state.ATN=true;
-		}
+		state.ATN=(0!=(data&0x10));
 		if(0!=(data&0x20))
 		{
 		}
-		if(0!=(data&0x40))
+		state.IMSK=(0!=(data&0x40));
+		state.WEN=(0!=(data&0x80));
+
+		if(true!=IRQEnabled())
 		{
-			state.IMSK=true;
-		}
-		if(0!=(data&0x80))
-		{
-			state.WEN=true;
+			// Probably resetting IMSK should also clear IRR.
+			townsPtr->pic.SetInterruptRequestBit(TOWNSIRQ_SCSI,false);
 		}
 		break;
 	}
@@ -467,6 +465,7 @@ void TownsSCSI::ExecSCSICommand(void)
 			EnterStatusPhase();
 		}
 		break;
+	case SCSICMD_READ_6:
 	case SCSICMD_READ_10:
 		if(SCSIDEVICE_HARDDISK==state.dev[state.selId].devType)
 		{
@@ -564,17 +563,33 @@ void TownsSCSI::ExecSCSICommand(void)
 					}
 				}
 				break;
+			case SCSICMD_READ_6:
 			case SCSICMD_READ_10:
 				if(SCSIDEVICE_HARDDISK==state.dev[state.selId].devType)
 				{
 					townsPtr->NotifyDiskRead();
 
-					unsigned int LBA=(state.commandBuffer[2]<<24)|
-					                 (state.commandBuffer[3]<<16)|
-					                 (state.commandBuffer[4]<<8)|
-					                  state.commandBuffer[5];
-					unsigned int LEN=(state.commandBuffer[7]<<8)|
-					                  state.commandBuffer[8];
+					unsigned int LBA,LEN;
+
+					if(SCSICMD_READ_10==state.commandBuffer[0])
+					{
+						LBA=(state.commandBuffer[2]<<24)|
+						    (state.commandBuffer[3]<<16)|
+						    (state.commandBuffer[4]<<8)|
+						     state.commandBuffer[5];
+						LEN=(state.commandBuffer[7]<<8)|
+						     state.commandBuffer[8];
+					}
+					else
+					{
+						LBA=(state.commandBuffer[2]<<8)|
+						     state.commandBuffer[3];
+						LEN= state.commandBuffer[4];
+						if(0==LEN)
+						{
+							LEN=256;
+						}
+					}
 
 					LBA*=HARDDISK_SECTOR_LENGTH;
 					LEN*=HARDDISK_SECTOR_LENGTH;
