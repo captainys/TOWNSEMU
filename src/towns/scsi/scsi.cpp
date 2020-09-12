@@ -582,7 +582,8 @@ void TownsSCSI::ExecSCSICommand(void)
 					}
 					else
 					{
-						LBA=(state.commandBuffer[2]<<8)|
+						LBA=((state.commandBuffer[1]&0x1F)<<16)|
+						    (state.commandBuffer[2]<<8)|
 						     state.commandBuffer[3];
 						LEN= state.commandBuffer[4];
 						if(0==LEN)
