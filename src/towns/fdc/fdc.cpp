@@ -1032,6 +1032,7 @@ bool TownsFDC::WriteFault(void) const
 					std::vector <D77File::D77Disk::D77Sector> sectors;
 					for(unsigned int ptr=0; ptr<formatData.size()-4; ++ptr)
 					{
+						// FM-OASYS writes 00 00 00 FE, 00 00 00 FB for formatting the track 0 side 0.
 						if((0xA1==formatData[ptr] &&
 						    0xA1==formatData[ptr+1] &&
 						    0xA1==formatData[ptr+2] &&
@@ -1039,7 +1040,12 @@ bool TownsFDC::WriteFault(void) const
 						   (0xF5==formatData[ptr] &&
 						    0xF5==formatData[ptr+1] &&
 						    0xF5==formatData[ptr+2] &&
-						    0xFE==formatData[ptr+3])) // Address Mark
+						    0xFE==formatData[ptr+3]) ||
+						   (0x00==formatData[ptr] &&
+						    0x00==formatData[ptr+1] &&
+						    0x00==formatData[ptr+2] &&
+						    0xFE==formatData[ptr+3])
+						    ) // Address Mark
 						{
 							C=formatData[ptr+4];
 							H=formatData[ptr+5];
@@ -1055,7 +1061,12 @@ bool TownsFDC::WriteFault(void) const
 						        (0xF5==formatData[ptr] &&
 						         0xF5==formatData[ptr+1] &&
 						         0xF5==formatData[ptr+2] &&
-						         0xFB==formatData[ptr+3])) // Data Mark
+						         0xFB==formatData[ptr+3]) ||
+						        (0x00==formatData[ptr] &&
+						         0x00==formatData[ptr+1] &&
+						         0x00==formatData[ptr+2] &&
+						         0xFB==formatData[ptr+3])
+						         ) // Data Mark
 						{
 							auto dataPtr=formatData.data()+ptr+4;
 							unsigned int sectorSize=128*(1<<N);
