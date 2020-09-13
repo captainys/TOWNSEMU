@@ -630,11 +630,13 @@ unsigned int TownsFDC::DriveSelect(void) const
 
 unsigned int TownsFDC::GetDriveMode(void) const
 {
-	if(true!=state.DDEN)
-	{
-		return MEDIA_SINGLE_DENSITY;
-	}
-	else if(true==state.HISPD && true==state.MODEB)
+	// Probably DDEN==0 means 2D (320K)  I'm not sure.
+	// OASYS tries to write to 2HD disk with DDEN==0.
+	// if(true!=state.DDEN)
+	// {
+	// 	return MEDIA_SINGLE_DENSITY;
+	// }
+	if(true==state.HISPD && true==state.MODEB)
 	{
 		return MEDIA_2HD_1440KB;
 	}
@@ -1243,6 +1245,8 @@ std::vector <std::string> TownsFDC::GetStatusText(void) const
 			text.back()+=imgFilePtr->fName;
 			text.back()+=")";
 		}
+		text.back()+="  MEDIA:";
+		text.back()+=MediaTypeToString(drv.mediaType);
 
 		text.push_back(line);
 		text.back()+="TRKPOS:"+cpputil::Uitoa(drv.trackPos)+" TRKREG:"+cpputil::Uitoa(drv.trackReg);
@@ -1270,7 +1274,9 @@ std::vector <std::string> TownsFDC::GetStatusText(void) const
 	text.back()+=(state.DDEN ? "1" : "0");
 	text.back()+=" IRQMSK:";
 	text.back()+=(state.IRQMSK ? "1" : "0");
-	
+
+	text.push_back("DRIVE MODE:");
+	text.back()+=MediaTypeToString(GetDriveMode());
 
 	text.push_back(line);
 	text.back()="RecordType:";
@@ -1342,4 +1348,26 @@ std::vector <std::string> TownsFDC::GetStatusText(void) const
 		break;
 	}
 	return str;
+}
+
+/* static */ std::string TownsFDC::MediaTypeToString(unsigned int mediaType)
+{
+	switch(mediaType)
+	{
+	default:
+	case MEDIA_UNKNOWN:
+		return "Unknown/Empty";
+	case MEDIA_2D:
+		return "2D";
+	case MEDIA_2DD_640KB:
+		return "2DD 640KB";
+	case MEDIA_2DD_720KB:
+		return "2DD 720KB";
+	case MEDIA_2HD_1232KB:
+		return "2HD 1232KB";
+	case MEDIA_2HD_1440KB:
+		return "2DD 1440KB";
+	case MEDIA_SINGLE_DENSITY:
+		return "1DD?";
+	}
 }

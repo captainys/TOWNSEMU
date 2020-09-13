@@ -227,6 +227,7 @@ public:
 
 	std::vector <std::string> GetStatusText(void) const;
 	static std::string FDCCommandToExplanation(unsigned char cmd);
+	static std::string MediaTypeToString(unsigned int mediaType);
 };
 
 
