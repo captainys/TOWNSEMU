@@ -1174,7 +1174,17 @@ bool TownsFDC::WriteFault(void) const
 	{
 	case TOWNSIO_FDC_STATUS_COMMAND://       0x200, // [2] pp.253
 		PICPtr->SetInterruptRequestBit(TOWNSIRQ_FDC,false);
-		return state.lastStatus;
+		data=state.lastStatus;
+		// This status byte is supposed to be a command status.  My original interpretation was it updates
+		// only when FDC command was issued.
+		// However, FM-OASYS reads this byte and checks bit 7 for drive-not ready without issuing a command.
+		// Presumably, bit 7 of this byte returns current drive-ready state.
+		data=state.lastStatus;
+		if(true==DriveReady())
+		{
+			data&=0x7F;
+		}
+		return data;
 	case TOWNSIO_FDC_TRACK://                0x202, // [2] pp.253
 		break;
 	case TOWNSIO_FDC_SECTOR://               0x204, // [2] pp.253
