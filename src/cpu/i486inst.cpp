@@ -4166,13 +4166,14 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	}
 
 	bool EIPSetByInstruction=false;
+	int EIPIncrement=inst.numBytes;
 	unsigned int clocksPassed=0;
 
 	switch(opCodeRenumberTable[inst.opCode])
 	{
 	case I486_RENUMBER_UNDEFINED_SHOOT_INT6:
 		Interrupt(INT_INVALID_OPCODE,mem,0,0);
-		EIPSetByInstruction=true;
+		EIPIncrement=0;
 		clocksPassed=26;  // ? How many clocks should I use?
 		break;
 
@@ -4295,7 +4296,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				if(0==value.byteData[0])
 				{
 					Interrupt(0,mem,0,0); // [1] pp.26-28
-					EIPSetByInstruction=true;
+					EIPIncrement=0;
 					// I don't think INT 0 was issued unless division by zero.
 					// I thought it just overflew if quo didn't fit in the target register, am I wrong?
 				}
@@ -4315,7 +4316,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				if(0==value.byteData[0])
 				{
 					Interrupt(0,mem,0,0); // [1] pp.26-28
-					EIPSetByInstruction=true;
+					EIPIncrement=0;
 					// I don't think INT 0 was issued unless division by zero.
 					// I thought it just overflew if quo didn't fit in the target register, am I wrong?
 				}
@@ -4451,7 +4452,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
 				if(true==state.exception)
 				{
-					EIPSetByInstruction=true;
+					EIPIncrement=0;
 				}
 				else
 				{
@@ -4513,13 +4514,13 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				unsigned int denom=value.GetAsDword();
 				if(true==state.exception)
 				{
-					EIPSetByInstruction=true;
+					EIPIncrement=0;
 				}
 				else if(0==denom)
 				{
 					clocksPassed=40;
 					Interrupt(0,mem,0,0); // [1] pp.26-28
-					EIPSetByInstruction=true;
+					EIPIncrement=0;
 					// I don't think INT 0 was issued unless division by zero.
 					// I thought it just overflew if quo didn't fit in the target register, am I wrong?
 				}
@@ -4551,13 +4552,13 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				int denom=value.GetAsSignedDword();
 				if(true==state.exception)
 				{
-					EIPSetByInstruction=true;
+					EIPIncrement=0;
 				}
 				else if(0==denom)
 				{
 					clocksPassed=40;
 					Interrupt(0,mem,0,0); // [1] pp.26-28
-					EIPSetByInstruction=true;
+					EIPIncrement=0;
 					// I don't think INT 0 was issued unless division by zero.
 					// I thought it just overflew if quo didn't fit in the target register, am I wrong?
 				}
@@ -4839,7 +4840,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{
 				RaiseException(EXCEPTION_UD,0);
 				HandleException(true,mem,inst.numBytes);
-				EIPSetByInstruction=true;
+				EIPIncrement=0;
 				break;
 			}
 
@@ -4900,7 +4901,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				if(idx<min || max<idx)
 				{
 					Interrupt(5,mem,0,0); // inst.numBytes,inst.numBytes ?
-					EIPSetByInstruction=true;
+					EIPIncrement=0;
 				}
 			}
 			else
@@ -4908,13 +4909,13 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				if(IsInRealMode() || 0!=(state.EFLAGS&EFLAGS_VIRTUAL86))
 				{
 					Interrupt(6,mem,0,0);
-					EIPSetByInstruction=true;
+					EIPIncrement=0;
 				}
 				else
 				{
 					RaiseException(EXCEPTION_UD,0);
 					HandleException(true,mem,inst.numBytes);
-					EIPSetByInstruction=true;
+					EIPIncrement=0;
 					break;
 				}
 			}
@@ -5145,7 +5146,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{
 				state.EIP=op1.offset;
 			}
-			EIPSetByInstruction=true;
+			EIPIncrement=0;
 		}
 		break;
 	case I486_RENUMBER_CALL_REL://   0xE8,
@@ -5168,7 +5169,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			}
 
 			state.EIP=destin;
-			EIPSetByInstruction=true;
+			EIPIncrement=0;
 		}
 		break;
 	case I486_RENUMBER_JMP_REL://          0xE9,   // cw or cd
@@ -5180,7 +5181,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			destin&=operandSizeMask[inst.operandSize>>3];
 
 			state.EIP=destin;
-			EIPSetByInstruction=true;
+			EIPIncrement=0;
 		}
 		break;
 
@@ -5376,7 +5377,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_RENUMBER_FWAIT://      0x9B,
 		if(true==state.fpuState.ExceptionPending())
 		{
-			EIPSetByInstruction=true;
+			EIPIncrement=0;
 		}
 		clocksPassed=3;
 		break;
@@ -5544,7 +5545,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				clocksPassed+=(IsInRealMode() ? 17 : 10); // Protected Mode 32 if CPL>IOPL
 				if(true==TakeIOReadException(GetDX(),1,mem,inst.numBytes))
 				{
-					EIPSetByInstruction=true;
+					EIPIncrement=0;
 					break;
 				}
 				auto ioRead=IOIn8(io,GetDX());
@@ -5567,7 +5568,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		if(true==TakeIOReadException(inst.EvalUimm8(),1,mem,inst.numBytes))
 		{
-			EIPSetByInstruction=true;
+			EIPIncrement=0;
 			break;
 		}
 		{
@@ -5589,7 +5590,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		if(true==TakeIOReadException(inst.EvalUimm8(),inst.operandSize>>3,mem,inst.numBytes))
 		{
-			EIPSetByInstruction=true;
+			EIPIncrement=0;
 			break;
 		}
 		if(16==inst.operandSize)
@@ -5620,7 +5621,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		if(true==TakeIOReadException(GetDX(),1,mem,inst.numBytes))
 		{
-			EIPSetByInstruction=true;
+			EIPIncrement=0;
 			break;
 		}
 		{
@@ -5642,7 +5643,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		if(true==TakeIOReadException(GetDX(),inst.operandSize>>3,mem,inst.numBytes))
 		{
-			EIPSetByInstruction=true;
+			EIPIncrement=0;
 			break;
 		}
 		if(16==inst.operandSize)
@@ -5852,7 +5853,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 							}
 						}
 						state.EIP=(value.GetAsDword()&operandSizeMask[inst.operandSize>>3]);
-						EIPSetByInstruction=true;
+						EIPIncrement=0;
 					}
 				}
 				break;
@@ -5910,7 +5911,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 						{
 							Abort("CALLF/JMPF to Gate");
 						}
-						EIPSetByInstruction=true;
+						EIPIncrement=0;
 					}
 					if(3==REG) // CALLF Indirect
 					{
@@ -6025,19 +6026,19 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 	case I486_RENUMBER_INT3://       0xCC,
 		Interrupt(3,mem,1,1);
-		EIPSetByInstruction=true;
+		EIPIncrement=0;
 		clocksPassed=26;
 		break;
 	case I486_RENUMBER_INT://        0xCD,
 		clocksPassed=(IsInRealMode() ? 30 : 44);
 		Interrupt(inst.EvalUimm8(),mem,2,2);
-		EIPSetByInstruction=true;
+		EIPIncrement=0;
 		break;
 	case I486_RENUMBER_INTO://       0xCE,
 		if(GetOF())
 		{
 			Interrupt(inst.EvalUimm8(),mem,2,2);
-			EIPSetByInstruction=true;
+			EIPIncrement=0;
 			clocksPassed=(IsInRealMode() ? 28 : 46);
 		}
 		else
@@ -6052,7 +6053,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			auto offset=inst.EvalSimm8();
 			state.EIP=((state.EIP+offset+inst.numBytes)&operandSizeMask[inst.operandSize>>3]);
 			clocksPassed=3;
-			EIPSetByInstruction=true;
+			EIPIncrement=0;
 		}
 		break;
 	case I486_RENUMBER_JO_REL8:   // 0x70,
@@ -6238,7 +6239,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				Abort("JMPF to Gate");
 			}
 			state.EIP=op1.offset;
-			EIPSetByInstruction=true;
+			EIPIncrement=0;
 		}
 		break;
 
@@ -6467,7 +6468,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				{
 					SetECX(ECX);
 					HandleException(true,mem,inst.numBytes);
-					EIPSetByInstruction=true;
+					EIPIncrement=0;
 				}
 				clocksPassed+=5;
 				ECX=state.ECX();
@@ -6499,7 +6500,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				{
 					SetECX(ECX);
 					HandleException(true,mem,inst.numBytes);
-					EIPSetByInstruction=true;
+					EIPIncrement=0;
 				}
 				clocksPassed+=5;
 				ECX=state.ECX();
@@ -6535,12 +6536,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				if(IsInRealMode())
 				{
 					Interrupt(6,mem,0,0);
-					EIPSetByInstruction=true;
+					EIPIncrement=0;
 				}
 				else
 				{
 					RaiseException(EXCEPTION_UD,0);
-					EIPSetByInstruction=true;
+					EIPIncrement=0;
 				}
 			}
 			break;
@@ -6568,12 +6569,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				if(IsInRealMode())
 				{
 					Interrupt(6,mem,0,0);
-					EIPSetByInstruction=true;
+					EIPIncrement=0;
 				}
 				else
 				{
 					RaiseException(EXCEPTION_UD,0);
-					EIPSetByInstruction=true;
+					EIPIncrement=0;
 				}
 			}
 			break;
@@ -6697,7 +6698,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			if(true==state.exception)
 			{
 				HandleException(true,mem,inst.numBytes);
-				EIPSetByInstruction=true;
+				EIPIncrement=0;
 			}
 			clocksPassed=1;
 		}
@@ -6715,7 +6716,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			else
 			{
 				HandleException(true,mem,inst.numBytes);
-				EIPSetByInstruction=true;
+				EIPIncrement=0;
 			}
 			clocksPassed=1;
 		}
@@ -6743,7 +6744,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			else
 			{
 				HandleException(true,mem,inst.numBytes);
-				EIPSetByInstruction=true;
+				EIPIncrement=0;
 			}
 			clocksPassed=1;
 		}
@@ -6802,7 +6803,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			RaiseException(EXCEPTION_GP,0);
 			HandleException(false,mem,inst.numBytes);
-			EIPSetByInstruction=true;
+			EIPIncrement=0;
 		}
 		clocksPassed=16;
 		break;
@@ -6815,7 +6816,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			RaiseException(EXCEPTION_GP,0);
 			HandleException(false,mem,inst.numBytes);
-			EIPSetByInstruction=true;
+			EIPIncrement=0;
 		}
 		clocksPassed=4;
 		break;
@@ -6865,7 +6866,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				{
 					SetECX(ECX);
 					HandleException(true,mem,inst.numBytes);
-					EIPSetByInstruction=true;
+					EIPIncrement=0;
 					break;
 				}
 				ECX=state.ECX();
@@ -6898,7 +6899,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				{
 					SetECX(ECX);
 					HandleException(true,mem,inst.numBytes);
-					EIPSetByInstruction=true;
+					EIPIncrement=0;
 					break;
 				}
 				ECX=state.ECX();
@@ -6932,7 +6933,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			else
 			{
 				HandleException(true,mem,inst.numBytes);
-				EIPSetByInstruction=true;
+				EIPIncrement=0;
 			}
 		}
 		break;
@@ -6959,7 +6960,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			else
 			{
 				HandleException(true,mem,inst.numBytes);
-				EIPSetByInstruction=true;
+				EIPIncrement=0;
 			}
 		}
 		break;
@@ -6981,7 +6982,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		if(true==TakeIOWriteException(inst.EvalUimm8(),1,mem,inst.numBytes))
 		{
-			EIPSetByInstruction=true;
+			EIPIncrement=0;
 			break;
 		}
 		IOOut8(io,inst.EvalUimm8(),GetAL());
@@ -6997,7 +6998,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		if(true==TakeIOWriteException(inst.EvalUimm8(),inst.operandSize>>3,mem,inst.numBytes))
 		{
-			EIPSetByInstruction=true;
+			EIPIncrement=0;
 			break;
 		}
 		if(16==inst.operandSize)
@@ -7020,7 +7021,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		if(true==TakeIOWriteException(GetDX(),1,mem,inst.numBytes))
 		{
-			EIPSetByInstruction=true;
+			EIPIncrement=0;
 			break;
 		}
 		IOOut8(io,GetDX(),GetAL());
@@ -7036,7 +7037,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		if(true==TakeIOWriteException(GetDX(),inst.operandSize>>3,mem,inst.numBytes))
 		{
-			EIPSetByInstruction=true;
+			EIPIncrement=0;
 			break;
 		}
 		if(16==inst.operandSize)
@@ -7059,7 +7060,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				clocksPassed+=(IsInRealMode() ? 17 : 10); // Protected Mode 32 if CPL>IOPL
 				if(true==TakeIOWriteException(GetDX(),1,mem,inst.numBytes))
 				{
-					EIPSetByInstruction=true;
+					EIPIncrement=0;
 					break;
 				}
 				auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
@@ -7077,7 +7078,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				clocksPassed+=(IsInRealMode() ? 17 : 10); // Protected Mode 32 if CPL>IOPL
 				if(true==TakeIOWriteException(GetDX(),inst.operandSize>>3,mem,inst.numBytes))
 				{
-					EIPSetByInstruction=true;
+					EIPIncrement=0;
 					break;
 				}
 				auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
@@ -7311,7 +7312,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_RENUMBER_RET://              0xC3,
 		clocksPassed=5;
 		SetIPorEIP(inst.operandSize,Pop(mem,inst.operandSize));
-		EIPSetByInstruction=true;
+		EIPIncrement=0;
 		if(enableCallStack)
 		{
 			PopCallStack(state.CS().value,state.EIP);
@@ -7369,7 +7370,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 			// IRET to Virtual86 mode requires EFLAGS be loaded before the segment register.
 			LoadSegmentRegister(state.CS(),segRegValue,mem);
-			EIPSetByInstruction=true;
+			EIPIncrement=0;
 			if(enableCallStack)
 			{
 				PopCallStack(state.CS().value,state.EIP);
@@ -7389,7 +7390,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			SetIPorEIP(inst.operandSize,Pop(mem,inst.operandSize));
 			auto segRegValue=Pop(mem,inst.operandSize);
 			LoadSegmentRegister(state.CS(),segRegValue,mem);
-			EIPSetByInstruction=true;
+			EIPIncrement=0;
 			if(enableCallStack)
 			{
 				PopCallStack(state.CS().value,state.EIP);
@@ -7400,7 +7401,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		clocksPassed=5;
 		SetIPorEIP(inst.operandSize,Pop(mem,inst.operandSize));
 		state.ESP()+=inst.EvalUimm16(); // Do I need to take &0xffff if address mode is 16? 
-		EIPSetByInstruction=true;
+		EIPIncrement=0;
 		if(enableCallStack)
 		{
 			PopCallStack(state.CS().value,state.EIP);
@@ -7418,7 +7419,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		SetIPorEIP(inst.operandSize,Pop(mem,inst.operandSize));
 		LoadSegmentRegister(state.CS(),Pop(mem,inst.operandSize),mem);
 		state.ESP()+=inst.EvalUimm16(); // Do I need to take &0xffff if address mode is 16? 
-		EIPSetByInstruction=true;
+		EIPIncrement=0;
 		if(enableCallStack)
 		{
 			PopCallStack(state.CS().value,state.EIP);
@@ -7665,7 +7666,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					{
 						RaiseException(EXCEPTION_GP,selector); // [1] pp.26-199
 						HandleException(false,mem,inst.numBytes);
-						EIPSetByInstruction=true;
+						EIPIncrement=0;
 					}
 					else
 					{
@@ -7699,13 +7700,13 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				if(true==IsInRealMode())
 				{
 					Interrupt(6,mem,0,0);
-					EIPSetByInstruction=true;
+					EIPIncrement=0;
 				}
 				else if(0!=(state.EFLAGS&EFLAGS_VIRTUAL86))
 				{
 					RaiseException(EXCEPTION_UD,0);
 					HandleException(true,mem,inst.numBytes);
-					EIPSetByInstruction=true;
+					EIPIncrement=0;
 				}
 				else
 				{
@@ -7730,13 +7731,13 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				if(true==IsInRealMode())
 				{
 					Interrupt(6,mem,0,0);
-					EIPSetByInstruction=true;
+					EIPIncrement=0;
 				}
 				else if(0!=(state.EFLAGS&EFLAGS_VIRTUAL86))
 				{
 					RaiseException(EXCEPTION_UD,0);
 					HandleException(true,mem,inst.numBytes);
-					EIPSetByInstruction=true;
+					EIPIncrement=0;
 				}
 				else
 				{
@@ -7800,7 +7801,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				{
 					SetECX(ECX);
 					HandleException(false,mem,inst.numBytes);
-					EIPSetByInstruction=true;
+					EIPIncrement=0;
 					break;
 				}
 				if(true!=EIPSetByInstruction)
@@ -7832,7 +7833,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				{
 					SetECX(ECX);
 					HandleException(false,mem,inst.numBytes);
-					EIPSetByInstruction=true;
+					EIPIncrement=0;
 					break;
 				}
 				if(true!=EIPSetByInstruction)
@@ -7922,7 +7923,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	}
 	if(true!=EIPSetByInstruction)
 	{
-		state.EIP+=inst.numBytes;
+		state.EIP+=EIPIncrement;
 	}
 
 	if(nullptr!=debuggerPtr)
