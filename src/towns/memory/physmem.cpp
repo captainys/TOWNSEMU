@@ -159,6 +159,15 @@ void TownsPhysicalMemory::State::Reset(void)
 	case TOWNSIO_KVRAM_OR_ANKFONT://    0xFF99,
 		state.ANKFont=(0!=(data&1));
 		break;
+
+	case TOWNSIO_MEMCARD_STATUS: //           0x48A, // [2] pp.93
+		break;
+	case TOWNSIO_MEMCARD_BANK: //             0x490, // [2] pp.794
+		state.memCardBank=((data>>4)&3);
+		break;
+	case TOWNSIO_MEMCARD_ATTRIB: //           0x491, // [2] pp.795
+		state.memCardREG=(0!=(data&1));
+		break;
 	}
 }
 /* virtual */ unsigned int TownsPhysicalMemory::IOReadByte(unsigned int ioport)
@@ -229,6 +238,21 @@ void TownsPhysicalMemory::State::Reset(void)
 		}
 		break;
 	case TOWNSIO_KVRAM_OR_ANKFONT://    0xFF99,
+		break;
+
+	case TOWNSIO_MEMCARD_STATUS: //           0x48A, // [2] pp.93
+		data=(true==state.memCard.changed ? 0x80 : 0);
+		// data|=0x20 if low battery
+		// data|=0x10 if battery needs to be changed
+		data|=(0==state.memCard.data.size() ? 6 : 0);
+		data|=(state.memCard.writeProtected ? 1 : 0);
+		break;
+	case TOWNSIO_MEMCARD_BANK: //             0x490, // [2] pp.794
+		data=((state.memCardBank&3)<<4);
+		break;
+	case TOWNSIO_MEMCARD_ATTRIB: //           0x491, // [2] pp.795
+		data=(ICMemoryCard::MEMCARD_TYPE_JEIDA4==state.memCard.memCardType ? 0 : 0x80);
+		data|=(state.memCardREG ? 1 : 0);
 		break;
 	}
 	return data;
@@ -434,6 +458,14 @@ void TownsPhysicalMemory::SetUpMemoryAccess(void)
 	spriteRAMAccess.SetPhysicalMemoryPointer(this);
 	spriteRAMAccess.SetCPUPointer(&cpu);
 	mem.AddAccess(&spriteRAMAccess,TOWNSADDR_SPRITERAM_BASE,TOWNSADDR_SPRITERAM_END-1);
+
+	oldMemCardAccess.SetPhysicalMemoryPointer(this);
+	oldMemCardAccess.SetCPUPointer(&cpu);
+	mem.AddAccess(&oldMemCardAccess,TOWNSADDR_MEMCARD_OLD_BASE,TOWNSADDR_MEMCARD_OLD_END-1);
+
+	JEIDA4MemCardAccess.SetPhysicalMemoryPointer(this);
+	JEIDA4MemCardAccess.SetCPUPointer(&cpu);
+	mem.AddAccess(&JEIDA4MemCardAccess,TOWNSADDR_MEMCARD_JEIDA4_BASE,TOWNSADDR_MEMCARD_JEIDA4_END-1);
 
 	osROMAccess.SetPhysicalMemoryPointer(this);
 	osROMAccess.SetCPUPointer(&cpu);

@@ -493,6 +493,59 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 
 ////////////////////////////////////////////////////////////
 
+/* virtual */ unsigned int TownsOldMemCardAccess::FetchByte(unsigned int physAddr) const
+{
+	auto &memCard=physMemPtr->state.memCard;
+	if(ICMemoryCard::MEMCARD_TYPE_OLD==memCard.memCardType)
+	{
+		unsigned int memCardAddr=physAddr-TOWNSADDR_MEMCARD_OLD_BASE;
+		if(memCardAddr<memCard.data.size())
+		{
+			return memCard.data[memCardAddr];
+		}
+	}
+	return 0xFF;
+}
+/* virtual */ void TownsOldMemCardAccess::StoreByte(unsigned int physAddr,unsigned char data)
+{
+	auto &memCard=physMemPtr->state.memCard;
+	if(ICMemoryCard::MEMCARD_TYPE_OLD==memCard.memCardType && true!=memCard.writeProtected)
+	{
+		auto memCardAddr=physAddr-TOWNSADDR_MEMCARD_OLD_BASE;
+		memCard.data[memCardAddr]=data;
+	}
+}
+
+////////////////////////////////////////////////////////////
+
+/* virtual */ unsigned int TownsJEIDA4MemCardAccess::FetchByte(unsigned int physAddr) const
+{
+	auto &memCard=physMemPtr->state.memCard;
+	if(ICMemoryCard::MEMCARD_TYPE_JEIDA4==memCard.memCardType)
+	{
+		// I should return attribute information if REG==true.  But, I don't know what exactly it is.
+		unsigned int memCardAddr=physAddr-TOWNSADDR_MEMCARD_JEIDA4_BASE+0x400000*physMemPtr->state.memCardBank;
+		if(memCardAddr<memCard.data.size())
+		{
+			return memCard.data[memCardAddr];
+		}
+	}
+	return 0xFF;
+}
+/* virtual */ void TownsJEIDA4MemCardAccess::StoreByte(unsigned int physAddr,unsigned char data)
+{
+	auto &memCard=physMemPtr->state.memCard;
+	if(ICMemoryCard::MEMCARD_TYPE_JEIDA4==memCard.memCardType && true!=memCard.writeProtected)
+	{
+		unsigned int memCardAddr=physAddr-TOWNSADDR_MEMCARD_JEIDA4_BASE+0x400000*physMemPtr->state.memCardBank;
+		if(memCardAddr<memCard.data.size())
+		{
+			memCard.data[memCardAddr]=data;
+		}
+	}
+}
+
+////////////////////////////////////////////////////////////
 
 /* virtual */ unsigned int TownsOsROMAccess::FetchByte(unsigned int physAddr) const
 {

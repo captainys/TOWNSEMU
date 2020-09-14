@@ -30,6 +30,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "device.h"
 #include "ramrom.h"
 #include "townsdef.h"
+#include "memcard.h"
 
 
 
@@ -165,6 +166,20 @@ public:
 	virtual void StoreByte(unsigned int physAddr,unsigned char data);
 	virtual void StoreWord(unsigned int physAddr,unsigned int data);
 	virtual void StoreDword(unsigned int physAddr,unsigned int data);
+};
+
+class TownsOldMemCardAccess : public TownsMemAccess
+{
+public:
+	virtual unsigned int FetchByte(unsigned int physAddr) const;
+	virtual void StoreByte(unsigned int physAddr,unsigned char data);
+};
+
+class TownsJEIDA4MemCardAccess : public TownsMemAccess
+{
+public:
+	virtual unsigned int FetchByte(unsigned int physAddr) const;
+	virtual void StoreByte(unsigned int physAddr,unsigned char data);
 };
 
 class TownsOsROMAccess : public TownsMemAccess
@@ -336,6 +351,11 @@ public:
 		std::vector <unsigned char> waveRAM;
 		unsigned char CMOSRAM[TOWNS_CMOS_SIZE];
 
+		// PCMCIA memory card.
+		ICMemoryCard memCard;
+		unsigned int memCardBank=0;
+		bool memCardREG=false; // [2] pp.795
+
 		KanjiROMAccess kanjiROMAccess;
 
 		void Reset(void);
@@ -386,6 +406,8 @@ public:
 
 
 	TownsSpriteRAMAccess spriteRAMAccess;
+	TownsOldMemCardAccess oldMemCardAccess;
+	TownsJEIDA4MemCardAccess JEIDA4MemCardAccess;
 	TownsOsROMAccess osROMAccess;
 	TownsFont20ROMAccess font20ROMAccess;
 	TownsWaveRAMAccess waveRAMAccess;

@@ -11,6 +11,7 @@ bool ICMemoryCard::LoadRawImage(std::string fName)
 		std::swap(this->data,data);
 		this->fName=fName;
 		this->modified=false;
+		this->changed=true;
 	}
 }
 void ICMemoryCard::SetFileName(std::string fName)

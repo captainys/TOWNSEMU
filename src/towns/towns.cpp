@@ -237,6 +237,9 @@ FMTowns::FMTowns() :
 	io.AddDevice(&physMem,TOWNSIO_VRAMACCESSCTRL_ADDR); //      0x458, // [2] pp.17,pp.112
 	io.AddDevice(&physMem,TOWNSIO_VRAMACCESSCTRL_DATA_LOW); //  0x45A, // [2] pp.17,pp.112
 	io.AddDevice(&physMem,TOWNSIO_VRAMACCESSCTRL_DATA_HIGH); // 0x45B, // [2] pp.17,pp.112
+	io.AddDevice(&physMem,TOWNSIO_MEMCARD_STATUS); //           0x48A, // [2] pp.93
+	io.AddDevice(&physMem,TOWNSIO_MEMCARD_BANK); //             0x490, // [2] pp.794
+	io.AddDevice(&physMem,TOWNSIO_MEMCARD_ATTRIB); //           0x491, // [2] pp.795
 	io.AddDevice(&physMem,TOWNSIO_KANJI_JISCODE_HIGH);//  0xFF94,
 	io.AddDevice(&physMem,TOWNSIO_KANJI_JISCODE_LOW);//   0xFF95,
 	io.AddDevice(&physMem,TOWNSIO_KANJI_PTN_HIGH);//      0xFF96,
