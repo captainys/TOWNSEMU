@@ -4165,7 +4165,6 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		debuggerPtr->BeforeRunOneInstruction(*this,mem,io,inst);
 	}
 
-	bool EIPSetByInstruction=false;
 	int EIPIncrement=inst.numBytes;
 	unsigned int clocksPassed=0;
 
@@ -7830,17 +7829,21 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				if(true!=state.exception)
 				{
 					UpdateDIorEDIAfterStringOp(inst.addressSize,8);
-					EIPSetByInstruction=(INST_PREFIX_REP==prefix);
+					if(INST_PREFIX_REP==prefix)
+					{
+						EIPIncrement=0;
+					}
+					else
+					{
+						EIPIncrement=inst.numBytes;
+						break;
+					}
 				}
 				else
 				{
 					SetECX(ECX);
 					HandleException(false,mem,inst.numBytes);
 					EIPIncrement=0;
-					break;
-				}
-				if(true!=EIPSetByInstruction)
-				{
 					break;
 				}
 				ECX=state.ECX();
@@ -7862,17 +7865,21 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				if(true!=state.exception)
 				{
 					UpdateDIorEDIAfterStringOp(inst.addressSize,inst.operandSize);
-					EIPSetByInstruction=(INST_PREFIX_REP==prefix);
+					if(INST_PREFIX_REP==prefix)
+					{
+						EIPIncrement=0;
+					}
+					else
+					{
+						EIPIncrement=inst.numBytes;
+						break;
+					}
 				}
 				else
 				{
 					SetECX(ECX);
 					HandleException(false,mem,inst.numBytes);
 					EIPIncrement=0;
-					break;
-				}
-				if(true!=EIPSetByInstruction)
-				{
 					break;
 				}
 				ECX=state.ECX();
@@ -7956,10 +7963,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		Abort("Clocks-Passed is not set.");
 		return 0;
 	}
-	if(true!=EIPSetByInstruction)
-	{
-		state.EIP+=EIPIncrement;
-	}
+	state.EIP+=EIPIncrement;
 
 	if(nullptr!=debuggerPtr)
 	{
