@@ -3853,7 +3853,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			auto offset=inst.EvalSimm8(); \
 			state.EIP=((state.EIP+offset+inst.numBytes)&operandSizeMask[inst.operandSize>>3]); \
 			clocksPassed=3; \
-			EIPSetByInstruction=true; \
+			EIPIncrement=0; \
 		} \
 		else \
 		{ \
@@ -3870,7 +3870,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			destin&=operandSizeMask[inst.operandSize>>3]; \
 			state.EIP=destin; \
 			clocksPassed=3; \
-			EIPSetByInstruction=true; \
+			EIPIncrement=0; \
 		} \
 		else \
 		{ \
@@ -5262,9 +5262,13 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					SubByteWordOrDword(inst.operandSize,data1,data2);
 					UpdateESIandEDIAfterStringOp(inst.addressSize,inst.operandSize);
 					clocksPassed+=8;
-					EIPSetByInstruction=REPEorNECheck(clocksPassed,inst.instPrefix,inst.addressSize);
-					if(true!=EIPSetByInstruction)
+					if(true==REPEorNECheck(clocksPassed,inst.instPrefix,inst.addressSize))
 					{
+						EIPIncrement=0;
+					}
+					else
+					{
+						EIPIncrement=inst.numBytes;
 						break;
 					}
 				}
@@ -6462,7 +6466,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				{
 					SetAL(newAL);
 					UpdateSIorESIAfterStringOp(inst.addressSize,8);
-					EIPSetByInstruction=(INST_PREFIX_REP==prefix);
+					if(INST_PREFIX_REP==prefix)
+					{
+						EIPIncrement=0;
+					}
 				}
 				else
 				{
@@ -6494,7 +6501,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 						SetEAX(FetchDword(inst.addressSize,seg,state.ESI(),mem));
 					}
 					UpdateSIorESIAfterStringOp(inst.addressSize,inst.operandSize);
-					EIPSetByInstruction=(INST_PREFIX_REP==prefix);
+					if(INST_PREFIX_REP==prefix)
+					{
+						EIPIncrement=0;
+					}
 				}
 				else
 				{
@@ -6856,9 +6866,13 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				{
 					UpdateSIorESIAfterStringOp(inst.addressSize,8);
 					UpdateDIorEDIAfterStringOp(inst.addressSize,8);
-					EIPSetByInstruction=(INST_PREFIX_REP==prefix);
-					if(true!=EIPSetByInstruction)
+					if(INST_PREFIX_REP==prefix)
 					{
+						EIPIncrement=0;
+					}
+					else
+					{
+						EIPIncrement=inst.numBytes;
 						break;
 					}
 				}
