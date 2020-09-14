@@ -5555,7 +5555,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				auto ioRead=IOIn8(io,GetDX());
 				StoreByte(mem,inst.addressSize,state.ES(),state.EDI(),ioRead);
 				UpdateDIorEDIAfterStringOp(inst.addressSize,8);
-				EIPSetByInstruction=(INST_PREFIX_REP==prefix);
+				if(INST_PREFIX_REP==prefix)
+				{
+					EIPIncrement=0;
+				}
 			}
 		}
 		break;
@@ -6903,9 +6906,13 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				if(true!=state.exception)
 				{
 					UpdateESIandEDIAfterStringOp(inst.addressSize,inst.operandSize);
-					EIPSetByInstruction=(INST_PREFIX_REP==prefix);
-					if(true!=EIPSetByInstruction)
+					if(INST_PREFIX_REP==prefix)
 					{
+						EIPIncrement=0;
+					}
+					else
+					{
+						EIPIncrement=inst.numBytes;
 						break;
 					}
 				}
@@ -7080,7 +7087,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
 				IOOut8(io,GetDX(),FetchByte(inst.addressSize,seg,state.ESI(),mem));
 				UpdateSIorESIAfterStringOp(inst.addressSize,8);
-				EIPSetByInstruction=(INST_PREFIX_REP==prefix);
+				if(INST_PREFIX_REP==prefix)
+				{
+					EIPIncrement=0;
+				}
 			}
 		}
 		break;
@@ -7105,7 +7115,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					IOOut32(io,GetDX(),FetchDword(inst.addressSize,seg,state.ESI(),mem));
 				}
 				UpdateSIorESIAfterStringOp(inst.addressSize,inst.operandSize);
-				EIPSetByInstruction=(INST_PREFIX_REP==prefix);
+				if(INST_PREFIX_REP==prefix)
+				{
+					EIPIncrement=0;
+				}
 			}
 		}
 		break;
@@ -7553,9 +7566,13 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			SubByte(AL,data);
 			UpdateDIorEDIAfterStringOp(inst.addressSize,8);
 			clocksPassed+=6;
-			EIPSetByInstruction=REPEorNECheck(clocksPassed,inst.instPrefix,inst.addressSize);
-			if(true!=EIPSetByInstruction)
+			if(true==REPEorNECheck(clocksPassed,inst.instPrefix,inst.addressSize))
 			{
+				EIPIncrement=0;
+			}
+			else
+			{
+				EIPIncrement=inst.numBytes;
 				break;
 			}
 		}
@@ -7571,9 +7588,13 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			SubWordOrDword(inst.operandSize,EAX,data);
 			UpdateDIorEDIAfterStringOp(inst.addressSize,inst.operandSize);
 			clocksPassed+=6;
-			EIPSetByInstruction=REPEorNECheck(clocksPassed,inst.instPrefix,inst.addressSize);
-			if(true!=EIPSetByInstruction)
+			if(true==REPEorNECheck(clocksPassed,inst.instPrefix,inst.addressSize))
 			{
+				EIPIncrement=0;
+			}
+			else
+			{
+				EIPIncrement=inst.numBytes;
 				break;
 			}
 		}
