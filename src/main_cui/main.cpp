@@ -356,6 +356,8 @@ bool Setup(FMTowns &towns,Outside_World *outside_world,const TownsARGV &argv)
 		towns.vndrv.sharedDir[i].linked=true;
 	}
 
+	towns.crtc.state.highResAvailable=argv.highResAvailable;
+
 	for(auto vk : argv.virtualKeys)
 	{
 		auto townsKey=TownsStrToKeyCode(vk.townsKey);

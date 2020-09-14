@@ -599,6 +599,10 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 			pcmVol=vol;
 			++i;
 		}
+		else if("-HIGHRES"==ARG)
+		{
+			highResAvailable=true;
+		}
 		else
 		{
 			if(1==i)

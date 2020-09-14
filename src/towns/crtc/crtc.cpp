@@ -880,7 +880,7 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 		break;
 
 	case TOWNSIO_MX_HIRES://            0x470,
-		data=(TOWNSTYPE_2_MX<=townsPtr->townsType ? 0x7F : 0x80); // [2] pp. 831
+		data=(true==state.highResAvailable ? 0x7F : 0x80); // [2] pp. 831
 		break;
 
 	case TOWNSIO_MX_VRAMSIZE://         0x471,

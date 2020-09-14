@@ -40,6 +40,8 @@ public:
 	bool noWait=true;
 	bool noWaitStandby=false;
 
+	bool highResAvailable=false;
+
 	bool catchUpRealTime=true;
 
 	std::string ROMPath;

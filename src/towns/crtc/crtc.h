@@ -145,6 +145,8 @@ public:
 		bool VSYNCIRQ=false;
 		bool VSYNC=false;
 
+		bool highResAvailable=false;
+
 		unsigned short crtcReg[32];
 		unsigned int crtcAddrLatch;
 
