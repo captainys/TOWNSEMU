@@ -4006,6 +4006,100 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		} \
 	}
 
+	// For RCL and RCR see reminder #20200123-1
+	#define ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8(ctr) \
+	{ \
+		auto value=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op1); \
+		auto i=value.GetAsDword(); \
+		if(true!=state.exception) \
+		{ \
+			switch(inst.GetREG()) \
+			{ \
+			case 0: \
+				RolByte(i,ctr); \
+				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
+				break; \
+			case 1: \
+				RorByte(i,ctr); \
+				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
+				break; \
+			case 2: \
+				RclByte(i,ctr); \
+				clocksPassed=(OPER_ADDR==op1.operandType ? 10 : 11); \
+				break; \
+			case 3: \
+				RcrByte(i,ctr); \
+				clocksPassed=(OPER_ADDR==op1.operandType ? 10 : 11); \
+				break; \
+			case 4: \
+				ShlByte(i,ctr); \
+				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
+				break; \
+			case 5: \
+				ShrByte(i,ctr); \
+				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
+				break; \
+			case 6: \
+				Abort("Undefined REG for "+cpputil::Ubtox(inst.opCode)); \
+				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
+				return 0; \
+			case 7: \
+				SarByte(i,ctr); \
+				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
+				break; \
+			} \
+			value.SetDword(i); \
+			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value); \
+		} \
+	}
+
+	// For RCL and RCR See reminder #20200123-1
+	#define ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM(ctr) \
+	{ \
+		auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8); \
+		auto i=value.GetAsDword(); \
+		if(true!=state.exception) \
+		{ \
+			switch(inst.GetREG()) \
+			{ \
+			case 0: \
+				RolByteWordOrDword(inst.operandSize,i,ctr); \
+				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
+				break; \
+			case 1: \
+				RorByteWordOrDword(inst.operandSize,i,ctr); \
+				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
+				break; \
+			case 2: \
+				RclWordOrDword(inst.operandSize,i,ctr); \
+				clocksPassed=(OPER_ADDR==op1.operandType ? 10 : 11); \
+				break; \
+			case 3: \
+				clocksPassed=(OPER_ADDR==op1.operandType ? 10 : 11); \
+				RcrWordOrDword(inst.operandSize,i,ctr); \
+				break; \
+			case 4: \
+				ShlWordOrDword(inst.operandSize,i,ctr); \
+				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
+				break; \
+			case 5: \
+				ShrWordOrDword(inst.operandSize,i,ctr); \
+				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
+				break; \
+			case 6: \
+				Abort("Undefined REG for "+cpputil::Ubtox(inst.opCode)); \
+				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
+				return 0; \
+			case 7: \
+				SarByteWordOrDword(inst.operandSize,i,ctr); \
+				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
+				break; \
+			} \
+			value.SetDword(i); \
+			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value); \
+		} \
+	}
+
 
 	static const unsigned int reg8AndPattern[]=
 	{
@@ -4083,128 +4177,23 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 
 	case I486_RENUMBER_C0_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_I8://0xC0,// ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
-	case I486_RENUMBER_D0_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_1://0xD0, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
-	case I486_RENUMBER_D3_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_CL://0xD2,// ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
-		{
-			auto value=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op1);
-			auto i=value.GetAsDword();
-			unsigned int ctr;
-			if(I486_OPCODE_C0_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_I8==inst.opCode)
-			{
-				ctr=inst.EvalUimm8()&31; // [1] pp.26-243 Only bottom 5 bits are used.
-			}
-			else if(I486_OPCODE_D3_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_CL==inst.opCode)
-			{
-				ctr=GetCL()&31;
-			}
-			else
-			{
-				ctr=1;
-			}
-			if(true==state.exception)
-			{
-				break;
-			}
-			switch(inst.GetREG())
-			{
-			case 0:// "ROL";
-				RolByte(i,ctr);
-				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
-				break;
-			case 1:// "ROR";
-				RorByte(i,ctr);
-				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
-				break;
-			case 2:// "RCL";
-				RclByte(i,ctr);
-				clocksPassed=(OPER_ADDR==op1.operandType ? 10 : 11);  // See reminder #20200123-1
-				break;
-			case 3:// "RCR";
-				RcrByte(i,ctr);
-				clocksPassed=(OPER_ADDR==op1.operandType ? 10 : 11);  // See reminder #20200123-1
-				break;
-			case 4:// "SHL";
-				ShlByte(i,ctr);
-				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
-				break;
-			case 5:// "SHR";
-				ShrByte(i,ctr);
-				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
-				break;
-			case 6:// cpputil::Ubtox(opCode)+"?";
-				Abort("Undefined REG for "+cpputil::Ubtox(inst.opCode));
-				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
-				return 0;
-			case 7:// "SAR";
-				SarByte(i,ctr);
-				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
-				break;
-			}
-			value.SetDword(i);
-			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
-		}
+		ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8(inst.EvalUimm8()&31); // [1] pp.26-243 Only bottom 5 bits are used.
 		break;
+	case I486_RENUMBER_D0_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_1://0xD0, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
+		ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8(1)
+		break;
+	case I486_RENUMBER_D3_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_CL://0xD2,// ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
+		ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8(GetCL()&31)
+		break;
+
 	case I486_RENUMBER_C1_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_I8:// =0xC1, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
+		ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM(inst.EvalUimm8()&31); // [1] pp.26-243 Only bottom 5 bits are used.
+		break;
 	case I486_RENUMBER_D1_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_1://=0xD1, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
+		ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM(1);
+		break;
 	case I486_RENUMBER_D3_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_CL://0xD3, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
-		{
-			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
-			auto i=value.GetAsDword();
-			unsigned int ctr=0;
-			if(I486_OPCODE_C1_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_I8==inst.opCode)
-			{
-				ctr=inst.EvalUimm8()&31; // [1] pp.26-243 Only bottom 5 bits are used.
-			}
-			else if(I486_OPCODE_D3_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_CL==inst.opCode)
-			{
-				ctr=GetCL()&31;
-			}
-			else
-			{
-				ctr=1;
-			}
-			if(true==state.exception)
-			{
-				break;
-			}
-			switch(inst.GetREG())
-			{
-			case 0:// "ROL";
-				RolByteWordOrDword(inst.operandSize,i,ctr);
-				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
-				break;
-			case 1:// "ROR";
-				RorByteWordOrDword(inst.operandSize,i,ctr);
-				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
-				break;
-			case 2:// "RCL";
-				RclWordOrDword(inst.operandSize,i,ctr);
-				clocksPassed=(OPER_ADDR==op1.operandType ? 10 : 11);  // See reminder #20200123-1
-				break;
-			case 3:// "RCR";
-				clocksPassed=(OPER_ADDR==op1.operandType ? 10 : 11);  // See reminder #20200123-1
-				RcrWordOrDword(inst.operandSize,i,ctr);
-				break;
-			case 4:// "SHL";
-				ShlWordOrDword(inst.operandSize,i,ctr);
-				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
-				break;
-			case 5:// "SHR";
-				ShrWordOrDword(inst.operandSize,i,ctr);
-				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
-				break;
-			case 6:// cpputil::Ubtox(opCode)+"?";
-				Abort("Undefined REG for "+cpputil::Ubtox(inst.opCode));
-				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
-				return 0;
-			case 7:// "SAR";
-				SarByteWordOrDword(inst.operandSize,i,ctr);
-				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
-				break;
-			}
-			value.SetDword(i);
-			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
-		}
+		ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM(GetCL()&31);
 		break;
 
 	case I486_RENUMBER_F6_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF6
@@ -5258,23 +5247,25 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 	case I486_RENUMBER_CMPSB://           0xA6,
 	case I486_RENUMBER_CMPS://            0xA7,
-		for(int ctr=0;
-		    ctr<MAX_REP_BUNDLE_COUNT &&
-		    true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize);
-		    ++ctr)
 		{
 			auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
-			auto data1=FetchByteWordOrDword(inst.operandSize,inst.addressSize,seg,state.ESI(),mem);
-			auto data2=FetchByteWordOrDword(inst.operandSize,inst.addressSize,state.ES(),state.EDI(),mem);
-			if(true!=state.exception)
+			for(int ctr=0;
+			    ctr<MAX_REP_BUNDLE_COUNT &&
+			    true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize);
+			    ++ctr)
 			{
-				SubByteWordOrDword(inst.operandSize,data1,data2);
-				UpdateESIandEDIAfterStringOp(inst.addressSize,inst.operandSize);
-				clocksPassed+=8;
-				EIPSetByInstruction=REPEorNECheck(clocksPassed,inst.instPrefix,inst.addressSize);
-				if(true!=EIPSetByInstruction)
+				auto data1=FetchByteWordOrDword(inst.operandSize,inst.addressSize,seg,state.ESI(),mem);
+				auto data2=FetchByteWordOrDword(inst.operandSize,inst.addressSize,state.ES(),state.EDI(),mem);
+				if(true!=state.exception)
 				{
-					break;
+					SubByteWordOrDword(inst.operandSize,data1,data2);
+					UpdateESIandEDIAfterStringOp(inst.addressSize,inst.operandSize);
+					clocksPassed+=8;
+					EIPSetByInstruction=REPEorNECheck(clocksPassed,inst.instPrefix,inst.addressSize);
+					if(true!=EIPSetByInstruction)
+					{
+						break;
+					}
 				}
 			}
 		}
