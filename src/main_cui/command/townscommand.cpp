@@ -2359,7 +2359,7 @@ void TownsCommandInterpreter::Execute_CMOSSave(FMTowns &towns,Command &cmd)
 {
 	if(2<=cmd.argv.size())
 	{
-		if(true!=cpputil::WriteBinaryFile(cmd.argv[1],TOWNS_CMOS_SIZE,TOWNS_CMOS_SIZE,towns.physMem.state.CMOSRAM))
+		if(true!=cpputil::WriteBinaryFile(cmd.argv[1],TOWNS_CMOS_SIZE,towns.physMem.state.CMOSRAM))
 		{
 			PrintError(ERROR_CANNOT_SAVE_FILE);
 		}
