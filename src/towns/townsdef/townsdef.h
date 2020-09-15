@@ -702,5 +702,18 @@ enum
 	std::string TownsAppToStr(unsigned int i);
 #endif
 
+
+enum
+{
+	TOWNS_MEMCARD_TYPE_NONE,
+	TOWNS_MEMCARD_TYPE_OLD,
+	TOWNS_MEMCARD_TYPE_JEIDA4
+};
+
+#ifdef __cplusplus
+	std::string TownsMemCardTypeToStr(unsigned int memCardType);
+#endif
+
+
 /* } */
 #endif

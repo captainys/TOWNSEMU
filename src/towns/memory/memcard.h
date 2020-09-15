@@ -13,14 +13,7 @@
 class ICMemoryCard
 {
 public:
-	enum
-	{
-		MEMCARD_TYPE_NONE,
-		MEMCARD_TYPE_OLD,
-		MEMCARD_TYPE_JEIDA4
-	};
-
-	unsigned int memCardType=MEMCARD_TYPE_OLD;
+	unsigned int memCardType=TOWNS_MEMCARD_TYPE_OLD;
 	std::string fName;
 	std::vector <unsigned char> data;
 	mutable bool modified=false;

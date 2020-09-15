@@ -50,6 +50,8 @@ public:
 	std::string fdImgFName[2];
 	bool fdImgWriteProtect[2]={false,false};
 	std::string cdImgFName;
+	unsigned int memCardType=TOWNS_MEMCARD_TYPE_NONE;
+	std::string memCardImgFName;
 	std::string startUpScriptFName;
 	std::string symbolFName;
 	std::string playbackEventLogFName;

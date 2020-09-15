@@ -87,6 +87,10 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  Write un-protect floppy disk." << std::endl;
 	std::cout << "-CD image-file-name" << std::endl;
 	std::cout << "  CD-ROM image file name for the internal drive. ISO or CUE." << std::endl;
+	std::cout << "-ICM image-file-name" << std::endl;
+	std::cout << "  IC Memory Card image file name." << std::endl;
+	std::cout << "-JEIDA4 image-file-name" << std::endl;
+	std::cout << "  IC Memory Card image file name.  Opened as JEIDA4 (PCMCIA)." << std::endl;
 	std::cout << "-GAMEPORT0 KEY|PHYSx|ANAx|NONE" << std::endl;
 	std::cout << "-GAMEPORT1 KEY|PHYSx|ANAx|NONE" << std::endl;
 	std::cout << "  Specify game-port emulation.  By keyboard (Arrow,Z,X,A,S), or physical gamepad." << std::endl;
@@ -597,6 +601,18 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 				vol=8192;
 			}
 			pcmVol=vol;
+			++i;
+		}
+		else if("-ICM"==ARG && i+1<argc)
+		{
+			memCardType=TOWNS_MEMCARD_TYPE_OLD;
+			memCardImgFName=argv[i+1];
+			++i;
+		}
+		else if("-JEIDA4"==ARG && i+1<argc)
+		{
+			memCardType=TOWNS_MEMCARD_TYPE_JEIDA4;
+			memCardImgFName=argv[i+1];
 			++i;
 		}
 		else if("-HIGHRES"==ARG)

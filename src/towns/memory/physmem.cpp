@@ -242,6 +242,7 @@ void TownsPhysicalMemory::State::Reset(void)
 
 	case TOWNSIO_MEMCARD_STATUS: //           0x48A, // [2] pp.93
 		data=(true==state.memCard.changed ? 0x80 : 0);
+		state.memCard.changed=false;
 		// data|=0x20 if low battery
 		// data|=0x10 if battery needs to be changed
 		data|=(0==state.memCard.data.size() ? 6 : 0);
@@ -251,7 +252,7 @@ void TownsPhysicalMemory::State::Reset(void)
 		data=((state.memCardBank&3)<<4);
 		break;
 	case TOWNSIO_MEMCARD_ATTRIB: //           0x491, // [2] pp.795
-		data=(ICMemoryCard::MEMCARD_TYPE_JEIDA4==state.memCard.memCardType ? 0 : 0x80);
+		data=(TOWNS_MEMCARD_TYPE_JEIDA4==state.memCard.memCardType ? 0 : 0x80);
 		data|=(state.memCardREG ? 1 : 0);
 		break;
 	}
@@ -638,6 +639,10 @@ std::vector <std::string> TownsPhysicalMemory::GetStatusText(void) const
 	text.push_back("");
 	text.back()="Native VRAM Mask:";
 	text.back()+=cpputil::Uitox(cpputil::GetDword(state.nativeVRAMMask));
+
+	text.push_back("");
+	text.back()="IC Memory Card Type:";
+	text.back()+=TownsMemCardTypeToStr(state.memCard.memCardType);
 
 	return text;
 }

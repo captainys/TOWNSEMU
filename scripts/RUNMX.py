@@ -14,6 +14,7 @@ BUILDDIR=os.path.join(THISDIR,"..","build")
 SRCDIR=os.path.join(THISDIR,"..","src")
 ROMDIR=os.path.join(THISDIR,"..","..","TOWNSEMU_TEST","ROM_"+TOWNSTYPE)
 DISKDIR=os.path.join(THISDIR,"..","..","TOWNSEMU_TEST","DISKIMG")
+MEMCARDDIR=os.path.join(THISDIR,"..","..","TOWNSEMU_TEST","MEMCARD")
 
 
 
@@ -35,6 +36,8 @@ def Run(argv):
 		os.path.join(DISKDIR,"hddimage.bin"),
 		"-HD1",
 		os.path.join(DISKDIR,"40MB.h1"),
+		"-ICM",
+		os.path.join(MEMCARDDIR,"4MB.bin"),
 		"-CMOS",
 		"../testdata/CMOS.bin",
 		#"-DONTAUTOSAVECMOS",

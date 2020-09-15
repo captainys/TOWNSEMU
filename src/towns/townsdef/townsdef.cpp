@@ -745,3 +745,18 @@ unsigned int TownsStrToKeyCode(std::string str)
 	}
 	return TOWNS_JISKEY_NULL;
 }
+
+std::string TownsMemCardTypeToStr(unsigned int memCardType)
+{
+	switch(memCardType)
+	{
+	default:
+	case TOWNS_MEMCARD_TYPE_NONE:
+		return "NONE";
+	case TOWNS_MEMCARD_TYPE_OLD:
+		return "OLD";
+	case TOWNS_MEMCARD_TYPE_JEIDA4:
+		return "JEIDA4";
+	}
+
+}
