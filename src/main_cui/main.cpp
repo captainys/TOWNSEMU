@@ -375,6 +375,7 @@ bool Setup(FMTowns &towns,Outside_World *outside_world,const TownsARGV &argv)
 	{
 		if(true==towns.physMem.state.memCard.LoadRawImage(argv.memCardImgFName))
 		{
+			towns.physMem.state.memCard.memCardType=argv.memCardType;
 			towns.physMem.state.memCard.fName=argv.memCardImgFName;
 			towns.physMem.state.memCard.changed=false;  // Because it was already in upon power-on.
 		}

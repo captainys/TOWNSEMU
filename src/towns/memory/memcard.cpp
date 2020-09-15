@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "memcard.h"
 #include "cpputil.h"
 
@@ -12,7 +14,9 @@ bool ICMemoryCard::LoadRawImage(std::string fName)
 		this->fName=fName;
 		this->modified=false;
 		this->changed=true;
+		return true;
 	}
+	return false;
 }
 void ICMemoryCard::SetFileName(std::string fName)
 {
@@ -24,6 +28,7 @@ bool ICMemoryCard::SaveRawImage(void) const
 	{
 		if(true==cpputil::WriteBinaryFile(this->fName,data.size(),data.data()))
 		{
+			std::cout << "Saved Memory Card Image to " << this->fName << std::endl;
 			modified=false;
 			return true;
 		}

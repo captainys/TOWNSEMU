@@ -515,11 +515,15 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 }
 /* virtual */ void TownsOldMemCardAccess::StoreByte(unsigned int physAddr,unsigned char data)
 {
-	auto &memCard=physMemPtr->state.memCard;
-	if(TOWNS_MEMCARD_TYPE_OLD==memCard.memCardType && true!=memCard.writeProtected)
+	if(true!=physMemPtr->state.memCardREG)
 	{
-		auto memCardAddr=physAddr-TOWNSADDR_MEMCARD_OLD_BASE;
-		memCard.data[memCardAddr]=data;
+		auto &memCard=physMemPtr->state.memCard;
+		if(TOWNS_MEMCARD_TYPE_OLD==memCard.memCardType && true!=memCard.writeProtected)
+		{
+			auto memCardAddr=physAddr-TOWNSADDR_MEMCARD_OLD_BASE;
+			memCard.data[memCardAddr]=data;
+			memCard.modified=true;
+		}
 	}
 }
 
@@ -527,27 +531,34 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 
 /* virtual */ unsigned int TownsJEIDA4MemCardAccess::FetchByte(unsigned int physAddr) const
 {
-	auto &memCard=physMemPtr->state.memCard;
-	if(TOWNS_MEMCARD_TYPE_JEIDA4==memCard.memCardType)
+	if(true!=physMemPtr->state.memCardREG)
 	{
-		// I should return attribute information if REG==true.  But, I don't know what exactly it is.
-		unsigned int memCardAddr=physAddr-TOWNSADDR_MEMCARD_JEIDA4_BASE+0x400000*physMemPtr->state.memCardBank;
-		if(memCardAddr<memCard.data.size())
+		auto &memCard=physMemPtr->state.memCard;
+		if(TOWNS_MEMCARD_TYPE_JEIDA4==memCard.memCardType)
 		{
-			return memCard.data[memCardAddr];
+			// I should return attribute information if REG==true.  But, I don't know what exactly it is.
+			unsigned int memCardAddr=physAddr-TOWNSADDR_MEMCARD_JEIDA4_BASE+0x400000*physMemPtr->state.memCardBank;
+			if(memCardAddr<memCard.data.size())
+			{
+				return memCard.data[memCardAddr];
+			}
 		}
 	}
 	return 0xFF;
 }
 /* virtual */ void TownsJEIDA4MemCardAccess::StoreByte(unsigned int physAddr,unsigned char data)
 {
-	auto &memCard=physMemPtr->state.memCard;
-	if(TOWNS_MEMCARD_TYPE_JEIDA4==memCard.memCardType && true!=memCard.writeProtected)
+	if(true!=physMemPtr->state.memCardREG)
 	{
-		unsigned int memCardAddr=physAddr-TOWNSADDR_MEMCARD_JEIDA4_BASE+0x400000*physMemPtr->state.memCardBank;
-		if(memCardAddr<memCard.data.size())
+		auto &memCard=physMemPtr->state.memCard;
+		if(TOWNS_MEMCARD_TYPE_JEIDA4==memCard.memCardType && true!=memCard.writeProtected)
 		{
-			memCard.data[memCardAddr]=data;
+			unsigned int memCardAddr=physAddr-TOWNSADDR_MEMCARD_JEIDA4_BASE+0x400000*physMemPtr->state.memCardBank;
+			if(memCardAddr<memCard.data.size())
+			{
+				memCard.data[memCardAddr]=data;
+				memCard.modified=true;
+			}
 		}
 	}
 }

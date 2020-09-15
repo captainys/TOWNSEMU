@@ -133,6 +133,7 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world,class Tow
 		{
 			townsPtr->state.nextSecondInTownsTime+=PER_SECOND;
 			townsPtr->fdc.SaveModifiedDiskImages();
+			townsPtr->physMem.state.memCard.SaveRawImageIfModified();
 		}
 
 		if(RUNMODE_PAUSE==runModeCopy)
