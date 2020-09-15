@@ -479,6 +479,10 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 		break;
 	case CDCMD_MODE1READ://  0x02,
 		{
+			// CDDA needs to stop when MODE1READ is sent while playing.
+			state.CDDAState=State::CDDA_IDLE;
+			OutsideWorld->CDDAStop();
+
 			DiscImage::MinSecFrm msfBegin,msfEnd;
 
 			msfBegin.min=DiscImage::BCDToBin(state.paramQueue[0]);
