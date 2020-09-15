@@ -495,6 +495,13 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 
 /* virtual */ unsigned int TownsOldMemCardAccess::FetchByte(unsigned int physAddr) const
 {
+	// DISKBIOS (INT 93H AX=??50H) reads C0000000H for CIS information.
+	// Just returning 0xFF (CIS termination) makes TICMFMT.EXE happy.
+	if(true==physMemPtr->state.memCardREG)
+	{
+		return 0xFF;
+	}
+
 	auto &memCard=physMemPtr->state.memCard;
 	if(TOWNS_MEMCARD_TYPE_OLD==memCard.memCardType)
 	{
