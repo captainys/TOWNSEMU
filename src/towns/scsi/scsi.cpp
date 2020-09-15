@@ -77,6 +77,7 @@ TownsSCSI::TownsSCSI(class FMTowns *townsPtr) : Device(townsPtr)
 	commandLength[SCSICMD_READ_CAPACITY]  =10;
 	commandLength[SCSICMD_READ_10]        =10;
 	commandLength[SCSICMD_WRITE_10]       =10;
+	commandLength[SCSICMD_VERIFY_10]      =10;
 }
 /* virtual */ void TownsSCSI::PowerOn(void)
 {
@@ -494,6 +495,19 @@ void TownsSCSI::ExecSCSICommand(void)
 			EnterStatusPhase();
 		}
 		break;
+	case SCSICMD_VERIFY_10:
+		if (SCSIDEVICE_HARDDISK==state.dev[state.selId].devType)
+		{
+			EnterDataOutPhase();
+		}
+		else
+		{
+			state.senseKey=SENSEKEY_ILLEGAL_REQUEST;
+			state.status=STATUSCODE_CHECK_CONDITION;
+			state.message=0; // What am I supposed to return?
+			EnterStatusPhase();
+		}
+		break;
 	default:
 		townsPtr->debugger.ExternalBreak("SCSI command not implemented yet.");
 		EnterBusFreePhase();
@@ -722,6 +736,27 @@ void TownsSCSI::ExecSCSICommand(void)
 							state.message=0; // What am I supposed to return?
 							EnterStatusPhase();
 						}
+					}
+				}
+				else
+				{
+					state.senseKey=SENSEKEY_ILLEGAL_REQUEST;
+					state.status=STATUSCODE_CHECK_CONDITION;
+					state.message=0; // What am I supposed to return?
+					EnterStatusPhase();
+				}
+				break;
+			case SCSICMD_VERIFY_10:
+				if (SCSIDEVICE_HARDDISK==state.dev[state.selId].devType)
+				{
+					auto bytChk=(state.commandBuffer[1]&0x02)!=0;
+
+					if (bytChk==false) {
+						state.status=STATUSCODE_GOOD;
+						state.message=0;
+						EnterStatusPhase();
+					} else {
+						townsPtr->debugger.ExternalBreak("DATA OUT Phase: VERIFY(10) with bytChk=1 Not Supported.");
 					}
 				}
 				else
