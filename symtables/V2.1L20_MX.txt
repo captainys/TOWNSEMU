@@ -2769,6 +2769,196 @@ P
 M 0
 /end
 /begin0
+T 1
+* 0000B000:00000004
+# 
+R 
+L Boot Sector Entry
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 0000B000:00000053
+# 
+R 
+L FDBOOT:MAIN
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 0000B000:000000C7
+# 
+R 
+L (Prob)Read IO.SYS
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000B000:000000D6
+# [0031]=Number of sectors to read
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000B000:000000DC
+# 78H=120 sectors
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 0000B000:000000DF
+# 
+R 
+L Read Disk Loop
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000B000:000000E7
+# Next Sector
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000B000:000000F7
+# Next Side
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000B000:000000FE
+# Next Cylinder
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000B000:00000102
+# Move pointer forward by 400H bytes
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 0000B000:000001B1
+# 
+R 
+L FDBOOT:(Prob)Read Sector
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000B000:000001B9
+# DS:[0030]=Device ID
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000B000:000001BC
+# DS:[0022]=Cylinder
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000B000:000001C0
+# DS:[0020]=Sector DS:[0021]=Side
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000B000:000001C4
+# DS:[0021]=Number of sectors
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000B000:000001C8
+# DS:[0033]=Address DS:[0035]=Segment
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000B000:000001E1
+# (Prob)Retry Count
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 0000B000:000001E9
+# 
+R 
+L Return
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 0000B000:000001EC
+# 
+R 
+L FDBOOT:(Prob)Restore DS:[0030] is device ID
+P 
+% 0
+M 0
+/end
+/begin0
 T 0
 * 0000FC00:00000365
 # Calling Get Keyboard State
@@ -3150,6 +3340,16 @@ M 0
 /end
 /begin0
 T 1
+* 0000FC00:00001EDA
+# 
+R 
+L SYSROM:(Prob)Disk BIOS Equivalent
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
 * 0000FC00:00002293
 # 
 R 
@@ -3374,6 +3574,16 @@ T 1
 # 
 R 
 L SYSROM:RESET_VECTOR_TOSV11
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 0000FFFB:00000014
+# 
+R 
+L SYSROM:Disk BIOS Equivalent
 P 
 % 0
 M 0

@@ -36,7 +36,7 @@ def Run(argv):
 		os.path.join(DISKDIR,"hddimage.bin"),
 		"-HD1",
 		os.path.join(DISKDIR,"40MB.h1"),
-		"-JEIDA4",
+		"-ICM",
 		os.path.join(MEMCARDDIR,"4MB.bin"),
 		"-CMOS",
 		"../testdata/CMOS.bin",
