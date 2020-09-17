@@ -2459,6 +2459,46 @@ P
 M 0
 /end
 /begin0
+T 1
+* 00001048:00000000
+# 
+R 
+L IO.SYS Entry
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001048:000001DB
+# 
+R 
+L IO.SYS:MAIN
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001048:00000264
+# AL=40H is RAM/ROM disk
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001048:000002A7
+# (Prob)Jump to MSDOS.SYS
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
 T 0
 * 00001048:00002C9C
 # 
@@ -2784,6 +2824,66 @@ T 2
 # 
 R 
 L FDBOOT:MAIN
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000B000:00000062
+# [0020H]=Sector
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000B000:00000067
+# [0021H]=Side
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000B000:00000085
+# No Error -> Jump to B000:0085 (Next line)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000B000:00000099
+# Compare 'FBIOS'
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000B000:000000B3
+# DX=[0050:0000]=1048H
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000B000:000000BA
+# Jump by RETF to 1048:0000
+R 
+L 
 P 
 % 0
 M 0
