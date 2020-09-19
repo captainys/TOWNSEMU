@@ -1,0 +1,1140 @@
+/begin0
+T 1
+* 00003368:00000314
+# 
+R 
+L TICM.SYS Strategy
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00003368:0000031F
+# 
+R 
+L TICM.SYS Interrupt
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00003368:0000033E
+# DS:BX is PSP
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00003368:0000036F
+# 
+R 
+L (Prob)TICM.SYS Return Error Code 1
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00003368:00000371
+# 
+R 
+L TICM.SYS Return
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00003368:00000392
+# 
+R 
+L (Prob)TICM.SYS initialization
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00003368:000011EA
+# FFH means termination?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00003368:000011F1
+# Tuple 13H?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00003368:000011F8
+# 
+R 
+L Tuple type below 0FH, FFH or 13H
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00003368:0000120F
+# 
+R 
+L Tuple type 88H, 98H, A8H, or B8H
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00003368:00001216
+# Jump if tuple type is 0FFH
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00003368:00001225
+# Will make error code 01H
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00003368:000012C6
+# 
+R 
+L IF (AH&1)==0 THEN No Error ELSE Error Code 01H
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00003368:000012CD
+# 
+R 
+L Error code 01H
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00003368:000012D1
+# 80H is hard error
+R 
+L Error Return
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00003368:000012D3
+# 
+R 
+L Return error code = BH
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00003368:000012E2
+# 
+R 
+L Tuple Loop
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00003368:000012E3
+# Almost certain: AH&8 is a 16-bit flag (8-bit otherwise)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00003368:000012E8
+# Skip high-byte
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00003368:000012F0
+# 
+R 
+L Not 0FFH
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00003368:000012F4
+# 
+R 
+L Tuple type 10H (Check sum?)
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00003368:000012FC
+# 2nd byte of the tuple
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00003368:000012FF
+# 3rd byte of the tuple
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00003368:0000130D
+# 4th byte of the tuple (Type,Size,?,Sum), 16bit
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00003368:000013C5
+# 
+R 
+L Return CF=0
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00003368:000013C7
+# 
+R 
+L POP DX, Return CF=1
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00003368:000013C8
+# 
+R 
+L Return CF=1
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00003368:000013CA
+# 
+R 
+L MEMCARD:(Prob)Copy one CIS Tuple to 3368:0EAB
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00003368:000013D2
+# DS:0AAB is data buffer 400H bytes from PHYS:C0000000H
+R 
+L Loop until non-zero CIS tuple type
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00003368:000013D5
+# DS:[0AA6H] is the current offset to the buffer
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00003368:000013E2
+# (AH&8)=Flag Non-Zero means 16-bit integers.  Zero means 8-bit integers
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00003368:000013EB
+# DS:0EABH
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00003368:000013FF
+# (Prob)Tuple size
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00003368:00001406
+# 2 for CIS code and Size
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00003368:0000141B
+# SI points to CIS Tuple top again
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00003368:00001636
+# 
+R 
+L (Prob)TICM.SYS driver installation
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00003368:00001644
+# Message: Cannot ADDRV IC Memory Card Driver.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00003368:00001651
+# Message: FM-TOWNS IC MEMORY CARD DEVICE DRIVER V1.1 L12
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00003368:00001661
+# Message: TICM.SYS works only on TownsOS
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00003368:00001666
+# Message: TICM.SYS does not work on this computer
+R 
+L Print Error: TICM.SYS does not work on this computer
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00003368:000016BB
+# 
+R 
+L (Prob)TICM.SYS Analyze Command Parameter:
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00003368:000016CA
+# 
+R 
+L Parse Command Line Loop
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00003368:000016CF
+# '/'
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00003368:000016D6
+# 'U'
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00003368:000016DA
+# 't'
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00003368:000016E1
+# '0'
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00003368:00001710
+# Most likely AL=Drive Letter
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00003368:00001714
+# Message: Registered IC Memory Card to ? Drive
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00003368:0000171B
+# Message: Unit number required.
+R 
+L Unit Number Required.
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00003368:00001720
+# Message: Wrong Unit Number
+R 
+L Wrong Unit Number
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00003368:00001725
+# Message: No available drive letter
+R 
+L No Available Drive Letter
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00003368:0000172A
+# TICM.SYS is already installed.
+R 
+L TICM.SYS Already Installed
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00003368:0000173A
+# 
+R 
+L Print Message
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00003368:00001741
+# 
+R 
+L Return Available Drive Letter in AL
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00003368:000017C0
+# 
+R 
+L Getting info from SysService INT AFH AH=FCH
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 0000AF37:0000067A
+# 
+R 
+L Skip driver file name
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000AF37:0000069F
+# [PACKET+10H] Must be the segment
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 0000AF37:00000A02
+# 
+R 
+L Call Strategy or Interrupt
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 0000FC00:00002898
+# 
+R 
+L SYSROM:Set Up Timer
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000FC00:000028BB
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 0
+* 0000FC00:000028C1
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 0
+* 0000FC00:000028CB
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 0
+* 0000FC00:000028DD
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 1
+* 0000FC00:00002945
+# 
+R 
+L SYSROM:Something to do with Timer
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000FC00:00002946
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 1
+* 0000FC00:0000295E
+# 
+R 
+L SYSROM:(Prob)Read SCSI Sector?
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 0000FC00:0000298D
+# 
+R 
+L SYSROM:SCSI_PHASE_LOOP
+P 
+% 0
+M 1
+/end
+/begin0
+T 0
+* 0000FC00:00002991
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 0
+* 0000FC00:000029AA
+# SCSI MSG|C/D bits
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000FC00:000029AC
+# Jump if not data
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000FC00:000029B0
+# Jump if no req (Redundant. Already checked.)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000FC00:000029B2
+# 48H for Mem to I/O
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000FC00:000029B8
+# 44H for I/O to Mem
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000FC00:000029D2
+# AH=SCSI Status
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000FC00:000029D5
+# AL=SCSI Message
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 0000FC00:000029DC
+# 
+R 
+L Return
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 0000FC00:000029DF
+# 
+R 
+L Wait SCSI ready for 3000us
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000FC00:000029E1
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 0
+* 0000FC00:000029E9
+# BB8H=3000
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000FC00:000029EF
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 1
+* 0000FC00:00002A0C
+# 
+R 
+L SYSROM:Initialize DMA, Set DMA Channel, Write Dev Ctrl(Low)
+P 
+% 0
+M 1
+/end
+/begin0
+T 0
+* 0000FC00:00002A12
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 0
+* 0000FC00:00002A18
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 1
+* 0000FC00:00002A1F
+# 
+R 
+L SYSROM:Initiate SCSI command sequence
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000FC00:00002A23
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 0
+* 0000FC00:00002A26
+# Write SCSI ID bits in the SCSI Data Register
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000FC00:00002A29
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 0
+* 0000FC00:00002A2F
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 2
+* 0000FC00:00002A3E
+# 
+R 
+L Turn off SEL bit and return
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000FC00:00002A40
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 0
+* 0000FC00:00002A44
+# CH=0 if no error.  CH=2 if SCSI controller did not respond.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 0000FC00:00002A45
+# SYSROM:(Prob)Wait by Timer
+R 
+L SYSROM:Called if SCSI doesn't immediately BUSY after SEL
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 0000FC00:00002A65
+# 
+R 
+L SYSROM:NOP
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 0000FC00:00002A66
+# 
+R 
+L SYSROM:Handle SCSI Command Phase
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000FC00:00002A74
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 1
+* 0000FC00:00002A82
+# 
+R 
+L SYSROM:Handle SCSI Status Phase
+P 
+% 0
+M 1
+/end
+/begin0
+T 1
+* 0000FC00:00002A8A
+# 
+R 
+L SYSROM:Handle SCSI Message In Phase
+P 
+% 0
+M 1
+/end
+/begin0
+T 1
+* 0000FC00:00002A92
+# 
+R 
+L SYSROM:Write AH to I/O 0AAH (DMAC_MODE_CONTROL)
+P 
+% 0
+M 1
+/end
+/begin0
+T 1
+* 0000FC00:00002A99
+# 
+R 
+L SYSROM:Set DMA Address, Select SCSI channel, Wait for DMA End
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 0000FC00:00002AA2
+# 
+R 
+L DMA Transfer Loop
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 0000FC00:00002AA9
+# 
+R 
+L Wait DMA End
+P 
+% 0
+M 1
+/end
+/begin0
+T 0
+* 0000FC00:00002AAD
+# Non-Zero means Terminal Count or DMA End
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000FC00:00002AB1
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 0
+* 0000FC00:00002AB5
+# Phase changed to non-data
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000FC00:00002AB9
+# Zero means SCSI no longer busy.  Command abruptly terminated
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000FC00:00002AC1
+# Increment high-word of the physical addres
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000FC00:00002AC3
+# Clear low-word of the physical address. (Can't DMA cross 64KB border?)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 0000FC00:00002AD2
+# 
+R 
+L SYSROM:SEG+OFFSET to Physical Address
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 0000FC00:00002AE4
+# 
+R 
+L SYSROM:Set DMA Address and Count.  Count=FFFF
+P 
+% 0
+M 1
+/end
+/begin0
+T 0
+* 0000FC00:00002AEA
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 0
+* 0000FC00:00002AF0
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 0
+* 0000FC00:00002AFB
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 1
+* 0000FC00:00002B00
+# 
+R 
+L SYSROM:Enable (Unmask) SCSI DMA Channel
+P 
+% 0
+M 1
+/end
+/begin0
+T 1
+* 0000FC00:00002B08
+# 
+R 
+L SYSROM:Disable (mask) SCSI DMA Channel
+P 
+% 0
+M 1
+/end

@@ -1,0 +1,340 @@
+/begin0
+T 1
+* 00002600:00000738
+# 
+R 
+L INT D9H
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00002600:00000752
+# BX=Function Code AH
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00002600:00000762
+# Set address for Jump by RETF
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00002600:00000768
+# Return to 2600:077B then IRET
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00002600:0000077C
+# 
+R 
+L Return from INT D9H
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00002C00:00000374
+# 
+R 
+L INT D9H AH=0DH
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00004A20:000001F7
+# Call CPU Reset
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00004A20:000001FA
+# Return from RESET
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00004A20:00000CA7
+# 
+R 
+L Read from MEMIO C000:DX to AL
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00004A20:00000CB4
+# 
+R 
+L Write AL to MEMIO C000:DX
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00004A20:00000D8F
+# 
+R 
+L Failing in this function
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00004A20:000010C3
+# 
+R 
+L CPU Reset
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00004A20:000010E4
+# 
+R 
+L Reset by I/O 0020H
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00004A20:000010E7
+# 
+R 
+L Called from SYSROM on RESET
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00004A20:000010F7
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 0
+* 00004A20:000010FD
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 0
+* 00004A20:00001103
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 0
+* 00004A20:00001109
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 0
+* 00004A20:0000110F
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 0
+* 00004A20:00001115
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 0
+* 00004A20:0000111B
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 0
+* 00004A20:00001128
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 2
+* 00004A20:00001195
+# 
+R 
+L Clear Screen, Show message, then Infinite Loop
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00004A20:000011ED
+# 
+R 
+L (Prob)Print One Letter
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 0000FC00:0000298D
+# 
+R 
+L SCSI-Read Loop?
+P 
+% 0
+M 1
+/end
+/begin0
+T 0
+* 0000FC00:00002991
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 0
+* 0000FC00:00002997
+# Jump if no REQ
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000FC00:000029A4
+# Handle Different Phases
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000FC00:000029C8
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 1
+* 0000FC00:00002A65
+# 
+R 
+L SYSROM-SCSI:Not Handle Phase
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 0000FC00:00002A66
+# 
+R 
+L SYSROM-SCSI:Handle IO=0,MSG=0,CD=1
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000FC00:00002A74
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 1
+* 0000FC00:00002A82
+# 
+R 
+L SYSROM-SCSI:Handle IO=1,MSG=0,CD=1
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 0000FC00:00002A8A
+# 
+R 
+L SYSROM-SCSI:Handle IO=1,MSG=1,CD=1
+P 
+% 0
+M 0
+/end
