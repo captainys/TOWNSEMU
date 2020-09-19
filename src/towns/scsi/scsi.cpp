@@ -112,6 +112,8 @@ bool TownsSCSI::LoadCDImage(unsigned int scsiId,std::string fName)
 		if(DiscImage::ERROR_NOERROR==state.dev[scsiId].discImg.Open(fName))
 		{
 			state.deviceConnected=true;
+			state.dev[scsiId].imageFName=fName;
+			state.dev[scsiId].devType=SCSIDEVICE_CDROM;
 			return true;
 		}
 	}
