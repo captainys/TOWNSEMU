@@ -106,14 +106,12 @@ bool TownsSCSI::LoadHardDiskImage(unsigned int scsiId,std::string fName)
 }
 bool TownsSCSI::LoadCDImage(unsigned int scsiId,std::string fName)
 {
-	std::cout << "SCSI CD-ROM is not supported yet." << std::endl;
+	std::cout << "SCSI CD-ROM is not fully supported yet." << std::endl;
 	if(scsiId<MAX_NUM_SCSIDEVICES)
 	{
-		auto fSize=cpputil::FileSize(fName);
-		if(0<fSize)
+		if(DiscImage::ERROR_NOERROR==state.dev[scsiId].discImg.Open(fName))
 		{
 			state.deviceConnected=true;
-
 			return true;
 		}
 	}

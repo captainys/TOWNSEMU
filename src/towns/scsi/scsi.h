@@ -5,6 +5,8 @@
 #include <vector>
 #include <string>
 
+#include "discimg.h"
+
 /*
 Phase and I/O [0xC32] read
  PHASE_BUSFREE:       C_D=0x10  MSG=0x20  I_O=0x40     I/O [0xC32]  0x0*
@@ -70,14 +72,22 @@ public:
 	{
 		SCSICMD_TEST_UNIT_READY =0x00,  // [9] 8.2.16 TEST UNIT READY Command
 		SCSICMD_REZERO_UNIT     =0x01,  // [9] 9.2.13 REZERO UNIT command
+		// SCSICMD_SENSE           =0x03,
 		SCSICMD_READ_6          =0x08,  // [9] 9.2.5 READ(6) command
 		SCSICMD_WRITE_6         =0x0A,  // [9] 9.2.20 WRITE(6) command
 		SCSICMD_INQUIRY         =0x12,
+		// SCSICMD_STOP            =0x1B,
 		SCSICMD_PREVENT_REMOVAL =0x1E,  // [9] 9.2.4 PREVENT ALLOW MEDIUM REMOVAL command
 		SCSICMD_READ_CAPACITY   =0x25,  // [9] 9.2.7 READ CAPACITY command
 		SCSICMD_READ_10         =0x28,  // [9] 9.2.6 READ(10) command
 		SCSICMD_WRITE_10        =0x2A,  // [9] 9.2.21 WRITE(10) command
+		// SCSICMD_SEEK            =0x2B,
 		SCSICMD_VERIFY_10       =0x2F,  // [9] 9.2.19 VERIFY command
+		// SCSICMD_READ_SUBCHANNEL =0x42,
+		// SCSICMD_READTOC         =0x43,
+		// SCSICMD_PLAY_AUDIO_MSF  =0x47,
+		// SCSICMD_PAUSE_RESUME    =0x4B,
+		// SCSICMD_STOP_PLAY       =0x4E,
 		// When adding a support for command, don't forget to add commandLength[]= in the constructor.
 	};
 
@@ -127,6 +137,7 @@ public:
 		unsigned int devType=SCSIDEVICE_NONE;
 		std::string imageFName;
 		long long int imageSize=0;
+		DiscImage discImg;
 	};
 
 	class State

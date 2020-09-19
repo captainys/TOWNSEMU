@@ -191,7 +191,10 @@ bool Setup(FMTowns &towns,Outside_World *outside_world,const TownsARGV &argv)
 		}
 		else if(scsi.imageType==TownsARGV::SCSIIMAGE_CDROM)
 		{
-			std::cout << "SCSI CD-ROM is not supported yet." << std::endl;
+			if(true!=towns.scsi.LoadCDImage(scsi.scsiID,scsi.imgFName))
+			{
+				std::cout << "Failed to load SCSI CD image." << std::endl;
+			}
 		}
 	}
 
