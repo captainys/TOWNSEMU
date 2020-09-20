@@ -39,7 +39,8 @@ public:
 
 	enum
 	{
-		HARDDISK_SECTOR_LENGTH=512
+		HARDDISK_SECTOR_LENGTH=512,
+		CDROM_SECTOR_LENGTH=2048
 	};
 
 	enum
@@ -72,7 +73,7 @@ public:
 	{
 		SCSICMD_TEST_UNIT_READY =0x00,  // [9] 8.2.16 TEST UNIT READY Command
 		SCSICMD_REZERO_UNIT     =0x01,  // [9] 9.2.13 REZERO UNIT command
-		// SCSICMD_SENSE           =0x03,
+		SCSICMD_SENSE           =0x03,  // [9] 8.2.14 REQUEST SENSE Command
 		SCSICMD_READ_6          =0x08,  // [9] 9.2.5 READ(6) command
 		SCSICMD_WRITE_6         =0x0A,  // [9] 9.2.20 WRITE(6) command
 		SCSICMD_INQUIRY         =0x12,
@@ -83,7 +84,7 @@ public:
 		SCSICMD_WRITE_10        =0x2A,  // [9] 9.2.21 WRITE(10) command
 		// SCSICMD_SEEK            =0x2B,
 		SCSICMD_VERIFY_10       =0x2F,  // [9] 9.2.19 VERIFY command
-		// SCSICMD_READ_SUBCHANNEL =0x42,
+		SCSICMD_READ_SUBCHANNEL =0x42,  // [9] 14.2.10 READ SUB-CHANNEL command
 		// SCSICMD_READTOC         =0x43,
 		// SCSICMD_PLAY_AUDIO_MSF  =0x47,
 		// SCSICMD_PAUSE_RESUME    =0x4B,

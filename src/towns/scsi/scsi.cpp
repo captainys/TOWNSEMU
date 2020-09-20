@@ -70,6 +70,7 @@ TownsSCSI::TownsSCSI(class FMTowns *townsPtr) : Device(townsPtr)
 	}
 	commandLength[SCSICMD_TEST_UNIT_READY]=6;
 	commandLength[SCSICMD_REZERO_UNIT]    =6;
+	commandLength[SCSICMD_SENSE]          =6;
 	commandLength[SCSICMD_READ_6]         =6;
 	commandLength[SCSICMD_WRITE_6]        =6;
 	commandLength[SCSICMD_INQUIRY]        =6;
@@ -78,6 +79,7 @@ TownsSCSI::TownsSCSI(class FMTowns *townsPtr) : Device(townsPtr)
 	commandLength[SCSICMD_READ_10]        =10;
 	commandLength[SCSICMD_WRITE_10]       =10;
 	commandLength[SCSICMD_VERIFY_10]      =10;
+	commandLength[SCSICMD_READ_SUBCHANNEL]=10;
 }
 /* virtual */ void TownsSCSI::PowerOn(void)
 {
@@ -106,7 +108,6 @@ bool TownsSCSI::LoadHardDiskImage(unsigned int scsiId,std::string fName)
 }
 bool TownsSCSI::LoadCDImage(unsigned int scsiId,std::string fName)
 {
-	std::cout << "SCSI CD-ROM is not fully supported yet." << std::endl;
 	if(scsiId<MAX_NUM_SCSIDEVICES)
 	{
 		if(DiscImage::ERROR_NOERROR==state.dev[scsiId].discImg.Open(fName))
@@ -437,6 +438,9 @@ void TownsSCSI::ExecSCSICommand(void)
 		}
 		EnterStatusPhase();
 		break;
+	case SCSICMD_SENSE:
+		EnterDataInPhase();
+		break;
 	case SCSICMD_READ_CAPACITY:
 		if(0!=(state.commandBuffer[8]&1) && // PMI bit on
 		   (0!=state.commandBuffer[2] ||
@@ -469,7 +473,8 @@ void TownsSCSI::ExecSCSICommand(void)
 		break;
 	case SCSICMD_READ_6:
 	case SCSICMD_READ_10:
-		if(SCSIDEVICE_HARDDISK==state.dev[state.selId].devType)
+		if(SCSIDEVICE_HARDDISK==state.dev[state.selId].devType ||
+		   SCSIDEVICE_CDROM==state.dev[state.selId].devType)
 		{
 			EnterDataInPhase();
 		}
@@ -507,6 +512,20 @@ void TownsSCSI::ExecSCSICommand(void)
 			state.message=0; // What am I supposed to return?
 			EnterStatusPhase();
 		}
+		break;
+	case SCSICMD_READ_SUBCHANNEL:
+		if (SCSIDEVICE_CDROM==state.dev[state.selId].devType)
+		{
+			EnterDataInPhase();
+		}
+		else
+		{
+			state.senseKey=SENSEKEY_ILLEGAL_REQUEST;
+			state.status=STATUSCODE_CHECK_CONDITION;
+			state.message=0; // What am I supposed to return?
+			EnterStatusPhase();
+		}
+		break;
 		break;
 	default:
 		townsPtr->debugger.ExternalBreak("SCSI command not implemented yet.");
@@ -559,6 +578,19 @@ void TownsSCSI::ExecSCSICommand(void)
 					}
 				}
 				break;
+			case SCSICMD_SENSE:
+				{
+					unsigned char senseData[8]={0,0,0,0,0,0,0,0};
+					senseData[0]=0xF0;
+					senseData[2]=state.senseKey;
+
+					townsPtr->dmac.DeviceToMemory(DMACh,sizeof(senseData),senseData);
+					townsPtr->dmac.SetDMATransferEnd(TOWNSDMA_SCSI);
+					state.status=STATUSCODE_GOOD;
+					state.message=0;
+					EnterStatusPhase();
+				}
+				break;
 			case SCSICMD_READ_CAPACITY:
 				{
 					auto data=MakeReadCapacityData(state.selId);
@@ -581,7 +613,8 @@ void TownsSCSI::ExecSCSICommand(void)
 				break;
 			case SCSICMD_READ_6:
 			case SCSICMD_READ_10:
-				if(SCSIDEVICE_HARDDISK==state.dev[state.selId].devType)
+				if(SCSIDEVICE_HARDDISK==state.dev[state.selId].devType ||
+				   SCSIDEVICE_CDROM==state.dev[state.selId].devType)
 				{
 					townsPtr->NotifyDiskRead();
 
@@ -608,14 +641,26 @@ void TownsSCSI::ExecSCSICommand(void)
 						}
 					}
 
-					LBA*=HARDDISK_SECTOR_LENGTH;
-					LEN*=HARDDISK_SECTOR_LENGTH;
-					auto bytesTransferred=townsPtr->dmac.DeviceToMemory(
-					    DMACh,
-					    cpputil::ReadBinaryFile(
-					        state.dev[state.selId].imageFName,
-					        LBA+state.bytesTransferred,
-					        LEN-state.bytesTransferred));
+					unsigned int bytesTransferred=0;
+					if(SCSIDEVICE_HARDDISK==state.dev[state.selId].devType)
+					{
+						LBA*=HARDDISK_SECTOR_LENGTH;
+						LEN*=HARDDISK_SECTOR_LENGTH;
+						bytesTransferred=townsPtr->dmac.DeviceToMemory(
+						    DMACh,
+						    cpputil::ReadBinaryFile(
+						        state.dev[state.selId].imageFName,
+						        LBA+state.bytesTransferred,
+						        LEN-state.bytesTransferred));
+					}
+					else if(SCSIDEVICE_CDROM==state.dev[state.selId].devType)
+					{
+						auto sectorData=state.dev[state.selId].discImg.ReadSectorMODE1(LBA,LEN);
+						bytesTransferred=townsPtr->dmac.DeviceToMemory(
+						    DMACh,
+						    sectorData.size()-state.bytesTransferred,sectorData.data()+state.bytesTransferred);
+						LEN*=CDROM_SECTOR_LENGTH;
+					}
 					if(0<bytesTransferred)
 					{
 						state.bytesTransferred+=bytesTransferred;
@@ -631,6 +676,32 @@ void TownsSCSI::ExecSCSICommand(void)
 					{
 						townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DATA_INTERVAL);
 					}
+				}
+				else
+				{
+					state.senseKey=SENSEKEY_ILLEGAL_REQUEST;
+					state.status=STATUSCODE_CHECK_CONDITION;
+					state.message=0; // What am I supposed to return?
+					EnterStatusPhase();
+				}
+				break;
+			case SCSICMD_READ_SUBCHANNEL:
+				if(SCSIDEVICE_CDROM==state.dev[state.selId].devType)
+				{
+					// Tentatively return CDDA not in progress.
+					unsigned char subQData[48];
+					for(auto &b : subQData)
+					{
+						b=0;
+					}
+					subQData[1]=0x13; // 11h Playing 12H Paused 13H Completed 14H Error 15H No CDDA State
+					subQData[2]=0x00;  subQData[3]=44;
+
+					townsPtr->dmac.DeviceToMemory(DMACh,sizeof(subQData),subQData);
+					townsPtr->dmac.SetDMATransferEnd(TOWNSDMA_SCSI);
+					state.status=STATUSCODE_GOOD;
+					state.message=0;
+					EnterStatusPhase();
 				}
 				else
 				{
