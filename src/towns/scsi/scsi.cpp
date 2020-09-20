@@ -80,6 +80,7 @@ TownsSCSI::TownsSCSI(class FMTowns *townsPtr) : Device(townsPtr)
 	commandLength[SCSICMD_WRITE_10]       =10;
 	commandLength[SCSICMD_VERIFY_10]      =10;
 	commandLength[SCSICMD_READ_SUBCHANNEL]=10;
+	commandLength[SCSICMD_READTOC]        =10;
 }
 /* virtual */ void TownsSCSI::PowerOn(void)
 {
@@ -513,6 +514,7 @@ void TownsSCSI::ExecSCSICommand(void)
 			EnterStatusPhase();
 		}
 		break;
+	case SCSICMD_READTOC:
 	case SCSICMD_READ_SUBCHANNEL:
 		if (SCSIDEVICE_CDROM==state.dev[state.selId].devType)
 		{
@@ -698,6 +700,31 @@ void TownsSCSI::ExecSCSICommand(void)
 					subQData[2]=0x00;  subQData[3]=44;
 
 					townsPtr->dmac.DeviceToMemory(DMACh,sizeof(subQData),subQData);
+					townsPtr->dmac.SetDMATransferEnd(TOWNSDMA_SCSI);
+					state.status=STATUSCODE_GOOD;
+					state.message=0;
+					EnterStatusPhase();
+				}
+				else
+				{
+					state.senseKey=SENSEKEY_ILLEGAL_REQUEST;
+					state.status=STATUSCODE_CHECK_CONDITION;
+					state.message=0; // What am I supposed to return?
+					EnterStatusPhase();
+				}
+				break;
+			case SCSICMD_READTOC:
+				if(SCSIDEVICE_CDROM==state.dev[state.selId].devType &&
+				   (state.commandBuffer[6]<=state.dev[state.selId].discImg.GetNumTracks() ||
+				    0xAA==state.commandBuffer[6]))  // 0xAA returns the total length.
+				{
+					auto tocData=MakeTOCData(
+					    state.selId,
+					    state.commandBuffer[6],
+					    (state.commandBuffer[7]<<8)|state.commandBuffer[8],
+					    (0!=(state.commandBuffer[1]&2)));
+
+					townsPtr->dmac.DeviceToMemory(DMACh,tocData);
 					townsPtr->dmac.SetDMATransferEnd(TOWNSDMA_SCSI);
 					state.status=STATUSCODE_GOOD;
 					state.message=0;
@@ -973,6 +1000,100 @@ std::vector <unsigned char> TownsSCSI::MakeReadCapacityData(int scsiId) const
 	dat[5]=0;
 	dat[6]=((HARDDISK_SECTOR_LENGTH>>8)&255);
 	dat[7]= (HARDDISK_SECTOR_LENGTH    &255);
+	return dat;
+}
+
+std::vector <unsigned char> TownsSCSI::MakeTOCData(int scsiId,unsigned int startTrack,unsigned int allocSize,bool MSF) const
+{
+	std::vector <unsigned char> dat;
+
+	if(SCSIDEVICE_CDROM==state.dev[scsiId].devType)
+	{
+		// Placeholder for TOC length
+		dat.push_back(0);
+		dat.push_back(0);
+
+		dat.push_back(1);
+		dat.push_back(state.dev[scsiId].discImg.GetNumTracks());
+
+		if(0xAA==startTrack)
+		{
+			dat.push_back(0);
+			dat.push_back(0);
+			dat.push_back(0);
+			dat.push_back(0);
+
+			auto length=state.dev[scsiId].discImg.GetNumSectors()+DiscImage::HSG_BASE;
+			if(true==MSF)
+			{
+				auto MSF=DiscImage::HSGtoMSF(length);
+				dat.push_back(0);
+				dat.push_back((unsigned char)MSF.min);
+				dat.push_back((unsigned char)MSF.sec);
+				dat.push_back((unsigned char)MSF.frm);
+			}
+			else
+			{
+				dat.push_back((length>>24)&0xFF);
+				dat.push_back((length>>16)&0xFF);
+				dat.push_back((length>>8)&0xFF);
+				dat.push_back( length    &0xFF);
+			}
+		}
+		else
+		{
+			auto &allTracks=state.dev[scsiId].discImg.GetTracks();
+			for(auto trk=startTrack; trk<=state.dev[scsiId].discImg.GetNumTracks(); ++trk)
+			{
+				auto &t=allTracks[trk-1];
+				unsigned char ADR_CTRL=0;
+				if(DiscImage::TRACK_AUDIO==t.trackType)
+				{
+					ADR_CTRL=0x00;
+				}
+				else
+				{
+					ADR_CTRL=0x14;
+				}
+				dat.push_back(0);
+				dat.push_back(ADR_CTRL);
+				dat.push_back(trk);
+				dat.push_back(0);
+
+				auto start=t.start+t.preGap;
+				if(true==MSF)
+				{
+					start+=DiscImage::MakeMSF(0,2,0);  // 2 seconds magic
+					dat.push_back(0);
+					dat.push_back((unsigned char)start.min);
+					dat.push_back((unsigned char)start.sec);
+					dat.push_back((unsigned char)start.frm);
+				}
+				else
+				{
+					unsigned int LBA=DiscImage::MSFtoHSG(start);
+					dat.push_back((LBA>>24)&0xFF);
+					dat.push_back((LBA>>16)&0xFF);
+					dat.push_back((LBA>>8)&0xFF);
+					dat.push_back( LBA    &0xFF);
+				}
+
+				if(allocSize<=dat.size())
+				{
+					break;
+				}
+			}
+		}
+
+		if(allocSize<dat.size())
+		{
+			dat.resize(allocSize);
+		}
+
+		dat[0]=(dat.size()>>8)&0xFF;
+		dat[1]= dat.size()    &0xFF;
+	}
+
 	return dat;
 }
 

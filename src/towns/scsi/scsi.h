@@ -85,7 +85,7 @@ public:
 		// SCSICMD_SEEK            =0x2B,
 		SCSICMD_VERIFY_10       =0x2F,  // [9] 9.2.19 VERIFY command
 		SCSICMD_READ_SUBCHANNEL =0x42,  // [9] 14.2.10 READ SUB-CHANNEL command
-		// SCSICMD_READTOC         =0x43,
+		SCSICMD_READTOC         =0x43,
 		// SCSICMD_PLAY_AUDIO_MSF  =0x47,
 		// SCSICMD_PAUSE_RESUME    =0x4B,
 		// SCSICMD_STOP_PLAY       =0x4E,
@@ -209,6 +209,7 @@ public:
 
 	std::vector <unsigned char> MakeInquiryData(int scsiId) const;
 	std::vector <unsigned char> MakeReadCapacityData(int scsiId) const;
+	std::vector <unsigned char> MakeTOCData(int scsiId,unsigned int startTrack,unsigned int allocSize,bool MSF) const;
 
 	std::vector <std::string> GetStatusText(void) const;
 };
