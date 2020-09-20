@@ -483,6 +483,19 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 			state.CDDAState=State::CDDA_IDLE;
 			OutsideWorld->CDDAStop();
 
+			// TownsOS V2.1 L20 issues MODE1READ command without checking the status by GETSTATE.
+			// This causes an issue when redirecting Internal CD-ROM to external CD-ROM.
+			// Drive Not Ready must be checked in here.
+			// Also, the 1st byte of the error code looks to be non-zero.
+			// Probably the logic is:
+			//    GETSTATE when CD media is not in  -> GETSTATE command itself succeeds (1st byte==0), but the drive is not ready (2nd byte==9)
+			//    MODE1READ when CD media is not in -> MODE1READ command fails (1st byte=0x21), and the drive is not ready (2nd byte=9)
+			if(0==state.GetDisc().GetNumTracks())
+			{
+				state.PushStatusQueue(0x21,9,0,0);
+				break;
+			}
+
 			DiscImage::MinSecFrm msfBegin,msfEnd;
 
 			msfBegin.min=DiscImage::BCDToBin(state.paramQueue[0]);

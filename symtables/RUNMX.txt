@@ -1,4 +1,64 @@
 /begin0
+T 0
+* 00000008:000020B8
+# 22H=CDC Command Mode 1 Read
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00000008:000020D9
+# Status Byte[0]==22H means Data Ready
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00000008:0000211D
+# 
+R 
+L CD-ROM Error
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00000008:00002124
+# 
+R 
+L CD-ROM No Error
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00000008:0000212A
+# 
+R 
+L RUN386(?):Issue CD-ROM Command
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00000008:0000218F
+# 
+R 
+L RUN386(?):Get CD-ROM Status Bytes from [1797H]
+P 
+% 0
+M 0
+/end
+/begin0
 T 1
 * 00003368:00000314
 # 
