@@ -75,15 +75,18 @@ TownsSCSI::TownsSCSI(class FMTowns *townsPtr) : Device(townsPtr)
 	commandLength[SCSICMD_SENSE]          =6;
 	commandLength[SCSICMD_READ_6]         =6;
 	commandLength[SCSICMD_WRITE_6]        =6;
+	commandLength[SCSICMD_SEEK_6]         =6;
 	commandLength[SCSICMD_INQUIRY]        =6;
 	commandLength[SCSICMD_PREVENT_REMOVAL]=6;
 	commandLength[SCSICMD_READ_CAPACITY]  =10;
 	commandLength[SCSICMD_READ_10]        =10;
 	commandLength[SCSICMD_WRITE_10]       =10;
+	commandLength[SCSICMD_SEEK_10]        =10;
 	commandLength[SCSICMD_VERIFY_10]      =10;
 	commandLength[SCSICMD_READ_SUBCHANNEL]=10;
 	commandLength[SCSICMD_READTOC]        =10;
 	commandLength[SCSICMD_PLAY_AUDIO_MSF] =10;
+	commandLength[SCSICMD_PAUSE_RESUME]   =10;
 }
 
 void TownsSCSI::SetOutsideWorld(class Outside_World *ptr)
@@ -538,7 +541,7 @@ void TownsSCSI::ExecSCSICommand(void)
 		}
 		break;
 	case SCSICMD_PLAY_AUDIO_MSF:
-		if (SCSIDEVICE_CDROM==state.dev[state.selId].devType)
+		if(SCSIDEVICE_CDROM==state.dev[state.selId].devType)
 		{
 			auto start=DiscImage::MakeMSF(state.commandBuffer[3],state.commandBuffer[4],state.commandBuffer[5]);
 			auto end=DiscImage::MakeMSF(state.commandBuffer[6],state.commandBuffer[7],state.commandBuffer[8]);
@@ -560,6 +563,37 @@ void TownsSCSI::ExecSCSICommand(void)
 			state.message=0; // What am I supposed to return?
 			EnterStatusPhase();
 		}
+		break;
+	case SCSICMD_PAUSE_RESUME:
+		if(SCSIDEVICE_CDROM==state.dev[state.selId].devType)
+		{
+			if(state.commandBuffer[8]&1) // Resume
+			{
+				outsideworld->CDDAResume();
+			}
+			else
+			{
+				outsideworld->CDDAPause();
+			}
+			state.status=STATUSCODE_GOOD;
+			state.message=0; // What am I supposed to return?
+			state.senseKey=SENSEKEY_NO_SENSE;
+			EnterStatusPhase();
+		}
+		else
+		{
+			state.senseKey=SENSEKEY_ILLEGAL_REQUEST;
+			state.status=STATUSCODE_CHECK_CONDITION;
+			state.message=0; // What am I supposed to return?
+			EnterStatusPhase();
+		}
+		break;
+	case SCSICMD_SEEK_6:
+	case SCSICMD_SEEK_10:
+		state.status=STATUSCODE_GOOD;
+		state.message=0; // What am I supposed to return?
+		state.senseKey=SENSEKEY_NO_SENSE;
+		EnterStatusPhase();
 		break;
 	default:
 		townsPtr->debugger.ExternalBreak("SCSI command not implemented yet.");
