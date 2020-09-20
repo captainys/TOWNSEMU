@@ -25,6 +25,7 @@ class TownsSCSI : public Device
 {
 private:
 	class FMTowns *townsPtr;
+	class Outside_World *outsideworld=nullptr;
 public:
 	virtual const char *DeviceName(void) const{return "SCSI";}
 
@@ -86,7 +87,7 @@ public:
 		SCSICMD_VERIFY_10       =0x2F,  // [9] 9.2.19 VERIFY command
 		SCSICMD_READ_SUBCHANNEL =0x42,  // [9] 14.2.10 READ SUB-CHANNEL command
 		SCSICMD_READTOC         =0x43,
-		// SCSICMD_PLAY_AUDIO_MSF  =0x47,
+		SCSICMD_PLAY_AUDIO_MSF  =0x47,
 		// SCSICMD_PAUSE_RESUME    =0x4B,
 		// SCSICMD_STOP_PLAY       =0x4E,
 		// When adding a support for command, don't forget to add commandLength[]= in the constructor.
@@ -170,6 +171,8 @@ public:
 	bool monitorSCSICmd=false;
 
 	TownsSCSI(class FMTowns *townsPtr);
+
+	void SetOutsideWorld(class Outside_World *ptr);
 
 	virtual void PowerOn(void);
 	virtual void Reset(void);

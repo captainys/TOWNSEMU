@@ -30,6 +30,7 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world,class Tow
 	this->townsPtr=townsPtr;
 	townsPtr->cdrom.SetOutsideWorld(outside_world);
 	townsPtr->sound.SetOutsideWorld(outside_world);
+	townsPtr->scsi.SetOutsideWorld(outside_world);
 
 	outside_world->Start();
 
