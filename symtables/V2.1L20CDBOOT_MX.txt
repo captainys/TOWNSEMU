@@ -2229,6 +2229,196 @@ P
 M 0
 /end
 /begin0
+T 0
+* 00001048:00000219
+# Last Usable Page (actually +1)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001048:0000618B
+# DS:[44H] last usable page. Where is it written?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001048:00006194
+# 1674:000F will be the last usable page (C000H default)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001048:0000619D
+# This is where MSDOS.SYS is temporarily copied.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001048:000061AA
+# Adding IO.SYS segment.  Maybe meaningful.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00000000
+# 
+R 
+L MSDOS.SYS:Entry
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000004D9
+# SI=Last Usable Memory Location
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000004E1
+# (Prob)1679:02DE may also be the first usable page.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000004F0
+# (Prob)1679:0024 may be the first usable page
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000050A
+# (Prob)1DBE:0003 is the maximum usable pages
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:0000199C
+# 
+R 
+L MSDOS.SYS:(Prob)Making Memory Allocation Table?
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000199E
+# RealMode INT Vector Table
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000019A2
+# INT 22H
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000019A8
+# TO 24H (2 Words for 1 INT)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000019B1
+# AX=LastAddr-?Addr
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000019D0
+# CD 20 = INT 20H
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000019DB
+# CD 21 = INT 21H
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006C9C
+# (Prob)This can be the first usable conventional memory location
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006CA2
+# Last Usable Conventional Memory Location
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
 T 1
 * 00002A19:0000002C
 # 

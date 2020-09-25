@@ -2720,6 +2720,16 @@ M 0
 /end
 /begin0
 T 0
+* 00001E54:00003AB2
+# DOS:Jump to AH
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
 * 00005844:000007DE
 # 
 R 
