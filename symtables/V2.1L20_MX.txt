@@ -2579,6 +2579,26 @@ P
 M 0
 /end
 /begin0
+T 1
+* 00001674:00000000
+# 
+R 
+L Is it real MSDOS.SYS entry?
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00000000
+# 
+R 
+L DOS:MSDOS.SYS Entry (Prob)
+P 
+% 0
+M 0
+/end
+/begin0
 T 0
 * 00001679:000012D8
 # 
@@ -2814,6 +2834,16 @@ T 0
 # 
 R 
 L ????:ANALYZE_COMMAND_ARGS
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 0000AF37:00000000
+# 
+R 
+L IO.SYS Fragment. Copied from 1674:0000.
 P 
 % 0
 M 0

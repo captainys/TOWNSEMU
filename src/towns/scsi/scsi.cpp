@@ -403,7 +403,22 @@ void TownsSCSI::ProcessPhaseData(unsigned int dataByte)
 				msg+="H)";
 				townsPtr->debugger.ExternalBreak(msg);
 			}
-			ExecSCSICommand();
+
+			// Confirmed on FM TOWNS 2MX:
+			// If the high 3-bits of the second byte (Logical Unit ID) is non zero,
+			// Towns SCSI controller returns status code 02H (CHECK CONDITION).
+			// I still don't understand what this Logical Unit ID is.
+			if(0!=((state.commandBuffer[1]>>5)&7))
+			{
+				state.senseKey=SENSEKEY_ILLEGAL_REQUEST;
+				state.status=STATUSCODE_CHECK_CONDITION;
+				state.message=0;
+				EnterStatusPhase();
+			}
+			else
+			{
+				ExecSCSICommand();
+			}
 		}
 		else
 		{

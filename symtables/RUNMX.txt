@@ -59,6 +59,176 @@ P
 M 0
 /end
 /begin0
+T 0
+* 00000F45:0000005A
+# IO.SYS:Initialize Real-Mode INT Vector
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00000F45:0000005D
+# 0000:0240H is for INT 90H
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00000F45:00000066
+# 20H Vectors in total.  Up to INT AFH
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00000F45:00000073
+# 0000:0100H is for INT 40H (Hardware INT Vectors)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00000F45:000000FB
+# IO.SYS:Check FMR_RESOLUTION.
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 0
+* 00000F45:0000011B
+# IO.SYS:Not for this machine. Stop.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00000F45:00000143
+# IO.SYS:Writing 80H to 0400H, then read and TEST AL,08H.  Meaning unpublished.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00000F45:00000185
+# 
+R 
+L IO.SYS:(Prob)Bunch of BIOS initializations.
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00000F45:000001B5
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 0
+* 00000F45:00000240
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 0
+* 00000F45:000002CD
+# IO.SYS : Checking FPU
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00000F45:000002F7
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 0
+* 00000F45:00000341
+# I/O C34H Something to do with SCSI?
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 0
+* 00000F45:000008C1
+# IO.SYS:Calling SYSROM Service FFFB:0019
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00000F45:000008DD
+# IO.SYS:Calling SYSROM Service FFFB:0019
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00000F45:000008F9
+# IO.SYS:Calling SYSROM Service FFFB:0019
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001048:00000271
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
 T 1
 * 00003368:00000314
 # 
