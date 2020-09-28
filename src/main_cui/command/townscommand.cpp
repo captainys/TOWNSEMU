@@ -113,6 +113,15 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["CDLOAD"]=CMD_CDLOAD;
 	primaryCmdMap["CDOPENCLOSE"]=CMD_CDOPENCLOSE;
 	primaryCmdMap["CDDASTOP"]=CMD_CDDASTOP;
+
+	primaryCmdMap["SCSICD0LOAD"]=CMD_SCSICD0LOAD;
+	primaryCmdMap["SCSICD1LOAD"]=CMD_SCSICD1LOAD;
+	primaryCmdMap["SCSICD2LOAD"]=CMD_SCSICD2LOAD;
+	primaryCmdMap["SCSICD3LOAD"]=CMD_SCSICD3LOAD;
+	primaryCmdMap["SCSICD4LOAD"]=CMD_SCSICD4LOAD;
+	primaryCmdMap["SCSICD5LOAD"]=CMD_SCSICD5LOAD;
+	primaryCmdMap["SCSICD6LOAD"]=CMD_SCSICD6LOAD;
+
 	primaryCmdMap["FD0LOAD"]=CMD_FD0LOAD;
 	primaryCmdMap["FD0EJECT"]=CMD_FD0EJECT;
 	primaryCmdMap["FD0WP"]=CMD_FD0WRITEPROTECT;
@@ -232,6 +241,16 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Virtually open and close the internal CD-ROM drive." << std::endl;
 	std::cout << "CDDASTOP" << std::endl;
 	std::cout << "  Stop CDDA" << std::endl;
+
+	std::cout << "SCSICD0LOAD" << std::endl;
+	std::cout << "SCSICD1LOAD" << std::endl;
+	std::cout << "SCSICD2LOAD" << std::endl;
+	std::cout << "SCSICD3LOAD" << std::endl;
+	std::cout << "SCSICD4LOAD" << std::endl;
+	std::cout << "SCSICD5LOAD" << std::endl;
+	std::cout << "SCSICD6LOAD" << std::endl;
+	std::cout << "  Load SCSI CD-ROM drive." << std::endl;
+
 	std::cout << "FD0LOAD filename" << std::endl;
 	std::cout << "FD1LOAD filename" << std::endl;
 	std::cout << "  Load FD image.  The number 0 or 1 is the drive number." << std::endl;
@@ -875,6 +894,17 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 	case CMD_CDDASTOP:
 		towns.cdrom.StopCDDA();
 		break;
+
+	case CMD_SCSICD0LOAD:
+	case CMD_SCSICD1LOAD:
+	case CMD_SCSICD2LOAD:
+	case CMD_SCSICD3LOAD:
+	case CMD_SCSICD4LOAD:
+	case CMD_SCSICD5LOAD:
+	case CMD_SCSICD6LOAD:
+		Execute_SCSICDLoad(cmd.primaryCmd-CMD_SCSICD0LOAD,towns,cmd);
+		break;
+
 	case CMD_FD0LOAD:
 		Execute_FDLoad(0,towns,cmd);
 		break;
@@ -2422,6 +2452,33 @@ void TownsCommandInterpreter::Execute_CDLoad(FMTowns &towns,Command &cmd)
 		}
 	}
 }
+
+void TownsCommandInterpreter::Execute_SCSICDLoad(unsigned int SCSIID,FMTowns &towns,const Command &cmd)
+{
+	if(2<=cmd.argv.size())
+	{
+		if(SCSIID<7 && 
+		   (towns.scsi.state.dev[SCSIID].devType==TownsSCSI::SCSIDEVICE_NONE ||
+		    towns.scsi.state.dev[SCSIID].devType==TownsSCSI::SCSIDEVICE_CDROM))
+		{
+			auto res=towns.scsi.LoadCDImage(SCSIID,cmd.argv[1]);
+			std::cout << "[" << cmd.argv[1] << "]" << std::endl;
+			if(true==res)
+			{
+				std::cout << "Loaded Disc Image:" << cmd.argv[1] << " SCSI-ID:" << SCSIID << std::endl;
+			}
+			else
+			{
+				std::cout << "Load Error." << std::endl;
+			}
+		}
+		else if(SCSIID<7)
+		{
+			std::cout << "SCSI ID " << SCSIID << " is already used for a hard disk." << std::endl;
+		}
+	}
+}
+
 void TownsCommandInterpreter::Execute_FDLoad(int drv,FMTowns &towns,Command &cmd)
 {
 	if(2<=cmd.argv.size())

@@ -107,6 +107,13 @@ public:
 		CMD_CMOSSAVE,
 		CMD_CMOSLOAD,
 		CMD_CDLOAD,
+		CMD_SCSICD0LOAD,
+		CMD_SCSICD1LOAD,
+		CMD_SCSICD2LOAD,
+		CMD_SCSICD3LOAD,
+		CMD_SCSICD4LOAD,
+		CMD_SCSICD5LOAD,
+		CMD_SCSICD6LOAD,
 		CMD_CDOPENCLOSE,
 		CMD_CDDASTOP,
 		CMD_FD0LOAD,
@@ -295,6 +302,7 @@ public:
 	void Execute_CMOSLoad(FMTowns &towns,Command &cmd);
 	void Execute_CMOSSave(FMTowns &towns,Command &cmd);
 	void Execute_CDLoad(FMTowns &towns,Command &cmd);
+	void Execute_SCSICDLoad(unsigned int SCSIID,FMTowns &towns,const Command &cmd);
 	void Execute_FDLoad(int drv,FMTowns &towns,Command &cmd);
 	void Execute_FDEject(int drv,FMTowns &towns,Command &cmd);
 
