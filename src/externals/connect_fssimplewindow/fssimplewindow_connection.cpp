@@ -266,10 +266,20 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 					towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_JIS_RELEASE,FSKEYtoTownsKEY[c]);
 				}
 				break;
+			case FSKEY_ESC:
+				// User Request: Want to use ESC as ESC.
+				// Problem: F-BASIC386 uses Break.
+				// Trying: Physical ESC key makes both BREAK and ESC strokes.
+				byteData[0]|=(0!=FsGetKeyState(FSKEY_CTRL) ? TOWNS_KEYFLAG_CTRL : 0);
+				byteData[0]|=(0!=FsGetKeyState(FSKEY_SHIFT) ? TOWNS_KEYFLAG_SHIFT : 0);
+				towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_JIS_PRESS,  TOWNS_JISKEY_BREAK);
+				towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_JIS_RELEASE,TOWNS_JISKEY_BREAK);
+				towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_JIS_PRESS,  TOWNS_JISKEY_ESC);
+				towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_JIS_RELEASE,TOWNS_JISKEY_ESC);
+				break;
 			case FSKEY_ENTER:
 			case FSKEY_BS:
 			case FSKEY_TAB:
-			case FSKEY_ESC:
 			case FSKEY_UP:
 			case FSKEY_DOWN:
 			case FSKEY_LEFT:
