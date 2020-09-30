@@ -67,6 +67,10 @@ void TownsEventLog::BeginPlayback(void)
 		return "FILE_EXEC";
 	case EVT_KEYCODE:
 		return "KEYCODE";
+	case EVT_PAD0_A_DOWN:
+		return "PAD0ADOWN";
+	case EVT_PAD0_A_UP:
+		return "PAD0AUP";
 	};
 	return "?";
 }
@@ -501,6 +505,23 @@ void TownsEventLog::Playback(class FMTowns &towns)
 						playbackPtr->tPlayed=now;
 						++playbackPtr;
 					}
+				}
+				break;
+
+			case EVT_PAD0_A_DOWN:
+				if(dt<=tPassed)
+				{
+					towns.gameport.state.ports[0].button[0]=true;
+					playbackPtr->tPlayed=now;
+					++playbackPtr;
+				}
+				break;
+			case EVT_PAD0_A_UP:
+				if(dt<=tPassed)
+				{
+					towns.gameport.state.ports[0].button[0]=false;
+					playbackPtr->tPlayed=now;
+					++playbackPtr;
 				}
 				break;
 
