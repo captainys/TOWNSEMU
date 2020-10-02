@@ -2315,6 +2315,11 @@ void TownsCommandInterpreter::Execute_Let(FMTowns &towns,Command &cmd)
 				std::cout << "Loaded register value." << std::endl;
 			}
 		}
+		else if("CF"==cap)
+		{
+			towns.cpu.SetCF(0!=cpputil::Atoi(cmd.argv[2].c_str()));
+			std::cout << "Loaded CF." << std::endl;
+		}
 		else
 		{
 			std::cout << "Cannot load a value to this register/flag." << std::endl;
