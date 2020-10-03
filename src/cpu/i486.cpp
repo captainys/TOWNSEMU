@@ -311,6 +311,7 @@ i486DX::i486DX(VMBase *vmPtr) : CPU(vmPtr)
 	IsPrefix[OPSIZE_OVERRIDE]=true;
 	IsPrefix[ADDRSIZE_OVERRIDE]=true;
 	IsPrefix[FPU_FWAIT]=true;
+	IsPrefix[I486_OPCODE_NEED_SECOND_BYTE]=true;
 
 	ClearPageTableCache();
 }

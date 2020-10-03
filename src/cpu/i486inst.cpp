@@ -505,6 +505,7 @@ public:
 	#endif
 
 		unsigned int lastByte=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,CS,offset+inst.numBytes++,mem);
+		inst.opCode=0;
 		while(true==i486DX::IsPrefix[lastByte])
 		{
 			switch(lastByte)
@@ -535,18 +536,18 @@ public:
 				inst.fwait=lastByte;
 				break;
 
+			case I486_OPCODE_NEED_SECOND_BYTE: //0x0F
+				inst.opCode=(I486_OPCODE_NEED_SECOND_BYTE<<8);
+				lastByte=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,CS,offset+inst.numBytes++,mem);
+				goto PREFIX_DONE;
+
 			default:
 				goto PREFIX_DONE;
 			}
 			lastByte=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,CS,offset+inst.numBytes++,mem);
 		}
 	PREFIX_DONE:
-		inst.opCode=lastByte;
-		if(true==OpCodeNeedsOneMoreByte(inst.opCode))
-		{
-			lastByte=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,CS,offset+inst.numBytes++,mem);
-			inst.opCode=(inst.opCode<<8)|lastByte;
-		}
+		inst.opCode|=lastByte;
 		CPUCLASS::template FetchOperand<CPUCLASS,FUNCCLASS>(cpu,inst,op1,op2,ptr,CS,offset+inst.numBytes,mem);
 	}
 };

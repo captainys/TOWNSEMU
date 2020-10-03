@@ -76,7 +76,6 @@ public:
 
 	enum
 	{
-		I486_OPCODE_NEED_SECOND_BYTE=0x0F,
 		I486_NUM_IOPORT=65536,
 		MAX_REP_BUNDLE_COUNT=128,
 
@@ -606,6 +605,8 @@ public:
 		OPSIZE_OVERRIDE=  0x66,
 		ADDRSIZE_OVERRIDE=0x67,
 
+		// Not listed as a prefix, but for sure works something like it.
+		I486_OPCODE_NEED_SECOND_BYTE=0x0F,
 
 		// 
 		FPU_FWAIT=        0x9B,
@@ -2064,13 +2065,6 @@ public:
 	inline bool PagingEnabled(void) const
 	{
 		return 0!=(state.GetCR(0)&CR0_PAGING_ENABLED);
-	}
-
-	/*! Returns true if the opCode needs one more byte to be fully qualified.
-	*/
-	inline static bool OpCodeNeedsOneMoreByte(unsigned int firstByte)
-	{
-		return (firstByte==I486_OPCODE_NEED_SECOND_BYTE);
 	}
 
 	/*! Returns page info read from the memory.  It does not look at the page-table cache.
