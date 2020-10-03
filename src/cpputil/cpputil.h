@@ -56,6 +56,7 @@ char BoolToChar(bool f);
 std::string Uitox(unsigned int i);
 std::string Ustox(unsigned short i);
 std::string Ubtox(unsigned char i);
+std::string UitoaZeroPad(unsigned int i,unsigned numDigits);
 std::string Uitoa(unsigned int i);
 std::string Uitoa(unsigned int i,unsigned minLen);
 

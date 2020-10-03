@@ -365,15 +365,36 @@ unsigned int DiscImage::OpenCUEPostProcess(void)
 	}
 	else
 	{
-		for(long long int i=1; i<(int)tracks.size(); ++i)
+		long long int prevTrackSizeInBytes=0;
+		for(long long int i=0; i<(int)tracks.size(); ++i)
 		{
-			auto prevEndMSF=tracks[i].start-tracks[i].preGap;
-			auto prevEndHSG=MSFtoHSG(prevEndMSF);
-			tracks[i-1].end=HSGtoMSF(prevEndHSG-1);
-
-			auto prevNumSec=prevEndHSG-MSFtoHSG(tracks[i-1].start);
-			tracks[i].locationInFile=tracks[i-1].locationInFile+prevNumSec*tracks[i].sectorLength;
+			long long int trackLength=0,gapLength=0;
+			if(i+1<tracks.size())
+			{
+				auto endMSF=tracks[i+1].start-tracks[i+1].preGap;
+				auto endHSG=endMSF.ToHSG();
+				tracks[i].end=HSGtoMSF(endHSG-1);
+				trackLength=(endHSG-tracks[i].start.ToHSG())*tracks[i].sectorLength;
+			}
+			if(1<=i)
+			{
+				tracks[i].locationInFile=tracks[i-1].locationInFile+prevTrackSizeInBytes;
+				auto preGap=tracks[i].preGap.ToHSG();
+				gapLength=preGap*tracks[i-1].sectorLength;
+			}
+			prevTrackSizeInBytes=trackLength+gapLength;
 		}
+
+		//The following worked almost, but not quite right when 2048 bytes/sector data track is present.
+		// for(long long int i=1; i<(int)tracks.size(); ++i)
+		// {
+		// 	auto prevEndMSF=tracks[i].start-tracks[i].preGap;
+		// 	auto prevEndHSG=MSFtoHSG(prevEndMSF);
+		// 	tracks[i-1].end=HSGtoMSF(prevEndHSG-1);
+		// 	auto prevNumSec=prevEndHSG-MSFtoHSG(tracks[i-1].start);
+		// 	tracks[i].locationInFile=tracks[i-1].locationInFile+prevNumSec*tracks[i-1].sectorLength;
+		// }
+
 		auto lastTrackBytes=binLength-tracks.back().locationInFile;
 		if(0!=(lastTrackBytes%tracks.back().sectorLength))
 		{
@@ -535,7 +556,7 @@ std::vector <unsigned char> DiscImage::ReadSectorMODE1(unsigned int HSG,unsigned
 	std::vector <unsigned char> data;
 	if(true==ifp.is_open() && 0<tracks.size() && (tracks[0].trackType==TRACK_MODE1_DATA || tracks[0].trackType==TRACK_MODE2_DATA))
 	{
-		if(HSG+numSec<=tracks[0].end.ToHSG())
+		if(HSG+numSec<=tracks[0].end.ToHSG()+1)
 		{
 			auto sectorIntoTrack=HSG-tracks[0].start.ToHSG();
 			auto locationInTrack=sectorIntoTrack*tracks[0].sectorLength;

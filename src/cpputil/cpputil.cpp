@@ -647,6 +647,23 @@ std::string cpputil::Uitoa(unsigned int i,unsigned minLen)
 	return s;
 }
 
+std::string cpputil::UitoaZeroPad(unsigned int i,unsigned numDigits)
+{
+	std::string str;
+	for(int d=0; d<numDigits; ++d)
+	{
+		str.push_back('0');
+	}
+	int d=numDigits-1;
+	while(0!=i && 0<=d)
+	{
+		str[d]='0'+i%10;
+		i/=10;
+		--d;
+	}
+	return str;
+}
+
 std::string cpputil::Itox(int i)
 {
 	if(0<=i)

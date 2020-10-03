@@ -45,3 +45,7 @@ add_subdirectory(main_cui)
 
 #externals
 add_subdirectory(externals)
+
+
+#command-line utilities
+add_subdirectory(cmdutil)

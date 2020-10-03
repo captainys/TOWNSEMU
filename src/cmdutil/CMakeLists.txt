@@ -1,0 +1,2 @@
+add_executable(flattenbincue flattenbincue.cpp)
+target_link_libraries(flattenbincue discimg cpputil)
