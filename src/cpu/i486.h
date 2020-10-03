@@ -439,7 +439,6 @@ public:
 		uint32_t pageTableCacheValid[PAGETABLE_CACHE_SIZE];
 		uint32_t pageTableCache[PAGETABLE_CACHE_SIZE];
 
-		MemoryAccess::ConstPointer pageDirectoryCache; // This must be re-cached on state-load.
 		MemoryAccess::ConstMemoryWindow CSEIPWindow;   // This must be cleared on state-load.
 		MemoryAccess::MemoryWindow SSESPWindow;         // This must be cleared on state-load.
 	public:
