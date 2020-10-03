@@ -81,7 +81,7 @@ public:
 		MAX_REP_BUNDLE_COUNT=128,
 
 		LINEARADDR_TO_PAGE_SHIFT=12,
-		PAGETABLE_CACHE_SIZE=0x00400000,
+		PAGETABLE_CACHE_SIZE=0x00100000,
 		PAGEINFO_FLAG_PRESENT=0b000000000001,
 		PAGEINFO_FLAG_RW=     0b000000000010,
 		PAGEINFO_FLAG_US=     0b000000000100,
@@ -431,7 +431,14 @@ public:
 	private:
 		unsigned int CR[4];
 	public:
+		// pageTableCache[i] is valid if pageTableCacheValidCounter<=pageTableCacheValid[i].
+		// Page table cache is invalidated by incrementing pageTableCacheValidCounter.
+		// When pageTableCacheValidCounter reaches 0xffffffff,
+		// pageTableCacheValid and pageTableCacheValidCounter will be reset.
+		uint32_t pageTableCacheValidCounter=1;
+		uint32_t pageTableCacheValid[PAGETABLE_CACHE_SIZE];
 		uint32_t pageTableCache[PAGETABLE_CACHE_SIZE];
+
 		MemoryAccess::ConstPointer pageDirectoryCache; // This must be re-cached on state-load.
 		MemoryAccess::ConstMemoryWindow CSEIPWindow;   // This must be cleared on state-load.
 		MemoryAccess::MemoryWindow SSESPWindow;         // This must be cleared on state-load.
@@ -1825,10 +1832,11 @@ public:
 		state._SetCR(num,value);
 		if(3==num)
 		{
-			ClearPageTableCache();
+			InvalidatePageTableCache();
 		}
 	}
 	void ClearPageTableCache(void);
+	void InvalidatePageTableCache();
 
 
 	/*! Issue an interrupt.
@@ -2068,7 +2076,7 @@ public:
 
 	/*! Returns page info read from the memory.  It does not look at the page-table cache.
 	*/
-	inline uint32_t ReadPageInfo(unsigned int &exceptionType,unsigned int &exceptionCode,unsigned int linearAddr,const Memory &mem) const
+	inline uint32_t ReadPageInfo(unsigned int linearAddr,const Memory &mem) const
 	{
 		uint32_t pageDirectoryIndex=((linearAddr>>22)&1023);
 		uint32_t pageTableIndex=((linearAddr>>12)&1023);
@@ -2077,8 +2085,6 @@ public:
 		auto pageTableInfo=mem.FetchDword(pageDirectoryPtr+(pageDirectoryIndex<<2));
 		if(0==(pageTableInfo&1))
 		{
-			exceptionType=EXCEPTION_PF;
-			exceptionCode=0;
 			return 0;
 		}
 
@@ -2086,13 +2092,8 @@ public:
 		unsigned int pageInfo=mem.FetchDword(pageTablePtr+(pageTableIndex<<2));
 		if(0==(pageInfo&1))
 		{
-			exceptionType=EXCEPTION_PF;
-			exceptionCode=0;
 			return 0;
 		}
-
-		exceptionType=0;
-		exceptionCode=0;
 		return pageInfo;
 	}
 
@@ -2101,7 +2102,14 @@ public:
 	inline unsigned long LinearAddressToPhysicalAddress(
 	    unsigned int &exceptionType,unsigned int &exceptionCode,unsigned int linearAddr,const Memory &mem) const
 	{
-		auto pageInfo=ReadPageInfo(exceptionType,exceptionCode,linearAddr,mem);
+		auto pageIndex=(linearAddr>>LINEARADDR_TO_PAGE_SHIFT);
+
+		auto pageInfo=state.pageTableCache[pageIndex];
+		if(state.pageTableCacheValid[pageIndex]<state.pageTableCacheValidCounter)
+		{
+			pageInfo=ReadPageInfo(linearAddr,mem);
+		}
+
 		if(0!=(pageInfo&PAGEINFO_FLAG_PRESENT))
 		{
 			auto offset=(linearAddr&4095);
@@ -2109,6 +2117,8 @@ public:
 			exceptionType=EXCEPTION_NONE;
 			return physicalAddr;
 		}
+		exceptionType=EXCEPTION_PF;
+		exceptionCode=0;
 		return 0;
 	}
 
@@ -2121,13 +2131,21 @@ public:
 	*/
 	inline unsigned long LinearAddressToPhysicalAddress(unsigned int linearAddr,const Memory &mem)
 	{
-		unsigned int exceptionType,exceptionCode;
-		auto physicalAddr=LinearAddressToPhysicalAddress(exceptionType,exceptionCode,linearAddr,mem);
-		if(EXCEPTION_NONE!=exceptionType)
+		auto pageIndex=(linearAddr>>LINEARADDR_TO_PAGE_SHIFT);
+		auto pageInfo=state.pageTableCache[pageIndex];
+		if(state.pageTableCacheValid[pageIndex]<state.pageTableCacheValidCounter)
 		{
-			RaiseException(exceptionType,exceptionCode);
-			return 0;
+			pageInfo=ReadPageInfo(linearAddr,mem);
+			if(0==(pageInfo&PAGEINFO_FLAG_PRESENT))
+			{
+				RaiseException(EXCEPTION_PF,0);
+				return 0;
+			}
+			state.pageTableCache[pageIndex]=pageInfo;
+			state.pageTableCacheValid[pageIndex]=state.pageTableCacheValidCounter;
 		}
+		auto offset=(linearAddr&4095);
+		auto physicalAddr=(pageInfo&0xFFFFF000)+offset;
 		return physicalAddr;
 	}
 

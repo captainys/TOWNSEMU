@@ -384,6 +384,20 @@ void i486DX::ClearPageTableCache(void)
 	{
 		c=0;
 	}
+	state.pageTableCacheValidCounter=1;
+	for(auto &c : state.pageTableCacheValid)
+	{
+		c=0;
+	}
+}
+
+void i486DX::InvalidatePageTableCache()
+{
+	++state.pageTableCacheValidCounter;
+	if(state.pageTableCacheValidCounter==0xffffffff)
+	{
+		ClearPageTableCache();
+	}
 }
 
 void i486DX::HandleException(bool wasReadOp,Memory &mem,unsigned int numInstBytesForCallStack)
