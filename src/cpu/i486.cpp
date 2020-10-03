@@ -366,7 +366,7 @@ void i486DX::Reset(void)
 	// Better than leaving it uninitialized
 	SetCR(1,0);
 	SetCR(2,0);
-	state.pageDirectoryCache.Clear();
+	ClearPageTableCache();
 
 	for(auto &t : state.TEST)
 	{
@@ -376,8 +376,6 @@ void i486DX::Reset(void)
 	state.halt=false;
 	state.holdIRQ=false;
 	state.exception=false;
-
-	ClearPageTableCache();
 }
 
 void i486DX::ClearPageTableCache(void)

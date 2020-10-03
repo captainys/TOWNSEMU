@@ -36,7 +36,9 @@ public:
 
 bool TestDisassembly(unsigned int operandSize,unsigned int addressSize,long long int instLen,const unsigned char instByte[],const std::string &correctDisasm)
 {
-	i486DX cpu(nullptr);
+	static i486DX cpu(nullptr);
+	cpu.Reset();
+
 	Memory mem;
 	MemoryForDisassemble memAccess;
 

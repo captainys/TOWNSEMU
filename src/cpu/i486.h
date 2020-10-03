@@ -80,6 +80,7 @@ public:
 		I486_NUM_IOPORT=65536,
 		MAX_REP_BUNDLE_COUNT=128,
 
+		LINEARADDR_TO_PAGE_SHIFT=12,
 		PAGETABLE_CACHE_SIZE=0x00400000,
 		PAGEINFO_FLAG_PRESENT=0b000000000001,
 		PAGEINFO_FLAG_RW=     0b000000000010,
@@ -1825,17 +1826,6 @@ public:
 		if(3==num)
 		{
 			ClearPageTableCache();
-
-			auto memWin=mem.GetConstMemoryWindow(value&0xFFFFF000);
-			if(nullptr!=memWin.ptr)
-			{
-				state.pageDirectoryCache=memWin.GetReadAccessPointer(value&0xFFFFF000);
-			}
-			else
-			{
-				state.pageDirectoryCache.ptr=nullptr;
-				state.pageDirectoryCache.length=0;
-			}
 		}
 	}
 	void ClearPageTableCache(void);

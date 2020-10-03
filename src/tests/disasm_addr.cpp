@@ -58,7 +58,7 @@ ERREND:
 
 int main(int ac,char *av[])
 {
-	FMTowns towns;
+	static FMTowns towns;
 
 	towns.Reset();
 
