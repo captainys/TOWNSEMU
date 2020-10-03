@@ -312,6 +312,7 @@ i486DX::i486DX(VMBase *vmPtr) : CPU(vmPtr)
 	IsPrefix[ADDRSIZE_OVERRIDE]=true;
 	IsPrefix[FPU_FWAIT]=true;
 
+	ClearPageTableCache();
 }
 
 void i486DX::Reset(void)
@@ -375,6 +376,16 @@ void i486DX::Reset(void)
 	state.halt=false;
 	state.holdIRQ=false;
 	state.exception=false;
+
+	ClearPageTableCache();
+}
+
+void i486DX::ClearPageTableCache(void)
+{
+	for(auto &c : state.pageTableCache)
+	{
+		c=0;
+	}
 }
 
 void i486DX::HandleException(bool wasReadOp,Memory &mem,unsigned int numInstBytesForCallStack)

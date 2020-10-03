@@ -19,6 +19,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <map>
 #include <string>
 #include <iostream>
+#include <cstdint>
 
 #include "cpu.h"
 #include "ramrom.h"
@@ -78,6 +79,16 @@ public:
 		I486_OPCODE_NEED_SECOND_BYTE=0x0F,
 		I486_NUM_IOPORT=65536,
 		MAX_REP_BUNDLE_COUNT=128,
+
+		PAGETABLE_CACHE_SIZE=0x00400000,
+		PAGEINFO_FLAG_PRESENT=0b000000000001,
+		PAGEINFO_FLAG_RW=     0b000000000010,
+		PAGEINFO_FLAG_US=     0b000000000100,
+		PAGEINFO_FLAG_PWT=    0b000000001000,
+		PAGEINFO_FLAG_PCD=    0b000000010000,
+		PAGEINFO_FLAG_A=      0b000000100000,
+		PAGEINFO_FLAG_D=      0b000001000000,
+		PAGEINFO_FLAG_ABAIL=  0b111000000000,
 
 		//                 AVR NIOODITSZ A P C
 		//                 CMF0TPL      0 0 1
@@ -419,6 +430,7 @@ public:
 	private:
 		unsigned int CR[4];
 	public:
+		uint32_t pageTableCache[PAGETABLE_CACHE_SIZE];
 		MemoryAccess::ConstPointer pageDirectoryCache; // This must be re-cached on state-load.
 		MemoryAccess::ConstMemoryWindow CSEIPWindow;   // This must be cleared on state-load.
 		MemoryAccess::MemoryWindow SSESPWindow;         // This must be cleared on state-load.
@@ -1812,6 +1824,8 @@ public:
 		state._SetCR(num,value);
 		if(3==num)
 		{
+			ClearPageTableCache();
+
 			auto memWin=mem.GetConstMemoryWindow(value&0xFFFFF000);
 			if(nullptr!=memWin.ptr)
 			{
@@ -1824,6 +1838,7 @@ public:
 			}
 		}
 	}
+	void ClearPageTableCache(void);
 
 
 	/*! Issue an interrupt.
