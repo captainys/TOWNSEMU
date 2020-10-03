@@ -201,6 +201,10 @@ public:
 	public:
 		unsigned int trackType=TRACK_UNKNOWNTYPE;
 		unsigned int sectorLength=2352; // Default 2352 bytes per sector.
+		// Note about Track::locationInFile
+		// If the track has a PREGAP, locationInFile is PREGAP before INDEX01.
+		// Therefore PREGAP must belong to this track.
+		// However, when the sector length of the PREGAP seems to be of the previous track.
 		unsigned long long int locationInFile=0;
 		mutable std::vector <unsigned char> dataCache;
 		MinSecFrm start,end;  // end must be 1-frame before the next track or the disc length.

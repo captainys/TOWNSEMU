@@ -385,16 +385,6 @@ unsigned int DiscImage::OpenCUEPostProcess(void)
 			prevTrackSizeInBytes=trackLength+gapLength;
 		}
 
-		//The following worked almost, but not quite right when 2048 bytes/sector data track is present.
-		// for(long long int i=1; i<(int)tracks.size(); ++i)
-		// {
-		// 	auto prevEndMSF=tracks[i].start-tracks[i].preGap;
-		// 	auto prevEndHSG=MSFtoHSG(prevEndMSF);
-		// 	tracks[i-1].end=HSGtoMSF(prevEndHSG-1);
-		// 	auto prevNumSec=prevEndHSG-MSFtoHSG(tracks[i-1].start);
-		// 	tracks[i].locationInFile=tracks[i-1].locationInFile+prevNumSec*tracks[i-1].sectorLength;
-		// }
-
 		auto lastTrackBytes=binLength-tracks.back().locationInFile;
 		if(0!=(lastTrackBytes%tracks.back().sectorLength))
 		{

@@ -93,8 +93,13 @@ int main(int ac,char *av[])
 
 	if(2<=input.GetTracks().size())
 	{
-		auto preGapSectors=input.GetTracks()[1].start.ToHSG()-(LBA1+1);
+		auto preGapSectors=input.GetTracks()[1].preGap.ToHSG();
+		auto preGapVerify=input.GetTracks()[1].start.ToHSG()-(LBA1+1);
 		std::cout << "PreGap " << preGapSectors << " sectors." << std::endl;
+		if(preGapSectors!=preGapVerify)
+		{
+			std::cout << "Something is wrong." << std::endl;
+		}
 
 		std::vector <char> preGap;
 		preGap.resize(preGapSectors*2048);
@@ -105,7 +110,13 @@ int main(int ac,char *av[])
 		outBIN.write(preGap.data(),preGap.size());
 
 		inputBIN.open(input.binFName,std::ios::binary);
-		inputBIN.seekg(input.GetTracks()[1].locationInFile,inputBIN.beg);
+		// The twist of the PREGAP in BIN/CUE:
+		// PREGAP of the track belongs to the track.  Not to the previous track.
+		// However, the sector length of the PREGAP seems to be of the previous track.
+		// What's the ****?
+		// Since locationInFile points to the beginning of the PREGAP, 
+		// number of bytes of the PREGAP must be added to skip it.
+		inputBIN.seekg(input.GetTracks()[1].locationInFile+preGapSectors*input.GetTracks()[0].sectorLength,inputBIN.beg);
 
 		std::vector <char> dataBuf;
 		dataBuf.resize(64*1024*1024);
