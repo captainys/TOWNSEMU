@@ -88,7 +88,7 @@ public:
 		PAGEINFO_FLAG_PCD=    0b000000010000,
 		PAGEINFO_FLAG_A=      0b000000100000,
 		PAGEINFO_FLAG_D=      0b000001000000,
-		PAGEINFO_FLAG_ABAIL=  0b111000000000,
+		PAGEINFO_FLAG_AVAIL=  0b111000000000,
 
 		//                 AVR NIOODITSZ A P C
 		//                 CMF0TPL      0 0 1
@@ -2076,26 +2076,15 @@ public:
 		return (firstByte==I486_OPCODE_NEED_SECOND_BYTE);
 	}
 
-	/*!
+	/*! Returns page info read from the memory.  It does not look at the page-table cache.
 	*/
-	inline unsigned long LinearAddressToPhysicalAddress(
-	    unsigned int &exceptionType,unsigned int &exceptionCode,unsigned int linearAddr,const Memory &mem) const
+	inline uint32_t ReadPageInfo(unsigned int &exceptionType,unsigned int &exceptionCode,unsigned int linearAddr,const Memory &mem) const
 	{
-		unsigned int pageDirectoryIndex=((linearAddr>>22)&1023);
-		unsigned int pageTableIndex=((linearAddr>>12)&1023);
-		unsigned int offset=(linearAddr&4095);
+		uint32_t pageDirectoryIndex=((linearAddr>>22)&1023);
+		uint32_t pageTableIndex=((linearAddr>>12)&1023);
 
-		unsigned int pageTableInfo;
-		if(4096==state.pageDirectoryCache.length)
-		{
-			const auto ptr=state.pageDirectoryCache.ptr+(pageDirectoryIndex<<2);
-			pageTableInfo=cpputil::GetDword(ptr);
-		}
-		else
-		{
-			const unsigned int pageDirectoryPtr=state.GetCR(3)&0xFFFFF000;
-			pageTableInfo=mem.FetchDword(pageDirectoryPtr+(pageDirectoryIndex<<2));
-		}
+		auto pageDirectoryPtr=state.GetCR(3)&0xFFFFF000;
+		auto pageTableInfo=mem.FetchDword(pageDirectoryPtr+(pageDirectoryIndex<<2));
 		if(0==(pageTableInfo&1))
 		{
 			exceptionType=EXCEPTION_PF;
@@ -2112,9 +2101,25 @@ public:
 			return 0;
 		}
 
-		auto physicalAddr=(pageInfo&0xFFFFF000)+offset;
-		exceptionType=EXCEPTION_NONE;
-		return physicalAddr;
+		exceptionType=0;
+		exceptionCode=0;
+		return pageInfo;
+	}
+
+	/*!
+	*/
+	inline unsigned long LinearAddressToPhysicalAddress(
+	    unsigned int &exceptionType,unsigned int &exceptionCode,unsigned int linearAddr,const Memory &mem) const
+	{
+		auto pageInfo=ReadPageInfo(exceptionType,exceptionCode,linearAddr,mem);
+		if(0!=(pageInfo&PAGEINFO_FLAG_PRESENT))
+		{
+			auto offset=(linearAddr&4095);
+			auto physicalAddr=(pageInfo&0xFFFFF000)+offset;
+			exceptionType=EXCEPTION_NONE;
+			return physicalAddr;
+		}
+		return 0;
 	}
 
 	/*! Convert physicall address to the first-matching linear address.
