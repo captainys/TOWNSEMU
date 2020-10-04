@@ -337,7 +337,7 @@ unsigned int DiscImage::OpenCUEPostProcess(void)
 		binFileCandidate.push_back(base+".Img");
 	}
 	binFName="";
-	unsigned int binLength=0;
+	uint64_t binLength=0;
 	for(auto fn : binFileCandidate)
 	{
 		binLength=cpputil::FileSize(fn);
@@ -351,6 +351,7 @@ unsigned int DiscImage::OpenCUEPostProcess(void)
 	{
 		return ERROR_BINARY_FILE_NOT_FOUND;
 	}
+	this->binFileSize=binLength;
 
 	if(1==tracks.size())
 	{

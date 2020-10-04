@@ -18,6 +18,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include <vector>
 #include <string>
+#include <cstdint>
 
 class DiscImage
 {
@@ -250,7 +251,7 @@ public:
 	};
 
 	unsigned int fileType=FILETYPE_NONE;
-	unsigned long long int binFileSize=0;
+	uint64_t binFileSize=0;
 	std::string fName,binFName;
 	unsigned int num_sectors;
 	std::vector <Track> tracks;
