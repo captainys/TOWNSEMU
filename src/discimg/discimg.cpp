@@ -23,7 +23,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 
 // Uncomment for verbose output.
-// #define DEBUG_DISCIMG
+ #define DEBUG_DISCIMG
 
 /* static */ DiscImage::MinSecFrm DiscImage::MinSecFrm::Zero(void)
 {
@@ -366,34 +366,11 @@ unsigned int DiscImage::OpenCUEPostProcess(void)
 	}
 	else
 	{
-		long long int prevTrackSizeInBytes=0;
-		for(long long int i=0; i<(int)tracks.size(); ++i)
-		{
-			long long int trackLength=0,gapLength=0;
-			if(i+1<tracks.size())
-			{
-				auto endMSF=tracks[i+1].start-tracks[i+1].preGap;
-				auto endHSG=endMSF.ToHSG();
-				tracks[i].end=HSGtoMSF(endHSG-1);
-				trackLength=(endHSG-tracks[i].start.ToHSG())*tracks[i].sectorLength;
-			}
-			if(1<=i)
-			{
-				tracks[i].locationInFile=tracks[i-1].locationInFile+prevTrackSizeInBytes;
-				auto preGap=tracks[i].preGap.ToHSG();
-				gapLength=preGap*tracks[i-1].sectorLength;
-			}
-			prevTrackSizeInBytes=trackLength+gapLength;
-		}
-
-		auto lastTrackBytes=binLength-tracks.back().locationInFile;
-		if(0!=(lastTrackBytes%tracks.back().sectorLength))
+		if(true!=TryAnalyzeTracksWithAbsurdCUEInterpretation() &&
+		   true!=TryAnalyzeTracksWithMoreReasonableCUEInterpretation())
 		{
 			return ERROR_BINARY_SIZE_NOT_SECTOR_TIMES_INTEGER;
 		}
-		auto lastTrackNumSec=(binLength-tracks.back().locationInFile)/tracks.back().sectorLength;
-		auto lastSectorHSG=MSFtoHSG(tracks.back().start)+lastTrackNumSec-1;
-		tracks.back().end=HSGtoMSF((unsigned int)lastSectorHSG);
 	}
 	if(0<tracks.size())
 	{
@@ -423,19 +400,21 @@ unsigned int DiscImage::OpenCUEPostProcess(void)
 		}
 		else
 		{
+			auto locationInFile=tracks[i].locationInFile;
 			auto preGapInHSG=tracks[i].preGap.ToHSG();
 			if(0<preGapInHSG)
 			{
 				DiscLayout preGap;
 				preGap.layoutType=LAYOUT_GAP;
-				preGap.sectorLength=layout.back().sectorLength;
+				preGap.sectorLength=tracks[i].preGapSectorLength;
 				preGap.startHSG=tracks[i].start.ToHSG()-preGapInHSG;
 				preGap.numSectors=preGapInHSG;
-				preGap.locationInFile=layout.back().locationInFile+layout.back().sectorLength*layout.back().numSectors;
+				preGap.locationInFile=locationInFile;
 				layout.push_back(preGap);
+				locationInFile+=tracks[i].preGapSectorLength*preGapInHSG;
 			}
 			L.startHSG+=preGapInHSG;
-			L.locationInFile=layout.back().locationInFile+layout.back().sectorLength*layout.back().numSectors;
+			L.locationInFile=locationInFile;
 			layout.push_back(L);
 		}
 	}
@@ -460,11 +439,98 @@ unsigned int DiscImage::OpenCUEPostProcess(void)
 #ifdef DEBUG_DISCIMG
 	for(auto L : layout)
 	{
-		std::cout << "LAYOUT " << L.startHSG << " " << L.locationInFile << std::endl;
+		std::cout << "LAYOUT ";
+		switch(L.layoutType)
+		{
+		case LAYOUT_DATA:
+			std::cout << "DATA  ";
+			break;
+		case LAYOUT_AUDIO:
+			std::cout << "AUDIO ";
+			break;
+		case LAYOUT_GAP:
+			std::cout << "GAP   ";
+			break;
+		case LAYOUT_END:
+			std::cout << "END   ";
+			break;
+		default:
+			std::cout << "????? ";
+			break;
+		}
+		std::cout << L.startHSG << " " << L.locationInFile << std::endl;
 	}
 #endif
 
 	return ERROR_NOERROR;
+}
+bool DiscImage::TryAnalyzeTracksWithAbsurdCUEInterpretation(void)
+{
+	for(long long int i=0; i<(int)tracks.size(); ++i)
+	{
+		// Why I say this interpretation is absurd.
+		// Why pre-gap sector length of this sector needs to be the sector length of the previous track?
+		tracks[i].preGapSectorLength=(0==i ? 0 : tracks[i-1].sectorLength);
+	}
+
+	long long int prevTrackSizeInBytes=0;
+	for(long long int i=0; i<(int)tracks.size(); ++i)
+	{
+		long long int trackLength=0,gapLength=0;
+		if(i+1<tracks.size())
+		{
+			auto endMSF=tracks[i+1].start-tracks[i+1].preGap;
+			auto endHSG=endMSF.ToHSG();
+			tracks[i].end=HSGtoMSF(endHSG-1);
+			trackLength=(endHSG-tracks[i].start.ToHSG())*tracks[i].sectorLength;
+		}
+		if(1<=i)
+		{
+			tracks[i].locationInFile=tracks[i-1].locationInFile+prevTrackSizeInBytes;
+			auto preGap=tracks[i].preGap.ToHSG();
+			gapLength=preGap*tracks[i].preGapSectorLength;
+		}
+		prevTrackSizeInBytes=trackLength+gapLength;
+	}
+
+	auto lastTrackBytes=binFileSize-tracks.back().locationInFile;
+	if(0!=(lastTrackBytes%tracks.back().sectorLength))
+	{
+		return false;
+	}
+	auto lastTrackNumSec=(binFileSize-tracks.back().locationInFile)/tracks.back().sectorLength;
+	auto lastSectorHSG=MSFtoHSG(tracks.back().start)+lastTrackNumSec-1;
+	tracks.back().end=HSGtoMSF((unsigned int)lastSectorHSG);
+
+	return true;
+}
+bool DiscImage::TryAnalyzeTracksWithMoreReasonableCUEInterpretation(void)
+{
+	// More straight-forward interpretation, but I am not sure if it is correct.
+	for(long long int i=0; i<(int)tracks.size(); ++i)
+	{
+		tracks[i].preGapSectorLength=2352;
+	}
+
+	for(long long int i=0; i<tracks.size(); ++i)
+	{
+		if(i+1<tracks.size())
+		{
+			tracks[i].end=HSGtoMSF(tracks[i+1].start.ToHSG()-tracks[i+1].preGap.ToHSG()-1);
+		}
+		tracks[i].locationInFile=(tracks[i].start.ToHSG()-tracks[i].preGap.ToHSG())*2352;
+	}
+
+	auto lastTrackBytes=binFileSize-tracks.back().locationInFile;
+	if(0!=(lastTrackBytes%tracks.back().sectorLength))
+	{
+		return false;
+	}
+	auto lastTrackNumSec=(binFileSize-tracks.back().locationInFile)/tracks.back().sectorLength;
+	auto lastSectorHSG=MSFtoHSG(tracks.back().start)+lastTrackNumSec-1;
+	tracks.back().end=HSGtoMSF((unsigned int)lastSectorHSG);
+
+	return true;
 }
 
 unsigned int DiscImage::OpenISO(const std::string &fName)

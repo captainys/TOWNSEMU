@@ -202,6 +202,7 @@ public:
 	public:
 		unsigned int trackType=TRACK_UNKNOWNTYPE;
 		unsigned int sectorLength=2352; // Default 2352 bytes per sector.
+		unsigned int preGapSectorLength=2352; // BIN/CUE format sucks.  Utterly confusing.
 		// Note about Track::locationInFile
 		// If the track has a PREGAP, locationInFile is PREGAP before INDEX01.
 		// Therefore PREGAP must belong to this track.
@@ -271,6 +272,8 @@ public:
 	unsigned int OpenCUE(const std::string &fName);
 private:
 	unsigned int OpenCUEPostProcess(void);
+	bool TryAnalyzeTracksWithAbsurdCUEInterpretation(void);
+	bool TryAnalyzeTracksWithMoreReasonableCUEInterpretation(void);
 
 public:
 	unsigned int OpenISO(const std::string &fName);

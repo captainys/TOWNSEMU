@@ -22,9 +22,6 @@ int main(int ac,char *av[])
 		fprintf(stderr,"This program is based on my guess.  Again, there is no official standard\n");
 		fprintf(stderr,"of BIN/CUE data format :-P\n");
 		fprintf(stderr,"\n");
-		fprintf(stderr,"The BIN/CUE image created by this program won't be correctly recognized\n");
-		fprintf(stderr,"by TSUGARU.  Hope your image writer recognizes it correctly.\n");
-		fprintf(stderr,"\n");
 		fprintf(stderr,"Usage:\n");
 		fprintf(stderr,"  padbincue input.CUE output.CUE\n");
 		return 1;
