@@ -2,6 +2,9 @@
 #include <thread>
 #include <chrono>
 
+#include <stdlib.h>
+#include <string.h>
+
 #include "townsrenderthread.h"
 #include "render.h"
 #include "outside_world.h"
@@ -37,7 +40,7 @@ void TownsRenderingThread::ThreadFunc(void)
 		}
 		else if(RENDER==command)
 		{
-			rendererPtr->BuildImage(VRAMCopy.data(),paletteCopy,chaseHQPaletteCopy);
+			rendererPtr->BuildImage(VRAMCopy,paletteCopy,chaseHQPaletteCopy);
 			{
 				std::unique_lock <std::mutex> statusLock(statusMutex);
 				command=NO_COMMAND;
@@ -61,11 +64,13 @@ void TownsRenderingThread::CheckRenderingTimer(FMTowns &towns,TownsRender &rende
 	{
 		render.Prepare(towns.crtc);
 		this->rendererPtr=&render;
-		this->VRAMCopy=towns.physMem.state.VRAM;
+		memcpy(this->VRAMCopy,towns.physMem.state.VRAM.data(),towns.crtc.GetEffectiveVRAMSize());
 		this->paletteCopy=towns.crtc.state.palette;
 		this->chaseHQPaletteCopy=towns.crtc.chaseHQPalette;
 
 		state=STATE_RENDERING;
+		towns.var.nextRenderingTime=towns.state.townsTime+TOWNS_RENDERING_FREQUENCY;
+
 		checkImageAfterThisTIme=towns.state.townsTime+3000000; // Give sub-thread some time.
 
 		{
@@ -90,7 +95,6 @@ void TownsRenderingThread::CheckImageReady(FMTowns &towns,Outside_World &world)
 		{
 			world.Render(rendererPtr->GetImage());
 			world.UpdateStatusBitmap(towns);
-			towns.var.nextRenderingTime=towns.state.townsTime+TOWNS_RENDERING_FREQUENCY;
 			state=STATE_IDLE;
 		}
 	}

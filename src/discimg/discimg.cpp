@@ -23,7 +23,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 
 // Uncomment for verbose output.
- #define DEBUG_DISCIMG
+// #define DEBUG_DISCIMG
 
 /* static */ DiscImage::MinSecFrm DiscImage::MinSecFrm::Zero(void)
 {

@@ -11,6 +11,7 @@
 #include "crtc.h"
 #include "render.h"
 #include "towns.h"
+#include "townsdef.h"
 
 
 
@@ -29,7 +30,7 @@ public:
 	std::condition_variable cond;
 
 	TownsRender *rendererPtr;
-	std::vector <unsigned char> VRAMCopy;
+	unsigned char VRAMCopy[TOWNS_VRAM_SIZE];
 	TownsCRTC::AnalogPalette paletteCopy;
 	TownsCRTC::ChaseHQPalette chaseHQPaletteCopy;
 

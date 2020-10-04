@@ -17,19 +17,24 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 /* { */
 
 
+
+#include <stdint.h>
+
 #ifdef __cplusplus
 	#include <string>
 
 	const int PER_SECOND=1000000000;  // Unit: Nano Seconds
 	const int TOWNS_RENDERING_FREQUENCY=PER_SECOND/60;
 
-	const unsigned int TOWNS_CMOS_SIZE=8192;
-	const unsigned int TOWNS_WAVERAM_SIZE=65536;
-	const unsigned int TOWNS_SPRITERAM_SIZE=128*1024;
+	const uint32_t TOWNS_VRAM_SIZE     =1024*1024;
+	const uint32_t TOWNS_CMOS_SIZE     =8192;
+	const uint32_t TOWNS_WAVERAM_SIZE  =65536;
+	const uint32_t TOWNS_SPRITERAM_SIZE=128*1024;
+	const uint32_t TOWNS_CVRAM_SIZE    =32*1024;
 
-	const unsigned int TBIOS_ID_FREQUENCY=100;
+	const uint32_t TBIOS_ID_FREQUENCY=100;
 
-	const unsigned int TOWNS_NUM_GAMEPORTS=2;
+	const uint32_t TOWNS_NUM_GAMEPORTS=2;
 #endif
 
 

@@ -129,10 +129,10 @@ FMTowns::FMTowns() :
 
 	physMem.SetMainRAMSize(4*1024*1024);
 
-	physMem.SetVRAMSize(1024*1024);
-	physMem.SetCVRAMSize(32768);
-	physMem.SetSpriteRAMSize(512*1024);
-	physMem.SetWaveRAMSize(64*1024);
+	physMem.SetVRAMSize(TOWNS_VRAM_SIZE);
+	physMem.SetCVRAMSize(TOWNS_CVRAM_SIZE);
+	physMem.SetSpriteRAMSize(TOWNS_SPRITERAM_SIZE);
+	physMem.SetWaveRAMSize(TOWNS_WAVERAM_SIZE);
 	for(int i=0; i<TOWNS_CMOS_SIZE; ++i)
 	{
 		physMem.state.CMOSRAM[i]=defCMOS[i];

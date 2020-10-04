@@ -14,6 +14,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 << LICENSE */
 #include <iostream>
 #include <chrono>
+#include <memory>
 
 #include "townsthread.h"
 #include "townsrenderthread.h"
@@ -27,7 +28,7 @@ TownsThread::TownsThread(void)
 
 void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread)
 {
-	TownsRenderingThread renderingThread;
+	std::unique_ptr <TownsRenderingThread> renderingThread(new TownsRenderingThread);
 
 	bool terminate=false;
 	this->townsPtr=townsPtr;
@@ -52,7 +53,7 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world,class Tow
 		switch(runMode)
 		{
 		case RUNMODE_PAUSE:
-			renderingThread.WaitIdle();
+			renderingThread->WaitIdle();
 			townsPtr->ForceRender(render,*outside_world);
 			outside_world->DevicePolling(*townsPtr);
 			if(true==outside_world->PauseKeyPressed())
@@ -92,8 +93,8 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world,class Tow
 			townsPtr->cdrom.UpdateCDDAState(townsPtr->state.townsTime,*outside_world);
 
 			// townsPtr->CheckRenderingTimer(render,*outside_world);
-			renderingThread.CheckRenderingTimer(*townsPtr,render);
-			renderingThread.CheckImageReady(*townsPtr,*outside_world);
+			renderingThread->CheckRenderingTimer(*townsPtr,render);
+			renderingThread->CheckImageReady(*townsPtr,*outside_world);
 
 			outside_world->ProcessAppSpecific(*townsPtr);
 			outside_world->DevicePolling(*townsPtr);

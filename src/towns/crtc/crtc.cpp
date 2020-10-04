@@ -310,6 +310,12 @@ bool TownsCRTC::InSinglePageMode(void) const
 	return (0==(state.sifter[0]&0x10));
 }
 
+uint32_t TownsCRTC::GetEffectiveVRAMSize(void) const
+{
+	// Should return 1MB when High-Res mode is supported.
+	return 512*1024;
+}
+
 unsigned int TownsCRTC::GetBaseClockFreq(void) const
 {
 	auto CLKSEL=state.crtcReg[REG_CR1]&3;

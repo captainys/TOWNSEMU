@@ -17,6 +17,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 /* { */
 
 #include <vector>
+#include <cstdint>
 
 #include "device.h"
 #include "cheapmath.h"
@@ -290,6 +291,12 @@ public:
 
 	unsigned int GetBaseClockFreq(void) const;
 	unsigned int GetBaseClockScaler(void) const;
+
+
+	/*! Returns 512K if not in High-Res mode.  Or 1024KB in High-Res mode.
+	    (When High-Res mode is supported....)
+	*/
+	uint32_t GetEffectiveVRAMSize(void) const;
 
 	/*! Returns scaling.  Between 2 to 8 in each axis.
 	    It returns 2 times of actual zoom rate.
