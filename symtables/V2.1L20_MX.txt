@@ -2829,11 +2829,81 @@ P
 M 0
 /end
 /begin0
-T 1
+T 2
 * 00001679:00006AA1
 # 
 R 
-L MSDOS.SYS Real Entry
+L DOSINIT
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006AA3
+# CS:[02F2H]=[ENDMEM] (MSINIT.ASM)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006AA8
+# CS:[0468H]=[INITSP] (MSINIT.ASM)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006AAD
+# CS:[046AH]=[INITSS] (MSINIT.ASM)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006AB6
+# 6E16H=INITSTACK
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006AB9
+# SS=CS:[004AH]=[DEVHEAD+2] (MSINIT.ASM)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006ABE
+# SS=CS:[0048H]=[DEVHEAD] (MSINIT.ASM) DS:SI Points to CONSOLE Device
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006AC3
+# Setting INT 2AH is not in MSDOS 2.0 source
+R 
+L 
 P 
 % 0
 M 0
@@ -2859,11 +2929,111 @@ P
 M 0
 /end
 /begin0
+T 0
+* 00001679:00006ADA
+# DI=OFFSET SFTAB1+SFT_TABLE (MSINIT.ASM) Points to sft 0
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006AE0
+# Refcount (STOSB in MSDOS 2.0)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006AE3
+# Access rd/wr
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006B0D
+# 04H=SDEVATT,03H=ISCIN OR ISCOUT (MSINIT.ASM)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006B11
+# SS=CS:[0032H]=[BCON] (MSINIT.ASM
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006B16
+# SS=CS:[0034H]=[BCON+2] (MSINIT.ASM
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
 T 2
 * 00001679:00006B1B
-# 
+# AUX devices
 R 
-L Install IO.SYS drivers loop1
+L CHAR_INIT_LOOP
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006B20
+# [SI+SDEVATT],ISCLOCK (MSINIT.ASM)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006B26
+# [BCLOCK] (MSINIT.ASM)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006B2B
+# [BCLOCK+2] (MSINIT.ASM)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006B30
+# 6E18H=MEMSTRT (MSINIT.ASM) ES:BP points to DPB
+R 
+L 
 P 
 % 0
 M 0
@@ -2883,7 +3053,7 @@ T 2
 * 00001679:00006BA2
 # 
 R 
-L End of Drivers in IO.SYS Loop
+L CONINIT
 P 
 % 0
 M 0
@@ -2903,7 +3073,7 @@ T 1
 * 00001679:00006CEE
 # 
 R 
-L ?
+L CHARINIT (MSINIT.ASM)
 P 
 % 0
 M 0
