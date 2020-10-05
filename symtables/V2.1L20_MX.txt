@@ -2583,7 +2583,7 @@ T 1
 * 00001674:00000000
 # 
 R 
-L Is it real MSDOS.SYS entry?
+L Hanging part of IO.SYS.  Copies itself to AF37:0000
 P 
 % 0
 M 0
@@ -2593,7 +2593,7 @@ T 1
 * 00001679:00000000
 # 
 R 
-L DOS:MSDOS.SYS Entry (Prob)
+L MSDOS.SYS Entry
 P 
 % 0
 M 0
@@ -2679,6 +2679,86 @@ P
 M 0
 /end
 /begin0
+T 1
+* 00001679:00001AF4
+# 
+R 
+L Just Return. NOP
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00001AF5
+# 
+R 
+L INT 2AH AX=8002H
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00001AFC
+# 
+R 
+L Just Return. NOP
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00001AFD
+# 
+R 
+L INT 2AH AX=8102H
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00001B04
+# 
+R 
+L INT 2AH AH=84H
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00004738
+# 
+R 
+L Call STRATEGY & INTERRUPT of device driver in DS:SI
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000473B
+# Must be Jump Vector for STRATEGY
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000474C
+# Must be Jump Vector for INTERRUPT
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
 T 0
 * 00001679:00004E1C
 # 
@@ -2734,6 +2814,96 @@ T 0
 # 
 R 
 L IF(DOS:SS:[050DH]=FFH){CL=CH;SS[0508H]=CL;}
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00006AA0
+# 
+R 
+L INT 2AH Handler (Probably Tentative)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00006AA1
+# 
+R 
+L MSDOS.SYS Real Entry
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006AC6
+# DS=0 INT VECTORS
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006ACB
+# VECTOR for INT 2AH
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00006B1B
+# 
+R 
+L Install IO.SYS drivers loop1
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00006B33
+# 
+R 
+L Install IO.SYS drivers loop2
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00006BA2
+# 
+R 
+L End of Drivers in IO.SYS Loop
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006C25
+# 1679:1187 IRET
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00006CEE
+# 
+R 
+L ?
 P 
 % 0
 M 0
