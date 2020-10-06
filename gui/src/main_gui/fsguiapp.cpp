@@ -133,7 +133,9 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 		{
 			auto *keyboardSubMenu=subMenu->AddTextItem(0,FSKEY_K,L"Keyboard Mode")->AddSubMenu();
 			keyboardSubMenu->AddTextItem(0,FSKEY_D,L"Direct (for Gaming)")->BindCallBack(&THISCLASS::VM_Keyboard_Direct,this);
-			keyboardSubMenu->AddTextItem(0,FSKEY_T,L"Translation (for Typing)")->BindCallBack(&THISCLASS::VM_Keyboard_Translation,this);
+			keyboardSubMenu->AddTextItem(0,FSKEY_T,L"Translation1 (for Typing, ESC->ESC+BREAK)")->BindCallBack(&THISCLASS::VM_Keyboard_Translation1,this);
+			keyboardSubMenu->AddTextItem(0,FSKEY_2,L"Translation2 (for Typing, ESC->ESC)")->BindCallBack(&THISCLASS::VM_Keyboard_Translation2,this);
+			keyboardSubMenu->AddTextItem(0,FSKEY_3,L"Translation3 (for Typing, ESC->BREAK)")->BindCallBack(&THISCLASS::VM_Keyboard_Translation3,this);
 		}
 	}
 
@@ -988,11 +990,33 @@ void FsGuiMainCanvas::VM_Keyboard_Direct(FsGuiPopUpMenuItem *)
 		VM_Not_Running_Error();
 	}
 }
-void FsGuiMainCanvas::VM_Keyboard_Translation(FsGuiPopUpMenuItem *)
+void FsGuiMainCanvas::VM_Keyboard_Translation1(FsGuiPopUpMenuItem *)
 {
 	if(true==subproc.SubprocRunning())
 	{
-		subproc.Send("KEYBOARD TRANS\n");
+		subproc.Send("KEYBOARD TRANS1\n");
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+void FsGuiMainCanvas::VM_Keyboard_Translation2(FsGuiPopUpMenuItem *)
+{
+	if(true==subproc.SubprocRunning())
+	{
+		subproc.Send("KEYBOARD TRANS2\n");
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+void FsGuiMainCanvas::VM_Keyboard_Translation3(FsGuiPopUpMenuItem *)
+{
+	if(true==subproc.SubprocRunning())
+	{
+		subproc.Send("KEYBOARD TRANS3\n");
 	}
 	else
 	{

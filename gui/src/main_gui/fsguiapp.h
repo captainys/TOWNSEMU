@@ -179,7 +179,9 @@ private:
 	void VM_25MHz(FsGuiPopUpMenuItem *);
 
 	void VM_Keyboard_Direct(FsGuiPopUpMenuItem *);
-	void VM_Keyboard_Translation(FsGuiPopUpMenuItem *);
+	void VM_Keyboard_Translation1(FsGuiPopUpMenuItem *);
+	void VM_Keyboard_Translation2(FsGuiPopUpMenuItem *);
+	void VM_Keyboard_Translation3(FsGuiPopUpMenuItem *);
 
 
 	void CD_SelectImageFile(FsGuiPopUpMenuItem *);
