@@ -73,6 +73,12 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "-CMOS filename" << std::endl;
 	std::cout << "  Specify CMOS (BIOS settings) file.  If you specify this option," << std::endl;
 	std::cout << "  CMOS settings will be saved automatically when closing the program." << std::endl;
+	std::cout << "-KEYBOARD mode" << std::endl;
+	std::cout << "  Select keyboard mode.  mode can be one of:" << std::endl;
+	std::cout << "    DIRECT  <- Direct mode." << std::endl;
+	std::cout << "    TRANS1  <- Translation mode 1.  Physical ESC will make virtual ESC and BREAK." << std::endl;
+	std::cout << "    TRANS2  <- Translation mode 2.  Physical ESC will make virtual ESC." << std::endl;
+	std::cout << "    TRANS3  <- Translation mode 3.  Physical ESC will make virtual BREAK." << std::endl;
 	std::cout << "-KEYMAP filename" << std::endl;
 	std::cout << "  Load Key-Mapping file." << std::endl;
 	std::cout << "-DONTAUTOSAVECMOS" << std::endl;
@@ -345,6 +351,28 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		else if("-CMOS"==ARG && i+1<argc)
 		{
 			CMOSFName=argv[i+1];
+			++i;
+		}
+		else if("-KEYBOARD"==ARG && i+1<argc)
+		{
+			std::string MODE=argv[i+1];
+			cpputil::Capitalize(MODE);
+			if("DIRECT"==MODE)
+			{
+				keyboardMode=TOWNS_KEYBOARD_MODE_DIRECT;
+			}
+			else if("TRANS"==MODE || "TRANSLATION"==MODE || "TRANS1"==MODE || "TRANSLATION1"==MODE)
+			{
+				keyboardMode=TOWNS_KEYBOARD_MODE_TRANSLATION1;
+			}
+			else if("TRANS2"==MODE || "TRANSLATION2"==MODE)
+			{
+				keyboardMode=TOWNS_KEYBOARD_MODE_TRANSLATION2;
+			}
+			else if("TRANS3"==MODE || "TRANSLATION3"==MODE)
+			{
+				keyboardMode=TOWNS_KEYBOARD_MODE_TRANSLATION3;
+			}
 			++i;
 		}
 		else if("-KEYMAP"==ARG && i+1<argc)

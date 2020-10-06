@@ -361,6 +361,10 @@ bool Setup(FMTowns &towns,Outside_World *outside_world,const TownsARGV &argv)
 
 	towns.crtc.state.highResAvailable=argv.highResAvailable;
 
+	if(TOWNS_KEYBOARD_MODE_DEFAULT!=argv.keyboardMode)
+	{
+		outside_world->keyboardMode=argv.keyboardMode;
+	}
 	for(auto vk : argv.virtualKeys)
 	{
 		auto townsKey=TownsStrToKeyCode(vk.townsKey);

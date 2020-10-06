@@ -37,7 +37,7 @@ FsSimpleWindowConnection::FsSimpleWindowConnection()
 	FSKEYtoTownsKEY=new unsigned int [FSKEY_NUM_KEYCODE];
 	FSKEYState=new unsigned int [FSKEY_NUM_KEYCODE];
 
-	SetKeyboardMode(KEYBOARD_MODE_DIRECT);
+	SetKeyboardMode(TOWNS_KEYBOARD_MODE_DIRECT);
 	SetKeyboardLayout(KEYBOARD_LAYOUT_US);
 
 	for(int i=0; i<FSKEY_NUM_KEYCODE; ++i)
@@ -223,7 +223,7 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 
 	// For the time translation mode only.
 	// if(true==keyTranslationMode)
-	if(KEYBOARD_MODE_TRANSLATION==keyboardMode)
+	if(TOWNS_KEYBOARD_MODE_DIRECT!=keyboardMode) // Means one of the translation modes.
 	{
 		unsigned int c;
 		while(0!=(c=FsInkeyChar()))
@@ -272,10 +272,23 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 				// Trying: Physical ESC key makes both BREAK and ESC strokes.
 				byteData[0]|=(0!=FsGetKeyState(FSKEY_CTRL) ? TOWNS_KEYFLAG_CTRL : 0);
 				byteData[0]|=(0!=FsGetKeyState(FSKEY_SHIFT) ? TOWNS_KEYFLAG_SHIFT : 0);
-				towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_JIS_PRESS,  TOWNS_JISKEY_BREAK);
-				towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_JIS_RELEASE,TOWNS_JISKEY_BREAK);
-				towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_JIS_PRESS,  TOWNS_JISKEY_ESC);
-				towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_JIS_RELEASE,TOWNS_JISKEY_ESC);
+				if(TOWNS_KEYBOARD_MODE_TRANSLATION1==keyboardMode)
+				{
+					towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_JIS_PRESS,  TOWNS_JISKEY_BREAK);
+					towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_JIS_RELEASE,TOWNS_JISKEY_BREAK);
+					towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_JIS_PRESS,  TOWNS_JISKEY_ESC);
+					towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_JIS_RELEASE,TOWNS_JISKEY_ESC);
+				}
+				else if(TOWNS_KEYBOARD_MODE_TRANSLATION2==keyboardMode)
+				{
+					towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_JIS_PRESS,  TOWNS_JISKEY_ESC);
+					towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_JIS_RELEASE,TOWNS_JISKEY_ESC);
+				}
+				else if(TOWNS_KEYBOARD_MODE_TRANSLATION3==keyboardMode)
+				{
+					towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_JIS_PRESS,  TOWNS_JISKEY_BREAK);
+					towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_JIS_RELEASE,TOWNS_JISKEY_BREAK);
+				}
 				break;
 			case FSKEY_ENTER:
 			case FSKEY_BS:

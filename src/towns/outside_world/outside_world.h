@@ -101,12 +101,7 @@ public:
 	}
 
 
-	enum
-	{
-		KEYBOARD_MODE_DIRECT,
-		KEYBOARD_MODE_TRANSLATION
-	};
-	unsigned int keyboardMode=KEYBOARD_MODE_DIRECT;
+	unsigned int keyboardMode=TOWNS_KEYBOARD_MODE_DIRECT;
 
 	enum
 	{

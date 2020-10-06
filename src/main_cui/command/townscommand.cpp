@@ -364,8 +364,11 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Send keyboard codes." << std::endl;
 	std::cout << "KEYBOARD keyboardMode" <<std::endl;
 	std::cout << "  Select TRANSLATE or DIRECT mode." << std::endl;
-	std::cout << "  TRANSLATE or TRANS mode will be good for typing commands, but" << std::endl;
+	std::cout << "  TRANSLATE or TRANS mode (TRANSLATE1 or TRANS1) will be good for typing commands, but" << std::endl;
 	std::cout << "  cannot sense key release correctly." << std::endl;
+	std::cout << "  TRANS1 will make virtual BREAK+ESC from physical ESC." << std::endl;
+	std::cout << "  TRANS2 will make virtual ESC from physical ESC." << std::endl;
+	std::cout << "  TRANS3 will make virtual BREAK from physical ESC." << std::endl;
 	std::cout << "  DIRECT mode is good for games, but affected by the keyboard layout." << std::endl;
 	std::cout << "  US keyboard cannot type some of the characters." << std::endl;
 	std::cout << "LET register value" << std::endl;
@@ -841,14 +844,24 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 		{
 			std::string MODE=cmd.argv[1];
 			cpputil::Capitalize(MODE);
-			if("TRANS"==MODE || "TRANSLATE"==MODE)
+			if("TRANS"==MODE || "TRANSLATE"==MODE || "TRANS1"==MODE || "TRANSLATE1"==MODE)
 			{
-				outside_world->keyboardMode=Outside_World::KEYBOARD_MODE_TRANSLATION;
-				std::cout << "Keyboard TRANSLATION Mode" << std::endl;
+				outside_world->keyboardMode=TOWNS_KEYBOARD_MODE_TRANSLATION1;
+				std::cout << "Keyboard TRANSLATION Mode 1 (ESC->ESC+BREAK)" << std::endl;
+			}
+			else if("TRANS2"==MODE || "TRANSLATE2"==MODE)
+			{
+				outside_world->keyboardMode=TOWNS_KEYBOARD_MODE_TRANSLATION2;
+				std::cout << "Keyboard TRANSLATION Mode 2 (ESC->ESC)" << std::endl;
+			}
+			else if("TRANS3"==MODE || "TRANSLATE3"==MODE)
+			{
+				outside_world->keyboardMode=TOWNS_KEYBOARD_MODE_TRANSLATION3;
+				std::cout << "Keyboard TRANSLATION Mode 3 (ESC->BREAK)" << std::endl;
 			}
 			else if("DIRECT"==MODE)
 			{
-				outside_world->keyboardMode=Outside_World::KEYBOARD_MODE_DIRECT;
+				outside_world->keyboardMode=TOWNS_KEYBOARD_MODE_DIRECT;
 				std::cout << "Keyboard DIRECT Mode" << std::endl;
 			}
 			else

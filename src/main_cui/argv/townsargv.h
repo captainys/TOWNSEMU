@@ -59,6 +59,7 @@ public:
 
 	std::vector <std::string> sharedDir;
 
+	int keyboardMode=TOWNS_KEYBOARD_MODE_DEFAULT;
 	std::vector <VirtualKey> virtualKeys;
 
 	int fmVol=-1,pcmVol=-1;

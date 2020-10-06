@@ -2960,6 +2960,26 @@ M 0
 /end
 /begin0
 T 0
+* 00001679:00006AE6
+# Attribute Byte
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006AE9
+# 0C0H|ISCIN(01)|ISCOUT(02)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
 * 00001679:00006B0D
 # 04H=SDEVATT,03H=ISCIN OR ISCOUT (MSINIT.ASM)
 R 
@@ -3053,7 +3073,37 @@ T 2
 * 00001679:00006BA2
 # 
 R 
-L CONINIT
+L CONTINIT
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006BA4
+# First byte after current DPBs
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006BA6
+# [0036H]=[MAXSEC]
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006BAA
+# 6AA0H=OFFSET SYSBUF
+R 
+L 
 P 
 % 0
 M 0
