@@ -59,6 +59,7 @@ void TownsProfile::CleanUp(void)
 	strikeCommanderThrottlePhysicalId=-1;
 	strikeCommanderThrottleAxis=2;
 
+	keyboardMode=TOWNS_KEYBOARD_MODE_DEFAULT;
 	for(auto &vk : virtualKeys)
 	{
 		vk.townsKey=0;
@@ -180,6 +181,12 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 	sstream.str("");
 	sstream << "SCTHRAXS " << strikeCommanderThrottlePhysicalId << " " << strikeCommanderThrottleAxis;
 	text.push_back(sstream.str());
+
+	if(TOWNS_KEYBOARD_MODE_DEFAULT!=keyboardMode)
+	{
+		text.push_back("KYBDMODE ");
+		text.back()+=TownsKeyboardModeToStr(keyboardMode);
+	}
 
 	for(auto vk : virtualKeys)
 	{
@@ -404,6 +411,13 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 				++nVirtualKey;
 			}
 		}
+		else if(0==argv[0].STRCMP("KYBDMODE"))
+		{
+			if(2<=argv.size())
+			{
+				keyboardMode=TownsStrToKeyboardMode(argv[1].c_str());
+			}
+		}
 		else
 		{
 			errorMsg="Unrecognized keyword:";
@@ -564,6 +578,12 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 		sstream.str("");
 		sstream << strikeCommanderThrottleAxis;
 		argv.push_back(sstream.str());
+	}
+
+	if(TOWNS_KEYBOARD_MODE_DEFAULT!=keyboardMode)
+	{
+		argv.push_back("-KEYBOARD");
+		argv.push_back(TownsKeyboardModeToStr(keyboardMode));
 	}
 
 	for(auto vk : virtualKeys)

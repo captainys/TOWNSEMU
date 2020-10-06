@@ -602,6 +602,43 @@ std::string TownsKeyCodeToStr(unsigned int keyCode)
 	}
 	return "TOWNS_JISKEY_NULL";
 }
+
+std::string TownsKeyboardModeToStr(unsigned int keyboardMode)
+{
+	switch(keyboardMode)
+	{
+	case TOWNS_KEYBOARD_MODE_DIRECT:
+		return "DIRECT";
+	case TOWNS_KEYBOARD_MODE_TRANSLATION1:
+		return "TRANS1";
+	case TOWNS_KEYBOARD_MODE_TRANSLATION2:
+		return "TRANS2";
+	case TOWNS_KEYBOARD_MODE_TRANSLATION3:
+		return "TRANS3";
+	}
+	return "DEFAULT";
+}
+unsigned int TownsStrToKeyboardMode(std::string str)
+{
+	if(str=="DIRECT")
+	{
+		return TOWNS_KEYBOARD_MODE_DIRECT;
+	}
+	else if(str=="TRANS1")
+	{
+		return TOWNS_KEYBOARD_MODE_TRANSLATION1;
+	}
+	else if(str=="TRANS2")
+	{
+		return TOWNS_KEYBOARD_MODE_TRANSLATION2;
+	}
+	else if(str=="TRANS3")
+	{
+		return TOWNS_KEYBOARD_MODE_TRANSLATION3;
+	}
+	return TOWNS_KEYBOARD_MODE_DEFAULT;
+}
+
 unsigned int TownsStrToKeyCode(std::string str)
 {
 	static std::unordered_map <std::string,unsigned> map;

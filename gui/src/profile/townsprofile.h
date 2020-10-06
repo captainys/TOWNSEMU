@@ -51,6 +51,7 @@ public:
 		MAX_NUM_VIRTUALKEYS=10,
 	};
 	VirtualKey virtualKeys[MAX_NUM_VIRTUALKEYS];
+	unsigned int keyboardMode=TOWNS_KEYBOARD_MODE_DEFAULT;
 
 
 	std::string errorMsg;

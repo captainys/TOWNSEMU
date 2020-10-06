@@ -132,9 +132,17 @@ void ProfileDialog::Make(void)
 	}
 
 	{
-		auto tabId=AddTab(tab,"Virtual Keys");
+		auto tabId=AddTab(tab,"Keyboard");
 		BeginAddTabItem(tab,tabId);
 
+		AddStaticText(0,FSKEY_NULL,"Keyboard Mode (TRANS1:ESC->ESC+BREAK, TRANS2:ESC->ESC, TRANS3:ESC->BREAK):",YSTRUE);
+		keyboardModeDrp=AddEmptyDropList(0,FSKEY_NULL,"",20,20,20,YSFALSE);
+		for(int i=0; i<TOWNS_KEYBOARD_MODE_NUM_MODES; ++i)
+		{
+			keyboardModeDrp->AddString(TownsKeyboardModeToStr(i).c_str(),YSFALSE);
+		}
+
+		AddStaticText(0,FSKEY_NULL,"Virtual Keys:",YSTRUE);
 		for(int row=0; row<TownsProfile::MAX_NUM_VIRTUALKEYS; ++row)
 		{
 			virtualKeyTownsKeyDrp[row]=AddEmptyDropList(0,FSKEY_NULL,"",20,20,20,YSTRUE);
@@ -562,6 +570,7 @@ TownsProfile ProfileDialog::GetProfile(void) const
 	profile.strikeCommanderThrottleAxis=strikeCommanderThrottlePhysIdDrp->GetSelection();
 
 
+	profile.keyboardMode=TownsStrToKeyboardMode(keyboardModeDrp->GetSelectedString().c_str());
 	for(int row=0; row<TownsProfile::MAX_NUM_VIRTUALKEYS; ++row)
 	{
 		auto townsKeyStr=virtualKeyTownsKeyDrp[row]->GetSelectedString();
@@ -670,6 +679,7 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 	strikeCommanderThrottlePhysIdDrp->Select(profile.strikeCommanderThrottleAxis);
 
 
+	keyboardModeDrp->SelectByString(TownsKeyboardModeToStr(profile.keyboardMode).c_str());
 	for(int row=0; row<TownsProfile::MAX_NUM_VIRTUALKEYS; ++row)
 	{
 		auto townsKeyStr=TownsKeyCodeToStr(profile.virtualKeys[row].townsKey);

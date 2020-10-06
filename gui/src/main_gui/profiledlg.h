@@ -98,6 +98,7 @@ public:
 	FsGuiDropList *strikeCommanderThrottleAxisDrp;
 
 
+	FsGuiDropList *keyboardModeDrp;
 	FsGuiDropList *virtualKeyTownsKeyDrp[TownsProfile::MAX_NUM_VIRTUALKEYS];
 	FsGuiDropList *virtualKeyPhysIdDrp[TownsProfile::MAX_NUM_VIRTUALKEYS];
 	FsGuiDropList *virtualKeyButtonDrp[TownsProfile::MAX_NUM_VIRTUALKEYS];
