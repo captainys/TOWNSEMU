@@ -2610,6 +2610,306 @@ M 0
 /end
 /begin0
 T 0
+* 00001679:00000471
+# [046AH]=INITSS,[0468H]=INITSP
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00000479
+# [DMAADD+2]
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000047E
+# [DPBHEAD] Address of first DPB
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00000482
+# [DPBHEAD+2]
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00000487
+# [SFT_ADDR+2]
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000048C
+# [NUMIO]
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00000492
+# ES:[SI+DPB_NEXT_DPB+2]
+R 
+L SETFINDPB
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00000496
+# [SI+DPB_FIRST_ACCESS] Never accessed before
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000049B
+# 20H=DPBSIZ
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000004A3
+# [SI+DPB_NEXT_DPB+2] (Prob)Terminating the chain
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000004AA
+# (Prob)SYSBUF+0FH
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000004AD
+# (Prob)To allow 10000H, the MSB is kept in the CF
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000004AF
+# But Carry is from SUB SI,20H, most likely CF=0
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000004B3
+# Pretty much same as saying DI=6AAH
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000004BD
+# [BUFHEAD+2]
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000004C1
+# [BUFHEAD]
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000004C5
+# [DI+BUFDRV]
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000004CB
+# (Prob)[DI+NEXTBUF]
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000004D0
+# (Prob)[DI+NEXTBUF+2]
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000004D9
+# [ENDMEM]
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000004E1
+# ES:[CurrentPDB](Supposed to be DS:[CurrentPDB])
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000004E5
+# ES:[CurrentPDB] Two lines have no effect.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000004F0
+# [AREANA_HEAD]
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000004F7
+# (Prob)[ARENA_SIGNATURE],ARENA_SIGNATURE_END
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000004FC
+# (Prob)[ARENA_OWNER],ARENA_OWNER_SYSTEM
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00000502
+# [ENDMEM]
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000050A
+# [ARENA_SIZE]
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000050E
+# 009EH=OFFSET SFTABL+SFT_TABLE Point to sft 0
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00000514
+# Adjust Refcount
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00000515
+# 0026H=OFFSET SYSINITVAR
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
 * 00001679:000012D8
 # 
 R 
@@ -2634,6 +2934,16 @@ T 1
 # 
 R 
 L SETDPB
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:0000191F
+# 
+R 
+L (Prob)CREATE_PROCESS_DATA_BLOCK
 P 
 % 0
 M 0
@@ -3874,6 +4184,16 @@ T 1
 # 
 R 
 L IO.SYS Fragment. Copied from 1674:0000.
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000AF37:0000016C
+# Calling DOSINIT
+R 
+L 
 P 
 % 0
 M 0
