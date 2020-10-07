@@ -2599,6 +2599,16 @@ P
 M 0
 /end
 /begin0
+T 2
+* 00001679:0000046C
+# SI=Temporary DPB  DI=Permanent DPB
+R 
+L MOVDPB
+P 
+% 0
+M 0
+/end
+/begin0
 T 0
 * 00001679:000012D8
 # 
@@ -2614,6 +2624,26 @@ T 0
 # 
 R 
 L DOS:
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000018B6
+# 
+R 
+L SETDPB
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:0000199C
+# 
+R 
+L SETMEM
 P 
 % 0
 M 0
@@ -2724,6 +2754,16 @@ T 1
 # 
 R 
 L INT 2AH AH=84H
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00001F09
+# 
+R 
+L (Prob)OUTMES
 P 
 % 0
 M 0
@@ -3061,9 +3101,139 @@ M 0
 /begin0
 T 2
 * 00001679:00006B33
+# Next Device
+R 
+L PERDRV
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006B3D
+# [SI+SDEVATT],DEVTYP
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006B44
+# [CALLUNIT]
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006B4B
+# [SI+SDEVNAME],CL Number of units in name field
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006B4E
+# [NUMIO]
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006B55
+# [NUMIO]
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006B5C
+# [CALLBPB]
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00006B61
 # 
 R 
-L Install IO.SYS drivers loop2
+L PERUNIT
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006B73
+# [BP+DPB_SECTOR_SIZE]
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006B77
+# AX,[MAXSEC]
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006B7E
+# [MAXSEC],AX
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006B82
+# NOTMAX
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006B89
+# [BP+DPB_DRIVE]
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006B8D
+# [BP+DPB_UNIT]
+R 
+L 
 P 
 % 0
 M 0
@@ -3110,8 +3280,478 @@ M 0
 /end
 /begin0
 T 0
+* 00001679:00006BAF
+# (Prob)0010H=BUFINSIZ
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006BB2
+# (Prob)[DPBHEAD] True start of DPBs
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006BB7
+# 6AA0H=OFFSET SYSBUF
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006BBD
+# Allocate buffer space
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006BBF
+# True address of free memory
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006BC4
+# OFFSET MEMSTRT
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006BC7
+# 0018H=DPB_NEXT_DPB
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006BCA
+# [NUMIO]
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00006BD0
+# 0020H=DPBSIZ
+R 
+L TRUEDPBAD
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006BD4
+# DPBSIZ-2
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006BD9
+# DPBSIZ
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006BDF
+# End of list
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006BE0
+# True start of free space (round up to segment)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006BE7
+# Number of segments for DOS resources
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006BEB
+# First free segment
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006BF0
+# [ENDMEM]
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006BF6
+# [ENDMEM] Not doing anything
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006BFC
+# ES:[DSKCHRET+3]
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006C07
+# INITBASE+2
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006C0C
+# (Prob)4FC8=OFFSET DIVOV Set default divide trap address (INT 0?)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006C12
+# (Prob)CS for INT 0
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006C18
+# Set 9 segments (skip 2 between each)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006C22
+# INITBASE
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
 * 00001679:00006C25
 # 1679:1187 IRET
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006C2B
+# Set IP 9 times
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006C45
+# (Prob)Long Jump to Entry Point
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006C53
+# (Prob)ADDR_INT_ABORT
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006C59
+# (Prob)ADDR_INT_COMMAND
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006C5F
+# (Prob)[ADDR_INT_TERMINATE]
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006C65
+# (Prob)[ADDR_INT_TERMINATE+2]
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006C69
+# (Prob)BIOS DISK READ
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006C6F
+# (Prob)BIOS DISK WRITE
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006C75
+# (Prob)End But Stay Resident
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006C7F
+# 2AH*4
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006C8A
+# Zero interrupt locs for ints 2AH-2FH
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006C8D
+# 0358H=INITBLOCK
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006C9C
+# [CurrentPDB]
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006CA1
+# Save COMMAND address
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006CA2
+# [ENDMEM]
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006CA7
+# Basic Header
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006CAC
+# 0018H=PDB_JFN_Table
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006CB1
+# 0,1, and 2 are CON devices
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006CB5
+# 11H=FilePerProc-3
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006CB8
+# Rest are unused
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006CBC
+# 002CH=SFT_ADDR+2
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006CC0
+# OFFSET HEADER
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006CD5
+# 6E18H=MEMSTRT
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006CD8
+# [DPBHEAD] Place to move DPBs to
 R 
 L 
 P 
