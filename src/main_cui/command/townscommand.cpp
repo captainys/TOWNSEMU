@@ -1585,6 +1585,7 @@ void TownsCommandInterpreter::Execute_Dump_DOSInfo(FMTowns &towns,Command &cmd)
 		}
 		else if("MCB"==ARGV2)
 		{
+			int commandComCount=0;
 			unsigned int page=towns.mem.FetchWord(DOSADDR+TOWNS_DOS_MCBPTR);
 			for(;;)
 			{
@@ -1595,7 +1596,78 @@ void TownsCommandInterpreter::Execute_Dump_DOSInfo(FMTowns &towns,Command &cmd)
 				std::cout << cpputil::Ustox(page) << " ";
 				std::cout << cpputil::Ubtox(attrib) << " ";
 				std::cout << "PID=" << cpputil::Ustox(PID) << " ";
-				std::cout << "SIZE=" << cpputil::Ustox(size) << std::endl;
+				std::cout << "SIZE=" << cpputil::Ustox(size) << " ";
+
+				if(0==PID)
+				{
+					std::cout << "    UNUSED";
+				}
+				else if(8==PID)
+				{
+					std::cout << "    DOS";
+				}
+				else
+				{
+					unsigned int ENVSEG=towns.mem.FetchWord(PID*0x10+TOWNS_DOS_PSP_ENV_SEG);
+					unsigned int CALLERPSP=towns.mem.FetchWord(PID*0x10+TOWNS_DOS_PSP_CALLER_PSP);
+
+					if(CALLERPSP==PID)
+					{
+						++commandComCount;
+					}
+					// According to the article,
+					// https://www.drdobbs.com/architecture-and-design/mapping-dos-memory-allocation/184408026
+					// The MCB is an environment-variable block, if:
+					//   Is the second COMMAND.COM MCB (and ENVSEG==0) ||
+					//   Its own ENVSEG==MCB+1(Next page of the MCB).
+					if((2==commandComCount && 0==ENVSEG) || ENVSEG==page+1)
+					{
+						std::cout << "ENV ";
+					}
+					else
+					{
+						std::cout << "    ";
+					}
+
+					if(PID==CALLERPSP)
+					{
+						std::cout << "COMMAND.COM ";
+					}
+					else
+					{
+						auto ENVSEGMCB=ENVSEG-1;
+						unsigned int EXEPTR=0;
+						unsigned int ENVSEGSIZE=0x10*towns.mem.FetchWord(ENVSEGMCB*0x10+TOWNS_DOS_MCB_SIZE);
+						for(unsigned int i=0; i+3<ENVSEGSIZE; ++i)
+						{
+							// Apparently 00 00 01 00 preceds the executable name in the env seg.
+							if(0x00==towns.mem.FetchByte(ENVSEG*0x10+i) &&
+							   0x00==towns.mem.FetchByte(ENVSEG*0x10+i+1) &&
+							   0x01==towns.mem.FetchByte(ENVSEG*0x10+i+2) &&
+							   0x00==towns.mem.FetchByte(ENVSEG*0x10+i+3))
+							{
+								EXEPTR=i+4;
+								break;
+							}
+						}
+						std::string exeName;
+						for(int i=0; i<32; ++i)
+						{
+							auto c=towns.mem.FetchByte(ENVSEG*0x10+EXEPTR+i);
+							if(0==c)
+							{
+								break;
+							}
+							exeName.push_back(c);
+						}
+						std::cout << exeName << " ";
+					}
+
+					std::cout << "ENVSEG=" << cpputil::Ustox(ENVSEG) << " ";
+					std::cout << "CALLERPSP=" << cpputil::Ustox(CALLERPSP) << " ";
+				}
+
+				std::cout << std::endl;
 
 				if('Z'==attrib)
 				{
