@@ -198,6 +198,7 @@ public:
 		DUMP_SPRITE_PATTERN_16BIT,
 		DUMP_MOUSE,
 		DUMP_YM2612_LOG,
+		DUMP_DOS_INFO,
 	};
 
 	enum
@@ -272,6 +273,7 @@ public:
 	void Execute_ListBreakPoints(FMTowns &towns,Command &cmd);
 
 	void Execute_Dump(FMTowns &towns,Command &cmd);
+	void Execute_Dump_DOSInfo(FMTowns &towns,Command &cmd);
 
 	void Execute_Calculate(FMTowns &towns,Command &cmd);
 

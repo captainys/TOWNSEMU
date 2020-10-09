@@ -16,6 +16,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <cstdint>
 
 #include "i486debugmemaccess.h"
 
@@ -192,6 +193,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	dumpableMap["MOUSE"]=DUMP_MOUSE;
 	dumpableMap["YM2612LOG"]=DUMP_YM2612_LOG;
 	dumpableMap["SEGREG"]=DUMP_SEGMENT_REGISTER_DETAILS;
+	dumpableMap["DOS"]=DUMP_DOS_INFO;
 
 
 
@@ -1497,6 +1499,11 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 				std::cout << str << std::endl;
 			}
 			break;
+		case DUMP_DOS_INFO:
+			{
+				Execute_Dump_DOSInfo(towns,cmd);
+			}
+			break;
 		}
 	}
 	else
@@ -1514,6 +1521,85 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 			PrintError(ERROR_DUMP_TARGET_UNDEFINED);
 			return;
 		}
+	}
+}
+
+void TownsCommandInterpreter::Execute_Dump_DOSInfo(FMTowns &towns,Command &cmd)
+{
+	if(3<=cmd.argv.size())
+	{
+		// IO.SYS of Towns OS loads MSDOS.SYS at 1679H segment.
+		const uint32_t DOSADDR=TOWNS_DOS_SEG*0x10; // Physical Address
+
+		auto ARGV2=cmd.argv[2];
+		cpputil::Capitalize(ARGV2);
+		if("SYSVAR"==ARGV2)
+		{
+			uint16_t seg,ofs,s;
+			ofs=towns.mem.FetchWord(DOSADDR+TOWNS_DOS_DPB_PTR);
+			seg=towns.mem.FetchWord(DOSADDR+TOWNS_DOS_DPB_PTR+2);
+			std::cout << "DPB      " << cpputil::Ustox(seg) << ":" << cpputil::Ustox(ofs) << std::endl;
+
+			ofs=towns.mem.FetchWord(DOSADDR+TOWNS_DOS_SFT_PTR);
+			seg=towns.mem.FetchWord(DOSADDR+TOWNS_DOS_SFT_PTR+2);
+			std::cout << "SFT      " << cpputil::Ustox(seg) << ":" << cpputil::Ustox(ofs) << std::endl;
+
+			ofs=towns.mem.FetchWord(DOSADDR+TOWNS_DOS_CLOCK_DEV_PTR);
+			seg=towns.mem.FetchWord(DOSADDR+TOWNS_DOS_CLOCK_DEV_PTR+2);
+			std::cout << "CLOCKDEV " << cpputil::Ustox(seg) << ":" << cpputil::Ustox(ofs) << std::endl;
+
+			ofs=towns.mem.FetchWord(DOSADDR+TOWNS_DOS_CON_DEV_PTR);
+			seg=towns.mem.FetchWord(DOSADDR+TOWNS_DOS_CON_DEV_PTR+2);
+			std::cout << "CONDEV   " << cpputil::Ustox(seg) << ":" << cpputil::Ustox(ofs) << std::endl;
+
+			s=towns.mem.FetchWord(DOSADDR+TOWNS_DOS_BUF_SIZE);
+			std::cout << "BUFSIZE  " << cpputil::Ustox(s) << std::endl;
+
+			ofs=towns.mem.FetchWord(DOSADDR+TOWNS_DOS_BUF_PTR);
+			seg=towns.mem.FetchWord(DOSADDR+TOWNS_DOS_BUF_PTR+2);
+			std::cout << "BUFCHAIN " << cpputil::Ustox(seg) << ":" << cpputil::Ustox(ofs) << std::endl;
+
+			ofs=towns.mem.FetchWord(DOSADDR+TOWNS_DOS_CDS_LIST_PTR);
+			seg=towns.mem.FetchWord(DOSADDR+TOWNS_DOS_CDS_LIST_PTR+2);
+			std::cout << "CDS      " << cpputil::Ustox(seg) << ":" << cpputil::Ustox(ofs) << std::endl;
+
+			ofs=towns.mem.FetchWord(DOSADDR+TOWNS_DOS_FCB_PTR);
+			seg=towns.mem.FetchWord(DOSADDR+TOWNS_DOS_FCB_PTR+2);
+			std::cout << "FCB      " << cpputil::Ustox(seg) << ":" << cpputil::Ustox(ofs) << std::endl;
+
+			s=towns.mem.FetchWord(DOSADDR+TOWNS_DOS_FCB_KEEP_COUNT);
+			std::cout << "FCB KEEP COUNT " << cpputil::Ustox(s) << std::endl;
+
+			s=towns.mem.FetchByte(DOSADDR+TOWNS_DOS_DPB_COUNT);
+			std::cout << "DPB COUNT " << cpputil::Ustox(s) << std::endl;
+
+			s=towns.mem.FetchByte(DOSADDR+TOWNS_DOS_CDS_COUNT);
+			std::cout << "CDS COUNT " << cpputil::Ustox(s) << std::endl;
+
+			ofs=towns.mem.FetchWord(DOSADDR+TOWNS_DOS_NUL_DEV_HEADER);
+			seg=towns.mem.FetchWord(DOSADDR+TOWNS_DOS_NUL_DEV_HEADER+2);
+			std::cout << "NUL DEV  " << cpputil::Ustox(seg) << ":" << cpputil::Ustox(ofs) << std::endl;
+
+			s=towns.mem.FetchByte(DOSADDR+TOWNS_DOS_JOINED_DRV_COUNT);
+			std::cout << "JOINED DRV COUNT " << cpputil::Ustox(s) << std::endl;
+		}
+		else if("MCB"==ARGV2)
+		{
+			std::cout << "(Not implemented yet)" << std::endl;
+		}
+		else
+		{
+			std::cout << ARGV2 << ": Dump what of DOS info?" << std::endl;
+		}
+	}
+	else
+	{
+		std::cout << "DUMP DOS INFO" << std::endl;
+		std::cout << "ONLY FOR C:\\MSDOS.SYS ON TOWNS OS" << std::endl;
+		std::cout << "  DUMP DOS SYSVAR" << std::endl;
+		std::cout << "    SYSVAR structure." << std::endl;
+		std::cout << "  DUMP DOS MCB" << std::endl;
+		std::cout << "    Memory Control Blocks." << std::endl;
 	}
 }
 
