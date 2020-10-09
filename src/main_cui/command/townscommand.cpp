@@ -1585,7 +1585,31 @@ void TownsCommandInterpreter::Execute_Dump_DOSInfo(FMTowns &towns,Command &cmd)
 		}
 		else if("MCB"==ARGV2)
 		{
-			std::cout << "(Not implemented yet)" << std::endl;
+			unsigned int page=towns.mem.FetchWord(DOSADDR+TOWNS_DOS_MCBPTR);
+			for(;;)
+			{
+				unsigned int attrib=towns.mem.FetchByte(page<<4);
+				unsigned int PID=towns.mem.FetchWord((page<<4)+1);
+				unsigned int size=towns.mem.FetchWord((page<<4)+3);
+
+				std::cout << cpputil::Ustox(page) << " ";
+				std::cout << cpputil::Ubtox(attrib) << " ";
+				std::cout << "PID=" << cpputil::Ustox(PID) << " ";
+				std::cout << "SIZE=" << cpputil::Ustox(size) << std::endl;
+
+				if('Z'==attrib)
+				{
+					std::cout << "END" << std::endl;
+					break;
+				}
+				else if('M'!=attrib)
+				{
+					std::cout << "BROKEN" << std::endl;
+					break;
+				}
+
+				page=page+1+size;
+			}
 		}
 		else
 		{
