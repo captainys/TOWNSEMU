@@ -851,19 +851,6 @@ void FsSimpleWindowConnection::PollGamePads(void)
 	this->dx=(renderWid<winWid ? (winWid-renderWid)/2 : 0);
 	this->dy=(renderHei<(winHei-STATUS_HEI) ? (winHei-STATUS_HEI-renderHei)/2 : 0);
 
-
-	std::vector <unsigned char> flip;
-	flip.resize(img.wid*img.hei*4);
-
-	auto upsideDown=img.rgba;
-	auto rightSideUp=flip.data()+(img.hei-1)*img.wid*4;
-	for(unsigned int y=0; y<img.hei; ++y)
-	{
-		memcpy(rightSideUp,upsideDown,img.wid*4);
-		upsideDown+=img.wid*4;
-		rightSideUp-=img.wid*4;
-	}
-
 	glClear(GL_COLOR_BUFFER_BIT);
 	glViewport(0,0,winWid,winHei);
 	glMatrixMode(GL_PROJECTION);
@@ -872,7 +859,7 @@ void FsSimpleWindowConnection::PollGamePads(void)
 
 	glPixelZoom((float)scaling/100.0f,(float)scaling/100.0f);
 	glRasterPos2i(this->dx,(img.hei*scaling/100)+dy-1);
-	glDrawPixels(img.wid,img.hei,GL_RGBA,GL_UNSIGNED_BYTE,flip.data());
+	glDrawPixels(img.wid,img.hei,GL_RGBA,GL_UNSIGNED_BYTE,img.rgba);
 
 	glRasterPos2i(0,winHei-1);
 	glPixelZoom(1,1);
@@ -880,7 +867,10 @@ void FsSimpleWindowConnection::PollGamePads(void)
 
 	FsSwapBuffers();
 }
-
+/* virtual */ bool FsSimpleWindowConnection::ImageNeedsFlip(void)
+{
+	return true;  // OpenGL does require flip.
+}
 /* virtual */ void FsSimpleWindowConnection::SetKeyboardLayout(unsigned int layout)
 {
 	for(int i=0; i<FSKEY_NUM_KEYCODE; ++i)

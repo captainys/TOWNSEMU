@@ -41,6 +41,12 @@ void TownsRenderingThread::ThreadFunc(void)
 		else if(RENDER==command)
 		{
 			rendererPtr->BuildImage(VRAMCopy,paletteCopy,chaseHQPaletteCopy);
+
+			if(true==imageNeedsFlip)
+			{
+				rendererPtr->FlipUpsideDown();
+			}
+
 			{
 				std::unique_lock <std::mutex> statusLock(statusMutex);
 				command=NO_COMMAND;

@@ -133,6 +133,11 @@ public:
 	virtual void UpdateStatusBitmap(class FMTowns &towns)=0;
 	virtual void Render(const TownsRender::Image &img)=0;
 
+	/*! Implementation should return true if the image needs to be flipped before drawn on the window.
+	    The flag is transferred to rendering thread class at the beginning of the TownsThread::Start.
+	*/
+	virtual bool ImageNeedsFlip(void)=0;
+
 	void SetKeyboardMode(unsigned int mode);
 	virtual void SetKeyboardLayout(unsigned int layout)=0;
 

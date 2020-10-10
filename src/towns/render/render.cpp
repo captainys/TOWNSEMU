@@ -75,6 +75,24 @@ void TownsRender::BuildImage(const unsigned char VRAM[],const TownsCRTC::AnalogP
 		}
 	}
 }
+
+void TownsRender::FlipUpsideDown(void)
+{
+	std::vector <unsigned char> flip;
+	flip.resize(wid*4);
+
+	auto upsideDown=rgba.data();
+	auto rightSideUp=rgba.data()+(hei-1)*wid*4;
+	for(unsigned int y=0; y<hei/2; ++y)
+	{
+		memcpy(flip.data(),upsideDown ,wid*4);
+		memcpy(upsideDown ,rightSideUp,wid*4);
+		memcpy(rightSideUp,flip.data(),wid*4);
+		upsideDown+=wid*4;
+		rightSideUp-=wid*4;
+	}
+}
+
 void TownsRender::SetResolution(int wid,int hei)
 {
 	if(wid!=this->wid || hei!=this->hei)

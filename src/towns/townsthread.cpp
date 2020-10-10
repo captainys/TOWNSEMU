@@ -29,6 +29,7 @@ TownsThread::TownsThread(void)
 void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread)
 {
 	std::unique_ptr <TownsRenderingThread> renderingThread(new TownsRenderingThread);
+	renderingThread->imageNeedsFlip=outside_world->ImageNeedsFlip();
 
 	bool terminate=false;
 	this->townsPtr=townsPtr;

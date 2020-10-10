@@ -57,6 +57,10 @@ public:
 	/*! 
 	*/
 	void BuildImage(const unsigned char VRAM[],const TownsCRTC::AnalogPalette &palette,const TownsCRTC::ChaseHQPalette &chaseHQ);
+
+	/*!
+	*/
+	void FlipUpsideDown(void);
 private:
 	void SetResolution(int wid,int hei);
 

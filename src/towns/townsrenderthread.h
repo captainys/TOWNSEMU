@@ -28,6 +28,7 @@ public:
 	std::mutex mainMutex,statusMutex;
 	std::thread workerThread;
 	std::condition_variable cond;
+	bool imageNeedsFlip=false;
 
 	TownsRender *rendererPtr;
 	unsigned char VRAMCopy[TOWNS_VRAM_SIZE];
