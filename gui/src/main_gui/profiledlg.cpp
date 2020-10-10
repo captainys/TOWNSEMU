@@ -53,6 +53,9 @@ void ProfileDialog::Make(void)
 		scrnScaleTxt->SetLengthLimit(PATH_LENGTH);
 		scrnScaleTxt->SetInteger(100);
 
+		scrnAutoScaleBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Auto Scaling (Fit to Window Size)",YSTRUE);
+		scrnMaximizeBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Maximize on Start Up",YSTRUE);
+
 		pretend386DXBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Pretend 80386DX",YSTRUE);
 
 		EndAddTabItem();
@@ -552,6 +555,8 @@ TownsProfile ProfileDialog::GetProfile(void) const
 	profile.autoStart=(YSTRUE==autoStartBtn->GetCheck());
 
 	profile.screenScaling=scrnScaleTxt->GetInteger();
+	profile.screenAutoScaling=(YSTRUE==scrnAutoScaleBtn->GetCheck());
+	profile.screenMaximizeOnStartUp=(YSTRUE==scrnMaximizeBtn->GetCheck());
 
 	profile.appSpecificAugmentation=TownsStrToApp(appSpecificAugDrp->GetSelectedString().c_str());
 
@@ -662,6 +667,8 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 		autoStartBtn->SetCheck(YSFALSE);
 	}
 
+	scrnAutoScaleBtn->SetCheck(true==profile.screenAutoScaling ? YSTRUE : YSFALSE);
+	scrnMaximizeBtn->SetCheck(true==profile.screenMaximizeOnStartUp ? YSTRUE : YSFALSE);
 	scrnScaleTxt->SetInteger(profile.screenScaling);
 
 	appSpecificAugDrp->SelectByString(TownsAppToStr(profile.appSpecificAugmentation).c_str(),YSTRUE);

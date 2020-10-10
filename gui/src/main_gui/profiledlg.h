@@ -78,6 +78,8 @@ public:
 	FsGuiSlider *mouseIntegSpdSlider;
 	FsGuiButton *bootKeyBtn[15];
 	FsGuiTextBox *scrnScaleTxt;
+	FsGuiButton *scrnAutoScaleBtn;
+	FsGuiButton *scrnMaximizeBtn;
 	FsGuiButton *autoStartBtn;
 	FsGuiTextBox *CPUFreqTxt,*RAMSizeTxt;
 	FsGuiButton *catchUpRealTimeBtn;

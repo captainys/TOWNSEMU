@@ -23,6 +23,8 @@ public:
 	unsigned int bootKeyComb=BOOT_KEYCOMB_NONE;
 	unsigned int gamePort[2]={TOWNS_GAMEPORTEMU_PHYSICAL0,TOWNS_GAMEPORTEMU_MOUSE};
 	unsigned screenScaling=150;
+	bool screenAutoScaling=false;
+	bool screenMaximizeOnStartUp=false;
 	bool autoStart;
 	bool pretend386DX=false;
 	unsigned int freq=25;

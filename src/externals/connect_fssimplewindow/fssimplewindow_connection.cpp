@@ -130,6 +130,8 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 	soundPlayer.Start();
 	cddaStartHSG=0;
 
+	glClearColor(0,0,0,0);
+
 	// Make initial status bitmap
 	Put16x16Invert(0,15,CD_IDLE);
 	for(int fd=0; fd<2; ++fd)
@@ -689,6 +691,8 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 			struct YsGamePadReading reading;
 			int lb,mb,rb,mx,my;
 			FsGetMouseEvent(lb,mb,rb,mx,my);
+			mx-=this->dx;
+			my-=this->dy;
 			if(true==mouseByFlightstickAvailable && 0<=mouseByFlightstickPhysicalId && mouseByFlightstickPhysicalId<gamePads.size())
 			{
 				reading=gamePads[mouseByFlightstickPhysicalId];
@@ -816,13 +820,12 @@ void FsSimpleWindowConnection::PollGamePads(void)
 	int winWid,winHei;
 	FsGetWindowSize(winWid,winHei);
 
-
 	if(true==autoScaling)
 	{
 		if(0<img.wid && 0<img.hei)
 		{
 			unsigned int scaleX=100*winWid/img.wid;
-			unsigned int scaleY=100*winHei/img.hei;
+			unsigned int scaleY=100*(winHei-STATUS_HEI)/img.hei;
 			this->scaling=std::min(scaleX,scaleY);
 		}
 	}
@@ -843,6 +846,12 @@ void FsSimpleWindowConnection::PollGamePads(void)
 		}
 	}
 
+	unsigned int renderWid=img.wid*this->scaling/100;
+	unsigned int renderHei=img.hei*this->scaling/100;
+	this->dx=(renderWid<winWid ? (winWid-renderWid)/2 : 0);
+	this->dy=(renderHei<(winHei-STATUS_HEI) ? (winHei-STATUS_HEI-renderHei)/2 : 0);
+
+
 	std::vector <unsigned char> flip;
 	flip.resize(img.wid*img.hei*4);
 
@@ -862,7 +871,7 @@ void FsSimpleWindowConnection::PollGamePads(void)
 	glOrtho(0.0f,float(winWid),float(winHei),0.0f,-1,1);
 
 	glPixelZoom((float)scaling/100.0f,(float)scaling/100.0f);
-	glRasterPos2i(this->dx,(img.hei*scaling/100)-1);
+	glRasterPos2i(this->dx,(img.hei*scaling/100)+dy-1);
 	glDrawPixels(img.wid,img.hei,GL_RGBA,GL_UNSIGNED_BYTE,flip.data());
 
 	glRasterPos2i(0,winHei-1);

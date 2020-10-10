@@ -142,6 +142,14 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 	text.push_back(sstream.str());
 
 	sstream.str("");
+	sstream << "AUTOSCAL " << (true==screenAutoScaling ? 1 : 0);
+	text.push_back(sstream.str());
+
+	sstream.str("");
+	sstream << "MAXIMIZE " << (true==screenMaximizeOnStartUp ? 1 : 0);
+	text.push_back(sstream.str());
+
+	sstream.str("");
 	sstream << "APPSPEC_ " << TownsAppToStr(appSpecificAugmentation);
 	text.push_back(sstream.str());
 
@@ -293,6 +301,20 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 			if(2<=argv.size())
 			{
 				screenScaling=argv[1].Atoi();
+			}
+		}
+		else if(0==argv[0].STRCMP("AUTOSCAL"))
+		{
+			if(2<=argv.size())
+			{
+				screenAutoScaling=(0!=argv[1].Atoi());
+			}
+		}
+		else if(0==argv[0].STRCMP("MAXIMIZE"))
+		{
+			if(2<=argv.size())
+			{
+				screenMaximizeOnStartUp=(0!=argv[1].Atoi());
 			}
 		}
 		else if(0==argv[0].STRCMP("FREQUENC"))
@@ -498,6 +520,14 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 		sstream.str("");
 		sstream << screenScalingFix;
 		argv.push_back(sstream.str());
+	}
+	if(true==screenAutoScaling)
+	{
+		argv.push_back("-AUTOSCALE");
+	}
+	if(true==screenMaximizeOnStartUp)
+	{
+		argv.push_back("-MAXIMIZE");
 	}
 
 	if(1<=freq)

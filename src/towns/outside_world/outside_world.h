@@ -120,7 +120,7 @@ public:
 	bool scsiAccessLamp[6]={false,false,false,false,false,false};
 	bool autoScaling=false;
 	bool maximizeOnStartUp=false;
-	unsigned int dx=0;  // Screen (0,0) will be window (dx,0)
+	unsigned int dx=0,dy=0;  // Screen (0,0) will be window (dx,dy)
 	unsigned int scaling=100; // In Percent
 	bool pauseKey=false;
 
