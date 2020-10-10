@@ -118,6 +118,9 @@ public:
 	bool cdAccessLamp=false;
 	bool fdAccessLamp[4]={false,false,false,false};
 	bool scsiAccessLamp[6]={false,false,false,false,false,false};
+	bool autoScaling=false;
+	bool maximizeOnStartUp=false;
+	unsigned int dx=0;  // Screen (0,0) will be window (dx,0)
 	unsigned int scaling=100; // In Percent
 	bool pauseKey=false;
 

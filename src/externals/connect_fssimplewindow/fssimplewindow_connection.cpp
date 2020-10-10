@@ -115,6 +115,15 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 	}
 
 	FsOpenWindow(0,winY0,wid,hei+STATUS_HEI,1);
+	if(true==maximizeOnStartUp)
+	{
+		FsPollDevice();
+		FsMaximizeWindow();
+		for(int i=0; i<10; ++i)
+		{
+			FsPollDevice();
+		}
+	}
 	this->winWid=640;
 	this->winHei=480;
 	FsSetWindowTitle("FM Towns Emulator - TSUGARU");
@@ -804,17 +813,33 @@ void FsSimpleWindowConnection::PollGamePads(void)
 }
 /* virtual */ void FsSimpleWindowConnection::Render(const TownsRender::Image &img)
 {
-	if(this->winWid!=img.wid)  // Height is not correct yet   :-P
+	int winWid,winHei;
+	FsGetWindowSize(winWid,winHei);
+
+
+	if(true==autoScaling)
 	{
-		this->winWid=img.wid;
-		sinceLastResize=10;
-	}
-	else if(0<sinceLastResize)
-	{
-		--sinceLastResize;
-		if(0==sinceLastResize)
+		if(0<img.wid && 0<img.hei)
 		{
-			FsResizeWindow(this->winWid*scaling/100,this->winHei*scaling/100+STATUS_HEI);
+			unsigned int scaleX=100*winWid/img.wid;
+			unsigned int scaleY=100*winHei/img.hei;
+			this->scaling=std::min(scaleX,scaleY);
+		}
+	}
+	else
+	{
+		if(this->winWid!=img.wid)  // Height is not correct yet   :-P
+		{
+			this->winWid=img.wid;
+			sinceLastResize=10;
+		}
+		else if(0<sinceLastResize)
+		{
+			--sinceLastResize;
+			if(0==sinceLastResize)
+			{
+				FsResizeWindow(this->winWid*scaling/100,this->winHei*scaling/100+STATUS_HEI);
+			}
 		}
 	}
 
@@ -831,18 +856,16 @@ void FsSimpleWindowConnection::PollGamePads(void)
 	}
 
 	glClear(GL_COLOR_BUFFER_BIT);
-	int wid,hei;
-	FsGetWindowSize(wid,hei);
-	glViewport(0,0,wid,hei);
+	glViewport(0,0,winWid,winHei);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(0.0f,float(wid),float(hei),0.0f,-1,1);
+	glOrtho(0.0f,float(winWid),float(winHei),0.0f,-1,1);
 
 	glPixelZoom((float)scaling/100.0f,(float)scaling/100.0f);
-	glRasterPos2i(0,(img.hei*scaling/100)-1);
+	glRasterPos2i(this->dx,(img.hei*scaling/100)-1);
 	glDrawPixels(img.wid,img.hei,GL_RGBA,GL_UNSIGNED_BYTE,flip.data());
 
-	glRasterPos2i(0,hei-1);
+	glRasterPos2i(0,winHei-1);
 	glPixelZoom(1,1);
 	glDrawPixels(STATUS_WID,STATUS_HEI,GL_RGBA,GL_UNSIGNED_BYTE,statusBitmap);
 

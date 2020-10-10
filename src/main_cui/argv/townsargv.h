@@ -118,6 +118,8 @@ public:
 		SCALING_MAX=1000,
 	};
 	unsigned int scaling=100;
+	bool autoScaling=false;
+	bool maximizeOnStartUp=false;
 
 	TownsStartParameters();
 };

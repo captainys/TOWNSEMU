@@ -2931,9 +2931,299 @@ M 0
 /begin0
 T 1
 * 00001679:000018B6
-# 
+# Create a valid DPB from a user-specified BPB  Input ES:BP DPB DS:SI BPB
 R 
 L SETDPB
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000018B8
+# Skip over dpb_drive and dpb_UNIT
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000018BC
+# dpb_sector_size (Bytes per logical sector)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000018C2
+# dpb_cluster_mask (#sec/cluster-1 Assuming # is 2^n)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000018C7
+# 
+R 
+L LOG2LOOP
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000018D1
+# 
+R 
+L SAVLOG
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000018D3
+# dpb_cluster_shift
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000018D6
+# dpb_first_FAT Start of FAT (# of reserved sectors)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000018D8
+# dpb_FAT_count Number of FATs
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000018DC
+# dpb_root_entries Number of directory entries
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000018DF
+# Directory entries per sector
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000018E2
+# Cause Round Up
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000018EA
+# Number of directory sectors
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000018ED
+# Skip dpb_first_sector
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000018EE
+# Total number of sectors in DSKSIZ (temp as dpb_max_cluster)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000018F0
+# ES:[BP+dpb_media] Media byte
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000018F4
+# Number of sectors in a FAT
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000018F5
+# dpb_FAT_size
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000018F6
+# Space occupied by all FATs
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000018F8
+# ES:[BP+dpb_first_FAT]
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000018FC
+# dpb_dir_sector
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000018FD
+# Add number of directory sectors
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000018FF
+# ES:[BP.dpb_first_sector]
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001903
+# ES:[BP+DSKSIZ]
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001907
+# Sectors in data area
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001909
+# dpb_cluster_shift
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000190B
+# Div by sectors/cluster
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000190E
+# ES:[BP+dpb_max_cluster]
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001912
+# Current directory is root
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001918
+# (Prob)Number of free clusters (-1 if unknown)
+R 
+L 
 P 
 % 0
 M 0
@@ -3271,7 +3561,17 @@ M 0
 /begin0
 T 0
 * 00001679:00006ACB
-# VECTOR for INT 2AH
+# VECTOR (OFFSET) for INT 2AH
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006AD0
+# VECTOR (SEGMENT) for INT 2AH
 R 
 L 
 P 
@@ -3431,7 +3731,7 @@ M 0
 /begin0
 T 0
 * 00001679:00006B44
-# [CALLUNIT]
+# [CALLUNIT] (DEVCALL+0DH ?)
 R 
 L 
 P 
@@ -3471,7 +3771,7 @@ M 0
 /begin0
 T 0
 * 00001679:00006B5C
-# [CALLBPB]
+# [CALLBPB] In:Pointer to string after DEVICE=  Out:BPB array pointer
 R 
 L 
 P 
@@ -4071,9 +4371,49 @@ M 0
 /begin0
 T 1
 * 00001679:00006CEE
-# 
+# [DEVCALL.REQLEN],DINITHL
 R 
 L CHARINIT (MSINIT.ASM)
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006CF4
+# [DEVCALL.REQUNIT],0
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006CFA
+# [DEVCALL.REQFUNC],DEVINIT
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006D00
+# [DEVCALL.REQSTAT],0
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006D0A
+# OFFSET DEVCALL
+R 
+L 
 P 
 % 0
 M 0

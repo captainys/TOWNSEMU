@@ -45,6 +45,12 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  Print Help." << std::endl;
 	std::cout << "-SCALE X" << std::endl;
 	std::cout << "  Screen scaling X percent." << std::endl;
+	std::cout << "-AUTOSCALE" << std::endl;
+	std::cout << "  Auto scaleing screen to match the window size." << std::endl;
+	std::cout << "  -SCALE option is still valid for deciding the initial window size." << std::endl;
+	std::cout << "-MAXIMIZE" << std::endl;
+	std::cout << "  Maximize the window.  It also enables auto-scaling, and" << std::endl;
+	std::cout << "  -SCALE option will be disregarded." << std::endl;
 	std::cout << "-PAUSE" << std::endl;
 	std::cout << "  Machine state is PAUSE on start up." << std::endl;
 	std::cout << "-SHAREDDIR path" << std::endl;
@@ -216,6 +222,15 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 				scaling=SCALING_MAX;
 			}
 			++i;
+		}
+		else if("-AUTOSCALE"==ARG)
+		{
+			autoScaling=true;
+		}
+		else if("-MAXIMIZE"==ARG)
+		{
+			maximizeOnStartUp=true;
+			autoScaling=true;
 		}
 		else if("-PAUSE"==ARG)
 		{
