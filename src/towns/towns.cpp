@@ -601,6 +601,10 @@ void FMTowns::ForceRender(class TownsRender &render,class Outside_World &world)
 {
 	render.Prepare(crtc);
 	render.BuildImage(physMem.state.VRAM.data(),crtc.state.palette,crtc.chaseHQPalette);
+	if(true==world.ImageNeedsFlip())
+	{
+		render.FlipUpsideDown();
+	}
 	world.UpdateStatusBitmap(*this);
 	world.Render(render.GetImage());
 }
