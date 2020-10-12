@@ -33,6 +33,10 @@ void TownsSerialPort::DefaultClient::SetUpXMODEMtoVM(const std::vector <unsigned
 	fileTfrMode=FILETFR_XMODEM_TO_VM;
 	fileTfrPtr=0;
 	fileTfrData=data;
+	while(0!=(fileTfrData.size()%128))
+	{
+		fileTfrData.push_back(CODE_EOF);
+	}
 	XMODEM_EOT_SENT=false;
 	toVM.clear();
 }
@@ -45,6 +49,42 @@ void TownsSerialPort::DefaultClient::SetUpXMODEMfromVM(std::string hostRecvFName
 	toVM.push_back(CODE_NAK);
 	this->hostRecvFName=hostRecvFName;
 }
+
+void TownsSerialPort::DefaultClient::XMODEM_TO_VM_TransferNextBlock(void)
+{
+	unsigned int blk=((fileTfrPtr/128)+1)&255;
+	toVMPtr=toVM.size();
+	toVM.push_back(CODE_SOH);
+	toVM.push_back(blk);
+	toVM.push_back(~blk);
+	unsigned int checkSum=0;
+	for(unsigned int i=0; i<128; ++i)
+	{
+		if(fileTfrPtr+i<fileTfrData.size())
+		{
+			toVM.push_back(fileTfrData[fileTfrPtr+i]);
+		}
+		else
+		{
+			toVM.push_back(CODE_EOF);
+		}
+		checkSum+=toVM.back();
+	}
+	if(true==XMODEM_USE_CRC)
+	{
+		auto CRC=XMODEM_CRC(fileTfrData.data()+fileTfrPtr,128);
+		toVM.push_back((CRC>>8)&0xFF);
+		toVM.push_back(CRC&0xFF);
+printf("%s %d\n",__FUNCTION__,__LINE__);
+	}
+	else
+	{
+		toVM.push_back(checkSum&0xFF);
+	}
+
+	fileTfrPtr+=128;
+}
+
 /* virtual */ bool TownsSerialPort::DefaultClient::TxRDY(void)
 {
 	// Always ready to accept a data.
@@ -67,8 +107,18 @@ void TownsSerialPort::DefaultClient::SetUpXMODEMfromVM(std::string hostRecvFName
 		}
 		break;
 	case FILETFR_XMODEM_TO_VM:
-		// std::cout << "Tx from VM:" << cpputil::Ubtox(data) << std::endl;
-		if(CODE_NAK==data || CODE_ACK==data)
+		 std::cout << "Tx from VM:" << cpputil::Ubtox(data) << std::endl;
+		if(0==fileTfrPtr && 'C'==data)
+		{
+			XMODEM_USE_CRC=true;
+			XMODEM_TO_VM_TransferNextBlock();
+		}
+		else if(0==fileTfrPtr && CODE_NAK==data)
+		{
+			XMODEM_USE_CRC=false;
+			XMODEM_TO_VM_TransferNextBlock();
+		}
+		else if(CODE_NAK==data || CODE_ACK==data || 'C'==data) // WINK2.EXP uses 'C' for the first two packets apparently.  Confirmed in WINK2 source XMODEM2.C line 463
 		{
 			if(CODE_CAN==data)
 			{
@@ -79,42 +129,27 @@ void TownsSerialPort::DefaultClient::SetUpXMODEMfromVM(std::string hostRecvFName
 			else if(CODE_NAK==data && 128<=fileTfrPtr)
 			{
 				fileTfrPtr-=128;
+				XMODEM_TO_VM_TransferNextBlock();
 			}
-			if(CODE_ACK==data && fileTfrData.size()<=fileTfrPtr)
+			else if(CODE_ACK==data || (true==XMODEM_USE_CRC && 'C'==data))
 			{
-				if(true!=XMODEM_EOT_SENT)
+				if(fileTfrData.size()<=fileTfrPtr)
 				{
-					// toVM.clear();
-					toVM.push_back(CODE_EOT);
-					XMODEM_EOT_SENT=true;
-				}
-				else
-				{
-					fileTfrMode=FILETFR_NONE;
-				}
-			}
-			else
-			{
-				unsigned int blk=((fileTfrPtr/128)+1)&255;
-				toVMPtr=toVM.size();
-				toVM.push_back(CODE_SOH);
-				toVM.push_back(blk);
-				toVM.push_back(~blk);
-				unsigned int checkSum=0;
-				for(unsigned int i=0; i<128; ++i)
-				{
-					if(fileTfrPtr+i<fileTfrData.size())
+					if(true!=XMODEM_EOT_SENT)
 					{
-						toVM.push_back(fileTfrData[fileTfrPtr+i]);
+						// toVM.clear();
+						toVM.push_back(CODE_EOT);
+						XMODEM_EOT_SENT=true;
 					}
 					else
 					{
-						toVM.push_back(CODE_EOF);
+						fileTfrMode=FILETFR_NONE;
 					}
-					checkSum+=toVM.back();
 				}
-				fileTfrPtr+=128;
-				toVM.push_back(checkSum&0xFF);
+				else
+				{
+					XMODEM_TO_VM_TransferNextBlock();
+				}
 			}
 		}
 		break;
@@ -205,6 +240,34 @@ void TownsSerialPort::DefaultClient::SetUpXMODEMfromVM(std::string hostRecvFName
 	return true; // Always ready
 }
 
+/* References:
+     http://web.mit.edu/6.115/www/amulet/xmodem.htm
+     http://mdfs.net/Info/Comp/Comms/CRC16.htm
+*/
+unsigned int TownsSerialPort::DefaultClient::XMODEM_CRC(unsigned char ptr[],unsigned int len)
+{
+	const unsigned int magicNumber=0x1021;
+	unsigned int crc=0;
+	for(unsigned int i=0; i<len; ++i)
+	{
+		unsigned int dat=ptr[i];
+		dat<<=8;
+		crc=crc^dat;
+		for(unsigned int j=0; j<8; ++j)
+		{
+			if(crc&0x8000)
+			{
+				crc<<=1;
+				crc^=magicNumber;
+			}
+			else
+			{
+				crc<<=1;
+			}
+		}
+	}
+	return crc;
+}
 
 
 ////////////////////////////////////////////////////////////

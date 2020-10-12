@@ -64,11 +64,15 @@ public:
 		unsigned int fileTfrPtr=0;
 		std::vector <unsigned char> fileTfrData;
 		bool XMODEM_EOT_SENT=false;
+		bool XMODEM_USE_CRC=false;
 		std::string hostRecvFName;
 
 		void ClearXMODEM(void);
 		void SetUpXMODEMtoVM(const std::vector <unsigned char> &data);
 		void SetUpXMODEMfromVM(std::string hostRecvFName);
+
+		void XMODEM_TO_VM_TransferNextBlock(void);
+		unsigned int XMODEM_CRC(unsigned char ptr[],unsigned int len);
 
 		virtual bool TxRDY(void);
 		virtual void Tx(unsigned char data);
