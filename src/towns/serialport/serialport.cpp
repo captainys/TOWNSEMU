@@ -51,7 +51,7 @@ void TownsSerialPort::DefaultClient::SetUpXMODEMfromVM(std::string hostRecvFName
 	this->hostRecvFName=hostRecvFName;
 }
 
-void TownsSerialPort::DefaultClient::SetUpXMODEMfromVMCRC(std::string hostRecvFName)
+void TownsSerialPort::DefaultClient::SetUpXMODEMCRCfromVM(std::string hostRecvFName)
 {
 	fileTfrMode=FILETFR_XMODEM_FROM_VM;
 	fileTfrData.clear();
@@ -118,7 +118,7 @@ void TownsSerialPort::DefaultClient::XMODEM_TO_VM_TransferNextBlock(void)
 		}
 		break;
 	case FILETFR_XMODEM_TO_VM:
-		 std::cout << "Tx from VM:" << cpputil::Ubtox(data) << std::endl;
+		// std::cout << "Tx from VM:" << cpputil::Ubtox(data) << std::endl;
 		if(0==fileTfrPtr && 'C'==data)
 		{
 			XMODEM_USE_CRC=true;

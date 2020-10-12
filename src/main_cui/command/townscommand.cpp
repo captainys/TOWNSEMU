@@ -140,6 +140,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["XMODEMCLR"]=CMD_XMODEM_CLEAR;
 	primaryCmdMap["XMODEMTOVM"]=CMD_XMODEM_TO_VM;
 	primaryCmdMap["XMODEMFROMVM"]=CMD_XMODEM_FROM_VM;
+	primaryCmdMap["XMODEMCRCFROMVM"]=CMD_XMODEMCRC_FROM_VM;
 
 	primaryCmdMap["SPECIALDEBUG"]=CMD_SPECIAL_DEBUG;
 
@@ -272,7 +273,10 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  File transfer to the VM with XMODEM.  Type this command first," << std::endl;
 	std::cout << "  then start XMODEM in FM TOWNS application." << std::endl;
 	std::cout << "XMODEMFROMVM filename" << std::endl;
-	std::cout << "  File transfer from the VM with XMODEM.  Start XMODEM in FM TOWNS application," << std::endl;
+	std::cout << "  File transfer from the VM with XMODEM (CheckSum).  Start XMODEM in FM TOWNS application," << std::endl;
+	std::cout << "  and then type this command." << std::endl;
+	std::cout << "XMODEMCRCFROMVM filename" << std::endl;
+	std::cout << "  File transfer from the VM with XMODEM (CRC).  Start XMODEM in FM TOWNS application," << std::endl;
 	std::cout << "  and then type this command." << std::endl;
 	std::cout << "XMODEMCLR" << std::endl;
 	std::cout << "  Cancel XMODEM file transfer." << std::endl;
@@ -1025,6 +1029,9 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 		break;
 	case CMD_XMODEM_FROM_VM:
 		Execute_XMODEMfromVM(towns,cmd);
+		break;
+	case CMD_XMODEMCRC_FROM_VM:
+		Execute_XMODEMCRCfromVM(towns,cmd);
 		break;
 	case CMD_XMODEM_CLEAR:
 		towns.serialport.defaultClient.ClearXMODEM();
@@ -2999,6 +3006,28 @@ void TownsCommandInterpreter::Execute_XMODEMfromVM(FMTowns &towns,Command &cmd)
 		PrintError(ERROR_TOO_FEW_ARGS);
 	}
 }
+
+void TownsCommandInterpreter::Execute_XMODEMCRCfromVM(FMTowns &towns,Command &cmd)
+{
+	if(2<=cmd.argv.size())
+	{
+		if(towns.serialport.state.intel8251.clientPtr==&towns.serialport.defaultClient)
+		{
+			towns.serialport.defaultClient.SetUpXMODEMCRCfromVM(cmd.argv[1]);
+			std::cout << "Ready to receive " << cmd.argv[1] << std::endl;
+			std::cout << "(XMODEM upload must be started before this command in FM TOWNS)" << std::endl;
+		}
+		else
+		{
+			std::cout << "Default serial-port client is not in charge." << std::endl;
+		}
+	}
+	else
+	{
+		PrintError(ERROR_TOO_FEW_ARGS);
+	}
+}
+
 void TownsCommandInterpreter::Execute_SaveKeyMap(const Outside_World &outside_world,const Command &cmd)
 {
 	if(2<=cmd.argv.size())
