@@ -533,11 +533,11 @@ void TownsPhysicalMemory::SetSysROMDicROMMappingFlag(bool sysRomMapping,bool dic
 	// mapping, and then destroys CMOS RAM during the memory test.
 	//
 	// Only interpretation that makes sense to me is:
-	//   0480H Bit1(active low)  Bit0         D0000     F8000
-	//         1(false)          0(false)     MainRAM   MainRAM
-	//         1(false)          1(true)      MainRAM   MainRAM
-	//         0(true)           0(false)     SysROM    MainRAM
-	//         0(true)           1(true)      SysROM    DicROM/CMOS
+	//   0480H Bit1(active low)  Bit0         D0000        F8000
+	//         1(false)          0(false)     MainRAM      MainRAM
+	//         1(false)          1(true)      MainRAM      MainRAM
+	//         0(true)           0(false)     MainRAM      SysROM
+	//         0(true)           1(true)      DicROM/CMOS  SysROM
 	//
 	// I'll eventually test on the actual machine.
 
