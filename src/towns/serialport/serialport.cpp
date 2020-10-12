@@ -75,7 +75,6 @@ void TownsSerialPort::DefaultClient::XMODEM_TO_VM_TransferNextBlock(void)
 		auto CRC=XMODEM_CRC(fileTfrData.data()+fileTfrPtr,128);
 		toVM.push_back((CRC>>8)&0xFF);
 		toVM.push_back(CRC&0xFF);
-printf("%s %d\n",__FUNCTION__,__LINE__);
 	}
 	else
 	{
