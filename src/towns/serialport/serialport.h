@@ -70,6 +70,7 @@ public:
 		void ClearXMODEM(void);
 		void SetUpXMODEMtoVM(const std::vector <unsigned char> &data);
 		void SetUpXMODEMfromVM(std::string hostRecvFName);
+		void SetUpXMODEMfromVMCRC(std::string hostRecvFName);
 
 		void XMODEM_TO_VM_TransferNextBlock(void);
 		unsigned int XMODEM_CRC(unsigned char ptr[],unsigned int len);

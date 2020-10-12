@@ -46,7 +46,19 @@ void TownsSerialPort::DefaultClient::SetUpXMODEMfromVM(std::string hostRecvFName
 	fileTfrData.clear();
 	fromVM.clear();
 	toVMPtr=toVM.size();
+	XMODEM_USE_CRC=false;
 	toVM.push_back(CODE_NAK);
+	this->hostRecvFName=hostRecvFName;
+}
+
+void TownsSerialPort::DefaultClient::SetUpXMODEMfromVMCRC(std::string hostRecvFName)
+{
+	fileTfrMode=FILETFR_XMODEM_FROM_VM;
+	fileTfrData.clear();
+	fromVM.clear();
+	toVMPtr=toVM.size();
+	XMODEM_USE_CRC=true;
+	toVM.push_back('C');
 	this->hostRecvFName=hostRecvFName;
 }
 
@@ -175,26 +187,41 @@ void TownsSerialPort::DefaultClient::XMODEM_TO_VM_TransferNextBlock(void)
 		}
 		else
 		{
+			const unsigned int blockSize=(true==XMODEM_USE_CRC ? 133 : 132);
 			fromVM.push_back(data);
-			if(132==fromVM.size())
+			if(blockSize==fromVM.size())
 			{
-				unsigned int sum=0;
-				for(int i=3; i<3+128; ++i)
+				if(true==XMODEM_USE_CRC)
 				{
-					sum+=fromVM[i];
-				}
-				if(fromVM[1]!=(255&(~fromVM[2])) || fromVM[131]!=(sum&255))
-				{
-					toVM.push_back(CODE_NAK);
+					auto CRC=XMODEM_CRC(fromVM.data()+3,128);
+					if(((CRC>>8)&0xFF)!=fromVM[131] ||
+					   ( CRC    &0xFF)!=fromVM[132])
+					{
+						toVM.push_back(CODE_NAK);
+						fromVM.clear();
+						break;
+					}
 				}
 				else
 				{
+					unsigned int sum=0;
 					for(int i=3; i<3+128; ++i)
 					{
-						fileTfrData.push_back(fromVM[i]);
+						sum+=fromVM[i];
 					}
-					toVM.push_back(CODE_ACK);
+					if(fromVM[1]!=(255&(~fromVM[2])) || fromVM[131]!=(sum&255))
+					{
+						toVM.push_back(CODE_NAK);
+						fromVM.clear();
+						break;
+					}
 				}
+
+				for(int i=3; i<3+128; ++i)
+				{
+					fileTfrData.push_back(fromVM[i]);
+				}
+				toVM.push_back(CODE_ACK);
 				fromVM.clear();
 			}
 		}
