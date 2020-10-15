@@ -2039,6 +2039,16 @@ P
 M 0
 /end
 /begin0
+T 1
+* 00000421:00001782
+# 
+R 
+L CDROM:AH=0EH
+P 
+% 0
+M 0
+/end
+/begin0
 T 0
 * 00000421:00001BD5
 # 
@@ -4910,8 +4920,38 @@ M 0
 /end
 /begin0
 T 0
+* 0000FC00:00000C3F
+# Jump if 386SX
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
 * 0000FC00:00000C53
 # 5100H=Clock Icon
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000FC00:00000C99
+# Jump if 386SX
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000FC00:00000CC8
+# Jump to IPL
 R 
 L 
 P 

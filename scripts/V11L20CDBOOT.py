@@ -38,8 +38,6 @@ def Run(argv):
 		"E:/ISOImage/FM-TOWNS/TownsSystemV1.1L20/TOWNSSYSTEM.CUE",
 		"-HD0",
 		os.path.join(DISKDIR,"hddimage.bin"),
-		"-CMOS",
-		"../testdata/CMOS.bin",
 		"-DONTAUTOSAVECMOS",
 		"-SYM",
 		"../symtables/V1.1L10CDBOOT_"+TOWNSTYPE+".txt",

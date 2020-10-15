@@ -563,7 +563,7 @@ T 2
 * 00000256:000000C3
 # 
 R 
-L DISKBIOS:(Prob)Call_Device
+L DISKBIOS:Jump to Device
 P 
 % 0
 M 0
@@ -592,6 +592,16 @@ M 0
 T 0
 * 00000256:000016DA
 # CDROM:(Prob)Call function
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00000256:000016DD
+# CDROM:Jump to Function (BX=Incoming_AH*2)
 R 
 L 
 P 
@@ -634,6 +644,16 @@ T 0
 # [BP+04H]=Outgoing BX
 R 
 L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00000256:00001A74
+# 
+R 
+L CDROM:AH=0EH
 P 
 % 0
 M 0
