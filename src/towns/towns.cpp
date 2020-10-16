@@ -780,11 +780,25 @@ std::vector <std::string> FMTowns::GetMouseStatusText(void) const
 	std::vector <std::string> text;
 
 	text.push_back("");
-	text.back()+="Raw Coord (1X scale): (";
+	text.back()+="Last Known Raw Coord (1X scale): (";
 	text.back()+=cpputil::Itoa(var.lastKnownMouseX);
 	text.back()+=",";
 	text.back()+=cpputil::Itoa(var.lastKnownMouseY);
 	text.back()+=")";
+
+	int integX,integY;
+	if(true==GetMouseCoordinate(integX,integY,state.tbiosVersion))
+	{
+		text.push_back("Mouse Integration Coord:(");
+		text.back()+=cpputil::Itoa(integX);
+		text.back()+=",";
+		text.back()+=cpputil::Itoa(integY);
+		text.back()+=")";
+	}
+	else
+	{
+		text.push_back("Mouse Integration Unavailable");
+	}
 
 	unsigned int VRAMSize=(crtc.InSinglePageMode() ? 0x80000 : 0x40000);
 
