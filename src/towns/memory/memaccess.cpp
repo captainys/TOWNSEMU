@@ -340,6 +340,7 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 			break;
 		case TOWNSMEMIO_FMR_GVRAMDISPMODE://  0x000CFF82, // [2] pp.22,pp.158
 			crtcPtr->MEMIOWriteFMRVRAMDisplayMode(data);
+			townsPtr->crtc.state.crtcReg[TownsCRTC::REG_FA0]=(((unsigned int)(data&0x10))<<11);// 0x8000 or 0
 			break;
 		case TOWNSMEMIO_FMR_GVRAMPAGESEL://   0x000CFF83, // [2] pp.22,pp.159
 			// Looks like I was interpreting the definition of FM-R Graphics VRAM 'PAGE' wrong.
@@ -350,10 +351,6 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 			// different.
 			// Credit to Artane.!  Thanks!
 			physMemPtr->state.FMRVRAMWriteOffset=(0!=(data&0x10) ? 0x20000 : 0);
-
-			// Should I also change the Layer-1 Offset?
-			// Looks like I should.
-			townsPtr->crtc.state.crtcReg[TownsCRTC::REG_FA0]=physMemPtr->state.FMRVRAMWriteOffset/4;
 			break;
 
 		case TOWNSMEMIO_FIRQ://               0x000CFF84, // [2] pp.22,pp.95 Always zero in FM TOWNS
