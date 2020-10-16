@@ -14,6 +14,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 << LICENSE */
 #include <iostream>
 #include <algorithm>
+#include <cstdint>
 
 #include "towns.h"
 #include "townsdef.h"
@@ -829,12 +830,38 @@ bool FMTowns::GetMouseCoordinate(int &mx,int &my,unsigned int tbiosid) const
 			return true;
 		case TOWNS_APPSPECIFIC_AMARANTH3:
 			{
-				auto debugStop=debugger.stop; // FetchWord may break due to MEMR.
-				mx=(int)mem.FetchWord(0x248f0+0x40);
-				my=(int)mem.FetchWord(0x248f0+0x42);
-				debugger.stop=debugStop;
+				// Observed:
+				// MouseX 248F:0040
+				// MouseY 248F:0042
+				//
+				// Read Mouse()
+				// 2494:0000044E 8B0E0B00                  MOV     CX,[000BH]
+				// 2494:00000452 FA                        CLI
+				// 2494:00000453 E89500                    CALL    000004EB { Read Mouse 1 Byte()}
+
+				const uint32_t signature[]=
+				{
+					0x000B0E8B,
+					0x0095E8FA
+				};
+				const int32_t mouseCoordObserved=0x248F0+0x0040;
+				const int32_t readMouseProcObserved=0x24940+0x044E;
+				const int32_t physAddrOffset=mouseCoordObserved-readMouseProcObserved;
+
+				for(uint32_t addr=0x24000; addr<=0x24FFF; addr+=0x10)
+				{
+					if(signature[0]==mem.FetchDword(addr+0x44E) &&
+					   signature[1]==mem.FetchDword(addr+0x452))
+					{
+						auto debugStop=debugger.stop; // FetchWord may break due to MEMR.
+						mx=(int)mem.FetchWord(addr+0x44E+physAddrOffset);
+						my=(int)mem.FetchWord(addr+0x44E+physAddrOffset+2);
+						debugger.stop=debugStop;
+						return true;
+					}
+				}
 			}
-			return true;
+			break;
 		}
 	}
 	return false;
