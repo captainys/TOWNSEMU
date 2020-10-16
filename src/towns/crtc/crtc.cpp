@@ -1150,6 +1150,7 @@ std::vector <std::string> TownsCRTC::GetPageStatusText(int page) const
 
 	text.push_back("");
 	text.back()+="BytesPerLine="+cpputil::Uitox(layer.bytesPerLine);
+	text.back()+="  SkipBytes="+cpputil::Uitox(layer.VRAMHSkipBytes);
 
 	text.push_back("");
 	text.back()+="Zoom=(";

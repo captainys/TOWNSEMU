@@ -345,7 +345,7 @@ void TownsRender::Render4Bit(
 template <class OFFSETTRANS>
 void TownsRender::Render8Bit(const TownsCRTC::Layer &layer,const Vec3ub palette[256],const unsigned char VRAM[],bool transparent)
 {
-	unsigned int VRAMBase=layer.VRAMAddr+layer.VRAMHSkipBytes;
+	unsigned int VRAMBase=layer.VRAMAddr;
 	unsigned int VRAMOffsetVertical=layer.VRAMOffset&~layer.HScrollMask;
 	unsigned int VRAMOffsetHorizontal=layer.VRAMOffset&layer.HScrollMask;
 	const unsigned int VRAMHScrollMask=layer.HScrollMask;
@@ -362,7 +362,7 @@ void TownsRender::Render8Bit(const TownsCRTC::Layer &layer,const Vec3ub palette[
 		unsigned char *dstLine=rgba.data()+4*(Y*this->wid+X);
 		auto dst=dstLine;
 
-		unsigned int inLineVRAMOffset=0;
+		unsigned int inLineVRAMOffset=layer.VRAMHSkipBytes;
 		int ZHswitch=0;
 		auto ZH=ZHsrc[ZHswitch];
 		for(int x=0; x<layer.sizeOnMonitor.x() && x+layer.originOnMonitor.x()<this->wid && inLineVRAMOffset<layer.bytesPerLine; x++)
@@ -401,7 +401,7 @@ void TownsRender::Render8Bit(const TownsCRTC::Layer &layer,const Vec3ub palette[
 template <class OFFSETTRANS>
 void TownsRender::Render16Bit(const TownsCRTC::Layer &layer,const unsigned char VRAM[],bool transparent)
 {
-	unsigned int VRAMBase=layer.VRAMAddr+layer.VRAMHSkipBytes;
+	unsigned int VRAMBase=layer.VRAMAddr;
 	unsigned int VRAMOffsetVertical=layer.VRAMOffset&~layer.HScrollMask;
 	unsigned int VRAMOffsetHorizontal=layer.VRAMOffset&layer.HScrollMask;
 	const unsigned int VRAMHScrollMask=layer.HScrollMask;
@@ -422,7 +422,7 @@ void TownsRender::Render16Bit(const TownsCRTC::Layer &layer,const unsigned char 
 		unsigned char *dstLine=rgba.data()+4*(Y*this->wid+X);
 		auto dst=dstLine;
 
-		unsigned int inLineVRAMOffset=0;
+		unsigned int inLineVRAMOffset=layer.VRAMHSkipBytes;
 		int ZHswitch=0;
 		auto ZH=ZHsrc[ZHswitch];
 		for(int x=0; x<layer.sizeOnMonitor.x() && x+layer.originOnMonitor.x()<this->wid && inLineVRAMOffset<layer.bytesPerLine; x++)
