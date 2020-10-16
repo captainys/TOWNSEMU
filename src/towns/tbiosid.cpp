@@ -827,6 +827,14 @@ bool FMTowns::GetMouseCoordinate(int &mx,int &my,unsigned int tbiosid) const
 				debugger.stop=debugStop;
 			}
 			return true;
+		case TOWNS_APPSPECIFIC_AMARANTH3:
+			{
+				auto debugStop=debugger.stop; // FetchWord may break due to MEMR.
+				mx=(int)mem.FetchWord(0x248f0+0x40);
+				my=(int)mem.FetchWord(0x248f0+0x42);
+				debugger.stop=debugStop;
+			}
+			return true;
 		}
 	}
 	return false;
