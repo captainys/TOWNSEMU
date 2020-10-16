@@ -857,8 +857,8 @@ bool FMTowns::GetMouseCoordinate(int &mx,int &my,unsigned int tbiosid) const
 					   signature[1]==mem.FetchDword(addr+0x452))
 					{
 						auto debugStop=debugger.stop; // FetchWord may break due to MEMR.
-						mx=(int)mem.FetchWord(addr+0x44E+physAddrOffset);
-						my=(int)mem.FetchWord(addr+0x44E+physAddrOffset+2);
+						mx=(int)mem.FetchWord(int(addr+0x44E)+physAddrOffset);
+						my=(int)mem.FetchWord(int(addr+0x44E)+physAddrOffset+2);
 						debugger.stop=debugStop;
 						return true;
 					}
