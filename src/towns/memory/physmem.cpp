@@ -112,7 +112,7 @@ void TownsPhysicalMemory::State::Reset(void)
 		FMRVRAMAccess.crtcPtr->MEMIOWriteFMRVRAMDisplayMode(data);
 		break;
 	case TOWNSIO_FMR_VRAMPAGESEL:
-		state.FMRVRAMWriteOffset=(0!=(data&0x10) ? 0x40000 : 0);
+		state.FMRVRAMWriteOffset=(0!=(data&0x10) ? 0x20000 : 0);
 		break;
 
 	case TOWNSIO_VRAMACCESSCTRL_ADDR: //      0x458, // [2] pp.17,pp.112
