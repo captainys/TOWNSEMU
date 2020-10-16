@@ -548,10 +548,11 @@ unsigned int DiscImage::OpenISO(const std::string &fName)
 
 	auto fSize=end-begin;
 
-	if(0!=fSize%2048)
-	{
-		return ERROR_SECTOR_SIZE;
-	}
+	fSize&=(~2047); // Some image-generation tools adds extra bytes that need to be ignored.
+	// if(0!=fSize%2048)
+	// {
+	// 	return ERROR_SECTOR_SIZE;
+	// }
 
 	CleanUp();
 
