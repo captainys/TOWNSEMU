@@ -180,6 +180,8 @@ void TownsARGV::PrintApplicationList(void) const
 	std::cout << "  Mouse integration." << std::endl;
 	std::cout << "AMARANTH3" << std::endl;
 	std::cout << "  Mouse integration." << std::endl;
+	std::cout << "ULTIMAUNDERWORLD" << std::endl;
+	std::cout << "  Mouse integration." << std::endl;
 }
 
 bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])

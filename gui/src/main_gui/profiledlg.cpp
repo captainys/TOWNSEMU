@@ -312,6 +312,7 @@ void ProfileDialog::Make(void)
 		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_LEMMINGS2).c_str(),YSFALSE);
 		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_STRIKECOMMANDER).c_str(),YSFALSE);
 		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_SUPERDAISEN).c_str(),YSFALSE);
+		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_ULTIMAUNDERWORLD).c_str(),YSFALSE);
 		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_WINGCOMMANDER1).c_str(),YSFALSE);
 		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_WINGCOMMANDER2).c_str(),YSFALSE);
 

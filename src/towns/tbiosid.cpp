@@ -316,6 +316,19 @@ void FMTowns::OnCRTC_HST_Write(void)
 				std::cout << "  MousePointerY Physical Base=" << cpputil::Uitox(state.appSpecific_MousePtrY) << std::endl;
 			}
 			break;
+		case TOWNS_APPSPECIFIC_ULTIMAUNDERWORLD:
+			{
+				i486DX::SegmentRegister DS;
+				unsigned int exceptionType,exceptionCode;
+				cpu.DebugLoadSegmentRegister(DS,0x014,mem,false);
+
+				state.appSpecific_MousePtrX=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x55CDC,mem);
+				state.appSpecific_MousePtrY=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x55CDE,mem);
+
+				std::cout << "  MousePointerX Physical Base=" << cpputil::Uitox(state.appSpecific_MousePtrX) << std::endl;
+				std::cout << "  MousePointerY Physical Base=" << cpputil::Uitox(state.appSpecific_MousePtrY) << std::endl;
+			}
+			break;
 		}
 	}
 }
@@ -681,7 +694,8 @@ void FMTowns::SetMouseMotion(int port,int dx,int dy)
 
 bool FMTowns::GetMouseCoordinate(int &mx,int &my,unsigned int tbiosid) const
 {
-	if(true==state.mouseBIOSActive)
+	if(true==state.mouseBIOSActive &&
+	   TOWNS_APPSPECIFIC_ULTIMAUNDERWORLD!=state.appSpecificSetting)
 	{
 		switch(tbiosid)
 		{
@@ -771,6 +785,14 @@ bool FMTowns::GetMouseCoordinate(int &mx,int &my,unsigned int tbiosid) const
 	{
 		switch(state.appSpecificSetting)
 		{
+		case TOWNS_APPSPECIFIC_ULTIMAUNDERWORLD:
+			{
+				auto debugStop=debugger.stop; // FetchWord may break due to MEMR.
+				mx=(int)mem.FetchWord(state.appSpecific_MousePtrX);
+				my=399-(int)mem.FetchWord(state.appSpecific_MousePtrY)*2;
+				debugger.stop=debugStop;
+			}
+			return true;
 		case TOWNS_APPSPECIFIC_WINGCOMMANDER1:
 			{
 				auto debugStop=debugger.stop; // FetchWord may break due to MEMR.
