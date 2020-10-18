@@ -612,6 +612,7 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 	/* FM Towns 2F did not show any effect on disp bits.
 	   Function of these bits are supposed to be turn on/off VRAM bit planes.
 	   However, actual effect is unknown.
+       -> Earlier test program was wrong.  These bits works as a mask in 4-bit color mode.
 	*/
 	state.FMRGVRAMDisplayPlanes=disp;
 

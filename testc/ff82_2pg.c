@@ -107,7 +107,7 @@ int main(int ac,char *av[])
 
 	Print(0);
 
-	unsigned int FMRDisplayPage=0x10;
+	unsigned int FMRDisplayPage=0x00;
 	unsigned int FMRPlaneMask=0x27;
 	for(;;)
 	{
@@ -127,23 +127,23 @@ int main(int ac,char *av[])
 		}
 		if(0x20!=(pad&0x20)) // Button B
 		{
+			FMRPlaneMask^=0x03;
 			int write=FMRDisplayPage|FMRPlaneMask;
-			FMRDisplayPage^=0x03;
 			IOWriteByte(0xFF82,write);
 			WaitPadRelease();
 		}
 
 		if(0x1!=(pad&0x1)) // Down
 		{
-			int write=0x40|FMRDisplayPage|FMRPlaneMask;
 			FMRDisplayPage^=0x10;
+			int write=0x40|FMRDisplayPage|FMRPlaneMask;
 			IOWriteByte(0xFF82,write);
 			WaitPadRelease();
 		}
 		if(0x2!=(pad&0x2)) // Up
 		{
+			FMRPlaneMask^=0x03;
 			int write=0x40|FMRDisplayPage|FMRPlaneMask;
-			FMRDisplayPage^=0x03;
 			IOWriteByte(0xFF82,write);
 			WaitPadRelease();
 		}
