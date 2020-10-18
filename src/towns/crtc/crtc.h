@@ -289,12 +289,21 @@ public:
 	*/
 	bool InSinglePageMode(void) const;
 
-	/*! This function is needed because TBIOS function AH=06H ends up writing to I/O FF82H.
-	    I have no idea why it does that.  But, writing to I/O FF82H affects the VRAM offset.
-	    However, it should be disregarded unless CRTC is in FM-R compatible mode, which is
-	    640x400 16-color mode.
-	    To emulate this behavior, this function is needed.
-	    Currently, it returns true if the visible size on the monitor is 640x400, 2-layers, and 16-colors.
+	/*!
+	    This function was initially for I/O FF82H, FM-R compatible mode display page and bit masks.
+	    FF82H was supposed to be used only in the FM-R compatible mode, therefore EGB is not supposed
+	    to have nay business with this I/O.
+	    However, TBIOS EGB function AH=06 writes 27H.
+
+	    One possibility is that I/O-write to FF82 should be disregarded if CRTC is not in the FM-R
+	    compatible mode.  This function was initially made for that purpose.
+
+	    However, another possibility is bit 6 of FF82 controls if VRAM offset should be controlled by
+	    bit 4.  [2] tells that bit 6 must always be 1.  However, EGB is writing 27H.  Bit 6 is 0.
+
+	    Since TBIOS is writing 27H to FF82H, bit 6 looks to have an unpublished functionality.
+
+	    It returns true if the visible size on the monitor is 640x400, 2-layers, and 16-colors.
 	*/
 	bool IsInFMRCompatibleMode(void) const;
 

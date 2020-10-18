@@ -68,7 +68,7 @@ build\runtest.exp : build\io.obj build\vmif.obj build\runtest.OBJ build\f6f7.OBJ
 build\keyio.obj : keyboard\keyio.asm
 	386asm keyboard\keyio.asm -OBJECT build\keyio.obj
 
-build\keytest.c : keyboard\keytest.c
+build\keytest.obj : keyboard\keytest.c
 	hcd386 keyboard\keytest.c -obj build\keytest.obj
 
 build\keytest.exp : build\keyio.obj build\keytest.obj
@@ -97,6 +97,20 @@ build\captcrtc.obj : captcrtc.c io.h vmif.h
 
 build\captcrtc.exp : build\captcrtc.obj build\io.obj build\vmif.obj
 	386link build\captcrtc.obj build\io.obj -lib C:\hc386\small\hce.lib -lib C:\hc386\townslib\lib\tbios.lib -exe build\captcrtc.exp
+
+
+
+build\ff82_1pg.obj : ff82_1pg.c io.h vmif.h
+	hcd386 ff82_1pg.c -obj build\ff82_1pg.obj
+
+build\ff82_1pg.exp : build\ff82_1pg.obj build\vmif.obj
+	386link build\ff82_1pg.obj -lib C:\hc386\small\hce.lib -exe build\ff82_1pg.exp @LIBS.LN
+
+build\ff82_2pg.obj : ff82_2pg.c io.h vmif.h
+	hcd386 ff82_2pg.c -obj build\ff82_2pg.obj
+
+build\ff82_2pg.exp : build\ff82_2pg.obj build\vmif.obj
+	386link build\ff82_2pg.obj -lib C:\hc386\small\hce.lib -exe build\ff82_2pg.exp @LIBS.LN
 
 
 

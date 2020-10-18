@@ -340,7 +340,8 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 			break;
 		case TOWNSMEMIO_FMR_GVRAMDISPMODE://  0x000CFF82, // [2] pp.22,pp.158
 			crtcPtr->MEMIOWriteFMRVRAMDisplayMode(data);
-			if(true==crtcPtr->IsInFMRCompatibleMode())
+			// if(true==crtcPtr->IsInFMRCompatibleMode()) <- One possibility
+			if(0!=(data&0x40)) // <- Another possibility
 			{
 				townsPtr->crtc.state.crtcReg[TownsCRTC::REG_FA0]=(((unsigned int)(data&0x10))<<11);// 0x8000 or 0
 			}
