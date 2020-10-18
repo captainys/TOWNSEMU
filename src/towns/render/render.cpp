@@ -145,7 +145,7 @@ void TownsRender::Render4Bit(
 	{
 		for(int y=0; y<layer.sizeOnMonitor.y(); ++y)
 		{
-			const unsigned char *src=VRAM.data()+VRAMAddr+((layer.VRAMOffset+layer.bytesPerLine*y)&layer.VScrollMask);
+			const unsigned char *src=VRAM.data()+VRAMAddr+((layer.VRAMOffset+layer.FMRVRAMOffset+layer.bytesPerLine*y)&layer.VScrollMask);
 			unsigned char *dst=rgba.data()+4*y*this->wid;
 			for(int x=0; x<layer.sizeOnMonitor.x(); x+=2)
 			{
@@ -178,7 +178,7 @@ void TownsRender::Render4Bit(
 		auto ZV0=layer.zoom2x.y()/2;
 		auto ZV=ZV0;
 		const int ZH[2]={layer.zoom2x.x()/2,(layer.zoom2x.x()+1)/2};  // For x.5 times zoom rate.
-		int bytesPerLineTimesVRAMy=layer.VRAMOffset;
+		int bytesPerLineTimesVRAMy=layer.VRAMOffset+layer.FMRVRAMOffset;
 		auto VRAMTop=VRAM+VRAMAddr+layer.VRAMHSkipBytes;
 
 		// yStep should be 1 if transparent.
@@ -190,7 +190,7 @@ void TownsRender::Render4Bit(
 			const int Y=y+layer.originOnMonitor.y();
 			const int X=  layer.originOnMonitor.x();
 			unsigned int VRAMAddr=(bytesPerLineTimesVRAMy&layer.VScrollMask);
-			OFFSETTRANS::Trans(VRAMAddr,layer.FMRVRAMOffset);
+			OFFSETTRANS::Trans(VRAMAddr);
 			const unsigned char *src=VRAMTop+VRAMAddr;
 			unsigned char *dstLine=rgba.data()+4*(Y*this->wid+X);
 			auto dst=dstLine;
@@ -266,7 +266,7 @@ void TownsRender::Render4Bit(
 
 		auto ZV=layer.zoom2x.y()/2;
 		const int ZH[2]={layer.zoom2x.x()/2,(layer.zoom2x.x()+1)/2};  // For x.5 times zoom rate.
-		int bytesPerLineTimesVRAMy=layer.VRAMOffset;
+		int bytesPerLineTimesVRAMy=layer.VRAMOffset+layer.FMRVRAMOffset;
 		auto VRAMTop=VRAM+VRAMAddr+layer.VRAMHSkipBytes;
 
 		auto bottomY=this->hei-ZV;
@@ -297,7 +297,7 @@ void TownsRender::Render4Bit(
 			}
 
 			unsigned int VRAMAddr=(bytesPerLineTimesVRAMy&layer.VScrollMask);
-			OFFSETTRANS::Trans(VRAMAddr,layer.FMRVRAMOffset);
+			OFFSETTRANS::Trans(VRAMAddr);
 			const unsigned char *src=VRAMTop+VRAMAddr;
 			unsigned char *dstLine=rgba.data()+4*(Y*this->wid+X);
 			auto dst=dstLine;
@@ -346,8 +346,8 @@ template <class OFFSETTRANS>
 void TownsRender::Render8Bit(const TownsCRTC::Layer &layer,const Vec3ub palette[256],const unsigned char VRAM[],bool transparent)
 {
 	unsigned int VRAMBase=layer.VRAMAddr;
-	unsigned int VRAMOffsetVertical=layer.VRAMOffset&~layer.HScrollMask;
-	unsigned int VRAMOffsetHorizontal=layer.VRAMOffset&layer.HScrollMask;
+	unsigned int VRAMOffsetVertical=(layer.VRAMOffset+layer.FMRVRAMOffset)&~layer.HScrollMask;
+	unsigned int VRAMOffsetHorizontal=(layer.VRAMOffset+layer.FMRVRAMOffset)&layer.HScrollMask;
 	const unsigned int VRAMHScrollMask=layer.HScrollMask;
 	const unsigned int VRAMVScrollMask=layer.VScrollMask;
 	unsigned int lineVRAMOffset=0;
@@ -369,7 +369,7 @@ void TownsRender::Render8Bit(const TownsCRTC::Layer &layer,const Vec3ub palette[
 		{
 			unsigned int VRAMAddr=lineVRAMOffset+((inLineVRAMOffset+VRAMOffsetHorizontal)&VRAMHScrollMask);
 			VRAMAddr=VRAMBase+((VRAMAddr+VRAMOffsetVertical)&VRAMVScrollMask);
-			OFFSETTRANS::Trans(VRAMAddr,layer.FMRVRAMOffset);
+			OFFSETTRANS::Trans(VRAMAddr);
 
 			unsigned char col8=VRAM[VRAMAddr];
 			if(true!=transparent || 0!=col8)
@@ -402,8 +402,8 @@ template <class OFFSETTRANS>
 void TownsRender::Render16Bit(const TownsCRTC::Layer &layer,const unsigned char VRAM[],bool transparent)
 {
 	unsigned int VRAMBase=layer.VRAMAddr;
-	unsigned int VRAMOffsetVertical=layer.VRAMOffset&~layer.HScrollMask;
-	unsigned int VRAMOffsetHorizontal=layer.VRAMOffset&layer.HScrollMask;
+	unsigned int VRAMOffsetVertical=(layer.VRAMOffset+layer.FMRVRAMOffset)&~layer.HScrollMask;
+	unsigned int VRAMOffsetHorizontal=(layer.VRAMOffset+layer.FMRVRAMOffset)&layer.HScrollMask;
 	const unsigned int VRAMHScrollMask=layer.HScrollMask;
 	const unsigned int VRAMVScrollMask=layer.VScrollMask;
 	unsigned int lineVRAMOffset=0;
@@ -429,7 +429,7 @@ void TownsRender::Render16Bit(const TownsCRTC::Layer &layer,const unsigned char 
 		{
 			unsigned int VRAMAddr=lineVRAMOffset+((inLineVRAMOffset+VRAMOffsetHorizontal)&VRAMHScrollMask);
 			VRAMAddr=VRAMBase+((VRAMAddr+VRAMOffsetVertical)&VRAMVScrollMask);
-			OFFSETTRANS::Trans(VRAMAddr,layer.FMRVRAMOffset);
+			OFFSETTRANS::Trans(VRAMAddr);
 
 			unsigned short col16=cpputil::GetWord(VRAM+VRAMAddr);
 			if(true!=transparent || 0==(col16&0x8000))

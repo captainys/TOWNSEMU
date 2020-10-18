@@ -164,6 +164,16 @@ public:
 		AnalogPalette palette;
 
 		unsigned int FMRGVRAMDisplayPlanes=0x0F;
+
+		// FM-R VRAM Offset is not emulated correctly in the single-page mode.
+		// The offset apparently is applied to the VRAM address between CRTC and VRAM,
+		// and applied only if the VRAM address is between 00000H and 20000H
+		// (first half of layer 0 in the 2-page mode).
+		// However, in the single-page mode, in which CRTC reads VRAM staggered way,
+		// the output will be staggered.
+		// Using this bit in non-FMR mode (Screen Mode 4 X Screen Mode 1) is undefined,
+		// and the behavior may be different in other FM Towns models.
+		// No FM Towns application that is using this staggered effect has been confirmed.
 		uint32_t FMRVRAMOffset;
 		bool showPageFDA0[2];
 		bool showPage0448[2];
