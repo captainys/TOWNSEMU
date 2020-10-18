@@ -54,7 +54,7 @@ void WaitPadRelease(void)
 	}
 }
 
-void Print(unsigned int byteWrite)
+void Print(unsigned int byte)
 {
 	int y;
 	for(y=0; y<800; y+=16)
@@ -66,7 +66,7 @@ void Print(unsigned int byteWrite)
 		} p;
 		p.x=32;
 		p.y=y+15;
-		sprintf(p.str,"%02x %d",byteWrite,y);
+		sprintf(p.str,"%02x %d",byte,y);
 		p.len=strlen(p.str);
 		EGB_sjisString(EGB_work,&p);
 	}
@@ -123,7 +123,6 @@ int main(int ac,char *av[])
 			int write=FMRDisplayPage|FMRPlaneMask;
 			FMRDisplayPage^=0x10;
 			IOWriteByte(0xFF82,write);
-			Print(write);
 			WaitPadRelease();
 		}
 		if(0x20!=(pad&0x20)) // Button B
@@ -131,7 +130,6 @@ int main(int ac,char *av[])
 			int write=FMRDisplayPage|FMRPlaneMask;
 			FMRDisplayPage^=0x03;
 			IOWriteByte(0xFF82,write);
-			Print(write);
 			WaitPadRelease();
 		}
 
@@ -140,7 +138,6 @@ int main(int ac,char *av[])
 			int write=0x40|FMRDisplayPage|FMRPlaneMask;
 			FMRDisplayPage^=0x10;
 			IOWriteByte(0xFF82,write);
-			Print(write);
 			WaitPadRelease();
 		}
 		if(0x2!=(pad&0x2)) // Up
@@ -148,7 +145,6 @@ int main(int ac,char *av[])
 			int write=0x40|FMRDisplayPage|FMRPlaneMask;
 			FMRDisplayPage^=0x03;
 			IOWriteByte(0xFF82,write);
-			Print(write);
 			WaitPadRelease();
 		}
 	}

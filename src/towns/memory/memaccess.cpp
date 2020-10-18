@@ -349,7 +349,7 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 			// uses screen layer0 for graphics and layer1 for text.  So, 'page' and 'layer' are
 			// different.
 			// Credit to Artane.!  Thanks!
-			physMemPtr->state.FMRVRAMWriteOffset=(0!=(data&0x10) ? 0x20000 : 0);
+			physMemPtr->state.FMRVRAMWriteOffset=(0!=(data&0x10) ? TOWNS_FMRMODE_VRAM_OFFSET : 0);
 			break;
 
 		case TOWNSMEMIO_FIRQ://               0x000CFF84, // [2] pp.22,pp.95 Always zero in FM TOWNS

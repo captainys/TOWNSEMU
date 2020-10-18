@@ -190,7 +190,7 @@ void TownsRender::Render4Bit(
 			const int Y=y+layer.originOnMonitor.y();
 			const int X=  layer.originOnMonitor.x();
 			unsigned int VRAMAddr=(bytesPerLineTimesVRAMy&layer.VScrollMask);
-			OFFSETTRANS::Trans(VRAMAddr);
+			OFFSETTRANS::Trans(VRAMAddr,layer.FMRVRAMOffset);
 			const unsigned char *src=VRAMTop+VRAMAddr;
 			unsigned char *dstLine=rgba.data()+4*(Y*this->wid+X);
 			auto dst=dstLine;
@@ -297,7 +297,7 @@ void TownsRender::Render4Bit(
 			}
 
 			unsigned int VRAMAddr=(bytesPerLineTimesVRAMy&layer.VScrollMask);
-			OFFSETTRANS::Trans(VRAMAddr);
+			OFFSETTRANS::Trans(VRAMAddr,layer.FMRVRAMOffset);
 			const unsigned char *src=VRAMTop+VRAMAddr;
 			unsigned char *dstLine=rgba.data()+4*(Y*this->wid+X);
 			auto dst=dstLine;
@@ -369,7 +369,7 @@ void TownsRender::Render8Bit(const TownsCRTC::Layer &layer,const Vec3ub palette[
 		{
 			unsigned int VRAMAddr=lineVRAMOffset+((inLineVRAMOffset+VRAMOffsetHorizontal)&VRAMHScrollMask);
 			VRAMAddr=VRAMBase+((VRAMAddr+VRAMOffsetVertical)&VRAMVScrollMask);
-			OFFSETTRANS::Trans(VRAMAddr);
+			OFFSETTRANS::Trans(VRAMAddr,layer.FMRVRAMOffset);
 
 			unsigned char col8=VRAM[VRAMAddr];
 			if(true!=transparent || 0!=col8)
@@ -429,7 +429,7 @@ void TownsRender::Render16Bit(const TownsCRTC::Layer &layer,const unsigned char 
 		{
 			unsigned int VRAMAddr=lineVRAMOffset+((inLineVRAMOffset+VRAMOffsetHorizontal)&VRAMHScrollMask);
 			VRAMAddr=VRAMBase+((VRAMAddr+VRAMOffsetVertical)&VRAMVScrollMask);
-			OFFSETTRANS::Trans(VRAMAddr);
+			OFFSETTRANS::Trans(VRAMAddr,layer.FMRVRAMOffset);
 
 			unsigned short col16=cpputil::GetWord(VRAM+VRAMAddr);
 			if(true!=transparent || 0==(col16&0x8000))
