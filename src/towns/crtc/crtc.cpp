@@ -206,8 +206,8 @@ void TownsCRTC::State::Reset(void)
 	}
 	mxVideoOutCtrlAddrLatch=0;
 
-	FMRVRAMDisplayMode[0]=0x0F;
-	FMRVRAMDisplayMode[1]=0x0F;
+	FMRGVRAMDisplayPlanes=0x0F;
+	FMRVRAMOffset=0;
 
 	showPageFDA0[0]=true;
 	showPageFDA0[1]=true;
@@ -579,6 +579,7 @@ void TownsCRTC::MakePageLayerInfo(Layer &layer,unsigned char page) const
 	layer.zoom2x=GetPageZoom2X(page);
 	layer.VRAMAddr=0x40000*page;
 	layer.VRAMOffset=GetPageVRAMAddressOffset(page);
+	layer.FMRVRAMOffset=(0==page ? state.FMRVRAMOffset : 0); // Can be applied only to layer 0 in two-layer mode, or in the single-page mode.  Either way page==0.
 	layer.bytesPerLine=GetPageBytesPerLine(page);
 
 	// VRAMSkipBytes looks to depend on raw zoom factor.
@@ -607,7 +608,22 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 {
 	auto disp=((data>>2)&8)|(data&7);
 	auto page=((data>>4)&1);
-	state.FMRVRAMDisplayMode[page]=disp;
+
+	/* FM Towns 2F did not show any effect on disp bits.
+	   Function of these bits are supposed to be turn on/off VRAM bit planes.
+	   However, actual effect is unknown.
+	*/
+	state.FMRGVRAMDisplayPlanes=disp;
+
+	/* Test on FM Towns 2F indicated that FM-R Page switching is done by an additional address offsetting between CRTC and VRAM.
+	   The offset is applied only to 80000000H to 8004000H.  Since the single-page mode references the VRAM staggered,
+	   image will be broken staggered way if this additional offset is applied in the single-page mode.
+	   However, no FM Towns application that uses this staggered effect has been confirmed.
+
+	   Also, [2] tells bit 6 needs to be 1 always.  However, TBIOS AH=06 writes 27H to this register.  Obviously bit 6 is off.
+	   FM Towns 2F showed no different behavior if bit 6 is 0.
+	*/
+	state.FMRVRAMOffset=(0==(data&0x10) ? 0 : TOWNS_FMRMODE_VRAM_OFFSET);
 }
 
 /* virtual */ void TownsCRTC::IOWriteByte(unsigned int ioport,unsigned int data)
@@ -1148,7 +1164,7 @@ std::vector <std::string> TownsCRTC::GetStatusText(void) const
 	text.back()+=cpputil::Itoa(state.sifter[0]&3)+" "+cpputil::Itoa((state.sifter[0]>>2)&3);
 
 	text.push_back("");
-	text.back()+="FMR VRAM Display Mode:"+cpputil::Ubtox(state.FMRVRAMDisplayMode[0])+" "+cpputil::Ubtox(state.FMRVRAMDisplayMode[1]);
+	text.back()+="FMR VRAM Display Planes:"+cpputil::Ubtox(state.FMRGVRAMDisplayPlanes);
 
 	return text;
 }

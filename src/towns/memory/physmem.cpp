@@ -110,11 +110,6 @@ void TownsPhysicalMemory::State::Reset(void)
 		break;
 	case TOWNSIO_FMR_VRAMDISPLAYMODE: // 0xFF82
 		FMRVRAMAccess.crtcPtr->MEMIOWriteFMRVRAMDisplayMode(data);
-		// if(true==FMRVRAMAccess.crtcPtr->IsInFMRCompatibleMode())  <- One possibility
-		if(0!=(data&0x40)) // <- Another possibility
-		{
-			FMRVRAMAccess.crtcPtr->state.crtcReg[TownsCRTC::REG_FA0]=(((unsigned int)(data&0x10))<<11);// 0x8000 or 0
-		}
 		break;
 	case TOWNSIO_FMR_VRAMPAGESEL:
 		state.FMRVRAMWriteOffset=(0!=(data&0x10) ? 0x20000 : 0);

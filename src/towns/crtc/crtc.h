@@ -101,6 +101,7 @@ public:
 		unsigned bitsPerPixel;
 		unsigned int VRAMAddr;
 		unsigned int VRAMOffset;
+		unsigned int FMRVRAMOffset;
 		Vec2i originOnMonitor;
 		unsigned int VRAMHSkipBytes;
 		Vec2i sizeOnMonitor;
@@ -162,7 +163,8 @@ public:
 
 		AnalogPalette palette;
 
-		unsigned int FMRVRAMDisplayMode[2]={0x77,0x77};
+		unsigned int FMRGVRAMDisplayPlanes=0x0F;
+		uint32_t FMRVRAMOffset;
 		bool showPageFDA0[2];
 		bool showPage0448[2];
 

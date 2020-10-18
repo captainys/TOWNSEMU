@@ -89,6 +89,12 @@ enum
 	TOWNSDMA_CDROM=3
 };
 
+/*! Test of I/O FF82H behavior on FM Towns 2F indicated that the FM-R mode VRAM offset for Page 1
+    is not 0x20000.  It seems to be off by 13 and half lines.
+    However, so far no FM Towns applications actually using this offset has been confirmed.
+*/
+#define TOWNS_FMRMODE_VRAM_OFFSET         0x20000
+
 #define TOWNSADDR_FMR_VRAM_BASE           0xC0000
 #define TOWNSADDR_FMR_VRAM_END            0xC8000
 
