@@ -340,7 +340,10 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 			break;
 		case TOWNSMEMIO_FMR_GVRAMDISPMODE://  0x000CFF82, // [2] pp.22,pp.158
 			crtcPtr->MEMIOWriteFMRVRAMDisplayMode(data);
-			townsPtr->crtc.state.crtcReg[TownsCRTC::REG_FA0]=(((unsigned int)(data&0x10))<<11);// 0x8000 or 0
+			if(true==crtcPtr->IsInFMRCompatibleMode())
+			{
+				townsPtr->crtc.state.crtcReg[TownsCRTC::REG_FA0]=(((unsigned int)(data&0x10))<<11);// 0x8000 or 0
+			}
 			break;
 		case TOWNSMEMIO_FMR_GVRAMPAGESEL://   0x000CFF83, // [2] pp.22,pp.159
 			// Looks like I was interpreting the definition of FM-R Graphics VRAM 'PAGE' wrong.

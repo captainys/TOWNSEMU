@@ -316,6 +316,32 @@ uint32_t TownsCRTC::GetEffectiveVRAMSize(void) const
 	return 512*1024;
 }
 
+bool TownsCRTC::IsInFMRCompatibleMode(void) const
+{
+	if(true==InSinglePageMode())
+	{
+		return false;
+	}
+
+	auto pageSize=GetPageSizeOnMonitor(0);
+	if(640!=pageSize.x() || 400!=pageSize.y())
+	{
+		return false;
+	}
+	pageSize=GetPageSizeOnMonitor(1);
+	if(640!=pageSize.x() || 400!=pageSize.y())
+	{
+		return false;
+	}
+
+	if(4!=GetPageBitsPerPixel(0) || 4!=GetPageBitsPerPixel(1))
+	{
+		return false;
+	}
+
+	return true;
+}
+
 unsigned int TownsCRTC::GetBaseClockFreq(void) const
 {
 	auto CLKSEL=state.crtcReg[REG_CR1]&3;

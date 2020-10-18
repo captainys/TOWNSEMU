@@ -289,6 +289,15 @@ public:
 	*/
 	bool InSinglePageMode(void) const;
 
+	/*! This function is needed because TBIOS function AH=06H ends up writing to I/O FF82H.
+	    I have no idea why it does that.  But, writing to I/O FF82H affects the VRAM offset.
+	    However, it should be disregarded unless CRTC is in FM-R compatible mode, which is
+	    640x400 16-color mode.
+	    To emulate this behavior, this function is needed.
+	    Currently, it returns true if the visible size on the monitor is 640x400, 2-layers, and 16-colors.
+	*/
+	bool IsInFMRCompatibleMode(void) const;
+
 	unsigned int GetBaseClockFreq(void) const;
 	unsigned int GetBaseClockScaler(void) const;
 
