@@ -580,6 +580,7 @@ void TownsCRTC::MakePageLayerInfo(Layer &layer,unsigned char page) const
 	layer.VRAMAddr=0x40000*page;
 	layer.VRAMOffset=GetPageVRAMAddressOffset(page);
 	layer.FMRVRAMOffset=(0==page ? state.FMRVRAMOffset : 0); // Can be applied only to layer 0 in two-layer mode, or in the single-page mode.  Either way page==0.
+	layer.FMRGVRAMMask=(0==page ? state.FMRGVRAMDisplayPlanes : 0x0F); // GVRAM Planes works as a mask in 4-bit color mode for VRAM layer 0 only.
 	layer.bytesPerLine=GetPageBytesPerLine(page);
 
 	// VRAMSkipBytes looks to depend on raw zoom factor.

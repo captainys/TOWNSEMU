@@ -102,6 +102,7 @@ public:
 		unsigned int VRAMAddr;
 		unsigned int VRAMOffset;
 		unsigned int FMRVRAMOffset;
+		unsigned int FMRGVRAMMask;
 		Vec2i originOnMonitor;
 		unsigned int VRAMHSkipBytes;
 		Vec2i sizeOnMonitor;

@@ -173,6 +173,9 @@ void TownsRender::Render4Bit(
 	}
 	else */
 
+	unsigned int pixelMask=(layer.FMRGVRAMMask&0x0F);
+	pixelMask|=(pixelMask<<4);
+
 	if(47!=chaseHQPalette.lastPaletteUpdateCount) // ChaseHQ updates palette 47 times between VSYNC
 	{
 		auto ZV0=layer.zoom2x.y()/2;
@@ -196,7 +199,7 @@ void TownsRender::Render4Bit(
 			auto dst=dstLine;
 			for(int x=0; x<layer.sizeOnMonitor.x() && x+layer.originOnMonitor.x()<this->wid; x+=(ZH[0]+ZH[1]))
 			{
-				unsigned char vrambyte=*src;
+				unsigned char vrambyte=((*src)&pixelMask);
 				unsigned char pix=(vrambyte&0x0f);
 				for(int i=0; i<ZH[0]; ++i)
 				{
@@ -303,7 +306,7 @@ void TownsRender::Render4Bit(
 			auto dst=dstLine;
 			for(int x=0; x<layer.sizeOnMonitor.x() && x+layer.originOnMonitor.x()<this->wid; x+=(ZH[0]+ZH[1]))
 			{
-				unsigned char vrambyte=*src;
+				unsigned char vrambyte=((*src)&pixelMask);
 				unsigned char pix=(vrambyte&0x0f);
 				for(int i=0; i<ZH[0]; ++i)
 				{
