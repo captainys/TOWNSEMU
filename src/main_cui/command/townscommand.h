@@ -200,6 +200,7 @@ public:
 		DUMP_MOUSE,
 		DUMP_YM2612_LOG,
 		DUMP_DOS_INFO,
+		DUMP_MEMORY_FILTER,
 	};
 
 	enum

@@ -195,6 +195,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	dumpableMap["YM2612LOG"]=DUMP_YM2612_LOG;
 	dumpableMap["SEGREG"]=DUMP_SEGMENT_REGISTER_DETAILS;
 	dumpableMap["DOS"]=DUMP_DOS_INFO;
+	dumpableMap["MEMFILTER"]=DUMP_MEMORY_FILTER;
 
 
 
@@ -502,6 +503,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  YM2612 register-write log." << std::endl;
 	std::cout << "FMCH 0/1 0/1 0/1 0/1 0/1 0/1" << std::endl;
 	std::cout << "  Mute/Unmute YM2612 channels." << std::endl;
+	std::cout << "MEMFILTER" << std::endl;
+	std::cout << "  Memory filter addresses." << std::endl;
 
 	std::cout << "" << std::endl;
 
@@ -1509,6 +1512,24 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 		case DUMP_DOS_INFO:
 			{
 				Execute_Dump_DOSInfo(towns,cmd);
+			}
+			break;
+		case DUMP_MEMORY_FILTER:
+			{
+				const int counter0=256;
+				int counter=counter0;
+				for(auto addr : memFilter)
+				{
+					std::cout << "PHYS:" << cpputil::Uitox(addr) << std::endl;
+					if(0==--counter)
+					{
+						break;
+					}
+				}
+				if(0==counter)
+				{
+					std::cout << "Too many addresses in the filter.  Stopping at " << counter0 << " counts." << std::endl;
+				}
 			}
 			break;
 		}
