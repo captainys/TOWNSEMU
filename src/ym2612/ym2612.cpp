@@ -39,8 +39,8 @@ void YM2612::Channel::Clear()
 	BLOCK=0;
 	FB=0;
 	CONNECT=0;
-	L=0;
-	R=0;
+	L=1;
+	R=1;
 	AMS=0;
 	PMS=0;
 	usingSlot=0;

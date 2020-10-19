@@ -40,7 +40,7 @@ def Run(argv):
 		os.path.join(MEMCARDDIR,"4MB.bin"),
 		"-CMOS",
 		"../testdata/CMOS.bin",
-		#"-DONTAUTOSAVECMOS",
+		"-DONTAUTOSAVECMOS",
 		#"-DEBUG",
 		#"-PAUSE",
 	]+argv).wait()
