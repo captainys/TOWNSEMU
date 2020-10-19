@@ -55,7 +55,7 @@ void RF5C68::Clear(void)
 	}
 	for(auto &ch : state.ch)
 	{
-		ch.ENV=0;
+		ch.ENV=255;
 		ch.PAN=0;
 		ch.ST=0;
 		ch.FD=0;
