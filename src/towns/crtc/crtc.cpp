@@ -200,11 +200,11 @@ void TownsCRTC::State::Reset(void)
 	}
 	sifterAddrLatch=0;
 
-	for(auto &d : mxVideoOutCtrl)
+	for(auto &d : highResCrtcReg)
 	{
 		d=0;
 	}
-	mxVideoOutCtrlAddrLatch=0;
+	highResCrtcRegAddrLatch=0;
 
 	FMRGVRAMDisplayPlanes=0x0F;
 	FMRVRAMOffset=0;
@@ -259,7 +259,6 @@ TownsCRTC::TownsCRTC(class FMTowns *ptr,TownsSprite *spritePtr) : Device(ptr)
 {
 	this->townsPtr=ptr;
 	this->spritePtr=spritePtr;
-	state.mxVideoOutCtrl.resize(0x10000);
 	state.Reset();
 
 	// Tentatively
@@ -708,34 +707,41 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 		break; // No write access;
 
 	case TOWNSIO_MX_IMGOUT_ADDR_LOW://  0x472,
-		state.mxVideoOutCtrlAddrLatch=((state.mxVideoOutCtrlAddrLatch&0xff00)|(data&0xff));
+		state.highResCrtcRegAddrLatch=((state.highResCrtcRegAddrLatch&0xff00)|(data&0xff));
 		break;
 	case TOWNSIO_MX_IMGOUT_ADDR_HIGH:// 0x473,
-		state.mxVideoOutCtrlAddrLatch=((state.mxVideoOutCtrlAddrLatch&0x00ff)|((data<<8)&0xff));
+		state.highResCrtcRegAddrLatch=((state.highResCrtcRegAddrLatch&0x00ff)|((data<<8)&0xff));
 		break;
-	case TOWNSIO_MX_IMGOUT_ADDR_D0://   0x474,
-		// std::cout << "MX-VIDOUTCONTROL8[" << cpputil::Ustox(state.mxVideoOutCtrlAddrLatch) << "H]=" << cpputil::Ubtox(data) << "H" << std::endl;
-		state.mxVideoOutCtrl[state.mxVideoOutCtrlAddrLatch]=data;
-		break;
-	case TOWNSIO_MX_IMGOUT_ADDR_D1://   0x475,
-		if(state.mxVideoOutCtrlAddrLatch+1<state.mxVideoOutCtrl.size())
+	case TOWNSIO_MX_IMGOUT_D0://   0x474,
+		// std::cout << "MX-VIDOUTCONTROL8[" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << "H]=" << cpputil::Ubtox(data) << "H" << std::endl;
+		if(state.highResCrtcRegAddrLatch<NUM_HIRES_CRTC_REGISTERS)
 		{
-			// std::cout << "MX-VIDOUTCONTROL8[" << cpputil::Ustox(state.mxVideoOutCtrlAddrLatch+1) << "H]=" << cpputil::Ubtox(data) << "H" << std::endl;
-			state.mxVideoOutCtrl[state.mxVideoOutCtrlAddrLatch+1]=data;
+			state.highResCrtcReg[state.highResCrtcRegAddrLatch]&=0xFFFFFF00;
+			state.highResCrtcReg[state.highResCrtcRegAddrLatch]|=(data&0xFF);
 		}
 		break;
-	case TOWNSIO_MX_IMGOUT_ADDR_D2://   0x476,
-		if(state.mxVideoOutCtrlAddrLatch+2<state.mxVideoOutCtrl.size())
+	case TOWNSIO_MX_IMGOUT_D1://   0x475,
+		if(state.highResCrtcRegAddrLatch<NUM_HIRES_CRTC_REGISTERS)
 		{
-			// std::cout << "MX-VIDOUTCONTROL8[" << cpputil::Ustox(state.mxVideoOutCtrlAddrLatch+2) << "H]=" << cpputil::Ubtox(data) << "H" << std::endl;
-			state.mxVideoOutCtrl[state.mxVideoOutCtrlAddrLatch+2]=data;
+			// std::cout << "MX-VIDOUTCONTROL8[" << cpputil::Ustox(state.highResCrtcRegAddrLatch+1) << "H]=" << cpputil::Ubtox(data) << "H" << std::endl;
+			state.highResCrtcReg[state.highResCrtcRegAddrLatch]&=0xFFFF00FF;
+			state.highResCrtcReg[state.highResCrtcRegAddrLatch]|=((data&0xFF)<<8);
 		}
 		break;
-	case TOWNSIO_MX_IMGOUT_ADDR_D3://   0x477,
-		if(state.mxVideoOutCtrlAddrLatch+3<state.mxVideoOutCtrl.size())
+	case TOWNSIO_MX_IMGOUT_D2://   0x476,
+		if(state.highResCrtcRegAddrLatch<NUM_HIRES_CRTC_REGISTERS)
 		{
-			// std::cout << "MX-VIDOUTCONTROL8[" << cpputil::Ustox(state.mxVideoOutCtrlAddrLatch+3) << "H]=" << cpputil::Ubtox(data) << "H" << std::endl;
-			state.mxVideoOutCtrl[state.mxVideoOutCtrlAddrLatch+3]=data;
+			// std::cout << "MX-VIDOUTCONTROL8[" << cpputil::Ustox(state.highResCrtcRegAddrLatch+2) << "H]=" << cpputil::Ubtox(data) << "H" << std::endl;
+			state.highResCrtcReg[state.highResCrtcRegAddrLatch]&=0xFF00FFFF;
+			state.highResCrtcReg[state.highResCrtcRegAddrLatch]|=((data&0xFF)<<16);
+		}
+		break;
+	case TOWNSIO_MX_IMGOUT_D3://   0x477,
+		if(state.highResCrtcRegAddrLatch<NUM_HIRES_CRTC_REGISTERS)
+		{
+			// std::cout << "MX-VIDOUTCONTROL8[" << cpputil::Ustox(state.highResCrtcRegAddrLatch+3) << "H]=" << cpputil::Ubtox(data) << "H" << std::endl;
+			state.highResCrtcReg[state.highResCrtcRegAddrLatch]&=0x00FFFFFF;
+			state.highResCrtcReg[state.highResCrtcRegAddrLatch]|=((data&0xFF)<<24);
 		}
 		break;
 	case TOWNSIO_HSYNC_VSYNC:  // 0xFDA0 Also CRT Output COntrol
@@ -787,12 +793,31 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 		break; // No write access;
 
 	case TOWNSIO_MX_IMGOUT_ADDR_LOW://  0x472,
-		state.mxVideoOutCtrlAddrLatch=(data&0xffff);
+		state.highResCrtcRegAddrLatch=(data&0xffff);
 		break;
-	case TOWNSIO_MX_IMGOUT_ADDR_D0://   0x474,
-		// std::cout << "MX-VIDOUTCONTROL16[" << cpputil::Ustox(state.mxVideoOutCtrlAddrLatch) << "H]=" << cpputil::Ustox(data) << "H" << std::endl;
-		state.mxVideoOutCtrl[state.mxVideoOutCtrlAddrLatch]=data;
-		state.mxVideoOutCtrl[state.mxVideoOutCtrlAddrLatch+1]=(data>>8)&255;
+	case TOWNSIO_MX_IMGOUT_D0://   0x474,
+		// std::cout << "MX-VIDOUTCONTROL16[" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << "H]=" << cpputil::Ustox(data) << "H" << std::endl;
+		if(state.highResCrtcRegAddrLatch<NUM_HIRES_CRTC_REGISTERS)
+		{
+			state.highResCrtcReg[state.highResCrtcRegAddrLatch]&=0xFFFF0000;
+			state.highResCrtcReg[state.highResCrtcRegAddrLatch]|=(data&0xFFFF);
+		}
+		break;
+	case TOWNSIO_MX_IMGOUT_D1://   0x475,
+		// std::cout << "MX-VIDOUTCONTROL16[" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << "H]=" << cpputil::Ustox(data) << "H" << std::endl;
+		if(state.highResCrtcRegAddrLatch<NUM_HIRES_CRTC_REGISTERS)
+		{
+			state.highResCrtcReg[state.highResCrtcRegAddrLatch]&=0xFF0000FF;
+			state.highResCrtcReg[state.highResCrtcRegAddrLatch]|=((data&0xFFFF)<<8);
+		}
+		break;
+	case TOWNSIO_MX_IMGOUT_D2://   0x476,
+		// std::cout << "MX-VIDOUTCONTROL16[" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << "H]=" << cpputil::Ustox(data) << "H" << std::endl;
+		if(state.highResCrtcRegAddrLatch<NUM_HIRES_CRTC_REGISTERS)
+		{
+			state.highResCrtcReg[state.highResCrtcRegAddrLatch]&=0x0000FFFF;
+			state.highResCrtcReg[state.highResCrtcRegAddrLatch]|=((data&0xFFFF)<<16);
+		}
 		break;
 	default:
 		Device::IOWriteWord(ioport,data); // Let it write twice.
@@ -804,12 +829,12 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 {
 	switch(ioport)
 	{
-	case TOWNSIO_MX_IMGOUT_ADDR_D0://   0x474,
-		// std::cout << "MX-VIDOUTCONTROL32[" << cpputil::Ustox(state.mxVideoOutCtrlAddrLatch) << "H]=" << cpputil::Uitox(data) << "H" << std::endl;
-		state.mxVideoOutCtrl[state.mxVideoOutCtrlAddrLatch]=data;
-		state.mxVideoOutCtrl[state.mxVideoOutCtrlAddrLatch+1]=(data>>8)&255;
-		state.mxVideoOutCtrl[state.mxVideoOutCtrlAddrLatch+2]=(data>>16)&255;
-		state.mxVideoOutCtrl[state.mxVideoOutCtrlAddrLatch+3]=(data>>24)&255;
+	case TOWNSIO_MX_IMGOUT_D0://   0x474,
+		// std::cout << "MX-VIDOUTCONTROL32[" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << "H]=" << cpputil::Uitox(data) << "H" << std::endl;
+		if(state.highResCrtcRegAddrLatch<NUM_HIRES_CRTC_REGISTERS)
+		{
+			state.highResCrtcReg[state.highResCrtcRegAddrLatch]=data;
+		}
 		break;
 
 	case TOWNSIO_ANALOGPALETTE_CODE://=  0xFD90,
@@ -938,26 +963,26 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 		break;
 
 	case TOWNSIO_MX_IMGOUT_ADDR_LOW://  0x472,
-		data=(TOWNSTYPE_2_MX<=townsPtr->townsType ? (state.mxVideoOutCtrlAddrLatch&255) : 0xff);
+		data=(TOWNSTYPE_2_MX<=townsPtr->townsType ? (state.highResCrtcRegAddrLatch&255) : 0xff);
 		break;
 
 	case TOWNSIO_MX_IMGOUT_ADDR_HIGH:// 0x473,
-		data=(TOWNSTYPE_2_MX<=townsPtr->townsType ? ((state.mxVideoOutCtrlAddrLatch>>8)&255) : 0xff);
+		data=(TOWNSTYPE_2_MX<=townsPtr->townsType ? ((state.highResCrtcRegAddrLatch>>8)&255) : 0xff);
 		break;
 
-	case TOWNSIO_MX_IMGOUT_ADDR_D0://   0x474,
-		switch(state.mxVideoOutCtrlAddrLatch)
+	case TOWNSIO_MX_IMGOUT_D0://   0x474,
+		switch(state.highResCrtcRegAddrLatch)
 		{
 		case 0x0004:
 			data=0;
 			break;
 		}
 		break;
-	case TOWNSIO_MX_IMGOUT_ADDR_D1://   0x475,
+	case TOWNSIO_MX_IMGOUT_D1://   0x475,
 		break;
-	case TOWNSIO_MX_IMGOUT_ADDR_D2://   0x476,
+	case TOWNSIO_MX_IMGOUT_D2://   0x476,
 		break;
-	case TOWNSIO_MX_IMGOUT_ADDR_D3://   0x477,
+	case TOWNSIO_MX_IMGOUT_D3://   0x477,
 		break;
 
 	case TOWNSIO_HSYNC_VSYNC:

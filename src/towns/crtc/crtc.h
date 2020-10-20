@@ -92,6 +92,42 @@ public:
 		REG_CR2=    0x1F,
 	};
 
+	enum
+	{
+		HIGHRES_REG_CTRL0   =0x000,   // Write 0 -> ?
+		HIGHRES_REG_CTRL1   =0x004,   // Read bit0=HighResEnabled bit1=(Initial=1, WriteToBit1->0, HighResoDisabled->1)   Write bit1=1->bit0=0
+
+		HIGHRES_REG_DISPPAGE=0x005,   // Prob  
+		HIGHRES_REG_HSYNC2  =0x100,
+		HIGHRES_REG_HSYNC3  =0x101,
+		HIGHRES_REG_VSYNC2  =0x102,
+		HIGHRES_REG_VSYNC3  =0x103,
+		HIGHRES_REG_XSTART  =0x104,
+		HIGHRES_REG_XEND    =0x105,
+		HIGHRES_REG_YSTART  =0x106,
+		HIGHRES_REG_YEND    =0x107,
+
+		HIGHRES_REG_P0_WID_H   =0x110,
+		HIGHRES_REG_P0_WID_L   =0x111,
+		HIGHRES_REG_P0_HEI_H   =0x112,
+		HIGHRES_REG_P0_HEI_L   =0x113,
+		HIGHRES_REG_P0_VRAM_WID=0x114,
+		HIGHRES_REG_P0_VRAM_HEI=0x115,
+		HIGHRES_REG_P0_ZOOM    =0x119,
+
+		HIGHRES_REG_P1_WID_H   =0x120,
+		HIGHRES_REG_P1_WID_L   =0x121,
+		HIGHRES_REG_P1_HEI_H   =0x122,
+		HIGHRES_REG_P1_HEI_L   =0x123,
+		HIGHRES_REG_P1_VRAM_WID=0x124,
+		HIGHRES_REG_P1_VRAM_HEI=0x125,
+		HIGHRES_REG_P1_ZOOM    =0x129,
+
+		HIGHRES_REG_PALSEL  =0x130,   // Read bit9=PaletteBusy,  Write (Prob) 0->Page0 16-color palette, 1->Page1 16-color palette, 2->256-color palette
+		HIGHRES_REG_PALINDEX=0x132,   // Write Palette Index
+		HIGHRES_REG_PALCOL  =0x133,   // Write (R<<8)|B then G
+	};
+
 	static const unsigned int CLKSELtoHz[4];
 	unsigned int CLKSELtoFreq[4];
 
@@ -142,6 +178,12 @@ public:
 		unsigned char GetBlue(unsigned int PLT) const;
 	};
 
+	enum
+	{
+		NUM_CRTC_REGISTERS=32,
+		NUM_HIRES_CRTC_REGISTERS=512
+	};
+
 	class State
 	{
 	public:
@@ -149,8 +191,9 @@ public:
 		bool VSYNC=false;
 
 		bool highResAvailable=false;
+		bool highResCRTCEnabled=false;
 
-		unsigned short crtcReg[32];
+		unsigned short crtcReg[NUM_CRTC_REGISTERS];
 		unsigned int crtcAddrLatch;
 
 		bool DPMD; // Digital-Palette Modify Flag
@@ -159,8 +202,8 @@ public:
 		unsigned char sifter[4];   // Is it really Sifter?  Isn't it Shifter? [2] pp.140
 		unsigned int sifterAddrLatch;
 
-		std::vector <unsigned int> mxVideoOutCtrl;
-		unsigned int mxVideoOutCtrlAddrLatch;
+		unsigned int highResCrtcReg[NUM_HIRES_CRTC_REGISTERS];
+		unsigned int highResCrtcRegAddrLatch;
 
 		AnalogPalette palette;
 

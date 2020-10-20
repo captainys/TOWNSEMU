@@ -19,9 +19,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 
 
-int main(int ac,char *av[])
+int main(void)
 {
-	std::ifstream ifp(av[1]);
+	std::ifstream ifp("townsdef.h");
 	std::ofstream ofp("townsmap.cpp");
 
 	std::vector <std::string> text;
