@@ -190,9 +190,6 @@ public:
 		bool VSYNCIRQ=false;
 		bool VSYNC=false;
 
-		bool highResAvailable=false;
-		bool highResCRTCEnabled=false;
-
 		unsigned short crtcReg[NUM_CRTC_REGISTERS];
 		unsigned int crtcAddrLatch;
 
@@ -202,10 +199,18 @@ public:
 		unsigned char sifter[4];   // Is it really Sifter?  Isn't it Shifter? [2] pp.140
 		unsigned int sifterAddrLatch;
 
+		AnalogPalette palette;
+
+
+		bool highResAvailable=false;
+		bool highResCRTCEnabled=false;
 		unsigned int highResCrtcReg[NUM_HIRES_CRTC_REGISTERS];
 		unsigned int highResCrtcRegAddrLatch;
+		bool highResCrtcReg4Bit1=true;
+		unsigned int highResPaletteMode,highResPaletteLatch,highResPaletteBRorG;
+		AnalogPalette highResCrtcPalette;
 
-		AnalogPalette palette;
+
 
 		unsigned int FMRGVRAMDisplayPlanes=0x0F;
 
@@ -428,6 +433,10 @@ public:
 	virtual void IOWriteWord(unsigned int ioport,unsigned int data); // Default behavior calls IOWriteByte twice
 	virtual void IOWriteDword(unsigned int ioport,unsigned int data); // Default behavior calls IOWriteByte 4 times
 	virtual unsigned int IOReadByte(unsigned int ioport);
+
+	/* If high-reso crtc is enabled, bit15=0 enables High Res CRTC and disables conventional CRTC, or vise-versa.
+	*/
+	void WriteCR0(unsigned int data);
 
 	virtual void Reset(void);
 

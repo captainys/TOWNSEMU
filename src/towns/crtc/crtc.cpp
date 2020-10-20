@@ -200,11 +200,16 @@ void TownsCRTC::State::Reset(void)
 	}
 	sifterAddrLatch=0;
 
+	palette.Reset();
+
+
 	for(auto &d : highResCrtcReg)
 	{
 		d=0;
 	}
+	highResCRTCEnabled=false;
 	highResCrtcRegAddrLatch=0;
+	highResCrtcPalette.Reset();
 
 	FMRGVRAMDisplayPlanes=0x0F;
 	FMRVRAMOffset=0;
@@ -215,7 +220,7 @@ void TownsCRTC::State::Reset(void)
 	showPage0448[0]=true;
 	showPage0448[1]=true;
 
-	palette.Reset();
+	highResCrtcReg4Bit1=true;
 }
 
 void TownsCRTC::TurnOffVSYNCIRQ(void)
@@ -677,6 +682,10 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 		{
 			townsPtr->OnCRTC_HST_Write();
 		}
+		if(REG_CR0==state.crtcAddrLatch)
+		{
+			WriteCR0(data<<8);
+		}
 		UpdateSpriteHardware();
 		break;
 
@@ -718,6 +727,38 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 		{
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]&=0xFFFFFF00;
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]|=(data&0xFF);
+			if(HIGHRES_REG_PALSEL==state.highResCrtcRegAddrLatch)
+			{
+				state.highResPaletteBRorG=0; // Next will be BR component.
+			}
+			if(HIGHRES_REG_PALINDEX==state.highResCrtcRegAddrLatch)
+			{
+				state.highResCrtcPalette.codeLatch=data;
+			}
+			if(HIGHRES_REG_PALCOL==state.highResCrtcRegAddrLatch)
+			{
+				unsigned int compo=0;
+				if(0==state.highResPaletteBRorG)
+				{
+					compo=0; // B component
+				}
+				else
+				{
+					compo=2; // G component
+				}
+				switch(state.highResCrtcReg[HIGHRES_REG_PALSEL])
+				{
+				case 0:
+					state.highResCrtcPalette.Set16(0,compo,data);
+					break;
+				case 1:
+					state.highResCrtcPalette.Set16(1,compo,data);
+					break;
+				case 2:
+					state.highResCrtcPalette.Set256(compo,data);
+					break;
+				}
+			}
 		}
 		break;
 	case TOWNSIO_MX_IMGOUT_D1://   0x475,
@@ -726,6 +767,30 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 			// std::cout << "MX-VIDOUTCONTROL8[" << cpputil::Ustox(state.highResCrtcRegAddrLatch+1) << "H]=" << cpputil::Ubtox(data) << "H" << std::endl;
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]&=0xFFFF00FF;
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]|=((data&0xFF)<<8);
+			if(HIGHRES_REG_PALCOL==state.highResCrtcRegAddrLatch)
+			{
+				if(0==state.highResPaletteBRorG)
+				{
+					const unsigned int compo=1; // Red component.
+					switch(state.highResCrtcReg[HIGHRES_REG_PALSEL])
+					{
+					case 0:
+						state.highResCrtcPalette.Set16(0,compo,data);
+						break;
+					case 1:
+						state.highResCrtcPalette.Set16(1,compo,data);
+						break;
+					case 2:
+						state.highResCrtcPalette.Set256(compo,data);
+						break;
+					}
+					state.highResPaletteBRorG=1;
+				}
+				else
+				{
+					state.highResPaletteBRorG=0;
+				}
+			}
 		}
 		break;
 	case TOWNSIO_MX_IMGOUT_D2://   0x476,
@@ -777,6 +842,10 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 		{
 			townsPtr->OnCRTC_HST_Write();
 		}
+		if(REG_CR0==state.crtcAddrLatch)
+		{
+			WriteCR0(data);
+		}
 		break;
 	case TOWNSIO_CRTC_DATA_HIGH://           0x443,
 		break;
@@ -793,7 +862,7 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 		break; // No write access;
 
 	case TOWNSIO_MX_IMGOUT_ADDR_LOW://  0x472,
-		state.highResCrtcRegAddrLatch=(data&0xffff);
+		state.highResCrtcRegAddrLatch=(data&(NUM_HIRES_CRTC_REGISTERS-1));
 		break;
 	case TOWNSIO_MX_IMGOUT_D0://   0x474,
 		// std::cout << "MX-VIDOUTCONTROL16[" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << "H]=" << cpputil::Ustox(data) << "H" << std::endl;
@@ -801,6 +870,58 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 		{
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]&=0xFFFF0000;
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]|=(data&0xFFFF);
+			if(HIGHRES_REG_CTRL1==state.highResCrtcRegAddrLatch)
+			{
+				if(0!=(data&2))
+				{
+					state.highResCrtcReg4Bit1=false;
+				}
+			}
+			if(HIGHRES_REG_PALSEL==state.highResCrtcRegAddrLatch)
+			{
+				state.highResPaletteBRorG=0; // Next will be BR component.
+			}
+			if(HIGHRES_REG_PALINDEX==state.highResCrtcRegAddrLatch)
+			{
+				state.highResCrtcPalette.codeLatch=data&0xFF;
+			}
+			if(HIGHRES_REG_PALCOL==state.highResCrtcRegAddrLatch)
+			{
+				if(0==state.highResPaletteBRorG)
+				{
+					switch(state.highResCrtcReg[HIGHRES_REG_PALSEL])
+					{
+					case 0:
+						state.highResCrtcPalette.Set16(0,0,data&0xFF);
+						state.highResCrtcPalette.Set16(0,1,(data>>8)&0xFF);
+						break;
+					case 1:
+						state.highResCrtcPalette.Set16(1,0,data&0xFF);
+						state.highResCrtcPalette.Set16(1,1,(data>>8)&0xFF);
+						break;
+					case 2:
+						state.highResCrtcPalette.Set256(0,data&0xFF);
+						state.highResCrtcPalette.Set256(1,(data>>8)&0xFF);
+						break;
+					}
+					state.highResPaletteBRorG=1;
+				}
+				else
+				{
+					switch(state.highResCrtcReg[HIGHRES_REG_PALSEL])
+					{
+					case 0:
+						state.highResCrtcPalette.Set16(0,2,data&0xFF);
+						break;
+					case 1:
+						state.highResCrtcPalette.Set16(1,2,data&0xFF);
+						break;
+					case 2:
+						state.highResCrtcPalette.Set256(2,data&0xFF);
+						break;
+					}
+				}
+			}
 		}
 		break;
 	case TOWNSIO_MX_IMGOUT_D1://   0x475,
@@ -973,12 +1094,32 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 	case TOWNSIO_MX_IMGOUT_D0://   0x474,
 		switch(state.highResCrtcRegAddrLatch)
 		{
-		case 0x0004:
+		case HIGHRES_REG_CTRL1:
 			data=0;
+			if(true==state.highResCrtcReg4Bit1)
+			{
+				data|=2;
+			}
+			if(true==state.highResCRTCEnabled)
+			{
+				data|=1;
+			}
+			break;
+		default:
+			data=state.highResCrtcReg[state.highResCrtcRegAddrLatch];
 			break;
 		}
 		break;
 	case TOWNSIO_MX_IMGOUT_D1://   0x475,
+		switch(state.highResCrtcRegAddrLatch)
+		{
+		case HIGHRES_REG_CTRL1:
+			data=0;
+			break;
+		default:
+			data=((state.highResCrtcReg[state.highResCrtcRegAddrLatch]>>8)&0xFF);
+			break;
+		}
 		break;
 	case TOWNSIO_MX_IMGOUT_D2://   0x476,
 		break;
@@ -996,6 +1137,22 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 		break;
 	}
 	return data;
+}
+
+void TownsCRTC::WriteCR0(unsigned int data)
+{
+	if(true==state.highResAvailable)
+	{
+		state.highResCrtcReg4Bit1=true;
+		if(0==(data&0x8000)) // Clear START bit, disable conventional CRTC, enable high-res CRTC
+		{
+			state.highResCRTCEnabled=true;
+		}
+		else
+		{
+			state.highResCRTCEnabled=false;
+		}
+	}
 }
 
 /* virtual */ void TownsCRTC::Reset(void)
