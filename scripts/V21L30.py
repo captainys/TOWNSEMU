@@ -39,6 +39,7 @@ def Run(argv):
 		"-CMOS",
 		"../testdata/CMOS.bin",
 		"-DEBUG",
+		"-HIGHRES",
 		# "-PAUSE",
 	]+argv).wait()
 

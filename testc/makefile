@@ -202,6 +202,14 @@ build\egb02.exp : build\egb02.obj build\io.obj build\vmif.obj
 
 
 
+build\highres1.obj : highres1.c io.h vmif.h
+	hcd386 highres1.c -obj build\highres1.obj
+
+build\highres1.exp : build\highres1.obj build\io.obj build\vmif.obj
+	386link build\highres1.obj -exe build\highres1.exp @LIBS.LN
+
+
+
 build\mos01.obj : mos01.c io.h vmif.h
 	hcd386 mos01.c -obj build\mos01.obj
 
