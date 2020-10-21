@@ -427,7 +427,6 @@ public:
 	*/
 	void MakePageLayerInfo(Layer &layer,unsigned char page) const;
 
-
 	void MEMIOWriteFMRVRAMDisplayMode(unsigned char data);	// [2] pp.158
 
 	virtual void IOWriteByte(unsigned int ioport,unsigned int data);
@@ -463,6 +462,15 @@ public:
 	std::vector <std::string> GetStatusText(void) const;
 	std::vector <std::string> GetPageStatusText(int page) const;
 	std::vector <std::string> GetPaletteText(void) const;
+
+
+	/*! Make High-Res mode Layer Info.
+	*/
+	void MakeHighResPageLayerInfo(Layer &layer,unsigned char page) const;
+
+	std::vector <std::string> GetHighResStatusText(void) const;
+	std::vector <std::string> GetHighResPageStatusText(int page) const;
+	std::vector <std::string> GetHighResPaletteText(void) const;
 };
 
 

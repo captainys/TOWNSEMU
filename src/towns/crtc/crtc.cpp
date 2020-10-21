@@ -1443,3 +1443,33 @@ std::vector <std::string> TownsCRTC::GetPaletteText(void) const
 
 	return text;
 }
+
+void TownsCRTC::MakeHighResPageLayerInfo(Layer &layer,unsigned char page) const
+{
+}
+
+std::vector <std::string> TownsCRTC::GetHighResStatusText(void) const
+{
+	std::vector <std::string> text;
+	text.push_back(true==state.highResCRTCEnabled ? "HighRes CRTC Enabled" : "HighRes CRTC Disabled");
+
+	auto page0Info=GetHighResPageStatusText(0);
+	auto page1Info=GetHighResPageStatusText(1);
+
+	text.push_back("Page 0");
+	text.insert(text.end(),page0Info.begin(),page0Info.end());
+	text.push_back("Page 1");
+	text.insert(text.end(),page1Info.begin(),page1Info.end());
+
+	return text;
+}
+std::vector <std::string> TownsCRTC::GetHighResPageStatusText(int page) const
+{
+	std::vector <std::string> text;
+	return text;
+}
+std::vector <std::string> TownsCRTC::GetHighResPaletteText(void) const
+{
+	std::vector <std::string> text;
+	return text;
+}
