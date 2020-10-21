@@ -59,6 +59,46 @@ P
 M 0
 /end
 /begin0
+T 1
+* 00000110:00001847
+# 
+R 
+L (Prob)Set High-Res Mode on Initial TMENU Start
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00000110:00001874
+# 
+R 
+L (Prob)Set Normal Resolution Mode
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00000110:00001899
+# 
+R 
+L (Prob)Set High-Res Mode
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00000110:000026B0
+# 
+R 
+L (Prob)High-Res CRTC Wait VSYNC flip
+P 
+% 0
+M 0
+/end
+/begin0
 T 0
 * 00000F45:0000005A
 # IO.SYS:Initialize Real-Mode INT Vector

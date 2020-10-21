@@ -540,8 +540,8 @@ unsigned int TownsCRTC::GetPageBitsPerPixel(unsigned char page) const
 			return 4;
 		}
 	}
-	std::cout << __FUNCTION__ << std::endl;
-	std::cout << "Unknown color setting." << std::endl;
+	// std::cout << __FUNCTION__ << std::endl;
+	// std::cout << "Unknown color setting." << std::endl;
 	return 4; // What else can I do?
 }
 unsigned int TownsCRTC::GetPageVRAMAddressOffset(unsigned char page) const
@@ -1105,6 +1105,17 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 				data|=1;
 			}
 			break;
+		case HIGHRES_REG_VSYNC1:
+			// Based on TBIOS disassembly.
+			if(true==InVSYNC(townsPtr->state.townsTime))
+			{
+				data=2;
+			}
+			else
+			{
+				data=0;
+			}
+			break;
 		default:
 			data=state.highResCrtcReg[state.highResCrtcRegAddrLatch];
 			break;
@@ -1122,8 +1133,10 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 		}
 		break;
 	case TOWNSIO_MX_IMGOUT_D2://   0x476,
+		data=((state.highResCrtcReg[state.highResCrtcRegAddrLatch]>>16)&0xFF);
 		break;
 	case TOWNSIO_MX_IMGOUT_D3://   0x477,
+		data=((state.highResCrtcReg[state.highResCrtcRegAddrLatch]>>24)&0xFF);
 		break;
 
 	case TOWNSIO_HSYNC_VSYNC:

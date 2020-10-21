@@ -98,6 +98,7 @@ public:
 		HIGHRES_REG_CTRL1   =0x004,   // Read bit0=HighResEnabled bit1=(Initial=1, WriteToBit1->0, HighResoDisabled->1)   Write bit1=1->bit0=0
 
 		HIGHRES_REG_DISPPAGE=0x005,   // Prob  
+		HIGHRES_REG_VSYNC1  =0x006,   // Prob
 		HIGHRES_REG_HSYNC2  =0x100,
 		HIGHRES_REG_HSYNC3  =0x101,
 		HIGHRES_REG_VSYNC2  =0x102,
