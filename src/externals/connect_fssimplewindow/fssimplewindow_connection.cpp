@@ -831,9 +831,10 @@ void FsSimpleWindowConnection::PollGamePads(void)
 	}
 	else
 	{
-		if(this->winWid!=img.wid)  // Height is not correct yet   :-P
+		if(this->winWid!=img.wid || this->winHei!=img.hei)
 		{
 			this->winWid=img.wid;
+			this->winHei=img.hei;
 			sinceLastResize=10;
 		}
 		else if(0<sinceLastResize)

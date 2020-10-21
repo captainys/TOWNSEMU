@@ -135,7 +135,7 @@ public:
 	class Layer
 	{
 	public:
-		unsigned bitsPerPixel;
+		unsigned int bitsPerPixel;
 		unsigned int VRAMAddr;
 		unsigned int VRAMOffset;
 		unsigned int FMRVRAMOffset;
@@ -427,6 +427,8 @@ public:
 	*/
 	void MakePageLayerInfo(Layer &layer,unsigned char page) const;
 
+	void MakeLowResPageLayerInfo(Layer &layer,unsigned char page) const;
+
 	void MEMIOWriteFMRVRAMDisplayMode(unsigned char data);	// [2] pp.158
 
 	virtual void IOWriteByte(unsigned int ioport,unsigned int data);
@@ -460,13 +462,15 @@ public:
 	}
 
 	std::vector <std::string> GetStatusText(void) const;
-	std::vector <std::string> GetPageStatusText(int page) const;
+	std::vector <std::string> GetPageStatusText(const Layer &layer) const;
 	std::vector <std::string> GetPaletteText(void) const;
 
 
 	/*! Make High-Res mode Layer Info.
 	*/
 	void MakeHighResPageLayerInfo(Layer &layer,unsigned char page) const;
+
+	Vec2i GetHighResDisplaySize(void) const;
 
 	std::vector <std::string> GetHighResStatusText(void) const;
 	std::vector <std::string> GetHighResPageStatusText(int page) const;

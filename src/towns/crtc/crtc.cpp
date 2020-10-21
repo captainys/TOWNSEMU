@@ -573,7 +573,20 @@ unsigned int TownsCRTC::GetPageBytesPerLine(unsigned char page) const
 	}
 	return numBytes;
 }
+
 void TownsCRTC::MakePageLayerInfo(Layer &layer,unsigned char page) const
+{
+	if(true!=state.highResCRTCEnabled)
+	{
+		MakeLowResPageLayerInfo(layer,page);
+	}
+	else
+	{
+		MakeHighResPageLayerInfo(layer,page);
+	}
+}
+
+void TownsCRTC::MakeLowResPageLayerInfo(Layer &layer,unsigned char page) const
 {
 	page&=1;
 	layer.bitsPerPixel=GetPageBitsPerPixel(page);
@@ -1175,18 +1188,25 @@ void TownsCRTC::WriteCR0(unsigned int data)
 
 Vec2i TownsCRTC::GetRenderSize(void) const
 {
-	unsigned int hei=480; // Height still has errors.  Some 320x240 mode returns 320x880 size.
-	if(InSinglePageMode())
+	if(true!=state.highResCRTCEnabled)
 	{
-		auto dim=GetPageSizeOnMonitor(0);
-		return Vec2i::Make(std::max(640,dim.x()),hei);
+		unsigned int hei=480; // Height still has errors.  Some 320x240 mode returns 320x880 size.
+		if(InSinglePageMode())
+		{
+			auto dim=GetPageSizeOnMonitor(0);
+			return Vec2i::Make(std::max(640,dim.x()),hei);
+		}
+		else
+		{
+			auto dim0=GetPageSizeOnMonitor(0);
+			auto dim1=GetPageSizeOnMonitor(1);
+			auto wid=std::max(dim0.x(),dim1.x());
+			return Vec2i::Make(std::max(640,wid),hei);
+		}
 	}
 	else
 	{
-		auto dim0=GetPageSizeOnMonitor(0);
-		auto dim1=GetPageSizeOnMonitor(1);
-		auto wid=std::max(dim0.x(),dim1.x());
-		return Vec2i::Make(std::max(640,wid),hei);
+		return GetHighResDisplaySize();
 	}
 }
 
@@ -1333,7 +1353,10 @@ std::vector <std::string> TownsCRTC::GetStatusText(void) const
 		text.push_back("");
 		text.back()="Single-Page Mode.  ";
 
-		auto pageStat0=GetPageStatusText(0);
+		Layer layer;
+		MakeLowResPageLayerInfo(layer,0);
+
+		auto pageStat0=GetPageStatusText(layer);
 		text.insert(text.end(),pageStat0.begin(),pageStat0.end());
 	}
 	else
@@ -1341,10 +1364,16 @@ std::vector <std::string> TownsCRTC::GetStatusText(void) const
 		text.push_back("");
 		text.back()="2-Page Mode.  ";
 
-		auto pageStat0=GetPageStatusText(0);
+		Layer layer[2];
+		MakeLowResPageLayerInfo(layer[0],0);
+		MakeLowResPageLayerInfo(layer[1],1);
+
+		text.push_back("Page 0");
+		auto pageStat0=GetPageStatusText(layer[0]);
 		text.insert(text.end(),pageStat0.begin(),pageStat0.end());
 
-		auto pageStat1=GetPageStatusText(1);
+		text.push_back("Page 1");
+		auto pageStat1=GetPageStatusText(layer[1]);
 		text.insert(text.end(),pageStat1.begin(),pageStat1.end());
 	}
 
@@ -1369,15 +1398,9 @@ std::vector <std::string> TownsCRTC::GetStatusText(void) const
 	return text;
 }
 
-std::vector <std::string> TownsCRTC::GetPageStatusText(int page) const
+std::vector <std::string> TownsCRTC::GetPageStatusText(const Layer &layer) const
 {
-	Layer layer;
-	MakePageLayerInfo(layer,page);
-
 	std::vector <std::string> text;
-
-	text.push_back("");
-	text.back()="Page "+cpputil::Itoa(page);
 
 	text.push_back("");
 	text.back()+="Top-Left:("+cpputil::Itoa(layer.originOnMonitor.x())+","+cpputil::Itoa(layer.originOnMonitor.y())+")  ";
@@ -1446,26 +1469,42 @@ std::vector <std::string> TownsCRTC::GetPaletteText(void) const
 
 void TownsCRTC::MakeHighResPageLayerInfo(Layer &layer,unsigned char page) const
 {
-}
+	layer.bitsPerPixel=4;           // Tentative
+	layer.VRAMAddr=0x80000*page;
+	layer.VRAMOffset=0;             // Tentative
+	layer.FMRVRAMOffset=0;          // Probably FM-R page is not applicable to CRTC2.
+	layer.FMRGVRAMMask=0x0F;        // Probably mask is not applicable to CRTC2.
+	layer.originOnMonitor.Set(0,0); // Tentative
+	layer.VRAMHSkipBytes=0;
+	layer.sizeOnMonitor=GetHighResDisplaySize();
+	layer.VRAMCoverage1X=layer.sizeOnMonitor;
+	layer.zoom2x.Set(2,2);          // Tentative
+	layer.bytesPerLine=0x200;       // Tentative
 
+	layer.HScrollMask=(layer.bytesPerLine-1);
+	layer.VScrollMask=0x7FFFF;      // Tentative
+}
+Vec2i TownsCRTC::GetHighResDisplaySize(void) const
+{
+	return Vec2i::Make(state.highResCrtcReg[HIGHRES_REG_XEND]-state.highResCrtcReg[HIGHRES_REG_XSTART],state.highResCrtcReg[HIGHRES_REG_YEND]-state.highResCrtcReg[HIGHRES_REG_YSTART]);
+}
 std::vector <std::string> TownsCRTC::GetHighResStatusText(void) const
 {
 	std::vector <std::string> text;
 	text.push_back(true==state.highResCRTCEnabled ? "HighRes CRTC Enabled" : "HighRes CRTC Disabled");
 
-	auto page0Info=GetHighResPageStatusText(0);
-	auto page1Info=GetHighResPageStatusText(1);
+	Layer layer[2];
+	MakeHighResPageLayerInfo(layer[0],0);
+	MakeHighResPageLayerInfo(layer[1],1);
+
+	auto page0Info=GetPageStatusText(layer[0]);
+	auto page1Info=GetPageStatusText(layer[1]);
 
 	text.push_back("Page 0");
 	text.insert(text.end(),page0Info.begin(),page0Info.end());
 	text.push_back("Page 1");
 	text.insert(text.end(),page1Info.begin(),page1Info.end());
 
-	return text;
-}
-std::vector <std::string> TownsCRTC::GetHighResPageStatusText(int page) const
-{
-	std::vector <std::string> text;
 	return text;
 }
 std::vector <std::string> TownsCRTC::GetHighResPaletteText(void) const
