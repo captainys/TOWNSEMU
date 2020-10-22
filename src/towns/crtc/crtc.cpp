@@ -769,13 +769,13 @@ std::cout << "Write to CRTC2 Reg=" << cpputil::Ustox(state.highResCrtcRegAddrLat
 				switch(state.highResCrtcReg[HIGHRES_REG_PALSEL])
 				{
 				case 0:
-					state.highResCrtcPalette.Set16(0,1,data);
+					state.highResCrtcPalette.Set16(0,2,data);
 					break;
 				case 1:
-					state.highResCrtcPalette.Set16(1,1,data);
+					state.highResCrtcPalette.Set16(1,2,data);
 					break;
 				case 2:
-					state.highResCrtcPalette.Set256(1,data);
+					state.highResCrtcPalette.Set256(2,data);
 					break;
 				}
 			}
@@ -817,13 +817,13 @@ std::cout << "Write to CRTC2 Reg=" << cpputil::Ustox(state.highResCrtcRegAddrLat
 				switch(state.highResCrtcReg[HIGHRES_REG_PALSEL])
 				{
 				case 0:
-					state.highResCrtcPalette.Set16(0,2,data);
+					state.highResCrtcPalette.Set16(0,1,data);
 					break;
 				case 1:
-					state.highResCrtcPalette.Set16(1,2,data);
+					state.highResCrtcPalette.Set16(1,1,data);
 					break;
 				case 2:
-					state.highResCrtcPalette.Set256(2,data);
+					state.highResCrtcPalette.Set256(1,data);
 					break;
 				}
 			}
@@ -916,15 +916,15 @@ std::cout << "Write to CRTC2 Reg=" << cpputil::Ustox(state.highResCrtcRegAddrLat
 				switch(state.highResCrtcReg[HIGHRES_REG_PALSEL])
 				{
 				case 0:
-					state.highResCrtcPalette.Set16(0,1,data&0xFF);          // Low Green
+					state.highResCrtcPalette.Set16(0,2,data&0xFF);          // Low Green
 					state.highResCrtcPalette.Set16(0,0,(data>>8)&0xFF);     // High Red
 					break;
 				case 1:
-					state.highResCrtcPalette.Set16(1,1,data&0xFF);          // Low Green
+					state.highResCrtcPalette.Set16(1,2,data&0xFF);          // Low Green
 					state.highResCrtcPalette.Set16(1,0,(data>>8)&0xFF);     // High Red
 					break;
 				case 2:
-					state.highResCrtcPalette.Set256(1,data&0xFF);          // Low Green
+					state.highResCrtcPalette.Set256(2,data&0xFF);          // Low Green
 					state.highResCrtcPalette.Set256(0,(data>>8)&0xFF);     // High Red
 					break;
 				}
@@ -952,13 +952,13 @@ std::cout << "Write to CRTC2 Reg=" << cpputil::Ustox(state.highResCrtcRegAddrLat
 				switch(state.highResCrtcReg[HIGHRES_REG_PALSEL])
 				{
 				case 0:
-					state.highResCrtcPalette.Set16(0,2,data&0xFF);
+					state.highResCrtcPalette.Set16(0,1,data&0xFF);
 					break;
 				case 1:
-					state.highResCrtcPalette.Set16(1,2,data&0xFF);
+					state.highResCrtcPalette.Set16(1,1,data&0xFF);
 					break;
 				case 2:
-					state.highResCrtcPalette.Set256(2,data&0xFF);
+					state.highResCrtcPalette.Set256(1,data&0xFF);
 					break;
 				}
 			}
@@ -1173,6 +1173,22 @@ std::cout << "Write to CRTC2 Reg=" << cpputil::Ustox(state.highResCrtcRegAddrLat
 				data=0;
 			}
 			break;
+		case HIGHRES_REG_PALCOL:
+			{
+				switch(state.highResCrtcReg[HIGHRES_REG_PALSEL])
+				{
+				case 0:
+					data=state.highResCrtcPalette.Get16(0,2);
+					break;
+				case 1:
+					data=state.highResCrtcPalette.Get16(1,2);
+					break;
+				case 2:
+					data=state.highResCrtcPalette.Get256(2);
+					break;
+				}
+			}
+			break;
 		default:
 			data=state.highResCrtcReg[state.highResCrtcRegAddrLatch];
 			break;
@@ -1184,13 +1200,50 @@ std::cout << "Write to CRTC2 Reg=" << cpputil::Ustox(state.highResCrtcRegAddrLat
 		case HIGHRES_REG_CTRL1:
 			data=0;
 			break;
+		case HIGHRES_REG_PALCOL:
+			{
+				switch(state.highResCrtcReg[HIGHRES_REG_PALSEL])
+				{
+				case 0:
+					data=state.highResCrtcPalette.Get16(0,0);
+					break;
+				case 1:
+					data=state.highResCrtcPalette.Get16(1,0);
+					break;
+				case 2:
+					data=state.highResCrtcPalette.Get256(0);
+					break;
+				}
+			}
+			break;
 		default:
 			data=((state.highResCrtcReg[state.highResCrtcRegAddrLatch]>>8)&0xFF);
 			break;
 		}
 		break;
 	case TOWNSIO_MX_IMGOUT_D2://   0x476,
-		data=((state.highResCrtcReg[state.highResCrtcRegAddrLatch]>>16)&0xFF);
+		switch(state.highResCrtcRegAddrLatch)
+		{
+		case HIGHRES_REG_PALCOL:
+			{
+				switch(state.highResCrtcReg[HIGHRES_REG_PALSEL])
+				{
+				case 0:
+					data=state.highResCrtcPalette.Get16(0,1);
+					break;
+				case 1:
+					data=state.highResCrtcPalette.Get16(1,1);
+					break;
+				case 2:
+					data=state.highResCrtcPalette.Get256(1);
+					break;
+				}
+			}
+			break;
+		default:
+			data=((state.highResCrtcReg[state.highResCrtcRegAddrLatch]>>16)&0xFF);
+			break;
+		}
 		break;
 	case TOWNSIO_MX_IMGOUT_D3://   0x477,
 		data=((state.highResCrtcReg[state.highResCrtcRegAddrLatch]>>24)&0xFF);
