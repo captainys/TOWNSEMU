@@ -40,7 +40,7 @@ public:
 	bool noWait=true;
 	bool noWaitStandby=false;
 
-	bool highResAvailable=false;
+	bool highResAvailable=true;
 
 	bool catchUpRealTime=true;
 

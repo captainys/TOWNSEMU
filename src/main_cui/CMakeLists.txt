@@ -211,6 +211,7 @@ add_test(
 		H0
 		-UNITTEST
 		-DONTAUTOSAVECMOS
+		-LOWRES
 )
 
 add_test(
@@ -230,6 +231,7 @@ add_test(
 		H0
 		-UNITTEST
 		-DONTAUTOSAVECMOS
+		-LOWRES
 )
 
 add_test(

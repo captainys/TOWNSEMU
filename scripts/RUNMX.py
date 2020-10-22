@@ -41,7 +41,7 @@ def Run(argv):
 		"-CMOS",
 		"../testdata/CMOS.bin",
 		"-DONTAUTOSAVECMOS",
-		"-HIGHRES",
+		#"-HIGHRES",
 		#"-DEBUG",
 		#"-PAUSE",
 	]+argv).wait()

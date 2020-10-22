@@ -49,6 +49,10 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  Auto scaleing screen to match the window size." << std::endl;
 	std::cout << "-MAXIMIZE" << std::endl;
 	std::cout << "  Maximize the window on start up" << std::endl;
+	std::cout << "-HIGHRES" << std::endl;
+	std::cout << "  Enable High Resolution CRTC (default)" << std::endl;
+	std::cout << "-LOWRES" << std::endl;
+	std::cout << "  Disable High Resolution CRTC" << std::endl;
 	std::cout << "-PAUSE" << std::endl;
 	std::cout << "  Machine state is PAUSE on start up." << std::endl;
 	std::cout << "-SHAREDDIR path" << std::endl;
@@ -662,6 +666,10 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		else if("-HIGHRES"==ARG)
 		{
 			highResAvailable=true;
+		}
+		else if("-LOWRES"==ARG)
+		{
+			highResAvailable=false;
 		}
 		else
 		{

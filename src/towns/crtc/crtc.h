@@ -98,7 +98,7 @@ public:
 		HIGHRES_REG_CTRL1   =0x004,   // Read bit0=HighResEnabled bit1=(Initial=1, WriteToBit1->0, HighResoDisabled->1)   Write bit1=1->bit0=0
 
 		HIGHRES_REG_DISPPAGE=0x005,   // Prob  bit0 PriorityPage   bit8 ShowPage0   bit9 ShowPage1
-		HIGHRES_REG_VSYNC1  =0x006,   // Prob
+		HIGHRES_REG_VSYNC1  =0x006,   // Prob  TBIOS checks the bit is flipping
 		HIGHRES_REG_HSYNC2  =0x100,
 		HIGHRES_REG_HSYNC3  =0x101,
 		HIGHRES_REG_VSYNC2  =0x102,
@@ -132,7 +132,7 @@ public:
 
 		HIGHRES_REG_PALSEL  =0x130,   // Read bit9=PaletteBusy,  Write (Prob) 0->Page0 16-color palette, 1->Page1 16-color palette, 2->256-color palette
 		HIGHRES_REG_PALINDEX=0x132,   // Write Palette Index
-		HIGHRES_REG_PALCOL  =0x133,   // Write (R<<8)|B then G
+		HIGHRES_REG_PALCOL  =0x133,   // 32-bit access available.  Read/Write.  Low 8bit R, Mid Low 8bit G, Mid High 8bit B, High 8bit unused
 	};
 
 	static const unsigned int CLKSELtoHz[4];
@@ -210,7 +210,7 @@ public:
 
 
 		bool highResAvailable=false;
-		bool highResCRTCEnabled=false;
+		bool highResCRTCEnabled=true;
 		unsigned int highResCrtcReg[NUM_HIRES_CRTC_REGISTERS];
 		unsigned int highResCrtcRegAddrLatch;
 		bool highResCrtcReg4Bit1=true;
