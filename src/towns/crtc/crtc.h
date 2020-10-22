@@ -208,7 +208,7 @@ public:
 		unsigned int highResCrtcReg[NUM_HIRES_CRTC_REGISTERS];
 		unsigned int highResCrtcRegAddrLatch;
 		bool highResCrtcReg4Bit1=true;
-		unsigned int highResPaletteMode,highResPaletteLatch,highResPaletteBRorG;
+		unsigned int highResPaletteMode,highResPaletteLatch;
 		AnalogPalette highResCrtcPalette;
 
 
@@ -426,6 +426,12 @@ public:
 	/*! Make Layer infor.
 	*/
 	void MakePageLayerInfo(Layer &layer,unsigned char page) const;
+
+	/*! Returns a palette used.
+	    It can be conventional palette or high-res CRTC palette depending on state.highResCRTCEnabled.
+	*/
+	const AnalogPalette &GetPalette(void) const;
+
 
 	void MakeLowResPageLayerInfo(Layer &layer,unsigned char page) const;
 

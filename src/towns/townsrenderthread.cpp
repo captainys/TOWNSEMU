@@ -71,7 +71,7 @@ void TownsRenderingThread::CheckRenderingTimer(FMTowns &towns,TownsRender &rende
 		render.Prepare(towns.crtc);
 		this->rendererPtr=&render;
 		memcpy(this->VRAMCopy,towns.physMem.state.VRAM.data(),towns.crtc.GetEffectiveVRAMSize());
-		this->paletteCopy=towns.crtc.state.palette;
+		this->paletteCopy=towns.crtc.GetPalette();
 		this->chaseHQPaletteCopy=towns.crtc.chaseHQPalette;
 
 		state=STATE_RENDERING;
