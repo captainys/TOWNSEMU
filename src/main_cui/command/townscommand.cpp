@@ -168,8 +168,9 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	dumpableMap["DMAC"]=DUMP_DMAC;
 	dumpableMap["FDC"]=DUMP_FDC;
 	dumpableMap["CRTC"]=DUMP_CRTC;
-	dumpableMap["HIRESCRTC"]=DUMP_HIRESCRTC;
+	dumpableMap["HRCRTC"]=DUMP_HIRESCRTC;
 	dumpableMap["PALETTE"]=DUMP_PALETTE;
+	dumpableMap["HRPALETTE"]=DUMP_HIRESPALETTE;
 	dumpableMap["TIMER"]=DUMP_TIMER;
 	dumpableMap["GDT"]=DUMP_GDT;
 	dumpableMap["LDT"]=DUMP_LDT;
@@ -475,8 +476,12 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  SCSI Controller." << std::endl;
 	std::cout << "CRTC" << std::endl;
 	std::cout << "  CRTC." << std::endl;
+	std::cout << "HRCRTC" << std::endl;
+	std::cout << "  High-Res CRTC." << std::endl;
 	std::cout << "PALETTE" << std::endl;
 	std::cout << "  PALETTE." << std::endl;
+	std::cout << "HRPALETTE" << std::endl;
+	std::cout << "  High-Res PALETTE." << std::endl;
 	std::cout << "TIMER" << std::endl;
 	std::cout << "  Interval Timer (i8253)" << std::endl;
 	std::cout << "MEM" << std::endl;
@@ -1349,6 +1354,12 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 			break;
 		case DUMP_PALETTE:
 			for(auto str : towns.crtc.GetPaletteText())
+			{
+				std::cout << str << std::endl;
+			}
+			break;
+		case DUMP_HIRESPALETTE:
+			for(auto str : towns.crtc.GetHighResPaletteText())
 			{
 				std::cout << str << std::endl;
 			}

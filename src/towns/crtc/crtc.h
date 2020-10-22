@@ -470,6 +470,7 @@ public:
 	std::vector <std::string> GetStatusText(void) const;
 	std::vector <std::string> GetPageStatusText(const Layer &layer) const;
 	std::vector <std::string> GetPaletteText(void) const;
+	std::vector <std::string> GetLowResPaletteText(const AnalogPalette &palette) const;
 
 
 	/*! Make High-Res mode Layer Info.

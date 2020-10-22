@@ -752,6 +752,7 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 		{
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]&=0xFFFFFF00;
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]|=(data&0xFF);
+std::cout << "Write to CRTC2 Reg=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Uitox(state.highResCrtcReg[state.highResCrtcRegAddrLatch]) << std::endl;
 			if(HIGHRES_REG_CTRL1==state.highResCrtcRegAddrLatch)
 			{
 				if(0!=(data&2))
@@ -786,6 +787,7 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 			// std::cout << "MX-VIDOUTCONTROL8[" << cpputil::Ustox(state.highResCrtcRegAddrLatch+1) << "H]=" << cpputil::Ubtox(data) << "H" << std::endl;
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]&=0xFFFF00FF;
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]|=((data&0xFF)<<8);
+std::cout << "Write to CRTC2 Reg=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Uitox(state.highResCrtcReg[state.highResCrtcRegAddrLatch]) << std::endl;
 			if(HIGHRES_REG_PALCOL==state.highResCrtcRegAddrLatch)
 			{
 				switch(state.highResCrtcReg[HIGHRES_REG_PALSEL])
@@ -809,6 +811,7 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 			// std::cout << "MX-VIDOUTCONTROL8[" << cpputil::Ustox(state.highResCrtcRegAddrLatch+2) << "H]=" << cpputil::Ubtox(data) << "H" << std::endl;
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]&=0xFF00FFFF;
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]|=((data&0xFF)<<16);
+std::cout << "Write to CRTC2 Reg=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Uitox(state.highResCrtcReg[state.highResCrtcRegAddrLatch]) << std::endl;
 			if(HIGHRES_REG_PALCOL==state.highResCrtcRegAddrLatch)
 			{
 				switch(state.highResCrtcReg[HIGHRES_REG_PALSEL])
@@ -832,6 +835,7 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 			// std::cout << "MX-VIDOUTCONTROL8[" << cpputil::Ustox(state.highResCrtcRegAddrLatch+3) << "H]=" << cpputil::Ubtox(data) << "H" << std::endl;
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]&=0x00FFFFFF;
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]|=((data&0xFF)<<24);
+std::cout << "Write to CRTC2 Reg=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Uitox(state.highResCrtcReg[state.highResCrtcRegAddrLatch]) << std::endl;
 		}
 		break;
 	case TOWNSIO_HSYNC_VSYNC:  // 0xFDA0 Also CRT Output COntrol
@@ -895,6 +899,7 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 		{
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]&=0xFFFF0000;
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]|=(data&0xFFFF);
+std::cout << "Write to CRTC2 Reg=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Uitox(state.highResCrtcReg[state.highResCrtcRegAddrLatch]) << std::endl;
 			if(HIGHRES_REG_CTRL1==state.highResCrtcRegAddrLatch)
 			{
 				if(0!=(data&2))
@@ -932,6 +937,7 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 		{
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]&=0xFF0000FF;
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]|=((data&0xFFFF)<<8);
+std::cout << "Write to CRTC2 Reg=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Uitox(state.highResCrtcReg[state.highResCrtcRegAddrLatch]) << std::endl;
 		}
 		break;
 	case TOWNSIO_MX_IMGOUT_D2://   0x476,
@@ -940,6 +946,7 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 		{
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]&=0x0000FFFF;
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]|=((data&0xFFFF)<<16);
+std::cout << "Write to CRTC2 Reg=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Uitox(state.highResCrtcReg[state.highResCrtcRegAddrLatch]) << std::endl;
 			if(HIGHRES_REG_PALCOL==state.highResCrtcRegAddrLatch)
 			{
 				switch(state.highResCrtcReg[HIGHRES_REG_PALSEL])
@@ -972,6 +979,7 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 		if(state.highResCrtcRegAddrLatch<NUM_HIRES_CRTC_REGISTERS)
 		{
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]=data;
+std::cout << "Write to CRTC2 Reg=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Uitox(state.highResCrtcReg[state.highResCrtcRegAddrLatch]) << std::endl;
 			if(HIGHRES_REG_CTRL1==state.highResCrtcRegAddrLatch)
 			{
 				if(0!=(data&2))
@@ -1468,6 +1476,11 @@ std::vector <std::string> TownsCRTC::GetPageStatusText(const Layer &layer) const
 
 std::vector <std::string> TownsCRTC::GetPaletteText(void) const
 {
+	return GetLowResPaletteText(state.palette);
+}
+
+std::vector <std::string> TownsCRTC::GetLowResPaletteText(const AnalogPalette &palette) const
+{
 	std::vector <std::string> text;
 
 	text.push_back("");
@@ -1477,9 +1490,9 @@ std::vector <std::string> TownsCRTC::GetPaletteText(void) const
 		text.push_back("");
 		for(int j=0; j<16; ++j)
 		{
-			text.back()+=cpputil::Ubtox(state.palette.plt256[i+j][0]);
-			text.back()+=cpputil::Ubtox(state.palette.plt256[i+j][1]);
-			text.back()+=cpputil::Ubtox(state.palette.plt256[i+j][2]);
+			text.back()+=cpputil::Ubtox(palette.plt256[i+j][0]);
+			text.back()+=cpputil::Ubtox(palette.plt256[i+j][1]);
+			text.back()+=cpputil::Ubtox(palette.plt256[i+j][2]);
 			text.back().push_back(' ');
 		}
 	}
@@ -1494,9 +1507,9 @@ std::vector <std::string> TownsCRTC::GetPaletteText(void) const
 		text.back().push_back(':');
 		for(int i=0; i<16; ++i)
 		{
-			text.back()+=cpputil::Ubtox(state.palette.plt16[page][i][0]);
-			text.back()+=cpputil::Ubtox(state.palette.plt16[page][i][1]);
-			text.back()+=cpputil::Ubtox(state.palette.plt16[page][i][2]);
+			text.back()+=cpputil::Ubtox(palette.plt16[page][i][0]);
+			text.back()+=cpputil::Ubtox(palette.plt16[page][i][1]);
+			text.back()+=cpputil::Ubtox(palette.plt16[page][i][2]);
 			text.back().push_back(' ');
 		}
 	}
@@ -1546,6 +1559,5 @@ std::vector <std::string> TownsCRTC::GetHighResStatusText(void) const
 }
 std::vector <std::string> TownsCRTC::GetHighResPaletteText(void) const
 {
-	std::vector <std::string> text;
-	return text;
+	return GetLowResPaletteText(state.highResCrtcPalette);
 }
