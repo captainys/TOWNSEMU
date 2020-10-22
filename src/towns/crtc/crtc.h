@@ -97,7 +97,7 @@ public:
 		HIGHRES_REG_CTRL0   =0x000,   // Write 0 -> ?
 		HIGHRES_REG_CTRL1   =0x004,   // Read bit0=HighResEnabled bit1=(Initial=1, WriteToBit1->0, HighResoDisabled->1)   Write bit1=1->bit0=0
 
-		HIGHRES_REG_DISPPAGE=0x005,   // Prob  
+		HIGHRES_REG_DISPPAGE=0x005,   // Prob  bit0 PriorityPage   bit8 ShowPage0   bit9 ShowPage1
 		HIGHRES_REG_VSYNC1  =0x006,   // Prob
 		HIGHRES_REG_HSYNC2  =0x100,
 		HIGHRES_REG_HSYNC3  =0x101,
@@ -114,9 +114,10 @@ public:
 		HIGHRES_REG_P0_HEI_L   =0x113,
 		HIGHRES_REG_P0_VRAM_WID=0x114,
 		HIGHRES_REG_P0_VRAM_HEI=0x115,
-		HIGHRES_REG_P0_VRAM_OFFSET_LOW=0x116,  // Prob
-		HIGHRES_REG_P0_VRAM_OFFSET_HIGH=0x117, // Prob
+		HIGHRES_REG_P0_VRAM_OFFSET_X=0x116, // Prob
+		HIGHRES_REG_P0_VRAM_OFFSET_Y=0x117, // Prob
 		HIGHRES_REG_P0_ZOOM    =0x119,
+		HIGHRES_REG_P0_PALETTE =0x11B,   // Prob 8000H 32K color, 0FH 16-color palette, 0FFH 256-color palette
 
 		HIGHRES_REG_P1_WID_H   =0x120,
 		HIGHRES_REG_P1_WID_L   =0x121,
@@ -124,9 +125,10 @@ public:
 		HIGHRES_REG_P1_HEI_L   =0x123,
 		HIGHRES_REG_P1_VRAM_WID=0x124,
 		HIGHRES_REG_P1_VRAM_HEI=0x125,
-		HIGHRES_REG_P1_VRAM_OFFSET_LOW=0x126,  // Prob
-		HIGHRES_REG_P1_VRAM_OFFSET_HIGH=0x127, // Prob
+		HIGHRES_REG_P1_VRAM_OFFSET_X=0x126,  // Prob
+		HIGHRES_REG_P1_VRAM_OFFSET_Y=0x127,  // Prob
 		HIGHRES_REG_P1_ZOOM    =0x129,
+		HIGHRES_REG_P1_PALETTE =0x12B,   // Prob 8000H 32K color, 0FH 16-color palette, 0FFH 256-color palette
 
 		HIGHRES_REG_PALSEL  =0x130,   // Read bit9=PaletteBusy,  Write (Prob) 0->Page0 16-color palette, 1->Page1 16-color palette, 2->256-color palette
 		HIGHRES_REG_PALINDEX=0x132,   // Write Palette Index
@@ -234,7 +236,15 @@ public:
 
 		inline bool ShowPage(int page) const
 		{
-			return (showPageFDA0[page] && showPage0448[page]);
+			if(true!=highResCRTCEnabled)
+			{
+				return (showPageFDA0[page] && showPage0448[page]);
+			}
+			else
+			{
+				unsigned int showPageBit[2]={0x0100,0x0200};
+				return 0!=(highResCrtcReg[HIGHRES_REG_DISPPAGE]&showPageBit[page]);
+			}
 		}
 
 		void Reset(void);

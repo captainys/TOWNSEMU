@@ -561,7 +561,14 @@ unsigned int TownsCRTC::GetPageVRAMAddressOffset(unsigned char page) const
 }
 unsigned int TownsCRTC::GetPriorityPage(void) const
 {
-	return state.sifter[1]&1;
+	if(true!=state.highResCRTCEnabled)
+	{
+		return state.sifter[1]&1;
+	}
+	else
+	{
+		return state.highResCrtcReg[HIGHRES_REG_DISPPAGE]&1;
+	}
 }
 unsigned int TownsCRTC::GetPageBytesPerLine(unsigned char page) const
 {
@@ -1572,9 +1579,26 @@ std::vector <std::string> TownsCRTC::GetLowResPaletteText(const AnalogPalette &p
 
 void TownsCRTC::MakeHighResPageLayerInfo(Layer &layer,unsigned char page) const
 {
-	layer.bitsPerPixel=4;           // Tentative
+	switch(state.highResCrtcReg[HIGHRES_REG_P0_PALETTE+0x10*page])
+	{
+	default:
+	case 0x0F:
+		layer.bitsPerPixel=4;
+		break;
+	case 0xFF:
+		layer.bitsPerPixel=8;
+		break;
+	case 0x8000:
+		layer.bitsPerPixel=16;
+		break;
+	}
 	layer.VRAMAddr=0x80000*page;
-	layer.VRAMOffset=0;             // Tentative
+
+	unsigned int dx=state.highResCrtcReg[HIGHRES_REG_P0_VRAM_OFFSET_X+0x10*page];
+	unsigned int dy=state.highResCrtcReg[HIGHRES_REG_P0_VRAM_OFFSET_Y+0x10*page];
+	unsigned int vramWidInPix=state.highResCrtcReg[HIGHRES_REG_P0_VRAM_WID+0x10*page];
+
+	layer.VRAMOffset=(dy*vramWidInPix+dx)*layer.bitsPerPixel/8;
 	layer.FMRVRAMOffset=0;          // Probably FM-R page is not applicable to CRTC2.
 	layer.FMRGVRAMMask=0x0F;        // Probably mask is not applicable to CRTC2.
 	layer.originOnMonitor.Set(0,0); // Tentative
@@ -1582,7 +1606,7 @@ void TownsCRTC::MakeHighResPageLayerInfo(Layer &layer,unsigned char page) const
 	layer.sizeOnMonitor=GetHighResDisplaySize();
 	layer.VRAMCoverage1X=layer.sizeOnMonitor;
 	layer.zoom2x.Set(2,2);          // Tentative
-	layer.bytesPerLine=0x200;       // Tentative
+	layer.bytesPerLine=vramWidInPix*layer.bitsPerPixel/8;
 
 	layer.HScrollMask=(layer.bytesPerLine-1);
 	layer.VScrollMask=0x7FFFF;      // Tentative
