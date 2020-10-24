@@ -465,13 +465,13 @@ bool FMTowns::ControlMouse(int &diffX,int &diffY,int hostMouseX,int hostMouseY,u
 		{
 			origin=crtc.GetPageOriginOnMonitor(0);
 			zoom2x=crtc.GetPageZoom2X(0);
-			VRAMSize=0x80000;
+			VRAMSize=crtc.GetEffectiveVRAMSize();
 		}
 		else
 		{
 			origin=crtc.GetPageOriginOnMonitor(state.mouseDisplayPage);
 			zoom2x=crtc.GetPageZoom2X(state.mouseDisplayPage);
-			VRAMSize=0x40000;
+			VRAMSize=crtc.GetEffectiveVRAMSize()/2;
 		}
 		hostMouseX-=origin.x();
 		hostMouseY-=origin.y();
