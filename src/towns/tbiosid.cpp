@@ -527,7 +527,7 @@ bool FMTowns::ControlMouse(int &diffX,int &diffY,int hostMouseX,int hostMouseY,u
 			{
 				unsigned int VRAMHeight=VRAMSize/bytesPerLine;
 				hostMouseY+=VRAMoffset/bytesPerLine;
-				hostMouseY%=VRAMHeight;
+				hostMouseY=std::min<unsigned int>(hostMouseY,VRAMHeight-1);
 			}
 			// At this time it only takes vertical displacement into account.
 		}
