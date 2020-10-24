@@ -30,6 +30,7 @@ private:
 	std::vector <unsigned char> rgba;
 
 
+	bool highResCRTC;
 	bool crtcIsSinglePageMode;
 	bool crtcShowPage[2];
 	TownsCRTC::Layer crtcLayer[2];

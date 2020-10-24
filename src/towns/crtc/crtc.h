@@ -497,6 +497,10 @@ public:
 
 	Vec2i GetHighResDisplaySize(void) const;
 
+	/*! (Prob) Bit 1 of reg 1 means 2-layer mode.
+	*/
+	bool HighResCrtcIsInSinglePageMode(void) const;
+
 	std::vector <std::string> GetHighResStatusText(void) const;
 	std::vector <std::string> GetHighResPageStatusText(int page) const;
 	std::vector <std::string> GetHighResPaletteText(void) const;

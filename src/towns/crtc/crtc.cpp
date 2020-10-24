@@ -312,7 +312,14 @@ bool TownsCRTC::InHSYNC(const unsigned long long int townsTime) const
 
 bool TownsCRTC::InSinglePageMode(void) const
 {
-	return LowResCrtcIsInSinglePageMode();
+	if(true!=state.highResCRTCEnabled)
+	{
+		return LowResCrtcIsInSinglePageMode();
+	}
+	else
+	{
+		return HighResCrtcIsInSinglePageMode();
+	}
 }
 
 bool TownsCRTC::LowResCrtcIsInSinglePageMode(void) const
@@ -1621,7 +1628,18 @@ void TownsCRTC::MakeHighResPageLayerInfo(Layer &layer,unsigned char page) const
 	layer.bytesPerLine=vramWidInPix*layer.bitsPerPixel/8;
 
 	layer.HScrollMask=(layer.bytesPerLine-1);
-	layer.VScrollMask=0x7FFFF;      // Tentative
+	if(true==HighResCrtcIsInSinglePageMode())
+	{
+		layer.VScrollMask=TOWNS_VRAM_SIZE-1;
+	}
+	else
+	{
+		layer.VScrollMask=TOWNS_VRAM_SIZE/2-1;
+	}
+}
+bool TownsCRTC::HighResCrtcIsInSinglePageMode(void) const
+{
+	return (0==(state.highResCrtcReg[HIGHRES_REG_PGCTRL]&2));
 }
 Vec2i TownsCRTC::GetHighResDisplaySize(void) const
 {
@@ -1632,6 +1650,8 @@ std::vector <std::string> TownsCRTC::GetHighResStatusText(void) const
 	std::vector <std::string> text;
 	text.push_back(true==state.highResCRTCEnabled ? "HighRes CRTC Enabled" : "HighRes CRTC Disabled");
 
+	text.push_back(true==HighResCrtcIsInSinglePageMode() ? "Single-Layer Mode" : "Two-Layer Mode");
+
 	Layer layer[2];
 	MakeHighResPageLayerInfo(layer[0],0);
 	MakeHighResPageLayerInfo(layer[1],1);
@@ -1641,8 +1661,11 @@ std::vector <std::string> TownsCRTC::GetHighResStatusText(void) const
 
 	text.push_back("Page 0");
 	text.insert(text.end(),page0Info.begin(),page0Info.end());
-	text.push_back("Page 1");
-	text.insert(text.end(),page1Info.begin(),page1Info.end());
+	if(true!=HighResCrtcIsInSinglePageMode())
+	{
+		text.push_back("Page 1");
+		text.insert(text.end(),page1Info.begin(),page1Info.end());
+	}
 
 	return text;
 }

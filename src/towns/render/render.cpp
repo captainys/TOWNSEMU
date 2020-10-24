@@ -32,6 +32,7 @@ void TownsRender::Create(int wid,int hei)
 
 void TownsRender::Prepare(const TownsCRTC &crtc)
 {
+	highResCRTC=crtc.state.highResCRTCEnabled;
 	crtcIsSinglePageMode=crtc.InSinglePageMode();
 	if(true==crtcIsSinglePageMode)
 	{
@@ -59,7 +60,14 @@ void TownsRender::BuildImage(const unsigned char VRAM[],const TownsCRTC::AnalogP
 	{
 		if(true==crtcShowPage[0])
 		{
-			Render<VRAM1Trans>(0,crtcLayer[0],palette,chaseHQPalette,VRAM,false);
+			if(true!=highResCRTC)
+			{
+				Render<VRAM1Trans>(0,crtcLayer[0],palette,chaseHQPalette,VRAM,false);
+			}
+			else
+			{
+				Render<VRAM0Trans>(0,crtcLayer[0],palette,chaseHQPalette,VRAM,false);
+			}
 		}
 	}
 	else
