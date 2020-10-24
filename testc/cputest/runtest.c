@@ -993,6 +993,25 @@ int RunBinaryOp(void)
 	return 0;
 }
 
+extern int MOVEAXDS(int EAX);
+extern int MOVEAXDS7FFF(void);
+
+int RunMOV_EAX_DS(void)
+{
+	printf("MOV EAX,DS (operandSize=32)\n");
+	// Upper 16-bit must clear.
+	if(0!=(0xFFFF0000&MOVEAXDS(0xFFFF0000)) ||
+	   0!=(0xFFFF0000&MOVEAXDS(0x00FF0000)) ||
+	   0!=(0xFFFF0000&MOVEAXDS(0x00010000)) ||
+	   0!=(0xFFFF0000&MOVEAXDS7FFF()))
+	{
+		printf("Error!\n");
+		printf("MOV EAX,DS (operandSize=32) must clear upper 16-bits of EAX.\n");
+		return 1;
+	}
+	return 0;
+}
+
 int main(int ac,char *av[])
 {
 	int nFail=0;
@@ -1012,6 +1031,7 @@ int main(int ac,char *av[])
 	nFail+=RunMOV_M_TO_A_A_TO_M();
 	nFail+=RunSHLD_SHRD();
 	nFail+=RunBinaryOp();
+	nFail+=RunMOV_EAX_DS();
 	printf("ARPL not covered.\n");
 	printf("CALL and JMP not covered.\n");
 

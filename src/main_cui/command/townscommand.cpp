@@ -2629,6 +2629,14 @@ void TownsCommandInterpreter::Execute_CRTCPage(FMTowns &towns,Command &cmd)
 		towns.crtc.state.showPageFDA0[1]=towns.crtc.state.showPageFDA0[0];
 		towns.crtc.state.showPage0448[0]=towns.crtc.state.showPageFDA0[0];
 		towns.crtc.state.showPage0448[1]=towns.crtc.state.showPageFDA0[1];
+		if(0!=cpputil::Atoi(cmd.argv[1].c_str()))
+		{
+			towns.crtc.state.highResCrtcReg[TownsCRTC::HIGHRES_REG_DISPPAGE]|=0x300;
+		}
+		else
+		{
+			towns.crtc.state.highResCrtcReg[TownsCRTC::HIGHRES_REG_DISPPAGE]&=~0x300;
+		}
 	}
 	else if(3<=cmd.argv.size() && true!=towns.crtc.InSinglePageMode())
 	{
@@ -2636,6 +2644,22 @@ void TownsCommandInterpreter::Execute_CRTCPage(FMTowns &towns,Command &cmd)
 		towns.crtc.state.showPageFDA0[1]=(0!=cpputil::Atoi(cmd.argv[2].c_str()));
 		towns.crtc.state.showPage0448[0]=towns.crtc.state.showPageFDA0[0];
 		towns.crtc.state.showPage0448[1]=towns.crtc.state.showPageFDA0[1];
+		if(0!=cpputil::Atoi(cmd.argv[1].c_str()))
+		{
+			towns.crtc.state.highResCrtcReg[TownsCRTC::HIGHRES_REG_DISPPAGE]|=0x100;
+		}
+		else
+		{
+			towns.crtc.state.highResCrtcReg[TownsCRTC::HIGHRES_REG_DISPPAGE]&=~0x100;
+		}
+		if(0!=cpputil::Atoi(cmd.argv[2].c_str()))
+		{
+			towns.crtc.state.highResCrtcReg[TownsCRTC::HIGHRES_REG_DISPPAGE]|=0x200;
+		}
+		else
+		{
+			towns.crtc.state.highResCrtcReg[TownsCRTC::HIGHRES_REG_DISPPAGE]&=~0x200;
+		}
 	}
 	else
 	{
