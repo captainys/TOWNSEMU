@@ -1441,7 +1441,13 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 		// Example:  8c c6           MOV SI,ES
 		// Sreg: ES=0, CS=1, SS=2, DS=3, FD=4, GS=5 (OPCODE part of MODR_M)  [1] pp.26-10
 		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
-		inst.operandSize=16; // Force it to be 16-bit
+		// From observation on 2020/04/22, if the upper-16 bit of the destination register is undefined
+		// F-BASIC386 booted from CD may fail to open windows.
+		// From observation on 2020/10/24, if the operandSize is 32, upper 32-bit of the destination
+		// register must be clear instead of being preserved.
+		// Therefore, MOV AX,DS and MOV EAX,DS probably should behave differently.
+		// Hence the following clause "Force it to be 16-bit" is reverted and commented out.
+		// inst.operandSize=16; // Force it to be 16-bit
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		op2.DecodeMODR_MForSegmentRegister(inst.operand[0]);
 		break;
@@ -6633,7 +6639,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 
 	case I486_RENUMBER_MOV_FROM_SEG: //     0x8C,
-		Move(mem,inst.addressSize,inst.segOverride,op1,op2);
+		{
+			auto seg=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,2);
+			seg.byteData[2]=0;
+			seg.byteData[3]=0;
+			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,seg);
+		}
 		clocksPassed=3;
 		break;
 	case I486_RENUMBER_MOV_TO_SEG: //       0x8E,
