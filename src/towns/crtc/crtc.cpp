@@ -316,8 +316,14 @@ bool TownsCRTC::InSinglePageMode(void) const
 
 uint32_t TownsCRTC::GetEffectiveVRAMSize(void) const
 {
-	// Should return 1MB when High-Res mode is supported.
-	return 512*1024;
+	if(true==state.highResCRTCEnabled)
+	{
+		return TOWNS_VRAM_SIZE;
+	}
+	else
+	{
+		return TOWNS_MIDRES_VRAM_SIZE;
+	}
 }
 
 bool TownsCRTC::IsInFMRCompatibleMode(void) const
