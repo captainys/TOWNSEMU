@@ -207,7 +207,8 @@ void TownsCRTC::State::Reset(void)
 	{
 		d=0;
 	}
-	// highResCRTCEnabled=false;  Memo to self: Don't change it on Reset.
+	// highResCRTCAvailable=true;   Memo to self: Don't change it on Reset.
+	highResCRTCEnabled=false;
 	highResCrtcRegAddrLatch=0;
 	highResCrtcPalette.Reset();
 

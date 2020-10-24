@@ -95,6 +95,7 @@ public:
 	enum
 	{
 		HIGHRES_REG_CTRL0   =0x000,   // Write 0 -> ?
+		HIGHRES_REG_PGCTRL  =0x001,   // bit1 0->1-Layer mode  1->2-Layer mode    bit9 ?
 		HIGHRES_REG_CTRL1   =0x004,   // Read bit0=HighResEnabled bit1=(Initial=1, WriteToBit1->0, HighResoDisabled->1)   Write bit1=1->bit0=0
 
 		HIGHRES_REG_DISPPAGE=0x005,   // Prob  bit0 PriorityPage   bit8 ShowPage0   bit9 ShowPage1
@@ -209,8 +210,8 @@ public:
 		AnalogPalette palette;
 
 
-		bool highResAvailable=false;
-		bool highResCRTCEnabled=true;
+		bool highResAvailable=true;
+		bool highResCRTCEnabled=false;
 		unsigned int highResCrtcReg[NUM_HIRES_CRTC_REGISTERS];
 		unsigned int highResCrtcRegAddrLatch;
 		bool highResCrtcReg4Bit1=true;
