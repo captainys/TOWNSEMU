@@ -312,6 +312,11 @@ bool TownsCRTC::InHSYNC(const unsigned long long int townsTime) const
 
 bool TownsCRTC::InSinglePageMode(void) const
 {
+	return LowResCrtcIsInSinglePageMode();
+}
+
+bool TownsCRTC::LowResCrtcIsInSinglePageMode(void) const
+{
 	return (0==(state.sifter[0]&0x10));
 }
 
@@ -329,7 +334,7 @@ uint32_t TownsCRTC::GetEffectiveVRAMSize(void) const
 
 bool TownsCRTC::IsInFMRCompatibleMode(void) const
 {
-	if(true==InSinglePageMode())
+	if(true==LowResCrtcIsInSinglePageMode())
 	{
 		return false;
 	}
@@ -373,7 +378,7 @@ Vec2i TownsCRTC::GetPageZoom2X(unsigned char page) const
 	// I'm not sure if this logic is correct.  This doesn't cover screen mode 16.
 	if(15==GetHorizontalFrequency())
 	{
-		if(true==InSinglePageMode())
+		if(true==LowResCrtcIsInSinglePageMode())
 		{
 			zoom[1]*=2;
 		}
@@ -525,7 +530,7 @@ Vec2i TownsCRTC::GetPageVRAMCoverageSize1X(unsigned char page) const
 unsigned int TownsCRTC::GetPageBitsPerPixel(unsigned char page) const
 {
 	const unsigned int CL=(state.crtcReg[REG_CR0]>>(page*2))&3;
-	if(true==InSinglePageMode())
+	if(true==LowResCrtcIsInSinglePageMode())
 	{
 		if(2==CL)
 		{
@@ -562,7 +567,7 @@ unsigned int TownsCRTC::GetPageVRAMAddressOffset(unsigned char page) const
 	case 8:
 		return FA0*8;  // 8 pixels for 1 count.
 	case 16:
-		return (InSinglePageMode() ? FA0*8 : FA0*4); // 4 pixels or 2 pixels depending on the single-page or 2-page mode.
+		return (LowResCrtcIsInSinglePageMode() ? FA0*8 : FA0*4); // 4 pixels or 2 pixels depending on the single-page or 2-page mode.
 	}
 	return 0;
 }
@@ -581,7 +586,7 @@ unsigned int TownsCRTC::GetPageBytesPerLine(unsigned char page) const
 {
 	auto LOx=state.crtcReg[REG_LO0+page*4];
 	auto numBytes=LOx*4;   // Why did I think it was (LOx-FOx)*4?
-	if(true==InSinglePageMode())
+	if(true==LowResCrtcIsInSinglePageMode())
 	{
 		numBytes*=2;
 	}
@@ -638,7 +643,7 @@ void TownsCRTC::MakeLowResPageLayerInfo(Layer &layer,unsigned char page) const
 	{
 		layer.HScrollMask=0xFFFFFFFF;
 	}
-	if(true==InSinglePageMode() && 0==page)
+	if(true==LowResCrtcIsInSinglePageMode() && 0==page)
 	{
 		layer.VScrollMask=0x7FFFF;
 	}
@@ -736,7 +741,7 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 		state.sifter[state.sifterAddrLatch]=data;
 		if(0==state.sifterAddrLatch)
 		{
-			if(InSinglePageMode())
+			if(LowResCrtcIsInSinglePageMode())
 			{
 				state.showPage0448[0]=(0!=(data&0x08));
 				state.showPage0448[1]=false;
@@ -853,7 +858,7 @@ std::cout << "Write to CRTC2 Reg=" << cpputil::Ustox(state.highResCrtcRegAddrLat
 		}
 		break;
 	case TOWNSIO_HSYNC_VSYNC:  // 0xFDA0 Also CRT Output COntrol
-		if(InSinglePageMode())
+		if(LowResCrtcIsInSinglePageMode())
 		{
 			state.showPageFDA0[0]=(0!=((data>>2)&3));
 			state.showPageFDA0[1]=state.showPageFDA0[0];
@@ -1302,7 +1307,7 @@ Vec2i TownsCRTC::GetRenderSize(void) const
 	if(true!=state.highResCRTCEnabled)
 	{
 		unsigned int hei=480; // Height still has errors.  Some 320x240 mode returns 320x880 size.
-		if(InSinglePageMode())
+		if(LowResCrtcIsInSinglePageMode())
 		{
 			auto dim=GetPageSizeOnMonitor(0);
 			return Vec2i::Make(std::max(640,dim.x()),hei);
@@ -1460,7 +1465,7 @@ std::vector <std::string> TownsCRTC::GetStatusText(void) const
 	text.push_back("");
 	text.back()="CL0:"+cpputil::Itoa(CL[0])+"  CL1:"+cpputil::Itoa(CL[1]);
 
-	if(true==InSinglePageMode())
+	if(true==LowResCrtcIsInSinglePageMode())
 	{
 		text.push_back("");
 		text.back()="Single-Page Mode.  ";

@@ -362,9 +362,12 @@ private:
 	void TurnOnVSYNCIRQ(void);
 
 public:
+	bool InSinglePageMode(void) const;
+
+
 	/*! [2] pp.152
 	*/
-	bool InSinglePageMode(void) const;
+	bool LowResCrtcIsInSinglePageMode(void) const;
 
 	/*!
 	    This function was initially for I/O FF82H, FM-R compatible mode display page and bit masks.
