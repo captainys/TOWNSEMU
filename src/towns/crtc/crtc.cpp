@@ -801,13 +801,6 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]&=0xFFFFFF00;
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]|=(data&0xFF);
 std::cout << "Write to CRTC2 Reg=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Uitox(state.highResCrtcReg[state.highResCrtcRegAddrLatch]) << std::endl;
-			if(HIGHRES_REG_CTRL0==state.highResCrtcRegAddrLatch)
-			{
-				if(0!=(data&1) && true==state.highResAvailable)
-				{
-					state.highResCRTCEnabled=true;
-				}
-			}
 			if(HIGHRES_REG_CTRL1==state.highResCrtcRegAddrLatch)
 			{
 				if(0!=(data&2))
@@ -955,13 +948,6 @@ std::cout << "Write to CRTC2 Reg=" << cpputil::Ustox(state.highResCrtcRegAddrLat
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]&=0xFFFF0000;
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]|=(data&0xFFFF);
 std::cout << "Write to CRTC2 Reg=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Uitox(state.highResCrtcReg[state.highResCrtcRegAddrLatch]) << std::endl;
-			if(HIGHRES_REG_CTRL0==state.highResCrtcRegAddrLatch)
-			{
-				if(0!=(data&1) && true==state.highResAvailable)
-				{
-					state.highResCRTCEnabled=true;
-				}
-			}
 			if(HIGHRES_REG_CTRL1==state.highResCrtcRegAddrLatch)
 			{
 				if(0!=(data&2))
@@ -1042,13 +1028,6 @@ std::cout << "Write to CRTC2 Reg=" << cpputil::Ustox(state.highResCrtcRegAddrLat
 		{
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]=data;
 std::cout << "Write to CRTC2 Reg=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Uitox(state.highResCrtcReg[state.highResCrtcRegAddrLatch]) << std::endl;
-			if(HIGHRES_REG_CTRL0==state.highResCrtcRegAddrLatch)
-			{
-				if(0!=(data&1) && true==state.highResAvailable)
-				{
-					state.highResCRTCEnabled=true;
-				}
-			}
 			if(HIGHRES_REG_CTRL1==state.highResCrtcRegAddrLatch)
 			{
 				if(0!=(data&2))
@@ -1220,12 +1199,6 @@ std::cout << "Write to CRTC2 Reg=" << cpputil::Ustox(state.highResCrtcRegAddrLat
 	case TOWNSIO_MX_IMGOUT_D0://   0x474,
 		switch(state.highResCrtcRegAddrLatch)
 		{
-		case HIGHRES_REG_CTRL0:
-			if(0!=(data&1) && true==state.highResAvailable)
-			{
-				state.highResCRTCEnabled=true;
-			}
-			break;
 		case HIGHRES_REG_CTRL1:
 			data=0;
 			if(true==state.highResCrtcReg4Bit1)
