@@ -410,6 +410,17 @@ Vec2i TownsCRTC::GetPageZoom2X(unsigned char page) const
 }
 Vec2i TownsCRTC::GetPageOriginOnMonitor(unsigned char page) const
 {
+	if(true!=state.highResCRTCEnabled)
+	{
+		return GetLowResPageOriginOnMonitor(page);
+	}
+	else
+	{
+		return GetHighResPageOriginOnMonitor(page);
+	}
+}
+Vec2i TownsCRTC::GetLowResPageOriginOnMonitor(unsigned char page) const
+{
 	int x0,y0;
 	static const int reg[6]=
 	{
@@ -628,7 +639,7 @@ void TownsCRTC::MakeLowResPageLayerInfo(Layer &layer,unsigned char page) const
 {
 	page&=1;
 	layer.bitsPerPixel=GetPageBitsPerPixel(page);
-	layer.originOnMonitor=GetPageOriginOnMonitor(page);
+	layer.originOnMonitor=GetLowResPageOriginOnMonitor(page);
 	layer.sizeOnMonitor=GetPageSizeOnMonitor(page);
 	layer.VRAMCoverage1X=GetPageVRAMCoverageSize1X(page);
 	layer.zoom2x=GetPageZoom2X(page);
@@ -1640,6 +1651,10 @@ void TownsCRTC::MakeHighResPageLayerInfo(Layer &layer,unsigned char page) const
 bool TownsCRTC::HighResCrtcIsInSinglePageMode(void) const
 {
 	return (0==(state.highResCrtcReg[HIGHRES_REG_PGCTRL]&2));
+}
+Vec2i TownsCRTC::GetHighResPageOriginOnMonitor(unsigned char page) const
+{
+	return Vec2i::Make(0,0); // Tentative
 }
 Vec2i TownsCRTC::GetHighResDisplaySize(void) const
 {

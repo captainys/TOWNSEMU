@@ -402,9 +402,13 @@ public:
 	*/
 	Vec2i GetPageZoom2X(unsigned char page) const;
 
-	/*! Returns the page display origin on the monitor in VGA (640x480) coordinate.
+	/*! Returns the page display origin on the monitor in 1x scale.
 	*/
 	Vec2i GetPageOriginOnMonitor(unsigned char page) const;
+
+	/*! Returns the page display origin on the monitor in VGA (640x480) coordinate.
+	*/
+	Vec2i GetLowResPageOriginOnMonitor(unsigned char page) const;
 	/*! It is my guess.  The rectangle in which the image is drawn is defined only by
 	    HDSx, VDSx, HDEx, and VDEx.  But, what about HAJx?  FM TOWNS Technical Guidebook [2]
 	    fell short of explaining the meaning of HAJx.
@@ -500,6 +504,10 @@ public:
 	/*! (Prob) Bit 1 of reg 1 means 2-layer mode.
 	*/
 	bool HighResCrtcIsInSinglePageMode(void) const;
+
+	/*!
+	*/
+	Vec2i GetHighResPageOriginOnMonitor(unsigned char page) const;
 
 	std::vector <std::string> GetHighResStatusText(void) const;
 	std::vector <std::string> GetHighResPageStatusText(int page) const;
