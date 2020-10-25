@@ -189,7 +189,7 @@ build\testcd.exp : build\testcd.obj build\io.obj build\vmif.obj
 
 
 
-build\eaxds.obj : eaxds.c moveaxds.asm io.h vmif.h
+build\eaxds.obj : eaxds.c io.h vmif.h
 	hcd386 eaxds.c -obj build\eaxds.obj
 
 build\eaxds.exp : build\eaxds.obj build\moveaxds.obj build\io.obj build\vmif.obj
@@ -218,6 +218,14 @@ build\highres1.obj : highres1.c io.h vmif.h
 
 build\highres1.exp : build\highres1.obj build\io.obj build\vmif.obj
 	386link build\highres1.obj -exe build\highres1.exp @LIBS.LN
+
+
+
+build\fullcol1.obj : fullcol1.c io.h vmif.h
+	hcd386 fullcol1.c -obj build\fullcol1.obj
+
+build\fullcol1.exp : build\fullcol1.obj build\io.obj build\vmif.obj
+	386link build\fullcol1.obj -exe build\fullcol1.exp @LIBS.LN
 
 
 

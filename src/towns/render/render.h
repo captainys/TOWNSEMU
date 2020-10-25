@@ -94,6 +94,8 @@ public:
 	void Render8Bit(const TownsCRTC::Layer &layer,const Vec3ub palette[256],const unsigned char VRAM[],bool transparent);
 	template <class OFFSETTRANS>
 	void Render16Bit(const TownsCRTC::Layer &layer,const unsigned char VRAM[],bool transparent);
+	template <class OFFSETTRANS>
+	void Render24Bit(const TownsCRTC::Layer &layer,const unsigned char VRAM[],bool transparent);
 };
 
 

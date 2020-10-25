@@ -75,8 +75,6 @@ void Test640x480_32K(void)
 	EGB_displayStart(EGB_work,2,2,2);
 	EGB_displayStart(EGB_work,3,640,480);
 
-	EGB_writePage(EGB_work,1);
-
 	EGB_color(EGB_work,EGB_FOREGROUND_COLOR,0x7FFF);
 	EGB_writeMode(EGB_work,EGB_PSET);
 

@@ -94,7 +94,7 @@ public:
 
 	enum
 	{
-		HIGHRES_REG_CTRL0   =0x000,   // Write 0 -> ?
+		HIGHRES_REG_CTRL0   =0x000,   // Write 0 -> ?   1->enable highRes CRTC
 		HIGHRES_REG_PGCTRL  =0x001,   // bit1 0->1-Layer mode  1->2-Layer mode    bit9 ?
 		HIGHRES_REG_CTRL1   =0x004,   // Read bit0=HighResEnabled bit1=(Initial=1, WriteToBit1->0, HighResoDisabled->1)   Write bit1=1->bit0=0
 
@@ -118,7 +118,7 @@ public:
 		HIGHRES_REG_P0_VRAM_OFFSET_X=0x116, // Prob
 		HIGHRES_REG_P0_VRAM_OFFSET_Y=0x117, // Prob
 		HIGHRES_REG_P0_ZOOM    =0x119,
-		HIGHRES_REG_P0_PALETTE =0x11B,   // Prob 8000H 32K color, 0FH 16-color palette, 0FFH 256-color palette
+		HIGHRES_REG_P0_PALETTE =0x11B,   // Prob 8000H 32K color, 0FH 16-color palette, 0FFH 256-color palette, FFFFFFH 24-bit color
 
 		HIGHRES_REG_P1_WID_H   =0x120,
 		HIGHRES_REG_P1_WID_L   =0x121,

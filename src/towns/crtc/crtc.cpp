@@ -207,7 +207,7 @@ void TownsCRTC::State::Reset(void)
 	{
 		d=0;
 	}
-	// highResCRTCAvailable=true;   Memo to self: Don't change it on Reset.
+	// highResAvailable=true;   Memo to self: Don't change it on Reset.
 	highResCRTCEnabled=false;
 	highResCrtcRegAddrLatch=0;
 	highResCrtcPalette.Reset();
@@ -801,6 +801,13 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]&=0xFFFFFF00;
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]|=(data&0xFF);
 std::cout << "Write to CRTC2 Reg=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Uitox(state.highResCrtcReg[state.highResCrtcRegAddrLatch]) << std::endl;
+			if(HIGHRES_REG_CTRL0==state.highResCrtcRegAddrLatch)
+			{
+				if(0!=(data&1) && true==state.highResAvailable)
+				{
+					state.highResCRTCEnabled=true;
+				}
+			}
 			if(HIGHRES_REG_CTRL1==state.highResCrtcRegAddrLatch)
 			{
 				if(0!=(data&2))
@@ -948,6 +955,13 @@ std::cout << "Write to CRTC2 Reg=" << cpputil::Ustox(state.highResCrtcRegAddrLat
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]&=0xFFFF0000;
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]|=(data&0xFFFF);
 std::cout << "Write to CRTC2 Reg=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Uitox(state.highResCrtcReg[state.highResCrtcRegAddrLatch]) << std::endl;
+			if(HIGHRES_REG_CTRL0==state.highResCrtcRegAddrLatch)
+			{
+				if(0!=(data&1) && true==state.highResAvailable)
+				{
+					state.highResCRTCEnabled=true;
+				}
+			}
 			if(HIGHRES_REG_CTRL1==state.highResCrtcRegAddrLatch)
 			{
 				if(0!=(data&2))
@@ -1028,6 +1042,13 @@ std::cout << "Write to CRTC2 Reg=" << cpputil::Ustox(state.highResCrtcRegAddrLat
 		{
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]=data;
 std::cout << "Write to CRTC2 Reg=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Uitox(state.highResCrtcReg[state.highResCrtcRegAddrLatch]) << std::endl;
+			if(HIGHRES_REG_CTRL0==state.highResCrtcRegAddrLatch)
+			{
+				if(0!=(data&1) && true==state.highResAvailable)
+				{
+					state.highResCRTCEnabled=true;
+				}
+			}
 			if(HIGHRES_REG_CTRL1==state.highResCrtcRegAddrLatch)
 			{
 				if(0!=(data&2))
@@ -1199,6 +1220,12 @@ std::cout << "Write to CRTC2 Reg=" << cpputil::Ustox(state.highResCrtcRegAddrLat
 	case TOWNSIO_MX_IMGOUT_D0://   0x474,
 		switch(state.highResCrtcRegAddrLatch)
 		{
+		case HIGHRES_REG_CTRL0:
+			if(0!=(data&1) && true==state.highResAvailable)
+			{
+				state.highResCRTCEnabled=true;
+			}
+			break;
 		case HIGHRES_REG_CTRL1:
 			data=0;
 			if(true==state.highResCrtcReg4Bit1)
@@ -1631,6 +1658,9 @@ void TownsCRTC::MakeHighResPageLayerInfo(Layer &layer,unsigned char page) const
 		break;
 	case 0x8000:
 		layer.bitsPerPixel=16;
+		break;
+	case 0xFFFFFF:
+		layer.bitsPerPixel=24;
 		break;
 	}
 	layer.VRAMAddr=0x80000*page;

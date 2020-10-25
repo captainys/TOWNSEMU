@@ -137,6 +137,9 @@ void TownsRender::Render(
 	case 16:
 		Render16Bit<OFFSETTRANS>(layer,VRAM,transparent);
 		break;
+	case 24:
+		Render24Bit<OFFSETTRANS>(layer,VRAM,transparent);
+		break;
 	}
 }
 template <class OFFSETTRANS>
@@ -459,6 +462,75 @@ void TownsRender::Render16Bit(const TownsCRTC::Layer &layer,const unsigned char 
 				ZHswitch=1-ZHswitch;
 				ZH=ZHsrc[ZHswitch];
 				inLineVRAMOffset+=2;
+			}
+		}
+
+		if(1<yStep)
+		{
+			auto copyPtr=dstLine+(4*this->wid);
+			for(unsigned int zv=1; zv<yStep; ++zv)
+			{
+				std::memcpy(copyPtr,dstLine,dst-dstLine);
+				copyPtr+=(4*this->wid);
+			}
+			lineVRAMOffset+=layer.bytesPerLine;
+		}
+		else
+		{
+			--ZV;
+			if(0==ZV)
+			{
+				ZV=ZV0;
+				lineVRAMOffset+=layer.bytesPerLine;
+			}
+		}
+	}
+}
+
+template <class OFFSETTRANS>
+void TownsRender::Render24Bit(const TownsCRTC::Layer &layer,const unsigned char VRAM[],bool transparent)
+{
+	unsigned int VRAMBase=layer.VRAMAddr;
+	unsigned int VRAMOffsetVertical=(layer.VRAMOffset+layer.FMRVRAMOffset)&~layer.HScrollMask;
+	unsigned int VRAMOffsetHorizontal=(layer.VRAMOffset+layer.FMRVRAMOffset)&layer.HScrollMask;
+	const unsigned int VRAMHScrollMask=layer.HScrollMask+1;
+	const unsigned int VRAMVScrollMask=layer.VScrollMask;
+	unsigned int lineVRAMOffset=0;
+	const int ZHsrc[2]={layer.zoom2x.x()/2,(layer.zoom2x.x()+1)/2};  // For x.5 times zoom rate.
+	auto ZV0=layer.zoom2x.y()/2;
+	auto ZV=ZV0;
+
+	// yStep should be 1 if transparent.
+	// If transparnet==true, there is a possibility that memcpy overwrites background pixels.
+	unsigned int yStep=(true!=transparent ? ZV0 : 1);
+	auto bottomY=this->hei-yStep;
+	for(int y=0; y<layer.sizeOnMonitor.y() && y+layer.originOnMonitor.y()<=bottomY; y+=yStep)
+	{
+		auto X=  layer.originOnMonitor.x();
+		auto Y=y+layer.originOnMonitor.y();
+		unsigned char *dstLine=rgba.data()+4*(Y*this->wid+X);
+		auto dst=dstLine;
+
+		unsigned int inLineVRAMOffset=layer.VRAMHSkipBytes;
+		int ZHswitch=0;
+		auto ZH=ZHsrc[ZHswitch];
+		for(int x=0; x<layer.sizeOnMonitor.x() && x+layer.originOnMonitor.x()<this->wid && inLineVRAMOffset<layer.bytesPerLine; x++)
+		{
+			unsigned int VRAMAddr=lineVRAMOffset+((inLineVRAMOffset+VRAMOffsetHorizontal)%VRAMHScrollMask);
+			VRAMAddr=VRAMBase+((VRAMAddr+VRAMOffsetVertical)&VRAMVScrollMask);
+			OFFSETTRANS::Trans(VRAMAddr);
+
+			dst[0]=VRAM[VRAMAddr];
+			dst[1]=VRAM[VRAMAddr+1];
+			dst[2]=VRAM[VRAMAddr+2];
+			dst[3]=255;
+
+			dst+=4;
+			if(0==(--ZH))
+			{
+				ZHswitch=1-ZHswitch;
+				ZH=ZHsrc[ZHswitch];
+				inLineVRAMOffset+=3;
 			}
 		}
 
