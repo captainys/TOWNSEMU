@@ -402,6 +402,11 @@ public:
 	*/
 	Vec2i GetPageZoom2X(unsigned char page) const;
 
+	/*!
+	*/
+	Vec2i GetLowResPageZoom2X(unsigned char page) const;
+
+
 	/*! Returns the page display origin on the monitor in 1x scale.
 	*/
 	Vec2i GetPageOriginOnMonitor(unsigned char page) const;
@@ -500,6 +505,8 @@ public:
 	void MakeHighResPageLayerInfo(Layer &layer,unsigned char page) const;
 
 	Vec2i GetHighResDisplaySize(void) const;
+
+	Vec2i GetHighResPageZoom2X(unsigned char page) const;
 
 	/*! (Prob) Bit 1 of reg 1 means 2-layer mode.
 	*/

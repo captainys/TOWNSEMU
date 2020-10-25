@@ -377,6 +377,17 @@ unsigned int TownsCRTC::GetBaseClockScaler(void) const
 }
 Vec2i TownsCRTC::GetPageZoom2X(unsigned char page) const
 {
+	if(true!=state.highResCRTCEnabled)
+	{
+		return GetLowResPageZoom2X(page);
+	}
+	else
+	{
+		return GetHighResPageZoom2X(page);
+	}
+}
+Vec2i TownsCRTC::GetLowResPageZoom2X(unsigned char page) const
+{
 	Vec2i zoom;
 	auto pageZoom=(state.crtcReg[REG_ZOOM]>>(8*page));
 	zoom.x()=(( pageZoom    &15)+1);
@@ -524,7 +535,7 @@ Vec2i TownsCRTC::GetPageSizeOnMonitor(unsigned char page) const
 	}
 	else if(3==CLKSEL() && 0x29D==state.crtcReg[REG_HST]) // VING Setting
 	{
-		auto zoom=GetPageZoom2X(page);
+		auto zoom=GetLowResPageZoom2X(page);
 		wid*=zoom.x();
 		wid/=4;
 	}
@@ -642,7 +653,7 @@ void TownsCRTC::MakeLowResPageLayerInfo(Layer &layer,unsigned char page) const
 	layer.originOnMonitor=GetLowResPageOriginOnMonitor(page);
 	layer.sizeOnMonitor=GetPageSizeOnMonitor(page);
 	layer.VRAMCoverage1X=GetPageVRAMCoverageSize1X(page);
-	layer.zoom2x=GetPageZoom2X(page);
+	layer.zoom2x=GetLowResPageZoom2X(page);
 	layer.VRAMAddr=0x40000*page;
 	layer.VRAMOffset=GetPageVRAMAddressOffset(page);
 	layer.FMRVRAMOffset=(0==page ? state.FMRVRAMOffset : 0); // Can be applied only to layer 0 in two-layer mode, or in the single-page mode.  Either way page==0.
@@ -1631,11 +1642,11 @@ void TownsCRTC::MakeHighResPageLayerInfo(Layer &layer,unsigned char page) const
 	layer.VRAMOffset=(dy*vramWidInPix+dx)*layer.bitsPerPixel/8;
 	layer.FMRVRAMOffset=0;          // Probably FM-R page is not applicable to CRTC2.
 	layer.FMRGVRAMMask=0x0F;        // Probably mask is not applicable to CRTC2.
-	layer.originOnMonitor.Set(0,0); // Tentative
+	layer.originOnMonitor=GetHighResPageOriginOnMonitor(page);
 	layer.VRAMHSkipBytes=0;
 	layer.sizeOnMonitor=GetHighResDisplaySize();
 	layer.VRAMCoverage1X=layer.sizeOnMonitor;
-	layer.zoom2x.Set(2,2);          // Tentative
+	layer.zoom2x=GetHighResPageZoom2X(page);
 	layer.bytesPerLine=vramWidInPix*layer.bitsPerPixel/8;
 
 	layer.HScrollMask=(layer.bytesPerLine-1);
@@ -1655,6 +1666,11 @@ bool TownsCRTC::HighResCrtcIsInSinglePageMode(void) const
 Vec2i TownsCRTC::GetHighResPageOriginOnMonitor(unsigned char page) const
 {
 	return Vec2i::Make(0,0); // Tentative
+}
+Vec2i TownsCRTC::GetHighResPageZoom2X(unsigned char page) const
+{
+	auto zoomReg=state.highResCrtcReg[HIGHRES_REG_P0_ZOOM+0x10*page];
+	return Vec2i::Make((1+(zoomReg&0xff))*2,(1+((zoomReg>>8)&0xff))*2);
 }
 Vec2i TownsCRTC::GetHighResDisplaySize(void) const
 {
