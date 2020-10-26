@@ -42,6 +42,8 @@ public:
 
 		CMD_QUIT,
 
+		CMD_RESET,
+
 		CMD_HELP,
 
 		CMD_RUN,
