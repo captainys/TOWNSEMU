@@ -116,6 +116,7 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_T,L"FM TOWNS")->GetSubMenu();
 		subMenu->AddTextItem(0,FSKEY_S,L"Start Virtual Machine")->BindCallBack(&THISCLASS::VM_Start,this);
 		subMenu->AddTextItem(0,FSKEY_NULL,L"Start and Close GUI")->BindCallBack(&THISCLASS::VM_StartAndCloseGUI,this);
+		subMenu->AddTextItem(0,FSKEY_NULL,L"Reset Virtual Machine")->BindCallBack(&THISCLASS::VM_Reset,this);
 		subMenu->AddTextItem(0,FSKEY_Q,L"Power Off")->BindCallBack(&THISCLASS::VM_PowerOff,this);
 		subMenu->AddTextItem(0,FSKEY_P,L"Pause")->BindCallBack(&THISCLASS::VM_Pause,this);
 		subMenu->AddTextItem(0,FSKEY_R,L"Resume")->BindCallBack(&THISCLASS::VM_Resume,this);
@@ -888,6 +889,17 @@ void FsGuiMainCanvas::VM_PowerOffConfirm(FsGuiDialog *dlg,int returnCode)
 	if((int)YSOK==returnCode)
 	{
 		subproc.Send("Q\n");
+	}
+}
+void FsGuiMainCanvas::VM_Reset(FsGuiPopUpMenuItem *)
+{
+	if(true==subproc.SubprocRunning())
+	{
+		subproc.Send("RESET\n");
+	}
+	else
+	{
+		VM_Not_Running_Error();
 	}
 }
 void FsGuiMainCanvas::VM_Pause(FsGuiPopUpMenuItem *)

@@ -166,6 +166,7 @@ private:
 
 	void VM_Start(FsGuiPopUpMenuItem *);
 	void VM_StartAndCloseGUI(FsGuiPopUpMenuItem *);
+	void VM_Reset(FsGuiPopUpMenuItem *);
 	void VM_PowerOff(FsGuiPopUpMenuItem *);
 	void VM_PowerOffConfirm(FsGuiDialog *dlg,int returnCode);
 	void VM_Pause(FsGuiPopUpMenuItem *);
