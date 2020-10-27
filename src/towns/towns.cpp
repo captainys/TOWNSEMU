@@ -600,7 +600,7 @@ void FMTowns::SetMainRAMSize(long long int size)
 void FMTowns::ForceRender(class TownsRender &render,class Outside_World &world)
 {
 	render.Prepare(crtc);
-	render.BuildImage(physMem.state.VRAM.data(),crtc.state.palette,crtc.chaseHQPalette);
+	render.BuildImage(physMem.state.VRAM.data(),crtc.GetPalette(),crtc.chaseHQPalette);
 	if(true==world.ImageNeedsFlip())
 	{
 		render.FlipUpsideDown();
