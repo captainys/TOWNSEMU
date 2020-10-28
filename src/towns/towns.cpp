@@ -616,6 +616,12 @@ void FMTowns::RenderQuiet(class TownsRender &render,bool layer0,bool layer1)
 	render.BuildImage(physMem.state.VRAM.data(),crtc.GetPalette(),crtc.chaseHQPalette);
 }
 
+void FMTowns::RenderEntireVRAMLayerQuiet(class TownsRender &render,unsigned int layer)
+{
+	render.PrepareEntireVRAMLayer(crtc,layer);
+	render.BuildImage(physMem.state.VRAM.data(),crtc.GetPalette(),crtc.chaseHQPalette);
+}
+
 unsigned int FMTowns::GetEleVolCDLeft(void) const
 {
 	return state.eleVol[TOWNS_ELEVOL_FOR_CD][TOWNS_ELEVOL_CD_LEFT].vol;

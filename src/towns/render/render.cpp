@@ -50,6 +50,50 @@ void TownsRender::Prepare(const TownsCRTC &crtc)
 	crtcRenderSize=crtc.GetRenderSize();
 }
 
+void TownsRender::PrepareEntireVRAMLayer(const TownsCRTC &crtc,int layer)
+{
+	highResCRTC=crtc.state.highResCRTCEnabled;
+	crtcIsSinglePageMode=crtc.InSinglePageMode();
+	if(true==crtcIsSinglePageMode)
+	{
+		crtcShowPage[0]=crtc.state.ShowPage(0);
+		crtc.MakePageLayerInfo(crtcLayer[0],0);
+	}
+	else
+	{
+		crtcShowPage[0]=crtc.state.ShowPage(0);
+		crtcShowPage[1]=crtc.state.ShowPage(1);
+		crtc.MakePageLayerInfo(crtcLayer[0],0);
+		crtc.MakePageLayerInfo(crtcLayer[1],1);
+	}
+
+	if(1==crtcIsSinglePageMode && 0!=layer)
+	{
+		crtcShowPage[0]=false;
+		crtcShowPage[1]=false;
+	}
+	else if(0==layer || 1==layer)
+	{
+		crtcShowPage[layer]=true;
+		crtcShowPage[1-layer]=false;
+		crtcLayer[layer].VRAMOffset=0;
+		crtcLayer[layer].originOnMonitor.Set(0,0);
+		crtcLayer[layer].VRAMHSkipBytes=0;
+		crtcLayer[layer].sizeOnMonitor[0]=crtcLayer[layer].bytesPerLine*8/crtcLayer[layer].bitsPerPixel;
+		crtcLayer[layer].sizeOnMonitor[1]=(crtcLayer[layer].VScrollMask+1)/crtcLayer[layer].bytesPerLine;
+		crtcLayer[layer].VRAMCoverage1X=crtcLayer[layer].sizeOnMonitor;
+		crtcLayer[layer].zoom2x.Set(2,2);
+	}
+	else
+	{
+		crtcShowPage[0]=false;
+		crtcShowPage[1]=false;
+	}
+
+	crtcPriorityPage=crtc.GetPriorityPage();
+	crtcRenderSize=crtcLayer[layer].sizeOnMonitor;
+}
+
 void TownsRender::OerrideShowPage(bool layer0,bool layer1)
 {
 	crtcShowPage[0]=layer0;

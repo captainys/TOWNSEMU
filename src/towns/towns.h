@@ -512,6 +512,11 @@ public:
 	void RenderQuiet(class TownsRender &render,bool layer0,bool layer1);
 
 
+	/*! Render one entire VRAM layer, but not transfer to the window.
+	*/
+	void RenderEntireVRAMLayerQuiet(class TownsRender &render,unsigned int layer);
+
+
 	/*! Set up VRAM access.  Can have breakOnRead/breakOnWrite flag for debugging.
 	    Zero performance penalty if both flags are false.
 	*/

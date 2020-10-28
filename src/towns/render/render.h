@@ -55,6 +55,12 @@ public:
 	*/
 	void Prepare(const TownsCRTC &crtc);
 
+
+	/*!
+	*/
+	void PrepareEntireVRAMLayer(const TownsCRTC &crtc,int layer);
+
+
 	/*!
 	*/
 	void OerrideShowPage(bool layer0,bool layer1);
