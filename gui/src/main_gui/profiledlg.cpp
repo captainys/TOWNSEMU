@@ -58,6 +58,8 @@ void ProfileDialog::Make(void)
 
 		pretend386DXBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Pretend 80386DX",YSTRUE);
 
+		damperWireLineBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Render Damper-Wire Line (to make you nostalgic)",YSTRUE);
+
 		EndAddTabItem();
 	}
 
@@ -577,6 +579,9 @@ TownsProfile ProfileDialog::GetProfile(void) const
 	profile.strikeCommanderThrottleAxis=strikeCommanderThrottlePhysIdDrp->GetSelection();
 
 
+	profile.damperWireLine=(YSTRUE==damperWireLineBtn->GetCheck());
+
+
 	profile.keyboardMode=TownsStrToKeyboardMode(keyboardModeDrp->GetSelectedString().c_str());
 	for(int row=0; row<TownsProfile::MAX_NUM_VIRTUALKEYS; ++row)
 	{
@@ -687,6 +692,7 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 	strikeCommanderThrottlePhysIdDrp->Select(profile.strikeCommanderThrottlePhysicalId);
 	strikeCommanderThrottlePhysIdDrp->Select(profile.strikeCommanderThrottleAxis);
 
+	damperWireLineBtn->SetCheck(profile.damperWireLine ? YSTRUE : YSFALSE);
 
 	keyboardModeDrp->SelectByString(TownsKeyboardModeToStr(profile.keyboardMode).c_str());
 	for(int row=0; row<TownsProfile::MAX_NUM_VIRTUALKEYS; ++row)
