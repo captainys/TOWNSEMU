@@ -576,6 +576,7 @@ bool FMTowns::CheckRenderingTimer(TownsRender &render,Outside_World &world)
 	if(var.nextRenderingTime<=state.townsTime && true!=crtc.InVSYNC(state.townsTime))
 	{
 		render.Prepare(crtc);
+		render.damperWireLine=var.damperWireLine;
 		render.BuildImage(physMem.state.VRAM.data(),crtc.state.palette,crtc.chaseHQPalette);
 		world.Render(render.GetImage());
 		world.UpdateStatusBitmap(*this);
@@ -600,6 +601,7 @@ void FMTowns::SetMainRAMSize(long long int size)
 void FMTowns::ForceRender(class TownsRender &render,class Outside_World &world)
 {
 	render.Prepare(crtc);
+	render.damperWireLine=var.damperWireLine;
 	render.BuildImage(physMem.state.VRAM.data(),crtc.GetPalette(),crtc.chaseHQPalette);
 	if(true==world.ImageNeedsFlip())
 	{

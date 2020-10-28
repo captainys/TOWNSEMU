@@ -69,6 +69,7 @@ void TownsRenderingThread::CheckRenderingTimer(FMTowns &towns,TownsRender &rende
 	   true!=towns.crtc.InVSYNC(towns.state.townsTime))
 	{
 		render.Prepare(towns.crtc);
+		render.damperWireLine=towns.var.damperWireLine;
 		this->rendererPtr=&render;
 		memcpy(this->VRAMCopy,towns.physMem.state.VRAM.data(),towns.crtc.GetEffectiveVRAMSize());
 		this->paletteCopy=towns.crtc.GetPalette();

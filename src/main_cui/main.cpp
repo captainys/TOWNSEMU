@@ -388,6 +388,8 @@ bool Setup(FMTowns &towns,Outside_World *outside_world,const TownsARGV &argv)
 		}
 	}
 
+	towns.var.damperWireLine=argv.damperWireLine;
+
 	outside_world->strikeCommanderThrottlePhysicalId=argv.strikeCommanderThrottlePhysicalId;
 	outside_world->strikeCommanderThrottleAxis=argv.strikeCommanderThrottleAxis;
 

@@ -158,6 +158,8 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "-FMVOL volume" << std::endl;
 	std::cout << "-PCMVOL volume" << std::endl;
 	std::cout << "  Specify FM/PCM volume.  Volume will be rounded to 0 to 8192." << std::endl;
+	std::cout << "-DAMPERWIRELINE" << std::endl;
+	std::cout << "  Render damper-wire line to make you feel nostalgic." << std::endl;
 }
 
 void TownsARGV::PrintApplicationList(void) const
@@ -670,6 +672,10 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		else if("-LOWRES"==ARG)
 		{
 			highResAvailable=false;
+		}
+		else if("-DAMPERWIRELINE"==ARG)
+		{
+			damperWireLine=true;
 		}
 		else
 		{

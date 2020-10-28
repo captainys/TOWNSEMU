@@ -44,6 +44,8 @@ public:
 
 	bool catchUpRealTime=true;
 
+	bool damperWireLine=false;
+
 	std::string ROMPath;
 	std::string CMOSFName;
 	bool autoSaveCMOS=true; // If this flag is false, CMOSFName will not be copied to FMTowns::Variable.

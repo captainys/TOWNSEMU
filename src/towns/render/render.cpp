@@ -132,6 +132,18 @@ void TownsRender::BuildImage(const unsigned char VRAM[],const TownsCRTC::AnalogP
 			Render<VRAM0Trans>(priorityPage,  crtcLayer[priorityPage]  ,palette,chaseHQPalette,VRAM,true);
 		}
 	}
+
+	if(true==damperWireLine)
+	{
+		auto linePtr=rgba.data()+(hei*2/3)*wid*4;
+		for(int x=0; x<wid; ++x)
+		{
+			linePtr[0]=(unsigned char)((unsigned int)linePtr[0]*7/8);
+			linePtr[1]=(unsigned char)((unsigned int)linePtr[1]*7/8);
+			linePtr[2]=(unsigned char)((unsigned int)linePtr[2]*7/8);
+			linePtr+=4;
+		}
+	}
 }
 
 void TownsRender::FlipUpsideDown(void)

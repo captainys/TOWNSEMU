@@ -38,6 +38,8 @@ private:
 	Vec2i crtcRenderSize;
 
 public:
+	bool damperWireLine=false;
+
 	class Image
 	{
 	public:

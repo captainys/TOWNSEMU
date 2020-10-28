@@ -217,6 +217,10 @@ public:
 		bool debugBreakOnLButtonUp=false;
 		bool debugBreakOnLButtonDown=false;
 
+		/*! If this flag is true, fake damper-wire line is rendered.
+		*/
+		bool damperWireLine=false;
+
 		/*! Enable/disable mouse integration.
 		    To disable mouse integration, set this flag false, and call DontControlMouse().
 		    To enable, set this flag true, then VM will respect the next ControlMouse and SetMouseButtonState functions and on.
