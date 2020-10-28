@@ -196,6 +196,10 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 		text.back()+=TownsKeyboardModeToStr(keyboardMode);
 	}
 
+	sstream.str("");
+	sstream << "DAMPWIRE " << (damperWireLine ? 1 : 0);
+	text.push_back(sstream.str());
+
 	for(auto vk : virtualKeys)
 	{
 		if(0!=vk.townsKey && 0<=vk.physId)
@@ -440,6 +444,13 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 				keyboardMode=TownsStrToKeyboardMode(argv[1].c_str());
 			}
 		}
+		else if(0==argv[0].STRCMP("DAMPWIRE"))
+		{
+			if(2<=argv.size())
+			{
+				damperWireLine=(0!=argv[1].Atoi());
+			}
+		}
 		else
 		{
 			errorMsg="Unrecognized keyword:";
@@ -614,6 +625,11 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 	{
 		argv.push_back("-KEYBOARD");
 		argv.push_back(TownsKeyboardModeToStr(keyboardMode));
+	}
+
+	if(true==damperWireLine)
+	{
+		argv.push_back("-DAMPERWIRELINE");
 	}
 
 	for(auto vk : virtualKeys)
