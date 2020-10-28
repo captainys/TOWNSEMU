@@ -149,6 +149,9 @@ public:
 		CMD_XMODEM_FROM_VM,
 		CMD_XMODEMCRC_FROM_VM,
 
+		CMD_SAVE_SCREENSHOT,
+		CMD_SAVE_VRAMLAYER,
+
 		CMD_SPECIAL_DEBUG,
 	};
 
@@ -247,6 +250,7 @@ public:
 		ERROR_UNDEFINED_KEYBOARD_MODE,
 		ERROR_NO_DATA_GIVEN,
 		ERROR_WRONG_PARAMETER,
+		ERROR_VRAM_LAYER_UNAVAILABLE,
 	};
 
 	class Command
@@ -335,6 +339,9 @@ public:
 	void Execute_XMODEMtoVM(FMTowns &towns,Command &cmd);
 	void Execute_XMODEMfromVM(FMTowns &towns,Command &cmd);
 	void Execute_XMODEMCRCfromVM(FMTowns &towns,Command &cmd);
+
+	void Execute_SaveScreenShot(FMTowns &towns,Command &cmd);
+	void Execute_SaveVRAMLayer(FMTowns &towns,Command &cmd);
 
 	void Execute_SpecialDebug(FMTowns &towns,Command &cmd);
 };

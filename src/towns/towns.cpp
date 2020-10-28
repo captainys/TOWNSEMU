@@ -609,6 +609,13 @@ void FMTowns::ForceRender(class TownsRender &render,class Outside_World &world)
 	world.Render(render.GetImage());
 }
 
+void FMTowns::RenderQuiet(class TownsRender &render,bool layer0,bool layer1)
+{
+	render.Prepare(crtc);
+	render.OerrideShowPage(layer0,layer1);
+	render.BuildImage(physMem.state.VRAM.data(),crtc.GetPalette(),crtc.chaseHQPalette);
+}
+
 unsigned int FMTowns::GetEleVolCDLeft(void) const
 {
 	return state.eleVol[TOWNS_ELEVOL_FOR_CD][TOWNS_ELEVOL_CD_LEFT].vol;

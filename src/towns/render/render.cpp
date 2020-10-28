@@ -50,6 +50,12 @@ void TownsRender::Prepare(const TownsCRTC &crtc)
 	crtcRenderSize=crtc.GetRenderSize();
 }
 
+void TownsRender::OerrideShowPage(bool layer0,bool layer1)
+{
+	crtcShowPage[0]=layer0;
+	crtcShowPage[1]=layer1;
+}
+
 void TownsRender::BuildImage(const unsigned char VRAM[],const TownsCRTC::AnalogPalette &palette,const TownsCRTC::ChaseHQPalette &chaseHQPalette)
 {
 	SetResolution(crtcRenderSize.x(),crtcRenderSize.y());

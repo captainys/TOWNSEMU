@@ -18,6 +18,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <vector>
 #include <cstdint>
 
+#include "yspngenc.h"
+
 #include "i486debugmemaccess.h"
 
 #include "townscommand.h"
@@ -92,6 +94,9 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 
 	primaryCmdMap["SAVEKEYMAP"]=CMD_SAVE_KEYMAP;
 	primaryCmdMap["LOADKEYMAP"]=CMD_LOAD_KEYMAP;
+
+	primaryCmdMap["SS"]=CMD_SAVE_SCREENSHOT;
+	primaryCmdMap["SVL"]=CMD_SAVE_VRAMLAYER;
 
 	primaryCmdMap["SAVEYM2612LOG"]=CMD_SAVE_YM2612LOG;
 	primaryCmdMap["FMCH"]=CMD_YM2612_CH_ON_OFF;
@@ -402,6 +407,16 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "SAVEEVT filename.txt" << std::endl;
 	std::cout << "  Save Event Log to file." << std::endl;
 
+	std::cout << "SS filename.png" << std::endl;
+	std::cout << "SS filename.png 0|1" << std::endl;
+	std::cout << "  Save a screenshot." << std::endl;
+	std::cout << "  If 0 or 1 is specified after the file name," << std::endl;
+	std::cout << "  it will save a screenshot of the specified layer." << std::endl;
+	std::cout << "SVL filename.png 0|1" << std::endl;
+	std::cout << "  Save a VRAM layer. 0|1 " << std::endl;
+	std::cout << "  It will save entire layer, not just visible part on the monitor." << std::endl;
+	std::cout << "  In single-layer mode, you don't have to specify 0|1." << std::endl;
+
 	std::cout << "SAVEKEYMAP filename.txt" << std::endl;
 	std::cout << "LOADKEYMAP filename.txt" << std::endl;
 	std::cout << "  Save/Load key-mapping in a text file." << std::endl;
@@ -581,6 +596,9 @@ void TownsCommandInterpreter::PrintError(int errCode) const
 		break;
 	case ERROR_WRONG_PARAMETER:
 		std::cout << "Error: Wrong parameter." << std::endl;
+		break;
+	case ERROR_VRAM_LAYER_UNAVAILABLE:
+		std::cout << "Error: VRAM Layer Unavailable." << std::endl;
 		break;
 
 	default:
@@ -1054,6 +1072,13 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 
 	case CMD_SPECIAL_DEBUG:
 		Execute_SpecialDebug(towns,cmd);
+		break;
+
+	case CMD_SAVE_SCREENSHOT:
+		Execute_SaveScreenShot(towns,cmd);
+		break;
+	case CMD_SAVE_VRAMLAYER:
+		Execute_SaveVRAMLayer(towns,cmd);
 		break;
 	}
 }
@@ -3147,6 +3172,51 @@ void TownsCommandInterpreter::Execute_LoadKeyMap(Outside_World &outside_world,co
 	{
 		PrintError(ERROR_TOO_FEW_ARGS);
 	}
+}
+
+void TownsCommandInterpreter::Execute_SaveScreenShot(FMTowns &towns,Command &cmd)
+{
+	bool layer[2]=
+	{
+		towns.crtc.state.ShowPage(0),
+		towns.crtc.state.ShowPage(1)
+	};
+
+	if(3<=cmd.argv.size())
+	{
+		int showLayer=cpputil::Atoi(cmd.argv[2].data());
+		if(0!=showLayer && 1!=showLayer)
+		{
+			PrintError(ERROR_VRAM_LAYER_UNAVAILABLE);
+			return;
+		}
+		if(1==showLayer && towns.crtc.InSinglePageMode())
+		{
+			PrintError(ERROR_VRAM_LAYER_UNAVAILABLE);
+			return;
+		}
+		layer[showLayer]=true;
+		layer[1-showLayer]=false;
+	}
+
+	TownsRender render;
+	towns.RenderQuiet(render,layer[0],layer[1]);
+
+	auto img=render.GetImage();
+
+	YsRawPngEncoder encoder;
+	if(YSOK==encoder.EncodeToFile(cmd.argv[1].data(),img.wid,img.hei,8,6,img.rgba))
+	{
+		std::cout << "Saved to " << cmd.argv[1] << std::endl;
+	}
+	else
+	{
+		std::cout << "Save error." << std::endl;
+	}
+}
+void TownsCommandInterpreter::Execute_SaveVRAMLayer(FMTowns &towns,Command &cmd)
+{
+	std::cout << "VRAM Layer save will be available soon." << std::endl;
 }
 
 void TownsCommandInterpreter::Execute_SpecialDebug(FMTowns &towns,Command &cmd)

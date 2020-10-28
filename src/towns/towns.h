@@ -507,6 +507,11 @@ public:
 	void ForceRender(class TownsRender &render,class Outside_World &world);
 
 
+	/*! Render, but not transfer to the window.
+	*/
+	void RenderQuiet(class TownsRender &render,bool layer0,bool layer1);
+
+
 	/*! Set up VRAM access.  Can have breakOnRead/breakOnWrite flag for debugging.
 	    Zero performance penalty if both flags are false.
 	*/

@@ -184,6 +184,9 @@ private:
 	void VM_Keyboard_Translation2(FsGuiPopUpMenuItem *);
 	void VM_Keyboard_Translation3(FsGuiPopUpMenuItem *);
 
+	void VM_SaveScreenshot(FsGuiPopUpMenuItem *);
+	void VM_SaveScreenshot_FileSelected(FsGuiDialog *dlg,int returnCode);
+
 
 	void CD_SelectImageFile(FsGuiPopUpMenuItem *);
 	void CD_ImageFileSelected(FsGuiDialog *dlg,int returnCode);

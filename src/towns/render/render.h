@@ -55,6 +55,10 @@ public:
 	*/
 	void Prepare(const TownsCRTC &crtc);
 
+	/*!
+	*/
+	void OerrideShowPage(bool layer0,bool layer1);
+
 	/*! 
 	*/
 	void BuildImage(const unsigned char VRAM[],const TownsCRTC::AnalogPalette &palette,const TownsCRTC::ChaseHQPalette &chaseHQ);

@@ -138,6 +138,8 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 			keyboardSubMenu->AddTextItem(0,FSKEY_2,L"Translation2 (for Typing, ESC->ESC)")->BindCallBack(&THISCLASS::VM_Keyboard_Translation2,this);
 			keyboardSubMenu->AddTextItem(0,FSKEY_3,L"Translation3 (for Typing, ESC->BREAK)")->BindCallBack(&THISCLASS::VM_Keyboard_Translation3,this);
 		}
+
+		subMenu->AddTextItem(0,FSKEY_NULL,L"Save Screenshot")->BindCallBack(&THISCLASS::VM_SaveScreenshot,this);
 	}
 
 	{
@@ -1033,6 +1035,45 @@ void FsGuiMainCanvas::VM_Keyboard_Translation3(FsGuiPopUpMenuItem *)
 	else
 	{
 		VM_Not_Running_Error();
+	}
+}
+
+void FsGuiMainCanvas::VM_SaveScreenshot(FsGuiPopUpMenuItem *)
+{
+	if(true==subproc.SubprocRunning())
+	{
+		YsWString path,file;
+		profileDlg->profileFNameTxt->GetWText().SeparatePathFile(path,file);
+
+		auto fdlg=FsGuiDialog::CreateSelfDestructiveDialog<FsGuiFileDialog>();
+		fdlg->Initialize();
+		fdlg->mode=FsGuiFileDialog::MODE_SAVE;
+		fdlg->multiSelect=YSFALSE;
+		fdlg->title.Set(L"Save Screenshot");
+		fdlg->fileExtensionArray.Append(L".PNG");
+		fdlg->defaultFileName=path;
+		fdlg->BindCloseModalCallBack(&THISCLASS::VM_SaveScreenshot_FileSelected,this);
+		AttachModalDialog(fdlg);
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+void FsGuiMainCanvas::VM_SaveScreenshot_FileSelected(FsGuiDialog *dlg,int returnCode)
+{
+	auto fdlg=dynamic_cast <FsGuiFileDialog *>(dlg);
+	if(nullptr!=fdlg && (int)YSOK==returnCode)
+	{
+		YsWString fName=fdlg->selectedFileArray[0];
+		YsString utf8;
+		YsUnicodeToSystemEncoding(utf8,fName);
+		std::string cmd="SS ";
+		cmd.push_back('\"');
+		cmd+=utf8.c_str();
+		cmd.push_back('\"');
+		cmd.push_back('\n');
+		subproc.Send(cmd);
 	}
 }
 
