@@ -45,6 +45,7 @@ public:
 	bool catchUpRealTime=true;
 
 	bool damperWireLine=false;
+	bool scanLineEffectIn15KHz=false;
 
 	std::string ROMPath;
 	std::string CMOSFName;

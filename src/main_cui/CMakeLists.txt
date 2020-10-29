@@ -24,6 +24,7 @@ add_test(
 		"${CMAKE_SOURCE_DIR}/../symtables/UNITTEST.txt"
 		-UNITTEST
 		-DONTAUTOSAVECMOS
+		-DAMPERWIRELINE
 )
 
 add_test(
@@ -37,6 +38,7 @@ add_test(
 		"${CMAKE_SOURCE_DIR}/../symtables/UNITTEST.txt"
 		-UNITTEST
 		-DONTAUTOSAVECMOS
+		-DAMPERWIRELINE
 )
 
 add_test(
@@ -50,6 +52,7 @@ add_test(
 		"${CMAKE_SOURCE_DIR}/../symtables/UNITTEST.txt"
 		-UNITTEST
 		-DONTAUTOSAVECMOS
+		-DAMPERWIRELINE
 )
 
 add_test(
@@ -63,6 +66,7 @@ add_test(
 		"${CMAKE_SOURCE_DIR}/../symtables/UNITTEST.txt"
 		-UNITTEST
 		-DONTAUTOSAVECMOS
+		-DAMPERWIRELINE
 )
 
 add_test(
@@ -76,6 +80,7 @@ add_test(
 		"${CMAKE_SOURCE_DIR}/../symtables/UNITTEST.txt"
 		-UNITTEST
 		-DONTAUTOSAVECMOS
+		-DAMPERWIRELINE
 )
 
 add_test(
@@ -89,6 +94,7 @@ add_test(
 		"${CMAKE_SOURCE_DIR}/../symtables/UNITTEST.txt"
 		-UNITTEST
 		-DONTAUTOSAVECMOS
+		-DAMPERWIRELINE
 )
 
 add_test(
@@ -102,6 +108,7 @@ add_test(
 		"${CMAKE_SOURCE_DIR}/../symtables/UNITTEST.txt"
 		-UNITTEST
 		-DONTAUTOSAVECMOS
+		-DAMPERWIRELINE
 )
 
 add_test(
@@ -117,6 +124,7 @@ add_test(
 		"${CMAKE_SOURCE_DIR}/../testdata/ISOIMG/TESTDISC.iso"
 		-UNITTEST
 		-DONTAUTOSAVECMOS
+		-DAMPERWIRELINE
 )
 
 add_test(
@@ -132,6 +140,7 @@ add_test(
 		"${CMAKE_SOURCE_DIR}/../testdata/ISOIMG/TESTDISC.iso"
 		-UNITTEST
 		-DONTAUTOSAVECMOS
+		-DAMPERWIRELINE
 )
 
 add_test(
@@ -149,6 +158,7 @@ add_test(
 		-FREQ
 		20
 		-DONTAUTOSAVECMOS
+		-DAMPERWIRELINE
 )
 
 add_test(
@@ -164,6 +174,7 @@ add_test(
 		"${CMAKE_SOURCE_DIR}/../testdata/eventLog/V11L30TEST.txt"
 		-UNITTEST
 		-DONTAUTOSAVECMOS
+		-DAMPERWIRELINE
 )
 
 add_test(
@@ -177,6 +188,7 @@ add_test(
 		"${CMAKE_SOURCE_DIR}/../testdata/eventLog/V21L20TEST.txt"
 		-UNITTEST
 		-DONTAUTOSAVECMOS
+		-DAMPERWIRELINE
 )
 
 add_test(
@@ -192,6 +204,7 @@ add_test(
 		"${CMAKE_SOURCE_DIR}/../testdata/eventLog/V21L31TEST.txt"
 		-UNITTEST
 		-DONTAUTOSAVECMOS
+		-DAMPERWIRELINE
 )
 
 add_test(
@@ -212,6 +225,7 @@ add_test(
 		-UNITTEST
 		-DONTAUTOSAVECMOS
 		-LOWRES
+		-DAMPERWIRELINE
 )
 
 add_test(
@@ -232,6 +246,7 @@ add_test(
 		-UNITTEST
 		-DONTAUTOSAVECMOS
 		-LOWRES
+		-DAMPERWIRELINE
 )
 
 add_test(
@@ -249,6 +264,7 @@ add_test(
 		H0
 		-UNITTEST
 		-DONTAUTOSAVECMOS
+		-DAMPERWIRELINE
 )
 
 add_test(
@@ -263,6 +279,7 @@ add_test(
 		-POWEROFFAT
 		000C:00007237
 		-DONTAUTOSAVECMOS
+		-DAMPERWIRELINE
 )
 
 add_test(
@@ -279,6 +296,7 @@ add_test(
 		-POWEROFFAT
 		000C:00003CE4
 		-DONTAUTOSAVECMOS
+		-DAMPERWIRELINE
 )
 
 add_test(
@@ -293,6 +311,7 @@ add_test(
 		-POWEROFFAT
 		000C:00002604
 		-DONTAUTOSAVECMOS
+		-DAMPERWIRELINE
 )
 
 add_test(
@@ -307,6 +326,7 @@ add_test(
 		-POWEROFFAT
 		000C:000009C9
 		-DONTAUTOSAVECMOS
+		-DAMPERWIRELINE
 )
 
 add_test(
@@ -321,6 +341,7 @@ add_test(
 		-POWEROFFAT
 		000C:0000197D
 		-DONTAUTOSAVECMOS
+		-DAMPERWIRELINE
 )
 
 add_test(
@@ -335,6 +356,7 @@ add_test(
 		-POWEROFFAT
 		000C:0017A367
 		-DONTAUTOSAVECMOS
+		-DAMPERWIRELINE
 )
 
 add_test(
@@ -350,6 +372,7 @@ add_test(
 		-POWEROFFAT
 		000C:001A4495
 		-DONTAUTOSAVECMOS
+		-DAMPERWIRELINE
 )
 
 add_test(
@@ -364,6 +387,7 @@ add_test(
 		-POWEROFFAT
 		000C:0008A1B4
 		-DONTAUTOSAVECMOS
+		-DAMPERWIRELINE
 )
 
 add_test(
@@ -378,6 +402,7 @@ add_test(
 		-POWEROFFAT
 		000C:0000263B
 		-DONTAUTOSAVECMOS
+		-DAMPERWIRELINE
 )
 
 add_test(
@@ -394,6 +419,7 @@ add_test(
 		-POWEROFFAT
 		0044:00001077
 		-DONTAUTOSAVECMOS
+		-DAMPERWIRELINE
 )
 
 add_test(
@@ -408,6 +434,7 @@ add_test(
 		-POWEROFFAT
 		000C:000000FB
 		-DONTAUTOSAVECMOS
+		-DAMPERWIRELINE
 )
 
 add_test(
@@ -426,6 +453,7 @@ add_test(
 		-POWEROFFAT
 		000C:00018E7D
 		-DONTAUTOSAVECMOS
+		-DAMPERWIRELINE
 )
 
 add_test(
@@ -458,6 +486,7 @@ add_test(
 		-POWEROFFAT
 		000C:000717BA
 		-DONTAUTOSAVECMOS
+		-DAMPERWIRELINE
 )
 
 add_test(
@@ -472,6 +501,7 @@ add_test(
 		-POWEROFFAT
 		000C:001637B4
 		-DONTAUTOSAVECMOS
+		-DAMPERWIRELINE
 )
 
 add_test(
@@ -491,6 +521,7 @@ add_test(
 		-POWEROFFAT
 		4000:0000E218
 		-DONTAUTOSAVECMOS
+		-DAMPERWIRELINE
 )
 
 add_test(
@@ -506,6 +537,7 @@ add_test(
 		-POWEROFFAT
 		000C:00016D21
 		-DONTAUTOSAVECMOS
+		-DAMPERWIRELINE
 )
 
 add_test(
@@ -522,4 +554,5 @@ add_test(
 		-POWEROFFAT
 		000C:0009C509
 		-DONTAUTOSAVECMOS
+		-DAMPERWIRELINE
 )

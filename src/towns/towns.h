@@ -221,6 +221,8 @@ public:
 		*/
 		bool damperWireLine=false;
 
+		bool scanLineEffectIn15KHz=false;
+
 		/*! Enable/disable mouse integration.
 		    To disable mouse integration, set this flag false, and call DontControlMouse().
 		    To enable, set this flag true, then VM will respect the next ControlMouse and SetMouseButtonState functions and on.

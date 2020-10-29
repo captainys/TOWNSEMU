@@ -677,6 +677,10 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		{
 			damperWireLine=true;
 		}
+		else if("-SCANLINE15K"==ARG)
+		{
+			scanLineEffectIn15KHz=true;
+		}
 		else
 		{
 			if(1==i)

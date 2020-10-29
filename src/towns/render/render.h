@@ -36,9 +36,12 @@ private:
 	TownsCRTC::Layer crtcLayer[2];
 	int crtcPriorityPage;
 	Vec2i crtcRenderSize;
+	int scanLineCounter=0;
+	int frequency=0;
 
 public:
 	bool damperWireLine=false;
+	bool scanLineEffectIn15KHz=false;
 
 	class Image
 	{

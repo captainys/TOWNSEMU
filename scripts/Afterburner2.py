@@ -34,8 +34,9 @@ def Run(argv):
 		"PHYS0",
 		"-SYM",
 		"../../TOWNSEMU_TEST/symtables/AB2_"+TOWNSTYPE+".txt",
-		"-SCALE",
-		"160",
+		"-AUTOSCALE",
+		"-MAXIMIZE",
+		"-SCANLINE15K",
 		# "-DEBUG",
 		# "-PAUSE",
 	]+argv).wait()
