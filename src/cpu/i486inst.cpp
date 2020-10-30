@@ -726,12 +726,11 @@ unsigned int i486DX::FetchOperandRM(CPUCLASS &cpu,Instruction &inst,MemoryAccess
 {
 	FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset++,mem);
 
-	unsigned int numBytesFetched=1;
-
 	// [1] Table 26-1, 26-2, 26-3, pp. 26-4,26-5,26-6
 	if(16==inst.addressSize)
 	{
 		/* As Specification
+		unsigned int numBytesFetched=1;
 		auto MODR_M=inst.operand[inst.operandLen-1];
 		auto MOD=(MODR_M>>6)&3;
 		auto R_M=(MODR_M)&7;
@@ -749,7 +748,9 @@ unsigned int i486DX::FetchOperandRM(CPUCLASS &cpu,Instruction &inst,MemoryAccess
 		{
 			FUNCCLASS::FetchOperand16(cpu,inst,ptr,seg,offset,mem);
 			numBytesFetched+=2;
-		} */
+		}
+		return numBytesFetched;
+		*/
 
 		static const char table[256]=
 		{
@@ -762,21 +763,22 @@ unsigned int i486DX::FetchOperandRM(CPUCLASS &cpu,Instruction &inst,MemoryAccess
 			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 		};
-		switch(table[inst.operand[inst.operandLen-1]])
+		if(2==table[inst.operand[inst.operandLen-1]])
 		{
-		case 2:
 			FUNCCLASS::FetchOperand16(cpu,inst,ptr,seg,offset,mem);
-			numBytesFetched+=2;
-			break;
-		case 1:
-			FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset,mem);
-			++numBytesFetched;
-			break;
+			return 3; // Fetched 3 bytes
 		}
+		else if(1==table[inst.operand[inst.operandLen-1]])
+		{
+			FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset,mem);
+			return 2; // Fetched 2 bytes
+		}
+		return 1; // Fetched 1 bytes
 	}
 	else // if(32==inst.addressSize)
 	{
 		/* As Specification
+		unsigned int numBytesFetched=1;
 		auto MODR_M=inst.operand[inst.operandLen-1];
 		auto MOD=(MODR_M>>6)&3;
 		auto R_M=(MODR_M)&7;
@@ -833,6 +835,7 @@ unsigned int i486DX::FetchOperandRM(CPUCLASS &cpu,Instruction &inst,MemoryAccess
 			}
 		}
 		// else                                              CASE 0
+		return numBytesFetched;
 		*/
 
 		const static unsigned char table[256]=
@@ -851,7 +854,6 @@ unsigned int i486DX::FetchOperandRM(CPUCLASS &cpu,Instruction &inst,MemoryAccess
 		case 1:
 			{
 				FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset,mem);
-				++numBytesFetched;
 				++offset;
 
 				auto SIB=inst.operand[inst.operandLen-1];
@@ -861,35 +863,31 @@ unsigned int i486DX::FetchOperandRM(CPUCLASS &cpu,Instruction &inst,MemoryAccess
 				if(5==BASE)
 				{
 					FUNCCLASS::FetchOperand32(cpu,inst,ptr,seg,offset,mem);
-					numBytesFetched+=4;
+					return 6;
 				}
+				return 2;
 			}
 			break;
 		case 2:
 			FUNCCLASS::FetchOperand32(cpu,inst,ptr,seg,offset,mem);
-			numBytesFetched+=4;
-			break;
+			return 5;
 		case 3:
 			FUNCCLASS::FetchOperand16(cpu,inst,ptr,seg,offset,mem);
-			numBytesFetched+=2;
-			break;
+			return 3;
 		case 4:
 			FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset,mem);
-			++numBytesFetched;
-			break;
+			return 2;
 		case 5:
 			FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset,mem);
 			FUNCCLASS::FetchOperand32(cpu,inst,ptr,seg,offset+1,mem);
-			numBytesFetched+=5;
-			break;
+			return 6;
 		case 6:
 			FUNCCLASS::FetchOperand32(cpu,inst,ptr,seg,offset,mem);
-			numBytesFetched+=4;
-			break;
+			return 5;
 		}
+		return 1;
 	}
-
-	return numBytesFetched;
+	return 1;
 }
 
 std::string i486DX::Instruction::SegmentOverrideString(int segOverridePrefix)
