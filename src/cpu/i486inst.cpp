@@ -3903,7 +3903,33 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value); \
 	}
 
-	#define BINARYOP_RM_R(func,clock_for_addr,update) \
+	#define BINARYOP_R_FROM_RM(func,clock_for_addr,update) \
+	{ \
+		if(op2.operandType==OPER_ADDR) \
+		{ \
+			clocksPassed=(clock_for_addr); \
+		} \
+		else \
+		{ \
+			clocksPassed=1; \
+		} \
+		auto regNum=inst.GetREG(); \
+		auto op32or16=inst.operandSize>>3; \
+		unsigned int dst=(state.reg32()[regNum]&operandSizeMask[op32or16]); \
+		auto src=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,(op32or16)); \
+		if(true==state.exception) \
+		{ \
+			break; \
+		} \
+		(func)(inst.operandSize,dst,src.GetAsDword()); \
+		if(true==(update)) \
+		{ \
+			state.reg32()[regNum]&=operandSizeAndPattern[op32or16]; \
+			state.reg32()[regNum]|=(dst&operandSizeMask[op32or16]); \
+		} \
+	}
+
+	#define BINARYOP_RM_FROM_R(func,clock_for_addr,update) \
 	{ \
 		if(op1.operandType==OPER_ADDR || op2.operandType==OPER_ADDR) \
 		{ \
@@ -3913,18 +3939,18 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{ \
 			clocksPassed=1; \
 		} \
-		auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,(inst.operandSize/8)); \
-		auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,(inst.operandSize/8)); \
+		auto dst=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,(inst.operandSize/8)); \
+		auto src=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,(inst.operandSize/8)); \
 		if(true==state.exception) \
 		{ \
 			break; \
 		} \
-		auto i=value1.GetAsDword(); \
-		(func)(inst.operandSize,i,value2.GetAsDword()); \
+		auto i=dst.GetAsDword(); \
+		(func)(inst.operandSize,i,src.GetAsDword()); \
 		if(true==(update)) \
 		{ \
-			value1.SetDword(i); \
-			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1); \
+			dst.SetDword(i); \
+			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,dst); \
 		} \
 	}
 
@@ -4725,56 +4751,56 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 
 	case I486_RENUMBER_ADC_RM_FROM_R://   0x11,
-		BINARYOP_RM_R(AdcWordOrDword,3,true);
+		BINARYOP_RM_FROM_R(AdcWordOrDword,3,true);
 		break;
 	case I486_RENUMBER_ADD_RM_FROM_R://   0x01,
-		BINARYOP_RM_R(AddWordOrDword,3,true);
+		BINARYOP_RM_FROM_R(AddWordOrDword,3,true);
 		break;
 	case I486_RENUMBER_AND_RM_FROM_R://   0x21,
-		BINARYOP_RM_R(AndWordOrDword,3,true);
+		BINARYOP_RM_FROM_R(AndWordOrDword,3,true);
 		break;
 	case I486_RENUMBER_CMP_RM_FROM_R://   0x39,
-		BINARYOP_RM_R(SubWordOrDword,3,false);
+		BINARYOP_RM_FROM_R(SubWordOrDword,3,false);
 		break;
 	case I486_RENUMBER_SBB_RM_FROM_R://   0x19,
-		BINARYOP_RM_R(SbbWordOrDword,3,true);
+		BINARYOP_RM_FROM_R(SbbWordOrDword,3,true);
 		break;
 	case I486_RENUMBER_SUB_RM_FROM_R://   0x29,
-		BINARYOP_RM_R(SubWordOrDword,3,true);
+		BINARYOP_RM_FROM_R(SubWordOrDword,3,true);
 		break;
 	case I486_RENUMBER_TEST_RM_FROM_R://   0x85,
-		BINARYOP_RM_R(AndWordOrDword,1,false);
+		BINARYOP_RM_FROM_R(AndWordOrDword,1,false);
 		break;
 	case I486_RENUMBER_OR_RM_FROM_R://   0x09,
-		BINARYOP_RM_R(OrWordOrDword,3,true);
+		BINARYOP_RM_FROM_R(OrWordOrDword,3,true);
 		break;
 	case I486_RENUMBER_XOR_RM_FROM_R:
-		BINARYOP_RM_R(XorWordOrDword,3,true);
+		BINARYOP_RM_FROM_R(XorWordOrDword,3,true);
 		break;
 
 	case I486_RENUMBER_ADC_R_FROM_RM://   0x13,
-		BINARYOP_RM_R(AdcWordOrDword,3,true);
+		BINARYOP_R_FROM_RM(AdcWordOrDword,3,true);
 		break;
 	case I486_RENUMBER_ADD_R_FROM_RM://    0x03,
-		BINARYOP_RM_R(AddWordOrDword,3,true);
+		BINARYOP_R_FROM_RM(AddWordOrDword,3,true);
 		break;
 	case I486_RENUMBER_AND_R_FROM_RM://    0x23,
-		BINARYOP_RM_R(AndWordOrDword,3,true);
+		BINARYOP_R_FROM_RM(AndWordOrDword,3,true);
 		break;
 	case I486_RENUMBER_CMP_R_FROM_RM://    0x3B,
-		BINARYOP_RM_R(SubWordOrDword,3,false);
+		BINARYOP_R_FROM_RM(SubWordOrDword,3,false);
 		break;
 	case I486_RENUMBER_SBB_R_FROM_RM://    0x1B,
-		BINARYOP_RM_R(SbbWordOrDword,3,true);
+		BINARYOP_R_FROM_RM(SbbWordOrDword,3,true);
 		break;
 	case I486_RENUMBER_SUB_R_FROM_RM://    0x2B,
-		BINARYOP_RM_R(SubWordOrDword,3,true);
+		BINARYOP_R_FROM_RM(SubWordOrDword,3,true);
 		break;
 	case I486_RENUMBER_OR_R_FROM_RM://    0x0B,
-		BINARYOP_RM_R(OrWordOrDword,3,true);
+		BINARYOP_R_FROM_RM(OrWordOrDword,3,true);
 		break;
 	case I486_RENUMBER_XOR_R_FROM_RM:
-		BINARYOP_RM_R(XorWordOrDword,3,true);
+		BINARYOP_R_FROM_RM(XorWordOrDword,3,true);
 		break;
 
 
