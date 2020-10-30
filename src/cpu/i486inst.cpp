@@ -3939,14 +3939,16 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{ \
 			clocksPassed=1; \
 		} \
-		auto dst=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,(inst.operandSize/8)); \
-		auto src=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,(inst.operandSize/8)); \
+		auto regNum=inst.GetREG(); \
+		auto op32or16=inst.operandSize>>3; \
+		auto dst=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,op32or16); \
+		auto src=(state.reg32()[regNum]&operandSizeMask[op32or16]); \
 		if(true==state.exception) \
 		{ \
 			break; \
 		} \
 		auto i=dst.GetAsDword(); \
-		(func)(inst.operandSize,i,src.GetAsDword()); \
+		(func)(inst.operandSize,i,src); \
 		if(true==(update)) \
 		{ \
 			dst.SetDword(i); \
