@@ -3851,6 +3851,10 @@ std::string i486DX::Instruction::DisassembleIOLabel(unsigned int CS,unsigned int
 
 unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 {
+	// Considered to make it state.EIP=((state.EIP+offset)&operandSizeMask[inst.operandSize>>3]);
+	// and delete EIPIncrement=0;  This will save one add and one mov instructions per jump.
+	// However, this change may break backward jump to offset 0000H, when operandSize=16.
+	// Therefore not taken at this time.
 	#define CONDITIONALJUMP8(jumpCond) \
 	{ \
 		if(true==(jumpCond)) \
