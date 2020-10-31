@@ -7956,19 +7956,24 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_RENUMBER_XCHG_RM8_R8://           0x86,
 		clocksPassed=(OPER_ADDR==op1.operandType ? 5 : 3);
 		{
-			auto value1=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op1);
-			auto value2=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op2);
-			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value2);
-			StoreOperandValue(op2,mem,inst.addressSize,inst.segOverride,value1);
+			auto RM=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op1);
+			auto R=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op2);
+			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,R);
+			StoreOperandValue(op2,mem,inst.addressSize,inst.segOverride,RM);
 		}
 		break;
 	case I486_RENUMBER_XCHG_RM_R://             0x87,
 		clocksPassed=(OPER_ADDR==op1.operandType ? 5 : 3);
 		{
-			auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
-			auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize/8);
-			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value2);
-			StoreOperandValue(op2,mem,inst.addressSize,inst.segOverride,value1);
+			auto op32or16=inst.operandSize>>3;
+			auto RM=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,op32or16);
+			auto R=state.reg32()[inst.GetREG()]&operandSizeMask[op32or16];
+
+			state.reg32()[inst.GetREG()]&=operandSizeAndPattern[op32or16];
+			state.reg32()[inst.GetREG()]|=(RM.GetAsDword()&operandSizeMask[op32or16]);
+
+			RM.SetDword(R);
+			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,RM);
 		}
 		break;
 
