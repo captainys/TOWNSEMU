@@ -6571,6 +6571,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				switch(inst.GetREG())
 				{
 				case 2:
+					InvalidateDescriptorCache();
 					LoadDescriptorTableRegister(state.GDTR,inst.operandSize,value.byteData);
 					break;
 				case 3:
@@ -7728,6 +7729,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
 				if(true!=state.exception)
 				{
+					InvalidateDescriptorCache();
 					auto selector=value.GetAsWord();
 					auto TI=(0!=(selector&4));
 					state.LDTR.selector=selector;

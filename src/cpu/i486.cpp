@@ -368,8 +368,7 @@ void i486DX::Reset(void)
 	SetCR(1,0);
 	SetCR(2,0);
 	ClearPageTableCache();
-	ClearGDTCache();
-	ClearLDTCache();
+	ClearDescriptorCache();
 
 	for(auto &t : state.TEST)
 	{
@@ -410,39 +409,22 @@ void i486DX::EnableDescriptorCache(void)
 void i486DX::DisableDescriptorCache(void)
 {
 	state.useDescriptorCache=false;
-	ClearGDTCache();
-	ClearLDTCache();
+	ClearDescriptorCache();
 }
-void i486DX::ClearGDTCache(void)
+void i486DX::ClearDescriptorCache(void)
 {
-	state.gdtCacheValidCounter=1;
-	for(auto &c : state.gdtCache)
+	state.descriptorCacheValidCounter=1;
+	for(auto &c : state.descriptorCache)
 	{
 		c.validCounter=0;
 	}
 }
-void i486DX::ClearLDTCache(void)
+void i486DX::InvalidateDescriptorCache(void)
 {
-	state.ldtCacheValidCounter=1;
-	for(auto &c : state.ldtCache)
+	++state.descriptorCacheValidCounter;
+	if(0xffffffff==state.descriptorCacheValidCounter)
 	{
-		c.validCounter=0;
-	}
-}
-void i486DX::InvalidateGDTCache(void)
-{
-	++state.gdtCacheValidCounter;
-	if(0xffffffff==state.gdtCacheValidCounter)
-	{
-		ClearGDTCache();
-	}
-}
-void i486DX::InvalidateLDTCache(void)
-{
-	++state.ldtCacheValidCounter;
-	if(0xffffffff==state.ldtCacheValidCounter)
-	{
-		ClearLDTCache();
+		ClearDescriptorCache();
 	}
 }
 
@@ -921,6 +903,26 @@ public:
 	{
 		return cpu.GetConstMemoryWindowFromLinearAddress(linearAddr,mem);
 	}
+	static inline bool LoadFromDescriptorCache(uint32_t &upper4bytes,i486DX &cpu,SegmentRegister &reg,uint16_t value)
+	{
+		auto index=(value>>DESCRIPTOR_TO_INDEX_SHIFT);
+		if(true==cpu.state.useDescriptorCache &&
+		   0x0014!=value &&
+		   cpu.state.descriptorCacheValidCounter<=cpu.state.descriptorCache[index].validCounter)
+		{
+			reg=cpu.state.descriptorCache[index].reg;
+			upper4bytes=cpu.state.descriptorCache[index].upper4bytes;
+			return true;
+		}
+		return false;
+	}
+	static inline void StoreToDescriptorCache(i486DX &cpu,SegmentRegister &reg,uint16_t value,uint32_t upper4bytes)
+	{
+		auto index=(value>>DESCRIPTOR_TO_INDEX_SHIFT);
+		cpu.state.descriptorCache[index].reg=reg;
+		cpu.state.descriptorCache[index].upper4bytes=upper4bytes;
+		cpu.state.descriptorCache[index].validCounter=cpu.state.descriptorCacheValidCounter;
+	}
 };
 class i486DX::DebugLoadSegmentRegisterClass
 {
@@ -932,6 +934,13 @@ public:
 	static inline MemoryAccess::ConstMemoryWindow GetConstMemoryWindowFromLinearAddress(const i486DX &cpu,unsigned int linearAddr,const Memory &mem)
 	{
 		return cpu.DebugGetConstMemoryWindowFromLinearAddress(linearAddr,mem);
+	}
+	static inline bool LoadFromDescriptorCache(uint32_t &upper4bytes,const i486DX &cpu,SegmentRegister &reg,uint16_t value)
+	{
+		return false;
+	}
+	static inline void StoreToDescriptorCache(const i486DX &cpu,SegmentRegister &reg,uint16_t value,uint32_t upper4bytes)
+	{
 	}
 };
 template <class CPUCLASS,class FUNC>
@@ -991,6 +1000,12 @@ public:
 		}
 		else
 		{
+			uint32_t upper4bytes;
+			if(true==FUNC::LoadFromDescriptorCache(upper4bytes,cpu,reg,value))
+			{
+				return upper4bytes;
+			}
+
 			LoadProtectedModeDescriptor(cpu,value,mem);
 
 			// Sample GDT from WRHIGH.ASM
@@ -1023,7 +1038,11 @@ public:
 				reg.addressSize=32;
 				reg.operandSize=32;
 			}
-			return cpputil::GetDword(rawDesc+4);
+			upper4bytes=cpputil::GetDword(rawDesc+4);
+
+			FUNC::StoreToDescriptorCache(cpu,reg,value,upper4bytes);
+
+			return upper4bytes;
 		}
 	}
 

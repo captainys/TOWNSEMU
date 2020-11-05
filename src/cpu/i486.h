@@ -79,7 +79,8 @@ public:
 		I486_NUM_IOPORT=65536,
 		MAX_REP_BUNDLE_COUNT=128,
 
-		DESCRIPTOR_CACHE_SIZE=4096,
+		DESCRIPTOR_CACHE_SIZE=16384, // Even number=GDT  Odd number=LDT
+		DESCRIPTOR_TO_INDEX_SHIFT=2, // TI bit will be bit0.
 
 		LINEARADDR_TO_PAGE_SHIFT=12,
 		PAGETABLE_CACHE_SIZE=0x00100000,
@@ -197,15 +198,12 @@ public:
 		uint16_t value;
 	};
 
-	class SegmentDescriptor : public SegmentProperty
-	{
-	public:
-		uint32_t upper4bytes;
-	};
-	class SegmentDescriptorCache : public SegmentDescriptor
+	class SegmentDescriptorCache
 	{
 	public:
 		unsigned int validCounter=0;
+		uint32_t upper4bytes;
+		SegmentRegister reg;
 	};
 
 	enum
@@ -454,10 +452,8 @@ public:
 		uint32_t pageTableCache[PAGETABLE_CACHE_SIZE];
 
 		bool useDescriptorCache=true;
-		unsigned int gdtCacheValidCounter=1;                     // This must be cleared on state-load.
-		SegmentDescriptorCache gdtCache[DESCRIPTOR_CACHE_SIZE];  // This must be cleared on state-load.
-		unsigned int ldtCacheValidCounter=1;                     // This must be cleared on state-load.
-		SegmentDescriptorCache ldtCache[DESCRIPTOR_CACHE_SIZE];  // This must be cleared on state-load.
+		unsigned int descriptorCacheValidCounter=1;                     // This must be cleared on state-load.
+		SegmentDescriptorCache descriptorCache[DESCRIPTOR_CACHE_SIZE];  // This must be cleared on state-load.
 
 		MemoryAccess::ConstMemoryWindow CSEIPWindow;   // This must be cleared on state-load.
 		MemoryAccess::MemoryWindow SSESPWindow;         // This must be cleared on state-load.
@@ -1861,10 +1857,8 @@ public:
 
 	void EnableDescriptorCache(void);
 	void DisableDescriptorCache(void);
-	void ClearGDTCache(void);
-	void ClearLDTCache(void);
-	void InvalidateGDTCache(void);
-	void InvalidateLDTCache(void);
+	void ClearDescriptorCache(void);
+	void InvalidateDescriptorCache(void);
 
 
 	/*! Issue an interrupt.
