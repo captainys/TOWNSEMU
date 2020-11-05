@@ -1,7 +1,7 @@
 ; Need .386p
 
 ; Input
-;   DX:AX    Physical Address  DX=High_16_bit  AX=Low_16_bit
+;   ESI      Source Physical Address
 ;   ES:DI    Destination
 ;   CX       Transfer size
 
@@ -19,6 +19,10 @@ READ_HIGHB				PROC
 						PUSH	EAX
 						PUSHF
 
+						;   ESI -> DX:AX
+						MOV		AX,SI
+						SHR		ESI,16
+						MOV		DX,SI
 
 						MOV		CS:[GDT_BASE_LOW+1],AH
 						MOV		CS:[GDT_BASE_LOW+2],DL
@@ -28,7 +32,7 @@ READ_HIGHB				PROC
 						MOV		CS:[GDT_BASE_LOW],AH	; I don't know if segment boundary needs to be 4-byte alignment.
 						AND		AX,000FH				; Let AL carry the low 4 bits.
 						MOV		SI,AX
-						; Now Source is 0008:DI
+						; Now Source is 0008:SI
 
 
 						MOV		DX,CS
@@ -43,16 +47,12 @@ READ_HIGHB				PROC
 
 						CLI
 
-						MOV		EAX,CR0
-						PUSH	EAX
-						OR		AL,1
-						MOV		CR0,EAX
-
-
 						SGDT	FWORD PTR CS:[GDT_BACKUP]
-
-
 						LGDT	FWORD PTR CS:[GDT_INFO]
+
+						MOV		EDX,CR0
+						OR		DL,1
+						MOV		CR0,EDX
 
 						; https://wiki.osdev.org/Unreal_Mode suggest one jump "to tell 386/486 not to crash".
 						JMP		@f
@@ -71,13 +71,13 @@ READ_HIGHB				PROC
 						REP		MOVSB
 
 
-						LGDT	FWORD PTR CS:[GDT_BACKUP]
-
-						POP		EAX
-						MOV		CR0,EAX
+						AND		DL,0FEH
+						MOV		CR0,EDX
 
 						JMP		@f
 @@:
+
+						LGDT	FWORD PTR CS:[GDT_BACKUP]
 
 						POPF
 						POP		EAX

@@ -69,9 +69,11 @@ MAIN					PROC
 						CALL	PRINT_CRLF
 
 
-
-						LEA		DI,[DATABUF]
-						MOV		CX,256
+						MOV		SI,DX			;ESI Phys addr
+						SHL		ESI,16
+						MOV		SI,AX
+						LEA		DI,[DATABUF]	; ES:DI Read buffer
+						MOV		CX,256			; Number of bytes
 						CALL	READ_HIGHB
 
 
