@@ -368,6 +368,8 @@ void i486DX::Reset(void)
 	SetCR(1,0);
 	SetCR(2,0);
 	ClearPageTableCache();
+	ClearGDTCache();
+	ClearLDTCache();
 
 	for(auto &t : state.TEST)
 	{
@@ -398,6 +400,49 @@ void i486DX::InvalidatePageTableCache()
 	if(state.pageTableCacheValidCounter==0xffffffff)
 	{
 		ClearPageTableCache();
+	}
+}
+
+void i486DX::EnableDescriptorCache(void)
+{
+	state.useDescriptorCache=true;
+}
+void i486DX::DisableDescriptorCache(void)
+{
+	state.useDescriptorCache=false;
+	ClearGDTCache();
+	ClearLDTCache();
+}
+void i486DX::ClearGDTCache(void)
+{
+	state.gdtCacheValidCounter=1;
+	for(auto &c : state.gdtCache)
+	{
+		c.validCounter=0;
+	}
+}
+void i486DX::ClearLDTCache(void)
+{
+	state.ldtCacheValidCounter=1;
+	for(auto &c : state.ldtCache)
+	{
+		c.validCounter=0;
+	}
+}
+void i486DX::InvalidateGDTCache(void)
+{
+	++state.gdtCacheValidCounter;
+	if(0xffffffff==state.gdtCacheValidCounter)
+	{
+		ClearGDTCache();
+	}
+}
+void i486DX::InvalidateLDTCache(void)
+{
+	++state.ldtCacheValidCounter;
+	if(0xffffffff==state.ldtCacheValidCounter)
+	{
+		ClearLDTCache();
 	}
 }
 

@@ -79,6 +79,8 @@ public:
 		I486_NUM_IOPORT=65536,
 		MAX_REP_BUNDLE_COUNT=128,
 
+		DESCRIPTOR_CACHE_SIZE=4096,
+
 		LINEARADDR_TO_PAGE_SHIFT=12,
 		PAGETABLE_CACHE_SIZE=0x00100000,
 		PAGEINFO_FLAG_PRESENT=0b000000000001,
@@ -180,18 +182,31 @@ public:
 	};
 	static const char *const RegToStr[REG_TOTAL_NUMBER_OF_REGISTERS];
 
-	class SegmentRegister
+	class SegmentProperty
 	{
 	public:
-		unsigned short value;
-
-		// Cache
-		unsigned int baseLinearAddr;
-		unsigned int operandSize;
-		unsigned int addressSize;
-		unsigned int limit;
+		uint32_t baseLinearAddr;
+		uint32_t operandSize;
+		uint32_t addressSize;
+		uint32_t limit;
 	};
 
+	class SegmentRegister : public SegmentProperty
+	{
+	public:
+		uint16_t value;
+	};
+
+	class SegmentDescriptor : public SegmentProperty
+	{
+	public:
+		uint32_t upper4bytes;
+	};
+	class SegmentDescriptorCache : public SegmentDescriptor
+	{
+	public:
+		unsigned int validCounter=0;
+	};
 
 	enum
 	{
@@ -437,6 +452,12 @@ public:
 		uint32_t pageTableCacheValidCounter=1;
 		uint32_t pageTableCacheValid[PAGETABLE_CACHE_SIZE];
 		uint32_t pageTableCache[PAGETABLE_CACHE_SIZE];
+
+		bool useDescriptorCache=true;
+		unsigned int gdtCacheValidCounter=1;                     // This must be cleared on state-load.
+		SegmentDescriptorCache gdtCache[DESCRIPTOR_CACHE_SIZE];  // This must be cleared on state-load.
+		unsigned int ldtCacheValidCounter=1;                     // This must be cleared on state-load.
+		SegmentDescriptorCache ldtCache[DESCRIPTOR_CACHE_SIZE];  // This must be cleared on state-load.
 
 		MemoryAccess::ConstMemoryWindow CSEIPWindow;   // This must be cleared on state-load.
 		MemoryAccess::MemoryWindow SSESPWindow;         // This must be cleared on state-load.
@@ -1836,7 +1857,14 @@ public:
 		}
 	}
 	void ClearPageTableCache(void);
-	void InvalidatePageTableCache();
+	void InvalidatePageTableCache(void);
+
+	void EnableDescriptorCache(void);
+	void DisableDescriptorCache(void);
+	void ClearGDTCache(void);
+	void ClearLDTCache(void);
+	void InvalidateGDTCache(void);
+	void InvalidateLDTCache(void);
 
 
 	/*! Issue an interrupt.
