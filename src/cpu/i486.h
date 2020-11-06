@@ -2975,8 +2975,9 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 		Push(mem,16,state.EIP+numInstBytesForReturn);
 
 		auto intVecAddr=(INTNum&0xFF)*4;
-		auto destIP=mem.FetchWord(intVecAddr);
-		auto destCS=mem.FetchWord(intVecAddr+2);
+		uint32_t CSIP=mem.FetchDword(intVecAddr);
+		auto destIP=CSIP&0xFFFF;
+		auto destCS=(CSIP>>16)&0xFFFF;
 		if(true==enableCallStack)
 		{
 			PushCallStack(
