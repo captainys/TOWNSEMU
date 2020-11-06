@@ -2165,6 +2165,7 @@ public:
 	}
 
 
+
 	/*! Push a value.
 	*/
 	void Push(Memory &mem,unsigned int operandSize,unsigned int value);
@@ -2173,7 +2174,31 @@ public:
 	*/
 	unsigned int Pop(Memory &mem,unsigned int operandSize);
 
+	/*! Push two values.
+	*/
+	void Push(Memory &mem,unsigned int operandSize,uint32_t firstPush,uint32_t secondPush);
 
+	/*! Pop two values.
+	*/
+	void Pop(uint32_t &firstPop,uint32_t &secondPop,Memory &mem,unsigned int operandSize);
+
+	/*! Push three values.
+	*/
+	void Push(Memory &mem,unsigned int operandSize,uint32_t firstPush,uint32_t secondPush,uint32_t thirdPush);
+
+	/*! Pop three values.
+	*/
+	void Pop(uint32_t &firstPop,uint32_t &secondPop,uint32_t &thirdPop,Memory &mem,unsigned int operandSize);
+
+private:
+	// This function is a helper function for Push and Pop.
+	// It checks if the cached SSESPWindow covers the required number of bytes.
+	// If not, it tries to re-cache SSESPWindow.
+	// If the number of bytes in the stack is accessible from the pointer, it returns the pointer.
+	// If not, it returns nullptr.
+	inline unsigned char *GetStackAccessPointer(Memory &mem,uint32_t linearAddr,unsigned int numBytes);
+
+public:
 	/*! Fetch a byte. 
 	*/
 	inline unsigned int FetchByte(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
