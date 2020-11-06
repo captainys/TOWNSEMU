@@ -402,21 +402,16 @@ void i486DX::InvalidatePageTableCache()
 	}
 }
 
-void i486DX::EnableDescriptorCache(void)
-{
-	state.useDescriptorCache=true;
-}
-void i486DX::DisableDescriptorCache(void)
-{
-	state.useDescriptorCache=false;
-	ClearDescriptorCache();
-}
 void i486DX::ClearDescriptorCache(void)
 {
 	state.descriptorCacheValidCounter=1;
-	for(auto &c : state.descriptorCache)
+	for(auto &c : state.descriptorCacheValid)
 	{
-		c.validCounter=0;
+		c=0;
+	}
+	for(auto &ptr : state.descriptorCache)
+	{
+		ptr=nullptr;
 	}
 }
 void i486DX::InvalidateDescriptorCache(void)
@@ -892,9 +887,15 @@ void i486DX::PrintIDT(const Memory &mem) const
 }
 
 
-class i486DX::LoadSegmentRegisterClass
+template <class CPUCLASS>
+class i486DX::LoadSegmentRegisterTemplate
 {
 public:
+	unsigned char rawDescBuf[8];
+	const unsigned char *rawDesc;
+
+
+	// For mutable i486DX >>
 	static inline unsigned int FetchByteByLinearAddress(i486DX &cpu,const Memory &mem,unsigned int linearAddr)
 	{
 		return cpu.FetchByteByLinearAddress(mem,linearAddr);
@@ -903,30 +904,24 @@ public:
 	{
 		return cpu.GetConstMemoryWindowFromLinearAddress(linearAddr,mem);
 	}
-	static inline bool LoadFromDescriptorCache(uint32_t &upper4bytes,i486DX &cpu,SegmentRegister &reg,uint16_t value)
+	static inline const unsigned char *LoadFromDescriptorCache(i486DX &cpu,uint16_t selectorValue)
 	{
-		auto index=(value>>DESCRIPTOR_TO_INDEX_SHIFT);
-		if(true==cpu.state.useDescriptorCache &&
-		   0x0014!=value &&
-		   cpu.state.descriptorCacheValidCounter<=cpu.state.descriptorCache[index].validCounter)
+		auto index=(selectorValue>>DESCRIPTOR_TO_INDEX_SHIFT);
+		if(cpu.state.descriptorCacheValidCounter<=cpu.state.descriptorCacheValid[index])
 		{
-			reg=cpu.state.descriptorCache[index].reg;
-			upper4bytes=cpu.state.descriptorCache[index].upper4bytes;
-			return true;
+			return cpu.state.descriptorCache[index];
 		}
-		return false;
+		return nullptr;
 	}
-	static inline void StoreToDescriptorCache(i486DX &cpu,SegmentRegister &reg,uint16_t value,uint32_t upper4bytes)
+	static inline void StoreToDescriptorCache(i486DX &cpu,uint16_t selectorValue,const unsigned char *descPtr)
 	{
-		auto index=(value>>DESCRIPTOR_TO_INDEX_SHIFT);
-		cpu.state.descriptorCache[index].reg=reg;
-		cpu.state.descriptorCache[index].upper4bytes=upper4bytes;
-		cpu.state.descriptorCache[index].validCounter=cpu.state.descriptorCacheValidCounter;
+		auto index=(selectorValue>>DESCRIPTOR_TO_INDEX_SHIFT);
+		cpu.state.descriptorCache[index]=descPtr;
+		cpu.state.descriptorCacheValid[index]=cpu.state.descriptorCacheValidCounter;
 	}
-};
-class i486DX::DebugLoadSegmentRegisterClass
-{
-public:
+	// For mutable i486DX <<
+
+	// For constant i486DX >>
 	static inline unsigned int FetchByteByLinearAddress(const i486DX &cpu,const Memory &mem,unsigned int linearAddr)
 	{
 		return cpu.DebugFetchByteByLinearAddress(mem,linearAddr);
@@ -935,26 +930,28 @@ public:
 	{
 		return cpu.DebugGetConstMemoryWindowFromLinearAddress(linearAddr,mem);
 	}
-	static inline bool LoadFromDescriptorCache(uint32_t &upper4bytes,const i486DX &cpu,SegmentRegister &reg,uint16_t value)
+	static inline const unsigned char *LoadFromDescriptorCache(const i486DX &,uint16_t)
 	{
-		return false;
+		return nullptr;
 	}
-	static inline void StoreToDescriptorCache(const i486DX &cpu,SegmentRegister &reg,uint16_t value,uint32_t upper4bytes)
+	static inline void StoreToDescriptorCache(const i486DX &,uint16_t selectorValue,const unsigned char *)
 	{
 	}
-};
-template <class CPUCLASS,class FUNC>
-class i486DX::LoadSegmentRegisterTemplate
-{
-public:
-	unsigned char rawDescBuf[8];
-	const unsigned char *rawDesc;
+	// For constant i486DX <<
+
+
 
 	inline void LoadProtectedModeDescriptor(CPUCLASS &cpu,unsigned int value,const Memory &mem)
 	{
+		rawDesc=LoadFromDescriptorCache(cpu,value);
+		if(nullptr!=rawDesc)
+		{
+			return;
+		}
+
+
 		auto RPL=(value&3);
 		auto TI=(0!=(value&4));
-		auto INDEX=(value>>3)&0b0001111111111111;
 
 		unsigned int DTLinearBaseAddr=0;
 		if(0==TI)
@@ -965,24 +962,25 @@ public:
 		{
 			DTLinearBaseAddr=cpu.state.LDTR.linearBaseAddr;
 		}
-		DTLinearBaseAddr+=(8*INDEX);
+		DTLinearBaseAddr+=(value&0xfff8); // Use upper 13 bits.
 
-		auto memWin=FUNC::GetConstMemoryWindowFromLinearAddress(cpu,DTLinearBaseAddr,mem);
+		auto memWin=GetConstMemoryWindowFromLinearAddress(cpu,DTLinearBaseAddr,mem);
 		if(nullptr!=memWin.ptr && (DTLinearBaseAddr&(MemoryAccess::MEMORY_WINDOW_SIZE-1))<=(MemoryAccess::MEMORY_WINDOW_SIZE-8))
 		{
 			rawDesc=memWin.ptr+(DTLinearBaseAddr&(MemoryAccess::MEMORY_WINDOW_SIZE-1));
+			StoreToDescriptorCache(cpu,value,rawDesc);
 		}
 		else
 		{
 			rawDesc=rawDescBuf;
-			rawDescBuf[0]=(unsigned char)FUNC::FetchByteByLinearAddress(cpu,mem,DTLinearBaseAddr);
-			rawDescBuf[1]=(unsigned char)FUNC::FetchByteByLinearAddress(cpu,mem,DTLinearBaseAddr+1);
-			rawDescBuf[2]=(unsigned char)FUNC::FetchByteByLinearAddress(cpu,mem,DTLinearBaseAddr+2);
-			rawDescBuf[3]=(unsigned char)FUNC::FetchByteByLinearAddress(cpu,mem,DTLinearBaseAddr+3);
-			rawDescBuf[4]=(unsigned char)FUNC::FetchByteByLinearAddress(cpu,mem,DTLinearBaseAddr+4);
-			rawDescBuf[5]=(unsigned char)FUNC::FetchByteByLinearAddress(cpu,mem,DTLinearBaseAddr+5);
-			rawDescBuf[6]=(unsigned char)FUNC::FetchByteByLinearAddress(cpu,mem,DTLinearBaseAddr+6);
-			rawDescBuf[7]=(unsigned char)FUNC::FetchByteByLinearAddress(cpu,mem,DTLinearBaseAddr+7);
+			rawDescBuf[0]=(unsigned char)FetchByteByLinearAddress(cpu,mem,DTLinearBaseAddr);
+			rawDescBuf[1]=(unsigned char)FetchByteByLinearAddress(cpu,mem,DTLinearBaseAddr+1);
+			rawDescBuf[2]=(unsigned char)FetchByteByLinearAddress(cpu,mem,DTLinearBaseAddr+2);
+			rawDescBuf[3]=(unsigned char)FetchByteByLinearAddress(cpu,mem,DTLinearBaseAddr+3);
+			rawDescBuf[4]=(unsigned char)FetchByteByLinearAddress(cpu,mem,DTLinearBaseAddr+4);
+			rawDescBuf[5]=(unsigned char)FetchByteByLinearAddress(cpu,mem,DTLinearBaseAddr+5);
+			rawDescBuf[6]=(unsigned char)FetchByteByLinearAddress(cpu,mem,DTLinearBaseAddr+6);
+			rawDescBuf[7]=(unsigned char)FetchByteByLinearAddress(cpu,mem,DTLinearBaseAddr+7);
 		}
 	}
 
@@ -1000,12 +998,6 @@ public:
 		}
 		else
 		{
-			uint32_t upper4bytes;
-			if(true==FUNC::LoadFromDescriptorCache(upper4bytes,cpu,reg,value))
-			{
-				return upper4bytes;
-			}
-
 			LoadProtectedModeDescriptor(cpu,value,mem);
 
 			// Sample GDT from WRHIGH.ASM
@@ -1038,11 +1030,7 @@ public:
 				reg.addressSize=32;
 				reg.operandSize=32;
 			}
-			upper4bytes=cpputil::GetDword(rawDesc+4);
-
-			FUNC::StoreToDescriptorCache(cpu,reg,value,upper4bytes);
-
-			return upper4bytes;
+			return cpputil::GetDword(rawDesc+4);
 		}
 	}
 
@@ -1061,7 +1049,7 @@ public:
 
 unsigned int i486DX::DebugLoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode) const
 {
-	LoadSegmentRegisterTemplate<const i486DX,DebugLoadSegmentRegisterClass> loader;
+	LoadSegmentRegisterTemplate<const i486DX> loader;
 	return loader.LoadSegmentRegister(*this,reg,value,mem,IsInRealMode());
 }
 
@@ -1071,7 +1059,7 @@ unsigned int i486DX::LoadSegmentRegister(SegmentRegister &reg,unsigned int value
 	{
 		state.holdIRQ=true;
 	}
-	LoadSegmentRegisterTemplate<i486DX,LoadSegmentRegisterClass> loader;
+	LoadSegmentRegisterTemplate<i486DX> loader;
 	return loader.LoadSegmentRegister(*this,reg,value,mem,IsInRealMode());
 }
 
@@ -1081,7 +1069,7 @@ unsigned i486DX::LoadSegmentRegister(SegmentRegister &reg,unsigned int value,con
 	{
 		state.holdIRQ=true;
 	}
-	LoadSegmentRegisterTemplate<i486DX,LoadSegmentRegisterClass> loader;
+	LoadSegmentRegisterTemplate<i486DX> loader;
 	return loader.LoadSegmentRegister(*this,reg,value,mem,isInRealMode);
 }
 
@@ -1118,12 +1106,12 @@ void i486DX::LoadDescriptorTableRegister(SystemAddressRegister &reg,int operandS
 
 i486DX::FarPointer i486DX::GetCallGate(unsigned int selector,const Memory &mem)
 {
-	LoadSegmentRegisterTemplate<i486DX,LoadSegmentRegisterClass> loader;
+	LoadSegmentRegisterTemplate<i486DX> loader;
 	return loader.GetCallGate(*this,selector,mem);
 }
 i486DX::FarPointer i486DX::DebugGetCallGate(unsigned int selector,const Memory &mem) const
 {
-	LoadSegmentRegisterTemplate<const i486DX,DebugLoadSegmentRegisterClass> loader;
+	LoadSegmentRegisterTemplate<const i486DX> loader;
 	return loader.GetCallGate(*this,selector,mem);
 }
 

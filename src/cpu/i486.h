@@ -198,14 +198,6 @@ public:
 		uint16_t value;
 	};
 
-	class SegmentDescriptorCache
-	{
-	public:
-		unsigned int validCounter=0;
-		uint32_t upper4bytes;
-		SegmentRegister reg;
-	};
-
 	enum
 	{
 		NUM_SEGMENT_REGISTERS=REG_GS-REG_SEGMENT_REG_BASE+1
@@ -451,9 +443,20 @@ public:
 		uint32_t pageTableCacheValid[PAGETABLE_CACHE_SIZE];
 		uint32_t pageTableCache[PAGETABLE_CACHE_SIZE];
 
-		bool useDescriptorCache=true;
-		unsigned int descriptorCacheValidCounter=1;                     // This must be cleared on state-load.
-		SegmentDescriptorCache descriptorCache[DESCRIPTOR_CACHE_SIZE];  // This must be cleared on state-load.
+		// Descriptor cache stores pointers for descriptors, not linear base address, limit, etc.
+		// Some programs rewrites descriptor table after loaded by LGDT or LLDT.
+		// For example, DOS Extender's malloc extends the limit of data segment (0x14).
+		// Therefore, linear base, limit, and other attributes must be checked when
+		// a value is set in a segment selector.
+		//
+		// Descriptor cache is invalidated on Reset, LLDT, LGDT, or when Page Table pointer
+		// is set to CR3.
+		//
+		// Descriptor cache is referred and updated in function:
+		//   i486DX::LoadSegmentRegisterTemplate::LoadProtectedModeDescriptor
+		unsigned int descriptorCacheValidCounter=1;               // This must be cleared on state-load.
+		unsigned int descriptorCacheValid[DESCRIPTOR_CACHE_SIZE]; // This must be cleared on state-load.
+		unsigned char const *descriptorCache[DESCRIPTOR_CACHE_SIZE];    // This must be cleared on state-load.
 
 		MemoryAccess::ConstMemoryWindow CSEIPWindow;   // This must be cleared on state-load.
 		MemoryAccess::MemoryWindow SSESPWindow;         // This must be cleared on state-load.
@@ -1850,13 +1853,12 @@ public:
 		if(3==num)
 		{
 			InvalidatePageTableCache();
+			InvalidateDescriptorCache();
 		}
 	}
 	void ClearPageTableCache(void);
 	void InvalidatePageTableCache(void);
 
-	void EnableDescriptorCache(void);
-	void DisableDescriptorCache(void);
 	void ClearDescriptorCache(void);
 	void InvalidateDescriptorCache(void);
 
@@ -1945,9 +1947,7 @@ public:
 	void PrintLDT(const Memory &mem) const;
 
 private:
-	class LoadSegmentRegisterClass;
-	class DebugLoadSegmentRegisterClass;
-	template <class CPUCLASS,class FUNC>
+	template <class CPUCLASS>
 	class LoadSegmentRegisterTemplate;
 public:
 	enum
