@@ -5151,8 +5151,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{
 				clocksPassed=20;
 			}
-			Push(mem,inst.operandSize,state.CS().value);
-			Push(mem,inst.operandSize,state.EIP+inst.numBytes);
+			Push(mem,inst.operandSize,state.CS().value,state.EIP+inst.numBytes);
 
 			if(true==enableCallStack)
 			{
@@ -5926,8 +5925,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 								}
 							}
 
-							Push(mem,inst.operandSize,state.CS().value);
-							Push(mem,inst.operandSize,state.EIP+inst.numBytes);
+							Push(mem,inst.operandSize,state.CS().value,state.EIP+inst.numBytes);
 							if(true==enableCallStack)
 							{
 								auto destSeg=value.GetFwordSegment();
@@ -7168,14 +7166,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		clocksPassed=11;
 		{
 			auto temp=state.ESP();
-			Push(mem,inst.operandSize,state.EAX());
-			Push(mem,inst.operandSize,state.ECX());
-			Push(mem,inst.operandSize,state.EDX());
-			Push(mem,inst.operandSize,state.EBX());
-			Push(mem,inst.operandSize,temp);
-			Push(mem,inst.operandSize,state.EBP());
-			Push(mem,inst.operandSize,state.ESI());
-			Push(mem,inst.operandSize,state.EDI());
+			Push(mem,inst.operandSize,state.EAX(),state.ECX(),state.EDX());
+			Push(mem,inst.operandSize,state.EBX(),temp       ,state.EBP());
+			Push(mem,inst.operandSize,state.ESI(),state.EDI());
 		}
 		break;
 	case I486_RENUMBER_PUSHF://            0x9C,
