@@ -7447,9 +7447,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{
 				clocksPassed=18;
 			}
-			SetIPorEIP(inst.operandSize,Pop(mem,inst.operandSize));
-			auto segRegValue=Pop(mem,inst.operandSize);
-			LoadSegmentRegister(state.CS(),segRegValue,mem);
+
+			uint32_t eip,cs;
+			Pop(eip,cs,mem,inst.operandSize);
+
+			SetIPorEIP(inst.operandSize,eip);
+			LoadSegmentRegister(state.CS(),cs,mem);
 			EIPIncrement=0;
 			if(enableCallStack)
 			{
