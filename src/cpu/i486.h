@@ -2995,9 +2995,11 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 
 	if(IsInRealMode())
 	{
-		Push(mem,16,state.EFLAGS&0xFFFF);
-		Push(mem,16,state.CS().value);
-		Push(mem,16,state.EIP+numInstBytesForReturn);
+		Push(mem,16,state.EFLAGS&0xFFFF,state.CS().value,state.EIP+numInstBytesForReturn);
+		// Equivalent:
+		// Push(mem,16,state.EFLAGS&0xFFFF);
+		// Push(mem,16,state.CS().value);
+		// Push(mem,16,state.EIP+numInstBytesForReturn);
 
 		auto intVecAddr=(INTNum&0xFF)*4;
 		uint32_t CSIP=mem.FetchDword(intVecAddr);
@@ -3067,9 +3069,13 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 			{
 				SegmentRegister newCS;
 				LoadSegmentRegister(newCS,desc.SEG,mem);
-				Push(mem,gateOperandSize,state.EFLAGS);
-				Push(mem,gateOperandSize,state.CS().value);
-				Push(mem,gateOperandSize,state.EIP+numInstBytesForReturn);
+
+				Push(mem,gateOperandSize,state.EFLAGS,state.CS().value,state.EIP+numInstBytesForReturn);
+				// Equivalent >>
+				// Push(mem,gateOperandSize,state.EFLAGS);
+				// Push(mem,gateOperandSize,state.CS().value);
+				// Push(mem,gateOperandSize,state.EIP+numInstBytesForReturn);
+
 				SetIPorEIP(gateOperandSize,desc.OFFSET);
 				state.CS()=newCS;
 				SetIF(false);
