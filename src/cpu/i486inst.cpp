@@ -7390,10 +7390,13 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				clocksPassed=36;
 			}
 
-			SetIPorEIP(inst.operandSize,Pop(mem,inst.operandSize));
-			auto segRegValue=Pop(mem,inst.operandSize);
+			uint32_t eip,cs,eflags;
+			Pop(eip,cs,eflags,mem,inst.operandSize);
 
-			SetFLAGSorEFLAGS(inst.operandSize,Pop(mem,inst.operandSize));
+			SetIPorEIP(inst.operandSize,eip);
+			auto segRegValue=cs;
+
+			SetFLAGSorEFLAGS(inst.operandSize,eflags);
 			if(true!=IsInRealMode())
 			{
 				// if(state.EFLAGS&EFLAGS_NESTED)
