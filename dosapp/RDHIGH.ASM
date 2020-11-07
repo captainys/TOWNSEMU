@@ -1,3 +1,18 @@
+; Accidentally found difference between 486 and Pentium.
+;
+; LGDT instruction only updates GDT, but linear base address, segment limit, and other properties cached in
+; each segment selectors do not change.  Therefore, unless I don't use a far jump/call, it is safe to
+; first transition to the protected mode, and then update GDT with LGDT.
+;
+; In Pentium, segment properties cached in each segment selectors apparently reset upon LGDT.
+; Therefore, if I first transition to the protected mode, it is too late to update GDT with LGDT.
+; As soon as LGDT is called, CS cache is reset, and the value of CS from the real mode is most likely
+; not a valid code segment, and the program crashes.
+;
+; Thanks WINDY and Type.D for testing and confirming this finding with FM TOWNS II HC.
+
+
+
 ; Need .386p
 
 ; Input
