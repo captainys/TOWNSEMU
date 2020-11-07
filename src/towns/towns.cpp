@@ -138,7 +138,7 @@ FMTowns::FMTowns() :
 		physMem.state.CMOSRAM[i]=defCMOS[i];
 	}
 
-	physMem.SetUpMemoryAccess();
+	physMem.SetUpMemoryAccess(TownsTypeToCPUType(townsType));
 	physMem.FMRVRAMAccess.townsPtr=this;
 	physMem.FMRVRAMAccess.crtcPtr=&this->crtc;
 
