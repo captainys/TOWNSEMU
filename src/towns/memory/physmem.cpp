@@ -410,8 +410,6 @@ void TownsPhysicalMemory::SetUpMemoryAccess(void)
 	nativeDicROMAccess.SetCPUPointer(&cpu);
 	nativeCMOSRAMAccess.SetPhysicalMemoryPointer(this);
 	nativeCMOSRAMAccess.SetCPUPointer(&cpu);
-	mem.AddAccess(&nativeDicROMAccess,TOWNSADDR_NATIVE_DICROM_BASE,TOWNSADDR_NATIVE_DICROM_END-1);
-	mem.AddAccess(&nativeCMOSRAMAccess,TOWNSADDR_NATIVE_CMOSRAM_BASE,TOWNSADDR_NATIVE_CMOSRAM_END-1);
 
 	mappedSysROMAccess.SetPhysicalMemoryPointer(this);
 	mappedSysROMAccess.SetCPUPointer(&cpu);
@@ -458,35 +456,41 @@ void TownsPhysicalMemory::SetUpMemoryAccess(void)
 
 	spriteRAMAccess.SetPhysicalMemoryPointer(this);
 	spriteRAMAccess.SetCPUPointer(&cpu);
-	mem.AddAccess(&spriteRAMAccess,TOWNSADDR_SPRITERAM_BASE,TOWNSADDR_SPRITERAM_END-1);
 
 	oldMemCardAccess.SetPhysicalMemoryPointer(this);
 	oldMemCardAccess.SetCPUPointer(&cpu);
-	mem.AddAccess(&oldMemCardAccess,TOWNSADDR_MEMCARD_OLD_BASE,TOWNSADDR_MEMCARD_OLD_END-1);
 
 	JEIDA4MemCardAccess.SetPhysicalMemoryPointer(this);
 	JEIDA4MemCardAccess.SetCPUPointer(&cpu);
-	mem.AddAccess(&JEIDA4MemCardAccess,TOWNSADDR_MEMCARD_JEIDA4_BASE,TOWNSADDR_MEMCARD_JEIDA4_END-1);
 
 	osROMAccess.SetPhysicalMemoryPointer(this);
 	osROMAccess.SetCPUPointer(&cpu);
-	mem.AddAccess(&osROMAccess,0xC2000000,0xC207FFFF);
 
 	fontROMAccess.SetPhysicalMemoryPointer(this);
 	fontROMAccess.SetCPUPointer(&cpu);
-	mem.AddAccess(&fontROMAccess,0xC2100000,0xC213FFFF);
 
 	font20ROMAccess.SetPhysicalMemoryPointer(this);
 	font20ROMAccess.SetCPUPointer(&cpu);
-	mem.AddAccess(&font20ROMAccess,TOWNSADDR_FONT20_BASE,TOWNSADDR_FONT20_END-1);
 
 	waveRAMAccess.SetPhysicalMemoryPointer(this);
 	waveRAMAccess.SetCPUPointer(&cpu);
-	mem.AddAccess(&waveRAMAccess,TOWNSADDR_WAVERAM_WINDOW_BASE,TOWNSADDR_WAVERAM_WINDOW_END-1);
 
 	sysROMAccess.SetPhysicalMemoryPointer(this);
 	sysROMAccess.SetCPUPointer(&cpu);
-	mem.AddAccess(&sysROMAccess,0xFFFC0000,0xFFFFFFFF);
+
+	mem.AddAccess(&nativeDicROMAccess,TOWNSADDR_NATIVE_DICROM_BASE,TOWNSADDR_NATIVE_DICROM_END-1);
+	mem.AddAccess(&nativeCMOSRAMAccess,TOWNSADDR_NATIVE_CMOSRAM_BASE,TOWNSADDR_NATIVE_CMOSRAM_END-1);
+
+	mem.AddAccess(&spriteRAMAccess,TOWNSADDR_SPRITERAM_BASE,TOWNSADDR_SPRITERAM_END-1);
+
+	mem.AddAccess(&oldMemCardAccess,TOWNSADDR_MEMCARD_OLD_BASE,TOWNSADDR_MEMCARD_OLD_END-1);
+	mem.AddAccess(&JEIDA4MemCardAccess,TOWNSADDR_MEMCARD_JEIDA4_BASE,TOWNSADDR_MEMCARD_JEIDA4_END-1);
+	mem.AddAccess(&osROMAccess,TOWNSADDR_OSROM_BASE,TOWNSADDR_OSROM_END-1);
+	mem.AddAccess(&fontROMAccess,TOWNSADDR_FONT_BASE,TOWNSADDR_FONT_END-1);
+	mem.AddAccess(&font20ROMAccess,TOWNSADDR_FONT20_BASE,TOWNSADDR_FONT20_END-1);
+	mem.AddAccess(&waveRAMAccess,TOWNSADDR_WAVERAM_WINDOW_BASE,TOWNSADDR_WAVERAM_WINDOW_END-1);
+
+	mem.AddAccess(&sysROMAccess,TOWNSADDR_SYSROM_BASE,0xFFFFFFFF);
 }
 
 void TownsPhysicalMemory::SetUpVRAMAccess(bool breakOnRead,bool breakOnWrite)

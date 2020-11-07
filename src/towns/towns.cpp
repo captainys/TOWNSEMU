@@ -310,6 +310,43 @@ FMTowns::FMTowns() :
 	PowerOn();
 }
 
+/* static */ int FMTowns::TownsTypeToCPUType(unsigned int townsType)
+{
+	switch(townsType)
+	{
+	case FMR_50_60:
+	case FMR_50S:
+	case FMR_70:
+		return TOWNSCPU_UNKNOWN;
+	case TOWNSTYPE_MODEL1_2:
+	case TOWNSTYPE_1F_2F:
+	case TOWNSTYPE_10F_20F:
+	case TOWNSTYPE_2_CX:
+	case TOWNSTYPE_2_HG:
+		return TOWNSCPU_80386DX;
+	case TOWNSTYPE_UX:
+	case TOWNSTYPE_2_UG:
+		return TOWNSCPU_80386SX;
+	case TOWNSTYPE_2_HR:
+	case TOWNSTYPE_2_UR:
+	case TOWNSTYPE_2_MA:
+	case TOWNSTYPE_2_ME:
+	case TOWNSTYPE_2_MF_FRESH:
+	// EA
+		return TOWNSCPU_80486SX;
+	case TOWNSTYPE_2_MX:
+	// HA,
+		return TOWNSCPU_80486DX;
+	case TOWNSTYPE_2_HC:
+	// HB
+		return TOWNSCPU_PENTIUM;
+	// FS,FT
+	//   AM486DX
+	}
+	return TOWNSCPU_UNKNOWN;
+}
+
+
 unsigned int FMTowns::MachineID(void) const
 {
 	const int i80286=0;

@@ -351,6 +351,10 @@ public:
 
 	unsigned int MachineID(void) const;
 
+
+	static int TownsTypeToCPUType(unsigned int townsType);
+
+
 	/*! Returns four words in the TBIOS header located at:
 	        Physical Address:00100000
 	        Physical Address:00100008

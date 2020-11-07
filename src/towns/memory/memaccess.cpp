@@ -429,7 +429,7 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 /* virtual */ unsigned int TownsNativeDICROMAccess::FetchByte(unsigned int physAddr) const
 {
 	auto &physMem=*physMemPtr;
-	return physMem.dicRom[physAddr-TOWNSADDR_NATIVE_DICROM_BASE];
+	return physMem.dicRom[physAddr&TOWNSADDR_NATIVE_DICROM_AND];
 }
 /* virtual */ void TownsNativeDICROMAccess::StoreByte(unsigned int,unsigned char)
 {
@@ -443,12 +443,12 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 /* virtual */ unsigned int TownsNativeCMOSRAMAccess::FetchByte(unsigned int physAddr) const
 {
 	auto &physMem=*physMemPtr;
-	return physMem.state.CMOSRAM[physAddr-TOWNSADDR_NATIVE_CMOSRAM_BASE];
+	return physMem.state.CMOSRAM[physAddr&TOWNSADDR_NATIVE_CMOSRAM_AND];
 }
 /* virtual */ void TownsNativeCMOSRAMAccess::StoreByte(unsigned int physAddr,unsigned char data)
 {
 	auto &physMem=*physMemPtr;
-	physMem.state.CMOSRAM[physAddr-TOWNSADDR_NATIVE_CMOSRAM_BASE]=data;
+	physMem.state.CMOSRAM[physAddr&TOWNSADDR_NATIVE_CMOSRAM_AND]=data;
 }
 
 
@@ -459,32 +459,32 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 {
 	// 0x81000000,0x8101FFFF
 	auto &state=physMemPtr->state;
-	return state.spriteRAM[physAddr-0x81000000];
+	return state.spriteRAM[physAddr&TOWNSADDR_SPRITERAM_AND];
 }
 /* virtual */ unsigned int TownsSpriteRAMAccess::FetchWord(unsigned int physAddr) const
 {
 	auto &state=physMemPtr->state;
-	return cpputil::GetWord(state.spriteRAM.data()+physAddr-0x81000000);
+	return cpputil::GetWord(state.spriteRAM.data()+(physAddr&TOWNSADDR_SPRITERAM_AND));
 }
 /* virtual */ unsigned int TownsSpriteRAMAccess::FetchDword(unsigned int physAddr) const
 {
 	auto &state=physMemPtr->state;
-	return cpputil::GetDword(state.spriteRAM.data()+physAddr-0x81000000);
+	return cpputil::GetDword(state.spriteRAM.data()+(physAddr&TOWNSADDR_SPRITERAM_AND));
 }
 /* virtual */ void TownsSpriteRAMAccess::StoreByte(unsigned int physAddr,unsigned char data)
 {
 	auto &state=physMemPtr->state;
-	state.spriteRAM[physAddr-0x81000000]=data;
+	state.spriteRAM[physAddr&TOWNSADDR_SPRITERAM_AND]=data;
 }
 /* virtual */ void TownsSpriteRAMAccess::StoreWord(unsigned int physAddr,unsigned int data)
 {
 	auto &state=physMemPtr->state;
-	cpputil::PutWord(state.spriteRAM.data()+physAddr-0x81000000,data);
+	cpputil::PutWord(state.spriteRAM.data()+(physAddr&TOWNSADDR_SPRITERAM_AND),data);
 }
 /* virtual */ void TownsSpriteRAMAccess::StoreDword(unsigned int physAddr,unsigned int data)
 {
 	auto &state=physMemPtr->state;
-	cpputil::PutDword(state.spriteRAM.data()+physAddr-0x81000000,data);
+	cpputil::PutDword(state.spriteRAM.data()+(physAddr&TOWNSADDR_SPRITERAM_AND),data);
 }
 
 ////////////////////////////////////////////////////////////
@@ -501,7 +501,7 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 	auto &memCard=physMemPtr->state.memCard;
 	if(TOWNS_MEMCARD_TYPE_OLD==memCard.memCardType)
 	{
-		unsigned int memCardAddr=physAddr-TOWNSADDR_MEMCARD_OLD_BASE;
+		unsigned int memCardAddr=physAddr&TOWNSADDR_MEMCARD_AND;
 		if(memCardAddr<memCard.data.size())
 		{
 			return memCard.data[memCardAddr];
@@ -516,7 +516,7 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 		auto &memCard=physMemPtr->state.memCard;
 		if(TOWNS_MEMCARD_TYPE_OLD==memCard.memCardType && true!=memCard.writeProtected)
 		{
-			auto memCardAddr=physAddr-TOWNSADDR_MEMCARD_OLD_BASE;
+			auto memCardAddr=physAddr&TOWNSADDR_MEMCARD_AND;
 			memCard.data[memCardAddr]=data;
 			memCard.modified=true;
 		}
@@ -533,7 +533,7 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 		if(TOWNS_MEMCARD_TYPE_JEIDA4==memCard.memCardType)
 		{
 			// I should return attribute information if REG==true.  But, I don't know what exactly it is.
-			unsigned int memCardAddr=physAddr-TOWNSADDR_MEMCARD_JEIDA4_BASE+0x400000*physMemPtr->state.memCardBank;
+			unsigned int memCardAddr=(physAddr&TOWNSADDR_MEMCARD_AND)+0x400000*physMemPtr->state.memCardBank;
 			if(memCardAddr<memCard.data.size())
 			{
 				return memCard.data[memCardAddr];
@@ -549,7 +549,7 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 		auto &memCard=physMemPtr->state.memCard;
 		if(TOWNS_MEMCARD_TYPE_JEIDA4==memCard.memCardType && true!=memCard.writeProtected)
 		{
-			unsigned int memCardAddr=physAddr-TOWNSADDR_MEMCARD_JEIDA4_BASE+0x400000*physMemPtr->state.memCardBank;
+			unsigned int memCardAddr=(physAddr&TOWNSADDR_MEMCARD_AND)+0x400000*physMemPtr->state.memCardBank;
 			if(memCardAddr<memCard.data.size())
 			{
 				memCard.data[memCardAddr]=data;
@@ -563,16 +563,11 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 
 /* virtual */ unsigned int TownsOsROMAccess::FetchByte(unsigned int physAddr) const
 {
-	physAddr-=0xC2000000;
-	if(physAddr<physMemPtr->dosRom.size())
-	{
-		return physMemPtr->dosRom[physAddr];
-	}
-	return 0xff;
+	return physMemPtr->dosRom[physAddr&TOWNSADDR_OSROM_AND];
 }
 /* virtual */ unsigned int TownsOsROMAccess::FetchWord(unsigned int physAddr) const
 {
-	physAddr-=0xC2000000;
+	physAddr&=TOWNSADDR_OSROM_AND;
 	if(physAddr+1<physMemPtr->dosRom.size())
 	{
 		auto *ROMPtr=physMemPtr->dosRom.data()+physAddr;
@@ -586,7 +581,7 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 }
 /* virtual */ unsigned int TownsOsROMAccess::FetchDword(unsigned int physAddr) const
 {
-	physAddr-=0xC2000000;
+	physAddr&=TOWNSADDR_OSROM_AND;
 	if(physAddr+3<physMemPtr->dosRom.size())
 	{
 		auto *ROMPtr=physMemPtr->dosRom.data()+physAddr;
@@ -608,12 +603,8 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 
 /* virtual */ unsigned int TownsFontROMAccess::FetchByte(unsigned int physAddr) const
 {
-	physAddr-=0xC2100000;
-	if(physAddr<physMemPtr->fontRom.size())
-	{
-		return physMemPtr->fontRom[physAddr];
-	}
-	return 0xff;
+	physAddr&=TOWNSADDR_FONT_AND;
+	return physMemPtr->fontRom[physAddr];
 }
 /* virtual */ void TownsFontROMAccess::StoreByte(unsigned int physAddr,unsigned char data)
 {
@@ -623,12 +614,8 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 
 /* virtual */ unsigned int TownsFont20ROMAccess::FetchByte(unsigned int physAddr) const
 {
-	physAddr-=TOWNSADDR_FONT20_BASE;
-	if(physAddr<physMemPtr->font20Rom.size())
-	{
-		return physMemPtr->font20Rom[physAddr];
-	}
-	return 0xff;
+	physAddr&=TOWNSADDR_FONT20_AND;
+	return physMemPtr->font20Rom[physAddr];
 }
 /* virtual */ void TownsFont20ROMAccess::StoreByte(unsigned int physAddr,unsigned char data)
 {
@@ -640,11 +627,11 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 
 /* virtual */ unsigned int TownsWaveRAMAccess::FetchByte(unsigned int physAddr) const
 {
-	return pcmPtr->ReadWaveRAM(physAddr-TOWNSADDR_WAVERAM_WINDOW_BASE);
+	return pcmPtr->ReadWaveRAM(physAddr&TOWNSADDR_WAVERAM_WINDOW_AND);
 }
 /* virtual */ void TownsWaveRAMAccess::StoreByte(unsigned int physAddr,unsigned char data)
 {
-	pcmPtr->WriteWaveRAM(physAddr-TOWNSADDR_WAVERAM_WINDOW_BASE,data);
+	pcmPtr->WriteWaveRAM(physAddr&TOWNSADDR_WAVERAM_WINDOW_AND,data);
 }
 TownsWaveRAMAccess::TownsWaveRAMAccess(class RF5C68 *pcmPtr)
 {
@@ -657,11 +644,7 @@ TownsWaveRAMAccess::TownsWaveRAMAccess(class RF5C68 *pcmPtr)
 
 /* virtual */ unsigned int TownsSysROMAccess::FetchByte(unsigned int physAddr) const
 {
-	if(0xFFFC0000<=physAddr)
-	{
-		return physMemPtr->sysRom[physAddr-0xFFFC0000];
-	}
-	return 0xff;
+	return physMemPtr->sysRom[physAddr&TOWNSADDR_SYSROM_AND];
 }
 /* virtual */ void TownsSysROMAccess::StoreByte(unsigned int physAddr,unsigned char data)
 {
@@ -669,7 +652,7 @@ TownsWaveRAMAccess::TownsWaveRAMAccess(class RF5C68 *pcmPtr)
 /* virtual */ MemoryAccess::ConstMemoryWindow TownsSysROMAccess::GetConstMemoryWindow(unsigned int physAddr) const
 {
 	MemoryAccess::ConstMemoryWindow memWin;
-	memWin.ptr=physMemPtr->sysRom.data()+((physAddr&(~0xfff))-0xFFFC0000);
+	memWin.ptr=physMemPtr->sysRom.data()+((physAddr&(~0xfff)&TOWNSADDR_SYSROM_AND));
 	return memWin;
 }
 
