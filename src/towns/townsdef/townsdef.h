@@ -42,13 +42,14 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 enum
 {
+	TOWNSTYPE_UNKNOWN,
 	FMR_50_60,
 	FMR_50S,
 	FMR_70,
 	TOWNSTYPE_MODEL1_2,  // 1st Gen: model1, model2
 	TOWNSTYPE_1F_2F,     // 2nd Gen: 1F,2F
 	TOWNSTYPE_10F_20F,   // 3rd Gen: 10F,20F
-	TOWNSTYPE_UX,
+	TOWNSTYPE_2_UX,
 	TOWNSTYPE_2_CX,
 	TOWNSTYPE_2_UG,
 	TOWNSTYPE_2_HG,
@@ -60,6 +61,11 @@ enum
 	TOWNSTYPE_2_MF_FRESH,
 	TOWNSTYPE_2_HC
 };
+
+#ifdef __cplusplus
+std::string TownsTypeToStr(unsigned int townsType);
+unsigned int StrToTownsType(std::string str);
+#endif
 
 enum
 {

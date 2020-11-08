@@ -32,6 +32,8 @@ public:
 		unsigned int button;
 	};
 
+	unsigned int townsType=TOWNSTYPE_UNKNOWN;
+
 	unsigned int gamePort[2];
 	unsigned int bootKeyComb=BOOT_KEYCOMB_NONE;
 

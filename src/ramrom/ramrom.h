@@ -234,6 +234,10 @@ public:
 
 	Memory();
 
+	/*! Unassign all memory access objects.
+	*/
+	void CleanUp(void);
+
 	/*! Register memory-access object for physical address physAddrLow to physAddrHigh.
 	    Ex.  AddAccess(&low1MBAccess,0x00000000,0x000FFFFF);
 	    If a memory-access object chain is assigned to the slot, it only replaces the

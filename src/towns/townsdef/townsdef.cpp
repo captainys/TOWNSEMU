@@ -17,6 +17,120 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 
 
+std::string TownsTypeToStr(unsigned int townsType)
+{
+	switch(townsType)
+	{
+	case FMR_50_60:
+		return "R50";
+	case FMR_50S:
+		return "R50S";
+	case FMR_70:
+		return "R70";
+	case TOWNSTYPE_MODEL1_2:
+		return "MODEL2";
+	case TOWNSTYPE_1F_2F:
+		return "2F";
+	case TOWNSTYPE_10F_20F:
+		return "20F";
+	case TOWNSTYPE_2_UX:
+		return "UX";
+	case TOWNSTYPE_2_CX:
+		return "CX";
+	case TOWNSTYPE_2_UG:
+		return "UG";
+	case TOWNSTYPE_2_HG:
+		return "HG";
+	case TOWNSTYPE_2_HR:
+		return "HR";
+	case TOWNSTYPE_2_UR:
+		return "UR";
+	case TOWNSTYPE_2_MA:
+		return "MA";
+	case TOWNSTYPE_2_MX:
+		return "MX";
+	case TOWNSTYPE_2_ME:
+		return "ME";
+	case TOWNSTYPE_2_MF_FRESH:
+		return "MF";
+	case TOWNSTYPE_2_HC:
+		return "HC";
+	}
+	return "UNKNOWN";
+}
+unsigned int StrToTownsType(std::string str)
+{
+	if("R50"==str)
+	{
+		return FMR_50_60;
+	}
+	if("R50S"==str)
+	{
+		return FMR_50S;
+	}
+	if("R70"==str)
+	{
+		return FMR_70;
+	}
+	if("MODEL2"==str)
+	{
+		return TOWNSTYPE_MODEL1_2;
+	}
+	if("2F"==str)
+	{
+		return TOWNSTYPE_1F_2F;
+	}
+	if("20F"==str)
+	{
+		return TOWNSTYPE_10F_20F;
+	}
+	if("UX"==str)
+	{
+		return TOWNSTYPE_2_UX;
+	}
+	if("CX"==str)
+	{
+		return TOWNSTYPE_2_CX;
+	}
+	if("UG"==str)
+	{
+		return TOWNSTYPE_2_UG;
+	}
+	if("HG"==str)
+	{
+		return TOWNSTYPE_2_HG;
+	}
+	if("HR"==str)
+	{
+		return TOWNSTYPE_2_HR;
+	}
+	if("UR"==str)
+	{
+		return TOWNSTYPE_2_UR;
+	}
+	if("MA"==str)
+	{
+		return TOWNSTYPE_2_MA;
+	}
+	if("MX"==str)
+	{
+		return TOWNSTYPE_2_MX;
+	}
+	if("ME"==str)
+	{
+		return TOWNSTYPE_2_ME;
+	}
+	if("MF"==str || "FRESH"==str)
+	{
+		return TOWNSTYPE_2_MF_FRESH;
+	}
+	if("HC"==str)
+	{
+		return TOWNSTYPE_2_HC;
+	}
+	return TOWNSTYPE_UNKNOWN;
+}
+
 unsigned int TownsStrToKeyComb(std::string str)
 {
 	if("NONE"==str || "none"==str)

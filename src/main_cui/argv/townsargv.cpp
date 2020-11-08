@@ -160,6 +160,11 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  Specify FM/PCM volume.  Volume will be rounded to 0 to 8192." << std::endl;
 	std::cout << "-DAMPERWIRELINE" << std::endl;
 	std::cout << "  Render damper-wire line to make you feel nostalgic." << std::endl;
+	std::cout << "-TOWNSTYPE" << std::endl;
+	std::cout << "  Specify FM TOWNS type.  Can be one of:" << std::endl;
+	std::cout << "    MODEL2 2F 20F UX CX UG HG HR UR MA MX ME MF HC" << std::endl;
+	std::cout << "  It affects the return value from I/O 0030H." << std::endl;
+	std::cout << "  Also selection of UX and UG (386SX models) will affect memory mappings." << std::endl;
 }
 
 void TownsARGV::PrintApplicationList(void) const
@@ -680,6 +685,11 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		else if("-SCANLINE15K"==ARG)
 		{
 			scanLineEffectIn15KHz=true;
+		}
+		else if("-TOWNSTYPE"==ARG && i+1<argc)
+		{
+			townsType=StrToTownsType(argv[i+1]);
+			++i;
 		}
 		else
 		{

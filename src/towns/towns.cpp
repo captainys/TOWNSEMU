@@ -324,7 +324,7 @@ FMTowns::FMTowns() :
 	case TOWNSTYPE_2_CX:
 	case TOWNSTYPE_2_HG:
 		return TOWNSCPU_80386DX;
-	case TOWNSTYPE_UX:
+	case TOWNSTYPE_2_UX:
 	case TOWNSTYPE_2_UG:
 		return TOWNSCPU_80386SX;
 	case TOWNSTYPE_2_HR:
@@ -375,7 +375,7 @@ unsigned int FMTowns::MachineID(void) const
 	case TOWNSTYPE_10F_20F:   // 3rd Gen: 10F:20F
 		lowByte=i80386; // [2] pp.775
 		break;
-	case TOWNSTYPE_UX:
+	case TOWNSTYPE_2_UX:
 		lowByte=i80386SX; // [2] pp.781
 		break;
 	case TOWNSTYPE_2_CX:
@@ -421,7 +421,7 @@ unsigned int FMTowns::MachineID(void) const
 	case TOWNSTYPE_10F_20F:   // 3rd Gen: 10F:20F
 		highByte=0x4; // [2] pp.826
 		break;
-	case TOWNSTYPE_UX:
+	case TOWNSTYPE_2_UX:
 		highByte=0x3; // [2] pp.826
 		break;
 	case TOWNSTYPE_2_CX:

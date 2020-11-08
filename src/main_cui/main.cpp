@@ -171,6 +171,13 @@ bool Setup(FMTowns &towns,Outside_World *outside_world,const TownsARGV &argv)
 			}
 		}
 	}
+
+	if(TOWNSTYPE_UNKNOWN!=argv.townsType)
+	{
+		towns.townsType=argv.townsType;
+		towns.physMem.SetUpMemoryAccess(towns.TownsTypeToCPUType(argv.townsType));
+	}
+
 	if(""!=argv.cdImgFName)
 	{
 		auto errCode=towns.cdrom.state.GetDisc().Open(argv.cdImgFName);

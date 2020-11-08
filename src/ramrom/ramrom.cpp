@@ -88,6 +88,14 @@ Memory::Memory()
 	}
 }
 
+void Memory::CleanUp(void)
+{
+	for(auto &ptr : memAccessPtr)
+	{
+		ptr=&nullAccess;
+	}
+}
+
 void Memory::AddAccess(MemoryAccess *memAccess,unsigned int physAddrLow,unsigned int physAddrHigh)
 {
 	if(0!=(physAddrLow&((1<<GRANURALITY_SHIFT)-1)) || 0xfff!=(physAddrHigh&(1<<GRANURALITY_SHIFT)-1))
