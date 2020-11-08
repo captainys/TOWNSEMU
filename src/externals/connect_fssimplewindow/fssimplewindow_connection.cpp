@@ -260,57 +260,57 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 			}
 
 			this->ProcessInkey(towns,FSKEYtoTownsKEY[c]);
-			unsigned char byteData[2]={0,0};
+			unsigned char keyFlags=0;
 			switch(c)
 			{
 			default:
-				byteData[1]=0;
-				break;
-			// CTRL+C, CTRL+S, CTRL+Q
-			case FSKEY_C:
-			case FSKEY_S:
-			case FSKEY_Q:
-				if(0!=FsGetKeyState(FSKEY_CTRL))
+				// CTRL+C, CTRL+S, CTRL+Q...
+				if(0!=FsGetKeyState(FSKEY_CTRL) && FSKEY_A<=c && c<=FSKEY_Z)
 				{
-					byteData[0]=TOWNS_KEYFLAG_CTRL;
-					towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_JIS_PRESS,  FSKEYtoTownsKEY[c]);
-					towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_JIS_RELEASE,FSKEYtoTownsKEY[c]);
+					// Can take Ctrl+? and Ctrl+Shift+?, but Shift+? is taken by FsInkeyChar() already.
+					// Therefore this block should only process only if Ctrl key is held down.
+					keyFlags=TOWNS_KEYFLAG_CTRL;
+					if(0!=FsGetKeyState(FSKEY_SHIFT))
+					{
+						keyFlags=TOWNS_KEYFLAG_SHIFT;
+					}
+					towns.keyboard.PushFifo(keyFlags|TOWNS_KEYFLAG_JIS_PRESS,  FSKEYtoTownsKEY[c]);
+					towns.keyboard.PushFifo(keyFlags|TOWNS_KEYFLAG_JIS_RELEASE,FSKEYtoTownsKEY[c]);
 				}
 				break;
 			case FSKEY_ESC:
 				// User Request: Want to use ESC as ESC.
 				// Problem: F-BASIC386 uses Break.
 				// Trying: Physical ESC key makes both BREAK and ESC strokes.
-				byteData[0]|=(0!=FsGetKeyState(FSKEY_CTRL) ? TOWNS_KEYFLAG_CTRL : 0);
-				byteData[0]|=(0!=FsGetKeyState(FSKEY_SHIFT) ? TOWNS_KEYFLAG_SHIFT : 0);
+				keyFlags|=(0!=FsGetKeyState(FSKEY_CTRL) ? TOWNS_KEYFLAG_CTRL : 0);
+				keyFlags|=(0!=FsGetKeyState(FSKEY_SHIFT) ? TOWNS_KEYFLAG_SHIFT : 0);
 				if(TOWNS_KEYBOARD_MODE_TRANSLATION1==keyboardMode)
 				{
-					towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_JIS_PRESS,  TOWNS_JISKEY_BREAK);
-					towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_JIS_RELEASE,TOWNS_JISKEY_BREAK);
-					towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_JIS_PRESS,  TOWNS_JISKEY_ESC);
-					towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_JIS_RELEASE,TOWNS_JISKEY_ESC);
+					towns.keyboard.PushFifo(keyFlags|TOWNS_KEYFLAG_JIS_PRESS,  TOWNS_JISKEY_BREAK);
+					towns.keyboard.PushFifo(keyFlags|TOWNS_KEYFLAG_JIS_RELEASE,TOWNS_JISKEY_BREAK);
+					towns.keyboard.PushFifo(keyFlags|TOWNS_KEYFLAG_JIS_PRESS,  TOWNS_JISKEY_ESC);
+					towns.keyboard.PushFifo(keyFlags|TOWNS_KEYFLAG_JIS_RELEASE,TOWNS_JISKEY_ESC);
 				}
 				else if(TOWNS_KEYBOARD_MODE_TRANSLATION2==keyboardMode)
 				{
-					towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_JIS_PRESS,  TOWNS_JISKEY_ESC);
-					towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_JIS_RELEASE,TOWNS_JISKEY_ESC);
+					towns.keyboard.PushFifo(keyFlags|TOWNS_KEYFLAG_JIS_PRESS,  TOWNS_JISKEY_ESC);
+					towns.keyboard.PushFifo(keyFlags|TOWNS_KEYFLAG_JIS_RELEASE,TOWNS_JISKEY_ESC);
 				}
 				else if(TOWNS_KEYBOARD_MODE_TRANSLATION3==keyboardMode)
 				{
-					towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_JIS_PRESS,  TOWNS_JISKEY_BREAK);
-					towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_JIS_RELEASE,TOWNS_JISKEY_BREAK);
+					towns.keyboard.PushFifo(keyFlags|TOWNS_KEYFLAG_JIS_PRESS,  TOWNS_JISKEY_BREAK);
+					towns.keyboard.PushFifo(keyFlags|TOWNS_KEYFLAG_JIS_RELEASE,TOWNS_JISKEY_BREAK);
 				}
 				break;
 			case FSKEY_ENTER:
 			case FSKEY_BS:
 			case FSKEY_TAB:
-			case FSKEY_UP:
-			case FSKEY_DOWN:
-			case FSKEY_LEFT:
-			case FSKEY_RIGHT:
 			case FSKEY_HOME:
+			case FSKEY_END:
 			case FSKEY_PAGEUP:
 			case FSKEY_PAGEDOWN:
+			case FSKEY_NUMLOCK:
+			case FSKEY_ALT:
 			case FSKEY_INS:
 			case FSKEY_DEL:
 			case FSKEY_F1:
@@ -325,18 +325,24 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 			case FSKEY_F10:
 			case FSKEY_F11:
 			case FSKEY_F12:
-				byteData[0]|=(0!=FsGetKeyState(FSKEY_CTRL) ? TOWNS_KEYFLAG_CTRL : 0);
-				byteData[0]|=(0!=FsGetKeyState(FSKEY_SHIFT) ? TOWNS_KEYFLAG_SHIFT : 0);
-				towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_JIS_PRESS,  FSKEYtoTownsKEY[c]);
-				towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_JIS_RELEASE,FSKEYtoTownsKEY[c]);
+			case FSKEY_CAPSLOCK:
+			case FSKEY_CONVERT:
+			case FSKEY_NONCONVERT:
+			case FSKEY_KANA:       // Japanese JIS Keyboard Only => Win32 VK_KANA
+			case FSKEY_RO:         // Japanese JIS Keyboard Only => Win32 VK_OEM_102
+			case FSKEY_ZENKAKU:    // Japanese JIS Keyboard Only => Full Pitch/Half Pitch
+			case FSKEY_WHEELUP:
+			case FSKEY_WHEELDOWN:
+			case FSKEY_CONTEXT:
+			case FSKEY_UP:
+			case FSKEY_DOWN:
+			case FSKEY_LEFT:
+			case FSKEY_RIGHT:
+				keyFlags|=(0!=FsGetKeyState(FSKEY_CTRL) ? TOWNS_KEYFLAG_CTRL : 0);
+				keyFlags|=(0!=FsGetKeyState(FSKEY_SHIFT) ? TOWNS_KEYFLAG_SHIFT : 0);
+				towns.keyboard.PushFifo(keyFlags|TOWNS_KEYFLAG_JIS_PRESS,  FSKEYtoTownsKEY[c]);
+				towns.keyboard.PushFifo(keyFlags|TOWNS_KEYFLAG_JIS_RELEASE,FSKEYtoTownsKEY[c]);
 				break;
-			}
-			if(0!=byteData[1])
-			{
-				byteData[0]=TOWNS_KEYFLAG_JIS_PRESS;
-				towns.keyboard.PushFifo(byteData[0],byteData[1]);
-				byteData[0]=TOWNS_KEYFLAG_JIS_RELEASE;
-				towns.keyboard.PushFifo(byteData[0],byteData[1]);
 			}
 		}
 	}
