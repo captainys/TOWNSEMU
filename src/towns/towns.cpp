@@ -625,7 +625,7 @@ bool FMTowns::CheckRenderingTimer(TownsRender &render,Outside_World &world)
 
 void FMTowns::SetUpVRAMAccess(bool breakOnRead,bool breakOnWrite)
 {
-	physMem.SetUpVRAMAccess(breakOnRead,breakOnWrite);
+	physMem.SetUpVRAMAccess(TownsTypeToCPUType(townsType),breakOnRead,breakOnWrite);
 }
 
 void FMTowns::SetMainRAMSize(long long int size)

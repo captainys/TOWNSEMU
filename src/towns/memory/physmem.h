@@ -455,7 +455,7 @@ public:
 
 	/*!
 	*/
-	void SetUpVRAMAccess(bool breakOnRead,bool breakOnWrite);
+	void SetUpVRAMAccess(unsigned int cpuType,bool breakOnRead,bool breakOnWrite);
 
 	/*! 
 	*/
