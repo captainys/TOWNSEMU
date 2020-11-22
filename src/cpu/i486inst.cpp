@@ -7764,7 +7764,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		case 3: // LTR
 			{
 				// I need to correct implementation of task behavior to support EMM386.EXE
-				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize);
+				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
 				LoadTaskRegister(value.GetAsDword(),mem);
 				clocksPassed=20;
 			}
@@ -7785,7 +7785,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				}
 				else
 				{
-					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,16);
+					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,2);
 					SegmentRegister seg;
 					auto fourBytes=LoadSegmentRegister(seg,value.GetAsWord(),mem,false);
 					auto type=((fourBytes>>8)&0xF);
@@ -7816,7 +7816,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				}
 				else
 				{
-					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,16);
+					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,2);
 					SegmentRegister seg;
 					auto fourBytes=LoadSegmentRegister(seg,value.GetAsWord(),mem,false);
 					auto type=((fourBytes>>8)&0xF);
