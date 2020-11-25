@@ -660,6 +660,8 @@ void FsGuiMainCanvas::File_New_1232KB(FsGuiPopUpMenuItem *)
 	fdlg->title.Set(L"Create 1232KB Disk Image");
 	fdlg->fileExtensionArray.Append(L".BIN");
 	fdlg->fileExtensionArray.Append(L".D77");
+	fdlg->fileExtensionArray.Append(L".D88");
+	fdlg->fileExtensionArray.Append(L".XDF");
 	fdlg->defaultFileName=profileDlg->profileFNameTxt->GetWText();
 	fdlg->BindCloseModalCallBack(&THISCLASS::File_New_FileSelected,this);
 	AttachModalDialog(fdlg);
@@ -676,6 +678,8 @@ void FsGuiMainCanvas::File_New_1440KB(FsGuiPopUpMenuItem *)
 	fdlg->title.Set(L"Create 1440KB Disk Image");
 	fdlg->fileExtensionArray.Append(L".BIN");
 	fdlg->fileExtensionArray.Append(L".D77");
+	fdlg->fileExtensionArray.Append(L".D88");
+	fdlg->fileExtensionArray.Append(L".XDF");
 	fdlg->defaultFileName=profileDlg->profileFNameTxt->GetWText();
 	fdlg->BindCloseModalCallBack(&THISCLASS::File_New_FileSelected,this);
 	AttachModalDialog(fdlg);
@@ -692,6 +696,8 @@ void FsGuiMainCanvas::File_New_720KB(FsGuiPopUpMenuItem *)
 	fdlg->title.Set(L"Create 720KB Disk Image");
 	fdlg->fileExtensionArray.Append(L".BIN");
 	fdlg->fileExtensionArray.Append(L".D77");
+	fdlg->fileExtensionArray.Append(L".D88");
+	fdlg->fileExtensionArray.Append(L".XDF");
 	fdlg->defaultFileName=profileDlg->profileFNameTxt->GetWText();
 	fdlg->BindCloseModalCallBack(&THISCLASS::File_New_FileSelected,this);
 	AttachModalDialog(fdlg);
@@ -708,6 +714,8 @@ void FsGuiMainCanvas::File_New_640KB(FsGuiPopUpMenuItem *)
 	fdlg->title.Set(L"Create 640KB Disk Image");
 	fdlg->fileExtensionArray.Append(L".BIN");
 	fdlg->fileExtensionArray.Append(L".D77");
+	fdlg->fileExtensionArray.Append(L".D88");
+	fdlg->fileExtensionArray.Append(L".XDF");
 	fdlg->defaultFileName=profileDlg->profileFNameTxt->GetWText();
 	fdlg->BindCloseModalCallBack(&THISCLASS::File_New_FileSelected,this);
 	AttachModalDialog(fdlg);
@@ -743,8 +751,13 @@ void FsGuiMainCanvas::File_New_HDD_SizeSelected(FsGuiDialog *dlg,int returnCode)
 			fdlg->mode=FsGuiFileDialog::MODE_SAVE;
 			fdlg->multiSelect=YSFALSE;
 			fdlg->title.Set(L"Create Hard Disk Image");
-			fdlg->fileExtensionArray.Append(L".HDI");
 			fdlg->fileExtensionArray.Append(L".HD");
+			fdlg->fileExtensionArray.Append(L".HDI");
+			fdlg->fileExtensionArray.Append(L".HDM");
+			fdlg->fileExtensionArray.Append(L".H0");
+			fdlg->fileExtensionArray.Append(L".H1");
+			fdlg->fileExtensionArray.Append(L".H2");
+			fdlg->fileExtensionArray.Append(L".H3");
 			fdlg->defaultFileName=profileDlg->profileFNameTxt->GetWText();
 			fdlg->BindCloseModalCallBack(&THISCLASS::File_New_FileSelected,this);
 			AttachModalDialog(fdlg);
@@ -786,7 +799,7 @@ void FsGuiMainCanvas::File_New_FileSelected(FsGuiDialog *dlg,int returnCode)
 				}
 
 				auto ext=fName.GetExtension();
-				if(0==ext.STRCMP(L".D77"))
+				if(0==ext.STRCMP(L".D77") || 0==ext.STRCMP(L".D88"))
 				{
 					D77File d77;
 					d77.SetRawBinary(img);
@@ -1159,7 +1172,9 @@ void FsGuiMainCanvas::FD0_SelectImageFile(FsGuiPopUpMenuItem *)
 		fdlg->multiSelect=YSFALSE;
 		fdlg->title.Set(L"Open FD0 Image");
 		fdlg->fileExtensionArray.Append(L".BIN");
-		// fdlg->fileExtensionArray.Append(L".D77");
+		fdlg->fileExtensionArray.Append(L".D77");
+		fdlg->fileExtensionArray.Append(L".D88");
+		fdlg->fileExtensionArray.Append(L".XDF");
 		fdlg->defaultFileName=profileDlg->FDImgTxt[0][0]->GetWString();
 		fdlg->BindCloseModalCallBack(&THISCLASS::FD0_ImageFileSelected,this);
 		AttachModalDialog(fdlg);
@@ -1239,7 +1254,9 @@ void FsGuiMainCanvas::FD1_SelectImageFile(FsGuiPopUpMenuItem *)
 		fdlg->multiSelect=YSFALSE;
 		fdlg->title.Set(L"Open FD1 Image");
 		fdlg->fileExtensionArray.Append(L".BIN");
-		// fdlg->fileExtensionArray.Append(L".D77");
+		fdlg->fileExtensionArray.Append(L".D77");
+		fdlg->fileExtensionArray.Append(L".D88");
+		fdlg->fileExtensionArray.Append(L".XDF");
 		fdlg->defaultFileName=profileDlg->FDImgTxt[1][0]->GetWString();
 		fdlg->BindCloseModalCallBack(&THISCLASS::FD1_ImageFileSelected,this);
 		AttachModalDialog(fdlg);

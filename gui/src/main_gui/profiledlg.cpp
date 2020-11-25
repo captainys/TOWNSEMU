@@ -421,7 +421,8 @@ void ProfileDialog::Make(void)
 	}
 	if(CDImgBtn==btn)
 	{
-		Browse(L"CD Image",CDImgTxt,L".CUE",L".ISO");
+		std::vector <const wchar_t *> extList={L".CUE",L".ISO"};
+		Browse(L"CD Image",CDImgTxt,extList);
 	}
 	for(int i=0; i<2; ++i)
 	{
@@ -429,7 +430,8 @@ void ProfileDialog::Make(void)
 		{
 			YsWString label(L"Floppy Drive ");
 			label.push_back('0'+i);
-			Browse(label,FDImgTxt[i][0],L".BIN",nullptr); // ,L".D77"
+			std::vector <const wchar_t *> extList={L".BIN",L".D77",L".D88",L".XDF"};
+			Browse(label,FDImgTxt[i][0],extList);
 		}
 	}
 	for(int i=0; i<sizeof(HDImgBtn)/sizeof(HDImgBtn[0]); ++i)
@@ -438,7 +440,8 @@ void ProfileDialog::Make(void)
 		{
 			YsWString label(L"SCSI HDD ");
 			label.push_back('0'+i);
-			Browse(label,HDImgTxt[i],L".BIN",L".HDD");
+			std::vector <const wchar_t *> extList={L".BIN",L".HDD",L".HDM",L".HDI",L".H0",L".H1",L".H2",L".H3"};
+			Browse(label,HDImgTxt[i],extList);
 		}
 	}
 	if(runBtn==btn)
@@ -486,7 +489,7 @@ void ProfileDialog::OnSelectROMFile(FsGuiDialog *dlg,int returnCode)
 		ROMDirTxt->SetText(pth);
 	}
 }
-void ProfileDialog::Browse(const wchar_t label[],FsGuiTextBox *txt,const wchar_t ext0[],const wchar_t ext1[])
+void ProfileDialog::Browse(const wchar_t label[],FsGuiTextBox *txt,std::vector <const wchar_t *> extList)
 {
 	nowBrowsingTxt=txt;
 
@@ -497,10 +500,9 @@ void ProfileDialog::Browse(const wchar_t label[],FsGuiTextBox *txt,const wchar_t
 	fdlg->mode=FsGuiFileDialog::MODE_OPEN;
 	fdlg->multiSelect=YSFALSE;
 	fdlg->title.Set(label);
-	fdlg->fileExtensionArray.Append(ext0);
-	if(nullptr!=ext1)
+	for(auto ext : extList)
 	{
-		fdlg->fileExtensionArray.Append(ext1);
+		fdlg->fileExtensionArray.Append(ext);
 	}
 	fdlg->defaultFileName.SetUTF8String(def);
 	fdlg->BindCloseModalCallBack(&THISCLASS::OnSelectFile,this);

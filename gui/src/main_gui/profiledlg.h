@@ -2,6 +2,8 @@
 #define PROFILEDLG_IS_INCLUDED
 /* { */
 
+#include <vector>
+
 #include "fsgui.h"
 #include "fsguifiledialog.h"
 
@@ -120,7 +122,7 @@ public:
 	void OnSelectROMFile(FsGuiDialog *dlg,int returnCode);
 
 	FsGuiTextBox *nowBrowsingTxt=nullptr;
-	void Browse(const wchar_t label[],FsGuiTextBox *txt,const wchar_t ext0[],const wchar_t ext1[]);
+	void Browse(const wchar_t label[],FsGuiTextBox *txt,std::vector <const wchar_t *> extList);
 	void OnSelectFile(FsGuiDialog *dlg,int returnCode);
 
 	TownsProfile GetProfile(void) const;
