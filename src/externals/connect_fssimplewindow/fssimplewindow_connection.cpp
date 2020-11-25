@@ -231,6 +231,34 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 			}
 		}
 	}
+	// Wing Commander Throttle Control
+	if(0<=wingCommanderThrottlePhysicalId && wingCommanderThrottlePhysicalId<gamePads.size())
+	{
+		unsigned int setSpeed,maxSpeed;
+		towns.GetWingCommanderSetSpeedMaxSpeed(setSpeed,maxSpeed);
+
+		unsigned int thr=(unsigned int)((1.0f-gamePads[wingCommanderThrottlePhysicalId].axes[wingCommanderThrottleAxis])*128.0f); // 0-255 scale
+		thr=thr*maxSpeed/255;
+		if(1!=wingCommanderThrottleState && setSpeed<thr)
+		{
+			towns.keyboard.PushFifo(TOWNS_KEYFLAG_JIS_RELEASE,TOWNS_JISKEY_NUM_MINUS);
+			towns.keyboard.PushFifo(TOWNS_KEYFLAG_JIS_PRESS  ,TOWNS_JISKEY_NUM_PLUS);
+			wingCommanderThrottleState=1;
+		}
+		else if(-1!=wingCommanderThrottleState && thr<setSpeed)
+		{
+			towns.keyboard.PushFifo(TOWNS_KEYFLAG_JIS_RELEASE,TOWNS_JISKEY_NUM_PLUS);
+			towns.keyboard.PushFifo(TOWNS_KEYFLAG_JIS_PRESS  ,TOWNS_JISKEY_NUM_MINUS);
+			wingCommanderThrottleState=-1;
+		}
+		else if((0<wingCommanderThrottleState && thr<=setSpeed) ||
+		        (wingCommanderThrottleState<0 && setSpeed<=thr))
+		{
+			towns.keyboard.PushFifo(TOWNS_KEYFLAG_JIS_RELEASE,TOWNS_JISKEY_NUM_PLUS);
+			towns.keyboard.PushFifo(TOWNS_KEYFLAG_JIS_RELEASE,TOWNS_JISKEY_NUM_MINUS);
+			wingCommanderThrottleState=0;
+		}
+	}
 
 	// For the time translation mode only.
 	// if(true==keyTranslationMode)

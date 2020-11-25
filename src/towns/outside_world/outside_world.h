@@ -72,6 +72,10 @@ public:
 	int strikeCommanderThrottlePhysicalId=-1;
 	int strikeCommanderThrottleAxis=2;  // Typically flight-stick's throttle axis is the 3rd axis (#2 axis).
 
+	int wingCommanderThrottlePhysicalId=-1;
+	int wingCommanderThrottleAxis=2;  // Typically flight-stick's throttle axis is the 3rd axis (#2 axis).
+	int wingCommanderThrottleState=0;
+
 
 	/*! Virtual Keys.
 	*/

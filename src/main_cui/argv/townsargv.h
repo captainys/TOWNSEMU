@@ -75,8 +75,13 @@ public:
 	float mouseByFlightstickZeroZoneX=0.0F,mouseByFlightstickZeroZoneY=0.0F;
 	float mouseByFlightstickScaleX=320.0F,mouseByFlightstickScaleY=200.0F;
 
+
+	// When adding a throttle control for an app, also update Outside_World::CacheGamePadIndicesThatNeedUpdates.
 	int strikeCommanderThrottlePhysicalId=-1;
 	int strikeCommanderThrottleAxis=3;
+
+	int wingCommanderThrottlePhysicalId=-1;
+	int wingCommanderThrottleAxis=3;
 
 	enum
 	{

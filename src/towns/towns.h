@@ -181,6 +181,8 @@ public:
 		unsigned int appSpecific_MousePtrX=0;
 		unsigned int appSpecific_MousePtrY=0;
 		unsigned int appSpecific_WC2_EventQueueBaseAddr=0;  // DS:03CCH
+		uint32_t appSpecific_WC_setSpeedPtr=0;
+		uint32_t appSpecific_WC_maxSpeedPtr=0;
 		bool appSpecific_HoldMouseIntegration=false;
 
 		void PowerOn(void);
@@ -400,6 +402,12 @@ public:
 	*/
 	bool ControlMouse(int hostMouseX,int houstMouseY,unsigned int tbiosid);
 	bool ControlMouse(int &diffX,int &diffY,int hostMouseX,int houstMouseY,unsigned int tbiosid);
+
+
+	/*! Get Wing Commander set-speed and max-speed.
+	    Only available when App-Specific augmentation is turned on.
+	*/
+	void GetWingCommanderSetSpeedMaxSpeed(unsigned int &setSpeed,unsigned int &maxSpeed);
 
 
 	/*! Make mouse motion reported to the VM (0,0).

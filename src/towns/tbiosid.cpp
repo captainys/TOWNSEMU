@@ -253,8 +253,13 @@ void FMTowns::OnCRTC_HST_Write(void)
 				state.appSpecific_MousePtrX=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x6EEDC,mem);
 				state.appSpecific_MousePtrY=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x6EEDE,mem);
 
+				state.appSpecific_WC_setSpeedPtr=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x00066EF1,mem);
+				state.appSpecific_WC_maxSpeedPtr=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x000651BC,mem);
+
 				std::cout << "  MousePointerX Physical Base=" << cpputil::Uitox(state.appSpecific_MousePtrX) << std::endl;
 				std::cout << "  MousePointerY Physical Base=" << cpputil::Uitox(state.appSpecific_MousePtrY) << std::endl;
+				std::cout << "  Set-Speed Physical Addr    =" << cpputil::Uitox(state.appSpecific_WC_setSpeedPtr) << std::endl;
+				std::cout << "  Max-Speed Physical Addr    =" << cpputil::Uitox(state.appSpecific_WC_maxSpeedPtr) << std::endl;
 			}
 			break;
 		case TOWNS_APPSPECIFIC_WINGCOMMANDER2:
@@ -890,4 +895,10 @@ bool FMTowns::GetMouseCoordinate(int &mx,int &my,unsigned int tbiosid) const
 		}
 	}
 	return false;
+}
+
+void FMTowns::GetWingCommanderSetSpeedMaxSpeed(unsigned int &setSpeed,unsigned int &maxSpeed)
+{
+	setSpeed=mem.FetchByte(state.appSpecific_WC_setSpeedPtr);
+	maxSpeed=mem.FetchByte(state.appSpecific_WC_maxSpeedPtr);
 }

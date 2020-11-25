@@ -49,6 +49,7 @@ def Run(argv):
 		"-SCALE",
 		"160",
 		"-FLIGHTMOUSE","1","0","0","400","300","0",
+		"-WCTHR","2","2",
 		# "-DEBUG",
 		# "-PAUSE",
 	]+argv).wait()

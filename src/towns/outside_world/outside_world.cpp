@@ -233,6 +233,10 @@ void Outside_World::Put16x16SelectInvert(int x0,int y0,const unsigned char idleI
 	{
 		UseGamePad(strikeCommanderThrottlePhysicalId);
 	}
+	if(0<=wingCommanderThrottlePhysicalId)
+	{
+		UseGamePad(wingCommanderThrottlePhysicalId);
+	}
 }
 
 void Outside_World::UseGamePad(unsigned int gamePadIndex)
