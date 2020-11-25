@@ -237,26 +237,36 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 		unsigned int setSpeed,maxSpeed;
 		towns.GetWingCommanderSetSpeedMaxSpeed(setSpeed,maxSpeed);
 
+		unsigned int prevThr=(unsigned int)((1.0f-prevGamePads[wingCommanderThrottlePhysicalId].axes[wingCommanderThrottleAxis])*128.0f); // 0-255 scale
 		unsigned int thr=(unsigned int)((1.0f-gamePads[wingCommanderThrottlePhysicalId].axes[wingCommanderThrottleAxis])*128.0f); // 0-255 scale
+		prevThr=prevThr*maxSpeed/255;
 		thr=thr*maxSpeed/255;
-		if(1!=wingCommanderThrottleState && setSpeed<thr)
+
+		if(prevThr!=thr)
 		{
-			towns.keyboard.PushFifo(TOWNS_KEYFLAG_JIS_RELEASE,TOWNS_JISKEY_NUM_MINUS);
-			towns.keyboard.PushFifo(TOWNS_KEYFLAG_JIS_PRESS  ,TOWNS_JISKEY_NUM_PLUS);
-			wingCommanderThrottleState=1;
+			wingCommanderLastThrottleMoveTime=towns.state.townsTime;
+			wingCommanderNextThrottleUpdateTime=towns.state.townsTime;
 		}
-		else if(-1!=wingCommanderThrottleState && thr<setSpeed)
+
+		if(towns.state.townsTime<wingCommanderLastThrottleMoveTime+4*PER_SECOND && wingCommanderNextThrottleUpdateTime<=towns.state.townsTime)
 		{
-			towns.keyboard.PushFifo(TOWNS_KEYFLAG_JIS_RELEASE,TOWNS_JISKEY_NUM_PLUS);
-			towns.keyboard.PushFifo(TOWNS_KEYFLAG_JIS_PRESS  ,TOWNS_JISKEY_NUM_MINUS);
-			wingCommanderThrottleState=-1;
-		}
-		else if((0<wingCommanderThrottleState && thr<=setSpeed) ||
-		        (wingCommanderThrottleState<0 && setSpeed<=thr))
-		{
+			// Wing Commander I speed up/slow down while plus or minus key is held down.
+			// However, if another key is pressed during the acceleration or desceleration
+			// the set-speed stops changing.
+			// Therefore, it needs to send key-release code periodically to make the program
+			// think the plus or minus key is re-pressed to allow throttle to work while
+			// other keys are functional.
+			wingCommanderNextThrottleUpdateTime=towns.state.townsTime+PER_SECOND/16;
 			towns.keyboard.PushFifo(TOWNS_KEYFLAG_JIS_RELEASE,TOWNS_JISKEY_NUM_PLUS);
 			towns.keyboard.PushFifo(TOWNS_KEYFLAG_JIS_RELEASE,TOWNS_JISKEY_NUM_MINUS);
-			wingCommanderThrottleState=0;
+			if(setSpeed<thr)
+			{
+				towns.keyboard.PushFifo(TOWNS_KEYFLAG_JIS_PRESS  ,TOWNS_JISKEY_NUM_PLUS);
+			}
+			else if(thr<setSpeed)
+			{
+				towns.keyboard.PushFifo(TOWNS_KEYFLAG_JIS_PRESS  ,TOWNS_JISKEY_NUM_MINUS);
+			}
 		}
 	}
 
@@ -374,7 +384,7 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 			}
 		}
 	}
-	else
+	else // if(TOWNS_KEYBOARD_MODE_DIRECT==keyboardMode)
 	{
 		unsigned int c;
 		while(0!=(c=FsInkey()))

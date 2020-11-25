@@ -273,8 +273,13 @@ void FMTowns::OnCRTC_HST_Write(void)
 				state.appSpecific_WC2_EventQueueBaseAddr=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+WC2_EVENTQUEUE_BASE_ADDR,mem);
 				state.appSpecific_HoldMouseIntegration=true;
 
+				state.appSpecific_WC_setSpeedPtr=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x00002C46,mem);
+				state.appSpecific_WC_maxSpeedPtr=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x00003C53,mem);
+
 				std::cout << "  MousePointerX Physical Base=" << cpputil::Uitox(state.appSpecific_MousePtrX) << std::endl;
 				std::cout << "  MousePointerY Physical Base=" << cpputil::Uitox(state.appSpecific_MousePtrY) << std::endl;
+				std::cout << "  Set-Speed Physical Addr    =" << cpputil::Uitox(state.appSpecific_WC_setSpeedPtr) << std::endl;
+				std::cout << "  Max-Speed Physical Addr    =" << cpputil::Uitox(state.appSpecific_WC_maxSpeedPtr) << std::endl;
 				std::cout << "  Event Queue Base Physical Base=" << cpputil::Uitox(state.appSpecific_WC2_EventQueueBaseAddr) << std::endl;
 			}
 			break;
