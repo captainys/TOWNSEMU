@@ -537,7 +537,9 @@ bool FMTowns::ControlMouse(int &diffX,int &diffY,int hostMouseX,int hostMouseY,u
 			{
 				unsigned int VRAMHeight=VRAMSize/bytesPerLine;
 				hostMouseY+=VRAMoffset/bytesPerLine;
-				hostMouseY=std::min<unsigned int>(hostMouseY,VRAMHeight-1);
+				// The following must be signed int.
+				// Wing Commander 2's mouse coordinate is signed.
+				hostMouseY=std::min<int>(hostMouseY,VRAMHeight-1);
 			}
 			// At this time it only takes vertical displacement into account.
 		}
@@ -816,6 +818,10 @@ bool FMTowns::GetMouseCoordinate(int &mx,int &my,unsigned int tbiosid) const
 				auto debugStop=debugger.stop; // FetchWord may break due to MEMR.
 				mx=(int)mem.FetchWord(state.appSpecific_MousePtrX);
 				my=(int)mem.FetchWord(state.appSpecific_MousePtrY);
+
+				// In Wing Commander 2, mouse coordinate is signed.
+				mx=(mx&0x7FFF)-(mx&0x8000);
+				my=(my&0x7FFF)-(my&0x8000);
 
 				unsigned int nQueueFilled=std::min(WC2_EVENTQUEUE_LENGTH,mem.FetchWord(state.appSpecific_WC2_EventQueueBaseAddr+WC2_EVENTQUEUE_FILLED));
 				unsigned int queueReadPtr=mem.FetchDword(state.appSpecific_WC2_EventQueueBaseAddr+WC2_EVENTQUEUE_READ_PTR);

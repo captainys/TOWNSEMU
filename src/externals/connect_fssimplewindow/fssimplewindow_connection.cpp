@@ -244,6 +244,7 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 
 		if(prevThr!=thr)
 		{
+printf("pt %d t %d set %d max %d\n",prevThr,thr,setSpeed,maxSpeed);
 			wingCommanderLastThrottleMoveTime=towns.state.townsTime;
 			wingCommanderNextThrottleUpdateTime=towns.state.townsTime;
 		}
@@ -780,9 +781,21 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 				{
 					mx=0;
 				}
-				if(my<0)
+				if(TOWNS_APPSPECIFIC_WINGCOMMANDER2==towns.state.appSpecificSetting)
 				{
-					my=0;
+					// Wing Commander 2 allows negative mouse coordinate, or the control will be really slow nose down.
+					// But sending below -120 (2x scale) apparently changes the neutral position.
+					if(my<-240)
+					{
+						my=-240;
+					}
+				}
+				else
+				{
+					if(my<0)
+					{
+						my=0;
+					}
 				}
 			}
 			else
