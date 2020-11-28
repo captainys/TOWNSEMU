@@ -17,8 +17,10 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 /* { */
 
 
+#include <cstdint>
 #include <vector>
 #include <string>
+#include <utility>
 
 #include "device.h"
 #include "townsdef.h"
@@ -39,6 +41,10 @@ public:
 		NUM_CHANNELS_ACTUAL=6,
 		TICK_INTERVAL=3257,   // 3257nano-seconds
 	};
+
+	static constexpr uint32_t TIMER_CLOCK_HZ = 307200;
+	static constexpr uint32_t BUZZER_SAMPLING_RATE = 44100;
+	static constexpr int16_t BUZZER_VOLUME = 4096;
 
 	class State
 	{
@@ -63,6 +69,8 @@ public:
 		bool TMMSK[2];  // Only Channels 0 and 1.
 		bool TMOUT[2];
 		bool SOUND;
+
+		uint32_t buzzerPhase;
 
 		void PowerOn(void);
 		void Reset(void);
@@ -117,6 +125,9 @@ public:
 	void UpdatePICRequest(void) const;
 
 	std::vector <std::string> GetStatusText(void) const;
+
+	bool IsBuzzerPlaying() const;
+	std::pair<uint32_t, std::vector<unsigned char>> MakeBuzzerWave(int ms);
 };
 
 /* } */

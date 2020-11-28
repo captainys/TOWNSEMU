@@ -12,6 +12,10 @@ Redistribution and use in source and binary forms, with or without modification,
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 << LICENSE */
+#include <algorithm>
+#include <limits>
+#include <utility>
+
 #include "timer.h"
 #include "towns.h"
 #include "pic.h"
@@ -51,6 +55,7 @@ void TownsTimer::State::Reset(void)
 		b=false;
 	}
 	SOUND=true;
+	buzzerPhase = 0;
 }
 void TownsTimer::State::Latch(unsigned int ch)
 {
@@ -383,4 +388,55 @@ std::vector <std::string> TownsTimer::GetStatusText(void) const
 	text.back()+="  SOUND:";
 	text.back()+=(state.SOUND ? "1" : "0");
 	return text;
+}
+
+bool TownsTimer::IsBuzzerPlaying() const
+{
+	return state.SOUND;
+}
+
+/*
+ * Features not implemented:
+ * - BCD mode
+ * - non-50% duty cycle on odd counter
+ * - 4.6875Hz sound on zero counter
+ */
+std::pair<uint32_t, std::vector<unsigned char>> TownsTimer::MakeBuzzerWave(int ms)
+{
+	static_assert(std::numeric_limits<uint16_t>::max() > BUZZER_SAMPLING_RATE, "BUZZER_SAMPLING_RATE too large.");
+	static_assert(std::numeric_limits<int32_t>::max() / BUZZER_VOLUME > TIMER_CLOCK_HZ, "BUZZER_VOLUME too large.");
+
+	size_t samples = BUZZER_SAMPLING_RATE * ms / 1000;
+
+	std::vector<unsigned char> vec;
+	vec.resize(samples * 4);
+
+	uint16_t counter = state.channels[2].counterInitialValue;
+	if (counter < 2) {
+		return std::make_pair(BUZZER_SAMPLING_RATE, std::move(vec));
+	}
+
+	uint32_t period = counter * BUZZER_SAMPLING_RATE;
+	uint32_t phase = state.buzzerPhase;
+
+	int32_t i0 = std::min(phase, period - phase);
+
+	auto t = vec.begin();
+	for (size_t n = 0; n < samples; ++n) {
+		phase = (phase + TIMER_CLOCK_HZ) % period;
+
+		int32_t i1 = std::min(phase, period - phase);
+
+		int16_t value = BUZZER_VOLUME * (i1 - i0) / int32_t{ TIMER_CLOCK_HZ };
+		*t++ = value & 0xff;
+		*t++ = (value >> 8) & 0xff;
+		*t++ = value & 0xff;
+		*t++ = (value >> 8) & 0xff;
+
+		i0 = i1;
+	}
+
+	state.buzzerPhase = phase;
+
+	return std::make_pair(BUZZER_SAMPLING_RATE, std::move(vec));
 }

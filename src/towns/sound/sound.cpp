@@ -258,4 +258,10 @@ void TownsSound::ProcessSound(void)
 			outside_world->PCMPlay(wave);
 		}
 	}
+	if (townsPtr->timer.IsBuzzerPlaying()) {
+		if (!outside_world->BeepChannelPlaying()) {
+			auto r = townsPtr->timer.MakeBuzzerWave(BEEP_MILLISEC_PER_WAVE);
+			outside_world->BeepPlay(r.first, r.second);
+		}
+	}
 }
