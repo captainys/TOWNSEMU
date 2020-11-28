@@ -55,6 +55,7 @@ void TownsTimer::State::Reset(void)
 		b=false;
 	}
 	SOUND=true;
+	SOUND_MEMIO = false;
 	buzzerPhase = 0;
 }
 void TownsTimer::State::Latch(unsigned int ch)
@@ -390,9 +391,14 @@ std::vector <std::string> TownsTimer::GetStatusText(void) const
 	return text;
 }
 
+void TownsTimer::ControlBuzzerByMemoryIO(bool on)
+{
+	state.SOUND_MEMIO = on;
+}
+
 bool TownsTimer::IsBuzzerPlaying() const
 {
-	return state.SOUND;
+	return state.SOUND || state.SOUND_MEMIO;
 }
 
 /*
