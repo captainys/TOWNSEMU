@@ -1141,3 +1141,15 @@ void FsSimpleWindowConnection::PollGamePads(void)
 	return YSTRUE==soundPlayer.IsPlaying(FMChannel);
 }
 
+/* virtual */ void FsSimpleWindowConnection::BeepPlay(int samplingRate, std::vector<unsigned char> &wave) {
+	BeepChannel.CreateFromSigned16bitStereo(samplingRate, wave);
+	soundPlayer.PlayOneShot(BeepChannel);
+}
+
+/* virtual */ void FsSimpleWindowConnection::BeepPlayStop() {
+	soundPlayer.Stop(BeepChannel);
+}
+
+/* virtual */ bool FsSimpleWindowConnection::BeepChannelPlaying() const {
+	return YSTRUE == soundPlayer.IsPlaying(BeepChannel);
+}
