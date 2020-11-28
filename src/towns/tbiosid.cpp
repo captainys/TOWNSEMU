@@ -281,6 +281,34 @@ void FMTowns::OnCRTC_HST_Write(void)
 				std::cout << "  Set-Speed Physical Addr    =" << cpputil::Uitox(state.appSpecific_WC_setSpeedPtr) << std::endl;
 				std::cout << "  Max-Speed Physical Addr    =" << cpputil::Uitox(state.appSpecific_WC_maxSpeedPtr) << std::endl;
 				std::cout << "  Event Queue Base Physical Base=" << cpputil::Uitox(state.appSpecific_WC2_EventQueueBaseAddr) << std::endl;
+
+				i486DX::SegmentRegister CS;
+				cpu.DebugLoadSegmentRegister(CS,0x0014,mem,false);
+				if(0x74==cpu.DebugFetchByte(32,CS,0x8F634,mem) &&
+				   0x72==cpu.DebugFetchByte(32,CS,0x8F635,mem) &&
+				   0x22==cpu.DebugFetchByte(32,CS,0x8F636,mem) &&
+				   0xC0==cpu.DebugFetchByte(32,CS,0x8F637,mem) &&
+				   0x75==cpu.DebugFetchByte(32,CS,0x8F638,mem) &&
+				   0x6E==cpu.DebugFetchByte(32,CS,0x8F639,mem))
+				{
+					// Wing Commander 2 doesn't allow moving X and Y of turret simultaneously.
+					// Which is extremely unreasonable and destroying the game balance.
+					// This MOD allows turret aim X and Y move simultaneously.
+					cpu.DebugStoreByte(mem,32,CS,0x8F639,0);
+					std::cout << "  Allow turret X and Y move simultaneously." << std::endl;
+
+					// From:
+					// 000C:0008F634 7472                      JE      0008F6A8         ; Jump if no Y motion
+					// 000C:0008F636 22C0                      AND     AL,AL
+					// 000C:0008F638 756E                      JNE     0008F6A8         ; AL=X motion flag.  Jump if non zero X motion.
+					// 000C:0008F63A 8B3514AB0400              MOV     ESI,[0004AB14H]  ; DS:[0004AB14H] is turret pitch.
+
+					// To:
+					// 000C:0008F634 7472                      JE      0008F6A8         ; Jump if no Y motion
+					// 000C:0008F636 22C0                      AND     AL,AL
+					// 000C:0008F638 7500                      JNE     0008F63A         ; AL=X motion flag.  Jump if non zero X motion.
+					// 000C:0008F63A 8B3514AB0400              MOV     ESI,[0004AB14H]  ; DS:[0004AB14H] is turret pitch.
+				}
 			}
 			break;
 		case TOWNS_APPSPECIFIC_LEMMINGS:
