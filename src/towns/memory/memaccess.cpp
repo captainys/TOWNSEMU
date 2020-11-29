@@ -217,6 +217,9 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 				return byteData;
 			}
 			break;
+		case TOWNSMEMIO_BUZZER_CONTROL://     0x000CFF98
+			townsPtr->timer.ControlBuzzerByMemoryIO(true);
+			break;
 		}
 	}
 	else if(TOWNSADDR_FMR_VRAM_BASE<=physAddr && physAddr<TOWNSADDR_FMR_VRAM_END) /// FMR VRAM Plane Access
@@ -370,6 +373,9 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 			break;
 		case TOWNSMEMIO_KANJI_PTN_LOW://      0x000CFF97,
 			// Write access enabled? [2] pp.95
+			break;
+		case TOWNSMEMIO_BUZZER_CONTROL://     0x000CFF98
+			townsPtr->timer.ControlBuzzerByMemoryIO(false);
 			break;
 		case TOWNSMEMIO_KVRAM_OR_ANKFONT: //  0x000CFF99
 			physMemPtr->state.ANKFont=(0!=(data&1));
