@@ -76,6 +76,11 @@ public:
 	virtual void FMPlay(std::vector <unsigned char> &wave);
 	virtual void FMPlayStop(void);
 	virtual bool FMChannelPlaying(void);
+
+	YsSoundPlayer::SoundData BeepChannel;
+	virtual void BeepPlay(int samplingRate, std::vector<unsigned char> &wave);
+	virtual void BeepPlayStop();
+	virtual bool BeepChannelPlaying() const;
 };
 
 /* } */
