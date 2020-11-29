@@ -74,8 +74,9 @@ public:
 
 	int wingCommanderThrottlePhysicalId=-1;
 	int wingCommanderThrottleAxis=2;  // Typically flight-stick's throttle axis is the 3rd axis (#2 axis).
-	uint64_t wingCommanderLastThrottleMoveTime=0;
-	uint64_t wingCommanderNextThrottleUpdateTime=0;
+	int wingCommander1ThrottleState=0;
+	uint64_t wingCommander2LastThrottleMoveTime=0;
+	uint64_t wingCommander2NextThrottleUpdateTime=0;
 
 
 	/*! Virtual Keys.

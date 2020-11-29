@@ -234,39 +234,69 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 	// Wing Commander Throttle Control
 	if(0<=wingCommanderThrottlePhysicalId && wingCommanderThrottlePhysicalId<gamePads.size())
 	{
-		unsigned int setSpeed,maxSpeed;
-		towns.GetWingCommanderSetSpeedMaxSpeed(setSpeed,maxSpeed);
-
-		unsigned int prevThr=(unsigned int)((1.0f-prevGamePads[wingCommanderThrottlePhysicalId].axes[wingCommanderThrottleAxis])*128.0f); // 0-255 scale
-		unsigned int thr=(unsigned int)((1.0f-gamePads[wingCommanderThrottlePhysicalId].axes[wingCommanderThrottleAxis])*128.0f); // 0-255 scale
-		prevThr=prevThr*maxSpeed/255;
-		thr=thr*maxSpeed/255;
-
-		if(prevThr!=thr)
+		if(TOWNS_APPSPECIFIC_WINGCOMMANDER1==towns.state.appSpecificSetting)
 		{
-printf("pt %d t %d set %d max %d\n",prevThr,thr,setSpeed,maxSpeed);
-			wingCommanderLastThrottleMoveTime=towns.state.townsTime;
-			wingCommanderNextThrottleUpdateTime=towns.state.townsTime;
-		}
+			unsigned int setSpeed,maxSpeed;
+			towns.GetWingCommanderSetSpeedMaxSpeed(setSpeed,maxSpeed);
 
-		if(towns.state.townsTime<wingCommanderLastThrottleMoveTime+4*PER_SECOND && wingCommanderNextThrottleUpdateTime<=towns.state.townsTime)
-		{
-			// Wing Commander I speed up/slow down while plus or minus key is held down.
-			// However, if another key is pressed during the acceleration or desceleration
-			// the set-speed stops changing.
-			// Therefore, it needs to send key-release code periodically to make the program
-			// think the plus or minus key is re-pressed to allow throttle to work while
-			// other keys are functional.
-			wingCommanderNextThrottleUpdateTime=towns.state.townsTime+PER_SECOND/16;
-			towns.keyboard.PushFifo(TOWNS_KEYFLAG_JIS_RELEASE,TOWNS_JISKEY_NUM_PLUS);
-			towns.keyboard.PushFifo(TOWNS_KEYFLAG_JIS_RELEASE,TOWNS_JISKEY_NUM_MINUS);
-			if(setSpeed<thr)
+			unsigned int thr=(unsigned int)((1.0f-gamePads[wingCommanderThrottlePhysicalId].axes[wingCommanderThrottleAxis])*128.0f); // 0-255 scale
+			thr=thr*maxSpeed/255;
+			if(1!=wingCommander1ThrottleState && setSpeed<thr)
 			{
+				towns.keyboard.PushFifo(TOWNS_KEYFLAG_JIS_RELEASE,TOWNS_JISKEY_NUM_MINUS);
 				towns.keyboard.PushFifo(TOWNS_KEYFLAG_JIS_PRESS  ,TOWNS_JISKEY_NUM_PLUS);
+				wingCommander1ThrottleState=1;
 			}
-			else if(thr<setSpeed)
+			else if(-1!=wingCommander1ThrottleState && thr<setSpeed)
 			{
+				towns.keyboard.PushFifo(TOWNS_KEYFLAG_JIS_RELEASE,TOWNS_JISKEY_NUM_PLUS);
 				towns.keyboard.PushFifo(TOWNS_KEYFLAG_JIS_PRESS  ,TOWNS_JISKEY_NUM_MINUS);
+				wingCommander1ThrottleState=-1;
+			}
+			else if((0<wingCommander1ThrottleState && thr<=setSpeed) ||
+			        (wingCommander1ThrottleState<0 && setSpeed<=thr))
+			{
+				towns.keyboard.PushFifo(TOWNS_KEYFLAG_JIS_RELEASE,TOWNS_JISKEY_NUM_PLUS);
+				towns.keyboard.PushFifo(TOWNS_KEYFLAG_JIS_RELEASE,TOWNS_JISKEY_NUM_MINUS);
+				wingCommander1ThrottleState=0;
+			}
+		}
+		else if(TOWNS_APPSPECIFIC_WINGCOMMANDER2==towns.state.appSpecificSetting)
+		{
+			unsigned int setSpeed,maxSpeed;
+			towns.GetWingCommanderSetSpeedMaxSpeed(setSpeed,maxSpeed);
+
+			unsigned int prevThr=(unsigned int)((1.0f-prevGamePads[wingCommanderThrottlePhysicalId].axes[wingCommanderThrottleAxis])*128.0f); // 0-255 scale
+			unsigned int thr=(unsigned int)((1.0f-gamePads[wingCommanderThrottlePhysicalId].axes[wingCommanderThrottleAxis])*128.0f); // 0-255 scale
+			prevThr=prevThr*maxSpeed/255;
+			thr=thr*maxSpeed/255;
+
+			if(prevThr!=thr)
+			{
+				std::cout << "pre " << prevThr << " new " << thr << " set " << setSpeed << " max " << maxSpeed << std::endl;
+				wingCommander2LastThrottleMoveTime=towns.state.townsTime;
+				wingCommander2NextThrottleUpdateTime=towns.state.townsTime;
+			}
+
+			if(towns.state.townsTime<wingCommander2LastThrottleMoveTime+4*PER_SECOND && wingCommander2NextThrottleUpdateTime<=towns.state.townsTime)
+			{
+				// Wing Commander I speed up/slow down while plus or minus key is held down.
+				// However, if another key is pressed during the acceleration or desceleration
+				// the set-speed stops changing.
+				// Therefore, it needs to send key-release code periodically to make the program
+				// think the plus or minus key is re-pressed to allow throttle to work while
+				// other keys are functional.
+				wingCommander2NextThrottleUpdateTime=towns.state.townsTime+PER_SECOND/16;
+				towns.keyboard.PushFifo(TOWNS_KEYFLAG_JIS_RELEASE,TOWNS_JISKEY_NUM_PLUS);
+				towns.keyboard.PushFifo(TOWNS_KEYFLAG_JIS_RELEASE,TOWNS_JISKEY_NUM_MINUS);
+				if(setSpeed<thr)
+				{
+					towns.keyboard.PushFifo(TOWNS_KEYFLAG_JIS_PRESS  ,TOWNS_JISKEY_NUM_PLUS);
+				}
+				else if(thr<setSpeed)
+				{
+					towns.keyboard.PushFifo(TOWNS_KEYFLAG_JIS_PRESS  ,TOWNS_JISKEY_NUM_MINUS);
+				}
 			}
 		}
 	}
