@@ -807,14 +807,14 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 				my=mouseByFlightstickCenterY+(int)fy;
 				lb=reading.buttons[0];
 				rb=reading.buttons[1];
-				if(mx<0)
-				{
-					mx=0;
-				}
 				if(TOWNS_APPSPECIFIC_WINGCOMMANDER2==towns.state.appSpecificSetting)
 				{
 					// Wing Commander 2 allows negative mouse coordinate, or the control will be really slow nose down.
 					// But sending below -120 (2x scale) apparently changes the neutral position.
+					if(mx<-20)
+					{
+						mx=-20;
+					}
 					if(my<-240)
 					{
 						my=-240;
@@ -822,6 +822,10 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 				}
 				else
 				{
+					if(mx<0)
+					{
+						mx=0;
+					}
 					if(my<0)
 					{
 						my=0;
