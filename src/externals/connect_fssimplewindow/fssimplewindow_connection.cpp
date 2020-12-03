@@ -234,6 +234,9 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 	// Wing Commander Throttle Control
 	if(0<=wingCommanderThrottlePhysicalId && wingCommanderThrottlePhysicalId<gamePads.size())
 	{
+		/* The following method does not make too many key strokes,
+		   however, if another key is pressed while the set speed is still changing,
+		   the speed stops changing.
 		if(TOWNS_APPSPECIFIC_WINGCOMMANDER1==towns.state.appSpecificSetting)
 		{
 			unsigned int setSpeed,maxSpeed;
@@ -244,12 +247,14 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 			if(1!=wingCommander1ThrottleState && setSpeed<thr)
 			{
 				towns.keyboard.PushFifo(TOWNS_KEYFLAG_JIS_RELEASE,TOWNS_JISKEY_NUM_MINUS);
+				towns.keyboard.PushFifo(TOWNS_KEYFLAG_JIS_RELEASE,TOWNS_JISKEY_NUM_PLUS);
 				towns.keyboard.PushFifo(TOWNS_KEYFLAG_JIS_PRESS  ,TOWNS_JISKEY_NUM_PLUS);
 				wingCommander1ThrottleState=1;
 			}
 			else if(-1!=wingCommander1ThrottleState && thr<setSpeed)
 			{
 				towns.keyboard.PushFifo(TOWNS_KEYFLAG_JIS_RELEASE,TOWNS_JISKEY_NUM_PLUS);
+				towns.keyboard.PushFifo(TOWNS_KEYFLAG_JIS_RELEASE,TOWNS_JISKEY_NUM_MINUS);
 				towns.keyboard.PushFifo(TOWNS_KEYFLAG_JIS_PRESS  ,TOWNS_JISKEY_NUM_MINUS);
 				wingCommander1ThrottleState=-1;
 			}
@@ -260,8 +265,9 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 				towns.keyboard.PushFifo(TOWNS_KEYFLAG_JIS_RELEASE,TOWNS_JISKEY_NUM_MINUS);
 				wingCommander1ThrottleState=0;
 			}
-		}
-		else if(TOWNS_APPSPECIFIC_WINGCOMMANDER2==towns.state.appSpecificSetting)
+		} */
+		if(TOWNS_APPSPECIFIC_WINGCOMMANDER2==towns.state.appSpecificSetting ||
+		   TOWNS_APPSPECIFIC_WINGCOMMANDER1==towns.state.appSpecificSetting)
 		{
 			unsigned int setSpeed,maxSpeed;
 			towns.GetWingCommanderSetSpeedMaxSpeed(setSpeed,maxSpeed);

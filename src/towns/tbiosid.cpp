@@ -253,11 +253,16 @@ void FMTowns::OnCRTC_HST_Write(void)
 				state.appSpecific_MousePtrX=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x6EEDC,mem);
 				state.appSpecific_MousePtrY=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x6EEDE,mem);
 
+				state.appSpecific_WC1_StickPosXPtr=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x0006EF30,mem);
+				state.appSpecific_WC1_StickPosYPtr=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x0006EF34,mem);
+
 				state.appSpecific_WC_setSpeedPtr=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x00066EF1,mem);
 				state.appSpecific_WC_maxSpeedPtr=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x000651BC,mem);
 
 				std::cout << "  MousePointerX Physical Base=" << cpputil::Uitox(state.appSpecific_MousePtrX) << std::endl;
 				std::cout << "  MousePointerY Physical Base=" << cpputil::Uitox(state.appSpecific_MousePtrY) << std::endl;
+				std::cout << "  StickX Physical Base       =" << cpputil::Uitox(state.appSpecific_WC1_StickPosXPtr) << std::endl;
+				std::cout << "  StickY Physical Base       =" << cpputil::Uitox(state.appSpecific_WC1_StickPosYPtr) << std::endl;
 				std::cout << "  Set-Speed Physical Addr    =" << cpputil::Uitox(state.appSpecific_WC_setSpeedPtr) << std::endl;
 				std::cout << "  Max-Speed Physical Addr    =" << cpputil::Uitox(state.appSpecific_WC_maxSpeedPtr) << std::endl;
 			}
