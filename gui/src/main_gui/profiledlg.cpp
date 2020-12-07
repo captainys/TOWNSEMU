@@ -271,7 +271,7 @@ void ProfileDialog::Make(void)
 		,YSTRUE);
 
 
-		strikeCommanderThrottleEnableBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Use Throttle Axis for Strike Commander",YSTRUE);
+		strikeCommanderThrottleEnableBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Use Throttle Axis for Strike Commander/Wing Commander",YSTRUE);
 
 		AddStaticText(0,FSKEY_NULL,"JoystickID:",YSTRUE);
 		strikeCommanderThrottlePhysIdDrp=AddEmptyDropList(0,FSKEY_NULL,"",8,4,4,YSFALSE);

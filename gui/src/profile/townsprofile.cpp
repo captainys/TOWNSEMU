@@ -610,7 +610,15 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 
 	if(true==useStrikeCommanderThrottleAxis)
 	{
-		argv.push_back("-STCMTHR");
+		if(TOWNS_APPSPECIFIC_WINGCOMMANDER1==appSpecificAugmentation ||
+		   TOWNS_APPSPECIFIC_WINGCOMMANDER2==appSpecificAugmentation)
+		{
+			argv.push_back("-WCTHR");
+		}
+		else
+		{
+			argv.push_back("-STCMTHR");
+		}
 
 		sstream.str("");
 		sstream << strikeCommanderThrottlePhysicalId;
