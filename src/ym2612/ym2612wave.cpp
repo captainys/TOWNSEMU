@@ -918,7 +918,7 @@ void YM2612::KeyOff(unsigned int chNum)
 				slot.ReleaseStartTime=(ch.microsec12>>12)/1000;
 				slot.ReleaseStartDb100=slot.lastDb100Cache;
 
-				auto releaseTime=sustainDecayReleaseTime0to96dB[std::min<unsigned int>(slot.RRCache,63)];
+				uint64_t releaseTime=sustainDecayReleaseTime0to96dB[std::min<unsigned int>(slot.RRCache,63)];
 				releaseTime*=slot.lastDb100Cache;
 				releaseTime/=960000;
 				slot.ReleaseEndTime=slot.ReleaseStartTime+releaseTime;
