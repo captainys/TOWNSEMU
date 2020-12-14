@@ -726,9 +726,11 @@ inline int YM2612::Slot::UnscaledOutput(int phase,int phaseShift,unsigned int FB
 		{
 			0,1,2,4,8,16,32,64
 		};
-		// lastSlotOut=1.0=>4096   4096=>2PI
-		// To make it 4PI at FB=4, must divide by 32.
-		phase+=(lastSlot0Out*FBScaleTable[FB]/32);
+		// lastSlotOut=1.0=>UNSCALED_MAX   4096=>2PI
+		// To make it 4PI(8192) at FB=7(scale=64), must divide by UNSCALED_MAX*64/8192.
+		// What was I thinking when I made div=32?  It should be 16.
+		const int div=UNSCALED_MAX*64/8192;
+		phase+=(lastSlot0Out*FBScaleTable[FB]/div);
 	}
 	//                     8.0       * (2PI / 2)     /   1.0
 	const int outputScale=SLOTOUT_TO_NPI*(PHASE_STEPS/2)/UNSCALED_MAX;
