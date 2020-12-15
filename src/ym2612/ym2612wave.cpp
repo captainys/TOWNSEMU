@@ -917,7 +917,13 @@ void YM2612::KeyOff(unsigned int chNum)
 			if(true!=slot.InReleasePhase)
 			{
 				slot.InReleasePhase=true;
-				slot.ReleaseStartTime=(ch.microsec12>>12)/1000;
+
+				// 2020/12/15 nextMicrosec12 retains up to what time point wave has been generated.
+				//            Therefore, here must be nextMicrosec12, instead of microsec12.
+				//            If microsec12 is used, it virtually skips first 20ms of release,
+				//            and the amplitude drops like a stairstep.
+				//            It is inaudible in many situations, but clearly audible in Super Daisenryaku opening.
+				slot.ReleaseStartTime=(ch.nextMicrosec12>>12)/1000;
 				slot.ReleaseStartDb100=slot.lastDb100Cache;
 
 				uint64_t releaseTime=sustainDecayReleaseTime0to96dB[std::min<unsigned int>(slot.RRCache,63)];
