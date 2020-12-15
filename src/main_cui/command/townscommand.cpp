@@ -150,6 +150,13 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 
 	primaryCmdMap["SPECIALDEBUG"]=CMD_SPECIAL_DEBUG;
 
+
+	primaryCmdMap["STARTFMPCMREC"]=CMD_START_FMPCM_RECORDING;
+	primaryCmdMap["ENDFMPCMREC"]=CMD_END_FMPCM_RECORDING;
+	primaryCmdMap["SAVEFMREC"]=CMD_SAVE_FM_RECORDING;
+	primaryCmdMap["SAVEPCMREC"]=CMD_SAVE_PCM_RECORDING;
+
+
 	featureMap["CMDLOG"]=ENABLE_CMDLOG;
 	featureMap["AUTODISASM"]=ENABLE_DISASSEMBLE_EVERY_INST;
 	featureMap["IOMON"]=ENABLE_IOMONITOR;
@@ -420,6 +427,14 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "SAVEKEYMAP filename.txt" << std::endl;
 	std::cout << "LOADKEYMAP filename.txt" << std::endl;
 	std::cout << "  Save/Load key-mapping in a text file." << std::endl;
+
+	std::cout << "STARTFMPCMREC" << std::endl;
+	std::cout << "ENDFMPCMREC" << std::endl;
+	std::cout << "  Start/End FM and PCM recording." << std::endl;
+	std::cout << "SAVEFMREC filename.wav" << std::endl;
+	std::cout << "  Save YM2612 recording." << std::endl;
+	std::cout << "SAVEPCMREC filename.wav" << std::endl;
+	std::cout << "  Save PCM recording." << std::endl;
 
 	std::cout << "HOST2VM hostFileName vmFileName" << std::endl;
 	std::cout << "  Schedule Host to VM file transfer." << std::endl;
@@ -1079,6 +1094,25 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 		break;
 	case CMD_SAVE_VRAMLAYER:
 		Execute_SaveVRAMLayer(towns,cmd);
+		break;
+
+	case CMD_START_FMPCM_RECORDING:
+		towns.sound.StartRecording();
+		break;
+	case CMD_END_FMPCM_RECORDING:
+		towns.sound.EndRecording();
+		break;
+	case CMD_SAVE_FM_RECORDING:
+		if(2<=cmd.argv.size())
+		{
+			towns.sound.SaveFMRecording(cmd.argv[1]);
+		}
+		break;
+	case CMD_SAVE_PCM_RECORDING:
+		if(2<=cmd.argv.size())
+		{
+			towns.sound.SavePCMRecording(cmd.argv[1]);
+		}
 		break;
 	}
 }

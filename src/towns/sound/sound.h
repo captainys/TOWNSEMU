@@ -56,6 +56,9 @@ public:
 	State state;
 	class Outside_World *outside_world=nullptr;
 
+	bool recordFMandPCM=false;
+	std::vector <unsigned char> FMrecording,PCMrecording;
+
 	TownsSound(class FMTowns *townsPtr);
 	void SetOutsideWorld(class Outside_World *outside_world);
 	void PCMStartPlay(unsigned char chStartPlay);
@@ -77,6 +80,11 @@ public:
 	/*! Call this function periodically to continue sound playback.
 	*/
 	void ProcessSound(void);
+
+	void StartRecording(void);
+	void EndRecording(void);
+	void SaveFMRecording(std::string fName) const;
+	void SavePCMRecording(std::string fName) const;
 };
 
 /* } */

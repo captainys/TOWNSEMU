@@ -232,6 +232,10 @@ void TownsSound::ProcessSound(void)
 		{
 			state.ym2612.NextWaveAllChannels();
 			auto wav=state.ym2612.MakeWaveAllChannels(FM_MILLISEC_PER_WAVE);
+			if(true==recordFMandPCM)
+			{
+				FMrecording.insert(FMrecording.end(),wav.begin(),wav.end());
+			}
 			outside_world->FMPlay(wav);
 			state.ym2612.CheckToneDoneAllChannels();
 		}
@@ -255,6 +259,10 @@ void TownsSound::ProcessSound(void)
 			}
 
 			state.rf5c68.MakeWaveForNumSamples(wave.data(),numSamples);
+			if(true==recordFMandPCM)
+			{
+				FMrecording.insert(PCMrecording.end(),wave.begin(),wave.end());
+			}
 			outside_world->PCMPlay(wave);
 		}
 	}
@@ -264,4 +272,32 @@ void TownsSound::ProcessSound(void)
 			outside_world->BeepPlay(r.first, r.second);
 		}
 	}
+}
+
+void TownsSound::StartRecording(void)
+{
+	recordFMandPCM=true;
+	FMrecording.clear();
+	PCMrecording.clear();
+}
+void TownsSound::EndRecording(void)
+{
+	recordFMandPCM=false;
+}
+#include "yssimplesound.h"
+void TownsSound::SaveFMRecording(std::string fName) const
+{
+	YsSoundPlayer::SoundData data;
+	auto dataCopy=FMrecording;
+	data.CreateFromSigned16bitStereo(44100,dataCopy);
+	auto wavFile=data.MakeWavByteData();
+	cpputil::WriteBinaryFile(fName,wavFile.size(),wavFile.data());
+}
+void TownsSound::SavePCMRecording(std::string fName) const
+{
+	YsSoundPlayer::SoundData data;
+	auto dataCopy=PCMrecording;
+	data.CreateFromSigned16bitStereo(44100,dataCopy);
+	auto wavFile=data.MakeWavByteData();
+	cpputil::WriteBinaryFile(fName,wavFile.size(),wavFile.data());
 }
