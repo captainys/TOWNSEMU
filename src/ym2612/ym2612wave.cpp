@@ -1141,26 +1141,29 @@ long long int YM2612::MakeWaveForNSamplesTemplate(unsigned char wave[],unsigned 
 			// 
 			//     y(i+1)=A*sin(i*dt+C*y(i))
 			// 
-			// A is amplitude calculated from the envelope, and C is defined by feedback level.
+			// A is amplitude calculated from the envelope, and C is defined by feedback level, and
+			// dt depends on the frequency of the tone.
 			// 
 			// Let's denote the angle given to the sine function as:
 			// 
 			//     X(i)=i*dt+C*y(i)
 			// 
-			// When the slope of y(i) is negative, means the value is decreasing, the function can become
-			// unstable and diverge, until the function returns to the positive slope.  Here's what can happen.
+			// When the slope of sin(X(i)) is negative (0.5PI<X(i)<1.5PI), means the value is decreasing with
+			// increasing X, the function can become unstable and diverge, until the function returns to the
+			// positive slope.  Here's what can happen.
 			// 
 			// X(i) monotonicly increase if C=0, means no feedback.  However, if C is non-zero, i*dt increases, 
-			// but C*y(i) decreases while the slope of y(i) is negative.
+			// but C*y(i) can increase or decrease depending on the slope of y(i).
 			// 
-			// If the one-step decrease of C*y(i) exceeds the increase of i*dt, X(i) will decrease overall,
-			// which means the input to the sine functions goes backward.  A is positive, and the slope of the
-			// sine function at X(i) was negative, and if the input goes backward, y suddenly increases. i.e.,
-			// y(i+1) is greater than y(i).
+			// If the one-step decrease of C*y(i) exceeds the increase of i*dt (which is dt), 
+			// X(i) will decrease overall, which means the input to the sine functions goes backward.
+			// Amplitude is positive, and if the slope of the sine function at X(i) was negative, and if 
+			// the input goes backward, y suddenly increases. i.e., y(i+1) is greater than y(i).
 			// 
-			// So, for this one step, both C*y and i*dt terms increase.  This makes a large jump in X.  Overall
-			// y dives down bigger than the last increase.  Then, the next comes even bigger increase of y,
-			// followed by even bigger dive, and the function of y(i) starts oscillating every sample.
+			// Then in the next step, both C*y and i*dt terms increase.  This makes a large jump of X.
+			// The sine function is going down with X, as a result y dives down bigger than the last 
+			// increase.  Then, the next comes even bigger increase of y, followed by even bigger dive, 
+			// and the function of y(i) starts oscillating every sample.
 			// 
 			// From the above, the condition that starts this divergence is:
 			// 
