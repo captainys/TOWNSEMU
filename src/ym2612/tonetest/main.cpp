@@ -317,18 +317,6 @@ int main(void)
 			printf("FB %d\n",ym2612.state.channels[0].FB);
 			wave=MakeSample(ym2612);
 		}
-		else if(FSKEY_W==key)
-		{
-			ym2612.initialFeedbackUpdateCycle++;
-			printf("%d\n",ym2612.initialFeedbackUpdateCycle);
-			wave=MakeSample(ym2612);
-		}
-		else if(FSKEY_S==key)
-		{
-			ym2612.initialFeedbackUpdateCycle--;
-			printf("%d\n",ym2612.initialFeedbackUpdateCycle);
-			wave=MakeSample(ym2612);
-		}
 		else if(FSKEY_E==key)
 		{
 			++ym2612.state.channels[0].slots[0].TL;

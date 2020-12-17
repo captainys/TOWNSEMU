@@ -129,8 +129,6 @@ public:
 		int DetuneContributionToPhaseStepS12(unsigned int BLOCK,unsigned int NOTE) const;
 	};
 
-	int initialFeedbackUpdateCycle=1;
-
 	class Channel
 	{
 	public:
@@ -140,18 +138,13 @@ public:
 		unsigned int usingSlot;
 		Slot slots[NUM_SLOTS];
 
-		// Observation suggests that the output from SLOT0 with FB=6 and 7 depends on
-		// the frequency in which the lastSlot0Out is updated.
-		int feedbackUpdateCycle=2;
-
 		// Cache for wave-generation >>
 		unsigned int playState;
 		unsigned long long int toneDuration12;  // In (microsec<<12).
 		unsigned long long int microsec12;      // Microsec from start of a tone by (microsec12>>12)
-		int lastSlot0Out;
+		int lastSlot0Out[2];
 		mutable unsigned long long int nextMicrosec12; // Cached in MakeWave.
-		mutable int lastSlot0OutForNextWave;           // For calculating feedback.
-		mutable int nextFeedbackUpdateCycle;
+		mutable int lastSlot0OutForNextWave[2];           // For calculating feedback.
 		// Cache for wave-generation <<
 
 		void Clear();

@@ -852,8 +852,8 @@ void YM2612::KeyOn(unsigned int chNum)
 	state.playingCh|=(1<<chNum);
 	ch.playState=CH_PLAYING;
 	ch.microsec12=0;
-	ch.lastSlot0Out=0;
-	ch.feedbackUpdateCycle=initialFeedbackUpdateCycle;
+	ch.lastSlot0Out[0]=0;
+	ch.lastSlot0Out[1]=0;
 
 	// Formulat in [2] pp.204 suggests:
  	//   unsigned int KC=(ch.BLOCK<<2)|NOTE;
@@ -883,8 +883,8 @@ void YM2612::KeyOn(unsigned int chNum)
 #endif
 
 	ch.nextMicrosec12=ch.microsec12;
-	ch.lastSlot0OutForNextWave=ch.lastSlot0Out;
-	ch.nextFeedbackUpdateCycle=ch.feedbackUpdateCycle;
+	ch.lastSlot0OutForNextWave[0]=ch.lastSlot0Out[0];
+	ch.lastSlot0OutForNextWave[1]=ch.lastSlot0Out[1];
 	ch.slots[0].nextPhase12=ch.slots[0].phase12;
 	ch.slots[1].nextPhase12=ch.slots[1].phase12;
 	ch.slots[2].nextPhase12=ch.slots[2].phase12;
@@ -1084,8 +1084,7 @@ long long int YM2612::MakeWaveForNSamplesTemplate(unsigned char wave[],unsigned 
 
 	unsigned long long int microsec12[NUM_CHANNELS];
 	unsigned int phase12[NUM_CHANNELS][NUM_SLOTS];
-	int lastSlot0Out[NUM_CHANNELS];
-	int feedbackUpdateCycle[NUM_CHANNELS];
+	int lastSlot0Out[NUM_CHANNELS][2];
 	unsigned int LeftANDPtn[NUM_CHANNELS];
 	unsigned int RightANDPtn[NUM_CHANNELS];
 	unsigned long long int toneDurationMicrosec12[NUM_CHANNELS];
@@ -1098,8 +1097,8 @@ long long int YM2612::MakeWaveForNSamplesTemplate(unsigned char wave[],unsigned 
 		phase12[chNum][1]=ch.slots[1].phase12;
 		phase12[chNum][2]=ch.slots[2].phase12;
 		phase12[chNum][3]=ch.slots[3].phase12;
-		lastSlot0Out[chNum]=ch.lastSlot0Out;
-		feedbackUpdateCycle[chNum]=ch.feedbackUpdateCycle;
+		lastSlot0Out[chNum][0]=ch.lastSlot0Out[0];
+		lastSlot0Out[chNum][1]=ch.lastSlot0Out[1];
 		LeftANDPtn[chNum]=(0!=ch.L ? ~0 : 0);
 		RightANDPtn[chNum]=(0!=ch.R ? ~0 : 0);
 		toneDurationMicrosec12[chNum]=ch.toneDuration12;
@@ -1133,14 +1132,68 @@ long long int YM2612::MakeWaveForNSamplesTemplate(unsigned char wave[],unsigned 
 
 			LFOClass::CalculateLFO(AMSAdjustment,PMSAdjustment,state.FREQCTRL,ch);
 
-			auto s0Out=lastSlot0Out[chNum];
+
+			// Why take an average of last two samples, not just the last sample, for feedback?
+			// Cisc's FMGEN YM emulator does it.  I was wondering why.  But, it works as a damper to prevent
+			// premature divergence.
+			// 
+			// When feedback is given, the output from slot 0 is calculated as:
+			// 
+			//     y(i+1)=A*sin(i*dt+C*y(i))
+			// 
+			// A is amplitude calculated from the envelope, and C is defined by feedback level.
+			// 
+			// Let's denote the angle given to the sine function as:
+			// 
+			//     X(i)=i*dt+C*y(i)
+			// 
+			// When the slope of y(i) is negative, means the value is decreasing, the function can become
+			// unstable and diverge, until the function returns to the positive slope.  Here's what can happen.
+			// 
+			// X(i) monotonicly increase if C=0, means no feedback.  However, if C is non-zero, i*dt increases, 
+			// but C*y(i) decreases while the slope of y(i) is negative.
+			// 
+			// If the one-step decrease of C*y(i) exceeds the increase of i*dt, X(i) will decrease overall,
+			// which means the input to the sine functions goes backward.  A is positive, and the slope of the
+			// sine function at X(i) was negative, and if the input goes backward, y suddenly increases. i.e.,
+			// y(i+1) is greater than y(i).
+			// 
+			// So, for this one step, both C*y and i*dt terms increase.  This makes a large jump in X.  Overall
+			// y dives down bigger than the last increase.  Then, the next comes even bigger increase of y,
+			// followed by even bigger dive, and the function of y(i) starts oscillating every sample.
+			// 
+			// From the above, the condition that starts this divergence is:
+			// 
+			//     dt<-dY
+			// 
+			// where Y=C*y(i).  Interestingly, because of this condition, this particular mode of oscillation
+			// only appears when dY<0.
+			// 
+			// While it is a legitimate divergence that adds some noise component to the tone in some settings,
+			// Slot 0 starts this oscillation too easily.
+			// 
+			// Cisc's FMGEN YM-chip emulator, used in XM7 and M88 emulators (and maybe other emulators as well)
+			// solves this problem by feeding the average of the last two samples back to slot 0.
+			// 
+			// During the oscillation, the value of y jumps up and down.  But, if you look at the middle of the two
+			// consecutive outputs, it goes through a smooth decreasing curve.
+			// 
+			// The cause of this divergence is from the oscillation of the feedback term, C*y.  By taking average
+			// of the last two samples, it essentially damps the oscillation, and effectively prevents this divergence.
+			//
+			// So the modified formulation is:
+			//
+			//     y(i+1)=A*sin(i*dt+C*(y(i)+y(i-1))/2)
+			//
+			// Here I am explicitly writing it out, but Cisc's implementation embedded this division by two
+			// in the anyway-required bit shift.
+			//
+			// Very genious solution it is.
+
+			auto s0Out=(lastSlot0Out[chNum][1]+lastSlot0Out[chNum][0])/2;
 			auto ampl=CalculateAmplitude(chNum,microsec/1000,phase12[chNum],AMSAdjustment,s0Out);  // Envelope takes milliseconds.
-			--feedbackUpdateCycle[chNum];
-			if(feedbackUpdateCycle[chNum]<=0)
-			{
-				feedbackUpdateCycle[chNum]=initialFeedbackUpdateCycle;
-				lastSlot0Out[chNum]=s0Out;
-			}
+			lastSlot0Out[chNum][1]=lastSlot0Out[chNum][0];
+			lastSlot0Out[chNum][0]=s0Out;
 
 			leftOut+=(LeftANDPtn[chNum]&ampl);
 			rightOut+=(RightANDPtn[chNum]&ampl);
@@ -1161,8 +1214,8 @@ long long int YM2612::MakeWaveForNSamplesTemplate(unsigned char wave[],unsigned 
 	{
 		auto &ch=state.channels[chNum];
 		ch.nextMicrosec12=microsec12[chNum];
-		ch.lastSlot0OutForNextWave=lastSlot0Out[chNum];
-		ch.nextFeedbackUpdateCycle=feedbackUpdateCycle[chNum];
+		ch.lastSlot0OutForNextWave[0]=lastSlot0Out[chNum][0];
+		ch.lastSlot0OutForNextWave[1]=lastSlot0Out[chNum][1];
 		ch.slots[0].nextPhase12=phase12[chNum][0];
 		ch.slots[1].nextPhase12=phase12[chNum][1];
 		ch.slots[2].nextPhase12=phase12[chNum][2];
@@ -1196,8 +1249,8 @@ void YM2612::NextWave(unsigned int chNum)
 	if(CH_PLAYING==ch.playState)
 	{
 		ch.microsec12=ch.nextMicrosec12;
-		ch.lastSlot0Out=ch.lastSlot0OutForNextWave;
-		ch.feedbackUpdateCycle=ch.nextFeedbackUpdateCycle;
+		ch.lastSlot0Out[0]=ch.lastSlot0OutForNextWave[0];
+		ch.lastSlot0Out[1]=ch.lastSlot0OutForNextWave[1];
 		ch.slots[0].phase12=ch.slots[0].nextPhase12;
 		ch.slots[1].phase12=ch.slots[1].nextPhase12;
 		ch.slots[2].phase12=ch.slots[2].nextPhase12;
