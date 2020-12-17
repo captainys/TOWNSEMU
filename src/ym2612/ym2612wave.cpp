@@ -705,6 +705,24 @@ static int AMS4096Table[4]=
 
 ////////////////////////////////////////////////////////////
 
+int YM2612::Slot::DetuneContributionToPhaseStepS12(unsigned int BLOCK,unsigned int NOTE) const
+{
+	// Hz ranges 1 to roughly 8000.  PHASE_STEPS=4096.  hertz*PHASE_STEPS=2^13*2^12=2^25. Fits in 32 bit.
+	long long int detuneStepContribution=0;
+	if(0!=DT)
+	{
+		long long int hertz1000=detune1000Table[(BLOCK<<4)+(NOTE<<2)+(DT&3)];
+		detuneStepContribution=(hertz1000*PHASE_STEPS);
+		detuneStepContribution<<=12;
+		detuneStepContribution/=1000;  // Now it is (hertz*PHASE_STEPS)<<12.
+		if(0!=(DT&4))
+		{
+			detuneStepContribution=-detuneStepContribution;
+		}
+	}
+	return (int)detuneStepContribution;
+}
+
 inline int YM2612::Slot::UnscaledOutput(int phase,int phaseShift) const
 {
 	// phaseShift is input from the upstream slot.
@@ -809,6 +827,20 @@ inline int YM2612::Slot::InterpolateEnvelope(unsigned int timeInMS) const
 	}
 }
 
+unsigned int YM2612::Channel::Note(void) const
+{
+	// Formula [2] pp.204
+	// There is an error.  F_NUM is 11bits.  There is no F11.
+	// Probably, F11, F10, F9, F8 should be read F10, F9, F8, F7.
+	unsigned int F10=((F_NUM>>10)&1);
+	unsigned int F9= ((F_NUM>> 9)&1);
+	unsigned int F8= ((F_NUM>> 8)&1);
+	unsigned int F7=((F_NUM>>11)&1);
+	unsigned int N3=(F10&(F9|F8|F7))|((~F10)&F9&F8&F7);
+	unsigned int NOTE=(F10<<1)|N3;
+	return NOTE;
+}
+
 ////////////////////////////////////////////////////////////
 
 void YM2612::KeyOn(unsigned int chNum)
@@ -822,17 +854,6 @@ void YM2612::KeyOn(unsigned int chNum)
 	ch.microsec12=0;
 	ch.lastSlot0Out=0;
 	ch.feedbackUpdateCycle=initialFeedbackUpdateCycle;
-
-
-	// Formula [2] pp.204
-	// There is an error.  F_NUM is 11bits.  There is no F11.
-	// Probably, F11, F10, F9, F8 should be read F10, F9, F8, F7.
-	unsigned int F10=((ch.F_NUM>>10)&1);
-	unsigned int F9= ((ch.F_NUM>> 9)&1);
-	unsigned int F8= ((ch.F_NUM>> 8)&1);
-	unsigned int F7=((ch.F_NUM>>11)&1);
-	unsigned int N3=(F10&(F9|F8|F7))|((~F10)&F9&F8&F7);
-	unsigned int NOTE=(F10<<1)|N3;
 
 	// Formulat in [2] pp.204 suggests:
  	//   unsigned int KC=(ch.BLOCK<<2)|NOTE;
@@ -848,22 +869,7 @@ void YM2612::KeyOn(unsigned int chNum)
 		slot.lastDb100Cache=0;
 		slot.phase12=0;
 
-		// Hz ranges 1 to roughly 8000.  PHASE_STEPS=4096.  hertz*PHASE_STEPS=2^13*2^12=2^25. Fits in 32 bit.
-		long long int detuneStepContribution=0;
-		if(0!=slot.DT)
-		{
-			long long int hertz1000=detune1000Table[(ch.BLOCK<<4)+(NOTE<<2)+(slot.DT&3)];
-			detuneStepContribution=(hertz1000*PHASE_STEPS);
-			detuneStepContribution/=1000;
-			if(0!=(slot.DT&4))
-			{
-				detuneStepContribution=-detuneStepContribution;
-			}
-		}
-
-		UpdatePhase12StepSlot(slot,hertzX16);
-
-		 // Should consider DETUNE.
+		UpdatePhase12StepSlot(slot,hertzX16,slot.DetuneContributionToPhaseStepS12(ch.BLOCK,ch.Note()));
 
 		// (hertzX16*PHASE_STEPS)<<8==hertz*PHASE_STEPS*4096
 		CalculateEnvelope(slot.env,slot.RRCache,KC,slot);
@@ -885,7 +891,7 @@ void YM2612::KeyOn(unsigned int chNum)
 	ch.slots[3].nextPhase12=ch.slots[3].phase12;
 }
 
-void YM2612::UpdatePhase12StepSlot(Slot &slot,const unsigned int hertzX16)
+void YM2612::UpdatePhase12StepSlot(Slot &slot,const unsigned int hertzX16,int detuneContribution)
 {
 	// Phase runs hertz*PHASE_STEPS times per second.
 	//            hertz*PHASE_STEPS/WAVE_SAMPLING_RATE times per step.
@@ -894,6 +900,7 @@ void YM2612::UpdatePhase12StepSlot(Slot &slot,const unsigned int hertzX16)
 	unsigned long long phase12Step;
 	phase12Step=MULTITable[slot.MULTI]*hertzX16*PHASE_STEPS; // 2X from MULTITable, 16X from hertzX16
 	phase12Step<<=7;                                         // 128X  Overall 2x16x128=4096X
+	phase12Step+=MULTITable[slot.MULTI]*detuneContribution/2;
 	phase12Step/=WAVE_SAMPLING_RATE;
 	slot.phase12Step=(unsigned int)phase12Step;
 }
@@ -903,7 +910,7 @@ void YM2612::UpdatePhase12StepSlot(Channel &ch)
 	const unsigned int hertzX16=BLOCK_FNUM_to_FreqX16(ch.BLOCK,ch.F_NUM);
 	for(auto &slot : ch.slots)
 	{
-		UpdatePhase12StepSlot(slot,hertzX16);
+		UpdatePhase12StepSlot(slot,hertzX16,slot.DetuneContributionToPhaseStepS12(ch.BLOCK,ch.Note()));
 	};
 }
 

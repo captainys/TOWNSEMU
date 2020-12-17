@@ -125,6 +125,8 @@ public:
 		inline int EnvelopedOutputLn(int phase,int phaseShift,unsigned int timeInMS) const;
 		// DB scale: 0 to 9600
 		inline int InterpolateEnvelope(unsigned int timeInMS) const;
+
+		int DetuneContributionToPhaseStepS12(unsigned int BLOCK,unsigned int NOTE) const;
 	};
 
 	int initialFeedbackUpdateCycle=1;
@@ -153,6 +155,7 @@ public:
 		// Cache for wave-generation <<
 
 		void Clear();
+		unsigned int Note(void) const;
 	};
 
 	class State
@@ -240,7 +243,7 @@ public:
 
 	/*! Update phase update (times 2^12) per step for slot.
 	*/
-	void UpdatePhase12StepSlot(Slot &slot,const unsigned int hertzX16);
+	void UpdatePhase12StepSlot(Slot &slot,const unsigned int hertzX16,int detuneContribution);
 
 	/*! Update phase update (times 2^12) per step for channel.
 	*/
