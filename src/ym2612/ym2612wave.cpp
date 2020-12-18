@@ -1116,7 +1116,7 @@ long long int YM2612::MakeWaveForNSamplesTemplate(unsigned char wave[],unsigned 
 	// If microSec12=4096*microseconds, tm runs
 	//           4096000000/WAVE_SAMPLING_RATE per step
 
-	unsigned long long int microsec12[NUM_CHANNELS][NUM_SLOTS];
+	uint64_t microsec12[NUM_CHANNELS][NUM_SLOTS];
 	unsigned int phase12[NUM_CHANNELS][NUM_SLOTS];
 	int lastSlot0Out[NUM_CHANNELS][2];
 	unsigned int LeftANDPtn[NUM_CHANNELS];
@@ -1235,7 +1235,7 @@ long long int YM2612::MakeWaveForNSamplesTemplate(unsigned char wave[],unsigned 
 			// Very genious solution it is.
 
 			auto s0Out=(lastSlot0Out[chNum][1]+lastSlot0Out[chNum][0])/2;
-			auto ampl=CalculateAmplitude(chNum,microsec12[chNum],phase12[chNum],AMSAdjustment,s0Out);  // Envelope takes milliseconds.
+			auto ampl=CalculateAmplitude(chNum,microsec12[chNum],phase12[chNum],AMSAdjustment,s0Out);
 			lastSlot0Out[chNum][1]=lastSlot0Out[chNum][0];
 			lastSlot0Out[chNum][0]=s0Out;
 
