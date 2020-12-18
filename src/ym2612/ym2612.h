@@ -177,6 +177,9 @@ public:
 	State state;
 	bool channelMute[NUM_CHANNELS]={false,false,false,false,false,false};
 
+	static unsigned int attackExp[4096];
+	static unsigned int attackExpInverse[4096];
+
 	static int sineTable[PHASE_STEPS];
 	static unsigned int TLtoDB100[128];   // 100 times dB
 	static unsigned int SLtoDB100[16];    // 100 times dB
@@ -213,6 +216,7 @@ private:
 	void MakeSLtoDB100(void);
 	void MakeDB100to4095Scale(void);
 	void MakeLinearScaleTable(void);
+	void MakeAttackProfileTable(void);
 public:
 	void PowerOn(void);
 	void Reset(void);

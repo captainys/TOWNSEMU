@@ -134,6 +134,7 @@ YM2612::YM2612()
 	MakeSLtoDB100();
 	MakeDB100to4095Scale();
 	MakeLinearScaleTable();
+	MakeAttackProfileTable();
 	PowerOn();
 }
 YM2612::~YM2612()
@@ -209,6 +210,41 @@ void YM2612::MakeLinearScaleTable(void)
 	for(unsigned int i=0; i<=9600; ++i)
 	{
 		linear9600to4096[i]=i*4096/9600;
+	}
+}
+
+void YM2612::MakeAttackProfileTable(void)
+{
+	// YM2612 manual tells that the output level increases during the attack phase is exponential,
+	// which can open up a lot of interpretations.  Is it like dB(t)=C*k^t  ?
+	// By looking at fmgen by Cisc, it seems to be the difference from the peak output decreases
+	// exponentially.
+	//
+	// If the level difference from the maximum level is diff(i),
+	//     diff(i+1)=diff(i)*k   {0<t<1}
+	// Then,
+	//     diff(i)=diff(0)*(k^i) {0<t<1}
+	// Let's say the maximum is 4096.  I want to say diff reaches 0 at t=4096, but well it won't be zero.
+	// So, let's say diff reaches 1 at t=409t instead.  The initial difference is 4096.  Then,
+	// 
+	//     1=4096*t^4095, 
+	// 
+	// From there, I can calculate t.  And then values for the table.
+
+	double t=pow(1.0/4096.0,1.0/4095.0);
+	for(int i=0; i<4096; i++)
+	{
+		double y=1.0-pow(t,(double)i);
+		attackExp[i]=(int)(y*4096);
+	}
+
+	int j=0;
+	for(int i=0; i<4096; ++i)
+	{
+		for(; j<=attackExp[i+1]; ++j)
+		{
+			attackExpInverse[j]=i;
+		}
 	}
 }
 
