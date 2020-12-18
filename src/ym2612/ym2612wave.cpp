@@ -843,16 +843,27 @@ unsigned int YM2612::Channel::Note(void) const
 
 ////////////////////////////////////////////////////////////
 
-void YM2612::KeyOn(unsigned int chNum)
+void YM2612::KeyOn(unsigned int chNum,unsigned int slotFlags)
 {
+	if(0==slotFlags)
+	{
+		return;
+	}
+
+
 	auto &ch=state.channels[chNum];
 
 	const unsigned int hertzX16=BLOCK_FNUM_to_FreqX16(ch.BLOCK,ch.F_NUM);
 
 	state.playingCh|=(1<<chNum);
 	ch.playState=CH_PLAYING;
-	ch.lastSlot0Out[0]=0;
-	ch.lastSlot0Out[1]=0;
+	if(0!=(1&slotFlags))
+	{
+		ch.lastSlot0Out[0]=0;
+		ch.lastSlot0Out[1]=0;
+		ch.lastSlot0OutForNextWave[0]=ch.lastSlot0Out[0];
+		ch.lastSlot0OutForNextWave[1]=ch.lastSlot0Out[1];
+	}
 
 	// Formulat in [2] pp.204 suggests:
  	//   unsigned int KC=(ch.BLOCK<<2)|NOTE;
@@ -862,36 +873,51 @@ void YM2612::KeyOn(unsigned int chNum)
 	unsigned int KC=(ch.BLOCK<<2)|((ch.F_NUM>>9)&3);
 
 
-	for(auto &slot : ch.slots)
+	for(int i=0; i<NUM_SLOTS; ++i)
 	{
-		slot.microsecS12=0;
-		slot.InReleasePhase=false;
-		slot.lastDb100Cache=0;
-		slot.phase12=0;
+		if(0!=(slotFlags&(1<<i)))
+		{
+			auto &slot=ch.slots[i];
 
-		UpdatePhase12StepSlot(slot,hertzX16,slot.DetuneContributionToPhaseStepS12(ch.BLOCK,ch.Note()));
+			slot.InReleasePhase=false;
+			slot.phase12=0;
 
-		// (hertzX16*PHASE_STEPS)<<8==hertz*PHASE_STEPS*4096
-		CalculateEnvelope(slot.env,slot.RRCache,KC,slot);
-		slot.envDurationCache=slot.env[0]+slot.env[2]+slot.env[4];
+			UpdatePhase12StepSlot(slot,hertzX16,slot.DetuneContributionToPhaseStepS12(ch.BLOCK,ch.Note()));
+
+			// (hertzX16*PHASE_STEPS)<<8==hertz*PHASE_STEPS*4096
+			CalculateEnvelope(slot.env,slot.RRCache,KC,slot);
+			slot.envDurationCache=slot.env[0]+slot.env[2]+slot.env[4];
+			slot.toneDurationMillisecS12=slot.envDurationCache;
+			slot.toneDurationMillisecS12<<=12;
+
+
+			// Observation tells that if key is turned on while the previous tone is still playing, 
+			// The initial output level must start from the last output level, in which case
+			// microsec12 must fast-forwarded so that the output matches the lastDb100Cache.
+			// Linear interpolation will have error, but should be better than nothing.
+			if(slot.lastDb100Cache<=0)
+			{
+				slot.microsecS12=0;
+			}
+			else if(slot.env[1]<=slot.lastDb100Cache)
+			{
+				slot.microsecS12=(slot.env[0]*1000)<<12;
+			}
+			else
+			{
+				slot.microsecS12=(slot.env[0]*slot.lastDb100Cache/slot.env[1])*1000<<12;
+			}
+			slot.lastDb100Cache=0;
+
+
+			slot.nextMicrosecS12=slot.microsecS12;
+			slot.nextPhase12=slot.phase12;
+		}
 	}
 
-	ch.toneDuration12=CalculateToneDurationMilliseconds(chNum);
-	ch.toneDuration12<<=12;
 #ifdef YM2612_DEBUGOUTPUT
-	printf("%d BLOCK %03xH F_NUM %03xH Hertz %d Max Duration %d\n",KC,ch.BLOCK,ch.F_NUM,hertzX16/16,ch.toneDuration12>>12);
+	printf("%d BLOCK %03xH F_NUM %03xH Hertz %d\n",KC,ch.BLOCK,ch.F_NUM,hertzX16/16);
 #endif
-
-	ch.lastSlot0OutForNextWave[0]=ch.lastSlot0Out[0];
-	ch.lastSlot0OutForNextWave[1]=ch.lastSlot0Out[1];
-	ch.slots[0].nextMicrosecS12=ch.slots[0].microsecS12;
-	ch.slots[1].nextMicrosecS12=ch.slots[1].microsecS12;
-	ch.slots[2].nextMicrosecS12=ch.slots[2].microsecS12;
-	ch.slots[3].nextMicrosecS12=ch.slots[3].microsecS12;
-	ch.slots[0].nextPhase12=ch.slots[0].phase12;
-	ch.slots[1].nextPhase12=ch.slots[1].phase12;
-	ch.slots[2].nextPhase12=ch.slots[2].phase12;
-	ch.slots[3].nextPhase12=ch.slots[3].phase12;
 }
 
 void YM2612::UpdatePhase12StepSlot(Slot &slot,const unsigned int hertzX16,int detuneContribution)
@@ -917,7 +943,7 @@ void YM2612::UpdatePhase12StepSlot(Channel &ch)
 	};
 }
 
-void YM2612::KeyOff(unsigned int chNum)
+void YM2612::KeyOff(unsigned int chNum,unsigned int slotFlags)
 {
 	if(0!=(state.playingCh&(1<<chNum)))
 	{
@@ -1095,7 +1121,7 @@ long long int YM2612::MakeWaveForNSamplesTemplate(unsigned char wave[],unsigned 
 	int lastSlot0Out[NUM_CHANNELS][2];
 	unsigned int LeftANDPtn[NUM_CHANNELS];
 	unsigned int RightANDPtn[NUM_CHANNELS];
-	unsigned long long int toneDurationMicrosec12[NUM_CHANNELS];
+	unsigned long long int toneDurationMicrosecS12[NUM_CHANNELS][NUM_SLOTS];
 
 	for(unsigned int chNum=0; chNum<NUM_CHANNELS; ++chNum)
 	{
@@ -1112,8 +1138,10 @@ long long int YM2612::MakeWaveForNSamplesTemplate(unsigned char wave[],unsigned 
 		lastSlot0Out[chNum][1]=ch.lastSlot0Out[1];
 		LeftANDPtn[chNum]=(0!=ch.L ? ~0 : 0);
 		RightANDPtn[chNum]=(0!=ch.R ? ~0 : 0);
-		toneDurationMicrosec12[chNum]=ch.toneDuration12;
-		toneDurationMicrosec12[chNum]*=1000;
+		toneDurationMicrosecS12[chNum][0]=ch.slots[0].toneDurationMillisecS12*1000;
+		toneDurationMicrosecS12[chNum][1]=ch.slots[1].toneDurationMillisecS12*1000;
+		toneDurationMicrosecS12[chNum][2]=ch.slots[2].toneDurationMillisecS12*1000;
+		toneDurationMicrosecS12[chNum][3]=ch.slots[3].toneDurationMillisecS12*1000;
 	}
 
 	unsigned int i;
@@ -1124,10 +1152,10 @@ long long int YM2612::MakeWaveForNSamplesTemplate(unsigned char wave[],unsigned 
 		{
 			auto chNum=playingCh[j];
 			auto &ch=state.channels[chNum];
-			if(toneDurationMicrosec12[chNum]<=microsec12[chNum][0] &&
-			   toneDurationMicrosec12[chNum]<=microsec12[chNum][1] &&
-			   toneDurationMicrosec12[chNum]<=microsec12[chNum][2] &&
-			   toneDurationMicrosec12[chNum]<=microsec12[chNum][3])
+			if(toneDurationMicrosecS12[chNum][0]<=microsec12[chNum][0] &&
+			   toneDurationMicrosecS12[chNum][1]<=microsec12[chNum][1] &&
+			   toneDurationMicrosecS12[chNum][2]<=microsec12[chNum][2] &&
+			   toneDurationMicrosecS12[chNum][3]<=microsec12[chNum][3])
 			{
 				playingCh[j]=playingCh[nPlayingCh-1];
 				--nPlayingCh;
@@ -1289,21 +1317,6 @@ void YM2612::NextWaveAllChannels(void)
 	{
 		NextWave(chNum);
 	}
-}
-
-unsigned int YM2612::CalculateToneDurationMilliseconds(unsigned int chNum) const
-{
-	unsigned int durationInMS=0;
-	auto &ch=state.channels[chNum];
-	for(int slotNum=0; slotNum<NUM_SLOTS; ++slotNum)
-	{
-		if(0!=connToOutChannel[ch.CONNECT][slotNum])
-		{
-			auto &slot=ch.slots[slotNum];
-			durationInMS=std::max(durationInMS,slot.env[0]+slot.env[2]+slot.env[4]);
-		}
-	}
-	return durationInMS;
 }
 
 bool YM2612::CalculateEnvelope(unsigned int env[6],unsigned int &RR,unsigned int KC,const Slot &slot) const

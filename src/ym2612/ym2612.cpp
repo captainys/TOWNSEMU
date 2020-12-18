@@ -111,6 +111,13 @@ void YM2612::State::Reset(void)
 	{
 		b=false;
 	}
+	for(auto &ch : channels)
+	{
+		for(auto &slot : ch.slots)
+		{
+			slot.lastDb100Cache=0;
+		}
+	}
 	playingCh=0;
 	LFO=0;
 	FREQCTRL=0;
@@ -307,12 +314,12 @@ unsigned int YM2612::WriteRegister(unsigned int channelBase,unsigned int reg,uns
 			if(0==state.channels[ch].usingSlot && 0!=slotFlag)
 			{
 				// Play a tone
-				KeyOn(ch);
+				KeyOn(ch,0x0F);
 				chStartPlaying=ch;
 			}
 			else if(0!=state.channels[ch].usingSlot && 0==slotFlag)
 			{
-				KeyOff(ch);
+				KeyOff(ch,0x0F);
 			}
 
 			state.channels[ch].usingSlot=slotFlag;

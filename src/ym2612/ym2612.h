@@ -52,6 +52,8 @@ public:
 		UNSCALED_MAX=2048,
 		SLOTOUT_TO_NPI=8,         // 1.0 output from an upstream slot is 8PI.
 
+		SLOTFLAGS_ALL=0x0F,
+
 		TONE_CHOPOFF_MILLISEC=4000,
 
 		WAVE_SAMPLING_RATE=44100,
@@ -101,6 +103,7 @@ public:
 		// Cache for wave-generation >>
 		unsigned long long int microsecS12;      // Microsec from start of a tone by (microsec12>>12)
 		mutable unsigned long long int nextMicrosecS12; // Cached in MakeWave.
+		unsigned long long int toneDurationMillisecS12;  // In (microsec<<12).
 		unsigned int phase12;      // 5-bit phase=((phase>>12)&0x1F)
 		unsigned int phase12Step;  // Increment of phase12 per time step.
 		mutable unsigned int nextPhase12; // Cached in MakeWave
@@ -142,7 +145,6 @@ public:
 
 		// Cache for wave-generation >>
 		unsigned int playState;
-		unsigned long long int toneDuration12;  // In (microsec<<12).
 		int lastSlot0Out[2];
 		mutable int lastSlot0OutForNextWave[2];           // For calculating feedback.
 		// Cache for wave-generation <<
@@ -232,7 +234,7 @@ public:
 
 	/*! Cache parameters for calculating wave.
 	*/
-	void KeyOn(unsigned int ch);
+	void KeyOn(unsigned int ch,unsigned int slotFlags=SLOTFLAGS_ALL);
 
 	/*! Update phase update (times 2^12) per step for slot.
 	*/
@@ -261,10 +263,6 @@ private:
 	template <class LFO>
 	long long int MakeWaveForNSamplesTemplate(unsigned char wavBuf[],unsigned int nPlayingCh,unsigned int playingCh[],unsigned long long int numSamplesRequested) const;
 
-	/*! Returns the longest duration of the tone in milliseconds if no key off.
-	*/
-	unsigned int CalculateToneDurationMilliseconds(unsigned int chNum) const;
-
 	/*! lastSlot0Out is input/output.  Needed for calculating feedback.
 	*/
 	int CalculateAmplitude(int chNum,const uint64_t timeInMicrosecS12[NUM_SLOTS],const unsigned int slotPhase[4],const int AMS4096[4],int &lastSlot0Out) const;
@@ -281,7 +279,7 @@ public:
 
 	/*! Change channel state to RELEASE.
 	*/
-	void KeyOff(unsigned int ch);
+	void KeyOff(unsigned int ch,unsigned int slotFlags=SLOTFLAGS_ALL);
 
 
 	/*! Check if the tone is done, and update playingCh and playing state.
