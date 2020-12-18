@@ -99,6 +99,8 @@ public:
 		unsigned int SSG_EG;
 
 		// Cache for wave-generation >>
+		unsigned long long int microsecS12;      // Microsec from start of a tone by (microsec12>>12)
+		mutable unsigned long long int nextMicrosecS12; // Cached in MakeWave.
 		unsigned int phase12;      // 5-bit phase=((phase>>12)&0x1F)
 		unsigned int phase12Step;  // Increment of phase12 per time step.
 		mutable unsigned int nextPhase12; // Cached in MakeWave
@@ -141,9 +143,7 @@ public:
 		// Cache for wave-generation >>
 		unsigned int playState;
 		unsigned long long int toneDuration12;  // In (microsec<<12).
-		unsigned long long int microsec12;      // Microsec from start of a tone by (microsec12>>12)
 		int lastSlot0Out[2];
-		mutable unsigned long long int nextMicrosec12; // Cached in MakeWave.
 		mutable int lastSlot0OutForNextWave[2];           // For calculating feedback.
 		// Cache for wave-generation <<
 
@@ -267,7 +267,7 @@ private:
 
 	/*! lastSlot0Out is input/output.  Needed for calculating feedback.
 	*/
-	int CalculateAmplitude(int chNum,unsigned int timeInMS,const unsigned int slotPhase[4],const int AMS4096[4],int &lastSlot0Out) const;
+	int CalculateAmplitude(int chNum,const uint64_t timeInMicrosecS12[NUM_SLOTS],const unsigned int slotPhase[4],const int AMS4096[4],int &lastSlot0Out) const;
 
 
 public:
