@@ -65,6 +65,34 @@ inline void WordOp_Set(unsigned char *ptr,short value)
 	30,
 };
 
+// Attack/Decay/Sustain/Release rate becomes double every four steps in 64-level scale.
+// However between i*4 and (i+1)*4, the slope is linearly interpolated.
+// Therefore, the slope should be:
+//    i=N*4    a
+//    i=N*4+1  a*1.25
+//    i=N*4+2  a*1.5
+//    i=N*4+3  a*1.75
+//    i=N*4+4  a*2
+//     :
+//    i=N*4+8  a*4
+//
+// The duration of the segment is inverse of the slope, therefore:
+//    i=N*4    d
+//    i=N*4+1  d/1.25
+//    i=N*4+2  d/1.5
+//    i=N*4+3  d/1.75
+//    i=N*4+4  d/2
+//     :
+//    i=N*4+8  d/4
+//
+// The duration of decay/sustain/release depends on how much dB the segment needs to drop.
+// It is linear to the dB-drop.
+//
+// The duration of attack (based on the observation) is constant regardless of the total level.
+//
+// The observation indicated that the values listed in FM TOWNS Technical Databook was
+// about 10% slower than actual.
+
 static unsigned int attackTime0to96dB[64]= // 1/100ms
 {
 // Note: The time must be proportional to the base clock.
@@ -208,6 +236,9 @@ static unsigned int sustainDecayReleaseTime0to96dB[64]= // 1/100ms
 460,                    // 757,
 394,                    // 757,
 };
+
+// I just took the following table from FM TOWNS Technical Databook,
+// but I have no idea what's the hell this table is for.
 static unsigned int attackTime10to90Percent[64]=
 {
 0,
@@ -576,12 +607,12 @@ unsigned int YM2612::Channel::Note(void) const
 {
 	// Formula [2] pp.204
 	// There is an error.  F_NUM is 11bits.  There is no F11.
-	// Probably, F11, F10, F9, F8 should be read F10, F9, F8, F7.
+	// Probably, F11, F10, F9, F8 should be read bit10, bit9, bit8, bit7.
 	unsigned int F10=((F_NUM>>10)&1);
 	unsigned int F9= ((F_NUM>> 9)&1);
 	unsigned int F8= ((F_NUM>> 8)&1);
 	unsigned int F7=((F_NUM>>11)&1);
-	unsigned int N3=(F10&(F9|F8|F7))|((~F10)&F9&F8&F7);
+	unsigned int N3=(F10&(F9|F8|F7)); // |((~F10)&F9&F8&F7);  Measurement from actual FM TOWNS 2MX suggests no contribution from the second term.
 	unsigned int NOTE=(F10<<1)|N3;
 	return NOTE;
 }
