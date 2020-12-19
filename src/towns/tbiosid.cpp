@@ -564,11 +564,21 @@ bool FMTowns::ControlMouse(int &diffX,int &diffY,int hostMouseX,int hostMouseY,u
 		// VRAM offset needs to be taken into account.
 		if(true==considerVRAMOffset)
 		{
-			auto VRAMoffset=crtc.GetPageVRAMAddressOffset(state.mouseDisplayPage);
-			auto bytesPerLine=crtc.GetPageBytesPerLine(state.mouseDisplayPage);
+			int bytesPerLine=crtc.GetPageBytesPerLine(state.mouseDisplayPage);
 			if(0!=bytesPerLine)
 			{
+				int VRAMoffset=crtc.GetPageVRAMAddressOffset(state.mouseDisplayPage);
 				unsigned int VRAMHeight=VRAMSize/bytesPerLine;
+
+				// 2020/12/18
+				// SuperDAISENRYAKU needs to make the VRAM offset signed, but I suspect making it signed
+				// contradicted with something else.  I fix it this time, but it may break something else,
+				// in which case I'll need to think about something else to support both.
+				if(0x20000<=VRAMoffset)
+				{
+					VRAMoffset-=0x40000;
+				}
+
 				hostMouseY+=VRAMoffset/bytesPerLine;
 				// The following must be signed int.
 				// Wing Commander 2's mouse coordinate is signed.
