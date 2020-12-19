@@ -285,6 +285,13 @@ build\ymtone.exp : build\ymtone.OBJ build\io.OBJ
 	386link build\ymtone.obj -exe build\ymtone.exp @LIBS.LN -stack 16384
 
 
+build\ymwave.obj : ymwave.c
+	hcd386 ymwave.c -obj build\ymwave.OBJ
+
+build\ymwave.exp : build\ymwave.OBJ build\io.OBJ
+	386link build\ymwave.obj -exe build\ymwave.exp @LIBS.LN -stack 16384
+
+
 
 build\repeat.obj : cdrom\repeat.asm
 	MASM cdrom\repeat.ASM build\repeat.OBJ build\repeat.LST NUL

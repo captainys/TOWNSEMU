@@ -70,47 +70,66 @@ void WriteYM2612RegisterCH0to2(unsigned char reg,unsigned char data)
 }
 
 
-int main(void)
+int main(int argc,char *argv[])
 {
 	// 000C:0048
+	if(16!=argc)
+	{
+		printf("Usage:\n");
+		printf("  ymwave BLOCK FNUM DT MULTI TL KS AR AMON DR SR SL RR FB AMS PMS\n");
+		//        0      1     2    3  4     5  6  7  8    9  10 11 12 13 14  15
+		return 0;
+	}
 
-
-	int F_NUM=692;
-	int BLOCK=3;
+	int BLOCK=atoi(argv[1]);
+	int F_NUM=atoi(argv[2]);
+	int DT=   atoi(argv[3]);
+	int MULTI=atoi(argv[4]);
+	int TL=   atoi(argv[5]);
+	int KS=   atoi(argv[6]);
+	int AR=   atoi(argv[7]);
+	int AMON= atoi(argv[8]);
+	int DR=   atoi(argv[9]);
+	int SR=   atoi(argv[10]);
+	int SL=   atoi(argv[11]);
+	int RR=   atoi(argv[12]);
+	int FB=   atoi(argv[13]);
+	int AMS=  atoi(argv[14]);
+	int PMS=  atoi(argv[15]);
+	int CONN= 7;
 
 	ClearFMB(&fmb);
 
-	fmb.inst[0].DT_MULTI[0]=MIX_DT_MULTI(0,1);
-	fmb.inst[0].TL      [0]=26;
-	fmb.inst[0].KS_AR   [0]=MIX_KS_AR(0,15);
-	fmb.inst[0].AMON_DR [0]=MIX_AMON_DR(0,10);
-	fmb.inst[0].SR      [0]=0;
-	fmb.inst[0].SL_RR   [0]=MIX_SL_RR(2,5);
+	fmb.inst[0].DT_MULTI[0]=MIX_DT_MULTI(DT,MULTI);
+	fmb.inst[0].TL      [0]=TL;
+	fmb.inst[0].KS_AR   [0]=MIX_KS_AR(KS,AR);
+	fmb.inst[0].AMON_DR [0]=MIX_AMON_DR(AMON,DR);
+	fmb.inst[0].SR      [0]=SR;
+	fmb.inst[0].SL_RR   [0]=MIX_SL_RR(SL,RR);
 
 	fmb.inst[0].DT_MULTI[1]=MIX_DT_MULTI(0,1);
-	fmb.inst[0].TL      [1]=13;
+	fmb.inst[0].TL      [1]=127;
 	fmb.inst[0].KS_AR   [1]=MIX_KS_AR(0,21);
 	fmb.inst[0].AMON_DR [1]=MIX_AMON_DR(0,31);
 	fmb.inst[0].SR      [1]=0;
 	fmb.inst[0].SL_RR   [1]=MIX_SL_RR(0,10);
 
 	fmb.inst[0].DT_MULTI[2]=MIX_DT_MULTI(0,1);
-	fmb.inst[0].TL      [2]=13;
+	fmb.inst[0].TL      [2]=127;
 	fmb.inst[0].KS_AR   [2]=MIX_KS_AR(0,21);
 	fmb.inst[0].AMON_DR [2]=MIX_AMON_DR(0,31);
 	fmb.inst[0].SR      [2]=0;
 	fmb.inst[0].SL_RR   [2]=MIX_SL_RR(0,10);
 
 	fmb.inst[0].DT_MULTI[3]=MIX_DT_MULTI(0,1);
-	fmb.inst[0].TL      [3]=13;
+	fmb.inst[0].TL      [3]=127;
 	fmb.inst[0].KS_AR   [3]=MIX_KS_AR(0,21);
 	fmb.inst[0].AMON_DR [3]=MIX_AMON_DR(0,31);
 	fmb.inst[0].SR      [3]=0;
 	fmb.inst[0].SL_RR   [3]=MIX_SL_RR(0,10);
 
-	fmb.inst[0].FB_CONNECT=MIX_FB_CONNECT(7,5);
-	fmb.inst[0].LR_AMS_PMS=MIX_LR_AMS_PMS(1,1,0,0);
-
+	fmb.inst[0].FB_CONNECT=MIX_FB_CONNECT(FB,CONN);
+	fmb.inst[0].LR_AMS_PMS=MIX_LR_AMS_PMS(1,1,AMS,PMS);
 
 	// Sound BIOS refuses to write to TL for slots 1,2, and 3.
 	SND_init(SND_work);
@@ -132,20 +151,16 @@ int main(void)
 
 
 
-	for(int repeat=0; repeat<32; ++repeat)
-	{
-		BLOCK^=1;
+	WriteYM2612RegisterCH0to2(0xA4+ch,(BLOCK<<3)|((F_NUM>>8)&7));
+	WriteYM2612RegisterCH0to2(0xA0+ch,F_NUM&255);
 
-		WriteYM2612RegisterCH0to2(0xA0+ch,F_NUM&255);
-		WriteYM2612RegisterCH0to2(0xA4+ch,(BLOCK<<3)|((F_NUM>>8)&7));
+	WriteYM2612RegisterCH0to2(0x28,0xf0|(ch&7));   // Key On
 
-		WriteYM2612RegisterCH0to2(0x28,0xf0|(ch&7));   // Key On
+	clock_t clk0=clock();
+	while(clock()<clk0+CLOCKS_PER_SEC*4);
 
-		clock_t clk0=clock();
-		while(clock()<clk0+CLOCKS_PER_SEC/8);
+	WriteYM2612RegisterCH0to2(0x28,(ch&7));  // Key Off
 
-		WriteYM2612RegisterCH0to2(0x28,(ch&7));  // Key Off
-	}
 
 	SND_end();
 
