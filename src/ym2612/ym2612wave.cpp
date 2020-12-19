@@ -615,7 +615,23 @@ void YM2612::KeyOn(unsigned int chNum,unsigned int slotFlags)
 	// which doesn't make sense.
 	// SEGA Genesis Software Manaual tells KC is just top 5 bits of BLOCK|F_NUM2.
 	// Which makes more sense.
-	unsigned int KC=(ch.BLOCK<<2)|((ch.F_NUM>>9)&3);
+
+	// Measurement taken from FM TOWNS 2MX gave a conclusion:
+	//   NOTE=(N4<<1)|N3
+	//   N4=F11
+	//   N3=F11&(F10|F9|F8)
+	// F11 Highest bit of F_NUMBER
+	// F10 Second highest bit of F_NUMBER
+	// F9  Third highest bit of F_NUMBER
+	// F8  Fourth highest bit of F_NUMBER
+
+	// YAMAHA official manual for YM2608 Section 2-4-1-A, and FM Towns Technical Databook suggests:
+	//    N3=(F11&(F10|F9|F8))|((~F11)&F10&F9&F8)
+	// However, the actual YM2612 didn't show any contribution from ((~F11)&F10&F9&F8).
+
+	unsigned int N4=((ch.F_NUM>>9)&2);
+	unsigned int N3=((ch.F_NUM>>10)&((ch.F_NUM>>9)|(ch.F_NUM>>8)|(ch.F_NUM>>7)))&1;
+	unsigned int KC=(ch.BLOCK<<2)|N4|N3;
 
 
 	for(int i=0; i<NUM_SLOTS; ++i)
