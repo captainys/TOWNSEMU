@@ -231,10 +231,11 @@ void YM2612::MakeAttackProfileTable(void)
 	// 
 	// From there, I can calculate t.  And then values for the table.
 
-	double t=pow(1.0/4096.0,1.0/4095.0);
-	for(int i=0; i<4096; i++)
+	const double lastErr=0.014;
+	const double t=pow(lastErr,1.0/4096.0);
+	for(int i=0; i<4096; ++i)
 	{
-		double y=1.0-pow(t,(double)i);
+		double y=(1.0-pow(t,(double)i))/(1.0-lastErr);
 		attackExp[i]=(int)(y*4096);
 	}
 
