@@ -5,12 +5,7 @@
 
 #include "snd.h"
 
-
-
-
 char SND_work[SndWorkSize];
-
-
 
 struct FMInst
 {
@@ -40,7 +35,6 @@ void ClearFMB(struct FMB *fmbPtr)
 	}
 }
 
-
 #define MIX_DT_MULTI(DT,MULTI) ((((DT)&7)<<4)|(MULTI&15))
 #define MIX_KS_AR(KS,AR) (((KS&3)<<6)|(AR&31))
 #define MIX_AMON_DR(AMON,DR) (((AMON&1)<<7)|(DR&31))
@@ -49,7 +43,6 @@ void ClearFMB(struct FMB *fmbPtr)
 #define MIX_LR_AMS_PMS(L,R,AMS,PMS) (((L&1)<<7)|((R&1)<<6)|((AMS&3)<<4)|(PMS&7))
 
 static struct FMB fmb;
-
 
 #define IO_YM2612_STATUS		0x4D8
 #define IO_YM2612_ADDR_CH0_2	0x4D8
@@ -149,15 +142,13 @@ int main(int argc,char *argv[])
 	WriteYM2612RegisterCH0to2(0xB0+ch,fmb.inst[instNum].FB_CONNECT);
 	WriteYM2612RegisterCH0to2(0xB4+ch,fmb.inst[instNum].LR_AMS_PMS);
 
-
-
 	WriteYM2612RegisterCH0to2(0xA4+ch,(BLOCK<<3)|((F_NUM>>8)&7));
 	WriteYM2612RegisterCH0to2(0xA0+ch,F_NUM&255);
 
 	WriteYM2612RegisterCH0to2(0x28,0xf0|(ch&7));   // Key On
 
 	clock_t clk0=clock();
-	while(clock()<clk0+CLOCKS_PER_SEC*4);
+	while(clock()<clk0+CLOCKS_PER_SEC*6);
 
 	WriteYM2612RegisterCH0to2(0x28,(ch&7));  // Key Off
 
