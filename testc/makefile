@@ -299,6 +299,13 @@ build\ymwaverr.exp : build\ymwaverr.OBJ build\io.OBJ
 	386link build\ymwaverr.obj -exe build\ymwaverr.exp @LIBS.LN -stack 16384
 
 
+build\ymwaverp.obj : ymwaverp.c
+	hcd386 ymwaverp.c -obj build\ymwaverp.OBJ
+
+build\ymwaverp.exp : build\ymwaverp.OBJ build\io.OBJ
+	386link build\ymwaverp.obj -exe build\ymwaverp.exp @LIBS.LN -stack 16384
+
+
 
 build\repeat.obj : cdrom\repeat.asm
 	MASM cdrom\repeat.ASM build\repeat.OBJ build\repeat.LST NUL
