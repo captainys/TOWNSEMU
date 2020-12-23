@@ -115,7 +115,7 @@ void YM2612::State::Reset(void)
 	{
 		for(auto &slot : ch.slots)
 		{
-			slot.lastDb100Cache=0;
+			slot.lastDbX100Cache=0;
 		}
 	}
 	playingCh=0;

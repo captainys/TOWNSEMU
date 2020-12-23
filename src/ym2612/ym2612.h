@@ -102,16 +102,16 @@ public:
 
 		// Cache for wave-generation >>
 		mutable unsigned long long int microsecS12;  // Microsec from start of a tone by (microsec12>>12)
-		uint64_t toneDurationMicrosecS12;  // In (microsec<<12).
-		mutable unsigned int phase12;      // 5-bit phase=((phase>>12)&0x1F)
-		unsigned int phase12Step;  // Increment of phase12 per time step.
+		uint64_t toneDurationMicrosecS12;   // In (microsec<<12).
+		mutable unsigned int phaseS12;      // 5-bit phase=((phaseS12>>12)&0x1F)
+		unsigned int phaseS12Step;  // Increment of phase12 per time step.
 		unsigned int env[6];       // Envelope: Db100 scale.  0 to 9600.
 		unsigned int envDurationCache; // in milliseconds
 		unsigned int RRCache;      // Calibrated Release Rate
 		bool InReleasePhase;
 		unsigned int ReleaseStartTime,ReleaseEndTime;
-		unsigned int ReleaseStartDb100;
-		mutable unsigned int lastDb100Cache;  // 0 to 9600 scale.
+		unsigned int ReleaseStartDbX100;
+		mutable unsigned int lastDbX100Cache;  // 0 to 9600 scale.
 		// Cache for wave-generation <<
 
 		void Clear(void);
