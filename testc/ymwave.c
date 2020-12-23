@@ -1,7 +1,7 @@
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "io.h"
+#include "conio.h"
 
 #include "snd.h"
 
@@ -52,14 +52,14 @@ static struct FMB fmb;
 
 void WriteYM2612RegisterCH0to2(unsigned char reg,unsigned char data)
 {
-	while(0!=(0x80&IOReadByte(IO_YM2612_STATUS)))
+	while(0!=(0x80&inp(IO_YM2612_STATUS)))
 	{
 	}
-	IOWriteByte(IO_YM2612_ADDR_CH0_2,reg);
-	while(0!=(0x80&IOReadByte(IO_YM2612_STATUS)))
+	outp(IO_YM2612_ADDR_CH0_2,reg);
+	while(0!=(0x80&inp(IO_YM2612_STATUS)))
 	{
 	}
-	IOWriteByte(IO_YM2612_DATA_CH0_2,data);
+	outp(IO_YM2612_DATA_CH0_2,data);
 }
 
 
@@ -124,8 +124,8 @@ int main(int argc,char *argv[])
 	fmb.inst[0].FB_CONNECT=MIX_FB_CONNECT(FB,CONN);
 	fmb.inst[0].LR_AMS_PMS=MIX_LR_AMS_PMS(1,1,AMS,PMS);
 
-	// Sound BIOS refuses to write to TL for slots 1,2, and 3.
 	SND_init(SND_work);
+	// Sound BIOS refuses to write to TL for slots 1,2, and 3.
 	// SND_inst_write(0,0,(char *)&fmb);
 	// SND_inst_change(0,0);
 
@@ -147,11 +147,11 @@ int main(int argc,char *argv[])
 
 	WriteYM2612RegisterCH0to2(0x28,0xf0|(ch&7));   // Key On
 
+	// High-C clock() function returns real time.  Not useless like in UNIX.
 	clock_t clk0=clock();
 	while(clock()<clk0+CLOCKS_PER_SEC*6);
 
 	WriteYM2612RegisterCH0to2(0x28,(ch&7));  // Key Off
-
 
 	SND_end();
 
