@@ -677,8 +677,9 @@ void YM2612::KeyOn(unsigned int chNum,unsigned int slotFlags)
 			// (hertzX16*PHASE_STEPS)<<8==hertz*PHASE_STEPS*4096
 			CalculateEnvelope(slot.env,slot.RRCache,KC,slot);
 			slot.envDurationCache=slot.env[0]+slot.env[2]+slot.env[4];
-			slot.toneDurationMillisecS12=slot.envDurationCache;
-			slot.toneDurationMillisecS12<<=12;
+			slot.toneDurationMicrosecS12=slot.envDurationCache;  // In MS.
+			slot.toneDurationMicrosecS12*=1000;                  // In Microsec.
+			slot.toneDurationMicrosecS12<<=12;
 
 
 			// Observation tells that if key is turned on while the previous tone is still playing, 
@@ -906,17 +907,12 @@ long long int YM2612::MakeWaveForNSamplesTemplate(unsigned char wave[],unsigned 
 
 	unsigned int LeftANDPtn[NUM_CHANNELS];
 	unsigned int RightANDPtn[NUM_CHANNELS];
-	unsigned long long int toneDurationMicrosecS12[NUM_CHANNELS][NUM_SLOTS];
 
 	for(unsigned int chNum=0; chNum<NUM_CHANNELS; ++chNum)
 	{
 		auto &ch=state.channels[chNum];
 		LeftANDPtn[chNum]=(0!=ch.L ? ~0 : 0);
 		RightANDPtn[chNum]=(0!=ch.R ? ~0 : 0);
-		toneDurationMicrosecS12[chNum][0]=ch.slots[0].toneDurationMillisecS12*1000;
-		toneDurationMicrosecS12[chNum][1]=ch.slots[1].toneDurationMillisecS12*1000;
-		toneDurationMicrosecS12[chNum][2]=ch.slots[2].toneDurationMillisecS12*1000;
-		toneDurationMicrosecS12[chNum][3]=ch.slots[3].toneDurationMillisecS12*1000;
 	}
 
 	unsigned int i;
@@ -927,10 +923,10 @@ long long int YM2612::MakeWaveForNSamplesTemplate(unsigned char wave[],unsigned 
 		{
 			auto chNum=playingCh[j];
 			auto &ch=state.channels[chNum];
-			if(toneDurationMicrosecS12[chNum][0]<=ch.slots[0].microsecS12 &&
-			   toneDurationMicrosecS12[chNum][1]<=ch.slots[1].microsecS12 &&
-			   toneDurationMicrosecS12[chNum][2]<=ch.slots[2].microsecS12 &&
-			   toneDurationMicrosecS12[chNum][3]<=ch.slots[3].microsecS12)
+			if(ch.slots[0].toneDurationMicrosecS12<=ch.slots[0].microsecS12 &&
+			   ch.slots[1].toneDurationMicrosecS12<=ch.slots[1].microsecS12 &&
+			   ch.slots[2].toneDurationMicrosecS12<=ch.slots[2].microsecS12 &&
+			   ch.slots[3].toneDurationMicrosecS12<=ch.slots[3].microsecS12)
 			{
 				playingCh[j]=playingCh[nPlayingCh-1];
 				--nPlayingCh;

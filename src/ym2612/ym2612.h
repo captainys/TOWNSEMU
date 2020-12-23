@@ -101,8 +101,8 @@ public:
 		unsigned int SSG_EG;
 
 		// Cache for wave-generation >>
-		mutable unsigned long long int microsecS12;      // Microsec from start of a tone by (microsec12>>12)
-		unsigned long long int toneDurationMillisecS12;  // In (microsec<<12).
+		mutable unsigned long long int microsecS12;  // Microsec from start of a tone by (microsec12>>12)
+		uint64_t toneDurationMicrosecS12;  // In (microsec<<12).
 		mutable unsigned int phase12;      // 5-bit phase=((phase>>12)&0x1F)
 		unsigned int phase12Step;  // Increment of phase12 per time step.
 		unsigned int env[6];       // Envelope: Db100 scale.  0 to 9600.
