@@ -230,7 +230,6 @@ void TownsSound::ProcessSound(void)
 	{
 		if(0!=state.ym2612.state.playingCh && true!=outside_world->FMChannelPlaying())
 		{
-			state.ym2612.NextWaveAllChannels();
 			auto wav=state.ym2612.MakeWaveAllChannels(FM_MILLISEC_PER_WAVE);
 			if(true==recordFMandPCM)
 			{

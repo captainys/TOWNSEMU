@@ -270,14 +270,6 @@ private:
 
 
 public:
-	/*! 
-	*/
-	void NextWave(unsigned int chNum);
-
-	/*!
-	*/
-	void NextWaveAllChannels(void);
-
 	/*! Change channel state to RELEASE.
 	*/
 	void KeyOff(unsigned int ch,unsigned int slotFlags=SLOTFLAGS_ALL);

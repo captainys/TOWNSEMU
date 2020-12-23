@@ -1067,18 +1067,6 @@ long long int YM2612::MakeWaveForNSamples(unsigned char wave[],unsigned int nPla
 	}
 }
 
-void YM2612::NextWave(unsigned int chNum)
-{
-}
-
-void YM2612::NextWaveAllChannels(void)
-{
-	for(int chNum=0; chNum<NUM_CHANNELS; ++chNum)
-	{
-		NextWave(chNum);
-	}
-}
-
 bool YM2612::CalculateEnvelope(unsigned int env[6],unsigned int &RR,unsigned int KC,const Slot &slot) const
 {
 	KC&=31;

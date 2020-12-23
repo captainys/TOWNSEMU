@@ -55,7 +55,6 @@ bool Play(const char fName[])
 				if(0!=(ym2612.state.playingCh&(1<<chNum)) &&
 				   YSTRUE!=soundPlayer.IsPlaying(FMChannel[chNum]))
 				{
-					ym2612.NextWave(chNum);
 					auto wave=ym2612.MakeWave(chNum,time_precision_millisec);
 					FMChannel[chNum].CreateFromSigned16bitStereo(playBackRate,wave);
 					soundPlayer.PlayOneShot(FMChannel[chNum]);
