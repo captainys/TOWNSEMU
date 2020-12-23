@@ -700,8 +700,6 @@ void YM2612::KeyOn(unsigned int chNum,unsigned int slotFlags)
 			}
 			slot.lastDb100Cache=0;
 
-
-			slot.nextMicrosecS12=slot.microsecS12;
 			slot.nextPhase12=slot.phase12;
 		}
 	}
@@ -750,7 +748,8 @@ void YM2612::KeyOff(unsigned int chNum,unsigned int slotFlags)
 				//            If microsecS12 is used, it virtually skips first 20ms of release,
 				//            and the amplitude drops like a stairstep.
 				//            It is inaudible in many situations, but clearly audible in Super Daisenryaku opening.
-				slot.ReleaseStartTime=(slot.nextMicrosecS12>>12)/1000;
+				// 2020/12/23 Got rid of nextMicrosecS12.
+				slot.ReleaseStartTime=(slot.microsecS12>>12)/1000;
 				slot.ReleaseStartDb100=slot.lastDb100Cache;
 
 				uint64_t releaseTime=sustainDecayReleaseTime0to96dB[std::min<unsigned int>(slot.RRCache,63)];
@@ -907,7 +906,6 @@ long long int YM2612::MakeWaveForNSamplesTemplate(unsigned char wave[],unsigned 
 	// If microSec12=4096*microseconds, tm runs
 	//           4096000000/WAVE_SAMPLING_RATE per step
 
-	uint64_t microsec12[NUM_CHANNELS][NUM_SLOTS];
 	unsigned int phase12[NUM_CHANNELS][NUM_SLOTS];
 	unsigned int LeftANDPtn[NUM_CHANNELS];
 	unsigned int RightANDPtn[NUM_CHANNELS];
@@ -916,10 +914,6 @@ long long int YM2612::MakeWaveForNSamplesTemplate(unsigned char wave[],unsigned 
 	for(unsigned int chNum=0; chNum<NUM_CHANNELS; ++chNum)
 	{
 		auto &ch=state.channels[chNum];
-		microsec12[chNum][0]=ch.slots[0].microsecS12;
-		microsec12[chNum][1]=ch.slots[1].microsecS12;
-		microsec12[chNum][2]=ch.slots[2].microsecS12;
-		microsec12[chNum][3]=ch.slots[3].microsecS12;
 		phase12[chNum][0]=ch.slots[0].phase12;
 		phase12[chNum][1]=ch.slots[1].phase12;
 		phase12[chNum][2]=ch.slots[2].phase12;
@@ -940,10 +934,10 @@ long long int YM2612::MakeWaveForNSamplesTemplate(unsigned char wave[],unsigned 
 		{
 			auto chNum=playingCh[j];
 			auto &ch=state.channels[chNum];
-			if(toneDurationMicrosecS12[chNum][0]<=microsec12[chNum][0] &&
-			   toneDurationMicrosecS12[chNum][1]<=microsec12[chNum][1] &&
-			   toneDurationMicrosecS12[chNum][2]<=microsec12[chNum][2] &&
-			   toneDurationMicrosecS12[chNum][3]<=microsec12[chNum][3])
+			if(toneDurationMicrosecS12[chNum][0]<=ch.slots[0].microsecS12 &&
+			   toneDurationMicrosecS12[chNum][1]<=ch.slots[1].microsecS12 &&
+			   toneDurationMicrosecS12[chNum][2]<=ch.slots[2].microsecS12 &&
+			   toneDurationMicrosecS12[chNum][3]<=ch.slots[3].microsecS12)
 			{
 				playingCh[j]=playingCh[nPlayingCh-1];
 				--nPlayingCh;
@@ -1023,7 +1017,14 @@ long long int YM2612::MakeWaveForNSamplesTemplate(unsigned char wave[],unsigned 
 			// Very genious solution it is.
 
 			auto s0Out=(ch.lastSlot0Out[1]+ch.lastSlot0Out[0])/2;
-			auto ampl=CalculateAmplitude(chNum,microsec12[chNum],phase12[chNum],AMSAdjustment,s0Out);
+			const uint64_t microsecS12[4]=
+			{
+				ch.slots[0].microsecS12,
+				ch.slots[1].microsecS12,
+				ch.slots[2].microsecS12,
+				ch.slots[3].microsecS12,
+			};
+			auto ampl=CalculateAmplitude(chNum,microsecS12,phase12[chNum],AMSAdjustment,s0Out);
 			ch.lastSlot0Out[1]=ch.lastSlot0Out[0];
 			ch.lastSlot0Out[0]=s0Out;
 
@@ -1034,10 +1035,10 @@ long long int YM2612::MakeWaveForNSamplesTemplate(unsigned char wave[],unsigned 
 			phase12[chNum][1]+=ch.slots[1].phase12Step+PMSAdjustment[1];
 			phase12[chNum][2]+=ch.slots[2].phase12Step+PMSAdjustment[2];
 			phase12[chNum][3]+=ch.slots[3].phase12Step+PMSAdjustment[3];
-			microsec12[chNum][0]+=microsec12Step;
-			microsec12[chNum][1]+=microsec12Step;
-			microsec12[chNum][2]+=microsec12Step;
-			microsec12[chNum][3]+=microsec12Step;
+			ch.slots[0].microsecS12+=microsec12Step;
+			ch.slots[1].microsecS12+=microsec12Step;
+			ch.slots[2].microsecS12+=microsec12Step;
+			ch.slots[3].microsecS12+=microsec12Step;
 		}
 		WordOp_Set(wave+i*4  ,leftOut);
 		WordOp_Set(wave+i*4+2,rightOut);
@@ -1048,10 +1049,6 @@ long long int YM2612::MakeWaveForNSamplesTemplate(unsigned char wave[],unsigned 
 	for(unsigned int chNum=0; chNum<NUM_CHANNELS; ++chNum)
 	{
 		auto &ch=state.channels[chNum];
-		ch.slots[0].nextMicrosecS12=microsec12[chNum][0];
-		ch.slots[1].nextMicrosecS12=microsec12[chNum][1];
-		ch.slots[2].nextMicrosecS12=microsec12[chNum][2];
-		ch.slots[3].nextMicrosecS12=microsec12[chNum][3];
 		ch.slots[0].nextPhase12=phase12[chNum][0];
 		ch.slots[1].nextPhase12=phase12[chNum][1];
 		ch.slots[2].nextPhase12=phase12[chNum][2];
@@ -1084,10 +1081,6 @@ void YM2612::NextWave(unsigned int chNum)
 	auto &ch=state.channels[chNum];
 	if(CH_PLAYING==ch.playState)
 	{
-		ch.slots[0].microsecS12=ch.slots[0].nextMicrosecS12;
-		ch.slots[1].microsecS12=ch.slots[1].nextMicrosecS12;
-		ch.slots[2].microsecS12=ch.slots[2].nextMicrosecS12;
-		ch.slots[3].microsecS12=ch.slots[3].nextMicrosecS12;
 		ch.slots[0].phase12=ch.slots[0].nextPhase12;
 		ch.slots[1].phase12=ch.slots[1].nextPhase12;
 		ch.slots[2].phase12=ch.slots[2].nextPhase12;

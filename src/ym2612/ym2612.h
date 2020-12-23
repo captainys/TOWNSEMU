@@ -101,8 +101,7 @@ public:
 		unsigned int SSG_EG;
 
 		// Cache for wave-generation >>
-		unsigned long long int microsecS12;      // Microsec from start of a tone by (microsec12>>12)
-		mutable unsigned long long int nextMicrosecS12; // Cached in MakeWave.
+		mutable unsigned long long int microsecS12;      // Microsec from start of a tone by (microsec12>>12)
 		unsigned long long int toneDurationMillisecS12;  // In (microsec<<12).
 		unsigned int phase12;      // 5-bit phase=((phase>>12)&0x1F)
 		unsigned int phase12Step;  // Increment of phase12 per time step.
