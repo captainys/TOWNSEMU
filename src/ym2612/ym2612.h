@@ -103,9 +103,8 @@ public:
 		// Cache for wave-generation >>
 		mutable unsigned long long int microsecS12;      // Microsec from start of a tone by (microsec12>>12)
 		unsigned long long int toneDurationMillisecS12;  // In (microsec<<12).
-		unsigned int phase12;      // 5-bit phase=((phase>>12)&0x1F)
+		mutable unsigned int phase12;      // 5-bit phase=((phase>>12)&0x1F)
 		unsigned int phase12Step;  // Increment of phase12 per time step.
-		mutable unsigned int nextPhase12; // Cached in MakeWave
 		unsigned int env[6];       // Envelope: Db100 scale.  0 to 9600.
 		unsigned int envDurationCache; // in milliseconds
 		unsigned int RRCache;      // Calibrated Release Rate

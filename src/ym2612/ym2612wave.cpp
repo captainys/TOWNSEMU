@@ -699,8 +699,6 @@ void YM2612::KeyOn(unsigned int chNum,unsigned int slotFlags)
 				slot.microsecS12=(slot.env[0]*scale/4096)*1000<<12;
 			}
 			slot.lastDb100Cache=0;
-
-			slot.nextPhase12=slot.phase12;
 		}
 	}
 
@@ -906,7 +904,6 @@ long long int YM2612::MakeWaveForNSamplesTemplate(unsigned char wave[],unsigned 
 	// If microSec12=4096*microseconds, tm runs
 	//           4096000000/WAVE_SAMPLING_RATE per step
 
-	unsigned int phase12[NUM_CHANNELS][NUM_SLOTS];
 	unsigned int LeftANDPtn[NUM_CHANNELS];
 	unsigned int RightANDPtn[NUM_CHANNELS];
 	unsigned long long int toneDurationMicrosecS12[NUM_CHANNELS][NUM_SLOTS];
@@ -914,10 +911,6 @@ long long int YM2612::MakeWaveForNSamplesTemplate(unsigned char wave[],unsigned 
 	for(unsigned int chNum=0; chNum<NUM_CHANNELS; ++chNum)
 	{
 		auto &ch=state.channels[chNum];
-		phase12[chNum][0]=ch.slots[0].phase12;
-		phase12[chNum][1]=ch.slots[1].phase12;
-		phase12[chNum][2]=ch.slots[2].phase12;
-		phase12[chNum][3]=ch.slots[3].phase12;
 		LeftANDPtn[chNum]=(0!=ch.L ? ~0 : 0);
 		RightANDPtn[chNum]=(0!=ch.R ? ~0 : 0);
 		toneDurationMicrosecS12[chNum][0]=ch.slots[0].toneDurationMillisecS12*1000;
@@ -1024,17 +1017,24 @@ long long int YM2612::MakeWaveForNSamplesTemplate(unsigned char wave[],unsigned 
 				ch.slots[2].microsecS12,
 				ch.slots[3].microsecS12,
 			};
-			auto ampl=CalculateAmplitude(chNum,microsecS12,phase12[chNum],AMSAdjustment,s0Out);
+			const unsigned int phaseS12[4]=
+			{
+				ch.slots[0].phase12,
+				ch.slots[1].phase12,
+				ch.slots[2].phase12,
+				ch.slots[3].phase12,
+			};
+			auto ampl=CalculateAmplitude(chNum,microsecS12,phaseS12,AMSAdjustment,s0Out);
 			ch.lastSlot0Out[1]=ch.lastSlot0Out[0];
 			ch.lastSlot0Out[0]=s0Out;
 
 			leftOut+=(LeftANDPtn[chNum]&ampl);
 			rightOut+=(RightANDPtn[chNum]&ampl);
 
-			phase12[chNum][0]+=ch.slots[0].phase12Step+PMSAdjustment[0];
-			phase12[chNum][1]+=ch.slots[1].phase12Step+PMSAdjustment[1];
-			phase12[chNum][2]+=ch.slots[2].phase12Step+PMSAdjustment[2];
-			phase12[chNum][3]+=ch.slots[3].phase12Step+PMSAdjustment[3];
+			ch.slots[0].phase12+=ch.slots[0].phase12Step+PMSAdjustment[0];
+			ch.slots[1].phase12+=ch.slots[1].phase12Step+PMSAdjustment[1];
+			ch.slots[2].phase12+=ch.slots[2].phase12Step+PMSAdjustment[2];
+			ch.slots[3].phase12+=ch.slots[3].phase12Step+PMSAdjustment[3];
 			ch.slots[0].microsecS12+=microsec12Step;
 			ch.slots[1].microsecS12+=microsec12Step;
 			ch.slots[2].microsecS12+=microsec12Step;
@@ -1045,15 +1045,6 @@ long long int YM2612::MakeWaveForNSamplesTemplate(unsigned char wave[],unsigned 
 	}
 
 	std::memset(wave+i*4,0,(numSamples-i)*4);
-
-	for(unsigned int chNum=0; chNum<NUM_CHANNELS; ++chNum)
-	{
-		auto &ch=state.channels[chNum];
-		ch.slots[0].nextPhase12=phase12[chNum][0];
-		ch.slots[1].nextPhase12=phase12[chNum][1];
-		ch.slots[2].nextPhase12=phase12[chNum][2];
-		ch.slots[3].nextPhase12=phase12[chNum][3];
-	}
 
 // std::cout << (microsec12>>12) << "us " << std::endl;
 // std::cout << phase12[0] << "," << (phase12[0]>>12)/PHASE_STEPS << "cycles" << std::endl;
@@ -1078,14 +1069,6 @@ long long int YM2612::MakeWaveForNSamples(unsigned char wave[],unsigned int nPla
 
 void YM2612::NextWave(unsigned int chNum)
 {
-	auto &ch=state.channels[chNum];
-	if(CH_PLAYING==ch.playState)
-	{
-		ch.slots[0].phase12=ch.slots[0].nextPhase12;
-		ch.slots[1].phase12=ch.slots[1].nextPhase12;
-		ch.slots[2].phase12=ch.slots[2].nextPhase12;
-		ch.slots[3].phase12=ch.slots[3].nextPhase12;
-	}
 }
 
 void YM2612::NextWaveAllChannels(void)
