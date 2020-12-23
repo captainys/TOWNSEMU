@@ -145,8 +145,7 @@ public:
 
 		// Cache for wave-generation >>
 		unsigned int playState;
-		int lastSlot0Out[2];
-		mutable int lastSlot0OutForNextWave[2];           // For calculating feedback.
+		mutable int lastSlot0Out[2];
 		// Cache for wave-generation <<
 
 		void Clear();
