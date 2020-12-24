@@ -105,7 +105,7 @@ public:
 		uint64_t toneDurationMicrosecS12;   // In (microsec<<12).
 		mutable unsigned int phaseS12;      // 5-bit phase=((phaseS12>>12)&0x1F)
 		unsigned int phaseS12Step;  // Increment of phase12 per time step.
-		unsigned int env[6];       // Envelope: Db100 scale.  0 to 9600.
+		unsigned int env[6];       // Envelope is in Db100 scale.  0 to 9600.  Time is (microsec>>10) (=microsecS12>>22)
 		unsigned int envDurationCache; // in milliseconds
 		unsigned int RRCache;      // Calibrated Release Rate
 		bool InReleasePhase;

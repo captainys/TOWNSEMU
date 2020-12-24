@@ -677,9 +677,8 @@ void YM2612::KeyOn(unsigned int chNum,unsigned int slotFlags)
 			// (hertzX16*PHASE_STEPS)<<8==hertz*PHASE_STEPS*4096
 			CalculateEnvelope(slot.env,slot.RRCache,KC,slot);
 			slot.envDurationCache=slot.env[0]+slot.env[2]+slot.env[4];
-			slot.toneDurationMicrosecS12=slot.envDurationCache;  // In MS.
-			slot.toneDurationMicrosecS12*=1000;                  // In Microsec.
-			slot.toneDurationMicrosecS12<<=12;
+			slot.toneDurationMicrosecS12=slot.envDurationCache;  // In Microsec/1024
+			slot.toneDurationMicrosecS12<<=(12+10);
 
 
 			// Observation tells that if key is turned on while the previous tone is still playing, 
@@ -692,12 +691,12 @@ void YM2612::KeyOn(unsigned int chNum,unsigned int slotFlags)
 			}
 			else if(slot.env[1]<=slot.lastDbX100Cache)
 			{
-				slot.microsecS12=(slot.env[0]*1000)<<12;
+				slot.microsecS12=(slot.env[0]<<(12+10));
 			}
 			else
 			{
 				unsigned int scale=attackExpInverse[4096*slot.lastDbX100Cache/slot.env[1]];
-				slot.microsecS12=(slot.env[0]*scale/4096)*1000<<12;
+				slot.microsecS12=(slot.env[0]*scale/4096)<<(12+10);
 			}
 			slot.lastDbX100Cache=0;
 		}
@@ -748,12 +747,12 @@ void YM2612::KeyOff(unsigned int chNum,unsigned int slotFlags)
 				//            and the amplitude drops like a stairstep.
 				//            It is inaudible in many situations, but clearly audible in Super Daisenryaku opening.
 				// 2020/12/23 Got rid of nextMicrosecS12.
-				slot.ReleaseStartTime=(slot.microsecS12>>12)/1000;
+				slot.ReleaseStartTime=(slot.microsecS12>>(12+10));
 				slot.ReleaseStartDbX100=slot.lastDbX100Cache;
 
 				uint64_t releaseTime=sustainDecayReleaseTime0to96dB[std::min<unsigned int>(slot.RRCache,63)];
 				releaseTime*=slot.lastDbX100Cache;
-				releaseTime/=960000;
+				releaseTime/=(9600*1024/10);
 				slot.ReleaseEndTime=slot.ReleaseStartTime+releaseTime;
 			#ifdef YM2612_DEBUGOUTPUT
 				std::cout << "Release Time " << releaseTime << "ms  " << 
@@ -778,7 +777,7 @@ void YM2612::CheckToneDone(unsigned int chNum)
 		for(int i=0; i<connectionToOutputSlots[ch.CONNECT].nOutputSlots; ++i)
 		{
 			auto &slot=ch.slots[connectionToOutputSlots[ch.CONNECT].slots[i]];
-			auto millisec=(slot.microsecS12>>12)/1000;
+			auto millisec=(slot.microsecS12>>(10+12));
 			if(true==slot.InReleasePhase && millisec<slot.ReleaseEndTime)
 			{
 				slotStillPlaying=true;
@@ -1113,14 +1112,14 @@ bool YM2612::CalculateEnvelope(unsigned int env[6],unsigned int &RR,unsigned int
 	// The amplitude change is not linear, but I approximate by a linear function.  I may come back to the envelope
 	// generation once I get a good enough approximation.
 	unsigned long long int mul;
-	env[0]=attackTime0to96dB[AR]/100;
+	env[0]=(attackTime0to96dB[AR]*10)>>10;  // *10 to make it microsed, and then divide by 1024.
 	mul=SLdB100;
 	mul*=sustainDecayReleaseTime0to96dB[DR];
-	mul/=960000;
+	mul/=(9600*1024/10);
 	env[2]=(unsigned int)mul;
 	mul=9600-SLdB100;
 	mul*=sustainDecayReleaseTime0to96dB[SR];
-	mul/=960000;
+	mul/=(9600*1024/10);
 	env[4]=(unsigned int)mul;
 
 	// ?
@@ -1184,10 +1183,10 @@ int YM2612::CalculateAmplitude(int chNum,const uint64_t timeInMicrosecS12[NUM_SL
 
 	unsigned int timeInMS[NUM_SLOTS]=
 	{
-		(unsigned int)((timeInMicrosecS12[0]>>12)/1000),
-		(unsigned int)((timeInMicrosecS12[1]>>12)/1000),
-		(unsigned int)((timeInMicrosecS12[2]>>12)/1000),
-		(unsigned int)((timeInMicrosecS12[3]>>12)/1000),
+		(unsigned int)(timeInMicrosecS12[0]>>(12+10)),
+		(unsigned int)(timeInMicrosecS12[1]>>(12+10)),
+		(unsigned int)(timeInMicrosecS12[2]>>(12+10)),
+		(unsigned int)(timeInMicrosecS12[3]>>(12+10)),
 	};
 
 	#define SLOTOUTEV_Db_0(phaseShift) ((true!=slotActive[0] ? 0 : ch.slots[0].EnvelopedOutputDb((slotPhaseS12[0]>>12),phaseShift,timeInMS[0],ch.FB,lastSlot0Out))*AMS4096[0]/4096)
