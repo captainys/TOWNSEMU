@@ -106,7 +106,7 @@ public:
 		mutable unsigned int phaseS12;      // 5-bit phase=((phaseS12>>12)&0x1F)
 		unsigned int phaseS12Step;  // Increment of phase12 per time step.
 		unsigned int env[6];       // Envelope is in Db100 scale.  0 to 9600.  Time is (microsec>>10) (=microsecS12>>22)
-		unsigned int envDurationCache; // in milliseconds
+		unsigned int envDurationCache; // in (microsec>>10)
 		unsigned int RRCache;      // Calibrated Release Rate
 		bool InReleasePhase;
 		unsigned int ReleaseStartTime,ReleaseEndTime;
@@ -120,12 +120,11 @@ public:
 		// phaseShift is input from the upstream slot.
 		inline int UnscaledOutput(int phase,int phaseShift) const;
 		inline int UnscaledOutput(int phase,int phaseShift,unsigned int FB,int lastSlot0Out) const;
-		// Apply Envelope as Db.  Output is amplitude 4096 scale.
-		inline int EnvelopedOutputDb(int phase,int phaseShift,unsigned int timeInMS,unsigned int FB,int lastSlot0Out) const;
-		inline int EnvelopedOutputDb(int phase,int phaseShift,unsigned int timeInMS) const;
-		// Apply Envelope as Linear (9600 as 1.0).  Output is amplitude 4096 scale.
-		inline int EnvelopedOutputLn(int phase,int phaseShift,unsigned int timeInMS,unsigned int FB,int lastSlot0Out) const;
-		inline int EnvelopedOutputLn(int phase,int phaseShift,unsigned int timeInMS) const;
+
+		// Interpolate Envelope as Db.  Output is amplitude 4096 scale.
+		// Time input is close to ms, but it is actually (microsec>>10).
+		inline int EnvelopedOutputDbToAmpl(int phase,int phaseShift,unsigned int timeInMS,unsigned int FB,int lastSlot0Out) const;
+		inline int EnvelopedOutputDbToAmpl(int phase,int phaseShift,unsigned int timeInMS) const;
 		// DB scale: 0 to 9600
 		inline int InterpolateEnvelope(unsigned int timeInMS) const;
 
