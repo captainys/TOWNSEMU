@@ -1323,7 +1323,7 @@ void i486DX::Push(Memory &mem,unsigned int operandSize,unsigned int value)
 		{
 			cpputil::PutWord(accessPtr,value);
 		}
-		else if(32==operandSize)
+		else // if(32==operandSize)
 		{
 			cpputil::PutDword(accessPtr,value);
 		}
@@ -1337,7 +1337,7 @@ void i486DX::Push(Memory &mem,unsigned int operandSize,unsigned int value)
 	{
 		StoreWord(mem,addressSize,state.SS(),ESP,value);
 	}
-	else if(32==operandSize)
+	else // if(32==operandSize)
 	{
 		StoreDword(mem,addressSize,state.SS(),ESP,value);
 	}
@@ -1360,7 +1360,7 @@ unsigned int i486DX::Pop(Memory &mem,unsigned int operandSize)
 		{
 			return cpputil::GetWord(accessPtr);
 		}
-		else if(32==operandSize)
+		else // if(32==operandSize)
 		{
 			return cpputil::GetDword(accessPtr);
 		}
@@ -1374,7 +1374,7 @@ unsigned int i486DX::Pop(Memory &mem,unsigned int operandSize)
 		value=FetchWord(addressSize,state.SS(),ESP,mem);
 		ESP+=2;
 	}
-	else if(32==operandSize)
+	else // if(32==operandSize)
 	{
 		value=FetchDword(addressSize,state.SS(),ESP,mem);
 		ESP+=4;
@@ -1400,7 +1400,7 @@ void i486DX::Push(Memory &mem,unsigned int operandSize,uint32_t firstPush,uint32
 			cpputil::PutWord(accessPtr+2,firstPush);
 			cpputil::PutWord(accessPtr  ,secondPush);
 		}
-		else if(32==operandSize)
+		else // if(32==operandSize)
 		{
 			cpputil::PutDword(accessPtr+4,firstPush);
 			cpputil::PutDword(accessPtr  ,secondPush);
@@ -1413,7 +1413,7 @@ void i486DX::Push(Memory &mem,unsigned int operandSize,uint32_t firstPush,uint32
 		StoreWord(mem,addressSize,state.SS(),ESP+2,firstPush);
 		StoreWord(mem,addressSize,state.SS(),ESP  ,secondPush);
 	}
-	else if(32==operandSize)
+	else // if(32==operandSize)
 	{
 		StoreDword(mem,addressSize,state.SS(),ESP+4,firstPush);
 		StoreDword(mem,addressSize,state.SS(),ESP  ,secondPush);
@@ -1435,7 +1435,7 @@ void i486DX::Pop(uint32_t &firstPop,uint32_t &secondPop,Memory &mem,unsigned int
 			firstPop=cpputil::GetWord(accessPtr);
 			secondPop=cpputil::GetWord(accessPtr+2);
 		}
-		else if(32==operandSize)
+		else // if(32==operandSize)
 		{
 			firstPop=cpputil::GetDword(accessPtr);
 			secondPop=cpputil::GetDword(accessPtr+4);
@@ -1450,7 +1450,7 @@ void i486DX::Pop(uint32_t &firstPop,uint32_t &secondPop,Memory &mem,unsigned int
 		secondPop=FetchWord(addressSize,state.SS(),ESP+2,mem);
 		ESP+=4;
 	}
-	else if(32==operandSize)
+	else // if(32==operandSize)
 	{
 		firstPop=FetchDword(addressSize,state.SS(),ESP,mem);
 		secondPop=FetchDword(addressSize,state.SS(),ESP+4,mem);
@@ -1477,7 +1477,7 @@ void i486DX::Push(Memory &mem,unsigned int operandSize,uint32_t firstPush,uint32
 			cpputil::PutWord(accessPtr+2,secondPush);
 			cpputil::PutWord(accessPtr  ,thirdPush);
 		}
-		else if(32==operandSize)
+		else // if(32==operandSize)
 		{
 			cpputil::PutDword(accessPtr+8,firstPush);
 			cpputil::PutDword(accessPtr+4,secondPush);
@@ -1492,7 +1492,7 @@ void i486DX::Push(Memory &mem,unsigned int operandSize,uint32_t firstPush,uint32
 		StoreWord(mem,addressSize,state.SS(),ESP+2,secondPush);
 		StoreWord(mem,addressSize,state.SS(),ESP  ,thirdPush);
 	}
-	else if(32==operandSize)
+	else // if(32==operandSize)
 	{
 		StoreDword(mem,addressSize,state.SS(),ESP+8,firstPush);
 		StoreDword(mem,addressSize,state.SS(),ESP+4,secondPush);
@@ -1516,7 +1516,7 @@ void i486DX::Pop(uint32_t &firstPop,uint32_t &secondPop,uint32_t &thirdPop,Memor
 			secondPop=cpputil::GetWord(accessPtr+2);
 			thirdPop=cpputil::GetWord(accessPtr+4);
 		}
-		else if(32==operandSize)
+		else // if(32==operandSize)
 		{
 			firstPop=cpputil::GetDword(accessPtr);
 			secondPop=cpputil::GetDword(accessPtr+4);
@@ -1533,7 +1533,7 @@ void i486DX::Pop(uint32_t &firstPop,uint32_t &secondPop,uint32_t &thirdPop,Memor
 		thirdPop=FetchWord(addressSize,state.SS(),ESP+4,mem);
 		ESP+=6;
 	}
-	else if(32==operandSize)
+	else // if(32==operandSize)
 	{
 		firstPop=FetchDword(addressSize,state.SS(),ESP,mem);
 		secondPop=FetchDword(addressSize,state.SS(),ESP+4,mem);

@@ -33,7 +33,7 @@ private:
 public:
 	enum
 	{
-		NANOSECONDS_PER_TIME_SYNC=1000000,
+		NANOSECONDS_PER_TIME_SYNC=    1000000, // 1ms
 	};
 
 	enum

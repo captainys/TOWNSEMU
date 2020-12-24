@@ -98,7 +98,11 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world,class Tow
 			renderingThread->CheckImageReady(*townsPtr,*outside_world);
 
 			outside_world->ProcessAppSpecific(*townsPtr);
-			outside_world->DevicePolling(*townsPtr);
+			if(townsPtr->state.nextDevicePollingTime<townsPtr->state.cpuTime)
+			{
+				outside_world->DevicePolling(*townsPtr);
+				townsPtr->state.nextDevicePollingTime=townsPtr->state.cpuTime+FMTowns::DEVICE_POLLING_INTERVAL;
+			}
 			townsPtr->eventLog.Interval(*townsPtr);
 			if(true==townsPtr->CheckAbort() || outside_world->PauseKeyPressed())
 			{

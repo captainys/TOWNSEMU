@@ -66,6 +66,8 @@ public:
 	{
 		FREQUENCY_DEFAULT=25,                // MHz
 		FAST_DEVICE_POLLING_INTERVAL=10000,  // Nano-seconds
+		DEVICE_POLLING_INTERVAL=   8000000,  // 8ms
+
 		RESET_REASON_SOFTWARE=1,
 		RESET_REASON_CPU=2,
 	};
@@ -84,6 +86,8 @@ public:
 		    I think 64-bit is long enough.  So, I make it signed int.
 		*/
 		long long int townsTime;
+
+		int64_t nextDevicePollingTime=0;
 
 		/*! CPU time is calculated from the clock.
 		*/

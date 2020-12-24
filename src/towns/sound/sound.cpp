@@ -260,7 +260,7 @@ void TownsSound::ProcessSound(void)
 			state.rf5c68.MakeWaveForNumSamples(wave.data(),numSamples);
 			if(true==recordFMandPCM)
 			{
-				FMrecording.insert(PCMrecording.end(),wave.begin(),wave.end());
+				PCMrecording.insert(PCMrecording.end(),wave.begin(),wave.end());
 			}
 			outside_world->PCMPlay(wave);
 		}
