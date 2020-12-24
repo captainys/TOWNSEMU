@@ -4300,14 +4300,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				{
 					int AL=GetAL();
 					int OP=value.byteData[0];
-					if(0!=(AL&0x80))
-					{
-						AL-=0x100;
-					}
-					if(0!=(OP&0x80))
-					{
-						OP-=0x100;
-					}
+					AL=(AL&0x7F)-(AL&0x80);
+					OP=(OP&0x7F)-(OP&0x80);
 					auto imul=AL*OP;
 					SetAX(imul&0xFFFF);
 					if(0==(imul&0xFF80) || 0xFF80==(imul&0xFF80))
@@ -4359,15 +4353,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				else
 				{
 					int ax=GetAX();
-					if(0!=(0x8000&ax))
-					{
-						ax-=0x10000;
-					}
+					ax=(0x7FFF&ax)-(0x8000&ax);
 					int rm8=value.byteData[0];
-					if(0!=(rm8&0x80))
-					{
-						rm8-=0x100;
-					}
+					rm8=(rm8&0x7F)-(rm8&0x80);
+
 					int quo=ax/rm8;
 					int rem=ax%rm8;
 					quo=(quo+0x10000)&0xff;
@@ -4603,10 +4592,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					clocksPassed=24;
 
 					int DXAX=GetDX();
-					if(0!=(0x8000&DXAX))
-					{
-						DXAX-=0x10000LL;
-					}
+					DXAX=(DXAX&0x7FFF)-(DXAX&0x8000);
 					DXAX<<=inst.operandSize;
 					DXAX|=GetAX();
 
@@ -4621,10 +4607,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					clocksPassed=40;
 
 					long long int EDXEAX=GetEDX();
-					if(0!=(0x80000000&EDXEAX))
-					{
-						EDXEAX-=0x100000000LL;
-					}
+					EDXEAX=(EDXEAX&0x7FFFFFFF)-(EDXEAX&0x80000000);
 					EDXEAX<<=32;
 					EDXEAX|=GetEAX();
 
