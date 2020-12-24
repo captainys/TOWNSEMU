@@ -866,6 +866,14 @@ public:
 			}
 		}
 	}
+	static inline const int AMSMul(const int AMS)
+	{
+		return AMS;
+	}
+	static inline constexpr int AMSDiv(void)
+	{
+		return 4096;
+	}
 };
 
 class YM2612::WithoutLFO
@@ -873,6 +881,14 @@ class YM2612::WithoutLFO
 public:
 	static inline void CalculateLFO(int AMSAdjustment[4],int PMSAdjustment[4],unsigned int FREQCTRL,const Channel &ch)
 	{
+	}
+	static inline constexpr int AMSMul(const int)
+	{
+		return 1;
+	}
+	static inline constexpr int AMSDiv(void)
+	{
+		return 1;
 	}
 };
 
@@ -1003,7 +1019,7 @@ long long int YM2612::MakeWaveForNSamplesTemplate(unsigned char wave[],unsigned 
 				ch.slots[2].phaseS12,
 				ch.slots[3].phaseS12,
 			};
-			auto ampl=CalculateAmplitude(chNum,microsecS12,phaseS12,AMSAdjustment,s0Out);
+			auto ampl=CalculateAmplitude<LFOClass>(chNum,microsecS12,phaseS12,AMSAdjustment,s0Out);
 			ch.lastSlot0Out[1]=ch.lastSlot0Out[0];
 			ch.lastSlot0Out[0]=s0Out;
 
@@ -1149,6 +1165,7 @@ bool YM2612::CalculateEnvelope(unsigned int env[6],unsigned int &RR,unsigned int
 	return true;
 }
 
+template <class LFOClass>
 int YM2612::CalculateAmplitude(int chNum,const uint64_t timeInMicrosecS12[NUM_SLOTS],const unsigned int slotPhaseS12[NUM_SLOTS],const int AMS4096[4],int &lastSlot0Out) const
 {
 	if(true==channelMute[chNum])
@@ -1173,10 +1190,10 @@ int YM2612::CalculateAmplitude(int chNum,const uint64_t timeInMicrosecS12[NUM_SL
 		(unsigned int)(timeInMicrosecS12[3]>>(12+10)),
 	};
 
-	#define SLOTOUTEV_Db_0(phaseShift) ((true!=slotActive[0] ? 0 : ch.slots[0].EnvelopedOutputDbToAmpl((slotPhaseS12[0]>>12),phaseShift,timeInMS[0],ch.FB,lastSlot0Out))*AMS4096[0]/4096)
-	#define SLOTOUTEV_Db_1(phaseShift) ((true!=slotActive[1] ? 0 : ch.slots[1].EnvelopedOutputDbToAmpl((slotPhaseS12[1]>>12),phaseShift,timeInMS[1]))*AMS4096[1]/4096)
-	#define SLOTOUTEV_Db_2(phaseShift) ((true!=slotActive[2] ? 0 : ch.slots[2].EnvelopedOutputDbToAmpl((slotPhaseS12[2]>>12),phaseShift,timeInMS[2]))*AMS4096[2]/4096)
-	#define SLOTOUTEV_Db_3(phaseShift) ((true!=slotActive[3] ? 0 : ch.slots[3].EnvelopedOutputDbToAmpl((slotPhaseS12[3]>>12),phaseShift,timeInMS[3]))*AMS4096[3]/4096)
+	#define SLOTOUTEV_Db_0(phaseShift) ((true!=slotActive[0] ? 0 : ch.slots[0].EnvelopedOutputDbToAmpl((slotPhaseS12[0]>>12),phaseShift,timeInMS[0],ch.FB,lastSlot0Out))*LFOClass::AMSMul(AMS4096[0])/LFOClass::AMSDiv())
+	#define SLOTOUTEV_Db_1(phaseShift) ((true!=slotActive[1] ? 0 : ch.slots[1].EnvelopedOutputDbToAmpl((slotPhaseS12[1]>>12),phaseShift,timeInMS[1]))*LFOClass::AMSMul(AMS4096[1])/LFOClass::AMSDiv())
+	#define SLOTOUTEV_Db_2(phaseShift) ((true!=slotActive[2] ? 0 : ch.slots[2].EnvelopedOutputDbToAmpl((slotPhaseS12[2]>>12),phaseShift,timeInMS[2]))*LFOClass::AMSMul(AMS4096[2])/LFOClass::AMSDiv())
+	#define SLOTOUTEV_Db_3(phaseShift) ((true!=slotActive[3] ? 0 : ch.slots[3].EnvelopedOutputDbToAmpl((slotPhaseS12[3]>>12),phaseShift,timeInMS[3]))*LFOClass::AMSMul(AMS4096[3])/LFOClass::AMSDiv())
 
 	int s0out,s1out,s2out,s3out;
 	switch(ch.CONNECT)

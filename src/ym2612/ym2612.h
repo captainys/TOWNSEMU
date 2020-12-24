@@ -265,6 +265,7 @@ private:
 
 	/*! lastSlot0Out is input/output.  Needed for calculating feedback.
 	*/
+	template <class LFOClass>
 	int CalculateAmplitude(int chNum,const uint64_t timeInMicrosecS12[NUM_SLOTS],const unsigned int slotPhase[4],const int AMS4096[4],int &lastSlot0Out) const;
 
 
