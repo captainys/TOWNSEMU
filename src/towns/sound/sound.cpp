@@ -68,6 +68,8 @@ void TownsSound::PCMStopPlay(unsigned char chStopPlay)
 /* virtual */ void TownsSound::Reset(void)
 {
 	state.Reset();
+	nextFMWave.clear();
+	nextPCMWave.clear();
 }
 /* virtual */ void TownsSound::IOWriteByte(unsigned int ioport,unsigned int data)
 {
@@ -228,25 +230,26 @@ void TownsSound::ProcessSound(void)
 {
 	if(0!=state.ym2612.state.playingCh)
 	{
-		if(0!=state.ym2612.state.playingCh && true!=outside_world->FMChannelPlaying())
+		if(true==nextFMWave.empty())
 		{
-			auto wav=state.ym2612.MakeWaveAllChannels(FM_MILLISEC_PER_WAVE);
+			nextFMWave.swap(state.ym2612.MakeWaveAllChannels(FM_MILLISEC_PER_WAVE));
+		}
+		if(true!=outside_world->FMChannelPlaying() && true!=nextFMWave.empty())
+		{
 			if(true==recordFMandPCM)
 			{
-				FMrecording.insert(FMrecording.end(),wav.begin(),wav.end());
+				FMrecording.insert(FMrecording.end(),nextFMWave.begin(),nextFMWave.end());
 			}
-			outside_world->FMPlay(wav);
+			outside_world->FMPlay(nextFMWave);
+			nextFMWave.clear(); // It was supposed to be cleared in FMPlay.  Just in case.
 			state.ym2612.CheckToneDoneAllChannels();
 		}
 	}
 	if(state.rf5c68.state.playing && nullptr!=outside_world)
 	{
-		if(true!=outside_world->PCMChannelPlaying())
+		const unsigned int numSamples=PCM_MILLISEC_PER_WAVE*RF5C68::SAMPLING_RATE/1000;
+		if(true==nextPCMWave.empty())
 		{
-			std::vector <unsigned char> wave;
-			const unsigned int numSamples=PCM_MILLISEC_PER_WAVE*RF5C68::SAMPLING_RATE/1000;
-			wave.resize(numSamples*4);
-
 			for(unsigned int chNum=0; chNum<RF5C68::NUM_CHANNELS; ++chNum)
 			{
 				auto &ch=state.rf5c68.state.ch[chNum];
@@ -256,13 +259,17 @@ void TownsSound::ProcessSound(void)
 					ch.IRQAfterThisPlayBack=false;
 				}
 			}
-
-			state.rf5c68.MakeWaveForNumSamples(wave.data(),numSamples);
+			nextPCMWave.resize(numSamples*4);
+			state.rf5c68.MakeWaveForNumSamples(nextPCMWave.data(),numSamples);
+		}
+		if(true!=outside_world->PCMChannelPlaying() && true!=nextPCMWave.empty())
+		{
 			if(true==recordFMandPCM)
 			{
-				PCMrecording.insert(PCMrecording.end(),wave.begin(),wave.end());
+				PCMrecording.insert(PCMrecording.end(),nextPCMWave.begin(),nextPCMWave.end());
 			}
-			outside_world->PCMPlay(wave);
+			outside_world->PCMPlay(nextPCMWave);
+			nextPCMWave.clear(); // It was supposed to be cleared in PCMPlay.  Just in case.
 		}
 	}
 	if (townsPtr->timer.IsBuzzerPlaying()) {

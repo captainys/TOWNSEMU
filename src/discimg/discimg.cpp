@@ -108,16 +108,20 @@ DiscImage::DiscImage()
 		return "First track not starting at 00:00:00";
 	case ERROR_BINARY_SIZE_NOT_SECTOR_TIMES_INTEGER:
 		return "Binary size is not integer multiple of sector lengths.";
+	case ERROR_NUM_MULTI_BIN_NOT_EQUAL_TO_NUM_TRACKS:
+		return "Number of binary files and the number of tracks in multi-bin CUE file do not match.";
+	case ERROR_MULTI_BIN_DATA_NOT_2352_PER_SEC:
+		return "All tracks must use 2352 bytes/sector in multi-bin CUE file.";
 	}
 	return "Undefined error.";
 }
 void DiscImage::CleanUp(void)
 {
 	fileType=FILETYPE_NONE;
-	binFileSize=0;
+	totalBinLength=0;
 	fName="";
-	binFName="";
 	num_sectors=0;
+	binaries.clear();
 	tracks.clear();
 	layout.clear();
 }
@@ -201,7 +205,9 @@ unsigned int DiscImage::OpenCUE(const std::string &fName)
 			case CMD_FILE:
 				if(2<=argv.size())
 				{
-					binFName=argv[1];
+					Binary bin;
+					bin.fName=argv[1];
+					binaries.push_back(bin);
 				}
 				break;
 			case CMD_TRACK:
@@ -321,37 +327,87 @@ unsigned int DiscImage::OpenCUEPostProcess(void)
 	}
 
 
-	std::vector <std::string> binFileCandidate;
+	if(1<binaries.size()) // Multi-bin (1)
 	{
-		std::string path,file;
-		cpputil::SeparatePathFile(path,file,fName);
-		binFileCandidate.push_back(path+binFName);
-	}
-	{
-		std::string base=cpputil::RemoveExtension(fName.c_str());
-		binFileCandidate.push_back(base+".BIN");
-		binFileCandidate.push_back(base+".IMG");
-		binFileCandidate.push_back(base+".bin");
-		binFileCandidate.push_back(base+".img");
-		binFileCandidate.push_back(base+".Bin");
-		binFileCandidate.push_back(base+".Img");
-	}
-	binFName="";
-	uint64_t binLength=0;
-	for(auto fn : binFileCandidate)
-	{
-		binLength=cpputil::FileSize(fn);
-		if(0<binLength)
+		if(binaries.size()!=tracks.size())
 		{
-			binFName=fn;
-			break;
+			// The number of binaries needs to match the number of tracks.
+			return ERROR_NUM_MULTI_BIN_NOT_EQUAL_TO_NUM_TRACKS;
+		}
+		if(2352!=tracks[0].sectorLength)
+		{
+			// Non-2352 bytes/sec not supported in multi-bin format.
+			return ERROR_MULTI_BIN_DATA_NOT_2352_PER_SEC;
+		}
+		// I have absolutely no idea if I am interpreting it right.
+		// Multi-bin CUE files are so inconsistent.
+		for(int trk=0; trk<tracks.size(); ++trk)
+		{
+			// I hope it is a correct interpretation.
+			binaries[trk].bytesToSkip=2352*MSFtoHSG(tracks[trk].preGap+tracks[trk].start);
+		}
+	}
+
+
+	uint64_t binLength=0;
+	for(auto &bin : binaries)
+	{
+		std::vector <std::string> binFileCandidate;
+		{
+			std::string path,file;
+			cpputil::SeparatePathFile(path,file,fName);
+			binFileCandidate.push_back(path+bin.fName);
+		}
+		{
+			std::string base=cpputil::RemoveExtension(fName.c_str());
+			binFileCandidate.push_back(base+".BIN");
+			binFileCandidate.push_back(base+".IMG");
+			binFileCandidate.push_back(base+".bin");
+			binFileCandidate.push_back(base+".img");
+			binFileCandidate.push_back(base+".Bin");
+			binFileCandidate.push_back(base+".Img");
+		}
+		bin.fName="";
+		for(auto fn : binFileCandidate)
+		{
+			auto len=cpputil::FileSize(fn);
+			if(0<len)
+			{
+				binLength+=len;
+				binLength-=bin.bytesToSkip;
+				bin.fName=fn;
+				bin.fileSize=len;
+				break;
+			}
 		}
 	}
 	if(0==binLength)
 	{
 		return ERROR_BINARY_FILE_NOT_FOUND;
 	}
-	this->binFileSize=binLength;
+	this->totalBinLength=binLength;
+
+
+	if(1<binaries.size()) // Multi-bin (2)
+	{
+		// Information in multi-bin CUE file is very erratic and unreliable.
+		// I need to re-calculate based on the binary file sizes.
+		// Whoever designed .CUE data format did a poor job by having PREGAP and INDEX 00.
+		// INDEX 00 shouldn't have existed at all.  So confusing.
+		unsigned int startSector=0;
+		uint64_t locationInFile=0;
+		for(int i=0; i<tracks.size(); ++i)
+		{
+			uint32_t numBytes=(binaries[i].fileSize-binaries[i].bytesToSkip);
+			unsigned int numSec=numBytes/2352;
+			tracks[i].start=HSGtoMSF(startSector);
+			tracks[i].end=HSGtoMSF(startSector+numSec-1);
+			tracks[i].locationInFile=locationInFile;
+			binaries[i].byteOffsetInDisc=locationInFile;
+			locationInFile+=numBytes;
+			startSector+=numSec;
+		}
+	}
 
 	if(1==tracks.size())
 	{
@@ -372,6 +428,7 @@ unsigned int DiscImage::OpenCUEPostProcess(void)
 			return ERROR_BINARY_SIZE_NOT_SECTOR_TIMES_INTEGER;
 		}
 	}
+
 	if(0<tracks.size())
 	{
 		num_sectors=tracks.back().end.ToHSG()+1;  // LastSectorNumber+1
@@ -393,6 +450,7 @@ unsigned int DiscImage::OpenCUEPostProcess(void)
 		L.numSectors=tracks[i].end.ToHSG()-tracks[i].start.ToHSG()+1;
 		L.sectorLength=tracks[i].sectorLength;
 		L.startHSG=tracks[i].start.ToHSG();
+		L.indexToBinary=(1==binaries.size() ? 0 : i);
 		if(0==i)
 		{
 			L.locationInFile=0;
@@ -410,6 +468,7 @@ unsigned int DiscImage::OpenCUEPostProcess(void)
 				preGap.startHSG=tracks[i].start.ToHSG()-preGapInHSG;
 				preGap.numSectors=preGapInHSG;
 				preGap.locationInFile=locationInFile;
+				preGap.indexToBinary=(1==binaries.size() ? 0 : i);
 				layout.push_back(preGap);
 				locationInFile+=tracks[i].preGapSectorLength*preGapInHSG;
 			}
@@ -423,6 +482,7 @@ unsigned int DiscImage::OpenCUEPostProcess(void)
 		L.layoutType=LAYOUT_END;
 		L.sectorLength=0;
 		L.numSectors=0;
+		L.indexToBinary=(1==binaries.size() ? 0 : binaries.size()-1);
 		if(0<layout.size())
 		{
 			L.startHSG=layout.back().startHSG+layout.back().numSectors;
@@ -458,7 +518,7 @@ unsigned int DiscImage::OpenCUEPostProcess(void)
 			std::cout << "????? ";
 			break;
 		}
-		std::cout << L.startHSG << " " << L.locationInFile << std::endl;
+		std::cout << L.startHSG << " " << L.locationInFile << " " << totalBinLength << std::endl;
 	}
 #endif
 
@@ -493,12 +553,12 @@ bool DiscImage::TryAnalyzeTracksWithAbsurdCUEInterpretation(void)
 		prevTrackSizeInBytes=trackLength+gapLength;
 	}
 
-	auto lastTrackBytes=binFileSize-tracks.back().locationInFile;
+	auto lastTrackBytes=totalBinLength-tracks.back().locationInFile;
 	if(0!=(lastTrackBytes%tracks.back().sectorLength))
 	{
 		return false;
 	}
-	auto lastTrackNumSec=(binFileSize-tracks.back().locationInFile)/tracks.back().sectorLength;
+	auto lastTrackNumSec=(totalBinLength-tracks.back().locationInFile)/tracks.back().sectorLength;
 	auto lastSectorHSG=MSFtoHSG(tracks.back().start)+lastTrackNumSec-1;
 	tracks.back().end=HSGtoMSF((unsigned int)lastSectorHSG);
 
@@ -521,12 +581,12 @@ bool DiscImage::TryAnalyzeTracksWithMoreReasonableCUEInterpretation(void)
 		tracks[i].locationInFile=(tracks[i].start.ToHSG()-tracks[i].preGap.ToHSG())*2352;
 	}
 
-	auto lastTrackBytes=binFileSize-tracks.back().locationInFile;
+	auto lastTrackBytes=totalBinLength-tracks.back().locationInFile;
 	if(0!=(lastTrackBytes%tracks.back().sectorLength))
 	{
 		return false;
 	}
-	auto lastTrackNumSec=(binFileSize-tracks.back().locationInFile)/tracks.back().sectorLength;
+	auto lastTrackNumSec=(totalBinLength-tracks.back().locationInFile)/tracks.back().sectorLength;
 	auto lastSectorHSG=MSFtoHSG(tracks.back().start)+lastTrackNumSec-1;
 	tracks.back().end=HSGtoMSF((unsigned int)lastSectorHSG);
 
@@ -559,7 +619,11 @@ unsigned int DiscImage::OpenISO(const std::string &fName)
 
 	fileType=FILETYPE_ISO;
 	this->fName=fName;
-	this->binFName=fName;
+
+	Binary bin;
+	bin.fName=fName;
+	binaries.push_back(bin);
+
 	num_sectors=(unsigned int)(fSize/2048);
 
 	tracks.resize(1);
@@ -608,33 +672,36 @@ const std::vector <DiscImage::Track> &DiscImage::GetTracks(void) const
 
 std::vector <unsigned char> DiscImage::ReadSectorMODE1(unsigned int HSG,unsigned int numSec) const
 {
-	std::ifstream ifp;
-	ifp.open(binFName,std::ios::binary);
-
 	std::vector <unsigned char> data;
-	if(true==ifp.is_open() && 0<tracks.size() && (tracks[0].trackType==TRACK_MODE1_DATA || tracks[0].trackType==TRACK_MODE2_DATA))
-	{
-		if(HSG+numSec<=tracks[0].end.ToHSG()+1)
-		{
-			auto sectorIntoTrack=HSG-tracks[0].start.ToHSG();
-			auto locationInTrack=sectorIntoTrack*tracks[0].sectorLength;
 
-			ifp.seekg(tracks[0].locationInFile+locationInTrack,std::ios::beg);
-			data.resize(numSec*MODE1_BYTES_PER_SECTOR);
-			if(MODE1_BYTES_PER_SECTOR==tracks[0].sectorLength)
+	if(0<binaries.size())
+	{
+		std::ifstream ifp;
+		ifp.open(binaries[0].fName,std::ios::binary);
+		if(true==ifp.is_open() && 0<tracks.size() && (tracks[0].trackType==TRACK_MODE1_DATA || tracks[0].trackType==TRACK_MODE2_DATA))
+		{
+			if(HSG+numSec<=tracks[0].end.ToHSG()+1)
 			{
-				ifp.read((char *)data.data(),MODE1_BYTES_PER_SECTOR*numSec);
-			}
-			else if(RAW_BYTES_PER_SECTOR==tracks[0].sectorLength)
-			{
-				unsigned int dataPointer=0;
-				char skipper[288];
-				for(int i=0; i<(int)numSec; ++i)
+				auto sectorIntoTrack=HSG-tracks[0].start.ToHSG();
+				auto locationInTrack=sectorIntoTrack*tracks[0].sectorLength;
+
+				ifp.seekg(tracks[0].locationInFile+locationInTrack,std::ios::beg);
+				data.resize(numSec*MODE1_BYTES_PER_SECTOR);
+				if(MODE1_BYTES_PER_SECTOR==tracks[0].sectorLength)
 				{
-					ifp.read(skipper,16);
-					ifp.read((char *)data.data()+dataPointer,MODE1_BYTES_PER_SECTOR);
-					ifp.read(skipper,288);
-					dataPointer+=MODE1_BYTES_PER_SECTOR;
+					ifp.read((char *)data.data(),MODE1_BYTES_PER_SECTOR*numSec);
+				}
+				else if(RAW_BYTES_PER_SECTOR==tracks[0].sectorLength)
+				{
+					unsigned int dataPointer=0;
+					char skipper[288];
+					for(int i=0; i<(int)numSec; ++i)
+					{
+						ifp.read(skipper,16);
+						ifp.read((char *)data.data()+dataPointer,MODE1_BYTES_PER_SECTOR);
+						ifp.read(skipper,288);
+						dataPointer+=MODE1_BYTES_PER_SECTOR;
+					}
 				}
 			}
 		}
@@ -672,10 +739,7 @@ std::vector <unsigned char> DiscImage::GetWave(MinSecFrm startMSF,MinSecFrm endM
 {
 	std::vector <unsigned char> wave;
 
-	std::ifstream ifp;
-	ifp.open(binFName,std::ios::binary);
-
-	if(ifp.is_open() && 0<tracks.size() && startMSF<endMSF)
+	if(0<tracks.size() && startMSF<endMSF)
 	{
 		auto startHSG=startMSF.ToHSG();
 		auto endHSG=endMSF.ToHSG();
@@ -706,6 +770,8 @@ std::vector <unsigned char> DiscImage::GetWave(MinSecFrm startMSF,MinSecFrm endM
 				continue;
 			}
 
+			auto &bin=binaries[layout[i].indexToBinary]; // Do it before (*1)
+
 			if(layout[i+1].startHSG<=endHSG)
 			{
 				readTo=layout[i+1].locationInFile;
@@ -713,7 +779,7 @@ std::vector <unsigned char> DiscImage::GetWave(MinSecFrm startMSF,MinSecFrm endM
 			else
 			{
 				readTo=layout[i].locationInFile+layout[i].sectorLength*(endHSG-layout[i].startHSG);
-				i=layout.size(); // Let it loop-out.
+				i=layout.size(); // Let it loop-out. (*1)
 			}
 
 			if(readFrom<readTo)
@@ -724,11 +790,20 @@ std::vector <unsigned char> DiscImage::GetWave(MinSecFrm startMSF,MinSecFrm endM
 				std::cout << readFrom << " " << readTo << " " << readSize << " " << std::endl;
 			#endif
 
-				ifp.seekg(readFrom,std::ios::beg);
-
-				auto curSize=wave.size();
-				wave.resize(wave.size()+readSize);
-				ifp.read((char *)(wave.data()+curSize),readSize);
+				std::ifstream ifp;
+				ifp.open(bin.fName,std::ios::binary);
+				if(ifp.is_open())
+				{
+					ifp.seekg(readFrom-bin.byteOffsetInDisc+bin.bytesToSkip,std::ios::beg);
+					auto curSize=wave.size();
+					wave.resize(wave.size()+readSize);
+					for(auto i=curSize; i<wave.size(); ++i)
+					{
+						wave[i]=0;
+					}
+					ifp.read((char *)(wave.data()+curSize),readSize);
+					ifp.close();
+				}
 			}
 		}
 	}

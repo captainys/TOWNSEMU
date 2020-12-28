@@ -59,6 +59,8 @@ public:
 	bool recordFMandPCM=false;
 	std::vector <unsigned char> FMrecording,PCMrecording;
 
+	std::vector <unsigned char> nextFMWave,nextPCMWave;
+
 	TownsSound(class FMTowns *townsPtr);
 	void SetOutsideWorld(class Outside_World *outside_world);
 	void PCMStartPlay(unsigned char chStartPlay);

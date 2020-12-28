@@ -33,6 +33,11 @@ int main(int ac,char *av[])
 		std::cout << "Cannot open .CUE file." << std::endl;
 		return 1;
 	}
+	if(1!=input.binaries.size())
+	{
+		std::cout << "Not supporting a multi-bin CUE file." << std::endl;
+		return 1;
+	}
 
 	bool first=true;
 	for(auto &trk : input.GetTracks())
@@ -67,7 +72,7 @@ int main(int ac,char *av[])
 	}
 
 	std::cout << "Input CUE: " << input.fName << std::endl;
-	std::cout << "Input BIN: " << input.binFName << std::endl;
+	std::cout << "Input BIN: " << input.binaries[0].fName << std::endl;
 
 	std::string outFNameBase=cpputil::RemoveExtension(av[2]);
 	std::string outCUEFName=outFNameBase+".CUE";
@@ -80,7 +85,7 @@ int main(int ac,char *av[])
 
 	std::ifstream inputCUE,inputBIN;
 	inputCUE.open(input.fName);
-	inputBIN.open(input.binFName,std::ios::binary);
+	inputBIN.open(input.binaries[0].fName,std::ios::binary);
 
 	std::ofstream outCUE,outBIN;
 	outCUE.open(outCUEFName);

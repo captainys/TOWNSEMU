@@ -38,6 +38,8 @@ public:
 		ERROR_FIRST_TRACK_NOT_STARTING_AT_00_00_00,
 		ERROR_BINARY_FILE_NOT_FOUND,
 		ERROR_BINARY_SIZE_NOT_SECTOR_TIMES_INTEGER,
+		ERROR_NUM_MULTI_BIN_NOT_EQUAL_TO_NUM_TRACKS,
+		ERROR_MULTI_BIN_DATA_NOT_2352_PER_SEC,
 	};
 	enum
 	{
@@ -248,13 +250,38 @@ public:
 		unsigned int sectorLength;
 		unsigned int startHSG;
 		unsigned int numSectors;
-		unsigned long long int locationInFile;
+		uint64_t locationInFile;
+		unsigned int indexToBinary=0;
+	};
+
+	/*! To support multi-bin CUE.
+	    There seems to be no standard, and the data format of multi-bin CUE files are random.
+	    Very difficult to support....
+	*/
+	class Binary
+	{
+	public:
+		std::string fName;
+		uint64_t fileSize=0;
+
+		/*! Handling of PREGAP is one of the biggest mystery in supporting BIN/CUE.
+		    Even more nonsense in multi-bin CUE file.
+		    Looks like I need to skip bytes if there is a PREGAP.
+		    I'm not sure though.
+		    Meaning of PREGAP in CUE file in general, not just multi-bin format, looks random and inconsistent to me.
+		*/
+		uint64_t bytesToSkip=0;
+
+		/*!
+		*/
+		uint64_t byteOffsetInDisc=0;
 	};
 
 	unsigned int fileType=FILETYPE_NONE;
-	uint64_t binFileSize=0;
-	std::string fName,binFName;
+	std::string fName;
+	uint64_t totalBinLength=0;
 	unsigned int num_sectors;
+	std::vector <Binary> binaries;
 	std::vector <Track> tracks;
 	std::vector <DiscLayout> layout;
 
