@@ -233,7 +233,7 @@ void TownsSound::ProcessSound(void)
 		{
 			if(0!=state.ym2612.state.playingCh)
 			{
-				nextFMPCMWave.swap(state.ym2612.MakeWaveAllChannels(FM_PCM_MILLISEC_PER_WAVE));
+				nextFMPCMWave=state.ym2612.MakeWaveAllChannels(FM_PCM_MILLISEC_PER_WAVE);
 			}
 			if(true==state.rf5c68.IsPlaying())
 			{
