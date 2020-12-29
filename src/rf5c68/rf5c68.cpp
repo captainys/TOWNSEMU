@@ -67,6 +67,7 @@ void RF5C68::Clear(void)
 	state.chOnOff=0xff;  // Active LOW
 	state.IRQBank=0;
 	state.IRQBankMask=0;
+	state.timeBalance=0;
 }
 
 RF5C68::StartAndStopChannelBits RF5C68::WriteControl(unsigned char value)
@@ -316,6 +317,11 @@ unsigned int RF5C68::AddWaveForNumSamples(unsigned char waveBuf[],unsigned int n
 	}
 
 	return nFilled;
+}
+
+bool RF5C68::IsPlaying(void) const
+{
+	return true==state.playing;
 }
 
 void RF5C68::PlayStopped(unsigned int chNum)

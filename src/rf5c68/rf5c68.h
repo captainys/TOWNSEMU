@@ -136,6 +136,10 @@ public:
 
 	unsigned int AddWaveForNumSamples(unsigned char waveBuf[],unsigned int numSamples,int outSamplingRate);
 
+	/*! Returns true if playing.
+	*/
+	bool IsPlaying(void) const;
+
 	/*! Notified from the controller that the play has stopped.
 	*/
 	void PlayStopped(unsigned int ch);

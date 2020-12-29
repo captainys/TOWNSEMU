@@ -227,7 +227,7 @@ std::vector <std::string> TownsSound::GetStatusText(void) const
 
 void TownsSound::ProcessSound(void)
 {
-	if((0!=state.ym2612.state.playingCh || true==state.rf5c68.state.playing) && nullptr!=outside_world)
+	if((0!=state.ym2612.state.playingCh || true==state.rf5c68.IsPlaying()) && nullptr!=outside_world)
 	{
 		if(true==nextFMPCMWave.empty())
 		{
@@ -235,7 +235,7 @@ void TownsSound::ProcessSound(void)
 			{
 				nextFMPCMWave.swap(state.ym2612.MakeWaveAllChannels(FM_PCM_MILLISEC_PER_WAVE));
 			}
-			if(true==state.rf5c68.state.playing)
+			if(true==state.rf5c68.IsPlaying())
 			{
 				unsigned int numSamples=0;
 				if(true==nextFMPCMWave.empty()) // YM2612 not playing.
