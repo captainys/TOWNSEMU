@@ -202,16 +202,11 @@ public:
 
 
 public:
-	virtual void PCMPlay(std::vector <unsigned char > &wave)=0;
-	virtual void PCMPlayStop(void)=0;
-	virtual bool PCMChannelPlaying(void)=0;
+	virtual void FMPCMPlay(std::vector <unsigned char > &wave)=0;
+	virtual void FMPCMPlayStop(void)=0;
+	virtual bool FMPCMChannelPlaying(void)=0;
 
 
-
-public:
-	virtual void FMPlay(std::vector <unsigned char> &wave)=0;
-	virtual void FMPlayStop(void)=0;
-	virtual bool FMChannelPlaying(void)=0;
 
 public:
 	virtual void BeepPlay(int samplingRate, std::vector<unsigned char>& wave) = 0;

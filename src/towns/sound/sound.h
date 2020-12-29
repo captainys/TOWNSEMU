@@ -32,7 +32,6 @@ private:
 public:
 	enum
 	{
-		WAVE_OUT_SAMPLING_RATE=44100,
 		FM_PCM_MILLISEC_PER_WAVE=10, // Looks like time resolution of Wave Playback of Direct Sound is 10ms.
 		BEEP_MILLISEC_PER_WAVE=10
 	};
@@ -57,7 +56,7 @@ public:
 	class Outside_World *outside_world=nullptr;
 
 	bool recordFMandPCM=false;
-	std::vector <unsigned char> FMrecording,PCMrecording;
+	std::vector <unsigned char> FMPCMrecording;
 
 	std::vector <unsigned char> nextFMPCMWave;
 
@@ -85,8 +84,7 @@ public:
 
 	void StartRecording(void);
 	void EndRecording(void);
-	void SaveFMRecording(std::string fName) const;
-	void SavePCMRecording(std::string fName) const;
+	void SaveRecording(std::string fName) const;
 };
 
 /* } */

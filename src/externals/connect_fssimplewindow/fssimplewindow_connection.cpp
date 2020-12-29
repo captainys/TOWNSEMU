@@ -1248,23 +1248,9 @@ void FsSimpleWindowConnection::PollGamePads(void)
 	return msf;
 }
 
-/* virtual */ void FsSimpleWindowConnection::PCMPlay(std::vector <unsigned char > &wave)
+/* virtual */ void FsSimpleWindowConnection::FMPCMPlay(std::vector <unsigned char> &wave)
 {
-	PCMChannel.CreateFromSigned16bitStereo(RF5C68::FREQ,wave);
-	soundPlayer.PlayOneShot(PCMChannel);
-}
-/* virtual */ void FsSimpleWindowConnection::PCMPlayStop(void)
-{
-	soundPlayer.Stop(PCMChannel);
-}
-/* virtual */ bool FsSimpleWindowConnection::PCMChannelPlaying(void)
-{
-	return YSTRUE==soundPlayer.IsPlaying(PCMChannel);
-}
-
-/* virtual */ void FsSimpleWindowConnection::FMPlay(std::vector <unsigned char> &wave)
-{
-	FMChannel.CreateFromSigned16bitStereo(YM2612::WAVE_SAMPLING_RATE,wave);
+	FMPCMChannel.CreateFromSigned16bitStereo(YM2612::WAVE_SAMPLING_RATE,wave);
 
 	// std::string fName;
 	// fName="tone";
@@ -1273,14 +1259,14 @@ void FsSimpleWindowConnection::PollGamePads(void)
 	// auto waveFile=FMChannel[ch].MakeWavByteData();
 	// cpputil::WriteBinaryFile(fName,waveFile.size(),waveFile.data());
 
-	soundPlayer.PlayOneShot(FMChannel);
+	soundPlayer.PlayOneShot(FMPCMChannel);
 }
-/* virtual */ void FsSimpleWindowConnection::FMPlayStop(void)
+/* virtual */ void FsSimpleWindowConnection::FMPCMPlayStop(void)
 {
 }
-/* virtual */ bool FsSimpleWindowConnection::FMChannelPlaying(void)
+/* virtual */ bool FsSimpleWindowConnection::FMPCMChannelPlaying(void)
 {
-	return YSTRUE==soundPlayer.IsPlaying(FMChannel);
+	return YSTRUE==soundPlayer.IsPlaying(FMPCMChannel);
 }
 
 /* virtual */ void FsSimpleWindowConnection::BeepPlay(int samplingRate, std::vector<unsigned char> &wave) {

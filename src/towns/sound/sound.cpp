@@ -237,6 +237,7 @@ void TownsSound::ProcessSound(void)
 			}
 			if(true==state.rf5c68.IsPlaying())
 			{
+				const unsigned int WAVE_OUT_SAMPLING_RATE=YM2612::WAVE_SAMPLING_RATE; // Align with YM2612.
 				unsigned int numSamples=0;
 				if(true==nextFMPCMWave.empty()) // YM2612 not playing.
 				{
@@ -263,13 +264,13 @@ void TownsSound::ProcessSound(void)
 			}
 		}
 
-		if(true!=outside_world->FMChannelPlaying() && true!=nextFMPCMWave.empty())
+		if(true!=outside_world->FMPCMChannelPlaying() && true!=nextFMPCMWave.empty())
 		{
 			if(true==recordFMandPCM)
 			{
-				FMrecording.insert(FMrecording.end(),nextFMPCMWave.begin(),nextFMPCMWave.end());
+				FMPCMrecording.insert(FMPCMrecording.end(),nextFMPCMWave.begin(),nextFMPCMWave.end());
 			}
-			outside_world->FMPlay(nextFMPCMWave);
+			outside_world->FMPCMPlay(nextFMPCMWave);
 			nextFMPCMWave.clear(); // It was supposed to be cleared in FMPlay.  Just in case.
 			state.ym2612.CheckToneDoneAllChannels();
 		}
@@ -286,26 +287,17 @@ void TownsSound::ProcessSound(void)
 void TownsSound::StartRecording(void)
 {
 	recordFMandPCM=true;
-	FMrecording.clear();
-	PCMrecording.clear();
+	FMPCMrecording.clear();
 }
 void TownsSound::EndRecording(void)
 {
 	recordFMandPCM=false;
 }
 #include "yssimplesound.h"
-void TownsSound::SaveFMRecording(std::string fName) const
+void TownsSound::SaveRecording(std::string fName) const
 {
 	YsSoundPlayer::SoundData data;
-	auto dataCopy=FMrecording;
-	data.CreateFromSigned16bitStereo(44100,dataCopy);
-	auto wavFile=data.MakeWavByteData();
-	cpputil::WriteBinaryFile(fName,wavFile.size(),wavFile.data());
-}
-void TownsSound::SavePCMRecording(std::string fName) const
-{
-	YsSoundPlayer::SoundData data;
-	auto dataCopy=PCMrecording;
+	auto dataCopy=FMPCMrecording;
 	data.CreateFromSigned16bitStereo(44100,dataCopy);
 	auto wavFile=data.MakeWavByteData();
 	cpputil::WriteBinaryFile(fName,wavFile.size(),wavFile.data());

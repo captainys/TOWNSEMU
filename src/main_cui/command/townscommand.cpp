@@ -153,8 +153,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 
 	primaryCmdMap["STARTFMPCMREC"]=CMD_START_FMPCM_RECORDING;
 	primaryCmdMap["ENDFMPCMREC"]=CMD_END_FMPCM_RECORDING;
-	primaryCmdMap["SAVEFMREC"]=CMD_SAVE_FM_RECORDING;
-	primaryCmdMap["SAVEPCMREC"]=CMD_SAVE_PCM_RECORDING;
+	primaryCmdMap["SAVEFMPCMREC"]=CMD_SAVE_FMPCM_RECORDING;
 
 
 	featureMap["CMDLOG"]=ENABLE_CMDLOG;
@@ -430,11 +429,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 
 	std::cout << "STARTFMPCMREC" << std::endl;
 	std::cout << "ENDFMPCMREC" << std::endl;
-	std::cout << "  Start/End FM and PCM recording." << std::endl;
-	std::cout << "SAVEFMREC filename.wav" << std::endl;
-	std::cout << "  Save YM2612 recording." << std::endl;
-	std::cout << "SAVEPCMREC filename.wav" << std::endl;
-	std::cout << "  Save PCM recording." << std::endl;
+	std::cout << "SAVEFMPCMREC filename.wav" << std::endl;
+	std::cout << "  Start/End/Save FM and PCM audio recording." << std::endl;
 
 	std::cout << "HOST2VM hostFileName vmFileName" << std::endl;
 	std::cout << "  Schedule Host to VM file transfer." << std::endl;
@@ -1102,16 +1098,10 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 	case CMD_END_FMPCM_RECORDING:
 		towns.sound.EndRecording();
 		break;
-	case CMD_SAVE_FM_RECORDING:
+	case CMD_SAVE_FMPCM_RECORDING:
 		if(2<=cmd.argv.size())
 		{
-			towns.sound.SaveFMRecording(cmd.argv[1]);
-		}
-		break;
-	case CMD_SAVE_PCM_RECORDING:
-		if(2<=cmd.argv.size())
-		{
-			towns.sound.SavePCMRecording(cmd.argv[1]);
+			towns.sound.SaveRecording(cmd.argv[1]);
 		}
 		break;
 	}

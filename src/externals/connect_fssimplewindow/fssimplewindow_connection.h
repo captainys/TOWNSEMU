@@ -66,16 +66,13 @@ public:
 	virtual DiscImage::MinSecFrm CDDACurrentPosition(void);
 
 
-	YsSoundPlayer::SoundData PCMChannel;
-	virtual void PCMPlay(std::vector <unsigned char > &wave);
-	virtual void PCMPlayStop(void);
-	virtual bool PCMChannelPlaying(void);
+
+	YsSoundPlayer::SoundData FMPCMChannel;
+	virtual void FMPCMPlay(std::vector <unsigned char > &wave);
+	virtual void FMPCMPlayStop(void);
+	virtual bool FMPCMChannelPlaying(void);
 
 
-	YsSoundPlayer::SoundData FMChannel;
-	virtual void FMPlay(std::vector <unsigned char> &wave);
-	virtual void FMPlayStop(void);
-	virtual bool FMChannelPlaying(void);
 
 	YsSoundPlayer::SoundData BeepChannel;
 	virtual void BeepPlay(int samplingRate, std::vector<unsigned char> &wave);
