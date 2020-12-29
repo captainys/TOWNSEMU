@@ -240,7 +240,7 @@ void TownsSound::ProcessSound(void)
 				unsigned int numSamples=0;
 				if(true==nextFMPCMWave.empty()) // YM2612 not playing.
 				{
-					numSamples=FM_PCM_MILLISEC_PER_WAVE*RF5C68::SAMPLING_RATE/1000;
+					numSamples=FM_PCM_MILLISEC_PER_WAVE*WAVE_OUT_SAMPLING_RATE/1000;
 					nextFMPCMWave.resize(numSamples*4);
 					std::memset(nextFMPCMWave.data(),0,numSamples*4);
 				}
@@ -258,7 +258,7 @@ void TownsSound::ProcessSound(void)
 						ch.IRQAfterThisPlayBack=false;
 					}
 				}
-				state.rf5c68.AddWaveForNumSamples(nextFMPCMWave.data(),numSamples);
+				state.rf5c68.AddWaveForNumSamples(nextFMPCMWave.data(),numSamples,WAVE_OUT_SAMPLING_RATE);
 			}
 		}
 

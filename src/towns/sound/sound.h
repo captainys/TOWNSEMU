@@ -32,6 +32,7 @@ private:
 public:
 	enum
 	{
+		WAVE_OUT_SAMPLING_RATE=44100,
 		FM_PCM_MILLISEC_PER_WAVE=10, // Looks like time resolution of Wave Playback of Direct Sound is 10ms.
 		BEEP_MILLISEC_PER_WAVE=10
 	};

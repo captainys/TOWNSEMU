@@ -184,13 +184,13 @@ std::vector <std::string> RF5C68::GetStatusText(void) const
 	return text;
 }
 
-unsigned int RF5C68::MakeWaveForNumSamples(unsigned char waveBuf[],unsigned int numSamples)
+unsigned int RF5C68::MakeWaveForNumSamples(unsigned char waveBuf[],unsigned int numSamples,int outSamplingRate)
 {
 	std::memset(waveBuf,0,numSamples*4);
-	return AddWaveForNumSamples(waveBuf,numSamples);
+	return AddWaveForNumSamples(waveBuf,numSamples,outSamplingRate);
 }
 
-unsigned int RF5C68::AddWaveForNumSamples(unsigned char waveBuf[],unsigned int numSamples)
+unsigned int RF5C68::AddWaveForNumSamples(unsigned char waveBuf[],unsigned int numSamples,int outSamplingRate)
 {
 	unsigned int numPlayingCh=0,playingCh[NUM_CHANNELS];
 	unsigned int LvolCh[NUM_CHANNELS],RvolCh[NUM_CHANNELS],pcmAddr[NUM_CHANNELS];
@@ -298,11 +298,15 @@ unsigned int RF5C68::AddWaveForNumSamples(unsigned char waveBuf[],unsigned int n
 			;
 		}
 
-		WordOp_Add(wavePtr  ,Lout);
-		WordOp_Add(wavePtr+2,Rout);
-
-		wavePtr+=4;
-		++nFilled;
+		while(0<=state.timeBalance && nFilled<numSamples)
+		{
+			WordOp_Add(wavePtr  ,Lout);
+			WordOp_Add(wavePtr+2,Rout);
+			state.timeBalance-=SAMPLING_RATE;
+			wavePtr+=4;
+			++nFilled;
+		}
+		state.timeBalance+=outSamplingRate;
 	}
 
 	for(unsigned int chNum=0; chNum<NUM_CHANNELS; ++chNum)
