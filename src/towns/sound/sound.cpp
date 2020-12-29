@@ -249,6 +249,8 @@ void TownsSound::ProcessSound(void)
 					numSamples=(unsigned int)(nextFMPCMWave.size()/4);
 				}
 
+				state.rf5c68.AddWaveForNumSamples(nextFMPCMWave.data(),numSamples,WAVE_OUT_SAMPLING_RATE);
+
 				for(unsigned int chNum=0; chNum<RF5C68::NUM_CHANNELS; ++chNum)
 				{
 					auto &ch=state.rf5c68.state.ch[chNum];
@@ -258,7 +260,6 @@ void TownsSound::ProcessSound(void)
 						ch.IRQAfterThisPlayBack=false;
 					}
 				}
-				state.rf5c68.AddWaveForNumSamples(nextFMPCMWave.data(),numSamples,WAVE_OUT_SAMPLING_RATE);
 			}
 		}
 

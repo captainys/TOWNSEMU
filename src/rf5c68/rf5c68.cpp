@@ -321,7 +321,7 @@ unsigned int RF5C68::AddWaveForNumSamples(unsigned char waveBuf[],unsigned int n
 
 bool RF5C68::IsPlaying(void) const
 {
-	return true==state.playing;
+	return true==state.playing && 0xFF!=(state.chOnOff&0xFF);
 }
 
 void RF5C68::PlayStopped(unsigned int chNum)
