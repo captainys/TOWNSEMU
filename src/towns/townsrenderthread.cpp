@@ -101,7 +101,7 @@ void TownsRenderingThread::CheckImageReady(FMTowns &towns,Outside_World &world)
 		}
 		if(true==imageReady)
 		{
-			world.Render(rendererPtr->GetImage());
+			world.Render(rendererPtr->GetImage(),towns);
 			world.UpdateStatusBitmap(towns);
 			state=STATE_IDLE;
 		}

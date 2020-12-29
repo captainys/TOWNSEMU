@@ -615,7 +615,7 @@ bool FMTowns::CheckRenderingTimer(TownsRender &render,Outside_World &world)
 		render.Prepare(crtc);
 		render.damperWireLine=var.damperWireLine;
 		render.BuildImage(physMem.state.VRAM.data(),crtc.state.palette,crtc.chaseHQPalette);
-		world.Render(render.GetImage());
+		world.Render(render.GetImage(),*this);
 		world.UpdateStatusBitmap(*this);
 		var.nextRenderingTime=state.townsTime+TOWNS_RENDERING_FREQUENCY;
 		return true;
@@ -645,7 +645,7 @@ void FMTowns::ForceRender(class TownsRender &render,class Outside_World &world)
 		render.FlipUpsideDown();
 	}
 	world.UpdateStatusBitmap(*this);
-	world.Render(render.GetImage());
+	world.Render(render.GetImage(),*this);
 }
 
 void FMTowns::RenderQuiet(class TownsRender &render,bool layer0,bool layer1)
