@@ -68,8 +68,7 @@ void TownsSound::PCMStopPlay(unsigned char chStopPlay)
 /* virtual */ void TownsSound::Reset(void)
 {
 	state.Reset();
-	nextFMWave.clear();
-	nextPCMWave.clear();
+	nextFMPCMWave.clear();
 }
 /* virtual */ void TownsSound::IOWriteByte(unsigned int ioport,unsigned int data)
 {
@@ -228,50 +227,53 @@ std::vector <std::string> TownsSound::GetStatusText(void) const
 
 void TownsSound::ProcessSound(void)
 {
-	if(0!=state.ym2612.state.playingCh)
+	if((0!=state.ym2612.state.playingCh || true==state.rf5c68.state.playing) && nullptr!=outside_world)
 	{
-		if(true==nextFMWave.empty())
+		if(true==nextFMPCMWave.empty())
 		{
-			nextFMWave.swap(state.ym2612.MakeWaveAllChannels(FM_MILLISEC_PER_WAVE));
+			if(0!=state.ym2612.state.playingCh)
+			{
+				nextFMPCMWave.swap(state.ym2612.MakeWaveAllChannels(FM_PCM_MILLISEC_PER_WAVE));
+			}
+			if(true==state.rf5c68.state.playing)
+			{
+				unsigned int numSamples=0;
+				if(true==nextFMPCMWave.empty()) // YM2612 not playing.
+				{
+					numSamples=FM_PCM_MILLISEC_PER_WAVE*RF5C68::SAMPLING_RATE/1000;
+					nextFMPCMWave.resize(numSamples*4);
+					std::memset(nextFMPCMWave.data(),0,numSamples*4);
+				}
+				else
+				{
+					numSamples=(unsigned int)(nextFMPCMWave.size()/4);
+				}
+
+				for(unsigned int chNum=0; chNum<RF5C68::NUM_CHANNELS; ++chNum)
+				{
+					auto &ch=state.rf5c68.state.ch[chNum];
+					if(true==ch.IRQAfterThisPlayBack)
+					{
+						state.rf5c68.SetIRQBank(ch.IRQBank);
+						ch.IRQAfterThisPlayBack=false;
+					}
+				}
+				state.rf5c68.AddWaveForNumSamples(nextFMPCMWave.data(),numSamples);
+			}
 		}
-		if(true!=outside_world->FMChannelPlaying() && true!=nextFMWave.empty())
+
+		if(true!=outside_world->FMChannelPlaying() && true!=nextFMPCMWave.empty())
 		{
 			if(true==recordFMandPCM)
 			{
-				FMrecording.insert(FMrecording.end(),nextFMWave.begin(),nextFMWave.end());
+				FMrecording.insert(FMrecording.end(),nextFMPCMWave.begin(),nextFMPCMWave.end());
 			}
-			outside_world->FMPlay(nextFMWave);
-			nextFMWave.clear(); // It was supposed to be cleared in FMPlay.  Just in case.
+			outside_world->FMPlay(nextFMPCMWave);
+			nextFMPCMWave.clear(); // It was supposed to be cleared in FMPlay.  Just in case.
 			state.ym2612.CheckToneDoneAllChannels();
 		}
 	}
-	if(state.rf5c68.state.playing && nullptr!=outside_world)
-	{
-		const unsigned int numSamples=PCM_MILLISEC_PER_WAVE*RF5C68::SAMPLING_RATE/1000;
-		if(true==nextPCMWave.empty())
-		{
-			for(unsigned int chNum=0; chNum<RF5C68::NUM_CHANNELS; ++chNum)
-			{
-				auto &ch=state.rf5c68.state.ch[chNum];
-				if(true==ch.IRQAfterThisPlayBack)
-				{
-					state.rf5c68.SetIRQBank(ch.IRQBank);
-					ch.IRQAfterThisPlayBack=false;
-				}
-			}
-			nextPCMWave.resize(numSamples*4);
-			state.rf5c68.MakeWaveForNumSamples(nextPCMWave.data(),numSamples);
-		}
-		if(true!=outside_world->PCMChannelPlaying() && true!=nextPCMWave.empty())
-		{
-			if(true==recordFMandPCM)
-			{
-				PCMrecording.insert(PCMrecording.end(),nextPCMWave.begin(),nextPCMWave.end());
-			}
-			outside_world->PCMPlay(nextPCMWave);
-			nextPCMWave.clear(); // It was supposed to be cleared in PCMPlay.  Just in case.
-		}
-	}
+
 	if (townsPtr->timer.IsBuzzerPlaying()) {
 		if (!outside_world->BeepChannelPlaying()) {
 			auto r = townsPtr->timer.MakeBuzzerWave(BEEP_MILLISEC_PER_WAVE);

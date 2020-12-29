@@ -133,6 +133,8 @@ public:
 	*/
 	unsigned int MakeWaveForNumSamples(unsigned char waveBuf[],unsigned int numSamples);
 
+	unsigned int AddWaveForNumSamples(unsigned char waveBuf[],unsigned int numSamples);
+
 	/*! Notified from the controller that the play has stopped.
 	*/
 	void PlayStopped(unsigned int ch);

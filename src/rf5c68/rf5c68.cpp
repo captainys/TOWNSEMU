@@ -19,24 +19,19 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 
 
-inline void WordOp_Set(unsigned char *ptr,int value)
+inline void WordOp_Add(unsigned char *ptr,int value)
 {
+	value+=cpputil::GetSignedWord(ptr);
+
 	if(value<-32767)
 	{
-		*((short *)ptr)=-32767;
+		value=-32767;
 	}
 	else if(32767<value)
 	{
-		*((short *)ptr)=32767;
+		value=32767;
 	}
-	else
-	{
-		*((short *)ptr)=value;
-	}
-
-#ifndef YS_LITTLE_ENDIAN
-	std::swap(ptr[0],ptr[1]);
-#endif
+	cpputil::PutWord(ptr,(value&0xFFFF));
 }
 
 
@@ -191,6 +186,12 @@ std::vector <std::string> RF5C68::GetStatusText(void) const
 
 unsigned int RF5C68::MakeWaveForNumSamples(unsigned char waveBuf[],unsigned int numSamples)
 {
+	std::memset(waveBuf,0,numSamples*4);
+	return AddWaveForNumSamples(waveBuf,numSamples);
+}
+
+unsigned int RF5C68::AddWaveForNumSamples(unsigned char waveBuf[],unsigned int numSamples)
+{
 	unsigned int numPlayingCh=0,playingCh[NUM_CHANNELS];
 	unsigned int LvolCh[NUM_CHANNELS],RvolCh[NUM_CHANNELS],pcmAddr[NUM_CHANNELS];
 	for(unsigned int chNum=0; chNum<NUM_CHANNELS; ++chNum)
@@ -297,14 +298,12 @@ unsigned int RF5C68::MakeWaveForNumSamples(unsigned char waveBuf[],unsigned int 
 			;
 		}
 
-		WordOp_Set(wavePtr  ,Lout);
-		WordOp_Set(wavePtr+2,Rout);
+		WordOp_Add(wavePtr  ,Lout);
+		WordOp_Add(wavePtr+2,Rout);
 
 		wavePtr+=4;
 		++nFilled;
 	}
-
-	std::memset(waveBuf+nFilled*4,0,(numSamples-nFilled)*4);
 
 	for(unsigned int chNum=0; chNum<NUM_CHANNELS; ++chNum)
 	{
