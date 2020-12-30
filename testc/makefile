@@ -306,6 +306,20 @@ build\ymwaverp.exp : build\ymwaverp.OBJ build\io.OBJ
 	386link build\ymwaverp.obj -exe build\ymwaverp.exp @LIBS.LN -stack 16384
 
 
+build\ymenvl01.obj : ymenvl01.c
+	hcd386 ymenvl01.c -obj build\ymenvl01.OBJ
+
+build\ymenvl01.exp : build\ymenvl01.OBJ build\io.OBJ
+	386link build\ymenvl01.obj -exe build\ymenvl01.exp @LIBS.LN -stack 16384
+
+
+build\ymenvl02.obj : ymenvl02.c
+	hcd386 ymenvl02.c -obj build\ymenvl02.OBJ
+
+build\ymenvl02.exp : build\ymenvl02.OBJ build\io.OBJ
+	386link build\ymenvl02.obj -exe build\ymenvl02.exp @LIBS.LN -stack 16384
+
+
 
 build\repeat.obj : cdrom\repeat.asm
 	MASM cdrom\repeat.ASM build\repeat.OBJ build\repeat.LST NUL
