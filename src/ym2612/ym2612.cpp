@@ -419,14 +419,31 @@ unsigned int YM2612::WriteRegister(unsigned int channelBase,unsigned int reg,uns
 				state.channels[ch].slots[slot].MULTI=(value&15);
 				break;
 			case 0x40: // TL
-				state.channels[ch].slots[slot].TL=(value&0x7F);
-				if(0!=(state.channels[ch].usingSlot&(1<<slot)) || true==state.channels[ch].slots[slot].InReleasePhase)
 				{
-					UpdateSlotEnvelope(state.channels[ch],state.channels[ch].slots[slot]);
-					if(true==state.channels[ch].slots[slot].InReleasePhase &&
-					   state.channels[ch].slots[slot].env[1]<state.channels[ch].slots[slot].ReleaseStartDbX100)
+					auto prevTL=state.channels[ch].slots[slot].TL;
+					state.channels[ch].slots[slot].TL=(value&0x7F);
+					if(0!=(state.channels[ch].usingSlot&(1<<slot)))
 					{
-						state.channels[ch].slots[slot].ReleaseStartDbX100=state.channels[ch].slots[slot].env[1];
+						auto prevLevel=127-prevTL;
+						auto newLevel=127-state.channels[ch].slots[slot].TL;
+						UpdateSlotEnvelope(state.channels[ch],state.channels[ch].slots[slot]);
+						if(0!=prevLevel)
+						{
+							// Must be linear in dB scale.  To prepare for subsequent release phase.
+							state.channels[ch].slots[slot].lastDbX100Cache*=newLevel;
+							state.channels[ch].slots[slot].lastDbX100Cache/=prevLevel;
+						}
+					}
+					else if(true==state.channels[ch].slots[slot].InReleasePhase)
+					{
+						auto prevLevel=127-prevTL;
+						auto newLevel=127-state.channels[ch].slots[slot].TL;
+						if(0!=prevLevel)
+						{
+							// Must be linear in dB scale.  lastDbX100Cache shouldn't matter already.
+							state.channels[ch].slots[slot].ReleaseStartDbX100*=newLevel;
+							state.channels[ch].slots[slot].ReleaseStartDbX100/=prevLevel;
+						}
 					}
 				}
 				break;
