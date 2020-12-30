@@ -420,7 +420,7 @@ unsigned int YM2612::WriteRegister(unsigned int channelBase,unsigned int reg,uns
 				break;
 			case 0x40: // TL
 				state.channels[ch].slots[slot].TL=(value&0x7F);
-				if(0!=(state.channels[ch].usingSlot&(1<<slot)))
+				if(0!=(state.channels[ch].usingSlot&(1<<slot)) || true==state.channels[ch].slots[slot].InReleasePhase)
 				{
 					UpdateSlotEnvelope(state.channels[ch],state.channels[ch].slots[slot]);
 					if(true==state.channels[ch].slots[slot].InReleasePhase &&
@@ -446,14 +446,11 @@ unsigned int YM2612::WriteRegister(unsigned int channelBase,unsigned int reg,uns
 				state.channels[ch].slots[slot].RR=(value&0x0F);
 				if(0!=(state.channels[ch].usingSlot&(1<<slot)))
 				{
-					if(true==state.channels[ch].slots[slot].InReleasePhase)
-					{
-						UpdateRelease(state.channels[ch],state.channels[ch].slots[slot]);
-					}
-					else
-					{
-						UpdateSlotEnvelope(state.channels[ch],state.channels[ch].slots[slot]);
-					}
+					UpdateSlotEnvelope(state.channels[ch],state.channels[ch].slots[slot]);
+				}
+				else if(true==state.channels[ch].slots[slot].InReleasePhase)
+				{
+					UpdateRelease(state.channels[ch],state.channels[ch].slots[slot]);
 				}
 				break;
 			case 0x90: // SSG-EG
