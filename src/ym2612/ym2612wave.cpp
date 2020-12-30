@@ -601,6 +601,33 @@ unsigned int YM2612::Channel::Note(void) const
 	return NOTE;
 }
 
+unsigned int YM2612::Channel::KC(void) const
+{
+	// Formulat in [2] pp.204 suggests:
+ 	//   unsigned int KC=(ch.BLOCK<<2)|NOTE;
+	// which doesn't make sense.
+	// SEGA Genesis Software Manaual tells KC is just top 5 bits of BLOCK|F_NUM2.
+	// Which makes more sense.
+
+	// Measurement taken from FM TOWNS 2MX gave a conclusion:
+	//   NOTE=(N4<<1)|N3
+	//   N4=F11
+	//   N3=F11&(F10|F9|F8)
+	// F11 Highest bit of F_NUMBER
+	// F10 Second highest bit of F_NUMBER
+	// F9  Third highest bit of F_NUMBER
+	// F8  Fourth highest bit of F_NUMBER
+
+	// YAMAHA official manual for YM2608 Section 2-4-1-A, and FM Towns Technical Databook suggests:
+	//    N3=(F11&(F10|F9|F8))|((~F11)&F10&F9&F8)
+	// However, the actual YM2612 didn't show any contribution from ((~F11)&F10&F9&F8).
+
+	unsigned int N4=((F_NUM>>9)&2);
+	unsigned int N3=((F_NUM>>10)&((F_NUM>>9)|(F_NUM>>8)|(F_NUM>>7)))&1;
+	unsigned int KC=(BLOCK<<2)|N4|N3;
+	return KC&0x1F;
+}
+
 ////////////////////////////////////////////////////////////
 
 void YM2612::KeyOn(unsigned int chNum,unsigned int slotFlags)
@@ -623,30 +650,6 @@ void YM2612::KeyOn(unsigned int chNum,unsigned int slotFlags)
 		ch.lastSlot0Out[1]=0;
 	}
 
-	// Formulat in [2] pp.204 suggests:
- 	//   unsigned int KC=(ch.BLOCK<<2)|NOTE;
-	// which doesn't make sense.
-	// SEGA Genesis Software Manaual tells KC is just top 5 bits of BLOCK|F_NUM2.
-	// Which makes more sense.
-
-	// Measurement taken from FM TOWNS 2MX gave a conclusion:
-	//   NOTE=(N4<<1)|N3
-	//   N4=F11
-	//   N3=F11&(F10|F9|F8)
-	// F11 Highest bit of F_NUMBER
-	// F10 Second highest bit of F_NUMBER
-	// F9  Third highest bit of F_NUMBER
-	// F8  Fourth highest bit of F_NUMBER
-
-	// YAMAHA official manual for YM2608 Section 2-4-1-A, and FM Towns Technical Databook suggests:
-	//    N3=(F11&(F10|F9|F8))|((~F11)&F10&F9&F8)
-	// However, the actual YM2612 didn't show any contribution from ((~F11)&F10&F9&F8).
-
-	unsigned int N4=((ch.F_NUM>>9)&2);
-	unsigned int N3=((ch.F_NUM>>10)&((ch.F_NUM>>9)|(ch.F_NUM>>8)|(ch.F_NUM>>7)))&1;
-	unsigned int KC=(ch.BLOCK<<2)|N4|N3;
-
-
 	for(int i=0; i<NUM_SLOTS; ++i)
 	{
 		if(0!=(slotFlags&(1<<i)))
@@ -659,11 +662,7 @@ void YM2612::KeyOn(unsigned int chNum,unsigned int slotFlags)
 			UpdatePhase12StepSlot(slot,hertzX16,slot.DetuneContributionToPhaseStepS12(ch.BLOCK,ch.Note()));
 
 			// (hertzX16*PHASE_STEPS)<<8==hertz*PHASE_STEPS*4096
-			CalculateEnvelope(slot.env,slot.RRCache,KC,slot);
-			slot.envDurationCache=slot.env[0]+slot.env[2]+slot.env[4];
-			slot.toneDurationMicrosecS12=slot.envDurationCache;  // In Microsec/1024
-			slot.toneDurationMicrosecS12<<=(12+10);
-
+			UpdateSlotEnvelope(ch,slot);
 
 			// Observation tells that if key is turned on while the previous tone is still playing, 
 			// The initial output level must start from the last output level, in which case
@@ -724,25 +723,7 @@ void YM2612::KeyOff(unsigned int chNum,unsigned int slotFlags)
 			if(true!=slot.InReleasePhase)
 			{
 				slot.InReleasePhase=true;
-
-				// 2020/12/15 nextMicrosecS12 retains up to what time point wave has been generated.
-				//            Therefore, here must be nextMicrosecS12, instead of microsecS12.
-				//            If microsecS12 is used, it virtually skips first 20ms of release,
-				//            and the amplitude drops like a stairstep.
-				//            It is inaudible in many situations, but clearly audible in Super Daisenryaku opening.
-				// 2020/12/23 Got rid of nextMicrosecS12.
-				slot.ReleaseStartTime=(slot.microsecS12>>(12+10));
-				slot.ReleaseStartDbX100=slot.lastDbX100Cache;
-
-				uint64_t releaseTime=sustainDecayReleaseTime0to96dB[std::min<unsigned int>(slot.RRCache,63)];
-				releaseTime*=slot.lastDbX100Cache;
-				releaseTime/=(9600*1024/10);
-				slot.ReleaseEndTime=slot.ReleaseStartTime+releaseTime;
-			#ifdef YM2612_DEBUGOUTPUT
-				std::cout << "Release Time " << releaseTime << "ms  " << 
-				             "Start " << slot.ReleaseStartTime << "ms  " << 
-				             "End " << slot.ReleaseEndTime << "ms" << std::endl;
-			#endif
+				UpdateRelease(ch,slot);
 			}
 		}
 	}
@@ -1062,10 +1043,51 @@ long long int YM2612::MakeWaveForNSamples(unsigned char wave[],unsigned int nPla
 	}
 }
 
-bool YM2612::CalculateEnvelope(unsigned int env[6],unsigned int &RR,unsigned int KC,const Slot &slot) const
+void YM2612::UpdateSlotEnvelope(const Channel &ch,Slot &slot)
 {
-	KC&=31;
+	CalculateEnvelope(slot.env,ch.KC(),slot);
+	slot.envDurationCache=slot.env[0]+slot.env[2]+slot.env[4];
+	slot.toneDurationMicrosecS12=slot.envDurationCache;  // In Microsec/1024
+	slot.toneDurationMicrosecS12<<=(12+10);
+}
 
+void YM2612::UpdateRelease(const Channel &ch,Slot &slot)
+{
+	auto KC=ch.KC();
+	auto RR=(slot.RR*2+1)*2+(KC>>(3-slot.KS));  // [2] pp.206 Double RR and add 1.
+
+	// 2020/12/15 nextMicrosecS12 retains up to what time point wave has been generated.
+	//            Therefore, here must be nextMicrosecS12, instead of microsecS12.
+	//            If microsecS12 is used, it virtually skips first 20ms of release,
+	//            and the amplitude drops like a stairstep.
+	//            It is inaudible in many situations, but clearly audible in Super Daisenryaku opening.
+	// 2020/12/23 Got rid of nextMicrosecS12.
+	slot.ReleaseStartTime=(slot.microsecS12>>(12+10));
+	slot.ReleaseStartDbX100=slot.lastDbX100Cache;
+
+	// Strike Commander set TL to 126, and then key off after landing and full stop.
+	// Since no wave is calculated between TL=126 and key off, 
+	// it creates a situation in which last output level is greater than the peak output level.
+	// Therefore in such a situation, ReleaseStartDbX100 should be made at least less than TL.
+	if(slot.env[1]<slot.ReleaseStartDbX100)
+	{
+		slot.ReleaseStartDbX100=slot.env[1];
+	}
+
+
+	uint64_t releaseTime=sustainDecayReleaseTime0to96dB[std::min<unsigned int>(RR,63)];
+	releaseTime*=slot.lastDbX100Cache;
+	releaseTime/=(9600*1024/10);
+	slot.ReleaseEndTime=slot.ReleaseStartTime+releaseTime;
+#ifdef YM2612_DEBUGOUTPUT
+	std::cout << "Release Time " << releaseTime << "ms  " << 
+	             "Start " << slot.ReleaseStartTime << "ms  " << 
+	             "End " << slot.ReleaseEndTime << "ms" << std::endl;
+#endif
+}
+
+bool YM2612::CalculateEnvelope(unsigned int env[6],unsigned int KC,const Slot &slot) const
+{
 #ifdef YM2612_DEBUGOUTPUT
 	std::cout << KC << "," << slot.KS << "," << (KC>>(3-slot.KS)) << ", ";
 #endif
@@ -1073,15 +1095,13 @@ bool YM2612::CalculateEnvelope(unsigned int env[6],unsigned int &RR,unsigned int
 	unsigned int AR=slot.AR*2+(KC>>(3-slot.KS));
 	unsigned int DR=slot.DR*2+(KC>>(3-slot.KS));
 	unsigned int SR=slot.SR*2+(KC>>(3-slot.KS));
-	             RR=(slot.RR*2+1)*2+(KC>>(3-slot.KS));  // [2] pp.206 Double RR and add 1.
 	AR=std::min(AR,63U);
 	DR=std::min(DR,63U);
 	SR=std::min(SR,63U);
-	RR=std::min(RR,63U);
 
 	if(AR<4)
 	{
-		return NoTone(env,RR);
+		return NoTone(env);
 	}
 
 	auto TLdB100=TLtoDB100[slot.TL];
@@ -1089,7 +1109,7 @@ bool YM2612::CalculateEnvelope(unsigned int env[6],unsigned int &RR,unsigned int
 
 	if(9600<=TLdB100)
 	{
-		return NoTone(env,RR);
+		return NoTone(env);
 	}
 
 	const unsigned int TLinv=9600-TLdB100;
@@ -1158,7 +1178,6 @@ bool YM2612::CalculateEnvelope(unsigned int env[6],unsigned int &RR,unsigned int
 
 #ifdef YM2612_DEBUGOUTPUT
 	for(int i=0; i<6; ++i){std::cout << env[i] << ",";}
-	std::cout << "  RR=" << RR << "(" << sustainDecayReleaseTime0to96dB[RR]/100 << ")";
 	std::cout << std::endl;
 #endif
 

@@ -107,7 +107,6 @@ public:
 		unsigned int phaseS12Step;  // Increment of phase12 per time step.
 		unsigned int env[6];       // Envelope is in Db100 scale.  0 to 9600.  Time is (microsec>>10) (=microsecS12>>22)
 		unsigned int envDurationCache; // in (microsec>>10)
-		unsigned int RRCache;      // Calibrated Release Rate
 		bool InReleasePhase;
 		unsigned int ReleaseStartTime,ReleaseEndTime;
 		unsigned int ReleaseStartDbX100;
@@ -147,6 +146,7 @@ public:
 
 		void Clear();
 		unsigned int Note(void) const;
+		unsigned int KC(void) const;
 	};
 
 	class State
@@ -285,6 +285,16 @@ public:
 	void CheckToneDoneAllChannels(void);
 
 
+	/*! Updates slot envelope.
+	*/
+	void UpdateSlotEnvelope(const Channel &ch,Slot &slot);
+
+
+	/*!
+	*/
+	void UpdateRelease(const Channel &ch,Slot &slot);
+
+
 	/*! BLOCK_NOTE is as calculated by [2] pp.204.  Isn't it just high-5 bits of BLOCK|F_NUM2?
 	    Return value:
 	       true    Envelope calculated
@@ -296,12 +306,10 @@ public:
 	       env[3]  SL amplitude (0-127)
 	       env[4]  Duration after reaching SL.
 	       env[5]  Zero
-	    Release Rate:
-	       RR
 	*/
-	bool CalculateEnvelope(unsigned int env[6],unsigned int &RR,unsigned int BLOCK_NOTE,const Slot &slot) const;
+	bool CalculateEnvelope(unsigned int env[6],unsigned int BLOCK_NOTE,const Slot &slot) const;
 private:
-	inline bool NoTone(unsigned int env[6],unsigned int &RR) const
+	inline bool NoTone(unsigned int env[6]) const
 	{
 		env[0]=0;
 		env[1]=0;
@@ -309,7 +317,6 @@ private:
 		env[3]=0;
 		env[4]=0;
 		env[5]=0;
-		RR=0;
 		return false;
 	}
 

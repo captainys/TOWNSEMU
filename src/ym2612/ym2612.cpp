@@ -346,17 +346,20 @@ unsigned int YM2612::WriteRegister(unsigned int channelBase,unsigned int reg,uns
 		{
 			unsigned int slotFlag=((value>>4)&0x0F);
 
+			unsigned int onSlots=(~state.channels[ch].usingSlot)&slotFlag;
+			unsigned int offSlots=(state.channels[ch].usingSlot&(~slotFlag))&0x0F;
+
 			// Prob, this is the trigger to start playing.
 			// F-BASIC386 first writes SLOT=0 then SLOT=0x0F.
-			if(0==state.channels[ch].usingSlot && 0!=slotFlag)
+			if(0!=onSlots)
 			{
 				// Play a tone
-				KeyOn(ch,0x0F);
+				KeyOn(ch,onSlots);
 				chStartPlaying=ch;
 			}
-			else if(0!=state.channels[ch].usingSlot && 0==slotFlag)
+			if(0!=offSlots)
 			{
-				KeyOff(ch,0x0F);
+				KeyOff(ch,offSlots);
 			}
 
 			state.channels[ch].usingSlot=slotFlag;
@@ -417,6 +420,15 @@ unsigned int YM2612::WriteRegister(unsigned int channelBase,unsigned int reg,uns
 				break;
 			case 0x40: // TL
 				state.channels[ch].slots[slot].TL=(value&0x7F);
+				if(0!=(state.channels[ch].usingSlot&(1<<slot)))
+				{
+					UpdateSlotEnvelope(state.channels[ch],state.channels[ch].slots[slot]);
+					if(true==state.channels[ch].slots[slot].InReleasePhase &&
+					   state.channels[ch].slots[slot].env[1]<state.channels[ch].slots[slot].ReleaseStartDbX100)
+					{
+						state.channels[ch].slots[slot].ReleaseStartDbX100=state.channels[ch].slots[slot].env[1];
+					}
+				}
 				break;
 			case 0x50: // KS,AR
 				state.channels[ch].slots[slot].KS=((value>>6)&3);
@@ -432,6 +444,17 @@ unsigned int YM2612::WriteRegister(unsigned int channelBase,unsigned int reg,uns
 			case 0x80: // SL,RR
 				state.channels[ch].slots[slot].SL=((value>>4)&0x0F);
 				state.channels[ch].slots[slot].RR=(value&0x0F);
+				if(0!=(state.channels[ch].usingSlot&(1<<slot)))
+				{
+					if(true==state.channels[ch].slots[slot].InReleasePhase)
+					{
+						UpdateRelease(state.channels[ch],state.channels[ch].slots[slot]);
+					}
+					else
+					{
+						UpdateSlotEnvelope(state.channels[ch],state.channels[ch].slots[slot]);
+					}
+				}
 				break;
 			case 0x90: // SSG-EG
 				state.channels[ch].slots[slot].SSG_EG=(value&0x0F);

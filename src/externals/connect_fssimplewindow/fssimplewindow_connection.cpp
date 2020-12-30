@@ -1037,11 +1037,11 @@ void FsSimpleWindowConnection::PollGamePads(void)
 		glVertex2i(x,winHei-1);
 		glVertex2i(x,winHei-STATUS_HEI+1);
 
-		x=this->dx+228*2*scaling/100;
+		x=this->dx+224*2*scaling/100;
 		glVertex2i(x,winHei-1);
 		glVertex2i(x,winHei-STATUS_HEI+1);
 
-		x=this->dx+270*2*scaling/100;
+		x=this->dx+278*2*scaling/100;
 		glVertex2i(x,winHei-1);
 		glVertex2i(x,winHei-STATUS_HEI+1);
 
