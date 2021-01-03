@@ -20,6 +20,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include "eventlog.h"
 #include "cpputil.h"
+#include "townsdef.h"
 
 
 
@@ -45,6 +46,12 @@ void TownsEventLog::BeginPlayback(void)
 	mode=MODE_PLAYBACK;
 	playbackPtr=events.begin();
 }
+
+void TownsEventLog::StopPlayBack(void)
+{
+	mode=MODE_NONE;
+}
+
 /* static */ std::string TownsEventLog::EventTypeToString(int evtType)
 {
 	switch(evtType)
@@ -71,6 +78,12 @@ void TownsEventLog::BeginPlayback(void)
 		return "PAD0ADOWN";
 	case EVT_PAD0_A_UP:
 		return "PAD0AUP";
+	case EVT_KEYPRESS:
+		return "KEYPRESS";
+	case EVT_KEYRELEASE:
+		return "KEYRELEASE";
+	case EVT_REPEAT:
+		return "REPEAT";
 	};
 	return "?";
 }
@@ -259,6 +272,11 @@ std::vector <std::string> TownsEventLog::GetText(void) const
 			text.back()+=" ";
 			text.back()+=cpputil::Ubtox(e.keyCode[1]);
 			break;
+		case EVT_KEYPRESS:
+		case EVT_KEYRELEASE:
+			text.push_back("KEY ");
+			text.back()+=TownsKeyCodeToStr(e.keyCode[0]);
+			break;
 		}
 	}
 	return text;
@@ -380,6 +398,13 @@ bool TownsEventLog::LoadEventLog(std::string fName)
 						std::cout << "Too few arguments" << std::endl;
 						std::cout << "  " << line << std::endl;
 						return false;
+					}
+				}
+				else if("KEY"==argv[0])
+				{
+					if(2<=argv.size())
+					{
+						events.back().keyCode[0]=TownsStrToKeyCode(argv[1]);
 					}
 				}
 			}
@@ -536,6 +561,37 @@ void TownsEventLog::Playback(class FMTowns &towns)
 					playbackPtr->tPlayed=now;
 					++playbackPtr;
 				}
+				break;
+
+			case EVT_KEYPRESS:
+				if(dt<=tPassed)
+				{
+					unsigned char byteData=0;
+					// byteData|=(0!=FsGetKeyState(FSKEY_CTRL) ? TOWNS_KEYFLAG_CTRL : 0);
+					// byteData|=(0!=FsGetKeyState(FSKEY_SHIFT) ? TOWNS_KEYFLAG_SHIFT : 0);
+					byteData|=TOWNS_KEYFLAG_JIS_PRESS;
+
+					towns.keyboard.PushFifo(byteData,playbackPtr->keyCode[0]);
+					playbackPtr->tPlayed=now;
+					++playbackPtr;
+				}
+				break;
+			case EVT_KEYRELEASE:
+				if(dt<=tPassed)
+				{
+					unsigned char byteData=0;
+					// byteData|=(0!=FsGetKeyState(FSKEY_CTRL) ? TOWNS_KEYFLAG_CTRL : 0);
+					// byteData|=(0!=FsGetKeyState(FSKEY_SHIFT) ? TOWNS_KEYFLAG_SHIFT : 0);
+					byteData|=TOWNS_KEYFLAG_JIS_RELEASE;
+
+					towns.keyboard.PushFifo(byteData,playbackPtr->keyCode[0]);
+					playbackPtr->tPlayed=now;
+					++playbackPtr;
+				}
+				break;
+			case EVT_REPEAT:
+				playbackPtr=events.begin();
+				t0=now;
 				break;
 			}
 		}

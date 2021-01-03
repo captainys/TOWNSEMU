@@ -91,6 +91,8 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["IMMISIO"]=CMD_IMM_IS_IOPORT;
 	primaryCmdMap["SAVEEVT"]=CMD_SAVE_EVENTLOG;
 	primaryCmdMap["LOADEVT"]=CMD_LOAD_EVENTLOG;
+	primaryCmdMap["PLAYEVT"]=CMD_PLAY_EVENTLOG;
+	primaryCmdMap["STOPEVT"]=CMD_STOP_EVENTLOG;
 
 	primaryCmdMap["SAVEKEYMAP"]=CMD_SAVE_KEYMAP;
 	primaryCmdMap["LOADKEYMAP"]=CMD_LOAD_KEYMAP;
@@ -412,6 +414,13 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Save CS:EIP Log to file." << std::endl;
 	std::cout << "SAVEEVT filename.txt" << std::endl;
 	std::cout << "  Save Event Log to file." << std::endl;
+	std::cout << "LOADEVT filename.txt" << std::endl;
+	std::cout << "  Load Event Log." << std::endl;
+	std::cout << "PLAYEVT" << std::endl;
+	std::cout << "  Playback Event Log." << std::endl;
+	std::cout << "STOPEVT" << std::endl;
+	std::cout << "  Stop Playback Event Log." << std::endl;
+	
 
 	std::cout << "SS filename.png" << std::endl;
 	std::cout << "SS filename.png 0|1" << std::endl;
@@ -799,12 +808,21 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 	case CMD_LOAD_EVENTLOG:
 		if(true==towns.eventLog.LoadEventLog(cmd.argv[1]))
 		{
-			towns.eventLog.BeginPlayback();
+			printf("Loaded event log.\n");
+			printf("PLAYEVT command for play back.\n");
 		}
 		else
 		{
 			PrintError(ERROR_CANNOT_OPEN_FILE);
 		}
+		break;
+	case CMD_PLAY_EVENTLOG:
+		printf("Start Event-Log Playback.\n");
+		towns.eventLog.BeginPlayback();
+		break;
+	case CMD_STOP_EVENTLOG:
+		printf("Stop Event-Log Playback.\n");
+		towns.eventLog.StopPlayBack();
 		break;
 	case CMD_SAVE_KEYMAP:
 		Execute_SaveKeyMap(*outside_world,cmd);

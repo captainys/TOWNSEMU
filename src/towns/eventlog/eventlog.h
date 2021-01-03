@@ -48,6 +48,9 @@ public:
 		EVT_KEYCODE,
 		EVT_PAD0_A_DOWN,
 		EVT_PAD0_A_UP,
+		EVT_KEYPRESS,
+		EVT_KEYRELEASE,
+		EVT_REPEAT, // Go all the way back.
 	NUMBER_OF_EVENT_TYPES
 	};
 
@@ -90,6 +93,10 @@ public:
 	void BeginPlayback(void);
 private:
 	void SkipPlaybackFileEvent(void);
+
+
+public:
+	void StopPlayBack(void);
 
 
 
