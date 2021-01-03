@@ -64,6 +64,9 @@ public:
 
 	std::vector <std::string> sharedDir;
 
+	std::vector <std::string> fdSearchPaths;
+	std::vector <std::string> cdSearchPaths;
+
 	int keyboardMode=TOWNS_KEYBOARD_MODE_DEFAULT;
 	std::vector <VirtualKey> virtualKeys;
 

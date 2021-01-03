@@ -1186,6 +1186,10 @@ bool D77File::D77Disk::DeleteDuplicateSector(int trk,int sid)
 				}
 			}
 		}
+		for(auto &s : t.sector)
+		{
+			s.nSectorTrack=t.sector.size();
+		}
 	}
 
 	return modified;
@@ -1238,6 +1242,10 @@ bool D77File::D77Disk::DeleteSectorWithId(int trk,int sid,int sectorId)
 				SetModified();
 			}
 		}
+		for(auto &s : t.sector)
+		{
+			s.nSectorTrack=t.sector.size();
+		}
 	}
 
 	return modified;
@@ -1265,6 +1273,10 @@ bool D77File::D77Disk::DeleteSectorByIndex(int trk,int sid,int sectorIdx)
 			t.sector.erase(t.sector.begin()+sectorIdx);
 			modified=true;
 			SetModified();
+		}
+		for(auto &s : t.sector)
+		{
+			s.nSectorTrack=t.sector.size();
 		}
 	}
 
@@ -1324,6 +1336,16 @@ const D77File::D77Disk::D77Sector *D77File::D77Disk::GetSector(int trk,int sid,i
 	if(nullptr!=trkPtr)
 	{
 		return trkPtr->FindSector(sec);
+	}
+	return nullptr;
+}
+
+const D77File::D77Disk::D77Sector *D77File::D77Disk::GetSectorByIndex(int trk,int sid,int sec) const
+{
+	auto trkPtr=FindTrack(trk,sid);
+	if(nullptr!=trkPtr && 0<=sec && sec<trkPtr->sector.size())
+	{
+		return &trkPtr->sector[sec];
 	}
 	return nullptr;
 }

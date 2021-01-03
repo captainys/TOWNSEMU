@@ -152,11 +152,11 @@ int main(int argc,char *argv[])
 
 	WriteYM2612RegisterCH0to2(0x28,(ch&7));  // Key Off, Enter Release Phase
 
-	while(clock()<clk0+CLOCKS_PER_SEC*15/10);  // RR=31 at 1.5sec
+	while(clock()<clk0+CLOCKS_PER_SEC*15/10);  // RR=4 at 1.5sec
 
 	for(slot=0; slot<4; ++slot)
 	{
-		WriteYM2612RegisterCH0to2(0x80+ch+slot*4,MIX_SL_RR(SL,31));
+		WriteYM2612RegisterCH0to2(0x80+ch+slot*4,MIX_SL_RR(SL,8));
 	}
 
 	while(clock()<clk0+CLOCKS_PER_SEC*6);

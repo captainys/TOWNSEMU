@@ -243,6 +243,8 @@ public:
 	State state;
 	Variables var;
 
+	std::vector <std::string> searchPaths;
+
 	virtual const char *DeviceName(void) const{return "CDROM";}
 
 	TownsCDROM(class FMTowns *townsPtr,class TownsPIC *PICPtr,class TownsDMAC *DMACPtr);

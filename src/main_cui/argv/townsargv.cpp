@@ -91,6 +91,9 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  Load Key-Mapping file." << std::endl;
 	std::cout << "-DONTAUTOSAVECMOS" << std::endl;
 	std::cout << "  This option will prevent VM from saving CMOS file on exit." << std::endl;
+	std::cout << "-FDPATH path" << std::endl;
+	std::cout << "  Floppy-Disk Image Search Path." << std::endl;
+	std::cout << "  Repeat -FDPATH path1 -FDPATH path2 ... to specify multipl paths." << std::endl;
 	std::cout << "-FD0 filename" << std::endl;
 	std::cout << "  Floppy disk image file name for Drive A." << std::endl;
 	std::cout << "-FD1 filename" << std::endl;
@@ -101,6 +104,9 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  Write un-protect floppy disk." << std::endl;
 	std::cout << "-CD image-file-name" << std::endl;
 	std::cout << "  CD-ROM image file name for the internal drive. ISO or CUE." << std::endl;
+	std::cout << "-CDPATH path" << std::endl;
+	std::cout << "  CD-ROM Image Search Path." << std::endl;
+	std::cout << "  Repeat -CDPATH path1 -CDPATH path2 ... to specify multipl paths." << std::endl;
 	std::cout << "-ICM image-file-name" << std::endl;
 	std::cout << "  IC Memory Card image file name." << std::endl;
 	std::cout << "-JEIDA4 image-file-name" << std::endl;
@@ -354,6 +360,11 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 			wingCommanderThrottleAxis=cpputil::Atoi(argv[i+2]);
 			i+=2;
 		}
+		else if("-FDPATH"==ARG && i+1<argc)
+		{
+			fdSearchPaths.push_back(argv[i+1]);
+			++i;
+		}
 		else if("-FD0"==ARG && i+1<argc)
 		{
 			fdImgFName[0]=argv[i+1];
@@ -379,6 +390,11 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		else if("-FD1UP"==ARG)
 		{
 			fdImgWriteProtect[1]=false;
+		}
+		else if("-CDPATH"==ARG && i+1<argc)
+		{
+			cdSearchPaths.push_back(argv[i+1]);
+			++i;
 		}
 		else if("-CD"==ARG && i+1<argc)
 		{

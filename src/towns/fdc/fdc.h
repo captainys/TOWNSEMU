@@ -61,6 +61,8 @@ public:
 	};
 	ImageFile imgFile[NUM_DRIVES];
 
+	std::vector <std::string> searchPaths;
+
 	class State
 	{
 	public:

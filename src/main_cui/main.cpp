@@ -158,6 +158,8 @@ bool Setup(FMTowns &towns,Outside_World *outside_world,const TownsARGV &argv)
 		std::cout << towns.vmAbortReason << std::endl;
 		return false;
 	}
+
+	towns.fdc.searchPaths=argv.fdSearchPaths;
 	for(int drv=0; drv<2; ++drv)
 	{
 		if(""!=argv.fdImgFName[drv])
@@ -178,6 +180,7 @@ bool Setup(FMTowns &towns,Outside_World *outside_world,const TownsARGV &argv)
 		towns.physMem.SetUpMemoryAccess(towns.TownsTypeToCPUType(argv.townsType));
 	}
 
+	towns.cdrom.searchPaths=argv.cdSearchPaths;
 	if(""!=argv.cdImgFName)
 	{
 		auto errCode=towns.cdrom.state.GetDisc().Open(argv.cdImgFName);

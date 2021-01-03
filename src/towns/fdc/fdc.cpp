@@ -134,11 +134,12 @@ bool TownsFDC::LoadD77orRAW(unsigned int driveNum,const char fNameIn[],bool verb
 	}
 }
 
-bool TownsFDC::LoadD77(unsigned int driveNum,const char fName[],bool verbose)
+bool TownsFDC::LoadD77(unsigned int driveNum,const char fNameIn[],bool verbose)
 {
 	driveNum&=3;
 	auto imgIdx=driveNum;
 
+	auto fName=cpputil::FindFileWithSearchPaths(fNameIn,searchPaths);
 	auto bin=cpputil::ReadBinaryFile(fName);
 	if(0==bin.size())
 	{
@@ -162,11 +163,12 @@ bool TownsFDC::LoadD77(unsigned int driveNum,const char fName[],bool verbose)
 	}
 }
 
-bool TownsFDC::LoadRawBinary(unsigned int driveNum,const char fName[],bool verbose)
+bool TownsFDC::LoadRawBinary(unsigned int driveNum,const char fNameIn[],bool verbose)
 {
 	driveNum&=3;
 	auto imgIdx=driveNum;
 
+	auto fName=cpputil::FindFileWithSearchPaths(fNameIn,searchPaths);
 	auto bin=cpputil::ReadBinaryFile(fName);
 	if(0==bin.size())
 	{

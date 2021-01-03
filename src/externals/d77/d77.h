@@ -378,6 +378,10 @@ public:
 		*/
 		const D77Sector *GetSector(int trk,int sid,int sec) const;
 
+		/*! Get a pointer to a sector by index, not sector number.
+		*/
+		const D77Sector *GetSectorByIndex(int trk,int sid,int sec) const;
+
 		/*! Copies a track.
 		*/
 		bool CopyTrack(int dstTrk,int dstSide,int srcTrk,int srcSide);

@@ -391,14 +391,14 @@ unsigned int TownsCDROM::LoadDiscImage(const std::string &fName)
 	{
 		std::string cueFName=cpputil::RemoveExtension(fName.c_str());
 		cueFName+=".CUE";
-		if(DiscImage::ERROR_NOERROR==state.GetDisc().Open(cueFName))
+		if(DiscImage::ERROR_NOERROR==state.GetDisc().Open(cpputil::FindFileWithSearchPaths(cueFName,searchPaths)))
 		{
 			state.discChanged=true;
 			return true;
 		}
 		cueFName=cpputil::RemoveExtension(fName.c_str());
 		cueFName+=".cue";
-		if(DiscImage::ERROR_NOERROR==state.GetDisc().Open(cueFName))
+		if(DiscImage::ERROR_NOERROR==state.GetDisc().Open(cpputil::FindFileWithSearchPaths(cueFName,searchPaths)))
 		{
 			state.discChanged=true;
 			return true;
@@ -406,7 +406,7 @@ unsigned int TownsCDROM::LoadDiscImage(const std::string &fName)
 	}
 
 	state.discChanged=true;
-	return state.GetDisc().Open(fName);
+	return state.GetDisc().Open(cpputil::FindFileWithSearchPaths(fName,searchPaths));
 }
 
 void TownsCDROM::BreakOnCommandCheck(const char phase[])

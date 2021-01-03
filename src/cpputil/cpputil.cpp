@@ -41,6 +41,36 @@ bool cpputil::FileExists(std::string fName)
 	return false;
 }
 
+std::string cpputil::FindFileWithSearchPaths(std::string fName,const std::vector <std::string> &searchPaths)
+{
+	if(true==FileExists(fName))
+	{
+		return fName;
+	}
+
+	for(auto path : searchPaths)
+	{
+		auto ful=MakeFullPathName(path,fName);
+		if(true==FileExists(ful))
+		{
+			return ful;
+		}
+	}
+
+	std::string inPath,inFile;
+	SeparatePathFile(inPath,inFile,fName);
+	for(auto path : searchPaths)
+	{
+		auto ful=MakeFullPathName(path,inFile);
+		if(true==FileExists(ful))
+		{
+			return ful;
+		}
+	}
+
+	return "";
+}
+
 std::vector <unsigned char> cpputil::ReadBinaryFile(std::string fName)
 {
 	std::vector <unsigned char> dat;
