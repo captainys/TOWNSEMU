@@ -44,6 +44,7 @@ void TownsEventLog::BeginRecording(long long int townsTime)
 void TownsEventLog::BeginPlayback(void)
 {
 	mode=MODE_PLAYBACK;
+	t0=std::chrono::system_clock::now();
 	playbackPtr=events.begin();
 }
 
@@ -117,7 +118,7 @@ void TownsEventLog::LogMouseStart(long long int townsTime)
 	if(MODE_RECORDING==mode)
 	{
 		events.push_back(Event());
-		events.back().t=std::chrono::system_clock::now();
+		events.back().t=std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now()-t0);
 		events.back().townsTime=townsTime;
 		events.back().eventType=eventType;
 	}
@@ -132,7 +133,7 @@ void TownsEventLog::LogMouseEnd(long long int townsTime)
 	if(MODE_RECORDING==mode)
 	{
 		events.push_back(Event());
-		events.back().t=std::chrono::system_clock::now();
+		events.back().t=std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now()-t0);
 		events.back().townsTime=townsTime;
 		events.back().eventType=eventType;
 	}
@@ -147,7 +148,7 @@ void TownsEventLog::LogLeftButtonDown(long long int townsTime,int mx,int my)
 	if(MODE_RECORDING==mode)
 	{
 		events.push_back(Event());
-		events.back().t=std::chrono::system_clock::now();
+		events.back().t=std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now()-t0);
 		events.back().townsTime=townsTime;
 		events.back().eventType=eventType;
 		events.back().mos[0]=mx;
@@ -160,7 +161,7 @@ void TownsEventLog::LogLeftButtonUp(long long int townsTime,int mx,int my)
 	if(MODE_RECORDING==mode)
 	{
 		events.push_back(Event());
-		events.back().t=std::chrono::system_clock::now();
+		events.back().t=std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now()-t0);
 		events.back().townsTime=townsTime;
 		events.back().eventType=eventType;
 		events.back().mos[0]=mx;
@@ -173,7 +174,7 @@ void TownsEventLog::LogRightButtonDown(long long int townsTime,int mx,int my)
 	if(MODE_RECORDING==mode)
 	{
 		events.push_back(Event());
-		events.back().t=std::chrono::system_clock::now();
+		events.back().t=std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now()-t0);
 		events.back().townsTime=townsTime;
 		events.back().eventType=eventType;
 		events.back().mos[0]=mx;
@@ -186,7 +187,7 @@ void TownsEventLog::LogRightButtonUp(long long int townsTime,int mx,int my)
 	if(MODE_RECORDING==mode)
 	{
 		events.push_back(Event());
-		events.back().t=std::chrono::system_clock::now();
+		events.back().t=std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now()-t0);
 		events.back().townsTime=townsTime;
 		events.back().eventType=eventType;
 		events.back().mos[0]=mx;
@@ -199,7 +200,7 @@ void TownsEventLog::LogFileOpen(long long int townsTime,std::string fName)
 	if(MODE_RECORDING==mode)
 	{
 		events.push_back(Event());
-		events.back().t=std::chrono::system_clock::now();
+		events.back().t=std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now()-t0);
 		events.back().townsTime=townsTime;
 		events.back().eventType=eventType;
 		events.back().fName=fName;
@@ -211,7 +212,7 @@ void TownsEventLog::LogFileExec(long long int townsTime,std::string fName)
 	if(MODE_RECORDING==mode)
 	{
 		events.push_back(Event());
-		events.back().t=std::chrono::system_clock::now();
+		events.back().t=std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now()-t0);
 		events.back().townsTime=townsTime;
 		events.back().eventType=eventType;
 		events.back().fName=fName;
@@ -223,7 +224,7 @@ void TownsEventLog::LogKeyCode(long long int townsTime,unsigned char keyCode1,un
 	if(MODE_RECORDING==mode)
 	{
 		events.push_back(Event());
-		events.back().t=std::chrono::system_clock::now();
+		events.back().t=std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now()-t0);
 		events.back().townsTime=townsTime;
 		events.back().eventType=eventType;
 		events.back().keyCode[0]=keyCode1;
@@ -240,7 +241,7 @@ std::vector <std::string> TownsEventLog::GetText(void) const
 		text.back()+=EventTypeToString(e.eventType);
 
 		text.push_back("T ");
-		text.back()+=cpputil::Uitoa((int)(std::chrono::duration_cast <std::chrono::milliseconds>(e.t-t0).count()));
+		text.back()+=cpputil::Uitoa((int)(std::chrono::duration_cast <std::chrono::milliseconds>(e.t).count()));
 		text.back()+="ms";
 
 		text.push_back("TWT ");
@@ -322,8 +323,18 @@ bool TownsEventLog::LoadEventLog(std::string fName)
 				{
 					if(2<=argv.size())
 					{
+						std::chrono::milliseconds  t;
+						if(0==events.size())
+						{
+							t=std::chrono::milliseconds(0);
+						}
+						else
+						{
+							t=events.back().t;
+						}
 						events.push_back(Event());
 						events.back().eventType=strToEventType[argv[1]];
+						events.back().t=t; // Tentative.
 					}
 					else
 					{
@@ -336,7 +347,7 @@ bool TownsEventLog::LoadEventLog(std::string fName)
 				{
 					if(2<=argv.size())
 					{
-						events.back().t=t0+std::chrono::milliseconds(cpputil::Atoi(argv[1].c_str()));
+						events.back().t=std::chrono::milliseconds(cpputil::Atoi(argv[1].c_str()));
 					}
 					else
 					{
@@ -437,11 +448,11 @@ void TownsEventLog::Playback(class FMTowns &towns)
 		}
 		else
 		{
-			decltype(playbackPtr->tPlayed) baseT;
-			decltype(playbackPtr->t-t0) dt;
+			std::chrono::time_point <std::chrono::system_clock> baseT;
+			std::chrono::milliseconds dt;
 			if(events.begin()==playbackPtr)
 			{
-				dt=playbackPtr->t-t0;
+				dt=playbackPtr->t;
 				baseT=t0;
 			}
 			else
@@ -452,7 +463,7 @@ void TownsEventLog::Playback(class FMTowns &towns)
 				baseT=prev->tPlayed;
 			}
 			auto now=std::chrono::system_clock::now();
-			auto tPassed=now-baseT;
+			auto tPassed=std::chrono::duration_cast<std::chrono::milliseconds>(now-baseT);
 
 			switch(playbackPtr->eventType)
 			{
@@ -590,8 +601,11 @@ void TownsEventLog::Playback(class FMTowns &towns)
 				}
 				break;
 			case EVT_REPEAT:
-				playbackPtr=events.begin();
-				t0=now;
+				if(dt<=tPassed)
+				{
+					playbackPtr=events.begin();
+					t0=now;
+				}
 				break;
 			}
 		}

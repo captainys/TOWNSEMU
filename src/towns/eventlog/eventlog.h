@@ -57,7 +57,7 @@ public:
 	class Event
 	{
 	public:
-		std::chrono::time_point <std::chrono::system_clock>  t;
+		std::chrono::milliseconds  t;
 		mutable std::chrono::time_point <std::chrono::system_clock> tPlayed;
 		long long int townsTime;
 		int eventType;
