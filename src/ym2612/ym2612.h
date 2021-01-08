@@ -256,6 +256,11 @@ public:
 	/*! Adds a wave to the buffer, and returns the number of samples (number_of_bytes_filled/4).
 	    Sampling rate is defined by WAVE_SAMPLING_RATE.
 	*/
+	long long int MakeWaveForNSamples(unsigned char wavBuf[],unsigned long long int numSamplesRequested) const;
+
+	/*! Adds a wave to the buffer, and returns the number of samples (number_of_bytes_filled/4).
+	    Sampling rate is defined by WAVE_SAMPLING_RATE.
+	*/
 	long long int MakeWaveForNSamples(unsigned char wavBuf[],unsigned int nPlayingCh,unsigned int playingCh[],unsigned long long int numSamplesRequested) const;
 private:
 	class WithLFO;

@@ -1031,6 +1031,20 @@ long long int YM2612::MakeWaveForNSamplesTemplate(unsigned char wave[],unsigned 
 	return i;
 }
 
+long long int YM2612::MakeWaveForNSamples(unsigned char wavBuf[],unsigned long long int numSamplesRequested) const
+{
+	unsigned int nPlayingCh=0;
+	unsigned int playingCh[NUM_CHANNELS];
+	for(unsigned int chNum=0; chNum<NUM_CHANNELS; ++chNum)
+	{
+		if(0!=(state.playingCh&(1<<chNum)))
+		{
+			playingCh[nPlayingCh++]=chNum;
+		}
+	}
+	return MakeWaveForNSamples(wavBuf,nPlayingCh,playingCh,numSamplesRequested);
+}
+
 long long int YM2612::MakeWaveForNSamples(unsigned char wave[],unsigned int nPlayingCh,unsigned int playingCh[],unsigned long long int numSamples) const
 {
 	if(true==state.LFO)
