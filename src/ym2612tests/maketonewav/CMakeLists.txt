@@ -1,6 +1,6 @@
 set(TARGET_NAME maketonewav)
 add_executable(${TARGET_NAME} main.cpp)
-target_link_libraries(${TARGET_NAME} fssimplewindow ym2612 yssimplesound)
+target_link_libraries(${TARGET_NAME} fssimplewindow ym2612 yssimplesound cpputil)
 
 if(MSVC)
 	target_link_libraries(${TARGET_NAME} yssimplesound_dsound)

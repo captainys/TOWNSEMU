@@ -591,80 +591,83 @@ bool YM2612::TimerUp(unsigned int timerId) const
 }
 
 
-#include "cpputil.h"
 
 std::vector <std::string> YM2612::GetStatusText(void) const
 {
 	std::vector <std::string> text;
-	std::string empty;
+	char str[256];
 
-	text.push_back(empty);
-	text.back()="YM2612";
+	text.push_back("YM2612");
 
 	for(int chNum=0; chNum<6; ++chNum)
 	{
 		auto &ch=state.channels[chNum];
-		text.push_back(empty);
 
-		text.back()="CH:"+cpputil::Itoa(chNum);
-		text.back()+="  F_NUM="+cpputil::Itoa(ch.F_NUM,5)+"  BLOCK="+cpputil::Itoa(ch.BLOCK);
-		text.back()+="  FB="+cpputil::Itoa(ch.FB)+"  CONNECT="+cpputil::Itoa(ch.CONNECT);
-		text.back()+="  L="+cpputil::Itoa(ch.L)+"  R="+cpputil::Itoa(ch.R);
-		text.back()+="  AMS="+cpputil::Itoa(ch.AMS)+"  PMS="+cpputil::Itoa(ch.PMS);
-		text.back()+="  ActiveSlots="+cpputil::Ubtox(ch.usingSlot);
+		sprintf(str,"CH:%d  F_NUM=%-5d  BLOCK=%-2d  FB=%d  CONNECT=%d  L=%d  R=%d  AMS=%d  PMS=%d  ActiveSlots=%02x",
+			chNum,
+			ch.F_NUM,
+			ch.BLOCK,
+			ch.FB,
+			ch.CONNECT,
+			ch.L,
+			ch.R,
+			ch.AMS,
+			ch.PMS,
+			ch.usingSlot);
+		text.push_back(str);
 
+		int s=0;
 		for(auto &slot : ch.slots)
 		{
-			text.push_back(empty);
-			text.back()+="SLOT:";
-			text.back()+="DT="+cpputil::Itoa(slot.DT);
-			text.back()+="  MULTI="+cpputil::Itoa(slot.MULTI,2);
-			text.back()+="  TL="+cpputil::Itoa(slot.TL,3)+"("+cpputil::Itoa(TLtoDB100[slot.TL]/100,2)+"dB)";
-			text.back()+="  KS="+cpputil::Itoa(slot.KS);
-			text.back()+="  AR="+cpputil::Itoa(slot.AR,2);
-			text.back()+="  AM="+cpputil::Itoa(slot.AM);
-			text.back()+="  DR="+cpputil::Itoa(slot.DR,2);
-			text.back()+="  SR="+cpputil::Itoa(slot.SR,2);
-			text.back()+="  SL="+cpputil::Itoa(slot.SL,2)+"("+cpputil::Itoa(SLtoDB100[slot.SL]/100,2)+"dB)";
-			text.back()+="  RR="+cpputil::Itoa(slot.RR,2);
-			text.back()+="  SSG_EG="+cpputil::Itoa(slot.SSG_EG);
+			sprintf(str,"SLOT:%d  DT=%d  MULTI=%-2d  TL=%-3d(%2ddB)  KS=%d  AR=%-2d  AM=%d  DR=%-2d  SR=%-2d  SL=%2d(%2ddB)  RR=%-2d  SSG_EG=%d",
+				s,
+				slot.DT,
+				slot.MULTI,
+				slot.TL,
+				TLtoDB100[slot.TL]/100,
+				slot.KS,
+				slot.AR,
+				slot.AM,
+				slot.DR,
+				slot.SR,
+				slot.SL,
+				SLtoDB100[slot.SL]/100,
+				slot.RR,
+				slot.SSG_EG);
+			text.push_back(str);
+			++s;
 		}
 	}
 
 
-	text.push_back(empty);
-	text.back()="TimerA Up=";
-	text.back().push_back(cpputil::BoolToChar(TimerAUp()));
-	text.back()+="  Count Preset=";
-	text.back()+=cpputil::Ustox((state.reg[REG_TIMER_A_COUNT_HIGH]<<2)|(state.reg[REG_TIMER_A_COUNT_LOW]&3));
-	text.back()+="  Internal Count/Threshold=";
-	text.back()+=cpputil::Uitox(state.timerCounter[0]&0xFFFFFFFF)+"/"+cpputil::Uitox(NTICK_TIMER_A);
+	sprintf(str,"TimerA Up=%d  Count Preset=0x%04x  Internal Count/Threshold=0x%08x/0x%08x",
+		TimerAUp(),
+		((state.reg[REG_TIMER_A_COUNT_HIGH]<<2)|(state.reg[REG_TIMER_A_COUNT_LOW]&3)),
+		(state.timerCounter[0]&0xFFFFFFFF),
+		NTICK_TIMER_A);
+	text.push_back(str);
 
 
+	sprintf(str,"TimerB Up=%d  Count Preset=0x%04x  Internal Count/Threshold=0x%08x/0x%08x",
+		TimerBUp(),
+		state.reg[REG_TIMER_B_COUNT],
+		(state.timerCounter[1]&0xFFFFFFFF),
+		NTICK_TIMER_B);
+	text.push_back(str);
 
-	text.push_back(empty);
-	text.back()+="TimerB Up=";
-	text.back().push_back(cpputil::BoolToChar(TimerBUp()));
-	text.back()+="  Count Preset=";
-	text.back()+=cpputil::Ustox(state.reg[REG_TIMER_B_COUNT]);
-	text.back()+="  Internal Count/Threshold=";
-	text.back()+=cpputil::Uitox(state.timerCounter[1]&0xFFFFFFFF)+"/"+cpputil::Uitox(NTICK_TIMER_B);
 
-	text.push_back(empty);
-	text.back()="Timer Control(Reg ";
-	text.back()+=cpputil::Ubtox(REG_TIMER_CONTROL);
-	text.back()+=")=";
-	text.back()+=cpputil::Ubtox(state.reg[REG_TIMER_CONTROL]);
-	text.back()+=" MODE:"+cpputil::Ubtox((state.reg[REG_TIMER_CONTROL]>>6)&3);
-	text.back()+=" RST:"+cpputil::Ubtox((state.reg[REG_TIMER_CONTROL]>>4)&3);
-	text.back()+=" ENA:"+cpputil::Ubtox((state.reg[REG_TIMER_CONTROL]>>2)&3);
-	text.back()+=" LOAD:"+cpputil::Ubtox(state.reg[REG_TIMER_CONTROL]&3);
+	sprintf(str,"Timer Control(Reg 0x%02x)=0x%02x  MODE:0x%02x  RST:0x%02x  ENA:0x%02x  LOAD:0x%02x",
+		REG_TIMER_CONTROL,
+		state.reg[REG_TIMER_CONTROL],
+		((state.reg[REG_TIMER_CONTROL]>>6)&3),
+		((state.reg[REG_TIMER_CONTROL]>>4)&3),
+		((state.reg[REG_TIMER_CONTROL]>>2)&3),
+		(state.reg[REG_TIMER_CONTROL]&3));
+	text.push_back(str);
 
-	text.push_back("");
-	text.back()+="LFO:";
-	text.back()+=cpputil::BoolToStr(state.LFO);
-	text.back()+=" FREQ-CTRL:";
-	text.back()+=cpputil::Itoa(state.FREQCTRL);
+
+	sprintf(str,"LFO:%d  FREQ-CTRL:%d",state.LFO,state.FREQCTRL);
+	text.push_back(str);
 
 	return text;
 }
