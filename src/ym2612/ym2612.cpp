@@ -580,6 +580,16 @@ bool YM2612::TimerUp(unsigned int timerId) const
 	}
 }
 
+/* static */ void YM2612::GetCarrierSlotFromConnection(int &numCarrierSlots,int carrierSlots[4],unsigned int connection)
+{
+	connection&=7;
+	numCarrierSlots=connectionToOutputSlots[connection].nOutputSlots;
+	carrierSlots[0]=connectionToOutputSlots[connection].slots[0];
+	carrierSlots[1]=connectionToOutputSlots[connection].slots[1];
+	carrierSlots[2]=connectionToOutputSlots[connection].slots[2];
+	carrierSlots[3]=connectionToOutputSlots[connection].slots[3];
+}
+
 
 #include "cpputil.h"
 

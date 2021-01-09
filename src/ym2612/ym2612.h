@@ -58,6 +58,8 @@ public:
 
 		WAVE_SAMPLING_RATE=44100,
 		WAVE_OUTPUT_AMPLITUDE_MAX_DEFAULT=8192,
+
+		TL_MAX=127,
 	};
 
 	enum
@@ -68,6 +70,20 @@ public:
 		REG_TIMER_B_COUNT=0x26,
 		REG_TIMER_CONTROL=0x27,
 		REG_KEY_ON_OFF=0x28,
+
+		REG_DT_MULTI=0x30,
+		REG_TL=0x40,
+		REG_KS_AR=0x50,
+		REG_AM_DR=0x60,
+		REG_SR=0x70,
+		REG_SL_RR=0x80,
+		REG_SSG_EG=0x90,
+
+		REG_FNUM1=0xA0,
+		REG_FNUM2=0xA4,
+
+		REG_FB_CNCT=0xB0,
+		REG_LR_AMS_PMS=0xB4,
 	};
 
 	enum
@@ -388,6 +404,8 @@ public:
 		return FNUM;
 	}
 
+
+	static void GetCarrierSlotFromConnection(int &numCarrierSlots,int carrierSlots[4],unsigned int connection);
 
 
 	std::vector <std::string> GetStatusText(void) const;
