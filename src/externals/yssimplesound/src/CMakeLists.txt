@@ -1,5 +1,6 @@
 set(TARGET_NAME yssimplesound)
 add_library(${TARGET_NAME} yssimplesound.cpp yssimplesound.h)
+target_include_directories(${TARGET_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 if(MSVC)
 	add_subdirectory("windows_dsound")
