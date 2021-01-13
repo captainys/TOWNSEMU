@@ -11,17 +11,16 @@ ROMDIR=os.path.join(THISDIR,"..","testdata","ROM_MX")
 DISKDIR=os.path.join(THISDIR,"..","testdata","DISKIMG")
 
 
-def Make():
-	if sys.platform.startswith('win'):
-	    return "nmake"
-	else:
-	    return "make"
-
 
 def Run():
 	os.chdir(BUILDDIR)
 	proc=subprocess.Popen([
-		Make(),
+		"cmake",
+		"--build",
+		".",
+		"--parallel",
+		"--config",
+		"Release",
 	])
 	proc.communicate();
 	if proc.returncode!=0:

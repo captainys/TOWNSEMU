@@ -98,6 +98,8 @@ public:
 	class SoundData;
 	std::shared_ptr <STATE> playerStatePtr;
 
+	class Stream;
+
 private:
 	class APISpecificData;
 
@@ -142,6 +144,12 @@ public:
 	*/
 	void End(void);
 
+	/*! Prepare to play the sound data to reduce latency on PlayOneShot and PlayBackground.
+	    If the using application does not call this function, PlayOneShot and PlayBackground will call
+		this function, but the audio playback may start with some lag.
+	*/
+	void PreparePlay(SoundData &dat);
+
 	/*! Starts play-back without repeat.
 	*/
 	void PlayOneShot(SoundData &dat);
@@ -150,6 +158,31 @@ public:
 	*/
 	void PlayBackground(SoundData &dat);
 
+	/*! Start play as a stream.  Additional 
+	*/
+	YSRESULT StartStreaming(Stream &streamPlayer);
+
+	/*! Stop a stream player.
+	*/
+	void StopStreaming(Stream &streamPlayer);
+
+	/*! Check Stream Player can accept additional segment.
+	*/
+	YSBOOL StreamPlayerReadyToAcceptNextSegment(const Stream &streamPlayer,const SoundData &dat) const;
+
+	/*! Add a next segment to the stream player.
+	*/
+	YSRESULT AddNextStreamingSegment(Stream &streamPlayer,const SoundData &dat);
+
+private:
+	// Written in API-specific source >>
+	YSRESULT StartStreamingAPISpecific(Stream &streamPlayer);
+	void StopStreamingAPISpecific(Stream &streamPlayer);
+	YSBOOL StreamPlayerReadyToAcceptNextSegmentAPISpecific(const Stream &streamPlayer,const SoundData &dat) const;
+	YSRESULT AddNextStreamingSegmentAPISpecific(Stream &streamPlayer,const SoundData &dat);
+	// Written in API-specific source <<
+
+public:
 	/*! Stops play-back.
 	*/
 	void Stop(SoundData &dat);
@@ -200,6 +233,8 @@ private:
 	SoundData(const SoundData &);
 	SoundData &operator=(const SoundData &);
 	// Make Uncopiable <<
+
+	bool prepared=false;
 
 	friend class YsSoundPlayer;
 	class APISpecificDataPerSoundData;
@@ -256,6 +291,10 @@ private:
 public:
 	SoundData();
 	~SoundData();
+
+	void CopyFrom(const SoundData &incoming);
+	void MoveFrom(SoundData &incoming);
+
 	void Initialize(void);
 
 	void CleanUp(void);
@@ -379,6 +418,29 @@ public:
 private:
 	void CleanUpAPISpecific(void);
 	// Written per API <<
+};
+
+
+class YsSoundPlayer::Stream
+{
+friend class YsSoundPlayer;
+
+private:
+	// Make uncopiable.
+	Stream(const Stream &);
+	Stream &operator=(const Stream &);
+
+	class APISpecificData;
+
+	APISpecificData *api=nullptr;
+
+	// Written in API-specific code
+	APISpecificData *CreateAPISpecificData(void);
+	void DeleteAPISpecificData(APISpecificData *);
+
+public:
+	Stream();
+	~Stream();
 };
 
 

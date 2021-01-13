@@ -19,7 +19,11 @@ set(WIN_SUBSYSTEM CONSOLE)
 set(EXE_TYPE "")            # Can be "" or MACOSX_BUNDLE
 set(REALLY_NEED_CPP11 1)    # Setting 1 will enable use of C++11 libraries, but lose compatibility with OSX 10.6.
 
-
+if(APPLE)
+	find_library(AVFOUNDATION_LIB AVFoundation)
+	mark_as_advanced(AVFOUNDATION_LIB)
+	set(LIB_DEPENDENCY ${AVFOUNDATION_LIB})
+endif()
 
 #YSBEGIN "CMake Header" Ver 20170110
 # YS CMakeLists Template

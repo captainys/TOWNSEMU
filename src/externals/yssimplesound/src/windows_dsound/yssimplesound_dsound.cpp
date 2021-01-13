@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include <stdio.h>
 
 #define _WINSOCKAPI_
@@ -12,6 +14,11 @@
 #pragma comment(lib,"winmm.lib")
 #pragma comment(lib,"kernel32.lib")
 #pragma comment(lib,"dsound.lib")
+
+
+#ifdef min
+#undef min // ****ing windows.h namespace contamination.
+#endif
 
 
 class YsSoundPlayer::APISpecificData
@@ -509,4 +516,341 @@ void YsSoundPlayer::APISpecificData::DestroyDummyWindow(void)
 LRESULT WINAPI YsSoundPlayer::APISpecificData::OwnWindowFunc(HWND hWnd,UINT msg,WPARAM wp,LPARAM lp)
 {
 	return DefWindowProc(hWnd,msg,wp,lp);
+}
+
+////////////////////////////////////////////////////////////
+
+enum
+{
+	RINGBUFFER_MILLI=1000,
+
+	RINGBUFFER_CHANNELS=2,
+	RINGBUFFER_SAMPLING_RATE=44100,
+	RINGBUFFER_LENGTH_MILLISEC=10000,
+	RINGBUFFER_BITS_PER_SAMPLE=16,
+};
+
+class YsSoundPlayer::Stream::APISpecificData
+{
+public:
+	LPDIRECTSOUNDBUFFER dSoundBuf=nullptr;
+
+	uint64_t bufferLengthInBytes;
+	int64_t seg0Start,seg0End;
+	int64_t seg1Start,seg1End;
+};
+
+YsSoundPlayer::Stream::APISpecificData *YsSoundPlayer::Stream::CreateAPISpecificData(void)
+{
+	YsSoundPlayer::Stream::APISpecificData *api=new YsSoundPlayer::Stream::APISpecificData;
+	api->dSoundBuf=nullptr;
+	return api;
+}
+void YsSoundPlayer::Stream::DeleteAPISpecificData(APISpecificData *api)
+{
+	if(nullptr!=api)
+	{
+		if(nullptr!=api->dSoundBuf)
+		{
+		}
+		delete api;
+	}
+}
+
+YSRESULT YsSoundPlayer::StartStreamingAPISpecific(Stream &stream)
+{
+	auto api=stream.api;
+	if(nullptr!=api)
+	{
+		const int nChannels=RINGBUFFER_CHANNELS;
+		const int nBlockAlign=nChannels*RINGBUFFER_BITS_PER_SAMPLE/8;
+		const int nAvgBytesPerSec=RINGBUFFER_SAMPLING_RATE*nBlockAlign;
+
+		uint64_t sizeInBytes=RINGBUFFER_SAMPLING_RATE;
+		sizeInBytes*=RINGBUFFER_BITS_PER_SAMPLE/8;
+		sizeInBytes*=RINGBUFFER_CHANNELS;
+		sizeInBytes*=RINGBUFFER_LENGTH_MILLISEC;
+		sizeInBytes/=RINGBUFFER_MILLI;
+
+		stream.api->bufferLengthInBytes=sizeInBytes;
+
+		WAVEFORMATEX fmt;
+		fmt.cbSize=sizeof(fmt);
+		fmt.wFormatTag=WAVE_FORMAT_PCM;
+
+		fmt.nChannels=nChannels;
+		fmt.nSamplesPerSec=RINGBUFFER_SAMPLING_RATE;
+		fmt.wBitsPerSample=RINGBUFFER_BITS_PER_SAMPLE;
+
+		fmt.nBlockAlign=nBlockAlign;
+		fmt.nAvgBytesPerSec=nAvgBytesPerSec;
+
+
+		DSBUFFERDESC desc;
+		desc.dwSize=sizeof(desc);
+		// Finally!  I found it!
+		// https://stackoverflow.com/questions/25829935/play-background-music-with-directsound
+		// I can play sound when the window loses focus!
+		desc.dwFlags=DSBCAPS_CTRLVOLUME|DSBCAPS_LOCDEFER|DSBCAPS_GLOBALFOCUS|DSBCAPS_GETCURRENTPOSITION2;
+		desc.dwBufferBytes=sizeInBytes;
+		if(DSBSIZE_MAX<desc.dwBufferBytes)
+		{
+			desc.dwBufferBytes=DSBSIZE_MAX;
+		}
+		desc.dwReserved=0;
+		desc.lpwfxFormat=&fmt;
+		desc.guid3DAlgorithm=GUID_NULL;
+		if(DS_OK==this->api->dSound8->CreateSoundBuffer(&desc,&stream.api->dSoundBuf,NULL))
+		{
+			DWORD writeBufSize1,writeBufSize2;
+			unsigned char *writeBuf1,*writeBuf2;
+			if(stream.api->dSoundBuf->Lock(0,0,(LPVOID *)&writeBuf1,&writeBufSize1,(LPVOID *)&writeBuf2,&writeBufSize2,DSBLOCK_ENTIREBUFFER)==DS_OK)
+			{
+				if(NULL!=writeBuf1)
+				{
+					for(int i=0; i<(int)writeBufSize1; i++)
+					{
+						writeBuf1[i]=0;
+					}
+				}
+				if(NULL!=writeBuf2)
+				{
+					for(int i=0; i<(int)writeBufSize2; i++)
+					{
+						writeBuf2[i]=0;
+					}
+				}
+
+				stream.api->dSoundBuf->Unlock(writeBuf1,writeBufSize1,writeBuf2,writeBufSize2);
+
+				stream.api->dSoundBuf->SetCurrentPosition(0);
+				stream.api->dSoundBuf->Play(0,0xc0000000,DSBPLAY_LOOPING);
+
+				stream.api->seg0Start=0;
+				stream.api->seg0End=0;
+				stream.api->seg1Start=0;
+				stream.api->seg1End=0;
+			}
+			else
+			{
+				printf("Failed to Lock Buffer.\n");
+				return YSERR;
+			}
+		}
+		return YSOK;
+	}
+	return YSERR;
+}
+void YsSoundPlayer::StopStreamingAPISpecific(Stream &stream)
+{
+	if(nullptr!=stream.api && nullptr!=stream.api->dSoundBuf)
+	{
+		DWORD writeBufSize1,writeBufSize2;
+		unsigned char *writeBuf1,*writeBuf2;
+
+		stream.api->dSoundBuf->Stop();
+		if(stream.api->dSoundBuf->Lock(0,0,(LPVOID *)&writeBuf1,&writeBufSize1,(LPVOID *)&writeBuf2,&writeBufSize2,DSBLOCK_ENTIREBUFFER)==DS_OK)
+		{
+			if(NULL!=writeBuf1)
+			{
+				for(int i=0; i<(int)writeBufSize1; i++)
+				{
+					writeBuf1[i]=0;
+				}
+			}
+			if(NULL!=writeBuf2)
+			{
+				for(int i=0; i<(int)writeBufSize2; i++)
+				{
+					writeBuf2[i]=0;
+				}
+			}
+
+			stream.api->dSoundBuf->Unlock(writeBuf1,writeBufSize1,writeBuf2,writeBufSize2);
+
+			stream.api->dSoundBuf->SetCurrentPosition(0);
+
+			stream.api->seg0Start=0;
+			stream.api->seg0End=0;
+			stream.api->seg1Start=0;
+			stream.api->seg1End=0;
+		}
+	}
+}
+YSBOOL YsSoundPlayer::StreamPlayerReadyToAcceptNextSegmentAPISpecific(const Stream &stream,const SoundData &dat) const
+{
+	if(nullptr!=stream.api && nullptr!=stream.api->dSoundBuf)
+	{
+		DWORD playCursor,writeCursor;
+		stream.api->dSoundBuf->GetCurrentPosition(&playCursor,&writeCursor);
+		// Two segments: Seg0 -> Seg1.
+		// Next data should be written when Seg0 is done.
+		if(stream.api->seg0Start<=stream.api->seg0End)
+		{
+			//   0   seg0Start       seg0End
+			//   |     |---------------|        |
+			//                SEG0
+			if(playCursor<stream.api->seg0Start || stream.api->seg0End<=playCursor)
+			{
+				return YSTRUE;
+			}
+		}
+		else // means segment 0 wrapped around.
+		{
+			//   0   seg0End         seg0Start
+			//   |----|                |--------|
+			//    SEG0                    SEG0
+			if(stream.api->seg0End<=playCursor && playCursor<stream.api->seg0Start)
+			{
+				return YSTRUE;
+			}
+		}
+	}
+	return YSFALSE;
+}
+YSRESULT YsSoundPlayer::AddNextStreamingSegmentAPISpecific(Stream &stream,const SoundData &dat)
+{
+	// How can I tell both segments lapsed?
+	// If playing segment1, add it to the end of segment 1, and erase segment 0.
+	// If not, lapsed or it is the first segment.  Just write it to writeCursor.
+	if(nullptr!=stream.api && nullptr!=stream.api->dSoundBuf)
+	{
+		int64_t numSamplesIn=dat.GetNumSamplePerChannel();
+		int64_t numSamplesOut=numSamplesIn;
+		numSamplesOut*=RINGBUFFER_SAMPLING_RATE;
+		numSamplesOut/=dat.PlayBackRate();
+
+
+
+		DWORD playCursor,writeCursor;
+		stream.api->dSoundBuf->GetCurrentPosition(&playCursor,&writeCursor);
+
+		bool isPlayingSegment1=false;
+		if(stream.api->seg1Start<=stream.api->seg1End)
+		{
+			//   0   seg1Start       seg1End
+			//   |     |---------------|        |
+			//                SEG1
+			isPlayingSegment1=(stream.api->seg1Start<=playCursor && playCursor<stream.api->seg1End);
+		}
+		else // means segment 0 wrapped around.
+		{
+			//   0   seg1End         seg1Start
+			//   |----|                |--------|
+			//    SEG1                    SEG1
+			isPlayingSegment1=(playCursor<stream.api->seg1End || stream.api->seg1Start<=playCursor);
+		}
+
+		DWORD bytesCanWrite=0;
+		if(playCursor<writeCursor)
+		{
+			//   0   playCursor     writeCursor
+			//   |    |----------------|        |bufferLength
+			bytesCanWrite=stream.api->bufferLengthInBytes-(writeCursor-playCursor);
+		}
+		else
+		{
+			//   0   writeCursor     playCursor
+			//   |----|                |--------|
+			bytesCanWrite=playCursor-writeCursor;
+		}
+
+		if(true==isPlayingSegment1)
+		{
+			writeCursor=(DWORD)stream.api->seg1End;
+		}
+
+		DWORD bytesWrite=std::min<DWORD>(numSamplesOut*2*RINGBUFFER_CHANNELS,bytesCanWrite);
+
+
+		DWORD writeBufSize1,writeBufSize2;
+		unsigned char *writeBuf1,*writeBuf2;
+		if(stream.api->dSoundBuf->Lock(writeCursor,bytesWrite,(LPVOID *)&writeBuf1,&writeBufSize1,(LPVOID *)&writeBuf2,&writeBufSize2,0)==DS_OK)
+		{
+			const unsigned char *readPtr=dat.DataPointer();
+
+			int64_t balance=RINGBUFFER_SAMPLING_RATE;
+			if(NULL!=writeBuf1)
+			{
+				unsigned char *writePtr=(unsigned char *)writeBuf1;
+				uint64_t sizeLeft=writeBufSize1;
+				while(0<sizeLeft)
+				{
+					if(1==dat.GetNumChannel())
+					{
+						*writePtr++=readPtr[0];
+						*writePtr++=readPtr[1];
+						*writePtr++=readPtr[0];
+						*writePtr++=readPtr[1];
+					}
+					else
+					{
+						*writePtr++=readPtr[0];
+						*writePtr++=readPtr[1];
+						*writePtr++=readPtr[2];
+						*writePtr++=readPtr[3];
+					}
+
+					sizeLeft-=4;
+
+					balance-=dat.PlayBackRate();
+					while(balance<0)
+					{
+						balance+=RINGBUFFER_SAMPLING_RATE;
+						readPtr+=2*dat.GetNumChannel();
+					}
+				}
+			}
+
+			if(NULL!=writeBuf2)
+			{
+				unsigned char *writePtr=(unsigned char *)writeBuf2;
+				uint64_t sizeLeft=writeBufSize2;
+				while(0<sizeLeft)
+				{
+					if(1==dat.GetNumChannel())
+					{
+						*writePtr++=readPtr[0];
+						*writePtr++=readPtr[1];
+						*writePtr++=readPtr[0];
+						*writePtr++=readPtr[1];
+					}
+					else
+					{
+						*writePtr++=readPtr[0];
+						*writePtr++=readPtr[1];
+						*writePtr++=readPtr[2];
+						*writePtr++=readPtr[3];
+					}
+
+					sizeLeft-=4;
+
+					balance-=dat.PlayBackRate();
+					while(balance<0)
+					{
+						balance+=RINGBUFFER_SAMPLING_RATE;
+						readPtr+=2*dat.GetNumChannel();
+					}
+				}
+			}
+			stream.api->dSoundBuf->Unlock(writeBuf1,writeBufSize1,writeBuf2,writeBufSize2);
+		}
+
+
+		if(true==isPlayingSegment1)
+		{
+			stream.api->seg0Start=stream.api->seg1Start;
+			stream.api->seg0End=stream.api->seg1End;
+		}
+		else
+		{
+			// Lapsed: Make entire rest of the buffer as segment 0.
+			stream.api->seg0Start=(writeCursor+bytesWrite)%stream.api->bufferLengthInBytes;
+			stream.api->seg0End=writeCursor;
+		}
+		stream.api->seg1Start=writeCursor;
+		stream.api->seg1End=(writeCursor+bytesWrite)%stream.api->bufferLengthInBytes;
+		return YSOK;
+	}
+	return YSERR;
 }

@@ -77,7 +77,7 @@ int main(void)
 	// the copy files phase.
 	FsChangeToProgramDir();
 
-	YsSoundPlayer::SoundData propeller,notice;
+	YsSoundPlayer::SoundData propeller,notice,o4cdefgab;
 	// Use LoadWav function for loading a .WAV file to the variable.
 	// Just in case you ended up copying datafiles directory instead of individual files,
 	// I try "prop5.wav" and "datafiles/prop5.wav", "notice.wav" and "datafiles/notice.wav".
@@ -91,12 +91,18 @@ int main(void)
 	{
 		printf("Error!  Cannot load notice.wav!\n");
 	}
+	if(YSOK!=o4cdefgab.LoadWav("o4cdefgab.wav") &&
+	   YSOK!=o4cdefgab.LoadWav("datafiles/o4cdefgab.wav"))
+	{
+		printf("Error!  Cannot load notice.wav!\n");
+	}
 
 
 	printf("Keys:\n");
 	printf("  SPACE..........Play a tone (notice)\n");
 	printf("  B..............Begin propeller engine noise.\n");
 	printf("  E..............End propeller engine noise.\n");
+	printf("  O..............Begin o4cdefgab loop");
 	printf("  1-9............Change Volume.\n");
 
 
@@ -125,10 +131,17 @@ int main(void)
 			// MacOSX player has an issue that there may be a gap between loop, but I can do nothing about it.
 			player.PlayBackground(propeller);
 		}
+		if(FSKEY_O==key)
+		{
+			// To play a background sound, use PlayBackground function.
+			// MacOSX player has an issue that there may be a gap between loop, but I can do nothing about it.
+			player.PlayBackground(o4cdefgab);
+		}
 		if(FSKEY_E==key)
 		{
 			// To stop a background sound, call Stop function.
 			player.Stop(propeller);
+			player.Stop(o4cdefgab);
 		}
 
 		if(FSKEY_0<=key && key<=FSKEY_9)
@@ -149,8 +162,6 @@ int main(void)
 
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 		FsSwapBuffers();
-
-		FsSleep(10);
 	}
 
 	// It is a good practice to End the player.  If you don't it's automatic in the destructor.

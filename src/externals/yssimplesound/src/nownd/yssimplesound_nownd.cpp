@@ -131,3 +131,29 @@ void YsSoundPlayer::SoundData::CleanUpAPISpecific(void)
 {
 	api->CleanUp();
 }
+
+//////////////////////////////////////////////////////////////
+
+YsSoundPlayer::Stream::APISpecificData *YsSoundPlayer::Stream::CreateAPISpecificData(void)
+{
+	return nullptr;
+}
+void YsSoundPlayer::Stream::DeleteAPISpecificData(APISpecificData *)
+{
+}
+
+YSRESULT YsSoundPlayer::StartStreamingAPISpecific(Stream &)
+{
+	return YSOK;
+}
+void YsSoundPlayer::StopStreamingAPISpecific(Stream &)
+{
+}
+YSBOOL YsSoundPlayer::StreamPlayerReadyToAcceptNextSegmentAPISpecific(const Stream &,const SoundData &) const
+{
+	return YSFALSE;
+}
+YSRESULT YsSoundPlayer::AddNextStreamingSegmentAPISpecific(Stream &streamPlayer,const SoundData &dat)
+{
+	return YSOK;
+}

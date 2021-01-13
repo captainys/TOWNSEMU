@@ -25,10 +25,20 @@ def ExeExtension():
 		return ""
 
 
+
+def TsugaruExe():
+	if os.path.isfile("./main_cui/Tsugaru_CUI"+ExeExtension()):
+		return "./main_cui/Tsugaru_CUI"+ExeExtension()
+	if os.path.isfile("./main_cui/Release/Tsugaru_CUI"+ExeExtension()):
+		return "./main_cui/Release/Tsugaru_CUI"+ExeExtension()
+	throw
+
+
+
 def Run(argv):
 	os.chdir(BUILDDIR)
 	subprocess.Popen([
-		"./main_cui/Tsugaru_CUI"+ExeExtension(),
+		TsugaruExe(),
 		ROMDIR,
 		"-SYM",
 		"../symtables/RUN"+TOWNSTYPE+".txt",
