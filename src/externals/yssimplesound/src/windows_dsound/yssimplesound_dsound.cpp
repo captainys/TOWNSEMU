@@ -444,6 +444,10 @@ YSRESULT YsSoundPlayer::SoundData::PreparePlay(YsSoundPlayer &player)
 	{
 		return YSOK;
 	}
+	if(nullptr==player.api->dSound8)
+	{
+		return YSERR;
+	}
 
 	api->CreateBuffer(player.api->dSound8,*this);
 	if(nullptr!=api->dSoundBuf)
