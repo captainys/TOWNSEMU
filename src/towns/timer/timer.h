@@ -42,9 +42,18 @@ public:
 		TICK_INTERVAL=3257,   // 3257nano-seconds
 	};
 
-	static constexpr uint32_t TIMER_CLOCK_HZ = 307200;
-	static constexpr uint32_t BUZZER_SAMPLING_RATE = 44100;
-	static constexpr int16_t BUZZER_VOLUME = 4096;
+	constexpr uint32_t TIMER_CLOCK_HZ(void) const
+	{
+		return 307200;
+	}
+	constexpr uint32_t BUZZER_SAMPLING_RATE(void) const
+	{
+		return 44100;
+	} 
+	constexpr int16_t BUZZER_VOLUME(void) const
+	{
+		return 4096;
+	}
 
 	class State
 	{
