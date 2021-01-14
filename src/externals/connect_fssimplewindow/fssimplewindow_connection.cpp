@@ -150,8 +150,10 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 {
 	soundPlayer.End();
 }
+
 /* virtual */ void FsSimpleWindowConnection::DevicePolling(class FMTowns &towns)
 {
+	soundPlayer.KeepPlaying();
 	FsPollDevice();
 	PollGamePads();
 

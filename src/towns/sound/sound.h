@@ -32,8 +32,13 @@ private:
 public:
 	enum
 	{
+#if !defined(__linux__) && !defined(__linux)
 		FM_PCM_MILLISEC_PER_WAVE=10, // Looks like time resolution of Wave Playback of Direct Sound is 10ms.
 		BEEP_MILLISEC_PER_WAVE=10
+#else
+		FM_PCM_MILLISEC_PER_WAVE=40, // Maybe because I am developing on VirtualBox, I am getting outrageously slow latency of 80ms (40ms*2).
+		BEEP_MILLISEC_PER_WAVE=40
+#endif
 	};
 
 	virtual const char *DeviceName(void) const{return "SOUND";}
