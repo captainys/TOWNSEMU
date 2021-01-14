@@ -129,6 +129,9 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 	FsSetWindowTitle("FM Towns Emulator - TSUGARU");
 	soundPlayer.Start();
 	cddaStartHSG=0;
+#ifdef AUDIO_USE_STREAMING
+	soundPlayer.StartStreaming(FMPCMStream);
+#endif
 
 	glClearColor(0,0,0,0);
 
@@ -1250,23 +1253,26 @@ void FsSimpleWindowConnection::PollGamePads(void)
 
 /* virtual */ void FsSimpleWindowConnection::FMPCMPlay(std::vector <unsigned char> &wave)
 {
+#ifdef AUDIO_USE_STREAMING
+	YsSoundPlayer::SoundData nextWave;
+	nextWave.CreateFromSigned16bitStereo(YM2612::WAVE_SAMPLING_RATE,wave);
+	soundPlayer.AddNextStreamingSegment(FMPCMStream,nextWave);
+#else
 	FMPCMChannel.CreateFromSigned16bitStereo(YM2612::WAVE_SAMPLING_RATE,wave);
-
-	// std::string fName;
-	// fName="tone";
-	// fName+=cpputil::Itoa(ch);
-	// fName+=".wav";
-	// auto waveFile=FMChannel[ch].MakeWavByteData();
-	// cpputil::WriteBinaryFile(fName,waveFile.size(),waveFile.data());
-
 	soundPlayer.PlayOneShot(FMPCMChannel);
+#endif
 }
 /* virtual */ void FsSimpleWindowConnection::FMPCMPlayStop(void)
 {
 }
 /* virtual */ bool FsSimpleWindowConnection::FMPCMChannelPlaying(void)
 {
+#ifdef AUDIO_USE_STREAMING
+	YsSoundPlayer::SoundData dummyData;
+	return YSTRUE!=soundPlayer.StreamPlayerReadyToAcceptNextSegment(FMPCMStream,dummyData);
+#else
 	return YSTRUE==soundPlayer.IsPlaying(FMPCMChannel);
+#endif
 }
 
 /* virtual */ void FsSimpleWindowConnection::BeepPlay(int samplingRate, std::vector<unsigned char> &wave) {

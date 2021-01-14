@@ -16,6 +16,27 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #define FSSIMPLEWINDOW_CONNECTION_IS_INCLUDED
 /* { */
 
+
+
+/*
+The original plan was entirely transition to the streaming mode.  However, it turned out DirectSound gives an shameful 60ms latency (practically 80ms), and ALSA apalling 80ms latency.
+macOS's AVAudioEngine easily gave a 40ms latency.
+
+DirectSound does better job if I poll play-back state every 1ms and start new 20ms segment, which yields maximum 40ms latency.  The draw back is when you move window or click on 
+the window frame, you may hear zapping noise, but I believe latency is more important for games.
+
+ALSA has no choice.  Behind the scenes ALSA code does streaming.
+
+So, my best decision is to use streaming mode in macOS, which should work perfectly.  I have no choice with ALSA.  But, for Windows, I keep it polling-based playback.
+*/
+#ifndef _WIN32
+#define AUDIO_USE_STREAMING
+#else
+// Opposite is use polling
+#endif
+
+
+
 #include "outside_world.h"
 #include "yssimplesound.h"
 #include "ysgamepad.h"
@@ -67,7 +88,11 @@ public:
 
 
 
+#ifdef AUDIO_USE_STREAMING
+	YsSoundPlayer::Stream FMPCMStream;
+#else
 	YsSoundPlayer::SoundData FMPCMChannel;
+#endif
 	virtual void FMPCMPlay(std::vector <unsigned char > &wave);
 	virtual void FMPCMPlayStop(void);
 	virtual bool FMPCMChannelPlaying(void);
