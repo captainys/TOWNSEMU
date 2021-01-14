@@ -409,31 +409,32 @@ bool TownsTimer::IsBuzzerPlaying() const
  */
 std::pair<uint32_t, std::vector<unsigned char>> TownsTimer::MakeBuzzerWave(int ms)
 {
-	static_assert(std::numeric_limits<uint16_t>::max() > BUZZER_SAMPLING_RATE, "BUZZER_SAMPLING_RATE too large.");
-	static_assert(std::numeric_limits<int32_t>::max() / BUZZER_VOLUME > TIMER_CLOCK_HZ, "BUZZER_VOLUME too large.");
+	// New version of clang doesn't like it.
+	// static_assert(std::numeric_limits<uint16_t>::max() > BUZZER_SAMPLING_RATE(), "BUZZER_SAMPLING_RATE too large.");
+	// static_assert(std::numeric_limits<int32_t>::max() / BUZZER_VOLUME() > TIMER_CLOCK_HZ(), "BUZZER_VOLUME too large.");
 
-	size_t samples = BUZZER_SAMPLING_RATE * ms / 1000;
+	size_t samples = BUZZER_SAMPLING_RATE() * ms / 1000;
 
 	std::vector<unsigned char> vec;
 	vec.resize(samples * 4);
 
 	uint16_t counter = state.channels[2].counterInitialValue;
 	if (counter < 2) {
-		return std::make_pair(BUZZER_SAMPLING_RATE, std::move(vec));
+		return std::make_pair(BUZZER_SAMPLING_RATE(), std::move(vec));
 	}
 
-	uint32_t period = counter * BUZZER_SAMPLING_RATE;
+	uint32_t period = counter * BUZZER_SAMPLING_RATE();
 	uint32_t phase = state.buzzerPhase;
 
 	int32_t i0 = std::min(phase, period - phase);
 
 	auto t = vec.begin();
 	for (size_t n = 0; n < samples; ++n) {
-		phase = (phase + TIMER_CLOCK_HZ) % period;
+		phase = (phase + TIMER_CLOCK_HZ()) % period;
 
 		int32_t i1 = std::min(phase, period - phase);
 
-		int16_t value = BUZZER_VOLUME * (i1 - i0) / int32_t{ TIMER_CLOCK_HZ };
+		int16_t value = BUZZER_VOLUME() * (i1 - i0) / int32_t( TIMER_CLOCK_HZ() );
 		*t++ = value & 0xff;
 		*t++ = (value >> 8) & 0xff;
 		*t++ = value & 0xff;
@@ -444,5 +445,5 @@ std::pair<uint32_t, std::vector<unsigned char>> TownsTimer::MakeBuzzerWave(int m
 
 	state.buzzerPhase = phase;
 
-	return std::make_pair(BUZZER_SAMPLING_RATE, std::move(vec));
+	return std::make_pair(BUZZER_SAMPLING_RATE(), std::move(vec));
 }
