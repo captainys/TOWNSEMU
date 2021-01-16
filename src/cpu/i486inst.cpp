@@ -7998,7 +7998,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	{
 		if(true==state.exception)
 		{
-			Abort("Unhandled exception!");
+			std::string msg="Unhandled exception!  ";
+			msg+=ExceptionTypeToStr(state.exceptionType);
+			msg+="(0x";
+			msg+=cpputil::Uitox(state.exceptionCode);
+			msg+=")";
+			Abort(msg);
 		}
 		debuggerPtr->AfterRunOneInstruction(clocksPassed,*this,mem,io,inst);
 	}

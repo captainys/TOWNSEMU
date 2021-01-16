@@ -677,6 +677,7 @@ public:
 		EXCEPTION_SS,
 		EXCEPTION_PF
 	};
+	static std::string ExceptionTypeToStr(unsigned int exceptionType);
 
 	class Operand;
 

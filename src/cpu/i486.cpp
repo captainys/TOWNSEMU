@@ -3335,3 +3335,25 @@ bool i486DX::DebugTestIOMapPermission(const SegmentRegister &TR,unsigned int ioM
 	}
 	return true;
 }
+
+/* static */ std::string i486DX::ExceptionTypeToStr(unsigned int exceptionType)
+{
+	switch(exceptionType)
+	{
+	case EXCEPTION_NONE:
+		return "NONE";
+	case EXCEPTION_GP:
+		return "GP";
+	case EXCEPTION_ND:
+		return "ND";
+	case EXCEPTION_UD:
+		return "UD";
+	case EXCEPTION_SS:
+		return "SS";
+	case EXCEPTION_PF:
+		return "PF";
+	default:
+		break;
+	}
+	return "?";
+}
