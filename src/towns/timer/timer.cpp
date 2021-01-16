@@ -83,7 +83,21 @@ void TownsTimer::State::SetChannelCounter(unsigned int ch,unsigned int value)
 		CH.counterInitialValue|=(value&0xff);
 		if(0==CH.mode)
 		{
-			CH.counting=false;
+			// i8253 data sheet tells that "Rewriting a counter register during counting results
+			// in the following: (1) Write 1st byte stops the counting. (2) Write 2nd byte starts the
+			// new count."  However, it seems that it should start counting immediately after
+			// writing to the lower byte if RL=1.
+			// However, Page 3-57 also tells that "it must be loaded with the number of bytes
+			// programmed in the MODE control word (RL0, ROl1)."  The implication is the counter is
+			// 8 bit if RL=1, in which case it makes sense to start counting when LSB is written.
+			if(1!=CH.RL)
+			{
+				CH.counting=false;
+			}
+			else
+			{
+				CH.counting=true;
+			}
 		}
 	}
 	else
