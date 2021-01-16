@@ -1032,6 +1032,10 @@ void FsSimpleWindowConnection::PollGamePads(void)
 	glRasterPos2i(this->dx,(img.hei*scaling/100)+dy-1);
 	glDrawPixels(img.wid,img.hei,GL_RGBA,GL_UNSIGNED_BYTE,img.rgba);
 
+	glRasterPos2i(0,winHei-1);
+	glPixelZoom(1,1);
+	glDrawPixels(STATUS_WID,STATUS_HEI,GL_RGBA,GL_UNSIGNED_BYTE,statusBitmap);
+
 	if(TOWNS_APPSPECIFIC_STRIKECOMMANDER==towns.state.appSpecificSetting)
 	{
 		int x;
@@ -1052,10 +1056,6 @@ void FsSimpleWindowConnection::PollGamePads(void)
 
 		glEnd();
 	}
-
-	glRasterPos2i(0,winHei-1);
-	glPixelZoom(1,1);
-	glDrawPixels(STATUS_WID,STATUS_HEI,GL_RGBA,GL_UNSIGNED_BYTE,statusBitmap);
 
 	FsSwapBuffers();
 }
