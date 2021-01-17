@@ -3113,6 +3113,7 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 		else
 		{
 			RaiseException(EXCEPTION_GP,INTNum*8); // What's +EXT?  ([1] pp.26-170)
+			HandleException(false,mem,numInstBytesForCallStack);
 		}
 	}
 };
