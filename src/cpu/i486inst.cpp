@@ -58,6 +58,7 @@ void i486DX::MakeOpCodeRenumberTable(void)
 	opCodeRenumberTable[I486_OPCODE_BTC_RM_R]=I486_RENUMBER_BTC_RM_R;
 	opCodeRenumberTable[I486_OPCODE_BTS_RM_R]=I486_RENUMBER_BTS_RM_R;
 	opCodeRenumberTable[I486_OPCODE_BTR_RM_R]=I486_RENUMBER_BTR_RM_R;
+	opCodeRenumberTable[I486_OPCODE_LAR]=I486_RENUMBER_LAR;
 	opCodeRenumberTable[I486_OPCODE_CALL_REL]=I486_RENUMBER_CALL_REL;
 	opCodeRenumberTable[I486_OPCODE_CALL_FAR]=I486_RENUMBER_CALL_FAR;
 	opCodeRenumberTable[I486_OPCODE_CLC]=I486_RENUMBER_CLC;
@@ -1030,6 +1031,11 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 		op2.DecodeMODR_MForRegister(inst.operandSize,inst.operand[0]);
 		break;
 
+	case I486_RENUMBER_LAR:
+		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
+		op1.DecodeMODR_MForRegister(inst.operandSize,inst.operand[0]);
+		op2.Decode(inst.addressSize,inst.operandSize,inst.operand);
+		break;
 
 	case I486_RENUMBER_CALL_REL://   0xE8,
 	case I486_RENUMBER_JMP_REL://          0xE9,   // cw or cd
@@ -2006,6 +2012,9 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		disasm=DisassembleTypicalTwoOperands("BTR",op1,op2);
 		break;
 
+	case I486_OPCODE_LAR:  // 0x0F02
+		disasm=DisassembleTypicalTwoOperands("LAR",op1,op2);
+		break;
 
 	case I486_OPCODE_CALL_REL://   0xE8,
 	case I486_OPCODE_JMP_REL://          0xE9,   // cw or cd
@@ -5121,6 +5130,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				}
 			}
 		}
+		break;
+
+
+	case I486_RENUMBER_LAR:
+		std::cout << "LAR Not Implemented yet." << std::endl;
 		break;
 
 
