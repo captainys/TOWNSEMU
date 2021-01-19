@@ -5134,7 +5134,62 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 
 	case I486_RENUMBER_LAR:
-		std::cout << "LAR Not Implemented yet." << std::endl;
+		if(IsInRealMode())
+		{
+			Interrupt(6,mem,0,0);
+			EIPIncrement=0;
+		}
+		else
+		{
+			auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize/8);
+			auto selector=value2.GetAsWord();
+
+			auto RPL=(selector&3);
+			auto TI=(0!=(selector&4));
+
+			unsigned char rawDescBuf[8];
+			const unsigned char *rawDesc;
+
+			unsigned int DTLinearBaseAddr=0;
+			if(0==TI)
+			{
+				DTLinearBaseAddr=state.GDTR.linearBaseAddr;
+			}
+			else
+			{
+				DTLinearBaseAddr=state.LDTR.linearBaseAddr;
+			}
+			DTLinearBaseAddr+=(selector&0xfff8); // Use upper 13 bits.
+
+			auto memWin=GetConstMemoryWindowFromLinearAddress(DTLinearBaseAddr,mem);
+			if(nullptr!=memWin.ptr && (DTLinearBaseAddr&(MemoryAccess::MEMORY_WINDOW_SIZE-1))<=(MemoryAccess::MEMORY_WINDOW_SIZE-8))
+			{
+				rawDesc=memWin.ptr+(DTLinearBaseAddr&(MemoryAccess::MEMORY_WINDOW_SIZE-1));
+			}
+			else
+			{
+				rawDesc=rawDescBuf;
+				rawDescBuf[0]=FetchByteByLinearAddress(mem,DTLinearBaseAddr);
+				rawDescBuf[1]=FetchByteByLinearAddress(mem,DTLinearBaseAddr+1);
+				rawDescBuf[2]=FetchByteByLinearAddress(mem,DTLinearBaseAddr+2);
+				rawDescBuf[3]=FetchByteByLinearAddress(mem,DTLinearBaseAddr+3);
+				rawDescBuf[4]=FetchByteByLinearAddress(mem,DTLinearBaseAddr+4);
+				rawDescBuf[5]=FetchByteByLinearAddress(mem,DTLinearBaseAddr+5);
+				rawDescBuf[6]=FetchByteByLinearAddress(mem,DTLinearBaseAddr+6);
+				rawDescBuf[7]=FetchByteByLinearAddress(mem,DTLinearBaseAddr+7);
+			}
+
+
+			uint32_t accessRightBytes=cpputil::GetDword(rawDesc+4);
+			accessRightBytes&=0x00F0FF00; // As described in INTEL 80386 PROGRAMMER'S REFERENCE MANUAL 1986
+			OperandValue value1;
+			value1.SetDword(accessRightBytes);
+			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+
+
+			SetZF(true);
+			clocksPassed=16;
+		}
 		break;
 
 
