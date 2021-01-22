@@ -7442,6 +7442,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				clocksPassed=36;
 			}
 
+			bool IRET_TO_VM86=false;
+
 			uint32_t eip,cs,eflags;
 			Pop(eip,cs,eflags,mem,inst.operandSize);
 
@@ -7467,6 +7469,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					state.ESP()&=operandSizeAndPattern[inst.operandSize>>3];
 					state.ESP()|=(TempESP&operandSizeMask[inst.operandSize>>3]);
 					LoadSegmentRegister(state.SS(),TempSS,mem);
+					IRET_TO_VM86=true;
 				}
 
 				// The pseudo code in i486 Programmer's Reference Manual suggests that IRET in VM86 mode will cause #GP(0).
@@ -7486,7 +7489,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			// IRET to Virtual86 mode requires EFLAGS be loaded before the segment register.
 			LoadSegmentRegister(state.CS(),segRegValue,mem);
 			EIPIncrement=0;
-			if(enableCallStack)
+			if(true==enableCallStack && true!=IRET_TO_VM86) // 2021/01/21 Don't pop call stack if it is IRET_TO_VM86.
 			{
 				PopCallStack(state.CS().value,state.EIP);
 			}

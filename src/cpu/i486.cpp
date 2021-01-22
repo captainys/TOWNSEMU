@@ -668,7 +668,7 @@ std::vector <std::string> i486DX::GetGDTText(const Memory &mem) const
 		text.back()+=cpputil::Ubtox(addressSize);
 		text.back()+="H ";
 		text.back()+="Type=";
-		text.back()+=cpputil::Ubtox(rawDesc[5]&15);
+		text.back()+=cpputil::Ubtox(rawDesc[5]&31);
 		text.back()+="H ";
 		text.back()+="@ PHYS:";
 		text.back()+=cpputil::Uitox(DTPhysicalAddr);
