@@ -7489,7 +7489,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			// IRET to Virtual86 mode requires EFLAGS be loaded before the segment register.
 			LoadSegmentRegister(state.CS(),segRegValue,mem);
 			EIPIncrement=0;
-			if(true==enableCallStack && true!=IRET_TO_VM86) // 2021/01/21 Don't pop call stack if it is IRET_TO_VM86.
+			if(true==enableCallStack)
 			{
 				PopCallStack(state.CS().value,state.EIP);
 			}

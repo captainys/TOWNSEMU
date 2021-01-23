@@ -3101,7 +3101,14 @@ void i486DX::PopCallStack(unsigned int CS,unsigned int EIP)
 			// or the exception handler may process what the instruction meant to do and return to the
 			// next instruction.  Therefore, CS:EIP needs to be checked against return pointer, and
 			// one instruction after the return pointer.
-			if(CS==iter->fromCS && (EIP==iter->fromEIP+iter->callOpCodeLength || EIP==iter->fromEIP))
+
+			// Windows 3.1 uses ARPL to take over control from VM86 mode, in which case, the return
+			// address is +1 byte from ARPL.  However, ARPL instruction takes operands, therefore
+			// the number of bytes is 2+ bytes.  Therefore, it should instead of checking two
+			// return addresses, it should accept anywhere between the instruction address and
+			// the instruction address plus op code length.  That also covers INT 20H in Windows 3.1
+			// which returns to the address of the instruction.
+			if(CS==iter->fromCS && (iter->fromEIP<=EIP && EIP<=iter->fromEIP+iter->callOpCodeLength))
 			{
 				match=true;
 				break;
