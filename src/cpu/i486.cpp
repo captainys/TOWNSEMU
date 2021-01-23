@@ -438,6 +438,7 @@ void i486DX::HandleException(bool wasReadOp,Memory &mem,unsigned int numInstByte
 	case EXCEPTION_PF:
 		Interrupt(INT_PAGE_FAULT,mem,0,numInstBytesForCallStack);
 		Push(mem,32,(wasReadOp ? 0 : 2));
+		SetCR(2,state.exceptionLinearAddr);
 		break;
 	case EXCEPTION_GP:
 		Interrupt(INT_GENERAL_PROTECTION,mem,0,numInstBytesForCallStack);

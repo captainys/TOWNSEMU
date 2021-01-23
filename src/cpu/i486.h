@@ -558,6 +558,7 @@ public:
 		// True when an instruction raised an exception.
 		bool exception;
 		unsigned int exceptionCode,exceptionType;
+		uint32_t exceptionLinearAddr=0; // For EXCEPTION_PF
 	};
 
 	enum
@@ -2157,6 +2158,7 @@ public:
 			if(0==(pageInfo&PAGEINFO_FLAG_PRESENT))
 			{
 				RaiseException(EXCEPTION_PF,0);
+				state.exceptionLinearAddr=linearAddr;
 				return 0;
 			}
 			state.pageTableCache[pageIndex]=pageInfo;
