@@ -3050,6 +3050,8 @@ inline i486DX::CallStack i486DX::MakeCallStack(
 		stk.INTNum=0xffff;
 		stk.AX=0xffff;
 	}
+	stk.INTNum0=0xffff;
+	stk.AX0=0xffff;
 	stk.fromCS=fromCS;
 	stk.fromEIP=fromEIP;
 	stk.callOpCodeLength=callOpCodeLength;

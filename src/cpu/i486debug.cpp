@@ -439,13 +439,79 @@ std::vector <std::string> i486Debugger::GetCallStackText(const i486DX &cpu) cons
 		{
 			str+="  (INT ";
 			str+=cpputil::Ubtox((unsigned char)s.INTNum);
+			switch(s.INTNum)
+			{
+			case 0x0:
+				str+=" 0DIV";
+				break;
+			case 0x1:
+				str+=" DBG";
+				break;
+			case 0x2:
+				str+=" NMI";
+				break;
+			case 0x3:
+				str+=" BRKPT";
+				break;
+			case 0x4:
+				str+=" OVRFL";
+				break;
+			case 0x5:
+				str+=" BOUND";
+				break;
+			case 0x6:
+				str+=" INVOP";
+				break;
+			case 0x7:
+				str+=" DEVUV";
+				break;
+			case 0x8:
+				str+=" DBLFL";
+				break;
+			case 0x9:
+				break;
+			case 0xA:
+				str+=" IVTSK";
+				break;
+			case 0xB:
+				str+=" SEGNP";
+				break;
+			case 0xC:
+				str+=" STK";
+				break;
+			case 0xD:
+				str+=" GP";
+				break;
+			case 0xE:
+				str+=" PG";
+				break;
+			case 0x10:
+				str+=" FPU";
+				break;
+			case 0x11:
+				str+=" ALIGN";
+				break;
+			}
 			str+=",AX=";
 			str+=cpputil::Ustox(s.AX);
 			str+="H";
 
-			auto INTLabel=symTable.GetINTLabel(s.INTNum);
-			auto INTFuncLabelAH=symTable.GetINTFuncLabel(s.INTNum,(s.AX>>8)&0xFF);
-			auto INTFuncLabelAX=symTable.GetINTFuncLabel(s.INTNum,s.AX);
+			auto INTNum=s.INTNum;
+			auto AX=s.AX;
+			if(0xFFFF!=s.INTNum0)
+			{
+				str+="<-INT ";
+				str+=cpputil::Ubtox(s.INTNum0);
+				str+="H,AX=";
+				str+=cpputil::Ustox(s.AX0);
+				str+="H";
+				INTNum=s.INTNum0;
+                AX=s.AX0;
+			}
+
+			auto INTLabel=symTable.GetINTLabel(INTNum);
+			auto INTFuncLabelAH=symTable.GetINTFuncLabel(INTNum,(AX>>8)&0xFF);
+			auto INTFuncLabelAX=symTable.GetINTFuncLabel(INTNum,AX);
 			std::string INTFuncLabel;
 			if(0<INTFuncLabelAH.size() && INTFuncLabelAX.size())
 			{

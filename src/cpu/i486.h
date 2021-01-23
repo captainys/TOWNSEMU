@@ -1089,6 +1089,8 @@ public:
 	public:
 		unsigned int CR0;
 		unsigned short INTNum,AX;
+		// INTNum0,AX0 is the original INT that caused the exception.
+		unsigned short INTNum0=0xFFFF,AX0=0xFFFF;
 		unsigned int fromCS,fromEIP;
 		unsigned int callOpCodeLength;
 		unsigned int procCS,procEIP;
@@ -3038,10 +3040,19 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 				}
 				else
 				{
+					auto callStackDepth=callStack.size();
+					auto AX0=GetAX();
+
 					unsigned int Ibit=2;
 					unsigned int EXTbit=0; // 1 if external interrupt source.
 					RaiseException(EXCEPTION_GP,INTNum*8+Ibit+EXTbit); // EXT -> [1] 9-8 Error Code
 					HandleException(false,mem,numInstBytesForCallStack);  // <- This will shoot INT 0BH
+
+					if(true==enableCallStack && callStackDepth<callStack.size()) // Supposed to be true, just in case.
+					{
+						callStack.back().INTNum0=INTNum;
+						callStack.back().AX0=AX0;
+					}
 				}
 				return;
 			case 0b0110:
@@ -3112,8 +3123,17 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 		}
 		else
 		{
+			auto callStackDepth=callStack.size();
+			auto AX0=GetAX();
+
 			RaiseException(EXCEPTION_GP,INTNum*8); // What's +EXT?  ([1] pp.26-170)
 			HandleException(false,mem,numInstBytesForCallStack);
+
+			if(true==enableCallStack && callStackDepth<callStack.size()) // Supposed to be true, just in case.
+			{
+				callStack.back().INTNum0=INTNum;
+				callStack.back().AX0=AX0;
+			}
 		}
 	}
 };
