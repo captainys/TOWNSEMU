@@ -155,7 +155,7 @@ void i486Debugger::CleanUp(void)
 	}
 	CSEIPLogPtr=0;
 }
-void i486Debugger::AddBreakPoint(CS_EIP bp)
+void i486Debugger::AddBreakPoint(CS_EIP bp,uint32_t flags)
 {
 	if((bp.SEG&i486DX::FarPointer::SPECIAL_SEG_MASK)==i486DX::FarPointer::SEG_WILDCARD)
 	{
@@ -166,7 +166,13 @@ void i486Debugger::AddBreakPoint(CS_EIP bp)
 		auto iter=breakPoints.find(bp);
 		if(breakPoints.end()==iter)
 		{
-			breakPoints.insert(bp);
+			BreakPointInfo info;
+			info.flags=flags;
+			breakPoints[bp]=info;
+		}
+		else
+		{
+			iter->second.flags=flags;
 		}
 	}
 }
@@ -188,6 +194,7 @@ void i486Debugger::RemoveBreakPoint(CS_EIP bp)
 void i486Debugger::ClearBreakPoints(void)
 {
 	breakPoints.clear();
+	oneTimeBreakPoint.Nullify();
 	for(auto &CS : breakOnCS)
 	{
 		CS=false;
@@ -196,7 +203,10 @@ void i486Debugger::ClearBreakPoints(void)
 std::vector <i486Debugger::CS_EIP> i486Debugger::GetBreakPoints(void) const
 {
 	std::vector <CS_EIP> list;
-	list.insert(list.end(),breakPoints.begin(),breakPoints.end());
+	for(auto bp : breakPoints)
+	{
+		list.push_back(bp.first);
+	}
 	return list;
 }
 
@@ -375,9 +385,11 @@ void i486Debugger::CheckForBreakPoints(i486DX &cpu)
 	cseip.SEG=cpu.state.CS().value;
 	cseip.OFFSET=cpu.state.EIP;
 
-	if(breakPoints.find(cseip)!=breakPoints.end())
+	auto found=breakPoints.find(cseip);
+	if(found!=breakPoints.end())
 	{
 		stop=true;
+		lastBreakPointInfo=found->second;
 	}
 	if(breakOnCS[cseip.SEG])
 	{

@@ -32,9 +32,29 @@ public:
 		CSEIP_LOG_MASK=0x0FFFF
 	};
 
+	enum
+	{
+		BRKPNT_FLAG_NONE=0,
+
+		/* If BRKPNT_FLAG_MONITOR_STATUS is set, the debugger will break the execution.
+		   The Virtual Machine thread should check lastBreakPointInfo for the break-point
+		   flags, and if BRKPNT_FLAG_MONITOR_STATUS is set, print the machine state and
+		   resume execution.
+		   Since the debugger does not know all the Virtual Machine state, the debugger
+		   cannot print all the information.
+		*/
+		BRKPNT_FLAG_MONITOR_STATUS=1,
+	};
+	class BreakPointInfo
+	{
+	public:
+		uint32_t flags;
+	};
+
 	typedef i486DX::FarPointer CS_EIP;
 
-	std::set <CS_EIP> breakPoints;
+	std::map <CS_EIP,BreakPointInfo> breakPoints;
+	BreakPointInfo lastBreakPointInfo;
 	bool breakOnCS[65536];
 	std::vector <bool> breakOnIORead,breakOnIOWrite;
 	CS_EIP oneTimeBreakPoint;
@@ -103,7 +123,7 @@ public:
 	~i486Debugger();
 	void CleanUp(void);
 
-	void AddBreakPoint(CS_EIP bp);
+	void AddBreakPoint(CS_EIP bp,uint32_t flags=0);
 	void RemoveBreakPoint(CS_EIP bp);
 	void ClearBreakPoints(void);
 	std::vector <CS_EIP> GetBreakPoints(void) const;

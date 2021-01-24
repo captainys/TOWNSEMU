@@ -60,6 +60,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["HIST"]=CMD_PRINT_HISTORY;
 	primaryCmdMap["SAVEHIST"]=CMD_SAVE_HISTORY;
 	primaryCmdMap["BP"]=CMD_ADD_BREAKPOINT;
+	primaryCmdMap["MP"]=CMD_ADD_MONITORPOINT;
 	primaryCmdMap["BC"]=CMD_DELETE_BREAKPOINT;
 	primaryCmdMap["BL"]=CMD_LIST_BREAKPOINTS;
 	primaryCmdMap["T"]=CMD_RUN_ONE_INSTRUCTION;
@@ -375,6 +376,10 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "BP EIP|BRK EIP" << std::endl;
 	std::cout << "BP CS:EIP|BRK CS:EIP" << std::endl;
 	std::cout << "  Add a break point." << std::endl;
+	std::cout << "MP EIP|BRK EIP" << std::endl;
+	std::cout << "MP CS:EIP|BRK CS:EIP" << std::endl;
+	std::cout << "  Add a monitor-only break point.  At a monitor-only break point, the VM will print" << std::endl;
+	std::cout << "  the status, but will not stop the execution." << std::endl;
 	std::cout << "BC Num" << std::endl;
 	std::cout << "  Delete a break point." << std::endl;
 	std::cout << "  Num is the number printed by PRINT BRK." << std::endl;
@@ -620,6 +625,9 @@ void TownsCommandInterpreter::PrintError(int errCode) const
 	case ERROR_VRAM_LAYER_UNAVAILABLE:
 		std::cout << "Error: VRAM Layer Unavailable." << std::endl;
 		break;
+	case ERROR_UNDEFINED_BREAK_POINT_OPTION:
+		std::cout << "Error: Unknown Break-Point Option." << std::endl;
+		break;
 
 	default:
 		std::cout << "Error" << std::endl;
@@ -760,6 +768,9 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 
 	case CMD_ADD_BREAKPOINT:
 		Execute_AddBreakPoint(towns,cmd);
+		break;
+	case CMD_ADD_MONITORPOINT:
+		Execute_AddMonitorPoint(towns,cmd);
 		break;
 	case CMD_DELETE_BREAKPOINT:
 		Execute_DeleteBreakPoint(towns,cmd);
@@ -1275,17 +1286,55 @@ void TownsCommandInterpreter::Execute_AddBreakPoint(FMTowns &towns,Command &cmd)
 		return;
 	}
 
+	uint32_t flags=0;
+	for(int i=2; i<cmd.argv.size(); ++i)
+	{
+		auto cap=cmd.argv[i];
+		cpputil::Capitalize(cap);
+		if("MON"==cap || "MONITOR"==cap)
+		{
+			flags|=i486Debugger::BRKPNT_FLAG_MONITOR_STATUS;
+		}
+		else
+		{
+			std::cout << "What option? " << cap << std::endl;
+			PrintError(ERROR_UNDEFINED_BREAK_POINT_OPTION);
+			return;
+		}
+	}
+
 	auto addrAndSym=towns.debugger.GetSymTable().FindSymbolFromLabel(cmd.argv[1]);
 	if(addrAndSym.second.label==cmd.argv[1])
 	{
-		towns.debugger.AddBreakPoint(addrAndSym.first);
+		towns.debugger.AddBreakPoint(addrAndSym.first,flags);
 	}
 	else
 	{
 		auto farPtr=towns.cpu.TranslateFarPointer(cmdutil::MakeFarPointer(cmd.argv[1],towns.cpu));
-		towns.debugger.AddBreakPoint(farPtr);
+		towns.debugger.AddBreakPoint(farPtr,flags);
 	}
 }
+
+void TownsCommandInterpreter::Execute_AddMonitorPoint(FMTowns &towns,Command &cmd)
+{
+	if(cmd.argv.size()<2)
+	{
+		PrintError(ERROR_TOO_FEW_ARGS);
+		return;
+	}
+
+	auto addrAndSym=towns.debugger.GetSymTable().FindSymbolFromLabel(cmd.argv[1]);
+	if(addrAndSym.second.label==cmd.argv[1])
+	{
+		towns.debugger.AddBreakPoint(addrAndSym.first,i486Debugger::BRKPNT_FLAG_MONITOR_STATUS);
+	}
+	else
+	{
+		auto farPtr=towns.cpu.TranslateFarPointer(cmdutil::MakeFarPointer(cmd.argv[1],towns.cpu));
+		towns.debugger.AddBreakPoint(farPtr,i486Debugger::BRKPNT_FLAG_MONITOR_STATUS);
+	}
+}
+
 void TownsCommandInterpreter::Execute_DeleteBreakPoint(FMTowns &towns,Command &cmd)
 {
 	if(cmd.argv.size()<2)

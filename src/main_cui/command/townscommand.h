@@ -74,6 +74,7 @@ public:
 		CMD_SAVE_HISTORY,
 
 		CMD_ADD_BREAKPOINT,
+		CMD_ADD_MONITORPOINT,
 		CMD_DELETE_BREAKPOINT,
 		CMD_LIST_BREAKPOINTS,
 
@@ -257,6 +258,7 @@ public:
 		ERROR_NO_DATA_GIVEN,
 		ERROR_WRONG_PARAMETER,
 		ERROR_VRAM_LAYER_UNAVAILABLE,
+		ERROR_UNDEFINED_BREAK_POINT_OPTION,
 	};
 
 	class Command
@@ -285,6 +287,7 @@ public:
 	void Execute_Disable(FMTowns &towns,Command &cmd);
 
 	void Execute_AddBreakPoint(FMTowns &towns,Command &cmd);
+	void Execute_AddMonitorPoint(FMTowns &towns,Command &cmd);
 	void Execute_DeleteBreakPoint(FMTowns &towns,Command &cmd);
 	void Execute_ListBreakPoints(FMTowns &towns,Command &cmd);
 

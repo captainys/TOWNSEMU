@@ -83,9 +83,18 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world,class Tow
 							townsPtr->var.powerOff=true;
 							break;
 						}
-						PrintStatus(*townsPtr);
-						std::cout << ">";
-						runMode=RUNMODE_PAUSE;
+						if(townsPtr->debugger.lastBreakPointInfo.flags&i486Debugger::BRKPNT_FLAG_MONITOR_STATUS)
+						{
+							PrintStatus(*townsPtr);
+							townsPtr->debugger.ClearStopFlag();
+							this->SetRunMode(RUNMODE_RUN);
+						}
+						else
+						{
+							PrintStatus(*townsPtr);
+							std::cout << ">";
+							runMode=RUNMODE_PAUSE;
+						}
 						break;
 					}
 				}
