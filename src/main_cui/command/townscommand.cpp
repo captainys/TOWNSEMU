@@ -1287,21 +1287,6 @@ void TownsCommandInterpreter::Execute_AddBreakPoint(FMTowns &towns,Command &cmd)
 	}
 
 	uint32_t flags=0;
-	for(int i=2; i<cmd.argv.size(); ++i)
-	{
-		auto cap=cmd.argv[i];
-		cpputil::Capitalize(cap);
-		if("MON"==cap || "MONITOR"==cap)
-		{
-			flags|=i486Debugger::BRKPNT_FLAG_MONITOR_STATUS;
-		}
-		else
-		{
-			std::cout << "What option? " << cap << std::endl;
-			PrintError(ERROR_UNDEFINED_BREAK_POINT_OPTION);
-			return;
-		}
-	}
 
 	auto addrAndSym=towns.debugger.GetSymTable().FindSymbolFromLabel(cmd.argv[1]);
 	if(addrAndSym.second.label==cmd.argv[1])
