@@ -3031,7 +3031,8 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 		{
 			auto type=desc.GetType();
 			std::string errMsg;
-			const unsigned int gateOperandSize=32;
+			unsigned int gateOperandSize=32;
+			bool isINTGate=true; // false if it is a trap gate.
 			// https://wiki.osdev.org/Interrupt_Descriptor_Table
 			switch(type)
 			{
@@ -3059,13 +3060,18 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 				return;
 			case 0b0110:
 				Abort("286 16-bit INT gate not supported");
+				gateOperandSize=16;
 				break;
 			case 0b0111:
-				Abort("286 16-bit Trap gate not supported");
+				// I have no idea if it is the correct way of handling an 80286 gate.
+				gateOperandSize=16;
+				isINTGate=false;
 				break;
 			case 0b0101: //"386 32-bit Task";
 			case 0b1110: //"386 32-bit INT";
+				break;
 			case 0b1111: //"386 32-bit Trap";
+				isINTGate=false;
 				break;
 			}
 
@@ -3092,7 +3098,10 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 
 				SetIPorEIP(gateOperandSize,desc.OFFSET);
 				state.CS()=newCS;
-				SetIF(false);
+				if(true==isINTGate)
+				{
+					SetIF(false);
+				}
 				SetTF(false);
 			}
 			else // Interrupt from Virtual86 mode
