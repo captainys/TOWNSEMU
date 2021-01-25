@@ -668,7 +668,11 @@ std::vector <std::string> i486DX::GetGDTText(const Memory &mem) const
 		text.back()+="H AdSz=";
 		text.back()+=cpputil::Ubtox(addressSize);
 		text.back()+="H ";
-		text.back()+="Type=";
+		text.back()+="P=";
+		text.back()+=cpputil::Ubtox((rawDesc[5]>>7)&1);
+		text.back()+=" DPL=";
+		text.back()+=cpputil::Ubtox((rawDesc[5]>>5)&3);
+		text.back()+=" Type=";
 		text.back()+=cpputil::Ubtox(rawDesc[5]&31);
 		text.back()+="H ";
 		text.back()+="@ PHYS:";
@@ -749,7 +753,11 @@ std::vector <std::string> i486DX::GetLDTText(const Memory &mem) const
 		text.back()+="H AdSz=";
 		text.back()+=cpputil::Ubtox(addressSize);
 		text.back()+="H ";
-		text.back()+="Type=";
+		text.back()+="P=";
+		text.back()+=cpputil::Ubtox((rawDesc[5]>>7)&1);
+		text.back()+=" DPL=";
+		text.back()+=cpputil::Ubtox((rawDesc[5]>>5)&3);
+		text.back()+=" Type=";
 		text.back()+=cpputil::Ubtox(rawDesc[5]&15);
 		text.back()+="H ";
 		text.back()+="@ PHYS:";
@@ -775,11 +783,19 @@ std::vector <std::string> i486DX::GetIDTText(const Memory &mem) const
 		text.back()+=":";
 		text.back()+="SEG=";
 		text.back()+=cpputil::Ustox(desc.SEG);
-		text.back()+="  OFFSET=";
+		text.back()+=" OFFSET=";
 		text.back()+=cpputil::Uitox(desc.OFFSET);
 
+		auto P=(desc.flags>>15)&1;
+		text.back()+=" P=";
+		text.back()+=cpputil::Ubtox(P);
+
+		auto DPL=(desc.flags>>13)&3;
+		text.back()+=" DPL=";
+		text.back()+=cpputil::Ubtox(DPL);
+
 		auto type=(desc.flags>>8)&0x1F;
-		text.back()+="  TYPE=";
+		text.back()+=" TYPE=";
 		text.back()+=cpputil::Ubtox(type);
 		text.back()+="(";
 		// https://wiki.osdev.org/Interrupt_Descriptor_Table
