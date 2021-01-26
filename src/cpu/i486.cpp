@@ -839,7 +839,7 @@ std::vector <std::string> i486DX::GetTSSText(const Memory &mem) const
 	text.back()+="LINK(OLD TSS SELECTOR)="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,0,mem));
 
 	text.push_back("");
-	text.back()+="SS0:ESP0="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,8,mem))+":"+cpputil::Uitox(DebugFetchWord(addrSize,state.TR,4,mem));
+	text.back()+="SS0:ESP0="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,8,mem))+":"+cpputil::Uitox(DebugFetchDword(addrSize,state.TR,4,mem));
 	text.push_back("");
 	text.back()+="SS1:ESP1="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,0x10,mem))+":"+cpputil::Uitox(DebugFetchDword(addrSize,state.TR,0x0C,mem));
 	text.push_back("");
