@@ -346,6 +346,19 @@ void FMTowns::OnCRTC_HST_Write(void)
 				std::cout << "  MousePointerY Physical Base=" << cpputil::Uitox(state.appSpecific_MousePtrY) << std::endl;
 			}
 			break;
+		case TOWNS_APPSPECIFIC_OPERATIONWOLF:
+			{
+				i486DX::SegmentRegister DS;
+				unsigned int exceptionType,exceptionCode;
+				cpu.DebugLoadSegmentRegister(DS,0x0014,mem,false);
+
+				state.appSpecific_MousePtrX=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x5E420,mem);
+				state.appSpecific_MousePtrY=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x5E422,mem);
+
+				std::cout << "  MousePointerX Physical Base=" << cpputil::Uitox(state.appSpecific_MousePtrX) << std::endl;
+				std::cout << "  MousePointerY Physical Base=" << cpputil::Uitox(state.appSpecific_MousePtrY) << std::endl;
+			}
+			break;
 		case TOWNS_APPSPECIFIC_STRIKECOMMANDER:
 			{
 				i486DX::SegmentRegister DS;
@@ -601,8 +614,14 @@ bool FMTowns::ControlMouse(int &diffX,int &diffY,int hostMouseX,int hostMouseY,u
 			diffY/=8;
 		}
 
-		auto dx=ScaleStep(ClampStep(diffX),state.mouseIntegrationSpeed);
-		auto dy=ScaleStep(ClampStep(diffY),state.mouseIntegrationSpeed);
+		int speed=state.mouseIntegrationSpeed;
+		if(TOWNS_APPSPECIFIC_OPERATIONWOLF==state.appSpecificSetting)
+		{
+			speed*=2;
+		}
+
+		auto dx=ScaleStep(ClampStep(diffX),speed);
+		auto dy=ScaleStep(ClampStep(diffY),speed);
 		if(-slowDownRange<=dx && dx<=slowDownRange)
 		{
 			if(dx<0)
@@ -905,6 +924,14 @@ bool FMTowns::GetMouseCoordinate(int &mx,int &my,unsigned int tbiosid) const
 			return true;
 		case TOWNS_APPSPECIFIC_LEMMINGS:
 		case TOWNS_APPSPECIFIC_LEMMINGS2:
+			{
+				auto debugStop=debugger.stop; // FetchWord may break due to MEMR.
+				mx=(int)mem.FetchWord(state.appSpecific_MousePtrX);
+				my=(int)mem.FetchWord(state.appSpecific_MousePtrY);
+				debugger.stop=debugStop;
+			}
+			return true;
+		case TOWNS_APPSPECIFIC_OPERATIONWOLF:
 			{
 				auto debugStop=debugger.stop; // FetchWord may break due to MEMR.
 				mx=(int)mem.FetchWord(state.appSpecific_MousePtrX);
