@@ -7487,11 +7487,22 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			state.EFLAGS|=EFLAGS_ALWAYS_ON;
 
 			// IRET to Virtual86 mode requires EFLAGS be loaded before the segment register.
+			auto CPL=state.CS().DPL;
 			LoadSegmentRegister(state.CS(),segRegValue,mem);
 			EIPIncrement=0;
 			if(true==enableCallStack)
 			{
 				PopCallStack(state.CS().value,state.EIP);
+			}
+
+			if(state.CS().DPL>CPL && true!=IsInRealMode() && 0==(state.EFLAGS&EFLAGS_VIRTUAL86))
+			{
+				// IRET to outer level
+				auto TempESP=Pop(mem,inst.operandSize);
+				auto TempSS=Pop(mem,inst.operandSize);
+				LoadSegmentRegister(state.SS(),TempSS,mem);
+				state.ESP()=TempESP;
+				// Supposed to be zero segment selectors that are not valid in the outer level.
 			}
 		}
 		break;
