@@ -190,6 +190,7 @@ public:
 		uint32_t operandSize;
 		uint32_t addressSize;
 		uint32_t limit;
+		unsigned int DPL=0;
 	};
 
 	class SegmentRegister : public SegmentProperty

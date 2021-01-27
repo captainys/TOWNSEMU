@@ -475,7 +475,8 @@ std::vector <std::string> i486DX::GetStateText(void) const
 	     "CS:EIP="
 	    +cpputil::Ustox(state.CS().value)+":"+cpputil::Uitox(state.EIP)
 	    +"  LINEAR:"+cpputil::Uitox(state.CS().baseLinearAddr+state.EIP)
-	    +"  EFLAGS="+cpputil::Uitox(state.EFLAGS));
+	    +"  EFLAGS="+cpputil::Uitox(state.EFLAGS)
+	    +"  CPL="+cpputil::Ubtox(state.CS().DPL));
 
 	text.push_back(
 	     "EAX="+cpputil::Uitox(state.EAX())
@@ -1011,6 +1012,7 @@ public:
 			reg.operandSize=16;
 			// reg.limit=0xffff;   Surprisingly, reg.limit isn't affected!?  According to https://wiki.osdev.org/Unreal_Mode
 			reg.limit=std::max<unsigned int>(reg.limit,0xffff);
+			reg.DPL=(0!=(i486DX::EFLAGS_VIRTUAL86&cpu.state.EFLAGS) ? 3 : 0);
 			return 0xFFFFFFFF;
 		}
 		else
@@ -1036,6 +1038,7 @@ public:
 			}
 			reg.baseLinearAddr=segBase;
 			reg.value=value;
+			reg.DPL=(rawDesc[5]>>5)&3;
 
 			if((0x40&rawDesc[6])==0) // D==0
 			{
@@ -1100,6 +1103,7 @@ void i486DX::LoadSegmentRegisterRealMode(SegmentRegister &reg,unsigned int value
 	reg.baseLinearAddr=(value<<4);
 	reg.addressSize=16;
 	reg.operandSize=16;
+	reg.DPL=0; // In real mode, there is no restrictioin, so I think it should be set to highest privilege.
 	// reg.limit=0xffff;  Surprisingly, reg.limit isn't affected!?  According to https://wiki.osdev.org/Unreal_Mode
 }
 
