@@ -232,6 +232,10 @@ public:
 	{
 		TSS_OFFSET_ESP0=0x04,
 		TSS_OFFSET_SS0= 0x08,
+		TSS_OFFSET_ESP1=0x0C,
+		TSS_OFFSET_SS1= 0x10,
+		TSS_OFFSET_ESP2=0x14,
+		TSS_OFFSET_SS2= 0x18,
 	};
 	class TaskRegister : public SegmentRegister
 	{
@@ -3091,6 +3095,23 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 				SegmentRegister newCS;
 				LoadSegmentRegister(newCS,desc.SEG,mem);
 
+				auto DPL=newCS.DPL;
+				auto CPL=state.CS().DPL;
+				if(DPL<CPL)
+				{
+					auto TempSS=state.SS();
+					auto TempESP=state.ESP();
+					LoadSegmentRegister(state.SS(),FetchWord(32,state.TR,TSS_OFFSET_SS0+DPL*8,mem),mem);
+					state.ESP()=FetchDword(32,state.TR,TSS_OFFSET_ESP0+DPL*8,mem);
+					Push(mem,gateOperandSize,TempSS.value);
+					Push(mem,gateOperandSize,TempESP);
+				}
+				// else if(CPL<DPL)
+				// {
+				//	Interrupt to lower-privilege level should raise exception.
+				// }
+
+
 				Push(mem,gateOperandSize,state.EFLAGS,state.CS().value,state.EIP+numInstBytesForReturn);
 				// Equivalent >>
 				// Push(mem,gateOperandSize,state.EFLAGS);
@@ -3104,6 +3125,10 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 					SetIF(false);
 				}
 				SetTF(false);
+				if(DPL<CPL)
+				{
+					state.EFLAGS&=(~EFLAGS_NESTED);
+				}
 			}
 			else // Interrupt from Virtual86 mode
 			{
