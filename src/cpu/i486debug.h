@@ -49,6 +49,10 @@ public:
 	{
 	public:
 		uint32_t flags;
+		inline void Clear(void)
+		{
+			flags=0;
+		}
 	};
 
 	typedef i486DX::FarPointer CS_EIP;
@@ -171,10 +175,12 @@ public:
 
 	/*! Break from an external reason.
 	    It sets stop==1 and externalBreakReason=reason.
+	    It also clears lastBreakPointInfo.
 	*/
 	void ExternalBreak(const std::string &reason);
 
 	/*! Clear stop flag and externalBreakReason.
+	    It also clears lastBreakPointInfo.
 	*/
 	void ClearStopFlag(void);
 

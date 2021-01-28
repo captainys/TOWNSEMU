@@ -569,12 +569,14 @@ void i486Debugger::ExternalBreak(const std::string &reason)
 {
 	stop=true;
 	externalBreakReason=reason;
+	lastBreakPointInfo.Clear();
 }
 
 void i486Debugger::ClearStopFlag(void)
 {
 	stop=false;
 	externalBreakReason="";
+	lastBreakPointInfo.Clear();
 }
 
 void i486Debugger::Interrupt(const i486DX &cpu,unsigned int INTNum,Memory &mem,unsigned int numInstBytes)
