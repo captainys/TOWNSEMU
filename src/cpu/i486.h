@@ -1955,6 +1955,10 @@ public:
 	/*! Print LDT. */
 	void PrintLDT(const Memory &mem) const;
 
+	/*! Print Page Translation details
+	*/
+	void PrintPageTranslation(const Memory &mem,uint32_t linearAddr) const;
+
 private:
 	template <class CPUCLASS>
 	class LoadSegmentRegisterTemplate;

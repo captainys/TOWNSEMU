@@ -2285,17 +2285,8 @@ void TownsCommandInterpreter::Execute_AddressTranslation(FMTowns &towns,Command 
 		i486DX::SegmentRegister seg;
 		towns.cpu.LoadSegmentRegister(seg,farPtr.SEG,towns.mem);
 		auto linear=seg.baseLinearAddr+farPtr.OFFSET;
-		std::cout << "LINE:" << cpputil::Uitox(linear) << std::endl;
 
-		if(true==towns.cpu.PagingEnabled())
-		{
-			auto physical=towns.cpu.LinearAddressToPhysicalAddress(linear,towns.mem);
-			std::cout << "PHYS:" << cpputil::Uitox(physical) << std::endl;
-		}
-		else 
-		{
-			std::cout << "PHYS:" << cpputil::Uitox(linear) << std::endl;
-		}
+		towns.cpu.PrintPageTranslation(towns.mem,linear);
 	}
 	else
 	{

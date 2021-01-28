@@ -904,6 +904,66 @@ void i486DX::PrintIDT(const Memory &mem) const
 	}
 }
 
+void i486DX::PrintPageTranslation(const Memory &mem,uint32_t linearAddr) const
+{
+	auto pageIndex=(linearAddr>>LINEARADDR_TO_PAGE_SHIFT);
+
+	std::cout << "LINE:" << cpputil::Uitox(linearAddr) << "H" << std::endl;
+
+	auto pageInfo=state.pageTableCache[pageIndex];
+	if(state.pageTableCacheValid[pageIndex]<state.pageTableCacheValidCounter)
+	{
+		std::cout << "Page Info Not Cached" << std::endl;
+	}
+	else
+	{
+		std::cout << "Cached Page Info:" << cpputil::Uitox(pageInfo) << "H" << std::endl;
+		if(0!=(pageInfo&PAGEINFO_FLAG_PRESENT))
+		{
+			auto offset=(linearAddr&4095);
+			auto physicalAddr=(pageInfo&0xFFFFF000)+offset;
+			std::cout << "Cache PHYS:" << cpputil::Uitox(physicalAddr) << "H" << std::endl;
+		}
+		else
+		{
+			std::cout << "Cached Page Not Present" << std::endl;
+		}
+	}
+
+	uint32_t pageDirectoryIndex=((linearAddr>>22)&1023);
+	uint32_t pageTableIndex=((linearAddr>>12)&1023);
+
+	auto pageDirectoryPtr=state.GetCR(3)&0xFFFFF000;
+	auto pageTableInfo=mem.FetchDword(pageDirectoryPtr+(pageDirectoryIndex<<2));
+
+	std::cout << "Page Directory Index  :" << cpputil::Uitox(pageDirectoryIndex) << "H" << std::endl;
+	std::cout << "Page Directory Pointer:" << cpputil::Uitox(pageDirectoryPtr) << "H" << std::endl;
+	std::cout << "Page Directory Info   :" << cpputil::Uitox(pageTableInfo) << "H" << std::endl;
+	if(0==(pageTableInfo&1))
+	{
+		std::cout << "Page Table Not Present" << std::endl;
+	}
+	else
+	{
+		const uint32_t pageTablePtr=(pageTableInfo&0xFFFFF000);
+		const uint32_t pagePtr=pageTablePtr+(pageTableIndex<<2);
+		unsigned int pageInfo=mem.FetchDword(pagePtr);
+		std::cout << "Page Table Index  :" << cpputil::Uitox(pageTableIndex) << "H" << std::endl;
+		std::cout << "Page Table Pointer:" << cpputil::Uitox(pageTablePtr) << "H" << std::endl;
+		std::cout << "Page Pointer      :" << cpputil::Uitox(pagePtr) << "H" << std::endl;
+		std::cout << "Page Table Info   :" << cpputil::Uitox(pageInfo) << "H" << std::endl;
+		if(0==(pageInfo&1))
+		{
+			std::cout << "Page Not Present" << std::endl;
+		}
+		else
+		{
+			auto offset=(linearAddr&4095);
+			auto physicalAddr=(pageInfo&0xFFFFF000)+offset;
+			std::cout << "PHYS:" << cpputil::Uitox(physicalAddr) << "H" << std::endl;
+		}
+	}
+}
 
 template <class CPUCLASS>
 class i486DX::LoadSegmentRegisterTemplate
