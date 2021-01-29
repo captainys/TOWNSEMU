@@ -3171,6 +3171,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		disasm+=op1.Disassemble();
 		disasm.push_back(',');
 		disasm+=Operand::GetSizeQualifierToDisassembly(op2,8);
+		disasm+=SegmentOverrideString(segOverride);
 		disasm+=op2.Disassemble();
 		break;
 	case I486_OPCODE_MOVSX_R32_RM16://=   0x0FBF,
@@ -3180,6 +3181,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		disasm+=op1.Disassemble();
 		disasm.push_back(',');
 		disasm+=Operand::GetSizeQualifierToDisassembly(op2,16);
+		disasm+=SegmentOverrideString(segOverride);
 		disasm+=op2.Disassemble();
 		break;
 
