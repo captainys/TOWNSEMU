@@ -39,6 +39,14 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world,class Tow
 
 	outside_world->Start();
 
+	switch(townsPtr->state.appSpecificSetting)
+	{
+	case TOWNS_APPSPECIFIC_BRANDISH:
+		// Brandish doesn't know about 80486.  It confuses as 80386SX and messes up.
+		townsPtr->state.pretend386DX=true;
+		break;
+	}
+
 	TownsRender render;
 	for(;true!=terminate;)
 	{
