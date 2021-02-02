@@ -286,3 +286,15 @@ void TownsKeyboard::SetBootKeyCombination(unsigned int keyComb)
 		picPtr->SetInterruptRequestBit(TOWNSIRQ_KEYBOARD,true);
 	}
 }
+
+bool TownsKeyboard::InFifoBuffer(unsigned int code) const
+{
+	for(int i=0; i<nFifoFilled; ++i)
+	{
+		if(fifoBuf[i]==code)
+		{
+			return true;
+		}
+	}
+	return false;
+}

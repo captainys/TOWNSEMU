@@ -192,7 +192,7 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 
 
 	// Strike Commander throttle control.
-	if(0<=throttlePhysicalId && throttlePhysicalId<gamePads.size())
+	if(TOWNS_APPSPECIFIC_STRIKECOMMANDER==towns.state.appSpecificSetting && 0<=throttlePhysicalId && throttlePhysicalId<gamePads.size())
 	{
 		if(prevGamePads[throttlePhysicalId].axes[throttleAxis]!=
 		   gamePads[throttlePhysicalId].axes[throttleAxis])
@@ -285,11 +285,11 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 			if(prevThr!=thr)
 			{
 				std::cout << "pre " << prevThr << " new " << thr << " set " << setSpeed << " max " << maxSpeed << std::endl;
-				wingCommander2LastThrottleMoveTime=towns.state.townsTime;
-				wingCommander2NextThrottleUpdateTime=towns.state.townsTime;
+				lastThrottleMoveTime=towns.state.townsTime;
+				nextThrottleUpdateTime=towns.state.townsTime;
 			}
 
-			if(towns.state.townsTime<wingCommander2LastThrottleMoveTime+4*PER_SECOND && wingCommander2NextThrottleUpdateTime<=towns.state.townsTime)
+			if(towns.state.townsTime<lastThrottleMoveTime+4*PER_SECOND && nextThrottleUpdateTime<=towns.state.townsTime)
 			{
 				// Wing Commander I speed up/slow down while plus or minus key is held down.
 				// However, if another key is pressed during the acceleration or desceleration
@@ -297,7 +297,7 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 				// Therefore, it needs to send key-release code periodically to make the program
 				// think the plus or minus key is re-pressed to allow throttle to work while
 				// other keys are functional.
-				wingCommander2NextThrottleUpdateTime=towns.state.townsTime+PER_SECOND/16;
+				nextThrottleUpdateTime=towns.state.townsTime+PER_SECOND/16;
 				towns.keyboard.PushFifo(TOWNS_KEYFLAG_JIS_RELEASE,TOWNS_JISKEY_NUM_PLUS);
 				towns.keyboard.PushFifo(TOWNS_KEYFLAG_JIS_RELEASE,TOWNS_JISKEY_NUM_MINUS);
 				if(setSpeed<thr)
@@ -308,6 +308,34 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 				{
 					towns.keyboard.PushFifo(TOWNS_KEYFLAG_JIS_PRESS  ,TOWNS_JISKEY_NUM_MINUS);
 				}
+			}
+		}
+		else if(TOWNS_APPSPECIFIC_AIRWARRIOR_V2==towns.state.appSpecificSetting)
+		{
+			unsigned int prevInputThr=(unsigned int)((1.0f-prevGamePads[throttlePhysicalId].axes[throttleAxis])*8.1f); // 0 to 16 scale
+			unsigned int inputThr=(unsigned int)((1.0f-gamePads[throttlePhysicalId].axes[throttleAxis])*8.1f); // 0 to 16 scale
+
+			if(prevInputThr!=inputThr)
+			{
+				lastThrottleMoveTime=towns.state.townsTime;
+				nextThrottleUpdateTime=towns.state.townsTime;
+			}
+
+			if(towns.state.townsTime<lastThrottleMoveTime+4*PER_SECOND && nextThrottleUpdateTime<=towns.state.townsTime)
+			{
+				nextThrottleUpdateTime=towns.state.townsTime+PER_SECOND/16;
+				unsigned int currentThr=(towns.mem.FetchByte(towns.state.appSpecific_ThrottlePtr))/12; // 0 to 16
+				unsigned int keyToPress=TOWNS_JISKEY_NULL;
+				if(currentThr<inputThr)
+				{
+					keyToPress=TOWNS_JISKEY_C;
+				}
+				else if(inputThr<currentThr)
+				{
+					keyToPress=TOWNS_JISKEY_V;
+				}
+				towns.keyboard.PushFifo(TOWNS_KEYFLAG_JIS_PRESS  ,keyToPress);
+				towns.keyboard.PushFifo(TOWNS_KEYFLAG_JIS_RELEASE,keyToPress);
 			}
 		}
 	}

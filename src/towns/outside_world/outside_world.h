@@ -70,12 +70,12 @@ public:
 	int lastMousePosForSwitchBackToNormalMode[2]={0,0};
 
 	int wingCommander1ThrottleState=0;
-	uint64_t wingCommander2LastThrottleMoveTime=0;
-	uint64_t wingCommander2NextThrottleUpdateTime=0;
 
 	// For Wing Commander, Strike Commander, Fujitsu Air Warrior V2 Throttle Integration.
 	int throttlePhysicalId=-1;
 	int throttleAxis=2;  // Typically flight-stick's throttle axis is the 3rd axis (#2 axis).
+	uint64_t lastThrottleMoveTime=0;
+	uint64_t nextThrottleUpdateTime=0;
 
 
 	/*! Virtual Keys.

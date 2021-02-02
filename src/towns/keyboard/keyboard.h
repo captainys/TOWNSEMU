@@ -85,6 +85,8 @@ public:
 	virtual void RunScheduledTask(unsigned long long int townsTime);
 
 	virtual void Reset(void);
+
+	bool InFifoBuffer(unsigned int code) const;
 };
 
 /* } */
