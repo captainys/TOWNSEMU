@@ -566,6 +566,10 @@ unsigned int TownsStrToApp(std::string str)
 	{
 		return TOWNS_APPSPECIFIC_BRANDISH;
 	}
+	if("AIRWARRIORV2"==str || "AIRWARV2"==str)
+	{
+		return TOWNS_APPSPECIFIC_AIRWARRIOR_V2;
+	}
 	return TOWNS_APPSPECIFIC_NONE;
 }
 std::string TownsAppToStr(unsigned int i)
@@ -594,6 +598,8 @@ std::string TownsAppToStr(unsigned int i)
 		return "OPERATIONWOLF";
 	case TOWNS_APPSPECIFIC_BRANDISH:
 		return "BRANDISH";
+	case TOWNS_APPSPECIFIC_AIRWARRIOR_V2:
+		return "AIRWARRIORV2";
 	}
 }
 

@@ -811,8 +811,8 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 				// Wing Commander 1 turned out to be using separate joystick position from the mouse coordinate.
 				// Need to translate to the mouse coordinate.
 				int curStickX,curStickY;
-				curStickX=towns.mem.FetchDword(towns.state.appSpecific_WC1_StickPosXPtr);
-				curStickY=towns.mem.FetchDword(towns.state.appSpecific_WC1_StickPosYPtr);
+				curStickX=towns.mem.FetchDword(towns.state.appSpecific_StickPosXPtr);
+				curStickY=towns.mem.FetchDword(towns.state.appSpecific_StickPosYPtr);
 				curStickX=(curStickX&0x7FFF)-(curStickX&0x8000);
 				curStickY=(curStickY&0x7FFF)-(curStickY&0x8000);
 
@@ -871,68 +871,114 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 					}
 				}
 			}
-			else
+			else if(true==mouseByFlightstickEnabled && TOWNS_APPSPECIFIC_AIRWARRIOR_V2==towns.state.appSpecificSetting)
 			{
-				if(true==mouseByFlightstickEnabled)
+				// Wing Commander 1 turned out to be using separate joystick position from the mouse coordinate.
+				// Need to translate to the mouse coordinate.
+				int curStickX,curStickY;
+				curStickX=towns.mem.FetchDword(towns.state.appSpecific_StickPosXPtr);
+				curStickY=towns.mem.FetchDword(towns.state.appSpecific_StickPosYPtr);
+				curStickX=(curStickX&0x7FFF)-(curStickX&0x8000);
+				curStickY=(curStickY&0x7FFF)-(curStickY&0x8000);
+
+				float fx=reading.axes[0];
+				float fy=reading.axes[1];
+				fx=ApplyZeroZone(fx,mouseByFlightstickZeroZoneX);
+				fy=ApplyZeroZone(fy,mouseByFlightstickZeroZoneY);
+				int inputX=(int)(fx*250.0f);
+				int inputY=(int)(fy*250.0f);
+
+				// Joystick Input Left=negative Right=positive    NoseUp=positive NoseDown=negative
+				// Wing Commander Internal  Left=negative RIght=positive    NoseUp=positive NoseDown=negative
+				int diffX=inputX-curStickX;
+				int diffY=inputY-curStickY;
+
+				if(diffX<-80)
 				{
-					float fx=reading.axes[0];
-					float fy=reading.axes[1];
-					fx=ApplyZeroZone(fx,mouseByFlightstickZeroZoneX);
-					fy=ApplyZeroZone(fy,mouseByFlightstickZeroZoneY);
-					fx*=mouseByFlightstickScaleX;
-	                fy*=mouseByFlightstickScaleY;
-					mx=mouseByFlightstickCenterX+(int)fx;
-					my=mouseByFlightstickCenterY+(int)fy;
-					lb=reading.buttons[0];
-					rb=reading.buttons[1];
-					if(TOWNS_APPSPECIFIC_WINGCOMMANDER2==towns.state.appSpecificSetting)
+					diffX=-80;
+				}
+				if(80<diffX)
+				{
+					diffX=80;
+				}
+				if(diffY<-80)
+				{
+					diffY=-80;
+				}
+				if(80<diffY)
+				{
+					diffY=80;
+				}
+
+				towns.SetMouseButtonState((0!=lb),(0!=rb));
+				for(auto &p : towns.gameport.state.ports)
+				{
+					if(p.device==TownsGamePort::MOUSE)
 					{
-						// Wing Commander 2 allows negative mouse coordinate, or the control will be really slow nose down.
-						// But sending below -120 (2x scale) apparently changes the neutral position.
-						if(mx<-20)
-						{
-							mx=-20;
-						}
-						if(my<-240)
-						{
-							my=-240;
-						}
+						p.mouseMotion.Set(-diffX,-diffY);
 					}
-					else
+				}
+			}
+			else if(true==mouseByFlightstickEnabled)
+			{
+				float fx=reading.axes[0];
+				float fy=reading.axes[1];
+				fx=ApplyZeroZone(fx,mouseByFlightstickZeroZoneX);
+				fy=ApplyZeroZone(fy,mouseByFlightstickZeroZoneY);
+				fx*=mouseByFlightstickScaleX;
+                fy*=mouseByFlightstickScaleY;
+				mx=mouseByFlightstickCenterX+(int)fx;
+				my=mouseByFlightstickCenterY+(int)fy;
+				lb=reading.buttons[0];
+				rb=reading.buttons[1];
+				if(TOWNS_APPSPECIFIC_WINGCOMMANDER2==towns.state.appSpecificSetting)
+				{
+					// Wing Commander 2 allows negative mouse coordinate, or the control will be really slow nose down.
+					// But sending below -120 (2x scale) apparently changes the neutral position.
+					if(mx<-20)
 					{
-						if(mx<0)
-						{
-							mx=0;
-						}
-						if(my<0)
-						{
-							my=0;
-						}
+						mx=-20;
+					}
+					if(my<-240)
+					{
+						my=-240;
 					}
 				}
 				else
 				{
-					int wid,hei;
-					FsGetWindowSize(wid,hei);
 					if(mx<0)
 					{
 						mx=0;
-					}
-					else if(wid<=mx)
-					{
-						mx=wid-1;
 					}
 					if(my<0)
 					{
 						my=0;
 					}
-					else if(hei<=my)
-					{
-						my=hei-1;
-					}
-					mx=mx*100/scaling;
-					my=my*100/scaling;
 				}
+				this->ProcessMouse(towns,lb,mb,rb,mx,my);
+			}
+			else
+			{
+				int wid,hei;
+				FsGetWindowSize(wid,hei);
+				if(mx<0)
+				{
+					mx=0;
+				}
+				else if(wid<=mx)
+				{
+					mx=wid-1;
+				}
+				if(my<0)
+				{
+					my=0;
+				}
+				else if(hei<=my)
+				{
+					my=hei-1;
+				}
+				mx=mx*100/scaling;
+				my=my*100/scaling;
 
 				this->ProcessMouse(towns,lb,mb,rb,mx,my);
 			}

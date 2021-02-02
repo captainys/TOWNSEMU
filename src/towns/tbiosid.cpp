@@ -253,16 +253,16 @@ void FMTowns::OnCRTC_HST_Write(void)
 				state.appSpecific_MousePtrX=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x6EEDC,mem);
 				state.appSpecific_MousePtrY=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x6EEDE,mem);
 
-				state.appSpecific_WC1_StickPosXPtr=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x0006EF30,mem);
-				state.appSpecific_WC1_StickPosYPtr=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x0006EF34,mem);
+				state.appSpecific_StickPosXPtr=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x0006EF30,mem);
+				state.appSpecific_StickPosYPtr=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x0006EF34,mem);
 
 				state.appSpecific_WC_setSpeedPtr=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x00066EF1,mem);
 				state.appSpecific_WC_maxSpeedPtr=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x000651BC,mem);
 
 				std::cout << "  MousePointerX Physical Base=" << cpputil::Uitox(state.appSpecific_MousePtrX) << std::endl;
 				std::cout << "  MousePointerY Physical Base=" << cpputil::Uitox(state.appSpecific_MousePtrY) << std::endl;
-				std::cout << "  StickX Physical Base       =" << cpputil::Uitox(state.appSpecific_WC1_StickPosXPtr) << std::endl;
-				std::cout << "  StickY Physical Base       =" << cpputil::Uitox(state.appSpecific_WC1_StickPosYPtr) << std::endl;
+				std::cout << "  StickX Physical Base       =" << cpputil::Uitox(state.appSpecific_StickPosXPtr) << std::endl;
+				std::cout << "  StickY Physical Base       =" << cpputil::Uitox(state.appSpecific_StickPosYPtr) << std::endl;
 				std::cout << "  Set-Speed Physical Addr    =" << cpputil::Uitox(state.appSpecific_WC_setSpeedPtr) << std::endl;
 				std::cout << "  Max-Speed Physical Addr    =" << cpputil::Uitox(state.appSpecific_WC_maxSpeedPtr) << std::endl;
 			}
@@ -314,6 +314,17 @@ void FMTowns::OnCRTC_HST_Write(void)
 					// 000C:0008F638 7500                      JNE     0008F63A         ; AL=X motion flag.  Jump if non zero X motion.
 					// 000C:0008F63A 8B3514AB0400              MOV     ESI,[0004AB14H]  ; DS:[0004AB14H] is turret pitch.
 				}
+			}
+			break;
+		case TOWNS_APPSPECIFIC_AIRWARRIOR_V2:
+			{
+				i486DX::SegmentRegister DS;
+				unsigned int exceptionType,exceptionCode;
+				cpu.DebugLoadSegmentRegister(DS,0x0014,mem,false);
+				state.appSpecific_StickPosXPtr=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x00286720,mem);
+				state.appSpecific_StickPosYPtr=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x00286722,mem);
+				std::cout << "  StickX Physical Ptr        =" << cpputil::Uitox(state.appSpecific_StickPosXPtr) << std::endl;
+				std::cout << "  StickY Physical Ptr        =" << cpputil::Uitox(state.appSpecific_StickPosYPtr) << std::endl;
 			}
 			break;
 		case TOWNS_APPSPECIFIC_LEMMINGS:

@@ -184,11 +184,11 @@ public:
 		unsigned int appSpecificSetting=0;
 		unsigned int appSpecific_MousePtrX=0;
 		unsigned int appSpecific_MousePtrY=0;
+		uint32_t appSpecific_StickPosXPtr=0;
+		uint32_t appSpecific_StickPosYPtr=0;
 		unsigned int appSpecific_WC2_EventQueueBaseAddr=0;  // DS:03CCH
 		uint32_t appSpecific_WC_setSpeedPtr=0;
 		uint32_t appSpecific_WC_maxSpeedPtr=0;
-		uint32_t appSpecific_WC1_StickPosXPtr=0;
-		uint32_t appSpecific_WC1_StickPosYPtr=0;
 		bool appSpecific_HoldMouseIntegration=false;
 
 		void PowerOn(void);
