@@ -229,13 +229,9 @@ void Outside_World::Put16x16SelectInvert(int x0,int y0,const unsigned char idleI
 	{
 		UseGamePad(mouseByFlightstickPhysicalId);
 	}
-	if(0<=strikeCommanderThrottlePhysicalId)
+	if(0<=throttlePhysicalId)
 	{
-		UseGamePad(strikeCommanderThrottlePhysicalId);
-	}
-	if(0<=wingCommanderThrottlePhysicalId)
-	{
-		UseGamePad(wingCommanderThrottlePhysicalId);
+		UseGamePad(throttlePhysicalId);
 	}
 }
 

@@ -80,11 +80,8 @@ public:
 
 
 	// When adding a throttle control for an app, also update Outside_World::CacheGamePadIndicesThatNeedUpdates.
-	int strikeCommanderThrottlePhysicalId=-1;
-	int strikeCommanderThrottleAxis=3;
-
-	int wingCommanderThrottlePhysicalId=-1;
-	int wingCommanderThrottleAxis=3;
+	int throttlePhysicalId=-1;
+	int throttleAxis=3;
 
 	enum
 	{

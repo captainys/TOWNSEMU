@@ -192,13 +192,13 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 
 
 	// Strike Commander throttle control.
-	if(0<=strikeCommanderThrottlePhysicalId && strikeCommanderThrottlePhysicalId<gamePads.size())
+	if(0<=throttlePhysicalId && throttlePhysicalId<gamePads.size())
 	{
-		if(prevGamePads[strikeCommanderThrottlePhysicalId].axes[strikeCommanderThrottleAxis]!=
-		   gamePads[strikeCommanderThrottlePhysicalId].axes[strikeCommanderThrottleAxis])
+		if(prevGamePads[throttlePhysicalId].axes[throttleAxis]!=
+		   gamePads[throttlePhysicalId].axes[throttleAxis])
 		{
-			int prev=(1.0F-prevGamePads[strikeCommanderThrottlePhysicalId].axes[strikeCommanderThrottleAxis])*5.0F;
-			int now=(1.0F-gamePads[strikeCommanderThrottlePhysicalId].axes[strikeCommanderThrottleAxis])*5.0F;
+			int prev=(1.0F-prevGamePads[throttlePhysicalId].axes[throttleAxis])*5.0F;
+			int now=(1.0F-gamePads[throttlePhysicalId].axes[throttleAxis])*5.0F;
 
 			if(prev<0)
 			{
@@ -237,7 +237,7 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 		}
 	}
 	// Wing Commander Throttle Control
-	if(0<=wingCommanderThrottlePhysicalId && wingCommanderThrottlePhysicalId<gamePads.size())
+	if(0<=throttlePhysicalId && throttlePhysicalId<gamePads.size())
 	{
 		/* The following method does not make too many key strokes,
 		   however, if another key is pressed while the set speed is still changing,
@@ -247,7 +247,7 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 			unsigned int setSpeed,maxSpeed;
 			towns.GetWingCommanderSetSpeedMaxSpeed(setSpeed,maxSpeed);
 
-			unsigned int thr=(unsigned int)((1.0f-gamePads[wingCommanderThrottlePhysicalId].axes[wingCommanderThrottleAxis])*128.0f); // 0-255 scale
+			unsigned int thr=(unsigned int)((1.0f-gamePads[throttlePhysicalId].axes[throttleAxis])*128.0f); // 0-255 scale
 			thr=thr*maxSpeed/255;
 			if(1!=wingCommander1ThrottleState && setSpeed<thr)
 			{
@@ -277,8 +277,8 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 			unsigned int setSpeed,maxSpeed;
 			towns.GetWingCommanderSetSpeedMaxSpeed(setSpeed,maxSpeed);
 
-			unsigned int prevThr=(unsigned int)((1.0f-prevGamePads[wingCommanderThrottlePhysicalId].axes[wingCommanderThrottleAxis])*128.0f); // 0-255 scale
-			unsigned int thr=(unsigned int)((1.0f-gamePads[wingCommanderThrottlePhysicalId].axes[wingCommanderThrottleAxis])*128.0f); // 0-255 scale
+			unsigned int prevThr=(unsigned int)((1.0f-prevGamePads[throttlePhysicalId].axes[throttleAxis])*128.0f); // 0-255 scale
+			unsigned int thr=(unsigned int)((1.0f-gamePads[throttlePhysicalId].axes[throttleAxis])*128.0f); // 0-255 scale
 			prevThr=prevThr*maxSpeed/255;
 			thr=thr*maxSpeed/255;
 

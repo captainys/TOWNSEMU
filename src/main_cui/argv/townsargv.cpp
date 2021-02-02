@@ -130,12 +130,17 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  (Joystick ID, button ID starts with 0)" << std::endl;
 	std::cout << "-VIRTKEY townsKey gamePadPhysicalId button" << std::endl;
 	std::cout << "  Assign a virtual key to a gamepad button." << std::endl;
-	std::cout << "-STCMTHR physicalId axis" << std::endl;
-	std::cout << "  Assign a joystick analog axis to Strike Commander throttle." << std::endl;
-	std::cout << "-WCTHR  physicalId axis" << std::endl;
-	std::cout << "  Assign a joystick analog axis to Wing Commander throttle." << std::endl;
-	std::cout << "  Must be used together with -APP WINGCOMMANDER1." << std::endl;
+	std::cout << "-FLIGHTTHR physicalId axis" << std::endl;
+	std::cout << "  Assign a joystick analog axis for throttle integration." << std::endl;
+	std::cout << "  Throttle integration is available for:" << std::endl;
+	std::cout << "    Strike Commander, Strike Commander Plus, Wing Commander, Wing Commander 2," << std::endl;
+	std::cout << "    Fujitsu Air Warrior V2.1 L10" << std::endl;
+	std::cout << "  Must be used together with -APP options." << std::endl;
 	std::cout << "  Cycle throttle all the way forward and backward when start a mission to enable this feature." << std::endl;
+	std::cout << "-STCMTHR physicalId axis" << std::endl;
+	std::cout << "  Same as -FLIGHTTHR" << std::endl;
+	std::cout << "-WCTHR  physicalId axis" << std::endl;
+	std::cout << "  Same as -FLIGHTTHR" << std::endl;
 	std::cout << "-HD0 image-file-name" << std::endl;
 	std::cout << "  Hard-disk image file name.  Can be -HDx (0<=x<=6)" << std::endl;
 	std::cout << "-SCSICD0 image-file-name" << std::endl;
@@ -348,16 +353,22 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 			virtualKeys.push_back(vk);
 			i+=3;
 		}
+		else if("-FLIGHTTHR"==ARG && i+2<argc)
+		{
+			throttlePhysicalId=cpputil::Atoi(argv[i+1]);
+			throttleAxis=cpputil::Atoi(argv[i+2]);
+			i+=2;
+		}
 		else if("-STCMTHR"==ARG && i+2<argc)
 		{
-			strikeCommanderThrottlePhysicalId=cpputil::Atoi(argv[i+1]);
-			strikeCommanderThrottleAxis=cpputil::Atoi(argv[i+2]);
+			throttlePhysicalId=cpputil::Atoi(argv[i+1]);
+			throttleAxis=cpputil::Atoi(argv[i+2]);
 			i+=2;
 		}
 		else if("-WCTHR"==ARG && i+2<argc)
 		{
-			wingCommanderThrottlePhysicalId=cpputil::Atoi(argv[i+1]);
-			wingCommanderThrottleAxis=cpputil::Atoi(argv[i+2]);
+			throttlePhysicalId=cpputil::Atoi(argv[i+1]);
+			throttleAxis=cpputil::Atoi(argv[i+2]);
 			i+=2;
 		}
 		else if("-FDPATH"==ARG && i+1<argc)

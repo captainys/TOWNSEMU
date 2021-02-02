@@ -401,11 +401,8 @@ bool Setup(FMTowns &towns,Outside_World *outside_world,const TownsARGV &argv)
 	towns.var.damperWireLine=argv.damperWireLine;
 	towns.var.scanLineEffectIn15KHz=argv.scanLineEffectIn15KHz;
 
-	outside_world->strikeCommanderThrottlePhysicalId=argv.strikeCommanderThrottlePhysicalId;
-	outside_world->strikeCommanderThrottleAxis=argv.strikeCommanderThrottleAxis;
-
-	outside_world->wingCommanderThrottlePhysicalId=argv.wingCommanderThrottlePhysicalId;
-	outside_world->wingCommanderThrottleAxis=argv.wingCommanderThrottleAxis;
+	outside_world->throttlePhysicalId=argv.throttlePhysicalId;
+	outside_world->throttleAxis=argv.throttleAxis;
 
 	outside_world->scaling=argv.scaling;
 	outside_world->windowShift=argv.windowShift;
