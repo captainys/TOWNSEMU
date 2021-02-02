@@ -186,6 +186,8 @@ public:
 		unsigned int appSpecific_MousePtrY=0;
 		uint32_t appSpecific_StickPosXPtr=0;
 		uint32_t appSpecific_StickPosYPtr=0;
+		uint32_t appSpecific_ThrottlePtr=0;
+		uint32_t appSpecific_RudderPtr=0;
 		unsigned int appSpecific_WC2_EventQueueBaseAddr=0;  // DS:03CCH
 		uint32_t appSpecific_WC_setSpeedPtr=0;
 		uint32_t appSpecific_WC_maxSpeedPtr=0;

@@ -573,6 +573,25 @@ void FMTowns::ProcessSound(Outside_World *outside_world)
 	{
 		state.mouseDisplayPage=cpu.GetAL();
 		std::cout << "Mouse Display Page: " << state.mouseDisplayPage << std::endl;
+
+		// Looks like it is one of the good times of capturing joystick pointer in Air Warrior V2.
+		if(TOWNS_APPSPECIFIC_AIRWARRIOR_V2==state.appSpecificSetting)
+		{
+			i486DX::SegmentRegister DS;
+			unsigned int exceptionType,exceptionCode;
+			cpu.DebugLoadSegmentRegister(DS,0x0014,mem,false);
+
+			uint32_t ptrToStruct=cpu.DebugFetchDword(32,DS,0x13418,mem);
+
+			state.appSpecific_StickPosXPtr=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+ptrToStruct+0x18,mem);
+			state.appSpecific_StickPosYPtr=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+ptrToStruct+0x1A,mem);
+			state.appSpecific_ThrottlePtr=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x0002A576,mem);
+			state.appSpecific_RudderPtr=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x0002A57A,mem);
+			std::cout << "  StickX Physical Addr       =" << cpputil::Uitox(state.appSpecific_StickPosXPtr) << std::endl;
+			std::cout << "  StickY Physical Addr       =" << cpputil::Uitox(state.appSpecific_StickPosYPtr) << std::endl;
+			std::cout << "  Throttle Physical Addr     =" << cpputil::Uitox(state.appSpecific_ThrottlePtr) << std::endl;
+			std::cout << "  Rudder Physical Addr       =" << cpputil::Uitox(state.appSpecific_RudderPtr) << std::endl;
+		}
 	}
 	else if(1==cpu.GetAH())
 	{

@@ -316,17 +316,6 @@ void FMTowns::OnCRTC_HST_Write(void)
 				}
 			}
 			break;
-		case TOWNS_APPSPECIFIC_AIRWARRIOR_V2:
-			{
-				i486DX::SegmentRegister DS;
-				unsigned int exceptionType,exceptionCode;
-				cpu.DebugLoadSegmentRegister(DS,0x0014,mem,false);
-				state.appSpecific_StickPosXPtr=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x00286720,mem);
-				state.appSpecific_StickPosYPtr=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x00286722,mem);
-				std::cout << "  StickX Physical Ptr        =" << cpputil::Uitox(state.appSpecific_StickPosXPtr) << std::endl;
-				std::cout << "  StickY Physical Ptr        =" << cpputil::Uitox(state.appSpecific_StickPosYPtr) << std::endl;
-			}
-			break;
 		case TOWNS_APPSPECIFIC_LEMMINGS:
 			{
 				i486DX::SegmentRegister DS;
