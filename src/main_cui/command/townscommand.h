@@ -18,7 +18,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include <vector>
 #include <string>
-#include <set>
+#include <map>
 #include <unordered_map>
 
 #include "towns.h"
@@ -33,7 +33,7 @@ private:
 	std::unordered_map <std::string,unsigned int> dumpableMap;
 	std::unordered_map <std::string,unsigned int> breakEventMap;
 
-	std::set <unsigned int> memFilter;
+	std::map <unsigned int,unsigned int> memFilter;
 
 public:
 	enum
