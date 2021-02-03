@@ -938,6 +938,24 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 					diffY=80;
 				}
 
+				const int minimum_threshold=16;
+				if(-minimum_threshold<diffX && diffX<0)
+				{
+					diffX=-minimum_threshold;
+				}
+				if(0<diffX && diffX<minimum_threshold)
+				{
+					diffX=minimum_threshold;
+				}
+				if(-minimum_threshold<diffY && diffY<0)
+				{
+					diffY=-minimum_threshold;
+				}
+				if(0<diffY && diffY<minimum_threshold)
+				{
+					diffY=minimum_threshold;
+				}
+
 				towns.SetMouseButtonState((0!=lb),(0!=rb));
 				for(auto &p : towns.gameport.state.ports)
 				{
