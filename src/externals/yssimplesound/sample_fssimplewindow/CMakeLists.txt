@@ -6,7 +6,7 @@ endif()
 
 set(TARGET_NAME "yssimplesound_sample_fssimplewindow")
 set(IS_LIBRARY_PROJECT 0)
-set(LIB_DEPENDENCY fssimplewindow yssimplesound)
+set(LIB_DEPENDENCY fssimplewindow yssimplesound yssimplesound_platform)
 set(INCLUDE_DEPENDENCY)
 set(OWN_HEADER_PATH .)
 set(ADDITIONAL_HEADER_PATH)
@@ -20,13 +20,6 @@ set(EXE_TYPE MACOSX_BUNDLE)                # Can be "" or MACOSX_BUNDLE
 set(EXCLUDE_IN_UNIVERSAL_WINDOWS 0) # Setting 1 will exclude the project in Universal Windows Platform
 set(VS_IMPORT_TARGETS "")
 
-if(MSVC)
-	set(LIB_DEPENDENCY ${LIB_DEPENDENCY} yssimplesound_dsound)
-elseif(APPLE)
-	set(LIB_DEPENDENCY ${LIB_DEPENDENCY} yssimplesound_macosx)
-elseif(UNIX)
-	set(LIB_DEPENDENCY ${LIB_DEPENDENCY} yssimplesound_linux_alsa)
-endif()
 
 
 set(DATA_FILE_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/datafiles)

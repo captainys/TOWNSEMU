@@ -13,3 +13,5 @@ endif()
 add_subdirectory(nownd)
 
 add_subdirectory(unittest)
+
+set(YS_ALL_BATCH_TEST ${YS_ALL_BATCH_TEST} PARENT_SCOPE)

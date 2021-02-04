@@ -17,3 +17,6 @@ elseif(APPLE)
 elseif(UNIX)
 	target_link_libraries(${TARGET_NAME} yssimplesound_linux_alsa)
 endif()
+
+list(APPEND YS_ALL_BATCH_TEST yssimplesound_test)
+set(YS_ALL_BATCH_TEST ${YS_ALL_BATCH_TEST} PARENT_SCOPE)
