@@ -2509,6 +2509,66 @@ P
 M 0
 /end
 /begin0
+T 1
+* 00001048:00001AE7
+# 
+R 
+L DOS:Conv SJIS(AX) to JIS(AX)
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001048:00001AE8
+# DX=SJIS in
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001048:00001AEA
+# AH=01 Conv SJIS to JIS
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001048:00001AEE
+# DX=JIS out
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001048:00001B16
+# 
+R 
+L DOS:Printer Output (DL=char,BX=struct?,[BX+4]=BIOS Err Out)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001048:00001B34
+# 
+R 
+L DOS:Printer Write 18H->1BH->63H
+P 
+% 0
+M 0
+/end
+/begin0
 T 0
 * 00001048:00002C9C
 # 
@@ -2919,11 +2979,81 @@ P
 M 0
 /end
 /begin0
+T 1
+* 00001679:00001116
+# 
+R 
+L INT 31H Handler (No Code?)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00001181
+# 
+R 
+L INT 20H Handler
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00001187
+# 
+R 
+L INT 23H,24H,28H,2AH,2BH,2CH,2DH,2EH,32H,33H,...,3FH Handler.  Just IRET
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000011A2
+# 
+R 
+L INT 21H Handler
+P 
+% 0
+M 0
+/end
+/begin0
 T 0
 * 00001679:000012D8
 # 
 R 
 L DOS:LDS_SI,CS:[051EH]
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:0000133E
+# 
+R 
+L INT 25H Handler
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:0000136D
+# 
+R 
+L INT 26H Handler
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:0000147A
+# 
+R 
+L INT 2FH Handler
 P 
 % 0
 M 0
@@ -3429,11 +3559,31 @@ P
 M 0
 /end
 /begin0
+T 1
+* 00001679:00004FC8
+# 
+R 
+L INT 00H Handler
+P 
+% 0
+M 0
+/end
+/begin0
 T 0
 * 00001679:000057F6
 # 
 R 
 L DOS:
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00005C2D
+# 
+R 
+L INT 27H Handler
 P 
 % 0
 M 0
