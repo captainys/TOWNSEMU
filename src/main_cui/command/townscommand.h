@@ -156,6 +156,7 @@ public:
 		CMD_SAVE_VRAMLAYER,
 
 		CMD_SPECIAL_DEBUG,
+		CMD_DOSSEG,
 
 		CMD_START_FMPCM_RECORDING,
 		CMD_END_FMPCM_RECORDING,
@@ -270,6 +271,7 @@ public:
 	};
 
 	bool waitVM;
+	uint32_t DOSSEG=TOWNS_DOS_SEG; // for V2.1 L20 IO.SYS
 
 	TownsCommandInterpreter();
 

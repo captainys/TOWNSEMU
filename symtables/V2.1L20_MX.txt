@@ -2870,6 +2870,16 @@ M 0
 /end
 /begin0
 T 0
+* 00001679:000004D8
+# DX=1DBE->1DBF
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
 * 00001679:000004D9
 # [ENDMEM]
 R 
@@ -2891,7 +2901,27 @@ M 0
 /begin0
 T 0
 * 00001679:000004E5
-# ES:[CurrentPDB] Two lines have no effect.
+# Does nothing.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000004E9
+# Probably [0350H] is CreatePDB flag, but may not be used in DOS 3.x
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000004EF
+# AX=First segment of free memory (earlier DX) 1DBF->1DBE
 R 
 L 
 P 
@@ -2979,6 +3009,26 @@ P
 M 0
 /end
 /begin0
+T 2
+* 00001679:00000DED
+# 
+R 
+L Probably a Jump Table
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00000DEF
+# 
+R 
+L Jump Table for INT 21H functions
+P 
+% 0
+M 0
+/end
+/begin0
 T 1
 * 00001679:00001116
 # 
@@ -3020,10 +3070,240 @@ M 0
 /end
 /begin0
 T 0
+* 00001679:000011AA
+# Number of INT 21H Functions
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000011C8
+# SaveDS, SaveBX (See MSCODE.ASM)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000011D6
+# 2CFH=INDOS
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000011E5
+# Current USER_SP
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000011E8
+# NSP
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000011EB
+# Current USER_SS
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000011EE
+# NSS
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000011F3
+# USER_SP
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000011F7
+# USER_SS
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000011FB
+# CurrentPDB
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000011FF
+# DS.PSP_STACK_PTR
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001203
+# DS.PSP_STACK_PTR+2
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001207
+# PROB_NO_SET_DIR (MSCODE.ASM says 'set directories on search')
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001211
+# AUXSTACK
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000121B
+# CONSWAP (for redicetion?)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000121F
+# IDLEINT
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001263
+# IDLEINT
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000127C
+# Restore BX from SaveBX, Set Jump PTR
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001280
+# Restore DS
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001284
+# Branch to INT 21H function
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000128A
+# 2CFH=INDOS
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000012B2
+# 
+R 
+L restoreWorld: (Re-POP AX,BX,CX,DX,SI,DI,BP,DS,ES then RET()
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000012C5
+# 
+R 
+L saveWorld:Re-PUSH ES,DS,BP,DI,SI,DX,CX,BX,AX
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
 * 00001679:000012D8
 # 
 R 
-L DOS:LDS_SI,CS:[051EH]
+L LDS SI,CS:[051EH=USER_SP]
 P 
 % 0
 M 0
@@ -3049,6 +3329,26 @@ P
 M 0
 /end
 /begin0
+T 2
+* 00001679:000013B4
+# 
+R 
+L SYS_RET_OK
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000013BE
+# 
+R 
+L (Prob)Error End
+P 
+% 0
+M 0
+/end
+/begin0
 T 1
 * 00001679:0000147A
 # 
@@ -3059,11 +3359,31 @@ P
 M 0
 /end
 /begin0
+T 1
+* 00001679:0000169C
+# 
+R 
+L INT 21H AH=30H GetDOSVersion
+P 
+% 0
+M 0
+/end
+/begin0
 T 0
 * 00001679:000017A2
 # 
 R 
 L DOS:
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:0000183F
+# 
+R 
+L INT 21H AH=52H GetSYSVARS
 P 
 % 0
 M 0
@@ -3379,11 +3699,361 @@ P
 M 0
 /end
 /begin0
+T 0
+* 00001679:00001925
+# CurrentPDB
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000192A
+# Input SI=ENDMDM?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:0000192D
+# 
+R 
+L ?PROC
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001930
+# 14H=user_CS of STRUC user_environ
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00001937
+# DX=input PDB (PSP) segment to create
+R 
+L (Prob)Create Or Reset PDB
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001940
+# Copy first 256 bytes from CurrentPDB to newPDB
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000194E
+# CX=FilePerProc (PSP_FILE_LEN)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001952
+# What exactly is JFN?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001955
+# FFH means Available?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001961
+# DI.SF_MODE
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000196B
+# Don't copy SFN.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000197F
+# PSP_FILE_TABLE
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
 T 1
 * 00001679:0000199C
 # 
 R 
 L SETMEM
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000199E
+# DS=0(RIDT)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000019A0
+# ES=PDP aka PSP
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000019A2
+# SI points to INT 22H Handler
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000019A5
+# DI=Offset INT 22H,23H,24H handler addresses to be copied
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000019AD
+# PDP:[0002]=ENDMEM
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000019B1
+# AX=ENDMEM-PDP segment
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000019B3
+# 0FFFH in segment scale is 0FFF0H (64KB)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000019B8
+# Why is it capping at 64KB?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000019BB
+# Subtract 10h in segment scale (256 bytes)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000019BE
+# ENTRYPOINTSEG What is it?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000019C5
+# Make AX bytes scale
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000019C7
+# DS=PDP aka PSP
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000019C9
+# Supposed to be OFFSET to DOS CALL
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000019CC
+# Supposed to be SEGMENT to DOS CALL
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000019D0
+# INT 20H
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000019D6
+# CALLF
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000019DB
+# INT 21H
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000019E1
+# RETF
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000019E6
+# OFFSET to PSP_FILE_TABLE
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000019EC
+# FILE_TABLE_POINTER=PSP segment
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000019F0
+# PSP_FILE_LEN (20=14h)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000019F6
+# NEXT PSP OFFSET
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000019FC
+# NEXT PSP SEG
+R 
+L 
 P 
 % 0
 M 0
@@ -3424,6 +4094,16 @@ T 0
 # 
 R 
 L DOS:SWAP(DS,ES);SWAP(SI,DI)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00001ADD
+# 
+R 
+L TEST SF_DEVINFO,SF_DEVFLAG_REDIRECTED(or can be SDEVTYP)
 P 
 % 0
 M 0
@@ -3509,6 +4189,116 @@ P
 M 0
 /end
 /begin0
+T 0
+* 00001679:000046CA
+# 080h=SF_DEVFLAG_BLOCK_NOT_BLOCK
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000046D0
+# ES:DI is now device-driver info (SF_DRIVER_POINTER) or DPB
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000046DB
+# AH=UNIT  If CS:[02B1h]==0 and ES:DI is DPB
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000046DF
+# CL=DRIVE
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000046E2
+# ES:DI=device-driver info (DPB_PTR_TO_DRIVER equivalent SF_DRIVER_POINTER)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000046E6
+# (DI.SYSDEV_ATTR&0800H)==0 Open/Close/Removable media calls supported
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000046F4
+# 306H=DEVCALL (Command Buffer for Calling Strategy and Interrupt)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000046FA
+# REQLEN=0dh
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000046FD
+# AH=Unit, AL=Command
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00004731
+# 
+R 
+L Re-POP AX,BX,CX,DX,SI,DI,BP,DS,ES then RET
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00004735
+# 
+R 
+L CALL STRATEGY & INTERRUPT FROM DS:SI+07H
+P 
+% 0
+M 0
+/end
+/begin0
 T 1
 * 00001679:00004738
 # 
@@ -3589,6 +4379,526 @@ P
 M 0
 /end
 /begin0
+T 1
+* 00001679:00005CAD
+# 
+R 
+L Arena_Next: Move to the next and Check_Signature
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005CAF
+# MCB_NEXT
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00005CB4
+# 
+R 
+L Check_Signature:ES=AX and STC if First-Byte of MCB is not 4Dh not 5Ah
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00005CC4
+# 
+R 
+L COALESCE: Combine subsequent SYSTEM arenas
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00005CE6
+# 
+R 
+L INT 21H AH=48H Malloc
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005CED
+# First Arena
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005CF1
+# Best Arena
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005CF5
+# Last Arena
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00005D03
+# 
+R 
+L ALLOC_SCAN
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005D05
+# Is the MCB owned by DOS (PID=0000h)?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00005D0B
+# Is this the last MCB?
+R 
+L ALLOC_NEXT
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00005D15
+# 
+R 
+L ALLOC_ERR
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005D30
+# NOT ENOUGH MEMORY
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00005D34
+# add following free block to current
+R 
+L ALLOC_FOUND_FREE
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00005D44
+# 
+R 
+L ALLOC_TEST
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005D49
+# FirstArena
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005D51
+# FirstArena
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00005D56
+# BestArena
+R 
+L ALLOC_BEST
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005D5F
+# BestArena
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005D64
+# Arena Size
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005D6C
+# BestArena
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005D71
+# LastArena
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00005D78
+# LastArena
+R 
+L ALLOC_DO_SPLIT_HIGH
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005D7D
+# Arena_Size
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005D85
+# sizes are equal. no split
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005D87
+# point to next block
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005D89
+# no decrement!
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005D8C
+# bx has size of lower block
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005D8E
+# cx has upper (requested) size
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00005D91
+# 
+R 
+L ALLOC_DO_SPLIT
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005D99
+# FirstArena
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005DA0
+# BestArena
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005DA5
+# ArenaSize
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00005DB7
+# arena_size
+R 
+L ALLOC_SET_SIZES
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005DBB
+# arena_size
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005DC7
+# arena_owner
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00005DCC
+# 
+R 
+L ALLOC_SET_OWNER
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005DCE
+# CurrentPDB
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005DD2
+# arena_owner
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00005F75
+# CurrentPDB
+R 
+L get_jfn_pointer (prob)
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005F7A
+# PSP_FILE_TABLE_SIZE
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005F81
+# <- Error Code 06 is what?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00005F83
+# 
+R 
+L STC and RET
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005F85
+# PSP_FILE_TABLE_POINTER
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00005F8D
+# 
+R 
+L RET
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00005F8E
+# 
+R 
+L get_sf_from_jfn
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00005FA8
+# 002A=FIRST FCB PTR (sftable)
+R 
+L get_sf_from_sfn (Prob)
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00005FAD
+# DI.SFT_COUNT
+R 
+L Traverse SFT Loop
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005FB7
+# Next SFT
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00005FC2
+# 
+R 
+L Found SFT
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005FC6
+# AX=(SIZE sf_entry)*Index_In_This_SFT
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005FCB
+# Bytes for SFT_LINK(DD),SFT_COUNT(DW),SFT_TABLE(DW)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
 T 0
 * 00001679:00006208
 # 
@@ -3614,6 +4924,16 @@ T 0
 # 
 R 
 L IF(DOS:SS:[050DH]=FFH){CL=CH;SS[0508H]=CL;}
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00006A44
+# 
+R 
+L CMP BYTE PTR CS:[02B1H],0
 P 
 % 0
 M 0
@@ -4071,7 +5391,17 @@ M 0
 /begin0
 T 0
 * 00001679:00006BB7
-# 6AA0H=OFFSET SYSBUF
+# 6AA0H=OFFSET SYSBUF   DX=[DBPHEAD]-SYSBUF
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006BBB
+# BP=[DPBHEAD]-SYSBUF
 R 
 L 
 P 
@@ -4081,7 +5411,7 @@ M 0
 /begin0
 T 0
 * 00001679:00006BBD
-# Allocate buffer space
+# DI=MEMSTART+TotalDPBLen  BP=[DPBHEAD]-SYSBUF+(MEMSTART+TotalDPBLen)
 R 
 L 
 P 
@@ -4091,7 +5421,7 @@ M 0
 /begin0
 T 0
 * 00001679:00006BBF
-# True address of free memory
+# True address of free memory  378H=MEMSTRT-SYSBUF  BP=[DPBHEAD]+TotalDPBLen
 R 
 L 
 P 
@@ -4200,6 +5530,16 @@ M 0
 /end
 /begin0
 T 0
+* 00001679:00006BED
+# BX=000FH, but the value is not used anywhere. BX will be overwritten in SETMEM
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
 * 00001679:00006BF0
 # [ENDMEM]
 R 
@@ -4220,6 +5560,16 @@ M 0
 /end
 /begin0
 T 0
+* 00001679:00006BFA
+# ES=CS, but already ES=CS.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
 * 00001679:00006BFC
 # ES:[DSKCHRET+3]
 R 
@@ -4230,8 +5580,38 @@ M 0
 /end
 /begin0
 T 0
+* 00001679:00006C03
+# DS=0
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006C05
+# ES=0
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
 * 00001679:00006C07
 # INITBASE+2
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006C0A
+# AX=BP=CS
 R 
 L 
 P 
@@ -4522,6 +5902,16 @@ M 0
 T 0
 * 00001679:00006CD8
 # [DPBHEAD] Place to move DPBs to
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006CEB
+# DX first free segment, BP=CS, BX=000Fh?, DF=1
 R 
 L 
 P 

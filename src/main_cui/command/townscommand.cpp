@@ -152,6 +152,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["XMODEMCRCFROMVM"]=CMD_XMODEMCRC_FROM_VM;
 
 	primaryCmdMap["SPECIALDEBUG"]=CMD_SPECIAL_DEBUG;
+	primaryCmdMap["DOSSEG"]=CMD_DOSSEG;
 
 
 	primaryCmdMap["STARTFMPCMREC"]=CMD_START_FMPCM_RECORDING;
@@ -442,6 +443,15 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  It will save entire layer, not just visible part on the monitor." << std::endl;
 	std::cout << "  In single-layer mode, you don't have to specify 0|1." << std::endl;
 
+
+	std::cout << "DOSSEG 01234" << std::endl;
+	std::cout << "  Set Real-Mode MSDOS segment in hexa-decimal." << std::endl;
+	std::cout << "  Default value is 1679h (Towns OS V2.1L20 IO.SYS)." << std::endl;
+	std::cout << "  The value is used for DM DOS MCB and DM DOS SYSVARS" << std::endl;
+	std::cout << "  Most likely, MSDOS segment is:" << std::endl;
+	std::cout << "    1064h in TownsOS V1.1 L20" << std::endl;
+	std::cout << "    0FC0h in TownsOS V1.1 L30" << std::endl;
+	std::cout << "    1679h in TownsOS V2.1 L20" << std::endl;
 	std::cout << "SAVEKEYMAP filename.txt" << std::endl;
 	std::cout << "LOADKEYMAP filename.txt" << std::endl;
 	std::cout << "  Save/Load key-mapping in a text file." << std::endl;
@@ -1126,6 +1136,18 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 		Execute_SaveVRAMLayer(towns,cmd);
 		break;
 
+	case CMD_DOSSEG:
+		if(2<=cmd.argv.size())
+		{
+			this->DOSSEG=cpputil::Xtoi(cmd.argv[1].c_str());
+			std::cout << "Set DOSSEG=" << cpputil::Uitox(this->DOSSEG) << "h" << std::endl;
+		}
+		else
+		{
+			PrintError(ERROR_TOO_FEW_ARGS);
+		}
+		break;
+
 	case CMD_START_FMPCM_RECORDING:
 		towns.sound.StartRecording();
 		break;
@@ -1689,11 +1711,11 @@ void TownsCommandInterpreter::Execute_Dump_DOSInfo(FMTowns &towns,Command &cmd)
 	if(3<=cmd.argv.size())
 	{
 		// IO.SYS of Towns OS loads MSDOS.SYS at 1679H segment.
-		const uint32_t DOSADDR=TOWNS_DOS_SEG*0x10; // Physical Address
+		const uint32_t DOSADDR=DOSSEG*0x10; // Physical Address
 
 		auto ARGV2=cmd.argv[2];
 		cpputil::Capitalize(ARGV2);
-		if("SYSVAR"==ARGV2)
+		if("SYSVAR"==ARGV2 || "SYSVARS"==ARGV2)
 		{
 			uint16_t seg,ofs,s;
 			ofs=towns.mem.FetchWord(DOSADDR+TOWNS_DOS_DPB_PTR);
