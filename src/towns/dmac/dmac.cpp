@@ -313,6 +313,12 @@ unsigned int TownsDMAC::DeviceToMemory(State::Channel *DMACh,unsigned long long 
 		}
 		if(DMACh->currentCount+1==0 && true==DMACh->AUTI()) // :-(  Maybe I should use signed integer for counts.
 		{
+			// Memo to myself:
+			// AUTOI is Auto-Initialize.  Not Auto-Increment.
+			// Confirmed by uPD71071 data sheet (English version) page 19, top-right paragraph.
+			// Both address and count need to be initialized at ~END or terminal count.
+			// Interpreting it as Auto-Increment, and only initialize count is an error.
+			// Shadow of the Beast demands both address and count be initialized.
 			DMACh->currentAddr=DMACh->baseAddr;
 			DMACh->currentCount=DMACh->baseCount;
 		}
