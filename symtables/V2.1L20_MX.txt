@@ -3350,6 +3350,16 @@ M 0
 /end
 /begin0
 T 1
+* 00001679:000013FC
+# 
+R 
+L ? Routine
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
 * 00001679:0000147A
 # 
 R 
@@ -4133,7 +4143,7 @@ T 1
 * 00001679:00001AF4
 # 
 R 
-L Just Return. NOP
+L NOP
 P 
 % 0
 M 0
@@ -4153,7 +4163,7 @@ T 1
 * 00001679:00001AFC
 # 
 R 
-L Just Return. NOP
+L NOP
 P 
 % 0
 M 0
@@ -4180,10 +4190,520 @@ M 0
 /end
 /begin0
 T 1
+* 00001679:00001E67
+# 
+R 
+L Print \n
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00001EB9
+# 
+R 
+L One Letter Out
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001EBA
+# 0001h=STDOUT
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001ED0
+# SF_DRIVER_POINTER
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001ED3
+# 07H=SYSDEV_ATTR, 10H=SF_DEVFLAG_CHAR_INT_29_OUT
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00001EDF
+# 
+R 
+L Not INT 29 Device
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00001EE4
+# 
+R 
+L Do Spooler?
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001EF4
+# Jump if not ready.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00001F06
+# 
+R 
+L RET
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00001F07
+# 
+R 
+L INT 21H AH=02H CONOUT DOS v1.25 MSDOS.ASM CONOUT:
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
 * 00001679:00001F09
 # 
 R 
 L (Prob)OUTMES
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001F11
+# CS:[1A7H] prob CARPOS
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001F1D
+# Prob Ctrl+C Check Counter
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00001F2A
+# Skip Ctrl+C Check
+R 
+L Skip Ctrl+C Check 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001F2F
+# 36F606AC02FF
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001F3A
+# 1=STDOUT
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001F42
+# SF_ENTRY+5=SF_DEVFLAGS, 8000h=REDIRECTED
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001F47
+# 8000h=REDIRECTED"
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001F4B
+# 080h=NOT_BLOCK
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001F51
+# 4=STDPRN
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001F59
+# 0800H=Named Pipe
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00001F66
+# 
+R 
+L POP SI,DS,BX, then RET
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00001F69
+# 
+R 
+L Do Spooler(?), POP SI,DS,BX, then RET
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00001F6C
+# 
+R 
+L Control Code
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001F6E
+# Enter
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001F70
+# Back Space
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001F78
+# 1A7H=CARPOS
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001F8C
+# Print ' ' until X=8*N
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001F9C
+# CARPOS
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00001FA4
+# 
+R 
+L Write one letter.  If ctrl code, do ^.
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00001FE9
+# 
+R 
+L Do Spooler(?), POP SI,DS,BX, then RET
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00001FEC
+# 
+R 
+L POP SI,DS,BX, then RET
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000037CF
+# 
+R 
+L SWAPBACK ([0303h=CONSWAP]<=0)
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003AAC
+# 2<BX -> Regular File
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00003AAF
+# 0303h=CONSWAP
+R 
+L Get SF_ENTRY from BX->DS:SI
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00003AC9
+# 
+R 
+L CONSWAP is ON
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003ACE
+# PROB 0578H=SF_ENTRY for CONOUT Redirection
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:0000459B
+# 
+R 
+L Prob: Translate CP/M call 02->Write(08), 03->Status(0A)
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000045A0
+# DEVREQ+0EH Data Buffer?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000045A7
+# DEVREQ+12H Data Length?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000045B2
+# Check NOT REDIRECTED, NOT BLOCK
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000045C9
+# DX=Incoming_DS, DS=ES=CS
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000045CD
+# DEVREQ+3=REQ_STATUS
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000045D1
+# DEVREQ+0Dh=Media-Descriptor Byte
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000045D7
+# CS:1002 16 0E 16 0D 0F
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000045DD
+# CS:1007 86 04 86 05 87 08 87 0A 86 07
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000045E1
+# 0324H=REQHDR
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000045E4
+# [DEVREQ+0]=REQ_SIZE  02->16H, 03->0DH
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000045E8
+# [DEVREQ+2]=REQ_CMD_CODE  02->08H 03->0AH
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004600
+# Non-Destructive Read Command
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004617
+# If non-destructive read, AL will be char.  If not AX restored.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:0000461E
+# 
+R 
+L Error bit set
 P 
 % 0
 M 0
@@ -4303,7 +4823,7 @@ T 1
 * 00001679:00004738
 # 
 R 
-L Call STRATEGY & INTERRUPT of device driver in DS:SI
+L Call Strategy and INterrupt
 P 
 % 0
 M 0
@@ -4350,10 +4870,330 @@ M 0
 /end
 /begin0
 T 1
+* 00001679:00004E44
+# 2CFH=INDOS
+R 
+L (Prob)Check Ctrl+C from BCON device.
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004E56
+# RequestCode 05=Non-Destructive Read
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004E60
+# Clear Return Status
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004E69
+# [0032H]=BCON Console Device
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004E6D
+# Call Device at DS:[SI], Request Header=ES:[BX]
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004E70
+# Busy-Bit Check.  Set means no key is ready.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00004E81
+# Returned Character
+R 
+L Busy Bit is Zero.  Really Read.
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004E85
+# 03=Ctrl+C
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004E87
+# Return
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004E89
+# RequestCode 04=Read
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004E95
+# CONSDEV_REQ_CHAR
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00004EC3
+# 
+R 
+L INT 28H (Spooler) and RET
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004EC4
+# IDLEINT
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004ECC
+# ERRORMODE
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00004EE1
+# 
+R 
+L RET
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00004EE2
+# 
+R 
+L (Prob)Ctrl+C Check
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00004F6C
+# CNTCHAND in CTRLC.ASM
+R 
+L (Prob)Process Ctrl+C
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004F76
+# CONSWAP still meaning unknown.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004F81
+# Probably User_SS
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004F85
+# Probably User_SP
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004F8C
+# INDOS=0
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004F92
+# 2CEH=ERRORMODE
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004F9E
+# Fire INT 23H (Ctrl+C Handler)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004FA1
+# Save previous AX?  Original Command Code?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004FA6
+# AX=FLAGS
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004FA7
+# What does it mean SP different from saved value?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004FAE
+# Retry is possible because SS:SP is from User_SS:SP, and restoreWorld
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00004FB2
+# 
+R 
+L Jump to INT 21H, then IRET from there.
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004FB8
+# CF
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004FBD
+# AH=4C -> Exit Process
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
 * 00001679:00004FC8
 # 
 R 
 L INT 00H Handler
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005011
+# CONSOLE Error Handling?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000050BA
+# ERROR MODE
+R 
+L 
 P 
 % 0
 M 0
@@ -4833,7 +5673,7 @@ T 1
 * 00001679:00005F8E
 # 
 R 
-L get_sf_from_jfn
+L get_sf_from_jfn DS=CS,BX=JFN -> DS:DI=SF_ENTRY
 P 
 % 0
 M 0
