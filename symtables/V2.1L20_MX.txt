@@ -3329,6 +3329,16 @@ P
 M 0
 /end
 /begin0
+T 1
+* 00001679:000013AB
+# 
+R 
+L Save Temporary Device Driver Poitner in CS:0524h,0526h
+P 
+% 0
+M 0
+/end
+/begin0
 T 2
 * 00001679:000013B4
 # 
@@ -3359,11 +3369,191 @@ P
 M 0
 /end
 /begin0
+T 2
+* 00001679:00001477
+# 
+R 
+L CLC then RETF
+P 
+% 0
+M 0
+/end
+/begin0
 T 1
 * 00001679:0000147A
 # 
 R 
 L INT 2FH Handler
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:0000155C
+# procedure DATE16 in TIME.ASM of DOS2.0 Source
+R 
+L Read CLock. AX - YYYYYYYMMMMDDDDD, DX - HHHHHMMMMMMSSSSS (SSSSS=seconds/2)
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001564
+# Minutes to left part of byte
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001568
+# Push hours and minutes to left end
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000156E
+# Count every two seconds
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001570
+# Combine seconds with hours and minutes
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001574
+# [MONTH] Fetch month and year
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001579
+# Push month to left to make room for day
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000157E
+# [DAY]
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00001583
+# 
+R 
+L Read from BCLOCK
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001585
+# 0358H=BufferPtr
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001588
+# BufferLength=6
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000158B
+# StartSector=0
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001593
+# [BCLOCK]
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000015AC
+# RET
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000015B3
+# Is it days since certain date?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000015BB
+# 5b5h=1461?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:0000167F
+# 
+R 
+L (Word Ptr[300h]%7)->BytePtr[0302H] Day of Week? Something to do with date/time
 P 
 % 0
 M 0
@@ -4510,6 +4700,186 @@ M 0
 /end
 /begin0
 T 1
+* 00001679:000034CE
+# ES:DI<-TEMPORARY_SF_TABLE_PTR
+R 
+L Really Close
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000034D2
+# SF_ATTR
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000034D6
+# Redirected?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000034DF
+# Must be CLOSE call.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000034E2
+# 
+R 
+L Not Redirected Device, BX=SF_ATTR, ES:DI=SF_TABLE
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003575
+# Ref Count?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:0000357D
+# 
+R 
+L DEC REFCOUNT If RefC becomes 0, make it FFFF.  AX will be previous RefCount
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000357E
+# REFCOUNT
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003591
+# SF_DIR_ENT_SECTOR
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000035AA
+# What's CS:0574H?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000035C3
+# C3
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000035C4
+# TEMPORARY_SF_TABLE_PTR
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000035EB
+# RET if BLOCK or CHAR_NOT_EOF
+R 
+L Update SF_DATE and SF_TIME
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000035EF
+# RET
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000035F1
+# RET if Unknown Dev flag (4000h)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000035F5
+# RET
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000035FC
+# SF_DATE
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003600
+# SF_TIME
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
 * 00001679:000037CF
 # 
 R 
@@ -4842,6 +5212,126 @@ M 0
 T 0
 * 00001679:0000474C
 # Must be Jump Vector for INTERRUPT
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:0000475C
+# 
+R 
+L Make REQHDR at ES:0306H AL=Unit AH=Media DS:BX=Buffer CX=Length DX=StartSector
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000475F
+# DEVREQ_CMD_READ
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004761
+# REQLEN=16H
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004768
+# REQ_LEN
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000476A
+# REQ_UNIT=Incoming AL
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000476E
+# REQ_COMMAND
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004771
+# REQ_STATUS=0
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004778
+# Incoming_AH=Media Type?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000477E
+# Data Buffer Ptr
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004781
+# Data Buffer Seg
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004784
+# IncomingCX=Length (Popped AX and CX reverse order)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004786
+# IncomingDX=StartingSector
 R 
 L 
 P 
@@ -5192,6 +5682,36 @@ M 0
 T 0
 * 00001679:000050BA
 # ERROR MODE
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005382
+# Pointer to Drive-Parameter Block
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:0000540C
+# 
+R 
+L Media Check, ES:BP=Drive Parameter Block
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005417
+# 1679:00005417
 R 
 L 
 P 
@@ -5673,7 +6193,7 @@ T 1
 * 00001679:00005F8E
 # 
 R 
-L get_sf_from_jfn DS=CS,BX=JFN -> DS:DI=SF_ENTRY
+L get_sf_from_jfn DS=CS,BX=JFN -> ES:DI=SF_ENTRY()
 P 
 % 0
 M 0
@@ -5759,6 +6279,86 @@ P
 M 0
 /end
 /begin0
+T 1
+* 00001679:000065FD
+# 
+R 
+L INT 21H AH=3EH FCLOSE
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006604
+# 536H,538h=TEMPORARY_SF_TABLE_PTR
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000660C
+# ES:[DI]=Reference Count
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006612
+# MODE
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006618
+# I think I saw (AL&F0h)==7 somewhere
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000661F
+# Write unused to SFN at JFN in PDB
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006779
+# DS:[DI+2F]? SF_MACHINE_NUMBER?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006780
+# Error 06H=DOSERR_INVALID_HANDLE
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
 T 0
 * 00001679:000069A5
 # 
@@ -5774,6 +6374,16 @@ T 1
 # 
 R 
 L CMP BYTE PTR CS:[02B1H],0
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00006A76
+# 
+R 
+L CALLF WORD PTR [0064]
 P 
 % 0
 M 0
