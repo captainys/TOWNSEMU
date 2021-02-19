@@ -1865,6 +1865,41 @@ void TownsCommandInterpreter::Execute_Dump_DOSInfo(FMTowns &towns,Command &cmd)
 				page=page+1+size;
 			}
 		}
+		else if("BUF"==ARGV2 || "BUFFER"==ARGV2 || "BUFFERS"==ARGV2)
+		{
+			unsigned int bufSize=towns.mem.FetchWord(DOSADDR+TOWNS_DOS_BUF_SIZE);
+			std::cout << "BUFFER LENGTH=" << bufSize << "(" << cpputil::Uitox(bufSize) << ")" << std::endl;
+
+			std::cout << "LAST BUFFER=" <<
+			   cpputil::Ustox(towns.mem.FetchWord(DOSADDR+TOWNS_DOS_LASTBUFF+2)) << ":" <<
+			   cpputil::Ustox(towns.mem.FetchWord(DOSADDR+TOWNS_DOS_LASTBUFF)) << std::endl;
+
+			uint32_t bufOffset=towns.mem.FetchWord(DOSADDR+TOWNS_DOS_BUF_PTR);
+			uint32_t bufSeg=towns.mem.FetchWord(DOSADDR+TOWNS_DOS_BUF_PTR+2);
+			while(0xFFFF!=bufOffset)
+			{
+				std::cout << cpputil::Ustox(bufSeg) << ":" << cpputil::Ustox(bufOffset) << " ";
+
+				auto bufLinear=bufSeg*0x10+bufOffset;
+				char c='A'+(towns.mem.FetchByte(bufLinear+4)&0x2f);
+				std::cout << c << ": ";
+
+				std::cout << "DRV=" << cpputil::Ubtox(towns.mem.FetchByte(bufLinear+4)) << "h ";
+				std::cout << "FLAGS=" << cpputil::Ubtox(towns.mem.FetchByte(bufLinear+5)) << "h ";
+				std::cout << "LBA=" << cpputil::Ubtox(towns.mem.FetchWord(bufLinear+6)) << "h ";
+				std::cout << "WR_CNT=" << cpputil::Ubtox(towns.mem.FetchWord(bufLinear+8)) << "h ";
+				std::cout << "WR_INC=" << cpputil::Ubtox(towns.mem.FetchWord(bufLinear+9)) << "h ";
+				std::cout << "DPB=" << 
+				   cpputil::Ustox(towns.mem.FetchWord(bufLinear+12)) << ":" <<
+				   cpputil::Ustox(towns.mem.FetchWord(bufLinear+10)) << " ";
+				std::cout << "Unused=" << cpputil::Ustox(towns.mem.FetchWord(bufLinear+14));
+
+				std::cout << std::endl;
+
+				bufOffset=towns.mem.FetchWord(bufSeg*0x10+bufOffset);
+				bufSeg=towns.mem.FetchWord(bufSeg*0x10+bufOffset+2);
+			}
+		}
 		else
 		{
 			std::cout << ARGV2 << ": Dump what of DOS info?" << std::endl;
@@ -1878,6 +1913,8 @@ void TownsCommandInterpreter::Execute_Dump_DOSInfo(FMTowns &towns,Command &cmd)
 		std::cout << "    SYSVAR structure." << std::endl;
 		std::cout << "  DUMP DOS MCB" << std::endl;
 		std::cout << "    Memory Control Blocks." << std::endl;
+		std::cout << "  DUMP DOS BUF" << std::endl;
+		std::cout << "    Sector Buffers." << std::endl;
 	}
 }
 

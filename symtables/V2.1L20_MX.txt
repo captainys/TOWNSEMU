@@ -3009,6 +3009,16 @@ P
 M 0
 /end
 /begin0
+T 1
+* 00001679:00000ADD
+# 
+R 
+L 1679:00005382
+P 
+% 0
+M 0
+/end
+/begin0
 T 2
 * 00001679:00000DED
 # 
@@ -4700,6 +4710,16 @@ M 0
 /end
 /begin0
 T 1
+* 00001679:00003121
+# TEMPORARY_SF_ENTRY
+R 
+L TEMPORARY_SF_ENTRY->Call Open. If INT 2F, increment refcount, else, DEVCALL Open
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
 * 00001679:000034CE
 # ES:DI<-TEMPORARY_SF_TABLE_PTR
 R 
@@ -4711,7 +4731,7 @@ M 0
 /begin0
 T 0
 * 00001679:000034D2
-# SF_ATTR
+# SF_DEVFLAGS
 R 
 L 
 P 
@@ -4750,8 +4770,188 @@ M 0
 /end
 /begin0
 T 0
+* 00001679:000034F3
+# PUSH PrevRefCount
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000034FB
+# DS:SI=SF_ENTRY,ES:DI=DIRENT
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003504
+# SI=SF_TABLE+020H=FILE_NAME
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00003514
+# 
+R 
+L Return DOSERR_FILE_NOT_FOUND
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:0000351B
+# 
+R 
+L Return DOSERR_FILE_NOT_FOUND
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:0000351F
+# Dirent.Attr
+R 
+L FCLOSE_FILE_FOUND (ES:DI=Dirent, DS:SI=SF_ENTRY)
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003523
+# SF_ENTRY.Attr
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003526
+# 0506h=Saved SF_ATTR
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000352F
+# Dirent.Attr|=Archive
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003534
+# Copy First Cluster to Dirent
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000353B
+# Copy Size to Dirent
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003549
+# Copy Date to Dirent
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003550
+# Copy Time to Dirent
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003557
+# ES:BX is sector buffer header.  BX+5 is FLAGS.  040h is Buffer Written.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003560
+# AL=Saved_SF_DRIVE
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003568
+# DOSERR_ACCESS_DENIED
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:0000356C
+# 
+R 
+L ReturnNoError
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003570
+# CS=PrevRefCount pushed at 1679:000034F3
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
 * 00001679:00003575
-# Ref Count?
+# Why? Because refcount is temporarily made FFFF if it becamse 0 at 1679:000034E8 
 R 
 L 
 P 
@@ -4779,6 +4979,16 @@ P
 M 0
 /end
 /begin0
+T 1
+* 00001679:0000358A
+# LASTENT?  Skip?
+R 
+L Get Directory Pointer in the buffer ES:DI is 20h-byte DIR, ES:BX is Buffer Header for the sector buffer.
+P 
+% 0
+M 0
+/end
+/begin0
 T 0
 * 00001679:00003591
 # SF_DIR_ENT_SECTOR
@@ -4790,8 +5000,48 @@ M 0
 /end
 /begin0
 T 0
+* 00001679:0000359C
+# Must Pre Read
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
 * 00001679:000035AA
-# What's CS:0574H?
+# CURBUF returned from GETBUFFR
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000035AF
+# If so, +05 is flags. 04H means directory sector.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000035B6
+# DI=DiskBuffer  BX=DiskBufferHeader
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000035BB
+# If DS:SI is SF_ENTRY, SF_DIR_ENT_POS_IN_SECTOR.  20H is bytes per DIRENT
 R 
 L 
 P 
@@ -4922,6 +5172,86 @@ M 0
 T 0
 * 00001679:00003ACE
 # PROB 0578H=SF_ENTRY for CONOUT Redirection
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00003B3B
+# 
+R 
+L FATSECRD (Read FAT Sector?)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00003B62
+# 
+R 
+L DREAD
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00003B8E
+# 
+R 
+L Most Likely DEVCALL Write Sector
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00003B94
+# 
+R 
+L Retry Write?
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00003BA8
+# 
+R 
+L Prob DEVCALL Write Sector
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000040EB
+# 
+R 
+L Match File Name with wildcard '?' taken into account.  (Match->ZF=1)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00004407
+# a=~(Saved SF_ATTR), a&=CH, a&=16h(DIR|SYS|HID) -> ZF
+R 
+L DIR,SYS, or HIDDEN flat has been turned OFF -> NE
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004408
+# Saved SF_ATTR
 R 
 L 
 P 
@@ -5079,6 +5409,46 @@ P
 M 0
 /end
 /begin0
+T 1
+* 00001679:000046B7
+# 
+R 
+L DEVCALL Open, ES:DI=SF_ENTRY
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000046BA
+# DEVREQ_CMD_OPEN
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000046BE
+# 
+R 
+L DEVCALL Close, ES:DI=SF_ENTRY
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000046C1
+# DEVREQ_CMD_CLOSE
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
 T 0
 * 00001679:000046CA
 # 080h=SF_DEVFLAG_BLOCK_NOT_BLOCK
@@ -5092,6 +5462,16 @@ M 0
 T 0
 * 00001679:000046D0
 # ES:DI is now device-driver info (SF_DRIVER_POINTER) or DPB
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000046D4
+# Jump if CHAR DEVICE
 R 
 L 
 P 
@@ -5132,6 +5512,16 @@ M 0
 T 0
 * 00001679:000046E6
 # (DI.SYSDEV_ATTR&0800H)==0 Open/Close/Removable media calls supported
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000046EC
+# Jump if Open/Close/Removable calls supported.
 R 
 L 
 P 
@@ -5332,6 +5722,36 @@ M 0
 T 0
 * 00001679:00004786
 # IncomingDX=StartingSector
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:0000478F
+# 
+R 
+L Make REQHDR at ES:0306H AL=Unit AH=Media 8+BYTE[2ADH]=CMD CX=Length DX=StartSector
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004792
+# DEVREQ_CMD_WRITE
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004794
+# Must be a VERIFY flag
 R 
 L 
 P 
@@ -5689,11 +6109,21 @@ P
 M 0
 /end
 /begin0
-T 0
+T 1
 * 00001679:00005382
 # Pointer to Drive-Parameter Block
 R 
-L 
+L (Prob)Media Check.  Meaning of [0511H](coming from ES:[BP]) is unknown
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000053EB
+# 
+R 
+L Error in Media Check.
 P 
 % 0
 M 0
@@ -5714,6 +6144,456 @@ T 0
 # 1679:00005417
 R 
 L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000055B2
+# 
+R 
+L PLACEBUF
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:0000565D
+# 
+R 
+L GETBUFFR AH=PriorityBufferToHave AL=0:Preread/NonZero:NoPreRead DX:LBA(Prob) ES:BP=DRIVE_PARAM_BLOCK(BUF.ASM) -> [CURBUF]
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:0000565F
+# 052CH=PREREAD
+R 
+L GETBUFFRB SI must be 1. Read FAT sector to buffer?
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005662
+# Drive
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005666
+# 001EH=LASTBUFFER
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000566F
+# SECBUF_LBA
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005674
+# SECBUF_DRIVE
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000567B
+# [0038H]=IO_BUFF_PTR. (DOSINIT area reused)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00005680
+# 
+R 
+L SearchBufferLoop
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000568A
+# NEXTBUF
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005691
+# [0038H]=IO_BUFF_PTR. (DOSINIT area reused)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000569A
+# DS:DI preserved.  Therefore, it points to a one clean buffer after the function.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000056A1
+# 
+R 
+L Read or Write error
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000056A5
+# PREREAD(0->Must Preread)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000056AD
+# DI=buffer header  BX=buffer
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000056BD
+# DIR SECTOR FLAG
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000056BF
+# Buffer
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000056C1
+# READ SECTOR
+R 
+L NORMSEC: (Not a FAT sector, prob)
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000056C4
+# INITIAL FLAGS=0
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000056CB
+# DI.BUFSECNO
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000056CE
+# DI.BUFDRVDP(OFFSET)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000056D4
+# Drive
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000056D8
+# DI.BUFDRV,FLAGS (AH=FLAGS)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000056DB
+# 
+R 
+L FoundAvailableBuffer
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000056DE
+# SI!=0 means FAT sector
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000056EA
+# Number of FATs if FAT, or 1 if not FAT
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000056F0
+# CURBUF(seg)
+R 
+L DS:DI is sector buffer for Drive and LBA
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000056F5
+# LASTBUFFER(seg)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000056FA
+# CURBUF(OFFSET)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000056FF
+# LASTBUF(SEG)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00005705
+# 
+R 
+L Must be Read Error
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00005708
+# Unused Drive
+R 
+L Write All Dirty Buffer of the Specific Drive ES:DI=DIRENT,DS:SI=SF_ENTRY, AL=DRIVE
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000570A
+# 0038H=BUFFHEAD (Sector Buffer Pointer)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:0000570E
+# 
+R 
+L Buffer Loop
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00005737
+# 
+R 
+L DS:DI=Sector Buffer (IO_BUF) Header
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005746
+# Buffer Dirty (or Written?)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:0000575E
+# 
+R 
+L BUFWRITE Flush Buffer at DS:DI and Mark Unused
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005761
+# Mark it Unused, Clear Flags
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005768
+# AH is from [DI+05H], flags IO_BUF_FLAG_WRITTEN.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005774
+# ES:BP=DRIVE_PARAM_BLOCK
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005777
+# BX=Data Pointer
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000577A
+# DX=LBA
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000577D
+# CX=Number of FATs (Prob Redundancy)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000578C
+# Data Sector?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:0000579B
+# 
+R 
+L Write Sector Loop
 P 
 % 0
 M 0
@@ -6334,6 +7214,16 @@ T 0
 # Write unused to SFN at JFN in PDB
 R 
 L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00006628
+# 
+R 
+L I think it's just recovring incoming AH
 P 
 % 0
 M 0

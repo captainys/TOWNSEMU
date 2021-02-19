@@ -833,3 +833,50 @@ std::vector <std::string> cpputil::MakeDump(unsigned int printAddr,long long int
 
 	return text;
 }
+
+bool cpputil::WildCardCompare(std::string ptn,std::string str)
+{
+	return WildCardCompare(ptn.size(),ptn.data(),str.size(),str.data());
+}
+
+bool cpputil::WildCardCompare(int lenPtn,const char ptn[],int lenStr,const char str[])
+{
+	while(0<lenPtn && 0<lenStr)
+	{
+		if(*ptn==*str || '?'==*ptn)
+		{
+			++ptn;
+			++str;
+			--lenPtn;
+			--lenStr;
+			if(0==lenStr && 0==lenPtn)
+			{
+				return true;
+			}
+		}
+		else if('*'==*ptn)
+		{
+			// Any part after ptn may match any part after str.
+			++ptn;
+			--lenPtn;
+			if(0==lenPtn)
+			{
+				return true;
+			}
+			while(0<lenStr)
+			{
+				if(true==WildCardCompare(lenPtn,ptn,lenStr,str))
+				{
+					return true;
+				}
+				--lenStr;
+				++str;
+			}
+		}
+		else
+		{
+			return false;
+		}
+	}
+	return false;
+}
