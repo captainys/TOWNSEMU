@@ -2659,11 +2659,11 @@ P
 M 0
 /end
 /begin0
-T 1
+T 2
 * 00001679:00000000
-# 
+# EOF_ON_INPUT,
 R 
-L MSDOS.SYS Entry
+L 5011
 P 
 % 0
 M 0
@@ -3373,7 +3373,7 @@ T 1
 * 00001679:000013FC
 # 
 R 
-L ? Routine
+L ?Routine  Set 2D1H,2D4H,2D5H based on 2D2H, and CS:[SI]
 P 
 % 0
 M 0
@@ -4310,6 +4310,16 @@ M 0
 /end
 /begin0
 T 1
+* 00001679:00001A83
+# NO_SET_DIR?
+R 
+L Wait by Busy Wait. CS:[001CH] is the loop count
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
 * 00001679:00001ADD
 # 
 R 
@@ -5139,6 +5149,206 @@ P
 M 0
 /end
 /begin0
+T 2
+* 00001679:000037EB
+# ES:DI=SF_ENTRY
+R 
+L Really Fread, CX=BytesToRead, CS:02DA DMABuffer
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000037EF
+# SF_MODE
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000037F5
+# 01H=WriteMode
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000037FC
+# 
+R 
+L File is Read or Read/Write mode
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000037FF
+# Zero Byte Read?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:0000380E
+# DI.SF_DEVFLAGS,SF_DEVFLAG_IS_CHARDEV
+R 
+L Fread from BLOCK or CHAR device.
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00003825
+# 
+R 
+L Fread from CHARDEV
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000382E
+# DMA Address
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003832
+# SF_DEVFLAG_NOT_EOF
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003837
+# SF_DEVFLAG_CHAR_NUL
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:0000383E
+# 
+R 
+L EOF_ON_INPUT or NUL
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00003841
+# SF_DEVFLAG_BINARY
+R 
+L Not EOF_ON_INPUT, Not NUL
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003846
+# SF_DEVFLAG_CONS_IN
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:0000384E
+# 
+R 
+L Binary Fread from CHAR dev
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00003894
+# 
+R 
+L Fread from CHARDEV, Not Binary, Not Cons In
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000038AE
+# Fread CHARDEV Loop
+R 
+L Fread CHARDEV Loop
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000038B7
+# REQ_STATUS for request header at 306h
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00003901
+# 
+R 
+L EOF_ON_INPUT or NULL
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00003922
+# 
+R 
+L EOF_ON_INPUT or NUL
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000392E
+# Erase NOT_EOF bit.  Make it an EOF device?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
 T 0
 * 00001679:00003AAC
 # 2<BX -> Regular File
@@ -5224,6 +5434,386 @@ T 1
 # 
 R 
 L Prob DEVCALL Write Sector
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00003BF2
+# 
+R 
+L Calculate BytesIntoSector,SectorIntoCluster,ClusterIntoFile
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003C01
+# DMABufferOffset, actually between 00h and 0fh. Higher bits have been transferred to SEG
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003C0E
+# DX|AX is file pointer.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003C16
+# BYTES INTO FILE HIGH
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003C1A
+# BYTES INTO FILE LOW
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003C1D
+# SF_DEVFLAGS,SF_DEVFLAG_REDIRECTED,SF_DEVFLAG_CHARDEV
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003C23
+# Jump if CHARDEV or REDIRECTED
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003C26
+# It is not redirected, so it must be DRIVE_PARAM_BLOCK
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003C2A
+# Drive
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003C2E
+# Temporarily Save Drive
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003C32
+# DPB_BYTES_PER_SECTOR
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003C38
+# Prevent INT 0 (DIV by Zero or Overflow)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003C3A
+# CurrentPos to SectorsIntoFile and LocationInSector
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003C3C
+# Nth SECTOR IN FILE
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003C3F
+# BYTES INTO SECTOR
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003C45
+# BP.DPB_CLUSTER_MASK
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003C49
+# SECTOR_INTO_CLUSTER
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003C4E
+# DPB_CLUSTER_SHIFT
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003C54
+# CLUSTERS_INTO_FILE
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003C5D
+# 2DAH=DMABufferAddress
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003C61
+# Jump if EndOffset+1 is before 64KB boundary
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003C66
+# AX=-DMA_Offset (FFF1-0000)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003C6A
+# If zero, make it FFFF
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003C6F
+# In the end, AX=EndOfDMABufferAfterRead
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003CBB
+# SF_MODE_FCB_SET
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003CCB
+# Mode & 0xF0
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003CCF
+# Skip next if FCB_SET==0 && (MODE & 0xF0)!=0
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003CD4
+# RET
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00003CE4
+# SF_FILE_SIZE_LOW
+R 
+L Fread from BLOCK device
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003CE8
+# SF_FILE_SIZE_HIGH
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003CEC
+# Subtract File Location to get Bytes Remaining
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003D00
+# CX is maximum bytes that can be read.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00003D02
+# 
+R 
+L Some bytes left
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003D0D
+# DPB or SYSDEV (in this case must be SYSDEV)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00003D1F
+# 
+R 
+L EOF
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00003D2D
+# 
+R 
+L Read Bytes=0, Return DOSERR_ACCESS_DENIED(5)
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003D2F
+# DOSERR_ACCESS_DENIED
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00003EC4
+# 
+R 
+L Must be EOF
 P 
 % 0
 M 0
@@ -6089,11 +6679,21 @@ P
 M 0
 /end
 /begin0
-T 0
+T 2
 * 00001679:00005011
-# CONSOLE Error Handling?
+# 
 R 
-L 
+L CONSOLE Error Handling?
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00005091
+# 
+R 
+L DDDH, DEDH, D8DH, something to do with error handling?
 P 
 % 0
 M 0
@@ -7229,6 +7829,136 @@ P
 M 0
 /end
 /begin0
+T 2
+* 00001679:0000662A
+# 
+R 
+L SYS_RET_OK
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:0000662D
+# 
+R 
+L Error End
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00006630
+# 37EBH is Really Fread
+R 
+L INT 21H AH=3FH FREAD BX=JFN CX=Bytes DS:DX=ReadBuffer
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006638
+# AL=*jfn=sfn
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00006642
+# TEMPORARY_SF_ENTRY
+R 
+L Set DMA Ptr and Call SI
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000664C
+# Save DMA Buffer Pointer
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006656
+# BX=ReadBufferOffset
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000665B
+# BX=ReadBufferOffset>>4
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006662
+# Transffered Upper 12bits of Offset to SEG
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006668
+# DMA Buffer Ptr
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006676
+# Restore DMA Buffer Pointer
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006680
+# AX=NumberOfBytesRead
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:0000676E
+# 
+R 
+L SF_ENTRY from SFN, verify MACHINE_NUMBER, or DOSERR_INVALID_HANDLE
+P 
+% 0
+M 0
+/end
+/begin0
 T 0
 * 00001679:00006779
 # DS:[DI+2F]? SF_MACHINE_NUMBER?
@@ -7254,6 +7984,16 @@ T 0
 # 
 R 
 L IF(DOS:SS:[050DH]=FFH){CL=CH;SS[0508H]=CL;}
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00006A09
+# 
+R 
+L Meaningless Wait by Busy Loop?
 P 
 % 0
 M 0
