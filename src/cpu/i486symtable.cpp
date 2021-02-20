@@ -311,12 +311,10 @@ std::vector <std::string> i486SymbolTable::GetList(bool returnType,bool label,bo
 	std::vector <std::string> text;
 	for(const auto &addrAndSym : symTable)
 	{
-		std::string empty;
-
 		auto &addr=addrAndSym.first;
 		auto &sym=addrAndSym.second;
 
-		text.push_back(empty);
+		text.push_back("");
 		text.back()=cpputil::Ustox(addr.SEG);
 		text.back()+=":";
 		text.back()+=cpputil::Uitox(addr.OFFSET);

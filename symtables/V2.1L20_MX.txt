@@ -4763,7 +4763,7 @@ T 2
 * 00001679:000034E2
 # 
 R 
-L Not Redirected Device, BX=SF_ATTR, ES:DI=SF_TABLE
+L Not Redirected Device, BX=SF_DEVFLAGS, ES:DI=SF_TABLE
 P 
 % 0
 M 0
@@ -4933,7 +4933,7 @@ T 2
 * 00001679:0000356C
 # 
 R 
-L ReturnNoError
+L DEVCALL Close and ReturnNoError
 P 
 % 0
 M 0

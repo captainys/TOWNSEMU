@@ -71,6 +71,10 @@ public:
 		CMD_DUMP,
 		CMD_PRINT_STATUS,
 		CMD_PRINT_HISTORY,
+		CMD_PRINT_SYMBOL,
+		CMD_PRINT_SYMBOL_LABEL_PROC,
+		CMD_PRINT_SYMBOL_PROC,
+		CMD_PRINT_SYMBOL_FIND,
 		CMD_SAVE_HISTORY,
 
 		CMD_ADD_BREAKPOINT,
@@ -313,6 +317,8 @@ public:
 
 	void Execute_AddSymbol(FMTowns &towns,Command &cmd);
 	void Execute_DelSymbol(FMTowns &towns,Command &cmd);
+
+	void Execute_SymbolInquiry(FMTowns &towns,Command &cmd);
 
 	void Execute_TypeKeyboard(FMTowns &towns,Command &cmd);
 

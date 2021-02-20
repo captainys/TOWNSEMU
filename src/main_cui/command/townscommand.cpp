@@ -95,6 +95,11 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["PLAYEVT"]=CMD_PLAY_EVENTLOG;
 	primaryCmdMap["STOPEVT"]=CMD_STOP_EVENTLOG;
 
+	primaryCmdMap["SYM"]=CMD_PRINT_SYMBOL;
+	primaryCmdMap["SYMLAB"]=CMD_PRINT_SYMBOL_LABEL_PROC;
+	primaryCmdMap["SYMPROC"]=CMD_PRINT_SYMBOL_PROC;
+	primaryCmdMap["SYMFIND"]=CMD_PRINT_SYMBOL_FIND;
+
 	primaryCmdMap["SAVEKEYMAP"]=CMD_SAVE_KEYMAP;
 	primaryCmdMap["LOADKEYMAP"]=CMD_LOAD_KEYMAP;
 
@@ -365,6 +370,17 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Take Imm operand of the address as IO-port address." << std::endl;
 	std::cout << "DELSYM SEG:OFFSET label" << std::endl;
 	std::cout << "  Delete a symbol.  A symbol and comment associated with the address will be deleted." << std::endl;
+
+	std::cout << "SYM <SEG>" << std::endl;
+	std::cout << "  Print symbol table.  Can specify segment." << std::endl;
+	std::cout << "SYMLAB <SEG>" << std::endl;
+	std::cout << "  Print jump label and procedures in the symbol table.  Can specify segment." << std::endl;
+	std::cout << "SYMPROC <SEG>" << std::endl;
+	std::cout << "  Print procedures in the symbol table.  Can specify segment." << std::endl;
+	std::cout << "SYMFIND <SEG> wildcard" << std::endl;
+	std::cout << "  Keyword search in the symbol table.  Segment is optional." << std::endl;
+	std::cout << "  Keyword can use wildcard." << std::endl;
+
 	std::cout << "WAIT" << std::endl;
 	std::cout << "  Wait until VM becomes PAUSE state." << std::endl;
 	std::cout << "RET|RTS" << std::endl;
@@ -928,6 +944,13 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 		break;
 	case CMD_DEL_SYMBOL:
 		Execute_DelSymbol(towns,cmd);
+		break;
+
+	case CMD_PRINT_SYMBOL:
+	case CMD_PRINT_SYMBOL_LABEL_PROC:
+	case CMD_PRINT_SYMBOL_PROC:
+	case CMD_PRINT_SYMBOL_FIND:
+		Execute_SymbolInquiry(towns,cmd);
 		break;
 
 	case CMD_TYPE_KEYBOARD:
@@ -2651,6 +2674,88 @@ void TownsCommandInterpreter::Execute_DelSymbol(FMTowns &towns,Command &cmd)
 		else
 		{
 			PrintError(ERROR_COULD_NOT_DELETE_SYMBOL);
+		}
+	}
+}
+
+void TownsCommandInterpreter::Execute_SymbolInquiry(FMTowns &towns,Command &cmd)
+{
+	std::string ptn="*";
+	uint32_t segFilter=0xFFFF0000;
+	bool showLabel=true,showProc=true,showComment=true;
+	switch(cmd.primaryCmd)
+	{
+	case CMD_PRINT_SYMBOL:
+		if(2<=cmd.argv.size())
+		{
+			segFilter=cpputil::Xtoi(cmd.argv[1].c_str());
+		}
+		break;
+	case CMD_PRINT_SYMBOL_LABEL_PROC:
+		showComment=false;
+		if(2<=cmd.argv.size())
+		{
+			segFilter=cpputil::Xtoi(cmd.argv[1].c_str());
+		}
+		break;
+	case CMD_PRINT_SYMBOL_PROC:
+		showComment=false;
+		showLabel=false;
+		if(2<=cmd.argv.size())
+		{
+			segFilter=cpputil::Xtoi(cmd.argv[1].c_str());
+		}
+		break;
+	case CMD_PRINT_SYMBOL_FIND:
+		if(3<=cmd.argv.size())
+		{
+			segFilter=cpputil::Xtoi(cmd.argv[1].c_str());
+			ptn="*"+cmd.argv[2]+"*";
+		}
+		else
+		{
+			ptn="*"+cmd.argv[1]+"*";
+		}
+		break;
+	}
+	for(auto &entry : towns.debugger.GetSymTable().GetTable())
+	{
+		auto &addr=entry.first;
+		auto &sym=entry.second;
+
+		if(0xFFFF0000!=segFilter && segFilter!=addr.SEG)
+		{
+			continue;
+		}
+
+		if((showProc==true && sym.symType==i486Symbol::SYM_PROCEDURE) ||
+		   (showLabel==true && sym.symType==i486Symbol::SYM_JUMP_DESTINATION) ||
+		   (showComment==true && ""!=sym.inLineComment))
+		{
+			std::string addrStr,textStr;
+			bool returnType=true,label=true,param=true;
+			addrStr=cpputil::Ustox(addr.SEG);
+			addrStr+=":";
+			addrStr+=cpputil::Uitox(addr.OFFSET);
+			addrStr+=" ";
+
+			textStr=sym.Format(returnType,label,param);
+			if(0<sym.inLineComment.size())
+			{
+				textStr+=" ; ";
+				textStr+=sym.inLineComment;
+			}
+
+			auto PTN=ptn;
+			auto TEXTSTR=textStr;
+			cpputil::Capitalize(PTN);
+			cpputil::Capitalize(TEXTSTR);
+			if("*"!=ptn && true!=cpputil::WildCardCompare(PTN,TEXTSTR))
+			{
+				continue;
+			}
+
+			std::cout << addrStr << " " << textStr << std::endl;
 		}
 	}
 }
