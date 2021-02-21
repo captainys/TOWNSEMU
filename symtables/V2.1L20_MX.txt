@@ -3379,6 +3379,36 @@ P
 M 0
 /end
 /begin0
+T 0
+* 00001679:00001401
+# Incoming DI or mapped value
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00001405
+# 
+R 
+L LOOP1405
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000140E
+# LODSB+3 -> 4 bytes unit
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
 T 2
 * 00001679:00001477
 # 
@@ -5391,9 +5421,49 @@ M 0
 /begin0
 T 1
 * 00001679:00003B3B
-# 
+# Critical Error Handling Flags
 R 
 L FATSECRD (Read FAT Sector?)
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003B43
+# DPB_NUM_FAT(Redundancy)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003B47
+# DPB_SECTORS_PER_FAT
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00003B50
+# 
+R 
+L Repeat DPB_NUM_FAT times
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003B54
+# DEVCALL_Read_Sector
+R 
+L 
 P 
 % 0
 M 0
@@ -5404,6 +5474,36 @@ T 1
 # 
 R 
 L DREAD
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00003B7D
+# 
+R 
+L DEVCALL_Read_Sector
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003B7E
+# DPB_MEDIA_DESC_TYPE
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003B82
+# DPB_UNIT_CODE
+R 
+L 
 P 
 % 0
 M 0
@@ -5679,6 +5779,186 @@ P
 M 0
 /end
 /begin0
+T 1
+* 00001679:00003C76
+# BYTES_INTO_SECTOR
+R 
+L Calc BytesToRead from this sector, last sector, and num whole read, CX=bytes to read, ES:BP is DPB
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003C79
+# BX=Bytes to read
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003C7D
+# Jump if read from the 1st byte of the sector
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003C7F
+# DPB_BYTES_PER_SECTOR
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003C83
+# AX=BytesPerSector-BytesIntoSector=BytesRemainInSector
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003C85
+# BX=BytesToRead-BytesRemainInSector=BytesAfterThisSector
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003C87
+# Jump if whole sector is needed
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003C89
+# AX=BytesToRead
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003C8D
+# BytesToRead from the sector
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003C94
+# BytesAfterThisSector/BytesPerSector
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003C98
+# Sectors that needs to be read whole
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003C9B
+# Bytes read from the last sector.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003C9F
+# Bytes to read from the current sector.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003CA3
+# Jump if there are hanging bytes from the first or last sector
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003CA8
+# Jump if number of whole sectors is not 1
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003CAE
+# BytesToReadFromLastSector=SectorLength
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003CB1
+# DX=0. Clear Sectors needs to be read whole.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00003CB6
+# 
+R 
+L Recovery from Far Proc [007C] failure?
+P 
+% 0
+M 0
+/end
+/begin0
 T 0
 * 00001679:00003CBB
 # SF_MODE_FCB_SET
@@ -5763,15 +6043,45 @@ T 2
 * 00001679:00003D02
 # 
 R 
-L Some bytes left
+L Call [007C] Loop
 P 
 % 0
 M 0
 /end
 /begin0
 T 0
+* 00001679:00003D05
+# Jump if Far Proc CS:[007C] returned CF=0
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
 * 00001679:00003D0D
-# DPB or SYSDEV (in this case must be SYSDEV)
+# DPB or SYSDEV (in this case must be DBP since it is BLOCK)
+R 
+L CX is still number of bytes that can be read or to read
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003D14
+# CLUSTER_INTO_FILE
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003D1B
+# CX==0 means successful.
 R 
 L 
 P 
@@ -5781,9 +6091,19 @@ M 0
 /begin0
 T 2
 * 00001679:00003D1F
-# 
+# Must be EOF
 R 
 L EOF
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003D2B
+# Return DOSERR_ACCESS_DENIED
+R 
+L 
 P 
 % 0
 M 0
@@ -5810,10 +6130,60 @@ M 0
 /end
 /begin0
 T 2
+* 00001679:00003D34
+# 
+R 
+L Fread Do DEVCALLs
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003D38
+# Cluster into file
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003D3C
+# Bytes to read from the current sector
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003D48
+# Num sectors whole read
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003D59
+# Sector into cluster
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
 * 00001679:00003EC4
 # 
 R 
-L Must be EOF
+L CX=0, Restore ES:DI=SF_ENTRY, CLC, RET
 P 
 % 0
 M 0
@@ -6349,6 +6719,146 @@ P
 M 0
 /end
 /begin0
+T 1
+* 00001679:00004A75
+# 
+R 
+L SeekToCurrentCluster
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004A76
+# ES:DI=SF_TABLE
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004A7A
+# Current Absolute Cluster Number
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004A7E
+# Current Relative Cluster Number
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004A84
+# Jump if AbsCluster==0
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004A86
+# CX=ClusterIntoFile-RelCluster
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004A8A
+# CX=ClusterIntoFile-RelCluster+RelCluster=ClusterIntoFile
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004A8E
+# Scan from the first.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004A93
+# Ret CX=0,DX?,BX=AbsCluster or FirstCluster
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00004A95
+# CX must be the loop counter then.
+R 
+L Seek To Cluster Loop (BX absolute cluster DX cluster into file CX counter
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004A9C
+# DI is returned from 1679:5225. Cluster ID?  Then FFF8 is 16-bit last cluster, FF8 is 12-bit
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004AA6
+# Increment Relative Cluster Number
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00004AAB
+# CX=ClusterIntoFile+1,DX=RelCluster-1,BX=AbsCluster=0
+R 
+L Absolute Cluster Number=0
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004AAC
+# Return CX=NonZero, then EOF end.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
 T 0
 * 00001679:00004E1C
 # 
@@ -6689,6 +7199,26 @@ P
 M 0
 /end
 /begin0
+T 1
+* 00001679:0000502F
+# 
+R 
+L Something to do with error hanling? (used in fread)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:0000507D
+# ES:BP=DPB, AL=Drive
+R 
+L Critical Error. DI=0fffH for Invalid Cluster Num
+P 
+% 0
+M 0
+/end
+/begin0
 T 2
 * 00001679:00005091
 # 
@@ -6700,10 +7230,370 @@ M 0
 /end
 /begin0
 T 0
+* 00001679:00005095
+# Table_end-Table_begin
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000509C
+# IF 010H<DI use AX=DI, else use AX=BYTE PTR [0DDD+DI]
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000509E
+# 13h,14h,15h,16h,17h,18h,19h,1Ah,1Bh,1Ch,1Dh,1Eh,1Fh,1Fh,22h
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000050A5
+# [2D2h]=Incoming DI or mapped value
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
 * 00001679:000050BA
 # ERROR MODE
 R 
 L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000050E3
+# ERRORMODE
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000050ED
+# 
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000050F7
+# Shoot INT 24H Critical Error
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000510C
+# INDOS
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005111
+# ERRORMODE
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00005118
+# 
+R 
+L AL=3(Error during handling Error), or AL=Return from INT 24H
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005136
+# Enable BUFWRITE
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00005145
+# 
+R 
+L BYTE PTR *(CS:[546H])=CS:[0542H
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00005157
+# 
+R 
+L INT 24H Returned AL=0
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000516D
+# 0303h=CONSWAP
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00005188
+# 
+R 
+L INT 2AH AH=82H then INT 2FH AX=1122H....
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00005214
+# DPB_MAX_CLUSTER
+R 
+L If maxCluster>=0FF6H CMP BX,FFF8h, else CMP BX,0FF8h
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00005225
+# DPB_MAX_CLUSTER
+R 
+L GetNextCluster ES:BP=DPB, BX=Cluster
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000522E
+# Prob Jump if 16-bit cluster
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005232
+# Prob 12-bit FAT and need shift.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00005251
+# Free Clusters=Unknown(0ffffh)
+R 
+L Invalid Cluster Number -> Critical Error
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000052E8
+# 
+R 
+L GetNextClusterFromFAT(Prob) BX=ClusterNumber ES:BP=DPB
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000052F6
+# Max Cluster Num
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000052FA
+# Prob Jump if 16-bit cluster (Don't jump 12-bit)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000052FE
+# AX=ClusterNum*2 (if 16bit)  ClusterNum*3/2 (if 12bit)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005300
+# Bytes Per Sector
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005304
+# Faster calculation if 512 bytes/sector.  Should be a better way than GOTO.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005308
+# Hell of a GOTO....
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005315
+# DPB_FIRST_FAT_SECTOR
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005319
+# CX=bytesPerSector-1
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000532C
+# CURBUF
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005337
+# Jump if first byte of cluster is not last byte of the sector
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000534B
+# Need to read the next sector if 12-bit FAT crosses the sector boundary
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005353
+# CURBUF
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005369
+# Max Cluster Number
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00005377
+# 
+R 
+L ErrorEnd
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:0000537C
+# 
+R 
+L DIV AX,CX  JUMP 5315
 P 
 % 0
 M 0
@@ -6901,7 +7791,7 @@ M 0
 /begin0
 T 0
 * 00001679:000056BD
-# DIR SECTOR FLAG
+# FAT SECTOR FLAG (IO_BUF_FLAG_IS_FAT)
 R 
 L 
 P 
@@ -6992,6 +7882,26 @@ M 0
 T 0
 * 00001679:000056DE
 # SI!=0 means FAT sector
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000056E2
+# DPB_NUM_FATS
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000056E6
+# DPB_SECTORS_PER_FAT
 R 
 L 
 P 
@@ -7180,8 +8090,28 @@ M 0
 /end
 /begin0
 T 0
+* 00001679:00005786
+# Fatal Error Handling Flags for Buffer Write
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
 * 00001679:0000578C
 # Data Sector?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005792
+# Fatal Error Handling Flags for Data Sector.
 R 
 L 
 P 
@@ -7993,7 +8923,17 @@ T 1
 * 00001679:00006A09
 # 
 R 
-L Meaningless Wait by Busy Loop?
+L Callf [007Ch] up to [001Ah] times.  By default, it succeeds (CF=0)
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006A1E
+# (Prob)Error Recovery
+R 
+L 
 P 
 % 0
 M 0
