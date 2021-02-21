@@ -45,19 +45,14 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 ////////////////////////////////////////////////////////////
 
-
 static std::string GetExtension(const std::string &fName)
 {
-	for(auto i=fName.size()-1; 0<=i; --i)
-	{
-		if(fName[i]=='.')
-		{
-			std::string ext;
-			ext.insert(ext.end(),fName.begin()+i,fName.end());
-			return ext;
-		}
+	auto pos = fName.rfind('.');
+	if (pos == std::string::npos) {
+		return "";
 	}
-	return "";
+
+	return fName.substr(pos);
 }
 static void Capitalize(std::string &str)
 {
