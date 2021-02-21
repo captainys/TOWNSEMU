@@ -10,6 +10,12 @@ target_link_libraries(${TARGET_NAME}
 	fssimplewindow_connection
 )
 
+if(UNIX)
+	# Not supposed to be needed.
+	# Is g++ broken again?
+	target_link_libraries(${TARGET_NAME} pthread)
+endif()
+
 add_subdirectory(command)
 add_subdirectory(argv)
 
