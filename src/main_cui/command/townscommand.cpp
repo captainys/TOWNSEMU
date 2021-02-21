@@ -924,7 +924,10 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 		Execute_TypeKeyboard(towns,cmd);
 		break;
 	case CMD_KEYBOARD:
-		if(nullptr!=outside_world)
+		if (cmd.argv.size() < 2) {
+			PrintError(ERROR_TOO_FEW_ARGS);
+		}
+		else if(nullptr!=outside_world)
 		{
 			std::string MODE=cmd.argv[1];
 			cpputil::Capitalize(MODE);
