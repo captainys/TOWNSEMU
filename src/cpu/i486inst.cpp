@@ -1284,8 +1284,9 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 	case I486_RENUMBER_INT3://       0xCC,
 		break;
 	case I486_RENUMBER_INT://        0xCD,
+		FUNCCLASS::FetchImm8(cpu, inst, ptr, seg, offset, mem);
+		break;
 	case I486_RENUMBER_INTO://       0xCE,
-		FUNCCLASS::FetchImm8(cpu,inst,ptr,seg,offset,mem);
 		break;
 
 
@@ -2606,9 +2607,8 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 	case I486_OPCODE_INT3://       0xCC,
 		disasm="INT3";
 		break;
-	case I486_OPCODE_INTO://        0xCD,
 	case I486_OPCODE_INT://        0xCD,
-		disasm=(I486_OPCODE_INT==opCode ? "INT" : "INTO");
+		disasm = "INT";
 		disasm=DisassembleTypicalOneImm(disasm,EvalUimm8(),8);
 		if(I486_OPCODE_INT==opCode)
 		{
@@ -2621,6 +2621,9 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 				disasm.push_back(')');
 			}
 		}
+		break;
+	case I486_OPCODE_INTO://        0xCE,
+		disasm = "INTO";
 		break;
 
 
@@ -6130,7 +6133,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_RENUMBER_INTO://       0xCE,
 		if(GetOF())
 		{
-			Interrupt(inst.EvalUimm8(),mem,2,2);
+			Interrupt(INT_INTO_OVERFLOW, mem, 1, 1);
 			EIPIncrement=0;
 			clocksPassed=(IsInRealMode() ? 28 : 46);
 		}

@@ -1880,8 +1880,8 @@ public:
 
 		numInstbyte should tell how many bytes that EIP should be displaced for the return address.
 		For hardware-interrupt, it should be 1.
-		For INT, INTO it should be 2.
-		For INT3, it should be 1.
+		For INT, it should be 2.
+		For INT3 and INTO, it should be 1.
 		For interrupt by exception, it should be 0 to allow re-try.
 
 		numInstBytes is divided into numInstBytesFoReturn and numInstBytesForCallStack.
