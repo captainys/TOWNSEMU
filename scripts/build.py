@@ -13,6 +13,8 @@ DISKDIR=os.path.join(THISDIR,"..","testdata","DISKIMG")
 
 
 def Run():
+	cwd=os.getcwd()
+
 	os.chdir(BUILDDIR)
 	proc=subprocess.Popen([
 		"cmake",
@@ -23,6 +25,9 @@ def Run():
 		"Release",
 	])
 	proc.communicate();
+
+	os.chdir(cwd)
+
 	if proc.returncode!=0:
 		print("Build Error!")
 		quit()

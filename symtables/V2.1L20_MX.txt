@@ -5320,6 +5320,56 @@ M 0
 /end
 /begin0
 T 2
+* 00001679:00003850
+# 
+R 
+L Loop
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000385A
+# TEMPORARY_SF_ENTRY
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000387A
+# Ctrl+C?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00003881
+# 
+R 
+L Ctrl+C
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003882
+# TEMPOLARY_SF_ENTRY
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
 * 00001679:00003894
 # 
 R 
@@ -5349,11 +5399,81 @@ P
 M 0
 /end
 /begin0
+T 0
+* 00001679:000038C6
+# 0318h=REQHEAD+12h=RequestedBytes
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000038DA
+# 0318h=REQHEAD+12h=ReadCount(?)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000038EB
+# 0314h=REQHEAD+0eh=BufferPointer
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000038F8
+# 1A=EOF
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000038FC
+# Return
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000038FE
+# Up to specified bytes
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
 T 2
 * 00001679:00003901
 # 
 R 
 L EOF_ON_INPUT or NULL
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00003903
+# 
+R 
+L Fread from CON device, Binary, Cons In, CS:[0022]!=0
 P 
 % 0
 M 0
@@ -5374,6 +5494,16 @@ T 0
 # Erase NOT_EOF bit.  Make it an EOF device?
 R 
 L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00003937
+# 
+R 
+L Fread from CHARDEV, Binary, Cons In
 P 
 % 0
 M 0
@@ -6099,11 +6229,11 @@ P
 M 0
 /end
 /begin0
-T 0
+T 2
 * 00001679:00003D2B
-# Return DOSERR_ACCESS_DENIED
+# 
 R 
-L 
+L Read Bytes=0, Return DOSERR_ACCESS_DENIED
 P 
 % 0
 M 0
@@ -6573,7 +6703,7 @@ T 1
 * 00001679:0000475C
 # 
 R 
-L Make REQHDR at ES:0306H AL=Unit AH=Media DS:BX=Buffer CX=Length DX=StartSector
+L Make REQHDR CMD_READ at ES:0306H AL=Unit AH=Media DS:BX=Buffer CX=Length DX=StartSector
 P 
 % 0
 M 0
@@ -6852,6 +6982,36 @@ M 0
 T 0
 * 00001679:00004AAC
 # Return CX=NonZero, then EOF end.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00004BFA
+# 
+R 
+L CLUSTER_TO_SECTOR (DX in, DX out)
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004BFB
+# DPB_CLUSTER_ShIFT
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004C05
+# DPB_FIRST_DATA_SECTOR
 R 
 L 
 P 
@@ -7623,7 +7783,27 @@ T 1
 * 00001679:0000540C
 # 
 R 
-L Media Check, ES:BP=Drive Parameter Block
+L Media Check or First Access Check, ES:BP=Drive Parameter Block.
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000540E
+# Command=CHECK REMOVABLE MEDIA
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005410
+# Unit
+R 
+L 
 P 
 % 0
 M 0
@@ -7634,6 +7814,336 @@ T 0
 # 1679:00005417
 R 
 L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005422
+# Media Desc
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005445
+# AH=Previous AccessFlag.  DPB.AccessFlag=0
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000544C
+# DEVREQ+0Eh Check Media returns something there.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005457
+# Prev AccessFlag or MediaCheck return code is negative, at least one non-zero
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000545B
+# Device Driver Pointer
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000545F
+# DEVFLAG_OPEN_CLOSE_SUPPORTED
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005494
+# IO_BUF
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000549D
+# BUffer Written?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000054B2
+# DPB_NUM_FREE_CLUSTERS
+R 
+L Media Check returned code with bit7=1
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000054BB
+# IO_BUF_FLAG_READ
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000054BF
+# Compare Drive
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000054C4
+# IO_BUF_FLAG_WRITTEN
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000054CA
+# JMP if same drive, buffer is dirty (written)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000054D9
+# DPB_PTR_TO_DEV_DRIVER
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000054DD
+# SYSDEV_DEVFLAG_MEDIA_DESC_IN_FAT_REQUIRED
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000054EE
+# CURBUF
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000054F2
+# So, it is one available buffer.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000054F4
+# 
+R 
+L Media Desc in FAT Required
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005502
+# So, DS:DI is one available buffer.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005510
+# REQ_LEN
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005519
+# DEVREQ_CMD_BUILD_BPB
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000554B
+# Current Media Desc Type in DPB
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005559
+# Media Desc Type in BPB
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000555C
+# Jump if Media Dec Didn't Change
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005566
+# NUM_FAT
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000556A
+# SECTORS_PER_FAT
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00005579
+# 
+R 
+L Clear BufferRead flag of all buffers.  Then returns DS:DI=first buffer.
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005581
+# Clear Buffer-Read flag (b5)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005584
+# Next Buffer
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00005592
+# 
+R 
+L FastFoward until BufferRead flag is 0.  ZF=1 if end.
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000559B
+# Jump if BufferRead flag.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000055A2
+# 
+R 
+L NextBuffer
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000055A6
+# Essentially PLACEBUF
+R 
+L Pretty much PLACEBUF
 P 
 % 0
 M 0
@@ -10102,6 +10612,26 @@ M 0
 T 0
 * 0000AF37:0000016C
 # Calling DOSINIT
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 0000AF37:000003B3
+# 
+R 
+L Open CONFIG.SYS
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000AF37:00000557
+# FREAD CONFIG.SYS
 R 
 L 
 P 

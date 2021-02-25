@@ -10,11 +10,13 @@ TOWNSTYPE="MX"
 
 THISFILE=os.path.realpath(__file__)
 THISDIR=os.path.dirname(THISFILE)
-BUILDDIR=os.path.join(THISDIR,"..","build")
-SRCDIR=os.path.join(THISDIR,"..","src")
-ROMDIR=os.path.join(THISDIR,"..","..","TOWNSEMU_TEST","ROM_"+TOWNSTYPE)
-DISKDIR=os.path.join(THISDIR,"..","..","TOWNSEMU_TEST","DISKIMG")
-MEMCARDDIR=os.path.join(THISDIR,"..","..","TOWNSEMU_TEST","MEMCARD")
+TSUGARUDIR=os.path.join(THISDIR,"..")
+
+BUILDDIR=os.path.join(TSUGARUDIR,"build")
+SRCDIR=os.path.join(TSUGARUDIR,"src")
+ROMDIR=os.path.join(TSUGARUDIR,"..","TOWNSEMU_TEST","ROM_"+TOWNSTYPE)
+DISKDIR=os.path.join(TSUGARUDIR,"..","TOWNSEMU_TEST","DISKIMG")
+MEMCARDDIR=os.path.join(TSUGARUDIR,"..","TOWNSEMU_TEST","MEMCARD")
 
 
 
@@ -27,21 +29,22 @@ def ExeExtension():
 
 
 def TsugaruExe():
-	if os.path.isfile("./main_cui/Tsugaru_CUI"+ExeExtension()):
-		return "./main_cui/Tsugaru_CUI"+ExeExtension()
-	if os.path.isfile("./main_cui/Release/Tsugaru_CUI"+ExeExtension()):
-		return "./main_cui/Release/Tsugaru_CUI"+ExeExtension()
+	fName=os.path.join(TSUGARUDIR,"build","main_cui","Tsugaru_CUI"+ExeExtension())
+	if os.path.isfile(fName):
+		return fName
+	fName=os.path.join(TSUGARUDIR,"build","main_cui","Release","Tsugaru_CUI"+ExeExtension())
+	if os.path.isfile(fName):
+		return fName
 	throw
 
 
 
 def Run(argv):
-	os.chdir(BUILDDIR)
 	subprocess.Popen([
 		TsugaruExe(),
 		ROMDIR,
 		"-SYM",
-		"../symtables/RUN"+TOWNSTYPE+".txt",
+		os.path.join(TSUGARUDIR,"symtables","RUN"+TOWNSTYPE+".txt"),
 		"-HD0",
 		os.path.join(DISKDIR,"hddimage.bin"),
 		"-HD1",
@@ -49,7 +52,7 @@ def Run(argv):
 		"-JEIDA4",
 		os.path.join(MEMCARDDIR,"4MB.bin"),
 		"-CMOS",
-		"../testdata/CMOS.bin",
+		os.path.join(TSUGARUDIR,"testdata","CMOS.bin"),
 		"-DONTAUTOSAVECMOS",
 		#"-HIGHRES",
 		#"-DEBUG",
