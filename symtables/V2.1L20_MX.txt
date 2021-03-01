@@ -2450,6 +2450,26 @@ M 0
 /end
 /begin0
 T 0
+* 00000679:00003974
+# SF_MODE
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00000679:00006015
+# 
+R 
+L NextSF_ENTRY
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
 * 00000D47:0000057C
 # 
 R 
@@ -5509,6 +5529,216 @@ P
 M 0
 /end
 /begin0
+T 1
+* 00001679:00003970
+# ES:DI=SF_ENTRY
+R 
+L FWRITE main
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000397A
+# If read mode, do nothing.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003981
+# If (MODE & FCB_SET), skip read-only mode check.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000398E
+# If attr&read_only, return 0 bytes, ACCESS_DENIED.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00003996
+# 
+R 
+L FWRITE to REDIRECTED
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000399E
+# SF_DEVFLAGS & SF_DEVFLAG_IS_CHARDEV
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000039B5
+# 
+R 
+L Write to CHARDEV in BINARY mode
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000039EB
+# 
+R 
+L Move File Pointer by AX bytes and return no error
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000039F5
+# 
+R 
+L POP DS, Move File Pointer by CX bytes, then return no error.
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000039F7
+# 
+R 
+L POP DS, Move File Pointer by DX bytes, then return no error.
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000039FA
+# 
+R 
+L FWRITE to CHARDEV
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000039FF
+# SF_DEVFLAGS|=NOT_WRITTEN ????
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003A04
+# 
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003A0D
+# BL=SF_DEVFLAGS
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003A0F
+# DS:BX=DMA Buffer Pointer
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003A17
+# SF_DEVFLAG_CHAR_BINARY
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00003A1D
+# SF_DEVFLAG_CHAR_CONS_OUT
+R 
+L Write to CHARDEV in ASCII mode
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003A21
+# SF_DEVFLAG_CHAR_NUL
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003A27
+# EOF?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00003A3C
+# 
+R 
+L FWRITE CHARDEV ASCII MODE Loop
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00003A8B
+# 
+R 
+L POP DS, Move File Pointer by DX bytes, then return no error.
+P 
+% 0
+M 0
+/end
+/begin0
 T 0
 * 00001679:00003AAC
 # 2<BX -> Regular File
@@ -6310,6 +6540,26 @@ M 0
 /end
 /begin0
 T 2
+* 00001679:00003E2B
+# 
+R 
+L Move File Pointer by CX bytes and return no error
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00003E38
+# 
+R 
+L FWRITE to BLOCKDEV
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
 * 00001679:00003EC4
 # 
 R 
@@ -6823,7 +7073,7 @@ T 1
 * 00001679:0000478F
 # 
 R 
-L Make REQHDR at ES:0306H AL=Unit AH=Media 8+BYTE[2ADH]=CMD CX=Length DX=StartSector
+L Make REQHDR WRITE at ES:0306H AL=Unit AH=Media BYTE[2ADH]=VerifyFlag CX=Length DX=StartSector DS:BX is data pointer
 P 
 % 0
 M 0
@@ -9123,7 +9373,7 @@ T 1
 * 00001679:00005FA8
 # 002A=FIRST FCB PTR (sftable)
 R 
-L get_sf_from_sfn (Prob)
+L get_sf_from_sfn BX=SFN -> ES:DI=SF_ENTRY
 P 
 % 0
 M 0
@@ -9179,11 +9429,371 @@ P
 M 0
 /end
 /begin0
+T 1
+* 00001679:00005FD0
+# 
+R 
+L Find Available JFN -> BX=JFN,ES:[DI]=JFN Pointer or DOSERR_TOO_MANY_OPEN_FILES
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00005FE3
+# 
+R 
+L Find Available SF_ENTRY -> ES:DI=SF_ENTRY, BX=SFN
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005FEC
+# DOSERR_TOO_MANY_OPEN_FILES
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005FF1
+# REFCOUNT=0?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005FF7
+# REFCOUNT=0ffffh?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006003
+# SF_MACHINE_NUMBER
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000600E
+# SF_PSP_OWNER
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00006014
+# 
+R 
+L Try Next SF_ENTRY (POP BX)
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00006015
+# 
+R 
+L Try Next SF_ENTRY
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00006018
+# 
+R 
+L Found a SF_ENTRY
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006028
+# Not CurrentPDB.  What is it?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00006058
+# ':'
+R 
+L Prob: Initialize CDS DS:SI=DPB, AL=Drive Letter
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000605B
+# @
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000605D
+# NUM DPB
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006063
+# Most likely CDS
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006068
+# CDS_DRIVE_TYPE
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006074
+# '\ '
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006082
+# Root Directory Name Length
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000609E
+# DPB
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000060A9
+# 
+R 
+L RET
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00006117
+# 
+R 
+L Set Up Current CDS  AL 1=ADrv, 0=CurDrv  CurrentCDSPtr->CS:[053AH], Use Temporary CDS CS:[0495h] if not set.
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000611B
+# Current Drive
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000613C
+# 'A'
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:0000614E
+# 
+R 
+L SetDir (NoSetDir=0)
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:0000615A
+# 
+R 
+L Error End
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:0000615B
+# 
+R 
+L ret
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000615E
+# NUM_CDS
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006163
+# Jump if AL is below NUM_CDS
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00006167
+# 
+R 
+L Set Current CDS to ALth
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006169
+# CDS_PTR
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000616E
+# CDS sizs=51h bytes
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00006207
+# 
+R 
+L ret
+P 
+% 0
+M 0
+/end
+/begin0
 T 0
 * 00001679:00006208
 # 
 R 
 L DOS:(PROB)MAKE_FULL_PATH_NAME
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00006238
+# 
+R 
+L Probably never comes in to this path.
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000626A
+# DOSERR_DIR_NOT_FOUND
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:0000626D
+# Temporarily nullify the current CDS
+R 
+L CDS Structure is Ready to Go.
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006274
+# Qualify Remote File Name DS:SI C-Str File Name  ES:DI 128-buf for qualified name
+R 
+L 
 P 
 % 0
 M 0
@@ -9390,6 +10000,16 @@ M 0
 /end
 /begin0
 T 1
+* 00001679:00006684
+# 
+R 
+L INT 21H AH=40H FWRITE
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
 * 00001679:0000676E
 # 
 R 
@@ -9414,6 +10034,56 @@ T 0
 # Error 06H=DOSERR_INVALID_HANDLE
 R 
 L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00006784
+# 
+R 
+L INT 21H AH=3DH FOPEN
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000679A
+# SFN
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000679F
+# SF_ENTRY
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000067C5
+# Write SFN to PSP
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00006837
+# 
+R 
+L Error End (CS:[542h]=0ffffh)
 P 
 % 0
 M 0

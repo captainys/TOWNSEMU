@@ -1912,7 +1912,7 @@ void TownsCommandInterpreter::Execute_Dump_DOSInfo(FMTowns &towns,Command &cmd)
 
 				std::cout << "DRV=" << cpputil::Ubtox(towns.mem.FetchByte(bufLinear+4)) << "h ";
 				std::cout << "FLAGS=" << cpputil::Ubtox(towns.mem.FetchByte(bufLinear+5)) << "h ";
-				std::cout << "LBA=" << cpputil::Ubtox(towns.mem.FetchWord(bufLinear+6)) << "h ";
+				std::cout << "LBA=" << cpputil::Ustox(towns.mem.FetchWord(bufLinear+6)) << "h ";
 				std::cout << "WR_CNT=" << cpputil::Ubtox(towns.mem.FetchWord(bufLinear+8)) << "h ";
 				std::cout << "WR_INC=" << cpputil::Ubtox(towns.mem.FetchWord(bufLinear+9)) << "h ";
 				std::cout << "DPB=" << 
