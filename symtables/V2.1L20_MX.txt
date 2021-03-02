@@ -2679,11 +2679,11 @@ P
 M 0
 /end
 /begin0
-T 2
+T 1
 * 00001679:00000000
 # EOF_ON_INPUT,
 R 
-L Loop
+L Strcpy
 P 
 % 0
 M 0
@@ -4319,6 +4319,26 @@ P
 M 0
 /end
 /begin0
+T 1
+* 00001679:00001A36
+# 
+R 
+L Kanji-Aware Strcpy
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00001A4F
+# 
+R 
+L Kanji-Unaware Strcpy (Destroys SI and DI)
+P 
+% 0
+M 0
+/end
+/begin0
 T 0
 * 00001679:00001A58
 # 
@@ -4364,6 +4384,16 @@ T 1
 # NO_SET_DIR?
 R 
 L Wait by Busy Wait. CS:[001CH] is the loop count
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00001AC8
+# 
+R 
+L Check CurrentCDS is not NULL(0ffffh) and not REDIRECTED.
 P 
 % 0
 M 0
@@ -4769,11 +4799,91 @@ P
 M 0
 /end
 /begin0
+T 0
+* 00001679:00002A7F
+# DOSERR_DIR_NOT_FOUND
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00002B00
+# DOSERR_DIR_NOT_FOUND
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
 T 1
 * 00001679:00003121
 # TEMPORARY_SF_ENTRY
 R 
 L TEMPORARY_SF_ENTRY->Call Open. If INT 2F, increment refcount, else, DEVCALL Open
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000031A2
+# 
+R 
+L FOPEN after MakeFullPathName
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000031AD
+# SF_ENTRY
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000031B8
+# CurrentCDS
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000031C3
+# OPEN
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000032A4
+# 
+R 
+L This part is also checking (mode&0xf0)==0x70
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000032CB
+# DOSERR_INVALID_ACCESS?
+R 
+L 
 P 
 % 0
 M 0
@@ -5182,6 +5292,46 @@ M 0
 T 0
 * 00001679:00003600
 # SF_TIME
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000036EF
+# 
+R 
+L Called from 4510, in Proc 44A2
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000036F4
+# CHDIR
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003702
+# Finally clear 2F8h
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003711
+# What's CS:[558h]?
 R 
 L 
 P 
@@ -6579,6 +6729,126 @@ P
 M 0
 /end
 /begin0
+T 0
+* 00001679:000041AF
+# Sector into cluster
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000041B3
+# Cluster into file
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000041C9
+# 
+R 
+L Called from 3707 in Proc 36EF
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000041D4
+# Current Sector Buffer
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000041DA
+# Pointer to the directory name
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000041DE
+# ':\'
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000041FF
+# Pointer to the directory name
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004214
+# Terminate C-String
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:0000421D
+# 
+R 
+L INFINITY
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00004265
+# 
+R 
+L Make 11-byte file name from CS:[4E6h] also check against CHARDEV if 0==(CS:[0506h&08h])
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000426B
+# 11-byte File Name
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004280
+# '.'
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
 T 1
 * 00001679:00004407
 # a=~(Saved SF_ATTR), a&=CH, a&=16h(DIR|SYS|HID) -> ZF
@@ -6594,6 +6864,266 @@ T 0
 # Saved SF_ATTR
 R 
 L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00004414
+# 
+R 
+L Search CHARDEV if 0==(CS:[0506h]&08h) CS:[0532H], BH=(DEVFLAG|C0h&DFh) -> STC Not Found.
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004418
+# [04E6h]=11-byte File Name (without directories)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000442F
+# DEVHEAD (First SYSDEV)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00004432
+# DEVFLAG_IS_CHARDEV
+R 
+L Search CHARDEV Loop
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004437
+# Skip if not CHARDEV
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000443B
+# SI=SYSDEV_NAME
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000444A
+# Next SYSDEV
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00004451
+# 
+R 
+L Return CF=1
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:0000445F
+# 
+R 
+L Found SYSDEV. Copy ptr to CS:[0534h], BH=(DEVFLAGS|0C0h&0DFh), CLC, RET
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00004474
+# 
+R 
+L (Prob)Making Temporary DIRENT
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000044A2
+# 
+R 
+L ?Proc referring to [2F8h]() CS:DI=DIRECTORY (excluding last \file name)
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000044AB
+# Current CDS
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000044C0
+# Jump if REDIRECTED Drive
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000044C5
+# DL=[2F8h], [2F8h]=0
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000044CC
+# Copy CWD to CS:360h
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000044D9
+# Put back DL to [2F8h], but it doesn't seem to be used.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000044EC
+# CurrentDIR Cluster Unavailable
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000044FE
+# Incoming_DI
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:0000454C
+# 
+R 
+L Restore ES:DI from [BP-06H] and RET
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00004556
+# 
+R 
+L Find CHARDEV if 0==(CS:[0508h]&08h) CS:[0532H], BH=(DEVFLAG|C0h&DFh) -> STC If Found.()
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004563
+# Uncapitalize two letter
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004566
+# 'de'
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000456E
+# 'v'
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00004578
+# 
+R 
+L File Name starts with 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004581
+# Jump if DS;[SI] is not terminator.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00004598
+# 
+R 
+L STC and RET (not '/dev/')
 P 
 % 0
 M 0
@@ -7269,6 +7799,106 @@ P
 M 0
 /end
 /begin0
+T 1
+* 00001679:00004D52
+# 
+R 
+L (Prob)'xxx.yyy' to 'xxx     yyy'
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004D58
+# '.'
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004D87
+# '*'
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004D8B
+# '?'
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004D9F
+# '?'
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00004DB6
+# 
+R 
+L (Prob)Make 11-byte File Name from CS:[04E6H].  If CS:[04E6H]==E5H, make it 05H.
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00004DE3
+# 
+R 
+L LODSB, Capitalize,  Call CS:[BX+12h] where BX=CS:[0356H]
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004DE4
+# 'a'
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004DE8
+# 'z'
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004DF4
+# Prob this routine is for Far Call
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
 T 0
 * 00001679:00004E1C
 # 
@@ -7624,6 +8254,16 @@ T 1
 # ES:BP=DPB, AL=Drive
 R 
 L Critical Error. DI=0fffH for Invalid Cluster Num
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00005081
+# 
+R 
+L Save DPB in CS:[51AH], Load ES:SI=SYSDEV, Fall down to error handling
 P 
 % 0
 M 0
@@ -8019,6 +8659,106 @@ P
 M 0
 /end
 /begin0
+T 1
+* 00001679:00005394
+# 
+R 
+L Media Check. If fail make all CDS Cluster of this DPB to 0ffffh if root dir.
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005396
+# CDS_DRIVE_PARAM_BLOCK
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000539A
+# DPB_DRIVE
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000053AF
+# AX=0-1=0ffffh
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000053B1
+# NUM_CDS
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000053B7
+# CDS_DRIVE_PARAM_BLOCK
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000053BB
+# CDS_PTR (First CDS)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000053C0
+# Redirected
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000053D5
+# CurrentDIR Cluster
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000053DF
+# 
+R 
+L Next CDS
+P 
+% 0
+M 0
+/end
+/begin0
 T 2
 * 00001679:000053EB
 # 
@@ -8033,7 +8773,7 @@ T 1
 * 00001679:0000540C
 # 
 R 
-L Media Check or First Access Check, ES:BP=Drive Parameter Block.
+L Media Check or First Access Check, ES:BP=Drive Parameter Block.  CF=0 No Error.  NE:Unchanged  E:Changed or New
 P 
 % 0
 M 0
@@ -8080,8 +8820,18 @@ M 0
 /end
 /begin0
 T 0
+* 00001679:00005439
+# Status Code
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
 * 00001679:00005445
-# AH=Previous AccessFlag.  DPB.AccessFlag=0
+# AH=PrevAccessFlag.  DPB.AccessFlag=0  0:Accessed 0ff:Unaccessed
 R 
 L 
 P 
@@ -8091,7 +8841,27 @@ M 0
 /begin0
 T 0
 * 00001679:0000544C
-# DEVREQ+0Eh Check Media returns something there.
+# DEVREQ+0Eh  1:unchanged  0:unknown  0ffh:changed
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005450
+# Jump if PrevAccess!=Unaccessed && true!=Changed
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005455
+# Jump if PrevAccess==Accessed && Change/UnchangeUnknown
 R 
 L 
 P 
@@ -8101,7 +8871,7 @@ M 0
 /begin0
 T 0
 * 00001679:00005457
-# Prev AccessFlag or MediaCheck return code is negative, at least one non-zero
+# Previously Accessed && Unchanged.  Return CF=0  NE(ZF=0)
 R 
 L 
 P 
@@ -8129,11 +8899,11 @@ P
 M 0
 /end
 /begin0
-T 0
+T 2
 * 00001679:00005494
 # IO_BUF
 R 
-L 
+L If there is one written buffer of the drive, return CF=0, otherwise, re-build BPB->DPB
 P 
 % 0
 M 0
@@ -8149,9 +8919,29 @@ P
 M 0
 /end
 /begin0
+T 0
+* 00001679:000054A3
+# Found one written buffer, then return CF=0
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000054A5
+# Return CF=0, NE
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
 T 1
 * 00001679:000054B2
-# DPB_NUM_FREE_CLUSTERS
+# PrevAccess==Unaccessed or Media Check returned Changed=true
 R 
 L Media Check returned code with bit7=1
 P 
@@ -8220,6 +9010,16 @@ M 0
 /end
 /begin0
 T 0
+* 00001679:000054E9
+# Get First FAT Sector Buffer
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
 * 00001679:000054EE
 # CURBUF
 R 
@@ -8249,11 +9049,11 @@ P
 M 0
 /end
 /begin0
-T 0
+T 2
 * 00001679:00005502
 # So, DS:DI is one available buffer.
 R 
-L 
+L Have an available buffer DS:DI
 P 
 % 0
 M 0
@@ -8404,6 +9204,16 @@ T 1
 # 
 R 
 L PLACEBUF
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:0000564E
+# 
+R 
+L CMP (DS,SI),(ES,DI)
 P 
 % 0
 M 0
@@ -9540,10 +10350,20 @@ M 0
 /end
 /begin0
 T 1
+* 00001679:00006042
+# First DPB
+R 
+L Find DPB in DS:SI for Drive AL. (ADrive is 0)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
 * 00001679:00006058
 # ':'
 R 
-L Prob: Initialize CDS DS:SI=DPB, AL=Drive Letter
+L Initialize Current CDS. Input AL=Drive Letter(char)
 P 
 % 0
 M 0
@@ -9571,7 +10391,7 @@ M 0
 /begin0
 T 0
 * 00001679:00006063
-# Most likely CDS
+# Current CDS
 R 
 L 
 P 
@@ -9610,6 +10430,36 @@ M 0
 /end
 /begin0
 T 0
+* 00001679:00006088
+# CurrentDir=Root
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000608E
+# Unused?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006097
+# Subtract 'A' to make it 0-based Drive Number
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
 * 00001679:0000609E
 # DPB
 R 
@@ -9624,6 +10474,26 @@ T 2
 # 
 R 
 L RET
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00006100
+# 
+R 
+L STC if Current CDS is a JOINED drive.
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000610C
+# JOINED Drive?
+R 
+L 
 P 
 % 0
 M 0
@@ -9689,11 +10559,11 @@ P
 M 0
 /end
 /begin0
-T 0
+T 1
 * 00001679:0000615E
 # NUM_CDS
 R 
-L 
+L Set CurrentCDS to ALth
 P 
 % 0
 M 0
@@ -9749,11 +10619,51 @@ P
 M 0
 /end
 /begin0
-T 0
+T 1
 * 00001679:00006208
 # 
 R 
-L DOS:(PROB)MAKE_FULL_PATH_NAME
+L MakeFullPathName with CS:[2F8h]=0
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:0000620C
+# 
+R 
+L MakeFullPathName with CS:[2F8h]=0FFh
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000620E
+# What's this CS:[02F8h] flag?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000622C
+# BP=134 bytes into file-name buffer.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006230
+# CDS structure not-ready flag.
+R 
+L 
 P 
 % 0
 M 0
@@ -9764,6 +10674,16 @@ T 2
 # 
 R 
 L Probably never comes in to this path.
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000625D
+# CurrentCDS
+R 
+L 
 P 
 % 0
 M 0
@@ -9799,11 +10719,431 @@ P
 M 0
 /end
 /begin0
+T 2
+* 00001679:0000628F
+# 
+R 
+L File name starts with \\ or // or \/ or /\
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00006291
+# 
+R 
+L Loop for after \\
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000062B2
+# 
+R 
+L DS=SS and return
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000062B5
+# 
+R 
+L STOSB, DS=SS, and return
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000062B8
+# 
+R 
+L Not starting with \\ or //
+P 
+% 0
+M 0
+/end
+/begin0
 T 0
+* 00001679:000062BE
+# DOSERR_FILE_NOT_FOUND
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000062C2
+# 
+R 
+L File Name is NOT empty.
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000062C9
+# Jump if not SYSDEV
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000062CB
+# Force Use Temporary CDS
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000062DD
+# '/'
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000062E7
+# 
+R 
+L NOT SYSDEV
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000062EA
+# DOSERR_DIR_NOT_FOUND
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000062FF
+# DS:SI=Current CDS
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006306
+# BX=strlen(CurrentDir)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006309
+# If DI=360h (File Name Buffer), BP=3E6h
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:0000630D
+# 
+R 
+L LocalKanjiAwareStrcpyLoop
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000631A
+# '\'
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006325
+# '\'
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000632E
+# Store '\', but DI points to the same location, not the next location.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:0000634A
+# 
+R 
+L Called from 634A in Proc 6208
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000063A8
+# CDS_DRIVE_TYPE,CDS_TYPE_REDIRECTED
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000063AE
+# Jump if NOT REDIRECTED
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000063B1
+# 
+R 
+L NOT REDIRECTED
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000063D3
+# ':'
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000063DA
+# '\'
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000063EC
+# 
+R 
+L RET
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000063F2
+# '.'
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000063F8
+# '..'
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00006425
+# 
+R 
+L AL=='/'->'\', Return AL==0 or AL=='\'
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00006427
+# 
+R 
+L CMP AL,'/' '\' or 0 ('/'->'\')
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:0000642F
+# 
+R 
+L Called from 6400
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000064F9
+# NUM JOINED DRV
+R 
+L If first part of the path matches JOINED drive, replace with real path
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006518
+# JOINED?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006553
+# '\'
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:0000656B
+# 
+R 
+L DS:SI=CurrentCDS, ES:DI=DPB, CS:[524h]=DPB, RET
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:0000657F
+# 
+R 
+L RET
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
 * 00001679:0000659E
 # 
 R 
-L DOS:GET_DRIVE_NUMBER_FROM_FILE_NAME_IN_AL
+L GetDriveNumberFromFileName AL=0 if not specified. AL=1 is A drive. 0FFh if @ drive or ' drive.
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000065A5
+# ':'
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000065AB
+# Get drive letter in AL, ':' in AH.  Skipping two bytes.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000065B5
+# 
+R 
+L Store '(DriveLetter):'  AL=Drive (0=A)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000065B7
+# 
+R 
+L Store 'DRV:' to ES:DI++.  AL=1->ADrive
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000065BD
+# 
+R 
+L STRNCMP(DS:SI,ES:DI,STRLEN(DS:SI))
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000065E6
+# 
+R 
+L (Prob)Move to the end of C-String KanjiAware
 P 
 % 0
 M 0
@@ -10050,6 +11390,16 @@ M 0
 /end
 /begin0
 T 0
+* 00001679:00006789
+# Will become jump destination
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
 * 00001679:0000679A
 # SFN
 R 
@@ -10072,6 +11422,116 @@ M 0
 T 0
 * 00001679:000067C5
 # Write SFN to PSP
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000067D2
+# SF_ENTRY
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000067E1
+# DOSERR_FILE_NOT_FOUND
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000067E6
+# DS:SI=SF_ENTRY
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000067ED
+# Jump if not FOPEN
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000067F8
+# SF_MODE
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000067FD
+# SF_SHARE_FT_OFFSET
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006805
+# 31A2H for FOPEN
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000680E
+# RefCount 1 Opened
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000681E
+# Error Code in Case of Critical Error
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006829
+# RefCount 0
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000682D
+# Location to store critical error code
 R 
 L 
 P 

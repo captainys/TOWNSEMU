@@ -585,6 +585,15 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Mute/Unmute YM2612 channels." << std::endl;
 	std::cout << "MEMFILTER" << std::endl;
 	std::cout << "  Memory filter addresses." << std::endl;
+	std::cout << "DOS SYSVAR" << std::endl;
+	std::cout << "DOS BUF" << std::endl;
+	std::cout << "DOS MCB" << std::endl;
+	std::cout << "DOS SFT" << std::endl;
+	std::cout << "DOS CDS" << std::endl;
+	std::cout << "DOS DPB" << std::endl;
+	std::cout << "DOS FNP" << std::endl;
+	std::cout << "DOS TMPDIRENT" << std::endl;
+	std::cout << "  DOS info.  Need to set DOSSEG unless DOSSEG is 1679." << std::endl;
 
 	std::cout << "" << std::endl;
 
@@ -1925,6 +1934,99 @@ void TownsCommandInterpreter::Execute_Dump_DOSInfo(FMTowns &towns,Command &cmd)
 				bufOffset=towns.mem.FetchWord(bufSeg*0x10+bufOffset);
 				bufSeg=towns.mem.FetchWord(bufSeg*0x10+bufOffset+2);
 			}
+		}
+		else if("SFT"==ARGV2)
+		{
+			uint32_t ofs=towns.mem.FetchWord(DOSADDR+TOWNS_DOS_SFT_PTR);
+			uint32_t seg=towns.mem.FetchWord(DOSADDR+TOWNS_DOS_SFT_PTR+2);
+			int ctr=0;
+			while(ofs!=0xffff)
+			{
+				std::cout << "SFT " << ctr << " at " << cpputil::Ustox(seg) << ":" << cpputil::Ustox(ofs) << std::endl;
+				std::cout << "REF   MODE  ATT FLAGS DPB/DVR   Clst0 Time  Date  Size      FilePtr   RelClst CurClst DirSec InSec FileName    PSP" << std::endl;
+				//            0000h 0000h 00h 0000h 00000000h 0000h 0000h 0000h 00000000h 00000000h 0000h   0000h   0000h  0000h xxxxxxxxxxx xxxxh
+
+				int nSF=towns.mem.FetchWord(seg*0x10+ofs+4);
+				for(int i=0; i<nSF; ++i)
+				{
+					uint32_t sf=ofs+6+0x35*i;
+					unsigned int refCount=towns.mem.FetchWord(seg*0x10+sf);
+					unsigned int mode=towns.mem.FetchWord(seg*0x10+sf+2);
+					unsigned int attr=towns.mem.FetchByte(seg*0x10+sf+4);
+					unsigned int flags=towns.mem.FetchWord(seg*0x10+sf+5);
+					unsigned int dpbOrDvr=towns.mem.FetchDword(seg*0x10+sf+7);
+					unsigned int firstCluster=towns.mem.FetchWord(seg*0x10+sf+11);
+					unsigned int time=towns.mem.FetchWord(seg*0x10+sf+13);
+					unsigned int date=towns.mem.FetchWord(seg*0x10+sf+15);
+					unsigned int size=towns.mem.FetchDword(seg*0x10+sf+17);
+					unsigned int fPtr=towns.mem.FetchDword(seg*0x10+sf+21);
+					unsigned int clusterIntoFile=towns.mem.FetchWord(seg*0x10+sf+25);
+					unsigned int curCluster=towns.mem.FetchWord(seg*0x10+sf+27);
+					unsigned int dirEntSector=towns.mem.FetchWord(seg*0x10+sf+29);
+					unsigned int dirPosInSector=towns.mem.FetchByte(seg*0x10+sf+31);
+
+					std::string fName;
+					for(int i=0; i<11; ++i)
+					{
+						char c=(char)towns.mem.FetchByte(seg*0x10+sf+32+i);
+						if(c<' ')
+						{
+							c=' ';
+						}
+						fName.push_back(c);
+					}
+
+					unsigned int nextSharedSft=towns.mem.FetchDword(seg*0x10+sf+43);
+					unsigned int machine=towns.mem.FetchWord(seg*0x10+sf+47);
+					unsigned int PSP=towns.mem.FetchWord(seg*0x10+sf+49);
+					unsigned int shareOffset=towns.mem.FetchWord(seg*0x10+sf+51);
+
+					std::cout << cpputil::Ustox(refCount) << "h ";
+					std::cout << cpputil::Ustox(mode) << "h ";
+					std::cout << cpputil::Ubtox(attr) << "h ";
+					std::cout << cpputil::Ustox(flags) << "h ";
+					std::cout << cpputil::Uitox(dpbOrDvr)  << "h ";
+					std::cout << cpputil::Ustox(firstCluster) << "h ";
+					std::cout << cpputil::Ustox(time) << "h ";
+					std::cout << cpputil::Ustox(date) << "h ";
+					std::cout << cpputil::Uitox(size) << "h ";
+					std::cout << cpputil::Uitox(fPtr) << "h ";
+					std::cout << cpputil::Ustox(clusterIntoFile) << "h   ";
+					std::cout << cpputil::Ustox(curCluster) << "h   ";
+					std::cout << cpputil::Ustox(dirEntSector) << "h  ";
+					std::cout << cpputil::Ustox(dirPosInSector) << "h  ";
+					std::cout << fName << " ";
+					std::cout << cpputil::Ustox(PSP) << "h ";
+					std::cout << std::endl;
+				}
+
+				auto nextSft=towns.mem.FetchDword(seg*0x10+ofs);
+				ofs=(nextSft&0xffff);
+				seg=((nextSft>>16)&0xffff);
+			}
+		}
+		else if("DPB"==ARGV2)
+		{
+		}
+		else if("CDS"==ARGV2)
+		{
+		}
+		else if("TMPDIRENT"==ARGV2)
+		{
+		}
+		else if("FNP"==ARGV2)
+		{
+			std::cout << "File Name Table at " << cpputil::Ustox(DOSSEG) << ":0360h" << std::endl;
+			for(int i=0; i<128; ++i)
+			{
+				char c=(char)towns.mem.FetchByte(DOSADDR+0x360+i);
+				if(0==c)
+				{
+					break;
+				}
+				std::cout << c;
+			}
+			std::cout << std::endl;
 		}
 		else
 		{
