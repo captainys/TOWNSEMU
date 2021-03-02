@@ -2003,6 +2003,7 @@ void TownsCommandInterpreter::Execute_Dump_DOSInfo(FMTowns &towns,Command &cmd)
 				auto nextSft=towns.mem.FetchDword(seg*0x10+ofs);
 				ofs=(nextSft&0xffff);
 				seg=((nextSft>>16)&0xffff);
+				++ctr;
 			}
 		}
 		else if("DPB"==ARGV2)
@@ -2011,8 +2012,8 @@ void TownsCommandInterpreter::Execute_Dump_DOSInfo(FMTowns &towns,Command &cmd)
 			unsigned int seg=towns.mem.FetchWord(DOSADDR+TOWNS_DOS_DPB_PTR+2);
 			unsigned int dpbCount=towns.mem.FetchByte(DOSADDR+TOWNS_DOS_DPB_COUNT);
 
-			std::cout << "            Uni Byt/Sc Msk Sft FAT0  nFAT nDir  Data0 MxClst Sc/FAT DIR0 DevDriver Med Acc LastC FreeC" << std::endl;
-			//            00000000h A: 00h 0000h 00h 00h 0000h 00h  0000h 0000h 0000h  00h   0000h 00000000h 00h 00h 0000h 0000h
+			std::cout << "            Uni Byt/Sc Msk Sft FAT0  nFAT nDir  Data0 MxClst Sc/FAT DIR0 DevDriver Med UAcc LastC FreeC" << std::endl;
+			//            00000000h A: 00h 0000h 00h 00h 0000h 00h  0000h 0000h 0000h  00h   0000h 00000000h 00h 00h  0000h 0000h
 			while(ofs!=0xffff)
 			{
 				unsigned int drive=towns.mem.FetchByte(seg*0x10+ofs);
@@ -2040,15 +2041,15 @@ void TownsCommandInterpreter::Execute_Dump_DOSInfo(FMTowns &towns,Command &cmd)
 				std::cout << cpputil::Ubtox(clusterMask) << "h ";
 				std::cout << cpputil::Ubtox(clusterShift) << "h ";
 				std::cout << cpputil::Ustox(FAT0) << "h ";
-				std::cout << cpputil::Ubtox(nFAT) << "h ";
+				std::cout << cpputil::Ubtox(nFAT) << "h  ";
 				std::cout << cpputil::Ustox(nDIR) << "h ";
 				std::cout << cpputil::Ustox(DATA0) << "h ";
-				std::cout << cpputil::Ustox(maxCluster) << "h ";
-				std::cout << cpputil::Ubtox(sectorsPerFAT) << "h ";
+				std::cout << cpputil::Ustox(maxCluster) << "h  ";
+				std::cout << cpputil::Ubtox(sectorsPerFAT) << "h   ";
 				std::cout << cpputil::Ustox(DIR0) << "h ";
 				std::cout << cpputil::Uitox(DVR) << "h ";
 				std::cout << cpputil::Ubtox(mediaDesc) << "h "; 
-				std::cout << cpputil::Ubtox(unaccessed) << "h "; 
+				std::cout << cpputil::Ubtox(unaccessed) << "h  "; 
 				std::cout << cpputil::Ustox(lastClusterAlloc) << "h "; 
 				std::cout << cpputil::Ustox(freeClusters) << "h "; 
 				std::cout << std::endl;
@@ -2058,6 +2059,40 @@ void TownsCommandInterpreter::Execute_Dump_DOSInfo(FMTowns &towns,Command &cmd)
 		}
 		else if("CDS"==ARGV2)
 		{
+			auto ofs=towns.mem.FetchWord(DOSADDR+TOWNS_DOS_CDS_LIST_PTR);
+			auto seg=towns.mem.FetchWord(DOSADDR+TOWNS_DOS_CDS_LIST_PTR+2);
+			auto nCDS=towns.mem.FetchByte(DOSADDR+TOWNS_DOS_CDS_COUNT);
+			std::cout << "          Type  DPB     CWDClst Strlen" << std::endl;
+			//            00000000h 0000h 00000000h 0000h 0000h A:
+			for(unsigned int i=0; i<=nCDS; ++i)
+			{
+				auto cds=ofs+0x51*i;
+				if(i==nCDS)
+				{
+					std::cout << "TemporaryCDS" << std::endl;
+					cds=0x495;
+					seg=DOSSEG;
+				}
+				std::cout << cpputil::Ustox(seg) << cpputil::Ustox(cds) << "h ";
+				std::cout << cpputil::Ustox(towns.mem.FetchWord(seg*0x10+cds+0x43)) << "h ";
+				std::cout << cpputil::Uitox(towns.mem.FetchDword(seg*0x10+cds+0x45)) << "h ";
+				std::cout << cpputil::Ustox(towns.mem.FetchWord(seg*0x10+cds+0x49)) << "h ";
+				std::cout << cpputil::Ustox(towns.mem.FetchWord(seg*0x10+cds+0x4f)) << "h ";
+				for(int j=0; j<80; ++j)
+				{
+					char c=(char)towns.mem.FetchByte(seg*0x10+cds+j);
+					if(0==c)
+					{
+						break;
+					}
+					if(c<' ')
+					{
+						c=' ';
+					}
+					std::cout << c;
+				}
+				std::cout << std::endl;
+			}
 		}
 		else if("TMPDIRENT"==ARGV2)
 		{
@@ -2091,6 +2126,12 @@ void TownsCommandInterpreter::Execute_Dump_DOSInfo(FMTowns &towns,Command &cmd)
 		std::cout << "    Memory Control Blocks." << std::endl;
 		std::cout << "  DUMP DOS BUF" << std::endl;
 		std::cout << "    Sector Buffers." << std::endl;
+		std::cout << "  DUMP DOS SFT" << std::endl;
+		std::cout << "    System File Table." << std::endl;
+		std::cout << "  DUMP DOS DPB" << std::endl;
+		std::cout << "    Drive Parameter Block." << std::endl;
+		std::cout << "  DUMP DOS FNP" << std::endl;
+		std::cout << "    Temporary File Name Table." << std::endl;
 	}
 }
 
