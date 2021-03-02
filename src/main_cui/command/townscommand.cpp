@@ -2007,6 +2007,54 @@ void TownsCommandInterpreter::Execute_Dump_DOSInfo(FMTowns &towns,Command &cmd)
 		}
 		else if("DPB"==ARGV2)
 		{
+			unsigned int ofs=towns.mem.FetchWord(DOSADDR+TOWNS_DOS_DPB_PTR);
+			unsigned int seg=towns.mem.FetchWord(DOSADDR+TOWNS_DOS_DPB_PTR+2);
+			unsigned int dpbCount=towns.mem.FetchByte(DOSADDR+TOWNS_DOS_DPB_COUNT);
+
+			std::cout << "            Uni Byt/Sc Msk Sft FAT0  nFAT nDir  Data0 MxClst Sc/FAT DIR0 DevDriver Med Acc LastC FreeC" << std::endl;
+			//            00000000h A: 00h 0000h 00h 00h 0000h 00h  0000h 0000h 0000h  00h   0000h 00000000h 00h 00h 0000h 0000h
+			while(ofs!=0xffff)
+			{
+				unsigned int drive=towns.mem.FetchByte(seg*0x10+ofs);
+				unsigned int unit=towns.mem.FetchByte(seg*0x10+ofs+1);
+				unsigned int bytesPerSector=towns.mem.FetchWord(seg*0x10+ofs+2);
+				unsigned int clusterMask=towns.mem.FetchByte(seg*0x10+ofs+4);
+				unsigned int clusterShift=towns.mem.FetchByte(seg*0x10+ofs+5);
+				unsigned int FAT0=towns.mem.FetchWord(seg*0x10+ofs+6);
+				unsigned int nFAT=towns.mem.FetchByte(seg*0x10+ofs+8);
+				unsigned int nDIR=towns.mem.FetchWord(seg*0x10+ofs+9);
+				unsigned int DATA0=towns.mem.FetchWord(seg*0x10+ofs+0x0B);
+				unsigned int maxCluster=towns.mem.FetchWord(seg*0x10+ofs+0x0D);
+				unsigned int sectorsPerFAT=towns.mem.FetchByte(seg*0x10+ofs+0x0F);
+				unsigned int DIR0=towns.mem.FetchWord(seg*0x10+ofs+0x10);
+				unsigned int DVR=towns.mem.FetchDword(seg*0x10+ofs+0x12);
+				unsigned int mediaDesc=towns.mem.FetchByte(seg*0x10+ofs+0x16);
+				unsigned int unaccessed=towns.mem.FetchByte(seg*0x10+ofs+0x17);
+				unsigned int nextDPB=towns.mem.FetchDword(seg*0x10+ofs+0x18);
+				unsigned int lastClusterAlloc=towns.mem.FetchWord(seg*0x10+ofs+0x1C);
+				unsigned int freeClusters=towns.mem.FetchWord(seg*0x10+ofs+0x1E);
+				std::cout << cpputil::Ustox(seg) << cpputil::Ustox(ofs) << "h ";
+				std::cout << char('A'+drive) << ": ";
+				std::cout << cpputil::Ubtox(unit) << "h ";
+				std::cout << cpputil::Ustox(bytesPerSector) << "h ";
+				std::cout << cpputil::Ubtox(clusterMask) << "h ";
+				std::cout << cpputil::Ubtox(clusterShift) << "h ";
+				std::cout << cpputil::Ustox(FAT0) << "h ";
+				std::cout << cpputil::Ubtox(nFAT) << "h ";
+				std::cout << cpputil::Ustox(nDIR) << "h ";
+				std::cout << cpputil::Ustox(DATA0) << "h ";
+				std::cout << cpputil::Ustox(maxCluster) << "h ";
+				std::cout << cpputil::Ubtox(sectorsPerFAT) << "h ";
+				std::cout << cpputil::Ustox(DIR0) << "h ";
+				std::cout << cpputil::Uitox(DVR) << "h ";
+				std::cout << cpputil::Ubtox(mediaDesc) << "h "; 
+				std::cout << cpputil::Ubtox(unaccessed) << "h "; 
+				std::cout << cpputil::Ustox(lastClusterAlloc) << "h "; 
+				std::cout << cpputil::Ustox(freeClusters) << "h "; 
+				std::cout << std::endl;
+				seg=((nextDPB>>16)&0xffff);
+				ofs=(nextDPB&0xffff);
+			}
 		}
 		else if("CDS"==ARGV2)
 		{
