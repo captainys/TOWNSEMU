@@ -4869,21 +4869,211 @@ P
 M 0
 /end
 /begin0
-T 2
-* 00001679:000032A4
-# 
+T 0
+* 00001679:000031CA
+# CDS_TYPE_REDIRECTED
 R 
-L This part is also checking (mode&0xf0)==0x70
+L 
 P 
 % 0
 M 0
 /end
 /begin0
 T 0
+* 00001679:000031D4
+# OPEN
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000031E9
+# DOSERR_FILE_NOT_FOUND
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000031F1
+# 
+R 
+L DOSERR_DIR_NOT_FOUND
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000031F6
+# 
+R 
+L DOSERR_ACCESS_DENIED
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000031FB
+# 
+R 
+L Proc 41C9 Returned CF=0
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003201
+# ES=Directory Buffer
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003213
+# SF_ENTRY
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000321A
+# SF_MODE_FCB_SET
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003225
+# MODE&0xF0.  Sharing?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003239
+# Jump if (MODE&0x0F)==0 Read
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00003260
+# 
+R 
+L RET
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003276
+# SF_MODE_FCB_SET
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000327E
+# CurrentPDB
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003281
+# SF_PSP_OWNER
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00003285
+# 
+R 
+L RET
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00003286
+# SF_MODE_FCB_SET
+R 
+L Called from 3258 in Proc 31A2
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000329F
+# DOSERR_SHARING_VIOLATION?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000032A4
+# 
+R 
+L Check (mode&0xF0).  Sharing?
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000032AD
+# CDS Not Ready Flag
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
 * 00001679:000032CB
 # DOSERR_INVALID_ACCESS?
 R 
-L 
+L DOSERR_INVALID_ACCESS
 P 
 % 0
 M 0
@@ -5299,6 +5489,16 @@ P
 M 0
 /end
 /begin0
+T 0
+* 00001679:00003618
+# DOSERR_INVALID_HANDLE
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
 T 1
 * 00001679:000036EF
 # 
@@ -5330,10 +5530,40 @@ M 0
 /end
 /begin0
 T 0
+* 00001679:0000370A
+# DOSERR_DIR_NOT_FOUND
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
 * 00001679:00003711
 # What's CS:[558h]?
 R 
 L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000371F
+# RMDIR
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:0000374B
+# 
+R 
+L JMP 3618h (Return DOSERR_ACCESS_DENIED)
 P 
 % 0
 M 0
@@ -5922,6 +6152,166 @@ M 0
 T 0
 * 00001679:00003ACE
 # PROB 0578H=SF_ENTRY for CONOUT Redirection
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00003AD4
+# 
+R 
+L RET
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00003AD5
+# 
+R 
+L Must be Read Directory Sector AX=nTh Sector
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003AD7
+# Prob 0 means root directory
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003ADE
+# Root DIR.  DX=nTh Sector
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003AE4
+# DPB_CLUSTER_MASK
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003AE8
+# DPB_CLUSTER_SHIFT
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003AEC
+# AX=nTh Cluster, DX=nTh Sector in the Cluster
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003AF2
+# Save nTh Cluster in CX
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003AF4
+# AH=nTh Sector in the Cluster
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003AF6
+# First DIR Sector (at first)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003AFF
+# Clusters into File (or maybe directory?)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003B13
+# Exhausted the cluster chain
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003B17
+# Last Cluster or Terminator
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003B1B
+# DI? One Before the last?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003B30
+# Current Buffer
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003B34
+# IO_BUF_FLAGS|=IO_BUF_FLAG_IS_DIR
 R 
 L 
 P 
@@ -6720,10 +7110,250 @@ M 0
 /end
 /begin0
 T 1
+* 00001679:0000404A
+# 
+R 
+L Search in Directory. Called from 4358
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004054
+# If bit3, Skip initializing sectors
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00004061
+# 
+R 
+L Search DIRENT Loop
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000406C
+# File name starts with 0E5h?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000408D
+# DPB
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000040B4
+# 
+R 
+L DIRENT Found
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000040E8
+# 
+R 
+L ES=CS,RET
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
 * 00001679:000040EB
 # 
 R 
 L Match File Name with wildcard '?' taken into account.  (Match->ZF=1)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000040FA
+# 
+R 
+L Increment File Number in Directory
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004117
+# Last Cluster Read
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004120
+# Not supposed to use cluster 0 and 1
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00004128
+# 
+R 
+L Reached Max Files Per DIR
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:0000412A
+# Still within the current sector
+R 
+L Still within the Current Sector
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:0000412F
+# 
+R 
+L Still within the Current Cluster
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00004148
+# 
+R 
+L Prob Get [02F4]th DIRENT
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:0000414B
+# 
+R 
+L Prob Get AXth DIRENT.  Updates [02F4]
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000414E
+# Probably multiplying by sizeof(DIRENT)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004157
+# Making it 32-bit to be divided.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000415B
+# DPB_BYTES_PER_SECTOR
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000416D
+# CURBUF OFFSET
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004171
+# ADD BUF HEADER size
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004174
+# BX=Buffer+nThInSector*32
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004176
+# DX=Buffer+SectorSize=End of Buffer
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:0000417B
+# 
+R 
+L Called from 4397
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000041AA
+# 
+R 
+L Copy DPB_FIRST_DATA_SECTOR, DPB_FIRST_DIR_SECTOR to [512h][556h], clears [558h] and [50Eh]
 P 
 % 0
 M 0
@@ -6749,11 +7379,31 @@ P
 M 0
 /end
 /begin0
+T 0
+* 00001679:000041B6
+# DPB_FIRST_DATA_SECTOR
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000041BA
+# DPB_FIRST_DIR_SECTOR
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
 T 1
 * 00001679:000041C9
 # 
 R 
-L Called from 3707 in Proc 36EF
+L Called from 3707 in Proc 36EF, 31DE in Proc 31A2
 P 
 % 0
 M 0
@@ -6790,8 +7440,28 @@ M 0
 /end
 /begin0
 T 0
+* 00001679:000041E3
+# Jump if backslash is used.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000041E5
+# Slash is used, must be a CHARDEV
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
 * 00001679:000041FF
-# Pointer to the directory name
+# Pointer to the qualified file name (Prob CS:360h)
 R 
 L 
 P 
@@ -6814,6 +7484,36 @@ T 2
 # 
 R 
 L INFINITY
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000421F
+# Was initialized to -1 at the beginning of MakeFullPathName
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004237
+# BX=STRLEN(CWD)-1
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000424E
+# ES:BP=SYSDEV or DPB.  Prob DPB
+R 
+L 
 P 
 % 0
 M 0
@@ -6844,6 +7544,166 @@ T 0
 # '.'
 R 
 L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000042A1
+# 
+R 
+L Jump from 4252.  Another ugly 'GOTO'
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000042A9
+# 
+R 
+L File Name is empty.
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000042B2
+# 
+R 
+L File Name is not empty
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000042CB
+# CDS STRLEN(CWD)-1
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000042D9
+# Clear Filename part of tmp dirent
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000042EE
+# '.'
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000042F6
+# '\'
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000042FA
+# '?'
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004304
+# Start of extension part
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00004323
+# DS:[SI] points to EndOfString or '\'
+R 
+L End of One Path
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000432B
+# <- What's DI here?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00004332
+# 
+R 
+L One Segment of Path is in the temporary DIRENT
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00004355
+# 
+R 
+L Not CHARDEV
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000043D0
+# 
+R 
+L Prob Reached the End of Full-Path Name
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000043EB
+# 
+R 
+L ERROR END
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000043F3
+# DPB
+R 
+L ES:BP=DPB, [2F4][516]=0,[56A][56C]=ffff
 P 
 % 0
 M 0
@@ -6999,6 +7859,16 @@ P
 M 0
 /end
 /begin0
+T 2
+* 00001679:000044C3
+# 
+R 
+L Not a REDIRECTED drive
+P 
+% 0
+M 0
+/end
+/begin0
 T 0
 * 00001679:000044C5
 # DL=[2F8h], [2F8h]=0
@@ -7039,11 +7909,31 @@ P
 M 0
 /end
 /begin0
+T 2
+* 00001679:000044F2
+# 
+R 
+L Media Changed or New
+P 
+% 0
+M 0
+/end
+/begin0
 T 0
 * 00001679:000044FE
 # Incoming_DI
 R 
 L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:0000453E
+# 
+R 
+L Restore ES:DI, Store it to CurrentCDS Pointer, Return CF=0
 P 
 % 0
 M 0
@@ -7624,6 +8514,16 @@ T 0
 # Must be a VERIFY flag
 R 
 L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000049BB
+# 
+R 
+L Called from 3241 in Proc 31A2
 P 
 % 0
 M 0
@@ -8453,7 +9353,7 @@ T 1
 * 00001679:00005225
 # DPB_MAX_CLUSTER
 R 
-L GetNextCluster ES:BP=DPB, BX=Cluster
+L GetNextCluster ES:BP=DPB, BX=Cluster -> DI=Next Cluster
 P 
 % 0
 M 0
@@ -8663,7 +9563,7 @@ T 1
 * 00001679:00005394
 # 
 R 
-L Media Check. If fail make all CDS Cluster of this DPB to 0ffffh if root dir.
+L Media Check. If fail make all CDS Cluster of this DPB to 0ffffh if root dir. NE:Unchanged E:Changed or New
 P 
 % 0
 M 0
@@ -10483,7 +11383,7 @@ T 1
 * 00001679:00006100
 # 
 R 
-L STC if Current CDS is a JOINED drive.
+L Set Up CurrentCDS, and STC if JOINed drive.
 P 
 % 0
 M 0
@@ -10840,6 +11740,16 @@ M 0
 /end
 /begin0
 T 0
+* 00001679:000062F8
+# DOSERR_DIR_NOT_FOUND
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
 * 00001679:000062FF
 # DS:SI=Current CDS
 R 
@@ -10909,11 +11819,71 @@ P
 M 0
 /end
 /begin0
+T 0
+* 00001679:00006347
+# '\'
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
 T 1
 * 00001679:0000634A
 # 
 R 
 L Called from 634A in Proc 6208
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006351
+# Qualified File Name
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006355
+# CurrentCDS
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000635F
+# BX is end of CurrentDir
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000637C
+# Last CHAR of CurrentDir
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000638B
+# Prob End of Fully Qualified File Name
+R 
+L 
 P 
 % 0
 M 0
@@ -10950,8 +11920,8 @@ M 0
 /end
 /begin0
 T 0
-* 00001679:000063D3
-# ':'
+* 00001679:000063BC
+# DOSERR_DIR_NOT_FOUND
 R 
 L 
 P 
@@ -10960,8 +11930,68 @@ M 0
 /end
 /begin0
 T 0
+* 00001679:000063C3
+# JMP if not / or \
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000063C5
+# BP is the stopper for temporary path name
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000063D3
+# 
+R 
+L If lastChar==':' Append '\' and RET
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
 * 00001679:000063DA
 # '\'
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000063E2
+# 
+R 
+L Return DOSERR_FILE_NOT_FOUND or DOSERR_DIR_NOT_FOUND
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000063E5
+# DOSERR_DIR_NOT_FOUND if the last char is / or \'
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000063E9
+# DOSERR_FILE_NOT_FOUND if the last char is not \ and /'
 R 
 L 
 P 
@@ -11143,7 +12173,7 @@ T 1
 * 00001679:000065E6
 # 
 R 
-L (Prob)Move to the end of C-String KanjiAware
+L (Prob)Move to the end of C-String KanjiAware, CMP lastChar with '/' and '\'
 P 
 % 0
 M 0
@@ -11500,8 +12530,28 @@ M 0
 /end
 /begin0
 T 0
+* 00001679:00006808
+# SF_ENTRY
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
 * 00001679:0000680E
 # RefCount 1 Opened
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006812
+# SF_FLAGS
 R 
 L 
 P 
@@ -11584,6 +12634,26 @@ T 1
 # 
 R 
 L CMP BYTE PTR CS:[02B1H],0
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00006A4B
+# 
+R 
+L Called from 3249 in Proc 31A2
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00006A50
+# 
+R 
+L Called from 329A in Proc 31A2
 P 
 % 0
 M 0

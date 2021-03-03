@@ -2130,6 +2130,8 @@ void TownsCommandInterpreter::Execute_Dump_DOSInfo(FMTowns &towns,Command &cmd)
 		std::cout << "    System File Table." << std::endl;
 		std::cout << "  DUMP DOS DPB" << std::endl;
 		std::cout << "    Drive Parameter Block." << std::endl;
+		std::cout << "  DUMP DOS CDS" << std::endl;
+		std::cout << "    Current Directory Structures." << std::endl;
 		std::cout << "  DUMP DOS FNP" << std::endl;
 		std::cout << "    Temporary File Name Table." << std::endl;
 	}
