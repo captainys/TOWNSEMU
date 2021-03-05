@@ -7341,9 +7341,19 @@ M 0
 /begin0
 T 1
 * 00001679:0000417B
-# 
+# Called from 4397, InputBX=Cluster of the DIRENT
 R 
-L Called from 4397
+L Called from 4397, InputBX=Cluster of the DIRENT
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004187
+# ClusterMask+1=SectorPerCluster+1
+R 
+L 
 P 
 % 0
 M 0
@@ -7353,7 +7363,7 @@ T 1
 * 00001679:000041AA
 # 
 R 
-L Copy DPB_FIRST_DATA_SECTOR, DPB_FIRST_DIR_SECTOR to [512h][556h], clears [558h] and [50Eh]
+L [512h]=DPB_FIRST_DIR_SECTOR-DPB_FIRST_DATA_SECTOR,[556h]=DPB_FIRST_DIR_SECTOR, [558h]=[50Eh]=0
 P 
 % 0
 M 0
@@ -7403,7 +7413,7 @@ T 1
 * 00001679:000041C9
 # 
 R 
-L Called from 3707 in Proc 36EF, 31DE in Proc 31A2
+L Called from 3707 in Proc 36EF, 31DE in Proc 31A2, CF=1 DIR_NOT_FOUND, NE=ACCESS_DENIED
 P 
 % 0
 M 0
@@ -7460,8 +7470,28 @@ M 0
 /end
 /begin0
 T 0
+* 00001679:000041ED
+# CS:360h doesn't have '?:\' and is not a CHARDEV
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
 * 00001679:000041FF
 # Pointer to the qualified file name (Prob CS:360h)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004208
+# Transfer within CS segment (4E6h to 360h)
 R 
 L 
 P 
@@ -7489,9 +7519,29 @@ P
 M 0
 /end
 /begin0
-T 0
+T 2
 * 00001679:0000421F
 # Was initialized to -1 at the beginning of MakeFullPathName
+R 
+L Not a CHARDEV
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004228
+# Path after '?:\', if CS:[54Eh]=ffffh
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004230
+# Current CDS
 R 
 L 
 P 
@@ -7501,7 +7551,27 @@ M 0
 /begin0
 T 0
 * 00001679:00004237
-# BX=STRLEN(CWD)-1
+# BX=CurrentDIR Cluster
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004241
+# If [54Eh]=0ffffh, SI=DestinationString after '?:\'
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004245
+# Jump if CurrentDIR is not empty
 R 
 L 
 P 
@@ -7523,7 +7593,7 @@ T 1
 * 00001679:00004265
 # 
 R 
-L Make 11-byte file name from CS:[4E6h] also check against CHARDEV if 0==(CS:[0506h&08h])
+L Make 11-byte file name from CS:[4E6h] also check against CHARDEV if 0==(CS:[0506h&08h]), CF=1 if not CHARDEV
 P 
 % 0
 M 0
@@ -7599,6 +7669,16 @@ P
 M 0
 /end
 /begin0
+T 2
+* 00001679:000042E4
+# 
+R 
+L FileNameLoop
+P 
+% 0
+M 0
+/end
+/begin0
 T 0
 * 00001679:000042EE
 # '.'
@@ -7629,11 +7709,11 @@ P
 M 0
 /end
 /begin0
-T 0
+T 2
 * 00001679:00004304
 # Start of extension part
 R 
-L 
+L ExtensionLoop
 P 
 % 0
 M 0
@@ -7821,9 +7901,39 @@ M 0
 /begin0
 T 1
 * 00001679:00004474
-# 
+# Make Temporary DIRENT for SYSDEV->AL=0,BX=OFFSET DIRENT,SI=DRIVER PTR
 R 
 L (Prob)Making Temporary DIRENT
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000447A
+# 3-byte spaces as extension.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000447C
+# Attrib 40H undefined.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004484
+# 10-byte zeros
+R 
+L 
 P 
 % 0
 M 0

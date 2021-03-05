@@ -119,6 +119,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["EMB"]=CMD_EDIT_MEMORY_BYTE;
 	primaryCmdMap["EMW"]=CMD_EDIT_MEMORY_WORD;
 	primaryCmdMap["EMD"]=CMD_EDIT_MEMORY_DWORD;
+	primaryCmdMap["EMS"]=CMD_EDIT_MEMORY_STRING;
 	primaryCmdMap["REPLACE"]=CMD_REPLACE;
 
 
@@ -428,7 +429,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "EMB seg:offset data" <<std::endl;
 	std::cout << "EMW seg:offset data" <<std::endl;
 	std::cout << "EMD seg:offset data" <<std::endl;
-	std::cout << "  Edit memory byte/word/dword respectively." << std::endl;
+	std::cout << "EMS seg:offset data" <<std::endl;
+	std::cout << "  Edit memory byte/word/dword/string respectively." << std::endl;
 	std::cout << "REPLACE hexadecimal-data hexadecimal-data" << std::endl;
 	std::cout << "  Replace in main memory." << std::endl;
 	std::cout << "CRTCPAGE 1|0 1|0" << std::endl;
@@ -1011,6 +1013,9 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 		break;
 	case CMD_EDIT_MEMORY_DWORD:
 		Execute_EditMemory(towns,cmd,4);
+		break;
+	case CMD_EDIT_MEMORY_STRING:
+		Execute_EditMemory(towns,cmd,~0);
 		break;
 	case CMD_REPLACE:
 		Execute_Replace(towns,cmd);
@@ -3043,7 +3048,29 @@ void TownsCommandInterpreter::Execute_EditMemory(FMTowns &towns,Command &cmd,uns
 			farPtr.SEG=towns.cpu.state.DS().value;
 		}
 		TownsLineParserHexadecimal parser(&towns.cpu);
-		if(true==parser.Analyze(cmd.argv[2]))
+		if(~0==numBytes) // String
+		{
+			if((farPtr.SEG&0xFFFF0000)==i486DX::FarPointer::PHYS_ADDR)
+			{
+				for(int i=0; i<cmd.argv[2].size(); ++i)
+				{
+					towns.mem.StoreByte(farPtr.OFFSET+i,cmd.argv[2][i]);
+				}
+				towns.mem.StoreByte(farPtr.OFFSET+cmd.argv[2].size(),0);
+			}
+			else
+			{
+				i486DX::SegmentRegister seg;
+				farPtr.LoadSegmentRegister(seg,towns.cpu,towns.mem);
+				for(int i=0; i<cmd.argv[2].size(); ++i)
+				{
+					towns.cpu.DebugStoreByte(towns.mem,32,seg,farPtr.OFFSET+i,cmd.argv[2][i]);
+				}
+				towns.cpu.DebugStoreByte(towns.mem,32,seg,farPtr.OFFSET+cmd.argv[2].size(),0);
+			}
+			std::cout << "Stored string to memory." << std::endl;
+		}
+		else if(true==parser.Analyze(cmd.argv[2]))
 		{
 			if((farPtr.SEG&0xFFFF0000)==i486DX::FarPointer::PHYS_ADDR)
 			{
