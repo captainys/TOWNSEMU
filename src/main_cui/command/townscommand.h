@@ -276,7 +276,6 @@ public:
 	};
 
 	bool waitVM;
-	uint32_t DOSSEG=TOWNS_DOS_SEG; // for V2.1 L20 IO.SYS
 
 	TownsCommandInterpreter();
 

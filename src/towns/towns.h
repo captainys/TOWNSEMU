@@ -179,7 +179,7 @@ public:
 		unsigned int MOS_pulsePerPixelH=8,MOS_pulsePerPixelV=8;
 		int mouseIntegrationSpeed=256;
 
-		unsigned short DOSSEG=0x1679;
+		unsigned short DOSSEG=TOWNS_DOS_SEG; // for V2.1 L20 IO.SYS
 
 		/*! Application-Specific Customization parameters.
 		*/

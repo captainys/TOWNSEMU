@@ -1179,8 +1179,8 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 	case CMD_DOSSEG:
 		if(2<=cmd.argv.size())
 		{
-			this->DOSSEG=cpputil::Xtoi(cmd.argv[1].c_str());
-			std::cout << "Set DOSSEG=" << cpputil::Uitox(this->DOSSEG) << "h" << std::endl;
+			towns.state.DOSSEG=cpputil::Xtoi(cmd.argv[1].c_str());
+			std::cout << "Set DOSSEG=" << cpputil::Uitox(towns.state.DOSSEG) << "h" << std::endl;
 		}
 		else
 		{
@@ -1751,7 +1751,7 @@ void TownsCommandInterpreter::Execute_Dump_DOSInfo(FMTowns &towns,Command &cmd)
 	if(3<=cmd.argv.size())
 	{
 		// IO.SYS of Towns OS loads MSDOS.SYS at 1679H segment.
-		const uint32_t DOSADDR=DOSSEG*0x10; // Physical Address
+		const uint32_t DOSADDR=towns.state.DOSSEG*0x10; // Physical Address
 
 		auto ARGV2=cmd.argv[2];
 		cpputil::Capitalize(ARGV2);
@@ -2076,7 +2076,7 @@ void TownsCommandInterpreter::Execute_Dump_DOSInfo(FMTowns &towns,Command &cmd)
 				{
 					std::cout << "TemporaryCDS" << std::endl;
 					cds=0x495;
-					seg=DOSSEG;
+					seg=towns.state.DOSSEG;
 				}
 				std::cout << cpputil::Ustox(seg) << cpputil::Ustox(cds) << "h ";
 				std::cout << cpputil::Ustox(towns.mem.FetchWord(seg*0x10+cds+0x43)) << "h ";
@@ -2104,7 +2104,7 @@ void TownsCommandInterpreter::Execute_Dump_DOSInfo(FMTowns &towns,Command &cmd)
 		}
 		else if("FNP"==ARGV2)
 		{
-			std::cout << "File Name Table at " << cpputil::Ustox(DOSSEG) << ":0360h" << std::endl;
+			std::cout << "File Name Table at " << cpputil::Ustox(towns.state.DOSSEG) << ":0360h" << std::endl;
 			for(int i=0; i<128; ++i)
 			{
 				char c=(char)towns.mem.FetchByte(DOSADDR+0x360+i);
