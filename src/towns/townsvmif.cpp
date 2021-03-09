@@ -52,6 +52,10 @@ void FMTowns::ProcessVMToHostCommand(unsigned int vmCmd,unsigned int paramLen,co
 	case TOWNS_VMIF_CMD_FILE_TXRDY:
 		VMHostFileTransfer();
 		break;
+	case TOWNS_VMIF_CMD_NOTIFY_DOSSEG:
+		std::cout << "DOSSEG=" << cpputil::Ustox(cpu.state.CS().value) << std::endl;
+		state.DOSSEG=cpu.state.CS().value;
+		break;
 	}
 }
 void FMTowns::VMHostFileTransfer(void)

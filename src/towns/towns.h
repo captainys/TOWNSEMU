@@ -179,6 +179,8 @@ public:
 		unsigned int MOS_pulsePerPixelH=8,MOS_pulsePerPixelV=8;
 		int mouseIntegrationSpeed=256;
 
+		unsigned short DOSSEG=0x1679;
+
 		/*! Application-Specific Customization parameters.
 		*/
 		unsigned int appSpecificSetting=0;

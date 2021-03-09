@@ -4850,6 +4850,16 @@ M 0
 /end
 /begin0
 T 0
+* 00001679:000031B3
+# SF_MODE
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
 * 00001679:000031B8
 # CurrentCDS
 R 
@@ -4901,7 +4911,7 @@ M 0
 /begin0
 T 2
 * 00001679:000031F1
-# 
+# DOSERR_DIR_NOT_FOUND
 R 
 L DOSERR_DIR_NOT_FOUND
 P 
@@ -4911,7 +4921,7 @@ M 0
 /begin0
 T 2
 * 00001679:000031F6
-# 
+# DOSERR_ACCESS_DENIED
 R 
 L DOSERR_ACCESS_DENIED
 P 
@@ -4930,8 +4940,58 @@ M 0
 /end
 /begin0
 T 0
+* 00001679:000031FD
+# Probably it is a file attribute, but then why is it fetching at 3205h?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000031FF
+# 
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
 * 00001679:00003201
 # ES=Directory Buffer
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003205
+# DIRENT+0Bh=File Attributes
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003209
+# Volume Label Bit
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000320D
+# ATTR_READONLY
 R 
 L 
 P 
@@ -4974,6 +5034,16 @@ T 0
 # Jump if (MODE&0x0F)==0 Read
 R 
 L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00003241
+# 
+R 
+L Prob AH=Attrib, CX=Mode
 P 
 % 0
 M 0
@@ -7413,7 +7483,7 @@ T 1
 * 00001679:000041C9
 # 
 R 
-L Called from 3707 in Proc 36EF, 31DE in Proc 31A2, CF=1 DIR_NOT_FOUND, NE=ACCESS_DENIED
+L Called from 3707 in Proc 36EF, 31DE in Proc 31A2, FOPEN, CF=1 DIR_NOT_FOUND, NE=ACCESS_DENIED
 P 
 % 0
 M 0
@@ -8631,9 +8701,149 @@ M 0
 /begin0
 T 1
 * 00001679:000049BB
-# 
+# Init SF_ENTRY AH=lowByte of SF_FLAGS, CX=Mode, BX=Offset DIRENT, SI points to First Cluster of DIRENT
 R 
-L Called from 3241 in Proc 31A2
+L Init
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000049BD
+# DI=SF_ENTRY
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000049C1
+# Skip RefCount and Mode.  Pointing to +4 Attr
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000049C8
+# Jump if SF_FLAGS_CHARDEV
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000049CE
+# File Attrib
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000049D1
+# SF_ATTR -> DI=FLAGS
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000049D6
+# SF_DEVFLAG_BLOCK_NOT_WRITTEN
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000049D8
+# SF_FLAGS->DI=DRIVER POINTER
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000049DA
+# Proc 41C9h stores SYSDEV ptr in this location of temporary DIRENT
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000049DF
+# (Prob)Jump if SYSDEV
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000049E1
+# DPB
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000049EA
+# DRIVER POINTER -> DI=FIRST_CLUSTER_NUM
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000049F1
+# DATE TIME -> DI=FILE SIZE
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000049F9
+# (Prob)Jump if not SYSDEV
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004A02
+# FILE SIZE -> DI=SF_FILE_POINTER(or position in file)
+R 
+L 
 P 
 % 0
 M 0
@@ -10000,6 +10210,16 @@ M 0
 /end
 /begin0
 T 0
+* 00001679:000054CC
+# IO_BUF_DRIVE=0FFh,IO_BUF_FLAGS=020H(IO_BUF_FLAG_READ)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
 * 00001679:000054D9
 # DPB_PTR_TO_DEV_DRIVER
 R 
@@ -10090,8 +10310,28 @@ M 0
 /end
 /begin0
 T 0
+* 00001679:0000552D
+# Transfer Driver Ptr to DS:SI
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
 * 00001679:0000554B
 # Current Media Desc Type in DPB
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005553
+# DPB_LAST_CLUSTER_ALLOC
 R 
 L 
 P 
@@ -10112,6 +10352,16 @@ M 0
 T 0
 * 00001679:0000555C
 # Jump if Media Dec Didn't Change
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005561
+# Recover DS:DI from REQHEAD+0Eh (Set at 5505h and 550Ch)
 R 
 L 
 P 

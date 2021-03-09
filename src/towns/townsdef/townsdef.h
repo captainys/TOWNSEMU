@@ -737,6 +737,8 @@ enum
 	TOWNS_VMIF_CMD_FILE_RXRDY=    0x04, // File Transfer Ready to Read (Ready to receive data in Sprite RAM)
 	TOWNS_VMIF_CMD_FILE_ACK=      0x05, // File Transfer 
 	TOWNS_VMIF_CMD_FILE_TXRDY=    0x06, // File Transfer Ready to Send (Data is in Sprite RAM)
+
+	TOWNS_VMIF_CMD_NOTIFY_DOSSEG= 0x07, // Capture CS as DOSSEG
 };
 
 enum
