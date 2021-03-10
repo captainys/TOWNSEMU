@@ -3070,37 +3070,49 @@ void TownsCommandInterpreter::Execute_EditMemory(FMTowns &towns,Command &cmd,uns
 			}
 			std::cout << "Stored string to memory." << std::endl;
 		}
-		else if(true==parser.Analyze(cmd.argv[2]))
+		else
 		{
-			if((farPtr.SEG&0xFFFF0000)==i486DX::FarPointer::PHYS_ADDR)
+			auto OFFSET=farPtr.OFFSET;
+			for(int i=2; i<cmd.argv.size(); ++i)
 			{
-				switch(numBytes)
+				if(true==parser.Analyze(cmd.argv[i]))
 				{
-				case 1:
-					towns.mem.StoreByte(farPtr.OFFSET,parser.Evaluate());
-					break;
-				case 2:
-					towns.mem.StoreWord(farPtr.OFFSET,parser.Evaluate());
-					break;
-				case 4:
-					towns.mem.StoreDword(farPtr.OFFSET,parser.Evaluate());
-					break;
+					if((farPtr.SEG&0xFFFF0000)==i486DX::FarPointer::PHYS_ADDR)
+					{
+						switch(numBytes)
+						{
+						case 1:
+							towns.mem.StoreByte(OFFSET,parser.Evaluate());
+							break;
+						case 2:
+							towns.mem.StoreWord(OFFSET,parser.Evaluate());
+							break;
+						case 4:
+							towns.mem.StoreDword(OFFSET,parser.Evaluate());
+							break;
+						}
+					}
+					else
+					{
+						i486DX::SegmentRegister seg;
+						farPtr.LoadSegmentRegister(seg,towns.cpu,towns.mem);
+						switch(numBytes)
+						{
+						case 1:
+							towns.cpu.DebugStoreByte(towns.mem,32,seg,OFFSET,parser.Evaluate());
+							break;
+						case 2:
+							towns.cpu.DebugStoreWord(towns.mem,32,seg,OFFSET,parser.Evaluate());
+							break;
+						case 4:
+							towns.cpu.DebugStoreDword(towns.mem,32,seg,OFFSET,parser.Evaluate());
+							break;
+						}
+					}
+					OFFSET+=numBytes;
 				}
-			}
-			else
-			{
-				i486DX::SegmentRegister seg;
-				farPtr.LoadSegmentRegister(seg,towns.cpu,towns.mem);
-				switch(numBytes)
+				else
 				{
-				case 1:
-					towns.cpu.DebugStoreByte(towns.mem,32,seg,farPtr.OFFSET,parser.Evaluate());
-					break;
-				case 2:
-					towns.cpu.DebugStoreWord(towns.mem,32,seg,farPtr.OFFSET,parser.Evaluate());
-					break;
-				case 4:
-					towns.cpu.DebugStoreDword(towns.mem,32,seg,farPtr.OFFSET,parser.Evaluate());
 					break;
 				}
 			}
