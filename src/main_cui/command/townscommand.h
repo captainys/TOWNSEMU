@@ -107,6 +107,7 @@ public:
 		CMD_EDIT_MEMORY_DWORD,
 		CMD_EDIT_MEMORY_STRING,
 		CMD_REPLACE,
+		CMD_SAVE_MEMORY_DUMP,
 
 		CMD_CRTC_PAGE,
 
@@ -361,6 +362,8 @@ public:
 	void Execute_SaveVRAMLayer(FMTowns &towns,Command &cmd);
 
 	void Execute_SpecialDebug(FMTowns &towns,Command &cmd);
+
+	void Execute_SaveMemDump(FMTowns &towns,Command &cmd);
 };
 
 

@@ -4820,6 +4820,136 @@ M 0
 /end
 /begin0
 T 1
+* 00001679:00002B29
+# 
+R 
+L ? Called from AH=4BH,AX=4400h. AL=0->Prob Return DH=0(BLOCKDEV)/HiByte of SYSDEV_FLAGS(CHARDEV)
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00002B36
+# DOSERR_INVALID_HANDLE
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00002B38
+# 
+R 
+L Error End
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00002B3B
+# 
+R 
+L ES:DI is SF_ENTRY
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00002B41
+# SF_DEVFLAGS
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00002B4B
+# DOSERR_INVALID_DATA
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00002B62
+# 
+R 
+L Return SYS_RET_OK
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00002B65
+# 
+R 
+L Incoming_AL=0
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00002B75
+# Is CHARDEV.  ES:DI<-SYSDEV
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00002B79
+# HiByte of SYSDEV_DEVFLAGS
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00002B87
+# SF_DEVFLAGS, SF_FLAG_IS_CHARDEV
+R 
+L Incoming_AL=2
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00002B94
+# ES:DI=DPB
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00002BEA
+# DOSERR_INVALID_FUNC
+R 
+L Return DOSERR_INVALID_FUNC
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
 * 00001679:00003121
 # TEMPORARY_SF_ENTRY
 R 
@@ -10959,11 +11089,121 @@ P
 M 0
 /end
 /begin0
+T 1
+* 00001679:000057C5
+# 
+R 
+L INT 21H AH=4BH Exec or Load AL=0->Exec 1->Load Only 3->Load Overlay
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000057D7
+# Load or Exec Error End
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000057E1
+# INT 21H AH=4BH Exec or Load [BP-04H]=Incoming BX (Param Block)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000057E4
+# INT 21H AH=4BH Exec or Load [BP-02H]=Incoming ES (Param Block)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000057E7
+# INT 21H AH=4BH Exec or Load [BP-05H]=Incoming AL (0:Exec 1:Load 3:Load)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000057EE
+# INT 21H AH=4BH Exec or Load [BP-1AH]=Incoming DX (Filename)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000057F1
+# INT 21H AH=4BH Exec or Load [BP-18H]=Incoming DX (Filename)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
 T 0
 * 00001679:000057F6
 # 
 R 
 L DOS:
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005805
+# INT 21H AH=4BH Exec or Load [BP-08H]=File Handle
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005820
+# NOT CHARDEV
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000582E
+# Jump if Mode=2 or 3 (Load Overlay)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000058E7
+# 
+R 
+L (Prob)FCLOSE and Return
 P 
 % 0
 M 0

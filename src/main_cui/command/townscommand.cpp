@@ -121,6 +121,8 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["EMD"]=CMD_EDIT_MEMORY_DWORD;
 	primaryCmdMap["EMS"]=CMD_EDIT_MEMORY_STRING;
 	primaryCmdMap["REPLACE"]=CMD_REPLACE;
+	primaryCmdMap["SAVEMEMDUMP"]=CMD_SAVE_MEMORY_DUMP;
+
 
 
 	primaryCmdMap["CRTCPAGE"]=CMD_CRTC_PAGE;
@@ -433,6 +435,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Edit memory byte/word/dword/string respectively." << std::endl;
 	std::cout << "REPLACE hexadecimal-data hexadecimal-data" << std::endl;
 	std::cout << "  Replace in main memory." << std::endl;
+	std::cout << "SAVEMEMDUMP filename seg:offset length" << std::endl;
+	std::cout << "  Save memory dump.  Seg, offset, and length are in hexadecimal." << std::endl;
 	std::cout << "CRTCPAGE 1|0 1|0" << std::endl;
 	std::cout << "  Turn on/off display page." << std::endl;
 	std::cout << "CMOSLOAD filename" << std::endl;
@@ -1019,6 +1023,9 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 		break;
 	case CMD_REPLACE:
 		Execute_Replace(towns,cmd);
+		break;
+	case CMD_SAVE_MEMORY_DUMP:
+		Execute_SaveMemDump(towns,cmd);
 		break;
 
 	case CMD_CRTC_PAGE:
@@ -3737,6 +3744,56 @@ void TownsCommandInterpreter::Execute_SaveScreenShot(FMTowns &towns,Command &cmd
 		std::cout << "Save error." << std::endl;
 	}
 }
+void TownsCommandInterpreter::Execute_SaveMemDump(FMTowns &towns,Command &cmd)
+{
+	if(4<=cmd.argv.size())
+	{
+		auto farPtr=cmdutil::MakeFarPointer(cmd.argv[2],towns.cpu);
+		if(farPtr.SEG==i486DX::FarPointer::NO_SEG)
+		{
+			farPtr.SEG=towns.cpu.state.DS().value;
+		}
+
+		TownsLineParserHexadecimal parser(&towns.cpu);
+		parser.Analyze(cmd.argv[3]);
+		auto length=parser.Evaluate();
+
+		i486DX::SegmentRegister seg;
+		if((farPtr.SEG&0xFFFF0000)!=i486DX::FarPointer::PHYS_ADDR)
+		{
+			farPtr.LoadSegmentRegister(seg,towns.cpu,towns.mem);
+		}
+		std::vector <unsigned char> buf;
+		for(unsigned int i=0; i<length; ++i)
+		{
+			unsigned char c;
+			if((farPtr.SEG&0xFFFF0000)==i486DX::FarPointer::PHYS_ADDR)
+			{
+				c=towns.mem.FetchByte(farPtr.OFFSET+i);
+			}
+			else
+			{
+				c=towns.cpu.DebugFetchByte(32,seg,farPtr.OFFSET+i,towns.mem);
+			}
+			buf.push_back(c);
+		}
+
+		std::ofstream ofp(cmd.argv[1],std::ios::binary);
+		if(ofp.is_open())
+		{
+			ofp.write((const char *)buf.data(),buf.size());
+			ofp.close();
+		}
+		else
+		{
+			PrintError(ERROR_CANNOT_SAVE_FILE);
+		}
+	}
+	else
+	{
+		PrintError(ERROR_TOO_FEW_ARGS);
+	}
+}
 void TownsCommandInterpreter::Execute_SaveVRAMLayer(FMTowns &towns,Command &cmd)
 {
 	std::cout << "VRAM Layer save will be available soon." << std::endl;
@@ -3746,3 +3803,4 @@ void TownsCommandInterpreter::Execute_SpecialDebug(FMTowns &towns,Command &cmd)
 {
 	std::cout << "Currently nothing happens with special debugging command." << std::endl;
 }
+
