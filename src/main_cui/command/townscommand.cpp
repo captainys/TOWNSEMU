@@ -598,6 +598,7 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "DOS CDS" << std::endl;
 	std::cout << "DOS DPB" << std::endl;
 	std::cout << "DOS FNP" << std::endl;
+	std::cout << "DOS PSP" << std::endl;
 	std::cout << "DOS TMPDIRENT" << std::endl;
 	std::cout << "  DOS info.  Need to set DOSSEG unless DOSSEG is 1679." << std::endl;
 
@@ -1811,6 +1812,12 @@ void TownsCommandInterpreter::Execute_Dump_DOSInfo(FMTowns &towns,Command &cmd)
 
 			s=towns.mem.FetchByte(DOSADDR+TOWNS_DOS_JOINED_DRV_COUNT);
 			std::cout << "JOINED DRV COUNT " << cpputil::Ustox(s) << std::endl;
+
+			s=towns.mem.FetchByte(DOSADDR+TOWNS_DOS_ENDMEM);
+			std::cout << "ENDMEM " << cpputil::Ustox(s) << std::endl;
+
+			uint32_t d=towns.mem.FetchDword(DOSADDR+TOWNS_DOS_DTA_ADDRESS);
+			std::cout << "DTA Address " << cpputil::Uitox(d) << std::endl;
 		}
 		else if("MCB"==ARGV2)
 		{
@@ -1837,7 +1844,7 @@ void TownsCommandInterpreter::Execute_Dump_DOSInfo(FMTowns &towns,Command &cmd)
 				}
 				else
 				{
-					unsigned int ENVSEG=towns.mem.FetchWord(PID*0x10+TOWNS_DOS_PSP_ENV_SEG);
+					unsigned int ENVSEG=towns.mem.FetchWord(PID*0x10+TOWNS_DOS_PSP_ENVSEG);
 					unsigned int CALLERPSP=towns.mem.FetchWord(PID*0x10+TOWNS_DOS_PSP_CALLER_PSP);
 
 					if(CALLERPSP==PID)
@@ -1952,7 +1959,7 @@ void TownsCommandInterpreter::Execute_Dump_DOSInfo(FMTowns &towns,Command &cmd)
 			uint32_t ofs=towns.mem.FetchWord(DOSADDR+TOWNS_DOS_SFT_PTR);
 			uint32_t seg=towns.mem.FetchWord(DOSADDR+TOWNS_DOS_SFT_PTR+2);
 			int ctr=0;
-			while(ofs!=0xffff)
+			while(ofs!=0xffff && ctr<256)
 			{
 				std::cout << "SFT " << ctr << " at " << cpputil::Ustox(seg) << ":" << cpputil::Ustox(ofs) << std::endl;
 				std::cout << "REF   MODE  ATT FLAGS DPB/DVR   Clst0 Time  Date  Size      FilePtr   RelClst CurClst DirSec InSec FileName    PSP" << std::endl;
@@ -2023,10 +2030,12 @@ void TownsCommandInterpreter::Execute_Dump_DOSInfo(FMTowns &towns,Command &cmd)
 			unsigned int ofs=towns.mem.FetchWord(DOSADDR+TOWNS_DOS_DPB_PTR);
 			unsigned int seg=towns.mem.FetchWord(DOSADDR+TOWNS_DOS_DPB_PTR+2);
 			unsigned int dpbCount=towns.mem.FetchByte(DOSADDR+TOWNS_DOS_DPB_COUNT);
+			const int maxCount='Z'-'A'+1;
+			int count=0;
 
 			std::cout << "            Uni Byt/Sc Msk Sft FAT0  nFAT nDir  Data0 MxClst Sc/FAT DIR0 DevDriver Med UAcc LastC FreeC" << std::endl;
 			//            00000000h A: 00h 0000h 00h 00h 0000h 00h  0000h 0000h 0000h  00h   0000h 00000000h 00h 00h  0000h 0000h
-			while(ofs!=0xffff)
+			while(ofs!=0xffff && count<maxCount)
 			{
 				unsigned int drive=towns.mem.FetchByte(seg*0x10+ofs);
 				unsigned int unit=towns.mem.FetchByte(seg*0x10+ofs+1);
@@ -2067,6 +2076,7 @@ void TownsCommandInterpreter::Execute_Dump_DOSInfo(FMTowns &towns,Command &cmd)
 				std::cout << std::endl;
 				seg=((nextDPB>>16)&0xffff);
 				ofs=(nextDPB&0xffff);
+				++count;
 			}
 		}
 		else if("CDS"==ARGV2)
@@ -2122,6 +2132,79 @@ void TownsCommandInterpreter::Execute_Dump_DOSInfo(FMTowns &towns,Command &cmd)
 				std::cout << c;
 			}
 			std::cout << std::endl;
+		}
+		else if("PSP"==ARGV2)
+		{
+			auto seg=towns.mem.FetchWord(DOSADDR+TOWNS_DOS_CURRENT_PDB);
+			uint32_t ofs=0;
+			uint32_t count=0;
+
+			while(0xffff!=seg && 0!=seg && count<16)
+			{
+				std::cout << "PSP ENDSEG INT22h    INT 23h   INT 23h  CALLER ENVSEG SSSP    NXTPSP DOSVER" << std::endl;
+				std::cout << cpputil::Ustox(seg) << " ";
+				std::cout << cpputil::Ustox(towns.mem.FetchWord(seg*0x10+ofs+TOWNS_DOS_PSP_ENDSEG)) << "h ";
+				std::cout << cpputil::Uitox(towns.mem.FetchDword(seg*0x10+ofs+TOWNS_DOS_PSP_INT22VEC)) << "h ";
+				std::cout << cpputil::Uitox(towns.mem.FetchDword(seg*0x10+ofs+TOWNS_DOS_PSP_INT23VEC)) << "h ";
+				std::cout << cpputil::Uitox(towns.mem.FetchDword(seg*0x10+ofs+TOWNS_DOS_PSP_INT24VEC)) << "h ";
+				std::cout << cpputil::Ustox(towns.mem.FetchWord(seg*0x10+ofs+TOWNS_DOS_PSP_CALLER_PSP)) << "h ";
+				std::cout << cpputil::Ustox(towns.mem.FetchWord(seg*0x10+ofs+TOWNS_DOS_PSP_ENVSEG)) << "h ";
+				std::cout << cpputil::Uitox(towns.mem.FetchDword(seg*0x10+ofs+TOWNS_DOS_PSP_STACK_PTR)) << "h ";
+				std::cout << cpputil::Ustox(towns.mem.FetchWord(seg*0x10+ofs+TOWNS_DOS_PSP_NEXT_PSP)) << "h ";
+				std::cout << cpputil::Ustox(towns.mem.FetchWord(seg*0x10+ofs+TOWNS_DOS_PSP_DOS_VERSION)) << "h ";
+				std::cout << std::endl;
+
+				std::cout << "Exe: ";
+				uint32_t ENVSEG=towns.mem.FetchWord(seg*0x10+ofs+TOWNS_DOS_PSP_ENVSEG);
+				if(0!=ENVSEG)
+				{
+					auto ENVADDR=ENVSEG*0x10;
+					while(0!=towns.mem.FetchByte(ENVADDR) || 0!=towns.mem.FetchByte(ENVADDR+1))
+					{
+						++ENVADDR;
+					}
+					ENVADDR+=4;	// Skip 00 00 01 00
+					std::string exe;
+					while(0!=towns.mem.FetchByte(ENVADDR))
+					{
+						exe.push_back(towns.mem.FetchByte(ENVADDR));
+						++ENVADDR;
+					}
+					std::cout << exe << std::endl;
+				}
+				else
+				{
+					std::cout << "(Prob)COMMAND.COM" << std::endl;
+				}
+
+				std::cout << "File:";
+				for(int i=0; i<20; ++i)
+				{
+					std::cout << " " << cpputil::Ubtox(towns.mem.FetchByte(seg*0x10+ofs+TOWNS_DOS_PSP_FILE_TABLE+i));
+				}
+				std::cout << std::endl;
+
+				std::cout << "FCB1:";
+				for(int i=0; i<16; ++i)
+				{
+					std::cout << " " << cpputil::Ubtox(towns.mem.FetchByte(seg*0x10+ofs+TOWNS_DOS_PSP_FCB1+i));
+				}
+				std::cout << std::endl;
+				std::cout << "FCB2:";
+				for(int i=0; i<16; ++i)
+				{
+					std::cout << " " << cpputil::Ubtox(towns.mem.FetchByte(seg*0x10+ofs+TOWNS_DOS_PSP_FCB2+i));
+				}
+				std::cout << std::endl;
+
+				auto callerPSP=towns.mem.FetchWord(seg*0x10+ofs+TOWNS_DOS_PSP_CALLER_PSP);
+				if(callerPSP==seg)
+				{
+					break;
+				}
+				seg=callerPSP;
+				++count;
+			}
 		}
 		else
 		{

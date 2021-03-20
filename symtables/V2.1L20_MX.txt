@@ -3070,6 +3070,36 @@ M 0
 /end
 /begin0
 T 1
+* 00001679:0000114E
+# 
+R 
+L INT 21H AH=50h SetPSP (In>BX=PSP Segment)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00001154
+# 
+R 
+L INT 21H AH=62h MOV BX,CS:[02DEh], IRET (Questionable)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:0000115A
+# 
+R 
+L INT 21H AH=33h Extended Break Checking(In>AL=Subfunc)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
 * 00001679:00001181
 # 
 R 
@@ -3390,6 +3420,16 @@ M 0
 /end
 /begin0
 T 1
+* 00001679:000013D2
+# 
+R 
+L INT 21H AH=63h XOR AL,AL, RET  (Questionable)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
 * 00001679:000013FC
 # 
 R 
@@ -3444,6 +3484,56 @@ T 1
 # 
 R 
 L INT 2FH Handler
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00001487
+# 
+R 
+L INT 21H AH=64h RETF 0002h (Questionable)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000014C7
+# 
+R 
+L INT 21H AH=2Ah Get Date(Out>CX=Year DH=Month DL=Day AL=Day of week(0=Sunday))
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000014E4
+# 
+R 
+L INT 21H AH=2Bh Set Date(In>CX=Year DH=Month DL=Day)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00001504
+# 
+R 
+L INT 21H AH=2Ch Get Time(Out>CH=Hour CL=Min DH=Sec DL=1/100sec)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00001515
+# 
+R 
+L INT 21H AH=2Dh Set Time(In>CH=Hour CL=Min DH=Sec DL=1/100sec)
 P 
 % 0
 M 0
@@ -3601,7 +3691,7 @@ M 0
 /begin0
 T 0
 * 00001679:000015BB
-# 5b5h=1461?
+# 5b5h=1461=365*4+1 Must be something to do with leap year
 R 
 L 
 P 
@@ -3629,6 +3719,156 @@ P
 M 0
 /end
 /begin0
+T 1
+* 00001679:000016B5
+# 
+R 
+L INT 21H AH=54h Get Verify Flag(Out>AL=Verify Flag 0 or 1)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000016BA
+# 
+R 
+L INT 21H AH=2Eh Set Verify Flag(In>DL=0, AL=verify flag 0 or 1)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000016C1
+# 
+R 
+L INT 21H AH=38h Get/Set Country Info
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000016C3
+# AL=FFh means 16-bit country code 
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000016C5
+# If 8-bit country code, copy to BX
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000016CC
+# Make ES:DI buffer
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000016D8
+# CASE FUNCTION
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00001729
+# 
+R 
+L INT 21H AH=36h Get Free Disk Space(In>AL=Drive 0=curr 1=A: Out>AX=Sect/Clst BX=#FreeClst...)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00001754
+# 
+R 
+L INT 21H AH=2Fh Get DTA Addr(Out>ES:BX currentDTA)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00001768
+# 
+R 
+L INT 21H AH=1Ah Set DTA Address(In>DS:DX DTA)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00001773
+# 
+R 
+L INT 21H AH=19h Get Current Drive(Out>AL=Drive 0=A:)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00001778
+# 
+R 
+L INT 21H AH=0Eh Set Current Drive(In>DL=Drive,0=A: Out>AL=# of valid drive letters)
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001785
+# NUM_CDS
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:0000178A
+# 
+R 
+L INT 21H AH=35h Get INT Vec(In>AL=INTNum Out>ES:BX=INT Handler)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:0000179A
+# 
+R 
+L INT 21H AH=25h Set Int Vector(In>AL=INTNum DS:DX=Handler)
+P 
+% 0
+M 0
+/end
+/begin0
 T 0
 * 00001679:000017A2
 # 
@@ -3640,10 +3880,100 @@ M 0
 /end
 /begin0
 T 1
+* 00001679:000017B2
+# 
+R 
+L INT 21H AH=37h Get/Set \DEV\ Prefix Use or Get/Set Switch Char
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000017D7
+# 
+R 
+L INT 21H AH=59h Get Extended Error Info(In>BX=0 Out>AX Extended Error BH=ErrClass BL=RecomAction CH=ErrLocus ES:DI=?)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000017FA
+# 
+R 
+L INT 21H AH=29h Parse Filename into FCB(In>AL=Options DS:SI=Filename ES:DI=Buffer unopened FCB)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00001805
+# 
+R 
+L INT 21H AH=1Bh Get Alloc Info for Current Drive(Out>AL=Sect/Clst CX=Byt/Sect DX=#Clst DS:BX=&mediaDesc)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00001807
+# 
+R 
+L INT 21H AH=1Ch Get Alloc Info for Drive(In>DL=drive 0=A: Out>AL=Sect/Clst CX=Byt/Sect DX=#Clst DS:BX=&mediaDesc)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00001833
+# 
+R 
+L INT 21H AH=34h Get INDOS Pointer(Out>ES:BX=INDOS Ptr)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
 * 00001679:0000183F
 # 
 R 
-L INT 21H AH=52H GetSYSVARS
+L INT 21H AH=52H GetSYSVARS (Out>ES:BX=SYSVARS)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:0000184B
+# 
+R 
+L INT 21H AH=1Fh Get DPB for Current Drive(Out>AL=0 OK DS:BX=DPB, AL=FFH Invalid Drive)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:0000184D
+# 
+R 
+L INT 21H AH=32h Get DPB for drive(In>DL=Drive 0=curr 1=A: Out>AL=0 DS:BX=DPB/AL=0ffh Invalid Drive)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:0000187C
+# 
+R 
+L INT 21H AH=0Dh Disk Reset. Write Back all buffers.
 P 
 % 0
 M 0
@@ -3653,7 +3983,7 @@ T 1
 * 00001679:000018B6
 # Create a valid DPB from a user-specified BPB  Input ES:BP DPB DS:SI BPB
 R 
-L SETDPB
+L INT 21H AH=53h BPBtoDPB(In>DS:SI=BPB ES:BP=Buffer for DPB)
 P 
 % 0
 M 0
@@ -3953,7 +4283,7 @@ T 1
 * 00001679:0000191F
 # 
 R 
-L (Prob)CREATE_PROCESS_DATA_BLOCK
+L INT 21H AH=55h Create Child PSP(In>DX=newPSP Seg SI=Memory Size Field for DX:[0002h])
 P 
 % 0
 M 0
@@ -3983,7 +4313,7 @@ T 1
 * 00001679:0000192D
 # 
 R 
-L ?PROC
+L INT 21H AH=26h CreatePSP(In>DX=PSPSegment CS=segment PSP to copyo)
 P 
 % 0
 M 0
@@ -4473,7 +4803,27 @@ T 1
 * 00001679:00001B04
 # 
 R 
-L INT 2AH AH=84H
+L INT 21H AH=08h Direct CONIN without Echo(Out:AL=chr)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00001B19
+# 
+R 
+L INT 21H AH=09h PUTS(In>DS:DX=$-terminated string)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00001B25
+# 
+R 
+L INT 21H AH=0Ah Buffered Input(In>DS:DX=buffer)
 P 
 % 0
 M 0
@@ -4490,10 +4840,30 @@ M 0
 /end
 /begin0
 T 1
+* 00001679:00001E71
+# 
+R 
+L INT 21H AH=06h Direct CONIN/OUT In>DL=chr(In>DL=0FFh Out:AL=chr)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00001E9D
+# 
+R 
+L INT 21H AH=07h Direct CONIN without Echo(Out:AL=chr)
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
 * 00001679:00001EB9
 # 
 R 
-L One Letter Out
+L One Char Out
 P 
 % 0
 M 0
@@ -4530,10 +4900,20 @@ M 0
 /end
 /begin0
 T 2
+* 00001679:00001EDC
+# 
+R 
+L CLC,RET
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
 * 00001679:00001EDF
 # 
 R 
-L Not INT 29 Device
+L One Char Out Not INT 29h Device
 P 
 % 0
 M 0
@@ -4559,6 +4939,16 @@ P
 M 0
 /end
 /begin0
+T 1
+* 00001679:00001EFE
+# 
+R 
+L INT 21H AH=01h GETCH Ret:AL=chr
+P 
+% 0
+M 0
+/end
+/begin0
 T 2
 * 00001679:00001F06
 # 
@@ -4573,7 +4963,7 @@ T 1
 * 00001679:00001F07
 # 
 R 
-L INT 21H AH=02H CONOUT DOS v1.25 MSDOS.ASM CONOUT:
+L INT 21H AH=02H CONOUT DOS v1.25 MSDOS.ASM CONOUT
 P 
 % 0
 M 0
@@ -4621,7 +5011,7 @@ M 0
 /begin0
 T 0
 * 00001679:00001F2F
-# 36F606AC02FF
+# PROB_COUT_SIMUL_PRN
 R 
 L 
 P 
@@ -4779,6 +5169,36 @@ P
 M 0
 /end
 /begin0
+T 1
+* 00001679:00001FB9
+# 
+R 
+L INT 21H AH=03h GETCH from STDAUX Ret:AL=chr
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00001FD6
+# 
+R 
+L INT 21H AH=04h PUTCH to STDAUX In>DL=chr
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00001FDC
+# 
+R 
+L INT 21H AH=05h PUTCH to PRN In>DL=chr
+P 
+% 0
+M 0
+/end
+/begin0
 T 2
 * 00001679:00001FE9
 # 
@@ -4799,11 +5219,331 @@ P
 M 0
 /end
 /begin0
+T 1
+* 00001679:00001FF0
+# 
+R 
+L INT 21H AH=0Bh Get STDIN Stat(Out>AL=0 No Char avail. FFh Char Available)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00001FFA
+# 
+R 
+L INT 21H AH=0Ch Flush Buffer and Read STDIN(In>STDIN function after flushing)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00002027
+# 
+R 
+L INT 21H AH=24h Set Random Record Num FCB(In>DS:DX=Opened FCB)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:0000203F
+# 
+R 
+L INT 21H AH=13h Delete FCB(In>DS:DX Unopened FCB Wildcard accepted)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00002053
+# 
+R 
+L INT 21H AH=23h Get File Size FCB(In>DS:DX=Unopened FCB Out>AL=Stat)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000020A2
+# 
+R 
+L INT 21H AH=10h Close File FCB(In>DS:DX FCB Out>AL=0 OK AL=FFH ERR)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00002108
+# 
+R 
+L INT 21H AH=17h Rename FCB(In>DS:DX Unopened FCB)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000026EA
+# 
+R 
+L INT 21H AH=0Fh Open File FCB(In>DS:DX Unopened FCB Out>AL=0 OK AL=FFH ERR)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000027BB
+# 
+R 
+L INT 21H AH=16h FCRAETE FCB(In>DS:DX Unopened FCB)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000027CB
+# 
+R 
+L INT 21H AH=28h Random Block Write FCB(In>CX=#Records DS:DX=opened FCB Out>AL=Status)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000027D0
+# 
+R 
+L INT 21H AH=27h Random Block Read FCB(In>CX=#Records DS:DX=opened FCB Out>AL=Status)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000027D5
+# 
+R 
+L INT 21H AH=14h FREAD FCB(In>DS:DX FCB AL=Status)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000027DA
+# 
+R 
+L INT 21H AH=15h FWRITE FCB(In>DS:DX FCB AL=Status)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000027DF
+# 
+R 
+L INT 21H AH=21h Read Random Record FCB(In>DS:DX Out>AL=Stat)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000027E4
+# 
+R 
+L INT 21H AH=22h Write Random Record FCB(In>DS:DX opened FCB, DTA Area=Data)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000027E9
+# 
+R 
+L INT 21H AH=11h FindFirst FCB(In>DS:DX Unopened FCB Out>AL=0 OK AL=FFH ERR)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:0000288A
+# 
+R 
+L INT 21H AH=12h FindNext FCB(In>DS:DX Unopened FCB Out>AL=0 OK AL=FFH ERR)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000028FD
+# 
+R 
+L INT 21H AH=4Eh FindFirst(In>AL=APPEND flag? CX=AttribMask DS:DX CStr File Spec Out>CF=0 DTA with Find Struc)
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00002940
+# SI=0475H (+15H from SDB), DI=DMApp+15H
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00002941
+# 15H+0BH=20H from 460h
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00002945
+# SI becomes 48Bh (+2Bh from SDB), DI=DMApp+16H
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000294B
+# SI becomes 491h (+31h from SDB), DI=DMApp+1Ah
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00002955
+# 
+R 
+L INT 21H AH=4Fh FindNext(In>DTA from last FindFirst or FindNext)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00002987
+# 
+R 
+L 11-byte filename+ext to plain file name.ext
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000029A6
+# '.'
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000029BC
+# 
+R 
+L INT 21H AH=47h GETCWD(In>DL=Drive 0=Curr 1=A: DS:SI=64-byte CStr buffer  CF=0 AX=0100h CF=1 AX=ErrCode)
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000029F0
+# Length of Drive-Letter Part
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000029F6
+# '\'
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000029FB
+# Skip first backslash
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00002A36
+# 
+R 
+L INT 21H AH=3Ah RMDIR(In>DS:DX=Cstr Pathname)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00002A75
+# 
+R 
+L INT 21H AH=3Bh SETCWD(In>DS:DX=Cstr Pathname)
+P 
+% 0
+M 0
+/end
+/begin0
 T 0
 * 00001679:00002A7F
 # DOSERR_DIR_NOT_FOUND
 R 
 L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00002AF1
+# 
+R 
+L INT 21H AH=39h MKDIR(In>DS:DX=CStr Pathname)
 P 
 % 0
 M 0
@@ -4823,7 +5563,7 @@ T 1
 * 00001679:00002B29
 # 
 R 
-L ? Called from AH=4BH,AX=4400h. AL=0->Prob Return DH=0(BLOCKDEV)/HiByte of SYSDEV_FLAGS(CHARDEV)
+L INT 21H AH=44h IOCTL In>AL=0 Get Dev Info AL=1 Set Dev Info AL=2 Read CHARDEV BX=Handle
 P 
 % 0
 M 0
@@ -4869,9 +5609,29 @@ P
 M 0
 /end
 /begin0
+T 2
+* 00001679:00002B47
+# 
+R 
+L Incoming_AL=1 Set Dev Info DX=DEV Info
+P 
+% 0
+M 0
+/end
+/begin0
 T 0
 * 00001679:00002B4B
 # DOSERR_INVALID_DATA
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00002B5E
+# Overwrite SF_DEVFLAGS LoByte Only.
 R 
 L 
 P 
@@ -4931,7 +5691,7 @@ M 0
 /begin0
 T 0
 * 00001679:00002B94
-# ES:DI=DPB
+# It's CHARDEV.  ES:DI=SYSDEV
 R 
 L 
 P 
@@ -4944,6 +5704,76 @@ T 2
 # DOSERR_INVALID_FUNC
 R 
 L Return DOSERR_INVALID_FUNC
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00002CB1
+# SYSDEV_DEVFLAG_IOCTL_SUPPORTED
+R 
+L Shoot IOCTL Read or Write command.
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00002CB9
+# AL is still incoming AX=4401h or 4402h
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00002CBF
+# Command 0Ch=IOCTL Write
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00002CC6
+# Command 03h=IOCTL Read
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00002CCB
+# Length
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00002CCD
+# BL=0 if JMPed from 1679:00002B9A
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00002CF2
+# Byte Count Transferred
+R 
+L 
 P 
 % 0
 M 0
@@ -5274,6 +6104,156 @@ T 2
 # DOSERR_INVALID_ACCESS?
 R 
 L DOSERR_INVALID_ACCESS
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000032D1
+# Get Free Disk Space (36h) Main
+R 
+L Get Free Disk Space (36h) Main
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00003332
+# CurrentCDS
+R 
+L Called from AH=4Eh Find First
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000333B
+# INT2FH_FIND_FIRST_NO_CDS
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00003362
+# 
+R 
+L DOSERR_NO_MORE_FILES
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000033DD
+# Drive Ltter.  Bit7 is REDIRECTED
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003424
+# Drive Letter
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000342A
+# 11-byte Filename+Ext
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000342F
+# Attrib
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003434
+# Entry Count
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000343D
+# Cluster
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00003461
+# CurrentPDB
+R 
+L Close All Files of Process, Also INT 2FH AX=111Dh
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003466
+# PSP_FILE_TABLE_SIZE
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003477
+# INT 2Fh Close All Files of Process (Abort)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00003480
+# First FCB
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000034A4
+# SF_ENTRY Loop
+R 
+L 
 P 
 % 0
 M 0
@@ -8370,6 +9350,16 @@ M 0
 /end
 /begin0
 T 0
+* 00001679:000045B7
+# JMP if REDIRECTED or BLOCK
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
 * 00001679:000045C9
 # DX=Incoming_DS, DS=ES=CS
 R 
@@ -8470,10 +9460,30 @@ M 0
 /end
 /begin0
 T 2
+* 00001679:0000461C
+# 
+R 
+L REDIRECTED or BLOCK
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
 * 00001679:0000461E
 # 
 R 
 L Error bit set
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00004635
+# 
+R 
+L REDIRECTED or BLOCK
 P 
 % 0
 M 0
@@ -9149,6 +10159,176 @@ P
 M 0
 /end
 /begin0
+T 2
+* 00001679:00004CF0
+# 
+R 
+L AH=29H Parse Filename into FCB Main
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004CF8
+# Use Existing Drive number if no drive is specified
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004CFA
+# Jump if no-clear-drive flag
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004CFC
+# Reset Drive Number
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004D00
+# Skip Drive Number
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004D04
+# Use existing file name if no base name is specified
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004D0F
+# Clear 8 bytes if (Flags&04)==0
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004D13
+# Don't Clear Extension Flag
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004D1C
+# Clear Ext if 0==(Flags&04)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004D1F
+# Write 4-byte zeros
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004D21
+# Rewind back to the top of FCB
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004D24
+# Skip-Leading Separator Flag
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004D29
+# Skip all TAB or Space
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004D2F
+# Jump if not seprator
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004D32
+# Skip all TAB or Space
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004D3A
+# ':'
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004D4D
+# Store Drive Number
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
 T 1
 * 00001679:00004D52
 # 
@@ -9199,6 +10379,26 @@ P
 M 0
 /end
 /begin0
+T 0
+* 00001679:00004DAF
+# Equal if AL=TAB or Space
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004DB2
+# If tab or space, loop.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
 T 1
 * 00001679:00004DB6
 # 
@@ -9213,7 +10413,7 @@ T 1
 * 00001679:00004DE3
 # 
 R 
-L LODSB, Capitalize,  Call CS:[BX+12h] where BX=CS:[0356H]
+L LODSB, Capitalize,  Call (CS:[BX+12h] where BX=0356H)=CASE FUNCTION, See AH=30h(), EQUAL if AL<=' ', ==DQ, {+,./:;<=>[\]|} CF=1 if AL<' '
 P 
 % 0
 M 0
@@ -9244,6 +10444,26 @@ T 0
 # Prob this routine is for Far Call
 R 
 L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00004E04
+# 
+R 
+L Equal if AL=09,20,2b,2c,3a,3b,3c,3d,3e,7C
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00004E10
+# 
+R 
+L EQUAL(ZF=1) if AL=09h or 20h (Tab or Space)
 P 
 % 0
 M 0
@@ -9783,7 +11003,177 @@ T 1
 * 00001679:00005188
 # 
 R 
-L INT 2AH AH=82H then INT 2FH AX=1122H....
+L Exitting Process INT 2AH AH=82H then INT 2FH AX=1122H....
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005189
+# INT 2AH AH=82H Network End DOS Critical Section.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005193
+# INT 2Fh AX=1122h Process Termination Hook
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000519D
+# CX is DS at CS:5188
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000051A0
+# CurrentPDB
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000051A7
+# PSP_CALLER_PSP_SEG
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000051B2
+# This AX will become CS:[2DEh](CurrentPDB)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000051B3
+# Exit Type
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000051C1
+# Set CurrentPDB to PSP_CALLER_PSP_SEG
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000051D4
+# INDOS=0
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000051E3
+# From 519E,519F.  INT 22H Handler
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000051EB
+# CurrentPDB Maybe already PSP_CALLER_PSP_SEG
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000051EF
+# PSP_STACK_PTR
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000051F3
+# PSP_STACK_PTR+2
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000051FA
+# USER_SP Why AX?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000051FE
+# POP FLAGS,IP,CS from last INT 21H AH=4Bh
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005201
+# FLAGS on return from process
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005205
+# Return address from process
+R 
+L 
 P 
 % 0
 M 0
@@ -10959,6 +12349,16 @@ P
 M 0
 /end
 /begin0
+T 0
+* 00001679:00005712
+# IO_BUF_DRIVE
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
 T 1
 * 00001679:00005737
 # 
@@ -11090,18 +12490,58 @@ M 0
 /end
 /begin0
 T 1
+* 00001679:000057BB
+# 
+R 
+L INT 21H AH=4Dh Get Return Code or ERRORLEVEL (Out> AH=Termination Type AL=return Code CF=0)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
 * 00001679:000057C5
 # 
 R 
-L INT 21H AH=4BH Exec or Load AL=0->Exec 1->Load Only 3->Load Overlay
+L INT 21H AH=4BH Exec or Load (In>AL=0->Exec 1->Load Only 3->Load Overlay DS:DX=FName ES:BX=ParamBlock) 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000057CF
+# 
+R 
+L Load or Exec Error End with CS:[2D1h]=1
 P 
 % 0
 M 0
 /end
 /begin0
 T 0
+* 00001679:000057D5
+# DOSERR_INVALID_FUNC
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
 * 00001679:000057D7
-# Load or Exec Error End
+# 
+R 
+L Load or Exec Error End
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000057DD
+# AL must be 0,1, or 3.
 R 
 L 
 P 
@@ -11180,8 +12620,48 @@ M 0
 /end
 /begin0
 T 0
+* 00001679:00005816
+# DOSERR_FILE_NOT_FOUND
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:0000581B
+# DOSERR_BAD_ENV
+R 
+L DOSERR_BAD_ENV
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
 * 00001679:00005820
-# NOT CHARDEV
+# [BP-12H] Prob is a Segment for loading binary
+R 
+L NOT CHARDEV
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005825
+# [BP-0EH] ENVSEG of the new process
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000582A
+# Exec Mode
 R 
 L 
 P 
@@ -11199,11 +12679,991 @@ P
 M 0
 /end
 /begin0
+T 0
+* 00001679:00005830
+# DS:SI=Incoming Parameter Block
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005833
+# [ParamBlock+00h]=ENVSEG
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005837
+# ENVSEG(0->Use Current)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
 T 2
-* 00001679:000058E7
+* 00001679:00005839
+# CurrentPDB
+R 
+L [ParamBlock+00h]=0, Use Current ENVSEG
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000583E
+# PSP:002Ch=PSP_ENV_SEG
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005841
+# ENVSEG=CurrentPSP's ENVSEG
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005846
+# Jump if current ENVSEG=NULL
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00005851
 # 
 R 
+L FirstForward DI until double 0s
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005859
+# (Prob)10h bytes extra plus 1 byte for terminating command file name
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000585C
+# STRLEN of Command File Name
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005868
+# This is former DI. (ENVSEG starts from offset zero)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00005870
+# [BP-0Eh]=new ENVSEG
+R 
+L If First 2 bytes of Param Block is non-zero, Make a copy of Current ENVSEG
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000587D
+# EXE File Name
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00005885
+# 
+R 
+L ENVSEG is ready one way or the other
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005887
+# 1A bytes
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000588A
+# This must be a pointer to read EXE header
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000589F
+# exeHeader.MaxAllocParagraphs
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000058AB
+# exeHeader
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000058AE
+# MZ
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000058B3
+# MZ
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000058BB
+# exeHeader.((FileSize+511)/512)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000058C2
+# exeHeader.HeaderSize in Paragraphs
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000058D2
+# SrcENVSEG
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000058D8
+# Relocation factor to apply to overlay if .EXE
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000058E1
+# 
+R 
+L DOSERR_OUT_OF_MEMORY
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000058E5
+# 
+R 
+L DOSERR_BAD_FORMAT
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000058E7
+# File Handle
+R 
 L (Prob)FCLOSE and Return
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005914
+# Take max-available if MaxAllocPara==0
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005916
+# exeHeader+0Ah:Minimum Paragraphs
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000591A
+# JMP if BinarySize+MinAllocParag<AvailableParag
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005920
+# exeHeader+0Ah:Minimum Paragraphs
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005924
+# exeHeader+0Ah:Maximum Paragraphs
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000592E
+# AX=min(AX,BX) or maxAvailable if MaxAllocPara==0
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00005957
+# exeHeader+08h=Header Size in Paragraphs
+R 
+L Loading Point and Relocation Factor is ready
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000595B
+# Making CX:DX to be header size, but it is unimaginable that header size exceeds 16-bit.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00005976
+# Read Binary Loop
+R 
+L Read Binary Loop
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005979
+# Up to 0FE00h bytes at a time.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000059AF
+# Loop until [BP-0Ch] is zero
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000059B1
+# Relocation Factor
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000059B9
+# Save Initial SS and SP
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000059D2
+# Relocation Table Offset
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000059E2
+# 
+R 
+L Must be a read error
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000059E5
+# exeHeader.Relocation Table Count
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000059E9
+# 
+R 
+L Relocation Outer Loop
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000059EA
+# File Name Buffer (Reusing)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000059ED
+# 184 bytes at a time.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000059FE
+# Relocation Factor
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00005A01
+# Relocation Loop
+R 
+L Relocation Inner Loop
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00005A1A
+# 
+R 
+L Relocation Done
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00005A1D
+# 
+R 
+L DOSERR_OUT_OF_MEMORY
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005A24
+# JMP if not Load Overlay Mode
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005A26
+# Incoming Parameter Block
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005A32
+# This will fail.  Therefore BX will be number of available paragraphs.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005A3F
+# Allocate Maximum Available Memory
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005A47
+# 10H paragraphs is 100H bytes.  Must be for PSP
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005A4A
+# [BP-14H] must be where the program is loaded
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005A4F
+# If greater, read 0FF00h (AX=0-100h)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005A55
+# If MaxAvail<64K
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005A59
+# AX=MaxAvailPages*16
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005A5B
+# AX=MaxAvailPages*16-100h=Max Bytes Available for .COM or .SYS
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005A8B
+# Initial CS
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005A8F
+# Initial IP
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00005AA9
+# 
+R 
+L Binary is in the memory.
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005ABD
+# If it is just Load Overlay, it is loaded.  Done.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005AC3
+# Malloced Segment=CHild PSP
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005AC6
+# MCB_PID
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005AC9
+# New ENVSEG
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005ACE
+# If NewENVSEG is NULL, don't write anything to the MCB of NewENVSEG
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005AD5
+# Malloced Segment=Child PSP
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005AEA
+# PSP_ENVSEG
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005AEF
+# Exec Param Block
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005AF4
+# First FCB to copy
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005B20
+# CL=0-1=0FFh
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005B3B
+# PUSH Return Address
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005B41
+# Copy Return Address to PSP:INT22h
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005B55
+# Copy Return Address to INT 22h Handler
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005B5D
+# DTA Address OFFSET
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005B64
+# CurrentPDB is it already updated?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005B69
+# DTA Address SEG
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00005B74
+# Initial SSSP
+R 
+L Finish Loading. Mode=1
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005B79
+# Exec Param Block
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005B7C
+# Initial SS
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005B88
+# Initial CSIP
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00005B9B
+# 
+R 
+L Jump to Process. Mode=0
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005BA8
+# INDOS=0
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00005BBB
+# 
+R 
+L DOS EXEC JUMP BY RETF TO PROCESS
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00005BBC
+# 
+R 
+L Call FREAD
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00005BCB
+# 
+R 
+L Prob Clear PSP Owner of MCBs [BP-0EH] and [BP-12H]
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00005BD7
+# 
+R 
+L Set CurrentPDB to MCBs for segments [BP-12H] and [BP-0Eh]
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005BD8
+# CurrentPDB
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00005BE5
+# 
+R 
+L Prob Set PSP Owner to MCBs [BP-0EH] and [BP-12H]
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00005BF6
+# 
+R 
+L (Prob)Set BX=PSP in MCB for Segment AX
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005BFA
+# Prob AX is a memory block. AX-1 is MCB for the memory block.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00005C04
+# 
+R 
+L INT 21H AH=31h Terminate and Stay Resident(In>AL=Return Code DX=#paragraphs to keep)
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005C15
+# Minimum 6 Paragraphs
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005C21
+# Jump if MRESIZE failed.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005C23
+# AX=PSP Segment
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005C27
+# PSP_ENDMEM
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005C2A
+# Pop Return Code
+R 
+L 
 P 
 % 0
 M 0
@@ -11214,6 +13674,136 @@ T 1
 # 
 R 
 L INT 27H Handler
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00005C3C
+# 
+R 
+L INT 21H AH=4Ch Exit(In>AL=Return Code)
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005C56
+# CurrentPDB
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005C5B
+# CurrentPDB if AH=4C, Caller CS if AH=00
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00005C60
+# 
+R 
+L INT 21H AH=00h Terminate Process CS=PSP segment
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005C6D
+# Must be return code
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005C74
+# CurrentPDB if AH=4C, Caller CS if AH=00
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005C79
+# ES=0000h RIDT
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005C7B
+# PSP_INT22H, PSP_INT23H, PSP_INT24H
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005C7E
+# Int 22H Handler
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005C81
+# Update Int 22h
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005C83
+# Update Int 23h
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005C85
+# Update Int 24h
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00005C8A
+# 
+R 
+L Free MCBs of PSP=BX
 P 
 % 0
 M 0
@@ -11263,7 +13853,7 @@ T 1
 * 00001679:00005CE6
 # 
 R 
-L INT 21H AH=48H Malloc
+L INT 21H AH=48h MALLOC(In>BX=#Paragraphs Out>CF=0 AX=Segment CF=1 AX=ErrCode BX=Max available block)
 P 
 % 0
 M 0
@@ -11610,6 +14200,46 @@ M 0
 /end
 /begin0
 T 1
+* 00001679:00005DDF
+# 
+R 
+L INT 21H AH=4Ah MRESIZE(In>BX=New size ES=Seg to Resize Out>CF=0 AX=Segment CF=1 AX=ErrCode BX=Max available block)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00005E03
+# 
+R 
+L INT 21H AH=49h FREE(In>ES=Segment to free Out>CF=0 NoErr CF=1 AX=ErrCode)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00005E23
+# 
+R 
+L INT 21H AH=58h Get/Set MALLOC Strategy(In>AL=0 Get AL=1 Set AX=Current Strategy BX=new Strategy)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00005E42
+# 
+R 
+L INT 21H AH=5Dh 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
 * 00001679:00005F75
 # CurrentPDB
 R 
@@ -11850,6 +14480,16 @@ M 0
 /end
 /begin0
 T 1
+* 00001679:00006033
+# 
+R 
+L INT 21H AH=5Fh 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
 * 00001679:00006042
 # First DPB
 R 
@@ -11974,6 +14614,16 @@ T 2
 # 
 R 
 L RET
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000060AA
+# 
+R 
+L INT 21H AH=5Eh 
 P 
 % 0
 M 0
@@ -12720,6 +15370,16 @@ M 0
 /end
 /begin0
 T 1
+* 00001679:00006580
+# 
+R 
+L INT 21H AH=60h TRUENAME(In>DS:DI=CStr Filename or Path  ES:DI=128-byte buffer for output)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
 * 00001679:0000659E
 # 
 R 
@@ -12793,7 +15453,7 @@ T 1
 * 00001679:000065FD
 # 
 R 
-L INT 21H AH=3EH FCLOSE
+L INT 21H AH=3EH FCLOSE(In>BX=File Handle Out>CF=0 Success CF=1 AX=ErrCode)
 P 
 % 0
 M 0
@@ -12883,7 +15543,7 @@ T 1
 * 00001679:00006630
 # 37EBH is Really Fread
 R 
-L INT 21H AH=3FH FREAD BX=JFN CX=Bytes DS:DX=ReadBuffer
+L INT 21H AH=3FH FREAD(In>BX=File Handle CX=Bytes DS:DX=ReadBuffer Out>CF=0 AX=BytesRead CF=1 AX=ErrCode)
 P 
 % 0
 M 0
@@ -12894,6 +15554,16 @@ T 0
 # AL=*jfn=sfn
 R 
 L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00006640
+# 
+R 
+L Error End
 P 
 % 0
 M 0
@@ -12979,11 +15649,151 @@ P
 M 0
 /end
 /begin0
+T 2
+* 00001679:00006682
+# 
+R 
+L SYS_RET_OK
+P 
+% 0
+M 0
+/end
+/begin0
 T 1
 * 00001679:00006684
 # 
 R 
-L INT 21H AH=40H FWRITE
+L INT 21H AH=40H FWRITE(In>BX=File Handle CX=Bytes DS:DX=ReadBuffer Out>CF=0 AX=BytesWritten CF=1 AX=ErrCode)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00006689
+# 
+R 
+L INT 21H AH=42h LSEEK(In>AL=0 Begin 1 Curr 2 End BX=Handle CX:DX=Signed offset)
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000668E
+# DOSERR_FILE_NOT_FOUND
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006698
+# DOSERR_INVALID_FUNC
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000066A2
+# 
+R 
+L LSeek from current position
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000066AA
+# 
+R 
+L LSeek from SEEK_SET
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000066BD
+# SF_DEVFLAGS&SF_DEVFLAG_REDIRECTED'
+R 
+L LSeek from SEEK_END
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000066D7
+# SF_MODE
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000066DE
+# Something to do with sharing SHARE_ALLOW?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000066E3
+# SHARE_DENY_R?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000066E8
+# INT2FH_SEEK_FROM_END
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000066F1
+# 
+R 
+L INT 21H AH=57h Get/Set Time Stamp(In>BX=file Handle CX=Time DX=Date AL=0 Get AL=1 Set)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00006740
+# 
+R 
+L INT 21H AH=45h DUPLICATE FILE HANDLE (In>BX=Handle Out>CF=0 AX=New Handle CF=1 AX=ErrCode)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00006760
+# 
+R 
+L INT 21H AH=46h FORCE DUPLICATE FILE HANDLE (In>BX=Handle CX=DuplicatedFileHandle Out>CF=0 NoErr CF=1 AX=ErrCode)
 P 
 % 0
 M 0
@@ -13023,7 +15833,7 @@ T 1
 * 00001679:00006784
 # 
 R 
-L INT 21H AH=3DH FOPEN
+L INT 21H AH=3DH FOPEN(In>DS:DX=CStr Filename AL=Mode Out>CF=0 AX=file handle CF=1 AX=ErrCode)
 P 
 % 0
 M 0
@@ -13209,11 +16019,111 @@ P
 M 0
 /end
 /begin0
+T 1
+* 00001679:00006843
+# 
+R 
+L INT 21H AH=3Ch FCREATE(In>DS:DX=CStr Filename CX=File Attrib Out>CF=0 AX=file handle CF=1 AX=ErrCode)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00006850
+# 
+R 
+L INT 21H AH=43h In>DS:DX=CStr Filename AL=0 Get File Attrib AL=1 Set File Attrib
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00006867
+# CS:[SATTR]
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:0000687B
+# 
+R 
+L AH=43h AL=00h Get File Attrib
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00006888
+# 
+R 
+L AH=43h AL=01h Set File Attrib
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00006895
+# 
+R 
+L INT 21H AH=41h DELETE(In>DS:DX=CStr Filename)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000068BB
+# 
+R 
+L INT 21H AH=56h Rename Move File or Dir(In>DS:DX=Source File ES:DI=New File)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000068FE
+# 
+R 
+L INT 21H AH=5Bh Create New File No Truncation(In>CX=Attr DS:DX=CStr File Name Out>CF=0 AX=Handle CF=1 AX=ErrCode)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:0000691E
+# 
+R 
+L INT 21H AH=5Ah Create Temp File(In>DS:DX CStr Path ending with backslash and 13 zeros to recv buf CX=attr Out>AX FHandle RW mode)
+P 
+% 0
+M 0
+/end
+/begin0
 T 0
 * 00001679:000069A5
 # 
 R 
 L IF(DOS:SS:[050DH]=FFH){CL=CH;SS[0508H]=CL;}
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:000069B5
+# 
+R 
+L INT 21H AH=5Ch Lock/Unlock File(In>AL=0 Lock AL=1 Unlock BX=FHandle CX:DX=StartPos SI:DI=Length Out>CF=1 Unless network installed.)
 P 
 % 0
 M 0
@@ -14444,6 +17354,26 @@ T 0
 # FREAD CONFIG.SYS
 R 
 L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 0000AF37:00000596
+# 
+R 
+L (Prob)IO.SYS DEVICE= LOOP
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 0000AF37:000005A2
+# 
+R 
+L (Prob)IO.SYS DEVICE= LOOP
 P 
 % 0
 M 0
