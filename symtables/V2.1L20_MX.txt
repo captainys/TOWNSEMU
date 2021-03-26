@@ -3109,6 +3109,16 @@ P
 M 0
 /end
 /begin0
+T 2
+* 00001679:00001185
+# 
+R 
+L AL=0, IRET
+P 
+% 0
+M 0
+/end
+/begin0
 T 1
 * 00001679:00001187
 # 
@@ -3369,6 +3379,16 @@ P
 M 0
 /end
 /begin0
+T 0
+* 00001679:000012E0
+# INT 21H AH=F8H Set OEM INT 21H Handler
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
 T 1
 * 00001679:0000133E
 # 
@@ -3494,6 +3514,16 @@ T 1
 # 
 R 
 L INT 21H AH=64h RETF 0002h (Questionable)
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000014C3
+# By default jump to 1679:1B60
+R 
+L 
 P 
 % 0
 M 0
@@ -4719,6 +4749,16 @@ P
 M 0
 /end
 /begin0
+T 0
+* 00001679:00001AA0
+# [BP]BX [BP+2]BP [BP+4]IP [BP+6]AX [BP+8]cs:1133h [BP+A]cs:1135h
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
 T 1
 * 00001679:00001AC8
 # 
@@ -4809,6 +4849,16 @@ P
 M 0
 /end
 /begin0
+T 2
+* 00001679:00001B18
+# 
+R 
+L RET
+P 
+% 0
+M 0
+/end
+/begin0
 T 1
 * 00001679:00001B19
 # 
@@ -4821,9 +4871,299 @@ M 0
 /begin0
 T 1
 * 00001679:00001B25
-# 
+# STD_CON_STRING_INPUT of MS-DOS V2.0 Source
 R 
 L INT 21H AH=0Ah Buffered Input(In>DS:DX=buffer)
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001B29
+# DS:SI is the input buffer
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001B2D
+# AL=Max num chars, AH=Num chars recall
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001B30
+# IF zero, RET
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001B34
+# This part is essentially MOVZX BX,AH
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001B38
+# JMP if max chars <= num recall
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001B3A
+# If num recall < max chars, cmp buf[2+numrecall],CR (LODSW made SI=buf+2)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001B3D
+# JMP if end of last input is CR (Correct Input Buffer)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001B3F
+# If end of last input is not CR, BX=0, otherwise BX=length of last input
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001B43
+# DX=buffer length-1
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001B44
+# [CARPOS]
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001B48
+# [STARTPOS]
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001B4D
+# INBUF
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001B50
+# [INSMODE]=0 Insert Mode Off
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001B57
+# Truncating the string to zero regardless of the recall count?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001B5E
+# Probably if 0Ah, skip subsequent 0Dh
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00001B60
+# 
+R 
+L GETCH_LOOP
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001B65
+# Ctrl+F?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001B67
+# [ESCCHAR]
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001B71
+# C_DEL
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001B75
+# c_BS
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001B79
+# Ctrl+Y?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001B80
+# Ctrl+W?
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001B8B
+# c_LF
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00001BA5
+# Got a char
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00001BE6
+# 
+R 
+L BACKSPJ
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00001BE9
+# 
+R 
+L BUFFUL
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00001BF1
+# 
+R 
+L ESC
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00001BF4
+# 
+R 
+L ENDLIN
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:00001C0A
+# 
+R 
+L PHYCRLF
 P 
 % 0
 M 0
@@ -5163,7 +5503,7 @@ T 1
 * 00001679:00001FA4
 # 
 R 
-L Write one letter.  If ctrl code, do ^.
+L BUFOUT Write one letter.  If ctrl code, do ^.
 P 
 % 0
 M 0
@@ -5774,6 +6114,16 @@ T 0
 # Byte Count Transferred
 R 
 L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 00001679:00002D27
+# 
+R 
+L AH=41H DELETE Main
 P 
 % 0
 M 0
@@ -10643,7 +10993,7 @@ T 1
 * 00001679:00004EE2
 # 
 R 
-L (Prob)Ctrl+C Check
+L (Prob)Ctrl+C Check and Return DS:SI=SF_ENTRY for File Handle 0
 P 
 % 0
 M 0
@@ -11521,7 +11871,7 @@ M 0
 /begin0
 T 0
 * 00001679:0000540E
-# Command=CHECK REMOVABLE MEDIA
+# Command Length=0Fh
 R 
 L 
 P 
@@ -11541,7 +11891,7 @@ M 0
 /begin0
 T 0
 * 00001679:00005417
-# 1679:00005417
+# Command=CHECK REMOVABLE MEDIA
 R 
 L 
 P 
@@ -14239,6 +14589,26 @@ P
 M 0
 /end
 /begin0
+T 0
+* 00001679:00005E48
+# JMP if AL=7,8, or 9
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00005E4A
+# Reaches here if AL<7 or 9<A
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
 T 1
 * 00001679:00005F75
 # CurrentPDB
@@ -15774,6 +16144,16 @@ T 1
 # 
 R 
 L INT 21H AH=57h Get/Set Time Stamp(In>BX=file Handle CX=Time DX=Date AL=0 Get AL=1 Set)
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000066FF
+# 
+R 
+L Get/Set Time Stamp
 P 
 % 0
 M 0

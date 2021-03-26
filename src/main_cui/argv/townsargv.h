@@ -140,6 +140,7 @@ public:
 	TownsARGV();
 	void PrintHelp(void) const;
 	void PrintApplicationList(void) const;
+	void CopyFile(std::string src,std::string dst);
 	bool AnalyzeCommandParameter(int argc,char *argv[]);
 };
 

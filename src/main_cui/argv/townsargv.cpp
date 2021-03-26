@@ -59,6 +59,9 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  Directory visible in the VM via VNDRV." << std::endl;
 	std::cout << "-DEBUG,-DEBUGGER" << std::endl;
 	std::cout << "  Start the machine with debugger enabled." << std::endl;
+	std::cout << "-COPYFILE src dst" << std::endl;
+	std::cout << "  Copy a file before starting the VM." << std::endl;
+	std::cout << "  Used for auto testing." << std::endl;
 	std::cout << "-UNITTEST" << std::endl;
 	std::cout << "  Let it run automatically to the end without taking control commands." << std::endl;
 	std::cout << "-FREQ frequency_in_MHz" << std::endl;
@@ -210,6 +213,32 @@ void TownsARGV::PrintApplicationList(void) const
 	std::cout << "  Mouse integration." << std::endl;
 }
 
+void TownsARGV::CopyFile(std::string src,std::string dst)
+{
+	std::ifstream ifp(src,std::ios::binary);
+	if(ifp.is_open())
+	{
+		ifp.seekg(0,ifp.end);
+		auto fSize=ifp.tellg();
+		ifp.seekg(0,ifp.beg);
+
+		std::vector <char> buf;
+		buf.resize(fSize);
+		ifp.read(buf.data(),buf.size());
+		ifp.close();
+
+		std::ofstream ofp(dst,std::ios::binary);
+		if(ofp.is_open())
+		{
+			ofp.write(buf.data(),buf.size());
+			ofp.close();
+			return;
+		}
+	}
+	std::cout << "Failed to copy a file." << std::endl;
+	exit(1);
+}
+
 bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 {
 	for(int i=1; i<argc; ++i)
@@ -284,6 +313,11 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		else if("-DEBUG"==ARG || "-DEBUGGER"==ARG)
 		{
 			debugger=true;
+		}
+		else if("-COPYFILE"==ARG && i+2<argc)
+		{
+			CopyFile(argv[i+1],argv[i+2]);
+			i+=2;
 		}
 		else if("-UNITTEST"==ARG)
 		{
