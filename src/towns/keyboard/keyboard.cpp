@@ -35,6 +35,21 @@ TownsKeyboard::TownsKeyboard(FMTowns *townsPtr,TownsPIC *picPtr) : Device(townsP
 	nFifoFilled=0;
 }
 
+void TownsKeyboard::SetAutoType(std::string str)
+{
+	while(nFifoFilled+1<FIFO_BUF_LEN && 0<str.size())
+	{
+		unsigned char byteData[2];
+		if(0<TranslateChar(byteData,str[0]))
+		{
+			PushFifo(byteData[0]|TOWNS_KEYFLAG_PRESS  ,byteData[1]);
+			PushFifo(byteData[0]|TOWNS_KEYFLAG_RELEASE,byteData[1]);
+		}
+		str.erase(str.begin());
+	}
+	autoType=str;
+}
+
 void TownsKeyboard::PushFifo(unsigned char code1,unsigned char code2)
 {
 	if(TownsEventLog::MODE_RECORDING==townsPtr->eventLog.mode)
@@ -160,6 +175,18 @@ void TownsKeyboard::SetBootKeyCombination(unsigned int keyComb)
 					fifoBuf[i]=fifoBuf[i+1];
 				}
 				--nFifoFilled;
+
+				while(nFifoFilled+1<FIFO_BUF_LEN && 0<autoType.size())
+				{
+					unsigned char byteData[2];
+					if(0<TranslateChar(byteData,autoType[0]))
+					{
+						PushFifo(byteData[0]|TOWNS_KEYFLAG_PRESS  ,byteData[1]);
+						PushFifo(byteData[0]|TOWNS_KEYFLAG_RELEASE,byteData[1]);
+					}
+					autoType.erase(autoType.begin());
+				}
+
 				if(0<nFifoFilled && true==state.IRQEnabled)
 				{
 					townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+KEY_REPEAT_INTERVAL);

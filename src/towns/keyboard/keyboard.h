@@ -16,6 +16,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #define KEYBOARD_IS_INCLUDED
 /* { */
 
+#include <string>
 #include "device.h"
 #include "townsdef.h"
 
@@ -55,12 +56,14 @@ public:
 	};
 	unsigned int nFifoFilled;
 	unsigned char fifoBuf[FIFO_BUF_LEN];
+	std::string autoType;
 
 	bool debugBreakOnReturnKey=false;
 
 	class FMTowns *townsPtr;
 	class TownsPIC *picPtr;
 
+	void SetAutoType(std::string str);
 	void PushFifo(unsigned char code1,unsigned char code2); // Always push a pair.
 
 	void BootSequenceStarted(void);

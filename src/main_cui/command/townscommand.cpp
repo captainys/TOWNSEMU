@@ -115,6 +115,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["CALC"]=CMD_CALCULATE;
 
 	primaryCmdMap["TYPE"]=CMD_TYPE_KEYBOARD;
+	primaryCmdMap["TY"]=CMD_TYPE_KEYBOARD;
 	primaryCmdMap["LET"]=CMD_LET;
 	primaryCmdMap["EMB"]=CMD_EDIT_MEMORY_BYTE;
 	primaryCmdMap["EMW"]=CMD_EDIT_MEMORY_WORD;
@@ -3057,19 +3058,22 @@ void TownsCommandInterpreter::Execute_TypeKeyboard(FMTowns &towns,Command &cmd)
 	{
 		if(' '==cmd.cmdline[i] || '\t'==cmd.cmdline[i])
 		{
-			for(int j=i+1; j<cmd.cmdline.size(); ++j)
-			{
-				unsigned char byteData[2];
-				if(0<TownsKeyboard::TranslateChar(byteData,cmd.cmdline[j]))
-				{
-					towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_PRESS  ,byteData[1]);
-					towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_RELEASE,byteData[1]);
-				}
-			}
-			unsigned char byteData[2];
-			TownsKeyboard::TranslateChar(byteData,0x0D);
-			towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_PRESS  ,byteData[1]);
-			towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_RELEASE,byteData[1]);
+			cmd.cmdline.push_back(0x0D);
+			towns.keyboard.SetAutoType(cmd.cmdline.data()+i+1);
+
+//			for(int j=i+1; j<cmd.cmdline.size(); ++j)
+//			{
+//				unsigned char byteData[2];
+//				if(0<TownsKeyboard::TranslateChar(byteData,cmd.cmdline[j]))
+//				{
+//					towns.keyboard.PushExtFifo(byteData[0]|TOWNS_KEYFLAG_PRESS  ,byteData[1]);
+//					towns.keyboard.PushExtFifo(byteData[0]|TOWNS_KEYFLAG_RELEASE,byteData[1]);
+//				}
+//			}
+//			unsigned char byteData[2];
+//			TownsKeyboard::TranslateChar(byteData,0x0D);
+//			towns.keyboard.PushExtFifo(byteData[0]|TOWNS_KEYFLAG_PRESS  ,byteData[1]);
+//			towns.keyboard.PushExtFifo(byteData[0]|TOWNS_KEYFLAG_RELEASE,byteData[1]);
 			return;
 		}
 	}
