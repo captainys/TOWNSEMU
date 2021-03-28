@@ -577,6 +577,43 @@ void i486Debugger::Interrupt(const i486DX &cpu,unsigned int INTNum,Memory &mem,u
 	{
 		switch(breakOnINT[INTNum&0xFF].cond)
 		{
+		case BreakOnINTCondition::COND_FOPEN_FCREATE:
+			{
+				bool brk=false;
+				std::string str;
+				if(cpu.GetAH()==0x3D)
+				{
+					str="Break on FOPEN ";
+					brk=true;
+				}
+				if(cpu.GetAH()==0x3C)
+				{
+					str="Break on FCREATE_OR_TRUNCATE ";
+					brk=true;
+				}
+				if(cpu.GetAH()==0x5B)
+				{
+					str="Break on FCREATE ";
+					brk=true;
+				}
+				if(true==brk)
+				{
+					std::string fName;
+					if(true==cpu.IsInRealMode())  // Real Mode
+					{
+						fName=cpu.DebugFetchString(16,cpu.state.DS(),cpu.GetDX(),mem);
+					}
+					else
+					{
+						fName=cpu.DebugFetchString(32,cpu.state.DS(),cpu.GetEDX(),mem);
+					}
+					if(true==cpputil::WildCardCompare(breakOnINT[INTNum&0xFF].fName,fName)) // Pattern,Filename
+					{
+						str+=fName;
+						ExternalBreak(str);
+					}
+				}
+			}
 		case BreakOnINTCondition::COND_ALWAYS:
 			{
 				std::string str("Break on INT ");
@@ -632,7 +669,10 @@ std::string i486Debugger::INTExplanation(const i486DX &cpu,unsigned int INTNum,M
 			INTLabel+=" "+INTFuncLabelAX;
 		}
 
-		if((0x3D00==(cpu.GetAX()&0xFF00) || 0x4B00==(cpu.GetAX()&0xFF00)))
+		if(0x3D00==(cpu.GetAX()&0xFF00) ||
+		   0x3C00==(cpu.GetAX()&0xFF00) ||
+		   0x5B00==(cpu.GetAX()&0xFF00) ||
+		   0x4B00==(cpu.GetAX()&0xFF00))
 		{
 			if(true==cpu.IsInRealMode())  // Real Mode
 			{

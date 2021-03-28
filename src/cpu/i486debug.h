@@ -143,10 +143,12 @@ public:
 			COND_NEVER,
 			COND_ALWAYS,
 			COND_AH,
-			COND_AX
+			COND_AX,
+			COND_FOPEN_FCREATE,
 		};
 		unsigned short cond=COND_NEVER;
 		unsigned short condValue=0;
+		std::string fName;
 	};
 	BreakOnINTCondition breakOnINT[BreakOnINTCondition::NUM_INTERRUPTS];
 	mutable bool stop;
