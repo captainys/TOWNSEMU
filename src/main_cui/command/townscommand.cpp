@@ -1387,12 +1387,12 @@ void TownsCommandInterpreter::Execute_AddMonitorPoint(FMTowns &towns,Command &cm
 	auto addrAndSym=towns.debugger.GetSymTable().FindSymbolFromLabel(cmd.argv[1]);
 	if(addrAndSym.second.label==cmd.argv[1])
 	{
-		towns.debugger.AddBreakPoint(addrAndSym.first,i486Debugger::BRKPNT_FLAG_MONITOR_STATUS);
+		towns.debugger.AddBreakPoint(addrAndSym.first,i486Debugger::BRKPNT_FLAG_MONITOR_ONLY);
 	}
 	else
 	{
 		auto farPtr=towns.cpu.TranslateFarPointer(cmdutil::MakeFarPointer(cmd.argv[1],towns.cpu));
-		towns.debugger.AddBreakPoint(farPtr,i486Debugger::BRKPNT_FLAG_MONITOR_STATUS);
+		towns.debugger.AddBreakPoint(farPtr,i486Debugger::BRKPNT_FLAG_MONITOR_ONLY);
 	}
 }
 

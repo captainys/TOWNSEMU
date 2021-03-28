@@ -43,15 +43,49 @@ public:
 		   Since the debugger does not know all the Virtual Machine state, the debugger
 		   cannot print all the information.
 		*/
-		BRKPNT_FLAG_MONITOR_STATUS=1,
+		BRKPNT_FLAG_MONITOR_ONLY=1,
+
+		/* If BRKPNT_FLAG_MONITOR_BEFORE_PASSCOUNT is set,
+		   debugger should print the monitoring information before the pass count is reached.
+		*/
+		BRKPNT_FLAG_SILENT_UNTIL_BREAK=2,
 	};
 	class BreakPointInfo
 	{
 	public:
 		uint32_t flags;
+		/* passCountUntilBreak is decremented IF BRKPNT_FLAG_MONITOR_ONLY is clear.
+		*/
+		uint64_t passCountUntilBreak=0;
+		/* passedCount is always incremented when CS:EIP matches the breakpoint.
+		*/
+		uint64_t passedCount=0;
 		inline void Clear(void)
 		{
 			flags=0;
+			passCountUntilBreak=0;
+			passedCount=0;
+		}
+
+		/*! Call this function when reached the break point.
+		*/
+		inline void SteppedOn(void)
+		{
+			++passedCount;
+			if(0==(flags&BRKPNT_FLAG_MONITOR_ONLY))
+			{
+				if(0!=passCountUntilBreak)
+				{
+					--passCountUntilBreak;
+				}
+			}
+		}
+
+		/*! Returns true if VM should break.
+		*/
+		inline bool ShouldBreak(void) const
+		{
+			return (0==(flags&BRKPNT_FLAG_MONITOR_ONLY) && 0==passCountUntilBreak);
 		}
 	};
 

@@ -389,6 +389,7 @@ void i486Debugger::CheckForBreakPoints(i486DX &cpu)
 	if(found!=breakPoints.end())
 	{
 		stop=true;
+		found->second.SteppedOn();
 		lastBreakPointInfo=found->second;
 	}
 	if(breakOnCS[cseip.SEG])
