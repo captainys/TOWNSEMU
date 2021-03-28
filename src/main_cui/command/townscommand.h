@@ -78,6 +78,7 @@ public:
 		CMD_SAVE_HISTORY,
 
 		CMD_ADD_BREAKPOINT,
+		CMD_ADD_BREAKPOINT_WITH_PASSCOUNT,
 		CMD_ADD_MONITORPOINT,
 		CMD_DELETE_BREAKPOINT,
 		CMD_LIST_BREAKPOINTS,
@@ -294,6 +295,7 @@ public:
 	void Execute_Disable(FMTowns &towns,Command &cmd);
 
 	void Execute_AddBreakPoint(FMTowns &towns,Command &cmd);
+	void Execute_AddBreakPointWithPassCount(FMTowns &towns,Command &cmd);
 	void Execute_AddMonitorPoint(FMTowns &towns,Command &cmd);
 	void Execute_DeleteBreakPoint(FMTowns &towns,Command &cmd);
 	void Execute_ListBreakPoints(FMTowns &towns,Command &cmd);

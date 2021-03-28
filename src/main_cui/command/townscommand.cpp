@@ -60,6 +60,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["HIST"]=CMD_PRINT_HISTORY;
 	primaryCmdMap["SAVEHIST"]=CMD_SAVE_HISTORY;
 	primaryCmdMap["BP"]=CMD_ADD_BREAKPOINT;
+	primaryCmdMap["BPPC"]=CMD_ADD_BREAKPOINT_WITH_PASSCOUNT;
 	primaryCmdMap["MP"]=CMD_ADD_MONITORPOINT;
 	primaryCmdMap["BC"]=CMD_DELETE_BREAKPOINT;
 	primaryCmdMap["BL"]=CMD_LIST_BREAKPOINTS;
@@ -402,6 +403,11 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "BP EIP|BRK EIP" << std::endl;
 	std::cout << "BP CS:EIP|BRK CS:EIP" << std::endl;
 	std::cout << "  Add a break point." << std::endl;
+	std::cout << "BPPC EIP|BRK EIP passCount" << std::endl;
+	std::cout << "BPPC CS:EIP passCount" << std::endl;
+	std::cout << "  Add a break point with pass count" << std::endl;
+	std::cout << "  Majority of the numbers specified in the parameters are hexadecimal, but" << std::endl;
+	std::cout << "  The number here (passCount) is a decimal number." << std::endl;
 	std::cout << "MP EIP|BRK EIP" << std::endl;
 	std::cout << "MP CS:EIP|BRK CS:EIP" << std::endl;
 	std::cout << "  Add a monitor-only break point.  At a monitor-only break point, the VM will print" << std::endl;
@@ -816,6 +822,9 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 
 	case CMD_ADD_BREAKPOINT:
 		Execute_AddBreakPoint(towns,cmd);
+		break;
+	case CMD_ADD_BREAKPOINT_WITH_PASSCOUNT:
+		Execute_AddBreakPointWithPassCount(towns,cmd);
 		break;
 	case CMD_ADD_MONITORPOINT:
 		Execute_AddMonitorPoint(towns,cmd);
@@ -1363,6 +1372,29 @@ void TownsCommandInterpreter::Execute_AddBreakPoint(FMTowns &towns,Command &cmd)
 	}
 
 	i486Debugger::BreakPointInfo info;
+
+	auto addrAndSym=towns.debugger.GetSymTable().FindSymbolFromLabel(cmd.argv[1]);
+	if(addrAndSym.second.label==cmd.argv[1])
+	{
+		towns.debugger.AddBreakPoint(addrAndSym.first,info);
+	}
+	else
+	{
+		auto farPtr=towns.cpu.TranslateFarPointer(cmdutil::MakeFarPointer(cmd.argv[1],towns.cpu));
+		towns.debugger.AddBreakPoint(farPtr,info);
+	}
+}
+
+void TownsCommandInterpreter::Execute_AddBreakPointWithPassCount(FMTowns &towns,Command &cmd)
+{
+	if(cmd.argv.size()<3)
+	{
+		PrintError(ERROR_TOO_FEW_ARGS);
+		return;
+	}
+
+	i486Debugger::BreakPointInfo info;
+	info.passCountUntilBreak=cpputil::Atoi(cmd.argv[2].c_str());
 
 	auto addrAndSym=towns.debugger.GetSymTable().FindSymbolFromLabel(cmd.argv[1]);
 	if(addrAndSym.second.label==cmd.argv[1])
