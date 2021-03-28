@@ -408,6 +408,12 @@ void i486Debugger::SetBreakOnINTwithAX(unsigned int INTNum,unsigned int AX)
 	breakOnINT[INTNum&(BreakOnINTCondition::NUM_INTERRUPTS-1)].condValue=AX;
 }
 
+void i486Debugger::SetBreakOnFOpen(std::string fName)
+{
+	breakOnINT[0x21].cond=BreakOnINTCondition::COND_FOPEN_FCREATE;
+	breakOnINT[0x21].fName=fName;
+}
+
 void i486Debugger::ClearBreakOnINT(void)
 {
 	for(int i=0; i<BreakOnINTCondition::NUM_INTERRUPTS; ++i)
@@ -614,6 +620,7 @@ void i486Debugger::Interrupt(const i486DX &cpu,unsigned int INTNum,Memory &mem,u
 					}
 				}
 			}
+			break;
 		case BreakOnINTCondition::COND_ALWAYS:
 			{
 				std::string str("Break on INT ");

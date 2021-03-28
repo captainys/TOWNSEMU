@@ -232,6 +232,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	breakEventMap["DMACREQ"]=BREAK_ON_DMAC_REQUEST;
 	breakEventMap["FDCCMD"]= BREAK_ON_FDC_COMMAND;
 	breakEventMap["INT"]=    BREAK_ON_INT;
+	breakEventMap["FOPEN"]=  BREAK_ON_FOPEN;
 	breakEventMap["RDCVRAM"]=BREAK_ON_CVRAM_READ;
 	breakEventMap["WRCVRAM"]=BREAK_ON_CVRAM_WRITE;
 	breakEventMap["RDFMRVRAM"]=BREAK_ON_FMRVRAM_READ;
@@ -623,6 +624,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "INT n" << std::endl;
 	std::cout << "INT n AH=hh" << std::endl;
 	std::cout << "INT n AX=hhhh" << std::endl;
+	std::cout << "FOPEN fileNameWildCard" << std::endl;
+	std::cout << "  Break when fopen,fcreate with the given file name." << std::endl;
 	std::cout << "RDCVRAM" << std::endl;
 	std::cout << "WRCVRAM" << std::endl;
 	std::cout << "RDFMRVRAM" << std::endl;
@@ -2313,6 +2316,17 @@ void TownsCommandInterpreter::Execute_BreakOn(FMTowns &towns,Command &cmd)
 		case BREAK_ON_FDC_COMMAND:
 			towns.fdc.debugBreakOnCommandWrite=true;
 			break;
+		case BREAK_ON_FOPEN:
+			if(3<=cmd.argv.size())
+			{
+				towns.debugger.SetBreakOnFOpen(cmd.argv[2]);
+			}
+			else
+			{
+				PrintError(ERROR_TOO_FEW_ARGS);
+				return;
+			}
+			break;
 		case BREAK_ON_INT:
 			if(3<=cmd.argv.size())
 			{
@@ -2536,6 +2550,11 @@ void TownsCommandInterpreter::Execute_ClearBreakOn(FMTowns &towns,Command &cmd)
 			else
 			{
 				towns.debugger.ClearBreakOnINT();
+			}
+			break;
+		case BREAK_ON_FOPEN:
+			{
+				towns.debugger.ClearBreakOnINT(0x21);
 			}
 			break;
 		case BREAK_ON_FMRVRAM_READ:

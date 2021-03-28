@@ -17,6 +17,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 /* { */
 
 
+#include <string>
 #include <set>
 #include <map>
 #include "i486.h"
@@ -197,6 +198,7 @@ public:
 	/*! Break on INT
 	*/
 	void SetBreakOnINT(unsigned int IRQNum);
+	void SetBreakOnFOpen(std::string fName);
 	void SetBreakOnINTwithAH(unsigned int IRQNum,unsigned int AH);
 	void SetBreakOnINTwithAX(unsigned int IRQNum,unsigned int AX);
 
