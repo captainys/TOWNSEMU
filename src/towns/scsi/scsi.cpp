@@ -338,10 +338,24 @@ void TownsSCSI::EnterStatusPhase(void)
 }
 /* virtual */ unsigned int TownsSCSI::IOReadByte(unsigned int ioport)
 {
+	/* 2021/03/27
+	SCSI Controller can accept command even when no device is connected.
+
+	This change was necessary to address the situation:
+	(1) Hard-disk drive-letter is registered in CMOS, but
+	(2) No hard-disk image is mounted.
+
+	This is similar to the situation when a hard-disk drive-letter is registered in CMOS, but
+	the external hard drive is powered off.
+
+	The real FM TOWNS can boot in this setting.  However, the BIOS (IO.SYS) was waiting for the
+	SCSI ready signal forever unless I comment out the following four lines.
+
 	if(true!=state.deviceConnected)
 	{
 		return 0xff;
 	}
+	*/
 
 	switch(ioport)
 	{
