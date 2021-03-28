@@ -155,7 +155,7 @@ void i486Debugger::CleanUp(void)
 	}
 	CSEIPLogPtr=0;
 }
-void i486Debugger::AddBreakPoint(CS_EIP bp,uint32_t flags)
+void i486Debugger::AddBreakPoint(CS_EIP bp,BreakPointInfo info)
 {
 	if((bp.SEG&i486DX::FarPointer::SPECIAL_SEG_MASK)==i486DX::FarPointer::SEG_WILDCARD)
 	{
@@ -163,17 +163,7 @@ void i486Debugger::AddBreakPoint(CS_EIP bp,uint32_t flags)
 	}
 	else
 	{
-		auto iter=breakPoints.find(bp);
-		if(breakPoints.end()==iter)
-		{
-			BreakPointInfo info;
-			info.flags=flags;
-			breakPoints[bp]=info;
-		}
-		else
-		{
-			iter->second.flags=flags;
-		}
+		breakPoints[bp]=info;
 	}
 }
 void i486Debugger::RemoveBreakPoint(CS_EIP bp)

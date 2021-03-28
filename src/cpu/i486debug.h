@@ -53,7 +53,7 @@ public:
 	class BreakPointInfo
 	{
 	public:
-		uint32_t flags;
+		uint32_t flags=0;
 		/* passCountUntilBreak is decremented IF BRKPNT_FLAG_MONITOR_ONLY is clear.
 		*/
 		uint64_t passCountUntilBreak=0;
@@ -161,7 +161,7 @@ public:
 	~i486Debugger();
 	void CleanUp(void);
 
-	void AddBreakPoint(CS_EIP bp,uint32_t flags=0);
+	void AddBreakPoint(CS_EIP bp,BreakPointInfo info);
 	void RemoveBreakPoint(CS_EIP bp);
 	void ClearBreakPoints(void);
 	std::vector <CS_EIP> GetBreakPoints(void) const;

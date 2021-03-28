@@ -1362,17 +1362,17 @@ void TownsCommandInterpreter::Execute_AddBreakPoint(FMTowns &towns,Command &cmd)
 		return;
 	}
 
-	uint32_t flags=0;
+	i486Debugger::BreakPointInfo info;
 
 	auto addrAndSym=towns.debugger.GetSymTable().FindSymbolFromLabel(cmd.argv[1]);
 	if(addrAndSym.second.label==cmd.argv[1])
 	{
-		towns.debugger.AddBreakPoint(addrAndSym.first,flags);
+		towns.debugger.AddBreakPoint(addrAndSym.first,info);
 	}
 	else
 	{
 		auto farPtr=towns.cpu.TranslateFarPointer(cmdutil::MakeFarPointer(cmd.argv[1],towns.cpu));
-		towns.debugger.AddBreakPoint(farPtr,flags);
+		towns.debugger.AddBreakPoint(farPtr,info);
 	}
 }
 
@@ -1384,15 +1384,18 @@ void TownsCommandInterpreter::Execute_AddMonitorPoint(FMTowns &towns,Command &cm
 		return;
 	}
 
+	i486Debugger::BreakPointInfo info;
+	info.flags=i486Debugger::BRKPNT_FLAG_MONITOR_ONLY;
+
 	auto addrAndSym=towns.debugger.GetSymTable().FindSymbolFromLabel(cmd.argv[1]);
 	if(addrAndSym.second.label==cmd.argv[1])
 	{
-		towns.debugger.AddBreakPoint(addrAndSym.first,i486Debugger::BRKPNT_FLAG_MONITOR_ONLY);
+		towns.debugger.AddBreakPoint(addrAndSym.first,info);
 	}
 	else
 	{
 		auto farPtr=towns.cpu.TranslateFarPointer(cmdutil::MakeFarPointer(cmd.argv[1],towns.cpu));
-		towns.debugger.AddBreakPoint(farPtr,i486Debugger::BRKPNT_FLAG_MONITOR_ONLY);
+		towns.debugger.AddBreakPoint(farPtr,info);
 	}
 }
 

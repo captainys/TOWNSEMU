@@ -307,8 +307,9 @@ bool Setup(FMTowns &towns,Outside_World *outside_world,const TownsARGV &argv)
 
 	if(true==argv.powerOffAtBreakPoint)
 	{
+		i486Debugger::BreakPointInfo info;
 		towns.var.powerOffAt.MakeFromString(argv.powerOffAt);
-		towns.debugger.AddBreakPoint(towns.var.powerOffAt);
+		towns.debugger.AddBreakPoint(towns.var.powerOffAt,info);
 	}
 
 	std::cout << "Loaded ROM Images.\n";
