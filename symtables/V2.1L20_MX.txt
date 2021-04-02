@@ -5740,6 +5740,26 @@ M 0
 /end
 /begin0
 T 0
+* 00001679:000028FF
+# SATTR
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000291B
+# Use DS:460H as temporary directory entry.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
 * 00001679:00002940
 # SI=0475H (+15H from SDB), DI=DMApp+15H
 R 
@@ -8650,6 +8670,16 @@ M 0
 /end
 /begin0
 T 0
+* 00001679:0000404D
+# SAVED_SATTR
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
 * 00001679:00004054
 # If bit3, Skip initializing sectors
 R 
@@ -8679,9 +8709,59 @@ P
 M 0
 /end
 /begin0
-T 0
+T 2
 * 00001679:0000408D
 # DPB
+R 
+L Next
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000040B4
+# CH=FileAttrib
+R 
+L DIRENT Found
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000040B7
+# Matching file attribute
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000040BB
+# AH=SATTR&~(UNKNOWN40h|ARCHIVE20h|READONLY01h)
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000040C1
+# Jump if file is not VOLLABEL
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000040C9
+# Jump if file is VOLLABEL and SATTR is not VOLLABEL
 R 
 L 
 P 
@@ -8690,10 +8770,60 @@ M 0
 /end
 /begin0
 T 2
-* 00001679:000040B4
+* 00001679:000040CF
+# SATTR=VOLLABEL?
+R 
+L File is NOT VOLLABEL
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000040D2
+# Jump if fileAttrib=SATTR=VOLLABEL
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000040D7
+# Jump if 0==(~SATTR&(DIR|SYSTEM|HIDDEN))
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000040D9
+# DS:[518h]=0 from MOV DS:[518h],0E500h
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:000040DE
+# If [518]!=0, everything matches.
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 2
+* 00001679:000040E0
 # 
 R 
-L DIRENT Found
+L (Prob)Attrib Matched
 P 
 % 0
 M 0
@@ -9279,6 +9409,26 @@ P
 M 0
 /end
 /begin0
+T 0
+* 00001679:00004339
+# SATTR
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:0000433D
+# SAVED_SATTR
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
 T 2
 * 00001679:00004355
 # 
@@ -9321,9 +9471,9 @@ M 0
 /begin0
 T 1
 * 00001679:00004407
-# a=~(Saved SF_ATTR), a&=CH, a&=16h(DIR|SYS|HID) -> ZF
+# 
 R 
-L DIR,SYS, or HIDDEN flat has been turned OFF -> NE
+L CH=fileAttr => TEST (~SATTR)&CH&(DIR|HIDDEN|SYSTEM)
 P 
 % 0
 M 0
@@ -9332,6 +9482,16 @@ M 0
 T 0
 * 00001679:00004408
 # Saved SF_ATTR
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 00001679:00004410
+# DIR|HIDDEN|SYSTEM
 R 
 L 
 P 

@@ -265,7 +265,9 @@ std::vector <std::string> TownsEventLog::GetText(void) const
 		case EVT_FILE_OPEN:  // INT 21H AH=3DH
 		case EVT_FILE_EXEC:  // INT 21H AH=4BH
 			text.push_back("FNAME ");
+			text.back().push_back('\"');
 			text.back()+=e.fName;
+			text.back().push_back('\"');
 			break;
 		case EVT_KEYCODE:
 			text.push_back("KEYCODE ");
