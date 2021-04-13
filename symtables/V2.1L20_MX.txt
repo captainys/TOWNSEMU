@@ -18589,6 +18589,196 @@ P
 M 0
 /end
 /begin0
+T 0
+* 0000FC00:00001FB7
+# Branch to Disk-BIOS equivalent based on AH
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 0000FC00:00001FE3
+# 
+R 
+L Disk-BIOS Equivalent AH=03h (RESTORE)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 0000FC00:0000201E
+# 
+R 
+L Disk-BIOS Equivalent AH=03h (RESTORE), AL=02?h (FD)
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000FC00:0000205E
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 0
+* 0000FC00:00002064
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 1
+* 0000FC00:00002111
+# 
+R 
+L FD Seek
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000FC00:00002138
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 0
+* 0000FC00:00002144
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 0
+* 0000FC00:0000214B
+# FDC Command SEEK
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 0000FC00:0000217B
+# 
+R 
+L Disk-BIOS Equivalent AH=05h (READ)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 0000FC00:000021B6
+# 
+R 
+L Disk-BIOS Equivalent AH=05h (READ), AL=02?h (FD)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 0000FC00:00002245
+# 
+R 
+L [SI+2]->CMOS 319Ch, [DI+2]->CMOS 31A0h, then Set up DMA
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 0000FC00:0000225A
+# 
+R 
+L Set up DMA
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 0000FC00:00002261
+# 
+R 
+L  Set up DMA, Unmask bit 0
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 0000FC00:0000226A
+# 
+R 
+L Set up DMA
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 0000FC00:00002277
+# 
+R 
+L DMAC Mask|=01h (Redirect)
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 0000FC00:0000227B
+# 
+R 
+L DMA Init
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 0000FC00:00002280
+# 
+R 
+L DMA Channel Select
+P 
+% 0
+M 1
+/end
+/begin0
+T 1
+* 0000FC00:00002287
+# 
+R 
+L DMA Count to FFFFh
+P 
+% 0
+M 1
+/end
+/begin0
 T 1
 * 0000FC00:00002293
 # 
@@ -18619,6 +18809,146 @@ P
 M 1
 /end
 /begin0
+T 1
+* 0000FC00:000022C5
+# DMA Mode=044h
+R 
+L DMA Mode=044h
+P 
+% 0
+M 1
+/end
+/begin0
+T 1
+* 0000FC00:000022CC
+# 
+R 
+L DMAC Mask|=01h
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 0000FC00:000022D5
+# 
+R 
+L DMAC Mask&=FEh
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 0000FC00:000022DC
+# 
+R 
+L DMA Device Control
+P 
+% 0
+M 1
+/end
+/begin0
+T 1
+* 0000FC00:0000230C
+# 
+R 
+L Wait BUSY flag to clear then write FDC READ Command
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000FC00:0000230F
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 0
+* 0000FC00:00002318
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 0
+* 0000FC00:0000231B
+# FDC Command READ
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000FC00:00002368
+# 7D0h=2000
+R 
+L 
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000FC00:00002371
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 0
+* 0000FC00:0000237C
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 1
+* 0000FC00:00002399
+# Check FDC Error State
+R 
+L Check FDC Error State
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 0000FC00:000023D2
+# Rewrite IO 208H Drive Control from CMOS 3198H
+R 
+L Rewrite IO 208H Drive Control from CMOS 3198H
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 0000FC00:000023EC
+# 
+R 
+L Disk-BIOS Equivalent (Prob) Check IO 20DH then Drive Select/Control and FDC Reset
+P 
+% 0
+M 0
+/end
+/begin0
 T 0
 * 0000FC00:00002405
 # 
@@ -18627,6 +18957,136 @@ L
 P 
 % 0
 M 1
+/end
+/begin0
+T 1
+* 0000FC00:00002420
+# 
+R 
+L Disk-BIOS Equivalent (Prob) Set Drive Select and Drive Control from CMOS and Reset FDC
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000FC00:00002451
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 0
+* 0000FC00:0000246F
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 0
+* 0000FC00:00002482
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 0
+* 0000FC00:000024A1
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 0
+* 0000FC00:000024A7
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 1
+* 0000FC00:0000250F
+# 
+R 
+L Wait FREADY (Bit1 of IO 0208H)
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000FC00:00002512
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 2
+* 0000FC00:00002517
+# 
+R 
+L Wait Ready Loop
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000FC00:0000253E
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 1
+* 0000FC00:0000254E
+# 
+R 
+L Drive Select, Latch MODE and INUSE (IO 20CH)
+P 
+% 0
+M 0
+/end
+/begin0
+T 0
+* 0000FC00:00002558
+# 
+R 
+L 
+P 
+% 0
+M 1
+/end
+/begin0
+T 1
+* 0000FC00:00002568
+# Wait BUSY flag to clear
+R 
+L Wait BUSY flag to clear (IO 200h)
+P 
+% 0
+M 0
 /end
 /begin0
 T 2
@@ -18784,6 +19244,16 @@ T 1
 # 
 R 
 L SYSROM:Enable (Unmask) DMA Channel 1
+P 
+% 0
+M 0
+/end
+/begin0
+T 1
+* 0000FC00:00002B3C
+# 
+R 
+L Disk-BIOS Equivalent AH=08h (RESET)
 P 
 % 0
 M 0

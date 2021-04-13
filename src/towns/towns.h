@@ -595,6 +595,14 @@ public:
 	static void MakeINTInfo(class i486SymbolTable &symTable);
 
 	using VMBase::GetScheduledTasksText;
+
+
+	bool SaveState(std::string fName) const;
+	bool LoadState(std::string fName);
+
+	const int serialDataVersion=0;
+	virtual std::vector <unsigned char> Serialize(std::string stateFName) const;
+	virtual bool Deserialize(const std::vector <unsigned char> &dat,std::string stateFName);
 };
 
 
