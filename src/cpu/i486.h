@@ -191,12 +191,18 @@ public:
 		uint32_t addressSize;
 		uint32_t limit;
 		unsigned int DPL=0;
+
+		void Serialize(std::vector <unsigned char> &data) const;
+		bool Deserialize(const unsigned char *&data);
 	};
 
 	class SegmentRegister : public SegmentProperty
 	{
 	public:
 		uint16_t value;
+
+		void Serialize(std::vector <unsigned char> &data) const;
+		bool Deserialize(const unsigned char *&data);
 	};
 
 	enum
@@ -222,11 +228,17 @@ public:
 	public:
 		unsigned int linearBaseAddr;
 		unsigned short limit;
+
+		void Serialize(std::vector <unsigned char> &data) const;
+		bool Deserialize(const unsigned char *&data);
 	};
 	class SystemAddressRegisterAndSelector : public SystemAddressRegister
 	{
 	public:
 		unsigned short selector;
+
+		void Serialize(std::vector <unsigned char> &data) const;
+		bool Deserialize(const unsigned char *&data);
 	};
 	enum
 	{
@@ -241,6 +253,9 @@ public:
 	{
 	public:
 		unsigned int attrib;  // Should it keep attribute?
+
+		void Serialize(std::vector <unsigned char> &data) const;
+		bool Deserialize(const unsigned char *&data);
 	};
 	class FarPointer
 	{
@@ -564,6 +579,9 @@ public:
 		bool exception;
 		unsigned int exceptionCode,exceptionType;
 		uint32_t exceptionLinearAddr=0; // For EXCEPTION_PF
+
+		void Serialize(std::vector <unsigned char> &data) const;
+		bool Deserialize(const unsigned char *&data,uint32_t version);
 	};
 
 	enum
@@ -2993,6 +3011,11 @@ public:
 	    It will not raise an exception.  It is for debugging purpose.
 	*/
 	bool DebugTestIOMapPermission(const SegmentRegister &TR,unsigned int ioMin,unsigned int accessSize,const Memory &mem) const;
+
+
+	virtual uint32_t SerializeVersion(void) const;
+	virtual void SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const;
+	virtual bool SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version);
 };
 
 
