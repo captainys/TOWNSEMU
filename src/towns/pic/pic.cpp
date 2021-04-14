@@ -410,3 +410,66 @@ std::vector <std::string> TownsPIC::GetStateText(void) const
 	return text;
 }
 
+
+void TownsPIC::I8259A::Serialize(std::vector <unsigned char> &data) const
+{
+	PushUint16(data,IRR);
+	PushUint16(data,ISR);
+	PushUint16(data,IMR);
+
+	PushUint16(data,OCW[0]);
+	PushUint16(data,OCW[1]);
+	PushUint16(data,OCW[2]);
+
+	PushUint16(data,ICW[0]);
+	PushUint16(data,ICW[1]);
+	PushUint16(data,ICW[2]);
+	PushUint16(data,ICW[3]);
+
+	PushUint32(data,highestPriorityInt);
+	PushUint32(data,init_stage);
+	PushUint32(data,ocw_stage);
+
+	PushBool(data,SMM);
+	PushBool(data,autoRotateOnAEOI);
+}
+bool TownsPIC::I8259A::Deserialize(const unsigned char *&data,uint32_t version)
+{
+	IRR=ReadUint16(data);
+	ISR=ReadUint16(data);
+	IMR=ReadUint16(data);
+
+	OCW[0]=ReadUint16(data);
+	OCW[1]=ReadUint16(data);
+	OCW[2]=ReadUint16(data);
+
+	ICW[0]=ReadUint16(data);
+	ICW[1]=ReadUint16(data);
+	ICW[2]=ReadUint16(data);
+	ICW[3]=ReadUint16(data);
+
+	highestPriorityInt=ReadUint32(data);
+	init_stage=ReadUint32(data);
+	ocw_stage=ReadUint32(data);
+
+	SMM=ReadBool(data);
+	autoRotateOnAEOI=ReadBool(data);
+
+	return true;
+}
+
+/* virtual */ uint32_t TownsPIC::SerializeVersion(void) const
+{
+	return 0;
+}
+/* virtual */ void TownsPIC::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
+{
+	state.i8259A[0].Serialize(data);
+	state.i8259A[1].Serialize(data);
+}
+/* virtual */ bool TownsPIC::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
+{
+	auto b0=state.i8259A[0].Deserialize(data,version);
+	auto b1=state.i8259A[1].Deserialize(data,version);
+	return true==b0 && true==b1;
+}

@@ -136,6 +136,9 @@ public:
 		    This function just fires up an IRQ without checking anything.
 		*/
 		void FireIRQ(i486DX &cpu,Memory &mem,unsigned int INTToGo);
+
+		void Serialize(std::vector <unsigned char> &data) const;
+		bool Deserialize(const unsigned char *&data,uint32_t version);
 	};
 	class State
 	{
@@ -200,6 +203,11 @@ public:
 			}
 		}
 	}
+
+
+	virtual uint32_t SerializeVersion(void) const;
+	virtual void SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const;
+	virtual bool SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version);
 };
 
 /* } */
