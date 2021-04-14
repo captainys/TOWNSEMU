@@ -44,6 +44,9 @@ public:
 		    It is set to TIME_NO_SCHEDULE in the constructor.
 		*/
 		unsigned long long int scheduleTime;
+
+		void PushState(std::vector <unsigned char> &data) const;
+		bool ReadState(const unsigned char *&data);
 	};
 
 	CommonState commonState;
@@ -82,13 +85,20 @@ public:
 	DevData
 	+0  32 bytes       DevIdent  Device ID String
 	+32 DW             Version
-	+36                Data (Length depends on the device)
+	+36 DW             Length in bytes of the common state
+	+40                Common State
+	+40+x              Data (Length depends on the device)
 	*/
 	const unsigned int deviceIdLength=32;
-	virtual std::vector <unsigned char> Serialize(std::string stateFName) const;
-	virtual bool Deserialize(const std::vector <unsigned char> &dat,std::string stateFName);
+	std::vector <unsigned char> Serialize(std::string stateFName) const;
+	bool Deserialize(const std::vector <unsigned char> &dat,std::string stateFName);
 protected:
-	void BeginSerialization(std::vector <unsigned char> &buf,unsigned int version) const;
+	/*! Version used for serialization.
+	*/
+	virtual uint32_t SerializeVersion(void) const{return ~0;};
+
+	virtual void SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const{};
+	virtual bool SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version){return false;};
 
 	static void PushInt64(std::vector <unsigned char> &buf,int64_t data);
 	static void PushUint64(std::vector <unsigned char> &buf,uint64_t data);

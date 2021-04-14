@@ -17,6 +17,29 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "device.h"
 #include "cpputil.h"
 
+
+void Device::CommonState::PushState(std::vector <unsigned char> &data) const
+{
+	Device::PushUint32(data,16);
+	Device::PushUint64(data,deviceTime);
+	Device::PushUint64(data,scheduleTime);
+}
+bool Device::CommonState::ReadState(const unsigned char *&data)
+{
+	uint32_t len=ReadUint32(data);
+	if(16==len)
+	{
+		deviceTime=Device::ReadUint64(data);
+		scheduleTime=Device::ReadUint64(data);
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+
 Device::Device(VMBase *vmPtr)
 {
 	this->vmPtr=vmPtr;
@@ -74,37 +97,59 @@ void Device::Abort(const std::string &abortReason) const
 	return IOReadByte(ioport)|(IOReadByte(ioport+1)<<8)|(IOReadByte(ioport+2)<<16)|(IOReadByte(ioport+3)<<24);
 }
 
-/* virtual */ std::vector <unsigned char> Device::Serialize(std::string) const
+std::vector <unsigned char> Device::Serialize(std::string stateFName) const
 {
-	std::vector <unsigned char> empty;
-	BeginSerialization(empty,~0);
-	return empty;
-}
-/* virtual */ bool Device::Deserialize(const std::vector <unsigned char> &,std::string)
-{
-	return false;
-}
-void Device::BeginSerialization(std::vector <unsigned char> &buf,unsigned int version) const
-{
-	buf.resize(36);
-	for(auto &b : buf)
-	{
-		b=0;
-	}
-
-	cpputil::PutDword(buf.data()+32,version);
+	std::vector <unsigned char> data;
 
 	std::string devName=DeviceName();
 	if(31<devName.size())
 	{
 		std::cout << "Device Name exceeds 31 letters." << std::endl;
-		return;
+		return data;
 	}
+
+	data.resize(36);
+	for(auto &b : data)
+	{
+		b=0;
+	}
+
+	cpputil::PutDword(data.data()+deviceIdLength,SerializeVersion());
 
 	for(int i=0; i<devName.size(); ++i)
 	{
-		buf[i]=(unsigned char)devName[i];
+		data[i]=(unsigned char)devName[i];
 	}
+
+	commonState.PushState(data);
+
+	SpecificSerialize(data,stateFName);
+	return data;
+}
+bool Device::Deserialize(const std::vector <unsigned char> &dat,std::string stateFName)
+{
+	const unsigned char *data=dat.data();
+
+	std::string readDeviceId=(const char *)data;
+	std::string thisDeviceId=DeviceName();
+	if(readDeviceId!=thisDeviceId)
+	{
+		return ~0;
+	}
+
+	data+=deviceIdLength;
+	uint32_t version=ReadUint32(data);
+	if(~0==version)
+	{
+		return false;
+	}
+
+	if(true!=commonState.ReadState(data))
+	{
+		return false;
+	}
+
+	return SpecificDeserialize(data,stateFName,version);
 }
 
 /* static */ void Device::PushInt64(std::vector <unsigned char> &buf,int64_t data)

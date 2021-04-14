@@ -4,19 +4,116 @@
 
 bool FMTowns::SaveState(std::string fName) const
 {
+	std::ofstream ofp(fName,std::ios::binary);
+	if(true==ofp.is_open())
+	{
+		std::vector <const Device *> allDevices;
+		allDevices.push_back(this);
+		allDevices.push_back(&cpu);
+		allDevices.push_back(&pic);
+		allDevices.push_back(&dmac);
+		allDevices.push_back(&physMem);
+		allDevices.push_back(&crtc);
+		allDevices.push_back(&sprite);
+		allDevices.push_back(&fdc);
+		allDevices.push_back(&scsi);
+		allDevices.push_back(&cdrom);
+		allDevices.push_back(&rtc);
+		allDevices.push_back(&sound);
+		allDevices.push_back(&gameport);
+		allDevices.push_back(&timer);
+		allDevices.push_back(&keyboard);
+		allDevices.push_back(&serialport);
+		allDevices.push_back(&vndrv);
+
+		for(auto devPtr : allDevices)
+		{
+			auto dat=devPtr->Serialize(fName);
+			uint32_t len=(uint32_t)dat.size();
+
+			ofp.write((char *)&len,4);
+			ofp.write((char *)dat.data(),len);
+		}
+	}
 	return false;
 }
 bool FMTowns::LoadState(std::string fName)
 {
+	std::ifstream ifp(fName,std::ios::binary);
+	if(true==ifp.is_open())
+	{
+		std::vector <Device *> allDevices;
+		allDevices.push_back(this);
+		allDevices.push_back(&cpu);
+		allDevices.push_back(&pic);
+		allDevices.push_back(&dmac);
+		allDevices.push_back(&physMem);
+		allDevices.push_back(&crtc);
+		allDevices.push_back(&sprite);
+		allDevices.push_back(&fdc);
+		allDevices.push_back(&scsi);
+		allDevices.push_back(&cdrom);
+		allDevices.push_back(&rtc);
+		allDevices.push_back(&sound);
+		allDevices.push_back(&gameport);
+		allDevices.push_back(&timer);
+		allDevices.push_back(&keyboard);
+		allDevices.push_back(&serialport);
+		allDevices.push_back(&vndrv);
+
+		while(true!=ifp.eof())
+		{
+			uint32_t len;
+			ifp.read((char *)&len,4);
+			if(0==len)
+			{
+				break;
+			}
+
+			std::vector <unsigned char> data;
+			data.resize(len);
+			ifp.read((char *)data.data(),len);
+
+			bool successful=false;
+			for(auto devPtr : allDevices)
+			{
+				if(true==devPtr->Deserialize(data,fName))
+				{
+					successful=true;
+					break;
+				}
+			}
+
+			if(true!=successful)
+			{
+				return false;
+			}
+		}
+
+		for(auto devPtr : allDevices)
+		{
+			UnscheduleDeviceCallBack(*devPtr);
+		}
+		for(auto devPtr : allDevices)
+		{
+			if(TIME_NO_SCHEDULE!=devPtr->commonState.scheduleTime)
+			{
+				ScheduleDeviceCallBack(*devPtr,devPtr->commonState.scheduleTime);
+			}
+		}
+
+		return true;
+	}
 	return false;
 }
 
-/* virtual */ std::vector <unsigned char> FMTowns::Serialize(std::string) const
+/* virtual */ uint32_t FMTowns::SerializeVersion(void) const
 {
-	std::vector <unsigned char> data;
-	BeginSerialization(data,serialDataVersion);
+	return 0;
+}
 
-
+/* virtual */ void FMTowns::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
+{
 	PushInt64(data,state.townsTime);
 	PushInt64(data,state.nextDevicePollingTime);
 	PushInt64(data,state.cpuTime);
@@ -69,14 +166,9 @@ bool FMTowns::LoadState(std::string fName)
 	PushUint32(data,state.appSpecific_WC_setSpeedPtr);
 	PushUint32(data,state.appSpecific_WC_maxSpeedPtr);
 	PushBool(data,state.appSpecific_HoldMouseIntegration);
-
-	return data;
 }
-/* virtual */ bool FMTowns::Deserialize(const std::vector <unsigned char> &dat,std::string)
+/* virtual */ bool FMTowns::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
 {
-	const unsigned char *data=dat.data()+deviceIdLength;
-	auto version=ReadUint32(data);
-
 	state.townsTime=ReadInt64(data);
 	state.nextDevicePollingTime=ReadInt64(data);
 	state.cpuTime=ReadInt64(data);
@@ -130,5 +222,5 @@ bool FMTowns::LoadState(std::string fName)
 	state.appSpecific_WC_maxSpeedPtr=ReadUint32(data);
 	state.appSpecific_HoldMouseIntegration=ReadBool(data);
 
-	return data;
+	return true;
 }
