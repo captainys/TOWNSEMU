@@ -17,3 +17,7 @@ add_test(NAME wildcard COMMAND wildcard)
 add_executable(truename truename.cpp)
 target_link_libraries(truename cpputil)
 
+add_executable(relpath relpath.cpp)
+target_link_libraries(relpath cpputil)
+add_test(NAME relativePath COMMAND relpath)
+

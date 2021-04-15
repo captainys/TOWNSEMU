@@ -635,8 +635,89 @@ std::string cpputil::TrueName(std::string incoming)
 
 std::string cpputil::MakeRelativePath(std::string fName,std::string relativeToThisDir)
 {
-	// Tentative
-	return fName;
+	fName=cpputil::TrueName(fName);
+	relativeToThisDir=cpputil::TrueName(relativeToThisDir);
+
+	if(relativeToThisDir.size()==0)
+	{
+		return fName;
+	}
+	if(0<relativeToThisDir.size() && relativeToThisDir.back()=='/')
+	{
+		relativeToThisDir.pop_back();
+	}
+	if(relativeToThisDir.size()==0)
+	{
+		return fName;
+	}
+
+	// relativeToThisDir="/abc/xyz/pqr"
+	// fName=            "/abc/subdir/file"
+	// Return=           "../../subdir/file"
+
+	int currentSlash=0;
+	while(currentSlash<relativeToThisDir.size())
+	{
+		auto nextSlash=currentSlash;
+		if(relativeToThisDir[nextSlash]=='/')
+		{
+			++nextSlash;
+		}
+		while(nextSlash<relativeToThisDir.size() && relativeToThisDir[nextSlash]!='/')
+		{
+			++nextSlash;
+		}
+
+		bool match=true;
+		for(int i=currentSlash; i<nextSlash; ++i)
+		{
+			auto a=relativeToThisDir[i];
+			auto b=fName[i];
+		#ifdef _WIN32
+			if('a'<=a && a<='z')
+			{
+				a+='A'-'a';
+			}
+			if('a'<=b && b<='z')
+			{
+				b+='A'-'a';
+			}
+		#endif
+			if(a!=b)
+			{
+				match=false;
+				break;
+			}
+		}
+
+		if(true==match)
+		{
+			currentSlash=nextSlash;
+		}
+		else
+		{
+			break;
+		}
+	}
+
+	// relativeToThisDir="/abc/xyz/pqr"
+	// fName=            "/abc/subdir/file"
+	//                        ^ currentSlash points to.
+
+	std::string relPath;
+	for(int i=currentSlash; i<relativeToThisDir.size(); ++i)
+	{
+		if('/'==relativeToThisDir[i])
+		{
+			relPath=relPath+"../";
+		}
+	}
+	for(int i=currentSlash+1; i<fName.size(); ++i)
+	{
+		relPath.push_back(fName[i]);
+	}
+
+	return relPath;
 }
 
 void cpputil::SimplifyPath(std::string &path)
