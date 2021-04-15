@@ -107,6 +107,9 @@ protected:
 	static void PushInt16(std::vector <unsigned char> &buf,int16_t data);
 	static void PushUint16(std::vector <unsigned char> &buf,uint16_t data);
 	static void PushBool(std::vector <unsigned char> &buf,bool flag);
+	static void PushString(std::vector <unsigned char> &buf,std::string str);
+	static void PushUcharArray(std::vector <unsigned char> &buf,const std::vector <unsigned char> &data);
+	static void PushUcharArray(std::vector <unsigned char> &buf,uint64_t len,const unsigned char data[]);
 
 	static uint64_t ReadUint64(const unsigned char *&data);
 	static int64_t ReadInt64(const unsigned char *&data);

@@ -393,3 +393,54 @@ std::vector <std::string> TownsDMAC::GetStateText(void) const
 	return text;
 }
 
+
+
+/* virtual */ uint32_t TownsDMAC::SerializeVersion(void) const
+{
+	return 0;
+}
+/* virtual */ void TownsDMAC::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
+{
+	PushUint32(data,state.bitSize);      // 00A0H 8 or 16
+	PushBool(data,state.BASE);                 // 00A1H
+	PushUint32(data,state.SELCH);        // 00A1H
+	PushUint16(data,state.devCtrl[0]);  // 00A8 and 00A9
+	PushUint16(data,state.devCtrl[1]);  // 00A8 and 00A9
+	PushUint16(data,state.temporaryReg[0]); // 00AB and 00AC What are they?
+	PushUint16(data,state.temporaryReg[1]); // 00AB and 00AC What are they?
+	PushUint16(data,state.req);
+	PushUint16(data,state.mask);
+
+	for(auto &ch : state.ch)
+	{
+		PushUint32(data,ch.baseCount);    // 00A2H and 00A3H
+		PushUint32(data,ch.currentCount); // 00A2H and 00A3H
+		PushUint32(data,ch.baseAddr);     // 00A4 to 00A7
+		PushUint32(data,ch.currentAddr);  // 00A4 to 00A7
+		PushUint16(data,ch.modeCtrl);     // 00AA
+		PushBool(data,ch.terminalCount);  // 00AB
+	}
+}
+/* virtual */ bool TownsDMAC::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
+{
+	state.bitSize=ReadUint32(data);      // 00A0H 8 or 16
+	state.BASE=ReadBool(data);                 // 00A1H
+	state.SELCH=ReadUint32(data);        // 00A1H
+	state.devCtrl[0]=ReadUint16(data);  // 00A8 and 00A9
+	state.devCtrl[1]=ReadUint16(data);  // 00A8 and 00A9
+	state.temporaryReg[0]=ReadUint16(data); // 00AB and 00AC What are they?
+	state.temporaryReg[1]=ReadUint16(data); // 00AB and 00AC What are they?
+	state.req=ReadUint16(data);
+	state.mask=ReadUint16(data);
+
+	for(auto &ch : state.ch)
+	{
+		ch.baseCount=ReadUint32(data);    // 00A2H and 00A3H
+		ch.currentCount=ReadUint32(data); // 00A2H and 00A3H
+		ch.baseAddr=ReadUint32(data);     // 00A4 to 00A7
+		ch.currentAddr=ReadUint32(data);  // 00A4 to 00A7
+		ch.modeCtrl=ReadUint16(data);     // 00AA
+		ch.terminalCount=ReadBool(data);  // 00AB
+	}
+	return true;
+}

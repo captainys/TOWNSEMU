@@ -13,3 +13,7 @@ add_test(NAME vram_mapping COMMAND vram_mapping)
 add_executable(wildcard wildcard.cpp)
 target_link_libraries(wildcard cpputil)
 add_test(NAME wildcard COMMAND wildcard)
+
+add_executable(truename truename.cpp)
+target_link_libraries(truename cpputil)
+

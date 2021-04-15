@@ -677,3 +677,68 @@ std::vector <std::string> TownsPhysicalMemory::GetStatusText(void) const
 
 	return text;
 }
+
+
+/* virtual */ uint32_t TownsPhysicalMemory::SerializeVersion(void) const
+{
+	return 0;
+}
+/* virtual */ void TownsPhysicalMemory::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
+{
+	std::string stateDir,stateName;
+	cpputil::SeparatePathFile(stateDir,stateName,stateFName);
+
+	PushBool(data,state.sysRomMapping);  // Whenever changing this flag, synchronously change memory access mapping.
+	PushBool(data,state.dicRom);
+	PushUint32(data,state.DICROMBank);
+	PushBool(data,state.FMRVRAM);
+	PushBool(data,state.TVRAMWrite);
+	PushBool(data,state.ANKFont);
+	PushUint32(data,state.FMRVRAMMask);
+	PushUint32(data,state.FMRVRAMWriteOffset);
+
+	PushUint32(data,state.nativeVRAMMaskRegisterLatch);
+	for(auto nvMsk : state.nativeVRAMMask)
+	{
+		PushUint16(data, nvMsk);
+	}
+
+	PushUcharArray(data,state.RAM);
+	PushUcharArray(data,state.VRAM);
+	PushUcharArray(data,state.CVRAM);
+	PushUcharArray(data,state.spriteRAM);
+	PushUcharArray(data,state.waveRAM);
+	PushUcharArray(data,TOWNS_CMOS_SIZE,state.CMOSRAM);
+
+	// PCMCIA memory card.
+	PushUint32(data,state.memCard.memCardType);
+	PushString(data,cpputil::MakeRelativePath(state.memCard.fName,stateDir));
+	PushUcharArray(data,state.memCard.data);
+	PushBool(data, state.memCard.modified);
+	PushBool(data, state.memCard.changed);
+	PushBool(data, state.memCard.writeProtected);
+	PushUint64(data,state.memCard.lastModified);
+
+
+	PushUint32(data, state.memCardBank);
+	PushBool(data, state.memCardREG); // [2] pp.795
+
+	PushUint16(data,state.kanjiROMAccess.JISCodeHigh); // 000CFF94 Big Endian?
+	PushUint16(data,state.kanjiROMAccess.JISCodeLow);  // 000CFF95
+	PushUint32(data,state.kanjiROMAccess.row);
+
+	// System ROM and DOS rom needs to be saved.
+	// If the system started with YSDOS, it cannot switch back to the original MSDOS, vise-versa.
+	PushUcharArray(data,sysRom);
+	PushUcharArray(data,dosRom);
+}
+/* virtual */ bool TownsPhysicalMemory::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
+{
+
+
+	//void SetSysROMDicROMMappingFlag(bool sysRomMapping,bool dicRomMapping);
+	//void SetFMRVRAMMappingFlag(bool FMRVRAMMapping);
+	//void EnableOrDisableNativeVRAMMask(void);
+
+	return true;
+}

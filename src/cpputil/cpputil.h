@@ -47,6 +47,12 @@ inline char FourBitToX(int i);
 
 void SeparatePathFile(std::string &path,std::string &file,const std::string &fName);
 
+std::string Getcwd(void);
+
+std::string TrueName(std::string path);
+
+std::string MakeRelativePath(std::string fName,std::string relativeToThisDir);
+
 void SimplifyPath(std::string &path);
 
 long long int FileSize(const std::string &fName);

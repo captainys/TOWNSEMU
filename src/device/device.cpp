@@ -217,6 +217,28 @@ bool Device::Deserialize(const std::vector <unsigned char> &dat,std::string stat
 	buf[len  ]= flag;
 }
 
+/* static */ void Device::PushString(std::vector <unsigned char> &buf,std::string str)
+{
+	PushUint32(buf,str.size()+1);
+	for(auto c : str)
+	{
+		buf.push_back(c);
+	}
+	buf.push_back(0);
+}
+/* static */ void Device::PushUcharArray(std::vector <unsigned char> &buf,const std::vector <unsigned char> &data)
+{
+	PushUint32(buf,(uint32_t)data.size());
+	buf.insert(buf.end(),data.begin(),data.end());
+}
+/* static */ void Device::PushUcharArray(std::vector <unsigned char> &buf,uint64_t len,const unsigned char data[])
+{
+	for(uint64_t i=0; i<len; ++i)
+	{
+		buf.push_back(data[i]);
+	}
+}
+
 /* static */ uint64_t Device::ReadUint64(const unsigned char *&data)
 {
 	uint64_t v;

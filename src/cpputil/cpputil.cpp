@@ -14,6 +14,13 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 << LICENSE */
 #include <fstream>
 
+#ifdef _WIN32
+	#include <direct.h>
+	#define getcwd _getcwd
+#else
+	#include <unistd.h>
+#endif
+
 #include "cpputil.h"
 
 
@@ -517,6 +524,119 @@ void cpputil::SeparatePathFile(std::string &path,std::string &file,const std::st
 	path=fName;
 	path.resize(lastSeparator+1);
 	file=fName.data()+lastSeparator+1;
+}
+
+std::string cpputil::Getcwd(void)
+{
+	char cwdIn[1024];
+	getcwd(cwdIn,1023);
+
+	std::string cwd=cwdIn;
+	// Curse backslash.  MSDOS will forever be laughed at for backslash.  (Oh, and also 0D 0A.)
+	for(auto &c : cwd)
+	{
+		if('\\'==c)
+		{
+			c='/';
+		}
+	}
+
+	return cwd;
+}
+
+std::string cpputil::TrueName(std::string incoming)
+{
+	// Just curse backslash.
+	for(auto &c : incoming)
+	{
+		if('\\'==c)
+		{
+			c='/';
+		}
+	}
+
+	std::string path=incoming;
+	std::string cwd=Getcwd();
+
+
+#ifdef _WIN32
+	int incomingDrive=-1,currentDrive=-1;
+
+	// Is full-path given?
+	if(3<=incoming.size() && ':'==incoming[1] && '/'==incoming[2])
+	{
+		if('a'<=incoming[0] && incoming[0]<='z')
+		{
+			incoming[0]+='A'-'a';
+		}
+		return incoming;
+	}
+
+	if(2<=cwd.size() && cwd[1]==':')
+	{
+		currentDrive=cwd[0];
+		if('a'<=currentDrive && currentDrive<='z')
+		{
+			currentDrive-='a';
+			cwd[0]+='A'-'a';
+		}
+		else
+		{
+			currentDrive-='A';
+		}
+	}
+
+	if(2<=incoming.size() && incoming[1]==':')
+	{
+		incomingDrive=incoming[0];
+		if('a'<=incomingDrive && incomingDrive<='z')
+		{
+			incomingDrive-='a';
+		}
+		else
+		{
+			incomingDrive-='A';
+		}
+	}
+
+	if(-1!=incomingDrive && incomingDrive!=currentDrive)
+	{
+		// If the current drive!=incoming drive, no way.
+		// Just curse the drive letter.
+		return path;
+	}
+
+	if(-1!=currentDrive && '/'==incoming[0])
+	{
+		std::string driveLetter;
+		driveLetter.push_back('A'+currentDrive);
+		driveLetter.push_back(':');
+		return driveLetter+incoming;
+	}
+#else
+	if('/'==incoming[0])
+	{
+		return incoming;
+	}
+#endif
+
+	// Incoming is most likely is a relative path.
+
+	if('/'!=cwd.back())
+	{
+		cwd.push_back('/');
+	}
+	path=cwd+incoming;
+
+	SimplifyPath(path);
+
+	return path;
+}
+
+std::string cpputil::MakeRelativePath(std::string fName,std::string relativeToThisDir)
+{
+	// Tentative
+	return fName;
 }
 
 void cpputil::SimplifyPath(std::string &path)
