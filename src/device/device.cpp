@@ -309,3 +309,40 @@ bool Device::Deserialize(const std::vector <unsigned char> &dat,std::string stat
 	++data;
 	return v;
 }
+/* static */ std::string Device::ReadString(const unsigned char *&data)
+{
+	std::string str;
+	auto len=ReadUint32(data);
+
+	for(int64_t i=0; i<len; ++i)
+	{
+		if(0!=*data)
+		{
+			str.push_back((char)*data);
+		}
+		++data;
+	}
+
+	return str;
+}
+/* static */ std::vector <unsigned char> Device::ReadUcharArray(const unsigned char *&data)
+{
+	auto len=ReadUint32(data);
+	std::vector <unsigned char> buf;
+
+	for(int64_t i=0; i<len; ++i)
+	{
+		buf.push_back(*data);
+		++data;
+	}
+
+	return buf;
+}
+/* static */ void Device::ReadUcharArray(const unsigned char *&data,uint64_t len,unsigned char buf[])
+{
+	for(uint64_t i=0; i<len; ++i)
+	{
+		buf[i]=*data;
+		++data;
+	}
+}

@@ -544,6 +544,21 @@ std::string cpputil::Getcwd(void)
 	return cwd;
 }
 
+bool cpputil::IsRelativePath(std::string path)
+{
+	if(0<path.size() && ('/'==path[0] || '\\'==path[0]))
+	{
+		return false;
+	}
+#ifdef _WIN32
+	if(3<=path.size() && ':'==path[1] && ('/'==path[2] || '\\'==path[2]))
+	{
+		return false;
+	}
+#endif
+	return true;
+}
+
 std::string cpputil::TrueName(std::string incoming)
 {
 	// Just curse backslash.

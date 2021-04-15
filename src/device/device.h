@@ -118,6 +118,9 @@ protected:
 	static uint16_t ReadUint16(const unsigned char *&data);
 	static int16_t ReadInt16(const unsigned char *&data);
 	static bool ReadBool(const unsigned char *&data);
+	static std::string ReadString(const unsigned char *&data);
+	static std::vector <unsigned char> ReadUcharArray(const unsigned char *&data);
+	static void ReadUcharArray(const unsigned char *&data,uint64_t len,unsigned char buf[]);
 };
 
 /* } */

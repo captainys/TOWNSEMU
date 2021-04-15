@@ -734,11 +734,67 @@ std::vector <std::string> TownsPhysicalMemory::GetStatusText(void) const
 }
 /* virtual */ bool TownsPhysicalMemory::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
 {
+	std::string stateDir,stateName;
+	cpputil::SeparatePathFile(stateDir,stateName,stateFName);
 
 
-	//void SetSysROMDicROMMappingFlag(bool sysRomMapping,bool dicRomMapping);
-	//void SetFMRVRAMMappingFlag(bool FMRVRAMMapping);
-	//void EnableOrDisableNativeVRAMMask(void);
+
+	state.sysRomMapping=ReadBool(data);  // Whenever changing this flag, synchronously change memory access mapping.
+	state.dicRom=ReadBool(data);
+	state.DICROMBank=ReadUint32(data);
+	state.FMRVRAM=ReadBool(data);
+	state.TVRAMWrite=ReadBool(data);
+	state.ANKFont=ReadBool(data);
+	state.FMRVRAMMask=ReadUint32(data);
+	state.FMRVRAMWriteOffset=ReadUint32(data);
+
+	state.nativeVRAMMaskRegisterLatch=ReadUint32(data);
+	for(auto &nvMsk : state.nativeVRAMMask)
+	{
+		nvMsk=ReadUint16(data);
+	}
+
+	state.RAM=ReadUcharArray(data);
+	state.VRAM=ReadUcharArray(data);
+	state.CVRAM=ReadUcharArray(data);
+	state.spriteRAM=ReadUcharArray(data);
+	state.waveRAM=ReadUcharArray(data);
+	ReadUcharArray(data,TOWNS_CMOS_SIZE,state.CMOSRAM);
+
+	// PCMCIA memory card.
+	state.memCard.memCardType=ReadUint32(data);
+
+	state.memCard.fName=ReadString(data);
+	if(true==cpputil::IsRelativePath(state.memCard.fName))
+	{
+		state.memCard.fName=cpputil::MakeFullPathName(stateDir,state.memCard.fName);
+	}
+
+	state.memCard.data=ReadUcharArray(data);
+	state.memCard.modified=ReadBool(data);
+	state.memCard.changed=ReadBool(data);
+	state.memCard.writeProtected=ReadBool(data);
+	state.memCard.lastModified=ReadUint64(data);
+
+
+	state.memCardBank=ReadUint32(data);
+	state.memCardREG=ReadBool(data); // [2] pp.795
+
+	state.kanjiROMAccess.JISCodeHigh=ReadUint16(data); // 000CFF94 Big Endian?
+	state.kanjiROMAccess.JISCodeLow=ReadUint16(data);  // 000CFF95
+	state.kanjiROMAccess.row=ReadUint32(data);
+
+	// System ROM and DOS rom needs to be saved.
+	// If the system started with YSDOS, it cannot switch back to the original MSDOS, vise-versa.
+	sysRom=ReadUcharArray(data);
+	dosRom=ReadUcharArray(data);
+
+
+
+	// Reset mappings
+	SetSysROMDicROMMappingFlag(state.sysRomMapping,state.dicRom);
+	SetFMRVRAMMappingFlag(state.FMRVRAM);
+	EnableOrDisableNativeVRAMMask();
 
 	return true;
 }

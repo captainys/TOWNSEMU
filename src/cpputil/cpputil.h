@@ -49,6 +49,8 @@ void SeparatePathFile(std::string &path,std::string &file,const std::string &fNa
 
 std::string Getcwd(void);
 
+bool IsRelativePath(std::string path);
+
 std::string TrueName(std::string path);
 
 std::string MakeRelativePath(std::string fName,std::string relativeToThisDir);
