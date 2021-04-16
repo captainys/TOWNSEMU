@@ -572,3 +572,29 @@ std::vector <std::string> TownsSprite::GetPattern16BitText(unsigned int ptnIdx,c
 	}
 	return text;
 }
+
+/* virtual */ uint32_t TownsSprite::SerializeVersion(void) const
+{
+	return 0;
+}
+/* virtual */ void TownsSprite::SpecificSerialize(std::vector <unsigned char> &data,std::string) const
+{
+	PushUint16(data,state.addressLatch);
+	for(auto r : state.reg)
+	{
+		PushUint16(data,r);
+	}
+	PushBool(data,state.spriteBusy);
+	PushBool(data,state.screenModeAcceptsSprite);
+}
+/* virtual */ bool TownsSprite::SpecificDeserialize(const unsigned char *&data,std::string,uint32_t version)
+{
+	state.addressLatch=ReadUint16(data);
+	for(auto &r : state.reg)
+	{
+		r=ReadUint16(data);
+	}
+	state.spriteBusy=ReadBool(data);
+	state.screenModeAcceptsSprite=ReadBool(data);
+	return true;
+}

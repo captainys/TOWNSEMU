@@ -93,13 +93,6 @@ public:
 	std::vector <unsigned char> Serialize(std::string stateFName) const;
 	bool Deserialize(const std::vector <unsigned char> &dat,std::string stateFName);
 protected:
-	/*! Version used for serialization.
-	*/
-	virtual uint32_t SerializeVersion(void) const{return ~0;};
-
-	virtual void SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const{};
-	virtual bool SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version){return false;};
-
 	static void PushInt64(std::vector <unsigned char> &buf,int64_t data);
 	static void PushUint64(std::vector <unsigned char> &buf,uint64_t data);
 	static void PushInt32(std::vector <unsigned char> &buf,int32_t data);
@@ -121,6 +114,16 @@ protected:
 	static std::string ReadString(const unsigned char *&data);
 	static std::vector <unsigned char> ReadUcharArray(const unsigned char *&data);
 	static void ReadUcharArray(const unsigned char *&data,uint64_t len,unsigned char buf[]);
+
+	/*! Version used for serialization.
+	*/
+	virtual uint32_t SerializeVersion(void) const{return ~0;};
+	/*! Device-specific Serialization.
+	*/
+	virtual void SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const{};
+	/*! Device-specific De-serialization.
+	*/
+	virtual bool SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version){return false;};
 };
 
 /* } */

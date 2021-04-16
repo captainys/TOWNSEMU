@@ -1707,3 +1707,144 @@ std::vector <std::string> TownsCRTC::GetHighResPaletteText(void) const
 {
 	return GetLowResPaletteText(state.highResCrtcPalette);
 }
+
+
+void TownsCRTC::AnalogPalette::Serialize(std::vector <unsigned char> &data) const
+{
+	PushUint32(data,codeLatch);
+	for(int i=0; i<2; ++i)
+	{
+		for(int j=0; j<16; ++j)
+		{
+			uint32_t col;
+			col=(plt16[i][j][2]<<16)|(plt16[i][j][1]<<8)|plt16[i][j][0];
+			PushUint32(data,col);
+		}
+	}
+	for(auto p : plt256)
+	{
+		uint32_t col;
+		col=(p[2]<<16)|(p[1]<<8)|p[0];
+		PushUint32(data,col);
+	}
+}
+void TownsCRTC::AnalogPalette::Deserialize(const unsigned char *&data)
+{
+	codeLatch=ReadUint32(data);
+	for(int i=0; i<2; ++i)
+	{
+		for(int j=0; j<16; ++j)
+		{
+			uint32_t col=ReadUint32(data);
+			plt16[i][j][2]=(col>>16)&255;
+			plt16[i][j][1]=(col>>8)&255;
+			plt16[i][j][0]=col&255;
+		}
+	}
+	for(auto &p : plt256)
+	{
+		uint32_t col=ReadUint32(data);
+		p[2]=(col>>16)&255;
+		p[1]=(col>>8)&255;
+		p[0]=col&255;
+	}
+}
+
+/* virtual */ uint32_t TownsCRTC::SerializeVersion(void) const
+{
+	return 0;
+}
+/* virtual */ void TownsCRTC::SpecificSerialize(std::vector <unsigned char> &data,std::string) const
+{
+	PushBool(data,state.VSYNCIRQ);;
+	PushBool(data,state.VSYNC);;
+
+	for(auto r : state.crtcReg)
+	{
+		PushUint16(data,r);
+	}
+	PushUint32(data,state.crtcAddrLatch);
+
+	PushBool(data,state.DPMD); // Digital-Palette Modify Flag
+	for(auto p : state.FMRPalette)
+	{
+		PushUint32(data,p);
+	}
+
+	for(auto s : state.sifter)
+	{
+		PushUint16(data,s);
+	}
+	PushUint32(data,state.sifterAddrLatch);
+
+	state.palette.Serialize(data);
+
+	PushBool(data,state.highResAvailable);
+	PushBool(data,state.highResCRTCEnabled);
+	for(auto r : state.highResCrtcReg)
+	{
+		PushUint32(data,r);
+	}
+	PushUint32(data,state.highResCrtcRegAddrLatch);
+	PushBool(data,state.highResCrtcReg4Bit1);
+	PushUint32(data,state.highResPaletteMode);
+	PushUint32(data,state.highResPaletteLatch);
+
+	state.highResCrtcPalette.Serialize(data);
+
+	PushUint32(data,state.FMRGVRAMDisplayPlanes);
+
+	PushUint32(data,state.FMRVRAMOffset);
+	PushBool(data,state.showPageFDA0[0]);
+	PushBool(data,state.showPageFDA0[1]);
+	PushBool(data,state.showPage0448[0]);
+	PushBool(data,state.showPage0448[1]);
+}
+/* virtual */ bool TownsCRTC::SpecificDeserialize(const unsigned char *&data,std::string,uint32_t version)
+{
+	state.VSYNCIRQ=ReadBool(data);;
+	state.VSYNC=ReadBool(data);;
+
+	for(auto &r : state.crtcReg)
+	{
+		r=ReadUint16(data);
+	}
+	state.crtcAddrLatch=ReadUint32(data);
+
+	state.DPMD=ReadBool(data); // Digital-Palette Modify Flag
+	for(auto &p : state.FMRPalette)
+	{
+		p=ReadUint32(data);
+	}
+
+	for(auto &s : state.sifter)
+	{
+		s=ReadUint16(data);
+	}
+	state.sifterAddrLatch=ReadUint32(data);
+
+	state.palette.Deserialize(data);
+
+	state.highResAvailable=ReadBool(data);
+	state.highResCRTCEnabled=ReadBool(data);
+	for(auto &r : state.highResCrtcReg)
+	{
+		r=ReadUint32(data);
+	}
+	state.highResCrtcRegAddrLatch=ReadUint32(data);
+	state.highResCrtcReg4Bit1=ReadBool(data);
+	state.highResPaletteMode=ReadUint32(data);
+	state.highResPaletteLatch=ReadUint32(data);
+
+	state.highResCrtcPalette.Deserialize(data);
+
+	state.FMRGVRAMDisplayPlanes=ReadUint32(data);
+
+	state.FMRVRAMOffset=ReadUint32(data);
+	state.showPageFDA0[0]=ReadBool(data);
+	state.showPageFDA0[1]=ReadBool(data);
+	state.showPage0448[0]=ReadBool(data);
+	state.showPage0448[1]=ReadBool(data);
+
+	return true;
+}

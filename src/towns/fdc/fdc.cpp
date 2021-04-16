@@ -1384,3 +1384,137 @@ std::vector <std::string> TownsFDC::GetStatusText(void) const
 		return "1DD?";
 	}
 }
+
+/* virtual */ uint32_t TownsFDC::SerializeVersion(void) const
+{
+	return 0;
+}
+/* virtual */ void TownsFDC::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
+{
+	std::string stateDir,stateName;
+	cpputil::SeparatePathFile(stateDir,stateName,stateFName);
+
+	PushUint32(data,NUM_DRIVES);
+	for(auto &imgf : imgFile)
+	{
+		std::string fName;
+		std::vector <unsigned char> dskImg;
+		if(0<imgf.d77.GetNumDisk())
+		{
+			PushUint32(data,imgf.fileType);
+			PushString(data,cpputil::MakeRelativePath(imgf.fName,stateDir));
+			PushUcharArray(data,imgf.d77.MakeD77Image());
+		}
+		else
+		{
+			PushUint32(data,imgf.fileType);
+			PushString(data,"");
+			PushUcharArray(data,dskImg);
+		}
+	}
+
+	for(auto &drv : state.drive)
+	{
+		PushInt32(data,drv.trackPos);      // Actual head location.
+		PushInt32(data,drv.trackReg);      // Value in track register 0202H
+		PushInt32(data,drv.sectorReg);     // Value in sector register 0x04H
+		PushInt32(data,drv.dataReg);       // Value in data register 0x06H
+
+		PushInt32(data,drv.lastSeekDir);   // For STEP command.
+		PushInt32(data,drv.imgFileNum);    // Pointer to imgFile.
+		PushInt32(data,drv.diskIndex);     // Disk Index in imgFile[imgFileNum]
+		PushInt32(data,drv.mediaType);
+
+		PushBool(data,drv.motor);
+		PushBool(data,drv.diskChange);
+		PushInt32(data,drv.pretendDriveNotReadyCount);
+	}
+
+	PushBool(data,state.driveSwitch);  // [2] pp.258
+	PushBool(data,state.busy);
+	PushBool(data,state.MODEB);  // [2] pp.258, pp.809
+	PushBool(data,state.HISPD);  // [2] pp.258, pp.809
+	PushBool(data,state.INUSE);
+	PushUint32(data,state.side); // Is side common for all drives?  Or Per drive?
+	PushBool(data,state.CLKSEL);
+	PushBool(data,state.DDEN);
+	PushBool(data,state.IRQMSK);
+
+	PushUint32(data,state.driveSelectBit);
+	PushUint32(data,state.lastCmd);
+	PushUint32(data,state.lastStatus);
+
+	PushBool(data,state.recordType);
+	PushBool(data,state.recordNotFound);
+	PushBool(data,state.CRCError);
+	PushBool(data,state.lostData);
+	PushBool(data,state.writeFault);
+	PushUint32(data,state.addrMarkReadCount);
+
+	PushInt64(data,state.scheduleTime);
+}
+/* virtual */ bool TownsFDC::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
+{
+	std::string stateDir,stateName;
+	cpputil::SeparatePathFile(stateDir,stateName,stateFName);
+
+	ReadUint32(data); // Dummy read NUM_DRIVES
+	for(auto &imgf : imgFile)
+	{
+		imgf.fileType=ReadUint32(data);
+		auto fName=ReadString(data);
+		auto dskImg=ReadUcharArray(data);
+
+		if(""!=fName && 0<dskImg.size())
+		{
+			if(cpputil.IsRelativePath(fName))
+			{
+				fName=cpputil::MakeFullPathName(stateDir,fName);
+			}
+			imgf.fName=fName;
+			imgf.d77.SetData(dskImg,false);
+		}
+	}
+
+	for(auto &drv : state.drive)
+	{
+		drv.trackPos=ReadInt32(data);      // Actual head location.
+		drv.trackReg=ReadInt32(data);      // Value in track register 0202H
+		drv.sectorReg=ReadInt32(data);     // Value in sector register 0x04H
+		drv.dataReg=ReadInt32(data);       // Value in data register 0x06H
+
+		drv.lastSeekDir=ReadInt32(data);   // For STEP command.
+		drv.imgFileNum=ReadInt32(data);    // Pointer to imgFile.
+		drv.diskIndex=ReadInt32(data);     // Disk Index in imgFile[imgFileNum]
+		drv.mediaType=ReadInt32(data);
+
+		drv.motor=ReadBool(data);
+		drv.diskChange=ReadBool(data);
+		drv.pretendDriveNotReadyCount=ReadInt32(data);
+	}
+
+	state.driveSwitch=ReadBool(data);  // [2] pp.258
+	state.busy=ReadBool(data);
+	state.MODEB=ReadBool(data);  // [2] pp.258, pp.809
+	state.HISPD=ReadBool(data);  // [2] pp.258, pp.809
+	state.INUSE=ReadBool(data);
+	state.side=ReadUint32(data); // Is side common for all drives?  Or Per drive?
+	state.CLKSEL=ReadBool(data);
+	state.DDEN=ReadBool(data);
+	state.IRQMSK=ReadBool(data);
+
+	state.driveSelectBit=ReadUint32(data);
+	state.lastCmd=ReadUint32(data);
+	state.lastStatus=ReadUint32(data);
+
+	state.recordType=ReadBool(data);
+	state.recordNotFound=ReadBool(data);
+	state.CRCError=ReadBool(data);
+	state.lostData=ReadBool(data);
+	state.writeFault=ReadBool(data);
+	state.addrMarkReadCount=ReadUint32(data);
+
+	state.scheduleTime=ReadInt64(data);
+
+	return true;
+}

@@ -184,6 +184,9 @@ public:
 		unsigned char GetRed(unsigned int PLT) const;
 		unsigned char GetGreen(unsigned int PLT) const;
 		unsigned char GetBlue(unsigned int PLT) const;
+
+		void Serialize(std::vector <unsigned char> &data) const;
+		void Deserialize(const unsigned char *&data);
 	};
 
 	enum
@@ -519,6 +522,17 @@ public:
 	std::vector <std::string> GetHighResStatusText(void) const;
 	std::vector <std::string> GetHighResPageStatusText(int page) const;
 	std::vector <std::string> GetHighResPaletteText(void) const;
+
+	/*! Version used for serialization.
+	*/
+	virtual uint32_t SerializeVersion(void) const;
+	/*! Device-specific Serialization.
+	*/
+	virtual void SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const;
+	/*! Device-specific De-serialization.
+	*/
+	virtual bool SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version);
+
 };
 
 

@@ -184,6 +184,11 @@ public:
 	std::vector <std::string> GetPaletteText(unsigned int palIdx,const unsigned char spriteRAM[]) const;
 	std::vector <std::string> GetPattern4BitText(unsigned int ptnIdx,const unsigned char spriteRAM[]) const;
 	std::vector <std::string> GetPattern16BitText(unsigned int ptnIdx,const unsigned char spriteRAM[]) const;
+
+
+	virtual uint32_t SerializeVersion(void) const;
+	virtual void SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const;
+	virtual bool SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version);
 };
 
 /* } */
