@@ -1467,7 +1467,7 @@ std::vector <std::string> TownsFDC::GetStatusText(void) const
 
 		if(""!=fName && 0<dskImg.size())
 		{
-			if(cpputil.IsRelativePath(fName))
+			if(cpputil::IsRelativePath(fName))
 			{
 				fName=cpputil::MakeFullPathName(stateDir,fName);
 			}

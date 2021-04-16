@@ -170,3 +170,22 @@ TownsRTC::TownsRTC(class FMTowns *townsPtr) : Device(townsPtr)
 	return data;
 }
 
+
+/* virtual */ uint32_t TownsRTC::SerializeVersion(void) const
+{
+	return 0;
+}
+/* virtual */ void TownsRTC::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
+{
+	PushUint32(data,state.state);
+	PushBool(data,state.hour24); // If true, return 00:00 to 23:59 scale
+	PushUint32(data,state.registerLatch);
+	PushUint32(data,state.lastDataWrite);
+}
+/* virtual */ bool TownsRTC::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
+{
+	state.state=ReadUint32(data);
+	state.hour24=ReadBool(data); // If true, return 00:00 to 23:59 scale
+	state.registerLatch=ReadUint32(data);
+	state.lastDataWrite=ReadUint32(data);
+}

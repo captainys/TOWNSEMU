@@ -1264,3 +1264,93 @@ std::vector <std::string> TownsSCSI::GetStatusText(void) const
 
 	return text;
 }
+
+/* virtual */ uint32_t TownsSCSI::SerializeVersion(void) const
+{
+	return 0;
+}
+/* virtual */ void TownsSCSI::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
+{
+	for(auto &dev : state.dev)
+	{
+		PushUint32(data,dev.devType);
+		PushString(data,dev.imageFName);
+		PushInt64(data,dev.imageSize);
+	}
+
+	PushBool(data,state.deviceConnected);
+
+	PushUint32(data,state.nCommandFilled);
+	for(auto c : state.commandBuffer)
+	{
+		PushUint16(data,c);
+	}
+	PushUint32(data,state.bytesTransferred);
+
+	PushBool(data,state.REQ);
+	PushBool(data,state.I_O);
+	PushBool(data,state.MSG);
+	PushBool(data,state.C_D);
+	PushBool(data,state.BUSY);
+	PushBool(data,state.INT);
+	PushBool(data,state.PERR);
+	PushBool(data,state.DMAE);
+	PushBool(data,state.SEL);
+	PushBool(data,state.ATN);
+	PushBool(data,state.IMSK);
+	PushBool(data,state.WEN);
+
+	PushUint32(data,state.selId);
+	PushUint32(data,state.phase);
+	PushUint32(data,state.lastDataByte);
+
+	PushUint16(data,state.status);
+	PushUint16(data,state.message);
+	PushUint32(data,state.senseKey);
+}
+/* virtual */ bool TownsSCSI::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
+{
+	for(auto &dev : state.dev)
+	{
+		dev.devType=ReadUint32(data);
+		dev.imageFName=ReadString(data);
+		dev.imageSize=ReadInt64(data);
+		if(SCSIDEVICE_CDROM==dev.devType)
+		{
+			if(DiscImage::ERROR_NOERROR!=dev.discImg.Open(dev.imageFName))
+			{
+				// Try different directories...
+			}
+		}
+	}
+
+	state.deviceConnected=ReadBool(data);
+
+	state.nCommandFilled=ReadUint32(data);
+	for(auto &c : state.commandBuffer)
+	{
+		c=ReadUint16(data);
+	}
+	state.bytesTransferred=ReadUint32(data);
+
+	state.REQ=ReadBool(data);
+	state.I_O=ReadBool(data);
+	state.MSG=ReadBool(data);
+	state.C_D=ReadBool(data);
+	state.BUSY=ReadBool(data);
+	state.INT=ReadBool(data);
+	state.PERR=ReadBool(data);
+	state.DMAE=ReadBool(data);
+	state.SEL=ReadBool(data);
+	state.ATN=ReadBool(data);
+	state.IMSK=ReadBool(data);
+	state.WEN=ReadBool(data);
+
+	state.selId=ReadUint32(data);
+	state.phase=ReadUint32(data);
+	state.lastDataByte=ReadUint32(data);
+
+	state.status=ReadUint16(data);
+	state.message=ReadUint16(data);
+	state.senseKey=ReadUint32(data);
+}

@@ -337,6 +337,11 @@ private:
 	/* Turn on IRR flag if status queue is not empty.
 	*/
 	void SetSIRQ_IRR(void);
+
+
+	virtual uint32_t SerializeVersion(void) const;
+	virtual void SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const;
+	virtual bool SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version);
 };
 
 

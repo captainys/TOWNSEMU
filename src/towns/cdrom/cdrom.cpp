@@ -1167,3 +1167,92 @@ void TownsCDROM::SetSIRQ_IRR(void)
 		PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
 	}
 }
+
+/* virtual */ uint32_t TownsCDROM::SerializeVersion(void) const
+{
+	return 0;
+}
+/* virtual */ void TownsCDROM::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
+{
+	PushString(data,state.imgFileName);
+
+	PushBool(data,state.SIRQ); // 4C0H bit 7
+	PushBool(data,state.DEI);  // 4C0H bit 6 (DMA End Flag)
+	PushBool(data,state.STSF); // 4C0H bit 5 (Software Transfer End)
+	PushBool(data,state.DTSF); // 4C0H bit 4 (DMA Transfer in progress)
+	PushBool(data,state.DRY);  // 4C0H bit 0 (Ready to receive command)
+
+	PushBool(data,state.enableSIRQ);
+	PushBool(data,state.enableDEI);
+
+	PushBool(data,state.cmdReceived);
+	PushUint16(data,state.cmd);
+	PushInt32(data,state.nParamQueue);
+	for(auto p : state.paramQueue)
+	{
+		PushUint16(data,p);
+	}
+	for(auto q : state.statusQueue)
+	{
+		PushUint16(data,q);
+	}
+
+	PushUint32(data,state.readingSectorHSG);
+	PushUint32(data,state.endSectorHSG);
+
+	PushBool(data,state.DMATransfer);
+	PushBool(data,state.CPUTransfer); // Both are not supposed to be 1, but I/O can set it that way.
+	PushBool(data,state.WaitForDTS);
+
+	PushBool(data,state.discChanged);
+
+	PushBool(data,state.delayedSIRQ);
+
+	PushUint32(data,state.CDDAState);
+	PushInt64(data,state.nextCDDAPollingTime);
+	PushUint32(data,state.CDDAEndTime.ToHSG());
+}
+/* virtual */ bool TownsCDROM::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
+{
+	state.imgFileName=ReadString(data);
+	if(DiscImage::ERROR_NOERROR!=state.GetDisc().Open(state.imgFileName))
+	{
+		// Try search paths.
+	}
+
+	state.SIRQ=ReadBool(data); // 4C0H bit 7
+	state.DEI=ReadBool(data);  // 4C0H bit 6 (DMA End Flag)
+	state.STSF=ReadBool(data); // 4C0H bit 5 (Software Transfer End)
+	state.DTSF=ReadBool(data); // 4C0H bit 4 (DMA Transfer in progress)
+	state.DRY=ReadBool(data);  // 4C0H bit 0 (Ready to receive command)
+
+	state.enableSIRQ=ReadBool(data);
+	state.enableDEI=ReadBool(data);
+
+	state.cmdReceived=ReadBool(data);
+	state.cmd=ReadUint16(data);
+	state.nParamQueue=ReadInt32(data);
+	for(auto &p : state.paramQueue)
+	{
+		p=ReadUint16(data);
+	}
+	for(auto &q : state.statusQueue)
+	{
+		q=ReadUint16(data);
+	}
+
+	state.readingSectorHSG=ReadUint32(data);
+	state.endSectorHSG=ReadUint32(data);
+
+	state.DMATransfer=ReadBool(data);
+	state.CPUTransfer=ReadBool(data); // Both are not supposed to be 1, but I/O can set it that way.
+	state.WaitForDTS=ReadBool(data);
+
+	state.discChanged=ReadBool(data);
+    
+	state.delayedSIRQ=ReadBool(data);
+    
+	state.CDDAState=ReadUint32(data);
+	state.nextCDDAPollingTime=ReadInt64(data);
+	state.CDDAEndTime.FromHSG(ReadUint32(data));
+}
