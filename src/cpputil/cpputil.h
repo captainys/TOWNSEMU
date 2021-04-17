@@ -32,7 +32,7 @@ bool WriteBinaryFile(const std::string &fName,unsigned long long int start,unsig
 std::vector <std::string> Parser(const char str[]);
 const std::string &Capitalize(std::string &s);
 std::string Capitalize(const char s[]);
-std::string GetExtension(const char fName[]);
+std::string GetExtension(std::string fName);
 std::string ChangeExtension(const char orgFName[],const char newExt[]);
 std::string RemoveExtension(const char orgFName[]);
 std::string GetBaseName(const char path[]);

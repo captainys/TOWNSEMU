@@ -57,6 +57,9 @@ public:
 		int fileType;
 		std::string fName;
 		D77File d77;
+		bool LoadD77orRAW(std::string fName);
+		bool LoadD77(std::string fName);
+		bool LoadRAW(std::string fName);
 		void SaveIfModified(void);
 	};
 	ImageFile imgFile[NUM_DRIVES];
@@ -115,6 +118,8 @@ public:
 	bool debugBreakOnCommandWrite;
 
 	virtual const char *DeviceName(void) const{return "FDC";}
+
+	static bool IsD77Extension(std::string ext);
 
 	TownsFDC(class FMTowns *townsPtr,class TownsPIC *PICPtr,class TownsDMAC *dmacPtr);
 

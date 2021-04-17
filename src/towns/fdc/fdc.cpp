@@ -53,6 +53,63 @@ void TownsFDC::ImageFile::SaveIfModified(void)
 	}
 }
 
+bool TownsFDC::ImageFile::LoadD77orRAW(std::string fName)
+{
+	auto ext=cpputil::GetExtension(fName);
+	cpputil::Capitalize(ext);
+	if(true==IsD77Extension(ext))
+	{
+		return LoadD77(fName);
+	}
+	else
+	{
+		return LoadRAW(fName);
+	}
+}
+bool TownsFDC::ImageFile::LoadD77(std::string fName)
+{
+	bool verbose=false;
+	auto bin=cpputil::ReadBinaryFile(fName);
+	if(0==bin.size())
+	{
+		return false;
+	}
+
+	this->d77.CleanUp();
+	this->d77.SetData(bin,verbose);
+	if(0<this->d77.GetNumDisk())
+	{
+		this->fileType=IMGFILE_D77;
+		this->fName=fName;
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+bool TownsFDC::ImageFile::LoadRAW(std::string fName)
+{
+	bool verbose=false;
+	auto bin=cpputil::ReadBinaryFile(fName);
+	if(0==bin.size())
+	{
+		return false;
+	}
+
+	this->d77.CleanUp();
+	if(true==this->d77.SetRawBinary(bin,verbose))
+	{
+		this->fileType=IMGFILE_RAW;
+		this->fName=fName;
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
 ////////////////////////////////////////////////////////////
 
 void TownsFDC::State::Reset(void)
@@ -99,6 +156,10 @@ void TownsFDC::State::Drive::DiskChanged(void)
 
 ////////////////////////////////////////////////////////////
 
+/* static */ bool TownsFDC::IsD77Extension(std::string ext)
+{
+	return ".D77"==ext || ".D88"==ext;
+}
 
 TownsFDC::TownsFDC(class FMTowns *townsPtr,class TownsPIC *PICPtr,class TownsDMAC *DMACPtr) : Device(townsPtr)
 {
@@ -124,7 +185,7 @@ bool TownsFDC::LoadD77orRAW(unsigned int driveNum,const char fNameIn[],bool verb
 {
 	auto ext=cpputil::GetExtension(fNameIn);
 	cpputil::Capitalize(ext);
-	if(".D77"==ext || ".D88"==ext)
+	if(true==IsD77Extension(ext))
 	{
 		return LoadD77(driveNum,fNameIn,verbose);
 	}
@@ -139,28 +200,15 @@ bool TownsFDC::LoadD77(unsigned int driveNum,const char fNameIn[],bool verbose)
 	driveNum&=3;
 	auto imgIdx=driveNum;
 
-	auto fName=cpputil::FindFileWithSearchPaths(fNameIn,searchPaths);
-	auto bin=cpputil::ReadBinaryFile(fName);
-	if(0==bin.size())
-	{
-		return false;
-	}
-
 	SaveIfModifiedAndUnlinkDiskImage(imgIdx);
 
-	imgFile[imgIdx].d77.CleanUp();
-	imgFile[imgIdx].d77.SetData(bin,verbose);
-	if(0<imgFile[imgIdx].d77.GetNumDisk())
+	auto fName=cpputil::FindFileWithSearchPaths(fNameIn,searchPaths);
+	if(true==imgFile[imgIdx].LoadD77(fName))
 	{
-		imgFile[imgIdx].fileType=IMGFILE_D77;
-		imgFile[imgIdx].fName=fName;
 		LinkDiskImageToDrive(imgIdx,0,driveNum);
 		return true;
 	}
-	else
-	{
-		return false;
-	}
+	return false;
 }
 
 bool TownsFDC::LoadRawBinary(unsigned int driveNum,const char fNameIn[],bool verbose)
@@ -168,27 +216,15 @@ bool TownsFDC::LoadRawBinary(unsigned int driveNum,const char fNameIn[],bool ver
 	driveNum&=3;
 	auto imgIdx=driveNum;
 
-	auto fName=cpputil::FindFileWithSearchPaths(fNameIn,searchPaths);
-	auto bin=cpputil::ReadBinaryFile(fName);
-	if(0==bin.size())
-	{
-		return false;
-	}
-
 	SaveIfModifiedAndUnlinkDiskImage(imgIdx);
 
-	imgFile[imgIdx].d77.CleanUp();
-	if(true==imgFile[imgIdx].d77.SetRawBinary(bin,verbose))
+	auto fName=cpputil::FindFileWithSearchPaths(fNameIn,searchPaths);
+	if(true==imgFile[imgIdx].LoadRAW(fName))
 	{
-		imgFile[imgIdx].fileType=IMGFILE_RAW;
-		imgFile[imgIdx].fName=fName;
 		LinkDiskImageToDrive(imgIdx,0,driveNum);
 		return true;
 	}
-	else
-	{
-		return false;
-	}
+	return false;
 }
 
 void TownsFDC::LinkDiskImageToDrive(int imgIdx,int diskIdx,int driveNum)
@@ -1387,7 +1423,7 @@ std::vector <std::string> TownsFDC::GetStatusText(void) const
 
 /* virtual */ uint32_t TownsFDC::SerializeVersion(void) const
 {
-	return 0;
+	return 1;
 }
 /* virtual */ void TownsFDC::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
 {
@@ -1402,13 +1438,15 @@ std::vector <std::string> TownsFDC::GetStatusText(void) const
 		if(0<imgf.d77.GetNumDisk())
 		{
 			PushUint32(data,imgf.fileType);
-			PushString(data,cpputil::MakeRelativePath(imgf.fName,stateDir));
+			PushString(data,imgf.fName);  // As is
+			PushString(data,cpputil::MakeRelativePath(imgf.fName,stateDir)); // Relpath
 			PushUcharArray(data,imgf.d77.MakeD77Image());
 		}
 		else
 		{
 			PushUint32(data,imgf.fileType);
-			PushString(data,"");
+			PushString(data,""); // As is
+			PushString(data,""); // Relpath
 			PushUcharArray(data,dskImg);
 		}
 	}
@@ -1463,16 +1501,66 @@ std::vector <std::string> TownsFDC::GetStatusText(void) const
 	{
 		imgf.fileType=ReadUint32(data);
 		auto fName=ReadString(data);
+		std::string relPath;
+		if(1<=version)
+		{
+			relPath=ReadString(data);
+		}
 		auto dskImg=ReadUcharArray(data);
 
-		if(""!=fName && 0<dskImg.size())
+		if(""!=fName)
 		{
-			if(cpputil::IsRelativePath(fName))
+			// See disk-image search rule in townsstate.cpp
+			bool loaded=false;
+
+			// (1) Try using the filename stored in the state file as is.
+			if(true!=loaded)
 			{
-				fName=cpputil::MakeFullPathName(stateDir,fName);
+				loaded=imgf.LoadD77orRAW(fName);
 			}
-			imgf.fName=fName;
-			imgf.d77.SetData(dskImg,false);
+
+			// (2) Try state path+relative path
+			auto stateRel=cpputil::MakeFullPathName(stateDir,relPath);
+			if(true!=loaded)
+			{
+				loaded=imgf.LoadD77orRAW(stateRel);
+			}
+
+			// (3) Try image search path+file name
+			if(true!=loaded)
+			{
+				std::string imgDir,imgName;
+				cpputil::SeparatePathFile(imgDir,imgName,fName);
+				for(auto path : searchPaths)
+				{
+					auto ful=cpputil::MakeFullPathName(path,imgName);
+					loaded=imgf.LoadD77orRAW(ful);
+					if(true==loaded)
+					{
+						break;
+					}
+				}
+			}
+
+			// (4) Try state path+file name
+			if(true!=loaded)
+			{
+				std::string imgDir,imgName;
+				cpputil::SeparatePathFile(imgDir,imgName,fName);
+				auto ful=cpputil::MakeFullPathName(stateDir,imgName);
+				loaded=imgf.LoadD77orRAW(ful);
+			}
+
+			// (5) If floppy-disk image, use image stored in the state file.
+			if(true!=loaded && 0<dskImg.size())
+			{
+				if(cpputil::IsRelativePath(fName))
+				{
+					fName=cpputil::MakeFullPathName(stateDir,fName);
+				}
+				imgf.fName=fName;
+				imgf.d77.SetData(dskImg,false);
+			}
 		}
 	}
 

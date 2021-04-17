@@ -217,9 +217,9 @@ std::string cpputil::Capitalize(const char s[])
 	return std::string(s);
 }
 
-std::string cpputil::GetExtension(const char fName[])
+std::string cpputil::GetExtension(std::string fName)
 {
-	if(nullptr==fName)
+	if(""==fName)
 	{
 		return "";
 	}
@@ -235,7 +235,7 @@ std::string cpputil::GetExtension(const char fName[])
 
 	if(0<=lastDot)
 	{
-		std::string ext(fName+lastDot);
+		std::string ext(fName.data()+lastDot);
 		return ext;
 	}
 	return "";
