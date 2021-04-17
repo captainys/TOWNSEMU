@@ -33,6 +33,7 @@ void FMTowns::State::PowerOn(void)
 	nextFastDevicePollingTime=FAST_DEVICE_POLLING_INTERVAL;
 	freq=FREQUENCY_DEFAULT;
 	resetReason=0;
+	nextRenderingTime=0;
 }
 void FMTowns::State::Reset(void)
 {
@@ -70,7 +71,6 @@ FMTowns::Variable::Variable()
 void FMTowns::Variable::Reset(void)
 {
 	// freeRunTimerShift should survive Reset.
-	nextRenderingTime=0;
 	disassemblePointer.SEG=0;
 	disassemblePointer.OFFSET=0;
 
@@ -629,14 +629,14 @@ void FMTowns::RunFastDevicePollingInternal(void)
 
 bool FMTowns::CheckRenderingTimer(TownsRender &render,Outside_World &world)
 {
-	if(var.nextRenderingTime<=state.townsTime && true!=crtc.InVSYNC(state.townsTime))
+	if(state.nextRenderingTime<=state.townsTime && true!=crtc.InVSYNC(state.townsTime))
 	{
 		render.Prepare(crtc);
 		render.damperWireLine=var.damperWireLine;
 		render.BuildImage(physMem.state.VRAM.data(),crtc.state.palette,crtc.chaseHQPalette);
 		world.Render(render.GetImage(),*this);
 		world.UpdateStatusBitmap(*this);
-		var.nextRenderingTime=state.townsTime+TOWNS_RENDERING_FREQUENCY;
+		state.nextRenderingTime=state.townsTime+TOWNS_RENDERING_FREQUENCY;
 		return true;
 	}
 	return false;

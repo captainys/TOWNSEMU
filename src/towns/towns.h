@@ -122,6 +122,9 @@ public:
 		*/
 		bool pretend386DX=false;
 
+		/*! 
+		*/
+		unsigned long long int nextRenderingTime=0;
 
 		/*! 
 		*/
@@ -221,7 +224,6 @@ public:
 	{
 	public:
 		unsigned int freeRunTimerShift;
-		unsigned long long int nextRenderingTime;
 
 		bool powerOff=false;
 		int returnCode=0;

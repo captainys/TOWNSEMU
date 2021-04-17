@@ -116,6 +116,7 @@ bool FMTowns::LoadState(std::string fName)
 /* virtual */ void FMTowns::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
 {
 	PushInt64(data,state.townsTime);
+	PushInt64(data,state.nextRenderingTime);
 	PushInt64(data,state.nextDevicePollingTime);
 	PushInt64(data,state.cpuTime);
 	PushInt64(data,state.timeDeficit);
@@ -171,6 +172,7 @@ bool FMTowns::LoadState(std::string fName)
 /* virtual */ bool FMTowns::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
 {
 	state.townsTime=ReadInt64(data);
+	state.nextRenderingTime=ReadInt64(data);
 	state.nextDevicePollingTime=ReadInt64(data);
 	state.cpuTime=ReadInt64(data);
 	state.timeDeficit=ReadInt64(data);

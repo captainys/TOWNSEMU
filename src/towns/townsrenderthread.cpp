@@ -65,7 +65,7 @@ void TownsRenderingThread::WaitIdle(void)
 void TownsRenderingThread::CheckRenderingTimer(FMTowns &towns,TownsRender &render)
 {
 	if(STATE_IDLE==state && 
-	   towns.var.nextRenderingTime<=towns.state.townsTime && 
+	   towns.state.nextRenderingTime<=towns.state.townsTime && 
 	   true!=towns.crtc.InVSYNC(towns.state.townsTime))
 	{
 		render.Prepare(towns.crtc);
@@ -77,7 +77,7 @@ void TownsRenderingThread::CheckRenderingTimer(FMTowns &towns,TownsRender &rende
 		this->chaseHQPaletteCopy=towns.crtc.chaseHQPalette;
 
 		state=STATE_RENDERING;
-		towns.var.nextRenderingTime=towns.state.townsTime+TOWNS_RENDERING_FREQUENCY;
+		towns.state.nextRenderingTime=towns.state.townsTime+TOWNS_RENDERING_FREQUENCY;
 
 		checkImageAfterThisTIme=towns.state.townsTime+3000000; // Give sub-thread some time.
 
