@@ -34,6 +34,7 @@ bool FMTowns::SaveState(std::string fName) const
 			ofp.write((char *)&len,4);
 			ofp.write((char *)dat.data(),len);
 		}
+		return true;
 	}
 	return false;
 }
@@ -63,7 +64,7 @@ bool FMTowns::LoadState(std::string fName)
 
 		while(true!=ifp.eof())
 		{
-			uint32_t len;
+			uint32_t len=0;
 			ifp.read((char *)&len,4);
 			if(0==len)
 			{

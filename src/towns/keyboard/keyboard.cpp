@@ -352,5 +352,5 @@ bool TownsKeyboard::InFifoBuffer(unsigned int code) const
 
 	state.lastCmd=ReadUint32(data);
 
-	return 0;
+	return true;
 }

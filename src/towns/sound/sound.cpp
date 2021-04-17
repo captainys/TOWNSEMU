@@ -537,4 +537,5 @@ void TownsSound::DeserializeRF5C68(const unsigned char *&data)
 	state.addrLatch[1]=ReadUint32(data);
 	DeserializeYM2612(data);
 	DeserializeRF5C68(data);
+	return true;
 }

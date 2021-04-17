@@ -170,6 +170,10 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["SAVEFMPCMREC"]=CMD_SAVE_FMPCM_RECORDING;
 
 
+	primaryCmdMap["SAVESTATE"]=CMD_SAVE_STATE;
+	primaryCmdMap["LOADSTATE"]=CMD_LOAD_STATE;
+
+
 	featureMap["CMDLOG"]=ENABLE_CMDLOG;
 	featureMap["AUTODISASM"]=ENABLE_DISASSEMBLE_EVERY_INST;
 	featureMap["IOMON"]=ENABLE_IOMONITOR;
@@ -526,6 +530,11 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Set FM (YM2612) volume.  0 to 8192.  Default value is 4096." << std::endl;
 	std::cout << "PCMVOL volume" << std::endl;
 	std::cout << "  Set PCM (RF5C68) volume.  0 to 8192.  Default value is 4096." << std::endl;
+
+	std::cout << "SAVESTATE fileName" << std::endl;
+	std::cout << "  Save machine state (experimental)" << std::endl;
+	std::cout << "LOADSTATE fileName" << std::endl;
+	std::cout << "  Load machine state (experimental)" << std::endl;
 
 	std::cout << "" << std::endl;
 
@@ -952,6 +961,41 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 				PrintError(ERROR_WRONG_PARAMETER);
 			}
 			towns.sound.state.rf5c68.state.volume=vol;
+		}
+		else
+		{
+			PrintError(ERROR_TOO_FEW_ARGS);
+		}
+		break;
+
+	case CMD_SAVE_STATE:
+		if(2<=cmd.argv.size())
+		{
+			if(true!=towns.SaveState(cmd.argv[1]))
+			{
+				PrintError(ERROR_CANNOT_SAVE_FILE);
+			}
+			else
+			{
+				std::cout << "Saved " << cmd.argv[1] << std::endl;
+			}
+		}
+		else
+		{
+			PrintError(ERROR_TOO_FEW_ARGS);
+		}
+		break;
+	case CMD_LOAD_STATE:
+		if(2<=cmd.argv.size())
+		{
+			if(true!=towns.LoadState(cmd.argv[1]))
+			{
+				PrintError(ERROR_CANNOT_OPEN_FILE);
+			}
+			else
+			{
+				std::cout << "Loaded " << cmd.argv[1] << std::endl;
+			}
 		}
 		else
 		{

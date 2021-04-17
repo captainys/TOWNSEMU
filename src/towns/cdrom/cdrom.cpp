@@ -1255,4 +1255,6 @@ void TownsCDROM::SetSIRQ_IRR(void)
 	state.CDDAState=ReadUint32(data);
 	state.nextCDDAPollingTime=ReadInt64(data);
 	state.CDDAEndTime.FromHSG(ReadUint32(data));
+
+	return true;
 }

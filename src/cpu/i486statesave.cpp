@@ -160,7 +160,7 @@ bool i486DX::State::Deserialize(const unsigned char *&data,uint32_t version)
 
 	CSEIPWindow.CleanUp();   // This must be cleared on state-load.
 	SSESPWindow.CleanUp();         // This must be cleared on state-load.
-	return false;
+	return true;
 }
 
 /* virtual */ uint32_t i486DX::SerializeVersion(void) const

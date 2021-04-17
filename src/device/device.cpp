@@ -134,8 +134,10 @@ bool Device::Deserialize(const std::vector <unsigned char> &dat,std::string stat
 	std::string thisDeviceId=DeviceName();
 	if(readDeviceId!=thisDeviceId)
 	{
-		return ~0;
+		return false;
 	}
+
+	std::cout << "De-serializing " << readDeviceId << std::endl;
 
 	data+=deviceIdLength;
 	uint32_t version=ReadUint32(data);

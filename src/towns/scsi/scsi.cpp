@@ -1353,4 +1353,6 @@ std::vector <std::string> TownsSCSI::GetStatusText(void) const
 	state.status=ReadUint16(data);
 	state.message=ReadUint16(data);
 	state.senseKey=ReadUint32(data);
+
+	return true;
 }
