@@ -681,7 +681,7 @@ std::vector <std::string> TownsPhysicalMemory::GetStatusText(void) const
 
 /* virtual */ uint32_t TownsPhysicalMemory::SerializeVersion(void) const
 {
-	return 0;
+	return 1;
 }
 /* virtual */ void TownsPhysicalMemory::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
 {
@@ -712,6 +712,7 @@ std::vector <std::string> TownsPhysicalMemory::GetStatusText(void) const
 
 	// PCMCIA memory card.
 	PushUint32(data,state.memCard.memCardType);
+	PushString(data,state.memCard.fName);
 	PushString(data,cpputil::MakeRelativePath(state.memCard.fName,stateDir));
 	PushUcharArray(data,state.memCard.data);
 	PushBool(data, state.memCard.modified);
@@ -764,11 +765,57 @@ std::vector <std::string> TownsPhysicalMemory::GetStatusText(void) const
 	// PCMCIA memory card.
 	state.memCard.memCardType=ReadUint32(data);
 
-	state.memCard.fName=ReadString(data);
-	if(true==cpputil::IsRelativePath(state.memCard.fName))
 	{
-		state.memCard.fName=cpputil::MakeFullPathName(stateDir,state.memCard.fName);
+		state.memCard.fName=""; // Tentative
+
+		std::string fName=ReadString(data);
+		std::string relPath="";
+		if(1<=version)
+		{
+			relPath=ReadString(data);
+		}
+
+		// See disk-image search rule in townsstate.cpp
+		bool fileExists=false;
+
+		// (1) Try using the filename stored in the state file as is.
+		if(true!=fileExists)
+		{
+			fileExists=cpputil::FileExists(fName);
+			if(true==fileExists)
+			{
+				state.memCard.fName=fName;
+			}
+		}
+
+		// (2) Try state path+relative path
+		auto stateRel=cpputil::MakeFullPathName(stateDir,relPath);
+		if(true!=fileExists)
+		{
+			fileExists=cpputil::FileExists(stateRel);
+			if(true==fileExists)
+			{
+				state.memCard.fName=stateRel;
+			}
+		}
+
+		// (3) Try image search path+file name
+		// No search paths for IC memory card.
+
+		// (4) Try state path+file name
+		if(true!=fileExists)
+		{
+			std::string imgDir,imgName;
+			cpputil::SeparatePathFile(imgDir,imgName,fName);
+			auto ful=cpputil::MakeFullPathName(stateDir,imgName);
+			fileExists=cpputil::FileExists(ful);
+			if(true==fileExists)
+			{
+				state.memCard.fName=ful;
+			}
+		}
 	}
+
 
 	state.memCard.data=ReadUcharArray(data);
 	state.memCard.modified=ReadBool(data);
