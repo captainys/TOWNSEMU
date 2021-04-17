@@ -100,15 +100,19 @@ bool FMTowns::LoadState(std::string fName)
 			}
 		}
 
-		for(auto devPtr : allDevices)
-		{
-			UnscheduleDeviceCallBack(*devPtr);
-		}
+		// I was first running a loop for unscheduling all devices,
+		// and then a loop for re-scheduling devices that has non-null scheduleTime
+		// only to realize that UnscheduleDeviceCallBack was nullifying the scheduleTime.
+
 		for(auto devPtr : allDevices)
 		{
 			if(TIME_NO_SCHEDULE!=devPtr->commonState.scheduleTime)
 			{
 				ScheduleDeviceCallBack(*devPtr,devPtr->commonState.scheduleTime);
+			}
+			else
+			{
+				UnscheduleDeviceCallBack(*devPtr);
 			}
 		}
 
