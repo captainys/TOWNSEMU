@@ -93,7 +93,7 @@ public:
 
 
 	void SerializeYM2612(std::vector <unsigned char> &data) const;
-	void DeserializeYM2612(const unsigned char *&data);
+	void DeserializeYM2612(const unsigned char *&data,unsigned int version);
 	void SerializeRF5C68(std::vector <unsigned char> &data) const;
 	void DeserializeRF5C68(const unsigned char *&data);
 

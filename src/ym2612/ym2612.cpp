@@ -99,9 +99,12 @@ void YM2612::State::Reset(void)
 	{
 		b=0;
 	}
-	for(auto &r : reg)
+	for(int i=0; i<2; ++i)
 	{
-		r=0;
+		for(auto &r : regSet[i])
+		{
+			r=0;
+		}
 	}
 	for(auto &t : timerCounter)
 	{
@@ -259,6 +262,15 @@ void YM2612::Reset(void)
 }
 unsigned int YM2612::WriteRegister(unsigned int channelBase,unsigned int reg,unsigned int value)
 {
+	auto regSet=channelBase/3;
+	if(reg<0x30)
+	{
+		regSet=0;
+	}
+	else if(1<regSet)
+	{
+		return 0;
+	}
 	if(true==takeRegLog)
 	{
 		RegWriteLog rwl;
@@ -281,13 +293,13 @@ unsigned int YM2612::WriteRegister(unsigned int channelBase,unsigned int reg,uns
 	unsigned int chStartPlaying=65535;
 	static const unsigned int slotTwist[4]={0,2,1,3};
 	reg&=255;
-	auto prev=state.reg[reg];
-	state.reg[reg]=value;
+	auto prev=state.regSet[regSet][reg];
+	state.regSet[regSet][reg]=value;
 	if(REG_TIMER_CONTROL==reg)
 	{
 		// [2] pp. 202 RESET bits will be cleared immediately after set.
 		// .... I interpret it as RESET bits are always read to zero.
-		state.reg[REG_TIMER_CONTROL]&=0xCF;
+		state.regSet[regSet][REG_TIMER_CONTROL]&=0xCF;
 
 		// LOAD bits are mysterious.
 		// [2] pp.201 tells that writing 1 to LOAD bit resets the counter and start counting.
@@ -314,14 +326,14 @@ unsigned int YM2612::WriteRegister(unsigned int channelBase,unsigned int reg,uns
 
 		if(0==(prev&1) && 0!=(value&1)) // Load Timer A
 		{
-			unsigned int countHigh=state.reg[REG_TIMER_A_COUNT_HIGH];
-			unsigned int countLow=state.reg[REG_TIMER_A_COUNT_LOW];
+			unsigned int countHigh=state.regSet[regSet][REG_TIMER_A_COUNT_HIGH];
+			unsigned int countLow=state.regSet[regSet][REG_TIMER_A_COUNT_LOW];
 			auto count=(countHigh<<2)|(countLow&3);
 			state.timerCounter[0]=count*TIMER_A_PER_TICK;
 		}
 		if(0==(prev&2) && 0!=(value&2)) // Load Timer B
 		{
-			state.timerCounter[1]=(unsigned int)(state.reg[REG_TIMER_B_COUNT])*TIMER_B_PER_TICK;
+			state.timerCounter[1]=(unsigned int)(state.regSet[regSet][REG_TIMER_B_COUNT])*TIMER_B_PER_TICK;
 		}
 		if(value&4) // Enable Timer A Flag
 		{
@@ -516,7 +528,8 @@ unsigned int YM2612::WriteRegister(unsigned int channelBase,unsigned int reg,uns
 }
 unsigned int YM2612::ReadRegister(unsigned int channelBase,unsigned int reg) const
 {
-	return state.reg[reg&255];
+	auto regSet=channelBase/3;
+	return state.regSet[regSet][reg&255];
 }
 void YM2612::Run(unsigned long long int systemTimeInNS)
 {
@@ -531,25 +544,25 @@ void YM2612::Run(unsigned long long int systemTimeInNS)
 		auto nTick=(systemTimeInNS-state.lastTickTimeInNS)/TICK_DURATION_IN_NS;
 		state.lastTickTimeInNS+=nTick*TICK_DURATION_IN_NS;
 		// See (1) in the above comment.
-		if(0!=(state.reg[REG_TIMER_CONTROL]&0x01))
+		if(0!=(state.regSet[0][REG_TIMER_CONTROL]&0x01))
 		{
 			state.timerCounter[0]+=nTick;
 			if(NTICK_TIMER_A<=state.timerCounter[0])
 			{
-				state.reg[REG_TIMER_CONTROL]&=(~0x01);
-				if(0!=(state.reg[REG_TIMER_CONTROL]&0x04))
+				state.regSet[0][REG_TIMER_CONTROL]&=(~0x01);
+				if(0!=(state.regSet[0][REG_TIMER_CONTROL]&0x04))
 				{
 					state.timerUp[0]=true;
 				}
 			}
 		}
-		if(0!=(state.reg[REG_TIMER_CONTROL]&0x02))
+		if(0!=(state.regSet[0][REG_TIMER_CONTROL]&0x02))
 		{
 			state.timerCounter[1]+=nTick;
 			if(NTICK_TIMER_B<=state.timerCounter[1])
 			{
-				state.reg[REG_TIMER_CONTROL]&=(~0x02);
-				if(0!=(state.reg[REG_TIMER_CONTROL]&0x08))
+				state.regSet[0][REG_TIMER_CONTROL]&=(~0x02);
+				if(0!=(state.regSet[0][REG_TIMER_CONTROL]&0x08))
 				{
 					state.timerUp[1]=true;
 				}
@@ -642,7 +655,7 @@ std::vector <std::string> YM2612::GetStatusText(void) const
 
 	sprintf(str,"TimerA Up=%d  Count Preset=0x%04x  Internal Count/Threshold=0x%08x/0x%08x",
 		TimerAUp(),
-		((state.reg[REG_TIMER_A_COUNT_HIGH]<<2)|(state.reg[REG_TIMER_A_COUNT_LOW]&3)),
+		((state.regSet[0][REG_TIMER_A_COUNT_HIGH]<<2)|(state.regSet[0][REG_TIMER_A_COUNT_LOW]&3)),
 		(state.timerCounter[0]&0xFFFFFFFF),
 		NTICK_TIMER_A);
 	text.push_back(str);
@@ -650,7 +663,7 @@ std::vector <std::string> YM2612::GetStatusText(void) const
 
 	sprintf(str,"TimerB Up=%d  Count Preset=0x%04x  Internal Count/Threshold=0x%08x/0x%08x",
 		TimerBUp(),
-		state.reg[REG_TIMER_B_COUNT],
+		state.regSet[0][REG_TIMER_B_COUNT],
 		(state.timerCounter[1]&0xFFFFFFFF),
 		NTICK_TIMER_B);
 	text.push_back(str);
@@ -658,11 +671,11 @@ std::vector <std::string> YM2612::GetStatusText(void) const
 
 	sprintf(str,"Timer Control(Reg 0x%02x)=0x%02x  MODE:0x%02x  RST:0x%02x  ENA:0x%02x  LOAD:0x%02x",
 		REG_TIMER_CONTROL,
-		state.reg[REG_TIMER_CONTROL],
-		((state.reg[REG_TIMER_CONTROL]>>6)&3),
-		((state.reg[REG_TIMER_CONTROL]>>4)&3),
-		((state.reg[REG_TIMER_CONTROL]>>2)&3),
-		(state.reg[REG_TIMER_CONTROL]&3));
+		state.regSet[0][REG_TIMER_CONTROL],
+		((state.regSet[0][REG_TIMER_CONTROL]>>6)&3),
+		((state.regSet[0][REG_TIMER_CONTROL]>>4)&3),
+		((state.regSet[0][REG_TIMER_CONTROL]>>2)&3),
+		(state.regSet[0][REG_TIMER_CONTROL]&3));
 	text.push_back(str);
 
 

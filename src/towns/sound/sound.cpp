@@ -375,7 +375,8 @@ void TownsSound::SerializeYM2612(std::vector <unsigned char> &data) const
 	PushUint32(data,ym2612.state.BLOCK_6CH[0]);
 	PushUint32(data,ym2612.state.BLOCK_6CH[1]);
 	PushUint32(data,ym2612.state.BLOCK_6CH[2]);
-	PushUcharArray(data,sizeof(ym2612.state.reg),ym2612.state.reg);
+	PushUcharArray(data,256,ym2612.state.regSet[0]);
+	PushUcharArray(data,256,ym2612.state.regSet[1]);
 	PushUint64(data,ym2612.state.timerCounter[0]);
 	PushUint64(data,ym2612.state.timerCounter[1]);
 	PushBool(data,ym2612.state.timerUp[0]);
@@ -383,7 +384,7 @@ void TownsSound::SerializeYM2612(std::vector <unsigned char> &data) const
 	PushUint32(data,ym2612.state.playingCh);
 	PushInt32(data,ym2612.state.volume);
 }
-void TownsSound::DeserializeYM2612(const unsigned char *&data)
+void TownsSound::DeserializeYM2612(const unsigned char *&data,unsigned int version)
 {
 	auto &ym2612=state.ym2612;
 
@@ -453,7 +454,11 @@ void TownsSound::DeserializeYM2612(const unsigned char *&data)
 	ym2612.state.BLOCK_6CH[0]=ReadUint32(data);
 	ym2612.state.BLOCK_6CH[1]=ReadUint32(data);
 	ym2612.state.BLOCK_6CH[2]=ReadUint32(data);
-	ReadUcharArray(data,sizeof(ym2612.state.reg),ym2612.state.reg);
+	ReadUcharArray(data,256,ym2612.state.regSet[0]);
+	if(1<=version)
+	{
+		ReadUcharArray(data,256,ym2612.state.regSet[1]);
+	}
 	ym2612.state.timerCounter[0]=ReadUint64(data);
 	ym2612.state.timerCounter[1]=ReadUint64(data);
 	ym2612.state.timerUp[0]=ReadBool(data);
@@ -520,7 +525,7 @@ void TownsSound::DeserializeRF5C68(const unsigned char *&data)
 
 /* virtual */ uint32_t TownsSound::SerializeVersion(void) const
 {
-	return 0;
+	return 1;
 }
 /* virtual */ void TownsSound::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
 {
@@ -535,7 +540,7 @@ void TownsSound::DeserializeRF5C68(const unsigned char *&data)
 	state.muteFlag=ReadUint32(data);
 	state.addrLatch[0]=ReadUint32(data);
 	state.addrLatch[1]=ReadUint32(data);
-	DeserializeYM2612(data);
+	DeserializeYM2612(data,version);
 	DeserializeRF5C68(data);
 	return true;
 }
