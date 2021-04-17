@@ -461,3 +461,68 @@ std::pair<uint32_t, std::vector<unsigned char>> TownsTimer::MakeBuzzerWave(int m
 
 	return std::make_pair(BUZZER_SAMPLING_RATE(), std::move(vec));
 }
+
+/* virtual */ uint32_t TownsTimer::SerializeVersion(void) const
+{
+	return 0;
+}
+/* virtual */ void TownsTimer::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
+{
+	PushUint64(data,state.lastTickTimeInNS);
+	for(auto &ch : state.channels)
+	{
+		PushUint16(data,ch.mode);
+		PushUint16(data,ch.lastCmd);
+		PushUint16(data,ch.counter);
+		PushUint16(data,ch.counterInitialValue);
+		PushUint16(data,ch.latchedCounter);
+		PushUint16(data,ch.increment);
+		PushBool(data,ch.OUT);
+		PushBool(data,ch.counting);
+		PushBool(data,ch.latched);
+		PushBool(data,ch.bcd);
+
+		PushUint32(data,ch.RL);
+		PushBool(data,ch.accessLow);
+	}
+
+	PushBool(data,state.TMMSK[0]);
+	PushBool(data,state.TMMSK[1]);
+	PushBool(data,state.TMOUT[0]);
+	PushBool(data,state.TMOUT[1]);
+	PushBool(data,state.SOUND);
+	PushBool(data,state.SOUND_MEMIO);
+
+	PushUint32(data,state.buzzerPhase);
+}
+/* virtual */ bool TownsTimer::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
+{
+	state.lastTickTimeInNS=ReadUint64(data);
+	for(auto &ch : state.channels)
+	{
+		ch.mode=ReadUint16(data);
+		ch.lastCmd=ReadUint16(data);
+		ch.counter=ReadUint16(data);
+		ch.counterInitialValue=ReadUint16(data);
+		ch.latchedCounter=ReadUint16(data);
+		ch.increment=ReadUint16(data);
+		ch.OUT=ReadBool(data);
+		ch.counting=ReadBool(data);
+		ch.latched=ReadBool(data);
+		ch.bcd=ReadBool(data);
+
+		ch.RL=ReadUint32(data);
+		ch.accessLow=ReadBool(data);
+	}
+
+	state.TMMSK[0]=ReadBool(data);
+	state.TMMSK[1]=ReadBool(data);
+	state.TMOUT[0]=ReadBool(data);
+	state.TMOUT[1]=ReadBool(data);
+	state.SOUND=ReadBool(data);
+	state.SOUND_MEMIO=ReadBool(data);
+
+	state.buzzerPhase=ReadUint32(data);
+
+	return true;
+}

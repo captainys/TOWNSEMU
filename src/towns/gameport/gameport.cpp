@@ -226,3 +226,31 @@ void TownsGamePort::State::Reset(void)
 	return 0xff;
 }
 
+
+/* virtual */ uint32_t TownsGamePort::SerializeVersion(void) const
+{
+	return 0;
+}
+/* virtual */ void TownsGamePort::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
+{
+	for(auto &p : state.ports)
+	{
+		PushInt32(data,p.device);
+		PushInt32(data,p.state);
+		PushBool(data,p.COM);
+		PushUint16(data,p.TRIG);
+		PushInt64(data,p.lastAccessTime);
+	}
+}
+/* virtual */ bool TownsGamePort::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
+{
+	for(auto &p : state.ports)
+	{
+		p.device=ReadInt32(data);
+		p.state=ReadInt32(data);
+		p.COM=ReadBool(data);
+		p.TRIG=ReadUint16(data);
+		p.lastAccessTime=ReadInt64(data);
+	}
+	return true;
+}

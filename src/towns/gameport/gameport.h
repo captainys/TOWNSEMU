@@ -91,6 +91,10 @@ public:
 	virtual void IOWriteByte(unsigned int ioport,unsigned int data);
 
 	virtual unsigned int IOReadByte(unsigned int ioport);
+
+	virtual uint32_t SerializeVersion(void) const;
+	virtual void SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const;
+	virtual bool SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version);
 };
 
 /* } */

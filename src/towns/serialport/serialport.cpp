@@ -402,3 +402,84 @@ void TownsSerialPort::UpdatePIC(void)
 	return 0xff;
 }
 
+
+/* virtual */ uint32_t TownsSerialPort::SerializeVersion(void) const
+{
+	return 0;
+}
+/* virtual */ void TownsSerialPort::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
+{
+	PushInt64(data,state.intel8251.state.lastTxTime);
+	PushInt64(data,state.intel8251.state.lastRxTime);
+
+	PushBool(data,state.intel8251.state.immediatelyAfterReset);
+
+	PushUint32(data,state.intel8251.state.nanoSecondsPerByte);
+
+	PushUint32(data,state.intel8251.state.baudRate);
+
+	PushUint16(data,state.intel8251.state.stopBits);
+	PushUint16(data,state.intel8251.state.preScale);
+
+	PushBool(data,state.intel8251.state.SCS);
+	PushBool(data,state.intel8251.state.ESD);
+
+	PushUint16(data,state.intel8251.state.dataLength);
+	PushBool(data,state.intel8251.state.evenParity);
+	PushBool(data,state.intel8251.state.parityEnabled);
+
+	PushBool(data,state.intel8251.state.RxEN);
+	PushBool(data,state.intel8251.state.TxEN);
+	PushBool(data,state.intel8251.state.RxRDY);
+	PushBool(data,state.intel8251.state.TxRDY);
+	PushBool(data,state.intel8251.state.SYNDET);
+	PushBool(data,state.intel8251.state.FE);
+	PushBool(data,state.intel8251.state.OE);
+	PushBool(data,state.intel8251.state.PE);
+	PushBool(data,state.intel8251.state.TxEMPTY);
+	PushBool(data,state.intel8251.state.RTS);
+	PushBool(data,state.intel8251.state.DTR);
+	PushBool(data,state.intel8251.state.BREAK);
+
+	PushUint16(data,state.INTEnableBits);
+	PushBool(data,state.INTbyTxRDY_RxRDY_SYNDET);
+}
+/* virtual */ bool TownsSerialPort::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
+{
+	state.intel8251.state.lastTxTime=ReadInt64(data);
+	state.intel8251.state.lastRxTime=ReadInt64(data);
+
+	state.intel8251.state.immediatelyAfterReset=ReadBool(data);
+
+	state.intel8251.state.nanoSecondsPerByte=ReadUint32(data);
+
+	state.intel8251.state.baudRate=ReadUint32(data);
+
+	state.intel8251.state.stopBits=ReadUint16(data);
+	state.intel8251.state.preScale=ReadUint16(data);
+
+	state.intel8251.state.SCS=ReadBool(data);
+	state.intel8251.state.ESD=ReadBool(data);
+
+	state.intel8251.state.dataLength=ReadUint16(data);
+	state.intel8251.state.evenParity=ReadBool(data);
+	state.intel8251.state.parityEnabled=ReadBool(data);
+
+	state.intel8251.state.RxEN=ReadBool(data);
+	state.intel8251.state.TxEN=ReadBool(data);
+	state.intel8251.state.RxRDY=ReadBool(data);
+	state.intel8251.state.TxRDY=ReadBool(data);
+	state.intel8251.state.SYNDET=ReadBool(data);
+	state.intel8251.state.FE=ReadBool(data);
+	state.intel8251.state.OE=ReadBool(data);
+	state.intel8251.state.PE=ReadBool(data);
+	state.intel8251.state.TxEMPTY=ReadBool(data);
+	state.intel8251.state.RTS=ReadBool(data);
+	state.intel8251.state.DTR=ReadBool(data);
+	state.intel8251.state.BREAK=ReadBool(data);
+
+	state.INTEnableBits=ReadUint16(data);
+	state.INTbyTxRDY_RxRDY_SYNDET=ReadBool(data);
+
+	return true;
+}

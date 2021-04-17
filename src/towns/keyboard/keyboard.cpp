@@ -325,3 +325,32 @@ bool TownsKeyboard::InFifoBuffer(unsigned int code) const
 	}
 	return false;
 }
+
+
+
+/* virtual */ uint32_t TownsKeyboard::SerializeVersion(void) const
+{
+	return 0;
+}
+/* virtual */ void TownsKeyboard::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
+{
+	PushBool(data,state.IRQEnabled);
+	PushBool(data,state.KBINT);
+
+	PushUint32(data,state.bootKeyComb);
+	PushUint32(data,state.bootKeyCombSequenceCounter);
+
+	PushUint32(data,state.lastCmd);
+}
+/* virtual */ bool TownsKeyboard::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
+{
+	state.IRQEnabled=ReadBool(data);
+	state.KBINT=ReadBool(data);
+
+	state.bootKeyComb=ReadUint32(data);
+	state.bootKeyCombSequenceCounter=ReadUint32(data);
+
+	state.lastCmd=ReadUint32(data);
+
+	return 0;
+}

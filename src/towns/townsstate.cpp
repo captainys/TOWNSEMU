@@ -24,7 +24,7 @@ bool FMTowns::SaveState(std::string fName) const
 		allDevices.push_back(&timer);
 		allDevices.push_back(&keyboard);
 		allDevices.push_back(&serialport);
-		allDevices.push_back(&vndrv);
+		// allDevices.push_back(&vndrv);
 
 		for(auto devPtr : allDevices)
 		{
@@ -59,7 +59,7 @@ bool FMTowns::LoadState(std::string fName)
 		allDevices.push_back(&timer);
 		allDevices.push_back(&keyboard);
 		allDevices.push_back(&serialport);
-		allDevices.push_back(&vndrv);
+		// allDevices.push_back(&vndrv);
 
 		while(true!=ifp.eof())
 		{
