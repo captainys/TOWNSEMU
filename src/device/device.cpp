@@ -244,28 +244,28 @@ bool Device::Deserialize(const std::vector <unsigned char> &dat,std::string stat
 /* static */ uint64_t Device::ReadUint64(const unsigned char *&data)
 {
 	uint64_t v;
-	v= data[0]|
-	  (data[1]<<8)|
-	  (data[2]<<16)|
-	  (data[3]<<24)|
-	  (data[4]<<32)|
-	  (data[5]<<40)|
-	  (data[6]<<48)|
-	  (data[7]<<56);
+	v= ((uint64_t)data[0])|
+	  (((uint64_t)data[1])<<8)|
+	  (((uint64_t)data[2])<<16)|
+	  (((uint64_t)data[3])<<24)|
+	  (((uint64_t)data[4])<<32)|
+	  (((uint64_t)data[5])<<40)|
+	  (((uint64_t)data[6])<<48)|
+	  (((uint64_t)data[7])<<56);
 	data+=8;
 	return v;
 }
 /* static */ int64_t Device::ReadInt64(const unsigned char *&data)
 {
 	int64_t v;
-	v= data[0]|
-	  (data[1]<<8)|
-	  (data[2]<<16)|
-	  (data[3]<<24)|
-	  (data[4]<<32)|
-	  (data[5]<<40)|
-	  (data[6]<<48)|
-	  (data[7]<<56);
+	v= ((uint64_t)data[0])|
+	  (((uint64_t)data[1])<<8)|
+	  (((uint64_t)data[2])<<16)|
+	  (((uint64_t)data[3])<<24)|
+	  (((uint64_t)data[4])<<32)|
+	  (((uint64_t)data[5])<<40)|
+	  (((uint64_t)data[6])<<48)|
+	  (((uint64_t)data[7])<<56);
 	data+=8;
 	return v;
 }
