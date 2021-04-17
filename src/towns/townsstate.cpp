@@ -3,11 +3,12 @@
 #include "towns.h"
 
 // Disk-image (Disc-image) search rule:
-// (1) Try using the filename stored in the state file as is.
-// (2) Try state path+relative path
-// (3) Try image search path+file name
-// (4) Try state path+file name
-// (5) If floppy-disk image, use image stored in the state file.
+// (1) Hard-disk image is not auto-mounted.
+// (2) Try using the filename stored in the state file as is.
+// (3) Try state path+relative path
+// (4) Try image search path+file name
+// (5) Try state path+file name
+// (6) If floppy-disk image, use image stored in the state file.
 
 
 bool FMTowns::SaveState(std::string fName) const

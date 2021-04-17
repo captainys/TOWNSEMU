@@ -1170,11 +1170,15 @@ void TownsCDROM::SetSIRQ_IRR(void)
 
 /* virtual */ uint32_t TownsCDROM::SerializeVersion(void) const
 {
-	return 0;
+	return 1;
 }
 /* virtual */ void TownsCDROM::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
 {
+	std::string stateDir,stateName;
+	cpputil::SeparatePathFile(stateDir,stateName,stateFName);
+
 	PushString(data,state.imgFileName);
+	PushString(data,cpputil::MakeRelativePath(state.imgFileName,stateDir));
 
 	PushBool(data,state.SIRQ); // 4C0H bit 7
 	PushBool(data,state.DEI);  // 4C0H bit 6 (DMA End Flag)
@@ -1214,11 +1218,77 @@ void TownsCDROM::SetSIRQ_IRR(void)
 }
 /* virtual */ bool TownsCDROM::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
 {
-	state.imgFileName=ReadString(data);
-	if(DiscImage::ERROR_NOERROR!=state.GetDisc().Open(state.imgFileName))
+	std::string stateDir,stateName;
+	cpputil::SeparatePathFile(stateDir,stateName,stateFName);
+
+
+
+	std::string fName=ReadString(data);
+	std::string relPath;
+	if(1<=version)
 	{
-		// Try search paths.
+		relPath=ReadString(data);
 	}
+
+
+	// See disk-image search rule in townsstate.cpp
+	bool loaded=false;
+
+	// (1) Try using the filename stored in the state file as is.
+	if(true!=loaded)
+	{
+		if(cpputil::FileExists(fName) &&
+		   DiscImage::ERROR_NOERROR!=state.GetDisc().Open(fName))
+		{
+			state.imgFileName=fName;
+			loaded=true;
+		}
+	}
+
+	// (2) Try state path+relative path
+	auto stateRel=cpputil::MakeFullPathName(stateDir,relPath);
+	if(true!=loaded)
+	{
+		if(cpputil::FileExists(stateRel) &&
+		   DiscImage::ERROR_NOERROR!=state.GetDisc().Open(stateRel))
+		{
+			state.imgFileName=stateRel;
+			loaded=true;
+		}
+	}
+
+	// (3) Try image search path+file name
+	if(true!=loaded)
+	{
+		std::string imgDir,imgName;
+		cpputil::SeparatePathFile(imgDir,imgName,fName);
+		for(auto dir : searchPaths)
+		{
+			auto ful=cpputil::MakeFullPathName(dir,imgName);
+			if(cpputil::FileExists(ful) &&
+			   DiscImage::ERROR_NOERROR!=state.GetDisc().Open(ful))
+			{
+				state.imgFileName=ful;
+				loaded=true;
+			}
+		}
+	}
+
+	// (4) Try state path+file name
+	if(true!=loaded)
+	{
+		std::string imgDir,imgName;
+		cpputil::SeparatePathFile(imgDir,imgName,fName);
+		auto ful=cpputil::MakeFullPathName(stateDir,imgName);
+		if(cpputil::FileExists(ful) &&
+		   DiscImage::ERROR_NOERROR!=state.GetDisc().Open(ful))
+		{
+			state.imgFileName=ful;
+			loaded=true;
+		}
+	}
+
+
 
 	state.SIRQ=ReadBool(data); // 4C0H bit 7
 	state.DEI=ReadBool(data);  // 4C0H bit 6 (DMA End Flag)

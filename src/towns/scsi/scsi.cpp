@@ -1267,14 +1267,18 @@ std::vector <std::string> TownsSCSI::GetStatusText(void) const
 
 /* virtual */ uint32_t TownsSCSI::SerializeVersion(void) const
 {
-	return 0;
+	return 1;
 }
 /* virtual */ void TownsSCSI::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
 {
+	std::string stateDir,stateName;
+	cpputil::SeparatePathFile(stateDir,stateName,stateFName);
+
 	for(auto &dev : state.dev)
 	{
 		PushUint32(data,dev.devType);
 		PushString(data,dev.imageFName);
+		PushString(data,cpputil::MakeRelativePath(dev.imageFName,stateDir));
 		PushInt64(data,dev.imageSize);
 	}
 
@@ -1310,16 +1314,63 @@ std::vector <std::string> TownsSCSI::GetStatusText(void) const
 }
 /* virtual */ bool TownsSCSI::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
 {
+	std::string stateDir,stateName;
+	cpputil::SeparatePathFile(stateDir,stateName,stateFName);
+
 	for(auto &dev : state.dev)
 	{
 		dev.devType=ReadUint32(data);
-		dev.imageFName=ReadString(data);
-		dev.imageSize=ReadInt64(data);
+		std::string fName=ReadString(data);
+		std::string relPath;
+		if(1<=version)
+		{
+			relPath=ReadString(data);
+		}
+		ReadInt64(data); // Dummy read
+		// Do not auto-load hard-disk image.
 		if(SCSIDEVICE_CDROM==dev.devType)
 		{
-			if(DiscImage::ERROR_NOERROR!=dev.discImg.Open(dev.imageFName))
+			// See disk-image search rule in townsstate.cpp
+			bool loaded=false;
+
+			// (1) Try using the filename stored in the state file as is.
+			if(true!=loaded)
 			{
-				// Try different directories...
+				if(cpputil::FileExists(fName) &&
+				   DiscImage::ERROR_NOERROR!=dev.discImg.Open(fName))
+				{
+					dev.imageFName=fName;
+					loaded=true;
+				}
+			}
+
+			// (2) Try state path+relative path
+			auto stateRel=cpputil::MakeFullPathName(stateDir,relPath);
+			if(true!=loaded)
+			{
+				if(cpputil::FileExists(stateRel) &&
+				   DiscImage::ERROR_NOERROR!=dev.discImg.Open(stateRel))
+				{
+					dev.imageFName=stateRel;
+					loaded=true;
+				}
+			}
+
+			// (3) Try image search path+file name
+			// No search paths for SCSI CD-ROM.
+
+			// (4) Try state path+file name
+			if(true!=loaded)
+			{
+				std::string imgDir,imgName;
+				cpputil::SeparatePathFile(imgDir,imgName,fName);
+				auto ful=cpputil::MakeFullPathName(stateDir,imgName);
+				if(cpputil::FileExists(ful) &&
+				   DiscImage::ERROR_NOERROR!=dev.discImg.Open(ful))
+				{
+					dev.imageFName=ful;
+					loaded=true;
+				}
 			}
 		}
 	}
