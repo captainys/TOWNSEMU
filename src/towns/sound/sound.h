@@ -90,6 +90,16 @@ public:
 	void StartRecording(void);
 	void EndRecording(void);
 	void SaveRecording(std::string fName) const;
+
+
+	void SerializeYM2612(std::vector <unsigned char> &data) const;
+	void DeserializeYM2612(const unsigned char *&data);
+	void SerializeRF5C68(std::vector <unsigned char> &data) const;
+	void DeserializeRF5C68(const unsigned char *&data);
+
+	virtual uint32_t SerializeVersion(void) const;
+	virtual void SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const;
+	virtual bool SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version);
 };
 
 /* } */

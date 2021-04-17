@@ -188,4 +188,5 @@ TownsRTC::TownsRTC(class FMTowns *townsPtr) : Device(townsPtr)
 	state.hour24=ReadBool(data); // If true, return 00:00 to 23:59 scale
 	state.registerLatch=ReadUint32(data);
 	state.lastDataWrite=ReadUint32(data);
+	return true;
 }

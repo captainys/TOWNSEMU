@@ -302,3 +302,239 @@ void TownsSound::SaveRecording(std::string fName) const
 	auto wavFile=data.MakeWavByteData();
 	cpputil::WriteBinaryFile(fName,wavFile.size(),wavFile.data());
 }
+
+
+
+void TownsSound::SerializeYM2612(std::vector <unsigned char> &data) const
+{
+	auto &ym2612=state.ym2612;
+
+	PushBool(data,ym2612.state.LFO);
+	PushUint32(data,ym2612.state.FREQCTRL);
+	PushUint64(data,ym2612.state.deviceTimeInNS);
+	PushUint64(data,ym2612.state.lastTickTimeInNS);
+	for(auto &ch : ym2612.state.channels)
+	{
+		PushUint32(data,ch.F_NUM);
+		PushUint32(data,ch.BLOCK);
+		PushUint32(data,ch.FB);
+		PushUint32(data,ch.CONNECT);
+		PushUint32(data,ch.L);
+		PushUint32(data,ch.R);
+		PushUint32(data,ch.AMS);
+		PushUint32(data,ch.PMS);
+		PushUint32(data,ch.usingSlot);
+
+		for(auto &sl : ch.slots)
+		{
+			PushUint32(data,sl.DT);
+			PushUint32(data,sl.MULTI);
+			PushUint32(data,sl.TL);
+			PushUint32(data,sl.KS);
+			PushUint32(data,sl.AR);
+			PushUint32(data,sl.AM);
+			PushUint32(data,sl.DR);
+			PushUint32(data,sl.SR);
+			PushUint32(data,sl.SL);
+			PushUint32(data,sl.RR);
+			PushUint32(data,sl.SSG_EG);
+
+			// Cache for wave-generation >>
+			PushUint64(data,sl.microsecS12);
+			PushUint64(data,sl.toneDurationMicrosecS12);
+			PushUint32(data,sl.phaseS12);
+			PushUint32(data,sl.phaseS12Step);
+			PushUint32(data,sl.env[0]);
+			PushUint32(data,sl.env[1]);
+			PushUint32(data,sl.env[2]);
+			PushUint32(data,sl.env[3]);
+			PushUint32(data,sl.env[4]);
+			PushUint32(data,sl.env[5]);
+			PushUint32(data,sl.envDurationCache);
+			PushBool(data,sl.InReleasePhase);
+			PushUint32(data,sl.ReleaseStartTime);
+			PushUint32(data,sl.ReleaseEndTime);
+			PushUint32(data,sl.ReleaseStartDbX100);
+			PushUint32(data,sl.lastDbX100Cache);
+			// Cache for wave-generation <<
+		}
+
+		PushUint32(data,ch.playState);
+		PushInt32(data,ch.lastSlot0Out[0]);
+		PushInt32(data,ch.lastSlot0Out[1]);
+	}
+	PushUint32(data,ym2612.state.F_NUM_3CH[0]);
+	PushUint32(data,ym2612.state.F_NUM_3CH[1]);
+	PushUint32(data,ym2612.state.F_NUM_3CH[2]);
+	PushUint32(data,ym2612.state.BLOCK_3CH[0]);
+	PushUint32(data,ym2612.state.BLOCK_3CH[1]);
+	PushUint32(data,ym2612.state.BLOCK_3CH[2]);
+	PushUint32(data,ym2612.state.F_NUM_6CH[0]);
+	PushUint32(data,ym2612.state.F_NUM_6CH[1]);
+	PushUint32(data,ym2612.state.F_NUM_6CH[2]);
+	PushUint32(data,ym2612.state.BLOCK_6CH[0]);
+	PushUint32(data,ym2612.state.BLOCK_6CH[1]);
+	PushUint32(data,ym2612.state.BLOCK_6CH[2]);
+	PushUcharArray(data,sizeof(ym2612.state.reg),ym2612.state.reg);
+	PushUint64(data,ym2612.state.timerCounter[0]);
+	PushUint64(data,ym2612.state.timerCounter[1]);
+	PushBool(data,ym2612.state.timerUp[0]);
+	PushBool(data,ym2612.state.timerUp[1]);
+	PushUint32(data,ym2612.state.playingCh);
+	PushInt32(data,ym2612.state.volume);
+}
+void TownsSound::DeserializeYM2612(const unsigned char *&data)
+{
+	auto &ym2612=state.ym2612;
+
+	ym2612.state.LFO=ReadBool(data);
+	ym2612.state.FREQCTRL=ReadUint32(data);
+	ym2612.state.deviceTimeInNS=ReadUint64(data);
+	ym2612.state.lastTickTimeInNS=ReadUint64(data);
+	for(auto &ch : ym2612.state.channels)
+	{
+		ch.F_NUM=ReadUint32(data);
+		ch.BLOCK=ReadUint32(data);
+		ch.FB=ReadUint32(data);
+		ch.CONNECT=ReadUint32(data);
+		ch.L=ReadUint32(data);
+		ch.R=ReadUint32(data);
+		ch.AMS=ReadUint32(data);
+		ch.PMS=ReadUint32(data);
+		ch.usingSlot=ReadUint32(data);
+
+		for(auto &sl : ch.slots)
+		{
+			sl.DT=ReadUint32(data);
+			sl.MULTI=ReadUint32(data);
+			sl.TL=ReadUint32(data);
+			sl.KS=ReadUint32(data);
+			sl.AR=ReadUint32(data);
+			sl.AM=ReadUint32(data);
+			sl.DR=ReadUint32(data);
+			sl.SR=ReadUint32(data);
+			sl.SL=ReadUint32(data);
+			sl.RR=ReadUint32(data);
+			sl.SSG_EG=ReadUint32(data);
+
+			// Cache for wave-generation >>
+			sl.microsecS12=ReadUint64(data);
+			sl.toneDurationMicrosecS12=ReadUint64(data);
+			sl.phaseS12=ReadUint32(data);
+			sl.phaseS12Step=ReadUint32(data);
+			sl.env[0]=ReadUint32(data);
+			sl.env[1]=ReadUint32(data);
+			sl.env[2]=ReadUint32(data);
+			sl.env[3]=ReadUint32(data);
+			sl.env[4]=ReadUint32(data);
+			sl.env[5]=ReadUint32(data);
+			sl.envDurationCache=ReadUint32(data);
+			sl.InReleasePhase=ReadBool(data);
+			sl.ReleaseStartTime=ReadUint32(data);
+			sl.ReleaseEndTime=ReadUint32(data);
+			sl.ReleaseStartDbX100=ReadUint32(data);
+			sl.lastDbX100Cache=ReadUint32(data);
+			// Cache for wave-generation <<
+		}
+
+		ch.playState=ReadUint32(data);
+		ch.lastSlot0Out[0]=ReadInt32(data);
+		ch.lastSlot0Out[1]=ReadInt32(data);
+	}
+	ym2612.state.F_NUM_3CH[0]=ReadUint32(data);
+	ym2612.state.F_NUM_3CH[1]=ReadUint32(data);
+	ym2612.state.F_NUM_3CH[2]=ReadUint32(data);
+	ym2612.state.BLOCK_3CH[0]=ReadUint32(data);
+	ym2612.state.BLOCK_3CH[1]=ReadUint32(data);
+	ym2612.state.BLOCK_3CH[2]=ReadUint32(data);
+	ym2612.state.F_NUM_6CH[0]=ReadUint32(data);
+	ym2612.state.F_NUM_6CH[1]=ReadUint32(data);
+	ym2612.state.F_NUM_6CH[2]=ReadUint32(data);
+	ym2612.state.BLOCK_6CH[0]=ReadUint32(data);
+	ym2612.state.BLOCK_6CH[1]=ReadUint32(data);
+	ym2612.state.BLOCK_6CH[2]=ReadUint32(data);
+	ReadUcharArray(data,sizeof(ym2612.state.reg),ym2612.state.reg);
+	ym2612.state.timerCounter[0]=ReadUint64(data);
+	ym2612.state.timerCounter[1]=ReadUint64(data);
+	ym2612.state.timerUp[0]=ReadBool(data);
+	ym2612.state.timerUp[1]=ReadBool(data);
+	ym2612.state.playingCh=ReadUint32(data);
+	ym2612.state.volume=ReadInt32(data);
+}
+void TownsSound::SerializeRF5C68(std::vector <unsigned char> &data) const
+{
+	auto &rf5c68=state.rf5c68;
+
+	PushUcharArray(data,rf5c68.state.waveRAM);
+	for(auto &ch : rf5c68.state.ch)
+	{
+		PushUint16(data,ch.ENV);
+		PushUint16(data,ch.PAN);
+		PushUint16(data,ch.ST);
+		PushUint16(data,ch.FD);
+		PushUint16(data,ch.LS);
+
+		PushUint16(data,ch.playPtr);
+		PushBool(data,ch.repeatAfterThisSegment);
+		PushBool(data,ch.IRQAfterThisPlayBack);
+		PushUint16(data,ch.IRQBank);
+	}
+	PushBool(data,rf5c68.state.playing);
+	PushUint16(data,rf5c68.state.Bank);
+	PushUint16(data,rf5c68.state.CB);
+	PushUint16(data,rf5c68.state.chOnOff);
+	PushInt32(data,rf5c68.state.timeBalance);
+	PushUint16(data,rf5c68.state.IRQBank);
+	PushUint16(data,rf5c68.state.IRQBankMask);
+	PushInt32(data,rf5c68.state.volume);
+}
+void TownsSound::DeserializeRF5C68(const unsigned char *&data)
+{
+	auto &rf5c68=state.rf5c68;
+
+	rf5c68.state.waveRAM=ReadUcharArray(data);
+	for(auto &ch : rf5c68.state.ch)
+	{
+		ch.ENV=ReadUint16(data);
+		ch.PAN=ReadUint16(data);
+		ch.ST =ReadUint16(data);
+		ch.FD =ReadUint16(data);
+		ch.LS =ReadUint16(data);
+
+		ch.playPtr=ReadUint16(data);
+		ch.repeatAfterThisSegment=ReadBool(data);
+		ch.IRQAfterThisPlayBack=ReadBool(data);
+		ch.IRQBank=ReadUint16(data);
+	}
+	rf5c68.state.playing=ReadBool(data);
+	rf5c68.state.Bank=ReadUint16(data);
+	rf5c68.state.CB=ReadUint16(data);
+	rf5c68.state.chOnOff=ReadUint16(data);
+	rf5c68.state.timeBalance=ReadInt32(data);
+	rf5c68.state.IRQBank=ReadUint16(data);
+	rf5c68.state.IRQBankMask=ReadUint16(data);
+	rf5c68.state.volume=ReadInt32(data);
+}
+
+
+
+/* virtual */ uint32_t TownsSound::SerializeVersion(void) const
+{
+	return 0;
+}
+/* virtual */ void TownsSound::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
+{
+	PushUint32(data,state.muteFlag);
+	PushUint32(data,state.addrLatch[0]);
+	PushUint32(data,state.addrLatch[1]);
+	SerializeYM2612(data);
+	SerializeRF5C68(data);
+}
+/* virtual */ bool TownsSound::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
+{
+	state.muteFlag=ReadUint32(data);
+	state.addrLatch[0]=ReadUint32(data);
+	state.addrLatch[1]=ReadUint32(data);
+	DeserializeYM2612(data);
+	DeserializeRF5C68(data);
+}
