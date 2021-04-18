@@ -203,7 +203,8 @@ public:
 		};
 		unsigned int CDDAState=CDDA_IDLE;
 		long long int nextCDDAPollingTime=0;
-		DiscImage::MinSecFrm CDDAEndTime;
+		DiscImage::MinSecFrm CDDAStartTime,CDDAEndTime;
+		bool CDDARepeat=false;
 
 	private:
 		DiscImage *imgPtr;

@@ -583,7 +583,9 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 				bool repeat=(1==state.paramQueue[6]); // Should I say 0!= ?
 				OutsideWorld->CDDAPlay(state.GetDisc(),msfBegin,msfEnd,repeat,leftLinear,rightLinear);
 				state.CDDAState=State::CDDA_PLAYING;
+				state.CDDAStartTime=msfBegin;
 				state.CDDAEndTime=msfEnd;
+				state.CDDARepeat=repeat;
 			}
 			if(true==StatusRequestBit(state.cmd))
 			{
@@ -1170,7 +1172,7 @@ void TownsCDROM::SetSIRQ_IRR(void)
 
 /* virtual */ uint32_t TownsCDROM::SerializeVersion(void) const
 {
-	return 1;
+	return 2;
 }
 /* virtual */ void TownsCDROM::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
 {
@@ -1214,7 +1216,10 @@ void TownsCDROM::SetSIRQ_IRR(void)
 
 	PushUint32(data,state.CDDAState);
 	PushInt64(data,state.nextCDDAPollingTime);
+	PushUint32(data,state.CDDAStartTime.ToHSG());
+	PushUint32(data,state.CDDAStartTime.ToHSG()); // Will be the current position.  Temporarily the start time.
 	PushUint32(data,state.CDDAEndTime.ToHSG());
+	PushBool(data,state.CDDARepeat);
 }
 /* virtual */ bool TownsCDROM::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
 {
@@ -1324,7 +1329,17 @@ void TownsCDROM::SetSIRQ_IRR(void)
     
 	state.CDDAState=ReadUint32(data);
 	state.nextCDDAPollingTime=ReadInt64(data);
-	state.CDDAEndTime.FromHSG(ReadUint32(data));
-
+	if(2<=version)
+	{
+		state.CDDAStartTime.FromHSG(ReadUint32(data));
+		ReadUint32(data); // Will be the current position.  Temporarily the start time.
+		state.CDDAEndTime.FromHSG(ReadUint32(data));
+		state.CDDARepeat=ReadBool(data);
+	}
+	else
+	{
+		state.CDDAState=State::CDDA_IDLE;
+		state.CDDAEndTime.FromHSG(ReadUint32(data));
+	}
 	return true;
 }
