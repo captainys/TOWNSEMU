@@ -56,6 +56,8 @@ public:
 	void CheckRenderingTimer(FMTowns &towns,class TownsRender &render);
 	void CheckImageReady(FMTowns &towns,class Outside_World &world);
 	void WaitIdle(void);
+
+	void JustLoadedMachineState(void);
 };
 
 

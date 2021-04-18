@@ -107,3 +107,8 @@ void TownsRenderingThread::CheckImageReady(FMTowns &towns,Outside_World &world)
 		}
 	}
 }
+void TownsRenderingThread::JustLoadedMachineState(void)
+{
+	WaitIdle();
+	state=STATE_IDLE;
+}

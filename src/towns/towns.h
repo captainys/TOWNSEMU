@@ -305,6 +305,12 @@ public:
 		int lastKnownMouseX=0,lastKnownMouseY=0;
 
 
+		/*! I think this flag is a dirty way of dealing with the state load, but TownsThread needs to know
+		    the machine state has just been loaded.
+		*/
+		bool justLoadedState=false;
+
+
 		i486DX::FarPointer disassemblePointer;
 		Variable();
 		void Reset(void);

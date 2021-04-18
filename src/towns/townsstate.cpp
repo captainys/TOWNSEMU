@@ -118,6 +118,8 @@ bool FMTowns::LoadState(std::string fName,class Outside_World &outsideWorld)
 
 		cdrom.ResumeCDDAAfterRestore(&outsideWorld);
 
+		var.justLoadedState=true;
+
 		return true;
 	}
 	return false;

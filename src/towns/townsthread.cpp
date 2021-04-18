@@ -59,6 +59,8 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world,class Tow
 
 		bool clockTicking=false;  // Will be made true if VM is running.
 
+		townsPtr->var.justLoadedState=false;
+
 		switch(runMode)
 		{
 		case RUNMODE_PAUSE:
@@ -183,8 +185,11 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world,class Tow
 		uiThread->uiLock.lock();
 		uiThread->ExecCommandQueue(*this,*townsPtr,outside_world);
 		uiThread->uiLock.unlock();
-
-		if(true==clockTicking)
+		if(true==townsPtr->var.justLoadedState)
+		{
+			renderingThread->JustLoadedMachineState();
+		}
+		else if(true==clockTicking)
 		{
 			AdjustRealTime(townsPtr,townsPtr->state.cpuTime-cpuTime0,realTime0,outside_world);
 		}
