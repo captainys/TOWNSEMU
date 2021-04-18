@@ -113,6 +113,15 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 	}
 
 	{
+		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_S,"State")->GetSubMenu();
+		subMenu->AddTextItem(0,FSKEY_S,L"Save Machine State")->BindCallBack(&THISCLASS::State_SaveState,this);
+		subMenu->AddTextItem(0,FSKEY_L,L"Load Machine State")->BindCallBack(&THISCLASS::State_LoadState,this);
+		subMenu->AddTextItem(0,FSKEY_NULL,L"Load Machine State and Pause")->BindCallBack(&THISCLASS::State_LoadStateAndPause,this);
+		subMenu->AddTextItem(0,FSKEY_NULL,L"Load Last Machine State")->BindCallBack(&THISCLASS::State_LoadLastState,this);
+		subMenu->AddTextItem(0,FSKEY_NULL,L"Load Last Machine State and Pause")->BindCallBack(&THISCLASS::State_LoadLastStateAndPause,this);
+	}
+
+	{
 		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_T,L"FM TOWNS")->GetSubMenu();
 		subMenu->AddTextItem(0,FSKEY_S,L"Start Virtual Machine")->BindCallBack(&THISCLASS::VM_Start,this);
 		subMenu->AddTextItem(0,FSKEY_NULL,L"Start and Close GUI")->BindCallBack(&THISCLASS::VM_StartAndCloseGUI,this);
@@ -871,6 +880,201 @@ void FsGuiMainCanvas::File_New_FileSelected(FsGuiDialog *dlg,int returnCode)
 		}
 	}
 }
+
+////////////////////////////////////////////////////////////
+
+
+
+void FsGuiMainCanvas::State_SaveState(FsGuiPopUpMenuItem *)
+{
+	if(true==subproc.SubprocRunning())
+	{
+		auto defFn=lastStateFName;
+		if(0==defFn.Strlen())
+		{
+			defFn.MakeFullPathName(GetTsugaruProfileDir(),L"*.TState");
+		}
+		auto fdlg=FsGuiDialog::CreateSelfDestructiveDialog<FsGuiFileDialog>();
+		fdlg->Initialize();
+		fdlg->mode=FsGuiFileDialog::MODE_SAVE;
+		fdlg->multiSelect=YSFALSE;
+		fdlg->title.Set(L"Save Machine State");
+		fdlg->fileExtensionArray.Append(L".TState");
+		fdlg->defaultFileName=defFn;
+		fdlg->BindCloseModalCallBack(&THISCLASS::State_SaveState_FileSelected,this);
+		AttachModalDialog(fdlg);
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+void FsGuiMainCanvas::State_SaveState_FileSelected(FsGuiDialog *dlg,int returnCode)
+{
+	auto fdlg=dynamic_cast<FsGuiFileDialog *>(dlg);
+	if(nullptr!=fdlg && (int)YSOK==returnCode)
+	{
+		selectedStateFName=fdlg->selectedFileArray[0];
+		if(YSTRUE==YsFileIO::CheckFileExist(selectedStateFName))
+		{
+			auto dlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialog>();
+			dlg->Make(L"File Already Exists",L"File Already Exists.  Overwrite?",L"Confirm",L"Cancel");
+			dlg->BindCloseModalCallBack(&THISCLASS::State_SaveState_Confirm,this);
+			AttachModalDialog(dlg);
+		}
+		else
+		{
+			State_SaveState_Save(selectedStateFName);
+		}
+	}
+}
+void FsGuiMainCanvas::State_SaveState_Confirm(FsGuiDialog *dlg,int returnCode)
+{
+	if((int)YSOK==returnCode)
+	{
+		State_SaveState_Save(selectedStateFName);
+	}
+}
+void FsGuiMainCanvas::State_SaveState_Save(YsWString fName)
+{
+	lastStateFName=selectedStateFName;
+	YsString utf8;
+	utf8.EncodeUTF8(selectedStateFName.data());
+
+	YsString cmd;
+	cmd="SAVESTATE \"";
+	cmd.Append(utf8);
+	cmd.Append("\"");
+	subproc.Send(cmd.data());
+}
+
+void FsGuiMainCanvas::State_LoadState(FsGuiPopUpMenuItem *)
+{
+	if(true==subproc.SubprocRunning())
+	{
+		auto defFn=lastStateFName;
+		if(0==defFn.Strlen())
+		{
+			defFn.MakeFullPathName(GetTsugaruProfileDir(),L"*.TState");
+		}
+		auto fdlg=FsGuiDialog::CreateSelfDestructiveDialog<FsGuiFileDialog>();
+		fdlg->Initialize();
+		fdlg->mode=FsGuiFileDialog::MODE_OPEN;
+		fdlg->multiSelect=YSFALSE;
+		fdlg->title.Set(L"Load Machine State");
+		fdlg->fileExtensionArray.Append(L".TState");
+		fdlg->defaultFileName=defFn;
+		fdlg->BindCloseModalCallBack(&THISCLASS::State_LoadState_FileSelected,this);
+		AttachModalDialog(fdlg);
+
+		loadStateThenPause=false;
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+void FsGuiMainCanvas::State_LoadStateAndPause(FsGuiPopUpMenuItem *)
+{
+	if(true==subproc.SubprocRunning())
+	{
+		auto defFn=lastStateFName;
+		if(0==defFn.Strlen())
+		{
+			defFn.MakeFullPathName(GetTsugaruProfileDir(),L"*.TState");
+		}
+		auto fdlg=FsGuiDialog::CreateSelfDestructiveDialog<FsGuiFileDialog>();
+		fdlg->Initialize();
+		fdlg->mode=FsGuiFileDialog::MODE_OPEN;
+		fdlg->multiSelect=YSFALSE;
+		fdlg->title.Set(L"Load Machine State");
+		fdlg->fileExtensionArray.Append(L".TState");
+		fdlg->defaultFileName=defFn;
+		fdlg->BindCloseModalCallBack(&THISCLASS::State_LoadState_FileSelected,this);
+		AttachModalDialog(fdlg);
+
+		loadStateThenPause=true;
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+void FsGuiMainCanvas::State_LoadState_FileSelected(FsGuiDialog *dlg,int returnCode)
+{
+	auto fdlg=dynamic_cast<FsGuiFileDialog *>(dlg);
+	if(nullptr!=fdlg && (int)YSOK==returnCode)
+	{
+		selectedStateFName=fdlg->selectedFileArray[0];
+		if(YSTRUE==YsFileIO::CheckFileExist(selectedStateFName))
+		{
+			YsString utf8;
+			utf8.EncodeUTF8(selectedStateFName.data());
+
+			subproc.Send("PAUSE");
+
+			YsString cmd;
+			cmd="LOADSTATE \"";
+			cmd.Append(utf8);
+			cmd.Append("\"");
+			subproc.Send(cmd.data());
+
+			if(true!=loadStateThenPause)
+			{
+				subproc.Send("RUN");
+			}
+
+			lastStateFName=selectedStateFName;
+		}
+	}
+}
+void FsGuiMainCanvas::State_LoadLastState(FsGuiPopUpMenuItem *)
+{
+	if(true==subproc.SubprocRunning())
+	{
+		if(0<lastStateFName.Strlen())
+		{
+			lastStateFName=selectedStateFName;
+			YsString utf8;
+			utf8.EncodeUTF8(selectedStateFName.data());
+
+			YsString cmd;
+			cmd="LOADSTATE \"";
+			cmd.Append(utf8);
+			cmd.Append("\"");
+			subproc.Send(cmd.data());
+		}
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+void FsGuiMainCanvas::State_LoadLastStateAndPause(FsGuiPopUpMenuItem *)
+{
+	if(true==subproc.SubprocRunning())
+	{
+		if(0<lastStateFName.Strlen())
+		{
+			lastStateFName=selectedStateFName;
+			YsString utf8;
+			utf8.EncodeUTF8(selectedStateFName.data());
+
+			YsString cmd;
+			cmd="LOADSTATE \"";
+			cmd.Append(utf8);
+			cmd.Append("\"");
+			subproc.Send(cmd.data());
+			subproc.Send("PAUSE");
+		}
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+
+
 
 ////////////////////////////////////////////////////////////
 

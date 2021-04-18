@@ -54,11 +54,11 @@ void ProfileDialog::Make(void)
 		scrnScaleTxt->SetInteger(100);
 
 		scrnAutoScaleBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Auto Scaling (Fit to Window Size)",YSTRUE);
-		scrnMaximizeBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Maximize on Start Up",YSTRUE);
+		scrnMaximizeBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Maximize on Start Up",YSFALSE);
 
 		pretend386DXBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Pretend 80386DX",YSTRUE);
 
-		damperWireLineBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Render Damper-Wire Line (to make you nostalgic)",YSTRUE);
+		damperWireLineBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Render Damper-Wire Line (to make you nostalgic)",YSFALSE);
 
 		EndAddTabItem();
 	}

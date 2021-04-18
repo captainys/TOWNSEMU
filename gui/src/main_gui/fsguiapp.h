@@ -151,6 +151,22 @@ private:
 	void File_Exit_ReallyExit(void);
 
 
+
+	YsWString lastStateFName;
+	YsWString selectedStateFName;
+	bool loadStateThenPause=false;
+	void State_SaveState(FsGuiPopUpMenuItem *);
+	void State_SaveState_FileSelected(FsGuiDialog *dlg,int returnCode);
+	void State_SaveState_Confirm(FsGuiDialog *dlg,int returnCode);
+	void State_SaveState_Save(YsWString fName);
+	void State_LoadState(FsGuiPopUpMenuItem *);
+	void State_LoadStateAndPause(FsGuiPopUpMenuItem *);
+	void State_LoadState_FileSelected(FsGuiDialog *dlg,int returnCode);
+	void State_LoadLastState(FsGuiPopUpMenuItem *);
+	void State_LoadLastStateAndPause(FsGuiPopUpMenuItem *);
+
+
+
 	bool genFloppyDisk=true;
 	unsigned int genDiskSize=0;
 	void File_New_1232KB(FsGuiPopUpMenuItem *);
