@@ -109,6 +109,7 @@ public:
 	bool interactive=true;
 
 	bool powerOffAtBreakPoint=false;
+	bool forceQuitOnPowerOff=false;
 	std::string powerOffAt;
 
 	bool pretend386DX=false;

@@ -206,6 +206,11 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world,class Tow
 	}
 
 	outside_world->Stop();
+
+	if(true==townsPtr->var.forceQuitOnPowerOff)
+	{
+		exit(0);
+	}
 }
 
 void TownsThread::AdjustRealTime(FMTowns *townsPtr,long long int cpuTimePassed,std::chrono::time_point<std::chrono::high_resolution_clock> time0,Outside_World *outside_world)

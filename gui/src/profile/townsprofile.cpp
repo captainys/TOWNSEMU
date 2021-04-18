@@ -43,7 +43,7 @@ void TownsProfile::CleanUp(void)
 	autoStart=false;
 	screenScaling=150;
 	pretend386DX=false;
-	freq=25;
+	freq=40;
 	appSpecificAugmentation=TOWNS_APPSPECIFIC_NONE;
 
 	memSizeInMB=4;
@@ -475,6 +475,7 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 	}
 
 	argv.push_back("-WINDOWSHIFT");
+	argv.push_back("-FORCEQUITONPOFF");
 
 	if(""!=CDImgFile)
 	{

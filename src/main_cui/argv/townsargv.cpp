@@ -183,6 +183,8 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "    MODEL2 2F 20F UX CX UG HG HR UR MA MX ME MF HC" << std::endl;
 	std::cout << "  It affects the return value from I/O 0030H." << std::endl;
 	std::cout << "  Also selection of UX and UG (386SX models) will affect memory mappings." << std::endl;
+	std::cout << "-FORCEQUITONPOFF" << std::endl;
+	std::cout << "  Use exit(0) to exit the program on power off." << std::endl;
 }
 
 void TownsARGV::PrintApplicationList(void) const
@@ -761,6 +763,10 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		{
 			townsType=StrToTownsType(argv[i+1]);
 			++i;
+		}
+		else if("-FORCEQUITONPOFF"==ARG)
+		{
+			forceQuitOnPowerOff=true;
 		}
 		else
 		{

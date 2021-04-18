@@ -279,6 +279,11 @@ public:
 		bool pauseOnPowerOff=false;
 
 
+		/*! Use exit(0) function on power off.
+		*/
+		bool forceQuitOnPowerOff=false;
+
+
 		/*! If this flag is true, and if VM lags behind the real time, townsTime will be fast-forwarded to 
 		    catch up with the real time.  It will force interrupts fired up roughly real time.  However,
 		    timing-sensitive application may break because all of a sudden multiple devices becomes active

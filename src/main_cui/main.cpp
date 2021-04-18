@@ -401,6 +401,7 @@ bool Setup(FMTowns &towns,Outside_World *outside_world,const TownsARGV &argv)
 
 	towns.var.damperWireLine=argv.damperWireLine;
 	towns.var.scanLineEffectIn15KHz=argv.scanLineEffectIn15KHz;
+	towns.var.forceQuitOnPowerOff=argv.forceQuitOnPowerOff;
 
 	outside_world->throttlePhysicalId=argv.throttlePhysicalId;
 	outside_world->throttleAxis=argv.throttleAxis;
