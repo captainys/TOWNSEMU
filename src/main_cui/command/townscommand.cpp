@@ -988,7 +988,7 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 	case CMD_LOAD_STATE:
 		if(2<=cmd.argv.size())
 		{
-			if(true!=towns.LoadState(cmd.argv[1]))
+			if(true!=towns.LoadState(cmd.argv[1],*outside_world))
 			{
 				PrintError(ERROR_CANNOT_OPEN_FILE);
 			}

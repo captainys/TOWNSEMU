@@ -343,6 +343,10 @@ private:
 	virtual uint32_t SerializeVersion(void) const;
 	virtual void SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const;
 	virtual bool SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version);
+
+public:
+	// Will be called from FMTowns::LoadState
+	void ResumeCDDAAfterRestore(class Outside_World *outsideWorld);
 };
 
 

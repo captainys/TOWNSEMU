@@ -600,7 +600,7 @@ public:
 
 
 	bool SaveState(std::string fName) const;
-	bool LoadState(std::string fName);
+	bool LoadState(std::string fName,class Outside_World &outsideWorld);
 
 	virtual uint32_t SerializeVersion(void) const;
 	virtual void SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const;

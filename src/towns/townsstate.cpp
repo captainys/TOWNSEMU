@@ -47,7 +47,7 @@ bool FMTowns::SaveState(std::string fName) const
 	}
 	return false;
 }
-bool FMTowns::LoadState(std::string fName)
+bool FMTowns::LoadState(std::string fName,class Outside_World &outsideWorld)
 {
 	std::ifstream ifp(fName,std::ios::binary);
 	if(true==ifp.is_open())
@@ -115,6 +115,8 @@ bool FMTowns::LoadState(std::string fName)
 				UnscheduleDeviceCallBack(*devPtr);
 			}
 		}
+
+		cdrom.ResumeCDDAAfterRestore(&outsideWorld);
 
 		return true;
 	}

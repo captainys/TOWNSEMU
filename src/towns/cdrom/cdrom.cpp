@@ -1343,3 +1343,18 @@ void TownsCDROM::SetSIRQ_IRR(void)
 	}
 	return true;
 }
+
+void TownsCDROM::ResumeCDDAAfterRestore(class Outside_World *outsideWorld)
+{
+	unsigned int leftLinear=255;
+	unsigned int rightLinear=255;
+	if(State::CDDA_PLAYING==state.CDDAState)
+	{
+		outsideWorld->CDDAPlay(state.GetDisc(),state.CDDAStartTime,state.CDDAEndTime,state.CDDARepeat,leftLinear,rightLinear);
+	}
+	else if(State::CDDA_PAUSED==state.CDDAState)
+	{
+		outsideWorld->CDDAPlay(state.GetDisc(),state.CDDAStartTime,state.CDDAEndTime,state.CDDARepeat,leftLinear,rightLinear);
+		outsideWorld->CDDAPause();
+	}
+}
