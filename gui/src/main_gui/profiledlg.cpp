@@ -333,6 +333,10 @@ void ProfileDialog::Make(void)
 
 	Fit();
 	SetArrangeType(FSDIALOG_ARRANGE_TOP_LEFT);
+
+
+	TownsProfile defaultProfile;
+	SetProfile(defaultProfile);
 }
 
 /* virtual */ void ProfileDialog::OnDropListSelChange(FsGuiDropList *drp,int prevSel)
@@ -546,6 +550,14 @@ TownsProfile ProfileDialog::GetProfile(void) const
 	}
 
 	profile.mouseIntegrationSpeed=(int)(mouseIntegSpdSlider->GetScaledValue());
+	if(profile.mouseIntegrationSpeed<32)
+	{
+		profile.mouseIntegrationSpeed=32;
+	}
+	else if(256<profile.mouseIntegrationSpeed)
+	{
+		profile.mouseIntegrationSpeed=256;
+	}
 
 	profile.bootKeyComb=BOOT_KEYCOMB_NONE;
 	for(int i=0; i<sizeof(bootKeyBtn)/sizeof(bootKeyBtn[0]); ++i)
@@ -637,6 +649,7 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 			}
 		}
 	}
+
 	mouseIntegSpdSlider->SetPositionByScaledValue((double)profile.mouseIntegrationSpeed);
 
 
