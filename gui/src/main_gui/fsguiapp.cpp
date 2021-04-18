@@ -1011,17 +1011,15 @@ void FsGuiMainCanvas::State_LoadState_FileSelected(FsGuiDialog *dlg,int returnCo
 			YsString utf8;
 			utf8.EncodeUTF8(selectedStateFName.data());
 
-			subproc.Send("PAUSE");
-
 			YsString cmd;
 			cmd="LOADSTATE \"";
 			cmd.Append(utf8);
 			cmd.Append("\"");
 			subproc.Send(cmd.data());
 
-			if(true!=loadStateThenPause)
+			if(true==loadStateThenPause)
 			{
-				subproc.Send("RUN");
+				subproc.Send("PAUSE");
 			}
 
 			lastStateFName=selectedStateFName;
