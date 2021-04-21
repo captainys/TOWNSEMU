@@ -801,6 +801,19 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 				if(true==cyberStickAssignment && 0<=mouseByFlightstickPhysicalId && mouseByFlightstickPhysicalId<gamePads.size())
 				{
 					auto axisReading=gamePads[mouseByFlightstickPhysicalId];
+					decltype(axisReading) throttleReading;
+					float z=0;
+					if(0<=throttlePhysicalId && throttlePhysicalId<gamePads.size())
+					{
+						throttleReading=gamePads[throttlePhysicalId];
+						z=gamePads[throttlePhysicalId].axes[throttleAxis];
+					}
+					else
+					{
+						throttleReading=axisReading;
+						z=gamePads[throttlePhysicalId].axes[2];
+					}
+
 					float x=axisReading.axes[0];
 					float y=axisReading.axes[1];
 					int ix=x*127.0;
@@ -821,17 +834,26 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 					{
 						iy=127;
 					}
+					int iz=z*127.0;
+					if(iz<-128)
+					{
+						iz=-128;
+					}
+					else if(127<iz)
+					{
+						iz=127;
+					}
 
 					unsigned int trig=0;
-					trig|=(axisReading.buttons[0] ? 0x01 : 0);
-					trig|=(axisReading.buttons[1] ? 0x02 : 0);
-					trig|=(axisReading.buttons[2] ? 0x04 : 0);
-					trig|=(axisReading.buttons[3] ? 0x08 : 0);
-					trig|=(axisReading.buttons[4] ? 0x10 : 0);
-					trig|=(axisReading.buttons[5] ? 0x20 : 0);
-					trig|=(axisReading.buttons[6] ? 0x40 : 0);
-					trig|=(axisReading.buttons[7] ? 0x80 : 0);
-					towns.SetCyberStickState(portId,ix,iy,0,trig);
+					trig|=((axisReading.buttons[0] || throttleReading.buttons[0]) ? 0x01 : 0);
+					trig|=((axisReading.buttons[1] || throttleReading.buttons[1]) ? 0x02 : 0);
+					trig|=((axisReading.buttons[2] || throttleReading.buttons[2]) ? 0x04 : 0);
+					trig|=((axisReading.buttons[3] || throttleReading.buttons[3]) ? 0x08 : 0);
+					trig|=((axisReading.buttons[4] || throttleReading.buttons[4]) ? 0x10 : 0);
+					trig|=((axisReading.buttons[5] || throttleReading.buttons[5]) ? 0x20 : 0);
+					trig|=((axisReading.buttons[6] || throttleReading.buttons[6]) ? 0x40 : 0);
+					trig|=((axisReading.buttons[7] || throttleReading.buttons[7]) ? 0x80 : 0);
+					towns.SetCyberStickState(portId,ix,iy,iz,trig);
 				}
 				break;
 			}

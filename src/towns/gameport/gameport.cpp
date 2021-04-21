@@ -131,6 +131,44 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 	{
 		if(CYBERSTICK_BOOT_IDLE_TIME<townsTime)
 		{
+			// Trigger Bits (Active Low)
+			//         0 Select
+			//         1 Start
+			//         2 E1 on Throttle
+			//         3 E2 on Throttle
+			//         4 D Button on Throttle
+			//         5 C Button on the Main Body
+			//         6
+			//         7
+			//         8 B Button on the Main Body
+			//         9 A Button on the Main Body
+			//        10 B Button on the Stick
+			//        11 A Button on the Stick
+
+			// What's reasonable mapping?
+			//   Physical Trigger 0 -> A Button on the Stick (Bit 11)
+			//   Physical Trigger 1 -> B Button on the Stick (Bit 10)
+			//   Physical Trigger 2 -> C Button on the Main Body (Bit 5)
+			//   Physical Trigger 3 -> D Button on Throttle (Bit 4)
+			//   Physical Trigger 4 -> A Button on the Main Body (Bit 9)
+			//   Physical Trigger 5 -> B Button on the Main Body (Bit 8)
+			//   Physical Trigger 6 -> E2
+			//   Physical Trigger 7 -> E1
+			//   Physical Trigger 8 -> Select (Bit 0)
+			//   Physical Trigger 9 -> Start  (Bit 1)
+			unsigned int cyberTrig=0;
+			cyberTrig|=((trig&0x001) ? 0x800 : 0);
+			cyberTrig|=((trig&0x002) ? 0x400 : 0);
+			cyberTrig|=((trig&0x004) ? 0x020 : 0);
+			cyberTrig|=((trig&0x008) ? 0x010 : 0);
+			cyberTrig|=((trig&0x010) ? 0x200 : 0);
+			cyberTrig|=((trig&0x020) ? 0x100 : 0);
+			cyberTrig|=((trig&0x040) ? 0x008 : 0);
+			cyberTrig|=((trig&0x080) ? 0x004 : 0);
+			cyberTrig|=((trig&0x100) ? 0x001 : 0);
+			cyberTrig|=((trig&0x200) ? 0x002 : 0);
+			cyberTrig=~cyberTrig;
+
 			switch(state)
 			{
 			default:
@@ -151,24 +189,11 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 				data=0x20;
 				break;
 
-			// Trigger Bits (Active Low)
-			//         0 Select
-			//         1 Start
-			//         2 E1
-			//         3 E2
-			//         4 Button on Throttle
-			//         5 C Button on the Main Body
-			//         6
-			//         7
-			//         8 B Button on the Main Body
-			//         9 A Button on the Main Body
-			//        10 B Button on the Stick
-			//        11 A Button on the Stick
 			case CYBERSTICK_00B:
-				data=0x0F;       // Trigger bit 4 to 7
+				data=0x00|((cyberTrig>>4)&0x0F);       // Trigger bit 4 to 7
 				break;
 			case CYBERSTICK_01B: // I don't remember interval, but I guess 0.1ms separation is good.
-				data=0x1F;       // Trigger bit 0 to 3
+				data=0x10|((cyberTrig  )&0x0F);       // Trigger bit 0 to 3
 				break;
 			case CYBERSTICK_02B:
 				data=0x00|(((0x80+mouseMotionCopy.y())>>4)&0x0F);
@@ -195,7 +220,7 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 				data=0x1F;
 				break;
 			case CYBERSTICK_10B:
-				data=0x0F;         // Trigger bits 8 to 11
+				data=0x00|((cyberTrig>>8)&0x0F);         // Trigger bits 8 to 11
 				break;
 			case CYBERSTICK_11B:
 				data=0x1F;
