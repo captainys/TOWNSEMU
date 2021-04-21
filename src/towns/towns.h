@@ -450,6 +450,11 @@ public:
 	void SetGamePadState(int port,bool Abutton,bool Bbutton,bool left,bool right,bool up,bool down,bool run,bool pause);
 
 
+	/*! Set Cyber-Stick State.  Called from Outside_World.
+	*/
+	void SetCyberStickState(int port,int x,int y,int z,unsigned int trig);
+
+
 	/*!
 	*/
 	void SetMouseMotion(int port,int dx,int dy);

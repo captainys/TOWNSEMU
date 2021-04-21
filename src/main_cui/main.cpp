@@ -356,6 +356,7 @@ bool Setup(FMTowns &towns,Outside_World *outside_world,const TownsARGV &argv)
 		case TOWNS_GAMEPORTEMU_PHYSICAL5_AS_CYBERSTICK:
 		case TOWNS_GAMEPORTEMU_PHYSICAL6_AS_CYBERSTICK:
 		case TOWNS_GAMEPORTEMU_PHYSICAL7_AS_CYBERSTICK:
+		case TOWNS_GAMEPORTEMU_CYBERSTICK:
 			towns.gameport.state.ports[i].device=TownsGamePort::CYBERSTICK;
 			break;
 		default:
@@ -412,6 +413,7 @@ bool Setup(FMTowns &towns,Outside_World *outside_world,const TownsARGV &argv)
 	outside_world->maximizeOnStartUp=argv.maximizeOnStartUp;
 
 	outside_world->mouseByFlightstickAvailable=argv.mouseByFlightstickAvailable;
+	outside_world->cyberStickAssignment=argv.cyberStickAssignment;
 	outside_world->mouseByFlightstickPhysicalId=argv.mouseByFlightstickPhysicalId;
 	outside_world->mouseByFlightstickZeroZoneX=argv.mouseByFlightstickZeroZoneX;
 	outside_world->mouseByFlightstickZeroZoneY=argv.mouseByFlightstickZeroZoneY;

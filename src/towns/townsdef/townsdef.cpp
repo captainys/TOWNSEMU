@@ -421,6 +421,11 @@ unsigned int TownsStrToGamePortEmu(std::string str)
 		return TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG7;
 	}
 
+	if("CYBER"==str || "cyber"==str || "CYBERSTICK"==str || "cyberstick"==str)
+	{
+		return TOWNS_GAMEPORTEMU_CYBERSTICK;
+	}
+
 	return TOWNS_GAMEPORTEMU_NONE;
 }
 
@@ -520,6 +525,9 @@ std::string TownsGamePortEmuToStr(unsigned int emu)
 		return "ANA6MOUSE";
 	case TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG7:
 		return "ANA7MOUSE";
+
+	case TOWNS_GAMEPORTEMU_CYBERSTICK:
+		return "CYBERSTICK";
 	}
 	return "NONE";
 }

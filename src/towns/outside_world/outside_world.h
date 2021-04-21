@@ -60,6 +60,7 @@ public:
 
 	// Wing Commander and Strike Commander series can be configured to use mouse as joystick.
 	bool mouseByFlightstickAvailable=false;
+	bool cyberStickAssignment=false;
 	bool mouseByFlightstickEnabled=false;
 	int mouseByFlightstickPhysicalId=-1;  // Physical joystick ID.
 	int mouseByFlightstickRecalibrateButton=-1; // Recalibrate button

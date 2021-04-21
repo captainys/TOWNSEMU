@@ -133,6 +133,10 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  (Joystick ID, button ID starts with 0)" << std::endl;
 	std::cout << "-VIRTKEY townsKey gamePadPhysicalId button" << std::endl;
 	std::cout << "  Assign a virtual key to a gamepad button." << std::endl;
+	std::cout << "-FLIGHTSTICK physIdx zeroZoneInPercent" << std::endl;
+	std::cout << "  Joystick assignment to be used with CYBERSTICK." << std::endl;
+	std::cout << "  Difference from -FLIGHTMOUSE is the setting is applied to the CYBERSTICK." << std::endl;
+	std::cout << "  Has no effect if CYBERSTICK is not connected to the game port." << std::endl;
 	std::cout << "-FLIGHTTHR physicalId axis" << std::endl;
 	std::cout << "  Assign a joystick analog axis for throttle integration." << std::endl;
 	std::cout << "  Throttle integration is available for:" << std::endl;
@@ -371,6 +375,7 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		else if("-FLIGHTMOUSE"==ARG && i+6<argc)
 		{
 			mouseByFlightstickAvailable=true;
+			cyberStickAssignment=false;
 			mouseByFlightstickPhysicalId=cpputil::Atoi(argv[i+1]);
 			mouseByFlightstickCenterX=cpputil::Atoi(argv[i+2]);
 			mouseByFlightstickCenterY=cpputil::Atoi(argv[i+3]);
@@ -379,6 +384,15 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 			mouseByFlightstickZeroZoneX=atof(argv[i+6])/100.0F;
 			mouseByFlightstickZeroZoneY=mouseByFlightstickZeroZoneX;
 			i+=6;
+		}
+		else if("-FLIGHTSTICK"==ARG && i+2<argc)
+		{
+			mouseByFlightstickAvailable=false;
+			cyberStickAssignment=true;
+			mouseByFlightstickPhysicalId=cpputil::Atoi(argv[i+1]);
+			mouseByFlightstickZeroZoneX=atof(argv[i+2])/100.0F;
+			mouseByFlightstickZeroZoneY=mouseByFlightstickZeroZoneX;
+			i+=2;
 		}
 		else if("-VIRTKEY"==ARG && i+3<argc)
 		{

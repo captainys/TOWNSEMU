@@ -797,6 +797,43 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 					}
 				}
 				break;
+			case TOWNS_GAMEPORTEMU_CYBERSTICK:
+				if(true==cyberStickAssignment && 0<=mouseByFlightstickPhysicalId && mouseByFlightstickPhysicalId<gamePads.size())
+				{
+					auto axisReading=gamePads[mouseByFlightstickPhysicalId];
+					float x=axisReading.axes[0];
+					float y=axisReading.axes[1];
+					int ix=x*127.0;
+					if(ix<-128)
+					{
+						ix=-128;
+					}
+					else if(127<ix)
+					{
+						ix=127;
+					}
+					int iy=y*127.0;
+					if(iy<-128)
+					{
+						iy=-128;
+					}
+					else if(127<iy)
+					{
+						iy=127;
+					}
+
+					unsigned int trig=0;
+					trig|=(axisReading.buttons[0] ? 0x01 : 0);
+					trig|=(axisReading.buttons[1] ? 0x02 : 0);
+					trig|=(axisReading.buttons[2] ? 0x04 : 0);
+					trig|=(axisReading.buttons[3] ? 0x08 : 0);
+					trig|=(axisReading.buttons[4] ? 0x10 : 0);
+					trig|=(axisReading.buttons[5] ? 0x20 : 0);
+					trig|=(axisReading.buttons[6] ? 0x40 : 0);
+					trig|=(axisReading.buttons[7] ? 0x80 : 0);
+					towns.SetCyberStickState(portId,ix,iy,0,trig);
+				}
+				break;
 			}
 		}
 

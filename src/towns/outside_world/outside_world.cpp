@@ -225,7 +225,7 @@ void Outside_World::Put16x16SelectInvert(int x0,int y0,const unsigned char idleI
 	{
 		UseGamePad(vk.physicalId);
 	}
-	if(true==mouseByFlightstickAvailable && 0<=mouseByFlightstickPhysicalId)
+	if((true==mouseByFlightstickAvailable || true==cyberStickAssignment) && 0<=mouseByFlightstickPhysicalId)
 	{
 		UseGamePad(mouseByFlightstickPhysicalId);
 	}

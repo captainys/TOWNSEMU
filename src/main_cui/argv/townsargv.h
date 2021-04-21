@@ -73,6 +73,7 @@ public:
 	int fmVol=-1,pcmVol=-1;
 
 	bool mouseByFlightstickAvailable=false;
+	bool cyberStickAssignment=false;
 	int mouseByFlightstickPhysicalId=-1;  // Physical joystick ID.
 	int mouseByFlightstickCenterX=320,mouseByFlightstickCenterY=200;
 	float mouseByFlightstickZeroZoneX=0.0F,mouseByFlightstickZeroZoneY=0.0F;

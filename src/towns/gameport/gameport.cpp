@@ -33,16 +33,11 @@ void TownsGamePort::Port::Write(long long int townsTime,bool COM,unsigned char T
 			state=(state+1)%NUM_MOUSESTATE;
 		}
 	}
-	if(CYBERSTICK==device)
+	if(CYBERSTICK==device && CYBERSTICK_BOOT_IDLE_TIME<townsTime) // CYBERSTICK_BOOT_IDLE_TIME is for preventing boot menu
 	{
 		if((true==this->COM || lastAccessTime+CYBERSTICK_TIMEOUT<=townsTime) && true!=COM)
 		{
 			state=CYBERSTICK_00B;
-			lastStateChangeTime=townsTime;
-		}
-		else if(CYBERSTICK_00B==state && true==COM)
-		{
-			state=CYBERSTICK_01A;
 			lastStateChangeTime=townsTime;
 			mouseMotionCopy=mouseMotion;
 			zAxisCopy=zAxis;
@@ -134,71 +129,83 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 	}
 	else if(CYBERSTICK==device)
 	{
-		switch(state)
+		if(CYBERSTICK_BOOT_IDLE_TIME<townsTime)
 		{
-		case CYBERSTICK_00B:	// Idle
-			data|=0x3F;
-			break;
-		case CYBERSTICK_01B:
-		case CYBERSTICK_02B:
-		case CYBERSTICK_03B:
-		case CYBERSTICK_04B:
-		case CYBERSTICK_05B:
-		case CYBERSTICK_06B:
-		case CYBERSTICK_07B:
-		case CYBERSTICK_08B:
-		case CYBERSTICK_09B:
-		case CYBERSTICK_10B:
-		case CYBERSTICK_11B:
-			data=0x20;
-			break;
+			switch(state)
+			{
+			default:
+			case CYBERSTICK_00A:	// Idle
+				data|=0x3F;
+				break;
+			case CYBERSTICK_01A:
+			case CYBERSTICK_02A:
+			case CYBERSTICK_03A:
+			case CYBERSTICK_04A:
+			case CYBERSTICK_05A:
+			case CYBERSTICK_06A:
+			case CYBERSTICK_07A:
+			case CYBERSTICK_08A:
+			case CYBERSTICK_09A:
+			case CYBERSTICK_10A:
+			case CYBERSTICK_11A:
+				data=0x20;
+				break;
 
-		case CYBERSTICK_00A:
-			data=(trig>>4)&0x0F;
-			break;
-		case CYBERSTICK_01A: // I don't remember interval, but I guess 0.1ms separation is good.
-			data=0x10|((mouseMotionCopy.y()>>4)&0x0F);
-			break;
-		case CYBERSTICK_02A:
-			data=0x00|((mouseMotionCopy.x()>>4)&0x0F);
-			break;
-		case CYBERSTICK_03A:
-			data=0x10|((zAxisCopy>>4)&0x0F);
-			break;
-		case CYBERSTICK_04A:
-			data=0x00;
-			break;
-		case CYBERSTICK_05A:
-			data=0x10|((mouseMotionCopy.y())&0x0F);
-			break;
-		case CYBERSTICK_06A:
-			data=0x00|((mouseMotionCopy.x())&0x0F);
-			break;
-		case CYBERSTICK_07A:
-			data=0x10;
-			break;
-		case CYBERSTICK_08A:
-			data=0x00;
-			break;
-		case CYBERSTICK_09A:
-			data=0x10;
-			break;
-		case CYBERSTICK_10A:
-			data=0x00;
-			break;
-		case CYBERSTICK_11A:
-			data=0x10;
-			break;
-		}
+			// Trigger 0 Select
+			//         1 Start
+			//         2 E1
+			//         3 E2
+			case CYBERSTICK_00B:
+				data=((~trig)>>4)&0x0F;
+				break;
+			case CYBERSTICK_01B: // I don't remember interval, but I guess 0.1ms separation is good.
+				data=0x10|((~trig)&0x0F);
+				break;
+			case CYBERSTICK_02B:
+				data=0x00|(((0x80+mouseMotionCopy.y())>>4)&0x0F);
+				break;
+			case CYBERSTICK_03B:
+				data=0x10|(((0x80+mouseMotionCopy.x())>>4)&0x0F);
+				break;
+			case CYBERSTICK_04B:
+				data=0x00|(((0x80+zAxisCopy)>>4)&0x0F);
+				break;
+			case CYBERSTICK_05B:
+				data=0x1F;
+				break;
+			case CYBERSTICK_06B:
+				data=0x00|((0x80+mouseMotionCopy.y())&0x0F);
+				break;
+			case CYBERSTICK_07B:
+				data=0x10|((0x80+mouseMotionCopy.x())&0x0F);
+				break;
+			case CYBERSTICK_08B:
+				data=0x00|((0x80+zAxisCopy)&0x0F);
+				break;
+			case CYBERSTICK_09B:
+				data=0x1F;
+				break;
+			case CYBERSTICK_10B:
+				data=0x0F;
+				break;
+			case CYBERSTICK_11B:
+				data=0x1F;
+				break;
+			}
 
-		if(lastStateChangeTime+CYBERSTICK_TIMEOUT<townsTime)
-		{
-			state=CYBERSTICK_00A;
+			if(lastStateChangeTime+CYBERSTICK_TIMEOUT<townsTime)
+			{
+				state=CYBERSTICK_00A;
+			}
+			else if(lastStateChangeTime+CYBERSTICK_READ_INTERVAL<townsTime)
+			{
+				++state;
+				lastStateChangeTime=townsTime;
+			}
 		}
-		else if(lastStateChangeTime+CYBERSTICK_READ_INTERVAL<townsTime)
+		else
 		{
-			++state;
-			lastStateChangeTime=townsTime;
+			data=0xFF;
 		}
 	}
 	else // if(NONE==device)

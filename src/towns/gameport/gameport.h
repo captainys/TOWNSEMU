@@ -34,7 +34,8 @@ public:
 		CYBERSTICK,  // Hope for the future versions.
 		MOUSEREAD_RESET_TIMEOUT=1000000, // 1000000ns=1ms
 		CYBERSTICK_TIMEOUT=2000000,      // 2000000ns=2ms
-		CYBERSTICK_READ_INTERVAL=10000,  //   10000ns=0.01ms
+		CYBERSTICK_READ_INTERVAL=3500,   //    3500ns=3.5us
+		CYBERSTICK_BOOT_IDLE_TIME=1000000000, // Don't activate for 1 second to prevent boot menu.
 	};
 
 	enum
