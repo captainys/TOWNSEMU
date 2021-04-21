@@ -33,6 +33,21 @@ void TownsGamePort::Port::Write(long long int townsTime,bool COM,unsigned char T
 			state=(state+1)%NUM_MOUSESTATE;
 		}
 	}
+	if(CYBERSTICK==device)
+	{
+		if((true==this->COM || lastAccessTime+CYBERSTICK_TIMEOUT<=townsTime) && true!=COM)
+		{
+			state=CYBERSTICK_00B;
+			lastStateChangeTime=townsTime;
+		}
+		else if(CYBERSTICK_00B==state && true==COM)
+		{
+			state=CYBERSTICK_01A;
+			lastStateChangeTime=townsTime;
+			mouseMotionCopy=mouseMotion;
+			zAxisCopy=zAxis;
+		}
+	}
 	this->COM=COM;
 	this->TRIG=TRIG;
 }
@@ -116,6 +131,75 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 			data&=0b11011111;
 		}
 		data&=(0xCF|(TRIG<<4));
+	}
+	else if(CYBERSTICK==device)
+	{
+		switch(state)
+		{
+		case CYBERSTICK_00B:	// Idle
+			data|=0x3F;
+			break;
+		case CYBERSTICK_01B:
+		case CYBERSTICK_02B:
+		case CYBERSTICK_03B:
+		case CYBERSTICK_04B:
+		case CYBERSTICK_05B:
+		case CYBERSTICK_06B:
+		case CYBERSTICK_07B:
+		case CYBERSTICK_08B:
+		case CYBERSTICK_09B:
+		case CYBERSTICK_10B:
+		case CYBERSTICK_11B:
+			data=0x20;
+			break;
+
+		case CYBERSTICK_00A:
+			data=(trig>>4)&0x0F;
+			break;
+		case CYBERSTICK_01A: // I don't remember interval, but I guess 0.1ms separation is good.
+			data=0x10|((mouseMotionCopy.y()>>4)&0x0F);
+			break;
+		case CYBERSTICK_02A:
+			data=0x00|((mouseMotionCopy.x()>>4)&0x0F);
+			break;
+		case CYBERSTICK_03A:
+			data=0x10|((zAxisCopy>>4)&0x0F);
+			break;
+		case CYBERSTICK_04A:
+			data=0x00;
+			break;
+		case CYBERSTICK_05A:
+			data=0x10|((mouseMotionCopy.y())&0x0F);
+			break;
+		case CYBERSTICK_06A:
+			data=0x00|((mouseMotionCopy.x())&0x0F);
+			break;
+		case CYBERSTICK_07A:
+			data=0x10;
+			break;
+		case CYBERSTICK_08A:
+			data=0x00;
+			break;
+		case CYBERSTICK_09A:
+			data=0x10;
+			break;
+		case CYBERSTICK_10A:
+			data=0x00;
+			break;
+		case CYBERSTICK_11A:
+			data=0x10;
+			break;
+		}
+
+		if(lastStateChangeTime+CYBERSTICK_TIMEOUT<townsTime)
+		{
+			state=CYBERSTICK_00A;
+		}
+		else if(lastStateChangeTime+CYBERSTICK_READ_INTERVAL<townsTime)
+		{
+			++state;
+			lastStateChangeTime=townsTime;
+		}
 	}
 	else // if(NONE==device)
 	{
@@ -229,7 +313,7 @@ void TownsGamePort::State::Reset(void)
 
 /* virtual */ uint32_t TownsGamePort::SerializeVersion(void) const
 {
-	return 0;
+	return 1;
 }
 /* virtual */ void TownsGamePort::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
 {
@@ -240,6 +324,7 @@ void TownsGamePort::State::Reset(void)
 		PushBool(data,p.COM);
 		PushUint16(data,p.TRIG);
 		PushInt64(data,p.lastAccessTime);
+		PushInt64(data,p.lastStateChangeTime);
 	}
 }
 /* virtual */ bool TownsGamePort::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
@@ -251,6 +336,10 @@ void TownsGamePort::State::Reset(void)
 		p.COM=ReadBool(data);
 		p.TRIG=ReadUint16(data);
 		p.lastAccessTime=ReadInt64(data);
+		if(1<=version)
+		{
+			p.lastStateChangeTime=ReadInt64(data);
+		}
 	}
 	return true;
 }

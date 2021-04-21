@@ -32,7 +32,9 @@ public:
 		MOUSE,
 		GAMEPAD,
 		CYBERSTICK,  // Hope for the future versions.
-		MOUSEREAD_RESET_TIMEOUT=1000000,
+		MOUSEREAD_RESET_TIMEOUT=1000000, // 1000000ns=1ms
+		CYBERSTICK_TIMEOUT=2000000,      // 2000000ns=2ms
+		CYBERSTICK_READ_INTERVAL=10000,  //   10000ns=0.01ms
 	};
 
 	enum
@@ -41,6 +43,31 @@ public:
 		MOUSESTATE_XLOW,
 		MOUSESTATE_YHIGH,
 		MOUSESTATE_YLOW,
+
+		CYBERSTICK_00A,
+		CYBERSTICK_00B, // 
+		CYBERSTICK_01A, // I don't remember interval, but I guess 0.01ms separation is good.
+		CYBERSTICK_01B,
+		CYBERSTICK_02A,
+		CYBERSTICK_02B,
+		CYBERSTICK_03A,
+		CYBERSTICK_03B,
+		CYBERSTICK_04A,
+		CYBERSTICK_04B,
+		CYBERSTICK_05A,
+		CYBERSTICK_05B,
+		CYBERSTICK_06A,
+		CYBERSTICK_06B,
+		CYBERSTICK_07A,
+		CYBERSTICK_07B,
+		CYBERSTICK_08A,
+		CYBERSTICK_08B,
+		CYBERSTICK_09A,
+		CYBERSTICK_09B,
+		CYBERSTICK_10A,
+		CYBERSTICK_10B,
+		CYBERSTICK_11A,
+		CYBERSTICK_11B,
 
 	NUM_MOUSESTATE,
 	};
@@ -53,7 +80,10 @@ public:
 		bool COM=false;       // COM from CPU.
 		unsigned char TRIG=3; // TRIG from CPU.
 		bool button[2],left,right,up,down,run,pause;
-		Vec2i mouseMotion;
+
+		Vec2i mouseMotion;  // For CyberStick, used as XY position.
+		int zAxis=0; // For CyberStick
+		int trig=0;  // For CyberStick
 
 		// Once CPU starts reading the mouse, mouseMotion should stay the same.
 		// If the value changes after 4-bits of the motion x or y is read before
@@ -61,8 +91,10 @@ public:
 		// To prevent this situation, mouseMotion is copied to mouseMotionCopy
 		// when the first 4-bit of DX is sent to the CPU.
 		Vec2i mouseMotionCopy;
+		int zAxisCopy; // For CyberStick
 
 		long long int lastAccessTime;
+		long long int lastStateChangeTime;
 
 		void Write(long long int townsTime,bool COM,unsigned char TRIG);
 		unsigned char Read(long long int townsTime); // Reading last coordinate should reset motion.  Not a const.
