@@ -151,15 +151,24 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 				data=0x20;
 				break;
 
-			// Trigger 0 Select
+			// Trigger Bits (Active Low)
+			//         0 Select
 			//         1 Start
 			//         2 E1
 			//         3 E2
+			//         4 Button on Throttle
+			//         5 C Button on the Main Body
+			//         6
+			//         7
+			//         8 B Button on the Main Body
+			//         9 A Button on the Main Body
+			//        10 B Button on the Stick
+			//        11 A Button on the Stick
 			case CYBERSTICK_00B:
-				data=((~trig)>>4)&0x0F;
+				data=0x0F;       // Trigger bit 4 to 7
 				break;
 			case CYBERSTICK_01B: // I don't remember interval, but I guess 0.1ms separation is good.
-				data=0x10|((~trig)&0x0F);
+				data=0x1F;       // Trigger bit 0 to 3
 				break;
 			case CYBERSTICK_02B:
 				data=0x00|(((0x80+mouseMotionCopy.y())>>4)&0x0F);
@@ -171,7 +180,7 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 				data=0x00|(((0x80+zAxisCopy)>>4)&0x0F);
 				break;
 			case CYBERSTICK_05B:
-				data=0x1F;
+				data=0x1F;      // Unused?
 				break;
 			case CYBERSTICK_06B:
 				data=0x00|((0x80+mouseMotionCopy.y())&0x0F);
@@ -186,7 +195,7 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 				data=0x1F;
 				break;
 			case CYBERSTICK_10B:
-				data=0x0F;
+				data=0x0F;         // Trigger bits 8 to 11
 				break;
 			case CYBERSTICK_11B:
 				data=0x1F;
