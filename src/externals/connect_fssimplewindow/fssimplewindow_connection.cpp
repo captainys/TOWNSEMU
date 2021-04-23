@@ -797,6 +797,45 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 					}
 				}
 				break;
+
+			case TOWNS_GAMEPORTEMU_PHYSICAL0_AS_CYBERSTICK:
+			case TOWNS_GAMEPORTEMU_PHYSICAL1_AS_CYBERSTICK:
+			case TOWNS_GAMEPORTEMU_PHYSICAL2_AS_CYBERSTICK:
+			case TOWNS_GAMEPORTEMU_PHYSICAL3_AS_CYBERSTICK:
+			case TOWNS_GAMEPORTEMU_PHYSICAL4_AS_CYBERSTICK:
+			case TOWNS_GAMEPORTEMU_PHYSICAL5_AS_CYBERSTICK:
+			case TOWNS_GAMEPORTEMU_PHYSICAL6_AS_CYBERSTICK:
+			case TOWNS_GAMEPORTEMU_PHYSICAL7_AS_CYBERSTICK:
+				{
+					auto physId=gamePort[portId]-TOWNS_GAMEPORTEMU_PHYSICAL0_AS_CYBERSTICK;
+					if(0<=physId && physId<gamePads.size())
+					{
+						auto axisReading=gamePads[physId];
+
+						float x=axisReading.axes[0];
+						float y=axisReading.axes[1];
+						float z=axisReading.axes[2];
+						int ix=x*127.0;
+						int iy=y*127.0;
+						int iz=z*127.0;
+						ix=cpputil::Clamp(ix,-128,127);
+						iy=cpputil::Clamp(iy,-128,127);
+						iz=cpputil::Clamp(iz,-128,127);
+
+						unsigned int trig=0;
+						trig|=(axisReading.buttons[0] ? 0x01 : 0);
+						trig|=(axisReading.buttons[1] ? 0x02 : 0);
+						trig|=(axisReading.buttons[2] ? 0x04 : 0);
+						trig|=(axisReading.buttons[3] ? 0x08 : 0);
+						trig|=(axisReading.buttons[4] ? 0x10 : 0);
+						trig|=(axisReading.buttons[5] ? 0x20 : 0);
+						trig|=(axisReading.buttons[6] ? 0x40 : 0);
+						trig|=(axisReading.buttons[7] ? 0x80 : 0);
+						towns.SetCyberStickState(portId,ix,iy,iz,trig);
+					}
+				}
+				break;
+
 			case TOWNS_GAMEPORTEMU_CYBERSTICK:
 				if(true==cyberStickAssignment && 0<=mouseByFlightstickPhysicalId && mouseByFlightstickPhysicalId<gamePads.size())
 				{
@@ -817,32 +856,11 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 					float x=axisReading.axes[0];
 					float y=axisReading.axes[1];
 					int ix=x*127.0;
-					if(ix<-128)
-					{
-						ix=-128;
-					}
-					else if(127<ix)
-					{
-						ix=127;
-					}
 					int iy=y*127.0;
-					if(iy<-128)
-					{
-						iy=-128;
-					}
-					else if(127<iy)
-					{
-						iy=127;
-					}
 					int iz=z*127.0;
-					if(iz<-128)
-					{
-						iz=-128;
-					}
-					else if(127<iz)
-					{
-						iz=127;
-					}
+					ix=cpputil::Clamp(ix,-128,127);
+					iy=cpputil::Clamp(iy,-128,127);
+					iz=cpputil::Clamp(iz,-128,127);
 
 					unsigned int trig=0;
 					trig|=((axisReading.buttons[0] || throttleReading.buttons[0]) ? 0x01 : 0);

@@ -45,6 +45,20 @@ int Xtoi(const char str[]);
 int Atoi(const char str[]);
 inline char FourBitToX(int i);
 
+template <class T>
+inline T Clamp(T value,T min,T max)
+{
+	if(value<min)
+	{
+		return min;
+	}
+	else if(max<value)
+	{
+		return max;
+	}
+	return value;
+}
+
 void SeparatePathFile(std::string &path,std::string &file,const std::string &fName);
 
 std::string Getcwd(void);

@@ -312,35 +312,35 @@ unsigned int TownsStrToGamePortEmu(std::string str)
 	{
 		return TOWNS_GAMEPORTEMU_ANALOG7;
 	}
-	if("PHYS0CYB"==str || "phys0cyb"==str)
+	if("PHYS0CYB"==str || "phys0cyb"==str || "PHYS0CYBER"==str || "phys0cyber"==str)
 	{
 		return TOWNS_GAMEPORTEMU_PHYSICAL0_AS_CYBERSTICK;
 	}
-	if("PHYS1CYB"==str || "phys1cyb"==str)
+	if("PHYS1CYB"==str || "phys1cyb"==str || "PHYS1CYBER"==str || "phys1cyber"==str)
 	{
 		return TOWNS_GAMEPORTEMU_PHYSICAL1_AS_CYBERSTICK;
 	}
-	if("PHYS2CYB"==str || "phys2cyb"==str)
+	if("PHYS2CYB"==str || "phys2cyb"==str || "PHYS2CYBER"==str || "phys2cyber"==str)
 	{
 		return TOWNS_GAMEPORTEMU_PHYSICAL2_AS_CYBERSTICK;
 	}
-	if("PHYS3CYB"==str || "phys3cyb"==str)
+	if("PHYS3CYB"==str || "phys3cyb"==str || "PHYS3CYBER"==str || "phys3cyber"==str)
 	{
 		return TOWNS_GAMEPORTEMU_PHYSICAL3_AS_CYBERSTICK;
 	}
-	if("PHYS4CYB"==str || "phys4cyb"==str)
+	if("PHYS4CYB"==str || "phys4cyb"==str || "PHYS4CYBER"==str || "phys4cyber"==str)
 	{
 		return TOWNS_GAMEPORTEMU_PHYSICAL4_AS_CYBERSTICK;
 	}
-	if("PHYS5CYB"==str || "phys5cyb"==str)
+	if("PHYS5CYB"==str || "phys5cyb"==str || "PHYS5CYBER"==str || "phys5cyber"==str)
 	{
 		return TOWNS_GAMEPORTEMU_PHYSICAL5_AS_CYBERSTICK;
 	}
-	if("PHYS6CYB"==str || "phys6cyb"==str)
+	if("PHYS6CYB"==str || "phys6cyb"==str || "PHYS6CYBER"==str || "phys6cyber"==str)
 	{
 		return TOWNS_GAMEPORTEMU_PHYSICAL6_AS_CYBERSTICK;
 	}
-	if("PHYS7CYB"==str || "phys7cyb"==str)
+	if("PHYS7CYB"==str || "phys7cyb"==str || "PHYS7CYBER"==str || "phys7cyber"==str)
 	{
 		return TOWNS_GAMEPORTEMU_PHYSICAL7_AS_CYBERSTICK;
 	}
