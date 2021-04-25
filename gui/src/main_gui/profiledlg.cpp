@@ -586,9 +586,10 @@ TownsProfile ProfileDialog::GetProfile(void) const
 	profile.mouseByFlightstickPhysicalId=flightMousePhysIdDrp->GetSelection();
 	profile.mouseByFlightstickCenterX=flightMouseCenterXTxt->GetInteger();
 	profile.mouseByFlightstickCenterY=flightMouseCenterYTxt->GetInteger();
-	profile.mouseByFlightstickScaleX=flightMouseScaleXTxt->GetInteger();
-	profile.mouseByFlightstickScaleY=flightMouseScaleYTxt->GetInteger();
-	profile.mouseByFlightstickZeroZonePercent=flightMouseDeadZoneTxt->GetInteger();
+	profile.mouseByFlightstickScaleX=flightMouseScaleXTxt->GetRealNumber();
+	profile.mouseByFlightstickScaleY=flightMouseScaleYTxt->GetRealNumber();
+	profile.mouseByFlightstickZeroZoneX=(float)flightMouseDeadZoneTxt->GetInteger()/100.0;
+	profile.mouseByFlightstickZeroZoneY=(float)flightMouseDeadZoneTxt->GetInteger()/100.0;
 
 
 	profile.useStrikeCommanderThrottleAxis=(YSTRUE==strikeCommanderThrottleEnableBtn->GetCheck());
@@ -704,7 +705,7 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 	flightMouseCenterYTxt->SetInteger(profile.mouseByFlightstickCenterY);
 	flightMouseScaleXTxt->SetInteger(profile.mouseByFlightstickScaleX);
 	flightMouseScaleYTxt->SetInteger(profile.mouseByFlightstickScaleY);
-	flightMouseDeadZoneTxt->SetInteger(profile.mouseByFlightstickZeroZonePercent);
+	flightMouseDeadZoneTxt->SetInteger((int)(100.0f*profile.mouseByFlightstickZeroZoneX));
 
 	strikeCommanderThrottleEnableBtn->SetCheck(profile.useStrikeCommanderThrottleAxis ? YSTRUE : YSFALSE);
 	strikeCommanderThrottlePhysIdDrp->Select(profile.strikeCommanderThrottlePhysicalId);

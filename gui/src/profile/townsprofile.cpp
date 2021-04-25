@@ -52,8 +52,10 @@ void TownsProfile::CleanUp(void)
 	mouseByFlightstickAvailable=false;
 	mouseByFlightstickPhysicalId=-1;
 	mouseByFlightstickCenterX=320,mouseByFlightstickCenterY=200;
-	mouseByFlightstickZeroZonePercent=0;
-	mouseByFlightstickScaleX=500,mouseByFlightstickScaleY=400;
+	mouseByFlightstickZeroZoneX=0;
+	mouseByFlightstickZeroZoneY=0;
+	mouseByFlightstickScaleX=500.0f;
+	mouseByFlightstickScaleY=400.0f;
 
 	useStrikeCommanderThrottleAxis=false;
 	strikeCommanderThrottlePhysicalId=-1;
@@ -178,7 +180,7 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 	text.push_back(sstream.str());
 
 	sstream.str("");
-	sstream << "FLTMOSZZ " << mouseByFlightstickZeroZonePercent;
+	sstream << "FLTMOSZZ " << 100.0f*mouseByFlightstickZeroZoneX;
 	text.push_back(sstream.str());
 
 
@@ -401,15 +403,16 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 		{
 			if(3<=argv.size())
 			{
-				mouseByFlightstickScaleX=argv[1].Atoi();
-				mouseByFlightstickScaleY=argv[2].Atoi();
+				mouseByFlightstickScaleX=argv[1].Atof();
+				mouseByFlightstickScaleY=argv[2].Atof();
 			}
 		}
 		else if(0==argv[0].STRCMP("FLTMOSZZ"))
 		{
 			if(2<=argv.size())
 			{
-				mouseByFlightstickZeroZonePercent=argv[1].Atoi();
+				mouseByFlightstickZeroZoneX=(float)(argv[1].Atof()/100.0);
+				mouseByFlightstickZeroZoneY=(float)(argv[1].Atof()/100.0);
 			}
 		}
 		else if(0==argv[0].STRCMP("USESCTHR"))
@@ -605,7 +608,7 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 		argv.push_back(sstream.str());
 
 		sstream.str("");
-		sstream << mouseByFlightstickZeroZonePercent;
+		sstream << 100.0f*mouseByFlightstickZeroZoneX;
 		argv.push_back(sstream.str());
 	}
 

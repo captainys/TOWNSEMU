@@ -65,7 +65,7 @@ public:
 	int mouseByFlightstickPhysicalId=-1;  // Physical joystick ID.
 	int mouseByFlightstickCenterX=320,mouseByFlightstickCenterY=200;
 	float mouseByFlightstickZeroZoneX=0.0F,mouseByFlightstickZeroZoneY=0.0F;
-	float mouseByFlightstickScaleX=320.0F,mouseByFlightstickScaleY=200.0F;
+	float mouseByFlightstickScaleX=500.0F,mouseByFlightstickScaleY=400.0F;
 
 
 	// When adding a throttle control for an app, also update Outside_World::CacheGamePadIndicesThatNeedUpdates.
@@ -103,9 +103,9 @@ public:
 
 	bool pretend386DX=false;
 
-	unsigned int memSizeInMB=0;
+	unsigned int memSizeInMB=4;
 
-	unsigned int freq=0;
+	unsigned int freq=33;
 
 	unsigned int mouseIntegrationSpeed=256;
 

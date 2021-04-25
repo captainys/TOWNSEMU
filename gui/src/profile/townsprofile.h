@@ -6,8 +6,9 @@
 #include <string>
 
 #include "townsdef.h"
+#include "townsparam.h"
 
-class TownsProfile
+class TownsProfile : public TownsStartParameters
 {
 public:
 	enum
@@ -20,23 +21,10 @@ public:
 	std::string FDImgFile[2][NUM_STANDBY_FDIMG];
 	bool FDWriteProtect[2][NUM_STANDBY_FDIMG];
 	std::string SCSIImgFile[MAX_NUM_SCSI_DEVICE];
-	unsigned int bootKeyComb=BOOT_KEYCOMB_NONE;
-	unsigned int gamePort[2]={TOWNS_GAMEPORTEMU_PHYSICAL0,TOWNS_GAMEPORTEMU_MOUSE};
 	unsigned screenScaling=150;
-	bool damperWireLine=false;
 	bool screenAutoScaling=false;
 	bool screenMaximizeOnStartUp=false;
 	bool autoStart;
-	bool pretend386DX=false;
-	unsigned int freq=25;
-	unsigned int memSizeInMB=4;
-	unsigned int mouseIntegrationSpeed=256;
-
-	bool mouseByFlightstickAvailable=false;
-	int mouseByFlightstickPhysicalId=-1;  // Physical joystick ID.
-	int mouseByFlightstickCenterX=320,mouseByFlightstickCenterY=200;
-	int mouseByFlightstickZeroZonePercent=0;
-	int mouseByFlightstickScaleX=500,mouseByFlightstickScaleY=400;
 
 	bool useStrikeCommanderThrottleAxis=false;
 	int strikeCommanderThrottlePhysicalId=-1;
