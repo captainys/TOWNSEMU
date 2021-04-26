@@ -16,7 +16,6 @@ public:
 		NUM_STANDBY_FDIMG=4,
 		MAX_NUM_SCSI_DEVICE=7,
 	};
-	std::string ROMDir;
 	std::string CDImgFile;
 	std::string FDImgFile[2][NUM_STANDBY_FDIMG];
 	bool FDWriteProtect[2][NUM_STANDBY_FDIMG];

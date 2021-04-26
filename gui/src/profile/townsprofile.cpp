@@ -13,7 +13,7 @@ TownsProfile::TownsProfile()
 }
 void TownsProfile::CleanUp(void)
 {
-	ROMDir="";
+	ROMPath="";
 	CDImgFile="";
 	for(auto &f : FDImgFile[0])
 	{
@@ -77,7 +77,7 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 
 	text.push_back("ROMDIR__ ");
 	text.back().push_back('\"');
-	text.back()+=ROMDir;
+	text.back()+=ROMPath;
 	text.back().push_back('\"');
 
 	text.push_back("CDIMG___ ");
@@ -232,7 +232,7 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 		{
 			if(2<=argv.size())
 			{
-				ROMDir=argv[1].c_str();
+				ROMPath=argv[1].c_str();
 			}
 		}
 		else if(0==argv[0].STRCMP("CDIMG___"))
@@ -471,7 +471,7 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 
 	argv.push_back("Tsugaru_CUI.exe");
 
-	argv.push_back(ROMDir);
+	argv.push_back(ROMPath);
 	if(0<argv.back().size() && (argv.back().back()=='/' || argv.back().back()=='\\'))
 	{
 		argv.back().pop_back();
