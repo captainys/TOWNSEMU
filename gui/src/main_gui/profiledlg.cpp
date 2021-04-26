@@ -575,11 +575,11 @@ TownsProfile ProfileDialog::GetProfile(void) const
 
 	profile.autoStart=(YSTRUE==autoStartBtn->GetCheck());
 
-	profile.screenScaling=scrnScaleTxt->GetInteger();
-	profile.screenAutoScaling=(YSTRUE==scrnAutoScaleBtn->GetCheck());
-	profile.screenMaximizeOnStartUp=(YSTRUE==scrnMaximizeBtn->GetCheck());
+	profile.scaling=scrnScaleTxt->GetInteger();
+	profile.autoScaling=(YSTRUE==scrnAutoScaleBtn->GetCheck());
+	profile.maximizeOnStartUp=(YSTRUE==scrnMaximizeBtn->GetCheck());
 
-	profile.appSpecificAugmentation=TownsStrToApp(appSpecificAugDrp->GetSelectedString().c_str());
+	profile.appSpecificSetting=TownsStrToApp(appSpecificAugDrp->GetSelectedString().c_str());
 
 
 	profile.mouseByFlightstickAvailable=(YSTRUE==flightMouseEnableBtn->GetCheck());
@@ -593,8 +593,8 @@ TownsProfile ProfileDialog::GetProfile(void) const
 
 
 	profile.useStrikeCommanderThrottleAxis=(YSTRUE==strikeCommanderThrottleEnableBtn->GetCheck());
-	profile.strikeCommanderThrottlePhysicalId=strikeCommanderThrottlePhysIdDrp->GetSelection();
-	profile.strikeCommanderThrottleAxis=strikeCommanderThrottlePhysIdDrp->GetSelection();
+	profile.throttlePhysicalId=strikeCommanderThrottlePhysIdDrp->GetSelection();
+	profile.throttleAxis=strikeCommanderThrottlePhysIdDrp->GetSelection();
 
 
 	profile.damperWireLine=(YSTRUE==damperWireLineBtn->GetCheck());
@@ -693,11 +693,11 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 		autoStartBtn->SetCheck(YSFALSE);
 	}
 
-	scrnAutoScaleBtn->SetCheck(true==profile.screenAutoScaling ? YSTRUE : YSFALSE);
-	scrnMaximizeBtn->SetCheck(true==profile.screenMaximizeOnStartUp ? YSTRUE : YSFALSE);
-	scrnScaleTxt->SetInteger(profile.screenScaling);
+	scrnAutoScaleBtn->SetCheck(true==profile.autoScaling ? YSTRUE : YSFALSE);
+	scrnMaximizeBtn->SetCheck(true==profile.maximizeOnStartUp ? YSTRUE : YSFALSE);
+	scrnScaleTxt->SetInteger(profile.scaling);
 
-	appSpecificAugDrp->SelectByString(TownsAppToStr(profile.appSpecificAugmentation).c_str(),YSTRUE);
+	appSpecificAugDrp->SelectByString(TownsAppToStr(profile.appSpecificSetting).c_str(),YSTRUE);
 
 	flightMouseEnableBtn->SetCheck(profile.mouseByFlightstickAvailable ? YSTRUE : YSFALSE);
 	flightMousePhysIdDrp->Select(profile.mouseByFlightstickPhysicalId);
@@ -708,8 +708,8 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 	flightMouseDeadZoneTxt->SetInteger((int)(100.0f*profile.mouseByFlightstickZeroZoneX));
 
 	strikeCommanderThrottleEnableBtn->SetCheck(profile.useStrikeCommanderThrottleAxis ? YSTRUE : YSFALSE);
-	strikeCommanderThrottlePhysIdDrp->Select(profile.strikeCommanderThrottlePhysicalId);
-	strikeCommanderThrottlePhysIdDrp->Select(profile.strikeCommanderThrottleAxis);
+	strikeCommanderThrottlePhysIdDrp->Select(profile.throttlePhysicalId);
+	strikeCommanderThrottlePhysIdDrp->Select(profile.throttleAxis);
 
 	damperWireLineBtn->SetCheck(profile.damperWireLine ? YSTRUE : YSFALSE);
 

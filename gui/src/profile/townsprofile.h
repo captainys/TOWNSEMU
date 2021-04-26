@@ -19,14 +19,9 @@ public:
 	std::string FDImgFile[2][NUM_STANDBY_FDIMG];
 	bool FDWriteProtect[2][NUM_STANDBY_FDIMG];
 	std::string SCSIImgFile[MAX_NUM_SCSI_DEVICE];
-	unsigned screenScaling=150;
-	bool screenAutoScaling=false;
-	bool screenMaximizeOnStartUp=false;
-	bool autoStart;
+	bool autoStart=false;
 
 	bool useStrikeCommanderThrottleAxis=false;
-	int strikeCommanderThrottlePhysicalId=-1;
-	unsigned int strikeCommanderThrottleAxis=2;
 
 	class VirtualKey
 	{
@@ -43,8 +38,6 @@ public:
 
 
 	std::string errorMsg;
-
-	unsigned int appSpecificAugmentation=TOWNS_APPSPECIFIC_NONE;
 
 	TownsProfile();
 	void CleanUp(void);

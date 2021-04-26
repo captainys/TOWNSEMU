@@ -70,7 +70,7 @@ public:
 
 	// When adding a throttle control for an app, also update Outside_World::CacheGamePadIndicesThatNeedUpdates.
 	int throttlePhysicalId=-1;
-	int throttleAxis=3;
+	int throttleAxis=2;
 
 	enum
 	{
@@ -109,7 +109,7 @@ public:
 
 	unsigned int mouseIntegrationSpeed=256;
 
-	unsigned int appSpecificSetting=0;
+	unsigned int appSpecificSetting=TOWNS_APPSPECIFIC_NONE;
 
 	enum
 	{

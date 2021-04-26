@@ -41,10 +41,10 @@ void TownsProfile::CleanUp(void)
 
 	bootKeyComb=BOOT_KEYCOMB_NONE;
 	autoStart=false;
-	screenScaling=150;
+	scaling=150;
 	pretend386DX=false;
 	freq=40;
-	appSpecificAugmentation=TOWNS_APPSPECIFIC_NONE;
+	appSpecificSetting=TOWNS_APPSPECIFIC_NONE;
 
 	memSizeInMB=4;
 	mouseIntegrationSpeed=256;
@@ -58,8 +58,8 @@ void TownsProfile::CleanUp(void)
 	mouseByFlightstickScaleY=400.0f;
 
 	useStrikeCommanderThrottleAxis=false;
-	strikeCommanderThrottlePhysicalId=-1;
-	strikeCommanderThrottleAxis=2;
+	throttlePhysicalId=-1;
+	throttleAxis=2;
 
 	keyboardMode=TOWNS_KEYBOARD_MODE_DEFAULT;
 	for(auto &vk : virtualKeys)
@@ -140,19 +140,19 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 	text.push_back(sstream.str());
 
 	sstream.str("");
-	sstream << "SCALING_ " << screenScaling;
+	sstream << "SCALING_ " << scaling;
 	text.push_back(sstream.str());
 
 	sstream.str("");
-	sstream << "AUTOSCAL " << (true==screenAutoScaling ? 1 : 0);
+	sstream << "AUTOSCAL " << (true==autoScaling ? 1 : 0);
 	text.push_back(sstream.str());
 
 	sstream.str("");
-	sstream << "MAXIMIZE " << (true==screenMaximizeOnStartUp ? 1 : 0);
+	sstream << "MAXIMIZE " << (true==maximizeOnStartUp ? 1 : 0);
 	text.push_back(sstream.str());
 
 	sstream.str("");
-	sstream << "APPSPEC_ " << TownsAppToStr(appSpecificAugmentation);
+	sstream << "APPSPEC_ " << TownsAppToStr(appSpecificSetting);
 	text.push_back(sstream.str());
 
 	sstream.str("");
@@ -189,7 +189,7 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 	text.push_back(sstream.str());
 
 	sstream.str("");
-	sstream << "SCTHRAXS " << strikeCommanderThrottlePhysicalId << " " << strikeCommanderThrottleAxis;
+	sstream << "SCTHRAXS " << throttlePhysicalId << " " << throttleAxis;
 	text.push_back(sstream.str());
 
 	if(TOWNS_KEYBOARD_MODE_DEFAULT!=keyboardMode)
@@ -306,21 +306,21 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 		{
 			if(2<=argv.size())
 			{
-				screenScaling=argv[1].Atoi();
+				scaling=argv[1].Atoi();
 			}
 		}
 		else if(0==argv[0].STRCMP("AUTOSCAL"))
 		{
 			if(2<=argv.size())
 			{
-				screenAutoScaling=(0!=argv[1].Atoi());
+				autoScaling=(0!=argv[1].Atoi());
 			}
 		}
 		else if(0==argv[0].STRCMP("MAXIMIZE"))
 		{
 			if(2<=argv.size())
 			{
-				screenMaximizeOnStartUp=(0!=argv[1].Atoi());
+				maximizeOnStartUp=(0!=argv[1].Atoi());
 			}
 		}
 		else if(0==argv[0].STRCMP("FREQUENC"))
@@ -360,7 +360,7 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 		{
 			if(2<=argv.size())
 			{
-				appSpecificAugmentation=TownsStrToApp(argv[1].c_str());
+				appSpecificSetting=TownsStrToApp(argv[1].c_str());
 			}
 		}
 		else if(0==argv[0].STRCMP("RUNAS386"))
@@ -426,8 +426,8 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 		{
 			if(3<=argv.size())
 			{
-				strikeCommanderThrottlePhysicalId=argv[1].Atoi();
-				strikeCommanderThrottleAxis=argv[2].Atoi();
+				throttlePhysicalId=argv[1].Atoi();
+				throttleAxis=argv[2].Atoi();
 			}
 		}
 		else if(0==argv[0].STRCMP("VIRTUKEY"))
@@ -520,9 +520,9 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 		argv.push_back(TownsGamePortEmuToStr(gamePort[i]));
 	}
 
-	if(100!=screenScaling)
+	if(100!=scaling)
 	{
-		auto screenScalingFix=screenScaling;
+		auto screenScalingFix=scaling;
 		if(screenScalingFix<30)
 		{
 			screenScalingFix=30;
@@ -536,11 +536,11 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 		sstream << screenScalingFix;
 		argv.push_back(sstream.str());
 	}
-	if(true==screenAutoScaling)
+	if(true==autoScaling)
 	{
 		argv.push_back("-AUTOSCALE");
 	}
-	if(true==screenMaximizeOnStartUp)
+	if(true==maximizeOnStartUp)
 	{
 		argv.push_back("-MAXIMIZE");
 	}
@@ -567,10 +567,10 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 	}
 
 	// Reminder to myself: App-Specific Augmentation must come at the very end.
-	if(TOWNS_APPSPECIFIC_NONE!=appSpecificAugmentation)
+	if(TOWNS_APPSPECIFIC_NONE!=appSpecificSetting)
 	{
 		argv.push_back("-APP");
-		argv.push_back(TownsAppToStr(appSpecificAugmentation));
+		argv.push_back(TownsAppToStr(appSpecificSetting));
 	}
 
 	if(true==pretend386DX)
@@ -614,8 +614,8 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 
 	if(true==useStrikeCommanderThrottleAxis)
 	{
-		if(TOWNS_APPSPECIFIC_WINGCOMMANDER1==appSpecificAugmentation ||
-		   TOWNS_APPSPECIFIC_WINGCOMMANDER2==appSpecificAugmentation)
+		if(TOWNS_APPSPECIFIC_WINGCOMMANDER1==appSpecificSetting ||
+		   TOWNS_APPSPECIFIC_WINGCOMMANDER2==appSpecificSetting)
 		{
 			argv.push_back("-WCTHR");
 		}
@@ -625,11 +625,11 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 		}
 
 		sstream.str("");
-		sstream << strikeCommanderThrottlePhysicalId;
+		sstream << throttlePhysicalId;
 		argv.push_back(sstream.str());
 
 		sstream.str("");
-		sstream << strikeCommanderThrottleAxis;
+		sstream << throttleAxis;
 		argv.push_back(sstream.str());
 	}
 
