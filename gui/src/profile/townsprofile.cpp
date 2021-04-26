@@ -14,7 +14,7 @@ TownsProfile::TownsProfile()
 void TownsProfile::CleanUp(void)
 {
 	ROMPath="";
-	CDImgFile="";
+	cdImgFName="";
 	for(auto &f : FDImgFile[0])
 	{
 		f="";
@@ -82,7 +82,7 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 
 	text.push_back("CDIMG___ ");
 	text.back().push_back('\"');
-	text.back()+=CDImgFile;
+	text.back()+=cdImgFName;
 	text.back().push_back('\"');
 
 	for(int i=0; i<2; ++i)
@@ -239,7 +239,7 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 		{
 			if(2<=argv.size())
 			{
-				CDImgFile=argv[1].c_str();
+				cdImgFName=argv[1].c_str();
 			}
 		}
 		else if(0==argv[0].STRCMP("FDIMG___"))
@@ -480,10 +480,10 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 	argv.push_back("-WINDOWSHIFT");
 	argv.push_back("-FORCEQUITONPOFF");
 
-	if(""!=CDImgFile)
+	if(""!=cdImgFName)
 	{
 		argv.push_back("-CD");
-		argv.push_back(CDImgFile);
+		argv.push_back(cdImgFName);
 	}
 
 	if(""!=FDImgFile[0][0])

@@ -16,7 +16,6 @@ public:
 		NUM_STANDBY_FDIMG=4,
 		MAX_NUM_SCSI_DEVICE=7,
 	};
-	std::string CDImgFile;
 	std::string FDImgFile[2][NUM_STANDBY_FDIMG];
 	bool FDWriteProtect[2][NUM_STANDBY_FDIMG];
 	std::string SCSIImgFile[MAX_NUM_SCSI_DEVICE];
@@ -41,14 +40,11 @@ public:
 		MAX_NUM_VIRTUALKEYS=10,
 	};
 	VirtualKey virtualKeys[MAX_NUM_VIRTUALKEYS];
-	unsigned int keyboardMode=TOWNS_KEYBOARD_MODE_DEFAULT;
 
 
 	std::string errorMsg;
 
 	unsigned int appSpecificAugmentation=TOWNS_APPSPECIFIC_NONE;
-
-	bool catchUpRealTime=true;
 
 	TownsProfile();
 	void CleanUp(void);

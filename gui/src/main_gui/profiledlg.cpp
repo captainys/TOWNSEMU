@@ -531,7 +531,7 @@ TownsProfile ProfileDialog::GetProfile(void) const
 	profile.ROMPath=ROMDirTxt->GetString().data();
 	profile.freq=CPUFreqTxt->GetInteger();
 	profile.memSizeInMB=RAMSizeTxt->GetInteger();
-	profile.CDImgFile=CDImgTxt->GetString().data();
+	profile.cdImgFName=CDImgTxt->GetString().data();
 	profile.FDImgFile[0][0]=FDImgTxt[0][0]->GetString().data();
 	profile.FDWriteProtect[0][0]=(YSTRUE==FDWriteProtBtn[0][0]->GetCheck());
 	profile.FDImgFile[1][0]=FDImgTxt[1][0]->GetString().data();
@@ -623,7 +623,7 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 
 	RAMSizeTxt->SetInteger(profile.memSizeInMB);
 
-	str.SetUTF8String(profile.CDImgFile.data());
+	str.SetUTF8String(profile.cdImgFName.data());
 	CDImgTxt->SetText(str);
 
 	str.SetUTF8String(profile.FDImgFile[0][0].data());
