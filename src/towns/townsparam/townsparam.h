@@ -15,7 +15,7 @@ public:
 	{
 		NUM_GAMEPORTS=2,
 		NUM_FDDRIVES=2,
-		MAX_NUM_SCSI_DEVICE=7,
+		MAX_NUM_SCSI_DEVICES=7,
 	};
 
 	class VirtualKey
@@ -81,17 +81,17 @@ public:
 
 	enum
 	{
+		SCSIIMAGE_NONE,
 		SCSIIMAGE_HARDDISK,
 		SCSIIMAGE_CDROM
 	};
 	class SCSIImage
 	{
 	public:
-		unsigned int scsiID;
-		unsigned imageType;
+		unsigned imageType=SCSIIMAGE_NONE;
 		std::string imgFName;
 	};
-	std::vector <SCSIImage> scsiImg;
+	SCSIImage scsiImg[MAX_NUM_SCSI_DEVICES];
 
 	class FileToSend
 	{

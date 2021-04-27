@@ -495,11 +495,9 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		         "-HD6"==ARG) &&
 		         i+1<argc)
 		{
-			SCSIImage scsi;
-			scsi.scsiID=ARG[3]-'0';
-			scsi.imageType=SCSIIMAGE_HARDDISK;
-			scsi.imgFName=argv[i+1];
-			scsiImg.push_back(scsi);
+			auto scsiID=ARG[3]-'0';
+			scsiImg[scsiID].imageType=SCSIIMAGE_HARDDISK;
+			scsiImg[scsiID].imgFName=argv[i+1];
 			++i;
 		}
 		else if(("-SCSICD0"==ARG ||
@@ -511,11 +509,9 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		         "-SCSICD6"==ARG) &&
 		         i+1<argc)
 		{
-			SCSIImage scsi;
-			scsi.scsiID=ARG[7]-'0';
-			scsi.imageType=SCSIIMAGE_CDROM;
-			scsi.imgFName=argv[i+1];
-			scsiImg.push_back(scsi);
+			auto scsiID=ARG[7]-'0';
+			scsiImg[scsiID].imageType=SCSIIMAGE_CDROM;
+			scsiImg[scsiID].imgFName=argv[i+1];
 			++i;
 		}
 		else if("-BOOTKEY"==ARG && i+1<argc)

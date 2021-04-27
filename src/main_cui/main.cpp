@@ -190,18 +190,19 @@ bool Setup(FMTowns &towns,Outside_World *outside_world,const TownsARGV &argv)
 		}
 	}
 
-	for(auto &scsi : argv.scsiImg)
+	for(int scsiID=0; scsiID<TownsARGV::MAX_NUM_SCSI_DEVICES; ++scsiID)
 	{
+		auto scsi=argv.scsiImg[scsiID];
 		if(scsi.imageType==TownsARGV::SCSIIMAGE_HARDDISK)
 		{
-			if(true!=towns.scsi.LoadHardDiskImage(scsi.scsiID,scsi.imgFName))
+			if(true!=towns.scsi.LoadHardDiskImage(scsiID,scsi.imgFName))
 			{
 				std::cout << "Failed to load hard disk image." << std::endl;
 			}
 		}
 		else if(scsi.imageType==TownsARGV::SCSIIMAGE_CDROM)
 		{
-			if(true!=towns.scsi.LoadCDImage(scsi.scsiID,scsi.imgFName))
+			if(true!=towns.scsi.LoadCDImage(scsiID,scsi.imgFName))
 			{
 				std::cout << "Failed to load SCSI CD image." << std::endl;
 			}
