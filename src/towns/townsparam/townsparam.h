@@ -15,6 +15,7 @@ public:
 	{
 		NUM_GAMEPORTS=2,
 		NUM_FDDRIVES=2,
+		MAX_NUM_SCSI_DEVICE=7,
 	};
 
 	class VirtualKey

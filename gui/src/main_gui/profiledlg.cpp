@@ -604,8 +604,8 @@ TownsProfile ProfileDialog::GetProfile(void) const
 	for(int row=0; row<TownsProfile::MAX_NUM_VIRTUALKEYS; ++row)
 	{
 		auto townsKeyStr=virtualKeyTownsKeyDrp[row]->GetSelectedString();
-		profile.virtualKeys[row].townsKey=TownsStrToKeyCode(townsKeyStr.c_str());
-		profile.virtualKeys[row].physId=virtualKeyPhysIdDrp[row]->GetSelection();
+		profile.virtualKeys[row].townsKey=townsKeyStr.c_str();
+		profile.virtualKeys[row].physicalId=virtualKeyPhysIdDrp[row]->GetSelection();
 		profile.virtualKeys[row].button=virtualKeyButtonDrp[row]->GetSelection();
 	}
 
@@ -716,11 +716,11 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 	keyboardModeDrp->SelectByString(TownsKeyboardModeToStr(profile.keyboardMode).c_str());
 	for(int row=0; row<TownsProfile::MAX_NUM_VIRTUALKEYS; ++row)
 	{
-		auto townsKeyStr=TownsKeyCodeToStr(profile.virtualKeys[row].townsKey);
+		auto townsKeyStr=profile.virtualKeys[row].townsKey;
 		virtualKeyTownsKeyDrp[row]->Select(0);
 		virtualKeyTownsKeyDrp[row]->SelectByString(townsKeyStr.c_str(),YSFALSE);
 
-		virtualKeyPhysIdDrp[row]->Select(profile.virtualKeys[row].physId);
+		virtualKeyPhysIdDrp[row]->Select(profile.virtualKeys[row].physicalId);
 		virtualKeyButtonDrp[row]->Select(profile.virtualKeys[row].button);
 	}
 }

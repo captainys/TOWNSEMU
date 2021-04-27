@@ -11,28 +11,17 @@
 class TownsProfile : public TownsStartParameters
 {
 public:
-	enum
-	{
-		MAX_NUM_SCSI_DEVICE=7,
-	};
-	std::string SCSIImgFile[MAX_NUM_SCSI_DEVICE];
-	bool autoStart=false;
-
-	bool useStrikeCommanderThrottleAxis=false;
-
-	class VirtualKey
-	{
-	public:
-		unsigned int townsKey;
-		int physId=-1;
-		unsigned int button;
-	};
+	// MAX_NUM_VIRTUALKEYS is limitation for GUI environment only.
 	enum
 	{
 		MAX_NUM_VIRTUALKEYS=10,
 	};
-	VirtualKey virtualKeys[MAX_NUM_VIRTUALKEYS];
+	std::string SCSIImgFile[MAX_NUM_SCSI_DEVICE];
+	bool useStrikeCommanderThrottleAxis=false;
 
+
+	// autoStart flag is unique to TownsProfile.  Not in TownsStartParameters.
+	bool autoStart=false;
 
 	std::string errorMsg;
 

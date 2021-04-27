@@ -54,10 +54,11 @@ void TownsProfile::CleanUp(void)
 	throttleAxis=2;
 
 	keyboardMode=TOWNS_KEYBOARD_MODE_DEFAULT;
+	virtualKeys.resize(MAX_NUM_VIRTUALKEYS);
 	for(auto &vk : virtualKeys)
 	{
-		vk.townsKey=0;
-		vk.physId=-1;
+		vk.townsKey="";
+		vk.physicalId=-1;
 	}
 
 	catchUpRealTime=true;
@@ -193,10 +194,10 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 
 	for(auto vk : virtualKeys)
 	{
-		if(0!=vk.townsKey && 0<=vk.physId)
+		if(""!=vk.townsKey && 0<=vk.physicalId)
 		{
 			sstream.str("");
-			sstream << "VIRTUKEY " << TownsKeyCodeToStr(vk.townsKey) << " " << vk.physId << " " << vk.button;
+			sstream << "VIRTUKEY " << vk.townsKey << " " << vk.physicalId << " " << vk.button;
 			text.push_back(sstream.str());
 		}
 	}
@@ -423,8 +424,8 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 		{
 			if(3<=argv.size() && nVirtualKey<MAX_NUM_VIRTUALKEYS)
 			{
-				virtualKeys[nVirtualKey].townsKey=TownsStrToKeyCode(argv[1].c_str());
-				virtualKeys[nVirtualKey].physId=argv[2].Atoi();
+				virtualKeys[nVirtualKey].townsKey=argv[1];
+				virtualKeys[nVirtualKey].physicalId=argv[2].Atoi();
 				virtualKeys[nVirtualKey].button=argv[3].Atoi();
 				++nVirtualKey;
 			}
@@ -635,13 +636,13 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 
 	for(auto vk : virtualKeys)
 	{
-		if(0<=vk.physId && 0!=vk.townsKey)
+		if(0<=vk.physicalId && ""!=vk.townsKey)
 		{
 			argv.push_back("-VIRTKEY");
-			argv.push_back(TownsKeyCodeToStr(vk.townsKey));
+			argv.push_back(vk.townsKey);
 
 			sstream.str("");
-			sstream << vk.physId;
+			sstream << vk.physicalId;
 			argv.push_back(sstream.str());
 
 			sstream.str("");
