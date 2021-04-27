@@ -15,11 +15,11 @@ void TownsProfile::CleanUp(void)
 {
 	ROMPath="";
 	cdImgFName="";
-	for(auto &f : FDImgFile)
+	for(auto &f : fdImgFName)
 	{
 		f="";
 	}
-	for(auto &wp : FDWriteProtect)
+	for(auto &wp : fdImgWriteProtect)
 	{
 		wp=false;
 	}
@@ -85,7 +85,7 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 		text.back().push_back('0');
 		text.back().push_back(' ');
 		text.back().push_back('\"');
-		text.back()+=FDImgFile[i];
+		text.back()+=fdImgFName[i];
 		text.back().push_back('\"');
 
 		text.push_back("FDWPROT_ ");
@@ -93,7 +93,7 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 		text.back().push_back(' ');
 		text.back().push_back('0');
 		text.back().push_back(' ');
-		text.back().push_back(FDWriteProtect[i] ? '1' : '0');
+		text.back().push_back(fdImgWriteProtect[i] ? '1' : '0');
 	}
 	for(int i=0; i<MAX_NUM_SCSI_DEVICE; ++i)
 	{
@@ -239,7 +239,7 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 				int fileNum=argv[2].Atoi();
 				if(0<=drive && drive<NUM_FDDRIVES && 0<=fileNum && 0==fileNum)
 				{
-					FDImgFile[drive]=argv[3].c_str();
+					fdImgFName[drive]=argv[3].c_str();
 				}
 			}
 		}
@@ -251,7 +251,7 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 				int fileNum=argv[2].Atoi();
 				if(0<=drive && drive<2 && 0<=fileNum && 0==fileNum)
 				{
-					FDWriteProtect[drive]=(0!=argv[3].Atoi());
+					fdImgWriteProtect[drive]=(0!=argv[3].Atoi());
 				}
 			}
 		}
@@ -475,15 +475,15 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 		argv.push_back(cdImgFName);
 	}
 
-	if(""!=FDImgFile[0])
+	if(""!=fdImgFName[0])
 	{
 		argv.push_back("-FD0");
-		argv.push_back(FDImgFile[0]);
+		argv.push_back(fdImgFName[0]);
 	}
-	if(""!=FDImgFile[1])
+	if(""!=fdImgFName[1])
 	{
 		argv.push_back("-FD1");
-		argv.push_back(FDImgFile[1]);
+		argv.push_back(fdImgFName[1]);
 	}
 
 	for(int scsiId=0; scsiId<MAX_NUM_SCSI_DEVICE; ++scsiId)

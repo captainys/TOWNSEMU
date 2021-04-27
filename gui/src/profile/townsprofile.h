@@ -15,8 +15,6 @@ public:
 	{
 		MAX_NUM_SCSI_DEVICE=7,
 	};
-	std::string FDImgFile[2];
-	bool FDWriteProtect[2];
 	std::string SCSIImgFile[MAX_NUM_SCSI_DEVICE];
 	bool autoStart=false;
 

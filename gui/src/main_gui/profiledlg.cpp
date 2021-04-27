@@ -532,10 +532,10 @@ TownsProfile ProfileDialog::GetProfile(void) const
 	profile.freq=CPUFreqTxt->GetInteger();
 	profile.memSizeInMB=RAMSizeTxt->GetInteger();
 	profile.cdImgFName=CDImgTxt->GetString().data();
-	profile.FDImgFile[0]=FDImgTxt[0]->GetString().data();
-	profile.FDWriteProtect[0]=(YSTRUE==FDWriteProtBtn[0]->GetCheck());
-	profile.FDImgFile[1]=FDImgTxt[1]->GetString().data();
-	profile.FDWriteProtect[1]=(YSTRUE==FDWriteProtBtn[1]->GetCheck());
+	profile.fdImgFName[0]=FDImgTxt[0]->GetString().data();
+	profile.fdImgWriteProtect[0]=(YSTRUE==FDWriteProtBtn[0]->GetCheck());
+	profile.fdImgFName[1]=FDImgTxt[1]->GetString().data();
+	profile.fdImgWriteProtect[1]=(YSTRUE==FDWriteProtBtn[1]->GetCheck());
 	profile.SCSIImgFile[0]=HDImgTxt[0]->GetString().data();
 	profile.SCSIImgFile[1]=HDImgTxt[1]->GetString().data();
 	profile.SCSIImgFile[2]=HDImgTxt[2]->GetString().data();
@@ -626,13 +626,13 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 	str.SetUTF8String(profile.cdImgFName.data());
 	CDImgTxt->SetText(str);
 
-	str.SetUTF8String(profile.FDImgFile[0].data());
+	str.SetUTF8String(profile.fdImgFName[0].data());
 	FDImgTxt[0]->SetText(str);
-	FDWriteProtBtn[0]->SetCheck(true==profile.FDWriteProtect[0] ? YSTRUE : YSFALSE);
+	FDWriteProtBtn[0]->SetCheck(true==profile.fdImgWriteProtect[0] ? YSTRUE : YSFALSE);
 
-	str.SetUTF8String(profile.FDImgFile[1].data());
+	str.SetUTF8String(profile.fdImgFName[1].data());
 	FDImgTxt[1]->SetText(str);
-	FDWriteProtBtn[1]->SetCheck(true==profile.FDWriteProtect[1] ? YSTRUE : YSFALSE);
+	FDWriteProtBtn[1]->SetCheck(true==profile.fdImgWriteProtect[1] ? YSTRUE : YSFALSE);
 
 	for(int i=0; i<TownsProfile::MAX_NUM_SCSI_DEVICE; ++i)
 	{
