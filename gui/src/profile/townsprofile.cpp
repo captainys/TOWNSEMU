@@ -23,9 +23,10 @@ void TownsProfile::CleanUp(void)
 	{
 		wp=false;
 	}
-	for(auto &f : SCSIImgFile)
+	for(auto &f : scsiImg)
 	{
-		f="";
+		f.imageType=SCSIIMAGE_NONE;
+		f.imgFName="";
 	}
 
 	gamePort[0]=TOWNS_GAMEPORTEMU_PHYSICAL0;
@@ -96,13 +97,16 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 		text.back().push_back(' ');
 		text.back().push_back(fdImgWriteProtect[i] ? '1' : '0');
 	}
-	for(int i=0; i<MAX_NUM_SCSI_DEVICE; ++i)
+	for(int i=0; i<MAX_NUM_SCSI_DEVICES; ++i)
 	{
 		text.push_back("SCSIIMG_ ");
 		text.back().push_back('0'+i);
 		text.back().push_back(' ');
 		text.back().push_back('\"');
-		text.back()+=SCSIImgFile[i];
+		if(TownsProfile::SCSIIMAGE_HARDDISK==scsiImg[i].imageType)
+		{
+			text.back()+=scsiImg[i].imgFName;
+		}
 		text.back().push_back('\"');
 	}
 
@@ -261,9 +265,10 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 			if(3<=argv.size())
 			{
 				int scsiId=argv[1].Atoi();
-				if(0<=scsiId && scsiId<MAX_NUM_SCSI_DEVICE)
+				if(0<=scsiId && scsiId<MAX_NUM_SCSI_DEVICES)
 				{
-					SCSIImgFile[scsiId]=argv[2].c_str();
+					scsiImg[scsiId].imgFName=argv[2].c_str();
+					scsiImg[scsiId].imageType=TownsProfile::SCSIIMAGE_HARDDISK;
 				}
 			}
 		}
@@ -487,13 +492,16 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 		argv.push_back(fdImgFName[1]);
 	}
 
-	for(int scsiId=0; scsiId<MAX_NUM_SCSI_DEVICE; ++scsiId)
+	for(int scsiId=0; scsiId<MAX_NUM_SCSI_DEVICES; ++scsiId)
 	{
-		if(""!=SCSIImgFile[scsiId])
+		if(""!=scsiImg[scsiId].imgFName)
 		{
-			argv.push_back("-HD");
-			argv.back().push_back('0'+scsiId);
-			argv.push_back(SCSIImgFile[scsiId]);
+			if(TownsProfile::SCSIIMAGE_HARDDISK==scsiImg[scsiId].imageType)
+			{
+				argv.push_back("-HD");
+				argv.back().push_back('0'+scsiId);
+				argv.push_back(scsiImg[scsiId].imgFName);
+			}
 		}
 	}
 

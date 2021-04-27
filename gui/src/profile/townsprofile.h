@@ -16,7 +16,6 @@ public:
 	{
 		MAX_NUM_VIRTUALKEYS=10,
 	};
-	std::string SCSIImgFile[MAX_NUM_SCSI_DEVICE];
 	bool useStrikeCommanderThrottleAxis=false;
 
 

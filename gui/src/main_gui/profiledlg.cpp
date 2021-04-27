@@ -536,12 +536,18 @@ TownsProfile ProfileDialog::GetProfile(void) const
 	profile.fdImgWriteProtect[0]=(YSTRUE==FDWriteProtBtn[0]->GetCheck());
 	profile.fdImgFName[1]=FDImgTxt[1]->GetString().data();
 	profile.fdImgWriteProtect[1]=(YSTRUE==FDWriteProtBtn[1]->GetCheck());
-	profile.SCSIImgFile[0]=HDImgTxt[0]->GetString().data();
-	profile.SCSIImgFile[1]=HDImgTxt[1]->GetString().data();
-	profile.SCSIImgFile[2]=HDImgTxt[2]->GetString().data();
-	profile.SCSIImgFile[3]=HDImgTxt[3]->GetString().data();
-	profile.SCSIImgFile[4]=HDImgTxt[4]->GetString().data();
-	profile.SCSIImgFile[5]=HDImgTxt[5]->GetString().data();
+	for(int i=0; i<TownsProfile::MAX_NUM_SCSI_DEVICES; ++i)
+	{
+		profile.scsiImg[i].imgFName=HDImgTxt[i]->GetString().data();
+		if(""!=profile.scsiImg[i].imgFName)
+		{
+			profile.scsiImg[i].imageType=TownsProfile::SCSIIMAGE_HARDDISK;
+		}
+		else
+		{
+			profile.scsiImg[i].imageType=TownsProfile::SCSIIMAGE_NONE;
+		}
+	}
 
 	for(int gameport=0; gameport<2; ++gameport)
 	{
@@ -634,10 +640,13 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 	FDImgTxt[1]->SetText(str);
 	FDWriteProtBtn[1]->SetCheck(true==profile.fdImgWriteProtect[1] ? YSTRUE : YSFALSE);
 
-	for(int i=0; i<TownsProfile::MAX_NUM_SCSI_DEVICE; ++i)
+	for(int i=0; i<TownsProfile::MAX_NUM_SCSI_DEVICES; ++i)
 	{
-		str.SetUTF8String(profile.SCSIImgFile[i].data());
-		HDImgTxt[i]->SetText(str);
+		if(TownsProfile::SCSIIMAGE_HARDDISK==profile.scsiImg[i].imageType)
+		{
+			str.SetUTF8String(profile.scsiImg[i].imgFName.data());
+			HDImgTxt[i]->SetText(str);
+		}
 	}
 
 	for(int gameport=0; gameport<2; ++gameport)
