@@ -16,7 +16,6 @@ public:
 	{
 		MAX_NUM_VIRTUALKEYS=10,
 	};
-	bool useStrikeCommanderThrottleAxis=false;
 
 
 	// autoStart flag is unique to TownsProfile.  Not in TownsStartParameters.

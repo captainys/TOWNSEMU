@@ -283,17 +283,19 @@ void ProfileDialog::Make(void)
 		strikeCommanderThrottlePhysIdDrp->AddString("5",YSFALSE);
 		strikeCommanderThrottlePhysIdDrp->AddString("6",YSFALSE);
 		strikeCommanderThrottlePhysIdDrp->AddString("7",YSFALSE);
+		strikeCommanderThrottlePhysIdDrp->Disable();
 
 		AddStaticText(0,FSKEY_NULL,"Axis:",YSFALSE);
-		strikeCommanderThrottlePhysIdDrp=AddEmptyDropList(0,FSKEY_NULL,"",8,4,4,YSFALSE);
-		strikeCommanderThrottlePhysIdDrp->AddString("0",YSFALSE);
-		strikeCommanderThrottlePhysIdDrp->AddString("1",YSFALSE);
-		strikeCommanderThrottlePhysIdDrp->AddString("2",YSTRUE);
-		strikeCommanderThrottlePhysIdDrp->AddString("3",YSFALSE);
-		strikeCommanderThrottlePhysIdDrp->AddString("4",YSFALSE);
-		strikeCommanderThrottlePhysIdDrp->AddString("5",YSFALSE);
-		strikeCommanderThrottlePhysIdDrp->AddString("6",YSFALSE);
-		strikeCommanderThrottlePhysIdDrp->AddString("7",YSFALSE);
+		strikeCommanderThrottleAxisDrp=AddEmptyDropList(0,FSKEY_NULL,"",8,4,4,YSFALSE);
+		strikeCommanderThrottleAxisDrp->AddString("0",YSFALSE);
+		strikeCommanderThrottleAxisDrp->AddString("1",YSFALSE);
+		strikeCommanderThrottleAxisDrp->AddString("2",YSTRUE);
+		strikeCommanderThrottleAxisDrp->AddString("3",YSFALSE);
+		strikeCommanderThrottleAxisDrp->AddString("4",YSFALSE);
+		strikeCommanderThrottleAxisDrp->AddString("5",YSFALSE);
+		strikeCommanderThrottleAxisDrp->AddString("6",YSFALSE);
+		strikeCommanderThrottleAxisDrp->AddString("7",YSFALSE);
+		strikeCommanderThrottleAxisDrp->Disable();
 
 		AddStaticText(0,FSKEY_NULL,
 			"This option translates physical throttle axis movement to 1,2,3,...,9,0 keys."
@@ -483,6 +485,19 @@ void ProfileDialog::Make(void)
 		flightMouseScaleYTxt->SetInteger(300);
 		appSpecificAugDrp->SelectByString(TownsAppToStr(TOWNS_APPSPECIFIC_STRIKECOMMANDER).c_str());
 	}
+	if(strikeCommanderThrottleEnableBtn==btn)
+	{
+		if(YSTRUE==strikeCommanderThrottleEnableBtn->GetCheck())
+		{
+			strikeCommanderThrottlePhysIdDrp->Enable();
+			strikeCommanderThrottleAxisDrp->Enable();
+		}
+		else
+		{
+			strikeCommanderThrottlePhysIdDrp->Disable();
+			strikeCommanderThrottleAxisDrp->Disable();
+		}
+	}
 }
 
 void ProfileDialog::OnSelectROMFile(FsGuiDialog *dlg,int returnCode)
@@ -598,9 +613,15 @@ TownsProfile ProfileDialog::GetProfile(void) const
 	profile.mouseByFlightstickZeroZoneY=(float)flightMouseDeadZoneTxt->GetInteger()/100.0;
 
 
-	profile.useStrikeCommanderThrottleAxis=(YSTRUE==strikeCommanderThrottleEnableBtn->GetCheck());
-	profile.throttlePhysicalId=strikeCommanderThrottlePhysIdDrp->GetSelection();
-	profile.throttleAxis=strikeCommanderThrottlePhysIdDrp->GetSelection();
+	if(YSTRUE==strikeCommanderThrottleEnableBtn->GetCheck())
+	{
+		profile.throttlePhysicalId=strikeCommanderThrottlePhysIdDrp->GetSelection();
+		profile.throttleAxis=strikeCommanderThrottleAxisDrp->GetSelection();
+	}
+	else
+	{
+		profile.throttlePhysicalId=-1;
+	}
 
 
 	profile.damperWireLine=(YSTRUE==damperWireLineBtn->GetCheck());
@@ -716,9 +737,20 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 	flightMouseScaleYTxt->SetInteger(profile.mouseByFlightstickScaleY);
 	flightMouseDeadZoneTxt->SetInteger((int)(100.0f*profile.mouseByFlightstickZeroZoneX));
 
-	strikeCommanderThrottleEnableBtn->SetCheck(profile.useStrikeCommanderThrottleAxis ? YSTRUE : YSFALSE);
-	strikeCommanderThrottlePhysIdDrp->Select(profile.throttlePhysicalId);
-	strikeCommanderThrottlePhysIdDrp->Select(profile.throttleAxis);
+	if(0<=profile.throttlePhysicalId)
+	{
+		strikeCommanderThrottleEnableBtn->SetCheck(YSTRUE);
+		strikeCommanderThrottlePhysIdDrp->Select(profile.throttlePhysicalId);
+		strikeCommanderThrottleAxisDrp->Select(profile.throttleAxis);
+		strikeCommanderThrottlePhysIdDrp->Enable();
+		strikeCommanderThrottleAxisDrp->Enable();
+	}
+	else
+	{
+		strikeCommanderThrottleEnableBtn->SetCheck(YSFALSE);
+		strikeCommanderThrottlePhysIdDrp->Disable();
+		strikeCommanderThrottleAxisDrp->Disable();
+	}
 
 	damperWireLineBtn->SetCheck(profile.damperWireLine ? YSTRUE : YSFALSE);
 

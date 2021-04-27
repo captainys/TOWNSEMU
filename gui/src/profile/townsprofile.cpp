@@ -50,7 +50,6 @@ void TownsProfile::CleanUp(void)
 	mouseByFlightstickScaleX=500.0f;
 	mouseByFlightstickScaleY=400.0f;
 
-	useStrikeCommanderThrottleAxis=false;
 	throttlePhysicalId=-1;
 	throttleAxis=2;
 
@@ -178,13 +177,19 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 	text.push_back(sstream.str());
 
 
-	sstream.str("");
-	sstream << "USESCTHR " << (useStrikeCommanderThrottleAxis ? 1 : 0);
-	text.push_back(sstream.str());
+	if(0<=throttlePhysicalId)
+	{
+		text.push_back("USESCTHR 1");
 
-	sstream.str("");
-	sstream << "SCTHRAXS " << throttlePhysicalId << " " << throttleAxis;
-	text.push_back(sstream.str());
+		sstream.str("");
+		sstream << "SCTHRAXS " << throttlePhysicalId << " " << throttleAxis;
+		text.push_back(sstream.str());
+	}
+	else
+	{
+		text.push_back("USESCTHR 0");
+		text.push_back("SCTHRAXS -1 -1");
+	}
 
 	if(TOWNS_KEYBOARD_MODE_DEFAULT!=keyboardMode)
 	{
@@ -210,6 +215,8 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 }
 bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 {
+	bool useThrottleAxis=false;
+
 	CleanUp();
 	unsigned int nVirtualKey=0;
 	for(auto &cppstr : text)
@@ -414,7 +421,7 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 		{
 			if(2<=argv.size())
 			{
-				useStrikeCommanderThrottleAxis=(0!=argv[1].Atoi());
+				useThrottleAxis=(0!=argv[1].Atoi());
 			}
 		}
 		else if(0==argv[0].STRCMP("SCTHRAXS"))
@@ -456,6 +463,12 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 			return false;
 		}
 	}
+
+	if(true!=useThrottleAxis)
+	{
+		throttlePhysicalId=-1;
+	}
+
 	errorMsg="";
 	return true;
 }
@@ -610,7 +623,7 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 		argv.push_back(sstream.str());
 	}
 
-	if(true==useStrikeCommanderThrottleAxis)
+	if(0<=throttlePhysicalId)
 	{
 		if(TOWNS_APPSPECIFIC_WINGCOMMANDER1==appSpecificSetting ||
 		   TOWNS_APPSPECIFIC_WINGCOMMANDER2==appSpecificSetting)
