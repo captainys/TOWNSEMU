@@ -73,10 +73,10 @@ public:
 
 	FsGuiStatic *profileFNameTxt;
 
-	FsGuiButton *ROMDirBtn,*CDImgBtn,*FDImgBtn[2][TownsProfile::NUM_STANDBY_FDIMG],*HDImgBtn[TownsProfile::MAX_NUM_SCSI_DEVICE];
-	FsGuiButton *FDWriteProtBtn[2][TownsProfile::NUM_STANDBY_FDIMG];
+	FsGuiButton *ROMDirBtn,*CDImgBtn,*FDImgBtn[TownsProfile::NUM_FDDRIVES],*HDImgBtn[TownsProfile::MAX_NUM_SCSI_DEVICE];
+	FsGuiButton *FDWriteProtBtn[TownsProfile::NUM_FDDRIVES];
 	FsGuiButton *damperWireLineBtn;
-	FsGuiTextBox *ROMDirTxt,*CDImgTxt,*FDImgTxt[2][TownsProfile::NUM_STANDBY_FDIMG],*HDImgTxt[TownsProfile::MAX_NUM_SCSI_DEVICE];
+	FsGuiTextBox *ROMDirTxt,*CDImgTxt,*FDImgTxt[TownsProfile::NUM_FDDRIVES],*HDImgTxt[TownsProfile::MAX_NUM_SCSI_DEVICE];
 	FsGuiDropList *gamePortDrp[2]; // None, Pad0, Pad1, Keybord Emulation, Mouse,
 	FsGuiSlider *mouseIntegSpdSlider;
 	FsGuiButton *bootKeyBtn[15];

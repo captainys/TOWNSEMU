@@ -11,6 +11,12 @@
 class TownsStartParameters
 {
 public:
+	enum
+	{
+		NUM_GAMEPORTS=2,
+		NUM_FDDRIVES=2,
+	};
+
 	class VirtualKey
 	{
 	public:
@@ -21,7 +27,7 @@ public:
 
 	unsigned int townsType=TOWNSTYPE_UNKNOWN;
 
-	unsigned int gamePort[2]={TOWNS_GAMEPORTEMU_PHYSICAL0,TOWNS_GAMEPORTEMU_MOUSE};
+	unsigned int gamePort[NUM_GAMEPORTS]={TOWNS_GAMEPORTEMU_PHYSICAL0,TOWNS_GAMEPORTEMU_MOUSE};
 
 	unsigned int bootKeyComb=BOOT_KEYCOMB_NONE;
 
@@ -40,8 +46,8 @@ public:
 	std::string ROMPath;
 	std::string CMOSFName;
 	bool autoSaveCMOS=true; // If this flag is false, CMOSFName will not be copied to FMTowns::Variable.
-	std::string fdImgFName[2];
-	bool fdImgWriteProtect[2]={false,false};
+	std::string fdImgFName[NUM_FDDRIVES];
+	bool fdImgWriteProtect[NUM_FDDRIVES]={false,false};
 	std::string cdImgFName;
 	unsigned int memCardType=TOWNS_MEMCARD_TYPE_NONE;
 	std::string memCardImgFName;

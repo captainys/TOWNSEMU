@@ -39,15 +39,15 @@ void ProfileDialog::Make(void)
 		CDImgTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",nShowPath,YSFALSE);
 		CDImgTxt->SetLengthLimit(PATH_LENGTH);
 
-		FDImgBtn[0][0]=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"FD0:",YSTRUE);
-		FDWriteProtBtn[0][0]=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Write Protect",YSFALSE);
-		FDImgTxt[0][0]=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",nShowPath-24,YSFALSE);
-		FDImgTxt[0][0]->SetLengthLimit(PATH_LENGTH);
+		FDImgBtn[0]=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"FD0:",YSTRUE);
+		FDWriteProtBtn[0]=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Write Protect",YSFALSE);
+		FDImgTxt[0]=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",nShowPath-24,YSFALSE);
+		FDImgTxt[0]->SetLengthLimit(PATH_LENGTH);
 
-		FDImgBtn[1][0]=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"FD1:",YSTRUE);
-		FDWriteProtBtn[1][0]=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Write Protect",YSFALSE);
-		FDImgTxt[1][0]=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",nShowPath-24,YSFALSE);
-		FDImgTxt[1][0]->SetLengthLimit(PATH_LENGTH);
+		FDImgBtn[1]=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"FD1:",YSTRUE);
+		FDWriteProtBtn[1]=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Write Protect",YSFALSE);
+		FDImgTxt[1]=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",nShowPath-24,YSFALSE);
+		FDImgTxt[1]->SetLengthLimit(PATH_LENGTH);
 
 		scrnScaleTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,L"Scaling(%):",4,YSTRUE);
 		scrnScaleTxt->SetLengthLimit(PATH_LENGTH);
@@ -433,12 +433,12 @@ void ProfileDialog::Make(void)
 	}
 	for(int i=0; i<2; ++i)
 	{
-		if(FDImgBtn[i][0]==btn)
+		if(FDImgBtn[i]==btn)
 		{
 			YsWString label(L"Floppy Drive ");
 			label.push_back('0'+i);
 			std::vector <const wchar_t *> extList={L".BIN",L".D77",L".D88",L".XDF"};
-			Browse(label,FDImgTxt[i][0],extList);
+			Browse(label,FDImgTxt[i],extList);
 		}
 	}
 	for(int i=0; i<sizeof(HDImgBtn)/sizeof(HDImgBtn[0]); ++i)
@@ -532,10 +532,10 @@ TownsProfile ProfileDialog::GetProfile(void) const
 	profile.freq=CPUFreqTxt->GetInteger();
 	profile.memSizeInMB=RAMSizeTxt->GetInteger();
 	profile.cdImgFName=CDImgTxt->GetString().data();
-	profile.FDImgFile[0][0]=FDImgTxt[0][0]->GetString().data();
-	profile.FDWriteProtect[0][0]=(YSTRUE==FDWriteProtBtn[0][0]->GetCheck());
-	profile.FDImgFile[1][0]=FDImgTxt[1][0]->GetString().data();
-	profile.FDWriteProtect[1][0]=(YSTRUE==FDWriteProtBtn[1][0]->GetCheck());
+	profile.FDImgFile[0]=FDImgTxt[0]->GetString().data();
+	profile.FDWriteProtect[0]=(YSTRUE==FDWriteProtBtn[0]->GetCheck());
+	profile.FDImgFile[1]=FDImgTxt[1]->GetString().data();
+	profile.FDWriteProtect[1]=(YSTRUE==FDWriteProtBtn[1]->GetCheck());
 	profile.SCSIImgFile[0]=HDImgTxt[0]->GetString().data();
 	profile.SCSIImgFile[1]=HDImgTxt[1]->GetString().data();
 	profile.SCSIImgFile[2]=HDImgTxt[2]->GetString().data();
@@ -626,13 +626,13 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 	str.SetUTF8String(profile.cdImgFName.data());
 	CDImgTxt->SetText(str);
 
-	str.SetUTF8String(profile.FDImgFile[0][0].data());
-	FDImgTxt[0][0]->SetText(str);
-	FDWriteProtBtn[0][0]->SetCheck(true==profile.FDWriteProtect[0][0] ? YSTRUE : YSFALSE);
+	str.SetUTF8String(profile.FDImgFile[0].data());
+	FDImgTxt[0]->SetText(str);
+	FDWriteProtBtn[0]->SetCheck(true==profile.FDWriteProtect[0] ? YSTRUE : YSFALSE);
 
-	str.SetUTF8String(profile.FDImgFile[1][0].data());
-	FDImgTxt[1][0]->SetText(str);
-	FDWriteProtBtn[1][0]->SetCheck(true==profile.FDWriteProtect[1][0] ? YSTRUE : YSFALSE);
+	str.SetUTF8String(profile.FDImgFile[1].data());
+	FDImgTxt[1]->SetText(str);
+	FDWriteProtBtn[1]->SetCheck(true==profile.FDWriteProtect[1] ? YSTRUE : YSFALSE);
 
 	for(int i=0; i<TownsProfile::MAX_NUM_SCSI_DEVICE; ++i)
 	{

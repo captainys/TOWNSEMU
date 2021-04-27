@@ -1377,7 +1377,7 @@ void FsGuiMainCanvas::FD0_SelectImageFile(FsGuiPopUpMenuItem *)
 		fdlg->fileExtensionArray.Append(L".D77");
 		fdlg->fileExtensionArray.Append(L".D88");
 		fdlg->fileExtensionArray.Append(L".XDF");
-		fdlg->defaultFileName=profileDlg->FDImgTxt[0][0]->GetWString();
+		fdlg->defaultFileName=profileDlg->FDImgTxt[0]->GetWString();
 		fdlg->BindCloseModalCallBack(&THISCLASS::FD0_ImageFileSelected,this);
 		AttachModalDialog(fdlg);
 	}
@@ -1459,7 +1459,7 @@ void FsGuiMainCanvas::FD1_SelectImageFile(FsGuiPopUpMenuItem *)
 		fdlg->fileExtensionArray.Append(L".D77");
 		fdlg->fileExtensionArray.Append(L".D88");
 		fdlg->fileExtensionArray.Append(L".XDF");
-		fdlg->defaultFileName=profileDlg->FDImgTxt[1][0]->GetWString();
+		fdlg->defaultFileName=profileDlg->FDImgTxt[1]->GetWString();
 		fdlg->BindCloseModalCallBack(&THISCLASS::FD1_ImageFileSelected,this);
 		AttachModalDialog(fdlg);
 	}

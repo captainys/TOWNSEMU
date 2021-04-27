@@ -13,11 +13,10 @@ class TownsProfile : public TownsStartParameters
 public:
 	enum
 	{
-		NUM_STANDBY_FDIMG=4,
 		MAX_NUM_SCSI_DEVICE=7,
 	};
-	std::string FDImgFile[2][NUM_STANDBY_FDIMG];
-	bool FDWriteProtect[2][NUM_STANDBY_FDIMG];
+	std::string FDImgFile[2];
+	bool FDWriteProtect[2];
 	std::string SCSIImgFile[MAX_NUM_SCSI_DEVICE];
 	bool autoStart=false;
 
