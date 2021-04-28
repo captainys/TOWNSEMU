@@ -14,7 +14,7 @@ public:
 	// MAX_NUM_VIRTUALKEYS is limitation for GUI environment only.
 	enum
 	{
-		MAX_NUM_VIRTUALKEYS=10,
+		MAX_NUM_VIRTUALKEYS=20,
 	};
 
 

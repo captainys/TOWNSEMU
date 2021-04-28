@@ -194,6 +194,9 @@ private:
 	void VM_12MHz(FsGuiPopUpMenuItem *);
 	void VM_16MHz(FsGuiPopUpMenuItem *);
 	void VM_25MHz(FsGuiPopUpMenuItem *);
+	void VM_33MHz(FsGuiPopUpMenuItem *);
+	void VM_50MHz(FsGuiPopUpMenuItem *);
+	void VM_66MHz(FsGuiPopUpMenuItem *);
 
 	void VM_Keyboard_Direct(FsGuiPopUpMenuItem *);
 	void VM_Keyboard_Translation1(FsGuiPopUpMenuItem *);

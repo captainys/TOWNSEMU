@@ -133,11 +133,14 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 		{
 			auto *freqSubMenu=subMenu->AddTextItem(0,FSKEY_F,L"CPU Frequency")->AddSubMenu();
 			freqSubMenu->AddTextItem(0,FSKEY_1,L"1MHz")->BindCallBack(&THISCLASS::VM_1MHz,this);
-			freqSubMenu->AddTextItem(0,FSKEY_4,L"4MHz")->BindCallBack(&THISCLASS::VM_4MHz,this);
-			freqSubMenu->AddTextItem(0,FSKEY_8,L"8MHz")->BindCallBack(&THISCLASS::VM_8MHz,this);
-			freqSubMenu->AddTextItem(0,FSKEY_2,L"12MHz")->BindCallBack(&THISCLASS::VM_12MHz,this);
-			freqSubMenu->AddTextItem(0,FSKEY_6,L"16MHz")->BindCallBack(&THISCLASS::VM_16MHz,this);
-			freqSubMenu->AddTextItem(0,FSKEY_5,L"25MHz")->BindCallBack(&THISCLASS::VM_25MHz,this);
+			freqSubMenu->AddTextItem(0,FSKEY_2,L"4MHz")->BindCallBack(&THISCLASS::VM_4MHz,this);
+			freqSubMenu->AddTextItem(0,FSKEY_3,L"8MHz")->BindCallBack(&THISCLASS::VM_8MHz,this);
+			freqSubMenu->AddTextItem(0,FSKEY_4,L"12MHz")->BindCallBack(&THISCLASS::VM_12MHz,this);
+			freqSubMenu->AddTextItem(0,FSKEY_5,L"16MHz")->BindCallBack(&THISCLASS::VM_16MHz,this);
+			freqSubMenu->AddTextItem(0,FSKEY_6,L"25MHz")->BindCallBack(&THISCLASS::VM_25MHz,this);
+			freqSubMenu->AddTextItem(0,FSKEY_7,L"33MHz")->BindCallBack(&THISCLASS::VM_33MHz,this);
+			freqSubMenu->AddTextItem(0,FSKEY_8,L"50MHz")->BindCallBack(&THISCLASS::VM_50MHz,this);
+			freqSubMenu->AddTextItem(0,FSKEY_9,L"66MHz")->BindCallBack(&THISCLASS::VM_66MHz,this);
 		}
 
 		{
@@ -1201,6 +1204,39 @@ void FsGuiMainCanvas::VM_25MHz(FsGuiPopUpMenuItem *)
 	if(true==subproc.SubprocRunning())
 	{
 		subproc.Send("FREQ 25\n");
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+void FsGuiMainCanvas::VM_33MHz(FsGuiPopUpMenuItem *)
+{
+	if(true==subproc.SubprocRunning())
+	{
+		subproc.Send("FREQ 33\n");
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+void FsGuiMainCanvas::VM_50MHz(FsGuiPopUpMenuItem *)
+{
+	if(true==subproc.SubprocRunning())
+	{
+		subproc.Send("FREQ 50\n");
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+void FsGuiMainCanvas::VM_66MHz(FsGuiPopUpMenuItem *)
+{
+	if(true==subproc.SubprocRunning())
+	{
+		subproc.Send("FREQ 66\n");
 	}
 	else
 	{

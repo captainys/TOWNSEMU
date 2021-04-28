@@ -137,7 +137,7 @@ void ProfileDialog::Make(void)
 	}
 
 	{
-		auto tabId=AddTab(tab,"Keyboard");
+		auto tabId=AddTab(tab,"Keyboard1");
 		BeginAddTabItem(tab,tabId);
 
 		AddStaticText(0,FSKEY_NULL,"Keyboard Mode (TRANS1:ESC->ESC+BREAK, TRANS2:ESC->ESC, TRANS3:ESC->BREAK):",YSTRUE);
@@ -148,7 +148,60 @@ void ProfileDialog::Make(void)
 		}
 
 		AddStaticText(0,FSKEY_NULL,"Virtual Keys:",YSTRUE);
-		for(int row=0; row<TownsProfile::MAX_NUM_VIRTUALKEYS; ++row)
+		for(int row=0; row<10; ++row)
+		{
+			virtualKeyTownsKeyDrp[row]=AddEmptyDropList(0,FSKEY_NULL,"",20,20,20,YSTRUE);
+			virtualKeyTownsKeyDrp[row]->AddString("(None)",YSTRUE);
+			for(int townsKey=0; townsKey<256; ++townsKey)
+			{
+				auto str=TownsKeyCodeToStr(townsKey);
+				auto reverse=TownsStrToKeyCode(str);
+				if(TOWNS_JISKEY_NULL!=reverse)
+				{
+					virtualKeyTownsKeyDrp[row]->AddString(str.c_str(),YSFALSE);
+				}
+			}
+
+			AddStaticText(0,FSKEY_NULL,"JoystickID:",YSFALSE);
+			virtualKeyPhysIdDrp[row]=AddEmptyDropList(0,FSKEY_NULL,"",8,4,4,YSFALSE);
+			virtualKeyPhysIdDrp[row]->AddString("0",YSTRUE);
+			virtualKeyPhysIdDrp[row]->AddString("1",YSFALSE);
+			virtualKeyPhysIdDrp[row]->AddString("2",YSFALSE);
+			virtualKeyPhysIdDrp[row]->AddString("3",YSFALSE);
+			virtualKeyPhysIdDrp[row]->AddString("4",YSFALSE);
+			virtualKeyPhysIdDrp[row]->AddString("5",YSFALSE);
+			virtualKeyPhysIdDrp[row]->AddString("6",YSFALSE);
+			virtualKeyPhysIdDrp[row]->AddString("7",YSFALSE);
+
+			AddStaticText(0,FSKEY_NULL,"Button:",YSFALSE);
+			virtualKeyButtonDrp[row]=AddEmptyDropList(0,FSKEY_NULL,"",8,4,4,YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("0",YSTRUE);
+			virtualKeyButtonDrp[row]->AddString("1",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("2",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("3",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("4",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("5",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("6",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("7",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("8",YSTRUE);
+			virtualKeyButtonDrp[row]->AddString("9",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("10",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("11",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("12",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("13",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("14",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("15",YSFALSE);
+		}
+
+		EndAddTabItem();
+	}
+	
+	{
+		auto tabId=AddTab(tab,"Keyboard2");
+		BeginAddTabItem(tab,tabId);
+		
+		AddStaticText(0,FSKEY_NULL,"Virtual Keys:",YSTRUE);
+		for(int row=10; row<TownsProfile::MAX_NUM_VIRTUALKEYS; ++row)
 		{
 			virtualKeyTownsKeyDrp[row]=AddEmptyDropList(0,FSKEY_NULL,"",20,20,20,YSTRUE);
 			virtualKeyTownsKeyDrp[row]->AddString("(None)",YSTRUE);
