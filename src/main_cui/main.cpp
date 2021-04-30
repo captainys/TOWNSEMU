@@ -135,7 +135,9 @@ int Run(FMTowns &towns,const TownsARGV &argv,Outside_World &outside_world)
 	TownsCUIThread cuiThread;
 
 	std::thread UIThread(&TownsCUIThread::Run,&cuiThread,&townsThread,&towns,&argv,&outside_world);
-	townsThread.Start(&towns,&outside_world,&cuiThread);
+	townsThread.VMStart(&towns,&outside_world,&cuiThread);
+	townsThread.VMMainLoop(&towns,&outside_world,&cuiThread);
+	townsThread.VMEnd(&towns,&outside_world,&cuiThread);
 
 	UIThread.join();
 

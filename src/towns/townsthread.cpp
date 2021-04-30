@@ -17,21 +17,17 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <memory>
 
 #include "townsthread.h"
-#include "townsrenderthread.h"
-#include "render.h"
 
 
-TownsThread::TownsThread(void)
+TownsThread::TownsThread(void) : renderingThread(new TownsRenderingThread)
 {
 	runMode=RUNMODE_PAUSE;
 }
 
-void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread)
+void TownsThread::VMStart(FMTowns *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread)
 {
-	std::unique_ptr <TownsRenderingThread> renderingThread(new TownsRenderingThread);
 	renderingThread->imageNeedsFlip=outside_world->ImageNeedsFlip();
 
-	bool terminate=false;
 	this->townsPtr=townsPtr;
 	townsPtr->cdrom.SetOutsideWorld(outside_world);
 	townsPtr->sound.SetOutsideWorld(outside_world);
@@ -46,8 +42,11 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world,class Tow
 		townsPtr->state.pretend386DX=true;
 		break;
 	}
-
+}
+void TownsThread::VMMainLoop(FMTowns *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread)
+{
 	TownsRender render;
+	bool terminate=false;
 	for(;true!=terminate;)
 	{
 		auto realTime0=std::chrono::high_resolution_clock::now();
@@ -194,7 +193,9 @@ void TownsThread::Start(FMTowns *townsPtr,Outside_World *outside_world,class Tow
 			AdjustRealTime(townsPtr,townsPtr->state.cpuTime-cpuTime0,realTime0,outside_world);
 		}
 	}
-
+}
+void TownsThread::VMEnd(FMTowns *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread)
+{
 	uiThread->uiLock.lock();
 	uiThread->vmTerminated=true;
 	uiThread->uiLock.unlock();

@@ -20,14 +20,18 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <chrono>
 #include <thread>
 #include <mutex>
+#include <memory>
 
 #include "towns.h"
 #include "outside_world.h"
+#include "townsrenderthread.h"
+#include "render.h"
 
 class TownsThread
 {
 private:
 	FMTowns *townsPtr;
+	std::unique_ptr <TownsRenderingThread> renderingThread;
 	int runMode;
 
 public:
@@ -46,7 +50,9 @@ public:
 
 	TownsThread();
 
-	void Start(FMTowns *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread);
+	void VMStart(FMTowns *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread);
+	void VMMainLoop(FMTowns *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread);
+	void VMEnd(FMTowns *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread);
 private:
 	void AdjustRealTime(FMTowns *townsPtr,long long int cpuTimePassed,std::chrono::time_point<std::chrono::high_resolution_clock> time0,Outside_World *outside_world);
 

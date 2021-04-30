@@ -114,7 +114,14 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 		winY0=48;
 	}
 
-	FsOpenWindow(0,winY0,wid,hei+STATUS_HEI,1);
+	if(0==FsCheckWindowOpen())
+	{
+		FsOpenWindow(0,winY0,wid,hei+STATUS_HEI,1);
+	}
+	else
+	{
+		FsResizeWindow(wid,hei);
+	}
 	if(true==maximizeOnStartUp)
 	{
 		FsPollDevice();
