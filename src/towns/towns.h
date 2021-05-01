@@ -42,6 +42,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "timer.h"
 #include "serialport.h"
 #include "vndrv.h"
+#include "townsparam.h"
 
 #include "eventlog.h"
 
@@ -373,6 +374,10 @@ public:
 
 
 	FMTowns();
+
+
+	static bool Setup(FMTowns &towns,Outside_World *outside_world,const TownsStartParameters &argv);
+
 
 	unsigned int MachineID(void) const;
 

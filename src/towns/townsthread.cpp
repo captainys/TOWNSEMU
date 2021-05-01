@@ -193,6 +193,10 @@ void TownsThread::VMMainLoop(FMTowns *townsPtr,Outside_World *outside_world,clas
 			AdjustRealTime(townsPtr,townsPtr->state.cpuTime-cpuTime0,realTime0,outside_world);
 		}
 	}
+	if(true==terminate)
+	{
+		runMode=RUNMODE_EXIT;
+	}
 }
 void TownsThread::VMEnd(FMTowns *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread)
 {

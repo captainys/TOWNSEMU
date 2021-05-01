@@ -32,7 +32,7 @@ class TownsThread
 private:
 	FMTowns *townsPtr;
 	std::unique_ptr <TownsRenderingThread> renderingThread;
-	int runMode;
+	int runMode=RUNMODE_PAUSE;
 
 public:
 	enum
@@ -42,6 +42,7 @@ public:
 
 	enum
 	{
+		RUNMODE_POWER_OFF,
 		RUNMODE_PAUSE,
 		RUNMODE_RUN,
 		RUNMODE_ONE_INSTRUCTION, // Always with debugger.
