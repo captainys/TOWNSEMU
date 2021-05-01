@@ -43,6 +43,7 @@ add_subdirectory(../../src/diskimg diskimg)
 add_subdirectory(../../src/main_cui main_cui)
 
 add_subdirectory(../../src/externals/d77 d77)
+add_subdirectory(../../src/externals/yspng yspng)
 add_subdirectory(../../src/externals/connect_fssimplewindow connect_fssimplewindow)
 
 

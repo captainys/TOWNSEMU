@@ -131,7 +131,7 @@ public:
 	bool pauseKey=false;
 
 	Outside_World();
-	~Outside_World();
+	virtual ~Outside_World();
 
 	virtual void Start(void)=0;
 	virtual void Stop(void)=0;
