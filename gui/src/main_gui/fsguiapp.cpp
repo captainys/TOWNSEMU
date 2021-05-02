@@ -81,6 +81,8 @@ void FsGuiMainCanvas::Initialize(int argc,char *argv[])
 	LoadProfile(GetDefaultProfileFileName());
 	AddDialog(profileDlg);
 
+	BindKeyCallBack(FSKEY_SCROLLLOCK,YSFALSE,YSFALSE,YSFALSE,&FsGuiMainCanvas::VM_Resume,this);
+
 	YsDisregardVariable(argc);
 	YsDisregardVariable(argv);
 	YsGLSLCreateSharedRenderer();
@@ -315,7 +317,7 @@ void FsGuiMainCanvas::Run(void)
 
 bool FsGuiMainCanvas::ReallyRun(bool usePipe)
 {
-	if(subproc.SubprocRunning())
+	if(true==IsVMRunning())
 	{
 		VM_Already_Running_Error();
 		return false;
@@ -389,6 +391,7 @@ bool FsGuiMainCanvas::ReallyRun(bool usePipe)
 	{
 		VM.profile=profileDlg->GetProfile();
 		VM.Run();
+		SetNeedRedraw(YSTRUE);
 	}
 	return true;
 }
@@ -421,6 +424,7 @@ void FsGuiMainCanvas::ResumeVMIfSameProc(void)
 	if(true!=separateProcess && true==VM.IsRunning())
 	{
 		VM.Run();
+		SetNeedRedraw(YSTRUE);
 	}
 }
 
