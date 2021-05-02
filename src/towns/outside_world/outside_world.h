@@ -117,6 +117,12 @@ public:
 
 	enum
 	{
+		LOWER_RIGHT_NONE,
+		LOWER_RIGHT_PAUSE,
+		LOWER_RIGHT_MENU,
+	};
+	enum
+	{
 		STATUS_WID=640,
 		STATUS_HEI=16
 	};
@@ -129,6 +135,8 @@ public:
 	unsigned int dx=0,dy=0;  // Screen (0,0) will be window (dx,dy)
 	unsigned int scaling=100; // In Percent
 	bool pauseKey=false;
+
+	unsigned int lowerRightIcon=LOWER_RIGHT_NONE;
 
 	Outside_World();
 	virtual ~Outside_World();

@@ -386,6 +386,22 @@ void ProfileDialog::Make(void)
 	runBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"START",YSTRUE);
 	autoStartBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Auto Start (Start VM as soon as the profile is loaded)",YSFALSE);
 
+	if(true!=canvasPtr->separateProcess)
+	{
+// macOS doen't send SCROLL_LOCK key code to the application.  WTF.
+#ifndef __APPLE__
+		AddStaticText(0,FSKEY_NULL,
+			"Press SCROLL_LOCK or Click on the lower-right [MENU] icon\n"
+			"to come back to the GUI from the VM.",
+			YSTRUE);
+#else
+		AddStaticText(0,FSKEY_NULL,
+			"Click on the lower-right [MENU] icon\n"
+			"to come back to the GUI from the VM.",
+			YSTRUE);
+#endif
+	}
+
 	Fit();
 	SetArrangeType(FSDIALOG_ARRANGE_TOP_LEFT);
 

@@ -43,6 +43,7 @@ void TownsVM::Alloc(void)
 	townsThreadPtr=new TownsThread;
 	cmdQueuePtr=new TownsCommandQueue;
 	outsideWorldPtr=new FsSimpleWindowConnection;
+	outsideWorldPtr->lowerRightIcon=Outside_World::LOWER_RIGHT_MENU;
 	townsThreadPtr->SetRunMode(TownsThread::RUNMODE_POWER_OFF);
 	townsThreadPtr->SetReturnOnPause(true);
 }

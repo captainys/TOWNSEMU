@@ -164,6 +164,35 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 	FsPollDevice();
 	PollGamePads();
 
+	int lb,mb,rb,mx,my;
+	auto mosEvt=FsGetMouseEvent(lb,mb,rb,mx,my);
+	if(LOWER_RIGHT_NONE!=lowerRightIcon && FSMOUSEEVENT_LBUTTONDOWN==mosEvt)
+	{
+		int wid,hei;
+		FsGetWindowSize(wid,hei);
+
+		int iconWid=0;
+		int iconHei=0;
+		switch(lowerRightIcon)
+		{
+		case LOWER_RIGHT_NONE:
+			break;
+		case LOWER_RIGHT_PAUSE:
+			iconWid=PAUSE_wid;
+			iconHei=PAUSE_hei;
+			break;
+		case LOWER_RIGHT_MENU:
+			iconWid=MENU_wid;
+			iconHei=MENU_hei;
+			break;
+		}
+		if(wid-iconWid<mx && hei<iconHei<my)
+		{
+			this->pauseKey=true;
+		}
+	}
+
+
 	bool gamePadEmulationByKey=false; // Emulate a gamepad with keyboard
 	bool mouseEmulationByNumPad=false; // Emulate mouse with keyboard numpad
 	for(unsigned int portId=0; portId<TOWNS_NUM_GAMEPORTS; ++portId)
@@ -887,8 +916,6 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 		if(mouseEmulationByAnalogAxis!=true)
 		{
 			struct YsGamePadReading reading;
-			int lb,mb,rb,mx,my;
-			FsGetMouseEvent(lb,mb,rb,mx,my);
 			mx-=this->dx;
 			my-=this->dy;
 			if(true==mouseByFlightstickAvailable && 0<=mouseByFlightstickPhysicalId && mouseByFlightstickPhysicalId<gamePads.size())
@@ -1211,6 +1238,20 @@ void FsSimpleWindowConnection::PollGamePads(void)
 	glRasterPos2i(0,winHei-1);
 	glPixelZoom(1,1);
 	glDrawPixels(STATUS_WID,STATUS_HEI,GL_RGBA,GL_UNSIGNED_BYTE,statusBitmap);
+
+	switch(lowerRightIcon)
+	{
+	case LOWER_RIGHT_NONE:
+		break;
+	case LOWER_RIGHT_PAUSE:
+		glRasterPos2i(winWid-PAUSE_wid,winHei-1);
+		glDrawPixels(PAUSE_wid,PAUSE_hei,GL_RGBA,GL_UNSIGNED_BYTE,::PAUSE);
+		break;
+	case LOWER_RIGHT_MENU:
+		glRasterPos2i(winWid-MENU_wid,winHei-1);
+		glDrawPixels(MENU_wid,MENU_hei,GL_RGBA,GL_UNSIGNED_BYTE,::MENU);
+		break;
+	}
 
 	if(TOWNS_APPSPECIFIC_STRIKECOMMANDER==towns.state.appSpecificSetting)
 	{

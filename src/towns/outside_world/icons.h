@@ -10,5 +10,12 @@ extern const unsigned char FD_IDLE[];
 extern const unsigned char HDD_BUSY[];
 extern const unsigned char HDD_IDLE[];
 
+extern const int MENU_wid;
+extern const int MENU_hei;
+extern const unsigned char MENU[];
+extern const int PAUSE_wid;
+extern const int PAUSE_hei;
+extern const unsigned char PAUSE[];
+
 /* } */
 #endif

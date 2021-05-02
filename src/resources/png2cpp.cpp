@@ -17,6 +17,12 @@ std::string files[]=
 	"HDD_IDLE",
 };
 
+std::string nonSquareFiles[]=
+{
+	"MENU",
+	"PAUSE",
+};
+
 int main(void)
 {
 	// Check all of them are 16x16
@@ -60,8 +66,37 @@ int main(void)
 		}
 
 		ofs << "};" << std::endl;
+	}
+
+	for(auto fName : nonSquareFiles)
+	{
+		YsRawPngDecoder png;
+		png.Decode((fName+".png").c_str());
+
+		ofs << "const int " << fName << "_wid=" << png.wid << ";" << std::endl;
+		ofs << "const int " << fName << "_hei=" << png.hei << ";" << std::endl;
+
+		ofs << "const unsigned char " << fName << "[]={" << std::endl;
+
+		for(int i=0; i<png.wid*png.hei; ++i)
+		{
+			ofs<<"0x"<<cpputil::Ubtox(png.rgba[i*4  ])<<",";
+			ofs<<"0x"<<cpputil::Ubtox(png.rgba[i*4+1])<<",";
+			ofs<<"0x"<<cpputil::Ubtox(png.rgba[i*4+2])<<",";
+			ofs<<"0x"<<cpputil::Ubtox(png.rgba[i*4+3])<<",";
+			if((i+1)%8==0 || i+1==png.wid*png.hei)
+			{
+				ofs<<std::endl;
+			}
+		}
+
+		ofs << "};" << std::endl;
 	
 	}
+
+
+
+
 	ofs.close();
 
 	return 0;
