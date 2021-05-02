@@ -60,6 +60,7 @@ public:
 	Subprocess subproc;
 	std::vector <std::string> VMLog;
 
+	bool separateProcess=false;
 	TownsVM VM;
 
 

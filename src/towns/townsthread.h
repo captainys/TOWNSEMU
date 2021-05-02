@@ -33,6 +33,7 @@ private:
 	FMTowns *townsPtr;
 	std::unique_ptr <TownsRenderingThread> renderingThread;
 	int runMode=RUNMODE_PAUSE;
+	bool returnOnPause=false;
 
 public:
 	enum
@@ -68,6 +69,10 @@ public:
 	    The thread that calls this function must take vmLock before calling. 
 	*/
 	void SetRunMode(int runModevoid);
+
+	/*! If true, VMMainLoop will return when VM is paused.
+	*/
+	void SetReturnOnPause(bool flag);
 
 	void PrintStatus(const FMTowns &towns) const;
 };

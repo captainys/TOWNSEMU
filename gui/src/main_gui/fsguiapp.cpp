@@ -338,56 +338,58 @@ bool FsGuiMainCanvas::ReallyRun(bool usePipe)
 	}
 
 
-	VM.profile=profileDlg->GetProfile();
-	VM.Run();
-
-
-/*
-	auto profile=profileDlg->GetProfile();
-	auto argv=profile.MakeArgv();
-	argv[0]=FindTsugaruCUI();
-	argv.push_back("-CMOS");
-	argv.push_back(GetCMOSFileName());
-
-
-	for(auto &arg : argv)
+	if(true==separateProcess)
 	{
-		YsWString utf16;
-		utf16.SetUTF8String(arg.c_str());
-		YsString sysEncode;
-		YsUnicodeToSystemEncoding(sysEncode,utf16);
-		arg=sysEncode.c_str();
+		auto profile=profileDlg->GetProfile();
+		auto argv=profile.MakeArgv();
+		argv[0]=FindTsugaruCUI();
+		argv.push_back("-CMOS");
+		argv.push_back(GetCMOSFileName());
+
+
+		for(auto &arg : argv)
+		{
+			YsWString utf16;
+			utf16.SetUTF8String(arg.c_str());
+			YsString sysEncode;
+			YsUnicodeToSystemEncoding(sysEncode,utf16);
+			arg=sysEncode.c_str();
+		}
+
+
+		for(auto arg : argv)
+		{
+			std::cout << arg << std::endl;
+		}
+
+		if(0==argv[0].size())
+		{
+			auto msgDlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialog>();
+			msgDlg->Make(
+			    L"Error",
+				L"Cannot find Tsugaru CUI module.\n"
+				L"Tsugaru CUI module must be in the same directory\n"
+				L"as the GUI module.",
+				L"OK",nullptr);
+			AttachModalDialog(msgDlg);
+			return false;
+		}
+		else if(true!=subproc.StartProc(argv,usePipe))
+		{
+			YsWString msg;
+			msg.SetUTF8String(subproc.errMsg.c_str());
+
+			auto msgDlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialog>();
+			msgDlg->Make(L"Error",msg,L"OK",nullptr);
+			AttachModalDialog(msgDlg);
+			return false;
+		}
 	}
-
-
-	for(auto arg : argv)
+	else
 	{
-		std::cout << arg << std::endl;
+		VM.profile=profileDlg->GetProfile();
+		VM.Run();
 	}
-
-	if(0==argv[0].size())
-	{
-		auto msgDlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialog>();
-		msgDlg->Make(
-		    L"Error",
-			L"Cannot find Tsugaru CUI module.\n"
-			L"Tsugaru CUI module must be in the same directory\n"
-			L"as the GUI module.",
-			L"OK",nullptr);
-		AttachModalDialog(msgDlg);
-		return false;
-	}
-	else if(true!=subproc.StartProc(argv,usePipe))
-	{
-		YsWString msg;
-		msg.SetUTF8String(subproc.errMsg.c_str());
-
-		auto msgDlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialog>();
-		msgDlg->Make(L"Error",msg,L"OK",nullptr);
-		AttachModalDialog(msgDlg);
-		return false;
-	}
-*/
 	return true;
 }
 
@@ -1142,13 +1144,27 @@ void FsGuiMainCanvas::VM_Pause(FsGuiPopUpMenuItem *)
 }
 void FsGuiMainCanvas::VM_Resume(FsGuiPopUpMenuItem *)
 {
-	if(true==subproc.SubprocRunning())
+	if(true==separateProcess)
 	{
-		subproc.Send("RUN\n");
+		if(true==subproc.SubprocRunning())
+		{
+			subproc.Send("RUN\n");
+		}
+		else
+		{
+			VM_Not_Running_Error();
+		}
 	}
 	else
 	{
-		VM_Not_Running_Error();
+		if(true==VM.IsRunning())
+		{
+			VM.Run();
+		}
+		else
+		{
+			VM_Not_Running_Error();
+		}
 	}
 }
 void FsGuiMainCanvas::VM_1MHz(FsGuiPopUpMenuItem *)

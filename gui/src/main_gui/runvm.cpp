@@ -33,6 +33,7 @@ void TownsVM::Alloc(void)
 	cmdQueuePtr=new TownsCommandQueue;
 	outsideWorldPtr=new FsSimpleWindowConnection;
 	townsThreadPtr->SetRunMode(TownsThread::RUNMODE_POWER_OFF);
+	townsThreadPtr->SetReturnOnPause(true);
 }
 void TownsVM::Free(void)
 {
@@ -59,6 +60,10 @@ void TownsVM::Run(void)
 		townsThreadPtr->SetRunMode(TownsThread::RUNMODE_RUN);
 		townsThreadPtr->VMStart(townsPtr,outsideWorldPtr,cmdQueuePtr);
 	}
+	else
+	{
+		townsThreadPtr->SetRunMode(TownsThread::RUNMODE_RUN);
+	}
 
 	townsThreadPtr->VMMainLoop(townsPtr,outsideWorldPtr,cmdQueuePtr);
 
@@ -67,4 +72,11 @@ void TownsVM::Run(void)
 		townsThreadPtr->VMEnd(townsPtr,outsideWorldPtr,cmdQueuePtr);
 		Free();
 	}
+}
+bool TownsVM::IsRunning(void) const
+{
+	return
+		(nullptr!=townsThreadPtr &&
+		 TownsThread::RUNMODE_POWER_OFF!=townsThreadPtr->GetRunMode() &&
+		 TownsThread::RUNMODE_EXIT!=townsThreadPtr->GetRunMode());
 }

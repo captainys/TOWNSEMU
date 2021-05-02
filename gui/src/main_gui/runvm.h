@@ -42,6 +42,7 @@ public:
 	void Free(void);
 
 	void Run(void);
+	bool IsRunning(void) const;
 };
 
 

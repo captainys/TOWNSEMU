@@ -179,6 +179,10 @@ void TownsThread::VMMainLoop(FMTowns *townsPtr,Outside_World *outside_world,clas
 		{
 			townsPtr->fdc.SaveModifiedDiskImages();
 			std::this_thread::sleep_for(std::chrono::milliseconds(10));
+			if(true==returnOnPause)
+			{
+				break;
+			}
 		}
 
 		uiThread->uiLock.lock();
@@ -261,6 +265,11 @@ int TownsThread::GetRunMode(void) const
 void TownsThread::SetRunMode(int nextRunMode)
 {
 	runMode=nextRunMode;
+}
+
+void TownsThread::SetReturnOnPause(bool flag)
+{
+	returnOnPause=flag;
 }
 
 void TownsThread::PrintStatus(const FMTowns &towns) const
