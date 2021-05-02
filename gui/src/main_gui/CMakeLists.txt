@@ -344,3 +344,18 @@ if(DATA_FILE_LOCATION)
 endif()
 
 #YSEND
+
+
+
+if(UNIX)
+	# Not supposed to be needed.
+	# Is g++ broken again?
+	target_link_libraries(${TARGET_NAME} pthread)
+
+	# I don't want to do the following.
+	# After people have suffered more than 30 year, maybe 40,
+	# UNIX ld still doesn't learn to do two-pass linking.
+	# How can it be the world dambest linker for 30 years?
+	# Utterly absurd.
+	target_link_libraries(${TARGET_NAME} yssimplesound yssimplesound_platform)
+endif()
