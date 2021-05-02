@@ -53,6 +53,8 @@ public:
 	FsSimpleWindowConnection();
 	~FsSimpleWindowConnection();
 
+	std::vector <unsigned char> PAUSEicon,MENUicon;
+
 	std::vector <struct YsGamePadReading> gamePads,prevGamePads;
 
 	// For mouse emulation by pad digital axes.

@@ -393,6 +393,9 @@ bool FsGuiMainCanvas::ReallyRun(bool usePipe)
 		VM.Run();
 		SetNeedRedraw(YSTRUE);
 	}
+
+	RemoveDialog(profileDlg);
+
 	return true;
 }
 
@@ -555,21 +558,32 @@ void FsGuiMainCanvas::File_SaveProfile(FsGuiPopUpMenuItem *)
 }
 void FsGuiMainCanvas::File_OpenProfile(FsGuiPopUpMenuItem *)
 {
-	auto fdlg=FsGuiDialog::CreateSelfDestructiveDialog<FsGuiFileDialog>();
-	fdlg->Initialize();
-	fdlg->mode=FsGuiFileDialog::MODE_OPEN;
-	fdlg->multiSelect=YSFALSE;
-	fdlg->title.Set(L"Open Profile");
-	fdlg->fileExtensionArray.Append(L".Tsugaru");
-	fdlg->defaultFileName=profileDlg->profileFNameTxt->GetWText();
-	fdlg->BindCloseModalCallBack(&THISCLASS::File_OpenProfile_FileSelected,this);
-	AttachModalDialog(fdlg);
+	if(true!=IsVMRunning())
+	{
+		auto fdlg=FsGuiDialog::CreateSelfDestructiveDialog<FsGuiFileDialog>();
+		fdlg->Initialize();
+		fdlg->mode=FsGuiFileDialog::MODE_OPEN;
+		fdlg->multiSelect=YSFALSE;
+		fdlg->title.Set(L"Open Profile");
+		fdlg->fileExtensionArray.Append(L".Tsugaru");
+		fdlg->defaultFileName=profileDlg->profileFNameTxt->GetWText();
+		fdlg->BindCloseModalCallBack(&THISCLASS::File_OpenProfile_FileSelected,this);
+		AttachModalDialog(fdlg);
+	}
+	else
+	{
+		VM_Already_Running_Error();
+	}
 }
 void FsGuiMainCanvas::File_OpenProfile_FileSelected(FsGuiDialog *dlg,int returnCode)
 {
 	auto fdlg=dynamic_cast <FsGuiFileDialog *>(dlg);
 	if(nullptr!=fdlg && (int)YSOK==returnCode)
 	{
+		if(profileDlg->GetParent()!=this)
+		{
+			AddDialog(profileDlg);
+		}
 		profileDlg->profileFNameTxt->SetText(fdlg->selectedFileArray[0]);
 		LoadProfile(fdlg->selectedFileArray[0]);
 	}
