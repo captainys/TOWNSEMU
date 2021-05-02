@@ -393,6 +393,37 @@ bool FsGuiMainCanvas::ReallyRun(bool usePipe)
 	return true;
 }
 
+bool FsGuiMainCanvas::IsVMRunning(void) const
+{
+	if(true==separateProcess)
+	{
+		return subproc.SubprocRunning();
+	}
+	else
+	{
+		return VM.IsRunning();
+	}
+}
+void FsGuiMainCanvas::SendVMCommand(std::string cmd)
+{
+	if(true==separateProcess)
+	{
+		subproc.Send(cmd);
+	}
+	else
+	{
+		VM.SendCommand(cmd);
+	}
+}
+
+void FsGuiMainCanvas::ResumeVMIfSameProc(void)
+{
+	if(true!=separateProcess && true==VM.IsRunning())
+	{
+		VM.Run();
+	}
+}
+
 std::string FsGuiMainCanvas::FindTsugaruCUI(void) const
 {
 	YsWString exeFile(L"Tsugaru_CUI");
@@ -899,7 +930,7 @@ void FsGuiMainCanvas::File_New_FileSelected(FsGuiDialog *dlg,int returnCode)
 
 void FsGuiMainCanvas::State_SaveState(FsGuiPopUpMenuItem *)
 {
-	if(true==subproc.SubprocRunning())
+	if(true==IsVMRunning())
 	{
 		auto defFn=lastStateFName;
 		if(0==defFn.Strlen())
@@ -957,12 +988,14 @@ void FsGuiMainCanvas::State_SaveState_Save(YsWString fName)
 	cmd="SAVESTATE \"";
 	cmd.Append(utf8);
 	cmd.Append("\"");
-	subproc.Send(cmd.data());
+	SendVMCommand(cmd.data());
+
+	ResumeVMIfSameProc();
 }
 
 void FsGuiMainCanvas::State_LoadState(FsGuiPopUpMenuItem *)
 {
-	if(true==subproc.SubprocRunning())
+	if(true==IsVMRunning())
 	{
 		auto defFn=lastStateFName;
 		if(0==defFn.Strlen())
@@ -1027,12 +1060,14 @@ void FsGuiMainCanvas::State_LoadState_FileSelected(FsGuiDialog *dlg,int returnCo
 			cmd="LOADSTATE \"";
 			cmd.Append(utf8);
 			cmd.Append("\"");
-			subproc.Send(cmd.data());
+			SendVMCommand(cmd.data());
 
 			if(true==loadStateThenPause)
 			{
-				subproc.Send("PAUSE");
+				SendVMCommand("PAUSE");
 			}
+
+			ResumeVMIfSameProc();
 
 			lastStateFName=selectedStateFName;
 		}
@@ -1040,7 +1075,7 @@ void FsGuiMainCanvas::State_LoadState_FileSelected(FsGuiDialog *dlg,int returnCo
 }
 void FsGuiMainCanvas::State_LoadLastState(FsGuiPopUpMenuItem *)
 {
-	if(true==subproc.SubprocRunning())
+	if(true==IsVMRunning())
 	{
 		if(0<lastStateFName.Strlen())
 		{
@@ -1052,7 +1087,8 @@ void FsGuiMainCanvas::State_LoadLastState(FsGuiPopUpMenuItem *)
 			cmd="LOADSTATE \"";
 			cmd.Append(utf8);
 			cmd.Append("\"");
-			subproc.Send(cmd.data());
+			SendVMCommand(cmd.data());
+			ResumeVMIfSameProc();
 		}
 	}
 	else
@@ -1062,7 +1098,7 @@ void FsGuiMainCanvas::State_LoadLastState(FsGuiPopUpMenuItem *)
 }
 void FsGuiMainCanvas::State_LoadLastStateAndPause(FsGuiPopUpMenuItem *)
 {
-	if(true==subproc.SubprocRunning())
+	if(true==IsVMRunning())
 	{
 		if(0<lastStateFName.Strlen())
 		{
@@ -1074,8 +1110,8 @@ void FsGuiMainCanvas::State_LoadLastStateAndPause(FsGuiPopUpMenuItem *)
 			cmd="LOADSTATE \"";
 			cmd.Append(utf8);
 			cmd.Append("\"");
-			subproc.Send(cmd.data());
-			subproc.Send("PAUSE");
+			SendVMCommand(cmd.data());
+			SendVMCommand("PAUSE");
 		}
 	}
 	else
@@ -1117,14 +1153,16 @@ void FsGuiMainCanvas::VM_PowerOffConfirm(FsGuiDialog *dlg,int returnCode)
 {
 	if((int)YSOK==returnCode)
 	{
-		subproc.Send("Q\n");
+		SendVMCommand("Q\n");
+		ResumeVMIfSameProc();
 	}
 }
 void FsGuiMainCanvas::VM_Reset(FsGuiPopUpMenuItem *)
 {
-	if(true==subproc.SubprocRunning())
+	if(true==IsVMRunning())
 	{
-		subproc.Send("RESET\n");
+		SendVMCommand("RESET\n");
+		ResumeVMIfSameProc();
 	}
 	else
 	{
@@ -1133,9 +1171,9 @@ void FsGuiMainCanvas::VM_Reset(FsGuiPopUpMenuItem *)
 }
 void FsGuiMainCanvas::VM_Pause(FsGuiPopUpMenuItem *)
 {
-	if(true==subproc.SubprocRunning())
+	if(true==IsVMRunning())
 	{
-		subproc.Send("PAU\n");
+		SendVMCommand("PAU\n");
 	}
 	else
 	{
@@ -1144,34 +1182,22 @@ void FsGuiMainCanvas::VM_Pause(FsGuiPopUpMenuItem *)
 }
 void FsGuiMainCanvas::VM_Resume(FsGuiPopUpMenuItem *)
 {
-	if(true==separateProcess)
+	if(true==IsVMRunning())
 	{
-		if(true==subproc.SubprocRunning())
-		{
-			subproc.Send("RUN\n");
-		}
-		else
-		{
-			VM_Not_Running_Error();
-		}
+		SendVMCommand("RUN\n");
+		ResumeVMIfSameProc();
 	}
 	else
 	{
-		if(true==VM.IsRunning())
-		{
-			VM.Run();
-		}
-		else
-		{
-			VM_Not_Running_Error();
-		}
+		VM_Not_Running_Error();
 	}
 }
 void FsGuiMainCanvas::VM_1MHz(FsGuiPopUpMenuItem *)
 {
-	if(true==subproc.SubprocRunning())
+	if(true==IsVMRunning())
 	{
-		subproc.Send("FREQ 1\n");
+		SendVMCommand("FREQ 1\n");
+		ResumeVMIfSameProc();
 	}
 	else
 	{
@@ -1180,9 +1206,10 @@ void FsGuiMainCanvas::VM_1MHz(FsGuiPopUpMenuItem *)
 }
 void FsGuiMainCanvas::VM_4MHz(FsGuiPopUpMenuItem *)
 {
-	if(true==subproc.SubprocRunning())
+	if(true==IsVMRunning())
 	{
-		subproc.Send("FREQ 4\n");
+		SendVMCommand("FREQ 4\n");
+		ResumeVMIfSameProc();
 	}
 	else
 	{
@@ -1191,9 +1218,10 @@ void FsGuiMainCanvas::VM_4MHz(FsGuiPopUpMenuItem *)
 }
 void FsGuiMainCanvas::VM_8MHz(FsGuiPopUpMenuItem *)
 {
-	if(true==subproc.SubprocRunning())
+	if(true==IsVMRunning())
 	{
-		subproc.Send("FREQ 8\n");
+		SendVMCommand("FREQ 8\n");
+		ResumeVMIfSameProc();
 	}
 	else
 	{
@@ -1202,9 +1230,10 @@ void FsGuiMainCanvas::VM_8MHz(FsGuiPopUpMenuItem *)
 }
 void FsGuiMainCanvas::VM_12MHz(FsGuiPopUpMenuItem *)
 {
-	if(true==subproc.SubprocRunning())
+	if(true==IsVMRunning())
 	{
-		subproc.Send("FREQ 12\n");
+		SendVMCommand("FREQ 12\n");
+		ResumeVMIfSameProc();
 	}
 	else
 	{
@@ -1213,9 +1242,10 @@ void FsGuiMainCanvas::VM_12MHz(FsGuiPopUpMenuItem *)
 }
 void FsGuiMainCanvas::VM_16MHz(FsGuiPopUpMenuItem *)
 {
-	if(true==subproc.SubprocRunning())
+	if(true==IsVMRunning())
 	{
-		subproc.Send("FREQ 16\n");
+		SendVMCommand("FREQ 16\n");
+		ResumeVMIfSameProc();
 	}
 	else
 	{
@@ -1224,9 +1254,10 @@ void FsGuiMainCanvas::VM_16MHz(FsGuiPopUpMenuItem *)
 }
 void FsGuiMainCanvas::VM_25MHz(FsGuiPopUpMenuItem *)
 {
-	if(true==subproc.SubprocRunning())
+	if(true==IsVMRunning())
 	{
-		subproc.Send("FREQ 25\n");
+		SendVMCommand("FREQ 25\n");
+		ResumeVMIfSameProc();
 	}
 	else
 	{
@@ -1235,9 +1266,10 @@ void FsGuiMainCanvas::VM_25MHz(FsGuiPopUpMenuItem *)
 }
 void FsGuiMainCanvas::VM_33MHz(FsGuiPopUpMenuItem *)
 {
-	if(true==subproc.SubprocRunning())
+	if(true==IsVMRunning())
 	{
 		subproc.Send("FREQ 33\n");
+		ResumeVMIfSameProc();
 	}
 	else
 	{
@@ -1246,9 +1278,10 @@ void FsGuiMainCanvas::VM_33MHz(FsGuiPopUpMenuItem *)
 }
 void FsGuiMainCanvas::VM_50MHz(FsGuiPopUpMenuItem *)
 {
-	if(true==subproc.SubprocRunning())
+	if(true==IsVMRunning())
 	{
-		subproc.Send("FREQ 50\n");
+		SendVMCommand("FREQ 50\n");
+		ResumeVMIfSameProc();
 	}
 	else
 	{
@@ -1257,9 +1290,10 @@ void FsGuiMainCanvas::VM_50MHz(FsGuiPopUpMenuItem *)
 }
 void FsGuiMainCanvas::VM_66MHz(FsGuiPopUpMenuItem *)
 {
-	if(true==subproc.SubprocRunning())
+	if(true==IsVMRunning())
 	{
-		subproc.Send("FREQ 66\n");
+		SendVMCommand("FREQ 66\n");
+		ResumeVMIfSameProc();
 	}
 	else
 	{
@@ -1269,9 +1303,10 @@ void FsGuiMainCanvas::VM_66MHz(FsGuiPopUpMenuItem *)
 
 void FsGuiMainCanvas::VM_Keyboard_Direct(FsGuiPopUpMenuItem *)
 {
-	if(true==subproc.SubprocRunning())
+	if(true==IsVMRunning())
 	{
-		subproc.Send("KEYBOARD DIRECT\n");
+		SendVMCommand("KEYBOARD DIRECT\n");
+		ResumeVMIfSameProc();
 	}
 	else
 	{
@@ -1280,9 +1315,10 @@ void FsGuiMainCanvas::VM_Keyboard_Direct(FsGuiPopUpMenuItem *)
 }
 void FsGuiMainCanvas::VM_Keyboard_Translation1(FsGuiPopUpMenuItem *)
 {
-	if(true==subproc.SubprocRunning())
+	if(true==IsVMRunning())
 	{
-		subproc.Send("KEYBOARD TRANS1\n");
+		SendVMCommand("KEYBOARD TRANS1\n");
+		ResumeVMIfSameProc();
 	}
 	else
 	{
@@ -1291,9 +1327,10 @@ void FsGuiMainCanvas::VM_Keyboard_Translation1(FsGuiPopUpMenuItem *)
 }
 void FsGuiMainCanvas::VM_Keyboard_Translation2(FsGuiPopUpMenuItem *)
 {
-	if(true==subproc.SubprocRunning())
+	if(true==IsVMRunning())
 	{
-		subproc.Send("KEYBOARD TRANS2\n");
+		SendVMCommand("KEYBOARD TRANS2\n");
+		ResumeVMIfSameProc();
 	}
 	else
 	{
@@ -1302,9 +1339,10 @@ void FsGuiMainCanvas::VM_Keyboard_Translation2(FsGuiPopUpMenuItem *)
 }
 void FsGuiMainCanvas::VM_Keyboard_Translation3(FsGuiPopUpMenuItem *)
 {
-	if(true==subproc.SubprocRunning())
+	if(true==IsVMRunning())
 	{
-		subproc.Send("KEYBOARD TRANS3\n");
+		SendVMCommand("KEYBOARD TRANS3\n");
+		ResumeVMIfSameProc();
 	}
 	else
 	{
@@ -1314,7 +1352,7 @@ void FsGuiMainCanvas::VM_Keyboard_Translation3(FsGuiPopUpMenuItem *)
 
 void FsGuiMainCanvas::VM_SaveScreenshot(FsGuiPopUpMenuItem *)
 {
-	if(true==subproc.SubprocRunning())
+	if(true==IsVMRunning())
 	{
 		YsWString path,file;
 		profileDlg->profileFNameTxt->GetWText().SeparatePathFile(path,file);
@@ -1347,7 +1385,8 @@ void FsGuiMainCanvas::VM_SaveScreenshot_FileSelected(FsGuiDialog *dlg,int return
 		cmd+=utf8.c_str();
 		cmd.push_back('\"');
 		cmd.push_back('\n');
-		subproc.Send(cmd);
+		SendVMCommand(cmd);
+		ResumeVMIfSameProc();
 	}
 }
 
@@ -1355,7 +1394,7 @@ void FsGuiMainCanvas::VM_SaveScreenshot_FileSelected(FsGuiDialog *dlg,int return
 
 void FsGuiMainCanvas::CD_SelectImageFile(FsGuiPopUpMenuItem *)
 {
-	if(true==subproc.SubprocRunning())
+	if(true==IsVMRunning())
 	{
 		auto fdlg=FsGuiDialog::CreateSelfDestructiveDialog<FsGuiFileDialog>();
 		fdlg->Initialize();
@@ -1386,14 +1425,15 @@ void FsGuiMainCanvas::CD_ImageFileSelected(FsGuiDialog *dlg,int returnCode)
 		cmd+=utf8.c_str();
 		cmd.push_back('\"');
 		cmd.push_back('\n');
-		subproc.Send(cmd);
+		SendVMCommand(cmd);
 	}
 }
 
 void FsGuiMainCanvas::CD_Eject(FsGuiPopUpMenuItem *)
 {
-	if(true==subproc.SubprocRunning())
+	if(true==IsVMRunning())
 	{
+		ResumeVMIfSameProc();
 	}
 	else
 	{
@@ -1402,9 +1442,10 @@ void FsGuiMainCanvas::CD_Eject(FsGuiPopUpMenuItem *)
 }
 void FsGuiMainCanvas::CD_OpenClose(FsGuiPopUpMenuItem *)
 {
-	if(true==subproc.SubprocRunning())
+	if(true==IsVMRunning())
 	{
-		subproc.Send("CDOPENCLOSE\n");
+		SendVMCommand("CDOPENCLOSE\n");
+		ResumeVMIfSameProc();
 	}
 	else
 	{
@@ -1413,9 +1454,10 @@ void FsGuiMainCanvas::CD_OpenClose(FsGuiPopUpMenuItem *)
 }
 void FsGuiMainCanvas::CD_CDDAStop(FsGuiPopUpMenuItem *)
 {
-	if(true==subproc.SubprocRunning())
+	if(true==IsVMRunning())
 	{
-		subproc.Send("CDDASTOP\n");
+		SendVMCommand("CDDASTOP\n");
+		ResumeVMIfSameProc();
 	}
 	else
 	{
@@ -1425,7 +1467,7 @@ void FsGuiMainCanvas::CD_CDDAStop(FsGuiPopUpMenuItem *)
 
 void FsGuiMainCanvas::FD0_SelectImageFile(FsGuiPopUpMenuItem *)
 {
-	if(true==subproc.SubprocRunning())
+	if(true==IsVMRunning())
 	{
 		auto fdlg=FsGuiDialog::CreateSelfDestructiveDialog<FsGuiFileDialog>();
 		fdlg->Initialize();
@@ -1459,7 +1501,8 @@ void FsGuiMainCanvas::FD0_ImageFileSelected(FsGuiDialog *dlg,int returnCode)
 		cmd+=utf8.c_str();
 		cmd.push_back('\"');
 		cmd.push_back('\n');
-		subproc.Send(cmd);
+		SendVMCommand(cmd);
+		ResumeVMIfSameProc();
 
 		FD0_writeProtectMenu->SetCheck(YSFALSE);
 		FD0_writeUnprotectMenu->SetCheck(YSTRUE);
@@ -1467,9 +1510,11 @@ void FsGuiMainCanvas::FD0_ImageFileSelected(FsGuiDialog *dlg,int returnCode)
 }
 void FsGuiMainCanvas::FD0_WriteProtect(FsGuiPopUpMenuItem *)
 {
-	if(true==subproc.SubprocRunning())
+	if(true==IsVMRunning())
 	{
-		subproc.Send("FD0WP\n");
+		SendVMCommand("FD0WP\n");
+		ResumeVMIfSameProc();
+
 		FD0_writeProtectMenu->SetCheck(YSTRUE);
 		FD0_writeUnprotectMenu->SetCheck(YSFALSE);
 	}
@@ -1480,9 +1525,11 @@ void FsGuiMainCanvas::FD0_WriteProtect(FsGuiPopUpMenuItem *)
 }
 void FsGuiMainCanvas::FD0_WriteUnprotect(FsGuiPopUpMenuItem *)
 {
-	if(true==subproc.SubprocRunning())
+	if(true==IsVMRunning())
 	{
-		subproc.Send("FD0UP\n");
+		SendVMCommand("FD0UP\n");
+		ResumeVMIfSameProc();
+
 		FD0_writeProtectMenu->SetCheck(YSFALSE);
 		FD0_writeUnprotectMenu->SetCheck(YSTRUE);
 	}
@@ -1493,9 +1540,11 @@ void FsGuiMainCanvas::FD0_WriteUnprotect(FsGuiPopUpMenuItem *)
 }
 void FsGuiMainCanvas::FD0_Eject(FsGuiPopUpMenuItem *)
 {
-	if(true==subproc.SubprocRunning())
+	if(true==IsVMRunning())
 	{
-		subproc.Send("FD0EJECT\n");
+		SendVMCommand("FD0EJECT\n");
+		ResumeVMIfSameProc();
+
 		FD0_writeProtectMenu->SetCheck(YSFALSE);
 		FD0_writeUnprotectMenu->SetCheck(YSTRUE);
 	}
@@ -1507,7 +1556,7 @@ void FsGuiMainCanvas::FD0_Eject(FsGuiPopUpMenuItem *)
 
 void FsGuiMainCanvas::FD1_SelectImageFile(FsGuiPopUpMenuItem *)
 {
-	if(true==subproc.SubprocRunning())
+	if(true==IsVMRunning())
 	{
 		auto fdlg=FsGuiDialog::CreateSelfDestructiveDialog<FsGuiFileDialog>();
 		fdlg->Initialize();
@@ -1541,7 +1590,8 @@ void FsGuiMainCanvas::FD1_ImageFileSelected(FsGuiDialog *dlg,int returnCode)
 		cmd+=utf8.c_str();
 		cmd.push_back('\"');
 		cmd.push_back('\n');
-		subproc.Send(cmd);
+		SendVMCommand(cmd);
+		ResumeVMIfSameProc();
 
 		FD1_writeProtectMenu->SetCheck(YSFALSE);
 		FD1_writeUnprotectMenu->SetCheck(YSTRUE);
@@ -1549,9 +1599,11 @@ void FsGuiMainCanvas::FD1_ImageFileSelected(FsGuiDialog *dlg,int returnCode)
 }
 void FsGuiMainCanvas::FD1_WriteProtect(FsGuiPopUpMenuItem *)
 {
-	if(true==subproc.SubprocRunning())
+	if(true==IsVMRunning())
 	{
-		subproc.Send("FD1WP\n");
+		SendVMCommand("FD1WP\n");
+		ResumeVMIfSameProc();
+
 		FD1_writeProtectMenu->SetCheck(YSTRUE);
 		FD1_writeUnprotectMenu->SetCheck(YSFALSE);
 	}
@@ -1562,9 +1614,11 @@ void FsGuiMainCanvas::FD1_WriteProtect(FsGuiPopUpMenuItem *)
 }
 void FsGuiMainCanvas::FD1_WriteUnprotect(FsGuiPopUpMenuItem *)
 {
-	if(true==subproc.SubprocRunning())
+	if(true==IsVMRunning())
 	{
-		subproc.Send("FD1UP\n");
+		SendVMCommand("FD1UP\n");
+		ResumeVMIfSameProc();
+
 		FD1_writeProtectMenu->SetCheck(YSFALSE);
 		FD1_writeUnprotectMenu->SetCheck(YSTRUE);
 	}
@@ -1575,9 +1629,11 @@ void FsGuiMainCanvas::FD1_WriteUnprotect(FsGuiPopUpMenuItem *)
 }
 void FsGuiMainCanvas::FD1_Eject(FsGuiPopUpMenuItem *)
 {
-	if(true==subproc.SubprocRunning())
+	if(true==IsVMRunning())
 	{
-		subproc.Send("FD1EJECT\n");
+		SendVMCommand("FD1EJECT\n");
+		ResumeVMIfSameProc();
+
 		FD1_writeProtectMenu->SetCheck(YSFALSE);
 		FD1_writeUnprotectMenu->SetCheck(YSTRUE);
 	}

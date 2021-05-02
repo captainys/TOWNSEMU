@@ -118,6 +118,20 @@ public:
 	/*! Start Tsugaru_CUI with the profile set in the profileDlg.
 	*/
 	void Run(void);
+
+
+	/*!
+	*/
+	bool IsVMRunning(void) const;
+
+	/*!
+	*/
+	void SendVMCommand(std::string cmd);
+
+	/*!
+	*/
+	void ResumeVMIfSameProc(void);
+
 private:
 	bool ReallyRun(bool usePipe=true);
 	std::string FindTsugaruCUI(void) const;

@@ -7,15 +7,26 @@
 }
 /* virtual */ void TownsCommandQueue::ExecCommandQueue(TownsThread &vmThread,FMTowns &towns,Outside_World *outside_world)
 {
-	if(""!=this->cmdline)
+	while(true!=cmdqueue.empty())
 	{
-		auto cmd=cmdInterpreter.Interpret(this->cmdline);
+		auto cmdline=cmdqueue.front();
+		cmdqueue.pop();
+
+		std::cout << cmdline << std::endl;
+
+		auto cmd=cmdInterpreter.Interpret(cmdline);
 		cmdInterpreter.Execute(vmThread,towns,outside_world,cmd);
 		if(TownsCommandInterpreter::CMD_QUIT==cmd.primaryCmd)
 		{
 		}
-		this->cmdline="";
 	}
+}
+
+void TownsCommandQueue::SendCommand(std::string cmd)
+{
+	uiLock.lock();
+	this->cmdqueue.push(cmd);
+	uiLock.unlock();
 }
 
 TownsVM::TownsVM()
@@ -79,4 +90,11 @@ bool TownsVM::IsRunning(void) const
 		(nullptr!=townsThreadPtr &&
 		 TownsThread::RUNMODE_POWER_OFF!=townsThreadPtr->GetRunMode() &&
 		 TownsThread::RUNMODE_EXIT!=townsThreadPtr->GetRunMode());
+}
+void TownsVM::SendCommand(std::string cmd)
+{
+	if(nullptr!=cmdQueuePtr)
+	{
+		cmdQueuePtr->SendCommand(cmd);
+	}
 }
