@@ -390,6 +390,10 @@ bool FsGuiMainCanvas::ReallyRun(bool usePipe)
 	else
 	{
 		VM.profile=profileDlg->GetProfile();
+		if(""==VM.profile.CMOSFName)
+		{
+			VM.profile.CMOSFName=GetCMOSFileName();
+		}
 		VM.Run();
 		SetNeedRedraw(YSTRUE);
 	}
