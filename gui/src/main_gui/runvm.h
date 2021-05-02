@@ -4,10 +4,15 @@
 
 
 
+#ifdef OUT
+#undef OUT
+#endif
+
 #include "towns.h"
 #include "townsthread.h"
 #include "outside_world.h"
 #include "townscommand.h"
+#include "townsprofile.h"
 
 
 class TownsCommandQueue : public TownsUIThread
@@ -24,12 +29,18 @@ public:
 class TownsVM
 {
 public:
-	TownsThread *townsThreadPtr;
-	TownsCommandQueue *cmdQueuePtr;
-	Outside_World *outsideWorldPtr;
+	TownsProfile profile;
+	FMTowns *townsPtr=nullptr;
+	TownsThread *townsThreadPtr=nullptr;
+	TownsCommandQueue *cmdQueuePtr=nullptr;
+	Outside_World *outsideWorldPtr=nullptr;
 
 	TownsVM();
 	~TownsVM();
+
+	void Alloc(void);
+	void Free(void);
+
 	void Run(void);
 };
 

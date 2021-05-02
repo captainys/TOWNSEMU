@@ -337,6 +337,12 @@ bool FsGuiMainCanvas::ReallyRun(bool usePipe)
 		return false;
 	}
 
+
+	VM.profile=profileDlg->GetProfile();
+	VM.Run();
+
+
+/*
 	auto profile=profileDlg->GetProfile();
 	auto argv=profile.MakeArgv();
 	argv[0]=FindTsugaruCUI();
@@ -381,6 +387,7 @@ bool FsGuiMainCanvas::ReallyRun(bool usePipe)
 		AttachModalDialog(msgDlg);
 		return false;
 	}
+*/
 	return true;
 }
 

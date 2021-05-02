@@ -34,6 +34,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <fsgui.h>
 #include "profiledlg.h"
 #include "subproc.h"
+#include "runvm.h"
 
 class FsGuiMainCanvas : public FsGuiCanvas
 {
@@ -58,6 +59,8 @@ public:
 	// [Core data structure]
 	Subprocess subproc;
 	std::vector <std::string> VMLog;
+
+	TownsVM VM;
 
 
 	// [Modeless dialogs]

@@ -19,13 +19,14 @@ TownsRenderingThread::TownsRenderingThread()
 }
 TownsRenderingThread::~TownsRenderingThread()
 {
+	std::cout << "Ending Rendering Thread." << std::endl;
 	{
 		std::unique_lock <std::mutex> mainLock(mainMutex);
 		command=QUIT;
 	}
 	cond.notify_one();
 	workerThread.join();
-	std::cout << "Ending Rendering Thread." << std::endl;
+	std::cout << "." << std::endl;
 }
 
 void TownsRenderingThread::ThreadFunc(void)
@@ -107,6 +108,7 @@ void TownsRenderingThread::CheckImageReady(FMTowns &towns,Outside_World &world)
 		}
 	}
 }
+
 void TownsRenderingThread::JustLoadedMachineState(void)
 {
 	WaitIdle();
