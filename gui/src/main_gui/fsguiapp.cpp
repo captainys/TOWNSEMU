@@ -1025,7 +1025,7 @@ void FsGuiMainCanvas::State_LoadState(FsGuiPopUpMenuItem *)
 }
 void FsGuiMainCanvas::State_LoadStateAndPause(FsGuiPopUpMenuItem *)
 {
-	if(true==subproc.SubprocRunning())
+	if(true==IsVMRunning())
 	{
 		auto defFn=lastStateFName;
 		if(0==defFn.Strlen())
@@ -1141,7 +1141,7 @@ void FsGuiMainCanvas::VM_StartAndCloseGUI(FsGuiPopUpMenuItem *)
 }
 void FsGuiMainCanvas::VM_PowerOff(FsGuiPopUpMenuItem *)
 {
-	if(true==subproc.SubprocRunning())
+	if(true==IsVMRunning())
 	{
 		auto msgDlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialog>();
 		msgDlg->Make(L"Confirm Power Off?",L"Power Off?",L"Yes",L"No");

@@ -155,6 +155,10 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 }
 /* virtual */ void FsSimpleWindowConnection::Stop(void)
 {
+	if(true==maximizeOnStartUp)
+	{
+		FsUnmaximizeWindow();
+	}
 	soundPlayer.End();
 }
 
