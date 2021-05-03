@@ -1220,6 +1220,11 @@ void FsSimpleWindowConnection::PollGamePads(void)
 }
 /* virtual */ void FsSimpleWindowConnection::Render(const TownsRender::Image &img,const class FMTowns &towns)
 {
+	RenderBeforeSwapBuffers(img,towns);
+	FsSwapBuffers();
+}
+void FsSimpleWindowConnection::RenderBeforeSwapBuffers(const TownsRender::Image &img,const class FMTowns &towns)
+{
 	int winWid,winHei;
 	FsGetWindowSize(winWid,winHei);
 
@@ -1303,8 +1308,6 @@ void FsSimpleWindowConnection::PollGamePads(void)
 
 		glEnd();
 	}
-
-	FsSwapBuffers();
 }
 /* virtual */ bool FsSimpleWindowConnection::ImageNeedsFlip(void)
 {

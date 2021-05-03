@@ -73,6 +73,7 @@ public:
 	void PollGamePads(void);
 	virtual void UpdateStatusBitmap(class FMTowns &towns);
 	virtual void Render(const TownsRender::Image &img,const class FMTowns &towns);
+	void RenderBeforeSwapBuffers(const TownsRender::Image &img,const class FMTowns &towns);
 	virtual bool ImageNeedsFlip(void);
 
 	virtual void SetKeyboardLayout(unsigned int layout);
