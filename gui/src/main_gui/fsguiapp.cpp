@@ -597,10 +597,7 @@ void FsGuiMainCanvas::File_OpenProfile_FileSelected(FsGuiDialog *dlg,int returnC
 	auto fdlg=dynamic_cast <FsGuiFileDialog *>(dlg);
 	if(nullptr!=fdlg && (int)YSOK==returnCode)
 	{
-		if(profileDlg->GetParent()!=this)
-		{
-			AddDialog(profileDlg);
-		}
+		AddDialog(profileDlg);
 		profileDlg->profileFNameTxt->SetText(fdlg->selectedFileArray[0]);
 		LoadProfile(fdlg->selectedFileArray[0]);
 	}
