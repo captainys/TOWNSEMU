@@ -197,6 +197,10 @@ void TownsThread::VMMainLoop(FMTowns *townsPtr,Outside_World *outside_world,clas
 			AdjustRealTime(townsPtr,townsPtr->state.cpuTime-cpuTime0,realTime0,outside_world);
 		}
 	}
+
+	// Rendering thread may be working on local TownsRender.
+	// WaitIdle to make sure the rendering thread is done with rendering before leaving this function.
+	renderingThread->WaitIdle();
 }
 void TownsThread::VMEnd(FMTowns *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread)
 {

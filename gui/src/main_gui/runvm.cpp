@@ -49,8 +49,8 @@ void TownsVM::Alloc(void)
 }
 void TownsVM::Free(void)
 {
-	delete townsPtr;
 	delete townsThreadPtr;
+	delete townsPtr;
 	delete cmdQueuePtr;
 	delete outsideWorldPtr;
 	townsPtr=nullptr;
