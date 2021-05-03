@@ -295,6 +295,19 @@ void FsGuiMainCanvas::Draw(void)
 	glLoadIdentity();
 #endif
 
+	if(true!=separateProcess &&
+	   true==VM.IsRunning() &&
+	   nullptr!=VM.outsideWorldPtr &&
+	   nullptr!=VM.townsPtr)
+	{
+		auto image=VM.lastImage.GetImage();
+		if(0<image.wid && 0<image.hei)
+		{
+			VM.outsideWorldPtr->UpdateStatusBitmap(*VM.townsPtr);
+			VM.outsideWorldPtr->RenderBeforeSwapBuffers(image,*VM.townsPtr);
+		}
+	}
+
 	YsGLSLUsePlain2DRenderer(YsGLSLSharedPlain2DRenderer());
 	YsGLSLUseWindowCoordinateInPlain2DDrawing(YsGLSLSharedPlain2DRenderer(),YSTRUE);
 	YsGLSLEndUsePlain2DRenderer(YsGLSLSharedPlain2DRenderer());

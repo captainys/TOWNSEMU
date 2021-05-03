@@ -15,7 +15,7 @@
 #include "outside_world.h"
 #include "townscommand.h"
 #include "townsprofile.h"
-
+#include "fssimplewindow_connection.h"
 
 class TownsCommandQueue : public TownsUIThread
 {
@@ -34,10 +34,11 @@ class TownsVM
 {
 public:
 	TownsProfile profile;
+	TownsRender lastImage;
 	FMTowns *townsPtr=nullptr;
 	TownsThread *townsThreadPtr=nullptr;
 	TownsCommandQueue *cmdQueuePtr=nullptr;
-	Outside_World *outsideWorldPtr=nullptr;
+	FsSimpleWindowConnection *outsideWorldPtr=nullptr;
 
 	TownsVM();
 	~TownsVM();

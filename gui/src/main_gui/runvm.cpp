@@ -84,6 +84,10 @@ void TownsVM::Run(void)
 		townsThreadPtr->VMEnd(townsPtr,outsideWorldPtr,cmdQueuePtr);
 		Free();
 	}
+	else
+	{
+		townsPtr->ForceRender(lastImage,*outsideWorldPtr);
+	}
 }
 bool TownsVM::IsRunning(void) const
 {
