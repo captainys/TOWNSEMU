@@ -169,6 +169,8 @@ private:
 	void File_Exit_ReallyExit(void);
 
 
+	void View_OpenProfileDialog(FsGuiPopUpMenuItem *);
+
 
 	YsWString lastStateFName;
 	YsWString selectedStateFName;

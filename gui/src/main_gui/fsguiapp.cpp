@@ -115,6 +115,11 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 	}
 
 	{
+		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_V,L"View")->GetSubMenu();
+		subMenu->AddTextItem(0,FSKEY_P,L"Profile Dialog")->BindCallBack(&THISCLASS::View_OpenProfileDialog,this);
+	}
+
+	{
 		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_S,"State")->GetSubMenu();
 		subMenu->AddTextItem(0,FSKEY_S,L"Save Machine State")->BindCallBack(&THISCLASS::State_SaveState,this);
 		subMenu->AddTextItem(0,FSKEY_L,L"Load Machine State")->BindCallBack(&THISCLASS::State_LoadState,this);
@@ -399,6 +404,7 @@ bool FsGuiMainCanvas::ReallyRun(bool usePipe)
 			AttachModalDialog(msgDlg);
 			return false;
 		}
+		RemoveDialog(profileDlg);
 	}
 	else
 	{
@@ -407,11 +413,15 @@ bool FsGuiMainCanvas::ReallyRun(bool usePipe)
 		{
 			VM.profile.CMOSFName=GetCMOSFileName();
 		}
+		RemoveDialog(profileDlg);
+
 		VM.Run();
+		if(true!=VM.IsRunning())
+		{
+			AddDialog(profileDlg);
+		}
 		SetNeedRedraw(YSTRUE);
 	}
-
-	RemoveDialog(profileDlg);
 
 	return true;
 }
@@ -444,6 +454,10 @@ void FsGuiMainCanvas::ResumeVMIfSameProc(void)
 	if(true!=separateProcess && true==VM.IsRunning())
 	{
 		VM.Run();
+		if(true!=VM.IsRunning())
+		{
+			AddDialog(profileDlg);
+		}
 		SetNeedRedraw(YSTRUE);
 	}
 }
@@ -956,6 +970,26 @@ void FsGuiMainCanvas::File_New_FileSelected(FsGuiDialog *dlg,int returnCode)
 	}
 }
 
+
+
+////////////////////////////////////////////////////////////
+
+
+
+void FsGuiMainCanvas::View_OpenProfileDialog(FsGuiPopUpMenuItem *)
+{
+	if(true!=IsVMRunning())
+	{
+		AddDialog(profileDlg);
+	}
+	else
+	{
+		VM_Already_Running_Error();
+	}
+}
+
+
+
 ////////////////////////////////////////////////////////////
 
 
@@ -1144,6 +1178,7 @@ void FsGuiMainCanvas::State_LoadLastStateAndPause(FsGuiPopUpMenuItem *)
 			cmd.Append("\"");
 			SendVMCommand(cmd.data());
 			SendVMCommand("PAUSE");
+			ResumeVMIfSameProc();
 		}
 	}
 	else

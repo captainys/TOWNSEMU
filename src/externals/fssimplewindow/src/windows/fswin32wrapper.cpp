@@ -294,6 +294,7 @@ void FsMaximizeWindow(void)
 }
 void FsUnmaximizeWindow(void)
 {
+	ShowWindow(fsWin32Internal.hWnd,SW_RESTORE);
 }
 void FsMakeFullScreen(void)
 {
