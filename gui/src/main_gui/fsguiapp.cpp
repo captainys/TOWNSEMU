@@ -358,9 +358,11 @@ bool FsGuiMainCanvas::ReallyRun(bool usePipe)
 	}
 
 
+	auto profile=profileDlg->GetProfile();
+	separateProcess=profile.separateProcess; // This is the only chance to change this flag.
+
 	if(true==separateProcess)
 	{
-		auto profile=profileDlg->GetProfile();
 		auto argv=profile.MakeArgv();
 		argv[0]=FindTsugaruCUI();
 		argv.push_back("-CMOS");

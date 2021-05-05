@@ -60,6 +60,7 @@ public:
 	Subprocess subproc;
 	std::vector <std::string> VMLog;
 
+	// separateProcess flag may only be changed when starting the VM.
 	bool separateProcess=false;
 	TownsVM VM;
 
