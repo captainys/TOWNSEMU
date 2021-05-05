@@ -142,6 +142,13 @@ private:
 
 private:
 	// [Menu pointers for check marks]
+	FsGuiPopUpMenu *fileRecentProfile;
+	FsGuiRecentFiles recentProfile;
+	void AddRecentlyUsedFile(const wchar_t wfn[]);
+	void RefreshRecentlyUsedFileList(void);
+	static void File_Recent(void *appPtr,FsGuiPopUpMenu *,FsGuiPopUpMenuItem *itm);
+	YsWString GetRecentFileListFileName(void) const;
+
 
 	// [Menu call-backs]
 	/*! Sample call-back functions.

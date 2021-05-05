@@ -111,6 +111,10 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 			subSubMenu->AddTextItem(0,FSKEY_NULL,L"Hard-Disk Image")->BindCallBack(&THISCLASS::File_New_HDD,this);
 		}
 
+		fileRecentProfile=subMenu->AddTextItem(0,FSKEY_R,L"Recent")->AddSubMenu();
+		RefreshRecentlyUsedFileList();
+		recentProfile.PopulateMenu(*fileRecentProfile,20,File_Recent,this);
+
 		subMenu->AddTextItem(0,FSKEY_X,L"Exit")->BindCallBack(&THISCLASS::File_Exit,this);
 	}
 
@@ -323,6 +327,56 @@ void FsGuiMainCanvas::Draw(void)
 	FsGuiCanvas::Show();
 
 	FsSwapBuffers();
+}
+
+void FsGuiMainCanvas::RefreshRecentlyUsedFileList(void)
+{
+	if(nullptr!=fileRecentProfile)
+	{
+		YsWString recentFn=GetRecentFileListFileName();
+		FILE *fp=YsFileIO::Fopen(recentFn,"r");
+		if(NULL!=fp)
+		{
+			YsTextFileInputStream inStream(fp);
+			recentProfile.Open(inStream);
+			fclose(fp);
+
+			recentProfile.PopulateMenu(*fileRecentProfile,16,File_Recent,this);
+		}
+	}
+}
+
+void FsGuiMainCanvas::AddRecentlyUsedFile(const wchar_t wfn[])
+{
+	if(nullptr!=fileRecentProfile)
+	{
+		recentProfile.AddFile(wfn);
+		recentProfile.PopulateMenu(*fileRecentProfile,16,File_Recent,this);
+
+		YsWString recentFn=GetRecentFileListFileName();
+
+		FILE *fp=YsFileIO::Fopen(recentFn,"w");
+		if(NULL!=fp)
+		{
+			YsTextFileOutputStream outStream(fp);
+			recentProfile.Save(outStream,16);
+			fclose(fp);
+		}
+	}
+}
+
+/* static */ void FsGuiMainCanvas::File_Recent(void *appPtr,FsGuiPopUpMenu *,FsGuiPopUpMenuItem *itm)
+{
+	const wchar_t *wfn=itm->GetString();
+	FsGuiMainCanvas *canvasPtr=(FsGuiMainCanvas *)appPtr;
+	canvasPtr->LoadProfile(wfn);
+}
+
+YsWString FsGuiMainCanvas::GetRecentFileListFileName(void) const
+{
+	YsWString fName;
+	fName.MakeFullPathName(GetTsugaruProfileDir(),L"RecentProfile.txt");
+	return fName;
 }
 
 
@@ -616,6 +670,7 @@ void FsGuiMainCanvas::File_OpenProfile_FileSelected(FsGuiDialog *dlg,int returnC
 		AddDialog(profileDlg);
 		profileDlg->profileFNameTxt->SetText(fdlg->selectedFileArray[0]);
 		LoadProfile(fdlg->selectedFileArray[0]);
+		AddRecentlyUsedFile(fdlg->selectedFileArray[0]);
 	}
 }
 void FsGuiMainCanvas::File_SaveProfileAs(FsGuiPopUpMenuItem *)
@@ -648,6 +703,7 @@ void FsGuiMainCanvas::File_SaveProfileAs_FileSelected(FsGuiDialog *dlg,int retur
 		{
 			profileDlg->profileFNameTxt->SetText(fdlg->selectedFileArray[0]);
 			SaveProfile(fName);
+			AddRecentlyUsedFile(fName);
 		}
 	}
 }
@@ -658,6 +714,7 @@ void FsGuiMainCanvas::File_SaveProfileAs_OverwriteConfirm(FsGuiDialog *dlgIn,int
 	{
 		profileDlg->profileFNameTxt->SetText(dlg->payload);
 		SaveProfile(dlg->payload);
+		AddRecentlyUsedFile(dlg->payload);
 	}
 }
 
