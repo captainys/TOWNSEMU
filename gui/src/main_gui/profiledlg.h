@@ -87,6 +87,7 @@ public:
 	FsGuiTextBox *CPUFreqTxt,*RAMSizeTxt;
 	FsGuiButton *catchUpRealTimeBtn;
 	FsGuiButton *runBtn;
+	FsGuiButton *separateProcBtn;
 	FsGuiButton *pretend386DXBtn;
 
 	FsGuiButton *flightMouseEnableBtn;

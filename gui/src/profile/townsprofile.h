@@ -21,6 +21,9 @@ public:
 	// autoStart flag is unique to TownsProfile.  Not in TownsStartParameters.
 	bool autoStart=false;
 
+	// separateProcess flag is unique to TownsProfile.  Not in TownsStartParameters.
+	bool separateProcess=false;
+
 	std::string errorMsg;
 
 	TownsProfile();

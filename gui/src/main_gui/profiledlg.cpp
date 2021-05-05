@@ -385,6 +385,7 @@ void ProfileDialog::Make(void)
 
 	runBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"START",YSTRUE);
 	autoStartBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Auto Start (Start VM as soon as the profile is loaded)",YSFALSE);
+	separateProcBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Separate Process",YSFALSE);
 
 	if(true!=canvasPtr->separateProcess)
 	{
@@ -694,7 +695,7 @@ TownsProfile ProfileDialog::GetProfile(void) const
 
 
 	profile.damperWireLine=(YSTRUE==damperWireLineBtn->GetCheck());
-
+	profile.separateProcess=(YSTRUE==separateProcBtn->GetCheck());
 
 	profile.keyboardMode=TownsStrToKeyboardMode(keyboardModeDrp->GetSelectedString().c_str());
 	for(int row=0; row<TownsProfile::MAX_NUM_VIRTUALKEYS; ++row)
@@ -790,6 +791,15 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 	else
 	{
 		autoStartBtn->SetCheck(YSFALSE);
+	}
+
+	if(true==profile.separateProcess)
+	{
+		separateProcBtn->SetCheck(YSTRUE);
+	}
+	else
+	{
+		separateProcBtn->SetCheck(YSFALSE);
 	}
 
 	scrnAutoScaleBtn->SetCheck(true==profile.autoScaling ? YSTRUE : YSFALSE);

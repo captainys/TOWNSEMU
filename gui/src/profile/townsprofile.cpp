@@ -120,6 +120,9 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 	text.push_back("AUTOSTAR ");
 	text.back()+=(autoStart ? "1" : "0");
 
+	text.push_back("SEPARPRC ");
+	text.back()+=(separateProcess ? "1" : "0");
+
 	sstream.str("");
 	sstream << "FREQUENC " << freq;
 	text.push_back(sstream.str());
@@ -291,6 +294,13 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 			if(2<=argv.size())
 			{
 				autoStart=(0!=argv[1].Atoi());
+			}
+		}
+		else if(0==argv[0].STRCMP("SEPARPRC"))
+		{
+			if(2<=argv.size())
+			{
+				separateProcess=(0!=argv[1].Atoi());
 			}
 		}
 		else if(0==argv[0].STRCMP("GAMEPORT"))
