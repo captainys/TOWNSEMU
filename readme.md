@@ -9,46 +9,48 @@ PEB01130@nifty.com
 # Introduction
 It is an emulator of legendary Fujitsu FM TOWNS computer.  The goal is to emulate model II MX, which was the last computer I pledged allegiance.  Also I am trying to find and document undocumented features of FM TOWNS system as much as possible while writing the emulator.
 
-Have been tested on Windows 10 and macOS.  I'll try Linux when Windows and macOS versions get stable.
+Have been tested on Windows 10 and macOS.  I think it runs on Linux, but I have a report that audio doesn't work on the natively-running Linux.  I can hear audio on my developing environment on Virtual Box.  I haven't been able to confirm the report on my side yet.
 
 
 伝説の名機富士通FM TOWNSのエミュレータです。目標はモデルII MXを再現することです。FM TOWNS II MXは僕が最後に忠誠を誓った機種でした。また、開発と並行してFM TOWNSのシステムで未公開の機能を見つけて記録に残すことも目標にしています。
 
-とりあえず、Windows 10とmacOSXで動きます。Linuxも対応するつもり。
+とりあえず、Windows 10とmacOSXで動きます。Linuxも対応したと思うんですが、Virtual Box上の開発環境だと普通に音が鳴るのですが、直接起動しているLinuxで音が出ないという報告があるのですが、まだ確認できてません。
 
 
 
 
 
 # ROMS
-The ROM set is compatible with the best FM TOWNS emulator UNZ.
+The ROM set is compatible with another FM TOWNS emulator UNZ.  You can get the best experience if you own an actual FM TOWNS hardware and extract ROM image from your TOWNS.  However, if you do not own your FM TOWNS hardware, you can use the following free version of the ROM.
 
-ROMイメージは現在最高のFM TOWNSエミュレータとされているUNZと互換性があります。
+http://ysflight.com/FM/towns/FreeTOWNS/e.html
+
+
+
+ROMイメージはFM TOWNSエミュレータUNZと互換性があります。実機を所有している方は、実機から抜き出したROMイメージを使うのが最も高い再現性を出すことができますが、実機を所有していない場合は、以下のURLからフリーの互換ROMをダウンロードして使うことができます。
+
+http://ysflight.com/FM/towns/FreeTOWNS/j.html
 
 
 
 
 
 # LIMITATIONS
-The emulation is getting better.  I have confirmed 20+ game titles playable on Tsugaru, and users report emulation state in the Wiki (https://wiki3.jp/fmtowns/page/10).  Wiki is set up by WINDY.  (Thnks!)
+The emulation is getting better.  I have confirmed 20+ game titles playable on Tsugaru, and users report emulation state in the Wiki (https://wiki3.jp/fmtowns/page/10).  Wiki is set up by WINDY.  (Thanks!)  Overall, I think it is safe to say more than 97% of FM TOWNS apps works.
 
-80486 emulation is, getting faster, but slow.  At this time, if you run the VM on Core i7 3.0GHz PC, VM runs somewhere like 80486 25 to 28MHz.  There is a room for speed up.  Will be done down the road.
+80486 emulation is, getting faster, but slow.  At this time, if you run the VM on Core i7 3.0GHz PC, VM runs somewhere like 80486 25 to 28MHz.  Core i9 2.80GHz can keep up with 66MHz.  There is a room for speed up.  Will be done down the road.
 
 Not-all instructions of Intel 80486 processor have been implemented yet.  Towns OS didn't use task registers.  I have no plan on adding support for those registers.  Since the emulator works as a debugger, debug registers won't be supported, either.
-
-RF5C68 PCM Sound Generator support is very primitive.
 
 FM Sound Generators is becoming more realistic, but still not all functionalities are supported.
 
 
 
-エミュレーションはかなりよくなってきて、自分で20以上のゲームタイトルがプレイ可能なことを確認しました。また、ユーザによる動作確認もWikiに上がってきています。(https://wiki3.jp/fmtowns/page/10) WikiはWINDYさんがセットアップしてくださいました。ありがとうございます。
+エミュレーションはかなりよくなってきて、自分で20以上のゲームタイトルがプレイ可能なことを確認しました。また、ユーザによる動作確認もWikiに上がってきています。(https://wiki3.jp/fmtowns/page/10) WikiはWINDYさんがセットアップしてくださいました。ありがとうございます。現状で、少なく見積もって97%以上のFM TOWNSアプリケーションを実行できると言えるようです。
 
-80486エミュレーションは速くなってきましたが、まだ遅いです。今のバージョンだとCore i7 3GHzで実行して80486 25～28MHz相当のスピードです。まだスピードアップの余地があるので、そのうちやります。
+80486エミュレーションは速くなってきましたが、まだ遅いです。今のバージョンだとCore i7 3GHzで実行して80486 25～28MHz相当のスピードです。Core i9の2.8GHzだと66MHzぐらい出るようですが、まだスピードアップの余地があるので、そのうちやります。
 
 80486のすべてのインストラクションをエミュレートできてません。なお、Towns OSはタスク機能は使ってなかったと思われるので多分サポートしません。また、エミュレータがデバッガとして機能するのでデバッグ機能もサポートしない予定です。
-
-RF5C68 PCM音源の音は出ますが、まだ非常に限定的なサポートです。
 
 FM音源は、かなりそれっぽくなってきましたが、まだSSG_EG未対応です。
 
@@ -250,6 +252,10 @@ The tests are timing-sensitive, or the CPU needs to be reasonably fast.  If not,
 
 
 # Revisions
+### 2021/05/06
+- Virtual Machine is pretty stable, I think.
+- Added tight-integration mode in the GUI module.
+
 ### 2020/09/06
 - I lost track of what I added or improved.  But, I can say I clear-confirmed Wing Commander 1 and Strike Commander  :-)
 
