@@ -1164,9 +1164,11 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 				{
 					my=hei-1;
 				}
-				mx=mx*100/scaling;
-				my=my*100/scaling;
-
+				if(0!=scaling) // Just in case
+				{
+					mx=mx*100/scaling;
+					my=my*100/scaling;
+				}
 				this->ProcessMouse(towns,lb,mb,rb,mx,my);
 			}
 		}

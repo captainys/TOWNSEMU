@@ -83,7 +83,7 @@ void TownsRenderingThread::CheckRenderingTimer(FMTowns &towns,TownsRender &rende
 		checkImageAfterThisTIme=towns.state.townsTime+3000000; // Give sub-thread some time.
 
 		{
-			std::unique_lock <std::mutex> mainLock(mainMutex);
+			std::unique_lock <std::mutex> statusLock(statusMutex);
 			command=RENDER;
 			imageReady=false;
 		}
@@ -109,8 +109,13 @@ void TownsRenderingThread::CheckImageReady(FMTowns &towns,Outside_World &world)
 	}
 }
 
-void TownsRenderingThread::JustLoadedMachineState(void)
+void TownsRenderingThread::DiscardRunningRenderingTask(void)
 {
 	WaitIdle();
 	state=STATE_IDLE;
+	{
+		std::unique_lock <std::mutex> statusLock(statusMutex);
+		command=NO_COMMAND;
+		imageReady=false;
+	}
 }

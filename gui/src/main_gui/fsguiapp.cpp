@@ -370,6 +370,7 @@ void FsGuiMainCanvas::AddRecentlyUsedFile(const wchar_t wfn[])
 	const wchar_t *wfn=itm->GetString();
 	FsGuiMainCanvas *canvasPtr=(FsGuiMainCanvas *)appPtr;
 	canvasPtr->LoadProfile(wfn);
+	canvasPtr->AddRecentlyUsedFile(wfn); // This will move the selected to the top of the list.
 }
 
 YsWString FsGuiMainCanvas::GetRecentFileListFileName(void) const
@@ -557,6 +558,78 @@ std::string FsGuiMainCanvas::GetCMOSFileName(void) const
 	return utf8.c_str();
 }
 
+YsWString FsGuiMainCanvas::GetDefaultNewDiskImageFileName(void) const
+{
+	YsWString fName;
+	if(0<lastSelectedFDFName.Strlen())
+	{
+		fName=lastSelectedFDFName;
+	}
+	else if(0<lastSelectedProfileFName.Strlen())
+	{
+		fName=lastSelectedProfileFName;
+	}
+	else
+	{
+		fName=profileDlg->profileFNameTxt->GetWText();
+	}
+
+	YsWString path,file;
+	fName.SeparatePathFile(path,file);
+
+	YsWString ful;
+	ful.MakeFullPathName(path,L"disk.d77");
+	return ful;
+}
+
+YsWString FsGuiMainCanvas::GetDefaultOpenDiskImageFileName(void) const
+{
+	if(0<lastSelectedFDFName.Strlen())
+	{
+		return lastSelectedFDFName;
+	}
+
+	YsWString fName,path,file;
+	if(0<lastSelectedProfileFName.Strlen())
+	{
+		fName=lastSelectedProfileFName;
+	}
+	else
+	{
+		fName=profileDlg->profileFNameTxt->GetWText();
+	}
+
+	fName.SeparatePathFile(path,file);
+
+	YsWString ful;
+	ful.MakeFullPathName(path,L"*.d77");
+	return ful;
+}
+
+YsWString FsGuiMainCanvas::GetDefaultNewHardDiskImageFileName(void) const
+{
+	YsWString fName;
+	if(0<lastSelectedHDFName.Strlen())
+	{
+		fName=lastSelectedHDFName;
+	}
+	else if(0<lastSelectedProfileFName.Strlen())
+	{
+		fName=lastSelectedProfileFName;
+	}
+	else
+	{
+		fName=profileDlg->profileFNameTxt->GetWText();
+	}
+
+	YsWString path,file;
+	fName.SeparatePathFile(path,file);
+
+	YsWString ful;
+	ful.MakeFullPathName(path,L"harddisk.h0");
+	return ful;
+}
+
 std::vector <YsWString> FsGuiMainCanvas::CheckMissingROMFiles(void) const
 {
 	std::vector <YsWString> missing;
@@ -729,6 +802,7 @@ void FsGuiMainCanvas::SaveProfile(YsWString fName) const
 		outStream.Printf("%s\n",str.c_str());
 	}
 	fp.Fclose();
+	lastSelectedProfileFName=fName;
 }
 void FsGuiMainCanvas::LoadProfile(YsWString fName)
 {
@@ -761,6 +835,27 @@ void FsGuiMainCanvas::LoadProfile(YsWString fName)
 			errMsg.SetUTF8String(profile.errorMsg.c_str());
 			dlg->Make(L"Profile Load Error",errMsg,L"OK",nullptr);
 			AttachModalDialog(dlg);
+		}
+
+		lastSelectedProfileFName=fName;
+		for(auto imgFName : profile.fdImgFName)
+		{
+			if(""!=imgFName)
+			{
+				lastSelectedFDFName.SetUTF8String(imgFName.c_str());
+			}
+		}
+		if(""!=profile.cdImgFName)
+		{
+			lastSelectedCDFName.SetUTF8String(profile.cdImgFName.data());
+		}
+		for(auto scsi : profile.scsiImg)
+		{
+			if(TownsProfile::SCSIIMAGE_HARDDISK==scsi.imageType && ""!=scsi.imgFName)
+			{
+				lastSelectedHDFName.SetUTF8String(scsi.imgFName.data());
+				break;
+			}
 		}
 	}
 }
@@ -819,7 +914,7 @@ void FsGuiMainCanvas::File_New_1232KB(FsGuiPopUpMenuItem *)
 	fdlg->fileExtensionArray.Append(L".D77");
 	fdlg->fileExtensionArray.Append(L".D88");
 	fdlg->fileExtensionArray.Append(L".XDF");
-	fdlg->defaultFileName=profileDlg->profileFNameTxt->GetWText();
+	fdlg->defaultFileName=GetDefaultNewDiskImageFileName();
 	fdlg->BindCloseModalCallBack(&THISCLASS::File_New_FileSelected,this);
 	AttachModalDialog(fdlg);
 }
@@ -837,7 +932,7 @@ void FsGuiMainCanvas::File_New_1440KB(FsGuiPopUpMenuItem *)
 	fdlg->fileExtensionArray.Append(L".D77");
 	fdlg->fileExtensionArray.Append(L".D88");
 	fdlg->fileExtensionArray.Append(L".XDF");
-	fdlg->defaultFileName=profileDlg->profileFNameTxt->GetWText();
+	fdlg->defaultFileName=GetDefaultNewDiskImageFileName();
 	fdlg->BindCloseModalCallBack(&THISCLASS::File_New_FileSelected,this);
 	AttachModalDialog(fdlg);
 }
@@ -855,7 +950,7 @@ void FsGuiMainCanvas::File_New_720KB(FsGuiPopUpMenuItem *)
 	fdlg->fileExtensionArray.Append(L".D77");
 	fdlg->fileExtensionArray.Append(L".D88");
 	fdlg->fileExtensionArray.Append(L".XDF");
-	fdlg->defaultFileName=profileDlg->profileFNameTxt->GetWText();
+	fdlg->defaultFileName=GetDefaultNewDiskImageFileName();
 	fdlg->BindCloseModalCallBack(&THISCLASS::File_New_FileSelected,this);
 	AttachModalDialog(fdlg);
 }
@@ -873,7 +968,7 @@ void FsGuiMainCanvas::File_New_640KB(FsGuiPopUpMenuItem *)
 	fdlg->fileExtensionArray.Append(L".D77");
 	fdlg->fileExtensionArray.Append(L".D88");
 	fdlg->fileExtensionArray.Append(L".XDF");
-	fdlg->defaultFileName=profileDlg->profileFNameTxt->GetWText();
+	fdlg->defaultFileName=GetDefaultNewDiskImageFileName();
 	fdlg->BindCloseModalCallBack(&THISCLASS::File_New_FileSelected,this);
 	AttachModalDialog(fdlg);
 }
@@ -915,7 +1010,7 @@ void FsGuiMainCanvas::File_New_HDD_SizeSelected(FsGuiDialog *dlg,int returnCode)
 			fdlg->fileExtensionArray.Append(L".H1");
 			fdlg->fileExtensionArray.Append(L".H2");
 			fdlg->fileExtensionArray.Append(L".H3");
-			fdlg->defaultFileName=profileDlg->profileFNameTxt->GetWText();
+			fdlg->defaultFileName=GetDefaultNewHardDiskImageFileName();
 			fdlg->BindCloseModalCallBack(&THISCLASS::File_New_FileSelected,this);
 			AttachModalDialog(fdlg);
 		}
@@ -937,6 +1032,7 @@ void FsGuiMainCanvas::File_New_FileSelected(FsGuiDialog *dlg,int returnCode)
 		{
 			if(true==genFloppyDisk)
 			{
+				lastSelectedFDFName=fName;
 				std::vector <unsigned char> img;
 
 				switch(genDiskSize)
@@ -990,6 +1086,8 @@ void FsGuiMainCanvas::File_New_FileSelected(FsGuiDialog *dlg,int returnCode)
 			}
 			else
 			{
+				lastSelectedHDFName=fName;
+
 				bool result=false;
 				YsFileIO::File ofp(fName,"wb");
 				if(nullptr!=ofp.Fp())
@@ -1552,6 +1650,7 @@ void FsGuiMainCanvas::CD_ImageFileSelected(FsGuiDialog *dlg,int returnCode)
 		cmd.push_back('\"');
 		cmd.push_back('\n');
 		SendVMCommand(cmd);
+		lastSelectedCDFName=fName;
 	}
 }
 
@@ -1604,7 +1703,7 @@ void FsGuiMainCanvas::FD0_SelectImageFile(FsGuiPopUpMenuItem *)
 		fdlg->fileExtensionArray.Append(L".D77");
 		fdlg->fileExtensionArray.Append(L".D88");
 		fdlg->fileExtensionArray.Append(L".XDF");
-		fdlg->defaultFileName=profileDlg->FDImgTxt[0]->GetWString();
+		fdlg->defaultFileName=GetDefaultOpenDiskImageFileName();
 		fdlg->BindCloseModalCallBack(&THISCLASS::FD0_ImageFileSelected,this);
 		AttachModalDialog(fdlg);
 	}
@@ -1632,6 +1731,8 @@ void FsGuiMainCanvas::FD0_ImageFileSelected(FsGuiDialog *dlg,int returnCode)
 
 		FD0_writeProtectMenu->SetCheck(YSFALSE);
 		FD0_writeUnprotectMenu->SetCheck(YSTRUE);
+
+		lastSelectedFDFName=fName;
 	}
 }
 void FsGuiMainCanvas::FD0_WriteProtect(FsGuiPopUpMenuItem *)
@@ -1693,7 +1794,7 @@ void FsGuiMainCanvas::FD1_SelectImageFile(FsGuiPopUpMenuItem *)
 		fdlg->fileExtensionArray.Append(L".D77");
 		fdlg->fileExtensionArray.Append(L".D88");
 		fdlg->fileExtensionArray.Append(L".XDF");
-		fdlg->defaultFileName=profileDlg->FDImgTxt[1]->GetWString();
+		fdlg->defaultFileName=GetDefaultOpenDiskImageFileName();
 		fdlg->BindCloseModalCallBack(&THISCLASS::FD1_ImageFileSelected,this);
 		AttachModalDialog(fdlg);
 	}
@@ -1721,6 +1822,8 @@ void FsGuiMainCanvas::FD1_ImageFileSelected(FsGuiDialog *dlg,int returnCode)
 
 		FD1_writeProtectMenu->SetCheck(YSFALSE);
 		FD1_writeUnprotectMenu->SetCheck(YSTRUE);
+
+		lastSelectedFDFName=fName;
 	}
 }
 void FsGuiMainCanvas::FD1_WriteProtect(FsGuiPopUpMenuItem *)

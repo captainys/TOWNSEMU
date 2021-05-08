@@ -57,7 +57,7 @@ public:
 	void CheckImageReady(FMTowns &towns,class Outside_World &world);
 	void WaitIdle(void);
 
-	void JustLoadedMachineState(void);
+	void DiscardRunningRenderingTask(void);
 };
 
 

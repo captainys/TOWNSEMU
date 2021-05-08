@@ -60,6 +60,11 @@ public:
 	Subprocess subproc;
 	std::vector <std::string> VMLog;
 
+	mutable YsWString lastSelectedProfileFName;
+	mutable YsWString lastSelectedCDFName;
+	mutable YsWString lastSelectedFDFName;
+	mutable YsWString lastSelectedHDFName;
+
 	// separateProcess flag may only be changed when starting the VM.
 	bool separateProcess=false;
 	TownsVM VM;
@@ -138,6 +143,10 @@ private:
 	std::string FindTsugaruCUI(void) const;
 	std::vector <YsWString> CheckMissingROMFiles(void) const;
 	std::string GetCMOSFileName(void) const;
+
+	YsWString GetDefaultNewDiskImageFileName(void) const;
+	YsWString GetDefaultOpenDiskImageFileName(void) const;
+	YsWString GetDefaultNewHardDiskImageFileName(void) const;
 
 
 private:

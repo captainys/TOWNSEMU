@@ -45,6 +45,9 @@ void TownsThread::VMStart(FMTowns *townsPtr,Outside_World *outside_world,class T
 }
 void TownsThread::VMMainLoop(FMTowns *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread)
 {
+	// Just in case, if there is a remains of the rendering from the previous run, discard it.
+	renderingThread->DiscardRunningRenderingTask();
+
 	TownsRender render;
 	bool terminate=false;
 	for(;true!=terminate;)
@@ -190,7 +193,7 @@ void TownsThread::VMMainLoop(FMTowns *townsPtr,Outside_World *outside_world,clas
 		uiThread->uiLock.unlock();
 		if(true==townsPtr->var.justLoadedState)
 		{
-			renderingThread->JustLoadedMachineState();
+			renderingThread->DiscardRunningRenderingTask();
 		}
 		else if(true==clockTicking)
 		{
@@ -200,7 +203,7 @@ void TownsThread::VMMainLoop(FMTowns *townsPtr,Outside_World *outside_world,clas
 
 	// Rendering thread may be working on local TownsRender.
 	// WaitIdle to make sure the rendering thread is done with rendering before leaving this function.
-	renderingThread->WaitIdle();
+	renderingThread->DiscardRunningRenderingTask();
 }
 void TownsThread::VMEnd(FMTowns *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread)
 {
