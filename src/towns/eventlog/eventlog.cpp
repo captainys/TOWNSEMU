@@ -285,6 +285,18 @@ std::vector <std::string> TownsEventLog::GetText(void) const
 	return text;
 }
 
+void TownsEventLog::MakeRepeat(void)
+{
+	if(0<events.size() && EVT_REPEAT!=events.back().eventType)
+	{
+		Event rept=events.back();
+		rept.t+=std::chrono::milliseconds(10);
+		rept.townsTime+=PER_SECOND/100;
+		rept.eventType=EVT_REPEAT;
+		events.push_back(rept);
+	}
+}
+
 bool TownsEventLog::SaveEventLog(std::string fName) const
 {
 	std::ofstream ofp(fName);

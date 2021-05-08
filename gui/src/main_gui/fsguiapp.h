@@ -64,6 +64,7 @@ public:
 	mutable YsWString lastSelectedCDFName;
 	mutable YsWString lastSelectedFDFName;
 	mutable YsWString lastSelectedHDFName;
+	mutable YsWString lastEventFName;
 
 	// separateProcess flag may only be changed when starting the VM.
 	bool separateProcess=false;
@@ -147,6 +148,7 @@ private:
 	YsWString GetDefaultNewDiskImageFileName(void) const;
 	YsWString GetDefaultOpenDiskImageFileName(void) const;
 	YsWString GetDefaultNewHardDiskImageFileName(void) const;
+	YsWString GetDefaultNewEventLogFileName(void) const;
 
 
 private:
@@ -263,6 +265,19 @@ private:
 	void FD1_WriteProtect(FsGuiPopUpMenuItem *);
 	void FD1_WriteUnprotect(FsGuiPopUpMenuItem *);
 	void FD1_Eject(FsGuiPopUpMenuItem *);
+
+
+	void EventLog_StartRecording(FsGuiPopUpMenuItem *);
+	void EventLog_EndRecording(FsGuiPopUpMenuItem *);
+	void EventLog_MakeRepeat(FsGuiPopUpMenuItem *);
+	void EventLog_Replay(FsGuiPopUpMenuItem *);
+	void EventLog_Stop(FsGuiPopUpMenuItem *);
+	void EventLog_Open(FsGuiPopUpMenuItem *);
+	void EventLog_Open_FileSelected(FsGuiDialog *dlg,int returnCode);
+	void EventLog_Save(FsGuiPopUpMenuItem *);
+	void EventLog_Save_FileSelected(FsGuiDialog *dlg,int returnCode);
+	void EventLog_Save_Confirm(FsGuiDialog *dlg,int returnCode);
+	void EventLog_Save_Save(YsWString fName);
 
 
 

@@ -193,6 +193,16 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 	}
 
 	{
+		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_A,L"Automation")->GetSubMenu();
+		subMenu->AddTextItem(0,FSKEY_B,"Begin Recording")->BindCallBack(&THISCLASS::EventLog_StartRecording,this);
+		subMenu->AddTextItem(0,FSKEY_E,"End Recording")->BindCallBack(&THISCLASS::EventLog_EndRecording,this);
+		subMenu->AddTextItem(0,FSKEY_R,"Make Repeat")->BindCallBack(&THISCLASS::EventLog_MakeRepeat,this);
+		subMenu->AddTextItem(0,FSKEY_P,"Play Back")->BindCallBack(&THISCLASS::EventLog_Replay,this);
+		subMenu->AddTextItem(0,FSKEY_A,"Stop Play Back")->BindCallBack(&THISCLASS::EventLog_Stop,this);
+		subMenu->AddTextItem(0,FSKEY_S,"Save Recording")->BindCallBack(&THISCLASS::EventLog_Save,this);
+	}
+
+	{
 		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_H,L"Help")->GetSubMenu();
 		subMenu->AddTextItem(0,FSKEY_H,L"Help")->BindCallBack(&THISCLASS::Help_Help,this);
 		subMenu->AddTextItem(0,FSKEY_A,L"About")->BindCallBack(&THISCLASS::Help_About,this);
@@ -627,6 +637,30 @@ YsWString FsGuiMainCanvas::GetDefaultNewHardDiskImageFileName(void) const
 
 	YsWString ful;
 	ful.MakeFullPathName(path,L"harddisk.h0");
+	return ful;
+}
+
+YsWString FsGuiMainCanvas::GetDefaultNewEventLogFileName(void) const
+{
+	YsWString fName;
+	if(0<lastEventFName.Strlen())
+	{
+		fName=lastEventFName;
+	}
+	else if(0<lastSelectedProfileFName.Strlen())
+	{
+		fName=lastSelectedProfileFName;
+	}
+	else
+	{
+		fName=profileDlg->profileFNameTxt->GetWText();
+	}
+
+	YsWString path,file;
+	fName.SeparatePathFile(path,file);
+
+	YsWString ful;
+	ful.MakeFullPathName(path,L"newevent.evt");
 	return ful;
 }
 
@@ -1871,6 +1905,159 @@ void FsGuiMainCanvas::FD1_Eject(FsGuiPopUpMenuItem *)
 		VM_Not_Running_Error();
 	}
 }
+
+
+
+////////////////////////////////////////////////////////////
+
+
+
+void FsGuiMainCanvas::EventLog_StartRecording(FsGuiPopUpMenuItem *)
+{
+	if(true==IsVMRunning())
+	{
+		SendVMCommand("ENA EVENTLOG\n");
+		ResumeVMIfSameProc();
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+void FsGuiMainCanvas::EventLog_EndRecording(FsGuiPopUpMenuItem *)
+{
+	if(true==IsVMRunning())
+	{
+		SendVMCommand("DIS EVENTLOG\n");
+		ResumeVMIfSameProc();
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+void FsGuiMainCanvas::EventLog_MakeRepeat(FsGuiPopUpMenuItem *)
+{
+	if(true==IsVMRunning())
+	{
+		SendVMCommand("DIS EVENTLOG\n");
+		SendVMCommand("MAKEREPEATEVENTLOG\n");
+		ResumeVMIfSameProc();
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+void FsGuiMainCanvas::EventLog_Replay(FsGuiPopUpMenuItem *)
+{
+	if(true==IsVMRunning())
+	{
+		SendVMCommand("DIS EVENTLOG\n");
+		SendVMCommand("PLAYEVT");
+		ResumeVMIfSameProc();
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+void FsGuiMainCanvas::EventLog_Stop(FsGuiPopUpMenuItem *)
+{
+	if(true==IsVMRunning())
+	{
+		SendVMCommand("STOPEVT\n");
+		ResumeVMIfSameProc();
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+/*
+void FsGuiMainCanvas::EventLog_Open(FsGuiPopUpMenuItem *)
+{
+}
+void FsGuiMainCanvas::EventLog_Open_FileSelected(FsGuiDialog *dlg,int returnCode)
+{
+	lastEventFName=fName;
+
+	std::string cmd="LOADEVT";
+	cmd
+	SendVMCommand(
+}
+*/
+void FsGuiMainCanvas::EventLog_Save(FsGuiPopUpMenuItem *)
+{
+	if(true==IsVMRunning())
+	{
+		auto fdlg=FsGuiDialog::CreateSelfDestructiveDialog<FsGuiFileDialog>();
+		fdlg->Initialize();
+		fdlg->mode=FsGuiFileDialog::MODE_SAVE;
+		fdlg->multiSelect=YSFALSE;
+		fdlg->title.Set(L"Save Event-Log As");
+		fdlg->fileExtensionArray.Append(L".evt");
+		fdlg->defaultFileName=GetDefaultNewEventLogFileName();
+		fdlg->BindCloseModalCallBack(&THISCLASS::EventLog_Save_FileSelected,this);
+		AttachModalDialog(fdlg);
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+void FsGuiMainCanvas::EventLog_Save_FileSelected(FsGuiDialog *dlg,int returnCode)
+{
+	auto fdlg=dynamic_cast <FsGuiFileDialog *>(dlg);
+	if(nullptr!=fdlg && (int)YSOK==returnCode)
+	{
+		auto fName=fdlg->selectedFileArray[0];
+		if(YSTRUE==YsFileIO::CheckFileExist(fName))
+		{
+			auto dlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialogWithPayload<YsWString> >();
+			dlg->payload=fName;
+			dlg->Make(L"Overwrite Event Log?",L"Are you sure?",L"Yes",L"No");
+			dlg->BindCloseModalCallBack(&FsGuiMainCanvas::EventLog_Save_Confirm,this);
+			AttachModalDialog(dlg);
+		}
+		else
+		{
+			EventLog_Save_Save(fName);
+		}
+	}
+}
+void FsGuiMainCanvas::EventLog_Save_Confirm(FsGuiDialog *dlgIn,int returnCode)
+{
+	auto dlg=dynamic_cast <FsGuiMessageBoxDialogWithPayload<YsWString> *>(dlgIn);
+	if(nullptr!=dlg && (int)YSOK==returnCode)
+	{
+		EventLog_Save_Save(dlg->payload);
+	}
+}
+void FsGuiMainCanvas::EventLog_Save_Save(YsWString fName)
+{
+	YsString utf8;
+	utf8.EncodeUTF8(fName.data());
+
+	SendVMCommand("DIS EVENTLOG\n");
+
+	YsString cmd;
+	cmd="SAVEEVT \"";
+	cmd.Append(utf8);
+	cmd.Append("\"");
+	cmd.Append("\n");
+	SendVMCommand(cmd.data());
+	ResumeVMIfSameProc();
+
+	lastEventFName=fName;
+}
+
+
+
+////////////////////////////////////////////////////////////
+
+
+
 void FsGuiMainCanvas::Help_About(FsGuiPopUpMenuItem *)
 {
 	auto msgDlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialog>();

@@ -95,6 +95,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["LOADEVT"]=CMD_LOAD_EVENTLOG;
 	primaryCmdMap["PLAYEVT"]=CMD_PLAY_EVENTLOG;
 	primaryCmdMap["STOPEVT"]=CMD_STOP_EVENTLOG;
+	primaryCmdMap["MAKEREPEATEVENTLOG"]=CMD_MAKE_REPEAT_EVENTLOG;
 
 	primaryCmdMap["SYM"]=CMD_PRINT_SYMBOL;
 	primaryCmdMap["SYMLAB"]=CMD_PRINT_SYMBOL_LABEL_PROC;
@@ -903,6 +904,10 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 	case CMD_STOP_EVENTLOG:
 		printf("Stop Event-Log Playback.\n");
 		towns.eventLog.StopPlayBack();
+		break;
+	case CMD_MAKE_REPEAT_EVENTLOG:
+		printf("Make Event-Log Repeat.\n");
+		towns.eventLog.MakeRepeat();
 		break;
 	case CMD_SAVE_KEYMAP:
 		Execute_SaveKeyMap(*outside_world,cmd);

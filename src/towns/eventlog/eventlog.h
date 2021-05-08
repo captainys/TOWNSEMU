@@ -133,6 +133,8 @@ public:
 
 	std::vector <std::string> GetText(void) const;
 
+	void MakeRepeat(void);
+
 	bool SaveEventLog(std::string fName) const;
 	bool LoadEventLog(std::string fName);
 };
