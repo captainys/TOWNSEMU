@@ -602,58 +602,69 @@ bool FMTowns::ControlMouse(int &diffX,int &diffY,int hostMouseX,int hostMouseY,u
 
 		diffX=hostMouseX-mx;
 		diffY=hostMouseY-my;
-
-		if(state.MOS_pulsePerPixelH<8)
-		{
-			diffX*=state.MOS_pulsePerPixelH;
-			diffX/=8;
-		}
-		if(state.MOS_pulsePerPixelV<8)
-		{
-			diffY*=state.MOS_pulsePerPixelV;
-			diffY/=8;
-		}
-
-		int speed=state.mouseIntegrationSpeed;
-		if(TOWNS_APPSPECIFIC_OPERATIONWOLF==state.appSpecificSetting)
-		{
-			speed*=2;
-		}
-
-		auto dx=ScaleStep(ClampStep(diffX),speed);
-		auto dy=ScaleStep(ClampStep(diffY),speed);
-		if(-slowDownRange<=dx && dx<=slowDownRange)
-		{
-			if(dx<0)
-			{
-				dx=-1;
-			}
-			else if(0<dx)
-			{
-				dx=1;
-			}
-		}
-		if(-slowDownRange<=dy && dy<=slowDownRange)
-		{
-			if(dy<0)
-			{
-				dy=-1;
-			}
-			else if(0<dy)
-			{
-				dy=1;
-			}
-		}
-		for(auto &p : gameport.state.ports)
-		{
-			if(p.device==TownsGamePort::MOUSE)
-			{
-				p.mouseMotion.Set(-dx,-dy);
-			}
-		}
-		return true;
+		return ControlMouseByDiff(diffX,diffY,tbiosid,slowDownRange);
 	}
 	return false;
+}
+
+bool FMTowns::ControlMouseInVMCoord(int goalMouseX,int goalMouseY,unsigned int tbiosid)
+{
+	int mx,my;
+	GetMouseCoordinate(mx,my,tbiosid);
+	return ControlMouseByDiff(goalMouseX-mx,goalMouseY-my,tbiosid);
+}
+
+bool FMTowns::ControlMouseByDiff(int diffX,int diffY,unsigned int tbiosid,int slowDownRange)
+{
+	if(state.MOS_pulsePerPixelH<8)
+	{
+		diffX*=state.MOS_pulsePerPixelH;
+		diffX/=8;
+	}
+	if(state.MOS_pulsePerPixelV<8)
+	{
+		diffY*=state.MOS_pulsePerPixelV;
+		diffY/=8;
+	}
+
+	int speed=state.mouseIntegrationSpeed;
+	if(TOWNS_APPSPECIFIC_OPERATIONWOLF==state.appSpecificSetting)
+	{
+		speed*=2;
+	}
+
+	auto dx=ScaleStep(ClampStep(diffX),speed);
+	auto dy=ScaleStep(ClampStep(diffY),speed);
+	if(-slowDownRange<=dx && dx<=slowDownRange)
+	{
+		if(dx<0)
+		{
+			dx=-1;
+		}
+		else if(0<dx)
+		{
+			dx=1;
+		}
+	}
+	if(-slowDownRange<=dy && dy<=slowDownRange)
+	{
+		if(dy<0)
+		{
+			dy=-1;
+		}
+		else if(0<dy)
+		{
+			dy=1;
+		}
+	}
+	for(auto &p : gameport.state.ports)
+	{
+		if(p.device==TownsGamePort::MOUSE)
+		{
+			p.mouseMotion.Set(-dx,-dy);
+		}
+	}
+	return true;
 }
 
 void FMTowns::DontControlMouse(void)

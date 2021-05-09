@@ -500,7 +500,7 @@ void TownsEventLog::Playback(class FMTowns &towns)
 			case EVT_LBUTTONDOWN:
 				if(dt/2<tPassed)
 				{
-					towns.ControlMouse(playbackPtr->mos.x(),playbackPtr->mos.y(),towns.state.tbiosVersion);
+					towns.ControlMouseInVMCoord(playbackPtr->mos.x(),playbackPtr->mos.y(),towns.state.tbiosVersion);
 					int mx,my;
 					towns.GetMouseCoordinate(mx,my,towns.state.tbiosVersion);
 					if(mx==playbackPtr->mos.x() && my==playbackPtr->mos.y() && dt<=tPassed)
@@ -515,7 +515,7 @@ void TownsEventLog::Playback(class FMTowns &towns)
 			case EVT_LBUTTONUP:
 				if(dt/2<tPassed)
 				{
-					towns.ControlMouse(playbackPtr->mos.x(),playbackPtr->mos.y(),towns.state.tbiosVersion);
+					towns.ControlMouseInVMCoord(playbackPtr->mos.x(),playbackPtr->mos.y(),towns.state.tbiosVersion);
 					int mx,my;
 					towns.GetMouseCoordinate(mx,my,towns.state.tbiosVersion);
 					if(mx==playbackPtr->mos.x() && my==playbackPtr->mos.y() && dt<=tPassed)
@@ -530,7 +530,7 @@ void TownsEventLog::Playback(class FMTowns &towns)
 			case EVT_RBUTTONDOWN:
 				if(dt/2<tPassed)
 				{
-					towns.ControlMouse(playbackPtr->mos.x(),playbackPtr->mos.y(),towns.state.tbiosVersion);
+					towns.ControlMouseInVMCoord(playbackPtr->mos.x(),playbackPtr->mos.y(),towns.state.tbiosVersion);
 					int mx,my;
 					towns.GetMouseCoordinate(mx,my,towns.state.tbiosVersion);
 					if(mx==playbackPtr->mos.x() && my==playbackPtr->mos.y() && dt<=tPassed)
@@ -545,7 +545,7 @@ void TownsEventLog::Playback(class FMTowns &towns)
 			case EVT_RBUTTONUP:
 				if(dt/2<tPassed)
 				{
-					towns.ControlMouse(playbackPtr->mos.x(),playbackPtr->mos.y(),towns.state.tbiosVersion);
+					towns.ControlMouseInVMCoord(playbackPtr->mos.x(),playbackPtr->mos.y(),towns.state.tbiosVersion);
 					int mx,my;
 					towns.GetMouseCoordinate(mx,my,towns.state.tbiosVersion);
 					if(mx==playbackPtr->mos.x() && my==playbackPtr->mos.y() && dt<=tPassed)

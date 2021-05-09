@@ -431,6 +431,13 @@ public:
 	bool ControlMouse(int hostMouseX,int houstMouseY,unsigned int tbiosid);
 	bool ControlMouse(int &diffX,int &diffY,int hostMouseX,int houstMouseY,unsigned int tbiosid);
 
+	/*! Control mouse return.  The difference from ControlMouse is the input x and y are in the Towns's
+	    mouse coordinate.
+	*/
+	bool ControlMouseInVMCoord(int goalMouseX,int goalMouseY,unsigned int tbiosid);
+
+	bool ControlMouseByDiff(int diffX,int diffY,unsigned int tbiosid,int slowDownRange=0);
+
 
 	/*! Get Wing Commander set-speed and max-speed.
 	    Only available when App-Specific augmentation is turned on.
