@@ -235,51 +235,57 @@ void TownsEventLog::LogKeyCode(long long int townsTime,unsigned char keyCode1,un
 std::vector <std::string> TownsEventLog::GetText(void) const
 {
 	std::vector <std::string> text;
-	for(auto e : events)
+	if(0<events.size())
 	{
-		text.push_back("EVT ");
-		text.back()+=EventTypeToString(e.eventType);
-
-		text.push_back("T ");
-		text.back()+=cpputil::Uitoa((int)(std::chrono::duration_cast <std::chrono::milliseconds>(e.t).count()));
-		text.back()+="ms";
-
-		text.push_back("TWT ");
-		text.back()+=cpputil::Uitoa((int)((e.townsTime-townsTime0)/1000000));
-		text.back()+="ms";
-
-		switch(e.eventType)
+		auto prev=events.front();
+		for(auto e : events)
 		{
-		case EVT_LBUTTONDOWN:
-		case EVT_LBUTTONUP:
-		case EVT_RBUTTONDOWN:
-		case EVT_RBUTTONUP:
-			text.push_back("MOS ");
-			text.back()+=cpputil::Uitoa(e.mos.x());
-			text.back()+=" ";
-			text.back()+=cpputil::Uitoa(e.mos.y());
-			break;
-		case EVT_TBIOS_MOS_START:
-		case EVT_TBIOS_MOS_END:
-			break;
-		case EVT_FILE_OPEN:  // INT 21H AH=3DH
-		case EVT_FILE_EXEC:  // INT 21H AH=4BH
-			text.push_back("FNAME ");
-			text.back().push_back('\"');
-			text.back()+=e.fName;
-			text.back().push_back('\"');
-			break;
-		case EVT_KEYCODE:
-			text.push_back("KEYCODE ");
-			text.back()+=cpputil::Ubtox(e.keyCode[0]);
-			text.back()+=" ";
-			text.back()+=cpputil::Ubtox(e.keyCode[1]);
-			break;
-		case EVT_KEYPRESS:
-		case EVT_KEYRELEASE:
-			text.push_back("KEY ");
-			text.back()+=TownsKeyCodeToStr(e.keyCode[0]);
-			break;
+			text.push_back("EVT ");
+			text.back()+=EventTypeToString(e.eventType);
+
+			text.push_back("DELTAT ");
+			text.back()+=cpputil::Uitoa((int)(std::chrono::duration_cast <std::chrono::milliseconds>(e.t-prev.t).count()));
+			text.back()+="ms";
+
+			text.push_back("TWT ");
+			text.back()+=cpputil::Uitoa((int)((e.townsTime-townsTime0)/1000000));
+			text.back()+="ms";
+
+			switch(e.eventType)
+			{
+			case EVT_LBUTTONDOWN:
+			case EVT_LBUTTONUP:
+			case EVT_RBUTTONDOWN:
+			case EVT_RBUTTONUP:
+				text.push_back("MOS ");
+				text.back()+=cpputil::Uitoa(e.mos.x());
+				text.back()+=" ";
+				text.back()+=cpputil::Uitoa(e.mos.y());
+				break;
+			case EVT_TBIOS_MOS_START:
+			case EVT_TBIOS_MOS_END:
+				break;
+			case EVT_FILE_OPEN:  // INT 21H AH=3DH
+			case EVT_FILE_EXEC:  // INT 21H AH=4BH
+				text.push_back("FNAME ");
+				text.back().push_back('\"');
+				text.back()+=e.fName;
+				text.back().push_back('\"');
+				break;
+			case EVT_KEYCODE:
+				text.push_back("KEYCODE ");
+				text.back()+=cpputil::Ubtox(e.keyCode[0]);
+				text.back()+=" ";
+				text.back()+=cpputil::Ubtox(e.keyCode[1]);
+				break;
+			case EVT_KEYPRESS:
+			case EVT_KEYRELEASE:
+				text.push_back("KEY ");
+				text.back()+=TownsKeyCodeToStr(e.keyCode[0]);
+				break;
+			}
+
+			prev=e;
 		}
 	}
 	return text;
@@ -362,6 +368,26 @@ bool TownsEventLog::LoadEventLog(std::string fName)
 					if(2<=argv.size())
 					{
 						events.back().t=std::chrono::milliseconds(cpputil::Atoi(argv[1].c_str()));
+					}
+					else
+					{
+						std::cout << "Too few arguments" << std::endl;
+						std::cout << "  " << line << std::endl;
+						return false;
+					}
+				}
+				else if("DELTAT"==argv[0])
+				{
+					if(2<=argv.size())
+					{
+						if(1<events.size())
+						{
+							auto iter=events.end();
+							--iter;
+							--iter;
+							auto prev=*iter;
+							events.back().t=prev.t+std::chrono::milliseconds(cpputil::Atoi(argv[1].c_str()));
+						}
 					}
 					else
 					{

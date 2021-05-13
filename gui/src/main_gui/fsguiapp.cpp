@@ -200,6 +200,7 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 		subMenu->AddTextItem(0,FSKEY_P,"Play Back")->BindCallBack(&THISCLASS::EventLog_Replay,this);
 		subMenu->AddTextItem(0,FSKEY_A,"Stop Play Back")->BindCallBack(&THISCLASS::EventLog_Stop,this);
 		subMenu->AddTextItem(0,FSKEY_S,"Save Recording")->BindCallBack(&THISCLASS::EventLog_Save,this);
+		subMenu->AddTextItem(0,FSKEY_O,"Open Recording")->BindCallBack(&THISCLASS::EventLog_Open,this);
 	}
 
 	{
@@ -1974,19 +1975,52 @@ void FsGuiMainCanvas::EventLog_Stop(FsGuiPopUpMenuItem *)
 		VM_Not_Running_Error();
 	}
 }
-/*
+
 void FsGuiMainCanvas::EventLog_Open(FsGuiPopUpMenuItem *)
 {
+	if(true==IsVMRunning())
+	{
+		auto fdlg=FsGuiDialog::CreateSelfDestructiveDialog<FsGuiFileDialog>();
+		fdlg->Initialize();
+		fdlg->mode=FsGuiFileDialog::MODE_OPEN;
+		fdlg->multiSelect=YSFALSE;
+		fdlg->title.Set(L"Open Event-Log");
+		fdlg->fileExtensionArray.Append(L".evt");
+		fdlg->defaultFileName=GetDefaultNewEventLogFileName();
+		fdlg->BindCloseModalCallBack(&THISCLASS::EventLog_Open_FileSelected,this);
+		AttachModalDialog(fdlg);
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
 }
 void FsGuiMainCanvas::EventLog_Open_FileSelected(FsGuiDialog *dlg,int returnCode)
 {
-	lastEventFName=fName;
+	auto fdlg=dynamic_cast <FsGuiFileDialog *>(dlg);
+	if(nullptr!=fdlg && (int)YSOK==returnCode)
+	{
+		auto fName=fdlg->selectedFileArray[0];
 
-	std::string cmd="LOADEVT";
-	cmd
-	SendVMCommand(
+		YsString utf8;
+		utf8.EncodeUTF8(fName.data());
+
+		lastEventFName=fName;
+
+		SendVMCommand("DIS EVENTLOG\n");
+
+		YsString cmd;
+		cmd="LOADEVT \"";
+		cmd.Append(utf8);
+		cmd.Append("\"");
+		cmd.Append("\n");
+		SendVMCommand(cmd.data());
+		ResumeVMIfSameProc();
+
+		lastEventFName=fName;
+	}
 }
-*/
+
 void FsGuiMainCanvas::EventLog_Save(FsGuiPopUpMenuItem *)
 {
 	if(true==IsVMRunning())

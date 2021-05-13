@@ -216,7 +216,7 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 			iconHei=MENU_hei;
 			break;
 		}
-		if(wid-iconWid<mx && hei<iconHei<my)
+		if(wid-iconWid<mx && hei-iconHei<my)
 		{
 			this->pauseKey=true;
 		}
