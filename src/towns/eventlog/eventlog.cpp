@@ -283,6 +283,13 @@ std::vector <std::string> TownsEventLog::GetText(void) const
 				text.push_back("KEY ");
 				text.back()+=TownsKeyCodeToStr(e.keyCode[0]);
 				break;
+			case EVT_REPEAT:
+				if(REP_INFINITY!=e.repCountMax)
+				{
+					text.push_back("REPCOUNT ");
+					text.back()+=cpputil::Uitoa(e.repCountMax);
+				}
+				break;
 			}
 
 			prev=e;
@@ -456,6 +463,13 @@ bool TownsEventLog::LoadEventLog(std::string fName)
 					if(2<=argv.size())
 					{
 						events.back().keyCode[0]=TownsStrToKeyCode(argv[1]);
+					}
+				}
+				else if("REPCOUNT"==argv[0])
+				{
+					if(2<=argv.size())
+					{
+						events.back().repCountMax=cpputil::Atoi(argv[1].c_str());
 					}
 				}
 			}
@@ -643,6 +657,16 @@ void TownsEventLog::Playback(class FMTowns &towns)
 			case EVT_REPEAT:
 				if(dt<=tPassed)
 				{
+					if(REP_INFINITY!=playbackPtr->repCountMax)
+					{
+						++(playbackPtr->repCount);
+						if(playbackPtr->repCountMax<=playbackPtr->repCount)
+						{
+							playbackPtr->repCount=0;
+							++playbackPtr;
+							break;
+						}
+					}
 					playbackPtr=events.begin();
 					t0=now;
 				}

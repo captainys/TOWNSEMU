@@ -54,6 +54,11 @@ public:
 	NUMBER_OF_EVENT_TYPES
 	};
 
+	enum
+	{
+		REP_INFINITY=0x7fffffff
+	};
+
 	class Event
 	{
 	public:
@@ -64,6 +69,7 @@ public:
 		Vec2i mos;
 		std::string fName;
 		unsigned char keyCode[2];
+		int repCount=0,repCountMax=REP_INFINITY;
 	};
 
 	int mode=MODE_NONE;
