@@ -114,6 +114,38 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 		winY0=48;
 	}
 
+
+	// In tight GUI integration, FsResizeWindow will re-enter OnDraw call-back, and will crash inside
+	// unless bitmaps are ready.  Do it before FsResizeWindow.
+
+	// Make PAUSE and MENU icons.  Used only in the tightly-integrated GUI.
+	PAUSEicon.resize(4*PAUSE_wid*PAUSE_hei);
+	MENUicon.resize(4*MENU_wid*MENU_hei);
+	for(int y=0; y<PAUSE_hei; ++y)
+	{
+		int Y=PAUSE_hei-1-y;
+		for(int x=0; x<PAUSE_wid; ++x)
+		{
+			PAUSEicon[(y*PAUSE_wid+x)*4  ]=PAUSE[(Y*PAUSE_wid+x)*4  ];
+			PAUSEicon[(y*PAUSE_wid+x)*4+1]=PAUSE[(Y*PAUSE_wid+x)*4+1];
+			PAUSEicon[(y*PAUSE_wid+x)*4+2]=PAUSE[(Y*PAUSE_wid+x)*4+2];
+			PAUSEicon[(y*PAUSE_wid+x)*4+3]=PAUSE[(Y*PAUSE_wid+x)*4+3];
+		}
+	}
+	for(int y=0; y<MENU_hei; ++y)
+	{
+		int Y=MENU_hei-1-y;
+		for(int x=0; x<MENU_wid; ++x)
+		{
+			MENUicon[(y*MENU_wid+x)*4  ]=MENU[(Y*MENU_wid+x)*4  ];
+			MENUicon[(y*MENU_wid+x)*4+1]=MENU[(Y*MENU_wid+x)*4+1];
+			MENUicon[(y*MENU_wid+x)*4+2]=MENU[(Y*MENU_wid+x)*4+2];
+			MENUicon[(y*MENU_wid+x)*4+3]=MENU[(Y*MENU_wid+x)*4+3];
+		}
+	}
+
+
+
 	if(0==FsCheckWindowOpen())
 	{
 		FsOpenWindow(0,winY0,wid,hei+STATUS_HEI,1);
@@ -151,32 +183,6 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 	for(int hdd=0; hdd<6; ++hdd)
 	{
 		Put16x16Invert(48+16*hdd,15,HDD_IDLE);
-	}
-
-	// Make PAUSE and MENU icons.  Used only in the tightly-integrated GUI.
-	PAUSEicon.resize(4*PAUSE_wid*PAUSE_hei);
-	MENUicon.resize(4*MENU_wid*MENU_hei);
-	for(int y=0; y<PAUSE_hei; ++y)
-	{
-		int Y=PAUSE_hei-1-y;
-		for(int x=0; x<PAUSE_wid; ++x)
-		{
-			PAUSEicon[(y*PAUSE_wid+x)*4  ]=PAUSE[(Y*PAUSE_wid+x)*4  ];
-			PAUSEicon[(y*PAUSE_wid+x)*4+1]=PAUSE[(Y*PAUSE_wid+x)*4+1];
-			PAUSEicon[(y*PAUSE_wid+x)*4+2]=PAUSE[(Y*PAUSE_wid+x)*4+2];
-			PAUSEicon[(y*PAUSE_wid+x)*4+3]=PAUSE[(Y*PAUSE_wid+x)*4+3];
-		}
-	}
-	for(int y=0; y<MENU_hei; ++y)
-	{
-		int Y=MENU_hei-1-y;
-		for(int x=0; x<MENU_wid; ++x)
-		{
-			MENUicon[(y*MENU_wid+x)*4  ]=MENU[(Y*MENU_wid+x)*4  ];
-			MENUicon[(y*MENU_wid+x)*4+1]=MENU[(Y*MENU_wid+x)*4+1];
-			MENUicon[(y*MENU_wid+x)*4+2]=MENU[(Y*MENU_wid+x)*4+2];
-			MENUicon[(y*MENU_wid+x)*4+3]=MENU[(Y*MENU_wid+x)*4+3];
-		}
 	}
 }
 /* virtual */ void FsSimpleWindowConnection::Stop(void)
