@@ -578,6 +578,14 @@ unsigned int TownsStrToApp(std::string str)
 	{
 		return TOWNS_APPSPECIFIC_AIRWARRIOR_V2;
 	}
+	if("DUNGEONMASTER_JP"==str || "DUNMASJ"==str)
+	{
+		return TOWNS_APPSPECIFIC_DUNGEONMASTER_JP;
+	}
+	if("DUNGEONMASTER_EN"==str || "DUNMASE"==str)
+	{
+		return TOWNS_APPSPECIFIC_DUNGEONMASTER_EN;
+	}
 	return TOWNS_APPSPECIFIC_NONE;
 }
 std::string TownsAppToStr(unsigned int i)
@@ -608,6 +616,10 @@ std::string TownsAppToStr(unsigned int i)
 		return "BRANDISH";
 	case TOWNS_APPSPECIFIC_AIRWARRIOR_V2:
 		return "AIRWARRIORV2";
+	case TOWNS_APPSPECIFIC_DUNGEONMASTER_JP:
+		return "DUNGEONMASTER_JP";
+	case TOWNS_APPSPECIFIC_DUNGEONMASTER_EN:
+		return "DUNGEONMASTER_EN";
 	}
 }
 

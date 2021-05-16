@@ -52,6 +52,120 @@ void TownsKeyboard::SetAutoType(std::string str)
 
 void TownsKeyboard::PushFifo(unsigned char code1,unsigned char code2)
 {
+	if(TOWNS_APPSPECIFIC_DUNGEONMASTER_JP==townsPtr->state.appSpecificSetting ||
+	   TOWNS_APPSPECIFIC_DUNGEONMASTER_EN==townsPtr->state.appSpecificSetting)
+	{
+		int Yoffset=(TOWNS_APPSPECIFIC_DUNGEONMASTER_JP==townsPtr->state.appSpecificSetting ? 8 : 0);
+
+		if(TOWNS_JISKEY_PF01==code2 || //   0x5D,
+		   TOWNS_JISKEY_PF02==code2 || //   0x5E,
+		   TOWNS_JISKEY_PF03==code2 || //   0x5F,
+		   TOWNS_JISKEY_PF04==code2) //   0x60,
+		{
+			code2=(code2-TOWNS_JISKEY_PF01)+TOWNS_JISKEY_1;
+		}
+		else if(0==(TOWNS_KEYFLAG_RELEASE&code1))
+		{
+			switch(code2)
+			{
+			case TOWNS_JISKEY_1: //         0x02,
+			case TOWNS_JISKEY_2: //         0x03,
+			case TOWNS_JISKEY_3: //         0x04,
+			case TOWNS_JISKEY_4: //         0x05,
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Dunmas_Spell_Char(code2-TOWNS_JISKEY_1,Yoffset);
+				townsPtr->eventLog.BeginPlayback();
+				return;
+			case TOWNS_JISKEY_Q:
+				townsPtr->Dunmas_Spell_Level(0);
+				return;
+			case TOWNS_JISKEY_W:
+				townsPtr->Dunmas_Spell_Level(1);
+				return;
+			case TOWNS_JISKEY_E:
+				townsPtr->Dunmas_Spell_Level(2);
+				return;
+			case TOWNS_JISKEY_R:
+				townsPtr->Dunmas_Spell_Level(3);
+				return;
+			case TOWNS_JISKEY_T:
+				townsPtr->Dunmas_Spell_Level(4);
+				return;
+			case TOWNS_JISKEY_Y:
+				townsPtr->Dunmas_Spell_Level(5);
+				return;
+			case TOWNS_JISKEY_RETURN:
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Dunmas_Spell_FourFireballs(Yoffset);
+				townsPtr->eventLog.BeginPlayback();
+				return;
+			case TOWNS_JISKEY_L:
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Dunmas_Spell_Light(Yoffset);
+				townsPtr->eventLog.BeginPlayback();
+				return;
+			case TOWNS_JISKEY_O:
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Dunmas_Spell_Torch(Yoffset);
+				townsPtr->eventLog.BeginPlayback();
+				return;
+			case TOWNS_JISKEY_I:
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Dunmas_Spell_MakeLifePotion(Yoffset);
+				townsPtr->eventLog.BeginPlayback();
+				return;
+			case TOWNS_JISKEY_P:
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Dunmas_Spell_MakeDetoxPotion(Yoffset);
+				townsPtr->eventLog.BeginPlayback();
+				return;
+			case TOWNS_JISKEY_M:
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Dunmas_Spell_MakeStaminaPotion(Yoffset);
+				townsPtr->eventLog.BeginPlayback();
+				return;
+			case TOWNS_JISKEY_D:
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Dunmas_Spell_Defense(Yoffset);
+				townsPtr->eventLog.BeginPlayback();
+				return;
+			case TOWNS_JISKEY_S:
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Dunmas_Spell_FireDefense(Yoffset);
+				townsPtr->eventLog.BeginPlayback();
+				return;
+			case TOWNS_JISKEY_F:
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Dunmas_Spell_Fireball(Yoffset);
+				townsPtr->eventLog.BeginPlayback();
+				return;
+			case TOWNS_JISKEY_B:
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Dunmas_Spell_LightningBolt(Yoffset);
+				townsPtr->eventLog.BeginPlayback();
+				return;
+			case TOWNS_JISKEY_V:
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Dunmas_Spell_SeeThrough(Yoffset);
+				townsPtr->eventLog.BeginPlayback();
+				return;
+			case TOWNS_JISKEY_SPACE:
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Dunmas_FrontRow_Attack(0,TOWNS_KEYFLAG_SHIFT&code1,Yoffset);
+				townsPtr->eventLog.BeginPlayback();
+				return;
+			case TOWNS_JISKEY_TAB:
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Dunmas_All_Attack(0,TOWNS_KEYFLAG_SHIFT&code1,Yoffset);
+				townsPtr->eventLog.BeginPlayback();
+				return;
+			case TOWNS_JISKEY_ESC:
+				townsPtr->eventLog.StopPlayBack();
+				return;
+			}
+		}
+	}
+
 	if(TownsEventLog::MODE_RECORDING==townsPtr->eventLog.mode)
 	{
 		townsPtr->eventLog.LogKeyCode(townsPtr->state.townsTime,code1,code2);

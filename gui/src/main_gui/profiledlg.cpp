@@ -375,6 +375,8 @@ void ProfileDialog::Make(void)
 		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_ULTIMAUNDERWORLD).c_str(),YSFALSE);
 		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_WINGCOMMANDER1).c_str(),YSFALSE);
 		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_WINGCOMMANDER2).c_str(),YSFALSE);
+		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_DUNGEONMASTER_JP).c_str(),YSFALSE);
+		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_DUNGEONMASTER_EN).c_str(),YSFALSE);
 
 		appSpecificExplanation=AddStaticText(0,FSKEY_NULL,L"",YSTRUE);
 

@@ -34,6 +34,18 @@ void TownsEventLog::CleanUp(void)
 {
 	events.clear();
 }
+void TownsEventLog::AddEvent(Event e)
+{
+	if(events.size()==0)
+	{
+		e.t=std::chrono::milliseconds(0);
+	}
+	else
+	{
+		e.t+=events.back().t;
+	}
+	events.push_back(e);
+}
 void TownsEventLog::BeginRecording(long long int townsTime)
 {
 	CleanUp();

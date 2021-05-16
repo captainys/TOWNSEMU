@@ -230,7 +230,17 @@ bool FMTowns::LoadState(std::string fName,class Outside_World &outsideWorld)
 
 	state.DOSSEG=ReadUint16(data);
 
-	state.appSpecificSetting=ReadUint32(data);
+	// If the user chose an app-specific setting on start, it shouldn't override it.
+	// For example, if start Dungeon Master without app-specific setting, and then later want to
+	// turn it on, the start-up setting should have priority.
+	if(TOWNS_APPSPECIFIC_NONE==state.appSpecificSetting)
+	{
+		state.appSpecificSetting=ReadUint32(data);
+	}
+	else
+	{
+		ReadUint32(data); // Dummy read
+	}
 	state.appSpecific_MousePtrX=ReadUint32(data);
 	state.appSpecific_MousePtrY=ReadUint32(data);
 	state.appSpecific_StickPosXPtr=ReadUint32(data);

@@ -87,6 +87,11 @@ public:
 	void CleanUp(void);
 
 
+	/*! Programatically add an event.
+	    e.t is taken as the duration.
+	*/
+	void AddEvent(Event e);
+
 
 	/*! Sets t0 to std::chrono::system_clock::now().
 	*/

@@ -198,6 +198,7 @@ public:
 		uint32_t appSpecific_WC_setSpeedPtr=0;
 		uint32_t appSpecific_WC_maxSpeedPtr=0;
 		bool appSpecific_HoldMouseIntegration=false;
+		uint32_t appSpecific_Dunmas_SpellPower=0; // Won't be saved in state.
 
 		void PowerOn(void);
 		void Reset(void);
@@ -633,6 +634,25 @@ public:
 	virtual uint32_t SerializeVersion(void) const;
 	virtual void SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const;
 	virtual bool SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version);
+
+
+	// Dungeon Master Keyboard Shortcut
+	// Yoffset is needed because click coordinate is shifted about 8 pixels down in Japanese mode.
+	void Dunmas_Spell_Char(int charNum,int Yoffset);
+	void Dunmas_Spell_Level(int level);
+	void Dunmas_Spell_Light(int Yoffset);
+	void Dunmas_Spell_Torch(int Yoffset);
+	void Dunmas_Spell_SeeThrough(int Yoffset);
+	void Dunmas_Spell_MakeLifePotion(int Yoffset);
+	void Dunmas_Spell_MakeDetoxPotion(int Yoffset);
+	void Dunmas_Spell_MakeStaminaPotion(int Yoffset);
+	void Dunmas_Spell_Fireball(int Yoffset);
+	void Dunmas_Spell_FourFireballs(int Yoffset);
+	void Dunmas_Spell_LightningBolt(int Yoffset);
+	void Dunmas_Spell_Defense(int Yoffset);
+	void Dunmas_Spell_FireDefense(int Yoffset);
+	void Dunmas_FrontRow_Attack(int level,bool continuous,int Yoffset);
+	void Dunmas_All_Attack(int level,bool continuous,int Yoffset);
 };
 
 
