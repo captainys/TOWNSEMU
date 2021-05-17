@@ -33,12 +33,12 @@ static void Dunmas_PushBack_MouseClick(TownsEventLog &eventLog,int x,int y)
 {
 	TownsEventLog::Event e;
 	e.eventType=TownsEventLog::EVT_LBUTTONDOWN;
-	e.t=std::chrono::milliseconds(50);
+	e.t=std::chrono::milliseconds(75);
 	e.mos.Set(x,y);
 	eventLog.AddEvent(e);
 
 	e.eventType=TownsEventLog::EVT_LBUTTONUP;
-	e.t=std::chrono::milliseconds(50);
+	e.t=std::chrono::milliseconds(75);
 	e.mos.Set(x,y);
 	eventLog.AddEvent(e);
 }
