@@ -131,6 +131,19 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 	{
 		if(CYBERSTICK_BOOT_IDLE_TIME<townsTime)
 		{
+			//  +0 Btn high 4 bits
+			//  +1 Btn low 4 bits
+			//  +2 Y high 4 bits
+			//  +3 X high 4 bits
+			//  +4 Pow high 4 bits
+			//  +5 Trim high 4 bits?
+			//  +6 Y low 4 bits
+			//  +7 X low 4 bits
+			//  +8 Pow low 4 bits
+			//  +9 Trim low 4 bits?
+			// +10 Btn ? 4 bits
+			// +11 Unused?
+
 			// Trigger Bits (Active Low)
 			//         0 Select
 			//         1 Start
@@ -163,10 +176,12 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 			cyberTrig|=((trig&0x008) ? 0x010 : 0);
 			cyberTrig|=((trig&0x010) ? 0x200 : 0);
 			cyberTrig|=((trig&0x020) ? 0x100 : 0);
-			cyberTrig|=((trig&0x040) ? 0x008 : 0);
-			cyberTrig|=((trig&0x080) ? 0x004 : 0);
+			cyberTrig|=((trig&0x040) ? 0x080 : 0);
+			cyberTrig|=((trig&0x080) ? 0x040 : 0);
 			cyberTrig|=((trig&0x100) ? 0x001 : 0);
 			cyberTrig|=((trig&0x200) ? 0x002 : 0);
+			cyberTrig|=((trig&0x400) ? 0x004 : 0);
+			cyberTrig|=((trig&0x800) ? 0x008 : 0);
 			cyberTrig=~cyberTrig;
 
 			switch(state)

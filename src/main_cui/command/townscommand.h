@@ -172,6 +172,8 @@ public:
 
 		CMD_SAVE_STATE,
 		CMD_LOAD_STATE,
+
+		CMD_GAMEPORT,
 	};
 
 	enum
@@ -371,6 +373,8 @@ public:
 	void Execute_SpecialDebug(FMTowns &towns,Command &cmd);
 
 	void Execute_SaveMemDump(FMTowns &towns,Command &cmd);
+
+	void Execute_Gameport(FMTowns &towns,Outside_World *outside_world,Command &cmd);
 };
 
 

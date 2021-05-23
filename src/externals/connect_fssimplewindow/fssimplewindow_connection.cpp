@@ -903,6 +903,10 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 						trig|=(axisReading.buttons[5] ? 0x20 : 0);
 						trig|=(axisReading.buttons[6] ? 0x40 : 0);
 						trig|=(axisReading.buttons[7] ? 0x80 : 0);
+						trig|=(axisReading.buttons[8] ? 0x100 : 0);
+						trig|=(axisReading.buttons[9] ? 0x200 : 0);
+						trig|=(axisReading.buttons[10] ? 0x400 : 0);
+						trig|=(axisReading.buttons[11] ? 0x800 : 0);
 						towns.SetCyberStickState(portId,ix,iy,iz,trig);
 					}
 				}
@@ -943,6 +947,10 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 					trig|=((axisReading.buttons[5] || throttleReading.buttons[5]) ? 0x20 : 0);
 					trig|=((axisReading.buttons[6] || throttleReading.buttons[6]) ? 0x40 : 0);
 					trig|=((axisReading.buttons[7] || throttleReading.buttons[7]) ? 0x80 : 0);
+					trig|=((axisReading.buttons[8] || throttleReading.buttons[8]) ? 0x100 : 0);
+					trig|=((axisReading.buttons[9] || throttleReading.buttons[9]) ? 0x200 : 0);
+					trig|=((axisReading.buttons[10] || throttleReading.buttons[10]) ? 0x400 : 0);
+					trig|=((axisReading.buttons[11] || throttleReading.buttons[11]) ? 0x800 : 0);
 					towns.SetCyberStickState(portId,ix,iy,iz,trig);
 				}
 				break;

@@ -174,6 +174,8 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["SAVESTATE"]=CMD_SAVE_STATE;
 	primaryCmdMap["LOADSTATE"]=CMD_LOAD_STATE;
 
+	primaryCmdMap["GAMEPORT"]=CMD_GAMEPORT;
+
 
 	featureMap["CMDLOG"]=ENABLE_CMDLOG;
 	featureMap["AUTODISASM"]=ENABLE_DISASSEMBLE_EVERY_INST;
@@ -281,6 +283,10 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Virtually open and close the internal CD-ROM drive." << std::endl;
 	std::cout << "CDDASTOP" << std::endl;
 	std::cout << "  Stop CDDA" << std::endl;
+
+	std::cout << "GAMEPORT i device" << std::endl;
+	std::cout << "  Connect (or disconnect) device to game port i." << std::endl;
+	std::cout << "  Type GAMEPORT to list device options." << std::endl;
 
 	std::cout << "SCSICD0LOAD" << std::endl;
 	std::cout << "SCSICD1LOAD" << std::endl;
@@ -1269,6 +1275,10 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 		{
 			towns.sound.SaveRecording(cmd.argv[1]);
 		}
+		break;
+
+	case CMD_GAMEPORT:
+		Execute_Gameport(towns,outside_world,cmd);
 		break;
 	}
 }
@@ -3994,3 +4004,28 @@ void TownsCommandInterpreter::Execute_SpecialDebug(FMTowns &towns,Command &cmd)
 	std::cout << "Currently nothing happens with special debugging command." << std::endl;
 }
 
+void TownsCommandInterpreter::Execute_Gameport(FMTowns &towns,Outside_World *outside_world,Command &cmd)
+{
+	if(3<=cmd.argv.size())
+	{
+		unsigned int port=cpputil::Atoi(cmd.argv[1].c_str());
+		unsigned int devType=TownsStrToGamePortEmu(cmd.argv[2]);
+		if(port<TOWNS_NUM_GAMEPORTS)
+		{
+			towns.gameport.state.ports[port].device=devType;
+			outside_world->CacheGamePadIndicesThatNeedUpdates(towns);
+		}
+		else
+		{
+			std::cout << "Port needs to be 0 or 1." << std::endl;
+		}
+	}
+	else
+	{
+		std::cout << "List of Device Options for Game Port:" << std::endl;
+		for(int i=0; i<TOWNS_GAMEPORTEMU_NUM_DEVICES; ++i)
+		{
+			std::cout << TownsGamePortEmuToStr(i) << std::endl;
+		}
+	}
+}

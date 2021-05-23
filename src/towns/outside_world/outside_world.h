@@ -40,7 +40,7 @@ public:
 
 	// Mouse will be automatically identified by towns.gameport.
 	// Only game-pad emulation takes effect.
-	unsigned int gamePort[2];
+	unsigned int gamePort[TOWNS_NUM_GAMEPORTS];
 
 	// Pause mouse integration until mouse cursor is moved.
 	// Strike Commander controls the view direction with mouse, and press F1 to reset.
@@ -190,6 +190,7 @@ public:
 	    If the sub-class overloads this function, call Outside_World::CacheGamePadIndicesThatNeedUpdates, and then
 	    add an ID by calling UseGamePad function..
 	*/
+	void CacheGamePadIndicesThatNeedUpdates(const class FMTowns &towns);
 	virtual void CacheGamePadIndicesThatNeedUpdates(void);
 
 	/*! Call this function to cache game pad index that needs to be updated every polling.

@@ -171,6 +171,15 @@ void Outside_World::Put16x16SelectInvert(int x0,int y0,const unsigned char idleI
 	std::cout << __FUNCTION__ << " is not implemented in this environment." << std::endl;
 }
 
+void Outside_World::CacheGamePadIndicesThatNeedUpdates(const class FMTowns &towns)
+{
+	for(int i=0; i<TOWNS_NUM_GAMEPORTS; ++i)
+	{
+		gamePort[i]=towns.gameport.state.ports[i].device;
+	}
+	CacheGamePadIndicesThatNeedUpdates();
+}
+
 /* virtual */ void Outside_World::CacheGamePadIndicesThatNeedUpdates(void)
 {
 	gameDevsNeedUpdateCached=true;
