@@ -62,6 +62,9 @@ void TownsProfile::CleanUp(void)
 	}
 
 	catchUpRealTime=true;
+
+	fmVol=-1;
+	pcmVol=-1;
 }
 std::vector <std::string> TownsProfile::Serialize(void) const
 {
@@ -213,6 +216,14 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 			text.push_back(sstream.str());
 		}
 	}
+
+	sstream.str("");
+	sstream << "FMVOLUME " << fmVol;
+	text.push_back(sstream.str());
+
+	sstream.str("");
+	sstream << "PCMVOLUM " << pcmVol;
+	text.push_back(sstream.str());
 
 	return text;
 }
@@ -464,6 +475,20 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 			if(2<=argv.size())
 			{
 				damperWireLine=(0!=argv[1].Atoi());
+			}
+		}
+		else if(0==argv[0].STRCMP("FMVOLUME"))
+		{
+			if(2<=argv.size())
+			{
+				fmVol=argv[1].Atoi();
+			}
+		}
+		else if(0==argv[0].STRCMP("PCMVOLUM"))
+		{
+			if(2<=argv.size())
+			{
+				pcmVol=argv[1].Atoi();
 			}
 		}
 		else

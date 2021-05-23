@@ -2,6 +2,8 @@
 #include "profiledlg.h"
 #include "fsguiapp.h"
 
+#include "ym2612.h"
+
 
 
 ProfileDialog::ProfileDialog(FsGuiMainCanvas *canvasPtr)
@@ -250,6 +252,23 @@ void ProfileDialog::Make(void)
 	}
 
 	{
+		auto tabId=AddTab(tab,"Sound");
+		BeginAddTabItem(tab,tabId);
+
+		AddStaticText(0,FSKEY_NULL,"FM Volume",YSTRUE);
+		fmVolumeDefaultBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"Set Default",YSFALSE);
+		fmVolumeText=AddStaticText(0,FSKEY_NULL,"00000",YSFALSE);
+		fmVolumeSlider=AddHorizontalSlider(0,FSKEY_NULL,32,0.0,8192.0,YSFALSE);
+
+		AddStaticText(0,FSKEY_NULL,"PCM Volume",YSTRUE);
+		pcmVolumeDefaultBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"Set Default",YSFALSE);
+		pcmVolumeText=AddStaticText(0,FSKEY_NULL,"00000",YSFALSE);
+		pcmVolumeSlider=AddHorizontalSlider(0,FSKEY_NULL,32,0.0,8192.0,YSFALSE);
+
+		EndAddTabItem();
+	}
+
+	{
 		auto tabId=AddTab(tab,"Boot");
 		BeginAddTabItem(tab,tabId);
 
@@ -483,6 +502,18 @@ void ProfileDialog::Make(void)
 	}
 }
 
+void ProfileDialog::OnSliderPositionChange(FsGuiSlider *slider,const double &prevPos,const double &prevValue)
+{
+	if(slider==fmVolumeSlider)
+	{
+		UpdateFMVolumeText();
+	}
+	else if(slider==pcmVolumeSlider)
+	{
+		UpdatePCMVolumeText();
+	}
+}
+
 /* virtual */ void ProfileDialog::OnButtonClick(FsGuiButton *btn)
 {
 	if(ROMDirBtn==btn)
@@ -569,6 +600,14 @@ void ProfileDialog::Make(void)
 			strikeCommanderThrottlePhysIdDrp->Disable();
 			strikeCommanderThrottleAxisDrp->Disable();
 		}
+	}
+	if(fmVolumeDefaultBtn==btn)
+	{
+		SetDefaultFMVolume();
+	}
+	if(pcmVolumeDefaultBtn==btn)
+	{
+		SetDefaultPCMVolume();
 	}
 }
 
@@ -709,6 +748,18 @@ TownsProfile ProfileDialog::GetProfile(void) const
 	}
 
 
+	profile.fmVol=(int)fmVolumeSlider->GetScaledValue();
+	if(YM2612::WAVE_OUTPUT_AMPLITUDE_MAX_DEFAULT==profile.fmVol)
+	{
+		profile.fmVol=-1;
+	}
+	profile.pcmVol=(int)pcmVolumeSlider->GetScaledValue();
+	if(RF5C68::WAVE_OUTPUT_AMPLITUDE_MAX_DEFAULT==profile.pcmVol)
+	{
+		profile.pcmVol=-1;
+	}
+
+
 	return profile;
 }
 void ProfileDialog::SetProfile(const TownsProfile &profile)
@@ -845,4 +896,48 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 		virtualKeyPhysIdDrp[row]->Select(profile.virtualKeys[row].physicalId);
 		virtualKeyButtonDrp[row]->Select(profile.virtualKeys[row].button);
 	}
+
+	if(profile.fmVol<0)
+	{
+		SetDefaultFMVolume();
+	}
+	else
+	{
+		fmVolumeSlider->SetPositionByScaledValue(profile.fmVol);
+		UpdateFMVolumeText();
+	}
+	if(profile.pcmVol<0)
+	{
+		SetDefaultPCMVolume();
+	}
+	else
+	{
+		pcmVolumeSlider->SetPositionByScaledValue(profile.pcmVol);
+		UpdatePCMVolumeText();
+	}
+}
+
+void ProfileDialog::SetDefaultFMVolume(void)
+{
+	fmVolumeSlider->SetPositionByScaledValue(YM2612::WAVE_OUTPUT_AMPLITUDE_MAX_DEFAULT);
+	UpdateFMVolumeText();
+}
+void ProfileDialog::SetDefaultPCMVolume(void)
+{
+	pcmVolumeSlider->SetPositionByScaledValue(RF5C68::WAVE_OUTPUT_AMPLITUDE_MAX_DEFAULT);
+	UpdatePCMVolumeText();
+}
+void ProfileDialog::UpdateFMVolumeText(void)
+{
+	auto scaled=fmVolumeSlider->GetScaledValue();
+	YsString text;
+	text.Printf("%d",(int)scaled);
+	fmVolumeText->SetText(text);
+}
+void ProfileDialog::UpdatePCMVolumeText(void)
+{
+	auto scaled=pcmVolumeSlider->GetScaledValue();
+	YsString text;
+	text.Printf("%d",(int)scaled);
+	pcmVolumeText->SetText(text);
 }

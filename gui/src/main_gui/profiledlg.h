@@ -110,12 +110,19 @@ public:
 	FsGuiDropList *virtualKeyButtonDrp[TownsProfile::MAX_NUM_VIRTUALKEYS];
 
 
+	FsGuiStatic *fmVolumeText,*pcmVolumeText;
+	FsGuiButton *fmVolumeDefaultBtn,*pcmVolumeDefaultBtn;
+	FsGuiSlider *fmVolumeSlider,*pcmVolumeSlider;
+
+
 	FsGuiDropList *appSpecificAugDrp;
 	FsGuiStatic *appSpecificExplanation;
 
 	ProfileDialog(FsGuiMainCanvas *canvasPtr);
 
 	void Make(void);
+
+	void OnSliderPositionChange(FsGuiSlider *slider,const double &prevPos,const double &prevValue);
 
 	virtual void OnDropListSelChange(FsGuiDropList *drp,int prevSel);
 
@@ -128,6 +135,11 @@ public:
 
 	TownsProfile GetProfile(void) const;
 	void SetProfile(const TownsProfile &profile);
+
+	void SetDefaultFMVolume(void);
+	void SetDefaultPCMVolume(void);
+	void UpdateFMVolumeText(void);
+	void UpdatePCMVolumeText(void);
 };
 
 

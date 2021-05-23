@@ -198,7 +198,7 @@ void FMTowns::State::PowerOn(void)
 	}
 	if(0<=argv.pcmVol)
 	{
-		towns.sound.state.rf5c68.state.volume=argv.fmVol;
+		towns.sound.state.rf5c68.state.volume=argv.pcmVol;
 	}
 
 	if(true==argv.powerOffAtBreakPoint)
