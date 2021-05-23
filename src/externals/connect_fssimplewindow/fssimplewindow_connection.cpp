@@ -887,12 +887,15 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 						float x=axisReading.axes[0];
 						float y=axisReading.axes[1];
 						float z=axisReading.axes[2];
+						float w=axisReading.axes[3];
 						int ix=x*127.0;
 						int iy=y*127.0;
 						int iz=z*127.0;
+						int iw=w*127.0;
 						ix=cpputil::Clamp(ix,-128,127);
 						iy=cpputil::Clamp(iy,-128,127);
 						iz=cpputil::Clamp(iz,-128,127);
+						iw=cpputil::Clamp(iw,-128,127);
 
 						unsigned int trig=0;
 						trig|=(axisReading.buttons[0] ? 0x01 : 0);
@@ -907,7 +910,7 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 						trig|=(axisReading.buttons[9] ? 0x200 : 0);
 						trig|=(axisReading.buttons[10] ? 0x400 : 0);
 						trig|=(axisReading.buttons[11] ? 0x800 : 0);
-						towns.SetCyberStickState(portId,ix,iy,iz,trig);
+						towns.SetCyberStickState(portId,ix,iy,iz,iw,trig);
 					}
 				}
 				break;
@@ -934,6 +937,7 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 					int ix=x*127.0;
 					int iy=y*127.0;
 					int iz=z*127.0;
+					int iw=0;
 					ix=cpputil::Clamp(ix,-128,127);
 					iy=cpputil::Clamp(iy,-128,127);
 					iz=cpputil::Clamp(iz,-128,127);
@@ -951,7 +955,7 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 					trig|=((axisReading.buttons[9] || throttleReading.buttons[9]) ? 0x200 : 0);
 					trig|=((axisReading.buttons[10] || throttleReading.buttons[10]) ? 0x400 : 0);
 					trig|=((axisReading.buttons[11] || throttleReading.buttons[11]) ? 0x800 : 0);
-					towns.SetCyberStickState(portId,ix,iy,iz,trig);
+					towns.SetCyberStickState(portId,ix,iy,iz,iw,trig);
 				}
 				break;
 			}

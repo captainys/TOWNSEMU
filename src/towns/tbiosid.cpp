@@ -777,11 +777,12 @@ void FMTowns::SetMouseMotion(int port,int dx,int dy)
 	p.mouseMotion.Set(dx,dy);
 }
 
-void FMTowns::SetCyberStickState(int port,int x,int y,int z,unsigned int trig)
+void FMTowns::SetCyberStickState(int port,int x,int y,int z,int w,unsigned int trig)
 {
 	auto &p=gameport.state.ports[port&1];
 	p.mouseMotion.Set(x,y);
 	p.zAxis=z;
+	p.wAxis=w;
 	p.trig=trig;
 }
 

@@ -41,6 +41,7 @@ void TownsGamePort::Port::Write(long long int townsTime,bool COM,unsigned char T
 			lastStateChangeTime=townsTime;
 			mouseMotionCopy=mouseMotion;
 			zAxisCopy=zAxis;
+			wAxisCopy=wAxis;
 		}
 	}
 	this->COM=COM;
@@ -220,7 +221,7 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 				data=0x00|(((0x80+zAxisCopy)>>4)&0x0F);
 				break;
 			case CYBERSTICK_05B:
-				data=0x1F;      // Unused?
+				data=0x10|(((0x80+wAxisCopy)>>4)&0x0F);   // Probably Trim axis high
 				break;
 			case CYBERSTICK_06B:
 				data=0x00|((0x80+mouseMotionCopy.y())&0x0F);
@@ -232,7 +233,7 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 				data=0x00|((0x80+zAxisCopy)&0x0F);
 				break;
 			case CYBERSTICK_09B:
-				data=0x1F;
+				data=0x10|((0x80+wAxisCopy)&0x0F);       // Probably Trim axis low
 				break;
 			case CYBERSTICK_10B:
 				data=0x00|((cyberTrig>>8)&0x0F);         // Trigger bits 8 to 11

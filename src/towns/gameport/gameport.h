@@ -84,6 +84,7 @@ public:
 
 		Vec2i mouseMotion;  // For CyberStick, used as XY position.
 		int zAxis=0; // For CyberStick
+		int wAxis=0; // For CyberStick
 		int trig=0;  // For CyberStick
 
 		// Once CPU starts reading the mouse, mouseMotion should stay the same.
@@ -93,6 +94,7 @@ public:
 		// when the first 4-bit of DX is sent to the CPU.
 		Vec2i mouseMotionCopy;
 		int zAxisCopy; // For CyberStick
+		int wAxisCopy; // For CyberStick
 
 		long long int lastAccessTime;
 		long long int lastStateChangeTime;

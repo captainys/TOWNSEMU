@@ -465,7 +465,7 @@ public:
 
 	/*! Set Cyber-Stick State.  Called from Outside_World.
 	*/
-	void SetCyberStickState(int port,int x,int y,int z,unsigned int trig);
+	void SetCyberStickState(int port,int x,int y,int z,int w,unsigned int trig);
 
 
 	/*!
