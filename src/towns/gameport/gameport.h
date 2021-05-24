@@ -86,7 +86,7 @@ public:
 		Vec2i mouseMotion;  // For CyberStick, used as XY position.
 		int zAxis=0; // For CyberStick
 		int wAxis=0; // For CyberStick
-		int trig=0;  // For CyberStick
+		int trig=0;  // For CyberStick and CAPCOM CPSF
 
 		// Once CPU starts reading the mouse, mouseMotion should stay the same.
 		// If the value changes after 4-bits of the motion x or y is read before
@@ -115,6 +115,8 @@ public:
 	};
 
 	State state;
+
+	static unsigned int EmulationTypeToDeviceType(unsigned int emulationType);
 
 	TownsGamePort(class FMTowns *townsPtr);
 

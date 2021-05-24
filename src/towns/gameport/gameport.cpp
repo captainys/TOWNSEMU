@@ -19,6 +19,57 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "cpputil.h"
 
 
+/* static */ unsigned int TownsGamePort::EmulationTypeToDeviceType(unsigned int emulationType)
+{
+	switch(emulationType)
+	{
+	case TOWNS_GAMEPORTEMU_NONE:
+		return NONE;
+	case TOWNS_GAMEPORTEMU_MOUSE:
+	case TOWNS_GAMEPORTEMU_MOUSE_BY_KEY:
+	case TOWNS_GAMEPORTEMU_MOUSE_BY_NUMPAD:
+	case TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL0:
+	case TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL1:
+	case TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL2:
+	case TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL3:
+	case TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL4:
+	case TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL5:
+	case TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL6:
+	case TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL7:
+	case TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG0:
+	case TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG1:
+	case TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG2:
+	case TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG3:
+	case TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG4:
+	case TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG5:
+	case TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG6:
+	case TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG7:
+		return MOUSE;
+	case TOWNS_GAMEPORTEMU_PHYSICAL0_AS_CYBERSTICK:
+	case TOWNS_GAMEPORTEMU_PHYSICAL1_AS_CYBERSTICK:
+	case TOWNS_GAMEPORTEMU_PHYSICAL2_AS_CYBERSTICK:
+	case TOWNS_GAMEPORTEMU_PHYSICAL3_AS_CYBERSTICK:
+	case TOWNS_GAMEPORTEMU_PHYSICAL4_AS_CYBERSTICK:
+	case TOWNS_GAMEPORTEMU_PHYSICAL5_AS_CYBERSTICK:
+	case TOWNS_GAMEPORTEMU_PHYSICAL6_AS_CYBERSTICK:
+	case TOWNS_GAMEPORTEMU_PHYSICAL7_AS_CYBERSTICK:
+	case TOWNS_GAMEPORTEMU_CYBERSTICK:
+		return CYBERSTICK;
+	case TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL0:
+	case TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL1:
+	case TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL2:
+	case TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL3:
+	case TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL4:
+	case TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL5:
+	case TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL6:
+	case TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL7:
+		return CAPCOMCPSF;
+	default:
+		return GAMEPAD;
+	}
+	return NONE;
+}
+
 
 void TownsGamePort::Port::Write(long long int townsTime,bool COM,unsigned char TRIG)
 {
@@ -257,6 +308,55 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 		{
 			data=0xFF;
 		}
+	}
+	else if(CAPCOMCPSF==device)
+	{
+		// Source: https://gamesx.com/wiki/doku.php?id=controls:x686button
+		// Pinout questionable.  The wiki tells there might be errors.
+		//COM=High
+		//  FWD  =bit0=UP
+		//  BACK =bit1=DOWN
+		//  LEFT =bit2=LEFT
+		//  RIGHT=bit3=RIGHT
+		//  TRIG1=bit4=L
+		//  TRIG2=bit5=START
+		//COM=Low
+		//  FWD  =bit0=R
+		//  BACK =bit1=Y
+		//  LEFT =bit2=X
+		//  RIGHT=bit3=SELECT
+		//  TRIG1=bit4=A
+		//  TRIG2=bit5=B
+
+		bool A=(0!=(trig & 1));       //B1 Fall -> Correct
+		bool B=(0!=(trig & 2));       //B2 Jump -> Correct
+		bool X=(0!=(trig & 4));       //B3
+		bool Y=(0!=(trig & 8));       //B4 Attack -> Correct
+		bool L=(0!=(trig & 16));      //B5
+		bool R=(0!=(trig & 32));      //B6
+		bool start=(0!=(trig & 64));  //B7 PAUSE -> Correct
+		bool select=(0!=(trig & 128));//B8
+		unsigned int flags;
+		if(true!=COM)
+		{
+			flags=(up ?      1 : 0)|
+			      (down ?    2 : 0)|
+			      (left ?    4 : 0)|
+			      (right ?   8 : 0)|
+			      (A ?      16 : 0)|
+			      (B ?      32 : 0);
+		}
+		else
+		{
+			flags=(R ?       1 : 0)|
+			      (Y ?       2 : 0)|
+			      (X ?       4 : 0)|
+			      (select ?  8 : 0)|
+			      (L ?      16 : 0)|
+			      (start ?  32 : 0);
+		}
+		data|=((~flags)&0x3F);
+		data&=(0xCF|(TRIG<<4));
 	}
 	else // if(NONE==device)
 	{

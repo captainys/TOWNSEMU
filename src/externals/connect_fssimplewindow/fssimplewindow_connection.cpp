@@ -735,6 +735,42 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 				}
 				break;
 
+			case TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL0:
+			case TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL1:
+			case TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL2:
+			case TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL3:
+			case TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL4:
+			case TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL5:
+			case TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL6:
+			case TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL7:
+				if(true!=gamePadInitialized)
+				{
+					YsGamePadInitialize();
+					gamePadInitialized=true;
+				}
+				{
+					int padId=gamePort[portId]-TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL0;
+					if(0<=padId && padId<gamePads.size())
+					{
+						auto &reading=gamePads[padId];
+						towns.SetCAPCOMCPSFState(
+						    portId,
+						    reading.dirs[0].upDownLeftRight[2],
+						    reading.dirs[0].upDownLeftRight[3],
+						    reading.dirs[0].upDownLeftRight[0],
+						    reading.dirs[0].upDownLeftRight[1],
+						    reading.buttons[0],
+						    reading.buttons[1],
+						    reading.buttons[2],
+						    reading.buttons[3],
+						    reading.buttons[4],
+						    reading.buttons[5],
+						    reading.buttons[6],
+						    reading.buttons[7]);
+					}
+				}
+				break;
+
 			case TOWNS_GAMEPORTEMU_MOUSE_BY_KEY:
 			case TOWNS_GAMEPORTEMU_MOUSE_BY_NUMPAD:
 			case TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL0:

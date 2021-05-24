@@ -467,6 +467,11 @@ public:
 	*/
 	void SetCyberStickState(int port,int x,int y,int z,int w,unsigned int trig);
 
+	/*! Set CAPCOM CPSF State.  Called from Outside_World.
+	*/
+	void SetCAPCOMCPSFState(int port,bool left,bool right,bool up,bool down,bool A,bool B,bool X,bool Y,bool L,bool R, bool start,bool select);
+
+
 
 	/*!
 	*/

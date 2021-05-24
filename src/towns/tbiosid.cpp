@@ -786,6 +786,23 @@ void FMTowns::SetCyberStickState(int port,int x,int y,int z,int w,unsigned int t
 	p.trig=trig;
 }
 
+void FMTowns::SetCAPCOMCPSFState(int port,bool left,bool right,bool up,bool down,bool A,bool B,bool X,bool Y,bool L,bool R, bool start,bool select)
+{
+	auto &p=gameport.state.ports[port&1];
+	p.left=left;
+	p.right=right;
+	p.up=up;
+	p.down=down;
+	p.trig=(A ? 1 : 0)|
+	       (B ? 2 : 0)|
+	       (X ? 4 : 0)|
+	       (Y ? 8 : 0)|
+	       (L ? 16 : 0)|
+	       (R ? 32 : 0)|
+	       (start ? 64 : 0)|
+	       (select ? 128 : 0);
+}
+
 bool FMTowns::GetMouseCoordinate(int &mx,int &my,unsigned int tbiosid) const
 {
 	if(true==state.mouseBIOSActive &&

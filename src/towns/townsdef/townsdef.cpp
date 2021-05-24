@@ -353,10 +353,6 @@ unsigned int TownsStrToGamePortEmu(std::string str)
 		return TOWNS_GAMEPORTEMU_PHYSICAL7_AS_CYBERSTICK;
 	}
 
-	if("KEYCPSF"==str)
-	{
-		return TOWNS_GAMEPORTEMU_CAPCOM_BY_KEY;
-	}
 	if("PHYS0CPSF"==str || "PHYS0CAPCOM"==str)
 	{
 		return TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL0;
@@ -574,8 +570,6 @@ std::string TownsGamePortEmuToStr(unsigned int emu)
 	case TOWNS_GAMEPORTEMU_CYBERSTICK:
 		return "CYBERSTICK";
 
-	case TOWNS_GAMEPORTEMU_CAPCOM_BY_KEY:
-		return "KEYCPSF";
 	case TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL0:
 		return "PHYS0CPSF";
 	case TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL1:
