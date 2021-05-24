@@ -753,12 +753,30 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 					if(0<=padId && padId<gamePads.size())
 					{
 						auto &reading=gamePads[padId];
+						bool up=reading.dirs[0].upDownLeftRight[2];
+						bool dn=reading.dirs[0].upDownLeftRight[3];
+						bool lf=reading.dirs[0].upDownLeftRight[0];
+						bool ri=reading.dirs[0].upDownLeftRight[1];
+
+						// Muscle Bomber cannot start without pressing START button.
+						// So, I use physical buttons 8 and 9 for START/SELECT.
+						if(reading.buttons[8])
+						{
+							up=true;
+							dn=true;
+						}
+						if(reading.buttons[9])
+						{
+							lf=true;
+							ri=true;
+						}
+
 						towns.SetCAPCOMCPSFState(
 						    portId,
-						    reading.dirs[0].upDownLeftRight[2],
-						    reading.dirs[0].upDownLeftRight[3],
-						    reading.dirs[0].upDownLeftRight[0],
-						    reading.dirs[0].upDownLeftRight[1],
+						    up,
+						    dn,
+						    lf,
+						    ri,
 						    reading.buttons[0],
 						    reading.buttons[1],
 						    reading.buttons[2],
