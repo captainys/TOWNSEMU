@@ -55,6 +55,123 @@ static FsGuiMainCanvas *appMainCanvas;
 
 ////////////////////////////////////////////////////////////
 
+static const FsGuiMainCanvas::HumanReadable gameportEmulationTypes[]
+{
+	{TOWNS_GAMEPORTEMU_NONE,"None"},
+	{TOWNS_GAMEPORTEMU_MOUSE,"Mouse"},
+	{TOWNS_GAMEPORTEMU_KEYBOARD,"Game Pad by Host Keyboard"},
+	{TOWNS_GAMEPORTEMU_PHYSICAL0,"Game Pad by Host Game Controller 0"},
+	{TOWNS_GAMEPORTEMU_PHYSICAL1,"Game Pad by Host Game Controller 1"},
+	{TOWNS_GAMEPORTEMU_PHYSICAL2,"Game Pad by Host Game Controller 2"},
+	{TOWNS_GAMEPORTEMU_PHYSICAL3,"Game Pad by Host Game Controller 3"},
+	{TOWNS_GAMEPORTEMU_PHYSICAL4,"Game Pad by Host Game Controller 4"},
+	{TOWNS_GAMEPORTEMU_PHYSICAL5,"Game Pad by Host Game Controller 5"},
+	{TOWNS_GAMEPORTEMU_PHYSICAL6,"Game Pad by Host Game Controller 6"},
+	{TOWNS_GAMEPORTEMU_PHYSICAL7,"Game Pad by Host Game Controller 7"},
+	{TOWNS_GAMEPORTEMU_ANALOG0,"Game Pad by Host Game Controller (Analog) 0"},
+	{TOWNS_GAMEPORTEMU_ANALOG1,"Game Pad by Host Game Controller (Analog) 1"},
+	{TOWNS_GAMEPORTEMU_ANALOG2,"Game Pad by Host Game Controller (Analog) 2"},
+	{TOWNS_GAMEPORTEMU_ANALOG3,"Game Pad by Host Game Controller (Analog) 3"},
+	{TOWNS_GAMEPORTEMU_ANALOG4,"Game Pad by Host Game Controller (Analog) 4"},
+	{TOWNS_GAMEPORTEMU_ANALOG5,"Game Pad by Host Game Controller (Analog) 5"},
+	{TOWNS_GAMEPORTEMU_ANALOG6,"Game Pad by Host Game Controller (Analog) 6"},
+	{TOWNS_GAMEPORTEMU_ANALOG7,"Game Pad by Host Game Controller (Analog) 7"},
+	{TOWNS_GAMEPORTEMU_PHYSICAL0_AS_CYBERSTICK,"Cyberstick by Host Game Controller 0"},
+	{TOWNS_GAMEPORTEMU_PHYSICAL1_AS_CYBERSTICK,"Cyberstick by Host Game Controller 1"},
+	{TOWNS_GAMEPORTEMU_PHYSICAL2_AS_CYBERSTICK,"Cyberstick by Host Game Controller 2"},
+	{TOWNS_GAMEPORTEMU_PHYSICAL3_AS_CYBERSTICK,"Cyberstick by Host Game Controller 3"},
+	{TOWNS_GAMEPORTEMU_PHYSICAL4_AS_CYBERSTICK,"Cyberstick by Host Game Controller 4"},
+	{TOWNS_GAMEPORTEMU_PHYSICAL5_AS_CYBERSTICK,"Cyberstick by Host Game Controller 5"},
+	{TOWNS_GAMEPORTEMU_PHYSICAL6_AS_CYBERSTICK,"Cyberstick by Host Game Controller 6"},
+	{TOWNS_GAMEPORTEMU_PHYSICAL7_AS_CYBERSTICK,"Cyberstick by Host Game Controller 7"},
+	{TOWNS_GAMEPORTEMU_MOUSE_BY_KEY,"Mouse by Host Arrow Keys"},
+	{TOWNS_GAMEPORTEMU_MOUSE_BY_NUMPAD,"Mouse by Host NUM Keys"},
+	{TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL0,"Mouse by Host Game Controller 0"},
+	{TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL1,"Mouse by Host Game Controller 1"},
+	{TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL2,"Mouse by Host Game Controller 2"},
+	{TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL3,"Mouse by Host Game Controller 3"},
+	{TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL4,"Mouse by Host Game Controller 4"},
+	{TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL5,"Mouse by Host Game Controller 5"},
+	{TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL6,"Mouse by Host Game Controller 6"},
+	{TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL7,"Mouse by Host Game Controller 7"},
+	{TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG0,"Mouse by Host Game Controller (Analog) 0"},
+	{TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG1,"Mouse by Host Game Controller (Analog) 1"},
+	{TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG2,"Mouse by Host Game Controller (Analog) 2"},
+	{TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG3,"Mouse by Host Game Controller (Analog) 3"},
+	{TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG4,"Mouse by Host Game Controller (Analog) 4"},
+	{TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG5,"Mouse by Host Game Controller (Analog) 5"},
+	{TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG6,"Mouse by Host Game Controller (Analog) 6"},
+	{TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG7,"Mouse by Host Game Controller (Analog) 7"},
+	{TOWNS_GAMEPORTEMU_CYBERSTICK,"Cyberstick by Custom Axis Button Assignments"},
+	{TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL0,"CAPCOM CPSF by Game Controller 0"},
+	{TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL1,"CAPCOM CPSF by Game Controller 1"},
+	{TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL2,"CAPCOM CPSF by Game Controller 2"},
+	{TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL3,"CAPCOM CPSF by Game Controller 3"},
+	{TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL4,"CAPCOM CPSF by Game Controller 4"},
+	{TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL5,"CAPCOM CPSF by Game Controller 5"},
+	{TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL6,"CAPCOM CPSF by Game Controller 6"},
+	{TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL7,"CAPCOM CPSF by Game Controller 7"},
+};
+
+static const unsigned int selectableGameportDevices[]=
+{
+	TOWNS_GAMEPORTEMU_NONE,
+	TOWNS_GAMEPORTEMU_MOUSE,
+	TOWNS_GAMEPORTEMU_KEYBOARD,
+	TOWNS_GAMEPORTEMU_PHYSICAL0,
+	TOWNS_GAMEPORTEMU_PHYSICAL1,
+	TOWNS_GAMEPORTEMU_PHYSICAL2,
+	TOWNS_GAMEPORTEMU_PHYSICAL3,
+	TOWNS_GAMEPORTEMU_ANALOG0,
+	TOWNS_GAMEPORTEMU_ANALOG1,
+	TOWNS_GAMEPORTEMU_ANALOG2,
+	TOWNS_GAMEPORTEMU_ANALOG3,
+	TOWNS_GAMEPORTEMU_PHYSICAL0_AS_CYBERSTICK,
+	TOWNS_GAMEPORTEMU_PHYSICAL1_AS_CYBERSTICK,
+	TOWNS_GAMEPORTEMU_PHYSICAL2_AS_CYBERSTICK,
+	TOWNS_GAMEPORTEMU_PHYSICAL3_AS_CYBERSTICK,
+	TOWNS_GAMEPORTEMU_MOUSE_BY_KEY,
+	TOWNS_GAMEPORTEMU_MOUSE_BY_NUMPAD,
+	TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL0,
+	TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL1,
+	TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL2,
+	TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL3,
+	TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG0,
+	TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG1,
+	TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG2,
+	TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG3,
+	TOWNS_GAMEPORTEMU_CYBERSTICK,
+	TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL0,
+	TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL1,
+	TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL2,
+	TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL3,
+};
+
+/* static */ std::string FsGuiMainCanvas::GamePortEmulationTypeToHumanReadable(unsigned int emuType)
+{
+	for(auto x : gameportEmulationTypes)
+	{
+		if(x.code==emuType)
+		{
+			return x.label;
+		}
+	}
+	return "None";
+}
+/* static */ unsigned int FsGuiMainCanvas::HumanReadableToGamePortEmulationType(std::string label)
+{
+	for(auto x : gameportEmulationTypes)
+	{
+		if(x.label==label)
+		{
+			return x.code;
+		}
+	}
+	return TOWNS_GAMEPORTEMU_NONE;
+}
+
+////////////////////////////////////////////////////////////
+
 FsGuiMainCanvas::FsGuiMainCanvas()
 {
 	appMustTerminate=YSFALSE;
@@ -190,6 +307,13 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 		FD1_writeUnprotectMenu=subMenu->AddTextItem(0,FSKEY_U,L"Write Unprotect");
 		FD1_writeUnprotectMenu->BindCallBack(&THISCLASS::FD1_WriteUnprotect,this);
 		subMenu->AddTextItem(0,FSKEY_J,L"Eject")->BindCallBack(&THISCLASS::FD1_Eject,this);
+	}
+
+	{
+		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_NULL,"Devices")->GetSubMenu();
+		auto *gamePortMenu=subMenu->AddTextItem(0,FSKEY_G,"Game Ports")->AddSubMenu();
+		gamePortMenu->AddTextItem(0,FSKEY_0,"Port 0")->BindCallBack(&THISCLASS::Device_GamePort0,this);
+		gamePortMenu->AddTextItem(0,FSKEY_1,"Port 1")->BindCallBack(&THISCLASS::Device_GamePort1,this);
 	}
 
 	{
@@ -1904,6 +2028,99 @@ void FsGuiMainCanvas::FD1_Eject(FsGuiPopUpMenuItem *)
 	else
 	{
 		VM_Not_Running_Error();
+	}
+}
+
+
+
+////////////////////////////////////////////////////////////
+
+
+
+class FsGuiMainCanvas::GamePortDialog : public FsGuiDialog
+{
+public:
+	int port;
+	FsGuiDropList *deviceList;
+	FsGuiButton *okBtn,*cancelBtn;
+	void Make(int port);
+	virtual void OnButtonClick(FsGuiButton *btn);
+};
+
+void FsGuiMainCanvas::GamePortDialog::Make(int port)
+{
+	this->port=port;
+	YsString label;
+	label.Printf("Game Port %d\n",port);
+	AddStaticText(0,FSKEY_NULL,label,YSTRUE);
+
+	deviceList=AddEmptyDropList(0,FSKEY_NULL,"Device Emulation",16,32,32,YSTRUE);
+	for(auto sel : selectableGameportDevices)
+	{
+		deviceList->AddString(GamePortEmulationTypeToHumanReadable(sel).c_str(),YSFALSE);
+	}
+
+	okBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"OK",YSTRUE);
+	cancelBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"Cancel",YSFALSE);
+}
+/* virtual */ void FsGuiMainCanvas::GamePortDialog::OnButtonClick(FsGuiButton *btn)
+{
+	if(btn==okBtn)
+	{
+		CloseModalDialog(YSOK);
+	}
+	else if(btn==cancelBtn)
+	{
+		CloseModalDialog(YSERR);
+	}
+}
+
+void FsGuiMainCanvas::Device_GamePort0(FsGuiPopUpMenuItem *)
+{
+	if(true==IsVMRunning())
+	{
+		auto *dlg=FsGuiDialog::CreateSelfDestructiveDialog<GamePortDialog>();
+		dlg->Make(0);
+		dlg->BindCloseModalCallBack(&FsGuiMainCanvas::Device_GamePort_DeviceSelected,this);
+		AttachModalDialog(dlg);
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+void FsGuiMainCanvas::Device_GamePort1(FsGuiPopUpMenuItem *)
+{
+	if(true==IsVMRunning())
+	{
+		auto *dlg=FsGuiDialog::CreateSelfDestructiveDialog<GamePortDialog>();
+		dlg->Make(1);
+		dlg->BindCloseModalCallBack(&FsGuiMainCanvas::Device_GamePort_DeviceSelected,this);
+		AttachModalDialog(dlg);
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+void FsGuiMainCanvas::Device_GamePort_DeviceSelected(FsGuiDialog *dlgIn,int returnCode)
+{
+	if((int)YSOK==returnCode)
+	{
+		auto dlg=dynamic_cast<GamePortDialog *>(dlgIn);
+		if(nullptr!=dlg)
+		{
+			auto sel=dlg->deviceList->GetSelection();
+			if(0<=sel)
+			{
+				auto devStr=dlg->deviceList->GetSelectedString();
+				auto emulationType=HumanReadableToGamePortEmulationType(devStr.c_str());
+
+				char str[256];
+				sprintf(str,"GAMEPORT %d %s\n",dlg->port,TownsGamePortEmuToStr(emulationType).c_str());
+				SendVMCommand(str);
+			}
+		}
 	}
 }
 

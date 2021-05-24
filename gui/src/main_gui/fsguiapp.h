@@ -57,6 +57,12 @@ private:
 
 public:
 	// [Core data structure]
+	struct HumanReadable
+	{
+		unsigned int code;
+		std::string label;
+	};
+
 	Subprocess subproc;
 	std::vector <std::string> VMLog;
 
@@ -150,6 +156,8 @@ private:
 	YsWString GetDefaultNewHardDiskImageFileName(void) const;
 	YsWString GetDefaultNewEventLogFileName(void) const;
 
+	static std::string GamePortEmulationTypeToHumanReadable(unsigned int emuType);
+	static unsigned int HumanReadableToGamePortEmulationType(std::string);
 
 private:
 	// [Menu pointers for check marks]
@@ -266,6 +274,10 @@ private:
 	void FD1_WriteUnprotect(FsGuiPopUpMenuItem *);
 	void FD1_Eject(FsGuiPopUpMenuItem *);
 
+	class GamePortDialog;
+	void Device_GamePort0(FsGuiPopUpMenuItem *);
+	void Device_GamePort1(FsGuiPopUpMenuItem *);	
+	void Device_GamePort_DeviceSelected(FsGuiDialog *dlg,int returnCode);
 
 	void EventLog_StartRecording(FsGuiPopUpMenuItem *);
 	void EventLog_EndRecording(FsGuiPopUpMenuItem *);
