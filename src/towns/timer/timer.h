@@ -96,6 +96,7 @@ public:
 	};
 
 	State state;
+	bool breakOnBeep=false;
 
 	TownsTimer(class FMTowns *townsPtr,class TownsPIC *picPtr);
 

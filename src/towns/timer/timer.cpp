@@ -301,12 +301,19 @@ TownsTimer::TownsTimer(class FMTowns *townsPtr,class TownsPIC *picPtr) : Device(
 		}
 		break;
 	case TOWNSIO_TIMER_INT_CTRL_INT_REASON://0x60,
-		state.TMMSK[0]=(0!=(data&1));
-		state.TMMSK[1]=(0!=(data&2));
-		state.SOUND=(0!=(data&4));
-		if(0!=(data&0x80))
 		{
-			state.TMOUT[0]=false;
+			bool prevBeep=state.SOUND;
+			state.TMMSK[0]=(0!=(data&1));
+			state.TMMSK[1]=(0!=(data&2));
+			state.SOUND=(0!=(data&4));
+			if(0!=(data&0x80))
+			{
+				state.TMOUT[0]=false;
+			}
+			if(true==breakOnBeep && true!=prevBeep && true==state.SOUND)
+			{
+				townsPtr->debugger.ExternalBreak("Beep On");
+			}
 		}
 		UpdatePICRequest();
 		break;
