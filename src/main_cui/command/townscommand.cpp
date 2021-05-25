@@ -262,6 +262,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	breakEventMap["MEMR"]=BREAK_ON_MEM_READ;
 	breakEventMap["MEMWRITE"]=BREAK_ON_MEM_WRITE;
 	breakEventMap["MEMW"]=BREAK_ON_MEM_WRITE;
+	breakEventMap["BEEP"]=BREAK_ON_BEEP;
 }
 
 void TownsCommandInterpreter::PrintHelp(void) const
@@ -659,6 +660,7 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "SCSIDMA" << std::endl;
 	std::cout << "MEMREAD physAddr" << std::endl;
 	std::cout << "MEMWRITE physAddr" << std::endl;
+	std::cout << "BEEP" << std::endl;
 }
 
 void TownsCommandInterpreter::PrintError(int errCode) const
@@ -2571,8 +2573,11 @@ void TownsCommandInterpreter::Execute_BreakOn(FMTowns &towns,Command &cmd)
 				return;
 			}
 			break;
+		case BREAK_ON_BEEP:
+			towns.timer.breakOnBeep=true;
+			break;
 		}
-		std::cout << reason << " is ON." << std::endl;
+		std::cout << "Break On " << reason << " is ON." << std::endl;
 	}
 }
 void TownsCommandInterpreter::Execute_ClearBreakOn(FMTowns &towns,Command &cmd)
@@ -2763,8 +2768,11 @@ void TownsCommandInterpreter::Execute_ClearBreakOn(FMTowns &towns,Command &cmd)
 				std::cout << "Clear All Break on Memory Write" << std::endl;
 			}
 			break;
+		case BREAK_ON_BEEP:
+			towns.timer.breakOnBeep=false;
+			break;
 		}
-		std::cout << iter->first << " is OFF." << std::endl;
+		std::cout << "Break On " << iter->first << " is OFF." << std::endl;
 	}
 }
 
