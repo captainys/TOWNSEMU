@@ -321,10 +321,9 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 	}
 
 	{
-		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_NULL,"Devices")->GetSubMenu();
-		auto *gamePortMenu=subMenu->AddTextItem(0,FSKEY_G,"Game Ports")->AddSubMenu();
-		gamePortMenu->AddTextItem(0,FSKEY_0,"Port 0")->BindCallBack(&THISCLASS::Device_GamePort0,this);
-		gamePortMenu->AddTextItem(0,FSKEY_1,"Port 1")->BindCallBack(&THISCLASS::Device_GamePort1,this);
+		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_D,"Devices")->GetSubMenu();
+		subMenu->AddTextItem(0,FSKEY_0,"Game Port 0")->BindCallBack(&THISCLASS::Device_GamePort0,this);
+		subMenu->AddTextItem(0,FSKEY_1,"Game Port 1")->BindCallBack(&THISCLASS::Device_GamePort1,this);
 	}
 
 	{
