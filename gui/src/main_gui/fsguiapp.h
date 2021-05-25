@@ -156,8 +156,10 @@ private:
 	YsWString GetDefaultNewHardDiskImageFileName(void) const;
 	YsWString GetDefaultNewEventLogFileName(void) const;
 
+public:
 	static std::string GamePortEmulationTypeToHumanReadable(unsigned int emuType);
 	static unsigned int HumanReadableToGamePortEmulationType(std::string);
+	static std::vector <std::string> GetSelectableGamePortEmulationTypeHumanReadable(void);
 
 private:
 	// [Menu pointers for check marks]

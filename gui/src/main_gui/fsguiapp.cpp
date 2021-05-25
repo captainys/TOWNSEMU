@@ -103,14 +103,14 @@ static const FsGuiMainCanvas::HumanReadable gameportEmulationTypes[]
 	{TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG6,"Mouse by Host Game Controller (Analog) 6"},
 	{TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG7,"Mouse by Host Game Controller (Analog) 7"},
 	{TOWNS_GAMEPORTEMU_CYBERSTICK,"Cyberstick by Custom Axis Button Assignments"},
-	{TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL0,"CAPCOM CPSF by Game Controller 0"},
-	{TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL1,"CAPCOM CPSF by Game Controller 1"},
-	{TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL2,"CAPCOM CPSF by Game Controller 2"},
-	{TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL3,"CAPCOM CPSF by Game Controller 3"},
-	{TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL4,"CAPCOM CPSF by Game Controller 4"},
-	{TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL5,"CAPCOM CPSF by Game Controller 5"},
-	{TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL6,"CAPCOM CPSF by Game Controller 6"},
-	{TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL7,"CAPCOM CPSF by Game Controller 7"},
+	{TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL0,"CAPCOM CPSF by Host Game Controller 0"},
+	{TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL1,"CAPCOM CPSF by Host Game Controller 1"},
+	{TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL2,"CAPCOM CPSF by Host Game Controller 2"},
+	{TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL3,"CAPCOM CPSF by Host Game Controller 3"},
+	{TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL4,"CAPCOM CPSF by Host Game Controller 4"},
+	{TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL5,"CAPCOM CPSF by Host Game Controller 5"},
+	{TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL6,"CAPCOM CPSF by Host Game Controller 6"},
+	{TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL7,"CAPCOM CPSF by Host Game Controller 7"},
 };
 
 static const unsigned int selectableGameportDevices[]=
@@ -168,6 +168,17 @@ static const unsigned int selectableGameportDevices[]=
 		}
 	}
 	return TOWNS_GAMEPORTEMU_NONE;
+}
+
+/* static */ std::vector <std::string> FsGuiMainCanvas::GetSelectableGamePortEmulationTypeHumanReadable(void)
+{
+	// Who cares O(N^2) here?
+	std::vector <std::string> lst;
+	for(auto x : selectableGameportDevices)
+	{
+		lst.push_back(GamePortEmulationTypeToHumanReadable(x));
+	}
+	return lst;
 }
 
 ////////////////////////////////////////////////////////////
@@ -2119,6 +2130,7 @@ void FsGuiMainCanvas::Device_GamePort_DeviceSelected(FsGuiDialog *dlgIn,int retu
 				char str[256];
 				sprintf(str,"GAMEPORT %d %s\n",dlg->port,TownsGamePortEmuToStr(emulationType).c_str());
 				SendVMCommand(str);
+				ResumeVMIfSameProc();
 			}
 		}
 	}

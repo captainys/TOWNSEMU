@@ -111,23 +111,14 @@ void ProfileDialog::Make(void)
 			label.push_back(':');
 
 			AddStaticText(0,FSKEY_NULL,label.c_str(),YSTRUE);
-			gamePortDrp[i]=AddEmptyDropList(0,FSKEY_NULL,"",20,40,40,YSTRUE);
-			gamePortDrp[i]->AddString("None",YSTRUE);
-			gamePortDrp[i]->AddString("GamePad0",YSFALSE);
-			gamePortDrp[i]->AddString("GamePad1",YSFALSE);
-			gamePortDrp[i]->AddString("GamePad0 (Analog Axes as Direction)",YSFALSE);
-			gamePortDrp[i]->AddString("GamePad1 (Analog Axes as Direction)",YSFALSE);
-			gamePortDrp[i]->AddString("Emulation by Keyboard(Arrow and ASZX)",YSFALSE);
-			gamePortDrp[i]->AddString("Mouse",YSFALSE);
-			gamePortDrp[i]->AddString("Mouse by Key (Arrow and ZX)",YSTRUE);
-			gamePortDrp[i]->AddString("Mouse by NumPad (NUMKEY and /*)",YSFALSE);
-			gamePortDrp[i]->AddString("Mouse by Pad0",YSFALSE);
-			gamePortDrp[i]->AddString("Mouse by Pad1",YSFALSE);
-			gamePortDrp[i]->AddString("Mouse by Analog0",YSFALSE);
-			gamePortDrp[i]->AddString("Mouse by Analog1",YSFALSE);
+			gamePortDrp[i]=AddEmptyDropList(0,FSKEY_NULL,"",16,40,40,YSTRUE);
+			for(auto label : FsGuiMainCanvas::GetSelectableGamePortEmulationTypeHumanReadable())
+			{
+				gamePortDrp[i]->AddString(label.c_str(),YSFALSE);
+			}
 		}
-		gamePortDrp[0]->Select(1);
-		gamePortDrp[1]->Select(6);
+		gamePortDrp[0]->SelectByString(FsGuiMainCanvas::GamePortEmulationTypeToHumanReadable(TOWNS_GAMEPORTEMU_PHYSICAL0).c_str());
+		gamePortDrp[1]->SelectByString(FsGuiMainCanvas::GamePortEmulationTypeToHumanReadable(TOWNS_GAMEPORTEMU_MOUSE).c_str());
 
 		AddStaticText(0,FSKEY_NULL,"Mouse-Integration Speed",YSTRUE);
 		AddStaticText(0,FSKEY_NULL,"(Try slowing down if mouse-cursor jumps around)",YSTRUE);
@@ -677,8 +668,8 @@ TownsProfile ProfileDialog::GetProfile(void) const
 
 	for(int gameport=0; gameport<2; ++gameport)
 	{
-		auto sel=gamePortDrp[gameport]->GetSelection();
-		profile.gamePort[gameport]=gamePortChoice[sel];
+		auto sel=gamePortDrp[gameport]->GetSelectedString();
+		profile.gamePort[gameport]=FsGuiMainCanvas::HumanReadableToGamePortEmulationType(sel.c_str());
 	}
 
 	profile.mouseIntegrationSpeed=(int)(mouseIntegSpdSlider->GetScaledValue());
@@ -795,13 +786,7 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 
 	for(int gameport=0; gameport<2; ++gameport)
 	{
-		for(int i=0; i<NUM_GAMEPORT_CHOICE; ++i)
-		{
-			if(gamePortChoice[i]==profile.gamePort[gameport])
-			{
-				gamePortDrp[gameport]->Select(i);
-			}
-		}
+		gamePortDrp[gameport]->SelectByString(FsGuiMainCanvas::GamePortEmulationTypeToHumanReadable(profile.gamePort[gameport]).c_str());
 	}
 
 	mouseIntegSpdSlider->SetPositionByScaledValue((double)profile.mouseIntegrationSpeed);
