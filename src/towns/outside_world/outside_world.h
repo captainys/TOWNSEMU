@@ -190,7 +190,6 @@ public:
 	    If the sub-class overloads this function, call Outside_World::CacheGamePadIndicesThatNeedUpdates, and then
 	    add an ID by calling UseGamePad function..
 	*/
-	void CacheGamePadIndicesThatNeedUpdates(const class FMTowns &towns);
 	virtual void CacheGamePadIndicesThatNeedUpdates(void);
 
 	/*! Call this function to cache game pad index that needs to be updated every polling.

@@ -4013,7 +4013,8 @@ void TownsCommandInterpreter::Execute_Gameport(FMTowns &towns,Outside_World *out
 		if(port<TOWNS_NUM_GAMEPORTS)
 		{
 			towns.gameport.state.ports[port].device=TownsGamePort::EmulationTypeToDeviceType(devType);
-			outside_world->CacheGamePadIndicesThatNeedUpdates(towns);
+			outside_world->gamePort[port]=devType;
+			outside_world->CacheGamePadIndicesThatNeedUpdates();
 		}
 		else
 		{
