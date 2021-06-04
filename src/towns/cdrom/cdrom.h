@@ -110,7 +110,8 @@ public:
 	enum
 	{
 		DELAYED_STATUS_IRQ_TIME=  50000,  // Tentatively  50us
-		READ_SECTOR_TIME=       5000000,  // Tentatively   5ms  1X CD-ROM should be 1second/75frames=13.3ms per sector
+		DEFAULT_READ_SECTOR_TIME= 5000000,  // Tentatively   5ms  1X CD-ROM should be 1second/75frames=13.3ms per sector
+		READ_SECTOR_TIME_1X=     13300000,
 		NOTIFICATION_TIME=      1000000,  // Tentatively   1ms
 		CDDASTOP_TIME=          1000000,  // Tentatively   1ms
 		SEEK_TIME=            100000000,  // Tentatively 100ms
@@ -161,6 +162,7 @@ public:
 
 		unsigned int readingSectorHSG,endSectorHSG;
 
+		unsigned int readSectorTime=DEFAULT_READ_SECTOR_TIME;
 		bool DMATransfer,CPUTransfer; // Both are not supposed to be 1, but I/O can set it that way.
 		bool WaitForDTS;
 

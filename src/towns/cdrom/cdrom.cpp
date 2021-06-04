@@ -187,7 +187,7 @@ TownsCDROM::TownsCDROM(class FMTowns *townsPtr,class TownsPIC *PICPtr,class Town
 			if(true==DMAAvailable && true!=state.DTSF)
 			{
 				state.DTSF=true;
-				townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+READ_SECTOR_TIME);
+				townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+state.readSectorTime);
 			}
 		}
 		break;
@@ -530,7 +530,7 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 					state.SIRQ=true;
 					PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
 				}
-				townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+READ_SECTOR_TIME);
+				townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+state.readSectorTime);
 
 				state.DRY=false;
 				state.DTSF=false;
@@ -1172,7 +1172,7 @@ void TownsCDROM::SetSIRQ_IRR(void)
 
 /* virtual */ uint32_t TownsCDROM::SerializeVersion(void) const
 {
-	return 2;
+	return 3;
 }
 /* virtual */ void TownsCDROM::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
 {
@@ -1220,6 +1220,8 @@ void TownsCDROM::SetSIRQ_IRR(void)
 	PushUint32(data,state.CDDAStartTime.ToHSG()); // Will be the current position.  Temporarily the start time.
 	PushUint32(data,state.CDDAEndTime.ToHSG());
 	PushBool(data,state.CDDARepeat);
+
+	PushUint32(data,state.readSectorTime); // Version 3 or newer.
 }
 /* virtual */ bool TownsCDROM::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
 {
@@ -1340,6 +1342,11 @@ void TownsCDROM::SetSIRQ_IRR(void)
 	{
 		state.CDDAState=State::CDDA_IDLE;
 		state.CDDAEndTime.FromHSG(ReadUint32(data));
+	}
+
+	if(3<=version)
+	{
+		state.readSectorTime=ReadUint32(data);
 	}
 	return true;
 }
