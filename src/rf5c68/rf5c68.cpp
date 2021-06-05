@@ -163,7 +163,8 @@ std::vector <std::string> RF5C68::GetStatusText(void) const
 		s+="PAN="+cpputil::Ubtox(state.ch[ch].PAN)+" ";
 		s+="ST="+cpputil::Ubtox(state.ch[ch].ST)+" ";
 		s+="FD="+cpputil::Ustox(state.ch[ch].FD)+" ";
-		s+="LS="+cpputil::Ustox(state.ch[ch].LS);
+		s+="LS="+cpputil::Ustox(state.ch[ch].LS)+" ";
+		s+="PlayPtr="+cpputil::Ustox(state.ch[ch].playPtr);
 
 		text.push_back(s);
 	}
