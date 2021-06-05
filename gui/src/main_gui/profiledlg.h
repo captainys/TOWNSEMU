@@ -31,6 +31,7 @@ public:
 	FsGuiButton *FDWriteProtBtn[TownsProfile::NUM_FDDRIVES];
 	FsGuiButton *damperWireLineBtn;
 	FsGuiTextBox *ROMDirTxt,*CDImgTxt,*FDImgTxt[TownsProfile::NUM_FDDRIVES],*HDImgTxt[TownsProfile::MAX_NUM_SCSI_DEVICES];
+	FsGuiDropList *CDSpeedDrp;
 	FsGuiDropList *gamePortDrp[2]; // None, Pad0, Pad1, Keybord Emulation, Mouse,
 	FsGuiSlider *mouseIntegSpdSlider;
 	FsGuiButton *bootKeyBtn[15];

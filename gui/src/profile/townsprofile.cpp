@@ -15,6 +15,7 @@ void TownsProfile::CleanUp(void)
 {
 	ROMPath="";
 	cdImgFName="";
+	cdSpeed=0;
 	for(auto &f : fdImgFName)
 	{
 		f="";
@@ -217,6 +218,13 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 		}
 	}
 
+	if(0!=cdSpeed)
+	{
+		sstream.str("");
+		sstream << "CDSPEEDX " << cdSpeed;
+		text.push_back(sstream.str());
+	}
+
 	sstream.str("");
 	sstream << "FMVOLUME " << fmVol;
 	text.push_back(sstream.str());
@@ -255,6 +263,13 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 			if(2<=argv.size())
 			{
 				cdImgFName=argv[1].c_str();
+			}
+		}
+		else if(0==argv[0].STRCMP("CDSPEEDX"))
+		{
+			if(2<=argv.size())
+			{
+				cdSpeed=argv[1].Atoi();
 			}
 		}
 		else if(0==argv[0].STRCMP("FDIMG___"))
@@ -705,6 +720,13 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 			sstream << vk.button;
 			argv.push_back(sstream.str());
 		}
+	}
+
+	if(0!=cdSpeed)
+	{
+		sstream.str("");
+		sstream << "-CDSPEED " << cdSpeed;
+		argv.push_back(sstream.str());
 	}
 
 	return argv;

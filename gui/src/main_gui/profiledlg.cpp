@@ -41,6 +41,18 @@ void ProfileDialog::Make(void)
 		CDImgTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",nShowPath,YSFALSE);
 		CDImgTxt->SetLengthLimit(PATH_LENGTH);
 
+		AddStaticText(0,FSKEY_NULL,"CD Speed",YSTRUE);
+		CDSpeedDrp=AddEmptyDropList(0,FSKEY_NULL,"",16,8,8,YSFALSE);
+		CDSpeedDrp->AddString("Default",YSTRUE);
+		CDSpeedDrp->AddString("1X",YSFALSE);
+		CDSpeedDrp->AddString("2X",YSFALSE);
+		CDSpeedDrp->AddString("3X",YSFALSE);
+		CDSpeedDrp->AddString("4X",YSFALSE);
+		CDSpeedDrp->AddString("5X",YSFALSE);
+		CDSpeedDrp->AddString("6X",YSFALSE);
+		CDSpeedDrp->AddString("7X",YSFALSE);
+		CDSpeedDrp->AddString("8X",YSFALSE);
+
 		FDImgBtn[0]=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"FD0:",YSTRUE);
 		FDWriteProtBtn[0]=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Write Protect",YSFALSE);
 		FDImgTxt[0]=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",nShowPath-24,YSFALSE);
@@ -750,6 +762,11 @@ TownsProfile ProfileDialog::GetProfile(void) const
 		profile.pcmVol=-1;
 	}
 
+	profile.cdSpeed=CDSpeedDrp->GetSelection();
+	if(profile.cdSpeed<0)
+	{
+		profile.cdSpeed=0;
+	}
 
 	return profile;
 }
@@ -900,6 +917,8 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 		pcmVolumeSlider->SetPositionByScaledValue(profile.pcmVol);
 		UpdatePCMVolumeText();
 	}
+
+	CDSpeedDrp->Select(profile.cdSpeed);
 }
 
 void ProfileDialog::SetDefaultFMVolume(void)
