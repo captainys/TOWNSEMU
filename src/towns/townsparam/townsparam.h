@@ -50,6 +50,8 @@ public:
 	std::string fdImgFName[NUM_FDDRIVES];
 	bool fdImgWriteProtect[NUM_FDDRIVES]={false,false};
 	std::string cdImgFName;
+	unsigned int cdSpeed=0;  // 0->Use default.
+
 	unsigned int memCardType=TOWNS_MEMCARD_TYPE_NONE;
 	std::string memCardImgFName;
 	std::string startUpScriptFName;

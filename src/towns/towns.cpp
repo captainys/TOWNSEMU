@@ -84,6 +84,10 @@ void FMTowns::State::PowerOn(void)
 			std::cout << DiscImage::ErrorCodeToText(errCode);
 		}
 	}
+	if(0!=argv.cdSpeed)
+	{
+		towns.cdrom.state.readSectorTime=TOWNS_CD_READ_SECTOR_TIME_1X/argv.cdSpeed;
+	}
 
 	for(int scsiID=0; scsiID<TownsStartParameters::MAX_NUM_SCSI_DEVICES; ++scsiID)
 	{

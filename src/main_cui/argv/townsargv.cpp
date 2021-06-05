@@ -98,6 +98,8 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "-CDPATH path" << std::endl;
 	std::cout << "  CD-ROM Image Search Path." << std::endl;
 	std::cout << "  Repeat -CDPATH path1 -CDPATH path2 ... to specify multipl paths." << std::endl;
+	std::cout << "-CDSPEED N" << std::endl;
+	std::cout << "  Set CD speed.  CD speed will be set to Nx." << std::endl;
 	std::cout << "-ICM image-file-name" << std::endl;
 	std::cout << "  IC Memory Card image file name." << std::endl;
 	std::cout << "-JEIDA4 image-file-name" << std::endl;
@@ -443,6 +445,11 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		else if("-CDPATH"==ARG && i+1<argc)
 		{
 			cdSearchPaths.push_back(argv[i+1]);
+			++i;
+		}
+		else if("-CDSPEED"==ARG && i+1<argc)
+		{
+			cdSpeed=cpputil::Atoi(argv[i+1]);
 			++i;
 		}
 		else if("-CD"==ARG && i+1<argc)
