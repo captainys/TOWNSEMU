@@ -746,10 +746,11 @@ std::vector <unsigned char> DiscImage::GetWave(MinSecFrm startMSF,MinSecFrm endM
 		for(int i=0; i+1<layout.size(); ++i)  // Condition i<layout.size()-1 will crash when layout.size()==0 because it is unsigned.
 		{
 			unsigned long long int readFrom=0,readTo=0;
+			const auto layoutType=layout[i].layoutType;
 
 			if(startHSG<=layout[i].startHSG)
 			{
-				if(LAYOUT_DATA==layout[i].layoutType)
+				if(LAYOUT_DATA==layout[i].layoutType) // I have a feeling that this condition does nothing....
 				{
 					wave.clear();
 					return wave;
@@ -785,19 +786,25 @@ std::vector <unsigned char> DiscImage::GetWave(MinSecFrm startMSF,MinSecFrm endM
 				std::cout << readFrom << " " << readTo << " " << readSize << " " << std::endl;
 			#endif
 
-				std::ifstream ifp;
-				ifp.open(bin.fName,std::ios::binary);
-				if(ifp.is_open())
+				auto curSize=wave.size();
+				wave.resize(wave.size()+readSize);
+				for(auto i=curSize; i<wave.size(); ++i)
 				{
-					ifp.seekg(readFrom-bin.byteOffsetInDisc+bin.bytesToSkip,std::ios::beg);
-					auto curSize=wave.size();
-					wave.resize(wave.size()+readSize);
-					for(auto i=curSize; i<wave.size(); ++i)
+					wave[i]=0;
+				}
+
+				// I thought DATA track is excluded by the above condition, but it looks to be wrong.
+				// To prevent noise from the data track, it needs to be checked here.
+				if(LAYOUT_AUDIO==layoutType)
+				{
+					std::ifstream ifp;
+					ifp.open(bin.fName,std::ios::binary);
+					if(ifp.is_open())
 					{
-						wave[i]=0;
+						ifp.seekg(readFrom-bin.byteOffsetInDisc+bin.bytesToSkip,std::ios::beg);
+						ifp.read((char *)(wave.data()+curSize),readSize);
+						ifp.close();
 					}
-					ifp.read((char *)(wave.data()+curSize),readSize);
-					ifp.close();
 				}
 			}
 		}
