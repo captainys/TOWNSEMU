@@ -142,7 +142,7 @@ public:
 	class State
 	{
 	public:
-		std::string imgFileName;
+		// Removed std::string imgFileName, which was redundant with DiscImage.
 
 		bool SIRQ; // 4C0H bit 7
 		bool DEI;  // 4C0H bit 6 (DMA End Flag)

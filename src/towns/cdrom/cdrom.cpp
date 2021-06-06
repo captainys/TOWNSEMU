@@ -52,7 +52,6 @@ void TownsCDROM::State::PushStatusQueue(unsigned char d0,unsigned char d1,unsign
 }
 void TownsCDROM::State::Reset(void)
 {
-	// Do not clear imgFileName on reset.
 	ResetMPU();
 	enableSIRQ=false;
 	enableDEI=false;
@@ -1179,8 +1178,8 @@ void TownsCDROM::SetSIRQ_IRR(void)
 	std::string stateDir,stateName;
 	cpputil::SeparatePathFile(stateDir,stateName,stateFName);
 
-	PushString(data,state.imgFileName);
-	PushString(data,cpputil::MakeRelativePath(state.imgFileName,stateDir));
+	PushString(data,state.GetDisc().fName);
+	PushString(data,cpputil::MakeRelativePath(state.GetDisc().fName,stateDir));
 
 	PushBool(data,state.SIRQ); // 4C0H bit 7
 	PushBool(data,state.DEI);  // 4C0H bit 6 (DMA End Flag)
@@ -1247,7 +1246,6 @@ void TownsCDROM::SetSIRQ_IRR(void)
 		if(cpputil::FileExists(fName) &&
 		   DiscImage::ERROR_NOERROR!=state.GetDisc().Open(fName))
 		{
-			state.imgFileName=fName;
 			loaded=true;
 		}
 	}
@@ -1259,7 +1257,6 @@ void TownsCDROM::SetSIRQ_IRR(void)
 		if(cpputil::FileExists(stateRel) &&
 		   DiscImage::ERROR_NOERROR!=state.GetDisc().Open(stateRel))
 		{
-			state.imgFileName=stateRel;
 			loaded=true;
 		}
 	}
@@ -1275,7 +1272,6 @@ void TownsCDROM::SetSIRQ_IRR(void)
 			if(cpputil::FileExists(ful) &&
 			   DiscImage::ERROR_NOERROR!=state.GetDisc().Open(ful))
 			{
-				state.imgFileName=ful;
 				loaded=true;
 			}
 		}
@@ -1290,7 +1286,6 @@ void TownsCDROM::SetSIRQ_IRR(void)
 		if(cpputil::FileExists(ful) &&
 		   DiscImage::ERROR_NOERROR!=state.GetDisc().Open(ful))
 		{
-			state.imgFileName=ful;
 			loaded=true;
 		}
 	}
