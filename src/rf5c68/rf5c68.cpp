@@ -228,6 +228,15 @@ unsigned int RF5C68::AddWaveForNumSamples(unsigned char waveBuf[],unsigned int n
 			auto readAddr=(pcmAddr[chNum]>>FD_BIT_SHIFT);
 			auto data=state.waveRAM[readAddr];
 
+			// If the data is LOOP_STOP_CODE, try rewind and then get the data.
+			// If the data is still LOOP_STOP_CODE after rewinding, it should be taken as zero.
+			if(LOOP_STOP_CODE==data)
+			{
+				pcmAddr[chNum]=(ch.LS<<FD_BIT_SHIFT);
+				readAddr=(pcmAddr[chNum]>>FD_BIT_SHIFT);
+				data=state.waveRAM[readAddr];
+			}
+
 			bool loopStop=(LOOP_STOP_CODE==data);
 			if(true!=loopStop)
 			{
