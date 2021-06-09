@@ -230,8 +230,15 @@ unsigned int RF5C68::AddWaveForNumSamples(unsigned char waveBuf[],unsigned int n
 
 			// If the data is LOOP_STOP_CODE, try rewind and then get the data.
 			// If the data is still LOOP_STOP_CODE after rewinding, it should be taken as zero.
+			// The logic is dirty.  The real chip should be doing much simpler logic.  I need to clean it.
 			if(LOOP_STOP_CODE==data)
 			{
+				if(0xFFF==(readAddr&0xFFF))
+				{
+					auto bank=((pcmAddr[chNum]>>FD_BIT_SHIFT>>BANK_SHIFT)&0x0F);
+					ch.IRQAfterThisPlayBack=true;
+					ch.IRQBank=bank;
+				}
 				pcmAddr[chNum]=(ch.LS<<FD_BIT_SHIFT);
 				readAddr=(pcmAddr[chNum]>>FD_BIT_SHIFT);
 				data=state.waveRAM[readAddr];
