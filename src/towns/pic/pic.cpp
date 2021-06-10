@@ -174,7 +174,7 @@ bool TownsPIC::I8259A::GetInterruptRequestBit(unsigned int intNum) const
 
 unsigned int TownsPIC::I8259A::INTToGo(void) const
 {
-	for(unsigned int pri=0; pri<7; ++pri)
+	for(unsigned int pri=0; pri<8; ++pri)
 	{
 		auto INTNum=(highestPriorityInt+pri)&7;
 		if(0!=(IRR&(1<<INTNum)) && 0==(ISR&(1<<INTNum)) && 0==(OCW[0]&(1<<INTNum)))
