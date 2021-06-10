@@ -184,6 +184,7 @@ void TownsSound::PCMStopPlay(unsigned char chStopPlay)
 		}
 		break;
 	case TOWNSIO_SOUND_PCM_INT_MASK://      0x4EA, // [2] pp.19,
+		data=state.rf5c68.state.IRQBankMask;
 		break;
 	case TOWNSIO_SOUND_PCM_INT://           0x4EB, // [2] pp.19,
 		data=state.rf5c68.state.IRQBank;
