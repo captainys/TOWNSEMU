@@ -44,6 +44,9 @@ public:
 	bool damperWireLine=false;
 	bool scanLineEffectIn15KHz=false;
 
+	// If not "", VM starts from this saved state.
+	std::string startUpStateFName;
+
 	std::string ROMPath;
 	std::string CMOSFName;
 	bool autoSaveCMOS=true; // If this flag is false, CMOSFName will not be copied to FMTowns::Variable.

@@ -284,6 +284,13 @@ void FMTowns::State::PowerOn(void)
 
 	outside_world->CacheGamePadIndicesThatNeedUpdates();
 
+
+	if(""!=argv.startUpStateFName)
+	{
+		towns.LoadState(argv.startUpStateFName,*outside_world);
+	}
+
+
 	return true;
 }
 

@@ -179,6 +179,8 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  Also selection of UX and UG (386SX models) will affect memory mappings." << std::endl;
 	std::cout << "-FORCEQUITONPOFF" << std::endl;
 	std::cout << "  Use exit(0) to exit the program on power off." << std::endl;
+	std::cout << "-LOADSTATE stateFName.TState" << std::endl;
+	std::cout << "  Load specified state file on start-up." << std::endl;
 }
 
 void TownsARGV::PrintApplicationList(void) const
@@ -772,6 +774,11 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		else if("-FORCEQUITONPOFF"==ARG)
 		{
 			forceQuitOnPowerOff=true;
+		}
+		else if("-LOADSTATE"==ARG && i+1<argc)
+		{
+			startUpStateFName=argv[i+1];
+			++i;
 		}
 		else
 		{
