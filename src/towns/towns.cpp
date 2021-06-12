@@ -284,12 +284,10 @@ void FMTowns::State::PowerOn(void)
 
 	outside_world->CacheGamePadIndicesThatNeedUpdates();
 
-
-	if(""!=argv.startUpStateFName)
-	{
-		towns.LoadState(argv.startUpStateFName,*outside_world);
-	}
-
+	// Start-Up VM State cannot be loaded until outside_world is initialized.
+	// If the VM state is loaded here, CDDA will not be started.
+	// It should be delayed.
+	towns.var.startUpStateFName=argv.startUpStateFName;
 
 	return true;
 }

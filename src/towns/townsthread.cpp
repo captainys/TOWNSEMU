@@ -35,6 +35,11 @@ void TownsThread::VMStart(FMTowns *townsPtr,Outside_World *outside_world,class T
 
 	outside_world->Start();
 
+	if(""!=townsPtr->var.startUpStateFName)
+	{
+		townsPtr->LoadState(townsPtr->var.startUpStateFName,*outside_world);
+	}
+
 	switch(townsPtr->state.appSpecificSetting)
 	{
 	case TOWNS_APPSPECIFIC_BRANDISH:

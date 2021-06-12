@@ -257,6 +257,11 @@ public:
 		*/
 		unsigned int frequencyBackup=0;
 
+		/*! VM State loaded at start-up.
+		    Loaded in TownsThread::VMStart
+		*/
+		std::string startUpStateFName;
+
 
 		enum
 		{
