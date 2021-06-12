@@ -231,6 +231,11 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 		subMenu->AddTextItem(0,FSKEY_NULL,L"Reload Default")->BindCallBack(&THISCLASS::File_ReloadDefaultProfile,this);
 
 		{
+			auto subSubMenu=subMenu->AddTextItem(0,FSKEY_NULL,L"CMOS RAM")->AddSubMenu();
+			subSubMenu->AddTextItem(0,FSKEY_NULL,"Clear CMOS RAM")->BindCallBack(&THISCLASS::File_ClearCMOS,this);
+		}
+
+		{
 			auto subSubMenu=subMenu->AddTextItem(0,FSKEY_N,L"New")->AddSubMenu();
 			subSubMenu->AddTextItem(0,FSKEY_NULL,L"1232KB Floppy Disk Image")->BindCallBack(&THISCLASS::File_New_1232KB,this);
 			subSubMenu->AddTextItem(0,FSKEY_NULL,L"1440KB Floppy Disk Image")->BindCallBack(&THISCLASS::File_New_1440KB,this);
@@ -1296,7 +1301,71 @@ void FsGuiMainCanvas::File_New_FileSelected(FsGuiDialog *dlg,int returnCode)
 	}
 }
 
+////////////////////////////////////////////////////////////
 
+class FsGuiMainCanvas::File_ClearCMOSDialog : public FsGuiDialog
+{
+public:
+	FsGuiButton *confirmClearCMOSBtn,*reallyConfirmBtn,*reallyReallyConfirmBtn;
+	FsGuiButton *cancelBtn;
+	std::string cmosFName;
+	void Make(void);
+	virtual void OnButtonClick(FsGuiButton *btn);
+};
+
+void FsGuiMainCanvas::File_ClearCMOSDialog::Make(void)
+{
+	AddStaticText(0,FSKEY_NULL,
+		"CMOS stores boot drive, drive-letter assignments, and other\n"
+		"system settings.  When the system does not start, clearing\n"
+		"CMOS may fix the boot problem.  Otherwise, you may have to\n"
+		"re-configure your drive-letters etc.\n",
+		YSTRUE);
+
+	confirmClearCMOSBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"Confirm Clear CMOS",YSTRUE);
+	reallyConfirmBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"Really Confirm Clear CMOS",YSFALSE);
+	reallyConfirmBtn->Disable();
+	reallyReallyConfirmBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"Really Really Confirm Clear",YSFALSE);
+	reallyReallyConfirmBtn->Disable();
+	cancelBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"Cancel",YSTRUE);
+	Fit();
+}
+
+/* virtual */ void FsGuiMainCanvas::File_ClearCMOSDialog::OnButtonClick(FsGuiButton *btn)
+{
+	if(btn==cancelBtn)
+	{
+		CloseModalDialog(0);
+	}
+	if(btn==confirmClearCMOSBtn)
+	{
+		reallyConfirmBtn->Enable();
+	}
+	if(btn==reallyConfirmBtn)
+	{
+		reallyReallyConfirmBtn->Enable();
+	}
+	if(btn==reallyReallyConfirmBtn)
+	{
+		remove(cmosFName.c_str());
+		CloseModalDialog(0);
+	}
+}
+
+void FsGuiMainCanvas::File_ClearCMOS(FsGuiPopUpMenuItem *)
+{
+	if(true!=IsVMRunning())
+	{
+		auto dlg=FsGuiDialog::CreateSelfDestructiveDialog<File_ClearCMOSDialog>();
+		dlg->Make();
+		dlg->cmosFName=GetCMOSFileName();
+		AttachModalDialog(dlg);
+	}
+	else
+	{
+		VM_Already_Running_Error();
+	}
+}
 
 ////////////////////////////////////////////////////////////
 
@@ -2072,6 +2141,8 @@ void FsGuiMainCanvas::GamePortDialog::Make(int port)
 
 	okBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"OK",YSTRUE);
 	cancelBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"Cancel",YSFALSE);
+
+	Fit();
 }
 /* virtual */ void FsGuiMainCanvas::GamePortDialog::OnButtonClick(FsGuiButton *btn)
 {

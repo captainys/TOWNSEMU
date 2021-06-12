@@ -197,6 +197,9 @@ private:
 	void File_Exit_ConfirmExitCallBack(FsGuiDialog *,int);
 	void File_Exit_ReallyExit(void);
 
+	class File_ClearCMOSDialog;
+	void File_ClearCMOS(FsGuiPopUpMenuItem *);
+
 
 	void View_OpenProfileDialog(FsGuiPopUpMenuItem *);
 
