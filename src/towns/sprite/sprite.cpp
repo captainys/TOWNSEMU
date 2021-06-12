@@ -41,9 +41,12 @@ TownsSprite::TownsSprite(class FMTowns *townsPtr,TownsPhysicalMemory *physMemPtr
 }
 void TownsSprite::Start(void)
 {
-	state.reg[REG_CONTROL1]|=0x80;
-	state.spriteBusy=false;
-	townsPtr->ScheduleDeviceCallBack(*this,townsPtr->crtc.NextVSYNCTime(townsPtr->state.townsTime));
+	if(0==(state.reg[REG_CONTROL1]&0x80))
+	{
+		state.reg[REG_CONTROL1]|=0x80;
+		state.spriteBusy=false;
+		townsPtr->ScheduleDeviceCallBack(*this,townsPtr->crtc.NextVSYNCTime(townsPtr->state.townsTime));
+	}
 }
 void TownsSprite::Stop(void)
 {
