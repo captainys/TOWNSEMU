@@ -41,6 +41,10 @@ TownsSprite::TownsSprite(class FMTowns *townsPtr,TownsPhysicalMemory *physMemPtr
 }
 void TownsSprite::Start(void)
 {
+	// ImageFight write to SPEN repeatedly in the main loop.
+	// I was assuming SPEN is written once to start sprite, and therefore was not checking:
+	//     if(0==(state.reg[REG_CONTROL1]&0x80))
+	// Without this check, ImageFight was messing up sprite ready->busy update timing.
 	if(0==(state.reg[REG_CONTROL1]&0x80))
 	{
 		state.reg[REG_CONTROL1]|=0x80;
