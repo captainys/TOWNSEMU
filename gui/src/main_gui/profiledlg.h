@@ -44,6 +44,8 @@ public:
 	FsGuiButton *runBtn;
 	FsGuiButton *separateProcBtn;
 	FsGuiButton *pretend386DXBtn;
+	FsGuiButton *startUpStateFNameBtn;
+	FsGuiTextBox *startUpStateFNameTxt;
 
 	FsGuiButton *flightMouseEnableBtn;
 	FsGuiDropList *flightMousePhysIdDrp;

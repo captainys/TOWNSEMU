@@ -74,6 +74,9 @@ void ProfileDialog::Make(void)
 
 		damperWireLineBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Render Damper-Wire Line (to make you nostalgic)",YSFALSE);
 
+		startUpStateFNameBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"Load VM State",YSTRUE);
+		startUpStateFNameTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",nShowPath,YSFALSE);
+
 		EndAddTabItem();
 	}
 
@@ -539,6 +542,11 @@ void ProfileDialog::OnSliderPositionChange(FsGuiSlider *slider,const double &pre
 		std::vector <const wchar_t *> extList={L".CUE",L".ISO"};
 		Browse(L"CD Image",CDImgTxt,extList);
 	}
+	if(startUpStateFNameBtn==btn)
+	{
+		std::vector <const wchar_t *> extList={L".TState"};
+		Browse(L"Start-Up VM State",startUpStateFNameTxt,extList);
+	}
 	for(int i=0; i<2; ++i)
 	{
 		if(FDImgBtn[i]==btn)
@@ -768,6 +776,8 @@ TownsProfile ProfileDialog::GetProfile(void) const
 		profile.cdSpeed=0;
 	}
 
+	profile.startUpStateFName=startUpStateFNameTxt->GetString().data();
+
 	return profile;
 }
 void ProfileDialog::SetProfile(const TownsProfile &profile)
@@ -919,6 +929,9 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 	}
 
 	CDSpeedDrp->Select(profile.cdSpeed);
+
+	str.SetUTF8String(profile.startUpStateFName.data());
+	startUpStateFNameTxt->SetText(str);
 }
 
 void ProfileDialog::SetDefaultFMVolume(void)

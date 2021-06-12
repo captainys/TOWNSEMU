@@ -233,6 +233,13 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 	sstream << "PCMVOLUM " << pcmVol;
 	text.push_back(sstream.str());
 
+	if(""!=startUpStateFName)
+	{
+		sstream.str("");
+		sstream << "LOADSTAT " << startUpStateFName;
+		text.push_back(sstream.str());
+	}
+
 	return text;
 }
 bool TownsProfile::Deserialize(const std::vector <std::string> &text)
@@ -506,6 +513,13 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 				pcmVol=argv[1].Atoi();
 			}
 		}
+		else if(0==argv[0].STRCMP("LOADSTAT"))
+		{
+			if(2<=argv.size())
+			{
+				startUpStateFName=argv[1];
+			}
+		}
 		else
 		{
 			errorMsg="Unrecognized keyword:";
@@ -724,9 +738,17 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 
 	if(0!=cdSpeed)
 	{
+		argv.push_back("-CDSPEED");
+
 		sstream.str("");
-		sstream << "-CDSPEED " << cdSpeed;
+		sstream << cdSpeed;
 		argv.push_back(sstream.str());
+	}
+
+	if(""!=startUpStateFName)
+	{
+		argv.push_back("-LOADSTATE");
+		argv.push_back(startUpStateFName);
 	}
 
 	return argv;
