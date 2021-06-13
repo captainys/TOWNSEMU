@@ -1303,5 +1303,5 @@ std::vector <std::string> FMTowns::GetMouseStatusText(void) const
 	// Information based on https://github.com/nabe-abk/free386/blob/master/doc-ja/dosext/coco_nsd.txt <<
 
 
-	symTable.AddINTLabel(0xFD,"Wait 10us");
+	symTable.AddINTLabel(0xFD,"Wait CX*10us");
 }
