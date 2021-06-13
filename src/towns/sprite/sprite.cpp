@@ -49,7 +49,7 @@ void TownsSprite::Start(void)
 	{
 		state.reg[REG_CONTROL1]|=0x80;
 		state.spriteBusy=false;
-		townsPtr->ScheduleDeviceCallBack(*this,townsPtr->crtc.NextVSYNCEndTime(townsTime)+SPRITE_SCREEN_CLEAR_TIME);
+		townsPtr->ScheduleDeviceCallBack(*this,townsPtr->crtc.NextVSYNCEndTime(townsPtr->state.townsTime)+SPRITE_SCREEN_CLEAR_TIME);
 	}
 }
 void TownsSprite::Stop(void)
