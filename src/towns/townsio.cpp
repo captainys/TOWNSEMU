@@ -178,7 +178,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	switch(ioport)
 	{
 	case TOWNSIO_FREERUN_TIMER:// 0x26
-		return (state.townsTime<<var.freeRunTimerShift)&0xffff;
+		return ((state.townsTime/1000)<<var.freeRunTimerShift)&0xffff;
 	}
 	return Device::IOReadWord(ioport);
 }
