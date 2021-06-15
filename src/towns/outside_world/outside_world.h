@@ -197,6 +197,9 @@ public:
 	void UseGamePad(unsigned int gamePadIndex);
 
 
+	virtual void RegisterHostShortCut(std::string hostKeyLabel,bool ctrl,bool shift,std::string cmdStr);
+
+
 public:
 	/*! Left level and right level can be 0 to 256.  Value above 256 will be rounded to 256.
 	*/

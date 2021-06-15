@@ -198,6 +198,9 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 {
 	soundPlayer.KeepPlaying();
 	FsPollDevice();
+	bool ctrlKey=(0!=FsGetKeyState(FSKEY_CTRL));
+	bool shiftKey=(0!=FsGetKeyState(FSKEY_SHIFT));
+
 	PollGamePads();
 
 	int lb,mb,rb,mx,my;
@@ -438,6 +441,11 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 			{
 				this->pauseKey=true;
 			}
+			if(hostShortCut[c].inUse && hostShortCut[c].ctrl==ctrlKey && hostShortCut[c].shift==shiftKey)
+			{
+				// Process Host Short Cut
+				continue;
+			}
 
 			this->ProcessInkey(towns,FSKEYtoTownsKEY[c]);
 			unsigned char keyFlags=0;
@@ -445,12 +453,12 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 			{
 			default:
 				// CTRL+C, CTRL+S, CTRL+Q...
-				if(0!=FsGetKeyState(FSKEY_CTRL) && FSKEY_A<=c && c<=FSKEY_Z)
+				if(ctrlKey && FSKEY_A<=c && c<=FSKEY_Z)
 				{
 					// Can take Ctrl+? and Ctrl+Shift+?, but Shift+? is taken by FsInkeyChar() already.
 					// Therefore this block should only process only if Ctrl key is held down.
 					keyFlags=TOWNS_KEYFLAG_CTRL;
-					if(0!=FsGetKeyState(FSKEY_SHIFT))
+					if(shiftKey)
 					{
 						keyFlags=TOWNS_KEYFLAG_SHIFT;
 					}
@@ -462,8 +470,8 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 				// User Request: Want to use ESC as ESC.
 				// Problem: F-BASIC386 uses Break.
 				// Trying: Physical ESC key makes both BREAK and ESC strokes.
-				keyFlags|=(0!=FsGetKeyState(FSKEY_CTRL) ? TOWNS_KEYFLAG_CTRL : 0);
-				keyFlags|=(0!=FsGetKeyState(FSKEY_SHIFT) ? TOWNS_KEYFLAG_SHIFT : 0);
+				keyFlags|=(ctrlKey ? TOWNS_KEYFLAG_CTRL : 0);
+				keyFlags|=(shiftKey ? TOWNS_KEYFLAG_SHIFT : 0);
 				if(TOWNS_KEYBOARD_MODE_TRANSLATION1==keyboardMode)
 				{
 					towns.keyboard.PushFifo(keyFlags|TOWNS_KEYFLAG_JIS_PRESS,  TOWNS_JISKEY_BREAK);
@@ -518,8 +526,8 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 			case FSKEY_DOWN:
 			case FSKEY_LEFT:
 			case FSKEY_RIGHT:
-				keyFlags|=(0!=FsGetKeyState(FSKEY_CTRL) ? TOWNS_KEYFLAG_CTRL : 0);
-				keyFlags|=(0!=FsGetKeyState(FSKEY_SHIFT) ? TOWNS_KEYFLAG_SHIFT : 0);
+				keyFlags|=(ctrlKey ? TOWNS_KEYFLAG_CTRL : 0);
+				keyFlags|=(shiftKey ? TOWNS_KEYFLAG_SHIFT : 0);
 				towns.keyboard.PushFifo(keyFlags|TOWNS_KEYFLAG_JIS_PRESS,  FSKEYtoTownsKEY[c]);
 				towns.keyboard.PushFifo(keyFlags|TOWNS_KEYFLAG_JIS_RELEASE,FSKEYtoTownsKEY[c]);
 				break;
@@ -569,8 +577,8 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 					break;
 				}
 
-				byteData|=(0!=FsGetKeyState(FSKEY_CTRL) ? TOWNS_KEYFLAG_CTRL : 0);
-				byteData|=(0!=FsGetKeyState(FSKEY_SHIFT) ? TOWNS_KEYFLAG_SHIFT : 0);
+				byteData|=(ctrlKey ? TOWNS_KEYFLAG_CTRL : 0);
+				byteData|=(shiftKey ? TOWNS_KEYFLAG_SHIFT : 0);
 				if(0!=FSKEYState[c])
 				{
 					byteData|=0xF0; // Typamatic==Repeat?
@@ -624,8 +632,8 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 			auto sta=FsGetKeyState(key);
 			if(0!=FSKEYtoTownsKEY[key] && 0!=FSKEYState[key] && 0==sta)
 			{
-				byteData|=(0!=FsGetKeyState(FSKEY_CTRL) ? TOWNS_KEYFLAG_CTRL : 0);
-				byteData|=(0!=FsGetKeyState(FSKEY_SHIFT) ? TOWNS_KEYFLAG_SHIFT : 0);
+				byteData|=(ctrlKey ? TOWNS_KEYFLAG_CTRL : 0);
+				byteData|=(shiftKey ? TOWNS_KEYFLAG_SHIFT : 0);
 				byteData|=TOWNS_KEYFLAG_JIS_RELEASE;
 				towns.keyboard.PushFifo(byteData,FSKEYtoTownsKEY[key]);
 			}
@@ -1512,6 +1520,18 @@ void FsSimpleWindowConnection::RenderBeforeSwapBuffers(const TownsRender::Image 
 	FSKEYtoTownsKEY[FSKEY_RIGHT_SHIFT]= TOWNS_JISKEY_SHIFT;
 	FSKEYtoTownsKEY[FSKEY_LEFT_ALT]=    TOWNS_JISKEY_NULL;
 	FSKEYtoTownsKEY[FSKEY_RIGHT_ALT]=   TOWNS_JISKEY_NULL;
+}
+
+/* virtual */ void FsSimpleWindowConnection::RegisterHostShortCut(std::string hostKeyLabel,bool ctrl,bool shift,std::string cmdStr)
+{
+	auto fsKey=FsStringToKeyCode(hostKeyLabel.c_str());
+	if(FSKEY_NULL!=fsKey)
+	{
+		hostShortCut[fsKey].inUse=true;
+		hostShortCut[fsKey].ctrl=ctrl;
+		hostShortCut[fsKey].shift=shift;
+		hostShortCut[fsKey].cmdStr=cmdStr;
+	}
 }
 
 /* virtual */ void FsSimpleWindowConnection::CDDAPlay(const DiscImage &discImg,DiscImage::MinSecFrm from,DiscImage::MinSecFrm to,bool repeat,unsigned int leftLevel,unsigned int rightLevel)

@@ -26,6 +26,14 @@ public:
 		unsigned int button;
 	};
 
+	class HostShortCut
+	{
+	public:
+		std::string hostKey;
+		bool ctrl,shift;
+		std::string cmdStr;
+	};
+
 	unsigned int townsType=TOWNSTYPE_UNKNOWN;
 
 	unsigned int gamePort[NUM_GAMEPORTS]={TOWNS_GAMEPORTEMU_PHYSICAL0,TOWNS_GAMEPORTEMU_MOUSE};
@@ -69,6 +77,7 @@ public:
 
 	int keyboardMode=TOWNS_KEYBOARD_MODE_DEFAULT;
 	std::vector <VirtualKey> virtualKeys;
+	std::vector <HostShortCut> hostShortCutKeys;
 
 	int fmVol=-1,pcmVol=-1;
 

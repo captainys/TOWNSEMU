@@ -267,3 +267,8 @@ void Outside_World::UseGamePad(unsigned int gamePadIndex)
 	}
 	gamePadsNeedUpdate.push_back(gamePadIndex);
 }
+
+/* virtual */ void Outside_World::RegisterHostShortCut(std::string hostKeyLabel,bool ctrl,bool shift,std::string cmdStr)
+{
+	std::cout << "Host Short Cut not implemented." << std::endl;
+}

@@ -40,12 +40,23 @@ So, my best decision is to use streaming mode in macOS, which should work perfec
 #include "outside_world.h"
 #include "yssimplesound.h"
 #include "ysgamepad.h"
+#include "fssimplewindow.h"
 #include <vector>
 
 class FsSimpleWindowConnection : public Outside_World
 {
 public:
+	class HostShortCut
+	{
+	public:
+		bool inUse=false;
+		bool ctrl=false,shift=false;
+		std::string cmdStr;
+	};
+
 	#define PAUSE_KEY_CODE FSKEY_SCROLLLOCK
+
+	HostShortCut hostShortCut[FSKEY_NUM_KEYCODE];
 
 	bool gamePadInitialized=false;
 	unsigned int *FSKEYtoTownsKEY=nullptr;
@@ -77,6 +88,8 @@ public:
 	virtual bool ImageNeedsFlip(void);
 
 	virtual void SetKeyboardLayout(unsigned int layout);
+
+	virtual void RegisterHostShortCut(std::string hostKeyLabel,bool ctrl,bool shift,std::string cmdStr);
 
 
 	YsSoundPlayer soundPlayer;
