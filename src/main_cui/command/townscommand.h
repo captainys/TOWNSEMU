@@ -174,6 +174,10 @@ public:
 		CMD_LOAD_STATE,
 
 		CMD_GAMEPORT,
+
+		CMD_QUICK_SCREENSHOT,
+		CMD_QUICK_SCREENSHOT_PAGES,
+		CMD_QUICK_SCREENSHOT_DIR,
 	};
 
 	enum
@@ -376,6 +380,11 @@ public:
 	void Execute_SaveMemDump(FMTowns &towns,Command &cmd);
 
 	void Execute_Gameport(FMTowns &towns,Outside_World *outside_world,Command &cmd);
+
+	void Execute_QuickScreenShot(FMTowns &towns,Command &cmd);
+	void Execute_QuickScreenShotPages(FMTowns &towns,Command &cmd);
+	void Execute_QuickScreenShotDirectory(FMTowns &towns,Command &cmd);
+
 };
 
 

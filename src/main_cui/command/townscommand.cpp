@@ -18,6 +18,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <vector>
 #include <cstdint>
 
+#include <time.h>
+#include <stdio.h>
+
 #include "yspngenc.h"
 
 #include "i486debugmemaccess.h"
@@ -175,6 +178,11 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["LOADSTATE"]=CMD_LOAD_STATE;
 
 	primaryCmdMap["GAMEPORT"]=CMD_GAMEPORT;
+
+	primaryCmdMap["QSS"]=CMD_QUICK_SCREENSHOT;
+	primaryCmdMap["QSSPAGES"]=CMD_QUICK_SCREENSHOT_PAGES;
+	primaryCmdMap["QSSDIR"]=CMD_QUICK_SCREENSHOT_DIR;
+
 
 
 	featureMap["CMDLOG"]=ENABLE_CMDLOG;
@@ -484,6 +492,14 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Save a VRAM layer. 0|1 " << std::endl;
 	std::cout << "  It will save entire layer, not just visible part on the monitor." << std::endl;
 	std::cout << "  In single-layer mode, you don't have to specify 0|1." << std::endl;
+
+	std::cout << "QSS" << std::endl;
+	std::cout << "  Quick Screen Shot.  File name is automatically given." << std::endl;
+	std::cout << "  File is saved in the quick-screenshot directory." << std::endl;
+	std::cout << "QSSDIR dir" << std::endl;
+	std::cout << "  Specify quick-screenshot directory." << std::endl;
+	std::cout << "QSSPAGES 0|1 0|1" << std::endl;
+	std::cout << "  Specify pages to take quick screenshot" << std::endl;
 
 
 	std::cout << "DOSSEG 01234" << std::endl;
@@ -1281,6 +1297,16 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 
 	case CMD_GAMEPORT:
 		Execute_Gameport(towns,outside_world,cmd);
+		break;
+
+	case CMD_QUICK_SCREENSHOT:
+		Execute_QuickScreenShot(towns,cmd);
+		break;
+	case CMD_QUICK_SCREENSHOT_PAGES:
+		Execute_QuickScreenShotPages(towns,cmd);
+		break;
+	case CMD_QUICK_SCREENSHOT_DIR:
+		Execute_QuickScreenShotDirectory(towns,cmd);
 		break;
 	}
 }
@@ -4036,5 +4062,77 @@ void TownsCommandInterpreter::Execute_Gameport(FMTowns &towns,Outside_World *out
 		{
 			std::cout << TownsGamePortEmuToStr(i) << std::endl;
 		}
+	}
+}
+
+void TownsCommandInterpreter::Execute_QuickScreenShot(FMTowns &towns,Command &cmd)
+{
+	auto now=time(nullptr);
+	auto tm=localtime(&now);
+
+	auto year=tm->tm_year+1900;
+	auto month=tm->tm_mon+1;
+	auto date=tm->tm_mday;
+	auto hour=tm->tm_hour;
+	auto min=tm->tm_min;
+	auto sec=tm->tm_sec;
+
+	std::string ful;
+	for(int count=0; count<100; ++count)
+	{
+		char fmt[256];
+		sprintf(fmt,"%04d%02d%02d%02d%02d%02d%02d.png",year,month,date,hour,min,sec,count);
+
+		if(""!=towns.var.quickScrnShotDir)
+		{
+			ful=cpputil::MakeFullPathName(towns.var.quickScrnShotDir,fmt);
+		}
+		else
+		{
+			ful=fmt;
+		}
+
+		if(true!=cpputil::FileExists(ful))
+		{
+			break;
+		}
+	}
+
+	TownsRender render;
+	towns.RenderQuiet(render,towns.var.quickScrnShotPage[0],towns.var.quickScrnShotPage[1]);
+
+	auto img=render.GetImage();
+
+	YsRawPngEncoder encoder;
+	if(YSOK==encoder.EncodeToFile(ful.c_str(),img.wid,img.hei,8,6,img.rgba))
+	{
+		std::cout << "Saved to " << ful << std::endl;
+	}
+	else
+	{
+		std::cout << "Save error." << std::endl;
+	}
+}
+void TownsCommandInterpreter::Execute_QuickScreenShotPages(FMTowns &towns,Command &cmd)
+{
+	if(3<=cmd.argv.size())
+	{
+		towns.var.quickScrnShotPage[0]=(0!=cpputil::Atoi(cmd.argv[1].c_str()));
+		towns.var.quickScrnShotPage[1]=(0!=cpputil::Atoi(cmd.argv[2].c_str()));
+	}
+	else
+	{
+		PrintError(ERROR_TOO_FEW_ARGS);
+	}
+}
+void TownsCommandInterpreter::Execute_QuickScreenShotDirectory(FMTowns &towns,Command &cmd)
+{
+	if(2<=cmd.argv.size())
+	{
+		towns.var.quickScrnShotDir=cmd.argv[1];
+	}
+	else
+	{
+		PrintError(ERROR_TOO_FEW_ARGS);
 	}
 }

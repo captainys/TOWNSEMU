@@ -262,6 +262,14 @@ public:
 		*/
 		std::string startUpStateFName;
 
+		/*!
+		*/
+		std::string quickScrnShotDir;
+
+		/*!
+		*/
+		bool quickScrnShotPage[2]={true,true};
+
 
 		enum
 		{
