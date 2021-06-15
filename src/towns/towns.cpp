@@ -289,6 +289,10 @@ void FMTowns::State::PowerOn(void)
 	// It should be delayed.
 	towns.var.startUpStateFName=argv.startUpStateFName;
 
+	towns.var.quickScrnShotDir=argv.quickScrnShotDir;
+	towns.var.quickScrnShotPage[0]=argv.quickScrnShotPage[0];
+	towns.var.quickScrnShotPage[1]=argv.quickScrnShotPage[1];
+
 	return true;
 }
 

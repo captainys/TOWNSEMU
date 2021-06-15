@@ -780,6 +780,17 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 			startUpStateFName=argv[i+1];
 			++i;
 		}
+		else if("-QUICKSSDIR"==ARG && i+1<argc)
+		{
+			quickScrnShotDir=argv[i+1];
+			++i;
+		}
+		else if("-QUICKSSPAGES"==ARG && i+2<argc)
+		{
+			quickScrnShotPage[0]=(0!=cpputil::Atoi(argv[i+1]));
+			quickScrnShotPage[1]=(0!=cpputil::Atoi(argv[i+2]));
+			i+=2;
+		}
 		else
 		{
 			if(1==i)
