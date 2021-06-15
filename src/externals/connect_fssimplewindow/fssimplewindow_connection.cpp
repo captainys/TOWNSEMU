@@ -443,7 +443,7 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 			}
 			if(hostShortCut[c].inUse && hostShortCut[c].ctrl==ctrlKey && hostShortCut[c].shift==shiftKey)
 			{
-				// Process Host Short Cut
+				this->commandQueue.push(hostShortCut[c].cmdStr);
 				continue;
 			}
 

@@ -100,15 +100,28 @@ public:
 			uiTerminate=true;
 		}
 	}
-	else if(""!=this->cmdline)
+	else
 	{
-		auto cmd=cmdInterpreter.Interpret(this->cmdline);
-		cmdInterpreter.Execute(townsThread,towns,outside_world,cmd);
-		if(TownsCommandInterpreter::CMD_QUIT==cmd.primaryCmd)
+		if(""!=this->cmdline)
 		{
-			uiTerminate=true;
+			auto cmd=cmdInterpreter.Interpret(this->cmdline);
+			cmdInterpreter.Execute(townsThread,towns,outside_world,cmd);
+			if(TownsCommandInterpreter::CMD_QUIT==cmd.primaryCmd)
+			{
+				uiTerminate=true;
+			}
+			this->cmdline="";
 		}
-		this->cmdline="";
+		while(true!=outside_world->commandQueue.empty())
+		{
+			auto cmd=cmdInterpreter.Interpret(outside_world->commandQueue.front());
+			cmdInterpreter.Execute(townsThread,towns,outside_world,cmd);
+			if(TownsCommandInterpreter::CMD_QUIT==cmd.primaryCmd)
+			{
+				uiTerminate=true;
+			}
+			outside_world->commandQueue.pop();
+		}
 	}
 }
 

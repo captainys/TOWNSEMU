@@ -7,17 +7,21 @@
 }
 /* virtual */ void TownsCommandQueue::ExecCommandQueue(TownsThread &vmThread,FMTowns &towns,Outside_World *outside_world)
 {
-	while(true!=cmdqueue.empty())
+	for(int i=0; i<2; ++i)
 	{
-		auto cmdline=cmdqueue.front();
-		cmdqueue.pop();
-
-		std::cout << cmdline << std::endl;
-
-		auto cmd=cmdInterpreter.Interpret(cmdline);
-		cmdInterpreter.Execute(vmThread,towns,outside_world,cmd);
-		if(TownsCommandInterpreter::CMD_QUIT==cmd.primaryCmd)
+		auto &cmdqueue=(i==0 ? this->cmdqueue : outside_world->commandQueue);
+		while(true!=cmdqueue.empty())
 		{
+			auto cmdline=cmdqueue.front();
+			cmdqueue.pop();
+
+			std::cout << cmdline << std::endl;
+
+			auto cmd=cmdInterpreter.Interpret(cmdline);
+			cmdInterpreter.Execute(vmThread,towns,outside_world,cmd);
+			if(TownsCommandInterpreter::CMD_QUIT==cmd.primaryCmd)
+			{
+			}
 		}
 	}
 }

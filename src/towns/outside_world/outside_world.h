@@ -18,6 +18,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include <vector>
 #include <string>
+#include <queue>
 
 #include "render.h"
 #include "discimg.h"
@@ -83,6 +84,9 @@ public:
 	*/
 	std::vector <VirtualKey> virtualKeys;
 
+	/*!
+	*/
+	std::queue <std::string> commandQueue;
 
 	/*! Cache of game-pad indices that needs to be updated in polling.
 	*/
