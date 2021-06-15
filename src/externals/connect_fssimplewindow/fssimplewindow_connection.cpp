@@ -545,6 +545,11 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 			{
 				this->pauseKey=true;
 			}
+			if(hostShortCut[c].inUse && hostShortCut[c].ctrl==ctrlKey && hostShortCut[c].shift==shiftKey)
+			{
+				this->commandQueue.push(hostShortCut[c].cmdStr);
+				continue;
+			}
 
 			if(TOWNS_JISKEY_NULL!=FSKEYtoTownsKEY[c])
 			{

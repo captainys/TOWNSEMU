@@ -293,6 +293,11 @@ void FMTowns::State::PowerOn(void)
 	towns.var.quickScrnShotPage[0]=argv.quickScrnShotPage[0];
 	towns.var.quickScrnShotPage[1]=argv.quickScrnShotPage[1];
 
+	for(auto hsc : argv.hostShortCutKeys)
+	{
+		outside_world->RegisterHostShortCut(hsc.hostKey,hsc.ctrl,hsc.shift,hsc.cmdStr);
+	}
+
 	return true;
 }
 

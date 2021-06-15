@@ -791,6 +791,16 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 			quickScrnShotPage[1]=(0!=cpputil::Atoi(argv[i+2]));
 			i+=2;
 		}
+		else if("-HOSTSHORTCUT"==ARG && i+4<argc)
+		{
+			HostShortCut hsc;
+			hsc.hostKey=argv[i+1];
+			hsc.ctrl=(0!=cpputil::Atoi(argv[i+2]));
+			hsc.shift=(0!=cpputil::Atoi(argv[i+3]));
+			hsc.cmdStr=argv[i+4];
+			hostShortCutKeys.push_back(hsc);
+			i+=4;
+		}
 		else
 		{
 			if(1==i)
