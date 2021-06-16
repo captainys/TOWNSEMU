@@ -98,6 +98,8 @@ static std::string hotKeyFunc[][2]=
 {
 	{"None",""},
 	{"Quick Screenshot","QSS"},
+	{"Quick Page 0 Screenshot","QSS 0"},
+	{"Quick Page 1 Screenshot","QSS 1"},
 };
 
 
@@ -527,9 +529,7 @@ void ProfileDialog::Make(void)
 			hostShortCutFunctionDrp[i]->Select(0);
 		}
 
-		AddStaticText(0,FSKEY_NULL,"Quick Screen Shot:",YSTRUE);
-		quickSsPagesBtn[0]=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"PG0",YSFALSE);
-		quickSsPagesBtn[1]=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"PG1",YSFALSE);
+		AddStaticText(0,FSKEY_NULL,"Quick Screen Shot Dir:",YSTRUE);
 		quickSsDirBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"Browse",YSTRUE);
 		quickSsDirTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",nShowPath,YSFALSE);;
 
@@ -906,6 +906,30 @@ TownsProfile ProfileDialog::GetProfile(void) const
 
 	profile.startUpStateFName=startUpStateFNameTxt->GetString().data();
 
+	profile.quickScrnShotDir=quickSsDirTxt->GetString().data();
+	for(int i=0; i<MAX_NUM_HOST_SHORTCUT; ++i)
+	{
+		auto selHostKey=hostShortCutKeyLabelDrp[i]->GetSelection();
+		auto selFunc=hostShortCutFunctionDrp[i]->GetSelection();
+		if(0!=selHostKey && 0!=selFunc)
+		{
+			TownsStartParameters::HostShortCut hsc;
+			hsc.hostKey=hostShortCutKeyLabelDrp[i]->GetSelectedString().c_str();
+			for(auto pair : hotKeyFunc)
+			{
+				std::string label=hostShortCutFunctionDrp[i]->GetSelectedString().c_str();
+				if(pair[0]==label)
+				{
+					hsc.cmdStr=pair[1];
+					break;
+				}
+			}
+			hsc.ctrl=(YSTRUE==hostShortCutKeyCtrlBtn[i]->GetCheck());
+			hsc.shift=(YSTRUE==hostShortCutKeyShiftBtn[i]->GetCheck());
+			profile.hostShortCutKeys.push_back(hsc);
+		}
+	}
+
 	return profile;
 }
 void ProfileDialog::SetProfile(const TownsProfile &profile)
@@ -1060,6 +1084,34 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 
 	str.SetUTF8String(profile.startUpStateFName.data());
 	startUpStateFNameTxt->SetText(str);
+
+
+
+	str.SetUTF8String(profile.quickScrnShotDir.data());
+	quickSsDirTxt->SetText(str);
+
+	for(int i=0; i<MAX_NUM_HOST_SHORTCUT && i<profile.hostShortCutKeys.size(); ++i)
+	{
+		hostShortCutKeyLabelDrp[i]->Select(0);
+		hostShortCutFunctionDrp[i]->Select(0);
+	}
+	for(int i=0; i<MAX_NUM_HOST_SHORTCUT && i<profile.hostShortCutKeys.size(); ++i)
+	{
+		auto hsc=profile.hostShortCutKeys[i];
+
+		hostShortCutKeyLabelDrp[i]->SelectByString(hsc.hostKey.c_str(),YSFALSE);
+		hostShortCutKeyCtrlBtn[i]->SetCheck(hsc.ctrl ? YSTRUE : YSFALSE);
+		hostShortCutKeyShiftBtn[i]->SetCheck(hsc.shift ? YSTRUE : YSFALSE);
+
+		for(auto pair : hotKeyFunc)
+		{
+			if(pair[1]==hsc.cmdStr)
+			{
+				hostShortCutFunctionDrp[i]->SelectByString(pair[0].c_str(),YSFALSE);
+				break;
+			}
+		}
+	}
 }
 
 void ProfileDialog::SetDefaultFMVolume(void)

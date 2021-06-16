@@ -181,6 +181,11 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  Use exit(0) to exit the program on power off." << std::endl;
 	std::cout << "-LOADSTATE stateFName.TState" << std::endl;
 	std::cout << "  Load specified state file on start-up." << std::endl;
+
+	std::cout << "-QUICKSSDIR dir" << std::endl;
+	std::cout << "  Specify quick screen shot directory." << std::endl;
+	std::cout << "-HOSTSHORTCUT hostKey ctrl shift \"command\"" << std::endl;
+	std::cout << "  Assign host short cut key (hot key)." << std::endl;
 }
 
 void TownsARGV::PrintApplicationList(void) const
@@ -784,12 +789,6 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		{
 			quickScrnShotDir=argv[i+1];
 			++i;
-		}
-		else if("-QUICKSSPAGES"==ARG && i+2<argc)
-		{
-			quickScrnShotPage[0]=(0!=cpputil::Atoi(argv[i+1]));
-			quickScrnShotPage[1]=(0!=cpputil::Atoi(argv[i+2]));
-			i+=2;
 		}
 		else if("-HOSTSHORTCUT"==ARG && i+4<argc)
 		{

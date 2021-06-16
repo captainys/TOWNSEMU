@@ -180,7 +180,6 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["GAMEPORT"]=CMD_GAMEPORT;
 
 	primaryCmdMap["QSS"]=CMD_QUICK_SCREENSHOT;
-	primaryCmdMap["QSSPAGES"]=CMD_QUICK_SCREENSHOT_PAGES;
 	primaryCmdMap["QSSDIR"]=CMD_QUICK_SCREENSHOT_DIR;
 
 
@@ -496,10 +495,9 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "QSS" << std::endl;
 	std::cout << "  Quick Screen Shot.  File name is automatically given." << std::endl;
 	std::cout << "  File is saved in the quick-screenshot directory." << std::endl;
+	std::cout << "  Optionally, can specify page 0 or 1 as a parameter." << std::endl;
 	std::cout << "QSSDIR dir" << std::endl;
 	std::cout << "  Specify quick-screenshot directory." << std::endl;
-	std::cout << "QSSPAGES 0|1 0|1" << std::endl;
-	std::cout << "  Specify pages to take quick screenshot" << std::endl;
 
 
 	std::cout << "DOSSEG 01234" << std::endl;
@@ -1301,9 +1299,6 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 
 	case CMD_QUICK_SCREENSHOT:
 		Execute_QuickScreenShot(towns,cmd);
-		break;
-	case CMD_QUICK_SCREENSHOT_PAGES:
-		Execute_QuickScreenShotPages(towns,cmd);
 		break;
 	case CMD_QUICK_SCREENSHOT_DIR:
 		Execute_QuickScreenShotDirectory(towns,cmd);
@@ -4067,6 +4062,24 @@ void TownsCommandInterpreter::Execute_Gameport(FMTowns &towns,Outside_World *out
 
 void TownsCommandInterpreter::Execute_QuickScreenShot(FMTowns &towns,Command &cmd)
 {
+	bool layer[2]=
+	{
+		towns.crtc.state.ShowPage(0),
+		towns.crtc.state.ShowPage(1)
+	};
+
+	if(2<=cmd.argv.size() && true!=towns.crtc.InSinglePageMode())
+	{
+		int showLayer=cpputil::Atoi(cmd.argv[1].data());
+		if(0!=showLayer && 1!=showLayer)
+		{
+			PrintError(ERROR_VRAM_LAYER_UNAVAILABLE);
+			return;
+		}
+		layer[showLayer]=true;
+		layer[1-showLayer]=false;
+	}
+
 	auto now=time(nullptr);
 	auto tm=localtime(&now);
 
@@ -4099,7 +4112,7 @@ void TownsCommandInterpreter::Execute_QuickScreenShot(FMTowns &towns,Command &cm
 	}
 
 	TownsRender render;
-	towns.RenderQuiet(render,towns.var.quickScrnShotPage[0],towns.var.quickScrnShotPage[1]);
+	towns.RenderQuiet(render,layer[0],layer[1]);
 
 	auto img=render.GetImage();
 
@@ -4111,18 +4124,6 @@ void TownsCommandInterpreter::Execute_QuickScreenShot(FMTowns &towns,Command &cm
 	else
 	{
 		std::cout << "Save error." << std::endl;
-	}
-}
-void TownsCommandInterpreter::Execute_QuickScreenShotPages(FMTowns &towns,Command &cmd)
-{
-	if(3<=cmd.argv.size())
-	{
-		towns.var.quickScrnShotPage[0]=(0!=cpputil::Atoi(cmd.argv[1].c_str()));
-		towns.var.quickScrnShotPage[1]=(0!=cpputil::Atoi(cmd.argv[2].c_str()));
-	}
-	else
-	{
-		PrintError(ERROR_TOO_FEW_ARGS);
 	}
 }
 void TownsCommandInterpreter::Execute_QuickScreenShotDirectory(FMTowns &towns,Command &cmd)

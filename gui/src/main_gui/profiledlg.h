@@ -77,7 +77,6 @@ public:
 	FsGuiButton *hostShortCutKeyCtrlBtn[MAX_NUM_HOST_SHORTCUT];
 	FsGuiButton *hostShortCutKeyShiftBtn[MAX_NUM_HOST_SHORTCUT];
 	FsGuiDropList *hostShortCutFunctionDrp[MAX_NUM_HOST_SHORTCUT];
-	FsGuiButton *quickSsPagesBtn[2];
 	FsGuiButton *quickSsDirBtn;
 	FsGuiTextBox *quickSsDirTxt;
 
