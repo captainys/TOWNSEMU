@@ -66,6 +66,11 @@ void TownsProfile::CleanUp(void)
 
 	fmVol=-1;
 	pcmVol=-1;
+
+	quickScrnShotDir="";
+	quickScrnShotPage[0]=true;
+	quickScrnShotPage[1]=true;
+	hostShortCutKeys.clear();
 }
 std::vector <std::string> TownsProfile::Serialize(void) const
 {
@@ -238,6 +243,28 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 		sstream.str("");
 		sstream << "LOADSTAT " << startUpStateFName;
 		text.push_back(sstream.str());
+	}
+
+	text.push_back("QSSDIREC ");
+	text.back().push_back('\"');
+	text.back()+=quickScrnShotDir;
+	text.back().push_back('\"');
+
+	text.push_back("QSSPAGES ");
+	text.back()+=(quickScrnShotPage[0] ? "1" : "0");
+	text.back()+=(quickScrnShotPage[1] ? "1" : "0");
+
+	for(auto hsc : hostShortCutKeys)
+	{
+		text.push_back("HOSTSCUT ");
+		text.back()+=hsc.hostKey;
+		text.back()+=" ";
+		text.back()+=(hsc.ctrl ? "1" : "0");
+		text.back()+=(hsc.shift ? "1" : "0");
+		text.back()+=" ";
+		text.back().push_back('\"');
+		text.back()+=hsc.cmdStr;
+		text.back().push_back('\"');
 	}
 
 	return text;
@@ -520,6 +547,32 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 				startUpStateFName=argv[1];
 			}
 		}
+		else if(0==argv[0].STRCMP("QSSDIREC"))
+		{
+			if(2<=argv.size())
+			{
+				quickScrnShotDir=argv[1].c_str();
+			}
+		}
+		else if(0==argv[0].STRCMP("QSSPAGES"))
+		{
+			if(3<=argv.size())
+			{
+				quickScrnShotPage[0]=(0!=argv[1].Atoi());
+				quickScrnShotPage[1]=(0!=argv[2].Atoi());
+			}
+		}
+		else if(0==argv[0].STRCMP("HOSTSCUT"))
+		{
+			if(5<=argv.size())
+			{
+				HostShortCut hsc;
+				hsc.hostKey=argv[1].c_str();
+				hsc.ctrl=(0!=argv[2].Atoi());
+				hsc.shift=(0!=argv[3].Atoi());
+				hsc.cmdStr=argv[4].c_str();
+			}
+		}
 		else
 		{
 			errorMsg="Unrecognized keyword:";
@@ -749,6 +802,26 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 	{
 		argv.push_back("-LOADSTATE");
 		argv.push_back(startUpStateFName);
+	}
+
+	if(""!=quickScrnShotDir)
+	{
+		argv.push_back("-QUICKSSDIR");
+		argv.push_back(quickScrnShotDir);
+	}
+	if(true!=quickScrnShotPage[0] || true!=quickScrnShotPage[1])
+	{
+		argv.push_back("-QUICKSSPAGES");
+		argv.push_back(quickScrnShotPage[0] ? "1" : "0");
+		argv.push_back(quickScrnShotPage[1] ? "1" : "0");
+	}
+	for(auto hsc : hostShortCutKeys)
+	{
+		argv.push_back("-HOSTSHORTCUT");
+		argv.push_back(hsc.hostKey);
+		argv.push_back(hsc.ctrl ? "1" : "0");
+		argv.push_back(hsc.shift ? "1" : "0");
+		argv.push_back(hsc.cmdStr);
 	}
 
 	return argv;
