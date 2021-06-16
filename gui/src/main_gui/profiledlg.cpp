@@ -408,6 +408,27 @@ void ProfileDialog::Make(void)
 		EndAddTabItem();
 	}
 
+	{
+		auto tabId=AddTab(tab,"Hot Keys");
+		BeginAddTabItem(tab,tabId);
+
+		for(int i=0; i<MAX_NUM_HOST_SHORTCUT; ++i)
+		{
+			hostShortCutKeyLabelDrp[i]=AddEmptyDropList(0,FSKEY_NULL,"",8,8,8,YSTRUE);
+			hostShortCutKeyCtrlBtn[i]=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"CTRL",YSFALSE);
+			hostShortCutKeyShiftBtn[i]=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"SHIFT",YSFALSE);
+			hostShortCutFunctionDrp[i]=AddEmptyDropList(0,FSKEY_NULL,"",8,8,8,YSFALSE);
+		}
+
+		AddStaticText(0,FSKEY_NULL,"Quick Screen Shot:",YSTRUE);
+		quickSsPagesBtn[0]=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"PG0",YSFALSE);
+		quickSsPagesBtn[1]=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"PG1",YSFALSE);
+		quickSsDirBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"Browse",YSTRUE);
+		quickSsDirTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",nShowPath,YSFALSE);;
+
+		EndAddTabItem();
+	}
+
 	tab->SelectCurrentTab(mainTabId);
 
 	runBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"START",YSTRUE);

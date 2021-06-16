@@ -18,6 +18,7 @@ public:
 	{
 		PATH_LENGTH=1024,
 		PATH_SHOW=64,
+		MAX_NUM_HOST_SHORTCUT=8,
 	};
 
 
@@ -70,6 +71,15 @@ public:
 	FsGuiStatic *fmVolumeText,*pcmVolumeText;
 	FsGuiButton *fmVolumeDefaultBtn,*pcmVolumeDefaultBtn;
 	FsGuiSlider *fmVolumeSlider,*pcmVolumeSlider;
+
+
+	FsGuiDropList *hostShortCutKeyLabelDrp[MAX_NUM_HOST_SHORTCUT];
+	FsGuiButton *hostShortCutKeyCtrlBtn[MAX_NUM_HOST_SHORTCUT];
+	FsGuiButton *hostShortCutKeyShiftBtn[MAX_NUM_HOST_SHORTCUT];
+	FsGuiDropList *hostShortCutFunctionDrp[MAX_NUM_HOST_SHORTCUT];
+	FsGuiButton *quickSsPagesBtn[2];
+	FsGuiButton *quickSsDirBtn;
+	FsGuiTextBox *quickSsDirTxt;
 
 
 	FsGuiDropList *appSpecificAugDrp;
