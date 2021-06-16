@@ -182,6 +182,9 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["QSS"]=CMD_QUICK_SCREENSHOT;
 	primaryCmdMap["QSSDIR"]=CMD_QUICK_SCREENSHOT_DIR;
 
+	primaryCmdMap["QSAVE"]=CMD_QUICK_SAVESTATE;
+	primaryCmdMap["QLOAD"]=CMD_QUICK_LOADSTATE;
+
 
 
 	featureMap["CMDLOG"]=ENABLE_CMDLOG;
@@ -498,6 +501,11 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Optionally, can specify page 0 or 1 as a parameter." << std::endl;
 	std::cout << "QSSDIR dir" << std::endl;
 	std::cout << "  Specify quick-screenshot directory." << std::endl;
+
+	std::cout << "QSAVE" << std::endl;
+	std::cout << "QLOAD" << std::endl;
+	std::cout << "  Save/Load machine state to/from the pre-specified file name." << std::endl;
+	std::cout << "  File name needs to be specified by -QUICKSAVESTATE option." << std::endl;
 
 
 	std::cout << "DOSSEG 01234" << std::endl;
@@ -1302,6 +1310,11 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 		break;
 	case CMD_QUICK_SCREENSHOT_DIR:
 		Execute_QuickScreenShotDirectory(towns,cmd);
+		break;
+
+	case CMD_QUICK_SAVESTATE:
+	case CMD_QUICK_LOADSTATE:
+		std::cout << "I'm working on it!" << std::endl;
 		break;
 	}
 }
