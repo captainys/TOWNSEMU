@@ -1,8 +1,105 @@
 #include <iostream>
+#include <string>
 #include "profiledlg.h"
 #include "fsguiapp.h"
 
 #include "ym2612.h"
+
+
+
+static std::string hotKeyAssignable[]=
+{
+	"NULL",
+	"SPACE",
+	"0",
+	"1",
+	"2",
+	"3",
+	"4",
+	"5",
+	"6",
+	"7",
+	"8",
+	"9",
+	"A",
+	"B",
+	"C",
+	"D",
+	"E",
+	"F",
+	"G",
+	"H",
+	"I",
+	"J",
+	"K",
+	"L",
+	"M",
+	"N",
+	"O",
+	"P",
+	"Q",
+	"R",
+	"S",
+	"T",
+	"U",
+	"V",
+	"W",
+	"X",
+	"Y",
+	"Z",
+	"ESC",
+	"F1",
+	"F2",
+	"F3",
+	"F4",
+	"F5",
+	"F6",
+	"F7",
+	"F8",
+	"F9",
+	"F10",
+	"F11",
+	"F12",
+	"PRINTSCRN",
+	"CAPSLOCK",
+	"SCROLLLOCK",
+	"PAUSEBREAK",
+	"BS",
+	"TAB",
+	"ENTER",
+	"SHIFT",
+	"CTRL",
+	"ALT",
+	"INS",
+	"DEL",
+	"HOME",
+	"END",
+	"PAGEUP",
+	"PAGEDOWN",
+	"UP",
+	"DOWN",
+	"LEFT",
+	"RIGHT",
+	"NUMLOCK",
+	"TILDA",
+	"MINUS",
+	"PLUS",
+	"LBRACKET",
+	"RBRACKET",
+	"BACKSLASH",
+	"SEMICOLON",
+	"SINGLEQUOTE",
+	"COMMA",
+	"DOT",
+	"SLASH",
+};
+
+static std::string hotKeyFunc[][2]=
+{
+	{"None",""},
+	{"Quick Screenshot","QSS"},
+};
+
 
 
 
@@ -414,10 +511,20 @@ void ProfileDialog::Make(void)
 
 		for(int i=0; i<MAX_NUM_HOST_SHORTCUT; ++i)
 		{
-			hostShortCutKeyLabelDrp[i]=AddEmptyDropList(0,FSKEY_NULL,"",8,8,8,YSTRUE);
+			hostShortCutKeyLabelDrp[i]=AddEmptyDropList(0,FSKEY_NULL,"",8,6,8,(0==i%2 ? YSTRUE : YSFALSE));
+			for(auto str : hotKeyAssignable)
+			{
+				hostShortCutKeyLabelDrp[i]->AddString(str.c_str(),YSFALSE);
+			}
+			hostShortCutKeyLabelDrp[i]->Select(0);
 			hostShortCutKeyCtrlBtn[i]=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"CTRL",YSFALSE);
 			hostShortCutKeyShiftBtn[i]=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"SHIFT",YSFALSE);
-			hostShortCutFunctionDrp[i]=AddEmptyDropList(0,FSKEY_NULL,"",8,8,8,YSFALSE);
+			hostShortCutFunctionDrp[i]=AddEmptyDropList(0,FSKEY_NULL,"",8,14,16,YSFALSE);
+			for(auto pair : hotKeyFunc)
+			{
+				hostShortCutFunctionDrp[i]->AddString(pair[0].c_str(),YSFALSE);
+			}
+			hostShortCutFunctionDrp[i]->Select(0);
 		}
 
 		AddStaticText(0,FSKEY_NULL,"Quick Screen Shot:",YSTRUE);
