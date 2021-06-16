@@ -748,6 +748,11 @@ void ProfileDialog::OnSliderPositionChange(FsGuiSlider *slider,const double &pre
 	{
 		SetDefaultPCMVolume();
 	}
+	if(quickSsDirBtn==btn)
+	{
+		std::vector <const wchar_t *> extList={L".png"};
+		BrowseDir(L"Select A Quick Screenshot File (Can be dummy or new png)",quickSsDirTxt,extList);
+	}
 }
 
 void ProfileDialog::OnSelectROMFile(FsGuiDialog *dlg,int returnCode)
@@ -786,6 +791,37 @@ void ProfileDialog::OnSelectFile(FsGuiDialog *dlg,int returnCode)
 	if((int)YSOK==returnCode && nullptr!=fdlg)
 	{
 		nowBrowsingTxt->SetText(fdlg->selectedFileArray[0]);
+	}
+}
+
+void ProfileDialog::BrowseDir(const wchar_t label[],FsGuiTextBox *txt,std::vector <const wchar_t *> extList)
+{
+	nowBrowsingTxt=txt;
+
+	YsString def=ROMDirTxt->GetString();
+
+	auto fdlg=FsGuiDialog::CreateSelfDestructiveDialog<FsGuiFileDialog>();
+	fdlg->Initialize();
+	fdlg->mode=FsGuiFileDialog::MODE_SAVE;
+	fdlg->multiSelect=YSFALSE;
+	fdlg->title.Set(label);
+	for(auto ext : extList)
+	{
+		fdlg->fileExtensionArray.Append(ext);
+	}
+	fdlg->defaultFileName.SetUTF8String(def);
+	fdlg->BindCloseModalCallBack(&THISCLASS::OnSelectDir,this);
+	AttachModalDialog(fdlg);
+}
+void ProfileDialog::OnSelectDir(FsGuiDialog *dlg,int returnCode)
+{
+	auto fdlg=dynamic_cast <FsGuiFileDialog *>(dlg);
+	if((int)YSOK==returnCode && nullptr!=fdlg)
+	{
+		auto ful=fdlg->selectedFileArray[0];
+		YsWString dir,nam;
+		ful.SeparatePathFile(dir,nam);
+		nowBrowsingTxt->SetText(dir);
 	}
 }
 

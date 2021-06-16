@@ -99,6 +99,9 @@ public:
 	void Browse(const wchar_t label[],FsGuiTextBox *txt,std::vector <const wchar_t *> extList);
 	void OnSelectFile(FsGuiDialog *dlg,int returnCode);
 
+	void BrowseDir(const wchar_t label[],FsGuiTextBox *txt,std::vector <const wchar_t *> extList);
+	void OnSelectDir(FsGuiDialog *dlg,int returnCode);
+
 	TownsProfile GetProfile(void) const;
 	void SetProfile(const TownsProfile &profile);
 
