@@ -266,6 +266,9 @@ public:
 		*/
 		std::string quickScrnShotDir;
 
+		/*!
+		*/
+		std::string quickStateSaveFName;
 
 
 		enum

@@ -186,6 +186,9 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  Specify quick screen shot directory." << std::endl;
 	std::cout << "-HOSTSHORTCUT hostKey ctrl shift \"command\"" << std::endl;
 	std::cout << "  Assign host short cut key (hot key)." << std::endl;
+
+	std::cout << "-QUICKSTATESAVE filename" << std::endl;
+	std::cout << "  Specify quick state save/load file name." << std::endl;
 }
 
 void TownsARGV::PrintApplicationList(void) const
@@ -799,6 +802,11 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 			hsc.cmdStr=argv[i+4];
 			hostShortCutKeys.push_back(hsc);
 			i+=4;
+		}
+		else if("-QUICKSTATESAVE"==ARG && i+1<argc)
+		{
+			quickStateSaveFName=argv[i+1];
+			++i;
 		}
 		else
 		{

@@ -69,6 +69,8 @@ void TownsProfile::CleanUp(void)
 
 	quickScrnShotDir="";
 	hostShortCutKeys.clear();
+
+	quickStateSaveFName="";
 }
 std::vector <std::string> TownsProfile::Serialize(void) const
 {
@@ -261,6 +263,11 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 		text.back()+=hsc.cmdStr;
 		text.back().push_back('\"');
 	}
+
+	text.push_back("QSTASAVE ");
+	text.back().push_back('\"');
+	text.back()+=quickStateSaveFName;
+	text.back().push_back('\"');
 
 	return text;
 }
@@ -561,6 +568,13 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 				hostShortCutKeys.push_back(hsc);
 			}
 		}
+		else if(0==argv[0].STRCMP("QSTASAVE"))
+		{
+			if(2<=argv.size())
+			{
+				quickStateSaveFName=argv[1].c_str();
+			}
+		}
 		else
 		{
 			errorMsg="Unrecognized keyword:";
@@ -804,6 +818,12 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 		argv.push_back(hsc.ctrl ? "1" : "0");
 		argv.push_back(hsc.shift ? "1" : "0");
 		argv.push_back(hsc.cmdStr);
+	}
+
+	if(""!=quickStateSaveFName)
+	{
+		argv.push_back("-QUICKSTATESAV");
+		argv.push_back(quickStateSaveFName);
 	}
 
 	return argv;

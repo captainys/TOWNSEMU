@@ -143,6 +143,7 @@ public:
 	bool maximizeOnStartUp=false;
 
 	std::string quickScrnShotDir;
+	std::string quickStateSaveFName;
 
 	TownsStartParameters();
 };
