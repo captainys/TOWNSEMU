@@ -145,6 +145,8 @@ public:
 	std::string quickScrnShotDir;
 	std::string quickStateSaveFName;
 
+	std::string pauseResumeKeyLabel="SCROLLLOCK";
+
 	TownsStartParameters();
 };
 

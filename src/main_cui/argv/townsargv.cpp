@@ -189,6 +189,9 @@ void TownsARGV::PrintHelp(void) const
 
 	std::cout << "-QUICKSTATESAVE filename" << std::endl;
 	std::cout << "  Specify quick state save/load file name." << std::endl;
+
+	std::cout << "-PAUSEKEY keyLabel" << std::endl;
+	std::cout << "  Specify a hot key for pause/resume.  Default is SCROLLLOCK" << std::endl;
 }
 
 void TownsARGV::PrintApplicationList(void) const
@@ -807,6 +810,10 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		{
 			quickStateSaveFName=argv[i+1];
 			++i;
+		}
+		else if("-PAUSEKEY"==ARG && i+1<argc)
+		{
+			pauseResumeKeyLabel=argv[i+1];
 		}
 		else
 		{

@@ -1539,6 +1539,19 @@ void FsSimpleWindowConnection::RenderBeforeSwapBuffers(const TownsRender::Image 
 	}
 }
 
+/* virtual */ void FsSimpleWindowConnection::RegisterPauseResume(std::string hostKeyLabel)
+{
+	auto fsKey=FsStringToKeyCode(hostKeyLabel.c_str());
+	if(FSKEY_NULL!=fsKey)
+	{
+		PAUSE_KEY_CODE=fsKey;
+	}
+	else
+	{
+		PAUSE_KEY_CODE=DEFAULT_PAUSE_KEY_CODE;
+	}
+}
+
 /* virtual */ void FsSimpleWindowConnection::CDDAPlay(const DiscImage &discImg,DiscImage::MinSecFrm from,DiscImage::MinSecFrm to,bool repeat,unsigned int leftLevel,unsigned int rightLevel)
 {
 	if(256<leftLevel)

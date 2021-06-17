@@ -272,3 +272,7 @@ void Outside_World::UseGamePad(unsigned int gamePadIndex)
 {
 	std::cout << "Host Short Cut not implemented." << std::endl;
 }
+/* virtual */ void Outside_World::RegisterPauseResume(std::string hostKeyLabel)
+{
+	std::cout << "Pause/Resume customization not implemented." << std::endl;
+}

@@ -295,6 +295,7 @@ void FMTowns::State::PowerOn(void)
 	{
 		outside_world->RegisterHostShortCut(hsc.hostKey,hsc.ctrl,hsc.shift,hsc.cmdStr);
 	}
+	outside_world->RegisterPauseResume(argv.pauseResumeKeyLabel);
 
 	towns.var.quickStateSaveFName=argv.quickStateSaveFName;
 

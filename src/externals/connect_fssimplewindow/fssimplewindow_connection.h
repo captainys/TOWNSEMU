@@ -54,9 +54,10 @@ public:
 		std::string cmdStr;
 	};
 
-	#define PAUSE_KEY_CODE FSKEY_SCROLLLOCK
+	#define DEFAULT_PAUSE_KEY_CODE FSKEY_SCROLLLOCK
 
 	HostShortCut hostShortCut[FSKEY_NUM_KEYCODE];
+	unsigned int PAUSE_KEY_CODE=DEFAULT_PAUSE_KEY_CODE;
 
 	bool gamePadInitialized=false;
 	unsigned int *FSKEYtoTownsKEY=nullptr;
@@ -90,7 +91,7 @@ public:
 	virtual void SetKeyboardLayout(unsigned int layout);
 
 	virtual void RegisterHostShortCut(std::string hostKeyLabel,bool ctrl,bool shift,std::string cmdStr);
-
+	virtual void RegisterPauseResume(std::string hostKeyLabel);
 
 	YsSoundPlayer soundPlayer;
 	YsSoundPlayer::SoundData cddaChannel;

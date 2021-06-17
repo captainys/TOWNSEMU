@@ -201,7 +201,14 @@ public:
 	void UseGamePad(unsigned int gamePadIndex);
 
 
+	/*! Host-Key Label is implementation dependent.
+	*/
 	virtual void RegisterHostShortCut(std::string hostKeyLabel,bool ctrl,bool shift,std::string cmdStr);
+
+	/*! Host-Key Label is implementation dependent.
+	*/
+	virtual void RegisterPauseResume(std::string hostKeyLabel);
+
 
 
 public:

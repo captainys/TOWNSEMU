@@ -71,6 +71,8 @@ void TownsProfile::CleanUp(void)
 	hostShortCutKeys.clear();
 
 	quickStateSaveFName="";
+
+	pauseResumeKeyLabel="SCROLLLOCK";
 }
 std::vector <std::string> TownsProfile::Serialize(void) const
 {
@@ -268,6 +270,9 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 	text.back().push_back('\"');
 	text.back()+=quickStateSaveFName;
 	text.back().push_back('\"');
+
+	text.push_back("PAUSEKEY ");
+	text.push_back(pauseResumeKeyLabel);
 
 	return text;
 }
@@ -575,6 +580,13 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 				quickStateSaveFName=argv[1].c_str();
 			}
 		}
+		else if(0=="PAUSEKEY")
+		{
+			if(2<=argv.size())
+			{
+				pauseResumeKeyLabel=argv[1].c_str();
+			}
+		}
 		else
 		{
 			errorMsg="Unrecognized keyword:";
@@ -824,6 +836,12 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 	{
 		argv.push_back("-QUICKSTATESAV");
 		argv.push_back(quickStateSaveFName);
+	}
+
+	if(""!=pauseResumeKeyLabel)
+	{
+		argv.push_back("-PAUSEKEY");
+		argv.push_back(pauseResumeKeyLabel);
 	}
 
 	return argv;
