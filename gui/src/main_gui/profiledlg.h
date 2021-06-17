@@ -83,6 +83,7 @@ public:
 	FsGuiButton *quickStateSaveFNameBtn;
 	FsGuiTextBox *quickStateSaveFNameTxt;
 
+	FsGuiDropList *pauseResumeKeyDrp;
 
 	FsGuiDropList *appSpecificAugDrp;
 	FsGuiStatic *appSpecificExplanation;

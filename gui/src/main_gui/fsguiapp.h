@@ -76,6 +76,8 @@ public:
 	bool separateProcess=false;
 	TownsVM VM;
 
+	// pauseResumeKey is updated in ReallyRun function from TownsProfile.
+	unsigned int pauseResumeKey=FSKEY_SCROLLLOCK;
 
 	// [Modeless dialogs]
 	//   (1) Add a pointer in the following chunk.

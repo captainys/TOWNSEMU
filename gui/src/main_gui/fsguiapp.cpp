@@ -209,7 +209,8 @@ void FsGuiMainCanvas::Initialize(int argc,char *argv[])
 	LoadProfile(GetDefaultProfileFileName());
 	AddDialog(profileDlg);
 
-	BindKeyCallBack(FSKEY_SCROLLLOCK,YSFALSE,YSFALSE,YSFALSE,&FsGuiMainCanvas::VM_Resume,this);
+	// Pause/Resume key is made a variable.  Need to be checked in OnInterval.
+	// BindKeyCallBack(FSKEY_SCROLLLOCK,YSFALSE,YSFALSE,YSFALSE,&FsGuiMainCanvas::VM_Resume,this);
 
 	YsDisregardVariable(argc);
 	YsDisregardVariable(argv);
@@ -382,6 +383,10 @@ void FsGuiMainCanvas::OnInterval(void)
 		int key;
 		while(FSKEY_NULL!=(key=FsInkey()))
 		{
+			if(pauseResumeKey==key)
+			{
+				VM_Resume(nullptr);
+			}
 			this->KeyIn(key,(YSBOOL)FsGetKeyState(FSKEY_SHIFT),(YSBOOL)FsGetKeyState(FSKEY_CTRL),(YSBOOL)FsGetKeyState(FSKEY_ALT));
 		}
 	}
@@ -565,6 +570,14 @@ bool FsGuiMainCanvas::ReallyRun(bool usePipe)
 
 	auto profile=profileDlg->GetProfile();
 	separateProcess=profile.separateProcess; // This is the only chance to change this flag.
+
+	{
+		pauseResumeKey=FsStringToKeyCode(profile.pauseResumeKeyLabel.c_str());
+		if(FSKEY_NULL==pauseResumeKey)
+		{
+			pauseResumeKey=FSKEY_SCROLLLOCK;
+		}
+	}
 
 	if(true==separateProcess)
 	{

@@ -513,6 +513,13 @@ void ProfileDialog::Make(void)
 		auto tabId=AddTab(tab,"Hot Keys");
 		BeginAddTabItem(tab,tabId);
 
+		AddStaticText(0,FSKEY_NULL,"Pause/Resume(MENU on/off):",YSTRUE);
+		pauseResumeKeyDrp=AddEmptyDropList(0,FSKEY_NULL,"",8,12,12,YSFALSE);
+		for(auto str : hotKeyAssignable)
+		{
+			pauseResumeKeyDrp->AddString(str.c_str(),YSFALSE);
+		}
+
 		for(int i=0; i<MAX_NUM_HOST_SHORTCUT; ++i)
 		{
 			hostShortCutKeyLabelDrp[i]=AddEmptyDropList(0,FSKEY_NULL,"",8,6,8,(0==i%2 ? YSTRUE : YSFALSE));
@@ -979,6 +986,8 @@ TownsProfile ProfileDialog::GetProfile(void) const
 
 	profile.quickStateSaveFName=quickStateSaveFNameTxt->GetString().data();
 
+	profile.pauseResumeKeyLabel=pauseResumeKeyDrp->GetSelectedString().data();
+
 	return profile;
 }
 void ProfileDialog::SetProfile(const TownsProfile &profile)
@@ -1164,6 +1173,8 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 
 	str.SetUTF8String(profile.quickStateSaveFName.data());
 	quickStateSaveFNameTxt->SetText(str);
+
+	pauseResumeKeyDrp->SelectByString(profile.pauseResumeKeyLabel.c_str(),YSFALSE);
 }
 
 void ProfileDialog::SetDefaultFMVolume(void)

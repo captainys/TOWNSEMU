@@ -814,6 +814,7 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		else if("-PAUSEKEY"==ARG && i+1<argc)
 		{
 			pauseResumeKeyLabel=argv[i+1];
+			++i;
 		}
 		else
 		{

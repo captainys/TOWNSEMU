@@ -834,7 +834,7 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 
 	if(""!=quickStateSaveFName)
 	{
-		argv.push_back("-QUICKSTATESAV");
+		argv.push_back("-QUICKSTATESAVE");
 		argv.push_back(quickStateSaveFName);
 	}
 
