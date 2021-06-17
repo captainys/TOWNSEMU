@@ -296,7 +296,7 @@ void FMTowns::State::PowerOn(void)
 		outside_world->RegisterHostShortCut(hsc.hostKey,hsc.ctrl,hsc.shift,hsc.cmdStr);
 	}
 
-	towns.var.quickStateSaveFName=argv.quickStateSaveFName
+	towns.var.quickStateSaveFName=argv.quickStateSaveFName;
 
 	return true;
 }

@@ -1313,8 +1313,24 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 		break;
 
 	case CMD_QUICK_SAVESTATE:
+		if(true!=towns.SaveState(towns.var.quickStateSaveFName))
+		{
+			PrintError(ERROR_CANNOT_SAVE_FILE);
+		}
+		else
+		{
+			std::cout << "Saved " << towns.var.quickStateSaveFName << std::endl;
+		}
+		break;
 	case CMD_QUICK_LOADSTATE:
-		std::cout << "I'm working on it!" << std::endl;
+		if(true!=towns.LoadState(towns.var.quickStateSaveFName,*outside_world))
+		{
+			PrintError(ERROR_CANNOT_OPEN_FILE);
+		}
+		else
+		{
+			std::cout << "Loaded " << towns.var.quickStateSaveFName << std::endl;
+		}
 		break;
 	}
 }
