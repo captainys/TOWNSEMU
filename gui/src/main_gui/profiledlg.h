@@ -80,6 +80,9 @@ public:
 	FsGuiButton *quickSsDirBtn;
 	FsGuiTextBox *quickSsDirTxt;
 
+	FsGuiButton *quickStateSaveFNameBtn;
+	FsGuiTextBox *quickStateSaveFNameTxt;
+
 
 	FsGuiDropList *appSpecificAugDrp;
 	FsGuiStatic *appSpecificExplanation;

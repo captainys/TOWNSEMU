@@ -100,6 +100,8 @@ static std::string hotKeyFunc[][2]=
 	{"Quick Screenshot","QSS"},
 	{"Quick Page 0 Screenshot","QSS 0"},
 	{"Quick Page 1 Screenshot","QSS 1"},
+	{"Quick State Save","QSAVE"},
+	{"Quick State Load","QLOAD"},
 };
 
 
@@ -533,6 +535,10 @@ void ProfileDialog::Make(void)
 		quickSsDirBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"Browse",YSTRUE);
 		quickSsDirTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",nShowPath,YSFALSE);;
 
+		AddStaticText(0,FSKEY_NULL,"Quick State-Save File Name:",YSTRUE);
+		quickStateSaveFNameBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"Browse",YSTRUE);
+		quickStateSaveFNameTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",nShowPath,YSFALSE);
+
 		EndAddTabItem();
 	}
 
@@ -753,6 +759,11 @@ void ProfileDialog::OnSliderPositionChange(FsGuiSlider *slider,const double &pre
 		std::vector <const wchar_t *> extList={L".png"};
 		BrowseDir(L"Select A Quick Screenshot File (Can be dummy or new png)",quickSsDirTxt,extList);
 	}
+	if(quickStateSaveFNameBtn==btn)
+	{
+		std::vector <const wchar_t *> extList={L".TState"};
+		Browse(L"Select A Quick State-Save File",quickStateSaveFNameTxt,extList);
+	}
 }
 
 void ProfileDialog::OnSelectROMFile(FsGuiDialog *dlg,int returnCode)
@@ -966,6 +977,8 @@ TownsProfile ProfileDialog::GetProfile(void) const
 		}
 	}
 
+	profile.quickStateSaveFName=quickStateSaveFNameTxt->GetString().data();
+
 	return profile;
 }
 void ProfileDialog::SetProfile(const TownsProfile &profile)
@@ -1148,6 +1161,9 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 			}
 		}
 	}
+
+	str.SetUTF8String(profile.quickStateSaveFName.data());
+	quickStateSaveFNameTxt->SetText(str);
 }
 
 void ProfileDialog::SetDefaultFMVolume(void)
