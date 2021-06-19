@@ -272,7 +272,7 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 	text.back().push_back('\"');
 
 	text.push_back("PAUSEKEY ");
-	text.push_back(pauseResumeKeyLabel);
+	text.back()+=pauseResumeKeyLabel;
 
 	return text;
 }
@@ -580,7 +580,7 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 				quickStateSaveFName=argv[1].c_str();
 			}
 		}
-		else if(0=="PAUSEKEY")
+		else if(0==argv[0].STRCMP("PAUSEKEY"))
 		{
 			if(2<=argv.size())
 			{
