@@ -52,3 +52,4 @@ add_subdirectory(../../src/externals/connect_fssimplewindow connect_fssimplewind
 add_subdirectory(profile)
 add_subdirectory(subprocess)
 add_subdirectory(main_gui)
+add_subdirectory(tests_gui)

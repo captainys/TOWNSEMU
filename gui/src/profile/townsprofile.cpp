@@ -345,7 +345,14 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 				if(0<=scsiId && scsiId<MAX_NUM_SCSI_DEVICES)
 				{
 					scsiImg[scsiId].imgFName=argv[2].c_str();
-					scsiImg[scsiId].imageType=TownsProfile::SCSIIMAGE_HARDDISK;
+					if(""!=scsiImg[scsiId].imgFName)
+					{
+						scsiImg[scsiId].imageType=TownsProfile::SCSIIMAGE_HARDDISK;
+					}
+					else
+					{
+						scsiImg[scsiId].imageType=TownsProfile::SCSIIMAGE_NONE;
+					}
 				}
 			}
 		}
