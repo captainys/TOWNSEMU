@@ -769,7 +769,7 @@ void ProfileDialog::OnSliderPositionChange(FsGuiSlider *slider,const double &pre
 	if(quickStateSaveFNameBtn==btn)
 	{
 		std::vector <const wchar_t *> extList={L".TState"};
-		Browse(L"Select A Quick State-Save File",quickStateSaveFNameTxt,extList);
+		BrowseSaveAs(L"Select A Quick State-Save File",quickStateSaveFNameTxt,extList);
 	}
 }
 
@@ -804,6 +804,34 @@ void ProfileDialog::Browse(const wchar_t label[],FsGuiTextBox *txt,std::vector <
 	AttachModalDialog(fdlg);
 }
 void ProfileDialog::OnSelectFile(FsGuiDialog *dlg,int returnCode)
+{
+	auto fdlg=dynamic_cast <FsGuiFileDialog *>(dlg);
+	if((int)YSOK==returnCode && nullptr!=fdlg)
+	{
+		nowBrowsingTxt->SetText(fdlg->selectedFileArray[0]);
+	}
+}
+
+void ProfileDialog::BrowseSaveAs(const wchar_t label[],FsGuiTextBox *txt,std::vector <const wchar_t *> extList)
+{
+	nowBrowsingTxt=txt;
+
+	YsString def=ROMDirTxt->GetString();
+
+	auto fdlg=FsGuiDialog::CreateSelfDestructiveDialog<FsGuiFileDialog>();
+	fdlg->Initialize();
+	fdlg->mode=FsGuiFileDialog::MODE_SAVE;
+	fdlg->multiSelect=YSFALSE;
+	fdlg->title.Set(label);
+	for(auto ext : extList)
+	{
+		fdlg->fileExtensionArray.Append(ext);
+	}
+	fdlg->defaultFileName.SetUTF8String(def);
+	fdlg->BindCloseModalCallBack(&THISCLASS::OnSelectFile,this);
+	AttachModalDialog(fdlg);
+}
+void ProfileDialog::OnSelectFileSaveAs(FsGuiDialog *dlg,int returnCode)
 {
 	auto fdlg=dynamic_cast <FsGuiFileDialog *>(dlg);
 	if((int)YSOK==returnCode && nullptr!=fdlg)
