@@ -351,7 +351,7 @@ void TownsSprite::RunScheduledTask(unsigned long long int townsTime)
 
 			// Should it be NumSpritesToDraw()?
 			// Afterburner2 speeds up when number of visible sprites decreases.
-			unsigned long long int busyTime=32000+75000*NumSpritesToDraw();
+			unsigned long long int busyTime=SPRITE_ONE_TRANSFER_TIME*NumSpritesToDraw();
 
 			state.spriteBusy=true;
 			townsPtr->ScheduleDeviceCallBack(*this,townsTime+busyTime);
