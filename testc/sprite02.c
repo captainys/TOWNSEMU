@@ -13,6 +13,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 << LICENSE */
 #include "egb.h"
+#include "spr.h"
 #include "snd.h"
 #include "conio.h"
 
@@ -41,32 +42,12 @@ void SetScreenMode(int m1,int m2);
 #define EGB_NOT 5
 #define EGB_MATTE 6
 #define EGB_PASTEL 7
-#define EGB_OPAGUE 9
+#define EGB_OPAQUE 9
 #define EGB_MASKSET 13
 #define EGB_MASKRESET 14
 #define EGB_MASKNOT 15
 
-short seihou[]=
-{
-	5,
-	 20, 20,
-	 20,100,
-	100,100,
-	100, 20,
-	 20, 20
-};
-
-short hishigata[]=
-{
-	5,
-	  80,120,
-	  20,180,
-	  80,240,
-	 140,180,
-	  80,120,
-};
-
-#define MAX_SAMPLES 256
+#define MAX_SAMPLES 640
 int SPD0[MAX_SAMPLES];
 int VSYNC[MAX_SAMPLES];
 short lineBuf[MAX_SAMPLES*4+1];
@@ -78,11 +59,11 @@ short lineBuf[MAX_SAMPLES*4+1];
 
 int main(void)
 {
-	int nSprite=220;
+	int nSprite=10;
 
 	EGB_init(EGB_work,EgbWorkSize);
 
-	EGB_resolution(EGB_work,0,5);
+	EGB_resolution(EGB_work,0,3);
 	EGB_resolution(EGB_work,1,5);
 
 	EGB_writePage(EGB_work,1);
@@ -92,48 +73,76 @@ int main(void)
 
 	EGB_writePage(EGB_work,0);
 	EGB_clearScreen(EGB_work);
-	EGB_color(EGB_work,EGB_FOREGROUND_COLOR,32767);
+	EGB_color(EGB_work,EGB_FOREGROUND_COLOR,15);
 	EGB_color(EGB_work,EGB_BACKGROUND_COLOR,0);
 
 	EGB_writeMode(EGB_work,EGB_PSET);
-	EGB_connect(EGB_work,hishigata);
-	EGB_unConnect(EGB_work,seihou);
 
 	SPR_init();
 	SPR_display(1,nSprite);
+
+	int prevPad=0xFF;
 	for(;;)
 	{
 		int pad;
 		SND_joy_in_2(0,&pad);
-		if(0xC0!=(pad&0xc0))
+		if(0xC0!=(pad&0xc0)) // Start/Select
 		{
 			break;
 		}
 
-		CLI;
-		// Wait for Sprite Busy
-		while(0==(_inp(0x44C)&0x02))
+		if(0==(pad&0x10))
 		{
+			nSprite++;
+			SPR_display(1,nSprite);
 		}
+		if(0==(pad&0x20) && 10<nSprite)
+		{
+			nSprite--;
+			SPR_display(1,nSprite);
+		}
+		if(0==(pad&0x01))
+		{
+			nSprite+=10;
+			SPR_display(1,nSprite);
+		}
+		if(0==(pad&0x02))
+		{
+			nSprite-=10;
+			if(nSprite<10)
+			{
+				nSprite=10;
+			}
+			SPR_display(1,nSprite);
+		}
+
+		prevPad=pad;
+
+		CLI;
 		// Wait for Sprite Ready
 		while(_inp(0x44C)&0x02)
 		{
 		}
-		// Sample for 256 samples every 0.05ms
+		// Wait for Sprite Busy
+		while(0==(_inp(0x44C)&0x02))
+		{
+		}
 
+		// Sample for 256 samples every 0.1ms
 		int nSamples=0;
 		int freeRun=_inpw(0x0026);
-		const timeInterval=50000; // 50,000us=0.05ms
+		const timeInterval=100; // 100us=0.1ms
 		int timeBalance=timeInterval;
 		while(nSamples<MAX_SAMPLES)
 		{
 			SPD0[nSamples]=(_inp(0x44C)&0x02)/2;
 			VSYNC[nSamples]=_inp(0xFDA0)&0x01;
+			++nSamples;
 
 			while(0<timeBalance)
 			{
 				int now=_inpw(0x0026);
-				int deltaT=now-freeRun;
+				int deltaT=(now-freeRun)&0xFFFF;
 				timeBalance-=deltaT;
 				freeRun=now;
 			}
@@ -143,38 +152,52 @@ int main(void)
 		STI;
 
 		lineBuf[0]=MAX_SAMPLES*2;
-		for(int x=0; x<MAX_SAMPLES; ++x)
+		int x;
+		for(x=0; x<MAX_SAMPLES; ++x)
 		{
-			lineBuf[x*2  ]=x;
-			lineBuf[x*2+1]=128;
-			lineBuf[x*2+2]=x;
-			lineBuf[x*2+3]=128-SPD0[x]*32;
+			lineBuf[1+x*4  ]=x;
+			lineBuf[1+x*4+1]=120;
+			lineBuf[1+x*4+2]=x;
+			lineBuf[1+x*4+3]=120-SPD0[x]*32;
 		}
-		EGB_connect(EGB_work,lineBuf);
-		for(int x=0; x<MAX_SAMPLES; ++x)
+		EGB_color(EGB_work,EGB_FOREGROUND_COLOR,15);
+		EGB_unConnect(EGB_work,lineBuf);
+		for(x=0; x<MAX_SAMPLES; ++x)
 		{
-			lineBuf[x*2  ]=x;
-			lineBuf[x*2+1]=128-32;
-			lineBuf[x*2+2]=x;
-			lineBuf[x*2+3]=128-SPD0[x]*32;
+			lineBuf[1+x*4  ]=x;
+			lineBuf[1+x*4+1]=120-32;
+			lineBuf[1+x*4+2]=x;
+			lineBuf[1+x*4+3]=120-SPD0[x]*32;
 		}
-		EGB_connect(EGB_work,lineBuf);
-		for(int x=0; x<MAX_SAMPLES; ++x)
+		EGB_color(EGB_work,EGB_FOREGROUND_COLOR,1);
+		EGB_unConnect(EGB_work,lineBuf);
+
+		for(x=0; x<MAX_SAMPLES; ++x)
 		{
-			lineBuf[x*2  ]=x;
-			lineBuf[x*2+1]=128;
-			lineBuf[x*2+2]=x;
-			lineBuf[x*2+3]=128-VSYNC[x]*32;
+			lineBuf[1+x*4  ]=x;
+			lineBuf[1+x*4+1]=150;
+			lineBuf[1+x*4+2]=x;
+			lineBuf[1+x*4+3]=150-VSYNC[x]*32;
 		}
-		EGB_connect(EGB_work,lineBuf);
-		for(int x=0; x<MAX_SAMPLES; ++x)
+		EGB_color(EGB_work,EGB_FOREGROUND_COLOR,15);
+		EGB_unConnect(EGB_work,lineBuf);
+		for(x=0; x<MAX_SAMPLES; ++x)
 		{
-			lineBuf[x*2  ]=x;
-			lineBuf[x*2+1]=128-32;
-			lineBuf[x*2+2]=x;
-			lineBuf[x*2+3]=128-VSYNC[x]*32;
+			lineBuf[1+x*4  ]=x;
+			lineBuf[1+x*4+1]=150-32;
+			lineBuf[1+x*4+2]=x;
+			lineBuf[1+x*4+3]=150-VSYNC[x]*32;
 		}
-		EGB_connect(EGB_work,lineBuf);
+		EGB_color(EGB_work,EGB_FOREGROUND_COLOR,1);
+		EGB_unConnect(EGB_work,lineBuf);
+
+		char str[256];
+		sprintf(str+6,"%3d",nSprite);
+		(*(short *)(str+0))=16;
+		(*(short *)(str+2))=148;
+		(*(short *)(str+4))=3;
+		EGB_color(EGB_work,EGB_FOREGROUND_COLOR,15);
+		EGB_sjisString(EGB_work,str);
 	}
 
 	SPR_display(0,0);

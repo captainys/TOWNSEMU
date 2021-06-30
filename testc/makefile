@@ -243,6 +243,12 @@ build\sprite01.obj : sprite01.c io.h vmif.h
 build\sprite01.exp : build\sprite01.obj build\io.obj build\vmif.obj
 	386link build\sprite01.obj -exe build\sprite01.exp @LIBS.LN
 
+build\sprite02.obj : sprite02.c io.h vmif.h
+	hcd386 sprite02.c -obj build\sprite02.obj
+
+build\sprite02.exp : build\sprite02.obj build\io.obj build\vmif.obj
+	386link build\sprite02.obj -exe build\sprite02.exp @LIBS.LN
+
 
 
 build\timer.obj : timer.c io.h vmif.h
