@@ -49,7 +49,7 @@ void TownsSprite::Start(void)
 	{
 		state.reg[REG_CONTROL1]|=0x80;
 		state.spriteBusy=false;
-		townsPtr->ScheduleDeviceCallBack(*this,townsPtr->crtc.NextVSYNCEndTime(townsPtr->state.townsTime)+SPRITE_SCREEN_CLEAR_TIME);
+		townsPtr->ScheduleDeviceCallBack(*this,townsPtr->crtc.NextVSYNCRisingEdge(townsPtr->state.townsTime));
 	}
 }
 void TownsSprite::Stop(void)
@@ -347,7 +347,7 @@ void TownsSprite::RunScheduledTask(unsigned long long int townsTime)
 		{
 			// Formula in [2] pp. 369 (Sprite BIOS AH=01H) sugests that:
 			// The sprite busy starts at VSYNC and takes (32+(number of sprites drawn)*75) micro seconds.
-			// unsigned long long int busyTime=32000+75000*NumSpritesActuallyDrawn();
+			// unsigned long long int busyTime=32000+57000*NumSpritesActuallyDrawn();
 
 			// Should it be NumSpritesToDraw()?
 			// Afterburner2 speeds up when number of visible sprites decreases.
@@ -370,7 +370,7 @@ void TownsSprite::RunScheduledTask(unsigned long long int townsTime)
 				Render(physMemPtr->state.VRAM.data()+0x40000,physMemPtr->state.spriteRAM.data());
 			}
 			state.spriteBusy=false;
-			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->crtc.NextVSYNCEndTime(townsTime)+SPRITE_SCREEN_CLEAR_TIME);
+			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->crtc.NextVSYNCRisingEdge(townsTime));
 		}
 	}
 }
