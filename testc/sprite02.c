@@ -47,7 +47,9 @@ void SetScreenMode(int m1,int m2);
 #define EGB_MASKRESET 14
 #define EGB_MASKNOT 15
 
-#define MAX_SAMPLES 640
+#define SAMPLES_PER_ROW 640
+#define NUM_ROWS 4
+#define MAX_SAMPLES (SAMPLES_PER_ROW*NUM_ROWS)
 int SPD0[MAX_SAMPLES];
 int VSYNC[MAX_SAMPLES];
 short lineBuf[MAX_SAMPLES*4+1];
@@ -56,6 +58,14 @@ short lineBuf[MAX_SAMPLES*4+1];
 //extern unsigned _inpw(unsigned int);
 //extern int _outp(unsigned int ,int );
 //extern unsigned _outpw(unsigned int ,unsigned int );
+
+
+// Result (sampled by MX)
+// VSYNC duration 18us
+// Sprite busy starts at the beginning of VSYNC
+// Up to 290 sprites can be transferred in one CRT refresh cycle.
+// If 289 sprites, sprite is almost always busy.
+
 
 int main(void)
 {
@@ -81,6 +91,7 @@ int main(void)
 	SPR_init();
 	SPR_display(1,nSprite);
 
+	int timeInterval=26; // 26us=0.26ms (Roughly 640 samples per CRTC refresh)
 	int prevPad=0xFF;
 	for(;;)
 	{
@@ -115,6 +126,18 @@ int main(void)
 			}
 			SPR_display(1,nSprite);
 		}
+		if(0==(pad&0x04))
+		{
+			timeInterval++;
+		}
+		if(0==(pad&0x08))
+		{
+			if(1<timeInterval)
+			{
+				timeInterval--;
+			}
+		}
+		
 
 		prevPad=pad;
 
@@ -123,15 +146,18 @@ int main(void)
 		while(_inp(0x44C)&0x02)
 		{
 		}
-		// Wait for Sprite Busy
-		while(0==(_inp(0x44C)&0x02))
+		// Wait for VSYNC clear
+		while(0!=(_inp(0xFDA0)&0x01))
+		{
+		}
+		// Wait for VSYNC start
+		while(0==(_inp(0xFDA0)&0x01))
 		{
 		}
 
-		// Sample for 256 samples every 0.1ms
+		// Sample
 		int nSamples=0;
 		int freeRun=_inpw(0x0026);
-		const timeInterval=100; // 100us=0.1ms
 		int timeBalance=timeInterval;
 		while(nSamples<MAX_SAMPLES)
 		{
@@ -151,53 +177,67 @@ int main(void)
 
 		STI;
 
-		lineBuf[0]=MAX_SAMPLES*2;
-		int x;
-		for(x=0; x<MAX_SAMPLES; ++x)
+		for(int row=0; row<NUM_ROWS; ++row)
 		{
-			lineBuf[1+x*4  ]=x;
-			lineBuf[1+x*4+1]=120;
-			lineBuf[1+x*4+2]=x;
-			lineBuf[1+x*4+3]=120-SPD0[x]*32;
-		}
-		EGB_color(EGB_work,EGB_FOREGROUND_COLOR,15);
-		EGB_unConnect(EGB_work,lineBuf);
-		for(x=0; x<MAX_SAMPLES; ++x)
-		{
-			lineBuf[1+x*4  ]=x;
-			lineBuf[1+x*4+1]=120-32;
-			lineBuf[1+x*4+2]=x;
-			lineBuf[1+x*4+3]=120-SPD0[x]*32;
-		}
-		EGB_color(EGB_work,EGB_FOREGROUND_COLOR,1);
-		EGB_unConnect(EGB_work,lineBuf);
+			lineBuf[0]=SAMPLES_PER_ROW*2;
+			int x,x0,y0;
+			x0=row*SAMPLES_PER_ROW;
+			y0=row*120;
+			for(x=0; x<SAMPLES_PER_ROW; ++x)
+			{
+				lineBuf[1+x*4  ]=x;
+				lineBuf[1+x*4+1]=y0+50;
+				lineBuf[1+x*4+2]=x;
+				lineBuf[1+x*4+3]=y0+50-SPD0[x0+x]*50;
+			}
+			EGB_color(EGB_work,EGB_FOREGROUND_COLOR,12);
+			EGB_unConnect(EGB_work,lineBuf);
+			for(x=0; x<SAMPLES_PER_ROW; ++x)
+			{
+				lineBuf[1+x*4  ]=x;
+				lineBuf[1+x*4+1]=y0;
+				lineBuf[1+x*4+2]=x;
+				lineBuf[1+x*4+3]=y0+50-SPD0[x0+x]*50;
+			}
+			EGB_color(EGB_work,EGB_FOREGROUND_COLOR,1);
+			EGB_unConnect(EGB_work,lineBuf);
 
-		for(x=0; x<MAX_SAMPLES; ++x)
-		{
-			lineBuf[1+x*4  ]=x;
-			lineBuf[1+x*4+1]=150;
-			lineBuf[1+x*4+2]=x;
-			lineBuf[1+x*4+3]=150-VSYNC[x]*32;
-		}
-		EGB_color(EGB_work,EGB_FOREGROUND_COLOR,15);
-		EGB_unConnect(EGB_work,lineBuf);
-		for(x=0; x<MAX_SAMPLES; ++x)
-		{
-			lineBuf[1+x*4  ]=x;
-			lineBuf[1+x*4+1]=150-32;
-			lineBuf[1+x*4+2]=x;
-			lineBuf[1+x*4+3]=150-VSYNC[x]*32;
-		}
-		EGB_color(EGB_work,EGB_FOREGROUND_COLOR,1);
-		EGB_unConnect(EGB_work,lineBuf);
+			int nVSYNCSet=0;
+			for(x=0; x<SAMPLES_PER_ROW; ++x)
+			{
+				lineBuf[1+x*4  ]=x;
+				lineBuf[1+x*4+1]=y0+100;
+				lineBuf[1+x*4+2]=x;
+				lineBuf[1+x*4+3]=y0+100-VSYNC[x0+x]*50;
+				nVSYNCSet+=VSYNC[x0+x];
+			}
+			EGB_color(EGB_work,EGB_FOREGROUND_COLOR,15);
+			EGB_unConnect(EGB_work,lineBuf);
+			for(x=0; x<SAMPLES_PER_ROW; ++x)
+			{
+				lineBuf[1+x*4  ]=x;
+				lineBuf[1+x*4+1]=y0+50;
+				lineBuf[1+x*4+2]=x;
+				lineBuf[1+x*4+3]=y0+100-VSYNC[x0+x]*50;
+			}
+			EGB_color(EGB_work,EGB_FOREGROUND_COLOR,1);
+			EGB_unConnect(EGB_work,lineBuf);
 
-		char str[256];
-		sprintf(str+6,"%3d",nSprite);
-		(*(short *)(str+0))=16;
-		(*(short *)(str+2))=148;
-		(*(short *)(str+4))=3;
-		EGB_color(EGB_work,EGB_FOREGROUND_COLOR,15);
-		EGB_sjisString(EGB_work,str);
+			char str[256];
+			sprintf(str+6,"%3d",nSprite);
+			(*(short *)(str+0))=16;
+			(*(short *)(str+2))=y0+25;
+			(*(short *)(str+4))=3;
+			EGB_color(EGB_work,EGB_FOREGROUND_COLOR,15);
+			EGB_sjisString(EGB_work,str);
+
+			(*(short *)(str+0))=512;
+			(*(short *)(str+2))=y0+75;
+			(*(short *)(str+4))=6;
+			sprintf(str+6,"%3d%3d",nVSYNCSet,timeInterval);
+			EGB_color(EGB_work,EGB_FOREGROUND_COLOR,15);
+			EGB_sjisString(EGB_work,str);
+		}
 	}
 
 	SPR_display(0,0);
