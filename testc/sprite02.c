@@ -180,7 +180,9 @@ int main(void)
 		for(int row=0; row<NUM_ROWS; ++row)
 		{
 			lineBuf[0]=SAMPLES_PER_ROW*2;
-			int x,x0,y0;
+			char str[256];
+			int x,x0,y0,nSPD0;
+			nSPD0=0;
 			x0=row*SAMPLES_PER_ROW;
 			y0=row*120;
 			for(x=0; x<SAMPLES_PER_ROW; ++x)
@@ -189,6 +191,7 @@ int main(void)
 				lineBuf[1+x*4+1]=y0+50;
 				lineBuf[1+x*4+2]=x;
 				lineBuf[1+x*4+3]=y0+50-SPD0[x0+x]*50;
+				nSPD0+=SPD0[x0+x];
 			}
 			EGB_color(EGB_work,EGB_FOREGROUND_COLOR,12);
 			EGB_unConnect(EGB_work,lineBuf);
@@ -201,6 +204,14 @@ int main(void)
 			}
 			EGB_color(EGB_work,EGB_FOREGROUND_COLOR,1);
 			EGB_unConnect(EGB_work,lineBuf);
+
+			(*(short *)(str+0))=512;
+			(*(short *)(str+2))=y0+25;
+			(*(short *)(str+4))=6;
+			sprintf(str+6,"%3d%3d",nSPD0,timeInterval);
+			EGB_color(EGB_work,EGB_FOREGROUND_COLOR,15);
+			EGB_sjisString(EGB_work,str);
+
 
 			int nVSYNCSet=0;
 			for(x=0; x<SAMPLES_PER_ROW; ++x)
@@ -223,7 +234,6 @@ int main(void)
 			EGB_color(EGB_work,EGB_FOREGROUND_COLOR,1);
 			EGB_unConnect(EGB_work,lineBuf);
 
-			char str[256];
 			sprintf(str+6,"%3d",nSprite);
 			(*(short *)(str+0))=16;
 			(*(short *)(str+2))=y0+25;

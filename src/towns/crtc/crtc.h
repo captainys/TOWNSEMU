@@ -316,8 +316,8 @@ public:
 	{
 		// VSYNC_CYCLE is 1670000, but it is close enough to 0x1000000(16777216)
 		VSYNC_CYCLE=         0x1000000,
-		// Measurement taken from actual FM TOWNS II MX hardware tells VSYNC lasts for 18 to 19us.
-		CRT_VERTICAL_DURATION=0x1000000-19000, // Time CRTC spends for drawing.  VSYNC_CYCLE-CRT_VERTICAL_DURATION gives duration of VSYNC.
+		// Measurement taken from actual FM TOWNS II MX hardware tells VSYNC lasts for 60us.
+		CRT_VERTICAL_DURATION=0x1000000-60000, // Time CRTC spends for drawing.  VSYNC_CYCLE-CRT_VERTICAL_DURATION gives duration of VSYNC.
 		// HSYNC_CYCLE should be 32000, but it is close enough to 0x8000(32768)
 		HSYNC_CYCLE=            0x8000, // Not accurate.  Fixed at 31K
 		CRT_HORIZONTAL_DURATION= 30000,
