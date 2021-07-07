@@ -107,6 +107,23 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 	}
 	if(MOUSE==device)
 	{
+		bool button[2]=
+		{
+			this->button[0],this->button[1]
+		};
+		// Auto Shot
+		for(int i=0; i<2; ++i)
+		{
+			if(0!=autoShotInterval[i])
+			{
+				auto dt=townsTime%autoShotInterval[i];
+				if((autoShotInterval[i]/2)<=dt)
+				{
+					button[i]=false;
+				}
+			}
+		}
+
 		if(MOUSEREAD_RESET_TIMEOUT<(townsTime-lastAccessTime))
 		{
 			state=MOUSESTATE_XHIGH;
@@ -367,8 +384,17 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 	return data;
 }
 
-void TownsGamePort::Port::SetGamePadState(bool Abutton,bool Bbutton,bool left,bool right,bool up,bool down,bool run,bool pause)
+void TownsGamePort::Port::SetGamePadState(bool Abutton,bool Bbutton,bool left,bool right,bool up,bool down,bool run,bool pause,long long int townsTime)
 {
+	if(true!=this->button[0] && this->button[0]!=Abutton)
+	{
+		autoShotBaseTime[0]=townsTime;
+	}
+	if(true!=this->button[1] && this->button[1]!=Abutton)
+	{
+		autoShotBaseTime[1]=townsTime;
+	}
+
 	this->button[0]=Abutton;
 	this->button[1]=Bbutton;
 	this->left =left;
@@ -378,15 +404,17 @@ void TownsGamePort::Port::SetGamePadState(bool Abutton,bool Bbutton,bool left,bo
 	this->run  =run;
 	this->pause=pause;
 }
-void TownsGamePort::Port::SetCyberStickState(int x,int y,int z,int w,unsigned int trig)
+void TownsGamePort::Port::SetCyberStickState(int x,int y,int z,int w,unsigned int trig,long long int townsTime)
 {
+	SetAutoShotTimer(this->trig,trig,townsTime);
 	this->mouseMotion.Set(x,y);
 	this->zAxis=z;
 	this->wAxis=w;
 	this->trig=trig;
 }
-void TownsGamePort::Port::SetCAPCOMCPSFState(bool left,bool right,bool up,bool down,bool A,bool B,bool X,bool Y,bool L,bool R, bool start,bool select)
+void TownsGamePort::Port::SetCAPCOMCPSFState(bool left,bool right,bool up,bool down,bool A,bool B,bool X,bool Y,bool L,bool R, bool start,bool select,long long int townsTime)
 {
+	auto prevTrig=this->trig;
 	this->left=left;
 	this->right=right;
 	this->up=up;
@@ -399,6 +427,19 @@ void TownsGamePort::Port::SetCAPCOMCPSFState(bool left,bool right,bool up,bool d
 	           (R ? 32 : 0)|
 	           (start ? 64 : 0)|
 	           (select ? 128 : 0);
+	SetAutoShotTimer(this->trig,trig,townsTime);
+}
+void TownsGamePort::Port::SetAutoShotTimer(unsigned int prevTrig,unsigned int trig,long long int townsTime)
+{
+	unsigned int pressed=(~prevTrig)&trig;
+	for(unsigned int i=0; i<MAX_NUM_BUTTONS; ++i)
+	{
+		if(0!=(pressed&1))
+		{
+			autoShotBaseTime[i]=townsTime;
+		}
+		pressed>>=1;
+	}
 }
 
 ////////////////////////////////////////////////////////////
