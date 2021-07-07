@@ -761,14 +761,7 @@ void FMTowns::SetMouseButtonState(bool lButton,bool rButton)
 void FMTowns::SetGamePadState(int port,bool Abutton,bool Bbutton,bool left,bool right,bool up,bool down,bool run,bool pause)
 {
 	auto &p=gameport.state.ports[port&1];
-	p.button[0]=Abutton;
-	p.button[1]=Bbutton;
-	p.left =left;
-	p.right=right;
-	p.up   =up;
-	p.down =down;
-	p.run  =run;
-	p.pause=pause;
+	p.SetGamePadState(Abutton,Bbutton,left,right,up,down,run,pause);
 }
 
 void FMTowns::SetMouseMotion(int port,int dx,int dy)
@@ -780,27 +773,13 @@ void FMTowns::SetMouseMotion(int port,int dx,int dy)
 void FMTowns::SetCyberStickState(int port,int x,int y,int z,int w,unsigned int trig)
 {
 	auto &p=gameport.state.ports[port&1];
-	p.mouseMotion.Set(x,y);
-	p.zAxis=z;
-	p.wAxis=w;
-	p.trig=trig;
+	p.SetCyberStickState(x,y,z,w,trig);
 }
 
 void FMTowns::SetCAPCOMCPSFState(int port,bool left,bool right,bool up,bool down,bool A,bool B,bool X,bool Y,bool L,bool R, bool start,bool select)
 {
 	auto &p=gameport.state.ports[port&1];
-	p.left=left;
-	p.right=right;
-	p.up=up;
-	p.down=down;
-	p.trig=(A ? 1 : 0)|
-	       (B ? 2 : 0)|
-	       (X ? 4 : 0)|
-	       (Y ? 8 : 0)|
-	       (L ? 16 : 0)|
-	       (R ? 32 : 0)|
-	       (start ? 64 : 0)|
-	       (select ? 128 : 0);
+	p.SetCAPCOMCPSFState(left,right,up,down,A,B,X,Y,L,R,start,select);
 }
 
 bool FMTowns::GetMouseCoordinate(int &mx,int &my,unsigned int tbiosid) const

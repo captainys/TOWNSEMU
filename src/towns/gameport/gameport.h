@@ -41,6 +41,11 @@ public:
 
 	enum
 	{
+		MAX_NUM_BUTTONS=32
+	};
+
+	enum
+	{
 		MOUSESTATE_XHIGH,
 		MOUSESTATE_XLOW,
 		MOUSESTATE_YHIGH,
@@ -102,6 +107,15 @@ public:
 
 		void Write(long long int townsTime,bool COM,unsigned char TRIG);
 		unsigned char Read(long long int townsTime); // Reading last coordinate should reset motion.  Not a const.
+
+		void SetGamePadState(bool Abutton,bool Bbutton,bool left,bool right,bool up,bool down,bool run,bool pause);
+		void SetCyberStickState(int x,int y,int z,int w,unsigned int trig);
+		void SetCAPCOMCPSFState(bool left,bool right,bool up,bool down,bool A,bool B,bool X,bool Y,bool L,bool R, bool start,bool select);
+
+		// Don't have to save state >>
+		long long int autoShotInterval[MAX_NUM_BUTTONS];  // 0->No auto shot
+		long long int autoShotBaseTime[MAX_NUM_BUTTONS];
+		// Don't have to save state <<
 	};
 
 	class State

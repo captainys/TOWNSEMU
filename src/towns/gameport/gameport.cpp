@@ -367,6 +367,39 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 	return data;
 }
 
+void TownsGamePort::Port::SetGamePadState(bool Abutton,bool Bbutton,bool left,bool right,bool up,bool down,bool run,bool pause)
+{
+	this->button[0]=Abutton;
+	this->button[1]=Bbutton;
+	this->left =left;
+	this->right=right;
+	this->up   =up;
+	this->down =down;
+	this->run  =run;
+	this->pause=pause;
+}
+void TownsGamePort::Port::SetCyberStickState(int x,int y,int z,int w,unsigned int trig)
+{
+	this->mouseMotion.Set(x,y);
+	this->zAxis=z;
+	this->wAxis=w;
+	this->trig=trig;
+}
+void TownsGamePort::Port::SetCAPCOMCPSFState(bool left,bool right,bool up,bool down,bool A,bool B,bool X,bool Y,bool L,bool R, bool start,bool select)
+{
+	this->left=left;
+	this->right=right;
+	this->up=up;
+	this->down=down;
+	this->trig=(A ? 1 : 0)|
+	           (B ? 2 : 0)|
+	           (X ? 4 : 0)|
+	           (Y ? 8 : 0)|
+	           (L ? 16 : 0)|
+	           (R ? 32 : 0)|
+	           (start ? 64 : 0)|
+	           (select ? 128 : 0);
+}
 
 ////////////////////////////////////////////////////////////
 
@@ -394,6 +427,17 @@ void TownsGamePort::SetBootKeyCombination(unsigned int keyComb)
 
 void TownsGamePort::State::PowerOn(void)
 {
+	for(auto &p : ports)
+	{
+		for(auto &i : p.autoShotInterval)
+		{
+			i=0;
+		}
+		for(auto &t : p.autoShotBaseTime)
+		{
+			t=0;
+		}
+	}
 }
 void TownsGamePort::State::Reset(void)
 {
