@@ -172,6 +172,14 @@ private:
 	static void File_Recent(void *appPtr,FsGuiPopUpMenu *,FsGuiPopUpMenuItem *itm);
 	YsWString GetRecentFileListFileName(void) const;
 
+	// [Port][Button][Speed]
+	enum
+	{
+		MAX_NUM_BUTTONS=8,
+		NUM_AUTOSHOT_SPEED=4
+	};
+	FsGuiPopUpMenuItem *padAutoShot[2][MAX_NUM_BUTTONS][NUM_AUTOSHOT_SPEED];
+
 
 	// [Menu call-backs]
 	/*! Sample call-back functions.
@@ -283,8 +291,9 @@ private:
 
 	class GamePortDialog;
 	void Device_GamePort0(FsGuiPopUpMenuItem *);
-	void Device_GamePort1(FsGuiPopUpMenuItem *);	
+	void Device_GamePort1(FsGuiPopUpMenuItem *);
 	void Device_GamePort_DeviceSelected(FsGuiDialog *dlg,int returnCode);
+	void Device_AutoShot(FsGuiPopUpMenuItem *);
 
 	void EventLog_StartRecording(FsGuiPopUpMenuItem *);
 	void EventLog_EndRecording(FsGuiPopUpMenuItem *);

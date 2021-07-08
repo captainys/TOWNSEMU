@@ -330,6 +330,30 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_D,"Devices")->GetSubMenu();
 		subMenu->AddTextItem(0,FSKEY_0,"Game Port 0")->BindCallBack(&THISCLASS::Device_GamePort0,this);
 		subMenu->AddTextItem(0,FSKEY_1,"Game Port 1")->BindCallBack(&THISCLASS::Device_GamePort1,this);
+
+		auto *autoShotMenu=subMenu->AddTextItem(0,FSKEY_A,"Auto Shot")->AddSubMenu();
+		for(int port=0; port<2; ++port)
+		{
+			char str[256];
+			sprintf(str,"Game Port %d",port);
+			auto *portMenu=autoShotMenu->AddTextItem(0,FSKEY_0+port,str)->AddSubMenu();
+			for(int button=0; button<MAX_NUM_BUTTONS; ++button)
+			{
+				sprintf(str,"Button %d",button);
+				auto *buttonMenu=portMenu->AddTextItem(0,FSKEY_0+button,str)->AddSubMenu();
+				padAutoShot[port][button][0]=buttonMenu->AddTextItem(0,FSKEY_0,"None");
+				padAutoShot[port][button][1]=buttonMenu->AddTextItem(0,FSKEY_1,"8 shots per second");
+				padAutoShot[port][button][2]=buttonMenu->AddTextItem(0,FSKEY_2,"12 shots per second");
+				padAutoShot[port][button][3]=buttonMenu->AddTextItem(0,FSKEY_3,"16 shots per second");
+
+				padAutoShot[port][button][0]->BindCallBack(&THISCLASS::Device_AutoShot,this);
+				padAutoShot[port][button][1]->BindCallBack(&THISCLASS::Device_AutoShot,this);
+				padAutoShot[port][button][2]->BindCallBack(&THISCLASS::Device_AutoShot,this);
+				padAutoShot[port][button][3]->BindCallBack(&THISCLASS::Device_AutoShot,this);
+
+				padAutoShot[port][button][0]->SetCheck(YSTRUE);
+			}
+		}
 	}
 
 	{
@@ -2216,6 +2240,46 @@ void FsGuiMainCanvas::Device_GamePort_DeviceSelected(FsGuiDialog *dlgIn,int retu
 				ResumeVMIfSameProc();
 			}
 		}
+	}
+}
+
+void FsGuiMainCanvas::Device_AutoShot(FsGuiPopUpMenuItem *menu)
+{
+	if(true==IsVMRunning())
+	{
+		unsigned int interval[NUM_AUTOSHOT_SPEED]=
+		{
+			0,
+			125,
+			83,
+			63,
+		};
+		for(int port=0; port<2; ++port)
+		{
+			for(int button=0; button<MAX_NUM_BUTTONS; ++button)
+			{
+				for(int speed=0; speed<NUM_AUTOSHOT_SPEED; ++speed)
+				{
+					if(menu==padAutoShot[port][button][speed])
+					{
+						for(int b=0; b<NUM_AUTOSHOT_SPEED; ++b)
+						{
+							padAutoShot[port][button][b]->SetCheck(YSFALSE);
+						}
+						menu->SetCheck(YSTRUE);
+
+						char str[256];
+						sprintf(str,"AUTOSHOT %d %d %u",port,button,interval[speed]);
+						SendVMCommand(str);
+						ResumeVMIfSameProc();
+					}
+				}
+			}
+		}
+	}
+	else
+	{
+		VM_Not_Running_Error();
 	}
 }
 

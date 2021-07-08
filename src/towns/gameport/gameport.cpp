@@ -143,12 +143,12 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 	}
 	else if(GAMEPAD==device)
 	{
-		bool button[2]=
+		bool button[4]=
 		{
-			this->button[0],this->button[1]
+			this->button[0],this->button[1],this->run,this->pause
 		};
 		// Auto Shot
-		for(int i=0; i<2; ++i)
+		for(int i=0; i<4; ++i)
 		{
 			if(0!=autoShotInterval[i])
 			{
@@ -159,6 +159,8 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 				}
 			}
 		}
+		auto run=button[2];
+		auto pause=button[3];
 
 		data|=0x3F;
 		if(true==run)
