@@ -402,6 +402,13 @@ void FsGuiMainCanvas::OnInterval(void)
 			}
 		}
 	}
+	else
+	{
+		if(YSTRUE!=IsDialogUsed(profileDlg))
+		{
+			AddDialog(profileDlg);
+		}
+	}
 
 	{
 		int key;
