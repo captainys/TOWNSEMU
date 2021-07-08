@@ -180,6 +180,8 @@ public:
 
 		CMD_QUICK_SAVESTATE,
 		CMD_QUICK_LOADSTATE,
+
+		CMD_AUTOSHOT,
 	};
 
 	enum
@@ -387,6 +389,7 @@ public:
 	void Execute_QuickScreenShotPages(FMTowns &towns,Command &cmd);
 	void Execute_QuickScreenShotDirectory(FMTowns &towns,Command &cmd);
 
+	void Execute_AutoShot(FMTowns &towns,Command &cmd);
 };
 
 

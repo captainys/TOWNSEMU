@@ -107,23 +107,6 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 	}
 	if(MOUSE==device)
 	{
-		bool button[2]=
-		{
-			this->button[0],this->button[1]
-		};
-		// Auto Shot
-		for(int i=0; i<2; ++i)
-		{
-			if(0!=autoShotInterval[i])
-			{
-				auto dt=townsTime%autoShotInterval[i];
-				if((autoShotInterval[i]/2)<=dt)
-				{
-					button[i]=false;
-				}
-			}
-		}
-
 		if(MOUSEREAD_RESET_TIMEOUT<(townsTime-lastAccessTime))
 		{
 			state=MOUSESTATE_XHIGH;
@@ -160,6 +143,23 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 	}
 	else if(GAMEPAD==device)
 	{
+		bool button[2]=
+		{
+			this->button[0],this->button[1]
+		};
+		// Auto Shot
+		for(int i=0; i<2; ++i)
+		{
+			if(0!=autoShotInterval[i])
+			{
+				auto dt=townsTime%autoShotInterval[i];
+				if((autoShotInterval[i]/2)<=dt)
+				{
+					button[i]=false;
+				}
+			}
+		}
+
 		data|=0x3F;
 		if(true==run)
 		{
@@ -200,6 +200,21 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 	{
 		if(CYBERSTICK_BOOT_IDLE_TIME<townsTime)
 		{
+			unsigned int trig=this->trig;
+
+			// Auto Shot
+			for(int i=0; i<MAX_NUM_BUTTONS; ++i)
+			{
+				if(0!=autoShotInterval[i])
+				{
+					auto dt=townsTime%autoShotInterval[i];
+					if((autoShotInterval[i]/2)<=dt)
+					{
+						trig&=~(1<<i);
+					}
+				}
+			}
+
 			//  +0 Btn high 4 bits
 			//  +1 Btn low 4 bits
 			//  +2 Y high 4 bits
@@ -328,6 +343,21 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 	}
 	else if(CAPCOMCPSF==device)
 	{
+		unsigned int trig=this->trig;
+
+		// Auto Shot
+		for(int i=0; i<MAX_NUM_BUTTONS; ++i)
+		{
+			if(0!=autoShotInterval[i])
+			{
+				auto dt=townsTime%autoShotInterval[i];
+				if((autoShotInterval[i]/2)<=dt)
+				{
+					trig&=~(1<<i);
+				}
+			}
+		}
+
 		// Source: https://gamesx.com/wiki/doku.php?id=controls:x686button
 		// Pinout questionable.  The wiki tells there might be errors.
 		//COM=High

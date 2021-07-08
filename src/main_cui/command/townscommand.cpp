@@ -185,6 +185,8 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["QSAVE"]=CMD_QUICK_SAVESTATE;
 	primaryCmdMap["QLOAD"]=CMD_QUICK_LOADSTATE;
 
+	primaryCmdMap["AUTOSHOT"]=CMD_AUTOSHOT;
+
 
 
 	featureMap["CMDLOG"]=ENABLE_CMDLOG;
@@ -566,6 +568,10 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "LOADSTATE fileName" << std::endl;
 	std::cout << "  Load machine state (experimental)" << std::endl;
 
+	std::cout << "AUTOSHOT port button interval" << std::endl;
+	std::cout << "  Configure auto shot.  Interval=0 disables the auto shot." << std::endl;
+	std::cout << "  Interval is in milliseconds." << std::endl;
+	std::cout << "  Specify button=0 for A button." << std::endl;
 	std::cout << "" << std::endl;
 
 	std::cout << "<< Information that can be printed >>" << std::endl;
@@ -1331,6 +1337,9 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 		{
 			std::cout << "Loaded " << towns.var.quickStateSaveFName << std::endl;
 		}
+		break;
+	case CMD_AUTOSHOT:
+		Execute_AutoShot(towns,cmd);
 		break;
 	}
 }
@@ -4160,6 +4169,29 @@ void TownsCommandInterpreter::Execute_QuickScreenShotDirectory(FMTowns &towns,Co
 	if(2<=cmd.argv.size())
 	{
 		towns.var.quickScrnShotDir=cmd.argv[1];
+	}
+	else
+	{
+		PrintError(ERROR_TOO_FEW_ARGS);
+	}
+}
+
+void TownsCommandInterpreter::Execute_AutoShot(FMTowns &towns,Command &cmd)
+{
+	if(4<=cmd.argv.size())
+	{
+		unsigned int port=cpputil::Atoi(cmd.argv[1].data());
+		unsigned int button=cpputil::Atoi(cmd.argv[2].data());
+		long long int interval=cpputil::Atoi(cmd.argv[3].data())*1000*1000;
+		if(port<2 && button<TownsGamePort::MAX_NUM_BUTTONS)
+		{
+			towns.gameport.state.ports[port].autoShotInterval[button]=interval;
+			std::cout << "Configured Auto Shot for Port " << port << "Button " << button << std::endl;
+		}
+		else
+		{
+			std::cout << "Invalid port number or button number." << std::endl;
+		}
 	}
 	else
 	{
