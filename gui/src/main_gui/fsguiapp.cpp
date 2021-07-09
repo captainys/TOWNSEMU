@@ -402,12 +402,10 @@ void FsGuiMainCanvas::OnInterval(void)
 			}
 		}
 	}
-	else
+
+	if(true!=IsVMRunning() && YSTRUE!=IsDialogUsed(profileDlg))
 	{
-		if(YSTRUE!=IsDialogUsed(profileDlg))
-		{
-			AddDialog(profileDlg);
-		}
+		AddDialog(profileDlg);
 	}
 
 	{
