@@ -159,6 +159,8 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "-MOUSEINTEGSPD speed" << std::endl;
 	std::cout << "  Set mouse-integration speed.  If mouse jumps around, you can try setting lower value." << std::endl;
 	std::cout << "  Minimum is 32, and maximum is 256.  Default is 256 (fastest)." << std::endl;
+	std::cout << "-MOUSEINTEGVRAMOFFSET 1/0" << std::endl;
+	std::cout << "  1 for consider VRAM offset, or 0 for do not consider VRAM offset in mouse integration." << std::endl;
 	std::cout << "-APP title" << std::endl;
 	std::cout << "  Use application-specific customization." << std::endl;
 	std::cout << "  For the list of applications, start this program with" << std::endl;
@@ -317,6 +319,11 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 			{
 				mouseIntegrationSpeed=256;
 			}
+			++i;
+		}
+		else if("-MOUSEINTEGVRAMOFFSET"==ARG && i+1<argc)
+		{
+			considerVRAMOffsetInMouseIntegration=(0!=cpputil::Atoi(argv[i+1]));
 			++i;
 		}
 		else if("-DEBUG"==ARG || "-DEBUGGER"==ARG)

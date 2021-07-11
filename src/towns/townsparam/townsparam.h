@@ -129,6 +129,7 @@ public:
 	unsigned int freq=33;
 
 	unsigned int mouseIntegrationSpeed=256;
+	bool considerVRAMOffsetInMouseIntegration=true;
 
 	unsigned int appSpecificSetting=TOWNS_APPSPECIFIC_NONE;
 

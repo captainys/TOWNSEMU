@@ -242,6 +242,8 @@ void ProfileDialog::Make(void)
 		mouseIntegSpdSlider=AddHorizontalSlider(0,FSKEY_NULL,20,32.0,256.0,YSFALSE);
 		AddStaticText(0,FSKEY_NULL,"Fast",YSFALSE);
 
+		mouseIntegConsiderVRAMOffsetBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Consider VRAM Offset",YSFALSE);
+
 		EndAddTabItem();
 	}
 
@@ -911,6 +913,7 @@ TownsProfile ProfileDialog::GetProfile(void) const
 	{
 		profile.mouseIntegrationSpeed=256;
 	}
+	profile.considerVRAMOffsetInMouseIntegration=(mouseIntegConsiderVRAMOffsetBtn->GetCheck()==YSTRUE);
 
 	profile.bootKeyComb=BOOT_KEYCOMB_NONE;
 	for(int i=0; i<sizeof(bootKeyBtn)/sizeof(bootKeyBtn[0]); ++i)
@@ -1055,6 +1058,7 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 	}
 
 	mouseIntegSpdSlider->SetPositionByScaledValue((double)profile.mouseIntegrationSpeed);
+	mouseIntegConsiderVRAMOffsetBtn->SetCheck(profile.considerVRAMOffsetInMouseIntegration ? YSTRUE : YSFALSE);
 
 
 	for(int i=0; i<sizeof(bootKeyBtn)/sizeof(bootKeyBtn[0]); ++i)

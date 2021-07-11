@@ -245,6 +245,10 @@ public:
 		*/
 		bool mouseIntegration=true;
 
+		/*! Flag to consider VRAM offset in mouse integration.  Default value is true.
+		*/
+		bool considerVRAMOffsetInMouseIntegration=true;
+
 		/*! noWaitStandby will be copied to state.noWait on NotifyDiskRead().
 		*/
 		bool noWaitStandby=false;

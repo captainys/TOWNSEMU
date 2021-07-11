@@ -35,6 +35,7 @@ public:
 	FsGuiDropList *CDSpeedDrp;
 	FsGuiDropList *gamePortDrp[2]; // None, Pad0, Pad1, Keybord Emulation, Mouse,
 	FsGuiSlider *mouseIntegSpdSlider;
+	FsGuiButton *mouseIntegConsiderVRAMOffsetBtn;
 	FsGuiButton *bootKeyBtn[15];
 	FsGuiTextBox *scrnScaleTxt;
 	FsGuiButton *scrnAutoScaleBtn;

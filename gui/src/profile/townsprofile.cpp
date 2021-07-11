@@ -42,6 +42,7 @@ void TownsProfile::CleanUp(void)
 
 	memSizeInMB=4;
 	mouseIntegrationSpeed=256;
+	considerVRAMOffsetInMouseIntegration=true;
 
 	mouseByFlightstickAvailable=false;
 	mouseByFlightstickPhysicalId=-1;
@@ -731,6 +732,10 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 	sstream.str("");
 	sstream << mouseIntegrationSpeed;
 	argv.push_back(sstream.str());
+
+	argv.push_back("-MOUSEINTEGVRAMOFFSET");
+	argv.push_back(considerVRAMOffsetInMouseIntegration ? "1" : "0");
+
 
 	if(true==mouseByFlightstickAvailable)
 	{
