@@ -189,6 +189,7 @@ void FMTowns::State::PowerOn(void)
 	towns.gameport.SetBootKeyCombination(argv.bootKeyComb);
 
 	towns.state.mouseIntegrationSpeed=argv.mouseIntegrationSpeed;
+	towns.var.considerVRAMOffsetInMouseIntegration=argv.considerVRAMOffsetInMouseIntegration;
 	towns.state.noWait=argv.noWait;
 	towns.state.pretend386DX=argv.pretend386DX;
 	towns.var.noWaitStandby=argv.noWaitStandby;
