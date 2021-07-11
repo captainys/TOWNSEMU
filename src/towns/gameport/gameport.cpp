@@ -73,7 +73,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 void TownsGamePort::Port::Write(long long int townsTime,bool COM,unsigned char TRIG)
 {
-	if(MOUSE==device)
+	if(MOUSE==device && this->COM!=COM)
 	{
 		if((MOUSESTATE_XHIGH==state || MOUSESTATE_YHIGH==state) && true!=COM)
 		{
