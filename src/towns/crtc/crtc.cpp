@@ -800,7 +800,6 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 		{
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]&=0xFFFFFF00;
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]|=(data&0xFF);
-std::cout << "Write to CRTC2 Reg=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Uitox(state.highResCrtcReg[state.highResCrtcRegAddrLatch]) << std::endl;
 			if(HIGHRES_REG_CTRL1==state.highResCrtcRegAddrLatch)
 			{
 				if(0!=(data&2))
@@ -835,7 +834,6 @@ std::cout << "Write to CRTC2 Reg=" << cpputil::Ustox(state.highResCrtcRegAddrLat
 			// std::cout << "MX-VIDOUTCONTROL8[" << cpputil::Ustox(state.highResCrtcRegAddrLatch+1) << "H]=" << cpputil::Ubtox(data) << "H" << std::endl;
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]&=0xFFFF00FF;
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]|=((data&0xFF)<<8);
-std::cout << "Write to CRTC2 Reg=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Uitox(state.highResCrtcReg[state.highResCrtcRegAddrLatch]) << std::endl;
 			if(HIGHRES_REG_PALCOL==state.highResCrtcRegAddrLatch)
 			{
 				switch(state.highResCrtcReg[HIGHRES_REG_PALSEL])
@@ -859,7 +857,6 @@ std::cout << "Write to CRTC2 Reg=" << cpputil::Ustox(state.highResCrtcRegAddrLat
 			// std::cout << "MX-VIDOUTCONTROL8[" << cpputil::Ustox(state.highResCrtcRegAddrLatch+2) << "H]=" << cpputil::Ubtox(data) << "H" << std::endl;
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]&=0xFF00FFFF;
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]|=((data&0xFF)<<16);
-std::cout << "Write to CRTC2 Reg=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Uitox(state.highResCrtcReg[state.highResCrtcRegAddrLatch]) << std::endl;
 			if(HIGHRES_REG_PALCOL==state.highResCrtcRegAddrLatch)
 			{
 				switch(state.highResCrtcReg[HIGHRES_REG_PALSEL])
@@ -883,7 +880,6 @@ std::cout << "Write to CRTC2 Reg=" << cpputil::Ustox(state.highResCrtcRegAddrLat
 			// std::cout << "MX-VIDOUTCONTROL8[" << cpputil::Ustox(state.highResCrtcRegAddrLatch+3) << "H]=" << cpputil::Ubtox(data) << "H" << std::endl;
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]&=0x00FFFFFF;
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]|=((data&0xFF)<<24);
-std::cout << "Write to CRTC2 Reg=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Uitox(state.highResCrtcReg[state.highResCrtcRegAddrLatch]) << std::endl;
 		}
 		break;
 	case TOWNSIO_HSYNC_VSYNC:  // 0xFDA0 Also CRT Output COntrol
