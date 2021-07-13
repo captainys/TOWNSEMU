@@ -123,6 +123,7 @@ TownsCDROM::TownsCDROM(class FMTowns *townsPtr,class TownsPIC *PICPtr,class Town
 }
 /* virtual */ void TownsCDROM::IOWriteByte(unsigned int ioport,unsigned int data)
 {
+	bool cmdOrParam=false;
 	switch(ioport)
 	{
 	case TOWNSIO_CDROM_MASTER_CTRL_STATUS://0x4C0, // [2] pp.224
@@ -161,6 +162,7 @@ TownsCDROM::TownsCDROM(class FMTowns *townsPtr,class TownsPIC *PICPtr,class Town
 		state.cmd=data;
 		var.lastCmdIssuedAt.SEG=townsPtr->cpu.state.CS().value;
 		var.lastCmdIssuedAt.OFFSET=townsPtr->cpu.state.EIP;
+		cmdOrParam=true;
 		break;
 	case TOWNSIO_CDROM_PARAMETER_DATA://    0x4C4, // [2] pp.224
 		if(8<=state.nParamQueue)
@@ -174,6 +176,7 @@ TownsCDROM::TownsCDROM(class FMTowns *townsPtr,class TownsPIC *PICPtr,class Town
 		state.paramQueue[state.nParamQueue++]=data;
 		var.lastParamWrittenAt.SEG=townsPtr->cpu.state.CS().value;
 		var.lastParamWrittenAt.OFFSET=townsPtr->cpu.state.EIP;
+		cmdOrParam=true;
 		break;
 	case TOWNSIO_CDROM_TRANSFER_CTRL://     0x4C6, // [2] pp.227
 		state.DMATransfer=(0!=(data&0x10));
@@ -197,7 +200,12 @@ TownsCDROM::TownsCDROM(class FMTowns *townsPtr,class TownsPIC *PICPtr,class Town
 		// No write
 		break;
 	}
-	if(true==state.cmdReceived && PARAM_QUEUE_LEN<=state.nParamQueue)
+
+	// Regarding cmdOrParam flag:
+	// AWESOME bangs on 04C0h, and constantly clear DEI and SIRQ, regardless of the events.
+	// The following check must only be done when command is written or parameter queue changes,
+	// or the command is reset every time 04C0h is banged.
+	if(true==cmdOrParam && true==state.cmdReceived && PARAM_QUEUE_LEN<=state.nParamQueue)
 	{
 		ExecuteCDROMCommand();
 	}
