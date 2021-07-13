@@ -919,6 +919,7 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 		{
 			WriteCR0(data);
 		}
+		UpdateSpriteHardware();
 		break;
 	case TOWNSIO_CRTC_DATA_HIGH://           0x443,
 		break;
@@ -928,6 +929,7 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 		break;
 	case TOWNSIO_VIDEO_OUT_CTRL_DATA://=      0x44A,
 		state.sifter[state.sifterAddrLatch]=data;
+		UpdateSpriteHardware();
 		break;
 
 	case TOWNSIO_MX_HIRES://            0x470,
