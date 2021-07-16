@@ -587,9 +587,9 @@ bool FMTowns::ControlMouse(int &diffX,int &diffY,int hostMouseX,int hostMouseY,u
 				// SuperDAISENRYAKU needs to make the VRAM offset signed, but I suspect making it signed
 				// contradicted with something else.  I fix it this time, but it may break something else,
 				// in which case I'll need to think about something else to support both.
-				if(0x20000<=VRAMoffset)
+				if(VRAMSize/2<=VRAMoffset)
 				{
-					VRAMoffset-=0x40000;
+					VRAMoffset-=VRAMSize;
 				}
 
 				hostMouseY+=VRAMoffset/bytesPerLine;
