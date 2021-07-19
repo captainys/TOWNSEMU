@@ -113,6 +113,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 
 	primaryCmdMap["SAVEYM2612LOG"]=CMD_SAVE_YM2612LOG;
 	primaryCmdMap["FMCH"]=CMD_YM2612_CH_ON_OFF;
+	primaryCmdMap["PCMCH"]=CMD_PCM_CH_ON_OFF;
 
 	primaryCmdMap["FMVOL"]=CMD_FMVOL;
 	primaryCmdMap["PCMVOL"]=CMD_PCMVOL;
@@ -560,8 +561,12 @@ void TownsCommandInterpreter::PrintHelp(void) const
 
 	std::cout << "FMVOL volume" << std::endl;
 	std::cout << "  Set FM (YM2612) volume.  0 to 8192.  Default value is 4096." << std::endl;
+	std::cout << "FMCH 0/1 0/1 0/1 0/1 0/1 0/1" << std::endl;
+	std::cout << "  Enable/Disable YM2612 channels." << std::endl;
 	std::cout << "PCMVOL volume" << std::endl;
 	std::cout << "  Set PCM (RF5C68) volume.  0 to 8192.  Default value is 4096." << std::endl;
+	std::cout << "PCMCH 0/1 0/1 0/1 0/1 0/1 0/1 0/1 0/1" << std::endl;
+	std::cout << "  Enable/Disable PCM channels." << std::endl;
 
 	std::cout << "SAVESTATE fileName" << std::endl;
 	std::cout << "  Save machine state (experimental)" << std::endl;
@@ -640,8 +645,6 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Mouse status." << std::endl;
 	std::cout << "YM2612LOG" << std::endl;
 	std::cout << "  YM2612 register-write log." << std::endl;
-	std::cout << "FMCH 0/1 0/1 0/1 0/1 0/1 0/1" << std::endl;
-	std::cout << "  Mute/Unmute YM2612 channels." << std::endl;
 	std::cout << "MEMFILTER" << std::endl;
 	std::cout << "  Memory filter addresses." << std::endl;
 	std::cout << "DOS SYSVAR" << std::endl;
@@ -971,6 +974,24 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 			towns.sound.state.ym2612.channelMute[4]=(0==cpputil::Atoi(cmd.argv[5].c_str()));
 			towns.sound.state.ym2612.channelMute[5]=(0==cpputil::Atoi(cmd.argv[6].c_str()));
 			std::cout << "Set YM2612 chnanle mute/unmute" << std::endl;
+		}
+		else
+		{
+			PrintError(ERROR_TOO_FEW_ARGS);
+		}
+		break;
+	case CMD_PCM_CH_ON_OFF:
+		if(9<=cmd.argv.size())
+		{
+			towns.sound.state.rf5c68.chMute[0]=(0==cpputil::Atoi(cmd.argv[1].c_str()));
+			towns.sound.state.rf5c68.chMute[1]=(0==cpputil::Atoi(cmd.argv[2].c_str()));
+			towns.sound.state.rf5c68.chMute[2]=(0==cpputil::Atoi(cmd.argv[3].c_str()));
+			towns.sound.state.rf5c68.chMute[3]=(0==cpputil::Atoi(cmd.argv[4].c_str()));
+			towns.sound.state.rf5c68.chMute[4]=(0==cpputil::Atoi(cmd.argv[5].c_str()));
+			towns.sound.state.rf5c68.chMute[5]=(0==cpputil::Atoi(cmd.argv[6].c_str()));
+			towns.sound.state.rf5c68.chMute[6]=(0==cpputil::Atoi(cmd.argv[7].c_str()));
+			towns.sound.state.rf5c68.chMute[7]=(0==cpputil::Atoi(cmd.argv[8].c_str()));
+			std::cout << "Set RF5C68 chnanle mute/unmute" << std::endl;
 		}
 		else
 		{

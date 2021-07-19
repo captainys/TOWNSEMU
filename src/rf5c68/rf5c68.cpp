@@ -259,8 +259,11 @@ unsigned int RF5C68::AddWaveForNumSamples(unsigned char waveBuf[],unsigned int n
 					R=-R;
 				}
 
-				Lout+=L;
-				Rout+=R;
+				if(true!=chMute[chNum])
+				{
+					Lout+=L;
+					Rout+=R;
+				}
 
 				auto prevBank=((pcmAddr[chNum]>>FD_BIT_SHIFT>>BANK_SHIFT)&0x0F);
 				pcmAddr[chNum]+=ch.FD;

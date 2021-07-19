@@ -76,6 +76,7 @@ public:
 		int volume=WAVE_OUTPUT_AMPLITUDE_MAX_DEFAULT;
 	};
 	State state;
+	bool chMute[NUM_CHANNELS]={false,false,false,false,false,false,false,false};
 
 
 	RF5C68();
