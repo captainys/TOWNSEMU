@@ -551,6 +551,9 @@ bool FMTowns::ControlMouse(int &diffX,int &diffY,int hostMouseX,int hostMouseY,u
 		case TOWNS_APPSPECIFIC_AMARANTH3:
 			considerVRAMOffset=false;
 			break;
+		case TOWNS_APPSPECIFIC_OPERATIONWOLF:
+			considerVRAMOffset=false;
+			break;
 		case TOWNS_APPSPECIFIC_LEMMINGS:
 			considerVRAMOffset=false;
 			hostMouseX*=zoom2x.x();
