@@ -62,7 +62,7 @@ void TownsPhysicalMemory::State::Reset(void)
 	{
 		c=0;
 	}
-	for(auto &c : waveRAM)
+	for(auto &c : notUsed)
 	{
 		c=0;
 	}
@@ -377,9 +377,9 @@ void TownsPhysicalMemory::SetSpriteRAMSize(long long int size)
 	state.spriteRAM.resize(size);
 }
 
-void TownsPhysicalMemory::SetWaveRAMSize(long long int size)
+void TownsPhysicalMemory::SetDummySize(long long int size)
 {
-	state.waveRAM.resize(size);
+	state.notUsed.resize(size);
 }
 
 /* virtual */ void TownsPhysicalMemory::Reset(void)
@@ -707,7 +707,7 @@ std::vector <std::string> TownsPhysicalMemory::GetStatusText(void) const
 	PushUcharArray(data,state.VRAM);
 	PushUcharArray(data,state.CVRAM);
 	PushUcharArray(data,state.spriteRAM);
-	PushUcharArray(data,state.waveRAM);
+	PushUcharArray(data,state.notUsed);
 	PushUcharArray(data,TOWNS_CMOS_SIZE,state.CMOSRAM);
 
 	// PCMCIA memory card.
@@ -759,7 +759,7 @@ std::vector <std::string> TownsPhysicalMemory::GetStatusText(void) const
 	state.VRAM=ReadUcharArray(data);
 	state.CVRAM=ReadUcharArray(data);
 	state.spriteRAM=ReadUcharArray(data);
-	state.waveRAM=ReadUcharArray(data);
+	state.notUsed=ReadUcharArray(data);
 	ReadUcharArray(data,TOWNS_CMOS_SIZE,state.CMOSRAM);
 
 	// PCMCIA memory card.

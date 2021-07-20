@@ -400,7 +400,7 @@ FMTowns::FMTowns() :
 	physMem.SetVRAMSize(TOWNS_VRAM_SIZE);
 	physMem.SetCVRAMSize(TOWNS_CVRAM_SIZE);
 	physMem.SetSpriteRAMSize(TOWNS_SPRITERAM_SIZE);
-	physMem.SetWaveRAMSize(TOWNS_WAVERAM_SIZE);
+	physMem.SetDummySize(TOWNS_WAVERAM_SIZE);
 	for(int i=0; i<TOWNS_CMOS_SIZE; ++i)
 	{
 		physMem.state.CMOSRAM[i]=defCMOS[i];

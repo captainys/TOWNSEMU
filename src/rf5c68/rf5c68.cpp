@@ -46,7 +46,7 @@ void RF5C68::Clear(void)
 {
 	for(auto &b : state.waveRAM)
 	{
-		b=0;
+		b=0xff;
 	}
 	for(auto &ch : state.ch)
 	{

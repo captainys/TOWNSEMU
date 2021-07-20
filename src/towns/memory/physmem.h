@@ -349,7 +349,7 @@ public:
 		std::vector <unsigned char> VRAM;
 		std::vector <unsigned char> CVRAM;
 		std::vector <unsigned char> spriteRAM;
-		std::vector <unsigned char> waveRAM;
+		std::vector <unsigned char> notUsed;
 		unsigned char CMOSRAM[TOWNS_CMOS_SIZE];
 
 		// PCMCIA memory card.
@@ -444,9 +444,9 @@ public:
 	*/
 	void SetSpriteRAMSize(long long int size);
 
-	/*! Sets the WaveRAM size.
+	/*! Sets the WaveRAM size.  Used to be.  Now RF5C68 owns the wave RAM.
 	*/
-	void SetWaveRAMSize(long long int size);
+	void SetDummySize(long long int size);
 
 	/*! Set up memory access.  Protected-mode memory are mapped differently depending on 386SX or other.
 	    To allow 486 core to start, SYSROM is always mapped to the end of 32-bit address space.

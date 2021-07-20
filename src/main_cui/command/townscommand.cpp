@@ -174,6 +174,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["ENDFMPCMREC"]=CMD_END_FMPCM_RECORDING;
 	primaryCmdMap["SAVEFMPCMREC"]=CMD_SAVE_FMPCM_RECORDING;
 
+	primaryCmdMap["SAVEWAVRAM"]=CMD_SAVE_WAVERAM;
 
 	primaryCmdMap["SAVESTATE"]=CMD_SAVE_STATE;
 	primaryCmdMap["LOADSTATE"]=CMD_LOAD_STATE;
@@ -567,6 +568,9 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Set PCM (RF5C68) volume.  0 to 8192.  Default value is 4096." << std::endl;
 	std::cout << "PCMCH 0/1 0/1 0/1 0/1 0/1 0/1 0/1 0/1" << std::endl;
 	std::cout << "  Enable/Disable PCM channels." << std::endl;
+
+	std::cout << "SAVEWAVRAM filename" << std::endl;
+	std::cout << "  Save binary dump of the wave RAM." << std::endl;
 
 	std::cout << "SAVESTATE fileName" << std::endl;
 	std::cout << "  Save machine state (experimental)" << std::endl;
@@ -1325,6 +1329,23 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 		if(2<=cmd.argv.size())
 		{
 			towns.sound.SaveRecording(cmd.argv[1]);
+		}
+		break;
+	case CMD_SAVE_WAVERAM:
+		if(2<=cmd.argv.size())
+		{
+			if(true==cpputil::WriteBinaryFile(cmd.argv[1],towns.sound.state.rf5c68.state.waveRAM.size(),towns.sound.state.rf5c68.state.waveRAM.data()))
+			{
+				std::cout << "Saved." << std::endl;
+			}
+			else
+			{
+				std::cout << "Save error." << std::endl;
+			}
+		}
+		else
+		{
+			PrintError(ERROR_TOO_FEW_ARGS);
 		}
 		break;
 
