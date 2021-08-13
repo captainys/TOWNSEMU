@@ -245,6 +245,11 @@ public:
 		*/
 		bool mouseIntegration=true;
 
+		int mouseMinX=TownsStartParameters::DEFAULT_MOUSE_MINX;
+		int mouseMaxX=TownsStartParameters::DEFAULT_MOUSE_MAXX;
+		int mouseMinY=TownsStartParameters::DEFAULT_MOUSE_MINY;
+		int mouseMaxY=TownsStartParameters::DEFAULT_MOUSE_MAXY;
+
 		/*! Flag to consider VRAM offset in mouse integration.  Default value is true.
 		*/
 		bool considerVRAMOffsetInMouseIntegration=true;

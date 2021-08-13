@@ -161,6 +161,9 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  Minimum is 32, and maximum is 256.  Default is 256 (fastest)." << std::endl;
 	std::cout << "-MOUSEINTEGVRAMOFFSET 1/0" << std::endl;
 	std::cout << "  1 for consider VRAM offset, or 0 for do not consider VRAM offset in mouse integration." << std::endl;
+	std::cout << "-MOUSERANGE minX minY maxX maxY" << std::endl;
+	std::cout << "  Specify the range of the mouse cursor location in 1X scale." << std::endl;
+	std::cout <<"   Default is 0 0 1023 767." << std::endl;
 	std::cout << "-APP title" << std::endl;
 	std::cout << "  Use application-specific customization." << std::endl;
 	std::cout << "  For the list of applications, start this program with" << std::endl;
@@ -325,6 +328,14 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		{
 			considerVRAMOffsetInMouseIntegration=(0!=cpputil::Atoi(argv[i+1]));
 			++i;
+		}
+		else if("-MOUSERANGE"==ARG && i+4<argc)
+		{
+			mouseMinX=cpputil::Atoi(argv[i+1]);
+			mouseMinY=cpputil::Atoi(argv[i+2]);
+			mouseMaxX=cpputil::Atoi(argv[i+3]);
+			mouseMaxY=cpputil::Atoi(argv[i+4]);
+			i+=4;
 		}
 		else if("-DEBUG"==ARG || "-DEBUGGER"==ARG)
 		{

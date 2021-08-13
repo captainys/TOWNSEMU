@@ -499,6 +499,12 @@ bool FMTowns::ControlMouse(int &diffX,int &diffY,int hostMouseX,int hostMouseY,u
 		return true;
 	}
 
+	// Clamp by mouse range
+	hostMouseX=std::max(hostMouseX,var.mouseMinX);
+	hostMouseY=std::max(hostMouseY,var.mouseMinY);
+	hostMouseX=std::min(hostMouseX,var.mouseMaxX);
+	hostMouseY=std::min(hostMouseY,var.mouseMaxY);
+
 	int mx,my;
 	int slowDownRange=0;
 	var.lastKnownMouseX=hostMouseX;

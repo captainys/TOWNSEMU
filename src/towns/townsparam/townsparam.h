@@ -130,6 +130,17 @@ public:
 
 	unsigned int mouseIntegrationSpeed=256;
 	bool considerVRAMOffsetInMouseIntegration=true;
+	enum
+	{
+		DEFAULT_MOUSE_MINX=0,
+		DEFAULT_MOUSE_MAXX=1023,
+		DEFAULT_MOUSE_MINY=0,
+		DEFAULT_MOUSE_MAXY=767,
+	};
+	int mouseMinX=DEFAULT_MOUSE_MINX;
+	int mouseMaxX=DEFAULT_MOUSE_MAXX;
+	int mouseMinY=DEFAULT_MOUSE_MINY;
+	int mouseMaxY=DEFAULT_MOUSE_MAXY;
 
 	unsigned int appSpecificSetting=TOWNS_APPSPECIFIC_NONE;
 
