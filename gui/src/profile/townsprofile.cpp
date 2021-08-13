@@ -172,6 +172,10 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 	text.push_back(sstream.str());
 
 	sstream.str("");
+	sstream << "MOUSERNG " << mouseMinX << " " << mouseMinY << " " << mouseMaxX << " " << mouseMaxY;
+	text.push_back(sstream.str());
+
+	sstream.str("");
 	sstream << "FLTMOUSE " << (mouseByFlightstickAvailable ? 1 : 0);
 	text.push_back(sstream.str());
 
@@ -462,6 +466,16 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 			if(2<=argv.size())
 			{
 				mouseIntegrationSpeed=argv[1].Atoi();
+			}
+		}
+		else if(0==argv[0].STRCMP("MOUSERNG"))
+		{
+			if(5<=argv.size())
+			{
+				mouseMinX=argv[1].Atoi();
+				mouseMinY=argv[2].Atoi();
+				mouseMaxX=argv[3].Atoi();
+				mouseMaxY=argv[4].Atoi();
 			}
 		}
 		else if(0==argv[0].STRCMP("FLTMOUSE"))
@@ -855,6 +869,24 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 		argv.push_back("-PAUSEKEY");
 		argv.push_back(pauseResumeKeyLabel);
 	}
+
+	argv.push_back("-MOUSERANGE");
+
+	sstream.str("");
+	sstream << mouseMinX;
+	argv.push_back(sstream.str());
+
+	sstream.str("");
+	sstream << mouseMinY;
+	argv.push_back(sstream.str());
+
+	sstream.str("");
+	sstream << mouseMaxX;
+	argv.push_back(sstream.str());
+
+	sstream.str("");
+	sstream << mouseMaxY;
+	argv.push_back(sstream.str());
 
 	return argv;
 }

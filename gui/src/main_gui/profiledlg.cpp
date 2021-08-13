@@ -243,6 +243,14 @@ void ProfileDialog::Make(void)
 		AddStaticText(0,FSKEY_NULL,"Fast",YSFALSE);
 
 		mouseIntegConsiderVRAMOffsetBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Consider VRAM Offset",YSFALSE);
+		AddStaticText(0,FSKEY_NULL,"MinX:",YSTRUE);
+		mouseMinXTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",5,YSFALSE);
+		AddStaticText(0,FSKEY_NULL,"MinY:",YSFALSE);
+		mouseMinYTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",5,YSFALSE);
+		AddStaticText(0,FSKEY_NULL,"MaxX:",YSFALSE);
+		mouseMaxXTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",5,YSFALSE);
+		AddStaticText(0,FSKEY_NULL,"MaxY:",YSFALSE);
+		mouseMaxYTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",5,YSFALSE);
 
 		EndAddTabItem();
 	}
@@ -915,6 +923,11 @@ TownsProfile ProfileDialog::GetProfile(void) const
 	}
 	profile.considerVRAMOffsetInMouseIntegration=(mouseIntegConsiderVRAMOffsetBtn->GetCheck()==YSTRUE);
 
+	profile.mouseMinX=mouseMinXTxt->GetInteger();
+	profile.mouseMinY=mouseMinYTxt->GetInteger();
+	profile.mouseMaxX=mouseMaxXTxt->GetInteger();
+	profile.mouseMaxY=mouseMaxYTxt->GetInteger();
+
 	profile.bootKeyComb=BOOT_KEYCOMB_NONE;
 	for(int i=0; i<sizeof(bootKeyBtn)/sizeof(bootKeyBtn[0]); ++i)
 	{
@@ -1059,6 +1072,11 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 
 	mouseIntegSpdSlider->SetPositionByScaledValue((double)profile.mouseIntegrationSpeed);
 	mouseIntegConsiderVRAMOffsetBtn->SetCheck(profile.considerVRAMOffsetInMouseIntegration ? YSTRUE : YSFALSE);
+
+	mouseMinXTxt->SetInteger(profile.mouseMinX);
+	mouseMinYTxt->SetInteger(profile.mouseMinY);
+	mouseMaxXTxt->SetInteger(profile.mouseMaxX);
+	mouseMaxYTxt->SetInteger(profile.mouseMaxY);
 
 
 	for(int i=0; i<sizeof(bootKeyBtn)/sizeof(bootKeyBtn[0]); ++i)
