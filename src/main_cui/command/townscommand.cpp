@@ -1823,7 +1823,9 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 		case DUMP_TIME_BALANCE:
 			for(unsigned int i=0; i<FMTowns::Variable::TIME_ADJUSTMENT_LOG_LEN; ++i)
 			{
-				std::cout << towns.var.timeAdjustLog[(towns.var.timeAdjustLogPtr+i+1)%FMTowns::Variable::TIME_ADJUSTMENT_LOG_LEN];
+				auto I=(towns.var.timeAdjustLogPtr+i+1)%FMTowns::Variable::TIME_ADJUSTMENT_LOG_LEN;
+				std::cout << towns.var.timeAdjustLog[I];
+				std::cout << "  Deficit:" << towns.var.timeDeficitLog[I];
 				std::cout << std::endl;
 			}
 			break;
