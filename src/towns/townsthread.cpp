@@ -263,11 +263,15 @@ void TownsThread::AdjustRealTime(FMTowns *townsPtr,long long int cpuTimePassed,s
 		{
 			while(realTimePassed<cpuTimePassed)
 			{
-				realTimePassed=std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now()-time0).count();
 				townsPtr->ProcessSound(outside_world);
+				realTimePassed=std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now()-time0).count();
 			}
+			townsPtr->state.timeDeficit=(realTimePassed-cpuTimePassed)&(~(FMTowns::State::CATCHUP_PER_INSTRUCTION-1));
 		}
-		townsPtr->state.timeDeficit=0;
+		else
+		{
+			townsPtr->state.timeDeficit=0;
+		}
 	}
 }
 
