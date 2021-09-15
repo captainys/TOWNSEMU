@@ -100,9 +100,7 @@ public:
 
 		enum
 		{
-			CATCHUP_PER_INSTRUCTION=1024, // Nanoseconds catch-up per instruction.  Must be 2^n.
-			CATCHUP_DEFICIT_THRESHOLD=100000, // Ad-hoc threshold for applying catch-up
-			CATCHUP_DEFICIT_CUTOFF=  1000000, // If the deficit is above this threshold, just don't increase.
+			CATCHUP_DEFICIT_CUTOFF=2000000, // If the deficit is above this threshold, just don't increase.
 		};
 
 

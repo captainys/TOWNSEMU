@@ -790,10 +790,6 @@ unsigned int FMTowns::RunOneInstruction(void)
 	auto FREQ=state.freq;
 	auto passedInNanoSec=(state.clockBalance/FREQ);
 	state.townsTime+=passedInNanoSec;
-	if(State::CATCHUP_DEFICIT_THRESHOLD<state.timeDeficit)
-	{
-		state.townsTime+=State::CATCHUP_PER_INSTRUCTION;
-	}
 	state.cpuTime+=passedInNanoSec;
 	state.clockBalance%=FREQ;
 
