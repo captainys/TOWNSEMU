@@ -83,8 +83,8 @@ void TownsThread::VMMainLoop(FMTowns *townsPtr,Outside_World *outside_world,clas
 		case RUNMODE_RUN:
 			clockTicking=true;
 			{
-				auto nextTimeSync=townsPtr->state.cpuTime+NANOSECONDS_PER_TIME_SYNC;
-				while(townsPtr->state.cpuTime<nextTimeSync && true!=townsPtr->CheckAbort())
+				auto nextTimeSync=townsPtr->state.townsTime+NANOSECONDS_PER_TIME_SYNC;
+				while(townsPtr->state.townsTime<nextTimeSync && true!=townsPtr->CheckAbort())
 				{
 					townsPtr->RunOneInstruction();
 					townsPtr->pic.ProcessIRQ(townsPtr->cpu,townsPtr->mem);
@@ -130,10 +130,10 @@ void TownsThread::VMMainLoop(FMTowns *townsPtr,Outside_World *outside_world,clas
 			renderingThread->CheckImageReady(*townsPtr,*outside_world);
 
 			outside_world->ProcessAppSpecific(*townsPtr);
-			if(townsPtr->state.nextDevicePollingTime<townsPtr->state.cpuTime)
+			if(townsPtr->state.nextDevicePollingTime<townsPtr->state.townsTime)
 			{
 				outside_world->DevicePolling(*townsPtr);
-				townsPtr->state.nextDevicePollingTime=townsPtr->state.cpuTime+FMTowns::DEVICE_POLLING_INTERVAL;
+				townsPtr->state.nextDevicePollingTime=townsPtr->state.townsTime+FMTowns::DEVICE_POLLING_INTERVAL;
 			}
 			townsPtr->eventLog.Interval(*townsPtr);
 			if(true==townsPtr->CheckAbort() || outside_world->PauseKeyPressed())
