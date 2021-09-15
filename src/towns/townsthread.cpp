@@ -58,7 +58,7 @@ void TownsThread::VMMainLoop(FMTowns *townsPtr,Outside_World *outside_world,clas
 	for(;true!=terminate;)
 	{
 		auto realTime0=std::chrono::high_resolution_clock::now();
-		auto cpuTime0=townsPtr->state.cpuTime;
+		auto townsTime0=townsPtr->state.townsTime;
 
 		int runModeCopy=0;
 
@@ -202,7 +202,7 @@ void TownsThread::VMMainLoop(FMTowns *townsPtr,Outside_World *outside_world,clas
 		}
 		else if(true==clockTicking)
 		{
-			AdjustRealTime(townsPtr,townsPtr->state.cpuTime-cpuTime0,realTime0,outside_world);
+			AdjustRealTime(townsPtr,townsPtr->state.townsTime-townsTime0,realTime0,outside_world);
 		}
 	}
 
@@ -235,6 +235,29 @@ void TownsThread::VMEnd(FMTowns *townsPtr,Outside_World *outside_world,class Tow
 	}
 }
 
+
+// Case 1
+// Time deficit occurs when the VM lags behind the real-time (realTimePassed>cpuTimePassed):
+// 
+// RealTime  |------------>|1500us
+// VM        |----->|1000us
+//                  |      |deficit 500us
+// Hopefully it is due to screen rendering, disk access, or something temporary.
+
+// Case 2
+// When the VM catches up (deficit+realTimePassed<cpuTimePassed):
+// 
+// RealTime  |    |deficit-->|RalTimePassed-->|Wait------>|
+// VM        |    |----------------------------------->|
+//                                                     |->| New deficit
+
+// Case 3 : General case of Case 1
+// When the VM doesn't catch up, but pay back some deficit (cpuTimePassed>realTimePassed):
+// RealTime  |    |deficit-->|RealTimePassed-->|
+// VM        |    |------------------->|       |
+//                                     |------>|  New deficit
+
+
 void TownsThread::AdjustRealTime(FMTowns *townsPtr,long long int cpuTimePassed,std::chrono::time_point<std::chrono::high_resolution_clock> time0,Outside_World *outside_world)
 {
 	long long int realTimePassed=std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now()-time0).count();
@@ -243,35 +266,39 @@ void TownsThread::AdjustRealTime(FMTowns *townsPtr,long long int cpuTimePassed,s
 	townsPtr->var.timeDeficitLog[townsPtr->var.timeAdjustLogPtr]=townsPtr->state.timeDeficit;
 	townsPtr->var.timeAdjustLogPtr=(townsPtr->var.timeAdjustLogPtr+1)&(FMTowns::Variable::TIME_ADJUSTMENT_LOG_LEN-1);
 
-	if(cpuTimePassed<realTimePassed) // VM lagging
+	int64_t balance=cpuTimePassed-(townsPtr->state.timeDeficit+realTimePassed);
+	if(balance<0)  // Case 3
 	{
-		// Just record the time deficit here.
-		// In the next cycle, VM timer will be fast-forwarded 512 nanoseconds per instruction
-		// and 512 is subtracted from the deficit until deficit becomes zero.
 		if(true==townsPtr->var.catchUpRealTime)
 		{
-			townsPtr->state.timeDeficit=(realTimePassed-cpuTimePassed)&(~(FMTowns::State::CATCHUP_PER_INSTRUCTION-1));
+			townsPtr->state.timeDeficit=(-balance);
 		}
 		else
 		{
 			townsPtr->state.timeDeficit=0;
 		}
 	}
-	else
+	else // Case 2
 	{
 		if(true!=townsPtr->state.noWait)
 		{
-			while(realTimePassed<cpuTimePassed)
+			while(townsPtr->state.timeDeficit+realTimePassed<cpuTimePassed)
 			{
 				townsPtr->ProcessSound(outside_world);
 				realTimePassed=std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now()-time0).count();
 			}
-			townsPtr->state.timeDeficit=(realTimePassed-cpuTimePassed)&(~(FMTowns::State::CATCHUP_PER_INSTRUCTION-1));
+			int64_t newBalance=cpuTimePassed-(townsPtr->state.timeDeficit+realTimePassed);
+			townsPtr->state.timeDeficit=-newBalance;
 		}
 		else
 		{
 			townsPtr->state.timeDeficit=0;
 		}
+	}
+
+	if(FMTowns::State::CATCHUP_DEFICIT_CUTOFF<townsPtr->state.timeDeficit)
+	{
+		townsPtr->state.timeDeficit=FMTowns::State::CATCHUP_DEFICIT_CUTOFF;
 	}
 }
 
