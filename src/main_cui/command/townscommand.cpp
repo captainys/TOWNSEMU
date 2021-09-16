@@ -136,6 +136,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["CMOSLOAD"]=CMD_CMOSLOAD;
 	primaryCmdMap["CMOSSAVE"]=CMD_CMOSSAVE;
 	primaryCmdMap["CDLOAD"]=CMD_CDLOAD;
+	primaryCmdMap["CDCACHE"]=CMD_CDCACHE;
 	primaryCmdMap["CDOPENCLOSE"]=CMD_CDOPENCLOSE;
 	primaryCmdMap["CDDASTOP"]=CMD_CDDASTOP;
 
@@ -298,6 +299,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Virtually open and close the internal CD-ROM drive." << std::endl;
 	std::cout << "CDDASTOP" << std::endl;
 	std::cout << "  Stop CDDA" << std::endl;
+	std::cout << "CDCACHE" << std::endl;
+	std::cout << "  Cache CD binary.  It may consume large memory (as much as the CD image)." << std::endl;
 
 	std::cout << "GAMEPORT i device" << std::endl;
 	std::cout << "  Connect (or disconnect) device to game port i." << std::endl;
@@ -1164,6 +1167,16 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 
 	case CMD_CDLOAD:
 		Execute_CDLoad(towns,cmd);
+		break;
+	case CMD_CDCACHE:
+		if(true==towns.cdrom.state.GetDisc().CacheBinary())
+		{
+			std::cout << "Cached CD binary." << std::endl;
+		}
+		else
+		{
+			std::cout << "Could not cache CD binary." << std::endl;
+		}
 		break;
 	case CMD_CDOPENCLOSE:
 		towns.cdrom.StopCDDA();

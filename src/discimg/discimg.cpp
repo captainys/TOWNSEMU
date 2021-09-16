@@ -749,6 +749,7 @@ std::vector <unsigned char> DiscImage::ReadSectorMODE1(unsigned int HSG,unsigned
 						unsigned int dataPointer=0;
 						for(int i=0; i<(int)numSec && filePtr+MODE1_BYTES_PER_SECTOR<=binaryCache.size(); ++i)
 						{
+							filePtr+=16;
 							memcpy(data.data()+dataPointer,binaryCache.data()+filePtr,MODE1_BYTES_PER_SECTOR);
 							filePtr+=MODE1_BYTES_PER_SECTOR+288;
 							dataPointer+=MODE1_BYTES_PER_SECTOR;
