@@ -284,6 +284,7 @@ public:
 	std::vector <Binary> binaries;
 	std::vector <Track> tracks;
 	std::vector <DiscLayout> layout;
+	std::vector <unsigned char> binaryCache;
 
 	class TrackTime
 	{
@@ -304,6 +305,11 @@ private:
 
 public:
 	unsigned int OpenISO(const std::string &fName);
+
+	/*! Cache binary file.  It may take large memory.
+	    If it is the multi-binary image, it only reads the first binary.
+	*/
+	bool CacheBinary(void);
 
 	/*! Returns the number of tracks.
 	    Returns zero if image is not loaded.

@@ -119,6 +119,7 @@ void DiscImage::CleanUp(void)
 	binaries.clear();
 	tracks.clear();
 	layout.clear();
+	binaryCache.clear();
 }
 unsigned int DiscImage::Open(const std::string &fName)
 {
@@ -630,6 +631,29 @@ unsigned int DiscImage::OpenISO(const std::string &fName)
 
 	return ERROR_NOERROR;
 }
+
+bool DiscImage::CacheBinary(void)
+{
+	if(0<binaries.size())
+	{
+		std::ifstream ifp;
+		ifp.open(binaries[0].fName,std::ios::binary);
+		if(true==ifp.is_open())
+		{
+			ifp.seekg(0,std::ios::end);
+			auto fSize=ifp.tellg();
+
+			ifp.seekg(0,std::ios::beg);
+			binaryCache.resize(fSize);
+
+			ifp.read((char *)binaryCache.data(),fSize);
+
+			return true;
+		}
+	}
+	return false;
+}
+
 unsigned int DiscImage::GetNumTracks(void) const
 {
 	return (unsigned int)tracks.size();
