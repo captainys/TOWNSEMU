@@ -695,31 +695,64 @@ std::vector <unsigned char> DiscImage::ReadSectorMODE1(unsigned int HSG,unsigned
 
 	if(0<binaries.size())
 	{
-		std::ifstream ifp;
-		ifp.open(binaries[0].fName,std::ios::binary);
-		if(true==ifp.is_open() && 0<tracks.size() && (tracks[0].trackType==TRACK_MODE1_DATA || tracks[0].trackType==TRACK_MODE2_DATA))
+		if(0==binaryCache.size())
 		{
-			if(HSG+numSec<=tracks[0].end.ToHSG()+1)
+			std::ifstream ifp;
+			ifp.open(binaries[0].fName,std::ios::binary);
+			if(true==ifp.is_open() && 0<tracks.size() && (tracks[0].trackType==TRACK_MODE1_DATA || tracks[0].trackType==TRACK_MODE2_DATA))
 			{
-				auto sectorIntoTrack=HSG-tracks[0].start.ToHSG();
-				auto locationInTrack=sectorIntoTrack*tracks[0].sectorLength;
+				if(HSG+numSec<=tracks[0].end.ToHSG()+1)
+				{
+					auto sectorIntoTrack=HSG-tracks[0].start.ToHSG();
+					auto locationInTrack=sectorIntoTrack*tracks[0].sectorLength;
 
-				ifp.seekg(tracks[0].locationInFile+locationInTrack,std::ios::beg);
-				data.resize(numSec*MODE1_BYTES_PER_SECTOR);
-				if(MODE1_BYTES_PER_SECTOR==tracks[0].sectorLength)
-				{
-					ifp.read((char *)data.data(),MODE1_BYTES_PER_SECTOR*numSec);
-				}
-				else if(RAW_BYTES_PER_SECTOR==tracks[0].sectorLength)
-				{
-					unsigned int dataPointer=0;
-					char skipper[288];
-					for(int i=0; i<(int)numSec; ++i)
+					ifp.seekg(tracks[0].locationInFile+locationInTrack,std::ios::beg);
+					data.resize(numSec*MODE1_BYTES_PER_SECTOR);
+					if(MODE1_BYTES_PER_SECTOR==tracks[0].sectorLength)
 					{
-						ifp.read(skipper,16);
-						ifp.read((char *)data.data()+dataPointer,MODE1_BYTES_PER_SECTOR);
-						ifp.read(skipper,288);
-						dataPointer+=MODE1_BYTES_PER_SECTOR;
+						ifp.read((char *)data.data(),MODE1_BYTES_PER_SECTOR*numSec);
+					}
+					else if(RAW_BYTES_PER_SECTOR==tracks[0].sectorLength)
+					{
+						unsigned int dataPointer=0;
+						char skipper[288];
+						for(int i=0; i<(int)numSec; ++i)
+						{
+							ifp.read(skipper,16);
+							ifp.read((char *)data.data()+dataPointer,MODE1_BYTES_PER_SECTOR);
+							ifp.read(skipper,288);
+							dataPointer+=MODE1_BYTES_PER_SECTOR;
+						}
+					}
+				}
+			}
+		}
+		else
+		{
+			if(0<tracks.size() && (tracks[0].trackType==TRACK_MODE1_DATA || tracks[0].trackType==TRACK_MODE2_DATA))
+			{
+				if(HSG+numSec<=tracks[0].end.ToHSG()+1)
+				{
+					auto sectorIntoTrack=HSG-tracks[0].start.ToHSG();
+					auto locationInTrack=sectorIntoTrack*tracks[0].sectorLength;
+
+					auto filePtr=tracks[0].locationInFile+locationInTrack;
+					data.resize(numSec*MODE1_BYTES_PER_SECTOR);
+					if(MODE1_BYTES_PER_SECTOR==tracks[0].sectorLength)
+					{
+						uint64_t copyLen;
+						copyLen=std::min(data.size(),binaryCache.size()-filePtr);
+						memcpy(data.data(),binaryCache.data()+filePtr,copyLen);
+					}
+					else if(RAW_BYTES_PER_SECTOR==tracks[0].sectorLength)
+					{
+						unsigned int dataPointer=0;
+						for(int i=0; i<(int)numSec && filePtr+MODE1_BYTES_PER_SECTOR<=binaryCache.size(); ++i)
+						{
+							memcpy(data.data()+dataPointer,binaryCache.data()+filePtr,MODE1_BYTES_PER_SECTOR);
+							filePtr+=MODE1_BYTES_PER_SECTOR+288;
+							dataPointer+=MODE1_BYTES_PER_SECTOR;
+						}
 					}
 				}
 			}
