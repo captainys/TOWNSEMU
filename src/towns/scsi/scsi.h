@@ -4,6 +4,9 @@
 
 #include <vector>
 #include <string>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
 
 #include "discimg.h"
 
@@ -28,6 +31,60 @@ private:
 	class Outside_World *outsideworld=nullptr;
 public:
 	virtual const char *DeviceName(void) const{return "SCSI";}
+
+
+	class SCSIIOThread
+	{
+	public:
+		enum
+		{
+		CMD_NONE,
+		CMD_READ,
+		// CMD_WRITE,
+		CMD_QUIT,
+		};
+
+		mutable std::mutex mutex;
+		std::condition_variable cond;
+		std::thread thr;
+
+		unsigned int cmd=CMD_NONE;
+
+		bool dataReady=false;
+		std::string fName;
+		uint64_t filePtr,length;
+		std::vector <unsigned char> data;
+
+		/*! Must be created in the main thread.
+		*/
+		SCSIIOThread();
+
+		/*! Send CMD_QUIT to the thread func and wait for the function to be done.
+		*/
+		~SCSIIOThread();
+
+		void ThreadFunc(void);
+
+		/*! Called from the main thread to check if the thread is busy.
+		*/
+		bool IsBusy(void) const;
+
+		/*! Wait until the thread is ready.
+		*/
+		void WaitReady(void);
+
+		/*! Called from the main thread.  Set up CMD_READ.
+		    It will block until the thread is ready to take a command.
+		*/
+		void SetUpRead(std::string fName,uint64_t filePtr,uint64_t length);
+
+		/*! Called from the main thread to get the data.
+		    This will clear dataReady flag, and data.
+		    Returns true is data was ready and copied.
+		*/
+		bool GetData(std::vector <unsigned char> &dataRecv);
+	};
+
 
 	enum
 	{
@@ -132,6 +189,9 @@ public:
 	bool breakOnSCSICommand=false;
 	bool breakOnDMATransfer=false;
 
+
+
+
 	class SCSIDevice
 	{
 	public:
@@ -168,6 +228,9 @@ public:
 
 	State state;
 	bool monitorSCSICmd=false;
+
+	SCSIIOThread ioThread;
+
 
 	TownsSCSI(class FMTowns *townsPtr);
 

@@ -31,6 +31,99 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 
 
+TownsSCSI::SCSIIOThread::SCSIIOThread()
+{
+	std::thread t(&TownsSCSI::SCSIIOThread::ThreadFunc,this);
+	std::swap(t,thr);
+}
+TownsSCSI::SCSIIOThread::~SCSIIOThread()
+{
+	{
+		std::unique_lock <std::mutex> lock(mutex);
+		cmd=CMD_QUIT;
+	}
+	cond.notify_all();
+	thr.join();
+}
+void TownsSCSI::SCSIIOThread::ThreadFunc(void)
+{
+	std::unique_lock<std::mutex> lock(mutex);
+	for(;;)
+	{
+		// mutex is locked.  Can access command and parameters.
+
+		// Atomically check condition, release lock, and then wait until notified
+		// If the 'check condition' comes before 'wait' as advertised,
+		// this should exit immidiately if there are some tasks to do.
+
+		// To answer the question: what if it is not waiting when the main thread notify_all?
+		// this 'wait' will wait for notification, or will not wait if the condition is true.
+		// If tasks are populated, or quit flat is set before this 'wait', it will not block.
+		cond.wait(lock,[=]{return cmd!=CMD_NONE;});
+
+		// When wait exits, this thread owns the lock.
+
+		if(CMD_QUIT==cmd)
+		{
+			cmd=CMD_NONE;
+			break;
+		}
+		if(CMD_READ==cmd)
+		{
+		    data=cpputil::ReadBinaryFile(fName,filePtr,length);
+			cmd=CMD_NONE;
+			dataReady=true;
+		}
+	}
+}
+bool TownsSCSI::SCSIIOThread::IsBusy(void) const
+{
+	if(mutex.try_lock())
+	{
+		bool r=(CMD_NONE!=cmd);
+		mutex.unlock();
+		return r;
+	}
+	return true; // Couldn't take a lock -> Thread is busy.
+}
+void TownsSCSI::SCSIIOThread::WaitReady(void)
+{
+	std::unique_lock<std::mutex> lock(mutex);
+}
+void TownsSCSI::SCSIIOThread::SetUpRead(std::string fName,uint64_t filePtr,uint64_t length)
+{
+	{
+		std::unique_lock <std::mutex> lock(mutex);
+		cmd=CMD_READ;
+		dataReady=false;
+		this->fName=fName;
+		this->filePtr=filePtr;
+		this->length=length;
+	}
+	cond.notify_all();
+}
+bool TownsSCSI::SCSIIOThread::GetData(std::vector <unsigned char> &dataRecv)
+{
+	bool result=false;
+	if(mutex.try_lock())
+	{
+		if(true==dataReady)
+		{
+			std::swap(dataRecv,data);
+			dataReady=false;
+			result=true;
+		}
+		mutex.unlock();
+	}
+	return result;
+}
+
+
+
+////////////////////////////////////////////////////////////
+
+
+
 void TownsSCSI::State::PowerOn(void)
 {
 	Reset();
