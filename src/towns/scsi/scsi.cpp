@@ -363,6 +363,54 @@ void TownsSCSI::EnterDataInPhase(void)
 	state.bytesTransferred=0;
 	SetUpIO_MSG_CDfromPhase();
 	townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DATA_INTERVAL);
+
+	if(SCSICMD_READ_6==state.commandBuffer[0] ||
+	   SCSICMD_READ_10==state.commandBuffer[0])
+	{
+		if(SCSIDEVICE_HARDDISK==state.dev[state.selId].devType ||
+		   SCSIDEVICE_CDROM==state.dev[state.selId].devType)
+		{
+			unsigned int LBA,LEN;
+
+			if(SCSICMD_READ_10==state.commandBuffer[0])
+			{
+				LBA=(state.commandBuffer[2]<<24)|
+				    (state.commandBuffer[3]<<16)|
+				    (state.commandBuffer[4]<<8)|
+				     state.commandBuffer[5];
+				LEN=(state.commandBuffer[7]<<8)|
+				     state.commandBuffer[8];
+			}
+			else
+			{
+				LBA=((state.commandBuffer[1]&0x1F)<<16)|
+				    (state.commandBuffer[2]<<8)|
+				     state.commandBuffer[3];
+				LEN= state.commandBuffer[4];
+				if(0==LEN)
+				{
+					LEN=256;
+				}
+			}
+
+			if(SCSIDEVICE_HARDDISK==state.dev[state.selId].devType)
+			{
+				LBA*=HARDDISK_SECTOR_LENGTH;
+				LEN*=HARDDISK_SECTOR_LENGTH;
+				ioThread.SetUpFileRead(
+				        state.dev[state.selId].imageFName,
+				        LBA+state.bytesTransferred,
+				        LEN-state.bytesTransferred);
+			}
+			else if(SCSIDEVICE_CDROM==state.dev[state.selId].devType)
+			{
+				ioThread.SetUpCDRead(
+				        &state.dev[state.selId].discImg,
+				        LBA,
+				        LEN);
+			}
+		}
+	}
 }
 void TownsSCSI::EnterDataOutPhase(void)
 {
@@ -824,6 +872,14 @@ void TownsSCSI::ExecSCSICommand(void)
 				if(SCSIDEVICE_HARDDISK==state.dev[state.selId].devType ||
 				   SCSIDEVICE_CDROM==state.dev[state.selId].devType)
 				{
+					std::vector <unsigned char> data;
+					if(true!=ioThread.GetData(data))
+					{
+						townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+IOTHREAD_WAIT_INTERVAL);
+						break;
+					}
+
+
 					townsPtr->NotifyDiskRead();
 
 					unsigned int LBA,LEN;
@@ -852,21 +908,11 @@ void TownsSCSI::ExecSCSICommand(void)
 					unsigned int bytesTransferred=0;
 					if(SCSIDEVICE_HARDDISK==state.dev[state.selId].devType)
 					{
-						LBA*=HARDDISK_SECTOR_LENGTH;
-						LEN*=HARDDISK_SECTOR_LENGTH;
-						bytesTransferred=townsPtr->dmac.DeviceToMemory(
-						    DMACh,
-						    cpputil::ReadBinaryFile(
-						        state.dev[state.selId].imageFName,
-						        LBA+state.bytesTransferred,
-						        LEN-state.bytesTransferred));
+						bytesTransferred=townsPtr->dmac.DeviceToMemory(DMACh,data);
 					}
 					else if(SCSIDEVICE_CDROM==state.dev[state.selId].devType)
 					{
-						auto sectorData=state.dev[state.selId].discImg.ReadSectorMODE1(LBA,LEN);
-						bytesTransferred=townsPtr->dmac.DeviceToMemory(
-						    DMACh,
-						    sectorData.size()-state.bytesTransferred,sectorData.data()+state.bytesTransferred);
+						bytesTransferred=townsPtr->dmac.DeviceToMemory(DMACh,data);
 						LEN*=CDROM_SECTOR_LENGTH;
 					}
 					if(0<bytesTransferred)
@@ -882,6 +928,22 @@ void TownsSCSI::ExecSCSICommand(void)
 					}
 					else
 					{
+						if(SCSIDEVICE_HARDDISK==state.dev[state.selId].devType)
+						{
+							LBA*=HARDDISK_SECTOR_LENGTH;
+							LEN*=HARDDISK_SECTOR_LENGTH;
+							ioThread.SetUpFileRead(
+							        state.dev[state.selId].imageFName,
+							        LBA+state.bytesTransferred,
+							        LEN-state.bytesTransferred);
+						}
+						else if(SCSIDEVICE_CDROM==state.dev[state.selId].devType)
+						{
+							ioThread.SetUpCDRead(
+							        &state.dev[state.selId].discImg,
+							        LBA,
+							        LEN);
+						}
 						townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DATA_INTERVAL);
 					}
 				}
