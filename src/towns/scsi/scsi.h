@@ -39,7 +39,8 @@ public:
 		enum
 		{
 		CMD_NONE,
-		CMD_READ,
+		CMD_FILEREAD,
+		CMD_CDREAD,
 		// CMD_WRITE,
 		CMD_QUIT,
 		};
@@ -53,6 +54,7 @@ public:
 		bool dataReady=false;
 		std::string fName;
 		uint64_t filePtr,length;
+		const DiscImage *discImgPtr=nullptr;
 		std::vector <unsigned char> data;
 
 		/*! Must be created in the main thread.
@@ -73,10 +75,15 @@ public:
 		*/
 		void WaitReady(void);
 
-		/*! Called from the main thread.  Set up CMD_READ.
+		/*! Called from the main thread.  Set up CMD_FILEREAD.
 		    It will block until the thread is ready to take a command.
 		*/
-		void SetUpRead(std::string fName,uint64_t filePtr,uint64_t length);
+		void SetUpFileRead(std::string fName,uint64_t filePtr,uint64_t length);
+
+		/*! Called from the main thread.  Set up CMD_FILEREAD.
+		    It will block until the thread is ready to take a command.
+		*/
+		void SetUpCDRead(const DiscImage *discImgPtr,uint64_t LBA,uint64_t LEN);
 
 		/*! Called from the main thread to get the data.
 		    This will clear dataReady flag, and data.
@@ -93,6 +100,7 @@ public:
 		COMMAND_DELAY=500000,
 		MESSAGE_DELAY=500000,
 		STATUS_DELAY=500000,
+		IOTHREAD_WAIT_INTERVAL=100000,
 	};
 
 	enum

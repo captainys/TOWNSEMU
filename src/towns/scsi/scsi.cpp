@@ -68,9 +68,15 @@ void TownsSCSI::SCSIIOThread::ThreadFunc(void)
 			cmd=CMD_NONE;
 			break;
 		}
-		if(CMD_READ==cmd)
+		else if(CMD_FILEREAD==cmd)
 		{
 		    data=cpputil::ReadBinaryFile(fName,filePtr,length);
+			cmd=CMD_NONE;
+			dataReady=true;
+		}
+		else if(CMD_CDREAD==cmd)
+		{
+			data=discImgPtr->ReadSectorMODE1(filePtr,length);
 			cmd=CMD_NONE;
 			dataReady=true;
 		}
@@ -90,15 +96,27 @@ void TownsSCSI::SCSIIOThread::WaitReady(void)
 {
 	std::unique_lock<std::mutex> lock(mutex);
 }
-void TownsSCSI::SCSIIOThread::SetUpRead(std::string fName,uint64_t filePtr,uint64_t length)
+void TownsSCSI::SCSIIOThread::SetUpFileRead(std::string fName,uint64_t filePtr,uint64_t length)
 {
 	{
 		std::unique_lock <std::mutex> lock(mutex);
-		cmd=CMD_READ;
+		cmd=CMD_FILEREAD;
 		dataReady=false;
 		this->fName=fName;
 		this->filePtr=filePtr;
 		this->length=length;
+	}
+	cond.notify_all();
+}
+void TownsSCSI::SCSIIOThread::SetUpCDRead(const DiscImage *discImgPtr,uint64_t LBA,uint64_t LEN)
+{
+	{
+		std::unique_lock <std::mutex> lock(mutex);
+		cmd=CMD_CDREAD;
+		dataReady=false;
+		this->discImgPtr=discImgPtr;
+		this->filePtr=LBA;
+		this->length=LEN;
 	}
 	cond.notify_all();
 }
@@ -1030,6 +1048,7 @@ void TownsSCSI::ExecSCSICommand(void)
 					else
 					{
 						townsPtr->dmac.SetDMATransferEnd(TOWNSDMA_SCSI);
+						ioThread.WaitReady();
 						if(true==cpputil::WriteBinaryFile(
 						    state.dev[state.selId].imageFName,
 						    LBA+state.bytesTransferred,
