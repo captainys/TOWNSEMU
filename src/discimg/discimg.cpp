@@ -16,6 +16,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <fstream>
 #include <vector>
 #include <unordered_map>
+#include <string.h>
 
 #include "discimg.h"
 #include "cpputil.h"
