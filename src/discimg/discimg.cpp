@@ -741,7 +741,7 @@ std::vector <unsigned char> DiscImage::ReadSectorMODE1(unsigned int HSG,unsigned
 					if(MODE1_BYTES_PER_SECTOR==tracks[0].sectorLength)
 					{
 						uint64_t copyLen;
-						copyLen=std::min(data.size(),binaryCache.size()-filePtr);
+						copyLen=std::min<uint64_t>(data.size(),binaryCache.size()-filePtr);
 						memcpy(data.data(),binaryCache.data()+filePtr,copyLen);
 					}
 					else if(RAW_BYTES_PER_SECTOR==tracks[0].sectorLength)
