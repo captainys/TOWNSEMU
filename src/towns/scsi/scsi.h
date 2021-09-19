@@ -86,10 +86,9 @@ public:
 		void SetUpCDRead(const DiscImage *discImgPtr,uint64_t LBA,uint64_t LEN);
 
 		/*! Called from the main thread to get the data.
-		    This will clear dataReady flag, and data.
-		    Returns true is data was ready and copied.
+		    It returns nullptr if the data is not ready.
 		*/
-		bool GetData(std::vector <unsigned char> &dataRecv);
+		const std::vector <unsigned char> *GetData(void);
 	};
 
 

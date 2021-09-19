@@ -120,20 +120,18 @@ void TownsSCSI::SCSIIOThread::SetUpCDRead(const DiscImage *discImgPtr,uint64_t L
 	}
 	cond.notify_all();
 }
-bool TownsSCSI::SCSIIOThread::GetData(std::vector <unsigned char> &dataRecv)
+const std::vector <unsigned char> *TownsSCSI::SCSIIOThread::GetData(void)
 {
-	bool result=false;
+	const std::vector <unsigned char> *dataPtr=nullptr;
 	if(mutex.try_lock())
 	{
 		if(true==dataReady)
 		{
-			std::swap(dataRecv,data);
-			dataReady=false;
-			result=true;
+			dataPtr=&data;
 		}
 		mutex.unlock();
 	}
-	return result;
+	return dataPtr;
 }
 
 
@@ -872,13 +870,14 @@ void TownsSCSI::ExecSCSICommand(void)
 				if(SCSIDEVICE_HARDDISK==state.dev[state.selId].devType ||
 				   SCSIDEVICE_CDROM==state.dev[state.selId].devType)
 				{
-					std::vector <unsigned char> data;
-					if(true!=ioThread.GetData(data))
+					auto dataPtr=ioThread.GetData();
+					if(nullptr==dataPtr)
 					{
 						townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+IOTHREAD_WAIT_INTERVAL);
 						break;
 					}
 
+					auto &data=*dataPtr;
 
 					townsPtr->NotifyDiskRead();
 
@@ -906,15 +905,20 @@ void TownsSCSI::ExecSCSICommand(void)
 					}
 
 					unsigned int bytesTransferred=0;
+					bytesTransferred=townsPtr->dmac.DeviceToMemory(
+					    DMACh,
+					    data.size()-state.bytesTransferred,
+					    data.data()+state.bytesTransferred);
+
 					if(SCSIDEVICE_HARDDISK==state.dev[state.selId].devType)
 					{
-						bytesTransferred=townsPtr->dmac.DeviceToMemory(DMACh,data);
+						LEN*=HARDDISK_SECTOR_LENGTH;
 					}
 					else if(SCSIDEVICE_CDROM==state.dev[state.selId].devType)
 					{
-						bytesTransferred=townsPtr->dmac.DeviceToMemory(DMACh,data);
 						LEN*=CDROM_SECTOR_LENGTH;
 					}
+
 					if(0<bytesTransferred)
 					{
 						state.bytesTransferred+=bytesTransferred;
@@ -928,22 +932,6 @@ void TownsSCSI::ExecSCSICommand(void)
 					}
 					else
 					{
-						if(SCSIDEVICE_HARDDISK==state.dev[state.selId].devType)
-						{
-							LBA*=HARDDISK_SECTOR_LENGTH;
-							LEN*=HARDDISK_SECTOR_LENGTH;
-							ioThread.SetUpFileRead(
-							        state.dev[state.selId].imageFName,
-							        LBA+state.bytesTransferred,
-							        LEN-state.bytesTransferred);
-						}
-						else if(SCSIDEVICE_CDROM==state.dev[state.selId].devType)
-						{
-							ioThread.SetUpCDRead(
-							        &state.dev[state.selId].discImg,
-							        LBA,
-							        LEN);
-						}
 						townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DATA_INTERVAL);
 					}
 				}
