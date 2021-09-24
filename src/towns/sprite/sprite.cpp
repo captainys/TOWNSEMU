@@ -29,6 +29,7 @@ void TownsSprite::State::PowerOn(void)
 	}
 	spriteBusy=false;
 	screenModeAcceptsSprite=false;
+	page = 0;
 }
 void TownsSprite::State::Reset(void)
 {
@@ -38,37 +39,6 @@ TownsSprite::TownsSprite(class FMTowns *townsPtr,TownsPhysicalMemory *physMemPtr
 {
 	this->townsPtr=townsPtr;
 	this->physMemPtr=physMemPtr;
-}
-void TownsSprite::Start(void)
-{
-	// ImageFight write to SPEN repeatedly in the main loop.
-	// I was assuming SPEN is written once to start sprite, and therefore was not checking:
-	//     if(0==(state.reg[REG_CONTROL1]&0x80))
-	// Without this check, ImageFight was messing up sprite ready->busy update timing.
-	if(0==(state.reg[REG_CONTROL1]&0x80))
-	{
-		state.reg[REG_CONTROL1]|=0x80;
-		state.spriteBusy=false;
-		townsPtr->ScheduleDeviceCallBack(*this,townsPtr->crtc.NextVSYNCRisingEdge(townsPtr->state.townsTime));
-	}
-}
-void TownsSprite::Stop(void)
-{
-	// Shadow of the Beast stops sprite while the sprite state is busy.
-	// Presumably the program is taking its own timing since VSYNC to make sure the sprites are drawn.
-	// However, Tsugaru's sprite is not fully in sync with VSYNC, and it makes the screen stop updating.
-	// The workaround is to check spriteBusy, SPEN, and screenModeAcceptsSprite flags, and
-	// render if the sprite was stopped in the middle of busy period.
-	//
-	// For this purpose, this function needs to be able to see SPEN flag.  Therefore, IOWrite function
-	// should update state.reg[REG_CONTROL1] after Stop() function if SPEN bit is cleared.
-	if(true==state.spriteBusy && true==SPEN() && true==state.screenModeAcceptsSprite)
-	{
-		Render(physMemPtr->state.VRAM.data()+0x40000,physMemPtr->state.spriteRAM.data());
-	}
-	state.reg[REG_CONTROL1]&=0x7F;
-	state.spriteBusy=false;
-	townsPtr->UnscheduleDeviceCallBack(*this);
 }
 
 unsigned int TownsSprite::NumSpritesActuallyDrawn(void) const
@@ -116,6 +86,9 @@ unsigned int TownsSprite::NumSpritesActuallyDrawn(void) const
 /* virtual */ void TownsSprite::PowerOn(void)
 {
 	state.PowerOn();
+
+	townsPtr->ScheduleDeviceCallBack(*this, townsPtr->crtc.NextVSYNCRisingEdge(townsPtr->state.townsTime));
+	state.callbackType = CALLBACK_VSYNC;
 }
 /* virtual */ void TownsSprite::Reset(void)
 {
@@ -131,20 +104,28 @@ unsigned int TownsSprite::NumSpritesActuallyDrawn(void) const
 		state.addressLatch=data&7;
 		break;
 	case TOWNSIO_SPRITE_DATA://              0x452, // [2] pp.128
-		if(REG_CONTROL1==state.addressLatch)
-		{
-			if(0!=(0x80&data))
-			{
-				Start();
-			}
-			else
-			{
-				Stop();
-			}
+		switch (state.addressLatch) {
+		case REG_CONTROL0:
+			state.reg[state.addressLatch] = data;
+			break;
+		case REG_CONTROL1:
+			state.reg[state.addressLatch] = data & 0x83;
+			break;
+		case REG_HORIZONTAL_OFFSET0:
+		case REG_VERTICAL_OFFSET0:
+			state.reg[state.addressLatch] = data;
+			break;
+		case REG_HORIZONTAL_OFFSET1:
+		case REG_VERTICAL_OFFSET1:
+			state.reg[state.addressLatch] = data & 0x01;
+			break;
+		case REG_DISPLAY_PAGE:
+			state.reg[state.addressLatch] = data & 0x88; // DP0 saved on MA.
+			break;
+		case REG_DUMMY:
+			state.reg[state.addressLatch] = 0;
+			break;
 		}
-		// Register data must be updated after Stop() function for Shadow of the Beast.
-		// See explanation in Stop() function.
-		state.reg[state.addressLatch]=data;
 		break;
 	}
 }
@@ -174,11 +155,10 @@ unsigned int TownsSprite::NumSpritesActuallyDrawn(void) const
 
 void TownsSprite::Render(unsigned char VRAMIn[],const unsigned char spriteRAM[]) const
 {
-	unsigned char *VRAMTop=VRAMIn+SPRITE_HALF_VRAM_SIZE*DisplayPage();
+	unsigned char *VRAMTop=VRAMIn + SPRITE_HALF_VRAM_SIZE * PAGE();
 
 	// [2] pp.368 (Sprite BIOS AH=00H) tells, the top 2-lines of the VRAM page are VRAM-clear data.
 	//     So, apparently it is possible to clear the sprite page with non-0x8000 values.
-	//     FOr the time being, I just clear all VRAM with 0x8000
 	for(unsigned int offset=SPRITE_VRAM_BYTES_PER_LINE*2; offset<0x20000; offset+=2)
 	{
 		VRAMTop[offset  ]=VRAMTop[ offset   &(SPRITE_VRAM_BYTES_PER_LINE*2-1)];
@@ -341,38 +321,26 @@ void TownsSprite::Render(unsigned char VRAMIn[],const unsigned char spriteRAM[])
 
 void TownsSprite::RunScheduledTask(unsigned long long int townsTime)
 {
-	if(true==SPEN())
-	{
-		if(true!=state.spriteBusy)
-		{
-			// Formula in [2] pp. 369 (Sprite BIOS AH=01H) sugests that:
-			// The sprite busy starts at VSYNC and takes (32+(number of sprites drawn)*75) micro seconds.
-			// unsigned long long int busyTime=32000+57000*NumSpritesActuallyDrawn();
+	if (state.callbackType == CALLBACK_VSYNC) {
+		if (SPEN()) {
+			state.spriteBusy = true;
+			state.page = 1 - state.page;
+			auto finishTime = townsTime + SPRITE_SCREEN_CLEAR_TIME + (uint64_t)SPRITE_ONE_TRANSFER_TIME * NumSpritesToDraw();
 
-			// Should it be NumSpritesToDraw()?
-			// Afterburner2 speeds up when number of visible sprites decreases.
-			unsigned long long int busyTime=SPRITE_ONE_TRANSFER_TIME*NumSpritesToDraw();
+			Render(physMemPtr->state.VRAM.data() + 0x40000,
+				physMemPtr->state.spriteRAM.data());
 
-			state.spriteBusy=true;
-			townsPtr->ScheduleDeviceCallBack(*this,townsTime+busyTime);
+			townsPtr->ScheduleDeviceCallBack(*this, finishTime);
+			state.callbackType = CALLBACK_FINISH;
+			return;
 		}
-		else
-		{
-			// The rendering timing can be:
-			// (1) Every time a window is re-drawn,
-			// (2) At the beginning of sprite-busy period, or
-			// (3) At the end of sprite-busy period.
-			// The CPU is not supposed to modify sprite during the sprite-busy period.
-			// However, some changes may be made not in time, then changes may be made during the sprite-busy period.
-			// Then, it is the safest to draw at the end of sprite-busy period.
-			if(true==state.screenModeAcceptsSprite)
-			{
-				Render(physMemPtr->state.VRAM.data()+0x40000,physMemPtr->state.spriteRAM.data());
-			}
-			state.spriteBusy=false;
-			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->crtc.NextVSYNCRisingEdge(townsTime));
-		}
+	} else if (state.callbackType == CALLBACK_FINISH) {
+		state.spriteBusy = false;
 	}
+
+	auto nextVSync = townsPtr->crtc.NextVSYNCRisingEdge(townsTime);
+	townsPtr->ScheduleDeviceCallBack(*this, nextVSync);
+	state.callbackType = CALLBACK_VSYNC;
 }
 
 std::vector <std::string> TownsSprite::GetStatusText(const unsigned char spriteRAM[]) const
@@ -403,8 +371,8 @@ std::vector <std::string> TownsSprite::GetStatusText(const unsigned char spriteR
 	text.back()+=cpputil::Itoa(HOffset());
 	text.back()+=" VOFFSET:";
 	text.back()+=cpputil::Itoa(VOffset());
-	text.back()+=" DISPPAGE:";
-	text.back()+=cpputil::Itoa(DisplayPage());
+	text.back()+=" DP1:";
+	text.back()+=cpputil::Itoa(DP1());
 
 	text.push_back("");
 	text.back()="#ActuallyDrawn:";
@@ -514,7 +482,7 @@ std::vector <unsigned int> TownsSprite::GetPalette(unsigned int palIdx,const uns
 	palVal.resize(16);
 	for(int i=0; i<SPRITE_PALETTE_NUM_COLORS; ++i)
 	{
-		palVal[i]=(palettePtr[i]|(palettePtr[i+1]<<8));
+		palVal[i] = palettePtr[i * 2] | (palettePtr[i * 2 + 1]<<8);
 	}
 	return palVal;
 }
@@ -593,6 +561,8 @@ std::vector <std::string> TownsSprite::GetPattern16BitText(unsigned int ptnIdx,c
 	}
 	PushBool(data,state.spriteBusy);
 	PushBool(data,state.screenModeAcceptsSprite);
+	PushUint16(data, state.callbackType);
+	PushUint16(data, state.page);
 }
 /* virtual */ bool TownsSprite::SpecificDeserialize(const unsigned char *&data,std::string,uint32_t version)
 {
@@ -603,5 +573,7 @@ std::vector <std::string> TownsSprite::GetPattern16BitText(unsigned int ptnIdx,c
 	}
 	state.spriteBusy=ReadBool(data);
 	state.screenModeAcceptsSprite=ReadBool(data);
+	state.callbackType = ReadUint16(data);
+	state.page = ReadUint16(data);
 	return true;
 }
