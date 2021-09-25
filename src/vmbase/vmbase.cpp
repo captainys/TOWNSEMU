@@ -13,8 +13,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 << LICENSE */
 #include "vmbase.h"
-#include "device.h"
-#include "cpputil.h"
 
 
 
@@ -40,25 +38,6 @@ VMBase::~VMBase()
 {
 	delete dev0;
 	dev0=nullptr;
-}
-
-void VMBase::RunScheduledTasks(long long int vmTime)
-{
-	for(auto devIndex=allDevices[0]->vmNextTaskScheduledDeviceIndex;
-	    0<=devIndex;
-	    devIndex=allDevices[devIndex]->vmNextTaskScheduledDeviceIndex)
-	{
-		auto devPtr=allDevices[devIndex];
-		if(devPtr->commonState.scheduleTime<=vmTime)
-		{
-			// Device may make another schedule in the call back.
-			// UnscheduleDeviceCallBack must not wipe a new schedule.
-			// Therefore, UnscheduleDeviceCallBack and then RunScheduledTask.
-			// Not the other way round.
-			UnscheduleDeviceCallBack(*devPtr);
-			devPtr->RunScheduledTask(vmTime);
-		}
-	}
 }
 
 void VMBase::ScheduleDeviceCallBack(Device &dev,long long int timer)

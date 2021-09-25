@@ -19,12 +19,12 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <vector>
 #include <string>
 
-#include "vmbase.h"
+
 
 class Device
 {
 protected:
-	VMBase *vmPtr;
+	class VMBase *vmPtr;
 
 public:
 	const unsigned long long int TIME_NO_SCHEDULE=~0;

@@ -20,6 +20,10 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include <vector>
 #include <string>
+#include "device.h"
+#include "cpputil.h"
+
+
 
 class VMBase
 {
@@ -41,7 +45,7 @@ public:
 
 	/*! Run scheduled tasks.
 	*/
-	void RunScheduledTasks(long long int vmTime);
+	inline void RunScheduledTasks(long long int vmTime);
 	/*!
 	*/
 	void ScheduleDeviceCallBack(class Device &dev,long long int timer);
@@ -60,6 +64,25 @@ public:
 
 	std::vector <std::string> GetScheduledTasksText(void) const;
 };
+
+inline void VMBase::RunScheduledTasks(long long int vmTime)
+{
+	for(auto devIndex=allDevices[0]->vmNextTaskScheduledDeviceIndex;
+	    0<=devIndex;
+	    devIndex=allDevices[devIndex]->vmNextTaskScheduledDeviceIndex)
+	{
+		auto devPtr=allDevices[devIndex];
+		if(devPtr->commonState.scheduleTime<=vmTime)
+		{
+			// Device may make another schedule in the call back.
+			// UnscheduleDeviceCallBack must not wipe a new schedule.
+			// Therefore, UnscheduleDeviceCallBack and then RunScheduledTask.
+			// Not the other way round.
+			UnscheduleDeviceCallBack(*devPtr);
+			devPtr->RunScheduledTask(vmTime);
+		}
+	}
+}
 
 
 

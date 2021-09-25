@@ -15,6 +15,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <iostream>
 
 #include "device.h"
+#include "vmbase.h"
 #include "cpputil.h"
 
 

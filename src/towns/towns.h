@@ -19,6 +19,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <vector>
 #include <string>
 
+#include "vmbase.h"
 #include "device.h"
 #include "i486.h"
 #include "i486debug.h"
