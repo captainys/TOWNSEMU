@@ -57,8 +57,9 @@ public:
 
 	enum
 	{
-		CALLBACK_VSYNC = 0,
-		CALLBACK_FINISH = 1,
+		CALLBACK_NONE = 0,
+		CALLBACK_VSYNC = 1,
+		CALLBACK_FINISH = 2,
 	};
 
 	class State

@@ -29,6 +29,7 @@ void TownsSprite::State::PowerOn(void)
 	}
 	spriteBusy=false;
 	screenModeAcceptsSprite=false;
+	callbackType = CALLBACK_NONE;
 	page = 0;
 }
 void TownsSprite::State::Reset(void)
@@ -86,9 +87,6 @@ unsigned int TownsSprite::NumSpritesActuallyDrawn(void) const
 /* virtual */ void TownsSprite::PowerOn(void)
 {
 	state.PowerOn();
-
-	townsPtr->ScheduleDeviceCallBack(*this, townsPtr->crtc.NextVSYNCRisingEdge(townsPtr->state.townsTime));
-	state.callbackType = CALLBACK_VSYNC;
 }
 /* virtual */ void TownsSprite::Reset(void)
 {
@@ -110,6 +108,12 @@ unsigned int TownsSprite::NumSpritesActuallyDrawn(void) const
 			break;
 		case REG_CONTROL1:
 			state.reg[state.addressLatch] = data & 0x83;
+
+			if (data & 0x80 && state.callbackType == CALLBACK_NONE) {
+				auto nextVSync = townsPtr->crtc.NextVSYNCRisingEdge(townsPtr->state.townsTime);
+				townsPtr->ScheduleDeviceCallBack(*this, nextVSync);
+				state.callbackType = CALLBACK_VSYNC;
+			}
 			break;
 		case REG_HORIZONTAL_OFFSET0:
 		case REG_VERTICAL_OFFSET0:
@@ -332,15 +336,20 @@ void TownsSprite::RunScheduledTask(unsigned long long int townsTime)
 
 			townsPtr->ScheduleDeviceCallBack(*this, finishTime);
 			state.callbackType = CALLBACK_FINISH;
-			return;
+		} else {
+			state.callbackType = CALLBACK_NONE;
 		}
 	} else if (state.callbackType == CALLBACK_FINISH) {
 		state.spriteBusy = false;
-	}
 
-	auto nextVSync = townsPtr->crtc.NextVSYNCRisingEdge(townsTime);
-	townsPtr->ScheduleDeviceCallBack(*this, nextVSync);
-	state.callbackType = CALLBACK_VSYNC;
+		if (SPEN()) {
+			auto nextVSync = townsPtr->crtc.NextVSYNCRisingEdge(townsTime);
+			townsPtr->ScheduleDeviceCallBack(*this, nextVSync);
+			state.callbackType = CALLBACK_VSYNC;
+		} else {
+			state.callbackType = CALLBACK_NONE;
+		}
+	}
 }
 
 std::vector <std::string> TownsSprite::GetStatusText(const unsigned char spriteRAM[]) const
