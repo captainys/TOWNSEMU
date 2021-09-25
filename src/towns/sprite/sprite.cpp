@@ -561,7 +561,7 @@ std::vector <std::string> TownsSprite::GetPattern16BitText(unsigned int ptnIdx,c
 
 /* virtual */ uint32_t TownsSprite::SerializeVersion(void) const
 {
-	return 0;
+	return 1;
 }
 /* virtual */ void TownsSprite::SpecificSerialize(std::vector <unsigned char> &data,std::string) const
 {
@@ -572,6 +572,8 @@ std::vector <std::string> TownsSprite::GetPattern16BitText(unsigned int ptnIdx,c
 	}
 	PushBool(data,state.spriteBusy);
 	PushBool(data,state.screenModeAcceptsSprite);
+
+	// Version 1 and later >>
 	PushUint16(data, state.callbackType);
 	PushUint16(data, state.page);
 }
@@ -584,7 +586,22 @@ std::vector <std::string> TownsSprite::GetPattern16BitText(unsigned int ptnIdx,c
 	}
 	state.spriteBusy=ReadBool(data);
 	state.screenModeAcceptsSprite=ReadBool(data);
-	state.callbackType = ReadUint16(data);
-	state.page = ReadUint16(data);
+	if(0==version)
+	{
+		if(true==SPEN())
+		{
+			state.callbackType=(true==state.spriteBusy ? CALLBACK_FINISH : CALLBACK_VSYNC);
+		}
+		else
+		{
+			state.callbackType=CALLBACK_NONE;
+		}
+		state.page=0; // Should catch up in the next.
+	}
+	else if(1<=version)
+	{
+		state.callbackType = ReadUint16(data);
+		state.page = ReadUint16(data);
+	}
 	return true;
 }
