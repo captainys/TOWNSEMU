@@ -656,7 +656,11 @@ void TownsCRTC::MakeLowResPageLayerInfo(Layer &layer,unsigned char page) const
 	layer.zoom2x=GetLowResPageZoom2X(page);
 	layer.VRAMAddr=0x40000*page;
 	layer.VRAMOffset=GetPageVRAMAddressOffset(page);
-	layer.FMRVRAMOffset=(0==page ? state.FMRVRAMOffset : 0); // Can be applied only to layer 0 in two-layer mode, or in the single-page mode.  Either way page==0.
+	if (page == 0) {
+		layer.FlipVRAMOffset = state.FMRVRAMOffset; // Can be applied only to layer 0 in two-layer mode, or in the single-page mode.  Either way page==0.
+	} else {
+		layer.FlipVRAMOffset = townsPtr->sprite.DisplayVRAMOffset();
+	}
 	layer.FMRGVRAMMask=(0==page ? state.FMRGVRAMDisplayPlanes : 0x0F); // GVRAM Planes works as a mask in 4-bit color mode for VRAM layer 0 only.
 	layer.bytesPerLine=GetPageBytesPerLine(page);
 
@@ -1148,7 +1152,7 @@ std::cout << "Write to CRTC2 Reg=" << cpputil::Ustox(state.highResCrtcRegAddrLat
 	case TOWNSIO_DPMD_SPRITEBUSY_SPRITEPAGE: // 044CH  [2] pp.153
 		data=(true==state.DPMD ? 0x80 : 0);
 		data|=(true==spritePtr->SPD0() ? 2 : 0);
-		data|=spritePtr->WritingPage();
+		data|=(spritePtr->PAGE() ? 1 : 0);
 		state.DPMD=false;
 		break;
 
@@ -1641,7 +1645,7 @@ void TownsCRTC::MakeHighResPageLayerInfo(Layer &layer,unsigned char page) const
 	unsigned int vramWidInPix=state.highResCrtcReg[HIGHRES_REG_P0_VRAM_WID+0x10*page];
 
 	layer.VRAMOffset=(dy*vramWidInPix+dx)*layer.bitsPerPixel/8;
-	layer.FMRVRAMOffset=0;          // Probably FM-R page is not applicable to CRTC2.
+	layer.FlipVRAMOffset =0;        // Probably FM-R/Sprite page is not applicable to CRTC2.
 	layer.FMRGVRAMMask=0x0F;        // Probably mask is not applicable to CRTC2.
 	layer.originOnMonitor=GetHighResPageOriginOnMonitor(page);
 	layer.VRAMHSkipBytes=0;

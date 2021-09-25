@@ -271,7 +271,7 @@ void TownsRender::Render4Bit(
 		auto ZV0=layer.zoom2x.y()/2;
 		auto ZV=ZV0;
 		const int ZH[2]={layer.zoom2x.x()/2,(layer.zoom2x.x()+1)/2};  // For x.5 times zoom rate.
-		int bytesPerLineTimesVRAMy=layer.VRAMOffset+layer.FMRVRAMOffset;
+		int bytesPerLineTimesVRAMy=layer.VRAMOffset+layer.FlipVRAMOffset;
 		auto VRAMTop=VRAM+VRAMAddr+layer.VRAMHSkipBytes;
 
 		// yStep should be 1 if transparent.
@@ -359,7 +359,7 @@ void TownsRender::Render4Bit(
 
 		auto ZV=layer.zoom2x.y()/2;
 		const int ZH[2]={layer.zoom2x.x()/2,(layer.zoom2x.x()+1)/2};  // For x.5 times zoom rate.
-		int bytesPerLineTimesVRAMy=layer.VRAMOffset+layer.FMRVRAMOffset;
+		int bytesPerLineTimesVRAMy=layer.VRAMOffset+layer.FlipVRAMOffset;
 		auto VRAMTop=VRAM+VRAMAddr+layer.VRAMHSkipBytes;
 
 		auto bottomY=this->hei-ZV;
@@ -439,8 +439,8 @@ template <class OFFSETTRANS>
 void TownsRender::Render8Bit(const TownsCRTC::Layer &layer,const Vec3ub palette[256],const unsigned char VRAM[],bool transparent)
 {
 	unsigned int VRAMBase=layer.VRAMAddr;
-	unsigned int VRAMOffsetVertical=(layer.VRAMOffset+layer.FMRVRAMOffset)&~layer.HScrollMask;
-	unsigned int VRAMOffsetHorizontal=(layer.VRAMOffset+layer.FMRVRAMOffset)&layer.HScrollMask;
+	unsigned int VRAMOffsetVertical=(layer.VRAMOffset+layer.FlipVRAMOffset)&~layer.HScrollMask;
+	unsigned int VRAMOffsetHorizontal=(layer.VRAMOffset+layer.FlipVRAMOffset)&layer.HScrollMask;
 	const unsigned int VRAMHScrollMask=layer.HScrollMask;
 	const unsigned int VRAMVScrollMask=layer.VScrollMask;
 	unsigned int lineVRAMOffset=0;
@@ -495,8 +495,8 @@ template <class OFFSETTRANS>
 void TownsRender::Render16Bit(const TownsCRTC::Layer &layer,const unsigned char VRAM[],bool transparent)
 {
 	unsigned int VRAMBase=layer.VRAMAddr;
-	unsigned int VRAMOffsetVertical=(layer.VRAMOffset+layer.FMRVRAMOffset)&~layer.HScrollMask;
-	unsigned int VRAMOffsetHorizontal=(layer.VRAMOffset+layer.FMRVRAMOffset)&layer.HScrollMask;
+	unsigned int VRAMOffsetVertical=(layer.VRAMOffset+layer.FlipVRAMOffset)&~layer.HScrollMask;
+	unsigned int VRAMOffsetHorizontal=(layer.VRAMOffset+layer.FlipVRAMOffset)&layer.HScrollMask;
 	const unsigned int VRAMHScrollMask=layer.HScrollMask;
 	const unsigned int VRAMVScrollMask=layer.VScrollMask;
 	unsigned int lineVRAMOffset=0;
@@ -570,8 +570,8 @@ template <class OFFSETTRANS>
 void TownsRender::Render24Bit(const TownsCRTC::Layer &layer,const unsigned char VRAM[],bool transparent)
 {
 	unsigned int VRAMBase=layer.VRAMAddr;
-	unsigned int VRAMOffsetVertical=(layer.VRAMOffset+layer.FMRVRAMOffset)&~layer.HScrollMask;
-	unsigned int VRAMOffsetHorizontal=(layer.VRAMOffset+layer.FMRVRAMOffset)&layer.HScrollMask;
+	unsigned int VRAMOffsetVertical=(layer.VRAMOffset+layer.FlipVRAMOffset)&~layer.HScrollMask;
+	unsigned int VRAMOffsetHorizontal=(layer.VRAMOffset+layer.FlipVRAMOffset)&layer.HScrollMask;
 	const unsigned int VRAMHScrollMask=layer.HScrollMask+1;
 	const unsigned int VRAMVScrollMask=layer.VScrollMask;
 	unsigned int lineVRAMOffset=0;

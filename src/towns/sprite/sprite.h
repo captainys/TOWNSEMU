@@ -55,6 +55,13 @@ public:
 	NUM_REGS=8,
 	};
 
+	enum
+	{
+		CALLBACK_NONE = 0,
+		CALLBACK_VSYNC = 1,
+		CALLBACK_FINISH = 2,
+	};
+
 	class State
 	{
 	public:
@@ -62,6 +69,8 @@ public:
 		unsigned char reg[NUM_REGS];
 		bool spriteBusy;
 		bool screenModeAcceptsSprite;
+		uint8_t callbackType;
+		uint8_t page;
 
 		void PowerOn(void);
 		void Reset(void);
@@ -71,8 +80,6 @@ public:
 	class TownsPhysicalMemory *physMemPtr;
 
 	TownsSprite(class FMTowns *townsPtr,class TownsPhysicalMemory *physMemPtr);
-	void Start(void);
-	void Stop(void);
 
 	inline bool SPEN(void) const
 	{
@@ -100,11 +107,18 @@ public:
 	{
 		return ((state.reg[REG_VERTICAL_OFFSET1]<<8)|state.reg[REG_VERTICAL_OFFSET0])&0x1FF;
 	}
-	inline unsigned int DisplayPage(void) const
+	inline unsigned int DP1() const
 	{
 		return (state.reg[REG_DISPLAY_PAGE]>>7);
 	}
-
+	inline unsigned int DisplayPage() const
+	{
+		return SPEN() ? !PAGE() : DP1();
+	}
+	inline uint32_t DisplayVRAMOffset() const
+	{
+		return DisplayPage() ? SPRITE_HALF_VRAM_SIZE : 0;
+	}
 
 	void RunScheduledTask(unsigned long long int townsTime);
 
@@ -157,16 +171,9 @@ public:
 		return state.spriteBusy;
 	}
 
-	inline unsigned char WritingPage(void) const // For CRTC I/O
+	inline bool PAGE() const // For CRTC I/O
 	{
-		if(0!=(state.reg[REG_DISPLAY_PAGE]&0x10))
-		{
-			return 0;
-		}
-		else
-		{
-			return 1;
-		}
+		return state.page;
 	}
 
 	virtual void PowerOn(void);
