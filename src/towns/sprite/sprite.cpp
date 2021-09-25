@@ -203,6 +203,8 @@ void TownsSprite::Render(unsigned char VRAMIn[],const unsigned char spriteRAM[])
 		const int xStep=(0!=(attrib&ATTR_SUX) ? 2 : 1);
 		const int yStep=(0!=(attrib&ATTR_SUY) ? 2 : 1);
 
+		uint8_t spys = (paletteInfo & PALETTE_SPYS) ? 0x80 : 0;
+
 		if(0!=(paletteInfo&PALETTE_CTEN))
 		{
 			// 16-color paletted sprite
@@ -225,9 +227,9 @@ void TownsSprite::Render(unsigned char VRAMIn[],const unsigned char spriteRAM[])
 						unsigned char pix4bit=((src[0]>>shift)&0x0F);
 						if(0!=pix4bit)  // [2] pp.371 Sprite BIOS.  4bit all zero means through.
 						{
-							const unsigned char *col=palettePtr+(pix4bit<<1);
-							dstPtr[0]=col[0];
-							dstPtr[1]=col[1];
+							const unsigned char *col = palettePtr + (pix4bit << 1);
+							dstPtr[0] = col[0];
+							dstPtr[1] = (col[1] & 0x7f) | spys;
 						}
 						dstPtr+=2;
 					}
@@ -256,9 +258,9 @@ void TownsSprite::Render(unsigned char VRAMIn[],const unsigned char spriteRAM[])
 							unsigned char pix4bit=((src[0]>>shift)&0x0F);
 							if(0!=pix4bit)  // [2] pp.371 Sprite BIOS.  4bit all zero means through.
 							{
-								const unsigned char *col=palettePtr+(pix4bit<<1);
-								dstPtr[0]=col[0];
-								dstPtr[1]=col[1];
+								const unsigned char *col = palettePtr + (pix4bit << 1);
+								dstPtr[0] = col[0];
+								dstPtr[1] = (col[1] & 0x7f) | spys;
 							}
 						}
 					}
@@ -284,8 +286,8 @@ void TownsSprite::Render(unsigned char VRAMIn[],const unsigned char spriteRAM[])
 						auto src=srcPtr+SPRITE_PTN32K_BYTES_PER_LINE*yTfm+(xTfm<<1);
 						if(0==(src[1]&0x80))
 						{
-							dstPtr[0]=src[0];
-							dstPtr[1]=src[1];
+							dstPtr[0] = src[0];
+							dstPtr[1] = src[1] | spys;
 						}
 						dstPtr+=2;
 					}
@@ -312,8 +314,8 @@ void TownsSprite::Render(unsigned char VRAMIn[],const unsigned char spriteRAM[])
 
 							if(0==(src[1]&0x80))
 							{
-								dstPtr[0]=src[0];
-								dstPtr[1]=src[1];
+								dstPtr[0] = src[0];
+								dstPtr[1] = src[1] | spys;
 							}
 						}
 					}
