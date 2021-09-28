@@ -31,6 +31,12 @@ void i486DX::FPUState::FNINIT(void)
 // FIP<=0
 // FOP<=0
 // FCS<=0
+	if(true==FPUEnabled)
+	{
+		controlWord=0x037F;
+		statusWord=0;
+		tagWord=0xFFFF;
+	}
 }
 bool i486DX::FPUState::ExceptionPending(void) const
 {
@@ -38,9 +44,23 @@ bool i486DX::FPUState::ExceptionPending(void) const
 }
 unsigned int i486DX::FPUState::GetStatusWord(void) const
 {
-	return 0xffff;
+	if(true==FPUEnabled)
+	{
+		return statusWord;
+	}
+	else
+	{
+		return 0xffff;
+	}
 }
 unsigned int i486DX::FPUState::GetControlWord(void) const
 {
-	return 0xffff;
+	if(true==FPUEnabled)
+	{
+		return controlWord;
+	}
+	else
+	{
+		return 0xffff;
+	}
 }

@@ -332,6 +332,9 @@ public:
 	{
 	public:
 		bool FPUEnabled;
+		uint16_t statusWord=0xFFFF;
+		uint16_t controlWord=0xFFFF;
+		uint16_t tagWord=0xFFFF;
 
 		void FNINIT(void);
 		bool ExceptionPending(void) const;
