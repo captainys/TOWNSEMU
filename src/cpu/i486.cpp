@@ -358,7 +358,7 @@ void i486DX::Reset(void)
 	state.EAX()=RESET_EAX;
 	SetDX(RESET_DX);
 	SetCR(0,RESET_CR0);
-	if(true!=state.fpuState.FPUEnabled)
+	if(true!=state.fpuState.enabled)
 	{
 		auto cr0=state.GetCR(0);
 		cr0&=(~CR0_MATH_PRESENT);

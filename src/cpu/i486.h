@@ -331,7 +331,7 @@ public:
 	class FPUState
 	{
 	public:
-		bool FPUEnabled;
+		bool enabled=false;
 		uint16_t statusWord=0xFFFF;
 		uint16_t controlWord=0xFFFF;
 		uint16_t tagWord=0xFFFF;

@@ -201,6 +201,9 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	featureMap["DEBUG"]=ENABLE_DEBUGGER;
 	featureMap["MOUSEINTEG"]=ENABLE_MOUSEINTEGRATION;
 	featureMap["YM2612LOG"]=ENABLE_YM2612_LOG;
+	featureMap["FPU"]=ENABLE_FPU;
+	featureMap["487"]=ENABLE_FPU;
+	featureMap["80487"]=ENABLE_FPU;
 
 	dumpableMap["CALLSTACK"]=DUMP_CALLSTACK;
 	dumpableMap["CST"]=DUMP_CALLSTACK;
@@ -1467,6 +1470,10 @@ void TownsCommandInterpreter::Execute_Enable(FMTowns &towns,Command &cmd)
 			towns.sound.state.ym2612.regWriteLog.clear();
 			std::cout << "YM2612 register write log is Enabled." << std::endl;
 			break;
+		case ENABLE_FPU:
+			towns.cpu.state.fpuState.enabled=true;
+			std::cout << "80487 Enabled." << std::endl;
+			break;
 		}
 	}
 }
@@ -1536,6 +1543,10 @@ void TownsCommandInterpreter::Execute_Disable(FMTowns &towns,Command &cmd)
 		case ENABLE_YM2612_LOG:
 			towns.sound.state.ym2612.takeRegLog=false;
 			std::cout << "YM2612 register write log is Disabled." << std::endl;
+			break;
+		case ENABLE_FPU:
+			towns.cpu.state.fpuState.enabled=false;
+			std::cout << "80487 Disabled." << std::endl;
 			break;
 		}
 	}

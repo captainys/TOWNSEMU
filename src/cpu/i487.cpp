@@ -18,7 +18,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 i486DX::FPUState::FPUState()
 {
-	FPUEnabled=false; // Tentative.
+	enabled=false; // Tentative.
 }
 void i486DX::FPUState::FNINIT(void)
 {
@@ -31,7 +31,7 @@ void i486DX::FPUState::FNINIT(void)
 // FIP<=0
 // FOP<=0
 // FCS<=0
-	if(true==FPUEnabled)
+	if(true==enabled)
 	{
 		controlWord=0x037F;
 		statusWord=0;
@@ -44,7 +44,7 @@ bool i486DX::FPUState::ExceptionPending(void) const
 }
 unsigned int i486DX::FPUState::GetStatusWord(void) const
 {
-	if(true==FPUEnabled)
+	if(true==enabled)
 	{
 		return statusWord;
 	}
@@ -55,7 +55,7 @@ unsigned int i486DX::FPUState::GetStatusWord(void) const
 }
 unsigned int i486DX::FPUState::GetControlWord(void) const
 {
-	if(true==FPUEnabled)
+	if(true==enabled)
 	{
 		return controlWord;
 	}
