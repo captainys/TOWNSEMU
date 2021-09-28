@@ -13,6 +13,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 << LICENSE */
 #include <iostream>
+#include <math.h>
 
 #include "cpputil.h"
 #include "i486.h"
@@ -2156,6 +2157,18 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		if(0xF0<=operand[0] && operand[0]<=0xFF)
 		{
 			disasm="?FPUINST"+cpputil::Ubtox(opCode)+" "+cpputil::Ubtox(operand[0]);
+		}
+		else if(0xE8==operand[0])
+		{
+			disasm="FLD1";
+		}
+		else if(0xE9==operand[0])
+		{
+			disasm="FLDL2T";
+		}
+		else if(0xEE==operand[0])
+		{
+			disasm="FLDZ";
 		}
 		else
 		{
@@ -5478,6 +5491,33 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_RENUMBER_FPU_D9_FNSTCW_M16_FNSTENV_F2XM1_FXAM_FXCH_FXTRACT_FYL2X_FYL2XP1_FABS_:// 0xD9,
 		if(0xF0<=inst.operand[0] && inst.operand[0]<=0xFF)
 		{
+		}
+		else if(0xE8==inst.operand[0])
+		{
+			// FLD1
+			if(true==state.fpuState.enabled)
+			{
+				state.fpuState.Push(1.0);
+				clocksPassed=4;
+			}
+		}
+		else if(0xE9==inst.operand[0])
+		{
+			// FLDL2T
+			if(true==state.fpuState.enabled)
+			{
+				state.fpuState.Push(log2(10.0));
+				clocksPassed=8;
+			}
+		}
+		else if(0xEE==inst.operand[0])
+		{
+			// FLDZ
+			if(true==state.fpuState.enabled)
+			{
+				state.fpuState.Push(0.0);
+				clocksPassed=4;
+			}
 		}
 		else
 		{

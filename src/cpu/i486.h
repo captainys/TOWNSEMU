@@ -331,15 +331,31 @@ public:
 	class FPUState
 	{
 	public:
+		enum
+		{
+			STACK_LEN=8,
+		};
+		class Stack
+		{
+		public:
+			double value=0.0;
+			unsigned char tag=0;
+		};
+
 		bool enabled=false;
 		uint16_t statusWord=0xFFFF;
 		uint16_t controlWord=0xFFFF;
 		uint16_t tagWord=0xFFFF;
+		int stackPtr=0;
+		Stack stack[STACK_LEN];
 
 		void FNINIT(void);
 		bool ExceptionPending(void) const;
 		unsigned int GetStatusWord(void) const;
 		unsigned int GetControlWord(void) const;
+
+		bool Push(double value);
+		Stack Pop(void);
 
 		FPUState();
 	};

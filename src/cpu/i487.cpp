@@ -64,3 +64,24 @@ unsigned int i486DX::FPUState::GetControlWord(void) const
 		return 0xffff;
 	}
 }
+bool i486DX::FPUState::Push(double value)
+{
+	if(stackPtr<STACK_LEN)
+	{
+		stack[stackPtr].value=value;
+		stack[stackPtr].tag=0; // Should I do this?
+		++stackPtr;
+		return true;
+	}
+	return false; // Should shoot an exception for this.
+}
+i486DX::FPUState::Stack i486DX::FPUState::Pop(void)
+{
+	if(0<stackPtr)
+	{
+		auto ret=stack[stackPtr-1];
+		--stackPtr;
+		return ret;
+	}
+	return stack[0]; // Should shoot an exception for this.
+}
