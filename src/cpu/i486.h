@@ -358,6 +358,13 @@ public:
 		Stack Pop(void);
 
 		FPUState();
+
+		std::vector <std::string> GetStateText(void) const;
+
+		// Returns clocks passed.
+		unsigned int FLD1(i486DX &cpu);
+		unsigned int FLDL2T(i486DX &cpu);
+		unsigned int FLDZ(i486DX &cpu);
 	};
 
 	class InterruptDescriptor : public FarPointer

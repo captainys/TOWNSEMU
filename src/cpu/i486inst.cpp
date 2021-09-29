@@ -13,7 +13,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 << LICENSE */
 #include <iostream>
-#include <math.h>
 
 #include "cpputil.h"
 #include "i486.h"
@@ -112,6 +111,7 @@ void i486DX::MakeOpCodeRenumberTable(void)
 	opCodeRenumberTable[I486_OPCODE_FPU_DB_FNINIT_FRSTOR]=I486_RENUMBER_FPU_DB_FNINIT_FRSTOR;
 	opCodeRenumberTable[I486_OPCODE_FPU_DC_FADD]=I486_RENUMBER_FPU_DC_FADD;
 	opCodeRenumberTable[I486_OPCODE_FPU_DD_FLD_FSAVE_FST_FNSTSW_M16_FFREE_FUCOM]=I486_RENUMBER_FPU_DD_FLD_FSAVE_FST_FNSTSW_M16_FFREE_FUCOM;
+	opCodeRenumberTable[I486_OPCODE_FPU_DE]=I486_RENUMBER_FPU_DE;
 	opCodeRenumberTable[I486_OPCODE_FPU_DF_FNSTSW_AX]=I486_RENUMBER_FPU_DF_FNSTSW_AX;
 	opCodeRenumberTable[I486_OPCODE_HLT]=I486_RENUMBER_HLT;
 	opCodeRenumberTable[I486_OPCODE_IMUL_R_RM_I8]=I486_RENUMBER_IMUL_R_RM_I8;
@@ -1183,6 +1183,17 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 		}
 		break;
 
+	case I486_RENUMBER_FPU_DE:
+		{
+			unsigned int MODR_M;
+			FUNCCLASS::PeekOperand8(cpu,MODR_M,inst,ptr,seg,offset,mem);
+			if(0xF9==MODR_M)
+			{
+				FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset,mem);   // FDIV
+			}
+		}
+		break;
+
 	case I486_RENUMBER_FPU_DF_FNSTSW_AX://  0xDF,
 		{
 			unsigned int MODR_M;
@@ -2244,6 +2255,16 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 					break;
 				}
 			}
+		}
+		break;
+	case I486_OPCODE_FPU_DE:
+		if(0xF9==operand[0])
+		{
+			disasm="FDIV";
+		}
+		else
+		{
+			disasm="?FPUINST";
 		}
 		break;
 	case I486_OPCODE_FPU_DF_FNSTSW_AX://  0xDF,
@@ -5495,29 +5516,17 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		else if(0xE8==inst.operand[0])
 		{
 			// FLD1
-			if(true==state.fpuState.enabled)
-			{
-				state.fpuState.Push(1.0);
-				clocksPassed=4;
-			}
+			clocksPassed=state.fpuState.FLD1(*this);
 		}
 		else if(0xE9==inst.operand[0])
 		{
 			// FLDL2T
-			if(true==state.fpuState.enabled)
-			{
-				state.fpuState.Push(log2(10.0));
-				clocksPassed=8;
-			}
+			clocksPassed=state.fpuState.FLDL2T(*this);
 		}
 		else if(0xEE==inst.operand[0])
 		{
 			// FLDZ
-			if(true==state.fpuState.enabled)
-			{
-				state.fpuState.Push(0.0);
-				clocksPassed=4;
-			}
+			clocksPassed=state.fpuState.FLDZ(*this);
 		}
 		else
 		{
@@ -5584,6 +5593,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				}
 			}
 		}
+		break;
+	case I486_RENUMBER_FPU_DE:
 		break;
 	case I486_RENUMBER_FPU_DF_FNSTSW_AX://  0xDF,
 		if(0xE0==inst.operand[0])

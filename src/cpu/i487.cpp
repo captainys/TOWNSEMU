@@ -13,6 +13,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 << LICENSE */
 #include "i486.h"
+#include <math.h>
 
 
 
@@ -84,4 +85,72 @@ i486DX::FPUState::Stack i486DX::FPUState::Pop(void)
 		return ret;
 	}
 	return stack[0]; // Should shoot an exception for this.
+}
+
+std::vector <std::string> i486DX::FPUState::GetStateText(void) const
+{
+	std::vector <std::string> text;
+
+	if(true==enabled)
+	{
+		text.push_back("FPU is enabled.");
+	}
+	else
+	{
+		text.push_back("FPU is disabled.");
+	}
+
+	text.push_back("");
+	text.back()+="Stack Pointer:";
+	text.back()+=cpputil::Uitox(stackPtr);
+
+	for(int i=0; i<stackPtr; ++i)
+	{
+		char fmt[256];
+		sprintf(fmt,"[%d] %32.10lf %02x",i,stack[i].value,stack[i].tag);
+		text.push_back(fmt);
+	}
+
+	text.push_back("");
+	text.back()+="Control Word:";
+	text.back()+=cpputil::Ustox(controlWord);
+
+	text.push_back("");
+	text.back()+="Status Word :";
+	text.back()+=cpputil::Ustox(statusWord);
+
+	text.push_back("");
+	text.back()+="Tag Word    :";
+	text.back()+=cpputil::Ustox(tagWord);
+	text.back()+=" (What's the hell is it?)";
+
+	return text;
+}
+
+unsigned int i486DX::FPUState::FLD1(i486DX &cpuState)
+{
+	if(true==enabled)
+	{
+		Push(1.0);
+		return 4;
+	}
+	return 0; // Let it abort.
+}
+unsigned int i486DX::FPUState::FLDL2T(i486DX &cpu)
+{
+	if(true==enabled)
+	{
+		Push(log2(10.0));
+		return 8;
+	}
+	return 0; // Let it abort.
+}
+unsigned int i486DX::FPUState::FLDZ(i486DX &cpu)
+{
+	if(true==enabled)
+	{
+		Push(0.0);
+		return 4;
+	}
+	return 0;
 }

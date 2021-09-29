@@ -249,6 +249,9 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	dumpableMap["SEGREG"]=DUMP_SEGMENT_REGISTER_DETAILS;
 	dumpableMap["DOS"]=DUMP_DOS_INFO;
 	dumpableMap["MEMFILTER"]=DUMP_MEMORY_FILTER;
+	dumpableMap["FPU"]=DUMP_FPU;
+	dumpableMap["487"]=DUMP_FPU;
+	dumpableMap["80487"]=DUMP_FPU;
 
 
 
@@ -1958,6 +1961,14 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 				if(0==counter)
 				{
 					std::cout << "Too many addresses in the filter.  Stopping at " << counter0 << " counts." << std::endl;
+				}
+			}
+			break;
+		case DUMP_FPU:
+			{
+				for(auto str : towns.cpu.state.fpuState.GetStateText())
+				{
+					std::cout << str << std::endl;
 				}
 			}
 			break;
