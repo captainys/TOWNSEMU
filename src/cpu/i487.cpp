@@ -127,6 +127,22 @@ std::vector <std::string> i486DX::FPUState::GetStateText(void) const
 	return text;
 }
 
+unsigned int i486DX::FPUState::FCHS(i486DX &cpu)
+{
+	if(true==enabled)
+	{
+		if(0<stackPtr)
+		{
+			stack[stackPtr-1].value=-stack[stackPtr-1].value;
+			return 4;
+		}
+		else
+		{
+			// Raise NM exception.
+		}
+	}
+	return 0; // Let it abort.
+}
 unsigned int i486DX::FPUState::FLD1(i486DX &cpuState)
 {
 	if(true==enabled)
