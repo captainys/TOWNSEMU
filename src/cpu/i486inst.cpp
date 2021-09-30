@@ -5624,6 +5624,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		else if(0xD9==inst.operand[0])
 		{
+			// DOS Extender tests the FPU by checking:
+			//   -0.0==0.0
+			// While apparently majority of the floating-point implementation
+			// simply make it true, it is not guaranteed.
+			// FPU should explicitly check this case, or DOS-Extender may fail in
+			// some platforms.
 			// clocksPassed=state.fpuState.FCOMPP(*this);
 		}
 		break;
