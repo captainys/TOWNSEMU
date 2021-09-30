@@ -1096,7 +1096,12 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 		{
 			unsigned int MODR_M;
 			FUNCCLASS::PeekOperand8(cpu,MODR_M,inst,ptr,seg,offset,mem);
-			if(0xE0==MODR_M || (0xF0<=MODR_M && MODR_M<=0xFF))
+			if((0xC0<=MODR_M && MODR_M<=0xC7) ||
+			   0xE0==MODR_M ||
+			   0xE8==MODR_M ||
+			   0xE9==MODR_M ||
+			   0xEE==MODR_M ||
+			   (0xF0<=MODR_M && MODR_M<=0xFF))
 			{
 				FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset,mem);
 			}
@@ -2198,6 +2203,9 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		{
 			switch(GetREG())
 			{
+			case 5:
+				disasm=DisassembleTypicalOneOperand("FLDCW",op1,operandSize);
+				break;
 			case 7:
 				disasm=DisassembleTypicalOneOperand("FNSTCW",op1,operandSize);
 				break;
@@ -5624,13 +5632,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		else if(0xD9==inst.operand[0])
 		{
-			// DOS Extender tests the FPU by checking:
-			//   -0.0==0.0
-			// While apparently majority of the floating-point implementation
-			// simply make it true, it is not guaranteed.
-			// FPU should explicitly check this case, or DOS-Extender may fail in
-			// some platforms.
-			// clocksPassed=state.fpuState.FCOMPP(*this);
+			clocksPassed=state.fpuState.FCOMPP(*this);
 		}
 		break;
 	case I486_RENUMBER_FPU_DF_FNSTSW_AX://  0xDF,

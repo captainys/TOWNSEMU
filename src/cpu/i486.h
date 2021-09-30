@@ -334,6 +334,21 @@ public:
 		enum
 		{
 			STACK_LEN=8,
+
+			STATUS_IE=    0x01,
+			STATUS_DE=    0x02,
+			STATUS_ZE=    0x04,
+			STATUS_OE=    0x08,
+			STATUS_UE=    0x10,
+			STATUS_PE=    0x20,
+			STATUS_SF=    0x40,
+			STATUS_ES=    0x80,
+			STATUS_C0=   0x100,
+			STATUS_C1=   0x200,
+			STATUS_C2=   0x400,
+			STATUS_TOP= 0x3800,
+			STATUS_C3=  0x4000,
+			STATUS_BUSY=0x8000,
 		};
 		class Stack
 		{
@@ -387,9 +402,44 @@ public:
 			// Raise exception.
 			return stack[0];
 		}
+		inline void Compare(double ST,double SRC)
+		{
+			// DOS Extender tests the FPU by checking:
+			//   -0.0==0.0
+			// While apparently majority of the floating-point implementation
+			// simply make it true, it is not guaranteed.
+			// FPU should explicitly check this case, or DOS-Extender may fail in
+			// some platforms.
+			if(-0.0==ST)
+			{
+				ST=0.0;
+			}
+			if(-0.0==SRC)
+			{
+				SRC=0.0;
+			}
+			statusWord&=~(STATUS_C0|STATUS_C2|STATUS_C3);
+			if(true==isnan(ST) || true==isnan(SRC))
+			{
+				statusWord=(STATUS_C0|STATUS_C2|STATUS_C3);
+			}
+			else if(ST>SRC)
+			{
+				// statusWord|=0;
+			}
+			else if(ST<SRC)
+			{
+				statusWord|=STATUS_C0;
+			}
+			else if(ST==SRC)
+			{
+				statusWord|=STATUS_C3;
+			}
+		}
 
 		// Returns clocks passed.
 		unsigned int FCHS(i486DX &cpu);
+		unsigned int FCOMPP(i486DX &cpu);
 		unsigned int FDIV(i486DX &cpu);
 		unsigned int FLD_ST(i486DX &cpu,int i);
 		unsigned int FLD1(i486DX &cpu);

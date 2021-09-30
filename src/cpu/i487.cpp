@@ -143,6 +143,23 @@ unsigned int i486DX::FPUState::FCHS(i486DX &cpu)
 	}
 	return 0; // Let it abort.
 }
+unsigned int i486DX::FPUState::FCOMPP(i486DX &cpu)
+{
+	if(true==enabled)
+	{
+		if(2<=stackPtr)
+		{
+			Compare(ST(cpu).value,ST(cpu,1).value);
+			stackPtr-=2;
+			return 5;
+		}
+		else
+		{
+			// Raise NM exception.
+		}
+	}
+	return 0; // Let it abort.
+}
 unsigned int i486DX::FPUState::FDIV(i486DX &cpu)
 {
 	if(true==enabled)
