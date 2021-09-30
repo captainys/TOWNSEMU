@@ -1187,9 +1187,11 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 		{
 			unsigned int MODR_M;
 			FUNCCLASS::PeekOperand8(cpu,MODR_M,inst,ptr,seg,offset,mem);
-			if(0xF9==MODR_M)
+			if(0xF9==MODR_M || 0xD9==MODR_M)
 			{
-				FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset,mem);   // FDIV
+				// 0xD9:FCOMPP
+				// 0xF9:FDIV
+				FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset,mem);
 			}
 		}
 		break;
@@ -2269,6 +2271,11 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		}
 		break;
 	case I486_OPCODE_FPU_DE:
+		if(0xD9==operand[0])
+		{
+			disasm="FCOMPP";
+		}
+		else
 		if(0xF9==operand[0])
 		{
 			disasm="FDIV";
@@ -5524,6 +5531,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		if(0xF0<=inst.operand[0] && inst.operand[0]<=0xFF)
 		{
 		}
+		else if(0xC0<=inst.operand[0] && inst.operand[0]<=0xC7)
+		{
+			clocksPassed=state.fpuState.FLD_ST(*this,inst.operand[0]-0xC0);
+		}
 		else if(0xE0==inst.operand[0])
 		{
 			clocksPassed=state.fpuState.FCHS(*this);
@@ -5607,6 +5618,14 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		break;
 	case I486_RENUMBER_FPU_DE:
+		if(0xF9==inst.operand[0])
+		{
+			clocksPassed=state.fpuState.FDIV(*this);
+		}
+		else if(0xD9==inst.operand[0])
+		{
+			// clocksPassed=state.fpuState.FCOMPP(*this);
+		}
 		break;
 	case I486_RENUMBER_FPU_DF_FNSTSW_AX://  0xDF,
 		if(0xE0==inst.operand[0])

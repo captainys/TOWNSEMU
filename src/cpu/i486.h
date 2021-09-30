@@ -361,8 +361,37 @@ public:
 
 		std::vector <std::string> GetStateText(void) const;
 
+		inline Stack &ST(class i486DX &cpu)
+		{
+			return ST(cpu,0);
+		}
+		inline Stack &ST(class i486DX &cpu,int i)
+		{
+			if(i<stackPtr)
+			{
+				return stack[stackPtr-1-i];
+			}
+			// Raise exception.
+			return stack[0];
+		}
+		inline const Stack &ST(class i486DX &cpu) const
+		{
+			return ST(cpu,0);
+		}
+		inline const Stack &ST(class i486DX &cpu,int i) const
+		{
+			if(i<stackPtr)
+			{
+				return stack[stackPtr-1-i];
+			}
+			// Raise exception.
+			return stack[0];
+		}
+
 		// Returns clocks passed.
 		unsigned int FCHS(i486DX &cpu);
+		unsigned int FDIV(i486DX &cpu);
+		unsigned int FLD_ST(i486DX &cpu,int i);
 		unsigned int FLD1(i486DX &cpu);
 		unsigned int FLDL2T(i486DX &cpu);
 		unsigned int FLDZ(i486DX &cpu);
