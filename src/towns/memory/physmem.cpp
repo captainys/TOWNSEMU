@@ -661,19 +661,26 @@ std::vector <std::string> TownsPhysicalMemory::GetStatusText(void) const
 
 	text.push_back(empty);
 	text.back()="D0000-EFFFF:";
-	if(true==state.dicRom)
+	if (state.FMRVRAM)
 	{
-		text.back()+="Dictionary RAM/ROM, User Font RAM";
+		if (state.dicRom)
+		{
+			text.back() += "Dictionary RAM/ROM, User Font RAM";
+		}
+		else
+		{
+			text.back() += "N/A";
+		}
 	}
 	else
 	{
-		text.back()+="Main RAM";
+		text.back() += "Main RAM";
 	}
 	text.back()+="  Dictionary Bank:";
 	text.back()+=cpputil::Uitox(state.DICROMBank);
 
 	text.push_back(empty);
-	text.back()="FF000-FFFFF:";
+	text.back() = "F8000-FFFFF:";
 	if(true==state.sysRomMapping)
 	{
 		text.back()+="Boot ROM";
