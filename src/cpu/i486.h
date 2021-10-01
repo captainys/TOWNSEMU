@@ -441,6 +441,7 @@ public:
 		unsigned int FCHS(i486DX &cpu);
 		unsigned int FCOMPP(i486DX &cpu);
 		unsigned int FDIV(i486DX &cpu);
+		unsigned int FLDCW(i486DX &cpu,uint16_t cw);
 		unsigned int FLD_ST(i486DX &cpu,int i);
 		unsigned int FLD1(i486DX &cpu);
 		unsigned int FLDL2T(i486DX &cpu);

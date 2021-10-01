@@ -1108,14 +1108,6 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 			else
 			{
 				FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
-			}
-
-			if(0xF0<=inst.operand[0] && inst.operand[0]<=0xFF)
-			{
-				// Do nothing
-			}
-			else
-			{
 				op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 			}
 		}
@@ -5563,6 +5555,13 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			switch(inst.GetREG())
 			{
+			case 5: // "FLDCW"
+				{
+					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+					auto cw=value.GetAsWord();
+					clocksPassed=state.fpuState.FLDCW(*this,cw);
+				}
+				break;
 			case 7: // "FNSTCW"
 				{
 					OperandValue value;

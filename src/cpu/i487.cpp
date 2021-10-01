@@ -179,6 +179,14 @@ unsigned int i486DX::FPUState::FDIV(i486DX &cpu)
 	}
 	return 0; // Let it abort.
 }
+unsigned int i486DX::FPUState::FLDCW(i486DX &cpu,uint16_t cw)
+{
+	if(true==enabled)
+	{
+		controlWord=cw;
+	}
+	return 4;
+}
 unsigned int i486DX::FPUState::FLD_ST(i486DX &cpu,int i)
 {
 	if(true==enabled)
