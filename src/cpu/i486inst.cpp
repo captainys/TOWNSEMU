@@ -1139,6 +1139,24 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 			}
 		}
 		break;
+	case I486_RENUMBER_FPU_DC_FADD:
+		{
+			unsigned int MODR_M;
+			FUNCCLASS::PeekOperand8(cpu,MODR_M,inst,ptr,seg,offset,mem);
+			{
+				switch(Instruction::GetREG(MODR_M))
+				{
+				case 0: // FADD m64real
+					FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
+					op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
+					break;
+				default:
+					FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset,mem);
+					break;
+				}
+			}
+		}
+		break;
 	case I486_RENUMBER_FPU_DD_FLD_FSAVE_FST_FNSTSW_M16_FFREE_FUCOM:
 		{
 			unsigned int MODR_M;
@@ -1163,14 +1181,14 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 			{
 				switch(Instruction::GetREG(MODR_M))
 				{
+				default:
+					FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset,mem);
+					break;
+				// case 2: // FST m64real
+				// case 6: // FSAVE m94/108byte
+					break;
 				case 0:	// FLD m64real
-					break;
-				case 2: // FST m64real
-					break;
 				case 3: // FSTP m64real
-					break;
-				case 6: // FSAVE m94/108byte
-					break;
 				case 7: // FNSTSW m2byte
 					FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 					op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
@@ -2225,6 +2243,43 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 			disasm="FWAIT "+disasm;
 		}
 		break;
+	case I486_OPCODE_FPU_DC_FADD:
+		{
+			unsigned int MODR_M=operand[0];
+			{
+				switch(Instruction::GetREG(MODR_M))
+				{
+				case 0:	// FADD m64real
+					disasm=DisassembleTypicalOneOperand("FADD64",op1,operandSize);
+					break;
+				case 1:
+					disasm="?FPUINST REG=1";
+					break;
+				case 2: //
+					disasm="?FPUINST REG=2";
+					break;
+				case 3: //
+					disasm="?FPUINST REG=3";
+					break;
+				case 4:
+					disasm="?FPUINST REG=4";
+					break;
+				case 5:
+					disasm="?FPUINST REG=5";
+					break;
+				case 6: //
+					disasm="?FPUINST REG=6";
+					break;
+				case 7: //
+					disasm="?FPUINST REG=7";
+					break;
+				default:
+					disasm="?FPUINST";
+					break;
+				}
+			}
+		}
+		break;
 	case I486_OPCODE_FPU_DD_FLD_FSAVE_FST_FNSTSW_M16_FFREE_FUCOM:
 		{
 			unsigned int MODR_M=operand[0];
@@ -2249,16 +2304,25 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 				switch(Instruction::GetREG(MODR_M))
 				{
 				case 0:	// FLD m64real
-					disasm="?FPUINST";
+					disasm=DisassembleTypicalOneOperand("FLD64",op1,operandSize);
+					break;
+				case 1:
+					disasm="?FPUINST REG=1";
 					break;
 				case 2: // FST m64real
-					disasm="?FPUINST";
+					disasm="?FPUINST REG=2";
 					break;
 				case 3: // FSTP m64real
-					disasm="?FPUINST";
+					disasm=DisassembleTypicalOneOperand("FSTP64",op1,operandSize);
+					break;
+				case 4:
+					disasm="?FPUINST REG=4";
+					break;
+				case 5:
+					disasm="?FPUINST REG=5";
 					break;
 				case 6: // FSAVE m94/108byte
-					disasm="?FPUINST";
+					disasm="?FPUINST REG=6";
 					break;
 				case 7: // FNSTSW m2byte
 					disasm=DisassembleTypicalOneOperand("FNSTSW",op1,operandSize);
@@ -5581,6 +5645,16 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		else
 		{
+		}
+		break;
+	case I486_RENUMBER_FPU_DC_FADD:
+		{
+			unsigned int MODR_M=inst.operand[0];
+			{
+				switch(Instruction::GetREG(MODR_M))
+				{
+				}
+			}
 		}
 		break;
 	case I486_RENUMBER_FPU_DD_FLD_FSAVE_FST_FNSTSW_M16_FFREE_FUCOM:
