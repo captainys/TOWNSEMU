@@ -551,7 +551,7 @@ void TownsPhysicalMemory::SetUpVRAMAccess(unsigned int cpuType,bool breakOnRead,
 	}
 }
 
-void TownsPhysicalMemory::SetSysROMDicROMMappingFlag(bool sysRomMapping,bool dicRomMapping)
+void TownsPhysicalMemory::SetSysROMDicROMMappingFlag(bool sysRomMapping, bool dicRomMapping)
 {
 	// The interpretation of 0480H is very difficult.
 	// On startup system rom does:
@@ -563,44 +563,60 @@ void TownsPhysicalMemory::SetSysROMDicROMMappingFlag(bool sysRomMapping,bool dic
 	// as controlling Dictionary ROM and CMOS RAM mapping to D0000H to DFFFFH, it doesn't clear Dictionary ROM and CMOS RAM
 	// mapping, and then destroys CMOS RAM during the memory test.
 	//
-	// Only interpretation that makes sense to me is:
-	//   0480H Bit1(active low)  Bit0         D0000        F8000
-	//         1(false)          0(false)     MainRAM      MainRAM
-	//         1(false)          1(true)      MainRAM      MainRAM
-	//         0(true)           0(false)     MainRAM      SysROM
-	//         0(true)           1(true)      DicROM/CMOS  SysROM
-	//
-	// I'll eventually test on the actual machine.
+	//  404h    480h    480h
+	//  Bit7    Bit1    Bit0        d0000   d8000   e0000   f8000
+	//    0       0       0          N/A     N/A     N/A    SysROM
+	//    0       0       1         DicROM   CMOS    N/A    SysROM
+	//    0       1       0          N/A     N/A     N/A     RAM
+	//    0       1       1         DicROM   CMOS    N/A     RAM
+	//    1       0       0          RAM     RAM     RAM    SysROM
+	//    1       0       1          RAM     RAM     RAM    SysROM
+	//    1       1       0          RAM     RAM     RAM     RAM
+	//    1       1       1          RAM     RAM     RAM     RAM
+	//  !FMRVRAM
+	//          !sysRomMapping
+	//                  dicRom
 
-	state.sysRomMapping=sysRomMapping;
-	state.dicRom=dicRomMapping;
+	state.sysRomMapping = sysRomMapping;
+	state.dicRom = dicRomMapping;
 
-	if(true==sysRomMapping && true==dicRomMapping)
+	if (sysRomMapping)
 	{
-		memPtr->AddAccess(&mappedSysROMAccess,TOWNSADDR_SYSROM_MAP_BASE,TOWNSADDR_SYSROM_MAP_END-1);
-		memPtr->AddAccess(&mappedDicROMandDicRAMAccess,TOWNSADDR_FMR_DICROM_BASE,TOWNSADDR_BACKUP_RAM_END-1);
-	}
-	else if(true==sysRomMapping && true!=dicRomMapping)
-	{
-		memPtr->AddAccess(&mappedSysROMAccess,TOWNSADDR_SYSROM_MAP_BASE,TOWNSADDR_SYSROM_MAP_END-1);
-		memPtr->AddAccess(&mainRAMAccess,TOWNSADDR_FMR_DICROM_BASE,TOWNSADDR_BACKUP_RAM_END-1);
+		memPtr->AddAccess(&mappedSysROMAccess, TOWNSADDR_SYSROM_MAP_BASE, TOWNSADDR_SYSROM_MAP_END - 1);
 	}
 	else
 	{
-		memPtr->AddAccess(&mainRAMAccess,TOWNSADDR_SYSROM_MAP_BASE,TOWNSADDR_SYSROM_MAP_END-1);
-		memPtr->AddAccess(&mainRAMAccess,TOWNSADDR_FMR_DICROM_BASE,TOWNSADDR_BACKUP_RAM_END-1);
+		memPtr->AddAccess(&mainRAMAccess, TOWNSADDR_SYSROM_MAP_BASE, TOWNSADDR_SYSROM_MAP_END - 1);
+	}
+
+	if (state.FMRVRAM)
+	{
+		if (dicRomMapping)
+		{
+			memPtr->AddAccess(&mappedDicROMandDicRAMAccess, TOWNSADDR_FMR_DICROM_BASE, TOWNSADDR_BACKUP_RAM_END - 1);
+		}
+		else
+		{
+			memPtr->RemoveAccess(TOWNSADDR_FMR_DICROM_BASE, TOWNSADDR_BACKUP_RAM_END - 1);
+		}
 	}
 }
+
 void TownsPhysicalMemory::SetFMRVRAMMappingFlag(bool FMRVRAMMapping)
 {
-	state.FMRVRAM=FMRVRAMMapping;
-	if(true==FMRVRAMMapping)
+	state.FMRVRAM = FMRVRAMMapping;
+
+	if (FMRVRAMMapping)
 	{
-		memPtr->AddAccess(&FMRVRAMAccess,TOWNSADDR_FMR_VRAM_BASE,TOWNSADDR_FMR_VRAM_CVRAM_FONT_END-1);
+		memPtr->AddAccess(&FMRVRAMAccess, TOWNSADDR_FMR_VRAM_BASE, TOWNSADDR_FMR_VRAM_CVRAM_FONT_END - 1);
+		memPtr->RemoveAccess(TOWNSADDR_FMR_RESERVED_BASE, TOWNSADDR_FMR_RESERVED_END - 1);
+		if (state.dicRom) {
+			memPtr->AddAccess(&mappedDicROMandDicRAMAccess, TOWNSADDR_FMR_DICROM_BASE, TOWNSADDR_BACKUP_RAM_END - 1);
+		}
 	}
 	else
 	{
-		memPtr->AddAccess(&mainRAMAccess,TOWNSADDR_FMR_VRAM_BASE,TOWNSADDR_FMR_VRAM_CVRAM_FONT_END-1);
+		memPtr->AddAccess(&mainRAMAccess, TOWNSADDR_FMR_VRAM_BASE, TOWNSADDR_FMR_RESERVED_END - 1);
 	}
 }
 
