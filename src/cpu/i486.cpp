@@ -2267,8 +2267,9 @@ inline void i486DX::RolTemplate(unsigned int &value, unsigned int c) {
 
 	T src = value;
 
-	auto e = c % std::numeric_limits<T>::digits;
-	T res = (src << e) | (src >> (std::numeric_limits<T>::digits - e));
+	auto u = src + 0U;
+	auto e = c & (std::numeric_limits<T>::digits - 1);
+	T res = (u << e) | (u >> (std::numeric_limits<T>::digits - e));
 
 	value = res;
 	bool lsb = (res & 1) != 0;
@@ -2330,14 +2331,15 @@ void i486DX::RorByteWordOrDword(int operandSize,unsigned int &value,unsigned int
 
 template<typename T, typename _>
 inline void i486DX::RorTemplate(unsigned int &value, unsigned int c) {
-	
+
 	constexpr auto all = std::numeric_limits<T>::max();
 	constexpr auto sign = all ^ (all >> 1);
 
 	T src = value;
 
-	auto e = c % std::numeric_limits<T>::digits;
-	T res = (src >> e) | (src << (std::numeric_limits<T>::digits - e));
+	auto u = src + 0U;
+	auto e = c & (std::numeric_limits<T>::digits - 1);
+	T res = (u >> e) | (u << (std::numeric_limits<T>::digits - e));
 
 	value = res;
 	SetCF(c != 0 && (res & sign) != 0);
