@@ -2259,19 +2259,23 @@ void i486DX::XorByte(unsigned int &value1,unsigned int value2)
 	SetPF(CheckParity(value1&0xFF));
 }
 
-template <unsigned int valueMask,unsigned int countMask,unsigned int bitLength,unsigned int signBit>
-inline void i486DX::RolTemplate(unsigned int &value,unsigned int ctr)
-{
-	unsigned long long int mask=valueMask;
-	ctr&=countMask;
-	mask>>=(bitLength-ctr);
-	value=(value<<ctr)|((value>>(bitLength-ctr))&mask);
-	value&=valueMask;
-	SetCF(0!=ctr && 0!=(value&1));
-	if(1==ctr)
-	{
-		bool sgn=(0!=(value&signBit));
-		SetOF(sgn!=GetCF());
+template<typename T, typename _>
+inline void i486DX::RolTemplate(unsigned int &value, unsigned int c) {
+
+	constexpr auto all = std::numeric_limits<T>::max();
+	constexpr auto sign = all ^ (all >> 1);
+
+	T src = value;
+
+	auto e = c % std::numeric_limits<T>::digits;
+	T res = (src << e) | (src >> (std::numeric_limits<T>::digits - e));
+
+	value = res;
+	bool lsb = (res & 1) != 0;
+	SetCF(c != 0 && lsb);
+	if (c == 1) {
+		bool msb = (res & sign) != 0;
+		SetOF(msb != lsb);
 	}
 }
 
@@ -2292,40 +2296,19 @@ void i486DX::RolByteWordOrDword(int operandSize,unsigned int &value,unsigned int
 	}
 }
 
-void i486DX::RolDword(unsigned int &value,unsigned int ctr)
+void i486DX::RolDword(unsigned int &value, unsigned int ctr)
 {
-	RolTemplate<0xFFFFFFFF,0x1F,32,0x80000000>(value,ctr);
-
-	/* unsigned long long int mask=0xFFFFFFFF;
-	ctr&=0x1F;
-	mask>>=(32-ctr);
-	SetCF(0!=(value&0x80000000));
-	value=(value<<ctr)|((value>>(32-ctr))&mask);
-	value&=0xFFFFFFFF; */
+	RolTemplate<uint32_t>(value, ctr);
 }
 
-void i486DX::RolWord(unsigned int &value,unsigned int ctr)
+void i486DX::RolWord(unsigned int &value, unsigned int ctr)
 {
-	RolTemplate<0xFFFF,0xF,16,0x8000>(value,ctr);
-
-	/* unsigned long long int mask=0xFFFF;
-	ctr&=0xF;
-	mask>>=(16-ctr);
-	SetCF(0!=(value&0x8000));
-	value=(value<<ctr)|((value>>(16-ctr))&mask);
-	value&=0xFFFF; */
+	RolTemplate<uint16_t>(value, ctr);
 }
 
-void i486DX::RolByte(unsigned int &value,unsigned int ctr)
+void i486DX::RolByte(unsigned int &value, unsigned int ctr)
 {
-	RolTemplate<0xFF,0x7,8,0x80>(value,ctr);
-
-	/* unsigned long long int mask=0xFF;
-	ctr&=0x7;
-	mask>>=(8-ctr);
-	SetCF(0!=(value&0x80));
-	value=(value<<ctr)|((value>>(8-ctr))&mask);
-	value&=0xFF; */
+	RolTemplate<uint8_t>(value, ctr);
 }
 
 void i486DX::RorByteWordOrDword(int operandSize,unsigned int &value,unsigned int ctr)

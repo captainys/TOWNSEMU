@@ -2882,7 +2882,7 @@ public:
 	void XorByte(unsigned int &value1,unsigned int value2);
 
 private:
-	template <unsigned int valueMask,unsigned int countMask,unsigned int bitLength,unsigned int signBit>
+	template <typename T, typename _ = std::enable_if<std::is_unsigned<T>::value>::type>
 	inline void RolTemplate(unsigned int &value,unsigned int ctr);
 public:
 	/*! ROL a value and set OF and CF flags accoring to the result.
