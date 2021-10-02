@@ -12,8 +12,9 @@ Redistribution and use in source and binary forms, with or without modification,
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 << LICENSE */
-#include <iostream>
 #include <algorithm>
+#include <iostream>
+#include <limits>
 
 #include "cpputil.h"
 #include "i486.h"
@@ -2344,35 +2345,37 @@ void i486DX::RorByteWordOrDword(int operandSize,unsigned int &value,unsigned int
 	}
 }
 
-template <unsigned int bitCount,unsigned int allBits,unsigned int signBit>
-inline void i486DX::RorTemplate(unsigned int &value,unsigned int ctr)
-{
-	auto prevValue=value;
-	unsigned int rightBitsMask=(allBits>>(bitCount-ctr));
-	unsigned int rightBits=(value&rightBitsMask);
-	value&=allBits;
-	value>>=ctr;
-	value|=(rightBits<<(bitCount-ctr));
-	SetCF(0!=ctr && 0!=(value&signBit));
-	if(1==ctr)
-	{
-		SetOF((prevValue&signBit)!=(value&signBit));
+template<typename T, typename _>
+inline void i486DX::RorTemplate(unsigned int &value, unsigned int c) {
+	
+	constexpr auto all = std::numeric_limits<T>::max();
+	constexpr auto sign = all ^ (all >> 1);
+
+	T src = value;
+
+	auto e = c % std::numeric_limits<T>::digits;
+	T res = (src >> e) | (src << (std::numeric_limits<T>::digits - e));
+
+	value = res;
+	SetCF(c != 0 && (res & sign) != 0);
+	if (c == 1) {
+		SetOF(((src ^ res) & sign) != 0);
 	}
 }
 
-void i486DX::RorDword(unsigned int &value,unsigned int ctr)
+void i486DX::RorDword(unsigned int &value, unsigned int ctr)
 {
-	RorTemplate<32,0xffffffff,0x80000000>(value,ctr);
+	RorTemplate<uint32_t>(value, ctr);
 }
 
-void i486DX::RorWord(unsigned int &value,unsigned int ctr)
+void i486DX::RorWord(unsigned int &value, unsigned int ctr)
 {
-	RorTemplate<16,0xffff,0x8000>(value,ctr);
+	RorTemplate<uint16_t>(value, ctr);
 }
 
-void i486DX::RorByte(unsigned int &value,unsigned int ctr)
+void i486DX::RorByte(unsigned int &value, unsigned int ctr)
 {
-	RorTemplate<8,0xff,0x80>(value,ctr);
+	RorTemplate<uint8_t>(value, ctr);
 }
 
 void i486DX::RclWordOrDword(int operandSize,unsigned int &value,unsigned int ctr)
