@@ -439,9 +439,11 @@ public:
 		}
 
 		// Returns clocks passed.
+		unsigned int FADD64(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FCHS(i486DX &cpu);
 		unsigned int FCOMPP(i486DX &cpu);
 		unsigned int FDIV(i486DX &cpu);
+		unsigned int FLD64(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FLDCW(i486DX &cpu,uint16_t cw);
 		unsigned int FLD_ST(i486DX &cpu,int i);
 		unsigned int FLD1(i486DX &cpu);
@@ -3055,6 +3057,11 @@ public:
 	/*! Evaluate operand as an 8-bit operand.
 	*/
 	OperandValue EvaluateOperand8(
+	    const Memory &mem,int addressSize,int segmentOverride,const Operand &op);
+
+	/*! Evaluate operand as an 64-bit operand (double).
+	*/
+	OperandValue EvaluateOperand64(
 	    const Memory &mem,int addressSize,int segmentOverride,const Operand &op);
 
 

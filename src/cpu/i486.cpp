@@ -2887,6 +2887,41 @@ i486DX::OperandValue i486DX::EvaluateOperand8(
 	return value;
 }
 
+i486DX::OperandValue i486DX::EvaluateOperand64(
+	    const Memory &mem,int addressSize,int segmentOverride,const Operand &op)
+{
+	static const unsigned int addressMask[2]=
+	{
+		0x0000FFFF,
+		0xFFFFFFFF,
+	};
+
+	i486DX::OperandValue value;
+	value.numBytes=0;
+	switch(op.operandType)
+	{
+	default:
+		Abort("Tried to evaluate 64-bit from an inappropriate operandType.");
+		break;
+	case OPER_ADDR:
+		{
+			value.numBytes=8;
+
+			unsigned int offset;
+			const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,op,segmentOverride);
+
+			offset&=addressMask[addressSize>>5];
+
+			uint32_t LOWord=FetchDword(addressSize,seg,offset,mem);
+			uint32_t HIWord=FetchDword(addressSize,seg,offset+4,mem);
+			cpputil::PutDword(value.byteData  ,LOWord);
+			cpputil::PutDword(value.byteData+4,HIWord);
+		}
+		break;
+	}
+	return value;
+}
+
 void i486DX::StoreOperandValue(
     const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value)
 {

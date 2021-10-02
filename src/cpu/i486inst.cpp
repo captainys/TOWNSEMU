@@ -5653,6 +5653,28 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{
 				switch(Instruction::GetREG(MODR_M))
 				{
+				case 0:	// FADD m64real
+					{
+						auto value=EvaluateOperand64(mem,inst.addressSize,inst.segOverride,op1);
+						clocksPassed=state.fpuState.FADD64(*this,value.byteData);
+					}
+					break;
+				case 1:
+					break;
+				case 2: //
+					break;
+				case 3: //
+					break;
+				case 4:
+					break;
+				case 5:
+					break;
+				case 6: //
+					break;
+				case 7: //
+					break;
+				default:
+					break;
 				}
 			}
 		}
@@ -5677,6 +5699,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				switch(Instruction::GetREG(MODR_M))
 				{
 				case 0:	// FLD m64real
+					{
+						auto value=EvaluateOperand64(mem,inst.addressSize,inst.segOverride,op1);
+						clocksPassed=state.fpuState.FLD64(*this,value.byteData);
+					}
 					break;
 				case 2: // FST m64real
 					break;

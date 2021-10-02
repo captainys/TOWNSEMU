@@ -127,6 +127,24 @@ std::vector <std::string> i486DX::FPUState::GetStateText(void) const
 	return text;
 }
 
+unsigned int i486DX::FPUState::FADD64(i486DX &cpu,const unsigned char byteData[])
+{
+	if(true==enabled)
+	{
+		// Hope this CPU uses IEEE format.
+		const double *dataPtr=(const double *)byteData;
+		if(0<stackPtr)
+		{
+			ST(cpu).value+=*dataPtr;
+		}
+		else
+		{
+			// Raise NM exception.
+		}
+		return 3;
+	}
+	return 0;
+}
 unsigned int i486DX::FPUState::FCHS(i486DX &cpu)
 {
 	if(true==enabled)
@@ -178,6 +196,17 @@ unsigned int i486DX::FPUState::FDIV(i486DX &cpu)
 		return 70;
 	}
 	return 0; // Let it abort.
+}
+unsigned int i486DX::FPUState::FLD64(i486DX &cpu,const unsigned char byteData[])
+{
+	if(true==enabled)
+	{
+		// Hope this CPU uses IEEE format.
+		const double *dataPtr=(const double *)byteData;
+		Push(*dataPtr);
+		return 3;
+	}
+	return 0;
 }
 unsigned int i486DX::FPUState::FLDCW(i486DX &cpu,uint16_t cw)
 {
