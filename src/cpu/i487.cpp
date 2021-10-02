@@ -143,6 +143,63 @@ unsigned int i486DX::FPUState::FCHS(i486DX &cpu)
 	}
 	return 0; // Let it abort.
 }
+unsigned int i486DX::FPUState::FCOMPP(i486DX &cpu)
+{
+	if(true==enabled)
+	{
+		if(2<=stackPtr)
+		{
+			Compare(ST(cpu).value,ST(cpu,1).value);
+			stackPtr-=2;
+			return 5;
+		}
+		else
+		{
+			// Raise NM exception.
+		}
+	}
+	return 0; // Let it abort.
+}
+unsigned int i486DX::FPUState::FDIV(i486DX &cpu)
+{
+	if(true==enabled)
+	{
+		if(2<=stackPtr)
+		{
+			auto &ST=this->ST(cpu);
+			auto &ST1=this->ST(cpu,1);
+			if(0.0==ST1.value)
+			{
+				// Zero division.
+			}
+			ST1.value=ST.value/ST1.value; // Let it be a NaN if ST1.value is zero.
+			Pop();
+		}
+		return 70;
+	}
+	return 0; // Let it abort.
+}
+unsigned int i486DX::FPUState::FLDCW(i486DX &cpu,uint16_t cw)
+{
+	if(true==enabled)
+	{
+		controlWord=cw;
+	}
+	return 4;
+}
+unsigned int i486DX::FPUState::FLD_ST(i486DX &cpu,int i)
+{
+	if(true==enabled)
+	{
+		if(i<stackPtr)
+		{
+			auto &STi=ST(cpu,i);
+			Push(STi.value);
+		}
+		return 4;
+	}
+	return 0; // Let it abort.
+}
 unsigned int i486DX::FPUState::FLD1(i486DX &cpuState)
 {
 	if(true==enabled)
