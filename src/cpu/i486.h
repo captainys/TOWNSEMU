@@ -20,6 +20,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <string>
 #include <iostream>
 #include <cstdint>
+#include <math.h>
 
 #include "cpu.h"
 #include "ramrom.h"
