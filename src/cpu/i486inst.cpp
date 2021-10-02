@@ -1935,10 +1935,14 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 			disasm=DisassembleTypicalRM_I8(disasm,op1,EvalUimm8());
 			break;
 		case I486_OPCODE_D0_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_1://=0xD0, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
+			disasm = DisassembleTypicalOneOperand(disasm, op1, 8) + ",1";
+			break;
 		case I486_OPCODE_D1_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_1://=0xD1, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
 			disasm=DisassembleTypicalOneOperand(disasm,op1,operandSize)+",1";
 			break;
 		case I486_OPCODE_D3_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_CL://0xD2,// ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
+			disasm = DisassembleTypicalOneOperand(disasm, op1, 8) + ",CL";
+			break;
 		case I486_OPCODE_D3_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_CL://0xD3, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
 			disasm=DisassembleTypicalOneOperand(disasm,op1,operandSize)+",CL";
 			break;
