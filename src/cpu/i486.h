@@ -16,10 +16,11 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #define I486_IS_INCLUDED
 /* { */
 
+#include <cstdint>
+#include <iostream>
 #include <map>
 #include <string>
-#include <iostream>
-#include <cstdint>
+#include <type_traits>
 #include <math.h>
 
 #include "cpu.h"
@@ -2962,7 +2963,7 @@ public:
 	void XorByte(unsigned int &value1,unsigned int value2);
 
 private:
-	template <unsigned int valueMask,unsigned int countMask,unsigned int bitLength,unsigned int signBit>
+	template <typename T, typename _ = typename std::enable_if<std::is_unsigned<T>::value>::type>
 	inline void RolTemplate(unsigned int &value,unsigned int ctr);
 public:
 	/*! ROL a value and set OF and CF flags accoring to the result.
@@ -2975,7 +2976,7 @@ public:
 	void RolByte(unsigned int &value,unsigned int ctr);
 
 private:
-	template <unsigned int bitCount,unsigned int allBits,unsigned int signBit>
+	template <typename T, typename _ = typename std::enable_if<std::is_unsigned<T>::value>::type>
 	inline void RorTemplate(unsigned int &value,unsigned int ctr);
 public:
 	/*! ROR a value and set OF and CF flags accoring to the result.
