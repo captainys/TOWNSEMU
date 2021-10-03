@@ -3107,6 +3107,35 @@ void i486DX::StoreOperandValue8(
 	}
 }
 
+void i486DX::StoreOperandValue64(
+    const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value)
+{
+	static const unsigned int addressMask[2]=
+	{
+		0x0000FFFF,
+		0xFFFFFFFF,
+	};
+
+	switch(dst.operandType)
+	{
+	default:
+		Abort("Tried to store 64-bit value to a non-address operand.");
+		break;
+	case OPER_ADDR:
+		{
+			unsigned int offset;
+			const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,dst,segmentOverride);
+			offset&=addressMask[addressSize>>5];
+
+			uint32_t LOWord=cpputil::GetDword(value.byteData);
+			uint32_t HIWord=cpputil::GetDword(value.byteData+4);
+			StoreDword(mem,addressSize,seg,offset,  LOWord);
+			StoreDword(mem,addressSize,seg,offset+4,HIWord);
+		}
+		break;
+	}
+}
+
 bool i486DX::REPCheck(unsigned int &clocksPassed,unsigned int instPrefix,unsigned int addressSize)
 {
 	if(INST_PREFIX_REP==instPrefix || INST_PREFIX_REPNE==instPrefix)

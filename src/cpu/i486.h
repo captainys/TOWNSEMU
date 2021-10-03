@@ -330,6 +330,18 @@ public:
 	*/
 	FarPointer TranslateFarPointer(FarPointer ptr) const;
 
+	class OperandValueBase
+	{
+	public:
+		enum
+		{
+			MAX_NUM_BYTES=10
+		};
+
+		unsigned int numBytes;
+		unsigned char byteData[MAX_NUM_BYTES];
+	};
+
 	class FPUState
 	{
 	public:
@@ -370,6 +382,9 @@ public:
 		bool ExceptionPending(void) const;
 		unsigned int GetStatusWord(void) const;
 		unsigned int GetControlWord(void) const;
+
+		void GetSTAsDouble(class i486DX &cpu,OperandValueBase &value);
+
 
 		bool Push(double value);
 		Stack Pop(void);
@@ -1067,16 +1082,12 @@ public:
 	    The size is defined by the instruction an the operand size.
 	    This OperandValue is after the operand size is evaluated therefore it knows its size.
 	*/
-	class OperandValue
+	class OperandValue : public OperandValueBase
 	{
 	public:
-		enum
-		{
-			MAX_NUM_BYTES=10
-		};
-
-		unsigned int numBytes;
-		unsigned char byteData[MAX_NUM_BYTES];
+		using OperandValueBase::MAX_NUM_BYTES;
+		using OperandValueBase::numBytes;
+		using OperandValueBase::byteData;
 
 		/*! Returns a value as a unsigned dword.
 		    It won't evaluate beyond numBytes.
@@ -3096,6 +3107,10 @@ public:
 	/*! Store value to an 8-bit operand.
 	*/
 	void StoreOperandValue8(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value);
+
+	/*! Store value to an 64-bit operand.
+	*/
+	void StoreOperandValue64(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value);
 
 	/*! Returns override-segment for the prefix.  Returns default DS.
 	*/

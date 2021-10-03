@@ -5711,6 +5711,13 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				case 2: // FST m64real
 					break;
 				case 3: // FSTP m64real
+					{
+						OperandValue value;
+						state.fpuState.GetSTAsDouble(*this,value);
+						state.fpuState.Pop();
+						StoreOperandValue64(op1,mem,inst.addressSize,inst.segOverride,value);
+						clocksPassed=8;
+					}
 					break;
 				case 6: // FSAVE m94/108byte
 					break;

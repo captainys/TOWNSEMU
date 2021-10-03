@@ -65,6 +65,15 @@ unsigned int i486DX::FPUState::GetControlWord(void) const
 		return 0xffff;
 	}
 }
+void i486DX::FPUState::GetSTAsDouble(class i486DX &cpu,class OperandValueBase &value)
+{
+	if(0<stackPtr)
+	{
+		double *doublePtr=(double *)value.byteData;
+		*doublePtr=ST(cpu).value;
+		value.numBytes=8;
+	}
+}
 bool i486DX::FPUState::Push(double value)
 {
 	if(stackPtr<STACK_LEN)
