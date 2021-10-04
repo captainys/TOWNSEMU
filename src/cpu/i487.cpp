@@ -65,6 +65,10 @@ unsigned int i486DX::FPUState::GetControlWord(void) const
 		return 0xffff;
 	}
 }
+unsigned int i486DX::FPUState::GetRC(void) const
+{
+	return (GetControlWord()>>10)&3;
+}
 void i486DX::FPUState::GetSTAsDouble(class i486DX &cpu,class OperandValueBase &value)
 {
 	if(0<stackPtr)
@@ -72,6 +76,55 @@ void i486DX::FPUState::GetSTAsDouble(class i486DX &cpu,class OperandValueBase &v
 		double *doublePtr=(double *)value.byteData;
 		*doublePtr=ST(cpu).value;
 		value.numBytes=8;
+	}
+	else
+	{
+		// Raise NM fault.
+	}
+}
+void i486DX::FPUState::GetSTAsSignedInt(class i486DX &cpu,class OperandValueBase &value)
+{
+	if(0<stackPtr)
+	{
+		uint64_t i=0;
+		double d=ST(cpu).value;
+		switch(GetRC())
+		{
+		case 0: // Round to Nearest or Even
+			if(d<0.0)
+			{
+				d-=0.5;
+			}
+			break;
+		case 1: // Round Down (Toward -INF)
+			if(d<0.0)
+			{
+				d-=1.0;
+			}
+			break;
+		case 2: // Round Up (Toward +INF)
+			if(0.0<d)
+			{
+				d+=1.0;
+			}
+			break;
+		case 3: // Chop (Truncate)
+			break;
+		}
+		i=(uint64_t)d;
+		value.numBytes=8;
+		value.byteData[0]=( i     &255);
+		value.byteData[1]=((i>> 8)&255);
+		value.byteData[2]=((i>>16)&255);
+		value.byteData[3]=((i>>24)&255);
+		value.byteData[4]=((i>>32)&255);
+		value.byteData[5]=((i>>40)&255);
+		value.byteData[6]=((i>>48)&255);
+		value.byteData[7]=((i>>56)&255);
+	}
+	else
+	{
+		// Raise NM fault.
 	}
 }
 bool i486DX::FPUState::Push(double value)

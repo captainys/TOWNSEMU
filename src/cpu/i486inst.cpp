@@ -1122,18 +1122,21 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 			}
 			else
 			{
-				FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset,mem);
 				switch(Instruction::GetREG(MODR_M))
 				{
+				case 3: // FISTP m32int
+				case 7: // FSTP m80real
+					FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
+					op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
+					break;
 				case 0:
 				case 1:
 				case 2:
-				case 3:
 				case 4:
 				case 5:
 				case 6:
-				case 7:
 				default:
+					FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset,mem);
 					break;
 				}
 			}
@@ -2240,7 +2243,21 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		}
 		else
 		{
-			disasm="?FPUINST"+cpputil::Ubtox(opCode)+" "+cpputil::Ubtox(operand[0]);
+			unsigned int MODR_M=operand[0];
+			{
+				switch(Instruction::GetREG(MODR_M))
+				{
+				case 3:
+					disasm=DisassembleTypicalOneOperand("FISTP32",op1,operandSize);
+					break;
+				case 7:
+					disasm=DisassembleTypicalOneOperand("FSTP80",op1,operandSize);
+					break;
+				default:
+					disasm="?FPUINST"+cpputil::Ubtox(opCode)+" "+cpputil::Ubtox(operand[0])+" REG="+cpputil::Ubtox(Instruction::GetREG(MODR_M));
+					break;
+				}
+			}
 		}
 		if(FPU_FWAIT==fwait)
 		{

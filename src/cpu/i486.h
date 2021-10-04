@@ -383,7 +383,10 @@ public:
 		unsigned int GetStatusWord(void) const;
 		unsigned int GetControlWord(void) const;
 
+		unsigned int GetRC(void) const;
+
 		void GetSTAsDouble(class i486DX &cpu,OperandValueBase &value);
+		void GetSTAsSignedInt(class i486DX &cpu,OperandValueBase &value);
 
 
 		bool Push(double value);
