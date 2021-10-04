@@ -391,6 +391,7 @@ public:
 
 		static void DoubleTo80Bit(OperandValueBase &value80,double src);
 		static double DoubleFrom80Bit(const OperandValueBase &value80);
+		static double DoubleFrom80Bit(const unsigned char value80[]);
 
 
 		bool Push(double value);
@@ -466,7 +467,9 @@ public:
 		unsigned int FCHS(i486DX &cpu);
 		unsigned int FCOMPP(i486DX &cpu);
 		unsigned int FDIV(i486DX &cpu);
+		unsigned int FLD32(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FLD64(i486DX &cpu,const unsigned char byteData[]);
+		unsigned int FLD80(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FLDCW(i486DX &cpu,uint16_t cw);
 		unsigned int FLD_ST(i486DX &cpu,int i);
 		unsigned int FLD1(i486DX &cpu);
@@ -3081,6 +3084,11 @@ public:
 	/*! Evaluate operand as an 64-bit operand (double).
 	*/
 	OperandValue EvaluateOperand64(
+	    const Memory &mem,int addressSize,int segmentOverride,const Operand &op);
+
+	/*! Evaluate operand as an 80-bit operand (80-bit floating point).
+	*/
+	OperandValue EvaluateOperand80(
 	    const Memory &mem,int addressSize,int segmentOverride,const Operand &op);
 
 

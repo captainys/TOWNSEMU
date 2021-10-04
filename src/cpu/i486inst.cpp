@@ -1098,6 +1098,7 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 			FUNCCLASS::PeekOperand8(cpu,MODR_M,inst,ptr,seg,offset,mem);
 			if((0xC0<=MODR_M && MODR_M<=0xC7) ||
 			   0xE0==MODR_M ||
+			   0xE5==MODR_M || // FXAM
 			   0xE8==MODR_M ||
 			   0xE9==MODR_M ||
 			   0xEE==MODR_M ||
@@ -1125,6 +1126,7 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 				switch(Instruction::GetREG(MODR_M))
 				{
 				case 3: // FISTP m32int
+				case 5: // FLD m80real
 				case 7: // FSTP m80real
 					FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 					op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
@@ -1133,7 +1135,6 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 				case 1:
 				case 2:
 				case 4:
-				case 5:
 				case 6:
 				default:
 					FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset,mem);
@@ -2204,6 +2205,10 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		{
 			disasm="FCHS";
 		}
+		else if(0xE5==operand[0])
+		{
+			disasm="FXAM";
+		}
 		else if(0xE8==operand[0])
 		{
 			disasm="FLD1";
@@ -2220,6 +2225,9 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		{
 			switch(GetREG())
 			{
+			case 0:
+				disasm=DisassembleTypicalOneOperand("FLD(m32real)",op1,operandSize);
+				break;
 			case 5:
 				disasm=DisassembleTypicalOneOperand("FLDCW",op1,operandSize);
 				break;
@@ -2227,7 +2235,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 				disasm=DisassembleTypicalOneOperand("FNSTCW",op1,operandSize);
 				break;
 			default:
-				disasm="?FPUINST"+cpputil::Ubtox(opCode)+" "+cpputil::Ubtox(operand[0]);
+				disasm="?FPUINST"+cpputil::Ubtox(opCode)+" "+cpputil::Ubtox(operand[0])+" REG="+cpputil::Ubtox(GetREG());
 				break;
 			}
 		}
@@ -2248,10 +2256,13 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 				switch(Instruction::GetREG(MODR_M))
 				{
 				case 3:
-					disasm=DisassembleTypicalOneOperand("FISTP32",op1,operandSize);
+					disasm=DisassembleTypicalOneOperand("FISTP(m32int)",op1,operandSize);
+					break;
+				case 5:
+					disasm=DisassembleTypicalOneOperand("FLD(m80real)",op1,operandSize);
 					break;
 				case 7:
-					disasm=DisassembleTypicalOneOperand("FSTP80",op1,operandSize);
+					disasm=DisassembleTypicalOneOperand("FSTP(m80real)",op1,operandSize);
 					break;
 				default:
 					disasm="?FPUINST"+cpputil::Ubtox(opCode)+" "+cpputil::Ubtox(operand[0])+" REG="+cpputil::Ubtox(Instruction::GetREG(MODR_M));
@@ -2271,7 +2282,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 				switch(Instruction::GetREG(MODR_M))
 				{
 				case 0:	// FADD m64real
-					disasm=DisassembleTypicalOneOperand("FADD64",op1,operandSize);
+					disasm=DisassembleTypicalOneOperand("FADD(m64real)",op1,operandSize);
 					break;
 				case 1:
 					disasm="?FPUINST REG=1";
@@ -2310,7 +2321,9 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 			}
 			else if(0xD8==(MODR_M&0xF8)) // D8 11011xxx
 			{
-				disasm="?FPUINST";
+				disasm="FSTP ST(";
+				disasm+=cpputil::Ubtox(MODR_M&7);
+				disasm+=")";
 			}
 			else if(0xC0==(MODR_M&0xF8)) // C0 11000xxx
 			{
@@ -2325,7 +2338,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 				switch(Instruction::GetREG(MODR_M))
 				{
 				case 0:	// FLD m64real
-					disasm=DisassembleTypicalOneOperand("FLD64",op1,operandSize);
+					disasm=DisassembleTypicalOneOperand("FLD(m64real)",op1,operandSize);
 					break;
 				case 1:
 					disasm="?FPUINST REG=1";
@@ -2334,7 +2347,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 					disasm="?FPUINST REG=2";
 					break;
 				case 3: // FSTP m64real
-					disasm=DisassembleTypicalOneOperand("FSTP64",op1,operandSize);
+					disasm=DisassembleTypicalOneOperand("FSTP(m64real)",op1,operandSize);
 					break;
 				case 4:
 					disasm="?FPUINST REG=4";
@@ -5624,6 +5637,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			clocksPassed=state.fpuState.FCHS(*this);
 		}
+		else if(0xE5==inst.operand[0])
+		{
+			// FXAM
+		}
 		else if(0xE8==inst.operand[0])
 		{
 			clocksPassed=state.fpuState.FLD1(*this);
@@ -5640,6 +5657,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			switch(inst.GetREG())
 			{
+			case 0: // "FLD m32real"
+				{
+					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,4);
+					clocksPassed=state.fpuState.FLD32(*this,value.byteData);
+				}
+				break;
 			case 5: // "FLDCW"
 				{
 					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
@@ -5673,9 +5696,14 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			case 1:
 			case 2:
 			case 4:
-			case 5:
 			case 6:
 			default:
+				break;
+			case 5: // FLD m80real
+				{
+					auto value=EvaluateOperand80(mem,inst.addressSize,inst.segOverride,op1);
+					clocksPassed=state.fpuState.FLD80(*this,value.byteData);
+				}
 				break;
 			case 7: // FSTP m80real
 				{

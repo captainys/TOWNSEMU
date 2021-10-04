@@ -36,6 +36,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 	// It doesn't handle positive/negative infinity and NaN yet.
 
+	value80.numBytes=10;
 #ifdef YS_LITTLE_ENDIAN
 	*((uint16_t *)(value80.byteData+8))=exponent;
 	*((uint64_t *)value80.byteData)=fraction;
@@ -55,26 +56,30 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 }
 /* static */ double i486DX::FPUState::DoubleFrom80Bit(const OperandValueBase &value80)
 {
+	return DoubleFrom80Bit(value80.byteData);
+}
+/* static */ double i486DX::FPUState::DoubleFrom80Bit(const unsigned char byteData[])
+{
 	uint16_t exponent;
 	uint64_t fraction;
 	uint16_t signBit;
 
-	signBit=(value80.byteData[9]&0x80);
+	signBit=(byteData[9]&0x80);
 
 #ifdef YS_LITTLE_ENDIAN
-	exponent=*((uint16_t *)(value80.byteData+8));
-	fraction=*((uint64_t *)value80.byteData);
+	exponent=*((uint16_t *)(byteData+8));
+	fraction=*((uint64_t *)byteData);
 #else
 	fraction=
-		 (uint64_t)value80.byteData[0]     |
-		((uint64_t)value80.byteData[1]<< 8)|
-		((uint64_t)value80.byteData[2]<<16)|
-		((uint64_t)value80.byteData[3]<<24)|
-		((uint64_t)value80.byteData[4]<<32)|
-		((uint64_t)value80.byteData[5]<<40)|
-		((uint64_t)value80.byteData[6]<<48)|
-		((uint64_t)value80.byteData[7]<<56);
-	exponent=value80.byteData[8]|(value80.byteData[9]<<8);
+		 (uint64_t)byteData[0]     |
+		((uint64_t)byteData[1]<< 8)|
+		((uint64_t)byteData[2]<<16)|
+		((uint64_t)byteData[3]<<24)|
+		((uint64_t)byteData[4]<<32)|
+		((uint64_t)byteData[5]<<40)|
+		((uint64_t)byteData[6]<<48)|
+		((uint64_t)byteData[7]<<56);
+	exponent=byteData[8]|(byteData[9]<<8);
 #endif
 
 	fraction>>=11;
@@ -336,6 +341,19 @@ unsigned int i486DX::FPUState::FDIV(i486DX &cpu)
 	}
 	return 0; // Let it abort.
 }
+unsigned int i486DX::FPUState::FLD32(i486DX &cpu,const unsigned char byteData[])
+{
+	if(true==enabled)
+	{
+		float f;
+		uint32_t *i=(uint32_t *)&f;
+		// Assuming same endiannness for int and float.
+		*i=byteData[0]|(byteData[1]<<8)|(byteData[1]<<16)|(byteData[1]<<24);
+		Push((double)f);
+		return 3;
+	}
+	return 0;
+}
 unsigned int i486DX::FPUState::FLD64(i486DX &cpu,const unsigned char byteData[])
 {
 	if(true==enabled)
@@ -344,6 +362,16 @@ unsigned int i486DX::FPUState::FLD64(i486DX &cpu,const unsigned char byteData[])
 		const double *dataPtr=(const double *)byteData;
 		Push(*dataPtr);
 		return 3;
+	}
+	return 0;
+}
+unsigned int i486DX::FPUState::FLD80(i486DX &cpu,const unsigned char byteData[])
+{
+	if(true==enabled)
+	{
+		// Hope this CPU uses IEEE format.
+		Push(DoubleFrom80Bit(byteData));
+		return 6;
 	}
 	return 0;
 }
