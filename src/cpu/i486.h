@@ -389,6 +389,10 @@ public:
 		void GetSTAsSignedInt(class i486DX &cpu,OperandValueBase &value);
 
 
+		static void DoubleTo80Bit(OperandValueBase &value80,double src);
+		static double DoubleFrom80Bit(const OperandValueBase &value80);
+
+
 		bool Push(double value);
 		Stack Pop(void);
 
@@ -3114,6 +3118,10 @@ public:
 	/*! Store value to an 64-bit operand.
 	*/
 	void StoreOperandValue64(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value);
+
+	/*! Store value to an 80-bit operand.
+	*/
+	void StoreOperandValue80(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value);
 
 	/*! Returns override-segment for the prefix.  Returns default DS.
 	*/

@@ -3127,10 +3127,36 @@ void i486DX::StoreOperandValue64(
 			const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,dst,segmentOverride);
 			offset&=addressMask[addressSize>>5];
 
-			uint32_t LOWord=cpputil::GetDword(value.byteData);
-			uint32_t HIWord=cpputil::GetDword(value.byteData+4);
-			StoreDword(mem,addressSize,seg,offset,  LOWord);
-			StoreDword(mem,addressSize,seg,offset+4,HIWord);
+			StoreDword(mem,addressSize,seg,offset,  cpputil::GetDword(value.byteData));
+			StoreDword(mem,addressSize,seg,offset+4,cpputil::GetDword(value.byteData+4));
+		}
+		break;
+	}
+}
+
+void i486DX::StoreOperandValue80(
+    const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value)
+{
+	static const unsigned int addressMask[2]=
+	{
+		0x0000FFFF,
+		0xFFFFFFFF,
+	};
+
+	switch(dst.operandType)
+	{
+	default:
+		Abort("Tried to store 64-bit value to a non-address operand.");
+		break;
+	case OPER_ADDR:
+		{
+			unsigned int offset;
+			const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,dst,segmentOverride);
+			offset&=addressMask[addressSize>>5];
+
+			StoreDword(mem,addressSize,seg,offset,  cpputil::GetDword(value.byteData));
+			StoreDword(mem,addressSize,seg,offset+4,cpputil::GetDword(value.byteData+4));
+			StoreWord(mem,addressSize,seg,offset+8,cpputil::GetWord(value.byteData+8));
 		}
 		break;
 	}

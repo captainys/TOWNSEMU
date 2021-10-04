@@ -14,8 +14,85 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 << LICENSE */
 #include "i486.h"
 #include <math.h>
+#include <stdint.h>
 
 
+
+/* static */ void i486DX::FPUState::DoubleTo80Bit(OperandValueBase &value80,double src)
+{
+	// Reference  https://en.wikipedia.org/wiki/Double-precision_floating-point_format
+
+	// Assume sizeof(double) is 8-byte long.
+	uint64_t binary=*((uint64_t *)&src);
+	uint16_t exponent=((binary>>52)&2047);   // 1023=2^0
+	uint64_t fraction=(binary&((1<<52)-1));
+	unsigned char signBit=((binary>>51)<<7);
+
+	// In 80-bit format, fraction needs to be expanded to 64-bit
+	// Exponent 16383 is 2^0.
+	exponent=exponent+16383-1023;
+	fraction<<=11;
+	fraction|=(1<<63);  // Integer bit.
+
+	// It doesn't handle positive/negative infinity and NaN yet.
+
+#ifdef YS_LITTLE_ENDIAN
+	*((uint16_t *)(value80.byteData+8))=exponent;
+	*((uint64_t *)value80.byteData)=fraction;
+	value80.byteData[9]|=signBit;
+#else
+	value80.byteData[0]=( fraction     &255);
+	value80.byteData[1]=((fraction>> 8)&255);
+	value80.byteData[2]=((fraction>>16)&255);
+	value80.byteData[3]=((fraction>>24)&255);
+	value80.byteData[4]=((fraction>>32)&255);
+	value80.byteData[5]=((fraction>>40)&255);
+	value80.byteData[6]=((fraction>>48)&255);
+	value80.byteData[7]=((fraction>>56)&255);
+	value80.byteData[8]=(exponent&255);
+	value80.byteData[9]=(((exponent>>8)&255)|signBit);
+#endif
+}
+/* static */ double i486DX::FPUState::DoubleFrom80Bit(const OperandValueBase &value80)
+{
+	uint16_t exponent;
+	uint64_t fraction;
+	uint16_t signBit;
+
+	signBit=(value80.byteData[9]&0x80);
+
+#ifdef YS_LITTLE_ENDIAN
+	exponent=*((uint16_t *)(value80.byteData+8));
+	fraction=*((uint64_t *)value80.byteData);
+#else
+	fraction=
+		 (uint64_t)value80.byteData[0]     |
+		((uint64_t)value80.byteData[1]<< 8)|
+		((uint64_t)value80.byteData[2]<<16)|
+		((uint64_t)value80.byteData[3]<<24)|
+		((uint64_t)value80.byteData[4]<<32)|
+		((uint64_t)value80.byteData[5]<<40)|
+		((uint64_t)value80.byteData[6]<<48)|
+		((uint64_t)value80.byteData[7]<<56);
+	exponent=value80.byteData[8]|(value80.byteData[9]<<8);
+#endif
+
+	fraction>>=11;
+	fraction&=((1<<52)-1);
+	exponent=exponent+1023-16383;
+
+	// Assume the endiannness for integers is same as floating points.
+	double d;
+	uint64_t *i=(uint64_t *)&d;
+
+	*i=fraction|(exponent<<52);
+	if(0!=signBit)
+	{
+		*i|=(1<<63);
+	}
+
+	return d;
+}
 
 i486DX::FPUState::FPUState()
 {

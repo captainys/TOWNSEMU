@@ -5666,6 +5666,27 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		else
 		{
+			switch(Instruction::GetREG(inst.operand[0]))
+			{
+			case 3: // FISTP m32int
+			case 0:
+			case 1:
+			case 2:
+			case 4:
+			case 5:
+			case 6:
+			default:
+				break;
+			case 7: // FSTP m80real
+				{
+					OperandValue value;
+					i486DX::FPUState::DoubleTo80Bit(value,state.fpuState.ST(*this).value);
+					state.fpuState.Pop();
+					StoreOperandValue80(op1,mem,inst.addressSize,inst.segOverride,value);
+					clocksPassed=6;
+				}
+				break;
+			}
 		}
 		break;
 	case I486_RENUMBER_FPU_DC_FADD:
