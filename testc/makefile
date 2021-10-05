@@ -371,3 +371,12 @@ build\vndrvpri.exp : build\vndrvpri.obj  build\vndrvtst.obj
 
 build\vndrvdir.exp : build\vndrvdir.obj  build\vndrvtst.obj
 	386link build\vndrvdir.obj build\vndrvtst.obj @LIBS.LN
+
+
+
+build\fpu_comp.obj : fpu_comp.c
+	hcd386 fpu_comp.c -obj build\fpu_comp.obj
+
+build\fpu_comp.exp : build\fpu_comp.obj  build\vndrvtst.obj
+	386link build\fpu_comp.obj -exe build\fpu_comp.exp @LIBSFPU.LN
+
