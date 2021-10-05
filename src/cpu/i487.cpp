@@ -307,6 +307,8 @@ unsigned int i486DX::FPUState::FADD64(i486DX &cpu,const unsigned char byteData[]
 {
 	if(true==enabled)
 	{
+		statusWord&=~STATUS_C1;
+
 		// Hope this CPU uses IEEE format.
 		const double *dataPtr=(const double *)byteData;
 		if(0<stackPtr)
@@ -325,6 +327,8 @@ unsigned int i486DX::FPUState::FADDP_STi_ST(i486DX &cpu,int i)
 {
 	if(true==enabled)
 	{
+		statusWord&=~STATUS_C1;
+
 		if(i<stackPtr)
 		{
 			auto &ST=this->ST(cpu);
@@ -373,6 +377,8 @@ unsigned int i486DX::FPUState::FDIV(i486DX &cpu)
 {
 	if(true==enabled)
 	{
+		statusWord&=~STATUS_C1;
+
 		if(2<=stackPtr)
 		{
 			auto &ST=this->ST(cpu);
@@ -392,6 +398,8 @@ unsigned int i486DX::FPUState::FDIVRP_STi_ST(i486DX &cpu,int i)
 {
 	if(true==enabled)
 	{
+		statusWord&=~STATUS_C1;
+
 		if(i<stackPtr)
 		{
 			auto &ST=this->ST(cpu);
@@ -493,6 +501,8 @@ unsigned int i486DX::FPUState::FMUL(i486DX &cpu)
 {
 	if(true==enabled)
 	{
+		statusWord&=~STATUS_C1;
+
 		if(1<=stackPtr)
 		{
 			auto &ST=this->ST(cpu);
