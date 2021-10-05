@@ -25,7 +25,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	// Assume sizeof(double) is 8-byte long.
 	uint64_t binary=*((uint64_t *)&src);
 	uint16_t exponent=((binary>>52)&2047);   // 1023=2^0
-	uint64_t fraction=(binary&((1<<52)-1));
+	uint64_t fraction=(binary&((1LL<<52)-1));
 	unsigned char signBit=((binary>>63)<<7);
 
 	// In 80-bit format, fraction needs to be expanded to 64-bit
@@ -215,6 +215,7 @@ void i486DX::FPUState::GetSTAs80BitBCD(class i486DX &cpu,OperandValueBase &value
 	{
 		double src=ST(cpu).value;
 		value.numBytes=10;
+
 		if(src<0.0)
 		{
 			src=-src;
