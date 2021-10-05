@@ -468,6 +468,7 @@ public:
 		unsigned int FCHS(i486DX &cpu);
 		unsigned int FCOMPP(i486DX &cpu);
 		unsigned int FDIV(i486DX &cpu);
+		unsigned int FDIVRP_STi_ST(i486DX &cpu,int i);
 		unsigned int FLD32(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FLD64(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FLD80(i486DX &cpu,const unsigned char byteData[]);

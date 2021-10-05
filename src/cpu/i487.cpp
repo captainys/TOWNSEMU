@@ -373,6 +373,25 @@ unsigned int i486DX::FPUState::FDIV(i486DX &cpu)
 	}
 	return 0; // Let it abort.
 }
+unsigned int i486DX::FPUState::FDIVRP_STi_ST(i486DX &cpu,int i)
+{
+	if(true==enabled)
+	{
+		if(i<stackPtr)
+		{
+			auto &ST=this->ST(cpu);
+			auto &STi=this->ST(cpu,i);
+			if(0.0==ST.value)
+			{
+				// Zero division.
+			}
+			STi.value=STi.value/ST.value; // Let it be a NaN if ST1.value is zero.
+			Pop();
+		}
+		return 70;
+	}
+	return 0; // Let it abort.
+}
 unsigned int i486DX::FPUState::FLD32(i486DX &cpu,const unsigned char byteData[])
 {
 	if(true==enabled)
@@ -380,7 +399,7 @@ unsigned int i486DX::FPUState::FLD32(i486DX &cpu,const unsigned char byteData[])
 		float f;
 		uint32_t *i=(uint32_t *)&f;
 		// Assuming same endiannness for int and float.
-		*i=byteData[0]|(byteData[1]<<8)|(byteData[1]<<16)|(byteData[1]<<24);
+		*i=byteData[0]|(byteData[1]<<8)|(byteData[2]<<16)|(byteData[3]<<24);
 		Push((double)f);
 		return 3;
 	}
