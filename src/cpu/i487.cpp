@@ -26,13 +26,13 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	uint64_t binary=*((uint64_t *)&src);
 	uint16_t exponent=((binary>>52)&2047);   // 1023=2^0
 	uint64_t fraction=(binary&((1<<52)-1));
-	unsigned char signBit=((binary>>51)<<7);
+	unsigned char signBit=((binary>>63)<<7);
 
 	// In 80-bit format, fraction needs to be expanded to 64-bit
 	// Exponent 16383 is 2^0.
 	exponent=exponent+16383-1023;
 	fraction<<=11;
-	fraction|=(1<<63);  // Integer bit.
+	fraction|=(1LL<<63);  // Integer bit.
 
 	// It doesn't handle positive/negative infinity and NaN yet.
 
@@ -83,7 +83,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #endif
 
 	fraction>>=11;
-	fraction&=((1<<52)-1);
+	fraction&=((1LL<<52)-1);
 	exponent=exponent+1023-16383;
 
 	// Assume the endiannness for integers is same as floating points.

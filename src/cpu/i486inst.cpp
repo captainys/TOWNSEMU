@@ -22,6 +22,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 
 // #define VERIFY_MEMORY_WINDOW
+// #define BREAK_ON_FPU_INST
 
 
 /*static*/ unsigned short i486DX::opCodeRenumberTable[I486_OPCODE_MAX+1];
@@ -5646,6 +5647,13 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		clocksPassed=3;
 		break;
 	case I486_RENUMBER_FPU_D9_FNSTCW_M16_FNSTENV_F2XM1_FXAM_FXCH_FXTRACT_FYL2X_FYL2XP1_FABS_:// 0xD9,
+		#ifdef BREAK_ON_FPU_INST
+			if(nullptr!=debuggerPtr)
+			{
+				debuggerPtr->ExternalBreak("FPU Inst");
+			}
+		#endif
+
 		if(0xF0<=inst.operand[0] && inst.operand[0]<=0xFF)
 		{
 		}
@@ -5702,6 +5710,13 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		break;
 	case I486_RENUMBER_FPU_DB_FNINIT_FRSTOR://     0xDB, 
+		#ifdef BREAK_ON_FPU_INST
+			if(nullptr!=debuggerPtr)
+			{
+				debuggerPtr->ExternalBreak("FPU Inst");
+			}
+		#endif
+
 		if(0xE3==inst.operand[0])
 		{
 			state.fpuState.FNINIT();
@@ -5739,6 +5754,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 	case I486_RENUMBER_FPU_DC_FADD:
 		{
+		#ifdef BREAK_ON_FPU_INST
+			if(nullptr!=debuggerPtr)
+			{
+				debuggerPtr->ExternalBreak("FPU Inst");
+			}
+		#endif
 			unsigned int MODR_M=inst.operand[0];
 			{
 				switch(Instruction::GetREG(MODR_M))
@@ -5771,6 +5792,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 	case I486_RENUMBER_FPU_DD_FLD_FSAVE_FST_FNSTSW_M16_FFREE_FUCOM:
 		{
+		#ifdef BREAK_ON_FPU_INST
+			if(nullptr!=debuggerPtr)
+			{
+				debuggerPtr->ExternalBreak("FPU Inst");
+			}
+		#endif
 			unsigned int MODR_M=inst.operand[0];
 			if(0xD0==(MODR_M&0xF8)) // D0 11010xxx    [1] pp.151  0<=i<=7
 			{
@@ -5823,6 +5850,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		break;
 	case I486_RENUMBER_FPU_DE:
+		#ifdef BREAK_ON_FPU_INST
+			if(nullptr!=debuggerPtr)
+			{
+				debuggerPtr->ExternalBreak("FPU Inst");
+			}
+		#endif
 		if(0xC9==inst.operand[0])
 		{
 			clocksPassed=state.fpuState.FMUL(*this);
@@ -5837,6 +5870,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		break;
 	case I486_RENUMBER_FPU_DF_FNSTSW_AX://  0xDF,
+		#ifdef BREAK_ON_FPU_INST
+			if(nullptr!=debuggerPtr)
+			{
+				debuggerPtr->ExternalBreak("FPU Inst");
+			}
+		#endif
 		if(0xE0==inst.operand[0])
 		{
 			SetAX(state.fpuState.GetStatusWord());
