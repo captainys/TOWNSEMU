@@ -90,10 +90,12 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	double d;
 	uint64_t *i=(uint64_t *)&d;
 
-	*i=fraction|(exponent<<52);
+	*i=exponent;
+	*i<<=52;
+	*i|=fraction;
 	if(0!=signBit)
 	{
-		*i|=(1<<63);
+		*i|=(1LL<<63);
 	}
 
 	return d;
