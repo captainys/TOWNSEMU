@@ -101,6 +101,30 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	return d;
 }
 
+/* static */ double i486DX::FPUState::DoubleFrom64Bit(const unsigned char byteData[])
+{
+	double d;
+
+#ifdef YS_LITTLE_ENDIAN
+	const double *dPtr=(const double *)byteData;
+	d=*dPtr;
+#else
+	// Assume double and int are in the same byte order.
+	uint64_t *i=(uint64_t *)&d;
+	*i=	 (uint64_t)byteData[0]     |
+		((uint64_t)byteData[1]<< 8)|
+		((uint64_t)byteData[2]<<16)|
+		((uint64_t)byteData[3]<<24)|
+		((uint64_t)byteData[4]<<32)|
+		((uint64_t)byteData[5]<<40)|
+		((uint64_t)byteData[6]<<48)|
+		((uint64_t)byteData[7]<<56);
+#endif
+
+	return d;
+}
+
+
 i486DX::FPUState::FPUState()
 {
 	enabled=false; // Tentative.
@@ -347,6 +371,23 @@ unsigned int i486DX::FPUState::FCHS(i486DX &cpu)
 		if(0<stackPtr)
 		{
 			stack[stackPtr-1].value=-stack[stackPtr-1].value;
+			return 4;
+		}
+		else
+		{
+			// Raise NM exception.
+		}
+	}
+	return 0; // Let it abort.
+}
+unsigned int i486DX::FPUState::FCOMP_m64real(i486DX &cpu,const unsigned char byteData[])
+{
+	if(true==enabled)
+	{
+		if(1<=stackPtr)
+		{
+			Compare(ST(cpu).value,DoubleFrom64Bit(byteData));
+			--stackPtr;
 			return 4;
 		}
 		else

@@ -1093,6 +1093,22 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 
 	case I486_RENUMBER_FWAIT://      0x9B,
 		break;
+	case I486_RENUMBER_FPU_D8_FADD: // 0xD8
+		{
+			unsigned int MODR_M;
+			FUNCCLASS::PeekOperand8(cpu,MODR_M,inst,ptr,seg,offset,mem);
+			if(0xD1==MODR_M || // FCOM
+			   0xD9==MODR_M)   // FCOMP
+			{
+				FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset,mem);
+			}
+			else
+			{
+				FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
+				op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
+			}
+		}
+		break;
 	case I486_RENUMBER_FPU_D9_FNSTCW_M16_FNSTENV_F2XM1_FXAM_FXCH_FXTRACT_FYL2X_FYL2XP1_FABS_:// 0xD9,
 		{
 			unsigned int MODR_M;
@@ -1152,6 +1168,7 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 				switch(Instruction::GetREG(MODR_M))
 				{
 				case 0: // FADD m64real
+				case 3: // FCOMP m64real
 					FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 					op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 					break;
@@ -2201,6 +2218,30 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 	case I486_OPCODE_FWAIT://      0x9B,
 		disasm="FWAIT";
 		break;
+
+	case I486_OPCODE_FPU_D8_FADD: // 0xD8,
+		{
+			auto MODR_M=operand[0];
+			if(0xD1==MODR_M || // FCOM
+			   0xD9==MODR_M)   // FCOMP
+			{
+				disasm="?FPUINST"+cpputil::Ubtox(opCode)+" "+cpputil::Ubtox(operand[0]);
+			}
+			else
+			{
+				switch(GetREG())
+				{
+				case 3:
+					disasm=DisassembleTypicalOneOperand("FCOMP(m32real)  ",op1,operandSize);
+					break;
+				default:
+					disasm="?FPUINST"+cpputil::Ubtox(opCode)+" "+cpputil::Ubtox(operand[0])+" REG="+cpputil::Ubtox(GetREG());
+					break;
+				}
+			}
+		}
+		break;
+
 	case I486_OPCODE_FPU_D9_FNSTCW_M16_FNSTENV_F2XM1_FXAM_FXCH_FXTRACT_FYL2X_FYL2XP1_FABS_:// 0xD9,
 		if(0xF0<=operand[0] && operand[0]<=0xFF)
 		{
@@ -2294,7 +2335,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 				switch(Instruction::GetREG(MODR_M))
 				{
 				case 0:	// FADD m64real
-					disasm=DisassembleTypicalOneOperand("FADD(m64real)",op1,operandSize);
+					disasm=DisassembleTypicalOneOperand("FADD(m64real)  ",op1,operandSize);
 					break;
 				case 1:
 					disasm="?FPUINST REG=1";
@@ -2303,7 +2344,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 					disasm="?FPUINST REG=2";
 					break;
 				case 3: //
-					disasm="?FPUINST REG=3";
+					disasm=DisassembleTypicalOneOperand("FCOMP(m64real)  ",op1,operandSize);
 					break;
 				case 4:
 					disasm="?FPUINST REG=4";
@@ -5663,6 +5704,16 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		clocksPassed=3;
 		break;
+
+	case I486_RENUMBER_FPU_D8_FADD: // 0xD8
+		#ifdef BREAK_ON_FPU_INST
+			if(nullptr!=debuggerPtr)
+			{
+				debuggerPtr->ExternalBreak("FPU Inst");
+			}
+		#endif
+		break;
+
 	case I486_RENUMBER_FPU_D9_FNSTCW_M16_FNSTENV_F2XM1_FXAM_FXCH_FXTRACT_FYL2X_FYL2XP1_FABS_:// 0xD9,
 		#ifdef BREAK_ON_FPU_INST
 			if(nullptr!=debuggerPtr)
@@ -5791,7 +5842,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					break;
 				case 2: //
 					break;
-				case 3: //
+				case 3: // FCOMP m64real
+					{
+						auto value=EvaluateOperand64(mem,inst.addressSize,inst.segOverride,op1);
+						clocksPassed=state.fpuState.FCOMP_m64real(*this,value.byteData);
+					}
 					break;
 				case 4:
 					break;
