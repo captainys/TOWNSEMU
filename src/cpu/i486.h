@@ -465,6 +465,7 @@ public:
 
 		// Returns clocks passed.
 		unsigned int FADD64(i486DX &cpu,const unsigned char byteData[]);
+		unsigned int FADDP_STi_ST(i486DX &cpu,int i);
 		unsigned int FCHS(i486DX &cpu);
 		unsigned int FCOMPP(i486DX &cpu);
 		unsigned int FDIV(i486DX &cpu);

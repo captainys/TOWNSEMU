@@ -321,6 +321,21 @@ unsigned int i486DX::FPUState::FADD64(i486DX &cpu,const unsigned char byteData[]
 	}
 	return 0;
 }
+unsigned int i486DX::FPUState::FADDP_STi_ST(i486DX &cpu,int i)
+{
+	if(true==enabled)
+	{
+		if(i<stackPtr)
+		{
+			auto &ST=this->ST(cpu);
+			auto &STi=this->ST(cpu,i);
+			STi.value+=STi.value;
+			Pop();
+		}
+		return 10;
+	}
+	return 0; // Let it abort.
+}
 unsigned int i486DX::FPUState::FCHS(i486DX &cpu)
 {
 	if(true==enabled)
