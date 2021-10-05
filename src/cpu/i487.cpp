@@ -209,6 +209,35 @@ void i486DX::FPUState::GetSTAsSignedInt(class i486DX &cpu,class OperandValueBase
 		// Raise NM fault.
 	}
 }
+void i486DX::FPUState::GetSTAs80BitBCD(class i486DX &cpu,OperandValueBase &value)
+{
+	if(0<stackPtr)
+	{
+		double src=ST(cpu).value;
+		value.numBytes=10;
+		if(src<0.0)
+		{
+			src=-src;
+			value.byteData[9]=0x80;
+		}
+		else
+		{
+			value.byteData[9]=0x00;
+		}
+		uint64_t srcI=src;
+		for(int i=0; i<9; ++i)
+		{
+			value.byteData[i]=srcI%10;
+			srcI/=10;
+			value.byteData[i]|=((srcI%10)<<4);
+			srcI/=10;
+		}
+	}
+	else
+	{
+		// Raise NM fault.
+	}
+}
 bool i486DX::FPUState::Push(double value)
 {
 	if(stackPtr<STACK_LEN)
@@ -420,6 +449,76 @@ unsigned int i486DX::FPUState::FLDZ(i486DX &cpu)
 	{
 		Push(0.0);
 		return 4;
+	}
+	return 0;
+}
+unsigned int i486DX::FPUState::FMUL(i486DX &cpu)
+{
+	if(true==enabled)
+	{
+		if(1<=stackPtr)
+		{
+			auto &ST=this->ST(cpu);
+			auto &ST1=this->ST(cpu,1);
+			ST1.value=ST.value*ST1.value;
+			Pop();
+		}
+		return 70;
+	}
+	return 0; // Let it abort.
+}
+unsigned int i486DX::FPUState::FSTP_STi(i486DX &cpu,int i)
+{
+	if(true==enabled)
+	{
+		if(0<stackPtr)
+		{
+			auto &st=ST(cpu);
+			auto &sti=ST(cpu,i);
+			sti=st;
+			Pop();
+		}
+		else
+		{
+			// Raise NM exception
+		}
+		return 3;
+	}
+	return 0;
+}
+unsigned int i486DX::FPUState::FXAM(i486DX &cpu)
+{
+	if(true==enabled)
+	{
+		statusWord&=~(STATUS_C0|STATUS_C1|STATUS_C2|STATUS_C3);
+		if(0==stackPtr)
+		{
+			// Empty      C3,C2,C0=100
+			statusWord|=(STATUS_C3|STATUS_C0);
+		}
+		else
+		{
+			auto &st=ST(cpu);
+			if(isnan(st.value))
+			{
+				// Nan C3,C2,C0=001
+				statusWord|=STATUS_C0;
+			}
+			// Unsupported C3,C2,C0=000
+			// Infinity    C3,C2,C0=011
+			// Denormal    C3,C2,C0=110
+			else if(0==st.value)
+			{
+				// Zero        C3,C2,C0=100
+				statusWord|=STATUS_C3;
+			}
+			else
+			{
+				// Normal      C3,C2,C0=010
+				statusWord|=STATUS_C2;
+			}
+		}
+		return 8;
 	}
 	return 0;
 }

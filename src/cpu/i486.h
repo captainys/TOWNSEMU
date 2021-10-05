@@ -387,6 +387,7 @@ public:
 
 		void GetSTAsDouble(class i486DX &cpu,OperandValueBase &value);
 		void GetSTAsSignedInt(class i486DX &cpu,OperandValueBase &value);
+		void GetSTAs80BitBCD(class i486DX &cpu,OperandValueBase &value);
 
 
 		static void DoubleTo80Bit(OperandValueBase &value80,double src);
@@ -475,6 +476,9 @@ public:
 		unsigned int FLD1(i486DX &cpu);
 		unsigned int FLDL2T(i486DX &cpu);
 		unsigned int FLDZ(i486DX &cpu);
+		unsigned int FMUL(i486DX &cpu);
+		unsigned int FSTP_STi(i486DX &cpu,int i);
+		unsigned int FXAM(i486DX &cpu);
 	};
 
 	class InterruptDescriptor : public FarPointer
