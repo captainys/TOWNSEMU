@@ -398,7 +398,7 @@ public:
 
 		static double DoubleFrom32Bit(const unsigned char byteData[]);
 
-		bool Push(double value);
+		bool Push(class i486DX &cpu,double value);
 		void Pop(class i486DX &cpu);
 		void Pop(class i486DX &cpu,int level);
 		unsigned int NumFilled(void) const;

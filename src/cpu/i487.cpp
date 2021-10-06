@@ -284,7 +284,7 @@ void i486DX::FPUState::GetSTAs80BitBCD(class i486DX &cpu,OperandValueBase &value
 		// Raise NM fault.
 	}
 }
-bool i486DX::FPUState::Push(double value)
+bool i486DX::FPUState::Push(class i486DX &cpu,double value)
 {
 	if(stackPtr<STACK_LEN)
 	{
@@ -507,7 +507,7 @@ unsigned int i486DX::FPUState::FLD32(i486DX &cpu,const unsigned char byteData[])
 		uint32_t *i=(uint32_t *)&f;
 		// Assuming same endiannness for int and float.
 		*i=byteData[0]|(byteData[1]<<8)|(byteData[2]<<16)|(byteData[3]<<24);
-		Push((double)f);
+		Push(cpu,(double)f);
 		return 3;
 	}
 	return 0;
@@ -518,7 +518,7 @@ unsigned int i486DX::FPUState::FLD64(i486DX &cpu,const unsigned char byteData[])
 	{
 		// Hope this CPU uses IEEE format.
 		const double *dataPtr=(const double *)byteData;
-		Push(*dataPtr);
+		Push(cpu,*dataPtr);
 		return 3;
 	}
 	return 0;
@@ -528,7 +528,7 @@ unsigned int i486DX::FPUState::FLD80(i486DX &cpu,const unsigned char byteData[])
 	if(true==enabled)
 	{
 		// Hope this CPU uses IEEE format.
-		Push(DoubleFrom80Bit(byteData));
+		Push(cpu,DoubleFrom80Bit(byteData));
 		return 6;
 	}
 	return 0;
@@ -548,17 +548,17 @@ unsigned int i486DX::FPUState::FLD_ST(i486DX &cpu,int i)
 		if(i<stackPtr)
 		{
 			auto &STi=ST(cpu,i);
-			Push(STi.value);
+			Push(cpu,STi.value);
 		}
 		return 4;
 	}
 	return 0; // Let it abort.
 }
-unsigned int i486DX::FPUState::FLD1(i486DX &cpuState)
+unsigned int i486DX::FPUState::FLD1(i486DX &cpu)
 {
 	if(true==enabled)
 	{
-		Push(1.0);
+		Push(cpu,1.0);
 		return 4;
 	}
 	return 0; // Let it abort.
@@ -567,7 +567,7 @@ unsigned int i486DX::FPUState::FLDL2T(i486DX &cpu)
 {
 	if(true==enabled)
 	{
-		Push(log2(10.0));
+		Push(cpu,log2(10.0));
 		return 8;
 	}
 	return 0; // Let it abort.
@@ -576,7 +576,7 @@ unsigned int i486DX::FPUState::FLDZ(i486DX &cpu)
 {
 	if(true==enabled)
 	{
-		Push(0.0);
+		Push(cpu,0.0);
 		return 4;
 	}
 	return 0;
