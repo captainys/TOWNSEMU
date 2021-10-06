@@ -1169,7 +1169,9 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 				switch(Instruction::GetREG(MODR_M))
 				{
 				case 0: // FADD m64real
+				case 1: // FMUL m64real
 				case 3: // FCOMP m64real
+				case 7: // FDIVR m64real
 					FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 					op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 					break;
@@ -2345,7 +2347,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 					disasm=DisassembleTypicalOneOperand("FADD(m64real)  ",op1,operandSize);
 					break;
 				case 1:
-					disasm="?FPUINST REG=1";
+					disasm=DisassembleTypicalOneOperand("FMUL(m64real)  ",op1,operandSize);
 					break;
 				case 2: //
 					disasm="?FPUINST REG=2";
@@ -2363,7 +2365,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 					disasm="?FPUINST REG=6";
 					break;
 				case 7: //
-					disasm="?FPUINST REG=7";
+					disasm=DisassembleTypicalOneOperand("FDIVR(m64real)  ",op1,operandSize);
 					break;
 				default:
 					disasm="?FPUINST";
@@ -5874,7 +5876,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 						clocksPassed=state.fpuState.FADD64(*this,value.byteData);
 					}
 					break;
-				case 1:
+				case 1: // FMUL m64real
+					{
+						auto value=EvaluateOperand64(mem,inst.addressSize,inst.segOverride,op1);
+						clocksPassed=state.fpuState.FMUL_m64real(*this,value.byteData);
+					}
 					break;
 				case 2: //
 					break;
@@ -5890,7 +5896,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					break;
 				case 6: //
 					break;
-				case 7: //
+				case 7: // FDIVR m64real
+					{
+						auto value=EvaluateOperand64(mem,inst.addressSize,inst.segOverride,op1);
+						clocksPassed=state.fpuState.FDIVR_m64real(*this,value.byteData);
+					}
 					break;
 				default:
 					break;

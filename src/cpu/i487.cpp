@@ -352,11 +352,10 @@ unsigned int i486DX::FPUState::FADD64(i486DX &cpu,const unsigned char byteData[]
 	{
 		statusWord&=~STATUS_C1;
 
-		// Hope this CPU uses IEEE format.
-		const double *dataPtr=(const double *)byteData;
+		auto src=DoubleFrom64Bit(byteData);
 		if(0<stackPtr)
 		{
-			ST(cpu).value+=*dataPtr;
+			ST(cpu).value+=src;
 		}
 		else
 		{
@@ -487,6 +486,30 @@ unsigned int i486DX::FPUState::FDIV(i486DX &cpu)
 	}
 	return 0; // Let it abort.
 }
+unsigned int i486DX::FPUState::FDIVR_m64real(i486DX &cpu,const unsigned char byteData[])
+{
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+
+		auto src=DoubleFrom64Bit(byteData);
+		if(0<stackPtr)
+		{
+			auto &st=ST(cpu);
+			if(0==st.value)
+			{
+				// Zero division
+			}
+			ST(cpu).value=src/ST(cpu).value;
+		}
+		else
+		{
+			// Raise NM exception.
+		}
+		return 73;
+	}
+	return 0;
+}
 unsigned int i486DX::FPUState::FDIVRP_STi_ST(i486DX &cpu,int i)
 {
 	if(true==enabled)
@@ -606,6 +629,26 @@ unsigned int i486DX::FPUState::FMUL(i486DX &cpu)
 		return 70;
 	}
 	return 0; // Let it abort.
+}
+unsigned int i486DX::FPUState::FMUL_m64real(i486DX &cpu,const unsigned char byteData[])
+{
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+
+		auto src=DoubleFrom64Bit(byteData);
+		if(0<stackPtr)
+		{
+			auto &st=ST(cpu);
+			ST(cpu).value*=src;
+		}
+		else
+		{
+			// Raise NM exception.
+		}
+		return 14;
+	}
+	return 0;
 }
 unsigned int i486DX::FPUState::FSTP_STi(i486DX &cpu,int i)
 {
