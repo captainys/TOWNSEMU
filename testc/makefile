@@ -374,6 +374,12 @@ build\vndrvdir.exp : build\vndrvdir.obj  build\vndrvtst.obj
 
 
 
+build\fpu_calc.obj : fpu_calc.c
+	hcd386 fpu_calc.c -obj build\fpu_calc.obj
+
+build\fpu_calc.exp : build\fpu_calc.obj  build\vndrvtst.obj
+	386link build\fpu_calc.obj -exe build\fpu_calc.exp @LIBSFPU.LN
+
 build\fpu_comp.obj : fpu_comp.c
 	hcd386 fpu_comp.c -obj build\fpu_comp.obj
 

@@ -1098,7 +1098,8 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 			unsigned int MODR_M;
 			FUNCCLASS::PeekOperand8(cpu,MODR_M,inst,ptr,seg,offset,mem);
 			if(0xD1==MODR_M || // FCOM
-			   0xD9==MODR_M)   // FCOMP
+			   0xD9==MODR_M || // FCOMP
+			   (0xC0<=MODR_M && MODR_M<=0xC7)) // FADD ST,STi
 			{
 				FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset,mem);
 			}
@@ -2222,8 +2223,14 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 	case I486_OPCODE_FPU_D8_FADD: // 0xD8,
 		{
 			auto MODR_M=operand[0];
-			if(0xD1==MODR_M || // FCOM
-			   0xD9==MODR_M)   // FCOMP
+			if(0xC0<=MODR_M && MODR_M<=0xC7)
+			{
+				disasm="FADD  ST,ST(";
+				disasm.push_back('0'+(operand[0]&7));
+				disasm+=")";
+			}
+			else if(0xD1==MODR_M || // FCOM
+			        0xD9==MODR_M)   // FCOMP
 			{
 				disasm="?FPUINST"+cpputil::Ubtox(opCode)+" "+cpputil::Ubtox(operand[0]);
 			}
@@ -2461,13 +2468,16 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 			switch(Instruction::GetREG(operand[0]))
 			{
 			case 4:
-				disasm=DisassembleTypicalOneOperand("FBLD(m80dec)",op1,operandSize);
+				disasm=DisassembleTypicalOneOperand("FBLD(m80dec)  ",op1,operandSize);
 				break;
 			case 6: // FBSTP m80dec
-				disasm=DisassembleTypicalOneOperand("FBSTP(m80dec)",op1,operandSize);
+				disasm=DisassembleTypicalOneOperand("FBSTP(m80dec)  ",op1,operandSize);
+				break;
+			case 7: // FISTP m64int
+				disasm=DisassembleTypicalOneOperand("FISTP(m64int)  ",op1,operandSize);
 				break;
 			default:
-				disasm="?FPUINST";
+				disasm="?FPUINST REG="+cpputil::Ubtox(Instruction::GetREG(operand[0]));;
 				break;
 			}
 		}
@@ -5714,7 +5724,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		#endif
 		{
 			auto MODR_M=inst.operand[0];
-			if(0xD1==MODR_M)   // FCOM
+			if(0xC0<=MODR_M && MODR_M<=0xC7)
+			{
+				clocksPassed=state.fpuState.FADD_ST_STi(*this,MODR_M&7);
+			}
+			else if(0xD1==MODR_M)   // FCOM
 			{
 			}
 			else if(0xD9==MODR_M)   // FCOMP
@@ -5994,6 +6008,15 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					state.fpuState.Pop();
 					StoreOperandValue80(op1,mem,inst.addressSize,inst.segOverride,value);
 					clocksPassed=175;
+				}
+				break;
+			case 7: // FISTP m64int
+				{
+					OperandValue value;
+					state.fpuState.GetSTAsSignedInt(*this,value);
+					state.fpuState.Pop();
+					StoreOperandValue64(op1,mem,inst.addressSize,inst.segOverride,value);
+					clocksPassed=33;
 				}
 				break;
 			}
