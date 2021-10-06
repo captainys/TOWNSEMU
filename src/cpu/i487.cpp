@@ -500,7 +500,7 @@ unsigned int i486DX::FPUState::FDIVR_m64real(i486DX &cpu,const unsigned char byt
 			{
 				// Zero division
 			}
-			ST(cpu).value=src/ST(cpu).value;
+			st.value=src/st.value;
 		}
 		else
 		{
@@ -639,7 +639,6 @@ unsigned int i486DX::FPUState::FMUL_m64real(i486DX &cpu,const unsigned char byte
 		auto src=DoubleFrom64Bit(byteData);
 		if(0<stackPtr)
 		{
-			auto &st=ST(cpu);
 			ST(cpu).value*=src;
 		}
 		else
@@ -666,6 +665,26 @@ unsigned int i486DX::FPUState::FSTP_STi(i486DX &cpu,int i)
 			// Raise NM exception
 		}
 		return 3;
+	}
+	return 0;
+}
+unsigned int i486DX::FPUState::FSUBR_m64real(i486DX &cpu,const unsigned char byteData[])
+{
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+
+		auto src=DoubleFrom64Bit(byteData);
+		if(0<stackPtr)
+		{
+			auto &st=ST(cpu);
+			st.value=src-st.value;
+		}
+		else
+		{
+			// Raise NM exception.
+		}
+		return 14;
 	}
 	return 0;
 }

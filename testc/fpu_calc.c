@@ -32,6 +32,37 @@ int main(void)
 	}
 
 
+
+	a=10.01;
+	b=5.0;
+	c=a-b;
+	i=(int)c;
+	if(i==5)
+	{
+		printf("Correct Subtraction.\n");
+	}
+	else
+	{
+		e=1;
+		printf("Error in subtraction.\n");
+	}
+
+	a=-10.01;
+	b=-5.0;
+	c=a-b;
+	i=(int)c;
+	if(i==-5)
+	{
+		printf("Correct Subtraction.\n");
+	}
+	else
+	{
+		e=1;
+		printf("Error in subtraction.\n");
+	}
+
+
+
 	a=100.001;
 	b=10.0;
 	i=(int)(a/b);
