@@ -124,6 +124,25 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	return d;
 }
 
+/* static */ double i486DX::FPUState::DoubleFrom32Bit(const unsigned char byteData[])
+{
+	float f;
+
+#ifdef YS_LITTLE_ENDIAN
+	const float *fPtr=(const float *)byteData;
+	f=*fPtr;
+#else
+	// Assume float and int are in the same byte order.
+	uint32_t *i=(uint32_t *)&f;
+	*i=	 (uint64_t)byteData[0]     |
+		((uint64_t)byteData[1]<< 8)|
+		((uint64_t)byteData[2]<<16)|
+		((uint64_t)byteData[3]<<24);
+#endif
+
+	return (double)f;
+}
+
 
 i486DX::FPUState::FPUState()
 {
@@ -371,6 +390,23 @@ unsigned int i486DX::FPUState::FCHS(i486DX &cpu)
 		if(0<stackPtr)
 		{
 			stack[stackPtr-1].value=-stack[stackPtr-1].value;
+			return 4;
+		}
+		else
+		{
+			// Raise NM exception.
+		}
+	}
+	return 0; // Let it abort.
+}
+unsigned int i486DX::FPUState::FCOMP_m32real(i486DX &cpu,const unsigned char byteData[])
+{
+	if(true==enabled)
+	{
+		if(1<=stackPtr)
+		{
+			Compare(ST(cpu).value,DoubleFrom32Bit(byteData));
+			--stackPtr;
 			return 4;
 		}
 		else

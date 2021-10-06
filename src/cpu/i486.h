@@ -394,8 +394,9 @@ public:
 		static double DoubleFrom80Bit(const OperandValueBase &value80);
 		static double DoubleFrom80Bit(const unsigned char value80[]);
 
-		static double DoubleFrom64Bit(const unsigned char value64[]);
+		static double DoubleFrom64Bit(const unsigned char byteData[]);
 
+		static double DoubleFrom32Bit(const unsigned char byteData[]);
 
 		bool Push(double value);
 		Stack Pop(void);
@@ -470,6 +471,7 @@ public:
 		unsigned int FADDP_STi_ST(i486DX &cpu,int i);
 		unsigned int FCHS(i486DX &cpu);
 		unsigned int FCOMPP(i486DX &cpu);
+		unsigned int FCOMP_m32real(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FCOMP_m64real(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FDIV(i486DX &cpu);
 		unsigned int FDIVRP_STi_ST(i486DX &cpu,int i);

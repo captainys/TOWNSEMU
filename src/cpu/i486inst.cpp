@@ -5712,6 +5712,28 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				debuggerPtr->ExternalBreak("FPU Inst");
 			}
 		#endif
+		{
+			auto MODR_M=inst.operand[0];
+			if(0xD1==MODR_M)   // FCOM
+			{
+			}
+			else if(0xD9==MODR_M)   // FCOMP
+			{
+			}
+			else
+			{
+				switch(inst.GetREG())
+				{
+				case 3:
+					// FCOMP(m32real)
+					{
+						auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,4);
+						clocksPassed=state.fpuState.FCOMP_m32real(*this,value.byteData);
+					}
+					break;
+				}
+			}
+		}
 		break;
 
 	case I486_RENUMBER_FPU_D9_FNSTCW_M16_FNSTENV_F2XM1_FXAM_FXCH_FXTRACT_FYL2X_FYL2XP1_FABS_:// 0xD9,
