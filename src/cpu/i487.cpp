@@ -295,15 +295,32 @@ bool i486DX::FPUState::Push(double value)
 	}
 	return false; // Should shoot an exception for this.
 }
-i486DX::FPUState::Stack i486DX::FPUState::Pop(void)
+void i486DX::FPUState::Pop(i486DX &cpu)
 {
 	if(0<stackPtr)
 	{
-		auto ret=stack[stackPtr-1];
 		--stackPtr;
-		return ret;
 	}
-	return stack[0]; // Should shoot an exception for this.
+	else
+	{
+		// Raise NM exception
+	}
+}
+void i486DX::FPUState::Pop(class i486DX &cpu,int level)
+{
+	if(level<=stackPtr)
+	{
+		stackPtr-=level;
+	}
+	else
+	{
+		// Raise NM exception
+		// Should I make stack pointer to zero?
+	}
+}
+unsigned int i486DX::FPUState::NumFilled(void) const
+{
+	return stackPtr;
 }
 
 std::vector <std::string> i486DX::FPUState::GetStateText(void) const
@@ -353,14 +370,7 @@ unsigned int i486DX::FPUState::FADD64(i486DX &cpu,const unsigned char byteData[]
 		statusWord&=~STATUS_C1;
 
 		auto src=DoubleFrom64Bit(byteData);
-		if(0<stackPtr)
-		{
-			ST(cpu).value+=src;
-		}
-		else
-		{
-			// Raise NM exception.
-		}
+		ST(cpu).value+=src;
 		return 3;
 	}
 	return 0;
@@ -371,12 +381,9 @@ unsigned int i486DX::FPUState::FADD_ST_STi(i486DX &cpu,int i)
 	{
 		statusWord&=~STATUS_C1;
 
-		if(i<stackPtr)
-		{
-			auto &ST=this->ST(cpu);
-			auto &STi=this->ST(cpu,i);
-			ST.value+=STi.value;
-		}
+		auto &ST=this->ST(cpu);
+		auto &STi=this->ST(cpu,i);
+		ST.value+=STi.value;
 		return 10;
 	}
 	return 0; // Let it abort.
@@ -387,13 +394,11 @@ unsigned int i486DX::FPUState::FADDP_STi_ST(i486DX &cpu,int i)
 	{
 		statusWord&=~STATUS_C1;
 
-		if(i<stackPtr)
-		{
-			auto &ST=this->ST(cpu);
-			auto &STi=this->ST(cpu,i);
-			STi.value+=ST.value;
-			Pop();
-		}
+		auto &ST=this->ST(cpu);
+		auto &STi=this->ST(cpu,i);
+		STi.value+=ST.value;
+		Pop(cpu);
+
 		return 10;
 	}
 	return 0; // Let it abort.
@@ -402,15 +407,9 @@ unsigned int i486DX::FPUState::FCHS(i486DX &cpu)
 {
 	if(true==enabled)
 	{
-		if(0<stackPtr)
-		{
-			stack[stackPtr-1].value=-stack[stackPtr-1].value;
-			return 4;
-		}
-		else
-		{
-			// Raise NM exception.
-		}
+		auto &st=ST(cpu);
+		st.value=-st.value;
+		return 4;
 	}
 	return 0; // Let it abort.
 }
@@ -418,16 +417,9 @@ unsigned int i486DX::FPUState::FCOMP_m32real(i486DX &cpu,const unsigned char byt
 {
 	if(true==enabled)
 	{
-		if(1<=stackPtr)
-		{
-			Compare(ST(cpu).value,DoubleFrom32Bit(byteData));
-			--stackPtr;
-			return 4;
-		}
-		else
-		{
-			// Raise NM exception.
-		}
+		Compare(ST(cpu).value,DoubleFrom32Bit(byteData));
+		Pop(cpu);
+		return 4;
 	}
 	return 0; // Let it abort.
 }
@@ -435,16 +427,9 @@ unsigned int i486DX::FPUState::FCOMP_m64real(i486DX &cpu,const unsigned char byt
 {
 	if(true==enabled)
 	{
-		if(1<=stackPtr)
-		{
-			Compare(ST(cpu).value,DoubleFrom64Bit(byteData));
-			--stackPtr;
-			return 4;
-		}
-		else
-		{
-			// Raise NM exception.
-		}
+		Compare(ST(cpu).value,DoubleFrom64Bit(byteData));
+		Pop(cpu);
+		return 4;
 	}
 	return 0; // Let it abort.
 }
@@ -452,16 +437,9 @@ unsigned int i486DX::FPUState::FCOMPP(i486DX &cpu)
 {
 	if(true==enabled)
 	{
-		if(2<=stackPtr)
-		{
-			Compare(ST(cpu).value,ST(cpu,1).value);
-			stackPtr-=2;
-			return 5;
-		}
-		else
-		{
-			// Raise NM exception.
-		}
+		Compare(ST(cpu).value,ST(cpu,1).value);
+		Pop(cpu,2);
+		return 5;
 	}
 	return 0; // Let it abort.
 }
@@ -471,17 +449,15 @@ unsigned int i486DX::FPUState::FDIVP_STi_ST(i486DX &cpu,int i)
 	{
 		statusWord&=~STATUS_C1;
 
-		if(2<=stackPtr)
+		auto &ST=this->ST(cpu);
+		auto &STi=this->ST(cpu,i);
+		if(0.0==STi.value)
 		{
-			auto &ST=this->ST(cpu);
-			auto &STi=this->ST(cpu,i);
-			if(0.0==STi.value)
-			{
-				// Zero division.
-			}
-			STi.value=STi.value/ST.value; // Let it be a NaN if ST1.value is zero.
-			Pop();
+			// Zero division.
 		}
+		STi.value=STi.value/ST.value; // Let it be a NaN if ST1.value is zero.
+		Pop(cpu);
+
 		return 70;
 	}
 	return 0; // Let it abort.
@@ -493,19 +469,13 @@ unsigned int i486DX::FPUState::FDIVR_m64real(i486DX &cpu,const unsigned char byt
 		statusWord&=~STATUS_C1;
 
 		auto src=DoubleFrom64Bit(byteData);
-		if(0<stackPtr)
+		auto &st=ST(cpu);
+		if(0==st.value)
 		{
-			auto &st=ST(cpu);
-			if(0==st.value)
-			{
-				// Zero division
-			}
-			st.value=src/st.value;
+			// Zero division
 		}
-		else
-		{
-			// Raise NM exception.
-		}
+		st.value=src/st.value;
+
 		return 73;
 	}
 	return 0;
@@ -516,17 +486,15 @@ unsigned int i486DX::FPUState::FDIVRP_STi_ST(i486DX &cpu,int i)
 	{
 		statusWord&=~STATUS_C1;
 
-		if(i<stackPtr)
+		auto &ST=this->ST(cpu);
+		auto &STi=this->ST(cpu,i);
+		if(0.0==ST.value)
 		{
-			auto &ST=this->ST(cpu);
-			auto &STi=this->ST(cpu,i);
-			if(0.0==ST.value)
-			{
-				// Zero division.
-			}
-			STi.value=ST.value/STi.value; // Let it be a NaN if ST1.value is zero.
-			Pop();
+			// Zero division.
 		}
+		STi.value=ST.value/STi.value; // Let it be a NaN if ST1.value is zero.
+		Pop(cpu);
+
 		return 73;
 	}
 	return 0; // Let it abort.
@@ -619,13 +587,11 @@ unsigned int i486DX::FPUState::FMUL(i486DX &cpu)
 	{
 		statusWord&=~STATUS_C1;
 
-		if(1<=stackPtr)
-		{
-			auto &ST=this->ST(cpu);
-			auto &ST1=this->ST(cpu,1);
-			ST1.value=ST.value*ST1.value;
-			Pop();
-		}
+		auto &ST=this->ST(cpu);
+		auto &ST1=this->ST(cpu,1);
+		ST1.value=ST.value*ST1.value;
+		Pop(cpu);
+
 		return 70;
 	}
 	return 0; // Let it abort.
@@ -637,14 +603,7 @@ unsigned int i486DX::FPUState::FMUL_m64real(i486DX &cpu,const unsigned char byte
 		statusWord&=~STATUS_C1;
 
 		auto src=DoubleFrom64Bit(byteData);
-		if(0<stackPtr)
-		{
-			ST(cpu).value*=src;
-		}
-		else
-		{
-			// Raise NM exception.
-		}
+		ST(cpu).value*=src;
 		return 14;
 	}
 	return 0;
@@ -653,17 +612,11 @@ unsigned int i486DX::FPUState::FSTP_STi(i486DX &cpu,int i)
 {
 	if(true==enabled)
 	{
-		if(0<stackPtr)
-		{
-			auto &st=ST(cpu);
-			auto &sti=ST(cpu,i);
-			sti=st;
-			Pop();
-		}
-		else
-		{
-			// Raise NM exception
-		}
+		auto &st=ST(cpu);
+		auto &sti=ST(cpu,i);
+		sti=st;
+		Pop(cpu);
+
 		return 3;
 	}
 	return 0;
@@ -675,15 +628,9 @@ unsigned int i486DX::FPUState::FSUBR_m64real(i486DX &cpu,const unsigned char byt
 		statusWord&=~STATUS_C1;
 
 		auto src=DoubleFrom64Bit(byteData);
-		if(0<stackPtr)
-		{
-			auto &st=ST(cpu);
-			st.value=src-st.value;
-		}
-		else
-		{
-			// Raise NM exception.
-		}
+		auto &st=ST(cpu);
+		st.value=src-st.value;
+
 		return 14;
 	}
 	return 0;
@@ -693,7 +640,7 @@ unsigned int i486DX::FPUState::FXAM(i486DX &cpu)
 	if(true==enabled)
 	{
 		statusWord&=~(STATUS_C0|STATUS_C1|STATUS_C2|STATUS_C3);
-		if(0==stackPtr)
+		if(0==NumFilled())
 		{
 			// Empty      C3,C2,C0=100
 			statusWord|=(STATUS_C3|STATUS_C0);

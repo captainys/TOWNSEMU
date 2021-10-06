@@ -5853,7 +5853,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				{
 					OperandValue value;
 					i486DX::FPUState::DoubleTo80Bit(value,state.fpuState.ST(*this).value);
-					state.fpuState.Pop();
+					state.fpuState.Pop(*this);
 					StoreOperandValue80(op1,mem,inst.addressSize,inst.segOverride,value);
 					clocksPassed=6;
 				}
@@ -5953,7 +5953,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					{
 						OperandValue value;
 						state.fpuState.GetSTAsDouble(*this,value);
-						state.fpuState.Pop();
+						state.fpuState.Pop(*this);
 						StoreOperandValue64(op1,mem,inst.addressSize,inst.segOverride,value);
 						clocksPassed=8;
 					}
@@ -6022,7 +6022,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				{
 					OperandValue value;
 					state.fpuState.GetSTAs80BitBCD(*this,value);
-					state.fpuState.Pop();
+					state.fpuState.Pop(*this);
 					StoreOperandValue80(op1,mem,inst.addressSize,inst.segOverride,value);
 					clocksPassed=175;
 				}
@@ -6031,7 +6031,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				{
 					OperandValue value;
 					state.fpuState.GetSTAsSignedInt(*this,value);
-					state.fpuState.Pop();
+					state.fpuState.Pop(*this);
 					StoreOperandValue64(op1,mem,inst.addressSize,inst.segOverride,value);
 					clocksPassed=33;
 				}
