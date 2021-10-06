@@ -2,9 +2,18 @@
 
 						PUBLIC	FLD_m64real
 						PUBLIC	FLD_m80real
+
 						PUBLIC	FSTP_m64real
 						PUBLIC	FSTP_m80real
-						PUBLIC	FDIV
+
+						PUBLIC	FDIVP_STi_ST
+						PUBLIC	FDIVRP_STi_ST
+						PUBLIC	FDIV_STi_ST
+						PUBLIC	FDIVR_STi_ST
+						PUBLIC	FDIV_ST_STi
+						PUBLIC	FDIVR_ST_STi
+						PUBLIC	FDIV_m64real
+						PUBLIC	FDIVR_m64real
 
 CODE					SEGMENT
 
@@ -61,13 +70,90 @@ FSTP_m80real			ENDP
 
 
 
-FDIV					PROC
+FDIVP_STi_ST				PROC
 
-						DB		09Bh,0DEh,0F9h  ; FDIV
+						DB		09Bh,0DEh,0F9h  ; FDIVP
 						RET
 
-FDIV					ENDP
+FDIVP_STi_ST				ENDP
 
+
+
+
+FDIVRP_STi_ST			PROC
+
+						DB		09Bh,0DEh,0F1h  ; FDIVRP
+						RET
+
+FDIVRP_STi_ST			ENDP
+
+
+
+FDIV_STi_ST				PROC
+
+						DB		09Bh,0DCh,0F9h  ; FDIV
+						RET
+
+FDIV_STi_ST				ENDP
+
+
+
+
+FDIVR_STi_ST			PROC
+
+						DB		09Bh,0DCh,0F1h  ; FDIVR
+						RET
+
+FDIVR_STi_ST			ENDP
+
+
+
+FDIV_ST_STi				PROC
+
+						DB		09Bh,0D8h,0F1h  ; FDIV
+						RET
+
+FDIV_ST_STi				ENDP
+
+
+
+
+FDIVR_ST_STi			PROC
+
+						DB		09Bh,0D8h,0F9h  ; FDIVR
+						RET
+
+FDIVR_ST_STi			ENDP
+
+
+
+FDIV_m64real			PROC
+
+						MOV		EAX,[ESP+4]
+						DB		09Bh,0DCh,030h	; FDIV [EAX]
+						RET
+
+FDIV_m64real			ENDP
+
+
+
+FDIVR_m64real			PROC
+
+						MOV		EAX,[ESP+4]
+						DB		09Bh,0DCh,038h	; FDIVR [EAX]
+						RET
+
+FDIVR_m64real			ENDP
+
+
+
+
+
+; For LST file
+YSJUNK					PROC
+						FDIV
+						FDIVR
+YSJUNK					ENDP
 
 
 

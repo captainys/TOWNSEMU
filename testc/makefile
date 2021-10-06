@@ -389,7 +389,7 @@ build\fpu_comp.exp : build\fpu_comp.obj
 
 
 build\fpu.obj : fpu.asm
-	386asm fpu.asm -OBJECT build\fpu.obj
+	386asm fpu.asm -80387 -OBJECT build\fpu.obj -LIST build\fpu.lst
 
 build\fpuexp.obj : fpuexp.c
 	hcd386 fpuexp.c -obj build\fpuexp.obj
