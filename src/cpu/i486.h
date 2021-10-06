@@ -474,7 +474,7 @@ public:
 		unsigned int FCOMPP(i486DX &cpu);
 		unsigned int FCOMP_m32real(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FCOMP_m64real(i486DX &cpu,const unsigned char byteData[]);
-		unsigned int FDIV(i486DX &cpu);
+		unsigned int FDIVP_STi_ST(i486DX &cpu,int i);
 		unsigned int FDIVR_m64real(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FDIVRP_STi_ST(i486DX &cpu,int i);
 		unsigned int FLD32(i486DX &cpu,const unsigned char byteData[]);

@@ -465,7 +465,7 @@ unsigned int i486DX::FPUState::FCOMPP(i486DX &cpu)
 	}
 	return 0; // Let it abort.
 }
-unsigned int i486DX::FPUState::FDIV(i486DX &cpu)
+unsigned int i486DX::FPUState::FDIVP_STi_ST(i486DX &cpu,int i)
 {
 	if(true==enabled)
 	{
@@ -474,12 +474,12 @@ unsigned int i486DX::FPUState::FDIV(i486DX &cpu)
 		if(2<=stackPtr)
 		{
 			auto &ST=this->ST(cpu);
-			auto &ST1=this->ST(cpu,1);
-			if(0.0==ST1.value)
+			auto &STi=this->ST(cpu,i);
+			if(0.0==STi.value)
 			{
 				// Zero division.
 			}
-			ST1.value=ST.value/ST1.value; // Let it be a NaN if ST1.value is zero.
+			STi.value=STi.value/ST.value; // Let it be a NaN if ST1.value is zero.
 			Pop();
 		}
 		return 70;
@@ -524,7 +524,7 @@ unsigned int i486DX::FPUState::FDIVRP_STi_ST(i486DX &cpu,int i)
 			{
 				// Zero division.
 			}
-			STi.value=STi.value/ST.value; // Let it be a NaN if ST1.value is zero.
+			STi.value=ST.value/STi.value; // Let it be a NaN if ST1.value is zero.
 			Pop();
 		}
 		return 73;
