@@ -527,7 +527,7 @@ unsigned int i486DX::FPUState::FDIVRP_STi_ST(i486DX &cpu,int i)
 			STi.value=STi.value/ST.value; // Let it be a NaN if ST1.value is zero.
 			Pop();
 		}
-		return 70;
+		return 73;
 	}
 	return 0; // Let it abort.
 }
