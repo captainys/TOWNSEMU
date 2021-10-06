@@ -1772,7 +1772,7 @@ void FsGuiMainCanvas::VM_33MHz(FsGuiPopUpMenuItem *)
 {
 	if(true==IsVMRunning())
 	{
-		subproc.Send("FREQ 33\n");
+		SendVMCommand("FREQ 33\n");
 		ResumeVMIfSameProc();
 	}
 	else
