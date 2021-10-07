@@ -107,12 +107,28 @@ unsigned int TownsSprite::NumSpritesActuallyDrawn(void) const
 			state.reg[state.addressLatch] = data;
 			break;
 		case REG_CONTROL1:
-			state.reg[state.addressLatch] = data & 0x83;
+			{
+				auto prevSPEN=SPEN();
+				auto prevBUSY=state.spriteBusy;
 
-			if (data & 0x80 && state.callbackType == CALLBACK_NONE) {
-				auto nextVSync = townsPtr->crtc.NextVSYNCRisingEdge(townsPtr->state.townsTime);
-				townsPtr->ScheduleDeviceCallBack(*this, nextVSync);
-				state.callbackType = CALLBACK_VSYNC;
+				state.reg[state.addressLatch] = data & 0x83;
+
+				if (data & 0x80 && state.callbackType == CALLBACK_NONE) {
+					auto nextVSync = townsPtr->crtc.NextVSYNCRisingEdge(townsPtr->state.townsTime);
+					townsPtr->ScheduleDeviceCallBack(*this, nextVSync);
+					state.callbackType = CALLBACK_VSYNC;
+				}
+
+				// For Shadow of the Beasts >>
+				// Shadow of the Beasts turns off SPEN in the middle of sprite busy.
+				// If it happens, sprite needs to be immediately rendered, or will never be rendered.
+				if(true==prevSPEN && true!=SPEN() && true==prevBUSY)
+				{
+					state.page = 1 - state.page;
+					Render(physMemPtr->state.VRAM.data() + 0x40000,
+						physMemPtr->state.spriteRAM.data());
+				}
+				// For Shadow of the Beasts <<
 			}
 			break;
 		case REG_HORIZONTAL_OFFSET0:
@@ -330,11 +346,7 @@ void TownsSprite::RunScheduledTask(unsigned long long int townsTime)
 	if (state.callbackType == CALLBACK_VSYNC) {
 		if (SPEN()) {
 			state.spriteBusy = true;
-			state.page = 1 - state.page;
 			auto finishTime = townsTime + SPRITE_SCREEN_CLEAR_TIME + (uint64_t)SPRITE_ONE_TRANSFER_TIME * NumSpritesToDraw();
-
-			Render(physMemPtr->state.VRAM.data() + 0x40000,
-				physMemPtr->state.spriteRAM.data());
 
 			townsPtr->ScheduleDeviceCallBack(*this, finishTime);
 			state.callbackType = CALLBACK_FINISH;
@@ -345,6 +357,10 @@ void TownsSprite::RunScheduledTask(unsigned long long int townsTime)
 		state.spriteBusy = false;
 
 		if (SPEN()) {
+			state.page = 1 - state.page;
+			Render(physMemPtr->state.VRAM.data() + 0x40000,
+				physMemPtr->state.spriteRAM.data());
+
 			auto nextVSync = townsPtr->crtc.NextVSYNCRisingEdge(townsTime);
 			townsPtr->ScheduleDeviceCallBack(*this, nextVSync);
 			state.callbackType = CALLBACK_VSYNC;
