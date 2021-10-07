@@ -2245,6 +2245,9 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 				case 3:
 					disasm=DisassembleTypicalOneOperand("FCOMP(m32real)  ",op1,operandSize);
 					break;
+				case 6:
+					disasm=DisassembleTypicalOneOperand("FDIV(m32real)  ",op1,operandSize);
+					break;
 				default:
 					disasm="?FPUINST"+cpputil::Ubtox(opCode)+" "+cpputil::Ubtox(operand[0])+" REG="+cpputil::Ubtox(GetREG());
 					break;
@@ -2335,7 +2338,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		else if(0xF8==operand[0])
 		{
 			// FPREM
-			disasm="?FPUINST"+cpputil::Ubtox(opCode)+" "+cpputil::Ubtox(operand[0]);
+			disasm="FPREM";
 		}
 		else if(0xF9==operand[0])
 		{
@@ -5919,7 +5922,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		else if(0xF8==inst.operand[0])
 		{
-			// FPREM
+			clocksPassed=state.fpuState.FPREM(*this);
 		}
 		else if(0xF9==inst.operand[0])
 		{

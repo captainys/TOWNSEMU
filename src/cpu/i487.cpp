@@ -643,6 +643,25 @@ unsigned int i486DX::FPUState::FMUL_m64real(i486DX &cpu,const unsigned char byte
 	}
 	return 0;
 }
+unsigned int i486DX::FPUState::FPREM(i486DX &cpu)
+{
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+
+		auto &ST=this->ST(cpu);
+		auto &ST1=this->ST(cpu,1);
+		if(0==ST1.value)
+		{
+			// Zero division
+		}
+		ST1.value=fmod(ST.value,ST1.value);
+		Pop(cpu);
+
+		return 84;
+	}
+	return 0; // Let it abort.
+}
 unsigned int i486DX::FPUState::FSQRT(i486DX &cpu)
 {
 	if(true==enabled)

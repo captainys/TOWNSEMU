@@ -492,6 +492,7 @@ public:
 		unsigned int FLDZ(i486DX &cpu);
 		unsigned int FMUL(i486DX &cpu);
 		unsigned int FMUL_m64real(i486DX &cpu,const unsigned char byteData[]);
+		unsigned int FPREM(i486DX &cpu);
 		unsigned int FSQRT(i486DX &cpu);
 		unsigned int FSTP_STi(i486DX &cpu,int i);
 		unsigned int FSUBR_m64real(i486DX &cpu,const unsigned char byteData[]);
