@@ -1353,13 +1353,13 @@ void FsSimpleWindowConnection::RenderBeforeSwapBuffers(const TownsRender::Image 
 	glLoadIdentity();
 	glOrtho(0.0f,float(winWid),float(winHei),0.0f,-1,1);
 
-	glPixelZoom((float)scaling/100.0f,(float)scaling/100.0f);
-	glRasterPos2i(this->dx,(img.hei*scaling/100)+dy);
-	glDrawPixels(img.wid,img.hei,GL_RGBA,GL_UNSIGNED_BYTE,img.rgba);
-
 	glRasterPos2i(0,winHei-1);
 	glPixelZoom(1,1);
 	glDrawPixels(STATUS_WID,STATUS_HEI,GL_RGBA,GL_UNSIGNED_BYTE,statusBitmap);
+
+	glPixelZoom((float)scaling/100.0f,(float)scaling/100.0f);
+	glRasterPos2i(this->dx,(img.hei*scaling/100)+dy);
+	glDrawPixels(img.wid,img.hei,GL_RGBA,GL_UNSIGNED_BYTE,img.rgba);
 
 	switch(lowerRightIcon)
 	{
