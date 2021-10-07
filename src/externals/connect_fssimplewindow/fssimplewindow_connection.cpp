@@ -1357,10 +1357,6 @@ void FsSimpleWindowConnection::RenderBeforeSwapBuffers(const TownsRender::Image 
 	glPixelZoom(1,1);
 	glDrawPixels(STATUS_WID,STATUS_HEI,GL_RGBA,GL_UNSIGNED_BYTE,statusBitmap);
 
-	glPixelZoom((float)scaling/100.0f,(float)scaling/100.0f);
-	glRasterPos2i(this->dx,(img.hei*scaling/100)+dy);
-	glDrawPixels(img.wid,img.hei,GL_RGBA,GL_UNSIGNED_BYTE,img.rgba);
-
 	switch(lowerRightIcon)
 	{
 	case LOWER_RIGHT_NONE:
@@ -1395,6 +1391,10 @@ void FsSimpleWindowConnection::RenderBeforeSwapBuffers(const TownsRender::Image 
 
 		glEnd();
 	}
+
+	glPixelZoom((float)scaling/100.0f,(float)scaling/100.0f);
+	glRasterPos2i(this->dx,(img.hei*scaling/100)+dy);
+	glDrawPixels(img.wid,img.hei,GL_RGBA,GL_UNSIGNED_BYTE,img.rgba);
 }
 /* virtual */ bool FsSimpleWindowConnection::ImageNeedsFlip(void)
 {
