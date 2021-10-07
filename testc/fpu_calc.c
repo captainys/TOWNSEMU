@@ -1,4 +1,21 @@
 #include <stdio.h>
+#include <math.h>
+
+
+
+
+int FCompare(double a,double b)
+{
+	if(fabs(a-b)<0.000001)
+	{
+		return 0;
+	}
+	if(a-b<0)
+	{
+		return -1;
+	}
+	return 1;
+}
 
 int main(void)
 {
@@ -99,6 +116,11 @@ int main(void)
 	{
 		printf("Correct Multiplication.\n");
 	}
+	else
+	{
+		e=1;
+		printf("Error in Multiplication.\n");
+	}
 
 	a=2.0001;
 	b=-128.0001;
@@ -107,6 +129,50 @@ int main(void)
 	if(-256==i)
 	{
 		printf("Correct Multiplication.\n");
+	}
+	else
+	{
+		e=1;
+		printf("Error in Multiplication.\n");
+	}
+
+
+	a=fabs(-5.01);
+	i=(int)a;
+	if(5==i)
+	{
+		printf("fabs works fine.\n");
+	}
+	else
+	{
+		e=1;
+		printf("Error in fabs.\n");
+	}
+
+
+	a=sqrt(256.01);
+	i=(int)a;
+	if(16==i)
+	{
+		printf("sqrt works fine.\n");
+	}
+	else
+	{
+		e=1;
+		printf("Error in sqrt.\n");
+	}
+
+
+	if(0==FCompare(sin(_PI/6.0),0.5) &&
+	   0==FCompare(sin(_PI/3.0),sqrt(3.0)/2.0) &&
+	   0==FCompare(sin(_PI/2.0),1.0))
+	{
+		printf("sin works fine.\n");
+	}
+	else
+	{
+		e=1;
+		printf("Error in sin.\n");
 	}
 
 

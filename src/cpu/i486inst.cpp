@@ -1114,8 +1114,9 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 		{
 			unsigned int MODR_M;
 			FUNCCLASS::PeekOperand8(cpu,MODR_M,inst,ptr,seg,offset,mem);
-			if((0xC0<=MODR_M && MODR_M<=0xC7) ||
+			if((0xC0<=MODR_M && MODR_M<=0xCF) || // FLD_ST, FXCHG
 			   0xE0==MODR_M ||
+			   0xE1==MODR_M || // FABS
 			   0xE5==MODR_M || // FXAM
 			   0xE8==MODR_M ||
 			   0xE9==MODR_M ||
@@ -1143,13 +1144,13 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 			{
 				switch(Instruction::GetREG(MODR_M))
 				{
+				case 0: // FILD m32int
 				case 3: // FISTP m32int
 				case 5: // FLD m80real
 				case 7: // FSTP m80real
 					FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 					op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 					break;
-				case 0:
 				case 1:
 				case 2:
 				case 4:
@@ -2253,20 +2254,27 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		break;
 
 	case I486_OPCODE_FPU_D9_FNSTCW_M16_FNSTENV_F2XM1_FXAM_FXCH_FXTRACT_FYL2X_FYL2XP1_FABS_:// 0xD9,
-		if(0xF0<=operand[0] && operand[0]<=0xFF)
-		{
-			disasm="?FPUINST"+cpputil::Ubtox(opCode)+" "+cpputil::Ubtox(operand[0]);
-		}
-		else if(0xC0<=operand[0] && operand[0]<=0xC7)
+		if(0xC0<=operand[0] && operand[0]<=0xC7)
 		{
 			disasm="FLD ";
 			disasm+="ST(";
-			disasm.push_back('0'+operand[0]-0xC0);
+			disasm.push_back('0'+(operand[0]&7));
+			disasm+=")";
+		}
+		else if(0xC8<=operand[0] && operand[0]<=0xCF)
+		{
+			disasm="FXCHG ";
+			disasm+="ST(";
+			disasm.push_back('0'+(operand[0]&7));
 			disasm+=")";
 		}
 		else if(0xE0==operand[0])
 		{
 			disasm="FCHS";
+		}
+		else if(0xE1==operand[0])
+		{
+			disasm="FABS";
 		}
 		else if(0xE5==operand[0])
 		{
@@ -2283,6 +2291,85 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		else if(0xEE==operand[0])
 		{
 			disasm="FLDZ";
+		}
+		else if(0xF0==operand[0])
+		{
+			// F2XM1
+			disasm="?FPUINST"+cpputil::Ubtox(opCode)+" "+cpputil::Ubtox(operand[0]);
+		}
+		else if(0xF1==operand[0])
+		{
+			// FYL2X
+			disasm="?FPUINST"+cpputil::Ubtox(opCode)+" "+cpputil::Ubtox(operand[0]);
+		}
+		else if(0xF2==operand[0])
+		{
+			// FPTAN
+			disasm="?FPUINST"+cpputil::Ubtox(opCode)+" "+cpputil::Ubtox(operand[0]);
+		}
+		else if(0xF3==operand[0])
+		{
+			// FPATAN
+			disasm="?FPUINST"+cpputil::Ubtox(opCode)+" "+cpputil::Ubtox(operand[0]);
+		}
+		else if(0xF4==operand[0])
+		{
+			// FXTRACT
+			disasm="?FPUINST"+cpputil::Ubtox(opCode)+" "+cpputil::Ubtox(operand[0]);
+		}
+		else if(0xF5==operand[0])
+		{
+			// FPREM1
+			disasm="?FPUINST"+cpputil::Ubtox(opCode)+" "+cpputil::Ubtox(operand[0]);
+		}
+		else if(0xF6==operand[0])
+		{
+			// FDECSTP
+			disasm="?FPUINST"+cpputil::Ubtox(opCode)+" "+cpputil::Ubtox(operand[0]);
+		}
+		else if(0xF7==operand[0])
+		{
+			// FINCSTP
+			disasm="?FPUINST"+cpputil::Ubtox(opCode)+" "+cpputil::Ubtox(operand[0]);
+		}
+		else if(0xF8==operand[0])
+		{
+			// FPREM
+			disasm="?FPUINST"+cpputil::Ubtox(opCode)+" "+cpputil::Ubtox(operand[0]);
+		}
+		else if(0xF9==operand[0])
+		{
+			// FYL2XP1
+			disasm="?FPUINST"+cpputil::Ubtox(opCode)+" "+cpputil::Ubtox(operand[0]);
+		}
+		else if(0xFA==operand[0])
+		{
+			disasm="FSQRT";
+		}
+		else if(0xFB==operand[0])
+		{
+			// FSINCOS
+			disasm="?FPUINST"+cpputil::Ubtox(opCode)+" "+cpputil::Ubtox(operand[0]);
+		}
+		else if(0xFC==operand[0])
+		{
+			// FRNDINT
+			disasm="?FPUINST"+cpputil::Ubtox(opCode)+" "+cpputil::Ubtox(operand[0]);
+		}
+		else if(0xFD==operand[0])
+		{
+			// FSCALE
+			disasm="?FPUINST"+cpputil::Ubtox(opCode)+" "+cpputil::Ubtox(operand[0]);
+		}
+		else if(0xFE==operand[0])
+		{
+			// FSIN
+			disasm="?FPUINST"+cpputil::Ubtox(opCode)+" "+cpputil::Ubtox(operand[0]);
+		}
+		else if(0xFF==operand[0])
+		{
+			// FCOS
+			disasm="?FPUINST"+cpputil::Ubtox(opCode)+" "+cpputil::Ubtox(operand[0]);
 		}
 		else
 		{
@@ -2318,6 +2405,9 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 			{
 				switch(Instruction::GetREG(MODR_M))
 				{
+				case 0:
+					disasm=DisassembleTypicalOneOperand("FILD(m32int)",op1,operandSize);
+					break;
 				case 3:
 					disasm=DisassembleTypicalOneOperand("FISTP(m32int)",op1,operandSize);
 					break;
@@ -5763,16 +5853,21 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			}
 		#endif
 
-		if(0xF0<=inst.operand[0] && inst.operand[0]<=0xFF)
+		if(0xC0<=inst.operand[0] && inst.operand[0]<=0xC7)
 		{
+			clocksPassed=state.fpuState.FLD_ST(*this,inst.operand[0]&7);
 		}
-		else if(0xC0<=inst.operand[0] && inst.operand[0]<=0xC7)
+		else if(0xC8<=inst.operand[0] && inst.operand[0]<=0xCF)
 		{
-			clocksPassed=state.fpuState.FLD_ST(*this,inst.operand[0]-0xC0);
+			clocksPassed=state.fpuState.FXCH(*this,inst.operand[0]&7);
 		}
 		else if(0xE0==inst.operand[0])
 		{
 			clocksPassed=state.fpuState.FCHS(*this);
+		}
+		else if(0xE1==inst.operand[0])
+		{
+			clocksPassed=state.fpuState.FABS(*this);
 		}
 		else if(0xE5==inst.operand[0])
 		{
@@ -5789,6 +5884,70 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		else if(0xEE==inst.operand[0])
 		{
 			clocksPassed=state.fpuState.FLDZ(*this);
+		}
+		else if(0xF0==inst.operand[0])
+		{
+			// F2XM1
+		}
+		else if(0xF1==inst.operand[0])
+		{
+			// FYL2X
+		}
+		else if(0xF2==inst.operand[0])
+		{
+			// FPTAN
+		}
+		else if(0xF3==inst.operand[0])
+		{
+			// FPATAN
+		}
+		else if(0xF4==inst.operand[0])
+		{
+			// FXTRACT
+		}
+		else if(0xF5==inst.operand[0])
+		{
+			// FPREM1
+		}
+		else if(0xF6==inst.operand[0])
+		{
+			// FDECSTP
+		}
+		else if(0xF7==inst.operand[0])
+		{
+			// FINCSTP
+		}
+		else if(0xF8==inst.operand[0])
+		{
+			// FPREM
+		}
+		else if(0xF9==inst.operand[0])
+		{
+			// FYL2XP1
+		}
+		else if(0xFA==inst.operand[0])
+		{
+			clocksPassed=state.fpuState.FSQRT(*this);
+		}
+		else if(0xFB==inst.operand[0])
+		{
+			// FSINCOS
+		}
+		else if(0xFC==inst.operand[0])
+		{
+			// FRNDINT
+		}
+		else if(0xFD==inst.operand[0])
+		{
+			// FSCALE
+		}
+		else if(0xFE==inst.operand[0])
+		{
+			// FSIN
+		}
+		else if(0xFF==inst.operand[0])
+		{
+			// FCOS
 		}
 		else
 		{
@@ -5836,12 +5995,18 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			switch(Instruction::GetREG(inst.operand[0]))
 			{
 			case 3: // FISTP m32int
-			case 0:
 			case 1:
 			case 2:
 			case 4:
 			case 6:
 			default:
+				break;
+			case 0: // FILD m32int
+				{
+					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,4);
+					clocksPassed=state.fpuState.FILD_m32int(*this,value.byteData);
+				}
+				break;
 				break;
 			case 5: // FLD m80real
 				{

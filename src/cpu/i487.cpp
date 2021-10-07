@@ -13,10 +13,25 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 << LICENSE */
 #include "i486.h"
+#include <algorithm>
 #include <math.h>
 #include <stdint.h>
 
 
+
+/* static */ int32_t i486DX::FPUState::IntFrom32Bit(const unsigned char byteData[])
+{
+#ifdef YS_LITTLE_ENDIAN
+	return *((int *)byteData);
+#else
+	uint32_t ui;
+	ui= (uint32_t)byteData[0]|
+	   ((uint32_t)byteData[1]<<8)|
+	   ((uint32_t)byteData[2]<<16)|
+	   ((uint32_t)byteData[3]<<24)|;
+	return *((int32_t *)&ui);
+#endif
+}
 
 /* static */ void i486DX::FPUState::DoubleTo80Bit(OperandValueBase &value80,double src)
 {
@@ -363,6 +378,16 @@ std::vector <std::string> i486DX::FPUState::GetStateText(void) const
 	return text;
 }
 
+unsigned int i486DX::FPUState::FABS(i486DX &cpu)
+{
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+		ST(cpu).value=fabs(ST(cpu).value);
+		return 3;
+	}
+	return 0;
+}
 unsigned int i486DX::FPUState::FADD64(i486DX &cpu,const unsigned char byteData[])
 {
 	if(true==enabled)
@@ -499,6 +524,16 @@ unsigned int i486DX::FPUState::FDIVRP_STi_ST(i486DX &cpu,int i)
 	}
 	return 0; // Let it abort.
 }
+unsigned int i486DX::FPUState::FILD_m32int(i486DX &cpu,const unsigned char byteData[])
+{
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+		Push(cpu,(double)IntFrom32Bit(byteData));
+		return 0;
+	}
+	return 0;
+}
 unsigned int i486DX::FPUState::FLD32(i486DX &cpu,const unsigned char byteData[])
 {
 	if(true==enabled)
@@ -608,6 +643,17 @@ unsigned int i486DX::FPUState::FMUL_m64real(i486DX &cpu,const unsigned char byte
 	}
 	return 0;
 }
+unsigned int i486DX::FPUState::FSQRT(i486DX &cpu)
+{
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+
+		ST(cpu).value=sqrt(ST(cpu).value);
+		return 70;
+	}
+	return 0;
+}
 unsigned int i486DX::FPUState::FSTP_STi(i486DX &cpu,int i)
 {
 	if(true==enabled)
@@ -668,6 +714,16 @@ unsigned int i486DX::FPUState::FXAM(i486DX &cpu)
 			}
 		}
 		return 8;
+	}
+	return 0;
+}
+unsigned int i486DX::FPUState::FXCH(i486DX &cpu,int i)
+{
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+		std::swap(ST(cpu),ST(cpu,i));
+		return 4;
 	}
 	return 0;
 }

@@ -389,6 +389,7 @@ public:
 		void GetSTAsSignedInt(class i486DX &cpu,OperandValueBase &value);
 		void GetSTAs80BitBCD(class i486DX &cpu,OperandValueBase &value);
 
+		static int32_t IntFrom32Bit(const unsigned char byteData[]);
 
 		static void DoubleTo80Bit(OperandValueBase &value80,double src);
 		static double DoubleFrom80Bit(const OperandValueBase &value80);
@@ -469,6 +470,7 @@ public:
 		}
 
 		// Returns clocks passed.
+		unsigned int FABS(i486DX &cpu);
 		unsigned int FADD64(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FADD_ST_STi(i486DX &cpu,int i);
 		unsigned int FADDP_STi_ST(i486DX &cpu,int i);
@@ -476,6 +478,7 @@ public:
 		unsigned int FCOMPP(i486DX &cpu);
 		unsigned int FCOMP_m32real(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FCOMP_m64real(i486DX &cpu,const unsigned char byteData[]);
+		unsigned int FILD_m32int(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FDIVP_STi_ST(i486DX &cpu,int i);
 		unsigned int FDIVR_m64real(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FDIVRP_STi_ST(i486DX &cpu,int i);
@@ -489,9 +492,11 @@ public:
 		unsigned int FLDZ(i486DX &cpu);
 		unsigned int FMUL(i486DX &cpu);
 		unsigned int FMUL_m64real(i486DX &cpu,const unsigned char byteData[]);
+		unsigned int FSQRT(i486DX &cpu);
 		unsigned int FSTP_STi(i486DX &cpu,int i);
 		unsigned int FSUBR_m64real(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FXAM(i486DX &cpu);
+		unsigned int FXCH(i486DX &cpu,int i);
 	};
 
 	class InterruptDescriptor : public FarPointer
