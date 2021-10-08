@@ -124,7 +124,6 @@ unsigned int TownsSprite::NumSpritesActuallyDrawn(void) const
 				// If it happens, sprite needs to be immediately rendered, or will never be rendered.
 				if(true==prevSPEN && true!=SPEN() && true==prevBUSY)
 				{
-					state.page = 1 - state.page;
 					Render(physMemPtr->state.VRAM.data() + 0x40000,
 						physMemPtr->state.spriteRAM.data());
 				}
@@ -345,6 +344,7 @@ void TownsSprite::RunScheduledTask(unsigned long long int townsTime)
 {
 	if (state.callbackType == CALLBACK_VSYNC) {
 		if (SPEN()) {
+			state.page = 1 - state.page;
 			state.spriteBusy = true;
 			auto finishTime = townsTime + SPRITE_SCREEN_CLEAR_TIME + (uint64_t)SPRITE_ONE_TRANSFER_TIME * NumSpritesToDraw();
 
@@ -357,7 +357,6 @@ void TownsSprite::RunScheduledTask(unsigned long long int townsTime)
 		state.spriteBusy = false;
 
 		if (SPEN()) {
-			state.page = 1 - state.page;
 			Render(physMemPtr->state.VRAM.data() + 0x40000,
 				physMemPtr->state.spriteRAM.data());
 
