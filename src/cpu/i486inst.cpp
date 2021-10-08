@@ -5843,6 +5843,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 						clocksPassed=state.fpuState.FCOMP_m32real(*this,value.byteData);
 					}
 					break;
+				case 6:
+					{
+						auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,4);
+						clocksPassed=state.fpuState.FDIV_m32real(*this,value.byteData);
+					}
+					break;
 				}
 			}
 		}

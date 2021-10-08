@@ -468,6 +468,24 @@ unsigned int i486DX::FPUState::FCOMPP(i486DX &cpu)
 	}
 	return 0; // Let it abort.
 }
+unsigned int i486DX::FPUState::FDIV_m32real(i486DX &cpu,const unsigned char byteData[])
+{
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+
+		auto src=DoubleFrom32Bit(byteData);
+		auto &st=ST(cpu);
+		if(0==src)
+		{
+			// Zero division
+		}
+		st.value=st.value/src;
+
+		return 73;
+	}
+	return 0;
+}
 unsigned int i486DX::FPUState::FDIVP_STi_ST(i486DX &cpu,int i)
 {
 	if(true==enabled)
