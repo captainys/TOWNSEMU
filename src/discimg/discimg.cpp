@@ -371,7 +371,6 @@ unsigned int DiscImage::OpenCUEPostProcess(void)
 			if(0<len)
 			{
 				binLength+=len;
-				binLength-=bin.bytesToSkip;
 				bin.fName=fn;
 				bin.fileSize=len;
 				break;
@@ -395,10 +394,11 @@ unsigned int DiscImage::OpenCUEPostProcess(void)
 		uint64_t locationInFile=0;
 		for(int i=0; i<tracks.size(); ++i)
 		{
-			uint32_t numBytes=(binaries[i].fileSize-binaries[i].bytesToSkip);
-			unsigned int numSec=numBytes/2352;
-			tracks[i].start=HSGtoMSF(startSector);
-			tracks[i].end=HSGtoMSF(startSector+numSec-1);
+			uint32_t numBytes=binaries[i].fileSize;
+			unsigned int numSec=numBytes/tracks[i].sectorLength;
+			unsigned int numPreGapSec=binaries[i].bytesToSkip/tracks[i].sectorLength;
+			tracks[i].start=HSGtoMSF(startSector+numPreGapSec);
+			tracks[i].end=HSGtoMSF(startSector+numSec-numPreGapSec-1);
 			tracks[i].locationInFile=locationInFile;
 			binaries[i].byteOffsetInDisc=locationInFile;
 			locationInFile+=numBytes;
