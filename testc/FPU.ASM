@@ -19,6 +19,9 @@
 						PUBLIC	UseFCOS
 						PUBLIC	UseFPTAN
 
+						PUBLIC	UseFLD_PI
+						PUBLIC	Use_FLDL2E
+
 CODE					SEGMENT
 
 
@@ -174,6 +177,18 @@ UseFPTAN				PROC
 UseFPTAN				ENDP
 
 
+
+UseFLD_PI				PROC
+						FLDPI
+						RET
+UseFLD_PI				ENDP
+
+
+
+Use_FLDL2E				PROC
+						FLDL2E
+						RET
+Use_FLDL2E				ENDP
 
 
 

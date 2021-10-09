@@ -1118,9 +1118,7 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 			   0xE0==MODR_M ||
 			   0xE1==MODR_M || // FABS
 			   0xE5==MODR_M || // FXAM
-			   0xE8==MODR_M ||
-			   0xE9==MODR_M ||
-			   0xEE==MODR_M ||
+			   (0xE8<=MODR_M && MODR_M<=0xEE) ||
 			   (0xF0<=MODR_M && MODR_M<=0xFF))
 			{
 				FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset,mem);
@@ -2233,10 +2231,13 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 				disasm.push_back('0'+(operand[0]&7));
 				disasm+=")";
 			}
-			else if(0xD1==MODR_M || // FCOM
-			        0xD9==MODR_M)   // FCOMP
+			else if(0xD1==MODR_M)
 			{
 				disasm="?FPUINST"+cpputil::Ubtox(opCode)+" "+cpputil::Ubtox(operand[0]);
+			}
+			else if(0xD9==MODR_M)   // FCOMP
+			{
+				disasm="FCOMP";
 			}
 			else
 			{
@@ -2294,6 +2295,14 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		{
 			disasm="FLDL2T";
 		}
+		else if(0xEA==operand[0])
+		{
+			disasm="FLDL2E";
+		}
+		else if(0xEB==operand[0])
+		{
+			disasm="FLDPI";
+		}
 		else if(0xEE==operand[0])
 		{
 			disasm="FLDZ";
@@ -2306,7 +2315,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		else if(0xF1==operand[0])
 		{
 			// FYL2X
-			disasm="?FPUINST"+cpputil::Ubtox(opCode)+" "+cpputil::Ubtox(operand[0]);
+			disasm="FYL2X";
 		}
 		else if(0xF2==operand[0])
 		{
@@ -5834,6 +5843,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			}
 			else if(0xD9==MODR_M)   // FCOMP
 			{
+				clocksPassed=state.fpuState.FCOMP(*this);
 			}
 			else
 			{
@@ -5899,6 +5909,22 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			clocksPassed=state.fpuState.FLDL2T(*this);
 		}
+		else if(0xEA==inst.operand[0])
+		{
+			clocksPassed=state.fpuState.FLDL2E(*this);
+		}
+		else if(0xEB==inst.operand[0])
+		{
+			clocksPassed=state.fpuState.FLDPI(*this);
+		}
+		else if(0xEC==inst.operand[0])
+		{
+			// FLDLG2
+		}
+		else if(0xED==inst.operand[0])
+		{
+			// FLDLN2
+		}
 		else if(0xEE==inst.operand[0])
 		{
 			clocksPassed=state.fpuState.FLDZ(*this);
@@ -5909,7 +5935,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		else if(0xF1==inst.operand[0])
 		{
-			// FYL2X
+			clocksPassed=state.fpuState.FYL2X(*this);
 		}
 		else if(0xF2==inst.operand[0])
 		{

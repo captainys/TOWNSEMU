@@ -18,6 +18,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <stdint.h>
 
 
+static const double VALUE_OF_E= 2.71828182845904523536;
+static const double VALUE_OF_PI=3.14159265358979323846;
+
 
 /* static */ int32_t i486DX::FPUState::IntFrom32Bit(const unsigned char byteData[])
 {
@@ -458,6 +461,16 @@ unsigned int i486DX::FPUState::FCOMP_m64real(i486DX &cpu,const unsigned char byt
 	}
 	return 0; // Let it abort.
 }
+unsigned int i486DX::FPUState::FCOMP(i486DX &cpu)
+{
+	if(true==enabled)
+	{
+		Compare(ST(cpu).value,ST(cpu,1).value);
+		Pop(cpu);
+		return 4;
+	}
+	return 0; // Let it abort.
+}
 unsigned int i486DX::FPUState::FCOMPP(i486DX &cpu)
 {
 	if(true==enabled)
@@ -639,6 +652,24 @@ unsigned int i486DX::FPUState::FLDL2T(i486DX &cpu)
 	if(true==enabled)
 	{
 		Push(cpu,log2(10.0));
+		return 8;
+	}
+	return 0; // Let it abort.
+}
+unsigned int i486DX::FPUState::FLDL2E(i486DX &cpu)
+{
+	if(true==enabled)
+	{
+		Push(cpu,log2(VALUE_OF_E));
+		return 8;
+	}
+	return 0; // Let it abort.
+}
+unsigned int i486DX::FPUState::FLDPI(i486DX &cpu)
+{
+	if(true==enabled)
+	{
+		Push(cpu,VALUE_OF_PI);
 		return 8;
 	}
 	return 0; // Let it abort.
@@ -829,5 +860,9 @@ unsigned int i486DX::FPUState::FXCH(i486DX &cpu,int i)
 		std::swap(ST(cpu),ST(cpu,i));
 		return 4;
 	}
+	return 0;
+}
+unsigned int i486DX::FPUState::FYL2X(i486DX &cpu)
+{
 	return 0;
 }

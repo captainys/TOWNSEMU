@@ -16,8 +16,8 @@ void FDIVRP_STi_ST(void);
 void UseFSIN(void);
 void UseFCOS(void);
 void UseFPTAN(void);
-
-
+void UseFLD_PI(void);
+void Use_FLDL2E(void);
 
 int FCompare(double a,double b)
 {
@@ -53,6 +53,22 @@ double Tangent(double angle)
 	FSTP_m64real(&angle);
 	FSTP_m64real(&angle);
 	return angle;
+}
+
+double GetPI(void)
+{
+	double d;
+	UseFLD_PI();
+	FSTP_m64real(&d);
+	return d;
+}
+
+double GetL2E(void)
+{
+	double d;
+	Use_FLDL2E();
+	FSTP_m64real(&d);
+	return d;
 }
 
 int main(void)
@@ -201,11 +217,14 @@ int main(void)
 	}
 
 
+
+	double pi=GetPI();
+
 	// Apparently the following lines use FPREM instead of FSIN for unknown reason.
 	// Anyway, it's a good test for FPREM.
-	if(0==FCompare(sin(_PI/6.0),0.5) &&
-	   0==FCompare(sin(_PI/3.0),sqrt(3.0)/2.0) &&
-	   0==FCompare(sin(_PI/2.0),1.0))
+	if(0==FCompare(sin(pi/6.0),0.5) &&
+	   0==FCompare(sin(pi/3.0),sqrt(3.0)/2.0) &&
+	   0==FCompare(sin(pi/2.0),1.0))
 	{
 		printf("sin works fine.\n");
 	}
@@ -216,9 +235,9 @@ int main(void)
 	}
 
 
-	if(0==FCompare(Sine(_PI/6.0),0.5) &&
-	   0==FCompare(Sine(_PI/3.0),sqrt(3.0)/2.0) &&
-	   0==FCompare(Sine(_PI/2.0),1.0))
+	if(0==FCompare(Sine(pi/6.0),0.5) &&
+	   0==FCompare(Sine(pi/3.0),sqrt(3.0)/2.0) &&
+	   0==FCompare(Sine(pi/2.0),1.0))
 	{
 		printf("sin works fine.\n");
 	}
@@ -228,9 +247,9 @@ int main(void)
 		printf("Error in sin.\n");
 	}
 
-	if(0==FCompare(Cosine(_PI/6.0),sqrt(3.0)/2.0) &&
-	   0==FCompare(Cosine(_PI/3.0),0.5) &&
-	   0==FCompare(Cosine(_PI/2.0),0.0))
+	if(0==FCompare(Cosine(pi/6.0),sqrt(3.0)/2.0) &&
+	   0==FCompare(Cosine(pi/3.0),0.5) &&
+	   0==FCompare(Cosine(pi/2.0),0.0))
 	{
 		printf("cos works fine.\n");
 	}
@@ -240,9 +259,9 @@ int main(void)
 		printf("Error in cos.\n");
 	}
 
-	if(0==FCompare(Tangent(_PI/4.0),1.0) &&
-	   0==FCompare(Tangent(_PI/3.0),sqrt(3.0)) &&
-	   0==FCompare(Tangent(_PI/6.0),1.0/sqrt(3.0)) &&
+	if(0==FCompare(Tangent(pi/4.0),1.0) &&
+	   0==FCompare(Tangent(pi/3.0),sqrt(3.0)) &&
+	   0==FCompare(Tangent(pi/6.0),1.0/sqrt(3.0)) &&
 	   0==FCompare(Tangent(0),0.0))
 	{
 		printf("tan works fine.\n");
@@ -252,6 +271,19 @@ int main(void)
 		e=1;
 		printf("Error in tan.\n");
 	}
+
+
+	double l2e=GetL2E();
+	double E=pow(2.0,l2e);
+	if(0==FCompare(E,_E))
+	{
+		printf("pow and GetL2E works fine.\n");
+	}
+	else
+	{
+		printf("Error in pow or GetL2E.\n");
+	}
+
 
 
 	return e;

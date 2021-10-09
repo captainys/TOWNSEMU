@@ -475,6 +475,7 @@ public:
 		unsigned int FADD_ST_STi(i486DX &cpu,int i);
 		unsigned int FADDP_STi_ST(i486DX &cpu,int i);
 		unsigned int FCHS(i486DX &cpu);
+		unsigned int FCOMP(i486DX &cpu);
 		unsigned int FCOMPP(i486DX &cpu);
 		unsigned int FCOMP_m32real(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FCOMP_m64real(i486DX &cpu,const unsigned char byteData[]);
@@ -492,6 +493,8 @@ public:
 		unsigned int FLD_ST(i486DX &cpu,int i);
 		unsigned int FLD1(i486DX &cpu);
 		unsigned int FLDL2T(i486DX &cpu);
+		unsigned int FLDL2E(i486DX &cpu);
+		unsigned int FLDPI(i486DX &cpu);
 		unsigned int FLDZ(i486DX &cpu);
 		unsigned int FMUL(i486DX &cpu);
 		unsigned int FMUL_m64real(i486DX &cpu,const unsigned char byteData[]);
@@ -503,6 +506,7 @@ public:
 		unsigned int FSUBR_m64real(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FXAM(i486DX &cpu);
 		unsigned int FXCH(i486DX &cpu,int i);
+		unsigned int FYL2X(i486DX &cpu);
 	};
 
 	class InterruptDescriptor : public FarPointer
