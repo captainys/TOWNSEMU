@@ -214,6 +214,30 @@ unsigned int i486DX::FPUState::GetRC(void) const
 {
 	return (GetControlWord()>>10)&3;
 }
+double i486DX::FPUState::RoundToInteger(double src) const
+{
+	switch(GetRC())
+	{
+	case 0: // Round to Nearest or Even
+		if(src<0.0)
+		{
+			src-=0.5;
+		}
+		else if(0.0<src)
+		{
+			src+=0.5;
+		}
+		return src-fmod(src,1.0);
+	case 1: // Round Down (Toward -INF)
+		return floor(src);
+	case 2: // Round Up (Toward +INF)
+		return ceil(src);
+	default:
+	case 3: // Chop (Truncate)
+		return src-fmod(src,1.0);
+	}
+	
+}
 void i486DX::FPUState::GetSTAsDouble(class i486DX &cpu,class OperandValueBase &value)
 {
 	if(0<stackPtr)
@@ -232,30 +256,7 @@ void i486DX::FPUState::GetSTAsSignedInt(class i486DX &cpu,class OperandValueBase
 	if(0<stackPtr)
 	{
 		uint64_t i=0;
-		double d=ST(cpu).value;
-		switch(GetRC())
-		{
-		case 0: // Round to Nearest or Even
-			if(d<0.0)
-			{
-				d-=0.5;
-			}
-			break;
-		case 1: // Round Down (Toward -INF)
-			if(d<0.0)
-			{
-				d-=1.0;
-			}
-			break;
-		case 2: // Round Up (Toward +INF)
-			if(0.0<d)
-			{
-				d+=1.0;
-			}
-			break;
-		case 3: // Chop (Truncate)
-			break;
-		}
+		double d=RoundToInteger(ST(cpu).value);
 		i=(uint64_t)d;
 		value.numBytes=8;
 		value.byteData[0]=( i     &255);
@@ -579,7 +580,7 @@ unsigned int i486DX::FPUState::FILD_m32int(i486DX &cpu,const unsigned char byteD
 	{
 		statusWord&=~STATUS_C1;
 		Push(cpu,(double)IntFrom32Bit(byteData));
-		return 0;
+		return 16;
 	}
 	return 0;
 }
@@ -729,6 +730,19 @@ unsigned int i486DX::FPUState::FPREM(i486DX &cpu)
 	}
 	return 0; // Let it abort.
 }
+unsigned int i486DX::FPUState::FRNDINT(i486DX &cpu)
+{
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+
+		auto &ST=this->ST(cpu);
+		ST.value=RoundToInteger(ST.value);
+
+		return 241;
+	}
+	return 0; // Let it abort.
+}
 unsigned int i486DX::FPUState::FSIN(i486DX &cpu)
 {
 	if(true==enabled)
@@ -864,5 +878,14 @@ unsigned int i486DX::FPUState::FXCH(i486DX &cpu,int i)
 }
 unsigned int i486DX::FPUState::FYL2X(i486DX &cpu)
 {
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+		auto &st=ST(cpu);
+		auto &st1=ST(cpu,1);
+		st1.value=log2(st.value)*st1.value;
+		Pop(cpu);
+		return 311;
+	}
 	return 0;
 }

@@ -384,6 +384,7 @@ public:
 		unsigned int GetControlWord(void) const;
 
 		unsigned int GetRC(void) const;
+		double RoundToInteger(double src) const;
 
 		void GetSTAsDouble(class i486DX &cpu,OperandValueBase &value);
 		void GetSTAsSignedInt(class i486DX &cpu,OperandValueBase &value);
@@ -500,6 +501,7 @@ public:
 		unsigned int FMUL_m64real(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FPREM(i486DX &cpu);
 		unsigned int FPTAN(i486DX &cpu);
+		unsigned int FRNDINT(i486DX &cpu);
 		unsigned int FSIN(i486DX &cpu);
 		unsigned int FSQRT(i486DX &cpu);
 		unsigned int FSTP_STi(i486DX &cpu,int i);

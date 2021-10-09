@@ -1164,6 +1164,12 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 		{
 			unsigned int MODR_M;
 			FUNCCLASS::PeekOperand8(cpu,MODR_M,inst,ptr,seg,offset,mem);
+			if(0xE8<=MODR_M && MODR_M<=0xEF // FSUB ST(i),ST
+			   )
+			{
+				FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset,mem);
+			}
+			else
 			{
 				switch(Instruction::GetREG(MODR_M))
 				{
@@ -2368,8 +2374,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		}
 		else if(0xFC==operand[0])
 		{
-			// FRNDINT
-			disasm="?FPUINST"+cpputil::Ubtox(opCode)+" "+cpputil::Ubtox(operand[0]);
+			disasm="FRNDINT";
 		}
 		else if(0xFD==operand[0])
 		{
@@ -2378,7 +2383,6 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		}
 		else if(0xFE==operand[0])
 		{
-			// FSIN
 			disasm="FSIN";
 		}
 		else if(0xFF==operand[0])
@@ -2446,6 +2450,13 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 	case I486_OPCODE_FPU_DC_FADD:
 		{
 			unsigned int MODR_M=operand[0];
+			if(0xE8<=MODR_M && MODR_M<=0xEF)
+			{
+				disasm="FSUB  ST(";
+				disasm.push_back('0'+(MODR_M&7));
+				disasm+="),ST";
+			}
+			else
 			{
 				switch(Instruction::GetREG(MODR_M))
 				{
@@ -5979,7 +5990,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		else if(0xFC==inst.operand[0])
 		{
-			// FRNDINT
+			clocksPassed=state.fpuState.FRNDINT(*this);
 		}
 		else if(0xFD==inst.operand[0])
 		{
@@ -6079,6 +6090,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			}
 		#endif
 			unsigned int MODR_M=inst.operand[0];
+			if(0xE8<=MODR_M && MODR_M<=0xEF)
+			{
+			}
+			else
 			{
 				switch(Instruction::GetREG(MODR_M))
 				{
