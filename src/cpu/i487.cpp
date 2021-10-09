@@ -100,6 +100,17 @@ static const double VALUE_OF_PI=3.14159265358979323846;
 	exponent=byteData[8]|(byteData[9]<<8);
 #endif
 
+	if(exponent+1023<16384) // exponent+1023-16383 -> Make it Zero
+	{
+		exponent=16383-1023;
+		fraction=0;
+	}
+	else if(2048+16383<=exponent+1023) // 2048<=exponent+1023-16383 -> Make it Infinity
+	{
+		exponent=1024+16384;
+		fraction=((1LL<<52)-1);
+	}
+
 	fraction>>=11;
 	fraction&=((1LL<<52)-1);
 	exponent=exponent+1023-16383;
