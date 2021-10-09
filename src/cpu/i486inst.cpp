@@ -1211,10 +1211,10 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 				default:
 					FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset,mem);
 					break;
-				// case 2: // FST m64real
 				// case 6: // FSAVE m94/108byte
 					break;
 				case 0:	// FLD m64real
+				case 2: // FST m64real
 				case 3: // FSTP m64real
 				case 7: // FNSTSW m2byte
 					FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
@@ -2248,6 +2248,9 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 				case 6:
 					disasm=DisassembleTypicalOneOperand("FDIV(m32real)  ",op1,operandSize);
 					break;
+				case 7:
+					disasm=DisassembleTypicalOneOperand("FDIVR(m32real)  ",op1,operandSize);
+					break;
 				default:
 					disasm="?FPUINST"+cpputil::Ubtox(opCode)+" "+cpputil::Ubtox(operand[0])+" REG="+cpputil::Ubtox(GetREG());
 					break;
@@ -2367,7 +2370,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		else if(0xFE==operand[0])
 		{
 			// FSIN
-			disasm="?FPUINST"+cpputil::Ubtox(opCode)+" "+cpputil::Ubtox(operand[0]);
+			disasm="FSIN";
 		}
 		else if(0xFF==operand[0])
 		{
@@ -2500,7 +2503,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 					disasm="?FPUINST REG=1";
 					break;
 				case 2: // FST m64real
-					disasm="?FPUINST REG=2";
+					disasm=DisassembleTypicalOneOperand("FST(m64real)",op1,operandSize);
 					break;
 				case 3: // FSTP m64real
 					disasm=DisassembleTypicalOneOperand("FSTP(m64real)",op1,operandSize);
@@ -5849,6 +5852,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 						clocksPassed=state.fpuState.FDIV_m32real(*this,value.byteData);
 					}
 					break;
+				case 7:
+					{
+						auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,4);
+						clocksPassed=state.fpuState.FDIVR_m32real(*this,value.byteData);
+					}
+					break;
 				}
 			}
 		}
@@ -5904,7 +5913,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		else if(0xF2==inst.operand[0])
 		{
-			// FPTAN
+			clocksPassed=state.fpuState.FPTAN(*this);
 		}
 		else if(0xF3==inst.operand[0])
 		{
@@ -5952,11 +5961,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		else if(0xFE==inst.operand[0])
 		{
-			// FSIN
+			clocksPassed=state.fpuState.FSIN(*this);
 		}
 		else if(0xFF==inst.operand[0])
 		{
-			// FCOS
+			clocksPassed=state.fpuState.FCOS(*this);
 		}
 		else
 		{
@@ -6122,6 +6131,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					}
 					break;
 				case 2: // FST m64real
+					{
+						OperandValue value;
+						state.fpuState.GetSTAsDouble(*this,value);
+						StoreOperandValue64(op1,mem,inst.addressSize,inst.segOverride,value);
+						clocksPassed=8;
+					}
 					break;
 				case 3: // FSTP m64real
 					{

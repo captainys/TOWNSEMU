@@ -3,6 +3,21 @@
 
 
 
+void FLD_m64real(const double *ptr64);
+void FLD_m80real(const unsigned char *ptr64);
+void FSTP_m64real(void *buf8bytes);
+void FSTP_m80real(void *buf10bytes);
+void FDIV_ST_STi(void);
+void FDIVR_ST_STi(void);
+void FDIV_STi_ST(void);
+void FDIVR_STi_ST(void);
+void FDIVP_STi_ST(void);
+void FDIVRP_STi_ST(void);
+void UseFSIN(void);
+void UseFCOS(void);
+void UseFPTAN(void);
+
+
 
 int FCompare(double a,double b)
 {
@@ -15,6 +30,29 @@ int FCompare(double a,double b)
 		return -1;
 	}
 	return 1;
+}
+
+double Sine(double angle)
+{
+	FLD_m64real(&angle);
+	UseFSIN();
+	FSTP_m64real(&angle);
+	return angle;
+}
+double Cosine(double angle)
+{
+	FLD_m64real(&angle);
+	UseFCOS();
+	FSTP_m64real(&angle);
+	return angle;
+}
+double Tangent(double angle)
+{
+	FLD_m64real(&angle);
+	UseFPTAN();
+	FSTP_m64real(&angle);
+	FSTP_m64real(&angle);
+	return angle;
 }
 
 int main(void)
@@ -163,6 +201,8 @@ int main(void)
 	}
 
 
+	// Apparently the following lines use FPREM instead of FSIN for unknown reason.
+	// Anyway, it's a good test for FPREM.
 	if(0==FCompare(sin(_PI/6.0),0.5) &&
 	   0==FCompare(sin(_PI/3.0),sqrt(3.0)/2.0) &&
 	   0==FCompare(sin(_PI/2.0),1.0))
@@ -175,6 +215,43 @@ int main(void)
 		printf("Error in sin.\n");
 	}
 
+
+	if(0==FCompare(Sine(_PI/6.0),0.5) &&
+	   0==FCompare(Sine(_PI/3.0),sqrt(3.0)/2.0) &&
+	   0==FCompare(Sine(_PI/2.0),1.0))
+	{
+		printf("sin works fine.\n");
+	}
+	else
+	{
+		e=1;
+		printf("Error in sin.\n");
+	}
+
+	if(0==FCompare(Cosine(_PI/6.0),sqrt(3.0)/2.0) &&
+	   0==FCompare(Cosine(_PI/3.0),0.5) &&
+	   0==FCompare(Cosine(_PI/2.0),0.0))
+	{
+		printf("cos works fine.\n");
+	}
+	else
+	{
+		e=1;
+		printf("Error in cos.\n");
+	}
+
+	if(0==FCompare(Tangent(_PI/4.0),1.0) &&
+	   0==FCompare(Tangent(_PI/3.0),sqrt(3.0)) &&
+	   0==FCompare(Tangent(_PI/6.0),1.0/sqrt(3.0)) &&
+	   0==FCompare(Tangent(0),0.0))
+	{
+		printf("tan works fine.\n");
+	}
+	else
+	{
+		e=1;
+		printf("Error in tan.\n");
+	}
 
 
 	return e;

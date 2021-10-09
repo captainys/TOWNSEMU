@@ -15,6 +15,10 @@
 						PUBLIC	FDIV_m64real
 						PUBLIC	FDIVR_m64real
 
+						PUBLIC	UseFSIN
+						PUBLIC	UseFCOS
+						PUBLIC	UseFPTAN
+
 CODE					SEGMENT
 
 
@@ -144,6 +148,30 @@ FDIVR_m64real			PROC
 						RET
 
 FDIVR_m64real			ENDP
+
+
+
+UseFSIN					PROC
+						FWAIT
+						FSIN
+						RET
+UseFSIN					ENDP
+
+
+
+UseFCOS					PROC
+						FWAIT
+						FCOS
+						RET
+UseFCOS					ENDP
+
+
+
+UseFPTAN				PROC
+						FWAIT
+						FPTAN
+						RET
+UseFPTAN				ENDP
 
 
 

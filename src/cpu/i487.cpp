@@ -486,6 +486,24 @@ unsigned int i486DX::FPUState::FDIV_m32real(i486DX &cpu,const unsigned char byte
 	}
 	return 0;
 }
+unsigned int i486DX::FPUState::FDIVR_m32real(i486DX &cpu,const unsigned char byteData[])
+{
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+
+		auto src=DoubleFrom32Bit(byteData);
+		auto &st=ST(cpu);
+		if(0==st.value)
+		{
+			// Zero division
+		}
+		st.value=src/st.value;
+
+		return 73;
+	}
+	return 0;
+}
 unsigned int i486DX::FPUState::FDIVP_STi_ST(i486DX &cpu,int i)
 {
 	if(true==enabled)
@@ -677,6 +695,55 @@ unsigned int i486DX::FPUState::FPREM(i486DX &cpu)
 		Pop(cpu);
 
 		return 84;
+	}
+	return 0; // Let it abort.
+}
+unsigned int i486DX::FPUState::FSIN(i486DX &cpu)
+{
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+
+		auto &ST=this->ST(cpu);
+		ST.value=sin(ST.value);
+
+		return 241;
+	}
+	return 0; // Let it abort.
+}
+unsigned int i486DX::FPUState::FCOS(i486DX &cpu)
+{
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+
+		auto &ST=this->ST(cpu);
+		ST.value=cos(ST.value);
+
+		return 241;
+	}
+	return 0; // Let it abort.
+}
+unsigned int i486DX::FPUState::FPTAN(i486DX &cpu)
+{
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+
+		auto &ST=this->ST(cpu);
+		auto t=tan(ST.value);
+		if(true==isnan(t))
+		{
+			statusWord|=STATUS_C2;
+		}
+		else
+		{
+			statusWord&=~STATUS_C2;
+			ST.value=tan(ST.value);
+			Push(cpu,1.0); // I have no idea why it does it.
+		}
+
+		return 244;
 	}
 	return 0; // Let it abort.
 }
