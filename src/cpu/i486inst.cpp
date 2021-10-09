@@ -1117,6 +1117,7 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 			if((0xC0<=MODR_M && MODR_M<=0xCF) || // FLD_ST, FXCHG
 			   0xE0==MODR_M ||
 			   0xE1==MODR_M || // FABS
+			   0xE4==MODR_M || // FTST
 			   0xE5==MODR_M || // FXAM
 			   (0xE8<=MODR_M && MODR_M<=0xEE) ||
 			   (0xF0<=MODR_M && MODR_M<=0xFF))
@@ -2293,6 +2294,10 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		{
 			disasm="FXAM";
 		}
+		else if(0xE4==operand[0])
+		{
+			disasm="FTST";
+		}
 		else if(0xE8==operand[0])
 		{
 			disasm="FLD1";
@@ -2315,12 +2320,10 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		}
 		else if(0xF0==operand[0])
 		{
-			// F2XM1
-			disasm="?FPUINST"+cpputil::Ubtox(opCode)+" "+cpputil::Ubtox(operand[0]);
+			disasm="F2XM1";
 		}
 		else if(0xF1==operand[0])
 		{
-			// FYL2X
 			disasm="FYL2X";
 		}
 		else if(0xF2==operand[0])
@@ -2378,8 +2381,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		}
 		else if(0xFD==operand[0])
 		{
-			// FSCALE
-			disasm="?FPUINST"+cpputil::Ubtox(opCode)+" "+cpputil::Ubtox(operand[0]);
+			disasm="FSCALE";
 		}
 		else if(0xFE==operand[0])
 		{
@@ -5908,6 +5910,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			clocksPassed=state.fpuState.FABS(*this);
 		}
+		else if(0xE4==inst.operand[0])
+		{
+			clocksPassed=state.fpuState.FTST(*this);
+		}
 		else if(0xE5==inst.operand[0])
 		{
 			clocksPassed=state.fpuState.FXAM(*this);
@@ -5942,7 +5948,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		else if(0xF0==inst.operand[0])
 		{
-			// F2XM1
+			clocksPassed=state.fpuState.F2XM1(*this);
 		}
 		else if(0xF1==inst.operand[0])
 		{
@@ -5994,7 +6000,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		else if(0xFD==inst.operand[0])
 		{
-			// FSCALE
+			clocksPassed=state.fpuState.FSCALE(*this);
 		}
 		else if(0xFE==inst.operand[0])
 		{
@@ -6092,6 +6098,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			unsigned int MODR_M=inst.operand[0];
 			if(0xE8<=MODR_M && MODR_M<=0xEF)
 			{
+				clocksPassed=state.fpuState.FSUB_STi_ST(*this,MODR_M&7);
 			}
 			else
 			{

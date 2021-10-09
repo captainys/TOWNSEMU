@@ -382,6 +382,17 @@ std::vector <std::string> i486DX::FPUState::GetStateText(void) const
 	return text;
 }
 
+unsigned int i486DX::FPUState::F2XM1(i486DX &cpu)
+{
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+		auto &st=ST(cpu);
+		st.value=pow(2.0,st.value)-1.0;
+		return 242;
+	}
+	return 0;
+}
 unsigned int i486DX::FPUState::FABS(i486DX &cpu)
 {
 	if(true==enabled)
@@ -743,6 +754,22 @@ unsigned int i486DX::FPUState::FRNDINT(i486DX &cpu)
 	}
 	return 0; // Let it abort.
 }
+unsigned int i486DX::FPUState::FSCALE(i486DX &cpu)
+{
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+		// Intel 80486 Programmer's Reference Manual 26-125
+		// If the value is not integral, FSCALE uses the nearest integer smaller in magnitude.
+		auto &ST=this->ST(cpu);
+		auto &ST1=this->ST(cpu,1);
+		int p=(int)ST1.value;
+		ST.value*=pow(2.0,p);
+
+		return 31;
+	}
+	return 0; // Let it abort.
+}
 unsigned int i486DX::FPUState::FSIN(i486DX &cpu)
 {
 	if(true==enabled)
@@ -827,6 +854,28 @@ unsigned int i486DX::FPUState::FSUBR_m64real(i486DX &cpu,const unsigned char byt
 		st.value=src-st.value;
 
 		return 14;
+	}
+	return 0;
+}
+unsigned int i486DX::FPUState::FSUB_STi_ST(i486DX &cpu,int i)
+{
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+		auto &ST=this->ST(cpu);
+		auto &STi=this->ST(cpu,i);
+		STi.value=STi.value-ST.value;
+		return 10;
+	}
+	return 0;
+}
+unsigned int i486DX::FPUState::FTST(i486DX &cpu)
+{
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+		Compare(ST(cpu).value,0.0);
+		return 4;
 	}
 	return 0;
 }

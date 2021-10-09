@@ -471,6 +471,7 @@ public:
 		}
 
 		// Returns clocks passed.
+		unsigned int F2XM1(i486DX &cpu);
 		unsigned int FABS(i486DX &cpu);
 		unsigned int FADD64(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FADD_ST_STi(i486DX &cpu,int i);
@@ -502,10 +503,13 @@ public:
 		unsigned int FPREM(i486DX &cpu);
 		unsigned int FPTAN(i486DX &cpu);
 		unsigned int FRNDINT(i486DX &cpu);
+		unsigned int FSCALE(i486DX &cpu);
 		unsigned int FSIN(i486DX &cpu);
 		unsigned int FSQRT(i486DX &cpu);
 		unsigned int FSTP_STi(i486DX &cpu,int i);
 		unsigned int FSUBR_m64real(i486DX &cpu,const unsigned char byteData[]);
+		unsigned int FSUB_STi_ST(i486DX &cpu,int i);
+		unsigned int FTST(i486DX &cpu);
 		unsigned int FXAM(i486DX &cpu);
 		unsigned int FXCH(i486DX &cpu,int i);
 		unsigned int FYL2X(i486DX &cpu);
