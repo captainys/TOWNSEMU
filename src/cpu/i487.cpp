@@ -253,9 +253,43 @@ void i486DX::FPUState::GetSTAsDouble(class i486DX &cpu,class OperandValueBase &v
 {
 	if(0<stackPtr)
 	{
+	#ifdef YS_LITTLE_ENDIAN
 		double *doublePtr=(double *)value.byteData;
 		*doublePtr=ST(cpu).value;
+	#else
+		uint64_t *intPtr=(uint64_t *)(&ST(cpu).value);
+		value.byteData[0]=  (*intPtr)     &0xFF;
+		value.byteData[1]= ((*intPtr)>> 8)&0xFF;
+		value.byteData[2]= ((*intPtr)>>16)&0xFF;
+		value.byteData[3]= ((*intPtr)>>24)&0xFF;
+		value.byteData[4]= ((*intPtr)>>32)&0xFF;
+		value.byteData[5]= ((*intPtr)>>40)&0xFF;
+		value.byteData[6]= ((*intPtr)>>48)&0xFF;
+		value.byteData[7]= ((*intPtr)>>56)&0xFF;
+	#endif
 		value.numBytes=8;
+	}
+	else
+	{
+		// Raise NM fault.
+	}
+}
+void i486DX::FPUState::GetSTAsFloat(class i486DX &cpu,OperandValueBase &value)
+{
+	if(0<stackPtr)
+	{
+	#ifdef YS_LITTLE_ENDIAN
+		float *floatPtr=(float *)value.byteData;
+		*floatPtr=(float)ST(cpu).value;
+	#else
+		float f=ST(cpu.value);
+		uint32_t *intPtr=(uint64_t *)(&f);
+		value.byteData[0]=  (*intPtr)     &0xFF;
+		value.byteData[1]= ((*intPtr)>> 8)&0xFF;
+		value.byteData[2]= ((*intPtr)>>16)&0xFF;
+		value.byteData[3]= ((*intPtr)>>24)&0xFF;
+	#endif
+		value.numBytes=4;
 	}
 	else
 	{
@@ -414,6 +448,18 @@ unsigned int i486DX::FPUState::FABS(i486DX &cpu)
 	}
 	return 0;
 }
+unsigned int i486DX::FPUState::FADD_m32real(i486DX &cpu,const unsigned char byteData[])
+{
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+
+		auto src=DoubleFrom32Bit(byteData);
+		ST(cpu).value+=src;
+		return 10;
+	}
+	return 0;
+}
 unsigned int i486DX::FPUState::FADD64(i486DX &cpu,const unsigned char byteData[])
 {
 	if(true==enabled)
@@ -422,7 +468,7 @@ unsigned int i486DX::FPUState::FADD64(i486DX &cpu,const unsigned char byteData[]
 
 		auto src=DoubleFrom64Bit(byteData);
 		ST(cpu).value+=src;
-		return 3;
+		return 10;
 	}
 	return 0;
 }

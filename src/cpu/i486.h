@@ -387,6 +387,7 @@ public:
 		double RoundToInteger(double src) const;
 
 		void GetSTAsDouble(class i486DX &cpu,OperandValueBase &value);
+		void GetSTAsFloat(class i486DX &cpu,OperandValueBase &value);
 		void GetSTAsSignedInt(class i486DX &cpu,OperandValueBase &value);
 		void GetSTAs80BitBCD(class i486DX &cpu,OperandValueBase &value);
 
@@ -473,6 +474,7 @@ public:
 		// Returns clocks passed.
 		unsigned int F2XM1(i486DX &cpu);
 		unsigned int FABS(i486DX &cpu);
+		unsigned int FADD_m32real(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FADD64(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FADD_ST_STi(i486DX &cpu,int i);
 		unsigned int FADDP_STi_ST(i486DX &cpu,int i);

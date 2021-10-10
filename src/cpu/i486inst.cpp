@@ -5990,6 +5990,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{
 				switch(inst.GetREG())
 				{
+				case 0:	// FADD m32real
+					{
+						auto value=EvaluateOperand64(mem,inst.addressSize,inst.segOverride,op1);
+						clocksPassed=state.fpuState.FADD_m32real(*this,value.byteData);
+					}
+					break;
 				case 3:
 					// FCOMP(m32real)
 					{
@@ -6146,6 +6152,15 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				{
 					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,4);
 					clocksPassed=state.fpuState.FLD32(*this,value.byteData);
+				}
+				break;
+			case 3: // FSTP m32real
+				{
+					OperandValue value;
+					state.fpuState.GetSTAsFloat(*this,value);
+					StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+					state.fpuState.Pop(*this);
+					clocksPassed=7;
 				}
 				break;
 			case 5: // "FLDCW"

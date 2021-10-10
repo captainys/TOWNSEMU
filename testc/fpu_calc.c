@@ -302,9 +302,31 @@ int RunTest(void)
 	return e;
 }
 
+int RunTestFloatAndInt(void)
+{
+	int e=0;
+
+	float a,b,c;
+	int i;
+	i=10;
+	a=i;
+	a=a+i;
+	if(0==FCompare((double)a,20.0))
+	{
+		printf("Adding integer OK.\n");
+	}
+	else
+	{
+		e=1;
+		printf("Error in adding integer.\n");
+	}
+
+	return e;
+}
+
 int main(void)
 {
 	RunTest();
-	int e=RunTest();
+	int e=RunTest()+RunTestFloatAndInt();
 	return e;
 }
