@@ -742,6 +742,21 @@ unsigned int i486DX::FPUState::FMUL_m64real(i486DX &cpu,const unsigned char byte
 	}
 	return 0;
 }
+unsigned int i486DX::FPUState::FPATAN(i486DX &cpu)
+{
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+
+		auto &ST=this->ST(cpu);
+		auto &ST1=this->ST(cpu,1);
+		ST1.value=atan2(ST1.value,ST.value);
+		Pop(cpu);
+
+		return 84;
+	}
+	return 0; // Let it abort.
+}
 unsigned int i486DX::FPUState::FPREM(i486DX &cpu)
 {
 	if(true==enabled)
@@ -885,6 +900,19 @@ unsigned int i486DX::FPUState::FSUB_STi_ST(i486DX &cpu,int i)
 		auto &ST=this->ST(cpu);
 		auto &STi=this->ST(cpu,i);
 		STi.value=STi.value-ST.value;
+		return 10;
+	}
+	return 0;
+}
+unsigned int i486DX::FPUState::FSUBRP_STi_ST(i486DX &cpu,int i)
+{
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+		auto &ST=this->ST(cpu);
+		auto &STi=this->ST(cpu,i);
+		STi.value=ST.value-STi.value;
+		Pop(cpu);
 		return 10;
 	}
 	return 0;

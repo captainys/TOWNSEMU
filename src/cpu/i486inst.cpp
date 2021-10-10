@@ -6088,7 +6088,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		else if(0xF3==inst.operand[0])
 		{
-			// FPATAN
+			clocksPassed=state.fpuState.FPATAN(*this);
 		}
 		else if(0xF4==inst.operand[0])
 		{
@@ -6395,6 +6395,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		else if(0xD9==inst.operand[0])
 		{
 			clocksPassed=state.fpuState.FCOMPP(*this);
+		}
+		else if(0xE0<=inst.operand[0] && inst.operand[0]<=0xE7)
+		{
+			clocksPassed=state.fpuState.FSUBRP_STi_ST(*this,inst.operand[0]&7);
 		}
 		else if(0xF0<=inst.operand[0] && inst.operand[0]<=0xF7)
 		{

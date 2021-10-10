@@ -511,7 +511,7 @@ public:
 		unsigned int FSTP_STi(i486DX &cpu,int i);
 		unsigned int FSUBR_m64real(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FSUB_STi_ST(i486DX &cpu,int i);
-		unsigned int FSUBR_STi_ST(i486DX &cpu,int i);
+		unsigned int FSUBRP_STi_ST(i486DX &cpu,int i);
 		unsigned int FTST(i486DX &cpu);
 		unsigned int FXAM(i486DX &cpu);
 		unsigned int FXCH(i486DX &cpu,int i);
