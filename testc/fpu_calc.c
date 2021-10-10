@@ -71,7 +71,7 @@ double GetL2E(void)
 	return d;
 }
 
-int main(void)
+int RunTest(void)
 {
 	int e=0;
 
@@ -284,7 +284,27 @@ int main(void)
 		printf("Error in pow or GetL2E.\n");
 	}
 
+	if(0==FCompare(sqrt(10.0),pow(10.0,0.5)))
+	{
+		printf("pow and sqrt works fine.\n");
+	}
+	else
+	{
+		printf("Error in pow or sqrt.\n");
+	}
 
 
+	a=sqrt(3.0);
+	b=1.0;
+	a=atan2(a,b);
+
+
+	return e;
+}
+
+int main(void)
+{
+	RunTest();
+	int e=RunTest();
 	return e;
 }

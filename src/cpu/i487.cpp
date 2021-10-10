@@ -484,11 +484,20 @@ unsigned int i486DX::FPUState::FCOMP_m64real(i486DX &cpu,const unsigned char byt
 	}
 	return 0; // Let it abort.
 }
-unsigned int i486DX::FPUState::FCOMP(i486DX &cpu)
+unsigned int i486DX::FPUState::FCOM(i486DX &cpu,int i)
 {
 	if(true==enabled)
 	{
-		Compare(ST(cpu).value,ST(cpu,1).value);
+		Compare(ST(cpu).value,ST(cpu,i).value);
+		return 4;
+	}
+	return 0; // Let it abort.
+}
+unsigned int i486DX::FPUState::FCOMP(i486DX &cpu,int i)
+{
+	if(true==enabled)
+	{
+		Compare(ST(cpu).value,ST(cpu,i).value);
 		Pop(cpu);
 		return 4;
 	}
@@ -706,14 +715,14 @@ unsigned int i486DX::FPUState::FLDZ(i486DX &cpu)
 	}
 	return 0;
 }
-unsigned int i486DX::FPUState::FMUL(i486DX &cpu)
+unsigned int i486DX::FPUState::FMULP(i486DX &cpu,int i)
 {
 	if(true==enabled)
 	{
 		statusWord&=~STATUS_C1;
 
 		auto &ST=this->ST(cpu);
-		auto &ST1=this->ST(cpu,1);
+		auto &ST1=this->ST(cpu,i);
 		ST1.value=ST.value*ST1.value;
 		Pop(cpu);
 

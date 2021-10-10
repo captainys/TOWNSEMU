@@ -1116,7 +1116,7 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 			unsigned int MODR_M;
 			FUNCCLASS::PeekOperand8(cpu,MODR_M,inst,ptr,seg,offset,mem);
 			if((0xC0<=MODR_M && MODR_M<=0xCF) || // FLD_ST, FXCHG
-			   0xE0==MODR_M ||
+			   0xE0==MODR_M || // FCHS
 			   0xE1==MODR_M || // FABS
 			   0xE4==MODR_M || // FTST
 			   0xE5==MODR_M || // FXAM
@@ -1151,7 +1151,8 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 		{
 			unsigned int MODR_M;
 			FUNCCLASS::PeekOperand8(cpu,MODR_M,inst,ptr,seg,offset,mem);
-			if(0xE3==MODR_M) // FNINIT
+			if(0xE3==MODR_M || // FNINIT
+			   0xE2==MODR_M)   // FCLEX
 			{
 				FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset,mem);
 			}
@@ -1181,27 +1182,16 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 		{
 			unsigned int MODR_M;
 			FUNCCLASS::PeekOperand8(cpu,MODR_M,inst,ptr,seg,offset,mem);
-			if(0xE8<=MODR_M && MODR_M<=0xEF // FSUB ST(i),ST
+			if((0xE8<=MODR_M && MODR_M<=0xEF) || // FSUB ST(i),ST
+			   (0xC0<=MODR_M && MODR_M<=0xC7)    // FADD ST(i),ST
 			   )
 			{
 				FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset,mem);
 			}
 			else
 			{
-				switch(Instruction::GetREG(MODR_M))
-				{
-				case 0: // FADD m64real
-				case 1: // FMUL m64real
-				case 3: // FCOMP m64real
-				case 5: // FSUBR m64real
-				case 7: // FDIVR m64real
-					FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
-					op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
-					break;
-				default:
-					FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset,mem);
-					break;
-				}
+				FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
+				op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 			}
 		}
 		break;
@@ -1250,14 +1240,16 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 		{
 			unsigned int MODR_M;
 			FUNCCLASS::PeekOperand8(cpu,MODR_M,inst,ptr,seg,offset,mem);
-			if(0xC9==MODR_M ||
-			   0xF1==MODR_M ||
-			  (0xF8<=MODR_M && MODR_M<=0xFF) ||
-			   0xD9==MODR_M ||
-			  (0xC0<=MODR_M && MODR_M<=0xC7))
+			if((0xC8<=MODR_M && MODR_M<=0xCF) ||
+			   (0xE0<=MODR_M && MODR_M<=0xE7) ||
+			   (0xF0<=MODR_M && MODR_M<=0xFF) ||
+			    0xD9==MODR_M ||
+			   (0xC0<=MODR_M && MODR_M<=0xC7))
 			{
+				// 0xC8+i:FMULP
 				// 0xD9:FCOMPP
-				// 0xF9:FDIV
+				// 0xF0+i:FDIVR
+				// 0xF8+i:FDIVRP
 				// 0xC0 to 0xC7:FADDP
 				FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset,mem);
 			}
@@ -2254,13 +2246,17 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 				disasm.push_back('0'+(operand[0]&7));
 				disasm+=")";
 			}
-			else if(0xD1==MODR_M)
+			else if(0xD0==(MODR_M&0xF8))
 			{
-				disasm="?FPUINST"+cpputil::Ubtox(opCode)+" "+cpputil::Ubtox(operand[0]);
+				disasm="FCOM   ST(";
+				disasm.push_back('0'+(operand[0]&7));
+				disasm+=")";
 			}
-			else if(0xD9==MODR_M)   // FCOMP
+			else if(0xD8==(MODR_M&0xF8))   // FCOMP
 			{
-				disasm="FCOMP";
+				disasm="FCOMP  ST(";
+				disasm.push_back('0'+(operand[0]&7));
+				disasm+=")";
 			}
 			else
 			{
@@ -2474,28 +2470,28 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 			switch(Instruction::GetREG(operand[0]))
 			{
 			case 0:
-				disasm="FIADD(m32int)";
+				disasm=DisassembleTypicalOneOperand("FIADD(m32int)",op1,32);
 				break;
 			case 1:
-				disasm="FIMUL(m32int)";
+				disasm=DisassembleTypicalOneOperand("FIMUL(m32int)",op1,32);
 				break;
 			case 2:
-				disasm="FICOM(m32int)";
+				disasm=DisassembleTypicalOneOperand("FICOM(m32int)",op1,32);
 				break;
 			case 3:
-				disasm="FICOMP(m32int)";
+				disasm=DisassembleTypicalOneOperand("FICOMP(m32int)",op1,32);
 				break;
 			case 4:
-				disasm="FISUB(m32int)";
+				disasm=DisassembleTypicalOneOperand("FISUB(m32int)",op1,32);
 				break;
 			case 5:
-				disasm="FISUBR(m32int)";
+				disasm=DisassembleTypicalOneOperand("FISUBR(m32int)",op1,32);
 				break;
 			case 6:
-				disasm="FIDIV(m32int)";
+				disasm=DisassembleTypicalOneOperand("FIDIV(m32int)",op1,32);
 				break;
 			case 7:
-				disasm="FIDIVR(m32int)";
+				disasm=DisassembleTypicalOneOperand("FIDIVR(m32int)",op1,32);
 				break;
 			}
 		}
@@ -2508,6 +2504,10 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		if(0xE3==operand[0])
 		{
 			disasm="FNINIT";
+		}
+		else if(0xE2==operand[0])
+		{
+			disasm="FCLEX";
 		}
 		else
 		{
@@ -2547,6 +2547,12 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 			if(0xE8<=MODR_M && MODR_M<=0xEF)
 			{
 				disasm="FSUB  ST(";
+				disasm.push_back('0'+(MODR_M&7));
+				disasm+="),ST";
+			}
+			else if(0xC0<=MODR_M && MODR_M<=0xC7)
+			{
+				disasm="FADD  ST(";
 				disasm.push_back('0'+(MODR_M&7));
 				disasm+="),ST";
 			}
@@ -2650,23 +2656,31 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		}
 		break;
 	case I486_OPCODE_FPU_DE:
-		if(0xC9==operand[0])
+		if(0xC8<=operand[0] && operand[0]<=0xCF)
 		{
-			disasm="FMUL";
+			disasm="FMULP  ST(";
+			disasm.push_back('0'+(operand[0]&7));
+			disasm+="),ST";
 		}
 		else if(0xD9==operand[0])
 		{
 			disasm="FCOMPP";
 		}
-		else if(0xF8<=operand[0] && operand[0]<=0xFF)
-		{
-			disasm="FDIV    ST(";
-			disasm.push_back('0'+(operand[0]&7));
-			disasm+="),ST";
-		}
 		else if(0xC0<=operand[0] && operand[0]<=0xC7)
 		{
 			disasm="FADDP   ST(";
+			disasm.push_back('0'+(operand[0]&7));
+			disasm+="),ST";
+		}
+		else if(0xE0<=operand[0] && operand[0]<=0xE7)
+		{
+			disasm="FSUBRP  ST(";
+			disasm.push_back('0'+(operand[0]&7));
+			disasm+="),ST";
+		}
+		else if(0xF8<=operand[0] && operand[0]<=0xFF)
+		{
+			disasm="FDIV    ST(";
 			disasm.push_back('0'+(operand[0]&7));
 			disasm+="),ST";
 		}
@@ -2678,7 +2692,15 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		}
 		else
 		{
-			disasm="?FPUINST";
+			switch(Instruction::GetREG(operand[0]))
+			{
+			case 0:
+				disasm=DisassembleTypicalOneOperand("FIADD(m16int)  ",op1,16);
+				break;
+			default:
+				disasm="?FPUINST REG="+cpputil::Ubtox(Instruction::GetREG(operand[0]));;
+				break;
+			}
 		}
 
 		if(FPU_FWAIT==fwait)
@@ -5956,12 +5978,13 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{
 				clocksPassed=state.fpuState.FADD_ST_STi(*this,MODR_M&7);
 			}
-			else if(0xD1==MODR_M)   // FCOM
+			else if(0xD0==(MODR_M&0xF8))   // FCOM
 			{
+				clocksPassed=state.fpuState.FCOM(*this,MODR_M&7);
 			}
-			else if(0xD9==MODR_M)   // FCOMP
+			else if(0xD8==(MODR_M&0xF8))   // FCOMP
 			{
-				clocksPassed=state.fpuState.FCOMP(*this);
+				clocksPassed=state.fpuState.FCOMP(*this,MODR_M&7);
 			}
 			else
 			{
@@ -6239,6 +6262,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{
 				clocksPassed=state.fpuState.FSUB_STi_ST(*this,MODR_M&7);
 			}
+			else if(0xC0<=MODR_M && MODR_M<=0xC7)
+			{
+				// FADD ST(i),ST
+			}
 			else
 			{
 				switch(Instruction::GetREG(MODR_M))
@@ -6361,21 +6388,21 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			clocksPassed=state.fpuState.FADDP_STi_ST(*this,inst.operand[0]&7);
 		}
-		else if(0xC9==inst.operand[0])
+		else if(0xC8<=inst.operand[0] && inst.operand[0]<=0xCF)
 		{
-			clocksPassed=state.fpuState.FMUL(*this);
+			clocksPassed=state.fpuState.FMULP(*this,inst.operand[0]&7);
 		}
-		else if(0xF8<=inst.operand[0] && inst.operand[0]<=0xFF)
+		else if(0xD9==inst.operand[0])
 		{
-			clocksPassed=state.fpuState.FDIVP_STi_ST(*this,inst.operand[0]&7);
+			clocksPassed=state.fpuState.FCOMPP(*this);
 		}
 		else if(0xF0<=inst.operand[0] && inst.operand[0]<=0xF7)
 		{
 			clocksPassed=state.fpuState.FDIVRP_STi_ST(*this,inst.operand[0]&7);
 		}
-		else if(0xD9==inst.operand[0])
+		else if(0xF8<=inst.operand[0] && inst.operand[0]<=0xFF)
 		{
-			clocksPassed=state.fpuState.FCOMPP(*this);
+			clocksPassed=state.fpuState.FDIVP_STi_ST(*this,inst.operand[0]&7);
 		}
 		break;
 	case I486_RENUMBER_FPU_DF://  0xDF,
