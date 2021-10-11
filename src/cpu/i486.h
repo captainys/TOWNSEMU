@@ -375,8 +375,8 @@ public:
 		uint16_t statusWord=0xFFFF;
 		uint16_t controlWord=0xFFFF;
 		uint16_t tagWord=0xFFFF;
-		int stackPtr=0;
-		Stack stack[STACK_LEN];
+		int stackPtr=8;
+		Stack stack[STACK_LEN],nullRegister;
 
 		void FNINIT(void);
 		bool ExceptionPending(void) const;
@@ -416,12 +416,12 @@ public:
 		}
 		inline Stack &ST(class i486DX &cpu,int i)
 		{
-			if(i<stackPtr)
+			if(stackPtr+i<STACK_LEN)
 			{
-				return stack[stackPtr-1-i];
+				return stack[stackPtr+i];
 			}
 			// Raise exception.
-			return stack[0];
+			return nullRegister;
 		}
 		inline const Stack &ST(class i486DX &cpu) const
 		{
@@ -429,12 +429,12 @@ public:
 		}
 		inline const Stack &ST(class i486DX &cpu,int i) const
 		{
-			if(i<stackPtr)
+			if(stackPtr+i<STACK_LEN)
 			{
-				return stack[stackPtr-1-i];
+				return stack[stackPtr+i];
 			}
 			// Raise exception.
-			return stack[0];
+			return nullRegister;
 		}
 		inline void Compare(double ST,double SRC)
 		{

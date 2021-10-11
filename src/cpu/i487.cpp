@@ -193,6 +193,7 @@ void i486DX::FPUState::FNINIT(void)
 		controlWord=0x037F;
 		statusWord=0;
 		tagWord=0xFFFF;
+		stackPtr=8;
 	}
 }
 bool i486DX::FPUState::ExceptionPending(void) const
@@ -203,7 +204,7 @@ unsigned int i486DX::FPUState::GetStatusWord(void) const
 {
 	if(true==enabled)
 	{
-		return statusWord;
+		return (statusWord&0xC7FF)|((stackPtr&7)<<11);
 	}
 	else
 	{
@@ -251,119 +252,91 @@ double i486DX::FPUState::RoundToInteger(double src) const
 }
 void i486DX::FPUState::GetSTAsDouble(class i486DX &cpu,class OperandValueBase &value)
 {
-	if(0<stackPtr)
-	{
-	#ifdef YS_LITTLE_ENDIAN
-		double *doublePtr=(double *)value.byteData;
-		*doublePtr=ST(cpu).value;
-	#else
-		uint64_t *intPtr=(uint64_t *)(&ST(cpu).value);
-		value.byteData[0]=  (*intPtr)     &0xFF;
-		value.byteData[1]= ((*intPtr)>> 8)&0xFF;
-		value.byteData[2]= ((*intPtr)>>16)&0xFF;
-		value.byteData[3]= ((*intPtr)>>24)&0xFF;
-		value.byteData[4]= ((*intPtr)>>32)&0xFF;
-		value.byteData[5]= ((*intPtr)>>40)&0xFF;
-		value.byteData[6]= ((*intPtr)>>48)&0xFF;
-		value.byteData[7]= ((*intPtr)>>56)&0xFF;
-	#endif
-		value.numBytes=8;
-	}
-	else
-	{
-		// Raise NM fault.
-	}
+#ifdef YS_LITTLE_ENDIAN
+	double *doublePtr=(double *)value.byteData;
+	*doublePtr=ST(cpu).value;
+#else
+	uint64_t *intPtr=(uint64_t *)(&ST(cpu).value);
+	value.byteData[0]=  (*intPtr)     &0xFF;
+	value.byteData[1]= ((*intPtr)>> 8)&0xFF;
+	value.byteData[2]= ((*intPtr)>>16)&0xFF;
+	value.byteData[3]= ((*intPtr)>>24)&0xFF;
+	value.byteData[4]= ((*intPtr)>>32)&0xFF;
+	value.byteData[5]= ((*intPtr)>>40)&0xFF;
+	value.byteData[6]= ((*intPtr)>>48)&0xFF;
+	value.byteData[7]= ((*intPtr)>>56)&0xFF;
+#endif
+	value.numBytes=8;
 }
 void i486DX::FPUState::GetSTAsFloat(class i486DX &cpu,OperandValueBase &value)
 {
-	if(0<stackPtr)
-	{
-	#ifdef YS_LITTLE_ENDIAN
-		float *floatPtr=(float *)value.byteData;
-		*floatPtr=(float)ST(cpu).value;
-	#else
-		float f=ST(cpu.value);
-		uint32_t *intPtr=(uint64_t *)(&f);
-		value.byteData[0]=  (*intPtr)     &0xFF;
-		value.byteData[1]= ((*intPtr)>> 8)&0xFF;
-		value.byteData[2]= ((*intPtr)>>16)&0xFF;
-		value.byteData[3]= ((*intPtr)>>24)&0xFF;
-	#endif
-		value.numBytes=4;
-	}
-	else
-	{
-		// Raise NM fault.
-	}
+#ifdef YS_LITTLE_ENDIAN
+	float *floatPtr=(float *)value.byteData;
+	*floatPtr=(float)ST(cpu).value;
+#else
+	float f=ST(cpu.value);
+	uint32_t *intPtr=(uint64_t *)(&f);
+	value.byteData[0]=  (*intPtr)     &0xFF;
+	value.byteData[1]= ((*intPtr)>> 8)&0xFF;
+	value.byteData[2]= ((*intPtr)>>16)&0xFF;
+	value.byteData[3]= ((*intPtr)>>24)&0xFF;
+#endif
+	value.numBytes=4;
 }
 void i486DX::FPUState::GetSTAsSignedInt(class i486DX &cpu,class OperandValueBase &value)
 {
-	if(0<stackPtr)
-	{
-		uint64_t i=0;
-		double d=RoundToInteger(ST(cpu).value);
-		i=(uint64_t)d;
-		value.numBytes=8;
-		value.byteData[0]=( i     &255);
-		value.byteData[1]=((i>> 8)&255);
-		value.byteData[2]=((i>>16)&255);
-		value.byteData[3]=((i>>24)&255);
-		value.byteData[4]=((i>>32)&255);
-		value.byteData[5]=((i>>40)&255);
-		value.byteData[6]=((i>>48)&255);
-		value.byteData[7]=((i>>56)&255);
-	}
-	else
-	{
-		// Raise NM fault.
-	}
+	uint64_t i=0;
+	double d=RoundToInteger(ST(cpu).value);
+	i=(uint64_t)d;
+	value.numBytes=8;
+	value.byteData[0]=( i     &255);
+	value.byteData[1]=((i>> 8)&255);
+	value.byteData[2]=((i>>16)&255);
+	value.byteData[3]=((i>>24)&255);
+	value.byteData[4]=((i>>32)&255);
+	value.byteData[5]=((i>>40)&255);
+	value.byteData[6]=((i>>48)&255);
+	value.byteData[7]=((i>>56)&255);
 }
 void i486DX::FPUState::GetSTAs80BitBCD(class i486DX &cpu,OperandValueBase &value)
 {
-	if(0<stackPtr)
-	{
-		double src=ST(cpu).value;
-		value.numBytes=10;
+	double src=ST(cpu).value;
+	value.numBytes=10;
 
-		if(src<0.0)
-		{
-			src=-src;
-			value.byteData[9]=0x80;
-		}
-		else
-		{
-			value.byteData[9]=0x00;
-		}
-		uint64_t srcI=src;
-		for(int i=0; i<9; ++i)
-		{
-			value.byteData[i]=srcI%10;
-			srcI/=10;
-			value.byteData[i]|=((srcI%10)<<4);
-			srcI/=10;
-		}
+	if(src<0.0)
+	{
+		src=-src;
+		value.byteData[9]=0x80;
 	}
 	else
 	{
-		// Raise NM fault.
+		value.byteData[9]=0x00;
+	}
+	uint64_t srcI=src;
+	for(int i=0; i<9; ++i)
+	{
+		value.byteData[i]=srcI%10;
+		srcI/=10;
+		value.byteData[i]|=((srcI%10)<<4);
+		srcI/=10;
 	}
 }
 bool i486DX::FPUState::Push(class i486DX &cpu,double value)
 {
-	if(stackPtr<STACK_LEN)
+	if(0<stackPtr)
 	{
+		--stackPtr;
 		stack[stackPtr].value=value;
 		stack[stackPtr].tag=0; // Should I do this?
-		++stackPtr;
 		return true;
 	}
 	return false; // Should shoot an exception for this.
 }
 void i486DX::FPUState::Pop(i486DX &cpu)
 {
-	if(0<stackPtr)
+	if(stackPtr<STACK_LEN)
 	{
-		--stackPtr;
+		++stackPtr;
 	}
 	else
 	{
@@ -372,9 +345,9 @@ void i486DX::FPUState::Pop(i486DX &cpu)
 }
 void i486DX::FPUState::Pop(class i486DX &cpu,int level)
 {
-	if(level<=stackPtr)
+	if(stackPtr+level<=STACK_LEN)
 	{
-		stackPtr-=level;
+		stackPtr+=level;
 	}
 	else
 	{
@@ -384,7 +357,7 @@ void i486DX::FPUState::Pop(class i486DX &cpu,int level)
 }
 unsigned int i486DX::FPUState::NumFilled(void) const
 {
-	return stackPtr;
+	return STACK_LEN-stackPtr;
 }
 
 std::vector <std::string> i486DX::FPUState::GetStateText(void) const
@@ -404,10 +377,10 @@ std::vector <std::string> i486DX::FPUState::GetStateText(void) const
 	text.back()+="Stack Pointer:";
 	text.back()+=cpputil::Uitox(stackPtr);
 
-	for(int i=0; i<stackPtr; ++i)
+	for(int i=0; stackPtr+i<STACK_LEN; ++i)
 	{
 		char fmt[256];
-		sprintf(fmt,"[%d] %32.10lf %02x",i,stack[i].value,stack[i].tag);
+		sprintf(fmt,"ST%d %32.10lf %02x",i,stack[stackPtr+i].value,stack[stackPtr+i].tag);
 		text.push_back(fmt);
 	}
 
@@ -707,11 +680,8 @@ unsigned int i486DX::FPUState::FLD_ST(i486DX &cpu,int i)
 {
 	if(true==enabled)
 	{
-		if(i<stackPtr)
-		{
-			auto &STi=ST(cpu,i);
-			Push(cpu,STi.value);
-		}
+		auto &STi=ST(cpu,i);
+		Push(cpu,STi.value);
 		return 4;
 	}
 	return 0; // Let it abort.
