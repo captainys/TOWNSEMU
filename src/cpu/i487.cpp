@@ -776,6 +776,18 @@ unsigned int i486DX::FPUState::FMULP(i486DX &cpu,int i)
 	}
 	return 0; // Let it abort.
 }
+unsigned int i486DX::FPUState::FMUL_m32real(i486DX &cpu,const unsigned char byteData[])
+{
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+
+		auto src=DoubleFrom32Bit(byteData);
+		ST(cpu).value*=src;
+		return 14;
+	}
+	return 0;
+}
 unsigned int i486DX::FPUState::FMUL_m64real(i486DX &cpu,const unsigned char byteData[])
 {
 	if(true==enabled)
@@ -924,6 +936,20 @@ unsigned int i486DX::FPUState::FSTP_STi(i486DX &cpu,int i)
 	}
 	return 0;
 }
+unsigned int i486DX::FPUState::FSUBR_m32real(i486DX &cpu,const unsigned char byteData[])
+{
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+
+		auto src=DoubleFrom32Bit(byteData);
+		auto &st=ST(cpu);
+		st.value=src-st.value;
+
+		return 10;
+	}
+	return 0;
+}
 unsigned int i486DX::FPUState::FSUBR_m64real(i486DX &cpu,const unsigned char byteData[])
 {
 	if(true==enabled)
@@ -934,7 +960,7 @@ unsigned int i486DX::FPUState::FSUBR_m64real(i486DX &cpu,const unsigned char byt
 		auto &st=ST(cpu);
 		st.value=src-st.value;
 
-		return 14;
+		return 10;
 	}
 	return 0;
 }

@@ -2286,9 +2286,6 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 				case 7:
 					disasm=DisassembleTypicalOneOperand("FDIVR(m32real)  ",op1,operandSize);
 					break;
-				default:
-					disasm="?FPUINST"+cpputil::Ubtox(opCode)+" "+cpputil::Ubtox(operand[0])+" REG="+cpputil::Ubtox(GetREG());
-					break;
 				}
 			}
 		}
@@ -5996,11 +5993,23 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 						clocksPassed=state.fpuState.FADD_m32real(*this,value.byteData);
 					}
 					break;
+				case 1:
+					{
+						auto value=EvaluateOperand64(mem,inst.addressSize,inst.segOverride,op1);
+						clocksPassed=state.fpuState.FMUL_m32real(*this,value.byteData);
+					}
+					break;
 				case 3:
 					// FCOMP(m32real)
 					{
 						auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,4);
 						clocksPassed=state.fpuState.FCOMP_m32real(*this,value.byteData);
+					}
+					break;
+				case 5:
+					{
+						auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,4);
+						clocksPassed=state.fpuState.FSUBR_m32real(*this,value.byteData);
 					}
 					break;
 				case 6:

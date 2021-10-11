@@ -502,6 +502,7 @@ public:
 		unsigned int FLDPI(i486DX &cpu);
 		unsigned int FLDZ(i486DX &cpu);
 		unsigned int FMULP(i486DX &cpu,int i);
+		unsigned int FMUL_m32real(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FMUL_m64real(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FPATAN(i486DX &cpu);
 		unsigned int FPREM(i486DX &cpu);
@@ -511,6 +512,7 @@ public:
 		unsigned int FSIN(i486DX &cpu);
 		unsigned int FSQRT(i486DX &cpu);
 		unsigned int FSTP_STi(i486DX &cpu,int i);
+		unsigned int FSUBR_m32real(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FSUBR_m64real(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FSUB_STi_ST(i486DX &cpu,int i);
 		unsigned int FSUBRP_STi_ST(i486DX &cpu,int i);

@@ -311,7 +311,7 @@ int RunTestFloatAndInt(void)
 	i=10;
 	a=i;
 	a=a+i;
-	if(0==FCompare((double)a,20.0))
+	if(0==FCompare(a,20.0))
 	{
 		printf("Adding integer OK.\n");
 	}
@@ -320,6 +320,46 @@ int RunTestFloatAndInt(void)
 		e=1;
 		printf("Error in adding integer.\n");
 	}
+
+	a=65536.0f;
+	b=256.0;
+	c=a/b;
+	if(0==FCompare(c,256.0))
+	{
+		printf("Divsion by float OK.\n");
+	}
+	else
+	{
+		e=1;
+		printf("Error in division by float.\n");
+	}
+
+	a=1000.0;
+	b=100.0;
+	c=a-b;
+	if(0==FCompare(c,900.0))
+	{
+		printf("Subtraction by float OK.\n");
+	}
+	else
+	{
+		e=1;
+		printf("Error in subtraction by float.\n");
+	}
+
+
+	a=12345.0;
+	b=23456.0;
+	c=a*b;
+	if(0==FCompare(c,289564320.0))
+	{
+		printf("Multiplication by float OK.\n");
+	}
+	else
+	{
+		printf("Error in multiplication by float OK.\n");
+	}
+
 
 	return e;
 }
