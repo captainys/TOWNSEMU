@@ -2246,6 +2246,12 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 				disasm.push_back('0'+(operand[0]&7));
 				disasm+=")";
 			}
+			else if(0xC8==(MODR_M&0xF8))
+			{
+				disasm="FMUL  ST,ST(";
+				disasm.push_back('0'+(operand[0]&7));
+				disasm+=")";
+			}
 			else if(0xD0==(MODR_M&0xF8))
 			{
 				disasm="FCOM   ST(";
@@ -5974,6 +5980,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			if(0xC0<=MODR_M && MODR_M<=0xC7)
 			{
 				clocksPassed=state.fpuState.FADD_ST_STi(*this,MODR_M&7);
+			}
+			else if(0xC8==(MODR_M&0xF8))   // FMUL ST,ST(i)
+			{
+				clocksPassed=state.fpuState.FMUL_ST_STi(*this,MODR_M&7);
 			}
 			else if(0xD0==(MODR_M&0xF8))   // FCOM
 			{

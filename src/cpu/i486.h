@@ -504,6 +504,7 @@ public:
 		unsigned int FLDPI(i486DX &cpu);
 		unsigned int FLDZ(i486DX &cpu);
 		unsigned int FMULP(i486DX &cpu,int i);
+		unsigned int FMUL_ST_STi(i486DX &cpu,int i);
 		unsigned int FMUL_m32real(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FMUL_m64real(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FPATAN(i486DX &cpu);

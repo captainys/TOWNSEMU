@@ -772,7 +772,21 @@ unsigned int i486DX::FPUState::FMULP(i486DX &cpu,int i)
 		ST1.value=ST.value*ST1.value;
 		Pop(cpu);
 
-		return 70;
+		return 16;
+	}
+	return 0; // Let it abort.
+}
+unsigned int i486DX::FPUState::FMUL_ST_STi(i486DX &cpu,int i)
+{
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+
+		auto &ST=this->ST(cpu);
+		auto &STi=this->ST(cpu,i);
+		ST.value=ST.value*STi.value;
+
+		return 16;
 	}
 	return 0; // Let it abort.
 }
