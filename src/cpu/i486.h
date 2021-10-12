@@ -490,6 +490,7 @@ public:
 		unsigned int FILD_m32int(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FDIV_m32real(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FDIVP_STi_ST(i486DX &cpu,int i);
+		unsigned int FDIV_m64real(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FDIVR_m64real(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FDIVR_m32real(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FDIVRP_STi_ST(i486DX &cpu,int i);

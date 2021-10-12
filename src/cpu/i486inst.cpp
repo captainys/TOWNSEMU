@@ -6339,6 +6339,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					}
 					break;
 				case 6: // FDIV m64real
+					{
+						auto value=EvaluateOperand64(mem,inst.addressSize,inst.segOverride,op1);
+						clocksPassed=state.fpuState.FDIV_m64real(*this,value.byteData);
+					}
 					break;
 				case 7: // FDIVR m64real
 					{
