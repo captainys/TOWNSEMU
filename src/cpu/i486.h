@@ -396,6 +396,7 @@ public:
 		static void DoubleTo80Bit(OperandValueBase &value80,double src);
 		static double DoubleFrom80Bit(const OperandValueBase &value80);
 		static double DoubleFrom80Bit(const unsigned char value80[]);
+		static double DoubleFrom80BitBCD(const unsigned char bcd80[]);
 
 		static double DoubleFrom64Bit(const unsigned char byteData[]);
 
@@ -478,6 +479,7 @@ public:
 		unsigned int FADD64(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FADD_ST_STi(i486DX &cpu,int i);
 		unsigned int FADDP_STi_ST(i486DX &cpu,int i);
+		unsigned int FBLD(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FCHS(i486DX &cpu);
 		unsigned int FCOM(i486DX &cpu,int i);
 		unsigned int FCOMP(i486DX &cpu,int i);
@@ -510,6 +512,7 @@ public:
 		unsigned int FRNDINT(i486DX &cpu);
 		unsigned int FSCALE(i486DX &cpu);
 		unsigned int FSIN(i486DX &cpu);
+		unsigned int FSINCOS(i486DX &cpu);
 		unsigned int FSQRT(i486DX &cpu);
 		unsigned int FSTP_STi(i486DX &cpu,int i);
 		unsigned int FSUBR_m32real(i486DX &cpu,const unsigned char byteData[]);

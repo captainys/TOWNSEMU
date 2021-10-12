@@ -6135,7 +6135,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		else if(0xFB==inst.operand[0])
 		{
-			// FSINCOS
+			clocksPassed=state.fpuState.FSINCOS(*this);
 		}
 		else if(0xFC==inst.operand[0])
 		{
@@ -6449,6 +6449,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			switch(Instruction::GetREG(inst.operand[0]))
 			{
+			case 4:
+				{
+					auto value=EvaluateOperand80(mem,inst.addressSize,inst.segOverride,op1);
+					clocksPassed=state.fpuState.FBLD(*this,value.byteData);
+				}
+				break;
 			case 6: // FBSTP m80dec
 				{
 					OperandValue value;

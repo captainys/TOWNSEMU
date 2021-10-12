@@ -172,6 +172,26 @@ static const double VALUE_OF_PI=3.14159265358979323846;
 	return (double)f;
 }
 
+/* static */ double i486DX::FPUState::DoubleFrom80BitBCD(const unsigned char bcd80[])
+{
+	uint64_t i64=0,digit=1;
+	for(int i=0; i<9; ++i)
+	{
+		i64+=(digit*(bcd80[i]&0x0F));
+		digit*=10;
+		i64+=(digit*((bcd80[i]>>4)&0x0F));
+		digit*=10;
+	}
+
+	double value=(double)i64;
+	if(0!=(bcd80[9]&0x80))
+	{
+		value=-value;
+	}
+
+	return value;
+}
+
 
 i486DX::FPUState::FPUState()
 {
@@ -472,6 +492,16 @@ unsigned int i486DX::FPUState::FADDP_STi_ST(i486DX &cpu,int i)
 		return 10;
 	}
 	return 0; // Let it abort.
+}
+unsigned int i486DX::FPUState::FBLD(i486DX &cpu,const unsigned char byteData[])
+{
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+		Push(cpu,DoubleFrom80BitBCD(byteData));
+		return 75;
+	}
+	return 0;
 }
 unsigned int i486DX::FPUState::FCHS(i486DX &cpu)
 {
@@ -845,6 +875,20 @@ unsigned int i486DX::FPUState::FSIN(i486DX &cpu)
 		return 241;
 	}
 	return 0; // Let it abort.
+}
+unsigned int i486DX::FPUState::FSINCOS(i486DX &cpu)
+{
+	if(true==enabled)
+	{
+		statusWord&=(~STATUS_C2);
+
+		auto &ST=this->ST(cpu);
+		auto c=cos(ST.value);
+		ST.value=sin(ST.value);
+		Push(cpu,c);
+		return 291;
+	}
+	return 0;
 }
 unsigned int i486DX::FPUState::FCOS(i486DX &cpu)
 {
