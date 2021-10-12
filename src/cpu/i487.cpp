@@ -38,13 +38,60 @@ static const double VALUE_OF_PI=3.14159265358979323846;
 
 /* static */ void i486DX::FPUState::DoubleTo80Bit(OperandValueBase &value80,double src)
 {
-	// Reference  https://en.wikipedia.org/wiki/Double-precision_floating-point_format
-
 	// Assume sizeof(double) is 8-byte long.
 	uint64_t binary=*((uint64_t *)&src);
 	uint16_t exponent=((binary>>52)&2047);   // 1023=2^0
 	uint64_t fraction=(binary&((1LL<<52)-1));
 	unsigned char signBit=((binary>>63)<<7);
+
+	// Reference  https://en.wikipedia.org/wiki/Double-precision_floating-point_format
+	//            https://en.wikipedia.org/wiki/Extended_precision
+	if(INFINITY==src)
+	{
+		value80.numBytes=10;
+		value80.byteData[9]=0x7F;
+		value80.byteData[8]=0xFF;
+		value80.byteData[7]=0x80;
+		value80.byteData[6]=0;
+		value80.byteData[5]=0;
+		value80.byteData[4]=0;
+		value80.byteData[3]=0;
+		value80.byteData[2]=0;
+		value80.byteData[1]=0;
+		value80.byteData[0]=0;
+		return;
+	}
+	else if(-INFINITY==src)
+	{
+		value80.numBytes=10;
+		value80.byteData[9]=0xFF;
+		value80.byteData[8]=0xFF;
+		value80.byteData[7]=0x80;
+		value80.byteData[6]=0;
+		value80.byteData[5]=0;
+		value80.byteData[4]=0;
+		value80.byteData[3]=0;
+		value80.byteData[2]=0;
+		value80.byteData[1]=0;
+		value80.byteData[0]=0;
+		return;
+	}
+	else if(isnan(src))
+	{
+		value80.numBytes=10;
+		value80.byteData[9]=0x7F;
+		value80.byteData[8]=0xFF;
+		value80.byteData[7]=0xFF;
+		value80.byteData[6]=0xFF;
+		value80.byteData[5]=0xFF;
+		value80.byteData[4]=0xFF;
+		value80.byteData[3]=0xFF;
+		value80.byteData[2]=0xFF;
+		value80.byteData[1]=0xFF;
+		value80.byteData[0]=0xFF;
+		return;
+	}
+
 
 	// In 80-bit format, fraction needs to be expanded to 64-bit
 	// Exponent 16383 is 2^0.
@@ -84,6 +131,14 @@ static const double VALUE_OF_PI=3.14159265358979323846;
 
 	signBit=(byteData[9]&0x80);
 
+	if(0x7F==(byteData[9]&0x7F) && 0xFF==byteData[8])  // Exponent bits are all ones.
+	{
+		if(0xC0==(byteData[7]&0xC0)) // Nan
+		{
+			return NAN;
+		}
+	}
+
 #ifdef YS_LITTLE_ENDIAN
 	exponent=*((uint16_t *)(byteData+8));
 	fraction=*((uint64_t *)byteData);
@@ -102,8 +157,14 @@ static const double VALUE_OF_PI=3.14159265358979323846;
 
 	if(exponent+1023<16384) // exponent+1023-16383 -> Make it Zero
 	{
-		exponent=16383-1023;
-		fraction=0;
+		if(0!=signBit)
+		{
+			return -0.0;
+		}
+		else
+		{
+			return 0.0;
+		}
 	}
 	else if(2048+16383<=exponent+1023) // 2048<=exponent+1023-16383 -> Make it Infinity
 	{
@@ -132,7 +193,6 @@ static const double VALUE_OF_PI=3.14159265358979323846;
 	{
 		*i|=(1LL<<63);
 	}
-
 	return d;
 }
 
@@ -1100,15 +1160,23 @@ unsigned int i486DX::FPUState::FXAM(i486DX &cpu)
 		if(0==NumFilled())
 		{
 			// Empty      C3,C2,C0=100
-			statusWord|=(STATUS_C3|STATUS_C0);
+			statusWord|=STATUS_C3;
 		}
 		else
 		{
 			auto &st=ST(cpu);
+			if(0.0>st.value)
+			{
+				statusWord|=STATUS_C1;
+			}
 			if(isnan(st.value))
 			{
 				// Nan C3,C2,C0=001
 				statusWord|=STATUS_C0;
+			}
+			else if(INFINITY==st.value || -INFINITY==st.value)
+			{
+				statusWord|=STATUS_C2|STATUS_C0;
 			}
 			// Unsupported C3,C2,C0=000
 			// Infinity    C3,C2,C0=011
