@@ -1004,6 +1004,19 @@ unsigned int i486DX::FPUState::FSUB_STi_ST(i486DX &cpu,int i)
 	}
 	return 0;
 }
+unsigned int i486DX::FPUState::FSUBP_STi_ST(i486DX &cpu,int i)
+{
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+		auto &ST=this->ST(cpu);
+		auto &STi=this->ST(cpu,i);
+		STi.value=STi.value-ST.value;
+		Pop(cpu);
+		return 10;
+	}
+	return 0;
+}
 unsigned int i486DX::FPUState::FSUBRP_STi_ST(i486DX &cpu,int i)
 {
 	if(true==enabled)

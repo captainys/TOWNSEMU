@@ -1241,7 +1241,7 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 			unsigned int MODR_M;
 			FUNCCLASS::PeekOperand8(cpu,MODR_M,inst,ptr,seg,offset,mem);
 			if((0xC8<=MODR_M && MODR_M<=0xCF) ||
-			   (0xE0<=MODR_M && MODR_M<=0xE7) ||
+			   (0xE0<=MODR_M && MODR_M<=0xEF) ||
 			   (0xF0<=MODR_M && MODR_M<=0xFF) ||
 			    0xD9==MODR_M ||
 			   (0xC0<=MODR_M && MODR_M<=0xC7))
@@ -2582,7 +2582,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 					disasm=DisassembleTypicalOneOperand("FSUBR(m64real)  ",op1,operandSize);
 					break;
 				case 6: //
-					disasm=DisassembleTypicalOneOperand("FT(m64real)  ",op1,operandSize);
+					disasm=DisassembleTypicalOneOperand("FDIV(m64real)  ",op1,operandSize);
 					break;
 				case 7: //
 					disasm=DisassembleTypicalOneOperand("FDIVR(m64real)  ",op1,operandSize);
@@ -2678,6 +2678,12 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		else if(0xE0<=operand[0] && operand[0]<=0xE7)
 		{
 			disasm="FSUBRP  ST(";
+			disasm.push_back('0'+(operand[0]&7));
+			disasm+="),ST";
+		}
+		else if(0xE8<=operand[0] && operand[0]<=0xEF)
+		{
+			disasm="FSUBP   ST(";
 			disasm.push_back('0'+(operand[0]&7));
 			disasm+="),ST";
 		}
@@ -6332,7 +6338,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 						clocksPassed=state.fpuState.FSUBR_m64real(*this,value.byteData);
 					}
 					break;
-				case 6: //
+				case 6: // FDIV m64real
 					break;
 				case 7: // FDIVR m64real
 					{
@@ -6433,6 +6439,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		else if(0xE0<=inst.operand[0] && inst.operand[0]<=0xE7)
 		{
 			clocksPassed=state.fpuState.FSUBRP_STi_ST(*this,inst.operand[0]&7);
+		}
+		else if(0xE8<=inst.operand[0] && inst.operand[0]<=0xEF)
+		{
+			clocksPassed=state.fpuState.FSUBP_STi_ST(*this,inst.operand[0]&7);
 		}
 		else if(0xF0<=inst.operand[0] && inst.operand[0]<=0xF7)
 		{
