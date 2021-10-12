@@ -107,8 +107,14 @@ static const double VALUE_OF_PI=3.14159265358979323846;
 	}
 	else if(2048+16383<=exponent+1023) // 2048<=exponent+1023-16383 -> Make it Infinity
 	{
-		exponent=1024+16384;
-		fraction=((1LL<<52)-1);
+		if(0!=signBit)
+		{
+			return -INFINITY;
+		}
+		else
+		{
+			return INFINITY;
+		}
 	}
 
 	fraction>>=11;
