@@ -6022,6 +6022,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 						clocksPassed=state.fpuState.FCOMP_m32real(*this,value.byteData);
 					}
 					break;
+				case 4:
+					{
+						auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,4);
+						clocksPassed=state.fpuState.FSUB_m32real(*this,value.byteData);
+					}
+					break;
 				case 5:
 					{
 						auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,4);
@@ -6331,6 +6337,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					}
 					break;
 				case 4:
+					{
+						auto value=EvaluateOperand64(mem,inst.addressSize,inst.segOverride,op1);
+						clocksPassed=state.fpuState.FSUB_m64real(*this,value.byteData);
+					}
 					break;
 				case 5:
 					{
