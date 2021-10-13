@@ -155,6 +155,8 @@ static const double VALUE_OF_PI=3.14159265358979323846;
 	exponent=byteData[8]|(byteData[9]<<8);
 #endif
 
+	exponent&=0x7FFF;
+
 	if(exponent+1023<16384) // exponent+1023-16383 -> Make it Zero
 	{
 		if(0!=signBit)
