@@ -406,9 +406,9 @@ void i486DX::FPUState::GetSTAsFloat(class i486DX &cpu,OperandValueBase &value)
 }
 void i486DX::FPUState::GetSTAsSignedInt(class i486DX &cpu,class OperandValueBase &value)
 {
-	uint64_t i=0;
+	int64_t i=0;
 	double d=RoundToInteger(ST(cpu).value);
-	i=(uint64_t)d;
+	i=(int64_t)d;
 	value.numBytes=8;
 	value.byteData[0]=( i     &255);
 	value.byteData[1]=((i>> 8)&255);
