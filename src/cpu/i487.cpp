@@ -995,12 +995,31 @@ unsigned int i486DX::FPUState::FPREM(i486DX &cpu)
 			statusWord|=STATUS_C2;
 			// Zero division
 		}
+		else
+		{
+			// x86 manual tells that it should set LEAST significant bits of the quotient in C0,C3,C1.
+			// LEAST?  Is there any use?  I need to do math to make sense of it.
+			// For the meantime, I ignore those 3 bits.
+
+			// -> I see, I see.  It makes sense.  C0, C3, C1 should be taken from the quotient converted to integer.
+			//    I was thinking to take least significant bits from fraction part of floating point,
+			//    which for sure doesn't do any good.
+			int64_t quo=(uint64_t)(ST.value/ST1.value);
+			if(0!=(quo&1))
+			{
+				statusWord|=STATUS_C1;
+			}
+			if(0!=(quo&2))
+			{
+				statusWord|=STATUS_C3;
+			}
+			if(0!=(quo&4))
+			{
+				statusWord|=STATUS_C0;
+			}
+		}
 		ST1.value=fmod(ST.value,ST1.value);
 		Pop(cpu);
-
-		// x86 manual tells that it should set LEAST significant bits of the quotient in C0,C3,C1.
-		// LEAST?  Is there any use?  I need to do math to make sense of it.
-		// For the meantime, I ignore those 3 bits.
 
 	#ifdef CHECK_FOR_NAN
 		BreakOnNan(cpu,ST1.value);
