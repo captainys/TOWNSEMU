@@ -6287,7 +6287,6 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					clocksPassed=state.fpuState.FILD_m32int(*this,value.byteData);
 				}
 				break;
-				break;
 			case 5: // FLD m80real
 				{
 					auto value=EvaluateOperand80(mem,inst.addressSize,inst.segOverride,op1);
