@@ -56,7 +56,7 @@ void i486DX::FPUState::BreakOnNan(i486DX &cpu,double value)
 #ifdef YS_LITTLE_ENDIAN
 	return *((int64_t *)byteData);
 #else
-	uint32_t ui;
+	uint64_t ui;
 	ui= (uint64_t)byteData[0]|
 	   ((uint64_t)byteData[1]<<8)|
 	   ((uint64_t)byteData[2]<<16)|
