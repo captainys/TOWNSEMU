@@ -383,7 +383,7 @@ public:
 		unsigned int GetStatusWord(void) const;
 		unsigned int GetControlWord(void) const;
 
-		void i486DX::FPUState::BreakOnNan(i486DX &cpu,double value);
+		void BreakOnNan(i486DX &cpu,double value);
 
 		unsigned int GetRC(void) const;
 		double RoundToInteger(double src) const;
