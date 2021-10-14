@@ -40,7 +40,7 @@ void i486DX::FPUState::BreakOnNan(i486DX &cpu,double value)
 /* static */ int32_t i486DX::FPUState::IntFrom32Bit(const unsigned char byteData[])
 {
 #ifdef YS_LITTLE_ENDIAN
-	return *((int *)byteData);
+	return *((int32_t *)byteData);
 #else
 	uint32_t ui;
 	ui= (uint32_t)byteData[0]|
@@ -48,6 +48,24 @@ void i486DX::FPUState::BreakOnNan(i486DX &cpu,double value)
 	   ((uint32_t)byteData[2]<<16)|
 	   ((uint32_t)byteData[3]<<24)|;
 	return *((int32_t *)&ui);
+#endif
+}
+
+/* static */ int64_t i486DX::FPUState::IntFrom64Bit(const unsigned char byteData[])
+{
+#ifdef YS_LITTLE_ENDIAN
+	return *((int64_t *)byteData);
+#else
+	uint32_t ui;
+	ui= (uint64_t)byteData[0]|
+	   ((uint64_t)byteData[1]<<8)|
+	   ((uint64_t)byteData[2]<<16)|
+	   ((uint64_t)byteData[3]<<24)|
+	   ((uint64_t)byteData[4]<<32)|
+	   ((uint64_t)byteData[5]<<40)|
+	   ((uint64_t)byteData[6]<<48)|
+	   ((uint64_t)byteData[7]<<56);
+	return *((int64_t *)&ui);
 #endif
 }
 
@@ -781,6 +799,16 @@ unsigned int i486DX::FPUState::FILD_m32int(i486DX &cpu,const unsigned char byteD
 	{
 		statusWord&=~STATUS_C1;
 		Push(cpu,(double)IntFrom32Bit(byteData));
+		return 16;
+	}
+	return 0;
+}
+unsigned int i486DX::FPUState::FILD_m64int(i486DX &cpu,const unsigned char byteData[])
+{
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+		Push(cpu,(double)IntFrom64Bit(byteData));
 		return 16;
 	}
 	return 0;

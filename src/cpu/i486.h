@@ -394,6 +394,7 @@ public:
 		void GetSTAs80BitBCD(class i486DX &cpu,OperandValueBase &value);
 
 		static int32_t IntFrom32Bit(const unsigned char byteData[]);
+		static int64_t IntFrom64Bit(const unsigned char byteData[]);
 
 		static void DoubleTo80Bit(OperandValueBase &value80,double src);
 		static double DoubleFrom80Bit(const OperandValueBase &value80);
@@ -490,6 +491,7 @@ public:
 		unsigned int FCOMP_m64real(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FCOS(i486DX &cpu);
 		unsigned int FILD_m32int(i486DX &cpu,const unsigned char byteData[]);
+		unsigned int FILD_m64int(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FDIV_m32real(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FDIVP_STi_ST(i486DX &cpu,int i);
 		unsigned int FDIV_m64real(i486DX &cpu,const unsigned char byteData[]);

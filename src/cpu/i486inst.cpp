@@ -6500,6 +6500,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					clocksPassed=state.fpuState.FBLD(*this,value.byteData);
 				}
 				break;
+			case 5: // FILD m64int
+				{
+					auto value=EvaluateOperand64(mem,inst.addressSize,inst.segOverride,op1);
+					clocksPassed=state.fpuState.FILD_m64int(*this,value.byteData);
+				}
+				break;
 			case 6: // FBSTP m80dec
 				{
 					OperandValue value;
