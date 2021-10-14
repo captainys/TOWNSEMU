@@ -22,6 +22,21 @@ static const double VALUE_OF_E= 2.71828182845904523536;
 static const double VALUE_OF_PI=3.14159265358979323846;
 
 
+
+// #define CHECK_FOR_NAN
+
+
+
+void i486DX::FPUState::BreakOnNan(i486DX &cpu,double value)
+{
+	if(nullptr!=cpu.debuggerPtr && true==isnan(value))
+	{
+		cpu.debuggerPtr->ExternalBreak("FPU: NaN detected.");
+	}
+}
+
+
+
 /* static */ int32_t i486DX::FPUState::IntFrom32Bit(const unsigned char byteData[])
 {
 #ifdef YS_LITTLE_ENDIAN
@@ -662,6 +677,10 @@ unsigned int i486DX::FPUState::FDIVR_m32real(i486DX &cpu,const unsigned char byt
 		}
 		st.value=src/st.value;
 
+	#ifdef CHECK_FOR_NAN
+		BreakOnNan(cpu,st.value);
+	#endif
+
 		return 73;
 	}
 	return 0;
@@ -681,6 +700,10 @@ unsigned int i486DX::FPUState::FDIVP_STi_ST(i486DX &cpu,int i)
 		STi.value=STi.value/ST.value; // Let it be a NaN if ST1.value is zero.
 		Pop(cpu);
 
+	#ifdef CHECK_FOR_NAN
+		BreakOnNan(cpu,STi.value);
+	#endif
+
 		return 70;
 	}
 	return 0; // Let it abort.
@@ -698,6 +721,10 @@ unsigned int i486DX::FPUState::FDIV_m64real(i486DX &cpu,const unsigned char byte
 			// Zero division
 		}
 		st.value/=src;
+
+	#ifdef CHECK_FOR_NAN
+		BreakOnNan(cpu,st.value);
+	#endif
 
 		return 73;
 	}
@@ -717,6 +744,10 @@ unsigned int i486DX::FPUState::FDIVR_m64real(i486DX &cpu,const unsigned char byt
 		}
 		st.value=src/st.value;
 
+	#ifdef CHECK_FOR_NAN
+		BreakOnNan(cpu,st.value);
+	#endif
+
 		return 73;
 	}
 	return 0;
@@ -735,6 +766,10 @@ unsigned int i486DX::FPUState::FDIVRP_STi_ST(i486DX &cpu,int i)
 		}
 		STi.value=ST.value/STi.value; // Let it be a NaN if ST1.value is zero.
 		Pop(cpu);
+
+	#ifdef CHECK_FOR_NAN
+		BreakOnNan(cpu,STi.value);
+	#endif
 
 		return 73;
 	}
@@ -770,6 +805,9 @@ unsigned int i486DX::FPUState::FLD64(i486DX &cpu,const unsigned char byteData[])
 		// Hope this CPU uses IEEE format.
 		const double *dataPtr=(const double *)byteData;
 		Push(cpu,*dataPtr);
+	#ifdef CHECK_FOR_NAN
+		BreakOnNan(cpu,ST(cpu).value);
+	#endif
 		return 3;
 	}
 	return 0;
@@ -780,6 +818,9 @@ unsigned int i486DX::FPUState::FLD80(i486DX &cpu,const unsigned char byteData[])
 	{
 		// Hope this CPU uses IEEE format.
 		Push(cpu,DoubleFrom80Bit(byteData));
+	#ifdef CHECK_FOR_NAN
+		BreakOnNan(cpu,ST(cpu).value);
+	#endif
 		return 6;
 	}
 	return 0;
@@ -798,6 +839,9 @@ unsigned int i486DX::FPUState::FLD_ST(i486DX &cpu,int i)
 	{
 		auto &STi=ST(cpu,i);
 		Push(cpu,STi.value);
+	#ifdef CHECK_FOR_NAN
+		BreakOnNan(cpu,STi.value);
+	#endif
 		return 4;
 	}
 	return 0; // Let it abort.
@@ -807,6 +851,9 @@ unsigned int i486DX::FPUState::FLD1(i486DX &cpu)
 	if(true==enabled)
 	{
 		Push(cpu,1.0);
+	#ifdef CHECK_FOR_NAN
+		BreakOnNan(cpu,ST(cpu).value);
+	#endif
 		return 4;
 	}
 	return 0; // Let it abort.
@@ -857,6 +904,9 @@ unsigned int i486DX::FPUState::FMULP(i486DX &cpu,int i)
 		auto &ST1=this->ST(cpu,i);
 		ST1.value=ST.value*ST1.value;
 		Pop(cpu);
+	#ifdef CHECK_FOR_NAN
+		BreakOnNan(cpu,ST1.value);
+	#endif
 
 		return 16;
 	}
@@ -871,6 +921,9 @@ unsigned int i486DX::FPUState::FMUL_ST_STi(i486DX &cpu,int i)
 		auto &ST=this->ST(cpu);
 		auto &STi=this->ST(cpu,i);
 		ST.value=ST.value*STi.value;
+	#ifdef CHECK_FOR_NAN
+		BreakOnNan(cpu,ST.value);
+	#endif
 
 		return 16;
 	}
@@ -884,6 +937,11 @@ unsigned int i486DX::FPUState::FMUL_m32real(i486DX &cpu,const unsigned char byte
 
 		auto src=DoubleFrom32Bit(byteData);
 		ST(cpu).value*=src;
+
+	#ifdef CHECK_FOR_NAN
+		BreakOnNan(cpu,ST(cpu).value);
+	#endif
+
 		return 14;
 	}
 	return 0;
@@ -896,6 +954,11 @@ unsigned int i486DX::FPUState::FMUL_m64real(i486DX &cpu,const unsigned char byte
 
 		auto src=DoubleFrom64Bit(byteData);
 		ST(cpu).value*=src;
+
+	#ifdef CHECK_FOR_NAN
+		BreakOnNan(cpu,ST(cpu).value);
+	#endif
+
 		return 14;
 	}
 	return 0;
@@ -911,6 +974,10 @@ unsigned int i486DX::FPUState::FPATAN(i486DX &cpu)
 		ST1.value=atan2(ST1.value,ST.value);
 		Pop(cpu);
 
+	#ifdef CHECK_FOR_NAN
+		BreakOnNan(cpu,ST1.value);
+	#endif
+
 		return 84;
 	}
 	return 0; // Let it abort.
@@ -919,16 +986,25 @@ unsigned int i486DX::FPUState::FPREM(i486DX &cpu)
 {
 	if(true==enabled)
 	{
-		statusWord&=~STATUS_C1;
+		statusWord&=~(STATUS_C0|STATUS_C1|STATUS_C2|STATUS_C3);
 
 		auto &ST=this->ST(cpu);
 		auto &ST1=this->ST(cpu,1);
 		if(0==ST1.value)
 		{
+			statusWord|=STATUS_C2;
 			// Zero division
 		}
 		ST1.value=fmod(ST.value,ST1.value);
 		Pop(cpu);
+
+		// x86 manual tells that it should set LEAST significant bits of the quotient in C0,C3,C1.
+		// LEAST?  Is there any use?  I need to do math to make sense of it.
+		// For the meantime, I ignore those 3 bits.
+
+	#ifdef CHECK_FOR_NAN
+		BreakOnNan(cpu,ST1.value);
+	#endif
 
 		return 84;
 	}
@@ -942,6 +1018,10 @@ unsigned int i486DX::FPUState::FRNDINT(i486DX &cpu)
 
 		auto &ST=this->ST(cpu);
 		ST.value=RoundToInteger(ST.value);
+
+	#ifdef CHECK_FOR_NAN
+		BreakOnNan(cpu,ST.value);
+	#endif
 
 		return 241;
 	}
@@ -959,6 +1039,10 @@ unsigned int i486DX::FPUState::FSCALE(i486DX &cpu)
 		int p=(int)ST1.value;
 		ST.value*=pow(2.0,p);
 
+	#ifdef CHECK_FOR_NAN
+		BreakOnNan(cpu,ST.value);
+	#endif
+
 		return 31;
 	}
 	return 0; // Let it abort.
@@ -971,6 +1055,10 @@ unsigned int i486DX::FPUState::FSIN(i486DX &cpu)
 
 		auto &ST=this->ST(cpu);
 		ST.value=sin(ST.value);
+
+	#ifdef CHECK_FOR_NAN
+		BreakOnNan(cpu,ST.value);
+	#endif
 
 		return 241;
 	}
@@ -986,6 +1074,12 @@ unsigned int i486DX::FPUState::FSINCOS(i486DX &cpu)
 		auto c=cos(ST.value);
 		ST.value=sin(ST.value);
 		Push(cpu,c);
+
+	#ifdef CHECK_FOR_NAN
+		BreakOnNan(cpu,ST.value);
+		BreakOnNan(cpu,this->ST(cpu).value);
+	#endif
+
 		return 291;
 	}
 	return 0;
@@ -998,6 +1092,10 @@ unsigned int i486DX::FPUState::FCOS(i486DX &cpu)
 
 		auto &ST=this->ST(cpu);
 		ST.value=cos(ST.value);
+
+	#ifdef CHECK_FOR_NAN
+		BreakOnNan(cpu,ST.value);
+	#endif
 
 		return 241;
 	}
@@ -1022,6 +1120,10 @@ unsigned int i486DX::FPUState::FPTAN(i486DX &cpu)
 			Push(cpu,1.0); // I have no idea why it does it.
 		}
 
+	#ifdef CHECK_FOR_NAN
+		BreakOnNan(cpu,ST.value);
+	#endif
+
 		return 244;
 	}
 	return 0; // Let it abort.
@@ -1033,6 +1135,11 @@ unsigned int i486DX::FPUState::FSQRT(i486DX &cpu)
 		statusWord&=~STATUS_C1;
 
 		ST(cpu).value=sqrt(ST(cpu).value);
+
+	#ifdef CHECK_FOR_NAN
+		BreakOnNan(cpu,ST(cpu).value);
+	#endif
+
 		return 70;
 	}
 	return 0;
@@ -1060,6 +1167,10 @@ unsigned int i486DX::FPUState::FSUB_m32real(i486DX &cpu,const unsigned char byte
 		auto &st=ST(cpu);
 		st.value=st.value-src;
 
+	#ifdef CHECK_FOR_NAN
+		BreakOnNan(cpu,st.value);
+	#endif
+
 		return 10;
 	}
 	return 0;
@@ -1073,6 +1184,10 @@ unsigned int i486DX::FPUState::FSUB_m64real(i486DX &cpu,const unsigned char byte
 		auto src=DoubleFrom64Bit(byteData);
 		auto &st=ST(cpu);
 		st.value=st.value-src;
+
+	#ifdef CHECK_FOR_NAN
+		BreakOnNan(cpu,st.value);
+	#endif
 
 		return 10;
 	}
@@ -1217,6 +1332,11 @@ unsigned int i486DX::FPUState::FYL2X(i486DX &cpu)
 		auto &st1=ST(cpu,1);
 		st1.value=log2(st.value)*st1.value;
 		Pop(cpu);
+
+	#ifdef CHECK_FOR_NAN
+		BreakOnNan(cpu,st1.value);
+	#endif
+
 		return 311;
 	}
 	return 0;

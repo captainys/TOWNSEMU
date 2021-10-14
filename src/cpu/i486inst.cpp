@@ -2729,6 +2729,9 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 			case 4:
 				disasm=DisassembleTypicalOneOperand("FBLD(m80dec)  ",op1,operandSize);
 				break;
+			case 5:
+				disasm=DisassembleTypicalOneOperand("FILD(m64int)  ",op1,operandSize);
+				break;
 			case 6: // FBSTP m80dec
 				disasm=DisassembleTypicalOneOperand("FBSTP(m80dec)  ",op1,operandSize);
 				break;
@@ -6183,6 +6186,14 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				{
 					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,4);
 					clocksPassed=state.fpuState.FLD32(*this,value.byteData);
+				}
+				break;
+			case 2: // "FST m32real"
+				{
+					OperandValue value;
+					state.fpuState.GetSTAsFloat(*this,value);
+					StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+					clocksPassed=7;
 				}
 				break;
 			case 3: // FSTP m32real
