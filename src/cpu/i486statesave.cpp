@@ -113,6 +113,18 @@ void i486DX::State::Serialize(std::vector <unsigned char> &data) const
 	PushUint32(data,exceptionCode);
 	PushUint32(data,exceptionType);
 	PushUint32(data,exceptionLinearAddr); // For EXCEPTION_PF
+
+	// Version 1:
+	PushBool(data,fpuState.enabled);
+	PushUint16(data,fpuState.statusWord);
+	PushUint16(data,fpuState.controlWord);
+	PushUint16(data,fpuState.tagWord); // I'm still not sure if this tag word is separate from tag bits of the stack.
+	for(auto s : fpuState.stack)
+	{
+		auto data64=((uint64_t *)&s.value);
+		PushUint64(data,*data64);
+		PushUint16(data,s.tag);
+	}
 }
 bool i486DX::State::Deserialize(const unsigned char *&data,uint32_t version)
 {
@@ -157,6 +169,26 @@ bool i486DX::State::Deserialize(const unsigned char *&data,uint32_t version)
 	exceptionLinearAddr=ReadUint32(data); // For EXCEPTION_PF
 
 
+	// Version 1:
+	if(1<=version)
+	{
+		fpuState.enabled=ReadBool(data);
+		fpuState.statusWord=ReadUint16(data);
+		fpuState.controlWord=ReadUint16(data);
+		fpuState.tagWord=ReadUint16(data); // I'm still not sure if this tag word is separate from tag bits of the stack.
+		for(auto &s : fpuState.stack)
+		{
+			uint64_t data64=ReadUint64(data);
+			*((uint64_t *)&s.value)=data64;
+			s.tag=ReadUint16(data);
+		}
+	}
+	else
+	{
+		fpuState.enabled=false;
+		fpuState.Reset();
+	}
+
 
 	CSEIPWindow.CleanUp();   // This must be cleared on state-load.
 	SSESPWindow.CleanUp();         // This must be cleared on state-load.
@@ -165,7 +197,9 @@ bool i486DX::State::Deserialize(const unsigned char *&data,uint32_t version)
 
 /* virtual */ uint32_t i486DX::SerializeVersion(void) const
 {
-	return 0; // Version 0 doesn't include FPU state.
+	return 1; 
+	// Version 0 doesn't include FPU state.
+	// Version 1 includes FPU state.
 }
 /* virtual */ void i486DX::SpecificSerialize(std::vector <unsigned char> &data,std::string) const
 {

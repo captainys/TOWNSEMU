@@ -297,6 +297,19 @@ void i486DX::FPUState::BreakOnNan(i486DX &cpu,double value)
 i486DX::FPUState::FPUState()
 {
 	enabled=false; // Tentative.
+	Reset();
+}
+void i486DX::FPUState::Reset(void)
+{
+	controlWord=0x037F;
+	statusWord=0;
+	tagWord=0xFFFF;
+	stackPtr=8;
+	for(auto &s : stack)
+	{
+		s.tag=0;
+		s.value=0.0;
+	}
 }
 void i486DX::FPUState::FNINIT(void)
 {
@@ -311,10 +324,7 @@ void i486DX::FPUState::FNINIT(void)
 // FCS<=0
 	if(true==enabled)
 	{
-		controlWord=0x037F;
-		statusWord=0;
-		tagWord=0xFFFF;
-		stackPtr=8;
+		Reset();
 	}
 }
 bool i486DX::FPUState::ExceptionPending(void) const

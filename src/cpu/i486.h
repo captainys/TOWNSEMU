@@ -378,6 +378,12 @@ public:
 		int stackPtr=8;
 		Stack stack[STACK_LEN],nullRegister;
 
+		/*! Initialize variables regardless of the enabled flag.
+		    Does not change enabled flag.
+		*/
+		void Reset(void);
+		/*! Initialize variables only if enabled==true.
+		*/
 		void FNINIT(void);
 		bool ExceptionPending(void) const;
 		unsigned int GetStatusWord(void) const;
