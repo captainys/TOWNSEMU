@@ -1098,9 +1098,7 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 		{
 			unsigned int MODR_M;
 			FUNCCLASS::PeekOperand8(cpu,MODR_M,inst,ptr,seg,offset,mem);
-			if(0xD1==MODR_M || // FCOM
-			   0xD9==MODR_M || // FCOMP
-			   (0xC0<=MODR_M && MODR_M<=0xC7)) // FADD ST,STi
+			if(0xC0<=MODR_M && MODR_M<=0xDF) // FADD ST,STi  FMUL ST,STI, FCOM, FCOMP
 			{
 				FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset,mem);
 			}
@@ -5990,6 +5988,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{
 				clocksPassed=state.fpuState.FADD_ST_STi(*this,MODR_M&7);
 			}
+			else if(0xC0==(MODR_M&0xF8))   // FADD ST,ST(i)
+			{
+			}
 			else if(0xC8==(MODR_M&0xF8))   // FMUL ST,ST(i)
 			{
 				clocksPassed=state.fpuState.FMUL_ST_STi(*this,MODR_M&7);
@@ -6001,6 +6002,14 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			else if(0xD8==(MODR_M&0xF8))   // FCOMP
 			{
 				clocksPassed=state.fpuState.FCOMP(*this,MODR_M&7);
+			}
+			else if(0xF0==(MODR_M&0xF8))
+			{
+			   // FDIV ST,STi
+			}
+			else if(0xF8==(MODR_M&0xF8))
+			{
+			   // FDIVR ST,STi
 			}
 			else
 			{
@@ -6230,7 +6239,23 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				debuggerPtr->ExternalBreak("FPU Inst");
 			}
 		#endif
-		if(0xE9==inst.operand[0])
+		if(0xC0==(inst.operand[0]&0xF8))
+		{
+			 // FCMOVB
+		}
+		else if(0xC8==(inst.operand[0]&0xF8))
+		{
+			 // FCMOVE
+		}
+		else if(0xD0==(inst.operand[0]&0xF8))
+		{
+			 // FCMOVBE
+		}
+		else if(0xD8==(inst.operand[0]&0xF8))
+		{
+			 // FCMOVU
+		}
+		else if(0xE9==inst.operand[0])
 		{
 			// FUCOMPP
 		}
@@ -6265,10 +6290,38 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			}
 		#endif
 
+		if(0xC0==(inst.operand[0]&0xF8))
+		{
+			// FCMOVNB
+		}
+		else if(0xC8==(inst.operand[0]&0xF8))
+		{
+			// FCMOVNE
+		}
+		else if(0xD0==(inst.operand[0]&0xF8))
+		{
+			// FCMOVNBE
+		}
+		else if(0xD8==(inst.operand[0]&0xF8))
+		{
+			// FCMOVNU
+		}
+		else if(0xE2==inst.operand[0])
+		{
+			// FCLEX
+		}
 		if(0xE3==inst.operand[0])
 		{
 			state.fpuState.FNINIT();
 			clocksPassed=17;
+		}
+		else if(0xE8==(inst.operand[0]&0xF8))
+		{
+			// FUCOMI
+		}
+		else if(0xF0==(inst.operand[0]&0xF8))
+		{
+			// FCOMI
 		}
 		else
 		{
@@ -6321,6 +6374,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			else if(0xC0<=MODR_M && MODR_M<=0xC7)
 			{
 				// FADD ST(i),ST
+			}
+			else if(0xF8==(MODR_M&0xF8))
+			{
+				// FDIV STi,ST
 			}
 			else
 			{
@@ -6488,6 +6545,14 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			SetAX(state.fpuState.GetStatusWord());
 			clocksPassed=3;
+		}
+		else if(0xE8==(inst.operand[0]&0xF8))
+		{
+			// FUCOMIP
+		}
+		else if(0xF0==(inst.operand[0]&0xF8))
+		{
+			// FCOMIP
 		}
 		else
 		{
