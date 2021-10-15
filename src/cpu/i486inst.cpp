@@ -2611,7 +2611,9 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 			}
 			else if(0xC0==(MODR_M&0xF8)) // C0 11000xxx
 			{
-				disasm="?FPUINST";
+				disasm="FFREE ST(";
+				disasm+=cpputil::Ubtox(MODR_M&7);
+				disasm+=")";
 			}
 			else if(0xE0==(MODR_M&0xF8) || 0xE1==(MODR_M&0xF8) || 0xE8==(MODR_M&0xF8) || 0xE9==(MODR_M&0xF8))
 			{
@@ -5984,12 +5986,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		#endif
 		{
 			auto MODR_M=inst.operand[0];
-			if(0xC0<=MODR_M && MODR_M<=0xC7)
+			if(0xC0==(MODR_M&0xF8))   // FADD ST,ST(i)
 			{
 				clocksPassed=state.fpuState.FADD_ST_STi(*this,MODR_M&7);
-			}
-			else if(0xC0==(MODR_M&0xF8))   // FADD ST,ST(i)
-			{
 			}
 			else if(0xC8==(MODR_M&0xF8))   // FMUL ST,ST(i)
 			{
@@ -6002,6 +6001,14 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			else if(0xD8==(MODR_M&0xF8))   // FCOMP
 			{
 				clocksPassed=state.fpuState.FCOMP(*this,MODR_M&7);
+			}
+			else if(0xE0==(MODR_M&0xE0))
+			{
+			   // FSUB ST,STi
+			}
+			else if(0xE8==(MODR_M&0xE0))
+			{
+			   // FSUBR ST,STi
 			}
 			else if(0xF0==(MODR_M&0xF8))
 			{
@@ -6078,6 +6085,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		else if(0xC8<=inst.operand[0] && inst.operand[0]<=0xCF)
 		{
 			clocksPassed=state.fpuState.FXCH(*this,inst.operand[0]&7);
+		}
+		else if(0xD0==inst.operand[0])
+		{
+			// FNOP
 		}
 		else if(0xE0==inst.operand[0])
 		{
@@ -6375,6 +6386,14 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{
 				// FADD ST(i),ST
 			}
+			else if(0xC8==(MODR_M&0xF8))
+			{
+				// FMUL STi,ST
+			}
+			else if(0xE0==(MODR_M&0xF8))
+			{
+				// FSUBR STi,ST
+			}
 			else if(0xF8==(MODR_M&0xF8))
 			{
 				// FDIV STi,ST
@@ -6445,14 +6464,14 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			if(0xD0==(MODR_M&0xF8)) // D0 11010xxx    [1] pp.151  0<=i<=7
 			{
 			}
-			else if(0xD8<=(MODR_M&0xF8) && (MODR_M&0xF8)<=0xDF) // D8 11011xxx
+			else if(0xD8==(MODR_M&0xF8)) // D8 11011xxx
 			{
 				clocksPassed=state.fpuState.FSTP_STi(*this,(MODR_M&7));
 			}
 			else if(0xC0==(MODR_M&0xF8)) // C0 11000xxx
 			{
 			}
-			else if(0xE0==(MODR_M&0xF8) || 0xE1==(MODR_M&0xF8) || 0xE8==(MODR_M&0xF8) || 0xE9==(MODR_M&0xF8))
+			else if(0xE0==(MODR_M&0xF8) || 0xE8==(MODR_M&0xF8))
 			{
 			}
 			else

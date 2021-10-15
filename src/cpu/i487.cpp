@@ -1098,7 +1098,7 @@ unsigned int i486DX::FPUState::FSIN(i486DX &cpu)
 {
 	if(true==enabled)
 	{
-		statusWord&=~STATUS_C1;
+		statusWord&=~(STATUS_C1|STATUS_C2);
 
 		auto &ST=this->ST(cpu);
 		ST.value=sin(ST.value);
@@ -1115,7 +1115,7 @@ unsigned int i486DX::FPUState::FSINCOS(i486DX &cpu)
 {
 	if(true==enabled)
 	{
-		statusWord&=(~STATUS_C2);
+		statusWord&=~(STATUS_C1|STATUS_C2);
 
 		auto &ST=this->ST(cpu);
 		auto c=cos(ST.value);
@@ -1135,7 +1135,7 @@ unsigned int i486DX::FPUState::FCOS(i486DX &cpu)
 {
 	if(true==enabled)
 	{
-		statusWord&=~STATUS_C1;
+		statusWord&=~(STATUS_C1|STATUS_C2);
 
 		auto &ST=this->ST(cpu);
 		ST.value=cos(ST.value);
