@@ -317,6 +317,7 @@ int RunTestSinCosTan(void)
 		}
 		s0=s;
 	}
+	s0=sin(GetPI()/2.0);
 	for(i=91; i<=270; ++i)
 	{
 		double angle=(double)i*GetPI()/180.0;
@@ -338,7 +339,7 @@ int RunTestSinCosTan(void)
 		double s=Sine(angle);
 		if(s0>=s)
 		{
-			printf("Error in sin. %d %lf %lf\n",i,s0,s);
+			printf("Error in FSIN. %d %lf %lf\n",i,s0,s);
 			return 1;
 		}
 		s0=s;
@@ -349,7 +350,7 @@ int RunTestSinCosTan(void)
 		double s=Sine(angle);
 		if(s0<=s)
 		{
-			printf("Error in sin. %d %lf %lf\n",i,s0,s);
+			printf("Error in FSIN. %d %lf %lf\n",i,s0,s);
 			return 1;
 		}
 		s0=s;
@@ -438,7 +439,8 @@ int RunTestSinCosTan(void)
 
 int RunTestFMOD(void)
 {
-	for(int i=0; i<1000; ++i)
+	int i;
+	for(i=0; i<1000; ++i)
 	{
 		for(double a=0.1; a<=0.9; a+=0.1)
 		{
@@ -446,7 +448,20 @@ int RunTestFMOD(void)
 			double rem=fmod(numer,1.0);
 			if(0!=FCompare(rem,a))
 			{
-				printf("Error in fmod.\n");
+				printf("Error in fmod (Positive%Positive).\n");
+				return 1;
+			}
+		}
+	}
+	for(i=-1000; i<0; ++i)
+	{
+		for(double a=-0.1; a>=-0.9; a-=0.1)
+		{
+			double numer=(double)i+a;
+			double rem=fmod(numer,1.0);
+			if(0!=FCompare(rem,a))
+			{
+				printf("Error in fmod (Negative%Positive).\n");
 				return 1;
 			}
 		}
