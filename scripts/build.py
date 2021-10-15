@@ -16,15 +16,20 @@ def Run():
 	cwd=os.getcwd()
 
 	os.chdir(BUILDDIR)
-	proc=subprocess.Popen([
+
+	cmd=[
 		"cmake",
 		"--build",
 		".",
-		"--parallel",
 		"--config",
 		"Release",
-	])
+		"--parallel",
+	]
+
+	proc=subprocess.Popen(cmd)
 	proc.communicate();
+
+	print(cmd)
 
 	os.chdir(cwd)
 

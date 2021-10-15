@@ -1032,7 +1032,7 @@ unsigned int i486DX::FPUState::FPREM(i486DX &cpu)
 			// -> I see, I see.  It makes sense.  C0, C3, C1 should be taken from the quotient converted to integer.
 			//    I was thinking to take least significant bits from fraction part of floating point,
 			//    which for sure doesn't do any good.
-			int64_t quo=(uint64_t)(ST.value/ST1.value);
+			int64_t quo=(int64_t)(ST.value/ST1.value);
 			if(0!=(quo&1))
 			{
 				statusWord|=STATUS_C1;
