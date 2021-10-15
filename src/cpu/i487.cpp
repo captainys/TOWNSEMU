@@ -1046,10 +1046,10 @@ unsigned int i486DX::FPUState::FPREM(i486DX &cpu)
 				statusWord|=STATUS_C0;
 			}
 		}
-		ST1.value=fmod(ST.value,ST1.value);
+		ST.value=fmod(ST.value,ST1.value);
 
 	#ifdef CHECK_FOR_NAN
-		BreakOnNan(cpu,ST1.value);
+		BreakOnNan(cpu,ST.value);
 	#endif
 
 		return 84;
