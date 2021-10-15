@@ -123,6 +123,7 @@ public:
 	std::string powerOffAt;
 
 	bool pretend386DX=false;
+	bool useFPU=false;
 
 	unsigned int memSizeInMB=4;
 

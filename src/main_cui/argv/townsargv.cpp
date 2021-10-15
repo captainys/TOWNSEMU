@@ -54,6 +54,8 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  Let it run automatically to the end without taking control commands." << std::endl;
 	std::cout << "-FREQ frequency_in_MHz" << std::endl;
 	std::cout << "  Specify CPU frequency in Megahertz." << std::endl;
+	std::cout << "-USEFPU / -DONTUSEFPU" << std::endl;
+	std::cout << "  Use or do not use floating-point unit." << std::endl;
 	std::cout << "-MEMSIZE memory_size_in_MB" << std::endl;
 	std::cout << "  Specify main RAM size in mega bytes.  Max 64." << std::endl;
 	std::cout << "-NOWAIT" << std::endl;
@@ -360,6 +362,14 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		{
 			freq=cpputil::Atoi(argv[i+1]);
 			++i;
+		}
+		else if("-USEFPU"==ARG)
+		{
+			useFPU=true;
+		}
+		else if("-DONTUSEFPU"==ARG)
+		{
+			useFPU=false;
 		}
 		else if("-MEMSIZE"==ARG && i+1<argc)
 		{
