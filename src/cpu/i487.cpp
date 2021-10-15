@@ -1047,7 +1047,6 @@ unsigned int i486DX::FPUState::FPREM(i486DX &cpu)
 			}
 		}
 		ST1.value=fmod(ST.value,ST1.value);
-		Pop(cpu);
 
 	#ifdef CHECK_FOR_NAN
 		BreakOnNan(cpu,ST1.value);
