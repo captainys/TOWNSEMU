@@ -302,6 +302,159 @@ int RunTest(void)
 	return e;
 }
 
+int RunTestSinCosTan(void)
+{
+	int i;
+	double s0=sin(-GetPI()/2.0);
+	for(i=-89; i<=90; ++i)
+	{
+		double angle=(double)i*GetPI()/180.0;
+		double s=sin(angle);
+		if(s0>=s)
+		{
+			printf("Error in sin. %d %lf %lf\n",i,s0,s);
+			return 1;
+		}
+		s0=s;
+	}
+	for(i=91; i<=270; ++i)
+	{
+		double angle=(double)i*GetPI()/180.0;
+		double s=sin(angle);
+		if(s0<=s)
+		{
+			printf("Error in sin. %d %lf %lf\n",i,s0,s);
+			return 1;
+		}
+		s0=s;
+	}
+
+	// High-C's sin and cos apparently uses FPTAN to calculate sin.  I don't know why.
+	// Force FSIN test by Sine function.
+	s0=Sine(-GetPI()/2.0);
+	for(i=-89; i<=90; ++i)
+	{
+		double angle=(double)i*GetPI()/180.0;
+		double s=Sine(angle);
+		if(s0>=s)
+		{
+			printf("Error in sin. %d %lf %lf\n",i,s0,s);
+			return 1;
+		}
+		s0=s;
+	}
+	for(i=91; i<=270; ++i)
+	{
+		double angle=(double)i*GetPI()/180.0;
+		double s=Sine(angle);
+		if(s0<=s)
+		{
+			printf("Error in sin. %d %lf %lf\n",i,s0,s);
+			return 1;
+		}
+		s0=s;
+	}
+
+	double c0=cos(0.0);
+	for(i=1; i<=180; ++i)
+	{
+		double angle=(double)i*GetPI()/180.0;
+		double c=cos(angle);
+		if(c0<=c)
+		{
+			printf("Error in cos.\n");
+			return 1;
+		}
+		c0=c;
+	}
+	for(i=181; i<=360; ++i)
+	{
+		double angle=(double)i*GetPI()/180.0;
+		double c=cos(angle);
+		if(c0>=c)
+		{
+			printf("Error in cos.\n");
+			return 1;
+		}
+		c0=c;
+	}
+
+	// High-C's sin and cos apparently uses FPTAN to calculate sin.  I don't know why.
+	// Force FCOS test by Cosine function.
+	c0=Cosine(0.0);
+	for(i=1; i<=180; ++i)
+	{
+		double angle=(double)i*GetPI()/180.0;
+		double c=Cosine(angle);
+		if(c0<=c)
+		{
+			printf("Error in cos.\n");
+			return 1;
+		}
+		c0=c;
+	}
+	for(i=181; i<=360; ++i)
+	{
+		double angle=(double)i*GetPI()/180.0;
+		double c=Cosine(angle);
+		if(c0>=c)
+		{
+			printf("Error in cos.\n");
+			return 1;
+		}
+		c0=c;
+	}
+
+	double t0=tan(-GetPI()*89/180.0);
+	for(i=-88; i<=89; ++i)
+	{
+		double angle=(double)i*GetPI()/180.0;
+		double t=tan(angle);
+		if(t0>=t)
+		{
+			printf("Error in tan. %d %lf %lf\n",i,t0,t);
+			return 1;
+		}
+		t0=t;
+	}
+	t0=tan(GetPI()*91/180.0);
+	for(i=92; i<=269; ++i)
+	{
+		double angle=(double)i*GetPI()/180.0;
+		double t=tan(angle);
+		if(t0>=t)
+		{
+			printf("Error in tan. %d %lf %lf\n",i,t0,t);
+			return 1;
+		}
+		t0=t;
+	}
+
+
+	printf("Sin,Cos,Tan test ok.\n");
+
+	return 0;
+}
+
+int RunTestFMOD(void)
+{
+	for(int i=0; i<1000; ++i)
+	{
+		for(double a=0.1; a<=0.9; a+=0.1)
+		{
+			double numer=(double)i+a;
+			double rem=fmod(numer,1.0);
+			if(0!=FCompare(rem,a))
+			{
+				printf("Error in fmod.\n");
+				return 1;
+			}
+		}
+	}
+	printf("Fmod test ok.\n");
+	return 0;
+}
+
 int RunTestFloatAndInt(void)
 {
 	int e=0;
@@ -367,6 +520,6 @@ int RunTestFloatAndInt(void)
 int main(void)
 {
 	RunTest();
-	int e=RunTest()+RunTestFloatAndInt();
+	int e=RunTest()+RunTestFloatAndInt()+RunTestSinCosTan()+RunTestFMOD();
 	return e;
 }
