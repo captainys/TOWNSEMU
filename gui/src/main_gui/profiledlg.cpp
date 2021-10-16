@@ -134,6 +134,7 @@ void ProfileDialog::Make(void)
 		CPUFreqTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"CPU Speed (MHz)",4,YSTRUE);
 		CPUFreqTxt->SetInteger(25);
 		AddStaticText(0,FSKEY_NULL,"(Too-fast frequency rather slows down VM)",YSFALSE);
+		FPUBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Enable 80387 FPU",YSFALSE);
 
 		RAMSizeTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"RAM (MB)",4,YSFALSE);
 		RAMSizeTxt->SetInteger(4);
@@ -887,6 +888,7 @@ TownsProfile ProfileDialog::GetProfile(void) const
 
 	profile.ROMPath=ROMDirTxt->GetString().data();
 	profile.freq=CPUFreqTxt->GetInteger();
+	profile.useFPU=(YSTRUE==FPUBtn->GetCheck());
 	profile.memSizeInMB=RAMSizeTxt->GetInteger();
 	profile.cdImgFName=CDImgTxt->GetString().data();
 	profile.fdImgFName[0]=FDImgTxt[0]->GetString().data();
@@ -1042,6 +1044,7 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 	ROMDirTxt->SetText(str);
 
 	CPUFreqTxt->SetInteger(profile.freq);
+	FPUBtn->SetCheck(true==profile.useFPU ? YSTRUE : YSFALSE);
 
 	RAMSizeTxt->SetInteger(profile.memSizeInMB);
 

@@ -508,6 +508,7 @@ void FsGuiMainCanvas::Draw(void)
 	glDisable(GL_DEPTH_TEST);
 
 	glUseProgram(0);
+	glPixelZoom(1,1);
 	FsGuiCanvas::Show();
 
 	FsSwapBuffers();

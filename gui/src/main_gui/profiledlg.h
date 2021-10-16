@@ -43,6 +43,7 @@ public:
 	FsGuiButton *scrnMaximizeBtn;
 	FsGuiButton *autoStartBtn;
 	FsGuiTextBox *CPUFreqTxt,*RAMSizeTxt;
+	FsGuiButton *FPUBtn;
 	FsGuiButton *catchUpRealTimeBtn;
 	FsGuiButton *runBtn;
 	FsGuiButton *separateProcBtn;
