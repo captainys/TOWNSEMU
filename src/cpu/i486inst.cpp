@@ -1098,7 +1098,7 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 		{
 			unsigned int MODR_M;
 			FUNCCLASS::PeekOperand8(cpu,MODR_M,inst,ptr,seg,offset,mem);
-			if(0xC0<=MODR_M && MODR_M<=0xDF) // FADD ST,STi  FMUL ST,STI, FCOM, FCOMP
+			if(0xC0<=MODR_M && MODR_M<=0xE7) // FADD ST,STi  FMUL ST,STI, FCOM, FCOMP, FSUB
 			{
 				FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset,mem);
 			}
@@ -2259,6 +2259,12 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 			else if(0xD8==(MODR_M&0xF8))   // FCOMP
 			{
 				disasm="FCOMP  ST(";
+				disasm.push_back('0'+(operand[0]&7));
+				disasm+=")";
+			}
+			else if(0xE0==(MODR_M&0xF8))   // FSUB ST,STi
+			{
+				disasm="FSUB   ST,ST(";
 				disasm.push_back('0'+(operand[0]&7));
 				disasm+=")";
 			}
@@ -6004,7 +6010,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			}
 			else if(0xE0==(MODR_M&0xE0))
 			{
-			   // FSUB ST,STi
+				clocksPassed=state.fpuState.FSUB_ST_STi(*this,MODR_M&7);
 			}
 			else if(0xE8==(MODR_M&0xE0))
 			{
@@ -6128,7 +6134,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		else if(0xED==inst.operand[0])
 		{
-			// FLDLN2
+			clocksPassed=state.fpuState.FLDLN2(*this);
 		}
 		else if(0xEE==inst.operand[0])
 		{

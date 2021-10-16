@@ -918,6 +918,15 @@ unsigned int i486DX::FPUState::FLDL2E(i486DX &cpu)
 	}
 	return 0; // Let it abort.
 }
+unsigned int i486DX::FPUState::FLDLN2(i486DX &cpu)
+{
+	if(true==enabled)
+	{
+		Push(cpu,log(2.0));
+		return 8;
+	}
+	return 0; // Let it abort.
+}
 unsigned int i486DX::FPUState::FLDPI(i486DX &cpu)
 {
 	if(true==enabled)
@@ -1249,6 +1258,18 @@ unsigned int i486DX::FPUState::FSUB_m64real(i486DX &cpu,const unsigned char byte
 		BreakOnNan(cpu,st.value);
 	#endif
 
+		return 10;
+	}
+	return 0;
+}
+unsigned int i486DX::FPUState::FSUB_ST_STi(i486DX &cpu,int i)
+{
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+		auto &ST=this->ST(cpu);
+		auto &STi=this->ST(cpu,i);
+		ST.value=ST.value-STi.value;
 		return 10;
 	}
 	return 0;

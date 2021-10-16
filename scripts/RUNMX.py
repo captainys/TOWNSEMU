@@ -54,6 +54,7 @@ def Run(argv):
 		"-CMOS",
 		os.path.join(TSUGARUDIR,"testdata","CMOS.bin"),
 		"-DONTAUTOSAVECMOS",
+		"-USEFPU",
 		#"-HIGHRES",
 		#"-DEBUG",
 		#"-PAUSE",
