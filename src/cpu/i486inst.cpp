@@ -6328,6 +6328,14 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			// FCMOVNU
 		}
+		else if(0xE8==(inst.operand[0]&0xF8))
+		{
+			// FUCOMI
+		}
+		else if(0xF0==(inst.operand[0]&0xF8))
+		{
+			// FCOMI
+		}
 		else if(0xE2==inst.operand[0])
 		{
 			clocksPassed=state.fpuState.FCLEX(*this);
@@ -6336,14 +6344,6 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			state.fpuState.FNINIT();
 			clocksPassed=17;
-		}
-		else if(0xE8==(inst.operand[0]&0xF8))
-		{
-			// FUCOMI
-		}
-		else if(0xF0==(inst.operand[0]&0xF8))
-		{
-			// FCOMI
 		}
 		else
 		{
@@ -6389,11 +6389,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			}
 		#endif
 			unsigned int MODR_M=inst.operand[0];
-			if(0xE8<=MODR_M && MODR_M<=0xEF)
+			if(0xE8==(MODR_M&0xF8))
 			{
 				clocksPassed=state.fpuState.FSUB_STi_ST(*this,MODR_M&7);
 			}
-			else if(0xC0<=MODR_M && MODR_M<=0xC7)
+			else if(0xC0==(MODR_M&0xF8))
 			{
 				// FADD ST(i),ST
 			}
@@ -6475,23 +6475,21 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				debuggerPtr->ExternalBreak("FPU Inst");
 			}
 		#endif
-			unsigned int MODR_M=inst.operand[0];
-			if(0xD0==(MODR_M&0xF8)) // D0 11010xxx    [1] pp.151  0<=i<=7
+			switch(inst.operand[0]&0xF8)
 			{
-			}
-			else if(0xD8==(MODR_M&0xF8)) // D8 11011xxx
-			{
-				clocksPassed=state.fpuState.FSTP_STi(*this,(MODR_M&7));
-			}
-			else if(0xC0==(MODR_M&0xF8)) // C0 11000xxx
-			{
-			}
-			else if(0xE0==(MODR_M&0xF8) || 0xE8==(MODR_M&0xF8))
-			{
-			}
-			else
-			{
-				switch(Instruction::GetREG(MODR_M))
+			case 0xD0: // D0 11010xxx    [1] pp.151  0<=i<=7
+				break;
+			case 0xD8: // D8 11011xxx
+				clocksPassed=state.fpuState.FSTP_STi(*this,(inst.operand[0]&7));
+				break;
+			case 0xC0: // C0 11000xxx
+				break;
+			case 0xE0:
+				break;
+			case 0xE8:
+				break;
+			default:
+				switch(Instruction::GetREG(inst.operand[0]))
 				{
 				case 0:	// FLD m64real
 					{
@@ -6526,8 +6524,6 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 						StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
 					}
 					break;
-				default:
-					break;
 				}
 			}
 		}
@@ -6539,33 +6535,32 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				debuggerPtr->ExternalBreak("FPU Inst");
 			}
 		#endif
-		if(0xC0<=inst.operand[0] && inst.operand[0]<=0xC7)
+		switch(inst.operand[0]&0xF8)
 		{
+		case 0xC0:
 			clocksPassed=state.fpuState.FADDP_STi_ST(*this,inst.operand[0]&7);
-		}
-		else if(0xC8<=inst.operand[0] && inst.operand[0]<=0xCF)
-		{
+			break;
+		case 0xC8:
 			clocksPassed=state.fpuState.FMULP(*this,inst.operand[0]&7);
-		}
-		else if(0xE0<=inst.operand[0] && inst.operand[0]<=0xE7)
-		{
+			break;
+		case 0xE0:
 			clocksPassed=state.fpuState.FSUBRP_STi_ST(*this,inst.operand[0]&7);
-		}
-		else if(0xE8<=inst.operand[0] && inst.operand[0]<=0xEF)
-		{
+			break;
+		case 0xE8:
 			clocksPassed=state.fpuState.FSUBP_STi_ST(*this,inst.operand[0]&7);
-		}
-		else if(0xF0<=inst.operand[0] && inst.operand[0]<=0xF7)
-		{
+			break;
+		case 0xF0:
 			clocksPassed=state.fpuState.FDIVRP_STi_ST(*this,inst.operand[0]&7);
-		}
-		else if(0xF8<=inst.operand[0] && inst.operand[0]<=0xFF)
-		{
+			break;
+		case 0xF8:
 			clocksPassed=state.fpuState.FDIVP_STi_ST(*this,inst.operand[0]&7);
-		}
-		else if(0xD9==inst.operand[0])
-		{
-			clocksPassed=state.fpuState.FCOMPP(*this);
+			break;
+		default:
+			if(0xD9==inst.operand[0])
+			{
+				clocksPassed=state.fpuState.FCOMPP(*this);
+			}
+			break;
 		}
 		break;
 	case I486_RENUMBER_FPU_DF://  0xDF,
