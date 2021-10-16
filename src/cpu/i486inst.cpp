@@ -6040,8 +6040,13 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 						clocksPassed=state.fpuState.FMUL_m32real(*this,value.byteData);
 					}
 					break;
+				case 2:
+					{
+						auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,4);
+						clocksPassed=state.fpuState.FCOM_m32real(*this,value.byteData);
+					}
+					break;
 				case 3:
-					// FCOMP(m32real)
 					{
 						auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,4);
 						clocksPassed=state.fpuState.FCOMP_m32real(*this,value.byteData);
@@ -6094,7 +6099,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		else if(0xD0==inst.operand[0])
 		{
-			// FNOP
+			clocksPassed=3; // FNOP
 		}
 		else if(0xE0==inst.operand[0])
 		{
@@ -6421,6 +6426,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					}
 					break;
 				case 2: //
+					{
+						auto value=EvaluateOperand64(mem,inst.addressSize,inst.segOverride,op1);
+						clocksPassed=state.fpuState.FCOM_m64real(*this,value.byteData);
+					}
 					break;
 				case 3: // FCOMP m64real
 					{
@@ -6538,10 +6547,6 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			clocksPassed=state.fpuState.FMULP(*this,inst.operand[0]&7);
 		}
-		else if(0xD9==inst.operand[0])
-		{
-			clocksPassed=state.fpuState.FCOMPP(*this);
-		}
 		else if(0xE0<=inst.operand[0] && inst.operand[0]<=0xE7)
 		{
 			clocksPassed=state.fpuState.FSUBRP_STi_ST(*this,inst.operand[0]&7);
@@ -6557,6 +6562,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		else if(0xF8<=inst.operand[0] && inst.operand[0]<=0xFF)
 		{
 			clocksPassed=state.fpuState.FDIVP_STi_ST(*this,inst.operand[0]&7);
+		}
+		else if(0xD9==inst.operand[0])
+		{
+			clocksPassed=state.fpuState.FCOMPP(*this);
 		}
 		break;
 	case I486_RENUMBER_FPU_DF://  0xDF,

@@ -628,12 +628,30 @@ unsigned int i486DX::FPUState::FCLEX(i486DX &cpu)
 {
 	return 7;
 }
+unsigned int i486DX::FPUState::FCOM_m32real(i486DX &cpu,const unsigned char byteData[])
+{
+	if(true==enabled)
+	{
+		Compare(ST(cpu).value,DoubleFrom32Bit(byteData));
+		return 4;
+	}
+	return 0; // Let it abort.
+}
 unsigned int i486DX::FPUState::FCOMP_m32real(i486DX &cpu,const unsigned char byteData[])
 {
 	if(true==enabled)
 	{
 		Compare(ST(cpu).value,DoubleFrom32Bit(byteData));
 		Pop(cpu);
+		return 4;
+	}
+	return 0; // Let it abort.
+}
+unsigned int i486DX::FPUState::FCOM_m64real(i486DX &cpu,const unsigned char byteData[])
+{
+	if(true==enabled)
+	{
+		Compare(ST(cpu).value,DoubleFrom64Bit(byteData));
 		return 4;
 	}
 	return 0; // Let it abort.

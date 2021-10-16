@@ -494,7 +494,9 @@ public:
 		unsigned int FCOM(i486DX &cpu,int i);
 		unsigned int FCOMP(i486DX &cpu,int i);
 		unsigned int FCOMPP(i486DX &cpu);
+		unsigned int FCOM_m32real(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FCOMP_m32real(i486DX &cpu,const unsigned char byteData[]);
+		unsigned int FCOM_m64real(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FCOMP_m64real(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FCOS(i486DX &cpu);
 		unsigned int FILD_m32int(i486DX &cpu,const unsigned char byteData[]);
