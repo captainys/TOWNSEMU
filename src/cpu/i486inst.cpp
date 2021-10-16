@@ -6319,7 +6319,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		else if(0xE2==inst.operand[0])
 		{
-			// FCLEX
+			clocksPassed=state.fpuState.FCLEX(*this);
 		}
 		if(0xE3==inst.operand[0])
 		{

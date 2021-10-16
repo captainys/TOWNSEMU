@@ -624,6 +624,10 @@ unsigned int i486DX::FPUState::FCHS(i486DX &cpu)
 	}
 	return 0; // Let it abort.
 }
+unsigned int i486DX::FPUState::FCLEX(i486DX &cpu)
+{
+	return 7;
+}
 unsigned int i486DX::FPUState::FCOMP_m32real(i486DX &cpu,const unsigned char byteData[])
 {
 	if(true==enabled)

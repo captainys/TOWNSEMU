@@ -490,6 +490,7 @@ public:
 		unsigned int FADDP_STi_ST(i486DX &cpu,int i);
 		unsigned int FBLD(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FCHS(i486DX &cpu);
+		unsigned int FCLEX(i486DX &cpu);
 		unsigned int FCOM(i486DX &cpu,int i);
 		unsigned int FCOMP(i486DX &cpu,int i);
 		unsigned int FCOMPP(i486DX &cpu);
