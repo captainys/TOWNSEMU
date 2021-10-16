@@ -6008,11 +6008,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{
 				clocksPassed=state.fpuState.FCOMP(*this,MODR_M&7);
 			}
-			else if(0xE0==(MODR_M&0xE0))
+			else if(0xE0==(MODR_M&0xF8))
 			{
 				clocksPassed=state.fpuState.FSUB_ST_STi(*this,MODR_M&7);
 			}
-			else if(0xE8==(MODR_M&0xE0))
+			else if(0xE8==(MODR_M&0xF8))
 			{
 			   // FSUBR ST,STi
 			}
