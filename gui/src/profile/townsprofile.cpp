@@ -140,6 +140,10 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 	text.push_back(sstream.str());
 
 	sstream.str("");
+	sstream << "USE80387 " << (true==useFPU ? "1" : "0");
+	text.push_back(sstream.str());
+
+	sstream.str("");
 	sstream << "CATCHUPT " << (true==catchUpRealTime ? 1 : 0);
 	text.push_back(sstream.str());
 
@@ -422,6 +426,20 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 				if(freq<1)
 				{
 					freq=1;
+				}
+			}
+		}
+		else if(0==argv[0].STRCMP("USE80387"))
+		{
+			if(2<=argv.size())
+			{
+				if(0!=argv[1].Atoi())
+				{
+					useFPU=true;
+				}
+				else
+				{
+					useFPU=false;
 				}
 			}
 		}
@@ -715,6 +733,15 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 		sstream.str("");
 		sstream << freq;
 		argv.push_back(sstream.str());
+	}
+
+	if(true==useFPU)
+	{
+		argv.push_back("-USEFPU");
+	}
+	else
+	{
+		argv.push_back("-DONTUSEFPU");
 	}
 
 	if(true!=catchUpRealTime)
