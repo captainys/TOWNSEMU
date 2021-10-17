@@ -703,7 +703,9 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "SCSICMD" << std::endl;
 	std::cout << "SCSIDMA" << std::endl;
 	std::cout << "MEMREAD physAddr" << std::endl;
-	std::cout << "MEMWRITE physAddr" << std::endl;
+	std::cout << "MEMWRITE addr" << std::endl;
+	std::cout << "MEMWRITE addr DATA=byteData" << std::endl;
+	std::cout << "MEMWRITE addr D=byteData" << std::endl;
 	std::cout << "BEEP" << std::endl;
 }
 
@@ -2684,32 +2686,7 @@ void TownsCommandInterpreter::Execute_BreakOn(FMTowns &towns,Command &cmd)
 			}
 			break;
 		case BREAK_ON_MEM_WRITE:
-			if(4<=cmd.argv.size())
-			{
-				unsigned int addr0=cpputil::Xtoi(cmd.argv[2].c_str());
-				unsigned int addr1=cpputil::Xtoi(cmd.argv[3].c_str());
-				if(addr1<addr0)
-				{
-					std::swap(addr0,addr1);
-				}
-				for(auto addr=addr0; addr<=addr1; ++addr)
-				{
-					i486DebugMemoryAccess::SetBreakOnMemWrite(towns.mem,towns.debugger,addr);
-				}
-				std::cout << "Break on Memory Write" << std::endl;
-				std::cout << "  from PHYS:" << cpputil::Uitox(addr0) << std::endl;
-				std::cout << "  to PHYS:  " << cpputil::Uitox(addr1) << std::endl;
-			}
-			else if(3<=cmd.argv.size())
-			{
-				i486DebugMemoryAccess::SetBreakOnMemWrite(towns.mem,towns.debugger,cpputil::Xtoi(cmd.argv[2].c_str()));
-				std::cout << "Break on Memory Write PHYS:" << cpputil::Uitox(cpputil::Xtoi(cmd.argv[2].c_str())) << std::endl;
-			}
-			else
-			{
-				PrintError(ERROR_TOO_FEW_ARGS);
-				return;
-			}
+			Execute_BreakOnMemoryWrite(towns,cmd);
 			break;
 		case BREAK_ON_BEEP:
 			towns.timer.breakOnBeep=true;
@@ -4271,6 +4248,126 @@ void TownsCommandInterpreter::Execute_AutoShot(FMTowns &towns,Command &cmd)
 		{
 			std::cout << "Invalid port number or button number." << std::endl;
 		}
+	}
+	else
+	{
+		PrintError(ERROR_TOO_FEW_ARGS);
+	}
+}
+
+void TownsCommandInterpreter::Execute_BreakOnMemoryWrite(FMTowns &towns,Command &cmd)
+{
+	bool useValue=false;
+	unsigned char value=0;
+	int nAddr=0;
+	uint32_t addr[2];
+
+	for(int i=2; i<cmd.argv.size(); ++i)
+	{
+		// DATA=, DATA:, D:, D=, VALUE:, VALUE=, V:, V=
+		auto arg=cmd.argv[i];
+		cpputil::Capitalize(arg);
+		if(cpputil::StrStartsWith(arg,"DATA=") ||
+		   cpputil::StrStartsWith(arg,"D=") ||
+		   cpputil::StrStartsWith(arg,"VALUE=") ||
+		   cpputil::StrStartsWith(arg,"V=") ||
+		   cpputil::StrStartsWith(arg,"DATA:") ||
+		   cpputil::StrStartsWith(arg,"D:") ||
+		   cpputil::StrStartsWith(arg,"VALUE:") ||
+		   cpputil::StrStartsWith(arg,"V:"))
+		{
+			auto pos=arg.find(':');
+			if(std::string::npos==pos)
+			{
+				pos=arg.find('=');
+			}
+			if(std::string::npos!=pos)
+			{
+				useValue=true;
+				value=cpputil::Xtoi(arg.c_str()+pos+1);
+			}
+		}
+		else if(std::string::npos!=cmd.argv[i].find(':'))
+		{
+			auto farPtr=cmdutil::MakeFarPointer(cmd.argv[i],towns.cpu);
+			farPtr=towns.cpu.TranslateFarPointer(farPtr);
+
+			uint32_t physAddr=0;
+			if(i486DX::FarPointer::LINEAR_ADDR==farPtr.SEG)
+			{
+				unsigned int exceptionType,exceptionCode;
+				physAddr=towns.cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,farPtr.OFFSET,towns.mem);
+			}
+			else if(i486DX::FarPointer::PHYS_ADDR==farPtr.SEG)
+			{
+				physAddr=farPtr.OFFSET;
+			}
+			else
+			{
+				i486DX::SegmentRegister seg;
+				towns.cpu.LoadSegmentRegister(seg,farPtr.SEG,towns.mem);
+				auto linear=seg.baseLinearAddr+farPtr.OFFSET;
+
+				unsigned int exceptionType,exceptionCode;
+				physAddr=towns.cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,linear,towns.mem);
+			}
+			if(nAddr<2)
+			{
+				addr[nAddr]=physAddr;
+			}
+			++nAddr;
+		}
+		else
+		{
+			addr[nAddr]=cpputil::Xtoi(arg.c_str());
+			++nAddr;
+		}
+	}
+
+	if(2==nAddr)
+	{
+		if(addr[1]<addr[0])
+		{
+			std::swap(addr[0],addr[1]);
+		}
+		for(auto a=addr[0]; a<=addr[1]; ++a)
+		{
+			if(true!=useValue)
+			{
+				i486DebugMemoryAccess::SetBreakOnMemWrite(towns.mem,towns.debugger,a);
+			}
+			else
+			{
+				i486DebugMemoryAccess::SetBreakOnMemWrite(towns.mem,towns.debugger,a,value);
+			}
+		}
+		std::cout << "Break on Memory Write" << std::endl;
+		std::cout << "  from PHYS:" << cpputil::Uitox(addr[0]) << std::endl;
+		std::cout << "  to PHYS:  " << cpputil::Uitox(addr[1]) << std::endl;
+		if(true==useValue)
+		{
+			std::cout << "  Value=    " << cpputil::Ubtox(value) << std::endl;
+		}
+	}
+	else if(1==nAddr)
+	{
+		if(true!=useValue)
+		{
+			i486DebugMemoryAccess::SetBreakOnMemWrite(towns.mem,towns.debugger,addr[0]);
+		}
+		else
+		{
+			i486DebugMemoryAccess::SetBreakOnMemWrite(towns.mem,towns.debugger,addr[0],value);
+		}
+		std::cout << "Break on Memory Write PHYS:" << cpputil::Uitox(addr[0]) << std::endl;
+		if(true==useValue)
+		{
+			std::cout << "  Value=    " << cpputil::Ubtox(value) << std::endl;
+		}
+	}
+	else if(2<nAddr)
+	{
+		PrintError(ERROR_WRONG_PARAMETER);
 	}
 	else
 	{

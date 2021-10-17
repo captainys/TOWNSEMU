@@ -396,6 +396,8 @@ public:
 	void Execute_QuickScreenShotDirectory(FMTowns &towns,Command &cmd);
 
 	void Execute_AutoShot(FMTowns &towns,Command &cmd);
+
+	void Execute_BreakOnMemoryWrite(FMTowns &towns,Command &cmd);
 };
 
 

@@ -178,8 +178,9 @@ void i486DebugMemoryAccess::ClearBreakOnWrite(unsigned int physAddr)
 		auto rel=physAddr-physAddrTop;
 		auto found0=breakOnWriteData.find(rel);
 		auto found1=breakOnWriteData.find(rel+1);
-		if(breakOnWriteData.end()==found0 || found0->second==(data&0xff) ||
-		   breakOnWriteData.end()==found1 || found1->second==((data>>8)&0xff))
+		if((breakOnWriteData.end()==found0 && breakOnWriteData.end()==found1) ||
+		   (breakOnWriteData.end()!=found0 && found0->second==(data&0xff)) ||
+		   (breakOnWriteData.end()!=found1 && found1->second==((data>>8)&0xff)))
 		{
 			std::string msg;
 			msg="Memory Write WORD PTR PHYS:[";
@@ -204,10 +205,11 @@ void i486DebugMemoryAccess::ClearBreakOnWrite(unsigned int physAddr)
 		auto found1=breakOnWriteData.find(rel+1);
 		auto found2=breakOnWriteData.find(rel+2);
 		auto found3=breakOnWriteData.find(rel+3);
-		if(breakOnWriteData.end()==found0 || found0->second==(data&0xff) ||
-		   breakOnWriteData.end()==found1 || found1->second==((data>>8)&0xff) ||
-		   breakOnWriteData.end()==found2 || found2->second==((data>>16)&0xff) ||
-		   breakOnWriteData.end()==found3 || found3->second==((data>>24)&0xff))
+		if((breakOnWriteData.end()==found0 && breakOnWriteData.end()==found1 && breakOnWriteData.end()==found2 && breakOnWriteData.end()==found3) ||
+		   (breakOnWriteData.end()!=found0 && found0->second==(data&0xff)) ||
+		   (breakOnWriteData.end()!=found1 && found1->second==((data>>8)&0xff)) ||
+		   (breakOnWriteData.end()!=found2 && found2->second==((data>>16)&0xff)) ||
+		   (breakOnWriteData.end()!=found3 && found3->second==((data>>24)&0xff)))
 		{
 			std::string msg;
 			msg="Memory Write DWORD PTR PHYS:[";
