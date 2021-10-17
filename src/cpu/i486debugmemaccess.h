@@ -17,6 +17,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #define I486DEBUGMEMACCESS_IS_INCLUDED
 /* { */
 
+#include <map>
+
 #include "ramrom.h"
 #include "i486.h"
 #include "i486debug.h"
@@ -30,10 +32,12 @@ public:
 
 	bool breakOnRead[Memory::MEMORY_ACCESS_SLOT_SIZE];
 	bool breakOnWrite[Memory::MEMORY_ACCESS_SLOT_SIZE];
+	std::map <uint32_t,unsigned char> breakOnWriteData;
 
 	i486DebugMemoryAccess(i486Debugger &debugger,unsigned int physAddrTop);
 	void SetBreakOnRead(unsigned int physAddr);
 	void SetBreakOnWrite(unsigned int physAddr);
+	void SetBreakOnWrite(uint32_t physAddr,unsigned char data);
 	void ClearBreakOnRead(void);
 	void ClearBreakOnWrite(void);
 	void ClearBreakOnReadWrite(void);
@@ -51,6 +55,7 @@ public:
 	static void ClearBreakOnMemRead(Memory &mem,unsigned int physAddr);
 	static void ClearBreakOnMemRead(Memory &mem);
 	static void SetBreakOnMemWrite(Memory &mem,i486Debugger &debugger,unsigned int physAddr);
+	static void SetBreakOnMemWrite(Memory &mem,i486Debugger &debugger,unsigned int physAddr,unsigned char data);
 	static void ClearBreakOnMemWrite(Memory &mem,unsigned int physAddr);
 	static void ClearBreakOnMemWrite(Memory &mem);
 };

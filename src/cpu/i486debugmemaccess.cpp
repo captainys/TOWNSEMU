@@ -42,6 +42,20 @@ void i486DebugMemoryAccess::SetBreakOnWrite(unsigned int physAddr)
 	if(0<=physAddr && physAddr<Memory::MEMORY_ACCESS_SLOT_SIZE)
 	{
 		breakOnWrite[physAddr]=true;
+		auto found=breakOnWriteData.find(physAddr);
+		if(breakOnWriteData.end()!=found)
+		{
+			breakOnWriteData.erase(found);
+		}
+	}
+}
+void i486DebugMemoryAccess::SetBreakOnWrite(uint32_t physAddr,unsigned char data)
+{
+	physAddr-=physAddrTop;
+	if(0<=physAddr && physAddr<Memory::MEMORY_ACCESS_SLOT_SIZE)
+	{
+		breakOnWrite[physAddr]=true;
+		breakOnWriteData[physAddr]=data;
 	}
 }
 void i486DebugMemoryAccess::ClearBreakOnRead(void)
@@ -57,6 +71,7 @@ void i486DebugMemoryAccess::ClearBreakOnWrite(void)
 	{
 		breakOnWrite[i]=false;
 	}
+	breakOnWriteData.clear();
 }
 void i486DebugMemoryAccess::ClearBreakOnReadWrite(void)
 {
@@ -80,6 +95,11 @@ void i486DebugMemoryAccess::ClearBreakOnWrite(unsigned int physAddr)
 	if(0<=physAddr && physAddr<Memory::MEMORY_ACCESS_SLOT_SIZE)
 	{
 		breakOnRead[physAddr]=false;
+		auto found=breakOnWriteData.find(physAddr);
+		if(breakOnWriteData.end()!=found)
+		{
+			breakOnWriteData.erase(found);
+		}
 	}
 }
 
@@ -136,13 +156,17 @@ void i486DebugMemoryAccess::ClearBreakOnWrite(unsigned int physAddr)
 {
 	if(true==breakOnWrite[physAddr-physAddrTop])
 	{
-		std::string msg;
-		msg="Memory Write BYTE PTR PHYS:[";
-		msg+=cpputil::Uitox(physAddr);
-		msg+="] (";
-		msg+=cpputil::Ubtox(data);
-		msg+=")";
-		debuggerPtr->ExternalBreak(msg);
+		auto found=breakOnWriteData.find(physAddr-physAddrTop);
+		if(breakOnWriteData.end()==found || found->second==data)
+		{
+			std::string msg;
+			msg="Memory Write BYTE PTR PHYS:[";
+			msg+=cpputil::Uitox(physAddr);
+			msg+="] (";
+			msg+=cpputil::Ubtox(data);
+			msg+=")";
+			debuggerPtr->ExternalBreak(msg);
+		}
 	}
 	memAccessChain->StoreByte(physAddr,data);
 }
@@ -151,13 +175,20 @@ void i486DebugMemoryAccess::ClearBreakOnWrite(unsigned int physAddr)
 	if(true==breakOnWrite[physAddr-physAddrTop] ||
 	   true==breakOnWrite[physAddr+1-physAddrTop])
 	{
-		std::string msg;
-		msg="Memory Write WORD PTR PHYS:[";
-		msg+=cpputil::Uitox(physAddr);
-		msg+="] (";
-		msg+=cpputil::Ustox(data);
-		msg+=")";
-		debuggerPtr->ExternalBreak(msg);
+		auto rel=physAddr-physAddrTop;
+		auto found0=breakOnWriteData.find(rel);
+		auto found1=breakOnWriteData.find(rel+1);
+		if(breakOnWriteData.end()==found0 || found0->second==(data&0xff) ||
+		   breakOnWriteData.end()==found1 || found1->second==((data>>8)&0xff))
+		{
+			std::string msg;
+			msg="Memory Write WORD PTR PHYS:[";
+			msg+=cpputil::Uitox(physAddr);
+			msg+="] (";
+			msg+=cpputil::Ustox(data);
+			msg+=")";
+			debuggerPtr->ExternalBreak(msg);
+		}
 	}
 	memAccessChain->StoreWord(physAddr,data);
 }
@@ -168,13 +199,24 @@ void i486DebugMemoryAccess::ClearBreakOnWrite(unsigned int physAddr)
 	   true==breakOnWrite[physAddr+2-physAddrTop] ||
 	   true==breakOnWrite[physAddr+3-physAddrTop])
 	{
-		std::string msg;
-		msg="Memory Write DWORD PTR PHYS:[";
-		msg+=cpputil::Uitox(physAddr);
-		msg+="] (";
-		msg+=cpputil::Uitox(data);
-		msg+=")";
-		debuggerPtr->ExternalBreak(msg);
+		auto rel=physAddr-physAddrTop;
+		auto found0=breakOnWriteData.find(rel);
+		auto found1=breakOnWriteData.find(rel+1);
+		auto found2=breakOnWriteData.find(rel+2);
+		auto found3=breakOnWriteData.find(rel+3);
+		if(breakOnWriteData.end()==found0 || found0->second==(data&0xff) ||
+		   breakOnWriteData.end()==found1 || found1->second==((data>>8)&0xff) ||
+		   breakOnWriteData.end()==found2 || found2->second==((data>>16)&0xff) ||
+		   breakOnWriteData.end()==found3 || found3->second==((data>>24)&0xff))
+		{
+			std::string msg;
+			msg="Memory Write DWORD PTR PHYS:[";
+			msg+=cpputil::Uitox(physAddr);
+			msg+="] (";
+			msg+=cpputil::Uitox(data);
+			msg+=")";
+			debuggerPtr->ExternalBreak(msg);
+		}
 	}
 	memAccessChain->StoreDword(physAddr,data);
 }
@@ -222,6 +264,18 @@ void i486DebugMemoryAccess::ClearBreakOnWrite(unsigned int physAddr)
 		debugMemAccess->memAccessChain=curMemAccess;
 	}
 	debugMemAccess->SetBreakOnWrite(physAddr);
+	mem.SetAccessObject(debugMemAccess,physAddr);
+}
+/* static */ void i486DebugMemoryAccess::SetBreakOnMemWrite(Memory &mem,i486Debugger &debugger,unsigned int physAddr,unsigned char data)
+{
+	auto *curMemAccess=mem.GetAccessObject(physAddr);
+	i486DebugMemoryAccess *debugMemAccess=dynamic_cast <i486DebugMemoryAccess *>(curMemAccess);
+	if(nullptr==debugMemAccess)
+	{
+		debugMemAccess=new i486DebugMemoryAccess(debugger,physAddr);
+		debugMemAccess->memAccessChain=curMemAccess;
+	}
+	debugMemAccess->SetBreakOnWrite(physAddr,data);
 	mem.SetAccessObject(debugMemAccess,physAddr);
 }
 /* static */ void i486DebugMemoryAccess::ClearBreakOnMemWrite(Memory &mem,unsigned int physAddr)
