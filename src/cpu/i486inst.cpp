@@ -729,9 +729,6 @@ std::string i486DX::Instruction::SegmentOverrideString(int segOverridePrefix)
 template <class CPUCLASS,class FUNCCLASS>
 void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &op2,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,int offset,const Memory &mem)
 {
-	op1.Clear();
-	op2.Clear();
-
 	switch(opCodeRenumberTable[inst.opCode])
 	{
 	case I486_RENUMBER_UNDEFINED_SHOOT_INT6:
