@@ -80,6 +80,7 @@ public:
 	{
 		I486_NUM_IOPORT=65536,
 		MAX_REP_BUNDLE_COUNT=128,
+		MAX_INSTRUCTION_LENGTH=15,  // Intel x86 instruction set 2.3.11 AVX Instruction Length, 80386 Programmer's Reference Manual 14.7 Redundant Prefix
 
 		DESCRIPTOR_CACHE_SIZE=16384, // Even number=GDT  Odd number=LDT
 		DESCRIPTOR_TO_INDEX_SHIFT=2, // TI bit will be bit0.
@@ -2860,9 +2861,10 @@ public:
 		return DebugFetchInstruction(memWin,inst,op1,op2,CS,offset,mem,operandSize,addressSize);
 	}
 private:
+	class BurstModeFetchInstructionFunctions;
 	class DebugFetchInstructionFunctions;
 	class RealFetchInstructionFunctions;
-	template <class CPUCLASS,class FUNCCLASS>
+	template <class CPUCLASS,class FUNCCLASS,class BURSTMODEFUNCCLASS>
 	class FetchInstructionClass;
 private:
 	/* Set in the constructor. CS******SizePointer[0] points to sixteen, and

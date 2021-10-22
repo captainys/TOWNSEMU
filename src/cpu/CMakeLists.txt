@@ -5,6 +5,7 @@ i486.h
 i486.cpp
 i487.cpp
 i486inst.h
+i486instfetch.h
 i486inst.cpp
 i486operand.cpp
 i486debug.h
