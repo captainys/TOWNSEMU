@@ -1335,12 +1335,16 @@ void TownsCRTC::WriteCR0(unsigned int data)
 
 Vec2i TownsCRTC::GetRenderSize(void) const
 {
+	const int minHei=402;  // Reading mackerel for 2 pixels.
+	// What do I mean by 'read mackerel'?  Translate to Japanese and back to English.
+	// Well, google translate didn't work.  Use something better.
 	if(true!=state.highResCRTCEnabled)
 	{
-		unsigned int hei=480; // Height still has errors.  Some 320x240 mode returns 320x880 size.
+		const int maxHei=480;   // Height still has errors.  Some 320x240 mode returns 320x880 size.
 		if(LowResCrtcIsInSinglePageMode())
 		{
 			auto dim=GetPageSizeOnMonitor(0);
+			unsigned int hei=std::min(maxHei,std::max(dim.y(),minHei));
 			return Vec2i::Make(std::max(640,dim.x()),hei);
 		}
 		else
@@ -1348,13 +1352,15 @@ Vec2i TownsCRTC::GetRenderSize(void) const
 			auto dim0=GetPageSizeOnMonitor(0);
 			auto dim1=GetPageSizeOnMonitor(1);
 			auto wid=std::max(dim0.x(),dim1.x());
+			auto hei=std::max(dim0.y(),dim1.y());
+			hei=std::min(maxHei,std::max(hei,minHei));
 			return Vec2i::Make(std::max(640,wid),hei);
 		}
 	}
 	else
 	{
 		auto dim=GetHighResDisplaySize();
-		return Vec2i::Make(std::max(640,dim.x()),std::max(480,dim.y()));
+		return Vec2i::Make(std::max(640,dim.x()),std::max(minHei,dim.y()));
 	}
 }
 
