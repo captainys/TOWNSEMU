@@ -459,11 +459,14 @@ public:
 
 	/*! 
 	*/
-	void SetSysROMDicROMMappingFlag(bool sysRomMapping,bool dicRomMapping);
+	void UpdateSysROMDicROMMappingFlag(bool sysRomMapping,bool dicRomMapping);
+	void ResetSysROMDicROMMappingFlag(bool sysRomMapping,bool dicRomMapping);
+
 
 	/*!
 	*/
-	void SetFMRVRAMMappingFlag(bool FMRVRAMMapping);
+	void UpdateFMRVRAMMappingFlag(bool FMRVRAMMapping);
+	void ResetFMRVRAMMappingFlag(bool FMRVRAMMapping);
 
 	/*! Enable or disable Native VRAM Mask depending on the mask.
 	    It resets VRAM access objects.

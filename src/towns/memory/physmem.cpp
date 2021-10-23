@@ -97,10 +97,10 @@ void TownsPhysicalMemory::State::Reset(void)
 	switch(ioport)
 	{
 	case TOWNSIO_FMR_VRAM_OR_MAINRAM: // 0x404
-		SetFMRVRAMMappingFlag((0x80&data)==0);
+		UpdateFMRVRAMMappingFlag((0x80&data)==0);
 		break;
 	case TOWNSIO_SYSROM_DICROM: // 0x480
-		SetSysROMDicROMMappingFlag(0==(data&2),0!=(data&1));
+		UpdateSysROMDicROMMappingFlag(0==(data&2),0!=(data&1));
 		break;
 	case TOWNSIO_DICROM_BANK://              0x484, // [2] pp.92
 		state.DICROMBank=data&0x0F;
@@ -385,8 +385,8 @@ void TownsPhysicalMemory::SetDummySize(long long int size)
 /* virtual */ void TownsPhysicalMemory::Reset(void)
 {
 	state.Reset();
-	SetSysROMDicROMMappingFlag(state.sysRomMapping,state.dicRom);
-	SetFMRVRAMMappingFlag(state.FMRVRAM);
+	ResetSysROMDicROMMappingFlag(state.sysRomMapping,state.dicRom);
+	ResetFMRVRAMMappingFlag(state.FMRVRAM);
 
 }
 
@@ -403,7 +403,7 @@ void TownsPhysicalMemory::SetUpMemoryAccess(unsigned int cpuType)
 
 	FMRVRAMAccess.SetPhysicalMemoryPointer(this);
 	FMRVRAMAccess.SetCPUPointer(&cpu);
-	SetFMRVRAMMappingFlag(true);  // This will set up memory access for 0xC0000 to 0xCFFFF
+	ResetFMRVRAMMappingFlag(true);  // This will set up memory access for 0xC0000 to 0xCFFFF
 
 	mappedDicROMandDicRAMAccess.SetPhysicalMemoryPointer(this);
 	mappedDicROMandDicRAMAccess.SetCPUPointer(&cpu);
@@ -415,7 +415,7 @@ void TownsPhysicalMemory::SetUpMemoryAccess(unsigned int cpuType)
 
 	mappedSysROMAccess.SetPhysicalMemoryPointer(this);
 	mappedSysROMAccess.SetCPUPointer(&cpu);
-	SetSysROMDicROMMappingFlag(true,false);   // This will set up memory access for 0xF8000 to 0xFFFFF and 0xD0000 to 0xDFFFF
+	ResetSysROMDicROMMappingFlag(true,false);   // This will set up memory access for 0xF8000 to 0xFFFFF and 0xD0000 to 0xDFFFF
 
 	if(0x00100000<state.RAM.size())
 	{
@@ -551,7 +551,7 @@ void TownsPhysicalMemory::SetUpVRAMAccess(unsigned int cpuType,bool breakOnRead,
 	}
 }
 
-void TownsPhysicalMemory::SetSysROMDicROMMappingFlag(bool sysRomMapping, bool dicRomMapping)
+void TownsPhysicalMemory::UpdateSysROMDicROMMappingFlag(bool sysRomMapping, bool dicRomMapping)
 {
 	// The interpretation of 0480H is very difficult.
 	// On startup system rom does:
@@ -577,47 +577,69 @@ void TownsPhysicalMemory::SetSysROMDicROMMappingFlag(bool sysRomMapping, bool di
 	//          !sysRomMapping
 	//                  dicRom
 
-	state.sysRomMapping = sysRomMapping;
-	state.dicRom = dicRomMapping;
+	if(state.sysRomMapping!=sysRomMapping)
+	{
+		state.sysRomMapping = sysRomMapping;
 
-	if (sysRomMapping)
-	{
-		memPtr->AddAccess(&mappedSysROMAccess, TOWNSADDR_SYSROM_MAP_BASE, TOWNSADDR_SYSROM_MAP_END - 1);
-	}
-	else
-	{
-		memPtr->AddAccess(&mainRAMAccess, TOWNSADDR_SYSROM_MAP_BASE, TOWNSADDR_SYSROM_MAP_END - 1);
-	}
-
-	if (state.FMRVRAM)
-	{
-		if (dicRomMapping)
+		if (sysRomMapping)
 		{
-			memPtr->AddAccess(&mappedDicROMandDicRAMAccess, TOWNSADDR_FMR_DICROM_BASE, TOWNSADDR_BACKUP_RAM_END - 1);
+			memPtr->AddAccess(&mappedSysROMAccess, TOWNSADDR_SYSROM_MAP_BASE, TOWNSADDR_SYSROM_MAP_END - 1);
 		}
 		else
 		{
-			memPtr->RemoveAccess(TOWNSADDR_FMR_DICROM_BASE, TOWNSADDR_BACKUP_RAM_END - 1);
+			memPtr->AddAccess(&mainRAMAccess, TOWNSADDR_SYSROM_MAP_BASE, TOWNSADDR_SYSROM_MAP_END - 1);
+		}
+	}
+
+	if(state.dicRom!=dicRomMapping)
+	{
+		state.dicRom = dicRomMapping;
+
+		if (state.FMRVRAM)
+		{
+			if (dicRomMapping)
+			{
+				memPtr->AddAccess(&mappedDicROMandDicRAMAccess, TOWNSADDR_FMR_DICROM_BASE, TOWNSADDR_BACKUP_RAM_END - 1);
+			}
+			else
+			{
+				memPtr->RemoveAccess(TOWNSADDR_FMR_DICROM_BASE, TOWNSADDR_BACKUP_RAM_END - 1);
+			}
 		}
 	}
 }
 
-void TownsPhysicalMemory::SetFMRVRAMMappingFlag(bool FMRVRAMMapping)
+void TownsPhysicalMemory::ResetSysROMDicROMMappingFlag(bool sysRomMapping,bool dicRomMapping)
 {
-	state.FMRVRAM = FMRVRAMMapping;
+	UpdateSysROMDicROMMappingFlag(true!=sysRomMapping,true!=dicRomMapping);
+	UpdateSysROMDicROMMappingFlag(sysRomMapping,dicRomMapping);
+}
 
-	if (FMRVRAMMapping)
+void TownsPhysicalMemory::UpdateFMRVRAMMappingFlag(bool FMRVRAMMapping)
+{
+	if(state.FMRVRAM!=FMRVRAMMapping)
 	{
-		memPtr->AddAccess(&FMRVRAMAccess, TOWNSADDR_FMR_VRAM_BASE, TOWNSADDR_FMR_VRAM_CVRAM_FONT_END - 1);
-		memPtr->RemoveAccess(TOWNSADDR_FMR_RESERVED_BASE, TOWNSADDR_FMR_RESERVED_END - 1);
-		if (state.dicRom) {
-			memPtr->AddAccess(&mappedDicROMandDicRAMAccess, TOWNSADDR_FMR_DICROM_BASE, TOWNSADDR_BACKUP_RAM_END - 1);
+		state.FMRVRAM = FMRVRAMMapping;
+
+		if (FMRVRAMMapping)
+		{
+			memPtr->AddAccess(&FMRVRAMAccess, TOWNSADDR_FMR_VRAM_BASE, TOWNSADDR_FMR_VRAM_CVRAM_FONT_END - 1);
+			memPtr->RemoveAccess(TOWNSADDR_FMR_RESERVED_BASE, TOWNSADDR_FMR_RESERVED_END - 1);
+			if (state.dicRom) {
+				memPtr->AddAccess(&mappedDicROMandDicRAMAccess, TOWNSADDR_FMR_DICROM_BASE, TOWNSADDR_BACKUP_RAM_END - 1);
+			}
+		}
+		else
+		{
+			memPtr->AddAccess(&mainRAMAccess, TOWNSADDR_FMR_VRAM_BASE, TOWNSADDR_FMR_RESERVED_END - 1);
 		}
 	}
-	else
-	{
-		memPtr->AddAccess(&mainRAMAccess, TOWNSADDR_FMR_VRAM_BASE, TOWNSADDR_FMR_RESERVED_END - 1);
-	}
+}
+
+void TownsPhysicalMemory::ResetFMRVRAMMappingFlag(bool FMRVRAMMapping)
+{
+	UpdateFMRVRAMMappingFlag(true!=FMRVRAMMapping);
+	UpdateFMRVRAMMappingFlag(FMRVRAMMapping);
 }
 
 void TownsPhysicalMemory::EnableOrDisableNativeVRAMMask(void)
@@ -862,8 +884,8 @@ std::vector <std::string> TownsPhysicalMemory::GetStatusText(void) const
 
 
 	// Reset mappings
-	SetSysROMDicROMMappingFlag(state.sysRomMapping,state.dicRom);
-	SetFMRVRAMMappingFlag(state.FMRVRAM);
+	ResetSysROMDicROMMappingFlag(state.sysRomMapping,state.dicRom);
+	ResetFMRVRAMMappingFlag(state.FMRVRAM);
 	EnableOrDisableNativeVRAMMask();
 
 	return true;
