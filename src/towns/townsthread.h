@@ -35,10 +35,14 @@ private:
 	int runMode=RUNMODE_PAUSE;
 	bool returnOnPause=false;
 
+	// This will be used for virtually slwoing down CPU when VM is lagging.
+	long long int timeDeficit=0;
+
 public:
 	enum
 	{
 		NANOSECONDS_PER_TIME_SYNC=    1000000, // 1ms
+		TIME_DEFICIT_PAYBACK_PER_INSTRUCTION= 1000, // 1us
 	};
 
 	enum

@@ -90,6 +90,11 @@ void TownsThread::VMMainLoop(FMTowns *townsPtr,Outside_World *outside_world,clas
 					townsPtr->pic.ProcessIRQ(townsPtr->cpu,townsPtr->mem);
 					townsPtr->RunFastDevicePolling();
 					townsPtr->RunScheduledTasks();
+
+					auto payBack=std::min<long long int>(TIME_DEFICIT_PAYBACK_PER_INSTRUCTION,timeDeficit);
+					townsPtr->state.townsTime+=payBack;
+					timeDeficit-=payBack;
+
 					if(true==townsPtr->debugger.stop)
 					{
 						if(townsPtr->cpu.state.CS().value==townsPtr->var.powerOffAt.SEG &&
@@ -295,6 +300,7 @@ void TownsThread::AdjustRealTime(FMTowns *townsPtr,long long int cpuTimePassed,s
 			townsPtr->state.timeDeficit=0;
 		}
 	}
+	this->timeDeficit=townsPtr->state.timeDeficit;
 
 	if(FMTowns::State::CATCHUP_DEFICIT_CUTOFF<townsPtr->state.timeDeficit)
 	{
