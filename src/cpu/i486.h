@@ -683,6 +683,11 @@ public:
 		unsigned int descriptorCacheValid[DESCRIPTOR_CACHE_SIZE]; // This must be cleared on state-load.
 		unsigned char const *descriptorCache[DESCRIPTOR_CACHE_SIZE];    // This must be cleared on state-load.
 
+		// Probably INT descriptor cache is very ineffective, and not worth implementing.
+		// Majority of INT shot from the protected mode will cause the control down to
+		// the real mode.  IDT will most likely be re-loaded when coming back to the
+		// protected mode.
+
 		MemoryAccess::ConstMemoryWindow CSEIPWindow;   // This must be cleared on state-load.
 		MemoryAccess::MemoryWindow SSESPWindow;         // This must be cleared on state-load.
 	public:

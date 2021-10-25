@@ -4447,6 +4447,24 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		} \
 	}
 
+	#define LOAD_FAR_POINTER(SEGREG) \
+		if(OPER_ADDR==op2.operandType) \
+		{ \
+			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,(inst.operandSize+16)/8); \
+			if(true!=state.exception) \
+			{ \
+				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value); \
+				auto seg=value.GetFwordSegment(); \
+				LoadSegmentRegister(state.SEGREG(),seg,mem); \
+			} \
+			clocksPassed=9; \
+		} \
+		else \
+		{ \
+			RaiseException(EXCEPTION_GP,0); \
+		}
+
+
 
 	static const unsigned int reg8AndPattern[]=
 	{
@@ -6755,21 +6773,33 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			auto REG=inst.GetREG();
 			switch(REG)
 			{
-			case 0:
-			case 1:
+			case 0: // INC
 				{
 					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
 					if(true!=state.exception)
 					{
 						auto i=value.GetAsDword();
-						if(0==REG)
-						{
-							IncrementWordOrDword(inst.operandSize,i);
-						}
-						else
-						{
-							DecrementWordOrDword(inst.operandSize,i);
-						}
+						IncrementWordOrDword(inst.operandSize,i);
+						value.SetDword(i);
+						StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+					}
+					if(op1.operandType==OPER_ADDR)
+					{
+						clocksPassed=3;
+					}
+					else
+					{
+						clocksPassed=1;
+					}
+				}
+				break;
+			case 1: // DEC
+				{
+					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+					if(true!=state.exception)
+					{
+						auto i=value.GetAsDword();
+						DecrementWordOrDword(inst.operandSize,i);
 						value.SetDword(i);
 						StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
 					}
@@ -6784,97 +6814,116 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				}
 				break;
 			case 2: // CALL Indirect
-			case 4: // JMP Indirect
 				{
 					clocksPassed=5;  // Same for CALL Indirect and JMP Indirect.
 					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
 					if(true!=state.exception)
 					{
-						if(2==REG) // CALL
+						Push(mem,inst.operandSize,state.EIP+inst.numBytes);
+						if(true==enableCallStack)
 						{
-							Push(mem,inst.operandSize,state.EIP+inst.numBytes);
-							if(true==enableCallStack)
-							{
-								PushCallStack(
-								    false,0xffff,0xffff,
-								    state.GetCR(0),
-								    state.CS().value,state.EIP,inst.numBytes,
-								    state.CS().value,value.GetAsDword(),
-								    mem);
-							}
+							PushCallStack(
+							    false,0xffff,0xffff,
+							    state.GetCR(0),
+							    state.CS().value,state.EIP,inst.numBytes,
+							    state.CS().value,value.GetAsDword(),
+							    mem);
 						}
 						state.EIP=(value.GetAsDword()&operandSizeMask[inst.operandSize>>3]);
 						EIPIncrement=0;
 					}
 				}
 				break;
+			case 4: // JMP Indirect
+				{
+					clocksPassed=5;  // Same for CALL Indirect and JMP Indirect.
+					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+					if(true!=state.exception)
+					{
+						state.EIP=(value.GetAsDword()&operandSizeMask[inst.operandSize>>3]);
+						EIPIncrement=0;
+					}
+				}
+				break;
 			case 3: // CALLF Indirect
-			case 5: // JMPF Indirect
 				{
 					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,(inst.operandSize+16)/8);
 					if(true!=state.exception)
 					{
-						if(3==REG) // Call
+						/* What is this?
+						   FM TOWNS BIOS uses 
+								MOV		AX,0110H
+								MOV		FS,AX
+								CALL	FAR PTR FS:[0040H]
+							for reading from a mouse.  That is a perfect opportunity for the emulator to
+							identify the operating system version.  The CPU class fires:
+								mouseBIOSInterceptorPtr->Intercept();
+							when indirect CALL to 0110:[0040H].
+						*/
+						if(nullptr!=mouseBIOSInterceptorPtr)
 						{
-							/* What is this?
-							   FM TOWNS BIOS uses 
-									MOV		AX,0110H
-									MOV		FS,AX
-									CALL	FAR PTR FS:[0040H]
-								for reading from a mouse.  That is a perfect opportunity for the emulator to
-								identify the operating system version.  The CPU class fires:
-									mouseBIOSInterceptorPtr->Intercept();
-								when indirect CALL to 0110:[0040H].
-							*/
-							if(nullptr!=mouseBIOSInterceptorPtr)
+							unsigned int offset;
+							auto segPtr=ExtractSegmentAndOffset(offset,op1,inst.segOverride);
+							if(0x0110==segPtr->value && 0x0040==offset)
 							{
-								unsigned int offset;
-								auto segPtr=ExtractSegmentAndOffset(offset,op1,inst.segOverride);
-								if(0x0110==segPtr->value && 0x0040==offset)
-								{
-									mouseBIOSInterceptorPtr->InterceptMouseBIOS();
-								}
-							}
-
-							Push(mem,inst.operandSize,state.CS().value,state.EIP+inst.numBytes);
-							if(true==enableCallStack)
-							{
-								auto destSeg=value.GetFwordSegment();
-								auto destEIP=value.GetAsDword();
-								if(16==inst.operandSize)
-								{
-									destEIP&=0xFFFF;
-								}
-								PushCallStack(
-								    false,0xffff,0xffff,
-								    state.GetCR(0),
-								    state.CS().value,state.EIP,inst.numBytes,
-								    destSeg,destEIP,
-								    mem);
+								mouseBIOSInterceptorPtr->InterceptMouseBIOS();
 							}
 						}
+
+						Push(mem,inst.operandSize,state.CS().value,state.EIP+inst.numBytes);
+						if(true==enableCallStack)
+						{
+							auto destSeg=value.GetFwordSegment();
+							auto destEIP=value.GetAsDword();
+							if(16==inst.operandSize)
+							{
+								destEIP&=0xFFFF;
+							}
+							PushCallStack(
+							    false,0xffff,0xffff,
+							    state.GetCR(0),
+							    state.CS().value,state.EIP,inst.numBytes,
+							    destSeg,destEIP,
+							    mem);
+						}
+
 						SetIPorEIP(inst.operandSize,value.GetAsDword());
 						auto descHighword=LoadSegmentRegister(state.CS(),value.GetFwordSegment(),mem);
 						auto descType=(descHighword&0x0f00);
 						if(descType==(DESC_TYPE_16BIT_CALL_GATE<<8) ||
 						   descType==(DESC_TYPE_32BIT_CALL_GATE<<8))
 						{
-							Abort("CALLF/JMPF to Gate");
+							Abort("CALLF to Gate");
 						}
 						EIPIncrement=0;
 					}
-					if(3==REG) // CALLF Indirect
+
+					if(true==IsInRealMode())
 					{
-						if(true==IsInRealMode())
-						{
-							clocksPassed=17;
-						}
-						else
-						{
-							clocksPassed=20;
-						}
+						clocksPassed=17;
 					}
-					else if(op1.operandType==OPER_ADDR)
+					else
+					{
+						clocksPassed=20;
+					}
+				}
+				break;
+			case 5: // JMPF Indirect
+				{
+					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,(inst.operandSize+16)/8);
+					if(true!=state.exception)
+					{
+						SetIPorEIP(inst.operandSize,value.GetAsDword());
+						auto descHighword=LoadSegmentRegister(state.CS(),value.GetFwordSegment(),mem);
+						auto descType=(descHighword&0x0f00);
+						if(descType==(DESC_TYPE_16BIT_CALL_GATE<<8) ||
+						   descType==(DESC_TYPE_32BIT_CALL_GATE<<8))
+						{
+							Abort("JMPF to Gate");
+						}
+						EIPIncrement=0;
+					}
+					if(op1.operandType==OPER_ADDR)
 					{
 						clocksPassed=3;
 					}
@@ -7353,10 +7402,18 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 
 	case I486_RENUMBER_LDS://              0xC5,
-	case I486_RENUMBER_LSS://              0x0FB2,
+		LOAD_FAR_POINTER(DS);
+		break;
 	case I486_RENUMBER_LES://              0xC4,
+		LOAD_FAR_POINTER(ES);
+		break;
 	case I486_RENUMBER_LFS://              0x0FB4,
+		LOAD_FAR_POINTER(FS);
+		break;
 	case I486_RENUMBER_LGS://              0x0FB5,
+		LOAD_FAR_POINTER(GS);
+		break;
+	case I486_RENUMBER_LSS://              0x0FB2,
 		if(OPER_ADDR==op2.operandType)
 		{
 			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,(inst.operandSize+16)/8);
@@ -7364,30 +7421,14 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{
 				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
 				auto seg=value.GetFwordSegment();
-				switch(opCodeRenumberTable[inst.opCode])
+
+				if(0==seg)
 				{
-				case I486_RENUMBER_LDS://              0xC5,
-					LoadSegmentRegister(state.DS(),seg,mem);
-					break;
-				case I486_RENUMBER_LSS://              0x0FB2,
-					if(0==seg)
-					{
-						RaiseException(EXCEPTION_GP,0);
-					}
-					else
-					{
-						LoadSegmentRegister(state.SS(),seg,mem);
-					}
-					break;
-				case I486_RENUMBER_LES://              0xC4,
-					LoadSegmentRegister(state.ES(),seg,mem);
-					break;
-				case I486_RENUMBER_LFS://              0x0FB4,
-					LoadSegmentRegister(state.FS(),seg,mem);
-					break;
-				case I486_RENUMBER_LGS://              0x0FB5,
-					LoadSegmentRegister(state.GS(),seg,mem);
-					break;
+					RaiseException(EXCEPTION_GP,0);
+				}
+				else
+				{
+					LoadSegmentRegister(state.SS(),seg,mem);
 				}
 			}
 			clocksPassed=9;  // It is described as 6/12, but what makes it 6 clocks or 12 clocks is not given.  Quaaaaack!!!!
