@@ -624,9 +624,13 @@ void TownsPhysicalMemory::UpdateFMRVRAMMappingFlag(bool FMRVRAMMapping)
 		if (FMRVRAMMapping)
 		{
 			memPtr->AddAccess(&FMRVRAMAccess, TOWNSADDR_FMR_VRAM_BASE, TOWNSADDR_FMR_VRAM_CVRAM_FONT_END - 1);
-			memPtr->RemoveAccess(TOWNSADDR_FMR_RESERVED_BASE, TOWNSADDR_FMR_RESERVED_END - 1);
 			if (state.dicRom) {
 				memPtr->AddAccess(&mappedDicROMandDicRAMAccess, TOWNSADDR_FMR_DICROM_BASE, TOWNSADDR_BACKUP_RAM_END - 1);
+				memPtr->RemoveAccess(TOWNSADDR_FMR_RESERVED_BASE, TOWNSADDR_FMR_RESERVED_END - 1);
+			}
+			else
+			{
+				memPtr->RemoveAccess(TOWNSADDR_FMR_DICROM_BASE, TOWNSADDR_FMR_RESERVED_END - 1);
 			}
 		}
 		else
