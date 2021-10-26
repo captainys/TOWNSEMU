@@ -4464,6 +4464,14 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			RaiseException(EXCEPTION_GP,0); \
 		}
 
+	#define MOV_REG32_FROM_I(REG) \
+		{ \
+			auto nBytes=(inst.operandSize>>3); \
+			auto imm=inst.EvalUimm8or16or32(inst.operandSize); \
+			state.NULL_and_reg32[REG]=(state.NULL_and_reg32[REG]&operandSizeAndPattern[nBytes])|imm; \
+			clocksPassed=1; \
+		}
+
 
 
 	static const unsigned int reg8AndPattern[]=
@@ -7754,43 +7762,62 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 
 	case I486_RENUMBER_MOV_I8_TO_AL: //     0xB0,
-	case I486_RENUMBER_MOV_I8_TO_CL: //     0xB1,
-	case I486_RENUMBER_MOV_I8_TO_DL: //     0xB2,
-	case I486_RENUMBER_MOV_I8_TO_BL: //     0xB3,
-		{
-			auto regNum=inst.opCode&3;
-			auto imm=inst.EvalUimm8();
-			state.reg32()[regNum]=(state.reg32()[regNum]&0xFFFFFF00)|imm;
-			clocksPassed=1;
-		}
+		SetAL(inst.EvalUimm8());
+		clocksPassed=1;
 		break;
+	case I486_RENUMBER_MOV_I8_TO_CL: //     0xB1,
+		SetCL(inst.EvalUimm8());
+		clocksPassed=1;
+		break;
+	case I486_RENUMBER_MOV_I8_TO_DL: //     0xB2,
+		SetDL(inst.EvalUimm8());
+		clocksPassed=1;
+		break;
+	case I486_RENUMBER_MOV_I8_TO_BL: //     0xB3,
+		SetBL(inst.EvalUimm8());
+		clocksPassed=1;
+		break;
+
 	case I486_RENUMBER_MOV_I8_TO_AH: //     0xB4,
+		SetAH(inst.EvalUimm8());
+		clocksPassed=1;
+		break;
 	case I486_RENUMBER_MOV_I8_TO_CH: //     0xB5,
+		SetCH(inst.EvalUimm8());
+		clocksPassed=1;
+		break;
 	case I486_RENUMBER_MOV_I8_TO_DH: //     0xB6,
+		SetDH(inst.EvalUimm8());
+		clocksPassed=1;
+		break;
 	case I486_RENUMBER_MOV_I8_TO_BH: //     0xB7,
-		{
-			auto regNum=inst.opCode&3;
-			auto imm=inst.EvalUimm8();
-			state.reg32()[regNum]=(state.reg32()[regNum]&0xFFFF00FF)|(imm<<8);
-			clocksPassed=1;
-		}
+		SetBH(inst.EvalUimm8());
+		clocksPassed=1;
 		break;
 
 	case I486_RENUMBER_MOV_I_TO_EAX: //     0xB8, // 16/32 depends on OPSIZE_OVERRIDE
+		MOV_REG32_FROM_I(REG_EAX);
+		break;
 	case I486_RENUMBER_MOV_I_TO_ECX: //     0xB9, // 16/32 depends on OPSIZE_OVERRIDE
+		MOV_REG32_FROM_I(REG_ECX);
+		break;
 	case I486_RENUMBER_MOV_I_TO_EDX: //     0xBA, // 16/32 depends on OPSIZE_OVERRIDE
+		MOV_REG32_FROM_I(REG_EDX);
+		break;
 	case I486_RENUMBER_MOV_I_TO_EBX: //     0xBB, // 16/32 depends on OPSIZE_OVERRIDE
+		MOV_REG32_FROM_I(REG_EBX);
+		break;
 	case I486_RENUMBER_MOV_I_TO_ESP: //     0xBC, // 16/32 depends on OPSIZE_OVERRIDE
+		MOV_REG32_FROM_I(REG_ESP);
+		break;
 	case I486_RENUMBER_MOV_I_TO_EBP: //     0xBD, // 16/32 depends on OPSIZE_OVERRIDE
+		MOV_REG32_FROM_I(REG_EBP);
+		break;
 	case I486_RENUMBER_MOV_I_TO_ESI: //     0xBE, // 16/32 depends on OPSIZE_OVERRIDE
+		MOV_REG32_FROM_I(REG_ESI);
+		break;
 	case I486_RENUMBER_MOV_I_TO_EDI: //     0xBF, // 16/32 depends on OPSIZE_OVERRIDE
-		{
-			auto nBytes=(inst.operandSize>>3);
-			auto regNum=inst.opCode&7;
-			auto imm=inst.EvalUimm8or16or32(inst.operandSize);
-			state.reg32()[regNum]=(state.reg32()[regNum]&operandSizeAndPattern[nBytes])|imm;
-			clocksPassed=1;
-		}
+		MOV_REG32_FROM_I(REG_EDI);
 		break;
 
 
@@ -8132,15 +8159,36 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 
 	case I486_RENUMBER_PUSH_EAX://         0x50,
+		clocksPassed=1;
+		Push(mem,inst.operandSize,GetEAX());
+		break;
 	case I486_RENUMBER_PUSH_ECX://         0x51,
+		clocksPassed=1;
+		Push(mem,inst.operandSize,GetECX());
+		break;
 	case I486_RENUMBER_PUSH_EDX://         0x52,
+		clocksPassed=1;
+		Push(mem,inst.operandSize,GetEDX());
+		break;
 	case I486_RENUMBER_PUSH_EBX://         0x53,
+		clocksPassed=1;
+		Push(mem,inst.operandSize,GetEBX());
+		break;
 	case I486_RENUMBER_PUSH_ESP://         0x54,
+		clocksPassed=1;
+		Push(mem,inst.operandSize,GetESP());
+		break;
 	case I486_RENUMBER_PUSH_EBP://         0x55,
+		clocksPassed=1;
+		Push(mem,inst.operandSize,GetEBP());
+		break;
 	case I486_RENUMBER_PUSH_ESI://         0x56,
+		clocksPassed=1;
+		Push(mem,inst.operandSize,GetESI());
+		break;
 	case I486_RENUMBER_PUSH_EDI://         0x57,
 		clocksPassed=1;
-		Push(mem,inst.operandSize,state.reg32()[(inst.opCode&7)]);
+		Push(mem,inst.operandSize,GetEDI());
 		break;
 	case I486_RENUMBER_PUSH_I8://          0x6A,
 		clocksPassed=1;
