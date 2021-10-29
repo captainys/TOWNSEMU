@@ -10,6 +10,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(DISC_IMAGE_DIR "C:/D/TownsISO")
 
 add_compile_definitions(YS_LITTLE_ENDIAN)
+add_compile_definitions(YS_TWOS_COMPLEMENT)
+# Believe or not, C/C++ does not assume 2's complement.
+# C/C++ does not guarantee that 0xFFFF is interpreted as 16-bit signed negative one.
+# In practice, pretty much all CPUs uses 2's complement, and safe to assume it is.
+# This flag will skip a little bit of computation.
 
 add_subdirectory(public/src)
 

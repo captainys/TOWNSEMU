@@ -111,23 +111,38 @@ inline unsigned int GetWord(const unsigned char byteData[])
 
 inline int GetSignedDword(const unsigned char byteData[])
 {
+#if defined(YS_LITTLE_ENDIAN) && defined(YS_TWOS_COMPLEMENT)
+	int32_t *signedPtr=(int32_t *)byteData;
+	return *signedPtr;
+#else
 	long long int dword=GetDword(byteData);
 	dword=(dword&0x7FFFFFFF)-(dword&0x80000000);
 	return (int)dword;
+#endif
 }
 
 inline int GetSignedWord(const unsigned char byteData[])
 {
+#if defined(YS_LITTLE_ENDIAN) && defined(YS_TWOS_COMPLEMENT)
+	int16_t *signedPtr=(int16_t *)byteData;
+	return *signedPtr;
+#else
 	int word=GetWord(byteData);
 	word=(word&0x7FFF)-(word&0x8000);
 	return word;
+#endif
 }
 
 inline int GetSignedByte(const unsigned char byteData)
 {
+#if defined(YS_LITTLE_ENDIAN) && defined(YS_TWOS_COMPLEMENT)
+	char *signedPtr=(char *)&byteData;
+	return *signedPtr;
+#else
 	int byte=byteData;
 	byte=(byte&0x7F)-(byte&0x80);
 	return byte;
+#endif
 }
 
 inline void PutDword(unsigned char byteData[],unsigned int data)
