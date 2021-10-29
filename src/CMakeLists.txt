@@ -15,6 +15,14 @@ add_compile_definitions(YS_TWOS_COMPLEMENT)
 # C/C++ does not guarantee that 0xFFFF is interpreted as 16-bit signed negative one.
 # In practice, pretty much all CPUs uses 2's complement, and safe to assume it is.
 # This flag will skip a little bit of computation.
+#
+# Speaking of C/C++, you may think:
+#    int x;
+#    short y;
+#    y=x;
+# will simply drop high 16 bits of x and copy low 16 bits to y.
+# It is what you get, in practice, but it is not guaranteed either.
+# If someone comes up with a crazy CPU in the future, the code may break.
 
 enable_testing()
 

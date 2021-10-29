@@ -1368,21 +1368,47 @@ public:
 
 	State state;
 
+
+#ifdef YS_LITTLE_ENDIAN
+	#define REG_LOW_WORD(reg) *((unsigned short *)&state.NULL_and_reg32[reg])
+	#define REG_LOW_BYTE(reg) *((unsigned char *)&state.NULL_and_reg32[reg])
+	#define REG_SECOND_BYTE(reg) (((unsigned char *)&state.NULL_and_reg32[reg])[1])
+
+	#define SET_REG_LOW_WORD(reg,value) *((unsigned short *)&state.NULL_and_reg32[reg])=(value);
+	#define SET_REG_LOW_BYTE(reg,value) *((unsigned char *)&state.NULL_and_reg32[reg])=(value);
+	#define SET_REG_SECOND_BYTE(reg,value) (((unsigned char *)&state.NULL_and_reg32[reg])[1])=(value);
+#else
+	#define REG_LOW_WORD(reg) (state.NULL_and_reg32[reg]&0xFFFF)
+	#define REG_LOW_BYTE(reg) (state.NULL_and_reg32[reg]&0xFF)
+	#define REG_SECOND_BYTE(reg) ((state.NULL_and_reg32[reg]>>8)&0xFF)
+
+	#define SET_REG_LOW_WORD(reg,value) {state.NULL_and_reg32[reg]&=0xffff0000;state.NULL_and_reg32[reg]|=((value)&0xFFFF);}
+	#define SET_REG_LOW_BYTE(reg,value) {state.NULL_and_reg32[reg]&=0xffffff00;state.NULL_and_reg32[reg]|=((value)&0xFF);}
+	#define SET_REG_SECOND_BYTE(reg,value) {state.NULL_and_reg32[reg]&=0xffff00ff;state.NULL_and_reg32[reg]|=(((value)&0xFF)<<8);}
+#endif
+
+	// I was hoping the compiler was able to recognize a pattern:
+	//    x&=0xFFFF0000;
+	//    x|=(y&0xFFFF);
+	// and turn into:
+	//    *((unsigned short *)&x)=y;
+	// .  But apparently not.
+
 	inline unsigned int GetEAX(void) const
 	{
 		return state.EAX();
 	}
 	inline unsigned int GetAX(void) const
 	{
-		return state.EAX()&0xffff;
+		return REG_LOW_WORD(REG_EAX);
 	}
 	inline unsigned int GetAL(void) const
 	{
-		return state.EAX()&0xff;
+		return REG_LOW_BYTE(REG_EAX);
 	}
 	inline unsigned int GetAH(void) const
 	{
-		return (state.EAX()>>8)&0xff;
+		return REG_SECOND_BYTE(REG_EAX);
 	}
 	inline void SetEAX(unsigned int value)
 	{
@@ -1390,18 +1416,15 @@ public:
 	}
 	inline void SetAX(unsigned int value)
 	{
-		state.EAX()&=0xffff0000;
-		state.EAX()|=(value&0xFFFF);
+		SET_REG_LOW_WORD(REG_EAX,value);
 	}
 	inline void SetAL(unsigned int value)
 	{
-		state.EAX()&=0xffffff00;
-		state.EAX()|=(value&0xFF);
+		SET_REG_LOW_BYTE(REG_EAX,value);
 	}
 	inline void SetAH(unsigned int value)
 	{
-		state.EAX()&=0xffff00ff;
-		state.EAX()|=((value&0xFF)<<8);
+		SET_REG_SECOND_BYTE(REG_EAX,value);
 	}
 
 
@@ -1411,15 +1434,15 @@ public:
 	}
 	inline unsigned int GetBX(void) const
 	{
-		return state.EBX()&0xffff;
+		return REG_LOW_WORD(REG_EBX);
 	}
 	inline unsigned int GetBL(void) const
 	{
-		return state.EBX()&0xff;
+		return REG_LOW_BYTE(REG_EBX);
 	}
 	inline unsigned int GetBH(void) const
 	{
-		return (state.EBX()>>8)&0xff;
+		return REG_SECOND_BYTE(REG_EBX);
 	}
 	inline void SetEBX(unsigned int value)
 	{
@@ -1448,15 +1471,15 @@ public:
 	}
 	inline unsigned int GetCX(void) const
 	{
-		return state.ECX()&0xffff;
+		return REG_LOW_WORD(REG_ECX);
 	}
 	inline unsigned int GetCL(void) const
 	{
-		return state.ECX()&0xff;
+		return REG_LOW_BYTE(REG_ECX);
 	}
 	inline unsigned int GetCH(void) const
 	{
-		return (state.ECX()>>8)&0xff;
+		return REG_SECOND_BYTE(REG_ECX);
 	}
 	inline void SetECX(unsigned int value)
 	{
@@ -1508,15 +1531,15 @@ public:
 	}
 	inline unsigned int GetDX(void) const
 	{
-		return state.EDX()&0xffff;
+		return REG_LOW_WORD(REG_EDX);
 	}
 	inline unsigned int GetDL(void) const
 	{
-		return state.EDX()&0xff;
+		return REG_LOW_BYTE(REG_EDX);
 	}
 	inline unsigned int GetDH(void) const
 	{
-		return (state.EDX()>>8)&0xff;
+		return REG_SECOND_BYTE(REG_EDX);
 	}
 	inline void SetEDX(unsigned int value)
 	{
@@ -1524,23 +1547,20 @@ public:
 	}
 	inline void SetDX(unsigned int value)
 	{
-		state.EDX()&=0xffff0000;
-		state.EDX()|=(value&0xFFFF);
+		SET_REG_LOW_WORD(REG_EDX,value);
 	}
 	inline void SetDL(unsigned int value)
 	{
-		state.EDX()&=0xffffff00;
-		state.EDX()|=(value&0xFF);
+		SET_REG_LOW_BYTE(REG_EDX,value);
 	}
 	inline void SetDH(unsigned int value)
 	{
-		state.EDX()&=0xffff00ff;
-		state.EDX()|=((value&0xFF)<<8);
+		SET_REG_SECOND_BYTE(REG_EDX,value);
 	}
 
 	inline unsigned int GetSI(void) const
 	{
-		return state.ESI()&0xffff;
+		return REG_LOW_WORD(REG_ESI);
 	}
 	inline void SetSI(unsigned int value)
 	{
@@ -1558,7 +1578,7 @@ public:
 
 	inline unsigned int GetDI(void) const
 	{
-		return state.EDI()&0xffff;
+		return REG_LOW_WORD(REG_EDI);
 	}
 	inline void SetDI(unsigned int value)
 	{
@@ -1576,7 +1596,7 @@ public:
 
 	inline unsigned int GetSP(void) const
 	{
-		return state.ESP()&0xffff;
+		return REG_LOW_WORD(REG_ESP);
 	}
 	inline void SetSP(unsigned int value)
 	{
@@ -1594,7 +1614,7 @@ public:
 
 	inline unsigned int GetBP(void) const
 	{
-		return state.EBP()&0xffff;
+		return REG_LOW_WORD(REG_EBP);
 	}
 	inline void SetBP(unsigned int value)
 	{
