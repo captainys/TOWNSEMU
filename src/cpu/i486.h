@@ -1370,21 +1370,37 @@ public:
 
 
 #ifdef YS_LITTLE_ENDIAN
-	#define REG_LOW_WORD(reg) *((unsigned short *)&state.NULL_and_reg32[reg])
-	#define REG_LOW_BYTE(reg) *((unsigned char *)&state.NULL_and_reg32[reg])
-	#define REG_SECOND_BYTE(reg) (((unsigned char *)&state.NULL_and_reg32[reg])[1])
+	#define INT_LOW_WORD(i) (*((uint16_t *)&(i)))
+	#define INT_LOW_BYTE(i) (((unsigned char *)&(i))[0])
+	#define INT_SECOND_BYTE(i) (((unsigned char *)&(i))[1])
 
-	#define SET_REG_LOW_WORD(reg,value) *((unsigned short *)&state.NULL_and_reg32[reg])=(value);
-	#define SET_REG_LOW_BYTE(reg,value) *((unsigned char *)&state.NULL_and_reg32[reg])=(value);
-	#define SET_REG_SECOND_BYTE(reg,value) (((unsigned char *)&state.NULL_and_reg32[reg])[1])=(value);
+	#define SET_INT_LOW_WORD(i,value) (*((uint16_t *)&(i)))=(value)
+	#define SET_INT_LOW_BYTE(i,value) (((unsigned char *)&(i))[0])=(value)
+	#define SET_INT_SECOND_BYTE(i,value) (((unsigned char *)&(i))[1])=(value)
+
+	#define REG_LOW_WORD(reg) INT_LOW_WORD(state.NULL_and_reg32[reg])
+	#define REG_LOW_BYTE(reg) INT_LOW_BYTE(state.NULL_and_reg32[reg])
+	#define REG_SECOND_BYTE(reg) INT_SECOND_BYTE(state.NULL_and_reg32[reg])
+
+	#define SET_REG_LOW_WORD(reg,value) REG_LOW_WORD(reg)=(value)
+	#define SET_REG_LOW_BYTE(reg,value) REG_LOW_BYTE(reg)=(value);
+	#define SET_REG_SECOND_BYTE(reg,value) REG_SECOND_BYTE(reg)=(value);
 #else
-	#define REG_LOW_WORD(reg) (state.NULL_and_reg32[reg]&0xFFFF)
-	#define REG_LOW_BYTE(reg) (state.NULL_and_reg32[reg]&0xFF)
-	#define REG_SECOND_BYTE(reg) ((state.NULL_and_reg32[reg]>>8)&0xFF)
+	#define INT_LOW_WORD(i) ((i)&0xFFFF)
+	#define INT_LOW_BYTE(i) ((i)&0xFF)
+	#define INT_SECOND_BYTE(i) (((i)>>8)&0xFF)
 
-	#define SET_REG_LOW_WORD(reg,value) {state.NULL_and_reg32[reg]&=0xffff0000;state.NULL_and_reg32[reg]|=((value)&0xFFFF);}
-	#define SET_REG_LOW_BYTE(reg,value) {state.NULL_and_reg32[reg]&=0xffffff00;state.NULL_and_reg32[reg]|=((value)&0xFF);}
-	#define SET_REG_SECOND_BYTE(reg,value) {state.NULL_and_reg32[reg]&=0xffff00ff;state.NULL_and_reg32[reg]|=(((value)&0xFF)<<8);}
+	#define SET_INT_LOW_WORD(i,value) {(i)&=0xFFFF0000;(i)|=((value)&0xFFFF);}
+	#define SET_INT_LOW_BYTE(i,value) {(i)&=0xFFFFFF00;(i)|=((value)&0xFF);}
+	#define SET_INT_SECOND_BYTE(i,value) {(i)&=0xFFFF00FF;(i)|=(((value)&0xFF)<<8);}
+
+	#define REG_LOW_WORD(reg) INT_LOW_WORD(state.NULL_and_reg32[reg])
+	#define REG_LOW_BYTE(reg) INT_LOW_BYTE(state.NULL_and_reg32[reg])
+	#define REG_SECOND_BYTE(reg) INT_SECOND_BYTE(state.NULL_and_reg32[reg])
+
+	#define SET_REG_LOW_WORD(reg,value) SET_INT_LOW_WORD(state.NULL_and_reg32[reg],value)
+	#define SET_REG_LOW_BYTE(reg,value) SET_INT_LOW_BYTE(state.NULL_and_reg32[reg],value)
+	#define SET_REG_SECOND_BYTE(reg,value) SET_INT_SECOND_BYTE(state.NULL_and_reg32[reg],value)
 #endif
 
 	// I was hoping the compiler was able to recognize a pattern:
@@ -1450,18 +1466,15 @@ public:
 	}
 	inline void SetBX(unsigned int value)
 	{
-		state.EBX()&=0xffff0000;
-		state.EBX()|=(value&0xFFFF);
+		SET_REG_LOW_WORD(REG_EBX,value);
 	}
 	inline void SetBL(unsigned int value)
 	{
-		state.EBX()&=0xffffff00;
-		state.EBX()|=(value&0xFF);
+		SET_REG_LOW_BYTE(REG_EBX,value);
 	}
 	inline void SetBH(unsigned int value)
 	{
-		state.EBX()&=0xffff00ff;
-		state.EBX()|=((value&0xFF)<<8);
+		SET_REG_SECOND_BYTE(REG_EBX,value);
 	}
 
 
@@ -1487,18 +1500,15 @@ public:
 	}
 	inline void SetCX(unsigned int value)
 	{
-		state.ECX()&=0xffff0000;
-		state.ECX()|=(value&0xFFFF);
+		SET_REG_LOW_WORD(REG_ECX,value);
 	}
 	inline void SetCL(unsigned int value)
 	{
-		state.ECX()&=0xffffff00;
-		state.ECX()|=(value&0xFF);
+		SET_REG_LOW_BYTE(REG_ECX,value);
 	}
 	inline void SetCH(unsigned int value)
 	{
-		state.ECX()&=0xffff00ff;
-		state.ECX()|=((value&0xFF)<<8);
+		SET_REG_SECOND_BYTE(REG_ECX,value);
 	}
 	inline unsigned int GetCXorECX(unsigned int bits) const
 	{
@@ -1564,8 +1574,7 @@ public:
 	}
 	inline void SetSI(unsigned int value)
 	{
-		state.ESI()&=0xffff0000;
-		state.ESI()|=(value&0xffff);
+		SET_REG_LOW_WORD(REG_ESI,value);
 	}
 	inline unsigned int GetESI(void) const
 	{
@@ -1582,8 +1591,7 @@ public:
 	}
 	inline void SetDI(unsigned int value)
 	{
-		state.EDI()&=0xffff0000;
-		state.EDI()|=(value&0xffff);
+		SET_REG_LOW_WORD(REG_EDI,value);
 	}
 	inline unsigned int GetEDI(void) const
 	{
@@ -1600,8 +1608,7 @@ public:
 	}
 	inline void SetSP(unsigned int value)
 	{
-		state.ESP()&=0xffff0000;
-		state.ESP()|=(value&0xffff);
+		SET_REG_LOW_WORD(REG_ESP,value);
 	}
 	inline unsigned int GetESP(void) const
 	{
@@ -1618,8 +1625,7 @@ public:
 	}
 	inline void SetBP(unsigned int value)
 	{
-		state.EBP()&=0xffff0000;
-		state.EBP()|=(value&0xffff);
+		SET_REG_LOW_WORD(REG_EBP,value);
 	}
 	inline unsigned int GetEBP(void) const
 	{
@@ -1640,8 +1646,7 @@ public:
 	}
 	inline void SetIP(unsigned int value)
 	{
-		state.EIP&=0xffff0000;
-		state.EIP|=(value&0xffff);
+		SET_INT_LOW_WORD(state.EIP,value);
 	}
 	inline void SetEIP(unsigned int value)
 	{
@@ -1664,7 +1669,7 @@ public:
 	{
 		if(16==operandSize)
 		{
-			state.EFLAGS=(state.EFLAGS&0xffff0000)|(value&0xffff);
+			SET_INT_LOW_WORD(state.EFLAGS,value);
 		}
 		else
 		{
@@ -3712,9 +3717,16 @@ inline unsigned int i486DX::GetRegisterValue(int reg) const
 
 inline unsigned int i486DX::GetRegisterValue8(int reg) const
 {
+#ifdef YS_LITTLE_ENDIAN
+	unsigned int regIdx=reg-REG_AL;
+	unsigned int highLow=regIdx>>2;
+	unsigned char *regPtr=(unsigned char *)&state.reg32()[regIdx&3];
+	return regPtr[highLow];
+#else
 	unsigned int regIdx=reg-REG_AL;
 	unsigned int shift=(regIdx<<1)&8;
 	return ((state.reg32()[regIdx&3]>>shift)&255);
+#endif
 }
 
 inline void i486DX::SetRegisterValue(unsigned int reg,unsigned int value)
@@ -3804,6 +3816,12 @@ inline void i486DX::SetRegisterValue(unsigned int reg,unsigned int value)
 
 inline void i486DX::SetRegisterValue8(unsigned int reg,unsigned char value)
 {
+#ifdef YS_LITTLE_ENDIAN
+	unsigned int regIdx=reg-REG_AL;
+	unsigned int highLow=regIdx>>2;
+	unsigned char *regPtr=(unsigned char *)&state.reg32()[regIdx&3];
+	regPtr[highLow]=value;
+#else
 	static const unsigned int highLowMask[2]=
 	{
 		0xFFFFFF00,
@@ -3813,6 +3831,7 @@ inline void i486DX::SetRegisterValue8(unsigned int reg,unsigned char value)
 	unsigned int highLow=regIdx>>2;
 	state.reg32()[regIdx&3]&=highLowMask[highLow];
 	state.reg32()[regIdx&3]|=(value<<(highLow<<3));
+#endif
 }
 
 inline bool i486DX::TakeIOReadException(unsigned int ioport,unsigned int accessSize,Memory &mem,unsigned int numInstBytes)
