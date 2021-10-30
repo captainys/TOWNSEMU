@@ -2431,11 +2431,35 @@ public:
 
 	/*! Push a value.
 	*/
-	void Push(Memory &mem,unsigned int operandSize,unsigned int value);
+	void Push16(Memory &mem,unsigned int value);
+	void Push32(Memory &mem,unsigned int value);
+	inline void Push(Memory &mem,unsigned int operandSize,unsigned int value)
+	{
+		if(16==operandSize)
+		{
+			Push16(mem,value);
+		}
+		else
+		{
+			Push32(mem,value);
+		}
+	}
 
 	/*! Pop a value.
 	*/
-	unsigned int Pop(Memory &mem,unsigned int operandSize);
+	unsigned int Pop16(Memory &mem);
+	unsigned int Pop32(Memory &mem);
+	inline unsigned int Pop(Memory &mem,unsigned int operandSize)
+	{
+		if(16==operandSize)
+		{
+			return Pop16(mem);
+		}
+		else
+		{
+			return Pop32(mem);
+		}
+	}
 
 	/*! Push two values.
 	*/

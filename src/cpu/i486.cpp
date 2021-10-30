@@ -1366,7 +1366,7 @@ i486DX::OperandValue i486DX::DescriptorTableToOperandValue(const SystemAddressRe
 	return 0;
 }
 
-inline unsigned char *i486DX::GetStackAccessPointer(Memory &mem,uint32_t linearAddr,unsigned int numBytes)
+inline unsigned char *i486DX::GetStackAccessPointer(Memory &mem,uint32_t linearAddr,const unsigned int numBytes)
 {
 	if((linearAddr&(MemoryAccess::MEMORY_WINDOW_SIZE-1))<=(MemoryAccess::MEMORY_WINDOW_SIZE-numBytes))
 	{
@@ -1380,7 +1380,8 @@ inline unsigned char *i486DX::GetStackAccessPointer(Memory &mem,uint32_t linearA
 			state.SSESPWindow=mem.GetMemoryWindow(physAddr);
 			state.SSESPWindow.linearBaseAddr=(linearAddr&(~(MemoryAccess::MEMORY_WINDOW_SIZE-1)));
 		}
-		if(nullptr!=state.SSESPWindow.ptr && true==state.SSESPWindow.IsLinearAddressInRange(linearAddr))
+		// The second conidition in the next line is automatic.
+		if(nullptr!=state.SSESPWindow.ptr /*&& true==state.SSESPWindow.IsLinearAddressInRange(linearAddr)*/)
 		{
 			return state.SSESPWindow.ptr+(linearAddr&(MemoryAccess::MEMORY_WINDOW_SIZE-1));
 		}
@@ -1388,79 +1389,90 @@ inline unsigned char *i486DX::GetStackAccessPointer(Memory &mem,uint32_t linearA
 	return nullptr;
 }
 
-void i486DX::Push(Memory &mem,unsigned int operandSize,unsigned int value)
+void i486DX::Push16(Memory &mem,unsigned int value)
 {
 	NUM_BYTES_MASK;
 	auto addressSize=GetStackAddressingSize();
 	auto &ESP=state.ESP();
 
-	unsigned int bytesToStore=(operandSize>>3);
+	const unsigned int bytesToStore=2;
 	ESP-=bytesToStore;
 
 	unsigned int linearAddr=state.SS().baseLinearAddr+(ESP&(numBytesMask[addressSize>>3]));
 	auto accessPtr=GetStackAccessPointer(mem,linearAddr,bytesToStore);
 	if(nullptr!=accessPtr)
 	{
-		if(16==operandSize)
-		{
-			cpputil::PutWord(accessPtr,value);
-		}
-		else // if(32==operandSize)
-		{
-			cpputil::PutDword(accessPtr,value);
-		}
+		cpputil::PutWord(accessPtr,value);
 		return;
 	}
 
-	// When addressSize==16, ESP will be &ed with 0xFFFF in StoreWord/StoreDword.
+	// When addressSize==16, ESP will be ANDed with 0xFFFF in StoreWord/StoreDword.
 	// Also ESP crossing 16-bit boundary would be an exception if addressSize==16.
 	// I cannot check it here, but to run a valid application, it shouldn't happen.
-	if(16==operandSize)
-	{
-		StoreWord(mem,addressSize,state.SS(),ESP,value);
-	}
-	else // if(32==operandSize)
-	{
-		StoreDword(mem,addressSize,state.SS(),ESP,value);
-	}
+	StoreWord(mem,addressSize,state.SS(),ESP,value);
 }
 
-unsigned int i486DX::Pop(Memory &mem,unsigned int operandSize)
+void i486DX::Push32(Memory &mem,unsigned int value)
+{
+	NUM_BYTES_MASK;
+	auto addressSize=GetStackAddressingSize();
+	auto &ESP=state.ESP();
+
+	const unsigned int bytesToStore=4;
+	ESP-=bytesToStore;
+
+	unsigned int linearAddr=state.SS().baseLinearAddr+(ESP&(numBytesMask[addressSize>>3]));
+	auto accessPtr=GetStackAccessPointer(mem,linearAddr,bytesToStore);
+	if(nullptr!=accessPtr)
+	{
+		cpputil::PutDword(accessPtr,value);
+		return;
+	}
+	StoreDword(mem,addressSize,state.SS(),ESP,value);
+}
+
+unsigned int i486DX::Pop16(Memory &mem)
 {
 	NUM_BYTES_MASK;
 	unsigned int value;
 	auto addressSize=GetStackAddressingSize();
 	auto &ESP=state.ESP();
-	unsigned int bytesToPop=(operandSize>>3);
+	const unsigned int bytesToPop=2;
 
 	unsigned int linearAddr=state.SS().baseLinearAddr+(ESP&(numBytesMask[addressSize>>3]));
 	auto accessPtr=GetStackAccessPointer(mem,linearAddr,bytesToPop);
 	if(nullptr!=accessPtr)
 	{
 		ESP+=bytesToPop;
-		if(16==operandSize)
-		{
-			return cpputil::GetWord(accessPtr);
-		}
-		else // if(32==operandSize)
-		{
-			return cpputil::GetDword(accessPtr);
-		}
+		return cpputil::GetWord(accessPtr);
 	}
 
 	// When addressSize==16, ESP will be &ed with 0xFFFF in StoreWord/StoreDword.
 	// Also ESP crossing 16-bit boundary would be an exception if addressSize==16.
 	// I cannot check it here, but to run a valid application, it shouldn't happen.
-	if(16==operandSize)
+	value=FetchWord(addressSize,state.SS(),ESP,mem);
+	ESP+=2;
+	return value;
+}
+
+unsigned int i486DX::Pop32(Memory &mem)
+{
+	NUM_BYTES_MASK;
+	unsigned int value;
+	auto addressSize=GetStackAddressingSize();
+	auto &ESP=state.ESP();
+	const unsigned int bytesToPop=4;
+
+	unsigned int linearAddr=state.SS().baseLinearAddr+(ESP&(numBytesMask[addressSize>>3]));
+	auto accessPtr=GetStackAccessPointer(mem,linearAddr,bytesToPop);
+	if(nullptr!=accessPtr)
 	{
-		value=FetchWord(addressSize,state.SS(),ESP,mem);
-		ESP+=2;
+		ESP+=bytesToPop;
+		return cpputil::GetDword(accessPtr);
 	}
-	else // if(32==operandSize)
-	{
-		value=FetchDword(addressSize,state.SS(),ESP,mem);
-		ESP+=4;
-	}
+
+	value=FetchDword(addressSize,state.SS(),ESP,mem);
+	ESP+=4;
 	return value;
 }
 
