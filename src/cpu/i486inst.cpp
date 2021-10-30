@@ -4254,7 +4254,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		} \
 	}
 
-	#define BINARYOP_RM_FROM_R(func,clock_for_addr,update) \
+	#define BINARYOP_RM_FROM_R(func16,func32,clock_for_addr,update) \
 	{ \
 		if(op1.operandType==OPER_ADDR || op2.operandType==OPER_ADDR) \
 		{ \
@@ -4265,19 +4265,37 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			clocksPassed=1; \
 		} \
 		auto regNum=inst.GetREG(); \
-		auto op32or16=inst.operandSize>>3; \
-		auto dst=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,op32or16); \
-		auto src=(state.reg32()[regNum]&operandSizeMask[op32or16]); \
-		if(true==state.exception) \
+		if(16==inst.operandSize) \
 		{ \
-			break; \
+			auto dst=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,2); \
+			auto src=INT_LOW_WORD(state.reg32()[regNum]); \
+			if(true==state.exception) \
+			{ \
+				break; \
+			} \
+			auto i=dst.GetAsWord(); \
+			(func16)(i,src); \
+			if(true==(update)) \
+			{ \
+				dst.SetDword(i); \
+				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,dst); \
+			} \
 		} \
-		auto i=dst.GetAsDword(); \
-		(func)(inst.operandSize,i,src); \
-		if(true==(update)) \
+		else \
 		{ \
-			dst.SetDword(i); \
-			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,dst); \
+			auto dst=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,4); \
+			auto src=state.reg32()[regNum]; \
+			if(true==state.exception) \
+			{ \
+				break; \
+			} \
+			auto i=dst.GetAsDword(); \
+			(func32)(i,src); \
+			if(true==(update)) \
+			{ \
+				dst.SetDword(i); \
+				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,dst); \
+			} \
 		} \
 	}
 
@@ -5087,31 +5105,31 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 
 	case I486_RENUMBER_ADC_RM_FROM_R://   0x11,
-		BINARYOP_RM_FROM_R(AdcWordOrDword,3,true);
+		BINARYOP_RM_FROM_R(AdcWord,AdcDword,3,true);
 		break;
 	case I486_RENUMBER_ADD_RM_FROM_R://   0x01,
-		BINARYOP_RM_FROM_R(AddWordOrDword,3,true);
+		BINARYOP_RM_FROM_R(AddWord,AddDword,3,true);
 		break;
 	case I486_RENUMBER_AND_RM_FROM_R://   0x21,
-		BINARYOP_RM_FROM_R(AndWordOrDword,3,true);
+		BINARYOP_RM_FROM_R(AndWord,AndDword,3,true);
 		break;
 	case I486_RENUMBER_CMP_RM_FROM_R://   0x39,
-		BINARYOP_RM_FROM_R(SubWordOrDword,3,false);
+		BINARYOP_RM_FROM_R(SubWord,SubDword,3,false);
 		break;
 	case I486_RENUMBER_SBB_RM_FROM_R://   0x19,
-		BINARYOP_RM_FROM_R(SbbWordOrDword,3,true);
+		BINARYOP_RM_FROM_R(SbbWord,SbbDword,3,true);
 		break;
 	case I486_RENUMBER_SUB_RM_FROM_R://   0x29,
-		BINARYOP_RM_FROM_R(SubWordOrDword,3,true);
+		BINARYOP_RM_FROM_R(SubWord,SubDword,3,true);
 		break;
 	case I486_RENUMBER_TEST_RM_FROM_R://   0x85,
-		BINARYOP_RM_FROM_R(AndWordOrDword,1,false);
+		BINARYOP_RM_FROM_R(AndWord,AndDword,1,false);
 		break;
 	case I486_RENUMBER_OR_RM_FROM_R://   0x09,
-		BINARYOP_RM_FROM_R(OrWordOrDword,3,true);
+		BINARYOP_RM_FROM_R(OrWord,OrDword,3,true);
 		break;
 	case I486_RENUMBER_XOR_RM_FROM_R:
-		BINARYOP_RM_FROM_R(XorWordOrDword,3,true);
+		BINARYOP_RM_FROM_R(XorWord,XorDword,3,true);
 		break;
 
 	case I486_RENUMBER_ADC_R_FROM_RM://   0x13,
