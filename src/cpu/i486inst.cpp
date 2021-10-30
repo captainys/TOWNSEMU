@@ -4396,7 +4396,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				break; \
 			} \
 			value.SetDword(i); \
-			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value); \
+			StoreOperandValue8(op1,mem,inst.addressSize,inst.segOverride,value); \
 		} \
 	}
 
