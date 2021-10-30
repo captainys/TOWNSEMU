@@ -4184,10 +4184,18 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	{ \
 		if(true==(jumpCond)) \
 		{ \
-			auto offset=inst.EvalSimm16or32(inst.operandSize); \
-			auto destin=state.EIP+offset+inst.numBytes; \
-			destin&=operandSizeMask[inst.operandSize>>3]; \
-			state.EIP=destin; \
+			if(16==inst.operandSize) \
+			{ \
+				auto offset=inst.EvalSimm16(); \
+				auto destin=state.EIP+offset+inst.numBytes; \
+				state.EIP=(destin&0xFFFF); \
+			} \
+			else \
+			{ \
+				auto offset=inst.EvalSimm32(); \
+				auto destin=state.EIP+offset+inst.numBytes; \
+				state.EIP=destin; \
+			} \
 			clocksPassed=3; \
 			EIPIncrement=0; \
 		} \
