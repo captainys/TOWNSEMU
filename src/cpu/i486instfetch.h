@@ -269,25 +269,38 @@ public:
 		}
 	#endif
 
-		unsigned int lastByte=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,CS,offset+inst.numBytes++,mem);
-		inst.opCode=0;
-		while(true==i486DX::IsPrefix[lastByte])
+		inst.opCode=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,CS,offset+inst.numBytes++,mem);
+		while(true==i486DX::IsPrefix[inst.opCode])
 		{
-			switch(lastByte)
+			switch(inst.opCode)
 			{
 			case INST_PREFIX_REP: // REP/REPE/REPZ
+				inst.instPrefix=INST_PREFIX_REP;
+				break;
 			case INST_PREFIX_REPNE:
+				inst.instPrefix=INST_PREFIX_REPNE;
+				break;
 			case INST_PREFIX_LOCK:
-				inst.instPrefix=lastByte;
+				inst.instPrefix=INST_PREFIX_LOCK;
 				break;
 
 			case SEG_OVERRIDE_CS:
+				inst.segOverride=SEG_OVERRIDE_CS;
+				break;
 			case SEG_OVERRIDE_SS:
+				inst.segOverride=SEG_OVERRIDE_SS;
+				break;
 			case SEG_OVERRIDE_DS:
+				inst.segOverride=SEG_OVERRIDE_DS;
+				break;
 			case SEG_OVERRIDE_ES:
+				inst.segOverride=SEG_OVERRIDE_ES;
+				break;
 			case SEG_OVERRIDE_FS:
+				inst.segOverride=SEG_OVERRIDE_FS;
+				break;
 			case SEG_OVERRIDE_GS:
-				inst.segOverride=lastByte;
+				inst.segOverride=SEG_OVERRIDE_GS;
 				break;
 
 			case OPSIZE_OVERRIDE:
@@ -298,21 +311,20 @@ public:
 				break;
 
 			case FPU_FWAIT:
-				inst.fwait=lastByte;
+				inst.fwait=FPU_FWAIT;
 				break;
 
 			case I486_OPCODE_NEED_SECOND_BYTE: //0x0F
-				inst.opCode=(I486_OPCODE_NEED_SECOND_BYTE<<8);
-				lastByte=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,CS,offset+inst.numBytes++,mem);
+				inst.opCode=(I486_OPCODE_NEED_SECOND_BYTE<<8)|
+				            FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,CS,offset+inst.numBytes++,mem);
 				goto PREFIX_DONE;
 
 			default:
 				goto PREFIX_DONE;
 			}
-			lastByte=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,CS,offset+inst.numBytes++,mem);
+			inst.opCode=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,CS,offset+inst.numBytes++,mem);
 		}
 	PREFIX_DONE:
-		inst.opCode|=lastByte;
 		if(MAX_INSTRUCTION_LENGTH<=ptr.length)
 		{
 			CPUCLASS::template FetchOperand<CPUCLASS,BURSTMODEFUNCCLASS>(cpu,inst,op1,op2,ptr,CS,offset+inst.numBytes,mem);
