@@ -19,6 +19,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 
 #include <vector>
+#include "cpputil.h"
 
 /*! MemoryAccess class is a base-class for actually memory-access implementation.
     MemoryAccess class pointers will be stored in 4KB slots of Memory class so that
@@ -73,8 +74,7 @@ public:
 		*/
 		inline void FetchTwoBytes(unsigned char buf[2])
 		{
-			buf[0]=ptr[0];
-			buf[1]=ptr[1];
+			cpputil::CopyWord(buf,ptr);
 			ptr+=2;
 			length-=2;
 		}
@@ -83,10 +83,7 @@ public:
 		*/
 		inline void FetchFourBytes(unsigned char buf[4])
 		{
-			buf[0]=ptr[0];
-			buf[1]=ptr[1];
-			buf[2]=ptr[2];
-			buf[3]=ptr[3];
+			cpputil::CopyDword(buf,ptr);
 			ptr+=4;
 			length-=4;
 		}
@@ -136,7 +133,12 @@ public:
 
 		inline bool IsLinearAddressInRange(unsigned int addr) const
 		{
+		#ifdef YS_TWOS_COMPLEMENT
+			addr-=linearBaseAddr;
+			return addr<MEMORY_WINDOW_SIZE;
+		#else
 			return (linearBaseAddr<=addr && addr<linearBaseAddr+MEMORY_WINDOW_SIZE);
+		#endif
 		}
 
 		/*! Returns a memory-access pointer from this window.
@@ -190,7 +192,12 @@ public:
 
 		inline bool IsLinearAddressInRange(unsigned int addr) const
 		{
+		#ifdef YS_TWOS_COMPLEMENT
+			addr-=linearBaseAddr;
+			return addr<MEMORY_WINDOW_SIZE;
+		#else
 			return (linearBaseAddr<=addr && addr<linearBaseAddr+MEMORY_WINDOW_SIZE);
+		#endif
 		}
 	};
 

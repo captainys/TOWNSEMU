@@ -167,6 +167,17 @@ inline void PutWord(unsigned char byteData[],unsigned short data)
 #endif
 }
 
+inline void CopyWord(unsigned char dst[],const unsigned char src[])
+{
+	(*(uint16_t *)dst)=(*(const uint16_t *)src);
+}
+
+inline void CopyDword(unsigned char dst[],const unsigned char src[])
+{
+	(*(uint32_t *)dst)=(*(const uint32_t *)src);
+}
+
+
 char BoolToChar(bool flag);
 const char *BoolToNumberStr(bool flag);
 
