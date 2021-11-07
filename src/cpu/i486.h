@@ -1262,6 +1262,9 @@ public:
 
 		inline void SetSignedDword(int dword)
 		{
+		#ifdef YS_TWOS_COMPLEMENT
+			SetDword(*((unsigned int *)&dword));
+		#else
 			unsigned int uDword;
 			// I probably can just say uDword=*((unsigned int *)&dword).
 			// But, officially the behavior is undefined by C/C++.
@@ -1271,6 +1274,7 @@ public:
 				uDword|=0x80000000;
 			}
 			SetDword(uDword);
+		#endif
 		}
 
 		/*! MakeDword makes a 4-byte long OperandValue.
