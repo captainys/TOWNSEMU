@@ -7165,10 +7165,15 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		CONDITIONALJUMP8(CondJG());
 		break;
 	case I486_RENUMBER_LOOP://             0xE2,
+		if(32==inst.operandSize)
 		{
-			auto nBytes=(inst.operandSize>>3);
-			unsigned int ctr=((state.ECX()-1)&operandSizeMask[nBytes]);
-			state.ECX()=((state.ECX()&operandSizeAndPattern[nBytes])|ctr);
+			state.ECX()-=1;
+			CONDITIONALJUMP8(0!=state.ECX());
+		}
+		else
+		{
+			unsigned int ctr=GetCX()-1;
+			SetCX(ctr);
 			CONDITIONALJUMP8(0!=ctr);
 		}
 		break;
