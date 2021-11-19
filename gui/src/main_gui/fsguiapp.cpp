@@ -2385,7 +2385,7 @@ void FsGuiMainCanvas::EventLog_Open_FileSelected(FsGuiDialog *dlg,int returnCode
 		auto fName=fdlg->selectedFileArray[0];
 
 		YsString utf8;
-		utf8.EncodeUTF8(fName.data());
+		YsUnicodeToSystemEncoding(utf8,fName);
 
 		lastEventFName=fName;
 
@@ -2453,7 +2453,7 @@ void FsGuiMainCanvas::EventLog_Save_Confirm(FsGuiDialog *dlgIn,int returnCode)
 void FsGuiMainCanvas::EventLog_Save_Save(YsWString fName)
 {
 	YsString utf8;
-	utf8.EncodeUTF8(fName.data());
+	YsUnicodeToSystemEncoding(utf8,fName);
 
 	SendVMCommand("DIS EVENTLOG\n");
 
