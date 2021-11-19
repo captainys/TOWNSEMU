@@ -725,7 +725,7 @@ std::string FsGuiMainCanvas::FindTsugaruCUI(void) const
 	if(YSTRUE==YsFileIO::CheckFileExist(ful))
 	{
 		YsString utf8;
-		utf8.EncodeUTF8(ful.data());
+		YsUnicodeToSystemEncoding(utf8,ful);
 		return utf8.c_str();
 	}
 
@@ -735,7 +735,7 @@ std::string FsGuiMainCanvas::FindTsugaruCUI(void) const
 	if(YSTRUE==YsFileIO::CheckFileExist(ful))
 	{
 		YsString utf8;
-		utf8.EncodeUTF8(ful.data());
+		YsUnicodeToSystemEncoding(utf8,ful);
 		return utf8.c_str();
 	}
 
@@ -747,7 +747,7 @@ std::string FsGuiMainCanvas::GetCMOSFileName(void) const
 	YsWString ful;
 	ful.MakeFullPathName(GetTsugaruProfileDir(),L"CMOS.DAT");
 	YsString utf8;
-	utf8.EncodeUTF8(ful.data());
+	YsUnicodeToSystemEncoding(utf8,ful);
 	return utf8.c_str();
 }
 
@@ -1486,7 +1486,7 @@ void FsGuiMainCanvas::State_SaveState_Save(YsWString fName)
 {
 	lastStateFName=selectedStateFName;
 	YsString utf8;
-	utf8.EncodeUTF8(selectedStateFName.data());
+	YsUnicodeToSystemEncoding(utf8,selectedStateFName);
 
 	YsString cmd;
 	cmd="SAVESTATE \"";
@@ -1558,7 +1558,7 @@ void FsGuiMainCanvas::State_LoadState_FileSelected(FsGuiDialog *dlg,int returnCo
 		if(YSTRUE==YsFileIO::CheckFileExist(selectedStateFName))
 		{
 			YsString utf8;
-			utf8.EncodeUTF8(selectedStateFName.data());
+			YsUnicodeToSystemEncoding(utf8,selectedStateFName);
 
 			YsString cmd;
 			cmd="LOADSTATE \"";
@@ -1585,7 +1585,7 @@ void FsGuiMainCanvas::State_LoadLastState(FsGuiPopUpMenuItem *)
 		{
 			lastStateFName=selectedStateFName;
 			YsString utf8;
-			utf8.EncodeUTF8(selectedStateFName.data());
+			YsUnicodeToSystemEncoding(utf8,selectedStateFName);
 
 			YsString cmd;
 			cmd="LOADSTATE \"";
@@ -1608,7 +1608,7 @@ void FsGuiMainCanvas::State_LoadLastStateAndPause(FsGuiPopUpMenuItem *)
 		{
 			lastStateFName=selectedStateFName;
 			YsString utf8;
-			utf8.EncodeUTF8(selectedStateFName.data());
+			YsUnicodeToSystemEncoding(utf8,selectedStateFName);
 
 			YsString cmd;
 			cmd="LOADSTATE \"";
