@@ -34,7 +34,7 @@ void TownsRenderingThread::ThreadFunc(void)
 	std::unique_lock <std::mutex> mainLock(mainMutex);
 	for(;;)
 	{
-		cond.wait(mainLock);
+		cond.wait(mainLock,[&]{return NO_COMMAND!=command;});
 		if(QUIT==command)
 		{
 			break;
