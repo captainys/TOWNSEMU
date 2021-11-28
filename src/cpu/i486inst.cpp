@@ -5608,11 +5608,22 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			clocksPassed=3;
 
-			auto offset=inst.EvalSimm16or32(inst.operandSize);
-			auto destin=state.EIP+offset+inst.numBytes;
-			destin&=operandSizeMask[inst.operandSize>>3];
+			uint32_t destin;
 
-			Push(mem,inst.operandSize,state.EIP+inst.numBytes);
+			if(16==inst.operandSize)
+			{
+				auto offset=inst.EvalSimm16();
+				destin=state.EIP+offset+inst.numBytes;
+				destin&=0xFFFF;
+				Push16(mem,state.EIP+inst.numBytes);
+			}
+			else // if(32==inst.operandSize)
+			{
+				auto offset=inst.EvalSimm32();
+				destin=state.EIP+offset+inst.numBytes;
+				Push32(mem,state.EIP+inst.numBytes);
+			}
+
 			if(true==enableCallStack)
 			{
 				PushCallStack(
@@ -5631,11 +5642,18 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			clocksPassed=3;
 
-			auto offset=inst.EvalSimm16or32(inst.operandSize);
-			auto destin=state.EIP+offset+inst.numBytes;
-			destin&=operandSizeMask[inst.operandSize>>3];
+			if(16==inst.operandSize)
+			{
+				auto offset=inst.EvalSimm16();
+				state.EIP=state.EIP+offset+inst.numBytes;
+				state.EIP&=0xFFFF;
+			}
+			else // if(32==inst.operandSize)
+			{
+				auto offset=inst.EvalSimm32();
+				state.EIP=state.EIP+offset+inst.numBytes;
+			}
 
-			state.EIP=destin;
 			EIPIncrement=0;
 		}
 		break;
