@@ -833,29 +833,53 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 
 
 
-	// Yes Operand
+	// RM_IMM8
 	case I486_RENUMBER_C0_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_I8://0xC0,// ::ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
+	case I486_RENUMBER_BINARYOP_RM8_FROM_I8:
+	case I486_RENUMBER_BINARYOP_RM8_FROM_I8_ALIAS:
+	case I486_RENUMBER_MOV_I8_TO_RM8: //    0xC6,
 		offset+=FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		FUNCCLASS::FetchImm8(cpu,inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,8,inst.operand);
 		break;
+
+
+
+	// RM_IMM
 	case I486_RENUMBER_C1_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_I8:// 0xC1, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
+	case I486_RENUMBER_BT_BTS_BTR_BTC_RM_I8:// 0FBA
+	case I486_RENUMBER_BINARYOP_RM_FROM_SXI8:
 		offset+=FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		FUNCCLASS::FetchImm8(cpu,inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
+
+
+
+	// RM8
 	case I486_RENUMBER_D0_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_1://0xD0, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
 	case I486_RENUMBER_D2_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_CL://0xD2,// ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
-		offset+=FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
+	case I486_RENUMBER_INC_DEC_R_M8:
+	case I486_RENUMBER_MOV_FROM_R8: //      0x88,
+		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,8,inst.operand);
 		break;
+
+
+
+	// RM
 	case I486_RENUMBER_D1_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_1://0xD1, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
 	case I486_RENUMBER_D3_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_CL://0xD3, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
-		offset+=FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
+	case I486_RENUMBER_INC_DEC_CALL_CALLF_JMP_JMPF_PUSH:
+	case I486_RENUMBER_MOV_FROM_R: //       0x89, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_RENUMBER_POP_M://            0x8F,
+		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 
 
+
+	// Yes Operand
 	case I486_RENUMBER_F6_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF6
 		offset+=FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		if(0==inst.GetREG()) // TEST RM8,I8
@@ -898,11 +922,6 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 		break;
 
 
-	case I486_RENUMBER_BT_BTS_BTR_BTC_RM_I8:// 0FBA
-		offset+=FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
-		FUNCCLASS::FetchImm8(cpu,inst,ptr,seg,offset,mem);
-		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
-		break;
 
 	case I486_RENUMBER_BSF_R_RM://   0x0FBC,
 	case I486_RENUMBER_BSR_R_RM://   0x0FBD,
@@ -1188,14 +1207,6 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 
 
 
-	case I486_RENUMBER_INC_DEC_R_M8:
-		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
-		op1.Decode(inst.addressSize,8,inst.operand);
-		break;
-	case I486_RENUMBER_INC_DEC_CALL_CALLF_JMP_JMPF_PUSH:
-		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
-		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
-		break;
 
 
 
@@ -1261,20 +1272,9 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 		break;
 
 
-	case I486_RENUMBER_BINARYOP_RM8_FROM_I8:
-	case I486_RENUMBER_BINARYOP_RM8_FROM_I8_ALIAS:
-		offset+=FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
-		FUNCCLASS::FetchImm8(cpu,inst,ptr,seg,offset,mem);
-		op1.Decode(inst.addressSize,8,inst.operand);
-		break;
 	case I486_RENUMBER_BINARYOP_R_FROM_I:
 		offset+=FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		FUNCCLASS::FetchImm16or32(cpu,inst,ptr,seg,offset,mem);
-		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
-		break;
-	case I486_RENUMBER_BINARYOP_RM_FROM_SXI8:
-		offset+=FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
-		FUNCCLASS::FetchImm8(cpu,inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 
@@ -1325,22 +1325,6 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 		break;
 
 
-	case I486_RENUMBER_MOV_FROM_R8: //      0x88,
-		// Example:  88 4c ff        MOV CL,[SI-1]     In Real Mode
-		// Example:  88 10           MOV DL,[BX+SI]    In Real Mode
-		// Example:  88 36 21 00     MOV DH,[021H]     In Real Mode
-		// Example:  67 88 26 61 10  MOV [1061],AH     In Protected Mode -> disp16 may become disp32, and vise-versa
-
-		// Example:  8D 04 C1        LEA EAX,[ECX+EAX*8] In Protected Mode
-		// Example:  8D 04 41        LEA EAX,[ECX+EAX*2] In Protected Mode
-		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
-		op1.Decode(inst.addressSize,8,inst.operand);
-		break;
-	case I486_RENUMBER_MOV_FROM_R: //       0x89, // 16/32 depends on OPSIZE_OVERRIDE
-		// Example:  89 26 3e 00     MOV [003EH],SP
-		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
-		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
-		break;
 	case I486_RENUMBER_MOV_TO_R8: //        0x8A,
 		// Example:  8a 0e 16 00     MOV CL,[0016H]
 		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
@@ -1438,11 +1422,6 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 	case I486_RENUMBER_MOV_I_TO_EDI: //   0xBF, // 16/32 depends on OPSIZE_OVERRIDE
 		FUNCCLASS::FetchImm16or32(cpu,inst,ptr,seg,offset,mem);
 		break;
-	case I486_RENUMBER_MOV_I8_TO_RM8: //    0xC6,
-		offset+=FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
-		FUNCCLASS::FetchImm8(cpu,inst,ptr,seg,offset,mem);
-		op1.Decode(inst.addressSize,8,inst.operand);
-		break;
 	case I486_RENUMBER_MOV_I_TO_RM: //      0xC7, // 16/32 depends on OPSIZE_OVERRIDE
 		offset+=FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		FUNCCLASS::FetchImm16or32(cpu,inst,ptr,seg,offset,mem);
@@ -1530,10 +1509,6 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 		break;
 
 
-	case I486_RENUMBER_POP_M://            0x8F,
-		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
-		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
-		break;
 
 
 	case I486_RENUMBER_RET_I16://          0xC2,
