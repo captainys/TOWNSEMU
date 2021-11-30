@@ -390,6 +390,7 @@ int main(int ac,char *av[])
 		"18 BC 7D 12345678",      "SBB     [EBP+EDI*2+12345678H],BH", 
 		"28 8C 7D 12345678",      "SUB     [EBP+EDI*2+12345678H],CL", 
 		"30 B4 7D 12345678",      "XOR     [EBP+EDI*2+12345678H],DH", 
+		"86 B4 7D 12345678",      "XCHG    [EBP+EDI*2+12345678H],DH", 
 
 		"23 C0",             "AND     EAX,EAX",
 		"66 23 C0",          "AND     AX,AX",

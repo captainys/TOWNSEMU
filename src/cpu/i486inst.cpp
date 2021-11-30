@@ -870,6 +870,7 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 	case I486_RENUMBER_SUB_RM8_FROM_R8:// 0x28,
 	case I486_RENUMBER_TEST_RM8_FROM_R8:// 0x84,
 	case I486_RENUMBER_XOR_RM8_FROM_R8:
+	case I486_RENUMBER_XCHG_RM8_R8://      0x86,
 		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,8,inst.operand);
 		break;
@@ -1337,13 +1338,6 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 
 
 
-	case I486_RENUMBER_MOV_TO_R8: //        0x8A,
-		// Example:  8a 0e 16 00     MOV CL,[0016H]
-		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
-		op2.Decode(inst.addressSize,8,inst.operand);
-		break;
-
-
 	case I486_RENUMBER_MOV_FROM_SEG: //     0x8C,
 		// Example:  8c c6           MOV SI,ES
 		// Sreg: ES=0, CS=1, SS=2, DS=3, FD=4, GS=5 (OPCODE part of MODR_M)  [1] pp.26-10
@@ -1500,6 +1494,7 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 
 
 
+	case I486_RENUMBER_MOV_TO_R8: //        0x8A,
 	case I486_RENUMBER_ADC_R8_FROM_RM8:// 0x12,
 	case I486_RENUMBER_ADD_R8_FROM_RM8:// 0x02,
 	case I486_RENUMBER_AND_R8_FROM_RM8:// 0x22,
@@ -1514,11 +1509,6 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 
 
 
-	case I486_RENUMBER_XCHG_RM8_R8://      0x86,
-		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
-		op1.Decode(inst.addressSize,8,inst.operand);
-		op2.DecodeMODR_MForRegister(8,inst.operand[0]);
-		break;
 
 
 
@@ -3813,6 +3803,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		}
 		break;
 	case I486_OPCODE_XCHG_RM8_R8://           0x86,
+		op2.DecodeMODR_MForRegister(8,operand[0]);
 		disasm=DisassembleTypicalTwoOperands("XCHG",op1,op2);
 		break;
 	case I486_OPCODE_XCHG_RM_R://             0x87,
@@ -8862,10 +8853,17 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_RENUMBER_XCHG_RM8_R8://           0x86,
 		clocksPassed=(OPER_ADDR==op1.operandType ? 5 : 3);
 		{
+			// op2 is a register.
 			auto RM=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op1);
-			auto R=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op2);
+
+			OperandValue R;
+			auto regNum=inst.GetREG(); // Guaranteed to be between 0 and 7
+			R.MakeByte(state.reg32()[regNum&3]>>reg8Shift[regNum]);
+
 			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,R);
-			StoreOperandValue(op2,mem,inst.addressSize,inst.segOverride,RM);
+
+			state.reg32()[regNum&3]&=reg8AndPattern[regNum];
+			state.reg32()[regNum&3]|=((unsigned int)(RM.GetAsByte())<<reg8Shift[regNum]);
 		}
 		break;
 	case I486_RENUMBER_XCHG_RM_R://             0x87,
