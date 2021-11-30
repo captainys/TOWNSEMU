@@ -1010,11 +1010,6 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 	case I486_RENUMBER_LAR:
 	case I486_RENUMBER_IMUL_R_RM://       0x0FAF,
 	case I486_RENUMBER_LEA://=              0x8D,
-	case I486_RENUMBER_LDS://              0xC5,
-	case I486_RENUMBER_LSS://              0x0FB2,
-	case I486_RENUMBER_LES://              0xC4,
-	case I486_RENUMBER_LFS://              0x0FB4,
-	case I486_RENUMBER_LGS://              0x0FB5,
 	case I486_RENUMBER_LSL://              0x0F03,
 		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		op1.DecodeMODR_MForRegister(inst.operandSize,inst.operand[0]);
@@ -1031,6 +1026,11 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 	case I486_RENUMBER_XOR_R_FROM_RM:
 	case I486_RENUMBER_BOUND: // 0x62
 	case I486_RENUMBER_MOV_TO_R: //         0x8B, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_RENUMBER_LDS://              0xC5,
+	case I486_RENUMBER_LSS://              0x0FB2,
+	case I486_RENUMBER_LES://              0xC4,
+	case I486_RENUMBER_LFS://              0x0FB4,
+	case I486_RENUMBER_LGS://              0x0FB5,
 		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		op2.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
@@ -3053,6 +3053,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 	case I486_OPCODE_LES://              0xC4,
 	case I486_OPCODE_LFS://              0x0FB4,
 	case I486_OPCODE_LGS://              0x0FB5,
+		op1.DecodeMODR_MForRegister(operandSize,operand[0]);
 		switch(opCode)
 		{
 		case I486_OPCODE_LDS://              0xC5,
@@ -4290,13 +4291,22 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		} \
 	}
 
+	// op1 is a register.
 	#define LOAD_FAR_POINTER(SEGREG) \
 		if(OPER_ADDR==op2.operandType) \
 		{ \
 			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,(inst.operandSize+16)/8); \
 			if(true!=state.exception) \
 			{ \
-				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value); \
+				auto regNum=inst.GetREG(); \
+				if(16==inst.operandSize) \
+				{ \
+					SET_INT_LOW_WORD(state.reg32()[regNum],value.GetAsWord()); \
+				} \
+				else \
+				{ \
+					state.reg32()[regNum]=value.GetAsDword(); \
+				} \
 				auto seg=value.GetFwordSegment(); \
 				LoadSegmentRegister(state.SEGREG(),seg,mem); \
 			} \
@@ -7293,7 +7303,17 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,(inst.operandSize+16)/8);
 			if(true!=state.exception)
 			{
-				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+				// op1 is a register.
+				auto regNum=inst.GetREG();
+				if(16==inst.operandSize)
+				{
+					SET_INT_LOW_WORD(state.reg32()[regNum],value.GetAsWord());
+				}
+				else
+				{
+					state.reg32()[regNum]=value.GetAsDword();
+				}
+
 				auto seg=value.GetFwordSegment();
 
 				if(0==seg)
