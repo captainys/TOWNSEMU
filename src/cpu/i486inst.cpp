@@ -877,15 +877,37 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 
 
 
-	// RM
+	// RM_X
 	case I486_RENUMBER_D1_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_1://0xD1, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
 	case I486_RENUMBER_D3_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_CL://0xD3, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
 	case I486_RENUMBER_INC_DEC_CALL_CALLF_JMP_JMPF_PUSH:
 	case I486_RENUMBER_MOV_FROM_R: //       0x89, // 16/32 depends on OPSIZE_OVERRIDE
 	case I486_RENUMBER_POP_M://            0x8F,
+	case I486_RENUMBER_ADC_RM_FROM_R://   0x11,
+	case I486_RENUMBER_ADD_RM_FROM_R://   0x01,
+	case I486_RENUMBER_AND_RM_FROM_R://   0x21,
+	case I486_RENUMBER_CMP_RM_FROM_R://   0x39,
+	case I486_RENUMBER_OR_RM_FROM_R://   0x09,
+	case I486_RENUMBER_SBB_RM_FROM_R://   0x19,
+	case I486_RENUMBER_SUB_RM_FROM_R://   0x29,
+	case I486_RENUMBER_TEST_RM_FROM_R://   0x85,
+	case I486_RENUMBER_XOR_RM_FROM_R:
+	case I486_RENUMBER_XCHG_RM_R://        0x87,
 		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
+	// RM_R
+	case I486_RENUMBER_BT_R_RM://    0x0FA3,
+	case I486_RENUMBER_BTC_RM_R://   0x0FBB,
+	case I486_RENUMBER_BTS_RM_R://   0x0FAB,
+	case I486_RENUMBER_BTR_RM_R://   0x0FB3,
+	case I486_RENUMBER_SHLD_RM_CL://       0x0FA5,
+	case I486_RENUMBER_SHRD_RM_CL://       0x0FAD,
+		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
+		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
+		op2.DecodeMODR_MForRegister(inst.operandSize,inst.operand[0]);
+		break;
+
 
 
 
@@ -998,6 +1020,7 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 		op1.DecodeMODR_MForRegister(inst.operandSize,inst.operand[0]);
 		op2.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
+	// X_RM
 	case I486_RENUMBER_ADC_R_FROM_RM://   0x13,
 	case I486_RENUMBER_ADD_R_FROM_RM://   0x03,
 	case I486_RENUMBER_AND_R_FROM_RM://   0x23,
@@ -1010,33 +1033,6 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 	case I486_RENUMBER_MOV_TO_R: //         0x8B, // 16/32 depends on OPSIZE_OVERRIDE
 		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		op2.Decode(inst.addressSize,inst.operandSize,inst.operand);
-		break;
-
-
-
-	// RM_R
-	case I486_RENUMBER_BT_R_RM://    0x0FA3,
-	case I486_RENUMBER_BTC_RM_R://   0x0FBB,
-	case I486_RENUMBER_BTS_RM_R://   0x0FAB,
-	case I486_RENUMBER_BTR_RM_R://   0x0FB3,
-	case I486_RENUMBER_SHLD_RM_CL://       0x0FA5,
-	case I486_RENUMBER_SHRD_RM_CL://       0x0FAD,
-		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
-		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
-		op2.DecodeMODR_MForRegister(inst.operandSize,inst.operand[0]);
-		break;
-	case I486_RENUMBER_ADC_RM_FROM_R://   0x11,
-	case I486_RENUMBER_ADD_RM_FROM_R://   0x01,
-	case I486_RENUMBER_AND_RM_FROM_R://   0x21,
-	case I486_RENUMBER_CMP_RM_FROM_R://   0x39,
-	case I486_RENUMBER_OR_RM_FROM_R://   0x09,
-	case I486_RENUMBER_SBB_RM_FROM_R://   0x19,
-	case I486_RENUMBER_SUB_RM_FROM_R://   0x29,
-	case I486_RENUMBER_TEST_RM_FROM_R://   0x85,
-	case I486_RENUMBER_XOR_RM_FROM_R:
-	case I486_RENUMBER_XCHG_RM_R://        0x87,
-		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
-		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 
 
