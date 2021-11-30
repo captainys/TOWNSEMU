@@ -1041,6 +1041,28 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 
 
 
+	// X_RM8
+	case I486_RENUMBER_MOV_TO_R8: //        0x8A,
+	case I486_RENUMBER_ADC_R8_FROM_RM8:// 0x12,
+	case I486_RENUMBER_ADD_R8_FROM_RM8:// 0x02,
+	case I486_RENUMBER_AND_R8_FROM_RM8:// 0x22,
+	case I486_RENUMBER_CMP_R8_FROM_RM8:// 0x3A,
+	case I486_RENUMBER_OR_R8_FROM_RM8:// 0x0A,
+	case I486_RENUMBER_SBB_R8_FROM_RM8:// 0x1A,
+	case I486_RENUMBER_SUB_R8_FROM_RM8:// 0x2A,
+	case I486_RENUMBER_XOR_R8_FROM_RM8:
+		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
+		op2.Decode(inst.addressSize,8,inst.operand);
+		break;
+	case I486_RENUMBER_MOVSX_R_RM8://=      0x0FBE,
+	case I486_RENUMBER_MOVZX_R_RM8://=      0x0FB6,
+		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
+		op2.Decode(inst.addressSize,8,inst.operand);
+		op1.DecodeMODR_MForRegister(inst.operandSize,inst.operand[0]);
+		break;
+
+
+
 	// Yes Operand
 	case I486_RENUMBER_F6_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF6
 		offset+=FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
@@ -1427,12 +1449,6 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 
 
 
-	case I486_RENUMBER_MOVSX_R_RM8://=      0x0FBE,
-	case I486_RENUMBER_MOVZX_R_RM8://=      0x0FB6,
-		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
-		op1.DecodeMODR_MForRegister(inst.operandSize,inst.operand[0]);
-		op2.Decode(inst.addressSize,8,inst.operand);
-		break;
 	case I486_RENUMBER_MOVSX_R32_RM16://=   0x0FBF,
 	case I486_RENUMBER_MOVZX_R32_RM16://=   0x0FB7,
 		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
@@ -1486,29 +1502,6 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 		inst.operandSize=16;
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
-
-
-
-
-
-
-
-
-	case I486_RENUMBER_MOV_TO_R8: //        0x8A,
-	case I486_RENUMBER_ADC_R8_FROM_RM8:// 0x12,
-	case I486_RENUMBER_ADD_R8_FROM_RM8:// 0x02,
-	case I486_RENUMBER_AND_R8_FROM_RM8:// 0x22,
-	case I486_RENUMBER_CMP_R8_FROM_RM8:// 0x3A,
-	case I486_RENUMBER_OR_R8_FROM_RM8:// 0x0A,
-	case I486_RENUMBER_SBB_R8_FROM_RM8:// 0x1A,
-	case I486_RENUMBER_SUB_R8_FROM_RM8:// 0x2A,
-	case I486_RENUMBER_XOR_R8_FROM_RM8:
-		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
-		op2.Decode(inst.addressSize,8,inst.operand);
-		break;
-
-
-
 
 
 
