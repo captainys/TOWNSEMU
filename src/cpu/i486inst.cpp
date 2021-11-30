@@ -344,6 +344,10 @@ void i486DX::MakeOpCodeRenumberTable(void)
 	opCodeRenumberTable[I486_OPCODE_XOR_R8_FROM_RM8]=I486_RENUMBER_XOR_R8_FROM_RM8;
 	opCodeRenumberTable[I486_OPCODE_XOR_R_FROM_RM]=I486_RENUMBER_XOR_R_FROM_RM;
 
+	for(auto &i : opCodeNeedOperandTable)
+	{
+		i=0;
+	}
 
 	opCodeNeedOperandTable[I486_OPCODE_UNDEFINED_SHOOT_INT6]=I486_NEEDOPERAND_UNDEFINED_SHOOT_INT6;
 	opCodeNeedOperandTable[I486_OPCODE_AAA]=I486_NEEDOPERAND_AAA;
@@ -1106,116 +1110,116 @@ std::string i486DX::Instruction::SegmentOverrideString(int segOverridePrefix)
 template <class CPUCLASS,class FUNCCLASS>
 void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &op2,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,int offset,const Memory &mem)
 {
-	switch(opCodeRenumberTable[inst.opCode])
+	switch(opCodeNeedOperandTable[inst.opCode])
 	{
 	// No Operand
-	case I486_RENUMBER_UNDEFINED_SHOOT_INT6:
-	case I486_RENUMBER_AAA: // 0x37
-	case I486_RENUMBER_AAS:
-	case I486_RENUMBER_CBW_CWDE://        0x98,
-	case I486_RENUMBER_CWD_CDQ://         0x99,
-	case I486_RENUMBER_CLC:
-	case I486_RENUMBER_CLD:
-	case I486_RENUMBER_CLI:
-	case I486_RENUMBER_CMC://        0xF5,
-	case I486_RENUMBER_CLTS: // 0x0F06
-	case I486_RENUMBER_CMPSB://           0xA6,
-	case I486_RENUMBER_CMPS://            0xA7,
-	case I486_RENUMBER_DAA://             0x27,
-	case I486_RENUMBER_DAS://             0x2F,
-	case I486_RENUMBER_DEC_EAX:
-	case I486_RENUMBER_DEC_ECX:
-	case I486_RENUMBER_DEC_EDX:
-	case I486_RENUMBER_DEC_EBX:
-	case I486_RENUMBER_DEC_ESP:
-	case I486_RENUMBER_DEC_EBP:
-	case I486_RENUMBER_DEC_ESI:
-	case I486_RENUMBER_DEC_EDI:
-	case I486_RENUMBER_FWAIT://      0x9B,
-	case I486_RENUMBER_INSB://     0x6C,
-	case I486_RENUMBER_IN_AL_DX://=        0xEC,
-	case I486_RENUMBER_IN_A_DX://=         0xED,
-	case I486_RENUMBER_LEAVE://            0xC9,
-	case I486_RENUMBER_HLT://        0xF4,
-	case I486_RENUMBER_INC_EAX://    0x40, // 16/32 depends on OPSIZE_OVERRIDE
-	case I486_RENUMBER_INC_ECX://    0x41, // 16/32 depends on OPSIZE_OVERRIDE
-	case I486_RENUMBER_INC_EDX://    0x42, // 16/32 depends on OPSIZE_OVERRIDE
-	case I486_RENUMBER_INC_EBX://    0x43, // 16/32 depends on OPSIZE_OVERRIDE
-	case I486_RENUMBER_INC_ESP://    0x44, // 16/32 depends on OPSIZE_OVERRIDE
-	case I486_RENUMBER_INC_EBP://    0x45, // 16/32 depends on OPSIZE_OVERRIDE
-	case I486_RENUMBER_INC_ESI://    0x46, // 16/32 depends on OPSIZE_OVERRIDE
-	case I486_RENUMBER_INC_EDI://    0x47, // 16/32 depends on OPSIZE_OVERRIDE
-	case I486_RENUMBER_IRET://   0xCF,
-	case I486_RENUMBER_INT3://       0xCC,
-	case I486_RENUMBER_INTO://       0xCE,
-	case I486_RENUMBER_LAHF://=             0x9F,
-	case I486_RENUMBER_LODSB://            0xAC,
-	case I486_RENUMBER_LODS://             0xAD,
-	case I486_RENUMBER_MOVSB://            0xA4,
-	case I486_RENUMBER_MOVS://             0xA5,
-	case I486_RENUMBER_NOP://              0x90,
-	case I486_RENUMBER_OUT_DX_AL: //        0xEE,
-	case I486_RENUMBER_OUT_DX_A: //         0xEF,
-	case I486_RENUMBER_OUTSB://            0x6E,
-	case I486_RENUMBER_OUTS://             0x6F,
-	case I486_RENUMBER_PUSHA://            0x60,
-	case I486_RENUMBER_PUSHF://            0x9C,
-	case I486_RENUMBER_PUSH_EAX://         0x50,
-	case I486_RENUMBER_PUSH_ECX://         0x51,
-	case I486_RENUMBER_PUSH_EDX://         0x52,
-	case I486_RENUMBER_PUSH_EBX://         0x53,
-	case I486_RENUMBER_PUSH_ESP://         0x54,
-	case I486_RENUMBER_PUSH_EBP://         0x55,
-	case I486_RENUMBER_PUSH_ESI://         0x56,
-	case I486_RENUMBER_PUSH_EDI://         0x57,
-	case I486_RENUMBER_PUSH_CS://          0x0E,
-	case I486_RENUMBER_PUSH_SS://          0x16,
-	case I486_RENUMBER_PUSH_DS://          0x1E,
-	case I486_RENUMBER_PUSH_ES://          0x06,
-	case I486_RENUMBER_PUSH_FS://          0x0FA0,
-	case I486_RENUMBER_PUSH_GS://          0x0FA8,
-	case I486_RENUMBER_POP_EAX://          0x58,
-	case I486_RENUMBER_POP_ECX://          0x59,
-	case I486_RENUMBER_POP_EDX://          0x5A,
-	case I486_RENUMBER_POP_EBX://          0x5B,
-	case I486_RENUMBER_POP_ESP://          0x5C,
-	case I486_RENUMBER_POP_EBP://          0x5D,
-	case I486_RENUMBER_POP_ESI://          0x5E,
-	case I486_RENUMBER_POP_EDI://          0x5F,
-	case I486_RENUMBER_POP_SS://           0x17,
-	case I486_RENUMBER_POP_DS://           0x1F,
-	case I486_RENUMBER_POP_ES://           0x07,
-	case I486_RENUMBER_POP_FS://           0x0FA1,
-	case I486_RENUMBER_POP_GS://           0x0FA9,
-	case I486_RENUMBER_POPA://             0x61,
-	case I486_RENUMBER_POPF://             0x9D,
-	case I486_RENUMBER_RET://              0xC3,
-	case I486_RENUMBER_RETF://             0xCB,
-	case I486_RENUMBER_SAHF://=             0x9E,
-	case I486_RENUMBER_SCASB://            0xAE,
-	case I486_RENUMBER_SCAS://             0xAF,
-	case I486_RENUMBER_STC://              0xF9,
-	case I486_RENUMBER_STD://              0xFD,
-	case I486_RENUMBER_STI://              0xFB,
-	case I486_RENUMBER_STOSB://            0xAA,
-	case I486_RENUMBER_STOS://             0xAB,
-	case I486_RENUMBER_XCHG_EAX_ECX://     0x91,
-	case I486_RENUMBER_XCHG_EAX_EDX://     0x92,
-	case I486_RENUMBER_XCHG_EAX_EBX://     0x93,
-	case I486_RENUMBER_XCHG_EAX_ESP://     0x94,
-	case I486_RENUMBER_XCHG_EAX_EBP://     0x95,
-	case I486_RENUMBER_XCHG_EAX_ESI://     0x96,
-	case I486_RENUMBER_XCHG_EAX_EDI://     0x97,
-	case I486_RENUMBER_XLAT://             0xD7,
+	case I486_NEEDOPERAND_UNDEFINED_SHOOT_INT6:
+	case I486_NEEDOPERAND_AAA: // 0x37
+	case I486_NEEDOPERAND_AAS:
+	case I486_NEEDOPERAND_CBW_CWDE://        0x98,
+	case I486_NEEDOPERAND_CWD_CDQ://         0x99,
+	case I486_NEEDOPERAND_CLC:
+	case I486_NEEDOPERAND_CLD:
+	case I486_NEEDOPERAND_CLI:
+	case I486_NEEDOPERAND_CMC://        0xF5,
+	case I486_NEEDOPERAND_CLTS: // 0x0F06
+	case I486_NEEDOPERAND_CMPSB://           0xA6,
+	case I486_NEEDOPERAND_CMPS://            0xA7,
+	case I486_NEEDOPERAND_DAA://             0x27,
+	case I486_NEEDOPERAND_DAS://             0x2F,
+	case I486_NEEDOPERAND_DEC_EAX:
+	case I486_NEEDOPERAND_DEC_ECX:
+	case I486_NEEDOPERAND_DEC_EDX:
+	case I486_NEEDOPERAND_DEC_EBX:
+	case I486_NEEDOPERAND_DEC_ESP:
+	case I486_NEEDOPERAND_DEC_EBP:
+	case I486_NEEDOPERAND_DEC_ESI:
+	case I486_NEEDOPERAND_DEC_EDI:
+	case I486_NEEDOPERAND_FWAIT://      0x9B,
+	case I486_NEEDOPERAND_INSB://     0x6C,
+	case I486_NEEDOPERAND_IN_AL_DX://=        0xEC,
+	case I486_NEEDOPERAND_IN_A_DX://=         0xED,
+	case I486_NEEDOPERAND_LEAVE://            0xC9,
+	case I486_NEEDOPERAND_HLT://        0xF4,
+	case I486_NEEDOPERAND_INC_EAX://    0x40, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_NEEDOPERAND_INC_ECX://    0x41, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_NEEDOPERAND_INC_EDX://    0x42, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_NEEDOPERAND_INC_EBX://    0x43, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_NEEDOPERAND_INC_ESP://    0x44, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_NEEDOPERAND_INC_EBP://    0x45, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_NEEDOPERAND_INC_ESI://    0x46, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_NEEDOPERAND_INC_EDI://    0x47, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_NEEDOPERAND_IRET://   0xCF,
+	case I486_NEEDOPERAND_INT3://       0xCC,
+	case I486_NEEDOPERAND_INTO://       0xCE,
+	case I486_NEEDOPERAND_LAHF://=             0x9F,
+	case I486_NEEDOPERAND_LODSB://            0xAC,
+	case I486_NEEDOPERAND_LODS://             0xAD,
+	case I486_NEEDOPERAND_MOVSB://            0xA4,
+	case I486_NEEDOPERAND_MOVS://             0xA5,
+	case I486_NEEDOPERAND_NOP://              0x90,
+	case I486_NEEDOPERAND_OUT_DX_AL: //        0xEE,
+	case I486_NEEDOPERAND_OUT_DX_A: //         0xEF,
+	case I486_NEEDOPERAND_OUTSB://            0x6E,
+	case I486_NEEDOPERAND_OUTS://             0x6F,
+	case I486_NEEDOPERAND_PUSHA://            0x60,
+	case I486_NEEDOPERAND_PUSHF://            0x9C,
+	case I486_NEEDOPERAND_PUSH_EAX://         0x50,
+	case I486_NEEDOPERAND_PUSH_ECX://         0x51,
+	case I486_NEEDOPERAND_PUSH_EDX://         0x52,
+	case I486_NEEDOPERAND_PUSH_EBX://         0x53,
+	case I486_NEEDOPERAND_PUSH_ESP://         0x54,
+	case I486_NEEDOPERAND_PUSH_EBP://         0x55,
+	case I486_NEEDOPERAND_PUSH_ESI://         0x56,
+	case I486_NEEDOPERAND_PUSH_EDI://         0x57,
+	case I486_NEEDOPERAND_PUSH_CS://          0x0E,
+	case I486_NEEDOPERAND_PUSH_SS://          0x16,
+	case I486_NEEDOPERAND_PUSH_DS://          0x1E,
+	case I486_NEEDOPERAND_PUSH_ES://          0x06,
+	case I486_NEEDOPERAND_PUSH_FS://          0x0FA0,
+	case I486_NEEDOPERAND_PUSH_GS://          0x0FA8,
+	case I486_NEEDOPERAND_POP_EAX://          0x58,
+	case I486_NEEDOPERAND_POP_ECX://          0x59,
+	case I486_NEEDOPERAND_POP_EDX://          0x5A,
+	case I486_NEEDOPERAND_POP_EBX://          0x5B,
+	case I486_NEEDOPERAND_POP_ESP://          0x5C,
+	case I486_NEEDOPERAND_POP_EBP://          0x5D,
+	case I486_NEEDOPERAND_POP_ESI://          0x5E,
+	case I486_NEEDOPERAND_POP_EDI://          0x5F,
+	case I486_NEEDOPERAND_POP_SS://           0x17,
+	case I486_NEEDOPERAND_POP_DS://           0x1F,
+	case I486_NEEDOPERAND_POP_ES://           0x07,
+	case I486_NEEDOPERAND_POP_FS://           0x0FA1,
+	case I486_NEEDOPERAND_POP_GS://           0x0FA9,
+	case I486_NEEDOPERAND_POPA://             0x61,
+	case I486_NEEDOPERAND_POPF://             0x9D,
+	case I486_NEEDOPERAND_RET://              0xC3,
+	case I486_NEEDOPERAND_RETF://             0xCB,
+	case I486_NEEDOPERAND_SAHF://=             0x9E,
+	case I486_NEEDOPERAND_SCASB://            0xAE,
+	case I486_NEEDOPERAND_SCAS://             0xAF,
+	case I486_NEEDOPERAND_STC://              0xF9,
+	case I486_NEEDOPERAND_STD://              0xFD,
+	case I486_NEEDOPERAND_STI://              0xFB,
+	case I486_NEEDOPERAND_STOSB://            0xAA,
+	case I486_NEEDOPERAND_STOS://             0xAB,
+	case I486_NEEDOPERAND_XCHG_EAX_ECX://     0x91,
+	case I486_NEEDOPERAND_XCHG_EAX_EDX://     0x92,
+	case I486_NEEDOPERAND_XCHG_EAX_EBX://     0x93,
+	case I486_NEEDOPERAND_XCHG_EAX_ESP://     0x94,
+	case I486_NEEDOPERAND_XCHG_EAX_EBP://     0x95,
+	case I486_NEEDOPERAND_XCHG_EAX_ESI://     0x96,
+	case I486_NEEDOPERAND_XCHG_EAX_EDI://     0x97,
+	case I486_NEEDOPERAND_XLAT://             0xD7,
 		break;
 
 
 
 	// RM_IMM8
-	case I486_RENUMBER_C0_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_I8://0xC0,// ::ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
-	case I486_RENUMBER_BINARYOP_RM8_FROM_I8:
-	case I486_RENUMBER_BINARYOP_RM8_FROM_I8_ALIAS:
-	case I486_RENUMBER_MOV_I8_TO_RM8: //    0xC6,
+	case I486_NEEDOPERAND_C0_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_I8://0xC0,// ::ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
+	case I486_NEEDOPERAND_BINARYOP_RM8_FROM_I8:
+	case I486_NEEDOPERAND_BINARYOP_RM8_FROM_I8_ALIAS:
+	case I486_NEEDOPERAND_MOV_I8_TO_RM8: //    0xC6,
 		offset+=FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		FUNCCLASS::FetchImm8(cpu,inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,8,inst.operand);
@@ -1224,9 +1228,9 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 
 
 	// RM_IMM
-	case I486_RENUMBER_C1_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_I8:// 0xC1, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
-	case I486_RENUMBER_BT_BTS_BTR_BTC_RM_I8:// 0FBA
-	case I486_RENUMBER_BINARYOP_RM_FROM_SXI8:
+	case I486_NEEDOPERAND_C1_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_I8:// 0xC1, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
+	case I486_NEEDOPERAND_BT_BTS_BTR_BTC_RM_I8:// 0FBA
+	case I486_NEEDOPERAND_BINARYOP_RM_FROM_SXI8:
 		offset+=FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		FUNCCLASS::FetchImm8(cpu,inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
@@ -1235,20 +1239,20 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 
 
 	// RM8
-	case I486_RENUMBER_D0_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_1://0xD0, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
-	case I486_RENUMBER_D2_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_CL://0xD2,// ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
-	case I486_RENUMBER_INC_DEC_R_M8:
-	case I486_RENUMBER_MOV_FROM_R8: //      0x88,
-	case I486_RENUMBER_ADC_RM8_FROM_R8:// 0x10,
-	case I486_RENUMBER_ADD_RM8_FROM_R8:// 0x00,
-	case I486_RENUMBER_AND_RM8_FROM_R8:// 0x20,
-	case I486_RENUMBER_CMP_RM8_FROM_R8:// 0x38,
-	case I486_RENUMBER_OR_RM8_FROM_R8:// 0x08,
-	case I486_RENUMBER_SBB_RM8_FROM_R8:// 0x18,
-	case I486_RENUMBER_SUB_RM8_FROM_R8:// 0x28,
-	case I486_RENUMBER_TEST_RM8_FROM_R8:// 0x84,
-	case I486_RENUMBER_XOR_RM8_FROM_R8:
-	case I486_RENUMBER_XCHG_RM8_R8://      0x86,
+	case I486_NEEDOPERAND_D0_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_1://0xD0, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
+	case I486_NEEDOPERAND_D2_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_CL://0xD2,// ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
+	case I486_NEEDOPERAND_INC_DEC_R_M8:
+	case I486_NEEDOPERAND_MOV_FROM_R8: //      0x88,
+	case I486_NEEDOPERAND_ADC_RM8_FROM_R8:// 0x10,
+	case I486_NEEDOPERAND_ADD_RM8_FROM_R8:// 0x00,
+	case I486_NEEDOPERAND_AND_RM8_FROM_R8:// 0x20,
+	case I486_NEEDOPERAND_CMP_RM8_FROM_R8:// 0x38,
+	case I486_NEEDOPERAND_OR_RM8_FROM_R8:// 0x08,
+	case I486_NEEDOPERAND_SBB_RM8_FROM_R8:// 0x18,
+	case I486_NEEDOPERAND_SUB_RM8_FROM_R8:// 0x28,
+	case I486_NEEDOPERAND_TEST_RM8_FROM_R8:// 0x84,
+	case I486_NEEDOPERAND_XOR_RM8_FROM_R8:
+	case I486_NEEDOPERAND_XCHG_RM8_R8://      0x86,
 		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,8,inst.operand);
 		break;
@@ -1256,31 +1260,31 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 
 
 	// RM_X
-	case I486_RENUMBER_D1_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_1://0xD1, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
-	case I486_RENUMBER_D3_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_CL://0xD3, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
-	case I486_RENUMBER_INC_DEC_CALL_CALLF_JMP_JMPF_PUSH:
-	case I486_RENUMBER_MOV_FROM_R: //       0x89, // 16/32 depends on OPSIZE_OVERRIDE
-	case I486_RENUMBER_POP_M://            0x8F,
-	case I486_RENUMBER_ADC_RM_FROM_R://   0x11,
-	case I486_RENUMBER_ADD_RM_FROM_R://   0x01,
-	case I486_RENUMBER_AND_RM_FROM_R://   0x21,
-	case I486_RENUMBER_CMP_RM_FROM_R://   0x39,
-	case I486_RENUMBER_OR_RM_FROM_R://   0x09,
-	case I486_RENUMBER_SBB_RM_FROM_R://   0x19,
-	case I486_RENUMBER_SUB_RM_FROM_R://   0x29,
-	case I486_RENUMBER_TEST_RM_FROM_R://   0x85,
-	case I486_RENUMBER_XOR_RM_FROM_R:
-	case I486_RENUMBER_XCHG_RM_R://        0x87,
+	case I486_NEEDOPERAND_D1_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_1://0xD1, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
+	case I486_NEEDOPERAND_D3_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_CL://0xD3, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
+	case I486_NEEDOPERAND_INC_DEC_CALL_CALLF_JMP_JMPF_PUSH:
+	case I486_NEEDOPERAND_MOV_FROM_R: //       0x89, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_NEEDOPERAND_POP_M://            0x8F,
+	case I486_NEEDOPERAND_ADC_RM_FROM_R://   0x11,
+	case I486_NEEDOPERAND_ADD_RM_FROM_R://   0x01,
+	case I486_NEEDOPERAND_AND_RM_FROM_R://   0x21,
+	case I486_NEEDOPERAND_CMP_RM_FROM_R://   0x39,
+	case I486_NEEDOPERAND_OR_RM_FROM_R://   0x09,
+	case I486_NEEDOPERAND_SBB_RM_FROM_R://   0x19,
+	case I486_NEEDOPERAND_SUB_RM_FROM_R://   0x29,
+	case I486_NEEDOPERAND_TEST_RM_FROM_R://   0x85,
+	case I486_NEEDOPERAND_XOR_RM_FROM_R:
+	case I486_NEEDOPERAND_XCHG_RM_R://        0x87,
 		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 	// RM_R
-	case I486_RENUMBER_BT_R_RM://    0x0FA3,
-	case I486_RENUMBER_BTC_RM_R://   0x0FBB,
-	case I486_RENUMBER_BTS_RM_R://   0x0FAB,
-	case I486_RENUMBER_BTR_RM_R://   0x0FB3,
-	case I486_RENUMBER_SHLD_RM_CL://       0x0FA5,
-	case I486_RENUMBER_SHRD_RM_CL://       0x0FAD,
+	case I486_NEEDOPERAND_BT_R_RM://    0x0FA3,
+	case I486_NEEDOPERAND_BTC_RM_R://   0x0FBB,
+	case I486_NEEDOPERAND_BTS_RM_R://   0x0FAB,
+	case I486_NEEDOPERAND_BTR_RM_R://   0x0FB3,
+	case I486_NEEDOPERAND_SHLD_RM_CL://       0x0FA5,
+	case I486_NEEDOPERAND_SHRD_RM_CL://       0x0FAD,
 		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		op2.DecodeMODR_MForRegister(inst.operandSize,inst.operand[0]);
@@ -1290,125 +1294,125 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 
 
 	// IMM8
-	case I486_RENUMBER_AAD://    0xD5,
-	case I486_RENUMBER_AAM://    0xD4,
-	case I486_RENUMBER_IN_AL_I8://=        0xE4,
-	case I486_RENUMBER_IN_A_I8://=         0xE5,
-	case I486_RENUMBER_INT://        0xCD,
-	case I486_RENUMBER_JMP_REL8://         0xEB,   // cb
-	case I486_RENUMBER_JO_REL8:   // 0x70,
-	case I486_RENUMBER_JNO_REL8:  // 0x71,
-	case I486_RENUMBER_JB_REL8:   // 0x72,
-	case I486_RENUMBER_JAE_REL8:  // 0x73,
-	case I486_RENUMBER_JE_REL8:   // 0x74,
-	case I486_RENUMBER_JECXZ_REL8:// 0xE3,  // Depending on the operand size
-	case I486_RENUMBER_JNE_REL8:  // 0x75,
-	case I486_RENUMBER_JBE_REL8:  // 0x76,
-	case I486_RENUMBER_JA_REL8:   // 0x77,
-	case I486_RENUMBER_JS_REL8:   // 0x78,
-	case I486_RENUMBER_JNS_REL8:  // 0x79,
-	case I486_RENUMBER_JP_REL8:   // 0x7A,
-	case I486_RENUMBER_JNP_REL8:  // 0x7B,
-	case I486_RENUMBER_JL_REL8:   // 0x7C,
-	case I486_RENUMBER_JGE_REL8:  // 0x7D,
-	case I486_RENUMBER_JLE_REL8:  // 0x7E,
-	case I486_RENUMBER_JG_REL8:   // 0x7F,
-	case I486_RENUMBER_LOOP://             0xE2,
-	case I486_RENUMBER_LOOPE://            0xE1,
-	case I486_RENUMBER_LOOPNE://           0xE0,
-	case I486_RENUMBER_MOV_I8_TO_AL: //     0xB0,
-	case I486_RENUMBER_MOV_I8_TO_CL: //     0xB1,
-	case I486_RENUMBER_MOV_I8_TO_DL: //     0xB2,
-	case I486_RENUMBER_MOV_I8_TO_BL: //     0xB3,
-	case I486_RENUMBER_MOV_I8_TO_AH: //     0xB4,
-	case I486_RENUMBER_MOV_I8_TO_CH: //     0xB5,
-	case I486_RENUMBER_MOV_I8_TO_DH: //     0xB6,
-	case I486_RENUMBER_MOV_I8_TO_BH: //     0xB7,
-	case I486_RENUMBER_OUT_I8_AL: //        0xE6,
-	case I486_RENUMBER_OUT_I8_A: //         0xE7,
-	case I486_RENUMBER_PUSH_I8://          0x6A,
-	case I486_RENUMBER_ADC_AL_FROM_I8://  0x14,
-	case I486_RENUMBER_ADD_AL_FROM_I8://  0x04,
-	case I486_RENUMBER_AND_AL_FROM_I8://  0x24,
-	case I486_RENUMBER_CMP_AL_FROM_I8://  0x3C,
-	case I486_RENUMBER_OR_AL_FROM_I8://  0x0C,
-	case I486_RENUMBER_SBB_AL_FROM_I8://  0x1C,
-	case I486_RENUMBER_SUB_AL_FROM_I8://  0x2C,
-	case I486_RENUMBER_TEST_AL_FROM_I8://  0xA8,
-	case I486_RENUMBER_XOR_AL_FROM_I8:
+	case I486_NEEDOPERAND_AAD://    0xD5,
+	case I486_NEEDOPERAND_AAM://    0xD4,
+	case I486_NEEDOPERAND_IN_AL_I8://=        0xE4,
+	case I486_NEEDOPERAND_IN_A_I8://=         0xE5,
+	case I486_NEEDOPERAND_INT://        0xCD,
+	case I486_NEEDOPERAND_JMP_REL8://         0xEB,   // cb
+	case I486_NEEDOPERAND_JO_REL8:   // 0x70,
+	case I486_NEEDOPERAND_JNO_REL8:  // 0x71,
+	case I486_NEEDOPERAND_JB_REL8:   // 0x72,
+	case I486_NEEDOPERAND_JAE_REL8:  // 0x73,
+	case I486_NEEDOPERAND_JE_REL8:   // 0x74,
+	case I486_NEEDOPERAND_JECXZ_REL8:// 0xE3,  // Depending on the operand size
+	case I486_NEEDOPERAND_JNE_REL8:  // 0x75,
+	case I486_NEEDOPERAND_JBE_REL8:  // 0x76,
+	case I486_NEEDOPERAND_JA_REL8:   // 0x77,
+	case I486_NEEDOPERAND_JS_REL8:   // 0x78,
+	case I486_NEEDOPERAND_JNS_REL8:  // 0x79,
+	case I486_NEEDOPERAND_JP_REL8:   // 0x7A,
+	case I486_NEEDOPERAND_JNP_REL8:  // 0x7B,
+	case I486_NEEDOPERAND_JL_REL8:   // 0x7C,
+	case I486_NEEDOPERAND_JGE_REL8:  // 0x7D,
+	case I486_NEEDOPERAND_JLE_REL8:  // 0x7E,
+	case I486_NEEDOPERAND_JG_REL8:   // 0x7F,
+	case I486_NEEDOPERAND_LOOP://             0xE2,
+	case I486_NEEDOPERAND_LOOPE://            0xE1,
+	case I486_NEEDOPERAND_LOOPNE://           0xE0,
+	case I486_NEEDOPERAND_MOV_I8_TO_AL: //     0xB0,
+	case I486_NEEDOPERAND_MOV_I8_TO_CL: //     0xB1,
+	case I486_NEEDOPERAND_MOV_I8_TO_DL: //     0xB2,
+	case I486_NEEDOPERAND_MOV_I8_TO_BL: //     0xB3,
+	case I486_NEEDOPERAND_MOV_I8_TO_AH: //     0xB4,
+	case I486_NEEDOPERAND_MOV_I8_TO_CH: //     0xB5,
+	case I486_NEEDOPERAND_MOV_I8_TO_DH: //     0xB6,
+	case I486_NEEDOPERAND_MOV_I8_TO_BH: //     0xB7,
+	case I486_NEEDOPERAND_OUT_I8_AL: //        0xE6,
+	case I486_NEEDOPERAND_OUT_I8_A: //         0xE7,
+	case I486_NEEDOPERAND_PUSH_I8://          0x6A,
+	case I486_NEEDOPERAND_ADC_AL_FROM_I8://  0x14,
+	case I486_NEEDOPERAND_ADD_AL_FROM_I8://  0x04,
+	case I486_NEEDOPERAND_AND_AL_FROM_I8://  0x24,
+	case I486_NEEDOPERAND_CMP_AL_FROM_I8://  0x3C,
+	case I486_NEEDOPERAND_OR_AL_FROM_I8://  0x0C,
+	case I486_NEEDOPERAND_SBB_AL_FROM_I8://  0x1C,
+	case I486_NEEDOPERAND_SUB_AL_FROM_I8://  0x2C,
+	case I486_NEEDOPERAND_TEST_AL_FROM_I8://  0xA8,
+	case I486_NEEDOPERAND_XOR_AL_FROM_I8:
 		FUNCCLASS::FetchImm8(cpu,inst,ptr,seg,offset,mem);
 		break;
 
 
 	// IMM
-	case I486_RENUMBER_JA_REL://    0x0F87,
-	case I486_RENUMBER_JAE_REL://   0x0F83,
-	case I486_RENUMBER_JB_REL://    0x0F82,
-	case I486_RENUMBER_JBE_REL://   0x0F86,
-	case I486_RENUMBER_JE_REL://    0x0F84,
-	case I486_RENUMBER_JG_REL://    0x0F8F,
-	case I486_RENUMBER_JGE_REL://   0x0F8D,
-	case I486_RENUMBER_JL_REL://    0x0F8C,
-	case I486_RENUMBER_JLE_REL://   0x0F8E,
-	case I486_RENUMBER_JNE_REL://   0x0F85,
-	case I486_RENUMBER_JNO_REL://   0x0F81,
-	case I486_RENUMBER_JNP_REL://   0x0F8B,
-	case I486_RENUMBER_JNS_REL://   0x0F89,
-	case I486_RENUMBER_JO_REL://    0x0F80,
-	case I486_RENUMBER_JP_REL://    0x0F8A,
-	case I486_RENUMBER_JS_REL://    0x0F88,
-	case I486_RENUMBER_CALL_REL://   0xE8,
-	case I486_RENUMBER_JMP_REL://          0xE9,   // cw or cd
-	case I486_RENUMBER_MOV_I_TO_EAX: //   0xB8, // 16/32 depends on OPSIZE_OVERRIDE
-	case I486_RENUMBER_MOV_I_TO_ECX: //   0xB9, // 16/32 depends on OPSIZE_OVERRIDE
-	case I486_RENUMBER_MOV_I_TO_EDX: //   0xBA, // 16/32 depends on OPSIZE_OVERRIDE
-	case I486_RENUMBER_MOV_I_TO_EBX: //   0xBB, // 16/32 depends on OPSIZE_OVERRIDE
-	case I486_RENUMBER_MOV_I_TO_ESP: //   0xBC, // 16/32 depends on OPSIZE_OVERRIDE
-	case I486_RENUMBER_MOV_I_TO_EBP: //   0xBD, // 16/32 depends on OPSIZE_OVERRIDE
-	case I486_RENUMBER_MOV_I_TO_ESI: //   0xBE, // 16/32 depends on OPSIZE_OVERRIDE
-	case I486_RENUMBER_MOV_I_TO_EDI: //   0xBF, // 16/32 depends on OPSIZE_OVERRIDE
-	case I486_RENUMBER_PUSH_I://           0x68,
-	case I486_RENUMBER_ADC_A_FROM_I://    0x15,
-	case I486_RENUMBER_ADD_A_FROM_I://    0x05,
-	case I486_RENUMBER_AND_A_FROM_I://    0x25,
-	case I486_RENUMBER_CMP_A_FROM_I://    0x3D,
-	case I486_RENUMBER_OR_A_FROM_I://    0x0D,
-	case I486_RENUMBER_SBB_A_FROM_I://    0x1D,
-	case I486_RENUMBER_SUB_A_FROM_I://    0x2D,
-	case I486_RENUMBER_TEST_A_FROM_I://    0xA9,
-	case I486_RENUMBER_XOR_A_FROM_I:
+	case I486_NEEDOPERAND_JA_REL://    0x0F87,
+	case I486_NEEDOPERAND_JAE_REL://   0x0F83,
+	case I486_NEEDOPERAND_JB_REL://    0x0F82,
+	case I486_NEEDOPERAND_JBE_REL://   0x0F86,
+	case I486_NEEDOPERAND_JE_REL://    0x0F84,
+	case I486_NEEDOPERAND_JG_REL://    0x0F8F,
+	case I486_NEEDOPERAND_JGE_REL://   0x0F8D,
+	case I486_NEEDOPERAND_JL_REL://    0x0F8C,
+	case I486_NEEDOPERAND_JLE_REL://   0x0F8E,
+	case I486_NEEDOPERAND_JNE_REL://   0x0F85,
+	case I486_NEEDOPERAND_JNO_REL://   0x0F81,
+	case I486_NEEDOPERAND_JNP_REL://   0x0F8B,
+	case I486_NEEDOPERAND_JNS_REL://   0x0F89,
+	case I486_NEEDOPERAND_JO_REL://    0x0F80,
+	case I486_NEEDOPERAND_JP_REL://    0x0F8A,
+	case I486_NEEDOPERAND_JS_REL://    0x0F88,
+	case I486_NEEDOPERAND_CALL_REL://   0xE8,
+	case I486_NEEDOPERAND_JMP_REL://          0xE9,   // cw or cd
+	case I486_NEEDOPERAND_MOV_I_TO_EAX: //   0xB8, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_NEEDOPERAND_MOV_I_TO_ECX: //   0xB9, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_NEEDOPERAND_MOV_I_TO_EDX: //   0xBA, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_NEEDOPERAND_MOV_I_TO_EBX: //   0xBB, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_NEEDOPERAND_MOV_I_TO_ESP: //   0xBC, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_NEEDOPERAND_MOV_I_TO_EBP: //   0xBD, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_NEEDOPERAND_MOV_I_TO_ESI: //   0xBE, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_NEEDOPERAND_MOV_I_TO_EDI: //   0xBF, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_NEEDOPERAND_PUSH_I://           0x68,
+	case I486_NEEDOPERAND_ADC_A_FROM_I://    0x15,
+	case I486_NEEDOPERAND_ADD_A_FROM_I://    0x05,
+	case I486_NEEDOPERAND_AND_A_FROM_I://    0x25,
+	case I486_NEEDOPERAND_CMP_A_FROM_I://    0x3D,
+	case I486_NEEDOPERAND_OR_A_FROM_I://    0x0D,
+	case I486_NEEDOPERAND_SBB_A_FROM_I://    0x1D,
+	case I486_NEEDOPERAND_SUB_A_FROM_I://    0x2D,
+	case I486_NEEDOPERAND_TEST_A_FROM_I://    0xA9,
+	case I486_NEEDOPERAND_XOR_A_FROM_I:
 		FUNCCLASS::FetchImm16or32(cpu,inst,ptr,seg,offset,mem);
 		break;
 
 
 
 	// R_RM
-	case I486_RENUMBER_BSF_R_RM://   0x0FBC,
-	case I486_RENUMBER_BSR_R_RM://   0x0FBD,
-	case I486_RENUMBER_LAR:
-	case I486_RENUMBER_IMUL_R_RM://       0x0FAF,
-	case I486_RENUMBER_LEA://=              0x8D,
-	case I486_RENUMBER_LSL://              0x0F03,
+	case I486_NEEDOPERAND_BSF_R_RM://   0x0FBC,
+	case I486_NEEDOPERAND_BSR_R_RM://   0x0FBD,
+	case I486_NEEDOPERAND_LAR:
+	case I486_NEEDOPERAND_IMUL_R_RM://       0x0FAF,
+	case I486_NEEDOPERAND_LEA://=              0x8D,
+	case I486_NEEDOPERAND_LSL://              0x0F03,
 		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		op1.DecodeMODR_MForRegister(inst.operandSize,inst.operand[0]);
 		op2.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 	// X_RM
-	case I486_RENUMBER_ADC_R_FROM_RM://   0x13,
-	case I486_RENUMBER_ADD_R_FROM_RM://   0x03,
-	case I486_RENUMBER_AND_R_FROM_RM://   0x23,
-	case I486_RENUMBER_CMP_R_FROM_RM://   0x3B,
-	case I486_RENUMBER_OR_R_FROM_RM://   0x0B,
-	case I486_RENUMBER_SBB_R_FROM_RM://   0x1B,
-	case I486_RENUMBER_SUB_R_FROM_RM://   0x2B,
-	case I486_RENUMBER_XOR_R_FROM_RM:
-	case I486_RENUMBER_BOUND: // 0x62
-	case I486_RENUMBER_MOV_TO_R: //         0x8B, // 16/32 depends on OPSIZE_OVERRIDE
-	case I486_RENUMBER_LDS://              0xC5,
-	case I486_RENUMBER_LSS://              0x0FB2,
-	case I486_RENUMBER_LES://              0xC4,
-	case I486_RENUMBER_LFS://              0x0FB4,
-	case I486_RENUMBER_LGS://              0x0FB5,
+	case I486_NEEDOPERAND_ADC_R_FROM_RM://   0x13,
+	case I486_NEEDOPERAND_ADD_R_FROM_RM://   0x03,
+	case I486_NEEDOPERAND_AND_R_FROM_RM://   0x23,
+	case I486_NEEDOPERAND_CMP_R_FROM_RM://   0x3B,
+	case I486_NEEDOPERAND_OR_R_FROM_RM://   0x0B,
+	case I486_NEEDOPERAND_SBB_R_FROM_RM://   0x1B,
+	case I486_NEEDOPERAND_SUB_R_FROM_RM://   0x2B,
+	case I486_NEEDOPERAND_XOR_R_FROM_RM:
+	case I486_NEEDOPERAND_BOUND: // 0x62
+	case I486_NEEDOPERAND_MOV_TO_R: //         0x8B, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_NEEDOPERAND_LDS://              0xC5,
+	case I486_NEEDOPERAND_LSS://              0x0FB2,
+	case I486_NEEDOPERAND_LES://              0xC4,
+	case I486_NEEDOPERAND_LFS://              0x0FB4,
+	case I486_NEEDOPERAND_LGS://              0x0FB5,
 		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		op2.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
@@ -1416,17 +1420,17 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 
 
 	// X_RM8
-	case I486_RENUMBER_MOV_TO_R8: //        0x8A,
-	case I486_RENUMBER_ADC_R8_FROM_RM8:// 0x12,
-	case I486_RENUMBER_ADD_R8_FROM_RM8:// 0x02,
-	case I486_RENUMBER_AND_R8_FROM_RM8:// 0x22,
-	case I486_RENUMBER_CMP_R8_FROM_RM8:// 0x3A,
-	case I486_RENUMBER_OR_R8_FROM_RM8:// 0x0A,
-	case I486_RENUMBER_SBB_R8_FROM_RM8:// 0x1A,
-	case I486_RENUMBER_SUB_R8_FROM_RM8:// 0x2A,
-	case I486_RENUMBER_XOR_R8_FROM_RM8:
-	case I486_RENUMBER_MOVSX_R_RM8://=      0x0FBE,
-	case I486_RENUMBER_MOVZX_R_RM8://=      0x0FB6,
+	case I486_NEEDOPERAND_MOV_TO_R8: //        0x8A,
+	case I486_NEEDOPERAND_ADC_R8_FROM_RM8:// 0x12,
+	case I486_NEEDOPERAND_ADD_R8_FROM_RM8:// 0x02,
+	case I486_NEEDOPERAND_AND_R8_FROM_RM8:// 0x22,
+	case I486_NEEDOPERAND_CMP_R8_FROM_RM8:// 0x3A,
+	case I486_NEEDOPERAND_OR_R8_FROM_RM8:// 0x0A,
+	case I486_NEEDOPERAND_SBB_R8_FROM_RM8:// 0x1A,
+	case I486_NEEDOPERAND_SUB_R8_FROM_RM8:// 0x2A,
+	case I486_NEEDOPERAND_XOR_R8_FROM_RM8:
+	case I486_NEEDOPERAND_MOVSX_R_RM8://=      0x0FBE,
+	case I486_NEEDOPERAND_MOVZX_R_RM8://=      0x0FB6,
 		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		op2.Decode(inst.addressSize,8,inst.operand);
 		break;
@@ -1434,7 +1438,7 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 
 
 	// Yes Operand
-	case I486_RENUMBER_F6_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF6
+	case I486_NEEDOPERAND_F6_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF6
 		offset+=FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		if(0==inst.GetREG()) // TEST RM8,I8
 		{
@@ -1443,7 +1447,7 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 		inst.operandSize=8;
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
-	case I486_RENUMBER_F7_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF7,
+	case I486_NEEDOPERAND_F7_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF7,
 		offset+=FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		if(0==inst.GetREG()) // TEST RM8,I8
 		{
@@ -1454,7 +1458,7 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 
 
 
-	case I486_RENUMBER_ARPL://       0x63,
+	case I486_NEEDOPERAND_ARPL://       0x63,
 		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		inst.operandSize=16;
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
@@ -1465,8 +1469,8 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 
 
 
-	case I486_RENUMBER_CALL_FAR://   0x9A,
-	case I486_RENUMBER_JMP_FAR:
+	case I486_NEEDOPERAND_CALL_FAR://   0x9A,
+	case I486_NEEDOPERAND_JMP_FAR:
 		offset+=FUNCCLASS::FetchOperand16or32(cpu,inst,ptr,seg,offset,mem);
 		FUNCCLASS::FetchOperand16(cpu,inst,ptr,seg,offset,mem);
 		op1.DecodeFarAddr(inst.addressSize,inst.operandSize,inst.operand);
@@ -1474,14 +1478,14 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 
 
 
-	case I486_RENUMBER_ENTER://      0xC8,
+	case I486_NEEDOPERAND_ENTER://      0xC8,
 		FUNCCLASS::FetchOperand16(cpu,inst,ptr,seg,offset,mem);
 		offset+=2;
 		FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset,mem);
 		break;
 
 
-	case I486_RENUMBER_FPU_D8: // 0xD8
+	case I486_NEEDOPERAND_FPU_D8: // 0xD8
 		{
 			unsigned int MODR_M;
 			FUNCCLASS::PeekOperand8(cpu,MODR_M,inst,ptr,seg,offset,mem);
@@ -1496,7 +1500,7 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 			}
 		}
 		break;
-	case I486_RENUMBER_FPU_D9:// 0xD9,
+	case I486_NEEDOPERAND_FPU_D9:// 0xD9,
 		{
 			unsigned int MODR_M;
 			FUNCCLASS::PeekOperand8(cpu,MODR_M,inst,ptr,seg,offset,mem);
@@ -1517,7 +1521,7 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 			}
 		}
 		break;
-	case I486_RENUMBER_FPU_DA:
+	case I486_NEEDOPERAND_FPU_DA:
 		{
 			unsigned int MODR_M;
 			FUNCCLASS::PeekOperand8(cpu,MODR_M,inst,ptr,seg,offset,mem);
@@ -1532,7 +1536,7 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 			}
 		}
 		break;
-	case I486_RENUMBER_FPU_DB://     0xDB, 
+	case I486_NEEDOPERAND_FPU_DB://     0xDB, 
 		{
 			unsigned int MODR_M;
 			FUNCCLASS::PeekOperand8(cpu,MODR_M,inst,ptr,seg,offset,mem);
@@ -1563,7 +1567,7 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 			}
 		}
 		break;
-	case I486_RENUMBER_FPU_DC:
+	case I486_NEEDOPERAND_FPU_DC:
 		{
 			unsigned int MODR_M;
 			FUNCCLASS::PeekOperand8(cpu,MODR_M,inst,ptr,seg,offset,mem);
@@ -1580,7 +1584,7 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 			}
 		}
 		break;
-	case I486_RENUMBER_FPU_DD:
+	case I486_NEEDOPERAND_FPU_DD:
 		{
 			unsigned int MODR_M;
 			FUNCCLASS::PeekOperand8(cpu,MODR_M,inst,ptr,seg,offset,mem);
@@ -1621,7 +1625,7 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 		}
 		break;
 
-	case I486_RENUMBER_FPU_DE:
+	case I486_NEEDOPERAND_FPU_DE:
 		{
 			unsigned int MODR_M;
 			FUNCCLASS::PeekOperand8(cpu,MODR_M,inst,ptr,seg,offset,mem);
@@ -1646,7 +1650,7 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 		}
 		break;
 
-	case I486_RENUMBER_FPU_DF://  0xDF,
+	case I486_NEEDOPERAND_FPU_DF://  0xDF,
 		{
 			unsigned int MODR_M;
 			FUNCCLASS::PeekOperand8(cpu,MODR_M,inst,ptr,seg,offset,mem);
@@ -1680,13 +1684,13 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 
 
 
-	case I486_RENUMBER_IMUL_R_RM_I8://0x6B,
+	case I486_NEEDOPERAND_IMUL_R_RM_I8://0x6B,
 		offset+=FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		FUNCCLASS::FetchImm8(cpu,inst,ptr,seg,offset,mem);
 		op1.DecodeMODR_MForRegister(inst.operandSize,inst.operand[0]);
 		op2.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
-	case I486_RENUMBER_IMUL_R_RM_IMM://0x69,
+	case I486_NEEDOPERAND_IMUL_R_RM_IMM://0x69,
 		offset+=FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		if(16==inst.operandSize)
 		{
@@ -1702,15 +1706,15 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 
 
 
-	case I486_RENUMBER_BINARYOP_R_FROM_I:
-	case I486_RENUMBER_MOV_I_TO_RM: //      0xC7, // 16/32 depends on OPSIZE_OVERRIDE
+	case I486_NEEDOPERAND_BINARYOP_R_FROM_I:
+	case I486_NEEDOPERAND_MOV_I_TO_RM: //      0xC7, // 16/32 depends on OPSIZE_OVERRIDE
 		offset+=FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		FUNCCLASS::FetchImm16or32(cpu,inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 
 
-	case I486_RENUMBER_LGDT_LIDT_SGDT_SIDT:
+	case I486_NEEDOPERAND_LGDT_LIDT_SGDT_SIDT:
 		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		if(4==inst.GetREG() || 6==inst.GetREG())
 		{
@@ -1721,7 +1725,7 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 
 
 
-	case I486_RENUMBER_MOV_FROM_SEG: //     0x8C,
+	case I486_NEEDOPERAND_MOV_FROM_SEG: //     0x8C,
 		// Example:  8c c6           MOV SI,ES
 		// Sreg: ES=0, CS=1, SS=2, DS=3, FD=4, GS=5 (OPCODE part of MODR_M)  [1] pp.26-10
 		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
@@ -1735,17 +1739,17 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		op2.DecodeMODR_MForSegmentRegister(inst.operand[0]);
 		break;
-	case I486_RENUMBER_MOV_TO_SEG: //       0x8E,
+	case I486_NEEDOPERAND_MOV_TO_SEG: //       0x8E,
 		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		inst.operandSize=16; // Force it to be 16-bit
 		op2.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		op1.DecodeMODR_MForSegmentRegister(inst.operand[0]);
 		break;
 
-	case I486_RENUMBER_MOV_M_TO_AL: //      0xA0, // 16/32 depends on ADDRESSSIZE_OVERRIDE
-	case I486_RENUMBER_MOV_M_TO_EAX: //     0xA1, // 16/32 depends on ADDRESSSIZE_OVERRIDE
-	case I486_RENUMBER_MOV_M_FROM_AL: //    0xA2, // 16/32 depends on ADDRESSSIZE_OVERRIDE
-	case I486_RENUMBER_MOV_M_FROM_EAX: //   0xA3, // 16/32 depends on ADDRESSSIZE_OVERRIDE
+	case I486_NEEDOPERAND_MOV_M_TO_AL: //      0xA0, // 16/32 depends on ADDRESSSIZE_OVERRIDE
+	case I486_NEEDOPERAND_MOV_M_TO_EAX: //     0xA1, // 16/32 depends on ADDRESSSIZE_OVERRIDE
+	case I486_NEEDOPERAND_MOV_M_FROM_AL: //    0xA2, // 16/32 depends on ADDRESSSIZE_OVERRIDE
+	case I486_NEEDOPERAND_MOV_M_FROM_EAX: //   0xA3, // 16/32 depends on ADDRESSSIZE_OVERRIDE
 		switch(inst.addressSize)
 		{
 		default:
@@ -1759,42 +1763,42 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 
 
 
-	case I486_RENUMBER_MOV_TO_CR://        0x0F22,
+	case I486_NEEDOPERAND_MOV_TO_CR://        0x0F22,
 		inst.operandSize=32; // [1] pp.26-213 32bit operands are always used with these instructions, 
 		                     //      regardless of the opreand-size attribute.
 		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		op1.DecodeMODR_MForCRRegister(inst.operand[0]);
 		op2.Decode(inst.addressSize,32,inst.operand);
 		break;
-	case I486_RENUMBER_MOV_TO_DR://        0x0F23,
+	case I486_NEEDOPERAND_MOV_TO_DR://        0x0F23,
 		inst.operandSize=32; // [1] pp.26-213 32bit operands are always used with these instructions, 
 		                     //      regardless of the opreand-size attribute.
 		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		op1.DecodeMODR_MForDRRegister(inst.operand[0]);
 		op2.Decode(inst.addressSize,32,inst.operand);
 		break;
-	case I486_RENUMBER_MOV_TO_TR://        0x0F26,
+	case I486_NEEDOPERAND_MOV_TO_TR://        0x0F26,
 		inst.operandSize=32; // [1] pp.26-213 32bit operands are always used with these instructions, 
 		                     //      regardless of the opreand-size attribute.
 		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		op1.DecodeMODR_MForTestRegister(inst.operand[0]);
 		op2.Decode(inst.addressSize,32,inst.operand);
 		break;
-	case I486_RENUMBER_MOV_FROM_CR://      0x0F20,
+	case I486_NEEDOPERAND_MOV_FROM_CR://      0x0F20,
 		inst.operandSize=32; // [1] pp.26-213 32bit operands are always used with these instructions, 
 		                     //      regardless of the opreand-size attribute.
 		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,32,inst.operand);
 		op2.DecodeMODR_MForCRRegister(inst.operand[0]);
 		break;
-	case I486_RENUMBER_MOV_FROM_DR://      0x0F21,
+	case I486_NEEDOPERAND_MOV_FROM_DR://      0x0F21,
 		inst.operandSize=32; // [1] pp.26-213 32bit operands are always used with these instructions, 
 		                     //      regardless of the opreand-size attribute.
 		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,32,inst.operand);
 		op2.DecodeMODR_MForDRRegister(inst.operand[0]);
 		break;
-	case I486_RENUMBER_MOV_FROM_TR://      0x0F24,
+	case I486_NEEDOPERAND_MOV_FROM_TR://      0x0F24,
 		inst.operandSize=32; // [1] pp.26-213 32bit operands are always used with these instructions, 
 		                     //      regardless of the opreand-size attribute.
 		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
@@ -1805,8 +1809,8 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 
 
 
-	case I486_RENUMBER_MOVSX_R32_RM16://=   0x0FBF,
-	case I486_RENUMBER_MOVZX_R32_RM16://=   0x0FB7,
+	case I486_NEEDOPERAND_MOVSX_R32_RM16://=   0x0FBF,
+	case I486_NEEDOPERAND_MOVZX_R32_RM16://=   0x0FB7,
 		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		op1.DecodeMODR_MForRegister(32,inst.operand[0]);
 		op2.Decode(inst.addressSize,16,inst.operand);
@@ -1814,15 +1818,15 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 
 
 
-	case I486_RENUMBER_RET_I16://          0xC2,
-	case I486_RENUMBER_RETF_I16://         0xCA,
+	case I486_NEEDOPERAND_RET_I16://          0xC2,
+	case I486_NEEDOPERAND_RETF_I16://         0xCA,
 		FUNCCLASS::FetchImm16(cpu,inst,ptr,seg,offset,mem);
 		break;
 
 
 
-	case I486_RENUMBER_SHLD_RM_I8://       0x0FA4,
-	case I486_RENUMBER_SHRD_RM_I8://       0x0FAC,
+	case I486_NEEDOPERAND_SHLD_RM_I8://       0x0FA4,
+	case I486_NEEDOPERAND_SHRD_RM_I8://       0x0FAC,
 		offset+=FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		FUNCCLASS::FetchImm8(cpu,inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
@@ -1831,29 +1835,29 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 
 
 
-	case I486_RENUMBER_SETA://             0x0F97,
-	case I486_RENUMBER_SETAE://            0x0F93,
-	case I486_RENUMBER_SETB://             0x0F92,
-	case I486_RENUMBER_SETBE://            0x0F96,
-	case I486_RENUMBER_SETE://             0x0F94,
-	case I486_RENUMBER_SETG://             0x0F9F,
-	case I486_RENUMBER_SETGE://            0x0F9D,
-	case I486_RENUMBER_SETL://             0x0F9C,
-	case I486_RENUMBER_SETLE://            0x0F9E,
-	case I486_RENUMBER_SETNE://            0x0F95,
-	case I486_RENUMBER_SETNO://            0x0F91,
-	case I486_RENUMBER_SETNP://            0x0F9B,
-	case I486_RENUMBER_SETNS://            0x0F99,
-	case I486_RENUMBER_SETO://             0x0F90,
-	case I486_RENUMBER_SETP://             0x0F9A,
-	case I486_RENUMBER_SETS://             0x0F98,
+	case I486_NEEDOPERAND_SETA://             0x0F97,
+	case I486_NEEDOPERAND_SETAE://            0x0F93,
+	case I486_NEEDOPERAND_SETB://             0x0F92,
+	case I486_NEEDOPERAND_SETBE://            0x0F96,
+	case I486_NEEDOPERAND_SETE://             0x0F94,
+	case I486_NEEDOPERAND_SETG://             0x0F9F,
+	case I486_NEEDOPERAND_SETGE://            0x0F9D,
+	case I486_NEEDOPERAND_SETL://             0x0F9C,
+	case I486_NEEDOPERAND_SETLE://            0x0F9E,
+	case I486_NEEDOPERAND_SETNE://            0x0F95,
+	case I486_NEEDOPERAND_SETNO://            0x0F91,
+	case I486_NEEDOPERAND_SETNP://            0x0F9B,
+	case I486_NEEDOPERAND_SETNS://            0x0F99,
+	case I486_NEEDOPERAND_SETO://             0x0F90,
+	case I486_NEEDOPERAND_SETP://             0x0F9A,
+	case I486_NEEDOPERAND_SETS://             0x0F98,
 		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		inst.operandSize=8;
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 
 
-	case I486_RENUMBER_SLDT_STR_LLDT_LTR_VERR_VERW://             0x0F00,
+	case I486_NEEDOPERAND_SLDT_STR_LLDT_LTR_VERR_VERW://             0x0F00,
 		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		inst.operandSize=16;
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
