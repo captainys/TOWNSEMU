@@ -26,7 +26,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 
 /*static*/ unsigned short i486DX::opCodeRenumberTable[I486_OPCODE_MAX+1];
-/*static*/ unsigned short i486DX::opCodeNeedOperandTable[I486_OPCODE_MAX+1];
+/*static*/ unsigned char i486DX::opCodeNeedOperandTable[I486_OPCODE_MAX+1];
 
 void i486DX::MakeOpCodeRenumberTable(void)
 {
