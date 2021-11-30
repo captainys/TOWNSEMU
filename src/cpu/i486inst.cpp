@@ -742,6 +742,7 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 	case I486_RENUMBER_CLI:
 	case I486_RENUMBER_CMC://        0xF5,
 	case I486_RENUMBER_CLTS: // 0x0F06
+	case I486_RENUMBER_CMPSB://           0xA6,
 	case I486_RENUMBER_CMPS://            0xA7,
 	case I486_RENUMBER_DAA://             0x27,
 	case I486_RENUMBER_DAS://             0x2F,
@@ -1093,16 +1094,6 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 		FUNCCLASS::FetchOperand16(cpu,inst,ptr,seg,offset,mem);
 		op1.DecodeFarAddr(inst.addressSize,inst.operandSize,inst.operand);
 		break;
-
-
-
-
-	case I486_RENUMBER_CMPSB://           0xA6,
-		inst.operandSize=8;
-		break;
-
-
-
 
 
 
@@ -5532,6 +5523,34 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 
 	case I486_RENUMBER_CMPSB://           0xA6,
+		{
+			auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
+			for(int ctr=0;
+			    ctr<MAX_REP_BUNDLE_COUNT &&
+			    true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize);
+			    ++ctr)
+			{
+				auto data1=FetchByte(inst.addressSize,seg,state.ESI(),mem);
+				auto data2=FetchByte(inst.addressSize,state.ES(),state.EDI(),mem);
+				if(true!=state.exception)
+				{
+					SubByte(data1,data2);
+					UpdateESIandEDIAfterStringOp(inst.addressSize,8);
+					clocksPassed+=8;
+					if(true==REPEorNECheck(clocksPassed,inst.instPrefix,inst.addressSize))
+					{
+						EIPIncrement=0;
+					}
+					else
+					{
+						EIPIncrement=inst.numBytes;
+						break;
+					}
+				}
+			}
+		}
+		break;
+
 	case I486_RENUMBER_CMPS://            0xA7,
 		{
 			auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
@@ -5540,11 +5559,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			    true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize);
 			    ++ctr)
 			{
-				auto data1=FetchByteWordOrDword(inst.operandSize,inst.addressSize,seg,state.ESI(),mem);
-				auto data2=FetchByteWordOrDword(inst.operandSize,inst.addressSize,state.ES(),state.EDI(),mem);
+				auto data1=FetchWordOrDword(inst.operandSize,inst.addressSize,seg,state.ESI(),mem);
+				auto data2=FetchWordOrDword(inst.operandSize,inst.addressSize,state.ES(),state.EDI(),mem);
 				if(true!=state.exception)
 				{
-					SubByteWordOrDword(inst.operandSize,data1,data2);
+					SubWordOrDword(inst.operandSize,data1,data2);
 					UpdateESIandEDIAfterStringOp(inst.addressSize,inst.operandSize);
 					clocksPassed+=8;
 					if(true==REPEorNECheck(clocksPassed,inst.instPrefix,inst.addressSize))
