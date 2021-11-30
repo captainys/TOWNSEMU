@@ -1051,14 +1051,10 @@ void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &
 	case I486_RENUMBER_SBB_R8_FROM_RM8:// 0x1A,
 	case I486_RENUMBER_SUB_R8_FROM_RM8:// 0x2A,
 	case I486_RENUMBER_XOR_R8_FROM_RM8:
-		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
-		op2.Decode(inst.addressSize,8,inst.operand);
-		break;
 	case I486_RENUMBER_MOVSX_R_RM8://=      0x0FBE,
 	case I486_RENUMBER_MOVZX_R_RM8://=      0x0FB6,
 		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		op2.Decode(inst.addressSize,8,inst.operand);
-		op1.DecodeMODR_MForRegister(inst.operandSize,inst.operand[0]);
 		break;
 
 
@@ -3266,6 +3262,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 
 	case I486_OPCODE_MOVSX_R_RM8://=      0x0FBE,
 	case I486_OPCODE_MOVZX_R_RM8://=      0x0FB6,
+		op1.DecodeMODR_MForRegister(operandSize,operand[0]);
 		disasm=(I486_OPCODE_MOVZX_R_RM8==opCode ? "MOVZX" : "MOVSX");
 		cpputil::ExtendString(disasm,8);
 		disasm+=op1.Disassemble();
@@ -7843,7 +7840,18 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					value.byteData[2]=0xff;
 					value.byteData[3]=0xff;
 				}
-				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+
+				// op1 is a register.
+				auto regNum=inst.GetREG(); // Guaranteed to be between 0 and 7
+				if(32==inst.operandSize)
+				{
+					state.reg32()[regNum]=value.GetAsDword();
+				}
+				else // if(16==operandSize)
+				{
+					state.reg32()[regNum]&=0xffff0000;
+					state.reg32()[regNum]|=(unsigned int)(value.GetAsWord());
+				}
 			}
 			else
 			{
