@@ -1853,7 +1853,12 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 			for(unsigned int i=0; i<FMTowns::Variable::TIME_ADJUSTMENT_LOG_LEN; ++i)
 			{
 				auto I=(towns.var.timeAdjustLogPtr+i+1)%FMTowns::Variable::TIME_ADJUSTMENT_LOG_LEN;
-				std::cout << towns.var.timeAdjustLog[I];
+				auto l=cpputil::Itoa(towns.var.timeAdjustLog[I]);
+				while(l.size()<12)
+				{
+					l.push_back(' ');
+				}
+				std::cout << l;
 				std::cout << "  Deficit:" << towns.var.timeDeficitLog[I];
 				std::cout << std::endl;
 			}
