@@ -297,6 +297,11 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 		}
 
 		subMenu->AddTextItem(0,FSKEY_NULL,L"Save Screenshot")->BindCallBack(&THISCLASS::VM_SaveScreenshot,this);
+
+		{
+			auto *testSubMenu=subMenu->AddTextItem(0,FSKEY_NULL,L"Test")->AddSubMenu();
+			testSubMenu->AddTextItem(0,FSKEY_NULL,L"Print Time Balance")->BindCallBack(&THISCLASS::VM_Test_PrintTimeBalance,this);
+		}
 	}
 
 	{
@@ -1877,6 +1882,20 @@ void FsGuiMainCanvas::VM_SaveScreenshot(FsGuiPopUpMenuItem *)
 		VM_Not_Running_Error();
 	}
 }
+
+void FsGuiMainCanvas::VM_Test_PrintTimeBalance(FsGuiPopUpMenuItem *)
+{
+	if(true==IsVMRunning())
+	{
+		SendVMCommand("PRI TIMEBALANCE");
+		ResumeVMIfSameProc();
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+
 void FsGuiMainCanvas::VM_SaveScreenshot_FileSelected(FsGuiDialog *dlg,int returnCode)
 {
 	auto fdlg=dynamic_cast <FsGuiFileDialog *>(dlg);

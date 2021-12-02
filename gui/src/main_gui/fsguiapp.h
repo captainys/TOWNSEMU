@@ -268,6 +268,8 @@ private:
 	void VM_SaveScreenshot(FsGuiPopUpMenuItem *);
 	void VM_SaveScreenshot_FileSelected(FsGuiDialog *dlg,int returnCode);
 
+	void VM_Test_PrintTimeBalance(FsGuiPopUpMenuItem *);
+
 
 	void CD_SelectImageFile(FsGuiPopUpMenuItem *);
 	void CD_ImageFileSelected(FsGuiDialog *dlg,int returnCode);
