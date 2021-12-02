@@ -1000,11 +1000,10 @@ void FMTowns::PrintStack(unsigned int numBytes) const
 }
 void FMTowns::PrintDisassembly(void) const
 {
-	i486DX::Instruction inst;
-	i486DX::Operand op1,op2;
+	i486DX::InstructionAndOperand instOp;
 	MemoryAccess::ConstMemoryWindow emptyMemWin;
-	cpu.DebugFetchInstruction(emptyMemWin,inst,op1,op2,mem);
-	auto disasm=cpu.Disassemble(inst,op1,op2,cpu.state.CS(),cpu.state.EIP,mem,debugger.GetSymTable(),debugger.GetIOTable());
+	cpu.DebugFetchInstruction(emptyMemWin,instOp,mem);
+	auto disasm=cpu.Disassemble(instOp.inst,instOp.op1,instOp.op2,cpu.state.CS(),cpu.state.EIP,mem,debugger.GetSymTable(),debugger.GetIOTable());
 	std::cout << disasm << std::endl;
 }
 

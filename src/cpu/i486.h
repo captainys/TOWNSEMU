@@ -2738,16 +2738,16 @@ public:
 	/*! Fetch an instruction.
 	    This function may raise page fault.
 	*/
-	inline void FetchInstruction(MemoryAccess::ConstMemoryWindow &memWin,Instruction &inst,Operand &op1,Operand &op2,const Memory &mem)
+	inline void FetchInstruction(MemoryAccess::ConstMemoryWindow &memWin,InstructionAndOperand &instOp,const Memory &mem)
 	{
-		return FetchInstruction(memWin,inst,op1,op2,state.CS(),state.EIP,mem);
+		return FetchInstruction(memWin,instOp.inst,instOp.op1,instOp.op2,state.CS(),state.EIP,mem);
 	}
 	/*! Fetch an instruction.
 	    It will not affect the CPU state.
 	*/
-	inline void DebugFetchInstruction(MemoryAccess::ConstMemoryWindow &memWin,Instruction &inst,Operand &op1,Operand &op2,const Memory &mem) const
+	inline void DebugFetchInstruction(MemoryAccess::ConstMemoryWindow &memWin,InstructionAndOperand &instOp,const Memory &mem) const
 	{
-		return DebugFetchInstruction(memWin,inst,op1,op2,state.CS(),state.EIP,mem);
+		return DebugFetchInstruction(memWin,instOp.inst,instOp.op1,instOp.op2,state.CS(),state.EIP,mem);
 	}
 
 
