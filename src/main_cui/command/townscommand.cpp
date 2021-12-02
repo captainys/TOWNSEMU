@@ -1850,16 +1850,35 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 			}
 			break;
 		case DUMP_TIME_BALANCE:
-			for(unsigned int i=0; i<FMTowns::Variable::TIME_ADJUSTMENT_LOG_LEN; ++i)
 			{
-				auto I=(towns.var.timeAdjustLogPtr+i+1)%FMTowns::Variable::TIME_ADJUSTMENT_LOG_LEN;
-				auto l=cpputil::Itoa(towns.var.timeAdjustLog[I]);
+				for(unsigned int i=FMTowns::Variable::TIME_ADJUSTMENT_LOG_LEN-64; i<FMTowns::Variable::TIME_ADJUSTMENT_LOG_LEN; ++i)
+				{
+					auto I=(towns.var.timeAdjustLogPtr+i+1)%FMTowns::Variable::TIME_ADJUSTMENT_LOG_LEN;
+					auto l=cpputil::Itoa(towns.var.timeAdjustLog[I]);
+					while(l.size()<12)
+					{
+						l.push_back(' ');
+					}
+					std::cout << l;
+					std::cout << "  Deficit:" << towns.var.timeDeficitLog[I];
+					std::cout << std::endl;
+				}
+				int64_t avgBalance=0,avgDeficit=0;
+				for(unsigned int i=0; i<FMTowns::Variable::TIME_ADJUSTMENT_LOG_LEN; ++i)
+				{
+					avgBalance+=towns.var.timeAdjustLog[i];
+					avgDeficit+=towns.var.timeDeficitLog[i];
+				}
+				avgBalance/=FMTowns::Variable::TIME_ADJUSTMENT_LOG_LEN;
+				avgDeficit/=FMTowns::Variable::TIME_ADJUSTMENT_LOG_LEN;
+				std::cout << "Average" << std::endl;
+				auto l=cpputil::Itoa(avgBalance);
 				while(l.size()<12)
 				{
 					l.push_back(' ');
 				}
 				std::cout << l;
-				std::cout << "  Deficit:" << towns.var.timeDeficitLog[I];
+				std::cout << "  Deficit:" << avgDeficit;
 				std::cout << std::endl;
 			}
 			break;

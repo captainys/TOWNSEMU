@@ -4511,9 +4511,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	state.holdIRQ=false;
 
 	InstructionAndOperand instOp;
-	auto &inst=instOp.inst;
-	auto &op1=instOp.op1;
-	auto &op2=instOp.op2;
+	const auto &inst=instOp.inst;
+	const auto &op1=instOp.op1;
+	const auto &op2=instOp.op2;
 	FetchInstruction(state.CSEIPWindow,instOp,state.CS(),state.EIP,mem);
 	if(nullptr!=debuggerPtr)
 	{

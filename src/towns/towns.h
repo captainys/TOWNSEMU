@@ -283,7 +283,7 @@ public:
 
 		enum
 		{
-			TIME_ADJUSTMENT_LOG_LEN=64
+			TIME_ADJUSTMENT_LOG_LEN=4096
 		};
 		unsigned int timeAdjustLogPtr=0;
 		int64_t timeAdjustLog[TIME_ADJUSTMENT_LOG_LEN];
