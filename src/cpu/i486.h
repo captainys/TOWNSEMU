@@ -1161,6 +1161,17 @@ public:
 		*/
 		unsigned int GetSize(void) const;
 	};
+
+	/*! 
+	*/
+	class InstructionAndOperand
+	{
+	public:
+		Instruction inst;
+		Operand op1;
+		Operand op2;
+	};
+
 	/*! OperandValue class is an evaluated operand value, or a value to be stored to
 	    the destination described by the operand.
 	    In 80486, operand itself may not know its size if it is an address operand.

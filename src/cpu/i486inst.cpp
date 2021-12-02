@@ -4506,9 +4506,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 	state.holdIRQ=false;
 
-	Instruction inst;
-	Operand op1,op2;
-	FetchInstruction(state.CSEIPWindow,inst,op1,op2,state.CS(),state.EIP,mem);
+	InstructionAndOperand instOp;
+	auto &inst=instOp.inst;
+	auto &op1=instOp.op1;
+	auto &op2=instOp.op2;
+	FetchInstruction(state.CSEIPWindow,instOp.inst,instOp.op1,instOp.op2,state.CS(),state.EIP,mem);
 	if(nullptr!=debuggerPtr)
 	{
 		debuggerPtr->BeforeRunOneInstruction(*this,mem,io,inst);
