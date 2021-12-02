@@ -71,15 +71,14 @@ bool TestDisassembly(unsigned int operandSize,unsigned int addressSize,long long
 		memAccess.ram[i]=instByte[i];
 	}
 
-	i486DX::Instruction inst;
-	i486DX::Operand op1,op2;
+	i486DX::InstructionAndOperand instOp;
 	i486SymbolTable emptySymTable;
 	MemoryAccess::ConstMemoryWindow memWin;
 	std::map <unsigned int,std::string> emptyIOTable;
 
 	{
-		cpu.DebugFetchInstruction(memWin,inst,op1,op2,cpu.state.CS(),cpu.state.EIP,mem,cpu.state.CS().operandSize,cpu.state.CS().addressSize);
-		auto disasm=inst.Disassemble(op1,op2,cpu.state.CS(),cpu.state.EIP,emptySymTable,emptyIOTable);
+		cpu.DebugFetchInstruction(memWin,instOp,cpu.state.CS(),cpu.state.EIP,mem,cpu.state.CS().operandSize,cpu.state.CS().addressSize);
+		auto disasm=instOp.inst.Disassemble(instOp.op1,instOp.op2,cpu.state.CS(),cpu.state.EIP,emptySymTable,emptyIOTable);
 		std::cout << "i486DX::DebugFetchInstruction()" << std::endl;
 		std::cout << "Disassembled as: [" << disasm << "]" << std::endl;
 		if(disasm!=correctDisasm)
@@ -89,8 +88,8 @@ bool TestDisassembly(unsigned int operandSize,unsigned int addressSize,long long
 		}
 	}
 	{
-		cpu.FetchInstruction(memWin,inst,op1,op2,cpu.state.CS(),cpu.state.EIP,mem,cpu.state.CS().operandSize,cpu.state.CS().addressSize);
-		auto disasm=inst.Disassemble(op1,op2,cpu.state.CS(),cpu.state.EIP,emptySymTable,emptyIOTable);
+		cpu.FetchInstruction(memWin,instOp,cpu.state.CS(),cpu.state.EIP,mem,cpu.state.CS().operandSize,cpu.state.CS().addressSize);
+		auto disasm=instOp.inst.Disassemble(instOp.op1,instOp.op2,cpu.state.CS(),cpu.state.EIP,emptySymTable,emptyIOTable);
 		std::cout << "i486DX::FetchInstruction()" << std::endl;
 		std::cout << "Disassembled as: [" << disasm << "]" << std::endl;
 		if(disasm!=correctDisasm)

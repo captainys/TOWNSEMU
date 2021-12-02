@@ -733,20 +733,20 @@ void i486DX::MakeOpCodeRenumberTable(void)
 
 void i486DX::FetchInstruction(
    MemoryAccess::ConstMemoryWindow &memWin,
-   Instruction &inst,Operand &op1,Operand &op2,
+   InstructionAndOperand &instOp,
    const SegmentRegister &CS,unsigned int offset,const Memory &mem,unsigned int defOperSize,unsigned int defAddrSize)
 {
 	FetchInstructionClass<i486DX,RealFetchInstructionFunctions,BurstModeFetchInstructionFunctions>::FetchInstruction(
-	    *this,memWin,inst,op1,op2,CS,offset,mem,defOperSize,defAddrSize);
+	    *this,memWin,instOp.inst,instOp.op1,instOp.op2,CS,offset,mem,defOperSize,defAddrSize);
 }
 
 void i486DX::DebugFetchInstruction(
    MemoryAccess::ConstMemoryWindow &memWin,
-   Instruction &inst,Operand &op1,Operand &op2,
+   InstructionAndOperand &instOp,
    const SegmentRegister &CS,unsigned int offset,const Memory &mem,unsigned int defOperSize,unsigned int defAddrSize) const
 {
 	FetchInstructionClass<const i486DX,DebugFetchInstructionFunctions,DebugFetchInstructionFunctions>::FetchInstruction(
-	    *this,memWin,inst,op1,op2,CS,offset,mem,defOperSize,defAddrSize);
+	    *this,memWin,instOp.inst,instOp.op1,instOp.op2,CS,offset,mem,defOperSize,defAddrSize);
 }
 
 inline void i486DX::FetchOperand8(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem)

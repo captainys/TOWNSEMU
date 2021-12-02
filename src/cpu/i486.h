@@ -2919,7 +2919,7 @@ public:
 	{
 		const unsigned int operandSize=*CSOperandSizePointer[Return0InRealMode1InProtectedMode()];
 		const unsigned int addressSize=*CSAddressSizePointer[Return0InRealMode1InProtectedMode()];
-		return FetchInstruction(memWin,instOp.inst,instOp.op1,instOp.op2,CS,offset,mem,operandSize,addressSize);
+		return FetchInstruction(memWin,instOp,CS,offset,mem,operandSize,addressSize);
 	}
 	/*! Fetch an instruction from specific segment and offset.
 	    It will not affect the CPU state including exceptions.
@@ -2928,7 +2928,7 @@ public:
 	{
 		const unsigned int operandSize=*CSOperandSizePointer[Return0InRealMode1InProtectedMode()];
 		const unsigned int addressSize=*CSAddressSizePointer[Return0InRealMode1InProtectedMode()];
-		return DebugFetchInstruction(memWin,instOp.inst,instOp.op1,instOp.op2,CS,offset,mem,operandSize,addressSize);
+		return DebugFetchInstruction(memWin,instOp,CS,offset,mem,operandSize,addressSize);
 	}
 private:
 	class BurstModeFetchInstructionFunctions;
@@ -2948,7 +2948,7 @@ public:
 	*/
 	void FetchInstruction(
 	    MemoryAccess::ConstMemoryWindow &memWin,
-	    Instruction &inst,Operand &op1,Operand &op2,
+	    InstructionAndOperand &instOp,
 	    const SegmentRegister &CS,unsigned int offset,const Memory &mem,unsigned int defOperSize,unsigned int defAddrSize);
 
 	/*! Fetch an instruction from specific segment and offset with given default operand size and address size.
@@ -2956,7 +2956,7 @@ public:
 	*/
 	void DebugFetchInstruction(
 	    MemoryAccess::ConstMemoryWindow &memWin,
-	    Instruction &inst,Operand &op1,Operand &op2,
+	    InstructionAndOperand &instOp,
 	    const SegmentRegister &CS,unsigned int offset,const Memory &mem,unsigned int defOperSize,unsigned int defAddrSize) const;
 
 private:
