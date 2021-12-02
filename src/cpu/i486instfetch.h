@@ -238,9 +238,13 @@ public:
 	static inline void FetchInstruction(
 	   CPUCLASS &cpu,
 	   MemoryAccess::ConstMemoryWindow &memWin,
-	   Instruction &inst,Operand &op1,Operand &op2,
+	   InstructionAndOperand &instOp,
 	   const SegmentRegister &CS,unsigned int offset,const Memory &mem,unsigned int defOperSize,unsigned int defAddrSize)
 	{
+		auto &inst=instOp.inst;
+		auto &op1=instOp.op1;
+		auto &op2=instOp.op2;
+
 		inst.Clear();
 		inst.operandSize=defOperSize;
 		inst.addressSize=defAddrSize;
@@ -327,11 +331,11 @@ public:
 	PREFIX_DONE:
 		if(MAX_INSTRUCTION_LENGTH<=ptr.length)
 		{
-			CPUCLASS::template FetchOperand<CPUCLASS,BURSTMODEFUNCCLASS>(cpu,inst,op1,op2,ptr,CS,offset+inst.numBytes,mem);
+			CPUCLASS::template FetchOperand<CPUCLASS,BURSTMODEFUNCCLASS>(cpu,instOp.inst,instOp.op1,instOp.op2,ptr,CS,offset+inst.numBytes,mem);
 		}
 		else
 		{
-			CPUCLASS::template FetchOperand<CPUCLASS,FUNCCLASS>(cpu,inst,op1,op2,ptr,CS,offset+inst.numBytes,mem);
+			CPUCLASS::template FetchOperand<CPUCLASS,FUNCCLASS>(cpu,instOp.inst,instOp.op1,instOp.op2,ptr,CS,offset+inst.numBytes,mem);
 		}
 	}
 };
