@@ -331,11 +331,11 @@ public:
 	PREFIX_DONE:
 		if(MAX_INSTRUCTION_LENGTH<=ptr.length)
 		{
-			CPUCLASS::template FetchOperand<CPUCLASS,BURSTMODEFUNCCLASS>(cpu,instOp.inst,instOp.op1,instOp.op2,ptr,CS,offset+inst.numBytes,mem);
+			CPUCLASS::template FetchOperand<CPUCLASS,BURSTMODEFUNCCLASS>(cpu,instOp,ptr,CS,offset+inst.numBytes,mem);
 		}
 		else
 		{
-			CPUCLASS::template FetchOperand<CPUCLASS,FUNCCLASS>(cpu,instOp.inst,instOp.op1,instOp.op2,ptr,CS,offset+inst.numBytes,mem);
+			CPUCLASS::template FetchOperand<CPUCLASS,FUNCCLASS>(cpu,instOp,ptr,CS,offset+inst.numBytes,mem);
 		}
 	}
 };

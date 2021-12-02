@@ -2910,7 +2910,7 @@ private:
 	    with minimum code duplicate.
 	*/
 	template <class CPUCLASS,class FUNCCLASS>
-	static void FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &op2,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,int offset,const Memory &mem);
+	static void FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,int offset,const Memory &mem);
 
 public:
 	/*! Fetch an instruction from specific segment and offset.

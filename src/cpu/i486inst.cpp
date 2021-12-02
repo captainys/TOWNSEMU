@@ -1108,8 +1108,12 @@ std::string i486DX::Instruction::SegmentOverrideString(int segOverridePrefix)
 }
 
 template <class CPUCLASS,class FUNCCLASS>
-void i486DX::FetchOperand(CPUCLASS &cpu,Instruction &inst,Operand &op1,Operand &op2,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,int offset,const Memory &mem)
+void i486DX::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,int offset,const Memory &mem)
 {
+	auto &inst=instOp.inst;
+	auto &op1=instOp.op1;
+	auto &op2=instOp.op2;
+
 	switch(opCodeNeedOperandTable[inst.opCode])
 	{
 	// No Operand
