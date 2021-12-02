@@ -2934,12 +2934,14 @@ void TownsCommandInterpreter::Execute_Disassemble(FMTowns &towns,Command &cmd)
 	farPtr=towns.cpu.TranslateFarPointer(farPtr);
 	for(int i=0; i<16; ++i)
 	{
-		i486DX::Instruction inst;
-		i486DX::Operand op1,op2;
+		i486DX::InstructionAndOperand instOp;
 		MemoryAccess::ConstMemoryWindow emptyMemWin;
 
 		towns.debugger.GetSymTable().PrintIfAny(farPtr.SEG,farPtr.OFFSET);
-		towns.cpu.FetchInstruction(emptyMemWin,inst,op1,op2,seg,farPtr.OFFSET,towns.mem);
+		towns.cpu.DebugFetchInstruction(emptyMemWin,instOp,seg,farPtr.OFFSET,towns.mem);
+		auto &inst=instOp.inst;
+		auto &op1=instOp.op1;
+		auto &op2=instOp.op2;
 		auto nRawBytes=towns.debugger.GetSymTable().GetRawDataBytes(farPtr);
 		if(0<nRawBytes)
 		{
@@ -3862,14 +3864,13 @@ void TownsCommandInterpreter::Execute_Find_Caller(FMTowns &towns,Command &cmd)
 		{
 			auto &seg=towns.cpu.state.CS();
 
-			i486DX::Instruction inst;
-			i486DX::Operand op1,op2;
+			i486DX::InstructionAndOperand instOp;
 			MemoryAccess::ConstMemoryWindow emptyMemWin;
 
 			towns.debugger.GetSymTable().PrintIfAny(seg.value,callerAddr);
-			towns.cpu.FetchInstruction(emptyMemWin,inst,op1,op2,seg,callerAddr,towns.mem);
+			towns.cpu.FetchInstruction(emptyMemWin,instOp,seg,callerAddr,towns.mem);
 
-			auto disasm=towns.cpu.Disassemble(inst,op1,op2,seg,callerAddr,towns.mem,towns.debugger.GetSymTable(),towns.debugger.GetIOTable());
+			auto disasm=towns.cpu.Disassemble(instOp.inst,instOp.op1,instOp.op2,seg,callerAddr,towns.mem,towns.debugger.GetSymTable(),towns.debugger.GetIOTable());
 			std::cout << disasm << std::endl;
 		}
 	}

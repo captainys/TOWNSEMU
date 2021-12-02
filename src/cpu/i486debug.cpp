@@ -794,9 +794,11 @@ std::vector <unsigned int> i486Debugger::FindCaller(unsigned int procAddr,const 
 		{
 			std::cout << "Searching..." << cpputil::Uitox(EIP) << std::endl;
 		}
-		i486DX::Instruction inst;
-		i486DX::Operand op1,op2;
-		cpu.DebugFetchInstruction(memWindow,inst,op1,op2,seg,EIP,mem);
+		i486DX::InstructionAndOperand instOp;
+		cpu.DebugFetchInstruction(memWindow,instOp,seg,EIP,mem);
+		auto &inst=instOp.inst;
+		auto &op1=instOp.op1;
+		auto &op2=instOp.op2;
 		switch(inst.opCode)
 		{
 		case I486_OPCODE_CALL_FAR://   0x9A,

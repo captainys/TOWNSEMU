@@ -2740,14 +2740,14 @@ public:
 	*/
 	inline void FetchInstruction(MemoryAccess::ConstMemoryWindow &memWin,InstructionAndOperand &instOp,const Memory &mem)
 	{
-		return FetchInstruction(memWin,instOp.inst,instOp.op1,instOp.op2,state.CS(),state.EIP,mem);
+		return FetchInstruction(memWin,instOp,state.CS(),state.EIP,mem);
 	}
 	/*! Fetch an instruction.
 	    It will not affect the CPU state.
 	*/
 	inline void DebugFetchInstruction(MemoryAccess::ConstMemoryWindow &memWin,InstructionAndOperand &instOp,const Memory &mem) const
 	{
-		return DebugFetchInstruction(memWin,instOp.inst,instOp.op1,instOp.op2,state.CS(),state.EIP,mem);
+		return DebugFetchInstruction(memWin,instOp,state.CS(),state.EIP,mem);
 	}
 
 
@@ -2915,20 +2915,20 @@ private:
 public:
 	/*! Fetch an instruction from specific segment and offset.
 	*/
-	inline void FetchInstruction(MemoryAccess::ConstMemoryWindow &memWin,Instruction &inst,Operand &op1,Operand &op2,const SegmentRegister &CS,unsigned int offset,const Memory &mem)
+	inline void FetchInstruction(MemoryAccess::ConstMemoryWindow &memWin,InstructionAndOperand &instOp,const SegmentRegister &CS,unsigned int offset,const Memory &mem)
 	{
 		const unsigned int operandSize=*CSOperandSizePointer[Return0InRealMode1InProtectedMode()];
 		const unsigned int addressSize=*CSAddressSizePointer[Return0InRealMode1InProtectedMode()];
-		return FetchInstruction(memWin,inst,op1,op2,CS,offset,mem,operandSize,addressSize);
+		return FetchInstruction(memWin,instOp.inst,instOp.op1,instOp.op2,CS,offset,mem,operandSize,addressSize);
 	}
 	/*! Fetch an instruction from specific segment and offset.
 	    It will not affect the CPU state including exceptions.
 	*/
-	inline void DebugFetchInstruction(MemoryAccess::ConstMemoryWindow &memWin,Instruction &inst,Operand &op1,Operand &op2,const SegmentRegister &CS,unsigned int offset,const Memory &mem) const
+	inline void DebugFetchInstruction(MemoryAccess::ConstMemoryWindow &memWin,InstructionAndOperand &instOp,const SegmentRegister &CS,unsigned int offset,const Memory &mem) const
 	{
 		const unsigned int operandSize=*CSOperandSizePointer[Return0InRealMode1InProtectedMode()];
 		const unsigned int addressSize=*CSAddressSizePointer[Return0InRealMode1InProtectedMode()];
-		return DebugFetchInstruction(memWin,inst,op1,op2,CS,offset,mem,operandSize,addressSize);
+		return DebugFetchInstruction(memWin,instOp.inst,instOp.op1,instOp.op2,CS,offset,mem,operandSize,addressSize);
 	}
 private:
 	class BurstModeFetchInstructionFunctions;
