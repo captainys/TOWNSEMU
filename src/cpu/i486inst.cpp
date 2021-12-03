@@ -901,7 +901,9 @@ inline unsigned int i486DX::DebugFetchImm16or32(Instruction &inst,MemoryAccess::
 template <class CPUCLASS,class FUNCCLASS>
 unsigned int i486DX::FetchOperandRM(CPUCLASS &cpu,Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
 {
-	FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset++,mem);
+	inst.operand[0]=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,seg,offset,mem);
+	inst.operandLen=1;
+	++inst.numBytes;
 
 	// How many bytes to fetch depends on MODR_M byte, which is always operand[0].
 	// Therefore, it can be made a table.
@@ -922,12 +924,12 @@ unsigned int i486DX::FetchOperandRM(CPUCLASS &cpu,Instruction &inst,MemoryAccess
 		};
 		if(2==table[inst.operand[0]])
 		{
-			FUNCCLASS::FetchOperand16(cpu,inst,ptr,seg,offset,mem);
+			FUNCCLASS::FetchOperand16(cpu,inst,ptr,seg,offset+1,mem);
 			return 3; // Fetched 3 bytes
 		}
 		else if(1==table[inst.operand[0]])
 		{
-			FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset,mem);
+			FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset+1,mem);
 			return 2; // Fetched 2 bytes
 		}
 		return 1; // Fetched 1 bytes
@@ -949,8 +951,7 @@ unsigned int i486DX::FetchOperandRM(CPUCLASS &cpu,Instruction &inst,MemoryAccess
 		{
 		case 1:
 			{
-				FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset,mem);
-				++offset;
+				FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset+1,mem);
 
 				auto SIB=inst.operand[1];
 				auto BASE=(SIB&7);
@@ -958,27 +959,27 @@ unsigned int i486DX::FetchOperandRM(CPUCLASS &cpu,Instruction &inst,MemoryAccess
 				// No base, [disp32+scaled_index]
 				if(5==BASE)
 				{
-					FUNCCLASS::FetchOperand32(cpu,inst,ptr,seg,offset,mem);
+					FUNCCLASS::FetchOperand32(cpu,inst,ptr,seg,offset+2,mem);
 					return 6;
 				}
 				return 2;
 			}
 			break;
 		case 2:
-			FUNCCLASS::FetchOperand32(cpu,inst,ptr,seg,offset,mem);
+			FUNCCLASS::FetchOperand32(cpu,inst,ptr,seg,offset+1,mem);
 			return 5;
 		case 3:
-			FUNCCLASS::FetchOperand16(cpu,inst,ptr,seg,offset,mem);
+			FUNCCLASS::FetchOperand16(cpu,inst,ptr,seg,offset+1,mem);
 			return 3;
 		case 4:
-			FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset,mem);
+			FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset+1,mem);
 			return 2;
 		case 5:
-			FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset,mem);
-			FUNCCLASS::FetchOperand32(cpu,inst,ptr,seg,offset+1,mem);
+			FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset+1,mem);
+			FUNCCLASS::FetchOperand32(cpu,inst,ptr,seg,offset+2,mem);
 			return 6;
 		case 6:
-			FUNCCLASS::FetchOperand32(cpu,inst,ptr,seg,offset,mem);
+			FUNCCLASS::FetchOperand32(cpu,inst,ptr,seg,offset+1,mem);
 			return 5;
 		}
 		return 1;
