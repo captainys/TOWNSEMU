@@ -903,32 +903,12 @@ unsigned int i486DX::FetchOperandRM(CPUCLASS &cpu,Instruction &inst,MemoryAccess
 {
 	FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset++,mem);
 
+	// How many bytes to fetch depends on MODR_M byte, which is always operand[0].
+	// Therefore, it can be made a table.
+
 	// [1] Table 26-1, 26-2, 26-3, pp. 26-4,26-5,26-6
 	if(16==inst.addressSize)
 	{
-		/* As Specification
-		unsigned int numBytesFetched=1;
-		auto MODR_M=inst.operand[inst.operandLen-1];
-		auto MOD=(MODR_M>>6)&3;
-		auto R_M=(MODR_M)&7;
-		if(0b00==MOD && 0b110==R_M) // disp16             CASE 2
-		{
-			FUNCCLASS::FetchOperand16(cpu,inst,ptr,seg,offset,mem);
-			numBytesFetched+=2;
-		}
-		else if(0b01==MOD)         //                     CASE 1
-		{
-			FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset,mem);
-			++numBytesFetched;
-		}
-		else if(0b10==MOD)         //                     CASE 2
-		{
-			FUNCCLASS::FetchOperand16(cpu,inst,ptr,seg,offset,mem);
-			numBytesFetched+=2;
-		}
-		return numBytesFetched;
-		*/
-
 		static const char table[256]=
 		{
 			0,0,0,0,0,0,2,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,2,0,
@@ -940,12 +920,12 @@ unsigned int i486DX::FetchOperandRM(CPUCLASS &cpu,Instruction &inst,MemoryAccess
 			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 		};
-		if(2==table[inst.operand[inst.operandLen-1]])
+		if(2==table[inst.operand[0]])
 		{
 			FUNCCLASS::FetchOperand16(cpu,inst,ptr,seg,offset,mem);
 			return 3; // Fetched 3 bytes
 		}
-		else if(1==table[inst.operand[inst.operandLen-1]])
+		else if(1==table[inst.operand[0]])
 		{
 			FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset,mem);
 			return 2; // Fetched 2 bytes
@@ -954,67 +934,6 @@ unsigned int i486DX::FetchOperandRM(CPUCLASS &cpu,Instruction &inst,MemoryAccess
 	}
 	else // if(32==inst.addressSize)
 	{
-		/* As Specification
-		unsigned int numBytesFetched=1;
-		auto MODR_M=inst.operand[inst.operandLen-1];
-		auto MOD=(MODR_M>>6)&3;
-		auto R_M=(MODR_M)&7;
-		if(0b00==MOD)
-		{
-			if(0b100==R_M) // SIB                         // CASE 1
-			{
-				FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset,mem);
-				++numBytesFetched;
-				++offset;
-
-				auto SIB=inst.operand[inst.operandLen-1];
-				auto BASE=(SIB&7);
-				// Special case MOD=0b00 && BASE==5 [1] Table 26-4 pp.26-7
-				// No base, [disp32+scaled_index]
-				if(5==BASE)
-				{
-					FUNCCLASS::FetchOperand32(cpu,inst,ptr,seg,offset,mem);
-					numBytesFetched+=4;
-				}
-			}
-			else if(0b101==R_M) // disp32                    CASE 2
-			{
-				FUNCCLASS::FetchOperand32(cpu,inst,ptr,seg,offset,mem);
-				numBytesFetched+=4;
-			}
-			// else                                          CASE 0
-		}
-		else if(0b01==MOD)
-		{
-			if(0b100==R_M) // SIB+disp8                      CASE 3
-			{
-				FUNCCLASS::FetchOperand16(cpu,inst,ptr,seg,offset,mem);
-				numBytesFetched+=2;
-			}
-			else                                          // CASE 4
-			{
-				FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset,mem);
-				++numBytesFetched;
-			}
-		}
-		else if(0b10==MOD)
-		{
-			if(0b100==R_M) // SIB+disp32                     CASE 5
-			{
-				FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset,mem);
-				FUNCCLASS::FetchOperand32(cpu,inst,ptr,seg,offset+1,mem);
-				numBytesFetched+=5;
-			}
-			else                                          // CASE 6
-			{
-				FUNCCLASS::FetchOperand32(cpu,inst,ptr,seg,offset,mem);
-				numBytesFetched+=4;
-			}
-		}
-		// else                                              CASE 0
-		return numBytesFetched;
-		*/
-
 		const static unsigned char table[256]=
 		{
 			0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,
@@ -1026,14 +945,14 @@ unsigned int i486DX::FetchOperandRM(CPUCLASS &cpu,Instruction &inst,MemoryAccess
 			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 		};
-		switch(table[inst.operand[inst.operandLen-1]])
+		switch(table[inst.operand[0]])
 		{
 		case 1:
 			{
 				FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset,mem);
 				++offset;
 
-				auto SIB=inst.operand[inst.operandLen-1];
+				auto SIB=inst.operand[1];
 				auto BASE=(SIB&7);
 				// Special case MOD=0b00 && BASE==5 [1] Table 26-4 pp.26-7
 				// No base, [disp32+scaled_index]
