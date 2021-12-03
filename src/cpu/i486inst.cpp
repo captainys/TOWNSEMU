@@ -925,13 +925,17 @@ unsigned int i486DX::FetchOperandRM(CPUCLASS &cpu,Instruction &inst,MemoryAccess
 		if(2==table[inst.operand[0]])
 		{
 			FUNCCLASS::FetchOperand16(cpu,inst,ptr,seg,offset+1,mem);
+			inst.operandLen=3;
 			return 3; // Fetched 3 bytes
 		}
 		else if(1==table[inst.operand[0]])
 		{
-			FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset+1,mem);
+			inst.operand[1]=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,seg,offset+1,mem);
+			inst.operandLen=2;
+			++inst.numBytes;
 			return 2; // Fetched 2 bytes
 		}
+		inst.operandLen=1;
 		return 1; // Fetched 1 bytes
 	}
 	else // if(32==inst.addressSize)
@@ -960,30 +964,40 @@ unsigned int i486DX::FetchOperandRM(CPUCLASS &cpu,Instruction &inst,MemoryAccess
 				if(5==BASE)
 				{
 					FUNCCLASS::FetchOperand32(cpu,inst,ptr,seg,offset+2,mem);
+					inst.operandLen=6;
 					return 6;
 				}
+				inst.operandLen=2;
 				return 2;
 			}
 			break;
 		case 2:
 			FUNCCLASS::FetchOperand32(cpu,inst,ptr,seg,offset+1,mem);
+			inst.operandLen=5;
 			return 5;
 		case 3:
 			FUNCCLASS::FetchOperand16(cpu,inst,ptr,seg,offset+1,mem);
+			inst.operandLen=3;
 			return 3;
 		case 4:
-			FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset+1,mem);
+			inst.operand[1]=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,seg,offset+1,mem);
+			inst.operandLen=2;
+			++inst.numBytes;
 			return 2;
 		case 5:
 			FUNCCLASS::FetchOperand8(cpu,inst,ptr,seg,offset+1,mem);
 			FUNCCLASS::FetchOperand32(cpu,inst,ptr,seg,offset+2,mem);
+			inst.operandLen=6;
 			return 6;
 		case 6:
 			FUNCCLASS::FetchOperand32(cpu,inst,ptr,seg,offset+1,mem);
+			inst.operandLen=5;
 			return 5;
 		}
+		inst.operandLen=1;
 		return 1;
 	}
+	inst.operandLen=1;
 	return 1;
 }
 
