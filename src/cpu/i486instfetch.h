@@ -28,11 +28,31 @@ public:
 	inline static unsigned int FetchInstructionByte(
 		CPUCLASS &cpu,
 		MemoryAccess::ConstPointer &ptr,
-		unsigned int addressSize,
-		const SegmentRegister &seg,
-		unsigned int offset,const Memory &mem)
+		unsigned int,
+		const SegmentRegister &,
+		unsigned int,const Memory &)
 	{
 		return ptr.FetchByte();
+	}
+	inline static void FetchInstructionTwoBytes(
+		unsigned char dat[2],
+		CPUCLASS &cpu,
+		MemoryAccess::ConstPointer &ptr,
+		unsigned int,
+		const SegmentRegister &,
+		unsigned int,const Memory &)
+	{
+		ptr.FetchTwoBytes(dat);
+	}
+	inline static void FetchInstructionFourBytes(
+		unsigned char dat[4],
+		CPUCLASS &cpu,
+		MemoryAccess::ConstPointer &ptr,
+		unsigned int ,
+		const SegmentRegister &,
+		unsigned int,const Memory &)
+	{
+		ptr.FetchFourBytes(dat);
 	}
 
 	inline static void FetchOperand8(CPUCLASS &cpu,Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
@@ -129,6 +149,26 @@ public:
 	{
 		return cpu.DebugFetchByte(addressSize,seg,offset,mem);
 	}
+	inline static void FetchInstructionTwoBytes(
+		unsigned char dat[2],
+		CPUCLASS &cpu,
+		MemoryAccess::ConstPointer &ptr,
+		unsigned int addressSize,
+		const SegmentRegister &seg,
+		unsigned int offset,const Memory &mem)
+	{
+		cpputil::PutWord(dat,cpu.DebugFetchWord(addressSize,seg,offset,mem));
+	}
+	inline static void FetchInstructionFourBytes(
+		unsigned char dat[4],
+		CPUCLASS &cpu,
+		MemoryAccess::ConstPointer &ptr,
+		unsigned int addressSize,
+		const SegmentRegister &seg,
+		unsigned int offset,const Memory &mem)
+	{
+		cpputil::PutDword(dat,cpu.DebugFetchDword(addressSize,seg,offset,mem));
+	}
 
 	inline static void FetchOperand8(CPUCLASS &cpu,Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
 	{
@@ -191,6 +231,26 @@ public:
 		unsigned int offset,const Memory &mem)
 	{
 		return cpu.FetchInstructionByte(ptr,addressSize,seg,offset,mem);
+	}
+	inline static void FetchInstructionTwoBytes(
+		unsigned char dat[2],
+		CPUCLASS &cpu,
+		MemoryAccess::ConstPointer &ptr,
+		unsigned int addressSize,
+		const SegmentRegister &seg,
+		unsigned int offset,const Memory &mem)
+	{
+		cpu.FetchInstructionTwoBytes(dat,ptr,addressSize,seg,offset,mem);
+	}
+	inline static void FetchInstructionFourBytes(
+		unsigned char dat[4],
+		CPUCLASS &cpu,
+		MemoryAccess::ConstPointer &ptr,
+		unsigned int addressSize,
+		const SegmentRegister &seg,
+		unsigned int offset,const Memory &mem)
+	{
+		cpu.FetchInstructionFourBytes(dat,ptr,addressSize,seg,offset,mem);
 	}
 
 	inline static void FetchOperand8(CPUCLASS &cpu,Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
