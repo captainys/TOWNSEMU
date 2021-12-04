@@ -970,6 +970,7 @@ unsigned int i486DX::FetchOperandRM(CPUCLASS &cpu,Instruction &inst,MemoryAccess
 			}
 			break;
 		case 2:
+		case 6:
 			FUNCCLASS::FetchInstructionFourBytes(inst.operand+1,cpu,ptr,inst.codeAddressSize,seg,offset+1,mem);
 			inst.operandLen=5;
 			break;
@@ -985,10 +986,6 @@ unsigned int i486DX::FetchOperandRM(CPUCLASS &cpu,Instruction &inst,MemoryAccess
 			inst.operand[1]=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,seg,offset+1,mem);
 			FUNCCLASS::FetchInstructionFourBytes(inst.operand+2,cpu,ptr,inst.codeAddressSize,seg,offset+2,mem);
 			inst.operandLen=6;
-			break;
-		case 6:
-			FUNCCLASS::FetchInstructionFourBytes(inst.operand+1,cpu,ptr,inst.codeAddressSize,seg,offset+1,mem);
-			inst.operandLen=5;
 			break;
 		default:
 			inst.operandLen=1;
