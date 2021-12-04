@@ -333,14 +333,14 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 		// else                                                         // CASE 0
 		*/
 
-		#define A 1
-		#define B 2
-		#define C 3
-		#define D 4
-		#define E 5
-		#define F 6
-		#define G 7
-		#define H 8
+		#define A 0
+		#define B 1
+		#define C 2
+		#define D 3
+		#define E 4
+		#define F 5
+		#define G 6
+		#define H 7
 
 		static const unsigned char caseTable[256]=
 		{
