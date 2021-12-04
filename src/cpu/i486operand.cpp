@@ -382,24 +382,23 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 				operandType=OPER_ADDR;
 				// indexShift=0; Already cleared in Clear()
 				offset=0;
-				numBytes=1;
 
 				auto SIB=operand[1];
 				auto SS=((SIB>>6)&3);
 				auto INDEX=((SIB>>3)&7);
 				auto BASE=(SIB&7);
-				++numBytes;
 
 				if(5!=BASE)
 				{
 					baseReg=REG_32BIT_REG_BASE+BASE;
+					numBytes=2;
 				}
 				else
 				{
 					baseReg=REG_NULL; // 0b00==MOD && 5==BASE  disp32[index]
 					offsetBits=32;
 					offset=cpputil::GetSignedDword(operand+2);
-					numBytes+=4;
+					numBytes=6;
 				}
 
 				indexReg=SIB_INDEX[INDEX];
@@ -411,13 +410,11 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 				operandType=OPER_ADDR;
 				// indexShift=0; Already cleared in Clear()
 				offset=0;
-				numBytes=1;
 
 				auto SIB=operand[1];
 				auto SS=((SIB>>6)&3);
 				auto INDEX=((SIB>>3)&7);
 				auto BASE=(SIB&7);
-				++numBytes;
 
 				if(5!=BASE)
 				{
@@ -433,7 +430,8 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 
 				offsetBits=8;
 				offset=cpputil::GetSignedByte(operand[2]);
-				++numBytes;
+
+				numBytes=3;
 			}
 			break;
 		case H: // MOD==2
@@ -441,13 +439,11 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 				operandType=OPER_ADDR;
 				// indexShift=0; Already cleared in Clear()
 				offset=0;
-				numBytes=1;
 
 				auto SIB=operand[1];
 				auto SS=((SIB>>6)&3);
 				auto INDEX=((SIB>>3)&7);
 				auto BASE=(SIB&7);
-				++numBytes;
 
 				if(5!=BASE)
 				{
@@ -463,7 +459,8 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 
 				offsetBits=32;
 				offset=cpputil::GetSignedDword(operand+2);
-				numBytes+=4;
+
+				numBytes=6;
 			}
 			break;
 		case C:
