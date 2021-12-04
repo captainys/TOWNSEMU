@@ -332,16 +332,26 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 		}
 		// else                                                         // CASE 0
 		*/
+
+		#define A 1
+		#define B 2
+		#define C 3
+		#define D 4
+		#define E 5
+		#define F 6
+		#define G 7
+		#define H 8
+
 		static const unsigned char caseTable[256]=
 		{
-			5,5,5,5,2,1,5,5,5,5,5,5,2,1,5,5,5,5,5,5,2,1,5,5,5,5,5,5,2,1,5,5,
-			5,5,5,5,2,1,5,5,5,5,5,5,2,1,5,5,5,5,5,5,2,1,5,5,5,5,5,5,2,1,5,5,
-			3,3,3,3,7,3,3,3,3,3,3,3,7,3,3,3,3,3,3,3,7,3,3,3,3,3,3,3,7,3,3,3,
-			3,3,3,3,7,3,3,3,3,3,3,3,7,3,3,3,3,3,3,3,7,3,3,3,3,3,3,3,7,3,3,3,
-			4,4,4,4,8,4,4,4,4,4,4,4,8,4,4,4,4,4,4,4,8,4,4,4,4,4,4,4,8,4,4,4,
-			4,4,4,4,8,4,4,4,4,4,4,4,8,4,4,4,4,4,4,4,8,4,4,4,4,4,4,4,8,4,4,4,
-			6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,
-			6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,
+			E,E,E,E,B,A,E,E,E,E,E,E,B,A,E,E,E,E,E,E,B,A,E,E,E,E,E,E,B,A,E,E,
+			E,E,E,E,B,A,E,E,E,E,E,E,B,A,E,E,E,E,E,E,B,A,E,E,E,E,E,E,B,A,E,E,
+			C,C,C,C,G,C,C,C,C,C,C,C,G,C,C,C,C,C,C,C,G,C,C,C,C,C,C,C,G,C,C,C,
+			C,C,C,C,G,C,C,C,C,C,C,C,G,C,C,C,C,C,C,C,G,C,C,C,C,C,C,C,G,C,C,C,
+			D,D,D,D,H,D,D,D,D,D,D,D,H,D,D,D,D,D,D,D,H,D,D,D,D,D,D,D,H,D,D,D,
+			D,D,D,D,H,D,D,D,D,D,D,D,H,D,D,D,D,D,D,D,H,D,D,D,D,D,D,D,H,D,D,D,
+			F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,
+			F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,
 		};
 
 		static const unsigned int SIB_INDEX[8]=
@@ -358,7 +368,7 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 
 		switch(caseTable[operand[0]])
 		{
-		case 1:
+		case A:
 			operandType=OPER_ADDR;
 			baseReg=REG_NULL;
 			indexReg=REG_NULL;
@@ -367,7 +377,7 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 			offsetBits=32;
 			numBytes=5;
 			break;
-		case 2: // MOD==0
+		case B: // MOD==0
 			{
 				operandType=OPER_ADDR;
 				// indexShift=0; Already cleared in Clear()
@@ -396,7 +406,7 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 				indexShift=SS;
 			}
 			break;
-		case 7: // MOD==1
+		case G: // MOD==1
 			{
 				operandType=OPER_ADDR;
 				// indexShift=0; Already cleared in Clear()
@@ -426,7 +436,7 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 				++numBytes;
 			}
 			break;
-		case 8: // MOD==2
+		case H: // MOD==2
 			{
 				operandType=OPER_ADDR;
 				// indexShift=0; Already cleared in Clear()
@@ -456,7 +466,7 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 				numBytes+=4;
 			}
 			break;
-		case 3:
+		case C:
 			operandType=OPER_ADDR;
 			// indexShift=0; Already cleared in Clear()
 
@@ -467,7 +477,7 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 			offset=cpputil::GetSignedByte(operand[1]);
 			numBytes=2;
 			break;
-		case 4:
+		case D:
 			operandType=OPER_ADDR;
 			// indexShift=0; Already cleared in Clear()
 
@@ -478,7 +488,7 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 			offset=cpputil::GetSignedDword(operand+1);
 			numBytes=5;
 			break;
-		case 5:
+		case E:
 			operandType=OPER_ADDR;
 			// indexShift=0; Already cleared in Clear()
 			offset=0;
@@ -487,7 +497,7 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 			baseReg=REG_32BIT_REG_BASE+R_M;
 			indexReg=REG_NULL;
 			break;
-		case 6:
+		case F:
 			operandType=numBytesToRegisterOperandType[dataSize>>3];
 			reg=R_M+(numBytesToBasicRegBase[dataSize>>3]);
 			numBytes=1;
