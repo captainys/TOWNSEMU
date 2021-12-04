@@ -1441,12 +1441,12 @@ void i486DX::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,MemoryAcce
 
 	// Yes Operand
 	case I486_NEEDOPERAND_F6_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF6
+		inst.operandSize=8;
 		offset+=FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		if(0==inst.GetREG()) // TEST RM8,I8
 		{
 			FUNCCLASS::FetchImm8(cpu,inst,ptr,seg,offset,mem);
 		}
-		inst.operandSize=8;
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 	case I486_NEEDOPERAND_F7_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF7,
@@ -1460,8 +1460,8 @@ void i486DX::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,MemoryAcce
 
 
 	case I486_NEEDOPERAND_ARPL://       0x63,
-		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		inst.operandSize=16;
+		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		op2.DecodeMODR_MForRegister(inst.operandSize,inst.operand[0]);
 		break;
@@ -1712,6 +1712,10 @@ void i486DX::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,MemoryAcce
 
 
 	case I486_NEEDOPERAND_LGDT_LIDT_SGDT_SIDT:
+		// I cannot change this to FetchOperandRMandDecode because operand size
+		// cannot be fixed until I fetch operands.
+		// The effect for the performance is minimum, but I cannot remove
+		// FetchOperandRM and Decode.  WTF.
 		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		if(4==inst.GetREG() || 6==inst.GetREG())
 		{
@@ -1737,8 +1741,8 @@ void i486DX::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,MemoryAcce
 		op2.DecodeMODR_MForSegmentRegister(inst.operand[0]);
 		break;
 	case I486_NEEDOPERAND_MOV_TO_SEG: //       0x8E,
-		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		inst.operandSize=16; // Force it to be 16-bit
+		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		op2.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		op1.DecodeMODR_MForSegmentRegister(inst.operand[0]);
 		break;
@@ -1833,15 +1837,15 @@ void i486DX::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,MemoryAcce
 
 
 	case I486_NEEDOPERAND_SETX:
-		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		inst.operandSize=8;
+		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 
 
 	case I486_NEEDOPERAND_SLDT_STR_LLDT_LTR_VERR_VERW://             0x0F00,
-		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		inst.operandSize=16;
+		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 
