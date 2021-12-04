@@ -1426,9 +1426,8 @@ void i486DX::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,MemoryAcce
 	case I486_NEEDOPERAND_IMUL_R_RM://       0x0FAF,
 	case I486_NEEDOPERAND_LEA://=              0x8D,
 	case I486_NEEDOPERAND_LSL://              0x0F03,
-		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
+		FetchOperandRMandDecode<CPUCLASS,FUNCCLASS>(op2,inst.addressSize,inst.operandSize,cpu,inst,ptr,seg,offset,mem);
 		op1.DecodeMODR_MForRegister(inst.operandSize,inst.operand[0]);
-		op2.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 
 
@@ -1451,12 +1450,11 @@ void i486DX::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,MemoryAcce
 		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 	case I486_NEEDOPERAND_F7_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF7,
-		offset+=FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
+		offset+=FetchOperandRMandDecode<CPUCLASS,FUNCCLASS>(op1,inst.addressSize,inst.operandSize,cpu,inst,ptr,seg,offset,mem);
 		if(0==inst.GetREG()) // TEST RM8,I8
 		{
 			FUNCCLASS::FetchImm16or32(cpu,inst,ptr,seg,offset,mem);
 		}
-		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 
 
@@ -1687,13 +1685,12 @@ void i486DX::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,MemoryAcce
 
 
 	case I486_NEEDOPERAND_IMUL_R_RM_I8://0x6B,
-		offset+=FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
+		offset+=FetchOperandRMandDecode<CPUCLASS,FUNCCLASS>(op2,inst.addressSize,inst.operandSize,cpu,inst,ptr,seg,offset,mem);
 		FUNCCLASS::FetchImm8(cpu,inst,ptr,seg,offset,mem);
 		op1.DecodeMODR_MForRegister(inst.operandSize,inst.operand[0]);
-		op2.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 	case I486_NEEDOPERAND_IMUL_R_RM_IMM://0x69,
-		offset+=FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
+		offset+=FetchOperandRMandDecode<CPUCLASS,FUNCCLASS>(op2,inst.addressSize,inst.operandSize,cpu,inst,ptr,seg,offset,mem);
 		if(16==inst.operandSize)
 		{
 			FUNCCLASS::FetchImm16(cpu,inst,ptr,seg,offset,mem);
@@ -1703,16 +1700,14 @@ void i486DX::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,MemoryAcce
 			FUNCCLASS::FetchImm32(cpu,inst,ptr,seg,offset,mem);
 		}
 		op1.DecodeMODR_MForRegister(inst.operandSize,inst.operand[0]);
-		op2.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 
 
 
 	case I486_NEEDOPERAND_BINARYOP_R_FROM_I:
 	case I486_NEEDOPERAND_MOV_I_TO_RM: //      0xC7, // 16/32 depends on OPSIZE_OVERRIDE
-		offset+=FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
+		offset+=FetchOperandRMandDecode<CPUCLASS,FUNCCLASS>(op1,inst.addressSize,inst.operandSize,cpu,inst,ptr,seg,offset,mem);
 		FUNCCLASS::FetchImm16or32(cpu,inst,ptr,seg,offset,mem);
-		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 
 
