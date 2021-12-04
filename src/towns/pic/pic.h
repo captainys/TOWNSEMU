@@ -173,7 +173,7 @@ public:
 
 	inline void ProcessIRQ(i486DX &cpu,Memory &mem)
 	{
-		if((0!=state.i8259A[0].IRR || 0!=state.i8259A[1].IRR) && cpu.GetIF() && true!=cpu.state.holdIRQ)
+		if(0!=(state.i8259A[0].IRR|state.i8259A[1].IRR) && cpu.GetIF() && false==cpu.state.holdIRQ)
 		{
 			unsigned int chip=0;
 			if(7==state.i8259A[0].highestPriorityInt) // in which case i8259A[1], then i8259A[0].
