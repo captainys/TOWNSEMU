@@ -336,10 +336,10 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 		{
 			5,5,5,5,2,1,5,5,5,5,5,5,2,1,5,5,5,5,5,5,2,1,5,5,5,5,5,5,2,1,5,5,
 			5,5,5,5,2,1,5,5,5,5,5,5,2,1,5,5,5,5,5,5,2,1,5,5,5,5,5,5,2,1,5,5,
-			3,3,3,3,2,3,3,3,3,3,3,3,2,3,3,3,3,3,3,3,2,3,3,3,3,3,3,3,2,3,3,3,
-			3,3,3,3,2,3,3,3,3,3,3,3,2,3,3,3,3,3,3,3,2,3,3,3,3,3,3,3,2,3,3,3,
-			4,4,4,4,2,4,4,4,4,4,4,4,2,4,4,4,4,4,4,4,2,4,4,4,4,4,4,4,2,4,4,4,
-			4,4,4,4,2,4,4,4,4,4,4,4,2,4,4,4,4,4,4,4,2,4,4,4,4,4,4,4,2,4,4,4,
+			3,3,3,3,7,3,3,3,3,3,3,3,7,3,3,3,3,3,3,3,7,3,3,3,3,3,3,3,7,3,3,3,
+			3,3,3,3,7,3,3,3,3,3,3,3,7,3,3,3,3,3,3,3,7,3,3,3,3,3,3,3,7,3,3,3,
+			4,4,4,4,8,4,4,4,4,4,4,4,8,4,4,4,4,4,4,4,8,4,4,4,4,4,4,4,8,4,4,4,
+			4,4,4,4,8,4,4,4,4,4,4,4,8,4,4,4,4,4,4,4,8,4,4,4,4,4,4,4,8,4,4,4,
 			6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,
 			6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,
 		};
@@ -354,7 +354,111 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 			offsetBits=32;
 			numBytes=5;
 			break;
-		case 2:
+		case 2: // MOD==0
+			{
+				operandType=OPER_ADDR;
+				// indexShift=0; Already cleared in Clear()
+				offset=0;
+				numBytes=1;
+
+				auto SIB=operand[1];
+				auto SS=((SIB>>6)&3);
+				auto INDEX=((SIB>>3)&7);
+				auto BASE=(SIB&7);
+				++numBytes;
+
+				if(5!=BASE)
+				{
+					baseReg=REG_32BIT_REG_BASE+BASE;
+				}
+				else
+				{
+					if(0b00==MOD) // disp32[index]
+					{
+						baseReg=REG_NULL;
+					}
+					else if(0b01==MOD || 0b10==MOD) // disp[EBP][index]
+					{
+						baseReg=REG_EBP;
+					}
+				}
+				if(0b100!=INDEX)
+				{
+					indexReg=REG_32BIT_REG_BASE+INDEX;
+					indexShift=SS;
+				}
+				else
+				{
+					indexReg=REG_NULL;
+				}
+
+				if((0==MOD && 5==BASE) || 0b10==MOD)
+				{
+					offsetBits=32;
+					offset=cpputil::GetSignedDword(operand+2);
+					numBytes+=4;
+				}
+				else if(0b01==MOD)
+				{
+					offsetBits=8;
+					offset=cpputil::GetSignedByte(operand[2]);
+					++numBytes;
+				}
+			}
+			break;
+		case 7: // MOD==1
+			{
+				operandType=OPER_ADDR;
+				// indexShift=0; Already cleared in Clear()
+				offset=0;
+				numBytes=1;
+
+				auto SIB=operand[1];
+				auto SS=((SIB>>6)&3);
+				auto INDEX=((SIB>>3)&7);
+				auto BASE=(SIB&7);
+				++numBytes;
+
+				if(5!=BASE)
+				{
+					baseReg=REG_32BIT_REG_BASE+BASE;
+				}
+				else
+				{
+					if(0b00==MOD) // disp32[index]
+					{
+						baseReg=REG_NULL;
+					}
+					else if(0b01==MOD || 0b10==MOD) // disp[EBP][index]
+					{
+						baseReg=REG_EBP;
+					}
+				}
+				if(0b100!=INDEX)
+				{
+					indexReg=REG_32BIT_REG_BASE+INDEX;
+					indexShift=SS;
+				}
+				else
+				{
+					indexReg=REG_NULL;
+				}
+
+				if((0==MOD && 5==BASE) || 0b10==MOD)
+				{
+					offsetBits=32;
+					offset=cpputil::GetSignedDword(operand+2);
+					numBytes+=4;
+				}
+				else if(0b01==MOD)
+				{
+					offsetBits=8;
+					offset=cpputil::GetSignedByte(operand[2]);
+					++numBytes;
+				}
+			}
+			break;
+		case 8: // MOD==2
 			{
 				operandType=OPER_ADDR;
 				// indexShift=0; Already cleared in Clear()
