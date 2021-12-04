@@ -1442,12 +1442,11 @@ void i486DX::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,MemoryAcce
 	// Yes Operand
 	case I486_NEEDOPERAND_F6_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF6
 		inst.operandSize=8;
-		offset+=FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
+		offset+=FetchOperandRMandDecode<CPUCLASS,FUNCCLASS>(op1,inst.addressSize,inst.operandSize,cpu,inst,ptr,seg,offset,mem);
 		if(0==inst.GetREG()) // TEST RM8,I8
 		{
 			FUNCCLASS::FetchImm8(cpu,inst,ptr,seg,offset,mem);
 		}
-		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 	case I486_NEEDOPERAND_F7_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF7,
 		offset+=FetchOperandRMandDecode<CPUCLASS,FUNCCLASS>(op1,inst.addressSize,inst.operandSize,cpu,inst,ptr,seg,offset,mem);
@@ -1461,8 +1460,7 @@ void i486DX::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,MemoryAcce
 
 	case I486_NEEDOPERAND_ARPL://       0x63,
 		inst.operandSize=16;
-		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
-		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
+		FetchOperandRMandDecode<CPUCLASS,FUNCCLASS>(op1,inst.addressSize,inst.operandSize,cpu,inst,ptr,seg,offset,mem);
 		op2.DecodeMODR_MForRegister(inst.operandSize,inst.operand[0]);
 		break;
 
@@ -1729,7 +1727,7 @@ void i486DX::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,MemoryAcce
 	case I486_NEEDOPERAND_MOV_FROM_SEG: //     0x8C,
 		// Example:  8c c6           MOV SI,ES
 		// Sreg: ES=0, CS=1, SS=2, DS=3, FD=4, GS=5 (OPCODE part of MODR_M)  [1] pp.26-10
-		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
+		FetchOperandRMandDecode<CPUCLASS,FUNCCLASS>(op1,inst.addressSize,inst.operandSize,cpu,inst,ptr,seg,offset,mem);
 		// From observation on 2020/04/22, if the upper-16 bit of the destination register is undefined
 		// F-BASIC386 booted from CD may fail to open windows.
 		// From observation on 2020/10/24, if the operandSize is 32, upper 32-bit of the destination
@@ -1737,13 +1735,11 @@ void i486DX::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,MemoryAcce
 		// Therefore, MOV AX,DS and MOV EAX,DS probably should behave differently.
 		// Hence the following clause "Force it to be 16-bit" is reverted and commented out.
 		// inst.operandSize=16; // Force it to be 16-bit
-		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		op2.DecodeMODR_MForSegmentRegister(inst.operand[0]);
 		break;
 	case I486_NEEDOPERAND_MOV_TO_SEG: //       0x8E,
 		inst.operandSize=16; // Force it to be 16-bit
-		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
-		op2.Decode(inst.addressSize,inst.operandSize,inst.operand);
+		FetchOperandRMandDecode<CPUCLASS,FUNCCLASS>(op2,inst.addressSize,inst.operandSize,cpu,inst,ptr,seg,offset,mem);
 		op1.DecodeMODR_MForSegmentRegister(inst.operand[0]);
 		break;
 
@@ -1767,43 +1763,37 @@ void i486DX::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,MemoryAcce
 	case I486_NEEDOPERAND_MOV_TO_CR://        0x0F22,
 		inst.operandSize=32; // [1] pp.26-213 32bit operands are always used with these instructions, 
 		                     //      regardless of the opreand-size attribute.
-		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
+		FetchOperandRMandDecode<CPUCLASS,FUNCCLASS>(op2,inst.addressSize,32,cpu,inst,ptr,seg,offset,mem);
 		op1.DecodeMODR_MForCRRegister(inst.operand[0]);
-		op2.Decode(inst.addressSize,32,inst.operand);
 		break;
 	case I486_NEEDOPERAND_MOV_TO_DR://        0x0F23,
 		inst.operandSize=32; // [1] pp.26-213 32bit operands are always used with these instructions, 
 		                     //      regardless of the opreand-size attribute.
-		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
+		FetchOperandRMandDecode<CPUCLASS,FUNCCLASS>(op2,inst.addressSize,32,cpu,inst,ptr,seg,offset,mem);
 		op1.DecodeMODR_MForDRRegister(inst.operand[0]);
-		op2.Decode(inst.addressSize,32,inst.operand);
 		break;
 	case I486_NEEDOPERAND_MOV_TO_TR://        0x0F26,
 		inst.operandSize=32; // [1] pp.26-213 32bit operands are always used with these instructions, 
 		                     //      regardless of the opreand-size attribute.
-		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
+		FetchOperandRMandDecode<CPUCLASS,FUNCCLASS>(op2,inst.addressSize,32,cpu,inst,ptr,seg,offset,mem);
 		op1.DecodeMODR_MForTestRegister(inst.operand[0]);
-		op2.Decode(inst.addressSize,32,inst.operand);
 		break;
 	case I486_NEEDOPERAND_MOV_FROM_CR://      0x0F20,
 		inst.operandSize=32; // [1] pp.26-213 32bit operands are always used with these instructions, 
 		                     //      regardless of the opreand-size attribute.
-		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
-		op1.Decode(inst.addressSize,32,inst.operand);
+		FetchOperandRMandDecode<CPUCLASS,FUNCCLASS>(op1,inst.addressSize,32,cpu,inst,ptr,seg,offset,mem);
 		op2.DecodeMODR_MForCRRegister(inst.operand[0]);
 		break;
 	case I486_NEEDOPERAND_MOV_FROM_DR://      0x0F21,
 		inst.operandSize=32; // [1] pp.26-213 32bit operands are always used with these instructions, 
 		                     //      regardless of the opreand-size attribute.
-		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
-		op1.Decode(inst.addressSize,32,inst.operand);
+		FetchOperandRMandDecode<CPUCLASS,FUNCCLASS>(op1,inst.addressSize,32,cpu,inst,ptr,seg,offset,mem);
 		op2.DecodeMODR_MForDRRegister(inst.operand[0]);
 		break;
 	case I486_NEEDOPERAND_MOV_FROM_TR://      0x0F24,
 		inst.operandSize=32; // [1] pp.26-213 32bit operands are always used with these instructions, 
 		                     //      regardless of the opreand-size attribute.
-		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
-		op1.Decode(inst.addressSize,32,inst.operand);
+		FetchOperandRMandDecode<CPUCLASS,FUNCCLASS>(op1,inst.addressSize,32,cpu,inst,ptr,seg,offset,mem);
 		op2.DecodeMODR_MForTestRegister(inst.operand[0]);
 		break;
 
@@ -1812,9 +1802,8 @@ void i486DX::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,MemoryAcce
 
 	case I486_NEEDOPERAND_MOVSX_R32_RM16://=   0x0FBF,
 	case I486_NEEDOPERAND_MOVZX_R32_RM16://=   0x0FB7,
-		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
+		FetchOperandRMandDecode<CPUCLASS,FUNCCLASS>(op2,inst.addressSize,16,cpu,inst,ptr,seg,offset,mem);
 		op1.DecodeMODR_MForRegister(32,inst.operand[0]);
-		op2.Decode(inst.addressSize,16,inst.operand);
 		break;
 
 
@@ -1828,9 +1817,8 @@ void i486DX::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,MemoryAcce
 
 	case I486_NEEDOPERAND_SHLD_RM_I8://       0x0FA4,
 	case I486_NEEDOPERAND_SHRD_RM_I8://       0x0FAC,
-		offset+=FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
+		offset+=FetchOperandRMandDecode<CPUCLASS,FUNCCLASS>(op1,inst.addressSize,inst.operandSize,cpu,inst,ptr,seg,offset,mem);
 		FUNCCLASS::FetchImm8(cpu,inst,ptr,seg,offset,mem);
-		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		op2.DecodeMODR_MForRegister(inst.operandSize,inst.operand[0]);
 		break;
 
