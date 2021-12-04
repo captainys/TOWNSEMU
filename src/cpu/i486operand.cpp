@@ -343,6 +343,19 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 			6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,
 			6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,
 		};
+
+		static const unsigned int SIB_INDEX[8]=
+		{
+			REG_EAX,
+			REG_ECX,
+			REG_EDX,
+			REG_EBX,
+			REG_NULL,
+			REG_EBP,
+			REG_ESI,
+			REG_EDI,
+		};
+
 		switch(caseTable[operand[0]])
 		{
 		case 1:
@@ -378,15 +391,9 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 					offset=cpputil::GetSignedDword(operand+2);
 					numBytes+=4;
 				}
-				if(0b100!=INDEX)
-				{
-					indexReg=REG_32BIT_REG_BASE+INDEX;
-					indexShift=SS;
-				}
-				else
-				{
-					indexReg=REG_NULL;
-				}
+
+				indexReg=SIB_INDEX[INDEX];
+				indexShift=SS;
 			}
 			break;
 		case 7: // MOD==1
@@ -410,15 +417,9 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 				{
 					baseReg=REG_EBP;
 				}
-				if(0b100!=INDEX)
-				{
-					indexReg=REG_32BIT_REG_BASE+INDEX;
-					indexShift=SS;
-				}
-				else
-				{
-					indexReg=REG_NULL;
-				}
+
+				indexReg=SIB_INDEX[INDEX];
+				indexShift=SS;
 
 				offsetBits=8;
 				offset=cpputil::GetSignedByte(operand[2]);
@@ -446,15 +447,9 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 				{
 					baseReg=REG_EBP; // 0b10==MOD   disp[EBP][index]
 				}
-				if(0b100!=INDEX)
-				{
-					indexReg=REG_32BIT_REG_BASE+INDEX;
-					indexShift=SS;
-				}
-				else
-				{
-					indexReg=REG_NULL;
-				}
+
+				indexReg=SIB_INDEX[INDEX];
+				indexShift=SS;
 
 				offsetBits=32;
 				offset=cpputil::GetSignedDword(operand+2);
