@@ -2861,6 +2861,11 @@ private:
 	template <class CPUCLASS,class FUNCCLASS>
 	inline static unsigned int FetchOperandRM(CPUCLASS &cpu,Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem);
 
+	template <class CPUCLASS,class FUNCCLASS>
+	inline static unsigned int FetchOperandRMandDecode(
+	    Operand &op,int addressSize,int dataSize,
+	    CPUCLASS &cpu,Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem);
+
 
 	/*! Fetch an 8-bit operand.
 	    It pushes inst.operandLen and this->numBytes by 1 byte.

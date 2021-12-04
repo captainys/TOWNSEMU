@@ -996,6 +996,316 @@ unsigned int i486DX::FetchOperandRM(CPUCLASS &cpu,Instruction &inst,MemoryAccess
 	return inst.operandLen;
 }
 
+template <class CPUCLASS,class FUNCCLASS>
+inline static unsigned int i486DX::FetchOperandRMandDecode(
+    Operand &op,int addressSize,int dataSize,
+    CPUCLASS &cpu,Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
+{
+	inst.operand[0]=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,seg,offset,mem);
+
+	NUM_BYTES_TO_BASIC_REG_BASE
+	NUM_BYTES_TO_REGISTER_OPERAND_TYPE
+
+	const auto MODR_M=inst.operand[0];
+	const auto MOD=((MODR_M>>6)&3);
+	// const auto REG_OPCODE=((MODR_M>>3)&7);
+	#define R_M (MODR_M&7)
+
+	op.Clear();
+
+	if(16==addressSize)
+	{
+		static const unsigned char caseTable[256]=
+		{
+			3,3,3,3,3,3,0,3,3,3,3,3,3,3,0,3,3,3,3,3,3,3,0,3,3,3,3,3,3,3,0,3,
+			3,3,3,3,3,3,0,3,3,3,3,3,3,3,0,3,3,3,3,3,3,3,0,3,3,3,3,3,3,3,0,3,
+			1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+			1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+			2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
+			2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
+			4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,
+			4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,
+		};
+		static const unsigned int MODR_M_to_BaseIndex[256][2]=
+		{
+			{REG_BX,REG_SI},{REG_BX,REG_DI},{REG_BP,REG_SI},{REG_BP,REG_DI},{REG_SI,REG_NULL},{REG_DI,REG_NULL},{REG_BP,REG_NULL},{REG_BX,REG_NULL},
+			{REG_BX,REG_SI},{REG_BX,REG_DI},{REG_BP,REG_SI},{REG_BP,REG_DI},{REG_SI,REG_NULL},{REG_DI,REG_NULL},{REG_BP,REG_NULL},{REG_BX,REG_NULL},
+			{REG_BX,REG_SI},{REG_BX,REG_DI},{REG_BP,REG_SI},{REG_BP,REG_DI},{REG_SI,REG_NULL},{REG_DI,REG_NULL},{REG_BP,REG_NULL},{REG_BX,REG_NULL},
+			{REG_BX,REG_SI},{REG_BX,REG_DI},{REG_BP,REG_SI},{REG_BP,REG_DI},{REG_SI,REG_NULL},{REG_DI,REG_NULL},{REG_BP,REG_NULL},{REG_BX,REG_NULL},
+			{REG_BX,REG_SI},{REG_BX,REG_DI},{REG_BP,REG_SI},{REG_BP,REG_DI},{REG_SI,REG_NULL},{REG_DI,REG_NULL},{REG_BP,REG_NULL},{REG_BX,REG_NULL},
+			{REG_BX,REG_SI},{REG_BX,REG_DI},{REG_BP,REG_SI},{REG_BP,REG_DI},{REG_SI,REG_NULL},{REG_DI,REG_NULL},{REG_BP,REG_NULL},{REG_BX,REG_NULL},
+			{REG_BX,REG_SI},{REG_BX,REG_DI},{REG_BP,REG_SI},{REG_BP,REG_DI},{REG_SI,REG_NULL},{REG_DI,REG_NULL},{REG_BP,REG_NULL},{REG_BX,REG_NULL},
+			{REG_BX,REG_SI},{REG_BX,REG_DI},{REG_BP,REG_SI},{REG_BP,REG_DI},{REG_SI,REG_NULL},{REG_DI,REG_NULL},{REG_BP,REG_NULL},{REG_BX,REG_NULL},
+
+			{REG_BX,REG_SI},{REG_BX,REG_DI},{REG_BP,REG_SI},{REG_BP,REG_DI},{REG_SI,REG_NULL},{REG_DI,REG_NULL},{REG_BP,REG_NULL},{REG_BX,REG_NULL},
+			{REG_BX,REG_SI},{REG_BX,REG_DI},{REG_BP,REG_SI},{REG_BP,REG_DI},{REG_SI,REG_NULL},{REG_DI,REG_NULL},{REG_BP,REG_NULL},{REG_BX,REG_NULL},
+			{REG_BX,REG_SI},{REG_BX,REG_DI},{REG_BP,REG_SI},{REG_BP,REG_DI},{REG_SI,REG_NULL},{REG_DI,REG_NULL},{REG_BP,REG_NULL},{REG_BX,REG_NULL},
+			{REG_BX,REG_SI},{REG_BX,REG_DI},{REG_BP,REG_SI},{REG_BP,REG_DI},{REG_SI,REG_NULL},{REG_DI,REG_NULL},{REG_BP,REG_NULL},{REG_BX,REG_NULL},
+			{REG_BX,REG_SI},{REG_BX,REG_DI},{REG_BP,REG_SI},{REG_BP,REG_DI},{REG_SI,REG_NULL},{REG_DI,REG_NULL},{REG_BP,REG_NULL},{REG_BX,REG_NULL},
+			{REG_BX,REG_SI},{REG_BX,REG_DI},{REG_BP,REG_SI},{REG_BP,REG_DI},{REG_SI,REG_NULL},{REG_DI,REG_NULL},{REG_BP,REG_NULL},{REG_BX,REG_NULL},
+			{REG_BX,REG_SI},{REG_BX,REG_DI},{REG_BP,REG_SI},{REG_BP,REG_DI},{REG_SI,REG_NULL},{REG_DI,REG_NULL},{REG_BP,REG_NULL},{REG_BX,REG_NULL},
+			{REG_BX,REG_SI},{REG_BX,REG_DI},{REG_BP,REG_SI},{REG_BP,REG_DI},{REG_SI,REG_NULL},{REG_DI,REG_NULL},{REG_BP,REG_NULL},{REG_BX,REG_NULL},
+
+			{REG_BX,REG_SI},{REG_BX,REG_DI},{REG_BP,REG_SI},{REG_BP,REG_DI},{REG_SI,REG_NULL},{REG_DI,REG_NULL},{REG_BP,REG_NULL},{REG_BX,REG_NULL},
+			{REG_BX,REG_SI},{REG_BX,REG_DI},{REG_BP,REG_SI},{REG_BP,REG_DI},{REG_SI,REG_NULL},{REG_DI,REG_NULL},{REG_BP,REG_NULL},{REG_BX,REG_NULL},
+			{REG_BX,REG_SI},{REG_BX,REG_DI},{REG_BP,REG_SI},{REG_BP,REG_DI},{REG_SI,REG_NULL},{REG_DI,REG_NULL},{REG_BP,REG_NULL},{REG_BX,REG_NULL},
+			{REG_BX,REG_SI},{REG_BX,REG_DI},{REG_BP,REG_SI},{REG_BP,REG_DI},{REG_SI,REG_NULL},{REG_DI,REG_NULL},{REG_BP,REG_NULL},{REG_BX,REG_NULL},
+			{REG_BX,REG_SI},{REG_BX,REG_DI},{REG_BP,REG_SI},{REG_BP,REG_DI},{REG_SI,REG_NULL},{REG_DI,REG_NULL},{REG_BP,REG_NULL},{REG_BX,REG_NULL},
+			{REG_BX,REG_SI},{REG_BX,REG_DI},{REG_BP,REG_SI},{REG_BP,REG_DI},{REG_SI,REG_NULL},{REG_DI,REG_NULL},{REG_BP,REG_NULL},{REG_BX,REG_NULL},
+			{REG_BX,REG_SI},{REG_BX,REG_DI},{REG_BP,REG_SI},{REG_BP,REG_DI},{REG_SI,REG_NULL},{REG_DI,REG_NULL},{REG_BP,REG_NULL},{REG_BX,REG_NULL},
+			{REG_BX,REG_SI},{REG_BX,REG_DI},{REG_BP,REG_SI},{REG_BP,REG_DI},{REG_SI,REG_NULL},{REG_DI,REG_NULL},{REG_BP,REG_NULL},{REG_BX,REG_NULL},
+
+			{REG_BX,REG_SI},{REG_BX,REG_DI},{REG_BP,REG_SI},{REG_BP,REG_DI},{REG_SI,REG_NULL},{REG_DI,REG_NULL},{REG_BP,REG_NULL},{REG_BX,REG_NULL},
+			{REG_BX,REG_SI},{REG_BX,REG_DI},{REG_BP,REG_SI},{REG_BP,REG_DI},{REG_SI,REG_NULL},{REG_DI,REG_NULL},{REG_BP,REG_NULL},{REG_BX,REG_NULL},
+			{REG_BX,REG_SI},{REG_BX,REG_DI},{REG_BP,REG_SI},{REG_BP,REG_DI},{REG_SI,REG_NULL},{REG_DI,REG_NULL},{REG_BP,REG_NULL},{REG_BX,REG_NULL},
+			{REG_BX,REG_SI},{REG_BX,REG_DI},{REG_BP,REG_SI},{REG_BP,REG_DI},{REG_SI,REG_NULL},{REG_DI,REG_NULL},{REG_BP,REG_NULL},{REG_BX,REG_NULL},
+			{REG_BX,REG_SI},{REG_BX,REG_DI},{REG_BP,REG_SI},{REG_BP,REG_DI},{REG_SI,REG_NULL},{REG_DI,REG_NULL},{REG_BP,REG_NULL},{REG_BX,REG_NULL},
+			{REG_BX,REG_SI},{REG_BX,REG_DI},{REG_BP,REG_SI},{REG_BP,REG_DI},{REG_SI,REG_NULL},{REG_DI,REG_NULL},{REG_BP,REG_NULL},{REG_BX,REG_NULL},
+			{REG_BX,REG_SI},{REG_BX,REG_DI},{REG_BP,REG_SI},{REG_BP,REG_DI},{REG_SI,REG_NULL},{REG_DI,REG_NULL},{REG_BP,REG_NULL},{REG_BX,REG_NULL},
+			{REG_BX,REG_SI},{REG_BX,REG_DI},{REG_BP,REG_SI},{REG_BP,REG_DI},{REG_SI,REG_NULL},{REG_DI,REG_NULL},{REG_BP,REG_NULL},{REG_BX,REG_NULL},
+		};
+
+		switch(caseTable[inst.operand[0]])
+		{
+		case 0:
+			FUNCCLASS::FetchInstructionTwoBytes(inst.operand+1,cpu,ptr,inst.codeAddressSize,seg,offset+1,mem);
+
+			op.operandType=OPER_ADDR;
+			op.baseReg=REG_NULL;
+			op.indexReg=REG_NULL;
+			// indexShift=0; Already cleared in Clear()
+			op.offset=cpputil::GetSignedWord(inst.operand+1);
+			op.offsetBits=16;
+			inst.operandLen=3;
+			break;
+		case 1:
+			inst.operand[1]=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,seg,offset+1,mem);
+
+			op.operandType=OPER_ADDR;
+			// indexShisft=0; Already cleared in Clear()
+			op.baseReg=MODR_M_to_BaseIndex[MODR_M][0];
+			op.indexReg=MODR_M_to_BaseIndex[MODR_M][1];
+			op.offsetBits=8;
+			op.offset=cpputil::GetSignedByte(inst.operand[1]);
+			inst.operandLen=2;
+			break;
+		case 2:
+			FUNCCLASS::FetchInstructionTwoBytes(inst.operand+1,cpu,ptr,inst.codeAddressSize,seg,offset+1,mem);
+
+			op.operandType=OPER_ADDR;
+			// indexShisft=0; Already cleared in Clear()
+			op.baseReg=MODR_M_to_BaseIndex[MODR_M][0];
+			op.indexReg=MODR_M_to_BaseIndex[MODR_M][1];
+			op.offsetBits=16;
+			op.offset=cpputil::GetSignedWord(inst.operand+1);
+			inst.operandLen=3;
+			break;
+		case 3:
+			op.operandType=OPER_ADDR;
+			// indexShisft=0; Already cleared in Clear()
+			op.baseReg=MODR_M_to_BaseIndex[MODR_M][0];
+			op.indexReg=MODR_M_to_BaseIndex[MODR_M][1];
+			op.offset=0;  // Tentative
+			op.offsetBits=16;
+			inst.operandLen=1;
+			break;
+		case 4:
+			op.operandType=numBytesToRegisterOperandType[dataSize>>3];
+			op.reg=R_M+(numBytesToBasicRegBase[dataSize>>3]);
+			inst.operandLen=1;
+			break;
+		}
+	}
+	else // if(32==addressSize)
+	{
+		#define A 0
+		#define B 1
+		#define C 2
+		#define D 3
+		#define E 4
+		#define F 5
+		#define G 6
+		#define H 7
+
+		static const unsigned char caseTable[256]=
+		{
+			E,E,E,E,B,A,E,E,E,E,E,E,B,A,E,E,E,E,E,E,B,A,E,E,E,E,E,E,B,A,E,E,
+			E,E,E,E,B,A,E,E,E,E,E,E,B,A,E,E,E,E,E,E,B,A,E,E,E,E,E,E,B,A,E,E,
+			C,C,C,C,G,C,C,C,C,C,C,C,G,C,C,C,C,C,C,C,G,C,C,C,C,C,C,C,G,C,C,C,
+			C,C,C,C,G,C,C,C,C,C,C,C,G,C,C,C,C,C,C,C,G,C,C,C,C,C,C,C,G,C,C,C,
+			D,D,D,D,H,D,D,D,D,D,D,D,H,D,D,D,D,D,D,D,H,D,D,D,D,D,D,D,H,D,D,D,
+			D,D,D,D,H,D,D,D,D,D,D,D,H,D,D,D,D,D,D,D,H,D,D,D,D,D,D,D,H,D,D,D,
+			F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,
+			F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,F,
+		};
+
+		static const unsigned int SIB_INDEX[8]=
+		{
+			REG_EAX,
+			REG_ECX,
+			REG_EDX,
+			REG_EBX,
+			REG_NULL,
+			REG_EBP,
+			REG_ESI,
+			REG_EDI,
+		};
+
+		switch(caseTable[inst.operand[0]])
+		{
+		case A:
+			FUNCCLASS::FetchInstructionFourBytes(inst.operand+1,cpu,ptr,inst.codeAddressSize,seg,offset+1,mem);
+
+			op.operandType=OPER_ADDR;
+			op.baseReg=REG_NULL;
+			op.indexReg=REG_NULL;
+			// indexShift=0; Already cleared in Clear()
+			op.offset=cpputil::GetSignedDword(inst.operand+1);
+			op.offsetBits=32;
+			inst.operandLen=5;
+			break;
+		case B: // MOD==0
+			{
+				inst.operand[1]=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,seg,offset+1,mem);
+
+				op.operandType=OPER_ADDR;
+				// indexShift=0; Already cleared in Clear()
+				op.offset=0;
+
+				auto SIB=inst.operand[1];
+				auto SS=((SIB>>6)&3);
+				auto INDEX=((SIB>>3)&7);
+				auto BASE=(SIB&7);
+
+				if(5!=BASE)
+				{
+					op.baseReg=REG_32BIT_REG_BASE+BASE;
+					inst.operandLen=2;
+				}
+				else
+				{
+					FUNCCLASS::FetchInstructionFourBytes(inst.operand+2,cpu,ptr,inst.codeAddressSize,seg,offset+2,mem);
+
+					op.baseReg=REG_NULL; // 0b00==MOD && 5==BASE  disp32[index]
+					op.offsetBits=32;
+					op.offset=cpputil::GetSignedDword(inst.operand+2);
+					inst.operandLen=6;
+				}
+
+				op.indexReg=SIB_INDEX[INDEX];
+				op.indexShift=SS;
+			}
+			break;
+		case G: // MOD==1
+			{
+				FUNCCLASS::FetchInstructionTwoBytes(inst.operand+1,cpu,ptr,inst.codeAddressSize,seg,offset+1,mem);
+
+				op.operandType=OPER_ADDR;
+				// indexShift=0; Already cleared in Clear()
+				op.offset=0;
+
+				auto SIB=inst.operand[1];
+				auto SS=((SIB>>6)&3);
+				auto INDEX=((SIB>>3)&7);
+				auto BASE=(SIB&7);
+
+				if(5!=BASE)
+				{
+					op.baseReg=REG_32BIT_REG_BASE+BASE;
+				}
+				else
+				{
+					op.baseReg=REG_EBP;
+				}
+
+				op.indexReg=SIB_INDEX[INDEX];
+				op.indexShift=SS;
+
+				op.offsetBits=8;
+				op.offset=cpputil::GetSignedByte(inst.operand[2]);
+
+				inst.operandLen=3;
+			}
+			break;
+		case H: // MOD==2
+			{
+				inst.operand[1]=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,seg,offset+1,mem);
+				FUNCCLASS::FetchInstructionFourBytes(inst.operand+2,cpu,ptr,inst.codeAddressSize,seg,offset+2,mem);
+
+				op.operandType=OPER_ADDR;
+				// indexShift=0; Already cleared in Clear()
+				op.offset=0;
+
+				auto SIB=inst.operand[1];
+				auto SS=((SIB>>6)&3);
+				auto INDEX=((SIB>>3)&7);
+				auto BASE=(SIB&7);
+
+				if(5!=BASE)
+				{
+					op.baseReg=REG_32BIT_REG_BASE+BASE;
+				}
+				else
+				{
+					op.baseReg=REG_EBP; // 0b10==MOD   disp[EBP][index]
+				}
+
+				op.indexReg=SIB_INDEX[INDEX];
+				op.indexShift=SS;
+
+				op.offsetBits=32;
+				op.offset=cpputil::GetSignedDword(inst.operand+2);
+
+				inst.operandLen=6;
+			}
+			break;
+		case C:
+			inst.operand[1]=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,seg,offset+1,mem);
+
+			op.operandType=OPER_ADDR;
+			// indexShift=0; Already cleared in Clear()
+
+			op.baseReg=REG_32BIT_REG_BASE+R_M;
+			op.indexReg=REG_NULL;
+
+			op.offsetBits=8;
+			op.offset=cpputil::GetSignedByte(inst.operand[1]);
+			inst.operandLen=2;
+			break;
+		case D:
+			FUNCCLASS::FetchInstructionFourBytes(inst.operand+1,cpu,ptr,inst.codeAddressSize,seg,offset+1,mem);
+
+			op.operandType=OPER_ADDR;
+			// indexShift=0; Already cleared in Clear()
+
+			op.baseReg=REG_32BIT_REG_BASE+R_M;
+			op.indexReg=REG_NULL;
+
+			op.offsetBits=32;
+			op.offset=cpputil::GetSignedDword(inst.operand+1);
+			inst.operandLen=5;
+			break;
+		case E:
+			op.operandType=OPER_ADDR;
+			// indexShift=0; Already cleared in Clear()
+			op.offset=0;
+			inst.operandLen=1;
+
+			op.baseReg=REG_32BIT_REG_BASE+R_M;
+			op.indexReg=REG_NULL;
+			break;
+		case F:
+			op.operandType=numBytesToRegisterOperandType[dataSize>>3];
+			op.reg=R_M+(numBytesToBasicRegBase[dataSize>>3]);
+			inst.operandLen=1;
+			break;
+		}
+	}
+
+	inst.numBytes+=inst.operandLen;
+	return inst.operandLen;
+}
+
 std::string i486DX::Instruction::SegmentOverrideString(int segOverridePrefix)
 {
 	switch(segOverridePrefix)
@@ -1053,34 +1363,30 @@ void i486DX::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,MemoryAcce
 
 	// RM_IMM8
 	case I486_NEEDOPERAND_RM_IMM8:
-		offset+=FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
+		offset+=FetchOperandRMandDecode<CPUCLASS,FUNCCLASS>(op1,inst.addressSize,8,cpu,inst,ptr,seg,offset,mem);
 		FUNCCLASS::FetchImm8(cpu,inst,ptr,seg,offset,mem);
-		op1.Decode(inst.addressSize,8,inst.operand);
 		break;
 
 
 
 	// RM_IMM
 	case I486_NEEDOPERAND_RM_IMM:
-		offset+=FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
+		offset+=FetchOperandRMandDecode<CPUCLASS,FUNCCLASS>(op1,inst.addressSize,inst.operandSize,cpu,inst,ptr,seg,offset,mem);
 		FUNCCLASS::FetchImm8(cpu,inst,ptr,seg,offset,mem);
-		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 
 
 
 	// RM8
 	case I486_NEEDOPERAND_RM8:
-		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
-		op1.Decode(inst.addressSize,8,inst.operand);
+		FetchOperandRMandDecode<CPUCLASS,FUNCCLASS>(op1,inst.addressSize,8,cpu,inst,ptr,seg,offset,mem);
 		break;
 
 
 
 	// RM_X
 	case I486_NEEDOPERAND_RM_X:
-		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
-		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
+		FetchOperandRMandDecode<CPUCLASS,FUNCCLASS>(op1,inst.addressSize,inst.operandSize,cpu,inst,ptr,seg,offset,mem);
 		break;
 	// RM_R(Will be integrated with RM_X)
 	case I486_NEEDOPERAND_BT_R_RM://    0x0FA3,
@@ -1089,8 +1395,7 @@ void i486DX::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,MemoryAcce
 	case I486_NEEDOPERAND_BTR_RM_R://   0x0FB3,
 	case I486_NEEDOPERAND_SHLD_RM_CL://       0x0FA5,
 	case I486_NEEDOPERAND_SHRD_RM_CL://       0x0FAD,
-		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
-		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
+		FetchOperandRMandDecode<CPUCLASS,FUNCCLASS>(op1,inst.addressSize,inst.operandSize,cpu,inst,ptr,seg,offset,mem);
 		op2.DecodeMODR_MForRegister(inst.operandSize,inst.operand[0]);
 		break;
 
@@ -1112,8 +1417,7 @@ void i486DX::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,MemoryAcce
 
 	// X_RM
 	case I486_NEEDOPERAND_X_RM:
-		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
-		op2.Decode(inst.addressSize,inst.operandSize,inst.operand);
+		FetchOperandRMandDecode<CPUCLASS,FUNCCLASS>(op2,inst.addressSize,inst.operandSize,cpu,inst,ptr,seg,offset,mem);
 		break;
 	// R_RM(WIll be integrated with X_RM)
 	case I486_NEEDOPERAND_BSF_R_RM://   0x0FBC,
@@ -1131,8 +1435,7 @@ void i486DX::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,MemoryAcce
 
 	// X_RM8
 	case I486_NEEDOPERAND_X_RM8:
-		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
-		op2.Decode(inst.addressSize,8,inst.operand);
+		FetchOperandRMandDecode<CPUCLASS,FUNCCLASS>(op2,inst.addressSize,8,cpu,inst,ptr,seg,offset,mem);
 		break;
 
 
