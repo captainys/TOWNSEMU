@@ -408,14 +408,7 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 				}
 				else
 				{
-					if(0b00==MOD) // disp32[index]
-					{
-						baseReg=REG_NULL;
-					}
-					else if(0b01==MOD || 0b10==MOD) // disp[EBP][index]
-					{
-						baseReg=REG_EBP;
-					}
+					baseReg=REG_EBP;
 				}
 				if(0b100!=INDEX)
 				{
@@ -427,18 +420,9 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 					indexReg=REG_NULL;
 				}
 
-				if((0==MOD && 5==BASE) || 0b10==MOD)
-				{
-					offsetBits=32;
-					offset=cpputil::GetSignedDword(operand+2);
-					numBytes+=4;
-				}
-				else if(0b01==MOD)
-				{
-					offsetBits=8;
-					offset=cpputil::GetSignedByte(operand[2]);
-					++numBytes;
-				}
+				offsetBits=8;
+				offset=cpputil::GetSignedByte(operand[2]);
+				++numBytes;
 			}
 			break;
 		case 8: // MOD==2
