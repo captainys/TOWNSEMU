@@ -2855,12 +2855,9 @@ private:
 
 
 
-	/*! Fetch an operand defined by the RM byte.
+	/*! Fetch an operand defined by the RM byte and decode.
 	    Returns the number of bytes fetched.
 	*/
-	template <class CPUCLASS,class FUNCCLASS>
-	inline static unsigned int FetchOperandRM(CPUCLASS &cpu,Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem);
-
 	template <class CPUCLASS,class FUNCCLASS>
 	inline static unsigned int FetchOperandRMandDecode(
 	    Operand &op,int addressSize,int dataSize,

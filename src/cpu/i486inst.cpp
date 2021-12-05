@@ -895,107 +895,6 @@ inline unsigned int i486DX::DebugFetchImm16or32(Instruction &inst,MemoryAccess::
 
 
 
-
-
-
-template <class CPUCLASS,class FUNCCLASS>
-unsigned int i486DX::FetchOperandRM(CPUCLASS &cpu,Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
-{
-	inst.operand[0]=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,seg,offset,mem);
-
-	// How many bytes to fetch depends on MODR_M byte, which is always operand[0].
-	// Therefore, it can be made a table.
-
-	// [1] Table 26-1, 26-2, 26-3, pp. 26-4,26-5,26-6
-	if(16==inst.addressSize)
-	{
-		static const char table[256]=
-		{
-			0,0,0,0,0,0,2,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,2,0,
-			0,0,0,0,0,0,2,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,2,0,
-			1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-			1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-			2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
-			2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
-			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-		};
-		if(2==table[inst.operand[0]])
-		{
-			FUNCCLASS::FetchInstructionTwoBytes(inst.operand+1,cpu,ptr,inst.codeAddressSize,seg,offset+1,mem);
-			inst.operandLen=3;
-		}
-		else if(1==table[inst.operand[0]])
-		{
-			inst.operand[1]=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,seg,offset+1,mem);
-			inst.operandLen=2;
-		}
-		else
-		{
-			inst.operandLen=1;
-		}
-	}
-	else // if(32==inst.addressSize)
-	{
-		const static unsigned char table[256]=
-		{
-			0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,
-			0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,0,0,0,0,1,2,0,0,
-			4,4,4,4,3,4,4,4,4,4,4,4,3,4,4,4,4,4,4,4,3,4,4,4,4,4,4,4,3,4,4,4,
-			4,4,4,4,3,4,4,4,4,4,4,4,3,4,4,4,4,4,4,4,3,4,4,4,4,4,4,4,3,4,4,4,
-			6,6,6,6,5,6,6,6,6,6,6,6,5,6,6,6,6,6,6,6,5,6,6,6,6,6,6,6,5,6,6,6,
-			6,6,6,6,5,6,6,6,6,6,6,6,5,6,6,6,6,6,6,6,5,6,6,6,6,6,6,6,5,6,6,6,
-			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-		};
-		switch(table[inst.operand[0]])
-		{
-		case 1:
-			{
-				inst.operand[1]=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,seg,offset+1,mem);
-
-				auto SIB=inst.operand[1];
-				auto BASE=(SIB&7);
-				// Special case MOD=0b00 && BASE==5 [1] Table 26-4 pp.26-7
-				// No base, [disp32+scaled_index]
-				if(5==BASE)
-				{
-					FUNCCLASS::FetchInstructionFourBytes(inst.operand+2,cpu,ptr,inst.codeAddressSize,seg,offset+2,mem);
-					inst.operandLen=6;
-				}
-				else
-				{
-					inst.operandLen=2;
-				}
-			}
-			break;
-		case 2:
-		case 6:
-			FUNCCLASS::FetchInstructionFourBytes(inst.operand+1,cpu,ptr,inst.codeAddressSize,seg,offset+1,mem);
-			inst.operandLen=5;
-			break;
-		case 3:
-			FUNCCLASS::FetchInstructionTwoBytes(inst.operand+1,cpu,ptr,inst.codeAddressSize,seg,offset+1,mem);
-			inst.operandLen=3;
-			break;
-		case 4:
-			inst.operand[1]=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,seg,offset+1,mem);
-			inst.operandLen=2;
-			break;
-		case 5:
-			inst.operand[1]=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,seg,offset+1,mem);
-			FUNCCLASS::FetchInstructionFourBytes(inst.operand+2,cpu,ptr,inst.codeAddressSize,seg,offset+2,mem);
-			inst.operandLen=6;
-			break;
-		default:
-			inst.operandLen=1;
-			break;
-		}
-	}
-	inst.numBytes+=inst.operandLen;
-	return inst.operandLen;
-}
-
 template <class CPUCLASS,class FUNCCLASS>
 inline static unsigned int i486DX::FetchOperandRMandDecode(
     Operand &op,int addressSize,int dataSize,
@@ -1493,8 +1392,7 @@ void i486DX::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,MemoryAcce
 			}
 			else
 			{
-				FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
-				op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
+				FetchOperandRMandDecode<CPUCLASS,FUNCCLASS>(op1,inst.addressSize,inst.operandSize,cpu,inst,ptr,seg,offset,mem);
 			}
 		}
 		break;
@@ -1514,8 +1412,7 @@ void i486DX::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,MemoryAcce
 			}
 			else
 			{
-				FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
-				op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
+				FetchOperandRMandDecode<CPUCLASS,FUNCCLASS>(op1,inst.addressSize,inst.operandSize,cpu,inst,ptr,seg,offset,mem);
 			}
 		}
 		break;
@@ -1529,8 +1426,7 @@ void i486DX::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,MemoryAcce
 			}
 			else
 			{
-				FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
-				op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
+				FetchOperandRMandDecode<CPUCLASS,FUNCCLASS>(op1,inst.addressSize,inst.operandSize,cpu,inst,ptr,seg,offset,mem);
 			}
 		}
 		break;
@@ -1551,8 +1447,7 @@ void i486DX::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,MemoryAcce
 				case 3: // FISTP m32int
 				case 5: // FLD m80real
 				case 7: // FSTP m80real
-					FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
-					op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
+					FetchOperandRMandDecode<CPUCLASS,FUNCCLASS>(op1,inst.addressSize,inst.operandSize,cpu,inst,ptr,seg,offset,mem);
 					break;
 				case 1:
 				case 2:
@@ -1577,8 +1472,7 @@ void i486DX::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,MemoryAcce
 			}
 			else
 			{
-				FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
-				op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
+				FetchOperandRMandDecode<CPUCLASS,FUNCCLASS>(op1,inst.addressSize,inst.operandSize,cpu,inst,ptr,seg,offset,mem);
 			}
 		}
 		break;
@@ -1615,8 +1509,7 @@ void i486DX::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,MemoryAcce
 				case 2: // FST m64real
 				case 3: // FSTP m64real
 				case 7: // FNSTSW m2byte
-					FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
-					op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
+					FetchOperandRMandDecode<CPUCLASS,FUNCCLASS>(op1,inst.addressSize,inst.operandSize,cpu,inst,ptr,seg,offset,mem);
 					break;
 				}
 			}
@@ -1642,8 +1535,7 @@ void i486DX::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,MemoryAcce
 			}
 			else
 			{
-				FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
-				op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
+				FetchOperandRMandDecode<CPUCLASS,FUNCCLASS>(op1,inst.addressSize,inst.operandSize,cpu,inst,ptr,seg,offset,mem);
 			}
 		}
 		break;
@@ -1658,8 +1550,7 @@ void i486DX::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,MemoryAcce
 			}
 			else
 			{
-				FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
-				op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
+				FetchOperandRMandDecode<CPUCLASS,FUNCCLASS>(op1,inst.addressSize,inst.operandSize,cpu,inst,ptr,seg,offset,mem);
 				switch(Instruction::GetREG(MODR_M))
 				{
 				case 0:
@@ -1717,8 +1608,7 @@ void i486DX::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,MemoryAcce
 			{
 				inst.operandSize=16;
 			}
-			FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
-			op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
+			FetchOperandRMandDecode<CPUCLASS,FUNCCLASS>(op1,inst.addressSize,inst.operandSize,cpu,inst,ptr,seg,offset,mem);
 		}
 		break;
 
@@ -1826,15 +1716,13 @@ void i486DX::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,MemoryAcce
 
 	case I486_NEEDOPERAND_SETX:
 		inst.operandSize=8;
-		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
-		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
+		FetchOperandRMandDecode<CPUCLASS,FUNCCLASS>(op1,inst.addressSize,inst.operandSize,cpu,inst,ptr,seg,offset,mem);
 		break;
 
 
 	case I486_NEEDOPERAND_SLDT_STR_LLDT_LTR_VERR_VERW://             0x0F00,
 		inst.operandSize=16;
-		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
-		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
+		FetchOperandRMandDecode<CPUCLASS,FUNCCLASS>(op1,inst.addressSize,inst.operandSize,cpu,inst,ptr,seg,offset,mem);
 		break;
 
 
