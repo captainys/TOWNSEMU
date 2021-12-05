@@ -34,6 +34,15 @@ public:
 	{
 		return ptr.FetchByte();
 	}
+	inline static unsigned int PeekInstructionByte(
+		CPUCLASS &cpu,
+		MemoryAccess::ConstPointer &ptr,
+		unsigned int,
+		const SegmentRegister &,
+		unsigned int,const Memory &)
+	{
+		return ptr.PeekByte();
+	}
 	inline static void FetchInstructionTwoBytes(
 		unsigned char dat[2],
 		CPUCLASS &cpu,
@@ -142,7 +151,16 @@ public:
 	}
 	inline static unsigned int FetchInstructionByte(
 		CPUCLASS &cpu,
-		MemoryAccess::ConstPointer &ptr,
+		MemoryAccess::ConstPointer &,
+		unsigned int addressSize,
+		const SegmentRegister &seg,
+		unsigned int offset,const Memory &mem)
+	{
+		return cpu.DebugFetchByte(addressSize,seg,offset,mem);
+	}
+	inline static unsigned int PeekInstructionByte(
+		CPUCLASS &cpu,
+		MemoryAccess::ConstPointer &,
 		unsigned int addressSize,
 		const SegmentRegister &seg,
 		unsigned int offset,const Memory &mem)
@@ -231,6 +249,15 @@ public:
 		unsigned int offset,const Memory &mem)
 	{
 		return cpu.FetchInstructionByte(ptr,addressSize,seg,offset,mem);
+	}
+	inline static unsigned int PeekInstructionByte(
+		CPUCLASS &cpu,
+		MemoryAccess::ConstPointer &ptr,
+		unsigned int addressSize,
+		const SegmentRegister &seg,
+		unsigned int offset,const Memory &mem)
+	{
+		return cpu.PeekInstructionByte(ptr,addressSize,seg,offset,mem);
 	}
 	inline static void FetchInstructionTwoBytes(
 		unsigned char dat[2],

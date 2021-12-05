@@ -1710,16 +1710,16 @@ void i486DX::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,MemoryAcce
 
 
 	case I486_NEEDOPERAND_LGDT_LIDT_SGDT_SIDT:
-		// I cannot change this to FetchOperandRMandDecode because operand size
-		// cannot be fixed until I fetch operands.
-		// The effect for the performance is minimum, but I cannot remove
-		// FetchOperandRM and Decode.  WTF.
-		FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
-		if(4==inst.GetREG() || 6==inst.GetREG())
 		{
-			inst.operandSize=16;
+			auto MODR_M=FUNCCLASS::PeekInstructionByte(cpu,ptr,inst.addressSize,seg,offset,mem);
+			auto REG=inst.GetREG(MODR_M);
+			if(4==REG || 6==REG)
+			{
+				inst.operandSize=16;
+			}
+			FetchOperandRM<CPUCLASS,FUNCCLASS>(cpu,inst,ptr,seg,offset,mem);
+			op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		}
-		op1.Decode(inst.addressSize,inst.operandSize,inst.operand);
 		break;
 
 
