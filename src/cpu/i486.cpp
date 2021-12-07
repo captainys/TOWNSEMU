@@ -81,10 +81,6 @@ const char *const i486DX::RegToStr[REG_TOTAL_NUMBER_OF_REGISTERS]=
 	"DS",
 	"FS",
 	"GS",
-	"GDT",
-	"LDT",
-	"TR",
-	"IDTR",
 };
 
 const bool i486DX::ParityTable[256]=
@@ -2677,75 +2673,7 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 		value.numBytes=2;
 		cpputil::PutWord(value.byteData,state.sreg[op.reg-REG_SEGMENT_REG_BASE].value);
 		break;
-	case OPER_REG:
-		switch(op.reg)
-		{
-		case REG_AL:
-		case REG_CL:
-		case REG_BL:
-		case REG_DL:
-		case REG_AH:
-		case REG_CH:
-		case REG_BH:
-		case REG_DH:
-			Abort("OPER_REG8 should be used for AL,CL,DL,BL,AH,CH,DH,BH");
-			break;
 
-		case REG_AX:
-		case REG_CX:
-		case REG_DX:
-		case REG_BX:
-		case REG_SP:
-		case REG_BP:
-		case REG_SI:
-		case REG_DI:
-			Abort("OPER_REG16 should be used for AX,CX,DX,BX,SP,BP,SI,DI");
-			break;
-
-		case REG_EAX:
-		case REG_ECX:
-		case REG_EDX:
-		case REG_EBX:
-		case REG_ESP:
-		case REG_EBP:
-		case REG_ESI:
-		case REG_EDI:
-			Abort("OPER_REG32 should be used for AX,CX,DX,BX,SP,BP,SI,DI");
-			break;
-
-		case REG_IP:
-			Abort("IP cannot be an operand");
-			break;
-		case REG_EIP:
-			Abort("EIP cannot be an operand");
-			break;
-		case REG_EFLAGS:
-			Abort("EFLAGS cannot be an operand");
-			break;
-
-		case REG_ES:
-		case REG_CS:
-		case REG_SS:
-		case REG_DS:
-		case REG_FS:
-		case REG_GS:
-			Abort("OPER_SREG should be used for AX,CX,DX,BX,SP,BP,SI,DI");
-			break;
-
-		case REG_GDT:
-			Abort("i486DX::EvaluateOperand, Check GDT Byte Order");
-			break;
-		case REG_LDT:
-			Abort("i486DX::EvaluateOperand, Check LDT Byte Order");
-			break;
-		case REG_TR:
-			Abort("i486DX::EvaluateOperand, Check TR Byte Order");
-			break;
-		case REG_IDTR:
-			Abort("i486DX::EvaluateOperand, Check IDTR Byte Order");
-			break;
-		}
-		break;
 	case OPER_CR0:
 	case OPER_CR1:
 	case OPER_CR2:
@@ -2937,72 +2865,7 @@ void i486DX::StoreOperandValue(
 	case OPER_SREG:
 		LoadSegmentRegister(state.sreg[dst.reg-REG_SEGMENT_REG_BASE],cpputil::GetWord(value.byteData),mem);
 		break;
-	case OPER_REG:
-		switch(dst.reg)
-		{
-		case REG_AL:
-		case REG_CL:
-		case REG_BL:
-		case REG_DL:
-		case REG_AH:
-		case REG_CH:
-		case REG_BH:
-		case REG_DH:
-			Abort("OPER_REG8 should be used for AL,CL,DL,BL,AH,CH,DH,BH");
-			break;
 
-		case REG_AX:
-		case REG_CX:
-		case REG_DX:
-		case REG_BX:
-		case REG_SP:
-		case REG_BP:
-		case REG_SI:
-		case REG_DI:
-			Abort("OPER_REG16 should be used for AX,CX,DX,BX,SP,BP,SI,DI");
-			break;
-
-		case REG_EAX:
-		case REG_ECX:
-		case REG_EDX:
-		case REG_EBX:
-		case REG_ESP:
-		case REG_EBP:
-		case REG_ESI:
-		case REG_EDI:
-			Abort("OPER_REG32 should be used for AX,CX,DX,BX,SP,BP,SI,DI");
-			break;
-
-		case REG_EIP:
-			state.EIP=cpputil::GetDword(value.byteData);
-			break;
-		case REG_EFLAGS:
-			state.EFLAGS=cpputil::GetDword(value.byteData);
-			break;
-
-		case REG_ES:
-		case REG_CS:
-		case REG_SS:
-		case REG_DS:
-		case REG_FS:
-		case REG_GS:
-			Abort("OPER_SREG should be used for AX,CX,DX,BX,SP,BP,SI,DI");
-			break;
-
-		case REG_GDT:
-			Abort("i486DX::StoreOperandValue, I don't think GDTR can be an operand.");
-			break;
-		case REG_LDT:
-			Abort("i486DX::StoreOperandValue, I don't think LDTR can be an operand.");
-			break;
-		case REG_TR:
-			Abort("i486DX::StoreOperandValue, I don't think TR can be an operand.");
-			break;
-		case REG_IDTR:
-			Abort("i486DX::StoreOperandValue, I don't think IDTR can be an operand.");
-			break;
-		}
-		break;
 	case OPER_CR0:
 	case OPER_CR1:
 	case OPER_CR2:

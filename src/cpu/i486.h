@@ -147,11 +147,6 @@ public:
 		REG_FS,
 		REG_GS,
 
-		REG_GDT,
-		REG_LDT,
-		REG_TR,
-		REG_IDTR,
-
 	REG_TOTAL_NUMBER_OF_REGISTERS
 	};
 	enum
@@ -1046,7 +1041,6 @@ public:
 		OPER_UNDEFINED,
 		OPER_ADDR,    // BaseReg+IndexReg*IndexScaling+Offset
 		OPER_FARADDR,
-		OPER_REG,
 		OPER_REG32, // EAX,ECX,EDX,EBX,ESP,EBP,ESI,EDI
 		OPER_REG16, // AX,CX,DX,BX,SP,BP,SI,DI
 		OPER_REG8,  // AL,CL,DL,BL,AH,CH,DH,BH

@@ -598,7 +598,6 @@ std::string i486DX::Operand::Disassemble(void) const
 		return DisassembleAsAddr();
 	case OPER_FARADDR:
 		return DisassembleAsFarAddr();
-	case OPER_REG:
 	case OPER_SREG:
 	case OPER_REG8:
 	case OPER_REG16:
@@ -802,7 +801,6 @@ unsigned int i486DX::Operand::GetSize(void) const
 		return 0;
 	case OPER_FARADDR:
 		return 0;
-	case OPER_REG:
 	case OPER_SREG:
 	case OPER_REG8:
 	case OPER_REG16:
