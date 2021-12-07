@@ -85,14 +85,6 @@ const char *const i486DX::RegToStr[REG_TOTAL_NUMBER_OF_REGISTERS]=
 	"LDT",
 	"TR",
 	"IDTR",
-	"DR0",
-	"DR1",
-	"DR2",
-	"DR3",
-	"DR4",
-	"DR5",
-	"DR6",
-	"DR7",
 
 	"TEST0",
 	"TEST1",
@@ -1329,21 +1321,6 @@ i486DX::OperandValue i486DX::DescriptorTableToOperandValue(const SystemAddressRe
 	case REG_FS:
 	case REG_GS:
 		return 2;
-
-	//case REG_GDT:
-	//case REG_LDT:
-	//case REG_TR:
-	//case REG_IDTR:
-
-	case REG_DR0:
-	case REG_DR1:
-	case REG_DR2:
-	case REG_DR3:
-	case REG_DR4:
-	case REG_DR5:
-	case REG_DR6:
-	case REG_DR7:
-		return 4;
 
 	case REG_TEST0:
 	case REG_TEST1:
@@ -2787,18 +2764,6 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 			Abort("i486DX::EvaluateOperand, Check IDTR Byte Order");
 			break;
 
-		case REG_DR0:
-		case REG_DR1:
-		case REG_DR2:
-		case REG_DR3:
-		case REG_DR4:
-		case REG_DR5:
-		case REG_DR6:
-		case REG_DR7:
-			value.numBytes=4;
-			cpputil::PutDword(value.byteData,state.DR[op.reg-REG_DR0]);
-			break;
-
 		case REG_TEST0:
 		case REG_TEST1:
 		case REG_TEST2:
@@ -2818,6 +2783,18 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 	case OPER_CR3:
 		value.numBytes=4;
 		cpputil::PutDword(value.byteData,state.GetCR(op.operandType-OPER_CR0));
+		break;
+
+	case OPER_DR0:
+	case OPER_DR1:
+	case OPER_DR2:
+	case OPER_DR3:
+	case OPER_DR4:
+	case OPER_DR5:
+	case OPER_DR6:
+	case OPER_DR7:
+		value.numBytes=4;
+		cpputil::PutDword(value.byteData,state.DR[op.operandType-OPER_DR0]);
 		break;
 	}
 	return value;
@@ -3045,30 +3022,6 @@ void i486DX::StoreOperandValue(
 		case REG_IDTR:
 			Abort("i486DX::StoreOperandValue, I don't think IDTR can be an operand.");
 			break;
-		case REG_DR0:
-			state.DR[0]=cpputil::GetDword(value.byteData);
-			break;
-		case REG_DR1:
-			state.DR[1]=cpputil::GetDword(value.byteData);
-			break;
-		case REG_DR2:
-			state.DR[2]=cpputil::GetDword(value.byteData);
-			break;
-		case REG_DR3:
-			state.DR[3]=cpputil::GetDword(value.byteData);
-			break;
-		case REG_DR4:
-			state.DR[4]=cpputil::GetDword(value.byteData);
-			break;
-		case REG_DR5:
-			state.DR[5]=cpputil::GetDword(value.byteData);
-			break;
-		case REG_DR6:
-			state.DR[6]=cpputil::GetDword(value.byteData);
-			break;
-		case REG_DR7:
-			state.DR[7]=cpputil::GetDword(value.byteData);
-			break;
 		case REG_TEST0:
 		case REG_TEST1:
 		case REG_TEST2:
@@ -3086,6 +3039,16 @@ void i486DX::StoreOperandValue(
 	case OPER_CR2:
 	case OPER_CR3:
 		SetCR(dst.operandType-OPER_CR0,cpputil::GetDword(value.byteData));
+		break;
+	case OPER_DR0:
+	case OPER_DR1:
+	case OPER_DR2:
+	case OPER_DR3:
+	case OPER_DR4:
+	case OPER_DR5:
+	case OPER_DR6:
+	case OPER_DR7:
+		state.DR[dst.operandType-OPER_DR0]=cpputil::GetDword(value.byteData);
 		break;
 	}
 }

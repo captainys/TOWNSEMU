@@ -523,8 +523,7 @@ void i486DX::Operand::DecodeMODR_MForCRRegister(unsigned char MODR_M)
 void i486DX::Operand::DecodeMODR_MForDRRegister(unsigned char MODR_M)
 {
 	auto REG_OPCODE=((MODR_M>>3)&7);
-	operandType=OPER_REG;
-	reg=REG_DR_REG_BASE+REG_OPCODE;
+	operandType=OPER_DR0+REG_OPCODE;
 }
 void i486DX::Operand::DecodeMODR_MForTestRegister(unsigned char MODR_M)
 {
@@ -614,6 +613,22 @@ std::string i486DX::Operand::Disassemble(void) const
 		return "CR2";
 	case OPER_CR3:
 		return "CR3";
+	case OPER_DR0:
+		return "DR0";
+	case OPER_DR1:
+		return "DR1";
+	case OPER_DR2:
+		return "DR2";
+	case OPER_DR3:
+		return "DR3";
+	case OPER_DR4:
+		return "DR4";
+	case OPER_DR5:
+		return "DR5";
+	case OPER_DR6:
+		return "DR6";
+	case OPER_DR7:
+		return "DR7";
 	}
 	return "(UndefinedOperandType?)";
 }
@@ -782,6 +797,15 @@ unsigned int i486DX::Operand::GetSize(void) const
 	case OPER_CR1:
 	case OPER_CR2:
 	case OPER_CR3:
+		return 4;
+	case OPER_DR0:
+	case OPER_DR1:
+	case OPER_DR2:
+	case OPER_DR3:
+	case OPER_DR4:
+	case OPER_DR5:
+	case OPER_DR6:
+	case OPER_DR7:
 		return 4;
 	}
 	return 0;
