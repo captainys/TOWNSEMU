@@ -516,6 +516,7 @@ void TownsEventLog::Playback(class FMTowns &towns)
 {
 	if(MODE_PLAYBACK==mode)
 	{
+		auto prevPtr=playbackPtr;
 		if(true==dontWaitFileEventInPlayback)
 		{
 			SkipPlaybackFileEvent();
@@ -570,7 +571,6 @@ void TownsEventLog::Playback(class FMTowns &towns)
 					towns.GetMouseCoordinate(mx,my,towns.state.tbiosVersion);
 					if(mx==playbackPtr->mos.x() && my==playbackPtr->mos.y() && dt<=tPassed)
 					{
-						std::cout << "EVT_LBUTTONDOWN" << std::endl;
 						towns.SetMouseButtonState(true,false);
 						playbackPtr->tPlayed=now;
 						++playbackPtr;
@@ -585,7 +585,6 @@ void TownsEventLog::Playback(class FMTowns &towns)
 					towns.GetMouseCoordinate(mx,my,towns.state.tbiosVersion);
 					if(mx==playbackPtr->mos.x() && my==playbackPtr->mos.y() && dt<=tPassed)
 					{
-						std::cout << "EVT_LBUTTONUP" << std::endl;
 						towns.SetMouseButtonState(false,false);
 						playbackPtr->tPlayed=now;
 						++playbackPtr;
@@ -600,7 +599,6 @@ void TownsEventLog::Playback(class FMTowns &towns)
 					towns.GetMouseCoordinate(mx,my,towns.state.tbiosVersion);
 					if(mx==playbackPtr->mos.x() && my==playbackPtr->mos.y() && dt<=tPassed)
 					{
-						std::cout << "EVT_RBUTTONDOWN" << std::endl;
 						towns.SetMouseButtonState(false,true);
 						playbackPtr->tPlayed=now;
 						++playbackPtr;
@@ -615,7 +613,6 @@ void TownsEventLog::Playback(class FMTowns &towns)
 					towns.GetMouseCoordinate(mx,my,towns.state.tbiosVersion);
 					if(mx==playbackPtr->mos.x() && my==playbackPtr->mos.y() && dt<=tPassed)
 					{
-						std::cout << "EVT_RBUTTONUP" << std::endl;
 						towns.SetMouseButtonState(false,false);
 						playbackPtr->tPlayed=now;
 						++playbackPtr;
@@ -746,6 +743,19 @@ void TownsEventLog::Playback(class FMTowns &towns)
 					t0=now;
 				}
 				break;
+			}
+		}
+		if(prevPtr!=playbackPtr)
+		{
+			std::cout << EventTypeToString(prevPtr->eventType);
+			std::cout << "  Next:";
+			if(events.end()==playbackPtr)
+			{
+				std::cout << "end" << std::endl;
+			}
+			else
+			{
+				std::cout << EventTypeToString(playbackPtr->eventType) << std::endl;
 			}
 		}
 	}
