@@ -3004,8 +3004,7 @@ void i486DX::StoreOperandValue(
 		break;
 	case OPER_REG16:
 		{
-			state.NULL_and_reg32[dst.reg&15]&=0xFFFF0000;
-			state.NULL_and_reg32[dst.reg&15]|=cpputil::GetWord(value.byteData);
+			SET_INT_LOW_WORD(state.NULL_and_reg32[dst.reg&15],cpputil::GetWord(value.byteData));
 		}
 		break;
 	case OPER_REG8:
