@@ -97,6 +97,19 @@ void TownsEventLog::StopPlayBack(void)
 		return "KEYRELEASE";
 	case EVT_REPEAT:
 		return "REPEAT";
+
+	case EVT_PAD0_B_DOWN:
+		return "PAD0BDOWN";
+	case EVT_PAD0_B_UP:
+		return "PAD0BUP";
+	case EVT_PAD0_SEL_DOWN:
+		return "PAD0SELDOWN";
+	case EVT_PAD0_SEL_UP:
+		return "PAD0SELUP";
+	case EVT_PAD0_RUN_DOWN:
+		return "PAD0RUNDOWN";
+	case EVT_PAD0_RUN_UP:
+		return "PAD0RUNUP";
 	};
 	return "?";
 }
@@ -626,6 +639,56 @@ void TownsEventLog::Playback(class FMTowns &towns)
 					++playbackPtr;
 				}
 				break;
+
+			case EVT_PAD0_B_DOWN:
+				if(dt<=tPassed)
+				{
+					towns.gameport.state.ports[0].button[1]=true;
+					playbackPtr->tPlayed=now;
+					++playbackPtr;
+				}
+				break;
+			case EVT_PAD0_B_UP:
+				if(dt<=tPassed)
+				{
+					towns.gameport.state.ports[0].button[1]=false;
+					playbackPtr->tPlayed=now;
+					++playbackPtr;
+				}
+				break;
+			case EVT_PAD0_RUN_DOWN:
+				if(dt<=tPassed)
+				{
+					towns.gameport.state.ports[0].button[2]=true;
+					playbackPtr->tPlayed=now;
+					++playbackPtr;
+				}
+				break;
+			case EVT_PAD0_RUN_UP:
+				if(dt<=tPassed)
+				{
+					towns.gameport.state.ports[0].button[2]=false;
+					playbackPtr->tPlayed=now;
+					++playbackPtr;
+				}
+				break;
+			case EVT_PAD0_SEL_DOWN:
+				if(dt<=tPassed)
+				{
+					towns.gameport.state.ports[0].button[3]=true;
+					playbackPtr->tPlayed=now;
+					++playbackPtr;
+				}
+				break;
+			case EVT_PAD0_SEL_UP:
+				if(dt<=tPassed)
+				{
+					towns.gameport.state.ports[0].button[3]=false;
+					playbackPtr->tPlayed=now;
+					++playbackPtr;
+				}
+				break;
+
 
 			case EVT_FILE_OPEN:  // INT 21H AH=3DH
 			case EVT_FILE_EXEC:  // INT 21H AH=4BH
