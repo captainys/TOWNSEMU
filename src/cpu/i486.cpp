@@ -2764,16 +2764,13 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 			break;
 
 		case REG_IP:
-			value.numBytes=2;
-			cpputil::PutWord(value.byteData,state.EIP);
+			Abort("IP cannot be an operand");
 			break;
 		case REG_EIP:
-			value.numBytes=4;
-			cpputil::PutDword(value.byteData,state.EIP);
+			Abort("EIP cannot be an operand");
 			break;
 		case REG_EFLAGS:
-			value.numBytes=4;
-			cpputil::PutDword(value.byteData,state.EFLAGS);
+			Abort("EFLAGS cannot be an operand");
 			break;
 
 		case REG_ES:
@@ -2787,44 +2784,22 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 
 		case REG_GDT:
 			Abort("i486DX::EvaluateOperand, Check GDT Byte Order");
-			value.numBytes=6;
-			value.byteData[0]=(state.GDTR.linearBaseAddr&255);
-			value.byteData[1]=((state.GDTR.linearBaseAddr>>8)&255);
-			value.byteData[2]=((state.GDTR.linearBaseAddr>>16)&255);
-			value.byteData[3]=((state.GDTR.linearBaseAddr>>24)&255);
-			value.byteData[4]=(state.GDTR.limit&255);
-			value.byteData[5]=((state.GDTR.limit>>8)&255);
 			break;
 		case REG_LDT:
 			Abort("i486DX::EvaluateOperand, Check LDT Byte Order");
-			value.numBytes=6;
-			value.byteData[0]=(state.LDTR.linearBaseAddr&255);
-			value.byteData[1]=((state.LDTR.linearBaseAddr>>8)&255);
-			value.byteData[2]=((state.LDTR.linearBaseAddr>>16)&255);
-			value.byteData[3]=((state.LDTR.linearBaseAddr>>24)&255);
-			value.byteData[4]=(state.LDTR.limit&255);
-			value.byteData[5]=((state.LDTR.limit>>8)&255);
 			break;
 		case REG_TR:
 			Abort("i486DX::EvaluateOperand, Check TR Byte Order");
 			break;
 		case REG_IDTR:
 			Abort("i486DX::EvaluateOperand, Check IDTR Byte Order");
-			value.numBytes=6;
-			value.byteData[0]=(state.IDTR.linearBaseAddr&255);
-			value.byteData[1]=((state.IDTR.linearBaseAddr>>8)&255);
-			value.byteData[2]=((state.IDTR.linearBaseAddr>>16)&255);
-			value.byteData[3]=((state.IDTR.linearBaseAddr>>24)&255);
-			value.byteData[4]=(state.IDTR.limit&255);
-			value.byteData[5]=((state.IDTR.limit>>8)&255);
 			break;
 
 		case REG_CR0:
 		case REG_CR1:
 		case REG_CR2:
 		case REG_CR3:
-			value.numBytes=4;
-			cpputil::PutDword(value.byteData,state.GetCR(op.reg-REG_CR0));
+			Abort("i486DX::EvaluateOperand, CR0 from OPER_REG.  Must be from OPER_CRx");
 			break;
 
 		case REG_DR0:
@@ -2851,6 +2826,13 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 			cpputil::PutDword(value.byteData,state.TEST[op.reg-REG_TEST0]);
 			break;
 		}
+		break;
+	case OPER_CR0:
+	case OPER_CR1:
+	case OPER_CR2:
+	case OPER_CR3:
+		value.numBytes=4;
+		cpputil::PutDword(value.byteData,state.GetCR(op.operandType-OPER_CR0));
 		break;
 	}
 	return value;
@@ -3119,6 +3101,12 @@ void i486DX::StoreOperandValue(
 			state.TEST[dst.reg-REG_TEST0]=cpputil::GetDword(value.byteData);
 			break;
 		}
+		break;
+	case OPER_CR0:
+	case OPER_CR1:
+	case OPER_CR2:
+	case OPER_CR3:
+		SetCR(dst.operandType-OPER_CR0,cpputil::GetDword(value.byteData));
 		break;
 	}
 }

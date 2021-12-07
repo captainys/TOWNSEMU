@@ -1075,6 +1075,11 @@ public:
 		OPER_REG16, // AX,CX,DX,BX,SP,BP,SI,DI
 		OPER_REG8,  // AL,CL,DL,BL,AH,CH,DH,BH
 		OPER_SREG,  // ES,CS,SS,DS,FS,GS,
+
+		OPER_CR0,
+		OPER_CR1,
+		OPER_CR2,
+		OPER_CR3,
 	};
 	class Operand
 	{
