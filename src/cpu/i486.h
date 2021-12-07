@@ -1074,8 +1074,6 @@ public:
 
 		// For OPER_REG* operand type
 		int reg;
-		// For OPER_IMM* operand type
-		int imm;
 		// For OPER_ADDR and OPER_FARADDR operand type
 		int baseReg,indexReg,indexShift,offset;
 		int offsetBits;
@@ -1138,7 +1136,6 @@ public:
 		std::string DisassembleAsAddr(void) const;
 		std::string DisassembleAsFarAddr(void) const;
 		std::string DisassembleAsReg(void) const;
-		std::string DisassembleAsImm(int immSize) const;
 
 	public:
 		/*! Returns size qualifier if the operand is address.

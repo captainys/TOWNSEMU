@@ -739,18 +739,6 @@ std::string i486DX::Operand::DisassembleAsReg(void) const
 {
 	return RegToStr[reg];
 }
-std::string i486DX::Operand::DisassembleAsImm(int immSize) const
-{
-	switch(immSize)
-	{
-	case 8:
-		return cpputil::Ubtox(imm)+"H";
-	case 16:
-		return cpputil::Ustox(imm)+"H";
-	default:
-		return cpputil::Uitox(imm)+"H";
-	}
-}
 /* static */ std::string i486DX::Operand::GetSizeQualifierToDisassembly(const Operand &op,int operandSize)
 {
 	if(op.operandType==OPER_ADDR)
