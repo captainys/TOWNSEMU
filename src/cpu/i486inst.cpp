@@ -7738,7 +7738,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			clocksPassed=(OPER_ADDR==op1.operandType ? 3 : 2);
 			{
 				OperandValue value;
-				value.MakeWord(GetRegisterValue(REG_CR0));
+				value.MakeWord(state.GetCR(0));
 				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
 			}
 			break;

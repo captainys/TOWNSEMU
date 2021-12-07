@@ -151,10 +151,6 @@ public:
 		REG_LDT,
 		REG_TR,
 		REG_IDTR,
-		REG_CR0,
-		REG_CR1,
-		REG_CR2,
-		REG_CR3,
 		REG_DR0,
 		REG_DR1,
 		REG_DR2,
@@ -181,7 +177,6 @@ public:
 		REG_16BIT_REG_BASE=REG_AX,
 		REG_32BIT_REG_BASE=REG_EAX,
 		REG_SEGMENT_REG_BASE=REG_ES,
-		REG_CR_REG_BASE=REG_CR0,
 		REG_DR_REG_BASE=REG_DR0,
 		REG_TEST_REG_BASE=REG_TEST0,
 	};
@@ -3724,20 +3719,6 @@ inline unsigned int i486DX::GetRegisterValue(int reg) const
 		return state.FS().value;
 	case REG_GS:
 		return state.GS().value;
-
-	//case REG_GDT:
-	//case REG_LDT:
-	//case REG_TR:
-	//case REG_IDTR:
-
-	case REG_CR0:
-		return state.GetCR(0);
-	case REG_CR1:
-		return state.GetCR(1);
-	case REG_CR2:
-		return state.GetCR(2);
-	case REG_CR3:
-		return state.GetCR(3);
 
 	case REG_DR0:
 	case REG_DR1:

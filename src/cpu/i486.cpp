@@ -85,10 +85,6 @@ const char *const i486DX::RegToStr[REG_TOTAL_NUMBER_OF_REGISTERS]=
 	"LDT",
 	"TR",
 	"IDTR",
-	"CR0",
-	"CR1",
-	"CR2",
-	"CR3",
 	"DR0",
 	"DR1",
 	"DR2",
@@ -1339,10 +1335,6 @@ i486DX::OperandValue i486DX::DescriptorTableToOperandValue(const SystemAddressRe
 	//case REG_TR:
 	//case REG_IDTR:
 
-	case REG_CR0:
-	case REG_CR1:
-	case REG_CR2:
-	case REG_CR3:
 	case REG_DR0:
 	case REG_DR1:
 	case REG_DR2:
@@ -2795,13 +2787,6 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 			Abort("i486DX::EvaluateOperand, Check IDTR Byte Order");
 			break;
 
-		case REG_CR0:
-		case REG_CR1:
-		case REG_CR2:
-		case REG_CR3:
-			Abort("i486DX::EvaluateOperand, CR0 from OPER_REG.  Must be from OPER_CRx");
-			break;
-
 		case REG_DR0:
 		case REG_DR1:
 		case REG_DR2:
@@ -3059,12 +3044,6 @@ void i486DX::StoreOperandValue(
 			break;
 		case REG_IDTR:
 			Abort("i486DX::StoreOperandValue, I don't think IDTR can be an operand.");
-			break;
-		case REG_CR0:
-		case REG_CR1:
-		case REG_CR2:
-		case REG_CR3:
-			Abort("i486DX::StoreOperandValue must not be used for CRx.");
 			break;
 		case REG_DR0:
 			state.DR[0]=cpputil::GetDword(value.byteData);
