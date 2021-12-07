@@ -85,15 +85,6 @@ const char *const i486DX::RegToStr[REG_TOTAL_NUMBER_OF_REGISTERS]=
 	"LDT",
 	"TR",
 	"IDTR",
-
-	"TEST0",
-	"TEST1",
-	"TEST2",
-	"TEST3",
-	"TEST4",
-	"TEST5",
-	"TEST6",
-	"TEST7",
 };
 
 const bool i486DX::ParityTable[256]=
@@ -1321,16 +1312,6 @@ i486DX::OperandValue i486DX::DescriptorTableToOperandValue(const SystemAddressRe
 	case REG_FS:
 	case REG_GS:
 		return 2;
-
-	case REG_TEST0:
-	case REG_TEST1:
-	case REG_TEST2:
-	case REG_TEST3:
-	case REG_TEST4:
-	case REG_TEST5:
-	case REG_TEST6:
-	case REG_TEST7:
-		return 4;
 	}
 	return 0;
 }
@@ -2763,18 +2744,6 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 		case REG_IDTR:
 			Abort("i486DX::EvaluateOperand, Check IDTR Byte Order");
 			break;
-
-		case REG_TEST0:
-		case REG_TEST1:
-		case REG_TEST2:
-		case REG_TEST3:
-		case REG_TEST4:
-		case REG_TEST5:
-		case REG_TEST6:
-		case REG_TEST7:
-			value.numBytes=4;
-			cpputil::PutDword(value.byteData,state.TEST[op.reg-REG_TEST0]);
-			break;
 		}
 		break;
 	case OPER_CR0:
@@ -2795,6 +2764,17 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 	case OPER_DR7:
 		value.numBytes=4;
 		cpputil::PutDword(value.byteData,state.DR[op.operandType-OPER_DR0]);
+		break;
+	case OPER_TEST0:
+	case OPER_TEST1:
+	case OPER_TEST2:
+	case OPER_TEST3:
+	case OPER_TEST4:
+	case OPER_TEST5:
+	case OPER_TEST6:
+	case OPER_TEST7:
+		value.numBytes=4;
+		cpputil::PutDword(value.byteData,state.TEST[op.operandType-OPER_TEST0]);
 		break;
 	}
 	return value;
@@ -3021,16 +3001,6 @@ void i486DX::StoreOperandValue(
 		case REG_IDTR:
 			Abort("i486DX::StoreOperandValue, I don't think IDTR can be an operand.");
 			break;
-		case REG_TEST0:
-		case REG_TEST1:
-		case REG_TEST2:
-		case REG_TEST3:
-		case REG_TEST4:
-		case REG_TEST5:
-		case REG_TEST6:
-		case REG_TEST7:
-			state.TEST[dst.reg-REG_TEST0]=cpputil::GetDword(value.byteData);
-			break;
 		}
 		break;
 	case OPER_CR0:
@@ -3048,6 +3018,16 @@ void i486DX::StoreOperandValue(
 	case OPER_DR6:
 	case OPER_DR7:
 		state.DR[dst.operandType-OPER_DR0]=cpputil::GetDword(value.byteData);
+		break;
+	case OPER_TEST0:
+	case OPER_TEST1:
+	case OPER_TEST2:
+	case OPER_TEST3:
+	case OPER_TEST4:
+	case OPER_TEST5:
+	case OPER_TEST6:
+	case OPER_TEST7:
+		state.TEST[dst.operandType-OPER_TEST0]=cpputil::GetDword(value.byteData);
 		break;
 	}
 }

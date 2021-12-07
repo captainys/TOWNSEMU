@@ -152,15 +152,6 @@ public:
 		REG_TR,
 		REG_IDTR,
 
-		REG_TEST0,
-		REG_TEST1,
-		REG_TEST2,
-		REG_TEST3,
-		REG_TEST4,
-		REG_TEST5,
-		REG_TEST6,
-		REG_TEST7,
-
 	REG_TOTAL_NUMBER_OF_REGISTERS
 	};
 	enum
@@ -169,7 +160,6 @@ public:
 		REG_16BIT_REG_BASE=REG_AX,
 		REG_32BIT_REG_BASE=REG_EAX,
 		REG_SEGMENT_REG_BASE=REG_ES,
-		REG_TEST_REG_BASE=REG_TEST0,
 	};
 	static const char *const RegToStr[REG_TOTAL_NUMBER_OF_REGISTERS];
 
@@ -1074,6 +1064,14 @@ public:
 		OPER_DR5,
 		OPER_DR6,
 		OPER_DR7,
+		OPER_TEST0,
+		OPER_TEST1,
+		OPER_TEST2,
+		OPER_TEST3,
+		OPER_TEST4,
+		OPER_TEST5,
+		OPER_TEST6,
+		OPER_TEST7,
 	};
 	class Operand
 	{
@@ -3718,16 +3716,6 @@ inline unsigned int i486DX::GetRegisterValue(int reg) const
 		return state.FS().value;
 	case REG_GS:
 		return state.GS().value;
-
-	case REG_TEST0:
-	case REG_TEST1:
-	case REG_TEST2:
-	case REG_TEST3:
-	case REG_TEST4:
-	case REG_TEST5:
-	case REG_TEST6:
-	case REG_TEST7:
-		return state.TEST[reg-REG_TEST0];
 	}
 	return 0;
 }
