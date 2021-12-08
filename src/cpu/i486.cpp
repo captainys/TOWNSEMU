@@ -1736,7 +1736,7 @@ void i486DX::DecrementDword(unsigned int &value)
 	SetSF(0!=(value&0x80000000));
 	SetZF(0==value);
 	SetAF(0x0F==(value&0x0F));
-	SetPF(CheckParity(value&0xFF));
+	SetPF(CheckParity(value));
 }
 void i486DX::DecrementWord(unsigned int &value)
 {
@@ -1745,7 +1745,7 @@ void i486DX::DecrementWord(unsigned int &value)
 	SetSF(0!=(value&0x8000));
 	SetZF(0==value);
 	SetAF(0x0F==(value&0x0F));
-	SetPF(CheckParity(value&0xFF));
+	SetPF(CheckParity(value));
 }
 void i486DX::DecrementByte(unsigned int &value)
 {
@@ -1754,7 +1754,7 @@ void i486DX::DecrementByte(unsigned int &value)
 	SetSF(0!=(value&0x80));
 	SetZF(0==value);
 	SetAF(0x0F==(value&0x0F));
-	SetPF(CheckParity(value&0xFF));
+	SetPF(CheckParity(value));
 }
 void i486DX::DecrementWithMask(unsigned int &value,unsigned int mask,unsigned int signBit)
 {
@@ -1763,7 +1763,7 @@ void i486DX::DecrementWithMask(unsigned int &value,unsigned int mask,unsigned in
 	SetAF(0x0F==(value&0x0F));
 	SetSF(value&signBit);
 	SetZF(0==value);
-	SetPF(CheckParity(value&0xFF));
+	SetPF(CheckParity(value));
 }
 
 void i486DX::IncrementWordOrDword(unsigned int operandSize,unsigned int &value)
@@ -1784,7 +1784,7 @@ void i486DX::IncrementDword(unsigned int &value)
 	SetOF(value==0x80000000);
 	SetSF(0!=(value&0x80000000));
 	SetZF(0==value);
-	SetPF(CheckParity(value&0xFF));
+	SetPF(CheckParity(value));
 }
 void i486DX::IncrementWord(unsigned int &value)
 {
@@ -1793,7 +1793,7 @@ void i486DX::IncrementWord(unsigned int &value)
 	SetOF(value==0x8000);
 	SetSF(0!=(value&0x8000));
 	SetZF(0==value);
-	SetPF(CheckParity(value&0xFF));
+	SetPF(CheckParity(value));
 }
 void i486DX::IncrementByte(unsigned int &value)
 {
@@ -1802,7 +1802,7 @@ void i486DX::IncrementByte(unsigned int &value)
 	SetOF(value==0x80);
 	SetSF(0!=(value&0x80));
 	SetZF(0==value);
-	SetPF(CheckParity(value&0xFF));
+	SetPF(CheckParity(value));
 }
 void i486DX::IncrementWithMask(unsigned int &value,unsigned int mask,unsigned int signBit)
 {
@@ -1811,7 +1811,7 @@ void i486DX::IncrementWithMask(unsigned int &value,unsigned int mask,unsigned in
 	SetOF(value==signBit);
 	SetSF(value&signBit);
 	SetZF(0==value);
-	SetPF(CheckParity(value&0xFF));
+	SetPF(CheckParity(value));
 }
 
 
@@ -1844,7 +1844,7 @@ void i486DX::AddDword(unsigned int &value1,unsigned int value2)
 	RaiseZF(0==value1);
 	RaiseAF((value1&0x0F)<(prevValue&0x0F));
 	RaiseCF(value1<prevValue);
-	RaisePF(CheckParity(value1&0xFF));
+	RaisePF(CheckParity(value1));
 }
 void i486DX::AddWord(unsigned int &value1,unsigned int value2)
 {
@@ -1863,7 +1863,7 @@ void i486DX::AddWord(unsigned int &value1,unsigned int value2)
 	RaiseZF(0==value1);
 	RaiseAF((value1&0x0F)<(prevValue&0x0F));
 	RaiseCF(value1<prevValue);
-	RaisePF(CheckParity(value1&0xFF));
+	RaisePF(CheckParity(value1));
 }
 void i486DX::AddByte(unsigned int &value1,unsigned int value2)
 {
@@ -1882,7 +1882,7 @@ void i486DX::AddByte(unsigned int &value1,unsigned int value2)
 	RaiseZF(0==value1);
 	RaiseAF((value1&0x0F)<(prevValue&0x0F));
 	RaiseCF(value1<prevValue);
-	RaisePF(CheckParity(value1&0xFF));
+	RaisePF(CheckParity(value1));
 }
 void i486DX::AndWordOrDword(int operandSize,unsigned int &value1,unsigned int value2)
 {
@@ -1906,7 +1906,7 @@ void i486DX::AndDword(unsigned int &value1,unsigned int value2)
 		EFLAGS_PARITY);
 	RaiseSF(0!=(0x80000000&value1));
 	RaiseZF(0==value1);
-	RaisePF(CheckParity(value1&0xFF));
+	RaisePF(CheckParity(value1));
 }
 void i486DX::AndWord(unsigned int &value1,unsigned int value2)
 {
@@ -1920,7 +1920,7 @@ void i486DX::AndWord(unsigned int &value1,unsigned int value2)
 		EFLAGS_PARITY);
 	RaiseSF(0!=(0x8000&value1));
 	RaiseZF(0==value1);
-	RaisePF(CheckParity(value1&0xFF));
+	RaisePF(CheckParity(value1));
 }
 void i486DX::AndByte(unsigned int &value1,unsigned int value2)
 {
@@ -1934,7 +1934,7 @@ void i486DX::AndByte(unsigned int &value1,unsigned int value2)
 		EFLAGS_PARITY);
 	RaiseSF(0!=(0x80&value1));
 	RaiseZF(0==value1);
-	RaisePF(CheckParity(value1&0xFF));
+	RaisePF(CheckParity(value1));
 }
 void i486DX::SubByteWordOrDword(int operandSize,unsigned int &value1,unsigned int value2)
 {
@@ -1972,7 +1972,7 @@ void i486DX::SubDword(unsigned int &value1,unsigned int value2)
 	RaiseZF(0==value1);
 	RaiseAF((prevValue&0xF)<(value1&0xF));
 	RaiseCF(value1>prevValue);
-	RaisePF(CheckParity(value1&0xFF));
+	RaisePF(CheckParity(value1));
 }
 void i486DX::SubWord(unsigned int &value1,unsigned int value2)
 {
@@ -1991,7 +1991,7 @@ void i486DX::SubWord(unsigned int &value1,unsigned int value2)
 	RaiseZF(0==value1);
 	RaiseAF((prevValue&0xF)<(value1&0xF));
 	RaiseCF(value1>prevValue);
-	RaisePF(CheckParity(value1&0xFF));
+	RaisePF(CheckParity(value1));
 }
 void i486DX::SubByte(unsigned int &value1,unsigned int value2)
 {
@@ -2010,7 +2010,7 @@ void i486DX::SubByte(unsigned int &value1,unsigned int value2)
 	RaiseZF(0==value1);
 	RaiseAF((prevValue&0xF)<(value1&0xF));
 	RaiseCF(value1>prevValue);
-	RaisePF(CheckParity(value1&0xFF));
+	RaisePF(CheckParity(value1));
 }
 void i486DX::AdcWordOrDword(int operandSize,unsigned int &value1,unsigned int value2)
 {
@@ -2041,7 +2041,7 @@ void i486DX::AdcDword(unsigned int &value1,unsigned int value2)
 	RaiseZF(0==value1);
 	RaiseAF((value1&0x0F)<(prevValue&0x0F) || (0!=carry && (prevValue&0x0F)==(value1&0x0F))); // 2nd condition for 0xFFFFFFFF+0xFFFFFFFF+1
 	RaiseCF(value1<prevValue || (0!=carry && value1==prevValue)); // 2nd condition for 0xFFFFFFFF+0xFFFFFFFF+1
-	RaisePF(CheckParity(value1&0xFF));
+	RaisePF(CheckParity(value1));
 }
 void i486DX::AdcWord(unsigned int &value1,unsigned int value2)
 {
@@ -2061,7 +2061,7 @@ void i486DX::AdcWord(unsigned int &value1,unsigned int value2)
 	RaiseZF(0==value1);
 	RaiseAF((value1&0x0F)<(prevValue&0x0F) || (0!=carry && (prevValue&0x0F)==(value1&0x0F))); // 2nd condition for 0xFFFF+0xFFFF+1
 	RaiseCF(value1<prevValue || (0!=carry && value1==prevValue)); // 2nd condition for 0xFFFF+0xFFFF+1
-	RaisePF(CheckParity(value1&0xFF));
+	RaisePF(CheckParity(value1));
 }
 void i486DX::AdcByte(unsigned int &value1,unsigned int value2)
 {
@@ -2081,7 +2081,7 @@ void i486DX::AdcByte(unsigned int &value1,unsigned int value2)
 	RaiseZF(0==value1);
 	RaiseAF((value1&0x0F)<(prevValue&0x0F) || (0!=carry && (prevValue&0x0F)==(value1&0x0F))); // 2nd condition for 0xFF+0xFF+1
 	RaiseCF(value1<prevValue || (0!=carry && value1==prevValue)); // 2nd condition for 0xFF+0xFF+1
-	RaisePF(CheckParity(value1&0xFF));
+	RaisePF(CheckParity(value1));
 }
 void i486DX::SbbWordOrDword(int operandSize,unsigned int &value1,unsigned int value2)
 {
@@ -2104,7 +2104,7 @@ void i486DX::SbbDword(unsigned int &value1,unsigned int value2)
 	SetZF(0==value1);
 	SetAF((prevValue&0xF)<(value1&0xF) || (0!=carry && (prevValue&0x0F)==(value1&0x0F)));
 	SetCF(value1>prevValue || (0!=carry && value1==prevValue));
-	SetPF(CheckParity(value1&0xFF));
+	SetPF(CheckParity(value1));
 }
 void i486DX::SbbWord(unsigned int &value1,unsigned int value2)
 {
@@ -2116,7 +2116,7 @@ void i486DX::SbbWord(unsigned int &value1,unsigned int value2)
 	SetZF(0==value1);
 	SetAF((prevValue&0xF)<(value1&0xF) || (0!=carry && (prevValue&0x0F)==(value1&0x0F)));
 	SetCF(value1>prevValue || (0!=carry && value1==prevValue));
-	SetPF(CheckParity(value1&0xFF));
+	SetPF(CheckParity(value1));
 }
 void i486DX::SbbByte(unsigned int &value1,unsigned int value2)
 {
@@ -2128,7 +2128,7 @@ void i486DX::SbbByte(unsigned int &value1,unsigned int value2)
 	SetZF(0==value1);
 	SetAF((prevValue&0xF)<(value1&0xF) || (0!=carry && (prevValue&0x0F)==(value1&0x0F)));
 	SetCF(value1>prevValue || (0!=carry && value1==prevValue));
-	SetPF(CheckParity(value1&0xFF));
+	SetPF(CheckParity(value1));
 }
 void i486DX::OrWordOrDword(int operandSize,unsigned int &value1,unsigned int value2)
 {
@@ -2149,7 +2149,7 @@ void i486DX::OrDword(unsigned int &value1,unsigned int value2)
 	value1|=value2;
 	SetSF(0!=(0x80000000&value1));
 	SetZF(0==value1);
-	SetPF(CheckParity(value1&0xFF));
+	SetPF(CheckParity(value1));
 }
 void i486DX::OrWord(unsigned int &value1,unsigned int value2)
 {
@@ -2160,7 +2160,7 @@ void i486DX::OrWord(unsigned int &value1,unsigned int value2)
 	value1&=0xFFFF;
 	SetSF(0!=(0x8000&value1));
 	SetZF(0==value1);
-	SetPF(CheckParity(value1&0xFF));
+	SetPF(CheckParity(value1));
 }
 void i486DX::OrByte(unsigned int &value1,unsigned int value2)
 {
@@ -2171,7 +2171,7 @@ void i486DX::OrByte(unsigned int &value1,unsigned int value2)
 	value1&=0xFF;
 	SetSF(0!=(0x80&value1));
 	SetZF(0==value1);
-	SetPF(CheckParity(value1&0xFF));
+	SetPF(CheckParity(value1));
 }
 void i486DX::XorWordOrDword(int operandSize,unsigned int &value1,unsigned int value2)
 {
@@ -2192,7 +2192,7 @@ void i486DX::XorDword(unsigned int &value1,unsigned int value2)
 	value1^=value2;
 	SetSF(0!=(0x80000000&value1));
 	SetZF(0==value1);
-	SetPF(CheckParity(value1&0xFF));
+	SetPF(CheckParity(value1));
 }
 void i486DX::XorWord(unsigned int &value1,unsigned int value2)
 {
@@ -2203,7 +2203,7 @@ void i486DX::XorWord(unsigned int &value1,unsigned int value2)
 	value1&=0xFFFF;
 	SetSF(0!=(0x8000&value1));
 	SetZF(0==value1);
-	SetPF(CheckParity(value1&0xFF));
+	SetPF(CheckParity(value1));
 }
 void i486DX::XorByte(unsigned int &value1,unsigned int value2)
 {
@@ -2214,7 +2214,7 @@ void i486DX::XorByte(unsigned int &value1,unsigned int value2)
 	value1&=0xFF;
 	SetSF(0!=(0x80&value1));
 	SetZF(0==value1);
-	SetPF(CheckParity(value1&0xFF));
+	SetPF(CheckParity(value1));
 }
 
 template<typename T, typename _>
@@ -2528,7 +2528,7 @@ void i486DX::ShlTemplate(unsigned int &value,unsigned int ctr)
 		SetOF((prevValue&signBit)!=(value&signBit));
 	}
 	SetZF(0==value);
-	SetPF(CheckParity(value&0xFF));
+	SetPF(CheckParity(value));
 	SetSF(0!=(value&signBit));
 }
 void i486DX::ShlWordOrDword(int operandSize,unsigned int &value,unsigned int ctr)
@@ -2573,7 +2573,7 @@ inline void i486DX::ShrTemplate(unsigned int &value,unsigned int ctr)
 		value>>=1;
 	}
 	SetZF(0==value);
-	SetPF(CheckParity(value&0xFF));
+	SetPF(CheckParity(value));
 	SetSF(0!=(value&signBit));
 }
 void i486DX::ShrWordOrDword(int operandSize,unsigned int &value,unsigned int ctr)

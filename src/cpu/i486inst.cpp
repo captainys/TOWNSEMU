@@ -4691,7 +4691,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				SetZF(0==i);
 				SetCF(0!=i);
 				i=-i;
-				SetPF(CheckParity(i&0xFF));
+				SetPF(CheckParity(i));
 				SetSF(0!=(i&0x80));
 				value1.SetSignedDword(i);
 				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
@@ -4849,7 +4849,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				SetCF(0!=i);
 				SetSF(i<0);
 				value1.SetSignedDword(i);
-				SetPF(CheckParity(i&0xFF));
+				SetPF(CheckParity(i));
 				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
 			}
 			break;
@@ -8717,7 +8717,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 						SetOF((concat&0x8000)!=(v1&0x8000));
 						SetZF(0==(concat&0xFFFF));
 						SetSF(0!=(concat&0x8000));
-						SetPF(CheckParity(concat&0xFF));
+						SetPF(CheckParity(concat));
 					}
 					else
 					{
@@ -8730,7 +8730,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 						SetOF((concat&0x80000000)!=(v1&0x80000000));
 						SetZF(0==(concat&0xFFFFFFFF));
 						SetSF(0!=(concat&0x80000000));
-						SetPF(CheckParity(concat&0xFF));
+						SetPF(CheckParity(concat));
 					}
 					break;
 				case I486_RENUMBER_SHRD_RM_I8://       0x0FAC,
@@ -8746,7 +8746,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 						SetOF((concat&0x8000)!=(v1&0x8000));
 						SetZF(0==(concat&0xFFFF));
 						SetSF(0!=(concat&0x8000));
-						SetPF(CheckParity(concat&0xFF));
+						SetPF(CheckParity(concat));
 					}
 					else
 					{
@@ -8760,7 +8760,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 						SetOF((concat&0x80000000)!=(v1&0x80000000));
 						SetZF(0==(concat&0xFFFFFFFF));
 						SetSF(0!=(concat&0x80000000));
-						SetPF(CheckParity(concat&0xFF));
+						SetPF(CheckParity(concat));
 					}
 					break;
 				}

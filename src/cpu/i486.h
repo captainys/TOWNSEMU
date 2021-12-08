@@ -1864,9 +1864,9 @@ public:
 		state.EFLAGS|=(EFLAGS_CARRY|EFLAGS_OVERFLOW);
 	}
 
-	inline bool CheckParity(unsigned char lowByte)
+	inline bool CheckParity(unsigned int lowByte)
 	{
-		return ParityTable[lowByte];
+		return ParityTable[INT_LOW_BYTE(lowByte)];
 		/* int n=0;
 		for(int i=0; i<8; ++i)
 		{
