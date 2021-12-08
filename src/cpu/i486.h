@@ -2116,6 +2116,8 @@ public:
 		{
 			InvalidatePageTableCache();
 			InvalidateDescriptorCache();
+			state.SSESPWindow.CleanUp();
+			state.CSEIPWindow.CleanUp();
 		}
 	}
 	void ClearPageTableCache(void);
