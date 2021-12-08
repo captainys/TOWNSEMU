@@ -2503,7 +2503,7 @@ public:
 			return 0;
 		}
 
-		if(&seg==&state.SS() && 
+		if(/* &seg==&state.SS() && */
 		   nullptr!=state.SSESPWindow.ptr &&
 		   true==state.SSESPWindow.IsLinearAddressInRange(addr))
 		{
@@ -2530,7 +2530,7 @@ public:
 			return 0;
 		}
 
-		if(&seg==&state.SS() && 
+		if(/* &seg==&state.SS() && */
 		   nullptr!=state.SSESPWindow.ptr &&
 		   true==state.SSESPWindow.IsLinearAddressInRange(addr))
 		{
@@ -2565,7 +2565,7 @@ public:
 			return 0;
 		}
 
-		if(&seg==&state.SS() && 
+		if(/* &seg==&state.SS() && */
 		   nullptr!=state.SSESPWindow.ptr &&
 		   true==state.SSESPWindow.IsLinearAddressInRange(addr))
 		{
@@ -3487,7 +3487,7 @@ inline void i486DX::StoreByte(Memory &mem,int addressSize,SegmentRegister seg,un
 	offset&=AddressMask((unsigned char)addressSize);
 	auto linearAddr=seg.baseLinearAddr+offset;
 
-	if(&seg==&state.SS() && 
+	if(/* &seg==&state.SS() && */
 	   nullptr!=state.SSESPWindow.ptr &&
 	   true==state.SSESPWindow.IsLinearAddressInRange(linearAddr))
 	{
@@ -3508,7 +3508,7 @@ inline void i486DX::StoreWord(Memory &mem,int addressSize,SegmentRegister seg,un
 	offset&=AddressMask((unsigned char)addressSize);
 	auto linearAddr=seg.baseLinearAddr+offset;
 
-	if(&seg==&state.SS() && 
+	if(/* &seg==&state.SS() && */
 	   nullptr!=state.SSESPWindow.ptr &&
 	   true==state.SSESPWindow.IsLinearAddressInRange(linearAddr))
 	{
@@ -3538,7 +3538,7 @@ inline void i486DX::StoreDword(Memory &mem,int addressSize,SegmentRegister seg,u
 	offset&=AddressMask((unsigned char)addressSize);
 	auto linearAddr=seg.baseLinearAddr+offset;
 
-	if(&seg==&state.SS() && 
+	if(/* &seg==&state.SS() && */
 	   nullptr!=state.SSESPWindow.ptr &&
 	   true==state.SSESPWindow.IsLinearAddressInRange(linearAddr))
 	{
