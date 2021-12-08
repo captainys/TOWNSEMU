@@ -896,7 +896,7 @@ inline unsigned int i486DX::DebugFetchImm16or32(Instruction &inst,MemoryAccess::
 
 
 template <class CPUCLASS,class FUNCCLASS>
-inline static unsigned int i486DX::FetchOperandRMandDecode(
+inline unsigned int i486DX::FetchOperandRMandDecode(
     Operand &op,int addressSize,int dataSize,
     CPUCLASS &cpu,Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
 {
