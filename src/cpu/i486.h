@@ -2021,7 +2021,7 @@ public:
 			{
 				DI+=operandSize/8;
 			}
-			state.EDI()=(state.EDI()&0xffff0000)|(DI&0xffff);
+			SET_INT_LOW_WORD(state.EDI(),DI);
 		}
 		else
 		{
@@ -2048,7 +2048,7 @@ public:
 			{
 				SI+=operandSize/8;
 			}
-			state.ESI()=(state.ESI()&0xffff0000)|(SI&0xffff);
+			SET_INT_LOW_WORD(state.ESI(),SI);
 		}
 		else
 		{
@@ -2078,8 +2078,8 @@ public:
 				DI+=operandSize/8;
 				SI+=operandSize/8;
 			}
-			state.EDI()=(state.EDI()&0xffff0000)|(DI&0xffff);
-			state.ESI()=(state.ESI()&0xffff0000)|(SI&0xffff);
+			SET_INT_LOW_WORD(state.EDI(),DI);
+			SET_INT_LOW_WORD(state.ESI(),SI);
 		}
 		else
 		{
