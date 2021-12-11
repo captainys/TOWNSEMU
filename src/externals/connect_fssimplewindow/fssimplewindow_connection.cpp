@@ -69,6 +69,54 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 	delete [] FSKEYState;
 }
 
+GLuint FsSimpleWindowConnection::GenTexture(void)
+{
+	GLuint texId;
+
+	glGenTextures(1,&texId);  // Reserve one texture identifier
+	glBindTexture(GL_TEXTURE_2D,texId);  // Making the texture identifier current (or bring it to the deck)
+
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+
+	return texId;
+}
+
+void FsSimpleWindowConnection::UpdateTexture(GLuint texId,int wid,int hei,const unsigned char *rgba) const
+{
+	glBindTexture(GL_TEXTURE_2D,texId);
+	glTexImage2D
+	    (GL_TEXTURE_2D,
+	     0,
+	     GL_RGBA,
+	     wid,
+	     hei,
+	     0,
+	     GL_RGBA,
+	     GL_UNSIGNED_BYTE,
+	     rgba);
+}
+void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) const
+{
+	glBegin(GL_QUADS);
+
+	glTexCoord2f(0,0);
+	glVertex2i(x0,y1);
+
+	glTexCoord2f(1,0);
+	glVertex2i(x1,y1);
+
+	glTexCoord2f(1,1);
+	glVertex2i(x1,y0);
+
+	glTexCoord2f(0,1);
+	glVertex2i(x0,y0);
+
+	glEnd();
+}
+
 /* virtual */ std::vector <std::string> FsSimpleWindowConnection::MakeKeyMappingText(void) const
 {
 	std::vector <std::string> text;
@@ -173,6 +221,13 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 #endif
 
 	glClearColor(0,0,0,0);
+	mainTexId=GenTexture();
+	statusTexId=GenTexture();
+
+	pauseIconTexId=GenTexture();
+	UpdateTexture(pauseIconTexId,PAUSE_wid,PAUSE_hei,PAUSEicon.data());
+	menuIconTexId=GenTexture();
+	UpdateTexture(menuIconTexId,MENU_wid,MENU_hei,MENUicon.data());
 
 	// Make initial status bitmap
 	Put16x16Invert(0,15,CD_IDLE);
@@ -1353,23 +1408,46 @@ void FsSimpleWindowConnection::RenderBeforeSwapBuffers(const TownsRender::Image 
 	glLoadIdentity();
 	glOrtho(0.0f,float(winWid),float(winHei),0.0f,-1,1);
 
-	glRasterPos2i(0,winHei-1);
+
+	glEnable(GL_TEXTURE_2D);
+    glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
+	glColor3f(1,1,1);
+
+	UpdateTexture(statusTexId,STATUS_WID,STATUS_HEI,statusBitmap);
+	DrawTextureRect(0,winHei-1-STATUS_HEI,STATUS_WID,winHei-1);
+
+	/*glRasterPos2i(0,winHei-1);
 	glPixelZoom(1,1);
-	glDrawPixels(STATUS_WID,STATUS_HEI,GL_RGBA,GL_UNSIGNED_BYTE,statusBitmap);
+	glDrawPixels(STATUS_WID,STATUS_HEI,GL_RGBA,GL_UNSIGNED_BYTE,statusBitmap); */
 
 	switch(lowerRightIcon)
 	{
 	case LOWER_RIGHT_NONE:
 		break;
 	case LOWER_RIGHT_PAUSE:
-		glRasterPos2i(winWid-PAUSE_wid,winHei-1);
-		glDrawPixels(PAUSE_wid,PAUSE_hei,GL_RGBA,GL_UNSIGNED_BYTE,PAUSEicon.data());
+		glBindTexture(GL_TEXTURE_2D,pauseIconTexId);
+		DrawTextureRect(winWid-PAUSE_wid,winHei-1-PAUSE_hei,winWid,winHei-1);
+		/* glRasterPos2i(winWid-PAUSE_wid,winHei-1);
+		glDrawPixels(PAUSE_wid,PAUSE_hei,GL_RGBA,GL_UNSIGNED_BYTE,PAUSEicon.data()); */
 		break;
 	case LOWER_RIGHT_MENU:
-		glRasterPos2i(winWid-MENU_wid,winHei-1);
-		glDrawPixels(MENU_wid,MENU_hei,GL_RGBA,GL_UNSIGNED_BYTE,MENUicon.data());
+		glBindTexture(GL_TEXTURE_2D,menuIconTexId);
+		DrawTextureRect(winWid-MENU_wid,winHei-1-MENU_hei,winWid,winHei-1);
+		/* glRasterPos2i(winWid-MENU_wid,winHei-1);
+		glDrawPixels(MENU_wid,MENU_hei,GL_RGBA,GL_UNSIGNED_BYTE,MENUicon.data()); */
 		break;
 	}
+
+
+	UpdateTexture(mainTexId,img.wid,img.hei,img.rgba);
+	DrawTextureRect(this->dx,this->dy,this->dx+img.wid*scaling/100,this->dy+img.hei*scaling/100);
+
+	glDisable(GL_TEXTURE_2D);
+
+	/*glPixelZoom((float)scaling/100.0f,(float)scaling/100.0f);
+	glRasterPos2i(this->dx,(img.hei*scaling/100)+dy);
+	glDrawPixels(img.wid,img.hei,GL_RGBA,GL_UNSIGNED_BYTE,img.rgba);*/
+
 
 	if(TOWNS_APPSPECIFIC_STRIKECOMMANDER==towns.state.appSpecificSetting)
 	{
@@ -1391,10 +1469,6 @@ void FsSimpleWindowConnection::RenderBeforeSwapBuffers(const TownsRender::Image 
 
 		glEnd();
 	}
-
-	glPixelZoom((float)scaling/100.0f,(float)scaling/100.0f);
-	glRasterPos2i(this->dx,(img.hei*scaling/100)+dy);
-	glDrawPixels(img.wid,img.hei,GL_RGBA,GL_UNSIGNED_BYTE,img.rgba);
 }
 /* virtual */ bool FsSimpleWindowConnection::ImageNeedsFlip(void)
 {

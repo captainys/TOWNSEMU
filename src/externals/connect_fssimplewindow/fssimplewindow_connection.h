@@ -56,6 +56,8 @@ public:
 
 	#define DEFAULT_PAUSE_KEY_CODE FSKEY_SCROLLLOCK
 
+	GLuint mainTexId,statusTexId,pauseIconTexId,menuIconTexId;
+
 	HostShortCut hostShortCut[FSKEY_NUM_KEYCODE];
 	unsigned int PAUSE_KEY_CODE=DEFAULT_PAUSE_KEY_CODE;
 
@@ -64,6 +66,10 @@ public:
 	unsigned int *FSKEYState=nullptr;
 	FsSimpleWindowConnection();
 	~FsSimpleWindowConnection();
+
+	GLuint GenTexture(void);
+	void UpdateTexture(GLuint texId,int wid,int hei,const unsigned char *rgba) const;
+	void DrawTextureRect(int x0,int y0,int x1,int y1) const;
 
 	std::vector <unsigned char> PAUSEicon,MENUicon;
 
