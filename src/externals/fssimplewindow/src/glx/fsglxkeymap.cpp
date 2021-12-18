@@ -56,10 +56,36 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define FS_NUM_XK 65536
 
-static int mapXKtoFSKEY[FS_NUM_XK];
+class XKtoFSKEYMap
+{
+public:
+	int fskeyForInkey=FSKEY_NULL;
+	int fskeyForKeyState=FSKEY_NULL;
+};
+
+static XKtoFSKEYMap mapXKtoFSKEY[FS_NUM_XK];
 static char mapXKtoChar[FS_NUM_XK];
 static int mapFSKEYtoXK[FSKEY_NUM_KEYCODE];
 
+
+static void FsXAddKeyMapping(int fskey1,int fskey2,int keysym)
+{
+	if(fskey1<0 || FSKEY_NUM_KEYCODE<=fskey1)
+	{
+		fprintf(stderr,"FSKEY is out of range\n");
+		return;
+	}
+	if(keysym<0 || FS_NUM_XK<=keysym)
+	{
+		fprintf(stderr,"XK is out of range\n");
+		return;
+	}
+
+	mapXKtoFSKEY[keysym].fskeyForInkey=fskey1;
+	mapXKtoFSKEY[keysym].fskeyForKeyState=fskey2;
+	mapFSKEYtoXK[fskey1]=keysym;
+	mapFSKEYtoXK[fskey2]=keysym;
+}
 
 static void FsXAddKeyMapping(int fskey,int keysym)
 {
@@ -74,7 +100,8 @@ static void FsXAddKeyMapping(int fskey,int keysym)
 		return;
 	}
 
-	mapXKtoFSKEY[keysym]=fskey;
+	mapXKtoFSKEY[keysym].fskeyForInkey=fskey;
+	mapXKtoFSKEY[keysym].fskeyForKeyState=FSKEY_NULL;
 	mapFSKEYtoXK[fskey]=keysym;
 }
 
@@ -91,7 +118,8 @@ void FsXCreateKeyMapping(void)
 	int i;
 	for(i=0; i<FS_NUM_XK; i++)
 	{
-		mapXKtoFSKEY[i]=0;
+		mapXKtoFSKEY[i].fskeyForInkey=0;
+		mapXKtoFSKEY[i].fskeyForKeyState=0;
 		mapXKtoChar[i]=0;
 	}
 	for(i=0; i<FSKEY_NUM_KEYCODE; i++)
@@ -150,7 +178,7 @@ void FsXCreateKeyMapping(void)
 	FsXAddKeyMapping(FSKEY_F11,                 XK_F11);
 	FsXAddKeyMapping(FSKEY_F12,                 XK_F12);
 	FsXAddKeyMapping(FSKEY_PRINTSCRN,           0);
-	FsXAddKeyMapping(FSKEY_SCROLLLOCK,          0);
+	FsXAddKeyMapping(FSKEY_SCROLLLOCK,          XK_Scroll_Lock);
 	FsXAddKeyMapping(FSKEY_PAUSEBREAK,          XK_Cancel);
 	FsXAddKeyMapping(FSKEY_TILDA,               0);
 	FsXAddKeyMapping(FSKEY_MINUS,               XK_minus);
@@ -165,12 +193,15 @@ void FsXCreateKeyMapping(void)
 	FsXAddKeyMapping(FSKEY_COLON,               ':');
 	FsXAddKeyMapping(FSKEY_SINGLEQUOTE,         '\'');
 	FsXAddKeyMapping(FSKEY_ENTER,               XK_Return);
-	FsXAddKeyMapping(FSKEY_SHIFT,               XK_Shift_L);
+	FsXAddKeyMapping(FSKEY_SHIFT,               FSKEY_LEFT_SHIFT,   XK_Shift_L);
+	FsXAddKeyMapping(FSKEY_SHIFT,               FSKEY_RIGHT_SHIFT,  XK_Shift_R);
 	FsXAddKeyMapping(FSKEY_COMMA,               XK_comma);
 	FsXAddKeyMapping(FSKEY_DOT,                 XK_period);
 	FsXAddKeyMapping(FSKEY_SLASH,               XK_slash);
-	FsXAddKeyMapping(FSKEY_CTRL,                XK_Control_L);
-	FsXAddKeyMapping(FSKEY_ALT,                 XK_Alt_L);
+	FsXAddKeyMapping(FSKEY_CTRL,                FSKEY_LEFT_CTRL,    XK_Control_L);
+	FsXAddKeyMapping(FSKEY_CTRL,                FSKEY_RIGHT_CTRL,   XK_Control_R);
+	FsXAddKeyMapping(FSKEY_ALT,                 FSKEY_LEFT_ALT,     XK_Alt_L);
+	FsXAddKeyMapping(FSKEY_ALT,                 FSKEY_RIGHT_ALT,    XK_Alt_R);
 	FsXAddKeyMapping(FSKEY_INS,                 XK_Insert);
 	FsXAddKeyMapping(FSKEY_DEL,                 XK_Delete);
 	FsXAddKeyMapping(FSKEY_HOME,                XK_Home);
@@ -198,6 +229,23 @@ void FsXCreateKeyMapping(void)
 	FsXAddKeyMapping(FSKEY_TENMINUS,            XK_KP_Subtract);
 	FsXAddKeyMapping(FSKEY_TENPLUS,             XK_KP_Add);
 	FsXAddKeyMapping(FSKEY_TENENTER,            XK_KP_Enter);
+
+	FsXAddKeyMapping(FSKEY_TEN0,                XK_KP_Insert);
+	FsXAddKeyMapping(FSKEY_TEN1,                XK_KP_End);
+	FsXAddKeyMapping(FSKEY_TEN2,                XK_KP_Down);
+	FsXAddKeyMapping(FSKEY_TEN3,                XK_KP_Page_Down);
+	FsXAddKeyMapping(FSKEY_TEN4,                XK_KP_Left);
+	FsXAddKeyMapping(FSKEY_TEN5,                XK_KP_Begin);
+	FsXAddKeyMapping(FSKEY_TEN6,                XK_KP_Right);
+	FsXAddKeyMapping(FSKEY_TEN7,                XK_KP_Home);
+	FsXAddKeyMapping(FSKEY_TEN8,                XK_KP_Up);
+	FsXAddKeyMapping(FSKEY_TEN9,                XK_KP_Page_Up);
+	FsXAddKeyMapping(FSKEY_TENDOT,              XK_KP_Delete);
+	// FsXAddKeyMapping(FSKEY_TENSLASH,            XK_KP_Divide);
+	// FsXAddKeyMapping(FSKEY_TENSTAR,             XK_KP_Multiply);
+	// FsXAddKeyMapping(FSKEY_TENMINUS,            XK_KP_Subtract);
+	// FsXAddKeyMapping(FSKEY_TENPLUS,             XK_KP_Add);
+	// FsXAddKeyMapping(FSKEY_TENENTER,            XK_KP_Enter);
 
 	FsXAddKeyMapping(FSKEY_CONVERT,             XK_Henkan);
 	FsXAddKeyMapping(FSKEY_NONCONVERT,          XK_Muhenkan);
@@ -325,11 +373,20 @@ void FsXCreateKeyMapping(void)
 	FsXAddKeysymToCharMapping(XK_KP_Enter,      '\n');
 }
 
-int FsXKeySymToFskey(int keysym)
+int FsXKeySymToFsInkey(int keysym)
 {
 	if(0<=keysym && keysym<FS_NUM_XK)
 	{
-		return mapXKtoFSKEY[keysym];
+		return mapXKtoFSKEY[keysym].fskeyForInkey;
+	}
+	return 0;
+}
+
+int FsXKeySymToFsGetKeyState(int keysym)
+{
+	if(0<=keysym && keysym<FS_NUM_XK)
+	{
+		return mapXKtoFSKEY[keysym].fskeyForKeyState;
 	}
 	return 0;
 }

@@ -60,7 +60,8 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define FS_NUM_XK 65536
 
 extern void FsXCreateKeyMapping(void);
-extern int FsXKeySymToFskey(int keysym);
+extern int FsXKeySymToFsInkey(int keysym);
+extern int FsXKeySymToFsGetKeyState(int keysym);
 extern char FsXKeySymToChar(int keysym);
 extern int FsXFskeyToKeySym(int fskey);
 
@@ -437,7 +438,7 @@ void FsSetWindowTitle(const char windowTitle[])
 
 void FsPollDevice(void)
 {
-	int i,fsKey;
+	int i,fsKey,fsKey2;
 	char chr;
 	KeySym ks;
 	XEvent ev;
@@ -543,22 +544,11 @@ void FsPollDevice(void)
 		{
 			ks=ks+XK_A-XK_a;
 		}
-		if(ks==XK_Alt_R)
-		{
-			ks=XK_Alt_L;
-		}
-		if(ks==XK_Shift_R)
-		{
-			ks=XK_Shift_L;
-		}
-		if(ks==XK_Control_R)
-		{
-			ks=XK_Control_L;
-		}
 
 		if(0<=ks && ks<FS_NUM_XK)
 		{
-			fsKey=FsXKeySymToFskey(ks); // mapXKtoFSKEY[ks];
+			fsKey=FsXKeySymToFsInkey(ks); // mapXKtoFSKEY[ks];
+			fsKey2=FsXKeySymToFsGetKeyState(ks);
 
 			// 2005/03/29 >>
 			if(fsKey==0)
@@ -572,22 +562,11 @@ void FsPollDevice(void)
 					{
 						ks=ks+XK_A-XK_a;
 					}
-					if(ks==XK_Alt_R)
-					{
-						ks=XK_Alt_L;
-					}
-					if(ks==XK_Shift_R)
-					{
-						ks=XK_Shift_L;
-					}
-					if(ks==XK_Control_R)
-					{
-						ks=XK_Control_L;
-					}
 
 					if(0<=ks && ks<FS_NUM_XK)
 					{
-						fsKey=FsXKeySymToFskey(ks); // mapXKtoFSKEY[ks];
+						fsKey=FsXKeySymToFsInkey(ks); // mapXKtoFSKEY[ks];
+						fsKey2=FsXKeySymToFsGetKeyState(ks);
 					}
 				}
 			}
@@ -596,6 +575,10 @@ void FsPollDevice(void)
 			if(ev.type==KeyPress && fsKey!=0)
 			{
 				fsKeyPress[fsKey]=1;
+				if(FSKEY_NULL!=fsKey2)
+				{
+					fsKeyPress[fsKey2]=1;
+				}
 				if(ev.xkey.window==ysXWnd) // 2005/04/08
 				{
 					if(nKeyBufUsed<NKEYBUF)
@@ -611,6 +594,10 @@ void FsPollDevice(void)
 			else
 			{
 				fsKeyPress[fsKey]=0;
+				if(FSKEY_NULL!=fsKey2)
+				{
+					fsKeyPress[fsKey2]=0;
+				}
 			}
 		}
 	}

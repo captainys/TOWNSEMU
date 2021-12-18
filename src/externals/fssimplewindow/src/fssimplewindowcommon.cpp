@@ -29,6 +29,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <stdio.h>
 #include <string.h>
+#include <chrono>
 
 #include "fssimplewindow.h"
 
@@ -91,15 +92,33 @@ void FsClearEventQueue(void)
 			checkAgain=1;
 		}
 
-		if(0!=FsCheckKeyHeldDown())
-		{
-			checkAgain=1;
-		}
-
 		if(0==checkAgain)
 		{
 			break;
 		}
+
+		FsSleep(50);
+	}
+
+	// Win32 has a bug that VK_KANJI is falsely detected as held down.
+	// To avoid infinite loop, Windows requires timeout.
+	// Probably Microsoft won't address this bug forever.
+	auto t0=std::chrono::system_clock::now();
+	for(;;)
+	{
+		FsPollDevice();
+		if(0==FsCheckKeyHeldDown())
+		{
+			break;
+		}
+
+	#ifdef WIN32
+		auto dt=std::chrono::system_clock::now()-t0;
+		if(500<std::chrono::duration_cast<std::chrono::milliseconds>(dt).count())
+		{
+			break;
+		}
+	#endif
 
 		FsSleep(50);
 	}
