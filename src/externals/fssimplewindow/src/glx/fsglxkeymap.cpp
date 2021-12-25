@@ -182,7 +182,7 @@ void FsXCreateKeyMapping(void)
 	FsXAddKeyMapping(FSKEY_PAUSEBREAK,          XK_Cancel);
 	FsXAddKeyMapping(FSKEY_TILDA,               XK_grave);
 	FsXAddKeyMapping(FSKEY_MINUS,               XK_minus);
-	FsXAddKeyMapping(FSKEY_PLUS,                XK_plus);
+	FsXAddKeyMapping(FSKEY_PLUS,                XK_equal); // There was a mix up.
 	FsXAddKeyMapping(FSKEY_BS,                  XK_BackSpace);
 	FsXAddKeyMapping(FSKEY_TAB,                 XK_Tab);
 	FsXAddKeyMapping(FSKEY_LBRACKET,            XK_bracketleft);
