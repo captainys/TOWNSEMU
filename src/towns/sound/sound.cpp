@@ -22,11 +22,13 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 void TownsSound::State::PowerOn(void)
 {
 	ym2612.PowerOn();
+	rf5c68.Clear();
 	ResetVariables();
 }
 void TownsSound::State::Reset(void)
 {
 	ym2612.Reset();
+	rf5c68.Clear();
 	ResetVariables();
 }
 void TownsSound::State::ResetVariables(void)
