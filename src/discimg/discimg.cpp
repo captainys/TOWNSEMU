@@ -739,6 +739,20 @@ unsigned int DiscImage::OpenMDS(const std::string &fName)
 		uint32_t sectorCount=cpputil::GetDword(MDSSessionBytes+0x04);
 		// According to https://problemkaputt.de/psx-spx.htm#cdromdiskimagesmdsmdfalcohol120,
 		// MDSSessionBytes+0x04 is the end sector.  I suspect it is a sector count including the first 2 seconds (150 sectors).
+
+		// The interpretation of the sector count is in the dark again.
+		// Does it include the first two seconds where TOC and other information is stored?
+		// Does it include PreGap sectors?
+		// There is absolutely no answer, and there even is a chance that nobody has ever
+		// defined it.
+		// In BIN/CUE, it was impossible to know the sector count other than dividing the
+		// binary size by the sector length.
+		// However, in MDS/MDF it is more reasonable to assume that the sector count is
+		// the start sector of the last track plus the number of sectors of the last track.
+		// The number of sectors of the last track can be calculated by subtracting
+		// .MDF file size minus start position in file of the last track.
+		// This start position in file was critically missing in BIN/CUE format.
+
 		unsigned int sessionID=cpputil::GetWord(MDSSessionBytes+0x08);
 		unsigned int nDataBlocks=MDSSessionBytes[0x0A];
 		unsigned int nLeadInInfo=MDSSessionBytes[0x0B];
@@ -766,7 +780,7 @@ unsigned int DiscImage::OpenMDS(const std::string &fName)
 		this->fName=fName;
 		fileType=FILETYPE_MDS;
 
-		num_sectors=sectorCount-150;
+		num_sectors=sectorCount-150; // This interpretation is questionable.
 
 		bool first=true;
 		uint32_t prevFileNameOffset=0;
@@ -853,31 +867,29 @@ unsigned int DiscImage::OpenMDS(const std::string &fName)
 
 
 		// Does the file size make sense?
-		uint32_t totalSizeForVerify=0;
-		for(int t=0; t<tracks.size(); ++t)
+		for(int t=0; t+1<tracks.size(); ++t)
 		{
 			uint32_t trackEndSector;
-			if(t+1<tracks.size())
-			{
-				trackEndSector=MSFtoHSG(tracks[t+1].start)-1;
-			}
-			else
-			{
-				trackEndSector=sectorCount-1-150;
-			}
+			trackEndSector=MSFtoHSG(tracks[t+1].start)-1;
+
 			tracks[t].end=HSGtoMSF(trackEndSector);
 			uint32_t trackStartSector=MSFtoHSG(tracks[t].start);
+		}
 
-			auto nSecTrk=trackEndSector-trackStartSector+1;
-			auto trackBytes=nSecTrk*tracks[t].sectorLength;
-			totalSizeForVerify+=trackBytes;
-		}
-		std::cout << "Number of Bytes Expected From Track Info:" << totalSizeForVerify << std::endl;
-		std::cout << "Number of Bytes of MDF:" << mdfSize << std::endl;
-		if(totalSizeForVerify!=mdfSize)
+		// See comments above.  It makes more sense to calculate the number of sectors
+		// based on the last track location in file and the binary size.
+		if(tracks.back().locationInFile<mdfSize)
 		{
-			return ERROR_BINARY_SIZE_NOT_SECTOR_TIMES_INTEGER;
+			unsigned int lastTrackBytes=mdfSize-tracks.back().locationInFile;
+			unsigned int lastTrackNumSec=lastTrackBytes/tracks.back().sectorLength;
+			num_sectors=MSFtoHSG(tracks.back().start)+lastTrackNumSec;
+			tracks.back().end=HSGtoMSF(num_sectors-1);
 		}
+		else
+		{
+			return ERROR_MDS_BINARY_TOO_SHORT;
+		}
+
 		Binary bin;
 		bin.fName=mdfFName;
 		binaries.push_back(bin);
