@@ -109,6 +109,18 @@ DiscImage::DiscImage()
 		return "Number of binary files and the number of tracks in multi-bin CUE file do not match.";
 	case ERROR_MULTI_BIN_DATA_NOT_2352_PER_SEC:
 		return "All tracks must use 2352 bytes/sector in multi-bin CUE file.";
+	case ERROR_MDS_MEDIA_TYPE:
+		return "Unsupported MDS Media Type.";
+	case ERROR_MDS_MULTI_SESSION_UNSUPPORTED:
+		return "MDS Multi-Session Unsupported.";
+	case ERROR_MDS_MULTI_FILE_UNSUPPORTED:
+		return "MDS Multi-File Unsupported.";
+	case ERROR_MDS_MODE2_UNSUPPORTED:
+		return "MDS Mode 2 Unsupported.";
+	case ERROR_MDS_FILE_SIZE_DOES_NOT_MAKE_SENSE:
+		return "MDF Binary File Size does not make sense.";
+	case ERROR_MDS_UNEXPECTED_NUMBER:
+		return "MDS Unexpected Number.";
 	}
 	return "Undefined error.";
 }
@@ -153,6 +165,29 @@ unsigned int DiscImage::Open(const std::string &fName)
 	if(".ISO"==ext)
 	{
 		return OpenISO(fName);
+	}
+	if(".MDS"==ext)
+	{
+		return OpenMDS(fName);
+	}
+	if(".MDF"==ext)
+	{
+		auto withoutExt=cpputil::RemoveExtension(fName.c_str());
+		auto mds=withoutExt+".mds";
+		auto MDS=withoutExt+".MDS";
+		auto Mds=withoutExt+".Mds";
+		if(cpputil::FileExists(mds))
+		{
+			return OpenMDS(mds);
+		}
+		if(cpputil::FileExists(MDS))
+		{
+			return OpenMDS(MDS);
+		}
+		if(cpputil::FileExists(Mds))
+		{
+			return OpenMDS(Mds);
+		}
 	}
 	return ERROR_UNSUPPORTED;
 }
@@ -432,6 +467,38 @@ unsigned int DiscImage::OpenCUEPostProcess(void)
 		num_sectors=tracks.back().end.ToHSG()+1;  // LastSectorNumber+1
 	}
 
+	MakeLayoutFromTracksAndBinaryFiles();
+
+#ifdef DEBUG_DISCIMG
+	for(auto L : layout)
+	{
+		std::cout << "LAYOUT ";
+		switch(L.layoutType)
+		{
+		case LAYOUT_DATA:
+			std::cout << "DATA  ";
+			break;
+		case LAYOUT_AUDIO:
+			std::cout << "AUDIO ";
+			break;
+		case LAYOUT_GAP:
+			std::cout << "GAP   ";
+			break;
+		case LAYOUT_END:
+			std::cout << "END   ";
+			break;
+		default:
+			std::cout << "????? ";
+			break;
+		}
+		std::cout << L.startHSG << " " << L.locationInFile << " " << totalBinLength << std::endl;
+	}
+#endif
+
+	return ERROR_NOERROR;
+}
+void DiscImage::MakeLayoutFromTracksAndBinaryFiles(void)
+{
 	for(long long int i=0; i<tracks.size(); ++i)
 	{
 		DiscLayout L;
@@ -493,34 +560,6 @@ unsigned int DiscImage::OpenCUEPostProcess(void)
 		}
 		layout.push_back(L);
 	}
-
-#ifdef DEBUG_DISCIMG
-	for(auto L : layout)
-	{
-		std::cout << "LAYOUT ";
-		switch(L.layoutType)
-		{
-		case LAYOUT_DATA:
-			std::cout << "DATA  ";
-			break;
-		case LAYOUT_AUDIO:
-			std::cout << "AUDIO ";
-			break;
-		case LAYOUT_GAP:
-			std::cout << "GAP   ";
-			break;
-		case LAYOUT_END:
-			std::cout << "END   ";
-			break;
-		default:
-			std::cout << "????? ";
-			break;
-		}
-		std::cout << L.startHSG << " " << L.locationInFile << " " << totalBinLength << std::endl;
-	}
-#endif
-
-	return ERROR_NOERROR;
 }
 bool DiscImage::TryAnalyzeTracksWithAbsurdCUEInterpretation(void)
 {
@@ -660,7 +699,7 @@ unsigned int DiscImage::OpenMDS(const std::string &fName)
 		}
 		if(0==mdfSize)
 		{
-			return ERROR_CANNOT_OPEN;
+			return ERROR_BINARY_FILE_NOT_FOUND;
 		}
 
 
@@ -681,11 +720,11 @@ unsigned int DiscImage::OpenMDS(const std::string &fName)
 		std::cout << "Session Offset:" << cpputil::Itox(sessionOffset) << std::endl;
 		if(0!=mediaType && 1!=mediaType && 2!=mediaType)
 		{
-			return ERROR_UNSUPPORTED;
+			return ERROR_MDS_MEDIA_TYPE;
 		}
 		if(1!=nSessions)
 		{
-			return ERROR_UNSUPPORTED;
+			return ERROR_MDS_MULTI_SESSION_UNSUPPORTED;
 		}
 
 
@@ -694,15 +733,17 @@ unsigned int DiscImage::OpenMDS(const std::string &fName)
 		unsigned char MDSSessionBytes[0x18];
 		ifp.read((char *)MDSSessionBytes,0x18);
 		uint32_t startSec=cpputil::GetDword(MDSSessionBytes);
-		uint32_t endSec=cpputil::GetDword(MDSSessionBytes+0x04);
+		uint32_t sectorCount=cpputil::GetDword(MDSSessionBytes+0x04);
+		// According to https://problemkaputt.de/psx-spx.htm#cdromdiskimagesmdsmdfalcohol120,
+		// MDSSessionBytes+0x04 is the end sector.  I suspect it is a sector count including the first 2 seconds (150 sectors).
 		unsigned int sessionID=cpputil::GetWord(MDSSessionBytes+0x08);
 		unsigned int nDataBlocks=MDSSessionBytes[0x0A];
 		unsigned int nLeadInInfo=MDSSessionBytes[0x0B];
 		unsigned int firstTrack=cpputil::GetWord(MDSSessionBytes+0x0C);
 		unsigned int lastTrack=cpputil::GetWord(MDSSessionBytes+0x0E);
 		unsigned int dataBlockOffset=cpputil::GetDword(MDSSessionBytes+0x14);
-		std::cout << "Start Sector:" << startSec << std::endl;
-		std::cout << "End Sector:" << endSec << std::endl;
+		std::cout << "Start Sector:" << cpputil::Itox(startSec) << std::endl;
+		std::cout << "Sector Count:" << sectorCount << std::endl;
 		std::cout << "Session ID:" << sessionID << std::endl;
 		std::cout << "Num Data Blocks:" << nDataBlocks << std::endl;
 		std::cout << "Num Lead In:" << nLeadInInfo << std::endl;
@@ -710,7 +751,18 @@ unsigned int DiscImage::OpenMDS(const std::string &fName)
 		std::cout << "Last Track:" << lastTrack << std::endl;
 		std::cout << "Data Block Offset:" << dataBlockOffset << std::endl;
 
+		if(0xFFFFFFFF-149!=startSec)
+		{
+			// Start sector needs to be -150
+			return ERROR_UNSUPPORTED;
+		}
 
+
+
+		CleanUp();
+
+		bool first=true;
+		uint32_t prevFileNameOffset=0;
 
 		ifp.seekg(dataBlockOffset,ifp.beg);
 		for(unsigned int i=0; i<nDataBlocks; ++i)
@@ -758,9 +810,74 @@ unsigned int DiscImage::OpenMDS(const std::string &fName)
 				std::cout << "Offset in MDF:" << MDFOffset << std::endl;
 				std::cout << "Number of File Names:" << numFileNames << std::endl;
 				std::cout << "File Name Offset:" << fileNameOffset << std::endl;
+
+				if(true==first)
+				{
+					prevFileNameOffset=fileNameOffset;
+					first=false;
+				}
+				else
+				{
+					if(prevFileNameOffset!=fileNameOffset)
+					{
+						return ERROR_MDS_MULTI_FILE_UNSUPPORTED;
+					}
+				}
+
+				Track trk;
+				switch(trackMode)
+				{
+				case 0xA9:
+					trk.trackType=TRACK_AUDIO;
+					break;
+				case 0xAA:
+					trk.trackType=TRACK_MODE1_DATA;
+					break;
+				default:
+					return ERROR_MDS_MODE2_UNSUPPORTED;
+				}
+				trk.sectorLength=sectorSize;
+				trk.preGapSectorLength=sectorSize; // I hope BIN/CUE's absurd pre-gap sector length doesn't haunt MDS.
+				trk.locationInFile=MDFOffset;
+				trk.start=HSGtoMSF(startSector);
+				tracks.push_back(trk);
 			}
 		}
 
+
+		// Does the file size make sense?
+		uint32_t totalSizeForVerify=0;
+		for(int t=0; t<tracks.size(); ++t)
+		{
+			uint32_t trackEndSector;
+			if(t+1<tracks.size())
+			{
+				trackEndSector=MSFtoHSG(tracks[t+1].start)-1;
+			}
+			else
+			{
+				trackEndSector=sectorCount-1-150;
+			}
+			tracks[t].end=HSGtoMSF(trackEndSector);
+			uint32_t trackStartSector=MSFtoHSG(tracks[t].start);
+
+			auto nSecTrk=trackEndSector-trackStartSector+1;
+			auto trackBytes=nSecTrk*tracks[t].sectorLength;
+			totalSizeForVerify+=trackBytes;
+		}
+		std::cout << "Number of Bytes Expected From Track Info:" << totalSizeForVerify << std::endl;
+		std::cout << "Number of Bytes of MDF:" << mdfSize << std::endl;
+		if(totalSizeForVerify!=mdfSize)
+		{
+			return ERROR_BINARY_SIZE_NOT_SECTOR_TIMES_INTEGER;
+		}
+		Binary bin;
+		bin.fName=mdfFName;
+		binaries.push_back(bin);
+
+
+
+		MakeLayoutFromTracksAndBinaryFiles();
 
 		return ERROR_NOERROR;
 	}
@@ -847,15 +964,15 @@ std::vector <unsigned char> DiscImage::ReadSectorMODE1(unsigned int HSG,unsigned
 					{
 						ifp.read((char *)data.data(),MODE1_BYTES_PER_SECTOR*numSec);
 					}
-					else if(RAW_BYTES_PER_SECTOR==tracks[0].sectorLength)
+					else
 					{
 						unsigned int dataPointer=0;
-						char skipper[288];
+						static char skipper[4096];
 						for(int i=0; i<(int)numSec; ++i)
 						{
 							ifp.read(skipper,16);
 							ifp.read((char *)data.data()+dataPointer,MODE1_BYTES_PER_SECTOR);
-							ifp.read(skipper,288);
+							ifp.read(skipper,tracks[0].sectorLength-MODE1_BYTES_PER_SECTOR-16);
 							dataPointer+=MODE1_BYTES_PER_SECTOR;
 						}
 					}
@@ -879,14 +996,14 @@ std::vector <unsigned char> DiscImage::ReadSectorMODE1(unsigned int HSG,unsigned
 						copyLen=std::min<uint64_t>(data.size(),binaryCache.size()-filePtr);
 						memcpy(data.data(),binaryCache.data()+filePtr,copyLen);
 					}
-					else if(RAW_BYTES_PER_SECTOR==tracks[0].sectorLength)
+					else
 					{
 						unsigned int dataPointer=0;
 						for(int i=0; i<(int)numSec && filePtr+MODE1_BYTES_PER_SECTOR<=binaryCache.size(); ++i)
 						{
 							filePtr+=16;
 							memcpy(data.data()+dataPointer,binaryCache.data()+filePtr,MODE1_BYTES_PER_SECTOR);
-							filePtr+=MODE1_BYTES_PER_SECTOR+288;
+							filePtr+=tracks[0].sectorLength;
 							dataPointer+=MODE1_BYTES_PER_SECTOR;
 						}
 					}
@@ -960,6 +1077,7 @@ std::vector <unsigned char> DiscImage::GetWave(MinSecFrm startMSF,MinSecFrm endM
 			}
 
 			auto &bin=binaries[layout[i].indexToBinary]; // Do it before (*1)
+			auto layoutSectorLength=layout[i].sectorLength; // Do it before (*1)
 
 			if(layout[i+1].startHSG<=endHSG)
 			{
@@ -973,30 +1091,63 @@ std::vector <unsigned char> DiscImage::GetWave(MinSecFrm startMSF,MinSecFrm endM
 
 			if(readFrom<readTo)
 			{
-				auto readSize=(readTo-readFrom)&(~3);
-
-			#ifdef DEBUG_DISCIMG
-				std::cout << readFrom << " " << readTo << " " << readSize << " " << std::endl;
-			#endif
-
-				auto curSize=wave.size();
-				wave.resize(wave.size()+readSize);
-				for(auto i=curSize; i<wave.size(); ++i)
+				if(layoutSectorLength<=AUDIO_SECTOR_SIZE)
 				{
-					wave[i]=0;
-				}
+					auto readSize=(readTo-readFrom)&(~3);
 
-				// I thought DATA track is excluded by the above condition, but it looks to be wrong.
-				// To prevent noise from the data track, it needs to be checked here.
-				if(LAYOUT_AUDIO==layoutType)
-				{
-					std::ifstream ifp;
-					ifp.open(bin.fName,std::ios::binary);
-					if(ifp.is_open())
+				#ifdef DEBUG_DISCIMG
+					std::cout << readFrom << " " << readTo << " " << readSize << " " << std::endl;
+				#endif
+
+					auto curSize=wave.size();
+					wave.resize(wave.size()+readSize);
+					for(auto i=curSize; i<wave.size(); ++i)
 					{
-						ifp.seekg(readFrom-bin.byteOffsetInDisc+bin.bytesToSkip,std::ios::beg);
-						ifp.read((char *)(wave.data()+curSize),readSize);
-						ifp.close();
+						wave[i]=0;
+					}
+
+					// I thought DATA track is excluded by the above condition, but it looks to be wrong.
+					// To prevent noise from the data track, it needs to be checked here.
+					if(LAYOUT_AUDIO==layoutType)
+					{
+						std::ifstream ifp;
+						ifp.open(bin.fName,std::ios::binary);
+						if(ifp.is_open())
+						{
+							ifp.seekg(readFrom-bin.byteOffsetInDisc+bin.bytesToSkip,std::ios::beg);
+							ifp.read((char *)(wave.data()+curSize),readSize);
+							ifp.close();
+						}
+					}
+				}
+				else
+				{
+					auto readSize=readTo-readFrom;
+					readSize/=layoutSectorLength;
+					readSize*=AUDIO_SECTOR_SIZE;
+					readSize&=(~3);
+
+					auto curPos=wave.size();
+					wave.resize(wave.size()+readSize);
+					for(auto i=curPos; i<wave.size(); ++i)
+					{
+						wave[i]=0;
+					}
+
+					if(LAYOUT_AUDIO==layoutType)
+					{
+						std::ifstream ifp;
+						ifp.open(bin.fName,std::ios::binary);
+						if(ifp.is_open())
+						{
+							ifp.seekg(readFrom-bin.byteOffsetInDisc+bin.bytesToSkip,std::ios::beg);
+							for(auto filePos=readFrom; filePos<readTo; filePos+=layoutSectorLength)
+							{
+								ifp.read((char *)(wave.data()+curPos),AUDIO_SECTOR_SIZE);
+								curPos+=layoutSectorLength;
+							}
+							ifp.close();
+						}
 					}
 				}
 			}

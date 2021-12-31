@@ -44,12 +44,19 @@ public:
 		ERROR_BINARY_SIZE_NOT_SECTOR_TIMES_INTEGER,
 		ERROR_NUM_MULTI_BIN_NOT_EQUAL_TO_NUM_TRACKS,
 		ERROR_MULTI_BIN_DATA_NOT_2352_PER_SEC,
+		ERROR_MDS_MEDIA_TYPE,
+		ERROR_MDS_MULTI_SESSION_UNSUPPORTED,
+		ERROR_MDS_MULTI_FILE_UNSUPPORTED,
+		ERROR_MDS_MODE2_UNSUPPORTED,
+		ERROR_MDS_FILE_SIZE_DOES_NOT_MAKE_SENSE,
+		ERROR_MDS_UNEXPECTED_NUMBER,
 	};
 	enum
 	{
 		HSG_BASE=150,
 		MODE1_BYTES_PER_SECTOR=2048,
 		RAW_BYTES_PER_SECTOR=2352,
+		AUDIO_SECTOR_SIZE=2352,
 	};
 	enum
 	{
@@ -304,6 +311,7 @@ public:
 	unsigned int OpenCUE(const std::string &fName);
 private:
 	unsigned int OpenCUEPostProcess(void);
+	void MakeLayoutFromTracksAndBinaryFiles(void);
 	bool TryAnalyzeTracksWithAbsurdCUEInterpretation(void);
 	bool TryAnalyzeTracksWithMoreReasonableCUEInterpretation(void);
 
