@@ -691,7 +691,7 @@ void ProfileDialog::OnSliderPositionChange(FsGuiSlider *slider,const double &pre
 	}
 	if(CDImgBtn==btn)
 	{
-		std::vector <const wchar_t *> extList={L".CUE",L".ISO"};
+		std::vector <const wchar_t *> extList={L".CUE",L".ISO",L".MDS"};
 		Browse(L"CD Image",CDImgTxt,extList);
 	}
 	if(startUpStateFNameBtn==btn)

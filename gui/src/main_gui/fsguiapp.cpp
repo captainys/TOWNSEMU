@@ -1927,6 +1927,7 @@ void FsGuiMainCanvas::CD_SelectImageFile(FsGuiPopUpMenuItem *)
 		fdlg->title.Set(L"Open CD Image");
 		fdlg->fileExtensionArray.Append(L".CUE");
 		fdlg->fileExtensionArray.Append(L".ISO");
+		fdlg->fileExtensionArray.Append(L".MDS");
 		fdlg->defaultFileName=profileDlg->CDImgTxt->GetWString();
 		fdlg->BindCloseModalCallBack(&THISCLASS::CD_ImageFileSelected,this);
 		AttachModalDialog(fdlg);
