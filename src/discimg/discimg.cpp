@@ -23,6 +23,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "cpputil.h"
 
 
+static char skipBuf[4096];
+
 
 // Uncomment for verbose output.
 // #define DEBUG_DISCIMG
@@ -967,12 +969,11 @@ std::vector <unsigned char> DiscImage::ReadSectorMODE1(unsigned int HSG,unsigned
 					else
 					{
 						unsigned int dataPointer=0;
-						static char skipper[4096];
 						for(int i=0; i<(int)numSec; ++i)
 						{
-							ifp.read(skipper,16);
+							ifp.read(skipBuf,16);
 							ifp.read((char *)data.data()+dataPointer,MODE1_BYTES_PER_SECTOR);
-							ifp.read(skipper,tracks[0].sectorLength-MODE1_BYTES_PER_SECTOR-16);
+							ifp.read(skipBuf,tracks[0].sectorLength-MODE1_BYTES_PER_SECTOR-16);
 							dataPointer+=MODE1_BYTES_PER_SECTOR;
 						}
 					}
@@ -1144,7 +1145,11 @@ std::vector <unsigned char> DiscImage::GetWave(MinSecFrm startMSF,MinSecFrm endM
 							for(auto filePos=readFrom; filePos<readTo; filePos+=layoutSectorLength)
 							{
 								ifp.read((char *)(wave.data()+curPos),AUDIO_SECTOR_SIZE);
-								curPos+=layoutSectorLength;
+								if(AUDIO_SECTOR_SIZE<layoutSectorLength)
+								{
+									ifp.read(skipBuf,layoutSectorLength-AUDIO_SECTOR_SIZE);
+								}
+								curPos+=AUDIO_SECTOR_SIZE;
 							}
 							ifp.close();
 						}
