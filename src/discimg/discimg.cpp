@@ -17,6 +17,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <vector>
 #include <unordered_map>
 #include <string.h>
+#include <stdint.h>
 
 #include "discimg.h"
 #include "cpputil.h"
@@ -631,6 +632,139 @@ unsigned int DiscImage::OpenISO(const std::string &fName)
 	tracks[0].postGap=MinSecFrm::Zero();
 
 	return ERROR_NOERROR;
+}
+
+unsigned int DiscImage::OpenMDS(const std::string &fName)
+{
+	std::ifstream ifp(fName,std::ios::binary);
+	if(true==ifp.is_open())
+	{
+		uint64_t mdfSize=0;
+		std::string mdfFName;
+		std::string fNameBase=cpputil::RemoveExtension(fName.c_str());
+		const std::string MDFCandidate[]=
+		{
+			fNameBase+".MDF",
+			fNameBase+".mdf",
+			fNameBase+".Mdf"
+		};
+		for(auto fn : MDFCandidate)
+		{
+			auto s=cpputil::FileSize(fn);
+			if(0!=s)
+			{
+				mdfSize=s;
+				mdfFName=fn;
+				break;
+			}
+		}
+		if(0==mdfSize)
+		{
+			return ERROR_CANNOT_OPEN;
+		}
+
+
+
+		unsigned char MDSHeaderBytes[0x58];
+		ifp.read((char *)MDSHeaderBytes,0x58);
+
+		std::string FileID;
+		for(int i=0; i<16; ++i)
+		{
+			FileID.push_back(MDSHeaderBytes[i]);
+		}
+		unsigned int mediaType=cpputil::GetWord(MDSHeaderBytes+0x12);
+		unsigned int nSessions=cpputil::GetWord(MDSHeaderBytes+0x14);
+		uint32_t sessionOffset=cpputil::GetDword(MDSHeaderBytes+0x50);
+		std::cout << "Media Type:" << mediaType << std::endl;
+		std::cout << "Number of Sessions:" << nSessions << std::endl;
+		std::cout << "Session Offset:" << cpputil::Itox(sessionOffset) << std::endl;
+		if(0!=mediaType && 1!=mediaType && 2!=mediaType)
+		{
+			return ERROR_UNSUPPORTED;
+		}
+		if(1!=nSessions)
+		{
+			return ERROR_UNSUPPORTED;
+		}
+
+
+
+		ifp.seekg(sessionOffset,ifp.beg);
+		unsigned char MDSSessionBytes[0x18];
+		ifp.read((char *)MDSSessionBytes,0x18);
+		uint32_t startSec=cpputil::GetDword(MDSSessionBytes);
+		uint32_t endSec=cpputil::GetDword(MDSSessionBytes+0x04);
+		unsigned int sessionID=cpputil::GetWord(MDSSessionBytes+0x08);
+		unsigned int nDataBlocks=MDSSessionBytes[0x0A];
+		unsigned int nLeadInInfo=MDSSessionBytes[0x0B];
+		unsigned int firstTrack=cpputil::GetWord(MDSSessionBytes+0x0C);
+		unsigned int lastTrack=cpputil::GetWord(MDSSessionBytes+0x0E);
+		unsigned int dataBlockOffset=cpputil::GetDword(MDSSessionBytes+0x14);
+		std::cout << "Start Sector:" << startSec << std::endl;
+		std::cout << "End Sector:" << endSec << std::endl;
+		std::cout << "Session ID:" << sessionID << std::endl;
+		std::cout << "Num Data Blocks:" << nDataBlocks << std::endl;
+		std::cout << "Num Lead In:" << nLeadInInfo << std::endl;
+		std::cout << "First Track:" << firstTrack << std::endl;
+		std::cout << "Last Track:" << lastTrack << std::endl;
+		std::cout << "Data Block Offset:" << dataBlockOffset << std::endl;
+
+
+
+		ifp.seekg(dataBlockOffset,ifp.beg);
+		for(unsigned int i=0; i<nDataBlocks; ++i)
+		{
+			unsigned char dataBlockBytes[0x50];
+			ifp.read((char *)dataBlockBytes,0x50);
+
+			unsigned int trackMode=dataBlockBytes[0];
+			// A9:Audio        2352 bytes/sec
+			// AA:Mode1        2048 bytes/sec
+			// AB:Mode2        2336 bytes/sec
+			// AC:Mode2_Form1  2048 bytes/sec
+			// AD:Mode2_Form2  ?
+			// EC:Mode2        2448 bytes/sec
+			unsigned int numSubChannels=dataBlockBytes[1]; // 8-> +60h bytes?
+			unsigned int ADR=dataBlockBytes[2]; // What is it?
+			unsigned int trackNum=dataBlockBytes[3];
+			unsigned int min=dataBlockBytes[0x09]; // Non-BCD
+			unsigned int sec=dataBlockBytes[0x0A];
+			unsigned int frm=dataBlockBytes[0x0b];
+
+			std::cout << std::endl;
+			std::cout << "Track Mode:" << cpputil::Ubtox(trackMode) << std::endl;
+			std::cout << "Num Sub Channels:" << numSubChannels << std::endl;
+			std::cout << "ADR(What is it?):" << ADR << std::endl;
+			std::cout << "Track:" << trackNum << std::endl;
+			std::cout << "Min Sec Frm:" << min << " " << sec << " " << frm << std::endl;
+
+			if(0xA0<=dataBlockBytes[0x04]) // Lead-In Info.  What is it?
+			{
+				std::cout << "Lead In Info" << std::endl;
+			}
+			else
+			{
+				uint32_t offset=cpputil::GetDword(dataBlockBytes+0x0C);
+				unsigned int sectorSize=cpputil::GetWord(dataBlockBytes+0x10);
+				uint32_t startSector=cpputil::GetDword(dataBlockBytes+0x24);
+				uint32_t MDFOffset=cpputil::GetDword(dataBlockBytes+0x28);
+				uint32_t numFileNames=cpputil::GetDword(dataBlockBytes+0x30);
+				uint32_t fileNameOffset=cpputil::GetDword(dataBlockBytes+0x34);
+
+				std::cout << "Offset:" << offset << std::endl;
+				std::cout << "Sector Size:" << sectorSize << std::endl;
+				std::cout << "Start Sector:" << startSector << std::endl;
+				std::cout << "Offset in MDF:" << MDFOffset << std::endl;
+				std::cout << "Number of File Names:" << numFileNames << std::endl;
+				std::cout << "File Name Offset:" << fileNameOffset << std::endl;
+			}
+		}
+
+
+		return ERROR_NOERROR;
+	}
+	return ERROR_CANNOT_OPEN;
 }
 
 bool DiscImage::CacheBinary(void)

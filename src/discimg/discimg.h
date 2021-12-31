@@ -20,6 +20,10 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <string>
 #include <cstdint>
 
+// MDS/MDF implementation is based on:
+//   https://problemkaputt.de/psx-spx.htm#cdromdiskimagesmdsmdfalcohol120
+
+
 class DiscImage
 {
 public:
@@ -305,6 +309,11 @@ private:
 
 public:
 	unsigned int OpenISO(const std::string &fName);
+
+
+public:
+	unsigned int OpenMDS(const std::string &fName);
+
 
 	/*! Cache binary file.  It may take large memory.
 	    If it is the multi-binary image, it only reads the first binary.
