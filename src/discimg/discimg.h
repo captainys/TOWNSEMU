@@ -62,7 +62,8 @@ public:
 	{
 		FILETYPE_NONE,
 		FILETYPE_ISO,
-		FILETYPE_CUE
+		FILETYPE_CUE,
+		FILETYPE_MDS
 	};
 	enum
 	{

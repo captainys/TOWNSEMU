@@ -204,6 +204,7 @@ unsigned int DiscImage::OpenCUE(const std::string &fName)
 
 	CleanUp();
 	this->fName=fName;
+	fileType=FILETYPE_CUE;
 
 	// https://en.wikipedia.org/wiki/Cue_sheet_(computing)
 	enum
@@ -762,6 +763,10 @@ unsigned int DiscImage::OpenMDS(const std::string &fName)
 
 
 		CleanUp();
+		this->fName=fName;
+		fileType=FILETYPE_MDS;
+
+		num_sectors=sectorCount-150;
 
 		bool first=true;
 		uint32_t prevFileNameOffset=0;
