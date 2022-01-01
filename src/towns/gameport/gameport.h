@@ -105,6 +105,14 @@ public:
 		long long int lastAccessTime;
 		long long int lastStateChangeTime;
 
+
+		// Used in Read() >>
+		bool lastButtonRead[2]={false,false};
+		long long int lastButtonDownTime[2]={0,0};
+		long long int maxButtonHoldTime[2]={0,0};
+		// Used in Read() <<
+
+
 		void Write(long long int townsTime,bool COM,unsigned char TRIG);
 		unsigned char Read(long long int townsTime); // Reading last coordinate should reset motion.  Not a const.
 

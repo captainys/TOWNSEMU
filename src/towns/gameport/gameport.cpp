@@ -105,17 +105,37 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 	{
 		data|=0x40;
 	}
+
+
+	bool buttonVirtual[2]={button[0],button[1]};
+	for(int b=0; b<2; ++b)
+	{
+		if(0!=maxButtonHoldTime[b])
+		{
+			if(false==lastButtonRead[b] && true==button[b])
+			{
+				lastButtonDownTime[b]=townsTime;
+			}
+			if(lastButtonDownTime[b]+maxButtonHoldTime[b]<=townsTime)
+			{
+				buttonVirtual[b]=false;
+			}
+		}
+		lastButtonRead[b]=button[b];
+	}
+
+
 	if(MOUSE==device)
 	{
 		if(MOUSEREAD_RESET_TIMEOUT<(townsTime-lastAccessTime))
 		{
 			state=MOUSESTATE_XHIGH;
 		}
-		if(true!=button[0])
+		if(true!=buttonVirtual[0])
 		{
 			data|=0x10;
 		}
-		if(true!=button[1])
+		if(true!=buttonVirtual[1])
 		{
 			data|=0x20;
 		}
@@ -145,7 +165,7 @@ unsigned char TownsGamePort::Port::Read(long long int townsTime)
 	{
 		bool button[4]=
 		{
-			this->button[0],this->button[1],this->run,this->pause
+			buttonVirtual[0],buttonVirtual[1],this->run,this->pause
 		};
 		// Auto Shot
 		for(int i=0; i<4; ++i)
