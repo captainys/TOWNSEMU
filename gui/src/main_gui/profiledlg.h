@@ -37,6 +37,8 @@ public:
 	FsGuiSlider *mouseIntegSpdSlider;
 	FsGuiButton *mouseIntegConsiderVRAMOffsetBtn;
 	FsGuiTextBox *mouseMinXTxt,*mouseMinYTxt,*mouseMaxXTxt,*mouseMaxYTxt;
+	FsGuiTextBox *maxButtonHoldTimeTxt[2][2];
+
 	FsGuiButton *bootKeyBtn[15];
 	FsGuiTextBox *scrnScaleTxt;
 	FsGuiButton *scrnAutoScaleBtn;

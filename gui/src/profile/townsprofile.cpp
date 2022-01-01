@@ -416,6 +416,16 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 				}
 			}
 		}
+		else if(0==argv[0].STRCMP("BTNHOLDT"))
+		{
+			if(4<=argv.size())
+			{
+				int port=argv[1].Atoi()&1;
+				int btn=argv[2].Atoi()&1;
+				int nanosec=argv[3].Atoi();
+				maxButtonHoldTime[port][btn]=nanosec;
+			}
+		}
 		else if(0==argv[0].STRCMP("SCALING_"))
 		{
 			if(2<=argv.size())

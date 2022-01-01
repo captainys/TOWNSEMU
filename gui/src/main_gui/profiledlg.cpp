@@ -233,7 +233,20 @@ void ProfileDialog::Make(void)
 			{
 				gamePortDrp[i]->AddString(label.c_str(),YSFALSE);
 			}
+
+			AddStaticText(0,FSKEY_NULL,"Max Button-Hold Time(ms) ",YSTRUE);
+			maxButtonHoldTimeTxt[i][0]=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,L"Btn0:",4,YSFALSE);
+			maxButtonHoldTimeTxt[i][1]=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,L"Btn1:",4,YSFALSE);
 		}
+
+		AddStaticText(0,FSKEY_NULL,
+			"Max Button-Hold Time will help you make a single click.  Some games are virtually unplayable\n"
+			"because you end up making unwanted menu selection unless you really release the button quickly\n"
+			"after pressing. By setting non-zero value in Max Button-Hold Time, Tsugaru virtually releases\n"
+			"the mouse/pad button after the specified time."
+			,
+			YSTRUE);
+
 		gamePortDrp[0]->SelectByString(FsGuiMainCanvas::GamePortEmulationTypeToHumanReadable(TOWNS_GAMEPORTEMU_PHYSICAL0).c_str());
 		gamePortDrp[1]->SelectByString(FsGuiMainCanvas::GamePortEmulationTypeToHumanReadable(TOWNS_GAMEPORTEMU_MOUSE).c_str());
 
@@ -912,6 +925,11 @@ TownsProfile ProfileDialog::GetProfile(void) const
 	{
 		auto sel=gamePortDrp[gameport]->GetSelectedString();
 		profile.gamePort[gameport]=FsGuiMainCanvas::HumanReadableToGamePortEmulationType(sel.c_str());
+
+		profile.maxButtonHoldTime[gameport][0]=maxButtonHoldTimeTxt[gameport][0]->GetInteger();
+		profile.maxButtonHoldTime[gameport][1]=maxButtonHoldTimeTxt[gameport][1]->GetInteger();
+		profile.maxButtonHoldTime[gameport][0]*=1000000;
+		profile.maxButtonHoldTime[gameport][1]*=1000000;
 	}
 
 	profile.mouseIntegrationSpeed=(int)(mouseIntegSpdSlider->GetScaledValue());
@@ -1071,6 +1089,8 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 	for(int gameport=0; gameport<2; ++gameport)
 	{
 		gamePortDrp[gameport]->SelectByString(FsGuiMainCanvas::GamePortEmulationTypeToHumanReadable(profile.gamePort[gameport]).c_str());
+		maxButtonHoldTimeTxt[gameport][0]->SetInteger(profile.maxButtonHoldTime[gameport][0]/1000000);
+		maxButtonHoldTimeTxt[gameport][1]->SetInteger(profile.maxButtonHoldTime[gameport][1]/1000000);
 	}
 
 	mouseIntegSpdSlider->SetPositionByScaledValue((double)profile.mouseIntegrationSpeed);
