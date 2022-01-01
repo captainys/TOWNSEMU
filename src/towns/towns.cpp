@@ -230,6 +230,8 @@ void FMTowns::State::PowerOn(void)
 	{
 		outside_world->gamePort[i]=argv.gamePort[i];
 		towns.gameport.state.ports[i].device=TownsGamePort::EmulationTypeToDeviceType(argv.gamePort[i]);
+		towns.gameport.state.ports[i].maxButtonHoldTime[0]=argv.maxButtonHoldTime[i][0];
+		towns.gameport.state.ports[i].maxButtonHoldTime[1]=argv.maxButtonHoldTime[i][1];
 	}
 
 	for(auto i=0; i<argv.sharedDir.size() && i<TownsVnDrv::MAX_NUM_SHARED_DIRECTORIES; ++i)

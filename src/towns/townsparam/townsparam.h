@@ -87,6 +87,7 @@ public:
 	int mouseByFlightstickCenterX=320,mouseByFlightstickCenterY=200;
 	float mouseByFlightstickZeroZoneX=0.0F,mouseByFlightstickZeroZoneY=0.0F;
 	float mouseByFlightstickScaleX=500.0F,mouseByFlightstickScaleY=400.0F;
+	long long int maxButtonHoldTime[2][2]={{0,0},{0,0}};
 
 
 	// When adding a throttle control for an app, also update Outside_World::CacheGamePadIndicesThatNeedUpdates.

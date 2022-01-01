@@ -33,6 +33,11 @@ void TownsProfile::CleanUp(void)
 	gamePort[0]=TOWNS_GAMEPORTEMU_PHYSICAL0;
 	gamePort[1]=TOWNS_GAMEPORTEMU_MOUSE;
 
+	maxButtonHoldTime[0][0]=0;
+	maxButtonHoldTime[0][1]=0;
+	maxButtonHoldTime[1][0]=0;
+	maxButtonHoldTime[1][1]=0;
+
 	bootKeyComb=BOOT_KEYCOMB_NONE;
 	autoStart=false;
 	scaling=150;
@@ -125,6 +130,20 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 	text.back()+=TownsGamePortEmuToStr(gamePort[0]);
 	text.push_back("GAMEPORT 1 ");
 	text.back()+=TownsGamePortEmuToStr(gamePort[1]);
+
+	for(int i=0; i<2; ++i)
+	{
+		for(int j=0; j<2; ++j)
+		{
+			text.push_back("BTNHOLDT 0 0 ");
+			text.back()[9]+=i;
+			text.back()[11]+=j;
+
+			sstream.str("");
+			sstream << maxButtonHoldTime[i][j];
+			text.back()+=sstream.str();
+		}
+	}
 
 	text.push_back("KEYCOMB_ ");
 	text.back()+=TownsKeyCombToStr(bootKeyComb);
@@ -700,6 +719,26 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 		argv.push_back("-GAMEPORT");
 		argv.back().push_back('0'+i);
 		argv.push_back(TownsGamePortEmuToStr(gamePort[i]));
+	}
+
+	for(int i=0; i<2; ++i)
+	{
+		for(int j=0; j<2; ++j)
+		{
+			unsigned int millisec=(maxButtonHoldTime[i][j]/1000000);
+			if(0!=millisec)
+			{
+				argv.push_back("-BUTTONHOLDTIME0");
+				argv.back().back()+=i;
+
+				argv.push_back("0");
+				argv.back().back()+=j;
+
+				sstream.str("");
+				sstream << millisec;
+				argv.push_back(sstream.str());
+			}
+		}
 	}
 
 	if(100!=scaling)
