@@ -59,6 +59,8 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["P"]=CMD_DUMP;
 	primaryCmdMap["DUMP"]=CMD_DUMP;
 	primaryCmdMap["DM"]=CMD_DUMP;
+	primaryCmdMap["MEMDUMP"]=CMD_MEMDUMP;
+	primaryCmdMap["MD"]=CMD_MEMDUMP;
 	primaryCmdMap["STA"]=CMD_PRINT_STATUS;
 	primaryCmdMap["HIST"]=CMD_PRINT_HISTORY;
 	primaryCmdMap["SAVEHIST"]=CMD_SAVE_HISTORY;
@@ -434,6 +436,11 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "PRINT info|PRI info|P info" << std::endl;
 	std::cout << "DUMP info|DM info" << std::endl;
 	std::cout << "  Print/Dump information." << std::endl;
+	std::cout << "MEMDUMP or MD seg:address" << std::endl;
+	std::cout << "MEMDUMP or MD seg:address wid hei step" << std::endl;
+	std::cout << "MEMDUMP or MD seg:address wid hei step 1/0" << std::endl;
+	std::cout << "  Memory Dump.  If you enter wid,hei,step it will dump non-16x16 columns." << std::endl;
+	std::cout << "  If you enter 1/0, you can control to show or hide ASCII dump." << std::endl;
 	std::cout << "CALC formula" << std::endl;
 	std::cout << "  Caluclate a value." << std::endl;
 	std::cout << "BP EIP|BRK EIP" << std::endl;
@@ -877,6 +884,10 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 
 	case CMD_DUMP:
 		Execute_Dump(towns,cmd);
+		break;
+
+	case CMD_MEMDUMP:
+		Execute_MemoryDump(towns,cmd);
 		break;
 
 	case CMD_CALCULATE:
@@ -2006,6 +2017,54 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 		if(i486DX::FarPointer::NO_SEG!=farPtr.SEG)
 		{
 			for(auto str : miscutil::MakeMemDump(towns.cpu,towns.mem,farPtr,256,/*shiftJIS*/false))
+			{
+				std::cout << str << std::endl;
+			}
+		}
+		else
+		{
+			PrintError(ERROR_DUMP_TARGET_UNDEFINED);
+			return;
+		}
+	}
+}
+
+void TownsCommandInterpreter::Execute_MemoryDump(FMTowns &towns,Command &cmd)
+{
+	if(cmd.argv.size()<2)
+	{
+		std::cout << "Need address." << std::endl;
+		PrintError(ERROR_TOO_FEW_ARGS);
+	}
+	else
+	{
+		int wid=16,hei=16,skip=1;
+		bool ascii=true;
+		if(3<=cmd.argv.size())
+		{
+			wid=cpputil::Atoi(cmd.argv[2].c_str());
+		}
+		if(4<=cmd.argv.size())
+		{
+			hei=cpputil::Atoi(cmd.argv[3].c_str());
+		}
+		if(5<=cmd.argv.size())
+		{
+			skip=cpputil::Atoi(cmd.argv[4].c_str());
+			if(skip<=0)
+			{
+				skip=1;
+			}
+		}
+		if(6<=cmd.argv.size())
+		{
+			ascii=(0!=cpputil::Atoi(cmd.argv[5].c_str()));
+		}
+
+		auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.cpu);
+		if(i486DX::FarPointer::NO_SEG!=farPtr.SEG)
+		{
+			for(auto str : miscutil::MakeMemDump2(towns.cpu,towns.mem,farPtr,wid,hei,skip,ascii,/*shiftJIS*/false))
 			{
 				std::cout << str << std::endl;
 			}

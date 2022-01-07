@@ -69,6 +69,7 @@ public:
 		// DISABLE CMDLOG
 
 		CMD_DUMP,
+		CMD_MEMDUMP,
 		CMD_PRINT_STATUS,
 		CMD_PRINT_HISTORY,
 		CMD_PRINT_SYMBOL,
@@ -324,6 +325,8 @@ public:
 
 	void Execute_Dump(FMTowns &towns,Command &cmd);
 	void Execute_Dump_DOSInfo(FMTowns &towns,Command &cmd);
+
+	void Execute_MemoryDump(FMTowns &towns,Command &cmd);
 
 	void Execute_Calculate(FMTowns &towns,Command &cmd);
 

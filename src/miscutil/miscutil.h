@@ -25,6 +25,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 namespace miscutil
 {
 	std::vector <std::string> MakeMemDump(const i486DX &cpu,const Memory &mem,i486DX::FarPointer ptr,unsigned int length,bool shiftJIS);
+	std::vector <std::string> MakeMemDump2(const i486DX &cpu,const Memory &mem,i486DX::FarPointer ptr,int wid,int hei,int skip,bool shiftJIS,bool includeASCII);
+
+	unsigned char GetByte(const i486DX &cpu,const Memory &mem,i486DX::FarPointer ptr,uint32_t offset);
 };
 
 /* } */

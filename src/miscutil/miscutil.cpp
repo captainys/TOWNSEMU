@@ -201,3 +201,72 @@ std::vector <std::string> miscutil::MakeMemDump(const i486DX &cpu,const Memory &
 	return text;
 }
 
+std::vector <std::string> miscutil::MakeMemDump2(const i486DX &cpu,const Memory &mem,i486DX::FarPointer ptr,int wid,int hei,int skip,bool includeASCII,bool shiftJIS)
+{
+	std::vector <std::string> text;
+
+	for(int y=0; y<hei; ++y)
+	{
+		std::string str,ascii;
+		for(int x=0; x<wid; x+=skip)
+		{
+			unsigned int offset=y*wid+x;
+
+			auto byte=GetByte(cpu,mem,ptr,offset);
+			str+=" "+cpputil::Ubtox(byte);
+
+			if(true==includeASCII)
+			{
+				if(byte<' ' || (true!=shiftJIS && 0x80<=byte))
+				{
+					ascii.push_back(' ');
+				}
+				else
+				{
+					ascii.push_back(byte);
+				}
+			}
+		}
+		if(0!=ascii.size())
+		{
+			str.push_back('|');
+			str+=ascii;
+			if(true==shiftJIS)
+			{
+				// Make sure to break first char of shift-JIS
+				ascii.push_back(' ');
+				ascii.push_back(' ');
+			}
+		}
+		text.push_back(str);
+	}
+
+	return text;
+}
+
+unsigned char miscutil::GetByte(const i486DX &cpu,const Memory &mem,i486DX::FarPointer ptr,uint32_t offset)
+{
+	if((ptr.SEG&0xffff0000)==i486DX::FarPointer::LINEAR_ADDR)
+	{
+		return cpu.DebugFetchByteByLinearAddress(mem,ptr.OFFSET+offset);
+	}
+	else if((ptr.SEG&0xffff0000)==i486DX::FarPointer::PHYS_ADDR)
+	{
+		return mem.FetchByte(ptr.OFFSET+offset);
+	}
+	else
+	{
+		i486DX::SegmentRegister seg;
+		std::string segTxt;
+		if((ptr.SEG&0xffff0000)==i486DX::FarPointer::SEG_REGISTER)
+		{
+			seg=cpu.state.GetSegmentRegister(ptr.SEG&0xffff);
+		}
+		else
+		{
+			cpu.DebugLoadSegmentRegister(seg,ptr.SEG,mem,cpu.IsInRealMode());
+		}
+		return cpu.DebugFetchByte(32,seg,ptr.OFFSET+offset,mem);
+	}
+}
+
