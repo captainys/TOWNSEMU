@@ -39,6 +39,13 @@ void i486Symbol::CleanUp(void)
 std::string i486Symbol::Format(bool returnType,bool label,bool param) const
 {
 	std::string str;
+
+	if(0<imported.size())
+	{
+		str=imported;
+		str.push_back(' ');
+	}
+
 	if(true==returnType)
 	{
 		str+=this->return_type;
@@ -94,6 +101,8 @@ bool i486SymbolTable::Load(std::istream &ifp)
 	// I Supplimental Info
 	// % Raw Data Byte Count
 	// M 0/1 immIsIOAddr flag
+	// B 0/1 immIsSymbol flag
+	// X label Imported from .EXP symbol table.
 	// /end
 
 	while(true!=ifp.eof())
@@ -159,6 +168,14 @@ bool i486SymbolTable::Load(std::istream &ifp)
 				case 'M':
 					curSymbol.immIsIOAddr=(0!=cpputil::Atoi(str.c_str()+2));
 					break;
+				case 'b':
+				case 'B':
+					curSymbol.immIsSymbol=(0!=cpputil::Atoi(str.c_str()+2));
+					break;
+				case 'x':
+				case 'X':
+					curSymbol.imported=(str.c_str()+2);
+					break;
 				}
 			}
 		}
@@ -193,6 +210,8 @@ bool i486SymbolTable::Save(std::ostream &ofp) const
 			ofp << "P " << sym.param <<  std::endl;
 			ofp << "% " << sym.rawDataBytes <<  std::endl;
 			ofp << "M " << (sym.immIsIOAddr ? "1" : "0") << std::endl;
+			ofp << "B " << (sym.immIsSymbol ? "1" : "0") << std::endl;
+			ofp << "X " << sym.imported  << std::endl;
 			for(auto &i : sym.info)
 			{
 				ofp << "I " << i <<  std::endl;
@@ -228,7 +247,7 @@ std::pair <i486DX::FarPointer,i486Symbol> i486SymbolTable::FindSymbolFromLabel(c
 {
 	for(auto &addrAndSym : symTable)
 	{
-		if(addrAndSym.second.label==label)
+		if(addrAndSym.second.label==label || addrAndSym.second.imported==label)
 		{
 			return addrAndSym;
 		}
@@ -252,6 +271,28 @@ i486Symbol *i486SymbolTable::SetImmIsIOPort(i486DX::FarPointer ptr)
 {
 	auto &symbol=symTable[ptr];
 	symbol.immIsIOAddr=true;
+	return &symbol;
+}
+i486Symbol *i486SymbolTable::SetImportedLabel(i486DX::FarPointer ptr,const std::string &label)
+{
+	bool makeItProcedure=false; // It can be a data, it can be a procedure, but temporarily make it a procedure, if not in the database yet.
+	auto found=symTable.find(ptr);
+	if(found==symTable.end())
+	{
+		makeItProcedure=true;
+	}
+	auto &symbol=symTable[ptr];
+	symbol.imported=label;
+	if(true==makeItProcedure)
+	{
+		symbol.symType=i486Symbol::SYM_PROCEDURE;
+	}
+	return &symbol;
+}
+i486Symbol *i486SymbolTable::SetImmIsSymbol(i486DX::FarPointer ptr)
+{
+	auto &symbol=symTable[ptr];
+	symbol.immIsSymbol=true;
 	return &symbol;
 }
 bool i486SymbolTable::Delete(i486DX::FarPointer ptr)
@@ -300,7 +341,7 @@ void i486SymbolTable::PrintIfAny(unsigned int SEG,unsigned int OFFSET,bool retur
 	ptr.SEG=SEG;
 	ptr.OFFSET=OFFSET;
 	auto *sym=Find(ptr);
-	if(nullptr!=sym && 0<sym->label.size())
+	if(nullptr!=sym && (0<sym->label.size() || 0<sym->imported.size()))
 	{
 		std::cout << sym->Format(returnType,label,param) << std::endl;
 	}

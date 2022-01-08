@@ -14,6 +14,7 @@ i486debugmemaccess.h
 i486debugmemaccess.cpp
 i486symtable.h
 i486symtable.cpp
+i486symtableexp.cpp
 i486statesave.cpp
 )
 target_link_libraries(cpu device ramrom inout cpputil)

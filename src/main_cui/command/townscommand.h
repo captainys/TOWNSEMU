@@ -99,6 +99,7 @@ public:
 		CMD_DEF_RAW_BYTES,
 		CMD_IMM_IS_IOPORT,
 		CMD_DEL_SYMBOL,
+		CMD_IMPORT_EXP_SYMTABLE,
 
 		CMD_TYPE_KEYBOARD,
 		CMD_KEYBOARD,
@@ -345,6 +346,7 @@ public:
 
 	void Execute_AddSymbol(FMTowns &towns,Command &cmd);
 	void Execute_DelSymbol(FMTowns &towns,Command &cmd);
+	void Execute_ImportEXPSymbolTable(FMTowns &towns,Command &cmd);
 
 	void Execute_SymbolInquiry(FMTowns &towns,Command &cmd);
 

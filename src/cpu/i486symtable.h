@@ -42,11 +42,13 @@ public:
 
 	bool temporary;  // If true, it will not be saved to file.
 	bool immIsIOAddr; // If true, disassembler should take Imm operand as an IO-port address.
+	bool immIsSymbol; // Take imm as a symbol.
 	unsigned int symType;
 	std::string return_type;
 	std::string label;
 	std::string inLineComment;
 	std::string param;
+	std::string imported; // Imported from .EXP symbol table.
 	std::vector <std::string> info;
 	unsigned int rawDataBytes;
 
@@ -103,6 +105,12 @@ public:
 	bool Save(const char fName[]) const;
 	bool Save(std::ostream &ofp) const;
 
+	/*! Import symbol table from .EXP.
+	    .EXP executable may or may not have a symbol table.
+	    MP format .EXP executable does not have a symbol table.
+	*/
+	bool ImportEXPSymbolTable(std::string fName);
+
 	/*! Save to the stored file name.
 	*/
 	bool AutoSave(void) const;
@@ -111,6 +119,9 @@ public:
 	const i486Symbol *Find(i486DX::FarPointer ptr) const;
 	i486Symbol *Update(i486DX::FarPointer ptr,const std::string &label);
 	i486Symbol *SetComment(i486DX::FarPointer ptr,const std::string &inLineComment);
+	i486Symbol *SetImportedLabel(i486DX::FarPointer ptr,const std::string &label);
+	i486Symbol *SetImmIsSymbol(i486DX::FarPointer ptr);
+
 
 	/*! Disassembler should take IMM operand at the given address as an IO-port address.
 	*/

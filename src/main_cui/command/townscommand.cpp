@@ -95,6 +95,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["ADDCMT"]=CMD_ADD_COMMENT;
 	primaryCmdMap["DEFRAW"]=CMD_DEF_RAW_BYTES;
 	primaryCmdMap["DELSYM"]=CMD_DEL_SYMBOL;
+	primaryCmdMap["IMPORTEXPSYM"]=CMD_IMPORT_EXP_SYMTABLE;
 	primaryCmdMap["IMMISIO"]=CMD_IMM_IS_IOPORT;
 	primaryCmdMap["SAVEEVT"]=CMD_SAVE_EVENTLOG;
 	primaryCmdMap["LOADEVT"]=CMD_LOAD_EVENTLOG;
@@ -423,6 +424,10 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "SYMFIND <SEG> wildcard" << std::endl;
 	std::cout << "  Keyword search in the symbol table.  Segment is optional." << std::endl;
 	std::cout << "  Keyword can use wildcard." << std::endl;
+	std::cout << "IMPORTEXPSYM filename.exp" << std::endl;
+	std::cout << "  Import .EXP symbol table." << std::endl;
+	std::cout << "  An .EXP file may or may not have a symbol table." << std::endl;
+	std::cout << "  Only P3-format .EXP binary can carry a symbol table." << std::endl;
 
 	std::cout << "WAIT" << std::endl;
 	std::cout << "  Wait until VM becomes PAUSE state." << std::endl;
@@ -1105,6 +1110,9 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 		break;
 	case CMD_DEL_SYMBOL:
 		Execute_DelSymbol(towns,cmd);
+		break;
+	case CMD_IMPORT_EXP_SYMTABLE:
+		Execute_ImportEXPSymbolTable(towns,cmd);
 		break;
 
 	case CMD_PRINT_SYMBOL:
@@ -3265,6 +3273,30 @@ void TownsCommandInterpreter::Execute_AddSymbol(FMTowns &towns,Command &cmd)
 		{
 			std::cout << "Auto-Saving of Symbol Table Failed." << std::endl;
 			std::cout << "File name is not specified or invalid." << std::endl;
+		}
+	}
+	else
+	{
+		PrintError(ERROR_TOO_FEW_ARGS);
+	}
+}
+
+void TownsCommandInterpreter::Execute_ImportEXPSymbolTable(FMTowns &towns,Command &cmd)
+{
+	if(2<=cmd.argv.size())
+	{
+		if(true==towns.debugger.GetSymTable().ImportEXPSymbolTable(cmd.argv[1]))
+		{
+			std::cout << "Imported .EXP symbol table." << std::endl;
+			if(true!=towns.debugger.GetSymTable().AutoSave())
+			{
+				std::cout << "Auto-Saving of Symbol Table Failed." << std::endl;
+				std::cout << "File name is not specified or invalid." << std::endl;
+			}
+		}
+		else
+		{
+			PrintError(ERROR_CANNOT_OPEN_FILE);
 		}
 	}
 	else
