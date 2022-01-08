@@ -207,6 +207,44 @@ std::vector <std::string> miscutil::MakeMemDump2(const i486DX &cpu,const Memory 
 
 	for(int y=0; y<hei; ++y)
 	{
+		unsigned int addr0=ptr.OFFSET+y*wid;
+		std::string addrTxt;
+
+		if((ptr.SEG&0xffff0000)==i486DX::FarPointer::LINEAR_ADDR)
+		{
+			addrTxt=cpputil::Uitox(addr0);
+		}
+		else if((ptr.SEG&0xffff0000)==i486DX::FarPointer::PHYS_ADDR)
+		{
+			addrTxt=cpputil::Uitox(addr0);
+		}
+		else
+		{
+			i486DX::SegmentRegister seg;
+			std::string segTxt;
+			if((ptr.SEG&0xffff0000)==i486DX::FarPointer::SEG_REGISTER)
+			{
+				seg=cpu.state.GetSegmentRegister(ptr.SEG&0xffff);
+				if((ptr.SEG&0xff)<i486DX::REG_TOTAL_NUMBER_OF_REGISTERS)
+				{
+					segTxt=cpu.RegToStr[ptr.SEG&0xff];
+				}
+				else
+				{
+					segTxt="????";
+				}
+			}
+			else
+			{
+				cpu.DebugLoadSegmentRegister(seg,ptr.SEG,mem,cpu.IsInRealMode());
+				segTxt=cpputil::Ustox(ptr.SEG);
+			}
+
+			addrTxt=segTxt;
+			addrTxt.push_back(':');
+			addrTxt+=cpputil::Uitox(addr0);
+		}
+
 		std::string str,ascii;
 		for(int x=0; x<wid; x+=skip)
 		{
@@ -238,7 +276,7 @@ std::vector <std::string> miscutil::MakeMemDump2(const i486DX &cpu,const Memory 
 				ascii.push_back(' ');
 			}
 		}
-		text.push_back(str);
+		text.push_back(addrTxt+str);
 	}
 
 	return text;
