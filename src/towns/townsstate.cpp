@@ -252,5 +252,7 @@ bool FMTowns::LoadState(std::string fName,class Outside_World &outsideWorld)
 	state.appSpecific_WC_maxSpeedPtr=ReadUint32(data);
 	state.appSpecific_HoldMouseIntegration=ReadBool(data);
 
+	vmAbort=false;
+
 	return true;
 }

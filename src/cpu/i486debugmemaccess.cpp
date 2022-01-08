@@ -177,12 +177,12 @@ inline bool i486DebugMemoryAccess::CheckBreakOnWriteCondition(uint32_t physAddr,
 	auto offset=physAddr-physAddrTop;
 	if(true==breakOnWrite[offset])
 	{
-		auto found=breakOnWriteData.find(physAddr-physAddrTop);
+		auto found=breakOnWriteData.find(offset);
 		if(breakOnWriteData.end()!=found && found->second==data)
 		{
 			return true;
 		}
-		else if(breakOnWriteData.end()==found && breakOnWriteMin[physAddr]<=data && data<=breakOnWriteMax[physAddr])
+		else if(breakOnWriteData.end()==found && breakOnWriteMin[offset]<=data && data<=breakOnWriteMax[offset])
 		{
 			return true;
 		}
@@ -292,6 +292,18 @@ inline bool i486DebugMemoryAccess::CheckBreakOnWriteCondition(uint32_t physAddr,
 		debugMemAccess->memAccessChain=curMemAccess;
 	}
 	debugMemAccess->SetBreakOnWrite(physAddr,data);
+	mem.SetAccessObject(debugMemAccess,physAddr);
+}
+/* static */ void i486DebugMemoryAccess::SetBreakOnMemWrite(Memory &mem,i486Debugger &debugger,unsigned int physAddr,unsigned char minValue,unsigned char maxValue)
+{
+	auto *curMemAccess=mem.GetAccessObject(physAddr);
+	i486DebugMemoryAccess *debugMemAccess=dynamic_cast <i486DebugMemoryAccess *>(curMemAccess);
+	if(nullptr==debugMemAccess)
+	{
+		debugMemAccess=new i486DebugMemoryAccess(debugger,physAddr);
+		debugMemAccess->memAccessChain=curMemAccess;
+	}
+	debugMemAccess->SetBreakOnWrite(physAddr,minValue,maxValue);
 	mem.SetAccessObject(debugMemAccess,physAddr);
 }
 /* static */ void i486DebugMemoryAccess::ClearBreakOnMemWrite(Memory &mem,unsigned int physAddr)

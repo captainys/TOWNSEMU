@@ -4345,8 +4345,8 @@ void TownsCommandInterpreter::Execute_AutoShot(FMTowns &towns,Command &cmd)
 
 void TownsCommandInterpreter::Execute_BreakOnMemoryWrite(FMTowns &towns,Command &cmd)
 {
-	bool useValue=false;
-	unsigned char value=0;
+	bool useValue=false,useMinMax=false;
+	unsigned char value=0,minValue=0,maxValue=255;
 	int nAddr=0;
 	uint32_t addr[2];
 
@@ -4373,6 +4373,42 @@ void TownsCommandInterpreter::Execute_BreakOnMemoryWrite(FMTowns &towns,Command 
 			{
 				useValue=true;
 				value=cpputil::Xtoi(arg.c_str()+pos+1);
+			}
+		}
+		else if(cpputil::StrStartsWith(arg,"MIN=") ||
+		        cpputil::StrStartsWith(arg,"Min=") ||
+		        cpputil::StrStartsWith(arg,"min=") ||
+		        cpputil::StrStartsWith(arg,"MIN:") ||
+		        cpputil::StrStartsWith(arg,"Min:") ||
+		        cpputil::StrStartsWith(arg,"min:"))
+		{
+			auto pos=arg.find(':');
+			if(std::string::npos==pos)
+			{
+				pos=arg.find('=');
+			}
+			if(std::string::npos!=pos)
+			{
+				useMinMax=true;
+				minValue=cpputil::Xtoi(arg.c_str()+pos+1);
+			}
+		}
+		else if(cpputil::StrStartsWith(arg,"MAX=") ||
+		        cpputil::StrStartsWith(arg,"Max=") ||
+		        cpputil::StrStartsWith(arg,"max=") ||
+		        cpputil::StrStartsWith(arg,"MAX:") ||
+		        cpputil::StrStartsWith(arg,"Max:") ||
+		        cpputil::StrStartsWith(arg,"max:"))
+		{
+			auto pos=arg.find(':');
+			if(std::string::npos==pos)
+			{
+				pos=arg.find('=');
+			}
+			if(std::string::npos!=pos)
+			{
+				useMinMax=true;
+				maxValue=cpputil::Xtoi(arg.c_str()+pos+1);
 			}
 		}
 		else if(std::string::npos!=cmd.argv[i].find(':'))
@@ -4412,6 +4448,12 @@ void TownsCommandInterpreter::Execute_BreakOnMemoryWrite(FMTowns &towns,Command 
 		}
 	}
 
+	if(useMinMax && useValue)
+	{
+		std::cout << "Min/Max and Data cannot be used simultaneously." << std::endl;
+		PrintError(ERROR_WRONG_PARAMETER);
+	}
+
 	if(2==nAddr)
 	{
 		if(addr[1]<addr[0])
@@ -4422,7 +4464,7 @@ void TownsCommandInterpreter::Execute_BreakOnMemoryWrite(FMTowns &towns,Command 
 		{
 			if(true!=useValue)
 			{
-				i486DebugMemoryAccess::SetBreakOnMemWrite(towns.mem,towns.debugger,a);
+				i486DebugMemoryAccess::SetBreakOnMemWrite(towns.mem,towns.debugger,a,minValue,maxValue);
 			}
 			else
 			{
@@ -4436,12 +4478,17 @@ void TownsCommandInterpreter::Execute_BreakOnMemoryWrite(FMTowns &towns,Command 
 		{
 			std::cout << "  Value=    " << cpputil::Ubtox(value) << std::endl;
 		}
+		if(true==useMinMax)
+		{
+			std::cout << "  Min=    " << cpputil::Ubtox(minValue) << std::endl;
+			std::cout << "  Max=    " << cpputil::Ubtox(maxValue) << std::endl;
+		}
 	}
 	else if(1==nAddr)
 	{
 		if(true!=useValue)
 		{
-			i486DebugMemoryAccess::SetBreakOnMemWrite(towns.mem,towns.debugger,addr[0]);
+			i486DebugMemoryAccess::SetBreakOnMemWrite(towns.mem,towns.debugger,addr[0],minValue,maxValue);
 		}
 		else
 		{
@@ -4451,6 +4498,11 @@ void TownsCommandInterpreter::Execute_BreakOnMemoryWrite(FMTowns &towns,Command 
 		if(true==useValue)
 		{
 			std::cout << "  Value=    " << cpputil::Ubtox(value) << std::endl;
+		}
+		if(true==useMinMax)
+		{
+			std::cout << "  Min=    " << cpputil::Ubtox(minValue) << std::endl;
+			std::cout << "  Max=    " << cpputil::Ubtox(maxValue) << std::endl;
 		}
 	}
 	else if(2<nAddr)

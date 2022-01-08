@@ -61,6 +61,7 @@ public:
 	static void ClearBreakOnMemRead(Memory &mem);
 	static void SetBreakOnMemWrite(Memory &mem,i486Debugger &debugger,unsigned int physAddr);
 	static void SetBreakOnMemWrite(Memory &mem,i486Debugger &debugger,unsigned int physAddr,unsigned char data);
+	static void SetBreakOnMemWrite(Memory &mem,i486Debugger &debugger,unsigned int physAddr,unsigned char minValue,unsigned char maxValue);
 	static void ClearBreakOnMemWrite(Memory &mem,unsigned int physAddr);
 	static void ClearBreakOnMemWrite(Memory &mem);
 };
