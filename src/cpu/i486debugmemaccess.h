@@ -32,11 +32,14 @@ public:
 
 	bool breakOnRead[Memory::MEMORY_ACCESS_SLOT_SIZE];
 	bool breakOnWrite[Memory::MEMORY_ACCESS_SLOT_SIZE];
+	unsigned char breakOnWriteMin[Memory::MEMORY_ACCESS_SLOT_SIZE];
+	unsigned char breakOnWriteMax[Memory::MEMORY_ACCESS_SLOT_SIZE];
 	std::map <uint32_t,unsigned char> breakOnWriteData;
 
 	i486DebugMemoryAccess(i486Debugger &debugger,unsigned int physAddrTop);
 	void SetBreakOnRead(unsigned int physAddr);
 	void SetBreakOnWrite(unsigned int physAddr);
+	void SetBreakOnWrite(unsigned int physAddr,unsigned char minValue,unsigned char maxValue);
 	void SetBreakOnWrite(uint32_t physAddr,unsigned char data);
 	void ClearBreakOnRead(void);
 	void ClearBreakOnWrite(void);
@@ -50,6 +53,8 @@ public:
 	virtual void StoreByte(unsigned int physAddr,unsigned char data);
 	virtual void StoreWord(unsigned int physAddr,unsigned int data);
 	virtual void StoreDword(unsigned int physAddr,unsigned int data);
+
+	inline bool CheckBreakOnWriteCondition(uint32_t physAddr,unsigned int data) const;
 
 	static void SetBreakOnMemRead(Memory &mem,i486Debugger &debugger,unsigned int physAddr);
 	static void ClearBreakOnMemRead(Memory &mem,unsigned int physAddr);

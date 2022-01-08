@@ -26,6 +26,8 @@ i486DebugMemoryAccess::i486DebugMemoryAccess(i486Debugger &debugger,unsigned int
 	{
 		breakOnRead[i]=false;
 		breakOnWrite[i]=false;
+		breakOnWriteMin[i]=0;
+		breakOnWriteMax[i]=0xFF;
 	}
 }
 void i486DebugMemoryAccess::SetBreakOnRead(unsigned int physAddr)
@@ -42,6 +44,23 @@ void i486DebugMemoryAccess::SetBreakOnWrite(unsigned int physAddr)
 	if(0<=physAddr && physAddr<Memory::MEMORY_ACCESS_SLOT_SIZE)
 	{
 		breakOnWrite[physAddr]=true;
+		breakOnWriteMin[physAddr]=0;
+		breakOnWriteMax[physAddr]=0xFF;
+		auto found=breakOnWriteData.find(physAddr);
+		if(breakOnWriteData.end()!=found)
+		{
+			breakOnWriteData.erase(found);
+		}
+	}
+}
+void i486DebugMemoryAccess::SetBreakOnWrite(unsigned int physAddr,unsigned char minValue,unsigned char maxValue)
+{
+	physAddr-=physAddrTop;
+	if(0<=physAddr && physAddr<Memory::MEMORY_ACCESS_SLOT_SIZE)
+	{
+		breakOnWrite[physAddr]=true;
+		breakOnWriteMin[physAddr]=minValue;
+		breakOnWriteMax[physAddr]=maxValue;
 		auto found=breakOnWriteData.find(physAddr);
 		if(breakOnWriteData.end()!=found)
 		{
@@ -152,73 +171,68 @@ void i486DebugMemoryAccess::ClearBreakOnWrite(unsigned int physAddr)
 	}
 	return data;
 }
-/* virtual */ void i486DebugMemoryAccess::StoreByte(unsigned int physAddr,unsigned char data)
+
+inline bool i486DebugMemoryAccess::CheckBreakOnWriteCondition(uint32_t physAddr,unsigned int data) const
 {
-	if(true==breakOnWrite[physAddr-physAddrTop])
+	auto offset=physAddr-physAddrTop;
+	if(true==breakOnWrite[offset])
 	{
 		auto found=breakOnWriteData.find(physAddr-physAddrTop);
-		if(breakOnWriteData.end()==found || found->second==data)
+		if(breakOnWriteData.end()!=found && found->second==data)
 		{
-			std::string msg;
-			msg="Memory Write BYTE PTR PHYS:[";
-			msg+=cpputil::Uitox(physAddr);
-			msg+="] (";
-			msg+=cpputil::Ubtox(data);
-			msg+=")";
-			debuggerPtr->ExternalBreak(msg);
+			return true;
 		}
+		else if(breakOnWriteData.end()==found && breakOnWriteMin[physAddr]<=data && data<=breakOnWriteMax[physAddr])
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+/* virtual */ void i486DebugMemoryAccess::StoreByte(unsigned int physAddr,unsigned char data)
+{
+	if(true==CheckBreakOnWriteCondition(physAddr,data))
+	{
+		std::string msg;
+		msg="Memory Write BYTE PTR PHYS:[";
+		msg+=cpputil::Uitox(physAddr);
+		msg+="] (";
+		msg+=cpputil::Ubtox(data);
+		msg+=")";
+		debuggerPtr->ExternalBreak(msg);
 	}
 	memAccessChain->StoreByte(physAddr,data);
 }
 /* virtual */ void i486DebugMemoryAccess::StoreWord(unsigned int physAddr,unsigned int data)
 {
-	if(true==breakOnWrite[physAddr-physAddrTop] ||
-	   true==breakOnWrite[physAddr+1-physAddrTop])
+	if(true==CheckBreakOnWriteCondition(physAddr  ,data&0xFF) ||
+	   true==CheckBreakOnWriteCondition(physAddr+1,(data>>8)&0xFF))
 	{
-		auto rel=physAddr-physAddrTop;
-		auto found0=breakOnWriteData.find(rel);
-		auto found1=breakOnWriteData.find(rel+1);
-		if((breakOnWriteData.end()==found0 && breakOnWriteData.end()==found1) ||
-		   (breakOnWriteData.end()!=found0 && found0->second==(data&0xff)) ||
-		   (breakOnWriteData.end()!=found1 && found1->second==((data>>8)&0xff)))
-		{
-			std::string msg;
-			msg="Memory Write WORD PTR PHYS:[";
-			msg+=cpputil::Uitox(physAddr);
-			msg+="] (";
-			msg+=cpputil::Ustox(data);
-			msg+=")";
-			debuggerPtr->ExternalBreak(msg);
-		}
+		std::string msg;
+		msg="Memory Write WORD PTR PHYS:[";
+		msg+=cpputil::Uitox(physAddr);
+		msg+="] (";
+		msg+=cpputil::Ustox(data);
+		msg+=")";
+		debuggerPtr->ExternalBreak(msg);
 	}
 	memAccessChain->StoreWord(physAddr,data);
 }
 /* virtual */ void i486DebugMemoryAccess::StoreDword(unsigned int physAddr,unsigned int data)
 {
-	if(true==breakOnWrite[physAddr-physAddrTop] ||
-	   true==breakOnWrite[physAddr+1-physAddrTop] ||
-	   true==breakOnWrite[physAddr+2-physAddrTop] ||
-	   true==breakOnWrite[physAddr+3-physAddrTop])
+	if(true==CheckBreakOnWriteCondition(physAddr  ,data&0xFF) ||
+	   true==CheckBreakOnWriteCondition(physAddr+1,(data>>8)&0xFF) ||
+	   true==CheckBreakOnWriteCondition(physAddr+2,(data>>16)&0xFF) ||
+	   true==CheckBreakOnWriteCondition(physAddr+3,(data>>24)&0xFF))
 	{
-		auto rel=physAddr-physAddrTop;
-		auto found0=breakOnWriteData.find(rel);
-		auto found1=breakOnWriteData.find(rel+1);
-		auto found2=breakOnWriteData.find(rel+2);
-		auto found3=breakOnWriteData.find(rel+3);
-		if((breakOnWriteData.end()==found0 && breakOnWriteData.end()==found1 && breakOnWriteData.end()==found2 && breakOnWriteData.end()==found3) ||
-		   (breakOnWriteData.end()!=found0 && found0->second==(data&0xff)) ||
-		   (breakOnWriteData.end()!=found1 && found1->second==((data>>8)&0xff)) ||
-		   (breakOnWriteData.end()!=found2 && found2->second==((data>>16)&0xff)) ||
-		   (breakOnWriteData.end()!=found3 && found3->second==((data>>24)&0xff)))
-		{
-			std::string msg;
-			msg="Memory Write DWORD PTR PHYS:[";
-			msg+=cpputil::Uitox(physAddr);
-			msg+="] (";
-			msg+=cpputil::Uitox(data);
-			msg+=")";
-			debuggerPtr->ExternalBreak(msg);
-		}
+		std::string msg;
+		msg="Memory Write DWORD PTR PHYS:[";
+		msg+=cpputil::Uitox(physAddr);
+		msg+="] (";
+		msg+=cpputil::Uitox(data);
+		msg+=")";
+		debuggerPtr->ExternalBreak(msg);
 	}
 	memAccessChain->StoreDword(physAddr,data);
 }
