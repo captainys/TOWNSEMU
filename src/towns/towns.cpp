@@ -809,6 +809,34 @@ void FMTowns::ProcessSound(Outside_World *outside_world)
 
 /* virtual */ void FMTowns::InterceptMouseBIOS(void)
 {
+	switch(state.appSpecificSetting)
+	{
+	case TOWNS_APPSPECIFIC_DAIKOUKAIJIDAI:
+		if(true!=cpu.IsInRealMode())
+		{
+			if(
+				0xC7==cpu.DebugFetchByte(32,cpu.state.CS(),0x488E2,mem) &&
+				0x47==cpu.DebugFetchByte(32,cpu.state.CS(),0x488E3,mem) &&
+				0x07==cpu.DebugFetchByte(32,cpu.state.CS(),0x488E4,mem) &&
+				0x00==cpu.DebugFetchByte(32,cpu.state.CS(),0x488E5,mem) &&
+				0x00==cpu.DebugFetchByte(32,cpu.state.CS(),0x488E6,mem) &&
+				0x00==cpu.DebugFetchByte(32,cpu.state.CS(),0x488E7,mem) &&
+				0x00==cpu.DebugFetchByte(32,cpu.state.CS(),0x488E8,mem))
+			{
+				cpu.DebugStoreByte(mem,32,cpu.state.CS(),0x488E2,0x8B);
+				cpu.DebugStoreByte(mem,32,cpu.state.CS(),0x488E3,0x7F);
+				cpu.DebugStoreByte(mem,32,cpu.state.CS(),0x488E4,0x07);
+				cpu.DebugStoreByte(mem,32,cpu.state.CS(),0x488E5,0xC6);
+				cpu.DebugStoreByte(mem,32,cpu.state.CS(),0x488E6,0x07);
+				cpu.DebugStoreByte(mem,32,cpu.state.CS(),0x488E7,0xFF);
+				cpu.DebugStoreByte(mem,32,cpu.state.CS(),0x488E8,0x90);
+				std::cout << "Applied Daikoukaijidai Pointer-Destruction Prevention Patch." << std::endl;
+			}
+		}
+		break;
+	}
+
+
 	if(0==cpu.GetAH())
 	{
 		if(TownsEventLog::MODE_RECORDING==eventLog.mode || TownsEventLog::MODE_PLAYBACK==eventLog.mode)

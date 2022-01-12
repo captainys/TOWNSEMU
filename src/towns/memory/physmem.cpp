@@ -787,6 +787,8 @@ std::vector <std::string> TownsPhysicalMemory::GetStatusText(void) const
 	std::string stateDir,stateName;
 	cpputil::SeparatePathFile(stateDir,stateName,stateFName);
 
+	auto prevRAMsize=state.RAM.size();
+
 
 
 	state.sysRomMapping=ReadBool(data);  // Whenever changing this flag, synchronously change memory access mapping.
@@ -891,6 +893,14 @@ std::vector <std::string> TownsPhysicalMemory::GetStatusText(void) const
 	ResetSysROMDicROMMappingFlag(state.sysRomMapping,state.dicRom);
 	ResetFMRVRAMMappingFlag(state.FMRVRAM);
 	EnableOrDisableNativeVRAMMask();
+	if(prevRAMsize<state.RAM.size())
+	{
+		memPtr->AddAccess(&mainRAMAccess,prevRAMsize,(unsigned int)state.RAM.size()-1);
+	}
+	else if(state.RAM.size()<prevRAMsize)
+	{
+		memPtr->AddAccess(&memPtr->nullAccess,(unsigned int)state.RAM.size(),prevRAMsize-1);
+	}
 
 	return true;
 }

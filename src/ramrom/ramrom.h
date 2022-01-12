@@ -225,9 +225,11 @@ public:
 */
 class Memory
 {
+public:
+	NullMemoryAccess nullAccess;
+
 private:
 	std::vector <MemoryAccess *> memAccessPtr;
-	NullMemoryAccess nullAccess;
 	enum
 	{
 		GRANURALITY_SHIFT=12,  // 4KB slot.

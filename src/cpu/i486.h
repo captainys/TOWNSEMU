@@ -3360,10 +3360,13 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 					auto callStackDepth=callStack.size();
 					auto AX0=GetAX();
 
-					unsigned int Ibit=2;
-					unsigned int EXTbit=0; // 1 if external interrupt source.
-					RaiseException(EXCEPTION_GP,INTNum*8+Ibit+EXTbit); // EXT -> [1] 9-8 Error Code
-					HandleException(false,mem,numInstBytesForCallStack);  // <- This will shoot INT 0BH
+					if(INT_GENERAL_PROTECTION!=INTNum) // Prevent infinite recursion.
+					{
+						unsigned int Ibit=2;
+						unsigned int EXTbit=0; // 1 if external interrupt source.
+						RaiseException(EXCEPTION_GP,INTNum*8+Ibit+EXTbit); // EXT -> [1] 9-8 Error Code
+						HandleException(false,mem,numInstBytesForCallStack);  // <- This will shoot INT 0BH
+					}
 
 					if(true==enableCallStack && callStackDepth<callStack.size()) // Supposed to be true, just in case.
 					{
@@ -3472,8 +3475,11 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 			auto callStackDepth=callStack.size();
 			auto AX0=GetAX();
 
-			RaiseException(EXCEPTION_GP,INTNum*8); // What's +EXT?  ([1] pp.26-170)
-			HandleException(false,mem,numInstBytesForCallStack);
+			if(INT_GENERAL_PROTECTION!=INTNum) // Prevent infinite recursion.
+			{
+				RaiseException(EXCEPTION_GP,INTNum*8); // What's +EXT?  ([1] pp.26-170)
+				HandleException(false,mem,numInstBytesForCallStack);
+			}
 
 			if(true==enableCallStack && callStackDepth<callStack.size()) // Supposed to be true, just in case.
 			{

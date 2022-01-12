@@ -527,6 +527,7 @@ void ProfileDialog::Make(void)
 		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_WINGCOMMANDER2).c_str(),YSFALSE);
 		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_DUNGEONMASTER_JP).c_str(),YSFALSE);
 		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_DUNGEONMASTER_EN).c_str(),YSFALSE);
+		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_DAIKOUKAIJIDAI).c_str(),YSFALSE);
 
 		appSpecificExplanation=AddStaticText(0,FSKEY_NULL,L"",YSTRUE);
 
@@ -667,6 +668,17 @@ void ProfileDialog::Make(void)
 				"mouse-reading function.  This option enables\n"
 				"control by mouse in Lemmings.\n"
 				"Cursor trembles a little bit.\n"
+			);
+			break;
+		case TOWNS_APPSPECIFIC_DAIKOUKAIJIDAI:
+			appSpecificExplanation->SetText(
+				"With 99% confidence, I believe DaikoukaiJidai (The Age of Navigation)\n"
+				"for FM TOWNS nullifies a pointer after winning a battle, but never\n"
+				"set a valid pointer before using it next time.  As a result, no \n"
+				"pirates appears after a victory, or in the worst case the program\n"
+				"crashes.  This patch prevents the pointer-destruction.\n"
+				"Also, this game takes timing with busy wait.  Recommended frequency\n"
+				"setting is 8MHz.\n"
 			);
 			break;
 		}

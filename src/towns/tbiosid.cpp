@@ -689,7 +689,8 @@ void FMTowns::DontControlMouse(void)
 
 void FMTowns::SetMouseButtonState(bool lButton,bool rButton)
 {
-	if(TOWNS_APPSPECIFIC_SUPERDAISEN==state.appSpecificSetting)
+	if(TOWNS_APPSPECIFIC_SUPERDAISEN==state.appSpecificSetting ||
+	   TOWNS_APPSPECIFIC_DAIKOUKAIJIDAI==state.appSpecificSetting)
 	{
 		if(true==lButton && 0==var.frequencyBackup)
 		{
