@@ -243,6 +243,17 @@ const i486Symbol *i486SymbolTable::Find(i486DX::FarPointer ptr) const
 	}
 	return nullptr;
 }
+const i486Symbol *i486SymbolTable::FindFromOffset(uint32_t OFFSET) const
+{
+	for(auto &addrAndSym : symTable)
+	{
+		if(addrAndSym.first.OFFSET==OFFSET)
+		{
+			return &addrAndSym.second;
+		}
+	}
+	return nullptr;
+}
 std::pair <i486DX::FarPointer,i486Symbol> i486SymbolTable::FindSymbolFromLabel(const std::string &label) const
 {
 	for(auto &addrAndSym : symTable)

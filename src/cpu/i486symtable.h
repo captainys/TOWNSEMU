@@ -21,6 +21,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <vector>
 #include <string>
 #include <map>
+#include <stdint.h>
 
 #include "i486.h"
 
@@ -117,6 +118,7 @@ public:
 
 	const i486Symbol *Find(unsigned int SEG,unsigned int OFFSET) const;
 	const i486Symbol *Find(i486DX::FarPointer ptr) const;
+	const i486Symbol *FindFromOffset(uint32_t OFFSET) const;
 	i486Symbol *Update(i486DX::FarPointer ptr,const std::string &label);
 	i486Symbol *SetComment(i486DX::FarPointer ptr,const std::string &inLineComment);
 	i486Symbol *SetImportedLabel(i486DX::FarPointer ptr,const std::string &label);
