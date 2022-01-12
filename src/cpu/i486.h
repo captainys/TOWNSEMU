@@ -915,12 +915,12 @@ public:
 		std::string Disassemble(const Operand &op1,const Operand &op2,SegmentRegister reg,unsigned int offset,const class i486SymbolTable &symTable,const std::map <unsigned int,std::string> &ioTable) const;
 	private:
 		/* operandSize is 8, 16, or 32 */
-		std::string DisassembleTypicalOneOperand(std::string inst,const Operand &op,int operandSize,const i486SymbolTable &symTable) const;
-		std::string DisassembleTypicalOneOperandAndImm(std::string inst,const Operand &op,unsigned int imm,int operandSize,const i486SymbolTable &symTable) const;
-		std::string DisassembleTypicalRM8_I8(std::string inst,const Operand &op1,unsigned int I8,const i486SymbolTable &symTable) const;
-		std::string DisassembleTypicalRM_I8(std::string inst,const Operand &op1,unsigned int I8,const i486SymbolTable &symTable) const;
-		std::string DisassembleTypicalTwoOperands(std::string inst,const Operand &op1,const Operand &op2,const i486SymbolTable &symTable) const;
-		std::string DisassembleTypicalOneImm(std::string inst,unsigned int imm,int operandSize,const i486SymbolTable &symTable) const;
+		std::string DisassembleTypicalOneOperand(std::string inst,const Operand &op,int operandSize,uint32_t CS,uint32_t EIP,const i486SymbolTable &symTable) const;
+		std::string DisassembleTypicalOneOperandAndImm(std::string inst,const Operand &op,unsigned int imm,int operandSize,uint32_t CS,uint32_t EIP,const i486SymbolTable &symTable) const;
+		std::string DisassembleTypicalRM8_I8(std::string inst,const Operand &op1,unsigned int I8,uint32_t CS,uint32_t EIP,const i486SymbolTable &symTable) const;
+		std::string DisassembleTypicalRM_I8(std::string inst,const Operand &op1,unsigned int I8,uint32_t CS,uint32_t EIP,const i486SymbolTable &symTable) const;
+		std::string DisassembleTypicalTwoOperands(std::string inst,const Operand &op1,const Operand &op2,uint32_t CS,uint32_t EIP,const i486SymbolTable &symTable) const;
+		std::string DisassembleTypicalOneImm(std::string inst,unsigned int imm,int operandSize,uint32_t CS,uint32_t EIP,const i486SymbolTable &symTable) const;
 
 		std::string DisassembleIOLabel(unsigned int CS,unsigned int EIP,const i486SymbolTable &symTable,const std::map <unsigned int,std::string> &ioTable,unsigned int imm) const;
 

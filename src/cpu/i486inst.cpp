@@ -1782,22 +1782,22 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		switch(opCode)
 		{
 		case I486_OPCODE_C0_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_I8://=0xC0,// ::ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
-			disasm=DisassembleTypicalRM8_I8(disasm,op1,EvalUimm8(),symTable);
+			disasm=DisassembleTypicalRM8_I8(disasm,op1,EvalUimm8(),cs.value,eip,symTable);
 			break;
 		case I486_OPCODE_C1_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_I8:// =0xC1, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
-			disasm=DisassembleTypicalRM_I8(disasm,op1,EvalUimm8(),symTable);
+			disasm=DisassembleTypicalRM_I8(disasm,op1,EvalUimm8(),cs.value,eip,symTable);
 			break;
 		case I486_OPCODE_D0_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_1://=0xD0, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
-			disasm = DisassembleTypicalOneOperand(disasm, op1, 8,symTable) + ",1";
+			disasm = DisassembleTypicalOneOperand(disasm, op1, 8,cs.value,eip,symTable) + ",1";
 			break;
 		case I486_OPCODE_D1_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_1://=0xD1, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
-			disasm=DisassembleTypicalOneOperand(disasm,op1,operandSize,symTable)+",1";
+			disasm=DisassembleTypicalOneOperand(disasm,op1,operandSize,cs.value,eip,symTable)+",1";
 			break;
 		case I486_OPCODE_D2_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_CL://0xD2,// ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
-			disasm = DisassembleTypicalOneOperand(disasm, op1, 8,symTable) + ",CL";
+			disasm = DisassembleTypicalOneOperand(disasm, op1, 8,cs.value,eip,symTable) + ",CL";
 			break;
 		case I486_OPCODE_D3_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM_CL://0xD3, // ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
-			disasm=DisassembleTypicalOneOperand(disasm,op1,operandSize,symTable)+",CL";
+			disasm=DisassembleTypicalOneOperand(disasm,op1,operandSize,cs.value,eip,symTable)+",CL";
 			break;
 		}
 		break;
@@ -1813,7 +1813,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		}
 		else
 		{
-			disasm=DisassembleTypicalOneImm("AAD",EvalUimm8(),8,symTable);
+			disasm=DisassembleTypicalOneImm("AAD",EvalUimm8(),8,cs.value,eip,symTable);
 		}
 		break;
 	case I486_OPCODE_AAM://    0xD4,
@@ -1823,7 +1823,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		}
 		else
 		{
-			disasm=DisassembleTypicalOneImm("AAM",EvalUimm8(),8,symTable);
+			disasm=DisassembleTypicalOneImm("AAM",EvalUimm8(),8,cs.value,eip,symTable);
 		}
 		break;
 	case I486_OPCODE_AAS:
@@ -1831,12 +1831,12 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		break;
 
 	case I486_OPCODE_ARPL://       0x63,
-		disasm=DisassembleTypicalTwoOperands("ARPL",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("ARPL",op1,op2,cs.value,eip,symTable);
 		break;
 
 	case I486_OPCODE_BOUND: // 0x62
 		op1.DecodeMODR_MForRegister(operandSize,operand[0]);
-		disasm=DisassembleTypicalTwoOperands("BOUND",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("BOUND",op1,op2,cs.value,eip,symTable);
 		break;
 
 
@@ -1859,31 +1859,31 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 			disasm="?";
 			break;
 		}
-		disasm=DisassembleTypicalRM_I8(disasm,op1,EvalUimm8(),symTable);
+		disasm=DisassembleTypicalRM_I8(disasm,op1,EvalUimm8(),cs.value,eip,symTable);
 		break;
 
 
 	case I486_OPCODE_BSF_R_RM://   0x0FBC,
-		disasm=DisassembleTypicalTwoOperands("BSF",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("BSF",op1,op2,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_BSR_R_RM://   0x0FBD,
-		disasm=DisassembleTypicalTwoOperands("BSR",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("BSR",op1,op2,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_BT_R_RM://    0x0FA3,
-		disasm=DisassembleTypicalTwoOperands("BT",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("BT",op1,op2,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_BTC_RM_R://   0x0FBB,
-		disasm=DisassembleTypicalTwoOperands("BTC",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("BTC",op1,op2,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_BTS_RM_R://   0x0FAB,
-		disasm=DisassembleTypicalTwoOperands("BTS",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("BTS",op1,op2,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_BTR_RM_R://   0x0FB3,
-		disasm=DisassembleTypicalTwoOperands("BTR",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("BTR",op1,op2,cs.value,eip,symTable);
 		break;
 
 	case I486_OPCODE_LAR:  // 0x0F02
-		disasm=DisassembleTypicalTwoOperands("LAR",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("LAR",op1,op2,cs.value,eip,symTable);
 		break;
 
 	case I486_OPCODE_CALL_REL://   0xE8,
@@ -1922,28 +1922,28 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		switch(GetREG())
 		{
 		case 0:
-			disasm=DisassembleTypicalOneOperandAndImm("TEST",op1,EvalUimm8or16or32(operandSize),operandSize,symTable);
+			disasm=DisassembleTypicalOneOperandAndImm("TEST",op1,EvalUimm8or16or32(operandSize),operandSize,cs.value,eip,symTable);
 			break;
 		case 2:
-			disasm=DisassembleTypicalOneOperand("NOT",op1,operandSize,symTable);
+			disasm=DisassembleTypicalOneOperand("NOT",op1,operandSize,cs.value,eip,symTable);
 			break;
 		case 3:
-			disasm=DisassembleTypicalOneOperand("NEG",op1,operandSize,symTable);
+			disasm=DisassembleTypicalOneOperand("NEG",op1,operandSize,cs.value,eip,symTable);
 			break;
 		case 4:
-			disasm=DisassembleTypicalOneOperand("MUL",op1,operandSize,symTable);
+			disasm=DisassembleTypicalOneOperand("MUL",op1,operandSize,cs.value,eip,symTable);
 			break;
 		case 5:
-			disasm=DisassembleTypicalOneOperand("IMUL",op1,operandSize,symTable);
+			disasm=DisassembleTypicalOneOperand("IMUL",op1,operandSize,cs.value,eip,symTable);
 			break;
 		case 6:
-			disasm=DisassembleTypicalOneOperand("DIV",op1,operandSize,symTable);
+			disasm=DisassembleTypicalOneOperand("DIV",op1,operandSize,cs.value,eip,symTable);
 			break;
 		case 7:
-			disasm=DisassembleTypicalOneOperand("IDIV",op1,operandSize,symTable);
+			disasm=DisassembleTypicalOneOperand("IDIV",op1,operandSize,cs.value,eip,symTable);
 			break;
 		default:
-			disasm=DisassembleTypicalOneOperand(cpputil::Ubtox(opCode)+"?",op1,operandSize,symTable);
+			disasm=DisassembleTypicalOneOperand(cpputil::Ubtox(opCode)+"?",op1,operandSize,cs.value,eip,symTable);
 			break;
 		}
 		break;
@@ -2060,28 +2060,28 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 				switch(GetREG())
 				{
 				case 0:
-					disasm=DisassembleTypicalOneOperand("FADD(m32real)  ",op1,operandSize,symTable);
+					disasm=DisassembleTypicalOneOperand("FADD(m32real)  ",op1,operandSize,cs.value,eip,symTable);
 					break;
 				case 1:
-					disasm=DisassembleTypicalOneOperand("FMUL(m32real)  ",op1,operandSize,symTable);
+					disasm=DisassembleTypicalOneOperand("FMUL(m32real)  ",op1,operandSize,cs.value,eip,symTable);
 					break;
 				case 2:
-					disasm=DisassembleTypicalOneOperand("FCOM(m32real)  ",op1,operandSize,symTable);
+					disasm=DisassembleTypicalOneOperand("FCOM(m32real)  ",op1,operandSize,cs.value,eip,symTable);
 					break;
 				case 3:
-					disasm=DisassembleTypicalOneOperand("FCOMP(m32real)  ",op1,operandSize,symTable);
+					disasm=DisassembleTypicalOneOperand("FCOMP(m32real)  ",op1,operandSize,cs.value,eip,symTable);
 					break;
 				case 4:
-					disasm=DisassembleTypicalOneOperand("FSUB(m32real)  ",op1,operandSize,symTable);
+					disasm=DisassembleTypicalOneOperand("FSUB(m32real)  ",op1,operandSize,cs.value,eip,symTable);
 					break;
 				case 5:
-					disasm=DisassembleTypicalOneOperand("FSUBR(m32real)  ",op1,operandSize,symTable);
+					disasm=DisassembleTypicalOneOperand("FSUBR(m32real)  ",op1,operandSize,cs.value,eip,symTable);
 					break;
 				case 6:
-					disasm=DisassembleTypicalOneOperand("FDIV(m32real)  ",op1,operandSize,symTable);
+					disasm=DisassembleTypicalOneOperand("FDIV(m32real)  ",op1,operandSize,cs.value,eip,symTable);
 					break;
 				case 7:
-					disasm=DisassembleTypicalOneOperand("FDIVR(m32real)  ",op1,operandSize,symTable);
+					disasm=DisassembleTypicalOneOperand("FDIVR(m32real)  ",op1,operandSize,cs.value,eip,symTable);
 					break;
 				}
 			}
@@ -2224,25 +2224,25 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 			switch(GetREG())
 			{
 			case 0:
-				disasm=DisassembleTypicalOneOperand("FLD(m32real)",op1,operandSize,symTable);
+				disasm=DisassembleTypicalOneOperand("FLD(m32real)",op1,operandSize,cs.value,eip,symTable);
 				break;
 			case 2:
-				disasm=DisassembleTypicalOneOperand("FST(m32real)",op1,operandSize,symTable);
+				disasm=DisassembleTypicalOneOperand("FST(m32real)",op1,operandSize,cs.value,eip,symTable);
 				break;
 			case 3:
-				disasm=DisassembleTypicalOneOperand("FSTP(m32real)",op1,operandSize,symTable);
+				disasm=DisassembleTypicalOneOperand("FSTP(m32real)",op1,operandSize,cs.value,eip,symTable);
 				break;
 			case 4:
-				disasm=DisassembleTypicalOneOperand("FLDENV",op1,operandSize,symTable);
+				disasm=DisassembleTypicalOneOperand("FLDENV",op1,operandSize,cs.value,eip,symTable);
 				break;
 			case 5:
-				disasm=DisassembleTypicalOneOperand("FLDCW",op1,operandSize,symTable);
+				disasm=DisassembleTypicalOneOperand("FLDCW",op1,operandSize,cs.value,eip,symTable);
 				break;
 			case 6:
-				disasm=DisassembleTypicalOneOperand("FNSTENV",op1,operandSize,symTable);
+				disasm=DisassembleTypicalOneOperand("FNSTENV",op1,operandSize,cs.value,eip,symTable);
 				break;
 			case 7:
-				disasm=DisassembleTypicalOneOperand("FNSTCW",op1,operandSize,symTable);
+				disasm=DisassembleTypicalOneOperand("FNSTCW",op1,operandSize,cs.value,eip,symTable);
 				break;
 			default:
 				disasm="?FPUINST"+cpputil::Ubtox(opCode)+" "+cpputil::Ubtox(operand[0])+" REG="+cpputil::Ubtox(GetREG());
@@ -2264,28 +2264,28 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 			switch(Instruction::GetREG(operand[0]))
 			{
 			case 0:
-				disasm=DisassembleTypicalOneOperand("FIADD(m32int)",op1,32,symTable);
+				disasm=DisassembleTypicalOneOperand("FIADD(m32int)",op1,32,cs.value,eip,symTable);
 				break;
 			case 1:
-				disasm=DisassembleTypicalOneOperand("FIMUL(m32int)",op1,32,symTable);
+				disasm=DisassembleTypicalOneOperand("FIMUL(m32int)",op1,32,cs.value,eip,symTable);
 				break;
 			case 2:
-				disasm=DisassembleTypicalOneOperand("FICOM(m32int)",op1,32,symTable);
+				disasm=DisassembleTypicalOneOperand("FICOM(m32int)",op1,32,cs.value,eip,symTable);
 				break;
 			case 3:
-				disasm=DisassembleTypicalOneOperand("FICOMP(m32int)",op1,32,symTable);
+				disasm=DisassembleTypicalOneOperand("FICOMP(m32int)",op1,32,cs.value,eip,symTable);
 				break;
 			case 4:
-				disasm=DisassembleTypicalOneOperand("FISUB(m32int)",op1,32,symTable);
+				disasm=DisassembleTypicalOneOperand("FISUB(m32int)",op1,32,cs.value,eip,symTable);
 				break;
 			case 5:
-				disasm=DisassembleTypicalOneOperand("FISUBR(m32int)",op1,32,symTable);
+				disasm=DisassembleTypicalOneOperand("FISUBR(m32int)",op1,32,cs.value,eip,symTable);
 				break;
 			case 6:
-				disasm=DisassembleTypicalOneOperand("FIDIV(m32int)",op1,32,symTable);
+				disasm=DisassembleTypicalOneOperand("FIDIV(m32int)",op1,32,cs.value,eip,symTable);
 				break;
 			case 7:
-				disasm=DisassembleTypicalOneOperand("FIDIVR(m32int)",op1,32,symTable);
+				disasm=DisassembleTypicalOneOperand("FIDIVR(m32int)",op1,32,cs.value,eip,symTable);
 				break;
 			}
 		}
@@ -2310,19 +2310,19 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 				switch(Instruction::GetREG(MODR_M))
 				{
 				case 0:
-					disasm=DisassembleTypicalOneOperand("FILD(m32int)",op1,operandSize,symTable);
+					disasm=DisassembleTypicalOneOperand("FILD(m32int)",op1,operandSize,cs.value,eip,symTable);
 					break;
 				case 2:
-					disasm=DisassembleTypicalOneOperand("FIST(m32int)",op1,operandSize,symTable);
+					disasm=DisassembleTypicalOneOperand("FIST(m32int)",op1,operandSize,cs.value,eip,symTable);
 					break;
 				case 3:
-					disasm=DisassembleTypicalOneOperand("FISTP(m32int)",op1,operandSize,symTable);
+					disasm=DisassembleTypicalOneOperand("FISTP(m32int)",op1,operandSize,cs.value,eip,symTable);
 					break;
 				case 5:
-					disasm=DisassembleTypicalOneOperand("FLD(m80real)",op1,operandSize,symTable);
+					disasm=DisassembleTypicalOneOperand("FLD(m80real)",op1,operandSize,cs.value,eip,symTable);
 					break;
 				case 7:
-					disasm=DisassembleTypicalOneOperand("FSTP(m80real)",op1,operandSize,symTable);
+					disasm=DisassembleTypicalOneOperand("FSTP(m80real)",op1,operandSize,cs.value,eip,symTable);
 					break;
 				default:
 					disasm="?FPUINST"+cpputil::Ubtox(opCode)+" "+cpputil::Ubtox(operand[0])+" REG="+cpputil::Ubtox(Instruction::GetREG(MODR_M));
@@ -2355,28 +2355,28 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 				switch(Instruction::GetREG(MODR_M))
 				{
 				case 0:	// FADD m64real
-					disasm=DisassembleTypicalOneOperand("FADD(m64real)  ",op1,operandSize,symTable);
+					disasm=DisassembleTypicalOneOperand("FADD(m64real)  ",op1,operandSize,cs.value,eip,symTable);
 					break;
 				case 1:
-					disasm=DisassembleTypicalOneOperand("FMUL(m64real)  ",op1,operandSize,symTable);
+					disasm=DisassembleTypicalOneOperand("FMUL(m64real)  ",op1,operandSize,cs.value,eip,symTable);
 					break;
 				case 2: //
-					disasm=DisassembleTypicalOneOperand("FCOM(m64real)  ",op1,operandSize,symTable);
+					disasm=DisassembleTypicalOneOperand("FCOM(m64real)  ",op1,operandSize,cs.value,eip,symTable);
 					break;
 				case 3: //
-					disasm=DisassembleTypicalOneOperand("FCOMP(m64real)  ",op1,operandSize,symTable);
+					disasm=DisassembleTypicalOneOperand("FCOMP(m64real)  ",op1,operandSize,cs.value,eip,symTable);
 					break;
 				case 4:
-					disasm=DisassembleTypicalOneOperand("FSUB(m64real)  ",op1,operandSize,symTable);
+					disasm=DisassembleTypicalOneOperand("FSUB(m64real)  ",op1,operandSize,cs.value,eip,symTable);
 					break;
 				case 5:
-					disasm=DisassembleTypicalOneOperand("FSUBR(m64real)  ",op1,operandSize,symTable);
+					disasm=DisassembleTypicalOneOperand("FSUBR(m64real)  ",op1,operandSize,cs.value,eip,symTable);
 					break;
 				case 6: //
-					disasm=DisassembleTypicalOneOperand("FDIV(m64real)  ",op1,operandSize,symTable);
+					disasm=DisassembleTypicalOneOperand("FDIV(m64real)  ",op1,operandSize,cs.value,eip,symTable);
 					break;
 				case 7: //
-					disasm=DisassembleTypicalOneOperand("FDIVR(m64real)  ",op1,operandSize,symTable);
+					disasm=DisassembleTypicalOneOperand("FDIVR(m64real)  ",op1,operandSize,cs.value,eip,symTable);
 					break;
 				default:
 					disasm="?FPUINST";
@@ -2417,16 +2417,16 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 				switch(Instruction::GetREG(MODR_M))
 				{
 				case 0:	// FLD m64real
-					disasm=DisassembleTypicalOneOperand("FLD(m64real)",op1,operandSize,symTable);
+					disasm=DisassembleTypicalOneOperand("FLD(m64real)",op1,operandSize,cs.value,eip,symTable);
 					break;
 				case 1:
 					disasm="?FPUINST REG=1";
 					break;
 				case 2: // FST m64real
-					disasm=DisassembleTypicalOneOperand("FST(m64real)",op1,operandSize,symTable);
+					disasm=DisassembleTypicalOneOperand("FST(m64real)",op1,operandSize,cs.value,eip,symTable);
 					break;
 				case 3: // FSTP m64real
-					disasm=DisassembleTypicalOneOperand("FSTP(m64real)",op1,operandSize,symTable);
+					disasm=DisassembleTypicalOneOperand("FSTP(m64real)",op1,operandSize,cs.value,eip,symTable);
 					break;
 				case 4:
 					disasm="?FPUINST REG=4";
@@ -2438,7 +2438,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 					disasm="?FPUINST REG=6";
 					break;
 				case 7: // FNSTSW m2byte
-					disasm=DisassembleTypicalOneOperand("FNSTSW",op1,operandSize,symTable);
+					disasm=DisassembleTypicalOneOperand("FNSTSW",op1,operandSize,cs.value,eip,symTable);
 					break;
 				default:
 					disasm="?FPUINST";
@@ -2497,7 +2497,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 			switch(Instruction::GetREG(operand[0]))
 			{
 			case 0:
-				disasm=DisassembleTypicalOneOperand("FIADD(m16int)  ",op1,16,symTable);
+				disasm=DisassembleTypicalOneOperand("FIADD(m16int)  ",op1,16,cs.value,eip,symTable);
 				break;
 			default:
 				disasm="?FPUINST REG="+cpputil::Ubtox(Instruction::GetREG(operand[0]));;
@@ -2520,16 +2520,16 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 			switch(Instruction::GetREG(operand[0]))
 			{
 			case 4:
-				disasm=DisassembleTypicalOneOperand("FBLD(m80dec)  ",op1,operandSize,symTable);
+				disasm=DisassembleTypicalOneOperand("FBLD(m80dec)  ",op1,operandSize,cs.value,eip,symTable);
 				break;
 			case 5:
-				disasm=DisassembleTypicalOneOperand("FILD(m64int)  ",op1,operandSize,symTable);
+				disasm=DisassembleTypicalOneOperand("FILD(m64int)  ",op1,operandSize,cs.value,eip,symTable);
 				break;
 			case 6: // FBSTP m80dec
-				disasm=DisassembleTypicalOneOperand("FBSTP(m80dec)  ",op1,operandSize,symTable);
+				disasm=DisassembleTypicalOneOperand("FBSTP(m80dec)  ",op1,operandSize,cs.value,eip,symTable);
 				break;
 			case 7: // FISTP m64int
-				disasm=DisassembleTypicalOneOperand("FISTP(m64int)  ",op1,operandSize,symTable);
+				disasm=DisassembleTypicalOneOperand("FISTP(m64int)  ",op1,operandSize,cs.value,eip,symTable);
 				break;
 			default:
 				disasm="?FPUINST REG="+cpputil::Ubtox(Instruction::GetREG(operand[0]));;
@@ -2558,19 +2558,19 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		break;
 	case I486_OPCODE_ADC_RM8_FROM_R8:
 		op2.DecodeMODR_MForRegister(8,operand[0]);
-		disasm=DisassembleTypicalTwoOperands("ADC",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("ADC",op1,op2,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_ADC_R8_FROM_RM8:
 		op1.DecodeMODR_MForRegister(8,operand[0]);
-		disasm=DisassembleTypicalTwoOperands("ADC",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("ADC",op1,op2,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_ADC_RM_FROM_R:
 		op2.DecodeMODR_MForRegister(operandSize,operand[0]);
-		disasm=DisassembleTypicalTwoOperands("ADC",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("ADC",op1,op2,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_ADC_R_FROM_RM:
 		op1.DecodeMODR_MForRegister(operandSize,operand[0]);
-		disasm=DisassembleTypicalTwoOperands("ADC",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("ADC",op1,op2,cs.value,eip,symTable);
 		break;
 
 
@@ -2589,19 +2589,19 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		break;
 	case I486_OPCODE_ADD_RM8_FROM_R8:
 		op2.DecodeMODR_MForRegister(8,operand[0]);
-		disasm=DisassembleTypicalTwoOperands("ADD",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("ADD",op1,op2,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_ADD_R8_FROM_RM8:
 		op1.DecodeMODR_MForRegister(8,operand[0]);
-		disasm=DisassembleTypicalTwoOperands("ADD",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("ADD",op1,op2,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_ADD_RM_FROM_R:
 		op2.DecodeMODR_MForRegister(operandSize,operand[0]);
-		disasm=DisassembleTypicalTwoOperands("ADD",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("ADD",op1,op2,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_ADD_R_FROM_RM:
 		op1.DecodeMODR_MForRegister(operandSize,operand[0]);
-		disasm=DisassembleTypicalTwoOperands("ADD",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("ADD",op1,op2,cs.value,eip,symTable);
 		break;
 
 
@@ -2620,19 +2620,19 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		break;
 	case I486_OPCODE_AND_RM8_FROM_R8:
 		op2.DecodeMODR_MForRegister(8,operand[0]);
-		disasm=DisassembleTypicalTwoOperands("AND",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("AND",op1,op2,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_AND_R8_FROM_RM8:
 		op1.DecodeMODR_MForRegister(8,operand[0]);
-		disasm=DisassembleTypicalTwoOperands("AND",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("AND",op1,op2,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_AND_RM_FROM_R:
 		op2.DecodeMODR_MForRegister(operandSize,operand[0]);
-		disasm=DisassembleTypicalTwoOperands("AND",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("AND",op1,op2,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_AND_R_FROM_RM:
 		op1.DecodeMODR_MForRegister(operandSize,operand[0]);
-		disasm=DisassembleTypicalTwoOperands("AND",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("AND",op1,op2,cs.value,eip,symTable);
 		break;
 
 
@@ -2651,19 +2651,19 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		break;
 	case I486_OPCODE_CMP_RM8_FROM_R8:
 		op2.DecodeMODR_MForRegister(8,operand[0]);
-		disasm=DisassembleTypicalTwoOperands("CMP",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("CMP",op1,op2,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_CMP_R8_FROM_RM8:
 		op1.DecodeMODR_MForRegister(8,operand[0]);
-		disasm=DisassembleTypicalTwoOperands("CMP",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("CMP",op1,op2,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_CMP_RM_FROM_R:
 		op2.DecodeMODR_MForRegister(operandSize,operand[0]);
-		disasm=DisassembleTypicalTwoOperands("CMP",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("CMP",op1,op2,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_CMP_R_FROM_RM:
 		op1.DecodeMODR_MForRegister(operandSize,operand[0]);
-		disasm=DisassembleTypicalTwoOperands("CMP",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("CMP",op1,op2,cs.value,eip,symTable);
 		break;
 
 
@@ -2682,19 +2682,19 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		break;
 	case I486_OPCODE_SBB_RM8_FROM_R8:
 		op2.DecodeMODR_MForRegister(8,operand[0]);
-		disasm=DisassembleTypicalTwoOperands("SBB",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("SBB",op1,op2,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_SBB_R8_FROM_RM8:
 		op1.DecodeMODR_MForRegister(8,operand[0]);
-		disasm=DisassembleTypicalTwoOperands("SBB",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("SBB",op1,op2,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_SBB_RM_FROM_R:
 		op2.DecodeMODR_MForRegister(operandSize,operand[0]);
-		disasm=DisassembleTypicalTwoOperands("SBB",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("SBB",op1,op2,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_SBB_R_FROM_RM:
 		op1.DecodeMODR_MForRegister(operandSize,operand[0]);
-		disasm=DisassembleTypicalTwoOperands("SBB",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("SBB",op1,op2,cs.value,eip,symTable);
 		break;
 
 
@@ -2713,19 +2713,19 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		break;
 	case I486_OPCODE_SUB_RM8_FROM_R8:
 		op2.DecodeMODR_MForRegister(8,operand[0]);
-		disasm=DisassembleTypicalTwoOperands("SUB",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("SUB",op1,op2,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_SUB_R8_FROM_RM8:
 		op1.DecodeMODR_MForRegister(8,operand[0]);
-		disasm=DisassembleTypicalTwoOperands("SUB",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("SUB",op1,op2,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_SUB_RM_FROM_R:
 		op2.DecodeMODR_MForRegister(operandSize,operand[0]);
-		disasm=DisassembleTypicalTwoOperands("SUB",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("SUB",op1,op2,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_SUB_R_FROM_RM:
 		op1.DecodeMODR_MForRegister(operandSize,operand[0]);
-		disasm=DisassembleTypicalTwoOperands("SUB",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("SUB",op1,op2,cs.value,eip,symTable);
 		break;
 
 
@@ -2744,11 +2744,11 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		break;
 	case I486_OPCODE_TEST_RM8_FROM_R8:
 		op2.DecodeMODR_MForRegister(8,operand[0]);
-		disasm=DisassembleTypicalTwoOperands("TEST",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("TEST",op1,op2,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_TEST_RM_FROM_R:
 		op2.DecodeMODR_MForRegister(operandSize,operand[0]);
-		disasm=DisassembleTypicalTwoOperands("TEST",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("TEST",op1,op2,cs.value,eip,symTable);
 		break;
 
 
@@ -2851,7 +2851,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		disasm+=cpputil::Itox(EvalSimm16or32(operandSize));
 		break;
 	case I486_OPCODE_IMUL_R_RM://       0x0FAF,
-		disasm=DisassembleTypicalTwoOperands("IMUL",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("IMUL",op1,op2,cs.value,eip,symTable);
 		break;
 
 
@@ -2869,10 +2869,10 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		switch(GetREG())
 		{
 		case 0:
-			disasm=DisassembleTypicalOneOperand("INC",op1,8,symTable);
+			disasm=DisassembleTypicalOneOperand("INC",op1,8,cs.value,eip,symTable);
 			break;
 		case 1:
-			disasm=DisassembleTypicalOneOperand("DEC",op1,8,symTable);
+			disasm=DisassembleTypicalOneOperand("DEC",op1,8,cs.value,eip,symTable);
 			break;
 		}
 		break;
@@ -2880,25 +2880,25 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		switch(GetREG())
 		{
 		case 0:
-			disasm=DisassembleTypicalOneOperand("INC",op1,operandSize,symTable);
+			disasm=DisassembleTypicalOneOperand("INC",op1,operandSize,cs.value,eip,symTable);
 			break;
 		case 1:
-			disasm=DisassembleTypicalOneOperand("DEC",op1,operandSize,symTable);
+			disasm=DisassembleTypicalOneOperand("DEC",op1,operandSize,cs.value,eip,symTable);
 			break;
 		case 2:
-			disasm=DisassembleTypicalOneOperand("CALL",op1,operandSize,symTable);
+			disasm=DisassembleTypicalOneOperand("CALL",op1,operandSize,cs.value,eip,symTable);
 			break;
 		case 3:
-			disasm=DisassembleTypicalOneOperand("CALLF",op1,operandSize,symTable);
+			disasm=DisassembleTypicalOneOperand("CALLF",op1,operandSize,cs.value,eip,symTable);
 			break;
 		case 4:
-			disasm=DisassembleTypicalOneOperand("JMP",op1,operandSize,symTable);
+			disasm=DisassembleTypicalOneOperand("JMP",op1,operandSize,cs.value,eip,symTable);
 			break;
 		case 5:
-			disasm=DisassembleTypicalOneOperand("JMPF",op1,operandSize,symTable);
+			disasm=DisassembleTypicalOneOperand("JMPF",op1,operandSize,cs.value,eip,symTable);
 			break;
 		case 6:
-			disasm=DisassembleTypicalOneOperand("PUSH",op1,operandSize,symTable);
+			disasm=DisassembleTypicalOneOperand("PUSH",op1,operandSize,cs.value,eip,symTable);
 			break;
 		}
 		break;
@@ -2928,7 +2928,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		break;
 	case I486_OPCODE_INT://        0xCD,
 		disasm = "INT";
-		disasm=DisassembleTypicalOneImm(disasm,EvalUimm8(),8,symTable);
+		disasm=DisassembleTypicalOneImm(disasm,EvalUimm8(),8,cs.value,eip,symTable);
 		if(I486_OPCODE_INT==opCode)
 		{
 			auto label=symTable.GetINTLabel(EvalUimm8());
@@ -3157,31 +3157,31 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		switch(GetREG())
 		{
 		case 0:
-			disasm=DisassembleTypicalOneOperandAndImm("ADD",op1,EvalUimm8(),8,symTable);
+			disasm=DisassembleTypicalOneOperandAndImm("ADD",op1,EvalUimm8(),8,cs.value,eip,symTable);
 			break;
 		case 1:
-			disasm=DisassembleTypicalOneOperandAndImm("OR",op1,EvalUimm8(),8,symTable);
+			disasm=DisassembleTypicalOneOperandAndImm("OR",op1,EvalUimm8(),8,cs.value,eip,symTable);
 			break;
 		case 2:
-			disasm=DisassembleTypicalOneOperandAndImm("ADC",op1,EvalUimm8(),8,symTable);
+			disasm=DisassembleTypicalOneOperandAndImm("ADC",op1,EvalUimm8(),8,cs.value,eip,symTable);
 			break;
 		case 3:
-			disasm=DisassembleTypicalOneOperandAndImm("SBB",op1,EvalUimm8(),8,symTable);
+			disasm=DisassembleTypicalOneOperandAndImm("SBB",op1,EvalUimm8(),8,cs.value,eip,symTable);
 			break;
 		case 4:
-			disasm=DisassembleTypicalOneOperandAndImm("AND",op1,EvalUimm8(),8,symTable);
+			disasm=DisassembleTypicalOneOperandAndImm("AND",op1,EvalUimm8(),8,cs.value,eip,symTable);
 			break;
 		case 5:
-			disasm=DisassembleTypicalOneOperandAndImm("SUB",op1,EvalUimm8(),8,symTable);
+			disasm=DisassembleTypicalOneOperandAndImm("SUB",op1,EvalUimm8(),8,cs.value,eip,symTable);
 			break;
 		case 6:
-			disasm=DisassembleTypicalOneOperandAndImm("XOR",op1,EvalUimm8(),8,symTable);
+			disasm=DisassembleTypicalOneOperandAndImm("XOR",op1,EvalUimm8(),8,cs.value,eip,symTable);
 			break;
 		case 7:
-			disasm=DisassembleTypicalOneOperandAndImm("CMP",op1,EvalUimm8(),8,symTable);
+			disasm=DisassembleTypicalOneOperandAndImm("CMP",op1,EvalUimm8(),8,cs.value,eip,symTable);
 			break;
 		default:
-			disasm=DisassembleTypicalOneOperandAndImm(cpputil::Ubtox(opCode)+"?",op1,EvalUimm8(),8,symTable);
+			disasm=DisassembleTypicalOneOperandAndImm(cpputil::Ubtox(opCode)+"?",op1,EvalUimm8(),8,cs.value,eip,symTable);
 			break;
 		}
 		break;
@@ -3189,31 +3189,31 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		switch(GetREG())
 		{
 		case 0:
-			disasm=DisassembleTypicalOneOperandAndImm("ADD",op1,EvalUimm8or16or32(operandSize),operandSize,symTable);
+			disasm=DisassembleTypicalOneOperandAndImm("ADD",op1,EvalUimm8or16or32(operandSize),operandSize,cs.value,eip,symTable);
 			break;
 		case 1:
-			disasm=DisassembleTypicalOneOperandAndImm("OR",op1,EvalUimm8or16or32(operandSize),operandSize,symTable);
+			disasm=DisassembleTypicalOneOperandAndImm("OR",op1,EvalUimm8or16or32(operandSize),operandSize,cs.value,eip,symTable);
 			break;
 		case 2:
-			disasm=DisassembleTypicalOneOperandAndImm("ADC",op1,EvalUimm8or16or32(operandSize),operandSize,symTable);
+			disasm=DisassembleTypicalOneOperandAndImm("ADC",op1,EvalUimm8or16or32(operandSize),operandSize,cs.value,eip,symTable);
 			break;
 		case 3:
-			disasm=DisassembleTypicalOneOperandAndImm("SBB",op1,EvalUimm8or16or32(operandSize),operandSize,symTable);
+			disasm=DisassembleTypicalOneOperandAndImm("SBB",op1,EvalUimm8or16or32(operandSize),operandSize,cs.value,eip,symTable);
 			break;
 		case 4:
-			disasm=DisassembleTypicalOneOperandAndImm("AND",op1,EvalUimm8or16or32(operandSize),operandSize,symTable);
+			disasm=DisassembleTypicalOneOperandAndImm("AND",op1,EvalUimm8or16or32(operandSize),operandSize,cs.value,eip,symTable);
 			break;
 		case 5:
-			disasm=DisassembleTypicalOneOperandAndImm("SUB",op1,EvalUimm8or16or32(operandSize),operandSize,symTable);
+			disasm=DisassembleTypicalOneOperandAndImm("SUB",op1,EvalUimm8or16or32(operandSize),operandSize,cs.value,eip,symTable);
 			break;
 		case 6:
-			disasm=DisassembleTypicalOneOperandAndImm("XOR",op1,EvalUimm8or16or32(operandSize),operandSize,symTable);
+			disasm=DisassembleTypicalOneOperandAndImm("XOR",op1,EvalUimm8or16or32(operandSize),operandSize,cs.value,eip,symTable);
 			break;
 		case 7:
-			disasm=DisassembleTypicalOneOperandAndImm("CMP",op1,EvalUimm8or16or32(operandSize),operandSize,symTable);
+			disasm=DisassembleTypicalOneOperandAndImm("CMP",op1,EvalUimm8or16or32(operandSize),operandSize,cs.value,eip,symTable);
 			break;
 		default:
-			disasm=DisassembleTypicalOneOperandAndImm(cpputil::Ubtox(opCode)+"?",op1,EvalUimm8or16or32(operandSize),operandSize,symTable);
+			disasm=DisassembleTypicalOneOperandAndImm(cpputil::Ubtox(opCode)+"?",op1,EvalUimm8or16or32(operandSize),operandSize,cs.value,eip,symTable);
 			break;
 		}
 		break;
@@ -3221,31 +3221,31 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		switch(GetREG())
 		{
 		case 0:
-			disasm=DisassembleTypicalOneOperand("ADD",op1,operandSize,symTable);
+			disasm=DisassembleTypicalOneOperand("ADD",op1,operandSize,cs.value,eip,symTable);
 			break;
 		case 1:
-			disasm=DisassembleTypicalOneOperand("OR",op1,operandSize,symTable);
+			disasm=DisassembleTypicalOneOperand("OR",op1,operandSize,cs.value,eip,symTable);
 			break;
 		case 2:
-			disasm=DisassembleTypicalOneOperand("ADC",op1,operandSize,symTable);
+			disasm=DisassembleTypicalOneOperand("ADC",op1,operandSize,cs.value,eip,symTable);
 			break;
 		case 3:
-			disasm=DisassembleTypicalOneOperand("SBB",op1,operandSize,symTable);
+			disasm=DisassembleTypicalOneOperand("SBB",op1,operandSize,cs.value,eip,symTable);
 			break;
 		case 4:
-			disasm=DisassembleTypicalOneOperand("AND",op1,operandSize,symTable);
+			disasm=DisassembleTypicalOneOperand("AND",op1,operandSize,cs.value,eip,symTable);
 			break;
 		case 5:
-			disasm=DisassembleTypicalOneOperand("SUB",op1,operandSize,symTable);
+			disasm=DisassembleTypicalOneOperand("SUB",op1,operandSize,cs.value,eip,symTable);
 			break;
 		case 6:
-			disasm=DisassembleTypicalOneOperand("XOR",op1,operandSize,symTable);
+			disasm=DisassembleTypicalOneOperand("XOR",op1,operandSize,cs.value,eip,symTable);
 			break;
 		case 7:
-			disasm=DisassembleTypicalOneOperand("CMP",op1,operandSize,symTable);
+			disasm=DisassembleTypicalOneOperand("CMP",op1,operandSize,cs.value,eip,symTable);
 			break;
 		default:
-			disasm=DisassembleTypicalOneOperand(cpputil::Ubtox(opCode)+"?",op1,operandSize,symTable);
+			disasm=DisassembleTypicalOneOperand(cpputil::Ubtox(opCode)+"?",op1,operandSize,cs.value,eip,symTable);
 			break;
 		}
 		{
@@ -3306,7 +3306,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 			disasm="LGS";
 			break;
 		}
-		disasm=DisassembleTypicalTwoOperands(disasm,op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands(disasm,op1,op2,cs.value,eip,symTable);
 		break;
 
 
@@ -3340,74 +3340,74 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		switch(GetREG())
 		{
 		case 0:
-			disasm=DisassembleTypicalOneOperand("SGDT",op1,16+operandSize,symTable);
+			disasm=DisassembleTypicalOneOperand("SGDT",op1,16+operandSize,cs.value,eip,symTable);
 			break;
 		case 1:
-			disasm=DisassembleTypicalOneOperand("SIDT",op1,16+operandSize,symTable);
+			disasm=DisassembleTypicalOneOperand("SIDT",op1,16+operandSize,cs.value,eip,symTable);
 			break;
 		case 2:
-			disasm=DisassembleTypicalOneOperand("LGDT",op1,16+operandSize,symTable);
+			disasm=DisassembleTypicalOneOperand("LGDT",op1,16+operandSize,cs.value,eip,symTable);
 			break;
 		case 3:
-			disasm=DisassembleTypicalOneOperand("LIDT",op1,16+operandSize,symTable);
+			disasm=DisassembleTypicalOneOperand("LIDT",op1,16+operandSize,cs.value,eip,symTable);
 			break;
 		case 4:
-			disasm=DisassembleTypicalOneOperand("SMSW",op1,16+operandSize,symTable);
+			disasm=DisassembleTypicalOneOperand("SMSW",op1,16+operandSize,cs.value,eip,symTable);
 			break;
 		case 6:
-			disasm=DisassembleTypicalOneOperand("LMSW",op1,16+operandSize,symTable);
+			disasm=DisassembleTypicalOneOperand("LMSW",op1,16+operandSize,cs.value,eip,symTable);
 			break;
 		case 7:
-			disasm=DisassembleTypicalOneOperand("INVLPG",op1,16+operandSize,symTable);
+			disasm=DisassembleTypicalOneOperand("INVLPG",op1,16+operandSize,cs.value,eip,symTable);
 			break;
 		default:
-			disasm=DisassembleTypicalTwoOperands(cpputil::Ubtox(opCode)+"?",op1,op2,symTable)+" REG="+cpputil::Ubtox(GetREG());
+			disasm=DisassembleTypicalTwoOperands(cpputil::Ubtox(opCode)+"?",op1,op2,cs.value,eip,symTable)+" REG="+cpputil::Ubtox(GetREG());
 			break;
 		}
 		break;
 
 
 	case I486_OPCODE_LSL://              0x0F03,
-		disasm=DisassembleTypicalTwoOperands("LSL",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("LSL",op1,op2,cs.value,eip,symTable);
 		break;
 
 
 	case I486_OPCODE_MOV_FROM_R8: //      0x88,
 		op2.DecodeMODR_MForRegister(8,operand[0]);
-		disasm=DisassembleTypicalTwoOperands("MOV",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("MOV",op1,op2,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_MOV_FROM_R: //       0x89, // 16/32 depends on OPSIZE_OVERRIDE
 		op2.DecodeMODR_MForRegister(operandSize,operand[0]);
-		disasm=DisassembleTypicalTwoOperands("MOV",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("MOV",op1,op2,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_MOV_TO_R8: //        0x8A,
 		op1.DecodeMODR_MForRegister(8,operand[0]);
-		disasm=DisassembleTypicalTwoOperands("MOV",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("MOV",op1,op2,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_MOV_TO_R: //         0x8B, // 16/32 depends on OPSIZE_OVERRIDE
 		op1.DecodeMODR_MForRegister(operandSize,operand[0]);
-		disasm=DisassembleTypicalTwoOperands("MOV",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("MOV",op1,op2,cs.value,eip,symTable);
 		break;
 
 	case I486_OPCODE_MOV_M_TO_AL: //      0xA0,
 		op2.MakeSimpleAddressOffsetFromImm(*this);
 		op1.MakeByRegisterNumber(8,REG_AL-REG_8BIT_REG_BASE);
-		disasm=DisassembleTypicalTwoOperands("MOV",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("MOV",op1,op2,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_MOV_M_TO_EAX: //     0xA1, // 16/32 depends on OPSIZE_OVERRIDE
 		op2.MakeSimpleAddressOffsetFromImm(*this);
 		op1.MakeByRegisterNumber(operandSize,REG_AL-REG_8BIT_REG_BASE);
-		disasm=DisassembleTypicalTwoOperands("MOV",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("MOV",op1,op2,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_MOV_M_FROM_AL: //    0xA2,
 		op1.MakeSimpleAddressOffsetFromImm(*this);
 		op2.MakeByRegisterNumber(8,REG_AL-REG_8BIT_REG_BASE);
-		disasm=DisassembleTypicalTwoOperands("MOV",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("MOV",op1,op2,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_MOV_M_FROM_EAX: //   0xA3, // 16/32 depends on OPSIZE_OVERRIDE
 		op1.MakeSimpleAddressOffsetFromImm(*this);
 		op2.MakeByRegisterNumber(operandSize,REG_AL-REG_8BIT_REG_BASE);
-		disasm=DisassembleTypicalTwoOperands("MOV",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("MOV",op1,op2,cs.value,eip,symTable);
 		break;
 
 	case I486_OPCODE_MOV_FROM_SEG: //     0x8C,
@@ -3419,7 +3419,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 	case I486_OPCODE_MOV_TO_DR://        0x0F23,
 	case I486_OPCODE_MOV_FROM_TR://      0x0F24,
 	case I486_OPCODE_MOV_TO_TR://        0x0F26,
-		disasm=DisassembleTypicalTwoOperands("MOV",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("MOV",op1,op2,cs.value,eip,symTable);
 		break;
 
 	case I486_OPCODE_MOV_I8_TO_AL: //     0xB0,
@@ -3431,18 +3431,18 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 	case I486_OPCODE_MOV_I8_TO_DH: //     0xB6,
 	case I486_OPCODE_MOV_I8_TO_BH: //     0xB7,
 		op1.MakeByRegisterNumber(8,opCode&7);
-		disasm=DisassembleTypicalOneOperandAndImm("MOV",op1,EvalUimm8(),8,symTable);
+		disasm=DisassembleTypicalOneOperandAndImm("MOV",op1,EvalUimm8(),8,cs.value,eip,symTable);
 		disasm+=DisassembleIOLabel(cs.value,eip,symTable,ioTable,EvalUimm8());
 		break;
 
 	case I486_OPCODE_MOV_I8_TO_RM8: //    0xC6,
 		op1.Decode(addressSize,8,operand);
-		disasm=DisassembleTypicalOneOperandAndImm("MOV",op1,EvalUimm8(),8,symTable);
+		disasm=DisassembleTypicalOneOperandAndImm("MOV",op1,EvalUimm8(),8,cs.value,eip,symTable);
 		disasm+=DisassembleIOLabel(cs.value,eip,symTable,ioTable,EvalUimm8());
 		break;
 	case I486_OPCODE_MOV_I_TO_RM: //      0xC7, // 16/32 depends on OPSIZE_OVERRIDE
 		op1.Decode(addressSize,operandSize,operand);
-		disasm=DisassembleTypicalOneOperandAndImm("MOV",op1,EvalUimm8or16or32(operandSize),operandSize,symTable);
+		disasm=DisassembleTypicalOneOperandAndImm("MOV",op1,EvalUimm8or16or32(operandSize),operandSize,cs.value,eip,symTable);
 		disasm+=DisassembleIOLabel(cs.value,eip,symTable,ioTable,EvalUimm8or16or32(operandSize));
 		break;
 
@@ -3455,7 +3455,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 	case I486_OPCODE_MOV_I_TO_ESI: //     0xBE, // 16/32 depends on OPSIZE_OVERRIDE
 	case I486_OPCODE_MOV_I_TO_EDI: //     0xBF, // 16/32 depends on OPSIZE_OVERRIDE
 		op1.MakeByRegisterNumber(operandSize,opCode&7);
-		disasm=DisassembleTypicalOneOperandAndImm("MOV",op1,EvalUimm8or16or32(operandSize),operandSize,symTable);
+		disasm=DisassembleTypicalOneOperandAndImm("MOV",op1,EvalUimm8or16or32(operandSize),operandSize,cs.value,eip,symTable);
 		disasm+=DisassembleIOLabel(cs.value,eip,symTable,ioTable,EvalUimm8or16or32(operandSize));
 		break;
 
@@ -3590,32 +3590,32 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 
 
 	case I486_OPCODE_SETA://             0x0F97,
-		disasm=DisassembleTypicalOneOperand("SETA",op1,8,symTable);
+		disasm=DisassembleTypicalOneOperand("SETA",op1,8,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_SETAE://            0x0F93,
-		disasm=DisassembleTypicalOneOperand("SETAE",op1,8,symTable);
+		disasm=DisassembleTypicalOneOperand("SETAE",op1,8,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_SETB://             0x0F92,
-		disasm=DisassembleTypicalOneOperand("SETB",op1,8,symTable);
+		disasm=DisassembleTypicalOneOperand("SETB",op1,8,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_SETBE://            0x0F96,
-		disasm=DisassembleTypicalOneOperand("SETBE",op1,8,symTable);
+		disasm=DisassembleTypicalOneOperand("SETBE",op1,8,cs.value,eip,symTable);
 		break;
 	// I486_OPCODE_SETC://             0x0F92,
 	case I486_OPCODE_SETE://             0x0F94,
-		disasm=DisassembleTypicalOneOperand("SETE",op1,8,symTable);
+		disasm=DisassembleTypicalOneOperand("SETE",op1,8,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_SETG://             0x0F9F,
-		disasm=DisassembleTypicalOneOperand("SETG",op1,8,symTable);
+		disasm=DisassembleTypicalOneOperand("SETG",op1,8,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_SETGE://            0x0F9D,
-		disasm=DisassembleTypicalOneOperand("SETGE",op1,8,symTable);
+		disasm=DisassembleTypicalOneOperand("SETGE",op1,8,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_SETL://             0x0F9C,
-		disasm=DisassembleTypicalOneOperand("SETL",op1,8,symTable);
+		disasm=DisassembleTypicalOneOperand("SETL",op1,8,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_SETLE://            0x0F9E,
-		disasm=DisassembleTypicalOneOperand("SETLE",op1,8,symTable);
+		disasm=DisassembleTypicalOneOperand("SETLE",op1,8,cs.value,eip,symTable);
 		break;
 	//I486_OPCODE_SETNA://            0x0F96,
 	//I486_OPCODE_SETNAE://           0x0F92,
@@ -3623,32 +3623,32 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 	//I486_OPCODE_SETNBE://           0x0F97,
 	//I486_OPCODE_SETNC://            0x0F93,
 	case I486_OPCODE_SETNE://            0x0F95,
-		disasm=DisassembleTypicalOneOperand("SETNE",op1,8,symTable);
+		disasm=DisassembleTypicalOneOperand("SETNE",op1,8,cs.value,eip,symTable);
 		break;
 	//I486_OPCODE_SETNG://            0x0F9E,
 	//I486_OPCODE_SETNGE://           0x0F9C,
 	//I486_OPCODE_SETNL://            0x0F9D,
 	//I486_OPCODE_SETNLE://           0x0F9F,
 	case I486_OPCODE_SETNO://            0x0F91,
-		disasm=DisassembleTypicalOneOperand("SETNO",op1,8,symTable);
+		disasm=DisassembleTypicalOneOperand("SETNO",op1,8,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_SETNP://            0x0F9B,
-		disasm=DisassembleTypicalOneOperand("SETNP",op1,8,symTable);
+		disasm=DisassembleTypicalOneOperand("SETNP",op1,8,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_SETNS://            0x0F99,
-		disasm=DisassembleTypicalOneOperand("SETNS",op1,8,symTable);
+		disasm=DisassembleTypicalOneOperand("SETNS",op1,8,cs.value,eip,symTable);
 		break;
 	// I486_OPCODE_SETNZ://            0x0F95,
 	case I486_OPCODE_SETO://             0x0F90,
-		disasm=DisassembleTypicalOneOperand("SETO",op1,8,symTable);
+		disasm=DisassembleTypicalOneOperand("SETO",op1,8,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_SETP://             0x0F9A,
-		disasm=DisassembleTypicalOneOperand("SETP",op1,8,symTable);
+		disasm=DisassembleTypicalOneOperand("SETP",op1,8,cs.value,eip,symTable);
 		break;
 	//I486_OPCODE_SETPE://            0x0F9A,
 	//I486_OPCODE_SETPO://            0x0F9B,
 	case I486_OPCODE_SETS://             0x0F98,
-		disasm=DisassembleTypicalOneOperand("SETS",op1,8,symTable);
+		disasm=DisassembleTypicalOneOperand("SETS",op1,8,cs.value,eip,symTable);
 		break;
 	// I486_OPCODE_SETZ://             0x0F94,
 
@@ -3657,22 +3657,22 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		switch(GetREG())
 		{
 		case 0:
-			disasm=DisassembleTypicalOneOperand("SLDT",op1,16,symTable);
+			disasm=DisassembleTypicalOneOperand("SLDT",op1,16,cs.value,eip,symTable);
 			break;
 		case 1:
-			disasm=DisassembleTypicalOneOperand("STR",op1,16,symTable);
+			disasm=DisassembleTypicalOneOperand("STR",op1,16,cs.value,eip,symTable);
 			break;
 		case 2:
-			disasm=DisassembleTypicalOneOperand("LLDT",op1,16,symTable);
+			disasm=DisassembleTypicalOneOperand("LLDT",op1,16,cs.value,eip,symTable);
 			break;
 		case 3:
-			disasm=DisassembleTypicalOneOperand("LTR",op1,16,symTable);
+			disasm=DisassembleTypicalOneOperand("LTR",op1,16,cs.value,eip,symTable);
 			break;
 		case 4:
-			disasm=DisassembleTypicalOneOperand("VERR",op1,16,symTable);
+			disasm=DisassembleTypicalOneOperand("VERR",op1,16,cs.value,eip,symTable);
 			break;
 		case 5:
-			disasm=DisassembleTypicalOneOperand("VERW",op1,16,symTable);
+			disasm=DisassembleTypicalOneOperand("VERW",op1,16,cs.value,eip,symTable);
 			break;
 		}
 		break;
@@ -3877,7 +3877,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 
 
 	case I486_OPCODE_POP_M://            0x8F,
-		disasm=DisassembleTypicalOneOperand("POP",op1,operandSize,symTable);
+		disasm=DisassembleTypicalOneOperand("POP",op1,operandSize,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_POP_EAX://          0x58,
 	case I486_OPCODE_POP_ECX://          0x59,
@@ -3954,19 +3954,19 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		break;
 	case I486_OPCODE_OR_RM8_FROM_R8:
 		op2.DecodeMODR_MForRegister(8,operand[0]);
-		disasm=DisassembleTypicalTwoOperands("OR",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("OR",op1,op2,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_OR_R8_FROM_RM8:
 		op1.DecodeMODR_MForRegister(8,operand[0]);
-		disasm=DisassembleTypicalTwoOperands("OR",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("OR",op1,op2,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_OR_RM_FROM_R:
 		op2.DecodeMODR_MForRegister(operandSize,operand[0]);
-		disasm=DisassembleTypicalTwoOperands("OR",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("OR",op1,op2,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_OR_R_FROM_RM:
 		op1.DecodeMODR_MForRegister(operandSize,operand[0]);
-		disasm=DisassembleTypicalTwoOperands("OR",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("OR",op1,op2,cs.value,eip,symTable);
 		break;
 
 
@@ -3985,19 +3985,19 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		break;
 	case I486_OPCODE_XOR_RM8_FROM_R8:
 		op2.DecodeMODR_MForRegister(8,operand[0]);
-		disasm=DisassembleTypicalTwoOperands("XOR",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("XOR",op1,op2,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_XOR_R8_FROM_RM8:
 		op1.DecodeMODR_MForRegister(8,operand[0]);
-		disasm=DisassembleTypicalTwoOperands("XOR",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("XOR",op1,op2,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_XOR_RM_FROM_R:
 		op2.DecodeMODR_MForRegister(operandSize,operand[0]);
-		disasm=DisassembleTypicalTwoOperands("XOR",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("XOR",op1,op2,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_XOR_R_FROM_RM:
 		op1.DecodeMODR_MForRegister(operandSize,operand[0]);
-		disasm=DisassembleTypicalTwoOperands("XOR",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("XOR",op1,op2,cs.value,eip,symTable);
 		break;
 
 
@@ -4021,11 +4021,11 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		break;
 	case I486_OPCODE_XCHG_RM8_R8://           0x86,
 		op2.DecodeMODR_MForRegister(8,operand[0]);
-		disasm=DisassembleTypicalTwoOperands("XCHG",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("XCHG",op1,op2,cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_XCHG_RM_R://             0x87,
 		op2.DecodeMODR_MForRegister(operandSize,operand[0]);
-		disasm=DisassembleTypicalTwoOperands("XCHG",op1,op2,symTable);
+		disasm=DisassembleTypicalTwoOperands("XCHG",op1,op2,cs.value,eip,symTable);
 		break;
 
 
@@ -4063,7 +4063,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 	return disasm;
 }
 
-std::string i486DX::Instruction::DisassembleTypicalOneOperand(std::string inst,const Operand &op,int operandSize,const i486SymbolTable &symTable) const
+std::string i486DX::Instruction::DisassembleTypicalOneOperand(std::string inst,const Operand &op,int operandSize,uint32_t cs,uint32_t eip,const i486SymbolTable &symTable) const
 {
 	auto sizeQual=i486DX::Operand::GetSizeQualifierToDisassembly(op,operandSize);
 	auto segQual=i486DX::Operand::GetSegmentQualifierToDisassembly(segOverride,op);
@@ -4073,7 +4073,7 @@ std::string i486DX::Instruction::DisassembleTypicalOneOperand(std::string inst,c
 	return disasm;
 }
 
-std::string i486DX::Instruction::DisassembleTypicalOneOperandAndImm(std::string inst,const Operand &op,unsigned int imm,int operandSize,const i486SymbolTable &symTable) const
+std::string i486DX::Instruction::DisassembleTypicalOneOperandAndImm(std::string inst,const Operand &op,unsigned int imm,int operandSize,uint32_t cs,uint32_t eip,const i486SymbolTable &symTable) const
 {
 	auto sizeQual=i486DX::Operand::GetSizeQualifierToDisassembly(op,operandSize);
 	auto segQual=i486DX::Operand::GetSegmentQualifierToDisassembly(segOverride,op);
@@ -4095,7 +4095,7 @@ std::string i486DX::Instruction::DisassembleTypicalOneOperandAndImm(std::string 
 	return disasm;
 }
 
-std::string i486DX::Instruction::DisassembleTypicalOneImm(std::string inst,unsigned int imm,int operandSize,const i486SymbolTable &symTable) const
+std::string i486DX::Instruction::DisassembleTypicalOneImm(std::string inst,unsigned int imm,int operandSize,uint32_t cs,uint32_t eip,const i486SymbolTable &symTable) const
 {
 	auto disasm=inst;
 	cpputil::ExtendString(disasm,8);
@@ -4115,7 +4115,7 @@ std::string i486DX::Instruction::DisassembleTypicalOneImm(std::string inst,unsig
 	return disasm;
 }
 
-std::string i486DX::Instruction::DisassembleTypicalRM8_I8(std::string inst,const Operand &op1,unsigned int I8,const i486SymbolTable &symTable) const
+std::string i486DX::Instruction::DisassembleTypicalRM8_I8(std::string inst,const Operand &op1,unsigned int I8,uint32_t cs,uint32_t eip,const i486SymbolTable &symTable) const
 {
 	auto sizeQual=i486DX::Operand::GetSizeQualifierToDisassembly(op1,8);
 	auto segQual=i486DX::Operand::GetSegmentQualifierToDisassembly(segOverride,op1);
@@ -4125,7 +4125,7 @@ std::string i486DX::Instruction::DisassembleTypicalRM8_I8(std::string inst,const
 	return disasm;
 }
 
-std::string i486DX::Instruction::DisassembleTypicalRM_I8(std::string inst,const Operand &op1,unsigned int I8,const i486SymbolTable &symTable) const
+std::string i486DX::Instruction::DisassembleTypicalRM_I8(std::string inst,const Operand &op1,unsigned int I8,uint32_t cs,uint32_t eip,const i486SymbolTable &symTable) const
 {
 	auto sizeQual=i486DX::Operand::GetSizeQualifierToDisassembly(op1,operandSize);
 	auto segQual=i486DX::Operand::GetSegmentQualifierToDisassembly(segOverride,op1);
@@ -4135,7 +4135,7 @@ std::string i486DX::Instruction::DisassembleTypicalRM_I8(std::string inst,const 
 	return disasm;
 }
 
-std::string i486DX::Instruction::DisassembleTypicalTwoOperands(std::string inst,const Operand &op1,const Operand &op2,const i486SymbolTable &symTable) const
+std::string i486DX::Instruction::DisassembleTypicalTwoOperands(std::string inst,const Operand &op1,const Operand &op2,uint32_t cs,uint32_t eip,const i486SymbolTable &symTable) const
 {
 	std::string disasm=inst,op1SizeQual,op2SizeQual,op1SegQual,op2SegQual;
 	cpputil::ExtendString(disasm,8);
