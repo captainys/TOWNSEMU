@@ -168,6 +168,11 @@ public:
 	/*!
 	*/
 	std::string GetINTFuncLabel(unsigned INTNum,unsigned int AHorAX) const;
+
+
+	/*!
+	*/
+	std::string FormatImmLabel(uint32_t cs,uint32_t eip,uint32_t imm) const;
 };
 
 

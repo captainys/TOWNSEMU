@@ -1906,7 +1906,7 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 	case I486_OPCODE_JMP_FAR:
 		disasm=(I486_OPCODE_JMP_FAR==opCode ? "JMPF" : "CALLF");
 		cpputil::ExtendString(disasm,8);
-		disasm+=op1.Disassemble();
+		disasm+=op1.Disassemble(cs.value,eip,symTable);
 		{
 			auto *sym=symTable.Find(op1.seg,op1.offset);
 			if(nullptr!=sym)
@@ -2840,14 +2840,14 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 
 	case I486_OPCODE_IMUL_R_RM_I8://0x6B,
 		disasm="IMUL    ";
-		disasm+=op1.Disassemble()+",";
-		disasm+=op2.Disassemble()+",";
+		disasm+=op1.Disassemble(cs.value,eip,symTable)+",";
+		disasm+=op2.Disassemble(cs.value,eip,symTable)+",";
 		disasm+=cpputil::Itox(EvalSimm8());
 		break;
 	case I486_OPCODE_IMUL_R_RM_IMM://0x69,
 		disasm="IMUL    ";
-		disasm+=op1.Disassemble()+",";
-		disasm+=op2.Disassemble()+",";
+		disasm+=op1.Disassemble(cs.value,eip,symTable)+",";
+		disasm+=op2.Disassemble(cs.value,eip,symTable)+",";
 		disasm+=cpputil::Itox(EvalSimm16or32(operandSize));
 		break;
 	case I486_OPCODE_IMUL_R_RM://       0x0FAF,
@@ -3272,13 +3272,13 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 	case I486_OPCODE_LEA://=              0x8D,
 		disasm="LEA";
 		cpputil::ExtendString(disasm,8);
-		disasm+=op1.Disassemble();
+		disasm+=op1.Disassemble(cs.value,eip,symTable);
 		disasm.push_back(',');
 		if(addressSize!=operandSize)
 		{
 			disasm+=Operand::GetSizeQualifierToDisassembly(op2,addressSize);
 		}
-		disasm+=op2.Disassemble();
+		disasm+=op2.Disassemble(cs.value,eip,symTable);
 		break;
 
 
@@ -3492,21 +3492,21 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		op1.DecodeMODR_MForRegister(operandSize,operand[0]);
 		disasm=(I486_OPCODE_MOVZX_R_RM8==opCode ? "MOVZX" : "MOVSX");
 		cpputil::ExtendString(disasm,8);
-		disasm+=op1.Disassemble();
+		disasm+=op1.Disassemble(cs.value,eip,symTable);
 		disasm.push_back(',');
 		disasm+=Operand::GetSizeQualifierToDisassembly(op2,8);
 		disasm+=SegmentOverrideString(segOverride);
-		disasm+=op2.Disassemble();
+		disasm+=op2.Disassemble(cs.value,eip,symTable);
 		break;
 	case I486_OPCODE_MOVSX_R32_RM16://=   0x0FBF,
 	case I486_OPCODE_MOVZX_R32_RM16://=   0x0FB7,
 		disasm=(I486_OPCODE_MOVZX_R32_RM16==opCode ? "MOVZX" : "MOVSX");
 		cpputil::ExtendString(disasm,8);
-		disasm+=op1.Disassemble();
+		disasm+=op1.Disassemble(cs.value,eip,symTable);
 		disasm.push_back(',');
 		disasm+=Operand::GetSizeQualifierToDisassembly(op2,16);
 		disasm+=SegmentOverrideString(segOverride);
-		disasm+=op2.Disassemble();
+		disasm+=op2.Disassemble(cs.value,eip,symTable);
 		break;
 
 
@@ -3558,8 +3558,8 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 				disasm="SHRD    ";
 				break;
 			}
-			disasm+=op1.Disassemble()+",";
-			disasm+=op2.Disassemble()+",";
+			disasm+=op1.Disassemble(cs.value,eip,symTable)+",";
+			disasm+=op2.Disassemble(cs.value,eip,symTable)+",";
 			disasm+=count;
 		}
 		break;
@@ -4069,7 +4069,7 @@ std::string i486DX::Instruction::DisassembleTypicalOneOperand(std::string inst,c
 	auto segQual=i486DX::Operand::GetSegmentQualifierToDisassembly(segOverride,op);
 	auto disasm=inst;
 	cpputil::ExtendString(disasm,8);
-	disasm+=sizeQual+segQual+op.Disassemble();
+	disasm+=sizeQual+segQual+op.Disassemble(cs,eip,symTable);
 	return disasm;
 }
 
@@ -4079,17 +4079,17 @@ std::string i486DX::Instruction::DisassembleTypicalOneOperandAndImm(std::string 
 	auto segQual=i486DX::Operand::GetSegmentQualifierToDisassembly(segOverride,op);
 	auto disasm=inst;
 	cpputil::ExtendString(disasm,8);
-	disasm+=sizeQual+segQual+op.Disassemble()+",";
+	disasm+=sizeQual+segQual+op.Disassemble(cs,eip,symTable)+",";
 	switch(operandSize)
 	{
 	case 8:
-		disasm+=cpputil::Ubtox(imm)+"H";
+		disasm+=cpputil::Ubtox(imm)+"H"+symTable.FormatImmLabel(cs,eip,imm);
 		break;
 	case 16:
-		disasm+=cpputil::Ustox(imm)+"H";
+		disasm+=cpputil::Ustox(imm)+"H"+symTable.FormatImmLabel(cs,eip,imm);
 		break;
 	default:
-		disasm+=cpputil::Uitox(imm)+"H";
+		disasm+=cpputil::Uitox(imm)+"H"+symTable.FormatImmLabel(cs,eip,imm);
 		break;
 	}
 	return disasm;
@@ -4102,14 +4102,14 @@ std::string i486DX::Instruction::DisassembleTypicalOneImm(std::string inst,unsig
 	switch(operandSize)
 	{
 	case 8:
-		disasm+=cpputil::Ubtox(imm)+"H";
+		disasm+=cpputil::Ubtox(imm)+"H"+symTable.FormatImmLabel(cs,eip,imm);
 		break;
 	case 16:
-		disasm+=cpputil::Ustox(imm)+"H";
+		disasm+=cpputil::Ustox(imm)+"H"+symTable.FormatImmLabel(cs,eip,imm);
 		break;
 	default:
 	case 32:
-		disasm+=cpputil::Uitox(imm)+"H";
+		disasm+=cpputil::Uitox(imm)+"H"+symTable.FormatImmLabel(cs,eip,imm);
 		break;
 	}
 	return disasm;
@@ -4121,7 +4121,7 @@ std::string i486DX::Instruction::DisassembleTypicalRM8_I8(std::string inst,const
 	auto segQual=i486DX::Operand::GetSegmentQualifierToDisassembly(segOverride,op1);
 	auto disasm=inst;
 	cpputil::ExtendString(disasm,8);
-	disasm+=sizeQual+segQual+op1.Disassemble()+","+cpputil::Ubtox(I8)+"H";
+	disasm+=sizeQual+segQual+op1.Disassemble(cs,eip,symTable)+","+cpputil::Ubtox(I8)+"H"+symTable.FormatImmLabel(cs,eip,I8);
 	return disasm;
 }
 
@@ -4131,7 +4131,7 @@ std::string i486DX::Instruction::DisassembleTypicalRM_I8(std::string inst,const 
 	auto segQual=i486DX::Operand::GetSegmentQualifierToDisassembly(segOverride,op1);
 	auto disasm=inst;
 	cpputil::ExtendString(disasm,8);
-	disasm+=sizeQual+segQual+op1.Disassemble()+","+cpputil::Ubtox(I8)+"H";
+	disasm+=sizeQual+segQual+op1.Disassemble(cs,eip,symTable)+","+cpputil::Ubtox(I8)+"H"+symTable.FormatImmLabel(cs,eip,I8);
 	return disasm;
 }
 
@@ -4142,9 +4142,9 @@ std::string i486DX::Instruction::DisassembleTypicalTwoOperands(std::string inst,
 
 	op1SegQual=i486DX::Operand::GetSegmentQualifierToDisassembly(segOverride,op1);
 	op2SegQual=i486DX::Operand::GetSegmentQualifierToDisassembly(segOverride,op2);
-	disasm+=op1SizeQual+op1SegQual+op1.Disassemble();
+	disasm+=op1SizeQual+op1SegQual+op1.Disassemble(cs,eip,symTable);
 	disasm.push_back(',');
-	disasm+=op2SizeQual+op2SegQual+op2.Disassemble();
+	disasm+=op2SizeQual+op2SegQual+op2.Disassemble(cs,eip,symTable);
 
 	return disasm;
 }

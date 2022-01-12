@@ -775,4 +775,25 @@ std::string i486SymbolTable::GetINTFuncLabel(unsigned INTNum,unsigned int AHorAX
 	}
 	return "";
 }
+std::string i486SymbolTable::FormatImmLabel(uint32_t cs,uint32_t eip,uint32_t imm) const
+{
+	std::string str;
+	auto found=Find(cs,eip);
+	if(nullptr!=found && true==found->immIsSymbol)
+	{
+		auto foundLabel=FindFromOffset(imm);
+		if(nullptr!=foundLabel)
+		{
+			if(""!=foundLabel->label)
+			{
+				str="("+foundLabel->label+")";
+			}
+			else if(""!=foundLabel->imported)
+			{
+				str="("+foundLabel->imported+")";
+			}
+		}
+	}
+	return str;
+}
 

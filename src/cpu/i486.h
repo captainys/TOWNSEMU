@@ -1131,10 +1131,10 @@ public:
 
 		/*! Returns a disassembly of the operand after decoding.
 		*/
-		std::string Disassemble(void) const;
+		std::string Disassemble(uint32_t cs,uint32_t eip,const i486SymbolTable &symTable) const;
 	private:
-		std::string DisassembleAsAddr(void) const;
-		std::string DisassembleAsFarAddr(void) const;
+		std::string DisassembleAsAddr(uint32_t cs,uint32_t eip,const i486SymbolTable &symTable) const;
+		std::string DisassembleAsFarAddr(uint32_t cs,uint32_t eip,const i486SymbolTable &symTable) const;
 		std::string DisassembleAsReg(void) const;
 
 	public:

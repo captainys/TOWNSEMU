@@ -17,6 +17,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include "towns.h"
 #include "cpputil.h"
+#include "i486symtable.h"
 
 
 bool TestAddressingDisassembly(
@@ -25,8 +26,9 @@ bool TestAddressingDisassembly(
     unsigned oplen,const unsigned char operand[],FMTowns &towns,const std::string &correctDisasm)
 {
 	i486DX::Operand oper;
+	i486SymbolTable symTable;
 	auto numBytes=oper.Decode(addressSize,dataSize,operand);
-	auto disasm=oper.Disassemble();
+	auto disasm=oper.Disassemble(0,0,symTable);
 
 	if(numBytes!=oplen)
 	{

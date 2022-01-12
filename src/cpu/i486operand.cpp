@@ -17,6 +17,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "cpputil.h"
 #include "i486.h"
 #include "i486inst.h"
+#include "i486symtable.h"
 
 
 
@@ -590,14 +591,14 @@ unsigned int i486DX::Operand::DecodeFarAddr(int addressSize,int operandSize,cons
 	}
 }
 
-std::string i486DX::Operand::Disassemble(void) const
+std::string i486DX::Operand::Disassemble(uint32_t cs,uint32_t eip,const i486SymbolTable &symTable) const
 {
 	switch(operandType)
 	{
 	case OPER_ADDR:
-		return DisassembleAsAddr();
+		return DisassembleAsAddr(cs,eip,symTable);
 	case OPER_FARADDR:
-		return DisassembleAsFarAddr();
+		return DisassembleAsFarAddr(cs,eip,symTable);
 	case OPER_SREG:
 	case OPER_REG8:
 	case OPER_REG16:
@@ -647,7 +648,7 @@ std::string i486DX::Operand::Disassemble(void) const
 	return "(UndefinedOperandType?)";
 }
 
-std::string i486DX::Operand::DisassembleAsAddr(void) const
+std::string i486DX::Operand::DisassembleAsAddr(uint32_t cs,uint32_t eip,const i486SymbolTable &symTable) const
 {
 	bool empty=true;
 
@@ -690,6 +691,7 @@ std::string i486DX::Operand::DisassembleAsAddr(void) const
 			break;
 		}
 		disasm.push_back('H');
+		disasm+=symTable.FormatImmLabel(cs,eip,offset);
 	}
 	else if(0!=offset)
 	{
@@ -710,12 +712,13 @@ std::string i486DX::Operand::DisassembleAsAddr(void) const
 			break;
 		}
 		disasm.push_back('H');
+		disasm+=symTable.FormatImmLabel(cs,eip,offset);
 	}
 
 	disasm.push_back(']');
 	return disasm;
 }
-std::string i486DX::Operand::DisassembleAsFarAddr(void) const
+std::string i486DX::Operand::DisassembleAsFarAddr(uint32_t cs,uint32_t eip,const i486SymbolTable &symTable) const
 {
 	// It doesn't add [] because may be used by JMP.
 	std::string disasm;
@@ -725,12 +728,14 @@ std::string i486DX::Operand::DisassembleAsFarAddr(void) const
 		disasm=cpputil::Ustox(seg);
 		disasm.push_back(':');
 		disasm+=cpputil::Ustox(offset);
+		disasm+=symTable.FormatImmLabel(cs,eip,offset);
 		break;
 	case 32:
 	default:
 		disasm=cpputil::Ustox(seg);
 		disasm.push_back(':');
 		disasm+=cpputil::Uitox(offset);
+		disasm+=symTable.FormatImmLabel(cs,eip,offset);
 		break;
 	}
 	return disasm;
