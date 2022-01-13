@@ -191,7 +191,6 @@ void TownsKeyboard::PushFifo(unsigned char code1,unsigned char code2)
 				townsPtr->Daikoukai_Right();
 				townsPtr->eventLog.BeginPlayback();
 				break;
-			case TOWNS_JISKEY_RETURN:
 			case TOWNS_JISKEY_SPACE:
 				townsPtr->eventLog.CleanUp();
 				townsPtr->Daikoukai_CourseSet();
@@ -244,39 +243,126 @@ void TownsKeyboard::PushFifo(unsigned char code1,unsigned char code2)
 				townsPtr->eventLog.BeginPlayback();
 				break;
 
-// Numpad +  +100
-// Numpad -  -100
-// Numpad *  +1000
-// Numpad /  -1000
-// PgUp      +10
-// PgDown    -10
-// Up        +1
-// Down      -1
-// Numpad .  AC
-// Numpad Enter  Enter on the keypad
+			case TOWNS_JISKEY_NUM_0:
+			case TOWNS_JISKEY_0:
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Daikoukai_Dentaku_0();
+				townsPtr->eventLog.BeginPlayback();
+				break;
+			case TOWNS_JISKEY_NUM_1:
+			case TOWNS_JISKEY_1:
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Daikoukai_Dentaku_1();
+				townsPtr->eventLog.BeginPlayback();
+				break;
+			case TOWNS_JISKEY_NUM_2:
+			case TOWNS_JISKEY_2:
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Daikoukai_Dentaku_2();
+				townsPtr->eventLog.BeginPlayback();
+				break;
+			case TOWNS_JISKEY_NUM_3:
+			case TOWNS_JISKEY_3:
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Daikoukai_Dentaku_3();
+				townsPtr->eventLog.BeginPlayback();
+				break;
+			case TOWNS_JISKEY_NUM_4:
+			case TOWNS_JISKEY_4:
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Daikoukai_Dentaku_4();
+				townsPtr->eventLog.BeginPlayback();
+				break;
+			case TOWNS_JISKEY_NUM_5:
+			case TOWNS_JISKEY_5:
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Daikoukai_Dentaku_5();
+				townsPtr->eventLog.BeginPlayback();
+				break;
+			case TOWNS_JISKEY_NUM_6:
+			case TOWNS_JISKEY_6:
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Daikoukai_Dentaku_6();
+				townsPtr->eventLog.BeginPlayback();
+				break;
+			case TOWNS_JISKEY_NUM_7:
+			case TOWNS_JISKEY_7:
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Daikoukai_Dentaku_7();
+				townsPtr->eventLog.BeginPlayback();
+				break;
+			case TOWNS_JISKEY_NUM_8:
+			case TOWNS_JISKEY_8:
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Daikoukai_Dentaku_8();
+				townsPtr->eventLog.BeginPlayback();
+				break;
+			case TOWNS_JISKEY_NUM_9:
+			case TOWNS_JISKEY_9:
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Daikoukai_Dentaku_9();
+				townsPtr->eventLog.BeginPlayback();
+				break;
 
-				//townsPtr->Daikoukai_Dentaku_Plus1000();
-				//townsPtr->Daikoukai_Dentaku_Plus100();
-				//townsPtr->Daikoukai_Dentaku_Plus10();
-				//townsPtr->Daikoukai_Dentaku_Plus1();
-				//townsPtr->Daikoukai_Dentaku_Minus1000();
-				//townsPtr->Daikoukai_Dentaku_Minus100();
-				//townsPtr->Daikoukai_Dentaku_Minus10();
-				//townsPtr->Daikoukai_Dentaku_Minus1();
-				//townsPtr->Daikoukai_Dentaku_0();
-				//townsPtr->Daikoukai_Dentaku_1();
-				//townsPtr->Daikoukai_Dentaku_2();
-				//townsPtr->Daikoukai_Dentaku_3();
-				//townsPtr->Daikoukai_Dentaku_4();
-				//townsPtr->Daikoukai_Dentaku_5();
-				//townsPtr->Daikoukai_Dentaku_6();
-				//townsPtr->Daikoukai_Dentaku_7();
-				//townsPtr->Daikoukai_Dentaku_8();
-				//townsPtr->Daikoukai_Dentaku_9();
-				//townsPtr->Daikoukai_Dentaku_Max();
-				//townsPtr->Daikoukai_Dentaku_Min();
-				//townsPtr->Daikoukai_Dentaku_AC();
-				//townsPtr->Daikoukai_Dentaku_RET();
+			case TOWNS_JISKEY_NUM_RETURN:
+			case TOWNS_JISKEY_RETURN:
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Daikoukai_Dentaku_RET();
+				townsPtr->eventLog.BeginPlayback();
+				break;
+
+			case TOWNS_JISKEY_NUM_DOT:
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Daikoukai_Dentaku_AC();
+				townsPtr->eventLog.BeginPlayback();
+				break;
+
+			case TOWNS_JISKEY_NUM_PLUS:
+			case TOWNS_JISKEY_W:
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Daikoukai_Dentaku_Plus100();
+				townsPtr->eventLog.BeginPlayback();
+				break;
+			case TOWNS_JISKEY_NUM_MINUS:
+			case TOWNS_JISKEY_S:
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Daikoukai_Dentaku_Minus100();
+				townsPtr->eventLog.BeginPlayback();
+				break;
+			case TOWNS_JISKEY_NUM_STAR:
+			case TOWNS_JISKEY_Q:
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Daikoukai_Dentaku_Plus1000();
+				townsPtr->eventLog.BeginPlayback();
+				break;
+			case TOWNS_JISKEY_NUM_SLASH:
+			case TOWNS_JISKEY_A:
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Daikoukai_Dentaku_Minus1000();
+				townsPtr->eventLog.BeginPlayback();
+				break;
+			case TOWNS_JISKEY_UP:
+			case TOWNS_JISKEY_E:
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Daikoukai_Dentaku_Plus10();
+				townsPtr->eventLog.BeginPlayback();
+				break;
+			case TOWNS_JISKEY_DOWN:
+			case TOWNS_JISKEY_D:
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Daikoukai_Dentaku_Minus10();
+				townsPtr->eventLog.BeginPlayback();
+				break;
+			case TOWNS_JISKEY_R:
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Daikoukai_Dentaku_Plus1();
+				townsPtr->eventLog.BeginPlayback();
+				break;
+			case TOWNS_JISKEY_F:
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Daikoukai_Dentaku_Minus1();
+				townsPtr->eventLog.BeginPlayback();
+				break;
 			}
 		}
 	}

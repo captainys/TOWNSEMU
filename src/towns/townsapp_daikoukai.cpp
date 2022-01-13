@@ -11,15 +11,17 @@
 // ESC or Break  Right-Click (Can navigate without mouse click!)
 // 0 to 9  (when keypad is open)  number
 // Numpad +  +100
-// Numpad -  -100
+// Numpad -  +10
 // Numpad *  +1000
-// Numpad /  -1000
-// PgUp      +10
-// PgDown    -10
+// Numpad /  +1
 // Up        +1
 // Down      -1
 // Numpad .  AC
 // Numpad Enter  Enter on the keypad
+// Q/A +-1000
+// W/S +-100
+// E/D +-10
+// R/F +-1
 
 
 static void PushBack_MouseClick(TownsEventLog &eventLog,int x,int y)
@@ -182,6 +184,23 @@ void FMTowns::Daikoukai_ApplyPatchesCacheAddr(void)
 		std::cout << "Cached Dentaku Dialog Location Addr:" << 
 		             cpputil::Itox(state.appSpecific_Daikoukai_DentakuDialogXAddr) << " " <<
 		             cpputil::Itox(state.appSpecific_Daikoukai_DentakuDialogYAddr) << std::endl;
+
+		std::cout << "Enabled Shortcut Keys:" << std::endl;
+		std::cout << "Y/N keys for Yes/No (When Yes/No dialog is open.)" << std::endl;
+		std::cout << "Numpad Keys for entering number (When Numpad Dialog is open.)" << std::endl;
+		std::cout << "Numpad* or Q for add 1000" << std::endl;
+		std::cout << "Numpad/ or A for subtract 1000" << std::endl;
+		std::cout << "Numpad+ or W for add 100" << std::endl;
+		std::cout << "Numpad- or S for subtract 100" << std::endl;
+		std::cout << "Up or E for add 10" << std::endl;
+		std::cout << "Down or D for subtract 10" << std::endl;
+		std::cout << "R for add 1" << std::endl;
+		std::cout << "F for subtract 1" << std::endl;
+		std::cout << "Enter for decide number (When Numpad Dialog is open.)" << std::endl;
+		std::cout << "ESC or Break for Right Click (Cancel or Open Navigation Dialog over the ocean)" << std::endl;
+		std::cout << "F1 to F8 for selecting Navigation Dialog button." << std::endl;
+		std::cout << "<- -> change heading (when heading dialog is open)" << std::endl;
+		std::cout << "Space for deciding heading (when heading dialog is open)" << std::endl;
 	}
 }
 void FMTowns::Daikoukai_RightClick(void)
