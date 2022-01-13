@@ -677,8 +677,8 @@ void ProfileDialog::Make(void)
 				"set a valid pointer before using it next time.  As a result, no \n"
 				"pirates appears after a victory, or in the worst case the program\n"
 				"crashes.  This patch prevents the pointer-destruction.\n"
-				"Also, this game takes timing with busy wait.  Recommended frequency\n"
-				"setting is 8MHz.\n"
+				"This patch also replaces busy-wait with timer (I/O 6Ch).\n"
+				"This patch also enables keyboard shortcuts.\n"
 			);
 			break;
 		}
