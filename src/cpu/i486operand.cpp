@@ -691,7 +691,7 @@ std::string i486DX::Operand::DisassembleAsAddr(uint32_t cs,uint32_t eip,const i4
 			break;
 		}
 		disasm.push_back('H');
-		disasm+=symTable.FormatImmLabel(cs,eip,offset);
+		disasm+=symTable.FormatOffsetLabel(cs,eip,offset);
 	}
 	else if(0!=offset)
 	{
@@ -712,7 +712,7 @@ std::string i486DX::Operand::DisassembleAsAddr(uint32_t cs,uint32_t eip,const i4
 			break;
 		}
 		disasm.push_back('H');
-		disasm+=symTable.FormatImmLabel(cs,eip,offset);
+		disasm+=symTable.FormatOffsetLabel(cs,eip,offset);
 	}
 
 	disasm.push_back(']');
@@ -728,14 +728,14 @@ std::string i486DX::Operand::DisassembleAsFarAddr(uint32_t cs,uint32_t eip,const
 		disasm=cpputil::Ustox(seg);
 		disasm.push_back(':');
 		disasm+=cpputil::Ustox(offset);
-		disasm+=symTable.FormatImmLabel(cs,eip,offset);
+		disasm+=symTable.FormatOffsetLabel(cs,eip,offset);
 		break;
 	case 32:
 	default:
 		disasm=cpputil::Ustox(seg);
 		disasm.push_back(':');
 		disasm+=cpputil::Uitox(offset);
-		disasm+=symTable.FormatImmLabel(cs,eip,offset);
+		disasm+=symTable.FormatOffsetLabel(cs,eip,offset);
 		break;
 	}
 	return disasm;

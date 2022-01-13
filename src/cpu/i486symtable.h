@@ -41,9 +41,10 @@ public:
 		SYM_TABLE_FWORD32,
 	};
 
-	bool temporary;  // If true, it will not be saved to file.
-	bool immIsIOAddr; // If true, disassembler should take Imm operand as an IO-port address.
-	bool immIsSymbol; // Take imm as a symbol.
+	bool temporary=false;  // If true, it will not be saved to file.
+	bool immIsIOAddr=false; // If true, disassembler should take Imm operand as an IO-port address.
+	bool immIsSymbol=false; // Take imm as a symbol.
+	bool offsetIsSymbol=false; // Take offset as a symbol.
 	unsigned int symType;
 	std::string return_type;
 	std::string label;
@@ -123,6 +124,7 @@ public:
 	i486Symbol *SetComment(i486DX::FarPointer ptr,const std::string &inLineComment);
 	i486Symbol *SetImportedLabel(i486DX::FarPointer ptr,const std::string &label);
 	i486Symbol *SetImmIsSymbol(i486DX::FarPointer ptr);
+	i486Symbol *SetOffsetIsSymbol(i486DX::FarPointer ptr);
 
 
 	/*! Disassembler should take IMM operand at the given address as an IO-port address.
@@ -173,6 +175,10 @@ public:
 	/*!
 	*/
 	std::string FormatImmLabel(uint32_t cs,uint32_t eip,uint32_t imm) const;
+
+	/*!
+	*/
+	std::string FormatOffsetLabel(uint32_t cs,uint32_t eip,uint32_t imm) const;
 };
 
 

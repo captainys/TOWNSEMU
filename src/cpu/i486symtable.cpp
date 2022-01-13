@@ -28,6 +28,8 @@ void i486Symbol::CleanUp(void)
 {
 	temporary=false;
 	immIsIOAddr=false;
+	immIsSymbol=false;
+	offsetIsSymbol=false;
 	symType=SYM_ANY;
 	return_type="";
 	label="";
@@ -102,6 +104,7 @@ bool i486SymbolTable::Load(std::istream &ifp)
 	// % Raw Data Byte Count
 	// M 0/1 immIsIOAddr flag
 	// B 0/1 immIsSymbol flag
+	// O 0/1 offsetIsSymbol flag
 	// X label Imported from .EXP symbol table.
 	// /end
 
@@ -172,6 +175,10 @@ bool i486SymbolTable::Load(std::istream &ifp)
 				case 'B':
 					curSymbol.immIsSymbol=(0!=cpputil::Atoi(str.c_str()+2));
 					break;
+				case 'o':
+				case 'O':
+					curSymbol.offsetIsSymbol=(0!=cpputil::Atoi(str.c_str()+2));
+					break;
 				case 'x':
 				case 'X':
 					curSymbol.imported=(str.c_str()+2);
@@ -211,6 +218,7 @@ bool i486SymbolTable::Save(std::ostream &ofp) const
 			ofp << "% " << sym.rawDataBytes <<  std::endl;
 			ofp << "M " << (sym.immIsIOAddr ? "1" : "0") << std::endl;
 			ofp << "B " << (sym.immIsSymbol ? "1" : "0") << std::endl;
+			ofp << "O " << (sym.offsetIsSymbol ? "1" : "0") << std::endl;
 			ofp << "X " << sym.imported  << std::endl;
 			for(auto &i : sym.info)
 			{
@@ -304,6 +312,12 @@ i486Symbol *i486SymbolTable::SetImmIsSymbol(i486DX::FarPointer ptr)
 {
 	auto &symbol=symTable[ptr];
 	symbol.immIsSymbol=true;
+	return &symbol;
+}
+i486Symbol *i486SymbolTable::SetOffsetIsSymbol(i486DX::FarPointer ptr)
+{
+	auto &symbol=symTable[ptr];
+	symbol.offsetIsSymbol=true;
 	return &symbol;
 }
 bool i486SymbolTable::Delete(i486DX::FarPointer ptr)
@@ -797,3 +811,24 @@ std::string i486SymbolTable::FormatImmLabel(uint32_t cs,uint32_t eip,uint32_t im
 	return str;
 }
 
+std::string i486SymbolTable::FormatOffsetLabel(uint32_t cs,uint32_t eip,uint32_t offset) const
+{
+	std::string str;
+	auto found=Find(cs,eip);
+	if(nullptr!=found && true==found->offsetIsSymbol)
+	{
+		auto foundLabel=FindFromOffset(offset);
+		if(nullptr!=foundLabel)
+		{
+			if(""!=foundLabel->label)
+			{
+				str="("+foundLabel->label+")";
+			}
+			else if(""!=foundLabel->imported)
+			{
+				str="("+foundLabel->imported+")";
+			}
+		}
+	}
+	return str;
+}

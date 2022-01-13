@@ -99,7 +99,9 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["IMMISIO"]=CMD_IMM_IS_IOPORT;
 	primaryCmdMap["IMMISSYM"]=CMD_IMM_IS_LABEL;
 	primaryCmdMap["IMMISLAB"]=CMD_IMM_IS_LABEL;
-	primaryCmdMap["OFFSETISLAB"]=CMD_IMM_IS_LABEL;
+	primaryCmdMap["OFFSETISLAB"]=CMD_OFFSET_IS_LABEL;
+	primaryCmdMap["OFSISLAB"]=CMD_OFFSET_IS_LABEL;
+	primaryCmdMap["OFFISLAB"]=CMD_OFFSET_IS_LABEL;
 	primaryCmdMap["SAVEEVT"]=CMD_SAVE_EVENTLOG;
 	primaryCmdMap["LOADEVT"]=CMD_LOAD_EVENTLOG;
 	primaryCmdMap["PLAYEVT"]=CMD_PLAY_EVENTLOG;
@@ -414,11 +416,14 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "DEFRAW SEG:OFFSET label numBytes" << std::endl;
 	std::cout << "  Define raw data bytes.  Disassembler will take this address as raw data." << std::endl;
 	std::cout << "IMMISIO CS:EIP" << std::endl;
-	std::cout << "  Take Imm operand of the address as IO-port address." << std::endl;
+	std::cout << "  Take Imm operand of the address as IO-port address in disassembly." << std::endl;
 	std::cout << "IMMISSYM CS:EIP" << std::endl;
 	std::cout << "IMMISLAB CS:EIP" << std::endl;
+	std::cout << "  Take Imm operand as label in disassembly." << std::endl;
 	std::cout << "OFFSETISLAB CS:EIP" << std::endl;
-	std::cout << "  Take Imm operand or address offset as label." << std::endl;
+	std::cout << "OFFISLAB CS:EIP" << std::endl;
+	std::cout << "OFSISLAB CS:EIP" << std::endl;
+	std::cout << "  Take address offset as label in disassembly." << std::endl;
 
 	std::cout << "DELSYM SEG:OFFSET label" << std::endl;
 	std::cout << "  Delete a symbol.  A symbol and comment associated with the address will be deleted." << std::endl;
@@ -1115,6 +1120,7 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 	case CMD_DEF_RAW_BYTES:
 	case CMD_IMM_IS_IOPORT:
 	case CMD_IMM_IS_LABEL:
+	case CMD_OFFSET_IS_LABEL:
 		Execute_AddSymbol(towns,cmd);
 		break;
 	case CMD_DEL_SYMBOL:
@@ -3209,7 +3215,8 @@ void TownsCommandInterpreter::Execute_SaveEventLog(FMTowns &towns,const std::str
 
 void TownsCommandInterpreter::Execute_AddSymbol(FMTowns &towns,Command &cmd)
 {
-	if(3<=cmd.argv.size() || (2<=cmd.argv.size() && (CMD_IMM_IS_IOPORT==cmd.primaryCmd || CMD_IMM_IS_LABEL==cmd.primaryCmd)))
+	if(3<=cmd.argv.size() || 
+	  (2<=cmd.argv.size() && (CMD_IMM_IS_IOPORT==cmd.primaryCmd || CMD_OFFSET_IS_LABEL==cmd.primaryCmd || CMD_IMM_IS_LABEL==cmd.primaryCmd)))
 	{
 		auto &symTable=towns.debugger.GetSymTable();
 
@@ -3281,6 +3288,13 @@ void TownsCommandInterpreter::Execute_AddSymbol(FMTowns &towns,Command &cmd)
 				auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.cpu);
 				farPtr=towns.cpu.TranslateFarPointer(farPtr);
 				symTable.SetImmIsSymbol(farPtr);
+			}
+			break;
+		case CMD_OFFSET_IS_LABEL:
+			{
+				auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.cpu);
+				farPtr=towns.cpu.TranslateFarPointer(farPtr);
+				symTable.SetOffsetIsSymbol(farPtr);
 			}
 			break;
 		}
