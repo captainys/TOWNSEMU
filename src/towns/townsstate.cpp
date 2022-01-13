@@ -127,7 +127,8 @@ bool FMTowns::LoadState(std::string fName,class Outside_World &outsideWorld)
 
 /* virtual */ uint32_t FMTowns::SerializeVersion(void) const
 {
-	return 0;
+	// Version 1 added app-specific settings for Daikoukaijidai
+	return 1;
 }
 
 /* virtual */ void FMTowns::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
@@ -185,6 +186,12 @@ bool FMTowns::LoadState(std::string fName,class Outside_World &outsideWorld)
 	PushUint32(data,state.appSpecific_WC_setSpeedPtr);
 	PushUint32(data,state.appSpecific_WC_maxSpeedPtr);
 	PushBool(data,state.appSpecific_HoldMouseIntegration);
+
+	// Version 1 and later
+	PushUint32(data,state.appSpecific_Daikoukai_YNDialogXAddr);
+	PushUint32(data,state.appSpecific_Daikoukai_YNDialogYAddr);
+	PushUint32(data,state.appSpecific_Daikoukai_DentakuDialogXAddr);
+	PushUint32(data,state.appSpecific_Daikoukai_DentakuDialogYAddr);
 }
 /* virtual */ bool FMTowns::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
 {
@@ -251,6 +258,21 @@ bool FMTowns::LoadState(std::string fName,class Outside_World &outsideWorld)
 	state.appSpecific_WC_setSpeedPtr=ReadUint32(data);
 	state.appSpecific_WC_maxSpeedPtr=ReadUint32(data);
 	state.appSpecific_HoldMouseIntegration=ReadBool(data);
+
+	if(1<=version)
+	{
+		state.appSpecific_Daikoukai_YNDialogXAddr=ReadUint32(data);
+		state.appSpecific_Daikoukai_YNDialogYAddr=ReadUint32(data);
+		state.appSpecific_Daikoukai_DentakuDialogXAddr=ReadUint32(data);
+		state.appSpecific_Daikoukai_DentakuDialogYAddr=ReadUint32(data);
+	}
+	else
+	{
+		state.appSpecific_Daikoukai_YNDialogXAddr=0;
+		state.appSpecific_Daikoukai_YNDialogYAddr=0;
+		state.appSpecific_Daikoukai_DentakuDialogXAddr=0;
+		state.appSpecific_Daikoukai_DentakuDialogYAddr=0;
+	}
 
 	vmAbort=false;
 

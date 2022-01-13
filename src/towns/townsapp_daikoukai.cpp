@@ -1,0 +1,183 @@
+// Daikoukaijidai for FM TOWNS
+// Keyboard Shortcuts
+#include "towns.h"
+
+
+
+static void PushBack_MouseClick(TownsEventLog &eventLog,int x,int y)
+{
+	TownsEventLog::Event e;
+	e.eventType=TownsEventLog::EVT_LBUTTONDOWN;
+	e.t=std::chrono::milliseconds(75);
+	e.mos.Set(x,y);
+	eventLog.AddEvent(e);
+
+	e.eventType=TownsEventLog::EVT_LBUTTONUP;
+	e.t=std::chrono::milliseconds(75);
+	e.mos.Set(x,y);
+	eventLog.AddEvent(e);
+}
+
+void FMTowns::Daikoukai_ApplyPatchesCacheAddr(void)
+{
+	if(true!=cpu.IsInRealMode())
+	{
+		if(
+			0xC7==cpu.DebugFetchByte(32,cpu.state.CS(),0x488E2,mem) &&
+			0x47==cpu.DebugFetchByte(32,cpu.state.CS(),0x488E3,mem) &&
+			0x07==cpu.DebugFetchByte(32,cpu.state.CS(),0x488E4,mem) &&
+			0x00==cpu.DebugFetchByte(32,cpu.state.CS(),0x488E5,mem) &&
+			0x00==cpu.DebugFetchByte(32,cpu.state.CS(),0x488E6,mem) &&
+			0x00==cpu.DebugFetchByte(32,cpu.state.CS(),0x488E7,mem) &&
+			0x00==cpu.DebugFetchByte(32,cpu.state.CS(),0x488E8,mem))
+		{
+			cpu.DebugStoreByte(mem,32,cpu.state.CS(),0x488E2,0x8B);
+			cpu.DebugStoreByte(mem,32,cpu.state.CS(),0x488E3,0x7F);
+			cpu.DebugStoreByte(mem,32,cpu.state.CS(),0x488E4,0x07);
+			cpu.DebugStoreByte(mem,32,cpu.state.CS(),0x488E5,0xC6);
+			cpu.DebugStoreByte(mem,32,cpu.state.CS(),0x488E6,0x07);
+			cpu.DebugStoreByte(mem,32,cpu.state.CS(),0x488E7,0xFF);
+			cpu.DebugStoreByte(mem,32,cpu.state.CS(),0x488E8,0x90);
+			std::cout << "Applied Daikoukaijidai Pointer-Destruction Prevention Patch." << std::endl;
+		}
+
+		if(
+			0x80==cpu.DebugFetchByte(32,cpu.state.CS(),0x29777,mem) &&
+			0x3D==cpu.DebugFetchByte(32,cpu.state.CS(),0x29778,mem) &&
+			0xAD==cpu.DebugFetchByte(32,cpu.state.CS(),0x29779,mem) &&
+			0x25==cpu.DebugFetchByte(32,cpu.state.CS(),0x2977A,mem) &&
+			0x00==cpu.DebugFetchByte(32,cpu.state.CS(),0x2977B,mem) &&
+			0x00==cpu.DebugFetchByte(32,cpu.state.CS(),0x2977C,mem) &&
+			0x00==cpu.DebugFetchByte(32,cpu.state.CS(),0x2977D,mem) &&
+			0x75==cpu.DebugFetchByte(32,cpu.state.CS(),0x2977E,mem) &&
+			0x06==cpu.DebugFetchByte(32,cpu.state.CS(),0x2977F,mem) &&
+			0x43==cpu.DebugFetchByte(32,cpu.state.CS(),0x29780,mem) &&
+			0xE9==cpu.DebugFetchByte(32,cpu.state.CS(),0x29781,mem) &&
+			0xA7==cpu.DebugFetchByte(32,cpu.state.CS(),0x29782,mem) &&
+			0xFE==cpu.DebugFetchByte(32,cpu.state.CS(),0x29783,mem) &&
+			0xFF==cpu.DebugFetchByte(32,cpu.state.CS(),0x29784,mem) &&
+			0xFF==cpu.DebugFetchByte(32,cpu.state.CS(),0x29785,mem))
+		{
+			int patch[]=
+			{
+				0x0029630,0x0F,0x83,0x46,0x01,0x00,0x00,-1,
+				0x002964B,0x0F,0x85,0x1D,0x01,0x00,0x00,-1,
+				0x002971C,0x74,0x50,-1,
+				0x0029746,0xEB,0x34,-1,
+				0x0029760,0x75,0x0C,-1,
+				0x0029755,0xEB,0x16,-1,
+				0x002976B,0xEB,0x01,-1,
+
+				0x002976D,0x58,-1,
+				0x002976E,0x43,-1,
+				0x002976F,0x80,0x3D,0xAD,0x25,0x00,0x00,0x00,-1,
+				0x0029776,0x0F,0x84,0xB1,0xFE,0xFF,0xFF,-1,
+				0x002977C,0xFE,0x05,0xB1,0x25,0x00,0x00,-1,
+				0x0029782,0x6A,0x08,-1,   // PUSH wait_count
+				0x0029784,0xE8,0x5B,0xC5,0xFF,0xFF,-1,
+				0x0029789,0x58,-1,
+				0x002978A,0x80,0x3D,0xAD,0x25,0x00,0x00,0x00,-1,
+				0x0029791,0x0F,0x84,0x28,0xFE,0xFF,0xFF,-1,
+
+				0x0029797,0x90,-1,
+				0x0029798,0x90,-1,
+				0x0029799,0x90,-1,-1,
+			};
+			int i=0;
+			while(patch[i]!=-1)
+			{
+				auto addr=patch[i++];
+				while(patch[i]!=-1)
+				{
+					cpu.DebugStoreByte(mem,32,cpu.state.CS(),addr++,patch[i++]);
+				}
+				++i;
+			}
+			std::cout << "Applied Daikoukaijidai Consistent-Wait Patch." << std::endl;
+		}
+		if(
+			0x8B==cpu.DebugFetchByte(32,cpu.state.CS(),0x25CE4,mem) &&
+			0x54==cpu.DebugFetchByte(32,cpu.state.CS(),0x25CE5,mem) &&
+			0x24==cpu.DebugFetchByte(32,cpu.state.CS(),0x25CE6,mem) &&
+			0x04==cpu.DebugFetchByte(32,cpu.state.CS(),0x25CE7,mem) &&
+			0x2B==cpu.DebugFetchByte(32,cpu.state.CS(),0x25CE8,mem) &&
+			0xC9==cpu.DebugFetchByte(32,cpu.state.CS(),0x25CE9,mem) &&
+			0x3B==cpu.DebugFetchByte(32,cpu.state.CS(),0x25CEA,mem) &&
+			0xD1==cpu.DebugFetchByte(32,cpu.state.CS(),0x25CEB,mem) &&
+			0x76==cpu.DebugFetchByte(32,cpu.state.CS(),0x25CEC,mem) &&
+			0x10==cpu.DebugFetchByte(32,cpu.state.CS(),0x25CED,mem) &&
+			0x2B==cpu.DebugFetchByte(32,cpu.state.CS(),0x25CEE,mem) &&
+			0xC0==cpu.DebugFetchByte(32,cpu.state.CS(),0x25CEF,mem))
+		{
+			unsigned char patch[]=
+			{
+				0x8B,0x44,0x24,0x04,
+				0x23,0xC0,
+				0x74,0x0C,
+
+				0xB9,0x58,0x1B,0x00,0x00, // MOV ECX,count   2710h->10000  1b58h->7000
+
+				0xE6,0x6C,
+				0xE2,0xFC,
+
+				0x48,
+				0x75,0xF4,
+
+				0x66,0xB8,0x58,0x1B,
+
+				0xC3,
+			};
+			uint32_t addr=0x00025CE4;
+			for(auto b : patch)
+			{
+				cpu.DebugStoreByte(mem,32,cpu.state.CS(),addr++,b);
+			}
+			std::cout << "Applied Daikoukaijidai No Busy-Wait Patch." << std::endl;
+		}
+		if(
+			0xE8==cpu.DebugFetchByte(32,cpu.state.CS(),0x2B244,mem) &&
+			0xB7==cpu.DebugFetchByte(32,cpu.state.CS(),0x2B245,mem) &&
+			0xAA==cpu.DebugFetchByte(32,cpu.state.CS(),0x2B246,mem) &&
+			0xFF==cpu.DebugFetchByte(32,cpu.state.CS(),0x2B247,mem) &&
+			0xFF==cpu.DebugFetchByte(32,cpu.state.CS(),0x2B248,mem))
+		{
+			cpu.DebugStoreByte(mem,32,cpu.state.CS(),0x2B244,0x90);
+			cpu.DebugStoreByte(mem,32,cpu.state.CS(),0x2B245,0x90);
+			cpu.DebugStoreByte(mem,32,cpu.state.CS(),0x2B246,0x90);
+			cpu.DebugStoreByte(mem,32,cpu.state.CS(),0x2B247,0x90);
+			cpu.DebugStoreByte(mem,32,cpu.state.CS(),0x2B248,0x90);
+			std::cout << "Applied Daikoukaijidai load/unload button repeat no-delay patch." << std::endl;
+		}
+
+		auto linearBase=cpu.state.DS().baseLinearAddr;
+		unsigned int exceptionType,exceptionCode; // To discard
+		state.appSpecific_Daikoukai_YNDialogXAddr=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,linearBase+0x1F098,mem);
+		state.appSpecific_Daikoukai_YNDialogYAddr=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,linearBase+0x1F09C,mem);
+		state.appSpecific_Daikoukai_DentakuDialogXAddr=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,linearBase+0x1F0AC,mem);
+		state.appSpecific_Daikoukai_DentakuDialogYAddr=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,linearBase+0x1F0B0,mem);
+
+		std::cout << "Cached YN Dialog Location Addr:" << 
+		             cpputil::Itox(state.appSpecific_Daikoukai_YNDialogXAddr) << " " <<
+		             cpputil::Itox(state.appSpecific_Daikoukai_YNDialogYAddr) << std::endl;
+		std::cout << "Cached Dentaku Dialog Location Addr:" << 
+		             cpputil::Itox(state.appSpecific_Daikoukai_DentakuDialogXAddr) << " " <<
+		             cpputil::Itox(state.appSpecific_Daikoukai_DentakuDialogYAddr) << std::endl;
+	}
+}
+void FMTowns::Daikoukai_YKey(void)
+{
+}
+void FMTowns::Daikoukai_NKey(void)
+{
+}
+void FMTowns::Daikoukai_Left(void)
+{
+}
+void FMTowns::Daikoukai_Right(void)
+{
+}
+void FMTowns::Daikoukai_CourseSet(void)
+{
+}
+
+

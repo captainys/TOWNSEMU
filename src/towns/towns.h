@@ -195,11 +195,16 @@ public:
 		uint32_t appSpecific_StickPosYPtr=0;
 		uint32_t appSpecific_ThrottlePtr=0;
 		uint32_t appSpecific_RudderPtr=0;
-		unsigned int appSpecific_WC2_EventQueueBaseAddr=0;  // DS:03CCH
+		unsigned int appSpecific_WC2_EventQueueBaseAddr=0;  // DS:03CCH        // Needs to be state-saved
 		uint32_t appSpecific_WC_setSpeedPtr=0;
 		uint32_t appSpecific_WC_maxSpeedPtr=0;
 		bool appSpecific_HoldMouseIntegration=false;
 		uint32_t appSpecific_Dunmas_SpellPower=0; // Won't be saved in state.
+
+		uint32_t appSpecific_Daikoukai_YNDialogXAddr=0;          // Needs to be state-saved
+		uint32_t appSpecific_Daikoukai_YNDialogYAddr=0;          // Needs to be state-saved
+		uint32_t appSpecific_Daikoukai_DentakuDialogXAddr=0;          // Needs to be state-saved
+		uint32_t appSpecific_Daikoukai_DentakuDialogYAddr=0;          // Needs to be state-saved
 
 		void PowerOn(void);
 		void Reset(void);
@@ -682,6 +687,13 @@ public:
 	void Dunmas_Spell_FireDefense(int Yoffset);
 	void Dunmas_FrontRow_Attack(int level,bool continuous,int Yoffset);
 	void Dunmas_All_Attack(int level,bool continuous,int Yoffset);
+
+	void Daikoukai_ApplyPatchesCacheAddr(void);
+	void Daikoukai_YKey(void);
+	void Daikoukai_NKey(void);
+	void Daikoukai_Left(void);
+	void Daikoukai_Right(void);
+	void Daikoukai_CourseSet(void);
 };
 
 

@@ -165,6 +165,9 @@ void TownsKeyboard::PushFifo(unsigned char code1,unsigned char code2)
 			}
 		}
 	}
+	else if(TOWNS_APPSPECIFIC_DAIKOUKAIJIDAI==townsPtr->state.appSpecificSetting)
+	{
+	}
 
 	if(TownsEventLog::MODE_RECORDING==townsPtr->eventLog.mode)
 	{
