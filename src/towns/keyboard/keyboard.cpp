@@ -167,6 +167,84 @@ void TownsKeyboard::PushFifo(unsigned char code1,unsigned char code2)
 	}
 	else if(TOWNS_APPSPECIFIC_DAIKOUKAIJIDAI==townsPtr->state.appSpecificSetting)
 	{
+		if(0==(TOWNS_KEYFLAG_RELEASE&code1))
+		{
+			switch(code2)
+			{
+			case TOWNS_JISKEY_Y:
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Daikoukai_YKey();
+				townsPtr->eventLog.BeginPlayback();
+				break;
+			case TOWNS_JISKEY_N:
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Daikoukai_NKey();
+				townsPtr->eventLog.BeginPlayback();
+				break;
+			case TOWNS_JISKEY_LEFT:
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Daikoukai_Left();
+				townsPtr->eventLog.BeginPlayback();
+				break;
+			case TOWNS_JISKEY_RIGHT:
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Daikoukai_Right();
+				townsPtr->eventLog.BeginPlayback();
+				break;
+			case TOWNS_JISKEY_RETURN:
+			case TOWNS_JISKEY_SPACE:
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Daikoukai_CourseSet();
+				townsPtr->eventLog.BeginPlayback();
+				break;
+			case TOWNS_JISKEY_ESC:
+			case TOWNS_JISKEY_BREAK:
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Daikoukai_RightClick();
+				townsPtr->eventLog.BeginPlayback();
+				break;
+			case TOWNS_JISKEY_PF01:
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Daikoukai_F1();
+				townsPtr->eventLog.BeginPlayback();
+				break;
+			case TOWNS_JISKEY_PF02:
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Daikoukai_F2();
+				townsPtr->eventLog.BeginPlayback();
+				break;
+			case TOWNS_JISKEY_PF03:
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Daikoukai_F3();
+				townsPtr->eventLog.BeginPlayback();
+				break;
+			case TOWNS_JISKEY_PF04:
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Daikoukai_F4();
+				townsPtr->eventLog.BeginPlayback();
+				break;
+			case TOWNS_JISKEY_PF05:
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Daikoukai_F5();
+				townsPtr->eventLog.BeginPlayback();
+				break;
+			case TOWNS_JISKEY_PF06:
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Daikoukai_F6();
+				townsPtr->eventLog.BeginPlayback();
+				break;
+			case TOWNS_JISKEY_PF07:
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Daikoukai_F7();
+				townsPtr->eventLog.BeginPlayback();
+				break;
+			case TOWNS_JISKEY_PF08:
+				townsPtr->eventLog.CleanUp();
+				townsPtr->Daikoukai_F8();
+				townsPtr->eventLog.BeginPlayback();
+				break;
+			}
+		}
 	}
 
 	if(TownsEventLog::MODE_RECORDING==townsPtr->eventLog.mode)

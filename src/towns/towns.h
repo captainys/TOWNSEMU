@@ -689,11 +689,20 @@ public:
 	void Dunmas_All_Attack(int level,bool continuous,int Yoffset);
 
 	void Daikoukai_ApplyPatchesCacheAddr(void);
+	void Daikoukai_RightClick(void);
 	void Daikoukai_YKey(void);
 	void Daikoukai_NKey(void);
 	void Daikoukai_Left(void);
 	void Daikoukai_Right(void);
 	void Daikoukai_CourseSet(void);
+	void Daikoukai_F1(void);
+	void Daikoukai_F2(void);
+	void Daikoukai_F3(void);
+	void Daikoukai_F4(void);
+	void Daikoukai_F5(void);
+	void Daikoukai_F6(void);
+	void Daikoukai_F7(void);
+	void Daikoukai_F8(void);
 };
 
 

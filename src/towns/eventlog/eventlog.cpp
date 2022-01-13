@@ -569,7 +569,8 @@ void TownsEventLog::Playback(class FMTowns &towns)
 					towns.ControlMouseInVMCoord(playbackPtr->mos.x(),playbackPtr->mos.y(),towns.state.tbiosVersion);
 					int mx,my;
 					towns.GetMouseCoordinate(mx,my,towns.state.tbiosVersion);
-					if(mx==playbackPtr->mos.x() && my==playbackPtr->mos.y() && dt<=tPassed)
+					int tol=playbackPtr->mosTolerance;
+					if(std::abs(mx-playbackPtr->mos.x())<=tol && std::abs(my-playbackPtr->mos.y())<=tol && dt<=tPassed)
 					{
 						towns.SetMouseButtonState(true,false);
 						playbackPtr->tPlayed=now;
@@ -583,7 +584,8 @@ void TownsEventLog::Playback(class FMTowns &towns)
 					towns.ControlMouseInVMCoord(playbackPtr->mos.x(),playbackPtr->mos.y(),towns.state.tbiosVersion);
 					int mx,my;
 					towns.GetMouseCoordinate(mx,my,towns.state.tbiosVersion);
-					if(mx==playbackPtr->mos.x() && my==playbackPtr->mos.y() && dt<=tPassed)
+					int tol=playbackPtr->mosTolerance;
+					if(std::abs(mx-playbackPtr->mos.x())<=tol && std::abs(my-playbackPtr->mos.y())<=tol && dt<=tPassed)
 					{
 						towns.SetMouseButtonState(false,false);
 						playbackPtr->tPlayed=now;
@@ -597,7 +599,8 @@ void TownsEventLog::Playback(class FMTowns &towns)
 					towns.ControlMouseInVMCoord(playbackPtr->mos.x(),playbackPtr->mos.y(),towns.state.tbiosVersion);
 					int mx,my;
 					towns.GetMouseCoordinate(mx,my,towns.state.tbiosVersion);
-					if(mx==playbackPtr->mos.x() && my==playbackPtr->mos.y() && dt<=tPassed)
+					int tol=playbackPtr->mosTolerance;
+					if(std::abs(mx-playbackPtr->mos.x())<=tol && std::abs(my-playbackPtr->mos.y())<=tol && dt<=tPassed)
 					{
 						towns.SetMouseButtonState(false,true);
 						playbackPtr->tPlayed=now;
@@ -611,7 +614,8 @@ void TownsEventLog::Playback(class FMTowns &towns)
 					towns.ControlMouseInVMCoord(playbackPtr->mos.x(),playbackPtr->mos.y(),towns.state.tbiosVersion);
 					int mx,my;
 					towns.GetMouseCoordinate(mx,my,towns.state.tbiosVersion);
-					if(mx==playbackPtr->mos.x() && my==playbackPtr->mos.y() && dt<=tPassed)
+					int tol=playbackPtr->mosTolerance;
+					if(std::abs(mx-playbackPtr->mos.x())<=tol && std::abs(my-playbackPtr->mos.y())<=tol && dt<=tPassed)
 					{
 						towns.SetMouseButtonState(false,false);
 						playbackPtr->tPlayed=now;

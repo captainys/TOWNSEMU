@@ -3,6 +3,12 @@
 #include "towns.h"
 
 
+// Y for Yes (when dialog is open)
+// N for No (when dialog is open)
+// Left Right for course change
+// Space or Full-Key-side Enter for course set
+// F1 to F8 Click on cruise-menu button (when on the ocean).
+
 
 static void PushBack_MouseClick(TownsEventLog &eventLog,int x,int y)
 {
@@ -10,11 +16,13 @@ static void PushBack_MouseClick(TownsEventLog &eventLog,int x,int y)
 	e.eventType=TownsEventLog::EVT_LBUTTONDOWN;
 	e.t=std::chrono::milliseconds(75);
 	e.mos.Set(x,y);
+	e.mosTolerance=2;
 	eventLog.AddEvent(e);
 
 	e.eventType=TownsEventLog::EVT_LBUTTONUP;
 	e.t=std::chrono::milliseconds(75);
 	e.mos.Set(x,y);
+	e.mosTolerance=2;
 	eventLog.AddEvent(e);
 }
 
@@ -164,20 +172,85 @@ void FMTowns::Daikoukai_ApplyPatchesCacheAddr(void)
 		             cpputil::Itox(state.appSpecific_Daikoukai_DentakuDialogYAddr) << std::endl;
 	}
 }
+void FMTowns::Daikoukai_RightClick(void)
+{
+	TownsEventLog::Event e;
+	e.eventType=TownsEventLog::EVT_RBUTTONDOWN;
+	e.t=std::chrono::milliseconds(75);
+	e.mos.Set(320,240);
+	e.mosTolerance=640;
+	eventLog.AddEvent(e);
+
+	e.eventType=TownsEventLog::EVT_RBUTTONUP;
+	e.t=std::chrono::milliseconds(75);
+	e.mos.Set(320,240);
+	e.mosTolerance=480;
+	eventLog.AddEvent(e);
+}
 void FMTowns::Daikoukai_YKey(void)
 {
+	if(0!=state.appSpecific_Daikoukai_DentakuDialogXAddr &&
+	   0!=state.appSpecific_Daikoukai_DentakuDialogYAddr)
+	{
+		int x=mem.FetchDword(state.appSpecific_Daikoukai_YNDialogXAddr);
+		int y=mem.FetchDword(state.appSpecific_Daikoukai_YNDialogYAddr);
+		x&=0xFFFFFFF8;
+		PushBack_MouseClick(eventLog,x+20,y+24);
+	}
 }
 void FMTowns::Daikoukai_NKey(void)
 {
+	if(0!=state.appSpecific_Daikoukai_DentakuDialogXAddr &&
+	   0!=state.appSpecific_Daikoukai_DentakuDialogYAddr)
+	{
+		int x=mem.FetchDword(state.appSpecific_Daikoukai_YNDialogXAddr);
+		int y=mem.FetchDword(state.appSpecific_Daikoukai_YNDialogYAddr);
+		x&=0xFFFFFFF8;
+		PushBack_MouseClick(eventLog,x+50,y+24);
+	}
 }
 void FMTowns::Daikoukai_Left(void)
 {
+	PushBack_MouseClick(eventLog,444,176);
 }
 void FMTowns::Daikoukai_Right(void)
 {
+	PushBack_MouseClick(eventLog,474,176);
 }
 void FMTowns::Daikoukai_CourseSet(void)
 {
+	PushBack_MouseClick(eventLog,508,176);
 }
-
+void FMTowns::Daikoukai_F1(void)
+{
+	PushBack_MouseClick(eventLog,440,160);
+}
+void FMTowns::Daikoukai_F2(void)
+{
+	PushBack_MouseClick(eventLog,496,160);
+}
+void FMTowns::Daikoukai_F3(void)
+{
+	PushBack_MouseClick(eventLog,552,160);
+}
+void FMTowns::Daikoukai_F4(void)
+{
+	PushBack_MouseClick(eventLog,608,160);
+}
+void FMTowns::Daikoukai_F5(void)
+{
+	PushBack_MouseClick(eventLog,440,192);
+}
+void FMTowns::Daikoukai_F6(void)
+{
+	PushBack_MouseClick(eventLog,496,192);
+}
+void FMTowns::Daikoukai_F7(void)
+{
+	PushBack_MouseClick(eventLog,552,192);
+}
+void FMTowns::Daikoukai_F8(void)
+{
+	PushBack_MouseClick(eventLog,608,192);
+}
 

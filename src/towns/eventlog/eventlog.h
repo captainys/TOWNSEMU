@@ -73,6 +73,7 @@ public:
 		long long int townsTime;
 		int eventType;
 		Vec2i mos;
+		int mosTolerance=0; // Not saved
 		std::string fName;
 		unsigned char keyCode[2];
 		int repCount=0,repCountMax=REP_INFINITY;
