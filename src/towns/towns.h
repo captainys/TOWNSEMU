@@ -703,6 +703,29 @@ public:
 	void Daikoukai_F6(void);
 	void Daikoukai_F7(void);
 	void Daikoukai_F8(void);
+	void Daikoukai_DentakuButton(int dx,int dy);
+	void Daikoukai_Dentaku_Plus1000(void);
+	void Daikoukai_Dentaku_Plus100(void);
+	void Daikoukai_Dentaku_Plus10(void);
+	void Daikoukai_Dentaku_Plus1(void);
+	void Daikoukai_Dentaku_Minus1000(void);
+	void Daikoukai_Dentaku_Minus100(void);
+	void Daikoukai_Dentaku_Minus10(void);
+	void Daikoukai_Dentaku_Minus1(void);
+	void Daikoukai_Dentaku_0(void);
+	void Daikoukai_Dentaku_1(void);
+	void Daikoukai_Dentaku_2(void);
+	void Daikoukai_Dentaku_3(void);
+	void Daikoukai_Dentaku_4(void);
+	void Daikoukai_Dentaku_5(void);
+	void Daikoukai_Dentaku_6(void);
+	void Daikoukai_Dentaku_7(void);
+	void Daikoukai_Dentaku_8(void);
+	void Daikoukai_Dentaku_9(void);
+	void Daikoukai_Dentaku_Max(void);
+	void Daikoukai_Dentaku_Min(void);
+	void Daikoukai_Dentaku_AC(void);
+	void Daikoukai_Dentaku_RET(void);
 };
 
 

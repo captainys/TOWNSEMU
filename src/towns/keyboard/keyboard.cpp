@@ -243,6 +243,40 @@ void TownsKeyboard::PushFifo(unsigned char code1,unsigned char code2)
 				townsPtr->Daikoukai_F8();
 				townsPtr->eventLog.BeginPlayback();
 				break;
+
+// Numpad +  +100
+// Numpad -  -100
+// Numpad *  +1000
+// Numpad /  -1000
+// PgUp      +10
+// PgDown    -10
+// Up        +1
+// Down      -1
+// Numpad .  AC
+// Numpad Enter  Enter on the keypad
+
+				//townsPtr->Daikoukai_Dentaku_Plus1000();
+				//townsPtr->Daikoukai_Dentaku_Plus100();
+				//townsPtr->Daikoukai_Dentaku_Plus10();
+				//townsPtr->Daikoukai_Dentaku_Plus1();
+				//townsPtr->Daikoukai_Dentaku_Minus1000();
+				//townsPtr->Daikoukai_Dentaku_Minus100();
+				//townsPtr->Daikoukai_Dentaku_Minus10();
+				//townsPtr->Daikoukai_Dentaku_Minus1();
+				//townsPtr->Daikoukai_Dentaku_0();
+				//townsPtr->Daikoukai_Dentaku_1();
+				//townsPtr->Daikoukai_Dentaku_2();
+				//townsPtr->Daikoukai_Dentaku_3();
+				//townsPtr->Daikoukai_Dentaku_4();
+				//townsPtr->Daikoukai_Dentaku_5();
+				//townsPtr->Daikoukai_Dentaku_6();
+				//townsPtr->Daikoukai_Dentaku_7();
+				//townsPtr->Daikoukai_Dentaku_8();
+				//townsPtr->Daikoukai_Dentaku_9();
+				//townsPtr->Daikoukai_Dentaku_Max();
+				//townsPtr->Daikoukai_Dentaku_Min();
+				//townsPtr->Daikoukai_Dentaku_AC();
+				//townsPtr->Daikoukai_Dentaku_RET();
 			}
 		}
 	}

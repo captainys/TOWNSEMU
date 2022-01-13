@@ -8,6 +8,18 @@
 // Left Right for course change
 // Space or Full-Key-side Enter for course set
 // F1 to F8 Click on cruise-menu button (when on the ocean).
+// ESC or Break  Right-Click (Can navigate without mouse click!)
+// 0 to 9  (when keypad is open)  number
+// Numpad +  +100
+// Numpad -  -100
+// Numpad *  +1000
+// Numpad /  -1000
+// PgUp      +10
+// PgDown    -10
+// Up        +1
+// Down      -1
+// Numpad .  AC
+// Numpad Enter  Enter on the keypad
 
 
 static void PushBack_MouseClick(TownsEventLog &eventLog,int x,int y)
@@ -200,8 +212,8 @@ void FMTowns::Daikoukai_YKey(void)
 }
 void FMTowns::Daikoukai_NKey(void)
 {
-	if(0!=state.appSpecific_Daikoukai_DentakuDialogXAddr &&
-	   0!=state.appSpecific_Daikoukai_DentakuDialogYAddr)
+	if(0!=state.appSpecific_Daikoukai_YNDialogXAddr &&
+	   0!=state.appSpecific_Daikoukai_YNDialogYAddr)
 	{
 		int x=mem.FetchDword(state.appSpecific_Daikoukai_YNDialogXAddr);
 		int y=mem.FetchDword(state.appSpecific_Daikoukai_YNDialogYAddr);
@@ -252,5 +264,104 @@ void FMTowns::Daikoukai_F7(void)
 void FMTowns::Daikoukai_F8(void)
 {
 	PushBack_MouseClick(eventLog,608,192);
+}
+void FMTowns::Daikoukai_DentakuButton(int dx,int dy)
+{
+	if(0!=state.appSpecific_Daikoukai_DentakuDialogXAddr &&
+	   0!=state.appSpecific_Daikoukai_DentakuDialogYAddr)
+	{
+		int x=mem.FetchDword(state.appSpecific_Daikoukai_DentakuDialogXAddr);
+		int y=mem.FetchDword(state.appSpecific_Daikoukai_DentakuDialogYAddr);
+		x&=0xFFFFFFF8;
+		PushBack_MouseClick(eventLog,x+dx,y+dy);
+	}
+}
+void FMTowns::Daikoukai_Dentaku_Plus1000(void)
+{
+	Daikoukai_DentakuButton(16,40);
+}
+void FMTowns::Daikoukai_Dentaku_Plus100(void)
+{
+	Daikoukai_DentakuButton(40,40);
+}
+void FMTowns::Daikoukai_Dentaku_Plus10(void)
+{
+	Daikoukai_DentakuButton(64,40);
+}
+void FMTowns::Daikoukai_Dentaku_Plus1(void)
+{
+	Daikoukai_DentakuButton(88,40);
+}
+void FMTowns::Daikoukai_Dentaku_Minus1000(void)
+{
+	Daikoukai_DentakuButton(16,72);
+}
+void FMTowns::Daikoukai_Dentaku_Minus100(void)
+{
+	Daikoukai_DentakuButton(40,72);
+}
+void FMTowns::Daikoukai_Dentaku_Minus10(void)
+{
+	Daikoukai_DentakuButton(64,72);
+}
+void FMTowns::Daikoukai_Dentaku_Minus1(void)
+{
+	Daikoukai_DentakuButton(88,72);
+}
+void FMTowns::Daikoukai_Dentaku_0(void)
+{
+	Daikoukai_DentakuButton(16,168);
+}
+void FMTowns::Daikoukai_Dentaku_1(void)
+{
+	Daikoukai_DentakuButton(16,144);
+}
+void FMTowns::Daikoukai_Dentaku_2(void)
+{
+	Daikoukai_DentakuButton(40,144);
+}
+void FMTowns::Daikoukai_Dentaku_3(void)
+{
+	Daikoukai_DentakuButton(64,144);
+}
+void FMTowns::Daikoukai_Dentaku_4(void)
+{
+	Daikoukai_DentakuButton(16,120);
+}
+void FMTowns::Daikoukai_Dentaku_5(void)
+{
+	Daikoukai_DentakuButton(40,120);
+}
+void FMTowns::Daikoukai_Dentaku_6(void)
+{
+	Daikoukai_DentakuButton(64,120);
+}
+void FMTowns::Daikoukai_Dentaku_7(void)
+{
+	Daikoukai_DentakuButton(16,96);
+}
+void FMTowns::Daikoukai_Dentaku_8(void)
+{
+	Daikoukai_DentakuButton(40,96);
+}
+void FMTowns::Daikoukai_Dentaku_9(void)
+{
+	Daikoukai_DentakuButton(64,96);
+}
+void FMTowns::Daikoukai_Dentaku_Max(void)
+{
+	Daikoukai_DentakuButton(92,96);
+}
+void FMTowns::Daikoukai_Dentaku_Min(void)
+{
+	Daikoukai_DentakuButton(92,120);
+}
+void FMTowns::Daikoukai_Dentaku_AC(void)
+{
+	Daikoukai_DentakuButton(92,144);
+}
+void FMTowns::Daikoukai_Dentaku_RET(void)
+{
+	Daikoukai_DentakuButton(64,168);
 }
 
