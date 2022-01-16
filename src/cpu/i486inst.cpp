@@ -2545,15 +2545,18 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 
 	case I486_OPCODE_ADC_AL_FROM_I8:
 		disasm="ADC     AL,"+cpputil::Ubtox(EvalUimm8())+"H";
+		disasm+=symTable.FormatImmLabel(cs.value,eip,EvalUimm8());
 		break;
 	case I486_OPCODE_ADC_A_FROM_I:
 		if(16==operandSize)
 		{
 			disasm="ADC     AX,"+cpputil::Ustox(EvalUimm16())+"H";
+			disasm+=symTable.FormatImmLabel(cs.value,eip,EvalUimm16());
 		}
 		else
 		{
 			disasm="ADC     EAX,"+cpputil::Uitox(EvalUimm32())+"H";
+			disasm+=symTable.FormatImmLabel(cs.value,eip,EvalUimm32());
 		}
 		break;
 	case I486_OPCODE_ADC_RM8_FROM_R8:
@@ -2576,15 +2579,18 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 
 	case I486_OPCODE_ADD_AL_FROM_I8:
 		disasm="ADD     AL,"+cpputil::Ubtox(EvalUimm8())+"H";
+		disasm+=symTable.FormatImmLabel(cs.value,eip,EvalUimm8());
 		break;
 	case I486_OPCODE_ADD_A_FROM_I:
 		if(16==operandSize)
 		{
 			disasm="ADD     AX,"+cpputil::Ustox(EvalUimm16())+"H";
+			disasm+=symTable.FormatImmLabel(cs.value,eip,EvalUimm16());
 		}
 		else
 		{
 			disasm="ADD     EAX,"+cpputil::Uitox(EvalUimm32())+"H";
+			disasm+=symTable.FormatImmLabel(cs.value,eip,EvalUimm32());
 		}
 		break;
 	case I486_OPCODE_ADD_RM8_FROM_R8:
@@ -2607,15 +2613,18 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 
 	case I486_OPCODE_AND_AL_FROM_I8:
 		disasm="AND     AL,"+cpputil::Ubtox(EvalUimm8())+"H";
+		disasm+=symTable.FormatImmLabel(cs.value,eip,EvalUimm8());
 		break;
 	case I486_OPCODE_AND_A_FROM_I:
 		if(16==operandSize)
 		{
 			disasm="AND     AX,"+cpputil::Ustox(EvalUimm16())+"H";
+			disasm+=symTable.FormatImmLabel(cs.value,eip,EvalUimm16());
 		}
 		else
 		{
 			disasm="AND     EAX,"+cpputil::Uitox(EvalUimm32())+"H";
+			disasm+=symTable.FormatImmLabel(cs.value,eip,EvalUimm32());
 		}
 		break;
 	case I486_OPCODE_AND_RM8_FROM_R8:
@@ -2638,15 +2647,18 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 
 	case I486_OPCODE_CMP_AL_FROM_I8:
 		disasm="CMP     AL,"+cpputil::Ubtox(EvalUimm8())+"H";
+		disasm+=symTable.FormatImmLabel(cs.value,eip,EvalUimm8());
 		break;
 	case I486_OPCODE_CMP_A_FROM_I:
 		if(16==operandSize)
 		{
 			disasm="CMP     AX,"+cpputil::Ustox(EvalUimm16())+"H";
+			disasm+=symTable.FormatImmLabel(cs.value,eip,EvalUimm16());
 		}
 		else
 		{
 			disasm="CMP     EAX,"+cpputil::Uitox(EvalUimm32())+"H";
+			disasm+=symTable.FormatImmLabel(cs.value,eip,EvalUimm32());
 		}
 		break;
 	case I486_OPCODE_CMP_RM8_FROM_R8:
@@ -2669,15 +2681,18 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 
 	case I486_OPCODE_SBB_AL_FROM_I8:
 		disasm="SBB     AL,"+cpputil::Ubtox(EvalUimm8())+"H";
+		disasm+=symTable.FormatImmLabel(cs.value,eip,EvalUimm8());
 		break;
 	case I486_OPCODE_SBB_A_FROM_I:
 		if(16==operandSize)
 		{
 			disasm="SBB     AX,"+cpputil::Ustox(EvalUimm16())+"H";
+			disasm+=symTable.FormatImmLabel(cs.value,eip,EvalUimm16());
 		}
 		else
 		{
 			disasm="SBB     EAX,"+cpputil::Uitox(EvalUimm32())+"H";
+			disasm+=symTable.FormatImmLabel(cs.value,eip,EvalUimm32());
 		}
 		break;
 	case I486_OPCODE_SBB_RM8_FROM_R8:
@@ -2700,15 +2715,18 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 
 	case I486_OPCODE_SUB_AL_FROM_I8:
 		disasm="SUB     AL,"+cpputil::Ubtox(EvalUimm8())+"H";
+		disasm+=symTable.FormatImmLabel(cs.value,eip,EvalUimm8());
 		break;
 	case I486_OPCODE_SUB_A_FROM_I:
 		if(16==operandSize)
 		{
 			disasm="SUB     AX,"+cpputil::Ustox(EvalUimm16())+"H";
+			disasm+=symTable.FormatImmLabel(cs.value,eip,EvalUimm16());
 		}
 		else
 		{
 			disasm="SUB     EAX,"+cpputil::Uitox(EvalUimm32())+"H";
+			disasm+=symTable.FormatImmLabel(cs.value,eip,EvalUimm32());
 		}
 		break;
 	case I486_OPCODE_SUB_RM8_FROM_R8:
@@ -2731,15 +2749,18 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 
 	case I486_OPCODE_TEST_AL_FROM_I8:
 		disasm="TEST    AL,"+cpputil::Ubtox(EvalUimm8())+"H";
+		disasm+=symTable.FormatImmLabel(cs.value,eip,EvalUimm8());
 		break;
 	case I486_OPCODE_TEST_A_FROM_I:
 		if(16==operandSize)
 		{
 			disasm="TEST    AX,"+cpputil::Ustox(EvalUimm16())+"H";
+			disasm+=symTable.FormatImmLabel(cs.value,eip,EvalUimm16());
 		}
 		else
 		{
 			disasm="TEST    EAX,"+cpputil::Uitox(EvalUimm32())+"H";
+			disasm+=symTable.FormatImmLabel(cs.value,eip,EvalUimm32());
 		}
 		break;
 	case I486_OPCODE_TEST_RM8_FROM_R8:
@@ -3836,11 +3857,13 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		{
 			disasm+="WORD PTR ";
 			disasm+=cpputil::Ubtox(EvalUimm8())+"H";
+			disasm+=symTable.FormatImmLabel(cs.value,eip,EvalUimm8());
 		}
 		else
 		{
 			disasm+="DWORD PTR ";
 			disasm+=cpputil::Ubtox(EvalUimm8())+"H";
+			disasm+=symTable.FormatImmLabel(cs.value,eip,EvalUimm8());
 		}
 		break;
 	case I486_OPCODE_PUSH_I://           0x68,
@@ -3849,11 +3872,13 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		{
 			disasm+="WORD PTR ";
 			disasm+=cpputil::Ustox(EvalUimm16())+"H";
+			disasm+=symTable.FormatImmLabel(cs.value,eip,EvalUimm16());
 		}
 		else
 		{
 			disasm+="DWORD PTR ";
 			disasm+=cpputil::Uitox(EvalUimm32())+"H";
+			disasm+=symTable.FormatImmLabel(cs.value,eip,EvalUimm32());
 		}
 		break;
 	case I486_OPCODE_PUSH_CS://          0x0E,
@@ -3941,15 +3966,18 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 
 	case I486_OPCODE_OR_AL_FROM_I8:
 		disasm="OR      AL,"+cpputil::Ubtox(EvalUimm8())+"H";
+		disasm+=symTable.FormatImmLabel(cs.value,eip,EvalUimm8());
 		break;
 	case I486_OPCODE_OR_A_FROM_I:
 		if(16==operandSize)
 		{
 			disasm="OR      AX,"+cpputil::Ustox(EvalUimm16())+"H";
+			disasm+=symTable.FormatImmLabel(cs.value,eip,EvalUimm16());
 		}
 		else
 		{
 			disasm="OR      EAX,"+cpputil::Uitox(EvalUimm32())+"H";
+			disasm+=symTable.FormatImmLabel(cs.value,eip,EvalUimm32());
 		}
 		break;
 	case I486_OPCODE_OR_RM8_FROM_R8:
@@ -3972,15 +4000,18 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 
 	case I486_OPCODE_XOR_AL_FROM_I8:
 		disasm="XOR     AL,"+cpputil::Ubtox(EvalUimm8())+"H";
+		disasm+=symTable.FormatImmLabel(cs.value,eip,EvalUimm8());
 		break;
 	case I486_OPCODE_XOR_A_FROM_I:
 		if(16==operandSize)
 		{
 			disasm="XOR     AX,"+cpputil::Ustox(EvalUimm16())+"H";
+			disasm+=symTable.FormatImmLabel(cs.value,eip,EvalUimm16());
 		}
 		else
 		{
 			disasm="XOR     EAX,"+cpputil::Uitox(EvalUimm32())+"H";
+			disasm+=symTable.FormatImmLabel(cs.value,eip,EvalUimm32());
 		}
 		break;
 	case I486_OPCODE_XOR_RM8_FROM_R8:
