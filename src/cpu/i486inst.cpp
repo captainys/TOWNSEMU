@@ -6330,7 +6330,6 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			switch(Instruction::GetREG(inst.operand[0]))
 			{
-			case 3: // FISTP m32int
 			case 1:
 			case 2:
 			case 4:
@@ -6341,6 +6340,16 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				{
 					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,4);
 					clocksPassed=state.fpuState.FILD_m32int(*this,value.byteData);
+				}
+				break;
+			case 3: // FISTP m32int
+				{
+					OperandValue value;
+					state.fpuState.GetSTAsSignedInt(*this,value);
+					state.fpuState.Pop(*this);
+					value.numBytes=4;
+					StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+					clocksPassed=33;
 				}
 				break;
 			case 5: // FLD m80real

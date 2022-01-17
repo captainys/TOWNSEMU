@@ -51,6 +51,7 @@ def Run(argv):
 		"../testdata/CMOS.bin",
 		"-DONTAUTOSAVECMOS",
 		# "-PAUSE",
+		"-USEFPU",
 	]+argv).wait()
 
 
