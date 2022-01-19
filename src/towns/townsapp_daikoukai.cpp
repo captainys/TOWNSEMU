@@ -170,6 +170,42 @@ void FMTowns::Daikoukai_ApplyPatchesCacheAddr(void)
 			cpu.DebugStoreByte(mem,32,cpu.state.CS(),0x2B248,0x90);
 			std::cout << "Applied Daikoukaijidai load/unload button repeat no-delay patch." << std::endl;
 		}
+		if(
+			0x68==cpu.DebugFetchByte(32,cpu.state.CS(),0x48D26,mem) &&
+			0xDE==cpu.DebugFetchByte(32,cpu.state.CS(),0x48D27,mem) &&
+			0x01==cpu.DebugFetchByte(32,cpu.state.CS(),0x48D28,mem) &&
+			0x00==cpu.DebugFetchByte(32,cpu.state.CS(),0x48D29,mem) &&
+			0x00==cpu.DebugFetchByte(32,cpu.state.CS(),0x48D2A,mem) &&
+			0x68==cpu.DebugFetchByte(32,cpu.state.CS(),0x48D2B,mem) &&
+			0xB0==cpu.DebugFetchByte(32,cpu.state.CS(),0x48D2C,mem) &&
+			0x00==cpu.DebugFetchByte(32,cpu.state.CS(),0x48D2D,mem) &&
+			0x00==cpu.DebugFetchByte(32,cpu.state.CS(),0x48D2E,mem) &&
+			0x00==cpu.DebugFetchByte(32,cpu.state.CS(),0x48D2F,mem) &&
+			0x6A==cpu.DebugFetchByte(32,cpu.state.CS(),0x48D30,mem) &&
+			0x22==cpu.DebugFetchByte(32,cpu.state.CS(),0x48D31,mem))
+		{
+			cpu.DebugStoreByte(mem,32,cpu.state.CS(),0x48D31,0x20);
+			std::cout << "Applied Daikoukaijidai fix corrupted image after final fleet battle." << std::endl;
+		}
+		if(
+			0xE8==cpu.DebugFetchByte(32,cpu.state.CS(),0x3183F,mem) &&
+			0xE0==cpu.DebugFetchByte(32,cpu.state.CS(),0x31840,mem) &&
+			0xFD==cpu.DebugFetchByte(32,cpu.state.CS(),0x31841,mem) &&
+			0xFF==cpu.DebugFetchByte(32,cpu.state.CS(),0x31842,mem) &&
+			0xFF==cpu.DebugFetchByte(32,cpu.state.CS(),0x31843,mem) &&
+			0xE8==cpu.DebugFetchByte(32,cpu.state.CS(),0x31844,mem) &&
+			0x73==cpu.DebugFetchByte(32,cpu.state.CS(),0x31845,mem) &&
+			0x48==cpu.DebugFetchByte(32,cpu.state.CS(),0x31846,mem) &&
+			0xFF==cpu.DebugFetchByte(32,cpu.state.CS(),0x31847,mem) &&
+			0xFF==cpu.DebugFetchByte(32,cpu.state.CS(),0x31848,mem))
+		{
+			cpu.DebugStoreByte(mem,32,cpu.state.CS(),0x3183F,0x90);
+			cpu.DebugStoreByte(mem,32,cpu.state.CS(),0x31840,0x90);
+			cpu.DebugStoreByte(mem,32,cpu.state.CS(),0x31841,0x90);
+			cpu.DebugStoreByte(mem,32,cpu.state.CS(),0x31842,0x90);
+			cpu.DebugStoreByte(mem,32,cpu.state.CS(),0x31843,0x90);
+			std::cout << "Applied Daikoukaijidai fix heap corruption." << std::endl;
+		}
 
 		auto linearBase=cpu.state.DS().baseLinearAddr;
 		unsigned int exceptionType,exceptionCode; // To discard
