@@ -103,3 +103,28 @@ FileSys::DirectoryEntry FileSys::FindNext(void)
 	}
 	return ent;
 }
+/* static */ std::string FileSys::Getcwd(void)
+{
+	char buf[1024];
+	if(nullptr==getcwd(buf,1023))
+	{
+		return "";
+	}
+	return buf;
+}
+/* static */ bool FileSys::Chdir(std::string str)
+{
+	if(0==chdir(str.c_str()))
+	{
+		return true;
+	}
+	return false;
+}
+/* static */ bool FileSys::Mkdir(std::string str)
+{
+	if(0==mkdir(str.c_str(),0x777))
+	{
+		return true;
+	}
+	return false;
+}

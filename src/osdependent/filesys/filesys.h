@@ -42,6 +42,15 @@ public:
 	~FileSys();
 	DirectoryEntry FindFirst(std::string subDir);
 	DirectoryEntry FindNext(void);
+
+
+
+	// Until C++17
+	// Damn it!  How long did it take for C++ people to admit that there is a thing called a file system!!
+	// Hope they admit that there is a thing called a home directory soon.
+	static std::string Getcwd(void);
+	static bool Chdir(std::string str);
+	static bool Mkdir(std::string str);
 };
 
 

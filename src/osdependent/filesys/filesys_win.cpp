@@ -1,4 +1,5 @@
 #include <windows.h>
+#include <direct.h>
 #include "filesys.h"
 
 
@@ -92,4 +93,29 @@ FileSys::DirectoryEntry FileSys::FindNext(void)
 		}
 	}
 	return ent;
+}
+/* static */ std::string FileSys::Getcwd(void)
+{
+	char buf[1024];
+	if(nullptr==_getcwd(buf,1023))
+	{
+		return "";
+	}
+	return buf;
+}
+/* static */ bool FileSys::Chdir(std::string str)
+{
+	if(0==_chdir(str.c_str()))
+	{
+		return true;
+	}
+	return false;
+}
+/* static */ bool FileSys::Mkdir(std::string str)
+{
+	if(0==_mkdir(str.c_str()))
+	{
+		return true;
+	}
+	return false;
 }
