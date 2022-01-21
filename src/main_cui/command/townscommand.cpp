@@ -202,6 +202,8 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["PWD"]=CMD_PWD;
 	primaryCmdMap["CD"]=CMD_CHDIR;
 	primaryCmdMap["CHDIR"]=CMD_CHDIR;
+	primaryCmdMap["LS"]=CMD_LS;
+	primaryCmdMap["DIR"]=CMD_LS;
 
 
 	featureMap["CMDLOG"]=ENABLE_CMDLOG;
@@ -576,6 +578,12 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Schedule VM to Host file transfer." << std::endl;
 	std::cout << "  File will be transferred when FTCLIENT.EXP is executed." << std::endl;
 	std::cout << "" << std::endl;
+
+	std::cout << "CD/CHDIR directory" << std::endl;
+	std::cout << "LS/DIR" << std::endl;
+	std::cout << "PWD" << std::endl;
+	std::cout << "  Directory commands." << std::endl;
+
 
 	std::cout << "<< Features that can be enabled|disabled >>" << std::endl;
 	std::cout << "CMDLOG" << std::endl;
@@ -1464,6 +1472,9 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 				std::cout << ERROR_CANNOT_CHDIR << std::endl;
 			}
 		}
+		break;
+	case CMD_LS:
+		Execute_LS(towns,cmd);
 		break;
 	}
 }
@@ -4601,5 +4612,63 @@ void TownsCommandInterpreter::Execute_BreakOnMemoryWrite(FMTowns &towns,Command 
 	else
 	{
 		PrintError(ERROR_TOO_FEW_ARGS);
+	}
+}
+void TownsCommandInterpreter::Execute_LS(FMTowns &towns,Command &cmd)
+{
+	FileSys fileSys;
+	bool detail=false;
+
+	int argPtr=1;
+	while(argPtr<cmd.argv.size())
+	{
+		if("-l"==cmd.argv[argPtr])
+		{
+			detail=true;
+			++argPtr;
+		}
+		else
+		{
+			break;
+		}
+	}
+
+
+	if(argPtr<cmd.argv.size())
+	{
+		fileSys.hostPath=cmd.argv[argPtr];
+	}
+	else
+	{
+		fileSys.hostPath=FileSys::Getcwd();
+	}
+	auto dirent=fileSys.FindFirst("");
+	while(true!=dirent.endOfDir)
+	{
+		if(true!=detail)
+		{
+			std::cout << dirent.fName << std::endl;
+		}
+		else
+		{
+			if(0!=(FileSys::ATTR_DIR&dirent.attr))
+			{
+				printf("d ");
+			}
+			else
+			{
+				printf("  ");
+			}
+			printf("%4d/%2d/%2d %d:%d:%d %16llu %s\n",
+			    dirent.year,
+			    dirent.month,
+			    dirent.day,
+			    dirent.hours,
+			    dirent.minutes,
+			    dirent.seconds,
+			    dirent.length,
+			    dirent.fName.c_str());
+		}
+		dirent=fileSys.FindNext();
 	}
 }

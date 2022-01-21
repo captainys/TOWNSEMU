@@ -193,6 +193,7 @@ public:
 
 		CMD_PWD,
 		CMD_CHDIR,
+		CMD_LS,
 	};
 
 	enum
@@ -409,6 +410,8 @@ public:
 	void Execute_AutoShot(FMTowns &towns,Command &cmd);
 
 	void Execute_BreakOnMemoryWrite(FMTowns &towns,Command &cmd);
+
+	void Execute_LS(FMTowns &towns,Command &cmd);
 };
 
 

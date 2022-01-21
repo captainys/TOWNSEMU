@@ -50,9 +50,17 @@ FileSys::DirectoryEntry FileSys::FindFirst(std::string subDir)
 	auto path=hostPath;
 	if(""!=subDir && "/"!=subDir && "\\"!=subDir)
 	{
-		path+=std::string("/")+subDir;
+		if(""==path || (path.back()!='/' && path.back()!='\\'))
+		{
+			path.push_back('/');
+		}
+		path+=subDir;
 	}
-	path+="/*.*";
+	if(""==path || (path.back()!='/' && path.back()!='\\'))
+	{
+		path.push_back('/');
+	}
+	path+="*.*";
 
 	WIN32_FIND_DATAA fd;
 	context->hFind=FindFirstFileA(path.c_str(),&fd);

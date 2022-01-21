@@ -68,7 +68,11 @@ FileSys::DirectoryEntry FileSys::FindFirst(std::string subDir)
 	std::string path=hostPath;
 	if(""!=subDir && "/"!=subDir && "\\"!=subDir)
 	{
-		path+=std::string("/")+subDir;
+		if(""==path || (path.back()!='/' && path.back()!='\\'))
+		{
+			path.push_back('/');
+		}
+		path+=subDir;
 	}
 	DirectoryEntry ent;
 
