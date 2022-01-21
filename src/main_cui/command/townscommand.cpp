@@ -28,6 +28,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "townscommand.h"
 #include "townscommandutil.h"
 #include "cpputil.h"
+#include "filesys.h"
 #include "miscutil.h"
 #include "townslineparser.h"
 
@@ -198,6 +199,9 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 
 	primaryCmdMap["AUTOSHOT"]=CMD_AUTOSHOT;
 
+	primaryCmdMap["PWD"]=CMD_PWD;
+	primaryCmdMap["CD"]=CMD_CHDIR;
+	primaryCmdMap["CHDIR"]=CMD_CHDIR;
 
 
 	featureMap["CMDLOG"]=ENABLE_CMDLOG;
@@ -773,6 +777,9 @@ void TownsCommandInterpreter::PrintError(int errCode) const
 		break;
 	case ERROR_UNDEFINED_BREAK_POINT_OPTION:
 		std::cout << "Error: Unknown Break-Point Option." << std::endl;
+		break;
+	case ERROR_CANNOT_CHDIR:
+		std::cout << "Error: Cannot change directory." << std::endl;
 		break;
 
 	default:
@@ -1437,6 +1444,26 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 		break;
 	case CMD_AUTOSHOT:
 		Execute_AutoShot(towns,cmd);
+		break;
+	case CMD_PWD:
+		std::cout << FileSys::Getcwd() << std::endl;
+		break;
+	case CMD_CHDIR:
+		if(2>cmd.argv.size())
+		{
+			std::cout << FileSys::Getcwd() << std::endl;
+		}
+		else
+		{
+			if(true==FileSys::Chdir(cmd.argv[1]))
+			{
+				std::cout << FileSys::Getcwd() << std::endl;
+			}
+			else
+			{
+				std::cout << ERROR_CANNOT_CHDIR << std::endl;
+			}
+		}
 		break;
 	}
 }
