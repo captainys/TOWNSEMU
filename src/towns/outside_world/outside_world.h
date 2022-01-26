@@ -25,6 +25,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "rf5c68.h"
 #include "ym2612.h"
 #include "townsdef.h"
+#include "townsparam.h"
 
 class Outside_World
 {
@@ -135,7 +136,7 @@ public:
 	bool fdAccessLamp[4]={false,false,false,false};
 	bool scsiAccessLamp[6]={false,false,false,false,false,false};
 	bool autoScaling=false;
-	bool maximizeOnStartUp=false;
+	unsigned int windowModeOnStartUp=TownsStartParameters::WINDOW_NORMAL;
 	unsigned int dx=0,dy=0;  // Screen (0,0) will be window (dx,dy)
 	unsigned int scaling=100; // In Percent
 	bool pauseKey=false;

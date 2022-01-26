@@ -279,7 +279,7 @@ void FMTowns::State::PowerOn(void)
 	outside_world->scaling=argv.scaling;
 	outside_world->windowShift=argv.windowShift;
 	outside_world->autoScaling=argv.autoScaling;
-	outside_world->maximizeOnStartUp=argv.maximizeOnStartUp;
+	outside_world->windowModeOnStartUp=argv.windowModeOnStartUp;
 
 	outside_world->mouseByFlightstickAvailable=argv.mouseByFlightstickAvailable;
 	outside_world->cyberStickAssignment=argv.cyberStickAssignment;

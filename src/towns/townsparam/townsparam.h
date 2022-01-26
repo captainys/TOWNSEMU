@@ -13,6 +13,13 @@ class TownsStartParameters
 public:
 	enum
 	{
+		WINDOW_NORMAL,
+		WINDOW_MAXIMIZE,
+		WINDOW_FULLSCREEN
+	};
+
+	enum
+	{
 		NUM_GAMEPORTS=2,
 		NUM_FDDRIVES=2,
 		MAX_NUM_SCSI_DEVICES=7,
@@ -154,7 +161,7 @@ public:
 	};
 	unsigned int scaling=100;
 	bool autoScaling=false;
-	bool maximizeOnStartUp=false;
+	unsigned int windowModeOnStartUp=WINDOW_NORMAL;
 
 	std::string quickScrnShotDir;
 	std::string quickStateSaveFName;

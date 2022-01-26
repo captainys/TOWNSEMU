@@ -37,6 +37,8 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  Auto scaleing screen to match the window size." << std::endl;
 	std::cout << "-MAXIMIZE" << std::endl;
 	std::cout << "  Maximize the window on start up" << std::endl;
+	std::cout << "-FULLSCREEN" << std::endl;
+	std::cout << "  Fullscreen on start up" << std::endl;
 	std::cout << "-HIGHRES" << std::endl;
 	std::cout << "  Enable High Resolution CRTC (default)" << std::endl;
 	std::cout << "-LOWRES" << std::endl;
@@ -314,7 +316,11 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		}
 		else if("-MAXIMIZE"==ARG)
 		{
-			maximizeOnStartUp=true;
+			windowModeOnStartUp=WINDOW_MAXIMIZE;
+		}
+		else if("-FULLSCREEN"==ARG)
+		{
+			windowModeOnStartUp=WINDOW_FULLSCREEN;
 		}
 		else if("-PAUSE"==ARG)
 		{

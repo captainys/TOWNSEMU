@@ -30,6 +30,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "towns.h"
 #include "icons.h"
 #include "ysgamepad.h"
+#include "townsparam.h"
 
 
 FsSimpleWindowConnection::FsSimpleWindowConnection()
@@ -202,15 +203,27 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 	{
 		FsResizeWindow(wid,hei);
 	}
-	if(true==maximizeOnStartUp)
+
+	switch(windowModeOnStartUp)
 	{
+	case TownsStartParameters::WINDOW_MAXIMIZE:
 		FsPollDevice();
 		FsMaximizeWindow();
 		for(int i=0; i<10; ++i)
 		{
 			FsPollDevice();
 		}
+		break;
+	case TownsStartParameters::WINDOW_FULLSCREEN:
+		FsPollDevice();
+		FsMakeFullScreen();
+		for(int i=0; i<10; ++i)
+		{
+			FsPollDevice();
+		}
+		break;
 	}
+
 	this->winWid=640;
 	this->winHei=480;
 	FsSetWindowTitle("FM Towns Emulator - TSUGARU");
@@ -242,7 +255,7 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 }
 /* virtual */ void FsSimpleWindowConnection::Stop(void)
 {
-	if(true==maximizeOnStartUp)
+	if(TownsStartParameters::WINDOW_NORMAL!=windowModeOnStartUp)
 	{
 		FsUnmaximizeWindow();
 	}
