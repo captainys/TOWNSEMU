@@ -170,7 +170,10 @@ void ProfileDialog::Make(void)
 		scrnScaleTxt->SetInteger(100);
 
 		scrnAutoScaleBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Auto Scaling (Fit to Window Size)",YSTRUE);
-		scrnMaximizeBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Maximize on Start Up",YSFALSE);
+		scrnModeDrp=AddEmptyDropList(0,FSKEY_NULL,"",4,20,20,YSFALSE);
+		scrnModeDrp->AddString("NORMAL WINDOW",YSTRUE);
+		scrnModeDrp->AddString("MAXIMIZE",YSFALSE);
+		scrnModeDrp->AddString("FULL SCREEN",YSFALSE);
 
 		pretend386DXBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Pretend 80386DX",YSTRUE);
 
@@ -978,7 +981,18 @@ TownsProfile ProfileDialog::GetProfile(void) const
 
 	profile.scaling=scrnScaleTxt->GetInteger();
 	profile.autoScaling=(YSTRUE==scrnAutoScaleBtn->GetCheck());
-	profile.maximizeOnStartUp=(YSTRUE==scrnMaximizeBtn->GetCheck());
+	switch(scrnModeDrp->GetSelection())
+	{
+	case 0:
+		profile.windowModeOnStartUp=TownsStartParameters::WINDOW_NORMAL;
+		break;
+	case 1:
+		profile.windowModeOnStartUp=TownsStartParameters::WINDOW_MAXIMIZE;
+		break;
+	case 2:
+		profile.windowModeOnStartUp=TownsStartParameters::WINDOW_FULLSCREEN;
+		break;
+	}
 
 	profile.appSpecificSetting=TownsStrToApp(appSpecificAugDrp->GetSelectedString().c_str());
 
@@ -1163,7 +1177,18 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 	}
 
 	scrnAutoScaleBtn->SetCheck(true==profile.autoScaling ? YSTRUE : YSFALSE);
-	scrnMaximizeBtn->SetCheck(true==profile.maximizeOnStartUp ? YSTRUE : YSFALSE);
+	switch(profile.windowModeOnStartUp)
+	{
+	case TownsStartParameters::WINDOW_NORMAL:
+		scrnModeDrp->Select(0);
+		break;
+	case TownsStartParameters::WINDOW_MAXIMIZE:
+		scrnModeDrp->Select(1);
+		break;
+	case TownsStartParameters::WINDOW_FULLSCREEN:
+		scrnModeDrp->Select(2);
+		break;
+	}
 	scrnScaleTxt->SetInteger(profile.scaling);
 
 	appSpecificAugDrp->SelectByString(TownsAppToStr(profile.appSpecificSetting).c_str(),YSTRUE);

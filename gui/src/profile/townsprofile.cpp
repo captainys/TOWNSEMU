@@ -178,9 +178,22 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 	sstream << "AUTOSCAL " << (true==autoScaling ? 1 : 0);
 	text.push_back(sstream.str());
 
-	sstream.str("");
-	sstream << "MAXIMIZE " << (true==maximizeOnStartUp ? 1 : 0);
-	text.push_back(sstream.str());
+	// sstream.str("");
+	// sstream << "MAXIMIZE " << (true==maximizeOnStartUp ? 1 : 0);
+	// text.push_back(sstream.str());
+
+	switch(windowModeOnStartUp)
+	{
+	case WINDOW_NORMAL:
+		text.push_back("WNDWMODE NORMAL");
+		break;
+	case WINDOW_MAXIMIZE:
+		text.push_back("WNDWMODE MAXIMIZE");
+		break;
+	case WINDOW_FULLSCREEN:
+		text.push_back("WNDWMODE FULLSCREEN");
+		break;
+	}
 
 	sstream.str("");
 	sstream << "APPSPEC_ " << TownsAppToStr(appSpecificSetting);
@@ -444,7 +457,25 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 		{
 			if(2<=argv.size())
 			{
-				maximizeOnStartUp=(0!=argv[1].Atoi());
+				windowModeOnStartUp=(0!=argv[1].Atoi() ? WINDOW_MAXIMIZE : WINDOW_NORMAL);
+			}
+		}
+		else if(0==argv[0].STRCMP("WNDWMODE"))
+		{
+			if(2<=argv.size())
+			{
+				if(0==argv[1].STRCMP("NORMAL"))
+				{
+					windowModeOnStartUp=WINDOW_NORMAL;
+				}
+				else if(0==argv[1].STRCMP("MAXIMIZE"))
+				{
+					windowModeOnStartUp=WINDOW_MAXIMIZE;
+				}
+				else if(0==argv[1].STRCMP("FULLSCREEN"))
+				{
+					windowModeOnStartUp=WINDOW_FULLSCREEN;
+				}
 			}
 		}
 		else if(0==argv[0].STRCMP("FREQUENC"))
@@ -771,9 +802,14 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 	{
 		argv.push_back("-AUTOSCALE");
 	}
-	if(true==maximizeOnStartUp)
+	switch(windowModeOnStartUp)
 	{
+	case WINDOW_MAXIMIZE:
 		argv.push_back("-MAXIMIZE");
+		break;
+	case WINDOW_FULLSCREEN:
+		argv.push_back("-FULLSCREEN");
+		break;
 	}
 
 	if(1<=freq)
