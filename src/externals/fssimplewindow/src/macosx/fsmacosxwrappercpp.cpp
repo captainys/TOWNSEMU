@@ -41,6 +41,8 @@ extern "C" void FsResizeWindowC(int wid,int hei);
 extern "C" void FsGetWindowSizeC(int *wid,int *hei);
 extern "C" void FsGetWindowPositionC(int *wid,int *hei);
 extern "C" void FsMaximizeWindowC(void);
+extern "C" void FsUnmaximizeWindowC(void);
+extern "C" void FsMakeFullScreenC(void);
 extern "C" void FsPollDeviceC(void);
 extern "C" void FsPushOnPaintEventC(void);
 extern "C" void FsOnInitializeOpenGLC(void);
@@ -135,9 +137,11 @@ void FsMaximizeWindow(void)
 }
 void FsUnmaximizeWindow(void)
 {
+	FsUnmaximizeWindowC();
 }
 void FsMakeFullScreen(void)
 {
+	FsMakeFullScreenC();
 }
 
 void FsPollDevice(void)

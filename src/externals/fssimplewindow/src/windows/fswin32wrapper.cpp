@@ -290,14 +290,24 @@ void FsCloseWindow(void)
 
 void FsMaximizeWindow(void)
 {
+	auto style=GetWindowLong(fsWin32Internal.hWnd,GWL_STYLE);
+	style=(style|WS_THICKFRAME|WS_CAPTION|WS_SYSMENU|WS_MINIMIZEBOX|WS_MAXIMIZEBOX);
+	SetWindowLong(fsWin32Internal.hWnd,GWL_STYLE,style);
 	ShowWindow(fsWin32Internal.hWnd,SW_MAXIMIZE);
 }
 void FsUnmaximizeWindow(void)
 {
+	auto style=GetWindowLong(fsWin32Internal.hWnd,GWL_STYLE);
+	style=(style|WS_THICKFRAME|WS_CAPTION|WS_SYSMENU|WS_MINIMIZEBOX|WS_MAXIMIZEBOX);
+	SetWindowLong(fsWin32Internal.hWnd,GWL_STYLE,style);
 	ShowWindow(fsWin32Internal.hWnd,SW_RESTORE);
 }
 void FsMakeFullScreen(void)
 {
+	auto style=GetWindowLong(fsWin32Internal.hWnd,GWL_STYLE);
+	style=(style&~(WS_THICKFRAME|WS_BORDER|WS_CAPTION|WS_SYSMENU|WS_MINIMIZEBOX|WS_MAXIMIZEBOX));
+	SetWindowLong(fsWin32Internal.hWnd,GWL_STYLE,style);
+	ShowWindow(fsWin32Internal.hWnd,SW_MAXIMIZE);
 }
 
 void FsGetWindowSize(int &wid,int &hei)

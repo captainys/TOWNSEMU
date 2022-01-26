@@ -626,6 +626,9 @@ static struct FsMouseEventLog mosBuffer[NKEYBUF];
 
 static int exposure=0;
 
+static bool maximizedOrFullScreen=false;
+static NSRect restoreRect={0,0,800,600};
+
 
 @interface YsMacDelegate : NSObject /* < NSApplicationDelegate > */
 /* Example: Fire has the same problem no explanation */
@@ -1414,7 +1417,10 @@ void FsOpenWindowC(int x0,int y0,int wid,int hei,int useDoubleBuffer,int useMult
 
 	NSRect contRect;
 	contRect=NSMakeRect(x0,y0,wid,hei);
-	
+
+	maximizedOrFullScreen=false;
+	restoreRect=contRect;
+
 	NSWindowStyleMask winStyle=
 	  NSTitledWindowMask|
 	  NSClosableWindowMask|
@@ -1558,6 +1564,39 @@ void FsGetWindowPositionC(int *x0,int *y0)
 
 void FsMaximizeWindowC(void)
 {
+	if(true!=maximizedOrFullScreen)
+	{
+		restoreRect=[ysWnd frame];
+		maximizedOrFullScreen=true;
+	}
+
+	[[NSApplication sharedApplication] setPresentationOptions:NSApplicationPresentationDefault];
+
+	NSScreen *screen=[ysWnd screen];
+	NSRect visibleFrame=[screen visibleFrame];
+	[ysWnd setFrame:visibleFrame display:TRUE];
+}
+
+void FsUnmaximizeWindowC(void)
+{
+	if(true==maximizedOrFullScreen)
+	{
+		[[NSApplication sharedApplication] setPresentationOptions:NSApplicationPresentationDefault];
+		[ysWnd setFrame:restoreRect display:TRUE];
+		maximizedOrFullScreen=false;
+	}
+}
+
+void FsMakeFullScreenC(void)
+{
+	if(true!=maximizedOrFullScreen)
+	{
+		restoreRect=[ysWnd frame];
+		maximizedOrFullScreen=true;
+	}
+
+	[[NSApplication sharedApplication] setPresentationOptions:NSApplicationPresentationDefault|NSApplicationPresentationHideMenuBar|NSApplicationPresentationHideDock];
+
 	NSScreen *screen=[ysWnd screen];
 	NSRect visibleFrame=[screen visibleFrame];
 	[ysWnd setFrame:visibleFrame display:TRUE];

@@ -222,6 +222,15 @@ void FsOpenWindow(const FsOpenWindowOption &opt)
 					sleep(1);
 					printf("Slept one second.\n");
 
+					if(opt.sizeOpt==FsOpenWindowOption::FULLSCREEN)
+					{
+						FsMakeFullScreen();
+					}
+					else if(opt.sizeOpt==FsOpenWindowOption::MAXIMIZE_WINDOW)
+					{
+						FsMaximizeWindow();
+					}
+
 					/* printf("Wait Expose Event\n");
 					XEvent ev;
 					while(XCheckTypedEvent(ysXDsp,Expose,&ev)!=True)
@@ -801,18 +810,47 @@ void FsCloseWindow(void)
 	XCloseDisplay(ysXDsp);
 }
 
+static void FsChangeWindowState(int setOrRemove,const char propertyName[])
+{
+	Atom _NET_WM_STATE=XInternAtom(ysXDsp,"_NET_WM_STATE",False);
+	Atom _NET_WM_STATE_ADD=XInternAtom(ysXDsp,"_NET_WM_STATE_ADD",False); // Somehow doesn't work
+	Atom _NET_WM_STATE_REMOVE=XInternAtom(ysXDsp,"_NET_WM_STATE_REMOVE",False); // Somehow doesn't work
+	Atom _NET_WM_STATE_Property=XInternAtom(ysXDsp,propertyName,False);
+
+	// From https://pyra-handheld.com/boards/threads/x11-fullscreen-howto.70443/
+	XEvent evt;
+	evt.xclient.type=ClientMessage;
+	evt.xclient.serial=0;
+	evt.xclient.send_event=True;
+	evt.xclient.window=ysXWnd;
+	evt.xclient.message_type=_NET_WM_STATE;
+	evt.xclient.format=32;
+	evt.xclient.data.l[0]=setOrRemove;
+	evt.xclient.data.l[1]=_NET_WM_STATE_Property;
+	evt.xclient.data.l[2]=0;
+	evt.xclient.data.l[3]=0;
+	evt.xclient.data.l[4]=0;
+	XSendEvent(ysXDsp,RootWindow(ysXDsp,ysXVis->screen),False,SubstructureRedirectMask|SubstructureNotifyMask,&evt);
+}
+
 void FsMaximizeWindow(void)
 {
-	printf("Sorry. %s not supported on this platform yet\n",__FUNCTION__);
+	FsChangeWindowState(0,"_NET_WM_STATE_FULLSCREEN");
+	FsChangeWindowState(1,"_NET_WM_STATE_MAXIMIZED_HORZ");
+	FsChangeWindowState(1,"_NET_WM_STATE_MAXIMIZED_VERT");
 }
 
 void FsUnmaximizeWindow(void)
 {
-	printf("Sorry. %s not supported on this platform yet\n",__FUNCTION__);
+	FsChangeWindowState(0,"_NET_WM_STATE_MAXIMIZED_HORZ");
+	FsChangeWindowState(0,"_NET_WM_STATE_MAXIMIZED_VERT");
+	FsChangeWindowState(0,"_NET_WM_STATE_FULLSCREEN");
 }
 void FsMakeFullScreen(void)
 {
-	printf("Sorry. %s not supported on this platform yet\n",__FUNCTION__);
+	FsChangeWindowState(0,"_NET_WM_STATE_MAXIMIZED_HORZ");
+	FsChangeWindowState(0,"_NET_WM_STATE_MAXIMIZED_VERT");
+	FsChangeWindowState(1,"_NET_WM_STATE_FULLSCREEN");
 }
 
 void FsSleep(int ms)
