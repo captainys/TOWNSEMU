@@ -43,6 +43,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["H"]=CMD_HELP;
 	primaryCmdMap["QUIT"]=CMD_QUIT;
 	primaryCmdMap["Q"]=CMD_QUIT;
+	primaryCmdMap["FORCEQUIT"]=CMD_FORCE_QUIT;
 	primaryCmdMap["RESET"]=CMD_RESET;
 	primaryCmdMap["?"]=CMD_HELP;
 	primaryCmdMap["RUN"]=CMD_RUN;
@@ -830,6 +831,9 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 		break;
 	case CMD_QUIT:
 		thr.SetRunMode(TownsThread::RUNMODE_EXIT);
+		break;
+	case CMD_FORCE_QUIT:
+		exit(0);
 		break;
 	case CMD_RESET:
 		towns.Reset();

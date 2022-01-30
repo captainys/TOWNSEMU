@@ -41,6 +41,7 @@ public:
 		CMD_NONE,
 
 		CMD_QUIT,
+		CMD_FORCE_QUIT,
 
 		CMD_RESET,
 
