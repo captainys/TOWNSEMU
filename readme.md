@@ -36,7 +36,7 @@ http://ysflight.com/FM/towns/FreeTOWNS/j.html
 
 
 # LIMITATIONS
-The emulation is getting better.  I have confirmed 20+ game titles playable on Tsugaru, and users report emulation state in the Wiki (https://wiki3.jp/fmtowns/page/10).  Wiki is set up by WINDY.  (Thanks!)  Overall, I think it is safe to say more than 97% of FM TOWNS apps works.
+The emulation is getting better.  Thanks to the great help from the users around the world, with conservative estimate Tsugaru can run more than 95% of the FM TOWNS commercial application titles.  Emulation state is in the Wiki (https://wiki3.jp/fmtowns/page/10).  Wiki is set up by WINDY.  (Thanks!)  Overall, I think it is safe to say more than 97% of FM TOWNS apps works.
 
 80486 emulation is, getting faster, but slow.  At this time, if you run the VM on Core i7 3.0GHz PC, VM runs somewhere like 80486 25 to 28MHz.  Core i9 2.80GHz can keep up with 66MHz.  There is a room for speed up.  Will be done down the road.
 
@@ -46,7 +46,7 @@ FM Sound Generators is becoming more realistic, but still not all functionalitie
 
 
 
-エミュレーションはかなりよくなってきて、自分で20以上のゲームタイトルがプレイ可能なことを確認しました。また、ユーザによる動作確認もWikiに上がってきています。(https://wiki3.jp/fmtowns/page/10) WikiはWINDYさんがセットアップしてくださいました。ありがとうございます。現状で、少なく見積もって97%以上のFM TOWNSアプリケーションを実行できると言えるようです。
+エミュレーションはかなりよくなってきて、世界中のユーザの皆さまのご協力により、少なく見積もってFM TOWNS用に発売されたソフトの95%以上が動作可能と推定しています。また、ユーザによる動作確認もWikiに上がってきています。(https://wiki3.jp/fmtowns/page/10) WikiはWINDYさんがセットアップしてくださいました。ありがとうございます。現状で、少なく見積もって97%以上のFM TOWNSアプリケーションを実行できると言えるようです。
 
 80486エミュレーションは速くなってきましたが、まだ遅いです。今のバージョンだとCore i7 3GHzで実行して80486 25～28MHz相当のスピードです。Core i9の2.8GHzだと66MHzぐらい出るようですが、まだスピードアップの余地があるので、そのうちやります。
 
