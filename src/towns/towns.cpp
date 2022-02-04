@@ -238,6 +238,9 @@ void FMTowns::State::PowerOn(void)
 	{
 		towns.vndrv.sharedDir[i].hostPath=argv.sharedDir[i];
 		towns.vndrv.sharedDir[i].linked=true;
+
+		towns.tgdrv.sharedDir[i].hostPath=argv.sharedDir[i];
+		towns.tgdrv.sharedDir[i].linked=true;
 	}
 
 	towns.crtc.state.highResAvailable=argv.highResAvailable;
