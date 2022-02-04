@@ -128,7 +128,8 @@ bool FMTowns::LoadState(std::string fName,class Outside_World &outsideWorld)
 /* virtual */ uint32_t FMTowns::SerializeVersion(void) const
 {
 	// Version 1 added app-specific settings for Daikoukaijidai
-	return 1;
+	// Version 2 added DOSLOLSEG, DOSLOLOFF, DOSVER
+	return 2;
 }
 
 /* virtual */ void FMTowns::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
@@ -174,6 +175,11 @@ bool FMTowns::LoadState(std::string fName,class Outside_World &outsideWorld)
 	PushInt32(data,state.mouseIntegrationSpeed);
 
 	PushUint16(data,state.DOSSEG);
+	// Version 2 and later >>
+	PushUint16(data,state.DOSVER);
+	PushUint16(data,state.DOSLOLOFF);
+	PushUint16(data,state.DOSLOLSEG);
+	// Version 2 and later <<
 
 	PushUint32(data,state.appSpecificSetting);
 	PushUint32(data,state.appSpecific_MousePtrX);
@@ -236,6 +242,12 @@ bool FMTowns::LoadState(std::string fName,class Outside_World &outsideWorld)
 	state.mouseIntegrationSpeed=ReadInt32(data);
 
 	state.DOSSEG=ReadUint16(data);
+	if(2<=version)
+	{
+		state.DOSVER=ReadUint16(data);
+		state.DOSLOLOFF=ReadUint16(data);
+		state.DOSLOLOFF=ReadUint16(data);
+	}
 
 	// If the user chose an app-specific setting on start, it shouldn't override it.
 	// For example, if start Dungeon Master without app-specific setting, and then later want to

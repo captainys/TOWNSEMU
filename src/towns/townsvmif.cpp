@@ -56,6 +56,19 @@ void FMTowns::ProcessVMToHostCommand(unsigned int vmCmd,unsigned int paramLen,co
 		std::cout << "DOSSEG=" << cpputil::Ustox(cpu.state.CS().value) << std::endl;
 		state.DOSSEG=cpu.state.CS().value;
 		break;
+	case TOWNS_VMIF_CMD_NOTIFY_DOSVER: // Capture DOS Version.  Use it immediately after MOV AH,30H  INT 21H  MOV BX,AX
+		{
+			std::cout << "DOSVER=" << cpu.GetBL() << "." << cpu.GetBH() << std::endl;
+			state.DOSVER=cpu.GetBX();
+		}
+		state.DOSVER=cpu.GetAX();
+		break;
+	case TOWNS_VMIF_CMD_NOTIFY_DOSLOL: // Capture DOS List of Lists, not DOS Laugh Out Loud.
+		std::cout << "DOS List Of Lists=" << cpputil::Ustox(cpu.state.ES().value) << ":" << cpputil::Ustox(cpu.GetBX()) << std::endl;
+		state.DOSSEG=cpu.state.ES().value;
+		state.DOSLOLSEG=cpu.state.ES().value;
+		state.DOSLOLOFF=cpu.GetBX();
+		break;
 	}
 }
 void FMTowns::VMHostFileTransfer(void)

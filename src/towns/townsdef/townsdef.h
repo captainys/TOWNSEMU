@@ -752,6 +752,10 @@ enum
 	TOWNS_VMIF_CMD_FILE_TXRDY=    0x06, // File Transfer Ready to Send (Data is in Sprite RAM)
 
 	TOWNS_VMIF_CMD_NOTIFY_DOSSEG= 0x07, // Capture CS as DOSSEG
+	TOWNS_VMIF_CMD_NOTIFY_DOSVER= 0x08, // Capture DOS Version.  Use it after MOV AH,30H  ->  INT 21H  ->  MOV BX,AX
+	TOWNS_VMIF_CMD_NOTIFY_DOSLOL= 0x09, // Capture DOS List of Lists, not DOS Laugh Out Loud.  Also updates DOSSEG (supposed to be the same)
+	TOWNS_VMIF_CMD_INT2FH=        0x0A, //
+	TOWNS_VMIF_CMD_INSTALL_DRIVE= 0x0B, //
 };
 
 enum

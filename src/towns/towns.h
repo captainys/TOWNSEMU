@@ -185,6 +185,9 @@ public:
 		int mouseIntegrationSpeed=256;
 
 		unsigned short DOSSEG=TOWNS_DOS_SEG; // for V2.1 L20 IO.SYS
+		unsigned short DOSVER=0;
+		unsigned short DOSLOLOFF=0;
+		unsigned short DOSLOLSEG=0;
 
 		/*! Application-Specific Customization parameters.
 		*/
