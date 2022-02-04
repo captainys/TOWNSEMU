@@ -1,4 +1,4 @@
-alltargets : exe\physdump.exe exe\dosntfy.exe
+alltargets : exe\physdump.exe exe\dosntfy.exe exe\tgdrv.com
 
 
 
@@ -19,3 +19,15 @@ exe\dosntfy.exe : build\dosntfy.obj
 	link build\dosntfy.obj;
 	copy dosntfy.exe exe\.
 	del dosntfy.exe
+
+
+
+build\tgdrv.obj : tgdrv.asm print.asm rdhigh.asm wrhigh.asm gdt.asm
+	masm tgdrv.asm build\tgdrv.obj build\tgdrv.lst NUL
+
+exe\tgdrv.com : build\tgdrv.obj
+	link build\tgdrv.obj;
+	exe2bin tgdrv.exe tgdrv.com
+	copy tgdrv.com exe\.
+	del tgdrv.exe
+	del tgdrv.com

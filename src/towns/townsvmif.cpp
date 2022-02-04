@@ -69,6 +69,15 @@ void FMTowns::ProcessVMToHostCommand(unsigned int vmCmd,unsigned int paramLen,co
 		state.DOSLOLSEG=cpu.state.ES().value;
 		state.DOSLOLOFF=cpu.GetBX();
 		break;
+
+	case TOWNS_VMIF_CMD_INT2FH: //        0x0A, //
+		std::cout << "INT 2FH Intercept." << std::endl;
+		cpu.SetCF(true);
+		break;
+	case TOWNS_VMIF_CMD_INSTALL_DRIVE: //  0x0B, //
+		std::cout << "Install Tsugaru Drive." << std::endl;
+		cpu.SetCF(false);
+		break;
 	}
 }
 void FMTowns::VMHostFileTransfer(void)
