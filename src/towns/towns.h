@@ -43,6 +43,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "timer.h"
 #include "serialport.h"
 #include "vndrv.h"
+#include "tgdrv.h"
 #include "townsparam.h"
 
 #include "eventlog.h"
@@ -370,6 +371,7 @@ public:
 	TownsTimer timer;
 	TownsSerialPort serialport;
 	TownsVnDrv vndrv;
+	TownsTgDrv tgdrv;
 	// Machine State <<
 
 	unsigned int townsType;

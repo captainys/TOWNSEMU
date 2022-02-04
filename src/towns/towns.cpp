@@ -374,7 +374,8 @@ FMTowns::FMTowns() :
 	gameport(this),
 	timer(this,&pic),
 	serialport(this),
-	vndrv(this)
+	vndrv(this),
+	tgdrv(this)
 {
 	townsType=TOWNSTYPE_2_MX;
 
@@ -401,6 +402,7 @@ FMTowns::FMTowns() :
 	allDevices.push_back(&keyboard);
 	allDevices.push_back(&serialport);
 	allDevices.push_back(&vndrv);
+	allDevices.push_back(&tgdrv);
 	VMBase::CacheDeviceIndex();
 
 	physMem.SetMainRAMSize(4*1024*1024);
@@ -582,6 +584,8 @@ FMTowns::FMTowns() :
 	io.AddDevice(&vndrv,TOWNSIO_VNDRV_ENABLE);//         0x2F12,
 	io.AddDevice(&vndrv,TOWNSIO_VNDRV_COMMAND);//        0x2F14,
 	io.AddDevice(&vndrv,TOWNSIO_VNDRV_AUXCOMMAND);//     0x2F18,
+
+	io.AddDevice(&tgdrv,TOWNSIO_VM_TGDRV);
 
 	PowerOn();
 }

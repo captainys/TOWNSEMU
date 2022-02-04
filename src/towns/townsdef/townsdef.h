@@ -430,6 +430,8 @@ enum
 	TOWNSIO_VM_HOST_IF_CMD_STATUS=0x2386,
 	TOWNSIO_VM_HOST_IF_DATA=      0x2387,
 
+	TOWNSIO_VM_TGDRV=             0x2388,
+
 	TOWNSIO_VNDRV_APICHECK=       0x2F10,
 	TOWNSIO_VNDRV_ENABLE=         0x2F12,
 	TOWNSIO_VNDRV_COMMAND=        0x2F14,
@@ -754,8 +756,12 @@ enum
 	TOWNS_VMIF_CMD_NOTIFY_DOSSEG= 0x07, // Capture CS as DOSSEG
 	TOWNS_VMIF_CMD_NOTIFY_DOSVER= 0x08, // Capture DOS Version.  Use it after MOV AH,30H  ->  INT 21H  ->  MOV BX,AX
 	TOWNS_VMIF_CMD_NOTIFY_DOSLOL= 0x09, // Capture DOS List of Lists, not DOS Laugh Out Loud.  Also updates DOSSEG (supposed to be the same)
-	TOWNS_VMIF_CMD_INT2FH=        0x0A, //
-	TOWNS_VMIF_CMD_INSTALL_DRIVE= 0x0B, //
+};
+
+enum
+{
+	TOWNS_VM_TGDRV_INSTALL=     0x01,
+	TOWNS_VM_TGDRV_INT2FH=      0x02,
 };
 
 enum

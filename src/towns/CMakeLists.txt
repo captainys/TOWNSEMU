@@ -1,5 +1,5 @@
 add_library(towns towns.h towns.cpp townsstate.cpp tbiosid.cpp townscmos.cpp townsio.cpp townsio.h townsvmif.cpp townsthread.cpp townsthread.h townsrenderthread.cpp townsrenderthread.h townsapp_dunmas.cpp townsapp_daikoukai.cpp)
-target_link_libraries(towns cpu vmbase device inout ramrom townscdrom townssound townsgameport townstimer townsmem townskeyboard townsrtc townspic townsdmac townscrtc townssprite townsrender townsfdc townsscsi townsserial townsvndrv d77 townsdef townsparam townseventlog outside_world)
+target_link_libraries(towns cpu vmbase device inout ramrom townscdrom townssound townsgameport townstimer townsmem townskeyboard townsrtc townspic townsdmac townscrtc townssprite townsrender townsfdc townsscsi townsserial townsvndrv townstgdrv d77 townsdef townsparam townseventlog outside_world)
 target_include_directories(towns PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_subdirectory(outside_world)
@@ -22,3 +22,4 @@ add_subdirectory(serialport)
 add_subdirectory(gameport)
 add_subdirectory(eventlog)
 add_subdirectory(vndrv)
+add_subdirectory(tgdrv)
