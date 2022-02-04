@@ -42,11 +42,16 @@ private:
 public:
 	virtual const char *DeviceName(void) const{return "TGDRIVE";}
 
+	FileSys sharedDir[TOWNS_TGDRV_MAX_NUM_DRIVES];
+
 	class State
 	{
 	public:
+		State();
 		void PowerOn(void);
 		void Reset(void);
+
+		char driveLetters[TOWNS_TGDRV_MAX_NUM_DRIVES];
 	};
 
 	State state;
@@ -60,6 +65,13 @@ public:
 	virtual unsigned int IOReadByte(unsigned int ioport);
 
 	void Install(void);
+
+	unsigned int DriveLetterToDriveIndex(char drvLetter) const;
+	char DriveIndexToDriveLetter(unsigned int driveIndex) const;
+	unsigned int GetCDSCount(void) const;
+	unsigned int GetCDSLength(void) const;
+	uint32_t GetCDSAddress(unsigned int driveIndex) const ; // 0 means A drive
+	uint16_t GetCDSType(unsigned int driveIndex) const ;  // 0 means A drive
 
 	/*! Version used for serialization.
 	*/

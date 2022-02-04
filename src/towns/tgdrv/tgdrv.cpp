@@ -16,11 +16,26 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "tgdrv.h"
 #include "towns.h"
 
+TownsTgDrv::State::State()
+{
+	for(auto &letter : driveLetters)
+	{
+		letter=0;
+	}
+}
 void TownsTgDrv::State::PowerOn(void)
 {
+	for(auto &letter : driveLetters)
+	{
+		letter=0;
+	}
 }
 void TownsTgDrv::State::Reset(void)
 {
+	for(auto &letter : driveLetters)
+	{
+		letter=0;
+	}
 }
 
 TownsTgDrv::TownsTgDrv(class FMTowns *townsPtr) : Device(townsPtr)
@@ -90,7 +105,147 @@ void TownsTgDrv::Install(void)
 		param.push_back(cpu.FetchByte(cpu.state.CS().addressSize,cpu.state.CS(),0x0081+i,mem));
 	}
 	std::cout << "{" << param << "}" << std::endl;
+
+
+	auto CDSCount=GetCDSCount();
+	std::cout << "CDS Count=" << CDSCount << std::endl;
+
+	for(int i=0; i<CDSCount; ++i)
+	{
+		std::cout << 'A'+i << " ";
+		std::cout << cpputil::Ustox(GetCDSType(i)) << "h " << std::endl;
+	}
+
+	std::vector <char> drives;
+	for(int i=0; i+3<param.size(); ++i)
+	{
+		if('/'==param[i] && ('D'==param[i+1] || 'd'==param[i+1]) && ':'==param[i+2])
+		{
+			unsigned int d=DriveLetterToDriveIndex(param[i+3]);
+			if(d<=CDSCount && 0==GetCDSType(d))  // Drive is unused.
+			{
+				drives.push_back(param[i+3]);
+			}
+		}
+	}
+	if(0==drives.size())
+	{
+		unsigned int driveIndex=0;
+		for(auto &fs : sharedDir)
+		{
+			if(true==fs.linked)
+			{
+				while(driveIndex<CDSCount)
+				{
+					if(0==GetCDSType(driveIndex))
+					{
+						drives.push_back(DriveIndexToDriveLetter(driveIndex));
+						++driveIndex;
+						break;
+					}
+					++driveIndex;
+				}
+			}
+			if(CDSCount<=driveIndex)
+			{
+				break;
+			}
+		}
+	}
+	if(0<drives.size())
+	{
+		int I=0;
+		for(auto letter : drives)
+		{
+			if(TOWNS_TGDRV_MAX_NUM_DRIVES<=I)
+			{
+				break;
+			}
+
+			cpu.StoreByte(
+			    mem,
+			    cpu.state.CS().addressSize,
+			    cpu.state.DS(),
+			    0x109+I,
+			    letter);
+
+			char str[2]={letter,0};
+			std::cout << "Assign Drive " << str << std::endl;
+
+			auto CDSAddr=GetCDSAddress(DriveLetterToDriveIndex(letter));
+			for(int i=0; i<GetCDSLength(); ++i)
+			{
+				mem.StoreByte(CDSAddr+i,0);
+			}
+			mem.StoreByte(CDSAddr  ,'\\');
+			mem.StoreByte(CDSAddr+1,'\\');
+			mem.StoreByte(CDSAddr+2,letter);
+			mem.StoreByte(CDSAddr+3,'.');
+			mem.StoreByte(CDSAddr+4,'A');
+			mem.StoreByte(CDSAddr+5,'.');
+			mem.StoreWord(CDSAddr+0x43,0xC000);
+
+			++I;
+		}
+		cpu.StoreByte(
+		    mem,
+		    cpu.state.CS().addressSize,
+		    cpu.state.DS(),
+		    0x108,
+		    I);
+	}
 }
+
+unsigned int TownsTgDrv::DriveLetterToDriveIndex(char drvLetter) const
+{
+	if('a'<=drvLetter && drvLetter<='z')
+	{
+		return drvLetter-'a';
+	}
+	else
+	{
+		return drvLetter-'A';
+	}
+}
+char TownsTgDrv::DriveIndexToDriveLetter(unsigned int driveIndex) const
+{
+	return 'A'+driveIndex;
+}
+unsigned int TownsTgDrv::GetCDSCount(void) const
+{
+	auto &mem=townsPtr->mem;
+	auto addr=townsPtr->state.DOSLOLSEG*0x10+TOWNS_DOS_CDS_COUNT;
+	return mem.FetchByte(addr);
+}
+
+unsigned int TownsTgDrv::GetCDSLength(void) const
+{
+	auto dosverMajor=townsPtr->state.DOSVER&0xFF;
+	if(4<=dosverMajor)
+	{
+		return 0x58;
+	}
+	else
+	{
+		return 0x51;
+	}
+}
+
+uint32_t TownsTgDrv::GetCDSAddress(unsigned int driveIndex) const
+{
+	auto &mem=townsPtr->mem;
+	auto DOSADDR=townsPtr->state.DOSLOLSEG*0x10;
+	auto ofs=mem.FetchWord(DOSADDR+TOWNS_DOS_CDS_LIST_PTR);
+	auto seg=mem.FetchWord(DOSADDR+TOWNS_DOS_CDS_LIST_PTR+2);
+	return seg*0x10+ofs+GetCDSLength()*driveIndex;
+}
+
+uint16_t TownsTgDrv::GetCDSType(unsigned int driveIndex) const
+{
+	auto addr=GetCDSAddress(driveIndex);
+	return townsPtr->mem.FetchWord(addr+0x43);
+}
+
 
 /* virtual */ uint32_t TownsTgDrv::SerializeVersion(void) const
 {

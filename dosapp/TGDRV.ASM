@@ -30,8 +30,8 @@ MAIN					PROC
 ; How can I tell it is already installed?
 
 						ORG		0108H
-NUM_TGDRV				DB		0			; CS:108H
-ASSIGNED_TGDRV_LETTERS	DB		16 dup(0)	; CS:109H to CS:118H
+NUM_TGDRV				DB		0                                 ; CS:108H
+ASSIGNED_TGDRV_LETTERS	DB		TOWNS_TGDRV_MAX_NUM_DRIVES dup(0) ; CS:109H to CS:110H
 
 MAIN					ENDP
 
@@ -39,6 +39,7 @@ MAIN					ENDP
 
 ;////////////////////////////////////////////////////////////
 
+						ORG		0200H
 INT2FH					PROC
 
 						PUSH	AX
