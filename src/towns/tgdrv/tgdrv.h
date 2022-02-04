@@ -20,6 +20,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "device.h"
 #include "townsdef.h"
 #include "cpputil.h"
+#include "filesys.h"
 
 
 
@@ -56,8 +57,9 @@ public:
 	virtual void Reset(void);
 
 	virtual void IOWriteByte(unsigned int ioport,unsigned int data);
-
 	virtual unsigned int IOReadByte(unsigned int ioport);
+
+	void Install(void);
 
 	/*! Version used for serialization.
 	*/

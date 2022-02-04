@@ -44,6 +44,7 @@ TownsTgDrv::TownsTgDrv(class FMTowns *townsPtr) : Device(townsPtr)
 		{
 		case TOWNS_VM_TGDRV_INSTALL://     0x01,
 			std::cout << "Installing Tsugaru Drive." << std::endl;
+			Install();
 			townsPtr->cpu.SetCF(false);
 			break;
 		case TOWNS_VM_TGDRV_INT2FH://      0x02,
@@ -73,6 +74,22 @@ TownsTgDrv::TownsTgDrv(class FMTowns *townsPtr) : Device(townsPtr)
 		break;
 	}
 	return 0xff;
+}
+
+void TownsTgDrv::Install(void)
+{
+	auto &cpu=townsPtr->cpu;
+	auto &mem=townsPtr->mem;
+
+	// CS:0080  Length of command parameter
+	// CS:0081- Command parameter
+	std::string param;
+	int len=cpu.FetchByte(cpu.state.CS().addressSize,cpu.state.CS(),0x0080,mem);
+	for(int i=0; i<len; ++i)
+	{
+		param.push_back(cpu.FetchByte(cpu.state.CS().addressSize,cpu.state.CS(),0x0081+i,mem));
+	}
+	std::cout << "{" << param << "}" << std::endl;
 }
 
 /* virtual */ uint32_t TownsTgDrv::SerializeVersion(void) const

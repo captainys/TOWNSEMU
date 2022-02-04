@@ -766,6 +766,11 @@ enum
 
 enum
 {
+	TOWNS_TGDRV_MAX_NUM_DRIVES=8
+};
+
+enum
+{
 	TOWNS_VMIF_TFR_END=           0x00,
 	TOWNS_VMIF_TFR_HOST_TO_VM=    0x01,
 	TOWNS_VMIF_TFR_VM_TO_HOST=    0x02,

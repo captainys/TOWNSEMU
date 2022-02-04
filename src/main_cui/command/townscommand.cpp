@@ -2469,6 +2469,17 @@ void TownsCommandInterpreter::Execute_Dump_DOSInfo(FMTowns &towns,Command &cmd)
 		}
 		else if("CDS"==ARGV2)
 		{
+			auto dosverMajor=towns.state.DOSVER&0xFF;
+			unsigned int CDSLen;
+			if(4<=dosverMajor)
+			{
+				CDSLen=0x58;
+			}
+			else
+			{
+				CDSLen=0x51;
+			}
+
 			auto ofs=towns.mem.FetchWord(DOSADDR+TOWNS_DOS_CDS_LIST_PTR);
 			auto seg=towns.mem.FetchWord(DOSADDR+TOWNS_DOS_CDS_LIST_PTR+2);
 			auto nCDS=towns.mem.FetchByte(DOSADDR+TOWNS_DOS_CDS_COUNT);
@@ -2476,7 +2487,7 @@ void TownsCommandInterpreter::Execute_Dump_DOSInfo(FMTowns &towns,Command &cmd)
 			//            00000000h 0000h 00000000h 0000h 0000h A:
 			for(unsigned int i=0; i<=nCDS; ++i)
 			{
-				auto cds=ofs+0x51*i;
+				auto cds=ofs+CDSLen*i;
 				if(i==nCDS)
 				{
 					std::cout << "TemporaryCDS" << std::endl;
