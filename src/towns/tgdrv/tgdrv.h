@@ -43,6 +43,7 @@ public:
 	virtual const char *DeviceName(void) const{return "TGDRIVE";}
 
 	FileSys sharedDir[TOWNS_TGDRV_MAX_NUM_DRIVES];
+	FileSys::DirectoryEntry dirent[TOWNS_TGDRV_MAX_NUM_DRIVES];
 
 	class State
 	{
@@ -65,12 +66,15 @@ public:
 	virtual unsigned int IOReadByte(unsigned int ioport);
 
 	bool Int2F_111B_FindFirst(void);
+	bool Int2F_111C_FindNext(void);
 	bool Int2F_1123_QualifyRemoteFileName(void);
 	bool Int2F_1125_RedirectedPrinterMode(void);
 
 	void ReturnAX(uint16_t ax);
 
 	int DriveLetterToSharedDirIndex(char letter) const;
+	void MakeDOSDirEnt(uint32_t DTABuffer,const FileSys::DirectoryEntry &dirent);
+	std::string FetchCString(uint32_t physAddr) const;
 
 
 	bool Install(void);
@@ -82,6 +86,7 @@ public:
 	std::string GetFilenameBuffer1(void) const;
 	std::string GetLastOfFilename(std::string in) const;
 	std::string FilenameTo11Bytes(std::string in) const;
+	std::string FullPathToSubDir(std::string fn) const;
 	uint32_t GetCDSAddress(unsigned int driveIndex) const ; // 0 means A drive
 	uint16_t GetCDSType(unsigned int driveIndex) const ;  // 0 means A drive
 	uint32_t GetDTAAddress(void) const;

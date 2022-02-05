@@ -13,7 +13,18 @@ public:
 
 /* static */ void FileSys::FindContext::DirEntFromFd(DirectoryEntry &ent,WIN32_FIND_DATAA &fd)
 {
+	FILETIME localFileTime;
+	FileTimeToLocalFileTime(&fd.ftLastWriteTime,&localFileTime);
+	SYSTEMTIME sysTime;
+	FileTimeToSystemTime(&localFileTime,&sysTime);
+
 	ent.fName=fd.cFileName;
+	ent.year=sysTime.wYear;
+	ent.month=sysTime.wMonth;
+	ent.day=sysTime.wDay;
+	ent.hours=sysTime.wHour;
+	ent.minutes=sysTime.wMinute;
+	ent.seconds=sysTime.wSecond;
 	if(0==(FILE_ATTRIBUTE_DIRECTORY&fd.dwFileAttributes))
 	{
 		ent.attr&=~ATTR_DIR;

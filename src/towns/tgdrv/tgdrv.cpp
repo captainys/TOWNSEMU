@@ -80,6 +80,9 @@ TownsTgDrv::TownsTgDrv(class FMTowns *townsPtr) : Device(townsPtr)
 			case 0x111b:
 				myDrive=Int2F_111B_FindFirst();
 				break;
+			case 0x111c:
+				myDrive=Int2F_111C_FindNext();
+				break;
 			case 0x1123:
 				myDrive=Int2F_1123_QualifyRemoteFileName();
 				break;
@@ -158,13 +161,58 @@ bool TownsTgDrv::Int2F_111B_FindFirst(void)
 		}
 		else
 		{
-			// if not found
+			auto subDir=FullPathToSubDir(fn);
+			dirent[sharedDirIndex]=sharedDir[sharedDirIndex].FindFirst(subDir);
+			if(true==dirent[sharedDirIndex].endOfDir)
 			{
+				// if not found
 				ReturnAX(TOWNS_DOSERR_FILE_NOT_FOUND);
 				townsPtr->cpu.SetCF(true);
 			}
+			else
+			{
+				MakeDOSDirEnt(DTABuffer+0x15,dirent[sharedDirIndex]);
+				townsPtr->cpu.SetCF(false);
+			}
 		}
 		return true; // Yes, it's mine.
+	}
+	return false;
+}
+bool TownsTgDrv::Int2F_111C_FindNext(void)
+{
+	// ES:DI is CDS for the drive.
+	uint32_t DTABuffer=GetDTAAddress();
+	unsigned char drv=townsPtr->mem.FetchByte(DTABuffer);
+	if(0==(drv&0x80))
+	{
+		return false;
+	}
+	drv&=0x7F;
+	auto sharedDirIndex=DriveLetterToSharedDirIndex(drv);
+	if(0<=sharedDirIndex)
+	{
+		if(true==dirent[sharedDirIndex].endOfDir)
+		{
+			ReturnAX(TOWNS_DOSERR_FILE_NOT_FOUND);
+			townsPtr->cpu.SetCF(true);
+		}
+		else
+		{
+			dirent[sharedDirIndex]=sharedDir[sharedDirIndex].FindNext();
+			if(true==dirent[sharedDirIndex].endOfDir)
+			{
+				// if not found
+				ReturnAX(TOWNS_DOSERR_FILE_NOT_FOUND);
+				townsPtr->cpu.SetCF(true);
+			}
+			else
+			{
+				MakeDOSDirEnt(DTABuffer+0x15,dirent[sharedDirIndex]);
+				townsPtr->cpu.SetCF(false);
+			}
+		}
+		return true;
 	}
 	return false;
 }
@@ -198,7 +246,38 @@ int TownsTgDrv::DriveLetterToSharedDirIndex(char letter) const
 	}
 	return -1;
 }
+void TownsTgDrv::MakeDOSDirEnt(uint32_t DTABuffer,const FileSys::DirectoryEntry &dirent)
+{
+	auto eleven=FilenameTo11Bytes(dirent.fName);
+	for(int i=0; i<11; ++i)
+	{
+		townsPtr->mem.StoreByte(DTABuffer+i,eleven[i]);
+	}
+	townsPtr->mem.StoreByte(DTABuffer+0x0B,dirent.attr);
+	townsPtr->mem.StoreByte(DTABuffer+0x0C,0);
 
+	uint16_t time=(dirent.hours<<11)|(dirent.minutes<<5)|(dirent.seconds/2);
+	uint16_t date=((dirent.year-1980)<<9)|(dirent.month<<5)|(dirent.day);
+
+	townsPtr->mem.StoreWord(DTABuffer+0x16,time);
+	townsPtr->mem.StoreWord(DTABuffer+0x18,date);
+	townsPtr->mem.StoreWord(DTABuffer+0x1A,0); // First cluster N/A for Network file
+	townsPtr->mem.StoreDword(DTABuffer+0x1C,(uint32_t)dirent.length);
+}
+std::string TownsTgDrv::FetchCString(uint32_t physAddr) const
+{
+	std::string str;
+	for(;;)
+	{
+		auto c=townsPtr->mem.FetchByte(physAddr++);
+		if(0==c)
+		{
+			break;
+		}
+		str.push_back(c);
+	}
+	return str;
+}
 
 bool TownsTgDrv::Install(void)
 {
@@ -392,6 +471,11 @@ std::string TownsTgDrv::FilenameTo11Bytes(std::string in) const
 		eleven.push_back(' ');
 	}
 
+	while('.'!=in[ptr] && ptr<in.size())
+	{
+		++ptr;
+	}
+
 	if('.'==in[ptr])
 	{
 		++ptr;
@@ -405,6 +489,33 @@ std::string TownsTgDrv::FilenameTo11Bytes(std::string in) const
 		eleven.push_back(' ');
 	}
 	return eleven;
+}
+std::string TownsTgDrv::FullPathToSubDir(std::string fn) const
+{
+	std::string subdir;
+	int i0=0;
+	if(('/'==fn[0] && '/'==fn[1]) || ('\\'==fn[0] && '\\'==fn[1]))
+	{
+		// \\Q.A. format
+		i0=6;
+	}
+	else if(':'==fn[1])
+	{
+		// Q: format
+		i0=2;
+	}
+	// Assume after last slash is find template.
+	int lastSlash=0;
+	for(int i=i0; i<fn.size(); ++i)
+	{
+		if('/'==fn[i] || '\\'==fn[i])
+		{
+			lastSlash=subdir.size();
+		}
+		subdir.push_back(fn[i]);
+	}
+	subdir.resize(lastSlash);
+	return subdir;
 }
 uint32_t TownsTgDrv::GetCDSAddress(unsigned int driveIndex) const
 {
