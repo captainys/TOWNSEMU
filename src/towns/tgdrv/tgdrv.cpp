@@ -218,6 +218,9 @@ bool TownsTgDrv::Int2F_111C_FindNext(void)
 }
 bool TownsTgDrv::Int2F_1123_QualifyRemoteFileName(void)
 {
+	auto physAddr=townsPtr->cpu.state.DS().baseLinearAddr+townsPtr->cpu.state.SI();
+	auto fn=FetchCString(physAddr);
+	std::cout << fn << std::endl;
 	return false;
 }
 bool TownsTgDrv::Int2F_1125_RedirectedPrinterMode(void)
