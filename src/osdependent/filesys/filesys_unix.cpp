@@ -9,9 +9,25 @@ class FileSys::FindContext
 {
 public:
 	DIR *dp=nullptr;
-	std::string subDir;
+	std::string subPath;
 	DirectoryEntry Read(std::string hostPath) const;
+
+	~FindContext();
+	void Close(void);
 };
+FileSys::FindContext::~FindContext()
+{
+	Close();
+}
+void FileSys::FindContext::Close(void)
+{
+	if(nullptr!=dp)
+	{
+		closedir(dp);
+		dp=nullptr;
+	}
+}
+
 FileSys::DirectoryEntry FileSys::FindContext::Read(std::string hostPath) const
 {
 	DirectoryEntry ent;
@@ -29,7 +45,7 @@ FileSys::DirectoryEntry FileSys::FindContext::Read(std::string hostPath) const
 		{
 			ent.endOfDir=false;
 
-			std::string ful=hostPath+"/"+subDir+"/"+de->d_name;
+			std::string ful=hostPath+"/"+subPath+"/"+de->d_name;
 
 			struct stat st;
 			stat(ful.c_str(),&st);
@@ -63,30 +79,46 @@ FileSys::~FileSys()
 	delete context;
 	context=nullptr;
 }
-FileSys::DirectoryEntry FileSys::FindFirst(std::string subDir)
+FileSys::DirectoryEntry FileSys::FindFirst(std::string subPath)
+{
+	return FindFirst(subPath,this->context);
+}
+FileSys::DirectoryEntry FileSys::FindNext(void)
+{
+	return FindNext(this->context);
+}
+
+
+FileSys::FindContext *FileSys::CreateFindContext(void)
+{
+	return new FindContext;
+}
+void FileSys::DeleteFindContext(FindContext *find)
+{
+	delete find;
+}
+FileSys::DirectoryEntry FileSys::FindFirst(std::string subPath,FindContext *context)
 {
 	std::string path=hostPath;
-	if(""!=subDir && "/"!=subDir && "\\"!=subDir)
+	if(""!=subPath && "/"!=subPath && "\\"!=subPath)
 	{
 		if(""==path || (path.back()!='/' && path.back()!='\\'))
 		{
 			path.push_back('/');
 		}
-		path+=subDir;
+		path+=subPath;
 	}
 	DirectoryEntry ent;
 
-	if(nullptr!=context->dp)
-	{
-		closedir(context->dp);
-	}
+	context->Close();
+
 	context->dp=opendir(path.c_str());
 	if(nullptr==context->dp)
 	{
 		ent.endOfDir=true;
 		return ent;
 	}
-	context->subDir=subDir;
+	context->subPath=subPath;
 
 	ent=context->Read(hostPath);
 	if(true==ent.endOfDir)
@@ -96,7 +128,7 @@ FileSys::DirectoryEntry FileSys::FindFirst(std::string subDir)
 	}
 	return ent;
 }
-FileSys::DirectoryEntry FileSys::FindNext(void)
+FileSys::DirectoryEntry FileSys::FindNext(FindContext *context)
 {
 	DirectoryEntry ent;
 	ent=context->Read(hostPath);
@@ -106,20 +138,6 @@ FileSys::DirectoryEntry FileSys::FindNext(void)
 		context->dp=nullptr;
 	}
 	return ent;
-}
-
-
-FileSys::FindContext *FileSys::CreateFindContext(void)
-{
-}
-void FileSys::DeleteFindContext(FindContext *find)
-{
-}
-FileSys::DirectoryEntry FileSys::FindFirst(std::string subPath,FindContext *find)
-{
-}
-FileSys::DirectoryEntry FileSys::FindNext(FindContext *find)
-{
 }
 
 

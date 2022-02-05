@@ -6,6 +6,7 @@
 int main(int ac,char *av[])
 {
 	FileSys fsys;
+	auto context=fsys.CreateFindContext();
 
 	fsys.hostPath=av[1];
 
@@ -16,12 +17,12 @@ int main(int ac,char *av[])
 		FileSys::DirectoryEntry ent;
 		if(true==first)
 		{
-			ent=fsys.FindFirst(av[2]);
+			ent=fsys.FindFirst(av[2],context);
 			first=false;
 		}
 		else
 		{
-			ent=fsys.FindNext();
+			ent=fsys.FindNext(context);
 		}
 
 		if(true==ent.endOfDir)
@@ -50,6 +51,9 @@ int main(int ac,char *av[])
 			checked|=16;
 		}
 	}
+
+	fsys.DeleteFindContext(context);
+
 	if(31==checked)
 	{
 		std::cout << "Detected all files." << std::endl;
