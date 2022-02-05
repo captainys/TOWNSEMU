@@ -107,6 +107,22 @@ FileSys::DirectoryEntry FileSys::FindNext(void)
 	}
 	return ent;
 }
+
+
+FileSys::FindContext *FileSys::CreateFindContext(void)
+{
+}
+void FileSys::DeleteFindContext(FindContext *find)
+{
+}
+FileSys::DirectoryEntry FileSys::FindFirst(std::string subPath,FindContext *find)
+{
+}
+FileSys::DirectoryEntry FileSys::FindNext(FindContext *find)
+{
+}
+
+
 /* static */ std::string FileSys::Getcwd(void)
 {
 	char buf[1024];

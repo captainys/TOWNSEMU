@@ -76,6 +76,13 @@ public:
 	//   Also the current implementation cannot support multiple find-contexts
 	//   running simultaneously.
 
+	// In OS-Dependent part >>
+	FindContext *CreateFindContext(void);
+	void DeleteFindContext(FindContext *find);
+	DirectoryEntry FindFirst(std::string subPath,FindContext *find);
+	DirectoryEntry FindNext(FindContext *find);
+	// In OS-Dependent part <<
+
 
 
 	enum
