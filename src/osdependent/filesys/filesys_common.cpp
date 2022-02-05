@@ -43,7 +43,13 @@ std::vector <unsigned char> FileSys::SystemFileTable::Read(uint32_t len)
 
 	return buf;
 }
-
+bool FileSys::SubPathIsDirectory(const std::string &subPath)
+{
+	auto findContext=CreateFindContext();
+	auto dirent=FindFirst(subPath,findContext);
+	DeleteFindContext(findContext);
+	return 0!=(dirent.attr&ATTR_DIR);
+}
 int FileSys::OpenExistingFile(std::string subPath,unsigned int openMode)
 {
 	auto sftIdx=FindAvailableSFT();

@@ -137,8 +137,36 @@ bool TownsTgDrv::Int2F_1105_Chdir(void)
 	auto sharedDirIdx=FullyQualifiedFileNameToSharedDirIndex(fName);
 	if(0<=sharedDirIdx)
 	{
+		auto CDSAddr=GetCDSAddress(DriveLetterToDriveIndex(driveLetter));
+
+		auto subPath=DropDriveLetter(fName);
 		std::cout << fName << std::endl;
-		townsPtr->cpu.SetCF(true);
+		std::cout << subPath << std::endl;
+		if(0==subPath.size() || "\\"==subPath || "/"==subPath)
+		{
+			for(int i=6; i<0x43; ++i)
+			{
+				townsPtr->mem.StoreByte(CDSAddr+i,0);
+			}
+			townsPtr->cpu.SetCF(false);
+		}
+		else if(true==sharedDir[sharedDirIdx].SubPathIsDirectory(subPath) && subPath.size()<0x43-7)
+		{
+			for(int i=0; i<subPath.size() && i+6<0x42; ++i)
+			{
+				townsPtr->mem.StoreByte(CDSAddr+6+i,subPath[i]);
+			}
+			for(int i=subPath.size(); i+6<0x43; ++i)
+			{
+				townsPtr->mem.StoreByte(CDSAddr+6+i,0);
+			}
+			townsPtr->cpu.SetCF(false);
+		}
+		else
+		{
+			ReturnAX(TOWNS_DOSERR_FILE_NOT_FOUND);
+			townsPtr->cpu.SetCF(true);
+		}
 		return true; // Yes, it's my drive.
 	}
 	return false; // No, it's not my drive.
@@ -267,8 +295,8 @@ bool TownsTgDrv::Int2F_1116_OpenExistingFile(void)
 		}
 		else
 		{
-			townsPtr->cpu.SetCF(true);
 			ReturnAX(TOWNS_DOSERR_FILE_NOT_FOUND);
+			townsPtr->cpu.SetCF(true);
 		}
 		return true; // Yes, it's my drive.
 	}

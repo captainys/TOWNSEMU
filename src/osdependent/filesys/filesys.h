@@ -104,7 +104,13 @@ public:
 		std::vector <unsigned char> Read(uint32_t len);
 	};
 	SystemFileTable sft[MAX_NUM_OPEN_FILE];
+	/*!
+	*/
+	bool SubPathIsDirectory(const std::string &subPath);
+
 	/*! Returns index to SFT.
+	    subPath is relative to the virtual drive in the VM,
+	    relative to the shared directory in the host.
 	*/
 	int OpenExistingFile(std::string subPath,unsigned int openMode);
 	/*! SftIdx is an index returned by one of open functions.
