@@ -77,6 +77,12 @@ TownsTgDrv::TownsTgDrv(class FMTowns *townsPtr) : Device(townsPtr)
 			bool myDrive=false;
 			switch(townsPtr->cpu.GetBX())
 			{
+			case 0x1105:
+				myDrive=Int2F_1105_Chdir();
+				break;
+			case 0x1106:
+				myDrive=Int2F_1106_CloseRemoteFile();
+				break;
 			case 0x1108:
 				myDrive=Int2F_1108_ReadFromRemoteFile();
 				break;
@@ -124,6 +130,53 @@ TownsTgDrv::TownsTgDrv(class FMTowns *townsPtr) : Device(townsPtr)
 	return 0xff;
 }
 
+bool TownsTgDrv::Int2F_1105_Chdir(void)
+{
+	auto fName=GetFilenameBuffer1();
+	auto driveLetter=FullyQualifiedFileNameToDriveLetter(fName);
+	auto sharedDirIdx=FullyQualifiedFileNameToSharedDirIndex(fName);
+	if(0<=sharedDirIdx)
+	{
+		std::cout << fName << std::endl;
+		townsPtr->cpu.SetCF(true);
+		return true; // Yes, it's my drive.
+	}
+	return false; // No, it's not my drive.
+}
+bool TownsTgDrv::Int2F_1106_CloseRemoteFile(void)
+{
+	char drvLetter='A'+FetchDriveCodeFromSFT(townsPtr->cpu.state.ES(),townsPtr->cpu.state.DI());
+	auto sharedDirIdx=DriveLetterToSharedDirIndex(drvLetter);
+	if(0<=sharedDirIdx)
+	{
+		auto hostSFTIdx=townsPtr->cpu.FetchWord(
+		    townsPtr->cpu.state.CS().addressSize,
+		    townsPtr->cpu.state.ES(),
+		    townsPtr->cpu.state.DI()+0x0B,
+		    townsPtr->mem);
+		if(0<=hostSFTIdx &&
+		   hostSFTIdx<FileSys::MAX_NUM_OPEN_FILE &&
+		   true==sharedDir[sharedDirIdx].sft[hostSFTIdx].IsOpen())
+		{
+			sharedDir[sharedDirIdx].CloseFile(hostSFTIdx);
+			townsPtr->cpu.StoreWord(
+				townsPtr->mem,
+				townsPtr->cpu.state.CS().addressSize,
+				townsPtr->cpu.state.ES(),
+				townsPtr->cpu.state.DI(),
+				0);  // Clear ref count.
+			townsPtr->cpu.SetCF(false);
+		}
+		else
+		{
+			// File not open.
+			ReturnAX(TOWNS_DOSERR_INVALID_HANDLE);
+			townsPtr->cpu.SetCF(true);
+		}
+		return true; // Yes, it's my drive.
+	}
+	return false; // No, it's not my drive.
+}
 bool TownsTgDrv::Int2F_1108_ReadFromRemoteFile(void)
 {
 	char drvLetter='A'+FetchDriveCodeFromSFT(townsPtr->cpu.state.ES(),townsPtr->cpu.state.DI());
@@ -162,9 +215,9 @@ bool TownsTgDrv::Int2F_1108_ReadFromRemoteFile(void)
 			ReturnAX(TOWNS_DOSERR_INVALID_HANDLE);
 			townsPtr->cpu.SetCF(true);
 		}
-		return true;
+		return true; // Yes, it's my drive.
 	}
-	return false;
+	return false; // No, it's not my drive.
 }
 
 bool TownsTgDrv::Int2F_110C_GetDiskInformation(void)
@@ -440,7 +493,7 @@ void TownsTgDrv::MakeVMSFT(const class i486DX::SegmentRegister &seg,uint32_t off
 	devInfo|=0x8000; // Redirected.
 	cpu.StoreWord(mem,CS.addressSize,seg,offset+0x05,devInfo);
 
-	cpu.StoreDword(mem,CS.addressSize,seg,offset+0x07,0); // Redirected. No DPB
+	cpu.StoreDword(mem,CS.addressSize,seg,offset+0x07,TGDRV_ID); // Redirected. No DPB.  Write Tsugaru Drive ID.
 	cpu.StoreWord(mem,CS.addressSize,seg,offset+0x0B,hostSFTIdx); // Use this word to connect with host.
 
 	cpu.StoreWord(mem,CS.addressSize,seg,offset+0x0D,hostSFT.FormatDOSTime());
@@ -617,6 +670,7 @@ bool TownsTgDrv::Install(void)
 			mem.StoreByte(CDSAddr+4,'A');
 			mem.StoreByte(CDSAddr+5,'.');
 			mem.StoreWord(CDSAddr+0x43,0xC000);
+			mem.StoreDword(CDSAddr+0x45,TGDRV_ID); // Put "TGDR" instead of DPB pointer.
 			mem.StoreWord(CDSAddr+0x4F,6); // Length for "\\P.A."
 
 			++I;

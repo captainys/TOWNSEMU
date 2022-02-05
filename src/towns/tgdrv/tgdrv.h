@@ -68,7 +68,9 @@ public:
 	virtual void IOWriteByte(unsigned int ioport,unsigned int data);
 	virtual unsigned int IOReadByte(unsigned int ioport);
 
+	bool Int2F_1105_Chdir(void);
 	bool Int2F_1108_ReadFromRemoteFile(void);
+	bool Int2F_1106_CloseRemoteFile(void);
 	bool Int2F_110C_GetDiskInformation(void);
 	bool Int2F_1116_OpenExistingFile(void);
 	bool Int2F_111B_FindFirst(void);
