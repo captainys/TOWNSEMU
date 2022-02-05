@@ -59,14 +59,35 @@ TownsTgDrv::TownsTgDrv(class FMTowns *townsPtr) : Device(townsPtr)
 		{
 		case TOWNS_VM_TGDRV_INSTALL://     0x01,
 			std::cout << "Installing Tsugaru Drive." << std::endl;
-			Install();
-			townsPtr->cpu.SetCF(false);
+			if(true==Install())
+			{
+				townsPtr->cpu.SetCF(false);
+			}
+			else
+			{
+				townsPtr->cpu.SetCF(true);
+			}
 			break;
 		case TOWNS_VM_TGDRV_INT2FH://      0x02,
-			std::cout << "INT 2FH Intercept." << std::endl;
+			// To use AL for OUT DX,AL  AX is copied to BX.
+			// AX is also at SS:[SP]
+			std::cout << "INT 2FH Intercept. Req=" << cpputil::Ustox(townsPtr->cpu.GetBX()) << std::endl;
 			// Set PF if not my drive.
 			// Clear PF if my drive.
-			townsPtr->cpu.SetPF(true);
+			bool myDrive=false;
+			switch(townsPtr->cpu.GetBX())
+			{
+			case 0x111b:
+				myDrive=Int2F_111B_FindFirst();
+				break;
+			case 0x1123:
+				myDrive=Int2F_1123_QualifyRemoteFileName();
+				break;
+			case 0x1125:
+				myDrive=Int2F_1125_RedirectedPrinterMode();
+				break;
+			}
+			townsPtr->cpu.SetPF(true!=myDrive);
 			break;
 		}
 		break;
@@ -91,7 +112,95 @@ TownsTgDrv::TownsTgDrv(class FMTowns *townsPtr) : Device(townsPtr)
 	return 0xff;
 }
 
-void TownsTgDrv::Install(void)
+
+bool TownsTgDrv::Int2F_111B_FindFirst(void)
+{
+	auto sAttr=GetSAttr();
+	std::string fn=GetFilenameBuffer1();
+	auto DTABuffer=GetDTAAddress();
+	std::cout << fn << std::endl;
+	std::cout << cpputil::Ustox(sAttr) << std::endl;
+	std::cout << cpputil::Uitox(GetDTAAddress()) << std::endl;
+
+	unsigned char drvLetter=cpputil::Capitalize(fn[2]); // Like \\N.A.
+	auto sharedDirIndex=DriveLetterToSharedDirIndex(drvLetter);
+
+	std::cout << sharedDirIndex << std::endl;
+
+	if(0<=sharedDirIndex)
+	{
+		townsPtr->mem.StoreByte(DTABuffer,0x80|drvLetter);
+		auto last=GetLastOfFilename(fn);
+		std::cout << last << std::endl;
+		auto eleven=FilenameTo11Bytes(last);
+		std::cout << eleven << std::endl;
+
+		for(int i=0; i<11; ++i)
+		{
+			townsPtr->mem.StoreByte(DTABuffer+1+i,eleven[i]);
+		}
+		townsPtr->mem.StoreByte(DTABuffer+0x0C,(unsigned char)sAttr);
+		townsPtr->mem.StoreWord(DTABuffer+0x0D,1);  // Entry Count? Always 1?
+		townsPtr->mem.StoreWord(DTABuffer+0x0F,1);  // Cluster Number? Always 1?
+		townsPtr->mem.StoreDword(DTABuffer+0x11,0);  // Entry Count? Always 1?
+
+		if(0!=(sAttr&TOWNS_DOS_DIRENT_ATTR_VOLLABEL))
+		{
+			for(int i=0; i<11; ++i)
+			{
+				townsPtr->mem.StoreByte(DTABuffer+0x15+i,"TSUGARUDRIV"[i]);
+			}
+			townsPtr->mem.StoreByte(DTABuffer+0x15+0x0B,TOWNS_DOS_DIRENT_ATTR_VOLLABEL);
+			for(int i=0x16; i<0x1C; ++i)
+			{
+				townsPtr->mem.StoreByte(DTABuffer+0x15+i,0);
+			}
+		}
+		else
+		{
+			// if not found
+			{
+				ReturnAX(TOWNS_DOSERR_FILE_NOT_FOUND);
+				townsPtr->cpu.SetCF(true);
+			}
+		}
+		return true; // Yes, it's mine.
+	}
+	return false;
+}
+bool TownsTgDrv::Int2F_1123_QualifyRemoteFileName(void)
+{
+	return false;
+}
+bool TownsTgDrv::Int2F_1125_RedirectedPrinterMode(void)
+{
+	return false; // Not my drive.  Not my printer actually.
+}
+
+void TownsTgDrv::ReturnAX(uint16_t ax)
+{
+	townsPtr->cpu.StoreWord(
+	    townsPtr->mem,
+	    townsPtr->cpu.state.SS().addressSize,
+	    townsPtr->cpu.state.SS(),
+	    townsPtr->cpu.state.SP(),
+	    ax);
+}
+
+int TownsTgDrv::DriveLetterToSharedDirIndex(char letter) const
+{
+	for(int i=0; i<TOWNS_TGDRV_MAX_NUM_DRIVES; ++i)
+	{
+		if(letter==state.driveLetters[i])
+		{
+			return i;
+		}
+	}
+	return -1;
+}
+
+
+bool TownsTgDrv::Install(void)
 {
 	auto &cpu=townsPtr->cpu;
 	auto &mem=townsPtr->mem;
@@ -169,6 +278,8 @@ void TownsTgDrv::Install(void)
 			    0x109+I,
 			    letter);
 
+			state.driveLetters[I]=letter;
+
 			char str[2]={letter,0};
 			std::cout << "Assign Drive " << str << std::endl;
 
@@ -193,7 +304,12 @@ void TownsTgDrv::Install(void)
 		    cpu.state.DS(),
 		    0x108,
 		    I);
+		if(0<I)
+		{
+			return true;
+		}
 	}
+	return false;
 }
 
 unsigned int TownsTgDrv::DriveLetterToDriveIndex(char drvLetter) const
@@ -231,6 +347,65 @@ unsigned int TownsTgDrv::GetCDSLength(void) const
 	}
 }
 
+std::string TownsTgDrv::GetFilenameBuffer1(void) const
+{
+	auto addr=GetFilenameBufferAddress();
+	std::string fn;
+	for(;;)
+	{
+		auto c=townsPtr->mem.FetchByte(addr++);
+		if(0==c)
+		{
+			break;
+		}
+		fn.push_back(c);
+	}
+	return fn;
+}
+std::string TownsTgDrv::GetLastOfFilename(std::string in) const
+{
+	int lastSlash=0;
+	for(int i=0; i<in.size(); ++i)
+	{
+		if('/'==in[i] || '\\'==in[i])
+		{
+			lastSlash=i+1;
+		}
+	}
+	std::string last;
+	for(int i=lastSlash; i<in.size(); ++i)
+	{
+		last.push_back(in[i]);
+	}
+	return last;
+}
+std::string TownsTgDrv::FilenameTo11Bytes(std::string in) const
+{
+	int ptr=0;
+	std::string eleven;
+	while(ptr<in.size() && eleven.size()<8 && '.'!=in[ptr])
+	{
+		eleven.push_back(in[ptr++]);
+	}
+	while(eleven.size()<8)
+	{
+		eleven.push_back(' ');
+	}
+
+	if('.'==in[ptr])
+	{
+		++ptr;
+		while(ptr<in.size() && eleven.size()<11)
+		{
+			eleven.push_back(in[ptr++]);
+		}
+	}
+	while(eleven.size()<11)
+	{
+		eleven.push_back(' ');
+	}
+	return eleven;
+}
 uint32_t TownsTgDrv::GetCDSAddress(unsigned int driveIndex) const
 {
 	auto &mem=townsPtr->mem;
@@ -245,6 +420,64 @@ uint16_t TownsTgDrv::GetCDSType(unsigned int driveIndex) const
 	auto addr=GetCDSAddress(driveIndex);
 	return townsPtr->mem.FetchWord(addr+0x43);
 }
+uint32_t TownsTgDrv::GetDTAAddress(void) const
+{
+	auto dosverMajor=townsPtr->state.DOSVER&0xFF;
+	uint64_t DTAPointer;
+	if(dosverMajor<4)
+	{
+		DTAPointer=townsPtr->state.DOSLOLSEG*0x10+0x2DA;
+	}
+	else
+	{
+		DTAPointer=townsPtr->state.DOSLOLSEG*0x10+0x32C;
+	}
+	uint32_t off=townsPtr->mem.FetchWord(DTAPointer);
+	uint32_t seg=townsPtr->mem.FetchWord(DTAPointer+2);
+	return seg*0x10+off;
+}
+uint32_t TownsTgDrv::GetFilenameBufferAddress(void) const
+{
+	auto dosverMajor=townsPtr->state.DOSVER&0xFF;
+	if(dosverMajor<4)
+	{
+		return townsPtr->state.DOSLOLSEG*0x10+0x360;
+	}
+	else
+	{
+		return townsPtr->state.DOSLOLSEG*0x10+0x3BE;
+	}
+}
+uint32_t TownsTgDrv::GetSDBAddress(void) const
+{
+	auto dosverMajor=townsPtr->state.DOSVER&0xFF;
+	if(dosverMajor<4)
+	{
+		return townsPtr->state.DOSLOLSEG*0x10+0x460;
+	}
+	else
+	{
+		return townsPtr->state.DOSLOLSEG*0x10+0x4BE;
+	}
+}
+uint16_t TownsTgDrv::GetSAttr(void) const
+{
+	auto addr=GetSAttrAddress();
+	return townsPtr->mem.FetchWord(addr);
+}
+uint32_t TownsTgDrv::GetSAttrAddress(void) const
+{
+	auto dosverMajor=townsPtr->state.DOSVER&0xFF;
+	if(dosverMajor<4)
+	{
+		return townsPtr->state.DOSLOLSEG*0x10+0x508;
+	}
+	else
+	{
+		return townsPtr->state.DOSLOLSEG*0x10+0x56D;
+	}
+}
+
 
 
 /* virtual */ uint32_t TownsTgDrv::SerializeVersion(void) const

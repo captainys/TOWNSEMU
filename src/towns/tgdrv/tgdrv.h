@@ -64,14 +64,31 @@ public:
 	virtual void IOWriteByte(unsigned int ioport,unsigned int data);
 	virtual unsigned int IOReadByte(unsigned int ioport);
 
-	void Install(void);
+	bool Int2F_111B_FindFirst(void);
+	bool Int2F_1123_QualifyRemoteFileName(void);
+	bool Int2F_1125_RedirectedPrinterMode(void);
+
+	void ReturnAX(uint16_t ax);
+
+	int DriveLetterToSharedDirIndex(char letter) const;
+
+
+	bool Install(void);
 
 	unsigned int DriveLetterToDriveIndex(char drvLetter) const;
 	char DriveIndexToDriveLetter(unsigned int driveIndex) const;
 	unsigned int GetCDSCount(void) const;
 	unsigned int GetCDSLength(void) const;
+	std::string GetFilenameBuffer1(void) const;
+	std::string GetLastOfFilename(std::string in) const;
+	std::string FilenameTo11Bytes(std::string in) const;
 	uint32_t GetCDSAddress(unsigned int driveIndex) const ; // 0 means A drive
 	uint16_t GetCDSType(unsigned int driveIndex) const ;  // 0 means A drive
+	uint32_t GetDTAAddress(void) const;
+	uint32_t GetFilenameBufferAddress(void) const;
+	uint32_t GetSDBAddress(void) const;
+	uint16_t GetSAttr(void) const;
+	uint32_t GetSAttrAddress(void) const;
 
 	/*! Version used for serialization.
 	*/

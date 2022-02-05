@@ -212,6 +212,15 @@ const std::string &cpputil::Capitalize(std::string &s)
 	return s;
 }
 
+char cpputil::Capitalize(char in)
+{
+	if('a'<=in && in<='z')
+	{
+		return in+'A'-'a';
+	}
+	return in;
+}
+
 std::string cpputil::Capitalize(const char s[])
 {
 	return std::string(s);

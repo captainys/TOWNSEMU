@@ -42,19 +42,42 @@ MAIN					ENDP
 						ORG		0200H
 INT2FH					PROC
 
-						PUSH	AX
-						PUSH	BX
 						PUSH	DX
+						PUSH	CX
+						PUSH	BX
+						PUSH	AX	; Tsugaru expects SS:SP is AX on write TOWNS_VM_TGDRV_INT2FH to TOWNSIO_VM_TGDRV.
 
 						MOV		BX,AX
 						MOV		DX,TOWNSIO_VM_TGDRV
 						MOV		AL,TOWNS_VM_TGDRV_INT2FH
 						OUT		DX,AL
 
-						POP		DX
-						POP		BX
 						POP		AX
+						POP		BX
+						POP		CX
+						POP		DX
 
+						JP		INT2FH_NOT_MY_DRIVE
+						JC		INT2FH_IS_MY_DRIVE_BUT_ERROR
+
+						PUSH	BP
+						; SS:BP   BP
+						; SS:BP+2 IP
+						; SS:BP+4 CS
+						; SS:BP+6 FLAGS
+						MOV		BP,SP
+						AND		WORD PTR SS:[BP+6],0FFFEh
+						POP		BP
+						IRET
+
+INT2FH_IS_MY_DRIVE_BUT_ERROR:
+						PUSH	BP
+						MOV		BP,SP
+						OR		WORD PTR SS:[BP+6],1
+						POP		BP
+						IRET
+
+INT2FH_NOT_MY_DRIVE:
 ;						JMP		FAR [CS:ORIGINAL_2FH]		; --USE_IN_NASM--
 						JMP		DWORD PTR CS:[ORIGINAL_2FH]	; --NOT_IN_NASM--
 
@@ -109,15 +132,26 @@ INSTALL					PROC
 						ADD		DX,0FH
 						SHR		DX,4
 
+						LEA		DX,MSG_INSTALLED
+						MOV		AH,09H
+						INT		21H
+
 						MOV		AH,31H
 						INT		21H
 
 FAILED_INSTALL:
+						LEA		DX,MSG_NOT_INSTALLED
+						MOV		AH,09H
+						INT		21H
+
 						MOV		AH,4CH
 						INT 	21H
 
-
 INSTALL					ENDP
+
+
+MSG_INSTALLED			DB		"TGDRV has been installed.",0Dh,0Ah,0,'$'
+MSG_NOT_INSTALLED		DB		"TGDRV has not been installed.",0Dh,0Ah,0,'$'
 
 
 
