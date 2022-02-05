@@ -42,6 +42,15 @@ MAIN					ENDP
 						ORG		0200H
 INT2FH					PROC
 
+						PUSH	BX
+						PUSH	AX
+						MOV		AH,51H ; GetPSP
+						INT		21H
+						MOV		CS:[CURRENT_PSP],BX
+						POP		AX
+						POP		BX
+
+						PUSH	WORD PTR CS:[CURRENT_PSP]
 						PUSH	DX
 						PUSH	CX
 						PUSH	BX
@@ -56,6 +65,7 @@ INT2FH					PROC
 						POP		BX
 						POP		CX
 						POP		DX
+						POP		WORD PTR CS:[CURRENT_PSP]
 
 						JP		INT2FH_NOT_MY_DRIVE
 						JC		INT2FH_IS_MY_DRIVE_BUT_ERROR
@@ -83,6 +93,7 @@ INT2FH_NOT_MY_DRIVE:
 
 INT2FH					ENDP
 
+CURRENT_PSP				DW		0
 ORIGINAL_2FH			DD		0
 
 END_OF_TSR:

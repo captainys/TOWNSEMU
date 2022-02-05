@@ -36,7 +36,7 @@ char Capitalize(char in);
 std::string GetExtension(std::string fName);
 std::string ChangeExtension(const char orgFName[],const char newExt[]);
 std::string RemoveExtension(const char orgFName[]);
-std::string GetBaseName(const char path[]);
+std::string GetBaseName(const std::string &path);
 bool StrStartsWith(const std::string &str,const char ptn[]);
 const char *StrSkip(const char str[],const char ptn[]);
 const char *StrSkipSpace(const char str[]);

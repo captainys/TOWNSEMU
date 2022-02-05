@@ -10,7 +10,8 @@ else()
 	set(SRCS filesys_null.cpp)
 endif()
 
-add_library(${TARGET_NAME} filesys.h ${SRCS})
+add_library(${TARGET_NAME} filesys.h filesys_common.cpp ${SRCS})
+target_link_libraries(${TARGET_NAME} cpputil)
 target_include_directories(${TARGET_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 

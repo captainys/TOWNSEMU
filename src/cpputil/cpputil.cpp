@@ -311,9 +311,9 @@ std::string cpputil::RemoveExtension(const char orgFName[])
 	return newFn;
 }
 
-std::string cpputil::GetBaseName(const char path[])
+std::string cpputil::GetBaseName(const std::string &path)
 {
-	if(nullptr==path)
+	if(0==path.size())
 	{
 		return "";
 	}

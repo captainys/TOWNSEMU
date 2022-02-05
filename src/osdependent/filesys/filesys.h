@@ -4,7 +4,14 @@
 
 
 
+#include <fstream>
 #include <string>
+
+// When C++17's filesystem library is commonly available and stable, I'll change it to
+// non-platform dependent library.
+// I'm so glad after too long years C++ insiders finally admitted there is a thing
+// called file system.
+// I hope they admit there is a thing called home directory soon.
 
 class FileSys
 {
@@ -12,6 +19,7 @@ private:
 	// Make it uncopyable.
 	FileSys(const FileSys &incoming);
 	FileSys &operator=(const FileSys &incoming);
+
 public:
 	class FindContext;
 
@@ -29,19 +37,72 @@ public:
 		ATTR_READONLY=0x01,
 	};
 
-	class DirectoryEntry
+	class HasFileAttrib
+	{
+	public:
+		unsigned int attr=0;
+	};
+	class HasTimeStamp
+	{
+	public:
+		unsigned int year=2004,month=06,day=13,hours=00,minutes=00,seconds=00;
+		uint16_t FormatDOSTime(void) const;
+		uint16_t FormatDOSDate(void) const;
+	};
+	class HasFileName
+	{
+	public:
+		std::string fName;
+	};
+
+	class DirectoryEntry : public HasFileAttrib, public HasTimeStamp, public HasFileName
 	{
 	public:
 		bool endOfDir=false;
 		unsigned long long int length=0;
-		unsigned int attr=0;
-		unsigned int year=2004,month=06,day=13,hours=00,minutes=00,seconds=00;
 		std::string fName;
 	};
 	FileSys();
 	~FileSys();
 	DirectoryEntry FindFirst(std::string subDir);
 	DirectoryEntry FindNext(void);
+	// Potential Problem:
+	//   DOS can stop directly listing and just forget about find-context.
+	//   Find-context is not allocated resource.
+	//   In the modern system, find-context is allocated resource.
+	//   Potentially DOS program can stop listing before reaching the end,
+	//   in which case, the current implementation will leak a find-context.
+	//   Also the current implementation cannot support multiple find-contexts
+	//   running simultaneously.
+
+
+
+	enum
+	{
+		MAX_NUM_OPEN_FILE=32,
+		OPENMODE_READ=0,   // Keep this number.  Compatible with DOS SFT
+		OPENMODE_WRITE=1,  // Keep this number.  Compatible with DOS SFT
+		OPENMODE_RW=2,     // Keep this number.  Compatible with DOS SFT
+	};
+	class SystemFileTable : public HasFileAttrib, public HasTimeStamp, public HasFileName
+	// Corresponds to DOS SFT
+	{
+	public:
+		unsigned int mode=0;
+		std::fstream fp;
+		const uint32_t GetFileSize(void); // Can't be const.  seekg is a modifier.
+		const uint32_t GetFilePointer(void); // Can't be const.  tellg is a modifier.  Seriously?
+	};
+	SystemFileTable sft[MAX_NUM_OPEN_FILE];
+	/*! Returns index to SFT.
+	*/
+	int OpenExistingFile(std::string subPath,unsigned int openMode);
+	/*! SftIdx is an index returned by one of open functions.
+	*/
+	bool CloseFile(int SftIdx);
+	/*! Returns -1 if none
+	*/
+	int FindAvailableSFT(void) const;
 
 
 

@@ -21,6 +21,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "townsdef.h"
 #include "cpputil.h"
 #include "filesys.h"
+#include "i486.h"
 
 
 
@@ -65,16 +66,26 @@ public:
 	virtual void IOWriteByte(unsigned int ioport,unsigned int data);
 	virtual unsigned int IOReadByte(unsigned int ioport);
 
+	bool Int21_110C_GetDiskInformation(void);
+	bool Int2F_1116_OpenExistingFile(void);
 	bool Int2F_111B_FindFirst(void);
 	bool Int2F_111C_FindNext(void);
 	bool Int2F_1123_QualifyRemoteFileName(void);
 	bool Int2F_1125_RedirectedPrinterMode(void);
 
+	uint16_t FetchPSP(void) const;
 	void ReturnAX(uint16_t ax);
+	void ReturnBX(uint16_t ax);
+	void ReturnCX(uint16_t ax);
+	void ReturnDX(uint16_t ax);
 
+	int FullyQualifiedFileNameToSharedDirIndex(const std::string &fn) const;
+	char FullyQualifiedFileNameToDriveLetter(const std::string &fn) const;
 	int DriveLetterToSharedDirIndex(char letter) const;
 	void MakeDOSDirEnt(uint32_t DTABuffer,const FileSys::DirectoryEntry &dirent);
+	void MakeVMSFT(const class i486DX::SegmentRegister &seg,uint32_t offset,char driveLetter,int hostSFTIdx,FileSys::SystemFileTable &hostSFT);
 	std::string FetchCString(uint32_t physAddr) const;
+	std::string FetchCString(const class i486DX::SegmentRegister &seg,uint32_t offset) const;
 
 
 	bool Install(void);
@@ -87,6 +98,7 @@ public:
 	std::string GetLastOfFilename(std::string in) const;
 	std::string FilenameTo11Bytes(std::string in) const;
 	std::string FullPathToSubDir(std::string fn) const;
+	std::string DropDriveLetter(std::string ful) const;
 	uint32_t GetCDSAddress(unsigned int driveIndex) const ; // 0 means A drive
 	uint16_t GetCDSType(unsigned int driveIndex) const ;  // 0 means A drive
 	uint32_t GetDTAAddress(void) const;
