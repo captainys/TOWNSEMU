@@ -77,8 +77,11 @@ TownsTgDrv::TownsTgDrv(class FMTowns *townsPtr) : Device(townsPtr)
 			bool myDrive=false;
 			switch(townsPtr->cpu.GetBX())
 			{
+			case 0x1108:
+				myDrive=Int2F_1108_ReadFromRemoteFile();
+				break;
 			case 0x110C:
-				myDrive=Int21_110C_GetDiskInformation();
+				myDrive=Int2F_110C_GetDiskInformation();
 				break;
 			case 0x1116:
 				myDrive=Int2F_1116_OpenExistingFile();
@@ -121,7 +124,50 @@ TownsTgDrv::TownsTgDrv(class FMTowns *townsPtr) : Device(townsPtr)
 	return 0xff;
 }
 
-bool TownsTgDrv::Int21_110C_GetDiskInformation(void)
+bool TownsTgDrv::Int2F_1108_ReadFromRemoteFile(void)
+{
+	char drvLetter='A'+FetchDriveCodeFromSFT(townsPtr->cpu.state.ES(),townsPtr->cpu.state.DI());
+	auto sharedDirIdx=DriveLetterToSharedDirIndex(drvLetter);
+	if(0<=sharedDirIdx)
+	{
+		auto hostSFTIdx=townsPtr->cpu.FetchWord(
+		    townsPtr->cpu.state.CS().addressSize,
+		    townsPtr->cpu.state.ES(),
+		    townsPtr->cpu.state.DI()+0x0B,
+		    townsPtr->mem);
+		if(0<=hostSFTIdx &&
+		   hostSFTIdx<FileSys::MAX_NUM_OPEN_FILE &&
+		   true==sharedDir[sharedDirIdx].sft[hostSFTIdx].IsOpen())
+		{
+			auto data=sharedDir[sharedDirIdx].sft[hostSFTIdx].Read(townsPtr->cpu.GetCX());
+			auto DTAAddr=GetDTAAddress();
+			for(auto d : data)
+			{
+				townsPtr->mem.StoreByte(DTAAddr++,d);
+			}
+			ReturnCX(data.size());
+
+			townsPtr->cpu.StoreDword(
+				townsPtr->mem,
+				townsPtr->cpu.state.CS().addressSize,
+				townsPtr->cpu.state.ES(),
+				townsPtr->cpu.state.DI()+0x15,
+				sharedDir[sharedDirIdx].sft[hostSFTIdx].GetFilePointer());
+
+			townsPtr->cpu.SetCF(false);
+		}
+		else
+		{
+			// File not open.
+			ReturnAX(TOWNS_DOSERR_INVALID_HANDLE);
+			townsPtr->cpu.SetCF(true);
+		}
+		return true;
+	}
+	return false;
+}
+
+bool TownsTgDrv::Int2F_110C_GetDiskInformation(void)
 {
 	auto CDS=FetchCString(townsPtr->cpu.state.ES(),townsPtr->cpu.state.DI());
 	if(CDS.size()<3)
@@ -429,6 +475,19 @@ void TownsTgDrv::MakeDOSDirEnt(uint32_t DTABuffer,const FileSys::DirectoryEntry 
 	townsPtr->mem.StoreWord(DTABuffer+0x18,dirent.FormatDOSDate());
 	townsPtr->mem.StoreWord(DTABuffer+0x1A,0); // First cluster N/A for Network file
 	townsPtr->mem.StoreDword(DTABuffer+0x1C,(uint32_t)dirent.length);
+}
+unsigned int TownsTgDrv::FetchDriveCodeFromSFT(const class i486DX::SegmentRegister &seg,uint32_t offset) const
+{
+	unsigned int flags=FetchDeviceInfoFromSFT(seg,offset);
+	return flags&0x1F;
+}
+unsigned int TownsTgDrv::FetchDeviceInfoFromSFT(const class i486DX::SegmentRegister &seg,uint32_t offset) const
+{
+	return townsPtr->cpu.FetchWord(
+		townsPtr->cpu.state.CS().addressSize,
+		seg,
+		offset+0x05,
+		townsPtr->mem);
 }
 std::string TownsTgDrv::FetchCString(uint32_t physAddr) const
 {

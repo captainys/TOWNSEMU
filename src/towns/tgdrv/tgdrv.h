@@ -43,6 +43,8 @@ private:
 public:
 	virtual const char *DeviceName(void) const{return "TGDRIVE";}
 
+	const int TGDRV_ID=0x52444754; // "TGDR"
+
 	FileSys sharedDir[TOWNS_TGDRV_MAX_NUM_DRIVES];
 	FileSys::DirectoryEntry dirent[TOWNS_TGDRV_MAX_NUM_DRIVES];
 
@@ -66,7 +68,8 @@ public:
 	virtual void IOWriteByte(unsigned int ioport,unsigned int data);
 	virtual unsigned int IOReadByte(unsigned int ioport);
 
-	bool Int21_110C_GetDiskInformation(void);
+	bool Int2F_1108_ReadFromRemoteFile(void);
+	bool Int2F_110C_GetDiskInformation(void);
 	bool Int2F_1116_OpenExistingFile(void);
 	bool Int2F_111B_FindFirst(void);
 	bool Int2F_111C_FindNext(void);
@@ -84,6 +87,8 @@ public:
 	int DriveLetterToSharedDirIndex(char letter) const;
 	void MakeDOSDirEnt(uint32_t DTABuffer,const FileSys::DirectoryEntry &dirent);
 	void MakeVMSFT(const class i486DX::SegmentRegister &seg,uint32_t offset,char driveLetter,int hostSFTIdx,FileSys::SystemFileTable &hostSFT);
+	unsigned int FetchDriveCodeFromSFT(const class i486DX::SegmentRegister &seg,uint32_t offset) const;
+	unsigned int FetchDeviceInfoFromSFT(const class i486DX::SegmentRegister &seg,uint32_t offset) const;
 	std::string FetchCString(uint32_t physAddr) const;
 	std::string FetchCString(const class i486DX::SegmentRegister &seg,uint32_t offset) const;
 

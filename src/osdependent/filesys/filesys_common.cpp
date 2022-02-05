@@ -9,6 +9,10 @@ uint16_t FileSys::HasTimeStamp::FormatDOSDate(void) const
 {
 	return ((year-1980)<<9)|(month<<5)|(day);
 }
+bool FileSys::SystemFileTable::IsOpen(void) const
+{
+	return fp.is_open();
+}
 const uint32_t FileSys::SystemFileTable::GetFileSize(void)
 {
 	auto curPos=fp.tellg();
@@ -23,6 +27,21 @@ const uint32_t FileSys::SystemFileTable::GetFileSize(void)
 const uint32_t FileSys::SystemFileTable::GetFilePointer(void)
 {
 	return fp.tellg();
+}
+
+std::vector <unsigned char> FileSys::SystemFileTable::Read(uint32_t len)
+{
+	std::vector <unsigned char> buf;
+	buf.resize(len);
+	fp.read((char *)buf.data(),len);
+
+	auto actualRead=fp.gcount();
+	if(actualRead<len)
+	{
+		buf.resize(actualRead);
+	}
+
+	return buf;
 }
 
 int FileSys::OpenExistingFile(std::string subPath,unsigned int openMode)

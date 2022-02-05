@@ -5,6 +5,7 @@
 
 
 #include <fstream>
+#include <vector>
 #include <string>
 
 // When C++17's filesystem library is commonly available and stable, I'll change it to
@@ -90,8 +91,10 @@ public:
 	public:
 		unsigned int mode=0;
 		std::fstream fp;
+		bool IsOpen(void) const;
 		const uint32_t GetFileSize(void); // Can't be const.  seekg is a modifier.
 		const uint32_t GetFilePointer(void); // Can't be const.  tellg is a modifier.  Seriously?
+		std::vector <unsigned char> Read(uint32_t len);
 	};
 	SystemFileTable sft[MAX_NUM_OPEN_FILE];
 	/*! Returns index to SFT.
