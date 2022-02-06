@@ -72,13 +72,19 @@ public:
 	bool Int2F_1108_ReadFromRemoteFile(void);
 	bool Int2F_1106_CloseRemoteFile(void);
 	bool Int2F_110C_GetDiskInformation(void);
+	bool Int2F_110F_GetFileAttrib(void);
 	bool Int2F_1116_OpenExistingFile(void);
+	bool Int2F_1117_OpenOrTruncate(void);
 	bool Int2F_111B_FindFirst(void);
 	bool Int2F_111C_FindNext(void);
 	bool Int2F_1123_QualifyRemoteFileName(void);
 	bool Int2F_1125_RedirectedPrinterMode(void);
 
 	uint16_t FetchPSP(void) const;
+	uint16_t FetchStackParam0(void) const;
+	uint16_t FetchStackParam1(void) const;
+	uint16_t FetchStackParam2(void) const;
+	uint16_t FetchStackParam3(void) const;
 	void ReturnAX(uint16_t ax);
 	void ReturnBX(uint16_t ax);
 	void ReturnCX(uint16_t ax);

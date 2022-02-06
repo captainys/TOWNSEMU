@@ -89,8 +89,14 @@ TownsTgDrv::TownsTgDrv(class FMTowns *townsPtr) : Device(townsPtr)
 			case 0x110C:
 				myDrive=Int2F_110C_GetDiskInformation();
 				break;
+			case 0x110F:
+				myDrive=Int2F_110F_GetFileAttrib();
+				break;
 			case 0x1116:
 				myDrive=Int2F_1116_OpenExistingFile();
+				break;
+			case 0x1117:
+				myDrive=Int2F_1117_OpenOrTruncate();
 				break;
 			case 0x111B:
 				myDrive=Int2F_111B_FindFirst();
@@ -279,6 +285,38 @@ bool TownsTgDrv::Int2F_110C_GetDiskInformation(void)
 	}
 	return false; // No, it's not my drive.
 }
+bool TownsTgDrv::Int2F_110F_GetFileAttrib(void)
+{
+	auto fName=GetFilenameBuffer1();
+	auto driveLetter=FullyQualifiedFileNameToDriveLetter(fName);
+	auto sharedDirIdx=FullyQualifiedFileNameToSharedDirIndex(fName);
+	if(0<=sharedDirIdx)
+	{
+		auto subPath=DropDriveLetter(fName);
+
+		auto find=sharedDir[sharedDirIdx].CreateFindContext();
+		auto dirent=sharedDir[sharedDirIdx].FindFirst(subPath,find);
+		sharedDir[sharedDirIdx].DeleteFindContext(find);
+
+		if(true!=dirent.endOfDir)
+		{
+			ReturnAX(dirent.attr);
+			ReturnBX(dirent.length>>16);
+			townsPtr->cpu.SetDI(dirent.length&0xFFFF);
+			ReturnCX(dirent.FormatDOSTime());
+			ReturnDX(dirent.FormatDOSDate());
+			townsPtr->cpu.SetCF(false);
+		}
+		else
+		{
+			ReturnAX(TOWNS_DOSERR_FILE_NOT_FOUND);
+			townsPtr->cpu.SetCF(true);
+		}
+
+		return true; // Yes, it's my drive.
+	}
+	return false; // No, it's not my drive.
+}
 bool TownsTgDrv::Int2F_1116_OpenExistingFile(void)
 {
 	auto fName=GetFilenameBuffer1();
@@ -298,6 +336,31 @@ bool TownsTgDrv::Int2F_1116_OpenExistingFile(void)
 			ReturnAX(TOWNS_DOSERR_FILE_NOT_FOUND);
 			townsPtr->cpu.SetCF(true);
 		}
+		return true; // Yes, it's my drive.
+	}
+	return false; // No, it's not my drive.
+}
+bool TownsTgDrv::Int2F_1117_OpenOrTruncate(void)
+{
+	auto fName=GetFilenameBuffer1();
+	auto driveLetter=FullyQualifiedFileNameToDriveLetter(fName);
+	auto sharedDirIdx=FullyQualifiedFileNameToSharedDirIndex(fName);
+	if(0<=sharedDirIdx)
+	{
+		townsPtr->cpu.SetCF(true);
+
+		auto mode=FetchStackParam0();
+		std::cout << cpputil::Ustox(mode) << std::endl;
+
+		if(0==(mode&0xFF00))
+		{
+			// Normal create
+		}
+		else if(0x0100==(mode&0xFF00))
+		{
+			// Truncate
+		}
+
 		return true; // Yes, it's my drive.
 	}
 	return false; // No, it's not my drive.
@@ -431,6 +494,38 @@ uint16_t TownsTgDrv::FetchPSP(void) const
 	            townsPtr->cpu.state.SS().addressSize,
 	            townsPtr->cpu.state.SS(),
 	            townsPtr->cpu.state.SP()+8,
+	            townsPtr->mem);
+}
+uint16_t TownsTgDrv::FetchStackParam0(void) const
+{
+	return townsPtr->cpu.FetchWord(
+	            townsPtr->cpu.state.SS().addressSize,
+	            townsPtr->cpu.state.SS(),
+	            townsPtr->cpu.state.SP()+10,
+	            townsPtr->mem);
+}
+uint16_t TownsTgDrv::FetchStackParam1(void) const
+{
+	return townsPtr->cpu.FetchWord(
+	            townsPtr->cpu.state.SS().addressSize,
+	            townsPtr->cpu.state.SS(),
+	            townsPtr->cpu.state.SP()+12,
+	            townsPtr->mem);
+}
+uint16_t TownsTgDrv::FetchStackParam2(void) const
+{
+	return townsPtr->cpu.FetchWord(
+	            townsPtr->cpu.state.SS().addressSize,
+	            townsPtr->cpu.state.SS(),
+	            townsPtr->cpu.state.SP()+14,
+	            townsPtr->mem);
+}
+uint16_t TownsTgDrv::FetchStackParam3(void) const
+{
+	return townsPtr->cpu.FetchWord(
+	            townsPtr->cpu.state.SS().addressSize,
+	            townsPtr->cpu.state.SS(),
+	            townsPtr->cpu.state.SP()+16,
 	            townsPtr->mem);
 }
 void TownsTgDrv::ReturnAX(uint16_t ax)

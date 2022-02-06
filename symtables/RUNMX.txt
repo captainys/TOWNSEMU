@@ -7,6 +7,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -17,6 +20,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 2
@@ -27,6 +33,9 @@ L CD-ROM Error
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 2
@@ -37,6 +46,9 @@ L CD-ROM No Error
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 1
@@ -47,6 +59,9 @@ L RUN386(?):Issue CD-ROM Command
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 1
@@ -57,6 +72,9 @@ L RUN386(?):Get CD-ROM Status Bytes from [1797H]
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 1
@@ -67,6 +85,9 @@ L (Prob)Set High-Res Mode on Initial TMENU Start
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 1
@@ -77,6 +98,9 @@ L (Prob)Set Normal Resolution Mode
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 1
@@ -87,6 +111,9 @@ L (Prob)Set High-Res Mode
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 1
@@ -97,6 +124,9 @@ L (Prob)High-Res CRTC Wait VSYNC flip
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -107,6 +137,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -117,6 +150,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -127,6 +163,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -137,6 +176,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -147,6 +189,9 @@ L
 P 
 % 0
 M 1
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -157,6 +202,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -167,6 +215,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 2
@@ -177,6 +228,9 @@ L IO.SYS:(Prob)Bunch of BIOS initializations.
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -187,6 +241,9 @@ L
 P 
 % 0
 M 1
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -197,6 +254,9 @@ L
 P 
 % 0
 M 1
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -207,6 +267,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -217,6 +280,9 @@ L
 P 
 % 0
 M 1
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -227,6 +293,9 @@ L
 P 
 % 0
 M 1
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -237,6 +306,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -247,6 +319,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -257,6 +332,152 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000FF6:00000792
+# ES:DI=1679:0026 SYSVARS or List of Lists
+R 
+L IO.SYS ? Routine Making CDS
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000FF6:00000797
+# Number of CDS (from LASTDRIVE=)
+R 
+L 
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000FF6:000007AC
+# IO.SYS Limiting Max Number of Drives to 12H (Drive R maximum)
+R 
+L 
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000FF6:000007BC
+# IO.SYS Overriding CDS Location?
+R 
+L 
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 2
+* 00000FF6:000007DE
+# 
+R 
+L IO.SYS Drive Update Outer Loop?
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000FF6:000007EF
+# 51H=Size of a CDS structure.
+R 
+L 
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000FF6:000007F4
+# 'A'
+R 
+L 
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 2
+* 00000FF6:000007FB
+# 
+R 
+L Refreshing Drive CDS?
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000FF6:00000802
+# ?:\
+R 
+L 
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000FF6:00000832
+# Prob Next DPB
+R 
+L 
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000FF6:00000841
+# 'A'
+R 
+L 
+P 
+% 0
+M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -267,6 +488,9 @@ L
 P 
 % 0
 M 1
+B 0
+O 0
+X 
 /end
 /begin0
 T 1
@@ -277,6 +501,9 @@ L TICM.SYS Strategy
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 1
@@ -287,26 +514,100 @@ L TICM.SYS Interrupt
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
-* 00003368:0000033E
-# DS:BX is PSP
+* 00003368:0000033B
+# TICM.SYS 02F2H is jump table for commands.
 R 
 L 
 P 
 % 0
 M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00003368:0000033E
+# DS:BX is Request Header  AF37:005C.
+R 
+L 
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00003368:00000343
+# Unit Number
+R 
+L 
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00003368:00000350
+# TICM.SYS Request Command Code
+R 
+L 
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 2
+* 00003368:00000365
+# 
+R 
+L TICM.SYS Req 05h Peek
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 2
+* 00003368:00000369
+# 
+R 
+L TICM.SYS Req 03h IOCTL Read
+P 
+% 0
+M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 2
 * 00003368:0000036F
 # 
 R 
-L (Prob)TICM.SYS Return Error Code 1
+L TICM.SYS Req 10h Output Until Busy?
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 2
@@ -317,16 +618,100 @@ L TICM.SYS Return
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
-T 1
+T 2
 * 00003368:00000392
 # 
 R 
-L (Prob)TICM.SYS initialization
+L TICM.SYS Req 00h Init
 P 
 % 0
 M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00003368:0000039C
+# Command Parameter Block
+R 
+L 
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 2
+* 00003368:000003D4
+# 
+R 
+L TICM.SYS Req 01h Media Check
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 2
+* 00003368:0000041A
+# 
+R 
+L TICM.SYS Req 02h Build BPB
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 2
+* 00003368:00000454
+# 
+R 
+L TICM.SYS Req 04h Read
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 2
+* 00003368:00000465
+# 
+R 
+L TICM.SYS Req 09h Write Verify
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 2
+* 00003368:0000047B
+# 
+R 
+L TICM.SYS Req 0Fh Removable Media Check
+P 
+% 0
+M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -337,6 +722,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -347,6 +735,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 2
@@ -357,6 +748,9 @@ L Tuple type below 0FH, FFH or 13H
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 2
@@ -367,6 +761,9 @@ L Tuple type 88H, 98H, A8H, or B8H
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -377,6 +774,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -387,6 +787,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 2
@@ -397,6 +800,9 @@ L IF (AH&1)==0 THEN No Error ELSE Error Code 01H
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 2
@@ -407,6 +813,9 @@ L Error code 01H
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 2
@@ -417,6 +826,9 @@ L Error Return
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 2
@@ -427,6 +839,9 @@ L Return error code = BH
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 2
@@ -437,6 +852,9 @@ L Tuple Loop
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -447,6 +865,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -457,6 +878,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 2
@@ -467,6 +891,9 @@ L Not 0FFH
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 2
@@ -477,6 +904,9 @@ L Tuple type 10H (Check sum?)
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -487,6 +917,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -497,6 +930,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -507,6 +943,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 2
@@ -517,6 +956,9 @@ L Return CF=0
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 2
@@ -527,6 +969,9 @@ L POP DX, Return CF=1
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 2
@@ -537,6 +982,9 @@ L Return CF=1
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 1
@@ -547,6 +995,9 @@ L MEMCARD:(Prob)Copy one CIS Tuple to 3368:0EAB
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 2
@@ -557,6 +1008,9 @@ L Loop until non-zero CIS tuple type
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -567,6 +1021,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -577,6 +1034,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -587,6 +1047,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -597,6 +1060,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -607,6 +1073,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -617,6 +1086,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 1
@@ -627,6 +1099,9 @@ L (Prob)TICM.SYS driver installation
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -637,6 +1112,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -647,6 +1125,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -657,6 +1138,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 2
@@ -667,6 +1151,48 @@ L Print Error: TICM.SYS does not work on this computer
 P 
 % 0
 M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 2
+* 00003368:0000166B
+# 
+R 
+L TICM.SYS Hardware/OS check passed
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00003368:00001678
+# 
+R 
+L 
+P 
+% 0
+M 1
+B 0
+O 0
+X 
+/end
+/begin0
+T 2
+* 00003368:000016B8
+# 
+R 
+L TICM.SYS Exit
+P 
+% 0
+M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 1
@@ -677,6 +1203,22 @@ L (Prob)TICM.SYS Analyze Command Parameter:
 P 
 % 0
 M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00003368:000016C5
+# Structure for IC mem card?
+R 
+L 
+P 
+% 0
+M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 2
@@ -687,6 +1229,9 @@ L Parse Command Line Loop
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -697,6 +1242,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -707,6 +1255,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -717,6 +1268,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -727,6 +1281,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -737,6 +1294,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -747,6 +1307,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 2
@@ -757,6 +1320,9 @@ L Unit Number Required.
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 2
@@ -767,6 +1333,9 @@ L Wrong Unit Number
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 2
@@ -777,6 +1346,9 @@ L No Available Drive Letter
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 2
@@ -787,6 +1359,9 @@ L TICM.SYS Already Installed
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 1
@@ -797,6 +1372,9 @@ L Print Message
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 1
@@ -807,6 +1385,61 @@ L Return Available Drive Letter in AL
 P 
 % 0
 M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00003368:0000174F
+# 
+R 
+L TICM.SYS (Prob)Register Drive
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00003368:00001759
+# 
+R 
+L DS:DI=0CFD:0000
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 2
+* 00003368:000017A3
+# 
+R 
+L TICM.SYS Register Drive Return Error
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00003368:000017A7
+# 
+R 
+L TICM.SYS Checking ?
+P 
+% 0
+M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 1
@@ -817,6 +1450,9 @@ L Getting info from SysService INT AFH AH=FCH
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 2
@@ -827,6 +1463,9 @@ L Skip driver file name
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -837,6 +1476,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 1
@@ -847,6 +1489,9 @@ L Call Strategy or Interrupt
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 1
@@ -857,6 +1502,9 @@ L SYSROM:Set Up Timer
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -867,6 +1515,9 @@ L
 P 
 % 0
 M 1
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -877,6 +1528,9 @@ L
 P 
 % 0
 M 1
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -887,6 +1541,9 @@ L
 P 
 % 0
 M 1
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -897,6 +1554,9 @@ L
 P 
 % 0
 M 1
+B 0
+O 0
+X 
 /end
 /begin0
 T 1
@@ -907,6 +1567,9 @@ L SYSROM:Something to do with Timer
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -917,6 +1580,9 @@ L
 P 
 % 0
 M 1
+B 0
+O 0
+X 
 /end
 /begin0
 T 1
@@ -927,6 +1593,9 @@ L SYSROM:(Prob)Read SCSI Sector?
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 2
@@ -937,6 +1606,9 @@ L SYSROM:SCSI_PHASE_LOOP
 P 
 % 0
 M 1
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -947,6 +1619,9 @@ L
 P 
 % 0
 M 1
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -957,6 +1632,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -967,6 +1645,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -977,6 +1658,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -987,6 +1671,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -997,6 +1684,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -1007,6 +1697,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -1017,6 +1710,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 2
@@ -1027,6 +1723,9 @@ L Return
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 1
@@ -1037,6 +1736,9 @@ L Wait SCSI ready for 3000us
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -1047,6 +1749,9 @@ L
 P 
 % 0
 M 1
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -1057,6 +1762,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -1067,6 +1775,9 @@ L
 P 
 % 0
 M 1
+B 0
+O 0
+X 
 /end
 /begin0
 T 1
@@ -1077,6 +1788,9 @@ L SYSROM:Initialize DMA, Set DMA Channel, Write Dev Ctrl(Low)
 P 
 % 0
 M 1
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -1087,6 +1801,9 @@ L
 P 
 % 0
 M 1
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -1097,6 +1814,9 @@ L
 P 
 % 0
 M 1
+B 0
+O 0
+X 
 /end
 /begin0
 T 1
@@ -1107,6 +1827,9 @@ L SYSROM:Initiate SCSI command sequence
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -1117,6 +1840,9 @@ L
 P 
 % 0
 M 1
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -1127,6 +1853,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -1137,6 +1866,9 @@ L
 P 
 % 0
 M 1
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -1147,6 +1879,9 @@ L
 P 
 % 0
 M 1
+B 0
+O 0
+X 
 /end
 /begin0
 T 2
@@ -1157,6 +1892,9 @@ L Turn off SEL bit and return
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -1167,6 +1905,9 @@ L
 P 
 % 0
 M 1
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -1177,6 +1918,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 1
@@ -1187,6 +1931,9 @@ L SYSROM:Called if SCSI doesn't immediately BUSY after SEL
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 1
@@ -1197,6 +1944,9 @@ L SYSROM:NOP
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 1
@@ -1207,6 +1957,9 @@ L SYSROM:Handle SCSI Command Phase
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -1217,6 +1970,9 @@ L
 P 
 % 0
 M 1
+B 0
+O 0
+X 
 /end
 /begin0
 T 1
@@ -1227,6 +1983,9 @@ L SYSROM:Handle SCSI Status Phase
 P 
 % 0
 M 1
+B 0
+O 0
+X 
 /end
 /begin0
 T 1
@@ -1237,6 +1996,9 @@ L SYSROM:Handle SCSI Message In Phase
 P 
 % 0
 M 1
+B 0
+O 0
+X 
 /end
 /begin0
 T 1
@@ -1247,6 +2009,9 @@ L SYSROM:Write AH to I/O 0AAH (DMAC_MODE_CONTROL)
 P 
 % 0
 M 1
+B 0
+O 0
+X 
 /end
 /begin0
 T 1
@@ -1257,6 +2022,9 @@ L SYSROM:Set DMA Address, Select SCSI channel, Wait for DMA End
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 2
@@ -1267,6 +2035,9 @@ L DMA Transfer Loop
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 2
@@ -1277,6 +2048,9 @@ L Wait DMA End
 P 
 % 0
 M 1
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -1287,6 +2061,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -1297,6 +2074,9 @@ L
 P 
 % 0
 M 1
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -1307,6 +2087,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -1317,6 +2100,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -1327,6 +2113,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -1337,6 +2126,9 @@ L
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 1
@@ -1347,6 +2139,9 @@ L SYSROM:SEG+OFFSET to Physical Address
 P 
 % 0
 M 0
+B 0
+O 0
+X 
 /end
 /begin0
 T 1
@@ -1357,6 +2152,9 @@ L SYSROM:Set DMA Address and Count.  Count=FFFF
 P 
 % 0
 M 1
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -1367,6 +2165,9 @@ L
 P 
 % 0
 M 1
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -1377,6 +2178,9 @@ L
 P 
 % 0
 M 1
+B 0
+O 0
+X 
 /end
 /begin0
 T 0
@@ -1387,6 +2191,9 @@ L
 P 
 % 0
 M 1
+B 0
+O 0
+X 
 /end
 /begin0
 T 1
@@ -1397,6 +2204,9 @@ L SYSROM:Enable (Unmask) SCSI DMA Channel
 P 
 % 0
 M 1
+B 0
+O 0
+X 
 /end
 /begin0
 T 1
@@ -1407,4 +2217,7 @@ L SYSROM:Disable (mask) SCSI DMA Channel
 P 
 % 0
 M 1
+B 0
+O 0
+X 
 /end
