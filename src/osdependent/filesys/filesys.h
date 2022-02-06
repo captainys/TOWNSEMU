@@ -132,6 +132,12 @@ public:
 	/*! Template="FILENAMEEXT" 11-letter format
 	*/
 	static bool DOSTemplateMatch(const std::string &templ11,const std::string &fName11);
+
+	/*! Weird DOS attribute matching.
+	    sAttr: Attribute searching for.
+	    fAttr: Attribute of file.
+	*/
+	static bool DOSAttrMatch(unsigned int sAttr,unsigned int fAttr);
 };
 
 

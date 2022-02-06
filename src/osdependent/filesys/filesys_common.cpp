@@ -123,3 +123,29 @@ int FileSys::FindAvailableSFT(void) const
 	}
 	return true;
 }
+
+/* static */ bool FileSys::DOSAttrMatch(unsigned int sAttr,unsigned int fAttr)
+{
+	// Absurd logic of MS-DOS attribute matching.
+	if(0!=(sAttr&ATTR_VOLUME))
+	{
+		if(0==(fAttr&ATTR_VOLUME))
+		{
+			return false;
+		}
+		return true;
+	}
+	else
+	{
+		if(0!=(fAttr&ATTR_VOLUME))
+		{
+			return false;
+		}
+		sAttr&=~(0x40|ATTR_ARCHIVE|ATTR_READONLY);
+		if(0==((~sAttr)&fAttr&(ATTR_DIR|ATTR_SYSTEM|ATTR_HIDDEN)))
+		{
+			return true;
+		}
+	}
+	return false;
+}

@@ -434,7 +434,8 @@ bool TownsTgDrv::Int2F_111B_FindFirst(void)
 				}
 
 				auto fName11=FilenameTo11Bytes(dirent[sharedDirIndex].fName);
-				if(true==FileSys::DOSTemplateMatch(eleven,fName11))
+				if(true==FileSys::DOSTemplateMatch(eleven,fName11) &&
+				   true==FileSys::DOSAttrMatch(sAttr,dirent[sharedDirIndex].attr))
 				{
 					MakeDOSDirEnt(DTABuffer+0x15,dirent[sharedDirIndex]);
 					townsPtr->cpu.SetCF(false);
@@ -469,6 +470,7 @@ bool TownsTgDrv::Int2F_111C_FindNext(void)
 	{
 		templ11[i]=townsPtr->mem.FetchByte(DTABuffer+1+i);
 	}
+	uint16_t sAttr=townsPtr->mem.FetchByte(DTABuffer+0x0C);
 
 	drv&=0x7F;
 	auto sharedDirIndex=DriveLetterToSharedDirIndex(drv);
@@ -486,7 +488,12 @@ bool TownsTgDrv::Int2F_111C_FindNext(void)
 			{
 				dirent[sharedDirIndex]=sharedDir[sharedDirIndex].FindNext();
 				auto fName11=FilenameTo11Bytes(dirent[sharedDirIndex].fName);
-				if(true==FileSys::DOSTemplateMatch(templ11,fName11))
+				if(true==dirent[sharedDirIndex].endOfDir)
+				{
+					break;
+				}
+				if(true==FileSys::DOSTemplateMatch(templ11,fName11) &&
+				   true==FileSys::DOSAttrMatch(sAttr,dirent[sharedDirIndex].attr))
 				{
 					MakeDOSDirEnt(DTABuffer+0x15,dirent[sharedDirIndex]);
 					townsPtr->cpu.SetCF(false);
