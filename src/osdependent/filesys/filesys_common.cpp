@@ -82,6 +82,36 @@ int FileSys::OpenExistingFile(std::string subPath,unsigned int openMode)
 	}
 	return -1;
 }
+int FileSys::OpenFileNotTruncate(std::string subPath,unsigned int openMode)
+{
+	auto sftIdx=FindAvailableSFT();
+	if(0<=sftIdx)
+	{
+		auto fullPath=cpputil::MakeFullPathName(hostPath,subPath);
+		if(true!=cpputil::FileExists(fullPath))
+		{
+			// If not exist, make one.
+			std::ofstream fp(fullPath,std::ios::binary);
+		}
+		sft[sftIdx].fName=subPath;
+		sft[sftIdx].mode=openMode;
+		switch(openMode)
+		{
+		case OPENMODE_READ:
+			sft[sftIdx].fp.open(fullPath,std::ios::in|std::ios::binary);
+			break;
+		case OPENMODE_WRITE: // Not to truncate, use in/out mode for WRITE.
+		case OPENMODE_RW:
+			sft[sftIdx].fp.open(fullPath,std::ios::in|std::ios::out|std::ios::binary);
+			break;
+		}
+		if(true==sft[sftIdx].fp.is_open())
+		{
+			return sftIdx;
+		}
+	}
+	return -1;
+}
 bool FileSys::CloseFile(int sftIdx)
 {
 	if(0<=sftIdx &&

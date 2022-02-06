@@ -349,16 +349,23 @@ bool TownsTgDrv::Int2F_1117_OpenOrTruncate(void)
 	{
 		townsPtr->cpu.SetCF(true);
 
+		auto subPath=DropDriveLetter(fName);
 		auto mode=FetchStackParam0();
-		std::cout << cpputil::Ustox(mode) << std::endl;
 
 		if(0==(mode&0xFF00))
 		{
 			// Normal create
+			auto hostSFTIdx=sharedDir[sharedDirIdx].OpenFileNotTruncate(subPath,FileSys::OPENMODE_RW);
+			if(0<=hostSFTIdx)
+			{
+				MakeVMSFT(townsPtr->cpu.state.ES(),townsPtr->cpu.state.DI(),driveLetter,hostSFTIdx,sharedDir[sharedDirIdx].sft[hostSFTIdx]);
+				townsPtr->cpu.SetCF(false);
+			}
 		}
 		else if(0x0100==(mode&0xFF00))
 		{
 			// Truncate
+			std::cout << "Truncate mode not supported yet." << std::endl;
 		}
 
 		return true; // Yes, it's my drive.
@@ -986,11 +993,19 @@ std::string TownsTgDrv::DropDriveLetter(std::string ful) const
 	if(('/'==ful[0] && '/'==ful[1]) || ('\\'==ful[0] && '\\'==ful[1]))
 	{
 		// \\Q.A. format
+		if('/'==ful[6] || '\\'==ful[6])
+		{
+			return ful.c_str()+7;
+		}
 		return ful.c_str()+6;
 	}
 	else if(0!=ful[0] && ':'==ful[1])
 	{
 		// Q: format
+		if('/'==ful[2] || '\\'==ful[2])
+		{
+			return ful.c_str()+3;
+		}
 		return ful.c_str()+2;
 	}
 	return ful;

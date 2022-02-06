@@ -113,6 +113,8 @@ public:
 	    relative to the shared directory in the host.
 	*/
 	int OpenExistingFile(std::string subPath,unsigned int openMode);
+	int OpenFileNotTruncate(std::string subPath,unsigned int openMode);
+
 	/*! SftIdx is an index returned by one of open functions.
 	*/
 	bool CloseFile(int SftIdx);
