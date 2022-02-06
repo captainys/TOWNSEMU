@@ -104,3 +104,22 @@ int FileSys::FindAvailableSFT(void) const
 	}
 	return -1;
 }
+
+/*! Template="FILENAMEEXT" 11-letter format
+    File=Normal
+*/
+/* static */ bool FileSys::DOSTemplateMatch(const std::string &templ11,const std::string &fName11)
+{
+	for(int i=0; i<11; ++i)
+	{
+		if('?'==templ11[i])
+		{
+			// Pass
+		}
+		else if(cpputil::Capitalize(templ11[i])!=cpputil::Capitalize(fName11[i]))
+		{
+			return false;
+		}
+	}
+	return true;
+}

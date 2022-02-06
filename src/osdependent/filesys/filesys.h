@@ -128,6 +128,10 @@ public:
 	static std::string Getcwd(void);
 	static bool Chdir(std::string str);
 	static bool Mkdir(std::string str);
+
+	/*! Template="FILENAMEEXT" 11-letter format
+	*/
+	static bool DOSTemplateMatch(const std::string &templ11,const std::string &fName11);
 };
 
 

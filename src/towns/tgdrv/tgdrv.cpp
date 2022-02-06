@@ -416,17 +416,38 @@ bool TownsTgDrv::Int2F_111B_FindFirst(void)
 		else
 		{
 			auto subDir=FullPathToSubDir(fn);
-			dirent[sharedDirIndex]=sharedDir[sharedDirIndex].FindFirst(subDir);
-			if(true==dirent[sharedDirIndex].endOfDir)
+			bool found=false,first=true;
+			for(;;)
+			{
+				if(true==first)
+				{
+					dirent[sharedDirIndex]=sharedDir[sharedDirIndex].FindFirst(subDir);
+					first=false;
+				}
+				else
+				{
+					dirent[sharedDirIndex]=sharedDir[sharedDirIndex].FindNext();
+				}
+				if(true==dirent[sharedDirIndex].endOfDir)
+				{
+					break;
+				}
+
+				auto fName11=FilenameTo11Bytes(dirent[sharedDirIndex].fName);
+				if(true==FileSys::DOSTemplateMatch(eleven,fName11))
+				{
+					MakeDOSDirEnt(DTABuffer+0x15,dirent[sharedDirIndex]);
+					townsPtr->cpu.SetCF(false);
+					found=true;
+					break;
+				}
+			}
+
+			if(true!=found)
 			{
 				// if not found
 				ReturnAX(TOWNS_DOSERR_FILE_NOT_FOUND);
 				townsPtr->cpu.SetCF(true);
-			}
-			else
-			{
-				MakeDOSDirEnt(DTABuffer+0x15,dirent[sharedDirIndex]);
-				townsPtr->cpu.SetCF(false);
 			}
 		}
 		return true; // Yes, it's mine.
@@ -442,6 +463,13 @@ bool TownsTgDrv::Int2F_111C_FindNext(void)
 	{
 		return false;
 	}
+
+	char templ11[11];
+	for(int i=0; i<11; ++i)
+	{
+		templ11[i]=townsPtr->mem.FetchByte(DTABuffer+1+i);
+	}
+
 	drv&=0x7F;
 	auto sharedDirIndex=DriveLetterToSharedDirIndex(drv);
 	if(0<=sharedDirIndex)
@@ -453,17 +481,25 @@ bool TownsTgDrv::Int2F_111C_FindNext(void)
 		}
 		else
 		{
-			dirent[sharedDirIndex]=sharedDir[sharedDirIndex].FindNext();
-			if(true==dirent[sharedDirIndex].endOfDir)
+			bool found=false;
+			for(;;)
+			{
+				dirent[sharedDirIndex]=sharedDir[sharedDirIndex].FindNext();
+				auto fName11=FilenameTo11Bytes(dirent[sharedDirIndex].fName);
+				if(true==FileSys::DOSTemplateMatch(templ11,fName11))
+				{
+					MakeDOSDirEnt(DTABuffer+0x15,dirent[sharedDirIndex]);
+					townsPtr->cpu.SetCF(false);
+					found=true;
+					break;
+				}
+			}
+
+			if(true!=found)
 			{
 				// if not found
 				ReturnAX(TOWNS_DOSERR_FILE_NOT_FOUND);
 				townsPtr->cpu.SetCF(true);
-			}
-			else
-			{
-				MakeDOSDirEnt(DTABuffer+0x15,dirent[sharedDirIndex]);
-				townsPtr->cpu.SetCF(false);
 			}
 		}
 		return true;
