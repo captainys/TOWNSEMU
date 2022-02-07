@@ -105,6 +105,8 @@ public:
 
 	int FindAvailableFindStruct(void) const;
 
+	bool FindStructValid(int findStructIdx) const;
+
 
 	/*! SubPath needs to be a directory.
 	    "/*.*" or "/*" will be added for file listing.

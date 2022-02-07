@@ -33,13 +33,28 @@ int FileSys::FindFirst(DirectoryEntry &ent,unsigned int PSP,const std::string &s
 }
 FileSys::DirectoryEntry FileSys::FindNext(int fsIdx)
 {
+	DirectoryEntry ent;
 	if(true==findStruct[fsIdx].used)
 	{
-		return FindNext(findStruct[fsIdx].findContext);
+		ent=FindNext(findStruct[fsIdx].findContext);
+		if(true==ent.endOfDir)
+		{
+			findStruct[fsIdx].used=false;
+		}
 	}
-	DirectoryEntry ent;
-	ent.endOfDir=true;
+	else
+	{
+		ent.endOfDir=true;
+	}
 	return ent;
+}
+bool FileSys::FindStructValid(int findStructIdx) const
+{
+	if(0<=findStructIdx && findStructIdx<MAX_NUM_OPEN_DIRECTORY)
+	{
+		return findStruct[findStructIdx].used;
+	}
+	return false;
 }
 int FileSys::FindAvailableFindStruct(void) const
 {

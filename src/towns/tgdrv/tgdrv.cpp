@@ -436,7 +436,7 @@ bool TownsTgDrv::Int2F_111B_FindFirst(void)
 		}
 		townsPtr->mem.StoreByte(DTABuffer+0x0C,(unsigned char)sAttr);
 		townsPtr->mem.StoreWord(DTABuffer+0x0D,1);  // Entry Count? Always 1?
-		townsPtr->mem.StoreWord(DTABuffer+0x0F,1);  // Cluster Number? Always 1?
+		// townsPtr->mem.StoreWord(DTABuffer+0x0F,1);  // Cluster Number? Always 1?
 		townsPtr->mem.StoreDword(DTABuffer+0x11,0);  // Entry Count? Always 1?
 
 		if(0!=(sAttr&TOWNS_DOS_DIRENT_ATTR_VOLLABEL))
@@ -463,28 +463,34 @@ bool TownsTgDrv::Int2F_111B_FindFirst(void)
 				return true; // Yes it's my drive.
 			}
 
-			bool found=false,first=true;
+			bool found=false;
+			int fsIdx=-1;
 			for(;;)
 			{
-				if(true==first)
+				FileSys::DirectoryEntry dirent;
+				if(fsIdx<0)
 				{
-					dirent[sharedDirIndex]=sharedDir[sharedDirIndex].FindFirst(subDir);
-					first=false;
+					fsIdx=sharedDir[sharedDirIndex].FindFirst(dirent,FetchPSP(),subDir);
+					if(fsIdx<0) // No available find struct or file not found.
+					{
+						break;
+					}
 				}
 				else
 				{
-					dirent[sharedDirIndex]=sharedDir[sharedDirIndex].FindNext();
+					dirent=sharedDir[sharedDirIndex].FindNext(fsIdx);
 				}
-				if(true==dirent[sharedDirIndex].endOfDir)
+				if(true==dirent.endOfDir)
 				{
 					break;
 				}
 
-				auto fName11=FilenameTo11Bytes(dirent[sharedDirIndex].fName);
+				auto fName11=FilenameTo11Bytes(dirent.fName);
 				if(true==FileSys::DOSTemplateMatch(eleven,fName11) &&
-				   true==FileSys::DOSAttrMatch(sAttr,dirent[sharedDirIndex].attr))
+				   true==FileSys::DOSAttrMatch(sAttr,dirent.attr))
 				{
-					MakeDOSDirEnt(DTABuffer+0x15,dirent[sharedDirIndex]);
+					MakeDOSDirEnt(DTABuffer+0x15,dirent);
+					townsPtr->mem.StoreWord(DTABuffer+0x0F,fsIdx);  // Use Cluster Number to connect fsIdx
 					townsPtr->cpu.SetCF(false);
 					found=true;
 					break;
@@ -523,38 +529,40 @@ bool TownsTgDrv::Int2F_111C_FindNext(void)
 	auto sharedDirIndex=DriveLetterToSharedDirIndex(drv);
 	if(0<=sharedDirIndex)
 	{
-		if(true==dirent[sharedDirIndex].endOfDir)
+		bool found=false;
+		int sfIdx=townsPtr->mem.FetchWord(DTABuffer+0x0F);
+		if(true==sharedDir[sharedDirIndex].FindStructValid(sfIdx))
 		{
-			ReturnAX(TOWNS_DOSERR_FILE_NOT_FOUND);
-			townsPtr->cpu.SetCF(true);
-		}
-		else
-		{
-			bool found=false;
 			for(;;)
 			{
-				dirent[sharedDirIndex]=sharedDir[sharedDirIndex].FindNext();
-				auto fName11=FilenameTo11Bytes(dirent[sharedDirIndex].fName);
-				if(true==dirent[sharedDirIndex].endOfDir)
+				auto dirent=sharedDir[sharedDirIndex].FindNext(sfIdx);
+printf("%s %d\n",__FUNCTION__,__LINE__);
+				auto fName11=FilenameTo11Bytes(dirent.fName);
+				if(true==dirent.endOfDir)
 				{
+printf("%s %d\n",__FUNCTION__,__LINE__);
 					break;
 				}
 				if(true==FileSys::DOSTemplateMatch(templ11,fName11) &&
-				   true==FileSys::DOSAttrMatch(sAttr,dirent[sharedDirIndex].attr))
+				   true==FileSys::DOSAttrMatch(sAttr,dirent.attr))
 				{
-					MakeDOSDirEnt(DTABuffer+0x15,dirent[sharedDirIndex]);
+					MakeDOSDirEnt(DTABuffer+0x15,dirent);
 					townsPtr->cpu.SetCF(false);
 					found=true;
 					break;
 				}
 			}
-
 			if(true!=found)
 			{
 				// if not found
 				ReturnAX(TOWNS_DOSERR_NO_MORE_FILES);
 				townsPtr->cpu.SetCF(true);
 			}
+		}
+		else
+		{
+			ReturnAX(TOWNS_DOSERR_FILE_NOT_FOUND);
+			townsPtr->cpu.SetCF(true);
 		}
 		return true;
 	}

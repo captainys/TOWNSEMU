@@ -46,7 +46,6 @@ public:
 	const int TGDRV_ID=0x52444754; // "TGDR"
 
 	FileSys sharedDir[TOWNS_TGDRV_MAX_NUM_DRIVES];
-	FileSys::DirectoryEntry dirent[TOWNS_TGDRV_MAX_NUM_DRIVES];
 
 	class State
 	{
