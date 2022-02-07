@@ -685,10 +685,22 @@ void TownsTgDrv::MakeVMSFT(const class i486DX::SegmentRegister &seg,uint32_t off
 }
 void TownsTgDrv::MakeDOSDirEnt(uint32_t DTABuffer,const FileSys::DirectoryEntry &dirent)
 {
-	auto eleven=FilenameTo11Bytes(dirent.fName);
+	std::string fName11;
+	if("."==dirent.fName || ".."==dirent.fName)
+	{
+		fName11=dirent.fName;
+		while(fName11.size()<11)
+		{
+			fName11.push_back(' ');
+		}
+	}
+	else
+	{
+		fName11=FilenameTo11Bytes(dirent.fName);
+	}
 	for(int i=0; i<11; ++i)
 	{
-		townsPtr->mem.StoreByte(DTABuffer+i,eleven[i]);
+		townsPtr->mem.StoreByte(DTABuffer+i,fName11[i]);
 	}
 	townsPtr->mem.StoreByte(DTABuffer+0x0B,dirent.attr);
 	townsPtr->mem.StoreByte(DTABuffer+0x0C,0);
