@@ -128,6 +128,9 @@ FileSys::DirectoryEntry FileSys::FindFirst(std::string subPath,FindContext *cont
 	}
 	return ent;
 }
+DirectoryEntry FileSys::GetFileAttrib(std::string FileName)
+{
+}
 FileSys::DirectoryEntry FileSys::FindNext(FindContext *context)
 {
 	DirectoryEntry ent;

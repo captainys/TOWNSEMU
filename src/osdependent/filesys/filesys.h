@@ -79,8 +79,18 @@ public:
 	// In OS-Dependent part >>
 	FindContext *CreateFindContext(void);
 	void DeleteFindContext(FindContext *find);
+
+	/*! SubPath needs to be a directory.
+	    "/*.*" or "/*" will be added for 
+	*/
 	DirectoryEntry FindFirst(std::string subPath,FindContext *find);
+
 	DirectoryEntry FindNext(FindContext *find);
+
+	/*! Returns file attribute in directory entry.
+	    If file not found, endOfDir member will be true.
+	*/
+	DirectoryEntry GetFileAttrib(std::string FileName) const;
 	// In OS-Dependent part <<
 
 
@@ -140,6 +150,8 @@ public:
 	    fAttr: Attribute of file.
 	*/
 	static bool DOSAttrMatch(unsigned int sAttr,unsigned int fAttr);
+
+	std::string MakeHostPath(const std::string &subPath) const;
 };
 
 

@@ -293,11 +293,7 @@ bool TownsTgDrv::Int2F_110F_GetFileAttrib(void)
 	if(0<=sharedDirIdx)
 	{
 		auto subPath=DropDriveLetter(fName);
-
-		auto find=sharedDir[sharedDirIdx].CreateFindContext();
-		auto dirent=sharedDir[sharedDirIdx].FindFirst(subPath,find);
-		sharedDir[sharedDirIdx].DeleteFindContext(find);
-
+		auto dirent=sharedDir[sharedDirIdx].GetFileAttrib(subPath);
 		if(true!=dirent.endOfDir)
 		{
 			ReturnAX(dirent.attr);

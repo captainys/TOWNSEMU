@@ -87,15 +87,7 @@ FileSys::DirectoryEntry FileSys::FindFirst(std::string subPath,FindContext *find
 {
 	find->Close();
 
-	auto path=hostPath;
-	if(""!=subPath && "/"!=subPath && "\\"!=subPath)
-	{
-		if(""==path || (path.back()!='/' && path.back()!='\\'))
-		{
-			path.push_back('/');
-		}
-		path+=subPath;
-	}
+	auto path=MakeHostPath(subPath);
 	if(""==path || (path.back()!='/' && path.back()!='\\'))
 	{
 		path.push_back('/');
@@ -141,9 +133,25 @@ FileSys::DirectoryEntry FileSys::FindNext(FindContext *find)
 	}
 	return ent;
 }
+FileSys::DirectoryEntry FileSys::GetFileAttrib(std::string fileName) const
+{
+	auto path=MakeHostPath(fileName);
+	WIN32_FIND_DATAA fd;
+	auto hFind=FindFirstFileA(path.c_str(),&fd);
 
-
-
+	DirectoryEntry ent;
+	if(INVALID_HANDLE_VALUE==hFind)
+	{
+		ent.endOfDir=true;
+	}
+	else
+	{
+		ent.endOfDir=false;
+		FindContext::DirEntFromFd(ent,fd);
+		FindClose(hFind);
+	}
+	return ent;
+}
 /* static */ std::string FileSys::Getcwd(void)
 {
 	char buf[1024];

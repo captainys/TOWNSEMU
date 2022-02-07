@@ -179,3 +179,24 @@ int FileSys::FindAvailableSFT(void) const
 	}
 	return false;
 }
+
+std::string FileSys::MakeHostPath(const std::string &subPath) const
+{
+	std::string path=hostPath;
+	if(""!=subPath && "/"!=subPath && "\\"!=subPath)
+	{
+		if(""==path || (path.back()!='/' && path.back()!='\\'))
+		{
+			path.push_back('/');
+		}
+		path+=subPath;
+	}
+	for(auto &c : path)
+	{
+		if('\\'==c)
+		{
+			c='/';
+		}
+	}
+	return path;
+}
