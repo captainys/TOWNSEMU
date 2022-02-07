@@ -79,13 +79,24 @@ public:
 	FileSys();
 	~FileSys();
 	// Potential Problem:
-	//   DOS can stop directly listing and just forget about find-context.
-	//   Find-context is not allocated resource.
-	//   In the modern system, find-context is allocated resource.
-	//   Potentially DOS program can stop listing before reaching the end,
-	//   in which case, the current implementation will leak a find-context.
-	//   Also the current implementation cannot support multiple find-contexts
-	//   running simultaneously.
+	//   DOS can stop directory listing and just forget about find-context.
+	//   There is no FindClose.
+	//
+	// If a program is written like: it searches for files only necessary
+	// for filling a dialog box.  If there are more files than the dialog
+	// box can show, the program will stop directory scan as soon as the
+	// dialog box is filled.  Then, it won't scan all the way, and the
+	// host never knows when to FindClose.  Eventually it runs out of
+	// find structs.
+	//
+	// Potential solutions:
+	// (1) Reuse find struct for same VM directory.  But, it won't solve
+	//     a situation like the user double-clicked sub-directory in the
+	//     dialog box.  The parent-directory find struct will be frozen
+	//     forever.
+	// (2) Reuse oldest find struct if it runs out.
+
+
 
 	// In OS-Dependent part >>
 	static FindContext *CreateFindContext(void);
