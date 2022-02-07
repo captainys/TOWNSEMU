@@ -536,11 +536,10 @@ bool TownsTgDrv::Int2F_111C_FindNext(void)
 			for(;;)
 			{
 				auto dirent=sharedDir[sharedDirIndex].FindNext(sfIdx);
-printf("%s %d\n",__FUNCTION__,__LINE__);
+
 				auto fName11=FilenameTo11Bytes(dirent.fName);
 				if(true==dirent.endOfDir)
 				{
-printf("%s %d\n",__FUNCTION__,__LINE__);
 					break;
 				}
 				if(true==FileSys::DOSTemplateMatch(templ11,fName11) &&

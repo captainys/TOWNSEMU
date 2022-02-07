@@ -76,22 +76,10 @@ FileSys::DirectoryEntry FileSys::FindContext::Read(std::string hostPath) const
 
 FileSys::FileSys()
 {
-	context=new FindContext;
 }
 FileSys::~FileSys()
 {
-	delete context;
-	context=nullptr;
 }
-FileSys::DirectoryEntry FileSys::FindFirst(std::string subPath)
-{
-	return FindFirst(subPath,this->context);
-}
-FileSys::DirectoryEntry FileSys::FindNext(void)
-{
-	return FindNext(this->context);
-}
-
 
 FileSys::FindContext *FileSys::CreateFindContext(void)
 {

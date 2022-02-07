@@ -56,21 +56,9 @@ void FileSys::FindContext::Close(void)
 
 FileSys::FileSys()
 {
-	context=new FindContext;
 }
 FileSys::~FileSys()
 {
-	context->Close();
-	delete context;
-	context=nullptr;
-}
-FileSys::DirectoryEntry FileSys::FindFirst(std::string subDir)
-{
-	return FindFirst(subDir,context);
-}
-FileSys::DirectoryEntry FileSys::FindNext(void)
-{
-	return FindNext(context);
 }
 
 

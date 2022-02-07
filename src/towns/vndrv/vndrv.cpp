@@ -239,15 +239,16 @@ void TownsVnDrv::ExecPrimaryCommand(unsigned int cmd)
 					}
 				}
 
-				auto dirEnt=drvPtr->FindFirst(subDir);
-				if(true==dirEnt.endOfDir)
-				{
-					townsPtr->cpu.SetAX(TOWNS_VNDRV_ERR_FILE_NOT_FOUND);
-					std::cout << "File not found" << std::endl;
-					break;
-				}
-				townsPtr->cpu.SetAX(TOWNS_VNDRV_ERR_NO_ERROR);
-				StoreDirEnt(dirEnt);
+				townsPtr->cpu.SetAX(TOWNS_VNDRV_ERR_FILE_NOT_FOUND);
+				// auto dirEnt=drvPtr->FindFirst(subDir);
+				// if(true==dirEnt.endOfDir)
+				// {
+				// 	townsPtr->cpu.SetAX(TOWNS_VNDRV_ERR_FILE_NOT_FOUND);
+				// 	std::cout << "File not found" << std::endl;
+				// 	break;
+				// }
+				// townsPtr->cpu.SetAX(TOWNS_VNDRV_ERR_NO_ERROR);
+				// StoreDirEnt(dirEnt);
 			}
 			break;
 		case TOWNS_VNDRV_CMD_FIND_NEXT://    0x1C,
@@ -262,15 +263,16 @@ void TownsVnDrv::ExecPrimaryCommand(unsigned int cmd)
 					break;
 				}
 
-				auto dirEnt=drvPtr->FindNext();
-				if(true==dirEnt.endOfDir)
-				{
-					townsPtr->cpu.SetAX(TOWNS_VNDRV_ERR_NO_MORE_FILES);
-					std::cout << "File not found" << std::endl;
-					break;
-				}
-				townsPtr->cpu.SetAX(TOWNS_VNDRV_ERR_NO_ERROR);
-				StoreDirEnt(dirEnt);
+				townsPtr->cpu.SetAX(TOWNS_VNDRV_ERR_NO_MORE_FILES);
+				// auto dirEnt=drvPtr->FindNext();
+				// if(true==dirEnt.endOfDir)
+				// {
+				// 	townsPtr->cpu.SetAX(TOWNS_VNDRV_ERR_NO_MORE_FILES);
+				// 	std::cout << "File not found" << std::endl;
+				// 	break;
+				// }
+				// townsPtr->cpu.SetAX(TOWNS_VNDRV_ERR_NO_ERROR);
+				// StoreDirEnt(dirEnt);
 			}
 			break;
 		}

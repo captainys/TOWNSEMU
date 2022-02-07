@@ -24,7 +24,6 @@ private:
 public:
 	class FindContext;
 
-	FindContext *context=nullptr;
 	bool linked=false;
 	std::string hostPath;
 
@@ -79,8 +78,6 @@ public:
 
 	FileSys();
 	~FileSys();
-	DirectoryEntry FindFirst(std::string subDir);
-	DirectoryEntry FindNext(void);
 	// Potential Problem:
 	//   DOS can stop directly listing and just forget about find-context.
 	//   Find-context is not allocated resource.

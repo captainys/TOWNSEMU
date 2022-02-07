@@ -4657,7 +4657,8 @@ void TownsCommandInterpreter::Execute_LS(FMTowns &towns,Command &cmd)
 	{
 		fileSys.hostPath=FileSys::Getcwd();
 	}
-	auto dirent=fileSys.FindFirst("");
+	auto findContext=fileSys.CreateFindContext();
+	auto dirent=fileSys.FindFirst("",findContext);
 	while(true!=dirent.endOfDir)
 	{
 		if(true!=detail)
@@ -4684,6 +4685,7 @@ void TownsCommandInterpreter::Execute_LS(FMTowns &towns,Command &cmd)
 			    dirent.length,
 			    dirent.fName.c_str());
 		}
-		dirent=fileSys.FindNext();
+		dirent=fileSys.FindNext(findContext);
 	}
+	fileSys.DeleteFindContext(findContext);
 }
