@@ -28,6 +28,21 @@ void FileSys::FindContext::Close(void)
 	}
 }
 
+static void StatToDirectoryEntry(FileSys::DirectoryEntry &dirent,const struct stat &stat)
+{
+	dirent.attr=0;
+	if(S_IFDIR==(stat.st_mode&S_IFMT))
+	{
+		dirent.attr|=FileSys::ATTR_DIR;
+		dirent.length=0;
+	}
+	else
+	{
+		dirent.attr&=~FileSys::ATTR_DIR;
+		dirent.length=stat.st_size;
+	}
+}
+
 FileSys::DirectoryEntry FileSys::FindContext::Read(std::string hostPath) const
 {
 	DirectoryEntry ent;
@@ -43,24 +58,13 @@ FileSys::DirectoryEntry FileSys::FindContext::Read(std::string hostPath) const
 	{
 		if(0!=de->d_ino)
 		{
-			ent.endOfDir=false;
-
 			std::string ful=hostPath+"/"+subPath+"/"+de->d_name;
-
 			struct stat st;
 			stat(ful.c_str(),&st);
+			StatToDirectoryEntry(ent,st);
 
+			ent.endOfDir=false;
 			ent.fName=de->d_name;
-			if(S_IFDIR==(st.st_mode&S_IFMT))
-			{
-				ent.attr|=ATTR_DIR;
-				ent.length=0;
-			}
-			else
-			{
-				ent.attr&=~ATTR_DIR;
-				ent.length=st.st_size;
-			}
 		}
 	}
 	else
@@ -99,15 +103,7 @@ void FileSys::DeleteFindContext(FindContext *find)
 }
 FileSys::DirectoryEntry FileSys::FindFirst(std::string subPath,FindContext *context)
 {
-	std::string path=hostPath;
-	if(""!=subPath && "/"!=subPath && "\\"!=subPath)
-	{
-		if(""==path || (path.back()!='/' && path.back()!='\\'))
-		{
-			path.push_back('/');
-		}
-		path+=subPath;
-	}
+	std::string path=MakeHostPath(subPath);
 	DirectoryEntry ent;
 
 	context->Close();
@@ -128,8 +124,24 @@ FileSys::DirectoryEntry FileSys::FindFirst(std::string subPath,FindContext *cont
 	}
 	return ent;
 }
-DirectoryEntry FileSys::GetFileAttrib(std::string FileName)
+FileSys::DirectoryEntry FileSys::GetFileAttrib(std::string fileName) const
 {
+	std::string path=MakeHostPath(fileName);
+
+	DirectoryEntry ent;
+
+	struct stat st;
+	if(0==stat(path.c_str(),&st))
+	{
+		StatToDirectoryEntry(ent,st);
+		ent.endOfDir=false;
+	}
+	else
+	{
+		ent.endOfDir=true;
+	}
+
+	return ent;
 }
 FileSys::DirectoryEntry FileSys::FindNext(FindContext *context)
 {
