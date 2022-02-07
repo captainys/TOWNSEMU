@@ -1,6 +1,62 @@
 #include "filesys.h"
 #include "cpputil.h"
 
+
+
+FileSys::FindStruct::FindStruct()
+{
+	findContext=CreateFindContext();
+}
+FileSys::FindStruct::~FindStruct()
+{
+	if(nullptr!=findContext)
+	{
+		DeleteFindContext(findContext);
+		findContext=nullptr;
+	}
+}
+int FileSys::FindFirst(DirectoryEntry &ent,unsigned int PSP,const std::string &subPath)
+{
+	auto fsIdx=FindAvailableFindStruct();
+	if(0<=fsIdx)
+	{
+		ent=FindFirst(subPath,findStruct[fsIdx].findContext);
+		if(true!=ent.endOfDir)
+		{
+			findStruct[fsIdx].PSP=PSP;
+			findStruct[fsIdx].used=true;
+			findStruct[fsIdx].subPath=subPath;
+			return fsIdx;
+		}
+	}
+	return -1;
+}
+FileSys::DirectoryEntry FileSys::FindNext(int fsIdx)
+{
+	if(true==findStruct[fsIdx].used)
+	{
+		return FindNext(findStruct[fsIdx].findContext);
+	}
+	DirectoryEntry ent;
+	ent.endOfDir=true;
+	return ent;
+}
+int FileSys::FindAvailableFindStruct(void) const
+{
+	for(int i=0; i<MAX_NUM_OPEN_DIRECTORY; ++i)
+	{
+		if(true!=findStruct[i].used)
+		{
+			return i;
+		}
+	}
+	return -1;
+}
+
+
+////////////////////////////////////////////////////////////
+
+
 uint16_t FileSys::HasTimeStamp::FormatDOSTime(void) const
 {
 	return (hours<<11)|(minutes<<5)|(seconds/2);

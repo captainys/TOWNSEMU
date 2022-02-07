@@ -30,6 +30,7 @@ public:
 
 	enum
 	{
+		MAX_NUM_OPEN_DIRECTORY=16,
 		ATTR_ARCHIVE= 0x20,
 		ATTR_DIR=     0x10,
 		ATTR_VOLUME=  0x08,
@@ -63,6 +64,19 @@ public:
 		unsigned long long int length=0;
 		std::string fName;
 	};
+
+	class FindStruct
+	{
+	public:
+		unsigned int PSP=0;
+		bool used=false;
+		std::string subPath;
+		FindContext *findContext=nullptr;
+		FindStruct();
+		~FindStruct();
+	};
+	FindStruct findStruct[MAX_NUM_OPEN_DIRECTORY];
+
 	FileSys();
 	~FileSys();
 	DirectoryEntry FindFirst(std::string subDir);
@@ -77,11 +91,23 @@ public:
 	//   running simultaneously.
 
 	// In OS-Dependent part >>
-	FindContext *CreateFindContext(void);
-	void DeleteFindContext(FindContext *find);
+	static FindContext *CreateFindContext(void);
+	static void DeleteFindContext(FindContext *find);
+
 
 	/*! SubPath needs to be a directory.
-	    "/*.*" or "/*" will be added for 
+	    "/*.*" or "/*" will be added for file listing.
+	    Returns an index to find struct.
+	*/
+	int FindFirst(DirectoryEntry &ent,unsigned int PSP,const std::string &subPath);
+
+	DirectoryEntry FindNext(int findStructIdx);
+
+	int FindAvailableFindStruct(void) const;
+
+
+	/*! SubPath needs to be a directory.
+	    "/*.*" or "/*" will be added for file listing.
 	*/
 	DirectoryEntry FindFirst(std::string subPath,FindContext *find);
 
