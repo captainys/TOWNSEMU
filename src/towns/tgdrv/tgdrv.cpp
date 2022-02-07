@@ -348,7 +348,7 @@ bool TownsTgDrv::Int2F_1116_OpenExistingFile(void)
 			return true; // Yes it's my drive.
 		}
 
-		auto hostSFTIdx=sharedDir[sharedDirIdx].OpenExistingFile(subPath,FileSys::OPENMODE_RW);
+		auto hostSFTIdx=sharedDir[sharedDirIdx].OpenExistingFile(FetchPSP(),subPath,FileSys::OPENMODE_RW);
 		if(0<=hostSFTIdx)
 		{
 			MakeVMSFT(townsPtr->cpu.state.ES(),townsPtr->cpu.state.DI(),driveLetter,hostSFTIdx,sharedDir[sharedDirIdx].sft[hostSFTIdx]);
@@ -386,7 +386,7 @@ bool TownsTgDrv::Int2F_1117_OpenOrTruncate(void)
 		if(0==(mode&0xFF00))
 		{
 			// Normal create
-			auto hostSFTIdx=sharedDir[sharedDirIdx].OpenFileNotTruncate(subPath,FileSys::OPENMODE_RW);
+			auto hostSFTIdx=sharedDir[sharedDirIdx].OpenFileNotTruncate(FetchPSP(),subPath,FileSys::OPENMODE_RW);
 			if(0<=hostSFTIdx)
 			{
 				MakeVMSFT(townsPtr->cpu.state.ES(),townsPtr->cpu.state.DI(),driveLetter,hostSFTIdx,sharedDir[sharedDirIdx].sft[hostSFTIdx]);

@@ -107,6 +107,7 @@ public:
 	{
 	public:
 		unsigned int mode=0;
+		unsigned int PSP=0;
 		std::fstream fp;
 		bool IsOpen(void) const;
 		const uint32_t GetFileSize(void); // Can't be const.  seekg is a modifier.
@@ -122,8 +123,8 @@ public:
 	    subPath is relative to the virtual drive in the VM,
 	    relative to the shared directory in the host.
 	*/
-	int OpenExistingFile(std::string subPath,unsigned int openMode);
-	int OpenFileNotTruncate(std::string subPath,unsigned int openMode);
+	int OpenExistingFile(unsigned int PSP,std::string subPath,unsigned int openMode);
+	int OpenFileNotTruncate(unsigned int PSP,std::string subPath,unsigned int openMode);
 
 	/*! SftIdx is an index returned by one of open functions.
 	*/

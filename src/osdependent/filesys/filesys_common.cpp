@@ -50,7 +50,7 @@ bool FileSys::SubPathIsDirectory(const std::string &subPath)
 	DeleteFindContext(findContext);
 	return 0!=(dirent.attr&ATTR_DIR);
 }
-int FileSys::OpenExistingFile(std::string subPath,unsigned int openMode)
+int FileSys::OpenExistingFile(unsigned int PSP,std::string subPath,unsigned int openMode)
 {
 	auto sftIdx=FindAvailableSFT();
 	if(0<=sftIdx)
@@ -63,6 +63,7 @@ int FileSys::OpenExistingFile(std::string subPath,unsigned int openMode)
 
 		sft[sftIdx].fName=subPath;
 		sft[sftIdx].mode=openMode;
+		sft[sftIdx].PSP=PSP;
 		switch(openMode)
 		{
 		case OPENMODE_READ:
@@ -82,7 +83,7 @@ int FileSys::OpenExistingFile(std::string subPath,unsigned int openMode)
 	}
 	return -1;
 }
-int FileSys::OpenFileNotTruncate(std::string subPath,unsigned int openMode)
+int FileSys::OpenFileNotTruncate(unsigned int PSP,std::string subPath,unsigned int openMode)
 {
 	auto sftIdx=FindAvailableSFT();
 	if(0<=sftIdx)
@@ -95,6 +96,7 @@ int FileSys::OpenFileNotTruncate(std::string subPath,unsigned int openMode)
 		}
 		sft[sftIdx].fName=subPath;
 		sft[sftIdx].mode=openMode;
+		sft[sftIdx].PSP=PSP;
 		switch(openMode)
 		{
 		case OPENMODE_READ:
