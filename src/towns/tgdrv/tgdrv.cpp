@@ -148,6 +148,15 @@ bool TownsTgDrv::Int2F_1105_Chdir(void)
 		auto subPath=DropDriveLetter(fName);
 		std::cout << fName << std::endl;
 		std::cout << subPath << std::endl;
+
+		auto invalidErr=CheckFileName(subPath);
+		if(TOWNS_DOSERR_NO_ERROR!=invalidErr)
+		{
+			ReturnAX(invalidErr);
+			townsPtr->cpu.SetCF(true);
+			return true; // Yes it's my drive.
+		}
+
 		if(0==subPath.size() || "\\"==subPath || "/"==subPath)
 		{
 			for(int i=6; i<0x43; ++i)
@@ -293,6 +302,15 @@ bool TownsTgDrv::Int2F_110F_GetFileAttrib(void)
 	if(0<=sharedDirIdx)
 	{
 		auto subPath=DropDriveLetter(fName);
+
+		auto invalidErr=CheckFileName(fName);
+		if(TOWNS_DOSERR_NO_ERROR!=invalidErr)
+		{
+			ReturnAX(invalidErr);
+			townsPtr->cpu.SetCF(true);
+			return true; // Yes it's my drive.
+		}
+
 		auto dirent=sharedDir[sharedDirIdx].GetFileAttrib(subPath);
 		if(true!=dirent.endOfDir)
 		{
@@ -321,6 +339,15 @@ bool TownsTgDrv::Int2F_1116_OpenExistingFile(void)
 	if(0<=sharedDirIdx)
 	{
 		auto subPath=DropDriveLetter(fName);
+
+		auto invalidErr=CheckFileName(fName);
+		if(TOWNS_DOSERR_NO_ERROR!=invalidErr)
+		{
+			ReturnAX(invalidErr);
+			townsPtr->cpu.SetCF(true);
+			return true; // Yes it's my drive.
+		}
+
 		auto hostSFTIdx=sharedDir[sharedDirIdx].OpenExistingFile(subPath,FileSys::OPENMODE_RW);
 		if(0<=hostSFTIdx)
 		{
@@ -347,6 +374,14 @@ bool TownsTgDrv::Int2F_1117_OpenOrTruncate(void)
 
 		auto subPath=DropDriveLetter(fName);
 		auto mode=FetchStackParam0();
+
+		auto invalidErr=CheckFileName(subPath);
+		if(TOWNS_DOSERR_NO_ERROR!=invalidErr)
+		{
+			ReturnAX(invalidErr);
+			townsPtr->cpu.SetCF(true);
+			return true; // Yes it's my drive.
+		}
 
 		if(0==(mode&0xFF00))
 		{
@@ -419,6 +454,15 @@ bool TownsTgDrv::Int2F_111B_FindFirst(void)
 		else
 		{
 			auto subDir=FullPathToSubDir(fn);
+
+			auto invalidErr=CheckFileName(subDir);
+			if(TOWNS_DOSERR_NO_ERROR!=invalidErr)
+			{
+				ReturnAX(invalidErr);
+				townsPtr->cpu.SetCF(true);
+				return true; // Yes it's my drive.
+			}
+
 			bool found=false,first=true;
 			for(;;)
 			{
@@ -508,7 +552,7 @@ bool TownsTgDrv::Int2F_111C_FindNext(void)
 			if(true!=found)
 			{
 				// if not found
-				ReturnAX(TOWNS_DOSERR_FILE_NOT_FOUND);
+				ReturnAX(TOWNS_DOSERR_NO_MORE_FILES);
 				townsPtr->cpu.SetCF(true);
 			}
 		}
@@ -532,6 +576,22 @@ bool TownsTgDrv::Int2F_1123_QualifyRemoteFileName(void)
 bool TownsTgDrv::Int2F_1125_RedirectedPrinterMode(void)
 {
 	return false; // Not my drive.  Not my printer actually.
+}
+
+unsigned int TownsTgDrv::CheckFileName(const std::string &fName) const
+{
+	for(int i=0; i<fName.size(); ++i)
+	{
+		if('.'==fName[i] && '.'==fName[i+1])
+		{
+			return TOWNS_DOSERR_ACCESS_DENIED;
+		}
+		if(fName[i]<' ' || 0x80<=fName[i])
+		{
+			return TOWNS_DOSERR_ACCESS_DENIED;
+		}
+	}
+	return TOWNS_DOSERR_NO_ERROR;
 }
 
 uint16_t TownsTgDrv::FetchPSP(void) const

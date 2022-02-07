@@ -80,6 +80,12 @@ public:
 	bool Int2F_1123_QualifyRemoteFileName(void);
 	bool Int2F_1125_RedirectedPrinterMode(void);
 
+	/*! Check file name.  If it includes ".." it returns DOS error code.
+	    Also it blocks kanji and kana characters.
+	    Input file name must be a fully-qualified file name from DOS.
+	*/
+	unsigned int CheckFileName(const std::string &fName) const;
+
 	uint16_t FetchPSP(void) const;
 	uint16_t FetchStackParam0(void) const;
 	uint16_t FetchStackParam1(void) const;
