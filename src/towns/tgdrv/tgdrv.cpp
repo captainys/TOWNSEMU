@@ -424,7 +424,7 @@ bool TownsTgDrv::Int2F_111B_FindFirst(void)
 
 	if(0<=sharedDirIndex)
 	{
-		townsPtr->mem.StoreByte(DTABuffer,0x80|drvLetter);
+		townsPtr->mem.StoreByte(DTABuffer,0x80|(drvLetter-'A'+1));  // (drv&0x7F) is FCB drive index.
 		auto last=GetLastOfFilename(fn);
 		std::cout << last << std::endl;
 		auto eleven=FilenameTo11Bytes(last);
@@ -519,7 +519,7 @@ bool TownsTgDrv::Int2F_111C_FindNext(void)
 	}
 	uint16_t sAttr=townsPtr->mem.FetchByte(DTABuffer+0x0C);
 
-	drv&=0x7F;
+	drv=(drv&0x7F)-1+'A'; // (drv&0x7F) is FCB drive index.
 	auto sharedDirIndex=DriveLetterToSharedDirIndex(drv);
 	if(0<=sharedDirIndex)
 	{
