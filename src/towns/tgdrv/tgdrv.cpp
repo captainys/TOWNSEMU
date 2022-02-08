@@ -95,6 +95,9 @@ TownsTgDrv::TownsTgDrv(class FMTowns *townsPtr) : Device(townsPtr)
 			case 0x110F:
 				myDrive=Int2F_110F_GetFileAttrib();
 				break;
+			case 0x1111:
+				myDrive=Int2F_1111_Rename();
+				break;
 			case 0x1116:
 				myDrive=Int2F_1116_OpenExistingFile();
 				break;
@@ -393,6 +396,23 @@ bool TownsTgDrv::Int2F_110F_GetFileAttrib(void)
 			ReturnAX(TOWNS_DOSERR_FILE_NOT_FOUND);
 			townsPtr->cpu.SetCF(true);
 		}
+
+		return true; // Yes, it's my drive.
+	}
+	return false; // No, it's not my drive.
+}
+bool TownsTgDrv::Int2F_1111_Rename(void)
+{
+	auto fn1=GetFilenameBuffer1();
+	auto fn2=GetFilenameBuffer2();
+	auto driveLetter=FullyQualifiedFileNameToDriveLetter(fn1);
+	auto sharedDirIdx=FullyQualifiedFileNameToSharedDirIndex(fn1);
+	if(0<=sharedDirIdx)
+	{
+		townsPtr->cpu.SetCF(true); // Tentative
+
+		std::cout << fn1 << std::endl;
+		std::cout << fn2 << std::endl;
 
 		return true; // Yes, it's my drive.
 	}
@@ -1064,6 +1084,21 @@ std::string TownsTgDrv::GetFilenameBuffer1(void) const
 	}
 	return fn;
 }
+std::string TownsTgDrv::GetFilenameBuffer2(void) const
+{
+	auto addr=GetFilenameBuffer2Address();
+	std::string fn;
+	for(;;)
+	{
+		auto c=townsPtr->mem.FetchByte(addr++);
+		if(0==c)
+		{
+			break;
+		}
+		fn.push_back(c);
+	}
+	return fn;
+}
 std::string TownsTgDrv::GetLastOfFilename(std::string in) const
 {
 	int lastSlash=0;
@@ -1203,6 +1238,10 @@ uint32_t TownsTgDrv::GetFilenameBufferAddress(void) const
 	{
 		return townsPtr->state.DOSLOLSEG*0x10+0x3BE;
 	}
+}
+uint32_t TownsTgDrv::GetFilenameBuffer2Address(void) const
+{
+	return GetFilenameBufferAddress()+0x80; // Need to check if it is same in DOS6.
 }
 uint32_t TownsTgDrv::GetSDBAddress(void) const
 {

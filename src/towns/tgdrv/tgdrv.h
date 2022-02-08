@@ -73,6 +73,7 @@ public:
 	bool Int2F_1106_CloseRemoteFile(void);
 	bool Int2F_110C_GetDiskInformation(void);
 	bool Int2F_110F_GetFileAttrib(void);
+	bool Int2F_1111_Rename(void);
 	bool Int2F_1116_OpenExistingFile(void);
 	bool Int2F_1117_OpenOrTruncate(void);
 	bool Int2F_111B_FindFirst(void);
@@ -115,6 +116,7 @@ public:
 	unsigned int GetCDSCount(void) const;
 	unsigned int GetCDSLength(void) const;
 	std::string GetFilenameBuffer1(void) const;
+	std::string GetFilenameBuffer2(void) const;
 	std::string GetLastOfFilename(std::string in) const;
 	std::string FilenameTo11Bytes(std::string in) const;
 	std::string FullPathToSubDir(std::string fn) const;
@@ -123,6 +125,7 @@ public:
 	uint16_t GetCDSType(unsigned int driveIndex) const ;  // 0 means A drive
 	uint32_t GetDTAAddress(void) const;
 	uint32_t GetFilenameBufferAddress(void) const;
+	uint32_t GetFilenameBuffer2Address(void) const;
 	uint32_t GetSDBAddress(void) const;
 	uint16_t GetSAttr(void) const;
 	uint32_t GetSAttrAddress(void) const;
