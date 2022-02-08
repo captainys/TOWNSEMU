@@ -102,6 +102,7 @@ public:
 	void MakeDOSDirEnt(uint32_t DTABuffer,const FileSys::DirectoryEntry &dirent);
 	void MakeVMSFT(const class i486DX::SegmentRegister &seg,uint32_t offset,char driveLetter,int hostSFTIdx,FileSys::SystemFileTable &hostSFT);
 	unsigned int FetchDriveCodeFromSFT(const class i486DX::SegmentRegister &seg,uint32_t offset) const;
+	uint32_t FetchFilePositionFromSFT(const class i486DX::SegmentRegister &seg,uint32_t offset) const;
 	unsigned int FetchDeviceInfoFromSFT(const class i486DX::SegmentRegister &seg,uint32_t offset) const;
 	std::string FetchCString(uint32_t physAddr) const;
 	std::string FetchCString(const class i486DX::SegmentRegister &seg,uint32_t offset) const;

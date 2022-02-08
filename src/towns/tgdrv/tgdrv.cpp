@@ -238,6 +238,9 @@ bool TownsTgDrv::Int2F_1108_ReadFromRemoteFile(void)
 		   hostSFTIdx<FileSys::MAX_NUM_OPEN_FILE &&
 		   true==sharedDir[sharedDirIdx].sft[hostSFTIdx].IsOpen())
 		{
+			auto position=FetchFilePositionFromSFT(townsPtr->cpu.state.ES(),townsPtr->cpu.state.DI());
+			sharedDir[sharedDirIdx].Seek(hostSFTIdx,position);
+
 			auto data=sharedDir[sharedDirIdx].sft[hostSFTIdx].Read(townsPtr->cpu.GetCX());
 			auto DTAAddr=GetDTAAddress();
 			for(auto d : data)
@@ -287,6 +290,10 @@ bool TownsTgDrv::Int2F_1109_WriteToRemoteFile(void)
 			{
 				data[i]=townsPtr->mem.FetchByte(DMABuffer+i);
 			}
+
+			auto position=FetchFilePositionFromSFT(townsPtr->cpu.state.ES(),townsPtr->cpu.state.DI());
+			sharedDir[sharedDirIdx].Seek(hostSFTIdx,position);
+
 			auto bytesWritten=sharedDir[sharedDirIdx].sft[hostSFTIdx].Write(data);
 			auto filePointer=sharedDir[sharedDirIdx].sft[hostSFTIdx].GetFilePointer();
 			townsPtr->cpu.StoreDword(
@@ -843,6 +850,14 @@ unsigned int TownsTgDrv::FetchDriveCodeFromSFT(const class i486DX::SegmentRegist
 {
 	unsigned int flags=FetchDeviceInfoFromSFT(seg,offset);
 	return flags&0x1F;
+}
+uint32_t TownsTgDrv::FetchFilePositionFromSFT(const class i486DX::SegmentRegister &seg,uint32_t offset) const
+{
+	return townsPtr->cpu.FetchDword(
+		townsPtr->cpu.state.CS().addressSize,
+		seg,
+		offset+0x15,
+		townsPtr->mem);
 }
 unsigned int TownsTgDrv::FetchDeviceInfoFromSFT(const class i486DX::SegmentRegister &seg,uint32_t offset) const
 {

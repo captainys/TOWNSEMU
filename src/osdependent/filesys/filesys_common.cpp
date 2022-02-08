@@ -1,3 +1,4 @@
+#include <iostream>
 #include "filesys.h"
 #include "cpputil.h"
 
@@ -130,6 +131,10 @@ bool FileSys::SystemFileTable::IsOpen(void) const
 }
 const uint32_t FileSys::SystemFileTable::GetFileSize(void)
 {
+	if(true==fp.eof())
+	{
+		fp.clear(); // Otherwise, cannot seek, tellg() will return -1.
+	}
 	auto curPos=fp.tellg();
 
 	fp.seekg(0,std::ios::end);
@@ -141,6 +146,10 @@ const uint32_t FileSys::SystemFileTable::GetFileSize(void)
 }
 const uint32_t FileSys::SystemFileTable::GetFilePointer(void)
 {
+	if(true==fp.eof())
+	{
+		fp.clear(); // Otherwise, cannot seek, tellg() will return -1.
+	}
 	return fp.tellg();
 }
 
@@ -241,6 +250,31 @@ int FileSys::OpenFileNotTruncate(unsigned int PSP,std::string subPath,unsigned i
 		}
 	}
 	return -1;
+}
+void FileSys::Seek(int sftIdx,uint32_t pos)
+{
+	if(0<=sftIdx &&
+	   sftIdx<MAX_NUM_OPEN_FILE &&
+	   true==sft[sftIdx].fp.is_open())
+	{
+		if(true==sft[sftIdx].fp.eof())
+		{
+			sft[sftIdx].fp.clear(); // Otherwise, cannot seek, tellg() will return -1.
+		}
+		switch(sft[sftIdx].mode)
+		{
+		case OPENMODE_READ://   // Keep this number.  Compatible with DOS SFT
+			sft[sftIdx].fp.seekg(pos,std::ios::beg);
+			break;
+		case OPENMODE_WRITE://  // Keep this number.  Compatible with DOS SFT
+			sft[sftIdx].fp.seekp(pos,std::ios::beg);
+			break;
+		case OPENMODE_RW://     // Keep this number.  Compatible with DOS SFT
+			sft[sftIdx].fp.seekg(pos,std::ios::beg);
+			sft[sftIdx].fp.seekp(pos,std::ios::beg);
+			break;
+		}
+	}
 }
 bool FileSys::CloseFile(int sftIdx)
 {
