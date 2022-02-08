@@ -69,6 +69,7 @@ public:
 
 	bool Int2F_1105_Chdir(void);
 	bool Int2F_1108_ReadFromRemoteFile(void);
+	bool Int2F_1109_WriteToRemoteFile(void);
 	bool Int2F_1106_CloseRemoteFile(void);
 	bool Int2F_110C_GetDiskInformation(void);
 	bool Int2F_110F_GetFileAttrib(void);

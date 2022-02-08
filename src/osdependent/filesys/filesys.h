@@ -154,6 +154,7 @@ public:
 		const uint32_t GetFileSize(void); // Can't be const.  seekg is a modifier.
 		const uint32_t GetFilePointer(void); // Can't be const.  tellg is a modifier.  Seriously?
 		std::vector <unsigned char> Read(uint32_t len);
+		uint32_t Write(const std::vector <unsigned char> &data);
 	};
 	SystemFileTable sft[MAX_NUM_OPEN_FILE];
 	/*!

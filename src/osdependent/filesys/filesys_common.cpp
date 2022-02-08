@@ -147,16 +147,29 @@ const uint32_t FileSys::SystemFileTable::GetFilePointer(void)
 std::vector <unsigned char> FileSys::SystemFileTable::Read(uint32_t len)
 {
 	std::vector <unsigned char> buf;
-	buf.resize(len);
-	fp.read((char *)buf.data(),len);
-
-	auto actualRead=fp.gcount();
-	if(actualRead<len)
+	if(true==fp.is_open())
 	{
-		buf.resize(actualRead);
-	}
+		buf.resize(len);
+		fp.read((char *)buf.data(),len);
 
+		auto actualRead=fp.gcount();
+		if(actualRead<len)
+		{
+			buf.resize(actualRead);
+		}
+	}
 	return buf;
+}
+uint32_t FileSys::SystemFileTable::Write(const std::vector <unsigned char> &data)
+{
+	if(true==fp.is_open())
+	{
+		auto ptr0=fp.tellg();
+		fp.write((const char *)data.data(),data.size());
+		auto ptr1=fp.tellg();
+		return ptr1-ptr0; // Seriously? gcount only works for read?
+	}
+	return 0;
 }
 bool FileSys::SubPathIsDirectory(const std::string &subPath)
 {

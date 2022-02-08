@@ -86,6 +86,9 @@ TownsTgDrv::TownsTgDrv(class FMTowns *townsPtr) : Device(townsPtr)
 			case 0x1108:
 				myDrive=Int2F_1108_ReadFromRemoteFile();
 				break;
+			case 0x1109:
+				myDrive=Int2F_1109_WriteToRemoteFile();
+				break;
 			case 0x110C:
 				myDrive=Int2F_110C_GetDiskInformation();
 				break;
@@ -262,7 +265,64 @@ bool TownsTgDrv::Int2F_1108_ReadFromRemoteFile(void)
 	}
 	return false; // No, it's not my drive.
 }
+bool TownsTgDrv::Int2F_1109_WriteToRemoteFile(void)
+{
+	char drvLetter='A'+FetchDriveCodeFromSFT(townsPtr->cpu.state.ES(),townsPtr->cpu.state.DI());
+	auto sharedDirIdx=DriveLetterToSharedDirIndex(drvLetter);
+	if(0<=sharedDirIdx)
+	{
+		auto hostSFTIdx=townsPtr->cpu.FetchWord(
+		    townsPtr->cpu.state.CS().addressSize,
+		    townsPtr->cpu.state.ES(),
+		    townsPtr->cpu.state.DI()+0x0B,
+		    townsPtr->mem);
+		if(0<=hostSFTIdx &&
+		   hostSFTIdx<FileSys::MAX_NUM_OPEN_FILE &&
+		   true==sharedDir[sharedDirIdx].sft[hostSFTIdx].IsOpen())
+		{
+			auto DMABuffer=GetDTAAddress();
+			std::vector <unsigned char> data;
+			data.resize(townsPtr->cpu.GetCX());
+			for(int i=0; i<townsPtr->cpu.GetCX(); ++i)
+			{
+				data[i]=townsPtr->mem.FetchByte(DMABuffer+i);
+			}
+			auto bytesWritten=sharedDir[sharedDirIdx].sft[hostSFTIdx].Write(data);
+			auto filePointer=sharedDir[sharedDirIdx].sft[hostSFTIdx].GetFilePointer();
+			townsPtr->cpu.StoreDword(
+				townsPtr->mem,
+				townsPtr->cpu.state.CS().addressSize,
+				townsPtr->cpu.state.ES(),
+				townsPtr->cpu.state.DI()+0x15,
+				filePointer);
 
+			uint32_t newSize=townsPtr->cpu.FetchDword(
+				townsPtr->cpu.state.CS().addressSize,
+				townsPtr->cpu.state.ES(),
+				townsPtr->cpu.state.DI()+0x11,
+				townsPtr->mem);
+
+			if(newSize<filePointer)
+			{
+				townsPtr->cpu.StoreDword(
+					townsPtr->mem,
+					townsPtr->cpu.state.CS().addressSize,
+					townsPtr->cpu.state.ES(),
+					townsPtr->cpu.state.DI()+0x11,
+					filePointer);
+			}
+			ReturnCX(bytesWritten);
+			townsPtr->cpu.SetCF(false);
+		}
+		else
+		{
+			ReturnAX(TOWNS_DOSERR_INVALID_ACCESS);
+			townsPtr->cpu.SetCF(true);
+		}
+		return true; // Yes, it's my drive.
+	}
+	return false; // No, it's not my drive.
+}
 bool TownsTgDrv::Int2F_110C_GetDiskInformation(void)
 {
 	auto CDS=FetchCString(townsPtr->cpu.state.ES(),townsPtr->cpu.state.DI());
@@ -382,6 +442,8 @@ bool TownsTgDrv::Int2F_1117_OpenOrTruncate(void)
 			townsPtr->cpu.SetCF(true);
 			return true; // Yes it's my drive.
 		}
+
+		std::cout << cpputil::Ustox(mode) << std::endl;
 
 		if(0==(mode&0xFF00))
 		{
