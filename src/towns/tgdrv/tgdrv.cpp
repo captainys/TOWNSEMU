@@ -414,6 +414,25 @@ bool TownsTgDrv::Int2F_1111_Rename(void)
 		std::cout << fn1 << std::endl;
 		std::cout << fn2 << std::endl;
 
+		auto fn2DriveLetter=FullyQualifiedFileNameToDriveLetter(fn2);
+		if(fn2DriveLetter!=driveLetter)
+		{
+			ReturnAX(TOWNS_DOSERR_ACCESS_DENIED);
+			return true; // Yes, it's my drive.
+		}
+
+		fn1=DropDriveLetter(fn1);
+		fn2=DropDriveLetter(fn2);
+
+		if(true==sharedDir[sharedDirIdx].RenameSubPath(fn1,fn2))
+		{
+			townsPtr->cpu.SetCF(false);
+		}
+		else
+		{
+			ReturnAX(TOWNS_DOSERR_ACCESS_DENIED);
+		}
+
 		return true; // Yes, it's my drive.
 	}
 	return false; // No, it's not my drive.

@@ -173,6 +173,13 @@ public:
 	/*! SftIdx is an index returned by one of open functions.
 	*/
 	bool CloseFile(int SftIdx);
+
+
+	/*!
+	*/
+	bool RenameSubPath(const std::string &subPathFrom,const std::string &subPathTo);
+
+
 	/*! Returns -1 if none
 	*/
 	int FindAvailableSFT(void) const;

@@ -287,6 +287,12 @@ bool FileSys::CloseFile(int sftIdx)
 	}
 	return false;
 }
+bool FileSys::RenameSubPath(const std::string &subPathFrom,const std::string &subPathTo)
+{
+	auto fullPathFrom=cpputil::MakeFullPathName(hostPath,subPathFrom);
+	auto fullPathTo=cpputil::MakeFullPathName(hostPath,subPathTo);
+	return 0==rename(fullPathFrom.c_str(),fullPathTo.c_str());
+}
 int FileSys::FindAvailableSFT(void) const
 {
 	for(int i=0; i<MAX_NUM_OPEN_FILE; ++i)
