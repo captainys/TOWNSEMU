@@ -68,33 +68,18 @@ public:
 	{
 	public:
 		unsigned int PSP=0;
+		mutable unsigned int usedTime=0;
 		bool used=false;
 		std::string subPath;
 		FindContext *findContext=nullptr;
 		FindStruct();
 		~FindStruct();
 	};
+	mutable unsigned int usedTimeSeed=0;
 	FindStruct findStruct[MAX_NUM_OPEN_DIRECTORY];
 
 	FileSys();
 	~FileSys();
-	// Potential Problem:
-	//   DOS can stop directory listing and just forget about find-context.
-	//   There is no FindClose.
-	//
-	// If a program is written like: it searches for files only necessary
-	// for filling a dialog box.  If there are more files than the dialog
-	// box can show, the program will stop directory scan as soon as the
-	// dialog box is filled.  Then, it won't scan all the way, and the
-	// host never knows when to FindClose.  Eventually it runs out of
-	// find structs.
-	//
-	// Potential solutions:
-	// (1) Reuse find struct for same VM directory.  But, it won't solve
-	//     a situation like the user double-clicked sub-directory in the
-	//     dialog box.  The parent-directory find struct will be frozen
-	//     forever.
-	// (2) Reuse oldest find struct if it runs out.
 
 
 
@@ -111,7 +96,27 @@ public:
 
 	DirectoryEntry FindNext(int findStructIdx);
 
-	int FindAvailableFindStruct(void) const;
+	/*! Find Struct used in _dos_findfirst and _dos_findnext are not a dynamically
+	    allocated resource, while Windows uses HANDLE, and unix DIR *, which are
+	    dynamically-allocated resource.
+
+	    Since DOS does not have a function like _dos_findclose, unless somehow
+	    the host finds a timing to close handle, it will use up handles for
+	    directory listing.
+
+	    One option is to close when FindNext reaches the end of the directory.
+	    However, if the DOS program stops in the middle, for example stops when
+	    it found what it was looking for, the host will not have a timing to close
+	    the handle.
+
+	    Two solutions to prevent resource exhaustion:
+	    (1) Reuse find struct when the DOS program is searching in the same
+	        directory again.  Therefore FindAvailableFindStruct needs the
+	        directory.
+	    (2) If nothing is found, sacrifice the oldest find struct.  For this
+	        purpose, usedTime member has been added.
+	*/
+	int FindAvailableFindStruct(const std::string &subPath) const;
 
 	bool FindStructValid(int findStructIdx) const;
 

@@ -17,13 +17,14 @@ FileSys::FindStruct::~FindStruct()
 }
 int FileSys::FindFirst(DirectoryEntry &ent,unsigned int PSP,const std::string &subPath)
 {
-	auto fsIdx=FindAvailableFindStruct();
+	auto fsIdx=FindAvailableFindStruct(subPath);
 	if(0<=fsIdx)
 	{
 		ent=FindFirst(subPath,findStruct[fsIdx].findContext);
 		if(true!=ent.endOfDir)
 		{
 			findStruct[fsIdx].PSP=PSP;
+			findStruct[fsIdx].usedTime=++usedTimeSeed;
 			findStruct[fsIdx].used=true;
 			findStruct[fsIdx].subPath=subPath;
 			return fsIdx;
@@ -56,7 +57,7 @@ bool FileSys::FindStructValid(int findStructIdx) const
 	}
 	return false;
 }
-int FileSys::FindAvailableFindStruct(void) const
+int FileSys::FindAvailableFindStruct(const std::string &subPath) const
 {
 	for(int i=0; i<MAX_NUM_OPEN_DIRECTORY; ++i)
 	{
@@ -65,7 +66,50 @@ int FileSys::FindAvailableFindStruct(void) const
 			return i;
 		}
 	}
-	return -1;
+
+	// If nothing is found:
+	int sameName=-1;
+	for(int i=0; i<MAX_NUM_OPEN_DIRECTORY; ++i)
+	{
+		if(findStruct[i].subPath==subPath)
+		{
+			if(sameName<0)
+			{
+				sameName=i;
+			}
+			else if(findStruct[i].usedTime<findStruct[sameName].usedTime)
+			{
+				sameName=i;
+			}
+		}
+	}
+	if(0<=sameName)
+	{
+		return sameName;
+	}
+
+	// If nothing is still found:
+	int oldest=0,newest=0;
+	for(int i=1; i<MAX_NUM_OPEN_DIRECTORY; ++i)
+	{
+		if(findStruct[i].usedTime<findStruct[oldest].usedTime)
+		{
+			oldest=i;
+		}
+		else
+		{
+			newest=i;
+		}
+	}
+	// Denomination.
+	auto oldestTime=findStruct[oldest].usedTime;
+	for(int i=0; i<MAX_NUM_OPEN_DIRECTORY; ++i)
+	{
+		findStruct[i].usedTime-=oldestTime;
+	}
+	usedTimeSeed=findStruct[newest].usedTime+1;
+
+	return oldest;
 }
 
 
