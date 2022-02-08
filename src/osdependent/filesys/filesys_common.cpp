@@ -164,9 +164,9 @@ uint32_t FileSys::SystemFileTable::Write(const std::vector <unsigned char> &data
 {
 	if(true==fp.is_open())
 	{
-		auto ptr0=fp.tellg();
+		auto ptr0=fp.tellp();
 		fp.write((const char *)data.data(),data.size());
-		auto ptr1=fp.tellg();
+		auto ptr1=fp.tellp();
 		return ptr1-ptr0; // Seriously? gcount only works for read?
 	}
 	return 0;
