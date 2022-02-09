@@ -187,6 +187,10 @@ public:
 	*/
 	bool MkdirSubPath(const std::string &subPath);
 
+	/*!
+	*/
+	bool RmdirSubPath(const std::string &subPath);
+
 
 	/*! Returns -1 if none
 	*/
@@ -200,6 +204,7 @@ public:
 	static std::string Getcwd(void);
 	static bool Chdir(std::string str);
 	static bool Mkdir(std::string str);
+	static bool Rmdir(std::string str);
 
 	/*! Template="FILENAMEEXT" 11-letter format
 	*/

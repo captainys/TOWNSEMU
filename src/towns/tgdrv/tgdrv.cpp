@@ -89,7 +89,7 @@ TownsTgDrv::TownsTgDrv(class FMTowns *townsPtr) : Device(townsPtr)
 				townsPtr->cpu.SetCF(false);
 				break;
 			case 0x1101:
-				// Rmdir
+				myDrive=Int2F_1101_Rmdir();
 				break;
 			case 0x1103:
 				myDrive=Int2F_1103_Mkdir();
@@ -136,6 +136,9 @@ TownsTgDrv::TownsTgDrv(class FMTowns *townsPtr) : Device(townsPtr)
 			case 0x111C:
 				myDrive=Int2F_111C_FindNext();
 				break;
+			case 0x111D:
+				// Close all files for the process.
+				break;
 			case 0x1123:
 				myDrive=Int2F_1123_QualifyRemoteFileName();
 				break;
@@ -154,6 +157,39 @@ TownsTgDrv::TownsTgDrv(class FMTowns *townsPtr) : Device(townsPtr)
 	return 0xff;
 }
 
+bool TownsTgDrv::Int2F_1101_Rmdir(void)
+{
+	auto fName=GetFilenameBuffer1();
+	auto driveLetter=FullyQualifiedFileNameToDriveLetter(fName);
+	auto sharedDirIdx=FullyQualifiedFileNameToSharedDirIndex(fName);
+	if(0<=sharedDirIdx)
+	{
+		auto subPath=DropDriveLetter(fName);
+		std::cout << fName << std::endl;
+		std::cout << subPath << std::endl;
+
+		auto invalidErr=CheckFileName(subPath);
+		if(TOWNS_DOSERR_NO_ERROR!=invalidErr)
+		{
+			ReturnAX(invalidErr);
+			townsPtr->cpu.SetCF(true);
+			return true; // Yes it's my drive.
+		}
+
+		if(true==sharedDir[sharedDirIdx].RmdirSubPath(subPath))
+		{
+			townsPtr->cpu.SetCF(false);
+		}
+		else
+		{
+			ReturnAX(TOWNS_DOSERR_INVALID_ACCESS);
+			townsPtr->cpu.SetCF(true);
+		}
+
+		return true; // Yes, it's my drive.
+	}
+	return false; // No, it's not my drive.
+}
 bool TownsTgDrv::Int2F_1103_Mkdir(void)
 {
 	auto fName=GetFilenameBuffer1();

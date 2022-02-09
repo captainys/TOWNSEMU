@@ -298,6 +298,10 @@ bool FileSys::DeleteSubPathFile(const std::string &subPath)
 	auto fullPath=cpputil::MakeFullPathName(hostPath,subPath);
 	return 0==remove(fullPath.c_str());
 }
+bool FileSys::RmdirSubPath(const std::string &subPath)
+{
+	return Rmdir(cpputil::MakeFullPathName(hostPath,subPath));
+}
 bool FileSys::MkdirSubPath(const std::string &subPath)
 {
 	return Mkdir(cpputil::MakeFullPathName(hostPath,subPath));

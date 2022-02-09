@@ -165,3 +165,11 @@ FileSys::DirectoryEntry FileSys::GetFileAttrib(std::string fileName) const
 	}
 	return false;
 }
+/* static */ bool FileSys::Rmdir(std::string str)
+{
+	if(0==_rmdir(str.c_str()))
+	{
+		return true;
+	}
+	return false;
+}

@@ -169,3 +169,11 @@ FileSys::DirectoryEntry FileSys::FindNext(FindContext *context)
 	}
 	return false;
 }
+/* static */ bool FileSys::Rmdir(std::string str)
+{
+	if(0==rmdir(str.c_str()))
+	{
+		return true;
+	}
+	return false;
+}
