@@ -43,7 +43,8 @@ private:
 public:
 	virtual const char *DeviceName(void) const{return "TGDRIVE";}
 
-	const int TGDRV_ID=0x52444754; // "TGDR"
+	const uint32_t TGDRV_ID=0x52444754; // "TGDR"
+	const uint16_t TGDRV_ID_SHORT=0x4754; // "TG"
 
 	FileSys sharedDir[TOWNS_TGDRV_MAX_NUM_DRIVES];
 
@@ -74,6 +75,7 @@ public:
 	bool Int2F_110C_GetDiskInformation(void);
 	bool Int2F_110F_GetFileAttrib(void);
 	bool Int2F_1111_Rename(void);
+	bool Int2F_1113_Delete(void);
 	bool Int2F_1116_OpenExistingFile(void);
 	bool Int2F_1117_OpenOrTruncate(void);
 	bool Int2F_111B_FindFirst(void);

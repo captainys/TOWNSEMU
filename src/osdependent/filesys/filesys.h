@@ -179,6 +179,10 @@ public:
 	*/
 	bool RenameSubPath(const std::string &subPathFrom,const std::string &subPathTo);
 
+	/*!
+	*/
+	bool DeleteSubPathFile(const std::string &subPath);
+
 
 	/*! Returns -1 if none
 	*/

@@ -293,6 +293,11 @@ bool FileSys::RenameSubPath(const std::string &subPathFrom,const std::string &su
 	auto fullPathTo=cpputil::MakeFullPathName(hostPath,subPathTo);
 	return 0==rename(fullPathFrom.c_str(),fullPathTo.c_str());
 }
+bool FileSys::DeleteSubPathFile(const std::string &subPath)
+{
+	auto fullPath=cpputil::MakeFullPathName(hostPath,subPath);
+	return 0==remove(fullPath.c_str());
+}
 int FileSys::FindAvailableSFT(void) const
 {
 	for(int i=0; i<MAX_NUM_OPEN_FILE; ++i)

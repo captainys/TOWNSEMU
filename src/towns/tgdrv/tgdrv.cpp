@@ -77,6 +77,17 @@ TownsTgDrv::TownsTgDrv(class FMTowns *townsPtr) : Device(townsPtr)
 			bool myDrive=false;
 			switch(townsPtr->cpu.GetBX())
 			{
+			case 0x6809:
+				// Installation Check.
+				//   If installed, return:
+				//     AX=4754 "TG"
+				//     BX=Installed Segment
+				//     CF=clear
+				myDrive=true;
+				ReturnAX(TGDRV_ID_SHORT);
+				ReturnBX(townsPtr->cpu.state.CS().value);
+				townsPtr->cpu.SetCF(false);
+				break;
 			case 0x1105:
 				myDrive=Int2F_1105_Chdir();
 				break;
@@ -97,6 +108,9 @@ TownsTgDrv::TownsTgDrv(class FMTowns *townsPtr) : Device(townsPtr)
 				break;
 			case 0x1111:
 				myDrive=Int2F_1111_Rename();
+				break;
+			case 0x1113:
+				myDrive=Int2F_1113_Delete();
 				break;
 			case 0x1116:
 				myDrive=Int2F_1116_OpenExistingFile();
@@ -125,20 +139,6 @@ TownsTgDrv::TownsTgDrv(class FMTowns *townsPtr) : Device(townsPtr)
 }
 /* virtual */ unsigned int TownsTgDrv::IOReadByte(unsigned int ioport)
 {
-	switch(ioport)
-	{
-	case 0:
-	case 1:
-	case 2:
-	case 3:
-	case 4:
-	case 5:
-	case 6:
-	case 7:
-	case 8:
-	case 9:
-		break;
-	}
 	return 0xff;
 }
 
@@ -431,6 +431,35 @@ bool TownsTgDrv::Int2F_1111_Rename(void)
 		else
 		{
 			ReturnAX(TOWNS_DOSERR_ACCESS_DENIED);
+		}
+
+		return true; // Yes, it's my drive.
+	}
+	return false; // No, it's not my drive.
+}
+bool TownsTgDrv::Int2F_1113_Delete(void)
+{
+	auto fName=GetFilenameBuffer1();
+	auto driveLetter=FullyQualifiedFileNameToDriveLetter(fName);
+	auto sharedDirIdx=FullyQualifiedFileNameToSharedDirIndex(fName);
+	if(0<=sharedDirIdx)
+	{
+		auto invalidErr=CheckFileName(fName);
+		if(TOWNS_DOSERR_NO_ERROR!=invalidErr)
+		{
+			ReturnAX(invalidErr);
+			townsPtr->cpu.SetCF(true);
+			return true; // Yes it's my drive.
+		}
+
+		townsPtr->cpu.SetCF(true);
+		ReturnAX(TOWNS_DOSERR_INVALID_ACCESS);
+
+		auto subPath=DropDriveLetter(fName);
+
+		if(true==sharedDir[sharedDirIdx].DeleteSubPathFile(subPath))
+		{
+			townsPtr->cpu.SetCF(false);
 		}
 
 		return true; // Yes, it's my drive.
