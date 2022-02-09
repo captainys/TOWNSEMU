@@ -298,6 +298,10 @@ bool FileSys::DeleteSubPathFile(const std::string &subPath)
 	auto fullPath=cpputil::MakeFullPathName(hostPath,subPath);
 	return 0==remove(fullPath.c_str());
 }
+bool FileSys::MkdirSubPath(const std::string &subPath)
+{
+	return Mkdir(cpputil::MakeFullPathName(hostPath,subPath));
+}
 int FileSys::FindAvailableSFT(void) const
 {
 	for(int i=0; i<MAX_NUM_OPEN_FILE; ++i)

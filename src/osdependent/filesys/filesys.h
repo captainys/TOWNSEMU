@@ -183,6 +183,10 @@ public:
 	*/
 	bool DeleteSubPathFile(const std::string &subPath);
 
+	/*!
+	*/
+	bool MkdirSubPath(const std::string &subPath);
+
 
 	/*! Returns -1 if none
 	*/
