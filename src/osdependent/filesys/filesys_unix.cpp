@@ -89,6 +89,10 @@ void FileSys::DeleteFindContext(FindContext *find)
 {
 	delete find;
 }
+void FileSys::FindClose(FindContext *find)
+{
+	find->Close();
+}
 FileSys::DirectoryEntry FileSys::FindFirst(std::string subPath,FindContext *context)
 {
 	std::string path=MakeHostPath(subPath);

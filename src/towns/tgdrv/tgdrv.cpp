@@ -101,7 +101,7 @@ TownsTgDrv::TownsTgDrv(class FMTowns *townsPtr) : Device(townsPtr)
 				myDrive=Int2F_1106_CloseRemoteFile();
 				break;
 			case 0x1107:
-				// Commit
+				myDrive=Int2F_1107_Flush();
 				break;
 			case 0x1108:
 				myDrive=Int2F_1108_ReadFromRemoteFile();
@@ -113,7 +113,7 @@ TownsTgDrv::TownsTgDrv(class FMTowns *townsPtr) : Device(townsPtr)
 				myDrive=Int2F_110C_GetDiskInformation();
 				break;
 			case 0x110E:
-				// Set file attribute
+				myDrive=Int2F_110E_SetFileAttrib();
 				break;
 			case 0x110F:
 				myDrive=Int2F_110F_GetFileAttrib();
@@ -137,7 +137,7 @@ TownsTgDrv::TownsTgDrv(class FMTowns *townsPtr) : Device(townsPtr)
 				myDrive=Int2F_111C_FindNext();
 				break;
 			case 0x111D:
-				// Close all files for the process.
+				myDrive=Int2F_111D_CloseAll();
 				break;
 			case 0x1123:
 				myDrive=Int2F_1123_QualifyRemoteFileName();
@@ -307,6 +307,18 @@ bool TownsTgDrv::Int2F_1106_CloseRemoteFile(void)
 	}
 	return false; // No, it's not my drive.
 }
+bool TownsTgDrv::Int2F_1107_Flush(void)
+{
+	char drvLetter='A'+FetchDriveCodeFromSFT(townsPtr->cpu.state.ES(),townsPtr->cpu.state.DI());
+	auto sharedDirIdx=DriveLetterToSharedDirIndex(drvLetter);
+	if(0<=sharedDirIdx)
+	{
+		// There's nothing to flush.
+		townsPtr->cpu.SetCF(false);
+		return true; // Yes, it's my drive.
+	}
+	return false; // No, it's not my drive.
+}
 bool TownsTgDrv::Int2F_1108_ReadFromRemoteFile(void)
 {
 	char drvLetter='A'+FetchDriveCodeFromSFT(townsPtr->cpu.state.ES(),townsPtr->cpu.state.DI());
@@ -440,6 +452,25 @@ bool TownsTgDrv::Int2F_110C_GetDiskInformation(void)
 			// No file, no space.
 			ReturnDX(0);
 		}
+		townsPtr->cpu.SetCF(false);
+		return true; // Yes, it's my drive.
+	}
+	return false; // No, it's not my drive.
+}
+bool TownsTgDrv::Int2F_110E_SetFileAttrib(void)
+{
+	auto fName=GetFilenameBuffer1();
+	auto driveLetter=FullyQualifiedFileNameToDriveLetter(fName);
+	auto sharedDirIdx=FullyQualifiedFileNameToSharedDirIndex(fName);
+	if(0<=sharedDirIdx)
+	{
+		// Not supported, but pretend to have succeeded.
+
+		auto attr=FetchStackParam0();
+		auto subPath=DropDriveLetter(fName);
+		std::cout << subPath << std::endl;
+		std::cout << cpputil::Ustox(attr) << std::endl;
+
 		townsPtr->cpu.SetCF(false);
 		return true; // Yes, it's my drive.
 	}
@@ -784,6 +815,17 @@ bool TownsTgDrv::Int2F_111C_FindNext(void)
 		return true;
 	}
 	return false;
+}
+bool TownsTgDrv::Int2F_111D_CloseAll(void)
+{
+	// http://www.ctyme.com/intr/rb-4327.htm  This tells PSP should be taken from
+	// Is DOS6 CurrentPDB same address?  I just take it from FetchPSP()
+	auto PSP=FetchPSP();
+	for(auto &fs : sharedDir)
+	{
+		fs.CloseAllForPSP(PSP);
+	}
+	return false; // Must continue to the next INT 2F device.  Don't take the ownership.
 }
 bool TownsTgDrv::Int2F_1123_QualifyRemoteFileName(void)
 {

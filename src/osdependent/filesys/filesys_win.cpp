@@ -21,7 +21,7 @@ void FileSys::FindContext::Close(void)
 {
 	if(INVALID_HANDLE_VALUE!=hFind)
 	{
-		FindClose(hFind);
+		::FindClose(hFind);
 		hFind=INVALID_HANDLE_VALUE;
 	}
 }
@@ -71,6 +71,11 @@ void FileSys::DeleteFindContext(FindContext *find)
 {
 	delete find;
 }
+void FileSys::FindClose(FindContext *find)
+{
+	find->Close();
+}
+
 FileSys::DirectoryEntry FileSys::FindFirst(std::string subPath,FindContext *find)
 {
 	find->Close();
@@ -136,7 +141,7 @@ FileSys::DirectoryEntry FileSys::GetFileAttrib(std::string fileName) const
 	{
 		ent.endOfDir=false;
 		FindContext::DirEntFromFd(ent,fd);
-		FindClose(hFind);
+		::FindClose(hFind);
 	}
 	return ent;
 }

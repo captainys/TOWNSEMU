@@ -86,6 +86,7 @@ public:
 	// In OS-Dependent part >>
 	static FindContext *CreateFindContext(void);
 	static void DeleteFindContext(FindContext *find);
+	static void FindClose(FindContext *);
 
 
 	/*! SubPath needs to be a directory.
@@ -191,6 +192,10 @@ public:
 	*/
 	bool RmdirSubPath(const std::string &subPath);
 
+
+	/*!
+	*/
+	void CloseAllForPSP(unsigned int PSP);
 
 	/*! Returns -1 if none
 	*/

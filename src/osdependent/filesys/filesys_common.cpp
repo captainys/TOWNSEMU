@@ -317,6 +317,27 @@ int FileSys::FindAvailableSFT(void) const
 	}
 	return -1;
 }
+void FileSys::CloseAllForPSP(unsigned int PSP)
+{
+	if(true==linked)
+	{
+		for(auto &fs : findStruct)
+		{
+			if(PSP==fs.PSP && true==fs.used)
+			{
+				FindClose(fs.findContext);
+				fs.used=false;
+			}
+		}
+		for(auto &t : sft)
+		{
+			if(PSP==t.PSP && true==t.fp.is_open())
+			{
+				t.fp.close();
+			}
+		}
+	}
+}
 
 /*! Template="FILENAMEEXT" 11-letter format
     File=Normal

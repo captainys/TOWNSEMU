@@ -74,7 +74,9 @@ public:
 	bool Int2F_1108_ReadFromRemoteFile(void);
 	bool Int2F_1109_WriteToRemoteFile(void);
 	bool Int2F_1106_CloseRemoteFile(void);
+	bool Int2F_1107_Flush(void);
 	bool Int2F_110C_GetDiskInformation(void);
+	bool Int2F_110E_SetFileAttrib(void);
 	bool Int2F_110F_GetFileAttrib(void);
 	bool Int2F_1111_Rename(void);
 	bool Int2F_1113_Delete(void);
@@ -82,6 +84,7 @@ public:
 	bool Int2F_1117_OpenOrTruncate(void);
 	bool Int2F_111B_FindFirst(void);
 	bool Int2F_111C_FindNext(void);
+	bool Int2F_111D_CloseAll(void);
 	bool Int2F_1123_QualifyRemoteFileName(void);
 	bool Int2F_1125_RedirectedPrinterMode(void);
 
