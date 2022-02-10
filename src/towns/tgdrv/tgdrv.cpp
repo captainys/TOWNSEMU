@@ -1099,13 +1099,15 @@ bool TownsTgDrv::Install(void)
 	std::cout << "SI=" << cpputil::Ustox(cpu.state.SI()) << std::endl;
 	std::cout << "DI=" << cpputil::Ustox(cpu.state.DI()) << std::endl;
 
-	// CS:0080  Length of command parameter
-	// CS:0081- Command parameter
+	// DS:SI  Length of command parameter
 	std::string param;
-	int len=cpu.FetchByte(cpu.state.CS().addressSize,cpu.state.CS(),0x0080,mem);
-	for(int i=0; i<len; ++i)
 	{
-		param.push_back(cpu.FetchByte(cpu.state.CS().addressSize,cpu.state.CS(),0x0081+i,mem));
+		uint16_t offset=cpu.state.SI();
+		int len=cpu.FetchByte(cpu.state.CS().addressSize,cpu.state.ES(),offset,mem);
+		for(int i=0; i<len; ++i)
+		{
+			param.push_back(cpu.FetchByte(cpu.state.CS().addressSize,cpu.state.ES(),offset+1+i,mem));
+		}
 	}
 	std::cout << "{" << param << "}" << std::endl;
 
