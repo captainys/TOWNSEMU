@@ -32,9 +32,7 @@ NOT_USED_AT_THIS_TIME	DD		0
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 						ORG		0108H
-NUM_TGDRV				DB		0                                    ; CS:108H
-ASSIGNED_TGDRV_LETTERS	DB		TOWNS_TGDRV_MAX_NUM_DRIVES dup(0FFh) ; CS:109H to CS:110H
-ERRMSG_BUFFER			DB		256 dup('$')                         ; CS:111H to CS:210H
+						INCLUDE TGDRVBUF.ASM
 
 
 STRATEGY				PROC	FAR

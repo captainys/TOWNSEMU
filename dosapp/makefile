@@ -22,7 +22,7 @@ exe\dosntfy.exe : build\dosntfy.obj
 
 
 
-build\tgdrvcom.obj : tgdrvcom.asm tgdrvmain.asm tgdrvdef.asm
+build\tgdrvcom.obj : tgdrvcom.asm tgdrvmain.asm tgdrvdef.asm tgdrvbuf.asm
 	masm tgdrvcom.asm build\tgdrvcom.obj build\tgdrv.lst NUL
 
 exe\tgdrv.com : build\tgdrvcom.obj
@@ -34,7 +34,7 @@ exe\tgdrv.com : build\tgdrvcom.obj
 
 
 
-build\tgdrvsys.obj : tgdrvsys.asm tgdrvmain.asm tgdrvdef.asm
+build\tgdrvsys.obj : tgdrvsys.asm tgdrvmain.asm tgdrvdef.asm tgdrvbuf.asm
 	masm tgdrvsys.asm build\tgdrvsys.obj build\tgdrvsys.lst NUL
 
 exe\tgdrv.sys : build\tgdrvsys.obj
