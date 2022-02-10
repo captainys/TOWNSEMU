@@ -1210,6 +1210,54 @@ bool TownsTgDrv::Install(void)
 		    I);
 		if(0<I)
 		{
+			auto dosverMajor=townsPtr->state.DOSVER&0xFF;
+			if(3==dosverMajor)
+			{
+				unsigned char DPBDrives['Z'-'A'+1];
+				for(auto &d : DPBDrives)
+				{
+					d=0;
+				}
+				for(int i=0; i<I; ++i)
+				{
+					DPBDrives[drives[i]-'A']=1;
+				}
+
+				const auto DOSLOLSEG=townsPtr->state.DOSLOLSEG;
+				unsigned int NumDPBFromList=0;
+				unsigned int NumDPBFromSYSVARS=townsPtr->mem.FetchByte(DOSLOLSEG*0x10+0x46); // SYSVARS+20h
+				unsigned int DPBOFF=townsPtr->mem.FetchWord(DOSLOLSEG*0x10+0x26); // SYSVARS+00h
+				unsigned int DPBSEG=townsPtr->mem.FetchWord(DOSLOLSEG*0x10+0x28); // SYSVARS+02h
+
+				const unsigned int DPB_PTR_TO_NEXT_DPB=0x18; // 0x19 for Ver 4.x or higher.
+
+				auto lastDPBOFF=DPBOFF;
+				auto lastDPBSEG=DPBSEG;
+				while(0xFFFF!=DPBOFF && 0xFFFF!=DPBSEG)
+				{
+					auto drvLetter=townsPtr->mem.FetchByte(DPBSEG*0x10+DPBOFF);
+					if(drvLetter<sizeof(DPBDrives))
+					{
+						DPBDrives[drvLetter]=2;
+					}
+					lastDPBOFF=DPBOFF;
+					lastDPBSEG=DPBSEG;
+
+					auto nextDPBOFF=townsPtr->mem.FetchWord(DPBSEG*0x10+DPBOFF+DPB_PTR_TO_NEXT_DPB);
+					auto nextDPBSEG=townsPtr->mem.FetchWord(DPBSEG*0x10+DPBOFF+DPB_PTR_TO_NEXT_DPB+2);
+					DPBOFF=nextDPBOFF;
+					DPBSEG=nextDPBSEG;
+				}
+
+				for(int i : DPBDrives)
+				{
+					std::cout << i;
+				}
+				std::cout << std::endl;
+
+				// TODO: Add Dummy DPBs for continuous drives.
+				//       Update DPB count in SYSVARS.
+			}
 			return true;
 		}
 	}
