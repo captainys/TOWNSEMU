@@ -18,24 +18,12 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 TownsTgDrv::State::State()
 {
-	for(auto &letter : driveLetters)
-	{
-		letter=0;
-	}
 }
 void TownsTgDrv::State::PowerOn(void)
 {
-	for(auto &letter : driveLetters)
-	{
-		letter=0;
-	}
 }
 void TownsTgDrv::State::Reset(void)
 {
-	for(auto &letter : driveLetters)
-	{
-		letter=0;
-	}
 }
 
 TownsTgDrv::TownsTgDrv(class FMTowns *townsPtr) : Device(townsPtr)
@@ -58,6 +46,10 @@ TownsTgDrv::TownsTgDrv(class FMTowns *townsPtr) : Device(townsPtr)
 		switch(data)
 		{
 		case TOWNS_VM_TGDRV_INSTALL://     0x01,
+			// Input:
+			//   CS:0109H(DRIVELETTER_BUFFER) is 8-byte drive-letter buffer to be filled. (Initial all FFh)
+			//   CS:0111H(ERRMSG_BUFFER) is 256-byte buffer for sending error messages to the client.
+
 			std::cout << "Installing Tsugaru Drive." << std::endl;
 			if(true==Install())
 			{
@@ -968,7 +960,11 @@ int TownsTgDrv::DriveLetterToSharedDirIndex(char letter) const
 {
 	for(int i=0; i<TOWNS_TGDRV_MAX_NUM_DRIVES; ++i)
 	{
-		if(letter==state.driveLetters[i])
+		if(letter==townsPtr->cpu.FetchByte(
+			townsPtr->cpu.state.CS().addressSize,
+			townsPtr->cpu.state.CS(),
+			DRIVELETTER_BUFFER+i,
+			townsPtr->mem))
 		{
 			return i;
 		}
@@ -1096,6 +1092,13 @@ bool TownsTgDrv::Install(void)
 	auto &cpu=townsPtr->cpu;
 	auto &mem=townsPtr->mem;
 
+	std::cout << "AX=" << cpputil::Ustox(cpu.GetAX()) << std::endl;
+	std::cout << "BX=" << cpputil::Ustox(cpu.GetBX()) << std::endl;
+	std::cout << "CX=" << cpputil::Ustox(cpu.GetCX()) << std::endl;
+	std::cout << "DX=" << cpputil::Ustox(cpu.GetDX()) << std::endl;
+	std::cout << "SI=" << cpputil::Ustox(cpu.state.SI()) << std::endl;
+	std::cout << "DI=" << cpputil::Ustox(cpu.state.DI()) << std::endl;
+
 	// CS:0080  Length of command parameter
 	// CS:0081- Command parameter
 	std::string param;
@@ -1122,9 +1125,17 @@ bool TownsTgDrv::Install(void)
 		if('/'==param[i] && ('D'==param[i+1] || 'd'==param[i+1]) && ':'==param[i+2])
 		{
 			unsigned int d=DriveLetterToDriveIndex(param[i+3]);
-			if(d<=CDSCount && 0==GetCDSType(d))  // Drive is unused.
+			if(d<=CDSCount && 0==GetCDSType(d))  // Check drive is unused.
 			{
-				drives.push_back(param[i+3]);
+				drives.push_back(cpputil::Capitalize(param[i+3]));
+			}
+		}
+		else if('/'==param[i] && ('F'==param[i+1] || 'f'==param[i+1]) && ':'==param[i+2])
+		{
+			unsigned int d=DriveLetterToDriveIndex(param[i+3]);
+			if(d<=CDSCount)  // Don't check drive is unused.
+			{
+				drives.push_back(cpputil::Capitalize(param[i+3]));
 			}
 		}
 	}
@@ -1166,10 +1177,8 @@ bool TownsTgDrv::Install(void)
 			    mem,
 			    cpu.state.CS().addressSize,
 			    cpu.state.DS(),
-			    0x109+I,
+			    DRIVELETTER_BUFFER+I,
 			    letter);
-
-			state.driveLetters[I]=letter;
 
 			char str[2]={letter,0};
 			std::cout << "Assign Drive " << str << std::endl;

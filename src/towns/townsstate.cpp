@@ -246,7 +246,7 @@ bool FMTowns::LoadState(std::string fName,class Outside_World &outsideWorld)
 	{
 		state.DOSVER=ReadUint16(data);
 		state.DOSLOLOFF=ReadUint16(data);
-		state.DOSLOLOFF=ReadUint16(data);
+		state.DOSLOLSEG=ReadUint16(data);
 	}
 
 	// If the user chose an app-specific setting on start, it shouldn't override it.

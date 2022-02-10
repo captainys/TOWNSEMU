@@ -46,6 +46,8 @@ public:
 	const uint32_t TGDRV_ID=0x52444754; // "TGDR"
 	const uint16_t TGDRV_ID_SHORT=0x4754; // "TG"
 
+	const uint16_t DRIVELETTER_BUFFER=0x0109; // CS:0109H 8-byte drive-letter buffer
+
 	FileSys sharedDir[TOWNS_TGDRV_MAX_NUM_DRIVES];
 
 	class State
@@ -54,8 +56,6 @@ public:
 		State();
 		void PowerOn(void);
 		void Reset(void);
-
-		char driveLetters[TOWNS_TGDRV_MAX_NUM_DRIVES];
 	};
 
 	State state;

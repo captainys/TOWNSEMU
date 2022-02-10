@@ -18,6 +18,8 @@ TOWNS_VM_TGDRV_INT2FH			EQU		02h
 
 TOWNS_TGDRV_MAX_NUM_DRIVES		EQU		08h
 
+DPB_LENGTH_DOS6					EQU		21h
+
 
 MAINSEG					SEGMENT	USE16
 
@@ -30,8 +32,9 @@ MAIN					PROC
 ; How can I tell it is already installed?
 
 						ORG		0108H
-NUM_TGDRV				DB		0                                 ; CS:108H
-ASSIGNED_TGDRV_LETTERS	DB		TOWNS_TGDRV_MAX_NUM_DRIVES dup(0) ; CS:109H to CS:110H
+NUM_TGDRV				DB		0                                    ; CS:108H
+ASSIGNED_TGDRV_LETTERS	DB		TOWNS_TGDRV_MAX_NUM_DRIVES dup(0FFh) ; CS:109H to CS:110H
+ERRMSG_BUFFER			DB		256 dup('$')                         ; CS:111H to CS:210H
 
 MAIN					ENDP
 
@@ -122,6 +125,9 @@ INT2FH_NOT_MY_DRIVE:
 
 INT2FH					ENDP
 
+
+
+
 CURRENT_PSP				DW		0
 ORIGINAL_2FH			DD		0
 STACKPARAM0				DW		0
@@ -138,6 +144,23 @@ END_OF_TSR:
 
 
 INSTALL					PROC
+
+						PUSH	CS
+						POP		DS
+
+						LEA		DX,MSG_INTRO
+						MOV		AH,09H
+						INT		21H
+
+						MOV		AX,6809h ; TGDRV Installation Check
+						INT		2FH
+						JC		INSTALL_CHECKED
+
+						LEA		DX,MSG_ALREADY_INSTALLED
+						CMP		AX,4754H ; "TG"
+						JE		ERRMSG_AND_EXIT
+
+INSTALL_CHECKED:
 						MOV		AH,30H	; GET DOS VERSION
 						INT		21H
 						MOV		BX,AX
@@ -156,6 +179,7 @@ INSTALL					PROC
 						PUSH	CS
 						POP		DS
 
+						MOV		DI,OFFSET ERRMSG_BUFFER  ; DS:DI Error Message Buffer.
 
 						MOV		DX,TOWNSIO_VM_TGDRV
 						MOV		AL,TOWNS_VM_TGDRV_INSTALL
@@ -172,19 +196,39 @@ INSTALL					PROC
 						MOV		AX,252FH
 						INT		21H
 
-						MOV		DX,OFFSET END_OF_TSR
-						ADD		DX,0FH
-						SHR		DX,4
-
 						LEA		DX,MSG_INSTALLED
 						MOV		AH,09H
 						INT		21H
+
+						MOVZX	CX,BYTE PTR CS:[NUM_TGDRV]
+						LEA		SI,ASSIGNED_TGDRV_LETTERS
+DRIVE_MSG_LOOP:
+						PUSH	CX
+						PUSH	SI
+
+						LODSB
+						MOV		CS:[MSG_DRIVES+6],AL
+
+						LEA		DX,MSG_DRIVES
+						MOV		AH,09H
+						INT		21H
+
+						POP		SI
+						POP		CX
+						LOOP	DRIVE_MSG_LOOP
+
+
+						MOV		DX,OFFSET END_OF_TSR
+						ADD		DX,0FH
+						SHR		DX,4
 
 						MOV		AH,31H
 						INT		21H
 
 FAILED_INSTALL:
 						LEA		DX,MSG_NOT_INSTALLED
+
+ERRMSG_AND_EXIT:
 						MOV		AH,09H
 						INT		21H
 
@@ -194,8 +238,13 @@ FAILED_INSTALL:
 INSTALL					ENDP
 
 
+MSG_INTRO				DB		"TSUGARU HOST-VM File Sharing Driver TGDRV",0Dh,0Ah
+						DB		"By CaptainYS  http://www.ysflight.com",0Dh,0Ah
+						DB		"Version 20220209",0Dh,0Ah,0,'$'
+MSG_ALREADY_INSTALLED	DB		"TGDRV has already beein installed.",0Dh,0Ah,0,'$'
 MSG_INSTALLED			DB		"TGDRV has been installed.",0Dh,0Ah,0,'$'
 MSG_NOT_INSTALLED		DB		"TGDRV has not been installed.",0Dh,0Ah,0,'$'
+MSG_DRIVES				DB		"Drive  ",0Dh,0Ah,0,'$'
 
 
 

@@ -2153,6 +2153,11 @@ void TownsCommandInterpreter::Execute_Dump_DOSInfo(FMTowns &towns,Command &cmd)
 		cpputil::Capitalize(ARGV2);
 		if("SYSVAR"==ARGV2 || "SYSVARS"==ARGV2)
 		{
+			std::cout << "DOSVER " << cpputil::Ustox(towns.state.DOSVER) << std::endl;
+			std::cout << "DOSSEG " << cpputil::Ustox(towns.state.DOSSEG) << std::endl;
+			std::cout << "DOSLOLSEG " << cpputil::Ustox(towns.state.DOSLOLSEG) << std::endl;
+			std::cout << "DOSLOLOFF " << cpputil::Ustox(towns.state.DOSLOLOFF) << std::endl;
+
 			uint16_t seg,ofs,s;
 			ofs=towns.mem.FetchWord(DOSADDR+TOWNS_DOS_DPB_PTR);
 			seg=towns.mem.FetchWord(DOSADDR+TOWNS_DOS_DPB_PTR+2);
