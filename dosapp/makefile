@@ -22,19 +22,19 @@ exe\dosntfy.exe : build\dosntfy.obj
 
 
 
-build\tgdrv.obj : tgdrv.asm
-	masm tgdrv.asm build\tgdrv.obj build\tgdrv.lst NUL
+build\tgdrvcom.obj : tgdrvcom.asm tgdrvmain.asm tgdrvdef.asm
+	masm tgdrvcom.asm build\tgdrvcom.obj build\tgdrv.lst NUL
 
-exe\tgdrv.com : build\tgdrv.obj
-	link build\tgdrv.obj;
-	exe2bin tgdrv.exe tgdrv.com
+exe\tgdrv.com : build\tgdrvcom.obj
+	link build\tgdrvcom.obj;
+	exe2bin tgdrvcom.exe tgdrv.com
 	copy tgdrv.com exe\.
-	del tgdrv.exe
+	del tgdrvcom.exe
 	del tgdrv.com
 
 
 
-build\tgdrvsys.obj : tgdrvsys.asm
+build\tgdrvsys.obj : tgdrvsys.asm tgdrvmain.asm tgdrvdef.asm
 	masm tgdrvsys.asm build\tgdrvsys.obj build\tgdrvsys.lst NUL
 
 exe\tgdrv.sys : build\tgdrvsys.obj

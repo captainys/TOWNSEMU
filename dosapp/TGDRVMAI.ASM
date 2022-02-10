@@ -1,6 +1,5 @@
 						; INCLUDED FROM TGDRVCOM.ASM and TGDRVSYS.ASM
 
-						ORG		0200H
 INT2FH					PROC
 
 						PUSH	BX
@@ -116,6 +115,10 @@ INSTALL					PROC
 
 						MOV		AX,6809h ; TGDRV Installation Check
 						INT		2FH
+
+						POP		SI
+						POP		ES
+
 						JC		INSTALL_CHECKED
 
 						LEA		DX,MSG_ALREADY_INSTALLED
@@ -123,6 +126,9 @@ INSTALL					PROC
 						JE		ERRMSG_AND_EXIT
 
 INSTALL_CHECKED:
+						PUSH	ES
+						PUSH	SI
+
 						MOV		AH,30H	; GET DOS VERSION
 						INT		21H
 						MOV		BX,AX
