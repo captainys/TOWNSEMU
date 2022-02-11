@@ -253,8 +253,30 @@ int FileSys::OpenFileNotTruncate(unsigned int PSP,std::string subPath,unsigned i
 }
 int FileSys::OpenFileTruncate(unsigned int PSP,std::string subPath,unsigned int openMode)
 {
-	// Not supported yet.
-	std::cout << "Truncate mode not supported yet." << std::endl;
+	if(OPENMODE_READ==openMode)
+	{
+		return -1;
+	}
+
+	auto sftIdx=FindAvailableSFT();
+	if(0<=sftIdx)
+	{
+		auto fullPath=cpputil::MakeFullPathName(hostPath,subPath);
+		if(true!=cpputil::FileExists(fullPath))
+		{
+			// If not exist, make one.
+			std::ofstream fp(fullPath,std::ios::binary);
+		}
+		sft[sftIdx].fName=subPath;
+		sft[sftIdx].mode=openMode;
+		sft[sftIdx].PSP=PSP;
+		sft[sftIdx].fp.open(fullPath,std::ios::in|std::ios::out|std::ios::trunc|std::ios::binary);
+
+		if(true==sft[sftIdx].fp.is_open())
+		{
+			return sftIdx;
+		}
+	}
 	return -1;
 }
 void FileSys::Seek(int sftIdx,uint32_t pos)
