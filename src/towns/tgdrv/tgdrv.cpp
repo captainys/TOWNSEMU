@@ -566,20 +566,72 @@ bool TownsTgDrv::Int2F_1113_Delete(void)
 
 		std::cout << subPath << std::endl;
 
+		bool wildCard=false;
 		for(auto c : subPath)
 		{
 			if('*'==c || '?'==c)
 			{
-				std::cout << "Delete by wildcard not supported for AX=1113" << std::endl;
-				ReturnAX(TOWNS_DOSERR_INVALID_ACCESS);
-				townsPtr->cpu.SetCF(true);
-				return true; // Yes it's my drive.
+				wildCard=true;
+				break;
 			}
 		}
 
-		if(true==sharedDir[sharedDirIdx].DeleteSubPathFile(subPath))
+		if(true!=wildCard)
 		{
+			if(true==sharedDir[sharedDirIdx].DeleteSubPathFile(subPath))
+			{
+				townsPtr->cpu.SetCF(false);
+			}
+		}
+		else
+		{
+			// Delete by wildcard.
+			auto wildCard=GetLastOfFilename(subPath);
+			auto templ11=FilenameTo11Bytes(wildCard);
+			std::cout << templ11 << std::endl;
+
+			auto subDir=FullPathToSubDir(subPath);
+
+			auto find=FileSys::CreateFindContext();
+			std::vector <std::string> toDel;
+			int c=0;
+			for(;;)
+			{
+				FileSys::DirectoryEntry dirent;
+				if(0==c)
+				{
+					dirent=sharedDir[sharedDirIdx].FindFirst(subDir,find);
+				}
+				else
+				{
+					dirent=sharedDir[sharedDirIdx].FindNext(find);
+				}
+				if(true==dirent.endOfDir)
+				{
+					break;
+				}
+
+				auto fName11=FilenameTo11Bytes(dirent.fName);
+				if(true==FileSys::DOSTemplateMatch(templ11,fName11))
+				{
+					toDel.push_back(dirent.fName);
+				}
+
+				++c;
+			}
+			FileSys::DeleteFindContext(find);
+
 			townsPtr->cpu.SetCF(false);
+			for(auto fn : toDel)
+			{
+				auto subPath=cpputil::MakeFullPathName(subDir,fn);
+				std::cout << subPath << std::endl;
+				if(true!=sharedDir[sharedDirIdx].DeleteSubPathFile(subPath))
+				{
+					townsPtr->cpu.SetCF(true);
+					ReturnAX(TOWNS_DOSERR_ACCESS_DENIED);
+				}
+			}
 		}
 
 		return true; // Yes, it's my drive.
