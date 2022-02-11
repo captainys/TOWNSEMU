@@ -114,6 +114,7 @@ public:
 	bool Int2F_111D_CloseAll(void);
 	bool Int2F_1123_QualifyRemoteFileName(void);
 	bool Int2F_1125_RedirectedPrinterMode(void);
+	bool Int2F_112E_ExtendedOpenOrCreate(void);
 
 	/*! Check file name.  If it includes ".." it returns DOS error code.
 	    Also it blocks kanji and kana characters.

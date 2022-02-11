@@ -137,6 +137,9 @@ TownsTgDrv::TownsTgDrv(class FMTowns *townsPtr) : Device(townsPtr)
 			case 0x1125:
 				myDrive=Int2F_1125_RedirectedPrinterMode();
 				break;
+			case 0x112E:
+				myDrive=Int2F_112E_ExtendedOpenOrCreate();
+				break;
 			}
 			townsPtr->cpu.SetPF(true!=myDrive);
 			break;
@@ -835,6 +838,40 @@ bool TownsTgDrv::Int2F_1123_QualifyRemoteFileName(void)
 bool TownsTgDrv::Int2F_1125_RedirectedPrinterMode(void)
 {
 	return false; // Not my drive.  Not my printer actually.
+}
+bool TownsTgDrv::Int2F_112E_ExtendedOpenOrCreate(void)
+{
+	auto fName=GetFilenameBuffer1();
+	auto driveLetter=FullyQualifiedFileNameToDriveLetter(fName);
+	auto sharedDirIdx=FullyQualifiedFileNameToSharedDirIndex(fName);
+	if(0<=sharedDirIdx)
+	{
+		townsPtr->cpu.SetCF(true);
+
+		// This function is not supposed to be called from DOS 3.x
+
+
+		auto subPath=DropDriveLetter(fName);
+		uint16_t attr=FetchStackParam0();
+
+		// From Ralf Brown's Interrupt List
+		//   DOS4.x or higher
+		//          SDA+9Eh   filename buffer
+		//     Word SDA+2E1h  extended file open mode
+		//     Word SDA+2DDh  extended file open action
+		// Action/Mode is same as INT 21H AX=6C00h
+
+		uint32_t addr=GetFilenameBufferAddress();
+		uint16_t openMode=townsPtr->mem.FetchWord(addr+0x2E1-0x9E);
+		uint16_t openAction=townsPtr->mem.FetchWord(addr+0x2DD-0x9E);
+
+		std::cout << fName << std::endl;
+		std::cout << cpputil::Ustox(openMode) << std::endl;
+		std::cout << cpputil::Ustox(openAction) << std::endl;
+
+		return true;
+	}
+	return false;
 }
 
 unsigned int TownsTgDrv::CheckFileName(const std::string &fName) const
