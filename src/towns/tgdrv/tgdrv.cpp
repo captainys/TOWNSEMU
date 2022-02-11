@@ -846,13 +846,17 @@ bool TownsTgDrv::Int2F_112E_ExtendedOpenOrCreate(void)
 	auto sharedDirIdx=FullyQualifiedFileNameToSharedDirIndex(fName);
 	if(0<=sharedDirIdx)
 	{
-		townsPtr->cpu.SetCF(true);
+		townsPtr->cpu.SetCF(true); // Tentative
 
 		// This function is not supposed to be called from DOS 3.x
 
 
 		auto subPath=DropDriveLetter(fName);
+
 		uint16_t attr=FetchStackParam0();
+		// Low byte: file attribute
+		// High byte: 00 normal create/open  01 create new file
+		// Wait, is high byte redundant with openAction?
 
 		// From Ralf Brown's Interrupt List
 		//   DOS4.x or higher
@@ -869,9 +873,62 @@ bool TownsTgDrv::Int2F_112E_ExtendedOpenOrCreate(void)
 		std::cout << cpputil::Ustox(openMode) << std::endl;
 		std::cout << cpputil::Ustox(openAction) << std::endl;
 
-		return true;
+		// openMode&7: 0 Read  1 Write  2 RW  Same as mode in SFT.
+		// openAction:
+		//   High 4 bits  Action if file does not exist
+		//     0000 fail (Cannot open)
+		//     0001 create
+		//   Low 4 bits   Action if file exists
+		//     0000 fail (Cannot overwrite)
+		//     0001 open
+		//     0010 truncate and open
+
+		auto dirent=sharedDir[sharedDirIdx].GetFileAttrib(subPath);
+		if(true==dirent.endOfDir) // File does not exist
+		{
+			if(0==(openAction&0xF0))
+			{
+				ReturnAX(TOWNS_DOSERR_FILE_NOT_FOUND);
+				return true; // Yes, it's my drive.
+			}
+			else if(0x10==(openAction&0xF0))
+			{
+				// Create
+				ReturnCX(2);
+			}
+			else
+			{
+				ReturnAX(TOWNS_DOSERR_INVALID_FUNC);
+				return true; // Yes, it's my drive.
+			}
+		}
+		else  // File exists
+		{
+			if(0==(openAction&0x0F))
+			{
+				ReturnAX(TOWNS_DOSERR_ACCESS_DENIED);
+				return true; // Yes, it's my drive.
+			}
+			else if(1==(openAction&0x0F))
+			{
+				// Open
+				ReturnCX(1);
+			}
+			else if(2==(openAction&0x0F))
+			{
+				// Truncate and Open
+				ReturnCX(3);
+			}
+			else
+			{
+				ReturnAX(TOWNS_DOSERR_INVALID_FUNC);
+				return true; // Yes, it's my drive.
+			}
+		}
+
+		return true; // Yes, it's my drive.
 	}
-	return false;
+	return false; // No, it's not my drive.
 }
 
 unsigned int TownsTgDrv::CheckFileName(const std::string &fName) const

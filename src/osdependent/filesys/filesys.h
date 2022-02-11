@@ -132,7 +132,7 @@ public:
 	/*! Returns file attribute in directory entry.
 	    If file not found, endOfDir member will be true.
 	*/
-	DirectoryEntry GetFileAttrib(std::string FileName) const;
+	DirectoryEntry GetFileAttrib(std::string subPath) const;
 	// In OS-Dependent part <<
 
 
