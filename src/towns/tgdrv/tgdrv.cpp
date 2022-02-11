@@ -1086,6 +1086,120 @@ std::string TownsTgDrv::FetchCString(const i486DX::SegmentRegister &seg,uint32_t
 	}
 	return str;
 }
+void TownsTgDrv::AddDPB(unsigned int lastDPBSEG,unsigned int lastDPBOFFSET,unsigned int newDPBSEG,unsigned int newDPBOFFSET)
+{
+	DOSDPB DPB=FetchDPB(lastDPBSEG,lastDPBOFFSET);
+
+	DPB.NEXT_DPB_OFFSET=newDPBOFFSET;
+	DPB.NEXT_DPB_SEG=newDPBSEG;
+	StoreDPB(lastDPBSEG,lastDPBOFFSET,DPB);
+
+	++DPB.DRIVE_CODE;
+	DPB.UNIT_CODE=0;
+	DPB.DEV_DRIVER_OFFSET=0x0048; // SYSVARS+22h (NUL device)
+	DPB.DEV_DRIVER_SEG=townsPtr->state.DOSLOLSEG;
+	DPB.NEXT_DPB_OFFSET=0xFFFF;
+	DPB.NEXT_DPB_SEG=0xFFFF;
+	StoreDPB(newDPBSEG,newDPBOFFSET,DPB);
+
+	auto NUM_DPB_ADDR=townsPtr->state.DOSLOLSEG*0x10+0x0046; // SYSVARS+20h
+	auto NUM_DPB=townsPtr->mem.FetchByte(NUM_DPB_ADDR);
+	++NUM_DPB;
+	townsPtr->mem.StoreByte(NUM_DPB_ADDR,NUM_DPB);
+}
+TownsTgDrv::DOSDPB TownsTgDrv::FetchDPB(unsigned int SEG,unsigned int OFFSET) const
+{
+	DOSDPB dpb;
+	auto &mem=townsPtr->mem;
+
+	unsigned int baseAddr=SEG*0x10+OFFSET;
+
+	dpb.DRIVE_CODE			=mem.FetchByte(baseAddr+0x00);
+	dpb.UNIT_CODE			=mem.FetchByte(baseAddr+0x01);
+	dpb.BYTES_PER_SECTOR	=mem.FetchWord(baseAddr+0x02);
+	dpb.CLUSTER_MASK		=mem.FetchByte(baseAddr+0x04);
+	dpb.CLUSTER_SHIFT		=mem.FetchByte(baseAddr+0x05);
+	dpb.FIRST_FAT_SECTOR	=mem.FetchWord(baseAddr+0x06);
+	dpb.NUM_FATS			=mem.FetchByte(baseAddr+0x08);
+	dpb.NUM_DIRENTS			=mem.FetchWord(baseAddr+0x09);
+	dpb.FIRST_DATA_SECTOR	=mem.FetchWord(baseAddr+0x0b);
+	dpb.MAX_CLUSTER_NUM		=mem.FetchWord(baseAddr+0x0d);
+
+	auto dosverMajor=townsPtr->state.DOSVER&0xFF;
+	if(3==dosverMajor)
+	{
+		dpb.SECTORS_PER_FAT		=mem.FetchByte(baseAddr+0x0f);
+		dpb.FIRST_DIR_SECTOR	=mem.FetchWord(baseAddr+0x10);
+		dpb.DEV_DRIVER_OFFSET 	=mem.FetchWord(baseAddr+0x12);
+		dpb.DEV_DRIVER_SEG 		=mem.FetchWord(baseAddr+0x14);
+		dpb.MEDIA_DESC_TYPE		=mem.FetchByte(baseAddr+0x16);
+		dpb.ACCESS_FLAG			=mem.FetchByte(baseAddr+0x17);
+		dpb.NEXT_DPB_OFFSET		=mem.FetchWord(baseAddr+0x18);
+		dpb.NEXT_DPB_SEG		=mem.FetchWord(baseAddr+0x1A);
+		dpb.LAST_CLUSTER_ALLOC	=mem.FetchWord(baseAddr+0x1C);
+		dpb.NUM_FREE_CLUSTERS	=mem.FetchWord(baseAddr+0x1E);
+	}
+	else
+	{
+		dpb.SECTORS_PER_FAT		=mem.FetchWord(baseAddr+0x0f);
+		dpb.FIRST_DIR_SECTOR	=mem.FetchWord(baseAddr+0x11);
+		dpb.DEV_DRIVER_OFFSET 	=mem.FetchWord(baseAddr+0x13);
+		dpb.DEV_DRIVER_SEG 		=mem.FetchWord(baseAddr+0x15);
+		dpb.MEDIA_DESC_TYPE		=mem.FetchByte(baseAddr+0x17);
+		dpb.ACCESS_FLAG			=mem.FetchByte(baseAddr+0x18);
+		dpb.NEXT_DPB_OFFSET		=mem.FetchWord(baseAddr+0x19);
+		dpb.NEXT_DPB_SEG		=mem.FetchWord(baseAddr+0x1B);
+		dpb.LAST_CLUSTER_ALLOC	=mem.FetchWord(baseAddr+0x1D);
+		dpb.NUM_FREE_CLUSTERS	=mem.FetchWord(baseAddr+0x1F);
+	}
+
+	return dpb;
+}
+void TownsTgDrv::StoreDPB(unsigned int SEG,unsigned int OFFSET,DOSDPB dpb)
+{
+	auto &mem=townsPtr->mem;
+
+	unsigned int baseAddr=SEG*0x10+OFFSET;
+
+	mem.StoreByte(baseAddr+0x00,dpb.DRIVE_CODE);
+	mem.StoreByte(baseAddr+0x01,dpb.UNIT_CODE);
+	mem.StoreWord(baseAddr+0x02,dpb.BYTES_PER_SECTOR);
+	mem.StoreByte(baseAddr+0x04,dpb.CLUSTER_MASK);
+	mem.StoreByte(baseAddr+0x05,dpb.CLUSTER_SHIFT);
+	mem.StoreWord(baseAddr+0x06,dpb.FIRST_FAT_SECTOR);
+	mem.StoreByte(baseAddr+0x08,dpb.NUM_FATS);
+	mem.StoreWord(baseAddr+0x09,dpb.NUM_DIRENTS);
+	mem.StoreWord(baseAddr+0x0b,dpb.FIRST_DATA_SECTOR);
+	mem.StoreWord(baseAddr+0x0d,dpb.MAX_CLUSTER_NUM);
+
+	auto dosverMajor=townsPtr->state.DOSVER&0xFF;
+	if(3==dosverMajor)
+	{
+		mem.StoreByte(baseAddr+0x0f,dpb.SECTORS_PER_FAT);
+		mem.StoreWord(baseAddr+0x10,dpb.FIRST_DIR_SECTOR);
+		mem.StoreWord(baseAddr+0x12,dpb.DEV_DRIVER_OFFSET);
+		mem.StoreWord(baseAddr+0x14,dpb.DEV_DRIVER_SEG);
+		mem.StoreByte(baseAddr+0x16,dpb.MEDIA_DESC_TYPE);
+		mem.StoreByte(baseAddr+0x17,dpb.ACCESS_FLAG);
+		mem.StoreWord(baseAddr+0x18,dpb.NEXT_DPB_OFFSET);
+		mem.StoreWord(baseAddr+0x1A,dpb.NEXT_DPB_SEG);
+		mem.StoreWord(baseAddr+0x1C,dpb.LAST_CLUSTER_ALLOC);
+		mem.StoreWord(baseAddr+0x1E,dpb.NUM_FREE_CLUSTERS);
+	}
+	else
+	{
+		mem.StoreWord(baseAddr+0x0f,dpb.SECTORS_PER_FAT);
+		mem.StoreWord(baseAddr+0x11,dpb.FIRST_DIR_SECTOR);
+		mem.StoreWord(baseAddr+0x13,dpb.DEV_DRIVER_OFFSET);
+		mem.StoreWord(baseAddr+0x15,dpb.DEV_DRIVER_SEG);
+		mem.StoreByte(baseAddr+0x17,dpb.MEDIA_DESC_TYPE);
+		mem.StoreByte(baseAddr+0x18,dpb.ACCESS_FLAG);
+		mem.StoreWord(baseAddr+0x19,dpb.NEXT_DPB_OFFSET);
+		mem.StoreWord(baseAddr+0x1B,dpb.NEXT_DPB_SEG);
+		mem.StoreWord(baseAddr+0x1D,dpb.LAST_CLUSTER_ALLOC);
+		mem.StoreWord(baseAddr+0x1F,dpb.NUM_FREE_CLUSTERS);
+	}
+}
 
 bool TownsTgDrv::Install(void)
 {
@@ -1128,14 +1242,6 @@ bool TownsTgDrv::Install(void)
 		{
 			unsigned int d=DriveLetterToDriveIndex(param[i+3]);
 			if(d<=CDSCount && 0==GetCDSType(d))  // Check drive is unused.
-			{
-				drives.push_back(cpputil::Capitalize(param[i+3]));
-			}
-		}
-		else if('/'==param[i] && ('F'==param[i+1] || 'f'==param[i+1]) && ':'==param[i+2])
-		{
-			unsigned int d=DriveLetterToDriveIndex(param[i+3]);
-			if(d<=CDSCount)  // Don't check drive is unused.
 			{
 				drives.push_back(cpputil::Capitalize(param[i+3]));
 			}
@@ -1233,20 +1339,21 @@ bool TownsTgDrv::Install(void)
 
 				auto lastDPBOFF=DPBOFF;
 				auto lastDPBSEG=DPBSEG;
+				DOSDPB lastDPB;
 				while(0xFFFF!=DPBOFF && 0xFFFF!=DPBSEG)
 				{
-					auto drvLetter=townsPtr->mem.FetchByte(DPBSEG*0x10+DPBOFF);
-					if(drvLetter<sizeof(DPBDrives))
+					auto dpb=FetchDPB(DPBSEG,DPBOFF);
+
+					if(dpb.DRIVE_CODE<sizeof(DPBDrives))
 					{
-						DPBDrives[drvLetter]=2;
+						DPBDrives[dpb.DRIVE_CODE]=2;
 					}
 					lastDPBOFF=DPBOFF;
 					lastDPBSEG=DPBSEG;
+					lastDPB=dpb;
 
-					auto nextDPBOFF=townsPtr->mem.FetchWord(DPBSEG*0x10+DPBOFF+DPB_PTR_TO_NEXT_DPB);
-					auto nextDPBSEG=townsPtr->mem.FetchWord(DPBSEG*0x10+DPBOFF+DPB_PTR_TO_NEXT_DPB+2);
-					DPBOFF=nextDPBOFF;
-					DPBSEG=nextDPBSEG;
+					DPBOFF=dpb.NEXT_DPB_OFFSET;
+					DPBSEG=dpb.NEXT_DPB_SEG;
 				}
 
 				for(int i : DPBDrives)
@@ -1255,8 +1362,26 @@ bool TownsTgDrv::Install(void)
 				}
 				std::cout << std::endl;
 
-				// TODO: Add Dummy DPBs for continuous drives.
-				//       Update DPB count in SYSVARS.
+				unsigned int newDPBOFF=DUMMYDPB_BUFFER;
+				unsigned int newDPBSEG=townsPtr->cpu.state.CS().value;
+
+				for(int i=0; i<sizeof(DPBDrives); ++i)
+				{
+					if(2==DPBDrives[i])
+					{
+					}
+					else if(1==DPBDrives[i])
+					{
+						AddDPB(lastDPBSEG,lastDPBOFF,newDPBSEG,newDPBOFF);
+						lastDPBSEG=newDPBSEG;
+						lastDPBOFF=newDPBOFF;
+						newDPBOFF+=GetDPBSize();
+					}
+					else
+					{
+						break;
+					}
+				}
 			}
 			return true;
 		}
@@ -1489,6 +1614,18 @@ uint16_t TownsTgDrv::GetSAttr(void) const
 {
 	auto addr=GetSAttrAddress();
 	return townsPtr->mem.FetchWord(addr);
+}
+uint32_t TownsTgDrv::GetDPBSize(void) const
+{
+	auto dosverMajor=townsPtr->state.DOSVER&0xFF;
+	if(dosverMajor<4)
+	{
+		return 0x20;
+	}
+	else
+	{
+		return 0x21;
+	}
 }
 uint32_t TownsTgDrv::GetSAttrAddress(void) const
 {

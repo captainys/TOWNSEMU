@@ -47,6 +47,7 @@ public:
 	const uint16_t TGDRV_ID_SHORT=0x4754; // "TG"
 
 	const uint16_t DRIVELETTER_BUFFER=0x0109; // CS:0109H 8-byte drive-letter buffer
+	const uint16_t DUMMYDPB_BUFFER=0x211;
 
 	FileSys sharedDir[TOWNS_TGDRV_MAX_NUM_DRIVES];
 
@@ -56,6 +57,32 @@ public:
 		State();
 		void PowerOn(void);
 		void Reset(void);
+	};
+
+	class DOSDPB
+	{
+	public:
+		unsigned int  DRIVE_CODE;		//	DB		? 		; 0=A drive
+		unsigned int  UNIT_CODE;			//	DB		?		; +01h
+		unsigned int  BYTES_PER_SECTOR;	//	DW		?		; +02h
+		unsigned int  CLUSTER_MASK;		//	DB		?		; +04h
+		unsigned int  CLUSTER_SHIFT;		//	DB		?		; +05h  SHL CLUSTER to get to SECTOR from the top of Data Sector
+		unsigned int  FIRST_FAT_SECTOR;	//	DW		?		; +06h
+		unsigned int  NUM_FATS;			//	DB		?		; +08h
+		unsigned int  NUM_DIRENTS;		//	DW		?		; +09h
+		unsigned int  FIRST_DATA_SECTOR;	//	DW		?		; +0bh
+		unsigned int  MAX_CLUSTER_NUM;	//	DW		?		; +0dh
+		unsigned int  SECTORS_PER_FAT;	//	DB		?		; +0fh  1 byte in DOS V3.x  2 bytes V4.x and later
+		unsigned int  FIRST_DIR_SECTOR;	//	DW		?		; +10h/+11h  How many sectors to skip to get to the root dir.
+		unsigned int  DEV_DRIVER_OFFSET; //	DW		?		; +12h/+13h
+		unsigned int  DEV_DRIVER_SEG; //	DW		?		; +14h/+15h
+		unsigned int  MEDIA_DESC_TYPE;	//	DB		?		; +16h/+17h  See BPB_MEDIA_DESC_TYPE
+		unsigned int  ACCESS_FLAG;		//	DB		?		; +17h/+18h
+		unsigned int  NEXT_DPB_OFFSET;	//	DW		?		; +18h/+19h
+		unsigned int  NEXT_DPB_SEG;		//	DW		?		; +1Ah/+1Bh  Set in Finalize_DPB_Loop in MSINIT.ASM(MS-DOS V2.0 soruce)
+		unsigned int  LAST_CLUSTER_ALLOC;//	DW		?		; +1Ch/+1Dh  Is this LAST_CLUSTER_ALLOC?  Or is this current working directory.
+		unsigned int  NUM_FREE_CLUSTERS;	//	DW		?		; +1Eh/+1Fh
+									//	; 20h bytes total Ver 3.x, 21h bytes total Ver 4.x and later
 	};
 
 	State state;
@@ -115,6 +142,10 @@ public:
 	std::string FetchCString(uint32_t physAddr) const;
 	std::string FetchCString(const class i486DX::SegmentRegister &seg,uint32_t offset) const;
 
+	void AddDPB(unsigned int lastDPBSEG,unsigned int lastDPBOFFSET,unsigned int newDPBSEG,unsigned int newDPBOFFSET);
+	DOSDPB FetchDPB(unsigned int SEG,unsigned int OFFSET) const;
+	void StoreDPB(unsigned int SEG,unsigned int OFFSET,DOSDPB dpb);
+
 
 	bool Install(void);
 
@@ -136,6 +167,7 @@ public:
 	uint32_t GetSDBAddress(void) const;
 	uint16_t GetSAttr(void) const;
 	uint32_t GetSAttrAddress(void) const;
+	uint32_t GetDPBSize(void) const;
 
 	/*! Version used for serialization.
 	*/
