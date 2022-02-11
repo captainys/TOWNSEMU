@@ -564,6 +564,19 @@ bool TownsTgDrv::Int2F_1113_Delete(void)
 
 		auto subPath=DropDriveLetter(fName);
 
+		std::cout << subPath << std::endl;
+
+		for(auto c : subPath)
+		{
+			if('*'==c || '?'==c)
+			{
+				std::cout << "Delete by wildcard not supported for AX=1113" << std::endl;
+				ReturnAX(TOWNS_DOSERR_INVALID_ACCESS);
+				townsPtr->cpu.SetCF(true);
+				return true; // Yes it's my drive.
+			}
+		}
+
 		if(true==sharedDir[sharedDirIdx].DeleteSubPathFile(subPath))
 		{
 			townsPtr->cpu.SetCF(false);
