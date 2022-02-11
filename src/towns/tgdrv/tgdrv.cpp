@@ -640,7 +640,12 @@ bool TownsTgDrv::Int2F_1117_OpenOrTruncate(void)
 		else if(0x0100==(mode&0xFF00))
 		{
 			// Truncate
-			std::cout << "Truncate mode not supported yet." << std::endl;
+			auto hostSFTIdx=sharedDir[sharedDirIdx].OpenFileTruncate(FetchPSP(),subPath,FileSys::OPENMODE_RW);
+			if(0<=hostSFTIdx)
+			{
+				MakeVMSFT(townsPtr->cpu.state.ES(),townsPtr->cpu.state.DI(),driveLetter,hostSFTIdx,sharedDir[sharedDirIdx].sft[hostSFTIdx]);
+				townsPtr->cpu.SetCF(false);
+			}
 		}
 
 		return true; // Yes, it's my drive.
@@ -858,12 +863,26 @@ bool TownsTgDrv::Int2F_112E_ExtendedOpenOrCreate(void)
 		// High byte: 00 normal create/open  01 create new file
 		// Wait, is high byte redundant with openAction?
 
+		const int normalOpenOrNewFile=(attr&0xFF00);
+		const int NORMAL_OPEN=0x0000;
+		const int CREATE_NEW_FILE=0x0100;
+
 		// From Ralf Brown's Interrupt List
 		//   DOS4.x or higher
 		//          SDA+9Eh   filename buffer
 		//     Word SDA+2E1h  extended file open mode
 		//     Word SDA+2DDh  extended file open action
 		// Action/Mode is same as INT 21H AX=6C00h
+
+		// Observed in DOS6
+		//   COPY from TGDRV
+		//     openMode=0040H  Read Mode
+		//     openAction=0101H
+		//     attr=0040H
+		//   COPY to TGDRV
+		//     openMode=0021H  Write Mode
+		//     openAction=0112H  If not exists create, if exists truncate.
+		//     attr=0020H
 
 		uint32_t addr=GetFilenameBufferAddress();
 		uint16_t openMode=townsPtr->mem.FetchWord(addr+0x2E1-0x9E);
@@ -872,6 +891,7 @@ bool TownsTgDrv::Int2F_112E_ExtendedOpenOrCreate(void)
 		std::cout << fName << std::endl;
 		std::cout << cpputil::Ustox(openMode) << std::endl;
 		std::cout << cpputil::Ustox(openAction) << std::endl;
+		std::cout << cpputil::Ustox(attr) << std::endl;
 
 		// openMode&7: 0 Read  1 Write  2 RW  Same as mode in SFT.
 		// openAction:
@@ -884,46 +904,70 @@ bool TownsTgDrv::Int2F_112E_ExtendedOpenOrCreate(void)
 		//     0010 truncate and open
 
 		auto dirent=sharedDir[sharedDirIdx].GetFileAttrib(subPath);
+		int hostSFTIdx=-1;
+		int AX=TOWNS_DOSERR_ACCESS_DENIED;
+		int CX=0;
 		if(true==dirent.endOfDir) // File does not exist
 		{
-			if(0==(openAction&0xF0))
+			if(FileSys::OPENMODE_READ==(openMode&7))
 			{
-				ReturnAX(TOWNS_DOSERR_FILE_NOT_FOUND);
-				return true; // Yes, it's my drive.
+				// Cannot read-open.
+				AX=TOWNS_DOSERR_FILE_NOT_FOUND;
+			}
+			else if(0==(openAction&0xF0))
+			{
+				// Fail if file does not exist.
+				AX=TOWNS_DOSERR_FILE_NOT_FOUND;
 			}
 			else if(0x10==(openAction&0xF0))
 			{
-				// Create
-				ReturnCX(2);
+				hostSFTIdx=sharedDir[sharedDirIdx].OpenFileNotTruncate(FetchPSP(),subPath,openMode&7);
+				CX=2;
 			}
 			else
 			{
-				ReturnAX(TOWNS_DOSERR_INVALID_FUNC);
-				return true; // Yes, it's my drive.
+				// Unknown action code.
+				AX=TOWNS_DOSERR_INVALID_FUNC;
 			}
 		}
 		else  // File exists
 		{
-			if(0==(openAction&0x0F))
+			if(CREATE_NEW_FILE==normalOpenOrNewFile)
 			{
-				ReturnAX(TOWNS_DOSERR_ACCESS_DENIED);
-				return true; // Yes, it's my drive.
+				// It's not going to be a new file.
+				AX=TOWNS_DOSERR_ACCESS_DENIED;
+			}
+			else if(0==(openAction&0x0F))
+			{
+				// Fail if file exists.
+				AX=TOWNS_DOSERR_ACCESS_DENIED;
 			}
 			else if(1==(openAction&0x0F))
 			{
-				// Open
-				ReturnCX(1);
+				hostSFTIdx=sharedDir[sharedDirIdx].OpenExistingFile(FetchPSP(),subPath,openMode&7);
+				CX=1;
 			}
 			else if(2==(openAction&0x0F))
 			{
-				// Truncate and Open
-				ReturnCX(3);
+				hostSFTIdx=sharedDir[sharedDirIdx].OpenFileTruncate(FetchPSP(),subPath,openMode&7);
+				CX=3;
 			}
 			else
 			{
-				ReturnAX(TOWNS_DOSERR_INVALID_FUNC);
-				return true; // Yes, it's my drive.
+				// Unknown action code.
+				AX=TOWNS_DOSERR_INVALID_FUNC;
 			}
+		}
+
+		if(0<=hostSFTIdx)
+		{
+			MakeVMSFT(townsPtr->cpu.state.ES(),townsPtr->cpu.state.DI(),driveLetter,hostSFTIdx,sharedDir[sharedDirIdx].sft[hostSFTIdx]);
+			ReturnCX(CX);
+			townsPtr->cpu.SetCF(false);
+		}
+		else
+		{
+			ReturnAX(AX);
 		}
 
 		return true; // Yes, it's my drive.

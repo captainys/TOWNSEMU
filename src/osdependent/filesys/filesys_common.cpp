@@ -251,6 +251,12 @@ int FileSys::OpenFileNotTruncate(unsigned int PSP,std::string subPath,unsigned i
 	}
 	return -1;
 }
+int FileSys::OpenFileTruncate(unsigned int PSP,std::string subPath,unsigned int openMode)
+{
+	// Not supported yet.
+	std::cout << "Truncate mode not supported yet." << std::endl;
+	return -1;
+}
 void FileSys::Seek(int sftIdx,uint32_t pos)
 {
 	if(0<=sftIdx &&

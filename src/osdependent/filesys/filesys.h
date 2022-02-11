@@ -168,6 +168,7 @@ public:
 	*/
 	int OpenExistingFile(unsigned int PSP,std::string subPath,unsigned int openMode);
 	int OpenFileNotTruncate(unsigned int PSP,std::string subPath,unsigned int openMode);
+	int OpenFileTruncate(unsigned int PSP,std::string subPath,unsigned int openMode);
 
 	void Seek(int SftIdx,uint32_t pos);
 
