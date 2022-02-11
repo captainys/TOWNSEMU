@@ -731,7 +731,7 @@ bool TownsTgDrv::Int2F_111B_FindFirst(void)
 	std::cout << cpputil::Ustox(sAttr) << std::endl;
 	std::cout << cpputil::Uitox(GetDTAAddress()) << std::endl;
 
-	unsigned char drvLetter=cpputil::Capitalize(fn[2]); // Like \\N.A.
+	unsigned char drvLetter=FullyQualifiedFileNameToDriveLetter(fn);
 	auto sharedDirIndex=DriveLetterToSharedDirIndex(drvLetter);
 
 	std::cout << sharedDirIndex << std::endl;
@@ -764,6 +764,7 @@ bool TownsTgDrv::Int2F_111B_FindFirst(void)
 			{
 				townsPtr->mem.StoreByte(DTABuffer+0x15+i,0);
 			}
+			townsPtr->cpu.SetCF(false);
 		}
 		else
 		{
