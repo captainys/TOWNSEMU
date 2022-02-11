@@ -1500,15 +1500,15 @@ bool TownsTgDrv::Install(void)
 			{
 				mem.StoreByte(CDSAddr+i,0);
 			}
-			mem.StoreByte(CDSAddr  ,'\\');
-			mem.StoreByte(CDSAddr+1,'\\');
-			mem.StoreByte(CDSAddr+2,letter);
-			mem.StoreByte(CDSAddr+3,'.');
-			mem.StoreByte(CDSAddr+4,'A');
-			mem.StoreByte(CDSAddr+5,'.');
+
+			// Probably it is no necessary to make it \\P.A.
+			mem.StoreByte(CDSAddr  ,letter);
+			mem.StoreByte(CDSAddr+1,':');
+			mem.StoreByte(CDSAddr+2,'\\');
+			mem.StoreWord(CDSAddr+0x4F,3); // Length for "\\P.A."
+
 			mem.StoreWord(CDSAddr+0x43,0xC000);
 			mem.StoreDword(CDSAddr+0x45,TGDRV_ID); // Put "TGDR" instead of DPB pointer.
-			mem.StoreWord(CDSAddr+0x4F,6); // Length for "\\P.A."
 
 			++I;
 		}
