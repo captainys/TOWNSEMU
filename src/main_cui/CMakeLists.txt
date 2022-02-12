@@ -124,7 +124,7 @@ add_test(
 		-CD
 		"${DISC_IMAGE_DIR}/TownsOSV2.1L20.cue"
 		-FD0
-		"${TESTDATA_DIR}/FPUTEST.d77"
+		"${TESTDATA_DIR}/FPUTEST.D77"
 		-EVTLOG
 		"${TESTDATA_DIR}/eventLog/FPU_CALC.evt"
 		-UNITTEST
@@ -175,7 +175,7 @@ add_test(
 		-SHAREDDIR
 		"${CMAKE_SOURCE_DIR}/../testdata/TGDRV"
 		-EVTLOG
-		"${CMAKE_SOURCE_DIR}/../testdata/eventlog/TGDRV2.1L20.evt"
+		"${CMAKE_SOURCE_DIR}/../testdata/eventLog/TGDRV2.1L20.evt"
 		-UNITTEST
 		-DONTUSEFPU
 		-DONTAUTOSAVECMOS
@@ -213,7 +213,7 @@ add_test(
 		-SHAREDDIR
 		"${CMAKE_SOURCE_DIR}/../testdata/TGDRV"
 		-EVTLOG
-		"${CMAKE_SOURCE_DIR}/../testdata/eventlog/TGDRVV2.1L31.evt"
+		"${CMAKE_SOURCE_DIR}/../testdata/eventLog/TGDRVV2.1L31.evt"
 		-UNITTEST
 		-DONTUSEFPU
 		-DONTAUTOSAVECMOS
@@ -232,7 +232,7 @@ add_test(
 		-SHAREDDIR
 		"${CMAKE_SOURCE_DIR}/../testdata/TGDRV"
 		-EVTLOG
-		"${CMAKE_SOURCE_DIR}/../testdata/eventlog/TGDRVV2.1L51.evt"
+		"${CMAKE_SOURCE_DIR}/../testdata/eventLog/TGDRVV2.1L51.evt"
 		-UNITTEST
 		-DONTUSEFPU
 		-DONTAUTOSAVECMOS

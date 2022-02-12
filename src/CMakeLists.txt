@@ -7,7 +7,11 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 
-set(DISC_IMAGE_DIR "C:/D/TownsISO")
+if(APPLE)
+    set(DISC_IMAGE_DIR "$ENV{HOME}/TOWNSISO")
+else()
+    set(DISC_IMAGE_DIR "C:/D/TownsISO")
+endif()
 
 add_compile_definitions(YS_LITTLE_ENDIAN)
 add_compile_definitions(YS_TWOS_COMPLEMENT)

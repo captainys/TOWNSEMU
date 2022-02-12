@@ -35,6 +35,9 @@ def TsugaruExe():
 	fName=os.path.join(TSUGARUDIR,"build","main_cui","Release","Tsugaru_CUI"+ExeExtension())
 	if os.path.isfile(fName):
 		return fName
+	fName=os.path.join(TSUGARUDIR,"build","main_cui","Tsugaru_CUI.app","Contents","MacOS","Tsugaru_CUI"+ExeExtension())
+	if os.path.isfile(fName):
+		return fName
 	throw
 
 
