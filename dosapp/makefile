@@ -1,4 +1,4 @@
-alltargets : exe\physdump.exe exe\dosntfy.exe exe\tgdrv.com exe\tgdrv.sys
+alltargets : exe\physdump.exe exe\dosntfy.exe exe\tgdrv.com exe\tgdrv.sys exe\biosver.exe
 
 
 
@@ -9,6 +9,16 @@ exe\physdump.exe : build\physdump.obj
 	link build\physdump.obj;
 	copy physdump.exe exe\.
 	del physdump.exe
+
+
+
+build\biosver.obj : biosver.asm print.asm
+	masm biosver.asm build\biosver.obj build\biosver.lst NUL
+
+exe\biosver.exe : build\biosver.obj
+	link build\biosver.obj;
+	copy biosver.exe exe\.
+	del biosver.exe
 
 
 

@@ -430,7 +430,15 @@ bool TownsTgDrv::Int2F_110C_GetDiskInformation(void)
 	}
 
 	std::cout << CDS << std::endl;
-	unsigned char drvLetter=cpputil::Capitalize(CDS[2]);
+	unsigned char drvLetter=0;
+	if(('/'==CDS[0] && '/'==CDS[1]) || ('\\'==CDS[0] && '\\'==CDS[1]))
+	{
+		drvLetter=cpputil::Capitalize(CDS[2]);
+	}
+	else if(':'==CDS[1])
+	{
+		drvLetter=cpputil::Capitalize(CDS[0]);
+	}
 	auto sharedDirIndex=DriveLetterToSharedDirIndex(drvLetter);
 
 	if(0<=sharedDirIndex) // My drive.
@@ -1502,10 +1510,23 @@ bool TownsTgDrv::Install(void)
 			}
 
 			// Probably it is no necessary to make it \\P.A.
-			mem.StoreByte(CDSAddr  ,letter);
-			mem.StoreByte(CDSAddr+1,':');
-			mem.StoreByte(CDSAddr+2,'\\');
-			mem.StoreWord(CDSAddr+0x4F,3); // Length for "\\P.A."
+			if(true==useSlashSlash)
+			{
+				mem.StoreByte(CDSAddr  ,'\\');
+				mem.StoreByte(CDSAddr+1,'\\');
+				mem.StoreByte(CDSAddr+2,letter);
+				mem.StoreByte(CDSAddr+2,'.');
+				mem.StoreByte(CDSAddr+2,'A');
+				mem.StoreByte(CDSAddr+2,'.');
+				mem.StoreWord(CDSAddr+0x4F,6); // Length for "\\P.A."
+			}
+			else
+			{
+				mem.StoreByte(CDSAddr  ,letter);
+				mem.StoreByte(CDSAddr+1,':');
+				mem.StoreByte(CDSAddr+2,'\\');
+				mem.StoreWord(CDSAddr+0x4F,2); // Length for "?:"  Don't count '\\'
+			}
 
 			mem.StoreWord(CDSAddr+0x43,0xC000);
 			mem.StoreDword(CDSAddr+0x45,TGDRV_ID); // Put "TGDR" instead of DPB pointer.
