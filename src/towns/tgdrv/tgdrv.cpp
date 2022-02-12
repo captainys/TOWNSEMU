@@ -1165,7 +1165,8 @@ int TownsTgDrv::DriveLetterToSharedDirIndex(char letter) const
 			townsPtr->cpu.state.CS().addressSize,
 			townsPtr->cpu.state.CS(),
 			DRIVELETTER_BUFFER+i,
-			townsPtr->mem))
+			townsPtr->mem) &&
+			true==sharedDir[i].linked)
 		{
 			return i;
 		}
@@ -1477,7 +1478,7 @@ bool TownsTgDrv::Install(void)
 		int I=0;
 		for(auto letter : drives)
 		{
-			if(TOWNS_TGDRV_MAX_NUM_DRIVES<=I)
+			if(TOWNS_TGDRV_MAX_NUM_DRIVES<=I || true!=sharedDir[I].linked)
 			{
 				break;
 			}
