@@ -109,7 +109,7 @@ public:
 	bool Int2F_1111_Rename(void);
 	bool Int2F_1113_Delete(void);
 	bool Int2F_1116_OpenExistingFile(void);
-	bool Int2F_1117_OpenOrTruncate(void);
+	bool Int2F_1117_CreateOrTruncate(void);
 	bool Int2F_111B_FindFirst(void);
 	bool Int2F_111C_FindNext(void);
 	bool Int2F_111D_CloseAll(void);

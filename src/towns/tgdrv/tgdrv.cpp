@@ -120,7 +120,7 @@ TownsTgDrv::TownsTgDrv(class FMTowns *townsPtr) : Device(townsPtr)
 				myDrive=Int2F_1116_OpenExistingFile();
 				break;
 			case 0x1117:
-				myDrive=Int2F_1117_OpenOrTruncate();
+				myDrive=Int2F_1117_CreateOrTruncate();
 				break;
 			case 0x111B:
 				myDrive=Int2F_111B_FindFirst();
@@ -678,7 +678,7 @@ bool TownsTgDrv::Int2F_1116_OpenExistingFile(void)
 	}
 	return false; // No, it's not my drive.
 }
-bool TownsTgDrv::Int2F_1117_OpenOrTruncate(void)
+bool TownsTgDrv::Int2F_1117_CreateOrTruncate(void)
 {
 	auto fName=GetFilenameBuffer1();
 	auto driveLetter=FullyQualifiedFileNameToDriveLetter(fName);
@@ -700,25 +700,14 @@ bool TownsTgDrv::Int2F_1117_OpenOrTruncate(void)
 
 		std::cout << cpputil::Ustox(mode) << std::endl;
 
-		if(0==(mode&0xFF00))
+		// Cannot figure the meaning of high-byte of mode.
+		//   0000=Normal Create and 0100=Truncate?  What's the difference?
+
+		auto hostSFTIdx=sharedDir[sharedDirIdx].OpenFileTruncate(FetchPSP(),subPath,FileSys::OPENMODE_RW);
+		if(0<=hostSFTIdx)
 		{
-			// Normal create
-			auto hostSFTIdx=sharedDir[sharedDirIdx].OpenFileNotTruncate(FetchPSP(),subPath,FileSys::OPENMODE_RW);
-			if(0<=hostSFTIdx)
-			{
-				MakeVMSFT(townsPtr->cpu.state.ES(),townsPtr->cpu.state.DI(),driveLetter,hostSFTIdx,sharedDir[sharedDirIdx].sft[hostSFTIdx]);
-				townsPtr->cpu.SetCF(false);
-			}
-		}
-		else if(0x0100==(mode&0xFF00))
-		{
-			// Truncate
-			auto hostSFTIdx=sharedDir[sharedDirIdx].OpenFileTruncate(FetchPSP(),subPath,FileSys::OPENMODE_RW);
-			if(0<=hostSFTIdx)
-			{
-				MakeVMSFT(townsPtr->cpu.state.ES(),townsPtr->cpu.state.DI(),driveLetter,hostSFTIdx,sharedDir[sharedDirIdx].sft[hostSFTIdx]);
-				townsPtr->cpu.SetCF(false);
-			}
+			MakeVMSFT(townsPtr->cpu.state.ES(),townsPtr->cpu.state.DI(),driveLetter,hostSFTIdx,sharedDir[sharedDirIdx].sft[hostSFTIdx]);
+			townsPtr->cpu.SetCF(false);
 		}
 
 		return true; // Yes, it's my drive.
