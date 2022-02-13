@@ -16,6 +16,24 @@ FileSys::FindStruct::~FindStruct()
 		findContext=nullptr;
 	}
 }
+void FileSys::HasTimeStamp::ClearTimeStamp(void)
+{
+	year=0;
+	month=0;
+	day=0;
+	hours=0;
+	minutes=0;
+	seconds=0;
+}
+void FileSys::HasTimeStamp::CopyTimeStampFrom(const HasTimeStamp &incoming)
+{
+	year=incoming.year;
+	month=incoming.month;
+	day=incoming.day;
+	hours=incoming.hours;
+	minutes=incoming.minutes;
+	seconds=incoming.seconds;
+}
 int FileSys::FindFirst(DirectoryEntry &ent,unsigned int PSP,const std::string &subPath)
 {
 	auto fsIdx=FindAvailableFindStruct(subPath);
@@ -198,6 +216,8 @@ int FileSys::OpenExistingFile(unsigned int PSP,std::string subPath,unsigned int 
 			return -1;
 		}
 
+		auto dirent=GetFileAttrib(subPath);
+
 		sft[sftIdx].fName=subPath;
 		sft[sftIdx].mode=openMode;
 		sft[sftIdx].PSP=PSP;
@@ -213,8 +233,10 @@ int FileSys::OpenExistingFile(unsigned int PSP,std::string subPath,unsigned int 
 			sft[sftIdx].fp.open(fullPath,std::ios::in|std::ios::out|std::ios::binary);
 			break;
 		}
+
 		if(true==sft[sftIdx].fp.is_open())
 		{
+			sft[sftIdx].CopyTimeStampFrom(dirent);
 			return sftIdx;
 		}
 	}
@@ -231,6 +253,9 @@ int FileSys::OpenFileNotTruncate(unsigned int PSP,std::string subPath,unsigned i
 			// If not exist, make one.
 			std::ofstream fp(fullPath,std::ios::binary);
 		}
+
+		auto dirent=GetFileAttrib(subPath);
+
 		sft[sftIdx].fName=subPath;
 		sft[sftIdx].mode=openMode;
 		sft[sftIdx].PSP=PSP;
@@ -246,6 +271,7 @@ int FileSys::OpenFileNotTruncate(unsigned int PSP,std::string subPath,unsigned i
 		}
 		if(true==sft[sftIdx].fp.is_open())
 		{
+			sft[sftIdx].CopyTimeStampFrom(dirent);
 			return sftIdx;
 		}
 	}
@@ -267,6 +293,9 @@ int FileSys::OpenFileTruncate(unsigned int PSP,std::string subPath,unsigned int 
 			// If not exist, make one.
 			std::ofstream fp(fullPath,std::ios::binary);
 		}
+
+		auto dirent=GetFileAttrib(subPath);
+
 		sft[sftIdx].fName=subPath;
 		sft[sftIdx].mode=openMode;
 		sft[sftIdx].PSP=PSP;
@@ -274,6 +303,7 @@ int FileSys::OpenFileTruncate(unsigned int PSP,std::string subPath,unsigned int 
 
 		if(true==sft[sftIdx].fp.is_open())
 		{
+			sft[sftIdx].CopyTimeStampFrom(dirent);
 			return sftIdx;
 		}
 	}

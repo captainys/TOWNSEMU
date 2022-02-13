@@ -49,6 +49,8 @@ public:
 		unsigned int year=2004,month=06,day=13,hours=00,minutes=00,seconds=00;
 		uint16_t FormatDOSTime(void) const;
 		uint16_t FormatDOSDate(void) const;
+		void ClearTimeStamp(void);
+		void CopyTimeStampFrom(const HasTimeStamp &incoming);
 	};
 	class HasFileName
 	{
