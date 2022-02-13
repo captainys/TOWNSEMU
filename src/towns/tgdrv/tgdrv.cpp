@@ -1199,8 +1199,8 @@ void TownsTgDrv::MakeVMSFT(const class i486DX::SegmentRegister &seg,uint32_t off
 	cpu.StoreWord(mem,CS.addressSize,seg,offset+0x1B,0); // Absolute cluster.  N/A.
 	cpu.StoreWord(mem,CS.addressSize,seg,offset+0x1D,0); // Dir ent sector N/A
 	cpu.StoreWord(mem,CS.addressSize,seg,offset+0x1F,0); // Dir ent position in sector N/A
+	auto eleven=FilenameTo11Bytes(hostSFT.fName);
 
-	auto eleven=FilenameTo11Bytes(cpputil::GetBaseName(hostSFT.fName));
 	for(int i=0; i<11; ++i)
 	{
 		cpu.StoreByte(mem,CS.addressSize,seg,offset+0x20+i,eleven[i]);
