@@ -46,6 +46,7 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "-PAUSE" << std::endl;
 	std::cout << "  Machine state is PAUSE on start up." << std::endl;
 	std::cout << "-SHAREDDIR path" << std::endl;
+	std::cout << "-SHAREDIR path" << std::endl;
 	std::cout << "  Directory visible in the VM via VNDRV." << std::endl;
 	std::cout << "-DEBUG,-DEBUGGER" << std::endl;
 	std::cout << "  Start the machine with debugger enabled." << std::endl;
@@ -326,7 +327,7 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		{
 			autoStart=false;
 		}
-		else if("-SHAREDDIR"==ARG && i+1<argc)
+		else if(("-SHAREDDIR"==ARG || "-SHAREDIR"==ARG) && i+1<argc)
 		{
 			sharedDir.push_back(argv[i+1]);
 			++i;

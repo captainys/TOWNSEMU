@@ -19,6 +19,7 @@ public:
 		PATH_LENGTH=1024,
 		PATH_SHOW=64,
 		MAX_NUM_HOST_SHORTCUT=8,
+		MAX_NUM_SHARED_DIR=4,
 	};
 
 
@@ -92,6 +93,9 @@ public:
 
 	FsGuiDropList *appSpecificAugDrp;
 	FsGuiStatic *appSpecificExplanation;
+
+	FsGuiButton *browseShareDirBtn[MAX_NUM_SHARED_DIR];
+	FsGuiTextBox *shareDirTxt[MAX_NUM_SHARED_DIR];
 
 	ProfileDialog(FsGuiMainCanvas *canvasPtr);
 

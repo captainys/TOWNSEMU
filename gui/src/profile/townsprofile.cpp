@@ -79,6 +79,8 @@ void TownsProfile::CleanUp(void)
 	quickStateSaveFName="";
 
 	pauseResumeKeyLabel="SCROLLLOCK";
+
+	sharedDir.clear();
 }
 std::vector <std::string> TownsProfile::Serialize(void) const
 {
@@ -314,6 +316,14 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 
 	text.push_back("PAUSEKEY ");
 	text.back()+=pauseResumeKeyLabel;
+
+	for(auto sd : sharedDir)
+	{
+		text.push_back("SHAREDIR ");
+		text.back().push_back('\"');
+		text.back()+=sd;
+		text.back().push_back('\"');
+	}
 
 	return text;
 }
@@ -687,6 +697,10 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 				pauseResumeKeyLabel=argv[1].c_str();
 			}
 		}
+		else if(0==argv[0].STRCMP("SHAREDIR"))
+		{
+			sharedDir.push_back(argv[1].c_str());
+		}
 		else
 		{
 			errorMsg="Unrecognized keyword:";
@@ -999,6 +1013,12 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 	sstream.str("");
 	sstream << mouseMaxY;
 	argv.push_back(sstream.str());
+
+	for(auto sd : sharedDir)
+	{
+		argv.push_back("-SHAREDIR");
+		argv.push_back(sd);
+	}
 
 	return argv;
 }
