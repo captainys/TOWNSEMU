@@ -198,8 +198,9 @@ uint32_t FileSys::SystemFileTable::Write(const std::vector <unsigned char> &data
 	}
 	return 0;
 }
-bool FileSys::SubPathIsDirectory(const std::string &subPath)
+bool FileSys::SubPathIsDirectory(std::string subPath)
 {
+	BackSlashToSlash(subPath);
 	auto findContext=CreateFindContext();
 	auto dirent=FindFirst(subPath,findContext);
 	DeleteFindContext(findContext);
@@ -210,6 +211,8 @@ int FileSys::OpenExistingFile(unsigned int PSP,std::string subPath,unsigned int 
 	auto sftIdx=FindAvailableSFT();
 	if(0<=sftIdx)
 	{
+		BackSlashToSlash(subPath);
+
 		auto fullPath=cpputil::MakeFullPathName(hostPath,subPath);
 		if(true!=cpputil::FileExists(fullPath))
 		{
@@ -247,6 +250,8 @@ int FileSys::OpenFileNotTruncate(unsigned int PSP,std::string subPath,unsigned i
 	auto sftIdx=FindAvailableSFT();
 	if(0<=sftIdx)
 	{
+		BackSlashToSlash(subPath);
+
 		auto fullPath=cpputil::MakeFullPathName(hostPath,subPath);
 		if(true!=cpputil::FileExists(fullPath))
 		{
@@ -287,6 +292,8 @@ int FileSys::OpenFileTruncate(unsigned int PSP,std::string subPath,unsigned int 
 	auto sftIdx=FindAvailableSFT();
 	if(0<=sftIdx)
 	{
+		BackSlashToSlash(subPath);
+
 		auto fullPath=cpputil::MakeFullPathName(hostPath,subPath);
 		if(true!=cpputil::FileExists(fullPath))
 		{
@@ -345,23 +352,29 @@ bool FileSys::CloseFile(int sftIdx)
 	}
 	return false;
 }
-bool FileSys::RenameSubPath(const std::string &subPathFrom,const std::string &subPathTo)
+bool FileSys::RenameSubPath(std::string subPathFrom,std::string subPathTo)
 {
+	BackSlashToSlash(subPathFrom);
+	BackSlashToSlash(subPathTo);
+
 	auto fullPathFrom=cpputil::MakeFullPathName(hostPath,subPathFrom);
 	auto fullPathTo=cpputil::MakeFullPathName(hostPath,subPathTo);
 	return 0==rename(fullPathFrom.c_str(),fullPathTo.c_str());
 }
-bool FileSys::DeleteSubPathFile(const std::string &subPath)
+bool FileSys::DeleteSubPathFile(std::string subPath)
 {
+	BackSlashToSlash(subPath);
 	auto fullPath=cpputil::MakeFullPathName(hostPath,subPath);
 	return 0==remove(fullPath.c_str());
 }
-bool FileSys::RmdirSubPath(const std::string &subPath)
+bool FileSys::RmdirSubPath(std::string subPath)
 {
+	BackSlashToSlash(subPath);
 	return Rmdir(cpputil::MakeFullPathName(hostPath,subPath));
 }
-bool FileSys::MkdirSubPath(const std::string &subPath)
+bool FileSys::MkdirSubPath(std::string subPath)
 {
+	BackSlashToSlash(subPath);
 	return Mkdir(cpputil::MakeFullPathName(hostPath,subPath));
 }
 int FileSys::FindAvailableSFT(void) const
@@ -461,4 +474,15 @@ std::string FileSys::MakeHostPath(const std::string &subPath) const
 		}
 	}
 	return path;
+}
+
+void FileSys::BackSlashToSlash(std::string &src)
+{
+	for(auto &c : src)
+	{
+		if('\\'==c)
+		{
+			c='/';
+		}
+	}
 }

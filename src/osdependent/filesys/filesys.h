@@ -162,7 +162,7 @@ public:
 	SystemFileTable sft[MAX_NUM_OPEN_FILE];
 	/*!
 	*/
-	bool SubPathIsDirectory(const std::string &subPath);
+	bool SubPathIsDirectory(std::string subPath);
 
 	/*! Returns index to SFT.
 	    subPath is relative to the virtual drive in the VM,
@@ -181,19 +181,19 @@ public:
 
 	/*!
 	*/
-	bool RenameSubPath(const std::string &subPathFrom,const std::string &subPathTo);
+	bool RenameSubPath(std::string subPathFrom,std::string subPathTo);
 
 	/*!
 	*/
-	bool DeleteSubPathFile(const std::string &subPath);
+	bool DeleteSubPathFile(std::string subPath);
 
 	/*!
 	*/
-	bool MkdirSubPath(const std::string &subPath);
+	bool MkdirSubPath(std::string subPath);
 
 	/*!
 	*/
-	bool RmdirSubPath(const std::string &subPath);
+	bool RmdirSubPath(std::string subPath);
 
 
 	/*!
@@ -210,6 +210,7 @@ public:
 	// Damn it!  How long did it take for C++ people to admit that there is a thing called a file system!!
 	// Hope they admit that there is a thing called a home directory soon.
 	static std::string Getcwd(void);
+	static void BackSlashToSlash(std::string &src);
 	static bool Chdir(std::string str);
 	static bool Mkdir(std::string str);
 	static bool Rmdir(std::string str);
