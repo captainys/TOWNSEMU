@@ -167,7 +167,8 @@ FileSys::DirectoryEntry FileSys::FindNext(FindContext *context)
 }
 /* static */ bool FileSys::Mkdir(std::string str)
 {
-	if(0==mkdir(str.c_str(),0x777))
+	auto mode=S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IWGRP|S_IXGRP|S_IROTH|S_IWOTH|S_IXOTH;
+	if(0==mkdir(str.c_str(),mode))
 	{
 		return true;
 	}
