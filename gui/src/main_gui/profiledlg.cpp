@@ -577,6 +577,30 @@ void ProfileDialog::Make(void)
 		EndAddTabItem();
 	}
 
+	{
+		auto tabId=AddTab(tab,"TGDRV");
+		BeginAddTabItem(tab,tabId);
+
+		for(int i=0; i<MAX_NUM_SHARED_DIR; ++i)
+		{
+			browseShareDirBtn[i]=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"Browse",YSTRUE);
+			shareDirTxt[i]=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",nShowPath,YSFALSE);;
+		}
+
+		AddStaticText(0,FSKEY_NULL,
+			"TGDRV enables VM-HOST file sharing.  Specify directories above to share,\n"
+			"and run TGDRV.COM in the utility disk (TsugaruUtil.D77) in the VM.  Then\n"
+			"shared directory will show up as a virtual drive.\n"
+			"\n"
+			"Towns MENU V2.1 is required.  Drive will be available, but will not be\n"
+			"visible from Towns MENU V1.1\n"
+			"\n"
+			"Browse: Click on a file in the shared directory.  Can be a dummy file.\n"
+			,YSTRUE);
+
+		EndAddTabItem();
+	}
+
 	tab->SelectCurrentTab(mainTabId);
 
 	runBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"START",YSTRUE);
@@ -809,6 +833,14 @@ void ProfileDialog::OnSliderPositionChange(FsGuiSlider *slider,const double &pre
 	{
 		std::vector <const wchar_t *> extList={L".TState"};
 		BrowseSaveAs(L"Select A Quick State-Save File",quickStateSaveFNameTxt,extList);
+	}
+	for(int i=0; i<MAX_NUM_SHARED_DIR; ++i)
+	{
+		if(browseShareDirBtn[i]==btn)
+		{
+			std::vector <const wchar_t *> extList={L"*.*"};
+			BrowseDir(L"Select A File in the Shared Directory (Can be dummy file)",shareDirTxt[i],extList);
+		}
 	}
 }
 
@@ -1078,6 +1110,16 @@ TownsProfile ProfileDialog::GetProfile(void) const
 
 	profile.pauseResumeKeyLabel=pauseResumeKeyDrp->GetSelectedString().data();
 
+	profile.sharedDir.clear();
+	for(int i=0; i<MAX_NUM_SHARED_DIR; ++i)
+	{
+		std::string str=shareDirTxt[i]->GetString().data();
+		if(""!=str)
+		{
+			profile.sharedDir.push_back(str);
+		}
+	}
+
 	return profile;
 }
 void ProfileDialog::SetProfile(const TownsProfile &profile)
@@ -1285,6 +1327,19 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 	quickStateSaveFNameTxt->SetText(str);
 
 	pauseResumeKeyDrp->SelectByString(profile.pauseResumeKeyLabel.c_str(),YSFALSE);
+
+	for(int i=0; i<MAX_NUM_SHARED_DIR; ++i)
+	{
+		if(i<profile.sharedDir.size())
+		{
+			str.SetUTF8String(profile.sharedDir[i].data());
+			shareDirTxt[i]->SetText(str);
+		}
+		else
+		{
+			shareDirTxt[i]->SetText("");
+		}
+	}
 }
 
 void ProfileDialog::SetDefaultFMVolume(void)
