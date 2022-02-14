@@ -186,7 +186,7 @@ add_test(
 	NAME TGDRV_V2.1L20_COMPROM
 	COMMAND
 		${TARGET_NAME}
-		"${TOWNSEMU_TEST}/ROM_DEV"
+		"${TOWNSEMU_TEST}/rom_dev"
 		-FD0
 		"${CMAKE_SOURCE_DIR}/../testdata/TGDRV/TGDRVTest.D77"
 		-CD
@@ -194,7 +194,7 @@ add_test(
 		-SHAREDDIR
 		"${CMAKE_SOURCE_DIR}/../testdata/TGDRV"
 		-EVTLOG
-		"${CMAKE_SOURCE_DIR}/../testdata/eventlog/TGDRV_COMPROM.evt"
+		"${CMAKE_SOURCE_DIR}/../testdata/eventLog/TGDRV_COMPROM.evt"
 		-UNITTEST
 		-DONTUSEFPU
 		-DONTAUTOSAVECMOS
