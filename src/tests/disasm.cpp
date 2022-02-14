@@ -120,7 +120,7 @@ bool TestDisassembly(unsigned int operandSize,unsigned int addressSize,const cha
 	{
 		for(long long int i=arg.size()-2; 0<=i; i-=2)
 		{
-			char hex[2]={arg[i],arg[i+1]};
+			char hex[]={arg[i],arg[i+1],0};
 			instByte.push_back(cpputil::Xtoi(hex));
 		}
 	}
