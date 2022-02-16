@@ -244,22 +244,24 @@ void YsSimpleSound_OSX_PlayOneShot(struct YsAVAudioEngine *engineInfoPtr,struct 
 		AVAudioPlayerNode *playerNodePtr=(__bridge AVAudioPlayerNode *)ptr->playerNodePtr;
 		AVAudioPCMBuffer *PCMBufferPtr=(__bridge AVAudioPCMBuffer *)ptr->PCMBufferPtr;
 #endif
+		if(0<[PCMBufferPtr frameLength])
+		{
+			[playerNodePtr play];
+			/* The following line won't give an error, but not useful.
+			[playerNodePtr scheduleBuffer:PCMBufferPtr completionHandler:YsAVPlayerCompletion()]; 
+			*/
 
-		[playerNodePtr play];
-	    /* The following line won't give an error, but not useful.
-		[playerNodePtr scheduleBuffer:PCMBufferPtr completionHandler:YsAVPlayerCompletion()]; 
-		*/
+			++ptr->bufferCount;
 
-		++ptr->bufferCount;
-
-		__block struct YsAVSound *soundCopy=ptr;
-	    [playerNodePtr scheduleBuffer:PCMBufferPtr completionHandler:^{
-			// How can I write a captured variable correctly?
-			if(0<soundCopy->bufferCount)  // Apparently stop method also invokes this completionHandler.
-			{
-				--soundCopy->bufferCount;
-			}
-		}];
+			__block struct YsAVSound *soundCopy=ptr;
+			[playerNodePtr scheduleBuffer:PCMBufferPtr completionHandler:^{
+				// How can I write a captured variable correctly?
+				if(0<soundCopy->bufferCount)  // Apparently stop method also invokes this completionHandler.
+				{
+					--soundCopy->bufferCount;
+				}
+			}];
+		}
 	}
 }
 
@@ -279,18 +281,21 @@ void YsSimpleSound_OSX_PlayBackground(struct YsAVAudioEngine *engineInfoPtr,stru
 		AVAudioPCMBuffer *PCMBufferPtr=(__bridge AVAudioPCMBuffer *)ptr->PCMBufferPtr;
 #endif
 
-		[playerNodePtr play];
-		++ptr->bufferCount;
-	    [playerNodePtr scheduleBuffer:PCMBufferPtr atTime:nil options:AVAudioPlayerNodeBufferLoops completionHandler:^{
-			/* How can I write a captured variable correctly? ->
+		if(0<[PCMBufferPtr frameLength])
+		{
+			[playerNodePtr play];
+			++ptr->bufferCount;
+			[playerNodePtr scheduleBuffer:PCMBufferPtr atTime:nil options:AVAudioPlayerNodeBufferLoops completionHandler:^{
+				/* How can I write a captured variable correctly? ->
 
-			Surprise!  Surprise!
-			According to:
-				https://www.mikeash.com/pyblog/friday-qa-2011-06-03-objective-c-blocks-vs-c0x-lambdas-fight.html
-			automatic reference counting does not apply to the captured variables.
-			Sounds like I cannot stop the player simply by [playerNodePtr stop];
-			*/
-		}];
+				Surprise!  Surprise!
+				According to:
+					https://www.mikeash.com/pyblog/friday-qa-2011-06-03-objective-c-blocks-vs-c0x-lambdas-fight.html
+				automatic reference counting does not apply to the captured variables.
+				Sounds like I cannot stop the player simply by [playerNodePtr stop];
+				*/
+			}];
+		}
 	}
 }
 
@@ -536,6 +541,11 @@ int YsSimpleSound_OSX_AddNextStreamingSegment(struct YsAVAudioEngine *engineInfo
 		int64_t numSamplesOut=numSamplesIn;
 		numSamplesOut*=PLAYBACK_RATE;
 		numSamplesOut/=samplingRate;
+
+		if(0==numSamplesOut)
+		{
+			return 0;
+		}
 
 		AVAudioPCMBuffer *PCMBufferPtr=[[AVAudioPCMBuffer alloc] initWithPCMFormat:audioFormat frameCapacity:numSamplesOut];
 		[PCMBufferPtr setFrameLength:numSamplesOut];
