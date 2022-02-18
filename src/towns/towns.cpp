@@ -936,7 +936,14 @@ void FMTowns::SetUpVRAMAccess(bool breakOnRead,bool breakOnWrite)
 void FMTowns::SetMainRAMSize(long long int size)
 {
 	physMem.SetMainRAMSize(size);
-	mem.RemoveAccess(physMem.state.RAM.size()-1,0x7FFFFFFF);
+	if(TOWNSCPU_80386SX!=TownsTypeToCPUType(townsType))
+	{
+		mem.RemoveAccess(physMem.state.RAM.size()-1,0x7FFFFFFF);
+	}
+	else
+	{
+		mem.RemoveAccess(physMem.state.RAM.size()-1,TOWNSADDR_386SX_VRAM0_BASE-1);
+	}
 	mem.AddAccess(&physMem.mainRAMAccess,0x00100000,physMem.state.RAM.size()-1);
 }
 
