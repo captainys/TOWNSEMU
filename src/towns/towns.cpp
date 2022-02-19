@@ -689,7 +689,6 @@ unsigned int FMTowns::MachineID(void) const
 		lowByte=Pentium;
 		break;
 	case TOWNSTYPE_MARTY:
-		highByte=0x4A;
 		lowByte=i80386SX;
 		break;
 	}
@@ -749,6 +748,10 @@ unsigned int FMTowns::MachineID(void) const
 		break;
 	case TOWNSTYPE_2_HC:
 		highByte=0x11; // Thanks, WINDY!
+		break;
+	case TOWNSTYPE_MARTY:
+		// Disassembly of TBIOS.SYS indicated that TBIOS.SYS detects marty by testing highByte&0x40.
+		highByte=0x4A;
 		break;
 	}
 
