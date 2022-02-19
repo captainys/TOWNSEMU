@@ -55,6 +55,8 @@ std::string TownsTypeToStr(unsigned int townsType)
 		return "MF";
 	case TOWNSTYPE_2_HC:
 		return "HC";
+	case TOWNSTYPE_MARTY:
+		return "MARTY";
 	}
 	return "UNKNOWN";
 }
@@ -127,6 +129,10 @@ unsigned int StrToTownsType(std::string str)
 	if("HC"==str)
 	{
 		return TOWNSTYPE_2_HC;
+	}
+	if("MARTY"==str)
+	{
+		return TOWNSTYPE_MARTY;
 	}
 	return TOWNSTYPE_UNKNOWN;
 }

@@ -14,6 +14,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 << LICENSE */
 #include <iostream>
 #include <fstream>
+#include <algorithm>
 
 #include "cpputil.h"
 #include "towns.h"
@@ -609,6 +610,7 @@ FMTowns::FMTowns() :
 		return TOWNSCPU_80386DX;
 	case TOWNSTYPE_2_UX:
 	case TOWNSTYPE_2_UG:
+	case TOWNSTYPE_MARTY:
 		return TOWNSCPU_80386SX;
 	case TOWNSTYPE_2_HR:
 	case TOWNSTYPE_2_UR:
@@ -678,6 +680,10 @@ unsigned int FMTowns::MachineID(void) const
 		break;
 	case TOWNSTYPE_2_HC:
 		lowByte=Pentium;
+		break;
+	case TOWNSTYPE_MARTY:
+		highByte=0x4A;
+		lowByte=i80386SX;
 		break;
 	}
 
@@ -935,15 +941,20 @@ void FMTowns::SetUpVRAMAccess(bool breakOnRead,bool breakOnWrite)
 
 void FMTowns::SetMainRAMSize(long long int size)
 {
+	uint64_t RAMEnd=0x7FFFFFFF;
+	if(TOWNSTYPE_MARTY==townsType)
+	{
+		size=std::min<uint64_t>(size,TOWNSADDR_MARTY_ROM0_BASE);
+		RAMEnd=TOWNSADDR_MARTY_ROM0_BASE-1;
+	}
+	else if(TOWNSCPU_80386SX==TownsTypeToCPUType(townsType))
+	{
+		size=std::min<uint64_t>(size,TOWNSADDR_386SX_VRAM0_BASE);
+		RAMEnd=TOWNSADDR_386SX_VRAM0_BASE-1;
+	}
+
 	physMem.SetMainRAMSize(size);
-	if(TOWNSCPU_80386SX!=TownsTypeToCPUType(townsType))
-	{
-		mem.RemoveAccess(physMem.state.RAM.size()-1,0x7FFFFFFF);
-	}
-	else
-	{
-		mem.RemoveAccess(physMem.state.RAM.size()-1,TOWNSADDR_386SX_VRAM0_BASE-1);
-	}
+	mem.RemoveAccess(physMem.state.RAM.size()-1,RAMEnd);
 	mem.AddAccess(&physMem.mainRAMAccess,0x00100000,physMem.state.RAM.size()-1);
 }
 
