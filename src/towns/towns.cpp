@@ -80,7 +80,7 @@ void FMTowns::State::PowerOn(void)
 	if(TOWNSTYPE_UNKNOWN!=argv.townsType)
 	{
 		towns.townsType=argv.townsType;
-		towns.physMem.SetUpMemoryAccess(towns.TownsTypeToCPUType(argv.townsType));
+		towns.physMem.SetUpMemoryAccess(argv.townsType,towns.TownsTypeToCPUType(argv.townsType));
 	}
 
 	towns.cdrom.searchPaths=argv.cdSearchPaths;
@@ -427,7 +427,7 @@ FMTowns::FMTowns() :
 		physMem.state.CMOSRAM[i]=defCMOS[i];
 	}
 
-	physMem.SetUpMemoryAccess(TownsTypeToCPUType(townsType));
+	physMem.SetUpMemoryAccess(townsType,TownsTypeToCPUType(townsType));
 	physMem.FMRVRAMAccess.townsPtr=this;
 	physMem.FMRVRAMAccess.crtcPtr=&this->crtc;
 

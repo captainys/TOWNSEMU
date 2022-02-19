@@ -428,7 +428,7 @@ void TownsPhysicalMemory::SetDummySize(long long int size)
 
 }
 
-void TownsPhysicalMemory::SetUpMemoryAccess(unsigned int cpuType)
+void TownsPhysicalMemory::SetUpMemoryAccess(unsigned int townsType,unsigned int cpuType)
 {
 	auto &mem=*memPtr;
 	auto &cpu=*cpuPtr;
@@ -518,6 +518,9 @@ void TownsPhysicalMemory::SetUpMemoryAccess(unsigned int cpuType)
 	sysROMAccess.SetPhysicalMemoryPointer(this);
 	sysROMAccess.SetCPUPointer(&cpu);
 
+	martyROMAccess.SetPhysicalMemoryPointer(this);
+	martyROMAccess.SetCPUPointer(&cpu);
+
 	mem.AddAccess(&nativeDicROMAccess,TOWNSADDR_NATIVE_DICROM_BASE,TOWNSADDR_NATIVE_DICROM_END-1);
 	mem.AddAccess(&nativeCMOSRAMAccess,TOWNSADDR_NATIVE_CMOSRAM_BASE,TOWNSADDR_NATIVE_CMOSRAM_END-1);
 	mem.AddAccess(&spriteRAMAccess,TOWNSADDR_SPRITERAM_BASE,TOWNSADDR_SPRITERAM_END-1);
@@ -528,6 +531,11 @@ void TownsPhysicalMemory::SetUpMemoryAccess(unsigned int cpuType)
 	mem.AddAccess(&font20ROMAccess,TOWNSADDR_FONT20_BASE,TOWNSADDR_FONT20_END-1);
 	mem.AddAccess(&waveRAMAccess,TOWNSADDR_WAVERAM_WINDOW_BASE,TOWNSADDR_WAVERAM_WINDOW_END-1);
 	mem.AddAccess(&sysROMAccess,TOWNSADDR_SYSROM_BASE,0xFFFFFFFF);
+
+	if(TOWNSTYPE_MARTY==townsType)
+	{
+		mem.AddAccess(&martyROMAccess,TOWNSADDR_MARTY_ROM0_BASE,TOWNSADDR_MARTY_ROM3_END-1);
+	}
 
 	if(TOWNSCPU_80386SX==cpuType)
 	{

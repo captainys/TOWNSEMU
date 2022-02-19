@@ -225,6 +225,14 @@ public:
 	virtual ConstMemoryWindow GetConstMemoryWindow(unsigned int physAddr) const;
 };
 
+class TownsMartyEXROMAccess : public TownsMemAccess
+{
+public:
+	virtual unsigned int FetchByte(unsigned int physAddr) const;
+	virtual void StoreByte(unsigned int physAddr,unsigned char data);
+	virtual ConstMemoryWindow GetConstMemoryWindow(unsigned int physAddr) const;
+};
+
 
 template <class MemAccessClass>
 class TownsMemAccessDebug : public MemAccessClass
@@ -414,6 +422,7 @@ public:
 	TownsFont20ROMAccess font20ROMAccess;
 	TownsWaveRAMAccess waveRAMAccess;
 	TownsSysROMAccess sysROMAccess;
+	TownsMartyEXROMAccess martyROMAccess;
 
 
 	virtual const char *DeviceName(void) const{return "MEMORY";}
@@ -452,7 +461,7 @@ public:
 	/*! Set up memory access.  Protected-mode memory are mapped differently depending on 386SX or other.
 	    To allow 486 core to start, SYSROM is always mapped to the end of 32-bit address space.
 	*/
-	void SetUpMemoryAccess(unsigned int cpuType);
+	void SetUpMemoryAccess(unsigned int townsType,unsigned int cpuType);
 
 	/*!
 	*/

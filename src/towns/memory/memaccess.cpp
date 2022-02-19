@@ -663,3 +663,17 @@ TownsWaveRAMAccess::TownsWaveRAMAccess(class RF5C68 *pcmPtr)
 }
 
 ////////////////////////////////////////////////////////////
+
+/* virtual */ unsigned int TownsMartyEXROMAccess::FetchByte(unsigned int physAddr) const
+{
+	return physMemPtr->martyRom[physAddr-TOWNSADDR_MARTY_ROM0_BASE];
+}
+/* virtual */ void TownsMartyEXROMAccess::StoreByte(unsigned int physAddr,unsigned char data)
+{
+}
+/* virtual */ MemoryAccess::ConstMemoryWindow TownsMartyEXROMAccess::GetConstMemoryWindow(unsigned int physAddr) const
+{
+	MemoryAccess::ConstMemoryWindow memWin;
+	memWin.ptr=physMemPtr->martyRom.data()+(physAddr-TOWNSADDR_MARTY_ROM0_BASE);
+	return memWin;
+}
