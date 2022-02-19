@@ -364,6 +364,7 @@ public:
 
 	State state;
 	std::vector <unsigned char> sysRom,dosRom,fontRom,font20Rom,dicRom;
+	std::vector <unsigned char> martyRom;
 	enum
 	{
 		SERIAL_ROM_LENGTH=32

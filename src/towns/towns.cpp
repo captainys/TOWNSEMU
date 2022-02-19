@@ -55,6 +55,13 @@ void FMTowns::State::PowerOn(void)
 		return false;
 	}
 
+	if(TOWNSTYPE_MARTY==argv.townsType &&
+	   TOWNSADDR_MARTY_ROM3_END-TOWNSADDR_MARTY_ROM0_BASE!=towns.physMem.martyRom.size())
+	{
+		std::cout << "Marty requires EX-ROM images." << std::endl;
+		return false;
+	}
+
 	towns.fdc.searchPaths=argv.fdSearchPaths;
 	for(int drv=0; drv<2; ++drv)
 	{

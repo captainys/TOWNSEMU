@@ -341,6 +341,44 @@ bool TownsPhysicalMemory::LoadROMImages(const char dirName[])
 		}
 	}
 
+	fName=cpputil::MakeFullPathName(dirName,"MAR_EX0.ROM");
+	auto mar0=cpputil::ReadBinaryFile(fName);
+	fName=cpputil::MakeFullPathName(dirName,"MAR_EX1.ROM");
+	auto mar1=cpputil::ReadBinaryFile(fName);
+	fName=cpputil::MakeFullPathName(dirName,"MAR_EX2.ROM");
+	auto mar2=cpputil::ReadBinaryFile(fName);
+	fName=cpputil::MakeFullPathName(dirName,"MAR_EX3.ROM");
+	auto mar3=cpputil::ReadBinaryFile(fName);
+
+	if(512*1024==mar0.size() &&
+	   512*1024==mar1.size() &&
+	   512*1024==mar2.size() &&
+	   512*1024==mar3.size())
+	{
+		martyRom.resize(2048*1024);
+		size_t ptr=0;
+		for(auto d : mar0)
+		{
+			martyRom[ptr++]=d;
+		}
+		for(auto d : mar1)
+		{
+			martyRom[ptr++]=d;
+		}
+		for(auto d : mar2)
+		{
+			martyRom[ptr++]=d;
+		}
+		for(auto d : mar3)
+		{
+			martyRom[ptr++]=d;
+		}
+	}
+	else
+	{
+		martyRom.clear();
+	}
+
 	return true;
 }
 
