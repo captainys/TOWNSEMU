@@ -325,6 +325,12 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 		text.back().push_back('\"');
 	}
 
+	if(TOWNSTYPE_UNKNOWN!=townsType)
+	{
+		text.push_back("TOWNSTYP ");
+		text.back()+=TownsTypeToStr(townsType);
+	}
+
 	return text;
 }
 bool TownsProfile::Deserialize(const std::vector <std::string> &text)
@@ -701,6 +707,13 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 		{
 			sharedDir.push_back(argv[1].c_str());
 		}
+		else if(0==argv[0].STRCMP("TOWNSTYP"))
+		{
+			if(2<=argv.size())
+			{
+				townsType=StrToTownsType(argv[1].c_str());
+			}
+		}
 		else
 		{
 			errorMsg="Unrecognized keyword:";
@@ -824,6 +837,12 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 	case WINDOW_FULLSCREEN:
 		argv.push_back("-FULLSCREEN");
 		break;
+	}
+
+	if(TOWNSTYPE_UNKNOWN!=townsType)
+	{
+		argv.push_back("-TOWNSTYPE");
+		argv.push_back(TownsTypeToStr(townsType));
 	}
 
 	if(1<=freq)

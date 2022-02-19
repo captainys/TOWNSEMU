@@ -175,7 +175,28 @@ void ProfileDialog::Make(void)
 		scrnModeDrp->AddString("MAXIMIZE",YSFALSE);
 		scrnModeDrp->AddString("FULL SCREEN",YSFALSE);
 
-		pretend386DXBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Pretend 80386DX",YSTRUE);
+		AddStaticText(0,FSKEY_NULL,"Model:",YSTRUE);
+
+		townsTypeDrp=AddEmptyDropList(0,FSKEY_NULL,"",20,20,20,YSFALSE);
+		townsTypeDrp->AddString("Unspecified",YSTRUE);
+		townsTypeDrp->AddString(TownsTypeToStr(TOWNSTYPE_MODEL1_2).c_str(),YSFALSE);
+		townsTypeDrp->AddString(TownsTypeToStr(TOWNSTYPE_1F_2F).c_str(),YSFALSE);
+		townsTypeDrp->AddString(TownsTypeToStr(TOWNSTYPE_10F_20F).c_str(),YSFALSE);
+		townsTypeDrp->AddString(TownsTypeToStr(TOWNSTYPE_2_UX).c_str(),YSFALSE);
+		townsTypeDrp->AddString(TownsTypeToStr(TOWNSTYPE_2_CX).c_str(),YSFALSE);
+		townsTypeDrp->AddString(TownsTypeToStr(TOWNSTYPE_2_UG).c_str(),YSFALSE);
+		townsTypeDrp->AddString(TownsTypeToStr(TOWNSTYPE_2_HG).c_str(),YSFALSE);
+		townsTypeDrp->AddString(TownsTypeToStr(TOWNSTYPE_2_HR).c_str(),YSFALSE);
+		townsTypeDrp->AddString(TownsTypeToStr(TOWNSTYPE_2_UR).c_str(),YSFALSE);
+		townsTypeDrp->AddString(TownsTypeToStr(TOWNSTYPE_2_MA).c_str(),YSFALSE);
+		townsTypeDrp->AddString(TownsTypeToStr(TOWNSTYPE_2_MX).c_str(),YSFALSE);
+		townsTypeDrp->AddString(TownsTypeToStr(TOWNSTYPE_2_ME).c_str(),YSFALSE);
+		townsTypeDrp->AddString(TownsTypeToStr(TOWNSTYPE_2_MF_FRESH).c_str(),YSFALSE);
+		townsTypeDrp->AddString(TownsTypeToStr(TOWNSTYPE_2_HC).c_str(),YSFALSE);
+		townsTypeDrp->AddString(TownsTypeToStr(TOWNSTYPE_MARTY).c_str(),YSFALSE);
+
+
+		pretend386DXBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Pretend 80386DX",YSFALSE);
 
 		damperWireLineBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Render Damper-Wire Line (to make you nostalgic)",YSFALSE);
 
@@ -1007,6 +1028,8 @@ TownsProfile ProfileDialog::GetProfile(void) const
 
 	profile.catchUpRealTime=(YSTRUE==catchUpRealTimeBtn->GetCheck());
 
+	profile.townsType=StrToTownsType(townsTypeDrp->GetSelectedString().c_str());
+
 	profile.pretend386DX=(YSTRUE==pretend386DXBtn->GetCheck());
 
 	profile.autoStart=(YSTRUE==autoStartBtn->GetCheck());
@@ -1189,6 +1212,15 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 	else
 	{
 		catchUpRealTimeBtn->SetCheck(YSFALSE);
+	}
+
+	if(TOWNSTYPE_UNKNOWN==profile.townsType)
+	{
+		townsTypeDrp->Select(0);
+	}
+	else
+	{
+		townsTypeDrp->SelectByString(TownsTypeToStr(profile.townsType).c_str());
 	}
 
 	if(true==profile.pretend386DX)

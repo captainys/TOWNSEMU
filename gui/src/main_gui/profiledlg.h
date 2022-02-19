@@ -50,6 +50,7 @@ public:
 	FsGuiButton *catchUpRealTimeBtn;
 	FsGuiButton *runBtn;
 	FsGuiButton *separateProcBtn;
+	FsGuiDropList *townsTypeDrp;
 	FsGuiButton *pretend386DXBtn;
 	FsGuiButton *startUpStateFNameBtn;
 	FsGuiTextBox *startUpStateFNameTxt;

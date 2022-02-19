@@ -859,7 +859,7 @@ std::vector <YsWString> FsGuiMainCanvas::CheckMissingROMFiles(void) const
 	{
 		L"FMT_DIC.ROM",
 		L"FMT_DOS.ROM",
-		L"FMT_F20.ROM",
+		// L"FMT_F20.ROM",
 		L"FMT_FNT.ROM",
 		L"FMT_SYS.ROM",
 	};
