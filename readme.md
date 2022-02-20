@@ -107,6 +107,23 @@ main_cui -HELP
 
 
 
+# Emulating Marty
+To emulate Marty, you need to own ROM images extracted from a Marty.
+
+In addition to specify the ROM location in the command parameter in CUI or text dialog box in GUI, you also need to select the machine type.  From CUI, add a parameter -TOWNSTYPE MARTY.  Or from GUI, select MARTY as Towns Type.
+
+If you do not specify the machine type, even with the Marty ROM, the virtual machine will start just like a full-spec FM TOWNS.
+
+Martyを再現するには、Martyから抜き出したROMイメージが必要です。
+
+MartyのROMイメージの場所をコマンドパラメータ、あるいはGUIのダイアログで指定する他に、マシンタイプをMartyに設定する必要があります。コマンドから指定する場合は  -TOWNSTYPE MARTY オプションを追加してください。GUIから指定する場合は、リストからMARTYを選んでください。
+
+マシンタイプを指定しない場合、MartyのROMを使っても、フルスペックのFM TOWNSのように起動してしまいます。
+
+
+
+
+
 # Command-Line Examples
 ```
 .\Tsugaru_CUI.exe -HELP

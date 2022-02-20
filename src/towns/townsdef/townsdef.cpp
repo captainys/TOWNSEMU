@@ -17,6 +17,17 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 
 
+static inline void Capitalize(std::string &str)
+{
+	for(auto &c : str)
+	{
+		if('a'<=c && c<='z')
+		{
+			c=c+'A'-'a';
+		}
+	}
+}
+
 std::string TownsTypeToStr(unsigned int townsType)
 {
 	switch(townsType)
@@ -62,6 +73,7 @@ std::string TownsTypeToStr(unsigned int townsType)
 }
 unsigned int StrToTownsType(std::string str)
 {
+	Capitalize(str);
 	if("R50"==str)
 	{
 		return FMR_50_60;
@@ -139,6 +151,7 @@ unsigned int StrToTownsType(std::string str)
 
 unsigned int TownsStrToKeyComb(std::string str)
 {
+	Capitalize(str);
 	if("NONE"==str || "none"==str)
 	{
 		return BOOT_KEYCOMB_NONE;
@@ -242,14 +255,7 @@ std::string TownsKeyCombToStr(unsigned int keycomb)
 
 unsigned int TownsStrToGamePortEmu(std::string str)
 {
-	for(auto &c : str)
-	{
-		if('a'<=c && c<='z')
-		{
-			c=c+'A'-'a';
-		}
-	}
-
+	Capitalize(str);
 	if("NONE"==str)
 	{
 		return TOWNS_GAMEPORTEMU_NONE;
@@ -598,6 +604,7 @@ std::string TownsGamePortEmuToStr(unsigned int emu)
 
 unsigned int TownsStrToApp(std::string str)
 {
+	Capitalize(str);
 	if("WINGCOMMANDER1"==str || "WC1"==str)
 	{
 		return TOWNS_APPSPECIFIC_WINGCOMMANDER1;
@@ -854,6 +861,7 @@ std::string TownsKeyboardModeToStr(unsigned int keyboardMode)
 }
 unsigned int TownsStrToKeyboardMode(std::string str)
 {
+	Capitalize(str);
 	if(str=="DIRECT")
 	{
 		return TOWNS_KEYBOARD_MODE_DIRECT;
@@ -1009,6 +1017,7 @@ unsigned int TownsStrToKeyCode(std::string str)
 
 		map["TOWNS_JISKEY_ALT"]=TOWNS_JISKEY_ALT;
 	}
+	Capitalize(str);
 	auto found=map.find(str);
 	if(map.end()!=found)
 	{
