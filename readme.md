@@ -1,5 +1,5 @@
-# FM TOWNS Emulator "Tsugaru"
-# FM TOWNS エミュレータ 「津軽」
+# FM TOWNS / Marty Emulator "Tsugaru"
+# FM TOWNS / Marty エミュレータ 「津軽」
 by CaptainYS
 
 <http://www.ysflight.com>
@@ -7,12 +7,12 @@ by CaptainYS
 PEB01130@nifty.com
 
 # Introduction
-It is an emulator of legendary Fujitsu FM TOWNS computer.  The goal is to emulate model II MX, which was the last computer I pledged allegiance.  Also I am trying to find and document undocumented features of FM TOWNS system as much as possible while writing the emulator.
+It is an emulator of legendary Fujitsu FM TOWNS computer including Marty.  The goal is to emulate model II MX, which was the last computer I pledged allegiance.  Also I am trying to find and document undocumented features of FM TOWNS system as much as possible while writing the emulator.
 
 Have been tested on Windows 10 and macOS.  I think it runs on Linux, but I have a report that audio doesn't work on the natively-running Linux.  I can hear audio on my developing environment on Virtual Box.  I haven't been able to confirm the report on my side yet.
 
 
-伝説の名機富士通FM TOWNSのエミュレータです。目標はモデルII MXを再現することです。FM TOWNS II MXは僕が最後に忠誠を誓った機種でした。また、開発と並行してFM TOWNSのシステムで未公開の機能を見つけて記録に残すことも目標にしています。
+伝説の名機富士通FM TOWNS/Martyのエミュレータです。目標はモデルII MXを再現することです。FM TOWNS II MXは僕が最後に忠誠を誓った機種でした。また、開発と並行してFM TOWNSのシステムで未公開の機能を見つけて記録に残すことも目標にしています。
 
 とりあえず、Windows 10とmacOSXで動きます。Linuxも対応したと思うんですが、Virtual Box上の開発環境だと普通に音が鳴るのですが、直接起動しているLinuxで音が出ないという報告があるのですが、まだ確認できてません。
 
@@ -157,7 +157,27 @@ FM TOWNSはMSXマウスを使用します。MSXマウスはマウスの移動量
 
 
 # VM<->Host File Transfer
-When you need to transfer files between the VM and the host, if the file size is small, you can use a conventional disk-image tool to transfer files via a disk image.  If the file does not fit a disk, there are two ways to transfer a file between the VM and the host.
+## Direct File Sharing - TGDRV
+You can share a directory of the host with the VM using a utility called TGDRV.COM
+
+When you start Tsugaru CUI, specify -SHAREDDIR \<dir\> option to specify a host directory to be shared with the VM.  When you start Tsugaru GUI, specify shared directories in "TGDRV" tab.  You can specify up to 8 directories in CUI, 4 directories in GUI.
+
+In the VM, insert the TsugaruUtil.D77, and run TGDRV.COM.  The sheard directory will appear as a virtual disk drive in the VM.  If you use a Towns OS installed on the hard-disk image, it would be convenient to copy TGDRV.COM to the virtual hard disk.
+
+Kanji and Katakana files also cannot be accessed.  In macOS and Linux environment, since MS-DOS capitalizes all the files, you cannot access filles with small-case letters.
+
+ユーティリティTGDRV.COMを使うことで、ホストPCのディレクトリを直接津軽上のVMと共有することができます。
+
+津軽CUIを起動するとき、-SHAREDDIR \<dir\>オプションを追加して、共有するディレクトリを指定してください。津軽GUIを使う場合は、"TGDRV"タブで共有ディレクトリを指定してください。CUIでは最大8箇所、GUIでは最大4か所のディレクトリを指定できます。
+
+津軽VM上ではディスクイメージ TsugaruUtil.D77 をセットして、TGDRV.COMを実行すると、共有ディレクトリがVM上の仮想ドライブとしてアクセスできるようになります。ハードディスクイメージを利用している場合は、ハードディスクイメージにTGDRV.COMをコピーしておくと便利と思います。
+
+漢字・カナを含むファイルもアクセスできません。macOSとLinuxでは、MS-DOSがすべてのファイル名を大文字にしてしまうため、ホスト上の小文字を含むファイルはアクセスできません。
+
+
+
+
+
 
 ## Using XMODEM
 To transfer a file from the host to the VM, follow the following steps:
@@ -252,6 +272,8 @@ The tests are timing-sensitive, or the CPU needs to be reasonably fast.  If not,
 
 
 # Revisions
+Please see commit comments after this!
+
 ### 2021/05/06
 - Virtual Machine is pretty stable, I think.
 - Added tight-integration mode in the GUI module.

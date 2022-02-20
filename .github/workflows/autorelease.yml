@@ -36,7 +36,8 @@ jobs:
           cmake -E copy ../gui/build/main_gui/Release/Tsugaru_GUI.exe .
           cmake -E copy ../readme.md .
           cmake -E copy ../command.md .
-          cmake -E tar cvf windows_binary_latest.zip --format=zip Tsugaru_CUI.exe Tsugaru_GUI.exe readme.md command.md
+          cmake -E copy ../util/TsugaruUtil.D77 .
+          cmake -E tar cvf windows_binary_latest.zip --format=zip Tsugaru_CUI.exe Tsugaru_GUI.exe TsugaruUtil.D77 readme.md command.md
       working-directory: ./ci_windows
     - name: upload_to_artifact
       uses: actions/upload-artifact@v1
@@ -85,7 +86,8 @@ jobs:
           cmake -E copy ../gui/build/main_gui/Tsugaru_GUI .
           cmake -E copy ../readme.md .
           cmake -E copy ../command.md .
-          cmake -E tar cvf ubuntu_binary_latest.zip --format=zip Tsugaru_CUI Tsugaru_GUI readme.md command.md
+          cmake -E copy ../util/TsugaruUtil.D77 .
+          cmake -E tar cvf ubuntu_binary_latest.zip --format=zip Tsugaru_CUI Tsugaru_GUI TsugaruUtil.D77 readme.md command.md
       working-directory: ./ci_ubuntu
     - name: upload_to_artifact
       uses: actions/upload-artifact@v1
@@ -128,7 +130,8 @@ jobs:
           cmake -E copy main_cui/Tsugaru_CUI.app/Contents/MacOS/Tsugaru_CUI Tsugaru_GUI.app/Contents/MacOS/.
           cmake -E copy ../readme.md .
           cmake -E copy ../command.md .
-          cmake -E tar cvf macos_binary_latest.zip --format=zip Tsugaru_GUI.app readme.md command.md
+          cmake -E copy ../util/TsugaruUtil.D77 .
+          cmake -E tar cvf macos_binary_latest.zip --format=zip Tsugaru_GUI.app TsugaruUtil.D77 readme.md command.md
       working-directory: ./ci_macos
     - name: upload_to_artifact
       uses: actions/upload-artifact@v1
