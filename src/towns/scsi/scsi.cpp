@@ -737,6 +737,7 @@ void TownsSCSI::ExecSCSICommand(void)
 			{
 				outsideworld->CDDAPlay(state.dev[state.selId].discImg,start,end,false,255,255); // There is no repeat.  Electric Volume not connected to SCSI CD.
 			}
+			state.dev[state.selId].CDDAEndTime=end;
 			state.status=STATUSCODE_GOOD;
 			state.message=0; // What am I supposed to return?
 			state.senseKey=SENSEKEY_NO_SENSE;
@@ -979,6 +980,28 @@ void TownsSCSI::ExecSCSICommand(void)
 						subQData[13]=(unsigned char)trackTime.MSF.min;
 						subQData[14]=(unsigned char)trackTime.MSF.sec;
 						subQData[15]=(unsigned char)trackTime.MSF.frm;
+
+						state.dev[state.selId].CDDAWasPlaying=true;
+					}
+					else if(true==state.dev[state.selId].CDDAWasPlaying)
+					{
+						// WAV playback and CDDA playback time not exactly match.
+						// Make sure CDDA end time is reported at least once.
+
+						subQData[1]=0x11;
+
+						auto trackTime=state.dev[state.selId].discImg.DiscTimeToTrackTime(state.dev[state.selId].CDDAEndTime);
+
+						subQData[6]=trackTime.track;
+
+						subQData[9]=(unsigned char)state.dev[state.selId].CDDAEndTime.min;
+						subQData[10]=(unsigned char)state.dev[state.selId].CDDAEndTime.sec;
+						subQData[11]=(unsigned char)state.dev[state.selId].CDDAEndTime.frm;
+						subQData[13]=(unsigned char)trackTime.MSF.min;
+						subQData[14]=(unsigned char)trackTime.MSF.sec;
+						subQData[15]=(unsigned char)trackTime.MSF.frm;
+
+						state.dev[state.selId].CDDAWasPlaying=false;
 					}
 					else
 					{
