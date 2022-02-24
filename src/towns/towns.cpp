@@ -242,6 +242,15 @@ void FMTowns::State::PowerOn(void)
 		towns.gameport.state.ports[i].maxButtonHoldTime[1]=argv.maxButtonHoldTime[i][1];
 	}
 
+	if(TOWNS_APPSPECIFIC_RASHINBAN==towns.state.appSpecificSetting)
+	{
+		if(towns.gameport.state.ports[1].device==TOWNS_GAMEPORTEMU_MOUSE)
+		{
+			towns.gameport.state.ports[0].device=TOWNS_GAMEPORTEMU_MOUSE;
+			towns.gameport.state.ports[1].device=TOWNS_GAMEPORTEMU_NONE;
+		}
+	}
+
 	for(auto i=0; i<argv.sharedDir.size() && i<TownsVnDrv::MAX_NUM_SHARED_DIRECTORIES; ++i)
 	{
 		towns.vndrv.sharedDir[i].hostPath=argv.sharedDir[i];
