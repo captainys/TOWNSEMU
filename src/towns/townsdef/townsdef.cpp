@@ -661,6 +661,10 @@ unsigned int TownsStrToApp(std::string str)
 	{
 		return TOWNS_APPSPECIFIC_DAIKOUKAIJIDAI;
 	}
+	if("RASHINBAN"==str || "RASHINBANN"==str || "RASINBAN"==str || "RASINBANN"==str || "GOLDENCOMPASS"==str || "OUGON"==str)
+	{
+		return TOWNS_APPSPECIFIC_RASHINBAN;
+	}
 	return TOWNS_APPSPECIFIC_NONE;
 }
 std::string TownsAppToStr(unsigned int i)
@@ -697,6 +701,8 @@ std::string TownsAppToStr(unsigned int i)
 		return "DUNGEONMASTER_EN";
 	case TOWNS_APPSPECIFIC_DAIKOUKAIJIDAI:
 		return "DAIKOUKAIJIDAI";
+	case TOWNS_APPSPECIFIC_RASHINBAN:
+		return "RASHINBAN";
 	}
 }
 

@@ -385,6 +385,19 @@ void FMTowns::OnCRTC_HST_Write(void)
 				std::cout << "  MousePointerY Physical Base=" << cpputil::Uitox(state.appSpecific_MousePtrY) << std::endl;
 			}
 			break;
+		case TOWNS_APPSPECIFIC_RASHINBAN:
+			{
+				i486DX::SegmentRegister DS;
+				unsigned int exceptionType,exceptionCode;
+				cpu.DebugLoadSegmentRegister(DS,0x014,mem,false);
+
+				state.appSpecific_MousePtrX=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x20794,mem);
+				state.appSpecific_MousePtrY=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x20798,mem);
+
+				std::cout << "  MousePointerX Physical Base=" << cpputil::Uitox(state.appSpecific_MousePtrX) << std::endl;
+				std::cout << "  MousePointerY Physical Base=" << cpputil::Uitox(state.appSpecific_MousePtrY) << std::endl;
+			}
+			break;
 		}
 	}
 }
@@ -893,6 +906,7 @@ bool FMTowns::GetMouseCoordinate(int &mx,int &my,unsigned int tbiosid) const
 				debugger.stop=debugStop;
 			}
 			return true;
+		case TOWNS_APPSPECIFIC_RASHINBAN:
 		case TOWNS_APPSPECIFIC_WINGCOMMANDER1:
 			{
 				auto debugStop=debugger.stop; // FetchWord may break due to MEMR.
