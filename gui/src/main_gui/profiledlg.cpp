@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <set>
 #include "profiledlg.h"
 #include "fsguiapp.h"
 
@@ -538,20 +539,19 @@ void ProfileDialog::Make(void)
 		AddStaticText(0,FSKEY_NULL,L"Application-Specific Augmentation",YSTRUE);
 		appSpecificAugDrp=AddEmptyDropList(0,FSKEY_NULL,"",10,40,40,YSTRUE);
 		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_NONE).c_str(),YSTRUE);
-		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_AIRWARRIOR_V2).c_str(),YSTRUE);
-		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_AMARANTH3).c_str(),YSFALSE);
-		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_BRANDISH).c_str(),YSFALSE);
-		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_LEMMINGS).c_str(),YSFALSE);
-		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_LEMMINGS2).c_str(),YSFALSE);
-		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_OPERATIONWOLF).c_str(),YSFALSE);
-		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_STRIKECOMMANDER).c_str(),YSFALSE);
-		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_SUPERDAISEN).c_str(),YSFALSE);
-		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_ULTIMAUNDERWORLD).c_str(),YSFALSE);
-		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_WINGCOMMANDER1).c_str(),YSFALSE);
-		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_WINGCOMMANDER2).c_str(),YSFALSE);
-		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_DUNGEONMASTER_JP).c_str(),YSFALSE);
-		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_DUNGEONMASTER_EN).c_str(),YSFALSE);
-		appSpecificAugDrp->AddString(TownsAppToStr(TOWNS_APPSPECIFIC_DAIKOUKAIJIDAI).c_str(),YSFALSE);
+
+		std::set <std::string> apps;
+		for(unsigned int i=0; i<TOWNS_NUM_APPSPECIFIC; ++i)
+		{
+			if(TOWNS_APPSPECIFIC_NONE!=i)
+			{
+				apps.insert(TownsAppToStr(i));
+			}
+		}
+		for(auto s : apps)
+		{
+			appSpecificAugDrp->AddString(s.c_str(),YSFALSE);
+		}
 
 		appSpecificExplanation=AddStaticText(0,FSKEY_NULL,L"",YSTRUE);
 
@@ -660,12 +660,14 @@ void ProfileDialog::Make(void)
 		auto app=TownsStrToApp(str.c_str());
 		switch(app)
 		{
+		default:
 		case TOWNS_APPSPECIFIC_NONE:
 			appSpecificExplanation->SetText("");
 			break;
 		case TOWNS_APPSPECIFIC_WINGCOMMANDER1:
 			appSpecificExplanation->SetText(
-			    "Mouse Integration for Wing Commander 1\n"
+				"Wing Commander, Origin\n"
+			    "Mouse Integration.\n"
 				"Wing Commander 1 for FM TOWNS uses its own function\n"
 				"instead of the Mouse BIOS to read mouse status.\n"
 				"To send mouse data correctly, Tsugasu needs to\n"
@@ -674,7 +676,8 @@ void ProfileDialog::Make(void)
 			break;
 		case TOWNS_APPSPECIFIC_WINGCOMMANDER2:
 			appSpecificExplanation->SetText(
-			    "Mouse Integration for Wing Commander 2\n"
+				"Wing Commander 2, Origin\n"
+			    "Mouse Integration.\n"
 				"Wing Commander 2 for FM TOWNS uses its own function\n"
 				"instead of the Mouse BIOS to read mouse status.\n"
 				"To send mouse data correctly, Tsugasu needs to\n"
@@ -683,7 +686,8 @@ void ProfileDialog::Make(void)
 			break;
 		case TOWNS_APPSPECIFIC_STRIKECOMMANDER:
 			appSpecificExplanation->SetText(
-			    "Mouse Integration for Strike Commander\n"
+				"Strike Commander, Origin\n"
+			    "Mouse Integration.\n"
 				"Strike Commander uses hybrid of own function and TBIOS\n"
 				"for reading mouse.\n"
 				"Mouse Integration is activated once you press an arrow key.\n"
@@ -692,6 +696,7 @@ void ProfileDialog::Make(void)
 			break;
 		case TOWNS_APPSPECIFIC_SUPERDAISEN:
 			appSpecificExplanation->SetText(
+				"Super Strategic Confrontation (Super Daisenryaku), Systemsoft\n"
 				"Super Daisenryaku for FM TOWNS is, I believe,\n"
 				"the best port among all other ports.  However,\n"
 				"it has a usability issue at higher CPU frequency.\n"
@@ -702,7 +707,8 @@ void ProfileDialog::Make(void)
 			break;
 		case TOWNS_APPSPECIFIC_LEMMINGS:
 			appSpecificExplanation->SetText(
-				"Mouse Integration for Lemmings\n"
+				"Lemmings, Psygnosis\n"
+				"Mouse Integration.\n"
 				"Like Wing Commander 1, Lemmings uses its own\n"
 				"mouse-reading function.  This option enables\n"
 				"control by mouse in Lemmings.\n"
@@ -711,7 +717,8 @@ void ProfileDialog::Make(void)
 			break;
 		case TOWNS_APPSPECIFIC_LEMMINGS2:
 			appSpecificExplanation->SetText(
-				"Mouse Integration for Lemmings2\n"
+				"Lemmings2, Psygnosis\n"
+				"Mouse Integration.\n"
 				"Like Wing Commander 1, Lemmings uses its own\n"
 				"mouse-reading function.  This option enables\n"
 				"control by mouse in Lemmings.\n"
@@ -720,13 +727,21 @@ void ProfileDialog::Make(void)
 			break;
 		case TOWNS_APPSPECIFIC_DAIKOUKAIJIDAI:
 			appSpecificExplanation->SetText(
-				"With 99% confidence, I believe DaikoukaiJidai (The Age of Navigation)\n"
+				"Uncharted Warters (DAIKOUKAI JIDAI), KOEI\n"
+				"With 99.99% confidence, I believe DaikoukaiJidai (The Age of Navigation)\n"
 				"for FM TOWNS nullifies a pointer after winning a battle, but never\n"
 				"set a valid pointer before using it next time.  As a result, no \n"
 				"pirates appears after a victory, or in the worst case the program\n"
 				"crashes.  This patch prevents the pointer-destruction.\n"
 				"This patch also replaces busy-wait with timer (I/O 6Ch).\n"
 				"This patch also enables keyboard shortcuts.\n"
+			);
+			break;
+		case TOWNS_APPSPECIFIC_RASHINBAN:
+			appSpecificExplanation->SetText(
+				"Golden Compass (Ougon No Rashinban), Riverhill Soft\n"
+				"Mouse Integration.\n"
+				"Also connect mouse to game port 0.\n"
 			);
 			break;
 		}
