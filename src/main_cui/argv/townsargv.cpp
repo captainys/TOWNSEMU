@@ -279,6 +279,7 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		if("-HELP"==ARG || "-H"==ARG || "-?"==ARG)
 		{
 			PrintHelp();
+			exit(1);
 		}
 		else if("-APP"==ARG)
 		{
