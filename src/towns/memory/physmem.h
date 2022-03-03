@@ -172,6 +172,12 @@ public:
 class TownsOldMemCardAccess : public TownsMemAccess
 {
 public:
+	class FMTowns *townsPtr; // Need to notify disk read upon BOOTKEY ICM
+	TownsOldMemCardAccess(class FMTowns *townsPtr)
+	{
+		this->townsPtr=townsPtr;
+	}
+
 	virtual unsigned int FetchByte(unsigned int physAddr) const;
 	virtual void StoreByte(unsigned int physAddr,unsigned char data);
 };
@@ -179,6 +185,12 @@ public:
 class TownsJEIDA4MemCardAccess : public TownsMemAccess
 {
 public:
+	class FMTowns *townsPtr; // Need to notify disk read upon BOOTKEY ICM
+	TownsJEIDA4MemCardAccess(class FMTowns *townsPtr)
+	{
+		this->townsPtr=townsPtr;
+	}
+
 	virtual unsigned int FetchByte(unsigned int physAddr) const;
 	virtual void StoreByte(unsigned int physAddr,unsigned char data);
 };

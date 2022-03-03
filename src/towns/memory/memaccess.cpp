@@ -507,6 +507,8 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 	auto &memCard=physMemPtr->state.memCard;
 	if(TOWNS_MEMCARD_TYPE_OLD==memCard.memCardType)
 	{
+		townsPtr->NotifyDiskRead();
+
 		unsigned int memCardAddr=physAddr&TOWNSADDR_MEMCARD_AND;
 		if(memCardAddr<memCard.data.size())
 		{
@@ -519,6 +521,8 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 {
 	if(true!=physMemPtr->state.memCardREG)
 	{
+		townsPtr->NotifyDiskRead();
+
 		auto &memCard=physMemPtr->state.memCard;
 		if(TOWNS_MEMCARD_TYPE_OLD==memCard.memCardType && true!=memCard.writeProtected)
 		{

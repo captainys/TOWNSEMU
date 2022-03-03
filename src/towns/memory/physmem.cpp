@@ -259,7 +259,11 @@ void TownsPhysicalMemory::State::Reset(void)
 	return data;
 }
 
-TownsPhysicalMemory::TownsPhysicalMemory(class FMTowns *townsPtr,class i486DX *cpuPtr,class Memory *memPtr,class RF5C68 *pcmPtr) : Device(townsPtr),waveRAMAccess(pcmPtr)
+TownsPhysicalMemory::TownsPhysicalMemory(class FMTowns *townsPtr,class i486DX *cpuPtr,class Memory *memPtr,class RF5C68 *pcmPtr) : 
+	Device(townsPtr),
+	waveRAMAccess(pcmPtr),
+	oldMemCardAccess(townsPtr),
+	JEIDA4MemCardAccess(townsPtr)
 {
 	takeJISCodeLog=false;
 	this->cpuPtr=cpuPtr;
