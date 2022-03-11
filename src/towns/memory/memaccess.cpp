@@ -505,15 +505,13 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 	}
 
 	auto &memCard=physMemPtr->state.memCard;
-	if(TOWNS_MEMCARD_TYPE_OLD==memCard.memCardType)
+
+	// Looks like first 16MB of JEIDA4 memory card is also accessible from C0000000h
+	unsigned int memCardAddr=physAddr&TOWNSADDR_MEMCARD_AND;
+	if(memCardAddr<memCard.data.size())
 	{
 		townsPtr->NotifyDiskRead();
-
-		unsigned int memCardAddr=physAddr&TOWNSADDR_MEMCARD_AND;
-		if(memCardAddr<memCard.data.size())
-		{
-			return memCard.data[memCardAddr];
-		}
+		return memCard.data[memCardAddr];
 	}
 	return 0xFF;
 }
@@ -523,12 +521,16 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 	{
 		townsPtr->NotifyDiskRead();
 
+		// Looks like first 16MB of JEIDA4 memory card is also accessible from C0000000h
 		auto &memCard=physMemPtr->state.memCard;
-		if(TOWNS_MEMCARD_TYPE_OLD==memCard.memCardType && true!=memCard.writeProtected)
+		if(true!=memCard.writeProtected)
 		{
 			auto memCardAddr=physAddr&TOWNSADDR_MEMCARD_AND;
-			memCard.data[memCardAddr]=data;
-			memCard.modified=true;
+			if(memCardAddr<memCard.data.size())
+			{
+				memCard.data[memCardAddr]=data;
+				memCard.modified=true;
+			}
 		}
 	}
 }
