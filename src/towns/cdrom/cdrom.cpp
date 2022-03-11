@@ -416,6 +416,11 @@ unsigned int TownsCDROM::LoadDiscImage(const std::string &fName)
 	return state.GetDisc().Open(cpputil::FindFileWithSearchPaths(fName,searchPaths));
 }
 
+void TownsCDROM::Eject(void)
+{
+	state.GetDisc().CleanUp();
+}
+
 void TownsCDROM::BreakOnCommandCheck(const char phase[])
 {
 	if(true==var.debugBreakOnCommandWrite)

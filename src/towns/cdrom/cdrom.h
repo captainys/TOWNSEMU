@@ -304,6 +304,10 @@ public:
 	*/
 	unsigned int LoadDiscImage(const std::string &fName);
 
+	/*!
+	*/
+	void Eject(void);
+
 	/*! 
 	*/
 	void ExecuteCDROMCommand(void);

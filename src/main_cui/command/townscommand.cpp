@@ -149,6 +149,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["CDCACHE"]=CMD_CDCACHE;
 	primaryCmdMap["CDOPENCLOSE"]=CMD_CDOPENCLOSE;
 	primaryCmdMap["CDDASTOP"]=CMD_CDDASTOP;
+	primaryCmdMap["CDEJECT"]=CMD_CDEJECT;
 
 	primaryCmdMap["SCSICD0LOAD"]=CMD_SCSICD0LOAD;
 	primaryCmdMap["SCSICD1LOAD"]=CMD_SCSICD1LOAD;
@@ -318,6 +319,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Load CD-ROM image." << std::endl;
 	std::cout << "CDOPENCLOSE" << std::endl;
 	std::cout << "  Virtually open and close the internal CD-ROM drive." << std::endl;
+	std::cout << "CDEJECT" << std::endl;
+	std::cout << "  Eject CD" << std::endl;
 	std::cout << "CDDASTOP" << std::endl;
 	std::cout << "  Stop CDDA" << std::endl;
 	std::cout << "CDCACHE" << std::endl;
@@ -1242,6 +1245,10 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 	case CMD_CDOPENCLOSE:
 		towns.cdrom.StopCDDA();
 		towns.cdrom.state.discChanged=true;
+		break;
+	case CMD_CDEJECT:
+		towns.cdrom.StopCDDA();
+		towns.cdrom.Eject();
 		break;
 	case CMD_CDDASTOP:
 		towns.cdrom.StopCDDA();
