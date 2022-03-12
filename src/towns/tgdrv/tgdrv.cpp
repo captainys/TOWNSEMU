@@ -750,7 +750,7 @@ bool TownsTgDrv::Int2F_111B_FindFirst(void)
 		// townsPtr->mem.StoreWord(DTABuffer+0x0F,1);  // Cluster Number? Always 1?
 		townsPtr->mem.StoreDword(DTABuffer+0x11,0);  // Entry Count? Always 1?
 
-		if(0!=(sAttr&TOWNS_DOS_DIRENT_ATTR_VOLLABEL))
+		if(sAttr==TOWNS_DOS_DIRENT_ATTR_VOLLABEL) // If it is requesting more than volume label, just skip it, and do normal FindFirst
 		{
 			for(int i=0; i<11; ++i)
 			{
@@ -766,6 +766,7 @@ bool TownsTgDrv::Int2F_111B_FindFirst(void)
 		else
 		{
 			auto subDir=FullPathToSubDir(fn);
+			sAttr&=(~TOWNS_DOS_DIRENT_ATTR_VOLLABEL);
 
 			auto invalidErr=CheckFileName(subDir);
 			if(TOWNS_DOSERR_NO_ERROR!=invalidErr)
@@ -836,6 +837,7 @@ bool TownsTgDrv::Int2F_111C_FindNext(void)
 		templ11[i]=townsPtr->mem.FetchByte(DTABuffer+1+i);
 	}
 	uint16_t sAttr=townsPtr->mem.FetchByte(DTABuffer+0x0C);
+	sAttr&=(~TOWNS_DOS_DIRENT_ATTR_VOLLABEL);
 
 	drv=(drv&0x7F)-1+'A'; // (drv&0x7F) is FCB drive index.
 	auto sharedDirIndex=DriveLetterToSharedDirIndex(drv);
