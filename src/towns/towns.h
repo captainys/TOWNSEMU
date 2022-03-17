@@ -416,6 +416,7 @@ public:
 
 	unsigned int MachineID(void) const;
 
+	int GetCPUType(void) const;
 
 	static int TownsTypeToCPUType(unsigned int townsType);
 

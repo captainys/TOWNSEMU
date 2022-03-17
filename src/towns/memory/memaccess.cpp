@@ -507,7 +507,15 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 	auto &memCard=physMemPtr->state.memCard;
 
 	// Looks like first 16MB of JEIDA4 memory card is also accessible from C0000000h
-	unsigned int memCardAddr=physAddr&TOWNSADDR_MEMCARD_AND;
+	unsigned int memCardAddr=physAddr;
+	if(0xC0000000<=physAddr)
+	{
+		memCardAddr&=TOWNSADDR_MEMCARD_AND;
+	}
+	else
+	{
+		memCardAddr&=TOWNSADDR_386SX_MEMCARD_AND;
+	}
 	if(memCardAddr<memCard.data.size())
 	{
 		townsPtr->NotifyDiskRead();
@@ -525,7 +533,15 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 		auto &memCard=physMemPtr->state.memCard;
 		if(true!=memCard.writeProtected)
 		{
-			auto memCardAddr=physAddr&TOWNSADDR_MEMCARD_AND;
+			unsigned int memCardAddr=physAddr;
+			if(0xC0000000<=physAddr)
+			{
+				memCardAddr&=TOWNSADDR_MEMCARD_AND;
+			}
+			else
+			{
+				memCardAddr&=TOWNSADDR_386SX_MEMCARD_AND;
+			}
 			if(memCardAddr<memCard.data.size())
 			{
 				memCard.data[memCardAddr]=data;
@@ -545,7 +561,17 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 		if(TOWNS_MEMCARD_TYPE_JEIDA4==memCard.memCardType)
 		{
 			// I should return attribute information if REG==true.  But, I don't know what exactly it is.
-			unsigned int memCardAddr=(physAddr&TOWNSADDR_MEMCARD_AND)+0x400000*physMemPtr->state.memCardBank;
+			unsigned int memCardAddr=physAddr;
+			if(0xC0000000<=physAddr)
+			{
+				memCardAddr&=TOWNSADDR_MEMCARD_AND;
+				memCardAddr+=0x400000*physMemPtr->state.memCardBank;
+			}
+			else
+			{
+				memCardAddr&=TOWNSADDR_386SX_MEMCARD_AND;
+				memCardAddr+=0x100000*physMemPtr->state.memCardBank;
+			}
 			if(memCardAddr<memCard.data.size())
 			{
 				return memCard.data[memCardAddr];
@@ -561,7 +587,17 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 		auto &memCard=physMemPtr->state.memCard;
 		if(TOWNS_MEMCARD_TYPE_JEIDA4==memCard.memCardType && true!=memCard.writeProtected)
 		{
-			unsigned int memCardAddr=(physAddr&TOWNSADDR_MEMCARD_AND)+0x400000*physMemPtr->state.memCardBank;
+			unsigned int memCardAddr=physAddr;
+			if(0xC0000000<=physAddr)
+			{
+				memCardAddr&=TOWNSADDR_MEMCARD_AND;
+				memCardAddr+=0x400000*physMemPtr->state.memCardBank;
+			}
+			else
+			{
+				memCardAddr&=TOWNSADDR_386SX_MEMCARD_AND;
+				memCardAddr+=0x100000*physMemPtr->state.memCardBank;
+			}
 			if(memCardAddr<memCard.data.size())
 			{
 				memCard.data[memCardAddr]=data;

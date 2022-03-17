@@ -647,6 +647,10 @@ FMTowns::FMTowns() :
 	return TOWNSCPU_UNKNOWN;
 }
 
+int FMTowns::GetCPUType(void) const
+{
+	return TownsTypeToCPUType(townsType);
+}
 
 unsigned int FMTowns::MachineID(void) const
 {

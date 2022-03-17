@@ -163,7 +163,14 @@ void TownsPhysicalMemory::State::Reset(void)
 	case TOWNSIO_MEMCARD_STATUS: //           0x48A, // [2] pp.93
 		break;
 	case TOWNSIO_MEMCARD_BANK: //             0x490, // [2] pp.794
-		state.memCardBank=((data>>4)&3);
+		if(TOWNSCPU_80386SX!=townsPtr->GetCPUType())
+		{
+			state.memCardBank=((data>>4)&3);
+		}
+		else
+		{
+			state.memCardBank=(data&0x3F);
+		}
 		break;
 	case TOWNSIO_MEMCARD_ATTRIB: //           0x491, // [2] pp.795
 		state.memCardREG=(0!=(data&1));
@@ -249,7 +256,14 @@ void TownsPhysicalMemory::State::Reset(void)
 		data|=(state.memCard.writeProtected ? 1 : 0);
 		break;
 	case TOWNSIO_MEMCARD_BANK: //             0x490, // [2] pp.794
-		data=((state.memCardBank&3)<<4);
+		if(TOWNSCPU_80386SX!=townsPtr->GetCPUType())
+		{
+			data=((state.memCardBank&3)<<4);
+		}
+		else
+		{
+			data=state.memCardBank;
+		}
 		break;
 	case TOWNSIO_MEMCARD_ATTRIB: //           0x491, // [2] pp.795
 		data=(TOWNS_MEMCARD_TYPE_JEIDA4==state.memCard.memCardType ? 0 : 0x80);
@@ -265,6 +279,8 @@ TownsPhysicalMemory::TownsPhysicalMemory(class FMTowns *townsPtr,class i486DX *c
 	oldMemCardAccess(townsPtr),
 	JEIDA4MemCardAccess(townsPtr)
 {
+	this->townsPtr=townsPtr;
+
 	takeJISCodeLog=false;
 	this->cpuPtr=cpuPtr;
 	this->memPtr=memPtr;
