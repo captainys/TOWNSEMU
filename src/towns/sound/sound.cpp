@@ -230,15 +230,15 @@ std::vector <std::string> TownsSound::GetStatusText(void) const
 
 void TownsSound::ProcessSound(void)
 {
-	if((0!=state.ym2612.state.playingCh || true==state.rf5c68.IsPlaying()) && nullptr!=outside_world)
+	if((true==IsFMPlaying() || true==IsPCMPlaying()) && nullptr!=outside_world)
 	{
 		if(true==nextFMPCMWave.empty())
 		{
-			if(0!=state.ym2612.state.playingCh)
+			if(true==IsFMPlaying())
 			{
 				nextFMPCMWave=state.ym2612.MakeWaveAllChannels(FM_PCM_MILLISEC_PER_WAVE);
 			}
-			if(true==state.rf5c68.IsPlaying())
+			if(true==IsPCMPlaying())
 			{
 				const unsigned int WAVE_OUT_SAMPLING_RATE=YM2612::WAVE_SAMPLING_RATE; // Align with YM2612.
 				unsigned int numSamples=0;

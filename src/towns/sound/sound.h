@@ -65,6 +65,15 @@ public:
 
 	std::vector <unsigned char> nextFMPCMWave;
 
+	inline bool IsFMPlaying(void) const
+	{
+		return 0!=state.ym2612.state.playingCh && 0!=(state.muteFlag&2);
+	}
+	inline bool IsPCMPlaying(void) const
+	{
+		return true==state.rf5c68.IsPlaying() && 0!=(state.muteFlag&1);
+	}
+
 	TownsSound(class FMTowns *townsPtr);
 	void SetOutsideWorld(class Outside_World *outside_world);
 	void PCMStartPlay(unsigned char chStartPlay);
