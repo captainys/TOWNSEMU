@@ -63,7 +63,7 @@ void FMTowns::State::PowerOn(void)
 	}
 
 	towns.fdc.searchPaths=argv.fdSearchPaths;
-	for(int drv=0; drv<2; ++drv)
+	for(int drv=0; drv<4; ++drv)
 	{
 		if(""!=argv.fdImgFName[drv])
 		{

@@ -21,7 +21,7 @@ public:
 	enum
 	{
 		NUM_GAMEPORTS=2,
-		NUM_FDDRIVES=2,
+		NUM_FDDRIVES=4,
 		MAX_NUM_SCSI_DEVICES=7,
 	};
 
@@ -66,7 +66,7 @@ public:
 	std::string CMOSFName;
 	bool autoSaveCMOS=true; // If this flag is false, CMOSFName will not be copied to FMTowns::Variable.
 	std::string fdImgFName[NUM_FDDRIVES];
-	bool fdImgWriteProtect[NUM_FDDRIVES]={false,false};
+	bool fdImgWriteProtect[NUM_FDDRIVES]={false,false,false,false};
 	std::string cdImgFName;
 	unsigned int cdSpeed=0;  // 0->Use default.
 

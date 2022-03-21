@@ -485,31 +485,21 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 			fdSearchPaths.push_back(argv[i+1]);
 			++i;
 		}
-		else if("-FD0"==ARG && i+1<argc)
+		else if(("-FD0"==ARG || "-FD1"==ARG || "-FD2"==ARG || "-FD3"==ARG) && i+1<argc)
 		{
-			fdImgFName[0]=argv[i+1];
+			int drv=ARG[3]-'0';
+			fdImgFName[drv]=argv[i+1];
 			++i;
 		}
-		else if("-FD1"==ARG && i+1<argc)
+		else if("-FD0WP"==ARG || "-FD1WP"==ARG || "-FD2WP"==ARG || "-FD3WP"==ARG)
 		{
-			fdImgFName[1]=argv[i+1];
-			++i;
+			int drv=ARG[3]-'0';
+			fdImgWriteProtect[drv]=true;
 		}
-		else if("-FD0WP"==ARG)
+		else if("-FD0UP"==ARG || "-FD1UP"==ARG || "-FD2UP"==ARG || "-FD3UP"==ARG)
 		{
-			fdImgWriteProtect[0]=true;
-		}
-		else if("-FD1WP"==ARG)
-		{
-			fdImgWriteProtect[1]=true;
-		}
-		else if("-FD0UP"==ARG)
-		{
-			fdImgWriteProtect[0]=false;
-		}
-		else if("-FD1UP"==ARG)
-		{
-			fdImgWriteProtect[1]=false;
+			int drv=ARG[3]-'0';
+			fdImgWriteProtect[drv]=false;
 		}
 		else if("-CDPATH"==ARG && i+1<argc)
 		{
