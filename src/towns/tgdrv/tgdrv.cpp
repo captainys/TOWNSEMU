@@ -261,7 +261,7 @@ bool TownsTgDrv::Int2F_1105_Chdir(void)
 		}
 		else
 		{
-			ReturnAX(TOWNS_DOSERR_FILE_NOT_FOUND);
+			ReturnAX(TOWNS_DOSERR_DIR_NOT_FOUND);
 			townsPtr->cpu.SetCF(true);
 		}
 		return true; // Yes, it's my drive.
