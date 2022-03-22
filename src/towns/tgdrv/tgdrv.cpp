@@ -283,13 +283,22 @@ bool TownsTgDrv::Int2F_1106_CloseRemoteFile(void)
 		   hostSFTIdx<FileSys::MAX_NUM_OPEN_FILE &&
 		   true==sharedDir[sharedDirIdx].sft[hostSFTIdx].IsOpen())
 		{
-			sharedDir[sharedDirIdx].CloseFile(hostSFTIdx);
+			auto refCount=FetchSFTReferenceCount(townsPtr->cpu.state.ES(),townsPtr->cpu.state.DI());
+			if(refCount<=1)
+			{
+				sharedDir[sharedDirIdx].CloseFile(hostSFTIdx);
+				refCount=0;
+			}
+			else
+			{
+				--refCount;
+			}
 			townsPtr->cpu.StoreWord(
 				townsPtr->mem,
 				townsPtr->cpu.state.CS().addressSize,
 				townsPtr->cpu.state.ES(),
 				townsPtr->cpu.state.DI(),
-				0);  // Clear ref count.
+				refCount);  // Update ref count.
 			townsPtr->cpu.SetCF(false);
 		}
 		else
@@ -1241,6 +1250,14 @@ unsigned int TownsTgDrv::FetchDriveCodeFromSFT(const class i486DX::SegmentRegist
 {
 	unsigned int flags=FetchDeviceInfoFromSFT(seg,offset);
 	return flags&0x1F;
+}
+uint16_t TownsTgDrv::FetchSFTReferenceCount(const class i486DX::SegmentRegister &seg,uint32_t offset) const
+{
+	return townsPtr->cpu.FetchWord(
+		townsPtr->cpu.state.CS().addressSize,
+		seg,
+		offset,
+		townsPtr->mem);
 }
 uint32_t TownsTgDrv::FetchFilePositionFromSFT(const class i486DX::SegmentRegister &seg,uint32_t offset) const
 {

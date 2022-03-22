@@ -2356,6 +2356,17 @@ void TownsCommandInterpreter::Execute_Dump_DOSInfo(FMTowns &towns,Command &cmd)
 		}
 		else if("SFT"==ARGV2)
 		{
+			auto dosverMajor=towns.state.DOSVER&0xFF;
+			unsigned int SFTLen;
+			if(4<=dosverMajor)
+			{
+				SFTLen=0x3B;
+			}
+			else
+			{
+				SFTLen=0x35;
+			}
+
 			uint32_t ofs=towns.mem.FetchWord(DOSADDR+TOWNS_DOS_SFT_PTR);
 			uint32_t seg=towns.mem.FetchWord(DOSADDR+TOWNS_DOS_SFT_PTR+2);
 			int ctr=0;
@@ -2368,7 +2379,7 @@ void TownsCommandInterpreter::Execute_Dump_DOSInfo(FMTowns &towns,Command &cmd)
 				int nSF=towns.mem.FetchWord(seg*0x10+ofs+4);
 				for(int i=0; i<nSF; ++i)
 				{
-					uint32_t sf=ofs+6+0x35*i;
+					uint32_t sf=ofs+6+SFTLen*i;
 					unsigned int refCount=towns.mem.FetchWord(seg*0x10+sf);
 					unsigned int mode=towns.mem.FetchWord(seg*0x10+sf+2);
 					unsigned int attr=towns.mem.FetchByte(seg*0x10+sf+4);
