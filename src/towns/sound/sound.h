@@ -67,11 +67,11 @@ public:
 
 	inline bool IsFMPlaying(void) const
 	{
-		return 0!=state.ym2612.state.playingCh && 0!=(state.muteFlag&2);
+		return 0!=state.ym2612.state.playingCh;
 	}
 	inline bool IsPCMPlaying(void) const
 	{
-		return true==state.rf5c68.IsPlaying() && 0!=(state.muteFlag&1);
+		return true==state.rf5c68.IsPlaying();
 	}
 
 	TownsSound(class FMTowns *townsPtr);

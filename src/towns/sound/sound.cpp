@@ -234,7 +234,7 @@ void TownsSound::ProcessSound(void)
 	{
 		if(true==nextFMPCMWave.empty())
 		{
-			if(true==IsFMPlaying())
+			if(true==IsFMPlaying() && 0!=(state.muteFlag&2))
 			{
 				nextFMPCMWave=state.ym2612.MakeWaveAllChannels(FM_PCM_MILLISEC_PER_WAVE);
 			}
@@ -253,7 +253,19 @@ void TownsSound::ProcessSound(void)
 					numSamples=(unsigned int)(nextFMPCMWave.size()/4);
 				}
 
-				state.rf5c68.AddWaveForNumSamples(nextFMPCMWave.data(),numSamples,WAVE_OUT_SAMPLING_RATE);
+				// Brandish expects PCM interrupt even when muted.
+				// Therefore, PCM wave must be generated and played for making IRQ.
+				if(0!=(state.muteFlag&1))
+				{
+					state.rf5c68.AddWaveForNumSamples(nextFMPCMWave.data(),numSamples,WAVE_OUT_SAMPLING_RATE);
+				}
+				else
+				{
+					// AddWaveForNumSamples will set IRQAfterThisPlayBack flag.
+					std::vector <unsigned char> dummy;
+					dummy.resize(numSamples*4);
+					state.rf5c68.AddWaveForNumSamples(dummy.data(),numSamples,WAVE_OUT_SAMPLING_RATE);
+				}
 
 				for(unsigned int chNum=0; chNum<RF5C68::NUM_CHANNELS; ++chNum)
 				{
