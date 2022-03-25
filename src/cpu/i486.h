@@ -3415,12 +3415,12 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 				SegmentRegister newCS;
 				LoadSegmentRegister(newCS,desc.SEG,mem);
 
-				if(DPL<CPL)
+				if(newCS.DPL<CPL)
 				{
 					auto TempSS=state.SS();
 					auto TempESP=state.ESP();
-					LoadSegmentRegister(state.SS(),FetchWord(32,state.TR,TSS_OFFSET_SS0+DPL*8,mem),mem);
-					state.ESP()=FetchDword(32,state.TR,TSS_OFFSET_ESP0+DPL*8,mem);
+					LoadSegmentRegister(state.SS(),FetchWord(32,state.TR,TSS_OFFSET_SS0+newCS.DPL*8,mem),mem);
+					state.ESP()=FetchDword(32,state.TR,TSS_OFFSET_ESP0+newCS.DPL*8,mem);
 					Push(mem,gateOperandSize,TempSS.value);
 					Push(mem,gateOperandSize,TempESP);
 				}
@@ -3443,7 +3443,7 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 					SetIF(false);
 				}
 				SetTF(false);
-				if(DPL<CPL)
+				if(newCS.DPL<CPL)
 				{
 					state.EFLAGS&=(~EFLAGS_NESTED);
 				}
