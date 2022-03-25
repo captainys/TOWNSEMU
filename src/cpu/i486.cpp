@@ -412,26 +412,26 @@ void i486DX::HandleException(bool wasReadOp,Memory &mem,unsigned int numInstByte
 	switch(state.exceptionType)
 	{
 	case EXCEPTION_PF:
-		Interrupt(INT_PAGE_FAULT,mem,0,numInstBytesForCallStack);
+		Interrupt(INT_PAGE_FAULT,mem,0,numInstBytesForCallStack,false);
 		Push(mem,32,(wasReadOp ? 0 : 2));
 		SetCR(2,state.exceptionLinearAddr);
 		break;
 	case EXCEPTION_GP:
-		Interrupt(INT_GENERAL_PROTECTION,mem,0,numInstBytesForCallStack);
+		Interrupt(INT_GENERAL_PROTECTION,mem,0,numInstBytesForCallStack,false);
 		if(true!=IsInRealMode()) // As HIMEM.SYS's expectation.
 		{
 			Push(mem,32,state.exceptionCode);
 		}
 		break;
 	case EXCEPTION_ND:
-		Interrupt(INT_SEGMENT_NOT_PRESENT,mem,0,numInstBytesForCallStack);
+		Interrupt(INT_SEGMENT_NOT_PRESENT,mem,0,numInstBytesForCallStack,false);
 		if(true!=IsInRealMode())
 		{
 			Push(mem,32,state.exceptionCode);
 		}
 		break;
 	case EXCEPTION_UD:
-		Interrupt(INT_INVALID_OPCODE,mem,0,numInstBytesForCallStack);
+		Interrupt(INT_INVALID_OPCODE,mem,0,numInstBytesForCallStack,false);
 		break;
 	case EXCEPTION_SS:
 		Abort("SS handling not implemented yet.");

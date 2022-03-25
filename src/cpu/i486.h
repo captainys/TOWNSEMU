@@ -526,6 +526,10 @@ public:
 		{
 			return (flags>>8)&0x1F;
 		}
+		inline unsigned int GetDPL(void) const
+		{
+			return (flags>>13)&3;
+		}
 	};
 
 	class State
@@ -2149,7 +2153,7 @@ public:
 		numInstBytesForReturn should be the number of instruction bytes that caused an interrupt, or zero if it is from PIC or exception.
 		numInstBytesForCallStack should be the number of instruction bytes that caused an interrupt, or zero if it is from PIC.
 	*/
-	inline void Interrupt(unsigned int intNum,Memory &mem,unsigned int numInstBytesForReturn,unsigned int numInstBytesForCallStack);
+	inline void Interrupt(unsigned int intNum,Memory &mem,unsigned int numInstBytesForReturn,unsigned int numInstBytesForCallStack,bool SWI);
 	inline void IOOut8(InOut &io,unsigned int ioport,unsigned int data);
 	inline void IOOut16(InOut &io,unsigned int ioport,unsigned int data);
 	inline void IOOut32(InOut &io,unsigned int ioport,unsigned int data);
@@ -3303,7 +3307,7 @@ public:
 
 #include "i486debug.h"
 
-inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numInstBytesForReturn,unsigned int numInstBytesForCallStack)
+inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numInstBytesForReturn,unsigned int numInstBytesForCallStack,bool SWI)
 {
 	if(nullptr!=debuggerPtr)
 	{
@@ -3402,13 +3406,15 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 				    mem);
 			}
 
+			auto DPL=desc.GetDPL();
+			// Apparently it should be IDT's DPL, not newCS's DPL.
+			auto CPL=state.CS().DPL;
+
 			if(0==(state.EFLAGS&EFLAGS_VIRTUAL86))
 			{
 				SegmentRegister newCS;
 				LoadSegmentRegister(newCS,desc.SEG,mem);
 
-				auto DPL=newCS.DPL;
-				auto CPL=state.CS().DPL;
 				if(DPL<CPL)
 				{
 					auto TempSS=state.SS();
@@ -3444,30 +3450,39 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 			}
 			else // Interrupt from Virtual86 mode
 			{
-				// INT instruction of [1].
-				auto TempEFLAGS=state.EFLAGS;
-				auto TempSS=state.SS();
-				auto TempESP=state.ESP();
-				state.EFLAGS&=~(EFLAGS_VIRTUAL86|EFLAGS_TRAP);
-				// if(fromInterruptGate)
+				// Should I raise exception if Software Interrupt && DPL<CPL?
+				if(true==SWI && DPL<CPL)
 				{
-					state.EFLAGS&=~EFLAGS_INT_ENABLE;
+					RaiseException(EXCEPTION_GP,INTNum*8); // What's +EXT?  ([1] pp.26-170)
+					HandleException(false,mem,numInstBytesForCallStack);
 				}
-				// Is TR always 32-bit address size?
-				LoadSegmentRegister(state.SS(),FetchWord(32,state.TR,TSS_OFFSET_SS0,mem),mem);
-				state.ESP()=FetchDword(32,state.TR,TSS_OFFSET_ESP0,mem);
-				Push(mem,32,state.GS().value);
-				Push(mem,32,state.FS().value);
-				Push(mem,32,state.DS().value);
-				Push(mem,32,state.ES().value);
-				Push(mem,32,TempSS.value);
-				Push(mem,32,TempESP);
-				Push(mem,32,TempEFLAGS);
-				Push(mem,32,state.CS().value);
-				Push(mem,32,state.EIP+numInstBytesForReturn);
+				else
+				{
+					// INT instruction of [1].
+					auto TempEFLAGS=state.EFLAGS;
+					auto TempSS=state.SS();
+					auto TempESP=state.ESP();
+					state.EFLAGS&=~(EFLAGS_VIRTUAL86|EFLAGS_TRAP);
+					// if(fromInterruptGate)
+					{
+						state.EFLAGS&=~EFLAGS_INT_ENABLE;
+					}
+					// Is TR always 32-bit address size?
+					LoadSegmentRegister(state.SS(),FetchWord(32,state.TR,TSS_OFFSET_SS0,mem),mem);
+					state.ESP()=FetchDword(32,state.TR,TSS_OFFSET_ESP0,mem);
+					Push(mem,32,state.GS().value);
+					Push(mem,32,state.FS().value);
+					Push(mem,32,state.DS().value);
+					Push(mem,32,state.ES().value);
+					Push(mem,32,TempSS.value);
+					Push(mem,32,TempESP);
+					Push(mem,32,TempEFLAGS);
+					Push(mem,32,state.CS().value);
+					Push(mem,32,state.EIP+numInstBytesForReturn);
 
-				SetIPorEIP(gateOperandSize,desc.OFFSET);
-				LoadSegmentRegister(state.CS(),desc.SEG,mem);
+					SetIPorEIP(gateOperandSize,desc.OFFSET);
+					LoadSegmentRegister(state.CS(),desc.SEG,mem);
+				}
 			}
 		}
 		else

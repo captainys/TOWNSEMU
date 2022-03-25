@@ -215,7 +215,7 @@ void TownsPIC::I8259A::FireIRQ(i486DX &cpu,Memory &mem,unsigned int INTToGo)
 	{
 		ISR|=(1<<INTToGo);
 		auto CPUINT=(GetT()&0xF8)|(INTToGo&7);
-		cpu.Interrupt(CPUINT,mem,0,0);
+		cpu.Interrupt(CPUINT,mem,0,0,false);
 	}
 }
 
