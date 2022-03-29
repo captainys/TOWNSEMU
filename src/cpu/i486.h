@@ -3406,7 +3406,7 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 				    mem);
 			}
 
-			auto DPL=desc.GetDPL();
+			auto gateDPL=desc.GetDPL();
 			// Apparently it should be IDT's DPL, not newCS's DPL.
 			auto CPL=state.CS().DPL;
 
@@ -3451,7 +3451,7 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 			else // Interrupt from Virtual86 mode
 			{
 				// Should I raise exception if Software Interrupt && DPL<CPL?
-				if(true==SWI && DPL<CPL)
+				if(true==SWI && gateDPL<CPL)
 				{
 					RaiseException(EXCEPTION_GP,INTNum*8); // What's +EXT?  ([1] pp.26-170)
 					HandleException(false,mem,numInstBytesForCallStack);

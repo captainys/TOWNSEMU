@@ -55,16 +55,26 @@ bool i486SymbolTable::ImportEXPSymbolTable(std::string fName)
 
 
 	// Analyze
-	if(binary.size()<2 || binary[0]!='P' || binary[1]!='3')
+	if(binary.size()<2 || (binary[0]=='P' && binary[1]=='3'))
 	{
-		std::cout << "Only P3 format can have a symbol table." << std::endl;
+		symTabOffset=cpputil::GetDword(binary.data()+symTabPointerLocation);
+		symTabSize=cpputil::GetDword(binary.data()+symTabSizeLocation);
+	}
+	else if(binary.size()<2 || (binary[0]=='M' && binary[1]=='P'))
+	{
+		// Based on Oh! FM TOWNS February 1992 issue, pp.76
+		uint32_t expSizeLow=cpputil::GetWord(binary.data()+2);
+		uint32_t expSizeHigh=cpputil::GetWord(binary.data()+4);
+		symTabOffset=expSizeLow+0x200*expSizeHigh;
+		symTabSize=binary.size()-symTabOffset;
+	}
+	else
+	{
+		std::cout << "Unknown EXP format." << std::endl;
 		return false;
 	}
 
-	symTabOffset=cpputil::GetDword(binary.data()+symTabPointerLocation);
 	printf("Symbol Table Offset=%08xh\n",symTabOffset);
-
-	symTabSize=cpputil::GetDword(binary.data()+symTabSizeLocation);
 	printf("Symbol Table Size=%08xh\n",symTabSize);
 
 	if(symTabOffset+4+16<=binary.size())
