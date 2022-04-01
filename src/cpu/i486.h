@@ -29,6 +29,13 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "cpputil.h"
 #include "i486inst.h"
 
+
+
+// Define the following macro to keep track of Accessed flag (0x20) and Dirty flag (0x40) of page table entries
+// #define TSUGARU_I486_UPDATE_PAGE_DA_FLAGS
+
+
+
 // References
 // [1]  i486 Processor Programmers Reference Manual
 
@@ -2279,7 +2286,7 @@ public:
 	/*! Retrieve Interrupt Descriptor from the current IDT.
 	    It could raise page fault.
 	*/
-	InterruptDescriptor GetInterruptDescriptor(unsigned int INTNum,const Memory &mem);
+	InterruptDescriptor GetInterruptDescriptor(unsigned int INTNum,Memory &mem);
 
 	/*! Retrieve Interrupt Descriptor from the current IDT.
 	    This will not change the CPU state including exceptions.
@@ -2384,6 +2391,63 @@ public:
 		return pageInfo;
 	}
 
+	/*! Called from LinearAddressToPhysicalAddressRead if TSUGARU_I486_UPDATE_PAGE_DA_FLAGS is defined.
+	*/
+	inline void MarkPageAccessed(unsigned int linearAddr,Memory &mem)
+	{
+		uint32_t pageDirectoryIndex=((linearAddr>>22)&1023);
+		uint32_t pageTableIndex=((linearAddr>>12)&1023);
+
+		auto pageDirectoryPtr=state.GetCR(3)&0xFFFFF000;
+		auto pageTableInfo=mem.FetchDword(pageDirectoryPtr+(pageDirectoryIndex<<2));
+		if(0==(pageTableInfo&1))
+		{
+			return;
+		}
+
+		const unsigned int pageTablePtr=(pageTableInfo&0xFFFFF000);
+		unsigned int pageInfo=mem.FetchDword(pageTablePtr+(pageTableIndex<<2));
+		if(0==(pageInfo&1))
+		{
+			return;
+		}
+
+		pageTableInfo|=PAGEINFO_FLAG_A;
+		pageInfo|=PAGEINFO_FLAG_A;
+		mem.StoreDword(pageDirectoryPtr+(pageDirectoryIndex<<2),pageTableInfo);
+		mem.StoreDword(pageTablePtr+(pageTableIndex<<2),pageInfo);
+	}
+
+	/*! Called from LinearAddressToPhysicalAddressWrite if TSUGARU_I486_UPDATE_PAGE_DA_FLAGS is defined.
+	*/
+	inline void MarkPageDirty(unsigned int linearAddr,Memory &mem)
+	{
+		uint32_t pageDirectoryIndex=((linearAddr>>22)&1023);
+		uint32_t pageTableIndex=((linearAddr>>12)&1023);
+
+		auto pageDirectoryPtr=state.GetCR(3)&0xFFFFF000;
+		auto pageTableInfo=mem.FetchDword(pageDirectoryPtr+(pageDirectoryIndex<<2));
+		if(0==(pageTableInfo&1))
+		{
+			return;
+		}
+
+		const unsigned int pageTablePtr=(pageTableInfo&0xFFFFF000);
+		unsigned int pageInfo=mem.FetchDword(pageTablePtr+(pageTableIndex<<2));
+		if(0==(pageInfo&1))
+		{
+			return;
+		}
+
+		pageTableInfo|=PAGEINFO_FLAG_A|PAGEINFO_FLAG_D;
+		pageInfo|=PAGEINFO_FLAG_A|PAGEINFO_FLAG_D;
+		mem.StoreDword(pageDirectoryPtr+(pageDirectoryIndex<<2),pageTableInfo);
+		mem.StoreDword(pageTablePtr+(pageTableIndex<<2),pageInfo);
+	}
+
+
+
+
 	/*!
 	*/
 	inline unsigned long LinearAddressToPhysicalAddress(
@@ -2414,9 +2478,11 @@ public:
 	*/
 	unsigned int PhysicalAddressToLinearAddress(unsigned physAddr,const Memory &mem) const;
 
-	/*!
+	/*! x86 keeps track of accessed page and written page in bit 5 (access) and bit 6 (write) of
+	    page-table entries.  Therefore, page-translation for read and write needs to do different
+	    things.
 	*/
-	inline unsigned long LinearAddressToPhysicalAddress(unsigned int linearAddr,const Memory &mem)
+	inline unsigned long LinearAddressToPhysicalAddressRead(unsigned int linearAddr,Memory &mem)
 	{
 		auto pageIndex=(linearAddr>>LINEARADDR_TO_PAGE_SHIFT);
 		auto pageInfo=state.pageTableCache[pageIndex];
@@ -2432,6 +2498,35 @@ public:
 			state.pageTableCache[pageIndex]=pageInfo;
 			state.pageTableCacheValid[pageIndex]=state.pageTableCacheValidCounter;
 		}
+
+	#ifdef TSUGARU_I486_UPDATE_PAGE_DA_FLAGS
+		MarkPageAccessed(linearAddr,mem);
+	#endif
+
+		auto offset=(linearAddr&4095);
+		auto physicalAddr=(pageInfo&0xFFFFF000)+offset;
+		return physicalAddr;
+	}
+	inline unsigned long LinearAddressToPhysicalAddressWrite(unsigned int linearAddr,Memory &mem)
+	{
+		auto pageIndex=(linearAddr>>LINEARADDR_TO_PAGE_SHIFT);
+		auto pageInfo=state.pageTableCache[pageIndex];
+		if(state.pageTableCacheValid[pageIndex]<state.pageTableCacheValidCounter)
+		{
+			pageInfo=ReadPageInfo(linearAddr,mem);
+			if(0==(pageInfo&PAGEINFO_FLAG_PRESENT))
+			{
+				RaiseException(EXCEPTION_PF,0);
+				state.exceptionLinearAddr=linearAddr;
+				return 0;
+			}
+			state.pageTableCache[pageIndex]=pageInfo;
+			state.pageTableCacheValid[pageIndex]=state.pageTableCacheValidCounter;
+		}
+
+	#ifdef TSUGARU_I486_UPDATE_PAGE_DA_FLAGS
+		MarkPageDirty(linearAddr,mem);
+	#endif
 		auto offset=(linearAddr&4095);
 		auto physicalAddr=(pageInfo&0xFFFFF000)+offset;
 		return physicalAddr;
@@ -2497,8 +2592,9 @@ private:
 
 public:
 	/*! Fetch a byte. 
+	    Turned out mem cannot be const.  Fetching byte will update page-table entry A flag.
 	*/
-	inline unsigned int FetchByte(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
+	inline unsigned int FetchByte(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)
 	{
 		offset&=AddressMask((unsigned char)addressSize);
 		auto addr=seg.baseLinearAddr+offset;
@@ -2518,14 +2614,15 @@ public:
 
 		if(true==PagingEnabled())
 		{
-			addr=LinearAddressToPhysicalAddress(addr,mem);
+			addr=LinearAddressToPhysicalAddressRead(addr,mem);
 		}
 		return mem.FetchByte(addr);
 	}
 
-	/*! Fetch a dword.
+	/*! Fetch a word.
+	    Turned out mem cannot be const.  Fetching byte will update page-table entry A flag.
 	*/
-	inline unsigned int FetchWord(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
+	inline unsigned int FetchWord(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)
 	{
 		offset&=AddressMask((unsigned char)addressSize);
 		auto addr=seg.baseLinearAddr+offset;
@@ -2549,7 +2646,7 @@ public:
 
 		if(true==PagingEnabled())
 		{
-			addr=LinearAddressToPhysicalAddress(addr,mem);
+			addr=LinearAddressToPhysicalAddressRead(addr,mem);
 			if(0xFFC<(addr&0xfff)) // May hit the page boundary
 			{
 				return FetchByte(addressSize,seg,offset,mem)|(FetchByte(addressSize,seg,offset+1,mem)<<8);
@@ -2559,8 +2656,9 @@ public:
 	}
 
 	/*! Fetch a dword.
+	    Turned out mem cannot be const.  Fetching byte will update page-table entry A flag.
 	*/
-	inline unsigned int FetchDword(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
+	inline unsigned int FetchDword(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)
 	{
 		offset&=AddressMask((unsigned char)addressSize);
 		auto addr=seg.baseLinearAddr+offset;
@@ -2584,7 +2682,7 @@ public:
 
 		if(true==PagingEnabled())
 		{
-			addr=LinearAddressToPhysicalAddress(addr,mem);
+			addr=LinearAddressToPhysicalAddressRead(addr,mem);
 			if(0xFF8<(addr&0xfff)) // May hit the page boundary
 			{
 				return 
@@ -2599,8 +2697,9 @@ public:
 	/*! Fetch a byte, word, or dword.
 	    Function name is left as FetchWordOrDword temporarily for the time being.
 	    Will be unified to FetchByteWordOrDword in the future.
+	    Turned out mem cannot be const.  Accessing memory will update page-table entry A flag.
 	*/
-	inline unsigned int FetchWordOrDword(unsigned int operandSize,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
+	inline unsigned int FetchWordOrDword(unsigned int operandSize,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)
 	{
 		switch(operandSize)
 		{
@@ -2613,26 +2712,27 @@ public:
 			return FetchDword(addressSize,seg,offset,mem);
 		}
 	}
-	inline unsigned int FetchByteWordOrDword(unsigned int operandSize,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
+	inline unsigned int FetchByteWordOrDword(unsigned int operandSize,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)
 	{
 		return FetchWordOrDword(operandSize,addressSize,seg,offset,mem);
 	}
 
 	/*! Fetch a byte by linear address.
 	*/
-	inline unsigned int FetchByteByLinearAddress(const Memory &mem,unsigned int linearAddr)
+	inline unsigned int FetchByteByLinearAddress(Memory &mem,unsigned int linearAddr)
 	{
 		if(true==PagingEnabled())
 		{
-			linearAddr=LinearAddressToPhysicalAddress(linearAddr,mem);
+			linearAddr=LinearAddressToPhysicalAddressRead(linearAddr,mem);
 		}
 		return mem.FetchByte(linearAddr);
 	}
 
 	/*! Returns const memory window from SEG:OFFSET.
 	    This may raise page fault depending on SEG:OFFSET.
+	    Turned out mem cannot be const.  Accessing memory will update page-table entry A flag.
 	*/
-	inline MemoryAccess::ConstMemoryWindow GetConstMemoryWindow(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
+	inline MemoryAccess::ConstMemoryWindow GetConstMemoryWindow(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)
 	{
 		offset&=AddressMask((unsigned char)addressSize);
 		auto linearAddr=seg.baseLinearAddr+offset;
@@ -2641,13 +2741,14 @@ public:
 
 	/*! Returns const memory window from a linear address.
 	    This may raise page fault depending on SEG:OFFSET.
+	    Turned out mem cannot be const.  Accessing memory will update page-table entry A flag.
 	*/
-	inline MemoryAccess::ConstMemoryWindow GetConstMemoryWindowFromLinearAddress(unsigned int linearAddr,const Memory &mem)
+	inline MemoryAccess::ConstMemoryWindow GetConstMemoryWindowFromLinearAddress(unsigned int linearAddr,Memory &mem)
 	{
 		auto physAddr=linearAddr;
 		if(true==PagingEnabled())
 		{
-			physAddr=LinearAddressToPhysicalAddress(linearAddr,mem);
+			physAddr=LinearAddressToPhysicalAddressRead(linearAddr,mem);
 		}
 		auto memWin=mem.GetConstMemoryWindow(physAddr);
 		memWin.linearBaseAddr=(linearAddr&(~0xfff));
@@ -2724,7 +2825,7 @@ public:
 
 	/*! Fetch a byte from CS:[EIP+offset].
 	*/
-	inline unsigned int FetchInstructionByte(unsigned int offset,const Memory &mem)
+	inline unsigned int FetchInstructionByte(unsigned int offset,Memory &mem)
 	{
 		return FetchByte(state.CS().addressSize,state.CS(),state.EIP+offset,mem);
 	}
@@ -2732,7 +2833,7 @@ public:
 	/*! Fetch an instruction.
 	    This function may raise page fault.
 	*/
-	inline void FetchInstruction(MemoryAccess::ConstMemoryWindow &memWin,InstructionAndOperand &instOp,const Memory &mem)
+	inline void FetchInstruction(MemoryAccess::ConstMemoryWindow &memWin,InstructionAndOperand &instOp,Memory &mem)
 	{
 		return FetchInstruction(memWin,instOp,state.CS(),state.EIP,mem);
 	}
@@ -2811,21 +2912,21 @@ private:
 	/*! Fetch an 8-bit operand.  Returns the number of bytes fetched.
 	    It pushes inst.operandLen and this->numBytes by 1 byte.
 	*/
-	inline void FetchOperand8(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem);
+	inline void FetchOperand8(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,Memory &mem);
 	/*! Peek an 8-bit operand.  Returns the number of bytes fetched.
 	    It does not push inst.operandLen and this->numBytes by 1 byte.
 	*/
-	inline void PeekOperand8(unsigned int &operand,const Instruction &inst,const MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem);
+	inline void PeekOperand8(unsigned int &operand,const Instruction &inst,const MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,Memory &mem);
 	/*! Fetch an 16-bit operand  Returns the number of bytes fetched..
 	*/
-	inline void FetchOperand16(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem);
+	inline void FetchOperand16(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,Memory &mem);
 	/*! Fetch an 32-bit operand.  Returns the number of bytes fetched.
 	*/
-	inline void FetchOperand32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem);
+	inline void FetchOperand32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,Memory &mem);
 	/*! Fetch an 16- or 32-bit operand.  Length fetched depends on inst.operandSize.
 	    Returns the number of bytes fetched.
 	*/
-	inline unsigned int FetchOperand16or32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem);
+	inline unsigned int FetchOperand16or32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,Memory &mem);
 
 
 	/*! Fetch an 8-bit operand.  Returns the number of bytes fetched.
@@ -2852,26 +2953,26 @@ private:
 	/*! Fetch an operand defined by the RM byte and decode.
 	    Returns the number of bytes fetched.
 	*/
-	template <class CPUCLASS,class FUNCCLASS>
+	template <class CPUCLASS,class MEMCLASS,class FUNCCLASS>
 	inline static unsigned int FetchOperandRMandDecode(
 	    Operand &op,int addressSize,int dataSize,
-	    CPUCLASS &cpu,Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem);
+	    CPUCLASS &cpu,Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,MEMCLASS &mem);
 
 
 	/*! Fetch an 8-bit operand.
 	    It pushes inst.operandLen and this->numBytes by 1 byte.
 	*/
-	inline void FetchImm8(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem);
+	inline void FetchImm8(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,Memory &mem);
 	/*! Fetch an 16-bit operand.
 	*/
-	inline void FetchImm16(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem);
+	inline void FetchImm16(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,Memory &mem);
 	/*! Fetch an 32-bit operand.
 	*/
-	inline void FetchImm32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem);
+	inline void FetchImm32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,Memory &mem);
 	/*! Fetch an 16- or 32-bit operand.  Length fetched depends on inst.operandSize.
 	    Returns the number of bytes fetched.
 	*/
-	inline unsigned int FetchImm16or32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem);
+	inline unsigned int FetchImm16or32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,Memory &mem);
 
 	/*! Fetch an 8-bit operand.
 	    It pushes inst.operandLen and this->numBytes by 1 byte.
@@ -2905,13 +3006,13 @@ private:
 	    Made a template function to make const-version (for debugging) and non-const version (for real)
 	    with minimum code duplicate.
 	*/
-	template <class CPUCLASS,class FUNCCLASS>
-	static void FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,int offset,const Memory &mem);
+	template <class CPUCLASS,class MEMCLASS,class FUNCCLASS>
+	static void FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,int offset,MEMCLASS &mem);
 
 public:
 	/*! Fetch an instruction from specific segment and offset.
 	*/
-	inline void FetchInstruction(MemoryAccess::ConstMemoryWindow &memWin,InstructionAndOperand &instOp,const SegmentRegister &CS,unsigned int offset,const Memory &mem)
+	inline void FetchInstruction(MemoryAccess::ConstMemoryWindow &memWin,InstructionAndOperand &instOp,const SegmentRegister &CS,unsigned int offset,Memory &mem)
 	{
 		const unsigned int operandSize=*CSOperandSizePointer[Return0InRealMode1InProtectedMode()];
 		const unsigned int addressSize=*CSAddressSizePointer[Return0InRealMode1InProtectedMode()];
@@ -2930,7 +3031,7 @@ private:
 	class BurstModeFetchInstructionFunctions;
 	class DebugFetchInstructionFunctions;
 	class RealFetchInstructionFunctions;
-	template <class CPUCLASS,class FUNCCLASS,class BURSTMODEFUNCCLASS>
+	template <class CPUCLASS,class MEMCLASS,class FUNCCLASS,class BURSTMODEFUNCCLASS>
 	class FetchInstructionClass;
 private:
 	/* Set in the constructor. CS******SizePointer[0] points to sixteen, and
@@ -2945,7 +3046,7 @@ public:
 	void FetchInstruction(
 	    MemoryAccess::ConstMemoryWindow &memWin,
 	    InstructionAndOperand &instOp,
-	    const SegmentRegister &CS,unsigned int offset,const Memory &mem,unsigned int defOperSize,unsigned int defAddrSize);
+	    const SegmentRegister &CS,unsigned int offset,Memory &mem,unsigned int defOperSize,unsigned int defAddrSize);
 
 	/*! Fetch an instruction from specific segment and offset with given default operand size and address size.
 	    It will not affect the CPU status including exceptions.
@@ -2956,7 +3057,7 @@ public:
 	    const SegmentRegister &CS,unsigned int offset,const Memory &mem,unsigned int defOperSize,unsigned int defAddrSize) const;
 
 private:
-	inline unsigned int FetchInstructionByte(MemoryAccess::ConstPointer &ptr,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
+	inline unsigned int FetchInstructionByte(MemoryAccess::ConstPointer &ptr,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)
 	{
 		if(0<ptr.length)
 		{
@@ -2967,7 +3068,7 @@ private:
 			return FetchByte(addressSize,seg,offset,mem);
 		}
 	}
-	inline unsigned int PeekInstructionByte(const MemoryAccess::ConstPointer &ptr,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
+	inline unsigned int PeekInstructionByte(const MemoryAccess::ConstPointer &ptr,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)
 	{
 		if(0<ptr.length)
 		{
@@ -2978,7 +3079,7 @@ private:
 			return FetchByte(addressSize,seg,offset,mem);
 		}
 	}
-	inline void FetchInstructionTwoBytes(unsigned char buf[2],MemoryAccess::ConstPointer &ptr,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
+	inline void FetchInstructionTwoBytes(unsigned char buf[2],MemoryAccess::ConstPointer &ptr,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)
 	{
 		if(2<=ptr.length)
 		{
@@ -2992,7 +3093,7 @@ private:
 			buf[1]=FetchByte(addressSize,seg,offset+1,mem);
 		}
 	}
-	inline void FetchInstructionFourBytes(unsigned char buf[4],MemoryAccess::ConstPointer &ptr,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
+	inline void FetchInstructionFourBytes(unsigned char buf[4],MemoryAccess::ConstPointer &ptr,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)
 	{
 		if(4<=ptr.length)
 		{
@@ -3210,22 +3311,22 @@ public:
 		In which case returned OperandValue will return correct value for GetAsDword, GetAsWord, and GetFwordSegment.
 	*/
 	OperandValue EvaluateOperand(
-	    const Memory &mem,int addressSize,int segmentOverride,const Operand &op,int destinationBytes);
+	    Memory &mem,int addressSize,int segmentOverride,const Operand &op,int destinationBytes);
 
 	/*! Evaluate operand as an 8-bit operand.
 	*/
 	OperandValue EvaluateOperand8(
-	    const Memory &mem,int addressSize,int segmentOverride,const Operand &op);
+	    Memory &mem,int addressSize,int segmentOverride,const Operand &op);
 
 	/*! Evaluate operand as an 64-bit operand (double).
 	*/
 	OperandValue EvaluateOperand64(
-	    const Memory &mem,int addressSize,int segmentOverride,const Operand &op);
+	    Memory &mem,int addressSize,int segmentOverride,const Operand &op);
 
 	/*! Evaluate operand as an 80-bit operand (80-bit floating point).
 	*/
 	OperandValue EvaluateOperand80(
-	    const Memory &mem,int addressSize,int segmentOverride,const Operand &op);
+	    Memory &mem,int addressSize,int segmentOverride,const Operand &op);
 
 
 	/*! Extract segment register and address offset from the OPER_ADDR type operand.
@@ -3291,7 +3392,7 @@ public:
 	/*! Return true if I/O access is permitted in I/O Map of TSS.
 	    It could raise exception.
 	*/
-	bool TestIOMapPermission(const SegmentRegister &TR,unsigned int ioMin,unsigned int accessSize,const Memory &mem);
+	bool TestIOMapPermission(const SegmentRegister &TR,unsigned int ioMin,unsigned int accessSize,Memory &mem);
 
 	/*! Return true if I/O access is permitted in I/O Map of TSS.
 	    It will not raise an exception.  It is for debugging purpose.
@@ -3521,7 +3622,7 @@ inline void i486DX::StoreByte(Memory &mem,int addressSize,SegmentRegister seg,un
 	auto physicalAddr=linearAddr;
 	if(true==PagingEnabled())
 	{
-		physicalAddr=LinearAddressToPhysicalAddress(linearAddr,mem);
+		physicalAddr=LinearAddressToPhysicalAddressWrite(linearAddr,mem);
 	}
 	return mem.StoreByte(physicalAddr,byteData);
 }
@@ -3546,7 +3647,7 @@ inline void i486DX::StoreWord(Memory &mem,int addressSize,SegmentRegister seg,un
 	auto physicalAddr=linearAddr;
 	if(true==PagingEnabled())
 	{
-		physicalAddr=LinearAddressToPhysicalAddress(linearAddr,mem);
+		physicalAddr=LinearAddressToPhysicalAddressWrite(linearAddr,mem);
 		if(0xFFE<(physicalAddr&0xfff)) // May hit the page boundary
 		{
 			StoreByte(mem,addressSize,seg,offset  , data    &255);// May hit the page boundary. Don't use StoreWord
@@ -3576,7 +3677,7 @@ inline void i486DX::StoreDword(Memory &mem,int addressSize,SegmentRegister seg,u
 	auto physicalAddr=linearAddr;
 	if(true==PagingEnabled())
 	{
-		physicalAddr=LinearAddressToPhysicalAddress(linearAddr,mem);
+		physicalAddr=LinearAddressToPhysicalAddressWrite(linearAddr,mem);
 		if(0xFFC<(physicalAddr&0xfff)) // May hit the page boundary
 		{
 			StoreByte(mem,addressSize,seg,offset  , data     &255);

@@ -852,12 +852,13 @@ void FMTowns::ProcessSound(Outside_World *outside_world)
 			eventLog.LogMouseStart(state.townsTime);
 		}
 
+		unsigned int excType,excCode;
 		state.MOS_work_linearAddr=cpu.state.GS().baseLinearAddr+cpu.GetEDI();
-		state.MOS_work_physicalAddr=cpu.LinearAddressToPhysicalAddress(state.MOS_work_linearAddr,mem);
+		state.MOS_work_physicalAddr=cpu.LinearAddressToPhysicalAddress(excType,excCode,state.MOS_work_linearAddr,mem);
 
 		i486DX::SegmentRegister CS;
 		cpu.LoadSegmentRegister(CS,0x110,mem);
-		state.TBIOS_physicalAddr=cpu.LinearAddressToPhysicalAddress(CS.baseLinearAddr,mem);
+		state.TBIOS_physicalAddr=cpu.LinearAddressToPhysicalAddress(excType,excCode,CS.baseLinearAddr,mem);
 		state.tbiosVersion=IdentifyTBIOS(state.TBIOS_physicalAddr);
 		state.TBIOS_mouseInfoOffset=FindTBIOSMouseInfoOffset(state.tbiosVersion,state.TBIOS_physicalAddr);
 

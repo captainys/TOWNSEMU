@@ -21,7 +21,7 @@ public:
 		unsigned int codeAddressSize,
 		const i486DX::SegmentRegister &CS,
 		unsigned int offset,
-		const Memory &mem)
+		Memory &mem)
 	{
 		memWin=cpu.GetConstMemoryWindow(codeAddressSize,CS,offset,mem);
 	}
@@ -237,7 +237,7 @@ public:
 		unsigned int codeAddressSize,
 		const i486DX::SegmentRegister &CS,
 		unsigned int offset,
-		const Memory &mem)
+		Memory &mem)
 	{
 		memWin=cpu.GetConstMemoryWindow(codeAddressSize,CS,offset,mem);
 	}
@@ -246,7 +246,7 @@ public:
 		MemoryAccess::ConstPointer &ptr,
 		unsigned int addressSize,
 		const SegmentRegister &seg,
-		unsigned int offset,const Memory &mem)
+		unsigned int offset,Memory &mem)
 	{
 		return cpu.FetchInstructionByte(ptr,addressSize,seg,offset,mem);
 	}
@@ -255,7 +255,7 @@ public:
 		MemoryAccess::ConstPointer &ptr,
 		unsigned int addressSize,
 		const SegmentRegister &seg,
-		unsigned int offset,const Memory &mem)
+		unsigned int offset,Memory &mem)
 	{
 		return cpu.PeekInstructionByte(ptr,addressSize,seg,offset,mem);
 	}
@@ -265,7 +265,7 @@ public:
 		MemoryAccess::ConstPointer &ptr,
 		unsigned int addressSize,
 		const SegmentRegister &seg,
-		unsigned int offset,const Memory &mem)
+		unsigned int offset,Memory &mem)
 	{
 		cpu.FetchInstructionTwoBytes(dat,ptr,addressSize,seg,offset,mem);
 	}
@@ -275,50 +275,50 @@ public:
 		MemoryAccess::ConstPointer &ptr,
 		unsigned int addressSize,
 		const SegmentRegister &seg,
-		unsigned int offset,const Memory &mem)
+		unsigned int offset,Memory &mem)
 	{
 		cpu.FetchInstructionFourBytes(dat,ptr,addressSize,seg,offset,mem);
 	}
 
-	inline static void FetchOperand8(CPUCLASS &cpu,Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
+	inline static void FetchOperand8(CPUCLASS &cpu,Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,Memory &mem)
 	{
 		cpu.FetchOperand8(inst,ptr,seg,offset,mem);
 	}
-	inline static void PeekOperand8(CPUCLASS &cpu,unsigned int &operand,const Instruction &inst,const MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
+	inline static void PeekOperand8(CPUCLASS &cpu,unsigned int &operand,const Instruction &inst,const MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,Memory &mem)
 	{
 		cpu.PeekOperand8(operand,inst,ptr,seg,offset,mem);
 	}
-	inline static void FetchOperand16(CPUCLASS &cpu,Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
+	inline static void FetchOperand16(CPUCLASS &cpu,Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,Memory &mem)
 	{
 		cpu.FetchOperand16(inst,ptr,seg,offset,mem);
 	}
-	inline static void FetchOperand32(CPUCLASS &cpu,Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
+	inline static void FetchOperand32(CPUCLASS &cpu,Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,Memory &mem)
 	{
 		cpu.FetchOperand32(inst,ptr,seg,offset,mem);
 	}
-	inline static unsigned int FetchOperand16or32(CPUCLASS &cpu,Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
+	inline static unsigned int FetchOperand16or32(CPUCLASS &cpu,Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,Memory &mem)
 	{
 		return cpu.FetchOperand16or32(inst,ptr,seg,offset,mem);
 	}
-	inline static void FetchImm8(CPUCLASS &cpu,Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
+	inline static void FetchImm8(CPUCLASS &cpu,Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,Memory &mem)
 	{
 		cpu.FetchImm8(inst,ptr,seg,offset,mem);
 	}
-	inline static void FetchImm16(CPUCLASS &cpu,Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
+	inline static void FetchImm16(CPUCLASS &cpu,Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,Memory &mem)
 	{
 		cpu.FetchImm16(inst,ptr,seg,offset,mem);
 	}
-	inline static void FetchImm32(CPUCLASS &cpu,Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
+	inline static void FetchImm32(CPUCLASS &cpu,Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,Memory &mem)
 	{
 		cpu.FetchImm32(inst,ptr,seg,offset,mem);
 	}
-	inline static unsigned int FetchImm16or32(CPUCLASS &cpu,Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
+	inline static unsigned int FetchImm16or32(CPUCLASS &cpu,Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,Memory &mem)
 	{
 		return cpu.FetchImm16or32(inst,ptr,seg,offset,mem);
 	}
 };
 
-template <class CPUCLASS,class FUNCCLASS,class BURSTMODEFUNCCLASS>
+template <class CPUCLASS,class MEMCLASS,class FUNCCLASS,class BURSTMODEFUNCCLASS>
 class i486DX::FetchInstructionClass
 {
 public:
@@ -326,7 +326,7 @@ public:
 	   CPUCLASS &cpu,
 	   MemoryAccess::ConstMemoryWindow &memWin,
 	   InstructionAndOperand &instOp,
-	   const SegmentRegister &CS,unsigned int offset,const Memory &mem,unsigned int defOperSize,unsigned int defAddrSize)
+	   const SegmentRegister &CS,unsigned int offset,MEMCLASS &mem,unsigned int defOperSize,unsigned int defAddrSize)
 	{
 		auto &inst=instOp.inst;
 		auto &op1=instOp.op1;
@@ -418,11 +418,11 @@ public:
 	PREFIX_DONE:
 		if(MAX_INSTRUCTION_LENGTH<=ptr.length)
 		{
-			CPUCLASS::template FetchOperand<CPUCLASS,BURSTMODEFUNCCLASS>(cpu,instOp,ptr,CS,offset+inst.numBytes,mem);
+			CPUCLASS::template FetchOperand<CPUCLASS,MEMCLASS,BURSTMODEFUNCCLASS>(cpu,instOp,ptr,CS,offset+inst.numBytes,mem);
 		}
 		else
 		{
-			CPUCLASS::template FetchOperand<CPUCLASS,FUNCCLASS>(cpu,instOp,ptr,CS,offset+inst.numBytes,mem);
+			CPUCLASS::template FetchOperand<CPUCLASS,MEMCLASS,FUNCCLASS>(cpu,instOp,ptr,CS,offset+inst.numBytes,mem);
 		}
 	}
 };

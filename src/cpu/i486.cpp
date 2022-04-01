@@ -950,11 +950,11 @@ public:
 
 
 	// For mutable i486DX >>
-	static inline unsigned int FetchByteByLinearAddress(i486DX &cpu,const Memory &mem,unsigned int linearAddr)
+	static inline unsigned int FetchByteByLinearAddress(i486DX &cpu,Memory &mem,unsigned int linearAddr)
 	{
 		return cpu.FetchByteByLinearAddress(mem,linearAddr);
 	}
-	static inline MemoryAccess::ConstMemoryWindow GetConstMemoryWindowFromLinearAddress(i486DX &cpu,unsigned int linearAddr,const Memory &mem)
+	static inline MemoryAccess::ConstMemoryWindow GetConstMemoryWindowFromLinearAddress(i486DX &cpu,unsigned int linearAddr,Memory &mem)
 	{
 		return cpu.GetConstMemoryWindowFromLinearAddress(linearAddr,mem);
 	}
@@ -1172,7 +1172,7 @@ i486DX::FarPointer i486DX::DebugGetCallGate(unsigned int selector,const Memory &
 	return loader.GetCallGate(*this,selector,mem);
 }
 
-i486DX::InterruptDescriptor i486DX::GetInterruptDescriptor(unsigned int INTNum,const Memory &mem)
+i486DX::InterruptDescriptor i486DX::GetInterruptDescriptor(unsigned int INTNum,Memory &mem)
 {
 	InterruptDescriptor desc;
 	if(8*INTNum<state.IDTR.limit)
@@ -1321,7 +1321,7 @@ inline unsigned char *i486DX::GetStackAccessPointer(Memory &mem,uint32_t linearA
 			auto physAddr=linearAddr;
 			if(true==PagingEnabled())
 			{
-				physAddr=LinearAddressToPhysicalAddress(linearAddr,mem);
+				physAddr=LinearAddressToPhysicalAddressWrite(linearAddr,mem); // Assume write-operation for stack.
 			}
 			state.SSESPWindow=mem.GetMemoryWindow(physAddr);
 			state.SSESPWindow.linearBaseAddr=(linearAddr&(~(MemoryAccess::MEMORY_WINDOW_SIZE-1)));
@@ -2603,7 +2603,7 @@ void i486DX::ShrByte(unsigned int &value,unsigned int ctr)
 
 
 i486DX::OperandValue i486DX::EvaluateOperand(
-    const Memory &mem,int addressSize,int segmentOverride,const Operand &op,int destinationBytes)
+    Memory &mem,int addressSize,int segmentOverride,const Operand &op,int destinationBytes)
 {
 	static const unsigned int addressMask[2]=
 	{
@@ -2709,7 +2709,7 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 }
 
 i486DX::OperandValue i486DX::EvaluateOperand8(
-    const Memory &mem,int addressSize,int segmentOverride,const Operand &op)
+    Memory &mem,int addressSize,int segmentOverride,const Operand &op)
 {
 	static const unsigned int addressMask[2]=
 	{
@@ -2740,7 +2740,7 @@ i486DX::OperandValue i486DX::EvaluateOperand8(
 }
 
 i486DX::OperandValue i486DX::EvaluateOperand64(
-	    const Memory &mem,int addressSize,int segmentOverride,const Operand &op)
+	    Memory &mem,int addressSize,int segmentOverride,const Operand &op)
 {
 	static const unsigned int addressMask[2]=
 	{
@@ -2773,7 +2773,7 @@ i486DX::OperandValue i486DX::EvaluateOperand64(
 }
 
 i486DX::OperandValue i486DX::EvaluateOperand80(
-	    const Memory &mem,int addressSize,int segmentOverride,const Operand &op)
+	    Memory &mem,int addressSize,int segmentOverride,const Operand &op)
 {
 	static const unsigned int addressMask[2]=
 	{
@@ -3283,7 +3283,7 @@ void i486DX::DebugStoreDword(Memory &mem,int addressSize,SegmentRegister seg,uns
 	mem.StoreDword(physicalAddr,data);
 }
 
-bool i486DX::TestIOMapPermission(const SegmentRegister &TR,unsigned int ioMin,unsigned int accessSize,const Memory &mem)
+bool i486DX::TestIOMapPermission(const SegmentRegister &TR,unsigned int ioMin,unsigned int accessSize,Memory &mem)
 {
 	unsigned int IOMapOffset0=FetchWord(32,TR,0x66,mem);
 	for(auto ioport=ioMin; ioport<ioMin+accessSize; ++ioport)
