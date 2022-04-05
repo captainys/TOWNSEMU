@@ -707,12 +707,12 @@ void FMTowns::SetMouseButtonState(bool lButton,bool rButton)
 	{
 		if(true==lButton && 0==var.frequencyBackup)
 		{
-			var.frequencyBackup=state.freq;
-			state.freq=2;
+			var.frequencyBackup=state.currentFreq;
+			state.currentFreq=2;
 		}
 		if(true!=lButton && 0!=var.frequencyBackup)
 		{
-			state.freq=var.frequencyBackup;
+			state.currentFreq=var.frequencyBackup;
 			var.frequencyBackup=0;
 		}
 	}

@@ -146,7 +146,13 @@ public:
 
 		/*! Clock frequency in MHz.  Default is FREQUENCY_DEFAULT.
 		*/
-		long long int freq;
+		long long int currentFreq;
+		long long int fastModeFreq;
+
+
+		/*!
+		*/
+		int mainRAMWait=0,VRAMWait=0;
 
 
 		/*! Reset reason.
@@ -620,6 +626,9 @@ public:
 	    Zero performance penalty if both flags are false.
 	*/
 	void SetUpVRAMAccess(bool breakOnRead,bool breakOnWrite);
+
+
+	bool FASTModeLamp(void) const;
 
 
 	/*! I/O access for internal devices. */

@@ -33,7 +33,8 @@ void FMTowns::State::PowerOn(void)
 	cpuTime=0;
 	nextSecondInTownsTime=PER_SECOND;
 	nextFastDevicePollingTime=FAST_DEVICE_POLLING_INTERVAL;
-	freq=FREQUENCY_DEFAULT;
+	currentFreq=FREQUENCY_DEFAULT;
+	fastModeFreq=FREQUENCY_DEFAULT;
 	resetReason=0;
 	nextRenderingTime=0;
 }
@@ -118,7 +119,8 @@ void FMTowns::State::PowerOn(void)
 
 	if(0!=argv.freq)
 	{
-		towns.state.freq=argv.freq;
+		towns.state.currentFreq=argv.freq;
+		towns.state.fastModeFreq=argv.freq;
 	}
 	towns.cpu.state.fpuState.enabled=argv.useFPU;
 
@@ -496,6 +498,11 @@ FMTowns::FMTowns() :
 	io.AddDevice(this,TOWNSIO_ELEVOL_1_COM); //            0x4E1, // [2] pp.18, pp.174
 	io.AddDevice(this,TOWNSIO_ELEVOL_2_DATA); //           0x4E2, // [2] pp.18, pp.174
 	io.AddDevice(this,TOWNSIO_ELEVOL_2_COM); //            0x4E3, // [2] pp.18, pp.174
+	io.AddDevice(this,TOWNSIO_MAINRAM_WAIT_1STGEN); //     0x5E0,
+	io.AddDevice(this,TOWNSIO_MAINRAM_WAIT); //            0x5E2,
+	io.AddDevice(this,TOWNSIO_VRAMWAIT); //                0x5E6,
+	io.AddDevice(this,TOWNSIO_FASTMODE); //                0x5EC, // [2] pp.794
+
 
 
 
@@ -826,7 +833,7 @@ unsigned int FMTowns::RunOneInstruction(void)
 	// Eg.  66MHz ->  66 clocks passed means 1 micro second.
 	//                clockBalance is 66000.
 	//                clockBalance/freq=1000.  1000 nano seconds.
-	auto FREQ=state.freq;
+	auto FREQ=state.currentFreq;
 	auto passedInNanoSec=(state.clockBalance/FREQ);
 	state.townsTime+=passedInNanoSec;
 	state.cpuTime+=passedInNanoSec;
@@ -961,6 +968,11 @@ bool FMTowns::CheckRenderingTimer(TownsRender &render,Outside_World &world)
 void FMTowns::SetUpVRAMAccess(bool breakOnRead,bool breakOnWrite)
 {
 	physMem.SetUpVRAMAccess(TownsTypeToCPUType(townsType),breakOnRead,breakOnWrite);
+}
+
+bool FMTowns::FASTModeLamp(void) const
+{
+	return false; // Tentative
 }
 
 void FMTowns::SetMainRAMSize(long long int size)

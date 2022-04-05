@@ -129,7 +129,8 @@ bool FMTowns::LoadState(std::string fName,class Outside_World &outsideWorld)
 {
 	// Version 1 added app-specific settings for Daikoukaijidai
 	// Version 2 added DOSLOLSEG, DOSLOLOFF, DOSVER
-	return 2;
+	// Version 3 added fastModeFreq, mainRAMWait,VRAMWait
+	return 3;
 }
 
 /* virtual */ void FMTowns::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
@@ -144,7 +145,7 @@ bool FMTowns::LoadState(std::string fName,class Outside_World &outsideWorld)
 	PushInt64(data,state.nextFastDevicePollingTime);
 	PushInt64(data,state.nextSecondInTownsTime);
 	PushInt64(data,state.clockBalance);
-	PushInt64(data,state.freq);
+	PushInt64(data,state.currentFreq);
 	PushUint32(data,state.resetReason);
 	PushUint32(data,state.serialROMBitCount);
 	PushUint32(data,state.lastSerialROMCommand);
@@ -198,6 +199,11 @@ bool FMTowns::LoadState(std::string fName,class Outside_World &outsideWorld)
 	PushUint32(data,state.appSpecific_Daikoukai_YNDialogYAddr);
 	PushUint32(data,state.appSpecific_Daikoukai_DentakuDialogXAddr);
 	PushUint32(data,state.appSpecific_Daikoukai_DentakuDialogYAddr);
+
+	// Version 3 and later
+	PushUint32(data,state.fastModeFreq);
+	PushUint32(data,state.mainRAMWait);
+	PushUint32(data,state.VRAMWait);
 }
 /* virtual */ bool FMTowns::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
 {
@@ -211,7 +217,7 @@ bool FMTowns::LoadState(std::string fName,class Outside_World &outsideWorld)
 	state.nextFastDevicePollingTime=ReadInt64(data);
 	state.nextSecondInTownsTime=ReadInt64(data);
 	state.clockBalance=ReadInt64(data);
-	state.freq=ReadInt64(data);
+	state.currentFreq=ReadInt64(data);
 	state.resetReason=ReadUint32(data);
 	state.serialROMBitCount=ReadUint32(data);
 	state.lastSerialROMCommand=ReadUint32(data);
@@ -284,6 +290,20 @@ bool FMTowns::LoadState(std::string fName,class Outside_World &outsideWorld)
 		state.appSpecific_Daikoukai_YNDialogYAddr=0;
 		state.appSpecific_Daikoukai_DentakuDialogXAddr=0;
 		state.appSpecific_Daikoukai_DentakuDialogYAddr=0;
+	}
+
+	if(3<=version)
+	{
+	// Version 3 and later
+		state.fastModeFreq=ReadUint32(data);
+		state.mainRAMWait =ReadUint32(data);
+		state.VRAMWait    =ReadUint32(data);
+	}
+	else
+	{
+		state.fastModeFreq=state.currentFreq;
+		state.mainRAMWait=0;
+		state.VRAMWait=0;
 	}
 
 	vmAbort=false;

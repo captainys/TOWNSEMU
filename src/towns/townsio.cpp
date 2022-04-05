@@ -134,6 +134,24 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 		}
 		break;
 
+	case TOWNSIO_FASTMODE:
+		if(TOWNSTYPE_2_CX<=townsType)
+		{
+			if(true==FASTModeLamp())
+			{
+				return 0x01;
+			}
+			else
+			{
+				return 0x00;
+			}
+		}
+		else
+		{
+			return 0xFF;
+		}
+		break;
+
 
 	case TOWNSIO_FMR_RESOLUTION: // 0x400
 		// Bit0 should always be 0.

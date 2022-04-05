@@ -1296,7 +1296,8 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 			{
 				MHz=1;
 			}
-			towns.state.freq=MHz;
+			towns.state.currentFreq=MHz;
+			towns.state.fastModeFreq=MHz;
 			std::cout << "Set CPU frequency to " << MHz << "MHz." << std::endl;
 		}
 		else
