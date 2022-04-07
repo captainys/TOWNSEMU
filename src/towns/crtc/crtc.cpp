@@ -543,6 +543,10 @@ Vec2i TownsCRTC::GetPageSizeOnMonitor(unsigned char page) const
 	{
 		hei/=2;
 	}
+
+	// Unless I add origin y, Galaxy Force II is chopped off the bottom part.
+	hei+=GetPageOriginOnMonitor(page).y();
+
 	return Vec2i::Make(wid,hei);
 }
 Vec2i TownsCRTC::GetPageVRAMCoverageSize1X(unsigned char page) const
