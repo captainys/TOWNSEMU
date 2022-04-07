@@ -963,6 +963,10 @@ enum
 	TOWNS_DOSERR_INVALID_DISK_CHANGE=0x22,
 };
 
+enum
+{
+	TOWNS_CMOSRAM_FASTMODE_FLAG     =0x615, // I/O 3C2Ah
+};
 
 /* } */
 #endif

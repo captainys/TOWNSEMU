@@ -175,6 +175,10 @@ void FMTowns::State::PowerOn(void)
 			towns.physMem.SetCMOS(CMOSBinary);
 		}
 	}
+	if(true==argv.alwaysBootToFASTMode)
+	{
+		towns.physMem.state.CMOSRAM[TOWNS_CMOSRAM_FASTMODE_FLAG]=1;
+	}
 	if(""!=argv.keyMapFName)
 	{
 		std::ifstream ifp(argv.keyMapFName);
@@ -972,7 +976,7 @@ void FMTowns::SetUpVRAMAccess(bool breakOnRead,bool breakOnWrite)
 
 bool FMTowns::FASTModeLamp(void) const
 {
-	return false; // Tentative
+	return (0==state.mainRAMWait && state.VRAMWait<3);
 }
 
 void FMTowns::SetMainRAMSize(long long int size)

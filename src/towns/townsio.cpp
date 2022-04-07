@@ -89,6 +89,32 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 		state.eleVol[1][state.eleVolChLatch[1]].C0=(0!=(data&8));
 		state.eleVol[1][state.eleVolChLatch[1]].C32=(0!=(data&16));
 		break;
+
+	case TOWNSIO_MAINRAM_WAIT_1STGEN: //     0x5E0,
+		state.mainRAMWait=data;
+		AdjustMachineSpeedForMemoryWait();
+		break;
+	case TOWNSIO_MAINRAM_WAIT: //            0x5E2,
+		state.mainRAMWait=data;
+		AdjustMachineSpeedForMemoryWait();
+		break;
+	case TOWNSIO_VRAMWAIT: //                0x5E6,
+		state.VRAMWait=data;
+		AdjustMachineSpeedForMemoryWait();
+		break;
+	case TOWNSIO_FASTMODE: //                0x5EC, // [2] pp.794
+		if(0!=(data&1))
+		{
+			state.mainRAMWait=0;
+			state.VRAMWait=0;
+		}
+		else
+		{
+			state.mainRAMWait=6;
+			state.VRAMWait=6;
+		}
+		AdjustMachineSpeedForMemoryWait();
+		break;
 	}
 }
 /* virtual */ void FMTowns::IOWriteWord(unsigned int ioport,unsigned int data)
@@ -207,4 +233,15 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 /* virtual */ void FMTowns::RunScheduledTask(unsigned long long int townsTime)
 {
 	cpu.Reset();
+}
+void FMTowns::AdjustMachineSpeedForMemoryWait(void)
+{
+	if(true==FASTModeLamp())
+	{
+		state.currentFreq=state.fastModeFreq;
+	}
+	else
+	{
+		state.currentFreq=FREQUENCY_SLOWMODE;
+	}
 }

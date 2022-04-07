@@ -47,6 +47,8 @@ public:
 
 	unsigned int bootKeyComb=BOOT_KEYCOMB_NONE;
 
+	bool alwaysBootToFASTMode=true;
+
 	bool windowShift=false;
 
 	bool noWait=true;

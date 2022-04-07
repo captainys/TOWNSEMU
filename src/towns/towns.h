@@ -68,6 +68,7 @@ public:
 	enum
 	{
 		FREQUENCY_DEFAULT=25,                // MHz
+		FREQUENCY_SLOWMODE=8,                // MHz
 		FAST_DEVICE_POLLING_INTERVAL=10000,  // Nano-seconds
 		DEVICE_POLLING_INTERVAL=   8000000,  // 8ms
 
@@ -645,7 +646,9 @@ public:
 	unsigned int GetEleVolCDLeft(void) const;
 	unsigned int GetEleVolCDRight(void) const;
 
-
+	/*! Adjust CPU frequency to simulate memory wait.
+	*/
+	void AdjustMachineSpeedForMemoryWait(void);
 
 	// VM<->Host Interface
 	void ProcessVMToHostCommand(unsigned int vmCmd,unsigned int paramLen,const unsigned char param[]);
