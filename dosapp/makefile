@@ -1,4 +1,4 @@
-alltargets : exe\physdump.exe exe\physwrit.exe exe\dosntfy.exe exe\tgdrv.com exe\tgdrv.sys exe\biosver.exe
+alltargets : exe\physdump.exe exe\physdmpw.exe exe\physwrit.exe exe\dosntfy.exe exe\tgdrv.com exe\tgdrv.sys exe\biosver.exe
 
 
 
@@ -9,6 +9,16 @@ exe\physdump.exe : build\physdump.obj
 	link build\physdump.obj;
 	copy physdump.exe exe\.
 	del physdump.exe
+
+
+
+build\physdmpw.obj : physdmpw.asm print.asm rdhigh.asm wrhigh.asm gdt.asm
+	masm physdmpw.asm build\physdmpw.obj build\physdmpw.lst NUL
+
+exe\physdmpw.exe : build\physdmpw.obj
+	link build\physdmpw.obj;
+	copy physdmpw.exe exe\.
+	del physdmpw.exe
 
 
 

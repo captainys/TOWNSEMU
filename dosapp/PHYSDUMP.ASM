@@ -73,8 +73,8 @@ MAIN					PROC
 						SHL		ESI,16
 						MOV		SI,AX
 						LEA		DI,[DATABUF]	; ES:DI Read buffer
-						MOV		CX,256			; Number of bytes
-						CALL	READ_HIGHB
+						MOV		CX,64			; Number of bytes=64*4=256
+						CALL	READ_HIGHD		; Read High Memory DWORD Read
 
 
 

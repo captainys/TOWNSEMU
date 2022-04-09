@@ -53,15 +53,7 @@ MAIN					PROC
 						MOV		DS,BX
 						MOV		SI,81H
 						CALL	SKIP_SPACE_TAB
-						MOV		DI,OFFSET PHYSADDR_BUF
-						CALL	COPY_WORD
-
-						CALL	FIND_SPACE_TAB
-						JC		INSUFFICIENT_PARAM
-
-						CALL	SKIP_SPACE_TAB
-						MOV		DI,OFFSET FILENAME_BUF
-						CALL	COPY_WORD
+						CALL	XTOI
 
 						CALL	PRINT_REGISTER
 						CALL	PRINT_CRLF
@@ -69,25 +61,6 @@ MAIN					PROC
 						POP		DS
 
 
-						MOV		SI,OFFSET FILENAME_BUF
-						CALL	PRINT_CSTR
-						CALL	PRINT_CRLF
-
-
-
-						MOV		DX,OFFSET FILENAME_BUF
-						MOV		AX,3D00h
-						INT		21H
-						JC		CANNOT_OPEN_FILE
-
-						; AX=File Handle
-						PUSH	AX	; Save File Handle
-
-						CALL	PRINT_AX
-						CALL	PRINT_CRLF
-
-						MOV		SI,OFFSET PHYSADDR_BUF
-						CALL	XTOI
 
 						XCHG	AX,DX
 						CALL	PRINT_AX
@@ -95,96 +68,55 @@ MAIN					PROC
 						CALL	PRINT_AX
 						CALL	PRINT_CRLF
 
-						POP		BX	; File Handle=BX
+
+						MOV		SI,DX			;ESI Phys addr
+						SHL		ESI,16
+						MOV		SI,AX
+						LEA		DI,[DATABUF]	; ES:DI Read buffer
+						MOV		CX,256			; Number of bytes
+						CALL	READ_HIGHD_WITH_WAIT
 
 
-						MOV		DI,DX
-						Shl		EDI,16
-						MOV		DI,AX
 
-						; Need to keep BX and EDI
-						; BX=File Handle
-						; EDI=Phys addr
-SEND_PHYSMEM_OUTER_LOOP:
-						PUSH	BX
-						PUSH	EDI
+						LEA		SI,[DATABUF]
+						XOR		BX,BX
 
-						MOV		AH,3FH
-						MOV		CX,256
-						MOV		DX,OFFSET DATABUF
-						INT		21H
+DUMP_OUTER_LOOP:
+						LODSB
+						CALL	PRINT_AL
+						MOV		AL,' '
+						CALL	PUTC
+						INC		BL
+						CMP		BL,16
+						JB		DUMP_OUTER_LOOP
 
-						JC		FILE_READ_ERROR
-
-						ADD		AX,3
-						AND		AX,0FFFCh
-						MOVZX	ECX,AX		; Transfer size 
-						PUSH	ECX			; Save transfer size
-
-						SHR		ECX,2		; Make it for MOVSD
-						JCXZ	SEND_PHYSMEM_DONE
-
-						MOV		EDX,EDI
-						SHR		EDX,16
-						MOV		AX,DI
-
-						MOV		SI,OFFSET DATABUF
-
-						;   DX:AX    Physical Address  DX=High_16_bit  AX=Low_16_bit
-						;   DS:SI    Source
-						;   CX       Transfer size.  It uses MOVSB.
-
-						CALL	WRITE_HIGHD
-
-						POP		ECX
-						POP		EDI
-						POP		BX
-						ADD		EDI,ECX
-						JMP		SEND_PHYSMEM_OUTER_LOOP
-
-SEND_PHYSMEM_DONE:
-						POP		ECX
-						POP		EDI
-						POP		BX
-
-						MOV		AH,3EH
-						INT		21H
+						MOV		AL,' '
+						CALL	PUTC
+						MOV		AL,'|'
+						CALL	PUTC
+						MOV		AL,' '
+						CALL	PUTC
 
 
-						MOV		SI,OFFSET DONE_TEXT
-						CALL	PRINT_CSTR
+						SUB		SI,16
+						MOV		BL,0
+DUMP_ASCII_LOOP:		LODSB
+						CALL	MAKEPRINTABLE
+						CALL	PUTC
+						INC		BL
+						CMP		BL,16
+						JB		DUMP_ASCII_LOOP
+
+
 						CALL	PRINT_CRLF
+						INC		BH
+						MOV		BL,0
+						CMP		BH,16
+						JB		DUMP_OUTER_LOOP
+
 
 						MOV		AH,4CH
 						INT		21H
-
-
-INSUFFICIENT_PARAM:
-						POP		DS
-						MOV		SI,OFFSET USAGE_TEXT
-						CALL	PRINT_CSTR
-
-						MOV		AH,4CH
-						INT		21H
-
-CANNOT_OPEN_FILE:
-						MOV		SI,OFFSET CANNOT_OPEN_FILE_TEXT
-						CALL	PRINT_CSTR
-						MOV		AH,4CH
-						INT		21H
-
-
-FILE_READ_ERROR:
-						MOV		SI,OFFSET READ_ERROR_TEXT
-						CALL	PRINT_CSTR
-						CALL	PRINT_CRLF
-						CALL	PRINT_AX
-						CALL	PRINT_CRLF
-						MOV		AH,4CH
-						INT		21H
-
-
-
 MAIN					ENDP
 
 
@@ -213,56 +145,6 @@ SKIP_SPACE_TAB			PROC
 						SUB		SI,1
 						RET
 SKIP_SPACE_TAB			ENDP
-
-
-
-COPY_WORD				PROC
-						PUSH	SI
-						PUSH	DI
-						PUSH	AX
-
-						CLD
-
-COPY_WORD_LOOP:	LODSB
-						CMP		AL,020H
-						JBE		COPY_WORD_END
-						STOSB
-						JMP		COPY_WORD_LOOP
-COPY_WORD_END:
-						SUB		AL,AL
-						STOSB
-
-						POP		AX
-						POP		DI
-						POP		SI
-						RET
-COPY_WORD				ENDP
-
-
-
-FIND_SPACE_TAB			PROC
-						CLD
-FIND_SPACE_TAB_LOOP:	LODSB
-						CMP		AL,' '
-						JE		SPACE_TAB_FOUND
-						CMP		AL,9
-						JE		SPACE_TAB_FOUND
-						CMP		AL,0
-						JE		SPACE_TAB_NOT_FOUND
-						CMP		AL,0Ah
-						JE		SPACE_TAB_NOT_FOUND
-						CMP		AL,0Dh
-						JE		SPACE_TAB_NOT_FOUND
-						JMP		FIND_SPACE_TAB_LOOP
-SPACE_TAB_FOUND:
-						DEC		SI
-						CLC
-						RET
-SPACE_TAB_NOT_FOUND:
-						STC
-						RET
-
-FIND_SPACE_TAB			ENDP
 
 
 
@@ -332,18 +214,7 @@ CODE					ENDS
 
 
 DATA					SEGMENT	USE16
-TITLE_LOGO				DB		"PHYSWRIT by CaptainYS http://www.ysflight.com",0DH,0AH,0
-
-USAGE_TEXT				DB		"Usage: PHYSWRIT physAddr file",0Dh,0Ah,0
-
-CANNOT_OPEN_FILE_TEXT	DB		"Cannot Open File.",0Dh,0Ah,0
-
-READ_ERROR_TEXT			DB		"File Read Error.",0Dh,0Ah,0
-
-DONE_TEXT				DB		"Transfer Done.",0Dh,0Ah,0
-
-PHYSADDR_BUF			DB		16 dup(0)
-FILENAME_BUF			DB		256 dup(0)
+TITLE_LOGO				DB		"PHYSDUMP by CaptainYS http://www.ysflight.com",0DH,0AH,0
 
 DATABUF					DB		256 dup(0)
 
