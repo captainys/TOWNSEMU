@@ -1,4 +1,4 @@
-alltargets : exe\physdump.exe exe\physdmpw.exe exe\physwrit.exe exe\dosntfy.exe exe\tgdrv.com exe\tgdrv.sys exe\biosver.exe
+alltargets : exe\physdump.exe exe\physdmpw.exe exe\physwrit.exe exe\physwriw.exe exe\physveri.exe exe\dosntfy.exe exe\tgdrv.com exe\tgdrv.sys exe\biosver.exe
 
 
 
@@ -29,6 +29,26 @@ exe\physwrit.exe : build\physwrit.obj
 	link build\physwrit.obj;
 	copy physwrit.exe exe\.
 	del physwrit.exe
+
+
+
+build\physwriw.obj : physwriw.asm print.asm rdhigh.asm wrhigh.asm gdt.asm
+	masm physwriw.asm build\physwriw.obj build\physwriw.lst NUL
+
+exe\physwriw.exe : build\physwriw.obj
+	link build\physwriw.obj;
+	copy physwriw.exe exe\.
+	del physwriw.exe
+
+
+
+build\physveri.obj : physveri.asm print.asm rdhigh.asm wrhigh.asm gdt.asm
+	masm physveri.asm build\physveri.obj build\physveri.lst NUL
+
+exe\physveri.exe : build\physveri.obj
+	link build\physveri.obj;
+	copy physveri.exe exe\.
+	del physveri.exe
 
 
 
