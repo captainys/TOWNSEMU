@@ -47,7 +47,7 @@ add_test(
 		-DAMPERWIRELINE
 		-DEBUG
 		-POWEROFFAT
-		8000:00003300
+		8000:0000
 )
 
 add_test(
@@ -297,6 +297,7 @@ add_test(
 		-UNITTEST
 		-DONTAUTOSAVECMOS
 		-DAMPERWIRELINE
+		-SLOWMODEFREQ 40
 )
 
 add_test(
@@ -326,6 +327,7 @@ add_test(
 		-USEFPU
 		-DONTAUTOSAVECMOS
 		-DAMPERWIRELINE
+		-SLOWMODEFREQ 40
 )
 
 add_test(
@@ -341,6 +343,7 @@ add_test(
 		-DONTUSEFPU
 		-DONTAUTOSAVECMOS
 		-DAMPERWIRELINE
+		-SLOWMODEFREQ 40
 )
 
 add_test(
@@ -463,6 +466,7 @@ add_test(
 		-UNITTEST
 		-DONTAUTOSAVECMOS
 		-DAMPERWIRELINE
+		-SLOWMODEFREQ 40
 )
 
 add_test(
@@ -479,6 +483,7 @@ add_test(
 		-UNITTEST
 		-DONTAUTOSAVECMOS
 		-DAMPERWIRELINE
+		-SLOWMODEFREQ 40
 )
 
 add_test(
@@ -529,6 +534,7 @@ add_test(
 		-UNITTEST
 		-DONTAUTOSAVECMOS
 		-DAMPERWIRELINE
+		-SLOWMODEFREQ 40
 )
 
 add_test(
@@ -543,6 +549,7 @@ add_test(
 		-UNITTEST
 		-DONTAUTOSAVECMOS
 		-DAMPERWIRELINE
+		-SLOWMODEFREQ 40
 )
 
 add_test(
@@ -601,6 +608,7 @@ add_test(
 		-DONTAUTOSAVECMOS
 		-LOWRES
 		-DAMPERWIRELINE
+		-SLOWMODEFREQ 40
 )
 
 add_test(

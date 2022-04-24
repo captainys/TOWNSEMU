@@ -138,6 +138,7 @@ public:
 	unsigned int memSizeInMB=4;
 
 	unsigned int freq=33;
+	unsigned int slowModeFreq=0; // 0->No Change
 
 	unsigned int mouseIntegrationSpeed=256;
 	bool considerVRAMOffsetInMouseIntegration=true;

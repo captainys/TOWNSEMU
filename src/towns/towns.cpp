@@ -122,6 +122,10 @@ void FMTowns::State::PowerOn(void)
 		towns.state.currentFreq=argv.freq;
 		towns.state.fastModeFreq=argv.freq;
 	}
+	if(0!=argv.slowModeFreq)
+	{
+		towns.var.slowModeFreq=argv.slowModeFreq;
+	}
 	towns.cpu.state.fpuState.enabled=argv.useFPU;
 
 	if(0!=argv.memSizeInMB)

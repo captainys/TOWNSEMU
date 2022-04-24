@@ -242,6 +242,6 @@ void FMTowns::AdjustMachineSpeedForMemoryWait(void)
 	}
 	else
 	{
-		state.currentFreq=FREQUENCY_SLOWMODE;
+		state.currentFreq=var.slowModeFreq;
 	}
 }

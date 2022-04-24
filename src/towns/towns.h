@@ -68,7 +68,7 @@ public:
 	enum
 	{
 		FREQUENCY_DEFAULT=25,                // MHz
-		FREQUENCY_SLOWMODE=8,                // MHz
+		FREQUENCY_SLOWMODE_DEFAULT=8,        // MHz
 		FAST_DEVICE_POLLING_INTERVAL=10000,  // Nano-seconds
 		DEVICE_POLLING_INTERVAL=   8000000,  // 8ms
 
@@ -282,6 +282,8 @@ public:
 		    the original frequency is saved in frequencyBackup.
 		*/
 		unsigned int frequencyBackup=0;
+
+		unsigned int slowModeFreq=FREQUENCY_SLOWMODE_DEFAULT;
 
 		/*! VM State loaded at start-up.
 		    Loaded in TownsThread::VMStart

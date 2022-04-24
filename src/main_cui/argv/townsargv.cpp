@@ -57,6 +57,10 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  Let it run automatically to the end without taking control commands." << std::endl;
 	std::cout << "-FREQ frequency_in_MHz" << std::endl;
 	std::cout << "  Specify CPU frequency in Megahertz." << std::endl;
+	std::cout << "-SLOWMODEFREQ frequency_in_MHz" << std::endl;
+	std::cout << "  Specify CPU frequency when set to SLOW mode in Megahertz." << std::endl;
+	std::cout << "  Some FM TOWNS models (confirmed 2F) sets machine in SLOW mode" << std::endl;
+	std::cout << "  in the boot ROM." << std::endl;
 	std::cout << "-USEFPU / -DONTUSEFPU" << std::endl;
 	std::cout << "  Use or do not use floating-point unit." << std::endl;
 	std::cout << "-MEMSIZE memory_size_in_MB" << std::endl;
@@ -381,6 +385,11 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		else if("-FREQ"==ARG && i+1<argc)
 		{
 			freq=cpputil::Atoi(argv[i+1]);
+			++i;
+		}
+		else if("-SLOWMODEFREQ"==ARG && i+1<argc)
+		{
+			slowModeFreq=cpputil::Atoi(argv[i+1]);
 			++i;
 		}
 		else if("-USEFPU"==ARG)
