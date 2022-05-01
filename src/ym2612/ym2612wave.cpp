@@ -49,7 +49,7 @@ inline void WordOp_Set(unsigned char *ptr,short value)
 #endif
 }
 
-inline int Gain(int a,int b)
+static inline int Gain(int a,int b)
 {
 	int c=a+b;
 	if(c<-32768 || 32767<c)
