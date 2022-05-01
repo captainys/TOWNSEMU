@@ -49,6 +49,18 @@ inline void WordOp_Set(unsigned char *ptr,short value)
 #endif
 }
 
+inline int Gain(int a,int b)
+{
+	int c=a+b;
+	if(c<-32768 || 32767<c)
+	{
+		return c/2;
+	}
+	else
+	{
+		return c;
+	}
+}
 
 
 // #define YM2612_DEBUGOUTPUT
@@ -1013,8 +1025,8 @@ long long int YM2612::MakeWaveForNSamplesTemplate(unsigned char wave[],unsigned 
 			ch.lastSlot0Out[1]=ch.lastSlot0Out[0];
 			ch.lastSlot0Out[0]=s0Out;
 
-			leftOut+=(LeftANDPtn[chNum]&ampl);
-			rightOut+=(RightANDPtn[chNum]&ampl);
+			leftOut=Gain(leftOut,(LeftANDPtn[chNum]&ampl));
+			rightOut=Gain(rightOut,(RightANDPtn[chNum]&ampl));
 
 			ch.slots[0].phaseS12+=ch.slots[0].phaseS12Step+PMSAdjustment[0];
 			ch.slots[1].phaseS12+=ch.slots[1].phaseS12Step+PMSAdjustment[1];
@@ -1246,32 +1258,32 @@ int YM2612::CalculateAmplitude(int chNum,const uint64_t timeInMicrosecS12[NUM_SL
 		lastSlot0Out=s0out;
 		s1out=SLOTOUTEV_Db_1(s0out);
 		s2out=SLOTOUTEV_Db_2(s1out);
-		return SLOTOUTEV_Db_3(s2out)*state.volume/UNSCALED_MAX;
+		return SLOTOUTEV_Db_3(s2out)*state.volume/DIV_CONNECT0;
 	case 1:
 		s0out=SLOTOUTEV_Db_0(0);
 		lastSlot0Out=s0out;
 		s1out=SLOTOUTEV_Db_1(0);
 		s2out=SLOTOUTEV_Db_2(s0out+s1out);
-		return SLOTOUTEV_Db_3(s2out)*state.volume/UNSCALED_MAX;
+		return SLOTOUTEV_Db_3(s2out)*state.volume/DIV_CONNECT1;
 	case 2:
 		s0out=SLOTOUTEV_Db_0(0);
 		lastSlot0Out=s0out;
 		s1out=SLOTOUTEV_Db_1(0);
 		s2out=SLOTOUTEV_Db_2(s1out);
-		return SLOTOUTEV_Db_3(s0out+s2out)*state.volume/UNSCALED_MAX;
+		return SLOTOUTEV_Db_3(s0out+s2out)*state.volume/DIV_CONNECT2;
 	case 3:
 		s0out=SLOTOUTEV_Db_0(0);
 		lastSlot0Out=s0out;
 		s1out=SLOTOUTEV_Db_1(s0out);
 		s2out=SLOTOUTEV_Db_2(0);
-		return SLOTOUTEV_Db_3(s1out+s2out)*state.volume/UNSCALED_MAX;
+		return SLOTOUTEV_Db_3(s1out+s2out)*state.volume/DIV_CONNECT3;
 	case 4:
 		s0out=SLOTOUTEV_Db_0(0);
 		lastSlot0Out=s0out;
 		s1out=SLOTOUTEV_Db_1(s0out);
 		s2out=SLOTOUTEV_Db_2(0);
 		s3out=SLOTOUTEV_Db_3(s2out);
-		return ((s1out+s3out)*state.volume/UNSCALED_MAX);
+		return ((s1out+s3out)*state.volume/DIV_CONNECT4);
 		// Test only Slot 3 -> return SLOTOUTEV_Db_3(0)*state.volume/UNSCALED_MAX;
 	case 5:
 		s0out=SLOTOUTEV_Db_0(0);
@@ -1279,20 +1291,20 @@ int YM2612::CalculateAmplitude(int chNum,const uint64_t timeInMicrosecS12[NUM_SL
 		s1out=SLOTOUTEV_Db_1(s0out);
 		s2out=SLOTOUTEV_Db_2(s0out);
 		s3out=SLOTOUTEV_Db_3(s0out);
-		return ((s1out+s2out+s3out)*state.volume/UNSCALED_MAX);
+		return ((s1out+s2out+s3out)*state.volume/DIV_CONNECT5);
 	case 6:
 		s0out=SLOTOUTEV_Db_0(0);
 		lastSlot0Out=s0out;
 		s1out=SLOTOUTEV_Db_1(s0out);
 		s2out=SLOTOUTEV_Db_2(0    );
 		s3out=SLOTOUTEV_Db_3(0    );
-		return ((s1out+s2out+s3out)*state.volume/UNSCALED_MAX);
+		return ((s1out+s2out+s3out)*state.volume/DIV_CONNECT6);
 	case 7:
 		s0out=SLOTOUTEV_Db_0(0);
 		lastSlot0Out=s0out;
 		s1out=SLOTOUTEV_Db_1(0);
 		s2out=SLOTOUTEV_Db_2(0);
 		s3out=SLOTOUTEV_Db_3(0);
-		return ((s0out+s1out+s2out+s3out)*state.volume/UNSCALED_MAX);
+		return ((s0out+s1out+s2out+s3out)*state.volume/DIV_CONNECT7);
 	}
 }
