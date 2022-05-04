@@ -746,6 +746,9 @@ public:
 	void Daikoukai_Dentaku_Min(void);
 	void Daikoukai_Dentaku_AC(void);
 	void Daikoukai_Dentaku_RET(void);
+
+	void AB2_Identify(void);  // Called on Mouse-BIOS initialization.
+	void AB2_Throttle(unsigned int inputThr);
 };
 
 
