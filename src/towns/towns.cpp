@@ -179,6 +179,15 @@ void FMTowns::State::PowerOn(void)
 			towns.physMem.SetCMOS(CMOSBinary);
 		}
 	}
+	if(true==argv.zeroCMOS)
+	{
+		std::vector <unsigned char> cmos;
+		for(int i=0; i<TOWNS_CMOS_SIZE; ++i)
+		{
+			cmos.push_back(0);
+		}
+		towns.physMem.SetCMOS(cmos);
+	}
 	if(true==argv.alwaysBootToFASTMode)
 	{
 		towns.physMem.state.CMOSRAM[TOWNS_CMOSRAM_FASTMODE_FLAG]=1;
@@ -296,6 +305,7 @@ void FMTowns::State::PowerOn(void)
 			towns.physMem.state.memCard.memCardType=argv.memCardType;
 			towns.physMem.state.memCard.fName=argv.memCardImgFName;
 			towns.physMem.state.memCard.changed=false;  // Because it was already in upon power-on.
+			towns.physMem.state.memCard.writeProtected=argv.memCardWriteProtected;
 		}
 	}
 

@@ -26,25 +26,26 @@ def ExeExtension():
 
 
 def TsugaruExe():
-	if os.path.isfile("./main_cui/Tsugaru_CUI"+ExeExtension()):
-		return "./main_cui/Tsugaru_CUI"+ExeExtension()
-	if os.path.isfile("./main_cui/Release/Tsugaru_CUI"+ExeExtension()):
-		return "./main_cui/Release/Tsugaru_CUI"+ExeExtension()
+	f=os.path.join(BUILDDIR,"main_cui/Tsugaru_CUI"+ExeExtension())
+	if os.path.isfile(f):
+		return f
+	f=os.path.join(BUILDDIR,"main_cui/Release/Tsugaru_CUI"+ExeExtension())
+	if os.path.isfile(f):
+		return f
 	throw
 
 
 
 def Run(argv):
-	os.chdir(BUILDDIR)
 	subprocess.Popen([
 		TsugaruExe(),
 		ROMDIR,
 		"-SYM",
-		"../symtables/RUN"+TOWNSTYPE+".txt",
+		os.path.join(THISDIR,"../symtables/RUN"+TOWNSTYPE+".txt"),
 		"-HD0",
 		os.path.join(DISKDIR,"hddimage.bin"),
 		"-CMOS",
-		"../testdata/CMOS.bin",
+		os.path.join(THISDIR,"../testdata/CMOS.bin"),
 		"-DONTAUTOSAVECMOS",
 		#"-DEBUG",
 		#"-PAUSE",
