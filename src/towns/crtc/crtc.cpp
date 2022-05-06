@@ -1586,7 +1586,19 @@ std::vector <std::string> TownsCRTC::GetPageStatusText(const Layer &layer) const
 
 	return text;
 }
-
+std::vector <std::string> TownsCRTC::GetRegisterDumpText(void) const
+{
+	std::vector <std::string> txt;
+	for(auto reg : state.crtcReg)
+	{
+		txt.push_back(cpputil::Ustox(reg));
+	}
+	for(auto reg : state.sifter)
+	{
+		txt.push_back(cpputil::Ubtox(reg));
+	}
+	return txt;
+}
 std::vector <std::string> TownsCRTC::GetPaletteText(void) const
 {
 	return GetLowResPaletteText(state.palette);
