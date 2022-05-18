@@ -341,6 +341,51 @@ void FileSys::Seek(int sftIdx,uint32_t pos)
 		}
 	}
 }
+
+uint32_t FileSys::Fsize(int sftIdx)
+{
+	uint32_t sz=0;
+	if(0<=sftIdx &&
+	   sftIdx<MAX_NUM_OPEN_FILE &&
+	   true==sft[sftIdx].fp.is_open())
+	{
+		if(true==sft[sftIdx].fp.eof())
+		{
+			sft[sftIdx].fp.clear(); // Otherwise, cannot seek, tellg() will return -1.
+		}
+
+		switch(sft[sftIdx].mode)
+		{
+		case OPENMODE_READ://   // Keep this number.  Compatible with DOS SFT
+			{
+				auto curPos=sft[sftIdx].fp.tellg();
+
+				sft[sftIdx].fp.seekg(0,std::ios::end);
+				sz=(uint32_t)sft[sftIdx].fp.tellg();
+
+				sft[sftIdx].fp.seekg(curPos,std::ios::beg);
+			}
+			break;
+		case OPENMODE_WRITE://  // Keep this number.  Compatible with DOS SFT
+		case OPENMODE_RW://     // Keep this number.  Compatible with DOS SFT
+			{
+				auto curPos=sft[sftIdx].fp.tellp();
+
+				sft[sftIdx].fp.seekp(0,std::ios::end);
+				sz=(uint32_t)sft[sftIdx].fp.tellp();
+
+				sft[sftIdx].fp.seekp(curPos,std::ios::beg);
+			}
+			break;
+		}
+	}
+	return sz;
+}
+
+void FileSys::TruncateToSize(int SftIdx,uint32_t pos)
+{
+}
+
 bool FileSys::CloseFile(int sftIdx)
 {
 	if(0<=sftIdx &&

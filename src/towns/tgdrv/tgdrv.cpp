@@ -374,6 +374,8 @@ bool TownsTgDrv::Int2F_1109_WriteToRemoteFile(void)
 	auto sharedDirIdx=DriveLetterToSharedDirIndex(drvLetter);
 	if(0<=sharedDirIdx)
 	{
+		std::cout << cpputil::Ustox(townsPtr->cpu.GetCX()) << std::endl;
+
 		auto hostSFTIdx=townsPtr->cpu.FetchWord(
 		    townsPtr->cpu.state.CS().addressSize,
 		    townsPtr->cpu.state.ES(),
@@ -383,43 +385,67 @@ bool TownsTgDrv::Int2F_1109_WriteToRemoteFile(void)
 		   hostSFTIdx<FileSys::MAX_NUM_OPEN_FILE &&
 		   true==sharedDir[sharedDirIdx].sft[hostSFTIdx].IsOpen())
 		{
-			auto DMABuffer=GetDTAAddress();
-			std::vector <unsigned char> data;
-			data.resize(townsPtr->cpu.GetCX());
-			for(int i=0; i<townsPtr->cpu.GetCX(); ++i)
+			if(0!=townsPtr->cpu.GetCX()) // If CX==0, truncate to the current file position.  See below.
 			{
-				data[i]=townsPtr->mem.FetchByte(DMABuffer+i);
-			}
+				auto DMABuffer=GetDTAAddress();
+				std::vector <unsigned char> data;
+				data.resize(townsPtr->cpu.GetCX());
+				for(int i=0; i<townsPtr->cpu.GetCX(); ++i)
+				{
+					data[i]=townsPtr->mem.FetchByte(DMABuffer+i);
+				}
 
-			auto position=FetchFilePositionFromSFT(townsPtr->cpu.state.ES(),townsPtr->cpu.state.DI());
-			sharedDir[sharedDirIdx].Seek(hostSFTIdx,position);
+				auto position=FetchFilePositionFromSFT(townsPtr->cpu.state.ES(),townsPtr->cpu.state.DI());
+				sharedDir[sharedDirIdx].Seek(hostSFTIdx,position);
 
-			auto bytesWritten=sharedDir[sharedDirIdx].sft[hostSFTIdx].Write(data);
-			auto filePointer=sharedDir[sharedDirIdx].sft[hostSFTIdx].GetFilePointer();
-			townsPtr->cpu.StoreDword(
-				townsPtr->mem,
-				townsPtr->cpu.state.CS().addressSize,
-				townsPtr->cpu.state.ES(),
-				townsPtr->cpu.state.DI()+0x15,
-				filePointer);
-
-			uint32_t newSize=townsPtr->cpu.FetchDword(
-				townsPtr->cpu.state.CS().addressSize,
-				townsPtr->cpu.state.ES(),
-				townsPtr->cpu.state.DI()+0x11,
-				townsPtr->mem);
-
-			if(newSize<filePointer)
-			{
+				auto bytesWritten=sharedDir[sharedDirIdx].sft[hostSFTIdx].Write(data);
+				auto filePointer=sharedDir[sharedDirIdx].sft[hostSFTIdx].GetFilePointer();
 				townsPtr->cpu.StoreDword(
 					townsPtr->mem,
 					townsPtr->cpu.state.CS().addressSize,
 					townsPtr->cpu.state.ES(),
-					townsPtr->cpu.state.DI()+0x11,
+					townsPtr->cpu.state.DI()+0x15,
 					filePointer);
+
+				uint32_t newSize=townsPtr->cpu.FetchDword(
+					townsPtr->cpu.state.CS().addressSize,
+					townsPtr->cpu.state.ES(),
+					townsPtr->cpu.state.DI()+0x11,
+					townsPtr->mem);
+
+				if(newSize<filePointer)
+				{
+					townsPtr->cpu.StoreDword(
+						townsPtr->mem,
+						townsPtr->cpu.state.CS().addressSize,
+						townsPtr->cpu.state.ES(),
+						townsPtr->cpu.state.DI()+0x11,
+						filePointer);
+				}
+				ReturnCX(bytesWritten);
+				townsPtr->cpu.SetCF(false);
 			}
-			ReturnCX(bytesWritten);
-			townsPtr->cpu.SetCF(false);
+			else
+			{
+				// http://www.ctyme.com/intr/rb-2791.htm
+				// CX=0 will truncate or extend the file to the current file position.
+
+				auto position=FetchFilePositionFromSFT(townsPtr->cpu.state.ES(),townsPtr->cpu.state.DI());
+				auto fsize=sharedDir[sharedDirIdx].Fsize(hostSFTIdx);
+				std::cout << "Current Position :" << position << std::endl;
+				std::cout << "Current File Size:" << fsize << std::endl;
+				if(fsize<position)
+				{
+					std::cout << "TGDRV Warning: Fwrite with CX=0, but TGDRV does not extend file." << std::endl;
+				}
+				else if(position<fsize)
+				{
+					sharedDir[sharedDirIdx].TruncateToSize(hostSFTIdx,position);
+				}
+
+				ReturnCX(0);
+				townsPtr->cpu.SetCF(false);
+			}
 		}
 		else
 		{
@@ -663,6 +689,8 @@ bool TownsTgDrv::Int2F_1116_OpenExistingFile(void)
 	if(0<=sharedDirIdx)
 	{
 		auto subPath=DropDriveLetter(fName);
+		auto mode=FetchStackParam0();
+		std::cout << cpputil::Ustox(mode) << std::endl;
 
 		auto invalidErr=CheckFileName(fName);
 		if(TOWNS_DOSERR_NO_ERROR!=invalidErr)
