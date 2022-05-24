@@ -665,6 +665,10 @@ unsigned int TownsStrToApp(std::string str)
 	{
 		return TOWNS_APPSPECIFIC_RASHINBAN;
 	}
+	if("AFTERBURNER"==str || "AFTERBURNER2"==str || "AB2"==str)
+	{
+		return TOWNS_APPSPECIFIC_AFTERBURNER2;
+	}
 	return TOWNS_APPSPECIFIC_NONE;
 }
 std::string TownsAppToStr(unsigned int i)
@@ -703,6 +707,8 @@ std::string TownsAppToStr(unsigned int i)
 		return "DAIKOUKAIJIDAI";
 	case TOWNS_APPSPECIFIC_RASHINBAN:
 		return "RASHINBAN";
+	case TOWNS_APPSPECIFIC_AFTERBURNER2:
+		return "AFTERBURNER2";
 	}
 }
 

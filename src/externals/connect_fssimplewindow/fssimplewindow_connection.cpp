@@ -482,6 +482,13 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 				towns.keyboard.PushFifo(TOWNS_KEYFLAG_JIS_RELEASE,keyToPress);
 			}
 		}
+		else if(TOWNS_APPSPECIFIC_AFTERBURNER2==towns.state.appSpecificSetting)
+		{
+			// Afterburner II Application-Specific Customization
+			// Contribution from BCC.
+			unsigned int inputThr = (unsigned int)((1.0f - gamePads[throttlePhysicalId].axes[throttleAxis]) * 1.5f); // 0 to 2 scale
+			towns.AB2_Throttle(inputThr);
+		}
 	}
 
 	// For the time translation mode only.

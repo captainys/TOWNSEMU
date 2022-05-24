@@ -341,6 +341,81 @@ void FileSys::Seek(int sftIdx,uint32_t pos)
 		}
 	}
 }
+
+uint32_t FileSys::Fsize(int sftIdx)
+{
+	uint32_t sz=0;
+	if(0<=sftIdx &&
+	   sftIdx<MAX_NUM_OPEN_FILE &&
+	   true==sft[sftIdx].fp.is_open())
+	{
+		if(true==sft[sftIdx].fp.eof())
+		{
+			sft[sftIdx].fp.clear(); // Otherwise, cannot seek, tellg() will return -1.
+		}
+
+		switch(sft[sftIdx].mode)
+		{
+		case OPENMODE_READ://   // Keep this number.  Compatible with DOS SFT
+			{
+				auto curPos=sft[sftIdx].fp.tellg();
+
+				sft[sftIdx].fp.seekg(0,std::ios::end);
+				sz=(uint32_t)sft[sftIdx].fp.tellg();
+
+				sft[sftIdx].fp.seekg(curPos,std::ios::beg);
+			}
+			break;
+		case OPENMODE_WRITE://  // Keep this number.  Compatible with DOS SFT
+		case OPENMODE_RW://     // Keep this number.  Compatible with DOS SFT
+			{
+				auto curPos=sft[sftIdx].fp.tellp();
+
+				sft[sftIdx].fp.seekp(0,std::ios::end);
+				sz=(uint32_t)sft[sftIdx].fp.tellp();
+
+				sft[sftIdx].fp.seekp(curPos,std::ios::beg);
+			}
+			break;
+		}
+	}
+	return sz;
+}
+
+void FileSys::TruncateToSize(int sftIdx,uint32_t pos)
+{
+	uint32_t sz=0;
+	if(0<=sftIdx &&
+	   sftIdx<MAX_NUM_OPEN_FILE &&
+	   true==sft[sftIdx].fp.is_open() &&
+	   (OPENMODE_WRITE==sft[sftIdx].mode || OPENMODE_RW==sft[sftIdx].mode))
+	{
+		std::vector <unsigned char> data;
+
+		sft[sftIdx].fp.close();
+
+		auto fullPath=cpputil::MakeFullPathName(hostPath,sft[sftIdx].fName);
+		if(0<pos)
+		{
+			sft[sftIdx].fp.open(fullPath,std::ios::in|std::ios::binary);
+			if(sft[sftIdx].fp.is_open())
+			{
+				data.resize(pos);
+				for(auto &d : data)
+				{
+					d=0;
+				}
+				sft[sftIdx].fp.read((char *)data.data(),pos);
+				sft[sftIdx].fp.close();
+			}
+		}
+
+		sft[sftIdx].fp.open(fullPath,std::ios::in|std::ios::out|std::ios::trunc|std::ios::binary);
+		sft[sftIdx].fp.write((char *)data.data(),data.size());
+		// Leave it open.
+	}
+}
+
 bool FileSys::CloseFile(int sftIdx)
 {
 	if(0<=sftIdx &&

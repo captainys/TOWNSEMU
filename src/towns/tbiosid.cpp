@@ -398,6 +398,9 @@ void FMTowns::OnCRTC_HST_Write(void)
 				std::cout << "  MousePointerY Physical Base=" << cpputil::Uitox(state.appSpecific_MousePtrY) << std::endl;
 			}
 			break;
+		case TOWNS_APPSPECIFIC_AFTERBURNER2:
+			AB2_Identify();
+			break;
 		}
 	}
 }

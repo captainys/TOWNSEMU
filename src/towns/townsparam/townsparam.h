@@ -67,6 +67,7 @@ public:
 	std::string ROMPath;
 	std::string CMOSFName;
 	bool autoSaveCMOS=true; // If this flag is false, CMOSFName will not be copied to FMTowns::Variable.
+	bool zeroCMOS=false; // Clear CMOS on Start Up
 	std::string fdImgFName[NUM_FDDRIVES];
 	bool fdImgWriteProtect[NUM_FDDRIVES]={false,false,false,false};
 	std::string cdImgFName;
@@ -78,6 +79,7 @@ public:
 	std::string symbolFName;
 	std::string playbackEventLogFName;
 	std::string keyMapFName;
+	bool memCardWriteProtected=false;
 
 	std::vector <std::string> sharedDir;
 
@@ -138,6 +140,7 @@ public:
 	unsigned int memSizeInMB=4;
 
 	unsigned int freq=33;
+	unsigned int slowModeFreq=0; // 0->No Change
 
 	unsigned int mouseIntegrationSpeed=256;
 	bool considerVRAMOffsetInMouseIntegration=true;

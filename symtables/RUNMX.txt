@@ -1482,6 +1482,58 @@ X
 /end
 /begin0
 T 2
+* 0000AF37:00000512
+# 
+R 
+L IO.SYS: (Prob)Load Device Driver Loop.
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 2
+* 0000AF37:000005A2
+# 
+R 
+L IO.SYS:(?)Load .SYS inner loop
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000AF37:0000066A
+# IO.SYS: Read .SYS
+R 
+L 
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 2
+* 0000AF37:00000672
+# 
+R 
+L Print 'File Not Found' and continue'
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 2
 * 0000AF37:0000067A
 # 
 R 
@@ -1507,11 +1559,518 @@ O 0
 X 
 /end
 /begin0
+T 0
+* 0000AF37:000006A2
+# CS:[000FH]=0C000H
+R 
+L 
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000AF37:000006A6
+# Jump if DEVICE_END is before ENDMEM
+R 
+L 
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 2
+* 0000AF37:000006AC
+# Pointer to the driver.
+R 
+L DEVICE_END is before the end of the world.
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000AF37:000006B5
+# ES:DI=SYSVARS
+R 
+L 
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000AF37:000006BA
+# DEVFLAGS
+R 
+L 
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000AF37:000006BC
+# IS_CHARDEV
+R 
+L 
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000AF37:000006C9
+# SYSVARS+0CH=BCON
+R 
+L 
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000AF37:000006D6
+# SYSVARS+08H=BCLOCK
+R 
+L 
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 2
+* 0000AF37:000006E1
+# [PACKET+0DH] Must be the number of units.
+R 
+L IS_NOT_CHARDEV
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000AF37:000006F4
+# SYSVARS+20H=NUM_DPB
+R 
+L 
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000AF37:000006FC
+# 1AH=Drive Z
+R 
+L 
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000AF37:00000703
+# 'Too many disk devices.'
+R 
+L 
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000AF37:0000071C
+# SYSVARS
+R 
+L 
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000AF37:00000721
+# First DPB Pointer
+R 
+L 
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 2
+* 0000AF37:00000725
+# 
+R 
+L IO.SYS: (Prob)FindNext to the last DPB
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000AF37:00000763
+# Build DPB
+R 
+L 
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000AF37:0000077A
+# '$\r\n'
+R 
+L 
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000AF37:0000077D
+# '\r\n'
+R 
+L 
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 2
+* 0000AF37:000007A1
+# SYSVARS
+R 
+L Link Driver to Driver Chain
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000AF37:000007A6
+# DEVHEAD Offset
+R 
+L 
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000AF37:000007AA
+# DEVHEAD Segment
+R 
+L 
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000AF37:000007AE
+# Pointer to the loaded driver
+R 
+L 
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000AF37:000007C1
+# Link Driver to Driver Chain
+R 
+L 
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000AF37:000007C3
+# Link Driver to Driver Chain
+R 
+L 
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000AF37:000007E7
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 1
+O 0
+X 
+/end
+/begin0
+T 1
+* 0000AF37:000008D2
+# 
+R 
+L #Bytes to #Pages
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000AF37:000009C5
+# PACKET+10H=Driver_End_Segment
+R 
+L 
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000AF37:000009D1
+# PACKET+0EH=Driver_End_Pointer
+R 
+L 
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000AF37:000009F7
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 1
+O 0
+X 
+/end
+/begin0
 T 1
 * 0000AF37:00000A02
 # 
 R 
-L Call Strategy or Interrupt
+L Call Strategy or Interrupt, CS:[0007H] is FAR PTR to driver
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 0000AF37:00000A75
+# 
+R 
+L Print File Not Found Message
+P 
+% 0
+M 0
+B 1
+O 0
+X 
+/end
+/begin0
+T 0
+* 0000AF37:00000A78
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 1
+O 0
+X 
+/end
+/begin0
+T 1
+* 0000AF37:00000A7B
+# 
+R 
+L Print Two Messages
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 2
+* 0000AF37:00000A7D
+# 
+R 
+L PUTS
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 2
+* 0000AF37:00000A88
+# 
+R 
+L PUTC
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 0000AF37:00000A91
+# 
+R 
+L Print Message
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 0000AF37:00000B6B
+# 
+R 
+L '\r\n'
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 0000AF37:00000BAC
+# 
+R 
+L 'The following file is not found.'
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 0000AF37:00000BF3
+# 
+R 
+L Invalid Country Code
+P 
+% 0
+M 0
+B 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 0000AF37:00000C13
+# 
+R 
+L CONFIG.SYS Too Large
 P 
 % 0
 M 0

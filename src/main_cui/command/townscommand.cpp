@@ -235,6 +235,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	dumpableMap["DMAC"]=DUMP_DMAC;
 	dumpableMap["FDC"]=DUMP_FDC;
 	dumpableMap["CRTC"]=DUMP_CRTC;
+	dumpableMap["CRTCDUMP"]=DUMP_CRTCDUMP;
 	dumpableMap["HRCRTC"]=DUMP_HIRESCRTC;
 	dumpableMap["PALETTE"]=DUMP_PALETTE;
 	dumpableMap["HRPALETTE"]=DUMP_HIRESPALETTE;
@@ -1838,6 +1839,12 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 			break;
 		case DUMP_CRTC:
 			for(auto str : towns.crtc.GetStatusText())
+			{
+				std::cout << str << std::endl;
+			}
+			break;
+		case DUMP_CRTCDUMP:
+			for(auto str : towns.crtc.GetRegisterDumpText())
 			{
 				std::cout << str << std::endl;
 			}

@@ -57,6 +57,10 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  Let it run automatically to the end without taking control commands." << std::endl;
 	std::cout << "-FREQ frequency_in_MHz" << std::endl;
 	std::cout << "  Specify CPU frequency in Megahertz." << std::endl;
+	std::cout << "-SLOWMODEFREQ frequency_in_MHz" << std::endl;
+	std::cout << "  Specify CPU frequency when set to SLOW mode in Megahertz." << std::endl;
+	std::cout << "  Some FM TOWNS models (confirmed 2F) sets machine in SLOW mode" << std::endl;
+	std::cout << "  in the boot ROM." << std::endl;
 	std::cout << "-USEFPU / -DONTUSEFPU" << std::endl;
 	std::cout << "  Use or do not use floating-point unit." << std::endl;
 	std::cout << "-MEMSIZE memory_size_in_MB" << std::endl;
@@ -87,6 +91,9 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  Load Key-Mapping file." << std::endl;
 	std::cout << "-DONTAUTOSAVECMOS" << std::endl;
 	std::cout << "  This option will prevent VM from saving CMOS file on exit." << std::endl;
+	std::cout << "-ZEROCMOS" << std::endl;
+	std::cout << "-RESETCMOS" << std::endl;
+	std::cout << "  Zero-clear CMOS on boot." << std::endl;
 	std::cout << "-FDPATH path" << std::endl;
 	std::cout << "  Floppy-Disk Image Search Path." << std::endl;
 	std::cout << "  Repeat -FDPATH path1 -FDPATH path2 ... to specify multipl paths." << std::endl;
@@ -109,6 +116,9 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  IC Memory Card image file name." << std::endl;
 	std::cout << "-JEIDA4 image-file-name" << std::endl;
 	std::cout << "  IC Memory Card image file name.  Opened as JEIDA4 (PCMCIA)." << std::endl;
+	std::cout << "-ICMWP" << std::endl;
+	std::cout << "-JEIDA4WP" << std::endl;
+	std::cout << "  Write protect memory card." << std::endl;
 	std::cout << "-GAMEPORT0 KEY|PHYSx|ANAx|NONE" << std::endl;
 	std::cout << "-GAMEPORT1 KEY|PHYSx|ANAx|NONE" << std::endl;
 	std::cout << "  Specify game-port emulation.  By keyboard (Arrow,Z,X,A,S), or physical gamepad." << std::endl;
@@ -383,6 +393,11 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 			freq=cpputil::Atoi(argv[i+1]);
 			++i;
 		}
+		else if("-SLOWMODEFREQ"==ARG && i+1<argc)
+		{
+			slowModeFreq=cpputil::Atoi(argv[i+1]);
+			++i;
+		}
 		else if("-USEFPU"==ARG)
 		{
 			useFPU=true;
@@ -551,6 +566,10 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		else if("-DONTAUTOSAVECMOS"==ARG)
 		{
 			autoSaveCMOS=false;
+		}
+		else if("-ZEROCMOS"==ARG || "-RESETCMOS"==ARG)
+		{
+			zeroCMOS=true;
 		}
 		else if(("-HD0"==ARG ||
 		         "-HD1"==ARG ||
@@ -806,6 +825,10 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 			memCardType=TOWNS_MEMCARD_TYPE_JEIDA4;
 			memCardImgFName=argv[i+1];
 			++i;
+		}
+		else if("-ICMWP"==ARG || "-JEIDA4WP"==ARG)
+		{
+			memCardWriteProtected=true;
 		}
 		else if("-HIGHRES"==ARG)
 		{

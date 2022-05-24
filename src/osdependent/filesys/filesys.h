@@ -174,6 +174,10 @@ public:
 
 	void Seek(int SftIdx,uint32_t pos);
 
+	uint32_t Fsize(int SftIdx);
+
+	void TruncateToSize(int SftIdx,uint32_t pos);
+
 	/*! SftIdx is an index returned by one of open functions.
 	*/
 	bool CloseFile(int SftIdx);

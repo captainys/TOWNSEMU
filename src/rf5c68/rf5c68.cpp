@@ -34,6 +34,19 @@ inline void WordOp_Add(unsigned char *ptr,int value)
 	cpputil::PutWord(ptr,(value&0xFFFF));
 }
 
+static inline int Gain(int a,int b)
+{
+	int c=a+b;
+	if(c<-32768 || 32767<c)
+	{
+		return c/2;
+	}
+	else
+	{
+		return c;
+	}
+}
+
 
 
 RF5C68::RF5C68()
@@ -201,8 +214,8 @@ unsigned int RF5C68::AddWaveForNumSamples(unsigned char waveBuf[],unsigned int n
 		auto &ch=state.ch[chNum];
 		LvolCh[chNum]=(ch.PAN&0x0F);
 		RvolCh[chNum]=((ch.PAN>>4)&0x0F);
-		LvolCh[chNum]=(LvolCh[chNum]*ch.ENV)*state.volume/(15*255);   // Lvol max=15, ENV max=255
-		RvolCh[chNum]=(RvolCh[chNum]*ch.ENV)*state.volume/(15*255);
+		LvolCh[chNum]=(LvolCh[chNum]*ch.ENV);
+		RvolCh[chNum]=(RvolCh[chNum]*ch.ENV);
 		pcmAddr[chNum]=(ch.playPtr<<FD_BIT_SHIFT);;
 		ch.repeatAfterThisSegment=false;
 
@@ -251,8 +264,8 @@ unsigned int RF5C68::AddWaveForNumSamples(unsigned char waveBuf[],unsigned int n
 				int R=L;
 				L*=Lvol;
 				R*=Rvol;
-				L>>=3;
-				R>>=3;
+				L>>=4;
+				R>>=4;
 				if(data&0x80)
 				{
 					L=-L;
@@ -261,8 +274,10 @@ unsigned int RF5C68::AddWaveForNumSamples(unsigned char waveBuf[],unsigned int n
 
 				if(true!=chMute[chNum])
 				{
-					Lout+=L;
-					Rout+=R;
+					L=(L*state.volume)/8192;
+					R=(R*state.volume)/8192;
+					Lout=Gain(Lout,L);
+					Rout=Gain(Rout,R);
 				}
 
 				auto prevBank=((pcmAddr[chNum]>>FD_BIT_SHIFT>>BANK_SHIFT)&0x0F);

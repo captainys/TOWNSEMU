@@ -122,6 +122,10 @@ void FMTowns::State::PowerOn(void)
 		towns.state.currentFreq=argv.freq;
 		towns.state.fastModeFreq=argv.freq;
 	}
+	if(0!=argv.slowModeFreq)
+	{
+		towns.var.slowModeFreq=argv.slowModeFreq;
+	}
 	towns.cpu.state.fpuState.enabled=argv.useFPU;
 
 	if(0!=argv.memSizeInMB)
@@ -174,6 +178,15 @@ void FMTowns::State::PowerOn(void)
 		{
 			towns.physMem.SetCMOS(CMOSBinary);
 		}
+	}
+	if(true==argv.zeroCMOS)
+	{
+		std::vector <unsigned char> cmos;
+		for(int i=0; i<TOWNS_CMOS_SIZE; ++i)
+		{
+			cmos.push_back(0);
+		}
+		towns.physMem.SetCMOS(cmos);
 	}
 	if(true==argv.alwaysBootToFASTMode)
 	{
@@ -292,6 +305,7 @@ void FMTowns::State::PowerOn(void)
 			towns.physMem.state.memCard.memCardType=argv.memCardType;
 			towns.physMem.state.memCard.fName=argv.memCardImgFName;
 			towns.physMem.state.memCard.changed=false;  // Because it was already in upon power-on.
+			towns.physMem.state.memCard.writeProtected=argv.memCardWriteProtected;
 		}
 	}
 
