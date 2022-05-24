@@ -71,7 +71,7 @@ void TownsCDROM::UpdateCDDAStateInternal(long long int townsTime,Outside_World &
 	state.nextCDDAPollingTime=townsTime+State::CDDA_POLLING_INTERVAL;
 	if(State::CDDA_PLAYING==state.CDDAState)
 	{
-		if(true!=OutsideWorld->CDDAIsPlaying())
+		if(true!=state.CDDARepeat && var.CDDAWave.size()<=var.CDDAPointer)
 		{
 			state.CDDAState=State::CDDA_STOPPING;
 		}
@@ -80,6 +80,16 @@ void TownsCDROM::UpdateCDDAStateInternal(long long int townsTime,Outside_World &
 	{
 		state.CDDAState=State::CDDA_ENDED;
 	}
+}
+
+DiscImage::MinSecFrm TownsCDROM::GetCDDACurrentPosition(void) const
+{
+	uint32_t baseFrm=state.CDDAStartTime.ToHSG();
+	// 75 frames / sec
+	baseFrm+=var.CDDAPointer*75/(DiscImage::AUDIO_SAMPLING_RATE*4);
+	DiscImage::MinSecFrm now;
+	now.FromHSG(baseFrm);
+	return now;
 }
 
 void TownsCDROM::State::ResetMPU(void)
@@ -493,7 +503,6 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 		{
 			// CDDA needs to stop when MODE1READ is sent while playing.
 			state.CDDAState=State::CDDA_IDLE;
-			OutsideWorld->CDDAStop();
 
 			// TownsOS V2.1 L20 issues MODE1READ command without checking the status by GETSTATE.
 			// This causes an issue when redirecting Internal CD-ROM to external CD-ROM.
@@ -555,6 +564,8 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 		break;
 	case CDCMD_CDDAPLAY://   0x04,
 		{
+			auto &discImg=state.GetDisc();
+
 			// I realized ChaseHQ go into infinite loop unless Status Queue is cleared.
 			// I'm wondering if I should do the same for all other commands.
 			state.ClearStatusQueue();
@@ -574,31 +585,14 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 			msfEnd.frm=DiscImage::BCDToBin(state.paramQueue[5]);
 			msfEnd-=offset;
 
-			if(nullptr!=OutsideWorld)
-			{
-				/*
-				auto leftDb= (TOWNS_ELEVOL_MAX-townsPtr->GetEleVolCDLeft())/2;
-				auto rightDb=(TOWNS_ELEVOL_MAX-townsPtr->GetEleVolCDRight())/2;
+			bool repeat=(1==state.paramQueue[6]); // Should I say 0!= ?
+			var.CDDAWave=discImg.GetWave(msfBegin,msfEnd);
+			var.CDDAPointer=0;
+			state.CDDAState=State::CDDA_PLAYING;
+			state.CDDAStartTime=msfBegin;
+			state.CDDAEndTime=msfEnd;
+			state.CDDARepeat=repeat;
 
-				// dB=20log(linear)
-				// dB/20=log10(linear)
-				// linear=10^(dB/20)
-				auto leftLinear=(unsigned int)(256.0/pow(10.0,(double)leftDb/20.0));
-				auto rightLinear=(unsigned int)(256.0/pow(10.0,(double)rightDb/20.0));
-				*/
-
-				// Temporarily disable electric volume.
-				// When CDDA is fading in, it stays low volume.
-				unsigned int leftLinear=255;
-				unsigned int rightLinear=255;
-
-				bool repeat=(1==state.paramQueue[6]); // Should I say 0!= ?
-				OutsideWorld->CDDAPlay(state.GetDisc(),msfBegin,msfEnd,repeat,leftLinear,rightLinear);
-				state.CDDAState=State::CDDA_PLAYING;
-				state.CDDAStartTime=msfBegin;
-				state.CDDAEndTime=msfEnd;
-				state.CDDARepeat=repeat;
-			}
 			if(true==StatusRequestBit(state.cmd))
 			{
 				SetStatusDriveNotReadyOrDiscChangedOrNoError();
@@ -702,10 +696,6 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 		}
 		break;
 	case CDCMD_CDDAPAUSE://  0x85,
-		if(nullptr!=OutsideWorld)
-		{
-			OutsideWorld->CDDAPause();
-		}
 		// Fix for ChaseHQ.
 		// CDDAState must be reset to IDLE regardless of the Status Request.
 		// ChaseHQ was issuing CDDAPAUSE command without Status Request flag.
@@ -723,9 +713,9 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 		std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " not implemented yet." << std::endl;
 		break;
 	case CDCMD_CDDARESUME:// 0x87,
-		if(nullptr!=OutsideWorld)
+		if(State::CDDA_PAUSED==state.CDDAState)
 		{
-			OutsideWorld->CDDAResume();
+			state.CDDAState=State::CDDA_PLAYING;
 		}
 		if(true==StatusRequestBit(state.cmd))
 		{
@@ -1087,12 +1077,6 @@ void TownsCDROM::SetStatusSubQRead(void)
 		return;
 	}
 
-	if(nullptr==OutsideWorld)
-	{
-		SetStatusDriveNotReady();
-		return;
-	}
-
 	// From reverse-engineering of CD-ROM BIOS, it is most likely:
 	// 00 00 00 00  <- First return no error.
 	// 18H xx trkBCD xx
@@ -1106,7 +1090,7 @@ void TownsCDROM::SetStatusSubQRead(void)
 
 	if(State::CDDA_PLAYING==state.CDDAState)
 	{
-		discTime=OutsideWorld->CDDACurrentPosition();
+		discTime=GetCDDACurrentPosition();
 		if(state.CDDAEndTime<discTime)
 		{
 			discTime=state.CDDAEndTime;
@@ -1154,10 +1138,6 @@ void TownsCDROM::PushStatusCDDAPlayEnded(void)
 
 void TownsCDROM::StopCDDA(void)
 {
-	if(nullptr!=OutsideWorld)
-	{
-		OutsideWorld->CDDAStop();
-	}
 	state.ClearStatusQueue();
 	if(true!=SetStatusDriveNotReadyOrDiscChanged())
 	{
@@ -1361,15 +1341,85 @@ void TownsCDROM::SetSIRQ_IRR(void)
 
 void TownsCDROM::ResumeCDDAAfterRestore(class Outside_World *outsideWorld)
 {
+	auto &discImg=state.GetDisc();
+
 	unsigned int leftLinear=255;
 	unsigned int rightLinear=255;
 	if(State::CDDA_PLAYING==state.CDDAState)
 	{
-		outsideWorld->CDDAPlay(state.GetDisc(),state.CDDAStartTime,state.CDDAEndTime,state.CDDARepeat,leftLinear,rightLinear);
+		var.CDDAWave=discImg.GetWave(state.CDDAStartTime,state.CDDAEndTime);
+		var.CDDAPointer=0;
 	}
 	else if(State::CDDA_PAUSED==state.CDDAState)
 	{
-		outsideWorld->CDDAPlay(state.GetDisc(),state.CDDAStartTime,state.CDDAEndTime,state.CDDARepeat,leftLinear,rightLinear);
-		outsideWorld->CDDAPause();
+		var.CDDAWave=discImg.GetWave(state.CDDAStartTime,state.CDDAEndTime);
+		var.CDDAPointer=0;
 	}
+}
+
+std::vector <unsigned char> TownsCDROM::MakeNextWave(uint32_t millisec)
+{
+	const uint64_t numSamples=millisec*DiscImage::AUDIO_SAMPLING_RATE/1000;
+
+	std::vector <unsigned char> wave;
+	wave.resize(numSamples*4);
+
+	uint64_t wavePtr=0;
+	while(wavePtr<numSamples*4)
+	{
+		if(var.CDDAWave.size()<=var.CDDAPointer+3 && true==state.CDDARepeat)
+		{
+			var.CDDAPointer=0;
+		}
+		if(var.CDDAWave.size()<=var.CDDAPointer+3)
+		{
+			break;
+		}
+
+		wave[wavePtr  ]=var.CDDAWave[var.CDDAPointer  ];
+		wave[wavePtr+1]=var.CDDAWave[var.CDDAPointer+1];
+		wave[wavePtr+2]=var.CDDAWave[var.CDDAPointer+2];
+		wave[wavePtr+3]=var.CDDAWave[var.CDDAPointer+3];
+		var.CDDAPointer+=4;
+		wavePtr+=4;
+	}
+	while(wavePtr<numSamples*4)
+	{
+		wave[wavePtr++]=0;
+	}
+
+	auto leftDb= (TOWNS_ELEVOL_MAX-townsPtr->GetEleVolCDLeft())/2;
+	auto rightDb=(TOWNS_ELEVOL_MAX-townsPtr->GetEleVolCDRight())/2;
+
+	// dB=20log(linear)
+	// dB/20=log10(linear)
+	// linear=10^(dB/20)
+	auto leftLevel=(unsigned int)(256.0/pow(10.0,(double)leftDb/20.0));
+	auto rightLevel=(unsigned int)(256.0/pow(10.0,(double)rightDb/20.0));
+
+	if(true!=townsPtr->GetEleVolCDLeftEN())
+	{
+		leftLevel=0;
+	}
+	if(true!=townsPtr->GetEleVolCDRightEN())
+	{
+		rightLevel=0;
+	}
+
+	if(leftLevel<256 || rightLevel<256)
+	{
+		for(long long int i=0; i+3<wave.size(); i+=4)
+		{
+			int left= cpputil::GetWord(wave.data()+i);
+			int right=cpputil::GetWord(wave.data()+i+2);;
+			left= (left &0x7FFF)-(left &0x8000);
+			right=(right&0x7FFF)-(right&0x8000);
+			left= left *leftLevel /256;
+			right=right*rightLevel/256;
+			cpputil::PutWord(wave.data()+i  ,left);
+			cpputil::PutWord(wave.data()+i+2,right);
+		}
+	}
+
+	return wave;
 }

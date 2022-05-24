@@ -24,6 +24,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "cpputil.h"
 #include "ym2612.h"
 #include "rf5c68.h"
+#include "cdrom.h"
 
 class TownsSound : public Device
 {
@@ -34,11 +35,12 @@ public:
 	{
 #if !defined(__linux__) && !defined(__linux)
 		FM_PCM_MILLISEC_PER_WAVE=10, // Looks like time resolution of Wave Playback of Direct Sound is 10ms.
-		BEEP_MILLISEC_PER_WAVE=10
+		BEEP_MILLISEC_PER_WAVE=10,
 #else
 		FM_PCM_MILLISEC_PER_WAVE=40, // Maybe because I am developing on VirtualBox, I am getting outrageously slow latency of 80ms (40ms*2).
-		BEEP_MILLISEC_PER_WAVE=40
+		BEEP_MILLISEC_PER_WAVE=40,
 #endif
+		CDDA_MILLISEC_PER_WAVE=40,
 	};
 
 	virtual const char *DeviceName(void) const{return "SOUND";}
@@ -64,6 +66,8 @@ public:
 	std::vector <unsigned char> FMPCMrecording;
 
 	std::vector <unsigned char> nextFMPCMWave;
+
+	std::vector <unsigned char> nextCDDAWave;
 
 	inline bool IsFMPlaying(void) const
 	{

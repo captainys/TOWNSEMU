@@ -643,6 +643,8 @@ public:
 
 
 	/*! Electric Volume.  Returns 31 when max level.  0 when -32dB. */
+	bool GetEleVolCDLeftEN(void) const;
+	bool GetEleVolCDRightEN(void) const;
 	unsigned int GetEleVolCDLeft(void) const;
 	unsigned int GetEleVolCDRight(void) const;
 

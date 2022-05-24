@@ -291,6 +291,33 @@ void TownsSound::ProcessSound(void)
 		}
 	}
 
+	if(true==townsPtr->cdrom.CDDAIsPlaying() || true==townsPtr->scsi.CDDAIsPlaying())
+	{
+		if(true==nextCDDAWave.empty())
+		{
+			if(true==townsPtr->cdrom.CDDAIsPlaying())
+			{
+				nextCDDAWave=townsPtr->cdrom.MakeNextWave(CDDA_MILLISEC_PER_WAVE);
+			}
+			else if(true==townsPtr->scsi.CDDAIsPlaying())
+			{
+				for(auto &dev : townsPtr->scsi.state.dev)
+				{
+					if(TownsSCSI::SCSIDEVICE_CDROM==dev.devType &&
+					   TownsSCSI::CDDA_PLAYING==dev.CDDAState)
+					{
+						nextCDDAWave=dev.MakeNextWave(CDDA_MILLISEC_PER_WAVE);
+					}
+				}
+			}
+		}
+		if(true!=outside_world->CDDAChannelPlaying() && true!=nextCDDAWave.empty())
+		{
+			outside_world->CDDAPlay(nextCDDAWave);
+			nextCDDAWave.clear();
+		}
+	}
+
 	if (townsPtr->timer.IsBuzzerPlaying()) {
 		if (!outside_world->BeepChannelPlaying()) {
 			auto r = townsPtr->timer.MakeBuzzerWave(BEEP_MILLISEC_PER_WAVE);

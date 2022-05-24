@@ -99,16 +99,9 @@ public:
 	virtual void RegisterHostShortCut(std::string hostKeyLabel,bool ctrl,bool shift,std::string cmdStr);
 	virtual void RegisterPauseResume(std::string hostKeyLabel);
 
-	YsSoundPlayer soundPlayer;
-	YsSoundPlayer::SoundData cddaChannel;
-	unsigned long long cddaStartHSG;
-	virtual void CDDAPlay(const DiscImage &discImg,DiscImage::MinSecFrm from,DiscImage::MinSecFrm to,bool repeat,unsigned int leftLevel,unsigned int rightLevel);
-	virtual void CDDAStop(void);
-	virtual void CDDAPause(void);
-	virtual void CDDAResume(void);
-	virtual bool CDDAIsPlaying(void);
-	virtual DiscImage::MinSecFrm CDDACurrentPosition(void);
 
+
+	YsSoundPlayer soundPlayer;
 
 
 #ifdef AUDIO_USE_STREAMING
@@ -118,8 +111,17 @@ public:
 #endif
 	virtual void FMPCMPlay(std::vector <unsigned char > &wave);
 	virtual void FMPCMPlayStop(void);
-	virtual bool FMPCMChannelPlaying(void);
+	virtual bool FMPCMChannelPlaying(void); // In streaming mode, returns false as soon as ready to take more wave.
 
+
+#ifdef AUDIO_USE_STREAMING
+	YsSoundPlayer::Stream CDDAStream;
+#else
+	YsSoundPlayer::SoundData CDDAChannel;
+#endif
+	virtual void CDDAPlay(std::vector <unsigned char > &wave);
+	virtual void CDDAPlayStop(void);
+	virtual bool CDDAChannelPlaying(void); // In streaming mode, returns false as soon as ready to take more wave.
 
 
 	YsSoundPlayer::SoundData BeepChannel;
