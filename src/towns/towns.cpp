@@ -1044,7 +1044,7 @@ bool FMTowns::GetEleVolCDLeftEN(void) const
 }
 bool FMTowns::GetEleVolCDRightEN(void) const
 {
-	return state.eleVol[TOWNS_ELEVOL_FOR_CD][TOWNS_ELEVOL_CD_LEFT].EN;
+	return state.eleVol[TOWNS_ELEVOL_FOR_CD][TOWNS_ELEVOL_CD_RIGHT].EN;
 }
 unsigned int FMTowns::GetEleVolCDLeft(void) const
 {
