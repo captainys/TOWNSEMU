@@ -231,8 +231,8 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 	soundPlayer.Start();
 #ifdef AUDIO_USE_STREAMING
 	soundPlayer.StartStreaming(FMPCMStream);
-	soundPlayer.StartStreaming(CDDAStream);
 #endif
+	soundPlayer.StartStreaming(CDDAStream);
 
 	glClearColor(0,0,0,0);
 	mainTexId=GenTexture();
@@ -1674,26 +1674,17 @@ void FsSimpleWindowConnection::RenderBeforeSwapBuffers(const TownsRender::Image 
 
 /* virtual */ void FsSimpleWindowConnection::CDDAPlay(std::vector <unsigned char> &wave)
 {
-#ifdef AUDIO_USE_STREAMING
 	YsSoundPlayer::SoundData nextWave;
 	nextWave.CreateFromSigned16bitStereo(DiscImage::AUDIO_SAMPLING_RATE,wave);
 	soundPlayer.AddNextStreamingSegment(CDDAStream,nextWave);
-#else
-	CDDAChannel.CreateFromSigned16bitStereo(DiscImage::AUDIO_SAMPLING_RATE,wave);
-	soundPlayer.PlayOneShot(CDDAChannel);
-#endif
 }
 /* virtual */ void FsSimpleWindowConnection::CDDAPlayStop(void)
 {
 }
 /* virtual */ bool FsSimpleWindowConnection::CDDAChannelPlaying(void)
 {
-#ifdef AUDIO_USE_STREAMING
 	YsSoundPlayer::SoundData dummyData;
 	return YSTRUE!=soundPlayer.StreamPlayerReadyToAcceptNextSegment(CDDAStream,dummyData);
-#else
-	return YSTRUE==soundPlayer.IsPlaying(CDDAChannel);
-#endif
 }
 
 

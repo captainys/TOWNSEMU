@@ -114,11 +114,7 @@ public:
 	virtual bool FMPCMChannelPlaying(void); // In streaming mode, returns false as soon as ready to take more wave.
 
 
-#ifdef AUDIO_USE_STREAMING
 	YsSoundPlayer::Stream CDDAStream;
-#else
-	YsSoundPlayer::SoundData CDDAChannel;
-#endif
 	virtual void CDDAPlay(std::vector <unsigned char > &wave);
 	virtual void CDDAPlayStop(void);
 	virtual bool CDDAChannelPlaying(void); // In streaming mode, returns false as soon as ready to take more wave.
