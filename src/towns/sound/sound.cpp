@@ -311,11 +311,18 @@ void TownsSound::ProcessSound(void)
 				}
 			}
 		}
-		if(true!=outside_world->CDDAChannelPlaying() && true!=nextCDDAWave.empty())
-		{
-			outside_world->CDDAPlay(nextCDDAWave);
-			nextCDDAWave.clear();
-		}
+	}
+	else if(true==nextCDDAWave.empty())
+	{
+		// Why did I not need this for FM and PCM?  :-(
+		const unsigned int len=CDDA_MILLISEC_PER_WAVE*4*DiscImage::AUDIO_SAMPLING_RATE/1000;
+		nextCDDAWave.resize(len);
+		memset(nextCDDAWave.data(),0,len);
+	}
+	if(true!=outside_world->CDDAChannelPlaying() && true!=nextCDDAWave.empty())
+	{
+		outside_world->CDDAPlay(nextCDDAWave);
+		nextCDDAWave.clear();
 	}
 
 	if (townsPtr->timer.IsBuzzerPlaying()) {
