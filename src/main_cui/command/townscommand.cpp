@@ -175,6 +175,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 
 	primaryCmdMap["XMODEMCLR"]=CMD_XMODEM_CLEAR;
 	primaryCmdMap["XMODEMTOVM"]=CMD_XMODEM_TO_VM;
+	primaryCmdMap["XMODEM1KTOVM"]=CMD_XMODEM1K_TO_VM;
 	primaryCmdMap["XMODEMFROMVM"]=CMD_XMODEM_FROM_VM;
 	primaryCmdMap["XMODEMCRCFROMVM"]=CMD_XMODEMCRC_FROM_VM;
 
@@ -1367,7 +1368,10 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 		break;
 
 	case CMD_XMODEM_TO_VM:
-		Execute_XMODEMtoVM(towns,cmd);
+		Execute_XMODEMtoVM(towns,cmd,128);
+		break;
+	case CMD_XMODEM1K_TO_VM:
+		Execute_XMODEMtoVM(towns,cmd,1024);
 		break;
 	case CMD_XMODEM_FROM_VM:
 		Execute_XMODEMfromVM(towns,cmd);
@@ -4139,7 +4143,7 @@ void TownsCommandInterpreter::Execute_Exception(FMTowns &towns,Command &cmd)
 		PrintError(ERROR_TOO_FEW_ARGS);
 	}
 }
-void TownsCommandInterpreter::Execute_XMODEMtoVM(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_XMODEMtoVM(FMTowns &towns,Command &cmd,uint32_t packetLength)
 {
 	if(2<=cmd.argv.size())
 	{
@@ -4152,7 +4156,7 @@ void TownsCommandInterpreter::Execute_XMODEMtoVM(FMTowns &towns,Command &cmd)
 		{
 			if(towns.serialport.state.intel8251.clientPtr==&towns.serialport.defaultClient)
 			{
-				towns.serialport.defaultClient.SetUpXMODEMtoVM(dat);
+				towns.serialport.defaultClient.SetUpXMODEMtoVM(dat,packetLength);
 				std::cout << "Ready to send " << cmd.argv[1] << std::endl;
 				std::cout << "Start XMODEM in FM TOWNS!" << std::endl;
 			}

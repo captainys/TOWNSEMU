@@ -165,6 +165,7 @@ public:
 
 		CMD_XMODEM_CLEAR,
 		CMD_XMODEM_TO_VM,
+		CMD_XMODEM1K_TO_VM,
 		CMD_XMODEM_FROM_VM,
 		CMD_XMODEMCRC_FROM_VM,
 
@@ -393,7 +394,7 @@ public:
 
 	void Execute_Find_Caller(FMTowns &towns,Command &cmd);
 
-	void Execute_XMODEMtoVM(FMTowns &towns,Command &cmd);
+	void Execute_XMODEMtoVM(FMTowns &towns,Command &cmd,uint32_t packetLength);
 	void Execute_XMODEMfromVM(FMTowns &towns,Command &cmd);
 	void Execute_XMODEMCRCfromVM(FMTowns &towns,Command &cmd);
 
