@@ -217,12 +217,13 @@ public:
 		// Not saved in the machine state.
 		uint32_t CDDAState=CDDA_IDLE;
 		uint32_t CDDAPointer=0;
+		uint64_t lastCDDAFeedTime=0;
 		DiscImage::MinSecFrm CDDAStartTime;
 		DiscImage::MinSecFrm CDDAEndTime; // Make sure it is reported at least once.
 		std::vector <unsigned char> CDDAWave;
 		bool CDDAWasPlaying=false;
 
-		DiscImage::MinSecFrm CDDACurrentPosition(void) const;
+		DiscImage::MinSecFrm CDDACurrentPosition(uint64_t townsTimeNanosec) const;
 		std::vector <unsigned char> MakeNextWave(uint32_t millisec);
 	};
 

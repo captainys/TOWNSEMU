@@ -298,6 +298,7 @@ void TownsSound::ProcessSound(void)
 			if(true==townsPtr->cdrom.CDDAIsPlaying())
 			{
 				nextCDDAWave=townsPtr->cdrom.MakeNextWave(CDDA_MILLISEC_PER_WAVE);
+				townsPtr->cdrom.var.lastCDDAFeedTime=townsPtr->state.townsTime;
 			}
 			else if(true==townsPtr->scsi.CDDAIsPlaying())
 			{
@@ -307,6 +308,7 @@ void TownsSound::ProcessSound(void)
 					   TownsSCSI::CDDA_PLAYING==dev.CDDAState)
 					{
 						nextCDDAWave=dev.MakeNextWave(CDDA_MILLISEC_PER_WAVE);
+						dev.lastCDDAFeedTime=townsPtr->state.townsTime;
 					}
 				}
 			}

@@ -588,6 +588,7 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 			bool repeat=(1==state.paramQueue[6]); // Should I say 0!= ?
 			var.CDDAWave=discImg.GetWave(msfBegin,msfEnd);
 			var.CDDAPointer=0;
+			var.lastCDDAFeedTime=townsPtr->state.townsTime;
 			state.CDDAState=State::CDDA_PLAYING;
 			state.CDDAStartTime=msfBegin;
 			state.CDDAEndTime=msfEnd;
@@ -716,6 +717,7 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 		if(State::CDDA_PAUSED==state.CDDAState)
 		{
 			state.CDDAState=State::CDDA_PLAYING;
+			var.lastCDDAFeedTime=townsPtr->state.townsTime;
 		}
 		if(true==StatusRequestBit(state.cmd))
 		{
@@ -1217,6 +1219,9 @@ void TownsCDROM::SetSIRQ_IRR(void)
 }
 /* virtual */ bool TownsCDROM::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
 {
+	var.CDDAPointer=0;
+	var.lastCDDAFeedTime=townsPtr->state.townsTime;
+
 	std::string stateDir,stateName;
 	cpputil::SeparatePathFile(stateDir,stateName,stateFName);
 

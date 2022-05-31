@@ -243,6 +243,7 @@ public:
 
 		std::vector <unsigned char> CDDAWave;
 		uint64_t CDDAPointer=0;
+		uint64_t lastCDDAFeedTime=0;
 	};
 
 	State state;

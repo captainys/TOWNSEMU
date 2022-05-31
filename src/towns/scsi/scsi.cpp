@@ -29,11 +29,17 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 ////////////////////////////////////////////////////////////
 
-DiscImage::MinSecFrm TownsSCSI::SCSIDevice::CDDACurrentPosition(void) const
+DiscImage::MinSecFrm TownsSCSI::SCSIDevice::CDDACurrentPosition(uint64_t townsTime) const
 {
 	double sec=CDDAPointer;
 	sec/=4.0; // 4 bytes per sample
 	sec/=(double)DiscImage::AUDIO_SAMPLING_RATE;
+
+	uint64_t sinceLastFeedNanosec=townsTime-lastCDDAFeedTime;
+	double sinceLastFeed=sinceLastFeedNanosec;
+	sinceLastFeed/=1000000000.0;
+
+	sec+=sinceLastFeed;
 
 	unsigned long long secHSG=(unsigned long long)(sec*75.0);
 	unsigned long long posInDisc=secHSG+CDDAStartTime.ToHSG();
@@ -782,6 +788,7 @@ void TownsSCSI::ExecSCSICommand(void)
 
 			state.dev[state.selId].CDDAWave=state.dev[state.selId].discImg.GetWave(start,end);
 			state.dev[state.selId].CDDAPointer=0;
+			state.dev[state.selId].lastCDDAFeedTime=townsPtr->state.townsTime;
 			state.dev[state.selId].CDDAStartTime=start;
 			state.dev[state.selId].CDDAEndTime=end;
 			state.dev[state.selId].CDDAState=CDDA_PLAYING;
@@ -806,6 +813,7 @@ void TownsSCSI::ExecSCSICommand(void)
 				if(CDDA_PAUSED==state.dev[state.selId].CDDAState)
 				{
 					state.dev[state.selId].CDDAState=CDDA_PLAYING;
+					state.dev[state.selId].lastCDDAFeedTime=townsPtr->state.townsTime;
 				}
 			}
 			else
@@ -1021,7 +1029,7 @@ void TownsSCSI::ExecSCSICommand(void)
 					{
 						subQData[1]=0x11;
 
-						auto discTime=state.dev[state.selId].CDDACurrentPosition();
+						auto discTime=state.dev[state.selId].CDDACurrentPosition(townsPtr->state.townsTime);
 						auto trackTime=state.dev[state.selId].discImg.DiscTimeToTrackTime(discTime);
 						discTime+=DiscImage::MakeMSF(0,2,0);
 
@@ -1581,6 +1589,9 @@ bool TownsSCSI::CDDAIsPlaying(void) const
 		// Do not auto-load hard-disk image.
 		if(SCSIDEVICE_CDROM==dev.devType)
 		{
+			dev.lastCDDAFeedTime=townsPtr->state.townsTime;
+			dev.CDDAPointer=0;
+
 			// See disk-image search rule in townsstate.cpp
 			bool loaded=false;
 
