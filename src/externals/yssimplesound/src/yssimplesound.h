@@ -5,6 +5,7 @@
 
 #include <vector>
 #include <memory>
+#include <stdint.h>
 
 
 #ifndef YSRESULT_IS_DEFINED
@@ -100,6 +101,14 @@ public:
 
 	class Stream;
 
+	class StreamingOption
+	{
+	public:
+		// Ring-Buffer Length in Millisec.
+		// It is just a preference and may be ignored.
+		uint32_t ringBufferLengthMillisec=1000;
+	};
+
 private:
 	class APISpecificData;
 
@@ -160,7 +169,7 @@ public:
 
 	/*! Start play as a stream.  Additional 
 	*/
-	YSRESULT StartStreaming(Stream &streamPlayer);
+	YSRESULT StartStreaming(Stream &streamPlayer,StreamingOption opt);
 
 	/*! Stop a stream player.
 	*/
@@ -176,7 +185,7 @@ public:
 
 private:
 	// Written in API-specific source >>
-	YSRESULT StartStreamingAPISpecific(Stream &streamPlayer);
+	YSRESULT StartStreamingAPISpecific(Stream &streamPlayer,StreamingOption opt);
 	void StopStreamingAPISpecific(Stream &streamPlayer);
 	YSBOOL StreamPlayerReadyToAcceptNextSegmentAPISpecific(const Stream &streamPlayer,const SoundData &dat) const;
 	YSRESULT AddNextStreamingSegmentAPISpecific(Stream &streamPlayer,const SoundData &dat);

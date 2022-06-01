@@ -295,7 +295,7 @@ public:
 		return (State::CDDA_PLAYING==state.CDDAState || State::CDDA_STOPPING==state.CDDAState);
 	}
 
-	DiscImage::MinSecFrm GetCDDACurrentPosition(void) const;
+	DiscImage::MinSecFrm GetCDDACurrentPosition(uint64_t townsTime) const;
 
 	virtual void IOWriteByte(unsigned int ioport,unsigned int data);
 	virtual unsigned int IOReadByte(unsigned int ioport);

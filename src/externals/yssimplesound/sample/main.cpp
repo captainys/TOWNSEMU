@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "fssimplewindow.h"
 #include "yssimplesound.h"
 

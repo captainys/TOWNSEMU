@@ -82,11 +82,17 @@ void TownsCDROM::UpdateCDDAStateInternal(long long int townsTime,Outside_World &
 	}
 }
 
-DiscImage::MinSecFrm TownsCDROM::GetCDDACurrentPosition(void) const
+DiscImage::MinSecFrm TownsCDROM::GetCDDACurrentPosition(uint64_t townsTime) const
 {
 	uint32_t baseFrm=state.CDDAStartTime.ToHSG();
 	// 75 frames / sec
 	baseFrm+=var.CDDAPointer*75/(DiscImage::AUDIO_SAMPLING_RATE*4);
+
+	uint64_t sinceLastFeed=townsTime-var.lastCDDAFeedTime;
+	sinceLastFeed*=75;
+	sinceLastFeed/=1000000000;
+	baseFrm+=sinceLastFeed;
+
 	DiscImage::MinSecFrm now;
 	now.FromHSG(baseFrm);
 	return now;
@@ -1092,7 +1098,7 @@ void TownsCDROM::SetStatusSubQRead(void)
 
 	if(State::CDDA_PLAYING==state.CDDAState)
 	{
-		discTime=GetCDDACurrentPosition();
+		discTime=GetCDDACurrentPosition(townsPtr->state.townsTime);
 		if(state.CDDAEndTime<discTime)
 		{
 			discTime=state.CDDAEndTime;

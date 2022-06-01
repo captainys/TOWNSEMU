@@ -263,7 +263,7 @@ void YsSoundPlayer::Stream::DeleteAPISpecificData(APISpecificData *api)
 	delete api;
 }
 
-YSRESULT YsSoundPlayer::StartStreamingAPISpecific(Stream &stream)
+YSRESULT YsSoundPlayer::StartStreamingAPISpecific(Stream &stream,StreamingOption)
 {
 	if(nullptr==stream.api->streamPlayer)
 	{

@@ -530,7 +530,6 @@ enum
 
 	RINGBUFFER_CHANNELS=2,
 	RINGBUFFER_SAMPLING_RATE=44100,
-	RINGBUFFER_LENGTH_MILLISEC=10000,
 	RINGBUFFER_BITS_PER_SAMPLE=16,
 };
 
@@ -561,7 +560,7 @@ void YsSoundPlayer::Stream::DeleteAPISpecificData(APISpecificData *api)
 	}
 }
 
-YSRESULT YsSoundPlayer::StartStreamingAPISpecific(Stream &stream)
+YSRESULT YsSoundPlayer::StartStreamingAPISpecific(Stream &stream,StreamingOption opt)
 {
 	auto api=stream.api;
 	if(nullptr!=api)
@@ -573,7 +572,7 @@ YSRESULT YsSoundPlayer::StartStreamingAPISpecific(Stream &stream)
 		uint64_t sizeInBytes=RINGBUFFER_SAMPLING_RATE;
 		sizeInBytes*=RINGBUFFER_BITS_PER_SAMPLE/8;
 		sizeInBytes*=RINGBUFFER_CHANNELS;
-		sizeInBytes*=RINGBUFFER_LENGTH_MILLISEC;
+		sizeInBytes*=opt.ringBufferLengthMillisec;
 		sizeInBytes/=RINGBUFFER_MILLI;
 
 		stream.api->bufferLengthInBytes=sizeInBytes;

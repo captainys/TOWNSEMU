@@ -230,9 +230,14 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 	FsSetWindowTitle("FM Towns Emulator - TSUGARU");
 	soundPlayer.Start();
 #ifdef AUDIO_USE_STREAMING
-	soundPlayer.StartStreaming(FMPCMStream);
+	YsSoundPlayer::StreamingOption FMPCMStreamOpt;
+	FMPCMStreamOpt.ringBufferLengthMillisec=100;
+	soundPlayer.StartStreaming(FMPCMStream,FMPCMStreamOpt);
 #endif
-	soundPlayer.StartStreaming(CDDAStream);
+
+	YsSoundPlayer::StreamingOption CDDAStreamOpt;
+	CDDAStreamOpt.ringBufferLengthMillisec=100;
+	soundPlayer.StartStreaming(CDDAStream,CDDAStreamOpt);
 
 	glClearColor(0,0,0,0);
 	mainTexId=GenTexture();

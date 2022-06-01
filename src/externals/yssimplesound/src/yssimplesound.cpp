@@ -168,9 +168,9 @@ void YsSoundPlayer::PlayBackground(SoundData &dat)
 	}
 }
 
-YSRESULT YsSoundPlayer::StartStreaming(Stream &streamPlayer)
+YSRESULT YsSoundPlayer::StartStreaming(Stream &streamPlayer,StreamingOption opt)
 {
-	return StartStreamingAPISpecific(streamPlayer);
+	return StartStreamingAPISpecific(streamPlayer,opt);
 }
 
 void YsSoundPlayer::StopStreaming(Stream &streamPlayer)

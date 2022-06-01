@@ -142,7 +142,7 @@ void YsSoundPlayer::Stream::DeleteAPISpecificData(APISpecificData *)
 {
 }
 
-YSRESULT YsSoundPlayer::StartStreamingAPISpecific(Stream &)
+YSRESULT YsSoundPlayer::StartStreamingAPISpecific(Stream &,StreamingOption)
 {
 	return YSOK;
 }
