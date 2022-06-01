@@ -32,7 +32,10 @@ public:
 		FD_BIT_SHIFT=11,
 		BANK_SHIFT=12, // 2^12 bytes per bank.
 		LOOP_STOP_CODE=0xFF,
-		WAVE_OUTPUT_AMPLITUDE_MAX_DEFAULT=8192,
+		WAVE_OUTPUT_AMPLITUDE_MAX_DEFAULT=4096,
+		// Was 8192.
+		// Had to change amplitude max of YM2612 to 4096 to prevent Super Daisenryaku tones from breaking.
+		// Adjusted to keep balance.
 	};
 
 	class Channel
