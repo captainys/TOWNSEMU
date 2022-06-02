@@ -240,10 +240,6 @@ public:
 		// it breaks the VM only if a specific command is sent.
 		// debugBreakOnSpecificCommand is ignored if debugBreakOnCommandWrite!=true.
 		unsigned int debugBreakOnSpecificCommand=0xffff;
-
-		std::vector <unsigned char> CDDAWave;
-		uint64_t CDDAPointer=0;
-		uint64_t lastCDDAFeedTime=0;
 	};
 
 	State state;
@@ -294,8 +290,6 @@ public:
 	{
 		return (State::CDDA_PLAYING==state.CDDAState || State::CDDA_STOPPING==state.CDDAState);
 	}
-
-	DiscImage::MinSecFrm GetCDDACurrentPosition(uint64_t townsTime) const;
 
 	virtual void IOWriteByte(unsigned int ioport,unsigned int data);
 	virtual unsigned int IOReadByte(unsigned int ioport);
@@ -358,8 +352,6 @@ private:
 public:
 	// Will be called from FMTowns::LoadState
 	void ResumeCDDAAfterRestore(class Outside_World *outsideWorld);
-
-	std::vector <unsigned char> MakeNextWave(uint32_t millisec);
 };
 
 

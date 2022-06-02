@@ -229,15 +229,10 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 	this->winHei=480;
 	FsSetWindowTitle("FM Towns Emulator - TSUGARU");
 	soundPlayer.Start();
+	cddaStartHSG=0;
 #ifdef AUDIO_USE_STREAMING
-	YsSoundPlayer::StreamingOption FMPCMStreamOpt;
-	FMPCMStreamOpt.ringBufferLengthMillisec=100;
-	soundPlayer.StartStreaming(FMPCMStream,FMPCMStreamOpt);
+	soundPlayer.StartStreaming(FMPCMStream);
 #endif
-
-	YsSoundPlayer::StreamingOption CDDAStreamOpt;
-	CDDAStreamOpt.ringBufferLengthMillisec=100;
-	soundPlayer.StartStreaming(CDDAStream,CDDAStreamOpt);
 
 	glClearColor(0,0,0,0);
 	mainTexId=GenTexture();
@@ -1652,6 +1647,69 @@ void FsSimpleWindowConnection::RenderBeforeSwapBuffers(const TownsRender::Image 
 	}
 }
 
+/* virtual */ void FsSimpleWindowConnection::CDDAPlay(const DiscImage &discImg,DiscImage::MinSecFrm from,DiscImage::MinSecFrm to,bool repeat,unsigned int leftLevel,unsigned int rightLevel)
+{
+	if(256<leftLevel)
+	{
+		leftLevel=256;
+	}
+	if(256<rightLevel)
+	{
+		rightLevel=256;
+	}
+	auto wave=discImg.GetWave(from,to);
+	if(leftLevel<256 || rightLevel<256)
+	{
+		for(long long int i=0; i+3<wave.size(); i+=4)
+		{
+			int left= cpputil::GetWord(wave.data()+i);
+			int right=cpputil::GetWord(wave.data()+i+2);;
+			left= (left &0x7FFF)-(left &0x8000);
+			right=(right&0x7FFF)-(right&0x8000);
+			left= left *leftLevel /256;
+			right=right*rightLevel/256;
+			cpputil::PutWord(wave.data()+i  ,left);
+			cpputil::PutWord(wave.data()+i+2,right);
+		}
+	}
+	cddaChannel.CreateFromSigned16bitStereo(44100,wave);
+	if(true==repeat)
+	{
+		soundPlayer.PlayBackground(cddaChannel);
+	}
+	else
+	{
+		soundPlayer.PlayOneShot(cddaChannel);
+	}
+	cddaStartHSG=from.ToHSG();
+}
+/* virtual */ void FsSimpleWindowConnection::CDDAStop(void)
+{
+	soundPlayer.Stop(cddaChannel);
+}
+/* virtual */ void FsSimpleWindowConnection::CDDAPause(void)
+{
+	soundPlayer.Pause(cddaChannel);
+}
+/* virtual */ void FsSimpleWindowConnection::CDDAResume(void)
+{
+	soundPlayer.Resume(cddaChannel);
+}
+/* virtual */ bool FsSimpleWindowConnection::CDDAIsPlaying(void)
+{
+	return (YSTRUE==soundPlayer.IsPlaying(cddaChannel));
+}
+/* virtual */ DiscImage::MinSecFrm FsSimpleWindowConnection::CDDACurrentPosition(void)
+{
+	double sec=soundPlayer.GetCurrentPosition(cddaChannel);
+	unsigned long long secHSG=(unsigned long long)(sec*75.0);
+	unsigned long long posInDisc=secHSG+cddaStartHSG;
+
+	DiscImage::MinSecFrm msf;
+	msf.FromHSG(posInDisc);
+	return msf;
+}
+
 /* virtual */ void FsSimpleWindowConnection::FMPCMPlay(std::vector <unsigned char> &wave)
 {
 #ifdef AUDIO_USE_STREAMING
@@ -1675,24 +1733,6 @@ void FsSimpleWindowConnection::RenderBeforeSwapBuffers(const TownsRender::Image 
 	return YSTRUE==soundPlayer.IsPlaying(FMPCMChannel);
 #endif
 }
-
-
-/* virtual */ void FsSimpleWindowConnection::CDDAPlay(std::vector <unsigned char> &wave)
-{
-	YsSoundPlayer::SoundData nextWave;
-	nextWave.CreateFromSigned16bitStereo(DiscImage::AUDIO_SAMPLING_RATE,wave);
-	soundPlayer.AddNextStreamingSegment(CDDAStream,nextWave);
-}
-/* virtual */ void FsSimpleWindowConnection::CDDAPlayStop(void)
-{
-}
-/* virtual */ bool FsSimpleWindowConnection::CDDAChannelPlaying(void)
-{
-	YsSoundPlayer::SoundData dummyData;
-	return YSTRUE!=soundPlayer.StreamPlayerReadyToAcceptNextSegment(CDDAStream,dummyData);
-}
-
-
 
 /* virtual */ void FsSimpleWindowConnection::BeepPlay(int samplingRate, std::vector<unsigned char> &wave) {
 	BeepChannel.CreateFromSigned16bitStereo(samplingRate, wave);

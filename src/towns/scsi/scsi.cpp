@@ -29,58 +29,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 ////////////////////////////////////////////////////////////
 
-DiscImage::MinSecFrm TownsSCSI::SCSIDevice::CDDACurrentPosition(uint64_t townsTime) const
-{
-	double sec=CDDAPointer;
-	sec/=4.0; // 4 bytes per sample
-	sec/=(double)DiscImage::AUDIO_SAMPLING_RATE;
-
-	uint64_t sinceLastFeedNanosec=townsTime-lastCDDAFeedTime;
-	double sinceLastFeed=sinceLastFeedNanosec;
-	sinceLastFeed/=1000000000.0;
-
-	sec+=sinceLastFeed;
-
-	unsigned long long secHSG=(unsigned long long)(sec*75.0);
-	unsigned long long posInDisc=secHSG+CDDAStartTime.ToHSG();
-
-	DiscImage::MinSecFrm msf;
-	msf.FromHSG(posInDisc);
-	return msf;
-
-}
-
-std::vector <unsigned char> TownsSCSI::SCSIDevice::MakeNextWave(uint32_t millisec)
-{
-	const uint64_t numSamples=millisec*DiscImage::AUDIO_SAMPLING_RATE/1000;
-
-	std::vector <unsigned char> wave;
-	wave.resize(numSamples*4);
-
-	uint64_t wavePtr=0;
-	while(wavePtr<numSamples*4)
-	{
-		if(CDDAWave.size()<=CDDAPointer+3)
-		{
-			CDDAState=CDDA_STOPPING;
-			break;
-		}
-
-		wave[wavePtr  ]=CDDAWave[CDDAPointer  ];
-		wave[wavePtr+1]=CDDAWave[CDDAPointer+1];
-		wave[wavePtr+2]=CDDAWave[CDDAPointer+2];
-		wave[wavePtr+3]=CDDAWave[CDDAPointer+3];
-		CDDAPointer+=4;
-		wavePtr+=4;
-	}
-	while(wavePtr<numSamples*4)
-	{
-		wave[wavePtr++]=0;
-	}
-	return wave;
-}
-
-////////////////////////////////////////////////////////////
 
 
 TownsSCSI::SCSIIOThread::SCSIIOThread()
@@ -785,13 +733,11 @@ void TownsSCSI::ExecSCSICommand(void)
 			auto end=DiscImage::MakeMSF(state.commandBuffer[6],state.commandBuffer[7],state.commandBuffer[8]);
 			start-=DiscImage::MakeMSF(0,2,0);
 			end-=DiscImage::MakeMSF(0,2,0);
-
-			state.dev[state.selId].CDDAWave=state.dev[state.selId].discImg.GetWave(start,end);
-			state.dev[state.selId].CDDAPointer=0;
-			state.dev[state.selId].lastCDDAFeedTime=townsPtr->state.townsTime;
-			state.dev[state.selId].CDDAStartTime=start;
+			if(nullptr!=outsideworld)
+			{
+				outsideworld->CDDAPlay(state.dev[state.selId].discImg,start,end,false,255,255); // There is no repeat.  Electric Volume not connected to SCSI CD.
+			}
 			state.dev[state.selId].CDDAEndTime=end;
-			state.dev[state.selId].CDDAState=CDDA_PLAYING;
 			state.status=STATUSCODE_GOOD;
 			state.message=0; // What am I supposed to return?
 			state.senseKey=SENSEKEY_NO_SENSE;
@@ -810,18 +756,11 @@ void TownsSCSI::ExecSCSICommand(void)
 		{
 			if(state.commandBuffer[8]&1) // Resume
 			{
-				if(CDDA_PAUSED==state.dev[state.selId].CDDAState)
-				{
-					state.dev[state.selId].CDDAState=CDDA_PLAYING;
-					state.dev[state.selId].lastCDDAFeedTime=townsPtr->state.townsTime;
-				}
+				outsideworld->CDDAResume();
 			}
 			else
 			{
-				if(CDDA_PLAYING==state.dev[state.selId].CDDAState)
-				{
-					state.dev[state.selId].CDDAState=CDDA_PAUSED;
-				}
+				outsideworld->CDDAPause();
 			}
 			state.status=STATUSCODE_GOOD;
 			state.message=0; // What am I supposed to return?
@@ -1025,11 +964,11 @@ void TownsSCSI::ExecSCSICommand(void)
 					// subQData[13]  Track relative CD Addr
 					// subQData[14]  Track relative CD Addr
 					// subQData[15]  Track relative CD Addr LSB
-					if(CDDA_PLAYING==state.dev[state.selId].CDDAState)
+					if(true==outsideworld->CDDAIsPlaying())
 					{
 						subQData[1]=0x11;
 
-						auto discTime=state.dev[state.selId].CDDACurrentPosition(townsPtr->state.townsTime);
+						auto discTime=outsideworld->CDDACurrentPosition();
 						auto trackTime=state.dev[state.selId].discImg.DiscTimeToTrackTime(discTime);
 						discTime+=DiscImage::MakeMSF(0,2,0);
 
@@ -1558,19 +1497,6 @@ std::vector <std::string> TownsSCSI::GetStatusText(void) const
 	PushUint16(data,state.message);
 	PushUint32(data,state.senseKey);
 }
-
-bool TownsSCSI::CDDAIsPlaying(void) const
-{
-	for(auto &dev : state.dev)
-	{
-		if(SCSIDEVICE_CDROM==dev.devType && CDDA_PLAYING==dev.CDDAState)
-		{
-			return true;
-		}
-	}
-	return false;
-}
-
 /* virtual */ bool TownsSCSI::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
 {
 	std::string stateDir,stateName;
@@ -1589,9 +1515,6 @@ bool TownsSCSI::CDDAIsPlaying(void) const
 		// Do not auto-load hard-disk image.
 		if(SCSIDEVICE_CDROM==dev.devType)
 		{
-			dev.lastCDDAFeedTime=townsPtr->state.townsTime;
-			dev.CDDAPointer=0;
-
 			// See disk-image search rule in townsstate.cpp
 			bool loaded=false;
 

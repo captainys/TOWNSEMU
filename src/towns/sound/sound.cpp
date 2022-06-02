@@ -291,42 +291,6 @@ void TownsSound::ProcessSound(void)
 		}
 	}
 
-	if(true==townsPtr->cdrom.CDDAIsPlaying() || true==townsPtr->scsi.CDDAIsPlaying())
-	{
-		if(true==nextCDDAWave.empty())
-		{
-			if(true==townsPtr->cdrom.CDDAIsPlaying())
-			{
-				nextCDDAWave=townsPtr->cdrom.MakeNextWave(CDDA_MILLISEC_PER_WAVE);
-				townsPtr->cdrom.var.lastCDDAFeedTime=townsPtr->state.townsTime;
-			}
-			else if(true==townsPtr->scsi.CDDAIsPlaying())
-			{
-				for(auto &dev : townsPtr->scsi.state.dev)
-				{
-					if(TownsSCSI::SCSIDEVICE_CDROM==dev.devType &&
-					   TownsSCSI::CDDA_PLAYING==dev.CDDAState)
-					{
-						nextCDDAWave=dev.MakeNextWave(CDDA_MILLISEC_PER_WAVE);
-						dev.lastCDDAFeedTime=townsPtr->state.townsTime;
-					}
-				}
-			}
-		}
-	}
-	else if(true==nextCDDAWave.empty())
-	{
-		// Why did I not need this for FM and PCM?  :-(
-		const unsigned int len=CDDA_MILLISEC_PER_WAVE*4*DiscImage::AUDIO_SAMPLING_RATE/1000;
-		nextCDDAWave.resize(len);
-		memset(nextCDDAWave.data(),0,len);
-	}
-	if(true!=outside_world->CDDAChannelPlaying() && true!=nextCDDAWave.empty())
-	{
-		outside_world->CDDAPlay(nextCDDAWave);
-		nextCDDAWave.clear();
-	}
-
 	if (townsPtr->timer.IsBuzzerPlaying()) {
 		if (!outside_world->BeepChannelPlaying()) {
 			auto r = townsPtr->timer.MakeBuzzerWave(BEEP_MILLISEC_PER_WAVE);

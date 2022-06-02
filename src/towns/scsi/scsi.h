@@ -197,14 +197,7 @@ public:
 	bool breakOnDMATransfer=false;
 
 
-	enum
-	{
-		CDDA_IDLE,
-		CDDA_PLAYING,
-		CDDA_PAUSED,
-		CDDA_STOPPING,
-		CDDA_ENDED,
-	};
+
 
 	class SCSIDevice
 	{
@@ -214,17 +207,8 @@ public:
 		long long int imageSize=0;
 		DiscImage discImg;
 
-		// Not saved in the machine state.
-		uint32_t CDDAState=CDDA_IDLE;
-		uint32_t CDDAPointer=0;
-		uint64_t lastCDDAFeedTime=0;
-		DiscImage::MinSecFrm CDDAStartTime;
+		bool CDDAWasPlaying=false; // Not saved in the machine state
 		DiscImage::MinSecFrm CDDAEndTime; // Make sure it is reported at least once.
-		std::vector <unsigned char> CDDAWave;
-		bool CDDAWasPlaying=false;
-
-		DiscImage::MinSecFrm CDDACurrentPosition(uint64_t townsTimeNanosec) const;
-		std::vector <unsigned char> MakeNextWave(uint32_t millisec);
 	};
 
 	class State
@@ -304,9 +288,6 @@ public:
 
 	std::vector <std::string> GetStatusText(void) const;
 
-	/* Returns true if at least one of the SCSI CD drive is playing CDDA.
-	*/
-	bool CDDAIsPlaying(void) const;
 
 	virtual uint32_t SerializeVersion(void) const;
 	virtual void SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const;
