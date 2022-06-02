@@ -232,6 +232,8 @@ public:
 		i486DX::FarPointer lastCmdIssuedAt;
 		i486DX::FarPointer lastParamWrittenAt;
 
+		bool CDEleVolUpdate=false;
+
 		bool debugBreakOnCommandWrite=false;
 		bool debugBreakOnDEI=false;
 		bool debugBreakOnDataReady=false;

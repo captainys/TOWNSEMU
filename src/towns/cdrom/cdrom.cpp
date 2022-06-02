@@ -80,6 +80,12 @@ void TownsCDROM::UpdateCDDAStateInternal(long long int townsTime,Outside_World &
 	{
 		state.CDDAState=State::CDDA_ENDED;
 	}
+
+	if(true==var.CDEleVolUpdate)
+	{
+		townsPtr->UpdateCDEleVol(&outside_world);
+		var.CDEleVolUpdate=false;
+	}
 }
 
 void TownsCDROM::State::ResetMPU(void)

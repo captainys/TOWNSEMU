@@ -74,6 +74,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 	case TOWNSIO_ELEVOL_1_DATA: //           0x4E0, // [2] pp.18, pp.174
 		state.eleVol[0][state.eleVolChLatch[0]].vol=(data&0x3f);
+		UpdateEleVol(0);
 		break;
 	case TOWNSIO_ELEVOL_1_COM: //            0x4E1, // [2] pp.18, pp.174
 		state.eleVolChLatch[0]=data&3;
@@ -84,6 +85,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 		break;
 	case TOWNSIO_ELEVOL_2_DATA: //           0x4E2, // [2] pp.18, pp.174
 		state.eleVol[1][state.eleVolChLatch[1]].vol=(data&0x3f);
+		UpdateEleVol(1);
 		break;
 	case TOWNSIO_ELEVOL_2_COM: //            0x4E3, // [2] pp.18, pp.174
 		state.eleVolChLatch[1]=data&3;
@@ -236,9 +238,10 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 void FMTowns::UpdateEleVol(int eleVol)
 {
-	if(1==eleVol && (TOWNS_ELEVOL_CD_LEFT==state.eleVolChLatch[1] || TOWNS_ELEVOL_CD_RIGHT==state.eleVolChLatch[1]))
+	if(TOWNS_ELEVOL_FOR_CD==eleVol &&
+	  (TOWNS_ELEVOL_CD_LEFT==state.eleVolChLatch[TOWNS_ELEVOL_FOR_CD] || TOWNS_ELEVOL_CD_RIGHT==state.eleVolChLatch[TOWNS_ELEVOL_FOR_CD]))
 	{
-		// UpdateCDEleVol(outside_world);
+		cdrom.var.CDEleVolUpdate=true;
 	}
 }
 
@@ -254,8 +257,8 @@ void FMTowns::UpdateCDEleVol(Outside_World *outside_world)
 	{
 		rightVol=0;
 	}
-	float left=(float)leftVol/31.0;
-	float right=(float)rightVol/31.0;
+	float left=(float)leftVol/63.0;
+	float right=(float)rightVol/63.0;
 	outside_world->CDDASetVolume(left,right);
 }
 
