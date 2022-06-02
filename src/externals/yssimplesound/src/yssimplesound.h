@@ -138,7 +138,7 @@ private:
 	void KeepPlayingAPISpecific(void);
 	YSBOOL IsPlayingAPISpecific(const SoundData &dat) const;
 	double GetCurrentPositionAPISpecific(const SoundData &dat) const;
-	void SetVolumeAPISpecific(SoundData &dat,float vol);
+	void SetVolumeAPISpecific(SoundData &dat,float leftVol,float rightVol);
 	void PauseAPISpecific(SoundData &dat);
 	void ResumeAPISpecific(SoundData &dat);
 	// Written per API <<
@@ -231,6 +231,7 @@ public:
 		This function has no effect at this time in Linux-ALSA environment.
 	*/
 	void SetVolume(SoundData &dat,float vol);
+	void SetVolumeLR(SoundData &dat,float leftVol,float rightVol);
 };
 
 
@@ -257,7 +258,7 @@ private:
 
 	YSBOOL isSigned;
 	std::vector <unsigned char> dat;
-	float playBackVolume;
+	float playBackVolumeLeft,playBackVolumeRight;
 
 	// Written per API >>
 	APISpecificDataPerSoundData *api;

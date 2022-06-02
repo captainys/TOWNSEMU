@@ -13,6 +13,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 << LICENSE */
 #include "townsio.h"
+#include "outside_world.h"
 
 
 
@@ -79,6 +80,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 		state.eleVol[0][state.eleVolChLatch[0]].EN=(0!=(data&4));
 		state.eleVol[0][state.eleVolChLatch[0]].C0=(0!=(data&8));
 		state.eleVol[0][state.eleVolChLatch[0]].C32=(0!=(data&16));
+		UpdateEleVol(0);
 		break;
 	case TOWNSIO_ELEVOL_2_DATA: //           0x4E2, // [2] pp.18, pp.174
 		state.eleVol[1][state.eleVolChLatch[1]].vol=(data&0x3f);
@@ -88,6 +90,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 		state.eleVol[1][state.eleVolChLatch[1]].EN=(0!=(data&4));
 		state.eleVol[1][state.eleVolChLatch[1]].C0=(0!=(data&8));
 		state.eleVol[1][state.eleVolChLatch[1]].C32=(0!=(data&16));
+		UpdateEleVol(1);
 		break;
 
 	case TOWNSIO_MAINRAM_WAIT_1STGEN: //     0x5E0,
@@ -230,6 +233,32 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 {
 	return Device::IOReadWord(ioport);
 }
+
+void FMTowns::UpdateEleVol(int eleVol)
+{
+	if(1==eleVol && (TOWNS_ELEVOL_CD_LEFT==state.eleVolChLatch[1] || TOWNS_ELEVOL_CD_RIGHT==state.eleVolChLatch[1]))
+	{
+		// UpdateCDEleVol(outside_world);
+	}
+}
+
+void FMTowns::UpdateCDEleVol(Outside_World *outside_world)
+{
+	unsigned int leftVol=GetEleVolCDLeft();
+	unsigned int rightVol=GetEleVolCDRight();
+	if(true!=GetEleVolCDLeftEN())
+	{
+		leftVol=0;
+	}
+	if(true!=GetEleVolCDRightEN())
+	{
+		rightVol=0;
+	}
+	float left=(float)leftVol/31.0;
+	float right=(float)rightVol/31.0;
+	outside_world->CDDASetVolume(left,right);
+}
+
 /* virtual */ void FMTowns::RunScheduledTask(unsigned long long int townsTime)
 {
 	cpu.Reset();

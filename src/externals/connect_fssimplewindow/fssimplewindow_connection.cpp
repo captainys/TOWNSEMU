@@ -1683,6 +1683,10 @@ void FsSimpleWindowConnection::RenderBeforeSwapBuffers(const TownsRender::Image 
 	}
 	cddaStartHSG=from.ToHSG();
 }
+/* virtual */ void FsSimpleWindowConnection::CDDASetVolume(float leftVol,float rightVol)
+{
+	soundPlayer.SetVolumeLR(cddaChannel,leftVol,rightVol);
+}
 /* virtual */ void FsSimpleWindowConnection::CDDAStop(void)
 {
 	soundPlayer.Stop(cddaChannel);

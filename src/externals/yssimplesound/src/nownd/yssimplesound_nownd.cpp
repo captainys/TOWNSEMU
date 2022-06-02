@@ -60,7 +60,7 @@ YSRESULT YsSoundPlayer::EndAPISpecific(void)
 	return YSOK;
 }
 
-void YsSoundPlayer::SetVolumeAPISpecific(SoundData &,float)
+void YsSoundPlayer::SetVolumeAPISpecific(SoundData &,float,float)
 {
 }
 

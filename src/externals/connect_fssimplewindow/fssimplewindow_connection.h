@@ -103,6 +103,7 @@ public:
 	YsSoundPlayer::SoundData cddaChannel;
 	unsigned long long cddaStartHSG;
 	virtual void CDDAPlay(const DiscImage &discImg,DiscImage::MinSecFrm from,DiscImage::MinSecFrm to,bool repeat,unsigned int leftLevel,unsigned int rightLevel);
+	virtual void CDDASetVolume(float leftVol,float rightVol);
 	virtual void CDDAStop(void);
 	virtual void CDDAPause(void);
 	virtual void CDDAResume(void);

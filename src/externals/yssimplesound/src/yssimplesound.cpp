@@ -228,8 +228,16 @@ double YsSoundPlayer::GetCurrentPosition(const SoundData &dat) const
 
 void YsSoundPlayer::SetVolume(SoundData &dat,float vol)
 {
-	dat.playBackVolume=vol;
-	SetVolumeAPISpecific(dat,vol);
+	dat.playBackVolumeLeft=vol;
+	dat.playBackVolumeRight=vol;
+	SetVolumeAPISpecific(dat,vol,vol);
+}
+
+void YsSoundPlayer::SetVolumeLR(SoundData &dat,float leftVol,float rightVol)
+{
+	dat.playBackVolumeLeft=leftVol;
+	dat.playBackVolumeRight=rightVol;
+	SetVolumeAPISpecific(dat,leftVol,rightVol);
 }
 
 ////////////////////////////////////////////////////////////
@@ -266,7 +274,8 @@ void YsSoundPlayer::SoundData::CopyFrom(const SoundData &incoming)
 
 		isSigned=incoming.isSigned;
 		dat=incoming.dat;
-		playBackVolume=incoming.playBackVolume;
+		playBackVolumeLeft=incoming.playBackVolumeLeft;
+		playBackVolumeRight=incoming.playBackVolumeRight;
 
 		// Do not copy -> APISpecificDataPerSoundData *api;
 	}
@@ -290,7 +299,8 @@ void YsSoundPlayer::SoundData::MoveFrom(SoundData &incoming)
 
 		isSigned=incoming.isSigned;
 		std::swap(dat,incoming.dat);
-		playBackVolume=incoming.playBackVolume;
+		playBackVolumeLeft=incoming.playBackVolumeLeft;
+		playBackVolumeRight=incoming.playBackVolumeRight;
 
 		incoming.CleanUp();
 
@@ -317,7 +327,8 @@ void YsSoundPlayer::SoundData::CleanUp(void)
 	rate=44100;
 	sizeInBytes=0;
 	isSigned=YSTRUE;
-	playBackVolume=1.0;
+	playBackVolumeLeft=1.0;
+	playBackVolumeRight=1.0;
 }
 
 unsigned int YsSoundPlayer::SoundData::NTimeStep(void) const
@@ -409,7 +420,8 @@ YSRESULT YsSoundPlayer::SoundData::CreateFromSigned16bitStereo(unsigned int samp
 	rate=samplingRate;
 	sizeInBytes=wave.size();
 	isSigned=YSTRUE;
-	playBackVolume=1.0;
+	playBackVolumeLeft=1.0;
+	playBackVolumeRight=1.0;
 
 	dat.swap(wave);
 

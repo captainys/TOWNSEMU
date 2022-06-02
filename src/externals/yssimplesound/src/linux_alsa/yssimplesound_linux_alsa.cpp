@@ -624,7 +624,7 @@ YSRESULT YsSoundPlayer::EndAPISpecific(void)
 	return api->End();
 }
 
-void YsSoundPlayer::SetVolumeAPISpecific(SoundData &dat,float vol)
+void YsSoundPlayer::SetVolumeAPISpecific(SoundData &dat,float leftVol,float rightVol)
 {
 }
 

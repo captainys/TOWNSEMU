@@ -576,24 +576,10 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 
 			if(nullptr!=OutsideWorld)
 			{
-				/*
-				auto leftDb= (TOWNS_ELEVOL_MAX-townsPtr->GetEleVolCDLeft())/2;
-				auto rightDb=(TOWNS_ELEVOL_MAX-townsPtr->GetEleVolCDRight())/2;
-
-				// dB=20log(linear)
-				// dB/20=log10(linear)
-				// linear=10^(dB/20)
-				auto leftLinear=(unsigned int)(256.0/pow(10.0,(double)leftDb/20.0));
-				auto rightLinear=(unsigned int)(256.0/pow(10.0,(double)rightDb/20.0));
-				*/
-
-				// Temporarily disable electric volume.
-				// When CDDA is fading in, it stays low volume.
-				unsigned int leftLinear=255;
-				unsigned int rightLinear=255;
-
 				bool repeat=(1==state.paramQueue[6]); // Should I say 0!= ?
-				OutsideWorld->CDDAPlay(state.GetDisc(),msfBegin,msfEnd,repeat,leftLinear,rightLinear);
+				OutsideWorld->CDDAPlay(state.GetDisc(),msfBegin,msfEnd,repeat,255,255);
+				townsPtr->UpdateCDEleVol(OutsideWorld);
+
 				state.CDDAState=State::CDDA_PLAYING;
 				state.CDDAStartTime=msfBegin;
 				state.CDDAEndTime=msfEnd;

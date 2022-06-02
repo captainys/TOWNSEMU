@@ -227,10 +227,27 @@ YSRESULT YsSoundPlayer::EndAPISpecific(void)
 	return YSOK;
 }
 
-void YsSoundPlayer::SetVolumeAPISpecific(SoundData &dat,float vol)
+void YsSoundPlayer::SetVolumeAPISpecific(SoundData &dat,float leftVol,float rightVol)
 {
 	if(nullptr!=dat.api->dSoundBuf)
 	{
+		float vol=(leftVol+rightVol)/2.0;
+
+		// left=1, right=0 -> DSBPAN_LEFT
+		// left=0, right=1 -> DSBPAN_RIGHT
+		LONG pan=0;
+		if(vol<0.001)
+		{
+		}
+		else if(leftVol>rightVol)
+		{
+			pan=(LONG)((float)DSBPAN_LEFT*(1.0-rightVol/leftVol));
+		}
+		else if(rightVol>leftVol)
+		{
+			pan=(LONG)((float)DSBPAN_RIGHT*(1.0-leftVol/rightVol));
+		}
+
 		vol=sqrt(vol);
 
 		float dB=(float)DSBVOLUME_MAX*vol+(float)DSBVOLUME_MIN*(1.0-vol);
@@ -245,6 +262,7 @@ void YsSoundPlayer::SetVolumeAPISpecific(SoundData &dat,float vol)
 		}
 		// printf("%d\n",atten);
 		dat.api->dSoundBuf->SetVolume(atten);
+		dat.api->dSoundBuf->SetPan(pan);
 	}
 }
 
@@ -257,7 +275,7 @@ YSRESULT YsSoundPlayer::PlayOneShotAPISpecific(SoundData &dat)
 
 	if(nullptr!=dat.api->dSoundBuf)
 	{
-		SetVolumeAPISpecific(dat,dat.playBackVolume);
+		SetVolumeAPISpecific(dat,dat.playBackVolumeLeft,dat.playBackVolumeRight);
 		dat.api->dSoundBuf->SetCurrentPosition(0);
 		dat.api->dSoundBuf->Play(0,0xc0000000,0);
 		return YSOK;
@@ -278,7 +296,7 @@ YSRESULT YsSoundPlayer::PlayBackgroundAPISpecific(SoundData &dat)
 		dat.api->dSoundBuf->GetStatus(&sta);
 		if(0==(sta&DSBSTATUS_PLAYING))
 		{
-			SetVolumeAPISpecific(dat,dat.playBackVolume);
+			SetVolumeAPISpecific(dat,dat.playBackVolumeLeft,dat.playBackVolumeRight);
 			dat.api->dSoundBuf->SetCurrentPosition(0);
 			dat.api->dSoundBuf->Play(0,0xc0000000,DSBPLAY_LOOPING);
 		}

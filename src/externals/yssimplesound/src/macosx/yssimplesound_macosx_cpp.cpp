@@ -114,7 +114,7 @@ YSRESULT YsSoundPlayer::PlayOneShotAPISpecific(SoundData &dat)
 {
 	if(nullptr!=dat.api->sndPtr)
 	{
-		YsSimpleSound_OSX_SetVolume(api->enginePtr,dat.api->sndPtr,dat.playBackVolume);
+		YsSimpleSound_OSX_SetVolume(api->enginePtr,dat.api->sndPtr,dat.playBackVolumeLeft);
 		YsSimpleSound_OSX_PlayOneShot(api->enginePtr,dat.api->sndPtr);
 		return YSOK;
 	}
@@ -125,7 +125,7 @@ YSRESULT YsSoundPlayer::PlayBackgroundAPISpecific(SoundData &dat)
 {
 	if(nullptr!=dat.api->sndPtr)
 	{
-		YsSimpleSound_OSX_SetVolume(api->enginePtr,dat.api->sndPtr,dat.playBackVolume);
+		YsSimpleSound_OSX_SetVolume(api->enginePtr,dat.api->sndPtr,dat.playBackVolumeLeft);
 		YsSimpleSound_OSX_PlayBackground(api->enginePtr,dat.api->sndPtr);
 		return YSOK;
 	}
@@ -174,11 +174,11 @@ void YsSoundPlayer::ResumeAPISpecific(SoundData &dat)
 	}
 }
 
-void YsSoundPlayer::SetVolumeAPISpecific(SoundData &dat,float vol)
+void YsSoundPlayer::SetVolumeAPISpecific(SoundData &dat,float leftVol,float rightVol)
 {
 	if(nullptr!=dat.api->sndPtr)
 	{
-		YsSimpleSound_OSX_SetVolume(api->enginePtr,dat.api->sndPtr,vol);
+		YsSimpleSound_OSX_SetVolume(api->enginePtr,dat.api->sndPtr,leftVol);
 	}
 }
 
