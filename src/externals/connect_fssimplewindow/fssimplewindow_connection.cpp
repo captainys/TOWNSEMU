@@ -231,7 +231,8 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 	soundPlayer.Start();
 	cddaStartHSG=0;
 #ifdef AUDIO_USE_STREAMING
-	soundPlayer.StartStreaming(FMPCMStream);
+	YsSoundPlayer::StreamingOption FMPCMStreamOpt;
+	soundPlayer.StartStreaming(FMPCMStream,FMPCMStreamOpt);
 #endif
 
 	glClearColor(0,0,0,0);
