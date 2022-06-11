@@ -81,7 +81,11 @@ void TownsGamePort::Port::Write(long long int townsTime,bool COM,unsigned char T
 		}
 		else if((MOUSESTATE_XLOW==state || MOUSESTATE_YLOW==state) && true==COM)
 		{
-			state=(state+1)%NUM_MOUSESTATE;
+			++state;
+		}
+		if(MOUSESTATE_YLOW<state)
+		{
+			state=MOUSESTATE_XHIGH;
 		}
 	}
 	if(CYBERSTICK==device && CYBERSTICK_BOOT_IDLE_TIME<townsTime) // CYBERSTICK_BOOT_IDLE_TIME is for preventing boot menu
