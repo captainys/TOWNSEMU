@@ -158,7 +158,7 @@ bool Equal(const TownsProfile &a,const TownsProfile &b)
 	   a.appSpecificSetting!=b.appSpecificSetting ||
 	   a.scaling!=b.scaling ||
 	   a.autoScaling!=b.autoScaling ||
-	   a.maximizeOnStartUp!=b.maximizeOnStartUp ||
+	   a.windowModeOnStartUp!=b.windowModeOnStartUp ||
 	   a.quickScrnShotDir!=b.quickScrnShotDir ||
 	   a.quickStateSaveFName!=b.quickStateSaveFName ||
 	   a.pauseResumeKeyLabel!=b.pauseResumeKeyLabel)
