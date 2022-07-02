@@ -13,6 +13,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 << LICENSE */
 #include "townsio.h"
+#include "outside_world.h"
 
 
 
@@ -73,21 +74,25 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 	case TOWNSIO_ELEVOL_1_DATA: //           0x4E0, // [2] pp.18, pp.174
 		state.eleVol[0][state.eleVolChLatch[0]].vol=(data&0x3f);
+		UpdateEleVol(0);
 		break;
 	case TOWNSIO_ELEVOL_1_COM: //            0x4E1, // [2] pp.18, pp.174
 		state.eleVolChLatch[0]=data&3;
 		state.eleVol[0][state.eleVolChLatch[0]].EN=(0!=(data&4));
 		state.eleVol[0][state.eleVolChLatch[0]].C0=(0!=(data&8));
 		state.eleVol[0][state.eleVolChLatch[0]].C32=(0!=(data&16));
+		UpdateEleVol(0);
 		break;
 	case TOWNSIO_ELEVOL_2_DATA: //           0x4E2, // [2] pp.18, pp.174
 		state.eleVol[1][state.eleVolChLatch[1]].vol=(data&0x3f);
+		UpdateEleVol(1);
 		break;
 	case TOWNSIO_ELEVOL_2_COM: //            0x4E3, // [2] pp.18, pp.174
 		state.eleVolChLatch[1]=data&3;
 		state.eleVol[1][state.eleVolChLatch[1]].EN=(0!=(data&4));
 		state.eleVol[1][state.eleVolChLatch[1]].C0=(0!=(data&8));
 		state.eleVol[1][state.eleVolChLatch[1]].C32=(0!=(data&16));
+		UpdateEleVol(1);
 		break;
 
 	case TOWNSIO_MAINRAM_WAIT_1STGEN: //     0x5E0,
@@ -230,6 +235,33 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 {
 	return Device::IOReadWord(ioport);
 }
+
+void FMTowns::UpdateEleVol(int eleVol)
+{
+	if(TOWNS_ELEVOL_FOR_CD==eleVol &&
+	  (TOWNS_ELEVOL_CD_LEFT==state.eleVolChLatch[TOWNS_ELEVOL_FOR_CD] || TOWNS_ELEVOL_CD_RIGHT==state.eleVolChLatch[TOWNS_ELEVOL_FOR_CD]))
+	{
+		cdrom.var.CDEleVolUpdate=true;
+	}
+}
+
+void FMTowns::UpdateCDEleVol(Outside_World *outside_world)
+{
+	unsigned int leftVol=GetEleVolCDLeft();
+	unsigned int rightVol=GetEleVolCDRight();
+	if(true!=GetEleVolCDLeftEN())
+	{
+		leftVol=0;
+	}
+	if(true!=GetEleVolCDRightEN())
+	{
+		rightVol=0;
+	}
+	float left=(float)leftVol/63.0;
+	float right=(float)rightVol/63.0;
+	outside_world->CDDASetVolume(left,right);
+}
+
 /* virtual */ void FMTowns::RunScheduledTask(unsigned long long int townsTime)
 {
 	cpu.Reset();

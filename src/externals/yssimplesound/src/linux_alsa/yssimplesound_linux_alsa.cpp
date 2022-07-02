@@ -624,7 +624,7 @@ YSRESULT YsSoundPlayer::EndAPISpecific(void)
 	return api->End();
 }
 
-void YsSoundPlayer::SetVolumeAPISpecific(SoundData &dat,float vol)
+void YsSoundPlayer::SetVolumeAPISpecific(SoundData &dat,float leftVol,float rightVol)
 {
 }
 
@@ -763,7 +763,7 @@ void YsSoundPlayer::Stream::DeleteAPISpecificData(APISpecificData *api)
 	delete api;
 }
 
-YSRESULT YsSoundPlayer::StartStreamingAPISpecific(Stream &stream)
+YSRESULT YsSoundPlayer::StartStreamingAPISpecific(Stream &stream,StreamingOption)
 {
 	for(auto playingStream : this->api->playingStream)
 	{

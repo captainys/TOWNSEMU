@@ -28,12 +28,12 @@ void TownsSerialPort::DefaultClient::ClearXMODEM(void)
 {
 	fileTfrMode=FILETFR_NONE;
 }
-void TownsSerialPort::DefaultClient::SetUpXMODEMtoVM(const std::vector <unsigned char> &data)
+void TownsSerialPort::DefaultClient::SetUpXMODEMtoVM(const std::vector <unsigned char> &data,uint32_t packetLength)
 {
-	fileTfrMode=FILETFR_XMODEM_TO_VM;
+	fileTfrMode=(128==packetLength ? FILETFR_XMODEM_TO_VM : FILETFR_XMODEM1024_TO_VM);
 	fileTfrPtr=0;
 	fileTfrData=data;
-	while(0!=(fileTfrData.size()%128))
+	while(0!=(fileTfrData.size()%packetLength))
 	{
 		fileTfrData.push_back(CODE_EOF);
 	}
@@ -62,15 +62,22 @@ void TownsSerialPort::DefaultClient::SetUpXMODEMCRCfromVM(std::string hostRecvFN
 	this->hostRecvFName=hostRecvFName;
 }
 
-void TownsSerialPort::DefaultClient::XMODEM_TO_VM_TransferNextBlock(void)
+void TownsSerialPort::DefaultClient::XMODEM_TO_VM_TransferNextBlock(uint32_t packetLength)
 {
-	unsigned int blk=((fileTfrPtr/128)+1)&255;
+	unsigned int blk=((fileTfrPtr/packetLength)+1)&255;
 	toVMPtr=toVM.size();
-	toVM.push_back(CODE_SOH);
+	if(128==packetLength)
+	{
+		toVM.push_back(CODE_SOH);
+	}
+	else
+	{
+		toVM.push_back(CODE_STX);
+	}
 	toVM.push_back(blk);
 	toVM.push_back(~blk);
 	unsigned int checkSum=0;
-	for(unsigned int i=0; i<128; ++i)
+	for(unsigned int i=0; i<packetLength; ++i)
 	{
 		if(fileTfrPtr+i<fileTfrData.size())
 		{
@@ -84,7 +91,7 @@ void TownsSerialPort::DefaultClient::XMODEM_TO_VM_TransferNextBlock(void)
 	}
 	if(true==XMODEM_USE_CRC)
 	{
-		auto CRC=XMODEM_CRC(fileTfrData.data()+fileTfrPtr,128);
+		auto CRC=XMODEM_CRC(fileTfrData.data()+fileTfrPtr,packetLength);
 		toVM.push_back((CRC>>8)&0xFF);
 		toVM.push_back(CRC&0xFF);
 	}
@@ -93,7 +100,7 @@ void TownsSerialPort::DefaultClient::XMODEM_TO_VM_TransferNextBlock(void)
 		toVM.push_back(checkSum&0xFF);
 	}
 
-	fileTfrPtr+=128;
+	fileTfrPtr+=packetLength;
 }
 
 /* virtual */ bool TownsSerialPort::DefaultClient::TxRDY(void)
@@ -103,7 +110,9 @@ void TownsSerialPort::DefaultClient::XMODEM_TO_VM_TransferNextBlock(void)
 }
 /* virtual */ void TownsSerialPort::DefaultClient::Tx(unsigned char data)
 {
-	// It is Tx from the VM point of view.  It is Rx from the client point of view.
+	uint32_t packetLength=128;
+
+	// It is Tx from the VM point of view.  It is Rx from the host point of view.
 	switch(fileTfrMode)
 	{
 	case FILETFR_NONE:
@@ -118,16 +127,18 @@ void TownsSerialPort::DefaultClient::XMODEM_TO_VM_TransferNextBlock(void)
 		}
 		break;
 	case FILETFR_XMODEM_TO_VM:
+	case FILETFR_XMODEM1024_TO_VM:
+		packetLength=(FILETFR_XMODEM1024_TO_VM==fileTfrMode ? 1024 : 128);
 		// std::cout << "Tx from VM:" << cpputil::Ubtox(data) << std::endl;
 		if(0==fileTfrPtr && 'C'==data)
 		{
 			XMODEM_USE_CRC=true;
-			XMODEM_TO_VM_TransferNextBlock();
+			XMODEM_TO_VM_TransferNextBlock(packetLength);
 		}
 		else if(0==fileTfrPtr && CODE_NAK==data)
 		{
 			XMODEM_USE_CRC=false;
-			XMODEM_TO_VM_TransferNextBlock();
+			XMODEM_TO_VM_TransferNextBlock(packetLength);
 		}
 		else if(CODE_NAK==data || CODE_ACK==data || 'C'==data) // WINK2.EXP uses 'C' for the first two packets apparently.  Confirmed in WINK2 source XMODEM2.C line 463
 		{
@@ -137,10 +148,10 @@ void TownsSerialPort::DefaultClient::XMODEM_TO_VM_TransferNextBlock(void)
 				fileTfrPtr=0;
 				XMODEM_EOT_SENT=false;
 			}
-			else if(CODE_NAK==data && 128<=fileTfrPtr)
+			else if(CODE_NAK==data && packetLength<=fileTfrPtr)
 			{
-				fileTfrPtr-=128;
-				XMODEM_TO_VM_TransferNextBlock();
+				fileTfrPtr-=packetLength;
+				XMODEM_TO_VM_TransferNextBlock(packetLength);
 			}
 			else if(CODE_ACK==data || (true==XMODEM_USE_CRC && 'C'==data))
 			{
@@ -159,7 +170,7 @@ void TownsSerialPort::DefaultClient::XMODEM_TO_VM_TransferNextBlock(void)
 				}
 				else
 				{
-					XMODEM_TO_VM_TransferNextBlock();
+					XMODEM_TO_VM_TransferNextBlock(packetLength);
 				}
 			}
 		}
@@ -167,7 +178,7 @@ void TownsSerialPort::DefaultClient::XMODEM_TO_VM_TransferNextBlock(void)
 	case FILETFR_XMODEM_FROM_VM:
 		if(0==fromVM.size())
 		{
-			if(CODE_SOH==data)
+			if(CODE_SOH==data || CODE_STX==data)
 			{
 				fromVM.push_back(data);
 			}
@@ -187,15 +198,16 @@ void TownsSerialPort::DefaultClient::XMODEM_TO_VM_TransferNextBlock(void)
 		}
 		else
 		{
-			const unsigned int blockSize=(true==XMODEM_USE_CRC ? 133 : 132);
+			const unsigned int packetSize=(CODE_SOH==fromVM[0] ? 128 : 1024);
+			const unsigned int blockSize=(true==XMODEM_USE_CRC ? packetSize+5 : packetSize+4);
 			fromVM.push_back(data);
 			if(blockSize==fromVM.size())
 			{
 				if(true==XMODEM_USE_CRC)
 				{
-					auto CRC=XMODEM_CRC(fromVM.data()+3,128);
-					if(((CRC>>8)&0xFF)!=fromVM[131] ||
-					   ( CRC    &0xFF)!=fromVM[132])
+					auto CRC=XMODEM_CRC(fromVM.data()+3,packetSize);
+					if(((CRC>>8)&0xFF)!=fromVM[blockSize-2] ||
+					   ( CRC    &0xFF)!=fromVM[blockSize-1])
 					{
 						toVM.push_back(CODE_NAK);
 						fromVM.clear();
@@ -205,11 +217,11 @@ void TownsSerialPort::DefaultClient::XMODEM_TO_VM_TransferNextBlock(void)
 				else
 				{
 					unsigned int sum=0;
-					for(int i=3; i<3+128; ++i)
+					for(int i=3; i<3+packetSize; ++i)
 					{
 						sum+=fromVM[i];
 					}
-					if(fromVM[1]!=(255&(~fromVM[2])) || fromVM[131]!=(sum&255))
+					if(fromVM[1]!=(255&(~fromVM[2])) || fromVM[blockSize-1]!=(sum&255))
 					{
 						toVM.push_back(CODE_NAK);
 						fromVM.clear();
@@ -217,7 +229,7 @@ void TownsSerialPort::DefaultClient::XMODEM_TO_VM_TransferNextBlock(void)
 					}
 				}
 
-				for(int i=3; i<3+128; ++i)
+				for(int i=3; i<3+packetSize; ++i)
 				{
 					fileTfrData.push_back(fromVM[i]);
 				}

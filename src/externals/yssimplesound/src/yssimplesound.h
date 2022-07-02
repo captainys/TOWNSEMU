@@ -5,6 +5,7 @@
 
 #include <vector>
 #include <memory>
+#include <stdint.h>
 
 
 #ifndef YSRESULT_IS_DEFINED
@@ -100,6 +101,14 @@ public:
 
 	class Stream;
 
+	class StreamingOption
+	{
+	public:
+		// Ring-Buffer Length in Millisec.
+		// It is just a preference and may be ignored.
+		uint32_t ringBufferLengthMillisec=1000;
+	};
+
 private:
 	class APISpecificData;
 
@@ -129,7 +138,7 @@ private:
 	void KeepPlayingAPISpecific(void);
 	YSBOOL IsPlayingAPISpecific(const SoundData &dat) const;
 	double GetCurrentPositionAPISpecific(const SoundData &dat) const;
-	void SetVolumeAPISpecific(SoundData &dat,float vol);
+	void SetVolumeAPISpecific(SoundData &dat,float leftVol,float rightVol);
 	void PauseAPISpecific(SoundData &dat);
 	void ResumeAPISpecific(SoundData &dat);
 	// Written per API <<
@@ -160,7 +169,7 @@ public:
 
 	/*! Start play as a stream.  Additional 
 	*/
-	YSRESULT StartStreaming(Stream &streamPlayer);
+	YSRESULT StartStreaming(Stream &streamPlayer,StreamingOption opt);
 
 	/*! Stop a stream player.
 	*/
@@ -176,7 +185,7 @@ public:
 
 private:
 	// Written in API-specific source >>
-	YSRESULT StartStreamingAPISpecific(Stream &streamPlayer);
+	YSRESULT StartStreamingAPISpecific(Stream &streamPlayer,StreamingOption opt);
 	void StopStreamingAPISpecific(Stream &streamPlayer);
 	YSBOOL StreamPlayerReadyToAcceptNextSegmentAPISpecific(const Stream &streamPlayer,const SoundData &dat) const;
 	YSRESULT AddNextStreamingSegmentAPISpecific(Stream &streamPlayer,const SoundData &dat);
@@ -222,6 +231,7 @@ public:
 		This function has no effect at this time in Linux-ALSA environment.
 	*/
 	void SetVolume(SoundData &dat,float vol);
+	void SetVolumeLR(SoundData &dat,float leftVol,float rightVol);
 };
 
 
@@ -248,7 +258,7 @@ private:
 
 	YSBOOL isSigned;
 	std::vector <unsigned char> dat;
-	float playBackVolume;
+	float playBackVolumeLeft,playBackVolumeRight;
 
 	// Written per API >>
 	APISpecificDataPerSoundData *api;

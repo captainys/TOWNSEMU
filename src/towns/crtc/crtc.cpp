@@ -544,9 +544,6 @@ Vec2i TownsCRTC::GetPageSizeOnMonitor(unsigned char page) const
 		hei/=2;
 	}
 
-	// Unless I add origin y, Galaxy Force II is chopped off the bottom part.
-	hei+=GetPageOriginOnMonitor(page).y();
-
 	return Vec2i::Make(wid,hei);
 }
 Vec2i TownsCRTC::GetPageVRAMCoverageSize1X(unsigned char page) const
@@ -1348,6 +1345,7 @@ Vec2i TownsCRTC::GetRenderSize(void) const
 		if(LowResCrtcIsInSinglePageMode())
 		{
 			auto dim=GetPageSizeOnMonitor(0);
+			dim[1]+=GetPageOriginOnMonitor(0).y();
 			unsigned int hei=std::min(maxHei,std::max(dim.y(),minHei));
 			return Vec2i::Make(std::max(640,dim.x()),hei);
 		}
@@ -1355,6 +1353,11 @@ Vec2i TownsCRTC::GetRenderSize(void) const
 		{
 			auto dim0=GetPageSizeOnMonitor(0);
 			auto dim1=GetPageSizeOnMonitor(1);
+
+			// Unless I add origin y, Galaxy Force II is chopped off the bottom part.
+			dim0[1]+=GetPageOriginOnMonitor(0).y();
+			dim1[1]+=GetPageOriginOnMonitor(1).y();
+
 			auto wid=std::max(dim0.x(),dim1.x());
 			auto hei=std::max(dim0.y(),dim1.y());
 			hei=std::min(maxHei,std::max(hei,minHei));

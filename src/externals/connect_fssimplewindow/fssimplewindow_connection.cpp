@@ -231,7 +231,8 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 	soundPlayer.Start();
 	cddaStartHSG=0;
 #ifdef AUDIO_USE_STREAMING
-	soundPlayer.StartStreaming(FMPCMStream);
+	YsSoundPlayer::StreamingOption FMPCMStreamOpt;
+	soundPlayer.StartStreaming(FMPCMStream,FMPCMStreamOpt);
 #endif
 
 	glClearColor(0,0,0,0);
@@ -1647,31 +1648,9 @@ void FsSimpleWindowConnection::RenderBeforeSwapBuffers(const TownsRender::Image 
 	}
 }
 
-/* virtual */ void FsSimpleWindowConnection::CDDAPlay(const DiscImage &discImg,DiscImage::MinSecFrm from,DiscImage::MinSecFrm to,bool repeat,unsigned int leftLevel,unsigned int rightLevel)
+/* virtual */ void FsSimpleWindowConnection::CDDAPlay(const DiscImage &discImg,DiscImage::MinSecFrm from,DiscImage::MinSecFrm to,bool repeat,unsigned int,unsigned int)
 {
-	if(256<leftLevel)
-	{
-		leftLevel=256;
-	}
-	if(256<rightLevel)
-	{
-		rightLevel=256;
-	}
 	auto wave=discImg.GetWave(from,to);
-	if(leftLevel<256 || rightLevel<256)
-	{
-		for(long long int i=0; i+3<wave.size(); i+=4)
-		{
-			int left= cpputil::GetWord(wave.data()+i);
-			int right=cpputil::GetWord(wave.data()+i+2);;
-			left= (left &0x7FFF)-(left &0x8000);
-			right=(right&0x7FFF)-(right&0x8000);
-			left= left *leftLevel /256;
-			right=right*rightLevel/256;
-			cpputil::PutWord(wave.data()+i  ,left);
-			cpputil::PutWord(wave.data()+i+2,right);
-		}
-	}
 	cddaChannel.CreateFromSigned16bitStereo(44100,wave);
 	if(true==repeat)
 	{
@@ -1682,6 +1661,10 @@ void FsSimpleWindowConnection::RenderBeforeSwapBuffers(const TownsRender::Image 
 		soundPlayer.PlayOneShot(cddaChannel);
 	}
 	cddaStartHSG=from.ToHSG();
+}
+/* virtual */ void FsSimpleWindowConnection::CDDASetVolume(float leftVol,float rightVol)
+{
+	soundPlayer.SetVolumeLR(cddaChannel,leftVol,rightVol);
 }
 /* virtual */ void FsSimpleWindowConnection::CDDAStop(void)
 {
