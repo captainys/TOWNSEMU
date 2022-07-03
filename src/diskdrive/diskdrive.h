@@ -158,6 +158,15 @@ public:
 	*/
 	inline bool CheckMediaTypeAndDriveModeCompatible(unsigned int mediaType,unsigned int driveMode) const
 	{
+		// TOWNS can read 2D disk, but it is reading as 2DD disk and stepping two tracks at a time.
+		// From hardware point of view TOWNS's floppy disk drive apparently is not distinguishing
+		// 2D and 2DD.
+		// Which means, it officially only support reading 2D, but probably it can format unformatted
+		// disk and format even-number tracks to format to 2D disk.
+		if(MEDIA_2D==mediaType)
+		{
+			mediaType=MEDIA_2DD_640KB;
+		}
 		if(MEDIA_2DD_720KB==mediaType)
 		{
 			mediaType=MEDIA_2DD_640KB;
@@ -175,6 +184,10 @@ public:
 	*/
 	inline bool CheckMediaTypeAndDriveModeCompatibleForFormat(unsigned int mediaType,unsigned int driveMode) const
 	{
+		if(MEDIA_2D==mediaType)
+		{
+			mediaType=MEDIA_2DD_640KB;
+		}
 		if(MEDIA_2DD_720KB==mediaType)
 		{
 			mediaType=MEDIA_2DD_640KB;
