@@ -104,6 +104,10 @@ public:
 		bool recordType,recordNotFound,CRCError,lostData,writeFault;
 		unsigned int addrMarkReadCount;
 
+		unsigned int dataReadPointer=0,expectedWriteLength=0;;
+		std::vector <unsigned char> data; // For I/O read and write
+		bool DRQ=false,IRQ=false;
+
 		long long int scheduleTime;
 
 		void Reset(void);

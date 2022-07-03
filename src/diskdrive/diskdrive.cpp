@@ -145,6 +145,12 @@ void DiskDrive::State::Reset(void)
 	writeFault=false;
 
 	addrMarkReadCount=0;
+
+	data.clear();
+	dataReadPointer=0;
+	expectedWriteLength=0;
+	DRQ=false;
+	IRQ=false;
 }
 
 void DiskDrive::State::Drive::DiskChanged(void)
@@ -413,6 +419,9 @@ void DiskDrive::SendCommand(unsigned int cmd,uint64_t vmTime)
 	}
 	else
 	{
+		state.data.clear();
+		state.dataReadPointer=0;
+
 		auto &drv=state.drive[DriveSelect()];
 		switch(cmd&0xF0)
 		{
@@ -474,6 +483,11 @@ void DiskDrive::SendCommand(unsigned int cmd,uint64_t vmTime)
 			state.lostData=false;
 			state.writeFault=false;
 			state.busy=true;
+
+			state.data.clear();
+			state.dataReadPointer=0;
+			state.DRQ=false;
+			state.IRQ=false;
 			break;
 		case 0xA0: // Write Data (Write Sector)
 		case 0xB0: // Write Data (Write Sector)
@@ -484,6 +498,11 @@ void DiskDrive::SendCommand(unsigned int cmd,uint64_t vmTime)
 			state.lostData=false;
 			state.writeFault=false;
 			state.busy=true;
+
+			state.data.clear();
+			state.expectedWriteLength=0;
+			state.DRQ=false;
+			state.IRQ=false;
 			break;
 
 		case 0xC0: // Read Address
@@ -494,6 +513,11 @@ void DiskDrive::SendCommand(unsigned int cmd,uint64_t vmTime)
 			state.lostData=false;
 			state.writeFault=false;
 			state.busy=true;
+
+			state.data.clear();
+			state.dataReadPointer=0;
+			state.DRQ=false;
+			state.IRQ=false;
 			break;
 		case 0xE0: // Read Track
 			state.recordType=false;
@@ -503,6 +527,11 @@ void DiskDrive::SendCommand(unsigned int cmd,uint64_t vmTime)
 			state.writeFault=false;
 			std::cout << __FUNCTION__ << std::endl;
 			std::cout << "Command " << cpputil::Ubtox(cmd) << " not supported yet." << std::endl;
+
+			state.data.clear();
+			state.dataReadPointer=0;
+			state.DRQ=false;
+			state.IRQ=false;
 			break;
 		case 0xF0: // Write Track
 			vmPtr->ScheduleDeviceCallBack(*this,vmTime+WRITE_TRACK_TIME);
@@ -511,6 +540,11 @@ void DiskDrive::SendCommand(unsigned int cmd,uint64_t vmTime)
 			state.CRCError=false;
 			state.lostData=false;
 			state.writeFault=false;
+
+			state.data.clear();
+			state.expectedWriteLength=0;
+			state.DRQ=false;
+			state.IRQ=false;
 			break;
 
 		case 0xD0: // Force Interrupt
@@ -896,7 +930,8 @@ std::vector <std::string> DiskDrive::GetStatusText(void) const
 
 /* virtual */ uint32_t DiskDrive::SerializeVersion(void) const
 {
-	return 1;
+	// Version 2 adds fields for I/O read/write (not DMA)
+	return 2;
 }
 /* virtual */ void DiskDrive::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
 {
@@ -963,6 +998,13 @@ std::vector <std::string> DiskDrive::GetStatusText(void) const
 	PushUint32(data,state.addrMarkReadCount);
 
 	PushInt64(data,state.scheduleTime);
+
+	// Version 2
+	PushUint32(data,state.dataReadPointer);
+	PushUint32(data,state.expectedWriteLength);
+	PushUcharArray(data,data);
+	PushBool(data,state.DRQ);
+	PushBool(data,state.IRQ);
 }
 /* virtual */ bool DiskDrive::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
 {
@@ -1077,5 +1119,13 @@ std::vector <std::string> DiskDrive::GetStatusText(void) const
 
 	state.scheduleTime=ReadInt64(data);
 
+	if(2<=version)
+	{
+		state.dataReadPointer=ReadUint32(data);
+		state.expectedWriteLength=ReadUint32(data);
+		state.data=ReadUcharArray(data);
+		state.DRQ=ReadBool(data);
+		state.IRQ=ReadBool(data);
+	}
 	return true;
 }
