@@ -355,7 +355,11 @@ unsigned int DiskDrive::IdentifyDiskMediaType(const D77File::D77Disk *diskPtr) c
 	}
 	totalSize/=1024;
 	unsigned int mediaType=MEDIA_UNKNOWN;
-	if(600<=totalSize && totalSize<680)
+	if(totalSize<600)
+	{
+		return MEDIA_2D;
+	}
+	else if(600<=totalSize && totalSize<680)
 	{
 		return MEDIA_2DD_640KB;
 	}

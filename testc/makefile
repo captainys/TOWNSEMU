@@ -1,3 +1,11 @@
+BUILD\DRVMODE.EXP : BUILD\DRVMODE.OBJ
+	386LINK BUILD\DRVMODE.OBJ -LIB C:\hc386\TOWNSLIB\LIB\FMCFRB.lib C:\hc386\small\hce.lib C:\hc386\small\na.lib -EXE BUILD\DRVMODE.EXP
+
+BUILD\DRVMODE.OBJ : DRVMODE.C
+	HCD386 DRVMODE.C -OBJ BUILD\DRVMODE.OBJ
+
+
+
 build\io.obj : io.asm
 	386asm io.asm -OBJECT build\io.obj
 
@@ -396,4 +404,6 @@ build\fpuexp.obj : fpuexp.c
 
 build\fpuexp.exp : build\fpuexp.obj
 	386link build\fpuexp.obj build\fpu.obj -exe build\fpuexp.exp @LIBSFPU.LN
+
+
 
