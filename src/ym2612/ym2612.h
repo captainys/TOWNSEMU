@@ -21,6 +21,14 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 
 
+// Relative to FM TOWNS
+#define YM_CLOCK_RATIO_DENOM 1
+#define YM_CLOCK_RATIO_NUMER 1
+// YM_CLOCK_RATIO intentionally not having parenthesis.  Don't add.
+#define YM_CLOCK_RATIO YM_CLOCK_RATIO_DENOM/YM_CLOCK_RATIO_NUMER
+#define YM_CLOCK_RATIO_INV YM_CLOCK_RATIO_NUMER/YM_CLOCK_RATIO_DENOM
+
+
 /*******************************************************************************
 
     YM2612 Emulator for Tsugaru:  Tsugaru-Ben
@@ -103,7 +111,7 @@ public:
 		// FM Towns Technical Databook tells internal clock frequency is 600KHz.
 		// Which is 1667ns per clock.
 		// However, actual measurement suggests it is 690KHz, which makes 1449ns per clock.
-		TICK_DURATION_IN_NS=1449,
+		TICK_DURATION_IN_NS=1449*YM_CLOCK_RATIO,
 		TIMER_A_PER_TICK=12,
 		TIMER_B_PER_TICK=192,
 		NTICK_TIMER_A=1024*TIMER_A_PER_TICK,
@@ -402,14 +410,14 @@ public:
 		// Value based on the observation.
 		static const unsigned int scale[8]=
 		{
-			(423892    /1000),   // (4238*16/10)/16,
-			(423892  *2/1000),   // (4239*16/10)/8,
-			(423892  *4/1000),   // (4239*16/10)/4,
-			(423892  *8/1000),   // (4239*16/10)/2,
-			(423892 *16/1000),   // (4239*16/10),
-			(423892 *32/1000),   // (4239*16/10)*2,
-			(423892 *64/1000),   // (4239*16/10)*4,
-			(423892*128/1000),   // (4239*16/10)*8,
+			((423892    *YM_CLOCK_RATIO)/1000),   // (4238*16/10)/16,
+			((423892  *2*YM_CLOCK_RATIO)/1000),   // (4239*16/10)/8,
+			((423892  *4*YM_CLOCK_RATIO)/1000),   // (4239*16/10)/4,
+			((423892  *8*YM_CLOCK_RATIO)/1000),   // (4239*16/10)/2,
+			((423892 *16*YM_CLOCK_RATIO)/1000),   // (4239*16/10),
+			((423892 *32*YM_CLOCK_RATIO)/1000),   // (4239*16/10)*2,
+			((423892 *64*YM_CLOCK_RATIO)/1000),   // (4239*16/10)*4,
+			((423892*128*YM_CLOCK_RATIO)/1000),   // (4239*16/10)*8,
 		};
 		FNUM*=scale[BLOCK&7];
 		FNUM/=1000;
