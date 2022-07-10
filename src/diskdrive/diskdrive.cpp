@@ -935,7 +935,8 @@ std::vector <std::string> DiskDrive::GetStatusText(void) const
 /* virtual */ uint32_t DiskDrive::SerializeVersion(void) const
 {
 	// Version 2 adds fields for I/O read/write (not DMA)
-	return 2;
+	// Version 3 adds CRCErrorAfterRead
+	return 3;
 }
 /* virtual */ void DiskDrive::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
 {
@@ -1009,6 +1010,8 @@ std::vector <std::string> DiskDrive::GetStatusText(void) const
 	PushUcharArray(data,data);
 	PushBool(data,state.DRQ);
 	PushBool(data,state.IRQ);
+	// Version 3
+	PushBool(data,state.CRCErrorAfterRead);
 }
 /* virtual */ bool DiskDrive::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
 {
@@ -1130,6 +1133,10 @@ std::vector <std::string> DiskDrive::GetStatusText(void) const
 		state.data=ReadUcharArray(data);
 		state.DRQ=ReadBool(data);
 		state.IRQ=ReadBool(data);
+	}
+	if(3<=version)
+	{
+		state.CRCErrorAfterRead=ReadBool(data);
 	}
 	return true;
 }

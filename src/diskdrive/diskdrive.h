@@ -106,7 +106,7 @@ public:
 
 		unsigned int dataReadPointer=0,expectedWriteLength=0;;
 		std::vector <unsigned char> data; // For I/O read and write
-		bool DRQ=false,IRQ=false;
+		bool DRQ=false,IRQ=false,CRCErrorAfterRead=false;
 
 		long long int scheduleTime;
 
