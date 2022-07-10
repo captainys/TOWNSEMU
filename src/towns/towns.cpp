@@ -249,7 +249,7 @@ void FMTowns::State::PowerOn(void)
 	std::cout << "Loaded ROM Images.\n";
 
 	towns.Reset();
-	towns.physMem.takeJISCodeLog=true;
+	towns.physMem.takeJISCodeLog=false;
 
 	std::cout << "Virtual Machine Reset.\n";
 
