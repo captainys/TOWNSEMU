@@ -436,6 +436,7 @@ void DiskDrive::SendCommand(unsigned int cmd,uint64_t vmTime)
 			state.CRCError=false;
 			state.lostData=false;
 			state.writeFault=false;
+			state.CRCErrorAfterRead=false;
 			state.busy=true;
 			break;
 		case 0x10: // Seek
@@ -445,6 +446,7 @@ void DiskDrive::SendCommand(unsigned int cmd,uint64_t vmTime)
 			state.CRCError=false;
 			state.lostData=false;
 			state.writeFault=false;
+			state.CRCErrorAfterRead=false;
 			state.busy=true;
 			break;
 		case 0x20: // Step?
@@ -455,6 +457,7 @@ void DiskDrive::SendCommand(unsigned int cmd,uint64_t vmTime)
 			state.CRCError=false;
 			state.lostData=false;
 			state.writeFault=false;
+			state.CRCErrorAfterRead=false;
 			state.busy=true;
 			break;
 		case 0x40: // Step In
@@ -465,6 +468,7 @@ void DiskDrive::SendCommand(unsigned int cmd,uint64_t vmTime)
 			state.CRCError=false;
 			state.lostData=false;
 			state.writeFault=false;
+			state.CRCErrorAfterRead=false;
 			state.busy=true;
 			break;
 		case 0x60: // Step Out
@@ -475,6 +479,7 @@ void DiskDrive::SendCommand(unsigned int cmd,uint64_t vmTime)
 			state.CRCError=false;
 			state.lostData=false;
 			state.writeFault=false;
+			state.CRCErrorAfterRead=false;
 			state.busy=true;
 			break;
 
@@ -492,6 +497,7 @@ void DiskDrive::SendCommand(unsigned int cmd,uint64_t vmTime)
 			state.dataReadPointer=0;
 			state.DRQ=false;
 			state.IRQ=false;
+			state.CRCErrorAfterRead=false;
 			break;
 		case 0xA0: // Write Data (Write Sector)
 		case 0xB0: // Write Data (Write Sector)
@@ -507,6 +513,7 @@ void DiskDrive::SendCommand(unsigned int cmd,uint64_t vmTime)
 			state.expectedWriteLength=0;
 			state.DRQ=false;
 			state.IRQ=false;
+			state.CRCErrorAfterRead=false;
 			break;
 
 		case 0xC0: // Read Address
@@ -522,6 +529,7 @@ void DiskDrive::SendCommand(unsigned int cmd,uint64_t vmTime)
 			state.dataReadPointer=0;
 			state.DRQ=false;
 			state.IRQ=false;
+			state.CRCErrorAfterRead=false;
 			break;
 		case 0xE0: // Read Track
 			state.recordType=false;
@@ -536,6 +544,7 @@ void DiskDrive::SendCommand(unsigned int cmd,uint64_t vmTime)
 			state.dataReadPointer=0;
 			state.DRQ=false;
 			state.IRQ=false;
+			state.CRCErrorAfterRead=false;
 			break;
 		case 0xF0: // Write Track
 			vmPtr->ScheduleDeviceCallBack(*this,vmTime+WRITE_TRACK_TIME);
@@ -549,6 +558,7 @@ void DiskDrive::SendCommand(unsigned int cmd,uint64_t vmTime)
 			state.expectedWriteLength=0;
 			state.DRQ=false;
 			state.IRQ=false;
+			state.CRCErrorAfterRead=false;
 			break;
 
 		case 0xD0: // Force Interrupt
@@ -565,6 +575,7 @@ void DiskDrive::SendCommand(unsigned int cmd,uint64_t vmTime)
 				return;                 // Other bits stays the same.
 			}
 			state.busy=false;
+			state.CRCErrorAfterRead=false;
 			break;
 		}
 	}
