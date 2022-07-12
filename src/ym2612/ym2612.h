@@ -123,6 +123,27 @@ public:
 		TIMER_B_PER_TICK=192,
 		NTICK_TIMER_A=1024*TIMER_A_PER_TICK,
 		NTICK_TIMER_B= 256*TIMER_B_PER_TICK,
+		// Self memo:
+		// TIMER_?_PER_TICK was hell confusing.  Sorry to myself (and other people who may
+		// be trying to understand the meaning of this code.)
+		// timerCounter[?] increments by one when the timer is enabled and one tick came in.
+		// The timer is up and blasts an IRQ when timerCounter[?] reaches NTICK_TIMER_?.
+
+		// Then what's TIMER_?_PER_TICK?
+		// When timer value is set by the CPU, timerCounter[?] is set to TIMER_?_PER_TICK times
+		// the value given by the CPU.
+		// Tumber of ticks before timer is up is proportional to TIMER_B_PER_TICK.
+		// For example, TIMER_B_PER_TICK is 192, and the CPU write 100, timer counter is
+		// set to 19200.  256*192-19200=29952 ticks needs to come in before timer B is up.
+		// If TIMER_B_PER_TICK is 128, and the CPU writes the same value, timer counter is
+		// set to 12800.  256*128-12800=19968 ticks needs to come in before timer B is up.
+
+		// 1024*TIMER_A_PER_TICK, this 1024 comes from TIMER_A uses 10-bit counter.
+		// 256*TIMER_B_PER_TICK, this 256 comes from TIMER_B uses 8-bit counter.
+
+		// Where are these 12 and 192 come from?  Taken from FM-Towns Technical Databook pp.201.
+		// 	TA=12*(1024-NB)/InternalClockKHz [ms]
+		// 	TB=192*(256-NB)/InternalClockKHz [ms]
 	};
 
 	enum {
