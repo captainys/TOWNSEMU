@@ -23,17 +23,19 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #ifdef MUTSU_FM77AV
 	// Relative to FM TOWNS
-	#define YM_CLOCK_RATIO_DENOM 104	// 1038 for "O4A" in F-BASIC386
-	#define YM_CLOCK_RATIO_NUMER 169	// 1689 for "O4A" in FM77AV HGPLAY
+	#define YM_PRESCALER_DEFAULT 3
+	#define YM_CLOCK_RATIO_NUMER (1689/YM_PRESCALER_DEFAULT)   // 1689 for "O4A" in FM77AV HGPLAY with 3X Pre-Scaler
+	#define YM_CLOCK_RATIO_DENOM 1038	                      // 1038 for "O4A" in F-BASIC386
 #else
 	// Relative to FM TOWNS
-	#define YM_CLOCK_RATIO_DENOM 1
 	#define YM_CLOCK_RATIO_NUMER 1
+	#define YM_CLOCK_RATIO_DENOM 1
 #endif
 
 // YM_CLOCK_RATIO intentionally not having parenthesis.  Don't add.
 #define YM_CLOCK_RATIO YM_CLOCK_RATIO_DENOM/YM_CLOCK_RATIO_NUMER
 #define YM_CLOCK_RATIO_INV YM_CLOCK_RATIO_NUMER/YM_CLOCK_RATIO_DENOM
+
 
 
 /*******************************************************************************
@@ -97,6 +99,12 @@ public:
 		REG_TIMER_B_COUNT=0x26,
 		REG_TIMER_CONTROL=0x27,
 		REG_KEY_ON_OFF=0x28,
+
+	#ifdef YM_PRESCALER_DEFAULT
+		REG_PRESCALER_0=0x2D,
+		REG_PRESCALER_1=0x2E,
+		REG_PRESCALER_2=0x2F,
+	#endif
 
 		REG_DT_MULTI=0x30,
 		REG_TL=0x40,
@@ -216,6 +224,10 @@ public:
 	class State
 	{
 	public:
+	#ifdef YM_PRESCALER_DEFAULT
+		unsigned int preScaler;
+	#endif
+
 		bool LFO;
 		unsigned int FREQCTRL;
 		unsigned long long int deviceTimeInNS;
@@ -285,7 +297,12 @@ public:
 	    65535 otherwise.
 	*/
 	unsigned int WriteRegister(unsigned int channelBase,unsigned int reg,unsigned int value);
+#ifndef YM_PRESCALER_DEFAULT
 	unsigned int ReadRegister(unsigned int channelBase,unsigned int reg) const;
+#else
+	// If prescaler is used, reading 2D,2E, or 2F may change the pre-scaler, and therefore cannot be const.
+	unsigned int ReadRegister(unsigned int channelBase,unsigned int reg);
+#endif
 
 	void Run(unsigned long long int systemTimeInNS);
 
@@ -438,16 +455,17 @@ public:
 		// Value based on the observation.
 		static const unsigned int scale[8]=
 		{
-			((423892*YM_CLOCK_RATIO)    /1000),   // (4238*16/10)/16,
-			((423892*YM_CLOCK_RATIO)  *2/1000),   // (4239*16/10)/8,
-			((423892*YM_CLOCK_RATIO)  *4/1000),   // (4239*16/10)/4,
-			((423892*YM_CLOCK_RATIO)  *8/1000),   // (4239*16/10)/2,
-			((423892*YM_CLOCK_RATIO) *16/1000),   // (4239*16/10),
-			((423892*YM_CLOCK_RATIO) *32/1000),   // (4239*16/10)*2,
-			((423892*YM_CLOCK_RATIO) *64/1000),   // (4239*16/10)*4,
-			((423892*YM_CLOCK_RATIO)*128/1000),   // (4239*16/10)*8,
+			((423892*YM_CLOCK_RATIO)    ),   // (4238*16/10)/16,  // divide by 10 part moved below
+			((423892*YM_CLOCK_RATIO)  *2),   // (4239*16/10)/8,
+			((423892*YM_CLOCK_RATIO)  *4),   // (4239*16/10)/4,
+			((423892*YM_CLOCK_RATIO)  *8),   // (4239*16/10)/2,
+			((423892*YM_CLOCK_RATIO) *16),   // (4239*16/10),
+			((423892*YM_CLOCK_RATIO) *32),   // (4239*16/10)*2,
+			((423892*YM_CLOCK_RATIO) *64),   // (4239*16/10)*4,
+			((423892*YM_CLOCK_RATIO)*128),   // (4239*16/10)*8,
 		};
-		FNUM*=scale[BLOCK&7];
+		FNUM*=YM_CLOCK_RATIO;
+		FNUM*=scale[BLOCK&7]/1000;
 		FNUM/=1000;
 		return FNUM;
 	}

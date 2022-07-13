@@ -77,6 +77,10 @@ void YM2612::State::PowerOn(void)
 }
 void YM2612::State::Reset(void)
 {
+#ifdef YM_PRESCALER_DEFAULT
+	preScaler=YM_PRESCALER_DEFAULT;
+#endif
+
 	deviceTimeInNS=0;
 	lastTickTimeInNS=0;
 	for(auto &c : channels)
@@ -524,10 +528,45 @@ unsigned int YM2612::WriteRegister(unsigned int channelBase,unsigned int reg,uns
 			}
 		}
 	}
+#ifdef YM_PRESCALER_DEFAULT
+	else if(REG_PRESCALER_0==reg)
+	{
+		state.preScaler=6;
+	}
+	else if(REG_PRESCALER_1==reg)
+	{
+		state.preScaler=3;
+	}
+	else if(REG_PRESCALER_2==reg)
+	{
+		state.preScaler=2;
+	}
+#endif
+
 	return chStartPlaying;
 }
+
+#ifndef YM_PRESCALER_DEFAULT
 unsigned int YM2612::ReadRegister(unsigned int channelBase,unsigned int reg) const
+#else
+unsigned int YM2612::ReadRegister(unsigned int channelBase,unsigned int reg)
+#endif
 {
+#ifdef YM_PRESCALER_DEFAULT
+	if(REG_PRESCALER_0==reg)
+	{
+		state.preScaler=6;
+	}
+	else if(REG_PRESCALER_1==reg)
+	{
+		state.preScaler=3;
+	}
+	else if(REG_PRESCALER_2==reg)
+	{
+		state.preScaler=2;
+	}
+#endif
+
 	auto regSet=channelBase/3;
 	return state.regSet[regSet][reg&255];
 }
@@ -539,10 +578,17 @@ void YM2612::Run(unsigned long long int systemTimeInNS)
 		state.deviceTimeInNS=systemTimeInNS;
 		return;
 	}
-	if(state.lastTickTimeInNS+TICK_DURATION_IN_NS<systemTimeInNS)
+
+#ifdef YM_PRESCALER_DEFAULT
+	const uint64_t nanosecPerTick=state.preScaler*TICK_DURATION_IN_NS;
+#else
+	const uint64_t nanosecPerTick=TICK_DURATION_IN_NS;
+#endif
+
+	if(state.lastTickTimeInNS+nanosecPerTick<systemTimeInNS)
 	{
-		auto nTick=(systemTimeInNS-state.lastTickTimeInNS)/TICK_DURATION_IN_NS;
-		state.lastTickTimeInNS+=nTick*TICK_DURATION_IN_NS;
+		auto nTick=(systemTimeInNS-state.lastTickTimeInNS)/nanosecPerTick;
+		state.lastTickTimeInNS+=nTick*nanosecPerTick;
 		// See (1) in the above comment.
 		if(0!=(state.regSet[0][REG_TIMER_CONTROL]&0x01))
 		{
