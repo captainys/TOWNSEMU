@@ -38,6 +38,10 @@ target_include_directories(${TARGET_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(${TARGET_NAME} PRIVATE ${SUBDIR})
 target_link_libraries(${TARGET_NAME} ${LIBS})
 
+if(APPLE)
+	set_property(TARGET ${TARGET_NAME} APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+endif()
+
 add_library(yssimplesound_platform ALIAS ${TARGET_NAME})
 
 

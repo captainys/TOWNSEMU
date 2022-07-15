@@ -3,7 +3,7 @@ target_link_libraries(disasm cpu cpputil)
 add_test(NAME disasm COMMAND disasm)
 
 add_executable(disasm_addr disasm_addr.cpp)
-target_link_libraries(disasm_addr towns townssound yssimplesound yssimplesound_nownd)
+target_link_libraries(disasm_addr towns townssound yssimplesound_nownd)
 add_test(NAME disasm_addr COMMAND disasm_addr)
 
 add_executable(vram_mapping vram_mapping.cpp)
