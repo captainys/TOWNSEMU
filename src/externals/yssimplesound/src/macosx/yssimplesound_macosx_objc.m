@@ -237,7 +237,7 @@ void YsSimpleSound_OSX_PlayOneShot(struct YsAVAudioEngine *engineInfoPtr,struct 
 	    AVAudioEngine *enginePtr=engineInfoPtr->enginePtr;
 	    AVAudioMixerNode *mixerNodePtr=engineInfoPtr->mixerNodePtr;
 		AVAudioPlayerNode *playerNodePtr=ptr->playerNodePtr;
-		AVAudioPCMBuffer *PCMBufferPtr=ptr->PCMBuffer;
+		AVAudioPCMBuffer *PCMBufferPtr=ptr->PCMBufferPtr;
 #else
 		AVAudioEngine *enginePtr=(__bridge AVAudioEngine *)engineInfoPtr->enginePtr;
 		AVAudioMixerNode *mixerNodePtr=(__bridge AVAudioMixerNode *)engineInfoPtr->mixerNodePtr;
@@ -273,7 +273,7 @@ void YsSimpleSound_OSX_PlayBackground(struct YsAVAudioEngine *engineInfoPtr,stru
 	    AVAudioEngine *enginePtr=engineInfoPtr->enginePtr;
 	    AVAudioMixerNode *mixerNodePtr=engineInfoPtr->mixerNodePtr;
 		AVAudioPlayerNode *playerNodePtr=ptr->playerNodePtr;
-		AVAudioPCMBuffer *PCMBufferPtr=ptr->PCMBuffer;
+		AVAudioPCMBuffer *PCMBufferPtr=ptr->PCMBufferPtr;
 #else
 		AVAudioEngine *enginePtr=(__bridge AVAudioEngine *)engineInfoPtr->enginePtr;
 		AVAudioMixerNode *mixerNodePtr=(__bridge AVAudioMixerNode *)engineInfoPtr->mixerNodePtr;
@@ -314,7 +314,7 @@ void YsSimpleSound_OSX_Stop(struct YsAVAudioEngine *engineInfoPtr,struct YsAVSou
 	    AVAudioEngine *enginePtr=engineInfoPtr->enginePtr;
 	    AVAudioMixerNode *mixerNodePtr=engineInfoPtr->mixerNodePtr;
 		__block AVAudioPlayerNode *playerNodePtr=ptr->playerNodePtr;
-		AVAudioPCMBuffer *PCMBufferPtr=ptr->PCMBuffer;
+		AVAudioPCMBuffer *PCMBufferPtr=ptr->PCMBufferPtr;
 #else
 		AVAudioEngine *enginePtr=(__bridge AVAudioEngine *)engineInfoPtr->enginePtr;
 		AVAudioMixerNode *mixerNodePtr=(__bridge AVAudioMixerNode *)engineInfoPtr->mixerNodePtr;
@@ -361,7 +361,7 @@ double YsSimpleSound_OSX_GetCurrentPosition(struct YsAVAudioEngine *engineInfoPt
 	    AVAudioEngine *enginePtr=engineInfoPtr->enginePtr;
 	    AVAudioMixerNode *mixerNodePtr=engineInfoPtr->mixerNodePtr;
 		__block AVAudioPlayerNode *playerNodePtr=ptr->playerNodePtr;
-		AVAudioPCMBuffer *PCMBufferPtr=ptr->PCMBuffer;
+		AVAudioPCMBuffer *PCMBufferPtr=ptr->PCMBufferPtr;
 #else
 		AVAudioEngine *enginePtr=(__bridge AVAudioEngine *)engineInfoPtr->enginePtr;
 		AVAudioMixerNode *mixerNodePtr=(__bridge AVAudioMixerNode *)engineInfoPtr->mixerNodePtr;
