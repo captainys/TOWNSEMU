@@ -479,6 +479,30 @@ const D77File::D77Disk::D77Track *D77File::D77Disk::GetTrack(int trk,int side) c
 	return nullptr;
 }
 
+D77File::D77Disk::D77Track *D77File::D77Disk::FindTrack(int cyl,int side)
+{
+	for(auto &t : track)
+	{
+		if(true!=t.sector.empty() &&
+		   t.sector[0].cylinder==cyl &&
+		   t.sector[0].head==side)
+		{
+			return &t;
+		}
+	}
+	return nullptr;
+}
+
+D77File::D77Disk::D77Track *D77File::D77Disk::GetTrack(int trk,int side)
+{
+	int t=trk*2+side;
+	if(0<=t && t<track.size())
+	{
+		return &track[t];
+	}
+	return nullptr;
+}
+
 std::vector <unsigned char> D77File::D77Disk::MakeD77Image(void) const
 {
 	std::vector <unsigned char> d77Img;
@@ -1344,6 +1368,26 @@ const D77File::D77Disk::D77Sector *D77File::D77Disk::GetSector(int trk,int sid,i
 }
 
 const D77File::D77Disk::D77Sector *D77File::D77Disk::GetSectorByIndex(int trk,int sid,int sec) const
+{
+	auto trkPtr=FindTrack(trk,sid);
+	if(nullptr!=trkPtr && 0<=sec && sec<trkPtr->sector.size())
+	{
+		return &trkPtr->sector[sec];
+	}
+	return nullptr;
+}
+
+D77File::D77Disk::D77Sector *D77File::D77Disk::GetSector(int trk,int sid,int sec)
+{
+	auto trkPtr=FindTrack(trk,sid);
+	if(nullptr!=trkPtr)
+	{
+		return trkPtr->FindSector(sec);
+	}
+	return nullptr;
+}
+
+D77File::D77Disk::D77Sector *D77File::D77Disk::GetSectorByIndex(int trk,int sid,int sec)
 {
 	auto trkPtr=FindTrack(trk,sid);
 	if(nullptr!=trkPtr && 0<=sec && sec<trkPtr->sector.size())

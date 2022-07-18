@@ -257,10 +257,12 @@ public:
 		    to be track=trk and head=side.  It may be different from physical track.
 		*/
 		const D77Track *FindTrack(int trk,int side) const;
+		D77Track *FindTrack(int trk,int side);
 
 		/*! Returns a track by the physical location.
 		*/
 		const D77Track *GetTrack(int trk,int side) const;
+		D77Track *GetTrack(int trk,int side);
 
 		std::vector <unsigned char> MakeD77Image(void) const;
 
@@ -384,10 +386,12 @@ public:
 		/*! Get a pointer to a sector.
 		*/
 		const D77Sector *GetSector(int trk,int sid,int sec) const;
+		D77Sector *GetSector(int trk,int sid,int sec);
 
 		/*! Get a pointer to a sector by index, not sector number.
 		*/
 		const D77Sector *GetSectorByIndex(int trk,int sid,int sec) const;
+		D77Sector *GetSectorByIndex(int trk,int sid,int sec);
 
 		/*! Copies a track.
 		*/

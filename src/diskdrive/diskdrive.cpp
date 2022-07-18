@@ -17,6 +17,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "cpputil.h"
 #include "diskdrive.h"
 #include "vmbase.h"
+#include "d77ext.h"
 
 
 void DiskDrive::ImageFile::SaveIfModified(void)
@@ -78,6 +79,23 @@ bool DiskDrive::ImageFile::LoadD77(std::string fName)
 	this->d77.SetData(bin,verbose);
 	if(0<this->d77.GetNumDisk())
 	{
+		D77ExtraInfo D77Ext;
+		std::string extFName=fName+"ext";
+		std::string ExtFName=fName+"Ext";
+		std::string EXtFName=fName+"EXt";
+		std::string EXTFName=fName+"EXT";
+		if(D77ExtraInfo::ERR_NOERROR==D77Ext.ReadD77Ext(extFName) ||
+		   D77ExtraInfo::ERR_NOERROR==D77Ext.ReadD77Ext(ExtFName) ||
+		   D77ExtraInfo::ERR_NOERROR==D77Ext.ReadD77Ext(EXtFName) ||
+		   D77ExtraInfo::ERR_NOERROR==D77Ext.ReadD77Ext(EXTFName))
+		{
+			auto diskPtr=this->d77.GetDisk(0);
+			if(nullptr!=diskPtr)
+			{
+				D77Ext.Apply(*diskPtr);
+			}
+		}
+
 		this->fileType=IMGFILE_D77;
 		this->fName=fName;
 		return true;
