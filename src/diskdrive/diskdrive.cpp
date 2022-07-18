@@ -348,9 +348,12 @@ unsigned int DiskDrive::IdentifyDiskMediaType(const D77File::D77Disk *diskPtr) c
 	for(auto loc : diskPtr->AllTrack())
 	{
 		auto trk=diskPtr->GetTrack(loc.track,loc.side);
-		for(auto &sec : trk->sector)
+		if(nullptr!=trk)
 		{
-			totalSize+=(128<<sec.sizeShift);
+			for(auto &sec : trk->sector)
+			{
+				totalSize+=(128<<sec.sizeShift);
+			}
 		}
 	}
 	totalSize/=1024;
@@ -947,7 +950,8 @@ std::vector <std::string> DiskDrive::GetStatusText(void) const
 {
 	// Version 2 adds fields for I/O read/write (not DMA)
 	// Version 3 adds CRCErrorAfterRead
-	return 3;
+	// Version 4 adds lastDRQTime.
+	return 4;
 }
 /* virtual */ void DiskDrive::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
 {
@@ -1023,6 +1027,8 @@ std::vector <std::string> DiskDrive::GetStatusText(void) const
 	PushBool(data,state.IRQ);
 	// Version 3
 	PushBool(data,state.CRCErrorAfterRead);
+	// Version 4
+	PushUint64(data,state.lastDRQTime);
 }
 /* virtual */ bool DiskDrive::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
 {
@@ -1148,6 +1154,10 @@ std::vector <std::string> DiskDrive::GetStatusText(void) const
 	if(3<=version)
 	{
 		state.CRCErrorAfterRead=ReadBool(data);
+	}
+	if(4<=version)
+	{
+		state.lastDRQTime=ReadUint64(data);
 	}
 	return true;
 }
