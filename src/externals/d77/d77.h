@@ -155,6 +155,13 @@ public:
 			unsigned short sectorDataSize; // Excluding the header.
 			std::vector <unsigned char> sectorData;
 
+			// Experimental >>
+			// nanosecPerByte
+			//   Zero means standard rate computed from RPM and track length.
+			//   Non zero means the sector must be read at the different rate.
+			unsigned int nanosecPerByte=0;
+			// Experimental <<
+
 			D77Sector();
 			~D77Sector();
 			void CleanUp(void);

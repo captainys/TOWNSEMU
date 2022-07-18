@@ -106,6 +106,9 @@ void D77File::D77Disk::D77Sector::CleanUp(void)
 	density=0;
 	deletedData=0;
 	crcStatus=0;
+
+	nanosecPerByte=0;
+
 	for(auto &c : reservedByte)
 	{
 		c=0;
