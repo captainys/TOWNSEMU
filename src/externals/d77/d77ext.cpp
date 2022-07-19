@@ -121,6 +121,7 @@ void D77ExtraInfo::Apply(D77File::D77Disk &disk) const
 		}
 		if(0!=s.nanosecPerByte)
 		{
+			secPtr->nanosecPerByte=s.nanosecPerByte;
 			std::cout << "NSBYTE applied to " << s.C << " " << s.H << " " << s.R << std::endl;
 		}
 	}

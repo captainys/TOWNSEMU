@@ -109,6 +109,8 @@ public:
 		bool DRQ=false,IRQ=false,CRCErrorAfterRead=false;
 		uint64_t lastDRQTime=0;
 
+		unsigned int nanosecPerByte=0;
+
 		long long int scheduleTime;
 
 		void Reset(void);
