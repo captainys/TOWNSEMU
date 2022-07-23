@@ -91,7 +91,7 @@ public:
 	}
 	inline unsigned int NumSpritesToDraw(void) const
 	{
-		unsigned int n=MAX_NUM_SPRITE_INDEX-((state.reg[REG_CONTROL1]<<8)|state.reg[REG_CONTROL0])&(MAX_NUM_SPRITE_INDEX-1);
+		unsigned int n=MAX_NUM_SPRITE_INDEX-FirstSpriteIndex();
 		return n;
 	}
 	unsigned int NumSpritesActuallyDrawn(void) const;

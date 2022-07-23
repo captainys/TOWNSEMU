@@ -1357,6 +1357,43 @@ std::vector <unsigned char> D77File::D77Disk::ReadSector(int trk,int sid,int sec
 	return empty;
 }
 
+const D77File::D77Disk::D77Sector *D77File::D77Disk::GetSectorFrom(int trk,int sid,int sec,unsigned int &posInTrack,unsigned int &nStep) const
+{
+	auto trkPtr=FindTrack(trk,sid);
+	nStep=0;
+	if(nullptr!=trkPtr)
+	{
+		for(nStep=0; nStep<trkPtr->sector.size(); ++nStep)
+		{
+			auto idx=(posInTrack+nStep)%trkPtr->sector.size();
+			if(sec==trkPtr->sector[idx].sector)
+			{
+				posInTrack=(idx+1)%trkPtr->sector.size();
+				return &trkPtr->sector[idx];
+			}
+		}
+	}
+	return nullptr;
+}
+D77File::D77Disk::D77Sector *D77File::D77Disk::GetSectorFrom(int trk,int sid,int sec,unsigned int &posInTrack,unsigned int &nStep)
+{
+	auto trkPtr=FindTrack(trk,sid);
+	nStep=0;
+	if(nullptr!=trkPtr)
+	{
+		for(nStep=0; nStep<trkPtr->sector.size(); ++nStep)
+		{
+			auto idx=(posInTrack+nStep)%trkPtr->sector.size();
+			if(sec==trkPtr->sector[idx].sector)
+			{
+				posInTrack=(idx+1)%trkPtr->sector.size();
+				return &trkPtr->sector[idx];
+			}
+		}
+	}
+	return nullptr;
+}
+
 const D77File::D77Disk::D77Sector *D77File::D77Disk::GetSector(int trk,int sid,int sec) const
 {
 	auto trkPtr=FindTrack(trk,sid);

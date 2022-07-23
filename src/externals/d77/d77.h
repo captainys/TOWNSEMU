@@ -388,6 +388,16 @@ public:
 		const D77Sector *GetSector(int trk,int sid,int sec) const;
 		D77Sector *GetSector(int trk,int sid,int sec);
 
+		/*! Get a pointer to a sector.
+		    It starts search from index posInTrack into the sector list of the track
+		    and wrap around.  For emulating skew format and korokoro protect by multi-read.
+		    If a sector is found, it increments the posInTrack to the one after the
+		    found sector.
+		    nStep will be how many sectors has been visited for finding the sector.
+		*/
+		const D77Sector *GetSectorFrom(int trk,int sid,int sec,unsigned int &posInTrack,unsigned int &nStep) const;
+		D77Sector *GetSectorFrom(int trk,int sid,int sec,unsigned int &posInTrack,unsigned int &nStep);
+
 		/*! Get a pointer to a sector by index, not sector number.
 		*/
 		const D77Sector *GetSectorByIndex(int trk,int sid,int sec) const;
