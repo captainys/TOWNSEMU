@@ -129,6 +129,14 @@ unsigned char i8251::VMReadData(long long int VMTime)
 	}
 	return 0xFF;
 }
+unsigned char i8251::VMPeekData(void) const
+{
+	if(nullptr!=clientPtr)
+	{
+		return clientPtr->PeekRx();
+	}
+	return 0xFF;
+}
 void i8251::Update(long long int newVMTime)
 {
 	if(true==state.TxEN && state.lastTxTime+state.nanoSecondsPerByte<newVMTime)

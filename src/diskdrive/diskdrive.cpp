@@ -553,13 +553,12 @@ void DiskDrive::SendCommand(unsigned int cmd,uint64_t vmTime)
 			state.CRCErrorAfterRead=false;
 			break;
 		case 0xE0: // Read Track
+			vmPtr->ScheduleDeviceCallBack(*this,vmTime+WRITE_TRACK_TIME);
 			state.recordType=false;
 			state.recordNotFound=false;
 			state.CRCError=false;
 			state.lostData=false;
 			state.writeFault=false;
-			std::cout << __FUNCTION__ << std::endl;
-			std::cout << "Command " << cpputil::Ubtox(cmd) << " not supported yet." << std::endl;
 
 			state.data.clear();
 			state.dataReadPointer=0;
@@ -801,7 +800,7 @@ bool DiskDrive::LostData(void) const
 }
 bool DiskDrive::DataRequest(void) const
 {
-	return false;
+	return state.DRQ;
 }
 bool DiskDrive::WriteFault(void) const
 {

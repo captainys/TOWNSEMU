@@ -99,6 +99,10 @@ public:
 		*/
 		virtual unsigned char Rx(void)=0;
 
+		/*! It should return a data to be transmitted in the next Rx(), but not change the state.
+		*/
+		virtual unsigned char PeekRx(void) const{return 0;};
+
 		/*!
 		*/
 		virtual bool DSR(void)=0;
@@ -155,6 +159,7 @@ public:
 
 	void VMWriteData(unsigned char data,long long int VMTime);
 	unsigned char VMReadData(long long int VMTime);
+	unsigned char VMPeekData(void) const;
 
 	/*! Updates the device state.
 	    newT is the time in nano seconds.
