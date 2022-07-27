@@ -135,7 +135,7 @@ void DiskDrive::State::Reset(void)
 	{
 		d.trackPos=0;      // Actual head location.
 		d.trackReg=0;      // Value in track register 0202H
-		d.sectorReg=1;     // Value in sector register 0x04H
+		d._sectorReg=1;     // Value in sector register 0x04H
 		d.dataReg=0;       // Value in data register 0x06H
 		d.lastSeekDir=1;
 		d.motor=false;
@@ -841,7 +841,7 @@ std::vector <std::string> DiskDrive::GetStatusText(void) const
 
 		text.push_back(line);
 		text.back()+="TRKPOS:"+cpputil::Uitoa(drv.trackPos)+" TRKREG:"+cpputil::Uitoa(drv.trackReg);
-		text.back()+=" SEC:"+cpputil::Uitoa(drv.sectorReg)+" LAST SEEK DIR:"+cpputil::Itoa(drv.lastSeekDir);
+		text.back()+=" SEC:"+cpputil::Uitoa(drv._sectorReg)+" LAST SEEK DIR:"+cpputil::Itoa(drv.lastSeekDir);
 		text.back()+=" DATAREG:"+cpputil::Ubtox(drv.dataReg)+" MOTOR:"+(drv.motor ? "ON" : "OFF");
 	}
 
@@ -1000,7 +1000,7 @@ std::vector <std::string> DiskDrive::GetStatusText(void) const
 	{
 		PushInt32(data,drv.trackPos);      // Actual head location.
 		PushInt32(data,drv.trackReg);      // Value in track register 0202H
-		PushInt32(data,drv.sectorReg);     // Value in sector register 0x04H
+		PushInt32(data,drv._sectorReg);     // Value in sector register 0x04H
 		PushInt32(data,drv.dataReg);       // Value in data register 0x06H
 
 		PushInt32(data,drv.lastSeekDir);   // For STEP command.
@@ -1124,7 +1124,7 @@ std::vector <std::string> DiskDrive::GetStatusText(void) const
 	{
 		drv.trackPos=ReadInt32(data);      // Actual head location.
 		drv.trackReg=ReadInt32(data);      // Value in track register 0202H
-		drv.sectorReg=ReadInt32(data);     // Value in sector register 0x04H
+		drv._sectorReg=ReadInt32(data);     // Value in sector register 0x04H
 		drv.dataReg=ReadInt32(data);       // Value in data register 0x06H
 
 		drv.lastSeekDir=ReadInt32(data);   // For STEP command.
@@ -1177,4 +1177,19 @@ std::vector <std::string> DiskDrive::GetStatusText(void) const
 		state.lastDRQTime=ReadUint64(data);
 	}
 	return true;
+}
+
+int DiskDrive::GetSectorReg(void) const
+{
+	return state.drive[DriveSelect()]._sectorReg;
+}
+void DiskDrive::SetSectorReg(int num)
+{
+	// Question:
+	//   Does FDC internally keeps separate sector number for each drive?  Or, just one sector number per FDC?
+	//   Apparently just one per FDC.
+	state.drive[0]._sectorReg=num;
+	state.drive[1]._sectorReg=num;
+	state.drive[2]._sectorReg=num;
+	state.drive[3]._sectorReg=num;
 }

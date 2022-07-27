@@ -74,7 +74,7 @@ public:
 		public:
 			int trackPos;      // Actual head location.
 			int trackReg;      // Value in track register 0202H
-			int sectorReg;     // Value in sector register 0x04H
+			int _sectorReg;     // Value in sector register 0x04H
 			int dataReg;       // Value in data register 0x06H
 
 			int lastSeekDir;   // For STEP command.
@@ -243,6 +243,10 @@ public:
 	static std::string FDCCommandToExplanation(unsigned char cmd);
 	static std::string MediaTypeToString(unsigned int mediaType);
 
+
+	int GetSectorReg(void) const;
+	int GetSectorReg(unsigned int drvSel) const;
+	void SetSectorReg(int num);
 
 
 	virtual uint32_t SerializeVersion(void) const;

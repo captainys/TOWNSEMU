@@ -135,7 +135,7 @@ void TownsFDC::MakeReady(void)
 		{
 			if(true==CheckMediaTypeAndDriveModeCompatible(drv.mediaType,GetDriveMode()))
 			{
-				auto secPtr=diskPtr->GetSector(drv.trackPos,state.side,drv.sectorReg);
+				auto secPtr=diskPtr->GetSector(drv.trackPos,state.side,GetSectorReg());
 				if(nullptr!=secPtr)
 				{
 					auto DMACh=DMACPtr->GetDMAChannel(TOWNSDMA_FPD);
@@ -151,9 +151,9 @@ void TownsFDC::MakeReady(void)
 						}
 
 						// What am I supposed to if error during DMA?
-						if(state.lastCmd&0x10 && diskPtr->GetSector(drv.trackPos,state.side,drv.sectorReg+1)) // Multi Record
+						if(state.lastCmd&0x10 && diskPtr->GetSector(drv.trackPos,state.side,GetSectorReg()+1)) // Multi Record
 						{
-							++drv.sectorReg;
+							SetSectorReg(GetSectorReg()+1);
 							townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+SECTOR_READ_WRITE_TIME);
 						}
 						else
@@ -192,7 +192,7 @@ void TownsFDC::MakeReady(void)
 			}
 			else if(true==CheckMediaTypeAndDriveModeCompatible(drv.mediaType,GetDriveMode()))
 			{
-				auto secPtr=diskPtr->GetSector(drv.trackPos,state.side,drv.sectorReg);
+				auto secPtr=diskPtr->GetSector(drv.trackPos,state.side,GetSectorReg());
 				if(nullptr!=secPtr)
 				{
 					auto DMACh=DMACPtr->GetDMAChannel(TOWNSDMA_FPD);
@@ -201,11 +201,11 @@ void TownsFDC::MakeReady(void)
 						auto toWrite=DMACPtr->MemoryToDevice(DMACh,(unsigned int)secPtr->sectorData.size());
 						if(toWrite.size()==secPtr->sectorData.size())
 						{
-							diskPtr->WriteSector(drv.trackPos,state.side,drv.sectorReg,toWrite.size(),toWrite.data());
+							diskPtr->WriteSector(drv.trackPos,state.side,GetSectorReg(),toWrite.size(),toWrite.data());
 							diskPtr->SetModified();
-							if(state.lastCmd&0x10 && diskPtr->GetSector(drv.trackPos,state.side,drv.sectorReg+1)) // Multi Record
+							if(state.lastCmd&0x10 && diskPtr->GetSector(drv.trackPos,state.side,GetSectorReg()+1)) // Multi Record
 							{
-								++drv.sectorReg;
+								SetSectorReg(GetSectorReg()+1);
 								townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+SECTOR_READ_WRITE_TIME);
 							}
 							else
@@ -481,7 +481,7 @@ void TownsFDC::MakeReady(void)
 		state.drive[DriveSelect()].trackReg=data;
 		break;
 	case TOWNSIO_FDC_SECTOR://               0x204, // [2] pp.253
-		state.drive[DriveSelect()].sectorReg=data;
+		SetSectorReg(data);
 		break;
 	case TOWNSIO_FDC_DATA://                 0x205, // [2] pp.253
 		state.drive[DriveSelect()].dataReg=data;
