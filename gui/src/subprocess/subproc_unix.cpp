@@ -138,6 +138,7 @@ bool Subprocess::Send(const std::string &str)
 	{
 		write(parToChd[1],str.data(),str.size());
 	}
+	return true;
 }
 
 bool Subprocess::Receive(std::string &str)
