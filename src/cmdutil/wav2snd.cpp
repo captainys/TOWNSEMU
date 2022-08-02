@@ -1,4 +1,6 @@
 #include "yssimplesound.h"
+#include <stdio.h>
+#include <stdlib.h>
 #include <vector>
 
 // cl wav2snd.cpp -I..\..\..\..\public\src\yssimplesound\src ..\..\..\..\public\src\yssimplesound\src\yssimplesound.cpp ..\..\..\..\public\src\yssimplesound\src\nownd\yssimplesound_nownd.cpp -EHsc -W3
