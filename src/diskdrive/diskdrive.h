@@ -56,7 +56,7 @@ public:
 	{
 	public:
 		bool exists=false;
-		uint8_t C,H,R,N;
+		uint8_t C,H,R,N,crcStatus;
 		std::vector <uint8_t> data;
 
 		void Make(unsigned int C,unsigned int H,unsigned int R,unsigned int N);
@@ -89,6 +89,18 @@ public:
 		bool SetData(int fileType,const std::vector <unsigned char> &bin,bool verboseMode);
 
 		Sector ReadSector(int diskIdx,unsigned int C,unsigned int H,unsigned int R) const;
+
+		/*! Find a sector starting from searchStartFrom-th sector in the track.
+		    It updates searchStartFrom, and also returns how many steps were required to get to the sector.
+		*/
+		Sector ReadSectorFrom(int diskIdx,unsigned int C,unsigned int H,unsigned int R,unsigned int &searchStartFrom,unsigned int &nSteps) const;
+
+		/*! Returns nanoseconds per byte for given RPM.
+		    If no information is stored, it returns zero.
+		    To emulate sector-read-time protect.
+		*/
+		unsigned int GetNanoSecPerByte(int diskIdx,unsigned int C,unsigned int H,unsigned int R) const;
+
 		bool WriteSector(int diskIdx,unsigned int C,unsigned int H,unsigned int R,size_t len,const uint8_t data[]);
 		unsigned int GetSectorLength(int diskIdx,unsigned int C,unsigned int H,unsigned int R) const;
 		bool SectorExists(int diskIdx,unsigned int C,unsigned int H,unsigned int R) const;

@@ -182,6 +182,7 @@ DiskDrive::Sector DiskDrive::DiskImage::ReadSector(int diskIdx,unsigned int C,un
 					sector.R=secPtr->sector;
 					sector.N=secPtr->sizeShift;
 					sector.data=secPtr->sectorData;
+					sector.crcStatus=secPtr->crcStatus;
 				}
 			}
 		}
@@ -189,6 +190,58 @@ DiskDrive::Sector DiskDrive::DiskImage::ReadSector(int diskIdx,unsigned int C,un
 	}
 	return sector;
 }
+
+DiskDrive::Sector DiskDrive::DiskImage::ReadSectorFrom(int diskIdx,unsigned int C,unsigned int H,unsigned int R,unsigned int &searchStartFrom,unsigned int &nSteps) const
+{
+	Sector sector;
+	switch(fileType)
+	{
+	case IMGFILE_D77:
+	case IMGFILE_RAW:
+		{
+			auto diskPtr=d77.GetDisk(diskIdx);
+			if(nullptr!=diskPtr)
+			{
+				auto secPtr=diskPtr->GetSectorFrom(C,H,R,searchStartFrom,nSteps);
+				if(nullptr!=secPtr)
+				{
+					sector.exists=true;
+					sector.C=secPtr->cylinder;
+					sector.H=secPtr->head;
+					sector.R=secPtr->sector;
+					sector.N=secPtr->sizeShift;
+					sector.data=secPtr->sectorData;
+					sector.crcStatus=secPtr->crcStatus;
+				}
+			}
+		}
+		break;
+	}
+	return sector;
+}
+
+unsigned int DiskDrive::DiskImage::GetNanoSecPerByte(int diskIdx,unsigned int C,unsigned int H,unsigned int R) const
+{
+	switch(fileType)
+	{
+	case IMGFILE_D77:
+	case IMGFILE_RAW:
+		{
+			auto diskPtr=d77.GetDisk(diskIdx);
+			if(nullptr!=diskPtr)
+			{
+				auto secPtr=diskPtr->GetSector(C,H,R);
+				if(nullptr!=secPtr)
+				{
+					return secPtr->nanosecPerByte;
+				}
+			}
+		}
+		break;
+	}
+	return 0;
+}
+
 bool DiskDrive::DiskImage::WriteSector(int diskIdx,unsigned int C,unsigned int H,unsigned int R,size_t len,const uint8_t data[])
 {
 	switch(fileType)
@@ -382,7 +435,18 @@ unsigned int DiskDrive::DiskImage::WriteTrack(int diskIdx,unsigned int C,unsigne
 				{
 				case MEDIA_2DD_640KB:
 				case MEDIA_2DD_720KB:
-					diskPtr->SetNumTrack(80);
+					// Don't resize number of tracks unless it is writing to 40<=C.
+					// It may be formatting a 2D disk.
+					// In fact, FM TOWNS uses even tracks to access a 2D disk, so from FDC point of view,
+					// there is no way to identify if it is 320KB or 640KB disk.
+					if(43<C)
+					{
+						diskPtr->SetNumTrack(80);
+					}
+					else if(40<=C)
+					{
+						diskPtr->SetNumTrack(C+1);
+					}
 					break;
 				case MEDIA_2HD_1232KB:
 					diskPtr->SetNumTrack(77);
