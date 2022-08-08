@@ -221,6 +221,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	featureMap["FPU"]=ENABLE_FPU;
 	featureMap["487"]=ENABLE_FPU;
 	featureMap["80487"]=ENABLE_FPU;
+	featureMap["FDCMON"]=ENABLE_FDCMONITOR;
 
 	dumpableMap["CALLSTACK"]=DUMP_CALLSTACK;
 	dumpableMap["CST"]=DUMP_CALLSTACK;
@@ -1568,6 +1569,10 @@ void TownsCommandInterpreter::Execute_Enable(FMTowns &towns,Command &cmd)
 			towns.cpu.state.fpuState.enabled=true;
 			std::cout << "80487 Enabled." << std::endl;
 			break;
+		case ENABLE_FDCMONITOR:
+			towns.fdc.fdcMonitor=true;
+			std::cout << "FDC Monitor Enabled." << std::endl;
+			break;
 		}
 	}
 }
@@ -1641,6 +1646,10 @@ void TownsCommandInterpreter::Execute_Disable(FMTowns &towns,Command &cmd)
 		case ENABLE_FPU:
 			towns.cpu.state.fpuState.enabled=false;
 			std::cout << "80487 Disabled." << std::endl;
+			break;
+		case ENABLE_FDCMONITOR:
+			towns.fdc.fdcMonitor=false;
+			std::cout << "FDC Monitor Disabled." << std::endl;
 			break;
 		}
 	}

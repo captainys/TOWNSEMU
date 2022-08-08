@@ -51,12 +51,61 @@ public:
 		MEDIA_2HD_1440KB=5,
 		MEDIA_SINGLE_DENSITY=0xFF,  // Not supported by TSUGARU.
 	};
-	class ImageFile
+
+	class Sector
+	{
+	public:
+		bool exists=false;
+		uint8_t C,H,R,N;
+		std::vector <uint8_t> data;
+
+		void Make(unsigned int C,unsigned int H,unsigned int R,unsigned int N);
+	};
+	class DiskImage
 	{
 	public:
 		int fileType;
-		std::string fName;
 		D77File d77;
+
+		unsigned int GetNumDisk(void) const;
+
+		bool IsModified(void) const;
+		void ClearModifiedFlag(void);
+		std::vector <unsigned char> MakeImageBinary(void) const;
+		std::vector <unsigned char> MakeImageBinaryIfNotTooLong(unsigned int lengthThresholdInBytes) const;
+		bool DiskLoaded(int diskIdx) const;
+
+		/*! Identifies the disk type based on the whole capacity.
+		*/
+		unsigned int IdentifyDiskMediaType(int diskIdx) const;
+
+		/*! Identifies the disk type based on the track capacity (sector_size*#sectors).
+		*/
+		static unsigned int IdentifyDiskMediaTypeFromTrackCapacity(unsigned int trackCapacity);
+
+		void SetWriteProtect(int diskIdx,bool writeProtect);
+		bool WriteProtected(int diskIdx) const;
+
+		bool SetData(int fileType,const std::vector <unsigned char> &bin,bool verboseMode);
+
+		Sector ReadSector(int diskIdx,unsigned int C,unsigned int H,unsigned int R) const;
+		bool WriteSector(int diskIdx,unsigned int C,unsigned int H,unsigned int R,size_t len,const uint8_t data[]);
+		unsigned int GetSectorLength(int diskIdx,unsigned int C,unsigned int H,unsigned int R) const;
+		bool SectorExists(int diskIdx,unsigned int C,unsigned int H,unsigned int R) const;
+		bool WriteSector(int diskIdx,unsigned int C,unsigned int H,unsigned int R,const std::vector <uint8_t> &data);
+		std::vector <uint8_t> ReadAddress(int diskIdx,unsigned int cylinder,unsigned int side,unsigned int &sectorPos) const;
+
+		void SetNumCylinders(int diskIdx,unsigned int n);
+
+		/*! Returns the new media type.
+		*/
+		unsigned int WriteTrack(int diskIdx,unsigned int C,unsigned int H,const std::vector <uint8_t> &data);
+	};
+	class ImageFile
+	{
+	public:
+		std::string fName;
+		DiskImage img;
 		bool LoadD77orRAW(std::string fName);
 		bool LoadD77(std::string fName);
 		bool LoadRAW(std::string fName);
@@ -139,22 +188,12 @@ private:
 
 public:
 	void Eject(unsigned int driveNum);
-	D77File::D77Disk *GetDriveDisk(int driveNum);
-	const D77File::D77Disk *GetDriveDisk(int driveNum) const;
 	ImageFile *GetDriveImageFile(int driveNum);
 	const ImageFile *GetDriveImageFile(int driveNum) const;
 
 	void SaveModifiedDiskImages(void);
 
 	void SetWriteProtect(int driveNum,bool writeProtect);
-
-	/*! Identifies the disk type based on the whole capacity.
-	*/
-	unsigned int IdentifyDiskMediaType(const D77File::D77Disk *diskPtr) const;
-
-	/*! Identifies the disk type based on the track capacity (sector_size*#sectors).
-	*/
-	unsigned int IdentifyDiskMediaTypeFromTrackCapacity(unsigned int trackCapacity) const;
 
 	/*! Returns true if disk media type and drive mode is compatible.
 	    Drive mode does not distinguish 720KB and 640KB modes.
@@ -226,6 +265,7 @@ public:
 	*/
 	unsigned int GetDriveMode(void) const;
 
+	bool DiskLoaded(int driveNum) const;
 	bool DriveReady(void) const;
 	bool WriteProtected(void) const;
 	bool SeekError(void) const;

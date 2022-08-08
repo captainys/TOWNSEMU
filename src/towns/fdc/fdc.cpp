@@ -48,7 +48,13 @@ void TownsFDC::MakeReady(void)
 /* virtual */ void TownsFDC::RunScheduledTask(unsigned long long int townsTime)
 {
 	auto &drv=state.drive[DriveSelect()];
-	auto diskPtr=GetDriveDisk(DriveSelect());
+	auto imgFilePtr=GetDriveImageFile(DriveSelect());
+	auto diskIdx=drv.diskIndex;
+	DiskDrive::DiskImage *imgPtr=nullptr;
+	if(nullptr!=imgFilePtr)
+	{
+		imgPtr=&imgFilePtr->img;
+	}
 
 	state.recordType=false;
 	state.recordNotFound=false;
@@ -131,27 +137,27 @@ void TownsFDC::MakeReady(void)
 	case 0x80: // Read Data (Read Sector)
 	case 0x90: // Read Data (Read Sector)
 		townsPtr->UnscheduleDeviceCallBack(*this); // Tentativelu
-		if(nullptr!=diskPtr)
+		if(nullptr!=imgPtr)
 		{
 			if(true==CheckMediaTypeAndDriveModeCompatible(drv.mediaType,GetDriveMode()))
 			{
-				auto secPtr=diskPtr->GetSector(drv.trackPos,state.side,GetSectorReg());
-				if(nullptr!=secPtr)
+				auto sec=imgPtr->ReadSector(diskIdx,drv.trackPos,state.side,GetSectorReg());
+				if(true==sec.exists)
 				{
 					auto DMACh=DMACPtr->GetDMAChannel(TOWNSDMA_FPD);
 					if(nullptr!=DMACh)
 					{
 						townsPtr->NotifyDiskRead();
 
-						auto bytesTransferred=DMACPtr->DeviceToMemory(DMACh,secPtr->sectorData);
-						if(secPtr->sectorData.size()!=bytesTransferred)
+						auto bytesTransferred=DMACPtr->DeviceToMemory(DMACh,sec.data);
+						if(sec.data.size()!=bytesTransferred)
 						{
 							std::cout << "Warning: Not all sector data was transferred by DMA (FD->Mem)." << std::endl;
 							std::cout << "Tsugaru does not support resume DMA from middle of a sector." << std::endl;
 						}
 
 						// What am I supposed to if error during DMA?
-						if(state.lastCmd&0x10 && diskPtr->GetSector(drv.trackPos,state.side,GetSectorReg()+1)) // Multi Record
+						if(state.lastCmd&0x10 && true==imgPtr->SectorExists(diskIdx,drv.trackPos,state.side,GetSectorReg()+1)) // Multi Record
 						{
 							SetSectorReg(GetSectorReg()+1);
 							townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+SECTOR_READ_WRITE_TIME);
@@ -184,26 +190,25 @@ void TownsFDC::MakeReady(void)
 	case 0xA0: // Write Data (Write Sector)
 	case 0xB0: // Write Data (Write Sector)
 		townsPtr->UnscheduleDeviceCallBack(*this);
-		if(nullptr!=diskPtr)
+		if(nullptr!=imgPtr)
 		{
-			if(true==diskPtr->IsWriteProtected())
+			if(true==imgPtr->WriteProtected(diskIdx))
 			{
 				// Write protected.
 			}
 			else if(true==CheckMediaTypeAndDriveModeCompatible(drv.mediaType,GetDriveMode()))
 			{
-				auto secPtr=diskPtr->GetSector(drv.trackPos,state.side,GetSectorReg());
-				if(nullptr!=secPtr)
+				auto secLen=imgPtr->GetSectorLength(diskIdx,drv.trackPos,state.side,GetSectorReg());
+				if(0<secLen)
 				{
 					auto DMACh=DMACPtr->GetDMAChannel(TOWNSDMA_FPD);
 					if(nullptr!=DMACh)
 					{
-						auto toWrite=DMACPtr->MemoryToDevice(DMACh,(unsigned int)secPtr->sectorData.size());
-						if(toWrite.size()==secPtr->sectorData.size())
+						auto toWrite=DMACPtr->MemoryToDevice(DMACh,secLen);
+						if(toWrite.size()==secLen)
 						{
-							diskPtr->WriteSector(drv.trackPos,state.side,GetSectorReg(),toWrite.size(),toWrite.data());
-							diskPtr->SetModified();
-							if(state.lastCmd&0x10 && diskPtr->GetSector(drv.trackPos,state.side,GetSectorReg()+1)) // Multi Record
+							imgPtr->WriteSector(diskIdx,drv.trackPos,state.side,GetSectorReg(),toWrite.size(),toWrite.data());
+							if(state.lastCmd&0x10 && true==imgPtr->SectorExists(diskIdx,drv.trackPos,state.side,GetSectorReg()+1)) // Multi Record
 							{
 								SetSectorReg(GetSectorReg()+1);
 								townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+SECTOR_READ_WRITE_TIME);
@@ -244,33 +249,18 @@ void TownsFDC::MakeReady(void)
 
 	case 0xC0: // Read Address
 		townsPtr->UnscheduleDeviceCallBack(*this);
-		if(nullptr!=diskPtr)
+		if(nullptr!=imgPtr)
 		{
 			if(true==CheckMediaTypeAndDriveModeCompatible(drv.mediaType,GetDriveMode()))
 			{
 				// Copy CHRN and CRC CRC to DMA.
-				auto trkPtr=diskPtr->GetTrack(drv.trackPos,state.side);
-				if(nullptr!=trkPtr)
+				auto CHRN_CRC=imgPtr->ReadAddress(diskIdx,drv.trackPos,state.side,state.addrMarkReadCount);
+				if(0<CHRN_CRC.size())
 				{
-					if(trkPtr->sector.size()<=state.addrMarkReadCount)
-					{
-						state.addrMarkReadCount=0;
-					}
-					auto &sector=trkPtr->sector[state.addrMarkReadCount];
-
-					std::vector <unsigned char> CRHN_CRC=
-					{
-						sector.cylinder,
-						sector.head,
-						sector.sector,
-						sector.sizeShift,
-						0x7f, // How can I calculate CRC?
-						0x7f
-					};
 					auto DMACh=DMACPtr->GetDMAChannel(TOWNSDMA_FPD);
 					if(nullptr!=DMACh)
 					{
-						DMACPtr->DeviceToMemory(DMACh,CRHN_CRC);
+						DMACPtr->DeviceToMemory(DMACh,CHRN_CRC);
 						MakeReady();
 					}
 					else
@@ -278,8 +268,6 @@ void TownsFDC::MakeReady(void)
 						state.lostData=true;
 						MakeReady();
 					}
-
-					++state.addrMarkReadCount;
 				}
 				MakeReady();
 			}
@@ -298,9 +286,9 @@ void TownsFDC::MakeReady(void)
 		break;
 	case 0xF0: // Write Track
 		townsPtr->UnscheduleDeviceCallBack(*this);
-		if(nullptr!=diskPtr)
+		if(nullptr!=imgPtr)
 		{
-			if(true==diskPtr->IsWriteProtected())
+			if(true==imgPtr->WriteProtected(diskIdx))
 			{
 				// Write protected.
 			}
@@ -358,85 +346,7 @@ void TownsFDC::MakeReady(void)
 						break;
 					}
 					auto formatData=DMACPtr->MemoryToDevice(DMACh,len);
-					unsigned int C=0,H=0,R=0,N=0,trackCapacity=0;
-					std::vector <D77File::D77Disk::D77Sector> sectors;
-					for(unsigned int ptr=0; ptr<formatData.size()-4; ++ptr)
-					{
-						// FM-OASYS writes 00 00 00 FE, 00 00 00 FB for formatting the track 0 side 0.
-						if((0xA1==formatData[ptr] &&
-						    0xA1==formatData[ptr+1] &&
-						    0xA1==formatData[ptr+2] &&
-						    0xFE==formatData[ptr+3]) ||
-						   (0xF5==formatData[ptr] &&
-						    0xF5==formatData[ptr+1] &&
-						    0xF5==formatData[ptr+2] &&
-						    0xFE==formatData[ptr+3]) ||
-						   (0x00==formatData[ptr] &&
-						    0x00==formatData[ptr+1] &&
-						    0x00==formatData[ptr+2] &&
-						    0xFE==formatData[ptr+3])
-						    ) // Address Mark
-						{
-							C=formatData[ptr+4];
-							H=formatData[ptr+5];
-							R=formatData[ptr+6];
-							N=formatData[ptr+7];
-							std::cout << "CHRN:" << C << " " << H << " " << R << " " << N << std::endl;
-							ptr+=7;
-						}
-						else if((0xA1==formatData[ptr] &&
-						         0xA1==formatData[ptr+1] &&
-						         0xA1==formatData[ptr+2] &&
-						         0xFB==formatData[ptr+3]) ||
-						        (0xF5==formatData[ptr] &&
-						         0xF5==formatData[ptr+1] &&
-						         0xF5==formatData[ptr+2] &&
-						         0xFB==formatData[ptr+3]) ||
-						        (0x00==formatData[ptr] &&
-						         0x00==formatData[ptr+1] &&
-						         0x00==formatData[ptr+2] &&
-						         0xFB==formatData[ptr+3])
-						         ) // Data Mark
-						{
-							auto dataPtr=formatData.data()+ptr+4;
-							unsigned int sectorSize=128*(1<<N);
-							if(0xF7==dataPtr[sectorSize]) // CRC
-							{
-								std::cout << "Sector Data" << std::endl;
-								D77File::D77Disk::D77Sector sector;
-								sector.Make(C,H,R,sectorSize);
-								for(unsigned int i=0; i<sectorSize; ++i)
-								{
-									sector.sectorData[i]=dataPtr[i];
-								}
-								sectors.push_back(sector);
-								trackCapacity+=sectorSize;
-							}
-						}
-					}
-					auto newDiskMediaType=IdentifyDiskMediaTypeFromTrackCapacity(trackCapacity);
-					if(MEDIA_UNKNOWN!=newDiskMediaType)
-					{
-						drv.mediaType=newDiskMediaType;
-						switch(newDiskMediaType)
-						{
-						case MEDIA_2DD_640KB:
-						case MEDIA_2DD_720KB:
-							diskPtr->SetNumTrack(80);
-							break;
-						case MEDIA_2HD_1232KB:
-							diskPtr->SetNumTrack(77);
-							break;
-						case MEDIA_2HD_1440KB:
-							diskPtr->SetNumTrack(80);
-							break;
-						}
-					}
-					for(auto &s : sectors)
-					{
-						s.nSectorTrack=(unsigned short)sectors.size();
-					}
-					diskPtr->ForceWriteTrack(drv.trackPos,state.side,(int)sectors.size(),sectors.data());
+					drv.mediaType=imgPtr->WriteTrack(diskIdx,drv.trackPos,state.side,formatData);
 					state.writeFault=false;
 				}
 				else
@@ -475,6 +385,10 @@ void TownsFDC::MakeReady(void)
 		if(true==debugBreakOnCommandWrite)
 		{
 			townsPtr->debugger.ExternalBreak("FDC Command Write "+cpputil::Ubtox(data)+" "+FDCCommandToExplanation(data));
+		}
+		if(true==fdcMonitor)
+		{
+			std::cout << ("FDC Command Write "+cpputil::Ubtox(data)+" "+FDCCommandToExplanation(data)) << std::endl;
 		}
 		break;
 	case TOWNSIO_FDC_TRACK://                0x202, // [2] pp.253

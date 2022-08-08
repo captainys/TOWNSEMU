@@ -29,6 +29,7 @@ public:
 	class TownsDMAC *DMACPtr;
 
 	bool debugBreakOnCommandWrite=false;
+	bool fdcMonitor=false;
 
 	virtual const char *DeviceName(void) const{return "FDC";}
 

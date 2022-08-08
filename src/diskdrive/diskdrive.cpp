@@ -20,20 +20,474 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "d77ext.h"
 
 
+
+void DiskDrive::Sector::Make(unsigned int C,unsigned int H,unsigned int R,unsigned int N)
+{
+	this->C=C;
+	this->H=H;
+	this->R-R;
+	this->N=N;
+	this->exists=true;
+	this->data.resize(128*(1<<N));
+}
+unsigned int DiskDrive::DiskImage::GetNumDisk(void) const
+{
+	switch(fileType)
+	{
+	case IMGFILE_RAW:
+	case IMGFILE_D77:
+		return d77.GetNumDisk();
+	}
+	return 0;
+}
+bool DiskDrive::DiskImage::IsModified(void) const
+{
+	switch(fileType)
+	{
+	case IMGFILE_RAW:
+	case IMGFILE_D77:
+		return d77.IsModified();
+	}
+	return false;
+}
+std::vector <unsigned char> DiskDrive::DiskImage::MakeImageBinary(void) const
+{
+	switch(fileType)
+	{
+	case IMGFILE_RAW:
+		return d77.MakeRawImage();
+	case IMGFILE_D77:
+		return d77.MakeD77Image();
+	}
+	std::vector <unsigned char> bin;
+	return bin;
+}
+std::vector <unsigned char> DiskDrive::DiskImage::MakeImageBinaryIfNotTooLong(unsigned int lengthThresholdInBytes) const
+{
+	auto bin=MakeImageBinary();
+	if(lengthThresholdInBytes<bin.size())
+	{
+		bin.clear();
+	}
+	return bin;
+}
+void DiskDrive::DiskImage::ClearModifiedFlag(void)
+{
+	switch(fileType)
+	{
+	case IMGFILE_RAW:
+	case IMGFILE_D77:
+		for(int i=0; i<d77.GetNumDisk(); ++i)
+		{
+			d77.GetDisk(i)->ClearModified();
+		}
+		break;
+	}
+}
+bool DiskDrive::DiskImage::DiskLoaded(int diskIdx) const
+{
+	switch(fileType)
+	{
+	case IMGFILE_RAW:
+	case IMGFILE_D77:
+		return nullptr!=d77.GetDisk(diskIdx);
+	}
+	return false;
+}
+unsigned int DiskDrive::DiskImage::IdentifyDiskMediaType(int diskIdx) const
+{
+	switch(fileType)
+	{
+	case IMGFILE_RAW:
+	case IMGFILE_D77:
+		{
+			auto diskPtr=d77.GetDisk(diskIdx);
+			if(nullptr==diskPtr)
+			{
+				break;
+			}
+			unsigned int totalSize=0;
+			for(auto loc : diskPtr->AllTrack())
+			{
+				auto trk=diskPtr->GetTrack(loc.track,loc.side);
+				if(nullptr!=trk)
+				{
+					for(auto &sec : trk->sector)
+					{
+						totalSize+=(128<<sec.sizeShift);
+					}
+				}
+			}
+			totalSize/=1024;
+			unsigned int mediaType=MEDIA_UNKNOWN;
+			if(totalSize<600)
+			{
+				return MEDIA_2D;
+			}
+			else if(600<=totalSize && totalSize<680)
+			{
+				return MEDIA_2DD_640KB;
+			}
+			else if(680<=totalSize && totalSize<760)
+			{
+				return MEDIA_2DD_720KB;
+			}
+			else if(1200<=totalSize && totalSize<1300)
+			{
+				return MEDIA_2HD_1232KB;
+			}
+			else if(1400<=totalSize && totalSize<1500)
+			{
+				return MEDIA_2HD_1440KB;
+			}
+		}
+		break;
+	}
+	return MEDIA_UNKNOWN;
+}
+
+bool DiskDrive::DiskImage::SetData(int fileType,const std::vector <unsigned char> &bin,bool verboseMode)
+{
+	switch(fileType)
+	{
+	case IMGFILE_D77:
+		this->fileType=fileType;
+		d77.SetData(bin,verboseMode);
+		return true;
+	case IMGFILE_RAW:
+		this->fileType=fileType;
+		d77.SetRawBinary(bin,verboseMode);
+		return true;
+	}
+	return false;
+}
+
+DiskDrive::Sector DiskDrive::DiskImage::ReadSector(int diskIdx,unsigned int C,unsigned int H,unsigned int R) const
+{
+	Sector sector;
+	switch(fileType)
+	{
+	case IMGFILE_D77:
+	case IMGFILE_RAW:
+		{
+			auto diskPtr=d77.GetDisk(diskIdx);
+			if(nullptr!=diskPtr)
+			{
+				auto secPtr=diskPtr->GetSector(C,H,R);
+				if(nullptr!=secPtr)
+				{
+					sector.exists=true;
+					sector.C=secPtr->cylinder;
+					sector.H=secPtr->head;
+					sector.R=secPtr->sector;
+					sector.N=secPtr->sizeShift;
+					sector.data=secPtr->sectorData;
+				}
+			}
+		}
+		break;
+	}
+	return sector;
+}
+bool DiskDrive::DiskImage::WriteSector(int diskIdx,unsigned int C,unsigned int H,unsigned int R,size_t len,const uint8_t data[])
+{
+	switch(fileType)
+	{
+	case IMGFILE_D77:
+	case IMGFILE_RAW:
+		{
+			auto diskPtr=d77.GetDisk(diskIdx);
+			if(nullptr!=diskPtr)
+			{
+				diskPtr->WriteSector(C,H,R,len,data);
+				diskPtr->SetModified();
+				return true;
+			}
+		}
+		break;
+	}
+	return false;
+}
+unsigned int DiskDrive::DiskImage::GetSectorLength(int diskIdx,unsigned int C,unsigned int H,unsigned int R) const
+{
+	switch(fileType)
+	{
+	case IMGFILE_D77:
+	case IMGFILE_RAW:
+		{
+			auto diskPtr=d77.GetDisk(diskIdx);
+			if(nullptr!=diskPtr)
+			{
+				auto secPtr=diskPtr->GetSector(C,H,R);
+				if(nullptr!=secPtr)
+				{
+					return secPtr->sectorData.size();
+				}
+			}
+		}
+		break;
+	}
+	return 0;
+}
+bool DiskDrive::DiskImage::SectorExists(int diskIdx,unsigned int C,unsigned int H,unsigned int R) const
+{
+	switch(fileType)
+	{
+	case IMGFILE_D77:
+	case IMGFILE_RAW:
+		{
+			auto diskPtr=d77.GetDisk(diskIdx);
+			if(nullptr!=diskPtr)
+			{
+				auto secPtr=diskPtr->GetSector(C,H,R);
+				if(nullptr!=secPtr)
+				{
+					return true;
+				}
+			}
+		}
+		break;
+	}
+	return false;
+}
+std::vector <uint8_t> DiskDrive::DiskImage::ReadAddress(int diskIdx,unsigned int cylinder,unsigned int side,unsigned int &sectorPos) const
+{
+	switch(fileType)
+	{
+	case IMGFILE_D77:
+	case IMGFILE_RAW:
+		{
+			auto diskPtr=d77.GetDisk(diskIdx);
+			if(nullptr!=diskPtr)
+			{
+				auto trkPtr=diskPtr->GetTrack(cylinder,side);
+				if(nullptr!=trkPtr)
+				{
+					if(trkPtr->sector.size()<=sectorPos)
+					{
+						sectorPos=0;
+					}
+					auto &sector=trkPtr->sector[sectorPos];
+					++sectorPos;
+
+					std::vector <unsigned char> CHRN_CRC=
+					{
+						sector.cylinder,
+						sector.head,
+						sector.sector,
+						sector.sizeShift,
+						0x7f, // How can I calculate CRC?
+						0x7f
+					};
+					return CHRN_CRC;
+				}
+			}
+		}
+		break;
+	}
+	std::vector <uint8_t> empty;
+	return empty;
+}
+void DiskDrive::DiskImage::SetNumCylinders(int diskIdx,unsigned int n)
+{
+	switch(fileType)
+	{
+	case IMGFILE_D77:
+	case IMGFILE_RAW:
+		{
+			auto diskPtr=d77.GetDisk(diskIdx);
+			if(nullptr!=diskPtr)
+			{
+				diskPtr->SetNumTrack(n);
+			}
+		}
+		break;
+	}
+}
+unsigned int DiskDrive::DiskImage::WriteTrack(int diskIdx,unsigned int C,unsigned int H,const std::vector <uint8_t> &formatData)
+{
+	unsigned int mediaType=MEDIA_UNKNOWN;
+	switch(fileType)
+	{
+	case IMGFILE_D77:
+	case IMGFILE_RAW:
+		{
+			auto diskPtr=d77.GetDisk(diskIdx);
+			if(nullptr==diskPtr)
+			{
+				return MEDIA_UNKNOWN;
+			}
+
+			unsigned int C=0,H=0,R=0,N=0,trackCapacity=0;
+			std::vector <D77File::D77Disk::D77Sector> sectors;
+			for(unsigned int ptr=0; ptr<formatData.size()-4; ++ptr)
+			{
+				// FM-OASYS writes 00 00 00 FE, 00 00 00 FB for formatting the track 0 side 0.
+				if((0xA1==formatData[ptr] &&
+				    0xA1==formatData[ptr+1] &&
+				    0xA1==formatData[ptr+2] &&
+				    0xFE==formatData[ptr+3]) ||
+				   (0xF5==formatData[ptr] &&
+				    0xF5==formatData[ptr+1] &&
+				    0xF5==formatData[ptr+2] &&
+				    0xFE==formatData[ptr+3]) ||
+				   (0x00==formatData[ptr] &&
+				    0x00==formatData[ptr+1] &&
+				    0x00==formatData[ptr+2] &&
+				    0xFE==formatData[ptr+3])
+				    ) // Address Mark
+				{
+					C=formatData[ptr+4];
+					H=formatData[ptr+5];
+					R=formatData[ptr+6];
+					N=formatData[ptr+7];
+					std::cout << "CHRN:" << C << " " << H << " " << R << " " << N << std::endl;
+					ptr+=7;
+				}
+				else if((0xA1==formatData[ptr] &&
+				         0xA1==formatData[ptr+1] &&
+				         0xA1==formatData[ptr+2] &&
+				         0xFB==formatData[ptr+3]) ||
+				        (0xF5==formatData[ptr] &&
+				         0xF5==formatData[ptr+1] &&
+				         0xF5==formatData[ptr+2] &&
+				         0xFB==formatData[ptr+3]) ||
+				        (0x00==formatData[ptr] &&
+				         0x00==formatData[ptr+1] &&
+				         0x00==formatData[ptr+2] &&
+				         0xFB==formatData[ptr+3])
+				         ) // Data Mark
+				{
+					auto dataPtr=formatData.data()+ptr+4;
+					unsigned int sectorSize=(128<<N);
+					if(0xF7==dataPtr[sectorSize]) // CRC
+					{
+						std::cout << "Sector Data" << std::endl;
+						D77File::D77Disk::D77Sector sector;
+						sector.Make(C,H,R,sectorSize);
+						for(unsigned int i=0; i<sectorSize; ++i)
+						{
+							sector.sectorData[i]=dataPtr[i];
+						}
+						sectors.push_back((D77File::D77Disk::D77Sector&&)sector);
+						trackCapacity+=sectorSize;
+					}
+				}
+			}
+			auto newDiskMediaType=DiskImage::IdentifyDiskMediaTypeFromTrackCapacity(trackCapacity);
+			if(MEDIA_UNKNOWN!=newDiskMediaType)
+			{
+				mediaType=newDiskMediaType;
+				switch(newDiskMediaType)
+				{
+				case MEDIA_2DD_640KB:
+				case MEDIA_2DD_720KB:
+					diskPtr->SetNumTrack(80);
+					break;
+				case MEDIA_2HD_1232KB:
+					diskPtr->SetNumTrack(77);
+					break;
+				case MEDIA_2HD_1440KB:
+					diskPtr->SetNumTrack(80);
+					break;
+				}
+			}
+			for(auto &s : sectors)
+			{
+				s.nSectorTrack=(unsigned short)sectors.size();
+			}
+			diskPtr->ForceWriteTrack(C,H,(int)sectors.size(),sectors.data());
+		}
+		break;
+	}
+	return mediaType;
+}
+
+/* static */ unsigned int DiskDrive::DiskImage::IdentifyDiskMediaTypeFromTrackCapacity(unsigned int trackCapacity)
+{
+	// [10]
+	//   1232KB format 1024 bytes per sector,  8 sectors per track, 77 tracks
+	//   1440KB format  512 bytes per sector, 18 sectors per track, 80 tracks
+	//    640KB format  512 bytes per sector,  8 sectors per track, 80 tracks
+	//    720KB format  512 bytes per sector,  9 sectors per track, 80 tracks
+	if(1024*8==trackCapacity)
+	{
+		return MEDIA_2HD_1232KB;
+	}
+	else if(512*18==trackCapacity)
+	{
+		return MEDIA_2HD_1440KB;
+	}
+	else if(512*8==trackCapacity)
+	{
+		return MEDIA_2DD_640KB;
+	}
+	else if(512*9==trackCapacity)
+	{
+		return MEDIA_2DD_720KB;
+	}
+	return MEDIA_UNKNOWN;
+}
+
+void DiskDrive::DiskImage::SetWriteProtect(int diskIdx,bool writeProtect)
+{
+	switch(fileType)
+	{
+	case IMGFILE_RAW:
+	case IMGFILE_D77:
+		{
+			auto diskPtr=d77.GetDisk(diskIdx);
+			if(nullptr!=diskPtr)
+			{
+				// Change of write-protection is not a modification for RAW image.
+				// Write-protection is a flag in .D77.
+				// Therefore, when it is a RAW image, it shouldn't change the modified flag.
+				bool isModified=diskPtr->IsModified();
+				if(true==writeProtect)
+				{
+					diskPtr->SetWriteProtected();
+				}
+				else
+				{
+					diskPtr->ClearWriteProtected();
+				}
+				if(IMGFILE_RAW==fileType)
+				{
+					if(true!=isModified)
+					{
+						diskPtr->ClearModified();
+					}
+				}
+			}
+		}
+		break;
+	}
+}
+bool DiskDrive::DiskImage::WriteProtected(int diskIdx) const
+{
+	switch(fileType)
+	{
+	case IMGFILE_RAW:
+	case IMGFILE_D77:
+		{
+			auto diskPtr=d77.GetDisk(diskIdx);
+			if(nullptr!=diskPtr)
+			{
+				return diskPtr->IsWriteProtected();
+			}
+		}
+		break;
+	}
+	return false;
+}
+
+////////////////////////////////////////////////////////////
+
 void DiskDrive::ImageFile::SaveIfModified(void)
 {
-	if(true==d77.IsModified())
+	if(true==img.IsModified())
 	{
-		std::vector <unsigned char> bin;
-		switch(fileType)
-		{
-		case IMGFILE_RAW:
-			bin=d77.MakeRawImage();
-			break;
-		case IMGFILE_D77:
-			bin=d77.MakeD77Image();
-			break;
-		}
+		auto bin=img.MakeImageBinary();
 		if(0<bin.size())
 		{
 			if(true!=cpputil::WriteBinaryFile(fName,bin.size(),bin.data()))
@@ -46,11 +500,7 @@ void DiskDrive::ImageFile::SaveIfModified(void)
 			}
 		}
 	}
-
-	for(int i=0; i<d77.GetNumDisk(); ++i)
-	{
-		d77.GetDisk(i)->ClearModified();
-	}
+	img.ClearModifiedFlag();
 }
 
 bool DiskDrive::ImageFile::LoadD77orRAW(std::string fName)
@@ -75,9 +525,9 @@ bool DiskDrive::ImageFile::LoadD77(std::string fName)
 		return false;
 	}
 
-	this->d77.CleanUp();
-	this->d77.SetData(bin,verbose);
-	if(0<this->d77.GetNumDisk())
+	this->img.d77.CleanUp();
+	this->img.d77.SetData(bin,verbose);
+	if(0<this->img.d77.GetNumDisk())
 	{
 		D77ExtraInfo D77Ext;
 		std::string extFName=fName+"ext";
@@ -89,14 +539,14 @@ bool DiskDrive::ImageFile::LoadD77(std::string fName)
 		   D77ExtraInfo::ERR_NOERROR==D77Ext.ReadD77Ext(EXtFName) ||
 		   D77ExtraInfo::ERR_NOERROR==D77Ext.ReadD77Ext(EXTFName))
 		{
-			auto diskPtr=this->d77.GetDisk(0);
+			auto diskPtr=this->img.d77.GetDisk(0);
 			if(nullptr!=diskPtr)
 			{
 				D77Ext.Apply(*diskPtr);
 			}
 		}
 
-		this->fileType=IMGFILE_D77;
+		this->img.fileType=IMGFILE_D77;
 		this->fName=fName;
 		return true;
 	}
@@ -114,10 +564,10 @@ bool DiskDrive::ImageFile::LoadRAW(std::string fName)
 		return false;
 	}
 
-	this->d77.CleanUp();
-	if(true==this->d77.SetRawBinary(bin,verbose))
+	this->img.d77.CleanUp();
+	if(true==this->img.d77.SetRawBinary(bin,verbose))
 	{
-		this->fileType=IMGFILE_RAW;
+		this->img.fileType=IMGFILE_RAW;
 		this->fName=fName;
 		return true;
 	}
@@ -195,7 +645,7 @@ DiskDrive::DiskDrive(VMBase *vmPtr) : Device(vmPtr)
 	}
 	for(auto &i : imgFile)
 	{
-		i.fileType=IMGFILE_RAW;
+		i.img.fileType=IMGFILE_RAW;
 	}
 }
 
@@ -249,7 +699,7 @@ void DiskDrive::LinkDiskImageToDrive(int imgIdx,int diskIdx,int driveNum)
 {
 	state.drive[driveNum].imgFileNum=imgIdx;
 	state.drive[driveNum].diskIndex=diskIdx;
-	state.drive[driveNum].mediaType=IdentifyDiskMediaType(imgFile[imgIdx].d77.GetDisk(diskIdx));
+	state.drive[driveNum].mediaType=imgFile[imgIdx].img.IdentifyDiskMediaType(diskIdx);
 	state.drive[driveNum].DiskChanged();
 }
 
@@ -275,30 +725,6 @@ void DiskDrive::Eject(unsigned int driveNum)
 	state.drive[driveNum].mediaType=MEDIA_UNKNOWN;
 }
 
-D77File::D77Disk *DiskDrive::GetDriveDisk(int driveNum)
-{
-	if(0<=driveNum && driveNum<NUM_DRIVES)
-	{
-		auto &drv=state.drive[driveNum];
-		if(0<=drv.imgFileNum && drv.imgFileNum<NUM_DRIVES)
-		{
-			return imgFile[drv.imgFileNum].d77.GetDisk(drv.diskIndex);
-		}
-	}
-	return nullptr;
-}
-const D77File::D77Disk *DiskDrive::GetDriveDisk(int driveNum) const
-{
-	if(0<=driveNum && driveNum<NUM_DRIVES)
-	{
-		auto &drv=state.drive[driveNum];
-		if(0<=drv.imgFileNum && drv.imgFileNum<NUM_DRIVES)
-		{
-			return imgFile[drv.imgFileNum].d77.GetDisk(drv.diskIndex);
-		}
-	}
-	return nullptr;
-}
 DiskDrive::ImageFile *DiskDrive::GetDriveImageFile(int driveNum)
 {
 	if(0<=driveNum && driveNum<NUM_DRIVES)
@@ -334,95 +760,14 @@ void DiskDrive::SaveModifiedDiskImages(void)
 
 void DiskDrive::SetWriteProtect(int driveNum,bool writeProtect)
 {
-	auto diskPtr=GetDriveDisk(driveNum);
-	if(nullptr!=diskPtr)
+	if(0<=driveNum && driveNum<NUM_DRIVES)
 	{
-		// Change of write-protection is not a modification for RAW image.
-		// Write-protection is a flag in .D77.
-		// Therefore, when it is a RAW image, it shouldn't change the modified flag.
-		bool isModified=diskPtr->IsModified();
-		if(true==writeProtect)
+		auto &drv=state.drive[driveNum];
+		if(0<=drv.imgFileNum && drv.imgFileNum<NUM_DRIVES)
 		{
-			diskPtr->SetWriteProtected();
-		}
-		else
-		{
-			diskPtr->ClearWriteProtected();
-		}
-		auto imgFilePtr=GetDriveImageFile(driveNum);
-		if(nullptr!=imgFilePtr && IMGFILE_RAW==imgFilePtr->fileType)
-		{
-			if(true!=isModified)
-			{
-				diskPtr->ClearModified();
-			}
+			return imgFile[drv.imgFileNum].img.SetWriteProtect(drv.diskIndex,writeProtect);
 		}
 	}
-}
-
-unsigned int DiskDrive::IdentifyDiskMediaType(const D77File::D77Disk *diskPtr) const
-{
-	unsigned int totalSize=0;
-	for(auto loc : diskPtr->AllTrack())
-	{
-		auto trk=diskPtr->GetTrack(loc.track,loc.side);
-		if(nullptr!=trk)
-		{
-			for(auto &sec : trk->sector)
-			{
-				totalSize+=(128<<sec.sizeShift);
-			}
-		}
-	}
-	totalSize/=1024;
-	unsigned int mediaType=MEDIA_UNKNOWN;
-	if(totalSize<600)
-	{
-		return MEDIA_2D;
-	}
-	else if(600<=totalSize && totalSize<680)
-	{
-		return MEDIA_2DD_640KB;
-	}
-	else if(680<=totalSize && totalSize<760)
-	{
-		return MEDIA_2DD_720KB;
-	}
-	else if(1200<=totalSize && totalSize<1300)
-	{
-		return MEDIA_2HD_1232KB;
-	}
-	else if(1400<=totalSize && totalSize<1500)
-	{
-		return MEDIA_2HD_1440KB;
-	}
-	return MEDIA_UNKNOWN;
-}
-
-unsigned int DiskDrive::IdentifyDiskMediaTypeFromTrackCapacity(unsigned int trackCapacity) const
-{
-	// [10]
-	//   1232KB format 1024 bytes per sector,  8 sectors per track, 77 tracks
-	//   1440KB format  512 bytes per sector, 18 sectors per track, 80 tracks
-	//    640KB format  512 bytes per sector,  8 sectors per track, 80 tracks
-	//    720KB format  512 bytes per sector,  9 sectors per track, 80 tracks
-	if(1024*8==trackCapacity)
-	{
-		return MEDIA_2HD_1232KB;
-	}
-	else if(512*18==trackCapacity)
-	{
-		return MEDIA_2HD_1440KB;
-	}
-	else if(512*8==trackCapacity)
-	{
-		return MEDIA_2DD_640KB;
-	}
-	else if(512*9==trackCapacity)
-	{
-		return MEDIA_2DD_720KB;
-	}
-	return MEDIA_UNKNOWN;
 }
 
 ////////////////////////////////////////////////////////////
@@ -752,9 +1097,21 @@ unsigned int DiskDrive::GetDriveMode(void) const
 	return MEDIA_UNKNOWN;
 }
 
+bool DiskDrive::DiskLoaded(int driveNum) const
+{
+	if(0<=driveNum && driveNum<NUM_DRIVES)
+	{
+		auto &drv=state.drive[driveNum];
+		if(0<=drv.imgFileNum && drv.imgFileNum<NUM_DRIVES)
+		{
+			return imgFile[drv.imgFileNum].img.DiskLoaded(drv.diskIndex);
+		}
+	}
+	return false;
+}
 bool DiskDrive::DriveReady(void) const
 {
-	if(0!=state.driveSelectBit && nullptr!=GetDriveDisk(DriveSelect()))
+	if(0!=state.driveSelectBit && true==DiskLoaded(DriveSelect()))
 	{
 		if(0<state.drive[DriveSelect()].pretendDriveNotReadyCount)
 		{
@@ -767,10 +1124,10 @@ bool DiskDrive::DriveReady(void) const
 }
 bool DiskDrive::WriteProtected(void) const
 {
-	auto diskPtr=GetDriveDisk(DriveSelect());
-	if(nullptr!=diskPtr)
+	auto &drv=state.drive[DriveSelect()];
+	if(0<=drv.imgFileNum && drv.imgFileNum<NUM_DRIVES)
 	{
-		return diskPtr->IsWriteProtected();
+		return imgFile[drv.imgFileNum].img.WriteProtected(drv.diskIndex);
 	}
 	return false; // Tentative.
 }
@@ -968,7 +1325,8 @@ std::vector <std::string> DiskDrive::GetStatusText(void) const
 	// Version 2 adds fields for I/O read/write (not DMA)
 	// Version 3 adds CRCErrorAfterRead
 	// Version 4 adds lastDRQTime.
-	return 4;
+	// Version 5 Disk image was always stored as D77 format until version 4.  Version 5 and later stores as is.
+	return 5;
 }
 /* virtual */ void DiskDrive::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
 {
@@ -980,16 +1338,16 @@ std::vector <std::string> DiskDrive::GetStatusText(void) const
 	{
 		std::string fName;
 		std::vector <unsigned char> dskImg;
-		if(0<imgf.d77.GetNumDisk())
+		if(0<imgf.img.GetNumDisk())
 		{
-			PushUint32(data,imgf.fileType);
+			PushUint32(data,imgf.img.fileType);
 			PushString(data,imgf.fName);  // As is
 			PushString(data,cpputil::MakeRelativePath(imgf.fName,stateDir)); // Relpath
-			PushUcharArray(data,imgf.d77.MakeD77Image());
+			PushUcharArray(data,imgf.img.MakeImageBinaryIfNotTooLong(1024*1024*8));
 		}
 		else
 		{
-			PushUint32(data,imgf.fileType);
+			PushUint32(data,imgf.img.fileType);
 			PushString(data,""); // As is
 			PushString(data,""); // Relpath
 			PushUcharArray(data,dskImg);
@@ -1055,7 +1413,7 @@ std::vector <std::string> DiskDrive::GetStatusText(void) const
 	ReadUint32(data); // Dummy read NUM_DRIVES
 	for(auto &imgf : imgFile)
 	{
-		imgf.fileType=ReadUint32(data);
+		imgf.img.fileType=ReadUint32(data);
 		auto fName=ReadString(data);
 		std::string relPath;
 		if(1<=version)
@@ -1114,8 +1472,15 @@ std::vector <std::string> DiskDrive::GetStatusText(void) const
 				{
 					fName=cpputil::MakeFullPathName(stateDir,fName);
 				}
-				imgf.fName=fName;
-				imgf.d77.SetData(dskImg,false);
+				if(version<=4) // Always D77
+				{
+					imgf.fName=fName;
+					imgf.img.d77.SetData(dskImg,false);
+				}
+				else
+				{
+					imgf.img.SetData(imgf.img.fileType,dskImg,false);
+				}
 			}
 		}
 	}
