@@ -88,12 +88,16 @@ public:
 
 		bool SetData(int fileType,const std::vector <unsigned char> &bin,bool verboseMode);
 
-		Sector ReadSector(int diskIdx,unsigned int C,unsigned int H,unsigned int R) const;
+		Sector ReadSector(
+		    int diskIdx,unsigned int trackPos,unsigned int side,
+		    unsigned int C,unsigned int H,unsigned int R) const;
 
 		/*! Find a sector starting from searchStartFrom-th sector in the track.
 		    It updates searchStartFrom, and also returns how many steps were required to get to the sector.
 		*/
-		Sector ReadSectorFrom(int diskIdx,unsigned int C,unsigned int H,unsigned int R,unsigned int &searchStartFrom,unsigned int &nSteps) const;
+		Sector ReadSectorFrom(
+		    int diskIdx,unsigned int trackPos,unsigned int side,
+		    unsigned int C,unsigned int H,unsigned int R,unsigned int &searchStartFrom,unsigned int &nSteps) const;
 
 		/*! Returns nanoseconds per byte for given RPM.
 		    If no information is stored, it returns zero.

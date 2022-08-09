@@ -162,36 +162,17 @@ bool DiskDrive::DiskImage::SetData(int fileType,const std::vector <unsigned char
 	return false;
 }
 
-DiskDrive::Sector DiskDrive::DiskImage::ReadSector(int diskIdx,unsigned int C,unsigned int H,unsigned int R) const
+DiskDrive::Sector DiskDrive::DiskImage::ReadSector(
+    int diskIdx,unsigned int trackPos,unsigned int side,
+    unsigned int C,unsigned int H,unsigned int R) const
 {
-	Sector sector;
-	switch(fileType)
-	{
-	case IMGFILE_D77:
-	case IMGFILE_RAW:
-		{
-			auto diskPtr=d77.GetDisk(diskIdx);
-			if(nullptr!=diskPtr)
-			{
-				auto secPtr=diskPtr->GetSector(C,H,R);
-				if(nullptr!=secPtr)
-				{
-					sector.exists=true;
-					sector.C=secPtr->cylinder;
-					sector.H=secPtr->head;
-					sector.R=secPtr->sector;
-					sector.N=secPtr->sizeShift;
-					sector.data=secPtr->sectorData;
-					sector.crcStatus=secPtr->crcStatus;
-				}
-			}
-		}
-		break;
-	}
-	return sector;
+	unsigned int searchStartFrom=0,nSteps=0;
+	return ReadSectorFrom(diskIdx,trackPos,side,C,H,R,searchStartFrom,nSteps);
 }
 
-DiskDrive::Sector DiskDrive::DiskImage::ReadSectorFrom(int diskIdx,unsigned int C,unsigned int H,unsigned int R,unsigned int &searchStartFrom,unsigned int &nSteps) const
+DiskDrive::Sector DiskDrive::DiskImage::ReadSectorFrom(
+    int diskIdx,unsigned int trackPos,unsigned int side,
+    unsigned int C,unsigned int H,unsigned int R,unsigned int &searchStartFrom,unsigned int &nSteps) const
 {
 	Sector sector;
 	switch(fileType)
@@ -202,16 +183,28 @@ DiskDrive::Sector DiskDrive::DiskImage::ReadSectorFrom(int diskIdx,unsigned int 
 			auto diskPtr=d77.GetDisk(diskIdx);
 			if(nullptr!=diskPtr)
 			{
-				auto secPtr=diskPtr->GetSectorFrom(C,H,R,searchStartFrom,nSteps);
-				if(nullptr!=secPtr)
+				auto trackPtr=diskPtr->GetTrack(trackPos,side);
+				if(nullptr!=trackPtr)
 				{
-					sector.exists=true;
-					sector.C=secPtr->cylinder;
-					sector.H=secPtr->head;
-					sector.R=secPtr->sector;
-					sector.N=secPtr->sizeShift;
-					sector.data=secPtr->sectorData;
-					sector.crcStatus=secPtr->crcStatus;
+					nSteps=0;
+					for(int i=0; i<trackPtr->sector.size(); ++i,++nSteps)
+					{
+						auto &d77Sector=trackPtr->sector[(i+searchStartFrom)%trackPtr->sector.size()];
+						if(d77Sector.cylinder==C &&
+						   d77Sector.head==H &&
+						   d77Sector.sector==R)
+						{
+							searchStartFrom=(i+searchStartFrom+1)%trackPtr->sector.size();
+							sector.exists=true;
+							sector.C=d77Sector.cylinder;
+							sector.H=d77Sector.head;
+							sector.R=d77Sector.sector;
+							sector.N=d77Sector.sizeShift;
+							sector.data=d77Sector.sectorData;
+							sector.crcStatus=d77Sector.crcStatus;
+							break;
+						}
+					}
 				}
 			}
 		}
