@@ -1389,7 +1389,8 @@ std::vector <std::string> DiskDrive::GetStatusText(void) const
 	// Version 3 adds CRCErrorAfterRead
 	// Version 4 adds lastDRQTime.
 	// Version 5 Disk image was always stored as D77 format until version 4.  Version 5 and later stores as is.
-	return 5;
+	// Version 6 adds sectorPositionInTrack,nanosecPerByte,nextIndexHoleTime,DDMErrorAfterRead;
+	return 6;
 }
 /* virtual */ void DiskDrive::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
 {
@@ -1467,6 +1468,12 @@ std::vector <std::string> DiskDrive::GetStatusText(void) const
 	PushBool(data,state.CRCErrorAfterRead);
 	// Version 4
 	PushUint64(data,state.lastDRQTime);
+
+	// Version 6
+	PushBool(data,state.DDMErrorAfterRead);
+	PushUint32(data,state.sectorPositionInTrack);
+	PushUint32(data,state.nanosecPerByte);
+	PushUint64(data,state.nextIndexHoleTime);
 }
 /* virtual */ bool DiskDrive::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
 {
@@ -1603,6 +1610,13 @@ std::vector <std::string> DiskDrive::GetStatusText(void) const
 	if(4<=version)
 	{
 		state.lastDRQTime=ReadUint64(data);
+	}
+	if(6<=version)
+	{
+		state.DDMErrorAfterRead=ReadBool(data);
+		state.sectorPositionInTrack=ReadUint32(data);
+		state.nanosecPerByte=ReadUint32(data);
+		state.nextIndexHoleTime=ReadUint64(data);
 	}
 	return true;
 }
