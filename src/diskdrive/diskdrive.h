@@ -39,7 +39,7 @@ public:
 		STEP_TIME=               1000000,  //  1ms in Nano Seconds.  Just took arbitrary.  Need to make it real.
 		SECTOR_READ_WRITE_TIME=  1000000,  //  1ms in Nano Seconds.  Just took arbitrary.  Need to make it real.
 		WRITE_TRACK_TIME=        1000000,  //  1ms in Nano Seconds.  Just took arbitrary.  Need to make it real.
-		ADDRMARK_READ_TIME=      1000000,  //  5ms in Nano Seconds.  Just took arbitrary.  Need to make it real.
+		ADDRMARK_READ_TIME=      1000000,  //  1ms in Nano Seconds.  Just took arbitrary.  Need to make it real.  But, keep it fast for the time being.
 	};
 	enum
 	{
@@ -56,7 +56,7 @@ public:
 	{
 	public:
 		bool exists=false;
-		uint8_t C,H,R,N,crcStatus;
+		uint8_t C,H,R,N,crcStatus,DDM;
 		std::vector <uint8_t> data;
 
 		void Make(unsigned int C,unsigned int H,unsigned int R,unsigned int N);
@@ -90,14 +90,14 @@ public:
 
 		Sector ReadSector(
 		    int diskIdx,unsigned int trackPos,unsigned int side,
-		    unsigned int C,unsigned int H,unsigned int R) const;
+		    unsigned int C,unsigned int H,unsigned int R,bool verifySide) const;
 
 		/*! Find a sector starting from searchStartFrom-th sector in the track.
 		    It updates searchStartFrom, and also returns how many steps were required to get to the sector.
 		*/
 		Sector ReadSectorFrom(
 		    int diskIdx,unsigned int trackPos,unsigned int side,
-		    unsigned int C,unsigned int H,unsigned int R,unsigned int &searchStartFrom,unsigned int &nSteps) const;
+		    unsigned int C,unsigned int H,unsigned int R,bool verifySide,unsigned int &searchStartFrom,unsigned int &nSteps) const;
 
 		/*! Returns nanoseconds per byte for given RPM.
 		    If no information is stored, it returns zero.
@@ -176,6 +176,8 @@ public:
 
 		unsigned int sectorPositionInTrack=0;
 		unsigned int nanosecPerByte=0;
+		long long int nextIndexHoleTime=0;
+		bool DDMErrorAfterRead=false;
 
 		long long int scheduleTime;
 

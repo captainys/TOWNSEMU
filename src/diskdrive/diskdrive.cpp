@@ -114,7 +114,7 @@ unsigned int DiskDrive::DiskImage::IdentifyDiskMediaType(int diskIdx) const
 				{
 					for(auto &sec : trk->sector)
 					{
-						totalSize+=(128<<sec.sizeShift);
+						totalSize+=(128<<(sec.sizeShift&3));
 					}
 				}
 			}
@@ -164,15 +164,15 @@ bool DiskDrive::DiskImage::SetData(int fileType,const std::vector <unsigned char
 
 DiskDrive::Sector DiskDrive::DiskImage::ReadSector(
     int diskIdx,unsigned int trackPos,unsigned int side,
-    unsigned int C,unsigned int H,unsigned int R) const
+    unsigned int C,unsigned int H,unsigned int R,bool verifySide) const
 {
 	unsigned int searchStartFrom=0,nSteps=0;
-	return ReadSectorFrom(diskIdx,trackPos,side,C,H,R,searchStartFrom,nSteps);
+	return ReadSectorFrom(diskIdx,trackPos,side,C,H,R,verifySide,searchStartFrom,nSteps);
 }
 
 DiskDrive::Sector DiskDrive::DiskImage::ReadSectorFrom(
     int diskIdx,unsigned int trackPos,unsigned int side,
-    unsigned int C,unsigned int H,unsigned int R,unsigned int &searchStartFrom,unsigned int &nSteps) const
+    unsigned int C,unsigned int H,unsigned int R,bool verifySide,unsigned int &searchStartFrom,unsigned int &nSteps) const
 {
 	Sector sector;
 	switch(fileType)
@@ -191,7 +191,7 @@ DiskDrive::Sector DiskDrive::DiskImage::ReadSectorFrom(
 					{
 						auto &d77Sector=trackPtr->sector[(i+searchStartFrom)%trackPtr->sector.size()];
 						if(d77Sector.cylinder==C &&
-						   d77Sector.head==H &&
+						   (true!=verifySide || d77Sector.head==H) &&
 						   d77Sector.sector==R)
 						{
 							searchStartFrom=(i+searchStartFrom+1)%trackPtr->sector.size();
@@ -202,6 +202,7 @@ DiskDrive::Sector DiskDrive::DiskImage::ReadSectorFrom(
 							sector.N=d77Sector.sizeShift;
 							sector.data=d77Sector.sectorData;
 							sector.crcStatus=d77Sector.crcStatus;
+							sector.DDM=d77Sector.deletedData;
 							break;
 						}
 					}
@@ -405,7 +406,7 @@ unsigned int DiskDrive::DiskImage::WriteTrack(int diskIdx,unsigned int C,unsigne
 				         ) // Data Mark
 				{
 					auto dataPtr=formatData.data()+ptr+4;
-					unsigned int sectorSize=(128<<N);
+					unsigned int sectorSize=(128<<(N&3));
 					if(0xF7==dataPtr[sectorSize]) // CRC
 					{
 						std::cout << "Sector Data" << std::endl;
@@ -921,6 +922,7 @@ void DiskDrive::SendCommand(unsigned int cmd,uint64_t vmTime)
 			state.DRQ=false;
 			state.IRQ=false;
 			state.CRCErrorAfterRead=false;
+			state.DDMErrorAfterRead=false;
 			break;
 		case 0xA0: // Write Data (Write Sector)
 		case 0xB0: // Write Data (Write Sector)
@@ -937,6 +939,7 @@ void DiskDrive::SendCommand(unsigned int cmd,uint64_t vmTime)
 			state.DRQ=false;
 			state.IRQ=false;
 			state.CRCErrorAfterRead=false;
+			state.DDMErrorAfterRead=false;
 			break;
 
 		case 0xC0: // Read Address
@@ -953,6 +956,7 @@ void DiskDrive::SendCommand(unsigned int cmd,uint64_t vmTime)
 			state.DRQ=false;
 			state.IRQ=false;
 			state.CRCErrorAfterRead=false;
+			state.DDMErrorAfterRead=false;
 			break;
 		case 0xE0: // Read Track
 			vmPtr->ScheduleDeviceCallBack(*this,vmTime+WRITE_TRACK_TIME);
@@ -967,6 +971,7 @@ void DiskDrive::SendCommand(unsigned int cmd,uint64_t vmTime)
 			state.DRQ=false;
 			state.IRQ=false;
 			state.CRCErrorAfterRead=false;
+			state.DDMErrorAfterRead=false;
 			break;
 		case 0xF0: // Write Track
 			vmPtr->ScheduleDeviceCallBack(*this,vmTime+WRITE_TRACK_TIME);
@@ -981,6 +986,7 @@ void DiskDrive::SendCommand(unsigned int cmd,uint64_t vmTime)
 			state.DRQ=false;
 			state.IRQ=false;
 			state.CRCErrorAfterRead=false;
+			state.DDMErrorAfterRead=false;
 			break;
 
 		case 0xD0: // Force Interrupt

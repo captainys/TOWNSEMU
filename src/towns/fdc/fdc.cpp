@@ -141,9 +141,10 @@ void TownsFDC::MakeReady(void)
 		{
 			if(true==CheckMediaTypeAndDriveModeCompatible(drv.mediaType,GetDriveMode()))
 			{
+				auto verifySide=(0!=(state.lastCmd&2));
 				auto sec=imgPtr->ReadSector(
 				    diskIdx,drv.trackPos,state.side,
-				    drv.trackPos,state.side,GetSectorReg());
+				    drv.trackPos,state.side,GetSectorReg(),verifySide);
 				if(true==sec.exists)
 				{
 					auto DMACh=DMACPtr->GetDMAChannel(TOWNSDMA_FPD);
