@@ -232,63 +232,93 @@ void TownsSound::ProcessSound(void)
 {
 	if((true==IsFMPlaying() || true==IsPCMPlaying()) && nullptr!=outside_world)
 	{
-		if(true==nextFMPCMWave.empty())
+		if(nextFMPCMWaveGenTime<=townsPtr->state.townsTime)
 		{
-			if(true==IsFMPlaying() && 0!=(state.muteFlag&2))
+			const unsigned int WAVE_OUT_SAMPLING_RATE=YM2612::WAVE_SAMPLING_RATE; // Align with YM2612.
+			const uint32_t numSamplesPerWave=FM_PCM_MILLISEC_PER_WAVE*WAVE_OUT_SAMPLING_RATE/1000;
+
+			if(true==nextFMPCMWave.empty())
 			{
-				nextFMPCMWave=state.ym2612.MakeWaveAllChannels(FM_PCM_MILLISEC_PER_WAVE);
+				nextFMPCMWaveFilledInMillisec=0;
+				nextFMPCMWave.resize(numSamplesPerWave*4);
+				memset(nextFMPCMWave.data(),0,nextFMPCMWave.size());
 			}
-			if(true==IsPCMPlaying())
+
+			if(nextFMPCMWaveFilledInMillisec<FM_PCM_MILLISEC_PER_WAVE)
 			{
-				const unsigned int WAVE_OUT_SAMPLING_RATE=YM2612::WAVE_SAMPLING_RATE; // Align with YM2612.
-				unsigned int numSamples=0;
-				if(true==nextFMPCMWave.empty()) // YM2612 not playing.
-				{
-					numSamples=FM_PCM_MILLISEC_PER_WAVE*WAVE_OUT_SAMPLING_RATE/1000;
-					nextFMPCMWave.resize(numSamples*4);
-					std::memset(nextFMPCMWave.data(),0,numSamples*4);
-				}
-				else
-				{
-					numSamples=(unsigned int)(nextFMPCMWave.size()/4);
-				}
+				uint32_t fillBegin=nextFMPCMWaveFilledInMillisec*numSamplesPerWave/FM_PCM_MILLISEC_PER_WAVE;
+				uint32_t fillEnd=(nextFMPCMWaveFilledInMillisec+MILLISEC_PER_WAVE_GENERATION)*numSamplesPerWave/FM_PCM_MILLISEC_PER_WAVE;
+				fillEnd=std::min(fillEnd,numSamplesPerWave);
 
-				// Brandish expects PCM interrupt even when muted.
-				// Therefore, PCM wave must be generated and played for making IRQ.
-				if(0!=(state.muteFlag&1))
-				{
-					state.rf5c68.AddWaveForNumSamples(nextFMPCMWave.data(),numSamples,WAVE_OUT_SAMPLING_RATE);
-				}
-				else
-				{
-					// AddWaveForNumSamples will set IRQAfterThisPlayBack flag.
-					std::vector <unsigned char> dummy;
-					dummy.resize(numSamples*4);
-					state.rf5c68.AddWaveForNumSamples(dummy.data(),numSamples,WAVE_OUT_SAMPLING_RATE);
-				}
+				auto fillNumSamples=fillEnd-fillBegin;
+				auto fillPtr=nextFMPCMWave.data()+fillBegin*4;
 
-				for(unsigned int chNum=0; chNum<RF5C68::NUM_CHANNELS; ++chNum)
+				if(true==IsFMPlaying() && 0!=(state.muteFlag&2))
 				{
-					auto &ch=state.rf5c68.state.ch[chNum];
-					if(true==ch.IRQAfterThisPlayBack)
+					state.ym2612.MakeWaveForNSamples(fillPtr,fillNumSamples);
+				}
+				if(true==IsPCMPlaying())
+				{
+					const unsigned int WAVE_OUT_SAMPLING_RATE=YM2612::WAVE_SAMPLING_RATE; // Align with YM2612.
+
+					// Brandish expects PCM interrupt even when muted.
+					// Therefore, PCM wave must be generated and played for making IRQ.
+					if(0!=(state.muteFlag&1))
 					{
-						state.rf5c68.SetIRQBank(ch.IRQBank);
-						ch.IRQAfterThisPlayBack=false;
+						state.rf5c68.AddWaveForNumSamples(fillPtr,fillNumSamples,WAVE_OUT_SAMPLING_RATE);
+					}
+					else
+					{
+						// AddWaveForNumSamples will set IRQAfterThisPlayBack flag.
+						std::vector <unsigned char> dummy;
+						dummy.resize(fillNumSamples*4);
+						state.rf5c68.AddWaveForNumSamples(dummy.data(),fillNumSamples,WAVE_OUT_SAMPLING_RATE);
+					}
+
+					for(unsigned int chNum=0; chNum<RF5C68::NUM_CHANNELS; ++chNum)
+					{
+						auto &ch=state.rf5c68.state.ch[chNum];
+						if(true==ch.IRQAfterThisPlayBack)
+						{
+							state.rf5c68.SetIRQBank(ch.IRQBank);
+							ch.IRQAfterThisPlayBack=false;
+						}
 					}
 				}
+				nextFMPCMWaveFilledInMillisec+=MILLISEC_PER_WAVE_GENERATION;
 			}
-		}
 
-		if(true!=outside_world->FMPCMChannelPlaying() && true!=nextFMPCMWave.empty())
-		{
-			if(true==recordFMandPCM)
+			nextFMPCMWaveGenTime+=MILLISEC_PER_WAVE_GENERATION*1000000;
+			// Maybe it was not playing a while?
+			if(nextFMPCMWaveGenTime<townsPtr->state.townsTime)
 			{
-				FMPCMrecording.insert(FMPCMrecording.end(),nextFMPCMWave.begin(),nextFMPCMWave.end());
+				nextFMPCMWaveGenTime=townsPtr->state.townsTime+MILLISEC_PER_WAVE_GENERATION*1000000;
 			}
-			outside_world->FMPCMPlay(nextFMPCMWave);
-			nextFMPCMWave.clear(); // It was supposed to be cleared in FMPlay.  Just in case.
-			state.ym2612.CheckToneDoneAllChannels();
 		}
+	}
+	else if(true!=nextFMPCMWave.empty())
+	{
+		// Sound stopped, but still something in the buffer.
+		// And, the sound may resume before the end of the buffer.
+		nextFMPCMWaveFilledInMillisec+=MILLISEC_PER_WAVE_GENERATION;
+	}
+	else
+	{
+		// Not playing, no leftover buffer.
+		nextFMPCMWaveGenTime=0;
+	}
+
+	if(true!=outside_world->FMPCMChannelPlaying() && FM_PCM_MILLISEC_PER_WAVE<=nextFMPCMWaveFilledInMillisec)
+	{
+		// Hopefully FMPCM channel finishes play back previous wave piece before nextFMPCMWaveGenTime.
+		if(true==recordFMandPCM)
+		{
+			FMPCMrecording.insert(FMPCMrecording.end(),nextFMPCMWave.begin(),nextFMPCMWave.end());
+		}
+		outside_world->FMPCMPlay(nextFMPCMWave);
+		nextFMPCMWave.clear(); // It was supposed to be cleared in FMPlay.  Just in case.
+		nextFMPCMWaveFilledInMillisec=0;
+		state.ym2612.CheckToneDoneAllChannels();
 	}
 
 	if (townsPtr->timer.IsBuzzerPlaying()) {
@@ -557,5 +587,6 @@ void TownsSound::DeserializeRF5C68(const unsigned char *&data)
 	state.addrLatch[1]=ReadUint32(data);
 	DeserializeYM2612(data,version);
 	DeserializeRF5C68(data);
+	nextFMPCMWaveGenTime=0;
 	return true;
 }

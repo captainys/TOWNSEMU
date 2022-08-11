@@ -33,12 +33,13 @@ public:
 	enum
 	{
 #if !defined(__linux__) && !defined(__linux)
-		FM_PCM_MILLISEC_PER_WAVE=10, // Looks like time resolution of Wave Playback of Direct Sound is 10ms.
-		BEEP_MILLISEC_PER_WAVE=10
+		FM_PCM_MILLISEC_PER_WAVE=20, // Looks like time resolution of Wave Playback of Direct Sound is 10ms.  And, it needs to be 10 times integer.
+		BEEP_MILLISEC_PER_WAVE=20,
 #else
 		FM_PCM_MILLISEC_PER_WAVE=40, // Maybe because I am developing on VirtualBox, I am getting outrageously slow latency of 80ms (40ms*2).
-		BEEP_MILLISEC_PER_WAVE=40
+		BEEP_MILLISEC_PER_WAVE=40,
 #endif
+		MILLISEC_PER_WAVE_GENERATION=4,
 	};
 
 	virtual const char *DeviceName(void) const{return "SOUND";}
@@ -63,6 +64,8 @@ public:
 	bool recordFMandPCM=false;
 	std::vector <unsigned char> FMPCMrecording;
 
+	uint64_t nextFMPCMWaveFilledInMillisec=0;
+	uint64_t nextFMPCMWaveGenTime=0;
 	std::vector <unsigned char> nextFMPCMWave;
 
 	inline bool IsFMPlaying(void) const
