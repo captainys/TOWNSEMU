@@ -360,69 +360,16 @@ public:
 		}
 	#endif
 
+		// Multi-byte instruction (0x0F) and pre-fixes are handled in FetchOperand.
+
 		inst.opCode=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,CS,offset+inst.numBytes++,mem);
-		while(true==i486DX::IsPrefix[inst.opCode])
-		{
-			switch(inst.opCode)
-			{
-			case INST_PREFIX_REP: // REP/REPE/REPZ
-				inst.instPrefix=INST_PREFIX_REP;
-				break;
-			case INST_PREFIX_REPNE:
-				inst.instPrefix=INST_PREFIX_REPNE;
-				break;
-			case INST_PREFIX_LOCK:
-				inst.instPrefix=INST_PREFIX_LOCK;
-				break;
-
-			case SEG_OVERRIDE_CS:
-				inst.segOverride=SEG_OVERRIDE_CS;
-				break;
-			case SEG_OVERRIDE_SS:
-				inst.segOverride=SEG_OVERRIDE_SS;
-				break;
-			case SEG_OVERRIDE_DS:
-				inst.segOverride=SEG_OVERRIDE_DS;
-				break;
-			case SEG_OVERRIDE_ES:
-				inst.segOverride=SEG_OVERRIDE_ES;
-				break;
-			case SEG_OVERRIDE_FS:
-				inst.segOverride=SEG_OVERRIDE_FS;
-				break;
-			case SEG_OVERRIDE_GS:
-				inst.segOverride=SEG_OVERRIDE_GS;
-				break;
-
-			case OPSIZE_OVERRIDE:
-				inst.operandSize=defOperSize^48;
-				break;
-			case ADDRSIZE_OVERRIDE:
-				inst.addressSize=defAddrSize^48;
-				break;
-
-			case FPU_FWAIT:
-				inst.fwait=FPU_FWAIT;
-				break;
-
-			case I486_OPCODE_NEED_SECOND_BYTE: //0x0F
-				inst.opCode=(I486_OPCODE_NEED_SECOND_BYTE<<8)|
-				            FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,CS,offset+inst.numBytes++,mem);
-				goto PREFIX_DONE;
-
-			default:
-				goto PREFIX_DONE;
-			}
-			inst.opCode=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,CS,offset+inst.numBytes++,mem);
-		}
-	PREFIX_DONE:
 		if(MAX_INSTRUCTION_LENGTH<=ptr.length)
 		{
-			CPUCLASS::template FetchOperand<CPUCLASS,MEMCLASS,BURSTMODEFUNCCLASS>(cpu,instOp,ptr,CS,offset+inst.numBytes,mem);
+			CPUCLASS::template FetchOperand<CPUCLASS,MEMCLASS,BURSTMODEFUNCCLASS>(cpu,instOp,ptr,CS,offset+inst.numBytes,mem,defOperSize,defAddrSize);
 		}
 		else
 		{
-			CPUCLASS::template FetchOperand<CPUCLASS,MEMCLASS,FUNCCLASS>(cpu,instOp,ptr,CS,offset+inst.numBytes,mem);
+			CPUCLASS::template FetchOperand<CPUCLASS,MEMCLASS,FUNCCLASS>(cpu,instOp,ptr,CS,offset+inst.numBytes,mem,defOperSize,defAddrSize);
 		}
 	}
 };

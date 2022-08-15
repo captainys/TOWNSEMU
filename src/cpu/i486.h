@@ -72,7 +72,6 @@ public:
 	static const char *const Reg32Str[8];
 	static const char *const Sreg[8];
 	static const bool ParityTable[256];
-	static bool IsPrefix[256]; // Used in FetchInstruction.  With this, FetchInstruction can avoid switch statement if there is no prefix.  Probably slightly faster.
 
 	/* opCodeRenumberTable is for making a single jump table for switch-case statement.
 	   Visual C++ makes multiple jump tables for one switch-case statement if the case numbers 
@@ -3007,7 +3006,7 @@ private:
 	    with minimum code duplicate.
 	*/
 	template <class CPUCLASS,class MEMCLASS,class FUNCCLASS>
-	static void FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,int offset,MEMCLASS &mem);
+	static void FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,int offset,MEMCLASS &mem,unsigned int defOperSize,unsigned int defAddrSize);
 
 public:
 	/*! Fetch an instruction from specific segment and offset.

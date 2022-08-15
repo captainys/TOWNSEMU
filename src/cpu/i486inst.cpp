@@ -723,6 +723,22 @@ void i486DX::MakeOpCodeRenumberTable(void)
 	opCodeNeedOperandTable[I486_OPCODE_MOV_FROM_TR]=I486_NEEDOPERAND_MOV_FROM_TR;
 
 	opCodeNeedOperandTable[I486_OPCODE_SLDT_STR_LLDT_LTR_VERR_VERW]=I486_NEEDOPERAND_SLDT_STR_LLDT_LTR_VERR_VERW;
+
+
+	// Multi-byte and pre-fix handling
+	opCodeNeedOperandTable[I486_OPCODE_NEED_SECOND_BYTE]=I486_NEEDOPERAND_NEED_SECOND_BYTE;
+	opCodeNeedOperandTable[INST_PREFIX_REP]=I486_NEEDOPERAND_PREFIX_REP; // REP/REPE/REPZ
+	opCodeNeedOperandTable[INST_PREFIX_REPNE]=I486_NEEDOPERAND_PREFIX_REPNE;
+	opCodeNeedOperandTable[INST_PREFIX_LOCK]=I486_NEEDOPERAND_PREFIX_LOCK;
+	opCodeNeedOperandTable[SEG_OVERRIDE_CS]=I486_NEEDOPERAND_SEG_OVERRIDE_CS;
+	opCodeNeedOperandTable[SEG_OVERRIDE_SS]=I486_NEEDOPERAND_SEG_OVERRIDE_SS;
+	opCodeNeedOperandTable[SEG_OVERRIDE_DS]=I486_NEEDOPERAND_SEG_OVERRIDE_DS;
+	opCodeNeedOperandTable[SEG_OVERRIDE_ES]=I486_NEEDOPERAND_SEG_OVERRIDE_ES;
+	opCodeNeedOperandTable[SEG_OVERRIDE_FS]=I486_NEEDOPERAND_SEG_OVERRIDE_FS;
+	opCodeNeedOperandTable[SEG_OVERRIDE_GS]=I486_NEEDOPERAND_SEG_OVERRIDE_GS;
+	opCodeNeedOperandTable[OPSIZE_OVERRIDE]=I486_NEEDOPERAND_OPERSIZE_OVERRIDE;
+	opCodeNeedOperandTable[ADDRSIZE_OVERRIDE]=I486_NEEDOPERAND_ADDRSIZE_OVERRIDE;
+	opCodeNeedOperandTable[FPU_FWAIT]=I486_NEEDOPERAND_FPU_FWAIT;
 }
 
 
@@ -1246,17 +1262,90 @@ std::string i486DX::Instruction::SegmentOverrideString(int segOverridePrefix)
 }
 
 template <class CPUCLASS,class MEMCLASS,class FUNCCLASS>
-void i486DX::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,int offset,MEMCLASS &mem)
+void i486DX::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,int offset,MEMCLASS &mem,unsigned int defOperSize,unsigned int defAddrSize)
 {
 	auto &inst=instOp.inst;
 	auto &op1=instOp.op1;
 	auto &op2=instOp.op2;
 
+
+REFETCH:
 	switch(opCodeNeedOperandTable[inst.opCode])
 	{
 	// No Operand
 	case I486_NEEDOPERAND_NONE:
 		break;
+
+
+	// Handling multi-byte instruction and pre-fixes >>
+	// This instruction (0x0F) needs the second byte.
+	// Fetch it, and then re-fetch operand.
+	case I486_NEEDOPERAND_NEED_SECOND_BYTE: //0x0F
+		inst.opCode=(I486_OPCODE_NEED_SECOND_BYTE<<8)|FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,seg,offset++,mem);
+		++inst.numBytes;
+		goto REFETCH;
+	// The following cases are not really operand type, but handling these here saves a prefix-fetch loop.
+	case I486_NEEDOPERAND_PREFIX_REP: // REP/REPE/REPZ
+		inst.instPrefix=INST_PREFIX_REP;
+		inst.opCode=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,seg,offset++,mem);
+		++inst.numBytes;
+		goto REFETCH;
+	case I486_NEEDOPERAND_PREFIX_REPNE:
+		inst.instPrefix=INST_PREFIX_REPNE;
+		inst.opCode=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,seg,offset++,mem);
+		++inst.numBytes;
+		goto REFETCH;
+	case I486_NEEDOPERAND_PREFIX_LOCK:
+		inst.instPrefix=INST_PREFIX_LOCK;
+		inst.opCode=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,seg,offset++,mem);
+		++inst.numBytes;
+		goto REFETCH;
+	case I486_NEEDOPERAND_SEG_OVERRIDE_CS:
+		inst.segOverride=SEG_OVERRIDE_CS;
+		inst.opCode=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,seg,offset++,mem);
+		++inst.numBytes;
+		goto REFETCH;
+	case I486_NEEDOPERAND_SEG_OVERRIDE_SS:
+		inst.segOverride=SEG_OVERRIDE_SS;
+		inst.opCode=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,seg,offset++,mem);
+		++inst.numBytes;
+		goto REFETCH;
+	case I486_NEEDOPERAND_SEG_OVERRIDE_DS:
+		inst.segOverride=SEG_OVERRIDE_DS;
+		inst.opCode=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,seg,offset++,mem);
+		++inst.numBytes;
+		goto REFETCH;
+	case I486_NEEDOPERAND_SEG_OVERRIDE_ES:
+		inst.segOverride=SEG_OVERRIDE_ES;
+		inst.opCode=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,seg,offset++,mem);
+		++inst.numBytes;
+		goto REFETCH;
+	case I486_NEEDOPERAND_SEG_OVERRIDE_FS:
+		inst.segOverride=SEG_OVERRIDE_FS;
+		inst.opCode=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,seg,offset++,mem);
+		++inst.numBytes;
+		goto REFETCH;
+	case I486_NEEDOPERAND_SEG_OVERRIDE_GS:
+		inst.segOverride=SEG_OVERRIDE_GS;
+		inst.opCode=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,seg,offset++,mem);
+		++inst.numBytes;
+		goto REFETCH;
+	case I486_NEEDOPERAND_OPERSIZE_OVERRIDE:
+		inst.operandSize=defOperSize^48;
+		inst.opCode=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,seg,offset++,mem);
+		++inst.numBytes;
+		goto REFETCH;
+	case I486_NEEDOPERAND_ADDRSIZE_OVERRIDE:
+		inst.addressSize=defAddrSize^48;
+		inst.opCode=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,seg,offset++,mem);
+		++inst.numBytes;
+		goto REFETCH;
+	case I486_NEEDOPERAND_FPU_FWAIT:
+		inst.fwait=FPU_FWAIT;
+		inst.opCode=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,seg,offset++,mem);
+		++inst.numBytes;
+		goto REFETCH;
+	// Handling multi-byte instruction and pre-fixes <<
 
 
 
