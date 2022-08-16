@@ -1461,7 +1461,7 @@ std::vector <std::string> DiskDrive::GetStatusText(void) const
 	// Version 2
 	PushUint32(data,state.dataReadPointer);
 	PushUint32(data,state.expectedWriteLength);
-	PushUcharArray(data,data);
+	PushUcharArray(data,state.data);
 	PushBool(data,state.DRQ);
 	PushBool(data,state.IRQ);
 	// Version 3

@@ -558,6 +558,10 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Save/Load machine state to/from the pre-specified file name." << std::endl;
 	std::cout << "  File name needs to be specified by -QUICKSAVESTATE option." << std::endl;
 
+	std::cout << "SAVESTATE fileName" << std::endl;
+	std::cout << "  Save machine state (experimental)" << std::endl;
+	std::cout << "LOADSTATE fileName" << std::endl;
+	std::cout << "  Load machine state (experimental)" << std::endl;
 
 	std::cout << "DOSSEG 01234" << std::endl;
 	std::cout << "  Set Real-Mode MSDOS segment in hexa-decimal." << std::endl;
@@ -586,6 +590,25 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  File will be transferred when FTCLIENT.EXP is executed." << std::endl;
 	std::cout << "" << std::endl;
 
+	std::cout << "FMVOL volume" << std::endl;
+	std::cout << "  Set FM (YM2612) volume.  0 to 8192.  Default value is 4096." << std::endl;
+	std::cout << "FMCH 0/1 0/1 0/1 0/1 0/1 0/1" << std::endl;
+	std::cout << "  Enable/Disable YM2612 channels." << std::endl;
+	std::cout << "PCMVOL volume" << std::endl;
+	std::cout << "  Set PCM (RF5C68) volume.  0 to 8192.  Default value is 4096." << std::endl;
+	std::cout << "PCMCH 0/1 0/1 0/1 0/1 0/1 0/1 0/1 0/1" << std::endl;
+	std::cout << "  Enable/Disable PCM channels." << std::endl;
+
+	std::cout << "SAVEWAVRAM filename" << std::endl;
+	std::cout << "  Save binary dump of the wave RAM." << std::endl;
+
+	std::cout << "AUTOSHOT port button interval" << std::endl;
+	std::cout << "  Configure auto shot.  Interval=0 disables the auto shot." << std::endl;
+	std::cout << "  Interval is in milliseconds." << std::endl;
+	std::cout << "  Specify button=0 for A button." << std::endl;
+	std::cout << "" << std::endl;
+
+
 	std::cout << "CD/CHDIR directory" << std::endl;
 	std::cout << "LS/DIR" << std::endl;
 	std::cout << "PWD" << std::endl;
@@ -613,28 +636,7 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "YM2612LOG" << std::endl;
 	std::cout << "  YM2612 register-write log. (Previous log is cleared)" << std::endl;
 
-	std::cout << "FMVOL volume" << std::endl;
-	std::cout << "  Set FM (YM2612) volume.  0 to 8192.  Default value is 4096." << std::endl;
-	std::cout << "FMCH 0/1 0/1 0/1 0/1 0/1 0/1" << std::endl;
-	std::cout << "  Enable/Disable YM2612 channels." << std::endl;
-	std::cout << "PCMVOL volume" << std::endl;
-	std::cout << "  Set PCM (RF5C68) volume.  0 to 8192.  Default value is 4096." << std::endl;
-	std::cout << "PCMCH 0/1 0/1 0/1 0/1 0/1 0/1 0/1 0/1" << std::endl;
-	std::cout << "  Enable/Disable PCM channels." << std::endl;
 
-	std::cout << "SAVEWAVRAM filename" << std::endl;
-	std::cout << "  Save binary dump of the wave RAM." << std::endl;
-
-	std::cout << "SAVESTATE fileName" << std::endl;
-	std::cout << "  Save machine state (experimental)" << std::endl;
-	std::cout << "LOADSTATE fileName" << std::endl;
-	std::cout << "  Load machine state (experimental)" << std::endl;
-
-	std::cout << "AUTOSHOT port button interval" << std::endl;
-	std::cout << "  Configure auto shot.  Interval=0 disables the auto shot." << std::endl;
-	std::cout << "  Interval is in milliseconds." << std::endl;
-	std::cout << "  Specify button=0 for A button." << std::endl;
-	std::cout << "" << std::endl;
 
 	std::cout << "<< Information that can be printed >>" << std::endl;
 	std::cout << "CALLSTACK|CST" << std::endl;
