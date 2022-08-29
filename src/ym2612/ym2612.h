@@ -216,6 +216,8 @@ public:
 		mutable int lastSlot0Out[2];
 		// Cache for wave-generation <<
 
+		mutable int lastAmplitudeMax=0; // Maximum absolute amplitude during the last wave generation.
+
 		void Clear();
 		unsigned int Note(void) const;
 		unsigned int KC(void) const;

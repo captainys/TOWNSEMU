@@ -15,6 +15,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <algorithm>
 #include <iostream>
 #include <cstring>
+#include <cstdlib> // for std::abs
 
 #include "ym2612.h"
 
@@ -914,6 +915,7 @@ long long int YM2612::MakeWaveForNSamplesTemplate(unsigned char wave[],unsigned 
 		auto &ch=state.channels[chNum];
 		LeftANDPtn[chNum]=(0!=ch.L ? ~0 : 0);
 		RightANDPtn[chNum]=(0!=ch.R ? ~0 : 0);
+		ch.lastAmplitudeMax=0;
 	}
 
 	unsigned int i;
@@ -1024,6 +1026,8 @@ long long int YM2612::MakeWaveForNSamplesTemplate(unsigned char wave[],unsigned 
 			auto ampl=CalculateAmplitude<LFOClass>(chNum,microsecS12,phaseS12,AMSAdjustment,s0Out);
 			ch.lastSlot0Out[1]=ch.lastSlot0Out[0];
 			ch.lastSlot0Out[0]=s0Out;
+
+			ch.lastAmplitudeMax=std::max(ch.lastAmplitudeMax,std::abs(ampl));
 
 			leftOut=Gain(leftOut,(LeftANDPtn[chNum]&ampl));
 			rightOut=Gain(rightOut,(RightANDPtn[chNum]&ampl));
