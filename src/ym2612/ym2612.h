@@ -35,7 +35,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 // YM_CLOCK_RATIO intentionally not having parenthesis.  Don't add.
 #define YM_CLOCK_RATIO YM_CLOCK_RATIO_NUMER/YM_CLOCK_RATIO_DENOM
 #define YM_CLOCK_RATIO_INV YM_CLOCK_RATIO_DENOM/YM_CLOCK_RATIO_NUMER
-
+#define YM_TIME_RATIO YM_CLOCK_RATIO_DENOM/YM_CLOCK_RATIO_NUMER
 
 
 /*******************************************************************************
@@ -408,7 +408,7 @@ public:
 	       env[5]  Zero
 	*/
 	bool CalculateEnvelope(unsigned int env[12],unsigned int BLOCK_NOTE,const Slot &slot) const;
-	bool CalculateEnvelopeSSG_EG(unsigned int env[12],const Slot &slot) const;
+	bool CalculateEnvelopeSSG_EG(unsigned int env[12],unsigned int KC,const Slot &slot) const;
 private:
 	inline bool NoTone(unsigned int env[6]) const
 	{

@@ -1277,7 +1277,7 @@ bool YM2612::CalculateEnvelope(unsigned int env[12],unsigned int KC,const Slot &
 
 	if(0!=(slot.SSG_EG&8))
 	{
-		return CalculateEnvelopeSSG_EG(env,slot);
+		return CalculateEnvelopeSSG_EG(env,KC,slot);
 	}
 
 	auto TLdB100=TLtoDB100[slot.TL];
@@ -1360,7 +1360,7 @@ bool YM2612::CalculateEnvelope(unsigned int env[12],unsigned int KC,const Slot &
 	return true;
 }
 
-bool YM2612::CalculateEnvelopeSSG_EG(unsigned int env[6],const Slot &slot) const
+bool YM2612::CalculateEnvelopeSSG_EG(unsigned int env[6],unsigned int KC,const Slot &slot) const
 {
 	auto TLdB100=TLtoDB100[slot.TL];
 	auto SLdB100=SLtoDB100[slot.SL];
@@ -1372,32 +1372,33 @@ bool YM2612::CalculateEnvelopeSSG_EG(unsigned int env[6],const Slot &slot) const
 
 	const unsigned int TLinv=9600-TLdB100;
 
-	unsigned int DR=slot.DR*2;
-	unsigned int SR=slot.SR*2;
+	unsigned int DR=slot.DR*2+(KC>>(3-slot.KS));
+	unsigned int SR=slot.SR*2+(KC>>(3-slot.KS));
 	DR=std::min(DR,63U);
 	SR=std::min(SR,63U);
-
 
 	unsigned int TLinvMinusSL=(SLdB100<TLinv ? TLinv-SLdB100 : 0);
 	unsigned int attackTime;
 	unsigned int TLtoSLTime;
 	unsigned int SLtoZeroTime;
 
-	uint64_t mul=SLdB100;
-	mul*=SSG_EG_DecayTime0dBTo95dB[DR];
-	mul/=(9500*1024/10); // Millisec overall
-	TLtoSLTime=(unsigned int)mul;
-
-	mul=TLinvMinusSL;
-	mul*=SSG_EG_DecayTime0dBTo95dB[SR];
-	mul/=(9500*1024/10);
-	SLtoZeroTime=(unsigned int)mul;
+	uint64_t mul;
 
 	for(int i=0; i<2; ++i)
 	{
 		switch(SSG_EG_PTN[slot.SSG_EG&7][i])
 		{
 		case SSGEG_UP:
+			mul=TLinvMinusSL;
+			mul*=SSG_EG_DecayTime0dBTo95dB[DR];
+			mul/=(9500*1024/10); // Millisec overall
+			TLtoSLTime=(unsigned int)mul;
+
+			mul=SLdB100;
+			mul*=SSG_EG_DecayTime0dBTo95dB[SR];
+			mul/=(9500*1024/10);
+			SLtoZeroTime=(unsigned int)mul;
+
 			env[6*i+0]=0;
 			env[6*i+1]=0;
 			env[6*i+2]=SLtoZeroTime;
@@ -1406,6 +1407,16 @@ bool YM2612::CalculateEnvelopeSSG_EG(unsigned int env[6],const Slot &slot) const
 			env[6*i+5]=TLinv;
 			break;
 		case SSGEG_DOWN:
+			mul=SLdB100;
+			mul*=SSG_EG_DecayTime0dBTo95dB[DR];
+			mul/=(9500*1024/10); // Millisec overall
+			TLtoSLTime=(unsigned int)mul;
+
+			mul=TLinvMinusSL;
+			mul*=SSG_EG_DecayTime0dBTo95dB[SR];
+			mul/=(9500*1024/10);
+			SLtoZeroTime=(unsigned int)mul;
+
 			env[6*i+0]=0;
 			env[6*i+1]=TLinv;
 			env[6*i+2]=TLtoSLTime;
