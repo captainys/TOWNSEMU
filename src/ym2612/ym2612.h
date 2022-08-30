@@ -75,7 +75,7 @@ public:
 		DIV_CONNECT3=1024,
 		DIV_CONNECT4=1024, // 2048,  Replacing values will take average output from output slots.
 		DIV_CONNECT5=1024, // 3072,  But, Super Daisenryaku sounds very wrong.
-		DIV_CONNECT6=1024, // 3072,
+		DIV_CONNECT6=1024, // 3072,  I have a feeling that Emerald Dragon sounds correct without averaging.
 		DIV_CONNECT7=1024, // 4096,
 
 		SLOTFLAGS_ALL=0x0F,
@@ -89,6 +89,9 @@ public:
 		// volume>6000 will clip Super Daisenryaku tones.
 
 		TL_MAX=127,
+
+		ENVELOPE_PRECISION_SHIFT=5,  // 2^ENVELOPE_PRECISION_SHIFT=ENVELOPE_PRECISION
+		ENVELOPE_PRECISION=32,       // 1/32 milliseconds
 	};
 
 	enum
@@ -206,10 +209,10 @@ public:
 
 		// Interpolate Envelope as Db.  Output is amplitude 4096 scale.
 		// Time input is close to ms, but it is actually (microsec>>10).
-		inline int EnvelopedOutputDbToAmpl(int phase,int phaseShift,unsigned int timeInMS,unsigned int FB,int lastSlot0Out) const;
-		inline int EnvelopedOutputDbToAmpl(int phase,int phaseShift,unsigned int timeInMS) const;
+		inline int EnvelopedOutputDbToAmpl(int phase,int phaseShift,unsigned int envTime,unsigned int FB,int lastSlot0Out) const;
+		inline int EnvelopedOutputDbToAmpl(int phase,int phaseShift,unsigned int envTime) const;
 		// DB scale: 0 to 9600
-		inline int InterpolateEnvelope(unsigned int timeInMS) const;
+		inline int InterpolateEnvelope(unsigned int envTime) const;
 
 		int DetuneContributionToPhaseStepS12(unsigned int BLOCK,unsigned int NOTE) const;
 	};

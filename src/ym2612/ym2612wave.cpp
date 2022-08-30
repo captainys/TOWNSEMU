@@ -649,23 +649,23 @@ inline int YM2612::Slot::UnscaledOutput(int phase,int phaseShift,unsigned int FB
 	const int outputScale=SLOTOUT_TO_NPI*(PHASE_STEPS/2)/UNSCALED_MAX;
 	return sineTable[(phase+(phaseShift*outputScale))&PHASE_MASK];
 }
-inline int YM2612::Slot::EnvelopedOutputDbToAmpl(int phase,int phaseShift,unsigned int timeInMS,unsigned int FB,int lastSlot0Out) const
+inline int YM2612::Slot::EnvelopedOutputDbToAmpl(int phase,int phaseShift,unsigned int envTime,unsigned int FB,int lastSlot0Out) const
 {
-	int dB=InterpolateEnvelope(timeInMS);
+	int dB=InterpolateEnvelope(envTime);
 	lastDbX100Cache=dB;
 	int ampl=DB100to4095Scale[dB];
 	int unscaledOut=UnscaledOutput(phase,phaseShift,FB,lastSlot0Out);
 	return (unscaledOut*ampl)/4096;
 }
-inline int YM2612::Slot::EnvelopedOutputDbToAmpl(int phase,int phaseShift,unsigned int timeInMS) const
+inline int YM2612::Slot::EnvelopedOutputDbToAmpl(int phase,int phaseShift,unsigned int envTime) const
 {
-	int dB=InterpolateEnvelope(timeInMS);
+	int dB=InterpolateEnvelope(envTime);
 	lastDbX100Cache=dB;
 	int ampl=DB100to4095Scale[dB];
 	int unscaledOut=UnscaledOutput(phase,phaseShift);
 	return (unscaledOut*ampl)/4096;
 }
-inline int YM2612::Slot::InterpolateEnvelope(unsigned int timeInMS) const
+inline int YM2612::Slot::InterpolateEnvelope(unsigned int envTime) const
 {
 	if(true!=InReleasePhase)
 	{
@@ -676,48 +676,48 @@ inline int YM2612::Slot::InterpolateEnvelope(unsigned int timeInMS) const
 			{
 				return 0;
 			}
-			if(timeTotal<=timeInMS && 0!=(SSG_EG&1)) // 9,11,13,14 keep the last output.  No repeat.
+			if(timeTotal<=envTime && 0!=(SSG_EG&1)) // 9,11,13,14 keep the last output.  No repeat.
 			{
 				return env[11];
 			}
-			timeInMS=timeInMS%timeTotal;
+			envTime=envTime%timeTotal;
 			unsigned int prev=0;
 			for(int i=0; i<12; i+=2)
 			{
-				if(timeInMS<env[i])
+				if(envTime<env[i])
 				{
 					int y0=prev;
 					int dY=env[i+1];
 					dY-=prev;
 					int W=env[i];
-					int w=timeInMS;
+					int w=envTime;
 					unsigned int o=y0+dY*w/W;
 					return o;
 				}
-				timeInMS-=env[i];
+				envTime-=env[i];
 				prev=env[i+1];
 			}
 			return env[11];
 		}
 
-		if(timeInMS<env[0]) // Attack
+		if(envTime<env[0]) // Attack
 		{
-			unsigned int x=4096*timeInMS/env[0];
+			unsigned int x=4096*envTime/env[0];
 			return (env[1]*attackExp[x])>>12;
 		}
 		else
 		{
-			timeInMS-=env[0];
-			if(timeInMS<env[2])
+			envTime-=env[0];
+			if(envTime<env[2])
 			{
-				return env[1]-(env[1]-env[3])*timeInMS/env[2];
+				return env[1]-(env[1]-env[3])*envTime/env[2];
 			}
 			else
 			{
-				timeInMS-=env[2];
-				if(timeInMS<env[4])
+				envTime-=env[2];
+				if(envTime<env[4])
 				{
-					return env[3]-env[3]*timeInMS/env[4];
+					return env[3]-env[3]*envTime/env[4];
 				}
 			}
 		}
@@ -725,9 +725,9 @@ inline int YM2612::Slot::InterpolateEnvelope(unsigned int timeInMS) const
 	}
 	else
 	{
-		if(timeInMS<ReleaseEndTime && ReleaseStartTime<ReleaseEndTime)
+		if(envTime<ReleaseEndTime && ReleaseStartTime<ReleaseEndTime)
 		{
-			auto diff=ReleaseEndTime-timeInMS;
+			auto diff=ReleaseEndTime-envTime;
 			auto DbX100=ReleaseStartDbX100;
 			DbX100*=diff;
 			DbX100/=(ReleaseEndTime-ReleaseStartTime);
@@ -896,13 +896,13 @@ void YM2612::CheckToneDone(unsigned int chNum)
 		for(int i=0; i<connectionToOutputSlots[ch.CONNECT].nOutputSlots; ++i)
 		{
 			auto &slot=ch.slots[connectionToOutputSlots[ch.CONNECT].slots[i]];
-			auto millisec=(slot.microsecS12>>(10+12));
-			if(true==slot.InReleasePhase && millisec<slot.ReleaseEndTime)
+			auto envTime=(slot.microsecS12>>(10+12-ENVELOPE_PRECISION_SHIFT));
+			if(true==slot.InReleasePhase && envTime<slot.ReleaseEndTime)
 			{
 				slotStillPlaying=true;
 				break;;
 			}
-			else if(true!=slot.InReleasePhase && millisec<slot.envDurationCache)
+			else if(true!=slot.InReleasePhase && envTime<slot.envDurationCache)
 			{
 				slotStillPlaying=true;
 				break;;
@@ -1219,7 +1219,7 @@ void YM2612::UpdateSlotEnvelope(const Channel &ch,Slot &slot)
 	CalculateEnvelope(slot.env,ch.KC(),slot);
 	slot.envDurationCache=slot.env[0]+slot.env[2]+slot.env[4];
 	slot.toneDurationMicrosecS12=slot.envDurationCache;  // In Microsec/1024
-	slot.toneDurationMicrosecS12<<=(12+10);
+	slot.toneDurationMicrosecS12<<=(12+10-ENVELOPE_PRECISION_SHIFT);
 }
 
 void YM2612::UpdateRelease(const Channel &ch,Slot &slot)
@@ -1233,7 +1233,7 @@ void YM2612::UpdateRelease(const Channel &ch,Slot &slot)
 	//            and the amplitude drops like a stairstep.
 	//            It is inaudible in many situations, but clearly audible in Super Daisenryaku opening.
 	// 2020/12/23 Got rid of nextMicrosecS12.
-	slot.ReleaseStartTime=(slot.microsecS12>>(12+10));
+	slot.ReleaseStartTime=(slot.microsecS12>>(12+10-ENVELOPE_PRECISION_SHIFT));
 	slot.ReleaseStartDbX100=slot.lastDbX100Cache;
 
 	// Strike Commander set TL to 126, and then key off after landing and full stop.
@@ -1248,7 +1248,7 @@ void YM2612::UpdateRelease(const Channel &ch,Slot &slot)
 
 	uint64_t releaseTime=sustainDecayReleaseTime0to96dB[std::min<unsigned int>(RR,63)];
 	releaseTime*=slot.lastDbX100Cache;
-	releaseTime/=(9600*1024/10);
+	releaseTime/=((9600*1024/10)/ENVELOPE_PRECISION);
 	slot.ReleaseEndTime=slot.ReleaseStartTime+releaseTime;
 #ifdef YM2612_DEBUGOUTPUT
 	std::cout << "Release Time " << releaseTime << "ms  " << 
@@ -1308,14 +1308,14 @@ bool YM2612::CalculateEnvelope(unsigned int env[12],unsigned int KC,const Slot &
 	// The amplitude change is not linear, but I approximate by a linear function.  I may come back to the envelope
 	// generation once I get a good enough approximation.
 	unsigned long long int mul;
-	env[0]=(attackTime0to96dB[AR]*10)>>10;  // *10 to make it microsec, and then divide by 1024.
+	env[0]=(attackTime0to96dB[AR]*10)>>(10-ENVELOPE_PRECISION_SHIFT);  // *10 to make it microsec, and then divide by 1024.
 	mul=SLdB100;
 	mul*=sustainDecayReleaseTime0to96dB[DR];
-	mul/=(9600*1024/10);
+	mul/=((9600*1024/10)/ENVELOPE_PRECISION);
 	env[2]=(unsigned int)mul;
 	mul=9600-SLdB100;
 	mul*=sustainDecayReleaseTime0to96dB[SR];
-	mul/=(9600*1024/10);
+	mul/=((9600*1024/10)/ENVELOPE_PRECISION);
 	env[4]=(unsigned int)mul;
 
 	// ?
@@ -1382,7 +1382,7 @@ bool YM2612::CalculateEnvelopeSSG_EG(unsigned int env[6],unsigned int KC,const S
 	unsigned int TLtoSLTime;
 	unsigned int SLtoZeroTime;
 
-	uint64_t mul,rem;
+	uint64_t mul;
 
 	for(int i=0; i<2; ++i)
 	{
@@ -1391,14 +1391,12 @@ bool YM2612::CalculateEnvelopeSSG_EG(unsigned int env[6],unsigned int KC,const S
 		case SSGEG_UP:
 			mul=TLinvMinusSL;
 			mul*=SSG_EG_DecayTime0dBTo95dB[DR];
-			rem=mul%(9500*1024/10);
-			mul/=(9500*1024/10); // Millisec overall
+			mul/=((9500*1024/10)/ENVELOPE_PRECISION);
 			TLtoSLTime=(unsigned int)mul;
 
 			mul=SLdB100;
 			mul*=SSG_EG_DecayTime0dBTo95dB[SR];
-			mul+=rem;
-			mul/=(9500*1024/10);
+			mul/=((9500*1024/10)/ENVELOPE_PRECISION);
 			SLtoZeroTime=(unsigned int)mul;
 
 			env[6*i+0]=0;
@@ -1411,14 +1409,12 @@ bool YM2612::CalculateEnvelopeSSG_EG(unsigned int env[6],unsigned int KC,const S
 		case SSGEG_DOWN:
 			mul=SLdB100;
 			mul*=SSG_EG_DecayTime0dBTo95dB[DR];
-			rem=mul%(9500*1024/10);;
-			mul/=(9500*1024/10); // Millisec overall
+			mul/=((9500*1024/10)/ENVELOPE_PRECISION);
 			TLtoSLTime=(unsigned int)mul;
 
 			mul=TLinvMinusSL;
 			mul*=SSG_EG_DecayTime0dBTo95dB[SR];
-			mul+=rem;
-			mul/=(9500*1024/10);
+			mul/=((9500*1024/10)/ENVELOPE_PRECISION);
 			SLtoZeroTime=(unsigned int)mul;
 
 			env[6*i+0]=0;
@@ -1431,17 +1427,17 @@ bool YM2612::CalculateEnvelopeSSG_EG(unsigned int env[6],unsigned int KC,const S
 		case SSGEG_ONE:
 			env[6*i+0]=0; // Jump up right away
 			env[6*i+1]=TLinv;
-			env[6*i+2]=10000; // 10ms.  Indefinite actually
+			env[6*i+2]=100000; // Indefinite actually
 			env[6*i+3]=TLinv;
-			env[6*i+4]=10000;
+			env[6*i+4]=100000;
 			env[6*i+5]=TLinv;
 			break;
 		case SSGEG_ZERO:
-			env[6*i+0]=10000; // Jump up right away
+			env[6*i+0]=100000; // Jump up right away
 			env[6*i+1]=0;
-			env[6*i+2]=10000; // 10ms.  Indefinite actually
+			env[6*i+2]=100000; // Indefinite actually
 			env[6*i+3]=0;
-			env[6*i+4]=10000;
+			env[6*i+4]=100000;
 			env[6*i+5]=0;
 			break;
 		}
@@ -1466,18 +1462,18 @@ int YM2612::CalculateAmplitude(int chNum,const uint64_t timeInMicrosecS12[NUM_SL
 		0!=(ch.usingSlot&8) || ch.slots[3].InReleasePhase,
 	};
 
-	unsigned int timeInMS[NUM_SLOTS]=
+	unsigned int envTime[NUM_SLOTS]=
 	{
-		(unsigned int)(timeInMicrosecS12[0]>>(12+10)),
-		(unsigned int)(timeInMicrosecS12[1]>>(12+10)),
-		(unsigned int)(timeInMicrosecS12[2]>>(12+10)),
-		(unsigned int)(timeInMicrosecS12[3]>>(12+10)),
+		(unsigned int)(timeInMicrosecS12[0]>>(12+10-ENVELOPE_PRECISION_SHIFT)),
+		(unsigned int)(timeInMicrosecS12[1]>>(12+10-ENVELOPE_PRECISION_SHIFT)),
+		(unsigned int)(timeInMicrosecS12[2]>>(12+10-ENVELOPE_PRECISION_SHIFT)),
+		(unsigned int)(timeInMicrosecS12[3]>>(12+10-ENVELOPE_PRECISION_SHIFT)),
 	};
 
-	#define SLOTOUTEV_Db_0(phaseShift) ((true!=slotActive[0] ? 0 : ch.slots[0].EnvelopedOutputDbToAmpl((slotPhaseS12[0]>>12),phaseShift,timeInMS[0],ch.FB,lastSlot0Out))*LFOClass::AMSMul(AMS4096[0])/LFOClass::AMSDiv())
-	#define SLOTOUTEV_Db_1(phaseShift) ((true!=slotActive[1] ? 0 : ch.slots[1].EnvelopedOutputDbToAmpl((slotPhaseS12[1]>>12),phaseShift,timeInMS[1]))*LFOClass::AMSMul(AMS4096[1])/LFOClass::AMSDiv())
-	#define SLOTOUTEV_Db_2(phaseShift) ((true!=slotActive[2] ? 0 : ch.slots[2].EnvelopedOutputDbToAmpl((slotPhaseS12[2]>>12),phaseShift,timeInMS[2]))*LFOClass::AMSMul(AMS4096[2])/LFOClass::AMSDiv())
-	#define SLOTOUTEV_Db_3(phaseShift) ((true!=slotActive[3] ? 0 : ch.slots[3].EnvelopedOutputDbToAmpl((slotPhaseS12[3]>>12),phaseShift,timeInMS[3]))*LFOClass::AMSMul(AMS4096[3])/LFOClass::AMSDiv())
+	#define SLOTOUTEV_Db_0(phaseShift) ((true!=slotActive[0] ? 0 : ch.slots[0].EnvelopedOutputDbToAmpl((slotPhaseS12[0]>>12),phaseShift,envTime[0],ch.FB,lastSlot0Out))*LFOClass::AMSMul(AMS4096[0])/LFOClass::AMSDiv())
+	#define SLOTOUTEV_Db_1(phaseShift) ((true!=slotActive[1] ? 0 : ch.slots[1].EnvelopedOutputDbToAmpl((slotPhaseS12[1]>>12),phaseShift,envTime[1]))*LFOClass::AMSMul(AMS4096[1])/LFOClass::AMSDiv())
+	#define SLOTOUTEV_Db_2(phaseShift) ((true!=slotActive[2] ? 0 : ch.slots[2].EnvelopedOutputDbToAmpl((slotPhaseS12[2]>>12),phaseShift,envTime[2]))*LFOClass::AMSMul(AMS4096[2])/LFOClass::AMSDiv())
+	#define SLOTOUTEV_Db_3(phaseShift) ((true!=slotActive[3] ? 0 : ch.slots[3].EnvelopedOutputDbToAmpl((slotPhaseS12[3]>>12),phaseShift,envTime[3]))*LFOClass::AMSMul(AMS4096[3])/LFOClass::AMSDiv())
 
 	int s0out,s1out,s2out,s3out;
 	switch(ch.CONNECT)
