@@ -160,6 +160,17 @@ public:
 		CH_RELEASE=2,
 	};
 
+	enum
+	{
+		SSGEG_UP,
+		SSGEG_DOWN,
+		SSGEG_ZERO,
+		SSGEG_ONE,
+		SSGEG_REPT,
+		SSGEG_KEEP
+	};
+	static const unsigned char SSG_EG_PTN[8][2];
+
 	class Slot
 	{
 	public:
@@ -177,7 +188,8 @@ public:
 		uint64_t toneDurationMicrosecS12;   // In (microsec<<12).
 		mutable unsigned int phaseS12;      // 5-bit phase=((phaseS12>>12)&0x1F)
 		unsigned int phaseS12Step;  // Increment of phase12 per time step.
-		unsigned int env[6];       // Envelope is in Db100 scale.  0 to 9600.  Time is (microsec>>10) (=microsecS12>>22)
+		unsigned int env[12];       // Envelope is in Db100 scale.  0 to 9600.  Time is (microsec>>10) (=microsecS12>>22)
+		                            // env[6] to env[11] only used for SSG_EG
 		unsigned int envDurationCache; // in (microsec>>10)
 		bool InReleasePhase;
 		unsigned int ReleaseStartTime,ReleaseEndTime;
@@ -395,7 +407,8 @@ public:
 	       env[4]  Duration after reaching SL.
 	       env[5]  Zero
 	*/
-	bool CalculateEnvelope(unsigned int env[6],unsigned int BLOCK_NOTE,const Slot &slot) const;
+	bool CalculateEnvelope(unsigned int env[12],unsigned int BLOCK_NOTE,const Slot &slot) const;
+	bool CalculateEnvelopeSSG_EG(unsigned int env[12],const Slot &slot) const;
 private:
 	inline bool NoTone(unsigned int env[6]) const
 	{

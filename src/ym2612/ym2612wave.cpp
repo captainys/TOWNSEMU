@@ -402,6 +402,90 @@ static unsigned int sustainDecayReleaseTime10to90Percent[64]=
 152,
 };
 
+// FM TOWNS Technical Data Book Table I-5-34 pp.210
+static const unsigned int SSG_EG_DecayTime0dBTo95dB[]= // 1/100ms
+{
+1572864, // 0
+1572864,
+1572864,
+1572864,
+
+1572864, // 4
+1572864,
+1048576,
+1048576,
+
+ 786432, // 8
+ 629146,
+ 524298,
+ 449390,
+
+ 393216, // 12
+ 314573,
+ 262144,
+ 224695,
+
+ 196608, // 16
+ 157286,
+ 131072,
+ 112347,
+
+  98304, // 20
+  78643,
+  65536,
+  56174,
+
+  49152, // 24
+  39322,
+  32768,
+  28097,
+
+  24576, // 28
+  19661,
+  16384,
+  14043,
+
+  12288, // 32
+   9830,
+   8192,
+   7022,
+
+   6144, // 36
+   4915,
+   4096,
+   3511,
+
+   3072, // 40
+   2458,
+   2048,
+   1755,
+
+   1536, // 44
+   1229,
+   1024,
+    878,
+
+    768, // 48
+    614,
+    512,
+    439,
+
+    384, // 52
+    307,
+    256,
+    219,
+
+    192, // 56
+    154,
+    128,
+    110,
+
+     96, // 60
+     96,
+     96,
+     96,
+};
+
 const struct YM2612::ConnectionToOutputSlot YM2612::connectionToOutputSlots[8]=
 {
 	{1,{3,-1,-1,-1}},
@@ -452,6 +536,19 @@ static unsigned int detune1000Table[]=
 	   0, 391, 763,1049,
 	   0, 391, 763,1049,
 };
+
+const unsigned char YM2612::SSG_EG_PTN[8][2]=
+{
+	{SSGEG_DOWN,SSGEG_DOWN}, // 8
+	{SSGEG_DOWN,SSGEG_ZERO}, // 9
+	{SSGEG_DOWN,SSGEG_UP, }, // 10
+	{SSGEG_DOWN,SSGEG_ONE,}, // 11
+	{SSGEG_UP,  SSGEG_UP, }, // 12
+	{SSGEG_UP,  SSGEG_ONE,}, // 13
+	{SSGEG_UP  ,SSGEG_DOWN}, // 14
+	{SSGEG_UP,  SSGEG_ZERO}, // 15
+};
+
 
 ////////////////////////////////////////////////////////////
 
@@ -572,6 +669,37 @@ inline int YM2612::Slot::InterpolateEnvelope(unsigned int timeInMS) const
 {
 	if(true!=InReleasePhase)
 	{
+		if(0!=(SSG_EG&8))
+		{
+			unsigned int timeTotal=env[0]+env[2]+env[4]+env[6]+env[8]+env[10];
+			if(0==timeTotal)
+			{
+				return 0;
+			}
+			if(timeTotal<=timeInMS && 0!=(SSG_EG&1)) // 9,11,13,14 keep the last output.  No repeat.
+			{
+				return env[11];
+			}
+			timeInMS=timeInMS%timeTotal;
+			unsigned int prev=0;
+			for(int i=0; i<12; i+=2)
+			{
+				if(timeInMS<env[i])
+				{
+					int y0=prev;
+					int dY=env[i+1];
+					dY-=prev;
+					int W=env[i];
+					int w=timeInMS;
+					unsigned int o=y0+dY*w/W;
+					return o;
+				}
+				timeInMS-=env[i];
+				prev=env[i+1];
+			}
+			return env[11];
+		}
+
 		if(timeInMS<env[0]) // Attack
 		{
 			unsigned int x=4096*timeInMS/env[0];
@@ -698,10 +826,14 @@ void YM2612::KeyOn(unsigned int chNum,unsigned int slotFlags)
 			{
 				slot.microsecS12=(slot.env[0]<<(12+10));
 			}
-			else
+			else if(0!=slot.env[1])
 			{
 				unsigned int scale=attackExpInverse[4096*slot.lastDbX100Cache/slot.env[1]];
 				slot.microsecS12=(slot.env[0]*scale/4096)<<(12+10);
+			}
+			else
+			{
+				slot.microsecS12=0;
 			}
 			slot.lastDbX100Cache=0;
 		}
@@ -1125,7 +1257,7 @@ void YM2612::UpdateRelease(const Channel &ch,Slot &slot)
 #endif
 }
 
-bool YM2612::CalculateEnvelope(unsigned int env[6],unsigned int KC,const Slot &slot) const
+bool YM2612::CalculateEnvelope(unsigned int env[12],unsigned int KC,const Slot &slot) const
 {
 #ifdef YM2612_DEBUGOUTPUT
 	std::cout << KC << "," << slot.KS << "," << (KC>>(3-slot.KS)) << ", ";
@@ -1141,6 +1273,11 @@ bool YM2612::CalculateEnvelope(unsigned int env[6],unsigned int KC,const Slot &s
 	if(AR<4)
 	{
 		return NoTone(env);
+	}
+
+	if(0!=(slot.SSG_EG&8))
+	{
+		return CalculateEnvelopeSSG_EG(env,slot);
 	}
 
 	auto TLdB100=TLtoDB100[slot.TL];
@@ -1171,7 +1308,7 @@ bool YM2612::CalculateEnvelope(unsigned int env[6],unsigned int KC,const Slot &s
 	// The amplitude change is not linear, but I approximate by a linear function.  I may come back to the envelope
 	// generation once I get a good enough approximation.
 	unsigned long long int mul;
-	env[0]=(attackTime0to96dB[AR]*10)>>10;  // *10 to make it microsed, and then divide by 1024.
+	env[0]=(attackTime0to96dB[AR]*10)>>10;  // *10 to make it microsec, and then divide by 1024.
 	mul=SLdB100;
 	mul*=sustainDecayReleaseTime0to96dB[DR];
 	mul/=(9600*1024/10);
@@ -1220,6 +1357,80 @@ bool YM2612::CalculateEnvelope(unsigned int env[6],unsigned int KC,const Slot &s
 	std::cout << std::endl;
 #endif
 
+	return true;
+}
+
+bool YM2612::CalculateEnvelopeSSG_EG(unsigned int env[6],const Slot &slot) const
+{
+	auto TLdB100=TLtoDB100[slot.TL];
+	auto SLdB100=SLtoDB100[slot.SL];
+
+	if(9600<=TLdB100)
+	{
+		return NoTone(env);
+	}
+
+	const unsigned int TLinv=9600-TLdB100;
+
+	unsigned int DR=slot.DR*2;
+	unsigned int SR=slot.SR*2;
+	DR=std::min(DR,63U);
+	SR=std::min(SR,63U);
+
+
+	unsigned int TLinvMinusSL=(SLdB100<TLinv ? TLinv-SLdB100 : 0);
+	unsigned int attackTime;
+	unsigned int TLtoSLTime;
+	unsigned int SLtoZeroTime;
+
+	uint64_t mul=SLdB100;
+	mul*=SSG_EG_DecayTime0dBTo95dB[DR];
+	mul/=(9500*1024/10); // Millisec overall
+	TLtoSLTime=(unsigned int)mul;
+
+	mul=TLinvMinusSL;
+	mul*=SSG_EG_DecayTime0dBTo95dB[SR];
+	mul/=(9500*1024/10);
+	SLtoZeroTime=(unsigned int)mul;
+
+	for(int i=0; i<2; ++i)
+	{
+		switch(SSG_EG_PTN[slot.SSG_EG&7][i])
+		{
+		case SSGEG_UP:
+			env[6*i+0]=0;
+			env[6*i+1]=0;
+			env[6*i+2]=SLtoZeroTime;
+			env[6*i+3]=TLinvMinusSL;
+			env[6*i+4]=TLtoSLTime;
+			env[6*i+5]=TLinv;
+			break;
+		case SSGEG_DOWN:
+			env[6*i+0]=0;
+			env[6*i+1]=TLinv;
+			env[6*i+2]=TLtoSLTime;
+			env[6*i+3]=TLinvMinusSL;
+			env[6*i+4]=SLtoZeroTime;
+			env[6*i+5]=0;
+			break;
+		case SSGEG_ONE:
+			env[6*i+0]=0; // Jump up right away
+			env[6*i+1]=TLinv;
+			env[6*i+2]=10000; // 10ms.  Indefinite actually
+			env[6*i+3]=TLinv;
+			env[6*i+4]=10000;
+			env[6*i+5]=TLinv;
+			break;
+		case SSGEG_ZERO:
+			env[6*i+0]=10000; // Jump up right away
+			env[6*i+1]=0;
+			env[6*i+2]=10000; // 10ms.  Indefinite actually
+			env[6*i+3]=0;
+			env[6*i+4]=10000;
+			env[6*i+5]=0;
+			break;
+		}
+	}
 	return true;
 }
 

@@ -433,6 +433,17 @@ void TownsSound::DeserializeYM2612(const unsigned char *&data,unsigned int versi
 {
 	auto &ym2612=state.ym2612;
 
+	for(auto &ch : ym2612.state.channels)
+	{
+		for(auto &sl : ch.slots)
+		{
+			for(auto &e : sl.env)
+			{
+				e=0;
+			}
+		}
+	}
+
 	ym2612.state.LFO=ReadBool(data);
 	ym2612.state.FREQCTRL=ReadUint32(data);
 	ym2612.state.deviceTimeInNS=ReadUint64(data);

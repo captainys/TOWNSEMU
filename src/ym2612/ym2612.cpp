@@ -488,6 +488,10 @@ unsigned int YM2612::WriteRegister(unsigned int channelBase,unsigned int reg,uns
 				break;
 			case 0x90: // SSG-EG
 				state.channels[ch].slots[slot].SSG_EG=(value&0x0F);
+				if(0!=(value&8))
+				{
+					UpdateSlotEnvelope(state.channels[ch],state.channels[ch].slots[slot]);
+				}
 				break;
 			}
 		}
