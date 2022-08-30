@@ -73,10 +73,10 @@ public:
 		DIV_CONNECT1=1024,
 		DIV_CONNECT2=1024,
 		DIV_CONNECT3=1024,
-		DIV_CONNECT4=2048,
-		DIV_CONNECT5=3072,
-		DIV_CONNECT6=3072,
-		DIV_CONNECT7=4096,
+		DIV_CONNECT4=1024, // 2048,  Replacing values will take average output from output slots.
+		DIV_CONNECT5=1024, // 3072,  But, Super Daisenryaku sounds very wrong.
+		DIV_CONNECT6=1024, // 3072,
+		DIV_CONNECT7=1024, // 4096,
 
 		SLOTFLAGS_ALL=0x0F,
 
