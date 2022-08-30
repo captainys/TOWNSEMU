@@ -824,12 +824,12 @@ void YM2612::KeyOn(unsigned int chNum,unsigned int slotFlags)
 			}
 			else if(slot.env[1]<=slot.lastDbX100Cache)
 			{
-				slot.microsecS12=(slot.env[0]<<(12+10));
+				slot.microsecS12=(slot.env[0]<<(12+10-ENVELOPE_PRECISION_SHIFT));
 			}
 			else if(0!=slot.env[1])
 			{
 				unsigned int scale=attackExpInverse[4096*slot.lastDbX100Cache/slot.env[1]];
-				slot.microsecS12=(slot.env[0]*scale/4096)<<(12+10);
+				slot.microsecS12=(slot.env[0]*scale/4096)<<(12+10-ENVELOPE_PRECISION_SHIFT);
 			}
 			else
 			{
