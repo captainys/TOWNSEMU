@@ -1382,7 +1382,7 @@ bool YM2612::CalculateEnvelopeSSG_EG(unsigned int env[6],unsigned int KC,const S
 	unsigned int TLtoSLTime;
 	unsigned int SLtoZeroTime;
 
-	uint64_t mul;
+	uint64_t mul,rem;
 
 	for(int i=0; i<2; ++i)
 	{
@@ -1391,11 +1391,13 @@ bool YM2612::CalculateEnvelopeSSG_EG(unsigned int env[6],unsigned int KC,const S
 		case SSGEG_UP:
 			mul=TLinvMinusSL;
 			mul*=SSG_EG_DecayTime0dBTo95dB[DR];
+			rem=mul%(9500*1024/10);
 			mul/=(9500*1024/10); // Millisec overall
 			TLtoSLTime=(unsigned int)mul;
 
 			mul=SLdB100;
 			mul*=SSG_EG_DecayTime0dBTo95dB[SR];
+			mul+=rem;
 			mul/=(9500*1024/10);
 			SLtoZeroTime=(unsigned int)mul;
 
@@ -1409,11 +1411,13 @@ bool YM2612::CalculateEnvelopeSSG_EG(unsigned int env[6],unsigned int KC,const S
 		case SSGEG_DOWN:
 			mul=SLdB100;
 			mul*=SSG_EG_DecayTime0dBTo95dB[DR];
+			rem=mul%(9500*1024/10);;
 			mul/=(9500*1024/10); // Millisec overall
 			TLtoSLTime=(unsigned int)mul;
 
 			mul=TLinvMinusSL;
 			mul*=SSG_EG_DecayTime0dBTo95dB[SR];
+			mul+=rem;
 			mul/=(9500*1024/10);
 			SLtoZeroTime=(unsigned int)mul;
 
