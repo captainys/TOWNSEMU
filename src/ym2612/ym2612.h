@@ -214,6 +214,12 @@ public:
 		// DB scale: 0 to 9600
 		inline int InterpolateEnvelope(unsigned int envTime) const;
 
+		// After introducing ENVELOPE_PRECISION, envelope interpolation may overflow 32-bit integer.
+		// Care must be taken.
+		inline unsigned int MulDivU(unsigned int C,unsigned int numer,unsigned int denom) const;
+		inline int MulDiv(int C,int numer,int denom) const;
+
+
 		int DetuneContributionToPhaseStepS12(unsigned int BLOCK,unsigned int NOTE) const;
 	};
 

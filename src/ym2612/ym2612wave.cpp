@@ -686,13 +686,12 @@ inline int YM2612::Slot::InterpolateEnvelope(unsigned int envTime) const
 			{
 				if(envTime<env[i])
 				{
-					int y0=prev;
-					int dY=env[i+1];
+					int64_t y0=prev;
+					int64_t dY=env[i+1];
 					dY-=prev;
-					int W=env[i];
-					int w=envTime;
-					unsigned int o=y0+dY*w/W;
-					return o;
+					int64_t W=env[i];
+					int64_t w=envTime;
+					return (int)y0+MulDiv(dY,w,W);
 				}
 				envTime-=env[i];
 				prev=env[i+1];
@@ -727,14 +726,24 @@ inline int YM2612::Slot::InterpolateEnvelope(unsigned int envTime) const
 	{
 		if(envTime<ReleaseEndTime && ReleaseStartTime<ReleaseEndTime)
 		{
-			auto diff=ReleaseEndTime-envTime;
-			auto DbX100=ReleaseStartDbX100;
-			DbX100*=diff;
-			DbX100/=(ReleaseEndTime-ReleaseStartTime);
-			return DbX100;
+			return MulDivU(ReleaseStartDbX100,ReleaseEndTime-envTime,ReleaseEndTime-ReleaseStartTime);
 		}
 		return 0; // Not supported yet.
 	}
+}
+inline unsigned int YM2612::Slot::MulDivU(unsigned int c,unsigned int numer,unsigned int denom) const
+{
+	uint64_t C=c;
+	uint64_t N=numer;
+	uint64_t D=denom;
+	return (unsigned int)(C*N/D);
+}
+inline int YM2612::Slot::MulDiv(int c,int numer,int denom) const
+{
+	int64_t C=c;
+	int64_t N=numer;
+	int64_t D=denom;
+	return (int)(C*N/D);
 }
 
 unsigned int YM2612::Channel::Note(void) const
