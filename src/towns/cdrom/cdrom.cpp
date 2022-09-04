@@ -845,7 +845,8 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 				// Initial State.  CPU doesn't know data ready, therefore does not make DMAC available.
 				if(true!=DMAAvailable || true!=state.DMATransfer)
 				{
-					if(true==PICPtr->GetInterruptRequestBit(TOWNSIRQ_CDROM))
+					if(true==PICPtr->GetInterruptRequestBit(TOWNSIRQ_CDROM) &&
+					   true==state.DEI)
 					{
 						// If the previous IRR hasn't been consumed, check back again after STATUS_CHECKBACK_TIME.
 						// This interpretation is most likely wrong.  But, Shadow of the Beast 2's CD-ROM IRQ handler
@@ -857,6 +858,12 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 						// Actually IRR should be an output pin from CDC and input pin of PIC.
 						// Therefore, CDC owns IRR.  So, it is entirely possible that CDC waits next Data Ready
 						// until the previous IRR from DEI is consumed.
+
+						// To try this, press a gamepad button during the fat brick dragon in the game-start
+						// demo is visible.
+
+						// This check contradicted with Yumimi Mix.  Therefore, I made it so that it also checks
+						// true==state.DEI.  It clears Yumimi Mix.
 						townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+STATUS_CHECKBACK_TIME);
 						return;
 					}
