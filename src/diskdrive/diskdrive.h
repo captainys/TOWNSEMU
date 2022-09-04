@@ -116,6 +116,20 @@ public:
 		/*! Returns the new media type.
 		*/
 		unsigned int WriteTrack(int diskIdx,unsigned int C,unsigned int H,const std::vector <uint8_t> &data);
+
+		uint16_t CalcCRC(const std::vector<uint8_t> &data) const {
+			const uint32_t polynomial = 0b0001000100000010000100000000;   // 0001 0001 0000 0010 0001 [0000 0000]
+			uint32_t crc_val = 0xe59a00;
+			for(auto it=data.begin(); it!=data.end(); ++it)
+			{
+				crc_val |= (*it);
+				for (size_t i = 0; i < 8; i++) {
+					crc_val <<= 1;
+					if (crc_val & 0x1000000) crc_val ^= polynomial;
+				}
+			}
+			return crc_val >> 8;
+		}
 	};
 	class ImageFile
 	{
