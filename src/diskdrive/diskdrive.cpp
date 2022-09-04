@@ -317,14 +317,15 @@ std::vector <uint8_t> DiskDrive::DiskImage::ReadAddress(int diskIdx,unsigned int
 					auto &sector=trkPtr->sector[sectorPos];
 					++sectorPos;
 
+					uint16_t crc_val = CalcCRC(std::vector<uint8_t>{0xfe, sector.cylinder, sector.head, sector.sizeShift, 0x00, 0x00});
 					std::vector <unsigned char> CHRN_CRC=
 					{
 						sector.cylinder,
 						sector.head,
 						sector.sector,
 						sector.sizeShift,
-						0x7f, // How can I calculate CRC?
-						0x7f
+						static_cast<unsigned char>(crc_val >> 8),
+						static_cast<unsigned char>(crc_val)
 					};
 					return CHRN_CRC;
 				}
