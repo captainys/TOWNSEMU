@@ -1391,9 +1391,12 @@ std::vector <std::string> DiskDrive::GetStatusText(void) const
 	// Version 4 adds lastDRQTime.
 	// Version 5 Disk image was always stored as D77 format until version 4.  Version 5 and later stores as is.
 	// Version 6 adds sectorPositionInTrack,nanosecPerByte,nextIndexHoleTime,DDMErrorAfterRead;
+
+	// Use common serialize/deserialize for Tsugaru and Mutsu until Version 6.  Then diverge.
+
 	return 6;
 }
-/* virtual */ void DiskDrive::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
+void DiskDrive::SerializeVersion0to6(std::vector <unsigned char> &data,std::string stateFName) const
 {
 	std::string stateDir,stateName;
 	cpputil::SeparatePathFile(stateDir,stateName,stateFName);
@@ -1475,8 +1478,18 @@ std::vector <std::string> DiskDrive::GetStatusText(void) const
 	PushUint32(data,state.sectorPositionInTrack);
 	PushUint32(data,state.nanosecPerByte);
 	PushUint64(data,state.nextIndexHoleTime);
+
+	// Common code for Tsugaru and Mutsu until this line.
+	// Don't add any more in SerializeVersion0to6.
 }
-/* virtual */ bool DiskDrive::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
+/* virtual */ void DiskDrive::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
+{
+	SerializeVersion0to6(data,stateFName);
+	// If something needs to be added for Tsugaru, do it here.
+}
+
+
+bool DiskDrive::DeserializeVersion0to6(const unsigned char *&data,std::string stateFName,uint32_t version)
 {
 	std::string stateDir,stateName;
 	cpputil::SeparatePathFile(stateDir,stateName,stateFName);
@@ -1619,7 +1632,16 @@ std::vector <std::string> DiskDrive::GetStatusText(void) const
 		state.nanosecPerByte=ReadUint32(data);
 		state.nextIndexHoleTime=ReadUint64(data);
 	}
+
+	// Common code for Tsugaru and Mutsu until this line.
+	// Don't add any more in DeserializeVersion0to6.
 	return true;
+}
+/* virtual */ bool DiskDrive::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
+{
+	bool res=DeserializeVersion0to6(data,stateFName,version);
+	// If something Tsugaru-specific needed, add here.  Not in DeserializeVersion0to6.
+	return res;
 }
 
 int DiskDrive::GetSectorReg(void) const

@@ -322,7 +322,9 @@ public:
 
 
 	virtual uint32_t SerializeVersion(void) const;
+	void SerializeVersion0to6(std::vector <unsigned char> &data,std::string stateFName) const;
 	virtual void SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const;
+	bool DeserializeVersion0to6(const unsigned char *&data,std::string stateFName,uint32_t version);
 	virtual bool SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version);
 };
 
