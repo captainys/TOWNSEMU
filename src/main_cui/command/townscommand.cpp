@@ -129,6 +129,8 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["PCMVOL"]=CMD_PCMVOL;
 
 	primaryCmdMap["CALC"]=CMD_CALCULATE;
+	primaryCmdMap["ASC"]=CMD_STRING_TO_ASCII;
+	primaryCmdMap["CHR"]=CMD_ASCII_TO_STRING;
 
 	primaryCmdMap["TYPE"]=CMD_TYPE_KEYBOARD;
 	primaryCmdMap["TY"]=CMD_TYPE_KEYBOARD;
@@ -474,6 +476,10 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  If you enter 1/0, you can control to show or hide ASCII dump." << std::endl;
 	std::cout << "CALC formula" << std::endl;
 	std::cout << "  Caluclate a value." << std::endl;
+	std::cout << "ASC string" << std::endl;
+	std::cout << "  Show ASCII code of the characters in the string." << std::endl;
+	std::cout << "CHR ASCIICode ASCIICode ASCIICode ..." << std::endl;
+	std::cout << "  Show characters of ASCII code." << std::endl;
 	std::cout << "BP EIP|BRK EIP" << std::endl;
 	std::cout << "BP CS:EIP|BRK CS:EIP" << std::endl;
 	std::cout << "  Add a break point." << std::endl;
@@ -937,6 +943,31 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 
 	case CMD_CALCULATE:
 		Execute_Calculate(towns,cmd);
+		break;
+	case CMD_STRING_TO_ASCII:
+		for(int i=1; i<cmd.argv.size(); ++i)
+		{
+			for(auto c : cmd.argv[i])
+			{
+				std::cout << '$' << cpputil::Ubtox(c) << '(' << int(c) << ')' << ' ';
+			}
+			std::cout << std::endl;
+		}
+		break;
+	case CMD_ASCII_TO_STRING:
+		for(int i=1; i<cmd.argv.size(); ++i)
+		{
+			char c=cpputil::Xtoi(cmd.argv[i].c_str());
+			if(' '<=c && c<=0x7f)
+			{
+				std::cout << c;
+			}
+			else
+			{
+				std::cout << '?';
+			}
+		}
+		std::cout << std::endl;
 		break;
 
 	case CMD_RUN_ONE_INSTRUCTION:

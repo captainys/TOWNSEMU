@@ -8,6 +8,11 @@ TownsLineParser::TownsLineParser(const class i486DX *cpuPtr)
 }
 /* virtual */ long long int TownsLineParser::EvaluateRawNumber(const std::string &str) const
 {
+	if('\''==str[0] && 0!=str[1] && '\''==str[2])
+	{
+		return int(str[1]);
+	}
+
 	std::string cap=str;
 	cpputil::Capitalize(cap);
 	auto reg=cpuPtr->StrToReg(cap);
@@ -27,6 +32,11 @@ TownsLineParserHexadecimal::TownsLineParserHexadecimal(const class i486DX *cpuPt
 }
 /* virtual */ long long int TownsLineParserHexadecimal::EvaluateRawNumber(const std::string &str) const
 {
+	if('\''==str[0] && 0!=str[1] && '\''==str[2])
+	{
+		return int(str[1]);
+	}
+
 	std::string cap=str;
 	cpputil::Capitalize(cap);
 	auto reg=cpuPtr->StrToReg(cap);
