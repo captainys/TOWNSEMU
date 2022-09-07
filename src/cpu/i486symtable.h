@@ -44,6 +44,7 @@ public:
 	bool temporary=false;  // If true, it will not be saved to file.
 	bool immIsIOAddr=false; // If true, disassembler should take Imm operand as an IO-port address.
 	bool immIsSymbol=false; // Take imm as a symbol.
+	bool immIsASCII=false; // Take imm as ASCII code.
 	bool offsetIsSymbol=false; // Take offset as a symbol.
 	unsigned int symType;
 	std::string return_type;

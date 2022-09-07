@@ -29,6 +29,7 @@ void i486Symbol::CleanUp(void)
 	temporary=false;
 	immIsIOAddr=false;
 	immIsSymbol=false;
+	immIsASCII=false;
 	offsetIsSymbol=false;
 	symType=SYM_ANY;
 	return_type="";
@@ -183,6 +184,10 @@ bool i486SymbolTable::Load(std::istream &ifp)
 				case 'X':
 					curSymbol.imported=(str.c_str()+2);
 					break;
+				case 'a':
+				case 'A':
+					curSymbol.immIsASCII=(0!=cpputil::Atoi(str.c_str()+2));
+					break;
 				}
 			}
 		}
@@ -218,6 +223,7 @@ bool i486SymbolTable::Save(std::ostream &ofp) const
 			ofp << "% " << sym.rawDataBytes <<  std::endl;
 			ofp << "M " << (sym.immIsIOAddr ? "1" : "0") << std::endl;
 			ofp << "B " << (sym.immIsSymbol ? "1" : "0") << std::endl;
+			ofp << "A " << (sym.immIsASCII ? "1" : "0") << std::endl;
 			ofp << "O " << (sym.offsetIsSymbol ? "1" : "0") << std::endl;
 			ofp << "X " << sym.imported  << std::endl;
 			for(auto &i : sym.info)
