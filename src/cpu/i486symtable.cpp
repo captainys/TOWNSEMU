@@ -298,6 +298,12 @@ i486Symbol *i486SymbolTable::SetImmIsIOPort(i486DX::FarPointer ptr)
 	symbol.immIsIOAddr=true;
 	return &symbol;
 }
+i486Symbol *i486SymbolTable::SetImmIsASCII(i486DX::FarPointer ptr)
+{
+	auto &symbol=symTable[ptr];
+	symbol.immIsASCII=true;
+	return &symbol;
+}
 i486Symbol *i486SymbolTable::SetImportedLabel(i486DX::FarPointer ptr,const std::string &label)
 {
 	bool makeItProcedure=false; // It can be a data, it can be a procedure, but temporarily make it a procedure, if not in the database yet.

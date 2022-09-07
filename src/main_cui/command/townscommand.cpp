@@ -101,6 +101,10 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["IMMISIO"]=CMD_IMM_IS_IOPORT;
 	primaryCmdMap["IMMISSYM"]=CMD_IMM_IS_LABEL;
 	primaryCmdMap["IMMISLAB"]=CMD_IMM_IS_LABEL;
+	primaryCmdMap["IMMISASC"]=CMD_IMM_IS_ASCII;
+	primaryCmdMap["IMMISASCII"]=CMD_IMM_IS_ASCII;
+	primaryCmdMap["IMMISCHR"]=CMD_IMM_IS_ASCII;
+	primaryCmdMap["IMMISCHAR"]=CMD_IMM_IS_ASCII;
 	primaryCmdMap["OFFSETISLAB"]=CMD_OFFSET_IS_LABEL;
 	primaryCmdMap["OFSISLAB"]=CMD_OFFSET_IS_LABEL;
 	primaryCmdMap["OFFISLAB"]=CMD_OFFSET_IS_LABEL;
@@ -435,6 +439,9 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "IMMISSYM CS:EIP" << std::endl;
 	std::cout << "IMMISLAB CS:EIP" << std::endl;
 	std::cout << "  Take Imm operand as label in disassembly." << std::endl;
+	std::cout << "IMMISASC/IMMISASCII/IMMISCHR/IMMISCHAR CS:EIP" << std::endl;
+	std::cout << "  Take Imm operand as ASCII code in disassembly." << std::endl;
+
 	std::cout << "OFFSETISLAB CS:EIP" << std::endl;
 	std::cout << "OFFISLAB CS:EIP" << std::endl;
 	std::cout << "OFSISLAB CS:EIP" << std::endl;
@@ -1178,6 +1185,7 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 	case CMD_DEF_RAW_BYTES:
 	case CMD_IMM_IS_IOPORT:
 	case CMD_IMM_IS_LABEL:
+	case CMD_IMM_IS_ASCII:
 	case CMD_OFFSET_IS_LABEL:
 		Execute_AddSymbol(towns,cmd);
 		break;
@@ -3418,6 +3426,13 @@ void TownsCommandInterpreter::Execute_AddSymbol(FMTowns &towns,Command &cmd)
 				auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.cpu);
 				farPtr=towns.cpu.TranslateFarPointer(farPtr);
 				symTable.SetImmIsSymbol(farPtr);
+			}
+			break;
+		case CMD_IMM_IS_ASCII:
+			{
+				auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.cpu);
+				farPtr=towns.cpu.TranslateFarPointer(farPtr);
+				symTable.SetImmIsASCII(farPtr);
 			}
 			break;
 		case CMD_OFFSET_IS_LABEL:

@@ -125,6 +125,7 @@ public:
 	i486Symbol *SetComment(i486DX::FarPointer ptr,const std::string &inLineComment);
 	i486Symbol *SetImportedLabel(i486DX::FarPointer ptr,const std::string &label);
 	i486Symbol *SetImmIsSymbol(i486DX::FarPointer ptr);
+	i486Symbol *SetImmIsASCII(i486DX::FarPointer ptr);
 	i486Symbol *SetOffsetIsSymbol(i486DX::FarPointer ptr);
 
 
