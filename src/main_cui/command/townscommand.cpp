@@ -3354,7 +3354,7 @@ void TownsCommandInterpreter::Execute_SaveEventLog(FMTowns &towns,const std::str
 void TownsCommandInterpreter::Execute_AddSymbol(FMTowns &towns,Command &cmd)
 {
 	if(3<=cmd.argv.size() || 
-	  (2<=cmd.argv.size() && (CMD_IMM_IS_IOPORT==cmd.primaryCmd || CMD_OFFSET_IS_LABEL==cmd.primaryCmd || CMD_IMM_IS_LABEL==cmd.primaryCmd)))
+	  (2<=cmd.argv.size() && (CMD_IMM_IS_IOPORT==cmd.primaryCmd || CMD_IMM_IS_ASCII==cmd.primaryCmd || CMD_OFFSET_IS_LABEL==cmd.primaryCmd || CMD_IMM_IS_LABEL==cmd.primaryCmd)))
 	{
 		auto &symTable=towns.debugger.GetSymTable();
 

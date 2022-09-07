@@ -933,6 +933,7 @@ public:
 		std::string DisassembleTypicalOneImm(std::string inst,unsigned int imm,int operandSize,uint32_t CS,uint32_t EIP,const i486SymbolTable &symTable) const;
 
 		std::string DisassembleIOLabel(unsigned int CS,unsigned int EIP,const i486SymbolTable &symTable,const std::map <unsigned int,std::string> &ioTable,unsigned int imm) const;
+		std::string DisassembleImmAsASCII(unsigned int CS,unsigned int EIP,const i486SymbolTable &symTable,unsigned int imm,unsigned int numBytes) const;
 
 	public:
 		/*! Returns REG of MODR/M byte from the first byte of operand internally
