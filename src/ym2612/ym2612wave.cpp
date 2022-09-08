@@ -809,6 +809,19 @@ void YM2612::KeyOn(unsigned int chNum,unsigned int slotFlags)
 		ch.lastSlot0Out[1]=0;
 	}
 
+	unsigned int slotHertzX16[NUM_SLOTS]=
+	{
+		hertzX16,hertzX16,hertzX16,hertzX16,
+	};
+
+	if(2==chNum && MODE_NONE!=GetChannel3Mode())
+	{
+		slotHertzX16[0]=BLOCK_FNUM_to_FreqX16(state.BLOCK_3CH[0],state.F_NUM_3CH[0]);
+		slotHertzX16[1]=BLOCK_FNUM_to_FreqX16(state.BLOCK_3CH[1],state.F_NUM_3CH[1]);
+		slotHertzX16[2]=BLOCK_FNUM_to_FreqX16(state.BLOCK_3CH[2],state.F_NUM_3CH[2]);
+		slotHertzX16[3]=hertzX16;
+	}
+
 	for(int i=0; i<NUM_SLOTS; ++i)
 	{
 		if(0!=(slotFlags&(1<<i)))
@@ -818,7 +831,7 @@ void YM2612::KeyOn(unsigned int chNum,unsigned int slotFlags)
 			slot.InReleasePhase=false;
 			slot.phaseS12=0;
 
-			UpdatePhase12StepSlot(slot,hertzX16,slot.DetuneContributionToPhaseStepS12(ch.BLOCK,ch.Note()));
+			UpdatePhase12StepSlot(slot,slotHertzX16[i],slot.DetuneContributionToPhaseStepS12(ch.BLOCK,ch.Note()));
 
 			// (hertzX16*PHASE_STEPS)<<8==hertz*PHASE_STEPS*4096
 			UpdateSlotEnvelope(ch,slot);
@@ -870,9 +883,22 @@ void YM2612::UpdatePhase12StepSlot(Slot &slot,const unsigned int hertzX16,int de
 void YM2612::UpdatePhase12StepSlot(Channel &ch)
 {
 	const unsigned int hertzX16=BLOCK_FNUM_to_FreqX16(ch.BLOCK,ch.F_NUM);
-	for(auto &slot : ch.slots)
+	unsigned int slotHertzX16[NUM_SLOTS]=
 	{
-		UpdatePhase12StepSlot(slot,hertzX16,slot.DetuneContributionToPhaseStepS12(ch.BLOCK,ch.Note()));
+		hertzX16,hertzX16,hertzX16,hertzX16,
+	};
+
+	if(&ch==&state.channels[2] && MODE_NONE!=GetChannel3Mode())
+	{
+		slotHertzX16[0]=BLOCK_FNUM_to_FreqX16(state.BLOCK_3CH[0],state.F_NUM_3CH[0]);
+		slotHertzX16[1]=BLOCK_FNUM_to_FreqX16(state.BLOCK_3CH[1],state.F_NUM_3CH[1]);
+		slotHertzX16[2]=BLOCK_FNUM_to_FreqX16(state.BLOCK_3CH[2],state.F_NUM_3CH[2]);
+		slotHertzX16[3]=hertzX16;
+	}
+
+	for(int i=0; i<NUM_SLOTS; ++i)
+	{
+		UpdatePhase12StepSlot(ch.slots[i],slotHertzX16[i],ch.slots[i].DetuneContributionToPhaseStepS12(ch.BLOCK,ch.Note()));
 	};
 }
 
