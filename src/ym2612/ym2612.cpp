@@ -604,6 +604,12 @@ void YM2612::Run(unsigned long long int systemTimeInNS)
 				{
 					state.timerUp[0]=true;
 				}
+				if(MODE_CSM==GetChannel3Mode())
+				{
+					KeyOff(2,0x0F);
+					KeyOn(2,0x0F);
+					state.channels[2].usingSlot=0x0F;
+				}
 			}
 		}
 		if(0!=(state.regSet[0][REG_TIMER_CONTROL]&0x02))
@@ -641,6 +647,11 @@ bool YM2612::TimerUp(unsigned int timerId) const
 	case 1:
 		return TimerBUp();
 	}
+}
+
+uint8_t YM2612::GetChannel3Mode(void) const
+{
+	return ((state.regSet[0][REG_TIMER_CONTROL]>>6)&3);
 }
 
 /* static */ void YM2612::GetCarrierSlotFromConnection(int &numCarrierSlots,int carrierSlots[4],unsigned int connection)

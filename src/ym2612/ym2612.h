@@ -92,6 +92,10 @@ public:
 
 		ENVELOPE_PRECISION_SHIFT=5,  // 2^ENVELOPE_PRECISION_SHIFT=ENVELOPE_PRECISION
 		ENVELOPE_PRECISION=32,       // 1/32 milliseconds
+
+		MODE_NONE=0,
+		MODE_CSM=2,
+		MODE_SOUNDEFFECT=1,
 	};
 
 	enum
@@ -336,6 +340,10 @@ public:
 	*/
 	bool TimerUp(unsigned int timerId) const;
 
+	/*! Returns Channel 3 (channels[2]) mode.
+	*/
+	uint8_t GetChannel3Mode(void) const;
+
 	/*! Cache parameters for calculating wave.
 	*/
 	void KeyOn(unsigned int ch,unsigned int slotFlags=SLOTFLAGS_ALL);
@@ -376,7 +384,6 @@ private:
 	*/
 	template <class LFOClass>
 	int CalculateAmplitude(int chNum,const uint64_t timeInMicrosecS12[NUM_SLOTS],const unsigned int slotPhase[4],const int AMS4096[4],int &lastSlot0Out) const;
-
 
 public:
 	/*! Change channel state to RELEASE.
