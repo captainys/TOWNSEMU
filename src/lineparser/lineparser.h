@@ -17,8 +17,12 @@ public:
 	{
 	public:
 		std::string label;
+		bool custom=false;
 		Term *next=nullptr,*prev=nullptr,*child=nullptr;
 	};
+
+	mutable bool error=false;
+	mutable std::string errorMessage;
 
 	Term *tree=nullptr;
 
@@ -37,6 +41,8 @@ protected:
 	bool IsBlank(char c) const;
 	void MakeLinear_AddToTail(Term * & tail, Term *newTerm);
 	std::string MakeLinear_GetOperator(const char *str) const;
+	virtual std::string MatchCustomKeyword(std::string str) const; // Used in MakeLinear
+	virtual bool IsCustomUnaryOperator(std::string str) const;
 
 public:
 	long long int Evaluate(void) const;
@@ -44,6 +50,10 @@ protected:
 	virtual long long int Evaluate(const Term *t) const;
 	virtual long long int EvaluateTerm(const Term *t) const;
 	virtual long long int EvaluateRawNumber(const std::string &str) const;
+
+	virtual long long int EvaluateCustomTerm(const Term *t) const;
+	virtual long long int EvaluateCustomUnaryOperator(const Term *t,long long int operand) const;
+	virtual long long int EvaluateCustomBinaryOperator(const Term *t,long long int left,long long int right) const;
 
 public:
 	void Print(void) const;

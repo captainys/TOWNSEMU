@@ -117,7 +117,16 @@ void LineParser::MakeLinear(const char *str)
 	auto tail=tree;
 	while(0!=*str)
 	{
-		std::string matchOperator=MakeLinear_GetOperator(str);
+		bool custom=false; // Tentative
+		std::string matchOperator=MatchCustomKeyword(str);
+		if(0==matchOperator.size())
+		{
+			matchOperator=MakeLinear_GetOperator(str);
+		}
+		else
+		{
+			custom=true;
+		}
 		if(0<matchOperator.size())
 		{
 			if(0<current.size())
@@ -128,6 +137,7 @@ void LineParser::MakeLinear(const char *str)
 				current="";
 			}
 			auto newTerm=new Term;
+			newTerm->custom=custom;
 			std::swap(newTerm->label,matchOperator);
 			MakeLinear_AddToTail(tail,newTerm);
 			state=STATE_VOID;
@@ -214,11 +224,20 @@ std::string LineParser::MakeLinear_GetOperator(const char *str) const
 	}
 	return "";
 }
+/* virtual */ std::string LineParser::MatchCustomKeyword(std::string str) const
+{
+	return "";
+}
 
-
+/* virtual */ bool LineParser::IsCustomUnaryOperator(std::string str) const
+{
+	return false;
+}
 
 long long int LineParser::Evaluate(void) const
 {
+	error=false;
+	errorMessage="";
 	return Evaluate(tree);
 }
 long long int LineParser::Evaluate(const Term *t) const
@@ -229,11 +248,19 @@ long long int LineParser::Evaluate(const Term *t) const
 	}
 	else if(nullptr==t->next)
 	{
+		if(true==t->custom)
+		{
+			return EvaluateCustomTerm(t);
+		}
 		return EvaluateTerm(t);
 	}
 	else if(nullptr==t->next->next) // Unary operator
 	{
-		if("-"==t->label)
+		if(true==t->custom)
+		{
+			return EvaluateCustomUnaryOperator(t,EvaluateTerm(t->next));
+		}
+		else if("-"==t->label)
 		{
 			return -EvaluateTerm(t->next);
 		}
@@ -247,7 +274,9 @@ long long int LineParser::Evaluate(const Term *t) const
 		}
 		else
 		{
-			std::cout << "Unsupported unary operator: " << t->next->label << std::endl;
+			error=true;
+			errorMessage="Unsupported unary operator: "+t->next->label;
+			std::cout << errorMessage << std::endl;
 			return 0;
 		}
 	}
@@ -255,7 +284,11 @@ long long int LineParser::Evaluate(const Term *t) const
 	{
 		auto left=EvaluateTerm(t);
 		auto right=EvaluateTerm(t->next->next);
-		if("*"==t->next->label)
+		if(true==t->custom)
+		{
+			return EvaluateCustomBinaryOperator(t,left,right);
+		}
+		else if("*"==t->next->label)
 		{
 			return left*right;
 		}
@@ -283,6 +316,8 @@ long long int LineParser::Evaluate(const Term *t) const
 		{
 			if(0==right)
 			{
+				error=true;
+				errorMessage="Division by zero.";
 				std::cout << "Division by zero." << std::endl;
 				return 0;
 			}
@@ -295,6 +330,8 @@ long long int LineParser::Evaluate(const Term *t) const
 		{
 			if(0==right)
 			{
+				error=true;
+				errorMessage="Division by zero.";
 				std::cout << "Division by zero." << std::endl;
 				return 0;
 			}
@@ -305,12 +342,16 @@ long long int LineParser::Evaluate(const Term *t) const
 		}
 		else
 		{
-			std::cout << "Unsupported binary operator: " << t->next->label << std::endl;
+			error=true;
+			errorMessage="Unsupported binary operator: "+t->next->label;
+			std::cout << errorMessage << std::endl;
 			return 0;
 		}
 	}
 	else
 	{
+		error=true;
+		errorMessage="Decomposition failed.";
 		std::cout << "Decomposition failed." << std::endl;
 		return 0;
 	}
@@ -330,6 +371,18 @@ long long int LineParser::EvaluateTerm(const Term *t) const
 {
 	return atoll(str.c_str());
 }
+/* virtual */ long long int LineParser::EvaluateCustomTerm(const Term *t) const
+{
+	return 0;
+}
+/* virtual */ long long int LineParser::EvaluateCustomUnaryOperator(const Term *t,long long int operand) const
+{
+	return 0;
+}
+/* virtual */ long long int LineParser::EvaluateCustomBinaryOperator(const Term *t,long long int left,long long int right) const
+{
+	return 0;
+}
 
 void LineParser::Print(void) const
 {
@@ -343,7 +396,12 @@ void LineParser::Print(const Term *t,int indent) const
 		{
 			std::cout << " ";
 		}
-		std::cout << t->label << std::endl;
+		std::cout << t->label;
+		if(true==t->custom)
+		{
+			std::cout << "(custom)";
+		}
+		std::cout << std::endl;
 		Print(t->child,indent+2);
 		t=t->next;
 	}
@@ -497,7 +555,9 @@ void LineParser::GroupByUnaryOperator(Term *current,const char *const op[])
 	Term *prev=nullptr;
 	for(auto term=current; nullptr!=term; term=term->next)
 	{
-		if((nullptr==prev || true==IsOneOf(prev->label,allOp)) && true==IsOneOf(term->label,op) && nullptr!=term->next)
+		if((nullptr==prev || true==IsOneOf(prev->label,allOp)) &&
+		   (true==IsOneOf(term->label,op) || true==IsCustomUnaryOperator(term->label)) &&
+		   nullptr!=term->next)
 		{
 			// From:
 			//   op word ....
@@ -513,7 +573,8 @@ void LineParser::GroupByUnaryOperator(Term *current,const char *const op[])
 
 			auto newTerm=new Term;
 			newTerm->child=term->child;
-			newTerm->label=term->label;
+			std::swap(newTerm->label,term->label);
+			std::swap(newTerm->custom,term->custom);
 			term->child=newTerm;
 
 			term->next=afterWord;
