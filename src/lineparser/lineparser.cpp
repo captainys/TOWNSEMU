@@ -117,7 +117,8 @@ void LineParser::MakeLinear(const char *str)
 	auto tail=tree;
 	while(0!=*str)
 	{
-		if(true==MakeLinear_IsOperator(str))
+		std::string matchOperator=MakeLinear_GetOperator(str);
+		if(0<matchOperator.size())
 		{
 			if(0<current.size())
 			{
@@ -127,7 +128,7 @@ void LineParser::MakeLinear(const char *str)
 				current="";
 			}
 			auto newTerm=new Term;
-			newTerm->label=MakeLinear_GetOperator(str);
+			std::swap(newTerm->label,matchOperator);
 			MakeLinear_AddToTail(tail,newTerm);
 			state=STATE_VOID;
 			str+=newTerm->label.size();
@@ -190,26 +191,6 @@ bool LineParser::IsBlank(char c) const
 	if(' '==c || '\t'==c)
 	{
 		return true;
-	}
-	return false;
-}
-bool LineParser::MakeLinear_IsOperator(const char str[])
-{
-	for(int i=0; nullptr!=allOp[i]; ++i)
-	{
-		bool match=true;
-		for(int j=0; allOp[i][j]!=0; ++j)
-		{
-			if(str[j]!=allOp[i][j])
-			{
-				match=false;
-				break;
-			}
-		}
-		if(true==match)
-		{
-			return true;
-		}
 	}
 	return false;
 }

@@ -36,7 +36,6 @@ protected:
 	void MakeLinear(const char *str);
 	bool IsBlank(char c) const;
 	void MakeLinear_AddToTail(Term * & tail, Term *newTerm);
-	bool MakeLinear_IsOperator(const char str[]);
 	std::string MakeLinear_GetOperator(const char *str) const;
 
 public:
