@@ -123,49 +123,7 @@ public:
 	void RunScheduledTask(unsigned long long int townsTime);
 
 	void Render(unsigned char VRAM[],const unsigned char spriteRAM[]) const;
-private:
-	inline static void Transform(unsigned int &X,unsigned int &Y,unsigned int x,unsigned int y,unsigned char ROT)
-	{
-		switch(ROT)
-		{
-		default:
-		case 0:
-			// No transformation
-			X=x;
-			Y=y;
-			break;
-		case 1:
-			X=x;
-			Y=15-y;
-			break;
-		case 2:
-			X=15-x;
-			Y=y;
-			break;
-		case 3:
-			X=15-x;
-			Y=15-y;
-			break;
-		case 4:
-			X=y;
-			Y=x;
-			break;
-		case 5:
-			X=15-y;
-			Y=x;
-			break;
-		case 6:
-			X=y;
-			Y=15-x;
-			break;
-		case 7:
-			X=15-y;
-			Y=15-x;
-			break;
-		}
-	}
 
-public:
 	inline bool SPD0(void) const   // For CRTC I/O
 	{
 		return state.spriteBusy;
