@@ -214,69 +214,80 @@ void TownsSprite::Render(unsigned char VRAMIn[],const unsigned char spriteRAM[])
 		}
 		unsigned int patternIndex=attrib&ATTR_PAT_MASK;
 
-		const unsigned char ROT=((attrib&ATTR_ROT_MASK)>>ATTR_ROT_SHIFT);
-		const int xStep=(0!=(attrib&ATTR_SUX) ? 2 : 1);
-		const int yStep=(0!=(attrib&ATTR_SUY) ? 2 : 1);
+		const unsigned char rot = ((attrib & ATTR_ROT_MASK) >> ATTR_ROT_SHIFT);
+		const bool sux = (0 != (attrib & ATTR_SUX));
+		const bool suy = (0 != (attrib & ATTR_SUY));
 
 		uint8_t spys = (paletteInfo & PALETTE_SPYS) ? 0x80 : 0;
 
-		if(0!=(paletteInfo&PALETTE_CTEN))
+		// pattern coordinate to drawing coordiante
+		auto transform = [rot, sux, suy](int& dx, int& dy, int px, int py)
+		{
+			switch (rot)
+			{
+			default:
+			case 0:
+				// No transformation
+				dx = px;
+				dy = py;
+				break;
+			case 1:
+				dx = px;
+				dy = 15 - py;
+				break;
+			case 2:
+				dx = 15 - px;
+				dy = py;
+				break;
+			case 3:
+				dx = 15 - px;
+				dy = 15 - py;
+				break;
+			case 4:
+				dx = py;
+				dy = px;
+				break;
+			case 5:
+				dx = py;
+				dy = 15 - px;
+				break;
+			case 6:
+				dx = 15 - py;
+				dy = px;
+				break;
+			case 7:
+				dx = 15 - py;
+				dy = 15 - px;
+				break;
+			}
+			if (sux) dx >>= 1;
+			if (suy) dy >>= 1;
+		};
+
+		if (0 != (paletteInfo & PALETTE_CTEN))
 		{
 			// 16-color paletted sprite
-			const unsigned int paletteIndex=paletteInfo&PALETTE_INDEX_MASK;
-			auto palettePtr=spriteRAM+(paletteIndex<<5);
-			auto srcPtr=spriteRAM+(patternIndex<<7);
-			if(dstX<256-SPRITE_DIMENSION && 2<=dstY && dstY<256-SPRITE_DIMENSION)
-			{
-				auto dstPtr=VRAMTop+SPRITE_VRAM_BYTES_PER_LINE*dstY+(dstX<<1);
-				for(unsigned int ptnY=0; ptnY<SPRITE_DIMENSION; ptnY+=yStep)
-				{
-					auto nextDstPtr=dstPtr+SPRITE_VRAM_BYTES_PER_LINE;
-					for(unsigned int ptnX=0; ptnX<SPRITE_DIMENSION; ptnX+=xStep)
-					{
-						unsigned int xTfm,yTfm;
-						Transform(xTfm,yTfm,ptnX,ptnY,ROT);
+			const unsigned int paletteIndex = paletteInfo & PALETTE_INDEX_MASK;
+			auto palettePtr = spriteRAM + (paletteIndex << 5);
+			auto srcPtr = spriteRAM + (patternIndex << 7);
 
-						auto src=srcPtr+SPRITE_PTN16_BYTES_PER_LINE*yTfm+(xTfm>>1);
-						unsigned char shift=(xTfm&1)<<2;
-						unsigned char pix4bit=((src[0]>>shift)&0x0F);
-						if(0!=pix4bit)  // [2] pp.371 Sprite BIOS.  4bit all zero means through.
-						{
-							const unsigned char *col = palettePtr + (pix4bit << 1);
-							dstPtr[0] = col[0];
-							dstPtr[1] = (col[1] & 0x7f) | spys;
-						}
-						dstPtr+=2;
-					}
-					dstPtr=nextDstPtr;
-				}
-			}
-			else if((dstX<256 || 496<dstX) && (dstY<256 || 496+2<dstY))
-			{
-				const int xBackShift=(0!=(attrib&ATTR_SUX) ? 1 : 0);
-				const int yBackShift=(0!=(attrib&ATTR_SUY) ? 1 : 0);
-				for(unsigned int ptnY=0; ptnY<SPRITE_DIMENSION; ptnY+=yStep)
-				{
-					for(unsigned int ptnX=0; ptnX<SPRITE_DIMENSION; ptnX+=xStep)
-					{
-						unsigned int vramX=((dstX+(ptnX>>xBackShift))&511);
-						unsigned int vramY=((dstY+(ptnY>>yBackShift))&511);
-						if(vramX<256 && 2<=vramY && vramY<256)
-						{
-							unsigned int xTfm,yTfm;
-							Transform(xTfm,yTfm,ptnX,ptnY,ROT);
+			for (int patY = 0; patY < SPRITE_DIMENSION; ++patY) {
+				for (int patX = 0; patX < SPRITE_DIMENSION; ++patX) {
+					int dx, dy;
+					transform(dx, dy, patX, patY);
 
-							auto src=srcPtr+SPRITE_PTN16_BYTES_PER_LINE*yTfm+(xTfm>>1);
-							auto dstPtr=VRAMTop+SPRITE_VRAM_BYTES_PER_LINE*vramY+(vramX<<1);
+					unsigned int sx = (dstX + dx) & 0x1ff;
+					unsigned int sy = (dstY + dy) & 0x1ff;
 
-							unsigned char shift=(xTfm&1)<<2;
-							unsigned char pix4bit=((src[0]>>shift)&0x0F);
-							if(0!=pix4bit)  // [2] pp.371 Sprite BIOS.  4bit all zero means through.
-							{
-								const unsigned char *col = palettePtr + (pix4bit << 1);
-								dstPtr[0] = col[0];
-								dstPtr[1] = (col[1] & 0x7f) | spys;
-							}
+					if (sx < 256 && 2 <= sy && sy < 256) {
+						auto src = srcPtr + SPRITE_PTN16_BYTES_PER_LINE * patY + (patX >> 1);
+						auto dst = VRAMTop + SPRITE_VRAM_BYTES_PER_LINE * sy + 2 * sx;
+
+						auto pix4bit = (src[0] >> ((patX & 1) ? 4 : 0)) & 0x0f;
+						if (pix4bit) {  // [2] pp.371 Sprite BIOS.  4bit all zero means through.
+							auto col = palettePtr + (pix4bit << 1);
+							dst[0] = col[0];
+							dst[1] = (col[1] & 0x7f) | spys;
 						}
 					}
 				}
@@ -285,53 +296,24 @@ void TownsSprite::Render(unsigned char VRAMIn[],const unsigned char spriteRAM[])
 		else
 		{
 			// 32768-color sprite
-			patternIndex&=(~3);
-			auto srcPtr=spriteRAM+(patternIndex<<7);
-			if(dstX<256-SPRITE_DIMENSION && 2<=dstY && dstY<256-SPRITE_DIMENSION)
-			{
-				auto dstPtr=VRAMTop+SPRITE_VRAM_BYTES_PER_LINE*dstY+(dstX<<1);
-				for(unsigned int ptnY=0; ptnY<SPRITE_DIMENSION; ptnY+=yStep)
-				{
-					auto nextDstPtr=dstPtr+SPRITE_VRAM_BYTES_PER_LINE;
-					for(unsigned int ptnX=0; ptnX<SPRITE_DIMENSION; ptnX+=xStep)
-					{
-						unsigned int xTfm,yTfm;
-						Transform(xTfm,yTfm,ptnX,ptnY,ROT);
+			patternIndex &= (~3);
+			auto srcPtr = spriteRAM + (patternIndex << 7);
 
-						auto src=srcPtr+SPRITE_PTN32K_BYTES_PER_LINE*yTfm+(xTfm<<1);
-						if(0==(src[1]&0x80))
-						{
-							dstPtr[0] = src[0];
-							dstPtr[1] = src[1] | spys;
-						}
-						dstPtr+=2;
-					}
-					dstPtr=nextDstPtr;
-				}
-			}
-			else if((dstX<256 || 496<dstX) && (dstY<256 || 496+2<dstY))
-			{
-				const int xBackShift=(0!=(attrib&ATTR_SUX) ? 1 : 0);
-				const int yBackShift=(0!=(attrib&ATTR_SUY) ? 1 : 0);
-				for(unsigned int ptnY=0; ptnY<SPRITE_DIMENSION; ptnY+=yStep)
-				{
-					for(unsigned int ptnX=0; ptnX<SPRITE_DIMENSION; ptnX+=xStep)
-					{
-						unsigned int vramX=((dstX+(ptnX>>xBackShift))&511);
-						unsigned int vramY=((dstY+(ptnY>>yBackShift))&511);
-						if(vramX<256 && 2<=vramY && vramY<256)
-						{
-							unsigned int xTfm,yTfm;
-							Transform(xTfm,yTfm,ptnX,ptnY,ROT);
+			for (int patY = 0; patY < SPRITE_DIMENSION; ++patY) {
+				for (int patX = 0; patX < SPRITE_DIMENSION; ++patX) {
+					int dx, dy;
+					transform(dx, dy, patX, patY);
 
-							auto src=srcPtr+SPRITE_PTN32K_BYTES_PER_LINE*yTfm+(xTfm<<1);
-							auto dstPtr=VRAMTop+SPRITE_VRAM_BYTES_PER_LINE*vramY+(vramX<<1);
+					unsigned int sx = (dstX + dx) & 0x1ff;
+					unsigned int sy = (dstY + dy) & 0x1ff;
 
-							if(0==(src[1]&0x80))
-							{
-								dstPtr[0] = src[0];
-								dstPtr[1] = src[1] | spys;
-							}
+					if (sx < 256 && 2 <= sy && sy < 256) {
+						auto src = srcPtr + SPRITE_PTN32K_BYTES_PER_LINE * patY + 2 * patX;
+						auto dst = VRAMTop + SPRITE_VRAM_BYTES_PER_LINE * sy + 2 * sx;
+
+						if ((src[1] & 0x80) == 0) {
+							dst[0] = src[0];
+							dst[1] = src[1] | spys;
 						}
 					}
 				}
