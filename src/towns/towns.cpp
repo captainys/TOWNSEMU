@@ -339,6 +339,11 @@ void FMTowns::State::PowerOn(void)
 	towns.var.startUpStateFName=argv.startUpStateFName;
 
 	towns.var.quickScrnShotDir=argv.quickScrnShotDir;
+	towns.var.scrnShotX0=argv.scrnShotX0;
+	towns.var.scrnShotY0=argv.scrnShotY0;
+	towns.var.scrnShotWid=argv.scrnShotWid;
+	towns.var.scrnShotHei=argv.scrnShotHei;
+
 
 	for(auto hsc : argv.hostShortCutKeys)
 	{

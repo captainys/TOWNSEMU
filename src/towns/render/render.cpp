@@ -30,6 +30,36 @@ void TownsRender::Create(int wid,int hei)
 	rgba.resize(4*wid*hei);
 }
 
+void TownsRender::Crop(unsigned int x0,unsigned int y0,unsigned int newWid,unsigned int newHei)
+{
+	std::vector <unsigned char> newRGBA;
+	newRGBA.resize(newWid*newHei*4);
+
+	memset(newRGBA.data(),0,newRGBA.size());
+
+	unsigned char *dstRow=newRGBA.data();
+	unsigned char *srcRow=rgba.data()+(wid*y0+x0)*4;
+	unsigned int copySizePerRow=0;
+	if(x0+newWid<=wid)
+	{
+		copySizePerRow=newWid*4;
+	}
+	else if(x0<wid)
+	{
+		copySizePerRow=(wid-x0)*4;
+	}
+	for(unsigned int y=0; y<newHei && y0+y<hei; ++y)
+	{
+		memcpy(dstRow,srcRow,copySizePerRow);
+		dstRow+=newWid*4;
+		srcRow+=wid*4;
+	}
+
+	std::swap(rgba,newRGBA);
+	wid=newWid;
+	hei=newHei;
+}
+
 void TownsRender::Prepare(const TownsCRTC &crtc)
 {
 	frequency=crtc.GetHorizontalFrequency();

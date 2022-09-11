@@ -405,6 +405,8 @@ public:
 	void Execute_SaveScreenShot(FMTowns &towns,Command &cmd);
 	void Execute_SaveVRAMLayer(FMTowns &towns,Command &cmd);
 
+	void SaveScreenShot(FMTowns &towns,TownsRender &render,std::string &fName);
+
 	void Execute_SpecialDebug(FMTowns &towns,Command &cmd);
 
 	void Execute_SaveMemDump(FMTowns &towns,Command &cmd);

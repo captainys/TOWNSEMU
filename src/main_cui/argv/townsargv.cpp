@@ -216,6 +216,8 @@ void TownsARGV::PrintHelp(void) const
 
 	std::cout << "-QUICKSSDIR dir" << std::endl;
 	std::cout << "  Specify quick screen shot directory." << std::endl;
+	std::cout << "-SSCROP x0 y0 wid hei" << std::endl;
+	std::cout << "  Crop screen shot." << std::endl;
 	std::cout << "-HOSTSHORTCUT hostKey ctrl shift \"command\"" << std::endl;
 	std::cout << "  Assign host short cut key (hot key)." << std::endl;
 
@@ -864,6 +866,14 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		{
 			quickScrnShotDir=argv[i+1];
 			++i;
+		}
+		else if("-SSCROP"==ARG && i+4<argc)
+		{
+			scrnShotX0=cpputil::Atoi(argv[i+1]);
+			scrnShotY0=cpputil::Atoi(argv[i+2]);
+			scrnShotWid=cpputil::Atoi(argv[i+3]);
+			scrnShotHei=cpputil::Atoi(argv[i+4]);
+			i+=4;
 		}
 		else if("-HOSTSHORTCUT"==ARG && i+4<argc)
 		{

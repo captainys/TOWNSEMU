@@ -170,6 +170,7 @@ public:
 
 	std::string quickScrnShotDir;
 	std::string quickStateSaveFName;
+	unsigned int scrnShotX0=0,scrnShotY0=0,scrnShotWid=0,scrnShotHei=0;
 
 	std::string pauseResumeKeyLabel="SCROLLLOCK";
 

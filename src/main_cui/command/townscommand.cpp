@@ -4350,17 +4350,7 @@ void TownsCommandInterpreter::Execute_SaveScreenShot(FMTowns &towns,Command &cmd
 	TownsRender render;
 	towns.RenderQuiet(render,layer[0],layer[1]);
 
-	auto img=render.GetImage();
-
-	YsRawPngEncoder encoder;
-	if(YSOK==encoder.EncodeToFile(cmd.argv[1].data(),img.wid,img.hei,8,6,img.rgba))
-	{
-		std::cout << "Saved to " << cmd.argv[1] << std::endl;
-	}
-	else
-	{
-		std::cout << "Save error." << std::endl;
-	}
+	SaveScreenShot(towns,render,cmd.argv[1]);
 }
 void TownsCommandInterpreter::Execute_SaveMemDump(FMTowns &towns,Command &cmd)
 {
@@ -4503,18 +4493,34 @@ void TownsCommandInterpreter::Execute_QuickScreenShot(FMTowns &towns,Command &cm
 	TownsRender render;
 	towns.RenderQuiet(render,layer[0],layer[1]);
 
+	SaveScreenShot(towns,render,ful);
+}
+
+void TownsCommandInterpreter::SaveScreenShot(FMTowns &towns,TownsRender &render,std::string &fName)
+{
+	if(0!=towns.var.scrnShotWid && 0!=towns.var.scrnShotHei)
+	{
+		render.Crop(towns.var.scrnShotX0,towns.var.scrnShotY0,towns.var.scrnShotWid,towns.var.scrnShotHei);
+	}
+
 	auto img=render.GetImage();
 
+	auto fNameTmp=fName+".tmp";
+
 	YsRawPngEncoder encoder;
-	if(YSOK==encoder.EncodeToFile(ful.c_str(),img.wid,img.hei,8,6,img.rgba))
+	if(YSOK==encoder.EncodeToFile(fNameTmp.c_str(),img.wid,img.hei,8,6,img.rgba))
 	{
-		std::cout << "Saved to " << ful << std::endl;
+		remove(fName.c_str());
+		rename(fNameTmp.c_str(),fName.c_str());
+		std::cout << "Saved to " << fName << std::endl;
 	}
 	else
 	{
 		std::cout << "Save error." << std::endl;
 	}
 }
+
+
 void TownsCommandInterpreter::Execute_QuickScreenShotDirectory(FMTowns &towns,Command &cmd)
 {
 	if(2<=cmd.argv.size())
