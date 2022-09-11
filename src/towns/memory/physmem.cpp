@@ -733,6 +733,186 @@ void TownsPhysicalMemory::EnableOrDisableNativeVRAMMask(void)
 	}
 }
 
+void TownsPhysicalMemory::BeginMemFilter(void)
+{
+	memFilter.RAMFilter.resize(state.RAM.size());
+	memFilter.prevRAM.resize(state.RAM.size());
+	memFilter.spriteRAMFilter.resize(state.spriteRAM.size());
+	memFilter.prevSpriteRAM.resize(state.spriteRAM.size());
+	for(uint32_t i=0; i<state.RAM.size(); ++i)
+	{
+		memFilter.RAMFilter[i]=true;
+		memFilter.prevRAM[i]=state.RAM[i];
+	}
+	for(uint32_t i=0; i<state.spriteRAM.size(); ++i)
+	{
+		memFilter.spriteRAMFilter[i]=true;
+		memFilter.prevSpriteRAM[i]=state.spriteRAM[i];
+	}
+}
+unsigned int TownsPhysicalMemory::ApplyMemFilter(uint8_t currentValue)
+{
+	unsigned int N=0;
+	for(uint32_t i=0; i<state.RAM.size(); ++i)
+	{
+		if(state.RAM[i]!=currentValue)
+		{
+			memFilter.RAMFilter[i]=false;
+		}
+		if(true==memFilter.RAMFilter[i])
+		{
+			++N;
+		}
+		memFilter.prevRAM[i]=state.RAM[i];
+	}
+	for(uint32_t i=0; i<state.spriteRAM.size(); ++i)
+	{
+		if(state.spriteRAM[i]!=currentValue)
+		{
+			memFilter.spriteRAMFilter[i]=false;
+		}
+		if(true==memFilter.spriteRAMFilter[i])
+		{
+			++N;
+		}
+		memFilter.prevSpriteRAM[i]=state.spriteRAM[i];
+	}
+	return N;
+}
+unsigned int TownsPhysicalMemory::ApplyMemFilterDecrease(void)
+{
+	unsigned int N=0;
+	for(uint32_t i=0; i<state.RAM.size(); ++i)
+	{
+		if(state.RAM[i]>=memFilter.prevRAM[i])
+		{
+			memFilter.RAMFilter[i]=false;
+		}
+		if(true==memFilter.RAMFilter[i])
+		{
+			++N;
+		}
+		memFilter.prevRAM[i]=state.RAM[i];
+	}
+	for(uint32_t i=0; i<state.spriteRAM.size(); ++i)
+	{
+		if(state.spriteRAM[i]>=memFilter.prevSpriteRAM[i])
+		{
+			memFilter.spriteRAMFilter[i]=false;
+		}
+		if(true==memFilter.spriteRAMFilter[i])
+		{
+			++N;
+		}
+		memFilter.prevSpriteRAM[i]=state.spriteRAM[i];
+	}
+	return N;
+}
+unsigned int TownsPhysicalMemory::ApplyMemFilterIncrease(void)
+{
+	unsigned int N=0;
+	for(uint32_t i=0; i<state.RAM.size(); ++i)
+	{
+		if(state.RAM[i]<=memFilter.prevRAM[i])
+		{
+			memFilter.RAMFilter[i]=false;
+		}
+		if(true==memFilter.RAMFilter[i])
+		{
+			++N;
+		}
+		memFilter.prevRAM[i]=state.RAM[i];
+	}
+	for(uint32_t i=0; i<state.spriteRAM.size(); ++i)
+	{
+		if(state.spriteRAM[i]<=memFilter.prevSpriteRAM[i])
+		{
+			memFilter.spriteRAMFilter[i]=false;
+		}
+		if(true==memFilter.spriteRAMFilter[i])
+		{
+			++N;
+		}
+		memFilter.prevSpriteRAM[i]=state.spriteRAM[i];
+	}
+	return N;
+}
+unsigned int TownsPhysicalMemory::ApplyMemFilterDifferent(void)
+{
+	unsigned int N=0;
+	for(uint32_t i=0; i<state.RAM.size(); ++i)
+	{
+		if(state.RAM[i]==memFilter.prevRAM[i])
+		{
+			memFilter.RAMFilter[i]=false;
+		}
+		if(true==memFilter.RAMFilter[i])
+		{
+			++N;
+		}
+		memFilter.prevRAM[i]=state.RAM[i];
+	}
+	for(uint32_t i=0; i<state.spriteRAM.size(); ++i)
+	{
+		if(state.spriteRAM[i]==memFilter.prevSpriteRAM[i])
+		{
+			memFilter.spriteRAMFilter[i]=false;
+		}
+		if(true==memFilter.spriteRAMFilter[i])
+		{
+			++N;
+		}
+		memFilter.prevSpriteRAM[i]=state.spriteRAM[i];
+	}
+	return N;
+}
+unsigned int TownsPhysicalMemory::ApplyMemFilterEqual(void)
+{
+	unsigned int N=0;
+	for(uint32_t i=0; i<state.RAM.size(); ++i)
+	{
+		if(state.RAM[i]!=memFilter.prevRAM[i])
+		{
+			memFilter.RAMFilter[i]=false;
+		}
+		if(true==memFilter.RAMFilter[i])
+		{
+			++N;
+		}
+		memFilter.prevRAM[i]=state.RAM[i];
+	}
+	for(uint32_t i=0; i<state.spriteRAM.size(); ++i)
+	{
+		if(state.spriteRAM[i]!=memFilter.prevSpriteRAM[i])
+		{
+			memFilter.spriteRAMFilter[i]=false;
+		}
+		if(true==memFilter.spriteRAMFilter[i])
+		{
+			++N;
+		}
+		memFilter.prevSpriteRAM[i]=state.spriteRAM[i];
+	}
+	return N;
+}
+void TownsPhysicalMemory::PrintMemFilter(void)
+{
+	for(unsigned int i=0; i<memFilter.RAMFilter.size(); ++i)
+	{
+		if(true==memFilter.RAMFilter[i])
+		{
+			std::cout << "PHYS:" << cpputil::Uitox(i) << std::endl;
+		}
+	}
+	for(unsigned int i=0; i<memFilter.spriteRAMFilter.size(); ++i)
+	{
+		if(true==memFilter.spriteRAMFilter[i])
+		{
+			std::cout << "PHYS:" << cpputil::Uitox(i+TOWNSADDR_SPRITERAM_BASE) << std::endl;
+		}
+	}
+}
+
 std::vector <std::string> TownsPhysicalMemory::GetStatusText(void) const
 {
 	std::vector <std::string> text;

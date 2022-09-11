@@ -2117,22 +2117,7 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 			break;
 		case DUMP_MEMORY_FILTER:
 			{
-				const int counter0=256;
-				int counter=counter0;
-				for(auto addr : memFilter)
-				{
-					std::cout << "PHYS:" << cpputil::Uitox(addr.first);
-					std::cout << " Last Value(" << cpputil::Ubtox(addr.second) << ")";
-					std::cout << " Now (" << cpputil::Ubtox(towns.physMem.state.RAM[addr.first]) << ")" << std::endl;
-					if(0==--counter)
-					{
-						break;
-					}
-				}
-				if(0==counter)
-				{
-					std::cout << "Too many addresses in the filter.  Stopping at " << counter0 << " counts." << std::endl;
-				}
+				towns.physMem.PrintMemFilter();
 			}
 			break;
 		case DUMP_FPU:
@@ -3904,24 +3889,13 @@ void TownsCommandInterpreter::Execute_MakeMemoryFilter(FMTowns &towns,Command &c
 {
 	if(2<=cmd.argv.size())
 	{
-		auto byteData=cpputil::Xtoi(cmd.argv[1].c_str());
-		memFilter.clear();
-
-		unsigned int physAddr=0;
-		for(auto memByte : towns.physMem.state.RAM)
-		{
-			if(memByte==byteData)
-			{
-				memFilter[physAddr]=memByte;
-			}
-			++physAddr;
-		}
-
-		std::cout << memFilter.size() << " occurrences" << std::endl;
+		towns.physMem.BeginMemFilter();
+		auto N=towns.physMem.ApplyMemFilter(cpputil::Xtoi(cmd.argv[1].c_str()));
+		std::cout << N << " occurrences" << std::endl;
 	}
 	else
 	{
-		PrintError(ERROR_TOO_FEW_ARGS);
+		towns.physMem.BeginMemFilter();
 	}
 }
 void TownsCommandInterpreter::Execute_UpdateMemoryFilter(FMTowns &towns,Command &cmd)
@@ -3930,70 +3904,32 @@ void TownsCommandInterpreter::Execute_UpdateMemoryFilter(FMTowns &towns,Command 
 	{
 		auto cond=cmd.argv[1];
 		cpputil::Capitalize(cond);
-		std::vector <decltype(memFilter.begin())> toErase;
 
 		if("INCREASE"==cond || "INC"==cond)
 		{
-			for(auto iter=memFilter.begin(); memFilter.end()!=iter; ++iter)
-			{
-				if(towns.physMem.state.RAM[iter->first]<=iter->second)
-				{
-					toErase.push_back(iter);
-				}
-				iter->second=towns.physMem.state.RAM[iter->first];
-			}
+			auto N=towns.physMem.ApplyMemFilterIncrease();
+			std::cout << N << " occurrences" << std::endl;
 		}
 		else if("DECREASE"==cond || "DEC"==cond)
 		{
-			for(auto iter=memFilter.begin(); memFilter.end()!=iter; ++iter)
-			{
-				if(iter->second<=towns.physMem.state.RAM[iter->first])
-				{
-					toErase.push_back(iter);
-				}
-				iter->second=towns.physMem.state.RAM[iter->first];
-			}
+			auto N=towns.physMem.ApplyMemFilterDecrease();
+			std::cout << N << " occurrences" << std::endl;
 		}
 		else if("DIFFERENT"==cond || "DIFF"==cond)
 		{
-			for(auto iter=memFilter.begin(); memFilter.end()!=iter; ++iter)
-			{
-				if(iter->second==towns.physMem.state.RAM[iter->first])
-				{
-					toErase.push_back(iter);
-				}
-				iter->second=towns.physMem.state.RAM[iter->first];
-			}
+			auto N=towns.physMem.ApplyMemFilterDifferent();
+			std::cout << N << " occurrences" << std::endl;
 		}
 		else if("SAME"==cond || "EQUAL"==cond || "EQU"==cond)
 		{
-			for(auto iter=memFilter.begin(); memFilter.end()!=iter; ++iter)
-			{
-				if(iter->second!=towns.physMem.state.RAM[iter->first])
-				{
-					toErase.push_back(iter);
-				}
-				iter->second=towns.physMem.state.RAM[iter->first];
-			}
+			auto N=towns.physMem.ApplyMemFilterEqual();
+			std::cout << N << " occurrences" << std::endl;
 		}
 		else
 		{
-			auto byteData=cpputil::Xtoi(cmd.argv[1].c_str());
-			for(auto iter=memFilter.begin(); memFilter.end()!=iter; ++iter)
-			{
-				if(byteData!=towns.physMem.state.RAM[iter->first])
-				{
-					toErase.push_back(iter);
-				}
-				iter->second=towns.physMem.state.RAM[iter->first];
-			}
+			auto N=towns.physMem.ApplyMemFilter(cpputil::Xtoi(cmd.argv[1].c_str()));
+			std::cout << N << " occurrences" << std::endl;
 		}
-
-		for(auto er : toErase)
-		{
-			memFilter.erase(er);
-		}
-		std::cout << memFilter.size() << " occurrences" << std::endl;
 	}
 	else
 	{

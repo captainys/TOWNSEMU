@@ -506,6 +506,28 @@ public:
 
 
 
+	class MemoryFilter
+	{
+	public:
+		std::vector <bool> RAMFilter;
+		std::vector <unsigned char> prevRAM;
+		std::vector <bool> spriteRAMFilter;
+		std::vector <unsigned char> prevSpriteRAM;
+	};
+	MemoryFilter memFilter;
+
+	/*!
+	*/
+	void BeginMemFilter(void);
+	unsigned int ApplyMemFilter(uint8_t currentValue);
+	unsigned int ApplyMemFilterDecrease(void);
+	unsigned int ApplyMemFilterIncrease(void);
+	unsigned int ApplyMemFilterDifferent(void);
+	unsigned int ApplyMemFilterEqual(void);
+	void PrintMemFilter(void);
+
+
+
 	std::vector <std::string> GetStatusText(void) const;
 
 
