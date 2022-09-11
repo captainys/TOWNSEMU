@@ -259,6 +259,7 @@ public:
 		DUMP_DOS_INFO,
 		DUMP_MEMORY_FILTER,
 		DUMP_FPU,
+		DUMP_WHERE_I_AM
 	};
 
 	enum

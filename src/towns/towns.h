@@ -19,6 +19,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <vector>
 #include <string>
 
+#include "lineparser.h"
+
 #include "vmbase.h"
 #include "device.h"
 #include "i486.h"
@@ -694,6 +696,37 @@ public:
 	virtual uint32_t SerializeVersion(void) const;
 	virtual void SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const;
 	virtual bool SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version);
+
+
+
+	// Toward semi-automated map generation.
+	// Feedback from Mutsu development.
+	class MemoryEvaluation : public LineParser
+	{
+	private:
+		FMTowns *townsPtr=nullptr;
+	public:
+		MemoryEvaluation(FMTowns *townsPtr);
+
+		bool ready=false;
+
+		bool Decode(std::string str);
+
+		std::string MatchCustomKeyword(std::string str) const override;
+		bool IsCustomUnaryOperator(std::string str) const override;
+		long long int EvaluateCustomUnaryOperator(const Term *t,long long int operand) const override;
+
+		// Eg.  Write formula like the following.
+		//   BYTE:$3600A
+		//   (WORD:0x3600A-0x4E00)/0x50
+		//   (WORD:0x600A-0x4E00)%0x50
+		// Addresses are physical addresses.
+		long long int EvaluateRawNumber(const std::string &str) const override;
+
+		unsigned int EvaluateMemoryReference(unsigned int addr,unsigned int nBytes) const;
+	};
+	MemoryEvaluation mapXY[2];
+
 
 
 	// Dungeon Master Keyboard Shortcut

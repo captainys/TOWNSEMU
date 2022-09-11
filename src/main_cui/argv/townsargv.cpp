@@ -875,6 +875,16 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 			scrnShotHei=cpputil::Atoi(argv[i+4]);
 			i+=4;
 		}
+		else if("-MAPX"==ARG && i+1<argc)
+		{
+			mapXYExpression[0]=argv[i+1];
+			++i;
+		}
+		else if("-MAPY"==ARG && i+1<argc)
+		{
+			mapXYExpression[1]=argv[i+1];
+			++i;
+		}
 		else if("-HOSTSHORTCUT"==ARG && i+4<argc)
 		{
 			HostShortCut hsc;

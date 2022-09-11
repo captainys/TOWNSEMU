@@ -344,6 +344,19 @@ void FMTowns::State::PowerOn(void)
 	towns.var.scrnShotWid=argv.scrnShotWid;
 	towns.var.scrnShotHei=argv.scrnShotHei;
 
+	for(int i=0; i<2; ++i)
+	{
+		if(""!=argv.mapXYExpression[i])
+		{
+			towns.mapXY[i].Decode(argv.mapXYExpression[i]);
+			if(true==towns.mapXY[i].error)
+			{
+				std::cout << "Error in map-XY expression" << std::endl;
+				std::cout << towns.mapXY[i].errorMessage << std::endl;
+			}
+		}
+	}
+
 
 	for(auto hsc : argv.hostShortCutKeys)
 	{
@@ -420,7 +433,8 @@ FMTowns::FMTowns() :
 	timer(this,&pic),
 	serialport(this),
 	vndrv(this),
-	tgdrv(this)
+	tgdrv(this),
+	mapXY{this,this}
 {
 	townsType=TOWNSTYPE_2_MX;
 
@@ -1415,4 +1429,87 @@ std::vector <std::string> FMTowns::GetMouseStatusText(void) const
 
 
 	symTable.AddINTLabel(0xFD,"Wait CX*10us");
+}
+
+////////////////////////////////////////////////////////////
+
+FMTowns::MemoryEvaluation::MemoryEvaluation(FMTowns *townsPtr)
+{
+	this->townsPtr=townsPtr;
+}
+
+bool FMTowns::MemoryEvaluation::Decode(std::string str)
+{
+	ready=false;
+	errorMessage="";
+	cpputil::Capitalize(str);
+	if(true==Analyze(str))
+	{
+		Evaluate(); // Dummy-evaluate.
+		if(true!=error)
+		{
+			ready=true;
+		}
+	}
+	if(""==errorMessage)
+	{
+		errorMessage="There was error(s) in the expression.";
+	}
+	return ready;
+}
+
+std::string FMTowns::MemoryEvaluation::MatchCustomKeyword(std::string str) const
+{
+	unsigned int skip=0;
+	if("BYTE:"==str.substr(0,5))
+	{
+		return "BYTE:";
+	}
+	else if("WORD:"==str.substr(0,5))
+	{
+		return "WORD:";
+	}
+	else if("DWORD:"==str.substr(0,6))
+	{
+		return "DWORD:";
+	}
+	return "";
+}
+bool FMTowns::MemoryEvaluation::IsCustomUnaryOperator(std::string str) const
+{
+	return ("BYTE:"==str.substr(0,5) ||
+	        "WORD:"==str.substr(0,5) ||
+	        "DWORD:"==str.substr(0,6));
+}
+long long int FMTowns::MemoryEvaluation::EvaluateCustomUnaryOperator(const Term *t,long long int operand) const
+{
+	// All capitalized in Decode.
+	if("BYTE:"==t->label.substr(0,5))
+	{
+		return EvaluateMemoryReference(operand,1);
+	}
+	else if("WORD:"==t->label.substr(0,5))
+	{
+		return EvaluateMemoryReference(operand,2);
+	}
+	else if("DWORD:"==t->label.substr(0,6))
+	{
+		return EvaluateMemoryReference(operand,4);
+	}
+	return 0;
+}
+
+long long int FMTowns::MemoryEvaluation::EvaluateRawNumber(const std::string &str) const
+{
+	return cpputil::Atoi(str.c_str());
+}
+
+unsigned int FMTowns::MemoryEvaluation::EvaluateMemoryReference(unsigned int addr,unsigned int nBytes) const
+{
+	int data=0;
+	for(int i=0; i<nBytes; ++i)
+	{
+		data|=(townsPtr->mem.FetchByte(addr+i)<<(i*8));
+	}
+	return data;
 }

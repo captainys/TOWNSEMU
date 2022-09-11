@@ -277,6 +277,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	dumpableMap["FPU"]=DUMP_FPU;
 	dumpableMap["487"]=DUMP_FPU;
 	dumpableMap["80487"]=DUMP_FPU;
+	dumpableMap["WHEREIAM"]=DUMP_WHERE_I_AM;
 
 
 
@@ -729,6 +730,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "DOS PSP" << std::endl;
 	std::cout << "DOS TMPDIRENT" << std::endl;
 	std::cout << "  DOS info.  Need to set DOSSEG unless DOSSEG is 1679." << std::endl;
+	std::cout << "WHEREIAM" << std::endl;
+	std::cout << "  If map-X and map-Y expression is defined, print X and Y coordinate." << std::endl;
 
 	std::cout << "" << std::endl;
 
@@ -2125,6 +2128,22 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 				for(auto str : towns.cpu.state.fpuState.GetStateText())
 				{
 					std::cout << str << std::endl;
+				}
+			}
+			break;
+		case DUMP_WHERE_I_AM:
+			for(int i=0; i<2; ++i)
+			{
+				std::cout << (0==i ? "X:" : "Y:");
+				if(true==towns.mapXY[i].ready)
+				{
+					auto eval=towns.mapXY[i].Evaluate();
+					std::cout << eval;
+					std::cout << "($" << cpputil::Ustox(eval) << ")" << std::endl;
+				}
+				else
+				{
+					std::cout << "Unavailable" << std::endl;
 				}
 			}
 			break;
@@ -4409,7 +4428,7 @@ void TownsCommandInterpreter::Execute_QuickScreenShot(FMTowns &towns,Command &cm
 	for(int count=0; count<100; ++count)
 	{
 		char fmt[256];
-		sprintf(fmt,"%04d%02d%02d%02d%02d%02d%02d.png",year,month,date,hour,min,sec,count);
+		sprintf(fmt,"%04d%02d%02d%02d%02d%02d%02d",year,month,date,hour,min,sec,count);
 
 		if(""!=towns.var.quickScrnShotDir)
 		{
@@ -4420,6 +4439,18 @@ void TownsCommandInterpreter::Execute_QuickScreenShot(FMTowns &towns,Command &cm
 			ful=fmt;
 		}
 
+		if(true==towns.mapXY[0].ready)
+		{
+			sprintf(fmt,"$X=%d",towns.mapXY[0].Evaluate());
+			ful+=std::string(fmt);
+		}
+		if(true==towns.mapXY[1].ready)
+		{
+			sprintf(fmt,"$Y=%d",towns.mapXY[1].Evaluate());
+			ful+=std::string(fmt);
+		}
+
+		ful+=".png";
 		if(true!=cpputil::FileExists(ful))
 		{
 			break;
