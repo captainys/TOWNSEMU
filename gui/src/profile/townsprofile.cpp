@@ -331,6 +331,20 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 		text.back()+=TownsTypeToStr(townsType);
 	}
 
+	sstream.str("");
+	sstream << "SCRNCROP " << scrnShotX0 << " " << scrnShotY0 << " " << scrnShotWid << " " << scrnShotHei;
+	text.push_back(sstream.str());
+
+	text.push_back("MAPLOC_X ");
+	text.back().push_back('\"');
+	text.back()+=mapXYExpression[0];
+	text.back().push_back('\"');
+
+	text.push_back("MAPLOC_Y ");
+	text.back().push_back('\"');
+	text.back()+=mapXYExpression[1];
+	text.back().push_back('\"');
+
 	return text;
 }
 bool TownsProfile::Deserialize(const std::vector <std::string> &text)
@@ -714,6 +728,30 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 				townsType=StrToTownsType(argv[1].c_str());
 			}
 		}
+		else if(0==argv[0].STRCMP("SCRNCROP"))
+		{
+			if(5<=argv.size())
+			{
+				scrnShotX0=argv[1].Atoi();
+				scrnShotY0=argv[2].Atoi();
+				scrnShotWid=argv[3].Atoi();
+				scrnShotHei=argv[4].Atoi();
+			}
+		}
+		else if(0==argv[0].STRCMP("MAPLOC_X"))
+		{
+			if(2<=argv.size())
+			{
+				mapXYExpression[0]=argv[1];
+			}
+		}
+		else if(0==argv[0].STRCMP("MAPLOC_Y"))
+		{
+			if(2<=argv.size())
+			{
+				mapXYExpression[1]=argv[1];
+			}
+		}
 		else
 		{
 			errorMsg="Unrecognized keyword:";
@@ -1037,6 +1075,35 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 	{
 		argv.push_back("-SHAREDIR");
 		argv.push_back(sd);
+	}
+
+
+	argv.push_back("-SSCROP");
+	sstream.str("");
+	sstream << scrnShotX0;
+	argv.push_back(sstream.str());
+
+	sstream.str("");
+	sstream << scrnShotY0;
+	argv.push_back(sstream.str());
+
+	sstream.str("");
+	sstream << scrnShotWid;
+	argv.push_back(sstream.str());
+
+	sstream.str("");
+	sstream << scrnShotHei;
+	argv.push_back(sstream.str());
+
+	if(""!=mapXYExpression[0])
+	{
+		argv.push_back("-MAPX");
+		argv.push_back(mapXYExpression[0]);
+	}
+	if(""!=mapXYExpression[1])
+	{
+		argv.push_back("-MAPY");
+		argv.push_back(mapXYExpression[1]);
 	}
 
 	return argv;
