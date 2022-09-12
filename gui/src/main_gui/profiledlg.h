@@ -98,6 +98,9 @@ public:
 	FsGuiButton *browseShareDirBtn[MAX_NUM_SHARED_DIR];
 	FsGuiTextBox *shareDirTxt[MAX_NUM_SHARED_DIR];
 
+	FsGuiTextBox *scrnShotCropTxt[4];
+	FsGuiTextBox *mapXYExpressionTxt[2];
+
 	ProfileDialog(FsGuiMainCanvas *canvasPtr);
 
 	void Make(void);
