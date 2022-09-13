@@ -4829,17 +4829,13 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			break;
 		case 3: // NEG
 			{
-				clocksPassed=(OPER_ADDR==op1.operandType ? 3 : 1);
-				auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
-				auto i=value1.GetAsSignedDword();
-				SetOF(-128==i);
-				SetZF(0==i);
-				SetCF(0!=i);
-				i=-i;
-				SetPF(CheckParity(i));
-				SetSF(0!=(i&0x80));
-				value1.SetSignedDword(i);
-				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+				clocksPassed = (OPER_ADDR == op1.operandType ? 3 : 1);
+				auto value1 = EvaluateOperand(mem, inst.addressSize, inst.segOverride, op1, inst.operandSize / 8);
+				uint32_t r = 0;
+				uint32_t i = value1.GetAsDword();
+				SubByte(r, i);
+				value1.SetDword(r);
+				StoreOperandValue(op1, mem, inst.addressSize, inst.segOverride, value1);
 			}
 			break;
 		case 4: // MUL
@@ -4978,37 +4974,13 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			break;
 		case 3: // NEG
 			{
-				clocksPassed=(OPER_ADDR==op1.operandType ? 3 : 1);
-				auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
-				int32_t i=value1.GetAsSignedDword();
-				if(16==inst.operandSize)
-				{
-					SetOF(-32768==i);
-				}
-				else if(32==inst.operandSize)
-				{
-					SetOF(-0x80000000LL==i);
-				}
-				i=-i;
-				SetZF(0==i);
-				SetCF(0!=i);
-				SetSF(i<0);
-			#ifndef _WIN32
-				// Somehow it steps on clang's bug.  When i=-0x80000000, it correctly negate to 0x80000000, which is
-				// -0x80000000.  However, the condition i<0 becomes false.  I need to add a special case to deal with
-				// this bug.  One possibility I can think of is clang does it in 64-bit integer and then copy back
-				// to the destination 32-bit integer.  In that case, Sign flag of the CPU will be clear.
-				// And the optimizer may have taken the Sign Flag for (i<0).
-				// This is not needed in Visual C++.
-				// clang version 12.0.5
-				if(0x80000000==value1.GetAsDword())
-				{
-					SetSF(true);
-				}
-			#endif
-				value1.SetSignedDword(i);
-				SetPF(CheckParity(i));
-				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+				clocksPassed = (OPER_ADDR == op1.operandType ? 3 : 1);
+				auto value1 = EvaluateOperand(mem, inst.addressSize, inst.segOverride, op1, inst.operandSize / 8);
+				uint32_t r = 0;
+				uint32_t i = value1.GetAsDword();
+				SubWordOrDword(inst.operandSize, r, i);
+				value1.SetDword(r);
+				StoreOperandValue(op1, mem, inst.addressSize, inst.segOverride, value1);
 			}
 			break;
 		case 4: // MUL
