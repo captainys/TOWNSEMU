@@ -348,6 +348,10 @@ public:
 	*/
 	void KeyOn(unsigned int ch,unsigned int slotFlags=SLOTFLAGS_ALL);
 
+	/*!
+	*/
+	void CalculateHertzX16Channel3SpecialMode(unsigned int slotHertzX16[],unsigned int hertzX16Default) const;
+
 	/*! Update phase update (times 2^12) per step for slot.
 	*/
 	void UpdatePhase12StepSlot(Slot &slot,const unsigned int hertzX16,int detuneContribution);
@@ -469,7 +473,7 @@ public:
 		F-Number Sampled from F-BASIC 386.
 		PLAY "O4A"  -> 1038 must correspond to 440Hz -> Ratio should be 0.423892100192678.
 	*/
-	inline unsigned int BLOCK_FNUM_to_FreqX16(unsigned int BLOCK,unsigned int FNUM)
+	inline unsigned int BLOCK_FNUM_to_FreqX16(unsigned int BLOCK,unsigned int FNUM) const
 	{
 		/* Value based on [2]
 		static const unsigned int scale[8]=

@@ -404,9 +404,11 @@ unsigned int YM2612::WriteRegister(unsigned int channelBase,unsigned int reg,uns
 					state.F_NUM_3CH[slot]|=((value&7)<<8);
 					state.BLOCK_3CH[slot]=((value>>3)&7);
 				}
+				UpdatePhase12StepSlot(state.channels[2]);
 			}
 			else if(3==channelBase)
 			{
+				// Probably it does not apply.
 				if(reg<0xAC)
 				{
 					state.F_NUM_6CH[slot]&=0xFF00;

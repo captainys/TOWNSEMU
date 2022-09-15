@@ -827,10 +827,7 @@ void YM2612::KeyOn(unsigned int chNum,unsigned int slotFlags)
 	//   ACH   Block|F-Number 2  3   2
 	if(2==chNum && MODE_NONE!=GetChannel3Mode())
 	{
-		slotHertzX16[0]=BLOCK_FNUM_to_FreqX16(state.BLOCK_3CH[1],state.F_NUM_3CH[1]);
-		slotHertzX16[1]=BLOCK_FNUM_to_FreqX16(state.BLOCK_3CH[2],state.F_NUM_3CH[2]);
-		slotHertzX16[2]=BLOCK_FNUM_to_FreqX16(state.BLOCK_3CH[0],state.F_NUM_3CH[0]);
-		slotHertzX16[3]=hertzX16;
+		CalculateHertzX16Channel3SpecialMode(slotHertzX16,hertzX16);
 	}
 
 	for(int i=0; i<NUM_SLOTS; ++i)
@@ -877,6 +874,14 @@ void YM2612::KeyOn(unsigned int chNum,unsigned int slotFlags)
 #endif
 }
 
+void YM2612::CalculateHertzX16Channel3SpecialMode(unsigned int slotHertzX16[],unsigned int hertzX16Default) const
+{
+	slotHertzX16[0]=BLOCK_FNUM_to_FreqX16(state.BLOCK_3CH[1],state.F_NUM_3CH[1]);
+	slotHertzX16[1]=BLOCK_FNUM_to_FreqX16(state.BLOCK_3CH[2],state.F_NUM_3CH[2]);
+	slotHertzX16[2]=BLOCK_FNUM_to_FreqX16(state.BLOCK_3CH[0],state.F_NUM_3CH[0]);
+	slotHertzX16[3]=hertzX16Default;
+}
+
 void YM2612::UpdatePhase12StepSlot(Slot &slot,const unsigned int hertzX16,int detuneContribution)
 {
 	// Phase runs hertz*PHASE_STEPS times per second.
@@ -901,10 +906,7 @@ void YM2612::UpdatePhase12StepSlot(Channel &ch)
 
 	if(&ch==&state.channels[2] && MODE_NONE!=GetChannel3Mode())
 	{
-		slotHertzX16[0]=BLOCK_FNUM_to_FreqX16(state.BLOCK_3CH[1],state.F_NUM_3CH[1]);
-		slotHertzX16[1]=BLOCK_FNUM_to_FreqX16(state.BLOCK_3CH[2],state.F_NUM_3CH[2]);
-		slotHertzX16[2]=BLOCK_FNUM_to_FreqX16(state.BLOCK_3CH[0],state.F_NUM_3CH[0]);
-		slotHertzX16[3]=hertzX16;
+		CalculateHertzX16Channel3SpecialMode(slotHertzX16,hertzX16);
 	}
 
 	for(int i=0; i<NUM_SLOTS; ++i)
