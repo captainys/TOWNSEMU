@@ -444,7 +444,7 @@ unsigned int YM2612::WriteRegister(unsigned int channelBase,unsigned int reg,uns
 					{
 						auto prevLevel=127-prevTL;
 						auto newLevel=127-state.channels[ch].slots[slot].TL;
-						UpdateSlotEnvelope(state.channels[ch],state.channels[ch].slots[slot]);
+						UpdateSlotEnvelope(ch,slot);
 						if(0!=prevLevel)
 						{
 							// Must be linear in dB scale.  To prepare for subsequent release phase.
@@ -481,7 +481,7 @@ unsigned int YM2612::WriteRegister(unsigned int channelBase,unsigned int reg,uns
 				state.channels[ch].slots[slot].RR=(value&0x0F);
 				if(0!=(state.channels[ch].usingSlot&(1<<slot)))
 				{
-					UpdateSlotEnvelope(state.channels[ch],state.channels[ch].slots[slot]);
+					UpdateSlotEnvelope(ch,slot);
 				}
 				else if(true==state.channels[ch].slots[slot].InReleasePhase)
 				{
@@ -492,7 +492,7 @@ unsigned int YM2612::WriteRegister(unsigned int channelBase,unsigned int reg,uns
 				state.channels[ch].slots[slot].SSG_EG=(value&0x0F);
 				if(0!=(value&8))
 				{
-					UpdateSlotEnvelope(state.channels[ch],state.channels[ch].slots[slot]);
+					UpdateSlotEnvelope(ch,slot);
 				}
 				break;
 			}

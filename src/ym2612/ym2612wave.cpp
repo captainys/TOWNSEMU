@@ -760,7 +760,7 @@ unsigned int YM2612::Channel::Note(void) const
 	return NOTE;
 }
 
-unsigned int YM2612::Channel::KC(void) const
+unsigned int YM2612::Channel::KC(unsigned int BLOCK,unsigned int F_NUM)
 {
 	// Formulat in [2] pp.204 suggests:
  	//   unsigned int KC=(ch.BLOCK<<2)|NOTE;
@@ -787,6 +787,11 @@ unsigned int YM2612::Channel::KC(void) const
 	return KC&0x1F;
 }
 
+unsigned int YM2612::Channel::KC(void) const
+{
+	return KC(BLOCK,F_NUM);
+}
+
 ////////////////////////////////////////////////////////////
 
 void YM2612::KeyOn(unsigned int chNum,unsigned int slotFlags)
@@ -800,6 +805,7 @@ void YM2612::KeyOn(unsigned int chNum,unsigned int slotFlags)
 	auto &ch=state.channels[chNum];
 
 	const unsigned int hertzX16=BLOCK_FNUM_to_FreqX16(ch.BLOCK,ch.F_NUM);
+	const unsigned int chKC=ch.KC();
 
 	state.playingCh|=(1<<chNum);
 	ch.playState=CH_PLAYING;
@@ -812,6 +818,10 @@ void YM2612::KeyOn(unsigned int chNum,unsigned int slotFlags)
 	unsigned int slotHertzX16[NUM_SLOTS]=
 	{
 		hertzX16,hertzX16,hertzX16,hertzX16,
+	};
+	unsigned int slotKC[NUM_SLOTS]=
+	{
+		chKC,chKC,chKC,chKC
 	};
 
 	// Oh, damn it!  Why 3ch f-numbers and slots are shuffled around?
@@ -828,6 +838,10 @@ void YM2612::KeyOn(unsigned int chNum,unsigned int slotFlags)
 	if(2==chNum && MODE_NONE!=GetChannel3Mode())
 	{
 		CalculateHertzX16Channel3SpecialMode(slotHertzX16,hertzX16);
+		slotKC[0]=CalculateSlotKCChannel3SpecialMode(0);
+		slotKC[1]=CalculateSlotKCChannel3SpecialMode(1);
+		slotKC[2]=CalculateSlotKCChannel3SpecialMode(2);
+		slotKC[3]=chKC;
 	}
 
 	for(int i=0; i<NUM_SLOTS; ++i)
@@ -842,7 +856,7 @@ void YM2612::KeyOn(unsigned int chNum,unsigned int slotFlags)
 			UpdatePhase12StepSlot(slot,slotHertzX16[i],slot.DetuneContributionToPhaseStepS12(ch.BLOCK,ch.Note()));
 
 			// (hertzX16*PHASE_STEPS)<<8==hertz*PHASE_STEPS*4096
-			UpdateSlotEnvelope(ch,slot);
+			UpdateSlotEnvelope(ch,slot,slotKC[i]);
 
 			// Observation tells that if key is turned on while the previous tone is still playing, 
 			// The initial output level must start from the last output level, in which case
@@ -880,6 +894,31 @@ void YM2612::CalculateHertzX16Channel3SpecialMode(unsigned int slotHertzX16[],un
 	slotHertzX16[1]=BLOCK_FNUM_to_FreqX16(state.BLOCK_3CH[2],state.F_NUM_3CH[2]);
 	slotHertzX16[2]=BLOCK_FNUM_to_FreqX16(state.BLOCK_3CH[0],state.F_NUM_3CH[0]);
 	slotHertzX16[3]=hertzX16Default;
+}
+
+unsigned int YM2612::CalculateSlotKCChannel3SpecialMode(unsigned int slotNum) const
+{
+	unsigned int BLOCK,F_NUM;
+	switch(slotNum)
+	{
+	case 0:
+		BLOCK=state.BLOCK_3CH[1];
+		F_NUM=state.F_NUM_3CH[1];
+		break;
+	case 1:
+		BLOCK=state.BLOCK_3CH[2];
+		F_NUM=state.F_NUM_3CH[2];
+		break;
+	case 2:
+		BLOCK=state.BLOCK_3CH[0];
+		F_NUM=state.F_NUM_3CH[0];
+		break;
+	default:
+		BLOCK=state.channels[2].BLOCK;
+		F_NUM=state.channels[2].F_NUM;
+		break;
+	}
+	return Channel::KC(BLOCK,F_NUM);
 }
 
 void YM2612::UpdatePhase12StepSlot(Slot &slot,const unsigned int hertzX16,int detuneContribution)
@@ -1262,9 +1301,24 @@ long long int YM2612::MakeWaveForNSamples(unsigned char wave[],unsigned int nPla
 	}
 }
 
-void YM2612::UpdateSlotEnvelope(const Channel &ch,Slot &slot)
+void YM2612::UpdateSlotEnvelope(unsigned int chNum,unsigned int slotNum)
 {
-	CalculateEnvelope(slot.env,ch.KC(),slot);
+	auto &ch=state.channels[chNum];
+	unsigned int KC;
+	if(2==chNum && MODE_NONE!=GetChannel3Mode())
+	{
+		KC=CalculateSlotKCChannel3SpecialMode(slotNum);
+	}
+	else
+	{
+		KC=ch.KC();
+	}
+	UpdateSlotEnvelope(ch,ch.slots[slotNum],KC);
+}
+
+void YM2612::UpdateSlotEnvelope(const Channel &ch,Slot &slot,unsigned int KC)
+{
+	CalculateEnvelope(slot.env,KC,slot);
 	slot.envDurationCache=slot.env[0]+slot.env[2]+slot.env[4];
 	slot.toneDurationMicrosecS12=slot.envDurationCache;  // In Microsec/1024
 	slot.toneDurationMicrosecS12<<=(12+10-ENVELOPE_PRECISION_SHIFT);

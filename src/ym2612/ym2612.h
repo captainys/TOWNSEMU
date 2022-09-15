@@ -246,6 +246,7 @@ public:
 		void Clear();
 		unsigned int Note(void) const;
 		unsigned int KC(void) const;
+		static unsigned int KC(unsigned int BLOCK,unsigned int F_NUM);
 	};
 
 	class State
@@ -352,6 +353,10 @@ public:
 	*/
 	void CalculateHertzX16Channel3SpecialMode(unsigned int slotHertzX16[],unsigned int hertzX16Default) const;
 
+	/*!
+	*/
+	unsigned int CalculateSlotKCChannel3SpecialMode(unsigned int slotNum) const;
+
 	/*! Update phase update (times 2^12) per step for slot.
 	*/
 	void UpdatePhase12StepSlot(Slot &slot,const unsigned int hertzX16,int detuneContribution);
@@ -407,7 +412,8 @@ public:
 
 	/*! Updates slot envelope.
 	*/
-	void UpdateSlotEnvelope(const Channel &ch,Slot &slot);
+	void UpdateSlotEnvelope(unsigned int chNum,unsigned int slotNum);
+	void UpdateSlotEnvelope(const Channel &ch,Slot &slot,unsigned int KC);
 
 
 	/*!
