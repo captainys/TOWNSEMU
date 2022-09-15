@@ -814,11 +814,22 @@ void YM2612::KeyOn(unsigned int chNum,unsigned int slotFlags)
 		hertzX16,hertzX16,hertzX16,hertzX16,
 	};
 
+	// Oh, damn it!  Why 3ch f-numbers and slots are shuffled around?
+	// FM Towns Technical Data Book pp. 212, Table I-5-38
+	//   Reg                    Ch  SLot
+	//   A2H   F-Number 1        3   4     F_NUM       ->Slot[3]
+	//   A6H   Block|F-Number 2  3   4
+	//   A8H   F-Number 1        3   3     F_NUM_3CH[0]->Slot[2]
+	//   A9H   F-Number 1        3   1     F_NUM_3CH[1]->Slot[0]
+	//   AAH   F-Number 1        3   2     F_NUM_3CH[2]->Slot[1]
+	//   ACH   Block|F-Number 2  3   3
+	//   ACH   Block|F-Number 2  3   1
+	//   ACH   Block|F-Number 2  3   2
 	if(2==chNum && MODE_NONE!=GetChannel3Mode())
 	{
-		slotHertzX16[0]=BLOCK_FNUM_to_FreqX16(state.BLOCK_3CH[0],state.F_NUM_3CH[0]);
-		slotHertzX16[1]=BLOCK_FNUM_to_FreqX16(state.BLOCK_3CH[1],state.F_NUM_3CH[1]);
-		slotHertzX16[2]=BLOCK_FNUM_to_FreqX16(state.BLOCK_3CH[2],state.F_NUM_3CH[2]);
+		slotHertzX16[0]=BLOCK_FNUM_to_FreqX16(state.BLOCK_3CH[1],state.F_NUM_3CH[1]);
+		slotHertzX16[1]=BLOCK_FNUM_to_FreqX16(state.BLOCK_3CH[2],state.F_NUM_3CH[2]);
+		slotHertzX16[2]=BLOCK_FNUM_to_FreqX16(state.BLOCK_3CH[0],state.F_NUM_3CH[0]);
 		slotHertzX16[3]=hertzX16;
 	}
 
@@ -890,9 +901,9 @@ void YM2612::UpdatePhase12StepSlot(Channel &ch)
 
 	if(&ch==&state.channels[2] && MODE_NONE!=GetChannel3Mode())
 	{
-		slotHertzX16[0]=BLOCK_FNUM_to_FreqX16(state.BLOCK_3CH[0],state.F_NUM_3CH[0]);
-		slotHertzX16[1]=BLOCK_FNUM_to_FreqX16(state.BLOCK_3CH[1],state.F_NUM_3CH[1]);
-		slotHertzX16[2]=BLOCK_FNUM_to_FreqX16(state.BLOCK_3CH[2],state.F_NUM_3CH[2]);
+		slotHertzX16[0]=BLOCK_FNUM_to_FreqX16(state.BLOCK_3CH[1],state.F_NUM_3CH[1]);
+		slotHertzX16[1]=BLOCK_FNUM_to_FreqX16(state.BLOCK_3CH[2],state.F_NUM_3CH[2]);
+		slotHertzX16[2]=BLOCK_FNUM_to_FreqX16(state.BLOCK_3CH[0],state.F_NUM_3CH[0]);
 		slotHertzX16[3]=hertzX16;
 	}
 
