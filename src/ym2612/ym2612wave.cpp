@@ -838,9 +838,9 @@ void YM2612::KeyOn(unsigned int chNum,unsigned int slotFlags)
 	if(2==chNum && MODE_NONE!=GetChannel3Mode())
 	{
 		CalculateHertzX16Channel3SpecialMode(slotHertzX16,hertzX16);
-		slotKC[0]=CalculateSlotKCChannel3SpecialMode(0);
-		slotKC[1]=CalculateSlotKCChannel3SpecialMode(1);
-		slotKC[2]=CalculateSlotKCChannel3SpecialMode(2);
+		slotKC[0]=CalculateSlotKCChannel3SpecialMode(1);
+		slotKC[1]=CalculateSlotKCChannel3SpecialMode(2);
+		slotKC[2]=CalculateSlotKCChannel3SpecialMode(0);
 		slotKC[3]=chKC;
 	}
 
