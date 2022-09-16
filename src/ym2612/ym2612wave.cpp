@@ -862,7 +862,7 @@ void YM2612::KeyOn(unsigned int chNum,unsigned int slotFlags)
 			// The initial output level must start from the last output level, in which case
 			// microsec12 must fast-forwarded so that the output matches the lastDbX100Cache.
 			// Linear interpolation will have error, but should be better than nothing.
-			if(slot.lastDbX100Cache<=0)
+			if(0!=(slot.SSG_EG&8) || slot.lastDbX100Cache<=0)
 			{
 				slot.microsecS12=0;
 			}

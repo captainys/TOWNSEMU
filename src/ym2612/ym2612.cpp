@@ -334,6 +334,12 @@ unsigned int YM2612::WriteRegister(unsigned int channelBase,unsigned int reg,uns
 			unsigned int countLow=state.regSet[regSet][REG_TIMER_A_COUNT_LOW];
 			auto count=(countHigh<<2)|(countLow&3);
 			state.timerCounter[0]=count*TIMER_A_PER_TICK;
+			if(MODE_CSM==GetChannel3Mode())
+			{
+				// FM Towns Technical Databook pp.201
+				// Key on when TimerA Load and Key off when TimerA Up.
+				KeyOn(2,0x0F);
+			}
 		}
 		if(0==(prev&2) && 0!=(value&2)) // Load Timer B
 		{
@@ -444,12 +450,17 @@ unsigned int YM2612::WriteRegister(unsigned int channelBase,unsigned int reg,uns
 					{
 						auto prevLevel=127-prevTL;
 						auto newLevel=127-state.channels[ch].slots[slot].TL;
-						UpdateSlotEnvelope(ch,slot);
-						if(0!=prevLevel)
+						if(2!=ch || MODE_NONE==GetChannel3Mode())
 						{
-							// Must be linear in dB scale.  To prepare for subsequent release phase.
-							state.channels[ch].slots[slot].lastDbX100Cache*=newLevel;
-							state.channels[ch].slots[slot].lastDbX100Cache/=prevLevel;
+							// FM Towns Technical Databook pp.205
+							// In CSM mode, change of TL takes effect at next Key On.
+							UpdateSlotEnvelope(ch,slot);
+							if(0!=prevLevel)
+							{
+								// Must be linear in dB scale.  To prepare for subsequent release phase.
+								state.channels[ch].slots[slot].lastDbX100Cache*=newLevel;
+								state.channels[ch].slots[slot].lastDbX100Cache/=prevLevel;
+							}
 						}
 					}
 					else if(true==state.channels[ch].slots[slot].InReleasePhase)
@@ -608,8 +619,9 @@ void YM2612::Run(unsigned long long int systemTimeInNS)
 				}
 				if(MODE_CSM==GetChannel3Mode())
 				{
+					// FM Towns Technical Databook pp.201
+					// Key on when TimerA Load and Key off when TimerA Up.
 					KeyOff(2,0x0F);
-					KeyOn(2,0x0F);
 					state.channels[2].usingSlot=0x0F;
 				}
 			}
@@ -711,6 +723,31 @@ std::vector <std::string> YM2612::GetStatusText(void) const
 				slot.RR,
 				slot.SSG_EG);
 			text.push_back(str);
+			if(2==chNum)
+			{
+				unsigned int BLOCK,F_NUM;
+				switch(s)
+				{
+				case 0:
+					BLOCK=state.BLOCK_3CH[1];
+					F_NUM=state.F_NUM_3CH[1];
+					break;
+				case 1:
+					BLOCK=state.BLOCK_3CH[2];
+					F_NUM=state.F_NUM_3CH[2];
+					break;
+				case 2:
+					BLOCK=state.BLOCK_3CH[0];
+					F_NUM=state.F_NUM_3CH[0];
+					break;
+				case 3:
+					BLOCK=ch.BLOCK;
+					F_NUM=ch.F_NUM;
+					break;
+				}
+				sprintf(str,"(%d:%d)",BLOCK,F_NUM);
+				text.back()+=std::string(str);
+			}
 			++s;
 		}
 	}
