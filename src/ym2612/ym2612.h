@@ -505,7 +505,6 @@ public:
 			((423892*YM_CLOCK_RATIO) *64),   // (4239*16/10)*4,
 			((423892*YM_CLOCK_RATIO)*128),   // (4239*16/10)*8,
 		};
-		FNUM*=YM_CLOCK_RATIO;
 	#ifdef YM_PRESCALER_DEFAULT
 		FNUM*=scale[BLOCK&7]/(1000*state.preScaler);
 	#else
