@@ -835,6 +835,7 @@ void YM2612::KeyOn(unsigned int chNum,unsigned int slotFlags)
 	//   ACH   Block|F-Number 2  3   3
 	//   ACH   Block|F-Number 2  3   1
 	//   ACH   Block|F-Number 2  3   2
+	// Also confirmed by YM2608J OPNA Application Manual section 2-2-2, table 2-2.
 	if(2==chNum && MODE_NONE!=GetChannel3Mode())
 	{
 		CalculateHertzX16Channel3SpecialMode(slotHertzX16,hertzX16);
