@@ -173,7 +173,6 @@ void YM2612::MakeTLtoDB100(void)
 		{
 			TLtoDB100[TL]+=(TL&(1<<bit_count))?75*(1<<bit_count):0;
 		}
-		std::cout << TL << " : " << TLtoDB100[TL] << std::endl;;
 	}
 }
 
