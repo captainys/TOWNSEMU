@@ -852,7 +852,10 @@ void YM2612::KeyOn(unsigned int chNum,unsigned int slotFlags)
 			auto &slot=ch.slots[i];
 
 			slot.InReleasePhase=false;
-			slot.phaseS12=0;
+			if(MODE_CSM!=GetChannel3Mode())
+			{
+				slot.phaseS12=0;
+			}
 
 			UpdatePhase12StepSlot(slot,slotHertzX16[i],slot.DetuneContributionToPhaseStepS12(ch.BLOCK,ch.Note()));
 
@@ -1320,7 +1323,7 @@ void YM2612::UpdateSlotEnvelope(unsigned int chNum,unsigned int slotNum)
 void YM2612::UpdateSlotEnvelope(const Channel &ch,Slot &slot,unsigned int KC)
 {
 	CalculateEnvelope(slot.env,KC,slot);
-	slot.envDurationCache=slot.env[0]+slot.env[2]+slot.env[4];
+	slot.envDurationCache=slot.env[0]+slot.env[2]+slot.env[4]+slot.env[6]+slot.env[8]+slot.env[10];
 	slot.toneDurationMicrosecS12=slot.envDurationCache;  // In Microsec/1024
 	slot.toneDurationMicrosecS12<<=(12+10-ENVELOPE_PRECISION_SHIFT);
 }
@@ -1420,6 +1423,13 @@ bool YM2612::CalculateEnvelope(unsigned int env[12],unsigned int KC,const Slot &
 	mul*=sustainDecayReleaseTime0to96dB[SR];
 	mul/=((9600*1024/10)/ENVELOPE_PRECISION);
 	env[4]=(unsigned int)mul;
+
+	env[6]=0;
+	env[7]=0;
+	env[8]=0;
+	env[9]=0;
+	env[10]=0;
+	env[11]=0;
 
 	// ?
 	// If, AR, DR, SR, and RR are really rates, the duration for attack, decay, and sustain should depend
