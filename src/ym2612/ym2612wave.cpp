@@ -852,10 +852,7 @@ void YM2612::KeyOn(unsigned int chNum,unsigned int slotFlags)
 			auto &slot=ch.slots[i];
 
 			slot.InReleasePhase=false;
-			if(MODE_CSM!=GetChannel3Mode())
-			{
-				slot.phaseS12=0;
-			}
+			slot.phaseS12=0;
 
 			UpdatePhase12StepSlot(slot,slotHertzX16[i],slot.DetuneContributionToPhaseStepS12(ch.BLOCK,ch.Note()));
 
