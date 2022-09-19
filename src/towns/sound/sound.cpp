@@ -84,7 +84,7 @@ void TownsSound::PCMStopPlay(unsigned char chStopPlay)
 		break;
 	case TOWNSIO_SOUND_DATA0://             0x4DA, // [2] pp.18,
 		{
-			state.ym2612.WriteRegister(0,state.addrLatch[0],data);
+			state.ym2612.WriteRegister(0,state.addrLatch[0],data,townsPtr->state.townsTime);
 		}
 		break;
 	case TOWNSIO_SOUND_ADDRESS1://          0x4DC, // [2] pp.18,
@@ -92,7 +92,7 @@ void TownsSound::PCMStopPlay(unsigned char chStopPlay)
 		break;
 	case TOWNSIO_SOUND_DATA1://             0x4DE, // [2] pp.18,
 		{
-			state.ym2612.WriteRegister(3,state.addrLatch[1],data);
+			state.ym2612.WriteRegister(3,state.addrLatch[1],data,townsPtr->state.townsTime);
 		}
 		break;
 	case TOWNSIO_SOUND_INT_REASON://        0x4E9, // [2] pp.19,

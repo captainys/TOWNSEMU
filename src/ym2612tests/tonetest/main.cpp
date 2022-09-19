@@ -189,25 +189,25 @@ void SetUpYM(YM2612 &ym2612,int CONNECT,int FB,int MULTI)
 	{
 		if(0x31==sample[i+1])
 		{
-			ym2612.WriteRegister(sample[i],sample[i+1],(sample[i+2]&0xF0)|MULTI);
+			ym2612.WriteRegister(sample[i],sample[i+1],(sample[i+2]&0xF0)|MULTI,0);
 		}
 		else
 		{
-			ym2612.WriteRegister(sample[i],sample[i+1],sample[i+2]);
+			ym2612.WriteRegister(sample[i],sample[i+1],sample[i+2],0);
 		}
 	}
 
-	ym2612.WriteRegister(0,0xB1,(FB<<3)|CONNECT);  // Ch1 not CH0
+	ym2612.WriteRegister(0,0xB1,(FB<<3)|CONNECT,0);  // Ch1 not CH0
 }
 
 void StartTone(YM2612 &ym2612)
 {
-	ym2612.WriteRegister(0,0x28,0xF0); // Start Tone CH1
+	ym2612.WriteRegister(0,0x28,0xF0,0); // Start Tone CH1
 }
 
 void StopTone(YM2612 &ym2612)
 {
-	ym2612.WriteRegister(0,0x28,0x00); // Stop Tone CH1
+	ym2612.WriteRegister(0,0x28,0x00,0); // Stop Tone CH1
 }
 
 std::vector <unsigned char> MakeSample(YM2612 &ym2612)

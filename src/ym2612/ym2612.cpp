@@ -264,7 +264,7 @@ void YM2612::Reset(void)
 {
 	state.Reset();
 }
-unsigned int YM2612::WriteRegister(unsigned int channelBase,unsigned int reg,unsigned int value)
+unsigned int YM2612::WriteRegister(unsigned int channelBase,unsigned int reg,unsigned int value,uint64_t systemTimeInNS)
 {
 	auto regSet=channelBase/3;
 	if(reg<0x30)
@@ -282,6 +282,7 @@ unsigned int YM2612::WriteRegister(unsigned int channelBase,unsigned int reg,uns
 		rwl.reg=(unsigned char)reg;
 		rwl.data=(unsigned char)value;
 		rwl.count=1;
+		rwl.systemTimeInNS=systemTimeInNS;
 		if(0<regWriteLog.size() &&
 		   regWriteLog.back().chBase==rwl.chBase &&
 		   regWriteLog.back().reg==rwl.reg &&
@@ -338,7 +339,14 @@ unsigned int YM2612::WriteRegister(unsigned int channelBase,unsigned int reg,uns
 			{
 				// FM Towns Technical Databook pp.201
 				// Key on when TimerA Load and Key off when TimerA Up.
-				KeyOn(2,0x0F);
+				if(true==useScheduling)
+				{
+					WriteRegisterSchedule(channelBase,REG_KEY_ON_OFF,0xF2,systemTimeInNS);
+				}
+				else
+				{
+					KeyOn(2,0x0F);
+				}
 			}
 		}
 		if(0==(prev&2) && 0!=(value&2)) // Load Timer B
@@ -621,7 +629,14 @@ void YM2612::Run(unsigned long long int systemTimeInNS)
 				{
 					// FM Towns Technical Databook pp.201
 					// Key on when TimerA Load and Key off when TimerA Up.
-					KeyOff(2,0x0F);
+					if(true==useScheduling)
+					{
+						WriteRegisterSchedule(0,REG_KEY_ON_OFF,0x02,systemTimeInNS);
+					}
+					else
+					{
+						KeyOff(2,0x0F);
+					}
 					state.channels[2].usingSlot=0x0F;
 				}
 			}
@@ -783,4 +798,33 @@ std::vector <std::string> YM2612::GetStatusText(void) const
 	text.push_back(str);
 
 	return text;
+}
+
+////////////////////////////////////////////////////////////
+
+void YM2612::WriteRegisterSchedule(unsigned int channelBase,unsigned int reg,unsigned int value,uint64_t systemTimeInNS)
+{
+	if(REG_KEY_ON_OFF==reg ||
+	   (0xA8<=reg && reg<=0xAE) || // Special 3CH F-Number/BLOCK
+	   (0x30<=reg && reg<=0x9E) || // Per Channel per slot
+	   (0xA0<=reg && reg<=0xB6))
+	{
+		RegWriteLog rwl;
+		rwl.chBase=channelBase;
+		rwl.reg=reg;
+		rwl.data=value;
+		rwl.systemTimeInNS=systemTimeInNS;
+		regWriteSched.push_back(rwl);
+	}
+	else
+	{
+		WriteRegister(channelBase,reg,value,systemTimeInNS);
+	}
+}
+void YM2612::FlushRegisterSchedule(void)
+{
+	for(auto sched : regWriteSched)
+	{
+		WriteRegister(sched.chBase,sched.reg,sched.data,sched.systemTimeInNS);
+	}
 }

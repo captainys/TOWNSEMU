@@ -1017,7 +1017,7 @@ void YM2612::CheckToneDoneAllChannels(void)
 	}
 }
 
-std::vector <unsigned char> YM2612::MakeWaveAllChannels(unsigned long long int millisec) const
+std::vector <unsigned char> YM2612::MakeWaveAllChannels(unsigned long long int millisec)
 {
 	std::vector <unsigned char> wave;
 
@@ -1041,7 +1041,7 @@ std::vector <unsigned char> YM2612::MakeWaveAllChannels(unsigned long long int m
 	return wave;
 }
 
-std::vector <unsigned char> YM2612::MakeWave(unsigned int ch,unsigned long long int millisec) const
+std::vector <unsigned char> YM2612::MakeWave(unsigned int ch,unsigned long long int millisec)
 {
 	std::vector <unsigned char> wave;
 
@@ -1116,7 +1116,7 @@ public:
 };
 
 template <class LFOClass>
-long long int YM2612::MakeWaveForNSamplesTemplate(unsigned char wave[],unsigned int nPlayingCh,unsigned int playingCh[],unsigned long long int numSamples) const
+long long int YM2612::MakeWaveForNSamplesTemplate(unsigned char wave[],unsigned int nPlayingCh,unsigned int playingCh[],unsigned long long int numSamples)
 {
 	const unsigned int microsecS12Step=4096000000/WAVE_SAMPLING_RATE;
 	// Time runs 1/WAVE_SAMPLING_RATE seconds per step
@@ -1129,6 +1129,8 @@ long long int YM2612::MakeWaveForNSamplesTemplate(unsigned char wave[],unsigned 
 
 	unsigned int LeftANDPtn[NUM_CHANNELS];
 	unsigned int RightANDPtn[NUM_CHANNELS];
+
+	FlushRegisterSchedule();
 
 	for(unsigned int chNum=0; chNum<NUM_CHANNELS; ++chNum)
 	{
@@ -1276,7 +1278,7 @@ long long int YM2612::MakeWaveForNSamplesTemplate(unsigned char wave[],unsigned 
 	return i;
 }
 
-long long int YM2612::MakeWaveForNSamples(unsigned char wavBuf[],unsigned long long int numSamplesRequested) const
+long long int YM2612::MakeWaveForNSamples(unsigned char wavBuf[],unsigned long long int numSamplesRequested)
 {
 	unsigned int nPlayingCh=0;
 	unsigned int playingCh[NUM_CHANNELS];
@@ -1290,7 +1292,7 @@ long long int YM2612::MakeWaveForNSamples(unsigned char wavBuf[],unsigned long l
 	return MakeWaveForNSamples(wavBuf,nPlayingCh,playingCh,numSamplesRequested);
 }
 
-long long int YM2612::MakeWaveForNSamples(unsigned char wave[],unsigned int nPlayingCh,unsigned int playingCh[],unsigned long long int numSamples) const
+long long int YM2612::MakeWaveForNSamples(unsigned char wave[],unsigned int nPlayingCh,unsigned int playingCh[],unsigned long long int numSamples)
 {
 	if(true==state.LFO)
 	{

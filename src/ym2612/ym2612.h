@@ -303,6 +303,7 @@ public:
 	public:
 		unsigned char chBase,reg,data;
 		unsigned int count=1;
+		uint64_t systemTimeInNS;
 	};
 	bool takeRegLog=false;
 	std::vector <RegWriteLog> regWriteLog;
@@ -324,7 +325,7 @@ public:
 	/*! Writes to a register, and if a channel starts playing a tone, it calls KeyOn and returns between 0 to 5.
 	    65535 otherwise.
 	*/
-	unsigned int WriteRegister(unsigned int channelBase,unsigned int reg,unsigned int value);
+	unsigned int WriteRegister(unsigned int channelBase,unsigned int reg,unsigned int value,uint64_t systemTimeInNS);
 #ifndef YM_PRESCALER_DEFAULT
 	unsigned int ReadRegister(unsigned int channelBase,unsigned int reg) const;
 #else
@@ -365,29 +366,33 @@ public:
 	*/
 	void UpdatePhase12StepSlot(Channel &ch);
 
+
+	// Removed const quailifiers from MakeWaveForNSamples.  YM2612 is a state machine after all.  Generating a wave segment also needs to update its state.
+
+
 	/*! Sampling rate is defined by WAVE_SAMPLING_RATE.
 	*/
-	std::vector <unsigned char> MakeWaveAllChannels(unsigned long long int millisec) const;
+	std::vector <unsigned char> MakeWaveAllChannels(unsigned long long int millisec);
 
 	/*! For debugging purpose.  Make wave for a specific channel.
 	*/
-	std::vector <unsigned char> MakeWave(unsigned int ch,unsigned long long int millisec) const;
+	std::vector <unsigned char> MakeWave(unsigned int ch,unsigned long long int millisec);
 
 public:
 	/*! Adds a wave to the buffer, and returns the number of samples (number_of_bytes_filled/4).
 	    Sampling rate is defined by WAVE_SAMPLING_RATE.
 	*/
-	long long int MakeWaveForNSamples(unsigned char wavBuf[],unsigned long long int numSamplesRequested) const;
+	long long int MakeWaveForNSamples(unsigned char wavBuf[],unsigned long long int numSamplesRequested);
 
 	/*! Adds a wave to the buffer, and returns the number of samples (number_of_bytes_filled/4).
 	    Sampling rate is defined by WAVE_SAMPLING_RATE.
 	*/
-	long long int MakeWaveForNSamples(unsigned char wavBuf[],unsigned int nPlayingCh,unsigned int playingCh[],unsigned long long int numSamplesRequested) const;
+	long long int MakeWaveForNSamples(unsigned char wavBuf[],unsigned int nPlayingCh,unsigned int playingCh[],unsigned long long int numSamplesRequested);
 private:
 	class WithLFO;
 	class WithoutLFO;
 	template <class LFO>
-	long long int MakeWaveForNSamplesTemplate(unsigned char wavBuf[],unsigned int nPlayingCh,unsigned int playingCh[],unsigned long long int numSamplesRequested) const;
+	long long int MakeWaveForNSamplesTemplate(unsigned char wavBuf[],unsigned int nPlayingCh,unsigned int playingCh[],unsigned long long int numSamplesRequested);
 
 	/*! lastSlot0Out is input/output.  Needed for calculating feedback.
 	*/
@@ -519,6 +524,23 @@ public:
 
 
 	std::vector <std::string> GetStatusText(void) const;
+
+
+
+	/* CSM play-back requires sub-millisecond precision.
+	   Let Silpheed speak correctly by enabling scheduling.
+	   Schedule must be flushed:
+	     After every wave generation,
+	     Before saving state.
+	   To enable scheduling, 
+	      (1) useScheduling=true;
+	      (2) Use WriteRegisterSchedule instead of WriteRegister.
+	      (3) VM needs to remember when the wave was generated for the last time, and pass it to MakeWaveForNSamples.
+	*/
+	bool useScheduling=false;
+	std::vector <RegWriteLog> regWriteSched;
+	void WriteRegisterSchedule(unsigned int channelBase,unsigned int reg,unsigned int value,uint64_t vmTime);
+	void FlushRegisterSchedule(void);
 };
 
 

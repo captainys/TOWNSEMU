@@ -75,7 +75,7 @@ bool Play(const char fName[])
 			if(playPtr+2<dat.size())
 			{
 				auto channelBase=(dat[playPtr]&1)*3;
-				auto keyOnCh=ym2612.WriteRegister(channelBase,dat[playPtr+1],dat[playPtr+2]);
+				auto keyOnCh=ym2612.WriteRegister(channelBase,dat[playPtr+1],dat[playPtr+2],0);
 				if(0<=keyOnCh && keyOnCh<num_channels)
 				{
 					auto wave=ym2612.MakeWave(keyOnCh,time_precision_millisec);
