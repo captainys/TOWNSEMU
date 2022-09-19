@@ -213,7 +213,7 @@ void StopTone(YM2612 &ym2612)
 std::vector <unsigned char> MakeSample(YM2612 &ym2612)
 {
 	ym2612.KeyOn(0);
-	auto wave=ym2612.MakeWave(0,100); // 100ms
+	auto wave=ym2612.MakeWave(0,100,0); // 100ms
 	ym2612.KeyOff(0);
 	return wave;
 }

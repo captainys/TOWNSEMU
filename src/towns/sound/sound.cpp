@@ -255,7 +255,7 @@ void TownsSound::ProcessSound(void)
 
 				if(true==IsFMPlaying() && 0!=(state.muteFlag&2))
 				{
-					state.ym2612.MakeWaveForNSamples(fillPtr,fillNumSamples);
+					state.ym2612.MakeWaveForNSamples(fillPtr,fillNumSamples,0);
 				}
 				if(true==IsPCMPlaying())
 				{

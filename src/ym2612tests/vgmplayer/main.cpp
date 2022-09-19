@@ -55,7 +55,7 @@ bool Play(const char fName[])
 				if(0!=(ym2612.state.playingCh&(1<<chNum)) &&
 				   YSTRUE!=soundPlayer.IsPlaying(FMChannel[chNum]))
 				{
-					auto wave=ym2612.MakeWave(chNum,time_precision_millisec);
+					auto wave=ym2612.MakeWave(chNum,time_precision_millisec,0);
 					FMChannel[chNum].CreateFromSigned16bitStereo(playBackRate,wave);
 					soundPlayer.PlayOneShot(FMChannel[chNum]);
 					ym2612.CheckToneDone(chNum);
@@ -78,7 +78,7 @@ bool Play(const char fName[])
 				auto keyOnCh=ym2612.WriteRegister(channelBase,dat[playPtr+1],dat[playPtr+2],0);
 				if(0<=keyOnCh && keyOnCh<num_channels)
 				{
-					auto wave=ym2612.MakeWave(keyOnCh,time_precision_millisec);
+					auto wave=ym2612.MakeWave(keyOnCh,time_precision_millisec,0);
 					FMChannel[keyOnCh].CreateFromSigned16bitStereo(playBackRate,wave);
 					soundPlayer.PlayOneShot(FMChannel[keyOnCh]);
 				}

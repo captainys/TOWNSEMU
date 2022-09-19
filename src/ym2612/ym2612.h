@@ -371,28 +371,32 @@ public:
 
 
 	/*! Sampling rate is defined by WAVE_SAMPLING_RATE.
+	    Unless register-write scheduling is used, lastWaveGenTime can be zero.
 	*/
-	std::vector <unsigned char> MakeWaveAllChannels(unsigned long long int millisec);
+	std::vector <unsigned char> MakeWaveAllChannels(unsigned long long int millisec,uint64_t lastWaveGenTime);
 
 	/*! For debugging purpose.  Make wave for a specific channel.
+	    Unless register-write scheduling is used, lastWaveGenTime can be zero.
 	*/
-	std::vector <unsigned char> MakeWave(unsigned int ch,unsigned long long int millisec);
+	std::vector <unsigned char> MakeWave(unsigned int ch,unsigned long long int millisec,uint64_t lastWaveGenTime);
 
 public:
 	/*! Adds a wave to the buffer, and returns the number of samples (number_of_bytes_filled/4).
 	    Sampling rate is defined by WAVE_SAMPLING_RATE.
+	    Unless register-write scheduling is used, lastWaveGenTime can be zero.
 	*/
-	long long int MakeWaveForNSamples(unsigned char wavBuf[],unsigned long long int numSamplesRequested);
+	long long int MakeWaveForNSamples(unsigned char wavBuf[],unsigned long long int numSamplesRequested,uint64_t lastWaveGenTime);
 
 	/*! Adds a wave to the buffer, and returns the number of samples (number_of_bytes_filled/4).
 	    Sampling rate is defined by WAVE_SAMPLING_RATE.
+	    Unless register-write scheduling is used, lastWaveGenTime can be zero.
 	*/
-	long long int MakeWaveForNSamples(unsigned char wavBuf[],unsigned int nPlayingCh,unsigned int playingCh[],unsigned long long int numSamplesRequested);
+	long long int MakeWaveForNSamples(unsigned char wavBuf[],unsigned int nPlayingCh,unsigned int playingCh[],unsigned long long int numSamplesRequested,uint64_t lastWaveGenTime);
 private:
 	class WithLFO;
 	class WithoutLFO;
 	template <class LFO>
-	long long int MakeWaveForNSamplesTemplate(unsigned char wavBuf[],unsigned int nPlayingCh,unsigned int playingCh[],unsigned long long int numSamplesRequested);
+	long long int MakeWaveForNSamplesTemplate(unsigned char wavBuf[],unsigned int nPlayingCh,unsigned int playingCh[],unsigned long long int numSamplesRequested,uint64_t lastWaveGenTime);
 
 	/*! lastSlot0Out is input/output.  Needed for calculating feedback.
 	*/
