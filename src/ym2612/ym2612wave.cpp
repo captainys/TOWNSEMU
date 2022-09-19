@@ -1115,7 +1115,65 @@ public:
 	}
 };
 
-template <class LFOClass>
+class YM2612::WithScheduler
+{
+public:
+	unsigned int schedPtr=0;
+	unsigned int balance=0;
+	unsigned int numSamples=0;
+	unsigned int totalNanosec=0;
+
+	inline void BeginMakeWave(YM2612 *ym,uint64_t numSamples)
+	{
+		totalNanosec=1000000000*numSamples/YM2612::WAVE_SAMPLING_RATE;
+		this->numSamples=numSamples;
+	}
+	inline void Increment(YM2612 *ym,uint64_t count,uint64_t lastWaveGenTime)
+	{
+		// 44100Hz.  1sample=22675nanosec=23us.
+		// Divide it rather than DDA it.
+		if(schedPtr<ym->regWriteSched.size() && 0<numSamples)
+		{
+			auto nanosec=count;
+			nanosec*=totalNanosec;
+			nanosec/=numSamples;
+			nanosec+=lastWaveGenTime;
+			while(schedPtr<ym->regWriteSched.size() && ym->regWriteSched[schedPtr].systemTimeInNS<=nanosec)
+			{
+				auto &sched=ym->regWriteSched[schedPtr];
+				ym->WriteRegister(sched.chBase,sched.reg,sched.data,sched.systemTimeInNS);
+				++schedPtr;
+			}
+		}
+	}
+	inline void EndMakeWave(YM2612 *ym)
+	{
+		while(schedPtr<ym->regWriteSched.size())
+		{
+			auto &sched=ym->regWriteSched[schedPtr];
+			ym->WriteRegister(sched.chBase,sched.reg,sched.data,sched.systemTimeInNS);
+			++schedPtr;
+		}
+		ym->regWriteSched.clear();
+	}
+};
+
+class YM2612::WithoutScheduler
+{
+public:
+	static inline void BeginMakeWave(YM2612 *ym,uint64_t numSamples)
+	{
+		ym->FlushRegisterSchedule();
+	}
+	static inline void Increment(YM2612 *ym,uint64_t count,uint64_t lastWaveGenTime)
+	{
+	}
+	static inline void EndMakeWave(YM2612 *ym)
+	{
+	}
+};
+
+template <class LFOClass,class SCHEDULER>
 long long int YM2612::MakeWaveForNSamplesTemplate(unsigned char wave[],unsigned int nPlayingCh,unsigned int playingCh[],unsigned long long int numSamples,uint64_t lastWaveGenTime)
 {
 	const unsigned int microsecS12Step=4096000000/WAVE_SAMPLING_RATE;
@@ -1127,10 +1185,12 @@ long long int YM2612::MakeWaveForNSamplesTemplate(unsigned char wave[],unsigned 
 	// If microSec12=4096*microseconds, tm runs
 	//           4096000000/WAVE_SAMPLING_RATE per step
 
+	SCHEDULER scheduler;
+
 	unsigned int LeftANDPtn[NUM_CHANNELS];
 	unsigned int RightANDPtn[NUM_CHANNELS];
 
-	FlushRegisterSchedule();
+	scheduler.BeginMakeWave(this,numSamples);
 
 	for(unsigned int chNum=0; chNum<NUM_CHANNELS; ++chNum)
 	{
@@ -1143,6 +1203,8 @@ long long int YM2612::MakeWaveForNSamplesTemplate(unsigned char wave[],unsigned 
 	unsigned int i;
 	for(i=0; i<numSamples && 0<nPlayingCh; ++i)
 	{
+		scheduler.Increment(this,i,lastWaveGenTime);
+
 		int leftOut=0,rightOut=0;
 		for(int j=nPlayingCh-1; 0<=j; --j)
 		{
@@ -1267,6 +1329,8 @@ long long int YM2612::MakeWaveForNSamplesTemplate(unsigned char wave[],unsigned 
 		WordOp_Set(wave+i*4+2,rightOut);
 	}
 
+	scheduler.EndMakeWave(this);
+
 	std::memset(wave+i*4,0,(numSamples-i)*4);
 
 // std::cout << (microsec12>>12) << "us " << std::endl;
@@ -1294,13 +1358,27 @@ long long int YM2612::MakeWaveForNSamples(unsigned char wavBuf[],unsigned long l
 
 long long int YM2612::MakeWaveForNSamples(unsigned char wave[],unsigned int nPlayingCh,unsigned int playingCh[],unsigned long long int numSamples,uint64_t lastWaveGenTime)
 {
-	if(true==state.LFO)
+	if(true==useScheduling)
 	{
-		return MakeWaveForNSamplesTemplate <WithLFO> (wave,nPlayingCh,playingCh,numSamples,lastWaveGenTime);
+		if(true==state.LFO)
+		{
+			return MakeWaveForNSamplesTemplate <WithLFO,WithScheduler> (wave,nPlayingCh,playingCh,numSamples,lastWaveGenTime);
+		}
+		else
+		{
+			return MakeWaveForNSamplesTemplate <WithoutLFO,WithScheduler> (wave,nPlayingCh,playingCh,numSamples,lastWaveGenTime);
+		}
 	}
 	else
 	{
-		return MakeWaveForNSamplesTemplate <WithoutLFO> (wave,nPlayingCh,playingCh,numSamples,lastWaveGenTime);
+		if(true==state.LFO)
+		{
+			return MakeWaveForNSamplesTemplate <WithLFO,WithoutScheduler> (wave,nPlayingCh,playingCh,numSamples,lastWaveGenTime);
+		}
+		else
+		{
+			return MakeWaveForNSamplesTemplate <WithoutLFO,WithoutScheduler> (wave,nPlayingCh,playingCh,numSamples,lastWaveGenTime);
+		}
 	}
 }
 

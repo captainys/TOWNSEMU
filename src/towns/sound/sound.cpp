@@ -354,6 +354,8 @@ void TownsSound::SerializeYM2612(std::vector <unsigned char> &data) const
 {
 	auto &ym2612=state.ym2612;
 
+	ym2612.FlushRegisterSchedule(0;
+
 	PushBool(data,ym2612.state.LFO);
 	PushUint32(data,ym2612.state.FREQCTRL);
 	PushUint64(data,ym2612.state.deviceTimeInNS);
@@ -432,6 +434,8 @@ void TownsSound::SerializeYM2612(std::vector <unsigned char> &data) const
 void TownsSound::DeserializeYM2612(const unsigned char *&data,unsigned int version)
 {
 	auto &ym2612=state.ym2612;
+
+	ym2612.FlushRegisterSchedule();
 
 	for(auto &ch : ym2612.state.channels)
 	{

@@ -395,7 +395,9 @@ public:
 private:
 	class WithLFO;
 	class WithoutLFO;
-	template <class LFO>
+	class WithScheduler;
+	class WithoutScheduler;
+	template <class LFO,class SCHEDULER>
 	long long int MakeWaveForNSamplesTemplate(unsigned char wavBuf[],unsigned int nPlayingCh,unsigned int playingCh[],unsigned long long int numSamplesRequested,uint64_t lastWaveGenTime);
 
 	/*! lastSlot0Out is input/output.  Needed for calculating feedback.
