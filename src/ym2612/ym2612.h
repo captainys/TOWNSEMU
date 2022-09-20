@@ -21,15 +21,30 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 
 
+// What exactly is the master clock given to YM2612 of TOWNS?
+// FM Towns Technical Databook tells internal clock is 600KHz on page 201.
+// However, after calibrating the tone to match real Towns, it must be 690KHz.  Is it correct?
+// Master clock must be the internal clock times pre scaler.  But, we don't know the default pre scalar value.
+// Let's say it is 3.  Then, 690KHz times 3=2070KHz.  Sounds reasonable.
+// But, now FM77AV's YM2203C uses master clock frequency of 1228.8KHz.
+// And after calibration we know the ratio between the two.
+// From there, 1228.8*1698/1038=1999.46.  2MHz.  Makes more sense.
 #ifdef MUTSU_FM77AV
 	// Relative to FM TOWNS
 	#define YM_PRESCALER_DEFAULT 3
 	#define YM_CLOCK_RATIO_NUMER 1038	                      // 1038 for "O4A" in F-BASIC386
 	#define YM_CLOCK_RATIO_DENOM (1689/YM_PRESCALER_DEFAULT)   // 1689 for "O4A" in FM77AV HGPLAY with 3X Pre-Scaler
+	#define YM_TICK_DURATION_IN_NS 1487  // Based on measurement.
 #else
 	// Relative to FM TOWNS
 	#define YM_CLOCK_RATIO_NUMER 1
-	#define YM_CLOCK_RATIO_DENOM 1
+	#define YM_CLOCK_RATIO_DNOM 1
+
+	// Per system
+	// FM Towns Technical Databook tells internal clock frequency is 600KHz.
+	// Which is 1667ns per clock.
+	// However, actual measurement suggests it is 690KHz, which makes 1449ns per clock.
+	#define YM_TICK_DURATION_IN_NS 1449
 #endif
 
 // YM_CLOCK_RATIO intentionally not having parenthesis.  Don't add.
@@ -140,7 +155,7 @@ public:
 		// FM Towns Technical Databook tells internal clock frequency is 600KHz.
 		// Which is 1667ns per clock.
 		// However, actual measurement suggests it is 690KHz, which makes 1449ns per clock.
-		TICK_DURATION_IN_NS=1449*YM_CLOCK_RATIO_INV,
+		TICK_DURATION_IN_NS=YM_TICK_DURATION_IN_NS*YM_CLOCK_RATIO_INV,
 		TIMER_A_PER_TICK=12,
 		TIMER_B_PER_TICK=192,
 		NTICK_TIMER_A=1024*TIMER_A_PER_TICK,
