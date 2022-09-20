@@ -352,9 +352,9 @@ void TownsSound::SaveRecording(std::string fName) const
 
 void TownsSound::SerializeYM2612(std::vector <unsigned char> &data) const
 {
-	auto &ym2612=state.ym2612;
+	auto ym2612=state.ym2612;  // Make a copy to flush register schedule.
 
-	ym2612.FlushRegisterSchedule(0;
+	ym2612.FlushRegisterSchedule();
 
 	PushBool(data,ym2612.state.LFO);
 	PushUint32(data,ym2612.state.FREQCTRL);
