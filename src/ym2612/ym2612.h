@@ -38,6 +38,13 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #define YM_TIME_RATIO YM_CLOCK_RATIO_DENOM/YM_CLOCK_RATIO_NUMER
 
 
+
+// Timers A and B apparently should auto-reload when up.
+// My previous implementation stopped the timer when it was up.
+// XM7's opn.c suggests both timers must re-load and keep going when up.
+// Remove the following macro to bring it back to the previous implementation.
+#define YM_TIMER_AUTO_RELOAD
+
 /*******************************************************************************
 
     YM2612 Emulator for Tsugaru:  Tsugaru-Ben
@@ -337,6 +344,9 @@ public:
 
 	bool TimerAUp(void) const;
 	bool TimerBUp(void) const;
+
+	void ReloadTimerA(void);
+	void ReloadTimerB(void);
 
 	/*! Returns timer-up state of 
 	*/

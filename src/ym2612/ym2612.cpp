@@ -331,27 +331,11 @@ unsigned int YM2612::WriteRegister(unsigned int channelBase,unsigned int reg,uns
 
 		if(0==(prev&1) && 0!=(value&1)) // Load Timer A
 		{
-			unsigned int countHigh=state.regSet[regSet][REG_TIMER_A_COUNT_HIGH];
-			unsigned int countLow=state.regSet[regSet][REG_TIMER_A_COUNT_LOW];
-			auto count=(countHigh<<2)|(countLow&3);
-			state.timerCounter[0]=count*TIMER_A_PER_TICK;
-			if(MODE_CSM==GetChannel3Mode())
-			{
-				// FM Towns Technical Databook pp.201
-				// Key on when TimerA Load and Key off when TimerA Up.
-				if(true==useScheduling)
-				{
-					WriteRegisterSchedule(channelBase,REG_KEY_ON_OFF,0xF2,systemTimeInNS);
-				}
-				else
-				{
-					KeyOn(2,0x0F);
-				}
-			}
+			ReloadTimerA();
 		}
 		if(0==(prev&2) && 0!=(value&2)) // Load Timer B
 		{
-			state.timerCounter[1]=(unsigned int)(state.regSet[regSet][REG_TIMER_B_COUNT])*TIMER_B_PER_TICK;
+			ReloadTimerB();
 		}
 		if(value&4) // Enable Timer A Flag
 		{
@@ -620,7 +604,12 @@ void YM2612::Run(unsigned long long int systemTimeInNS)
 			state.timerCounter[0]+=nTick;
 			if(NTICK_TIMER_A<=state.timerCounter[0])
 			{
+			#ifdef YM_TIMER_AUTO_RELOAD
+				ReloadTimerA();
+			#else
 				state.regSet[0][REG_TIMER_CONTROL]&=(~0x01);
+			#endif
+
 				if(0!=(state.regSet[0][REG_TIMER_CONTROL]&0x04))
 				{
 					state.timerUp[0]=true;
@@ -629,15 +618,20 @@ void YM2612::Run(unsigned long long int systemTimeInNS)
 				{
 					// FM Towns Technical Databook pp.201
 					// Key on when TimerA Load and Key off when TimerA Up.
+					// But, XM7 opn.c does KeyOff -> KeyOn upon TimerA Up.  Probably XM7 is correct.
+					// I don't think YM2203C and YM2312 are different in this.
 					if(true==useScheduling)
 					{
 						WriteRegisterSchedule(0,REG_KEY_ON_OFF,0x02,systemTimeInNS);
+						WriteRegisterSchedule(0,REG_KEY_ON_OFF,0xF2,systemTimeInNS);
 					}
 					else
 					{
 						KeyOff(2,0x0F);
+						state.channels[2].usingSlot=0;
+						KeyOn(2,0x0F);
+						state.channels[2].usingSlot=0x0F;
 					}
-					state.channels[2].usingSlot=0x0F;
 				}
 			}
 		}
@@ -646,7 +640,11 @@ void YM2612::Run(unsigned long long int systemTimeInNS)
 			state.timerCounter[1]+=nTick;
 			if(NTICK_TIMER_B<=state.timerCounter[1])
 			{
+			#ifdef YM_TIMER_AUTO_RELOAD
+				ReloadTimerB();
+			#else
 				state.regSet[0][REG_TIMER_CONTROL]&=(~0x02);
+			#endif
 				if(0!=(state.regSet[0][REG_TIMER_CONTROL]&0x08))
 				{
 					state.timerUp[1]=true;
@@ -666,6 +664,19 @@ bool YM2612::TimerBUp(void) const
 {
 	return state.timerUp[1];
 }
+void YM2612::ReloadTimerA(void)
+{
+	unsigned int countHigh=state.regSet[0][REG_TIMER_A_COUNT_HIGH];
+	unsigned int countLow=state.regSet[0][REG_TIMER_A_COUNT_LOW];
+	auto count=(countHigh<<2)|(countLow&3);
+	state.timerCounter[0]=count*TIMER_A_PER_TICK;
+}
+
+void YM2612::ReloadTimerB(void)
+{
+	state.timerCounter[1]=(unsigned int)(state.regSet[0][REG_TIMER_B_COUNT])*TIMER_B_PER_TICK;
+}
+
 bool YM2612::TimerUp(unsigned int timerId) const
 {
 	switch(timerId&1)
