@@ -38,7 +38,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #else
 	// Relative to FM TOWNS
 	#define YM_CLOCK_RATIO_NUMER 1
-	#define YM_CLOCK_RATIO_DNOM 1
+	#define YM_CLOCK_RATIO_DENOM 1
 
 	// Per system
 	// FM Towns Technical Databook tells internal clock frequency is 600KHz.
