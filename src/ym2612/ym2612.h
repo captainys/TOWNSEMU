@@ -30,7 +30,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 // And after calibration we know the ratio between the two.
 // From there, 1228.8*1698/1038=1999.46.  2MHz.  Makes more sense.
 #ifdef MUTSU_FM77AV
-	#define YM_MASTER_CLOCK 1228800	// 1228.8KHz
+	#define YM_MASTER_CLOCK 1228800LL	// 1228.8KHz
 
 	// Relative to FM TOWNS
 	#define YM_PRESCALER_DEFAULT 3
@@ -38,7 +38,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	#define YM_CLOCK_RATIO_DENOM (1689/YM_PRESCALER_DEFAULT)   // 1689 for "O4A" in FM77AV HGPLAY with 3X Pre-Scaler
 	#define YM_TICK_DURATION_IN_NS 1487  // Based on measurement.
 #else
-	#define YM_MASTER_CLOCK 2000000	// 2000.0KHz
+	#define YM_MASTER_CLOCK 2000000LL	// 2000.0KHz
 
 	// Relative to FM TOWNS
 	#define YM_TOWNS_PRESCALER 3
@@ -53,9 +53,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #endif
 
 // YM_CLOCK_RATIO intentionally not having parenthesis.  Don't add.
-#define YM_CLOCK_RATIO YM_CLOCK_RATIO_NUMER/YM_CLOCK_RATIO_DENOM
 #define YM_CLOCK_RATIO_INV YM_CLOCK_RATIO_DENOM/YM_CLOCK_RATIO_NUMER
-#define YM_TIME_RATIO YM_CLOCK_RATIO_DENOM/YM_CLOCK_RATIO_NUMER
 
 
 
@@ -280,7 +278,7 @@ public:
 	{
 	public:
 	#ifdef YM_PRESCALER_DEFAULT
-		unsigned int preScaler=YM_PRESCALAR_DEFAULT;
+		unsigned int preScaler=YM_PRESCALER_DEFAULT;
 	#else
 		unsigned int preScaler=YM_TOWNS_PRESCALER; // Transition
 	#endif
@@ -543,21 +541,16 @@ public:
 		// Value based on the observation.
 		static const unsigned int scale[8]=
 		{
-			((423892*YM_CLOCK_RATIO)    ),   // (4238*16/10)/16,  // divide by 10 part moved below
-			((423892*YM_CLOCK_RATIO)  *2),   // (4239*16/10)/8,
-			((423892*YM_CLOCK_RATIO)  *4),   // (4239*16/10)/4,
-			((423892*YM_CLOCK_RATIO)  *8),   // (4239*16/10)/2,
-			((423892*YM_CLOCK_RATIO) *16),   // (4239*16/10),
-			((423892*YM_CLOCK_RATIO) *32),   // (4239*16/10)*2,
-			((423892*YM_CLOCK_RATIO) *64),   // (4239*16/10)*4,
-			((423892*YM_CLOCK_RATIO)*128),   // (4239*16/10)*8,
+			(uint32_t)((423892LL*3LL*YM_MASTER_CLOCK/(2000000LL))    ),   // (4238*16/10)/16,  // divide by 10 part moved below
+			(uint32_t)((423892LL*3LL*YM_MASTER_CLOCK/(2000000LL))  *2),   // (4239*16/10)/8,
+			(uint32_t)((423892LL*3LL*YM_MASTER_CLOCK/(2000000LL))  *4),   // (4239*16/10)/4,
+			(uint32_t)((423892LL*3LL*YM_MASTER_CLOCK/(2000000LL))  *8),   // (4239*16/10)/2,
+			(uint32_t)((423892LL*3LL*YM_MASTER_CLOCK/(2000000LL)) *16),   // (4239*16/10),
+			(uint32_t)((423892LL*3LL*YM_MASTER_CLOCK/(2000000LL)) *32),   // (4239*16/10)*2,
+			(uint32_t)((423892LL*3LL*YM_MASTER_CLOCK/(2000000LL)) *64),   // (4239*16/10)*4,
+			(uint32_t)((423892LL*3LL*YM_MASTER_CLOCK/(2000000LL))*128),   // (4239*16/10)*8,
 		};
-
-	#ifdef YM_PRESCALER_DEFAULT
 		FNUM*=scale[BLOCK&7]/(1000*state.preScaler);
-	#else
-		FNUM*=scale[BLOCK&7]/1000;
-	#endif
 		FNUM/=1000;
 		return FNUM;
 	}
