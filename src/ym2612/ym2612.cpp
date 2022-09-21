@@ -845,7 +845,7 @@ void YM2612::FlushRegisterSchedule(void)
 {
 	for(auto sched : regWriteSched)
 	{
-		WriteRegister(sched.chBase,sched.reg,sched.data,sched.systemTimeInNS);
+		ReallyWriteRegister(sched.chBase,sched.reg,sched.data,sched.systemTimeInNS);
 	}
 	regWriteSched.clear();
 }
