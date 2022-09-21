@@ -616,11 +616,7 @@ void YM2612::Run(unsigned long long int systemTimeInNS)
 		return;
 	}
 
-#ifdef YM_PRESCALER_DEFAULT
-	const uint64_t nanosecPerTick=state.preScaler*TICK_DURATION_IN_NS;
-#else
-	const uint64_t nanosecPerTick=TICK_DURATION_IN_NS;
-#endif
+	const uint64_t nanosecPerTick=1000000000*state.preScaler/YM_MASTER_CLOCK;
 
 	if(state.lastTickTimeInNS+nanosecPerTick<systemTimeInNS)
 	{
