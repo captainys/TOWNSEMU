@@ -30,13 +30,18 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 // And after calibration we know the ratio between the two.
 // From there, 1228.8*1698/1038=1999.46.  2MHz.  Makes more sense.
 #ifdef MUTSU_FM77AV
+	#define YM_MASTER_CLOCK 1228800	// 1228.8KHz
+
 	// Relative to FM TOWNS
 	#define YM_PRESCALER_DEFAULT 3
 	#define YM_CLOCK_RATIO_NUMER 1038	                      // 1038 for "O4A" in F-BASIC386
 	#define YM_CLOCK_RATIO_DENOM (1689/YM_PRESCALER_DEFAULT)   // 1689 for "O4A" in FM77AV HGPLAY with 3X Pre-Scaler
 	#define YM_TICK_DURATION_IN_NS 1487  // Based on measurement.
 #else
+	#define YM_MASTER_CLOCK 2000000	// 2000.0KHz
+
 	// Relative to FM TOWNS
+	#define YM_TOWNS_PRESCALER 3
 	#define YM_CLOCK_RATIO_NUMER 1
 	#define YM_CLOCK_RATIO_DENOM 1
 
@@ -275,7 +280,9 @@ public:
 	{
 	public:
 	#ifdef YM_PRESCALER_DEFAULT
-		unsigned int preScaler;
+		unsigned int preScaler=YM_PRESCALAR_DEFAULT;
+	#else
+		unsigned int preScaler=YM_TOWNS_PRESCALER; // Transition
 	#endif
 
 		bool LFO;
@@ -545,6 +552,7 @@ public:
 			((423892*YM_CLOCK_RATIO) *64),   // (4239*16/10)*4,
 			((423892*YM_CLOCK_RATIO)*128),   // (4239*16/10)*8,
 		};
+
 	#ifdef YM_PRESCALER_DEFAULT
 		FNUM*=scale[BLOCK&7]/(1000*state.preScaler);
 	#else
