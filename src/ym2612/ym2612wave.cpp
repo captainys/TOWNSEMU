@@ -1141,7 +1141,7 @@ public:
 			while(schedPtr<ym->regWriteSched.size() && ym->regWriteSched[schedPtr].systemTimeInNS<=nanosec)
 			{
 				auto &sched=ym->regWriteSched[schedPtr];
-				ym->WriteRegister(sched.chBase,sched.reg,sched.data,sched.systemTimeInNS);
+				ym->ReallyWriteRegister(sched.chBase,sched.reg,sched.data,sched.systemTimeInNS);
 				++schedPtr;
 			}
 		}
@@ -1151,7 +1151,7 @@ public:
 		while(schedPtr<ym->regWriteSched.size())
 		{
 			auto &sched=ym->regWriteSched[schedPtr];
-			ym->WriteRegister(sched.chBase,sched.reg,sched.data,sched.systemTimeInNS);
+			ym->ReallyWriteRegister(sched.chBase,sched.reg,sched.data,sched.systemTimeInNS);
 			++schedPtr;
 		}
 		ym->regWriteSched.clear();

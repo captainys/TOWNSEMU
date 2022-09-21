@@ -348,6 +348,10 @@ public:
 	    65535 otherwise.
 	*/
 	unsigned int WriteRegister(unsigned int channelBase,unsigned int reg,unsigned int value,uint64_t systemTimeInNS);
+private:
+	unsigned int ReallyWriteRegister(unsigned int channelBase,unsigned int reg,unsigned int value,uint64_t systemTimeInNS);
+	unsigned int WriteRegisterSchedule(unsigned int channelBase,unsigned int reg,unsigned int value,uint64_t systemTimeInNS);
+public:
 #ifndef YM_PRESCALER_DEFAULT
 	unsigned int ReadRegister(unsigned int channelBase,unsigned int reg) const;
 #else
@@ -565,12 +569,10 @@ public:
 	     Before saving state.
 	   To enable scheduling, 
 	      (1) useScheduling=true;
-	      (2) Use WriteRegisterSchedule instead of WriteRegister.
-	      (3) VM needs to remember when the wave was generated for the last time, and pass it to MakeWaveForNSamples.
+	      (2) VM needs to remember when the wave was generated for the last time, and pass it to MakeWaveForNSamples.
 	*/
 	bool useScheduling=false;
 	std::vector <RegWriteLog> regWriteSched;
-	void WriteRegisterSchedule(unsigned int channelBase,unsigned int reg,unsigned int value,uint64_t vmTime);
 	void FlushRegisterSchedule(void);
 };
 

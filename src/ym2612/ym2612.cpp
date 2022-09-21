@@ -264,7 +264,24 @@ void YM2612::Reset(void)
 {
 	state.Reset();
 }
+
 unsigned int YM2612::WriteRegister(unsigned int channelBase,unsigned int reg,unsigned int value,uint64_t systemTimeInNS)
+{
+	if(true==useScheduling &&
+	   (REG_KEY_ON_OFF==reg ||
+	    (0xA8<=reg && reg<=0xAE) || // Special 3CH F-Number/BLOCK
+	    (0x30<=reg && reg<=0x9E) || // Per Channel per slot
+	    (0xA0<=reg && reg<=0xB6)))
+	{
+		return WriteRegisterSchedule(channelBase,reg,value,systemTimeInNS);
+	}
+	else
+	{
+		return ReallyWriteRegister(channelBase,reg,value,systemTimeInNS);
+	}
+}
+
+unsigned int YM2612::ReallyWriteRegister(unsigned int channelBase,unsigned int reg,unsigned int value,uint64_t systemTimeInNS)
 {
 	auto regSet=channelBase/3;
 	if(reg<0x30)
@@ -555,6 +572,17 @@ unsigned int YM2612::WriteRegister(unsigned int channelBase,unsigned int reg,uns
 	return chStartPlaying;
 }
 
+unsigned int YM2612::WriteRegisterSchedule(unsigned int channelBase,unsigned int reg,unsigned int value,uint64_t systemTimeInNS)
+{
+	RegWriteLog rwl;
+	rwl.chBase=channelBase;
+	rwl.reg=reg;
+	rwl.data=value;
+	rwl.systemTimeInNS=systemTimeInNS;
+	regWriteSched.push_back(rwl);
+	return 0;
+}
+
 #ifndef YM_PRESCALER_DEFAULT
 unsigned int YM2612::ReadRegister(unsigned int channelBase,unsigned int reg) const
 #else
@@ -813,25 +841,6 @@ std::vector <std::string> YM2612::GetStatusText(void) const
 
 ////////////////////////////////////////////////////////////
 
-void YM2612::WriteRegisterSchedule(unsigned int channelBase,unsigned int reg,unsigned int value,uint64_t systemTimeInNS)
-{
-	if(REG_KEY_ON_OFF==reg ||
-	   (0xA8<=reg && reg<=0xAE) || // Special 3CH F-Number/BLOCK
-	   (0x30<=reg && reg<=0x9E) || // Per Channel per slot
-	   (0xA0<=reg && reg<=0xB6))
-	{
-		RegWriteLog rwl;
-		rwl.chBase=channelBase;
-		rwl.reg=reg;
-		rwl.data=value;
-		rwl.systemTimeInNS=systemTimeInNS;
-		regWriteSched.push_back(rwl);
-	}
-	else
-	{
-		WriteRegister(channelBase,reg,value,systemTimeInNS);
-	}
-}
 void YM2612::FlushRegisterSchedule(void)
 {
 	for(auto sched : regWriteSched)
