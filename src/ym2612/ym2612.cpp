@@ -77,7 +77,7 @@ void YM2612::State::PowerOn(void)
 }
 void YM2612::State::Reset(void)
 {
-#ifdef YM_PRESCALER_DEFAULT
+#ifdef YM_PRESCALER_CONFIGURABLE
 	preScaler=YM_PRESCALER_DEFAULT;
 #endif
 
@@ -554,7 +554,7 @@ unsigned int YM2612::ReallyWriteRegister(unsigned int channelBase,unsigned int r
 			}
 		}
 	}
-#ifdef YM_PRESCALER_DEFAULT
+#ifdef YM_PRESCALER_CONFIGURABLE
 	else if(REG_PRESCALER_0==reg)
 	{
 		state.preScaler=6;
@@ -583,13 +583,13 @@ unsigned int YM2612::WriteRegisterSchedule(unsigned int channelBase,unsigned int
 	return 0;
 }
 
-#ifndef YM_PRESCALER_DEFAULT
+#ifndef YM_PRESCALER_CONFIGURABLE
 unsigned int YM2612::ReadRegister(unsigned int channelBase,unsigned int reg) const
 #else
 unsigned int YM2612::ReadRegister(unsigned int channelBase,unsigned int reg)
 #endif
 {
-#ifdef YM_PRESCALER_DEFAULT
+#ifdef YM_PRESCALER_CONFIGURABLE
 	if(REG_PRESCALER_0==reg)
 	{
 		state.preScaler=6;

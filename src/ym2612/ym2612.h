@@ -32,9 +32,10 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #ifdef MUTSU_FM77AV
 	#define YM_MASTER_CLOCK 1228800LL	// 1228.8KHz
 	#define YM_PRESCALER_DEFAULT 3
+	#define YM_PRESCALER_CONFIGURABLE
 #else
 	#define YM_MASTER_CLOCK 2000000LL	// 2000.0KHz
-	#define YM_TOWNS_PRESCALER 3
+	#define YM_PRESCALER_DEFAULT 3
 #endif
 
 
@@ -114,7 +115,7 @@ public:
 		REG_TIMER_CONTROL=0x27,
 		REG_KEY_ON_OFF=0x28,
 
-	#ifdef YM_PRESCALER_DEFAULT
+	#ifdef YM_PRESCALER_CONFIGURABLE
 		REG_PRESCALER_0=0x2D,
 		REG_PRESCALER_1=0x2E,
 		REG_PRESCALER_2=0x2F,
@@ -140,6 +141,9 @@ public:
 		// FM Towns Technical Databook tells internal clock frequency is 600KHz.
 		// Which is 1667ns per clock.
 		// However, actual measurement suggests it is 690KHz, which makes 1449ns per clock.
+		// Forget about it.
+		// After figuring TOWNS's YM2612 uses 2MHz master clock and 3X pre-scaler,
+		// now calculation is done based on the master clock.
 		TIMER_A_PER_TICK=12,
 		TIMER_B_PER_TICK=192,
 		NTICK_TIMER_A=1024*TIMER_A_PER_TICK,
@@ -258,10 +262,10 @@ public:
 	class State
 	{
 	public:
-	#ifdef YM_PRESCALER_DEFAULT
+	#ifdef YM_PRESCALER_CONFIGURABLE
 		unsigned int preScaler=YM_PRESCALER_DEFAULT;
 	#else
-		unsigned int preScaler=YM_TOWNS_PRESCALER; // Transition
+		const unsigned int preScaler=YM_PRESCALER_DEFAULT;
 	#endif
 
 		bool LFO;
@@ -338,10 +342,10 @@ private:
 	unsigned int ReallyWriteRegister(unsigned int channelBase,unsigned int reg,unsigned int value,uint64_t systemTimeInNS);
 	unsigned int WriteRegisterSchedule(unsigned int channelBase,unsigned int reg,unsigned int value,uint64_t systemTimeInNS);
 public:
-#ifndef YM_PRESCALER_DEFAULT
+#ifndef YM_PRESCALER_CONFIGURABLE
 	unsigned int ReadRegister(unsigned int channelBase,unsigned int reg) const;
 #else
-	// If prescaler is used, reading 2D,2E, or 2F may change the pre-scaler, and therefore cannot be const.
+	// If prescaler is configurable, reading 2D,2E, or 2F may change the pre-scaler, and therefore cannot be const.
 	unsigned int ReadRegister(unsigned int channelBase,unsigned int reg);
 #endif
 
@@ -507,7 +511,7 @@ public:
 	*/
 	inline unsigned int BLOCK_FNUM_to_FreqX16(unsigned int BLOCK,unsigned int FNUM) const
 	{
-		/* Value based on [2]
+		/* Value based on [2] FM Towns Technical Databook.  Wrong values.  Forget about it.
 		static const unsigned int scale[8]=
 		{
 			(3817*16/10)/16,
@@ -519,7 +523,7 @@ public:
 			(3817*16/10)*4,
 			(3817*16/10)*8,
 		}; */
-		// Value based on the observation.
+		// Value calibrated for a real FM TOWNS.
 		static const unsigned int scale[8]=
 		{
 			(uint32_t)((423892LL*3LL*YM_MASTER_CLOCK/(2000000LL))    ),   // (4238*16/10)/16,  // divide by 10 part moved below
@@ -533,6 +537,26 @@ public:
 		};
 		FNUM*=scale[BLOCK&7]/(1000*state.preScaler);
 		FNUM/=1000;
+
+		// Value 423892 is derived by calibrating with output from a real FM TOWNS.
+		// Does it agree with the published formula?
+		// This function is calculating Frequency as:
+		//     Freq*16=((FNUM*423892*3*phiM/2000000)<<(BLOCK&7))/(1000000*preScaler)
+		//     Freq=((FNUM*423892*3*phiM/(16*2000000))<<(BLOCK&7))/(1000000*preScaler)
+		//     Freq=((FNUM*423892*3*phiM/(32000000000000))<<(BLOCK&7))/(preScaler)
+		//     Freq=((FNUM*phiM*3.973989375/100000000))<<(BLOCK&7))/(preScaler)
+		//     Freq=((FNUM*phiM*3.973989375/10^8))<<(BLOCK&7))/(preScaler)
+		// Published formula in FM-Techknow is:
+		//     F_NUM=((Freq<<20)/(phiM/(12*preScaler))>>((BLOCK&7)-1)
+		//     F_NUM<<((BLOCK&7)-1)=((Freq<<20)/(phiM/(12*preScaler))
+		//     (F_NUM<<((BLOCK&7)-1))*(phiM/(12*preScaler))=(Freq<<20)
+		//     Freq=((F_NUM<<((BLOCK&7)-1))*(phiM/(12*preScaler)))>>20
+		//     Freq=((F_NUM*phiM>>20)/(12*preScaler))<<((BLOCK&7)-1)
+		//     Freq=((F_NUM*phiM/(12*2^20))<<((BLOCK&7)-1))/preScaler
+		//     Freq=((F_NUM*phiM/(12*2^21))<<(BLOCK&7))/preScaler
+		//     Freq=((F_NUM*phiM*3.973642985/10^8)<<(BLOCK&7))/preScaler
+		// Agree within 0.0075% error.
+
 		return FNUM;
 	}
 
