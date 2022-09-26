@@ -232,6 +232,7 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 	cddaStartHSG=0;
 #ifdef AUDIO_USE_STREAMING
 	YsSoundPlayer::StreamingOption FMPCMStreamOpt;
+	FMPCMStreamOpt.ringBufferLengthMillisec=TownsSound::FM_PCM_MILLISEC_PER_WAVE*2;
 	soundPlayer.StartStreaming(FMPCMStream,FMPCMStreamOpt);
 #endif
 
