@@ -1711,8 +1711,8 @@ void FsSimpleWindowConnection::RenderBeforeSwapBuffers(const TownsRender::Image 
 /* virtual */ bool FsSimpleWindowConnection::FMPCMChannelPlaying(void)
 {
 #ifdef AUDIO_USE_STREAMING
-	YsSoundPlayer::SoundData dummyData;
-	return YSTRUE!=soundPlayer.StreamPlayerReadyToAcceptNextSegment(FMPCMStream,dummyData);
+	unsigned int numSamples=(TownsSound::FM_PCM_MILLISEC_PER_WAVE*YM2612::WAVE_SAMPLING_RATE+999)/1000;
+	return YSTRUE!=soundPlayer.StreamPlayerReadyToAcceptNextNumSample(FMPCMStream,numSamples);
 #else
 	return YSTRUE==soundPlayer.IsPlaying(FMPCMChannel);
 #endif
