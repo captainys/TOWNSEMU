@@ -230,7 +230,7 @@ std::vector <std::string> TownsSound::GetStatusText(void) const
 
 void TownsSound::ProcessSound(void)
 {
-	if((true==IsFMPlaying() || true==IsPCMPlaying()) && nullptr!=outside_world)
+	if((true==IsFMPlaying() || true==IsPCMPlaying() || townsPtr->state.townsTime<lastFMPCMWaveGenTime+RINGBUFFER_CLEAR_TIME) && nullptr!=outside_world)
 	{
 		if(nextFMPCMWaveGenTime<=townsPtr->state.townsTime)
 		{
@@ -256,6 +256,7 @@ void TownsSound::ProcessSound(void)
 				if(true==IsFMPlaying() && 0!=(state.muteFlag&2))
 				{
 					state.ym2612.MakeWaveForNSamples(fillPtr,fillNumSamples,0);
+					lastFMPCMWaveGenTime=townsPtr->state.townsTime;
 				}
 				if(true==IsPCMPlaying())
 				{
@@ -284,6 +285,7 @@ void TownsSound::ProcessSound(void)
 							ch.IRQAfterThisPlayBack=false;
 						}
 					}
+					lastFMPCMWaveGenTime=townsPtr->state.townsTime;
 				}
 				nextFMPCMWaveFilledInMillisec+=MILLISEC_PER_WAVE_GENERATION;
 			}

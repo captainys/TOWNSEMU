@@ -790,7 +790,7 @@ void YsSoundPlayer::StopStreamingAPISpecific(Stream &stream)
 		}
 	}
 }
-YSBOOL YsSoundPlayer::StreamPlayerReadyToAcceptNextSegmentAPISpecific(const Stream &stream,const SoundData &) const
+YSBOOL YsSoundPlayer::StreamPlayerReadyToAcceptNextNumSampleAPISpecific(const Stream &stream,unsigned int) const
 {
 	if(0==stream.api->standBy.NTimeStep())
 	{

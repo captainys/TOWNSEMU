@@ -14,7 +14,12 @@ endif()
 
 
 
-add_test(NAME yssimplesound_makeFromCDDA COMMAND ${TARGET_NAME})
+# add_test(NAME yssimplesound_makeFromCDDA COMMAND ${TARGET_NAME})
 
 list(APPEND YS_ALL_BATCH_TEST ${TARGET_NAME})
 set(YS_ALL_BATCH_TEST ${YS_ALL_BATCH_TEST} PARENT_SCOPE)
+
+
+
+add_executable(yssimplesound_streamtest streamtest.cpp)
+target_link_libraries(yssimplesound_streamtest fssimplewindow yssimplesound)

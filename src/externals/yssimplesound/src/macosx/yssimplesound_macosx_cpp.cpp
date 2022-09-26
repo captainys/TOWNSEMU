@@ -278,7 +278,7 @@ void YsSoundPlayer::StopStreamingAPISpecific(Stream &stream)
 		YsSimpleSound_OSX_StopStreaming(this->api->enginePtr,stream.api->streamPlayer);
 	}
 }
-YSBOOL YsSoundPlayer::StreamPlayerReadyToAcceptNextSegmentAPISpecific(const Stream &stream,const SoundData &) const
+YSBOOL YsSoundPlayer::StreamPlayerReadyToAcceptNextNumSampleAPISpecific(const Stream &stream,unsigned int numSamples) const
 {
 	if(nullptr!=stream.api->streamPlayer)
 	{

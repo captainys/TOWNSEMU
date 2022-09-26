@@ -29,11 +29,8 @@ ALSA has no choice.  Behind the scenes ALSA code does streaming.
 
 So, my best decision is to use streaming mode in macOS, which should work perfectly.  I have no choice with ALSA.  But, for Windows, I keep it polling-based playback.
 */
-#ifndef _WIN32
+
 #define AUDIO_USE_STREAMING
-#else
-// Opposite is use polling
-#endif
 
 
 

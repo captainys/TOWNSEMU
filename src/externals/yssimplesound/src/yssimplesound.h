@@ -175,7 +175,15 @@ public:
 	*/
 	void StopStreaming(Stream &streamPlayer);
 
+	/*! Check Stream Player can accept additional specified number of samples.
+	    Linux and mac uses double-buffering, so the length does not matter.  It returns YSTRUE when one of the buffers becomes free.
+	    Windows Direct Sound uses ring-buffer, so the length matters.
+	*/
+	YSBOOL StreamPlayerReadyToAcceptNextNumSample(const Stream &streamPlayer,unsigned int numSamples) const;
+
 	/*! Check Stream Player can accept additional segment.
+	    Linux and mac uses double-buffering, so the length does not matter.  It returns YSTRUE when one of the buffers becomes free.
+	    Windows Direct Sound uses ring-buffer, so the length matters.
 	*/
 	YSBOOL StreamPlayerReadyToAcceptNextSegment(const Stream &streamPlayer,const SoundData &dat) const;
 
@@ -187,7 +195,7 @@ private:
 	// Written in API-specific source >>
 	YSRESULT StartStreamingAPISpecific(Stream &streamPlayer,StreamingOption opt);
 	void StopStreamingAPISpecific(Stream &streamPlayer);
-	YSBOOL StreamPlayerReadyToAcceptNextSegmentAPISpecific(const Stream &streamPlayer,const SoundData &dat) const;
+	YSBOOL StreamPlayerReadyToAcceptNextNumSampleAPISpecific(const Stream &streamPlayer,unsigned int numSamples) const;
 	YSRESULT AddNextStreamingSegmentAPISpecific(Stream &streamPlayer,const SoundData &dat);
 	// Written in API-specific source <<
 

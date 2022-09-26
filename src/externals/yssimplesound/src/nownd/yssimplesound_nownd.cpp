@@ -149,7 +149,7 @@ YSRESULT YsSoundPlayer::StartStreamingAPISpecific(Stream &,StreamingOption)
 void YsSoundPlayer::StopStreamingAPISpecific(Stream &)
 {
 }
-YSBOOL YsSoundPlayer::StreamPlayerReadyToAcceptNextSegmentAPISpecific(const Stream &,const SoundData &) const
+YSBOOL YsSoundPlayer::StreamPlayerReadyToAcceptNextNumSampleAPISpecific(const Stream &streamPlayer,unsigned int numSamples) const
 {
 	return YSFALSE;
 }

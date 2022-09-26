@@ -178,6 +178,11 @@ void YsSoundPlayer::StopStreaming(Stream &streamPlayer)
 	StopStreamingAPISpecific(streamPlayer);
 }
 
+YSBOOL YsSoundPlayer::StreamPlayerReadyToAcceptNextNumSample(const Stream &streamPlayer,unsigned int numSamples) const
+{
+	return StreamPlayerReadyToAcceptNextNumSampleAPISpecific(streamPlayer,numSamples);
+}
+
 YSBOOL YsSoundPlayer::StreamPlayerReadyToAcceptNextSegment(const Stream &streamPlayer,const SoundData &dat) const
 {
 	// Currently not supporting 8 bit samples.
@@ -185,7 +190,7 @@ YSBOOL YsSoundPlayer::StreamPlayerReadyToAcceptNextSegment(const Stream &streamP
 	{
 		return YSFALSE;
 	}
-	return StreamPlayerReadyToAcceptNextSegmentAPISpecific(streamPlayer,dat);
+	return StreamPlayerReadyToAcceptNextNumSample(streamPlayer,dat.GetNumSamplePerChannel());
 }
 
 YSRESULT YsSoundPlayer::AddNextStreamingSegment(Stream &streamPlayer,const SoundData &dat)

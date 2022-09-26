@@ -40,6 +40,8 @@ public:
 		BEEP_MILLISEC_PER_WAVE=40,
 #endif
 		MILLISEC_PER_WAVE_GENERATION=4,
+
+		RINGBUFFER_CLEAR_TIME=2000000000,  // Run 2 seconds after last wave generation to clear the ring buffer.  1 second should be enough, but just to be absolutely sure.
 	};
 
 	virtual const char *DeviceName(void) const{return "SOUND";}
@@ -66,6 +68,7 @@ public:
 
 	uint64_t nextFMPCMWaveFilledInMillisec=0;
 	uint64_t nextFMPCMWaveGenTime=0;
+	uint64_t lastFMPCMWaveGenTime=0;
 	std::vector <unsigned char> nextFMPCMWave;
 
 	inline bool IsFMPlaying(void) const
