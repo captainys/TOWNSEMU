@@ -826,7 +826,7 @@ YSRESULT YsSoundPlayer::AddNextStreamingSegmentAPISpecific(Stream &stream,const 
 					sizeLeft-=4;
 
 					balance-=dat.PlayBackRate();
-					while(balance<0)
+					while(balance<=0)
 					{
 						balance+=RINGBUFFER_SAMPLING_RATE;
 						readPtr+=2*dat.GetNumChannel();
@@ -858,7 +858,7 @@ YSRESULT YsSoundPlayer::AddNextStreamingSegmentAPISpecific(Stream &stream,const 
 					sizeLeft-=4;
 
 					balance-=dat.PlayBackRate();
-					while(balance<0)
+					while(balance<=0)
 					{
 						balance+=RINGBUFFER_SAMPLING_RATE;
 						readPtr+=2*dat.GetNumChannel();
