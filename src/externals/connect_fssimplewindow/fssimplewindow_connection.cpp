@@ -1462,7 +1462,7 @@ void FsSimpleWindowConnection::RenderBeforeSwapBuffers(const TownsRender::Image 
 
 
 	UpdateTexture(mainTexId,img.wid,img.hei,img.rgba);
-	DrawTextureRect(this->dx,this->dy,this->dx+img.wid*scaling/100,this->dy+img.hei*scaling/100);
+	DrawTextureRect(this->dx,this->dy+img.hei*scaling/100,this->dx+img.wid*scaling/100,this->dy);
 
 	glDisable(GL_TEXTURE_2D);
 
@@ -1494,7 +1494,7 @@ void FsSimpleWindowConnection::RenderBeforeSwapBuffers(const TownsRender::Image 
 }
 /* virtual */ bool FsSimpleWindowConnection::ImageNeedsFlip(void)
 {
-	return true;  // OpenGL does require flip.
+	return false;
 }
 /* virtual */ void FsSimpleWindowConnection::SetKeyboardLayout(unsigned int layout)
 {
