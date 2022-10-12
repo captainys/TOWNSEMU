@@ -25,8 +25,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 // #define BREAK_ON_FPU_INST
 
 
-/*static*/ int i486DX::opCodeRenumberTable[I486_OPCODE_MAX+1];
-/*static*/ int i486DX::opCodeNeedOperandTable[I486_OPCODE_MAX+1];
+/*static*/ unsigned short i486DX::opCodeRenumberTable[I486_OPCODE_MAX+1];
+/*static*/ unsigned char i486DX::opCodeNeedOperandTable[I486_OPCODE_MAX+1];
 
 void i486DX::MakeOpCodeRenumberTable(void)
 {
@@ -930,7 +930,7 @@ inline unsigned int i486DX::FetchOperandRMandDecode(
 
 	if(16==addressSize)
 	{
-		static const int caseTable[256]=
+		static const unsigned char caseTable[256]=
 		{
 			3,3,3,3,3,3,0,3,3,3,3,3,3,3,0,3,3,3,3,3,3,3,0,3,3,3,3,3,3,3,0,3,
 			3,3,3,3,3,3,0,3,3,3,3,3,3,3,0,3,3,3,3,3,3,3,0,3,3,3,3,3,3,3,0,3,
@@ -1042,7 +1042,7 @@ inline unsigned int i486DX::FetchOperandRMandDecode(
 		#define G 6
 		#define H 7
 
-		static const int caseTable[256]=
+		static const unsigned char caseTable[256]=
 		{
 			E,E,E,E,B,A,E,E,E,E,E,E,B,A,E,E,E,E,E,E,B,A,E,E,E,E,E,E,B,A,E,E,
 			E,E,E,E,B,A,E,E,E,E,E,E,B,A,E,E,E,E,E,E,B,A,E,E,E,E,E,E,B,A,E,E,
