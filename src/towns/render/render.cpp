@@ -300,7 +300,7 @@ void TownsRender::Render4Bit(
 	{
 		auto ZV0=layer.zoom2x.y()/2;
 		auto ZV=ZV0;
-		const int ZH[2]={layer.zoom2x.x()/2,(layer.zoom2x.x()+1)/2};  // For x.5 times zoom rate.
+		const int ZH[3] = { layer.zoom2x.x() / 2,(layer.zoom2x.x() + 1) / 2, (layer.zoom2x.x() / 2) + ((layer.zoom2x.x() + 1) / 2) };  // For x.5 times zoom rate.
 		int bytesPerLineTimesVRAMy=layer.VRAMOffset+layer.FlipVRAMOffset;
 		auto VRAMTop=VRAM+VRAMAddr+layer.VRAMHSkipBytes;
 
@@ -308,62 +308,121 @@ void TownsRender::Render4Bit(
 		// If transparnet==true, there is a possibility that memcpy overwrites background pixels.
 		unsigned int yStep=(true!=transparent ? ZV : 1);
 		auto bottomY=this->hei-yStep;
-		for(int y=0; y<layer.sizeOnMonitor.y() && y+layer.originOnMonitor.y()<=bottomY; y+=yStep)
+		if (true != transparent)
 		{
-			const int Y=y+layer.originOnMonitor.y();
-			const int X=  layer.originOnMonitor.x();
-			unsigned int VRAMAddr=(bytesPerLineTimesVRAMy&layer.VScrollMask);
-			OFFSETTRANS::Trans(VRAMAddr);
-			const unsigned char *src=VRAMTop+VRAMAddr;
-			unsigned char *dstLine=rgba.data()+4*(Y*this->wid+X);
-			auto dst=dstLine;
-			for(int x=0; x<layer.sizeOnMonitor.x() && x+layer.originOnMonitor.x()<this->wid; x+=(ZH[0]+ZH[1]))
+			for (int y = 0; y < layer.sizeOnMonitor.y() && y + layer.originOnMonitor.y() <= bottomY; y += yStep)
 			{
-				unsigned char vrambyte=((*src)&pixelMask);
-				unsigned char pix=(vrambyte&0x0f);
-				for(int i=0; i<ZH[0]; ++i)
+				const int Y = y + layer.originOnMonitor.y();
+				const int X = layer.originOnMonitor.x();
+				unsigned int VRAMAddr = (bytesPerLineTimesVRAMy & layer.VScrollMask);
+				OFFSETTRANS::Trans(VRAMAddr);
+				const unsigned char* src = VRAMTop + VRAMAddr;
+				unsigned char* dstLine = rgba.data() + 4 * (Y * this->wid + X);
+				auto dst = dstLine;
+				for (int x = 0; x < layer.sizeOnMonitor.x() && x + layer.originOnMonitor.x() < this->wid; x += ZH[2])
 				{
-					if(0!=pix ||true!=transparent)
+					unsigned char vrambyte = ((*src) & pixelMask);
+					unsigned char pix = (vrambyte & 0x0f);
+					for (int i = 0; i < ZH[0]; ++i)
 					{
-						dst[0]=palette[pix][0];
-						dst[1]=palette[pix][1];
-						dst[2]=palette[pix][2];
-						dst[3]=255;
+						dst[0] = palette[pix][0];
+						dst[1] = palette[pix][1];
+						dst[2] = palette[pix][2];
+						dst[3] = 255;
+						dst += 4;
 					}
-					dst+=4;
-				}
-				pix=(vrambyte&0xf0)>>4;
-				for(int i=0; i<ZH[1]; ++i)
-				{
-					if(0!=pix ||true!=transparent)
+					pix = (vrambyte & 0xf0) >> 4;
+					for (int i = 0; i < ZH[1]; ++i)
 					{
-						dst[0]=palette[pix][0];
-						dst[1]=palette[pix][1];
-						dst[2]=palette[pix][2];
-						dst[3]=255;
+						dst[0] = palette[pix][0];
+						dst[1] = palette[pix][1];
+						dst[2] = palette[pix][2];
+						dst[3] = 255;
+						dst += 4;
 					}
-					dst+=4;
+					++src;
 				}
-				++src;
-			}
 
-			if(1<yStep)
-			{
-				auto copyPtr=dstLine+(4*this->wid);
-				for(unsigned int zv=1; zv<yStep; ++zv)
+				if (1 < yStep)
 				{
-					std::memcpy(copyPtr,dstLine,dst-dstLine);
-					copyPtr+=(4*this->wid);
+					auto copyPtr = dstLine + (4 * this->wid);
+					for (unsigned int zv = 1; zv < yStep; ++zv)
+					{
+						std::memcpy(copyPtr, dstLine, dst - dstLine);
+						copyPtr += (4 * this->wid);
+					}
+					bytesPerLineTimesVRAMy += layer.bytesPerLine;
 				}
-				bytesPerLineTimesVRAMy+=layer.bytesPerLine;
-			}
-			else
-			{
-				--ZV;
-				if(0==ZV)
+				else
 				{
-					ZV=ZV0;
-					bytesPerLineTimesVRAMy+=layer.bytesPerLine;
+					--ZV;
+					if (0 == ZV)
+					{
+						ZV = ZV0;
+						bytesPerLineTimesVRAMy += layer.bytesPerLine;
+					}
+				}
+			}
+		}
+		else
+		{
+			for (int y = 0; y < layer.sizeOnMonitor.y() && y + layer.originOnMonitor.y() <= bottomY; y += yStep)
+			{
+				const int Y = y + layer.originOnMonitor.y();
+				const int X = layer.originOnMonitor.x();
+				unsigned int VRAMAddr = (bytesPerLineTimesVRAMy & layer.VScrollMask);
+				OFFSETTRANS::Trans(VRAMAddr);
+				const unsigned char* src = VRAMTop + VRAMAddr;
+				unsigned char* dstLine = rgba.data() + 4 * (Y * this->wid + X);
+				auto dst = dstLine;
+				for (int x = 0; x < layer.sizeOnMonitor.x() && x + layer.originOnMonitor.x() < this->wid; x += ZH[2])
+				{
+					unsigned char vrambyte = ((*src) & pixelMask);
+					unsigned char pix = (vrambyte & 0x0f);
+					for (int i = 0; i < ZH[0]; ++i)
+					{
+						if (0 != pix)
+						{
+							dst[0] = palette[pix][0];
+							dst[1] = palette[pix][1];
+							dst[2] = palette[pix][2];
+							dst[3] = 255;
+						}
+						dst += 4;
+					}
+					pix = (vrambyte & 0xf0) >> 4;
+					for (int i = 0; i < ZH[1]; ++i)
+					{
+						if (0 != pix)
+						{
+							dst[0] = palette[pix][0];
+							dst[1] = palette[pix][1];
+							dst[2] = palette[pix][2];
+							dst[3] = 255;
+						}
+						dst += 4;
+					}
+					++src;
+				}
+
+				if (1 < yStep)
+				{
+					auto copyPtr = dstLine + (4 * this->wid);
+					for (unsigned int zv = 1; zv < yStep; ++zv)
+					{
+						std::memcpy(copyPtr, dstLine, dst - dstLine);
+						copyPtr += (4 * this->wid);
+					}
+					bytesPerLineTimesVRAMy += layer.bytesPerLine;
+				}
+				else
+				{
+					--ZV;
+					if (0 == ZV)
+					{
+						ZV = ZV0;
+						bytesPerLineTimesVRAMy += layer.bytesPerLine;
+					}
 				}
 			}
 		}
@@ -374,94 +433,164 @@ void TownsRender::Render4Bit(
 		// std::cout << "ChaseHQ Special" << " " << chaseHQPalette.lastPaletteUpdateCount << std::endl;
 
 		Vec3ub paletteUpdate[16];
-		for(int i=0; i<16; ++i)
+		for (int i = 0; i < 16; ++i)
 		{
-			paletteUpdate[i]=palette[i];
+			paletteUpdate[i] = palette[i];
 		}
 
-		for(int i=0; i<16; ++i) // Sky
+		for (int i = 0; i < 16; ++i) // Sky
 		{
-			unsigned int code=chaseHQPalette.paletteLog[i<<2];
-			paletteUpdate[code&0x0F][0]=chaseHQPalette.paletteLog[(i<<2)+2];   // BRG->RGB
-			paletteUpdate[code&0x0F][1]=chaseHQPalette.paletteLog[(i<<2)+3];   // BRG->RGB
-			paletteUpdate[code&0x0F][2]=chaseHQPalette.paletteLog[(i<<2)+1];   // BRG->RGB
+			unsigned int code = chaseHQPalette.paletteLog[i << 2];
+			paletteUpdate[code & 0x0F][0] = chaseHQPalette.paletteLog[(i << 2) + 2];   // BRG->RGB
+			paletteUpdate[code & 0x0F][1] = chaseHQPalette.paletteLog[(i << 2) + 3];   // BRG->RGB
+			paletteUpdate[code & 0x0F][2] = chaseHQPalette.paletteLog[(i << 2) + 1];   // BRG->RGB
 		}
 
-		auto ZV=layer.zoom2x.y()/2;
-		const int ZH[2]={layer.zoom2x.x()/2,(layer.zoom2x.x()+1)/2};  // For x.5 times zoom rate.
-		int bytesPerLineTimesVRAMy=layer.VRAMOffset+layer.FlipVRAMOffset;
-		auto VRAMTop=VRAM+VRAMAddr+layer.VRAMHSkipBytes;
+		auto ZV = layer.zoom2x.y() / 2;
+		const int ZH[3] = { layer.zoom2x.x() / 2,(layer.zoom2x.x() + 1) / 2 ,  (layer.zoom2x.x() / 2) + ((layer.zoom2x.x() + 1) / 2) };  // For x.5 times zoom rate.
+		int bytesPerLineTimesVRAMy = layer.VRAMOffset + layer.FlipVRAMOffset;
+		auto VRAMTop = VRAM + VRAMAddr + layer.VRAMHSkipBytes;
 
-		auto bottomY=this->hei-ZV;
-		for(int y=0; y<layer.sizeOnMonitor.y() && y+layer.originOnMonitor.y()<=bottomY; y+=ZV)
+		auto bottomY = this->hei - ZV;
+		if (true != transparent)
 		{
-			const int Y=y+layer.originOnMonitor.y();
-			const int X=  layer.originOnMonitor.x();
+			for (int y = 0; y < layer.sizeOnMonitor.y() && y + layer.originOnMonitor.y() <= bottomY; y += ZV)
+			{
+				const int Y = y + layer.originOnMonitor.y();
+				const int X = layer.originOnMonitor.x();
 
-			if(196==y)
-			{
-				for(int i=16; i<32; ++i) // Buildings
+				if (196 == y)
 				{
-					unsigned int code=chaseHQPalette.paletteLog[i<<2];
-					paletteUpdate[code&0x0F][0]=chaseHQPalette.paletteLog[(i<<2)+2];   // BRG->RGB
-					paletteUpdate[code&0x0F][1]=chaseHQPalette.paletteLog[(i<<2)+3];   // BRG->RGB
-					paletteUpdate[code&0x0F][2]=chaseHQPalette.paletteLog[(i<<2)+1];   // BRG->RGB
-				}
-			}
-			if(288==y)
-			{
-				for(int i=32; i<47; ++i) // Road
-				{
-					unsigned int code=chaseHQPalette.paletteLog[i<<2];
-					paletteUpdate[code&0x0F][0]=chaseHQPalette.paletteLog[(i<<2)+2];   // BRG->RGB
-					paletteUpdate[code&0x0F][1]=chaseHQPalette.paletteLog[(i<<2)+3];   // BRG->RGB
-					paletteUpdate[code&0x0F][2]=chaseHQPalette.paletteLog[(i<<2)+1];   // BRG->RGB
-				}
-			}
-
-			unsigned int VRAMAddr=(bytesPerLineTimesVRAMy&layer.VScrollMask);
-			OFFSETTRANS::Trans(VRAMAddr);
-			const unsigned char *src=VRAMTop+VRAMAddr;
-			unsigned char *dstLine=rgba.data()+4*(Y*this->wid+X);
-			auto dst=dstLine;
-			for(int x=0; x<layer.sizeOnMonitor.x() && x+layer.originOnMonitor.x()<this->wid; x+=(ZH[0]+ZH[1]))
-			{
-				unsigned char vrambyte=((*src)&pixelMask);
-				unsigned char pix=(vrambyte&0x0f);
-				for(int i=0; i<ZH[0]; ++i)
-				{
-					if(0!=pix ||true!=transparent)
+					for (int i = 16; i < 32; ++i) // Buildings
 					{
-						dst[0]=paletteUpdate[pix][0];
-						dst[1]=paletteUpdate[pix][1];
-						dst[2]=paletteUpdate[pix][2];
-						dst[3]=255;
+						unsigned int code = chaseHQPalette.paletteLog[i << 2];
+						paletteUpdate[code & 0x0F][0] = chaseHQPalette.paletteLog[(i << 2) + 2];   // BRG->RGB
+						paletteUpdate[code & 0x0F][1] = chaseHQPalette.paletteLog[(i << 2) + 3];   // BRG->RGB
+						paletteUpdate[code & 0x0F][2] = chaseHQPalette.paletteLog[(i << 2) + 1];   // BRG->RGB
 					}
-					dst+=4;
 				}
-				pix=(vrambyte&0xf0)>>4;
-				for(int i=0; i<ZH[1]; ++i)
+				if (288 == y)
 				{
-					if(0!=pix ||true!=transparent)
+					for (int i = 32; i < 47; ++i) // Road
 					{
-						dst[0]=paletteUpdate[pix][0];
-						dst[1]=paletteUpdate[pix][1];
-						dst[2]=paletteUpdate[pix][2];
-						dst[3]=255;
+						unsigned int code = chaseHQPalette.paletteLog[i << 2];
+						paletteUpdate[code & 0x0F][0] = chaseHQPalette.paletteLog[(i << 2) + 2];   // BRG->RGB
+						paletteUpdate[code & 0x0F][1] = chaseHQPalette.paletteLog[(i << 2) + 3];   // BRG->RGB
+						paletteUpdate[code & 0x0F][2] = chaseHQPalette.paletteLog[(i << 2) + 1];   // BRG->RGB
 					}
-					dst+=4;
 				}
-				++src;
-			}
 
-			auto copyPtr=dstLine+(4*this->wid);
-			for(unsigned int zv=1; zv<ZV; ++zv)
+				unsigned int VRAMAddr = (bytesPerLineTimesVRAMy & layer.VScrollMask);
+				OFFSETTRANS::Trans(VRAMAddr);
+				const unsigned char* src = VRAMTop + VRAMAddr;
+				unsigned char* dstLine = rgba.data() + 4 * (Y * this->wid + X);
+				auto dst = dstLine;
+				for (int x = 0; x < layer.sizeOnMonitor.x() && x + layer.originOnMonitor.x() < this->wid; x += ZH[2])
+				{
+					unsigned char vrambyte = ((*src) & pixelMask);
+					unsigned char pix = (vrambyte & 0x0f);
+					for (int i = 0; i < ZH[0]; ++i)
+					{
+						dst[0] = paletteUpdate[pix][0];
+						dst[1] = paletteUpdate[pix][1];
+						dst[2] = paletteUpdate[pix][2];
+						dst[3] = 255;
+						dst += 4;
+					}
+					pix = (vrambyte & 0xf0) >> 4;
+					for (int i = 0; i < ZH[1]; ++i)
+					{
+						dst[0] = paletteUpdate[pix][0];
+						dst[1] = paletteUpdate[pix][1];
+						dst[2] = paletteUpdate[pix][2];
+						dst[3] = 255;
+						dst += 4;
+					}
+					++src;
+				}
+
+				auto copyPtr = dstLine + (4 * this->wid);
+				for (unsigned int zv = 1; zv < ZV; ++zv)
+				{
+					std::memcpy(copyPtr, dstLine, dst - dstLine);
+					copyPtr += (4 * this->wid);
+				}
+
+				bytesPerLineTimesVRAMy += layer.bytesPerLine;
+			}
+		}
+		else
+		{
+			for (int y = 0; y < layer.sizeOnMonitor.y() && y + layer.originOnMonitor.y() <= bottomY; y += ZV)
 			{
-				std::memcpy(copyPtr,dstLine,dst-dstLine);
-				copyPtr+=(4*this->wid);
-			}
+				const int Y = y + layer.originOnMonitor.y();
+				const int X = layer.originOnMonitor.x();
 
-			bytesPerLineTimesVRAMy+=layer.bytesPerLine;
+				if (196 == y)
+				{
+					for (int i = 16; i < 32; ++i) // Buildings
+					{
+						unsigned int code = chaseHQPalette.paletteLog[i << 2];
+						paletteUpdate[code & 0x0F][0] = chaseHQPalette.paletteLog[(i << 2) + 2];   // BRG->RGB
+						paletteUpdate[code & 0x0F][1] = chaseHQPalette.paletteLog[(i << 2) + 3];   // BRG->RGB
+						paletteUpdate[code & 0x0F][2] = chaseHQPalette.paletteLog[(i << 2) + 1];   // BRG->RGB
+					}
+				}
+				if (288 == y)
+				{
+					for (int i = 32; i < 47; ++i) // Road
+					{
+						unsigned int code = chaseHQPalette.paletteLog[i << 2];
+						paletteUpdate[code & 0x0F][0] = chaseHQPalette.paletteLog[(i << 2) + 2];   // BRG->RGB
+						paletteUpdate[code & 0x0F][1] = chaseHQPalette.paletteLog[(i << 2) + 3];   // BRG->RGB
+						paletteUpdate[code & 0x0F][2] = chaseHQPalette.paletteLog[(i << 2) + 1];   // BRG->RGB
+					}
+				}
+
+				unsigned int VRAMAddr = (bytesPerLineTimesVRAMy & layer.VScrollMask);
+				OFFSETTRANS::Trans(VRAMAddr);
+				const unsigned char* src = VRAMTop + VRAMAddr;
+				unsigned char* dstLine = rgba.data() + 4 * (Y * this->wid + X);
+				auto dst = dstLine;
+				for (int x = 0; x < layer.sizeOnMonitor.x() && x + layer.originOnMonitor.x() < this->wid; x += ZH[2])
+				{
+					unsigned char vrambyte = ((*src) & pixelMask);
+					unsigned char pix = (vrambyte & 0x0f);
+					for (int i = 0; i < ZH[0]; ++i)
+					{
+						if (0 != pix)
+						{
+							dst[0] = paletteUpdate[pix][0];
+							dst[1] = paletteUpdate[pix][1];
+							dst[2] = paletteUpdate[pix][2];
+							dst[3] = 255;
+						}
+						dst += 4;
+					}
+					pix = (vrambyte & 0xf0) >> 4;
+					for (int i = 0; i < ZH[1]; ++i)
+					{
+						if (0 != pix)
+						{
+							dst[0] = paletteUpdate[pix][0];
+							dst[1] = paletteUpdate[pix][1];
+							dst[2] = paletteUpdate[pix][2];
+							dst[3] = 255;
+						}
+						dst += 4;
+					}
+					++src;
+				}
+
+				auto copyPtr = dstLine + (4 * this->wid);
+				for (unsigned int zv = 1; zv < ZV; ++zv)
+				{
+					std::memcpy(copyPtr, dstLine, dst - dstLine);
+					copyPtr += (4 * this->wid);
+				}
+
+				bytesPerLineTimesVRAMy += layer.bytesPerLine;
+			}
 		}
 	}
 }
@@ -478,47 +607,92 @@ void TownsRender::Render8Bit(const TownsCRTC::Layer &layer,const Vec3ub palette[
 	auto ZV=layer.zoom2x.y()/2;
 
 	auto bottomY=this->hei-ZV;
-	for(int y=0; y<layer.sizeOnMonitor.y() && y+layer.originOnMonitor.y()<=bottomY; y+=ZV)
+	if (true != transparent)
 	{
-		auto X=  layer.originOnMonitor.x();
-		auto Y=y+layer.originOnMonitor.y();
-		unsigned char *dstLine=rgba.data()+4*(Y*this->wid+X);
-		auto dst=dstLine;
-
-		unsigned int inLineVRAMOffset=layer.VRAMHSkipBytes;
-		int ZHswitch=0;
-		auto ZH=ZHsrc[ZHswitch];
-		for(int x=0; x<layer.sizeOnMonitor.x() && x+layer.originOnMonitor.x()<this->wid && inLineVRAMOffset<layer.bytesPerLine; x++)
+		for (int y = 0; y < layer.sizeOnMonitor.y() && y + layer.originOnMonitor.y() <= bottomY; y += ZV)
 		{
-			unsigned int VRAMAddr=lineVRAMOffset+((inLineVRAMOffset+VRAMOffsetHorizontal)&VRAMHScrollMask);
-			VRAMAddr=VRAMBase+((VRAMAddr+VRAMOffsetVertical)&VRAMVScrollMask);
-			OFFSETTRANS::Trans(VRAMAddr);
+			auto X = layer.originOnMonitor.x();
+			auto Y = y + layer.originOnMonitor.y();
+			unsigned char* dstLine = rgba.data() + 4 * (Y * this->wid + X);
+			auto dst = dstLine;
 
-			unsigned char col8=VRAM[VRAMAddr];
-			if(true!=transparent || 0!=col8)
+			unsigned int inLineVRAMOffset = layer.VRAMHSkipBytes;
+			int ZHswitch = 0;
+			auto ZH = ZHsrc[ZHswitch];
+			for (int x = 0; x < layer.sizeOnMonitor.x() && x + layer.originOnMonitor.x() < this->wid && inLineVRAMOffset < layer.bytesPerLine; x++)
 			{
-				dst[0]=palette[col8][0];
-				dst[1]=palette[col8][1];
-				dst[2]=palette[col8][2];
-				dst[3]=255;
+				unsigned int VRAMAddr = lineVRAMOffset + ((inLineVRAMOffset + VRAMOffsetHorizontal) & VRAMHScrollMask);
+				VRAMAddr = VRAMBase + ((VRAMAddr + VRAMOffsetVertical) & VRAMVScrollMask);
+				OFFSETTRANS::Trans(VRAMAddr);
+
+				unsigned char col8 = VRAM[VRAMAddr];
+				dst[0] = palette[col8][0];
+				dst[1] = palette[col8][1];
+				dst[2] = palette[col8][2];
+				dst[3] = 255;
+				dst += 4;
+				if (0 == (--ZH))
+				{
+					ZHswitch = 1 - ZHswitch;
+					ZH = ZHsrc[ZHswitch];
+					++inLineVRAMOffset;
+				}
 			}
-			dst+=4;
-			if(0==(--ZH))
+
+			auto copyPtr = dstLine + (4 * this->wid);
+			for (unsigned int zv = 1; zv < ZV; ++zv)
 			{
-				ZHswitch=1-ZHswitch;
-				ZH=ZHsrc[ZHswitch];
-				++inLineVRAMOffset;
+				std::memcpy(copyPtr, dstLine, dst - dstLine);
+				copyPtr += (4 * this->wid);
 			}
+
+			lineVRAMOffset += layer.bytesPerLine;
 		}
-
-		auto copyPtr=dstLine+(4*this->wid);
-		for(unsigned int zv=1; zv<ZV; ++zv)
+	}
+	else
+	{
+		for (int y = 0; y < layer.sizeOnMonitor.y() && y + layer.originOnMonitor.y() <= bottomY; y += ZV)
 		{
-			std::memcpy(copyPtr,dstLine,dst-dstLine);
-			copyPtr+=(4*this->wid);
-		}
+			auto X = layer.originOnMonitor.x();
+			auto Y = y + layer.originOnMonitor.y();
+			unsigned char* dstLine = rgba.data() + 4 * (Y * this->wid + X);
+			auto dst = dstLine;
 
-		lineVRAMOffset+=layer.bytesPerLine;
+			unsigned int inLineVRAMOffset = layer.VRAMHSkipBytes;
+			int ZHswitch = 0;
+			auto ZH = ZHsrc[ZHswitch];
+			for (int x = 0; x < layer.sizeOnMonitor.x() && x + layer.originOnMonitor.x() < this->wid && inLineVRAMOffset < layer.bytesPerLine; x++)
+			{
+				unsigned int VRAMAddr = lineVRAMOffset + ((inLineVRAMOffset + VRAMOffsetHorizontal) & VRAMHScrollMask);
+				VRAMAddr = VRAMBase + ((VRAMAddr + VRAMOffsetVertical) & VRAMVScrollMask);
+				OFFSETTRANS::Trans(VRAMAddr);
+
+				unsigned char col8 = VRAM[VRAMAddr];
+				if (0 != col8)
+				{
+					dst[0] = palette[col8][0];
+					dst[1] = palette[col8][1];
+					dst[2] = palette[col8][2];
+					dst[3] = 255;
+				}
+				dst += 4;
+				if (0 == (--ZH))
+				{
+					ZHswitch = 1 - ZHswitch;
+					ZH = ZHsrc[ZHswitch];
+					++inLineVRAMOffset;
+				}
+			}
+
+			auto copyPtr = dstLine + (4 * this->wid);
+			for (unsigned int zv = 1; zv < ZV; ++zv)
+			{
+				std::memcpy(copyPtr, dstLine, dst - dstLine);
+				copyPtr += (4 * this->wid);
+			}
+
+			lineVRAMOffset += layer.bytesPerLine;
+		}
 	}
 }
 template <class OFFSETTRANS>
@@ -538,59 +712,118 @@ void TownsRender::Render16Bit(const TownsCRTC::Layer &layer,const unsigned char 
 	// If transparnet==true, there is a possibility that memcpy overwrites background pixels.
 	unsigned int yStep=(true!=transparent ? ZV0 : 1);
 	auto bottomY=this->hei-yStep;
-	for(int y=0; y<layer.sizeOnMonitor.y() && y+layer.originOnMonitor.y()<=bottomY; y+=yStep)
+	if (true != transparent)
 	{
-		auto X=  layer.originOnMonitor.x();
-		auto Y=y+layer.originOnMonitor.y();
-		unsigned char *dstLine=rgba.data()+4*(Y*this->wid+X);
-		auto dst=dstLine;
-
-		unsigned int inLineVRAMOffset=layer.VRAMHSkipBytes;
-		int ZHswitch=0;
-		auto ZH=ZHsrc[ZHswitch];
-		for(int x=0; x<layer.sizeOnMonitor.x() && x+layer.originOnMonitor.x()<this->wid && inLineVRAMOffset<layer.bytesPerLine; x++)
+		for (int y = 0; y < layer.sizeOnMonitor.y() && y + layer.originOnMonitor.y() <= bottomY; y += yStep)
 		{
-			unsigned int VRAMAddr=lineVRAMOffset+((inLineVRAMOffset+VRAMOffsetHorizontal)&VRAMHScrollMask);
-			VRAMAddr=VRAMBase+((VRAMAddr+VRAMOffsetVertical)&VRAMVScrollMask);
-			OFFSETTRANS::Trans(VRAMAddr);
+			auto X = layer.originOnMonitor.x();
+			auto Y = y + layer.originOnMonitor.y();
+			unsigned char* dstLine = rgba.data() + 4 * (Y * this->wid + X);
+			auto dst = dstLine;
 
-			unsigned short col16=cpputil::GetWord(VRAM+VRAMAddr);
-			if(true!=transparent || 0==(col16&0x8000))
+			unsigned int inLineVRAMOffset = layer.VRAMHSkipBytes;
+			int ZHswitch = 0;
+			auto ZH = ZHsrc[ZHswitch];
+			for (int x = 0; x < layer.sizeOnMonitor.x() && x + layer.originOnMonitor.x() < this->wid && inLineVRAMOffset < layer.bytesPerLine; x++)
 			{
-				dst[0]=((col16&0b000001111100000)>>5);
-				dst[0]=(dst[0]<<3)|((dst[0]>>2)&7);
-				dst[1]=((col16&0b111110000000000)>>10);
-				dst[1]=(dst[1]<<3)|((dst[1]>>2)&7);
-				dst[2]=(col16&0b000000000011111);
-				dst[2]=(dst[2]<<3)|((dst[2]>>2)&7);
-				dst[3]=255;
+				unsigned int VRAMAddr = lineVRAMOffset + ((inLineVRAMOffset + VRAMOffsetHorizontal) & VRAMHScrollMask);
+				VRAMAddr = VRAMBase + ((VRAMAddr + VRAMOffsetVertical) & VRAMVScrollMask);
+				OFFSETTRANS::Trans(VRAMAddr);
+
+				unsigned short col16 = cpputil::GetWord(VRAM + VRAMAddr);
+				dst[0] = ((col16 & 0b000001111100000) >> 5);
+				dst[0] = (dst[0] << 3) | ((dst[0] >> 2) & 7);
+				dst[1] = ((col16 & 0b111110000000000) >> 10);
+				dst[1] = (dst[1] << 3) | ((dst[1] >> 2) & 7);
+				dst[2] = (col16 & 0b000000000011111);
+				dst[2] = (dst[2] << 3) | ((dst[2] >> 2) & 7);
+				dst[3] = 255;
+				dst += 4;
+				if (0 == (--ZH))
+				{
+					ZHswitch = 1 - ZHswitch;
+					ZH = ZHsrc[ZHswitch];
+					inLineVRAMOffset += 2;
+				}
 			}
-			dst+=4;
-			if(0==(--ZH))
+
+			if (1 < yStep)
 			{
-				ZHswitch=1-ZHswitch;
-				ZH=ZHsrc[ZHswitch];
-				inLineVRAMOffset+=2;
+				auto copyPtr = dstLine + (4 * this->wid);
+				for (unsigned int zv = 1; zv < yStep; ++zv)
+				{
+					std::memcpy(copyPtr, dstLine, dst - dstLine);
+					copyPtr += (4 * this->wid);
+				}
+				lineVRAMOffset += layer.bytesPerLine;
+			}
+			else
+			{
+				--ZV;
+				if (0 == ZV)
+				{
+					ZV = ZV0;
+					lineVRAMOffset += layer.bytesPerLine;
+				}
 			}
 		}
+	}
+	else
+	{
+		for (int y = 0; y < layer.sizeOnMonitor.y() && y + layer.originOnMonitor.y() <= bottomY; y += yStep)
+		{
+			auto X = layer.originOnMonitor.x();
+			auto Y = y + layer.originOnMonitor.y();
+			unsigned char* dstLine = rgba.data() + 4 * (Y * this->wid + X);
+			auto dst = dstLine;
 
-		if(1<yStep)
-		{
-			auto copyPtr=dstLine+(4*this->wid);
-			for(unsigned int zv=1; zv<yStep; ++zv)
+			unsigned int inLineVRAMOffset = layer.VRAMHSkipBytes;
+			int ZHswitch = 0;
+			auto ZH = ZHsrc[ZHswitch];
+			for (int x = 0; x < layer.sizeOnMonitor.x() && x + layer.originOnMonitor.x() < this->wid && inLineVRAMOffset < layer.bytesPerLine; x++)
 			{
-				std::memcpy(copyPtr,dstLine,dst-dstLine);
-				copyPtr+=(4*this->wid);
+				unsigned int VRAMAddr = lineVRAMOffset + ((inLineVRAMOffset + VRAMOffsetHorizontal) & VRAMHScrollMask);
+				VRAMAddr = VRAMBase + ((VRAMAddr + VRAMOffsetVertical) & VRAMVScrollMask);
+				OFFSETTRANS::Trans(VRAMAddr);
+
+				unsigned short col16 = cpputil::GetWord(VRAM + VRAMAddr);
+				if (0 == (col16 & 0x8000))
+				{
+					dst[0] = ((col16 & 0b000001111100000) >> 5);
+					dst[0] = (dst[0] << 3) | ((dst[0] >> 2) & 7);
+					dst[1] = ((col16 & 0b111110000000000) >> 10);
+					dst[1] = (dst[1] << 3) | ((dst[1] >> 2) & 7);
+					dst[2] = (col16 & 0b000000000011111);
+					dst[2] = (dst[2] << 3) | ((dst[2] >> 2) & 7);
+					dst[3] = 255;
+				}
+				dst += 4;
+				if (0 == (--ZH))
+				{
+					ZHswitch = 1 - ZHswitch;
+					ZH = ZHsrc[ZHswitch];
+					inLineVRAMOffset += 2;
+				}
 			}
-			lineVRAMOffset+=layer.bytesPerLine;
-		}
-		else
-		{
-			--ZV;
-			if(0==ZV)
+
+			if (1 < yStep)
 			{
-				ZV=ZV0;
-				lineVRAMOffset+=layer.bytesPerLine;
+				auto copyPtr = dstLine + (4 * this->wid);
+				for (unsigned int zv = 1; zv < yStep; ++zv)
+				{
+					std::memcpy(copyPtr, dstLine, dst - dstLine);
+					copyPtr += (4 * this->wid);
+				}
+				lineVRAMOffset += layer.bytesPerLine;
+			}
+			else
+			{
+				--ZV;
+				if (0 == ZV)
+				{
+					ZV = ZV0;
+					lineVRAMOffset += layer.bytesPerLine;
+				}
 			}
 		}
 	}
