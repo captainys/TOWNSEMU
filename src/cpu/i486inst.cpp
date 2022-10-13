@@ -1846,9 +1846,10 @@ void i486DX::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,MemoryAcce
 		default:
 #if defined(_MSC_VER)
 			__assume(0);
+#else
+			break;
 #endif
 			// Undefined operand, or probably not implemented yet.
-			//break;
 		}
 
 	} while (refetch);
