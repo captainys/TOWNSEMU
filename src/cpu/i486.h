@@ -3455,31 +3455,8 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 			// https://wiki.osdev.org/Interrupt_Descriptor_Table
 			switch(type)
 			{
-			default:
-				if(true==state.exception && EXCEPTION_ND==state.exceptionType)
-				{
-					Abort("Infinite NO_PRESENT exception.");
-				}
-				else
-				{
-					auto callStackDepth=callStack.size();
-					auto AX0=GetAX();
-
-					if(INT_GENERAL_PROTECTION!=INTNum) // Prevent infinite recursion.
-					{
-						unsigned int Ibit=2;
-						unsigned int EXTbit=0; // 1 if external interrupt source.
-						RaiseException(EXCEPTION_GP,INTNum*8+Ibit+EXTbit); // EXT -> [1] 9-8 Error Code
-						HandleException(false,mem,numInstBytesForCallStack);  // <- This will shoot INT 0BH
-					}
-
-					if(true==enableCallStack && callStackDepth<callStack.size()) // Supposed to be true, just in case.
-					{
-						callStack.back().INTNum0=INTNum;
-						callStack.back().AX0=AX0;
-					}
-				}
-				return;
+			case 0b0101: //"386 32-bit Task";
+				break;
 			case 0b0110:
 				Abort("286 16-bit INT gate not supported");
 				gateOperandSize=16;
@@ -3489,12 +3466,36 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 				gateOperandSize=16;
 				isINTGate=false;
 				break;
-			case 0b0101: //"386 32-bit Task";
 			case 0b1110: //"386 32-bit INT";
 				break;
 			case 0b1111: //"386 32-bit Trap";
 				isINTGate=false;
 				break;
+			default:
+				if (true == state.exception && EXCEPTION_ND == state.exceptionType)
+				{
+					Abort("Infinite NO_PRESENT exception.");
+				}
+				else
+				{
+					auto callStackDepth = callStack.size();
+					auto AX0 = GetAX();
+
+					if (INT_GENERAL_PROTECTION != INTNum) // Prevent infinite recursion.
+					{
+						unsigned int Ibit = 2;
+						unsigned int EXTbit = 0; // 1 if external interrupt source.
+						RaiseException(EXCEPTION_GP, INTNum * 8 + Ibit + EXTbit); // EXT -> [1] 9-8 Error Code
+						HandleException(false, mem, numInstBytesForCallStack);  // <- This will shoot INT 0BH
+					}
+
+					if (true == enableCallStack && callStackDepth < callStack.size()) // Supposed to be true, just in case.
+					{
+						callStack.back().INTNum0 = INTNum;
+						callStack.back().AX0 = AX0;
+					}
+				}
+				return;
 			}
 
 			if(true==enableCallStack)
@@ -3518,12 +3519,15 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 
 				if(newCS.DPL<CPL)
 				{
-					auto TempSS=state.SS();
+					auto TempSS=state.SS().value;
 					auto TempESP=state.ESP();
 					LoadSegmentRegister(state.SS(),FetchWord(32,state.TR,TSS_OFFSET_SS0+newCS.DPL*8,mem),mem);
 					state.ESP()=FetchDword(32,state.TR,TSS_OFFSET_ESP0+newCS.DPL*8,mem);
-					Push(mem,gateOperandSize,TempSS.value);
-					Push(mem,gateOperandSize,TempESP);
+
+					Push(mem, gateOperandSize, TempSS, TempESP);
+					// Equivalent >>
+					// Push(mem,gateOperandSize,TempSS.value);
+					// Push(mem,gateOperandSize,TempESP);
 				}
 				// else if(CPL<DPL)
 				// {
@@ -3561,7 +3565,7 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 				{
 					// INT instruction of [1].
 					auto TempEFLAGS=state.EFLAGS;
-					auto TempSS=state.SS();
+					auto TempSS=state.SS().value;
 					auto TempESP=state.ESP();
 					state.EFLAGS&=~(EFLAGS_VIRTUAL86|EFLAGS_TRAP);
 					// if(fromInterruptGate)
@@ -3571,15 +3575,20 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 					// Is TR always 32-bit address size?
 					LoadSegmentRegister(state.SS(),FetchWord(32,state.TR,TSS_OFFSET_SS0,mem),mem);
 					state.ESP()=FetchDword(32,state.TR,TSS_OFFSET_ESP0,mem);
-					Push(mem,32,state.GS().value);
-					Push(mem,32,state.FS().value);
-					Push(mem,32,state.DS().value);
-					Push(mem,32,state.ES().value);
-					Push(mem,32,TempSS.value);
-					Push(mem,32,TempESP);
-					Push(mem,32,TempEFLAGS);
-					Push(mem,32,state.CS().value);
-					Push(mem,32,state.EIP+numInstBytesForReturn);
+
+					Push(mem, 32, state.GS().value, state.FS().value, state.DS().value);
+					Push(mem, 32, state.ES().value, TempSS, TempESP);
+					Push(mem, 32, TempEFLAGS, state.CS().value, state.EIP + numInstBytesForReturn);
+					// Equivalent >>
+					// Push(mem,32,state.GS().value);
+					// Push(mem,32,state.FS().value);
+					// Push(mem,32,state.DS().value);
+					// Push(mem,32,state.ES().value);
+					// Push(mem,32,TempSS.value);
+					// Push(mem,32,TempESP);
+					// Push(mem,32,TempEFLAGS);
+					// Push(mem,32,state.CS().value);
+					// Push(mem,32,state.EIP+numInstBytesForReturn);
 
 					SetIPorEIP(gateOperandSize,desc.OFFSET);
 					LoadSegmentRegister(state.CS(),desc.SEG,mem);
