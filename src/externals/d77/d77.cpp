@@ -537,9 +537,9 @@ std::vector <unsigned char> D77File::D77Disk::MakeD77Image(void) const
 	int trackIdx=0;
 	for(auto &t : track)
 	{
-		UnsignedIntToDWord(d77Img.data()+trackPtr[trackIdx],(unsigned int)d77Img.size());
 		if(0<t.sector.size())
 		{
+			UnsignedIntToDWord(d77Img.data()+trackPtr[trackIdx],(unsigned int)d77Img.size());
 			for(auto &s : t.sector)
 			{
 				unsigned char buf[2];
@@ -569,11 +569,8 @@ std::vector <unsigned char> D77File::D77Disk::MakeD77Image(void) const
 		else
 		{
 			// Inserting an unformatted track.
-			// Minimum 128-byte sector data + 0x10 header.  Am I rite?
-			for(int i=0; i<144; ++i)
-			{
-				d77Img.push_back(0);
-			}
+			// Just make a NULL pointer.
+			UnsignedIntToDWord(d77Img.data()+trackPtr[trackIdx],0);
 		}
 		++trackIdx;
 	}
@@ -661,12 +658,17 @@ bool D77File::D77Disk::SetD77Image(const unsigned char d77Img[],bool verboseMode
 	}
 	int trackCount=0;
 	long long int prevOffset=0;
+	int nUnformat=0;
 	for(auto offset : trackOffset)
 	{
 		if(0!=offset)
 		{
 			if(true==verboseMode)
 			{
+				for(int i=0; i<nUnformat; ++i)
+				{
+					printf("Unformatted Track\n");
+				}
 				printf("Reading Track... DiskOffset=%08x Count=%d ",(int)offset,trackCount);
 				if(0<trackCount)
 				{
@@ -674,9 +676,19 @@ bool D77File::D77Disk::SetD77Image(const unsigned char d77Img[],bool verboseMode
 				}
 				printf("\n");
 			}
+			for(int i=0; i<nUnformat; ++i)
+			{
+				D77Track trk;
+				track.push_back(trk);
+			}
+			nUnformat=0;
 			track.push_back(MakeTrackData(d77Img+offset,d77Img+header.diskSize));
 			prevOffset=offset;
 			++trackCount;
+		}
+		else
+		{
+			++nUnformat;
 		}
 	}
 	return true;
