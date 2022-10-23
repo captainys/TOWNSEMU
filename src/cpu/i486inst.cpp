@@ -753,7 +753,7 @@ void i486DX::FetchInstruction(
    const SegmentRegister &CS,unsigned int offset,Memory &mem,unsigned int defOperSize,unsigned int defAddrSize)
 {
 	FetchInstructionClass<i486DX,Memory,RealFetchInstructionFunctions,BurstModeFetchInstructionFunctions>::FetchInstruction(
-	    *this,memWin,instOp,CS,offset,mem,defOperSize,defAddrSize);
+		*this,memWin,instOp,CS,offset,mem,defOperSize,defAddrSize);
 }
 
 void i486DX::DebugFetchInstruction(
@@ -762,7 +762,7 @@ void i486DX::DebugFetchInstruction(
    const SegmentRegister &CS,unsigned int offset,const Memory &mem,unsigned int defOperSize,unsigned int defAddrSize) const
 {
 	FetchInstructionClass<const i486DX,const Memory,DebugFetchInstructionFunctions,DebugFetchInstructionFunctions>::FetchInstruction(
-	    *this,memWin,instOp,CS,offset,mem,defOperSize,defAddrSize);
+		*this,memWin,instOp,CS,offset,mem,defOperSize,defAddrSize);
 }
 
 inline void i486DX::FetchOperand8(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,Memory &mem)
@@ -913,15 +913,17 @@ inline unsigned int i486DX::DebugFetchImm16or32(Instruction &inst,MemoryAccess::
 
 template <class CPUCLASS,class MEMCLASS,class FUNCCLASS>
 inline unsigned int i486DX::FetchOperandRMandDecode(
-    Operand &op,int addressSize,int dataSize,
-    CPUCLASS &cpu,Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,MEMCLASS &mem)
+	Operand &op,int addressSize,int dataSize,
+	CPUCLASS &cpu,Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,MEMCLASS &mem)
 {
-	inst.operand[0]=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,seg,offset,mem);
+	auto &operand = inst.operand;
+	auto &operandLen = inst.operandLen;
+	operand[0]=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,seg,offset,mem);
 
 	NUM_BYTES_TO_BASIC_REG_BASE
 	NUM_BYTES_TO_REGISTER_OPERAND_TYPE
 
-	const auto MODR_M=inst.operand[0];
+	const auto MODR_M=operand[0];
 	const auto MOD=((MODR_M>>6)&3);
 	// const auto REG_OPCODE=((MODR_M>>3)&7);
 	#define R_M (MODR_M&7)
@@ -980,40 +982,40 @@ inline unsigned int i486DX::FetchOperandRMandDecode(
 			{REG_BX,REG_SI},{REG_BX,REG_DI},{REG_BP,REG_SI},{REG_BP,REG_DI},{REG_SI,REG_NULL},{REG_DI,REG_NULL},{REG_BP,REG_NULL},{REG_BX,REG_NULL},
 		};
 
-		switch(caseTable[inst.operand[0]])
+		switch(caseTable[operand[0]])
 		{
 		case 0:
-			FUNCCLASS::FetchInstructionTwoBytes(inst.operand+1,cpu,ptr,inst.codeAddressSize,seg,offset+1,mem);
+			FUNCCLASS::FetchInstructionTwoBytes(operand+1,cpu,ptr,inst.codeAddressSize,seg,offset+1,mem);
 
 			op.operandType=OPER_ADDR;
 			op.baseReg=REG_NULL;
 			op.indexReg=REG_NULL;
 			// indexShift=0; Already cleared in Clear()
-			op.offset=cpputil::GetSignedWord(inst.operand+1);
+			op.offset=cpputil::GetSignedWord(operand+1);
 			op.offsetBits=16;
-			inst.operandLen=3;
+			operandLen=3;
 			break;
 		case 1:
-			inst.operand[1]=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,seg,offset+1,mem);
+			operand[1]=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,seg,offset+1,mem);
 
 			op.operandType=OPER_ADDR;
 			// indexShisft=0; Already cleared in Clear()
 			op.baseReg=MODR_M_to_BaseIndex[MODR_M][0];
 			op.indexReg=MODR_M_to_BaseIndex[MODR_M][1];
 			op.offsetBits=8;
-			op.offset=cpputil::GetSignedByte(inst.operand[1]);
-			inst.operandLen=2;
+			op.offset=cpputil::GetSignedByte(operand[1]);
+			operandLen=2;
 			break;
 		case 2:
-			FUNCCLASS::FetchInstructionTwoBytes(inst.operand+1,cpu,ptr,inst.codeAddressSize,seg,offset+1,mem);
+			FUNCCLASS::FetchInstructionTwoBytes(operand+1,cpu,ptr,inst.codeAddressSize,seg,offset+1,mem);
 
 			op.operandType=OPER_ADDR;
 			// indexShisft=0; Already cleared in Clear()
 			op.baseReg=MODR_M_to_BaseIndex[MODR_M][0];
 			op.indexReg=MODR_M_to_BaseIndex[MODR_M][1];
 			op.offsetBits=16;
-			op.offset=cpputil::GetSignedWord(inst.operand+1);
-			inst.operandLen=3;
+			op.offset=cpputil::GetSignedWord(operand+1);
+			operandLen=3;
 			break;
 		case 3:
 			op.operandType=OPER_ADDR;
@@ -1022,12 +1024,12 @@ inline unsigned int i486DX::FetchOperandRMandDecode(
 			op.indexReg=MODR_M_to_BaseIndex[MODR_M][1];
 			op.offset=0;  // Tentative
 			op.offsetBits=16;
-			inst.operandLen=1;
+			operandLen=1;
 			break;
 		case 4:
 			op.operandType=numBytesToRegisterOperandType[dataSize>>3];
 			op.reg=R_M+(numBytesToBasicRegBase[dataSize>>3]);
-			inst.operandLen=1;
+			operandLen=1;
 			break;
 		}
 	}
@@ -1066,28 +1068,28 @@ inline unsigned int i486DX::FetchOperandRMandDecode(
 			REG_EDI,
 		};
 
-		switch (caseTable[inst.operand[0]])
+		switch (caseTable[operand[0]])
 		{
 		case A:
-			FUNCCLASS::FetchInstructionFourBytes(inst.operand + 1, cpu, ptr, inst.codeAddressSize, seg, offset + 1, mem);
+			FUNCCLASS::FetchInstructionFourBytes(operand + 1, cpu, ptr, inst.codeAddressSize, seg, offset + 1, mem);
 
 			op.operandType = OPER_ADDR;
 			op.baseReg = REG_NULL;
 			op.indexReg = REG_NULL;
 			// indexShift=0; Already cleared in Clear()
-			op.offset = cpputil::GetSignedDword(inst.operand + 1);
+			op.offset = cpputil::GetSignedDword(operand + 1);
 			op.offsetBits = 32;
-			inst.operandLen = 5;
+			operandLen = 5;
 			break;
 		case B: // MOD==0
 		{
-			inst.operand[1] = FUNCCLASS::FetchInstructionByte(cpu, ptr, inst.codeAddressSize, seg, offset + 1, mem);
+			operand[1] = FUNCCLASS::FetchInstructionByte(cpu, ptr, inst.codeAddressSize, seg, offset + 1, mem);
 
 			op.operandType = OPER_ADDR;
 			// indexShift=0; Already cleared in Clear()
 			op.offset = 0;
 
-			auto SIB = inst.operand[1];
+			auto SIB = operand[1];
 			auto SS = ((SIB >> 6) & 3);
 			auto INDEX = ((SIB >> 3) & 7);
 			auto BASE = (SIB & 7);
@@ -1095,16 +1097,16 @@ inline unsigned int i486DX::FetchOperandRMandDecode(
 			if (5 != BASE)
 			{
 				op.baseReg = REG_32BIT_REG_BASE + BASE;
-				inst.operandLen = 2;
+				operandLen = 2;
 			}
 			else
 			{
-				FUNCCLASS::FetchInstructionFourBytes(inst.operand + 2, cpu, ptr, inst.codeAddressSize, seg, offset + 2, mem);
+				FUNCCLASS::FetchInstructionFourBytes(operand + 2, cpu, ptr, inst.codeAddressSize, seg, offset + 2, mem);
 
 				op.baseReg = REG_NULL; // 0b00==MOD && 5==BASE  disp32[index]
 				op.offsetBits = 32;
-				op.offset = cpputil::GetSignedDword(inst.operand + 2);
-				inst.operandLen = 6;
+				op.offset = cpputil::GetSignedDword(operand + 2);
+				operandLen = 6;
 			}
 
 			op.indexReg = SIB_INDEX[INDEX];
@@ -1112,7 +1114,7 @@ inline unsigned int i486DX::FetchOperandRMandDecode(
 		}
 		break;
 		case C:
-			inst.operand[1] = FUNCCLASS::FetchInstructionByte(cpu, ptr, inst.codeAddressSize, seg, offset + 1, mem);
+			operand[1] = FUNCCLASS::FetchInstructionByte(cpu, ptr, inst.codeAddressSize, seg, offset + 1, mem);
 
 			op.operandType = OPER_ADDR;
 			// indexShift=0; Already cleared in Clear()
@@ -1121,11 +1123,11 @@ inline unsigned int i486DX::FetchOperandRMandDecode(
 			op.indexReg = REG_NULL;
 
 			op.offsetBits = 8;
-			op.offset = cpputil::GetSignedByte(inst.operand[1]);
-			inst.operandLen = 2;
+			op.offset = cpputil::GetSignedByte(operand[1]);
+			operandLen = 2;
 			break;
 		case D:
-			FUNCCLASS::FetchInstructionFourBytes(inst.operand + 1, cpu, ptr, inst.codeAddressSize, seg, offset + 1, mem);
+			FUNCCLASS::FetchInstructionFourBytes(operand + 1, cpu, ptr, inst.codeAddressSize, seg, offset + 1, mem);
 
 			op.operandType = OPER_ADDR;
 			// indexShift=0; Already cleared in Clear()
@@ -1134,14 +1136,14 @@ inline unsigned int i486DX::FetchOperandRMandDecode(
 			op.indexReg = REG_NULL;
 
 			op.offsetBits = 32;
-			op.offset = cpputil::GetSignedDword(inst.operand + 1);
-			inst.operandLen = 5;
+			op.offset = cpputil::GetSignedDword(operand + 1);
+			operandLen = 5;
 			break;
 		case E:
 			op.operandType = OPER_ADDR;
 			// indexShift=0; Already cleared in Clear()
 			op.offset = 0;
-			inst.operandLen = 1;
+			operandLen = 1;
 
 			op.baseReg = REG_32BIT_REG_BASE + R_M;
 			op.indexReg = REG_NULL;
@@ -1149,17 +1151,17 @@ inline unsigned int i486DX::FetchOperandRMandDecode(
 		case F:
 			op.operandType = numBytesToRegisterOperandType[dataSize >> 3];
 			op.reg = R_M + (numBytesToBasicRegBase[dataSize >> 3]);
-			inst.operandLen = 1;
+			operandLen = 1;
 			break;
 		case G: // MOD==1
 		{
-			FUNCCLASS::FetchInstructionTwoBytes(inst.operand + 1, cpu, ptr, inst.codeAddressSize, seg, offset + 1, mem);
+			FUNCCLASS::FetchInstructionTwoBytes(operand + 1, cpu, ptr, inst.codeAddressSize, seg, offset + 1, mem);
 
 			op.operandType = OPER_ADDR;
 			// indexShift=0; Already cleared in Clear()
 			op.offset = 0;
 
-			auto SIB = inst.operand[1];
+			auto SIB = operand[1];
 			auto SS = ((SIB >> 6) & 3);
 			auto INDEX = ((SIB >> 3) & 7);
 			auto BASE = (SIB & 7);
@@ -1177,21 +1179,21 @@ inline unsigned int i486DX::FetchOperandRMandDecode(
 			op.indexShift = SS;
 
 			op.offsetBits = 8;
-			op.offset = cpputil::GetSignedByte(inst.operand[2]);
+			op.offset = cpputil::GetSignedByte(operand[2]);
 
-			inst.operandLen = 3;
+			operandLen = 3;
 		}
 		break;
 		case H: // MOD==2
 		{
-			inst.operand[1] = FUNCCLASS::FetchInstructionByte(cpu, ptr, inst.codeAddressSize, seg, offset + 1, mem);
-			FUNCCLASS::FetchInstructionFourBytes(inst.operand + 2, cpu, ptr, inst.codeAddressSize, seg, offset + 2, mem);
+			operand[1] = FUNCCLASS::FetchInstructionByte(cpu, ptr, inst.codeAddressSize, seg, offset + 1, mem);
+			FUNCCLASS::FetchInstructionFourBytes(operand + 2, cpu, ptr, inst.codeAddressSize, seg, offset + 2, mem);
 
 			op.operandType = OPER_ADDR;
 			// indexShift=0; Already cleared in Clear()
 			op.offset = 0;
 
-			auto SIB = inst.operand[1];
+			auto SIB = operand[1];
 			auto SS = ((SIB >> 6) & 3);
 			auto INDEX = ((SIB >> 3) & 7);
 			auto BASE = (SIB & 7);
@@ -1209,16 +1211,16 @@ inline unsigned int i486DX::FetchOperandRMandDecode(
 			op.indexShift = SS;
 
 			op.offsetBits = 32;
-			op.offset = cpputil::GetSignedDword(inst.operand + 2);
+			op.offset = cpputil::GetSignedDword(operand + 2);
 
-			inst.operandLen = 6;
+			operandLen = 6;
 		}
 		break;
 		}
 	}
 
-	inst.numBytes+=inst.operandLen;
-	return inst.operandLen;
+	inst.numBytes+=operandLen;
+	return operandLen;
 }
 
 std::string i486DX::Instruction::SegmentOverrideString(int segOverridePrefix)
@@ -5786,11 +5788,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			if(true==enableCallStack)
 			{
 				PushCallStack(
-				    false,0xffff,0xffff,
-				    state.GetCR(0),
-				    state.CS().value,state.EIP,inst.numBytes,
-				    op1.seg,op1.offset,
-				    mem);
+					false,0xffff,0xffff,
+					state.GetCR(0),
+					state.CS().value,state.EIP,inst.numBytes,
+					op1.seg,op1.offset,
+					mem);
 			}
 
 			auto descHighword=LoadSegmentRegister(state.CS(),op1.seg,mem);
@@ -5837,11 +5839,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			if(true==enableCallStack)
 			{
 				PushCallStack(
-				    false,0xffff,0xffff,
-				    state.GetCR(0),
-				    state.CS().value,state.EIP,inst.numBytes,
-				    state.CS().value,destin,
-				    mem);
+					false,0xffff,0xffff,
+					state.GetCR(0),
+					state.CS().value,state.EIP,inst.numBytes,
+					state.CS().value,destin,
+					mem);
 			}
 
 			state.EIP=destin;
@@ -5933,9 +5935,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
 			for(int ctr=0;
-			    ctr<MAX_REP_BUNDLE_COUNT &&
-			    true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize);
-			    ++ctr)
+				ctr<MAX_REP_BUNDLE_COUNT &&
+				true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize);
+				++ctr)
 			{
 				auto data1=FetchByte(inst.addressSize,seg,state.ESI(),mem);
 				auto data2=FetchByte(inst.addressSize,state.ES(),state.EDI(),mem);
@@ -5962,9 +5964,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
 			for(int ctr=0;
-			    ctr<MAX_REP_BUNDLE_COUNT &&
-			    true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize);
-			    ++ctr)
+				ctr<MAX_REP_BUNDLE_COUNT &&
+				true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize);
+				++ctr)
 			{
 				auto data1=FetchWordOrDword(inst.operandSize,inst.addressSize,seg,state.ESI(),mem);
 				auto data2=FetchWordOrDword(inst.operandSize,inst.addressSize,state.ES(),state.EDI(),mem);
@@ -7137,11 +7139,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 						if(true==enableCallStack)
 						{
 							PushCallStack(
-							    false,0xffff,0xffff,
-							    state.GetCR(0),
-							    state.CS().value,state.EIP,inst.numBytes,
-							    state.CS().value,value.GetAsDword(),
-							    mem);
+								false,0xffff,0xffff,
+								state.GetCR(0),
+								state.CS().value,state.EIP,inst.numBytes,
+								state.CS().value,value.GetAsDword(),
+								mem);
 						}
 						state.EIP=(value.GetAsDword()&operandSizeMask[inst.operandSize>>3]);
 						EIPIncrement=0;
@@ -7194,11 +7196,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 								destEIP&=0xFFFF;
 							}
 							PushCallStack(
-							    false,0xffff,0xffff,
-							    state.GetCR(0),
-							    state.CS().value,state.EIP,inst.numBytes,
-							    destSeg,destEIP,
-							    mem);
+								false,0xffff,0xffff,
+								state.GetCR(0),
+								state.CS().value,state.EIP,inst.numBytes,
+								destSeg,destEIP,
+								mem);
 						}
 
 						SetIPorEIP(inst.operandSize,value.GetAsDword());
@@ -7705,7 +7707,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		  (OPER_REG32==op1.operandType || OPER_REG16==op1.operandType))
 		{
 			unsigned int offset=
-			    state.NULL_and_reg32[op2.baseReg&15]+
+				state.NULL_and_reg32[op2.baseReg&15]+
 			   (state.NULL_and_reg32[op2.indexReg&15]<<op2.indexShift)+
 			   op2.offset;
 			offset&=operandSizeMask[inst.addressSize>>3];
@@ -8196,9 +8198,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			auto prefix=REPNEtoREP(inst.instPrefix);
 			auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
 			for(int ctr=0;
-			    ctr<MAX_REP_BUNDLE_COUNT &&
-			    true==REPCheck(clocksPassed,prefix,inst.addressSize);
-			    ++ctr)
+				ctr<MAX_REP_BUNDLE_COUNT &&
+				true==REPCheck(clocksPassed,prefix,inst.addressSize);
+				++ctr)
 			{
 				auto data=FetchByte(inst.addressSize,seg,state.ESI(),mem);
 				StoreByte(mem,inst.addressSize,state.ES(),state.EDI(),data);
@@ -8234,9 +8236,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			auto prefix=REPNEtoREP(inst.instPrefix);
 			auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
 			for(int ctr=0;
-			    ctr<MAX_REP_BUNDLE_COUNT &&
-			    true==REPCheck(clocksPassed,prefix,inst.addressSize);
-			    ++ctr)
+				ctr<MAX_REP_BUNDLE_COUNT &&
+				true==REPCheck(clocksPassed,prefix,inst.addressSize);
+				++ctr)
 			{
 				auto data=FetchWordOrDword(inst.operandSize,inst.addressSize,seg,state.ESI(),mem);
 				StoreWordOrDword(mem,inst.operandSize,inst.addressSize,state.ES(),state.EDI(),data);
@@ -8942,9 +8944,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 	case I486_RENUMBER_SCASB://            0xAE,
 		for(int ctr=0;
-		    ctr<MAX_REP_BUNDLE_COUNT &&
-		    true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize);
-		    ++ctr)
+			ctr<MAX_REP_BUNDLE_COUNT &&
+			true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize);
+			++ctr)
 		{
 			auto data=FetchByte(inst.addressSize,state.ES(),state.EDI(),mem);
 			auto AL=GetAL();
@@ -8964,9 +8966,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 	case I486_RENUMBER_SCAS://             0xAF,
 		for(int ctr=0;
-		    ctr<MAX_REP_BUNDLE_COUNT &&
-		    true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize);
-		    ++ctr)
+			ctr<MAX_REP_BUNDLE_COUNT &&
+			true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize);
+			++ctr)
 		{
 			auto data=FetchWordOrDword(inst.operandSize,inst.addressSize,state.ES(),state.EDI(),mem);
 			auto EAX=GetEAX();
@@ -9207,9 +9209,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			auto ECX=state.ECX();
 			auto prefix=REPNEtoREP(inst.instPrefix);
 			for(int ctr=0; 
-			    ctr<MAX_REP_BUNDLE_COUNT && 
-			    true==REPCheck(clocksPassed,prefix,inst.addressSize);
-			    ++ctr)
+				ctr<MAX_REP_BUNDLE_COUNT && 
+				true==REPCheck(clocksPassed,prefix,inst.addressSize);
+				++ctr)
 			{
 				StoreByte(mem,inst.addressSize,state.ES(),state.EDI(),GetAL());
 				clocksPassed+=5;
@@ -9243,9 +9245,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			auto ECX=state.ECX();
 			auto prefix=REPNEtoREP(inst.instPrefix);
 			for(int ctr=0;
-			    ctr<MAX_REP_BUNDLE_COUNT &&
-			    true==REPCheck(clocksPassed,prefix,inst.addressSize);
-			    ++ctr)
+				ctr<MAX_REP_BUNDLE_COUNT &&
+				true==REPCheck(clocksPassed,prefix,inst.addressSize);
+				++ctr)
 			{
 				StoreWordOrDword(mem,inst.operandSize,inst.addressSize,state.ES(),state.EDI(),GetEAX());
 				clocksPassed+=5;
@@ -9333,7 +9335,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_RENUMBER_XLAT://             0xD7,
 		clocksPassed=4;
 		{
- 			SegmentRegister seg=SegmentOverrideDefaultDS(inst.segOverride);
+			SegmentRegister seg=SegmentOverrideDefaultDS(inst.segOverride);
 			unsigned int offset=GetAL();
 			if(32==inst.addressSize)
 			{
