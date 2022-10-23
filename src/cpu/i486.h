@@ -3518,12 +3518,15 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 
 				if(newCS.DPL<CPL)
 				{
-					auto TempSS=state.SS();
+					auto TempSS=state.SS().value;
 					auto TempESP=state.ESP();
 					LoadSegmentRegister(state.SS(),FetchWord(32,state.TR,TSS_OFFSET_SS0+newCS.DPL*8,mem),mem);
 					state.ESP()=FetchDword(32,state.TR,TSS_OFFSET_ESP0+newCS.DPL*8,mem);
-					Push(mem,gateOperandSize,TempSS.value);
-					Push(mem,gateOperandSize,TempESP);
+
+					Push(mem, gateOperandSize, TempSS,TempESP);
+					// Equivalent >>
+					// Push(mem,gateOperandSize,TempSS);
+					// Push(mem,gateOperandSize,TempESP);
 				}
 				// else if(CPL<DPL)
 				// {
@@ -3561,7 +3564,7 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 				{
 					// INT instruction of [1].
 					auto TempEFLAGS=state.EFLAGS;
-					auto TempSS=state.SS();
+					auto TempSS=state.SS().value;
 					auto TempESP=state.ESP();
 					state.EFLAGS&=~(EFLAGS_VIRTUAL86|EFLAGS_TRAP);
 					// if(fromInterruptGate)
@@ -3571,15 +3574,20 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 					// Is TR always 32-bit address size?
 					LoadSegmentRegister(state.SS(),FetchWord(32,state.TR,TSS_OFFSET_SS0,mem),mem);
 					state.ESP()=FetchDword(32,state.TR,TSS_OFFSET_ESP0,mem);
-					Push(mem,32,state.GS().value);
-					Push(mem,32,state.FS().value);
-					Push(mem,32,state.DS().value);
-					Push(mem,32,state.ES().value);
-					Push(mem,32,TempSS.value);
-					Push(mem,32,TempESP);
-					Push(mem,32,TempEFLAGS);
-					Push(mem,32,state.CS().value);
-					Push(mem,32,state.EIP+numInstBytesForReturn);
+
+					Push(mem, 32, state.GS().value, state.FS().value, state.DS().value);
+					Push(mem, 32, state.ES().value, TempSS, TempESP);
+					Push(mem, 32, TempEFLAGS, state.CS().value, state.EIP + numInstBytesForReturn);
+					// Equivalent >>
+					// Push(mem,32,state.GS().value);
+					// Push(mem,32,state.FS().value);
+					// Push(mem,32,state.DS().value);
+					// Push(mem,32,state.ES().value);
+					// Push(mem,32,TempSS.value);
+					// Push(mem,32,TempESP);
+					// Push(mem,32,TempEFLAGS);
+					// Push(mem,32,state.CS().value);
+					// Push(mem,32,state.EIP+numInstBytesForReturn);
 
 					SetIPorEIP(gateOperandSize,desc.OFFSET);
 					LoadSegmentRegister(state.CS(),desc.SEG,mem);
