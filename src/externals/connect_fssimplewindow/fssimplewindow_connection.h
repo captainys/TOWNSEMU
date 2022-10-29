@@ -67,6 +67,7 @@ public:
 	GLuint GenTexture(void);
 	void UpdateTexture(GLuint texId,int wid,int hei,const unsigned char *rgba) const;
 	void DrawTextureRect(int x0,int y0,int x1,int y1) const;
+	void PauseKeyPressed(void);
 
 	std::vector <unsigned char> PAUSEicon,MENUicon;
 
@@ -107,6 +108,8 @@ public:
 	virtual bool CDDAIsPlaying(void);
 	virtual DiscImage::MinSecFrm CDDACurrentPosition(void);
 
+
+	virtual void ToggleMouseCursor(void) override;
 
 
 #ifdef AUDIO_USE_STREAMING

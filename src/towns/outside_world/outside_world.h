@@ -202,6 +202,10 @@ public:
 	void UseGamePad(unsigned int gamePadIndex);
 
 
+	/*! Call this function to toggle host mouse cursor. */
+	virtual void ToggleMouseCursor(void){};
+
+
 	/*! Host-Key Label is implementation dependent.
 	*/
 	virtual void RegisterHostShortCut(std::string hostKeyLabel,bool ctrl,bool shift,std::string cmdStr);

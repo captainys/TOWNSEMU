@@ -199,6 +199,8 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["LOADSTATE"]=CMD_LOAD_STATE;
 
 	primaryCmdMap["GAMEPORT"]=CMD_GAMEPORT;
+	primaryCmdMap["TOGGLE_HOST_MOUSE_CURSOR"]=CMD_TOGGLE_HOST_MOUSE_CURSOR;
+	primaryCmdMap["TOGGLEMOUSE"]=CMD_TOGGLE_HOST_MOUSE_CURSOR;
 
 	primaryCmdMap["QSS"]=CMD_QUICK_SCREENSHOT;
 	primaryCmdMap["QSSDIR"]=CMD_QUICK_SCREENSHOT_DIR;
@@ -1483,6 +1485,9 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 
 	case CMD_GAMEPORT:
 		Execute_Gameport(towns,outside_world,cmd);
+		break;
+	case CMD_TOGGLE_HOST_MOUSE_CURSOR:
+		outside_world->ToggleMouseCursor();
 		break;
 
 	case CMD_QUICK_SCREENSHOT:

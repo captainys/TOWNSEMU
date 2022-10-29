@@ -517,7 +517,7 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 		{
 			if(PAUSE_KEY_CODE==c)
 			{
-				this->pauseKey=true;
+				PauseKeyPressed();
 			}
 			if(hostShortCut[c].inUse && hostShortCut[c].ctrl==ctrlKey && hostShortCut[c].shift==shiftKey)
 			{
@@ -621,7 +621,7 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 			this->ProcessInkey(towns,FSKEYtoTownsKEY[c]);
 			if(PAUSE_KEY_CODE==c)
 			{
-				this->pauseKey=true;
+				PauseKeyPressed();
 			}
 			if(hostShortCut[c].inUse && hostShortCut[c].ctrl==ctrlKey && hostShortCut[c].shift==shiftKey)
 			{
@@ -1729,4 +1729,28 @@ void FsSimpleWindowConnection::RenderBeforeSwapBuffers(const TownsRender::Image 
 
 /* virtual */ bool FsSimpleWindowConnection::BeepChannelPlaying() const {
 	return YSTRUE == soundPlayer.IsPlaying(BeepChannel);
+}
+
+/* virtual */ void FsSimpleWindowConnection::ToggleMouseCursor(void)
+{
+	if(0!=FsIsMouseCursorVisible())
+	{
+		FsShowMouseCursor(0);
+	}
+	else
+	{
+		FsShowMouseCursor(1);
+	}
+}
+
+void FsSimpleWindowConnection::PauseKeyPressed(void)
+{
+	if(0==FsGetKeyState(FSKEY_SHIFT))
+	{
+		this->pauseKey=true;
+	}
+	else
+	{
+		ToggleMouseCursor();
+	}
 }

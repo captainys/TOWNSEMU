@@ -415,6 +415,10 @@ void FsRegisterPollDeviceCallBack(void (*callback)(void *),void *param);
 void FsGetWindowSize(int &wid,int &hei);
 void FsGetWindowPosition(int &x0,int &y0);
 void FsSetWindowTitle(const char windowTitle[]);
+
+void FsShowMouseCursor(int showFlag);
+int FsIsMouseCursorVisible(void);
+
 void FsPollDevice(void);
 void FsSleep(int ms);
 long long int FsPassedTime(void);
