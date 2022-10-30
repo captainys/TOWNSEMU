@@ -1065,7 +1065,12 @@ unsigned char DiskDrive::MakeUpStatus(unsigned int cmd) const
 	case 0x60: // Step Out
 	case 0x70: // Step Out
 		data|=(WriteProtected() ? 0x40 : 0);
-		data|=(DriveReady() ?     0x20 : 0); // Head-Engaged: Make it same as drive ready.
+		// Observation from real FM77AV tells that head-engaged flag will not be set
+		// even if head-load flag is set in the command.
+		// Murder Club checks head-engaged flag and if set, it fails to start.
+		// I think Murder Club was the only program that cared about head-engaged flag.
+		// For the time being, I make it always 0.
+		// data|=(DriveReady() ?     0x20 : 0); // Head-Engaged: Make it same as drive ready.
 		data|=(SeekError() ?      0x10 : 0);
 		data|=(CRCError() ?       0x08 : 0);
 		data|=(state.drive[DriveSelect()].trackPos==0 ? 0x04 : 0);

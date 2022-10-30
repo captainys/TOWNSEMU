@@ -141,6 +141,11 @@ void TownsFDC::MakeReady(void)
 		{
 			if(true==CheckMediaTypeAndDriveModeCompatible(drv.mediaType,GetDriveMode()))
 			{
+				if(true==fdcMonitor)
+				{
+					std::cout << "C:" << drv.trackPos << " H:" << state.side << " R:" << GetSectorReg();
+				}
+
 				auto verifySide=(0!=(state.lastCmd&2));
 				auto sec=imgPtr->ReadSector(
 				    diskIdx,drv.trackPos,state.side,
@@ -179,8 +184,16 @@ void TownsFDC::MakeReady(void)
 				}
 				else
 				{
+					if(true==fdcMonitor)
+					{
+						std::cout << "Record Not Found";
+					}
 					state.recordNotFound=true;
 					MakeReady();
+				}
+				if(true==fdcMonitor)
+				{
+					std::cout << std::endl;
 				}
 			}
 			else
