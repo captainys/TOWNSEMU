@@ -493,7 +493,7 @@ void i486SymbolTable::MakeDOSIntFuncLabel(void)
 	AddINTFuncLabel(0x21,0x34,"Get INDOS Flag Pointer -> ES:BX=Ptr to INDOS");
 	AddINTFuncLabel(0x21,0x35,"Get INT Vector");
 	AddINTFuncLabel(0x21,0x36,"Get Free Disk Space");
-	AddINTFuncLabel(0x21,0x37,"Specify \DEV\ Prefix Requirement");
+	AddINTFuncLabel(0x21,0x37,"Specify \\DEV\\ Prefix Requirement");
 	AddINTFuncLabel(0x21,0x38,"Get Country/Region Info");
 	AddINTFuncLabel(0x21,0x39,"MKDIR DS:DX=Dirname");
 	AddINTFuncLabel(0x21,0x3A,"RMDIR DS:DX=Dirname");

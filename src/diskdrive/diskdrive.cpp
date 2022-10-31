@@ -25,7 +25,7 @@ void DiskDrive::Sector::Make(unsigned int C,unsigned int H,unsigned int R,unsign
 {
 	this->C=C;
 	this->H=H;
-	this->R-R;
+	this->R=R;
 	this->N=N;
 	this->exists=true;
 	this->data.resize(128*(1<<N));
