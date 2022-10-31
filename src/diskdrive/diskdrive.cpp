@@ -308,7 +308,7 @@ std::vector <uint8_t> DiskDrive::DiskImage::ReadAddress(int diskIdx,unsigned int
 			if(nullptr!=diskPtr)
 			{
 				auto trkPtr=diskPtr->GetTrack(cylinder,side);
-				if(nullptr!=trkPtr)
+				if(nullptr!=trkPtr && 0<trkPtr->sector.size())
 				{
 					if(trkPtr->sector.size()<=sectorPos)
 					{
