@@ -452,7 +452,24 @@ void TownsFDC::MakeReady(void)
 		// only when FDC command was issued.
 		// However, FM-OASYS reads this byte and checks bit 7 for drive-not ready without issuing a command.
 		// Presumably, bit 7 of this byte returns current drive-ready state.
+
 		data=state.lastStatus;
+
+		if(0xD0==(state.lastCmd&0xD0) || 0==(state.lastCmd&0x80))
+		{
+			auto t=townsPtr->state.townsTime;
+			t%=166000000;
+			bool indexHole=(t<2000000);
+			if(true==indexHole)
+			{
+				data|=2;
+			}
+			else
+			{
+				data&=0xFD;
+			}
+		}
+
 		if(true==DriveReady())
 		{
 			data&=0x7F;
