@@ -491,6 +491,7 @@ FMTowns::FMTowns() :
 	// Range I/O mapping may wipe single I/O mapping.
 
 	// Range I/O mappings >>>
+	io.AddDevice(this,TOWNSIO_CPU_MISC3/*0x24*/);
 	io.AddDevice(this,TOWNSIO_FREERUN_TIMER_LOW/*0x26*/,TOWNSIO_MACHINE_ID_HIGH/*0x31*/);
 	io.AddDevice(&crtc,TOWNSIO_MX_HIRES/*0x470*/,TOWNSIO_MX_IMGOUT_D3/*0x477*/);
 	io.AddDevice(&keyboard,TOWNSIO_KEYBOARD_DATA/*0x600*/,TOWNSIO_KEYBOARD_IRQ/*0x604*/);

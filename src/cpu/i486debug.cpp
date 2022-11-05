@@ -699,13 +699,39 @@ void i486Debugger::IOWrite(const i486DX &cpu,unsigned int ioport,unsigned int da
 
 	if(true==breakOnIOWrite[ioport&(i486DX::I486_NUM_IOPORT-1)])
 	{
-		ExternalBreak("IOWrite Port:"+cpputil::Uitox(ioport)+" Value:"+cpputil::Ubtox(data));
+		std::string msg;
+		if(4==lengthInBytes)
+		{
+			msg="IOWrite Port:"+cpputil::Uitox(ioport)+" Value:"+cpputil::Uitox(data);
+		}
+		else if(2==lengthInBytes)
+		{
+			msg="IOWrite Port:"+cpputil::Uitox(ioport)+" Value:"+cpputil::Ustox(data);
+		}
+		else
+		{
+			msg="IOWrite Port:"+cpputil::Uitox(ioport)+" Value:"+cpputil::Ubtox(data);
+		}
+		ExternalBreak(msg);
 	}
 
 	if(true==monitorIO && true==monitorIOports[ioport&0xFFFF])
 	{
 		std::cout << cpputil::Ustox(cpu.state.CS().value) << ":" << cpputil::Uitox(cpu.state.EIP) << " ";
-		std::cout << "Write IO" << (lengthInBytes<<3) << ":[" << cpputil::Ustox(ioport) << "] " << cpputil::Ubtox(data);
+		std::cout << "Write IO" << (lengthInBytes<<3) << ":[" << cpputil::Ustox(ioport) << "] ";
+		if(4==lengthInBytes)
+		{
+			std::cout << cpputil::Uitox(data);;
+		}
+		else if(2==lengthInBytes)
+		{
+			std::cout << cpputil::Ustox(data);;
+		}
+		else
+		{
+			std::cout << cpputil::Ubtox(data);;
+		}
+
 		auto iter=ioLabel.find(ioport);
 		if(ioLabel.end()!=iter)
 		{

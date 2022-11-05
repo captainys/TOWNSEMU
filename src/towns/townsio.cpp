@@ -142,6 +142,12 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 			return ret;
 		}
 		break;
+	case TOWNSIO_CPU_MISC3: // 0x24
+		if(TOWNSTYPE_2_UG<=townsType)
+		{
+			return 0x07;
+		}
+		return 0xFF;
 	case TOWNSIO_MACHINE_ID_LOW://         0x30
 		return MachineID()&0xFF;
 	case TOWNSIO_MACHINE_ID_HIGH://=        0x31,
