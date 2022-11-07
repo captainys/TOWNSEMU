@@ -152,10 +152,11 @@ void TownsFDC::MakeReady(void)
 					std::cout << "C:" << trackPos << " H:" << state.side << " R:" << GetSectorReg();
 				}
 
+				unsigned int nStepsToGetToTheSector=0;
 				auto verifySide=(0!=(state.lastCmd&2));
-				auto sec=imgPtr->ReadSector(
+				auto sec=imgPtr->ReadSectorFrom(
 				    diskIdx,trackPos,state.side,
-				    GetTrackReg(),state.side,GetSectorReg(),verifySide);
+				    GetTrackReg(),state.side,GetSectorReg(),verifySide,state.addrMarkReadCount,nStepsToGetToTheSector);
 				if(true==sec.exists)
 				{
 					auto DMACh=DMACPtr->GetDMAChannel(TOWNSDMA_FPD);
