@@ -1669,6 +1669,10 @@ bool DiskDrive::DeserializeVersion0to6(const unsigned char *&data,std::string st
 	return res;
 }
 
+int DiskDrive::GetTrackReg(void) const
+{
+	return state.drive[DriveSelect()].trackReg;
+}
 int DiskDrive::GetSectorReg(void) const
 {
 	return state.drive[DriveSelect()]._sectorReg;

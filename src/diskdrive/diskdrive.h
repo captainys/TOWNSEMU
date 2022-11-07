@@ -319,7 +319,7 @@ public:
 	static std::string FDCCommandToExplanation(unsigned char cmd);
 	static std::string MediaTypeToString(unsigned int mediaType);
 
-
+	int GetTrackReg(void) const;
 	int GetSectorReg(void) const;
 	int GetSectorReg(unsigned int drvSel) const;
 	void SetSectorReg(int num);

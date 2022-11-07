@@ -141,15 +141,21 @@ void TownsFDC::MakeReady(void)
 		{
 			if(true==CheckMediaTypeAndDriveModeCompatible(drv.mediaType,GetDriveMode()))
 			{
+				auto trackPos=drv.trackPos;
+				if(MEDIA_2D==drv.mediaType)
+				{
+					trackPos/=2;
+				}
+
 				if(true==fdcMonitor)
 				{
-					std::cout << "C:" << drv.trackPos << " H:" << state.side << " R:" << GetSectorReg();
+					std::cout << "C:" << trackPos << " H:" << state.side << " R:" << GetSectorReg();
 				}
 
 				auto verifySide=(0!=(state.lastCmd&2));
 				auto sec=imgPtr->ReadSector(
-				    diskIdx,drv.trackPos,state.side,
-				    drv.trackPos,state.side,GetSectorReg(),verifySide);
+				    diskIdx,trackPos,state.side,
+				    GetTrackReg(),state.side,GetSectorReg(),verifySide);
 				if(true==sec.exists)
 				{
 					auto DMACh=DMACPtr->GetDMAChannel(TOWNSDMA_FPD);
@@ -165,13 +171,21 @@ void TownsFDC::MakeReady(void)
 						}
 
 						// What am I supposed to if error during DMA?
-						if(state.lastCmd&0x10 && true==imgPtr->SectorExists(diskIdx,drv.trackPos,state.side,GetSectorReg()+1)) // Multi Record
+						if(state.lastCmd&0x10 && true==imgPtr->SectorExists(diskIdx,trackPos,state.side,GetSectorReg()+1)) // Multi Record
 						{
 							SetSectorReg(GetSectorReg()+1);
 							townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+SECTOR_READ_WRITE_TIME);
 						}
 						else
 						{
+							if(0!=sec.crcStatus)
+							{
+								state.CRCError=true;
+							}
+							if(0!=sec.DDM)
+							{
+								state.recordType=true;
+							}
 							MakeReady();
 							DMACPtr->SetDMATransferEnd(TOWNSDMA_FPD);
 						}
@@ -214,7 +228,14 @@ void TownsFDC::MakeReady(void)
 			}
 			else if(true==CheckMediaTypeAndDriveModeCompatible(drv.mediaType,GetDriveMode()))
 			{
-				auto secLen=imgPtr->GetSectorLength(diskIdx,drv.trackPos,state.side,GetSectorReg());
+				// Probably, if I send write command to 2D disk, it will write to cylinder=trackPos/2.
+				auto trackPos=drv.trackPos;
+				if(MEDIA_2D==drv.mediaType)
+				{
+					trackPos/=2;
+				}
+
+				auto secLen=imgPtr->GetSectorLength(diskIdx,trackPos,state.side,GetSectorReg());
 				if(0<secLen)
 				{
 					auto DMACh=DMACPtr->GetDMAChannel(TOWNSDMA_FPD);
@@ -223,7 +244,7 @@ void TownsFDC::MakeReady(void)
 						auto toWrite=DMACPtr->MemoryToDevice(DMACh,secLen);
 						if(toWrite.size()==secLen)
 						{
-							imgPtr->WriteSector(diskIdx,drv.trackPos,state.side,GetSectorReg(),toWrite.size(),toWrite.data());
+							imgPtr->WriteSector(diskIdx,trackPos,state.side,GetSectorReg(),toWrite.size(),toWrite.data());
 							if(state.lastCmd&0x10 && true==imgPtr->SectorExists(diskIdx,drv.trackPos,state.side,GetSectorReg()+1)) // Multi Record
 							{
 								SetSectorReg(GetSectorReg()+1);
@@ -269,8 +290,14 @@ void TownsFDC::MakeReady(void)
 		{
 			if(true==CheckMediaTypeAndDriveModeCompatible(drv.mediaType,GetDriveMode()))
 			{
+				auto trackPos=drv.trackPos;
+				if(MEDIA_2D==drv.mediaType)
+				{
+					trackPos/=2;
+				}
+
 				// Copy CHRN and CRC CRC to DMA.
-				auto CHRN_CRC=imgPtr->ReadAddress(diskIdx,drv.trackPos,state.side,state.addrMarkReadCount);
+				auto CHRN_CRC=imgPtr->ReadAddress(diskIdx,trackPos,state.side,state.addrMarkReadCount);
 				if(0<CHRN_CRC.size())
 				{
 					auto DMACh=DMACPtr->GetDMAChannel(TOWNSDMA_FPD);
@@ -300,8 +327,14 @@ void TownsFDC::MakeReady(void)
 		{
 			if(true==CheckMediaTypeAndDriveModeCompatible(drv.mediaType,GetDriveMode()))
 			{
+				auto trackPos=drv.trackPos;
+				if(MEDIA_2D==drv.mediaType)
+				{
+					trackPos/=2;
+				}
+
 				// Copy CHRN and CRC CRC to DMA.
-				auto trackData=imgPtr->ReadTrack(diskIdx,drv.trackPos,state.side);
+				auto trackData=imgPtr->ReadTrack(diskIdx,trackPos,state.side);
 				if(0<trackData.size())
 				{
 					auto DMACh=DMACPtr->GetDMAChannel(TOWNSDMA_FPD);
@@ -335,6 +368,12 @@ void TownsFDC::MakeReady(void)
 			}
 			else if(true==CheckMediaTypeAndDriveModeCompatibleForFormat(drv.mediaType,GetDriveMode()))
 			{
+				auto trackPos=drv.trackPos;
+				if(MEDIA_2D==drv.mediaType)
+				{
+					trackPos/=2;
+				}
+
 				auto DMACh=DMACPtr->GetDMAChannel(TOWNSDMA_FPD);
 				if(nullptr!=DMACh)
 				{
@@ -387,7 +426,7 @@ void TownsFDC::MakeReady(void)
 						break;
 					}
 					auto formatData=DMACPtr->MemoryToDevice(DMACh,len);
-					drv.mediaType=imgPtr->WriteTrack(diskIdx,drv.trackPos,state.side,formatData);
+					drv.mediaType=imgPtr->WriteTrack(diskIdx,trackPos,state.side,formatData);
 					state.writeFault=false;
 				}
 				else
