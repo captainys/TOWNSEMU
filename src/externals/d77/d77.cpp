@@ -12,6 +12,7 @@ Redistribution and use in source and binary forms, with or without modification,
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 << LICENSE */
+#include <set>
 #include "d77.h"
 
 
@@ -867,6 +868,105 @@ void D77File::D77Disk::CreateUnformatted(int nTrack,const char diskName[])
 		D77Disk::D77Track trk;
 		track.push_back((D77Disk::D77Track &&)trk);
 	}
+}
+
+std::vector <unsigned char> D77File::D77Disk::ReadTrack(int trk,int sid) const
+{
+	std::vector <unsigned char> data;
+
+	auto trkPtr=GetTrack(trk,sid);
+	if(nullptr!=trkPtr)
+	{
+		// GAP 0
+		for(int i=0; i<80; ++i)
+		{
+			data.push_back(0x4E);
+		}
+		// SYNC
+		for(int i=0; i<12; ++i)
+		{
+			data.push_back(0);
+		}
+		// Index Mark
+		data.push_back(0xC2);
+		data.push_back(0xC2);
+		data.push_back(0xC2);
+		data.push_back(0xFC);
+
+		// GAP 1
+		for(int i=0; i<50; ++i)
+		{
+			data.push_back(0x4E);
+		}
+
+		std::set <uint32_t> visited; // To prevent multi-sample for corocoro protect to be written multiple times.
+		for(auto &s : trkPtr->sector)
+		{
+			uint32_t CHRN;
+			CHRN=s.cylinder;
+			CHRN<<=8;
+			CHRN|=s.head;
+			CHRN<<=8;
+			CHRN|=s.sector;
+			CHRN<<=8;
+			CHRN|=s.sizeShift;
+			if(visited.find(CHRN)==visited.end())
+			{
+				visited.insert(CHRN);
+				for(int i=0; i<12; ++i)
+				{
+					data.push_back(0);
+				}
+				data.push_back(0xA1);
+				data.push_back(0xA1);
+				data.push_back(0xA1);
+				data.push_back(0xFE);
+				data.push_back(s.cylinder);
+				data.push_back(s.head);
+				data.push_back(s.sector);
+				data.push_back(s.sizeShift);
+				data.push_back(0xCC); // Should be CRC.
+				data.push_back(0xCC);
+				// GAP 2
+				for(int i=0; i<22; ++i)
+				{
+					data.push_back(0x4E);
+				}
+				for(int i=0; i<12; ++i)
+				{
+					data.push_back(0);
+				}
+				data.push_back(0xA1);
+				data.push_back(0xA1);
+				data.push_back(0xA1);
+				data.push_back(0xFB);
+				data.insert(data.end(),s.sectorData.begin(),s.sectorData.end());
+				data.push_back(0xCC); // Should be CRC.
+				data.push_back(0xCC);
+				// GAP 3
+				for(int i=0; i<84; ++i)
+				{
+					data.push_back(0);
+				}
+			}
+		}
+
+		// GAP 4
+		for(int i=0; i<400; ++i)
+		{
+			data.push_back(0x4E);
+		}
+	}
+	else
+	{
+		for(int i=0; i<1024*6; ++i) // Fill random number for 6KB
+		{
+			data.push_back(rand()%256);
+		}
+	}
+
+
+	return data;
 }
 
 bool D77File::D77Disk::WriteTrack(int trk,int sid,int nSec,const D77Disk::D77Sector sec[])

@@ -352,6 +352,26 @@ void DiskDrive::DiskImage::SetNumCylinders(int diskIdx,unsigned int n)
 		break;
 	}
 }
+
+std::vector <unsigned char> DiskDrive::DiskImage::ReadTrack(int diskIdx,unsigned int C,unsigned int H) const
+{
+	switch(fileType)
+	{
+	case IMGFILE_D77:
+	case IMGFILE_RAW:
+		{
+			auto diskPtr=d77.GetDisk(diskIdx);
+			if(nullptr!=diskPtr)
+			{
+				return diskPtr->ReadTrack(C,H);
+			}
+		}
+		break;
+	}
+
+	return std::vector <unsigned char>();
+}
+
 unsigned int DiskDrive::DiskImage::WriteTrack(int diskIdx,unsigned int C,unsigned int H,const std::vector <uint8_t> &formatData)
 {
 	unsigned int mediaType=MEDIA_UNKNOWN;

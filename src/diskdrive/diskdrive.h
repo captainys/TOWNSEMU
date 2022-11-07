@@ -113,6 +113,10 @@ public:
 
 		void SetNumCylinders(int diskIdx,unsigned int n);
 
+		/*! 
+		*/
+		std::vector <unsigned char> ReadTrack(int diskIdx,unsigned int C,unsigned int H) const;
+
 		/*! Returns the new media type.
 		*/
 		unsigned int WriteTrack(int diskIdx,unsigned int C,unsigned int H,const std::vector <uint8_t> &data);

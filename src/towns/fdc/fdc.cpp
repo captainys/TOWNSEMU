@@ -296,9 +296,34 @@ void TownsFDC::MakeReady(void)
 		break;
 	case 0xE0: // Read Track
 		townsPtr->UnscheduleDeviceCallBack(*this);
-		std::cout << __FUNCTION__ << std::endl;
-		std::cout << "Command " << cpputil::Ubtox(state.lastCmd) << " not supported yet." << std::endl;
-		MakeReady();
+		if(nullptr!=imgPtr)
+		{
+			if(true==CheckMediaTypeAndDriveModeCompatible(drv.mediaType,GetDriveMode()))
+			{
+				// Copy CHRN and CRC CRC to DMA.
+				auto trackData=imgPtr->ReadTrack(diskIdx,drv.trackPos,state.side);
+				if(0<trackData.size())
+				{
+					auto DMACh=DMACPtr->GetDMAChannel(TOWNSDMA_FPD);
+					if(nullptr!=DMACh)
+					{
+						DMACPtr->DeviceToMemory(DMACh,trackData);
+						MakeReady();
+					}
+					else
+					{
+						state.lostData=true;
+						MakeReady();
+					}
+				}
+				MakeReady();
+			}
+			else
+			{
+				MakeReady();
+				state.recordNotFound=true;
+			}
+		}
 		break;
 	case 0xF0: // Write Track
 		townsPtr->UnscheduleDeviceCallBack(*this);

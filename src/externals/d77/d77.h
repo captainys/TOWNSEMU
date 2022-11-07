@@ -298,6 +298,8 @@ public:
 		*/
 		void CreateUnformatted(int nTrack,const char diskName[]);
 
+		std::vector <unsigned char> ReadTrack(int trk,int sid) const;
+
 		/*! Write sectors to a track.
 		    This trk and side points to the physical location, not track and side numbers
 		    stored in the sector.
