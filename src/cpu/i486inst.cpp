@@ -32,7 +32,7 @@ void i486DX::MakeOpCodeRenumberTable(void)
 {
 	for(auto &renum : opCodeRenumberTable)
 	{
-		renum=~0;
+		renum=I486_RENUMBER_REALLY_UNDEFINED;
 	}
 
 	opCodeRenumberTable[I486_OPCODE_UNDEFINED_SHOOT_INT6]=I486_RENUMBER_UNDEFINED_SHOOT_INT6;
@@ -9353,6 +9353,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		break;
 
+	case I486_RENUMBER_REALLY_UNDEFINED:
+		clocksPassed=0;
+		break;
 
 	default:
 #if defined(_MSC_VER)
