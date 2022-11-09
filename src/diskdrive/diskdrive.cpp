@@ -613,10 +613,22 @@ bool DiskDrive::ImageFile::LoadD77(std::string fName)
 		std::string ExtFName=fName+"Ext";
 		std::string EXtFName=fName+"EXt";
 		std::string EXTFName=fName+"EXT";
+		std::string D7XFName=cpputil::RemoveExtension(fName.c_str());
+		std::string d7xFName=D7XFName;
+		std::string D7xFName=D7XFName;
+		std::string d7XFName=D7XFName;
+		D7XFName+=".D7X";
+		d7xFName+=".d7x";
+		D7xFName+=".D7x";
+		d7XFName+=".d7X";
 		if(D77ExtraInfo::ERR_NOERROR==D77Ext.ReadD77Ext(extFName) ||
 		   D77ExtraInfo::ERR_NOERROR==D77Ext.ReadD77Ext(ExtFName) ||
 		   D77ExtraInfo::ERR_NOERROR==D77Ext.ReadD77Ext(EXtFName) ||
-		   D77ExtraInfo::ERR_NOERROR==D77Ext.ReadD77Ext(EXTFName))
+		   D77ExtraInfo::ERR_NOERROR==D77Ext.ReadD77Ext(EXTFName) ||
+		   D77ExtraInfo::ERR_NOERROR==D77Ext.ReadD77Ext(D7XFName) ||
+		   D77ExtraInfo::ERR_NOERROR==D77Ext.ReadD77Ext(d7xFName) ||
+		   D77ExtraInfo::ERR_NOERROR==D77Ext.ReadD77Ext(d7XFName) ||
+		   D77ExtraInfo::ERR_NOERROR==D77Ext.ReadD77Ext(D7xFName))
 		{
 			auto diskPtr=this->img.d77.GetDisk(0);
 			if(nullptr!=diskPtr)
