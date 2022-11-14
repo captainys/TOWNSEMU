@@ -119,7 +119,7 @@ void D77ExtraInfo::Apply(D77File::D77Disk &disk) const
 		{
 			secPtr=disk.GetSectorByIndex(s.C,s.H,s.R);
 		}
-		if(0!=s.nanosecPerByte)
+		if(0!=s.nanosecPerByte && nullptr!=secPtr)
 		{
 			secPtr->nanosecPerByte=s.nanosecPerByte;
 			std::cout << "NSBYTE applied to " << s.C << " " << s.H << " " << s.R << std::endl;
