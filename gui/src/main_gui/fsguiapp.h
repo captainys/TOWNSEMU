@@ -49,6 +49,9 @@ public:
 	*/
 	YSBOOL appMustTerminate;
 
+
+	YSBOOL VMMustResume=YSFALSE;
+
 private:
 	/*! For convenience, you can use THISCLASS instead of FsGuiMainCanvas 
 	    in the member functions.
