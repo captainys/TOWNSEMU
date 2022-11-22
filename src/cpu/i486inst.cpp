@@ -3136,8 +3136,8 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		case I486_OPCODE_JE_REL8:   // 0x74,
 			disasm="JE";
 			break;
-		case I486_OPCODE_JECXZ_REL8:// 0xE3,  // Depending on the operand size
-			disasm=(16==operandSize ? "JCXZ" : "JECXZ");
+		case I486_OPCODE_JECXZ_REL8:// 0xE3,  // Depending on the address size
+			disasm=(16==addressSize ? "JCXZ" : "JECXZ");
 			break;
 		case I486_OPCODE_JNE_REL8:  // 0x75,
 			disasm="JNE";
@@ -7388,7 +7388,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 	case I486_RENUMBER_JECXZ_REL8:// 0xE3,  // Depending on the operand size
 		{
-			if(16==inst.operandSize)
+			if(16==inst.addressSize)
 			{
 				CONDITIONALJUMP8(GetCX()==0);
 			}
@@ -7432,7 +7432,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		CONDITIONALJUMP8(CondJG());
 		break;
 	case I486_RENUMBER_LOOP://             0xE2,
-		if(32==inst.operandSize)
+		if(32==inst.addressSize)
 		{
 			state.ECX()-=1;
 			CONDITIONALJUMP8(0!=state.ECX());
@@ -7446,7 +7446,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 	case I486_RENUMBER_LOOPE://            0xE1,
 		{
-			auto nBytes=(inst.operandSize>>3);
+			auto nBytes=(inst.addressSize>>3);
 			unsigned int ctr=((state.ECX()-1)&operandSizeMask[nBytes]);
 			state.ECX()=((state.ECX()&operandSizeAndPattern[nBytes])|ctr);
 			CONDITIONALJUMP8(0!=ctr && true==GetZF());
@@ -7454,7 +7454,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 	case I486_RENUMBER_LOOPNE://           0xE0,
 		{
-			auto nBytes=(inst.operandSize>>3);
+			auto nBytes=(inst.addressSize>>3);
 			unsigned int ctr=((state.ECX()-1)&operandSizeMask[nBytes]);
 			state.ECX()=((state.ECX()&operandSizeAndPattern[nBytes])|ctr);
 			CONDITIONALJUMP8(0!=ctr && true!=GetZF());
