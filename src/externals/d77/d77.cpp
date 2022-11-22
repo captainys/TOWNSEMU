@@ -12,7 +12,9 @@ Redistribution and use in source and binary forms, with or without modification,
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 << LICENSE */
+#include <algorithm>
 #include <set>
+#include <string.h>
 #include "d77.h"
 
 
@@ -109,6 +111,8 @@ void D77File::D77Disk::D77Sector::CleanUp(void)
 	crcStatus=0;
 
 	nanosecPerByte=0;
+	resampled=false;
+	probLeafInTheForest=false;
 
 	for(auto &c : reservedByte)
 	{
@@ -145,6 +149,7 @@ bool D77File::D77Disk::D77Sector::Make(int trk,int sid,int secId,int secSize)
 	this->sizeShift=sizeShift;
 	sectorDataSize=secSize;
 	sectorData.resize(secSize);
+	resampled=false;
 	for(auto &b : sectorData)
 	{
 		b=0;
@@ -168,6 +173,8 @@ void D77File::D77Disk::D77Track::CleanUp(void)
 		s.CleanUp();
 	}
 	sector.clear();
+	trackImage.clear();
+	FDCStatusAfterTrackRead=0;
 }
 
 void D77File::D77Disk::D77Track::PrintInfo(void) const
@@ -412,6 +419,7 @@ void D77File::D77Disk::CleanUp(void)
 	{
 		t.CleanUp();
 	}
+	rddDiskName="";
 	modified=false;
 }
 
@@ -580,6 +588,185 @@ std::vector <unsigned char> D77File::D77Disk::MakeD77Image(void) const
 	return d77Img;
 }
 
+std::vector <unsigned char> D77File::D77Disk::MakeRDDImage(void) const
+{
+	std::vector <unsigned char> bin;
+
+	// Signature
+	{
+		for(auto c : "REALDISKDUMP")
+		{
+			bin.push_back(c);
+		}
+		bin.push_back(0);
+		bin.push_back(0);
+		bin.push_back(0);
+		bin.push_back(0);
+	}
+
+	// Begin Disk
+	bin.push_back(0x00);  // Begin disk
+	bin.push_back(0x00);  // Version
+	bin.push_back(header.mediaType);
+	unsigned char flags=0;
+	if(0!=header.writeProtected)
+	{
+		flags|=1;
+	}
+	bin.push_back(flags);
+	while(0!=(bin.size()&0x0F))
+	{
+		bin.push_back(0);
+	}
+
+	// Disk Name
+	if(0<rddDiskName.size())
+	{
+		for(int i=0; i<32; ++i)
+		{
+			if(i<rddDiskName.size())
+			{
+				bin.push_back(rddDiskName[i]);
+			}
+			else
+			{
+				bin.push_back(0);
+			}
+		}
+	}
+	else
+	{
+		for(int i=0; i<17; ++i)
+		{
+			bin.push_back(header.diskName[i]);
+		}
+		for(int i=17; i<32; ++i)
+		{
+			bin.push_back(0);
+		}
+	}
+
+	for(unsigned int trk=0; trk<track.size(); ++trk)
+	{
+		auto C=trk/2;
+		auto H=trk%2;
+
+		// Begin Track
+		bin.push_back(0x01);
+		bin.push_back(C);
+		bin.push_back(H);
+		while(0!=(bin.size()&0x0F))
+		{
+			bin.push_back(0);
+		}
+
+		if(0<track[trk].trackImage.size())
+		{
+			// Track Read
+			bin.push_back(0x04);
+			bin.push_back(C);
+			bin.push_back(H);
+			bin.push_back(track[trk].FDCStatusAfterTrackRead);
+			while(14!=(bin.size()&0x0F))
+			{
+				bin.push_back(0);
+			}
+			bin.push_back(track[trk].trackImage.size()&0xFF);
+			bin.push_back((track[trk].trackImage.size()>>8)&0xFF);
+
+			for(auto d : track[trk].trackImage)
+			{
+				bin.push_back(d);
+			}
+			while(0!=(bin.size()&0x0F))
+			{
+				bin.push_back(0);
+			}
+		}
+
+		for(auto &s : track[trk].sector)
+		{
+			// Data
+			bin.push_back(0x03);
+			bin.push_back(s.cylinder);
+			bin.push_back(s.head);
+			bin.push_back(s.sector);
+			bin.push_back(s.sizeShift);
+
+			// Make up MB8877 Status Byte
+			unsigned char st=0;
+			if(0!=s.deletedData)
+			{
+				st|=MB8877_STATUS_DELETED_DATA; // Deleted Data or Record Type
+			}
+			if(0xF0==s.crcStatus)
+			{
+				st|=MB8877_STATUS_RECORD_NOT_FOUND; // Record Not Found
+			}
+			else if(0!=s.crcStatus)
+			{
+				st|=MB8877_STATUS_CRC; // CRC Error
+			}
+			bin.push_back(st);
+
+			unsigned char flags=0;
+			if(0!=s.density)
+			{
+				flags|=1; // Single density
+			}
+			if(true==s.resampled)
+			{
+				flags|=2;
+			}
+			if(true==s.probLeafInTheForest)
+			{
+				flags|=4;
+			}
+			bin.push_back(flags);
+
+			while(0x0B!=(bin.size()&0x0F))
+			{
+				bin.push_back(0);
+			}
+
+			unsigned int millisec=s.nanosecPerByte;
+			millisec*=s.sectorData.size();
+			millisec/=1000;
+			bin.push_back(millisec&0xFF);
+			bin.push_back((millisec>>8)&0xFF);
+			bin.push_back((millisec>>24)&0xFF);
+
+			bin.push_back(s.sectorData.size()&0xFF);
+			bin.push_back((s.sectorData.size()>>8)&0xFF);
+
+			for(auto c : s.sectorData)
+			{
+				bin.push_back(c);
+			}
+			while(0!=(bin.size()&0x0F))
+			{
+				bin.push_back(0);
+			}
+		}
+
+		// End Track
+		bin.push_back(0x05);
+		while(0!=(bin.size()&0x0F))
+		{
+			bin.push_back(0);
+		}
+	}
+
+	// End Disk
+	bin.push_back(0x06);
+	while(0!=(bin.size()&0x0F))
+	{
+		bin.push_back(0);
+	}
+
+	return bin;
+}
+
 std::vector <unsigned char> D77File::D77Disk::MakeRawImage(void) const
 {
 	std::vector <unsigned char> rawImg;
@@ -692,6 +879,166 @@ bool D77File::D77Disk::SetD77Image(const unsigned char d77Img[],bool verboseMode
 			++nUnformat;
 		}
 	}
+	return true;
+}
+
+bool D77File::D77Disk::SetRDDImage(size_t &bytesUsed,size_t len,const unsigned char rdd[],bool verboseMode)
+{
+	CleanUp();
+
+	size_t ptr=0;
+	bytesUsed=0;
+
+	if(0!=strncmp((const char *)rdd,"REALDISKDUMP",12))
+	{
+		if(true==verboseMode)
+		{
+			fprintf(stderr,"Wrong RDD Signature.\n");
+		}
+		return false;
+	}
+
+	// Begin Disk
+	ptr+=16;
+	if(0!=rdd[ptr])
+	{
+		if(true==verboseMode)
+		{
+			fprintf(stderr,"Begin Disk (00h) does not follow the signature.\n");
+		}
+		return false;
+	}
+
+	unsigned int version=rdd[ptr+1];
+	header.mediaType=rdd[ptr+2];
+	header.writeProtected=(rdd[ptr+3]&1);
+
+	// Disk Name
+	ptr+=16;
+	strncpy(header.diskName,(const char *)rdd+ptr,16);
+	for(int i=0; i<32; ++i)
+	{
+		rddDiskName.push_back(rdd[ptr+i]);
+	}
+
+
+	// Begin Track or can be Track Read
+	ptr+=32;
+	unsigned int C=0,H=0;
+	D77Track *trkPtr=nullptr;
+	while(ptr+16<=len)
+	{
+		switch(rdd[ptr])
+		{
+		case 1: // Begin Track
+			C=rdd[ptr+1];
+			H=rdd[ptr+2];
+			ptr+=16;
+			if(track.size()<=C*2+H)
+			{
+				track.resize(C*2+H+1);
+				trkPtr=&track.back();
+			}
+			break;
+		case 2: // ID Mark
+			// Ignore.  Just take from Sector Data
+			ptr+=16;
+			break;
+		case 3: // Sector Data
+			if(nullptr!=trkPtr)
+			{
+				auto cc=rdd[ptr+1];
+				auto hh=rdd[ptr+2];
+				auto rr=rdd[ptr+3];
+				auto nn=rdd[ptr+4];
+				auto FDCStatus=rdd[ptr+5];
+				auto flags=rdd[ptr+6];
+				unsigned int millisec=rdd[ptr+0x0B]|(rdd[ptr+0x0C]<<8)|(rdd[ptr+0x0D]<<16);
+				unsigned int realLen=rdd[ptr+0x0E]|(rdd[ptr+0x0F]<<8);
+
+				D77Sector sector;
+				sector.Make(cc,hh,rr,128<<(nn&3));
+				sector.resampled=(0!=(flags&2));
+				sector.probLeafInTheForest=(0!=(flags&4));
+				sector.density=(0!=(flags&0) ? D77_DENSITY_FM : 0x00);
+				sector.deletedData=((FDCStatus & MB8877_STATUS_DELETED_DATA) ? D77_DATAMARK_DELETED : 0);
+
+				if(0!=(FDCStatus&MB8877_STATUS_CRC))
+				{
+					sector.crcStatus=D77_SECTOR_STATUS_CRC; // CRC Error
+				}
+				else if(0!=(FDCStatus&MB8877_STATUS_RECORD_NOT_FOUND))
+				{
+					sector.crcStatus=D77_SECTOR_STATUS_RECORD_NOT_FOUND; // Record Not Found;
+				}
+				sector.nanosecPerByte=millisec*1000/std::max<int>(realLen,1);
+				sector.sectorData.resize(realLen);
+				for(size_t i=0; i<realLen; ++i)
+				{
+					sector.sectorData[i]=rdd[ptr+16+i];
+				}
+				trkPtr->sector.push_back(sector);
+
+				for(auto &s : trkPtr->sector) // **** D77!
+				{
+					s.nSectorTrack=trkPtr->sector.size();
+				}
+
+				ptr+=16+(realLen+15)&0xFFF0;
+			}
+			else
+			{
+				if(true==verboseMode)
+				{
+					fprintf(stderr,"Sector data without a track.\n");
+				}
+				return false;
+			}
+			break;
+		case 4: // Track Read
+			if(C!=rdd[ptr+1] || H!=rdd[ptr+2])
+			{
+				if(true==verboseMode)
+				{
+					fprintf(stderr,"Track dump for wrong track.\n");
+				}
+				return false;
+			}
+			else if(nullptr!=trkPtr)
+			{
+				unsigned int realLen=rdd[ptr+0x0E]|(rdd[ptr+0x0F]<<8);
+				for(size_t i=0; i<realLen; ++i)
+				{
+					trkPtr->trackImage.push_back(rdd[ptr+16+i]);
+				}
+				ptr+=16+(realLen+15)&0xFFF0;
+			}
+			else
+			{
+				if(true==verboseMode)
+				{
+					fprintf(stderr,"Track dump without a track.\n");
+				}
+				return false;
+			}
+			break;
+		case 5: // End of Track
+			trkPtr=nullptr;
+			ptr+=16;
+			break;
+		case 6: // End of Disk.  Force it to be done
+			bytesUsed=ptr+16;
+			ptr=len;
+			break;
+		default:
+			if(true==verboseMode)
+			{
+				fprintf(stderr,"Undefined RDD tag %02xh at %xh\n",rdd[ptr],ptr);
+			}
+			return false;
+		}
+	}
+
 	return true;
 }
 
@@ -1275,12 +1622,29 @@ bool D77File::D77Disk::GetCRCError(int trk,int sid,int sec) const
 		{
 			if(s.sector==sec)
 			{
-				return 0!=s.crcStatus;
+				return 0!=s.crcStatus && 0xF0!=s.crcStatus;
 			}
 		}
 	}
 	return false;
 }
+
+bool D77File::D77Disk::GetRecordNotFound(int trk,int sid,int sec) const
+{
+	auto trackPtr=FindTrack(trk,sid);
+	if(nullptr!=trackPtr)
+	{
+		for(auto &s : trackPtr->sector)
+		{
+			if(s.sector==sec)
+			{
+				return 0xF0==s.crcStatus;
+			}
+		}
+	}
+	return false;
+}
+
 bool D77File::D77Disk::GetDDM(int trk,int sid,int sec) const
 {
 	auto trackPtr=FindTrack(trk,sid);
@@ -1618,12 +1982,40 @@ void D77File::SetData(long long int nByte,const unsigned char byteData[],bool ve
 		}
 
 		const unsigned char *diskPtr=byteData+diskOffset;
+
+		size_t sz=diskPtr[0x1C]+(diskPtr[0x1D]<<8)+(diskPtr[0x1E]<<16)+(diskPtr[0x1F]<<24);
+		if(0==sz || nByte<diskOffset+sz || nByte<672+diskOffset)
+		{
+			break;
+		}
+
 		D77Disk disk;
 		disk.SetD77Image(diskPtr,verboseMode);
 		auto nextDiskOffset=diskOffset+disk.header.diskSize;
 		this->disk.push_back((D77Disk &&)disk);
 		diskOffset=nextDiskOffset;
 	}
+}
+
+bool D77File::SetRDDData(const std::vector <unsigned char> &byteData,bool verboseMode)
+{
+	size_t ptr=0;
+	while(ptr+16<=byteData.size() &&
+		   0==strncmp((const char *)byteData.data()+ptr,"REALDISKDUMP",12))
+	{
+		D77Disk disk;
+		size_t bytesUsed=0;
+		if(true==disk.SetRDDImage(bytesUsed,byteData.size()-ptr,byteData.data()+ptr,verboseMode))
+		{
+			this->disk.push_back((D77Disk &&)disk);
+			ptr+=bytesUsed;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	return true;
 }
 
 bool D77File::SetRawBinary(const std::vector <unsigned char> &byteData,bool verboseMode)
@@ -1743,6 +2135,18 @@ std::vector <unsigned char> D77File::MakeD77Image(void) const
 	}
 	return bin;
 }
+
+std::vector <unsigned char> D77File::MakeRDDImage(void) const
+{
+	std::vector <unsigned char> bin;
+	for(auto &d : disk)
+	{
+		auto diskBin=d.MakeRDDImage();
+		bin.insert(bin.end(),diskBin.begin(),diskBin.end());
+	}
+	return bin;
+}
+
 std::vector <unsigned char> D77File::MakeRawImage(void) const
 {
 	std::vector <unsigned char> bin;

@@ -119,7 +119,26 @@ class D77File
 public:
 	enum
 	{
-		DAMN_BIG_NUMBER=0x7ffffff
+		DAMN_BIG_NUMBER=0x7ffffff,
+
+		MB8877_STATUS_DELETED_DATA=0x20,
+		MB8877_STATUS_CRC=0x08,
+		MB8877_STATUS_RECORD_NOT_FOUND=0x10,
+
+		D77_MEDIATYPE_2D=0,
+		D77_MEDIATYPE_2DD=0x10,
+		D77_MEDIATYPE_2HD=0x20,
+		D77_MEDIATYPE_1D=0x30,
+		D77_MEDIATYPE_1DD=0x40,
+
+		D77_DENSITY_FM=0x40,
+		D77_DENSITY_MFM=0,
+
+		D77_DATAMARK_NORMAL=0,
+		D77_DATAMARK_DELETED=0x10,
+
+		D77_SECTOR_STATUS_CRC=0xB0,
+		D77_SECTOR_STATUS_RECORD_NOT_FOUND=0xF0,
 	};
 
 	static std::vector <std::string> QuickParser(const char str[]);
@@ -155,6 +174,9 @@ public:
 			unsigned short sectorDataSize; // Excluding the header.
 			std::vector <unsigned char> sectorData;
 
+			bool resampled=false;  // true if the sector was sampled multiple times for replicating unstable-byte or Corocoro protect.
+			bool probLeafInTheForest=false;  // true if it is suspected to be one of leaf-in-the-forest protect (such as Thexder and Fire Crystal)
+
 			// Experimental >>
 			// nanosecPerByte
 			//   Zero means standard rate computed from RPM and track length.
@@ -185,6 +207,8 @@ public:
 			};
 
 			std::vector <D77Sector> sector;
+			std::vector <unsigned char> trackImage;  // Result by track-dump command of MB8877.
+			unsigned char FDCStatusAfterTrackRead=0;
 
 			D77Track();
 			~D77Track();
@@ -237,6 +261,7 @@ public:
 			void CleanUp(void);
 		};
 		D77Header header;
+		std::string rddDiskName;
 
 	private:
 		std::vector <D77Track> track;
@@ -266,6 +291,7 @@ public:
 
 		std::vector <unsigned char> MakeD77Image(void) const;
 
+		std::vector <unsigned char> MakeRDDImage(void) const;
 
 		std::vector <unsigned char> MakeRawImage(void) const;
 
@@ -283,6 +309,11 @@ public:
 		    It clears the contents.  Also modified-flag will be cleared.
 		*/
 		bool SetD77Image(const unsigned char d77[],bool verboseMode);
+
+		/*! Construct a disk from an RDD image.
+		    It clears the contents.  Also modified-flag will be cleared.
+		*/
+		bool SetRDDImage(size_t &bytesUsed,size_t len,const unsigned char d77[],bool verboseMode);
 
 		/*! Constructs a track from a bytes in a D77 image.
 		*/
@@ -363,6 +394,9 @@ public:
 		/*! Get CRC error. */
 		bool GetCRCError(int trk,int sid,int sec) const;
 
+		/*! Get Record Not Found Error. */
+		bool GetRecordNotFound(int trk,int sid,int sec) const;
+
 		/*! Get DDM */
 		bool GetDDM(int trk,int sid,int sec) const;
 
@@ -441,6 +475,10 @@ public:
 	bool SetRawBinary(const std::vector <unsigned char> &byteData,bool verboseMode=true);
 	bool SetRawBinary(long long int nByte,const unsigned char byteData[],bool verboseMode=true);
 
+	/*! Create from .RDD disk image.
+	*/
+	bool SetRDDData(const std::vector <unsigned char> &byteData,bool verboseMode=true);
+
 	/*! Create a standard format disk and return a disk Id.
 	*/
 	int CreateStandardFormatted(void);
@@ -452,6 +490,10 @@ public:
 	/*! Create a binary to be written to an image file.
 	*/
 	std::vector <unsigned char> MakeD77Image(void) const;
+
+	/*! Create a binary to be written to an image file.
+	*/
+	std::vector <unsigned char> MakeRDDImage(void) const;
 
 	/*!  Create a binary to be written to an image file.
 	*/
