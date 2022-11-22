@@ -815,7 +815,7 @@ void ProfileDialog::OnSliderPositionChange(FsGuiSlider *slider,const double &pre
 		{
 			YsWString label(L"Floppy Drive ");
 			label.push_back('0'+i);
-			std::vector <const wchar_t *> extList={L".BIN",L".D77",L".D88",L".XDF"};
+			std::vector <const wchar_t *> extList={L".BIN",L".D77",L".RDD",L".D88",L".XDF"};
 			Browse(label,FDImgTxt[i],extList);
 		}
 	}
