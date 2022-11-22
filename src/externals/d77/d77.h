@@ -111,6 +111,7 @@ Offset    Size          Meaning
 */
 
 
+#include <array>
 #include <vector>
 #include <string>
 
@@ -208,6 +209,7 @@ public:
 
 			std::vector <D77Sector> sector;
 			std::vector <unsigned char> trackImage;  // Result by track-dump command of MB8877.
+			std::vector <std::array <unsigned char,16> > IDMark; // Result by Read-ID command of MB8877.
 			unsigned char FDCStatusAfterTrackRead=0;
 
 			D77Track();

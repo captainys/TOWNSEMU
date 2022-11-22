@@ -174,6 +174,7 @@ void D77File::D77Disk::D77Track::CleanUp(void)
 	}
 	sector.clear();
 	trackImage.clear();
+	IDMark.clear();
 	FDCStatusAfterTrackRead=0;
 }
 
@@ -328,6 +329,10 @@ void D77File::D77Disk::D77Track::WriteTrack(int nSec,const D77Disk::D77Sector se
 	{
 		this->sector[s]=sec[s];
 	}
+
+	// Once formatted, RDD track image and RDD IDMarks are invalid.
+	trackImage.clear();
+	IDMark.clear();
 }
 bool D77File::D77Disk::D77Track::AddSector(int trk,int sid,int secId,int secSize)
 {
@@ -660,6 +665,11 @@ std::vector <unsigned char> D77File::D77Disk::MakeRDDImage(void) const
 			bin.push_back(0);
 		}
 
+		for(auto IDMark : track[trk].IDMark)
+		{
+			bin.insert(bin.end(),IDMark.begin(),IDMark.end());
+		}
+
 		if(0<track[trk].trackImage.size())
 		{
 			// Track Read
@@ -941,7 +951,23 @@ bool D77File::D77Disk::SetRDDImage(size_t &bytesUsed,size_t len,const unsigned c
 			}
 			break;
 		case 2: // ID Mark
-			// Ignore.  Just take from Sector Data
+			if(nullptr!=trkPtr)
+			{
+				std::array <unsigned char,16> IDMark;
+				for(int i=0; i<16; ++i)
+				{
+					IDMark[i]=rdd[ptr+i];
+				}
+				trkPtr->IDMark.push_back(IDMark);
+			}
+			else
+			{
+				if(true==verboseMode)
+				{
+					fprintf(stderr,"Sector data without a track.\n");
+				}
+				return false;
+			}
 			ptr+=16;
 			break;
 		case 3: // Sector Data
@@ -1224,6 +1250,13 @@ std::vector <unsigned char> D77File::D77Disk::ReadTrack(int trk,int sid) const
 	auto trkPtr=GetTrack(trk,sid);
 	if(nullptr!=trkPtr)
 	{
+		// Use track image if available.
+		if(0<trkPtr->trackImage.size())
+		{
+			return trkPtr->trackImage;
+		}
+
+
 		// GAP 0
 		for(int i=0; i<80; ++i)
 		{
