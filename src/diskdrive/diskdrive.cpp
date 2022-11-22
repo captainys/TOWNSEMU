@@ -36,6 +36,7 @@ unsigned int DiskDrive::DiskImage::GetNumDisk(void) const
 	{
 	case IMGFILE_RAW:
 	case IMGFILE_D77:
+	case IMGFILE_RDD:
 		return d77.GetNumDisk();
 	}
 	return 0;
@@ -46,6 +47,7 @@ bool DiskDrive::DiskImage::IsModified(void) const
 	{
 	case IMGFILE_RAW:
 	case IMGFILE_D77:
+	case IMGFILE_RDD:
 		return d77.IsModified();
 	}
 	return false;
@@ -58,6 +60,8 @@ std::vector <unsigned char> DiskDrive::DiskImage::MakeImageBinary(void) const
 		return d77.MakeRawImage();
 	case IMGFILE_D77:
 		return d77.MakeD77Image();
+	case IMGFILE_RDD:
+		return d77.MakeRDDImage();
 	}
 	std::vector <unsigned char> bin;
 	return bin;
@@ -77,6 +81,7 @@ void DiskDrive::DiskImage::ClearModifiedFlag(void)
 	{
 	case IMGFILE_RAW:
 	case IMGFILE_D77:
+	case IMGFILE_RDD:
 		for(int i=0; i<d77.GetNumDisk(); ++i)
 		{
 			d77.GetDisk(i)->ClearModified();
@@ -90,6 +95,7 @@ bool DiskDrive::DiskImage::DiskLoaded(int diskIdx) const
 	{
 	case IMGFILE_RAW:
 	case IMGFILE_D77:
+	case IMGFILE_RDD:
 		return nullptr!=d77.GetDisk(diskIdx);
 	}
 	return false;
@@ -100,6 +106,7 @@ unsigned int DiskDrive::DiskImage::IdentifyDiskMediaType(int diskIdx) const
 	{
 	case IMGFILE_RAW:
 	case IMGFILE_D77:
+	case IMGFILE_RDD:
 		{
 			auto diskPtr=d77.GetDisk(diskIdx);
 			if(nullptr==diskPtr)
@@ -154,6 +161,10 @@ bool DiskDrive::DiskImage::SetData(int fileType,const std::vector <unsigned char
 		this->fileType=fileType;
 		d77.SetData(bin,verboseMode);
 		return true;
+	case IMGFILE_RDD:
+		this->fileType=fileType;
+		d77.SetRDDData(bin,verboseMode);
+		return true;
 	case IMGFILE_RAW:
 		this->fileType=fileType;
 		d77.SetRawBinary(bin,verboseMode);
@@ -179,6 +190,7 @@ DiskDrive::Sector DiskDrive::DiskImage::ReadSectorFrom(
 	{
 	case IMGFILE_D77:
 	case IMGFILE_RAW:
+	case IMGFILE_RDD:
 		{
 			auto diskPtr=d77.GetDisk(diskIdx);
 			if(nullptr!=diskPtr)
@@ -220,6 +232,7 @@ unsigned int DiskDrive::DiskImage::GetNanoSecPerByte(int diskIdx,unsigned int C,
 	{
 	case IMGFILE_D77:
 	case IMGFILE_RAW:
+	case IMGFILE_RDD:
 		{
 			auto diskPtr=d77.GetDisk(diskIdx);
 			if(nullptr!=diskPtr)
@@ -242,6 +255,7 @@ bool DiskDrive::DiskImage::WriteSector(int diskIdx,unsigned int C,unsigned int H
 	{
 	case IMGFILE_D77:
 	case IMGFILE_RAW:
+	case IMGFILE_RDD:
 		{
 			auto diskPtr=d77.GetDisk(diskIdx);
 			if(nullptr!=diskPtr)
@@ -261,6 +275,7 @@ unsigned int DiskDrive::DiskImage::GetSectorLength(int diskIdx,unsigned int C,un
 	{
 	case IMGFILE_D77:
 	case IMGFILE_RAW:
+	case IMGFILE_RDD:
 		{
 			auto diskPtr=d77.GetDisk(diskIdx);
 			if(nullptr!=diskPtr)
@@ -282,6 +297,7 @@ bool DiskDrive::DiskImage::SectorExists(int diskIdx,unsigned int C,unsigned int 
 	{
 	case IMGFILE_D77:
 	case IMGFILE_RAW:
+	case IMGFILE_RDD:
 		{
 			auto diskPtr=d77.GetDisk(diskIdx);
 			if(nullptr!=diskPtr)
@@ -303,6 +319,7 @@ std::vector <uint8_t> DiskDrive::DiskImage::ReadAddress(int diskIdx,unsigned int
 	{
 	case IMGFILE_D77:
 	case IMGFILE_RAW:
+	case IMGFILE_RDD:
 		{
 			auto diskPtr=d77.GetDisk(diskIdx);
 			if(nullptr!=diskPtr)
@@ -342,6 +359,7 @@ void DiskDrive::DiskImage::SetNumCylinders(int diskIdx,unsigned int n)
 	{
 	case IMGFILE_D77:
 	case IMGFILE_RAW:
+	case IMGFILE_RDD:
 		{
 			auto diskPtr=d77.GetDisk(diskIdx);
 			if(nullptr!=diskPtr)
@@ -359,6 +377,7 @@ std::vector <unsigned char> DiskDrive::DiskImage::ReadTrack(int diskIdx,unsigned
 	{
 	case IMGFILE_D77:
 	case IMGFILE_RAW:
+	case IMGFILE_RDD:
 		{
 			auto diskPtr=d77.GetDisk(diskIdx);
 			if(nullptr!=diskPtr)
@@ -379,6 +398,7 @@ unsigned int DiskDrive::DiskImage::WriteTrack(int diskIdx,unsigned int C,unsigne
 	{
 	case IMGFILE_D77:
 	case IMGFILE_RAW:
+	case IMGFILE_RDD:
 		{
 			auto diskPtr=d77.GetDisk(diskIdx);
 			if(nullptr==diskPtr)
@@ -514,6 +534,7 @@ void DiskDrive::DiskImage::SetWriteProtect(int diskIdx,bool writeProtect)
 	{
 	case IMGFILE_RAW:
 	case IMGFILE_D77:
+	case IMGFILE_RDD:
 		{
 			auto diskPtr=d77.GetDisk(diskIdx);
 			if(nullptr!=diskPtr)
@@ -548,6 +569,7 @@ bool DiskDrive::DiskImage::WriteProtected(int diskIdx) const
 	{
 	case IMGFILE_RAW:
 	case IMGFILE_D77:
+	case IMGFILE_RDD:
 		{
 			auto diskPtr=d77.GetDisk(diskIdx);
 			if(nullptr!=diskPtr)
@@ -577,6 +599,10 @@ void DiskDrive::ImageFile::SaveIfModified(void)
 			{
 				std::cout << "Auto-saved disk image:" << fName << std::endl;
 			}
+		}
+		else
+		{
+			std::cout << "Image-binary save not supported for this format." << std::endl;
 		}
 	}
 	img.ClearModifiedFlag();
@@ -638,6 +664,28 @@ bool DiskDrive::ImageFile::LoadD77(std::string fName)
 		}
 
 		this->img.fileType=IMGFILE_D77;
+		this->fName=fName;
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+bool DiskDrive::ImageFile::LoadRDD(std::string fName)
+{
+	bool verbose=false;
+	auto bin=cpputil::ReadBinaryFile(fName);
+	if(0==bin.size())
+	{
+		return false;
+	}
+
+	this->img.d77.CleanUp();
+	this->img.d77.SetRDDData(bin,verbose);
+	if(0<this->img.d77.GetNumDisk())
+	{
+		this->img.fileType=IMGFILE_RDD;
 		this->fName=fName;
 		return true;
 	}
@@ -725,6 +773,11 @@ void DiskDrive::State::Drive::DiskChanged(void)
 	return ".D77"==ext || ".D88"==ext;
 }
 
+/* static */ bool DiskDrive::IsRDDExtension(std::string ext)
+{
+	return ".RDD"==ext;
+}
+
 DiskDrive::DiskDrive(VMBase *vmPtr) : Device(vmPtr)
 {
 	Reset();
@@ -740,13 +793,17 @@ DiskDrive::DiskDrive(VMBase *vmPtr) : Device(vmPtr)
 	}
 }
 
-bool DiskDrive::LoadD77orRAW(unsigned int driveNum,const char fNameIn[],bool verbose)
+bool DiskDrive::LoadD77orRDDorRAW(unsigned int driveNum,const char fNameIn[],bool verbose)
 {
 	auto ext=cpputil::GetExtension(fNameIn);
 	cpputil::Capitalize(ext);
 	if(true==IsD77Extension(ext))
 	{
 		return LoadD77(driveNum,fNameIn,verbose);
+	}
+	else if(true==IsRDDExtension(ext))
+	{
+		return LoadRDD(driveNum,fNameIn,verbose);
 	}
 	else
 	{
@@ -763,6 +820,22 @@ bool DiskDrive::LoadD77(unsigned int driveNum,const char fNameIn[],bool verbose)
 
 	auto fName=cpputil::FindFileWithSearchPaths(fNameIn,searchPaths);
 	if(true==imgFile[imgIdx].LoadD77(fName))
+	{
+		LinkDiskImageToDrive(imgIdx,0,driveNum);
+		return true;
+	}
+	return false;
+}
+
+bool DiskDrive::LoadRDD(unsigned int driveNum,const char fNameIn[],bool verbose)
+{
+	driveNum&=3;
+	auto imgIdx=driveNum;
+
+	SaveIfModifiedAndUnlinkDiskImage(imgIdx);
+
+	auto fName=cpputil::FindFileWithSearchPaths(fNameIn,searchPaths);
+	if(true==imgFile[imgIdx].LoadRDD(fName))
 	{
 		LinkDiskImageToDrive(imgIdx,0,driveNum);
 		return true;

@@ -29,7 +29,8 @@ public:
 	enum
 	{
 		IMGFILE_RAW,
-		IMGFILE_D77
+		IMGFILE_D77,
+		IMGFILE_RDD,
 	};
 	enum
 	{
@@ -142,6 +143,7 @@ public:
 		DiskImage img;
 		bool LoadD77orRAW(std::string fName);
 		bool LoadD77(std::string fName);
+		bool LoadRDD(std::string fName);
 		bool LoadRAW(std::string fName);
 		void SaveIfModified(void);
 	};
@@ -209,10 +211,12 @@ public:
 	DiskDrive(VMBase *vmBase);
 
 	static bool IsD77Extension(std::string ext);
+	static bool IsRDDExtension(std::string ext);
 
-	bool LoadD77orRAW(unsigned int driveNum,const char fName[],bool verbose=true);
+	bool LoadD77orRDDorRAW(unsigned int driveNum,const char fName[],bool verbose=true);
 
 	bool LoadD77(unsigned int driveNum,const char fName[],bool verbose=true);
+	bool LoadRDD(unsigned int driveNum,const char fName[],bool verbose=true);
 	bool LoadRawBinary(unsigned int driveNum,const char fName[],bool verbose=true);
 
 	/*! D77 image can have multiple disks in one file.

@@ -68,7 +68,7 @@ void FMTowns::State::PowerOn(void)
 	{
 		if(""!=argv.fdImgFName[drv])
 		{
-			towns.fdc.LoadD77orRAW(drv,argv.fdImgFName[drv].c_str());
+			towns.fdc.LoadD77orRDDorRAW(drv,argv.fdImgFName[drv].c_str());
 			if(true==argv.fdImgWriteProtect[drv])
 			{
 				// D77 image may have write-protect switch.
