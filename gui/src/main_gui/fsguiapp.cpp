@@ -1146,6 +1146,7 @@ void FsGuiMainCanvas::File_New_1232KB(FsGuiPopUpMenuItem *)
 	fdlg->title.Set(L"Create 1232KB Disk Image");
 	fdlg->fileExtensionArray.Append(L".BIN");
 	fdlg->fileExtensionArray.Append(L".D77");
+	fdlg->fileExtensionArray.Append(L".RDD");
 	fdlg->fileExtensionArray.Append(L".D88");
 	fdlg->fileExtensionArray.Append(L".XDF");
 	fdlg->defaultFileName=GetDefaultNewDiskImageFileName();
@@ -1164,6 +1165,7 @@ void FsGuiMainCanvas::File_New_1440KB(FsGuiPopUpMenuItem *)
 	fdlg->title.Set(L"Create 1440KB Disk Image");
 	fdlg->fileExtensionArray.Append(L".BIN");
 	fdlg->fileExtensionArray.Append(L".D77");
+	fdlg->fileExtensionArray.Append(L".RDD");
 	fdlg->fileExtensionArray.Append(L".D88");
 	fdlg->fileExtensionArray.Append(L".XDF");
 	fdlg->defaultFileName=GetDefaultNewDiskImageFileName();
@@ -1182,6 +1184,7 @@ void FsGuiMainCanvas::File_New_720KB(FsGuiPopUpMenuItem *)
 	fdlg->title.Set(L"Create 720KB Disk Image");
 	fdlg->fileExtensionArray.Append(L".BIN");
 	fdlg->fileExtensionArray.Append(L".D77");
+	fdlg->fileExtensionArray.Append(L".RDD");
 	fdlg->fileExtensionArray.Append(L".D88");
 	fdlg->fileExtensionArray.Append(L".XDF");
 	fdlg->defaultFileName=GetDefaultNewDiskImageFileName();
@@ -1200,6 +1203,7 @@ void FsGuiMainCanvas::File_New_640KB(FsGuiPopUpMenuItem *)
 	fdlg->title.Set(L"Create 640KB Disk Image");
 	fdlg->fileExtensionArray.Append(L".BIN");
 	fdlg->fileExtensionArray.Append(L".D77");
+	fdlg->fileExtensionArray.Append(L".RDD");
 	fdlg->fileExtensionArray.Append(L".D88");
 	fdlg->fileExtensionArray.Append(L".XDF");
 	fdlg->defaultFileName=GetDefaultNewDiskImageFileName();
@@ -1291,6 +1295,12 @@ void FsGuiMainCanvas::File_New_FileSelected(FsGuiDialog *dlg,int returnCode)
 					D77File d77;
 					d77.SetRawBinary(img);
 					img=d77.MakeD77Image();
+				}
+				else if(0==ext.STRCMP(L".RDD"))
+				{
+					D77File d77;
+					d77.SetRawBinary(img);
+					img=d77.MakeRDDImage();
 				}
 
 				bool result=false;
@@ -2017,6 +2027,7 @@ void FsGuiMainCanvas::FD0_SelectImageFile(FsGuiPopUpMenuItem *)
 		fdlg->title.Set(L"Open FD0 Image");
 		fdlg->fileExtensionArray.Append(L".BIN");
 		fdlg->fileExtensionArray.Append(L".D77");
+		fdlg->fileExtensionArray.Append(L".RDD");
 		fdlg->fileExtensionArray.Append(L".D88");
 		fdlg->fileExtensionArray.Append(L".XDF");
 		fdlg->defaultFileName=GetDefaultOpenDiskImageFileName();
@@ -2108,6 +2119,7 @@ void FsGuiMainCanvas::FD1_SelectImageFile(FsGuiPopUpMenuItem *)
 		fdlg->title.Set(L"Open FD1 Image");
 		fdlg->fileExtensionArray.Append(L".BIN");
 		fdlg->fileExtensionArray.Append(L".D77");
+		fdlg->fileExtensionArray.Append(L".RDD");
 		fdlg->fileExtensionArray.Append(L".D88");
 		fdlg->fileExtensionArray.Append(L".XDF");
 		fdlg->defaultFileName=GetDefaultOpenDiskImageFileName();
