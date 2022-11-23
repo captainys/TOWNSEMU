@@ -1214,7 +1214,7 @@ bool D77File::D77Disk::SetRDDImage(size_t &bytesUsed,size_t len,const unsigned c
 			}
 			break;
 		case 5: // End of Track
-			trkPtr->IdentifyUnstableByte();
+			trkPtr->IdentifyUnstableByteRDD();
 			trkPtr=nullptr;
 			ptr+=16;
 			break;
