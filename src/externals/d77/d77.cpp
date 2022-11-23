@@ -110,6 +110,9 @@ void D77File::D77Disk::D77Sector::CleanUp(void)
 	deletedData=0;
 	crcStatus=0;
 
+	unstableBegin=0;
+	unstableEnd=0;
+
 	nanosecPerByte=0;
 	resampled=false;
 	probLeafInTheForest=false;
@@ -1049,6 +1052,61 @@ bool D77File::D77Disk::SetRDDImage(size_t &bytesUsed,size_t len,const unsigned c
 			}
 			break;
 		case 5: // End of Track
+			for(int i=0; i<trkPtr->sector.size(); ++i)
+			{
+				if(true==trkPtr->sector[i].resampled)
+				{
+					unsigned int unstableBegin=0,unstableEnd=0;
+					for(int j=i+1; j<trkPtr->sector.size(); ++j)
+					{
+						if(true==trkPtr->sector[j].resampled &&
+						   trkPtr->sector[i].cylinder==trkPtr->sector[j].cylinder &&
+						   trkPtr->sector[i].head==trkPtr->sector[j].head &&
+						   trkPtr->sector[i].sector==trkPtr->sector[j].sector &&
+						   trkPtr->sector[i].sizeShift==trkPtr->sector[j].sizeShift &&
+						   trkPtr->sector[i].sectorData.size()==trkPtr->sector[j].sectorData.size())
+						{
+							if(trkPtr->sector[i].sectorData.size()<=256 &&
+							   (trkPtr->sector[i].sectorData[0x14]!=trkPtr->sector[j].sectorData[0x14] ||
+							    trkPtr->sector[i].sectorData[0x15]!=trkPtr->sector[j].sectorData[0x15] ||
+							    trkPtr->sector[i].sectorData[0x16]!=trkPtr->sector[j].sectorData[0x16] ||
+							    trkPtr->sector[i].sectorData[0x17]!=trkPtr->sector[j].sectorData[0x17]))
+							{
+								unstableBegin=0x14;
+								unstableEnd=0x18;
+								break;
+							}
+							if(512<=trkPtr->sector[i].sectorData.size() &&
+							   (trkPtr->sector[i].sectorData[0x120]!=trkPtr->sector[j].sectorData[0x120] ||
+							    trkPtr->sector[i].sectorData[0x121]!=trkPtr->sector[j].sectorData[0x121] ||
+							    trkPtr->sector[i].sectorData[0x122]!=trkPtr->sector[j].sectorData[0x122] ||
+							    trkPtr->sector[i].sectorData[0x123]!=trkPtr->sector[j].sectorData[0x123]))
+							{
+								unstableBegin=0x120;
+								unstableEnd=0x124;
+								break;
+							}
+						}
+					}
+					if(unstableBegin<unstableEnd)
+					{
+						printf("Found unstable bytes.\n");
+						for(int j=i; j<trkPtr->sector.size(); ++j)
+						{
+							if(true==trkPtr->sector[j].resampled &&
+							   trkPtr->sector[i].cylinder==trkPtr->sector[j].cylinder &&
+							   trkPtr->sector[i].head==trkPtr->sector[j].head &&
+							   trkPtr->sector[i].sector==trkPtr->sector[j].sector &&
+							   trkPtr->sector[i].sizeShift==trkPtr->sector[j].sizeShift &&
+							   trkPtr->sector[i].sectorData.size()==trkPtr->sector[j].sectorData.size())
+							{
+								trkPtr->sector[j].unstableBegin=unstableBegin;
+								trkPtr->sector[j].unstableEnd=unstableEnd;
+							}
+						}
+					}
+				}
+			}
 			trkPtr=nullptr;
 			ptr+=16;
 			break;
@@ -1858,7 +1916,19 @@ std::vector <unsigned char> D77File::D77Disk::ReadSector(int trk,int sid,int sec
 		auto secPtr=trkPtr->FindSector(sec);
 		if(nullptr!=secPtr)
 		{
-			return secPtr->sectorData;
+			if(secPtr->unstableBegin<secPtr->unstableEnd)
+			{
+				return secPtr->sectorData;
+			}
+			else
+			{
+				auto dat=secPtr->sectorData;
+				for(auto i=secPtr->unstableBegin; i<secPtr->unstableEnd; ++i)
+				{
+					dat[i]=rand()&0xff;
+				}
+				return dat;
+			}
 		}
 	}
 

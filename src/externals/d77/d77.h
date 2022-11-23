@@ -140,6 +140,10 @@ public:
 
 		D77_SECTOR_STATUS_CRC=0xB0,
 		D77_SECTOR_STATUS_RECORD_NOT_FOUND=0xF0,
+
+		UNSTABLE_NONE=0x00,
+		UNSTABLE_VERSION1=0x01,
+		UNSTABLE_VERSION2=0x02,
 	};
 
 	static std::vector <std::string> QuickParser(const char str[]);
@@ -174,6 +178,8 @@ public:
 			unsigned char reservedByte[5];
 			unsigned short sectorDataSize; // Excluding the header.
 			std::vector <unsigned char> sectorData;
+
+			unsigned int unstableBegin=0,unstableEnd=0;
 
 			bool resampled=false;  // true if the sector was sampled multiple times for replicating unstable-byte or Corocoro protect.
 			bool probLeafInTheForest=false;  // true if it is suspected to be one of leaf-in-the-forest protect (such as Thexder and Fire Crystal)
