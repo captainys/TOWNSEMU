@@ -220,6 +220,9 @@ public:
 					return copy;
 				}
 			}
+
+			bool SameCHRN(const D77Sector &s) const;
+			bool SameCHRNandActualSize(const D77Sector &s) const;
 		};
 		class D77Track
 		{
@@ -275,11 +278,24 @@ public:
 			int GetSide(void) const;
 
 
+			/*! Check if the track is suspected to be leaf-in-the-forest protect.
+			    This type copy-protect (only confirmed on Thexder and Fire Crystal for FM-7)
+			    typically has multiple sectors with same CHR.
+			*/
+			bool SuspectedLeafInTheForest(void) const;
+
+
 			/*! Identify unstable-byte protect.
+			    IdentifyUnstableByte function checks if the track has multpile sectors,
+			    but all same CHR for distinguishing multi sample and leaf-in-the-forest.
+			    IdentifyUnstableByteRDD function relies on resampled flag of RDD.
 			*/
 			void IdentifyUnstableByte(void);
+			void IdentifyUnstableByteRDD(void);
+		private:
+			void UnidentifyUnstableByteForContinuousData(void);
 
-
+		public:
 			/*! Returns a list of sectors in the track.
 			    Member addr will all be zero.
 			*/
