@@ -178,8 +178,7 @@ public:
 			unsigned char reservedByte[5];
 			unsigned short sectorDataSize; // Excluding the header.
 			std::vector <unsigned char> sectorData;
-
-			unsigned int unstableBegin=0,unstableEnd=0;
+			std::vector <bool> unstableByte;
 
 			bool resampled=false;  // true if the sector was sampled multiple times for replicating unstable-byte or Corocoro protect.
 			bool probLeafInTheForest=false;  // true if it is suspected to be one of leaf-in-the-forest protect (such as Thexder and Fire Crystal)
@@ -199,6 +198,28 @@ public:
 			    Must be set before written to a track.
 			*/
 			bool Make(int trk,int sid,int secId,int secSize);
+
+			/*! Returns sector data taking unstable-bytes into account;
+			*/
+			inline std::vector <unsigned char> GetData(void) const
+			{
+				if(sectorData.size()!=unstableByte.size())
+				{
+					return sectorData;
+				}
+				else
+				{
+					auto copy=sectorData;
+					for(int i=0; i<copy.size(); ++i)
+					{
+						if(true==unstableByte[i])
+						{
+							copy[i]=rand()&0x255;
+						}
+					}
+					return copy;
+				}
+			}
 		};
 		class D77Track
 		{
@@ -252,6 +273,12 @@ public:
 			    It may be different from actual side.
 			*/
 			int GetSide(void) const;
+
+
+			/*! Identify unstable-byte protect.
+			*/
+			void IdentifyUnstableByte(void);
+
 
 			/*! Returns a list of sectors in the track.
 			    Member addr will all be zero.

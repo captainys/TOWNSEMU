@@ -212,13 +212,9 @@ DiskDrive::Sector DiskDrive::DiskImage::ReadSectorFrom(
 							sector.H=d77Sector.head;
 							sector.R=d77Sector.sector;
 							sector.N=d77Sector.sizeShift;
-							sector.data=d77Sector.sectorData;
+							sector.data=d77Sector.GetData();
 							sector.crcStatus=d77Sector.crcStatus;
 							sector.DDM=d77Sector.deletedData;
-							for(auto i=d77Sector.unstableBegin; i<d77Sector.unstableEnd; ++i)
-							{
-								sector.data[i]=rand()%0xFF;
-							}
 							break;
 						}
 					}
