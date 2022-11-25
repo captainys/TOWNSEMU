@@ -420,9 +420,9 @@ void D77File::D77Disk::D77Track::IdentifyUnstableByte(void)
 		}
 
 		s0.unstableByte.resize(s0.sectorData.size());
-		for(auto &b : s0.unstableByte)
+		for(int i=0; i<s0.unstableByte.size(); ++i)
 		{
-			b=false;
+			s0.unstableByte[i]=false;
 		}
 
 		for(int j=i+1; j<sector.size(); ++j)
@@ -473,9 +473,9 @@ void D77File::D77Disk::D77Track::IdentifyUnstableByteRDD(void)
 		}
 
 		s0.unstableByte.resize(s0.sectorData.size());
-		for(auto &b : s0.unstableByte)
+		for(int i=0; i<s0.unstableByte.size(); ++i)
 		{
-			b=false;
+			s0.unstableByte[i]=false;
 		}
 
 		for(int j=i+1; j<sector.size(); ++j)
