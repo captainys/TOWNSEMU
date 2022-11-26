@@ -408,7 +408,15 @@ Vec2i TownsCRTC::GetLowResPageZoom2X(unsigned char page) const
 	else if(3==CLKSEL() && 0x29D==state.crtcReg[REG_HST])
 	{
 		// VING games use this settings.  Apparently zoom-x needs to be interpreted as 4+(pageZoom&15).
-		zoom[0]=4+(pageZoom&15);
+		// Chase HQ        HST=029DH  ZOOM=1111H  Zoom2X=5
+		// Viewpoint       HST=029DH  ZOOM=1111H  Zoom2X=5
+		// Pu Li Ru La     HST=029DH  ZOOM=1111H  Zoom2X=5
+		// Splatter House  HST=029DH  ZOOM=1111H  Zoom2X=5
+		// Operation Wolf  N/A
+		// New Zealand Story  N/A
+		// Alshark Opening HST=029DH  ZOOM=0000H  Zoom2X=2
+		// Freeware Collection 8 Oh!FM TOWNS Cover Picture Collection  HST=029DH  ZOOM=0000H  Zoom2X=2
+		zoom[0]=2+3*(pageZoom&15); // Is it right?
 		zoom[1]*=2;
 	}
 	else
@@ -535,9 +543,25 @@ Vec2i TownsCRTC::GetPageSizeOnMonitor(unsigned char page) const
 	}
 	else if(3==CLKSEL() && 0x29D==state.crtcReg[REG_HST]) // VING Setting
 	{
+		// VING games use this settings.  Apparently zoom-x needs to be interpreted as 4+(pageZoom&15).
+		// Chase HQ        HST=029DH  ZOOM=1111H  Zoom2X=5  wid=640
+		// Viewpoint       HST=029DH  ZOOM=1111H  Zoom2X=5  wid=640
+		// Pu Li Ru La     HST=029DH  ZOOM=1111H  Zoom2X=5  wid=640
+		// Splatter House  HST=029DH  ZOOM=1111H  Zoom2X=5  wid=640
+		// Operation Wolf  N/A
+		// New Zealand Story  N/A
+		// Alshark Opening HST=029DH  ZOOM=0000H  Zoom2X=2
+		// Freeware Collection 8 Oh!FM TOWNS Cover Picture Collection  HST=029DH  ZOOM=0000H  Zoom2X=2  wid=512?
+
+		// Looks like zoom2X=5 -> wid*5/4
+		//            zoom2X=2 -> wid*4/4
+
 		auto zoom=GetLowResPageZoom2X(page);
-		wid*=zoom.x();
-		wid/=4;
+		if(5<=zoom.x())  // I have zero confidence in this condition.  It just takes care of known cases.
+		{
+			wid*=zoom.x();
+			wid/=4;
+		}
 	}
 	if(0==state.crtcReg[REG_FO0+4*page])
 	{
