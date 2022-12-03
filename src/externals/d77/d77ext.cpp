@@ -20,6 +20,10 @@ unsigned int D77ExtraInfo::ReadD77Ext(std::string fName)
 	//   Example: Cylinder 6, Side 1, Sector 4 should be read at 32000 nanosec per byte.
 	//   S 6 1 4 NSBYTE 32000
 
+	// Unstable bytes
+	//   Example: Cylidner 0, Side 0, Sector 247 ($F7) should have unstable bytes from offset 288 ($120) for 4 bytes.
+	//   S 0 0 247 USBYTE 288 4
+
 	std::ifstream ifp(fName);
 	if(true==ifp.is_open())
 	{
@@ -98,6 +102,18 @@ unsigned int D77ExtraInfo::ReadD77Ext(std::string fName)
 						sec.nanosecPerByte=atoi(ARGV[i+1].c_str());
 						++i;
 					}
+					if("USBYTE"==ARGV[i])
+					{
+						if(ARGV.size()<=i+2)
+						{
+							return ERR_INSUFFICIENT_ARGS;
+						}
+						UnstableBytes usBytes;
+						usBytes.offset=atoi(ARGV[i+1].c_str());
+						usBytes.length=atoi(ARGV[i+2].c_str());
+						sec.unstableBytes.push_back(usBytes);
+						i+=2;
+					}
 				}
 				perSector.push_back(sec);
 			}
@@ -123,6 +139,18 @@ void D77ExtraInfo::Apply(D77File::D77Disk &disk) const
 		{
 			secPtr->nanosecPerByte=s.nanosecPerByte;
 			std::cout << "NSBYTE applied to " << s.C << " " << s.H << " " << s.R << std::endl;
+		}
+		for(auto &usBytes : s.unstableBytes)
+		{
+			while(secPtr->unstableByte.size()<secPtr->sectorData.size())
+			{
+				secPtr->unstableByte.push_back(false);
+			}
+			for(unsigned i=0; i<usBytes.length && usBytes.offset+i<secPtr->unstableByte.size(); ++i)
+			{
+				secPtr->unstableByte[usBytes.offset+i]=true;
+			}
+			std::cout << "USBYTE applied to " << s.C << " " << s.H << " " << s.R << std::endl;
 		}
 	}
 }

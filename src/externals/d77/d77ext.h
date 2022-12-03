@@ -19,6 +19,12 @@ public:
 		ERR_INSUFFICIENT_ARGS
 	};
 
+	class UnstableBytes
+	{
+	public:
+		unsigned int offset,length;
+	};
+
 	class SectorExtInfo
 	{
 	public:
@@ -35,7 +41,7 @@ public:
 
 		// The bytes indexed by unstableBytes[i] in this sector must change
 		// value every time the sector is read.
-		std::vector <unsigned int> unstableBytes;
+		std::vector <UnstableBytes> unstableBytes;
 	};
 
 	std::vector <SectorExtInfo> perSector;
