@@ -69,6 +69,7 @@ void RF5C68::Clear(void)
 		ch.FD=0;
 		ch.LS=0;
 		ch.playPtr=0;
+		ch.playPtrLeftOver=0;
 		ch.repeatAfterThisSegment=false;
 
 		ch.IRQAfterThisPlayBack=false;
@@ -159,6 +160,7 @@ void RF5C68::WriteST(unsigned char value)
 {
 	state.ch[state.CB].ST=value;
 	state.ch[state.CB].playPtr=(value<<8);
+	state.ch[state.CB].playPtrLeftOver=0;
 }
 
 std::vector <std::string> RF5C68::GetStatusText(void) const
@@ -177,7 +179,8 @@ std::vector <std::string> RF5C68::GetStatusText(void) const
 		s+="ST="+cpputil::Ubtox(state.ch[ch].ST)+" ";
 		s+="FD="+cpputil::Ustox(state.ch[ch].FD)+" ";
 		s+="LS="+cpputil::Ustox(state.ch[ch].LS)+" ";
-		s+="PlayPtr="+cpputil::Ustox(state.ch[ch].playPtr);
+		s+="PlayPtr="+cpputil::Ustox(state.ch[ch].playPtr)+" ";
+		s+="LeftOver="+cpputil::Ustox(state.ch[ch].playPtrLeftOver);
 
 		text.push_back(s);
 	}
@@ -216,7 +219,7 @@ unsigned int RF5C68::AddWaveForNumSamples(unsigned char waveBuf[],unsigned int n
 		RvolCh[chNum]=((ch.PAN>>4)&0x0F);
 		LvolCh[chNum]=(LvolCh[chNum]*ch.ENV);
 		RvolCh[chNum]=(RvolCh[chNum]*ch.ENV);
-		pcmAddr[chNum]=(ch.playPtr<<FD_BIT_SHIFT);;
+		pcmAddr[chNum]=(ch.playPtr<<FD_BIT_SHIFT)|ch.playPtrLeftOver;
 		ch.repeatAfterThisSegment=false;
 
 		if(0<ch.FD && 0==(state.chOnOff&(1<<chNum)))
@@ -349,6 +352,7 @@ unsigned int RF5C68::AddWaveForNumSamples(unsigned char waveBuf[],unsigned int n
 	{
 		auto &ch=state.ch[chNum];
 		ch.playPtr=(pcmAddr[chNum]>>FD_BIT_SHIFT);
+		ch.playPtrLeftOver=(pcmAddr[chNum]&((1<<FD_BIT_SHIFT)-1));
 	}
 
 	return nFilled;
@@ -363,6 +367,7 @@ void RF5C68::PlayStopped(unsigned int chNum)
 {
 	auto &ch=state.ch[chNum];
 	ch.playPtr=(ch.ST<<8);
+	ch.playPtrLeftOver=0;
 }
 
 void RF5C68::SetIRQBank(unsigned int bank)
@@ -380,10 +385,12 @@ void RF5C68::SetUpNextSegment(unsigned int chNum)
 	if(true==ch.repeatAfterThisSegment)
 	{
 		ch.playPtr=ch.LS;
+		ch.playPtrLeftOver=0;
 	}
 	else
 	{
 		ch.playPtr+=0x1000;
 		ch.playPtr&=0xF000;
+		ch.playPtrLeftOver=0;
 	}
 }

@@ -47,7 +47,7 @@ public:
 		// playPtr is set when:
 		//    Written to ST, or
 		//    Play reached the end and came back to LS.
-		unsigned short playPtr;
+		uint16_t playPtr,playPtrLeftOver;
 		bool repeatAfterThisSegment;
 
 		bool IRQAfterThisPlayBack=false;
