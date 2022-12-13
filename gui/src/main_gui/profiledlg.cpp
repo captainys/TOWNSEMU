@@ -404,6 +404,10 @@ void ProfileDialog::Make(void)
 			virtualKeyButtonDrp[row]->AddString("15",YSFALSE);
 		}
 
+		AddStaticText(0,FSKEY_NULL,"Key-Mapping File (See File->New for Generating a Template)",YSTRUE);
+		selectKeyMapFileBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"Browse",YSTRUE);
+		keyMapFileTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",nShowPath,YSFALSE);
+
 		EndAddTabItem();
 	}
 
@@ -899,6 +903,11 @@ void ProfileDialog::OnSliderPositionChange(FsGuiSlider *slider,const double &pre
 			std::vector <const wchar_t *> extList={L"*.*"};
 			BrowseDir(L"Select A File in the Shared Directory (Can be dummy file)",shareDirTxt[i],extList);
 		}
+	}
+	if(selectKeyMapFileBtn==btn)
+	{
+		std::vector <const wchar_t *> extList={L".txt"};
+		BrowseSaveAs(L"Select A Key-Mapping File",keyMapFileTxt,extList);
 	}
 }
 

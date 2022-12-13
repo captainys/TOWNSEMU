@@ -74,6 +74,9 @@ public:
 	FsGuiDropList *virtualKeyPhysIdDrp[TownsProfile::MAX_NUM_VIRTUALKEYS];
 	FsGuiDropList *virtualKeyButtonDrp[TownsProfile::MAX_NUM_VIRTUALKEYS];
 
+	FsGuiTextBox *keyMapFileTxt;
+	FsGuiButton *selectKeyMapFileBtn;
+
 
 	FsGuiStatic *fmVolumeText,*pcmVolumeText;
 	FsGuiButton *fmVolumeDefaultBtn,*pcmVolumeDefaultBtn;
