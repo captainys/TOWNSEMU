@@ -243,6 +243,7 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 			subSubMenu->AddTextItem(0,FSKEY_NULL,L"640KB Floppy Disk Image")->BindCallBack(&THISCLASS::File_New_640KB,this);
 			subSubMenu->AddTextItem(0,FSKEY_NULL,L"720KB Floppy Disk Image")->BindCallBack(&THISCLASS::File_New_720KB,this);
 			subSubMenu->AddTextItem(0,FSKEY_NULL,L"Hard-Disk Image")->BindCallBack(&THISCLASS::File_New_HDD,this);
+			subSubMenu->AddTextItem(0,FSKEY_NULL,L"Make Default Key Mapping File")->BindCallBack(&THISCLASS::File_MakeDefaultKeyMappingFile,this);
 		}
 
 		fileRecentProfile=subMenu->AddTextItem(0,FSKEY_R,L"Recent")->AddSubMenu();
@@ -1022,6 +1023,65 @@ void FsGuiMainCanvas::File_SaveProfileAs_OverwriteConfirm(FsGuiDialog *dlgIn,int
 		profileDlg->profileFNameTxt->SetText(dlg->payload);
 		SaveProfile(dlg->payload);
 		AddRecentlyUsedFile(dlg->payload);
+	}
+}
+
+
+void FsGuiMainCanvas::File_MakeDefaultKeyMappingFile(FsGuiPopUpMenuItem *)
+{
+	auto fdlg=FsGuiDialog::CreateSelfDestructiveDialog<FsGuiFileDialog>();
+	fdlg->Initialize();
+	fdlg->mode=FsGuiFileDialog::MODE_SAVE;
+	fdlg->multiSelect=YSFALSE;
+	fdlg->title.Set(L"Make Default Key Mapping File");
+	fdlg->fileExtensionArray.Append(L".txt");
+	fdlg->defaultFileName=L"Tsugaru_keymap.txt";
+	fdlg->BindCloseModalCallBack(&THISCLASS::File_MakeDefaultKeyMappingFile_Selected,this);
+	AttachModalDialog(fdlg);
+}
+void FsGuiMainCanvas::File_MakeDefaultKeyMappingFile_Selected(FsGuiDialog *dlg,int returnCode)
+{
+	auto fdlg=dynamic_cast <FsGuiFileDialog *>(dlg);
+	if(nullptr!=fdlg && (int)YSOK==returnCode)
+	{
+		auto fName=fdlg->selectedFileArray[0];
+		if(YSTRUE==YsFileIO::CheckFileExist(fName))
+		{
+			auto dlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialogWithPayload<YsWString> >();
+			dlg->payload=fName;
+			dlg->Make(L"Overwrite Default",L"Are you sure?",L"Yes",L"No");
+			dlg->BindCloseModalCallBack(&FsGuiMainCanvas::File_MakeDefaultKeyMappingFile_OverwriteConfirm,this);
+			AttachModalDialog(dlg);
+		}
+		else
+		{
+			YsFileIO::File ofp(fName,"w");
+			if(nullptr!=ofp.Fp())
+			{
+				std::unique_ptr <FsSimpleWindowConnection> outside_world(new FsSimpleWindowConnection);
+				for(auto txt : outside_world->MakeDefaultKeyMappingText())
+				{
+					fprintf(ofp.Fp(),"%s\n",txt.c_str());
+				}
+			}
+		}
+	}
+}
+void FsGuiMainCanvas::File_MakeDefaultKeyMappingFile_OverwriteConfirm(FsGuiDialog *dlgIn,int returnCode)
+{
+	auto dlg=dynamic_cast <FsGuiMessageBoxDialogWithPayload<YsWString> *>(dlgIn);
+	if(nullptr!=dlg && (int)YSOK==returnCode)
+	{
+		auto fName=dlg->payload;
+		YsFileIO::File ofp(fName,"w");
+		if(nullptr!=ofp.Fp())
+		{
+			std::unique_ptr <FsSimpleWindowConnection> outside_world(new FsSimpleWindowConnection);
+			for(auto txt : outside_world->MakeDefaultKeyMappingText())
+			{
+				fprintf(ofp.Fp(),"%s\n",txt.c_str());
+			}
+		}
 	}
 }
 

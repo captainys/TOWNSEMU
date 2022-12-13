@@ -118,10 +118,10 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 	glEnd();
 }
 
-/* virtual */ std::vector <std::string> FsSimpleWindowConnection::MakeDefaultKeyMappingText(void) const override
+/* virtual */ std::vector <std::string> FsSimpleWindowConnection::MakeDefaultKeyMappingText(void) const
 {
 	unsigned int FSKEYtoTownsKEY[FSKEY_NUM_KEYCODE];
-	MakeKeyMapFromLayout(FSKEYtoTownsKEY,layout);
+	MakeKeyMapFromLayout(FSKEYtoTownsKEY,KEYBOARD_LAYOUT_US);
 	std::vector <std::string> text;
 	text.push_back("#HostKeyCode            TownsKeyCode");
 	for(int i=0; i<FSKEY_NUM_KEYCODE; ++i)
@@ -138,7 +138,7 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 	text.push_back("# Available Host Key Code");
 	for(int i=0; i<FSKEY_NUM_KEYCODE; ++i)
 	{
-		text.push_back("#"+FsKeyCodeToString(i));
+		text.push_back(std::string("#")+FsKeyCodeToString(i));
 	}
 	text.push_back("# Available Towns Key Code");
 	for(int i=0; i<256; ++i)

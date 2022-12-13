@@ -206,6 +206,10 @@ private:
 	void File_SaveProfileAs_FileSelected(FsGuiDialog *dlg,int returnCode);
 	void File_SaveProfileAs_OverwriteConfirm(FsGuiDialog *dlg,int returnCode);
 
+	void File_MakeDefaultKeyMappingFile(FsGuiPopUpMenuItem *);
+	void File_MakeDefaultKeyMappingFile_Selected(FsGuiDialog *dlg,int returnCode);
+	void File_MakeDefaultKeyMappingFile_OverwriteConfirm(FsGuiDialog *dlg,int returnCode);
+
 	void File_Exit(FsGuiPopUpMenuItem *);
 	void File_Exit_ConfirmExitCallBack(FsGuiDialog *,int);
 	void File_Exit_ReallyExit(void);
