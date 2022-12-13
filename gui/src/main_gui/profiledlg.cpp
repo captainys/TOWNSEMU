@@ -1131,6 +1131,7 @@ TownsProfile ProfileDialog::GetProfile(void) const
 		profile.virtualKeys[row].button=virtualKeyButtonDrp[row]->GetSelection();
 	}
 
+	profile.keyMapFName=keyMapFileTxt->GetString().data();
 
 	profile.fmVol=(int)fmVolumeSlider->GetScaledValue();
 	if(YM2612::WAVE_OUTPUT_AMPLITUDE_MAX_DEFAULT==profile.fmVol)
@@ -1355,6 +1356,10 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 		virtualKeyPhysIdDrp[row]->Select(profile.virtualKeys[row].physicalId);
 		virtualKeyButtonDrp[row]->Select(profile.virtualKeys[row].button);
 	}
+
+	str.SetUTF8String(profile.keyMapFName.data());
+	keyMapFileTxt->SetText(str);
+
 
 	if(profile.fmVol<0)
 	{

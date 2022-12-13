@@ -68,6 +68,8 @@ void TownsProfile::CleanUp(void)
 		vk.physicalId=-1;
 	}
 
+	keyMapFName="";
+
 	catchUpRealTime=true;
 
 	fmVol=-1;
@@ -266,6 +268,13 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 			sstream << "VIRTUKEY " << vk.townsKey << " " << vk.physicalId << " " << vk.button;
 			text.push_back(sstream.str());
 		}
+	}
+
+	if(""!=keyMapFName)
+	{
+		sstream.str("");
+		sstream << "KEYMAPFN " << keyMapFName;
+		text.push_back(sstream.str());
 	}
 
 	if(0!=cdSpeed)
@@ -647,6 +656,13 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 				virtualKeys[nVirtualKey].physicalId=argv[2].Atoi();
 				virtualKeys[nVirtualKey].button=argv[3].Atoi();
 				++nVirtualKey;
+			}
+		}
+		else if(0==argv[0].STRCMP("KEYMAPFN"))
+		{
+			if(2<=argv.size())
+			{
+				keyMapFName=argv[1].c_str();
 			}
 		}
 		else if(0==argv[0].STRCMP("KYBDMODE"))
@@ -1104,6 +1120,11 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 	{
 		argv.push_back("-MAPY");
 		argv.push_back(mapXYExpression[1]);
+	}
+	if(""!=keyMapFName)
+	{
+		argv.push_back("-KEYMAP");
+		argv.push_back(keyMapFName);
 	}
 
 	return argv;
