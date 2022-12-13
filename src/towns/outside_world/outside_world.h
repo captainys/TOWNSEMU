@@ -184,6 +184,7 @@ public:
 	*/
 	void ProcessAppSpecific(class FMTowns &towns);
 
+	virtual std::vector <std::string> MakeDefaultKeyMappingText(void) const;
 	virtual std::vector <std::string> MakeKeyMappingText(void) const;
 	virtual void LoadKeyMappingFromText(const std::vector <std::string> &text);
 

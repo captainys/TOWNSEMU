@@ -80,33 +80,35 @@ public:
 	unsigned int sinceLastResize=0;
 
 
-	virtual std::vector <std::string> MakeKeyMappingText(void) const;
-	virtual void LoadKeyMappingFromText(const std::vector <std::string> &text);
+	virtual std::vector <std::string> MakeDefaultKeyMappingText(void) const override;
+	virtual std::vector <std::string> MakeKeyMappingText(void) const override;
+	virtual void LoadKeyMappingFromText(const std::vector <std::string> &text) override;
 
-	virtual void Start(void);
-	virtual void Stop(void);
-	virtual void DevicePolling(class FMTowns &towns);
+	virtual void Start(void) override;
+	virtual void Stop(void) override;
+	virtual void DevicePolling(class FMTowns &towns) override;
 	void PollGamePads(void);
-	virtual void UpdateStatusBitmap(class FMTowns &towns);
-	virtual void Render(const TownsRender::Image &img,const class FMTowns &towns);
+	virtual void UpdateStatusBitmap(class FMTowns &towns) override;
+	virtual void Render(const TownsRender::Image &img,const class FMTowns &towns) override;
 	void RenderBeforeSwapBuffers(const TownsRender::Image &img,const class FMTowns &towns);
-	virtual bool ImageNeedsFlip(void);
+	virtual bool ImageNeedsFlip(void) override;
 
-	virtual void SetKeyboardLayout(unsigned int layout);
+	virtual void SetKeyboardLayout(unsigned int layout) override;
+	static void MakeKeyMapFromLayout(unsigned int FSKeyToTownsKEY[FSKEY_NUM_KEYCODE],unsigned int layout);
 
-	virtual void RegisterHostShortCut(std::string hostKeyLabel,bool ctrl,bool shift,std::string cmdStr);
-	virtual void RegisterPauseResume(std::string hostKeyLabel);
+	virtual void RegisterHostShortCut(std::string hostKeyLabel,bool ctrl,bool shift,std::string cmdStr) override;
+	virtual void RegisterPauseResume(std::string hostKeyLabel) override;
 
 	YsSoundPlayer soundPlayer;
 	YsSoundPlayer::SoundData cddaChannel;
 	unsigned long long cddaStartHSG;
-	virtual void CDDAPlay(const DiscImage &discImg,DiscImage::MinSecFrm from,DiscImage::MinSecFrm to,bool repeat,unsigned int,unsigned int);
-	virtual void CDDASetVolume(float leftVol,float rightVol);
-	virtual void CDDAStop(void);
-	virtual void CDDAPause(void);
-	virtual void CDDAResume(void);
-	virtual bool CDDAIsPlaying(void);
-	virtual DiscImage::MinSecFrm CDDACurrentPosition(void);
+	virtual void CDDAPlay(const DiscImage &discImg,DiscImage::MinSecFrm from,DiscImage::MinSecFrm to,bool repeat,unsigned int,unsigned int) override;
+	virtual void CDDASetVolume(float leftVol,float rightVol) override;
+	virtual void CDDAStop(void) override;
+	virtual void CDDAPause(void) override;
+	virtual void CDDAResume(void) override;
+	virtual bool CDDAIsPlaying(void) override;
+	virtual DiscImage::MinSecFrm CDDACurrentPosition(void) override;
 
 
 	virtual void ToggleMouseCursor(void) override;
@@ -117,16 +119,16 @@ public:
 #else
 	YsSoundPlayer::SoundData FMPCMChannel;
 #endif
-	virtual void FMPCMPlay(std::vector <unsigned char > &wave);
-	virtual void FMPCMPlayStop(void);
-	virtual bool FMPCMChannelPlaying(void);
+	virtual void FMPCMPlay(std::vector <unsigned char > &wave) override;
+	virtual void FMPCMPlayStop(void) override;
+	virtual bool FMPCMChannelPlaying(void) override;
 
 
 
 	YsSoundPlayer::SoundData BeepChannel;
-	virtual void BeepPlay(int samplingRate, std::vector<unsigned char> &wave);
-	virtual void BeepPlayStop();
-	virtual bool BeepChannelPlaying() const;
+	virtual void BeepPlay(int samplingRate, std::vector<unsigned char> &wave) override;
+	virtual void BeepPlayStop() override;
+	virtual bool BeepChannelPlaying() const override;
 };
 
 /* } */

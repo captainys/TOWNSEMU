@@ -118,6 +118,40 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 	glEnd();
 }
 
+/* virtual */ std::vector <std::string> FsSimpleWindowConnection::MakeDefaultKeyMappingText(void) const override
+{
+	unsigned int FSKEYtoTownsKEY[FSKEY_NUM_KEYCODE];
+	MakeKeyMapFromLayout(FSKEYtoTownsKEY,layout);
+	std::vector <std::string> text;
+	text.push_back("#HostKeyCode            TownsKeyCode");
+	for(int i=0; i<FSKEY_NUM_KEYCODE; ++i)
+	{
+		text.push_back("");
+		text.back()+=FsKeyCodeToString(i);
+		text.back()+=" ";
+		while(text.back().size()<24)
+		{
+			text.back()+=" ";
+		}
+		text.back()+=TownsKeyCodeToStr(FSKEYtoTownsKEY[i]);
+	}
+	text.push_back("# Available Host Key Code");
+	for(int i=0; i<FSKEY_NUM_KEYCODE; ++i)
+	{
+		text.push_back("#"+FsKeyCodeToString(i));
+	}
+	text.push_back("# Available Towns Key Code");
+	for(int i=0; i<256; ++i)
+	{
+		auto str=TownsKeyCodeToStr(i);
+		if(""!=str)
+		{
+			text.push_back("#"+str);
+		}
+	}
+	return text;
+}
+
 /* virtual */ std::vector <std::string> FsSimpleWindowConnection::MakeKeyMappingText(void) const
 {
 	std::vector <std::string> text;
@@ -142,6 +176,10 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 	}
 	for(auto str : text)
 	{
+		if('#'==str[0])
+		{
+			continue;
+		}
 		auto argv=cpputil::Parser(str.c_str());
 		if(2==argv.size())
 		{
@@ -1498,6 +1536,11 @@ void FsSimpleWindowConnection::RenderBeforeSwapBuffers(const TownsRender::Image 
 	return false;
 }
 /* virtual */ void FsSimpleWindowConnection::SetKeyboardLayout(unsigned int layout)
+{
+	MakeKeyMapFromLayout(FSKEYtoTownsKEY,layout);
+}
+
+/* static */ void FsSimpleWindowConnection::MakeKeyMapFromLayout(unsigned int FSKEYtoTownsKEY[FSKEY_NUM_KEYCODE],unsigned int layout)
 {
 	for(int i=0; i<FSKEY_NUM_KEYCODE; ++i)
 	{
