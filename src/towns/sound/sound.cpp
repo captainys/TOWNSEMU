@@ -331,6 +331,27 @@ void TownsSound::ProcessSound(void)
 	}
 }
 
+void TownsSound::ProcessSilence(void)
+{
+	std::vector <unsigned char> silence;
+	if(true!=outside_world->FMPCMChannelPlaying())
+	{
+		const unsigned int WAVE_OUT_SAMPLING_RATE=YM2612::WAVE_SAMPLING_RATE; // Align with YM2612.
+		const uint32_t numSamplesPerWave=FM_PCM_MILLISEC_PER_WAVE*WAVE_OUT_SAMPLING_RATE/1000;
+		silence.resize(numSamplesPerWave*4);
+		memset(silence.data(),0,silence.size());
+		outside_world->FMPCMPlay(silence);
+	}
+	if (!outside_world->BeepChannelPlaying())
+	{
+		auto BUZZER_SAMPLING_RATE=townsPtr->timer.BUZZER_SAMPLING_RATE();
+		size_t samples = BUZZER_SAMPLING_RATE * 200; // 5 ms
+		silence.resize(samples*4);
+		memset(silence.data(),0,silence.size());
+		outside_world->BeepPlay(BUZZER_SAMPLING_RATE,silence);
+	}
+}
+
 void TownsSound::StartRecording(void)
 {
 	recordFMandPCM=true;

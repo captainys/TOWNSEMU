@@ -102,6 +102,10 @@ public:
 	*/
 	void ProcessSound(void);
 
+	/*! Call this function periodically while VM is paused.
+	*/
+	void ProcessSilence(void);
+
 	void StartRecording(void);
 	void EndRecording(void);
 	void SaveRecording(std::string fName) const;

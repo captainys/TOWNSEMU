@@ -79,6 +79,7 @@ void TownsThread::VMMainLoop(FMTowns *townsPtr,Outside_World *outside_world,clas
 				runMode=RUNMODE_RUN;
 				townsPtr->debugger.stop=false;
 			}
+			townsPtr->sound.ProcessSilence();
 			break;
 		case RUNMODE_RUN:
 			clockTicking=true;
