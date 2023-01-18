@@ -544,14 +544,23 @@ Vec2i TownsCRTC::GetPageSizeOnMonitor(unsigned char page) const
 	else if(3==CLKSEL() && 0x29D==state.crtcReg[REG_HST]) // VING Setting
 	{
 		// VING games use this settings.  Apparently zoom-x needs to be interpreted as 4+(pageZoom&15).
-		// Chase HQ        HST=029DH  ZOOM=1111H  Zoom2X=5  wid=640
-		// Viewpoint       HST=029DH  ZOOM=1111H  Zoom2X=5  wid=640
-		// Pu Li Ru La     HST=029DH  ZOOM=1111H  Zoom2X=5  wid=640
-		// Splatter House  HST=029DH  ZOOM=1111H  Zoom2X=5  wid=640
+		// Chase HQ        HDS0=0082H  HDE0=00282H (Diff=512)  HST=029DH  ZOOM=1111H  Zoom2X=5  wid=640
+		// Viewpoint       HDE0=008AH  HDE0=0028AH (Diff=512)  HST=029DH  ZOOM=1111H  Zoom2X=5  wid=640
+		// Pu Li Ru La     HDE0=008AH  HDE0=0028AH (Diff=512)  HST=029DH  ZOOM=1111H  Zoom2X=5  wid=640
+		// Splatter House  HDE0=008AH  HDE0=0028AH (Diff=512)  HST=029DH  ZOOM=1111H  Zoom2X=5  wid=640
 		// Operation Wolf  N/A
 		// New Zealand Story  N/A
-		// Alshark Opening HST=029DH  ZOOM=0000H  Zoom2X=2
-		// Freeware Collection 8 Oh!FM TOWNS Cover Picture Collection  HST=029DH  ZOOM=0000H  Zoom2X=2  wid=512?
+		// Alshark Opening HDS0=0082H  HDE0=0282H  (Diff=512)  HST=029DH  ZOOM=0000H  Zoom2X=2  wid=512? 640?  Single-Page Mode
+		// Freeware Collection 8 Oh!FM TOWNS Cover Picture Collection  
+		//                 HDE0=0082H  HDE0=0282H  (Diff=512)  HST=029DH  ZOOM=0000H  Zoom2X=2  wid=512? 640?  Single-Page Mode
+
+		// Kurunkurupa While Zooming
+		//                 HDS0=0082H  HDE0=0282H  (Diff=512)  HST=029DH  ZOOM=1111H  Zoom2X=5  wid=640
+		//                 HDS0=0082H  HDE0=0282H  (Diff=512)  HST=029DH  ZOOM=2222H  Zoom2X=8  wid=640
+		//                 HDS0=0082H  HDE0=0282H  (Diff=512)  HST=029DH  ZOOM=3232H  Zoom2X=8  wid=640
+		//                 HDS0=0082H  HDE0=0282H  (Diff=512)  HST=029DH  ZOOM=4242H  Zoom2X=8  wid=640
+		//                 HDS0=0082H  HDE0=0282H  (Diff=512)  HST=029DH  ZOOM=4343H  Zoom2X=11 wid=640
+		//                 HDS0=0082H  HDE0=0282H  (Diff=512)  HST=029DH  ZOOM=5353H  Zoom2X=11 wid=640
 
 		// Looks like zoom2X=5 -> wid*5/4
 		//            zoom2X=2 -> wid*4/4
@@ -561,6 +570,10 @@ Vec2i TownsCRTC::GetPageSizeOnMonitor(unsigned char page) const
 		{
 			wid*=zoom.x();
 			wid/=4;
+		}
+		if(640<wid)
+		{
+			wid=640;
 		}
 	}
 	if(0==state.crtcReg[REG_FO0+4*page])
