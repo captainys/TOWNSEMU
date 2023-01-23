@@ -427,7 +427,11 @@ void TownsFDC::MakeReady(void)
 						break;
 					}
 					auto formatData=DMACPtr->MemoryToDevice(DMACh,len);
-					drv.mediaType=imgPtr->WriteTrack(diskIdx,trackPos,state.side,formatData);
+					auto newMediaType=imgPtr->WriteTrack(diskIdx,trackPos,state.side,formatData);
+					if(MEDIA_UNKNOWN!=newMediaType)
+					{
+						drv.mediaType=newMediaType;
+					}
 					state.writeFault=false;
 				}
 				else
