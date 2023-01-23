@@ -122,6 +122,12 @@ void D77File::D77Disk::D77Sector::CleanUp(void)
 	sectorData.clear();
 	unstableByte.clear();
 }
+bool D77File::D77Disk::D77Sector::SameCHR(const D77Sector &s) const
+{
+	return (cylinder==s.cylinder &&
+	        head==s.head &&
+	        sector==s.sector);
+}
 bool D77File::D77Disk::D77Sector::SameCHRN(const D77Sector &s) const
 {
 	return (cylinder==s.cylinder &&
@@ -385,17 +391,14 @@ int D77File::D77Disk::D77Track::GetSide(void) const
 
 bool D77File::D77Disk::D77Track::SuspectedLeafInTheForest(void) const
 {
-	bool allSameCHR=true;
 	for(auto &s : sector)
 	{
-		if(s.cylinder!=sector[0].cylinder ||
-		   s.head!=sector[0].head ||
-		   s.sizeShift!=sector[0].sizeShift)
+		if(true!=sector[0].SameCHR(s))
 		{
-			allSameCHR=false;
+			return false;
 		}
 	}
-	return allSameCHR;
+	return true;
 }
 
 void D77File::D77Disk::D77Track::IdentifyUnstableByte(void)
@@ -410,6 +413,7 @@ void D77File::D77Disk::D77Track::IdentifyUnstableByte(void)
 	{
 		s.unstableByte.clear();
 	}
+
 	// If the value changes, can be an unstable byte.
 	for(int i=0; i<sector.size(); ++i)
 	{

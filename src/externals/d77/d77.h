@@ -221,6 +221,7 @@ public:
 				}
 			}
 
+			bool SameCHR(const D77Sector &s) const;
 			bool SameCHRN(const D77Sector &s) const;
 			bool SameCHRNandActualSize(const D77Sector &s) const;
 		};
