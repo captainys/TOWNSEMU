@@ -2226,6 +2226,7 @@ bool D77File::SetRawBinary(long long int nByte,const unsigned char byteData[],bo
 	int bytesPerSector;
 	int sectorsPerTrack;
 	int numTracks;
+	unsigned char mediaType=0;
 	/*    1474560 bytes -> 1440KB   512bytes/sector, 18sectors/track, 80tracks, 2sides
 	      1261568 bytes -> 1232KB  1024bytes/sector,  8sectors/track, 77tracks, 2sides
 		   737280 bytes ->  720KB   512bytes/sector,  9sectors/track, 80tracks, 2sides
@@ -2237,26 +2238,31 @@ bool D77File::SetRawBinary(long long int nByte,const unsigned char byteData[],bo
 		bytesPerSector= 512;
 		sectorsPerTrack=18;
 		numTracks=      80;
+		mediaType=      D77_MEDIATYPE_2HD;
 		break;
 	case 1261568:
 		bytesPerSector= 1024;
 		sectorsPerTrack=8;
 		numTracks=      77;
+		mediaType=      D77_MEDIATYPE_2HD;
 		break;
 	case  737280:
 		bytesPerSector= 512;
 		sectorsPerTrack=9;
 		numTracks=      80;
+		mediaType=      D77_MEDIATYPE_2DD;
 		break;
 	case  655360:
 		bytesPerSector= 512;
 		sectorsPerTrack=8;
 		numTracks=      80;
+		mediaType=      D77_MEDIATYPE_2DD;
 		break;
 	case  327680:
 		bytesPerSector= 256;
 		sectorsPerTrack=16;
 		numTracks=      40;
+		mediaType=      D77_MEDIATYPE_2D;
 		break;
 	default:
 		return false;
@@ -2282,6 +2288,7 @@ bool D77File::SetRawBinary(long long int nByte,const unsigned char byteData[],bo
 	CleanUp();
 	auto diskId=CreateUnformatted(numTracks*2,"D77_DISK");
 	auto diskPtr=GetDisk(diskId);
+	diskPtr->header.mediaType=mediaType;
 	unsigned long long int imgPtr=0;
 	for(int track=0; track<numTracks; ++track)
 	{
