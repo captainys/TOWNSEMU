@@ -147,6 +147,17 @@ unsigned int DiskDrive::DiskImage::IdentifyDiskMediaType(int diskIdx) const
 			{
 				return MEDIA_2HD_1440KB;
 			}
+
+			if(IMGFILE_D77==fileType && 0!=diskPtr->header.mediaType)
+			{
+				switch(diskPtr->header.mediaType)
+				{
+				case D77File::D77_MEDIATYPE_2DD: //0x10,
+					return MEDIA_2DD_720KB; // May not be 720KB, but just tentative.
+				case D77File::D77_MEDIATYPE_2HD: //0x20,
+					return MEDIA_2HD_1232KB; // May not be 720KB, but just tentative.
+				}
+			}
 		}
 		break;
 	}
