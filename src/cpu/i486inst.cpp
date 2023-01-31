@@ -3979,15 +3979,14 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		if(16==operandSize)
 		{
 			disasm+="WORD PTR ";
-			disasm+=cpputil::Ubtox(EvalUimm8())+"H";
-			disasm+=symTable.FormatImmLabel(cs.value,eip,EvalUimm8())+DisassembleImmAsASCII(cs.value,eip,symTable,EvalUimm8(),1);
 		}
 		else
 		{
 			disasm+="DWORD PTR ";
-			disasm+=cpputil::Ubtox(EvalUimm8())+"H";
-			disasm+=symTable.FormatImmLabel(cs.value,eip,EvalUimm8())+DisassembleImmAsASCII(cs.value,eip,symTable,EvalUimm8(),1);;
 		}
+		disasm+=cpputil::Ubtox(EvalUimm8())+"H";
+		disasm+=symTable.FormatImmLabel(cs.value,eip,EvalUimm8())+DisassembleImmAsASCII(cs.value,eip,symTable,EvalUimm8(),1);
+		disasm+=DisassembleIOLabel(cs.value,eip,symTable,ioTable,EvalUimm8());
 		break;
 	case I486_OPCODE_PUSH_I://           0x68,
 		disasm="PUSH    ";
@@ -3996,12 +3995,14 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 			disasm+="WORD PTR ";
 			disasm+=cpputil::Ustox(EvalUimm16())+"H";
 			disasm+=symTable.FormatImmLabel(cs.value,eip,EvalUimm16())+DisassembleImmAsASCII(cs.value,eip,symTable,EvalUimm16(),2);;
+			disasm+=DisassembleIOLabel(cs.value,eip,symTable,ioTable,EvalUimm16());
 		}
 		else
 		{
 			disasm+="DWORD PTR ";
 			disasm+=cpputil::Uitox(EvalUimm32())+"H";
 			disasm+=symTable.FormatImmLabel(cs.value,eip,EvalUimm32())+DisassembleImmAsASCII(cs.value,eip,symTable,EvalUimm32(),4);
+			disasm+=DisassembleIOLabel(cs.value,eip,symTable,ioTable,EvalUimm32());
 		}
 		break;
 	case I486_OPCODE_PUSH_CS://          0x0E,
