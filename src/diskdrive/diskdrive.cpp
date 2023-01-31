@@ -139,7 +139,7 @@ unsigned int DiskDrive::DiskImage::IdentifyDiskMediaType(int diskIdx) const
 			{
 				return MEDIA_2DD_720KB;
 			}
-			else if(1200<=totalSize && totalSize<1300)
+			else if(1000<=totalSize && totalSize<1300) // Threshold reduced from 1200K to 1000K.  Wizardry V data disk uses only 1001KB of 2HD.
 			{
 				return MEDIA_2HD_1232KB;
 			}
