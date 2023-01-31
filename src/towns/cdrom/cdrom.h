@@ -316,6 +316,8 @@ public:
 
 	void DelayedCommandExecution(unsigned long long int townsTime);
 
+	void BeginReadSector(DiscImage::MinSecFrm from,DiscImage::MinSecFrm to);
+
 	void BreakOnCommandCheck(const char phase[]);
 
 	/*! Call-back from FMTowns class.

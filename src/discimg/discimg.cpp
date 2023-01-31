@@ -1032,6 +1032,82 @@ std::vector <unsigned char> DiscImage::ReadSectorMODE1(unsigned int HSG,unsigned
 	return data;
 }
 
+std::vector <unsigned char> DiscImage::ReadSectorRAW(unsigned int HSG,unsigned int numSec) const
+{
+	std::vector <unsigned char> data;
+
+	if(0<binaries.size())
+	{
+		if(0==binaryCache.size())
+		{
+			std::ifstream ifp;
+			ifp.open(binaries[0].fName,std::ios::binary);
+			if(true==ifp.is_open() && 0<tracks.size() && (tracks[0].trackType==TRACK_MODE1_DATA || tracks[0].trackType==TRACK_MODE2_DATA))
+			{
+				if(HSG+numSec<=tracks[0].end.ToHSG()+1)
+				{
+					auto sectorIntoTrack=HSG-tracks[0].start.ToHSG();
+					auto locationInTrack=sectorIntoTrack*tracks[0].sectorLength;
+
+					ifp.seekg(tracks[0].locationInFile+locationInTrack,std::ios::beg);
+					data.resize(numSec*RAW_BYTES_PER_SECTOR);
+					if(MODE1_BYTES_PER_SECTOR==tracks[0].sectorLength)
+					{
+						for(auto &d : data) // Sorry, I don't know how to calculate first four bytes and last 288 bytes.
+						{
+							d=0;
+						}
+						ifp.read((char *)data.data()+4,MODE1_BYTES_PER_SECTOR*numSec);
+					}
+					else
+					{
+						unsigned int dataPointer=0;
+						for(int i=0; i<(int)numSec; ++i)
+						{
+							ifp.read(skipBuf,12);
+							ifp.read((char *)data.data()+dataPointer,RAW_BYTES_PER_SECTOR);
+							ifp.read(skipBuf,tracks[0].sectorLength-RAW_BYTES_PER_SECTOR-12);
+							dataPointer+=RAW_BYTES_PER_SECTOR;
+						}
+					}
+				}
+			}
+		}
+		else
+		{
+			if(0<tracks.size() && (tracks[0].trackType==TRACK_MODE1_DATA || tracks[0].trackType==TRACK_MODE2_DATA))
+			{
+				if(HSG+numSec<=tracks[0].end.ToHSG()+1)
+				{
+					auto sectorIntoTrack=HSG-tracks[0].start.ToHSG();
+					auto locationInTrack=sectorIntoTrack*tracks[0].sectorLength;
+
+					auto filePtr=tracks[0].locationInFile+locationInTrack;
+					data.resize(numSec*MODE1_BYTES_PER_SECTOR);
+					if(MODE1_BYTES_PER_SECTOR==tracks[0].sectorLength)
+					{
+						uint64_t copyLen;
+						copyLen=std::min<uint64_t>(data.size(),binaryCache.size()-filePtr);
+						memcpy(data.data(),binaryCache.data()+filePtr,copyLen);
+					}
+					else
+					{
+						unsigned int dataPointer=0;
+						for(int i=0; i<(int)numSec && filePtr+MODE1_BYTES_PER_SECTOR<=binaryCache.size(); ++i)
+						{
+							filePtr+=16;
+							memcpy(data.data()+dataPointer,binaryCache.data()+filePtr,MODE1_BYTES_PER_SECTOR);
+							filePtr+=tracks[0].sectorLength;
+							dataPointer+=MODE1_BYTES_PER_SECTOR;
+						}
+					}
+				}
+			}
+		}
+	}
+	return data;
+}
+
 int DiscImage::GetTrackFromMSF(MinSecFrm MSF) const
 {
 	if(0<tracks.size())

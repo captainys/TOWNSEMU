@@ -56,7 +56,7 @@ public:
 	{
 		HSG_BASE=150,
 		MODE1_BYTES_PER_SECTOR=2048,
-		RAW_BYTES_PER_SECTOR=2352,
+		RAW_BYTES_PER_SECTOR=2340,
 		AUDIO_SECTOR_SIZE=2352,
 		AUDIO_SAMPLING_RATE=44100,
 	};
@@ -349,6 +349,12 @@ public:
 	    it returns zero byte.
 	*/
 	std::vector <unsigned char> ReadSectorMODE1(unsigned int HSG,unsigned int numSec) const;
+
+	/*! Read data sectors RAW (2340 bytes/sector).
+	    If it cannot be read (no data track, unsupported sector length, go beyond the data-track limit, etc.),
+	    it returns zero byte.
+	*/
+	std::vector <unsigned char> ReadSectorRAW(unsigned int HSG,unsigned int numSec) const;
 
 
 	/*! Returns the track from MSF.

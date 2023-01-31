@@ -523,41 +523,36 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 			msfEnd.sec=DiscImage::BCDToBin(state.paramQueue[4]);
 			msfEnd.frm=DiscImage::BCDToBin(state.paramQueue[5]);
 
-			state.readingSectorHSG=msfBegin.ToHSG();
-			state.endSectorHSG=msfEnd.ToHSG();
-			if(state.readingSectorHSG>state.endSectorHSG || state.readingSectorHSG<150) // 150frames=two seconds
-			{
-				SetStatusParameterError();
-				state.readingSectorHSG=0;
-				state.endSectorHSG=0;
-			}
-			else
-			{
-				state.readingSectorHSG-=150;
-				state.endSectorHSG-=150;
-
-				// Shadow of the Beast issues command 02H and expects status to be returned.
-				// Probably MODE2READ command needs to disregard STATUS REQUEST bit.
-
-				// Should I immediately return No-Error status before starting transfer?
-				// BIOS is not checking it immediately.
-				// 2F Boot ROM _IS_ checking it immediately.
-				SetStatusNoError();
-				if(true==state.enableSIRQ)
-				{
-					state.SIRQ=true;
-					PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
-				}
-				townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+state.readSectorTime);
-
-				state.DRY=false;
-				state.DTSF=false;
-				state.WaitForDTS=false;
-			}
+			BeginReadSector(msfBegin,msfEnd);
 		}
 		break;
 	case CDCMD_RAWREAD://    0x03,
-		std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " not implemented yet." << std::endl;
+		{
+			// CDDA needs to stop when MODE1READ is sent while playing.
+			state.CDDAState=State::CDDA_IDLE;
+			OutsideWorld->CDDAStop();
+
+			// TownsOS V2.1 L20 issues MODE1READ command without checking the status by GETSTATE.
+			// This causes an issue when redirecting Internal CD-ROM to external CD-ROM.
+			// Drive Not Ready must be checked in here.
+			// Also, the 1st byte of the error code looks to be non-zero.
+			// Probably the logic is:
+			//    GETSTATE when CD media is not in  -> GETSTATE command itself succeeds (1st byte==0), but the drive is not ready (2nd byte==9)
+			//    MODE1READ when CD media is not in -> MODE1READ command fails (1st byte=0x21), and the drive is not ready (2nd byte=9)
+			if(0==state.GetDisc().GetNumTracks())
+			{
+				state.PushStatusQueue(0x21,9,0,0);
+				break;
+			}
+
+			DiscImage::MinSecFrm msfBegin;
+
+			msfBegin.min=DiscImage::BCDToBin(state.paramQueue[0]);
+			msfBegin.sec=DiscImage::BCDToBin(state.paramQueue[1]);
+			msfBegin.frm=DiscImage::BCDToBin(state.paramQueue[2]);
+
+			BeginReadSector(msfBegin,msfBegin); // Looks like RAWREAD can run sector by sector.
+		}
 		break;
 	case CDCMD_CDDAPLAY://   0x04,
 		{
@@ -734,6 +729,41 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 	state.nParamQueue=0;
 }
 
+void TownsCDROM::BeginReadSector(DiscImage::MinSecFrm msfBegin,DiscImage::MinSecFrm msfEnd)
+{
+	state.readingSectorHSG=msfBegin.ToHSG();
+	state.endSectorHSG=msfEnd.ToHSG();
+	if(state.readingSectorHSG>state.endSectorHSG || state.readingSectorHSG<150) // 150frames=two seconds
+	{
+		SetStatusParameterError();
+		state.readingSectorHSG=0;
+		state.endSectorHSG=0;
+	}
+	else
+	{
+		state.readingSectorHSG-=150;
+		state.endSectorHSG-=150;
+
+		// Shadow of the Beast issues command 02H and expects status to be returned.
+		// Probably MODE2READ command needs to disregard STATUS REQUEST bit.
+
+		// Should I immediately return No-Error status before starting transfer?
+		// BIOS is not checking it immediately.
+		// 2F Boot ROM _IS_ checking it immediately.
+		SetStatusNoError();
+		if(true==state.enableSIRQ)
+		{
+			state.SIRQ=true;
+			PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
+		}
+		townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+state.readSectorTime);
+
+		state.DRY=false;
+		state.DTSF=false;
+		state.WaitForDTS=false;
+	}
+}
+
 /* virtual */ void TownsCDROM::RunScheduledTask(unsigned long long int townsTime)
 {
 	if(true==state.delayedSIRQ)
@@ -785,6 +815,7 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 		break;
 
 	case CDCMD_MODE1READ://  0x02,
+	case CDCMD_RAWREAD://    0x03,
 		{
 			if(state.readingSectorHSG<=state.endSectorHSG) // Have more data.
 			{
@@ -838,7 +869,14 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 					state.DEI=false;
 					state.DTSF=false;
 					state.STSF=false;
-					std::cout << "MODE1READ time out." << std::endl;
+					if(CDCMD_MODE1READ==(state.cmd&0x9F))
+					{
+						std::cout << "MODE1READ time out." << std::endl;
+					}
+					else
+					{
+						std::cout << "RAWREAD time out." << std::endl;
+					}
 					return;
 				}
 
@@ -898,7 +936,15 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 				{
 					townsPtr->NotifyDiskRead();
 
-					auto data=state.GetDisc().ReadSectorMODE1(state.readingSectorHSG,1);
+					std::vector <unsigned char> data;
+					if(CDCMD_MODE1READ==(state.cmd&0x9F))
+					{
+						data=state.GetDisc().ReadSectorMODE1(state.readingSectorHSG,1);
+					}
+					else
+					{
+						data=state.GetDisc().ReadSectorRAW(state.readingSectorHSG,1);
+					}
 					if(DMACh->currentCount+1<data.size())
 					{
 						data.resize(DMACh->currentCount+1);
