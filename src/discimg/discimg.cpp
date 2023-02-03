@@ -1057,9 +1057,14 @@ std::vector <unsigned char> DiscImage::ReadSectorRAW(unsigned int HSG,unsigned i
 						{
 							d=0;
 						}
-						ifp.read((char *)data.data()+4,MODE1_BYTES_PER_SECTOR*numSec);
+						unsigned int dataPointer=0;
+						for(int i=0; i<(int)numSec; ++i)
+						{
+							ifp.read((char *)data.data()+4+dataPointer,MODE1_BYTES_PER_SECTOR);
+							dataPointer+=RAW_BYTES_PER_SECTOR;
+						}
 					}
-					else
+					else if(RAW_BYTES_PER_SECTOR<=tracks[0].sectorLength)
 					{
 						unsigned int dataPointer=0;
 						for(int i=0; i<(int)numSec; ++i)
@@ -1068,6 +1073,13 @@ std::vector <unsigned char> DiscImage::ReadSectorRAW(unsigned int HSG,unsigned i
 							ifp.read((char *)data.data()+dataPointer,RAW_BYTES_PER_SECTOR);
 							ifp.read(skipBuf,tracks[0].sectorLength-RAW_BYTES_PER_SECTOR-12);
 							dataPointer+=RAW_BYTES_PER_SECTOR;
+						}
+					}
+					else
+					{
+						for(auto &d : data) // Sorry, I don't know how to calculate first four bytes and last 288 bytes.
+						{
+							d=0;
 						}
 					}
 				}
