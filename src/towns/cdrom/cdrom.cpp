@@ -499,6 +499,7 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 		std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " not implemented yet." << std::endl;
 		break;
 	case CDCMD_MODE1READ://  0x02,
+	case CDCMD_RAWREAD://    0x03,
 		{
 			// CDDA needs to stop when MODE1READ is sent while playing.
 			state.CDDAState=State::CDDA_IDLE;
@@ -527,34 +528,6 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 			msfEnd.frm=DiscImage::BCDToBin(state.paramQueue[5]);
 
 			BeginReadSector(msfBegin,msfEnd);
-		}
-		break;
-	case CDCMD_RAWREAD://    0x03,
-		{
-			// CDDA needs to stop when MODE1READ is sent while playing.
-			state.CDDAState=State::CDDA_IDLE;
-			OutsideWorld->CDDAStop();
-
-			// TownsOS V2.1 L20 issues MODE1READ command without checking the status by GETSTATE.
-			// This causes an issue when redirecting Internal CD-ROM to external CD-ROM.
-			// Drive Not Ready must be checked in here.
-			// Also, the 1st byte of the error code looks to be non-zero.
-			// Probably the logic is:
-			//    GETSTATE when CD media is not in  -> GETSTATE command itself succeeds (1st byte==0), but the drive is not ready (2nd byte==9)
-			//    MODE1READ when CD media is not in -> MODE1READ command fails (1st byte=0x21), and the drive is not ready (2nd byte=9)
-			if(0==state.GetDisc().GetNumTracks())
-			{
-				state.PushStatusQueue(0x21,9,0,0);
-				break;
-			}
-
-			DiscImage::MinSecFrm msfBegin;
-
-			msfBegin.min=DiscImage::BCDToBin(state.paramQueue[0]);
-			msfBegin.sec=DiscImage::BCDToBin(state.paramQueue[1]);
-			msfBegin.frm=DiscImage::BCDToBin(state.paramQueue[2]);
-
-			BeginReadSector(msfBegin,msfBegin); // Looks like RAWREAD can run sector by sector.
 		}
 		break;
 	case CDCMD_CDDAPLAY://   0x04,
