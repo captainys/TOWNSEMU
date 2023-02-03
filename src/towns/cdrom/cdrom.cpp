@@ -429,7 +429,7 @@ void TownsCDROM::Eject(void)
 
 void TownsCDROM::BreakOnCommandCheck(const char phase[])
 {
-	if(true==var.debugBreakOnCommandWrite)
+	if(true==var.debugBreakOnCommandWrite || true==var.debugMonitorCommandWrite)
 	{
 		bool commandTypeCheck=true;
 		if(0xFFFF!=var.debugBreakOnSpecificCommand && (state.cmd&0x9F)!=(var.debugBreakOnSpecificCommand&0x9F))
@@ -440,7 +440,10 @@ void TownsCDROM::BreakOnCommandCheck(const char phase[])
 		{
 			std::string msg="CDROM Command ";
 			msg+=phase;
-			townsPtr->debugger.ExternalBreak(msg);
+			if(true==var.debugBreakOnCommandWrite)
+			{
+				townsPtr->debugger.ExternalBreak(msg);
+			}
 			std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " |";
 			for(int i=0; i<8; ++i)
 			{
@@ -635,7 +638,11 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 			}
 		}
 		break;
-
+	case CDCMD_UNKNOWN3://   0x9F, ? Used by TownsMagazine Vol.2
+		std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " function unknown." << std::endl;
+		std::cout << "Currently just returns error status." << std::endl;
+		state.PushStatusQueue(0x21,0,0,0);
+		break;
 	case CDCMD_SETSTATE://   0x80,
 		if(true==StatusRequestBit(state.cmd))
 		{

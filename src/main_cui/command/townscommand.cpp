@@ -230,6 +230,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	featureMap["487"]=ENABLE_FPU;
 	featureMap["80487"]=ENABLE_FPU;
 	featureMap["FDCMON"]=ENABLE_FDCMONITOR;
+	featureMap["CDCMON"]=ENABLE_CDCMONITOR;
 
 	dumpableMap["CALLSTACK"]=DUMP_CALLSTACK;
 	dumpableMap["CST"]=DUMP_CALLSTACK;
@@ -1622,6 +1623,11 @@ void TownsCommandInterpreter::Execute_Enable(FMTowns &towns,Command &cmd)
 			towns.fdc.fdcMonitor=true;
 			std::cout << "FDC Monitor Enabled." << std::endl;
 			break;
+		case ENABLE_CDCMONITOR:
+			towns.cdrom.var.debugBreakOnCommandWrite=false;
+			towns.cdrom.var.debugMonitorCommandWrite=true;
+			std::cout << "CDC Monitor Enabled." << std::endl;
+			break;
 		}
 	}
 }
@@ -1699,6 +1705,10 @@ void TownsCommandInterpreter::Execute_Disable(FMTowns &towns,Command &cmd)
 		case ENABLE_FDCMONITOR:
 			towns.fdc.fdcMonitor=false;
 			std::cout << "FDC Monitor Disabled." << std::endl;
+			break;
+		case ENABLE_CDCMONITOR:
+			towns.cdrom.var.debugMonitorCommandWrite=false;
+			std::cout << "CDC Monitor Disabled." << std::endl;
 			break;
 		}
 	}
@@ -2880,6 +2890,7 @@ void TownsCommandInterpreter::Execute_BreakOn(FMTowns &towns,Command &cmd)
 			break;
 		case BREAK_ON_CDC_COMMAND:
 			towns.cdrom.var.debugBreakOnCommandWrite=true;
+			towns.cdrom.var.debugMonitorCommandWrite=false;
 			if(3<=cmd.argv.size())
 			{
 				towns.cdrom.var.debugBreakOnSpecificCommand=cpputil::Xtoi(cmd.argv[2].c_str());

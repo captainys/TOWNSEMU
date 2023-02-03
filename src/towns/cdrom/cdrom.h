@@ -137,6 +137,7 @@ public:
 		CDCMD_CDDAPAUSE=  0x85,
 		CDCMD_UNKNOWN2=   0x86,
 		CDCMD_CDDARESUME= 0x87,
+		CDCMD_UNKNOWN3=   0x9F,
 	};
 
 	class State
@@ -235,6 +236,7 @@ public:
 		bool CDEleVolUpdate=false;
 
 		bool debugBreakOnCommandWrite=false;
+		bool debugMonitorCommandWrite=false;
 		bool debugBreakOnDEI=false;
 		bool debugBreakOnDataReady=false;
 
