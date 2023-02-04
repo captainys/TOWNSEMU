@@ -479,7 +479,7 @@ unsigned int TownsStrToGamePortEmu(std::string str)
 		return TOWNS_GAMEPORTEMU_CYBERSTICK;
 	}
 
-	return TOWNS_GAMEPORTEMU_NONE;
+	return TOWNS_GAMEPORTEMU_ERROR;
 }
 
 std::string TownsGamePortEmuToStr(unsigned int emu)

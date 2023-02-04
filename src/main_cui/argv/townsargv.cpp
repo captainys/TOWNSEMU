@@ -123,6 +123,7 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "-GAMEPORT1 KEY|PHYSx|ANAx|NONE" << std::endl;
 	std::cout << "  Specify game-port emulation.  By keyboard (Arrow,Z,X,A,S), or physical gamepad." << std::endl;
 	std::cout << "  PHYS0,PHYS1,PHYS2,PHYS3 use physical game pad direction button (or hat switch) as up/down/left/right." << std::endl;
+	std::cout << "  PHYS0CAPCOM,PHYS1CAPCOM,PHYS2CAPCOM,PHYS3CAPCOM use physcal game pad as CAPCOM CPSF Joystick." << std::endl;
 	std::cout << "  ANA0,ANA1,ANA2,ANA3 use physical game pad analog stick as up/down/left/right." << std::endl;
 	std::cout << "  KEYMOUSE use arrow keys and ZX keys for mouse cursor and buttons." << std::endl;
 	std::cout << "  NUMPADMOUSE use NUMPAD number keys and /* keys for mouse cursor and buttons." << std::endl;
@@ -438,6 +439,11 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 			std::string DEV=argv[i+1];
 			cpputil::Capitalize(DEV);
 			gamePort[portId]=TownsStrToGamePortEmu(DEV);
+			if(TOWNS_GAMEPORTEMU_ERROR==gamePort[portId])
+			{
+				std::cout << "Undefined Game Port Emulation Type." << argv[i+1] << std::endl;
+				return false;
+			}
 			++i;
 		}
 		else if(("-BUTTONHOLDTIME0"==ARG || "-BUTTONHOLDTIME1"==ARG) && i+2<argc)
