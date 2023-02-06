@@ -1038,80 +1038,100 @@ std::vector <unsigned char> DiscImage::ReadSectorRAW(unsigned int HSG,unsigned i
 
 	if(0<binaries.size())
 	{
-		if(0==binaryCache.size())
+		std::ifstream ifp;
+		ifp.open(binaries[0].fName,std::ios::binary);
+		if(true==ifp.is_open() && 0<tracks.size() && (tracks[0].trackType==TRACK_MODE1_DATA || tracks[0].trackType==TRACK_MODE2_DATA))
 		{
-			std::ifstream ifp;
-			ifp.open(binaries[0].fName,std::ios::binary);
-			if(true==ifp.is_open() && 0<tracks.size() && (tracks[0].trackType==TRACK_MODE1_DATA || tracks[0].trackType==TRACK_MODE2_DATA))
+			if(HSG+numSec<=tracks[0].end.ToHSG()+1)
 			{
-				if(HSG+numSec<=tracks[0].end.ToHSG()+1)
-				{
-					auto sectorIntoTrack=HSG-tracks[0].start.ToHSG();
-					auto locationInTrack=sectorIntoTrack*tracks[0].sectorLength;
+				auto sectorIntoTrack=HSG-tracks[0].start.ToHSG();
+				auto locationInTrack=sectorIntoTrack*tracks[0].sectorLength;
 
-					ifp.seekg(tracks[0].locationInFile+locationInTrack,std::ios::beg);
-					data.resize(numSec*RAW_BYTES_PER_SECTOR);
-					if(MODE1_BYTES_PER_SECTOR==tracks[0].sectorLength)
+				ifp.seekg(tracks[0].locationInFile+locationInTrack,std::ios::beg);
+				data.resize(numSec*RAW_BYTES_PER_SECTOR);
+				if(MODE1_BYTES_PER_SECTOR==tracks[0].sectorLength)
+				{
+					for(auto &d : data) // Sorry, I don't know how to calculate first four bytes and last 288 bytes.
 					{
-						for(auto &d : data) // Sorry, I don't know how to calculate first four bytes and last 288 bytes.
-						{
-							d=0;
-						}
-						unsigned int dataPointer=0;
-						for(int i=0; i<(int)numSec; ++i)
-						{
-							ifp.read((char *)data.data()+4+dataPointer,MODE1_BYTES_PER_SECTOR);
-							dataPointer+=RAW_BYTES_PER_SECTOR;
-						}
+						d=0;
 					}
-					else if(RAW_BYTES_PER_SECTOR<=tracks[0].sectorLength)
+					unsigned int dataPointer=0;
+					for(int i=0; i<(int)numSec; ++i)
 					{
-						unsigned int dataPointer=0;
-						for(int i=0; i<(int)numSec; ++i)
-						{
-							ifp.read(skipBuf,12);
-							ifp.read((char *)data.data()+dataPointer,RAW_BYTES_PER_SECTOR);
-							ifp.read(skipBuf,tracks[0].sectorLength-RAW_BYTES_PER_SECTOR-12);
-							dataPointer+=RAW_BYTES_PER_SECTOR;
-						}
+						ifp.read((char *)data.data()+4+dataPointer,MODE1_BYTES_PER_SECTOR);
+						dataPointer+=RAW_BYTES_PER_SECTOR;
 					}
-					else
+				}
+				else if(RAW_BYTES_PER_SECTOR<=tracks[0].sectorLength)
+				{
+					unsigned int dataPointer=0;
+					for(int i=0; i<(int)numSec; ++i)
 					{
-						for(auto &d : data) // Sorry, I don't know how to calculate first four bytes and last 288 bytes.
-						{
-							d=0;
-						}
+						ifp.read(skipBuf,12);
+						ifp.read((char *)data.data()+dataPointer,RAW_BYTES_PER_SECTOR);
+						ifp.read(skipBuf,tracks[0].sectorLength-RAW_BYTES_PER_SECTOR-12);
+						dataPointer+=RAW_BYTES_PER_SECTOR;
+					}
+				}
+				else
+				{
+					for(auto &d : data) // Sorry, I don't know how to calculate first four bytes and last 288 bytes.
+					{
+						d=0;
 					}
 				}
 			}
 		}
-		else
-		{
-			if(0<tracks.size() && (tracks[0].trackType==TRACK_MODE1_DATA || tracks[0].trackType==TRACK_MODE2_DATA))
-			{
-				if(HSG+numSec<=tracks[0].end.ToHSG()+1)
-				{
-					auto sectorIntoTrack=HSG-tracks[0].start.ToHSG();
-					auto locationInTrack=sectorIntoTrack*tracks[0].sectorLength;
+	}
+	return data;
+}
 
-					auto filePtr=tracks[0].locationInFile+locationInTrack;
-					data.resize(numSec*MODE1_BYTES_PER_SECTOR);
-					if(MODE1_BYTES_PER_SECTOR==tracks[0].sectorLength)
+std::vector <unsigned char> DiscImage::ReadSectorMODE2(unsigned int HSG,unsigned int numSec) const
+{
+	std::vector <unsigned char> data;
+
+	if(0<binaries.size())
+	{
+		std::ifstream ifp;
+		ifp.open(binaries[0].fName,std::ios::binary);
+		if(true==ifp.is_open() && 0<tracks.size() && (tracks[0].trackType==TRACK_MODE1_DATA || tracks[0].trackType==TRACK_MODE2_DATA))
+		{
+			if(HSG+numSec<=tracks[0].end.ToHSG()+1)
+			{
+				auto sectorIntoTrack=HSG-tracks[0].start.ToHSG();
+				auto locationInTrack=sectorIntoTrack*tracks[0].sectorLength;
+
+				ifp.seekg(tracks[0].locationInFile+locationInTrack,std::ios::beg);
+				data.resize(numSec*RAW_BYTES_PER_SECTOR);
+				if(MODE1_BYTES_PER_SECTOR==tracks[0].sectorLength)
+				{
+					for(auto &d : data) // Sorry, I don't know how to calculate first four bytes and last 288 bytes.
 					{
-						uint64_t copyLen;
-						copyLen=std::min<uint64_t>(data.size(),binaryCache.size()-filePtr);
-						memcpy(data.data(),binaryCache.data()+filePtr,copyLen);
+						d=0;
 					}
-					else
+					unsigned int dataPointer=0;
+					for(int i=0; i<(int)numSec; ++i)
 					{
-						unsigned int dataPointer=0;
-						for(int i=0; i<(int)numSec && filePtr+MODE1_BYTES_PER_SECTOR<=binaryCache.size(); ++i)
-						{
-							filePtr+=16;
-							memcpy(data.data()+dataPointer,binaryCache.data()+filePtr,MODE1_BYTES_PER_SECTOR);
-							filePtr+=tracks[0].sectorLength;
-							dataPointer+=MODE1_BYTES_PER_SECTOR;
-						}
+						ifp.read((char *)data.data()+4+dataPointer,MODE2_BYTES_PER_SECTOR);
+						dataPointer+=RAW_BYTES_PER_SECTOR;
+					}
+				}
+				else if(MODE2_BYTES_PER_SECTOR<=tracks[0].sectorLength)
+				{
+					unsigned int dataPointer=0;
+					for(int i=0; i<(int)numSec; ++i)
+					{
+						ifp.read(skipBuf,16);
+						ifp.read((char *)data.data()+dataPointer,MODE2_BYTES_PER_SECTOR);
+						ifp.read(skipBuf,tracks[0].sectorLength-MODE2_BYTES_PER_SECTOR-16);
+						dataPointer+=RAW_BYTES_PER_SECTOR;
+					}
+				}
+				else
+				{
+					for(auto &d : data) // Sorry, I don't know how to calculate first four bytes and last 288 bytes.
+					{
+						d=0;
 					}
 				}
 			}

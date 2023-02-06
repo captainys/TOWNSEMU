@@ -495,10 +495,8 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 			}
 		}
 		break;
-	case CDCMD_MODE2READ://  0x01,
-		std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " not implemented yet." << std::endl;
-		break;
 	case CDCMD_MODE1READ://  0x02,
+	case CDCMD_MODE2READ://  0x01,
 	case CDCMD_RAWREAD://    0x03,
 		{
 			// CDDA needs to stop when MODE1READ is sent while playing.
@@ -795,6 +793,7 @@ void TownsCDROM::BeginReadSector(DiscImage::MinSecFrm msfBegin,DiscImage::MinSec
 		break;
 
 	case CDCMD_MODE1READ://  0x02,
+	case CDCMD_MODE2READ://  0x01,
 	case CDCMD_RAWREAD://    0x03,
 		{
 			if(state.readingSectorHSG<=state.endSectorHSG) // Have more data.
@@ -852,6 +851,10 @@ void TownsCDROM::BeginReadSector(DiscImage::MinSecFrm msfBegin,DiscImage::MinSec
 					if(CDCMD_MODE1READ==(state.cmd&0x9F))
 					{
 						std::cout << "MODE1READ time out." << std::endl;
+					}
+					else if(CDCMD_MODE2READ==(state.cmd&0x9F))
+					{
+						std::cout << "MODE2READ time out." << std::endl;
 					}
 					else
 					{
@@ -920,6 +923,10 @@ void TownsCDROM::BeginReadSector(DiscImage::MinSecFrm msfBegin,DiscImage::MinSec
 					if(CDCMD_MODE1READ==(state.cmd&0x9F))
 					{
 						data=state.GetDisc().ReadSectorMODE1(state.readingSectorHSG,1);
+					}
+					else if(CDCMD_MODE2READ==(state.cmd&0x9F))
+					{
+						data=state.GetDisc().ReadSectorMODE2(state.readingSectorHSG,1);
 					}
 					else
 					{
