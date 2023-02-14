@@ -41,6 +41,7 @@ public:
 		SECTOR_READ_WRITE_TIME=  1000000,  //  1ms in Nano Seconds.  Just took arbitrary.  Need to make it real.
 		WRITE_TRACK_TIME=        1000000,  //  1ms in Nano Seconds.  Just took arbitrary.  Need to make it real.
 		ADDRMARK_READ_TIME=      1000000,  //  1ms in Nano Seconds.  Just took arbitrary.  Need to make it real.  But, keep it fast for the time being.
+		DISK_CHANGE_TIME=       50000000,  //  Minimum 50ms after disk insertion before drive is ready.
 	};
 	enum
 	{
@@ -172,7 +173,7 @@ public:
 			mutable int pretendDriveNotReadyCount=0;
 			uint64_t pretendDriveNotReadyUntil=0;  // Not saved in the state.  Zero-ed when state-loaded.
 
-			void DiskChanged(void);
+			void DiskChanged(uint64_t vmTime);
 		};
 
 		Drive drive[NUM_DRIVES];
@@ -214,16 +215,16 @@ public:
 	static bool IsD77Extension(std::string ext);
 	static bool IsRDDExtension(std::string ext);
 
-	bool LoadD77orRDDorRAW(unsigned int driveNum,const char fName[],bool verbose=true);
+	bool LoadD77orRDDorRAW(unsigned int driveNum,const char fName[],uint64_t vmTime,bool verbose=true);
 
-	bool LoadD77(unsigned int driveNum,const char fName[],bool verbose=true);
-	bool LoadRDD(unsigned int driveNum,const char fName[],bool verbose=true);
-	bool LoadRawBinary(unsigned int driveNum,const char fName[],bool verbose=true);
+	bool LoadD77(unsigned int driveNum,const char fName[],uint64_t vmTime,bool verbose=true);
+	bool LoadRDD(unsigned int driveNum,const char fName[],uint64_t vmTime,bool verbose=true);
+	bool LoadRawBinary(unsigned int driveNum,const char fName[],uint64_t vmTime,bool verbose=true);
 
 	/*! D77 image can have multiple disks in one file.
 	    diskIdx is for pointing a disk in the multiple-disk D77 image.
 	*/
-	void LinkDiskImageToDrive(int imgIndex,int diskIdx,int driveNum);
+	void LinkDiskImageToDrive(int imgIndex,int diskIdx,int driveNum,uint64_t vmTime);
 private:
 	void SaveIfModifiedAndUnlinkDiskImage(unsigned int imgIndex);
 

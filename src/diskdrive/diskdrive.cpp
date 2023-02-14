@@ -771,10 +771,11 @@ void DiskDrive::State::Reset(void)
 	IRQ=false;
 }
 
-void DiskDrive::State::Drive::DiskChanged(void)
+void DiskDrive::State::Drive::DiskChanged(uint64_t vmTime)
 {
 	diskChange=true;
 	pretendDriveNotReadyCount=1;
+	pretendDriveNotReadyUntil=vmTime+DISK_CHANGE_TIME;
 }
 
 ////////////////////////////////////////////////////////////
@@ -804,7 +805,7 @@ DiskDrive::DiskDrive(VMBase *vmPtr) : Device(vmPtr)
 	}
 }
 
-bool DiskDrive::LoadD77orRDDorRAW(unsigned int driveNum,const char fNameIn[],bool verbose)
+bool DiskDrive::LoadD77orRDDorRAW(unsigned int driveNum,const char fNameIn[],uint64_t vmTime,bool verbose)
 {
 	auto ext=cpputil::GetExtension(fNameIn);
 	cpputil::Capitalize(ext);
@@ -822,7 +823,7 @@ bool DiskDrive::LoadD77orRDDorRAW(unsigned int driveNum,const char fNameIn[],boo
 	}
 }
 
-bool DiskDrive::LoadD77(unsigned int driveNum,const char fNameIn[],bool verbose)
+bool DiskDrive::LoadD77(unsigned int driveNum,const char fNameIn[],uint64_t vmTime,bool verbose)
 {
 	driveNum&=3;
 	auto imgIdx=driveNum;
@@ -832,13 +833,13 @@ bool DiskDrive::LoadD77(unsigned int driveNum,const char fNameIn[],bool verbose)
 	auto fName=cpputil::FindFileWithSearchPaths(fNameIn,searchPaths);
 	if(true==imgFile[imgIdx].LoadD77(fName))
 	{
-		LinkDiskImageToDrive(imgIdx,0,driveNum);
+		LinkDiskImageToDrive(imgIdx,0,driveNum,vmTime);
 		return true;
 	}
 	return false;
 }
 
-bool DiskDrive::LoadRDD(unsigned int driveNum,const char fNameIn[],bool verbose)
+bool DiskDrive::LoadRDD(unsigned int driveNum,const char fNameIn[],uint64_t vmTime,bool verbose)
 {
 	driveNum&=3;
 	auto imgIdx=driveNum;
@@ -848,13 +849,13 @@ bool DiskDrive::LoadRDD(unsigned int driveNum,const char fNameIn[],bool verbose)
 	auto fName=cpputil::FindFileWithSearchPaths(fNameIn,searchPaths);
 	if(true==imgFile[imgIdx].LoadRDD(fName))
 	{
-		LinkDiskImageToDrive(imgIdx,0,driveNum);
+		LinkDiskImageToDrive(imgIdx,0,driveNum,vmTime);
 		return true;
 	}
 	return false;
 }
 
-bool DiskDrive::LoadRawBinary(unsigned int driveNum,const char fNameIn[],bool verbose)
+bool DiskDrive::LoadRawBinary(unsigned int driveNum,const char fNameIn[],uint64_t vmTime,bool verbose)
 {
 	driveNum&=3;
 	auto imgIdx=driveNum;
@@ -864,18 +865,18 @@ bool DiskDrive::LoadRawBinary(unsigned int driveNum,const char fNameIn[],bool ve
 	auto fName=cpputil::FindFileWithSearchPaths(fNameIn,searchPaths);
 	if(true==imgFile[imgIdx].LoadRAW(fName))
 	{
-		LinkDiskImageToDrive(imgIdx,0,driveNum);
+		LinkDiskImageToDrive(imgIdx,0,driveNum,vmTime);
 		return true;
 	}
 	return false;
 }
 
-void DiskDrive::LinkDiskImageToDrive(int imgIdx,int diskIdx,int driveNum)
+void DiskDrive::LinkDiskImageToDrive(int imgIdx,int diskIdx,int driveNum,uint64_t vmTime)
 {
 	state.drive[driveNum].imgFileNum=imgIdx;
 	state.drive[driveNum].diskIndex=diskIdx;
 	state.drive[driveNum].mediaType=imgFile[imgIdx].img.IdentifyDiskMediaType(diskIdx);
-	state.drive[driveNum].DiskChanged();
+	state.drive[driveNum].DiskChanged(vmTime);
 }
 
 void DiskDrive::SaveIfModifiedAndUnlinkDiskImage(unsigned int imgIndex)
