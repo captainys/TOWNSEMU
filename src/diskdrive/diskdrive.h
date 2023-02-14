@@ -170,6 +170,7 @@ public:
 			bool motor;
 			bool diskChange;
 			mutable int pretendDriveNotReadyCount=0;
+			uint64_t pretendDriveNotReadyUntil=0;  // Not saved in the state.  Zero-ed when state-loaded.
 
 			void DiskChanged(void);
 		};
@@ -294,7 +295,7 @@ public:
 	void SendCommand(unsigned int data,uint64_t vmTime);  // Give townsTime to vmTime.
 
 	unsigned int CommandToCommandType(unsigned int cmd) const;
-	unsigned char MakeUpStatus(unsigned int cmd) const;
+	unsigned char MakeUpStatus(unsigned int cmd,uint64_t vmTime) const;
 
 	/*! Returns the selected drive.  Or zero(FD0) if no drive is selected.
 	*/
@@ -306,7 +307,7 @@ public:
 	unsigned int GetDriveMode(void) const;
 
 	bool DiskLoaded(int driveNum) const;
-	bool DriveReady(void) const;
+	bool DriveReady(uint64_t vmTime) const;
 	bool WriteProtected(void) const;
 	bool SeekError(void) const;
 	bool CRCError(void) const;

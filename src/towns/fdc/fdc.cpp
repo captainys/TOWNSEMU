@@ -453,7 +453,7 @@ void TownsFDC::MakeReady(void)
 		state.busy=false;
 		break;
 	}
-	state.lastStatus=MakeUpStatus(state.lastCmd);
+	state.lastStatus=MakeUpStatus(state.lastCmd,townsTime);
 }
 
 /* virtual */ void TownsFDC::IOWriteByte(unsigned int ioport,unsigned int data)
@@ -537,7 +537,7 @@ void TownsFDC::MakeReady(void)
 			}
 		}
 
-		if(true==DriveReady())
+		if(true==DriveReady(townsPtr->state.townsTime))
 		{
 			data&=0x7F;
 		}
@@ -559,7 +559,7 @@ void TownsFDC::MakeReady(void)
 		// 0421:00000BE6 C3                        RET
 		// Therefore, the timing to clear DSKCHG flag is not status-read.
 		// Maybe when a command is written?
-		data|=(DriveReady() ? 2 : 0);
+		data|=(DriveReady(townsPtr->state.townsTime) ? 2 : 0);
 		data|=0b01100; // 3-mode drive.      [2] pp.809
 		data|=0x80;    // 2 internal drives. [2] pp.773
 		break;

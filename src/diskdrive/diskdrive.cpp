@@ -955,7 +955,7 @@ void DiskDrive::SendCommand(unsigned int cmd,uint64_t vmTime)
 		// Meaning of 0xFE is unknown.
 		// MB8877 Data sheet does not list this command.
 		// Should I take it as 0xDE?
-		state.lastStatus=MakeUpStatus(0xD0);
+		state.lastStatus=MakeUpStatus(0xD0,vmTime);
 	}
 	else if((cmd&0xF0)!=0xD0 && 0==state.driveSelectBit)
 	{
@@ -1125,7 +1125,7 @@ void DiskDrive::SendCommand(unsigned int cmd,uint64_t vmTime)
 		}
 	}
 	state.lastCmd=cmd;
-	state.lastStatus=MakeUpStatus(cmd);
+	state.lastStatus=MakeUpStatus(cmd,vmTime);
 }
 unsigned int DiskDrive::CommandToCommandType(unsigned int cmd) const
 {
@@ -1161,14 +1161,14 @@ unsigned int DiskDrive::CommandToCommandType(unsigned int cmd) const
 	}
 	return 0; // What?
 }
-unsigned char DiskDrive::MakeUpStatus(unsigned int cmd) const
+unsigned char DiskDrive::MakeUpStatus(unsigned int cmd,uint64_t vmTime) const
 {
 	unsigned char data=0;
 	if(0xFE==cmd)
 	{
 		cmd=0xD0; // System ROM is using this 0xFE.  Same as 0xD0?  Or Reset?
 	}
-	data|=(true!=DriveReady() ? 0x80 : 0);
+	data|=(true!=DriveReady(vmTime) ? 0x80 : 0);
 	data|=(true==state.busy ? 0x01 : 0);
 	switch(cmd&0xF0)
 	{
@@ -1186,7 +1186,7 @@ unsigned char DiskDrive::MakeUpStatus(unsigned int cmd) const
 		// Murder Club checks head-engaged flag and if set, it fails to start.
 		// I think Murder Club was the only program that cared about head-engaged flag.
 		// For the time being, I make it always 0.
-		// data|=(DriveReady() ?     0x20 : 0); // Head-Engaged: Make it same as drive ready.
+		// data|=(DriveReady(vmTime) ?     0x20 : 0); // Head-Engaged: Make it same as drive ready.
 		data|=(SeekError() ?      0x10 : 0);
 		data|=(CRCError() ?       0x08 : 0);
 		data|=(state.drive[DriveSelect()].trackPos==0 ? 0x04 : 0);
@@ -1230,7 +1230,7 @@ unsigned char DiskDrive::MakeUpStatus(unsigned int cmd) const
 
 	case 0xD0: // Force Interrupt
 		data|=(WriteProtected() ? 0x40 : 0);
-		data|=(DriveReady() ?     0x20 : 0); // Head-Engaged: Make it same as drive ready.
+		data|=(DriveReady(vmTime) ?     0x20 : 0); // Head-Engaged: Make it same as drive ready.
 		data|=(state.drive[DriveSelect()].trackPos==0 ? 0x04 : 0);
 		data|=(IndexHole() ?      0x02 : 0);
 		data&=0xFE;
@@ -1294,13 +1294,17 @@ bool DiskDrive::DiskLoaded(int driveNum) const
 	}
 	return false;
 }
-bool DiskDrive::DriveReady(void) const
+bool DiskDrive::DriveReady(uint64_t vmTime) const
 {
 	if(0!=state.driveSelectBit && true==DiskLoaded(DriveSelect()))
 	{
 		if(0<state.drive[DriveSelect()].pretendDriveNotReadyCount)
 		{
 			--state.drive[DriveSelect()].pretendDriveNotReadyCount;
+			return false;
+		}
+		if(vmTime<state.drive[DriveSelect()].pretendDriveNotReadyUntil)
+		{
 			return false;
 		}
 		return true;
@@ -1614,6 +1618,11 @@ bool DiskDrive::DeserializeVersion0to6(const unsigned char *&data,std::string st
 {
 	std::string stateDir,stateName;
 	cpputil::SeparatePathFile(stateDir,stateName,stateFName);
+
+	for(auto &drv : state.drive)
+	{
+		drv.pretendDriveNotReadyUntil=0;
+	}
 
 	ReadUint32(data); // Dummy read NUM_DRIVES
 	for(auto &imgf : imgFile)
