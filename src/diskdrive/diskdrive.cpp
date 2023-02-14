@@ -811,15 +811,15 @@ bool DiskDrive::LoadD77orRDDorRAW(unsigned int driveNum,const char fNameIn[],uin
 	cpputil::Capitalize(ext);
 	if(true==IsD77Extension(ext))
 	{
-		return LoadD77(driveNum,fNameIn,verbose);
+		return LoadD77(driveNum,fNameIn,vmTime,verbose);
 	}
 	else if(true==IsRDDExtension(ext))
 	{
-		return LoadRDD(driveNum,fNameIn,verbose);
+		return LoadRDD(driveNum,fNameIn,vmTime,verbose);
 	}
 	else
 	{
-		return LoadRawBinary(driveNum,fNameIn,verbose);
+		return LoadRawBinary(driveNum,fNameIn,vmTime,verbose);
 	}
 }
 
