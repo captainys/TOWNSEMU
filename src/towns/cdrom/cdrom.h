@@ -234,6 +234,7 @@ public:
 		i486DX::FarPointer lastParamWrittenAt;
 
 		bool CDEleVolUpdate=false;
+		bool CDDAmute=false;
 
 		bool debugBreakOnCommandWrite=false;
 		bool debugMonitorCommandWrite=false;

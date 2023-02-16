@@ -155,6 +155,10 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["CDCACHE"]=CMD_CDCACHE;
 	primaryCmdMap["CDOPENCLOSE"]=CMD_CDOPENCLOSE;
 	primaryCmdMap["CDDASTOP"]=CMD_CDDASTOP;
+	primaryCmdMap["CDDAMUTE"]=CMD_CDDAMUTE;
+	primaryCmdMap["CDDAUNMUTE"]=CMD_CDDAUNMUTE;
+	primaryCmdMap["MUTECDDA"]=CMD_CDDAMUTE;
+	primaryCmdMap["UNMUTECDDA"]=CMD_CDDAUNMUTE;
 	primaryCmdMap["CDEJECT"]=CMD_CDEJECT;
 
 	primaryCmdMap["SCSICD0LOAD"]=CMD_SCSICD0LOAD;
@@ -336,6 +340,10 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Eject CD" << std::endl;
 	std::cout << "CDDASTOP" << std::endl;
 	std::cout << "  Stop CDDA" << std::endl;
+	std::cout << "CDDAMUTE/MUTECDDA" << std::endl;
+	std::cout << "  Mute CDDA" << std::endl;
+	std::cout << "CDDAUNMUTE/UNMUTECDDA" << std::endl;
+	std::cout << "  Unmute CDDA" << std::endl;
 	std::cout << "CDCACHE" << std::endl;
 	std::cout << "  Cache CD binary.  It may consume large memory (as much as the CD image)." << std::endl;
 
@@ -1302,6 +1310,14 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 		break;
 	case CMD_CDDASTOP:
 		towns.cdrom.StopCDDA();
+		break;
+	case CMD_CDDAMUTE:
+		towns.cdrom.var.CDDAmute=true;
+		towns.UpdateCDEleVol(outside_world);
+		break;
+	case CMD_CDDAUNMUTE:
+		towns.cdrom.var.CDDAmute=false;
+		towns.UpdateCDEleVol(outside_world);
 		break;
 
 	case CMD_SCSICD0LOAD:

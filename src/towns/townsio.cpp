@@ -253,19 +253,26 @@ void FMTowns::UpdateEleVol(int eleVol)
 
 void FMTowns::UpdateCDEleVol(Outside_World *outside_world)
 {
-	unsigned int leftVol=GetEleVolCDLeft();
-	unsigned int rightVol=GetEleVolCDRight();
-	if(true!=GetEleVolCDLeftEN())
+	if(true==cdrom.var.CDDAmute)
 	{
-		leftVol=0;
+		outside_world->CDDASetVolume(0,0);
 	}
-	if(true!=GetEleVolCDRightEN())
+	else
 	{
-		rightVol=0;
+		unsigned int leftVol=GetEleVolCDLeft();
+		unsigned int rightVol=GetEleVolCDRight();
+		if(true!=GetEleVolCDLeftEN())
+		{
+			leftVol=0;
+		}
+		if(true!=GetEleVolCDRightEN())
+		{
+			rightVol=0;
+		}
+		float left=(float)leftVol/63.0;
+		float right=(float)rightVol/63.0;
+		outside_world->CDDASetVolume(left,right);
 	}
-	float left=(float)leftVol/63.0;
-	float right=(float)rightVol/63.0;
-	outside_world->CDDASetVolume(left,right);
 }
 
 /* virtual */ void FMTowns::RunScheduledTask(unsigned long long int townsTime)
