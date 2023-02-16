@@ -9,3 +9,12 @@ add_test(
 	NAME cpputil_path
 	COMMAND pathtest
 )
+
+
+add_executable(inttest inttest.cpp)
+target_link_libraries(inttest cpputil)
+
+add_test(
+	NAME cpputil_int
+	COMMAND inttest
+)

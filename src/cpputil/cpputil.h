@@ -18,6 +18,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include <vector>
 #include <string>
+#include <stdint.h>
 
 namespace cpputil
 {
@@ -131,6 +132,34 @@ inline int GetSignedWord(const unsigned char byteData[])
 	int word=GetWord(byteData);
 	word=(word&0x7FFF)-(word&0x8000);
 	return word;
+#endif
+}
+
+inline uint16_t MakeUnsignedWord(uint8_t lowByte,uint8_t highByte)
+{
+#if defined(YS_LITTLE_ENDIAN)
+	uint16_t word;
+	uint8_t *ptr=(uint8_t *)&word;
+	ptr[0]=lowByte;
+	ptr[1]=highByte;
+	return word;
+#else
+	return (highByte<<8)|lowByte;
+#endif
+}
+
+inline uint32_t MakeUnsignedDword(uint8_t lowByte,uint8_t midLowByte,uint8_t midHighByte,uint8_t highByte)
+{
+#if defined(YS_LITTLE_ENDIAN)
+	uint32_t dword;
+	uint8_t *ptr=(uint8_t *)&dword;
+	ptr[0]=lowByte;
+	ptr[1]=midLowByte;
+	ptr[2]=midHighByte;
+	ptr[3]=highByte;
+	return dword;
+#else
+	return (highByte<<24)|(midHighByte<<16)|(midLowByte<<8)|lowByte;
 #endif
 }
 
