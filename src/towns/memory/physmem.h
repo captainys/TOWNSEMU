@@ -637,9 +637,9 @@ unsigned int TownsSinglePageVRAMAccessTemplate <DISPLACEMENT>::FetchWord(unsigne
 		offset=SinglePageOffsetToLinearOffset(offset);
 		return cpputil::GetWord(state.VRAM+offset);
 	}
-	return 
-	    state.VRAM[SinglePageOffsetToLinearOffset(offset)]|
-	   (state.VRAM[SinglePageOffsetToLinearOffset(offset+1)]<<8);
+	return cpputil::MakeUnsignedWord(
+	    state.VRAM[SinglePageOffsetToLinearOffset(offset)],
+	    state.VRAM[SinglePageOffsetToLinearOffset(offset+1)]);
 }
 template <const unsigned int DISPLACEMENT>
 unsigned int TownsSinglePageVRAMAccessTemplate <DISPLACEMENT>::FetchDword(unsigned int physAddr) const
@@ -651,11 +651,11 @@ unsigned int TownsSinglePageVRAMAccessTemplate <DISPLACEMENT>::FetchDword(unsign
 		offset=SinglePageOffsetToLinearOffset(offset);
 		return cpputil::GetDword(state.VRAM+offset);
 	}
-	return 
-	    state.VRAM[SinglePageOffsetToLinearOffset(offset)]|
-	   (state.VRAM[SinglePageOffsetToLinearOffset(offset+1)]<<8)|
-	   (state.VRAM[SinglePageOffsetToLinearOffset(offset+2)]<<16)|
-	   (state.VRAM[SinglePageOffsetToLinearOffset(offset+3)]<<24);
+	return cpputil::MakeUnsignedDword(
+	    state.VRAM[SinglePageOffsetToLinearOffset(offset)],
+	    state.VRAM[SinglePageOffsetToLinearOffset(offset+1)],
+	    state.VRAM[SinglePageOffsetToLinearOffset(offset+2)],
+	    state.VRAM[SinglePageOffsetToLinearOffset(offset+3)]);
 }
 template <const unsigned int DISPLACEMENT>
 void TownsSinglePageVRAMAccessTemplate <DISPLACEMENT>::StoreByte(unsigned int physAddr,unsigned char data)
@@ -676,8 +676,14 @@ void TownsSinglePageVRAMAccessTemplate <DISPLACEMENT>::StoreWord(unsigned int ph
 	}
 	else
 	{
+	#ifdef YS_LITTLE_ENDIAN
+		auto *dataPtr=(uint8_t *)&data;
+		state.VRAM[SinglePageOffsetToLinearOffset(offset)]  =dataPtr[0];
+		state.VRAM[SinglePageOffsetToLinearOffset(offset+1)]=dataPtr[1];
+	#else
 		state.VRAM[SinglePageOffsetToLinearOffset(offset)]  =( data    &255);
 		state.VRAM[SinglePageOffsetToLinearOffset(offset+1)]=((data>>8)&255);
+	#endif
 	}
 }
 template <const unsigned int DISPLACEMENT>
@@ -692,10 +698,18 @@ void TownsSinglePageVRAMAccessTemplate <DISPLACEMENT>::StoreDword(unsigned int p
 	}
 	else
 	{
+	#ifdef YS_LITTLE_ENDIAN
+		auto *dataPtr=(uint8_t *)&data;
+		state.VRAM[SinglePageOffsetToLinearOffset(offset)]  =dataPtr[0];
+		state.VRAM[SinglePageOffsetToLinearOffset(offset+1)]=dataPtr[1];
+		state.VRAM[SinglePageOffsetToLinearOffset(offset+2)]=dataPtr[2];
+		state.VRAM[SinglePageOffsetToLinearOffset(offset+3)]=dataPtr[3];
+	#else
 		state.VRAM[SinglePageOffsetToLinearOffset(offset)]  =( data     &255);
 		state.VRAM[SinglePageOffsetToLinearOffset(offset+1)]=((data>> 8)&255);
 		state.VRAM[SinglePageOffsetToLinearOffset(offset+2)]=((data>>16)&255);
 		state.VRAM[SinglePageOffsetToLinearOffset(offset+3)]=((data>>24)&255);
+	#endif
 	}
 }
 
