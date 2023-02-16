@@ -44,7 +44,7 @@ TownsSprite::TownsSprite(class FMTowns *townsPtr,TownsPhysicalMemory *physMemPtr
 
 unsigned int TownsSprite::NumSpritesActuallyDrawn(void) const
 {
-	auto *spriteRAM=townsPtr->physMem.state.spriteRAM.data();
+	auto *spriteRAM=townsPtr->physMem.state.spriteRAM;
 
 	unsigned int nDraw=0;
 	auto xOffset=HOffset(),yOffset=VOffset();
@@ -124,8 +124,8 @@ unsigned int TownsSprite::NumSpritesActuallyDrawn(void) const
 				// If it happens, sprite needs to be immediately rendered, or will never be rendered.
 				if(true==prevSPEN && true!=SPEN() && true==prevBUSY)
 				{
-					Render(physMemPtr->state.VRAM.data() + 0x40000,
-						physMemPtr->state.spriteRAM.data());
+					Render(physMemPtr->state.VRAM + 0x40000,
+						physMemPtr->state.spriteRAM);
 				}
 				// For Shadow of the Beasts <<
 			}
@@ -339,8 +339,8 @@ void TownsSprite::RunScheduledTask(unsigned long long int townsTime)
 		state.spriteBusy = false;
 
 		if (SPEN()) {
-			Render(physMemPtr->state.VRAM.data() + 0x40000,
-				physMemPtr->state.spriteRAM.data());
+			Render(physMemPtr->state.VRAM + 0x40000,
+				physMemPtr->state.spriteRAM);
 
 			auto nextVSync = townsPtr->crtc.NextVSYNCRisingEdge(townsTime);
 			townsPtr->ScheduleDeviceCallBack(*this, nextVSync);

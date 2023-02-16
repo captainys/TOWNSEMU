@@ -366,9 +366,9 @@ public:
 		unsigned char nativeVRAMMask[8]={0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff}; // Repeat twice for faster access.
 
 		std::vector <unsigned char> RAM;
-		std::vector <unsigned char> VRAM;
+		unsigned char VRAM[TOWNS_VRAM_SIZE];
 		std::vector <unsigned char> CVRAM;
-		std::vector <unsigned char> spriteRAM;
+		unsigned char spriteRAM[TOWNS_SPRITERAM_SIZE];
 		std::vector <unsigned char> notUsed;
 		unsigned char CMOSRAM[TOWNS_CMOS_SIZE];
 
@@ -459,6 +459,13 @@ public:
 	*/
 	void SetVRAMSize(long long int size);
 
+	/*! Returns VRAM size.
+	*/
+	constexpr uint32_t GetVRAMSize(void) const
+	{
+		return TOWNS_VRAM_SIZE;
+	}
+
 	/*! Sets the Character VRAM size.
 	*/
 	void SetCVRAMSize(long long int size);
@@ -466,6 +473,13 @@ public:
 	/*! Sets the SpriteRAM size.
 	*/
 	void SetSpriteRAMSize(long long int size);
+
+	/*! Returns Sprite RAM size.
+	*/
+	constexpr uint32_t GetSpriteRAMSize(void) const
+	{
+		return TOWNS_SPRITERAM_SIZE;
+	}
 
 	/*! Sets the WaveRAM size.  Used to be.  Now RF5C68 owns the wave RAM.
 	*/
@@ -547,13 +561,13 @@ template <const uint32_t DISPLACEMENT>
 unsigned int TownsVRAMAccessTemplate <DISPLACEMENT>::FetchWord(unsigned int physAddr) const
 {
 	auto &state=physMemPtr->state;
-	return cpputil::GetWord(state.VRAM.data()+((physAddr+DISPLACEMENT)&TOWNSADDR_VRAM_AND));
+	return cpputil::GetWord(state.VRAM+((physAddr+DISPLACEMENT)&TOWNSADDR_VRAM_AND));
 }
 template <const uint32_t DISPLACEMENT>
 unsigned int TownsVRAMAccessTemplate <DISPLACEMENT>::FetchDword(unsigned int physAddr) const
 {
 	auto &state=physMemPtr->state;
-	return cpputil::GetDword(state.VRAM.data()+((physAddr+DISPLACEMENT)&TOWNSADDR_VRAM_AND));
+	return cpputil::GetDword(state.VRAM+((physAddr+DISPLACEMENT)&TOWNSADDR_VRAM_AND));
 }
 template <const uint32_t DISPLACEMENT>
 void TownsVRAMAccessTemplate <DISPLACEMENT>::StoreByte(unsigned int physAddr,unsigned char data)
@@ -565,13 +579,13 @@ template <const uint32_t DISPLACEMENT>
 void TownsVRAMAccessTemplate <DISPLACEMENT>::StoreWord(unsigned int physAddr,unsigned int data)
 {
 	auto &state=physMemPtr->state;
-	cpputil::PutWord(state.VRAM.data()+((physAddr+DISPLACEMENT)&TOWNSADDR_VRAM_AND),(unsigned short)data);
+	cpputil::PutWord(state.VRAM+((physAddr+DISPLACEMENT)&TOWNSADDR_VRAM_AND),(unsigned short)data);
 }
 template <const uint32_t DISPLACEMENT>
 void TownsVRAMAccessTemplate <DISPLACEMENT>::StoreDword(unsigned int physAddr,unsigned int data)
 {
 	auto &state=physMemPtr->state;
-	cpputil::PutDword(state.VRAM.data()+((physAddr+DISPLACEMENT)&TOWNSADDR_VRAM_AND),data);
+	cpputil::PutDword(state.VRAM+((physAddr+DISPLACEMENT)&TOWNSADDR_VRAM_AND),data);
 }
 
 
@@ -591,8 +605,8 @@ void TownsVRAMAccessWithMaskTemplate<DISPLACEMENT>::StoreWord(unsigned int physA
 	auto &state=this->physMemPtr->state;
 	unsigned short mask=cpputil::GetWord(state.nativeVRAMMask+(physAddr&3));
 	unsigned short nega=~mask;
-	unsigned short vram=cpputil::GetWord(state.VRAM.data()+((physAddr+DISPLACEMENT)&TOWNSADDR_VRAM_AND));
-	cpputil::PutWord(state.VRAM.data()+((physAddr+DISPLACEMENT)&TOWNSADDR_VRAM_AND),(unsigned short)((vram&nega)|(data&mask)));
+	unsigned short vram=cpputil::GetWord(state.VRAM+((physAddr+DISPLACEMENT)&TOWNSADDR_VRAM_AND));
+	cpputil::PutWord(state.VRAM+((physAddr+DISPLACEMENT)&TOWNSADDR_VRAM_AND),(unsigned short)((vram&nega)|(data&mask)));
 }
 template <const uint32_t DISPLACEMENT>
 void TownsVRAMAccessWithMaskTemplate<DISPLACEMENT>::StoreDword(unsigned int physAddr,unsigned int data)
@@ -600,8 +614,8 @@ void TownsVRAMAccessWithMaskTemplate<DISPLACEMENT>::StoreDword(unsigned int phys
 	auto &state=this->physMemPtr->state;
 	unsigned int mask=cpputil::GetDword(state.nativeVRAMMask+(physAddr&3));
 	unsigned int nega=~mask;
-	unsigned int vram=cpputil::GetDword(state.VRAM.data()+((physAddr+DISPLACEMENT)&TOWNSADDR_VRAM_AND));
-	cpputil::PutDword(state.VRAM.data()+((physAddr+DISPLACEMENT)&TOWNSADDR_VRAM_AND),(vram&nega)|(data&mask));
+	unsigned int vram=cpputil::GetDword(state.VRAM+((physAddr+DISPLACEMENT)&TOWNSADDR_VRAM_AND));
+	cpputil::PutDword(state.VRAM+((physAddr+DISPLACEMENT)&TOWNSADDR_VRAM_AND),(vram&nega)|(data&mask));
 }
 
 ////////////////////////////////////////////////////////////
@@ -621,7 +635,7 @@ unsigned int TownsSinglePageVRAMAccessTemplate <DISPLACEMENT>::FetchWord(unsigne
 	if(0==(offset&1))
 	{
 		offset=SinglePageOffsetToLinearOffset(offset);
-		return cpputil::GetWord(state.VRAM.data()+offset);
+		return cpputil::GetWord(state.VRAM+offset);
 	}
 	return 
 	    state.VRAM[SinglePageOffsetToLinearOffset(offset)]|
@@ -635,7 +649,7 @@ unsigned int TownsSinglePageVRAMAccessTemplate <DISPLACEMENT>::FetchDword(unsign
 	if(0==(offset&3))
 	{
 		offset=SinglePageOffsetToLinearOffset(offset);
-		return cpputil::GetDword(state.VRAM.data()+offset);
+		return cpputil::GetDword(state.VRAM+offset);
 	}
 	return 
 	    state.VRAM[SinglePageOffsetToLinearOffset(offset)]|
@@ -658,7 +672,7 @@ void TownsSinglePageVRAMAccessTemplate <DISPLACEMENT>::StoreWord(unsigned int ph
 	if(0==(offset&1))
 	{
 		offset=SinglePageOffsetToLinearOffset(offset);
-		cpputil::PutWord(state.VRAM.data()+offset,(unsigned short)data);
+		cpputil::PutWord(state.VRAM+offset,(unsigned short)data);
 	}
 	else
 	{
@@ -674,7 +688,7 @@ void TownsSinglePageVRAMAccessTemplate <DISPLACEMENT>::StoreDword(unsigned int p
 	if(0==(offset&3))
 	{
 		offset=SinglePageOffsetToLinearOffset(offset);
-		cpputil::PutDword(state.VRAM.data()+offset,data);
+		cpputil::PutDword(state.VRAM+offset,data);
 	}
 	else
 	{
@@ -709,8 +723,8 @@ void TownsSinglePageVRAMAccessWithMaskTemplate<DISPLACEMENT>::StoreWord(unsigned
 		offset=this->SinglePageOffsetToLinearOffset(offset);
 		unsigned short mask=cpputil::GetWord(state.nativeVRAMMask+(physAddr&3));
 		unsigned short nega=~mask;
-		unsigned short vram=cpputil::GetWord(state.VRAM.data()+offset);
-		cpputil::PutWord(state.VRAM.data()+offset,(unsigned short)((vram&nega)|(data&mask)));
+		unsigned short vram=cpputil::GetWord(state.VRAM+offset);
+		cpputil::PutWord(state.VRAM+offset,(unsigned short)((vram&nega)|(data&mask)));
 	}
 	else
 	{
@@ -731,8 +745,8 @@ void TownsSinglePageVRAMAccessWithMaskTemplate<DISPLACEMENT>::StoreDword(unsigne
 		offset=this->SinglePageOffsetToLinearOffset(offset);
 		unsigned int mask=cpputil::GetDword(state.nativeVRAMMask+(physAddr&3));
 		unsigned int nega=~mask;
-		unsigned int vram=cpputil::GetDword(state.VRAM.data()+offset);
-		cpputil::PutDword(state.VRAM.data()+offset,(vram&nega)|(data&mask));
+		unsigned int vram=cpputil::GetDword(state.VRAM+offset);
+		cpputil::PutDword(state.VRAM+offset,(vram&nega)|(data&mask));
 	}
 	else
 	{

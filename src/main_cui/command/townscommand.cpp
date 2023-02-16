@@ -2045,7 +2045,7 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 			}
 			break;
 		case DUMP_SPRITE:
-			for(auto str : towns.sprite.GetStatusText(towns.physMem.state.spriteRAM.data()))
+			for(auto str : towns.sprite.GetStatusText(towns.physMem.state.spriteRAM))
 			{
 				std::cout << str << std::endl;
 			}
@@ -2055,7 +2055,7 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 			{
 				auto x=cpputil::Atoi(cmd.argv[2].c_str());
 				auto y=cpputil::Atoi(cmd.argv[3].c_str());
-				for(auto str : towns.sprite.GetStatusTextSpriteAt(towns.physMem.state.spriteRAM.data(),x,y))
+				for(auto str : towns.sprite.GetStatusTextSpriteAt(towns.physMem.state.spriteRAM,x,y))
 				{
 					std::cout << str << std::endl;
 				}
@@ -2069,7 +2069,7 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 			if(3<=cmd.argv.size())
 			{
 				auto palIdx=cpputil::Atoi(cmd.argv[2].c_str());
-				for(auto str : towns.sprite.GetPaletteText(palIdx,towns.physMem.state.spriteRAM.data()))
+				for(auto str : towns.sprite.GetPaletteText(palIdx,towns.physMem.state.spriteRAM))
 				{
 					std::cout << str << std::endl;
 				}
@@ -2083,7 +2083,7 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 			if(3<=cmd.argv.size())
 			{
 				auto palIdx=cpputil::Atoi(cmd.argv[2].c_str());
-				for(auto str : towns.sprite.GetPattern4BitText(palIdx,towns.physMem.state.spriteRAM.data()))
+				for(auto str : towns.sprite.GetPattern4BitText(palIdx,towns.physMem.state.spriteRAM))
 				{
 					std::cout << str << std::endl;
 				}
@@ -2097,7 +2097,7 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 			if(3<=cmd.argv.size())
 			{
 				auto palIdx=cpputil::Atoi(cmd.argv[2].c_str());
-				for(auto str : towns.sprite.GetPattern16BitText(palIdx,towns.physMem.state.spriteRAM.data()))
+				for(auto str : towns.sprite.GetPattern16BitText(palIdx,towns.physMem.state.spriteRAM))
 				{
 					std::cout << str << std::endl;
 				}
@@ -4067,9 +4067,9 @@ void TownsCommandInterpreter::Execute_Search_ByteSequence(FMTowns &towns,const s
 			FoundAt(towns,addr);
 		}
 	}
-	for(unsigned int addr=0; addr+bytes.size()<=towns.physMem.state.VRAM.size(); ++addr)
+	for(unsigned int addr=0; addr+bytes.size()<=towns.physMem.GetVRAMSize(); ++addr)
 	{
-		if(true==cpputil::Match(bytes.size(),bytes.data(),towns.physMem.state.VRAM.data()+addr))
+		if(true==cpputil::Match(bytes.size(),bytes.data(),towns.physMem.state.VRAM+addr))
 		{
 			FoundAt(towns,TOWNSADDR_VRAM0_BASE+addr);
 			if(--maxCount<=0)

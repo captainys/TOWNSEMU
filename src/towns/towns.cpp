@@ -994,7 +994,7 @@ bool FMTowns::CheckRenderingTimer(TownsRender &render,Outside_World &world)
 	{
 		render.Prepare(crtc);
 		render.damperWireLine=var.damperWireLine;
-		render.BuildImage(physMem.state.VRAM.data(),crtc.state.palette,crtc.chaseHQPalette);
+		render.BuildImage(physMem.state.VRAM,crtc.state.palette,crtc.chaseHQPalette);
 		world.Render(render.GetImage(),*this);
 		world.UpdateStatusBitmap(*this);
 		state.nextRenderingTime=state.townsTime+TOWNS_RENDERING_FREQUENCY;
@@ -1036,7 +1036,7 @@ void FMTowns::ForceRender(class TownsRender &render,class Outside_World &world)
 {
 	render.Prepare(crtc);
 	render.damperWireLine=var.damperWireLine;
-	render.BuildImage(physMem.state.VRAM.data(),crtc.GetPalette(),crtc.chaseHQPalette);
+	render.BuildImage(physMem.state.VRAM,crtc.GetPalette(),crtc.chaseHQPalette);
 	if(true==world.ImageNeedsFlip())
 	{
 		render.FlipUpsideDown();
@@ -1049,13 +1049,13 @@ void FMTowns::RenderQuiet(class TownsRender &render,bool layer0,bool layer1)
 {
 	render.Prepare(crtc);
 	render.OerrideShowPage(layer0,layer1);
-	render.BuildImage(physMem.state.VRAM.data(),crtc.GetPalette(),crtc.chaseHQPalette);
+	render.BuildImage(physMem.state.VRAM,crtc.GetPalette(),crtc.chaseHQPalette);
 }
 
 void FMTowns::RenderEntireVRAMLayerQuiet(class TownsRender &render,unsigned int layer)
 {
 	render.PrepareEntireVRAMLayer(crtc,layer);
-	render.BuildImage(physMem.state.VRAM.data(),crtc.GetPalette(),crtc.chaseHQPalette);
+	render.BuildImage(physMem.state.VRAM,crtc.GetPalette(),crtc.chaseHQPalette);
 }
 
 bool FMTowns::GetEleVolCDLeftEN(void) const

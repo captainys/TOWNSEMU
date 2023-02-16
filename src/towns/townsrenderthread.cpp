@@ -73,7 +73,7 @@ void TownsRenderingThread::CheckRenderingTimer(FMTowns &towns,TownsRender &rende
 		render.damperWireLine=towns.var.damperWireLine;
 		render.scanLineEffectIn15KHz=towns.var.scanLineEffectIn15KHz;
 		this->rendererPtr=&render;
-		memcpy(this->VRAMCopy,towns.physMem.state.VRAM.data(),towns.crtc.GetEffectiveVRAMSize());
+		memcpy(this->VRAMCopy,towns.physMem.state.VRAM,towns.crtc.GetEffectiveVRAMSize());
 		this->paletteCopy=towns.crtc.GetPalette();
 		this->chaseHQPaletteCopy=towns.crtc.chaseHQPalette;
 

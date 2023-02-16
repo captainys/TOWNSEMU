@@ -422,7 +422,11 @@ void TownsPhysicalMemory::SetMainRAMSize(long long int size)
 
 void TownsPhysicalMemory::SetVRAMSize(long long int size)
 {
-	state.VRAM.resize(size);
+	if(TOWNS_VRAM_SIZE!=size)
+	{
+		std::cout << "VRAM size is now fixed." << std::endl;
+		exit(1);
+	}
 }
 
 void TownsPhysicalMemory::SetCVRAMSize(long long int size)
@@ -432,7 +436,11 @@ void TownsPhysicalMemory::SetCVRAMSize(long long int size)
 
 void TownsPhysicalMemory::SetSpriteRAMSize(long long int size)
 {
-	state.spriteRAM.resize(size);
+	if(TOWNS_SPRITERAM_SIZE!=size)
+	{
+		std::cout << "Sprite RAM size is fixed." << std::endl;
+		exit(1);
+	}
 }
 
 void TownsPhysicalMemory::SetDummySize(long long int size)
@@ -737,14 +745,14 @@ void TownsPhysicalMemory::BeginMemFilter(void)
 {
 	memFilter.RAMFilter.resize(state.RAM.size());
 	memFilter.prevRAM.resize(state.RAM.size());
-	memFilter.spriteRAMFilter.resize(state.spriteRAM.size());
-	memFilter.prevSpriteRAM.resize(state.spriteRAM.size());
+	memFilter.spriteRAMFilter.resize(GetSpriteRAMSize());
+	memFilter.prevSpriteRAM.resize(GetSpriteRAMSize());
 	for(uint32_t i=0; i<state.RAM.size(); ++i)
 	{
 		memFilter.RAMFilter[i]=true;
 		memFilter.prevRAM[i]=state.RAM[i];
 	}
-	for(uint32_t i=0; i<state.spriteRAM.size(); ++i)
+	for(uint32_t i=0; i<GetSpriteRAMSize(); ++i)
 	{
 		memFilter.spriteRAMFilter[i]=true;
 		memFilter.prevSpriteRAM[i]=state.spriteRAM[i];
@@ -765,7 +773,7 @@ unsigned int TownsPhysicalMemory::ApplyMemFilter(uint8_t currentValue)
 		}
 		memFilter.prevRAM[i]=state.RAM[i];
 	}
-	for(uint32_t i=0; i<state.spriteRAM.size(); ++i)
+	for(uint32_t i=0; i<GetSpriteRAMSize(); ++i)
 	{
 		if(state.spriteRAM[i]!=currentValue)
 		{
@@ -794,7 +802,7 @@ unsigned int TownsPhysicalMemory::ApplyMemFilterDecrease(void)
 		}
 		memFilter.prevRAM[i]=state.RAM[i];
 	}
-	for(uint32_t i=0; i<state.spriteRAM.size(); ++i)
+	for(uint32_t i=0; i<GetSpriteRAMSize(); ++i)
 	{
 		if(state.spriteRAM[i]>=memFilter.prevSpriteRAM[i])
 		{
@@ -823,7 +831,7 @@ unsigned int TownsPhysicalMemory::ApplyMemFilterIncrease(void)
 		}
 		memFilter.prevRAM[i]=state.RAM[i];
 	}
-	for(uint32_t i=0; i<state.spriteRAM.size(); ++i)
+	for(uint32_t i=0; i<GetSpriteRAMSize(); ++i)
 	{
 		if(state.spriteRAM[i]<=memFilter.prevSpriteRAM[i])
 		{
@@ -852,7 +860,7 @@ unsigned int TownsPhysicalMemory::ApplyMemFilterDifferent(void)
 		}
 		memFilter.prevRAM[i]=state.RAM[i];
 	}
-	for(uint32_t i=0; i<state.spriteRAM.size(); ++i)
+	for(uint32_t i=0; i<GetSpriteRAMSize(); ++i)
 	{
 		if(state.spriteRAM[i]==memFilter.prevSpriteRAM[i])
 		{
@@ -881,7 +889,7 @@ unsigned int TownsPhysicalMemory::ApplyMemFilterEqual(void)
 		}
 		memFilter.prevRAM[i]=state.RAM[i];
 	}
-	for(uint32_t i=0; i<state.spriteRAM.size(); ++i)
+	for(uint32_t i=0; i<GetSpriteRAMSize(); ++i)
 	{
 		if(state.spriteRAM[i]!=memFilter.prevSpriteRAM[i])
 		{
@@ -998,10 +1006,16 @@ std::vector <std::string> TownsPhysicalMemory::GetStatusText(void) const
 		PushUint16(data, nvMsk);
 	}
 
+	std::vector <uint8_t> VRAM,spriteRAM; // For absolute backward compatibility, save as vector.
+	VRAM.resize(GetVRAMSize());
+	memcpy(VRAM.data(),state.VRAM,GetVRAMSize());
+	spriteRAM.resize(GetSpriteRAMSize());
+	memcpy(spriteRAM.data(),state.spriteRAM,GetSpriteRAMSize());
+
 	PushUcharArray(data,state.RAM);
-	PushUcharArray(data,state.VRAM);
+	PushUcharArray(data,VRAM);
 	PushUcharArray(data,state.CVRAM);
-	PushUcharArray(data,state.spriteRAM);
+	PushUcharArray(data,spriteRAM);
 	PushUcharArray(data,state.notUsed);
 	PushUcharArray(data,TOWNS_CMOS_SIZE,state.CMOSRAM);
 
@@ -1053,11 +1067,15 @@ std::vector <std::string> TownsPhysicalMemory::GetStatusText(void) const
 	}
 
 	state.RAM=ReadUcharArray(data);
-	state.VRAM=ReadUcharArray(data);
+	auto VRAM=ReadUcharArray(data);
 	state.CVRAM=ReadUcharArray(data);
-	state.spriteRAM=ReadUcharArray(data);
+	auto spriteRAM=ReadUcharArray(data);
 	state.notUsed=ReadUcharArray(data);
 	ReadUcharArray(data,TOWNS_CMOS_SIZE,state.CMOSRAM);
+
+	memcpy(state.VRAM,     VRAM.data(),     std::min<uint32_t>(GetVRAMSize(),VRAM.size()));
+	memcpy(state.spriteRAM,spriteRAM.data(),std::min<uint32_t>(GetSpriteRAMSize(),spriteRAM.size()));
+
 
 	// PCMCIA memory card.
 	state.memCard.memCardType=ReadUint32(data);

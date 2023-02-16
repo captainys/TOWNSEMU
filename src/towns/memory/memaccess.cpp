@@ -470,12 +470,12 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 /* virtual */ unsigned int TownsSpriteRAMAccess::FetchWord(unsigned int physAddr) const
 {
 	auto &state=physMemPtr->state;
-	return cpputil::GetWord(state.spriteRAM.data()+(physAddr&TOWNSADDR_SPRITERAM_AND));
+	return cpputil::GetWord(state.spriteRAM+(physAddr&TOWNSADDR_SPRITERAM_AND));
 }
 /* virtual */ unsigned int TownsSpriteRAMAccess::FetchDword(unsigned int physAddr) const
 {
 	auto &state=physMemPtr->state;
-	return cpputil::GetDword(state.spriteRAM.data()+(physAddr&TOWNSADDR_SPRITERAM_AND));
+	return cpputil::GetDword(state.spriteRAM+(physAddr&TOWNSADDR_SPRITERAM_AND));
 }
 /* virtual */ void TownsSpriteRAMAccess::StoreByte(unsigned int physAddr,unsigned char data)
 {
@@ -485,12 +485,12 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 /* virtual */ void TownsSpriteRAMAccess::StoreWord(unsigned int physAddr,unsigned int data)
 {
 	auto &state=physMemPtr->state;
-	cpputil::PutWord(state.spriteRAM.data()+(physAddr&TOWNSADDR_SPRITERAM_AND),data);
+	cpputil::PutWord(state.spriteRAM+(physAddr&TOWNSADDR_SPRITERAM_AND),data);
 }
 /* virtual */ void TownsSpriteRAMAccess::StoreDword(unsigned int physAddr,unsigned int data)
 {
 	auto &state=physMemPtr->state;
-	cpputil::PutDword(state.spriteRAM.data()+(physAddr&TOWNSADDR_SPRITERAM_AND),data);
+	cpputil::PutDword(state.spriteRAM+(physAddr&TOWNSADDR_SPRITERAM_AND),data);
 }
 
 ////////////////////////////////////////////////////////////

@@ -159,7 +159,7 @@ void FMTowns::VMHostFileTransfer(void)
 				return;
 			}
 
-			unsigned int batchSize=cpputil::GetDword(physMem.state.spriteRAM.data()+4);
+			unsigned int batchSize=cpputil::GetDword(physMem.state.spriteRAM+4);
 			for(unsigned int i=0; i<batchSize; ++i)
 			{
 				file.bin.push_back(physMem.state.spriteRAM[8+i]);
