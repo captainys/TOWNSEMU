@@ -2687,11 +2687,11 @@ public:
 			addr=LinearAddressToPhysicalAddressRead(addr,mem);
 			if(0xFF8<(addr&0xfff)) // May hit the page boundary
 			{
-				return 
-				     FetchByte(addressSize,seg,offset,mem)
-				   |(FetchByte(addressSize,seg,offset+1,mem)<<8)
-				   |(FetchByte(addressSize,seg,offset+2,mem)<<16)
-				   |(FetchByte(addressSize,seg,offset+3,mem)<<24);
+				return cpputil::MakeUnsignedDword(
+				     FetchByte(addressSize,seg,offset,mem),
+				     FetchByte(addressSize,seg,offset+1,mem),
+				     FetchByte(addressSize,seg,offset+2,mem),
+				     FetchByte(addressSize,seg,offset+3,mem));
 			}
 		}
 		return mem.FetchDword(addr);
