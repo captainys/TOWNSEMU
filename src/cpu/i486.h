@@ -900,26 +900,28 @@ public:
 	class Instruction
 	{
 	public:
-		unsigned int numBytes;
-		unsigned int instPrefix;
-		unsigned int segOverride;
-		unsigned int operandSize;
-		unsigned int addressSize;
-		unsigned int codeAddressSize; // 2020/03/07 Turned out, I need to keep code-segment address size for fetching instructions.
-		unsigned int fwait;
+		// Bytes cleared in Clear() >>
+		unsigned char numBytes,fwait;
+		unsigned short instPrefix;
+		unsigned short segOverride;
+		unsigned short operandLen;
+		// Bytes cleared in Clear() <<
+
+		unsigned short operandSize;
+		unsigned short addressSize;
+		unsigned short codeAddressSize; // 2020/03/07 Turned out, I need to keep code-segment address size for fetching instructions.
 
 		unsigned int opCode;
-		unsigned int operandLen;
 		unsigned char operand[12];  // Is 8 bytes maximum?  Maybe FPU instruction use up to 10 bytes.  I'll see.
 		unsigned char imm[4];       // Probably 4 bytes is good enough.
 
 		inline void Clear(void)
 		{
 			numBytes=0;
+			fwait=0;
 			instPrefix=0;
 			segOverride=0;
 			operandLen=0;
-			fwait=0;
 		}
 
 		std::string Disassemble(const Operand &op1,const Operand &op2,SegmentRegister reg,unsigned int offset,const class i486SymbolTable &symTable,const std::map <unsigned int,std::string> &ioTable) const;
