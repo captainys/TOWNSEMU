@@ -1081,13 +1081,13 @@ public:
 	class Operand
 	{
 	public:
-		int operandType;
+		unsigned char operandType,indexShift; // Hopefully cleared in Clear instruction with one instruction.
 
 		// For OPER_REG* operand type
 		int reg;
 		// For OPER_ADDR and OPER_FARADDR operand type
-		int baseReg,indexReg,indexShift,offset;
-		int offsetBits;
+		short  baseReg,indexReg,offsetBits;
+		int offset;
 		// For OPER_FARADDR operand type.  NOT USED in any other operand types.
 		int seg;
 
