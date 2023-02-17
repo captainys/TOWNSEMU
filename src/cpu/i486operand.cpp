@@ -500,6 +500,14 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 			reg=R_M+(numBytesToBasicRegBase[dataSize>>3]);
 			numBytes=1;
 			break;
+		default:
+			#ifdef _WIN32
+				__assume(0);
+			#elif defined(__clang__) || defined(__GNUC__)
+				__builtin_unreachable();
+			#else
+				break;
+			#endif
 		}
 	}
 

@@ -2684,6 +2684,14 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 		value.numBytes=4;
 		cpputil::PutDword(value.byteData,state.TEST[op.operandType-OPER_TEST0]);
 		break;
+	default:
+		#ifdef _WIN32
+			__assume(0);
+		#elif defined(__clang__) || defined(__GNUC__)
+			__builtin_unreachable();
+		#else
+			break;
+		#endif
 	}
 	return value;
 }
@@ -2872,6 +2880,14 @@ void i486DX::StoreOperandValue(
 	case OPER_TEST7:
 		state.TEST[dst.operandType-OPER_TEST0]=cpputil::GetDword(value.byteData);
 		break;
+	default:
+		#ifdef _WIN32
+			__assume(0);
+		#elif defined(__clang__) || defined(__GNUC__)
+			__builtin_unreachable();
+		#else
+			break;
+		#endif
 	}
 }
 
