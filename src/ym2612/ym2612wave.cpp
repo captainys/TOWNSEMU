@@ -1668,7 +1668,6 @@ int YM2612::CalculateAmplitude(int chNum,const uint64_t timeInMicrosecS12[NUM_SL
 	int s0out,s1out,s2out,s3out;
 	switch(ch.CONNECT)
 	{
-	default:
 	case 0:
 		s0out=SLOTOUTEV_Db_0(0);
 		lastSlot0Out=s0out;
@@ -1722,5 +1721,13 @@ int YM2612::CalculateAmplitude(int chNum,const uint64_t timeInMicrosecS12[NUM_SL
 		s2out=SLOTOUTEV_Db_2(0);
 		s3out=SLOTOUTEV_Db_3(0);
 		return ((s0out+s1out+s2out+s3out)*state.volume/DIV_CONNECT7);
+	default:
+		#ifdef _WIN32
+			__assume(0);
+		#elif defined(__clang__) || defined(__GNUC__)
+			__builtin_unreachable();
+		#else
+			break;
+		#endif
 	}
 }

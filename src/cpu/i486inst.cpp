@@ -1846,6 +1846,8 @@ void i486DX::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,MemoryAcce
 		default:
 #if defined(_MSC_VER)
 			__assume(0);
+#elif defined(__clang__) || defined(__GNUC__)
+			__builtin_unreachable();
 #else
 			break;
 #endif
@@ -9361,6 +9363,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	default:
 #if defined(_MSC_VER)
 		__assume(0);
+#elif defined(__clang__) || defined(__GNUC__)
+		__builtin_unreachable();
 #endif
 		Abort("Undefined instruction or simply not supported yet.");
 		return 0;
