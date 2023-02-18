@@ -219,6 +219,40 @@ inline int32_t WordToSigned32(uint16_t wd)
 #endif
 }
 
+inline int32_t WordPairToSigned32(uint16_t lowWord,uint16_t highWord)
+{
+#if defined(YS_TWOS_COMPLEMENT) && defined(YS_LITTLE_ENDIAN)
+	int32_t dw;
+	uint16_t *wdPtr=(uint16_t *)&dw;
+	wdPtr[0]=lowWord;
+	wdPtr[1]=highWord;
+	return dw;
+#else
+	int DXAX=highWord;
+	DXAX=(DXAX&0x7FFF)-(DXAX&0x8000);
+	DXAX<<=16;
+	DXAX|=lowWord;
+	return DXAX;
+#endif
+}
+
+inline int64_t DwordPairToSigned64(uint32_t lowWord,uint32_t highWord)
+{
+#if defined(YS_TWOS_COMPLEMENT) && defined(YS_LITTLE_ENDIAN)
+	int64_t qw;
+	uint32_t *dwPtr=(uint32_t *)&qw;
+	dwPtr[0]=lowWord;
+	dwPtr[1]=highWord;
+	return qw;
+#else
+	int64_t EDXEAX=highWord;
+	EDXEAX=(EDXEAX&0x7FFFFFFF)-(EDXEAX&0x80000000);
+	EDXEAX<<=32;
+	EDXEAX|=lowWord;
+	return EDXEAX;
+#endif
+}
+
 inline int64_t DwordToSigned64(uint32_t dw)
 {
 #if defined(YS_TWOS_COMPLEMENT)

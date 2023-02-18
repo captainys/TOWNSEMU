@@ -5187,31 +5187,25 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				{
 					clocksPassed=24;
 
-					int DXAX=GetDX();
-					DXAX=(DXAX&0x7FFF)-(DXAX&0x8000);
-					DXAX<<=inst.operandSize;
-					DXAX|=GetAX();
+					int32_t DXAX=cpputil::WordPairToSigned32(GetAX(),GetDX());
 
 					int quo=DXAX/denom;
 					int rem=DXAX%denom;
 
-					SetAX(quo&0xFFFF);
-					SetDX(rem&0xFFFF);
+					SetAX(cpputil::LowWord(quo));
+					SetDX(cpputil::LowWord(rem));
 				}
 				else if(32==inst.operandSize)
 				{
 					clocksPassed=40;
 
-					long long int EDXEAX=GetEDX();
-					EDXEAX=(EDXEAX&0x7FFFFFFF)-(EDXEAX&0x80000000);
-					EDXEAX<<=32;
-					EDXEAX|=GetEAX();
+					int64_t EDXEAX=cpputil::DwordPairToSigned64(GetEAX(),GetEDX());
 
 					long long int quo=EDXEAX/denom;
 					long long int rem=EDXEAX%denom;
 
-					SetEAX(quo&0xFFFFFFFF);
-					SetEDX(rem&0xFFFFFFFF);
+					SetEAX(cpputil::LowDword(quo));
+					SetEDX(cpputil::LowDword(rem));
 				}
 			}
 			break;
