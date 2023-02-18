@@ -138,7 +138,7 @@ bool FMTowns::LoadState(std::string fName,class Outside_World &outsideWorld)
 	PushInt64(data,state.townsTime);
 	PushInt64(data,state.nextRenderingTime);
 	PushInt64(data,state.nextDevicePollingTime);
-	PushInt64(data,state.cpuTime);
+	PushInt64(data,state.townsTime); // Now dummy.  Used to be cpuTime, but no longer used.
 	PushInt64(data,state.timeDeficit);
 	PushBool(data,state.noWait);
 	PushBool(data,state.pretend386DX);
@@ -210,7 +210,7 @@ bool FMTowns::LoadState(std::string fName,class Outside_World &outsideWorld)
 	state.townsTime=ReadInt64(data);
 	state.nextRenderingTime=ReadInt64(data);
 	state.nextDevicePollingTime=ReadInt64(data);
-	state.cpuTime=ReadInt64(data);
+	ReadInt64(data);
 	state.timeDeficit=ReadInt64(data);
 	state.noWait=ReadBool(data);
 	state.pretend386DX=ReadBool(data);

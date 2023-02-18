@@ -95,10 +95,6 @@ public:
 
 		int64_t nextDevicePollingTime=0;
 
-		/*! CPU time is calculated from the clock.
-		*/
-		long long int cpuTime;
-
 		/*! Nanoseconds VM is lagging behind the real time.
 		*/
 		long long int timeDeficit=0;
