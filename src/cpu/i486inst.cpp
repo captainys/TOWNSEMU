@@ -5083,12 +5083,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					if(16==inst.operandSize)
 					{
 						clocksPassed=20; // 13-26.  I don't know exactly how to calculate it.
-						int DXAX=GetAX();
-						DXAX=(DXAX&0x7FFF)-(DXAX&0x8000);
+						int DXAX=cpputil::WordToSigned32(GetAX());
 						DXAX*=multiplicand;
 
-						SetAX(DXAX&0xFFFF);
-						SetDX((DXAX>>16)&0xFFFF);
+						SetAX(cpputil::LowWord(DXAX));
+						SetDX(cpputil::HighWord(DXAX));
 
 						auto signExtCheck=DXAX&0xFFFF8000;
 						if(0==signExtCheck || signExtCheck==0xFFFF8000)
@@ -5107,12 +5106,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					else
 					{
 						clocksPassed=30; // 13-42.  I don't know exactly how to calculate it.
-						long long int EDXEAX=GetEAX();
-						EDXEAX=(EDXEAX&0x7FFFFFFF)-(EDXEAX&0x80000000);
+						long long int EDXEAX=cpputil::DwordToSigned64(GetEAX());
 						EDXEAX*=(long long int)multiplicand;
 
-						SetEAX(EDXEAX&0xFFFFFFFF);
-						SetEDX((EDXEAX>>32)&0xFFFFFFFF);
+						SetEAX(cpputil::LowDword(EDXEAX));
+						SetEDX(cpputil::HighDword(EDXEAX));
 
 						auto signExtCheck=EDXEAX&0xFFFFFFFF80000000LL;
 						if(0==signExtCheck || signExtCheck==0xFFFFFFFF80000000LL)

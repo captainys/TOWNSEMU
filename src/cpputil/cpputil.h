@@ -207,6 +207,70 @@ inline void CopyDword(unsigned char dst[],const unsigned char src[])
 	(*(uint32_t *)dst)=(*(const uint32_t *)src);
 }
 
+inline int32_t WordToSigned32(uint16_t wd)
+{
+#if defined(YS_TWOS_COMPLEMENT)
+	int16_t *signedPtr=(int16_t *)&wd;
+	return *signedPtr;
+#else
+	int32_t DXAX=GetAX();
+	DXAX=(DXAX&0x7FFF)-(DXAX&0x8000);
+	return DXAX;
+#endif
+}
+
+inline int64_t DwordToSigned64(uint32_t dw)
+{
+#if defined(YS_TWOS_COMPLEMENT)
+	int32_t *signedPtr=(int32_t *)&dw;
+	return *signedPtr;
+#else
+	int64_t int EDXEAX=dw;
+	EDXEAX=(EDXEAX&0x7FFFFFFF)-(EDXEAX&0x80000000);
+	return EDXEAX;
+#endif
+}
+
+inline uint16_t LowWord(int32_t dw)
+{
+#ifdef YS_LITTLE_ENDIAN
+	uint16_t *wdPtr=(uint16_t *)&dw;
+	return wdPtr[0];
+#else
+	return dw&0xFFFF;
+#endif
+}
+
+inline uint16_t HighWord(int32_t dw)
+{
+#ifdef YS_LITTLE_ENDIAN
+	uint16_t *wdPtr=(uint16_t *)&dw;
+	return wdPtr[1];
+#else
+	return (dw>>16)&0xFFFF;
+#endif
+}
+
+inline uint32_t LowDword(int64_t qw)
+{
+#ifdef YS_LITTLE_ENDIAN
+	uint32_t *dwPtr=(uint32_t *)&qw;
+	return dwPtr[0];
+#else
+	return qw&0xffffffff;
+#endif
+}
+
+inline uint32_t HighDword(int64_t qw)
+{
+#ifdef YS_LITTLE_ENDIAN
+	uint32_t *dwPtr=(uint32_t *)&qw;
+	return dwPtr[1];
+#else
+	return (qw>>32)&0xFFFFFFFF;
+#endif
+}
+
 
 char BoolToChar(bool flag);
 const char *BoolToNumberStr(bool flag);
