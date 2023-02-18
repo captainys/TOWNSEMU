@@ -232,5 +232,15 @@ bool WildCardCompare(int lenPtn,const char ptn[],int lenStr,const char str[]);
 
 };
 
+
+#ifdef _WIN32
+	#define std_unreachable __assume(0)
+#elif defined(__clang__) || defined(__GNUC__)
+	#define std_unreachable __builtin_unreachable()
+#else
+	#define std_unreachable
+#endif
+
+
 /* } */
 #endif

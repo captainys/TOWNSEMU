@@ -4654,6 +4654,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				SarByte(i,ctr); \
 				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
 				break; \
+			default: \
+				std_unreachable; \
 			} \
 			value.SetDword(i); \
 			StoreOperandValue8(op1,mem,inst.addressSize,inst.segOverride,value); \
@@ -4701,6 +4703,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				SarByteWordOrDword(inst.operandSize,i,ctr); \
 				clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
 				break; \
+			default: \
+				std_unreachable; \
 			} \
 			value.SetDword(i); \
 			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value); \
@@ -4969,7 +4973,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				}
 			}
 			break;
-		default:
+		case 1:
 			{
 				std::string msg;
 				msg="Undefined REG for ";
@@ -4982,6 +4986,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			}
 			clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
 			break;
+		default:
+			std_unreachable;
 		}
 		break;
 	case I486_RENUMBER_F7_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: //=0xF7,
@@ -5211,10 +5217,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				}
 			}
 			break;
-		default:
+		case 1:
 			Abort("Undefined REG for "+cpputil::Ubtox(inst.opCode));
 			clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2);
 			return 0;
+		default:
+			std_unreachable;
 		}
 		break;
 
@@ -5571,6 +5579,14 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 						StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
 					}
 					break;
+				case 0:
+				case 1:
+				case 2:
+				case 3:
+					Abort("Undefined REG for "+cpputil::Ubtox(inst.opCode));
+					break;
+				default:
+					std_unreachable;
 				}
 			}
 		}
@@ -7262,9 +7278,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					}
 				}
 				break;
-			default:
+			case 7:
 				Abort("Undefined REG for "+cpputil::Ubtox(inst.opCode));
 				return 0;
+			default:
+				std_unreachable;
 			}
 		}
 		break;
@@ -7615,8 +7633,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				SubByte(i,value2);
 				break;
 			default:
-				Abort("Undefined REG for "+cpputil::Ubtox(inst.opCode));
-				return 0;
+				std_unreachable;
 			}
 			if(7!=REG) // Don't store a value if it is CMP
 			{
@@ -7686,8 +7703,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				SubWordOrDword(inst.operandSize,i,value2);
 				break;
 			default:
-				Abort("Undefined REG for "+cpputil::Ubtox(inst.opCode));
-				return 0;
+				std_unreachable;
 			}
 			if(7!=REG) // Don't store a value if it is CMP
 			{
