@@ -106,3 +106,8 @@ std::vector <std::string> VMBase::GetScheduledTasksText(void) const
 	}
 	return text;
 }
+
+void VMBase::ClearAbortFlag(void)
+{
+	vmAbort=false;
+}

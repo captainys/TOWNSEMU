@@ -27,6 +27,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 class VMBase
 {
+private:
+	mutable bool vmAbort=false;
+
 protected:
 	/*! Device0 is a dummy device.  Always at allDevices[0].
 	    Used as a head pointer to the task-scheduled device chain.
@@ -37,7 +40,6 @@ protected:
 	std::vector <class Device *> allDevices;
 
 public:
-	mutable bool vmAbort=false;
 	mutable std::string vmAbortDeviceName,vmAbortReason;
 
 	VMBase();
@@ -61,6 +63,8 @@ public:
 	{
 		return vmAbort;
 	}
+
+	void ClearAbortFlag(void);
 
 	std::vector <std::string> GetScheduledTasksText(void) const;
 };

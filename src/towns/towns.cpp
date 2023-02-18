@@ -1208,7 +1208,7 @@ void FMTowns::PrintSound(void) const
 
 void FMTowns::PrintStatus(void) const
 {
-	if(true==VMBase::vmAbort)
+	if(true==VMBase::CheckAbort())
 	{
 		std::cout << "VM Aborted!" << std::endl;
 		std::cout << "Device:" << vmAbortDeviceName << std::endl;

@@ -306,7 +306,7 @@ bool FMTowns::LoadState(std::string fName,class Outside_World &outsideWorld)
 		state.VRAMWait=0;
 	}
 
-	vmAbort=false;
+	VMBase::ClearAbortFlag();
 
 	return true;
 }
