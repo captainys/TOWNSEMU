@@ -164,6 +164,7 @@ void TownsPIC::I8259A::SetInterruptRequestBit(unsigned int intNum,bool request)
 	{
 		IRR&=(~bit);
 	}
+	owner->state.UpdateIRRCache();
 }
 
 bool TownsPIC::I8259A::GetInterruptRequestBit(unsigned int intNum) const
@@ -229,6 +230,7 @@ void TownsPIC::State::Reset(void)
 	{
 		chip.Reset();
 	}
+	UpdateIRRCache();
 }
 
 
@@ -238,6 +240,10 @@ void TownsPIC::State::Reset(void)
 TownsPIC::TownsPIC(FMTowns *townsPtr) : Device(townsPtr)
 {
 	this->townsPtr=townsPtr;
+	for(auto &chip : state.i8259A)
+	{
+		chip.owner=this;
+	}
 	state.Reset();
 	debugBreakOnICW1Write=false;
 	debugBreakOnICW4Write=false;;
@@ -471,5 +477,6 @@ bool TownsPIC::I8259A::Deserialize(const unsigned char *&data,uint32_t version)
 {
 	auto b0=state.i8259A[0].Deserialize(data,version);
 	auto b1=state.i8259A[1].Deserialize(data,version);
+	state.UpdateIRRCache();
 	return true==b0 && true==b1;
 }

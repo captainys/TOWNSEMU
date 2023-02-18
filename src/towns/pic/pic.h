@@ -33,6 +33,8 @@ class TownsPIC : public Device
 public:
 	class I8259A
 	{
+	friend class TownsPIC;
+
 	public:
 		enum
 		{
@@ -48,7 +50,11 @@ public:
 			ICW4_SFNM_BIT=0x10,
 		};
 
-		unsigned char IRR,ISR,IMR;
+	private:
+		TownsPIC *owner=nullptr;
+		unsigned char IRR;
+	public:
+		unsigned char ISR,IMR;
 		unsigned char OCW[3];
 		unsigned char ICW[4];
 		unsigned int highestPriorityInt;
@@ -144,6 +150,13 @@ public:
 	{
 	public:
 		I8259A i8259A[2];
+
+		mutable unsigned char IRR0_OR_IRR1_Cache=0; // Not saved in the state file.  Updated after state is loaded.
+		void UpdateIRRCache(void) const
+		{
+			IRR0_OR_IRR1_Cache=(i8259A[0].IRR|i8259A[1].IRR);
+		}
+
 		void Reset(void);
 	};
 
@@ -173,7 +186,7 @@ public:
 
 	inline void ProcessIRQ(i486DX &cpu,Memory &mem)
 	{
-		if(0!=(state.i8259A[0].IRR|state.i8259A[1].IRR) && cpu.GetIF() && false==cpu.state.holdIRQ)
+		if(0!=state.IRR0_OR_IRR1_Cache && cpu.GetIF() && false==cpu.state.holdIRQ)
 		{
 			unsigned int chip=0;
 			if(7==state.i8259A[0].highestPriorityInt) // in which case i8259A[1], then i8259A[0].
