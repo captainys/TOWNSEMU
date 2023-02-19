@@ -249,7 +249,7 @@ inline int32_t WordPairToSigned32(uint16_t lowWord,uint16_t highWord)
 #endif
 }
 
-inline uint32_t DwordPairToUnsigned64(uint32_t lowWord,uint32_t highWord)
+inline uint64_t DwordPairToUnsigned64(uint32_t lowWord,uint32_t highWord)
 {
 #if defined(YS_TWOS_COMPLEMENT) && defined(YS_LITTLE_ENDIAN)
 	uint64_t dw;
