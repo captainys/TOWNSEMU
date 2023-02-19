@@ -58,11 +58,11 @@ public:
 		this->v[0]=x;
 		this->v[1]=y;
 	}
-	inline bool operator==(const Vec2Template &incoming) const
+	inline bool operator==(const Vec2Template <ComponentType> &incoming) const
 	{
 		return incoming.v[0]==this->v[0] && incoming.v[1]==this->v[1];
 	}
-	inline bool operator!=(const Vec2Template &incoming) const
+	inline bool operator!=(const Vec2Template <ComponentType> &incoming) const
 	{
 		return incoming.v[0]!=this->v[0] || incoming.v[1]!=this->v[1];
 	}
@@ -127,13 +127,101 @@ public:
 		this->v[1]=y;
 		this->v[2]=z;
 	}
-	inline bool operator==(const Vec3Template &incoming) const
+	inline bool operator==(const Vec3Template <ComponentType> &incoming) const
 	{
 		return incoming.v[0]==this->v[0] && incoming.v[1]==this->v[1] && incoming.v[2]==this->v[2];
 	}
-	inline bool operator!=(const Vec3Template &incoming) const
+	inline bool operator!=(const Vec3Template <ComponentType> &incoming) const
 	{
 		return incoming.v[0]!=this->v[0] || incoming.v[1]!=this->v[1] || incoming.v[2]!=this->v[2];
+	}
+};
+
+
+
+template <class ComponentType>
+class Vec4Template : public VectorTemplate <ComponentType,4>
+{
+public:
+	inline ComponentType x(void) const
+	{
+		return this->v[0];
+	}
+	inline ComponentType y(void) const
+	{
+		return this->v[1];
+	}
+	inline ComponentType z(void) const
+	{
+		return this->v[2];
+	}
+	inline ComponentType w(void) const
+	{
+		return this->v[3];
+	}
+	inline ComponentType &x(void)
+	{
+		return this->v[0];
+	}
+	inline ComponentType &y(void)
+	{
+		return this->v[1];
+	}
+	inline ComponentType &z(void)
+	{
+		return this->v[2];
+	}
+	inline ComponentType &w(void)
+	{
+		return this->v[3];
+	}
+
+	inline ComponentType r(void) const
+	{
+		return this->v[0];
+	}
+	inline ComponentType g(void) const
+	{
+		return this->v[1];
+	}
+	inline ComponentType b(void) const
+	{
+		return this->v[2];
+	}
+	inline ComponentType a(void) const
+	{
+		return this->v[3];
+	}
+	inline ComponentType &r(void)
+	{
+		return this->v[0];
+	}
+	inline ComponentType &g(void)
+	{
+		return this->v[1];
+	}
+	inline ComponentType &b(void)
+	{
+		return this->v[2];
+	}
+	inline ComponentType &a(void)
+	{
+		return this->v[3];
+	}
+	inline void Set(ComponentType x,ComponentType y,ComponentType z,ComponentType w)
+	{
+		this->v[0]=x;
+		this->v[1]=y;
+		this->v[2]=z;
+		this->v[3]=w;
+	}
+	inline bool operator==(const Vec4Template <ComponentType> &incoming) const
+	{
+		return incoming.v[0]==this->v[0] && incoming.v[1]==this->v[1] && incoming.v[2]==this->v[2] && incoming.v[3]==this->v[3];
+	}
+	inline bool operator!=(const Vec4Template <ComponentType> &incoming) const
+	{
+		return incoming.v[0]!=this->v[0] || incoming.v[1]!=this->v[1] || incoming.v[2]!=this->v[2] || incoming.v[3]!=this->v[3];
 	}
 };
 
@@ -177,6 +265,30 @@ public:
 		v.v[0]=0;
 		v.v[1]=0;
 		v.v[2]=0;
+		return v;
+	}
+};
+
+class Vec4ub : public Vec4Template <unsigned char>
+{
+public:
+	static inline Vec4ub Make(unsigned int x,unsigned int y,unsigned int z,unsigned int w)
+	{
+		Vec4ub v;
+		v.v[0]=x;
+		v.v[1]=y;
+		v.v[2]=z;
+		v.v[3]=z;
+		return v;
+	}
+
+	static inline Vec4ub Origin(void)
+	{
+		Vec4ub v;
+		v.v[0]=0;
+		v.v[1]=0;
+		v.v[2]=0;
+		v.v[3]=0;
 		return v;
 	}
 };
