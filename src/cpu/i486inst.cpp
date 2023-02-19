@@ -5032,8 +5032,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				clocksPassed=(OPER_ADDR==op1.operandType ? 26 : 13);
 				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,2);
 				auto DXAX=GetAX()*value.GetAsWord();
-				SetAX(DXAX&0xffff);
-				SetDX((DXAX>>16)&0xffff);
+				SetAX(cpputil::LowWord(DXAX));
+				SetDX(cpputil::HighWord(DXAX));
 				if(0!=(DXAX&0xffff0000))
 				{
 					SetCFOF();
@@ -5054,8 +5054,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				unsigned long long EAX=GetEAX();
 				unsigned long long MUL=value.GetAsDword();
 				unsigned long long EDXEAX=EAX*MUL;
-				SetEAX(EDXEAX&0xffffffff);
-				SetEDX((EDXEAX>>32)&0xffffffff);
+				SetEAX(cpputil::LowDword(EDXEAX));
+				SetEDX(cpputil::HighDword(EDXEAX));
 				if(0!=(EDXEAX&0xffffffff00000000))
 				{
 					SetCFOF();
@@ -5148,7 +5148,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				else if(16==inst.operandSize)
 				{
 					clocksPassed=24;
-					unsigned int DXAX=(GetDX()<<16)|GetAX();
+					unsigned int DXAX=cpputil::WordPairToUnsigned32(GetAX(),GetDX());
 					unsigned int quo=DXAX/denom;
 					unsigned int rem=DXAX%denom;
 					SetAX(quo);
@@ -5157,9 +5157,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				else if(32==inst.operandSize)
 				{
 					clocksPassed=40;
-					unsigned long long int EDXEAX=GetEDX();
-					EDXEAX<<=32;
-					EDXEAX|=GetEAX();
+					unsigned long long int EDXEAX=cpputil::DwordPairToUnsigned64(GetEAX(),GetEDX());
 					unsigned int quo=(unsigned int)(EDXEAX/denom);
 					unsigned int rem=(unsigned int)(EDXEAX%denom);
 					SetEAX(quo);
