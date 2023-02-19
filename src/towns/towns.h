@@ -242,6 +242,8 @@ public:
 	public:
 		unsigned int freeRunTimerShift;
 
+		uint64_t nextTimeSync; // Used from TownsThread.
+
 		bool powerOff=false;
 		int returnCode=0;
 
@@ -419,6 +421,13 @@ public:
 
 
 	FMTowns();
+
+
+	virtual void Abort(std::string devName,std::string abortReason) override
+	{
+		VMBase::Abort(devName,abortReason);
+		var.nextTimeSync=0;
+	}
 
 
 	static bool Setup(FMTowns &towns,Outside_World *outside_world,const TownsStartParameters &argv);

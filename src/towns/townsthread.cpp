@@ -84,8 +84,12 @@ void TownsThread::VMMainLoop(FMTowns *townsPtr,Outside_World *outside_world,clas
 		case RUNMODE_RUN:
 			clockTicking=true;
 			{
-				auto nextTimeSync=townsPtr->state.townsTime+NANOSECONDS_PER_TIME_SYNC;
-				while(townsPtr->state.townsTime<nextTimeSync && true!=townsPtr->CheckAbort())
+				townsPtr->var.nextTimeSync=townsPtr->state.townsTime+NANOSECONDS_PER_TIME_SYNC;
+				if(true==townsPtr->CheckAbort())
+				{
+					townsPtr->var.nextTimeSync=0;
+				}
+				while(townsPtr->state.townsTime<townsPtr->var.nextTimeSync)
 				{
 					townsPtr->RunOneInstruction();
 					townsPtr->pic.ProcessIRQ(townsPtr->cpu,townsPtr->mem);

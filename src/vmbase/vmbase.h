@@ -57,7 +57,7 @@ public:
 
 	void CacheDeviceIndex(void);
 
-	void Abort(std::string devName,std::string abortReason);
+	virtual void Abort(std::string devName,std::string abortReason);
 
 	inline bool CheckAbort(void) const
 	{
