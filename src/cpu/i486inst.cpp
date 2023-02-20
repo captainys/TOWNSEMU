@@ -5051,9 +5051,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{
 				clocksPassed=(OPER_ADDR==op1.operandType ? 42 : 13);
 				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,4);
-				unsigned long long EAX=GetEAX();
-				unsigned long long MUL=value.GetAsDword();
-				unsigned long long EDXEAX=EAX*MUL;
+				uint64_t EAX=GetEAX();
+				uint64_t MUL=value.GetAsDword();
+				uint64_t EDXEAX=EAX*MUL;
 				SetEAX(cpputil::LowDword(EDXEAX));
 				SetEDX(cpputil::HighDword(EDXEAX));
 				if(0!=(EDXEAX&0xffffffff00000000))
@@ -5106,8 +5106,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					else
 					{
 						clocksPassed=30; // 13-42.  I don't know exactly how to calculate it.
-						long long int EDXEAX=cpputil::DwordToSigned64(GetEAX());
-						EDXEAX*=(long long int)multiplicand;
+						int64_t EDXEAX=cpputil::DwordToSigned64(GetEAX());
+						EDXEAX*=(int64_t)multiplicand;
 
 						SetEAX(cpputil::LowDword(EDXEAX));
 						SetEDX(cpputil::HighDword(EDXEAX));
@@ -5199,8 +5199,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 					int64_t EDXEAX=cpputil::DwordPairToSigned64(GetEAX(),GetEDX());
 
-					long long int quo=EDXEAX/denom;
-					long long int rem=EDXEAX%denom;
+					int64_t quo=EDXEAX/denom;
+					int64_t rem=EDXEAX%denom;
 
 					SetEAX(cpputil::LowDword(quo));
 					SetEDX(cpputil::LowDword(rem));
