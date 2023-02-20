@@ -314,6 +314,26 @@ inline uint16_t HighWord(int32_t dw)
 #endif
 }
 
+inline uint16_t LowWord(uint32_t dw)
+{
+#ifdef YS_LITTLE_ENDIAN
+	uint16_t *wdPtr=(uint16_t *)&dw;
+	return wdPtr[0];
+#else
+	return dw&0xFFFF;
+#endif
+}
+
+inline uint16_t HighWord(uint32_t dw)
+{
+#ifdef YS_LITTLE_ENDIAN
+	uint16_t *wdPtr=(uint16_t *)&dw;
+	return wdPtr[1];
+#else
+	return (dw>>16)&0xFFFF;
+#endif
+}
+
 inline uint32_t LowDword(int64_t qw)
 {
 #ifdef YS_LITTLE_ENDIAN
@@ -325,6 +345,26 @@ inline uint32_t LowDword(int64_t qw)
 }
 
 inline uint32_t HighDword(int64_t qw)
+{
+#ifdef YS_LITTLE_ENDIAN
+	uint32_t *dwPtr=(uint32_t *)&qw;
+	return dwPtr[1];
+#else
+	return (qw>>32)&0xFFFFFFFF;
+#endif
+}
+
+inline uint32_t LowDword(uint64_t qw)
+{
+#ifdef YS_LITTLE_ENDIAN
+	uint32_t *dwPtr=(uint32_t *)&qw;
+	return dwPtr[0];
+#else
+	return qw&0xffffffff;
+#endif
+}
+
+inline uint32_t HighDword(uint64_t qw)
 {
 #ifdef YS_LITTLE_ENDIAN
 	uint32_t *dwPtr=(uint32_t *)&qw;

@@ -5834,8 +5834,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			if(16==inst.operandSize)
 			{
 				auto offset=inst.EvalSimm16();
-				destin=state.EIP+offset+inst.numBytes;
-				destin&=0xFFFF;
+				destin=cpputil::LowWord(state.EIP+offset+inst.numBytes);
 				Push16(mem,state.EIP+inst.numBytes);
 			}
 			else // if(32==inst.operandSize)
@@ -5866,8 +5865,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			if(16==inst.operandSize)
 			{
 				auto offset=inst.EvalSimm16();
-				state.EIP=state.EIP+offset+inst.numBytes;
-				state.EIP&=0xFFFF;
+				state.EIP=cpputil::LowWord(state.EIP+offset+inst.numBytes);
 			}
 			else // if(32==inst.operandSize)
 			{
