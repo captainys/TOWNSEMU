@@ -542,6 +542,11 @@ public:
 	{
 	public:
 		unsigned int NULL_and_reg32[9];
+	#ifdef YS_LITTLE_ENDIAN
+		uint8_t *reg8Ptr[8];
+	#endif
+
+		State();
 
 		inline unsigned int *reg32(void)
 		{
@@ -3315,6 +3320,11 @@ public:
 	OperandValue EvaluateOperand(
 	    Memory &mem,int addressSize,int segmentOverride,const Operand &op,int destinationBytes);
 
+	/*! Evaluate an operand when it is known to be either a register or memory.
+	*/
+	OperandValue EvaluateOperandReg16OrReg32OrMem(
+	    Memory &mem,int addressSize,int segmentOverride,const Operand &op,int destinationBytes);
+
 	/*! Evaluate operand as an 8-bit operand.
 	*/
 	OperandValue EvaluateOperand8(
@@ -3357,6 +3367,11 @@ public:
 	    If the destination is a register, the number of bytes stored depends on the size of the register.
 	*/
 	void StoreOperandValue(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value);
+
+	/*! Stores value to the destination described by the operand
+	    when the operand is known to be reg16, reg32, or mem.
+	*/
+	void StoreOperandValueReg16OrReg32OrMem(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value);
 
 	/*! Store value to an 8-bit operand.
 	*/
@@ -3840,10 +3855,7 @@ inline unsigned int i486DX::GetRegisterValue(int reg) const
 inline unsigned int i486DX::GetRegisterValue8(int reg) const
 {
 #ifdef YS_LITTLE_ENDIAN
-	unsigned int regIdx=reg-REG_AL;
-	unsigned int highLow=regIdx>>2;
-	unsigned char *regPtr=(unsigned char *)&state.reg32()[regIdx&3];
-	return regPtr[highLow];
+	return *state.reg8Ptr[reg-REG_AL];
 #else
 	unsigned int regIdx=reg-REG_AL;
 	unsigned int shift=(regIdx<<1)&8;
@@ -3939,10 +3951,7 @@ inline void i486DX::SetRegisterValue(unsigned int reg,unsigned int value)
 inline void i486DX::SetRegisterValue8(unsigned int reg,unsigned char value)
 {
 #ifdef YS_LITTLE_ENDIAN
-	unsigned int regIdx=reg-REG_AL;
-	unsigned int highLow=regIdx>>2;
-	unsigned char *regPtr=(unsigned char *)&state.reg32()[regIdx&3];
-	regPtr[highLow]=value;
+	*state.reg8Ptr[reg-REG_AL]=value;
 #else
 	static const unsigned int highLowMask[2]=
 	{

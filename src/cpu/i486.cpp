@@ -20,6 +20,21 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "i486.h"
 
 
+i486DX::State::State()
+{
+#ifdef YS_LITTLE_ENDIAN
+	reg8Ptr[0]=(uint8_t *)&NULL_and_reg32[REG_EAX];
+	reg8Ptr[1]=(uint8_t *)&NULL_and_reg32[REG_ECX];
+	reg8Ptr[2]=(uint8_t *)&NULL_and_reg32[REG_EDX];
+	reg8Ptr[3]=(uint8_t *)&NULL_and_reg32[REG_EBX];
+	reg8Ptr[4]=((uint8_t *)&NULL_and_reg32[REG_EAX])+1;
+	reg8Ptr[5]=((uint8_t *)&NULL_and_reg32[REG_ECX])+1;
+	reg8Ptr[6]=((uint8_t *)&NULL_and_reg32[REG_EDX])+1;
+	reg8Ptr[7]=((uint8_t *)&NULL_and_reg32[REG_EBX])+1;
+#endif
+}
+
+
 const char *const i486DX::Reg8Str[8]=
 {
 	"AL","CL","DL","BL","AH","CH","DH","BH"
@@ -2695,6 +2710,59 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 	return value;
 }
 
+i486DX::OperandValue i486DX::EvaluateOperandReg16OrReg32OrMem(
+	    Memory &mem,int addressSize,int segmentOverride,const Operand &op,int destinationBytes)
+{
+	static const unsigned int addressMask[2]=
+	{
+		0x0000FFFF,
+		0xFFFFFFFF,
+	};
+
+	i486DX::OperandValue value;
+	value.numBytes=0;
+	if(OPER_REG32==op.operandType)
+	{
+		unsigned int reg=state.NULL_and_reg32[op.reg];
+		value.numBytes=4;
+		cpputil::PutDword(value.byteData,reg);
+	}
+	else if(OPER_REG16==op.operandType)
+	{
+		unsigned int reg=state.NULL_and_reg32[op.reg&15];
+		value.numBytes=2;
+		cpputil::PutWord(value.byteData,reg);
+	}
+	else
+	{
+		value.numBytes=destinationBytes;
+
+		unsigned int offset;
+		const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,op,segmentOverride);
+
+		offset&=addressMask[addressSize>>5];
+		switch(value.numBytes)
+		{
+		case 1:
+			value.byteData[0]=FetchByte(addressSize,seg,offset,mem);
+			break;
+		case 2:
+			value.SetWord(FetchWord(addressSize,seg,offset,mem));
+			break;
+		case 4:
+			value.SetDword(FetchDword(addressSize,seg,offset,mem));
+			break;
+		default:
+			for(unsigned int i=0; i<value.numBytes; ++i)
+			{
+				value.byteData[i]=FetchByte(addressSize,seg,offset+i,mem);
+			}
+			break;
+		}
+	}
+	return value;
+}
+
 i486DX::OperandValue i486DX::EvaluateOperand8(
     Memory &mem,int addressSize,int segmentOverride,const Operand &op)
 {
@@ -2887,6 +2955,50 @@ void i486DX::StoreOperandValue(
 		#else
 			break;
 		#endif
+	}
+}
+
+void i486DX::StoreOperandValueReg16OrReg32OrMem(
+    const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value)
+{
+	static const unsigned int addressMask[2]=
+	{
+		0x0000FFFF,
+		0xFFFFFFFF,
+	};
+
+	if(OPER_REG32==dst.operandType)
+	{
+		state.NULL_and_reg32[dst.reg]=cpputil::GetDword(value.byteData);
+	}
+	else if(OPER_REG16==dst.operandType)
+	{
+		SET_INT_LOW_WORD(state.NULL_and_reg32[dst.reg&15],cpputil::GetWord(value.byteData));
+	}
+	else
+	{
+		unsigned int offset;
+		const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,dst,segmentOverride);
+
+		offset&=addressMask[addressSize>>5];
+		switch(value.numBytes)
+		{
+		case 1:
+			StoreByte(mem,addressSize,seg,offset,value.byteData[0]);
+			break;
+		case 2:
+			StoreWord(mem,addressSize,seg,offset,cpputil::GetWord(value.byteData));// cpputil::GetWord is faster than using value.GetAsWord.
+			break;
+		case 4:
+			StoreDword(mem,addressSize,seg,offset,cpputil::GetDword(value.byteData));// cpputil::GetWord is faster than using value.GetAsDword.
+			break;
+		default:
+			for(unsigned int i=0; i<value.numBytes; ++i)
+			{
+				StoreByte(mem,addressSize,seg,offset+i,value.byteData[i]);
+			}
+			break;
+		}
 	}
 }
 

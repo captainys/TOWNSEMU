@@ -4454,7 +4454,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		if(16==inst.operandSize) \
 		{ \
 			unsigned int dst=INT_LOW_WORD(state.reg32()[regNum]); \
-			auto src=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,2); \
+			auto src=EvaluateOperandReg16OrReg32OrMem(mem,inst.addressSize,inst.segOverride,op2,2); \
 			if(true==state.exception) \
 			{ \
 				break; \
@@ -4468,7 +4468,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		else \
 		{ \
 			unsigned int dst=state.reg32()[regNum]; \
-			auto src=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,4); \
+			auto src=EvaluateOperandReg16OrReg32OrMem(mem,inst.addressSize,inst.segOverride,op2,4); \
 			if(true==state.exception) \
 			{ \
 				break; \
@@ -4665,7 +4665,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	// For RCL and RCR See reminder #20200123-1
 	#define ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM(ctr) \
 	{ \
-		auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8); \
+		auto value=EvaluateOperandReg16OrReg32OrMem(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8); \
 		auto i=value.GetAsDword(); \
 		if(true!=state.exception) \
 		{ \
@@ -4707,7 +4707,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				std_unreachable; \
 			} \
 			value.SetDword(i); \
-			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value); \
+			StoreOperandValueReg16OrReg32OrMem(op1,mem,inst.addressSize,inst.segOverride,value); \
 		} \
 	}
 
