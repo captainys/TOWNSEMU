@@ -227,7 +227,6 @@ void i486DX::FarPointer::LoadSegmentRegister(SegmentRegister &seg,i486DX &cpu,co
 i486DX::i486DX(VMBase *vmPtr) : CPU(vmPtr)
 {
 	state.NULL_and_reg32[ 0]=0;
-	state.NULL_and_reg32[16]=0;
 
 	stackAddressSizePointer[0]=&sixteen;
 	stackAddressSizePointer[1]=&state.sreg[REG_SS-REG_SEGMENT_REG_BASE].addressSize;
