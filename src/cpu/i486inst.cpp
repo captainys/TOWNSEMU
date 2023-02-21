@@ -4494,7 +4494,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		auto regNum=inst.GetREG(); \
 		if(16==inst.operandSize) \
 		{ \
-			auto dst=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,2); \
+			auto dst=EvaluateOperandReg16OrReg32OrMem(mem,inst.addressSize,inst.segOverride,op1,2); \
 			auto src=INT_LOW_WORD(state.reg32()[regNum]); \
 			if(true==state.exception) \
 			{ \
@@ -4505,12 +4505,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			if(true==(update)) \
 			{ \
 				dst.SetDword(i); \
-				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,dst); \
+				StoreOperandValueReg16OrReg32OrMem(op1,mem,inst.addressSize,inst.segOverride,dst); \
 			} \
 		} \
 		else \
 		{ \
-			auto dst=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,4); \
+			auto dst=EvaluateOperandReg16OrReg32OrMem(mem,inst.addressSize,inst.segOverride,op1,4); \
 			auto src=state.reg32()[regNum]; \
 			if(true==state.exception) \
 			{ \
@@ -4521,7 +4521,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			if(true==(update)) \
 			{ \
 				dst.SetDword(i); \
-				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,dst); \
+				StoreOperandValueReg16OrReg32OrMem(op1,mem,inst.addressSize,inst.segOverride,dst); \
 			} \
 		} \
 	}
@@ -4850,7 +4850,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		case 0: // TEST
 			{
 				clocksPassed=(OPER_ADDR==op1.operandType ? 2 : 1);
-				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+				auto value=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op1);
 				unsigned int byte=value.byteData[0];
 				AndByte(byte,inst.EvalUimm8());
 				// SetCF(false); Done in AndByte
@@ -4860,29 +4860,29 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		case 2: // NOT
 			{
 				clocksPassed=(OPER_ADDR==op1.operandType ? 3 : 1);
-				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+				auto value=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op1);
 				if(true!=state.exception)
 				{
 					value.byteData[0]=~value.byteData[0];
-					StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+					StoreOperandValue8(op1,mem,inst.addressSize,inst.segOverride,value);
 				}
 			}
 			break;
 		case 3: // NEG
 			{
 				clocksPassed = (OPER_ADDR == op1.operandType ? 3 : 1);
-				auto value1 = EvaluateOperand(mem, inst.addressSize, inst.segOverride, op1, inst.operandSize / 8);
+				auto value1 = EvaluateOperand8(mem, inst.addressSize, inst.segOverride, op1);
 				uint32_t r = 0;
 				uint32_t i = value1.GetAsDword();
 				SubByte(r, i);
 				value1.SetDword(r);
-				StoreOperandValue(op1, mem, inst.addressSize, inst.segOverride, value1);
+				StoreOperandValue8(op1, mem, inst.addressSize, inst.segOverride, value1);
 			}
 			break;
 		case 4: // MUL
 			{
 				clocksPassed=(OPER_ADDR==op1.operandType ? 18 : 13);
-				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+				auto value=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op1);
 				auto mul=GetAL()*value.byteData[0];
 				SetAX(mul);
 				if(0!=(mul&0xff00))
@@ -4902,7 +4902,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		case 5: // IMUL R/M8
 			{
 				clocksPassed=(OPER_ADDR==op1.operandType ? 18 : 13);
-				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+				auto value=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op1);
 				if(true!=state.exception)
 				{
 					int AL=GetAL();
@@ -4929,7 +4929,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		case 6: // DIV
 			{
 				clocksPassed=16;
-				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+				auto value=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op1);
 				if(0==value.byteData[0])
 				{
 					Interrupt(0,mem,0,0,false); // [1] pp.26-28
@@ -4949,7 +4949,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		case 7: // IDIV
 			{
 				clocksPassed=20;
-				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+				auto value=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op1);
 				if(0==value.byteData[0])
 				{
 					Interrupt(0,mem,0,0,false); // [1] pp.26-28
@@ -4996,7 +4996,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		case 0: // TEST
 			{
 				clocksPassed=(OPER_ADDR==op1.operandType ? 2 : 1);
-				auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+				auto value1=EvaluateOperandReg16OrReg32OrMem(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
 				auto value2=inst.EvalUimm8or16or32(inst.operandSize);
 				unsigned int i1=value1.GetAsDword();
 				AndWordOrDword(inst.operandSize,i1,value2);
@@ -5007,7 +5007,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		case 2: // NOT
 			{
 				clocksPassed=(OPER_ADDR==op1.operandType ? 2 : 1);
-				auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+				auto value1=EvaluateOperandReg16OrReg32OrMem(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
 				value1.byteData[0]=~value1.byteData[0];
 				value1.byteData[1]=~value1.byteData[1];
 				value1.byteData[2]=~value1.byteData[2];
@@ -5018,7 +5018,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		case 3: // NEG
 			{
 				clocksPassed = (OPER_ADDR == op1.operandType ? 3 : 1);
-				auto value1 = EvaluateOperand(mem, inst.addressSize, inst.segOverride, op1, inst.operandSize / 8);
+				auto value1 = EvaluateOperandReg16OrReg32OrMem(mem, inst.addressSize, inst.segOverride, op1, inst.operandSize / 8);
 				uint32_t r = 0;
 				uint32_t i = value1.GetAsDword();
 				SubWordOrDword(inst.operandSize, r, i);
@@ -5030,7 +5030,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			if(16==inst.operandSize)
 			{
 				clocksPassed=(OPER_ADDR==op1.operandType ? 26 : 13);
-				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,2);
+				auto value=EvaluateOperandReg16OrReg32OrMem(mem,inst.addressSize,inst.segOverride,op1,2);
 				auto DXAX=GetAX()*value.GetAsWord();
 				SetAX(cpputil::LowWord(DXAX));
 				SetDX(cpputil::HighWord(DXAX));
@@ -5050,7 +5050,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			else
 			{
 				clocksPassed=(OPER_ADDR==op1.operandType ? 42 : 13);
-				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,4);
+				auto value=EvaluateOperandReg16OrReg32OrMem(mem,inst.addressSize,inst.segOverride,op1,4);
 				uint64_t EAX=GetEAX();
 				uint64_t MUL=value.GetAsDword();
 				uint64_t EDXEAX=EAX*MUL;
@@ -5072,7 +5072,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			break;
 		case 5: // IMUL
 			{
-				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+				auto value=EvaluateOperandReg16OrReg32OrMem(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
 				if(true==state.exception)
 				{
 					EIPIncrement=0;
@@ -5131,7 +5131,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			break;
 		case 6: // DIV
 			{
-				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+				auto value=EvaluateOperandReg16OrReg32OrMem(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
 				unsigned int denom=value.GetAsDword();
 				if(true==state.exception)
 				{
@@ -5167,7 +5167,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			break;
 		case 7: // IDIV
 			{
-				auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+				auto value=EvaluateOperandReg16OrReg32OrMem(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
 				int denom=value.GetAsSignedDword();
 				if(true==state.exception)
 				{
