@@ -241,6 +241,7 @@ void FMTowns::State::PowerOn(void)
 	if(true==argv.powerOffAtBreakPoint)
 	{
 		i486Debugger::BreakPointInfo info;
+		info.passCountUntilBreak=argv.powerOffAtPassCount;
 		towns.var.powerOffAt.MakeFromString(argv.powerOffAt);
 		towns.debugger.AddBreakPoint(towns.var.powerOffAt,info);
 	}

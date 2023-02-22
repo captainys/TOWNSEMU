@@ -102,7 +102,8 @@ void TownsThread::VMMainLoop(FMTowns *townsPtr,Outside_World *outside_world,clas
 
 					if(true==townsPtr->debugger.stop)
 					{
-						if(townsPtr->cpu.state.CS().value==townsPtr->var.powerOffAt.SEG &&
+						if(true==townsPtr->debugger.lastBreakPointInfo.ShouldBreak() &&
+						   townsPtr->cpu.state.CS().value==townsPtr->var.powerOffAt.SEG &&
 						   townsPtr->cpu.state.EIP==townsPtr->var.powerOffAt.OFFSET)
 						{
 							std::cout << "Break at the power-off point." << std::endl;

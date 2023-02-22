@@ -389,6 +389,16 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		{
 			powerOffAtBreakPoint=true;
 			powerOffAt=argv[i+1];
+			powerOffAtPassCount=0; // Tentative
+			for(size_t j=0; j<powerOffAt.size(); ++j)
+			{
+				if('@'==powerOffAt[j])
+				{
+					powerOffAtPassCount=cpputil::Atoi(powerOffAt.c_str()+j+1);
+					powerOffAt.resize(j);
+					break;
+				}
+			}
 			++i;
 		}
 		else if("-FREQ"==ARG && i+1<argc)

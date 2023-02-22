@@ -131,6 +131,7 @@ public:
 	bool interactive=true;
 
 	bool powerOffAtBreakPoint=false;
+	uint32_t powerOffAtPassCount=0;
 	bool forceQuitOnPowerOff=false;
 	std::string powerOffAt;
 
