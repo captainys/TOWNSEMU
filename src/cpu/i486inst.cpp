@@ -768,6 +768,11 @@ inline uint8_t *i486DX::GetOperandPointer(
 			offset&=0xFFFF;
 		}
 
+		if(seg.limit<offset+3)
+		{
+			return nullptr;  // Let FetchByte/FetchWord/FetchDword take care of exception.
+		}
+
 		auto physAddr=seg.baseLinearAddr+offset; // Tentative.
 		auto low12bit=physAddr&0xFFF;
 		if(low12bit<=0xFFC)
