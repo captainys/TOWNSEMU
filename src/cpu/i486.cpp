@@ -1056,8 +1056,19 @@ public:
 			//	DB		11000111B	; G=1, DB=1, (Unused)=0, A=0, LIMIT 16-19=0011
 			//	DB		0			; Base Address 24-31
 
+		#ifdef YS_LITTLE_ENDIAN
+			uint32_t segLimit,segBase;
+			uint8_t *segLimitPtr=(uint8_t *)&segLimit,*segBasePtr=(uint8_t *)&segBase;
+			cpputil::CopyWord(segLimitPtr,rawDesc+0);
+			segLimitPtr[2]=rawDesc[6]&0x0F;
+			segLimitPtr[3]=0;
+			cpputil::CopyWord(segBasePtr,rawDesc+2);
+			segBasePtr[2]=rawDesc[4];
+			segBasePtr[3]=rawDesc[7];
+		#else
 			unsigned int segLimit=cpputil::GetWord(rawDesc+0)|((rawDesc[6]&0x0F)<<16);
 			unsigned int segBase=cpputil::GetWord(rawDesc+2)|(rawDesc[4]<<16)|(rawDesc[7]<<24);
+		#endif
 			if((0x80&rawDesc[6])==0) // G==0
 			{
 				reg.limit=segLimit;
