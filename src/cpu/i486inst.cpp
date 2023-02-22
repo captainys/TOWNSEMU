@@ -5073,23 +5073,45 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		case 2: // NOT
 			{
 				clocksPassed=(OPER_ADDR==op1.operandType ? 3 : 1);
-				auto value=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op1);
-				if(true!=state.exception)
+				auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1);
+				if(nullptr!=operPtr)
 				{
-					value.byteData[0]=~value.byteData[0];
-					StoreOperandValue8(op1,mem,inst.addressSize,inst.segOverride,value);
+					if(true!=state.exception)
+					{
+						operPtr[0]=~operPtr[0];
+					}
+				}
+				else
+				{
+					auto value=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op1);
+					if(true!=state.exception)
+					{
+						value.byteData[0]=~value.byteData[0];
+						StoreOperandValue8(op1,mem,inst.addressSize,inst.segOverride,value);
+					}
 				}
 			}
 			break;
 		case 3: // NEG
 			{
 				clocksPassed = (OPER_ADDR == op1.operandType ? 3 : 1);
-				auto value1 = EvaluateOperand8(mem, inst.addressSize, inst.segOverride, op1);
-				uint32_t r = 0;
-				uint32_t i = value1.GetAsDword();
-				SubByte(r, i);
-				value1.SetDword(r);
-				StoreOperandValue8(op1, mem, inst.addressSize, inst.segOverride, value1);
+				auto operPtr=GetOperandPointer(mem, inst.addressSize, inst.segOverride, op1);
+				if(nullptr!=operPtr)
+				{
+					uint32_t r=0;
+					uint32_t i=operPtr[0];
+					SubByte(r,i);
+					operPtr[0]=r;
+				}
+				else
+				{
+					auto value1 = EvaluateOperand8(mem, inst.addressSize, inst.segOverride, op1);
+					uint32_t r = 0;
+					uint32_t i = value1.GetAsDword();
+					SubByte(r, i);
+					value1.SetDword(r);
+					StoreOperandValue8(op1, mem, inst.addressSize, inst.segOverride, value1);
+				}
 			}
 			break;
 		case 4: // MUL
@@ -5220,23 +5242,55 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		case 2: // NOT
 			{
 				clocksPassed=(OPER_ADDR==op1.operandType ? 2 : 1);
-				auto value1=EvaluateOperandReg16OrReg32OrMem(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
-				value1.byteData[0]=~value1.byteData[0];
-				value1.byteData[1]=~value1.byteData[1];
-				value1.byteData[2]=~value1.byteData[2];
-				value1.byteData[3]=~value1.byteData[3];
-				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+				auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1);
+				if(nullptr!=operPtr)
+				{
+					operPtr[0]=~operPtr[0];
+					operPtr[1]=~operPtr[1];
+					if(32==inst.operandSize)
+					{
+						operPtr[2]=~operPtr[2];
+						operPtr[3]=~operPtr[3];
+					}
+				}
+				else
+				{
+					auto value1=EvaluateOperandReg16OrReg32OrMem(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+					value1.byteData[0]=~value1.byteData[0];
+					value1.byteData[1]=~value1.byteData[1];
+					value1.byteData[2]=~value1.byteData[2];
+					value1.byteData[3]=~value1.byteData[3];
+					StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+				}
 			}
 			break;
 		case 3: // NEG
 			{
 				clocksPassed = (OPER_ADDR == op1.operandType ? 3 : 1);
-				auto value1 = EvaluateOperandReg16OrReg32OrMem(mem, inst.addressSize, inst.segOverride, op1, inst.operandSize / 8);
-				uint32_t r = 0;
-				uint32_t i = value1.GetAsDword();
-				SubWordOrDword(inst.operandSize, r, i);
-				value1.SetDword(r);
-				StoreOperandValue(op1, mem, inst.addressSize, inst.segOverride, value1);
+				auto operPtr=GetOperandPointer(mem, inst.addressSize, inst.segOverride, op1);
+				if(nullptr!=operPtr)
+				{
+					uint32_t r=0;
+					if(16==inst.operandSize)
+					{
+						SubWord(r,cpputil::GetWord(operPtr));
+						cpputil::PutWord(operPtr,r);
+					}
+					else
+					{
+						SubDword(r,cpputil::GetDword(operPtr));
+						cpputil::PutDword(operPtr,r);
+					}
+				}
+				else
+				{
+					auto value1 = EvaluateOperandReg16OrReg32OrMem(mem, inst.addressSize, inst.segOverride, op1, inst.operandSize / 8);
+					uint32_t r = 0;
+					uint32_t i = value1.GetAsDword();
+					SubWordOrDword(inst.operandSize, r, i);
+					value1.SetDword(r);
+					StoreOperandValue(op1, mem, inst.addressSize, inst.segOverride, value1);
+				}
 			}
 			break;
 		case 4: // MUL
