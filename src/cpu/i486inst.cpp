@@ -747,9 +747,13 @@ inline uint8_t *i486DX::GetOperandPointer(
     Memory &mem,int addressSize,int segmentOverride,const Operand &op)
 {
 #ifdef YS_LITTLE_ENDIAN
-	if(OPER_REG32==op.operandType || OPER_REG16==op.operandType)
+	if(OPER_REG32==op.operandType)
 	{
 		return (uint8_t *)&(state.NULL_and_reg32[op.reg]);
+	}
+	else if(OPER_REG16==op.operandType)
+	{
+		return (uint8_t *)&(state.NULL_and_reg32[op.reg-(REG_AX-REG_EAX)]);
 	}
 	else if(OPER_REG8==op.operandType)
 	{
@@ -4534,7 +4538,39 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			clocksPassed=1; \
 		} \
 		auto regNum=inst.GetREG(); \
-		if(16==inst.operandSize) \
+		auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1);\
+		if(nullptr!=operPtr)\
+		{\
+			if(16==inst.operandSize)\
+			{\
+				uint32_t i=cpputil::GetWord(operPtr);\
+				auto src=INT_LOW_WORD(state.reg32()[regNum]); \
+				if(true==state.exception)\
+				{\
+					break;\
+				}\
+				(func16)(i,src);\
+				if(true==(update))\
+				{\
+					cpputil::PutWord(operPtr,i);\
+				}\
+			}\
+			else\
+			{\
+				uint32_t i=cpputil::GetDword(operPtr);\
+				auto src=state.reg32()[regNum]; \
+				if(true==state.exception)\
+				{\
+					break;\
+				}\
+				(func32)(i,src);\
+				if(true==(update))\
+				{\
+					cpputil::PutDword(operPtr,i);\
+				}\
+			}\
+		}\
+		else if(16==inst.operandSize) \
 		{ \
 			auto dst=EvaluateOperandReg16OrReg32OrMem(mem,inst.addressSize,inst.segOverride,op1,2); \
 			auto src=INT_LOW_WORD(state.reg32()[regNum]); \
