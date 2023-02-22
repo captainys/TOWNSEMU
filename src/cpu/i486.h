@@ -3308,6 +3308,16 @@ public:
 	void ShrByte(unsigned int &value,unsigned int ctr);
 
 
+	/*! Returns a pointer to the operand.
+	    Can only be used for OPER_ADDR or OPER_REG.
+	    If available, it will reduce operand-type check for evaluate operand -> store operand
+	    type instructions.
+	    If there is a possibility of crossing the page boundary, it will return nullptr.
+	    *** Also, if it was memory, it assumes it will write to the address. ***
+	*/
+	inline uint8_t *GetOperandPointer(Memory &mem,int addressSize,int segmentOverride,const Operand &op);
+
+
 	/*! Evaluates an operand.
 	    destinationBytes is non zero if the operand that receives the value has a known size.
 	    If the destination size depends on the source size, destinationBytes should be zero.

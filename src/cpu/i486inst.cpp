@@ -743,6 +743,48 @@ void i486DX::MakeOpCodeRenumberTable(void)
 
 
 
+inline uint8_t *i486DX::GetOperandPointer(
+    Memory &mem,int addressSize,int segmentOverride,const Operand &op)
+{
+#ifdef YS_LITTLE_ENDIAN
+	if(OPER_REG32==op.operandType || OPER_REG16==op.operandType)
+	{
+		return (uint8_t *)&(state.NULL_and_reg32[op.reg]);
+	}
+	else if(OPER_REG8==op.operandType)
+	{
+		return (uint8_t *)state.reg8Ptr[op.reg-REG_AL];
+	}
+	else // Assume OPER_ADDR
+	{
+		unsigned int offset;
+		const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,op,segmentOverride);
+		if(16==addressSize)
+		{
+			offset&=0xFFFF;
+		}
+
+		auto physAddr=seg.baseLinearAddr+offset; // Tentative.
+		auto low12bit=physAddr&0xFFF;
+		if(low12bit<=0xFFC)
+		{
+			if(true==PagingEnabled())
+			{
+				physAddr=LinearAddressToPhysicalAddressWrite(physAddr,mem); // Assume write-operation for stack.
+			}
+			auto memWin=mem.GetMemoryWindow(physAddr);
+			if(nullptr!=memWin.ptr)
+			{
+				return memWin.ptr+low12bit;
+			}
+		}
+	}
+#endif
+	return nullptr;
+}
+
+
+
 #include "i486instfetch.h"
 
 
@@ -4537,18 +4579,36 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			clocksPassed=1; \
 		} \
 		unsigned int reg=REG_AL+inst.GetREG(); \
-		auto value1=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op1); \
-		auto value2=GetRegisterValue8(reg); \
-		if(true==state.exception) \
+		auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1); \
+		if(nullptr!=operPtr) \
 		{ \
-			break; \
+			auto value2=GetRegisterValue8(reg); \
+			if(true==state.exception) \
+			{ \
+				break; \
+			} \
+			uint32_t i=*operPtr; \
+			(func)(i,value2); \
+			if(true==update) \
+			{ \
+				*operPtr=i; \
+			} \
 		} \
-		auto i=value1.GetAsDword(); \
-		(func)(i,value2); \
-		if(true==update) \
+		else \
 		{ \
-			value1.SetDword(i); \
-			StoreOperandValue8(op1,mem,inst.addressSize,inst.segOverride,value1); \
+			auto value1=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op1); \
+			auto value2=GetRegisterValue8(reg); \
+			if(true==state.exception) \
+			{ \
+				break; \
+			} \
+			auto i=value1.GetAsDword(); \
+			(func)(i,value2); \
+			if(true==update) \
+			{ \
+				value1.SetDword(i); \
+				StoreOperandValue8(op1,mem,inst.addressSize,inst.segOverride,value1); \
+			} \
 		} \
 	}
 
