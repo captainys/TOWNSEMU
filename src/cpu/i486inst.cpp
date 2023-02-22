@@ -9634,31 +9634,71 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_RENUMBER_XCHG_RM8_R8://           0x86,
 		clocksPassed=(OPER_ADDR==op1.operandType ? 5 : 3);
 		{
-			// op2 is a register.
-			auto RM=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op1);
-
-			OperandValue R;
+			auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1);
 			auto regNum=inst.GetREG(); // Guaranteed to be between 0 and 7
-			R.MakeByte(state.reg32()[regNum&3]>>reg8Shift[regNum]);
+			if(nullptr!=operPtr)
+			{
+				uint8_t R=(state.reg32()[regNum&3]>>reg8Shift[regNum]);
+				uint32_t RM=operPtr[0];
 
-			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,R);
+				operPtr[0]=R;
 
-			state.reg32()[regNum&3]&=reg8AndPattern[regNum];
-			state.reg32()[regNum&3]|=((unsigned int)(RM.GetAsByte())<<reg8Shift[regNum]);
+				state.reg32()[regNum&3]&=reg8AndPattern[regNum];
+				state.reg32()[regNum&3]|=(RM<<reg8Shift[regNum]);
+			}
+			else
+			{
+				// op2 is a register.
+				auto RM=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op1);
+
+				OperandValue R;
+				R.MakeByte(state.reg32()[regNum&3]>>reg8Shift[regNum]);
+
+				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,R);
+
+				state.reg32()[regNum&3]&=reg8AndPattern[regNum];
+				state.reg32()[regNum&3]|=((unsigned int)(RM.GetAsByte())<<reg8Shift[regNum]);
+			}
 		}
 		break;
 	case I486_RENUMBER_XCHG_RM_R://             0x87,
 		clocksPassed=(OPER_ADDR==op1.operandType ? 5 : 3);
 		{
-			auto op32or16=inst.operandSize>>3;
-			auto RM=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,op32or16);
-			auto R=state.reg32()[inst.GetREG()]&operandSizeMask[op32or16];
+			auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1);
+			if(nullptr!=operPtr)
+			{
+				if(16==inst.operandSize)
+				{
+					uint16_t RM=cpputil::GetWord(operPtr);
+					uint16_t R=cpputil::LowWord(state.reg32()[inst.GetREG()]);
 
-			state.reg32()[inst.GetREG()]&=operandSizeAndPattern[op32or16];
-			state.reg32()[inst.GetREG()]|=(RM.GetAsDword()&operandSizeMask[op32or16]);
+					state.reg32()[inst.GetREG()]&=0xFFFF0000;
+					state.reg32()[inst.GetREG()]|=RM;
 
-			RM.SetDword(R);
-			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,RM);
+					cpputil::PutWord(operPtr,R);
+				}
+				else
+				{
+					uint32_t RM=cpputil::GetDword(operPtr);
+					uint32_t R=state.reg32()[inst.GetREG()];
+
+					state.reg32()[inst.GetREG()]=RM;
+
+					cpputil::PutDword(operPtr,R);
+				}
+			}
+			else
+			{
+				auto op32or16=inst.operandSize>>3;
+				auto RM=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,op32or16);
+				auto R=state.reg32()[inst.GetREG()]&operandSizeMask[op32or16];
+
+				state.reg32()[inst.GetREG()]&=operandSizeAndPattern[op32or16];
+				state.reg32()[inst.GetREG()]|=(RM.GetAsDword()&operandSizeMask[op32or16]);
+
+				RM.SetDword(R);
+				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,RM);
+			}
 		}
 		break;
 
