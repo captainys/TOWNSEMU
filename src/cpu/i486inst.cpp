@@ -7798,14 +7798,24 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				clocksPassed=1;
 			}
 
-			auto value1=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op1);
+			OperandValue value1;
+			uint32_t i;
+			auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1);
+			if(nullptr!=operPtr)
+			{
+				i=operPtr[0];
+			}
+			else
+			{
+				value1=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op1);
+				i=value1.GetAsDword();
+			}
 			auto value2=inst.EvalUimm8();
 			if(true==state.exception)
 			{
 				break;
 			}
 
-			auto i=value1.GetAsDword();
 			auto REG=inst.GetREG();
 			switch(REG)
 			{
@@ -7838,8 +7848,15 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			}
 			if(7!=REG) // Don't store a value if it is CMP
 			{
-				value1.SetDword(i);
-				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+				if(nullptr!=operPtr)
+				{
+					operPtr[0]=i;
+				}
+				else
+				{
+					value1.SetDword(i);
+					StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+				}
 			}
 		}
 		break;
@@ -7856,7 +7873,26 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				clocksPassed=1;
 			}
 
-			auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+			auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1);
+			OperandValue value1;
+			uint32_t i;
+			if(nullptr!=operPtr)
+			{
+				if(16==inst.operandSize)
+				{
+					i=cpputil::GetWord(operPtr);
+				}
+				else
+				{
+					i=cpputil::GetDword(operPtr);
+				}
+			}
+			else
+			{
+				value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+				i=value1.GetAsDword();
+			}
+
 			unsigned int value2;
 			if(I486_OPCODE_BINARYOP_R_FROM_I==inst.opCode)
 			{
@@ -7875,7 +7911,6 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				break;
 			}
 
-			auto i=value1.GetAsDword();
 			auto REG=inst.GetREG();
 			switch(REG)
 			{
@@ -7908,8 +7943,22 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			}
 			if(7!=REG) // Don't store a value if it is CMP
 			{
-				value1.SetDword(i);
-				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+				if(nullptr!=operPtr)
+				{
+					if(16==inst.operandSize)
+					{
+						cpputil::PutWord(operPtr,i);
+					}
+					else
+					{
+						cpputil::PutDword(operPtr,i);
+					}
+				}
+				else
+				{
+					value1.SetDword(i);
+					StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+				}
 			}
 		}
 		break;
@@ -8279,7 +8328,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_RENUMBER_MOV_FROM_R8: //      0x88,
 		{
 			auto regNum=inst.GetREG(); // Guaranteed to be between 0 and 7
+		#ifdef YS_LITTLE_ENDIAN
+			unsigned int value=*state.reg8Ptr[regNum];
+		#else
 			unsigned int value=(255&(state.reg32()[regNum&3]>>reg8Shift[regNum]));
+		#endif
 			OperandValue src;
 			src.MakeByte(value);
 			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,src);
@@ -8292,8 +8345,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			auto value=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op2);
 			if(true!=state.exception)
 			{
+			#ifdef YS_LITTLE_ENDIAN
+				*state.reg8Ptr[regNum]=value.GetAsByte();
+			#else
 				state.reg32()[regNum&3]&=reg8AndPattern[regNum];
 				state.reg32()[regNum&3]|=((unsigned int)(value.GetAsByte())<<reg8Shift[regNum]);
+			#endif
 			}
 			else
 			{
