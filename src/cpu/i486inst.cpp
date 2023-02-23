@@ -8368,18 +8368,33 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 	case I486_RENUMBER_MOV_TO_R: //         0x8B, // 16/32 depends on OPSIZE_OVERRIDE
 		{
-			auto nBytes=(inst.operandSize>>3);
-			auto regNum=inst.GetREG(); // Guaranteed to be between 0 and 7
-			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize/8);
-			if(true!=state.exception)
+			if(16==inst.operandSize)
 			{
-				state.reg32()[regNum]&=operandSizeAndPattern[nBytes];
-				state.reg32()[regNum]|=(unsigned int)(value.GetAsDword());
+				auto regNum=inst.GetREG(); // Guaranteed to be between 0 and 7
+				auto value=EvaluateOperandRegOrMem16(mem,inst.addressSize,inst.segOverride,op2);
+				if(true!=state.exception)
+				{
+					SET_INT_LOW_WORD(state.reg32()[regNum],value);
+				}
+				else
+				{
+					HandleException(true,mem,inst.numBytes);
+					EIPIncrement=0;
+				}
 			}
 			else
 			{
-				HandleException(true,mem,inst.numBytes);
-				EIPIncrement=0;
+				auto regNum=inst.GetREG(); // Guaranteed to be between 0 and 7
+				auto value=EvaluateOperandRegOrMem32(mem,inst.addressSize,inst.segOverride,op2);
+				if(true!=state.exception)
+				{
+					state.reg32()[regNum]=value;
+				}
+				else
+				{
+					HandleException(true,mem,inst.numBytes);
+					EIPIncrement=0;
+				}
 			}
 			clocksPassed=1;
 		}
