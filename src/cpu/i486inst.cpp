@@ -4440,7 +4440,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		if(true==(jumpCond)) \
 		{ \
 			auto offset=inst.EvalSimm8(); \
-			state.EIP=((state.EIP+offset+inst.numBytes)&operandSizeMask[inst.operandSize>>3]); \
+			state.EIP=(state.EIP+offset+inst.numBytes); \
+			if(16==inst.operandSize)\
+			{\
+				state.EIP&=0xFFFF;\
+			}\
 			clocksPassed=3; \
 			EIPIncrement=0; \
 		} \
