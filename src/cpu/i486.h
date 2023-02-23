@@ -3377,6 +3377,12 @@ public:
 	*/
 	void StoreOperandValue(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value);
 
+	/*! Stores value to the destination operand, when the operand is known to be reg16 or mem16. */
+	void StoreOperandValueRegOrMem16(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,uint16_t value);
+
+	/*! Stores value to the destination operand, when the operand is known to be reg32 or mem32. */
+	void StoreOperandValueRegOrMem32(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,uint32_t value);
+
 	/*! Stores value to the destination described by the operand
 	    when the operand is known to be reg16, reg32, or mem.
 	*/

@@ -2969,6 +2969,57 @@ void i486DX::StoreOperandValue(
 	}
 }
 
+void i486DX::StoreOperandValueRegOrMem16(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,uint16_t value)
+{
+	static const unsigned int addressMask[2]=
+	{
+		0x0000FFFF,
+		0xFFFFFFFF,
+	};
+
+	if(OPER_REG32==dst.operandType)
+	{
+		state.NULL_and_reg32[dst.reg]=value;
+	}
+	else if(OPER_REG16==dst.operandType)
+	{
+		SET_INT_LOW_WORD(state.NULL_and_reg32[dst.reg&15],value);
+	}
+	else
+	{
+		unsigned int offset;
+		const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,dst,segmentOverride);
+
+		offset&=addressMask[addressSize>>5];
+		StoreWord(mem,addressSize,seg,offset,value);
+	}
+}
+void i486DX::StoreOperandValueRegOrMem32(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,uint32_t value)
+{
+	static const unsigned int addressMask[2]=
+	{
+		0x0000FFFF,
+		0xFFFFFFFF,
+	};
+
+	if(OPER_REG32==dst.operandType)
+	{
+		state.NULL_and_reg32[dst.reg]=value;
+	}
+	else if(OPER_REG16==dst.operandType)
+	{
+		SET_INT_LOW_WORD(state.NULL_and_reg32[dst.reg&15],value);
+	}
+	else
+	{
+		unsigned int offset;
+		const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,dst,segmentOverride);
+
+		offset&=addressMask[addressSize>>5];
+		StoreDword(mem,addressSize,seg,offset,value);
+	}
+}
+
 void i486DX::StoreOperandValueReg16OrReg32OrMem(
     const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value)
 {

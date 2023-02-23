@@ -8348,10 +8348,16 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_RENUMBER_MOV_FROM_R: //       0x89, // 16/32 depends on OPSIZE_OVERRIDE
 		{
 			auto regNum=inst.GetREG();
-			unsigned int value=(state.reg32()[regNum]&operandSizeMask[inst.operandSize>>3]);
-			OperandValue src;
-			src.MakeByteWordOrDword(inst.operandSize,value);
-			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,src);
+			if(16==inst.operandSize)
+			{
+				uint32_t value=INT_LOW_WORD(state.reg32()[regNum]);
+				StoreOperandValueRegOrMem16(op1,mem,inst.addressSize,inst.segOverride,value);
+			}
+			else
+			{
+				uint32_t value=state.reg32()[regNum];
+				StoreOperandValueRegOrMem32(op1,mem,inst.addressSize,inst.segOverride,value);
+			}
 			if(true==state.exception)
 			{
 				HandleException(true,mem,inst.numBytes);
@@ -8389,7 +8395,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		#endif
 			OperandValue src;
 			src.MakeByte(value);
-			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,src);
+			StoreOperandValue8(op1,mem,inst.addressSize,inst.segOverride,src);
 			clocksPassed=1;
 		}
 		break;
