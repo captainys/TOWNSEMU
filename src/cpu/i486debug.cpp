@@ -154,6 +154,11 @@ void i486Debugger::CleanUp(void)
 		log.ESP=0;
 	}
 	CSEIPLogPtr=0;
+
+	for(auto &h : instHist)
+	{
+		h=0;
+	}
 }
 void i486Debugger::AddBreakPoint(CS_EIP bp,BreakPointInfo info)
 {
@@ -264,6 +269,8 @@ void i486Debugger::SetOneTimeBreakPoint(unsigned int CS,unsigned int EIP)
 void i486Debugger::BeforeRunOneInstruction(i486DX &cpu,Memory &mem,InOut &io,const i486DX::Instruction &inst)
 {
 	specialDebugInfo->BeforeRunOneInstruction(*this,cpu,mem,io,inst);
+
+	++instHist[inst.opCode];
 
 	CS_EIP cseip;
 	cseip.SEG=cpu.state.CS().value;

@@ -100,6 +100,8 @@ public:
 	std::string externalBreakReason;
 	std::map <unsigned int,std::string> ioLabel;
 
+	uint32_t instHist[0xFFFF];
+
 	class CSEIPLogType : public i486DX::FarPointer
 	{
 	public:

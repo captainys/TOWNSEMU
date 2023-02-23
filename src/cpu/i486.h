@@ -1390,7 +1390,6 @@ public:
 
 	State state;
 
-
 #ifdef YS_LITTLE_ENDIAN
 	#define INT_LOW_WORD(i) (*((uint16_t *)&(i)))
 	#define INT_LOW_BYTE(i) (((unsigned char *)&(i))[0])

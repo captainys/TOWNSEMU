@@ -17,6 +17,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <fstream>
 #include <vector>
 #include <cstdint>
+#include <map>
 
 #include <time.h>
 #include <stdio.h>
@@ -285,7 +286,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	dumpableMap["487"]=DUMP_FPU;
 	dumpableMap["80487"]=DUMP_FPU;
 	dumpableMap["WHEREIAM"]=DUMP_WHERE_I_AM;
-
+	dumpableMap["INSTHIST"]=DUMP_INSTRUCTION_HISTOGRAM;
 
 
 	breakEventMap["ICW1"]=   BREAK_ON_PIC_IWC1;
@@ -743,6 +744,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  DOS info.  Need to set DOSSEG unless DOSSEG is 1679." << std::endl;
 	std::cout << "WHEREIAM" << std::endl;
 	std::cout << "  If map-X and map-Y expression is defined, print X and Y coordinate." << std::endl;
+	std::cout << "INSTHIST" << std::endl;
+	std::cout << "  Instruction histogram.  Only available when the debugger is enabled." << std::endl;
 
 	std::cout << "" << std::endl;
 
@@ -2174,6 +2177,30 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 				else
 				{
 					std::cout << "Unavailable" << std::endl;
+				}
+			}
+			break;
+		case DUMP_INSTRUCTION_HISTOGRAM:
+			{
+				std::multimap <unsigned int,unsigned int> freqToInst;
+				for(unsigned int opCode=0; opCode<0xFFFF; ++opCode)
+				{
+					freqToInst.insert(std::pair<unsigned int,unsigned int>(towns.debugger.instHist[opCode],opCode));
+				}
+				int n=0;
+				for(auto iter=freqToInst.rbegin(); freqToInst.rend()!=iter; ++iter)
+				{
+					auto x=*iter;
+					std::cout << cpputil::Ustox(x.second) << ":" << cpputil::Uitox(x.first) << std::endl;
+					++n;
+					if(100<n)
+					{
+						break;
+					}
+				}
+				for(auto &h : towns.debugger.instHist)
+				{
+					h=0;
 				}
 			}
 			break;
