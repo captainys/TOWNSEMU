@@ -8641,24 +8641,40 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		break;
 	case I486_RENUMBER_MOVSX_R32_RM16://=   0x0FBF,
+		{
+			clocksPassed=3;
+			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,2);
+			if(true!=state.exception)
+			{
+				// op1 is a register.
+				auto regNum=inst.GetREG(); // Guaranteed to be between 0 and 7
+				if(0!=(value.byteData[1]&0x80))
+				{
+					value.byteData[2]=0xFF;
+					value.byteData[3]=0xFF;
+					state.reg32()[regNum]=cpputil::GetDword(value.byteData);
+				}
+				else
+				{
+					state.reg32()[regNum]=cpputil::GetWord(value.byteData);
+				}
+			}
+			else
+			{
+				HandleException(true,mem,inst.numBytes);
+				EIPIncrement=0;
+			}
+		}
+		break;
 	case I486_RENUMBER_MOVZX_R32_RM16://=   0x0FB7, 16bit to 32bit
 		{
 			clocksPassed=3;
 			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,2);
 			if(true!=state.exception)
 			{
-				value.numBytes=4;
-				if(I486_OPCODE_MOVZX_R32_RM16==inst.opCode || 0==(value.byteData[1]&0x80))
-				{
-					value.byteData[2]=0;
-					value.byteData[3]=0;
-				}
-				else
-				{
-					value.byteData[2]=0xff;
-					value.byteData[3]=0xff;
-				}
-				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+				// op1 is a register.
+				auto regNum=inst.GetREG(); // Guaranteed to be between 0 and 7
+				state.reg32()[regNum]=cpputil::GetWord(value.byteData);
 			}
 			else
 			{
