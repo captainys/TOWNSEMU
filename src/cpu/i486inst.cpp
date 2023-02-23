@@ -9643,7 +9643,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			auto op1=GetAX();
 			auto op2=state.reg32()[inst.opCode&7];
 			SetAX(op2);
-			state.reg32()[inst.opCode&7]=(state.reg32()[inst.opCode&7]&0xffff0000)|(op1&0xffff);
+			SET_INT_LOW_WORD(state.reg32()[inst.opCode&7],op1);
 		}
 		else
 		{
@@ -9660,6 +9660,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			auto regNum=inst.GetREG(); // Guaranteed to be between 0 and 7
 			if(nullptr!=operPtr)
 			{
+			#ifdef YS_LITTLE_ENDIAN
+				std::swap(operPtr[0],*state.reg8Ptr[regNum]);
+			#else
 				uint8_t R=(state.reg32()[regNum&3]>>reg8Shift[regNum]);
 				uint32_t RM=operPtr[0];
 
@@ -9667,6 +9670,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 				state.reg32()[regNum&3]&=reg8AndPattern[regNum];
 				state.reg32()[regNum&3]|=(RM<<reg8Shift[regNum]);
+			#endif
 			}
 			else
 			{
