@@ -4505,12 +4505,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		if(16==inst.operandSize) \
 		{ \
 			unsigned int dst=INT_LOW_WORD(state.reg32()[regNum]); \
-			auto src=EvaluateOperandReg16OrReg32OrMem(mem,inst.addressSize,inst.segOverride,op2,2); \
+			auto src=EvaluateOperandRegOrMem16(mem,inst.addressSize,inst.segOverride,op2); \
 			if(true==state.exception) \
 			{ \
 				break; \
 			} \
-			(func16)(dst,src.GetAsWord()); \
+			(func16)(dst,src); \
 			if(true==(update)) \
 			{ \
 				SET_INT_LOW_WORD(state.reg32()[regNum],dst); \
@@ -4519,12 +4519,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		else \
 		{ \
 			unsigned int dst=state.reg32()[regNum]; \
-			auto src=EvaluateOperandReg16OrReg32OrMem(mem,inst.addressSize,inst.segOverride,op2,4); \
+			auto src=EvaluateOperandRegOrMem32(mem,inst.addressSize,inst.segOverride,op2); \
 			if(true==state.exception) \
 			{ \
 				break; \
 			} \
-			(func32)(dst,src.GetAsDword()); \
+			(func32)(dst,src); \
 			if(true==(update)) \
 			{ \
 				state.reg32()[regNum]=dst; \

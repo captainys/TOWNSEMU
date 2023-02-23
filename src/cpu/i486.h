@@ -3329,6 +3329,14 @@ public:
 	OperandValue EvaluateOperand(
 	    Memory &mem,int addressSize,int segmentOverride,const Operand &op,int destinationBytes);
 
+	/*! Evaluate an operand when it is known to be Reg16 or Mem16.
+	*/
+	uint16_t EvaluateOperandRegOrMem16(Memory &mem,int addressSize,int segmentOverride,const Operand &op);
+
+	/*! Evaluate an operand when it is known to be Reg32 or Mem32.
+	*/
+	uint32_t EvaluateOperandRegOrMem32(Memory &mem,int addressSize,int segmentOverride,const Operand &op);
+
 	/*! Evaluate an operand when it is known to be either a register or memory.
 	*/
 	OperandValue EvaluateOperandReg16OrReg32OrMem(
