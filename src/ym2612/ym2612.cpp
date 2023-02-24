@@ -398,95 +398,101 @@ unsigned int YM2612::ReallyWriteRegister(unsigned int channelBase,unsigned int r
 	reg&=255;
 	auto prev=state.regSet[regSet][reg];
 	state.regSet[regSet][reg]=value;
-	if(REG_TIMER_CONTROL==reg)
+
+	switch(regWriteCaseTable[reg])
 	{
-		// [2] pp. 202 RESET bits will be cleared immediately after set.
-		// .... I interpret it as RESET bits are always read to zero.
-		state.regSet[regSet][REG_TIMER_CONTROL]&=0xCF;
+	case REGWRITE_MEANINGLESS:
+		break;
+	case REGWRITE_TIMER_CONTROL:
+		{
+			// [2] pp. 202 RESET bits will be cleared immediately after set.
+			// .... I interpret it as RESET bits are always read to zero.
+			state.regSet[regSet][REG_TIMER_CONTROL]&=0xCF;
 
-		// LOAD bits are mysterious.
-		// [2] pp.201 tells that writing 1 to LOAD bit resets the counter and start counting.
-		// Towns OS's behavior does not seem to be agree with it.
-		// Timer A interrupt handler writes 0x3F to register 0x27.  If I implement as [2] pp.201,
-		// Timer B counter is reset when Timer A is up, or vise versa.
-		// Slower one of Timer A or B will never be up.
-		//
-		// There are some possibilities:
-		// (1) The timer counter resets on the rising edge of LOAD.  When timer is up, LOAD will be cleared.
-		//     Therefore, writing LOAD=1 when LOAD is already 1 does nothing.
-		// (2) Towns OS writes (0118:[0727H])|0x15 for Timer A or (0118:[0727H])|0x2A for Timer B for resetting the counter.
-		//     0118:[0727H] is a cached value (or read back) from YM2612 register 27H.  If LOAD bits are always zero when
-		//     read, it won't reset the timer when resetting the other timer.
-		// (3) The timer counter is reloaded on LOAD=1 only if the timer is up.
-        //
-		// There are some web sites such as:
-		//   https://plutiedev.com/ym2612-registers#reg-27
-		//   https://www.smspower.org/maxim/Documents/YM2612
-		//   https://wiki.megadrive.org/index.php?title=YM2612_Registers
-		// suggesting that LOAD bit means the timer is running.  If so, I guess (2) is unlikely.
-		// With my elementary knowledge in FPGA programming, (1) looks to be more straight-forward.
-		// Currently I go with (1).
+			// LOAD bits are mysterious.
+			// [2] pp.201 tells that writing 1 to LOAD bit resets the counter and start counting.
+			// Towns OS's behavior does not seem to be agree with it.
+			// Timer A interrupt handler writes 0x3F to register 0x27.  If I implement as [2] pp.201,
+			// Timer B counter is reset when Timer A is up, or vise versa.
+			// Slower one of Timer A or B will never be up.
+			//
+			// There are some possibilities:
+			// (1) The timer counter resets on the rising edge of LOAD.  When timer is up, LOAD will be cleared.
+			//     Therefore, writing LOAD=1 when LOAD is already 1 does nothing.
+			// (2) Towns OS writes (0118:[0727H])|0x15 for Timer A or (0118:[0727H])|0x2A for Timer B for resetting the counter.
+			//     0118:[0727H] is a cached value (or read back) from YM2612 register 27H.  If LOAD bits are always zero when
+			//     read, it won't reset the timer when resetting the other timer.
+			// (3) The timer counter is reloaded on LOAD=1 only if the timer is up.
+	        //
+			// There are some web sites such as:
+			//   https://plutiedev.com/ym2612-registers#reg-27
+			//   https://www.smspower.org/maxim/Documents/YM2612
+			//   https://wiki.megadrive.org/index.php?title=YM2612_Registers
+			// suggesting that LOAD bit means the timer is running.  If so, I guess (2) is unlikely.
+			// With my elementary knowledge in FPGA programming, (1) looks to be more straight-forward.
+			// Currently I go with (1).
 
-		if(0==(prev&1) && 0!=(value&1)) // Load Timer A
-		{
-			ReloadTimerA();
-		}
-		if(0==(prev&2) && 0!=(value&2)) // Load Timer B
-		{
-			ReloadTimerB();
-		}
-		if(value&4) // Enable Timer A Flag
-		{
-		}
-		if(value&8) // Enable Timer B Flag
-		{
-		}
-		if(value&0x10) // Reset Timer A Flag
-		{
-			state.timerUp[0]=false;
-		}
-		if(value&0x20) // Reset Timer B Flag
-		{
-			state.timerUp[1]=false;
-		}
-	}
-	else if(REG_KEY_ON_OFF==reg)
-	{
-		static unsigned int chTwist[8]={0,1,2,255,3,4,5,255};
-		unsigned int ch=chTwist[value&7];
-		if(ch<6)
-		{
-			unsigned int slotFlag=((value>>4)&0x0F);
-
-			unsigned int onSlots=(~state.channels[ch].usingSlot)&slotFlag;
-			unsigned int offSlots=(state.channels[ch].usingSlot&(~slotFlag))&0x0F;
-
-			// Prob, this is the trigger to start playing.
-			// F-BASIC386 first writes SLOT=0 then SLOT=0x0F.
-			if(0!=onSlots)
+			if(0==(prev&1) && 0!=(value&1)) // Load Timer A
 			{
-				// Play a tone
-				KeyOn(ch,onSlots);
-				chStartPlaying=ch;
+				ReloadTimerA();
 			}
-			if(0!=offSlots)
+			if(0==(prev&2) && 0!=(value&2)) // Load Timer B
 			{
-				KeyOff(ch,offSlots);
+				ReloadTimerB();
 			}
-
-			state.channels[ch].usingSlot=slotFlag;
+			if(value&4) // Enable Timer A Flag
+			{
+			}
+			if(value&8) // Enable Timer B Flag
+			{
+			}
+			if(value&0x10) // Reset Timer A Flag
+			{
+				state.timerUp[0]=false;
+			}
+			if(value&0x20) // Reset Timer B Flag
+			{
+				state.timerUp[1]=false;
+			}
 		}
-	}
-	else if(REG_LFO==reg)
-	{
-		state.LFO=(0!=(value&8));
-		state.FREQCTRL=value&7;
-	}
-	else if(0xA8<=reg && reg<=0xAE) // Special 3CH F-Number/BLOCK
-	{
-		unsigned int slot=(reg&3);
-		if(slot<3)
+		break;
+	case REGWRITE_KEY_ON_OFF:
 		{
+			static unsigned int chTwist[8]={0,1,2,255,3,4,5,255};
+			unsigned int ch=chTwist[value&7];
+			if(ch<6)
+			{
+				unsigned int slotFlag=((value>>4)&0x0F);
+
+				unsigned int onSlots=(~state.channels[ch].usingSlot)&slotFlag;
+				unsigned int offSlots=(state.channels[ch].usingSlot&(~slotFlag))&0x0F;
+
+				// Prob, this is the trigger to start playing.
+				// F-BASIC386 first writes SLOT=0 then SLOT=0x0F.
+				if(0!=onSlots)
+				{
+					// Play a tone
+					KeyOn(ch,onSlots);
+					chStartPlaying=ch;
+				}
+				if(0!=offSlots)
+				{
+					KeyOff(ch,offSlots);
+				}
+
+				state.channels[ch].usingSlot=slotFlag;
+			}
+		}
+		break;
+	case REGWRITE_LFO:
+		{
+			state.LFO=(0!=(value&8));
+			state.FREQCTRL=value&7;
+		}
+		break;
+	case REGWRITE_3CH_SPECIAL:
+		{
+			unsigned int slot=(reg&3);
 			if(0==channelBase)
 			{
 				if(reg<0xAC)
@@ -518,123 +524,151 @@ unsigned int YM2612::ReallyWriteRegister(unsigned int channelBase,unsigned int r
 				}
 			}
 		}
-	}
-	else if(0x30<=reg && reg<=0x9E) // Per Channel per slot
-	{
-		unsigned int ch=(reg&3);
-		if(ch<=2)
+		break;
+	case REGWRITE_DT_MULTI:
 		{
+			unsigned int ch=(reg&3)+channelBase;
 			const unsigned int slot=slotTwist[((reg>>2)&3)];
-			ch+=channelBase;
-			switch(reg&0xF0)
-			{
-			case 0x30: // DT, MULTI
-				state.channels[ch].slots[slot].DT=((value>>4)&7);
-				state.channels[ch].slots[slot].MULTI=(value&15);
-				break;
-			case 0x40: // TL
-				{
-					auto prevTL=state.channels[ch].slots[slot].TL;
-					state.channels[ch].slots[slot].TL=(value&0x7F);
-					if(0!=(state.channels[ch].usingSlot&(1<<slot)))
-					{
-						auto prevLevel=127-prevTL;
-						auto newLevel=127-state.channels[ch].slots[slot].TL;
-						if(2!=ch || MODE_NONE==GetChannel3Mode())
-						{
-							// FM Towns Technical Databook pp.205
-							// In CSM mode, change of TL takes effect at next Key On.
-							UpdateSlotEnvelope(ch,slot);
-							if(0!=prevLevel)
-							{
-								// Must be linear in dB scale.  To prepare for subsequent release phase.
-								state.channels[ch].slots[slot].lastDbX100Cache*=newLevel;
-								state.channels[ch].slots[slot].lastDbX100Cache/=prevLevel;
-							}
-						}
-					}
-					else if(true==state.channels[ch].slots[slot].InReleasePhase)
-					{
-						auto prevLevel=127-prevTL;
-						auto newLevel=127-state.channels[ch].slots[slot].TL;
-						if(0!=prevLevel)
-						{
-							// Must be linear in dB scale.  lastDbX100Cache shouldn't matter already.
-							state.channels[ch].slots[slot].ReleaseStartDbX100*=newLevel;
-							state.channels[ch].slots[slot].ReleaseStartDbX100/=prevLevel;
-						}
-					}
-				}
-				break;
-			case 0x50: // KS,AR
-				state.channels[ch].slots[slot].KS=((value>>6)&3);
-				state.channels[ch].slots[slot].AR=(value&0x1F);
-				break;
-			case 0x60: // AM,DR
-				state.channels[ch].slots[slot].AM=((value>>7)&1);
-				state.channels[ch].slots[slot].DR=(value&0x1F);
-				break;
-			case 0x70: // SR
-				state.channels[ch].slots[slot].SR=(value&0x1F);
-				break;
-			case 0x80: // SL,RR
-				state.channels[ch].slots[slot].SL=((value>>4)&0x0F);
-				state.channels[ch].slots[slot].RR=(value&0x0F);
-				if(0!=(state.channels[ch].usingSlot&(1<<slot)))
-				{
-					UpdateSlotEnvelope(ch,slot);
-				}
-				else if(true==state.channels[ch].slots[slot].InReleasePhase)
-				{
-					UpdateRelease(state.channels[ch],state.channels[ch].slots[slot]);
-				}
-				break;
-			case 0x90: // SSG-EG
-				state.channels[ch].slots[slot].SSG_EG=(value&0x0F);
-				if(0!=(value&8))
-				{
-					UpdateSlotEnvelope(ch,slot);
-				}
-				break;
-			}
+			state.channels[ch].slots[slot].DT=((value>>4)&7);
+			state.channels[ch].slots[slot].MULTI=(value&15);
 		}
-	}
-	else if(0xA0<=reg && reg<=0xB6)
-	{
-		unsigned int ch=(reg&3);
-		if(ch<=2)
+		break;
+	case REGWRITE_TL:
 		{
-			unsigned int slot=slotTwist[((reg>>2)&3)];
-			ch+=channelBase;
-			switch(reg&0xFC)
+			unsigned int ch=(reg&3)+channelBase;
+			const unsigned int slot=slotTwist[((reg>>2)&3)];
+			auto prevTL=state.channels[ch].slots[slot].TL;
+			state.channels[ch].slots[slot].TL=(value&0x7F);
+			if(0!=(state.channels[ch].usingSlot&(1<<slot)))
 			{
-			case 0xA0: // F-Number1
-				// [2] pp.211 Implies that writing to reg A0H to A2H triggers a tone to play.
-				//     When setting the note, first write BLOCK and high 3-bits of F-Number (F-Number2),
-				//     and then write lower 8-bits of F-Number (F-Number1).
-				//     Or, is it REG_KEY_ON_OFF?
-				state.channels[ch].F_NUM&=0xFF00;
-				state.channels[ch].F_NUM|=value;
-				UpdatePhase12StepSlot(state.channels[ch]);
-				break;
-			case 0xA4: // BLOCK,F-Number2
-				state.channels[ch].F_NUM&=0x00FF;
-				state.channels[ch].F_NUM|=((value&7)<<8);
-				state.channels[ch].BLOCK=((value>>3)&7);
-				break;
-			case 0xB0: // FB, CONNECT
-				state.channels[ch].FB=((value>>3)&7);
-				state.channels[ch].CONNECT=(value&7);
-				break;
-			case 0xB4: // L,R,AMS,PMS
-				state.channels[ch].L=((value>>7)&1);
-				state.channels[ch].R=((value>>6)&1);
-				state.channels[ch].AMS=((value>>4)&3);
-				state.channels[ch].PMS=(value&7);
-				break;
+				auto prevLevel=127-prevTL;
+				auto newLevel=127-state.channels[ch].slots[slot].TL;
+				if(2!=ch || MODE_NONE==GetChannel3Mode())
+				{
+					// FM Towns Technical Databook pp.205
+					// In CSM mode, change of TL takes effect at next Key On.
+					UpdateSlotEnvelope(ch,slot);
+					if(0!=prevLevel)
+					{
+						// Must be linear in dB scale.  To prepare for subsequent release phase.
+						state.channels[ch].slots[slot].lastDbX100Cache*=newLevel;
+						state.channels[ch].slots[slot].lastDbX100Cache/=prevLevel;
+					}
+				}
+			}
+			else if(true==state.channels[ch].slots[slot].InReleasePhase)
+			{
+				auto prevLevel=127-prevTL;
+				auto newLevel=127-state.channels[ch].slots[slot].TL;
+				if(0!=prevLevel)
+				{
+					// Must be linear in dB scale.  lastDbX100Cache shouldn't matter already.
+					state.channels[ch].slots[slot].ReleaseStartDbX100*=newLevel;
+					state.channels[ch].slots[slot].ReleaseStartDbX100/=prevLevel;
+				}
 			}
 		}
+		break;
+	case REGWRITE_KS_AR:
+		{
+			unsigned int ch=(reg&3)+channelBase;
+			const unsigned int slot=slotTwist[((reg>>2)&3)];
+			state.channels[ch].slots[slot].KS=((value>>6)&3);
+			state.channels[ch].slots[slot].AR=(value&0x1F);
+		}
+		break;
+	case REGWRITE_AM_DR:
+		{
+			unsigned int ch=(reg&3)+channelBase;
+			const unsigned int slot=slotTwist[((reg>>2)&3)];
+			state.channels[ch].slots[slot].AM=((value>>7)&1);
+			state.channels[ch].slots[slot].DR=(value&0x1F);
+		}
+		break;
+	case REGWRITE_SR:
+		{
+			unsigned int ch=(reg&3)+channelBase;
+			const unsigned int slot=slotTwist[((reg>>2)&3)];
+			state.channels[ch].slots[slot].SR=(value&0x1F);
+		}
+		break;
+	case REGWRITE_SL_RR:
+		{
+			unsigned int ch=(reg&3)+channelBase;
+			const unsigned int slot=slotTwist[((reg>>2)&3)];
+			state.channels[ch].slots[slot].SL=((value>>4)&0x0F);
+			state.channels[ch].slots[slot].RR=(value&0x0F);
+			if(0!=(state.channels[ch].usingSlot&(1<<slot)))
+			{
+				UpdateSlotEnvelope(ch,slot);
+			}
+			else if(true==state.channels[ch].slots[slot].InReleasePhase)
+			{
+				UpdateRelease(state.channels[ch],state.channels[ch].slots[slot]);
+			}
+		}
+		break;
+	case REGWRITE_SSG_EG:
+		{
+			unsigned int ch=(reg&3)+channelBase;
+			const unsigned int slot=slotTwist[((reg>>2)&3)];
+			state.channels[ch].slots[slot].SSG_EG=(value&0x0F);
+			if(0!=(value&8))
+			{
+				UpdateSlotEnvelope(ch,slot);
+			}
+		}
+		break;
+	case REGWRITE_FNUM1:
+		{
+			unsigned int ch=(reg&3)+channelBase;
+			unsigned int slot=slotTwist[((reg>>2)&3)];
+			// [2] pp.211 Implies that writing to reg A0H to A2H triggers a tone to play.
+			//     When setting the note, first write BLOCK and high 3-bits of F-Number (F-Number2),
+			//     and then write lower 8-bits of F-Number (F-Number1).
+			//     Or, is it REG_KEY_ON_OFF?
+			state.channels[ch].F_NUM&=0xFF00;
+			state.channels[ch].F_NUM|=value;
+			UpdatePhase12StepSlot(state.channels[ch]);
+		}
+		break;
+	case REGWRITE_BLOCK_FNUM2:
+		{
+			unsigned int ch=(reg&3)+channelBase;
+			unsigned int slot=slotTwist[((reg>>2)&3)];
+			state.channels[ch].F_NUM&=0x00FF;
+			state.channels[ch].F_NUM|=((value&7)<<8);
+			state.channels[ch].BLOCK=((value>>3)&7);
+		}
+		break;
+	case REGWRITE_FB_CONNECT:
+		{
+			unsigned int ch=(reg&3)+channelBase;
+			unsigned int slot=slotTwist[((reg>>2)&3)];
+			state.channels[ch].FB=((value>>3)&7);
+			state.channels[ch].CONNECT=(value&7);
+		}
+		break;
+	case REGWRITE_L_R_AMS_PMS:
+		{
+			unsigned int ch=(reg&3)+channelBase;
+			unsigned int slot=slotTwist[((reg>>2)&3)];
+			state.channels[ch].L=((value>>7)&1);
+			state.channels[ch].R=((value>>6)&1);
+			state.channels[ch].AMS=((value>>4)&3);
+			state.channels[ch].PMS=(value&7);
+		}
+		break;
+	default:
+	#ifdef _WIN32
+		__assume(0);
+	#elif defined(__clang__) || defined(__GNUC__)
+		__builtin_unreachable();
+	#else
+		std::unreachable();
+	#endif
 	}
+
 #ifdef YM_PRESCALER_CONFIGURABLE
 	else if(REG_PRESCALER_0==reg)
 	{

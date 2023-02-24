@@ -339,7 +339,7 @@ public:
 		REGWRITE_FB_CONNECT,
 		REGWRITE_L_R_AMS_PMS,
 	};
-	uint8_t regWriteCaseTable[256];
+	uint32_t regWriteCaseTable[256];
 
 
 	YM2612();
