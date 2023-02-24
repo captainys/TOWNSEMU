@@ -227,6 +227,20 @@ void YM2612::MakeRegWriteCaseTable(void)
 				}
 			}
 		}
+	#ifdef YM_PRESCALER_CONFIGURABLE
+		else if(REG_PRESCALER_0==reg)
+		{
+			regWriteCaseTable[reg]=REGWRITE_PRESCALER_0;
+		}
+		else if(REG_PRESCALER_1==reg)
+		{
+			regWriteCaseTable[reg]=REGWRITE_PRESCALER_1;
+		}
+		else if(REG_PRESCALER_2==reg)
+		{
+			regWriteCaseTable[reg]=REGWRITE_PRESCALER_2;
+		}
+	#endif
 	}
 }
 void YM2612::MakeSineTable(void)
@@ -659,6 +673,17 @@ unsigned int YM2612::ReallyWriteRegister(unsigned int channelBase,unsigned int r
 			state.channels[ch].PMS=(value&7);
 		}
 		break;
+	#ifdef YM_PRESCALER_CONFIGURABLE
+	case REGWRITE_PRESCALER_0:
+		state.preScaler=6;
+		break;
+	case REGWRITE_PRESCALER_1:
+		state.preScaler=3;
+		break;
+	case REGWRITE_PRESCALER_2:
+		state.preScaler=2;
+		break;
+	#endif
 	default:
 	#ifdef _WIN32
 		__assume(0);
@@ -668,21 +693,6 @@ unsigned int YM2612::ReallyWriteRegister(unsigned int channelBase,unsigned int r
 		std::unreachable();
 	#endif
 	}
-
-#ifdef YM_PRESCALER_CONFIGURABLE
-	else if(REG_PRESCALER_0==reg)
-	{
-		state.preScaler=6;
-	}
-	else if(REG_PRESCALER_1==reg)
-	{
-		state.preScaler=3;
-	}
-	else if(REG_PRESCALER_2==reg)
-	{
-		state.preScaler=2;
-	}
-#endif
 
 	return chStartPlaying;
 }
