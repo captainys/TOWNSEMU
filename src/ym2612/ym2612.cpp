@@ -143,11 +143,92 @@ YM2612::YM2612()
 	MakeLinearScaleTable();
 	MakeAttackProfileTable();
 	PowerOn();
+	MakeRegWriteCaseTable();
 }
 YM2612::~YM2612()
 {
 }
 
+void YM2612::MakeRegWriteCaseTable(void)
+{
+	for(unsigned int reg=0; reg<256; ++reg)
+	{
+		regWriteCaseTable[reg]=REGWRITE_MEANINGLESS; // Tentative
+		if(REG_TIMER_CONTROL==reg)
+		{
+			regWriteCaseTable[reg]=REGWRITE_TIMER_CONTROL;
+		}
+		else if(REG_KEY_ON_OFF==reg)
+		{
+			regWriteCaseTable[reg]=REGWRITE_KEY_ON_OFF;
+		}
+		else if(REG_LFO==reg)
+		{
+			regWriteCaseTable[reg]=REGWRITE_LFO;
+		}
+		else if(0xA8<=reg && reg<=0xAE) // Special 3CH F-Number/BLOCK
+		{
+			unsigned int slot=(reg&3);
+			if(slot<3)
+			{
+				regWriteCaseTable[reg]=REGWRITE_3CH_SPECIAL;
+			}
+		}
+		else if(0x30<=reg && reg<=0x9E) // Per Channel per slot
+		{
+			unsigned int ch=(reg&3);
+			if(ch<=2)
+			{
+				switch(reg&0xF0)
+				{
+				case 0x30: // DT, MULTI
+					regWriteCaseTable[reg]=REGWRITE_DT_MULTI;
+					break;
+				case 0x40: // TL
+					regWriteCaseTable[reg]=REGWRITE_TL;
+					break;
+				case 0x50: // KS,AR
+					regWriteCaseTable[reg]=REGWRITE_KS_AR;
+					break;
+				case 0x60: // AM,DR
+					regWriteCaseTable[reg]=REGWRITE_AM_DR;
+					break;
+				case 0x70: // SR
+					regWriteCaseTable[reg]=REGWRITE_SR;
+					break;
+				case 0x80: // SL,RR
+					regWriteCaseTable[reg]=REGWRITE_SL_RR;
+					break;
+				case 0x90: // SSG-EG
+					regWriteCaseTable[reg]=REGWRITE_SSG_EG;
+					break;
+				}
+			}
+		}
+		else if(0xA0<=reg && reg<=0xB6)
+		{
+			unsigned int ch=(reg&3);
+			if(ch<=2)
+			{
+				switch(reg&0xFC)
+				{
+				case 0xA0: // F-Number1
+					regWriteCaseTable[reg]=REGWRITE_FNUM1;
+					break;
+				case 0xA4: // BLOCK,F-Number2
+					regWriteCaseTable[reg]=REGWRITE_BLOCK_FNUM2;
+					break;
+				case 0xB0: // FB, CONNECT
+					regWriteCaseTable[reg]=REGWRITE_FB_CONNECT;
+					break;
+				case 0xB4: // L,R,AMS,PMS
+					regWriteCaseTable[reg]=REGWRITE_L_R_AMS_PMS;
+					break;
+				}
+			}
+		}
+	}
+}
 void YM2612::MakeSineTable(void)
 {
 	const double PI=3.14159265358979323;

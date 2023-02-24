@@ -320,10 +320,32 @@ public:
 	bool takeRegLog=false;
 	std::vector <RegWriteLog> regWriteLog;
 
+	enum
+	{
+		REGWRITE_MEANINGLESS,
+		REGWRITE_TIMER_CONTROL,
+		REGWRITE_KEY_ON_OFF,
+		REGWRITE_LFO,
+		REGWRITE_3CH_SPECIAL,
+		REGWRITE_DT_MULTI,
+		REGWRITE_TL,
+		REGWRITE_KS_AR,
+		REGWRITE_AM_DR,
+		REGWRITE_SR,
+		REGWRITE_SL_RR,
+		REGWRITE_SSG_EG,
+		REGWRITE_FNUM1,
+		REGWRITE_BLOCK_FNUM2,
+		REGWRITE_FB_CONNECT,
+		REGWRITE_L_R_AMS_PMS,
+	};
+	uint8_t regWriteCaseTable[256];
+
 
 	YM2612();
 	~YM2612();
 private:
+	void MakeRegWriteCaseTable(void);
 	void MakeSineTable(void);
 	void MakeTLtoDB100(void);
 	void MakeSLtoDB100(void);
