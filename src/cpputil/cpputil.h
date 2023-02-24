@@ -213,7 +213,7 @@ inline int32_t WordToSigned32(uint16_t wd)
 	int16_t *signedPtr=(int16_t *)&wd;
 	return *signedPtr;
 #else
-	int32_t DXAX=GetAX();
+	int32_t DXAX=wd;
 	DXAX=(DXAX&0x7FFF)-(DXAX&0x8000);
 	return DXAX;
 #endif
@@ -288,7 +288,7 @@ inline int64_t DwordToSigned64(uint32_t dw)
 	int32_t *signedPtr=(int32_t *)&dw;
 	return *signedPtr;
 #else
-	int64_t int EDXEAX=dw;
+	int64_t EDXEAX=dw;
 	EDXEAX=(EDXEAX&0x7FFFFFFF)-(EDXEAX&0x80000000);
 	return EDXEAX;
 #endif
