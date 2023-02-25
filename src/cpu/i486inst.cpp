@@ -5232,12 +5232,20 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		switch(inst.GetREG())
 		{
 		case 0: // TEST
+			clocksPassed=(OPER_ADDR==op1.operandType ? 2 : 1);
+			if(16==inst.operandSize)
 			{
-				clocksPassed=(OPER_ADDR==op1.operandType ? 2 : 1);
-				auto value1=EvaluateOperandReg16OrReg32OrMem(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
-				auto value2=inst.EvalUimm8or16or32(inst.operandSize);
-				unsigned int i1=value1.GetAsDword();
-				AndWordOrDword(inst.operandSize,i1,value2);
+				uint32_t value1=EvaluateOperandRegOrMem16(mem,inst.addressSize,inst.segOverride,op1);
+				uint32_t value2=inst.EvalUimm16();
+				AndWord(value1,value2);
+				// SetCF(false); Done in AndWordOrDword
+				// SetOF(false);
+			}
+			else
+			{
+				auto value1=EvaluateOperandRegOrMem32(mem,inst.addressSize,inst.segOverride,op1);
+				auto value2=inst.EvalUimm32();
+				AndDword(value1,value2);
 				// SetCF(false); Done in AndWordOrDword
 				// SetOF(false);
 			}
