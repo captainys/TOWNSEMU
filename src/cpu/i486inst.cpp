@@ -5169,8 +5169,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		case 6: // DIV
 			{
 				clocksPassed=16;
-				auto value=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op1);
-				if(0==value.byteData[0])
+				uint16_t value=EvaluateOperandRegOrMem8(mem,inst.addressSize,inst.segOverride,op1);
+				if(0==value)
 				{
 					Interrupt(0,mem,0,0,false); // [1] pp.26-28
 					EIPIncrement=0;
@@ -5179,8 +5179,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				}
 				else
 				{
-					unsigned int quo=GetAX()/value.byteData[0];
-					unsigned int rem=GetAX()%value.byteData[0];
+					uint16_t AX=GetAX();
+					uint16_t quo=AX/value;
+					uint16_t rem=AX%value;
 					SetAL(quo);
 					SetAH(rem);
 				}
@@ -5189,8 +5190,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		case 7: // IDIV
 			{
 				clocksPassed=20;
-				auto value=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op1);
-				if(0==value.byteData[0])
+				auto value=EvaluateOperandRegOrMem8(mem,inst.addressSize,inst.segOverride,op1);
+				if(0==value)
 				{
 					Interrupt(0,mem,0,0,false); // [1] pp.26-28
 					EIPIncrement=0;
@@ -5199,11 +5200,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				}
 				else
 				{
-					int ax=GetAX();
-					ax=(0x7FFF&ax)-(0x8000&ax);
-					int rm8=value.byteData[0];
-					rm8=(rm8&0x7F)-(rm8&0x80);
-
+					int16_t ax=cpputil::WordToSigned32(GetAX());
+					int16_t rm8=cpputil::ByteToSigned32(value);
 					int quo=ax/rm8;
 					int rem=ax%rm8;
 					quo=(quo+0x10000)&0xff;
