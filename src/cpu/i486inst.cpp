@@ -9243,16 +9243,15 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			}
 			if(0!=count)
 			{
-				auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
-				auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize/8);
-
-				unsigned long long int concat;
+				uint64_t concat;
 				switch(opCodeRenumberTable[inst.opCode])
 				{
 				case I486_RENUMBER_SHLD_RM_I8://       0x0FA4,
 				case I486_RENUMBER_SHLD_RM_CL://       0x0FA5,
 					if(16==inst.operandSize)
 					{
+						auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+						auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize/8);
 						auto v1=value1.GetAsWord();
 						concat=(v1<<16)|value2.GetAsWord();
 						concat>>=(16-count);
@@ -9266,11 +9265,27 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					}
 					else
 					{
-						unsigned long long int v1=value1.GetAsDword();
-						concat=(v1<<32)|value2.GetAsDword();
+						auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1);
+						uint32_t v1;
+						if(nullptr!=operPtr)
+						{
+							v1=cpputil::GetDword(operPtr);
+						}
+						else
+						{
+							v1=EvaluateOperandRegOrMem32(mem,inst.addressSize,inst.segOverride,op1);
+						}
+						uint32_t v2=EvaluateOperandRegOrMem32(mem,inst.addressSize,inst.segOverride,op2);
+						concat=cpputil::DwordPairToUnsigned64(v2,v1);
 						concat>>=(32-count);
-						value1.MakeDword(concat&0xFFFFFFFF);
-						StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+						if(nullptr!=operPtr)
+						{
+							cpputil::PutDword(operPtr,cpputil::LowDword(concat));
+						}
+						else
+						{
+							StoreOperandValueRegOrMem32(op1,mem,inst.addressSize,inst.segOverride,cpputil::LowDword(concat));
+						}
 						SetCF(0!=(concat&0x100000000LL));
 						SetOF((concat&0x80000000)!=(v1&0x80000000));
 						SetZF(0==(concat&0xFFFFFFFF));
@@ -9282,6 +9297,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				case I486_RENUMBER_SHRD_RM_CL://       0x0FAD,
 					if(16==inst.operandSize)
 					{
+						auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+						auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize/8);
 						auto v1=value1.GetAsWord();
 						concat=(value2.GetAsWord()<<16)|v1;
 						SetCF(0!=count && 0!=(concat&(1LL<<(count-1))));
@@ -9295,13 +9312,28 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					}
 					else
 					{
-						unsigned long long int v1=value1.GetAsDword();
-						concat=value2.GetAsDword();
-						concat=(concat<<32)|v1;
+						auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1);
+						uint32_t v1;
+						if(nullptr!=operPtr)
+						{
+							v1=cpputil::GetDword(operPtr);
+						}
+						else
+						{
+							v1=EvaluateOperandRegOrMem32(mem,inst.addressSize,inst.segOverride,op1);
+						}
+						auto v2=EvaluateOperandRegOrMem32(mem,inst.addressSize,inst.segOverride,op2);
+						concat=cpputil::DwordPairToUnsigned64(v1,v2);;
 						SetCF(0!=count && 0!=(concat&(1LL<<(count-1))));
 						concat>>=count;
-						value1.MakeDword(concat&0xffffffff);
-						StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+						if(nullptr!=operPtr)
+						{
+							cpputil::PutDword(operPtr,cpputil::LowDword(concat));
+						}
+						else
+						{
+							StoreOperandValueRegOrMem32(op1,mem,inst.addressSize,inst.segOverride,cpputil::LowDword(concat));
+						}
 						SetOF((concat&0x80000000)!=(v1&0x80000000));
 						SetZF(0==(concat&0xFFFFFFFF));
 						SetSF(0!=(concat&0x80000000));
