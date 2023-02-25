@@ -7032,74 +7032,106 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 	case I486_RENUMBER_DEC_EAX:
 		clocksPassed=1;
+		if(16==inst.operandSize)
 		{
-			const auto nBytes=(inst.operandSize>>3);
-			auto value=state.EAX();
-			DecrementWithMask(value,operandSizeMask[nBytes],operandSizeSignBit[nBytes]);
-			state.EAX()=((state.EAX()&operandSizeAndPattern[nBytes])|value);
+			auto value=GetAX();
+			DecrementWord(value);
+			SetAX(value);
+		}
+		else
+		{
+			DecrementDword(state.EAX());
 		}
 		break;
 	case I486_RENUMBER_DEC_ECX:
 		clocksPassed=1;
+		if(16==inst.operandSize)
 		{
-			const auto nBytes=(inst.operandSize>>3);
-			auto value=state.ECX();
-			DecrementWithMask(value,operandSizeMask[nBytes],operandSizeSignBit[nBytes]);
-			state.ECX()=((state.ECX()&operandSizeAndPattern[nBytes])|value);
+			auto value=GetCX();
+			DecrementWord(value);
+			SetCX(value);
+		}
+		else
+		{
+			DecrementDword(state.ECX());
 		}
 		break;
 	case I486_RENUMBER_DEC_EDX:
 		clocksPassed=1;
+		if(16==inst.operandSize)
 		{
-			const auto nBytes=(inst.operandSize>>3);
-			auto value=state.EDX();
-			DecrementWithMask(value,operandSizeMask[nBytes],operandSizeSignBit[nBytes]);
-			state.EDX()=((state.EDX()&operandSizeAndPattern[nBytes])|value);
+			auto value=GetDX();
+			DecrementWord(value);
+			SetDX(value);
+		}
+		else
+		{
+			DecrementDword(state.EDX());
 		}
 		break;
 	case I486_RENUMBER_DEC_EBX:
 		clocksPassed=1;
+		if(16==inst.operandSize)
 		{
-			const auto nBytes=(inst.operandSize>>3);
-			auto value=state.EBX();
-			DecrementWithMask(value,operandSizeMask[nBytes],operandSizeSignBit[nBytes]);
-			state.EBX()=((state.EBX()&operandSizeAndPattern[nBytes])|value);
+			auto value=GetBX();
+			DecrementWord(value);
+			SetBX(value);
+		}
+		else
+		{
+			DecrementDword(state.EBX());
 		}
 		break;
 	case I486_RENUMBER_DEC_ESP:
 		clocksPassed=1;
+		if(16==inst.operandSize)
 		{
-			const auto nBytes=(inst.operandSize>>3);
-			auto value=state.ESP();
-			DecrementWithMask(value,operandSizeMask[nBytes],operandSizeSignBit[nBytes]);
-			state.ESP()=((state.ESP()&operandSizeAndPattern[nBytes])|value);
+			auto value=GetSP();
+			DecrementWord(value);
+			SetSP(value);
+		}
+		else
+		{
+			DecrementDword(state.ESP());
 		}
 		break;
 	case I486_RENUMBER_DEC_EBP:
 		clocksPassed=1;
+		if(16==inst.operandSize)
 		{
-			const auto nBytes=(inst.operandSize>>3);
-			auto value=state.EBP();
-			DecrementWithMask(value,operandSizeMask[nBytes],operandSizeSignBit[nBytes]);
-			state.EBP()=((state.EBP()&operandSizeAndPattern[nBytes])|value);
+			auto value=GetBP();
+			DecrementWord(value);
+			SetBP(value);
+		}
+		else
+		{
+			DecrementDword(state.EBP());
 		}
 		break;
 	case I486_RENUMBER_DEC_ESI:
 		clocksPassed=1;
+		if(16==inst.operandSize)
 		{
-			const auto nBytes=(inst.operandSize>>3);
-			auto value=state.ESI();
-			DecrementWithMask(value,operandSizeMask[nBytes],operandSizeSignBit[nBytes]);
-			state.ESI()=((state.ESI()&operandSizeAndPattern[nBytes])|value);
+			auto value=GetSI();
+			DecrementWord(value);
+			SetSI(value);
+		}
+		else
+		{
+			DecrementDword(state.ESI());
 		}
 		break;
 	case I486_RENUMBER_DEC_EDI:
 		clocksPassed=1;
+		if(16==inst.operandSize)
 		{
-			const auto nBytes=(inst.operandSize>>3);
-			auto value=state.EDI();
-			DecrementWithMask(value,operandSizeMask[nBytes],operandSizeSignBit[nBytes]);
-			state.EDI()=((state.EDI()&operandSizeAndPattern[nBytes])|value);
+			auto value=GetDI();
+			DecrementWord(value);
+			SetDI(value);
+		}
+		else
+		{
+			DecrementDword(state.EDI());
 		}
 		break;
 
@@ -7655,74 +7687,106 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 	case I486_RENUMBER_INC_EAX://    0x40, // 16/32 depends on OPSIZE_OVERRIDE
 		clocksPassed=1;
+		if(16==inst.operandSize)
 		{
-			const auto nBytes=(inst.operandSize>>3);
-			auto value=state.EAX();
-			IncrementWithMask(value,operandSizeMask[nBytes],operandSizeSignBit[nBytes]);
-			state.EAX()=((state.EAX()&operandSizeAndPattern[nBytes])|value);
+			uint32_t value=GetAX();
+			IncrementWord(value);
+			SetAX(value);
+		}
+		else
+		{
+			IncrementDword(state.EAX());
 		}
 		break;
 	case I486_RENUMBER_INC_ECX://    0x41, // 16/32 depends on OPSIZE_OVERRIDE
 		clocksPassed=1;
+		if(16==inst.operandSize)
 		{
-			const auto nBytes=(inst.operandSize>>3);
-			auto value=state.ECX();
-			IncrementWithMask(value,operandSizeMask[nBytes],operandSizeSignBit[nBytes]);
-			state.ECX()=((state.ECX()&operandSizeAndPattern[nBytes])|value);
+			uint32_t value=GetCX();
+			IncrementWord(value);
+			SetCX(value);
+		}
+		else
+		{
+			IncrementDword(state.ECX());
 		}
 		break;
 	case I486_RENUMBER_INC_EDX://    0x42, // 16/32 depends on OPSIZE_OVERRIDE
 		clocksPassed=1;
+		if(16==inst.operandSize)
 		{
-			const auto nBytes=(inst.operandSize>>3);
-			auto value=state.EDX();
-			IncrementWithMask(value,operandSizeMask[nBytes],operandSizeSignBit[nBytes]);
-			state.EDX()=((state.EDX()&operandSizeAndPattern[nBytes])|value);
+			uint32_t value=GetDX();
+			IncrementWord(value);
+			SetDX(value);
+		}
+		else
+		{
+			IncrementDword(state.EDX());
 		}
 		break;
 	case I486_RENUMBER_INC_EBX://    0x43, // 16/32 depends on OPSIZE_OVERRIDE
 		clocksPassed=1;
+		if(16==inst.operandSize)
 		{
-			const auto nBytes=(inst.operandSize>>3);
-			auto value=state.EBX();
-			IncrementWithMask(value,operandSizeMask[nBytes],operandSizeSignBit[nBytes]);
-			state.EBX()=((state.EBX()&operandSizeAndPattern[nBytes])|value);
+			uint32_t value=GetBX();
+			IncrementWord(value);
+			SetBX(value);
+		}
+		else
+		{
+			IncrementDword(state.EBX());
 		}
 		break;
 	case I486_RENUMBER_INC_ESP://    0x44, // 16/32 depends on OPSIZE_OVERRIDE
 		clocksPassed=1;
+		if(16==inst.operandSize)
 		{
-			const auto nBytes=(inst.operandSize>>3);
-			auto value=state.ESP();
-			IncrementWithMask(value,operandSizeMask[nBytes],operandSizeSignBit[nBytes]);
-			state.ESP()=((state.ESP()&operandSizeAndPattern[nBytes])|value);
+			uint32_t value=GetSP();
+			IncrementWord(value);
+			SetSP(value);
+		}
+		else
+		{
+			IncrementDword(state.ESP());
 		}
 		break;
 	case I486_RENUMBER_INC_EBP://    0x45, // 16/32 depends on OPSIZE_OVERRIDE
 		clocksPassed=1;
+		if(16==inst.operandSize)
 		{
-			const auto nBytes=(inst.operandSize>>3);
-			auto value=state.EBP();
-			IncrementWithMask(value,operandSizeMask[nBytes],operandSizeSignBit[nBytes]);
-			state.EBP()=((state.EBP()&operandSizeAndPattern[nBytes])|value);
+			uint32_t value=GetBP();
+			IncrementWord(value);
+			SetBP(value);
+		}
+		else
+		{
+			IncrementDword(state.EBP());
 		}
 		break;
 	case I486_RENUMBER_INC_ESI://    0x46, // 16/32 depends on OPSIZE_OVERRIDE
 		clocksPassed=1;
+		if(16==inst.operandSize)
 		{
-			const auto nBytes=(inst.operandSize>>3);
-			auto value=state.ESI();
-			IncrementWithMask(value,operandSizeMask[nBytes],operandSizeSignBit[nBytes]);
-			state.ESI()=((state.ESI()&operandSizeAndPattern[nBytes])|value);
+			uint32_t value=GetSI();
+			IncrementWord(value);
+			SetSI(value);
+		}
+		else
+		{
+			IncrementDword(state.ESI());
 		}
 		break;
 	case I486_RENUMBER_INC_EDI://    0x47, // 16/32 depends on OPSIZE_OVERRIDE
 		clocksPassed=1;
+		if(16==inst.operandSize)
 		{
-			const auto nBytes=(inst.operandSize>>3);
-			auto value=state.EDI();
-			IncrementWithMask(value,operandSizeMask[nBytes],operandSizeSignBit[nBytes]);
-			state.EDI()=((state.EDI()&operandSizeAndPattern[nBytes])|value);
+			uint32_t value=GetDI();
+			IncrementWord(value);
+			SetDI(value);
+		}
+		else
+		{
+			IncrementDword(state.EDI());
 		}
 		break;
 
