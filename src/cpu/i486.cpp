@@ -3043,6 +3043,27 @@ void i486DX::StoreOperandValue(
 	}
 }
 
+void i486DX::StoreOperandValueRegOrMem8(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,uint8_t value)
+{
+	static const unsigned int addressMask[2]=
+	{
+		0x0000FFFF,
+		0xFFFFFFFF,
+	};
+
+	if(OPER_REG8==dst.operandType)
+	{
+		SetRegisterValue8(dst.reg,value);
+	}
+	else
+	{
+		unsigned int offset;
+		const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,dst,segmentOverride);
+
+		offset&=addressMask[addressSize>>5];
+		StoreByte(mem,addressSize,seg,offset,value);
+	}
+}
 void i486DX::StoreOperandValueRegOrMem16(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,uint16_t value)
 {
 	static const unsigned int addressMask[2]=

@@ -7340,10 +7340,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 	case I486_RENUMBER_INC_DEC_R_M8:
 		{
-			auto value=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op1);
+			uint32_t i=EvaluateOperandRegOrMem8(mem,inst.addressSize,inst.segOverride,op1);
 			if(true!=state.exception)
 			{
-				auto i=value.GetAsDword();
 				switch(inst.GetREG())
 				{
 				case 0:
@@ -7352,12 +7351,18 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				case 1:
 					DecrementByte(i);
 					break;
-				default:
+				case 2:
+				case 3:
+				case 4:
+				case 5:
+				case 6:
+				case 7:
 					Abort("Undefined REG for "+cpputil::Ubtox(inst.opCode));
 					return 0;
+				default:
+					std_unreachable;
 				}
-				value.SetDword(i);
-				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+				StoreOperandValueRegOrMem8(op1,mem,inst.addressSize,inst.segOverride,i);
 			}
 			if(op1.operandType==OPER_ADDR)
 			{
@@ -7375,43 +7380,59 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			switch(REG)
 			{
 			case 0: // INC
+				if(16==inst.operandSize)
 				{
-					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+					uint32_t i=EvaluateOperandRegOrMem16(mem,inst.addressSize,inst.segOverride,op1);
 					if(true!=state.exception)
 					{
-						auto i=value.GetAsDword();
-						IncrementWordOrDword(inst.operandSize,i);
-						value.SetDword(i);
-						StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+						IncrementWord(i);
+						StoreOperandValueRegOrMem16(op1,mem,inst.addressSize,inst.segOverride,i);
 					}
-					if(op1.operandType==OPER_ADDR)
+				}
+				else
+				{
+					uint32_t i=EvaluateOperandRegOrMem32(mem,inst.addressSize,inst.segOverride,op1);
+					if(true!=state.exception)
 					{
-						clocksPassed=3;
+						IncrementDword(i);
+						StoreOperandValueRegOrMem32(op1,mem,inst.addressSize,inst.segOverride,i);
 					}
-					else
-					{
-						clocksPassed=1;
-					}
+				}
+				if(op1.operandType==OPER_ADDR)
+				{
+					clocksPassed=3;
+				}
+				else
+				{
+					clocksPassed=1;
 				}
 				break;
 			case 1: // DEC
+				if(16==inst.operandSize)
 				{
-					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+					uint32_t i=EvaluateOperandRegOrMem16(mem,inst.addressSize,inst.segOverride,op1);
 					if(true!=state.exception)
 					{
-						auto i=value.GetAsDword();
-						DecrementWordOrDword(inst.operandSize,i);
-						value.SetDword(i);
-						StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+						DecrementWord(i);
+						StoreOperandValueRegOrMem16(op1,mem,inst.addressSize,inst.segOverride,i);
 					}
-					if(op1.operandType==OPER_ADDR)
+				}
+				else
+				{
+					auto i=EvaluateOperandRegOrMem32(mem,inst.addressSize,inst.segOverride,op1);
+					if(true!=state.exception)
 					{
-						clocksPassed=3;
+						DecrementDword(i);
+						StoreOperandValueRegOrMem32(op1,mem,inst.addressSize,inst.segOverride,i);
 					}
-					else
-					{
-						clocksPassed=1;
-					}
+				}
+				if(op1.operandType==OPER_ADDR)
+				{
+					clocksPassed=3;
+				}
+				else
+				{
+					clocksPassed=1;
 				}
 				break;
 			case 2: // CALL Indirect
