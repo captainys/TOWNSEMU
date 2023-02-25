@@ -9243,20 +9243,33 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			}
 			if(0!=count)
 			{
-				uint64_t concat;
 				switch(opCodeRenumberTable[inst.opCode])
 				{
 				case I486_RENUMBER_SHLD_RM_I8://       0x0FA4,
 				case I486_RENUMBER_SHLD_RM_CL://       0x0FA5,
 					if(16==inst.operandSize)
 					{
-						auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
-						auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize/8);
-						auto v1=value1.GetAsWord();
-						concat=(v1<<16)|value2.GetAsWord();
+						auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1);
+						uint16_t v1;
+						if(nullptr!=operPtr)
+						{
+							v1=cpputil::GetWord(operPtr);
+						}
+						else
+						{
+							v1=EvaluateOperandRegOrMem16(mem,inst.addressSize,inst.segOverride,op1);
+						}
+						uint16_t v2=EvaluateOperandRegOrMem16(mem,inst.addressSize,inst.segOverride,op2);
+						uint32_t concat=cpputil::WordPairToUnsigned32(v2,v1);
 						concat>>=(16-count);
-						value1.MakeWord(concat&0xFFFF);
-						StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+						if(nullptr!=operPtr)
+						{
+							cpputil::PutWord(operPtr,cpputil::LowWord(concat));
+						}
+						else
+						{
+							StoreOperandValueRegOrMem16(op1,mem,inst.addressSize,inst.segOverride,cpputil::LowWord(concat));
+						}
 						SetCF(0!=(concat&0x10000));
 						SetOF((concat&0x8000)!=(v1&0x8000));
 						SetZF(0==(concat&0xFFFF));
@@ -9276,7 +9289,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 							v1=EvaluateOperandRegOrMem32(mem,inst.addressSize,inst.segOverride,op1);
 						}
 						uint32_t v2=EvaluateOperandRegOrMem32(mem,inst.addressSize,inst.segOverride,op2);
-						concat=cpputil::DwordPairToUnsigned64(v2,v1);
+						uint64_t concat=cpputil::DwordPairToUnsigned64(v2,v1);
 						concat>>=(32-count);
 						if(nullptr!=operPtr)
 						{
@@ -9297,14 +9310,28 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				case I486_RENUMBER_SHRD_RM_CL://       0x0FAD,
 					if(16==inst.operandSize)
 					{
-						auto value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
-						auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize/8);
-						auto v1=value1.GetAsWord();
-						concat=(value2.GetAsWord()<<16)|v1;
+						auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1);
+						uint16_t v1;
+						if(nullptr!=operPtr)
+						{
+							v1=cpputil::GetWord(operPtr);
+						}
+						else
+						{
+							v1=EvaluateOperandRegOrMem16(mem,inst.addressSize,inst.segOverride,op1);
+						}
+						uint16_t v2=EvaluateOperandRegOrMem16(mem,inst.addressSize,inst.segOverride,op2);
+						uint32_t concat=cpputil::WordPairToUnsigned32(v1,v2);
 						SetCF(0!=count && 0!=(concat&(1LL<<(count-1))));
 						concat>>=count;
-						value1.MakeWord(concat&0xffff);
-						StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+						if(nullptr!=operPtr)
+						{
+							cpputil::PutWord(operPtr,cpputil::LowWord(concat));
+						}
+						else
+						{
+							StoreOperandValueRegOrMem16(op1,mem,inst.addressSize,inst.segOverride,cpputil::LowWord(concat));
+						}
 						SetOF((concat&0x8000)!=(v1&0x8000));
 						SetZF(0==(concat&0xFFFF));
 						SetSF(0!=(concat&0x8000));
@@ -9323,7 +9350,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 							v1=EvaluateOperandRegOrMem32(mem,inst.addressSize,inst.segOverride,op1);
 						}
 						auto v2=EvaluateOperandRegOrMem32(mem,inst.addressSize,inst.segOverride,op2);
-						concat=cpputil::DwordPairToUnsigned64(v1,v2);;
+						uint64_t concat=cpputil::DwordPairToUnsigned64(v1,v2);;
 						SetCF(0!=count && 0!=(concat&(1LL<<(count-1))));
 						concat>>=count;
 						if(nullptr!=operPtr)
