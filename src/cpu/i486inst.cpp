@@ -9265,7 +9265,14 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 	case I486_RENUMBER_RET://              0xC3,
 		clocksPassed=5;
-		SetIPorEIP(inst.operandSize,Pop(mem,inst.operandSize));
+		if(16==inst.operandSize)
+		{
+			SetIP(Pop16(mem));
+		}
+		else
+		{
+			SetEIP(Pop32(mem));
+		}
 		EIPIncrement=0;
 		if(enableCallStack)
 		{
