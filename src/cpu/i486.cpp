@@ -2721,6 +2721,25 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 	return value;
 }
 
+uint8_t i486DX::EvaluateOperandRegOrMem8(Memory &mem,int addressSize,int segmentOverride,const Operand &op)
+{
+	if(OPER_ADDR==op.operandType)
+	{
+		unsigned int offset;
+		const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,op,segmentOverride);
+		if(16==addressSize)
+		{
+			offset=cpputil::LowWord(offset);
+		}
+		return FetchByte(addressSize,seg,offset,mem);
+	}
+	else
+	{
+		return GetRegisterValue8(op.reg);
+	}
+	return 0;
+}
+
 uint16_t i486DX::EvaluateOperandRegOrMem16(Memory &mem,int addressSize,int segmentOverride,const Operand &op)
 {
 	static const unsigned int addressMask[2]=

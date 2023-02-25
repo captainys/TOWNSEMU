@@ -294,6 +294,17 @@ inline int64_t DwordToSigned64(uint32_t dw)
 #endif
 }
 
+inline int32_t ByteToSigned32(uint8_t b)
+{
+#if defined(YS_TWOS_COMPLEMENT)
+	int8_t *signedPtr=(int8_t *)&b;
+	return *signedPtr;
+#else
+	int32_t AL=b;
+	return (AL&0x7F)-(AL&0x80);
+#endif
+}
+
 inline uint16_t LowWord(int32_t dw)
 {
 #ifdef YS_LITTLE_ENDIAN
@@ -371,6 +382,16 @@ inline uint32_t HighDword(uint64_t qw)
 	return dwPtr[1];
 #else
 	return (qw>>32)&0xFFFFFFFF;
+#endif
+}
+
+inline uint8_t GetWordHighByte(uint16_t wd)
+{
+#ifdef YS_LITTLE_ENDIAN
+	uint8_t *chPtr=(uint8_t *)&wd;
+	return chPtr[1];
+#else
+	return (wd>>8)&0xFF;
 #endif
 }
 

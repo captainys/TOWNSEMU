@@ -5072,8 +5072,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		case 0: // TEST
 			{
 				clocksPassed=(OPER_ADDR==op1.operandType ? 2 : 1);
-				auto value=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op1);
-				unsigned int byte=value.byteData[0];
+				uint32_t byte=EvaluateOperandRegOrMem8(mem,inst.addressSize,inst.segOverride,op1);
 				AndByte(byte,inst.EvalUimm8());
 				// SetCF(false); Done in AndByte
 				// SetOF(false); Done in AndByte
@@ -5126,10 +5125,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		case 4: // MUL
 			{
 				clocksPassed=(OPER_ADDR==op1.operandType ? 18 : 13);
-				auto value=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op1);
-				auto mul=GetAL()*value.byteData[0];
+				uint8_t value=EvaluateOperandRegOrMem8(mem,inst.addressSize,inst.segOverride,op1);
+				auto mul=GetAL()*value;
 				SetAX(mul);
-				if(0!=(mul&0xff00))
+				if(0!=cpputil::GetWordHighByte(mul))
 				{
 					SetCFOF();
 					//SetCF(true);
@@ -5146,15 +5145,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		case 5: // IMUL R/M8
 			{
 				clocksPassed=(OPER_ADDR==op1.operandType ? 18 : 13);
-				auto value=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op1);
+				int OP=cpputil::ByteToSigned32(EvaluateOperandRegOrMem8(mem,inst.addressSize,inst.segOverride,op1));
 				if(true!=state.exception)
 				{
-					int AL=GetAL();
-					int OP=value.byteData[0];
-					AL=(AL&0x7F)-(AL&0x80);
-					OP=(OP&0x7F)-(OP&0x80);
+					int AL=cpputil::ByteToSigned32(GetAL());
 					auto imul=AL*OP;
-					SetAX(imul&0xFFFF);
+					SetAX(cpputil::LowWord(imul));
 					if(0==(imul&0xFF80) || 0xFF80==(imul&0xFF80))
 					{
 						ClearCFOF();

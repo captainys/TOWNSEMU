@@ -3329,6 +3329,10 @@ public:
 	OperandValue EvaluateOperand(
 	    Memory &mem,int addressSize,int segmentOverride,const Operand &op,int destinationBytes);
 
+	/*! Evaluate an operand when it is known to be Reg8 or Mem8.
+	*/
+	uint8_t EvaluateOperandRegOrMem8(Memory &mem,int addressSize,int segmentOverride,const Operand &op);
+
 	/*! Evaluate an operand when it is known to be Reg16 or Mem16.
 	*/
 	uint16_t EvaluateOperandRegOrMem16(Memory &mem,int addressSize,int segmentOverride,const Operand &op);
@@ -3343,6 +3347,7 @@ public:
 	    Memory &mem,int addressSize,int segmentOverride,const Operand &op,int destinationBytes);
 
 	/*! Evaluate operand as an 8-bit operand.
+	    Use EvaluateOperandRegOrMem8 instead.
 	*/
 	OperandValue EvaluateOperand8(
 	    Memory &mem,int addressSize,int segmentOverride,const Operand &op);
