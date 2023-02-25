@@ -8942,74 +8942,90 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 	case I486_RENUMBER_POP_EAX://          0x58,
 		clocksPassed=4;
+		if(16==inst.operandSize)
 		{
-			auto nBytes=(inst.operandSize>>3);
-			auto value=Pop(mem,inst.operandSize);
-			state.EAX()&=operandSizeAndPattern[nBytes];
-			state.EAX()|=value;
+			SetAX(Pop16(mem));
+		}
+		else
+		{
+			state.EAX()=Pop32(mem);
 		}
 		break;
 	case I486_RENUMBER_POP_ECX://          0x59,
 		clocksPassed=4;
+		if(16==inst.operandSize)
 		{
-			auto nBytes=(inst.operandSize>>3);
-			auto value=Pop(mem,inst.operandSize);
-			state.ECX()&=operandSizeAndPattern[nBytes];
-			state.ECX()|=value;
+			SetCX(Pop16(mem));
+		}
+		else
+		{
+			state.ECX()=Pop32(mem);
 		}
 		break;
 	case I486_RENUMBER_POP_EDX://          0x5A,
 		clocksPassed=4;
+		if(16==inst.operandSize)
 		{
-			auto nBytes=(inst.operandSize>>3);
-			auto value=Pop(mem,inst.operandSize);
-			state.EDX()&=operandSizeAndPattern[nBytes];
-			state.EDX()|=value;
+			SetDX(Pop16(mem));
+		}
+		else
+		{
+			state.EDX()=Pop32(mem);
 		}
 		break;
 	case I486_RENUMBER_POP_EBX://          0x5B,
 		clocksPassed=4;
+		if(16==inst.operandSize)
 		{
-			auto nBytes=(inst.operandSize>>3);
-			auto value=Pop(mem,inst.operandSize);
-			state.EBX()&=operandSizeAndPattern[nBytes];
-			state.EBX()|=value;
+			SetBX(Pop16(mem));
+		}
+		else
+		{
+			state.EBX()=Pop32(mem);
 		}
 		break;
 	case I486_RENUMBER_POP_ESP://          0x5C,
 		clocksPassed=4;
+		if(16==inst.operandSize)
 		{
-			auto nBytes=(inst.operandSize>>3);
-			auto value=Pop(mem,inst.operandSize);
-			state.ESP()&=operandSizeAndPattern[nBytes];
-			state.ESP()|=value;
+			SetSP(Pop16(mem));
+		}
+		else
+		{
+			state.ESP()=Pop32(mem);
 		}
 		break;
 	case I486_RENUMBER_POP_EBP://          0x5D,
 		clocksPassed=4;
+		if(16==inst.operandSize)
 		{
-			auto nBytes=(inst.operandSize>>3);
-			auto value=Pop(mem,inst.operandSize);
-			state.EBP()&=operandSizeAndPattern[nBytes];
-			state.EBP()|=value;
+			SetBP(Pop16(mem));
+		}
+		else
+		{
+			state.EBP()=Pop32(mem);
 		}
 		break;
 	case I486_RENUMBER_POP_ESI://          0x5E,
 		clocksPassed=4;
+		if(16==inst.operandSize)
 		{
-			auto nBytes=(inst.operandSize>>3);
-			auto value=Pop(mem,inst.operandSize);
-			state.ESI()&=operandSizeAndPattern[nBytes];
-			state.ESI()|=value;
+			SetSI(Pop16(mem));
+		}
+		else
+		{
+			state.ESI()=Pop32(mem);
 		}
 		break;
 	case I486_RENUMBER_POP_EDI://          0x5F,
 		clocksPassed=4;
+		if(16==inst.operandSize)
 		{
-			auto nBytes=(inst.operandSize>>3);
-			auto value=Pop(mem,inst.operandSize);
-			state.EDI()&=operandSizeAndPattern[nBytes];
-			state.EDI()|=value;
+			SetDI(Pop16(mem));
+		}
+		else
+		{
+			state.EDI()=Pop32(mem);
 		}
 		break;
 
