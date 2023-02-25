@@ -7348,11 +7348,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		if(16==inst.operandSize)
 		{
-			SetBP(Pop(mem,inst.operandSize));
+			SetBP(Pop16(mem));
 		}
 		else
 		{
-			SetEBP(Pop(mem,inst.operandSize));
+			SetEBP(Pop32(mem));
 		}
 		break;
 
