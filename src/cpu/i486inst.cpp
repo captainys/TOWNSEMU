@@ -4956,9 +4956,14 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 	#define MOV_REG32_FROM_I(REG) \
 		{ \
-			auto nBytes=(inst.operandSize>>3); \
-			auto imm=inst.EvalUimm8or16or32(inst.operandSize); \
-			state.NULL_and_reg32[REG]=(state.NULL_and_reg32[REG]&operandSizeAndPattern[nBytes])|imm; \
+			if(16==inst.operandSize)\
+			{\
+				SET_INT_LOW_WORD(state.NULL_and_reg32[REG],inst.EvalUimm16());\
+			}\
+			else\
+			{\
+				state.NULL_and_reg32[REG]=inst.EvalUimm32();\
+			}\
 			clocksPassed=1; \
 		}
 
