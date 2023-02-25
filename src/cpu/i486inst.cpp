@@ -7340,7 +7340,16 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 	case I486_RENUMBER_INC_DEC_R_M8:
 		{
-			uint32_t i=EvaluateOperandRegOrMem8(mem,inst.addressSize,inst.segOverride,op1);
+			uint32_t i;
+			uint8_t *operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1);
+			if(nullptr!=operPtr)
+			{
+				i=operPtr[0];
+			}
+			else
+			{
+				i=EvaluateOperandRegOrMem8(mem,inst.addressSize,inst.segOverride,op1);
+			}
 			if(true!=state.exception)
 			{
 				switch(inst.GetREG())
@@ -7362,7 +7371,14 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				default:
 					std_unreachable;
 				}
-				StoreOperandValueRegOrMem8(op1,mem,inst.addressSize,inst.segOverride,i);
+				if(nullptr!=operPtr)
+				{
+					operPtr[0]=i;
+				}
+				else
+				{
+					StoreOperandValueRegOrMem8(op1,mem,inst.addressSize,inst.segOverride,i);
+				}
 			}
 			if(op1.operandType==OPER_ADDR)
 			{
@@ -7382,20 +7398,52 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			case 0: // INC
 				if(16==inst.operandSize)
 				{
-					uint32_t i=EvaluateOperandRegOrMem16(mem,inst.addressSize,inst.segOverride,op1);
+					uint8_t *operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1);
+					uint32_t i;
+					if(nullptr!=operPtr)
+					{
+						i=cpputil::GetWord(operPtr);
+					}
+					else
+					{
+						i=EvaluateOperandRegOrMem16(mem,inst.addressSize,inst.segOverride,op1);
+					}
 					if(true!=state.exception)
 					{
 						IncrementWord(i);
-						StoreOperandValueRegOrMem16(op1,mem,inst.addressSize,inst.segOverride,i);
+						if(nullptr!=operPtr)
+						{
+							cpputil::PutWord(operPtr,i);
+						}
+						else
+						{
+							StoreOperandValueRegOrMem16(op1,mem,inst.addressSize,inst.segOverride,i);
+						}
 					}
 				}
 				else
 				{
-					uint32_t i=EvaluateOperandRegOrMem32(mem,inst.addressSize,inst.segOverride,op1);
+					uint8_t *operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1);
+					uint32_t i;
+					if(nullptr!=operPtr)
+					{
+						i=cpputil::GetDword(operPtr);
+					}
+					else
+					{
+						i=EvaluateOperandRegOrMem32(mem,inst.addressSize,inst.segOverride,op1);
+					}
 					if(true!=state.exception)
 					{
 						IncrementDword(i);
-						StoreOperandValueRegOrMem32(op1,mem,inst.addressSize,inst.segOverride,i);
+						if(nullptr!=operPtr)
+						{
+							cpputil::PutDword(operPtr,i);
+						}
+						else
+						{
+							StoreOperandValueRegOrMem32(op1,mem,inst.addressSize,inst.segOverride,i);
+						}
 					}
 				}
 				if(op1.operandType==OPER_ADDR)
@@ -7410,20 +7458,52 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			case 1: // DEC
 				if(16==inst.operandSize)
 				{
-					uint32_t i=EvaluateOperandRegOrMem16(mem,inst.addressSize,inst.segOverride,op1);
+					uint8_t *operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1);
+					uint32_t i;
+					if(nullptr!=operPtr)
+					{
+						i=cpputil::GetWord(operPtr);
+					}
+					else
+					{
+						i=EvaluateOperandRegOrMem16(mem,inst.addressSize,inst.segOverride,op1);
+					}
 					if(true!=state.exception)
 					{
 						DecrementWord(i);
-						StoreOperandValueRegOrMem16(op1,mem,inst.addressSize,inst.segOverride,i);
+						if(nullptr!=operPtr)
+						{
+							cpputil::PutWord(operPtr,i);
+						}
+						else
+						{
+							StoreOperandValueRegOrMem16(op1,mem,inst.addressSize,inst.segOverride,i);
+						}
 					}
 				}
 				else
 				{
-					auto i=EvaluateOperandRegOrMem32(mem,inst.addressSize,inst.segOverride,op1);
+					uint8_t *operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1);
+					uint32_t i;
+					if(nullptr!=operPtr)
+					{
+						i=cpputil::GetDword(operPtr);
+					}
+					else
+					{
+						i=EvaluateOperandRegOrMem32(mem,inst.addressSize,inst.segOverride,op1);
+					}
 					if(true!=state.exception)
 					{
 						DecrementDword(i);
-						StoreOperandValueRegOrMem32(op1,mem,inst.addressSize,inst.segOverride,i);
+						if(nullptr!=operPtr)
+						{
+							cpputil::PutDword(operPtr,i);
+						}
+						else
+						{
+							StoreOperandValueRegOrMem32(op1,mem,inst.addressSize,inst.segOverride,i);
+						}
 					}
 				}
 				if(op1.operandType==OPER_ADDR)
