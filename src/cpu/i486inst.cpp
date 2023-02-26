@@ -9365,7 +9365,33 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				auto TempSS=Pop(mem,inst.operandSize);
 				LoadSegmentRegister(state.SS(),TempSS,mem);
 				state.ESP()=TempESP;
-				// Supposed to be zero segment selectors that are not valid in the outer level.
+
+				auto nextCPL=state.CS().value&3;
+
+				unsigned int regs[]=
+				{
+					REG_ES,REG_FS,REG_GS,REG_DS
+				};
+				for(auto reg : regs)
+				{
+					auto &s=state.sreg[reg-REG_SEGMENT_REG_BASE];
+					// (1) Selector within desc table limits
+					// (2) AR byte must be data or readable CS
+					// (3) If data or non-conforming code (What's non-conforming?), DPL>=CPL or DPL>=RPL.
+					bool valid=true;
+					auto RPL=(s.value&3);
+					// Currently only checking (3)
+					if(s.DPL<nextCPL) // The DPL>=RPL condition is questionable.
+					{
+						valid=false;
+					}
+
+					if(true!=valid)
+					{
+						s.value=0;
+						s.limit=0;
+					}
+				}
 			}
 		}
 		break;

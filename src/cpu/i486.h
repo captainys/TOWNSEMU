@@ -37,6 +37,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 // Define the following macro to cause UD exception when MOV CS,src
 // #define TSUGARU_I486_MORE_EXCEPTION_HANDLING
 
+// Define the fllowing macro to protect upper 16 bit of ESP when stack-address size is 16.
+// #define TSUGARU_I486_PROTECT_ESP_HIGHWORD
+
 
 
 // References

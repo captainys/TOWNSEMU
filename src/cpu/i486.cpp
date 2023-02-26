@@ -1340,14 +1340,26 @@ inline unsigned char *i486DX::GetStackAccessPointer(Memory &mem,uint32_t linearA
 	return nullptr;
 }
 
+#ifdef TSUGARU_I486_PROTECT_ESP_HIGHWORD
+	#define SaveESPHigh uint32_t ESPHigh;if(16==addressSize){ESPHigh=(ESP&0xFFFF0000);}
+	#define RestoreESPHigh if(16==addressSize){ESP&=0xFFFF;ESP|=ESPHigh;}
+#else
+	#define SaveESPHigh
+	#define RestoreESPHigh
+#endif
+
 void i486DX::Push16(Memory &mem,unsigned int value)
 {
 	NUM_BYTES_MASK;
 	auto addressSize=GetStackAddressingSize();
 	auto &ESP=state.ESP();
 
+	SaveESPHigh;
+
 	const unsigned int bytesToStore=2;
 	ESP-=bytesToStore;
+
+	RestoreESPHigh;
 
 	unsigned int linearAddr=state.SS().baseLinearAddr+(ESP&(numBytesMask[addressSize>>3]));
 	auto accessPtr=GetStackAccessPointer(mem,linearAddr,bytesToStore);
@@ -1369,8 +1381,12 @@ void i486DX::Push32(Memory &mem,unsigned int value)
 	auto addressSize=GetStackAddressingSize();
 	auto &ESP=state.ESP();
 
+	SaveESPHigh;
+
 	const unsigned int bytesToStore=4;
 	ESP-=bytesToStore;
+
+	RestoreESPHigh;
 
 	unsigned int linearAddr=state.SS().baseLinearAddr+(ESP&(numBytesMask[addressSize>>3]));
 	auto accessPtr=GetStackAccessPointer(mem,linearAddr,bytesToStore);
@@ -1390,11 +1406,14 @@ unsigned int i486DX::Pop16(Memory &mem)
 	auto &ESP=state.ESP();
 	const unsigned int bytesToPop=2;
 
+	SaveESPHigh;
+
 	unsigned int linearAddr=state.SS().baseLinearAddr+(ESP&(numBytesMask[addressSize>>3]));
 	auto accessPtr=GetStackAccessPointer(mem,linearAddr,bytesToPop);
 	if(nullptr!=accessPtr)
 	{
 		ESP+=bytesToPop;
+		RestoreESPHigh;
 		return cpputil::GetWord(accessPtr);
 	}
 
@@ -1403,6 +1422,7 @@ unsigned int i486DX::Pop16(Memory &mem)
 	// I cannot check it here, but to run a valid application, it shouldn't happen.
 	value=FetchWord(addressSize,state.SS(),ESP,mem);
 	ESP+=2;
+	RestoreESPHigh;
 	return value;
 }
 
@@ -1414,16 +1434,20 @@ unsigned int i486DX::Pop32(Memory &mem)
 	auto &ESP=state.ESP();
 	const unsigned int bytesToPop=4;
 
+	SaveESPHigh;
+
 	unsigned int linearAddr=state.SS().baseLinearAddr+(ESP&(numBytesMask[addressSize>>3]));
 	auto accessPtr=GetStackAccessPointer(mem,linearAddr,bytesToPop);
 	if(nullptr!=accessPtr)
 	{
 		ESP+=bytesToPop;
+		RestoreESPHigh;
 		return cpputil::GetDword(accessPtr);
 	}
 
 	value=FetchDword(addressSize,state.SS(),ESP,mem);
 	ESP+=4;
+	RestoreESPHigh;
 	return value;
 }
 
@@ -1433,8 +1457,12 @@ void i486DX::Push(Memory &mem,unsigned int operandSize,uint32_t firstPush,uint32
 	auto addressSize=GetStackAddressingSize();
 	auto &ESP=state.ESP();
 
+	SaveESPHigh;
+
 	const unsigned int bytesToStore=(operandSize>>3)*2;
 	ESP-=bytesToStore;
+
+	RestoreESPHigh;
 
 	unsigned int linearAddr=state.SS().baseLinearAddr+(ESP&(numBytesMask[addressSize>>3]));
 	auto accessPtr=GetStackAccessPointer(mem,linearAddr,bytesToStore);
@@ -1471,6 +1499,8 @@ void i486DX::Pop(uint32_t &firstPop,uint32_t &secondPop,Memory &mem,unsigned int
 	auto &ESP=state.ESP();
 	const unsigned int bytesToPop=(operandSize>>3)*2;
 
+	SaveESPHigh;
+
 	unsigned int linearAddr=state.SS().baseLinearAddr+(ESP&(numBytesMask[addressSize>>3]));
 	auto accessPtr=GetStackAccessPointer(mem,linearAddr,bytesToPop);
 	if(nullptr!=accessPtr)
@@ -1486,6 +1516,7 @@ void i486DX::Pop(uint32_t &firstPop,uint32_t &secondPop,Memory &mem,unsigned int
 			secondPop=cpputil::GetDword(accessPtr+4);
 		}
 		ESP+=bytesToPop;
+		RestoreESPHigh;
 		return;
 	}
 
@@ -1501,6 +1532,7 @@ void i486DX::Pop(uint32_t &firstPop,uint32_t &secondPop,Memory &mem,unsigned int
 		secondPop=FetchDword(addressSize,state.SS(),ESP+4,mem);
 		ESP+=8;
 	}
+	RestoreESPHigh;
 }
 
 void i486DX::Push(Memory &mem,unsigned int operandSize,uint32_t firstPush,uint32_t secondPush,uint32_t thirdPush)
@@ -1509,8 +1541,12 @@ void i486DX::Push(Memory &mem,unsigned int operandSize,uint32_t firstPush,uint32
 	auto addressSize=GetStackAddressingSize();
 	auto &ESP=state.ESP();
 
+	SaveESPHigh;
+
 	const unsigned int bytesToStore=(operandSize>>3)*3;
 	ESP-=bytesToStore;
+
+	RestoreESPHigh;
 
 	unsigned int linearAddr=state.SS().baseLinearAddr+(ESP&(numBytesMask[addressSize>>3]));
 	auto accessPtr=GetStackAccessPointer(mem,linearAddr,bytesToStore);
@@ -1551,6 +1587,8 @@ void i486DX::Pop(uint32_t &firstPop,uint32_t &secondPop,uint32_t &thirdPop,Memor
 	auto &ESP=state.ESP();
 	const unsigned int bytesToPop=(operandSize>>3)*3;
 
+	SaveESPHigh;
+
 	unsigned int linearAddr=state.SS().baseLinearAddr+(ESP&(numBytesMask[addressSize>>3]));
 	auto accessPtr=GetStackAccessPointer(mem,linearAddr,bytesToPop);
 	if(nullptr!=accessPtr)
@@ -1568,6 +1606,7 @@ void i486DX::Pop(uint32_t &firstPop,uint32_t &secondPop,uint32_t &thirdPop,Memor
 			thirdPop=cpputil::GetDword(accessPtr+8);
 		}
 		ESP+=bytesToPop;
+		RestoreESPHigh;
 		return;
 	}
 
@@ -1585,6 +1624,7 @@ void i486DX::Pop(uint32_t &firstPop,uint32_t &secondPop,uint32_t &thirdPop,Memor
 		thirdPop=FetchDword(addressSize,state.SS(),ESP+8,mem);
 		ESP+=12;
 	}
+	RestoreESPHigh;
 }
 
 unsigned int i486DX::PhysicalAddressToLinearAddress(unsigned physAddr,const Memory &mem) const
