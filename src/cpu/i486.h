@@ -34,6 +34,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 // Define the following macro to keep track of Accessed flag (0x20) and Dirty flag (0x40) of page table entries
 // #define TSUGARU_I486_UPDATE_PAGE_DA_FLAGS
 
+// Define the following macro to cause UD exception when MOV CS,src
+// #define TSUGARU_I486_MORE_EXCEPTION_HANDLING
+
 
 
 // References
