@@ -1034,11 +1034,6 @@ public:
 			RaiseException(cpu,EXCEPTION_GP,value);
 			return;
 		}
-		if(nullptr==rawDesc || 0==(rawDesc[5]&0x80)) // Segment not present
-		{
-			RaiseException(cpu,EXCEPTION_ND,value);
-			return;
-		}
 	#endif
 
 		auto memWin=GetConstMemoryWindowFromLinearAddress(cpu,DTLinearBaseAddr,mem);
@@ -1059,6 +1054,14 @@ public:
 			rawDescBuf[6]=(unsigned char)FetchByteByLinearAddress(cpu,mem,DTLinearBaseAddr+6);
 			rawDescBuf[7]=(unsigned char)FetchByteByLinearAddress(cpu,mem,DTLinearBaseAddr+7);
 		}
+
+	#ifdef TSUGARU_I486_MORE_EXCEPTION_HANDLING
+		if(nullptr==rawDesc || 0==(rawDesc[5]&0x80)) // Segment not present
+		{
+			RaiseException(cpu,EXCEPTION_ND,value);
+			return;
+		}
+	#endif
 	}
 
 	inline unsigned int LoadSegmentRegister(CPUCLASS &cpu,SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode)
