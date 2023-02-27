@@ -6197,6 +6197,15 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		clocksPassed=2;
 		break;
 	case I486_RENUMBER_CLI:
+	#ifdef TSUGARU_I486_MORE_EXCEPTION_HANDLING
+		if(true!=IsInRealMode() && GetIOPL()<state.CS().DPL)
+		{
+			RaiseException(EXCEPTION_GP,0);
+			HandleException(false,mem,inst.numBytes);
+			clocksPassed=2;
+			break;
+		}
+	#endif
 		state.EFLAGS&=(~EFLAGS_INT_ENABLE);
 		clocksPassed=2;
 		break;
@@ -7358,6 +7367,15 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 
 	case I486_RENUMBER_HLT://        0xF4,
+	#ifdef TSUGARU_I486_MORE_EXCEPTION_HANDLING
+		if(true!=IsInRealMode() && GetIOPL()<state.CS().DPL)
+		{
+			RaiseException(EXCEPTION_GP,0);
+			HandleException(false,mem,inst.numBytes);
+			clocksPassed=2;
+			break;
+		}
+	#endif
 		if(0==(state.EFLAGS&EFLAGS_VIRTUAL86))
 		{
 			state.halt=true;
@@ -9858,6 +9876,15 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		clocksPassed=2;
 		break;
 	case I486_RENUMBER_STI://              0xFB,
+	#ifdef TSUGARU_I486_MORE_EXCEPTION_HANDLING
+		if(true!=IsInRealMode() && GetIOPL()<state.CS().DPL)
+		{
+			RaiseException(EXCEPTION_GP,0);
+			HandleException(false,mem,inst.numBytes);
+			clocksPassed=2;
+			break;
+		}
+	#endif
 		SetIF(true);
 		// i486 Programmer's Reference Manual says:
 		// The processor then responds to the external interrupts after executing the next instruction
