@@ -967,9 +967,9 @@ public:
 		cpu.state.descriptorCache[index]=descPtr;
 		cpu.state.descriptorCacheValid[index]=cpu.state.descriptorCacheValidCounter;
 	}
-	static inline void RaiseException(i486DX &cpu,unsigned int selector)
+	static inline void RaiseException(i486DX &cpu,unsigned int exc,unsigned int selector)
 	{
-		cpu.RaiseException(EXCEPTION_GP,selector);
+		cpu.RaiseException(exc,selector);
 	}
 	// For mutable i486DX <<
 
@@ -989,7 +989,7 @@ public:
 	static inline void StoreToDescriptorCache(const i486DX &,uint16_t selectorValue,const unsigned char *)
 	{
 	}
-	static inline void RaiseException(const i486DX &cpu,unsigned int selector)
+	static inline void RaiseException(const i486DX &,unsigned int,unsigned int)
 	{
 	}
 	// For constant i486DX <<
@@ -1031,7 +1031,12 @@ public:
 	#ifdef TSUGARU_I486_MORE_EXCEPTION_HANDLING
 		if(limit<=(value&0xfff8))
 		{
-			RaiseException(cpu,value);
+			RaiseException(cpu,EXCEPTION_GP,value);
+			return;
+		}
+		if(nullptr==rawDesc || 0==(rawDesc[5]&0x80)) // Segment not present
+		{
+			RaiseException(cpu,EXCEPTION_ND,value);
 			return;
 		}
 	#endif
