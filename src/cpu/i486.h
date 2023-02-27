@@ -40,6 +40,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 // Define the fllowing macro to protect upper 16 bit of ESP when stack-address size is 16.
 // #define TSUGARU_I486_PROTECT_ESP_HIGHWORD
 
+// Define the following macro to force bottom two bits of CS and SS selector to be DPL of the code segment.
+// This is implied from TEST386 and also https://www.cs.cmu.edu/~410/doc/segments/segments.html.
+// #define TSUGARU_I486_CS_SS_RPL_IS_CPL
 
 
 // References
@@ -3593,6 +3596,14 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 
 				SetIPorEIP(gateOperandSize,desc.OFFSET);
 				state.CS()=newCS;
+
+			#ifdef TSUGARU_I486_CS_SS_RPL_IS_CPL
+				state.CS().value&=0xFFFC;
+				state.CS().value|=state.CS().DPL;
+				state.SS().value&=0xFFFC;
+				state.SS().value|=state.CS().DPL;
+			#endif
+
 				if(true==isINTGate)
 				{
 					SetIF(false);
