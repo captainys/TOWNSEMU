@@ -967,6 +967,10 @@ public:
 		cpu.state.descriptorCache[index]=descPtr;
 		cpu.state.descriptorCacheValid[index]=cpu.state.descriptorCacheValidCounter;
 	}
+	static inline void RaiseException(i486DX &cpu,unsigned int selector)
+	{
+		cpu.RaiseException(EXCEPTION_GP,selector);
+	}
 	// For mutable i486DX <<
 
 	// For constant i486DX >>
@@ -985,6 +989,9 @@ public:
 	static inline void StoreToDescriptorCache(const i486DX &,uint16_t selectorValue,const unsigned char *)
 	{
 	}
+	static inline void RaiseException(const i486DX &cpu,unsigned int selector)
+	{
+	}
 	// For constant i486DX <<
 
 
@@ -1001,16 +1008,33 @@ public:
 		auto RPL=(value&3);
 		auto TI=(0!=(value&4));
 
+	#ifdef TSUGARU_I486_MORE_EXCEPTION_HANDLING
+		unsigned int limit=0;
+	#endif
 		unsigned int DTLinearBaseAddr=0;
 		if(0==TI)
 		{
 			DTLinearBaseAddr=cpu.state.GDTR.linearBaseAddr;
+	#ifdef TSUGARU_I486_MORE_EXCEPTION_HANDLING
+			limit=cpu.state.GDTR.limit;
+	#endif
 		}
 		else
 		{
 			DTLinearBaseAddr=cpu.state.LDTR.linearBaseAddr;
+	#ifdef TSUGARU_I486_MORE_EXCEPTION_HANDLING
+			limit=cpu.state.LDTR.limit;
+	#endif
 		}
 		DTLinearBaseAddr+=(value&0xfff8); // Use upper 13 bits.
+
+	#ifdef TSUGARU_I486_MORE_EXCEPTION_HANDLING
+		if(limit<=(value&0xfff8))
+		{
+			RaiseException(cpu,value);
+			return;
+		}
+	#endif
 
 		auto memWin=GetConstMemoryWindowFromLinearAddress(cpu,DTLinearBaseAddr,mem);
 		if(nullptr!=memWin.ptr && (DTLinearBaseAddr&(MemoryAccess::MEMORY_WINDOW_SIZE-1))<=(MemoryAccess::MEMORY_WINDOW_SIZE-8))
@@ -1048,6 +1072,12 @@ public:
 		else
 		{
 			LoadProtectedModeDescriptor(cpu,value,mem);
+		#ifdef TSUGARU_I486_MORE_EXCEPTION_HANDLING
+			if(nullptr==rawDesc)
+			{
+				return 0;
+			}
+		#endif
 
 			// Sample GDT from WRHIGH.ASM
 			//	DB		0FFH,0FFH	; Segment Limit (0-15)

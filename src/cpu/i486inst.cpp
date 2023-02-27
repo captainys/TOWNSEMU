@@ -8486,6 +8486,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		else
 		{
 			Move(mem,inst.addressSize,inst.segOverride,op1,op2);
+			if(true==state.exception)
+			{
+				HandleException(true,mem,inst.numBytes);
+				EIPIncrement=0;
+			}
 		}
 	#else
 		Move(mem,inst.addressSize,inst.segOverride,op1,op2);
