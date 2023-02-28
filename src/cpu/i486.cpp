@@ -1036,7 +1036,7 @@ public:
 				RaiseException(cpu,EXCEPTION_GP,selectorValue); // If cpu is const i486DX &, it does nothing.
 				return;
 			}
-			else if(0!=(rawDesc[5]&8) && 0==(rawDesc[5]&1)) // If Code and Unreadable, GP.
+			else if(0!=(rawDesc[5]&8) && 0==(rawDesc[5]&2)) // If Code and Unreadable, GP.
 			{
 				rawDesc=nullptr;
 				RaiseException(cpu,EXCEPTION_GP,selectorValue); // If cpu is const i486DX &, it does nothing.
