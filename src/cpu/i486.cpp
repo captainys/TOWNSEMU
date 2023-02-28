@@ -1057,6 +1057,7 @@ public:
 	#ifdef TSUGARU_I486_MORE_EXCEPTION_HANDLING
 		if(nullptr==rawDesc || 0==(rawDesc[5]&0x80)) // Segment not present
 		{
+			rawDesc=nullptr;
 			RaiseException(cpu,EXCEPTION_ND,value);
 			return;
 		}
