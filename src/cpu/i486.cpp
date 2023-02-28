@@ -428,7 +428,11 @@ void i486DX::HandleException(bool wasReadOp,Memory &mem,unsigned int numInstByte
 		Interrupt(INT_INVALID_OPCODE,mem,0,numInstBytesForCallStack,false);
 		break;
 	case EXCEPTION_SS:
-		Abort("SS handling not implemented yet.");
+		Interrupt(INT_STACK_FAULT,mem,0,numInstBytesForCallStack,false);
+		if(true!=IsInRealMode()) // As HIMEM.SYS's expectation.
+		{
+			Push(mem,32,state.exceptionCode);
+		}
 		break;
 	default:
 		Abort("Undefined exception.");
