@@ -942,15 +942,20 @@ public:
 	unsigned char rawDescBuf[8];
 	const unsigned char *rawDesc;
 
+#ifdef TSUGARU_I486_MORE_EXCEPTION_HANDLING
+	bool needsDataOrReadableCode=false;
+	bool loadingStackSegment=false;
+#endif
+
 
 	// For mutable i486DX >>
 	static inline unsigned int FetchByteByLinearAddress(i486DX &cpu,Memory &mem,unsigned int linearAddr)
 	{
 		return cpu.FetchByteByLinearAddress(mem,linearAddr);
 	}
-	static inline MemoryAccess::ConstMemoryWindow GetConstMemoryWindowFromLinearAddress(i486DX &cpu,unsigned int linearAddr,Memory &mem)
+	static inline MemoryAccess::MemoryWindow GetConstMemoryWindowFromLinearAddress(i486DX &cpu,unsigned int linearAddr,Memory &mem)
 	{
-		return cpu.GetConstMemoryWindowFromLinearAddress(linearAddr,mem);
+		return cpu.GetMemoryWindowFromLinearAddress(linearAddr,mem);
 	}
 	static inline const unsigned char *LoadFromDescriptorCache(i486DX &cpu,uint16_t selectorValue)
 	{
@@ -969,7 +974,117 @@ public:
 	}
 	static inline void RaiseException(i486DX &cpu,unsigned int exc,unsigned int selector)
 	{
-		cpu.RaiseException(exc,selector);
+		cpu.RaiseException(exc,selector&~3);
+	}
+	static inline void SetAccessedFlag(uint8_t rawDesc[],i486DX &cpu)
+	{
+		rawDesc[5]|=1;
+	}
+	inline void DescriptorCheck(i486DX &cpu,uint32_t selectorValue)
+	{
+	#ifdef TSUGARU_I486_MORE_EXCEPTION_HANDLING
+		if(nullptr==rawDesc || 0==(rawDesc[5]&0x80)) // Segment not present
+		{
+			rawDesc=nullptr;
+			if(true!=loadingStackSegment)
+			{
+				RaiseException(cpu,EXCEPTION_ND,selectorValue); // If cpu is const i486DX &, it does nothing.
+			}
+			else
+			{
+				RaiseException(cpu,EXCEPTION_SS,selectorValue); // If cpu is const i486DX &, it does nothing.
+			}
+			return;
+		}
+
+		if(true==needsDataOrReadableCode)
+		{
+			// pp.108 of Intel 80386 Programmer's Reference Manual 1986 tells there is
+			// no way of distinguishing writable-data and readable-code segments.
+			// No way of distinguishing data and code?  Very poor description.
+			// 
+			// Better clues:
+			// https://redirect.cs.umbc.edu/courses/undergraduate/CMPE310/Fall07/cpatel2/slides/html_versions/chap17_lect15_segmentation.html
+			//   1000A Data Read-Only
+			//   1001A Data Read/Write
+			//   1010A Stack Read-Only
+			//   1011A Stack Read/Write
+			//   1100A Code Execute-Only
+			//   1101A Code Readable
+			//   1110A Code Execute-Only Conforming
+			//   1111A Code Readable Conforming
+			//
+			// https://wiki.osdev.org/Descriptors
+			//   0xxxx System Segment
+			//   1000A Data Normal         Read-Only
+			//   1001A Data Normal         Read/Write
+			//   1010A Data Expand-Down    Read-Only
+			//   1011A Data Expand-Down    Read/Write
+			//   1100A Code Non-Conforming Execute-Only
+			//   1101A Code Non-Conforming Readable
+			//   1110A Code Conforming     Execute-Only
+			//   1111A Code Conforming     Readable
+			// So it was a mis-print in Intel 80386 programmer's reference. WTF.
+
+			if(0==(rawDesc[5]&0x10)) // If system, GP.
+			{
+				rawDesc=nullptr;
+				RaiseException(cpu,EXCEPTION_GP,selectorValue); // If cpu is const i486DX &, it does nothing.
+				return;
+			}
+			else if(0!=(rawDesc[5]&8) && 0==(rawDesc[5]&1)) // If Code and Unreadable, GP.
+			{
+				rawDesc=nullptr;
+				RaiseException(cpu,EXCEPTION_GP,selectorValue); // If cpu is const i486DX &, it does nothing.
+				return;
+			}
+			else
+			{
+				auto RPL=selectorValue&3;
+				auto CPL=cpu.state.CS().DPL;
+				auto DPL=(rawDesc[5]>>5)&3;
+				if(DPL<CPL && DPL<RPL && (0==(rawDesc[5]&8) || 0==(rawDesc[5]&4))) // If Data or Non-Conforming Code and DPL<RPL,CPL
+				{
+					rawDesc=nullptr;
+					RaiseException(cpu,EXCEPTION_GP,selectorValue&~3); // If cpu is const i486DX &, it does nothing.
+					return;
+				}
+			}
+		}
+
+		if(true==loadingStackSegment)
+		{
+			// Needs to be:
+			//   Writable data segment
+			//   DPL must be equal to CPL
+			if(0==(rawDesc[5]&0x10)) // If system, GP.
+			{
+				rawDesc=nullptr;
+				RaiseException(cpu,EXCEPTION_GP,selectorValue); // If cpu is const i486DX &, it does nothing.
+				return;
+			}
+			if(0!=(rawDesc[5]&8)) // If code, GP.
+			{
+				rawDesc=nullptr;
+				RaiseException(cpu,EXCEPTION_GP,selectorValue); // If cpu is const i486DX &, it does nothing.
+				return;
+			}
+			if(0==(rawDesc[5]&2)) // If readable data, GP.
+			{
+				rawDesc=nullptr;
+				RaiseException(cpu,EXCEPTION_GP,selectorValue); // If cpu is const i486DX &, it does nothing.
+				return;
+			}
+			auto CPL=cpu.state.CS().DPL;
+			auto DPL=(rawDesc[5]>>5)&3;
+			if(CPL!=DPL)
+			{
+				rawDesc=nullptr;
+				RaiseException(cpu,EXCEPTION_GP,selectorValue); // If cpu is const i486DX &, it does nothing.
+				return;
+			}
+		}
+	#endif
 	}
 	// For mutable i486DX <<
 
@@ -992,6 +1107,12 @@ public:
 	static inline void RaiseException(const i486DX &,unsigned int,unsigned int)
 	{
 	}
+	static inline void SetAccessedFlag(const uint8_t rawDesc[],const i486DX &cpu)
+	{
+	}
+	inline void DescriptorCheck(const i486DX &cpu,uint32_t selectorValue)
+	{
+	}
 	// For constant i486DX <<
 
 
@@ -1001,6 +1122,7 @@ public:
 		rawDesc=LoadFromDescriptorCache(cpu,value);
 		if(nullptr!=rawDesc)
 		{
+			DescriptorCheck(cpu,value);
 			return;
 		}
 
@@ -1030,7 +1152,7 @@ public:
 	#ifdef TSUGARU_I486_MORE_EXCEPTION_HANDLING
 		if(limit<=(value&0xfff8))
 		{
-			RaiseException(cpu,EXCEPTION_GP,value);
+			RaiseException(cpu,EXCEPTION_GP,value);  // If cpu is const i486DX &, it does nothing.
 			return;
 		}
 	#endif
@@ -1040,6 +1162,7 @@ public:
 		{
 			rawDesc=memWin.ptr+(DTLinearBaseAddr&(MemoryAccess::MEMORY_WINDOW_SIZE-1));
 			StoreToDescriptorCache(cpu,value,rawDesc);
+			SetAccessedFlag(rawDesc,cpu);   // If cpu is const i486DX &, it does nothing.
 		}
 		else
 		{
@@ -1054,14 +1177,7 @@ public:
 			rawDescBuf[7]=(unsigned char)FetchByteByLinearAddress(cpu,mem,DTLinearBaseAddr+7);
 		}
 
-	#ifdef TSUGARU_I486_MORE_EXCEPTION_HANDLING
-		if(nullptr==rawDesc || 0==(rawDesc[5]&0x80)) // Segment not present
-		{
-			rawDesc=nullptr;
-			RaiseException(cpu,EXCEPTION_ND,value);
-			return;
-		}
-	#endif
+		DescriptorCheck(cpu,value);
 	}
 
 	inline unsigned int LoadSegmentRegister(CPUCLASS &cpu,SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode)
@@ -1084,9 +1200,17 @@ public:
 			// IF DS,ES,FS,or GS is loaded with a null selector THEN load segment register with selector, clear descriptor valid flag.
 			if(0==value)
 			{
-				reg.value=0;
-				reg.limit=0;
-				return 0;
+				if(&reg==&cpu.state.SS())
+				{
+					RaiseException(cpu,EXCEPTION_GP,0); // Does nothing if CPUCLASS is const i486DX &.
+					return 0;
+				}
+				else
+				{
+					reg.value=0;
+					reg.limit=0;
+					return 0;
+				}
 			}
 		#endif
 
@@ -1118,6 +1242,7 @@ public:
 			unsigned int segLimit=cpputil::GetWord(rawDesc+0)|((rawDesc[6]&0x0F)<<16);
 			unsigned int segBase=cpputil::GetWord(rawDesc+2)|(rawDesc[4]<<16)|(rawDesc[7]<<24);
 		#endif
+
 			if((0x80&rawDesc[6])==0) // G==0
 			{
 				reg.limit=segLimit;
@@ -1155,6 +1280,19 @@ public:
 		ptr.OFFSET=(rawDesc[0]|(rawDesc[1]<<8)|(rawDesc[6]<<16)|(rawDesc[7]<<24));
 		return ptr;
 	}
+
+	inline void SetFlags(CPUCLASS &cpu,const typename CPUCLASS::SegmentRegister &reg)
+	{
+		if(&reg==&cpu.state.DS() || &reg==&cpu.state.ES() || &reg==&cpu.state.FS() || &reg==&cpu.state.GS())
+		{
+			// GP exception if the segment is data or readable code.
+			needsDataOrReadableCode=true;
+		}
+		if(&reg==&cpu.state.SS())
+		{
+			loadingStackSegment=true;
+		}
+	}
 };
 
 unsigned int i486DX::DebugLoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode) const
@@ -1170,6 +1308,10 @@ unsigned int i486DX::LoadSegmentRegister(SegmentRegister &reg,unsigned int value
 		state.holdIRQ=true;
 	}
 	LoadSegmentRegisterTemplate<i486DX> loader;
+
+#ifdef TSUGARU_I486_MORE_EXCEPTION_HANDLING
+	loader.SetFlags(*this,reg);
+#endif
 	auto ret=loader.LoadSegmentRegister(*this,reg,value,mem,IsInRealMode());
 #ifdef TSUGARU_I486_CS_SS_RPL_IS_CPL
 	if(&reg==&state.CS())
@@ -1191,6 +1333,10 @@ unsigned i486DX::LoadSegmentRegister(SegmentRegister &reg,unsigned int value,con
 		state.holdIRQ=true;
 	}
 	LoadSegmentRegisterTemplate<i486DX> loader;
+
+#ifdef TSUGARU_I486_MORE_EXCEPTION_HANDLING
+	loader.SetFlags(*this,reg);
+#endif
 	auto ret=loader.LoadSegmentRegister(*this,reg,value,mem,isInRealMode);
 #ifdef TSUGARU_I486_CS_SS_RPL_IS_CPL
 	if(&reg==&state.CS())
