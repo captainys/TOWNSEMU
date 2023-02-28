@@ -1307,6 +1307,8 @@ unsigned int i486DX::DebugLoadSegmentRegister(SegmentRegister &reg,unsigned int 
 
 unsigned int i486DX::LoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem)
 {
+	TSUGARU_I486_FIDELITY_CLASS fidelity;
+
 	if(&reg==&state.SS())
 	{
 		state.holdIRQ=true;
@@ -1317,21 +1319,17 @@ unsigned int i486DX::LoadSegmentRegister(SegmentRegister &reg,unsigned int value
 	loader.SetFlags(*this,reg);
 #endif
 	auto ret=loader.LoadSegmentRegister(*this,reg,value,mem,IsInRealMode());
-#ifdef TSUGARU_I486_CS_SS_RPL_IS_CPL
-	if(&reg==&state.CS())
-	{
-		state.CS().value&=0xFFFC;
-		state.CS().value|=state.CS().DPL;
-		state.SS().value&=0xFFFC;
-		state.SS().value|=state.CS().DPL;
-	}
-#endif
+
+	fidelity.Sync_SS_CS_RPL_to_DPL(*this,state.CS(),reg);
+
 	return ret;
 }
 
 
 unsigned i486DX::LoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode)
 {
+	TSUGARU_I486_FIDELITY_CLASS fidelity;
+
 	if(&reg==&state.SS())
 	{
 		state.holdIRQ=true;
@@ -1342,15 +1340,9 @@ unsigned i486DX::LoadSegmentRegister(SegmentRegister &reg,unsigned int value,con
 	loader.SetFlags(*this,reg);
 #endif
 	auto ret=loader.LoadSegmentRegister(*this,reg,value,mem,isInRealMode);
-#ifdef TSUGARU_I486_CS_SS_RPL_IS_CPL
-	if(&reg==&state.CS())
-	{
-		state.CS().value&=0xFFFC;
-		state.CS().value|=state.CS().DPL;
-		state.SS().value&=0xFFFC;
-		state.SS().value|=state.CS().DPL;
-	}
-#endif
+
+	fidelity.Sync_SS_CS_RPL_to_DPL(*this,state.CS(),reg);
+
 	return ret;
 }
 

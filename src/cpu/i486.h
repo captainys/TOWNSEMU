@@ -30,7 +30,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "i486inst.h"
 
 
-
 // Define the following macro to keep track of Accessed flag (0x20) and Dirty flag (0x40) of page table entries
 // #define TSUGARU_I486_UPDATE_PAGE_DA_FLAGS
 
@@ -40,10 +39,12 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 // Define the fllowing macro to protect upper 16 bit of ESP when stack-address size is 16.
 // #define TSUGARU_I486_PROTECT_ESP_HIGHWORD
 
-// Define the following macro to force bottom two bits of CS and SS selector to be DPL of the code segment.
-// This is implied from TEST386 and also https://www.cs.cmu.edu/~410/doc/segments/segments.html.
-// #define TSUGARU_I486_CS_SS_RPL_IS_CPL
 
+#ifdef TSUGARU_I486_HIGH_FIDELITY
+	#define TSUGARU_I486_FIDELITY_CLASS i486DXHighFidelity
+#else
+	#define TSUGARU_I486_FIDELITY_CLASS i486DXDefaultFidelity
+#endif
 
 // References
 // [1]  i486 Processor Programmers Reference Manual
@@ -68,7 +69,6 @@ public:
 		OPER_REG16, \
 		OPER_REG32, \
 	};
-
 
 	inline unsigned int BitToMask(unsigned char bit)
 	{
@@ -3462,11 +3462,16 @@ public:
 	virtual bool SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version);
 };
 
+#include "i486fidelity.h"
+
+
 
 #include "i486debug.h"
 
 inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numInstBytesForReturn,unsigned int numInstBytesForCallStack,bool SWI)
 {
+	TSUGARU_I486_FIDELITY_CLASS fidelity;
+
 	if(nullptr!=debuggerPtr)
 	{
 		debuggerPtr->Interrupt(*this,INTNum,mem,numInstBytesForReturn);
@@ -3597,12 +3602,7 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 				SetIPorEIP(gateOperandSize,desc.OFFSET);
 				state.CS()=newCS;
 
-			#ifdef TSUGARU_I486_CS_SS_RPL_IS_CPL
-				state.CS().value&=0xFFFC;
-				state.CS().value|=state.CS().DPL;
-				state.SS().value&=0xFFFC;
-				state.SS().value|=state.CS().DPL;
-			#endif
+				fidelity.Sync_SS_CS_RPL_to_DPL(*this,state.CS(),state.CS());
 
 				if(true==isINTGate)
 				{
