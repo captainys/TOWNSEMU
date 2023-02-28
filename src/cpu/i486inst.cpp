@@ -8510,14 +8510,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			clocksPassed=1;
 			auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
 			unsigned int value=FetchWordOrDword(inst.operandSize,inst.addressSize,seg,inst.EvalUimm32(),mem);
-		#ifdef TSUGARU_I486_MORE_EXCEPTION_HANDLING
-			if(true==state.exception)
+			if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
 			{
-				HandleException(true,mem,inst.numBytes);
 				EIPIncrement=0;
 				break;
 			}
-		#endif
 			state.EAX()&=operandSizeAndPattern[inst.operandSize>>3];
 			state.EAX()|=(value&operandSizeMask[inst.operandSize>>3]);
 		}
@@ -8557,14 +8554,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			}
 			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,src);
 			clocksPassed=1;
-		#ifdef TSUGARU_I486_MORE_EXCEPTION_HANDLING
-			if(true==state.exception)
+			if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
 			{
-				HandleException(true,mem,inst.numBytes);
 				EIPIncrement=0;
 				break;
 			}
-		#endif
 		}
 		break;
 

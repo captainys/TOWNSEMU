@@ -11,6 +11,8 @@ public:
 	inline static void Sync_SS_CS_RPL_to_DPL(class i486DX &,i486DX::SegmentRegister &,i486DX::SegmentRegister &){}
 
 	constexpr bool IOPLException(class i486DX &,uint32_t exceptionType,Memory &,uint32_t instNumBytes){return false;}
+
+	constexpr bool HandleExceptionIfAny(class i486DX &,Memory &,uint32_t instNumBytes){return false;}
 };
 
 class i486DXDefaultFidelity : public i486DXLowFidelity
@@ -54,6 +56,16 @@ public:
 		{
 			cpu.RaiseException(exceptionType,0);
 			cpu.HandleException(false,mem,instNumBytes);
+			return true;
+		}
+		return false;
+	}
+
+	inline static bool HandleExceptionIfAny(class i486DX &cpu,Memory &mem,uint32_t instNumBytes)
+	{
+		if(true==cpu.state.exception)
+		{
+			cpu.HandleException(true,mem,instNumBytes);
 			return true;
 		}
 		return false;
