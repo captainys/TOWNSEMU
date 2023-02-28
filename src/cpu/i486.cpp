@@ -1004,7 +1004,6 @@ public:
 			return;
 		}
 
-
 		auto RPL=(value&3);
 		auto TI=(0!=(value&4));
 
@@ -1079,6 +1078,17 @@ public:
 		}
 		else
 		{
+		#ifdef TSUGARU_I486_MORE_EXCEPTION_HANDLING
+			// INTEL 80386 Programmer's Reference Manual 1986 pp.346
+			// IF DS,ES,FS,or GS is loaded with a null selector THEN load segment register with selector, clear descriptor valid flag.
+			if(0==value)
+			{
+				reg.value=0;
+				reg.limit=0;
+				return 0;
+			}
+		#endif
+
 			LoadProtectedModeDescriptor(cpu,value,mem);
 		#ifdef TSUGARU_I486_MORE_EXCEPTION_HANDLING
 			if(nullptr==rawDesc)
