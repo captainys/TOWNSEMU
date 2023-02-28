@@ -4431,6 +4431,8 @@ std::string i486DX::Instruction::DisassembleImmAsASCII(unsigned int CS,unsigned 
 
 unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 {
+	TSUGARU_I486_FIDELITY_CLASS fidelity;
+
 	// Considered to make it state.EIP=((state.EIP+offset)&operandSizeMask[inst.operandSize>>3]);
 	// and delete EIPIncrement=0;  This will save one add and one mov instructions per jump.
 	// However, this change may break backward jump to offset 0000H, when operandSize=16.
@@ -6197,15 +6199,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		clocksPassed=2;
 		break;
 	case I486_RENUMBER_CLI:
-	#ifdef TSUGARU_I486_MORE_EXCEPTION_HANDLING
-		if(true!=IsInRealMode() && GetIOPL()<state.CS().DPL)
+		if(true==fidelity.IOPLException(*this,EXCEPTION_GP,mem,inst.numBytes))
 		{
-			RaiseException(EXCEPTION_GP,0);
-			HandleException(false,mem,inst.numBytes);
 			clocksPassed=2;
 			break;
 		}
-	#endif
 		state.EFLAGS&=(~EFLAGS_INT_ENABLE);
 		clocksPassed=2;
 		break;
@@ -7367,15 +7365,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 
 	case I486_RENUMBER_HLT://        0xF4,
-	#ifdef TSUGARU_I486_MORE_EXCEPTION_HANDLING
-		if(true!=IsInRealMode() && GetIOPL()<state.CS().DPL)
+		if(true==fidelity.IOPLException(*this,EXCEPTION_GP,mem,inst.numBytes))
 		{
-			RaiseException(EXCEPTION_GP,0);
-			HandleException(false,mem,inst.numBytes);
 			clocksPassed=2;
 			break;
 		}
-	#endif
 		if(0==(state.EFLAGS&EFLAGS_VIRTUAL86))
 		{
 			state.halt=true;
@@ -9897,15 +9891,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		clocksPassed=2;
 		break;
 	case I486_RENUMBER_STI://              0xFB,
-	#ifdef TSUGARU_I486_MORE_EXCEPTION_HANDLING
-		if(true!=IsInRealMode() && GetIOPL()<state.CS().DPL)
+		if(true==fidelity.IOPLException(*this,EXCEPTION_GP,mem,inst.numBytes))
 		{
-			RaiseException(EXCEPTION_GP,0);
-			HandleException(false,mem,inst.numBytes);
 			clocksPassed=2;
 			break;
 		}
-	#endif
 		SetIF(true);
 		// i486 Programmer's Reference Manual says:
 		// The processor then responds to the external interrupts after executing the next instruction

@@ -9,6 +9,8 @@ public:
 	inline static void RestoreESPHighWord(uint8_t,uint32_t &){}
 
 	inline static void Sync_SS_CS_RPL_to_DPL(class i486DX &,i486DX::SegmentRegister &,i486DX::SegmentRegister &){}
+
+	constexpr bool IOPLException(class i486DX &,uint32_t exceptionType,Memory &,uint32_t instNumBytes){return false;}
 };
 
 class i486DXDefaultFidelity : public i486DXLowFidelity
@@ -44,6 +46,17 @@ public:
 			cpu.state.SS().value&=0xFFFC;
 			cpu.state.SS().value|=cpu.state.CS().DPL;
 		}
+	}
+
+	inline static bool IOPLException(class i486DX &cpu,uint32_t exceptionType,Memory &mem,uint32_t instNumBytes)
+	{
+		if(true!=cpu.IsInRealMode() && cpu.GetIOPL()<cpu.state.CS().DPL)
+		{
+			cpu.RaiseException(exceptionType,0);
+			cpu.HandleException(false,mem,instNumBytes);
+			return true;
+		}
+		return false;
 	}
 };
 
