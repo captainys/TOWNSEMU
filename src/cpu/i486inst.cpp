@@ -8469,26 +8469,6 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		clocksPassed=3;
 		break;
 	case I486_RENUMBER_MOV_TO_SEG: //       0x8E,
-	#ifdef TSUGARU_I486_MORE_EXCEPTION_HANDLING
-		// I don't think it was the reason why Windows 3.1 stops while booting, but MOV CS,r_m apparently causes UD exception.
-		if(op1.reg==REG_CS)
-		{
-			RaiseException(EXCEPTION_UD,0);
-			HandleException(true,mem,inst.numBytes);
-			EIPIncrement=0;
-		}
-		else
-		{
-			Move(mem,inst.addressSize,inst.segOverride,op1,op2);
-			if(true==state.exception)
-			{
-				HandleException(true,mem,inst.numBytes);
-				EIPIncrement=0;
-			}
-		}
-	#else
-		Move(mem,inst.addressSize,inst.segOverride,op1,op2);
-	#endif
 		if(true==IsInRealMode())
 		{
 			clocksPassed=3;
@@ -8496,6 +8476,20 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		else
 		{
 			clocksPassed=9;
+		}
+
+		// I don't think it was the reason why Windows 3.1 stops while booting, but MOV CS,r_m apparently causes UD exception.
+		if(true==fidelity.UDException_MOV_TO_CS(*this,op1.reg,mem,inst.numBytes))
+		{
+			EIPIncrement=0;
+			break;
+		}
+
+		Move(mem,inst.addressSize,inst.segOverride,op1,op2);
+
+		if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
+		{
+			EIPIncrement=0;
 		}
 		break;
 	case I486_RENUMBER_MOV_M_TO_AL: //      0xA0,

@@ -1123,6 +1123,9 @@ public:
 
 	inline void LoadProtectedModeDescriptor(CPUCLASS &cpu,unsigned int value,const Memory &mem)
 	{
+		TSUGARU_I486_FIDELITY_CLASS fidelity;
+		TSUGARU_I486_FIDELITY_CLASS::LoadSegmentRegisterVariables fidelityVar;
+
 		rawDesc=LoadFromDescriptorCache(cpu,value);
 		if(nullptr!=rawDesc)
 		{
@@ -1133,33 +1136,23 @@ public:
 		auto RPL=(value&3);
 		auto TI=(0!=(value&4));
 
-	#ifdef TSUGARU_I486_MORE_EXCEPTION_HANDLING
-		unsigned int limit=0;
-	#endif
 		unsigned int DTLinearBaseAddr=0;
 		if(0==TI)
 		{
 			DTLinearBaseAddr=cpu.state.GDTR.linearBaseAddr;
-	#ifdef TSUGARU_I486_MORE_EXCEPTION_HANDLING
-			limit=cpu.state.GDTR.limit;
-	#endif
+			fidelity.SetLimit(fidelityVar,cpu.state.GDTR.limit);
 		}
 		else
 		{
 			DTLinearBaseAddr=cpu.state.LDTR.linearBaseAddr;
-	#ifdef TSUGARU_I486_MORE_EXCEPTION_HANDLING
-			limit=cpu.state.LDTR.limit;
-	#endif
+			fidelity.SetLimit(fidelityVar,cpu.state.LDTR.limit);
 		}
 		DTLinearBaseAddr+=(value&0xfff8); // Use upper 13 bits.
 
-	#ifdef TSUGARU_I486_MORE_EXCEPTION_HANDLING
-		if(limit<=(value&0xfff8))
+		if(true==fidelity.CheckSelectorBeyondLimit(cpu,*this,fidelityVar,value))
 		{
-			RaiseException(cpu,EXCEPTION_GP,value);  // If cpu is const i486DX &, it does nothing.
 			return;
 		}
-	#endif
 
 		auto memWin=GetConstMemoryWindowFromLinearAddress(cpu,DTLinearBaseAddr,mem);
 		if(nullptr!=memWin.ptr && (DTLinearBaseAddr&(MemoryAccess::MEMORY_WINDOW_SIZE-1))<=(MemoryAccess::MEMORY_WINDOW_SIZE-8))
