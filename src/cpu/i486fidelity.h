@@ -5,6 +5,9 @@
 class i486DXLowFidelity
 {
 public:
+	inline static void SaveESPHighWord(uint8_t,uint32_t){}
+	inline static void RestoreESPHighWord(uint8_t,uint32_t &){}
+
 	inline static void Sync_SS_CS_RPL_to_DPL(class i486DX &,i486DX::SegmentRegister &,i486DX::SegmentRegister &){}
 };
 
@@ -16,6 +19,22 @@ public:
 class i486DXHighFidelity : public i486DXDefaultFidelity
 {
 public:
+	uint32_t ESPHigh;
+	inline void SaveESPHighWord(uint8_t addressSize,uint32_t ESP)
+	{
+		if(16==addressSize)
+		{
+			ESPHigh=(ESP&0xFFFF0000);
+		}
+	}
+	inline void RestoreESPHighWord(uint8_t addressSize,uint32_t &ESP)
+	{
+		if(16==addressSize)
+		{
+			ESP&=0xFFFF;ESP|=ESPHigh;
+		}
+	}
+
 	inline static void Sync_SS_CS_RPL_to_DPL(class i486DX &cpu,i486DX::SegmentRegister &CS,i486DX::SegmentRegister &setSeg)
 	{
 		if(&CS==&setSeg)
