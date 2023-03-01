@@ -1276,6 +1276,7 @@ public:
 
 	inline void SetFlags(CPUCLASS &cpu,const typename CPUCLASS::SegmentRegister &reg)
 	{
+#ifdef TSUGARU_I486_MORE_EXCEPTION_HANDLING
 		if(&reg==&cpu.state.DS() || &reg==&cpu.state.ES() || &reg==&cpu.state.FS() || &reg==&cpu.state.GS())
 		{
 			// GP exception if the segment is data or readable code.
@@ -1285,6 +1286,7 @@ public:
 		{
 			loadingStackSegment=true;
 		}
+#endif
 	}
 };
 
