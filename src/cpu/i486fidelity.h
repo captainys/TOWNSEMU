@@ -129,11 +129,11 @@ public:
 			raise();
 			return true;
 		}
-		// if(3==cpu.state.CS().DPL && 0b1010!=URUR && 0b1011!=URUR && 0b1110!=URUR && 0b1111!=URUR) // System Page.
-		// {
-		// 	raise();
-		// 	return true;
-		// }
+		if(3==cpu.state.CS().DPL && 0b1010!=URUR && 0b1011!=URUR && 0b1110!=URUR && 0b1111!=URUR) // System Page.
+		{
+			raise();
+			return true;
+		}
 		return false;
 	}
 

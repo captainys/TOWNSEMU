@@ -545,6 +545,19 @@ public:
 		}
 	};
 
+	class PageTableEntry
+	{
+	public:
+		uint32_t dir,table;
+	};
+	class PageTableCache
+	{
+	public:
+		PageTableEntry info;
+		uint32_t valid=0;
+		uint32_t makeIt64Bytes;
+	};
+
 	class State
 	{
 	public:
@@ -659,8 +672,7 @@ public:
 		// When pageTableCacheValidCounter reaches 0xffffffff,
 		// pageTableCacheValid and pageTableCacheValidCounter will be reset.
 		uint32_t pageTableCacheValidCounter=1;
-		uint32_t pageTableCacheValid[PAGETABLE_CACHE_SIZE];
-		uint32_t pageTableCache[PAGETABLE_CACHE_SIZE];
+		PageTableCache pageTableCache[PAGETABLE_CACHE_SIZE];
 
 		// Descriptor cache stores pointers for descriptors, not linear base address, limit, etc.
 		// Some programs rewrites descriptor table after loaded by LGDT or LLDT.
@@ -2389,25 +2401,24 @@ public:
 
 	/*! Returns page info read from the memory.  It does not look at the page-table cache.
 	*/
-	inline uint32_t ReadPageInfo(unsigned int linearAddr,const Memory &mem) const
+	inline PageTableEntry ReadPageInfo(unsigned int linearAddr,const Memory &mem) const
 	{
+		PageTableEntry info;
+
 		uint32_t pageDirectoryIndex=((linearAddr>>22)&1023);
 		uint32_t pageTableIndex=((linearAddr>>12)&1023);
 
 		auto pageDirectoryPtr=state.GetCR(3)&0xFFFFF000;
-		auto pageTableInfo=mem.FetchDword(pageDirectoryPtr+(pageDirectoryIndex<<2));
-		if(0==(pageTableInfo&1))
+		info.dir=mem.FetchDword(pageDirectoryPtr+(pageDirectoryIndex<<2));
+		if(0==(info.dir&1))
 		{
-			return 0;
+			info.table=0;
+			return info;
 		}
 
-		const unsigned int pageTablePtr=(pageTableInfo&0xFFFFF000);
-		unsigned int pageInfo=mem.FetchDword(pageTablePtr+(pageTableIndex<<2));
-		if(0==(pageInfo&1))
-		{
-			return 0;
-		}
-		return pageInfo;
+		const unsigned int pageTablePtr=(info.dir&0xFFFFF000);
+		info.table=mem.FetchDword(pageTablePtr+(pageTableIndex<<2));
+		return info;
 	}
 
 	/*! Called from LinearAddressToPhysicalAddressRead if TSUGARU_I486_UPDATE_PAGE_DA_FLAGS is defined.
@@ -2474,16 +2485,20 @@ public:
 	{
 		auto pageIndex=(linearAddr>>LINEARADDR_TO_PAGE_SHIFT);
 
-		auto pageInfo=state.pageTableCache[pageIndex];
-		if(state.pageTableCacheValid[pageIndex]<state.pageTableCacheValidCounter)
+		PageTableEntry pageInfo;
+		if(state.pageTableCache[pageIndex].valid<state.pageTableCacheValidCounter)
 		{
 			pageInfo=ReadPageInfo(linearAddr,mem);
 		}
+		else
+		{
+			pageInfo=state.pageTableCache[pageIndex].info;
+		}
 
-		if(0!=(pageInfo&PAGEINFO_FLAG_PRESENT))
+		if(0!=(pageInfo.table&PAGEINFO_FLAG_PRESENT))
 		{
 			auto offset=(linearAddr&4095);
-			auto physicalAddr=(pageInfo&0xFFFFF000)+offset;
+			auto physicalAddr=(pageInfo.table&0xFFFFF000)+offset;
 			exceptionType=EXCEPTION_NONE;
 			return physicalAddr;
 		}
@@ -3426,11 +3441,11 @@ inline unsigned long i486DX::LinearAddressToPhysicalAddressRead(unsigned int lin
 	TSUGARU_I486_FIDELITY_CLASS fidelity;
 
 	auto pageIndex=(linearAddr>>LINEARADDR_TO_PAGE_SHIFT);
-	auto pageInfo=state.pageTableCache[pageIndex];
-	if(state.pageTableCacheValid[pageIndex]<state.pageTableCacheValidCounter)
+	PageTableEntry pageInfo;
+	if(state.pageTableCache[pageIndex].valid<state.pageTableCacheValidCounter)
 	{
 		pageInfo=ReadPageInfo(linearAddr,mem);
-		if(0==(pageInfo&PAGEINFO_FLAG_PRESENT))
+		if(0==(pageInfo.table&PAGEINFO_FLAG_PRESENT))
 		{
 			uint32_t code=0;
 			if(0!=state.CS().DPL)
@@ -3441,13 +3456,20 @@ inline unsigned long i486DX::LinearAddressToPhysicalAddressRead(unsigned int lin
 			state.exceptionLinearAddr=linearAddr;
 			return 0;
 		}
-		state.pageTableCache[pageIndex]=pageInfo;
-		state.pageTableCacheValid[pageIndex]=state.pageTableCacheValidCounter;
+		if(true==fidelity.PageLevelException(*this,false,linearAddr,pageInfo.dir,pageInfo.table))
+		{
+			return 0;
+		}
+		state.pageTableCache[pageIndex].info=pageInfo;
+		state.pageTableCache[pageIndex].valid=state.pageTableCacheValidCounter;
 	}
-
-	if(true==fidelity.PageLevelException(*this,false,linearAddr,pageIndex,pageInfo))
+	else
 	{
-		return 0;
+		pageInfo=state.pageTableCache[pageIndex].info;
+		if(true==fidelity.PageLevelException(*this,false,linearAddr,pageInfo.dir,pageInfo.table))
+		{
+			return 0;
+		}
 	}
 
 #ifdef TSUGARU_I486_UPDATE_PAGE_DA_FLAGS
@@ -3455,7 +3477,7 @@ inline unsigned long i486DX::LinearAddressToPhysicalAddressRead(unsigned int lin
 #endif
 
 	auto offset=(linearAddr&4095);
-	auto physicalAddr=(pageInfo&0xFFFFF000)+offset;
+	auto physicalAddr=(pageInfo.table&0xFFFFF000)+offset;
 	return physicalAddr;
 }
 
@@ -3464,11 +3486,11 @@ inline unsigned long i486DX::LinearAddressToPhysicalAddressWrite(unsigned int li
 	TSUGARU_I486_FIDELITY_CLASS fidelity;
 
 	auto pageIndex=(linearAddr>>LINEARADDR_TO_PAGE_SHIFT);
-	auto pageInfo=state.pageTableCache[pageIndex];
-	if(state.pageTableCacheValid[pageIndex]<state.pageTableCacheValidCounter)
+	PageTableEntry pageInfo;
+	if(state.pageTableCache[pageIndex].valid<state.pageTableCacheValidCounter)
 	{
 		pageInfo=ReadPageInfo(linearAddr,mem);
-		if(0==(pageInfo&PAGEINFO_FLAG_PRESENT))
+		if(0==(pageInfo.table&PAGEINFO_FLAG_PRESENT))
 		{
 			uint32_t code=PFFLAG_WRITE;
 			if(0!=state.CS().DPL)
@@ -3479,20 +3501,27 @@ inline unsigned long i486DX::LinearAddressToPhysicalAddressWrite(unsigned int li
 			state.exceptionLinearAddr=linearAddr;
 			return 0;
 		}
-		state.pageTableCache[pageIndex]=pageInfo;
-		state.pageTableCacheValid[pageIndex]=state.pageTableCacheValidCounter;
+		if(true==fidelity.PageLevelException(*this,true,linearAddr,pageInfo.dir,pageInfo.table))
+		{
+			return 0;
+		}
+		state.pageTableCache[pageIndex].info=pageInfo;
+		state.pageTableCache[pageIndex].valid=state.pageTableCacheValidCounter;
 	}
-
-	if(true==fidelity.PageLevelException(*this,true,linearAddr,pageIndex,pageInfo))
+	else
 	{
-		return 0;
+		pageInfo=state.pageTableCache[pageIndex].info;
+		if(true==fidelity.PageLevelException(*this,true,linearAddr,pageInfo.dir,pageInfo.table))
+		{
+			return 0;
+		}
 	}
 
 #ifdef TSUGARU_I486_UPDATE_PAGE_DA_FLAGS
 	MarkPageDirty(linearAddr,mem);
 #endif
 	auto offset=(linearAddr&4095);
-	auto physicalAddr=(pageInfo&0xFFFFF000)+offset;
+	auto physicalAddr=(pageInfo.table&0xFFFFF000)+offset;
 	return physicalAddr;
 }
 

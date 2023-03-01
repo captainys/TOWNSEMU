@@ -354,13 +354,11 @@ void i486DX::ClearPageTableCache(void)
 {
 	for(auto &c : state.pageTableCache)
 	{
-		c=0;
+		c.valid=0;
+		c.info.dir=0;
+		c.info.table=0;
 	}
 	state.pageTableCacheValidCounter=1;
-	for(auto &c : state.pageTableCacheValid)
-	{
-		c=0;
-	}
 }
 
 void i486DX::InvalidatePageTableCache()
@@ -884,18 +882,18 @@ void i486DX::PrintPageTranslation(const Memory &mem,uint32_t linearAddr) const
 
 	std::cout << "LINE:" << cpputil::Uitox(linearAddr) << "H" << std::endl;
 
-	auto pageInfo=state.pageTableCache[pageIndex];
-	if(state.pageTableCacheValid[pageIndex]<state.pageTableCacheValidCounter)
+	auto pageInfo=state.pageTableCache[pageIndex].info;
+	if(state.pageTableCache[pageIndex].valid<state.pageTableCacheValidCounter)
 	{
 		std::cout << "Page Info Not Cached" << std::endl;
 	}
 	else
 	{
-		std::cout << "Cached Page Info:" << cpputil::Uitox(pageInfo) << "H" << std::endl;
-		if(0!=(pageInfo&PAGEINFO_FLAG_PRESENT))
+		std::cout << "Cached Page Info:" << cpputil::Uitox(pageInfo.table) << "H" << std::endl;
+		if(0!=(pageInfo.table&PAGEINFO_FLAG_PRESENT))
 		{
 			auto offset=(linearAddr&4095);
-			auto physicalAddr=(pageInfo&0xFFFFF000)+offset;
+			auto physicalAddr=(pageInfo.table&0xFFFFF000)+offset;
 			std::cout << "Cache PHYS:" << cpputil::Uitox(physicalAddr) << "H" << std::endl;
 		}
 		else
