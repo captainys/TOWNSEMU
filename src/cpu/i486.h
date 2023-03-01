@@ -2497,40 +2497,12 @@ public:
 	*/
 	unsigned int PhysicalAddressToLinearAddress(unsigned physAddr,const Memory &mem) const;
 
+
 	/*! x86 keeps track of accessed page and written page in bit 5 (access) and bit 6 (write) of
 	    page-table entries.  Therefore, page-translation for read and write needs to do different
 	    things.
 	*/
-	inline unsigned long LinearAddressToPhysicalAddressRead(unsigned int linearAddr,Memory &mem)
-	{
-		auto pageIndex=(linearAddr>>LINEARADDR_TO_PAGE_SHIFT);
-		auto pageInfo=state.pageTableCache[pageIndex];
-		if(state.pageTableCacheValid[pageIndex]<state.pageTableCacheValidCounter)
-		{
-			pageInfo=ReadPageInfo(linearAddr,mem);
-			if(0==(pageInfo&PAGEINFO_FLAG_PRESENT))
-			{
-				uint32_t code=0;
-				if(0!=state.CS().DPL)
-				{
-					code|=PFFLAG_USER_MODE;
-				}
-				RaiseException(EXCEPTION_PF,code);
-				state.exceptionLinearAddr=linearAddr;
-				return 0;
-			}
-			state.pageTableCache[pageIndex]=pageInfo;
-			state.pageTableCacheValid[pageIndex]=state.pageTableCacheValidCounter;
-		}
-
-	#ifdef TSUGARU_I486_UPDATE_PAGE_DA_FLAGS
-		MarkPageAccessed(linearAddr,mem);
-	#endif
-
-		auto offset=(linearAddr&4095);
-		auto physicalAddr=(pageInfo&0xFFFFF000)+offset;
-		return physicalAddr;
-	}
+	inline unsigned long LinearAddressToPhysicalAddressRead(unsigned int linearAddr,Memory &mem);
 	inline unsigned long LinearAddressToPhysicalAddressWrite(unsigned int linearAddr,Memory &mem);
 
 
@@ -3449,6 +3421,44 @@ public:
 
 #include "i486fidelity.h"
 
+inline unsigned long i486DX::LinearAddressToPhysicalAddressRead(unsigned int linearAddr,Memory &mem)
+{
+	TSUGARU_I486_FIDELITY_CLASS fidelity;
+
+	auto pageIndex=(linearAddr>>LINEARADDR_TO_PAGE_SHIFT);
+	auto pageInfo=state.pageTableCache[pageIndex];
+	if(state.pageTableCacheValid[pageIndex]<state.pageTableCacheValidCounter)
+	{
+		pageInfo=ReadPageInfo(linearAddr,mem);
+		if(0==(pageInfo&PAGEINFO_FLAG_PRESENT))
+		{
+			uint32_t code=0;
+			if(0!=state.CS().DPL)
+			{
+				code|=PFFLAG_USER_MODE;
+			}
+			RaiseException(EXCEPTION_PF,code);
+			state.exceptionLinearAddr=linearAddr;
+			return 0;
+		}
+		state.pageTableCache[pageIndex]=pageInfo;
+		state.pageTableCacheValid[pageIndex]=state.pageTableCacheValidCounter;
+	}
+
+	if(true==fidelity.PageLevelException(*this,false,linearAddr,pageIndex,pageInfo))
+	{
+		return 0;
+	}
+
+#ifdef TSUGARU_I486_UPDATE_PAGE_DA_FLAGS
+	MarkPageAccessed(linearAddr,mem);
+#endif
+
+	auto offset=(linearAddr&4095);
+	auto physicalAddr=(pageInfo&0xFFFFF000)+offset;
+	return physicalAddr;
+}
+
 inline unsigned long i486DX::LinearAddressToPhysicalAddressWrite(unsigned int linearAddr,Memory &mem)
 {
 	TSUGARU_I486_FIDELITY_CLASS fidelity;
@@ -3469,12 +3479,13 @@ inline unsigned long i486DX::LinearAddressToPhysicalAddressWrite(unsigned int li
 			state.exceptionLinearAddr=linearAddr;
 			return 0;
 		}
-		if(true==fidelity.PageLevelException(*this,true,linearAddr,pageInfo))
-		{
-			return 0;
-		}
 		state.pageTableCache[pageIndex]=pageInfo;
 		state.pageTableCacheValid[pageIndex]=state.pageTableCacheValidCounter;
+	}
+
+	if(true==fidelity.PageLevelException(*this,true,linearAddr,pageIndex,pageInfo))
+	{
+		return 0;
 	}
 
 #ifdef TSUGARU_I486_UPDATE_PAGE_DA_FLAGS

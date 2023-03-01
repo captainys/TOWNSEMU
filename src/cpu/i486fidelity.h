@@ -16,7 +16,7 @@ public:
 
 	constexpr bool HandleExceptionIfAny(class i486DX &,Memory &,uint32_t instNumBytes) const{return false;}
 
-	constexpr bool PageLevelException(class i486DX &cpu,bool write,uint32_t linearAddr,uint32_t pageInfo) const{return false;}
+	constexpr bool PageLevelException(class i486DX &cpu,bool write,uint32_t linearAddr,uint32_t pageIndex,uint32_t pageInfo) const{return false;}
 
 	// LoadSegmentRegister
 	class LoadSegmentRegisterVariables
@@ -98,7 +98,7 @@ public:
 		return false;
 	}
 
-	inline static bool PageLevelException(class i486DX &cpu,bool write,uint32_t linearAddr,uint32_t pageInfo)
+	inline static bool PageLevelException(class i486DX &cpu,bool write,uint32_t linearAddr,uint32_t pageIndex,uint32_t pageInfo)
 	{
 		auto raise=[&]
 		{
@@ -115,7 +115,9 @@ public:
 			cpu.state.exceptionLinearAddr=linearAddr;
 		};
 
-		if(true==write && 0==(pageInfo&i486DX::PAGEINFO_FLAG_RW)) // Read-Only Page.
+		// Intel 80386 Programmer's Reference Manual 1986 pp. 127
+		// All pages are read/write in supervisor mode.  RW flag has meaning only if it is running in the user mode.
+		if(0!=cpu.state.CS().DPL && true==write && 0==(pageInfo&i486DX::PAGEINFO_FLAG_RW)) // Read-Only Page.
 		{
 			raise();
 			return true;
