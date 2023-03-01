@@ -3640,6 +3640,10 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 				}
 				else
 				{
+					state.CS().DPL=0;
+					// Just in case, set CPL to zero so that SS can be loaded.
+					// VM86 monitor is supposed to be ring 0.
+
 					// INT instruction of [1].
 					auto TempEFLAGS=state.EFLAGS;
 					auto TempSS=state.SS();
