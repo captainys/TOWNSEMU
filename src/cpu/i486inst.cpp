@@ -6072,7 +6072,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{
 				clocksPassed=20;
 			}
-			Push(mem,inst.operandSize,state.CS().value,state.EIP+inst.numBytes);
+
+			auto prevCS=state.CS().value;
+			auto nextEIP=state.EIP+inst.numBytes;
 
 			if(true==enableCallStack)
 			{
@@ -6083,6 +6085,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				    op1.seg,op1.offset,
 				    mem);
 			}
+
+			auto prevCPL=state.CS().DPL;
 
 			auto descHighword=LoadSegmentRegister(state.CS(),op1.seg,mem);
 			auto descType=(descHighword&0x0f00);
@@ -6102,6 +6106,18 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{
 				state.EIP=op1.offset;
 			}
+
+			if(state.CS().DPL<prevCPL)
+			{
+				auto newCPL=state.CS().DPL;
+				auto prevSS=state.SS().value;
+				auto prevESP=state.ESP();
+				LoadSegmentRegister(state.SS(),FetchWord(32,state.TR,TSS_OFFSET_SS0+newCPL*8,mem),mem);
+				state.ESP()=FetchDword(32,state.TR,TSS_OFFSET_ESP0+newCPL*8,mem);
+				Push(mem,inst.operandSize,prevSS,prevESP);
+			}
+			Push(mem,inst.operandSize,prevCS,nextEIP);
+
 			EIPIncrement=0;
 		}
 		break;

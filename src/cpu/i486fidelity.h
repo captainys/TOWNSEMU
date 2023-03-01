@@ -16,7 +16,6 @@ public:
 
 	constexpr bool HandleExceptionIfAny(class i486DX &,Memory &,uint32_t instNumBytes){return false;}
 
-
 	// LoadSegmentRegister
 	class LoadSegmentRegisterVariables
 	{
