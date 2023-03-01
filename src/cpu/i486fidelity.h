@@ -10,13 +10,13 @@ public:
 
 	inline static void Sync_SS_CS_RPL_to_DPL(class i486DX &,i486DX::SegmentRegister &,i486DX::SegmentRegister &){}
 
-	constexpr bool UDException_MOV_TO_CS(class i486DX &,uint32_t reg,Memory &mem,uint32_t instNumBytes){return false;}
+	constexpr bool UDException_MOV_TO_CS(class i486DX &,uint32_t reg,Memory &mem,uint32_t instNumBytes) const{return false;}
 
-	constexpr bool IOPLException(class i486DX &,uint32_t exceptionType,Memory &,uint32_t instNumBytes){return false;}
+	constexpr bool IOPLException(class i486DX &,uint32_t exceptionType,Memory &,uint32_t instNumBytes) const{return false;}
 
-	constexpr bool HandleExceptionIfAny(class i486DX &,Memory &,uint32_t instNumBytes){return false;}
+	constexpr bool HandleExceptionIfAny(class i486DX &,Memory &,uint32_t instNumBytes) const{return false;}
 
-	constexpr bool PageLevelException(class i486DX &cpu,bool write,uint32_t linearAddr,uint32_t pageInfo){return false;}
+	constexpr bool PageLevelException(class i486DX &cpu,bool write,uint32_t linearAddr,uint32_t pageInfo) const{return false;}
 
 	// LoadSegmentRegister
 	class LoadSegmentRegisterVariables
@@ -115,11 +115,17 @@ public:
 			cpu.state.exceptionLinearAddr=linearAddr;
 		};
 
-		if(true==write && 0==(pageInfo&i486DX::PAGEINFO_FLAG_RW))
+		if(true==write && 0==(pageInfo&i486DX::PAGEINFO_FLAG_RW)) // Read-Only Page.
 		{
 			raise();
 			return true;
 		}
+// The following check looks to be incorrect.
+//		if(0!=cpu.state.CS().DPL && 0!=(pageInfo&i486DX::PAGEINFO_FLAG_US)) // System Page.
+//		{
+//			raise();
+//			return true;
+//		}
 		return false;
 	}
 

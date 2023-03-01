@@ -957,9 +957,9 @@ public:
 	{
 		return cpu.FetchByteByLinearAddress(mem,linearAddr);
 	}
-	static inline MemoryAccess::MemoryWindow GetConstMemoryWindowFromLinearAddress(i486DX &cpu,unsigned int linearAddr,Memory &mem)
+	static inline MemoryAccess::ConstMemoryWindow GetConstMemoryWindowFromLinearAddress(i486DX &cpu,unsigned int linearAddr,Memory &mem)
 	{
-		return cpu.GetMemoryWindowFromLinearAddress(linearAddr,mem);
+		return cpu.GetConstMemoryWindowFromLinearAddress(linearAddr,mem);
 	}
 	static inline const unsigned char *LoadFromDescriptorCache(i486DX &cpu,uint16_t selectorValue)
 	{
@@ -1111,9 +1111,6 @@ public:
 	static inline void RaiseException(const i486DX &,unsigned int,unsigned int)
 	{
 	}
-	static inline void SetAccessedFlag(const uint8_t rawDesc[],const i486DX &cpu)
-	{
-	}
 	inline void DescriptorCheck(const i486DX &cpu,uint32_t selectorValue)
 	{
 	}
@@ -1159,7 +1156,6 @@ public:
 		{
 			rawDesc=memWin.ptr+(DTLinearBaseAddr&(MemoryAccess::MEMORY_WINDOW_SIZE-1));
 			StoreToDescriptorCache(cpu,value,rawDesc);
-			SetAccessedFlag(rawDesc,cpu);   // If cpu is const i486DX &, it does nothing.
 		}
 		else
 		{
