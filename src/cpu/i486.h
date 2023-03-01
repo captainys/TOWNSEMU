@@ -3594,6 +3594,8 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 
 				if(newCS.DPL<CPL)
 				{
+					state.CS().DPL=newCS.DPL; // Raise privilege level so that it can load SS.
+
 					auto TempSS=state.SS();
 					auto TempESP=state.ESP();
 					LoadSegmentRegister(state.SS(),FetchWord(32,state.TR,TSS_OFFSET_SS0+newCS.DPL*8,mem),mem);
