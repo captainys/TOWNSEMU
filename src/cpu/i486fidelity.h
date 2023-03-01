@@ -16,6 +16,8 @@ public:
 
 	constexpr bool HandleExceptionIfAny(class i486DX &,Memory &,uint32_t instNumBytes){return false;}
 
+	constexpr bool PageLevelException(class i486DX &cpu,bool write,uint32_t linearAddr,uint32_t pageInfo){return false;}
+
 	// LoadSegmentRegister
 	class LoadSegmentRegisterVariables
 	{
@@ -91,6 +93,31 @@ public:
 		if(true==cpu.state.exception)
 		{
 			cpu.HandleException(true,mem,instNumBytes);
+			return true;
+		}
+		return false;
+	}
+
+	inline static bool PageLevelException(class i486DX &cpu,bool write,uint32_t linearAddr,uint32_t pageInfo)
+	{
+		auto raise=[&]
+		{
+			uint32_t code=i486DX::PFFLAG_PAGE_LEVEL;
+			if(true==write)
+			{
+				code|=i486DX::PFFLAG_WRITE;
+			}
+			if(0!=cpu.state.CS().DPL)
+			{
+				code|=i486DX::PFFLAG_USER_MODE;
+			}
+			cpu.RaiseException(i486DX::EXCEPTION_PF,code);
+			cpu.state.exceptionLinearAddr=linearAddr;
+		};
+
+		if(true==write && 0==(pageInfo&i486DX::PAGEINFO_FLAG_RW))
+		{
+			raise();
 			return true;
 		}
 		return false;

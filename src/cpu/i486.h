@@ -2531,36 +2531,7 @@ public:
 		auto physicalAddr=(pageInfo&0xFFFFF000)+offset;
 		return physicalAddr;
 	}
-	inline unsigned long LinearAddressToPhysicalAddressWrite(unsigned int linearAddr,Memory &mem)
-	{
-		auto pageIndex=(linearAddr>>LINEARADDR_TO_PAGE_SHIFT);
-		auto pageInfo=state.pageTableCache[pageIndex];
-		if(state.pageTableCacheValid[pageIndex]<state.pageTableCacheValidCounter)
-		{
-			pageInfo=ReadPageInfo(linearAddr,mem);
-			if(0==(pageInfo&PAGEINFO_FLAG_PRESENT))
-			{
-				uint32_t code=PFFLAG_WRITE;
-				if(0!=state.CS().DPL)
-				{
-					code|=PFFLAG_USER_MODE;
-				}
-				RaiseException(EXCEPTION_PF,code);
-				state.exceptionLinearAddr=linearAddr;
-				return 0;
-			}
-			state.pageTableCache[pageIndex]=pageInfo;
-			state.pageTableCacheValid[pageIndex]=state.pageTableCacheValidCounter;
-		}
-
-	#ifdef TSUGARU_I486_UPDATE_PAGE_DA_FLAGS
-		MarkPageDirty(linearAddr,mem);
-	#endif
-		auto offset=(linearAddr&4095);
-		auto physicalAddr=(pageInfo&0xFFFFF000)+offset;
-		return physicalAddr;
-	}
-
+	inline unsigned long LinearAddressToPhysicalAddressWrite(unsigned int linearAddr,Memory &mem);
 
 
 	/*! Push a value.
@@ -3478,6 +3449,41 @@ public:
 
 #include "i486fidelity.h"
 
+inline unsigned long i486DX::LinearAddressToPhysicalAddressWrite(unsigned int linearAddr,Memory &mem)
+{
+	TSUGARU_I486_FIDELITY_CLASS fidelity;
+
+	auto pageIndex=(linearAddr>>LINEARADDR_TO_PAGE_SHIFT);
+	auto pageInfo=state.pageTableCache[pageIndex];
+	if(state.pageTableCacheValid[pageIndex]<state.pageTableCacheValidCounter)
+	{
+		pageInfo=ReadPageInfo(linearAddr,mem);
+		if(0==(pageInfo&PAGEINFO_FLAG_PRESENT))
+		{
+			uint32_t code=PFFLAG_WRITE;
+			if(0!=state.CS().DPL)
+			{
+				code|=PFFLAG_USER_MODE;
+			}
+			RaiseException(EXCEPTION_PF,code);
+			state.exceptionLinearAddr=linearAddr;
+			return 0;
+		}
+		if(true==fidelity.PageLevelException(*this,true,linearAddr,pageInfo))
+		{
+			return 0;
+		}
+		state.pageTableCache[pageIndex]=pageInfo;
+		state.pageTableCacheValid[pageIndex]=state.pageTableCacheValidCounter;
+	}
+
+#ifdef TSUGARU_I486_UPDATE_PAGE_DA_FLAGS
+	MarkPageDirty(linearAddr,mem);
+#endif
+	auto offset=(linearAddr&4095);
+	auto physicalAddr=(pageInfo&0xFFFFF000)+offset;
+	return physicalAddr;
+}
 
 
 #include "i486debug.h"
