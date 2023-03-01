@@ -905,6 +905,12 @@ public:
 		EXCEPTION_SS,
 		EXCEPTION_PF
 	};
+	enum
+	{
+		PFFLAG_PAGE_LEVEL=1,
+		PFFLAG_WRITE=2,
+		PFFLAG_USER_MODE=4,
+	};
 	static std::string ExceptionTypeToStr(unsigned int exceptionType);
 
 	class Operand;
@@ -2482,7 +2488,7 @@ public:
 			return physicalAddr;
 		}
 		exceptionType=EXCEPTION_PF;
-		exceptionCode=0;
+		exceptionCode=0; //I should have added a flag for read/write
 		return 0;
 	}
 
@@ -2504,7 +2510,12 @@ public:
 			pageInfo=ReadPageInfo(linearAddr,mem);
 			if(0==(pageInfo&PAGEINFO_FLAG_PRESENT))
 			{
-				RaiseException(EXCEPTION_PF,0);
+				uint32_t code=0;
+				if(0!=state.CS().DPL)
+				{
+					code|=PFFLAG_USER_MODE;
+				}
+				RaiseException(EXCEPTION_PF,code);
 				state.exceptionLinearAddr=linearAddr;
 				return 0;
 			}
@@ -2529,7 +2540,12 @@ public:
 			pageInfo=ReadPageInfo(linearAddr,mem);
 			if(0==(pageInfo&PAGEINFO_FLAG_PRESENT))
 			{
-				RaiseException(EXCEPTION_PF,0);
+				uint32_t code=PFFLAG_WRITE;
+				if(0!=state.CS().DPL)
+				{
+					code|=PFFLAG_USER_MODE;
+				}
+				RaiseException(EXCEPTION_PF,code);
 				state.exceptionLinearAddr=linearAddr;
 				return 0;
 			}
@@ -2893,7 +2909,7 @@ public:
 
 	    See Interrupt() function for numInstBytes.
 	*/
-	void HandleException(bool wasReadOp,Memory &mem,unsigned int numInstBytesForCallStack);
+	void HandleException(bool,Memory &mem,unsigned int numInstBytesForCallStack);
 
 	/*! 80386 and 80486 apparently accepts REPNE in place for REP is used for INS,MOVS,OUTS,LODS,STOS.
 	    This inline function just make REPNE work as REP.

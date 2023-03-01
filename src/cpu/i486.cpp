@@ -393,7 +393,7 @@ void i486DX::InvalidateDescriptorCache(void)
 	}
 }
 
-void i486DX::HandleException(bool wasReadOp,Memory &mem,unsigned int numInstBytesForCallStack)
+void i486DX::HandleException(bool,Memory &mem,unsigned int numInstBytesForCallStack)
 {
 	/* Should add a flag.
 	if(nullptr!=debuggerPtr)
@@ -407,7 +407,7 @@ void i486DX::HandleException(bool wasReadOp,Memory &mem,unsigned int numInstByte
 	{
 	case EXCEPTION_PF:
 		Interrupt(INT_PAGE_FAULT,mem,0,numInstBytesForCallStack,false);
-		Push(mem,32,(wasReadOp ? 0 : 2));
+		Push(mem,32,state.exceptionCode);
 		SetCR(2,state.exceptionLinearAddr);
 		break;
 	case EXCEPTION_GP:
