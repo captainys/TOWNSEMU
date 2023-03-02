@@ -37,6 +37,13 @@ public:
 	// If low-fidelity, don't care if it is readable or writable.
 	inline static void ClearSegmentRegisterAttribBytes(uint16_t &attribBytes){};
 	inline static void CopySegmentRegisterTypeByte(uint16_t &attribBytes,const uint8_t desc[]){};
+
+	// Protect EFLAGS IOPL bits.
+	class IOPLBits
+	{
+	};
+	inline static void SaveIOPLBits(IOPLBits &iopl,const i486DX &cpu){};
+	inline static void RestoreIOPLBits(i486DX &cpu,const IOPLBits &iopl){};
 };
 
 class i486DXDefaultFidelity : public i486DXLowFidelity
@@ -235,6 +242,29 @@ public:
 	{
 		attribBytes=cpputil::GetWord(desc+5);
 	}
+
+
+
+	class IOPLBits
+	{
+	public:
+		uint32_t iopl;
+	};
+	inline static void SaveIOPLBits(IOPLBits &iopl,const i486DX &cpu)
+	{
+		if(true!=cpu.IsInRealMode() && 0!=cpu.state.CS().DPL)
+		{
+			iopl.iopl=(cpu.state.EFLAGS&i486DX::EFLAGS_IOPL);
+		}
+	};
+	inline static void RestoreIOPLBits(i486DX &cpu,const IOPLBits &iopl)
+	{
+		if(true!=cpu.IsInRealMode() && 0!=cpu.state.CS().DPL)
+		{
+			cpu.state.EFLAGS&=~i486DX::EFLAGS_IOPL;
+			cpu.state.EFLAGS|=iopl.iopl;
+		}
+	};
 };
 
 /* } */

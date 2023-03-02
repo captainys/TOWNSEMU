@@ -9319,6 +9319,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 	case I486_RENUMBER_POPF://             0x9D,
 		{
+			TSUGARU_I486_FIDELITY_CLASS::IOPLBits ioplBits;
+			TSUGARU_I486_FIDELITY_CLASS::SaveIOPLBits(ioplBits,*this);
+
 			// VM and RF flags must be preserved.
 			unsigned int EFLAGS=Pop(mem,inst.operandSize);
 			EFLAGS&=~(EFLAGS_RESUME|EFLAGS_VIRTUAL86);
@@ -9326,6 +9329,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			EFLAGS&=EFLAGS_MASK;
 			EFLAGS|=EFLAGS_ALWAYS_ON;
 			SetFLAGSorEFLAGS(inst.operandSize,EFLAGS);
+
+			TSUGARU_I486_FIDELITY_CLASS::RestoreIOPLBits(*this,ioplBits);
 		}
 		clocksPassed=(IsInRealMode() ? 9 : 6);
 		break;
