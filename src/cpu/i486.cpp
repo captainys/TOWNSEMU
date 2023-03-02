@@ -944,6 +944,8 @@ public:
 	unsigned char rawDescBuf[8];
 	const unsigned char *rawDesc;
 
+	TSUGARU_I486_FIDELITY_CLASS fidelity;
+
 #ifdef TSUGARU_I486_MORE_EXCEPTION_HANDLING
 	bool needsDataOrReadableCode=false;
 	bool loadingStackSegment=false;
@@ -1182,6 +1184,7 @@ public:
 			// reg.limit=0xffff;   Surprisingly, reg.limit isn't affected!?  According to https://wiki.osdev.org/Unreal_Mode
 			reg.limit=std::max<unsigned int>(reg.limit,0xffff);
 			reg.DPL=(0!=(i486DX::EFLAGS_VIRTUAL86&cpu.state.EFLAGS) ? 3 : 0);
+			fidelity.ClearSegmentRegisterAttribBytes(reg.attribBytes);
 			return 0xFFFFFFFF;
 		}
 		else
@@ -1245,6 +1248,8 @@ public:
 			reg.baseLinearAddr=segBase;
 			reg.value=value;
 			reg.DPL=(rawDesc[5]>>5)&3;
+
+			fidelity.CopySegmentRegisterTypeByte(reg.attribBytes,rawDesc);
 
 			if((0x40&rawDesc[6])==0) // D==0
 			{

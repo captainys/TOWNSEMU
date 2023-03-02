@@ -8534,6 +8534,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			clocksPassed=1;
 			auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
 			StoreByte(mem,inst.addressSize,seg,inst.EvalUimm32(),GetAL());
+			if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
+			{
+				EIPIncrement=0;
+				break;
+			}
 		}
 		break;
 	case I486_RENUMBER_MOV_M_FROM_EAX: //   0xA3, // 16/32 depends on OPSIZE_OVERRIDE
@@ -8541,6 +8546,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			clocksPassed=1;
 			auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
 			StoreWordOrDword(mem,inst.operandSize,inst.addressSize,seg,inst.EvalUimm32(),GetEAX());
+			if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
+			{
+				EIPIncrement=0;
+				break;
+			}
 		}
 		break;
 	case I486_RENUMBER_MOV_I8_TO_RM8: //    0xC6,
@@ -8549,6 +8559,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			src.MakeByte(inst.EvalUimm8());
 			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,src);
 			clocksPassed=1;
+			if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
+			{
+				EIPIncrement=0;
+				break;
+			}
 		}
 		break;
 	case I486_RENUMBER_MOV_I_TO_RM: //      0xC7, // 16/32 depends on OPSIZE_OVERRIDE

@@ -178,10 +178,11 @@ public:
 		uint32_t operandSize;
 		uint32_t addressSize;
 		uint32_t limit;
-		unsigned int DPL=0;
+		uint16_t DPL=0;
+		uint16_t attribBytes=0;
 
 		void Serialize(std::vector <unsigned char> &data) const;
-		bool Deserialize(const unsigned char *&data);
+		bool Deserialize(const unsigned char *&data,unsigned int version);
 	};
 
 	class SegmentRegister : public SegmentProperty
@@ -190,7 +191,7 @@ public:
 		uint16_t value;
 
 		void Serialize(std::vector <unsigned char> &data) const;
-		bool Deserialize(const unsigned char *&data);
+		bool Deserialize(const unsigned char *&data,unsigned int version);
 	};
 
 	enum
@@ -243,7 +244,7 @@ public:
 		unsigned int attrib;  // Should it keep attribute?
 
 		void Serialize(std::vector <unsigned char> &data) const;
-		bool Deserialize(const unsigned char *&data);
+		bool Deserialize(const unsigned char *&data,unsigned int version);
 	};
 	class FarPointer
 	{
@@ -3739,6 +3740,12 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 
 inline void i486DX::StoreByte(Memory &mem,int addressSize,SegmentRegister seg,unsigned int offset,unsigned char byteData)
 {
+	TSUGARU_I486_FIDELITY_CLASS fidelity;
+	if(true==fidelity.SegmentWriteException(*this,seg,offset))
+	{
+		return;
+	}
+
 	offset&=AddressMask((unsigned char)addressSize);
 	auto linearAddr=seg.baseLinearAddr+offset;
 
@@ -3760,6 +3767,12 @@ inline void i486DX::StoreByte(Memory &mem,int addressSize,SegmentRegister seg,un
 
 inline void i486DX::StoreWord(Memory &mem,int addressSize,SegmentRegister seg,unsigned int offset,unsigned int data)
 {
+	TSUGARU_I486_FIDELITY_CLASS fidelity;
+	if(true==fidelity.SegmentWriteException(*this,seg,offset))
+	{
+		return;
+	}
+
 	offset&=AddressMask((unsigned char)addressSize);
 	auto linearAddr=seg.baseLinearAddr+offset;
 
@@ -3790,6 +3803,12 @@ inline void i486DX::StoreWord(Memory &mem,int addressSize,SegmentRegister seg,un
 }
 inline void i486DX::StoreDword(Memory &mem,int addressSize,SegmentRegister seg,unsigned int offset,unsigned int data)
 {
+	TSUGARU_I486_FIDELITY_CLASS fidelity;
+	if(true==fidelity.SegmentWriteException(*this,seg,offset))
+	{
+		return;
+	}
+
 	offset&=AddressMask((unsigned char)addressSize);
 	auto linearAddr=seg.baseLinearAddr+offset;
 

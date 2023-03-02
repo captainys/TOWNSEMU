@@ -18,6 +18,8 @@ public:
 
 	constexpr bool PageLevelException(class i486DX &cpu,bool write,uint32_t linearAddr,uint32_t pageIndex,uint32_t pageInfo) const{return false;}
 
+	constexpr bool SegmentWriteException(class i486DX &cpu,const i486DX::SegmentRegister &reg,uint32_t offset) const{return false;}
+
 	// LoadSegmentRegister
 	class LoadSegmentRegisterVariables
 	{
@@ -29,6 +31,10 @@ public:
 	inline constexpr bool CheckSelectorBeyondLimit(class i486DX &cpu,LoaderClass &loader,LoadSegmentRegisterVariables &var,uint32_t selector){return false;}
 	template <class LoaderClass>
 	inline constexpr bool CheckSelectorBeyondLimit(const class i486DX &cpu,LoaderClass &loader,LoadSegmentRegisterVariables &var,uint32_t selector){return false;}
+
+	// If low-fidelity, don't care if it is readable or writable.
+	inline static void ClearSegmentRegisterAttribBytes(uint16_t &attribBytes){};
+	inline static void CopySegmentRegisterTypeByte(uint16_t &attribBytes,const uint8_t desc[]){};
 };
 
 class i486DXDefaultFidelity : public i486DXLowFidelity
@@ -137,6 +143,29 @@ public:
 		return false;
 	}
 
+
+	inline static bool SegmentWriteException(class i486DX &cpu,const i486DX::SegmentRegister &reg,uint32_t offset)
+	{
+		// https://wiki.osdev.org/Descriptors
+		//   0xxxx System Segment
+		//   1000A Data Normal         Read-Only
+		//   1001A Data Normal         Read/Write
+		//   1010A Data Expand-Down    Read-Only
+		//   1011A Data Expand-Down    Read/Write
+		//   1100A Code Non-Conforming Execute-Only
+		//   1101A Code Non-Conforming Readable
+		//   1110A Code Conforming     Execute-Only
+		//   1111A Code Conforming     Readable
+		uint32_t type=((reg.attribBytes>>1)&0x0F);
+		if(true!=cpu.IsInRealMode() && 0b1001!=type && 0b1011!=type)
+		{
+			cpu.RaiseException(i486DX::EXCEPTION_GP,0);
+			return true;
+		}
+		return false;
+	}
+
+
 	inline static void SetLimit(LoadSegmentRegisterVariables &var,uint32_t limit)
 	{
 		var.limit=limit;
@@ -152,6 +181,15 @@ public:
 		return false;
 	}
 	using i486DXLowFidelity::CheckSelectorBeyondLimit;
+
+	inline static void ClearSegmentRegisterAttribBytes(uint16_t &attribBytes)
+	{
+		attribBytes=0;
+	}
+	inline static void CopySegmentRegisterTypeByte(uint16_t &attribBytes,const uint8_t desc[])
+	{
+		attribBytes=cpputil::GetWord(desc+5);
+	}
 };
 
 /* } */

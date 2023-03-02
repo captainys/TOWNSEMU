@@ -8,15 +8,24 @@ void i486DX::SegmentProperty::Serialize(std::vector <unsigned char> &data) const
 	PushUint32(data,addressSize);
 	PushUint32(data,limit);
 	PushUint32(data,DPL);
+	PushUint32(data,attribBytes);
 }
 
-bool i486DX::SegmentProperty::Deserialize(const unsigned char *&data)
+bool i486DX::SegmentProperty::Deserialize(const unsigned char *&data,unsigned int version)
 {
 	baseLinearAddr=ReadUint32(data);
 	operandSize=ReadUint32(data);
 	addressSize=ReadUint32(data);
 	limit=ReadUint32(data);
 	DPL=ReadUint32(data);
+	if(2<=version)
+	{
+		attribBytes=ReadUint32(data);
+	}
+	else
+	{
+		attribBytes=0;
+	}
 	return true;
 }
 
@@ -26,9 +35,9 @@ void i486DX::SegmentRegister::Serialize(std::vector <unsigned char> &data) const
 	PushUint16(data,value);
 }
 
-bool i486DX::SegmentRegister::Deserialize(const unsigned char *&data)
+bool i486DX::SegmentRegister::Deserialize(const unsigned char *&data,unsigned int version)
 {
-	SegmentProperty::Deserialize(data);
+	SegmentProperty::Deserialize(data,version);
 	value=ReadUint16(data);
 	return true;
 }
@@ -65,9 +74,9 @@ void i486DX::TaskRegister::Serialize(std::vector <unsigned char> &data) const
 	PushUint32(data,attrib);
 }
 
-bool i486DX::TaskRegister::Deserialize(const unsigned char *&data)
+bool i486DX::TaskRegister::Deserialize(const unsigned char *&data,unsigned int version)
 {
-	SegmentRegister::Deserialize(data);
+	SegmentRegister::Deserialize(data,version);
 	attrib=ReadUint32(data);
 	return true;
 }
@@ -138,12 +147,12 @@ bool i486DX::State::Deserialize(const unsigned char *&data,uint32_t version)
 
 	for(auto &x : sreg)
 	{
-		x.Deserialize(data);
+		x.Deserialize(data,version);
 	}
 	GDTR.Deserialize(data);
 	IDTR.Deserialize(data);
 	LDTR.Deserialize(data);
-	TR.Deserialize(data);
+	TR.Deserialize(data,version);
 
 	for(auto &x : CR)
 	{
@@ -197,9 +206,10 @@ bool i486DX::State::Deserialize(const unsigned char *&data,uint32_t version)
 
 /* virtual */ uint32_t i486DX::SerializeVersion(void) const
 {
-	return 1; 
+	return 2;
 	// Version 0 doesn't include FPU state.
 	// Version 1 includes FPU state.
+	// Version 2 includes segment attrib bytes.
 }
 /* virtual */ void i486DX::SpecificSerialize(std::vector <unsigned char> &data,std::string) const
 {
