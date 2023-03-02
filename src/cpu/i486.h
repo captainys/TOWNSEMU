@@ -2601,106 +2601,18 @@ public:
 	/*! Fetch a byte. 
 	    Turned out mem cannot be const.  Fetching byte will update page-table entry A flag.
 	*/
-	inline unsigned int FetchByte(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)
-	{
-		offset&=AddressMask((unsigned char)addressSize);
-		auto addr=seg.baseLinearAddr+offset;
-
-		if(seg.limit<offset)
-		{
-			RaiseException(EXCEPTION_GP,0);
-			return 0;
-		}
-
-		if(/* &seg==&state.SS() && */
-		   nullptr!=state.SSESPWindow.ptr &&
-		   true==state.SSESPWindow.IsLinearAddressInRange(addr))
-		{
-			return state.SSESPWindow.ptr[addr&(MemoryAccess::MEMORY_WINDOW_SIZE-1)];
-		}
-
-		if(true==PagingEnabled())
-		{
-			addr=LinearAddressToPhysicalAddressRead(addr,mem);
-		}
-		return mem.FetchByte(addr);
-	}
+	inline unsigned int FetchByte(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem);
 
 	/*! Fetch a word.
 	    Turned out mem cannot be const.  Fetching byte will update page-table entry A flag.
 	*/
-	inline unsigned int FetchWord(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)
-	{
-		offset&=AddressMask((unsigned char)addressSize);
-		auto addr=seg.baseLinearAddr+offset;
-
-		if(seg.limit<offset+1)
-		{
-			RaiseException(EXCEPTION_GP,0);
-			return 0;
-		}
-
-		if(/* &seg==&state.SS() && */
-		   nullptr!=state.SSESPWindow.ptr &&
-		   true==state.SSESPWindow.IsLinearAddressInRange(addr))
-		{
-			unsigned int low12bits=(addr&(MemoryAccess::MEMORY_WINDOW_SIZE-1));
-			if(low12bits<=MemoryAccess::MEMORY_WINDOW_SIZE-2)
-			{
-				return cpputil::GetWord(state.SSESPWindow.ptr+low12bits);
-			}
-		}
-
-		if(true==PagingEnabled())
-		{
-			addr=LinearAddressToPhysicalAddressRead(addr,mem);
-			if(0xFFC<(addr&0xfff)) // May hit the page boundary
-			{
-				return FetchByte(addressSize,seg,offset,mem)|(FetchByte(addressSize,seg,offset+1,mem)<<8);
-			}
-		}
-		return mem.FetchWord(addr);
-	}
+	inline unsigned int FetchWord(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem);
 
 	/*! Fetch a dword.
 	    Turned out mem cannot be const.  Fetching byte will update page-table entry A flag.
 	*/
-	inline unsigned int FetchDword(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)
-	{
-		offset&=AddressMask((unsigned char)addressSize);
-		auto addr=seg.baseLinearAddr+offset;
+	inline unsigned int FetchDword(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem);
 
-		if(seg.limit<offset+3)
-		{
-			RaiseException(EXCEPTION_GP,0);
-			return 0;
-		}
-
-		if(/* &seg==&state.SS() && */
-		   nullptr!=state.SSESPWindow.ptr &&
-		   true==state.SSESPWindow.IsLinearAddressInRange(addr))
-		{
-			unsigned int low12bits=(addr&(MemoryAccess::MEMORY_WINDOW_SIZE-1));
-			if(low12bits<=MemoryAccess::MEMORY_WINDOW_SIZE-4)
-			{
-				return cpputil::GetDword(state.SSESPWindow.ptr+low12bits);
-			}
-		}
-
-		if(true==PagingEnabled())
-		{
-			addr=LinearAddressToPhysicalAddressRead(addr,mem);
-			if(0xFF8<(addr&0xfff)) // May hit the page boundary
-			{
-				return cpputil::MakeUnsignedDword(
-				     FetchByte(addressSize,seg,offset,mem),
-				     FetchByte(addressSize,seg,offset+1,mem),
-				     FetchByte(addressSize,seg,offset+2,mem),
-				     FetchByte(addressSize,seg,offset+3,mem));
-			}
-		}
-		return mem.FetchDword(addr);
-	}
 	/*! Fetch a byte, word, or dword.
 	    Function name is left as FetchWordOrDword temporarily for the time being.
 	    Will be unified to FetchByteWordOrDword in the future.
@@ -2790,21 +2702,21 @@ public:
 
 	/*! Store a byte.
 	*/
-	inline void StoreByte(Memory &mem,int addressSize,SegmentRegister seg,unsigned int offset,unsigned char data);
+	inline void StoreByte(Memory &mem,int addressSize,const SegmentRegister &seg,unsigned int offset,unsigned char data);
 
 	/*! Store a word.
 	*/
-	inline void StoreWord(Memory &mem,int addressSize,SegmentRegister seg,unsigned int offset,unsigned int data);
+	inline void StoreWord(Memory &mem,int addressSize,const SegmentRegister &seg,unsigned int offset,unsigned int data);
 
 	/*! Store a dword.
 	*/
-	inline void StoreDword(Memory &mem,int addressSize,SegmentRegister seg,unsigned int offset,unsigned int data);
+	inline void StoreDword(Memory &mem,int addressSize,const SegmentRegister &seg,unsigned int offset,unsigned int data);
 
 
 
 	/*! Store a word or dword.  Operand size must be 16 or 32.
 	*/
-	inline void StoreWordOrDword(Memory &mem,unsigned int operandSize,int addressSize,SegmentRegister seg,unsigned int offset,unsigned int data);
+	inline void StoreWordOrDword(Memory &mem,unsigned int operandSize,int addressSize,const SegmentRegister &seg,unsigned int offset,unsigned int data);
 
 	/*! Fetch a byte for debugger.  It won't change exception status.
 	*/
@@ -3757,16 +3669,109 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 	}
 };
 
-inline void i486DX::StoreByte(Memory &mem,int addressSize,SegmentRegister seg,unsigned int offset,unsigned char byteData)
+inline unsigned int i486DX::FetchByte(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)
 {
+	offset&=AddressMask((unsigned char)addressSize);
+	auto addr=seg.baseLinearAddr+offset;
+
+	TSUGARU_I486_FIDELITY_CLASS fidelity;
+	if(true==fidelity.SegmentReadException(*this,seg,offset))
+	{
+		return 0;
+	}
+
+	if(/* &seg==&state.SS() && */
+	   nullptr!=state.SSESPWindow.ptr &&
+	   true==state.SSESPWindow.IsLinearAddressInRange(addr))
+	{
+		return state.SSESPWindow.ptr[addr&(MemoryAccess::MEMORY_WINDOW_SIZE-1)];
+	}
+
+	if(true==PagingEnabled())
+	{
+		addr=LinearAddressToPhysicalAddressRead(addr,mem);
+	}
+	return mem.FetchByte(addr);
+}
+inline unsigned int i486DX::FetchWord(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)
+{
+	offset&=AddressMask((unsigned char)addressSize);
+	auto addr=seg.baseLinearAddr+offset;
+
+	TSUGARU_I486_FIDELITY_CLASS fidelity;
+	if(true==fidelity.SegmentReadException(*this,seg,offset))
+	{
+		return 0;
+	}
+
+	if(/* &seg==&state.SS() && */
+	   nullptr!=state.SSESPWindow.ptr &&
+	   true==state.SSESPWindow.IsLinearAddressInRange(addr))
+	{
+		unsigned int low12bits=(addr&(MemoryAccess::MEMORY_WINDOW_SIZE-1));
+		if(low12bits<=MemoryAccess::MEMORY_WINDOW_SIZE-2)
+		{
+			return cpputil::GetWord(state.SSESPWindow.ptr+low12bits);
+		}
+	}
+
+	if(true==PagingEnabled())
+	{
+		addr=LinearAddressToPhysicalAddressRead(addr,mem);
+		if(0xFFC<(addr&0xfff)) // May hit the page boundary
+		{
+			return FetchByte(addressSize,seg,offset,mem)|(FetchByte(addressSize,seg,offset+1,mem)<<8);
+		}
+	}
+	return mem.FetchWord(addr);
+}
+inline unsigned int i486DX::FetchDword(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)
+{
+	offset&=AddressMask((unsigned char)addressSize);
+	auto addr=seg.baseLinearAddr+offset;
+
+	TSUGARU_I486_FIDELITY_CLASS fidelity;
+	if(true==fidelity.SegmentReadException(*this,seg,offset))
+	{
+		return 0;
+	}
+
+	if(/* &seg==&state.SS() && */
+	   nullptr!=state.SSESPWindow.ptr &&
+	   true==state.SSESPWindow.IsLinearAddressInRange(addr))
+	{
+		unsigned int low12bits=(addr&(MemoryAccess::MEMORY_WINDOW_SIZE-1));
+		if(low12bits<=MemoryAccess::MEMORY_WINDOW_SIZE-4)
+		{
+			return cpputil::GetDword(state.SSESPWindow.ptr+low12bits);
+		}
+	}
+
+	if(true==PagingEnabled())
+	{
+		addr=LinearAddressToPhysicalAddressRead(addr,mem);
+		if(0xFF8<(addr&0xfff)) // May hit the page boundary
+		{
+			return cpputil::MakeUnsignedDword(
+			     FetchByte(addressSize,seg,offset,mem),
+			     FetchByte(addressSize,seg,offset+1,mem),
+			     FetchByte(addressSize,seg,offset+2,mem),
+			     FetchByte(addressSize,seg,offset+3,mem));
+		}
+	}
+	return mem.FetchDword(addr);
+}
+
+inline void i486DX::StoreByte(Memory &mem,int addressSize,const SegmentRegister &seg,unsigned int offset,unsigned char byteData)
+{
+	offset&=AddressMask((unsigned char)addressSize);
+	auto linearAddr=seg.baseLinearAddr+offset;
+
 	TSUGARU_I486_FIDELITY_CLASS fidelity;
 	if(true==fidelity.SegmentWriteException(*this,seg,offset))
 	{
 		return;
 	}
-
-	offset&=AddressMask((unsigned char)addressSize);
-	auto linearAddr=seg.baseLinearAddr+offset;
 
 	if(/* &seg==&state.SS() && */
 	   nullptr!=state.SSESPWindow.ptr &&
@@ -3784,16 +3789,16 @@ inline void i486DX::StoreByte(Memory &mem,int addressSize,SegmentRegister seg,un
 	return mem.StoreByte(physicalAddr,byteData);
 }
 
-inline void i486DX::StoreWord(Memory &mem,int addressSize,SegmentRegister seg,unsigned int offset,unsigned int data)
+inline void i486DX::StoreWord(Memory &mem,int addressSize,const SegmentRegister &seg,unsigned int offset,unsigned int data)
 {
+	offset&=AddressMask((unsigned char)addressSize);
+	auto linearAddr=seg.baseLinearAddr+offset;
+
 	TSUGARU_I486_FIDELITY_CLASS fidelity;
 	if(true==fidelity.SegmentWriteException(*this,seg,offset))
 	{
 		return;
 	}
-
-	offset&=AddressMask((unsigned char)addressSize);
-	auto linearAddr=seg.baseLinearAddr+offset;
 
 	if(/* &seg==&state.SS() && */
 	   nullptr!=state.SSESPWindow.ptr &&
@@ -3820,16 +3825,16 @@ inline void i486DX::StoreWord(Memory &mem,int addressSize,SegmentRegister seg,un
 	}
 	mem.StoreWord(physicalAddr,data);
 }
-inline void i486DX::StoreDword(Memory &mem,int addressSize,SegmentRegister seg,unsigned int offset,unsigned int data)
+inline void i486DX::StoreDword(Memory &mem,int addressSize,const SegmentRegister &seg,unsigned int offset,unsigned int data)
 {
+	offset&=AddressMask((unsigned char)addressSize);
+	auto linearAddr=seg.baseLinearAddr+offset;
+
 	TSUGARU_I486_FIDELITY_CLASS fidelity;
 	if(true==fidelity.SegmentWriteException(*this,seg,offset))
 	{
 		return;
 	}
-
-	offset&=AddressMask((unsigned char)addressSize);
-	auto linearAddr=seg.baseLinearAddr+offset;
 
 	if(/* &seg==&state.SS() && */
 	   nullptr!=state.SSESPWindow.ptr &&
@@ -3859,7 +3864,7 @@ inline void i486DX::StoreDword(Memory &mem,int addressSize,SegmentRegister seg,u
 	mem.StoreDword(physicalAddr,data);
 }
 
-inline void i486DX::StoreWordOrDword(Memory &mem,unsigned int operandSize,int addressSize,SegmentRegister seg,unsigned int offset,unsigned int data)
+inline void i486DX::StoreWordOrDword(Memory &mem,unsigned int operandSize,int addressSize,const SegmentRegister &seg,unsigned int offset,unsigned int data)
 {
 	switch(operandSize)
 	{

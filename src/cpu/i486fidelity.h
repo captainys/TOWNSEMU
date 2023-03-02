@@ -20,6 +20,8 @@ public:
 
 	constexpr bool SegmentWriteException(class i486DX &cpu,const i486DX::SegmentRegister &reg,uint32_t offset) const{return false;}
 
+	constexpr bool SegmentReadException(class i486DX &cpu,const i486DX::SegmentRegister &seg,uint32_t offset) const{return false;}
+
 	// LoadSegmentRegister
 	class LoadSegmentRegisterVariables
 	{
@@ -40,6 +42,15 @@ public:
 class i486DXDefaultFidelity : public i486DXLowFidelity
 {
 public:
+	static inline bool SegmentReadException(class i486DX &cpu,const i486DX::SegmentRegister &seg,uint32_t offset)
+	{
+		if(seg.limit<offset) // Needed to run Fractal Engine Demo and other Psygnosis games.
+		{
+			cpu.RaiseException(i486DX::EXCEPTION_GP,0);
+			return true;
+		}
+		return false;
+	}
 };
 
 class i486DXHighFidelity : public i486DXDefaultFidelity
@@ -144,17 +155,56 @@ public:
 	}
 
 
+	static inline bool SegmentReadException(class i486DX &cpu,const i486DX::SegmentRegister &seg,uint32_t offset)
+	{
+		auto raise=[&]
+		{
+			if(&seg==&cpu.state.SS())
+			{
+				cpu.RaiseException(i486DX::EXCEPTION_SS,0);
+			}
+			else
+			{
+				cpu.RaiseException(i486DX::EXCEPTION_GP,0);
+			}
+		};
+
+		uint32_t type=((seg.attribBytes>>1)&0x0F);
+		if(true!=cpu.IsInRealMode() && (i486DX::SEGTYPE_CODE_NONCONFORMING_EXECONLY==type || i486DX::SEGTYPE_CODE_CONFORMING_EXECONLY==type))
+		{
+			raise();
+			return true;
+		}
+		if(seg.limit<offset)
+		{
+			raise();
+			return true;
+		}
+		return false;
+	}
 	inline static bool SegmentWriteException(class i486DX &cpu,const i486DX::SegmentRegister &seg,uint32_t offset)
 	{
+		auto raise=[&]
+		{
+			if(&seg==&cpu.state.SS())
+			{
+				cpu.RaiseException(i486DX::EXCEPTION_SS,0);
+			}
+			else
+			{
+				cpu.RaiseException(i486DX::EXCEPTION_GP,0);
+			}
+		};
+
 		uint32_t type=((seg.attribBytes>>1)&0x0F);
 		if(true!=cpu.IsInRealMode() && i486DX::SEGTYPE_DATA_NORMAL_RW!=type && i486DX::SEGTYPE_DATA_EXPAND_DOWN_RW!=type)
 		{
-			cpu.RaiseException(i486DX::EXCEPTION_GP,0);
+			raise();
 			return true;
 		}
-		if(true!=cpu.IsInRealMode() && seg.limit<offset)
+		if(seg.limit<offset)
 		{
-			cpu.RaiseException(i486DX::EXCEPTION_GP,0);
+			raise();
 			return true;
 		}
 		return false;
