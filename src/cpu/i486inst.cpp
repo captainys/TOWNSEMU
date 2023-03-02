@@ -9372,7 +9372,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			SetIPorEIP(inst.operandSize,eip);
 			auto segRegValue=cs;
 
+			TSUGARU_I486_FIDELITY_CLASS::IOPLBits ioplBits;
+			TSUGARU_I486_FIDELITY_CLASS::SaveIOPLBits(ioplBits,*this);
 			SetFLAGSorEFLAGS(inst.operandSize,eflags);
+			TSUGARU_I486_FIDELITY_CLASS::RestoreIOPLBits(*this,ioplBits);
 			if(true!=IsInRealMode())
 			{
 				// if(state.EFLAGS&EFLAGS_NESTED)
