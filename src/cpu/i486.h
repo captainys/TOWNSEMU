@@ -3581,10 +3581,10 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 					Push(mem,gateOperandSize,TempSS.value);
 					Push(mem,gateOperandSize,TempESP);
 				}
-				// else if(CPL<DPL)
-				// {
-				//	Interrupt to lower-privilege level should raise exception.
-				// }
+				else if(CPL<newCS.DPL)
+				{
+					Abort("Interrupt to lower-privilege level should raise exception.");
+				}
 
 
 				Push(mem,gateOperandSize,state.EFLAGS,state.CS().value,state.EIP+numInstBytesForReturn);
@@ -3595,8 +3595,8 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 
 				SetIPorEIP(gateOperandSize,desc.OFFSET);
 				state.CS()=newCS;
-
-				fidelity.Sync_SS_CS_RPL_to_DPL(*this,state.CS(),state.CS());
+				// Intel 80386 Programmer's Reference Manual 1986 pp.307
+				fidelity.Sync_CS_RPL_to_DPL(*this);
 
 				if(true==isINTGate)
 				{

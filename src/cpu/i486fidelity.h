@@ -8,7 +8,7 @@ public:
 	inline static void SaveESPHighWord(uint8_t,uint32_t){}
 	inline static void RestoreESPHighWord(uint8_t,uint32_t &){}
 
-	inline static void Sync_SS_CS_RPL_to_DPL(class i486DX &,i486DX::SegmentRegister &,i486DX::SegmentRegister &){}
+	inline static void Sync_CS_RPL_to_DPL(class i486DX &){}
 
 	constexpr bool UDException_MOV_TO_CS(class i486DX &,uint32_t reg,Memory &mem,uint32_t instNumBytes) const{return false;}
 
@@ -79,15 +79,10 @@ public:
 		}
 	}
 
-	inline static void Sync_SS_CS_RPL_to_DPL(class i486DX &cpu,i486DX::SegmentRegister &CS,i486DX::SegmentRegister &setSeg)
+	inline static void Sync_CS_RPL_to_DPL(class i486DX &cpu)
 	{
-		if(true!=cpu.IsInRealMode() && true!=cpu.GetVM() && &CS==&setSeg)
-		{
-			cpu.state.CS().value&=0xFFFC;
-			cpu.state.CS().value|=cpu.state.CS().DPL;
-			cpu.state.SS().value&=0xFFFC;
-			cpu.state.SS().value|=cpu.state.CS().DPL;
-		}
+		cpu.state.CS().value&=~3;
+		cpu.state.CS().value|=(cpu.state.CS().DPL&3);
 	}
 
 	inline bool UDException_MOV_TO_CS(class i486DX &cpu,uint32_t reg,Memory &mem,uint32_t instNumBytes)
