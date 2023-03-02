@@ -3632,6 +3632,7 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 						state.EFLAGS&=~EFLAGS_INT_ENABLE;
 					}
 					// Is TR always 32-bit address size?
+					state.CS().DPL=0; // Change to CPL=0 before loading SS.
 					LoadSegmentRegister(state.SS(),FetchWord(32,state.TR,TSS_OFFSET_SS0,mem),mem);
 					state.ESP()=FetchDword(32,state.TR,TSS_OFFSET_ESP0,mem);
 					Push(mem,32,state.GS().value);
