@@ -110,6 +110,25 @@ public:
 		PAGEINFO_FLAG_D=      0b000001000000,
 		PAGEINFO_FLAG_AVAIL=  0b111000000000,
 
+		// https://wiki.osdev.org/Descriptors
+		//   0xxxx System Segment
+		//   1000A Data Normal         Read-Only
+		//   1001A Data Normal         Read/Write
+		//   1010A Data Expand-Down    Read-Only
+		//   1011A Data Expand-Down    Read/Write
+		//   1100A Code Non-Conforming Execute-Only
+		//   1101A Code Non-Conforming Readable
+		//   1110A Code Conforming     Execute-Only
+		//   1111A Code Conforming     Readable
+		SEGTYPE_DATA_NORMAL_READONLY=       0b1000, // Data Normal         Read-Only
+		SEGTYPE_DATA_NORMAL_RW=             0b1001, // Data Normal         Read/Write
+		SEGTYPE_DATA_EXPAND_DOWN_READONLY=  0b1010, // Data Expand-Down    Read-Only
+		SEGTYPE_DATA_EXPAND_DOWN_RW=        0b1011, // Data Expand-Down    Read/Write
+		SEGTYPE_CODE_NONCONFORMING_EXECONLY=0b1100, // Code Non-Conforming Execute-Only
+		SEGTYPE_CODE_NONCONFORMING_READABLE=0b1101, // Code Non-Conforming Readable
+		SEGTYPE_CODE_CONFORMING_EXECONLY=   0b1110, // Code Conforming     Execute-Only
+		SEGTYPE_CODE_CONFORMING_READABLE=   0b1111, // Code Conforming     Readable
+
 		//                 AVR NIOODITSZ A P C
 		//                 CMF0TPL      0 0 1
 		EFLAGS_MASK=     0b1110111111111010111,

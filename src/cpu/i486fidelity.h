@@ -144,20 +144,15 @@ public:
 	}
 
 
-	inline static bool SegmentWriteException(class i486DX &cpu,const i486DX::SegmentRegister &reg,uint32_t offset)
+	inline static bool SegmentWriteException(class i486DX &cpu,const i486DX::SegmentRegister &seg,uint32_t offset)
 	{
-		// https://wiki.osdev.org/Descriptors
-		//   0xxxx System Segment
-		//   1000A Data Normal         Read-Only
-		//   1001A Data Normal         Read/Write
-		//   1010A Data Expand-Down    Read-Only
-		//   1011A Data Expand-Down    Read/Write
-		//   1100A Code Non-Conforming Execute-Only
-		//   1101A Code Non-Conforming Readable
-		//   1110A Code Conforming     Execute-Only
-		//   1111A Code Conforming     Readable
-		uint32_t type=((reg.attribBytes>>1)&0x0F);
-		if(true!=cpu.IsInRealMode() && 0b1001!=type && 0b1011!=type)
+		uint32_t type=((seg.attribBytes>>1)&0x0F);
+		if(true!=cpu.IsInRealMode() && i486DX::SEGTYPE_DATA_NORMAL_RW!=type && i486DX::SEGTYPE_DATA_EXPAND_DOWN_RW!=type)
+		{
+			cpu.RaiseException(i486DX::EXCEPTION_GP,0);
+			return true;
+		}
+		if(true!=cpu.IsInRealMode() && seg.limit<offset)
 		{
 			cpu.RaiseException(i486DX::EXCEPTION_GP,0);
 			return true;
