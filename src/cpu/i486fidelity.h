@@ -74,7 +74,7 @@ public:
 
 	inline static void Sync_SS_CS_RPL_to_DPL(class i486DX &cpu,i486DX::SegmentRegister &CS,i486DX::SegmentRegister &setSeg)
 	{
-		if(&CS==&setSeg)
+		if(true!=cpu.IsInRealMode() && true!=cpu.GetVM() && &CS==&setSeg)
 		{
 			cpu.state.CS().value&=0xFFFC;
 			cpu.state.CS().value|=cpu.state.CS().DPL;
@@ -170,7 +170,7 @@ public:
 		};
 
 		uint32_t type=((seg.attribBytes>>1)&0x0F);
-		if(true!=cpu.IsInRealMode() && (i486DX::SEGTYPE_CODE_NONCONFORMING_EXECONLY==type || i486DX::SEGTYPE_CODE_CONFORMING_EXECONLY==type))
+		if(true!=cpu.IsInRealMode() && true!=cpu.GetVM() && (i486DX::SEGTYPE_CODE_NONCONFORMING_EXECONLY==type || i486DX::SEGTYPE_CODE_CONFORMING_EXECONLY==type))
 		{
 			raise();
 			return true;
@@ -197,7 +197,7 @@ public:
 		};
 
 		uint32_t type=((seg.attribBytes>>1)&0x0F);
-		if(true!=cpu.IsInRealMode() && i486DX::SEGTYPE_DATA_NORMAL_RW!=type && i486DX::SEGTYPE_DATA_EXPAND_DOWN_RW!=type)
+		if(true!=cpu.IsInRealMode() && true!=cpu.GetVM() && i486DX::SEGTYPE_DATA_NORMAL_RW!=type && i486DX::SEGTYPE_DATA_EXPAND_DOWN_RW!=type)
 		{
 			raise();
 			return true;

@@ -6217,6 +6217,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_RENUMBER_CLI:
 		if(true==fidelity.IOPLException(*this,EXCEPTION_GP,mem,inst.numBytes))
 		{
+			EIPIncrement=0;
 			clocksPassed=2;
 			break;
 		}
@@ -7383,6 +7384,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_RENUMBER_HLT://        0xF4,
 		if(true==fidelity.IOPLException(*this,EXCEPTION_GP,mem,inst.numBytes))
 		{
+			EIPIncrement=0;
 			clocksPassed=2;
 			break;
 		}
@@ -9910,11 +9912,6 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		clocksPassed=2;
 		break;
 	case I486_RENUMBER_STI://              0xFB,
-		if(true==fidelity.IOPLException(*this,EXCEPTION_GP,mem,inst.numBytes))
-		{
-			clocksPassed=2;
-			break;
-		}
 		SetIF(true);
 		// i486 Programmer's Reference Manual says:
 		// The processor then responds to the external interrupts after executing the next instruction
