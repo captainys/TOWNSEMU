@@ -3644,6 +3644,12 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 					Push(mem,32,state.CS().value);
 					Push(mem,32,state.EIP+numInstBytesForReturn);
 
+					// Need to clear DS,ES,FS,GS.  Or, PUSH FS -> POP FS will shoot GP(0).
+					LoadSegmentRegister(state.DS(),0,mem);
+					LoadSegmentRegister(state.ES(),0,mem);
+					LoadSegmentRegister(state.FS(),0,mem);
+					LoadSegmentRegister(state.GS(),0,mem);
+
 					SetIPorEIP(gateOperandSize,desc.OFFSET);
 					LoadSegmentRegister(state.CS(),desc.SEG,mem);
 				}
