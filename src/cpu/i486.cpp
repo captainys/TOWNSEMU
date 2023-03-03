@@ -1209,12 +1209,10 @@ public:
 		#endif
 
 			LoadProtectedModeDescriptor(cpu,value,mem);
-		#ifdef TSUGARU_I486_MORE_EXCEPTION_HANDLING
 			if(nullptr==rawDesc)
 			{
 				return 0;
 			}
-		#endif
 
 			// Sample GDT from WRHIGH.ASM
 			//	DB		0FFH,0FFH	; Segment Limit (0-15)
