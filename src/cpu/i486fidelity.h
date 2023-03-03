@@ -30,7 +30,12 @@ public:
 	public:
 		uint32_t limit;
 	};
+	class LoadSegmentRegisterFlags
+	{
+	public:
+	};
 	inline static void SetLimit(LoadSegmentRegisterVariables &,uint32_t limit){};
+	inline static void SetLoadSegmentRegisterFlags(LoadSegmentRegisterFlags &flags,const i486DX &cpu,const i486DX::SegmentRegister &reg){};
 	inline constexpr bool CheckSelectorBeyondLimit(class i486DX &cpu,LoadSegmentRegisterVariables &var,uint32_t selector){return false;}
 	inline constexpr bool CheckSelectorBeyondLimit(const class i486DX &cpu,LoadSegmentRegisterVariables &var,uint32_t selector){return false;}
 
@@ -238,9 +243,26 @@ public:
 	}
 
 
+	class LoadSegmentRegisterFlags
+	{
+	public:
+		bool needsDataOrReadableCode,loadingStackSegment;
+	};
 	inline static void SetLimit(LoadSegmentRegisterVariables &var,uint32_t limit)
 	{
 		var.limit=limit;
+	}
+	inline static void SetLoadSegmentRegisterFlags(LoadSegmentRegisterFlags &flags,const i486DX &cpu,const i486DX::SegmentRegister &reg)
+	{
+		if(&reg==&cpu.state.DS() || &reg==&cpu.state.ES() || &reg==&cpu.state.FS() || &reg==&cpu.state.GS())
+		{
+			// GP exception if the segment is data or readable code.
+			flags.needsDataOrReadableCode=true;
+		}
+		if(&reg==&cpu.state.SS())
+		{
+			flags.loadingStackSegment=true;
+		}
 	}
 	inline static bool CheckSelectorBeyondLimit(class i486DX &cpu,LoadSegmentRegisterVariables &var,uint32_t selector)
 	{

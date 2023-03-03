@@ -945,12 +945,7 @@ public:
 	const unsigned char *rawDesc;
 
 	TSUGARU_I486_FIDELITY_CLASS fidelity;
-
-#ifdef TSUGARU_I486_MORE_EXCEPTION_HANDLING
-	bool needsDataOrReadableCode=false;
-	bool loadingStackSegment=false;
-#endif
-
+	TSUGARU_I486_FIDELITY_CLASS::LoadSegmentRegisterFlags fidelityFlags;
 
 	// For mutable i486DX >>
 	static inline unsigned int FetchByteByLinearAddress(i486DX &cpu,Memory &mem,unsigned int linearAddr)
@@ -990,7 +985,7 @@ public:
 		if(nullptr==rawDesc || 0==(rawDesc[5]&0x80)) // Segment not present
 		{
 			rawDesc=nullptr;
-			if(true!=loadingStackSegment)
+			if(true!=fidelityFlags.loadingStackSegment)
 			{
 				RaiseException(cpu,EXCEPTION_ND,selectorValue); // If cpu is const i486DX &, it does nothing.
 			}
@@ -1001,7 +996,7 @@ public:
 			return;
 		}
 
-		if(true==needsDataOrReadableCode)
+		if(true==fidelityFlags.needsDataOrReadableCode)
 		{
 			// pp.108 of Intel 80386 Programmer's Reference Manual 1986 tells there is
 			// no way of distinguishing writable-data and readable-code segments.
@@ -1056,7 +1051,7 @@ public:
 			}
 		}
 
-		if(true==loadingStackSegment)
+		if(true==fidelityFlags.loadingStackSegment)
 		{
 			// Needs to be:
 			//   Writable data segment
@@ -1274,21 +1269,6 @@ public:
 		ptr.OFFSET=(rawDesc[0]|(rawDesc[1]<<8)|(rawDesc[6]<<16)|(rawDesc[7]<<24));
 		return ptr;
 	}
-
-	inline void SetFlags(CPUCLASS &cpu,const typename CPUCLASS::SegmentRegister &reg)
-	{
-#ifdef TSUGARU_I486_MORE_EXCEPTION_HANDLING
-		if(&reg==&cpu.state.DS() || &reg==&cpu.state.ES() || &reg==&cpu.state.FS() || &reg==&cpu.state.GS())
-		{
-			// GP exception if the segment is data or readable code.
-			needsDataOrReadableCode=true;
-		}
-		if(&reg==&cpu.state.SS())
-		{
-			loadingStackSegment=true;
-		}
-#endif
-	}
 };
 
 unsigned int i486DX::DebugLoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode) const
@@ -1307,9 +1287,8 @@ unsigned int i486DX::LoadSegmentRegister(SegmentRegister &reg,unsigned int value
 	}
 	LoadSegmentRegisterTemplate<i486DX> loader;
 
-#ifdef TSUGARU_I486_MORE_EXCEPTION_HANDLING
-	loader.SetFlags(*this,reg);
-#endif
+	fidelity.SetLoadSegmentRegisterFlags(loader.fidelityFlags,*this,reg);
+
 	auto ret=loader.LoadSegmentRegister(*this,reg,value,mem,IsInRealMode());
 
 	return ret;
@@ -1326,9 +1305,8 @@ unsigned i486DX::LoadSegmentRegister(SegmentRegister &reg,unsigned int value,con
 	}
 	LoadSegmentRegisterTemplate<i486DX> loader;
 
-#ifdef TSUGARU_I486_MORE_EXCEPTION_HANDLING
-	loader.SetFlags(*this,reg);
-#endif
+	fidelity.SetLoadSegmentRegisterFlags(loader.fidelityFlags,*this,reg);
+
 	auto ret=loader.LoadSegmentRegister(*this,reg,value,mem,isInRealMode);
 
 	return ret;
