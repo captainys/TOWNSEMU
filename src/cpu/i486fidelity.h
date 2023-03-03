@@ -24,6 +24,8 @@ public:
 
 	constexpr bool SegmentReadException(class i486DX &cpu,const i486DX::SegmentRegister &seg,uint32_t offset) const{return false;}
 
+	constexpr bool LockNotAllowed(class i486DX &cpu,const i486DX::Instruction &inst) const{return false;}
+
 	// LoadSegmentRegister
 	class LoadSegmentRegisterVariables
 	{
@@ -245,6 +247,72 @@ public:
 		}
 		return false;
 	}
+
+	static inline bool LockNotAllowed(class i486DX &cpu,Memory &mem,const i486DX::Instruction &inst,const i486DX::Operand &op1)
+	{
+		if(i486DX::INST_PREFIX_LOCK==inst.instPrefix)
+		{
+			if(i486DX::OPER_ADDR==op1.operandType)
+			{
+				switch(inst.opCode)
+				{
+				case I486_OPCODE_INC_DEC_R_M8: //                     0xFE, // INC(REG=0),DEC(REG=1)
+				case I486_OPCODE_BTC_RM_R: //   0x0FBB,
+				case I486_OPCODE_BTS_RM_R: //   0x0FAB,
+				case I486_OPCODE_BTR_RM_R: //   0x0FB3,
+				case I486_OPCODE_ADC_RM8_FROM_R8: // 0x10,
+				case I486_OPCODE_ADC_RM_FROM_R: //   0x11,
+				case I486_OPCODE_ADD_RM8_FROM_R8: // 0x00,
+				case I486_OPCODE_ADD_RM_FROM_R: //   0x01,
+				case I486_OPCODE_AND_RM8_FROM_R8: // 0x20,
+				case I486_OPCODE_AND_RM_FROM_R: //   0x21,
+				case I486_OPCODE_OR_RM8_FROM_R8: //   0x08,
+				case I486_OPCODE_OR_RM_FROM_R: //     0x09,
+				case I486_OPCODE_SBB_RM8_FROM_R8: // 0x18,
+				case I486_OPCODE_SBB_RM_FROM_R: //   0x19,
+				case I486_OPCODE_SUB_RM8_FROM_R8: // 0x28,
+				case I486_OPCODE_SUB_RM_FROM_R: //   0x29,
+				case I486_OPCODE_XCHG_RM8_R8: //      0x86,
+				case I486_OPCODE_XCHG_RM_R: //        0x87,
+				case I486_OPCODE_XOR_RM8_FROM_R8: //  0x30,
+				case I486_OPCODE_XOR_RM_FROM_R: //    0x31,
+					return false;
+				case I486_OPCODE_INC_DEC_CALL_CALLF_JMP_JMPF_PUSH: // =0xFF, // INC(REG=0),DEC(REG=1),CALL(REG=2),CALLF(REG=3),JMP(REG=4),JMPF(REG=5),PUSH(REG=6)
+					if(0==inst.GetREG() || 1==inst.GetREG())
+					{
+						return false;
+					}
+					break;
+				case I486_OPCODE_F6_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV: // =0xF6,
+				case I486_OPCODE_F7_TEST_NOT_NEG_MUL_IMUL_DIV_IDIV:   // 0xF7,
+					if(2==inst.GetREG() || 3==inst.GetREG())
+					{
+						return false;
+					}
+					break;
+				case I486_OPCODE_BT_BTS_BTR_BTC_RM_I8:   // 0xFBA, // BT(REG=4),BTS(REG=5),BTR(REG=6),BTC(REG=7)
+					if(5==inst.GetREG() || 6==inst.GetREG() || 7==inst.GetREG())
+					{
+						return false;
+					}
+					break;
+				case I486_OPCODE_BINARYOP_RM8_FROM_I8: // =0x80, // AND(REG=4), OR(REG=1), or XOR(REG=6) depends on the REG field of MODR/M
+				case I486_OPCODE_BINARYOP_RM8_FROM_I8_ALIAS:   // 0x82, 
+				case I486_OPCODE_BINARYOP_RM_FROM_SXI8:   // 0x83,
+					if(7!=inst.GetREG())
+					{
+						return false;
+					}
+					break;
+				}
+			}
+			cpu.RaiseException(i486DX::EXCEPTION_UD,0);
+			cpu.HandleException(true,mem,inst.numBytes);
+			return true;
+		}
+		return false;
+	}
+
 
 
 	class LoadSegmentRegisterFlags

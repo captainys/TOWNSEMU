@@ -5042,6 +5042,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		debuggerPtr->BeforeRunOneInstruction(*this,mem,io,inst);
 	}
 
+	if(true==fidelity.LockNotAllowed(*this,mem,inst,op1))
+	{
+		return 1;
+	}
+
 	int EIPIncrement=inst.numBytes;
 	unsigned int clocksPassed=0;
 
