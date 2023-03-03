@@ -6362,7 +6362,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_RENUMBER_ENTER://      0xC8,
 		{
 			// Weird operand.
-			unsigned int frameSize=inst.operand[0]|(((unsigned int)inst.operand[1])<<8);
+			unsigned int frameSize=cpputil::GetWord(inst.operand);
 			unsigned int level=inst.operand[2]&0x1F;
 
 			clocksPassed=14+level*3;
@@ -6372,19 +6372,21 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			if(0<level)
 			{
 				// Rewritten based on the psudo-code in https://www.scs.stanford.edu/05au-cs240c/lab/i386/ENTER.htm
-				while(0<level)
+				// Then rewritten based on Intel 80386 Programmer's Reference Manual 1986 pp.295.
+				for(unsigned int i=1; i<=level-1; ++i)
 				{
 					if(16==inst.operandSize)
 					{
 						SetBP(GetBP()-2);
-						Push(mem,inst.operandSize,state.BP());
+						auto dat=FetchWord(GetStackAddressingSize(),state.SS(),state.BP(),mem);
+						Push(mem,inst.operandSize,dat);
 					}
 					else
 					{
 						SetEBP(GetEBP()-4);
-						Push(mem,inst.operandSize,state.EBP());
+						auto dat=FetchDword(GetStackAddressingSize(),state.SS(),state.EBP(),mem);
+						Push(mem,inst.operandSize,dat);
 					}
-					--level;
 				}
 				Push(mem,inst.operandSize,framePtr);  // Should it be operandSize or addressSize?  Extremely confusing!
 			}
