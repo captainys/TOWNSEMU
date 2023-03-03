@@ -30,9 +30,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "i486inst.h"
 
 
-// Define the following macro to keep track of Accessed flag (0x20) and Dirty flag (0x40) of page table entries
-// #define TSUGARU_I486_UPDATE_PAGE_DA_FLAGS
-
 // Define the following macro to cause UD exception when MOV CS,src
 // #define TSUGARU_I486_MORE_EXCEPTION_HANDLING
 
@@ -2441,61 +2438,6 @@ public:
 		return info;
 	}
 
-	/*! Called from LinearAddressToPhysicalAddressRead if TSUGARU_I486_UPDATE_PAGE_DA_FLAGS is defined.
-	*/
-	inline void MarkPageAccessed(unsigned int linearAddr,Memory &mem)
-	{
-		uint32_t pageDirectoryIndex=((linearAddr>>22)&1023);
-		uint32_t pageTableIndex=((linearAddr>>12)&1023);
-
-		auto pageDirectoryPtr=state.GetCR(3)&0xFFFFF000;
-		auto pageTableInfo=mem.FetchDword(pageDirectoryPtr+(pageDirectoryIndex<<2));
-		if(0==(pageTableInfo&1))
-		{
-			return;
-		}
-
-		const unsigned int pageTablePtr=(pageTableInfo&0xFFFFF000);
-		unsigned int pageInfo=mem.FetchDword(pageTablePtr+(pageTableIndex<<2));
-		if(0==(pageInfo&1))
-		{
-			return;
-		}
-
-		pageTableInfo|=PAGEINFO_FLAG_A;
-		pageInfo|=PAGEINFO_FLAG_A;
-		mem.StoreDword(pageDirectoryPtr+(pageDirectoryIndex<<2),pageTableInfo);
-		mem.StoreDword(pageTablePtr+(pageTableIndex<<2),pageInfo);
-	}
-
-	/*! Called from LinearAddressToPhysicalAddressWrite if TSUGARU_I486_UPDATE_PAGE_DA_FLAGS is defined.
-	*/
-	inline void MarkPageDirty(unsigned int linearAddr,Memory &mem)
-	{
-		uint32_t pageDirectoryIndex=((linearAddr>>22)&1023);
-		uint32_t pageTableIndex=((linearAddr>>12)&1023);
-
-		auto pageDirectoryPtr=state.GetCR(3)&0xFFFFF000;
-		auto pageTableInfo=mem.FetchDword(pageDirectoryPtr+(pageDirectoryIndex<<2));
-		if(0==(pageTableInfo&1))
-		{
-			return;
-		}
-
-		const unsigned int pageTablePtr=(pageTableInfo&0xFFFFF000);
-		unsigned int pageInfo=mem.FetchDword(pageTablePtr+(pageTableIndex<<2));
-		if(0==(pageInfo&1))
-		{
-			return;
-		}
-
-		pageTableInfo|=PAGEINFO_FLAG_A|PAGEINFO_FLAG_D;
-		pageInfo|=PAGEINFO_FLAG_A|PAGEINFO_FLAG_D;
-		mem.StoreDword(pageDirectoryPtr+(pageDirectoryIndex<<2),pageTableInfo);
-		mem.StoreDword(pageTablePtr+(pageTableIndex<<2),pageInfo);
-	}
-
-
 
 
 	/*!
@@ -3404,9 +3346,7 @@ inline unsigned long i486DX::LinearAddressToPhysicalAddressRead(unsigned int lin
 		}
 	}
 
-#ifdef TSUGARU_I486_UPDATE_PAGE_DA_FLAGS
-	MarkPageAccessed(linearAddr,mem);
-#endif
+	fidelity.SetPageFlags(*this,linearAddr,mem,PAGEINFO_FLAG_A);
 
 	auto offset=(linearAddr&4095);
 	auto physicalAddr=(pageInfo.table&0xFFFFF000)+offset;
@@ -3449,9 +3389,8 @@ inline unsigned long i486DX::LinearAddressToPhysicalAddressWrite(unsigned int li
 		}
 	}
 
-#ifdef TSUGARU_I486_UPDATE_PAGE_DA_FLAGS
-	MarkPageDirty(linearAddr,mem);
-#endif
+	fidelity.SetPageFlags(*this,linearAddr,mem,PAGEINFO_FLAG_A|PAGEINFO_FLAG_D);
+
 	auto offset=(linearAddr&4095);
 	auto physicalAddr=(pageInfo.table&0xFFFFF000)+offset;
 	return physicalAddr;

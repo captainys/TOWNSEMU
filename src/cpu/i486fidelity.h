@@ -18,6 +18,8 @@ public:
 
 	constexpr bool PageLevelException(class i486DX &cpu,bool write,uint32_t linearAddr,uint32_t pageIndex,uint32_t pageInfo) const{return false;}
 
+	inline static void SetPageFlags(class i486DX &cpu,uint32_t linearAddr,Memory &mem,uint32_t flags){};
+
 	constexpr bool SegmentWriteException(class i486DX &cpu,const i486DX::SegmentRegister &reg,uint32_t offset) const{return false;}
 
 	constexpr bool SegmentReadException(class i486DX &cpu,const i486DX::SegmentRegister &seg,uint32_t offset) const{return false;}
@@ -154,6 +156,31 @@ public:
 			return true;
 		}
 		return false;
+	}
+
+	inline static void SetPageFlags(class i486DX &cpu,uint32_t linearAddr,Memory &mem,uint32_t flags)
+	{
+		uint32_t pageDirectoryIndex=((linearAddr>>22)&1023);
+		uint32_t pageTableIndex=((linearAddr>>12)&1023);
+
+		auto pageDirectoryPtr=cpu.state.GetCR(3)&0xFFFFF000;
+		auto pageTableInfo=mem.FetchDword(pageDirectoryPtr+(pageDirectoryIndex<<2));
+		if(0==(pageTableInfo&1))
+		{
+			return;
+		}
+
+		const unsigned int pageTablePtr=(pageTableInfo&0xFFFFF000);
+		unsigned int pageInfo=mem.FetchDword(pageTablePtr+(pageTableIndex<<2));
+		if(0==(pageInfo&1))
+		{
+			return;
+		}
+
+		pageTableInfo|=flags;
+		pageInfo|=flags;
+		mem.StoreDword(pageDirectoryPtr+(pageDirectoryIndex<<2),pageTableInfo);
+		mem.StoreDword(pageTablePtr+(pageTableIndex<<2),pageInfo);
 	}
 
 
