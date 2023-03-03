@@ -28,7 +28,7 @@ public:
 	class LoadSegmentRegisterVariables
 	{
 	public:
-		uint32_t limit;
+		uint32_t limit=0;
 	};
 	class LoadSegmentRegisterFlags
 	{
@@ -250,7 +250,7 @@ public:
 	class LoadSegmentRegisterFlags
 	{
 	public:
-		bool needsDataOrReadableCode,loadingStackSegment;
+		bool needsDataOrReadableCode=false,loadingStackSegment=false;
 	};
 	inline static void SetLimit(LoadSegmentRegisterVariables &var,uint32_t limit)
 	{
