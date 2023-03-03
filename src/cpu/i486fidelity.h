@@ -24,7 +24,7 @@ public:
 
 	constexpr bool SegmentReadException(class i486DX &cpu,const i486DX::SegmentRegister &seg,uint32_t offset) const{return false;}
 
-	constexpr bool LockNotAllowed(class i486DX &cpu,const i486DX::Instruction &inst) const{return false;}
+	constexpr bool LockNotAllowed(class i486DX &cpu,Memory &mem,const i486DX::Instruction &inst,const i486DX::Operand &op1) const{return false;}
 
 	// LoadSegmentRegister
 	class LoadSegmentRegisterVariables

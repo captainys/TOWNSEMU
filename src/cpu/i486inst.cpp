@@ -5751,13 +5751,13 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{
 				dst&=(~3);
 				dst|=(src&3);
-				SetZF(false);
+				SetZF(true);
 				value1.MakeWord(dst);
 				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
 			}
 			else
 			{
-				SetZF(true);
+				SetZF(false);
 			}
 		}
 		break;
