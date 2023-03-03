@@ -4253,6 +4253,11 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		break;
 	}
 
+	if(INST_PREFIX_LOCK==instPrefix)
+	{
+		disasm="LOCK "+disasm;
+	}
+
 	{
 		auto *sym=symTable.Find(cs.value,eip);
 		if(nullptr!=sym && 0<sym->inLineComment.size())
