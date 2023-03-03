@@ -971,119 +971,9 @@ public:
 		cpu.state.descriptorCache[index]=descPtr;
 		cpu.state.descriptorCacheValid[index]=cpu.state.descriptorCacheValidCounter;
 	}
-	static inline void RaiseException(i486DX &cpu,unsigned int exc,unsigned int selector)
-	{
-		cpu.RaiseException(exc,selector&~3);
-	}
 	static inline void SetAccessedFlag(uint8_t rawDesc[],i486DX &cpu)
 	{
 		rawDesc[5]|=1;
-	}
-	inline void DescriptorCheck(i486DX &cpu,uint32_t selectorValue)
-	{
-	#ifdef TSUGARU_I486_MORE_EXCEPTION_HANDLING
-		if(nullptr==rawDesc || 0==(rawDesc[5]&0x80)) // Segment not present
-		{
-			rawDesc=nullptr;
-			if(true!=fidelityFlags.loadingStackSegment)
-			{
-				RaiseException(cpu,EXCEPTION_ND,selectorValue); // If cpu is const i486DX &, it does nothing.
-			}
-			else
-			{
-				RaiseException(cpu,EXCEPTION_SS,selectorValue); // If cpu is const i486DX &, it does nothing.
-			}
-			return;
-		}
-
-		if(true==fidelityFlags.needsDataOrReadableCode)
-		{
-			// pp.108 of Intel 80386 Programmer's Reference Manual 1986 tells there is
-			// no way of distinguishing writable-data and readable-code segments.
-			// No way of distinguishing data and code?  Very poor description.
-			// 
-			// Better clues:
-			// https://redirect.cs.umbc.edu/courses/undergraduate/CMPE310/Fall07/cpatel2/slides/html_versions/chap17_lect15_segmentation.html
-			//   1000A Data Read-Only
-			//   1001A Data Read/Write
-			//   1010A Stack Read-Only
-			//   1011A Stack Read/Write
-			//   1100A Code Execute-Only
-			//   1101A Code Readable
-			//   1110A Code Execute-Only Conforming
-			//   1111A Code Readable Conforming
-			//
-			// https://wiki.osdev.org/Descriptors
-			//   0xxxx System Segment
-			//   1000A Data Normal         Read-Only
-			//   1001A Data Normal         Read/Write
-			//   1010A Data Expand-Down    Read-Only
-			//   1011A Data Expand-Down    Read/Write
-			//   1100A Code Non-Conforming Execute-Only
-			//   1101A Code Non-Conforming Readable
-			//   1110A Code Conforming     Execute-Only
-			//   1111A Code Conforming     Readable
-			// So it was a mis-print in Intel 80386 programmer's reference. WTF.
-
-			if(0==(rawDesc[5]&0x10)) // If system, GP.
-			{
-				rawDesc=nullptr;
-				RaiseException(cpu,EXCEPTION_GP,selectorValue); // If cpu is const i486DX &, it does nothing.
-				return;
-			}
-			else if(0!=(rawDesc[5]&8) && 0==(rawDesc[5]&2)) // If Code and Unreadable, GP.
-			{
-				rawDesc=nullptr;
-				RaiseException(cpu,EXCEPTION_GP,selectorValue); // If cpu is const i486DX &, it does nothing.
-				return;
-			}
-			else
-			{
-				auto RPL=selectorValue&3;
-				auto CPL=cpu.state.CS().DPL;
-				auto DPL=(rawDesc[5]>>5)&3;
-				if(DPL<CPL && DPL<RPL && (0==(rawDesc[5]&8) || 0==(rawDesc[5]&4))) // If Data or Non-Conforming Code and DPL<RPL,CPL
-				{
-					rawDesc=nullptr;
-					RaiseException(cpu,EXCEPTION_GP,selectorValue&~3); // If cpu is const i486DX &, it does nothing.
-					return;
-				}
-			}
-		}
-
-		if(true==fidelityFlags.loadingStackSegment)
-		{
-			// Needs to be:
-			//   Writable data segment
-			//   DPL must be equal to CPL
-			if(0==(rawDesc[5]&0x10)) // If system, GP.
-			{
-				rawDesc=nullptr;
-				RaiseException(cpu,EXCEPTION_GP,selectorValue); // If cpu is const i486DX &, it does nothing.
-				return;
-			}
-			if(0!=(rawDesc[5]&8)) // If code, GP.
-			{
-				rawDesc=nullptr;
-				RaiseException(cpu,EXCEPTION_GP,selectorValue); // If cpu is const i486DX &, it does nothing.
-				return;
-			}
-			if(0==(rawDesc[5]&2)) // If readable data, GP.
-			{
-				rawDesc=nullptr;
-				RaiseException(cpu,EXCEPTION_GP,selectorValue); // If cpu is const i486DX &, it does nothing.
-				return;
-			}
-			auto CPL=cpu.state.CS().DPL;
-			auto DPL=(rawDesc[5]>>5)&3;
-			if(CPL!=DPL)
-			{
-				rawDesc=nullptr;
-				RaiseException(cpu,EXCEPTION_GP,selectorValue); // If cpu is const i486DX &, it does nothing.
-				return;
-			}
-		}
-	#endif
 	}
 	// For mutable i486DX <<
 
@@ -1103,12 +993,6 @@ public:
 	static inline void StoreToDescriptorCache(const i486DX &,uint16_t selectorValue,const unsigned char *)
 	{
 	}
-	static inline void RaiseException(const i486DX &,unsigned int,unsigned int)
-	{
-	}
-	inline void DescriptorCheck(const i486DX &cpu,uint32_t selectorValue)
-	{
-	}
 	// For constant i486DX <<
 
 
@@ -1121,7 +1005,10 @@ public:
 		rawDesc=LoadFromDescriptorCache(cpu,value);
 		if(nullptr!=rawDesc)
 		{
-			DescriptorCheck(cpu,value);
+			if(true==fidelity.DescriptorException(fidelityFlags,cpu,value,rawDesc))
+			{
+				rawDesc=nullptr;
+			}
 			return;
 		}
 
@@ -1165,7 +1052,10 @@ public:
 			rawDescBuf[7]=(unsigned char)FetchByteByLinearAddress(cpu,mem,DTLinearBaseAddr+7);
 		}
 
-		DescriptorCheck(cpu,value);
+		if(true==fidelity.DescriptorException(fidelityFlags,cpu,value,rawDesc))
+		{
+			rawDesc=nullptr;
+		}
 	}
 
 	inline unsigned int LoadSegmentRegister(CPUCLASS &cpu,SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode)
@@ -1184,25 +1074,10 @@ public:
 		}
 		else
 		{
-		#ifdef TSUGARU_I486_MORE_EXCEPTION_HANDLING
-			// INTEL 80386 Programmer's Reference Manual 1986 pp.346
-			// IF DS,ES,FS,or GS is loaded with a null selector THEN load segment register with selector, clear descriptor valid flag.
-			if(0==value)
+			if(true==fidelity.LoadNullSelector(cpu,reg,value))
 			{
-				if(&reg==&cpu.state.SS())
-				{
-					RaiseException(cpu,EXCEPTION_GP,0); // Does nothing if CPUCLASS is const i486DX &.
-					return 0;
-				}
-				else
-				{
-					reg.value=0;
-					reg.limit=0;
-					return 0;
-				}
+				return 0;
 			}
-		#endif
-
 			LoadProtectedModeDescriptor(cpu,value,mem);
 			if(nullptr==rawDesc)
 			{

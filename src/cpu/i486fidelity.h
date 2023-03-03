@@ -36,8 +36,12 @@ public:
 	};
 	inline static void SetLimit(LoadSegmentRegisterVariables &,uint32_t limit){};
 	inline static void SetLoadSegmentRegisterFlags(LoadSegmentRegisterFlags &flags,const i486DX &cpu,const i486DX::SegmentRegister &reg){};
-	inline constexpr bool CheckSelectorBeyondLimit(class i486DX &cpu,LoadSegmentRegisterVariables &var,uint32_t selector){return false;}
-	inline constexpr bool CheckSelectorBeyondLimit(const class i486DX &cpu,LoadSegmentRegisterVariables &var,uint32_t selector){return false;}
+	inline constexpr bool CheckSelectorBeyondLimit(class i486DX &cpu,LoadSegmentRegisterVariables &var,uint32_t selector)const{return false;}
+	inline constexpr bool CheckSelectorBeyondLimit(const class i486DX &cpu,LoadSegmentRegisterVariables &var,uint32_t selector)const{return false;}
+	inline constexpr bool LoadNullSelector(i486DX &cpu,i486DX::SegmentRegister &reg,uint32_t selector)const{return false;}
+	inline constexpr bool LoadNullSelector(const i486DX &cpu,const i486DX::SegmentRegister &reg,uint32_t selector)const{return false;}
+	inline constexpr bool DescriptorException(const LoadSegmentRegisterFlags flags,i486DX &cpu,uint32_t selector,const uint8_t *desc)const{return false;}
+	inline constexpr bool DescriptorException(const LoadSegmentRegisterFlags flags,const i486DX &cpu,uint32_t selector,const uint8_t *desc)const{return false;}
 
 	// If low-fidelity, don't care if it is readable or writable.
 	inline static void ClearSegmentRegisterAttribBytes(uint16_t &attribBytes){};
@@ -263,6 +267,132 @@ public:
 		{
 			flags.loadingStackSegment=true;
 		}
+	}
+	inline bool LoadNullSelector(i486DX &cpu,i486DX::SegmentRegister &reg,uint32_t selector)
+	{
+		// INTEL 80386 Programmer's Reference Manual 1986 pp.346
+		// IF DS,ES,FS,or GS is loaded with a null selector THEN load segment register with selector, clear descriptor valid flag.
+		if(0==selector)
+		{
+			if(&reg==&cpu.state.SS())
+			{
+				cpu.RaiseException(i486DX::EXCEPTION_GP,0);
+				return true;
+			}
+			else
+			{
+				reg.value=0;
+				reg.limit=0;
+				return true;
+			}
+		}
+		return false;
+	}
+	inline bool LoadNullSelector(const i486DX &cpu,const i486DX::SegmentRegister &reg,uint32_t selector)
+	{
+		// Do nothing from const i486DX &.
+		return false;
+	}
+	inline bool DescriptorException(const LoadSegmentRegisterFlags flags,i486DX &cpu,uint32_t selector,const uint8_t *desc)
+	{
+		if(nullptr==desc || 0==(desc[5]&0x80)) // Segment not present
+		{
+			if(true!=flags.loadingStackSegment)
+			{
+				cpu.RaiseException(i486DX::EXCEPTION_ND,selector&~3);
+			}
+			else
+			{
+				cpu.RaiseException(i486DX::EXCEPTION_SS,selector&~3);
+			}
+			return true;
+		}
+
+		if(true==flags.needsDataOrReadableCode)
+		{
+			// pp.108 of Intel 80386 Programmer's Reference Manual 1986 tells there is
+			// no way of distinguishing writable-data and readable-code segments.
+			// No way of distinguishing data and code?  Very poor description.
+			// 
+			// Better clues:
+			// https://redirect.cs.umbc.edu/courses/undergraduate/CMPE310/Fall07/cpatel2/slides/html_versions/chap17_lect15_segmentation.html
+			//   1000A Data Read-Only
+			//   1001A Data Read/Write
+			//   1010A Stack Read-Only
+			//   1011A Stack Read/Write
+			//   1100A Code Execute-Only
+			//   1101A Code Readable
+			//   1110A Code Execute-Only Conforming
+			//   1111A Code Readable Conforming
+			//
+			// https://wiki.osdev.org/Descriptors
+			//   0xxxx System Segment
+			//   1000A Data Normal         Read-Only
+			//   1001A Data Normal         Read/Write
+			//   1010A Data Expand-Down    Read-Only
+			//   1011A Data Expand-Down    Read/Write
+			//   1100A Code Non-Conforming Execute-Only
+			//   1101A Code Non-Conforming Readable
+			//   1110A Code Conforming     Execute-Only
+			//   1111A Code Conforming     Readable
+			// So it was a mis-print in Intel 80386 programmer's reference. WTF.
+
+			if(0==(desc[5]&0x10)) // If system, GP.
+			{
+				cpu.RaiseException(i486DX::EXCEPTION_GP,selector&~3);
+				return true;
+			}
+			else if(0!=(desc[5]&8) && 0==(desc[5]&2)) // If Code and Unreadable, GP.
+			{
+				cpu.RaiseException(i486DX::EXCEPTION_GP,selector&~3); // If cpu is const i486DX &, it does nothing.
+				return true;
+			}
+			else
+			{
+				auto RPL=selector&3;
+				auto CPL=cpu.state.CS().DPL;
+				auto DPL=(desc[5]>>5)&3;
+				if(DPL<CPL && DPL<RPL && (0==(desc[5]&8) || 0==(desc[5]&4))) // If Data or Non-Conforming Code and DPL<RPL,CPL
+				{
+					cpu.RaiseException(i486DX::EXCEPTION_GP,selector&~3);
+					return true;
+				}
+			}
+		}
+
+		if(true==flags.loadingStackSegment)
+		{
+			// Needs to be:
+			//   Writable data segment
+			//   DPL must be equal to CPL
+			if(0==(desc[5]&0x10)) // If system, GP.
+			{
+				cpu.RaiseException(i486DX::EXCEPTION_GP,selector&~3);
+				return true;
+			}
+			if(0!=(desc[5]&8)) // If code, GP.
+			{
+				cpu.RaiseException(i486DX::EXCEPTION_GP,selector&~3);
+				return true;
+			}
+			if(0==(desc[5]&2)) // If readable data, GP.
+			{
+				cpu.RaiseException(i486DX::EXCEPTION_GP,selector&~3);
+				return true;
+			}
+			auto CPL=cpu.state.CS().DPL;
+			auto DPL=(desc[5]>>5)&3;
+			if(CPL!=DPL)
+			{
+				cpu.RaiseException(i486DX::EXCEPTION_GP,selector&~3);
+				return true;
+			}
+		}
+		return false;
+	}
+	inline bool DescriptorException(const LoadSegmentRegisterFlags flags,const i486DX &cpu,uint32_t selector,const uint8_t *desc)
+	{
+		return false;
 	}
 	inline static bool CheckSelectorBeyondLimit(class i486DX &cpu,LoadSegmentRegisterVariables &var,uint32_t selector)
 	{
