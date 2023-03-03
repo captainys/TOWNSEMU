@@ -31,10 +31,8 @@ public:
 		uint32_t limit;
 	};
 	inline static void SetLimit(LoadSegmentRegisterVariables &,uint32_t limit){};
-	template <class LoaderClass>
-	inline constexpr bool CheckSelectorBeyondLimit(class i486DX &cpu,LoaderClass &loader,LoadSegmentRegisterVariables &var,uint32_t selector){return false;}
-	template <class LoaderClass>
-	inline constexpr bool CheckSelectorBeyondLimit(const class i486DX &cpu,LoaderClass &loader,LoadSegmentRegisterVariables &var,uint32_t selector){return false;}
+	inline constexpr bool CheckSelectorBeyondLimit(class i486DX &cpu,LoadSegmentRegisterVariables &var,uint32_t selector){return false;}
+	inline constexpr bool CheckSelectorBeyondLimit(const class i486DX &cpu,LoadSegmentRegisterVariables &var,uint32_t selector){return false;}
 
 	// If low-fidelity, don't care if it is readable or writable.
 	inline static void ClearSegmentRegisterAttribBytes(uint16_t &attribBytes){};
@@ -244,17 +242,19 @@ public:
 	{
 		var.limit=limit;
 	}
-	template <class LoaderClass>
-	inline static bool CheckSelectorBeyondLimit(class i486DX &cpu,LoaderClass &loader,LoadSegmentRegisterVariables &var,uint32_t selector)
+	inline static bool CheckSelectorBeyondLimit(class i486DX &cpu,LoadSegmentRegisterVariables &var,uint32_t selector)
 	{
 		if(var.limit<=(selector&0xfff8))
 		{
-			loader.RaiseException(cpu,i486DX::EXCEPTION_GP,selector);
+			cpu.RaiseException(i486DX::EXCEPTION_GP,selector&~3);
 			return true;
 		}
 		return false;
 	}
-	using i486DXLowFidelity::CheckSelectorBeyondLimit;
+	inline static bool CheckSelectorBeyondLimit(const class i486DX &cpu,LoadSegmentRegisterVariables &var,uint32_t selector)
+	{
+		return false;
+	}
 
 	inline static void ClearSegmentRegisterAttribBytes(uint16_t &attribBytes)
 	{

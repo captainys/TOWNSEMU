@@ -1146,7 +1146,7 @@ public:
 		}
 		DTLinearBaseAddr+=(value&0xfff8); // Use upper 13 bits.
 
-		if(true==fidelity.CheckSelectorBeyondLimit(cpu,*this,fidelityVar,value))
+		if(true==fidelity.CheckSelectorBeyondLimit(cpu,fidelityVar,value))
 		{
 			return;
 		}
