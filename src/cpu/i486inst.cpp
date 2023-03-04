@@ -6379,15 +6379,16 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					{
 						SetBP(GetBP()-2);
 						auto dat=FetchWord(GetStackAddressingSize(),state.SS(),state.BP(),mem);
-						Push(mem,inst.operandSize,dat);
+						Push16(mem,dat);
 					}
 					else
 					{
 						SetEBP(GetEBP()-4);
 						auto dat=FetchDword(GetStackAddressingSize(),state.SS(),state.EBP(),mem);
-						Push(mem,inst.operandSize,dat);
+						Push32(mem,dat);
 					}
 				}
+
 				Push(mem,inst.operandSize,framePtr);  // Should it be operandSize or addressSize?  Extremely confusing!
 			}
 			if(16==inst.operandSize)
@@ -6405,6 +6406,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			else
 			{
 				SetESP(GetESP()-frameSize);
+			}
+			fidelity.PageFaultCheckAfterEnter(*this,mem);
+			if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
+			{
+				EIPIncrement=0;
 			}
 		}
 		break;
@@ -9873,17 +9879,51 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				}
 				else
 				{
-					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,2);
-					SegmentRegister seg;
-					auto fourBytes=LoadSegmentRegister(seg,value.GetAsWord(),mem,false);
-					auto type=((fourBytes>>8)&0xF);
-					if(type<8 || 10==type || 11==type || 14==type || 15==type) // i486 Programmer's Reference Manual 5.2.3 Segment Descriptors Table 5-1 pp.5-12
+					auto selector=EvaluateOperandRegOrMem16(mem,inst.addressSize,inst.segOverride,op1);
+					if(true==state.exception)
 					{
-						SetZF(true); // If readable.
+						HandleException(true,mem,inst.numBytes);
+						EIPIncrement=0;
+						break;
+					}
+
+					// Intel 80386 Programmer's Reference Manual pp.406.
+					// The pseudo code implies ZF=0 if accessible.
+					// However, textual explanation tells ZF=1 if accessible.
+					// Looks like textual explanation is correct.
+
+					if(0==selector) // Null selector
+					{
+						SetZF(false);
+						break;
+					}
+
+					// Assume state.exception==false here.
+					// Also protected mode, not VM86
+					SegmentRegister seg;
+					auto fourBytes=LoadSegmentRegister(seg,selector,mem,false);
+					if(true==state.exception) // Could not be loaded.
+					{
+						state.exception=false;
+						SetZF(false); // Inaccessible=not readable
+						break;
+					}
+
+					if(0!=(seg.attribBytes&0x10))
+					{
+						SetZF(false); // Looks like inaccessible for system segments.
+						break;
+					}
+
+					// https://wiki.osdev.org/Descriptors
+					uint32_t type=((seg.attribBytes>>1)&0x0F);
+					if(SEGTYPE_CODE_NONCONFORMING_EXECONLY==type || SEGTYPE_CODE_CONFORMING_EXECONLY==type)
+					{
+						SetZF(false); // If not readable.
 					}
 					else
 					{
-						SetZF(false); // If readable.
+						SetZF(true); // If readable.
 					}
 				}
 			}

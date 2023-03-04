@@ -26,6 +26,8 @@ public:
 
 	constexpr bool LockNotAllowed(class i486DX &cpu,Memory &mem,const i486DX::Instruction &inst,const i486DX::Operand &op1) const{return false;}
 
+	constexpr void PageFaultCheckAfterEnter(class i486DX &cpu,Memory &mem) const{}
+
 	// LoadSegmentRegister
 	class LoadSegmentRegisterVariables
 	{
@@ -313,6 +315,17 @@ public:
 		return false;
 	}
 
+	inline static void PageFaultCheckAfterEnter(class i486DX &cpu,Memory &mem)
+	{
+		if(16==cpu.GetStackAddressingSize())
+		{
+			cpu.LinearAddressToPhysicalAddressWrite(cpu.state.SS().baseLinearAddr+cpu.state.SP(),mem);
+		}
+		else
+		{
+			cpu.LinearAddressToPhysicalAddressWrite(cpu.state.SS().baseLinearAddr+cpu.state.ESP(),mem);
+		}
+	}
 
 
 	class LoadSegmentRegisterFlags
