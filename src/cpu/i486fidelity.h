@@ -26,7 +26,7 @@ public:
 
 	constexpr bool LockNotAllowed(class i486DX &cpu,Memory &mem,const i486DX::Instruction &inst,const i486DX::Operand &op1) const{return false;}
 
-	constexpr void PageFaultCheckAfterEnter(class i486DX &cpu,Memory &mem) const{}
+	void PageFaultCheckAfterEnter(class i486DX &cpu,Memory &mem) const{}
 
 	// LoadSegmentRegister
 	class LoadSegmentRegisterVariables
