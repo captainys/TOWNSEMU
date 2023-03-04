@@ -9909,15 +9909,19 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 						break;
 					}
 
-					if(0!=(seg.attribBytes&0x10))
-					{
-						SetZF(false); // Looks like inaccessible for system segments.
-						break;
-					}
-
 					// https://wiki.osdev.org/Descriptors
 					uint32_t type=((seg.attribBytes>>1)&0x0F);
-					if(SEGTYPE_CODE_NONCONFORMING_EXECONLY==type || SEGTYPE_CODE_CONFORMING_EXECONLY==type)
+					if(type<8)
+					{
+						SetZF(false); // Looks like inaccessible for system segments.
+					}
+					else if(SEGTYPE_CODE_NONCONFORMING_EXECONLY==type || SEGTYPE_CODE_CONFORMING_EXECONLY==type)
+					{
+						SetZF(false); // If not readable.
+					}
+					else if((SEGTYPE_CODE_NONCONFORMING_READABLE==type ||
+					         SEGTYPE_DATA_NORMAL_RW==type)
+					         && seg.DPL<state.CS().DPL) // Is it the condition?  Weird.
 					{
 						SetZF(false); // If not readable.
 					}
@@ -9944,17 +9948,46 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				}
 				else
 				{
-					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,2);
-					SegmentRegister seg;
-					auto fourBytes=LoadSegmentRegister(seg,value.GetAsWord(),mem,false);
-					auto type=((fourBytes>>8)&0xF);
-					if(2==type || 3==type || 6==type || 7==type) // i486 Programmer's Reference Manual 5.2.3 Segment Descriptors Table 5-1 pp.5-12
+					auto selector=EvaluateOperandRegOrMem16(mem,inst.addressSize,inst.segOverride,op1);
+					if(true==state.exception)
 					{
-						SetZF(true); // If writable.
+						HandleException(true,mem,inst.numBytes);
+						EIPIncrement=0;
+						break;
+					}
+
+					if(0==selector) // Null selector
+					{
+						SetZF(false);
+						break;
+					}
+
+					SegmentRegister seg;
+					auto fourBytes=LoadSegmentRegister(seg,selector,mem,false);
+					if(true==state.exception) // Could not be loaded.
+					{
+						state.exception=false;
+						SetZF(false); // Inaccessible=not readable
+						break;
+					}
+
+					// https://wiki.osdev.org/Descriptors
+					uint32_t type=((seg.attribBytes>>1)&0x0F);
+					if(type<8)
+					{
+						SetZF(false); // Looks like inaccessible for system segments.
+					}
+					else if(i486DX::SEGTYPE_DATA_NORMAL_RW!=type && i486DX::SEGTYPE_DATA_EXPAND_DOWN_RW!=type)
+					{
+						SetZF(false); // If writable.
+					}
+					else if(seg.DPL<state.CS().DPL)
+					{
+						SetZF(false); // If writable.
 					}
 					else
 					{
-						SetZF(false); // If writable.
+						SetZF(true); // If writable.
 					}
 				}
 			}
