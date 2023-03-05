@@ -6407,10 +6407,13 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{
 				SetESP(GetESP()-frameSize);
 			}
-			fidelity.PageFaultCheckAfterEnter(*this,mem);
-			if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
+			if(true!=IsInRealMode())
 			{
-				EIPIncrement=0;
+				fidelity.PageFaultCheckAfterEnter(*this,mem);
+				if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
+				{
+					EIPIncrement=0;
+				}
 			}
 		}
 		break;
