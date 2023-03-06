@@ -1116,8 +1116,7 @@ public:
 			reg.baseLinearAddr=segBase;
 			reg.value=value;
 			reg.DPL=(rawDesc[5]>>5)&3;
-
-			fidelity.CopySegmentRegisterTypeByte(reg.attribBytes,rawDesc);
+			reg.attribBytes=cpputil::GetWord(rawDesc+5);
 
 			if((0x40&rawDesc[6])==0) // D==0
 			{

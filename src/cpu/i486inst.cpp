@@ -9912,31 +9912,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 						break;
 					}
 
-					// https://wiki.osdev.org/Descriptors
-					uint32_t type=((seg.attribBytes>>1)&0x0F);
-					if(0==type && 0==state.CS().DPL) // I'm not confident in this condition at all but unless otherwise, Towns OS on DOS6 does't start.
-					{
-						SetZF(true);
-						break;
-					}
-					if(type<8)
-					{
-						SetZF(false); // Looks like inaccessible for system segments.
-					}
-					else if(SEGTYPE_CODE_NONCONFORMING_EXECONLY==type || SEGTYPE_CODE_CONFORMING_EXECONLY==type)
-					{
-						SetZF(false); // If not readable.
-					}
-					else if((SEGTYPE_CODE_NONCONFORMING_READABLE==type ||
-					         SEGTYPE_DATA_NORMAL_RW==type)
-					         && seg.DPL<state.CS().DPL) // Is it the condition?  Weird.
-					{
-						SetZF(false); // If not readable.
-					}
-					else
-					{
-						SetZF(true); // If readable.
-					}
+					// This type-check is not performance critical.
+					// However, state-file saved in the earlier version Tsugarudid not update
+					// segment type bytes, and therefore it may not work.
+					SetZF(fidelity.VERRTypeCheck(*this,seg));
 				}
 			}
 			break;
@@ -9979,29 +9958,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 						break;
 					}
 
-					// https://wiki.osdev.org/Descriptors
-					uint32_t type=((seg.attribBytes>>1)&0x0F);
-					if(0==type && 0==state.CS().DPL)// I'm not confident in this condition at all but unless otherwise, Towns OS on DOS6 does't start.
-					{
-						SetZF(true);
-						break;
-					}
-					if(type<8)
-					{
-						SetZF(false); // Looks like inaccessible for system segments.
-					}
-					else if(i486DX::SEGTYPE_DATA_NORMAL_RW!=type && i486DX::SEGTYPE_DATA_EXPAND_DOWN_RW!=type)
-					{
-						SetZF(false); // If writable.
-					}
-					else if(seg.DPL<state.CS().DPL)
-					{
-						SetZF(false); // If writable.
-					}
-					else
-					{
-						SetZF(true); // If writable.
-					}
+					// This type-check is not performance critical.
+					// However, state-file saved in the earlier version Tsugarudid not update
+					// segment type bytes, and therefore it may not work.
+					SetZF(fidelity.VERWTypeCheck(*this,seg));
 				}
 			}
 			break;

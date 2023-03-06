@@ -26,6 +26,11 @@ public:
 
 	constexpr bool LockNotAllowed(class i486DX &cpu,Memory &mem,const i486DX::Instruction &inst,const i486DX::Operand &op1) const{return false;}
 
+	// This is not performance critical, but unless it returns true, state-file saved in the older version Tsugaru
+	// may not work.
+	constexpr bool VERRTypeCheck(const i486DX &cpu,const i486DX::SegmentRegister &reg) const{return true;}
+	constexpr bool VERWTypeCheck(const i486DX &cpu,const i486DX::SegmentRegister &reg) const{return true;}
+
 	void PageFaultCheckAfterEnter(class i486DX &cpu,Memory &mem) const{}
 
 	// LoadSegmentRegister
@@ -49,7 +54,6 @@ public:
 
 	// If low-fidelity, don't care if it is readable or writable.
 	inline static void ClearSegmentRegisterAttribBytes(uint16_t &attribBytes){};
-	inline static void CopySegmentRegisterTypeByte(uint16_t &attribBytes,const uint8_t desc[]){};
 
 	// Protect EFLAGS IOPL bits.
 	class IOPLBits
@@ -315,6 +319,47 @@ public:
 		return false;
 	}
 
+	static inline bool VERRTypeCheck(const i486DX &cpu,const i486DX::SegmentRegister &reg)
+	{
+		// https://wiki.osdev.org/Descriptors
+		uint32_t type=((reg.attribBytes>>1)&0x0F);
+		if(type<8)
+		{
+			return false; // Looks like inaccessible for system segments.
+		}
+		else if(i486DX::SEGTYPE_CODE_NONCONFORMING_EXECONLY==type || i486DX::SEGTYPE_CODE_CONFORMING_EXECONLY==type)
+		{
+			return false; // Not readable.
+		}
+		else if((i486DX::SEGTYPE_CODE_NONCONFORMING_READABLE==type ||
+		         i486DX::SEGTYPE_DATA_NORMAL_RW==type)
+		         && reg.DPL<cpu.state.CS().DPL) // Is it the condition?  Weird.
+		{
+			return false; // Not readable.
+		}
+		// Readable.
+		return true;
+	}
+	static inline bool VERWTypeCheck(const i486DX &cpu,const i486DX::SegmentRegister &reg)
+	{
+		// https://wiki.osdev.org/Descriptors
+		uint32_t type=((reg.attribBytes>>1)&0x0F);
+		if(type<8)
+		{
+			return false; // Looks like inaccessible for system segments.
+		}
+		else if(i486DX::SEGTYPE_DATA_NORMAL_RW!=type && i486DX::SEGTYPE_DATA_EXPAND_DOWN_RW!=type)
+		{
+			return false; // Unwritable.
+		}
+		else if(reg.DPL<cpu.state.CS().DPL)
+		{
+			return false; // Unwritable.
+		}
+		// Writable.
+		return true;
+	}
+
 	inline static void PageFaultCheckAfterEnter(class i486DX &cpu,Memory &mem)
 	{
 		if(16==cpu.GetStackAddressingSize())
@@ -492,10 +537,6 @@ public:
 	inline static void ClearSegmentRegisterAttribBytes(uint16_t &attribBytes)
 	{
 		attribBytes=0;
-	}
-	inline static void CopySegmentRegisterTypeByte(uint16_t &attribBytes,const uint8_t desc[])
-	{
-		attribBytes=cpputil::GetWord(desc+5);
 	}
 
 
