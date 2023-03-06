@@ -9914,6 +9914,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 					// https://wiki.osdev.org/Descriptors
 					uint32_t type=((seg.attribBytes>>1)&0x0F);
+					if(0==type && 0==state.CS().DPL) // I'm not confident in this condition at all but unless otherwise, Towns OS on DOS6 does't start.
+					{
+						SetZF(true);
+						break;
+					}
 					if(type<8)
 					{
 						SetZF(false); // Looks like inaccessible for system segments.
@@ -9976,6 +9981,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 					// https://wiki.osdev.org/Descriptors
 					uint32_t type=((seg.attribBytes>>1)&0x0F);
+					if(0==type && 0==state.CS().DPL)// I'm not confident in this condition at all but unless otherwise, Towns OS on DOS6 does't start.
+					{
+						SetZF(true);
+						break;
+					}
 					if(type<8)
 					{
 						SetZF(false); // Looks like inaccessible for system segments.
