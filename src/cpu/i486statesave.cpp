@@ -219,5 +219,6 @@ bool i486DX::State::Deserialize(const unsigned char *&data,uint32_t version)
 {
 	ClearPageTableCache();  // Need to clear on load state.
 	ClearDescriptorCache(); // Need to clear on load state.
+	callStack.clear();
 	return state.Deserialize(data,version);
 }
