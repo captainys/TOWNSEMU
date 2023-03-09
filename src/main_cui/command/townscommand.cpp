@@ -227,6 +227,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 
 	featureMap["CMDLOG"]=ENABLE_CMDLOG;
 	featureMap["AUTODISASM"]=ENABLE_DISASSEMBLE_EVERY_INST;
+	featureMap["AUTODISASMR"]=ENABLE_DISASSEMBLE_EVERY_INST_WITH_REG;
 	featureMap["IOMON"]=ENABLE_IOMONITOR;
 	featureMap["SCSIMON"]=ENABLE_SCSICMDMONITOR;
 	featureMap["EVENTLOG"]=ENABLE_EVENTLOG;
@@ -654,6 +655,9 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Command log.  Saved to CMD.LOG." << std::endl;
 	std::cout << "AUTODISASM" << std::endl;
 	std::cout << "  Disassemble while running." << std::endl;
+	std::cout << "AUTODISASM" << std::endl;
+	std::cout << "  Disassemble while running with register dump." << std::endl;
+	std::cout << "Registers are EAX EBX ECX EDX ESI EDI EBP ESP EFLAGS DS ES FS GS SS" << std::endl;
 	std::cout << "IOMON iopotMin ioportMax" << std::endl;
 	std::cout << "  IO Monitor." << std::endl;
 	std::cout << "  ioportMin and ioportMax are optional." << std::endl;
@@ -867,6 +871,11 @@ TownsCommandInterpreter::Command TownsCommandInterpreter::Interpret(const std::s
 
 void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outside_World *outside_world,Command &cmd)
 {
+	if(CMD_DISASM!=cmd.primaryCmd && CMD_DISASM16!=cmd.primaryCmd && CMD_DISASM32!=cmd.primaryCmd)
+	{
+		towns.debugger.WriteLogFile(">"+cmd.cmdline);
+	}
+
 	switch(cmd.primaryCmd)
 	{
 	case CMD_NONE:
@@ -1613,7 +1622,14 @@ void TownsCommandInterpreter::Execute_Enable(FMTowns &towns,Command &cmd)
 			break;
 		case ENABLE_DISASSEMBLE_EVERY_INST:
 			towns.debugger.disassembleEveryStep=true;
+			towns.debugger.regDumpEveryStep=false;
 			std::cout << "Disassemble_Every_Step is ON." << std::endl;
+			break;
+		case ENABLE_DISASSEMBLE_EVERY_INST_WITH_REG:
+			towns.debugger.disassembleEveryStep=true;
+			towns.debugger.regDumpEveryStep=true;
+			std::cout << "Disassemble_Every_Step with Register Dump is ON." << std::endl;
+			std::cout << "Registers are EAX EBX ECX EDX ESI EDI EBP ESP EFLAGS DS ES FS GS SS" << std::endl;
 			break;
 		case ENABLE_IOMONITOR:
 			std::cout << "IO_Monitor is ON." << std::endl;
@@ -1695,6 +1711,7 @@ void TownsCommandInterpreter::Execute_Disable(FMTowns &towns,Command &cmd)
 		case ENABLE_CMDLOG:
 			break;
 		case ENABLE_DISASSEMBLE_EVERY_INST:
+		case ENABLE_DISASSEMBLE_EVERY_INST_WITH_REG:
 			towns.debugger.disassembleEveryStep=false;
 			std::cout << "Disassemble_Every_Step is OFF." << std::endl;
 			break;

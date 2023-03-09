@@ -160,7 +160,7 @@ public:
 	mutable bool stop;
 	bool monitorIO;
 	bool monitorIOports[65536];
-	bool disassembleEveryStep;
+	bool disassembleEveryStep=false,regDumpEveryStep=false;;
 
 	CS_EIP lastDisassembleAddr;
 
@@ -259,6 +259,7 @@ public:
 	std::vector <unsigned int> FindCaller(unsigned int procAddr,const i486DX::SegmentRegister &seg,const i486DX &cpu,const Memory &mem);
 
 	bool OpenLogFile(std::string logFileName);
+	std::ofstream &LogFileStream(void);
 	void CloseLogFile(void);
 	void WriteLogFile(std::string str);
 };

@@ -349,6 +349,26 @@ void i486Debugger::BeforeRunOneInstruction(i486DX &cpu,Memory &mem,InOut &io,con
 		lastDisassembleAddr.OFFSET=cpu.state.EIP;
 		std::cout << disasm << std::endl;
 		WriteLogFile(disasm);
+		if(true==regDumpEveryStep)
+		{
+			std::string regDump="             ";
+			regDump+=" "+cpputil::Uitox(cpu.state.EAX());
+			regDump+=" "+cpputil::Uitox(cpu.state.EBX());
+			regDump+=" "+cpputil::Uitox(cpu.state.ECX());
+			regDump+=" "+cpputil::Uitox(cpu.state.EDX());
+			regDump+=" "+cpputil::Uitox(cpu.state.ESI());
+			regDump+=" "+cpputil::Uitox(cpu.state.EDI());
+			regDump+=" "+cpputil::Uitox(cpu.state.EBP());
+			regDump+=" "+cpputil::Uitox(cpu.state.ESP());
+			regDump+=" "+cpputil::Uitox(cpu.state.EFLAGS);
+			regDump+=" "+cpputil::Ustox(cpu.state.DS().value);
+			regDump+=" "+cpputil::Ustox(cpu.state.ES().value);
+			regDump+=" "+cpputil::Ustox(cpu.state.FS().value);
+			regDump+=" "+cpputil::Ustox(cpu.state.GS().value);
+			regDump+=" "+cpputil::Ustox(cpu.state.SS().value);
+			std::cout << regDump << std::endl;
+			WriteLogFile(regDump);
+		}
 	}
 }
 
@@ -944,6 +964,10 @@ bool i486Debugger::OpenLogFile(std::string logFileName)
 		return logOfs.is_open();
 	}
 	return false;
+}
+std::ofstream &i486Debugger::LogFileStream(void)
+{
+	return logOfs;
 }
 void i486Debugger::CloseLogFile(void)
 {
