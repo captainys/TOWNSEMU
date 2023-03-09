@@ -221,6 +221,9 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["LS"]=CMD_LS;
 	primaryCmdMap["DIR"]=CMD_LS;
 
+	primaryCmdMap["DBLOG"]=CMD_OPEN_DEBUG_LOG;
+	primaryCmdMap["CDBLOG"]=CMD_CLOSE_DEBUG_LOG;
+
 
 	featureMap["CMDLOG"]=ENABLE_CMDLOG;
 	featureMap["AUTODISASM"]=ENABLE_DISASSEMBLE_EVERY_INST;
@@ -422,6 +425,11 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Find JMP rel8, JMP rel, CALL rel, CALLF, Jcc instructions within the current CS" << std::endl;
 	std::cout << "  that jump to the given offset." << std::endl;
 	std::cout << "  Currently it will miss indirect jump/call." << std::endl;
+
+	std::cout << "DBLOG filename" << std::endl;
+	std::cout << "  Start debug logging." << std::endl;
+	std::cout << "CDBLOG filename" << std::endl;
+	std::cout << "  Close debug logging." << std::endl;
 
 	std::cout << "ADTR SEG:OFFSET" << std::endl;
 	std::cout << "  Translate address to linear address and physical address." << std::endl;
@@ -1562,6 +1570,27 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 		break;
 	case CMD_LS:
 		Execute_LS(towns,cmd);
+		break;
+	case CMD_OPEN_DEBUG_LOG:
+		if(2<=cmd.argv.size())
+		{
+			if(true==towns.debugger.OpenLogFile(cmd.argv[1]))
+			{
+				std::cout << "Begin logging." << std::endl;
+			}
+			else
+			{
+				PrintError(ERROR_CANNOT_SAVE_FILE);
+			}
+		}
+		else
+		{
+			PrintError(ERROR_TOO_FEW_ARGS);
+		}
+		break;
+	case CMD_CLOSE_DEBUG_LOG:
+		towns.debugger.CloseLogFile();
+		std::cout << "Closed log file." << std::endl;
 		break;
 	}
 }

@@ -348,6 +348,7 @@ void i486Debugger::BeforeRunOneInstruction(i486DX &cpu,Memory &mem,InOut &io,con
 		lastDisassembleAddr.SEG=cpu.state.CS().value;
 		lastDisassembleAddr.OFFSET=cpu.state.EIP;
 		std::cout << disasm << std::endl;
+		WriteLogFile(disasm);
 	}
 }
 
@@ -720,31 +721,42 @@ void i486Debugger::IOWrite(const i486DX &cpu,unsigned int ioport,unsigned int da
 			msg="IOWrite Port:"+cpputil::Uitox(ioport)+" Value:"+cpputil::Ubtox(data);
 		}
 		ExternalBreak(msg);
+		WriteLogFile(msg);
 	}
 
 	if(true==monitorIO && true==monitorIOports[ioport&0xFFFF])
 	{
-		std::cout << cpputil::Ustox(cpu.state.CS().value) << ":" << cpputil::Uitox(cpu.state.EIP) << " ";
-		std::cout << "Write IO" << (lengthInBytes<<3) << ":[" << cpputil::Ustox(ioport) << "] ";
-		if(4==lengthInBytes)
+		for(int i=0; i<2; ++i)
 		{
-			std::cout << cpputil::Uitox(data);;
-		}
-		else if(2==lengthInBytes)
-		{
-			std::cout << cpputil::Ustox(data);;
-		}
-		else
-		{
-			std::cout << cpputil::Ubtox(data);;
-		}
+			std::ostream &ofs=(0==i ? std::cout : logOfs);
 
-		auto iter=ioLabel.find(ioport);
-		if(ioLabel.end()!=iter)
-		{
-			std::cout << "(" << iter->second << ")";
+			ofs<< cpputil::Ustox(cpu.state.CS().value) << ":" << cpputil::Uitox(cpu.state.EIP) << " ";
+			ofs<< "Write IO" << (lengthInBytes<<3) << ":[" << cpputil::Ustox(ioport) << "] ";
+			if(4==lengthInBytes)
+			{
+				ofs<< cpputil::Uitox(data);;
+			}
+			else if(2==lengthInBytes)
+			{
+				ofs<< cpputil::Ustox(data);;
+			}
+			else
+			{
+				ofs<< cpputil::Ubtox(data);;
+			}
+
+			auto iter=ioLabel.find(ioport);
+			if(ioLabel.end()!=iter)
+			{
+				ofs<< "(" << iter->second << ")";
+			}
+			ofs<< std::endl;
+
+			if(true!=logOfs.is_open())
+			{
+				break;
+			}
 		}
-		std::cout << std::endl;
 	}
 }
 void i486Debugger::IORead(const i486DX &cpu,unsigned int ioport,unsigned int data,unsigned int lengthInBytes)
@@ -753,19 +765,31 @@ void i486Debugger::IORead(const i486DX &cpu,unsigned int ioport,unsigned int dat
 
 	if(true==breakOnIORead[ioport&(i486DX::I486_NUM_IOPORT-1)])
 	{
-		ExternalBreak("IORead Port:"+cpputil::Uitox(ioport)+" Value:"+cpputil::Ubtox(data));
+		std::string msg="IORead Port:"+cpputil::Uitox(ioport)+" Value:"+cpputil::Ubtox(data);
+		ExternalBreak(msg);
+		WriteLogFile(msg);
 	}
 
 	if(true==monitorIO && true==monitorIOports[ioport&0xFFFF])
 	{
-		std::cout << cpputil::Ustox(cpu.state.CS().value) << ":" << cpputil::Uitox(cpu.state.EIP) << " ";
-		std::cout << "Read IO" << (lengthInBytes<<3) << ":[" << cpputil::Ustox(ioport) << "] " << cpputil::Ubtox(data);
-		auto iter=ioLabel.find(ioport);
-		if(ioLabel.end()!=iter)
+		for(int i=0; i<2; ++i)
 		{
-			std::cout << "(" << iter->second << ")";
+			std::ostream &ofs=(0==i ? std::cout : logOfs);
+
+			ofs << cpputil::Ustox(cpu.state.CS().value) << ":" << cpputil::Uitox(cpu.state.EIP) << " ";
+			ofs << "Read IO" << (lengthInBytes<<3) << ":[" << cpputil::Ustox(ioport) << "] " << cpputil::Ubtox(data);
+			auto iter=ioLabel.find(ioport);
+			if(ioLabel.end()!=iter)
+			{
+				ofs << "(" << iter->second << ")";
+			}
+			ofs << std::endl;
+
+			if(true!=logOfs.is_open())
+			{
+				break;
+			}
 		}
-		std::cout << std::endl;
 	}
 }
 
@@ -906,4 +930,29 @@ std::vector <unsigned int> i486Debugger::FindCaller(unsigned int procAddr,const 
 	}
 
 	return caller;
+}
+bool i486Debugger::OpenLogFile(std::string logFileName)
+{
+	std::ofstream ofs(logFileName);
+	if(ofs.is_open())
+	{
+		if(logOfs.is_open())
+		{
+			logOfs.close();
+		}
+		std::swap(logOfs,ofs);
+		return logOfs.is_open();
+	}
+	return false;
+}
+void i486Debugger::CloseLogFile(void)
+{
+	logOfs.close();
+}
+void i486Debugger::WriteLogFile(std::string str)
+{
+	if(logOfs.is_open())
+	{
+		logOfs << str << std::endl;
+	}
 }

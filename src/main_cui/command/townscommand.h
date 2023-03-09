@@ -204,6 +204,9 @@ public:
 		CMD_PWD,
 		CMD_CHDIR,
 		CMD_LS,
+
+		CMD_OPEN_DEBUG_LOG,
+		CMD_CLOSE_DEBUG_LOG,
 	};
 
 	enum

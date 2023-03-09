@@ -20,6 +20,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <string>
 #include <set>
 #include <map>
+#include <fstream>
 #include "i486.h"
 
 
@@ -121,6 +122,8 @@ public:
 
 private:
 	class i486SymbolTable *symTablePtr;
+	std::ofstream logOfs;
+
 public:
 	i486SymbolTable &GetSymTable(void);
 	const i486SymbolTable &GetSymTable(void) const;
@@ -254,6 +257,10 @@ private:
 
 public:
 	std::vector <unsigned int> FindCaller(unsigned int procAddr,const i486DX::SegmentRegister &seg,const i486DX &cpu,const Memory &mem);
+
+	bool OpenLogFile(std::string logFileName);
+	void CloseLogFile(void);
+	void WriteLogFile(std::string str);
 };
 
 template <>
