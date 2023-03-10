@@ -4489,6 +4489,20 @@ inline unsigned int i486DX::CALLF(Memory &mem,uint16_t opSize,uint16_t instNumBy
 }
 
 
+inline unsigned int i486DX::JMPF(Memory &mem,uint16_t opSize,uint16_t instNumBytes,uint16_t newCS,uint32_t newEIP,uint16_t defClocks)
+{
+	SetIPorEIP(opSize,newEIP);
+	auto descHighword=LoadSegmentRegister(state.CS(),newCS,mem);
+	auto descType=(descHighword&0x0f00);
+	if(descType==(DESC_TYPE_16BIT_CALL_GATE<<8) ||
+	   descType==(DESC_TYPE_32BIT_CALL_GATE<<8))
+	{
+		Abort("JMPF to Gate");
+	}
+	return defClocks;
+}
+
+
 unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 {
 	TSUGARU_I486_FIDELITY_CLASS fidelity;
@@ -7687,19 +7701,6 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				break;
 			case 5: // JMPF Indirect
 				{
-					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,(inst.operandSize+16)/8);
-					if(true!=state.exception)
-					{
-						SetIPorEIP(inst.operandSize,value.GetAsDword());
-						auto descHighword=LoadSegmentRegister(state.CS(),value.GetFwordSegment(),mem);
-						auto descType=(descHighword&0x0f00);
-						if(descType==(DESC_TYPE_16BIT_CALL_GATE<<8) ||
-						   descType==(DESC_TYPE_32BIT_CALL_GATE<<8))
-						{
-							Abort("JMPF to Gate");
-						}
-						EIPIncrement=0;
-					}
 					if(op1.operandType==OPER_ADDR)
 					{
 						clocksPassed=3;
@@ -7707,6 +7708,14 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					else
 					{
 						clocksPassed=1;
+					}
+
+					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,(inst.operandSize+16)/8);
+					if(true!=state.exception)
+					{
+						JMPF(mem,inst.operandSize,inst.numBytes,value.GetFwordSegment(),value.GetAsDword(),clocksPassed);
+
+						EIPIncrement=0;
 					}
 				}
 				break;
@@ -8046,14 +8055,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				}
 				break;
 			}
-			auto descHighword=LoadSegmentRegister(state.CS(),op1.seg,mem);
-			auto descType=(descHighword&0x0f00);
-			if(descType==(DESC_TYPE_16BIT_CALL_GATE<<8) ||
-			   descType==(DESC_TYPE_32BIT_CALL_GATE<<8))
-			{
-				Abort("JMPF to Gate");
-			}
-			state.EIP=op1.offset;
+
+			JMPF(mem,inst.operandSize,inst.numBytes,op1.seg,op1.offset,clocksPassed);
+
 			EIPIncrement=0;
 		}
 		break;
