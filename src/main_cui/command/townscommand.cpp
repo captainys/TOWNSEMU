@@ -655,7 +655,7 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Command log.  Saved to CMD.LOG." << std::endl;
 	std::cout << "AUTODISASM" << std::endl;
 	std::cout << "  Disassemble while running." << std::endl;
-	std::cout << "AUTODISASM" << std::endl;
+	std::cout << "AUTODISASMR" << std::endl;
 	std::cout << "  Disassemble while running with register dump." << std::endl;
 	std::cout << "Registers are EAX EBX ECX EDX ESI EDI EBP ESP EFLAGS DS ES FS GS SS" << std::endl;
 	std::cout << "IOMON iopotMin ioportMax" << std::endl;
