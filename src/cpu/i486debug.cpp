@@ -708,7 +708,7 @@ std::string i486Debugger::INTExplanation(const i486DX &cpu,unsigned int INTNum,M
 		   0x5B00==(cpu.GetAX()&0xFF00) ||
 		   0x4B00==(cpu.GetAX()&0xFF00))
 		{
-			if(true==cpu.IsInRealMode())  // Real Mode
+			if(true==cpu.IsInRealMode() || true==cpu.GetVM())  // Real Mode or VM86 Mode
 			{
 				INTLabel+=" "+cpu.DebugFetchString(16,cpu.state.DS(),cpu.GetDX(),mem);
 			}

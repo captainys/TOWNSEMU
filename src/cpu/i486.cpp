@@ -3438,7 +3438,7 @@ void i486DX::PushCallStack(
 		{
 			if((0x3D00==(AX&0xFF00) || 0x4B00==(AX&0xFF00)))
 			{
-				if(0==(CR0&1))  // Real Mode
+				if(true==IsInRealMode() || true==GetVM())
 				{
 					callStack.back().str=DebugFetchString(16,state.DS(),GetDX(),mem);
 				}
