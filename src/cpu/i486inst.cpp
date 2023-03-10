@@ -4437,7 +4437,7 @@ std::string i486DX::Instruction::DisassembleImmAsASCII(unsigned int CS,unsigned 
 inline unsigned int i486DX::CALLF(Memory &mem,uint16_t opSize,uint16_t instNumBytes,uint16_t newCS,uint32_t newEIP,uint16_t defClocks)
 {
 	auto prevCS=state.CS().value;
-	auto nextEIP=state.EIP+instNumBytes;
+	auto returnEIP=state.EIP+instNumBytes;
 
 	if(true==enableCallStack)
 	{
@@ -4451,39 +4451,66 @@ inline unsigned int i486DX::CALLF(Memory &mem,uint16_t opSize,uint16_t instNumBy
 
 	auto prevCPL=state.CS().DPL;
 
-	auto descHighword=LoadSegmentRegister(state.CS(),newCS,mem);
-	auto descType=(descHighword&0x0f00);
-	if(descType==(DESC_TYPE_16BIT_CALL_GATE<<8) ||
-	   descType==(DESC_TYPE_32BIT_CALL_GATE<<8))
+	if(true==IsInRealMode() || true==GetVM())
 	{
-		auto ptr=GetCallGate(newCS,mem);
-		if(descType==(DESC_TYPE_16BIT_CALL_GATE<<8))
-		{
-			ptr.OFFSET&=0xFFFF;
-		}
-		LoadSegmentRegister(state.CS(),ptr.SEG,mem);
-		state.EIP=ptr.OFFSET;
-		defClocks=35;
+		LoadSegmentRegister(state.CS(),newCS,mem);
+		state.EIP=newEIP&0xFFFF;
 	}
 	else
 	{
-		state.EIP=newEIP;
-		if(16==opSize)
+		LoadSegmentRegister(state.CS(),newCS,mem);
+		auto descType=state.CS().GetType();
+		switch(descType)
 		{
-			state.EIP&=0xFFFF;
+		case DESC_TYPE_16BIT_CALL_GATE:
+		case DESC_TYPE_32BIT_CALL_GATE:
+			{
+				auto ptr=GetCallGate(newCS,mem);
+				if(descType==DESC_TYPE_16BIT_CALL_GATE)
+				{
+					ptr.OFFSET&=0xFFFF;
+				}
+				LoadSegmentRegister(state.CS(),ptr.SEG,mem);
+				state.EIP=ptr.OFFSET;
+				defClocks=35;
+			}
+			break;
+		case DESCTYPE_AVAILABLE_286_TSS: //               1,
+		case DESCTYPE_BUSY_286_TSS: //                    3,
+		case DESCTYPE_TASK_GATE: //                       5,
+		case DESCTYPE_AVAILABLE_386_TSS: //               9,
+		case DESCTYPE_BUSY_386_TSS: //                 0x0B,
+			Abort("Call to Task not supported.");
+			break;
+		case SEGTYPE_CODE_NONCONFORMING_EXECONLY: //0b11000, // Code Non-Conforming Execute-Only
+		case SEGTYPE_CODE_NONCONFORMING_READABLE: //0b11010, // Code Non-Conforming Readable
+		case SEGTYPE_CODE_CONFORMING_EXECONLY: //   0b11100, // Code Conforming     Execute-Only
+		case SEGTYPE_CODE_CONFORMING_READABLE: //   0b11110, // Code Conforming     Readable
+			{
+				state.EIP=newEIP;
+				if(16==opSize)
+				{
+					state.EIP&=0xFFFF;
+				}
+			}
+			break;
+		default:
+			Abort("Unsupported call to descriptor type.");
+			break;
+		}
+
+		if(state.CS().DPL<prevCPL)
+		{
+			auto newCPL=state.CS().DPL;
+			auto prevSS=state.SS().value;
+			auto prevESP=state.ESP();
+			LoadSegmentRegister(state.SS(),FetchWord(32,state.TR,TSS_OFFSET_SS0+newCPL*8,mem),mem);
+			state.ESP()=FetchDword(32,state.TR,TSS_OFFSET_ESP0+newCPL*8,mem);
+			Push(mem,opSize,prevSS,prevESP);
 		}
 	}
 
-	if(state.CS().DPL<prevCPL)
-	{
-		auto newCPL=state.CS().DPL;
-		auto prevSS=state.SS().value;
-		auto prevESP=state.ESP();
-		LoadSegmentRegister(state.SS(),FetchWord(32,state.TR,TSS_OFFSET_SS0+newCPL*8,mem),mem);
-		state.ESP()=FetchDword(32,state.TR,TSS_OFFSET_ESP0+newCPL*8,mem);
-		Push(mem,opSize,prevSS,prevESP);
-	}
-	Push(mem,opSize,prevCS,nextEIP);
+	Push(mem,opSize,prevCS,returnEIP);
 
 	return defClocks;
 }

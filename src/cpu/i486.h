@@ -109,10 +109,12 @@ public:
 
 		// Intel 80386 Programmer's Reference Manual 1986 pp. 109
 		// Reserved                               0
+
 		DESCTYPE_AVAILABLE_286_TSS=               1,
 		DESCTYPE_LDT=                             2,
 		DESCTYPE_BUSY_286_TSS=                    3,
 		DESCTYPE_CALL_GATE=                       4,
+		DESC_TYPE_16BIT_CALL_GATE=0x04,
 		DESCTYPE_TASK_GATE=                       5,
 		DESCTYPE_286_INT_GATE=                    6,
 		DESCTYPE_286_TRAP_GATE=                   7,
@@ -121,6 +123,7 @@ public:
 		// Reserved                            0x0A
 		DESCTYPE_BUSY_386_TSS=                 0x0B,
 		DESCTYPE_386_CALL_GATE=                0x0C,
+		DESC_TYPE_32BIT_CALL_GATE=0x0C,
 		// Reserved                            0x0D
 		DESCTYPE_386_INT_GATE=                 0x0E,
 		DESCTYPE_386_TRAP_GATE=                0x0F,
@@ -2306,11 +2309,6 @@ private:
 	template <class CPUCLASS>
 	class LoadSegmentRegisterTemplate;
 public:
-	enum
-	{
-		DESC_TYPE_16BIT_CALL_GATE=0x04,
-		DESC_TYPE_32BIT_CALL_GATE=0x0C,
-	};
 
 	/*! Loads a segment register.
 	    If reg is SS, it raise holdIRQ flag.
