@@ -4434,6 +4434,57 @@ std::string i486DX::Instruction::DisassembleImmAsASCII(unsigned int CS,unsigned 
 }
 
 
+inline unsigned int i486DX::CALLF(Memory &mem,uint16_t opSize,uint16_t instNumBytes,uint16_t newCS,uint32_t newEIP,uint16_t defClocks)
+{
+	auto prevCS=state.CS().value;
+	auto nextEIP=state.EIP+instNumBytes;
+
+	if(true==enableCallStack)
+	{
+		PushCallStack(
+		    false,0xffff,0xffff,
+		    state.GetCR(0),
+		    state.CS().value,state.EIP,instNumBytes,
+		    newCS,newEIP,
+		    mem);
+	}
+
+	auto prevCPL=state.CS().DPL;
+
+	auto descHighword=LoadSegmentRegister(state.CS(),newCS,mem);
+	auto descType=(descHighword&0x0f00);
+	if(descType==(DESC_TYPE_16BIT_CALL_GATE<<8) ||
+	   descType==(DESC_TYPE_32BIT_CALL_GATE<<8))
+	{
+		auto ptr=GetCallGate(newCS,mem);
+		if(descType==(DESC_TYPE_16BIT_CALL_GATE<<8))
+		{
+			ptr.OFFSET&=0xFFFF;
+		}
+		LoadSegmentRegister(state.CS(),ptr.SEG,mem);
+		state.EIP=ptr.OFFSET;
+		defClocks=35;
+	}
+	else
+	{
+		state.EIP=newEIP;
+	}
+
+	if(state.CS().DPL<prevCPL)
+	{
+		auto newCPL=state.CS().DPL;
+		auto prevSS=state.SS().value;
+		auto prevESP=state.ESP();
+		LoadSegmentRegister(state.SS(),FetchWord(32,state.TR,TSS_OFFSET_SS0+newCPL*8,mem),mem);
+		state.ESP()=FetchDword(32,state.TR,TSS_OFFSET_ESP0+newCPL*8,mem);
+		Push(mem,opSize,prevSS,prevESP);
+	}
+	Push(mem,opSize,prevCS,nextEIP);
+
+	return defClocks;
+}
+
+
 unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 {
 	TSUGARU_I486_FIDELITY_CLASS fidelity;
@@ -6083,50 +6134,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				clocksPassed=20;
 			}
 
-			auto prevCS=state.CS().value;
-			auto nextEIP=state.EIP+inst.numBytes;
-
-			if(true==enableCallStack)
-			{
-				PushCallStack(
-				    false,0xffff,0xffff,
-				    state.GetCR(0),
-				    state.CS().value,state.EIP,inst.numBytes,
-				    op1.seg,op1.offset,
-				    mem);
-			}
-
-			auto prevCPL=state.CS().DPL;
-
-			auto descHighword=LoadSegmentRegister(state.CS(),op1.seg,mem);
-			auto descType=(descHighword&0x0f00);
-			if(descType==(DESC_TYPE_16BIT_CALL_GATE<<8) ||
-			   descType==(DESC_TYPE_32BIT_CALL_GATE<<8))
-			{
-				auto ptr=GetCallGate(op1.seg,mem);
-				if(descType==(DESC_TYPE_16BIT_CALL_GATE<<8))
-				{
-					ptr.OFFSET&=0xFFFF;
-				}
-				LoadSegmentRegister(state.CS(),ptr.SEG,mem);
-				state.EIP=ptr.OFFSET;
-				clocksPassed=35;
-			}
-			else
-			{
-				state.EIP=op1.offset;
-			}
-
-			if(state.CS().DPL<prevCPL)
-			{
-				auto newCPL=state.CS().DPL;
-				auto prevSS=state.SS().value;
-				auto prevESP=state.ESP();
-				LoadSegmentRegister(state.SS(),FetchWord(32,state.TR,TSS_OFFSET_SS0+newCPL*8,mem),mem);
-				state.ESP()=FetchDword(32,state.TR,TSS_OFFSET_ESP0+newCPL*8,mem);
-				Push(mem,inst.operandSize,prevSS,prevESP);
-			}
-			Push(mem,inst.operandSize,prevCS,nextEIP);
+			clocksPassed=CALLF(mem,inst.operandSize,inst.numBytes,op1.seg,op1.offset,clocksPassed);
 
 			EIPIncrement=0;
 		}

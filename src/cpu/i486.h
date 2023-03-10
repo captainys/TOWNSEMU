@@ -3030,6 +3030,10 @@ public:
 	static std::string Get16or32BitRegisterNameFromMODR_M(int dataSize,unsigned char MOD_RM);
 
 
+	/*! CALL FAR */
+	inline unsigned int CALLF(Memory &mem,uint16_t opSize,uint16_t instNumBytes,uint16_t newCS,uint32_t newEIP,uint16_t defClocks);
+
+
 	/*! Run one instruction and returns number of clocks. */
 	unsigned int RunOneInstruction(Memory &mem,InOut &io);
 
