@@ -107,6 +107,24 @@ public:
 		PAGEINFO_FLAG_D=      0b000001000000,
 		PAGEINFO_FLAG_AVAIL=  0b111000000000,
 
+		// Intel 80386 Programmer's Reference Manual 1986 pp. 109
+		// Reserved                               0
+		DESCTYPE_AVAILABLE_286_TSS=               1,
+		DESCTYPE_LDT=                             2,
+		DESCTYPE_BUSY_286_TSS=                    3,
+		DESCTYPE_CALL_GATE=                       4,
+		DESCTYPE_TASK_GATE=                       5,
+		DESCTYPE_286_INT_GATE=                    6,
+		DESCTYPE_286_TRAP_GATE=                   7,
+		// Reserved                               8
+		DESCTYPE_AVAILABLE_386_TSS=               9,
+		// Reserved                            0x0A
+		DESCTYPE_BUSY_386_TSS=                 0x0B,
+		DESCTYPE_386_CALL_GATE=                0x0C,
+		// Reserved                            0x0D
+		DESCTYPE_386_INT_GATE=                 0x0E,
+		DESCTYPE_386_TRAP_GATE=                0x0F,
+
 		// https://wiki.osdev.org/Descriptors
 		//   0xxxx System Segment
 		//   1000A Data Normal         Read-Only
@@ -117,14 +135,14 @@ public:
 		//   1101A Code Non-Conforming Readable
 		//   1110A Code Conforming     Execute-Only
 		//   1111A Code Conforming     Readable
-		SEGTYPE_DATA_NORMAL_READONLY=       0b1000, // Data Normal         Read-Only
-		SEGTYPE_DATA_NORMAL_RW=             0b1001, // Data Normal         Read/Write
-		SEGTYPE_DATA_EXPAND_DOWN_READONLY=  0b1010, // Data Expand-Down    Read-Only
-		SEGTYPE_DATA_EXPAND_DOWN_RW=        0b1011, // Data Expand-Down    Read/Write
-		SEGTYPE_CODE_NONCONFORMING_EXECONLY=0b1100, // Code Non-Conforming Execute-Only
-		SEGTYPE_CODE_NONCONFORMING_READABLE=0b1101, // Code Non-Conforming Readable
-		SEGTYPE_CODE_CONFORMING_EXECONLY=   0b1110, // Code Conforming     Execute-Only
-		SEGTYPE_CODE_CONFORMING_READABLE=   0b1111, // Code Conforming     Readable
+		SEGTYPE_DATA_NORMAL_READONLY=       0b10000, // Data Normal         Read-Only
+		SEGTYPE_DATA_NORMAL_RW=             0b10010, // Data Normal         Read/Write
+		SEGTYPE_DATA_EXPAND_DOWN_READONLY=  0b10100, // Data Expand-Down    Read-Only
+		SEGTYPE_DATA_EXPAND_DOWN_RW=        0b10110, // Data Expand-Down    Read/Write
+		SEGTYPE_CODE_NONCONFORMING_EXECONLY=0b11000, // Code Non-Conforming Execute-Only
+		SEGTYPE_CODE_NONCONFORMING_READABLE=0b11010, // Code Non-Conforming Readable
+		SEGTYPE_CODE_CONFORMING_EXECONLY=   0b11100, // Code Conforming     Execute-Only
+		SEGTYPE_CODE_CONFORMING_READABLE=   0b11110, // Code Conforming     Readable
 
 		//                 AVR NIOODITSZ A P C
 		//                 CMF0TPL      0 0 1
@@ -196,6 +214,17 @@ public:
 		uint32_t limit;
 		uint16_t DPL=0;
 		uint16_t attribBytes=0;
+
+		inline unsigned int GetType(void) const
+		{
+			auto type=attribBytes&0x1F;
+			if(8<=type)
+			{
+				// bit0 is ACCESSED flag and meaningless.
+				return type&0x1E;
+			}
+			return type;
+		}
 
 		void Serialize(std::vector <unsigned char> &data) const;
 		bool Deserialize(const unsigned char *&data,unsigned int version);
@@ -3473,20 +3502,26 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 					}
 				}
 				return;
-			case 0b0110:
+			case DESCTYPE_286_INT_GATE: // 0b0110:
 				Abort("286 16-bit INT gate not supported");
 				gateOperandSize=16;
 				break;
-			case 0b0111:
+			case DESCTYPE_286_TRAP_GATE: // 0b0111:
 				// I have no idea if it is the correct way of handling an 80286 gate.
 				gateOperandSize=16;
 				isINTGate=false;
 				break;
-			case 0b0101: //"386 32-bit Task";
-			case 0b1110: //"386 32-bit INT";
+			case DESCTYPE_TASK_GATE: // 0b0101: //"386 32-bit Task";
+				Abort("386 16-bit INT gate not supported");
 				break;
-			case 0b1111: //"386 32-bit Trap";
+			case DESCTYPE_386_INT_GATE: // 0b1110: //"386 32-bit INT";
+				break;
+			case DESCTYPE_386_TRAP_GATE: // 0b1111: //"386 32-bit Trap";
 				isINTGate=false;
+				break;
+			case DESCTYPE_AVAILABLE_386_TSS://               9,
+			case DESCTYPE_BUSY_386_TSS://                 0x0B,
+				Abort("INT-TO-TSS not supported");
 				break;
 			}
 

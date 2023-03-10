@@ -213,7 +213,7 @@ public:
 			}
 		};
 
-		uint32_t type=((seg.attribBytes>>1)&0x0F);
+		uint32_t type=seg.GetType();
 		if(true!=cpu.IsInRealMode() && true!=cpu.GetVM() && (i486DX::SEGTYPE_CODE_NONCONFORMING_EXECONLY==type || i486DX::SEGTYPE_CODE_CONFORMING_EXECONLY==type))
 		{
 			raise();
@@ -240,7 +240,7 @@ public:
 			}
 		};
 
-		uint32_t type=((seg.attribBytes>>1)&0x0F);
+		uint32_t type=seg.GetType();
 		if(true!=cpu.IsInRealMode() && true!=cpu.GetVM() && i486DX::SEGTYPE_DATA_NORMAL_RW!=type && i486DX::SEGTYPE_DATA_EXPAND_DOWN_RW!=type)
 		{
 			raise();
@@ -322,7 +322,7 @@ public:
 	static inline bool VERRTypeCheck(const i486DX &cpu,const i486DX::SegmentRegister &reg)
 	{
 		// https://wiki.osdev.org/Descriptors
-		uint32_t type=((reg.attribBytes>>1)&0x0F);
+		uint32_t type=reg.GetType();
 		if(type<8)
 		{
 			return false; // Looks like inaccessible for system segments.
@@ -343,7 +343,7 @@ public:
 	static inline bool VERWTypeCheck(const i486DX &cpu,const i486DX::SegmentRegister &reg)
 	{
 		// https://wiki.osdev.org/Descriptors
-		uint32_t type=((reg.attribBytes>>1)&0x0F);
+		uint32_t type=reg.GetType();
 		if(type<8)
 		{
 			return false; // Looks like inaccessible for system segments.
