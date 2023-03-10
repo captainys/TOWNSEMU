@@ -4468,6 +4468,10 @@ inline unsigned int i486DX::CALLF(Memory &mem,uint16_t opSize,uint16_t instNumBy
 	else
 	{
 		state.EIP=newEIP;
+		if(16==opSize)
+		{
+			state.EIP&=0xFFFF;
+		}
 	}
 
 	if(state.CS().DPL<prevCPL)
@@ -7640,6 +7644,15 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				break;
 			case 3: // CALLF Indirect
 				{
+					if(true==IsInRealMode())
+					{
+						clocksPassed=17;
+					}
+					else
+					{
+						clocksPassed=20;
+					}
+
 					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,(inst.operandSize+16)/8);
 					if(true!=state.exception)
 					{
@@ -7663,41 +7676,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 							}
 						}
 
-						Push(mem,inst.operandSize,state.CS().value,state.EIP+inst.numBytes);
-						if(true==enableCallStack)
-						{
-							auto destSeg=value.GetFwordSegment();
-							auto destEIP=value.GetAsDword();
-							if(16==inst.operandSize)
-							{
-								destEIP&=0xFFFF;
-							}
-							PushCallStack(
-							    false,0xffff,0xffff,
-							    state.GetCR(0),
-							    state.CS().value,state.EIP,inst.numBytes,
-							    destSeg,destEIP,
-							    mem);
-						}
+						auto destSeg=value.GetFwordSegment();
+						auto destEIP=value.GetAsDword();
 
-						SetIPorEIP(inst.operandSize,value.GetAsDword());
-						auto descHighword=LoadSegmentRegister(state.CS(),value.GetFwordSegment(),mem);
-						auto descType=(descHighword&0x0f00);
-						if(descType==(DESC_TYPE_16BIT_CALL_GATE<<8) ||
-						   descType==(DESC_TYPE_32BIT_CALL_GATE<<8))
-						{
-							Abort("CALLF to Gate");
-						}
+						clocksPassed=CALLF(mem,inst.operandSize,inst.numBytes,destSeg,destEIP,clocksPassed);
+
 						EIPIncrement=0;
-					}
-
-					if(true==IsInRealMode())
-					{
-						clocksPassed=17;
-					}
-					else
-					{
-						clocksPassed=20;
 					}
 				}
 				break;
