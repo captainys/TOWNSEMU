@@ -4449,8 +4449,6 @@ inline unsigned int i486DX::CALLF(Memory &mem,uint16_t opSize,uint16_t instNumBy
 		    mem);
 	}
 
-	auto prevCPL=state.CS().DPL;
-
 	if(true==IsInRealMode() || true==GetVM())
 	{
 		LoadSegmentRegister(state.CS(),newCS,mem);
@@ -4458,6 +4456,8 @@ inline unsigned int i486DX::CALLF(Memory &mem,uint16_t opSize,uint16_t instNumBy
 	}
 	else
 	{
+		auto prevCPL=state.CS().DPL;
+
 		LoadSegmentRegister(state.CS(),newCS,mem);
 		auto descType=state.CS().GetType();
 		switch(descType)
@@ -4518,14 +4518,48 @@ inline unsigned int i486DX::CALLF(Memory &mem,uint16_t opSize,uint16_t instNumBy
 
 inline unsigned int i486DX::JMPF(Memory &mem,uint16_t opSize,uint16_t instNumBytes,uint16_t newCS,uint32_t newEIP,uint16_t defClocks)
 {
-	SetIPorEIP(opSize,newEIP);
-	auto descHighword=LoadSegmentRegister(state.CS(),newCS,mem);
-	auto descType=(descHighword&0x0f00);
-	if(descType==(DESC_TYPE_16BIT_CALL_GATE<<8) ||
-	   descType==(DESC_TYPE_32BIT_CALL_GATE<<8))
+	if(true==IsInRealMode() || true==GetVM())
 	{
-		Abort("JMPF to Gate");
+		LoadSegmentRegister(state.CS(),newCS,mem);
+		state.EIP=newEIP&0xFFFF;
 	}
+	else
+	{
+		auto prevCPL=state.CS().DPL;
+
+		LoadSegmentRegister(state.CS(),newCS,mem);
+		auto descType=state.CS().GetType();
+		switch(descType)
+		{
+		case DESC_TYPE_16BIT_CALL_GATE:
+		case DESC_TYPE_32BIT_CALL_GATE:
+			Abort("JMPF to gate not supported.");
+			break;
+		case DESCTYPE_AVAILABLE_286_TSS: //               1,
+		case DESCTYPE_BUSY_286_TSS: //                    3,
+		case DESCTYPE_TASK_GATE: //                       5,
+		case DESCTYPE_AVAILABLE_386_TSS: //               9,
+		case DESCTYPE_BUSY_386_TSS: //                 0x0B,
+			Abort("JMPF to Task not supported.");
+			break;
+		case SEGTYPE_CODE_NONCONFORMING_EXECONLY: //0b11000, // Code Non-Conforming Execute-Only
+		case SEGTYPE_CODE_NONCONFORMING_READABLE: //0b11010, // Code Non-Conforming Readable
+		case SEGTYPE_CODE_CONFORMING_EXECONLY: //   0b11100, // Code Conforming     Execute-Only
+		case SEGTYPE_CODE_CONFORMING_READABLE: //   0b11110, // Code Conforming     Readable
+			{
+				state.EIP=newEIP;
+				if(16==opSize)
+				{
+					state.EIP&=0xFFFF;
+				}
+			}
+			break;
+		default:
+			Abort("Unsupported call to descriptor type.");
+			break;
+		}
+	}
+
 	return defClocks;
 }
 
