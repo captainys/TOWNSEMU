@@ -322,6 +322,9 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	breakEventMap["MEMWRITE"]=BREAK_ON_MEM_WRITE;
 	breakEventMap["MEMW"]=BREAK_ON_MEM_WRITE;
 	breakEventMap["BEEP"]=BREAK_ON_BEEP;
+	breakEventMap["PROTECTEDMODE"]=BREAK_ON_PROTECTED_MODE;
+	breakEventMap["REALMODE"]=BREAK_ON_REAL_MODE;
+	breakEventMap["VM86MODE"]=BREAK_ON_VM86_MODE;
 }
 
 void TownsCommandInterpreter::PrintHelp(void) const
@@ -795,6 +798,12 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "MEMWRITE addr DATA=byteData" << std::endl;
 	std::cout << "MEMWRITE addr D=byteData" << std::endl;
 	std::cout << "BEEP" << std::endl;
+	std::cout << "PROTECTEDMODE" << std::endl;
+	std::cout << "  Entering protected mode." << std::endl;
+	std::cout << "REALMODE" << std::endl;
+	std::cout << "  Entering real-address mode." << std::endl;
+	std::cout << "VM86MODE" << std::endl;
+	std::cout << "  Entering VM86 mode." << std::endl;
 }
 
 void TownsCommandInterpreter::PrintError(int errCode) const
@@ -3042,6 +3051,18 @@ void TownsCommandInterpreter::Execute_BreakOn(FMTowns &towns,Command &cmd)
 		case BREAK_ON_BEEP:
 			towns.timer.breakOnBeep=true;
 			break;
+		case BREAK_ON_PROTECTED_MODE:
+			towns.debugger.breakOnProtectedMode=true;
+			std::cout << "Break on entering protected mode." << std::endl;
+			break;
+		case BREAK_ON_REAL_MODE:
+			towns.debugger.breakOnRealMode=true;
+			std::cout << "Break on entering real-address mode." << std::endl;
+			break;
+		case BREAK_ON_VM86_MODE:
+			towns.debugger.breakOnVM86Mode=true;
+			std::cout << "Break on entering VM86 mode." << std::endl;
+			break;
 		}
 		std::cout << "Break On " << reason << " is ON." << std::endl;
 	}
@@ -3236,6 +3257,18 @@ void TownsCommandInterpreter::Execute_ClearBreakOn(FMTowns &towns,Command &cmd)
 			break;
 		case BREAK_ON_BEEP:
 			towns.timer.breakOnBeep=false;
+			break;
+		case BREAK_ON_PROTECTED_MODE:
+			towns.debugger.breakOnProtectedMode=false;
+			std::cout << "Don't break on entering protected mode." << std::endl;
+			break;
+		case BREAK_ON_REAL_MODE:
+			towns.debugger.breakOnRealMode=false;
+			std::cout << "Don't break on entering real-address mode." << std::endl;
+			break;
+		case BREAK_ON_VM86_MODE:
+			towns.debugger.breakOnVM86Mode=false;
+			std::cout << "Don't break on entering VM86 mode." << std::endl;
 			break;
 		}
 		std::cout << "Break On " << iter->first << " is OFF." << std::endl;

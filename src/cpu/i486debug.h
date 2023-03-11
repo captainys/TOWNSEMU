@@ -101,6 +101,10 @@ public:
 	std::string externalBreakReason;
 	std::map <unsigned int,std::string> ioLabel;
 
+	bool breakOnVM86Mode=false,prevVM86Mode=false;
+	bool breakOnProtectedMode=false,prevProtectedMode=false;
+	bool breakOnRealMode=false,prevRealMode=false;
+
 	uint32_t instHist[0xFFFF];
 
 	class CSEIPLogType : public i486DX::FarPointer

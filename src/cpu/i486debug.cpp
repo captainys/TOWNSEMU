@@ -272,6 +272,10 @@ void i486Debugger::BeforeRunOneInstruction(i486DX &cpu,Memory &mem,InOut &io,con
 
 	++instHist[inst.opCode];
 
+	prevVM86Mode=cpu.GetVM();
+	prevProtectedMode=(true!=cpu.GetVM() && true!=cpu.IsInRealMode());
+	prevRealMode=cpu.IsInRealMode();
+
 	CS_EIP cseip;
 	cseip.SEG=cpu.state.CS().value;
 	cseip.OFFSET=cpu.state.EIP;
@@ -376,6 +380,32 @@ void i486Debugger::AfterRunOneInstruction(unsigned int clocksPassed,i486DX &cpu,
 {
 	specialDebugInfo->AfterRunOneInstruction(*this,clocksPassed,cpu,mem,io,inst);
 	CheckForBreakPoints(cpu);
+
+	if(true==breakOnVM86Mode)
+	{
+		if(true!=prevVM86Mode && true==cpu.GetVM())
+		{
+			stop=true;
+			externalBreakReason="Entered VM86 Mode";
+		}
+	}
+	if(true==breakOnProtectedMode)
+	{
+		bool protectedMode=(true!=cpu.GetVM() && true!=cpu.IsInRealMode());
+		if(true!=prevProtectedMode && true==protectedMode)
+		{
+			stop=true;
+			externalBreakReason="Entered Protected Mode";
+		}
+	}
+	if(true==breakOnRealMode)
+	{
+		if(true!=prevRealMode && true==cpu.IsInRealMode())
+		{
+			stop=true;
+			externalBreakReason="Entered Real Mode";
+		}
+	}
 }
 
 std::vector <i486Debugger::CSEIPLogType> i486Debugger::GetCSEIPLog(void)
