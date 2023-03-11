@@ -240,6 +240,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	featureMap["80487"]=ENABLE_FPU;
 	featureMap["FDCMON"]=ENABLE_FDCMONITOR;
 	featureMap["CDCMON"]=ENABLE_CDCMONITOR;
+	featureMap["VXDMON"]=ENABLE_VXDMONITOR;
 
 	dumpableMap["CALLSTACK"]=DUMP_CALLSTACK;
 	dumpableMap["CST"]=DUMP_CALLSTACK;
@@ -677,6 +678,12 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Mouse Integration." << std::endl;
 	std::cout << "YM2612LOG" << std::endl;
 	std::cout << "  YM2612 register-write log. (Previous log is cleared)" << std::endl;
+	std::cout << "FDCMON" << std::endl;
+	std::cout << "  FDC monitor." << std::endl;
+	std::cout << "CDCMON" << std::endl;
+	std::cout << "  CDC monitor." << std::endl;
+	std::cout << "VXDMON" << std::endl;
+	std::cout << "  Windows 3.1 VxD Monitor." << std::endl;
 
 
 
@@ -1705,6 +1712,10 @@ void TownsCommandInterpreter::Execute_Enable(FMTowns &towns,Command &cmd)
 			towns.cdrom.var.debugMonitorCommandWrite=true;
 			std::cout << "CDC Monitor Enabled." << std::endl;
 			break;
+		case ENABLE_VXDMONITOR:
+			towns.debugger.breakOrMonitorOnVxDCall=i486Debugger::BRKPNT_FLAG_MONITOR_ONLY;
+			std::cout << "VxD Monitor Enabled." << std::endl;
+			break;
 		}
 	}
 }
@@ -1787,6 +1798,12 @@ void TownsCommandInterpreter::Execute_Disable(FMTowns &towns,Command &cmd)
 		case ENABLE_CDCMONITOR:
 			towns.cdrom.var.debugMonitorCommandWrite=false;
 			std::cout << "CDC Monitor Disabled." << std::endl;
+			break;
+		case ENABLE_VXDMONITOR:
+			towns.debugger.breakOrMonitorOnVxDCall=i486Debugger::BRKPNT_FLAG_NONE;
+			towns.debugger.breakOnVxDId=~0;
+			towns.debugger.breakOnVxDServiceNumber=~0;
+			std::cout << "VxD Monitor Disabled." << std::endl;
 			break;
 		}
 	}
@@ -3084,7 +3101,7 @@ void TownsCommandInterpreter::Execute_BreakOn(FMTowns &towns,Command &cmd)
 				towns.debugger.breakOrMonitorOnVxDCall=0xFF;
 				towns.debugger.breakOnVxDId=VxD;
 				towns.debugger.breakOnVxDServiceNumber=svc;
-				std::cout << "Break on VxD Call" << std::endl;
+
 			}
 			break;
 		}
