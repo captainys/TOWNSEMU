@@ -51,6 +51,11 @@ public:
 		   debugger should print the monitoring information before the pass count is reached.
 		*/
 		BRKPNT_FLAG_SILENT_UNTIL_BREAK=2,
+
+
+		/* Windows 3.1 uses INT 20H for VxD services.
+		*/
+		INT_WIN31_VxD=0x20,
 	};
 	class BreakPointInfo
 	{
@@ -104,6 +109,10 @@ public:
 	bool breakOnVM86Mode=false,prevVM86Mode=false;
 	bool breakOnProtectedMode=false,prevProtectedMode=false;
 	bool breakOnRealMode=false,prevRealMode=false;
+
+	// Monitoring Windows 3.1 VxD
+	uint8_t breakOrMonitorOnVxDCall=BRKPNT_FLAG_NONE;
+	uint32_t breakOnVxDId=~0,breakOnVxDServiceNumber=~0;
 
 	uint32_t instHist[0xFFFF];
 

@@ -276,6 +276,42 @@ void i486Debugger::BeforeRunOneInstruction(i486DX &cpu,Memory &mem,InOut &io,con
 	prevProtectedMode=(true!=cpu.GetVM() && true!=cpu.IsInRealMode());
 	prevRealMode=cpu.IsInRealMode();
 
+	if(BRKPNT_FLAG_NONE!=breakOrMonitorOnVxDCall)
+	{
+		if(true!=cpu.IsInRealMode() && true!=cpu.GetVM() && I486_OPCODE_INT==inst.opCode && INT_WIN31_VxD==inst.EvalUimm8())
+		{
+			auto EIP=cpu.GetEIP();
+
+			uint32_t svc=cpu.DebugFetchWord(inst.addressSize,cpu.state.CS(),EIP+2,mem);
+			uint32_t VxDId=cpu.DebugFetchWord(inst.addressSize,cpu.state.CS(),EIP+4,mem);
+			bool match=true;
+			if(breakOnVxDId<0x10000 && VxDId!=breakOnVxDId)
+			{
+				match=false;
+			}
+			if(breakOnVxDServiceNumber<0x10000 && svc!=breakOnVxDServiceNumber)
+			{
+				match=false;
+			}
+			if(true==match)
+			{
+				std::string msg;
+				msg="VxD Call ID="+cpputil::Ustox(VxDId)+" SVC="+cpputil::Ustox(svc);
+				WriteLogFile(msg);
+
+				if(BRKPNT_FLAG_MONITOR_ONLY!=breakOrMonitorOnVxDCall)
+				{
+					stop=true;
+					externalBreakReason=msg;
+				}
+				else
+				{
+					std::cout << msg << std::endl;
+				}
+			}
+		}
+	}
+
 	CS_EIP cseip;
 	cseip.SEG=cpu.state.CS().value;
 	cseip.OFFSET=cpu.state.EIP;

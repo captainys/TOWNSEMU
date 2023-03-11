@@ -325,6 +325,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	breakEventMap["PROTECTEDMODE"]=BREAK_ON_PROTECTED_MODE;
 	breakEventMap["REALMODE"]=BREAK_ON_REAL_MODE;
 	breakEventMap["VM86MODE"]=BREAK_ON_VM86_MODE;
+	breakEventMap["VXDCALL"]=BREAK_ON_VXD_CALL;
 }
 
 void TownsCommandInterpreter::PrintHelp(void) const
@@ -804,6 +805,10 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Entering real-address mode." << std::endl;
 	std::cout << "VM86MODE" << std::endl;
 	std::cout << "  Entering VM86 mode." << std::endl;
+	std::cout << "VXDCALL" << std::endl;
+	std::cout << "VXDCALL VxDId" << std::endl;
+	std::cout << "VXDCALL VxDId SvdNum" << std::endl;
+	std::cout << "  Windows 3.1 VxD service call." << std::endl;
 }
 
 void TownsCommandInterpreter::PrintError(int errCode) const
@@ -3063,6 +3068,25 @@ void TownsCommandInterpreter::Execute_BreakOn(FMTowns &towns,Command &cmd)
 			towns.debugger.breakOnVM86Mode=true;
 			std::cout << "Break on entering VM86 mode." << std::endl;
 			break;
+		case BREAK_ON_VXD_CALL:
+			{
+				uint32_t VxD=~0;
+				uint32_t svc=~0;
+				// BRKON VXDCALL 3 1 for VPICD VirtualizeIRQ
+				if(3<=cmd.argv.size())
+				{
+					VxD=cpputil::Xtoi(cmd.argv[2].c_str());
+				}
+				if(4<=cmd.argv.size())
+				{
+					svc=cpputil::Xtoi(cmd.argv[3].c_str());
+				}
+				towns.debugger.breakOrMonitorOnVxDCall=0xFF;
+				towns.debugger.breakOnVxDId=VxD;
+				towns.debugger.breakOnVxDServiceNumber=svc;
+				std::cout << "Break on VxD Call" << std::endl;
+			}
+			break;
 		}
 		std::cout << "Break On " << reason << " is ON." << std::endl;
 	}
@@ -3269,6 +3293,10 @@ void TownsCommandInterpreter::Execute_ClearBreakOn(FMTowns &towns,Command &cmd)
 		case BREAK_ON_VM86_MODE:
 			towns.debugger.breakOnVM86Mode=false;
 			std::cout << "Don't break on entering VM86 mode." << std::endl;
+			break;
+		case BREAK_ON_VXD_CALL:
+			towns.debugger.breakOrMonitorOnVxDCall=i486Debugger::BRKPNT_FLAG_NONE;
+			std::cout << "Don't break on VxD Call." << std::endl;
 			break;
 		}
 		std::cout << "Break On " << iter->first << " is OFF." << std::endl;
