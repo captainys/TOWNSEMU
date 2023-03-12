@@ -844,6 +844,49 @@ std::vector <std::string> i486DX::GetTSSText(const Memory &mem) const
 	return text;
 }
 
+std::vector <std::string> i486DX::GetDRText(void) const
+{
+	std::vector <std::string> text;
+	int i=0;
+	for(auto DR : state.DR)
+	{
+		if(0==i%4)
+		{
+			text.push_back("");
+		}
+		else
+		{
+			text.back()+="  ";
+		}
+		text.back()+="DR";
+		text.back().push_back('0'+i);
+		text.back()+="="+cpputil::Uitox(DR);
+		++i;
+	}
+	return text;
+}
+std::vector <std::string> i486DX::GetTESTText(void) const
+{
+	std::vector <std::string> text;
+	int i=0;
+	for(auto TEST : state.TEST)
+	{
+		if(0==i%4)
+		{
+			text.push_back("");
+		}
+		else
+		{
+			text.back()+="  ";
+		}
+		text.back()+="TEST";
+		text.back().push_back('0'+i);
+		text.back()+="="+cpputil::Uitox(TEST);
+		++i;
+	}
+	return text;
+}
+
 void i486DX::PrintState(void) const
 {
 	for(auto &str : GetStateText())

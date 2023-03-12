@@ -250,6 +250,8 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	dumpableMap["STATE"]=DUMP_CURRENT_STATUS;
 	dumpableMap["STA"]=DUMP_CURRENT_STATUS;
 	dumpableMap["S"]=DUMP_CURRENT_STATUS;
+	dumpableMap["DR"]=DUMP_DR;
+	dumpableMap["TEST"]=DUMP_TEST;
 	dumpableMap["HIST"]=DUMP_CSEIP_LOG;
 	dumpableMap["PIC"]=DUMP_PIC;
 	dumpableMap["DMA"]=DUMP_DMAC;
@@ -769,7 +771,10 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  If map-X and map-Y expression is defined, print X and Y coordinate." << std::endl;
 	std::cout << "INSTHIST" << std::endl;
 	std::cout << "  Instruction histogram.  Only available when the debugger is enabled." << std::endl;
-
+	std::cout << "DR" << std::endl;
+	std::cout << "  CPU debug registers." << std::endl;
+	std::cout << "TEST" << std::endl;
+	std::cout << "  CPU TEST registers." << std::endl;
 	std::cout << "" << std::endl;
 
 	std::cout << "<< Event that can break >>" << std::endl;
@@ -2279,6 +2284,18 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 				{
 					h=0;
 				}
+			}
+			break;
+		case DUMP_DR:
+			for(auto str : towns.cpu.GetDRText())
+			{
+				std::cout << str << std::endl;
+			}
+			break;
+		case DUMP_TEST:
+			for(auto str : towns.cpu.GetTESTText())
+			{
+				std::cout << str << std::endl;
 			}
 			break;
 		}

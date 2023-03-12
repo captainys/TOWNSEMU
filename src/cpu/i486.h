@@ -2288,6 +2288,14 @@ public:
 	*/
 	std::vector <std::string> GetTSSText(const Memory &mem) const;
 
+	/*! Return debug registers text.
+	*/
+	std::vector <std::string> GetDRText(void) const;
+
+	/*! Return debug registers text.
+	*/
+	std::vector <std::string> GetTESTText(void) const;
+
 	/*! Print state.
 	*/
 	void PrintState(void) const;
