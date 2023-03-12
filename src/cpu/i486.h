@@ -3553,6 +3553,19 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 			// Apparently it should be IDT's DPL, not newCS's DPL.
 			auto CPL=state.CS().DPL;
 
+			// There are three things:
+			//   CPL,
+			//   Gate's DPL, and
+			//   nextCS's DPL.
+
+			// If Software Interrupt && gateDPL<CPL, shoot GP exception.
+			if(true==SWI && gateDPL<CPL)
+			{
+				RaiseException(EXCEPTION_GP,INTNum*8); // What's +EXT?  ([1] pp.26-170)
+				HandleException(false,mem,numInstBytesForCallStack);
+				return;
+			}
+
 			if(0==(state.EFLAGS&EFLAGS_VIRTUAL86))
 			{
 				SegmentRegister newCS;
@@ -3598,13 +3611,6 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 			}
 			else // Interrupt from Virtual86 mode
 			{
-				// Should I raise exception if Software Interrupt && DPL<CPL?
-				if(true==SWI && gateDPL<CPL)
-				{
-					RaiseException(EXCEPTION_GP,INTNum*8); // What's +EXT?  ([1] pp.26-170)
-					HandleException(false,mem,numInstBytesForCallStack);
-				}
-				else
 				{
 					state.CS().DPL=0;
 					// Just in case, set CPL to zero so that SS can be loaded.
