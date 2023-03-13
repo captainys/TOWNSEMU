@@ -8542,6 +8542,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 	case I486_RENUMBER_LSL://              0x0F03,
 		clocksPassed=10;
+		if(true!=IsInRealMode() && true!=GetVM())
 		{
 			auto selectorValue=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize/8); // What to do with high 16 bits?
 			auto selector=selectorValue.GetAsWord();
@@ -8551,6 +8552,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			limit.MakeDword(seg.limit);
 			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,limit);
 			SetZF(true);
+		}
+		else
+		{
+			Abort("LSL from Real or VM86 mode.  Should be INT 6, but for the time being, I am stopping the VM.");
 		}
 		break;
 

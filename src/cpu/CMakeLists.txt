@@ -6,6 +6,7 @@ i486.cpp
 i487.cpp
 i486inst.h
 i486instfetch.h
+i486loadsegreg.h
 i486inst.cpp
 i486operand.cpp
 i486debug.h
