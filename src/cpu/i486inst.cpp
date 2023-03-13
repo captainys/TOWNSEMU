@@ -19,7 +19,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "i486inst.h"
 #include "i486debug.h"
 #include "i486symtable.h"
-
+#include "i486loadsegreg.h"
 
 // #define VERIFY_MEMORY_WINDOW
 // #define BREAK_ON_FPU_INST
@@ -8546,12 +8546,90 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			auto selectorValue=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize/8); // What to do with high 16 bits?
 			auto selector=selectorValue.GetAsWord();
-			SegmentRegister seg;
-			LoadSegmentRegister(seg,selector,mem,false);
-			OperandValue limit;
-			limit.MakeDword(seg.limit);
-			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,limit);
-			SetZF(true);
+			if(true!=state.exception)
+			{
+				i486DX::LoadSegmentRegisterTemplate<const i486DX> loader;
+				loader.LoadProtectedModeDescriptor(*this,selector,mem);
+				if(true==state.exception || nullptr==loader.rawDesc)
+				{
+					SetZF(false);
+					break;
+				}
+
+				// Should I check P flag or not?
+				//const uint8_t Pflag=(loader.rawDesc[5]&0x80);
+				//if(0==Pflag)
+				//{
+				//	SetZF(false);
+				//	break;
+				//}
+
+				uint8_t CPL=state.CS().DPL;
+				uint8_t RPL=selector&3;
+				uint8_t descDPL=(loader.rawDesc[5]>>5)&3;
+				uint8_t descType=loader.rawDesc[5]&0x1F;
+				if(0!=(descType&0x10))
+				{
+					descType&=~1;
+				}
+
+				bool valid=false;
+				switch(descType)
+				{
+				case DESCTYPE_AVAILABLE_286_TSS://               1,
+				case DESCTYPE_LDT://                             2,
+				case DESCTYPE_BUSY_286_TSS://                    3,
+				case 8: // Should LSL return for this one????  80386 Programmer's Reference Manual 1986 tells so.
+				case DESCTYPE_AVAILABLE_386_TSS://               9,
+				case DESCTYPE_BUSY_386_TSS://                 0x0B,
+				// Reserved                            0x0D
+				case SEGTYPE_DATA_NORMAL_READONLY://       0b10000, // Data Normal         Read-Only
+				case SEGTYPE_DATA_NORMAL_RW://             0b10010, // Data Normal         Read/Write
+				case SEGTYPE_DATA_EXPAND_DOWN_READONLY://  0b10100, // Data Expand-Down    Read-Only
+				case SEGTYPE_DATA_EXPAND_DOWN_RW://        0b10110, // Data Expand-Down    Read/Write
+				case SEGTYPE_CODE_NONCONFORMING_EXECONLY://0b11000, // Code Non-Conforming Execute-Only
+				case SEGTYPE_CODE_NONCONFORMING_READABLE://0b11010, // Code Non-Conforming Readable
+					if(descDPL<=CPL && RPL<=descDPL)
+					{
+						valid=true;
+					}
+					break;
+
+				case SEGTYPE_CODE_CONFORMING_EXECONLY://   0b11100, // Code Conforming     Execute-Only
+				case SEGTYPE_CODE_CONFORMING_READABLE://   0b11110, // Code Conforming     Readable
+					valid=true;
+					break;
+
+				case DESCTYPE_CALL_GATE://                       4,
+				case DESCTYPE_TASK_GATE://                       5,
+				case DESCTYPE_286_INT_GATE://                    6,
+				case DESCTYPE_286_TRAP_GATE://                   7,
+				case DESCTYPE_386_CALL_GATE://                0x0C,
+				case DESCTYPE_386_INT_GATE://                 0x0E,
+				case DESCTYPE_386_TRAP_GATE://                0x0F,
+					break;
+				}
+
+				if(true==valid)
+				{
+					unsigned int segLimit=cpputil::GetWord(loader.rawDesc+0)|((loader.rawDesc[6]&0x0F)<<16);
+					if(0x80&loader.rawDesc[6])
+					{
+						segLimit<<=12;
+						segLimit|=0xFFF;
+					}
+
+					OperandValue limit;
+					limit.MakeDword(segLimit);
+					StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,limit);
+
+					SetZF(true);
+				}
+				else
+				{
+					SetZF(false);
+				}
+			}
 		}
 		else
 		{
