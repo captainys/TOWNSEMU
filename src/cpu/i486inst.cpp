@@ -6157,50 +6157,76 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize/8);
 			auto selector=value2.GetAsWord();
 
-			auto RPL=(selector&3);
-			auto TI=(0!=(selector&4));
-
-			unsigned char rawDescBuf[8];
-			const unsigned char *rawDesc;
-
-			unsigned int DTLinearBaseAddr=0;
-			if(0==TI)
+			i486DX::LoadSegmentRegisterTemplate<const i486DX> loader;
+			loader.LoadProtectedModeDescriptor(*this,selector,mem);
+			if(true==state.exception || nullptr==loader.rawDesc)
 			{
-				DTLinearBaseAddr=state.GDTR.linearBaseAddr;
+				SetZF(false);
+				break;
+			}
+			uint8_t CPL=state.CS().DPL;
+			uint8_t RPL=selector&3;
+			uint8_t descDPL=(loader.rawDesc[5]>>5)&3;
+			uint8_t descType=loader.rawDesc[5]&0x1F;
+			if(0!=(descType&0x10))
+			{
+				descType&=~1;
+			}
+
+			bool valid=false;
+			switch(descType)
+			{
+			case DESCTYPE_CALL_GATE://                       4,
+			case DESCTYPE_TASK_GATE://                       5,
+			case DESCTYPE_386_CALL_GATE://                0x0C,
+
+			case DESCTYPE_AVAILABLE_286_TSS://               1,
+			case DESCTYPE_LDT://                             2,
+			case DESCTYPE_BUSY_286_TSS://                    3,
+			// case 8: // Should LSL return for this one????  80386 Programmer's Reference Manual 1986 tells so.
+			//            But actually measurement tells otherwise.
+			case DESCTYPE_AVAILABLE_386_TSS://               9,
+			case DESCTYPE_BUSY_386_TSS://                 0x0B,
+			// Reserved                            0x0D
+			case SEGTYPE_DATA_NORMAL_READONLY://       0b10000, // Data Normal         Read-Only
+			case SEGTYPE_DATA_NORMAL_RW://             0b10010, // Data Normal         Read/Write
+			case SEGTYPE_DATA_EXPAND_DOWN_READONLY://  0b10100, // Data Expand-Down    Read-Only
+			case SEGTYPE_DATA_EXPAND_DOWN_RW://        0b10110, // Data Expand-Down    Read/Write
+			case SEGTYPE_CODE_NONCONFORMING_EXECONLY://0b11000, // Code Non-Conforming Execute-Only
+			case SEGTYPE_CODE_NONCONFORMING_READABLE://0b11010, // Code Non-Conforming Readable
+				if(CPL<=descDPL && RPL<=descDPL)
+				{
+					valid=true;
+				}
+				break;
+
+			case SEGTYPE_CODE_CONFORMING_EXECONLY://   0b11100, // Code Conforming     Execute-Only
+			case SEGTYPE_CODE_CONFORMING_READABLE://   0b11110, // Code Conforming     Readable
+				valid=true;
+				break;
+
+			case DESCTYPE_286_INT_GATE://                    6,
+			case DESCTYPE_286_TRAP_GATE://                   7,
+			case DESCTYPE_386_INT_GATE://                 0x0E,
+			case DESCTYPE_386_TRAP_GATE://                0x0F,
+				break;
+			}
+
+			if(true==valid)
+			{
+				uint32_t accessRightBytes=cpputil::GetDword(loader.rawDesc+4);
+				accessRightBytes&=0x00FFFF00;
+				// Although INTEL 80386 PROGRAMMER'S REFERENCE MANUAL 1986 pp. 325 tells upper four bits
+				// of the limit will be undefined, 80486 returns exactly as defined in the descriptor.
+				OperandValue value1;
+				value1.SetDword(accessRightBytes);
+				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+				SetZF(true);
 			}
 			else
 			{
-				DTLinearBaseAddr=state.LDTR.linearBaseAddr;
+				SetZF(false);
 			}
-			DTLinearBaseAddr+=(selector&0xfff8); // Use upper 13 bits.
-
-			auto memWin=GetConstMemoryWindowFromLinearAddress(DTLinearBaseAddr,mem);
-			if(nullptr!=memWin.ptr && (DTLinearBaseAddr&(MemoryAccess::MEMORY_WINDOW_SIZE-1))<=(MemoryAccess::MEMORY_WINDOW_SIZE-8))
-			{
-				rawDesc=memWin.ptr+(DTLinearBaseAddr&(MemoryAccess::MEMORY_WINDOW_SIZE-1));
-			}
-			else
-			{
-				rawDesc=rawDescBuf;
-				rawDescBuf[0]=FetchByteByLinearAddress(mem,DTLinearBaseAddr);
-				rawDescBuf[1]=FetchByteByLinearAddress(mem,DTLinearBaseAddr+1);
-				rawDescBuf[2]=FetchByteByLinearAddress(mem,DTLinearBaseAddr+2);
-				rawDescBuf[3]=FetchByteByLinearAddress(mem,DTLinearBaseAddr+3);
-				rawDescBuf[4]=FetchByteByLinearAddress(mem,DTLinearBaseAddr+4);
-				rawDescBuf[5]=FetchByteByLinearAddress(mem,DTLinearBaseAddr+5);
-				rawDescBuf[6]=FetchByteByLinearAddress(mem,DTLinearBaseAddr+6);
-				rawDescBuf[7]=FetchByteByLinearAddress(mem,DTLinearBaseAddr+7);
-			}
-
-
-			uint32_t accessRightBytes=cpputil::GetDword(rawDesc+4);
-			accessRightBytes&=0x00F0FF00; // As described in INTEL 80386 PROGRAMMER'S REFERENCE MANUAL 1986
-			OperandValue value1;
-			value1.SetDword(accessRightBytes);
-			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
-
-
-			SetZF(true);
 			clocksPassed=16;
 		}
 		break;
@@ -8583,7 +8609,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				case DESCTYPE_AVAILABLE_286_TSS://               1,
 				case DESCTYPE_LDT://                             2,
 				case DESCTYPE_BUSY_286_TSS://                    3,
-				case 8: // Should LSL return for this one????  80386 Programmer's Reference Manual 1986 tells so.
+				// case 8: // Should LSL return for this one????  80386 Programmer's Reference Manual 1986 tells so.
+				//            But actually measurement tells otherwise.
 				case DESCTYPE_AVAILABLE_386_TSS://               9,
 				case DESCTYPE_BUSY_386_TSS://                 0x0B,
 				// Reserved                            0x0D
@@ -8593,7 +8620,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				case SEGTYPE_DATA_EXPAND_DOWN_RW://        0b10110, // Data Expand-Down    Read/Write
 				case SEGTYPE_CODE_NONCONFORMING_EXECONLY://0b11000, // Code Non-Conforming Execute-Only
 				case SEGTYPE_CODE_NONCONFORMING_READABLE://0b11010, // Code Non-Conforming Readable
-					if(descDPL<=CPL && RPL<=descDPL)
+					if(CPL<=descDPL && RPL<=descDPL)
 					{
 						valid=true;
 					}

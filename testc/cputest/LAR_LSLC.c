@@ -48,8 +48,10 @@ int main(void)
 							       res[0],res[1],res[2],res[3],
 							       ctr,opSize,descType,G,P,DPL,RPL);
 						#else
-							if(res[0]!=sample[ctr][0] || res[1]!=sample[ctr][1] ||
-							   res[2]!=sample[ctr][2] || res[3]!=sample[ctr][3])
+							if(res[0]!=sample[ctr][0] ||
+							   res[1]!=sample[ctr][1] ||
+							   (res[2]&0xFFF0FFFF)!=(sample[ctr][2]&0xFFF0FFFF) || // Upper four bits of the limit is undefined.
+							   res[3]!=sample[ctr][3])
 							{
 								printf("Result does not match!\n");
 								printf("[%4d] op=%d desc=0x%02x G=%d P=%d DPL=%d RPL=%d"
@@ -70,5 +72,8 @@ int main(void)
 			}
 		}
 	}
+	#ifndef SAMPLE_MODE
+	printf("End.\n");
+	#endif
 	return 0;
 }
