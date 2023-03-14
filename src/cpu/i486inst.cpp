@@ -2069,6 +2069,10 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		{
 			auto offset=EvalSimm16or32(operandSize);
 			auto destin=eip+offset+numBytes;
+			if(16==operandSize)
+			{
+				destin&=0xFFFF;
+			}
 			disasm+=cpputil::Uitox(destin);
 
 			auto *sym=symTable.Find(cs.value,destin);
