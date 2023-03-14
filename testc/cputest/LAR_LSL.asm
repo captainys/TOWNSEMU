@@ -85,7 +85,7 @@ NO_P_FLAG:
 						MOV		AX,LDT_SEG
 						LLDT	AX
 
-						DEBUG_BREAK_TOWNS_VM
+						; DEBUG_BREAK_TOWNS_VM
 
 
 

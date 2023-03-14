@@ -38,13 +38,15 @@ int main(void)
 						for(DPL=0; DPL<4; ++DPL)
 						{
 							TEST_LAR_LSL(res,opSize,descType,G,P,RPL,DPL);
-							printf("{0x%02x,0x%08x,0x%02x,0x%08x},"
+							printf("{0x%08x,0x%02x,0x%08x,0x%02x},"
 							       "// [%4d] op=%d desc=0x%02x G=%d P=%d RPL=%d DPL=%d"
 							       "\n",
-							       ctr,
 							       res[0],res[1],res[2],res[3],
-							       opSize,descType,G,P,RPL,DPL);
+							       ctr,opSize,descType,G,P,RPL,DPL);
 							++ctr;
+
+							//printf(">");
+							//getchar();
 						}
 					}
 				}
