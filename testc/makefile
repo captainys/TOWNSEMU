@@ -1,3 +1,6 @@
+all : build\LAR_LSL.EXP BUILD\DRVMODE.EXP build\gentest.exp build\runtest.exp build\keytest.exp build\FAIL.EXE build\SUCCESS.EXE build\captcrtc.exp build\ff82_1pg.exp build\ff82_2pg.exp build\test01.exp build\test02.exp build\test03.exp build\test04.exp build\test05.exp build\test06.exp build\test07.exp build\test08.exp build\testcd.exp build\eaxds.exp build\egb01.exp build\egb02.exp build\highres1.exp build\fullcol1.exp build\mos01.exp build\sprite01.exp build\sprite02.exp build\timer.exp build\vramtest.exp build\readtoc.exp build\ym2612FB.exp build\ymtone.exp build\ymwave.exp build\ymwaverr.exp build\ymwaverp.exp build\ymenvl01.exp build\ymenvl02.exp build\repeat.exe build\cdda.exe build\vndrvbrk.exp build\vndrvena.exp build\vndrvpri.exp build\vndrvdir.exp build\fpu_calc.exp build\fpu_comp.exp build\fpuexp.exp
+
+
 BUILD\DRVMODE.EXP : BUILD\DRVMODE.OBJ
 	386LINK BUILD\DRVMODE.OBJ -LIB C:\hc386\TOWNSLIB\LIB\FMCFRB.lib C:\hc386\small\hce.lib C:\hc386\small\na.lib -EXE BUILD\DRVMODE.EXP
 
@@ -407,3 +410,11 @@ build\fpuexp.exp : build\fpuexp.obj
 
 
 
+build\LAR_LSL.obj : cputest\LAR_LSL.asm
+	386asm cputest\LAR_LSL.asm -OBJECT build\LAR_LSL.obj
+
+build\LAR_LSLC.obj : cputest\LAR_LSLC.c
+	hcd386 cputest\LAR_LSLC.c -obj build\LAR_LSLC.obj
+
+build\LAR_LSL.EXP : build\LAR_LSL.obj build\LAR_LSLC.obj
+	386link build\LAR_LSL.obj build\LAR_LSLC.obj -exe build\LAR_LSL.exp @LIBS.LN
