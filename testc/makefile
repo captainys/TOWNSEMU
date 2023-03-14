@@ -416,5 +416,8 @@ build\LAR_LSL.obj : cputest\LAR_LSL.asm
 build\LAR_LSLC.obj : cputest\LAR_LSLC.c
 	hcd386 cputest\LAR_LSLC.c -obj build\LAR_LSLC.obj
 
-build\LAR_LSL.EXP : build\LAR_LSL.obj build\LAR_LSLC.obj
-	386link build\LAR_LSL.obj build\LAR_LSLC.obj -exe build\LAR_LSL.exp @LIBS.LN
+build\LAR_LSLD.obj : cputest\LAR_LSLD.c
+	hcd386 cputest\LAR_LSLD.c -obj build\LAR_LSLD.obj
+
+build\LAR_LSL.EXP : build\LAR_LSL.obj build\LAR_LSLC.obj build\LAR_LSLD.obj
+	386link build\LAR_LSL.obj build\LAR_LSLC.obj build\LAR_LSLD.obj -exe build\LAR_LSL.exp @LIBS.LN

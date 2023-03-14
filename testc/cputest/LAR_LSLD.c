@@ -1,8 +1,8 @@
 // Sampled on Real FM TOWNS II MX with 80486DX  2023/03/14
 
-extern unsigned int LAR_LSL_sample[4096][4];
+extern unsigned int sample[4096][4];
 
-unsigned int LAR_LSL_sample[4096][4]=
+unsigned int sample[4096][4]=
 {
 // LSL             LAR
 {0x77777777,0x00,0x77777777,0x00},// [   0] op=16 desc=0x00 G=0 P=0 DPL=0 RPL=0

@@ -20,6 +20,9 @@ extern void TEST_LAR_LSL(
 //   opSize     descType      G      P    RPL    DPL
 //     2     *    0x20     *  2  *   2  *  4   *  4=  4096
 
+extern unsigned int sample[4096][4];
+
+// #define SAMPLE_MODE
 
 int main(void)
 {
@@ -38,11 +41,25 @@ int main(void)
 						for(RPL=0; RPL<4; ++RPL)
 						{
 							TEST_LAR_LSL(res,opSize,descType,G,P,RPL,DPL);
+						#ifdef SAMPLE_MODE
 							printf("{0x%08x,0x%02x,0x%08x,0x%02x},"
 							       "// [%4d] op=%d desc=0x%02x G=%d P=%d DPL=%d RPL=%d"
 							       "\n",
 							       res[0],res[1],res[2],res[3],
 							       ctr,opSize,descType,G,P,DPL,RPL);
+						#else
+							if(res[0]!=sample[ctr][0] || res[1]!=sample[ctr][1] ||
+							   res[2]!=sample[ctr][2] || res[3]!=sample[ctr][3])
+							{
+								printf("Result does not match!\n");
+								printf("[%4d] op=%d desc=0x%02x G=%d P=%d DPL=%d RPL=%d"
+								       "\n",
+								       ctr,opSize,descType,G,P,DPL,RPL);
+								printf("VM returned: %08x %02x %08x %02x\n",res[0],res[1],res[2],res[3]);
+								printf("Should be  : %08x %02x %08x %02x\n",sample[ctr][0],sample[ctr][1],sample[ctr][2],sample[ctr][3]);
+								return 1;
+							}
+						#endif
 							++ctr;
 
 							//printf(">");
