@@ -1,10 +1,10 @@
 #include <stdio.h>
 
 extern void TEST_LAR_LSL(
-     unsigned int res[4],int opSize,unsigned int descType,unsigned int GFlag,unsigned int Pflag,unsigned int RPL,unsigned int DPL);
+     unsigned int res[4],int opSize,unsigned int descType,unsigned int GFlag,unsigned int Pflag,unsigned int DPL,unsigned int RPL);
 
 // void TEST_LAR_LSL(
-//     unsigned int res[4],int opSize,unsigned int descType,unsigned int GFlag,unsigned int Pflag,unsigned int RPL,unsigned int DPL);
+//     unsigned int res[4],int opSize,unsigned int descType,unsigned int GFlag,unsigned int Pflag,unsigned int DPL,unsigned int RPL);
 // opSize 16 or 32
 // descType 0 to 1FH
 // GFlag 1 or 0
@@ -33,16 +33,16 @@ int main(void)
 			{
 				for(P=0; P<2; ++P)
 				{
-					for(RPL=0; RPL<4; ++RPL)
+					for(DPL=0; DPL<4; ++DPL)
 					{
-						for(DPL=0; DPL<4; ++DPL)
+						for(RPL=0; RPL<4; ++RPL)
 						{
 							TEST_LAR_LSL(res,opSize,descType,G,P,RPL,DPL);
 							printf("{0x%08x,0x%02x,0x%08x,0x%02x},"
-							       "// [%4d] op=%d desc=0x%02x G=%d P=%d RPL=%d DPL=%d"
+							       "// [%4d] op=%d desc=0x%02x G=%d P=%d DPL=%d RPL=%d"
 							       "\n",
 							       res[0],res[1],res[2],res[3],
-							       ctr,opSize,descType,G,P,RPL,DPL);
+							       ctr,opSize,descType,G,P,DPL,RPL);
 							++ctr;
 
 							//printf(">");

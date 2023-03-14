@@ -26,7 +26,7 @@ CODE					SEGMENT
 
 
 ; void TEST_LAR_LSL(
-;     unsigned int res[4],int opSize,unsigned int descType,unsigned int GFlag,unsigned int Pflag,unsigned int RPL,unsigned int DPL);
+;     unsigned int res[4],int opSize,unsigned int descType,unsigned int GFlag,unsigned int Pflag,unsigned int DPL,unsigned int RPL);
 ; opSize 16 or 32
 ; descType 0 to 1FH
 ; GFlag 1 or 0
