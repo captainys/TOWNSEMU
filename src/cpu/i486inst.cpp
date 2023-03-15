@@ -4461,9 +4461,16 @@ inline unsigned int i486DX::CALLF(Memory &mem,uint16_t opSize,uint16_t instNumBy
 	}
 	else
 	{
+		TSUGARU_I486_FIDELITY_CLASS fidelity;
+
 		auto prevCPL=state.CS().DPL;
 
 		LoadSegmentRegister(state.CS(),newCS,mem);
+		if(fidelity.HandleExceptionIfAny(*this,mem,instNumBytes))
+		{
+			return defClocks;
+		}
+
 		auto descType=state.CS().GetType();
 		switch(descType)
 		{
@@ -4530,9 +4537,16 @@ inline unsigned int i486DX::JMPF(Memory &mem,uint16_t opSize,uint16_t instNumByt
 	}
 	else
 	{
+		TSUGARU_I486_FIDELITY_CLASS fidelity;
+
 		auto prevCPL=state.CS().DPL;
 
 		LoadSegmentRegister(state.CS(),newCS,mem);
+		if(fidelity.HandleExceptionIfAny(*this,mem,instNumBytes))
+		{
+			return defClocks;
+		}
+
 		auto descType=state.CS().GetType();
 		switch(descType)
 		{

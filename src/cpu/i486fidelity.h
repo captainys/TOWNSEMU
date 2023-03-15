@@ -2,6 +2,11 @@
 #define I486FIDELITY_IS_INCLUDED
 /* { */
 
+
+// Low Fidelity Mode (Planned)  Minimum exception handling.  Faster execution of FM TOWNS native apps.
+// Default Fidelity Mode        Exception handling required for running Fractal Engine.
+// High Fidelity Mode (Planned) Exception handling required for running Windows 3.1
+
 class i486DXLowFidelity
 {
 public:
@@ -376,7 +381,7 @@ public:
 	class LoadSegmentRegisterFlags
 	{
 	public:
-		bool needsDataOrReadableCode=false,loadingStackSegment=false;
+		bool needsDataOrReadableCode=false,loadingStackSegment=false,loadingCodeSegment=false;
 	};
 	inline static void SetLimit(LoadSegmentRegisterVariables &var,uint32_t limit)
 	{
@@ -389,9 +394,13 @@ public:
 			// GP exception if the segment is data or readable code.
 			flags.needsDataOrReadableCode=true;
 		}
-		if(&reg==&cpu.state.SS())
+		else if(&reg==&cpu.state.SS())
 		{
 			flags.loadingStackSegment=true;
+		}
+		else if(&reg==&cpu.state.CS())
+		{
+			flags.loadingCodeSegment=true;
 		}
 	}
 	inline bool LoadNullSelector(i486DX &cpu,i486DX::SegmentRegister &reg,uint32_t selector)
