@@ -1008,6 +1008,18 @@ void i486DX::PrintPageTranslation(const Memory &mem,uint32_t linearAddr) const
 
 #include "i486loadsegreg.h"
 
+const unsigned char *i486DX::GetSegmentDescriptor(unsigned char buf[8],unsigned int selector,const Memory &mem) const
+{
+	LoadSegmentRegisterTemplate<const i486DX> loader;
+	loader.LoadProtectedModeDescriptor(*this,selector,mem);
+	if(nullptr!=loader.rawDesc)
+	{
+		memcpy(buf,loader.rawDesc,8);
+		return buf;
+	}
+	return nullptr;
+}
+
 unsigned int i486DX::DebugLoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode) const
 {
 	LoadSegmentRegisterTemplate<const i486DX> loader;

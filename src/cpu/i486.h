@@ -2339,6 +2339,11 @@ public:
 	*/
 	void LoadSegmentRegisterRealMode(SegmentRegister &reg,unsigned int value);
 
+	/*! Returns non-null pointer same as buf if the selector is within limit.
+	    Returns nullptr if out of limit.
+	*/
+	const unsigned char *GetSegmentDescriptor(unsigned char buf[8],unsigned int selector,const Memory &mem) const;
+
 	/*! Get Call Gate.
 	    This function may raise exception.
 	*/
