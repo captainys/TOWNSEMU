@@ -15,6 +15,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <algorithm>
 #include <iostream>
 #include <limits>
+#include <string.h> // for memcpy.
 
 #include "cpputil.h"
 #include "i486.h"
