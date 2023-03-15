@@ -8197,6 +8197,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			auto value2=inst.EvalUimm8();
 			if(true==state.exception)
 			{
+				fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes);
+				EIPIncrement=0;
 				break;
 			}
 
@@ -8240,6 +8242,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				{
 					value1.SetDword(i);
 					StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+					if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
+					{
+						EIPIncrement=0;
+					}
 				}
 			}
 		}
