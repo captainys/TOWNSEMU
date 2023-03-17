@@ -1,4 +1,4 @@
-all : build\LAR_LSL.EXP BUILD\DRVMODE.EXP build\gentest.exp build\runtest.exp build\keytest.exp build\FAIL.EXE build\SUCCESS.EXE build\captcrtc.exp build\ff82_1pg.exp build\ff82_2pg.exp build\test01.exp build\test02.exp build\test03.exp build\test04.exp build\test05.exp build\test06.exp build\test07.exp build\test08.exp build\testcd.exp build\eaxds.exp build\egb01.exp build\egb02.exp build\highres1.exp build\fullcol1.exp build\mos01.exp build\sprite01.exp build\sprite02.exp build\timer.exp build\vramtest.exp build\readtoc.exp build\ym2612FB.exp build\ymtone.exp build\ymwave.exp build\ymwaverr.exp build\ymwaverp.exp build\ymenvl01.exp build\ymenvl02.exp build\repeat.exe build\cdda.exe build\vndrvbrk.exp build\vndrvena.exp build\vndrvpri.exp build\vndrvdir.exp build\fpu_calc.exp build\fpu_comp.exp build\fpuexp.exp
+all : build\LAR_LSL.EXP BUILD\DRVMODE.EXP build\gentest.exp build\runtest.exp build\keytest.exp build\FAIL.EXE build\SUCCESS.EXE build\captcrtc.exp build\ff82_1pg.exp build\ff82_2pg.exp build\test01.exp build\test02.exp build\test03.exp build\test04.exp build\test05.exp build\test06.exp build\test07.exp build\test08.exp build\testcd.exp build\eaxds.exp build\egb01.exp build\egb02.exp build\highres1.exp build\fullcol1.exp build\mos01.exp build\sprite01.exp build\sprite02.exp build\timer.exp build\vramtest.exp build\readtoc.exp build\ym2612FB.exp build\ymtone.exp build\ymwave.exp build\ymwaverr.exp build\ymwaverp.exp build\ymenvl01.exp build\ymenvl02.exp build\repeat.exe build\cdda.exe build\vndrvbrk.exp build\vndrvena.exp build\vndrvpri.exp build\vndrvdir.exp build\fpu_calc.exp build\fpu_comp.exp build\fpuexp.exp build\SCSIERR.EXP
 
 
 BUILD\DRVMODE.EXP : BUILD\DRVMODE.OBJ
@@ -421,3 +421,13 @@ build\LAR_LSLD.obj : cputest\LAR_LSLD.c
 
 build\LAR_LSL.EXP : build\LAR_LSL.obj build\LAR_LSLC.obj build\LAR_LSLD.obj
 	386link build\LAR_LSL.obj build\LAR_LSLC.obj build\LAR_LSLD.obj -exe build\LAR_LSL.exp @LIBS.LN
+
+
+build\SCSIERR.obj : scsierr.c
+	hcd386 scsierr.c -obj build\SCSIERR.obj
+
+build\SCSIERRA.obj : scsierr.asm
+	386asm scsierr.asm -OBJECT build\SCSIERRA.obj
+
+build\SCSIERR.EXP : build\SCSIERR.obj build\SCSIERRA.obj
+	386link build\SCSIERR.obj build\SCSIERRA.obj -exe build\SCSIERR.EXP @LIBS.LN
