@@ -19,6 +19,8 @@ public:
 
 	constexpr bool IOPLException(class i486DX &,uint32_t exceptionType,Memory &,uint32_t instNumBytes) const{return false;}
 
+	constexpr bool IOPLExceptionInVM86Mode(class i486DX &cpu,uint32_t exceptionType,Memory &mem,uint32_t instNumBytes) const{return false;}
+
 	constexpr bool HandleExceptionIfAny(class i486DX &,Memory &,uint32_t instNumBytes) const{return false;}
 
 	constexpr bool PageLevelException(class i486DX &cpu,bool write,uint32_t linearAddr,uint32_t pageIndex,uint32_t pageInfo) const{return false;}
@@ -121,6 +123,16 @@ public:
 	inline static bool IOPLException(class i486DX &cpu,uint32_t exceptionType,Memory &mem,uint32_t instNumBytes)
 	{
 		if(true!=cpu.IsInRealMode() && cpu.GetIOPL()<cpu.state.CS().DPL)
+		{
+			cpu.RaiseException(exceptionType,0);
+			cpu.HandleException(false,mem,instNumBytes);
+			return true;
+		}
+		return false;
+	}
+	inline static bool IOPLExceptionInVM86Mode(class i486DX &cpu,uint32_t exceptionType,Memory &mem,uint32_t instNumBytes)
+	{
+		if(true!=cpu.IsInRealMode() && cpu.GetVM() && cpu.GetIOPL()<3)
 		{
 			cpu.RaiseException(exceptionType,0);
 			cpu.HandleException(false,mem,instNumBytes);

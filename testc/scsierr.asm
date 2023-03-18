@@ -36,7 +36,7 @@ TEST_SCSI_ERR			PROC
 						MOV		EDI,[EBP+0CH]
 						MOV		ESI,[EBP+10H]
 
-						MOV		ECX,1024*1024
+						MOV		ECX,2*1024*1024
 
 						CLI
 						MOV		DX,0C30H
@@ -46,6 +46,16 @@ TEST_SCSI_ERR			PROC
 						MOV		DX,0C32H
 						MOV		AL,0C6H
 						OUT		DX,AL
+
+
+WAITBUSY:
+						IN		AL,DX
+						AND		AL,8
+						JE		WAITBUSY
+
+						MOV		AL,0C2H
+						OUT		DX,AL
+
 
 						XOR		AH,AH
 IOLOOP:

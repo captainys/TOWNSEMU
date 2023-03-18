@@ -9532,6 +9532,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 
 	case I486_RENUMBER_POPF://             0x9D,
+		clocksPassed=(IsInRealMode() ? 9 : 6);
 		{
 			TSUGARU_I486_FIDELITY_CLASS::IOPLBits ioplBits;
 			TSUGARU_I486_FIDELITY_CLASS::SaveIOPLBits(ioplBits,*this);
@@ -9546,7 +9547,6 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 			TSUGARU_I486_FIDELITY_CLASS::RestoreIOPLBits(*this,ioplBits);
 		}
-		clocksPassed=(IsInRealMode() ? 9 : 6);
 		break;
 
 
