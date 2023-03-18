@@ -339,9 +339,10 @@ void TownsSCSI::EnterSelectionPhase(void)
 		}
 	}
 	// What's the correct way of handling no-device?
-	state.phase=PHASE_BUSFREE;
-	state.BUSY=false;
-	SetUpIO_MSG_CDfromPhase();
+	state.senseKey=SENSEKEY_ILLEGAL_REQUEST;
+	state.status=STATUSCODE_CHECK_CONDITION;
+	state.message=0;
+	EnterStatusPhase();
 }
 void TownsSCSI::EnterCommandPhase(void)
 {
