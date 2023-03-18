@@ -7957,11 +7957,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 	case I486_RENUMBER_INT://        0xCD,
 		clocksPassed=(IsInRealMode() ? 30 : 44);
-		if(true==fidelity.IOPLExceptionInVM86Mode(*this,EXCEPTION_GP,mem,inst.numBytes))
-		{
-			EIPIncrement=0;
-			break;
-		}
+		// if(true==fidelity.IOPLExceptionInVM86Mode(*this,EXCEPTION_GP,mem,inst.numBytes))
+		// {
+		// 	EIPIncrement=0;
+		// 	break;
+		// }
 		Interrupt(inst.EvalUimm8(),mem,2,2,true);
 		EIPIncrement=0;
 		break;
