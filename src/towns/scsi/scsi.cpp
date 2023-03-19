@@ -1448,6 +1448,96 @@ std::vector <std::string> TownsSCSI::GetStatusText(void) const
 		text.back()+=cpputil::Ubtox(state.commandBuffer[i]);
 	}
 
+	text.push_back("");
+	switch(state.senseKey)
+	{
+	case SENSEKEY_NO_SENSE         ://0x00,
+		text.back()+="SENSEKEY_NO_SENSE";
+		break;
+	case SENSEKEY_RECOVERED_ERROR  ://0x01,
+		text.back()+="SENSEKEY_RECOVERED_ERROR";
+		break;
+	case SENSEKEY_NOT_READY        ://0x02,
+		text.back()+="SENSEKEY_NOT_READY";
+		break;
+	case SENSEKEY_MEDIUM_ERROR     ://0x03,
+		text.back()+="SENSEKEY_MEDIUM_ERROR";
+		break;
+	case SENSEKEY_HARDWARE_ERROR   ://0x04,
+		text.back()+="SENSEKEY_HARDWARE_ERROR";
+		break;
+	case SENSEKEY_ILLEGAL_REQUEST  ://0x05,
+		text.back()+="SENSEKEY_ILLEGAL_REQUEST";
+		break;
+	case SENSEKEY_UNIT_ATTENTION   ://0x06,
+		text.back()+="SENSEKEY_UNIT_ATTENTION";
+		break;
+	case SENSEKEY_DATA_PROTECT     ://0x07,
+		text.back()+="SENSEKEY_DATA_PROTECT";
+		break;
+	case SENSEKEY_BLANK_CHECK      ://0x08,
+		text.back()+="SENSEKEY_BLANK_CHECK";
+		break;
+	case SENSEKEY_VENDOR_SPECIFIC  ://0x09,
+		text.back()+="SENSEKEY_VENDOR_SPECIFIC";
+		break;
+	case SENSEKEY_COPY_ABORTED     ://0x0A,
+		text.back()+="SENSEKEY_COPY_ABORTED";
+		break;
+	case SENSEKEY_ABORTED_COMMAND  ://0x0B,
+		text.back()+="SENSEKEY_ABORTED_COMMAND";
+		break;
+	case SENSEKEY_EQUAL            ://0x0C,
+		text.back()+="SENSEKEY_EQUAL";
+		break;
+	case SENSEKEY_VOLUME_OVERFLOW  ://0x0D,
+		text.back()+="SENSEKEY_VOLUME_OVERFLOW";
+		break;
+	case SENSEKEY_MISCOMPARE       ://0x0E,
+		text.back()+="SENSEKEY_MISCOMPARE";
+		break;
+	case SENSEKEY_RESERVED         ://0x0F,
+		text.back()+="SENSEKEY_RESERVED";
+		break;
+	default:
+		text.back()+="Undefined Sense Key";
+		break;
+	}
+	text.back()+="  ";
+	switch(state.status)
+	{
+	case STATUSCODE_GOOD                      ://0,
+		text.back()+="STATUSCODE_GOOD";
+		break;
+	case STATUSCODE_CHECK_CONDITION           ://0x02,
+		text.back()+="STATUSCODE_CHECK_CONDITION";
+		break;
+	case STATUSCODE_CONDITION_MET             ://0x04,
+		text.back()+="STATUSCODE_CONDITION_MET";
+		break;
+	case STATUSCODE_BUSY                      ://0x08,
+		text.back()+="STATUSCODE_BUSY";
+		break;
+	case STATUSCODE_INTERMEDIATE              ://0x10,
+		text.back()+="STATUSCODE_INTERMEDIATE";
+		break;
+	case STATUSCODE_INTERMEDIATE_CONDITION_MET://0x14,
+		text.back()+="STATUSCODE_INTERMEDIATE_CONDITION_MET";
+		break;
+	case STATUSCODE_RESERVATION_CONFLICT      ://0x18,
+		text.back()+="STATUSCODE_RESERVATION_CONFLICT";
+		break;
+	case STATUSCODE_COMMAND_TERMINATED        ://0x22,
+		text.back()+="STATUSCODE_COMMAND_TERMINATED";
+		break;
+	case STATUSCODE_QUEUE_FULL                ://0x28,
+		text.back()+="STATUSCODE_QUEUE_FULL";
+		break;
+	default:
+		text.back()+="Undefined Status Code";
+		break;
+	}
+
 	return text;
 }
 
