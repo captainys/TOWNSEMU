@@ -8388,15 +8388,31 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 	case I486_RENUMBER_LDS://              0xC5,
 		LOAD_FAR_POINTER(DS);
+		if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
+		{
+			EIPIncrement=0;
+		}
 		break;
 	case I486_RENUMBER_LES://              0xC4,
 		LOAD_FAR_POINTER(ES);
+		if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
+		{
+			EIPIncrement=0;
+		}
 		break;
 	case I486_RENUMBER_LFS://              0x0FB4,
 		LOAD_FAR_POINTER(FS);
+		if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
+		{
+			EIPIncrement=0;
+		}
 		break;
 	case I486_RENUMBER_LGS://              0x0FB5,
 		LOAD_FAR_POINTER(GS);
+		if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
+		{
+			EIPIncrement=0;
+		}
 		break;
 	case I486_RENUMBER_LSS://              0x0FB2,
 		if(OPER_ADDR==op2.operandType)
@@ -8431,6 +8447,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		else
 		{
 			RaiseException(EXCEPTION_GP,0);
+		}
+		if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
+		{
+			EIPIncrement=0;
 		}
 		break;
 
