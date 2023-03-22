@@ -9558,6 +9558,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 	case I486_RENUMBER_POPF://             0x9D,
 		clocksPassed=(IsInRealMode() ? 9 : 6);
+		if(true==fidelity.IOPLExceptionInVM86Mode(*this,EXCEPTION_GP,mem,inst.numBytes))
+		{
+			EIPIncrement=0;
+			break;
+		}
 		{
 			TSUGARU_I486_FIDELITY_CLASS::IOPLBits ioplBits;
 			TSUGARU_I486_FIDELITY_CLASS::SaveIOPLBits(ioplBits,*this);
@@ -10202,6 +10207,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		clocksPassed=2;
 		break;
 	case I486_RENUMBER_STI://              0xFB,
+		clocksPassed=5;
+		if(true==fidelity.IOPLExceptionInVM86Mode(*this,EXCEPTION_GP,mem,inst.numBytes))
+		{
+			EIPIncrement=0;
+			break;
+		}
 		SetIF(true);
 		// i486 Programmer's Reference Manual says:
 		// The processor then responds to the external interrupts after executing the next instruction
@@ -10209,7 +10220,6 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		// Therefore, STI behaves like substituting a value to SS register, which holds an IRQ for the
 		// next instruction.
 		state.holdIRQ=true;
-		clocksPassed=5;
 		break;
 
 
