@@ -7320,7 +7320,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			if(true==REPCheck(clocksPassed,prefix,inst.addressSize))
 			{
 				clocksPassed+=(IsInRealMode() ? 17 : 10); // Protected Mode 32 if CPL>IOPL
-				if(true==TakeIOReadException(GetDX(),1,mem,inst.numBytes))
+				if(true==fidelity.TakeIOReadException(*this,GetDX(),1,mem,inst.numBytes))
 				{
 					EIPIncrement=0;
 					break;
@@ -7346,7 +7346,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			clocksPassed=8; // 28 if CPL>IOPL
 		}
-		if(true==TakeIOReadException(inst.EvalUimm8(),1,mem,inst.numBytes))
+		if(true==fidelity.TakeIOReadException(*this,inst.EvalUimm8(),1,mem,inst.numBytes))
 		{
 			EIPIncrement=0;
 			break;
@@ -7368,7 +7368,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			clocksPassed=8; // 28 if CPL>IOPL
 		}
-		if(true==TakeIOReadException(inst.EvalUimm8(),inst.operandSize>>3,mem,inst.numBytes))
+		if(true==fidelity.TakeIOReadException(*this,inst.EvalUimm8(),inst.operandSize>>3,mem,inst.numBytes))
 		{
 			EIPIncrement=0;
 			break;
@@ -7399,7 +7399,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			clocksPassed=8; // 28 if CPL>IOPL
 		}
-		if(true==TakeIOReadException(GetDX(),1,mem,inst.numBytes))
+		if(true==fidelity.TakeIOReadException(*this,GetDX(),1,mem,inst.numBytes))
 		{
 			EIPIncrement=0;
 			break;
@@ -7421,7 +7421,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			clocksPassed=8; // 28 if CPL>IOPL
 		}
-		if(true==TakeIOReadException(GetDX(),inst.operandSize>>3,mem,inst.numBytes))
+		if(true==fidelity.TakeIOReadException(*this,GetDX(),inst.operandSize>>3,mem,inst.numBytes))
 		{
 			EIPIncrement=0;
 			break;
@@ -9203,7 +9203,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			clocksPassed=11; // 31 if CPL>IOPL
 		}
-		if(true==TakeIOWriteException(inst.EvalUimm8(),1,mem,inst.numBytes))
+		if(true==fidelity.TakeIOWriteException(*this,inst.EvalUimm8(),1,mem,inst.numBytes))
 		{
 			EIPIncrement=0;
 			break;
@@ -9219,7 +9219,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			clocksPassed=11; // 31 if CPL>IOPL
 		}
-		if(true==TakeIOWriteException(inst.EvalUimm8(),inst.operandSize>>3,mem,inst.numBytes))
+		if(true==fidelity.TakeIOWriteException(*this,inst.EvalUimm8(),inst.operandSize>>3,mem,inst.numBytes))
 		{
 			EIPIncrement=0;
 			break;
@@ -9242,7 +9242,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			clocksPassed=10; // 30 if CPL>IOPL
 		}
-		if(true==TakeIOWriteException(GetDX(),1,mem,inst.numBytes))
+		if(true==fidelity.TakeIOWriteException(*this,GetDX(),1,mem,inst.numBytes))
 		{
 			EIPIncrement=0;
 			break;
@@ -9258,7 +9258,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			clocksPassed=10; // 30 if CPL>IOPL
 		}
-		if(true==TakeIOWriteException(GetDX(),inst.operandSize>>3,mem,inst.numBytes))
+		if(true==fidelity.TakeIOWriteException(*this,GetDX(),inst.operandSize>>3,mem,inst.numBytes))
 		{
 			EIPIncrement=0;
 			break;
@@ -9281,7 +9281,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			if(true==REPCheck(clocksPassed,prefix,inst.addressSize))
 			{
 				clocksPassed+=(IsInRealMode() ? 17 : 10); // Protected Mode 32 if CPL>IOPL
-				if(true==TakeIOWriteException(GetDX(),1,mem,inst.numBytes))
+				if(true==fidelity.TakeIOWriteException(*this,GetDX(),1,mem,inst.numBytes))
 				{
 					EIPIncrement=0;
 					break;
@@ -9302,7 +9302,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			if(true==REPCheck(clocksPassed,prefix,inst.addressSize))
 			{
 				clocksPassed+=(IsInRealMode() ? 17 : 10); // Protected Mode 32 if CPL>IOPL
-				if(true==TakeIOWriteException(GetDX(),inst.operandSize>>3,mem,inst.numBytes))
+				if(true==fidelity.TakeIOWriteException(*this,GetDX(),inst.operandSize>>3,mem,inst.numBytes))
 				{
 					EIPIncrement=0;
 					break;

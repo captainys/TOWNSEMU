@@ -58,6 +58,9 @@ public:
 	inline constexpr bool LoadNullSelector(const i486DX &cpu,const i486DX::SegmentRegister &reg,uint32_t selector)const{return false;}
 	inline constexpr bool DescriptorException(const LoadSegmentRegisterFlags flags,i486DX &cpu,uint32_t selector,const uint8_t *desc)const{return false;}
 	inline constexpr bool DescriptorException(const LoadSegmentRegisterFlags flags,const i486DX &cpu,uint32_t selector,const uint8_t *desc)const{return false;}
+	inline constexpr bool TakeIOReadException(i486DX &cpu,unsigned int ioport,unsigned int accessSize,Memory &mem,unsigned int numInstBytes)const{return false;}
+	inline constexpr bool TakeIOWriteException(i486DX &cpu,unsigned int ioport,unsigned int accessSize,Memory &mem,unsigned int numInstBytes)const{return false;}
+
 
 	// If low-fidelity, don't care if it is readable or writable.
 	inline static void ClearSegmentRegisterAttribBytes(uint16_t &attribBytes){};
@@ -79,6 +82,34 @@ public:
 		{
 			cpu.RaiseException(i486DX::EXCEPTION_GP,0);
 			return true;
+		}
+		return false;
+	}
+
+	static inline bool TakeIOReadException(i486DX &cpu,unsigned int ioport,unsigned int accessSize,Memory &mem,unsigned int numInstBytes)
+	{
+		if(0!=(cpu.state.EFLAGS&i486DX::EFLAGS_VIRTUAL86))
+		{
+			if(true!=cpu.TestIOMapPermission(cpu.state.TR,ioport,accessSize,mem))
+			{
+				cpu.RaiseException(i486DX::EXCEPTION_GP,0);
+				cpu.HandleException(true,mem,numInstBytes);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	static inline bool TakeIOWriteException(i486DX &cpu,unsigned int ioport,unsigned int accessSize,Memory &mem,unsigned int numInstBytes)
+	{
+		if(0!=(cpu.state.EFLAGS&i486DX::EFLAGS_VIRTUAL86))
+		{
+			if(true!=cpu.TestIOMapPermission(cpu.state.TR,ioport,accessSize,mem))
+			{
+				cpu.RaiseException(i486DX::EXCEPTION_GP,0);
+				cpu.HandleException(false,mem,numInstBytes);
+				return true;
+			}
 		}
 		return false;
 	}
