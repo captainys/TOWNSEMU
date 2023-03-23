@@ -86,6 +86,7 @@ public:
 		return false;
 	}
 
+	// Default fidelity level does not consider Protected Mode && IOPL<CPL since no known Towns native app uses 0<CPL protected mode.
 	static inline bool TakeIOReadException(i486DX &cpu,unsigned int ioport,unsigned int accessSize,Memory &mem,unsigned int numInstBytes)
 	{
 		if(0!=(cpu.state.EFLAGS&i486DX::EFLAGS_VIRTUAL86))
@@ -100,6 +101,7 @@ public:
 		return false;
 	}
 
+	// Default fidelity level does not consider Protected Mode && IOPL<CPL since no known Towns native app uses 0<CPL protected mode.
 	static inline bool TakeIOWriteException(i486DX &cpu,unsigned int ioport,unsigned int accessSize,Memory &mem,unsigned int numInstBytes)
 	{
 		if(0!=(cpu.state.EFLAGS&i486DX::EFLAGS_VIRTUAL86))
@@ -589,6 +591,38 @@ public:
 	inline static void ClearSegmentRegisterAttribBytes(uint16_t &attribBytes)
 	{
 		attribBytes=0;
+	}
+
+
+
+	// High fidelity level considers Protected Mode && IOPL<CPL for Windows 3.1 protected-mode interrupt handlers.
+	static inline bool TakeIOReadException(i486DX &cpu,unsigned int ioport,unsigned int accessSize,Memory &mem,unsigned int numInstBytes)
+	{
+		if(true!=cpu.IsInRealMode() && (0!=(cpu.state.EFLAGS&i486DX::EFLAGS_VIRTUAL86) || cpu.GetIOPL()<cpu.state.CS().DPL))
+		{
+			if(true!=cpu.TestIOMapPermission(cpu.state.TR,ioport,accessSize,mem))
+			{
+				cpu.RaiseException(i486DX::EXCEPTION_GP,0);
+				cpu.HandleException(true,mem,numInstBytes);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	// High fidelity level considers Protected Mode && IOPL<CPL for Windows 3.1 protected-mode interrupt handlers.
+	static inline bool TakeIOWriteException(i486DX &cpu,unsigned int ioport,unsigned int accessSize,Memory &mem,unsigned int numInstBytes)
+	{
+		if(true!=cpu.IsInRealMode() && (0!=(cpu.state.EFLAGS&i486DX::EFLAGS_VIRTUAL86) || cpu.GetIOPL()<cpu.state.CS().DPL))
+		{
+			if(true!=cpu.TestIOMapPermission(cpu.state.TR,ioport,accessSize,mem))
+			{
+				cpu.RaiseException(i486DX::EXCEPTION_GP,0);
+				cpu.HandleException(false,mem,numInstBytes);
+				return true;
+			}
+		}
+		return false;
 	}
 
 
