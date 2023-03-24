@@ -209,7 +209,9 @@ public:
 					}
 				}
 				state.i8259A[chip].FireIRQ(cpu,mem,INTToGo);
-				if(nullptr!=cpu.debuggerPtr)
+				// The second condition is needed for stopping when IRQ handler happens to be monitor point.
+				// Otherwise, lastBreakPoint flags will be overwritten and won't break.
+				if(nullptr!=cpu.debuggerPtr && true!=cpu.debuggerPtr->stop)
 				{
 					cpu.debuggerPtr->CheckForBreakPoints(cpu);
 				}
