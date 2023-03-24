@@ -1156,6 +1156,10 @@ void FMTowns::DumpRealModeIntVectors(void) const
 	for(auto s : GetRealModeIntVectorsText())
 	{
 		std::cout << s << std::endl;
+		if(nullptr!=cpu.debuggerPtr)
+		{
+			cpu.debuggerPtr->WriteLogFile(s);
+		}
 	}
 }
 std::vector <std::string> FMTowns::GetCallStackText(void) const
@@ -1167,6 +1171,10 @@ void FMTowns::PrintCallStack(void) const
 	for(auto str : GetCallStackText())
 	{
 		std::cout << str << std::endl;
+		if(nullptr!=cpu.debuggerPtr)
+		{
+			cpu.debuggerPtr->WriteLogFile(str);
+		}
 	}
 }
 void FMTowns::PrintPIC(void) const
@@ -1174,6 +1182,10 @@ void FMTowns::PrintPIC(void) const
 	for(auto str : pic.GetStateText())
 	{
 		std::cout << str << std::endl;
+		if(nullptr!=cpu.debuggerPtr)
+		{
+			cpu.debuggerPtr->WriteLogFile(str);
+		}
 	}
 }
 
@@ -1182,6 +1194,10 @@ void FMTowns::PrintDMAC(void) const
 	for(auto str : dmac.GetStateText())
 	{
 		std::cout << str << std::endl;
+		if(nullptr!=cpu.debuggerPtr)
+		{
+			cpu.debuggerPtr->WriteLogFile(str);
+		}
 	}
 }
 
@@ -1190,6 +1206,10 @@ void FMTowns::PrintFDC(void) const
 	for(auto str : fdc.GetStatusText())
 	{
 		std::cout << str << std::endl;
+		if(nullptr!=cpu.debuggerPtr)
+		{
+			cpu.debuggerPtr->WriteLogFile(str);
+		}
 	}
 }
 
@@ -1198,6 +1218,10 @@ void FMTowns::PrintTimer(void) const
 	for(auto str : timer.GetStatusText())
 	{
 		std::cout << str << std::endl;
+		if(nullptr!=cpu.debuggerPtr)
+		{
+			cpu.debuggerPtr->WriteLogFile(str);
+		}
 	}
 }
 
@@ -1206,10 +1230,18 @@ void FMTowns::PrintSound(void) const
 	for(auto str : sound.state.rf5c68.GetStatusText())
 	{
 		std::cout << str << std::endl;
+		if(nullptr!=cpu.debuggerPtr)
+		{
+			cpu.debuggerPtr->WriteLogFile(str);
+		}
 	}
 	for(auto str : sound.state.ym2612.GetStatusText())
 	{
 		std::cout << str << std::endl;
+		if(nullptr!=cpu.debuggerPtr)
+		{
+			cpu.debuggerPtr->WriteLogFile(str);
+		}
 	}
 }
 
