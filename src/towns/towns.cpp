@@ -1110,6 +1110,10 @@ void FMTowns::PrintStack(unsigned int numBytes) const
 	for(auto s : GetStackText(numBytes))
 	{
 		std::cout << s << std::endl;
+		if(nullptr!=cpu.debuggerPtr)
+		{
+			cpu.debuggerPtr->WriteLogFile(s);
+		}
 	}
 }
 void FMTowns::PrintDisassembly(void) const
@@ -1119,6 +1123,10 @@ void FMTowns::PrintDisassembly(void) const
 	cpu.DebugFetchInstruction(emptyMemWin,instOp,mem);
 	auto disasm=cpu.Disassemble(instOp.inst,instOp.op1,instOp.op2,cpu.state.CS(),cpu.state.EIP,mem,debugger.GetSymTable(),debugger.GetIOTable());
 	std::cout << disasm << std::endl;
+	if(nullptr!=cpu.debuggerPtr)
+	{
+		cpu.debuggerPtr->WriteLogFile(disasm);
+	}
 }
 
 std::vector <std::string> FMTowns::GetRealModeIntVectorsText(void) const

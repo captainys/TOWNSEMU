@@ -129,8 +129,15 @@ void TownsThread::VMMainLoop(FMTowns *townsPtr,Outside_World *outside_world,clas
 							if(0!=(townsPtr->debugger.lastBreakPointInfo.flags&i486Debugger::BRKPNT_FLAG_MONITOR_ONLY) ||
 							   0==(townsPtr->debugger.lastBreakPointInfo.flags&i486Debugger::BRKPNT_FLAG_SILENT_UNTIL_BREAK))
 							{
-								std::cout << "Passed " << townsPtr->debugger.lastBreakPointInfo.passedCount << " times." << std::endl;
-								PrintStatus(*townsPtr);
+								if(0==(i486Debugger::BRKPNT_FLAG_SHORT_FORMAT&townsPtr->debugger.lastBreakPointInfo.flags))
+								{
+									std::cout << "Passed " << townsPtr->debugger.lastBreakPointInfo.passedCount << " times." << std::endl;
+									PrintStatus(*townsPtr);
+								}
+								else
+								{
+									townsPtr->PrintDisassembly();
+								}
 							}
 							townsPtr->debugger.ClearStopFlag();
 							this->SetRunMode(RUNMODE_RUN);

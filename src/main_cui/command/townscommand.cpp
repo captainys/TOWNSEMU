@@ -70,6 +70,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["BP"]=CMD_ADD_BREAKPOINT;
 	primaryCmdMap["BPPC"]=CMD_ADD_BREAKPOINT_WITH_PASSCOUNT;
 	primaryCmdMap["MP"]=CMD_ADD_MONITORPOINT;
+	primaryCmdMap["MPSF"]=CMD_ADD_MONITORPOINT_SHORT_FORMAT;
 	primaryCmdMap["BC"]=CMD_DELETE_BREAKPOINT;
 	primaryCmdMap["BL"]=CMD_LIST_BREAKPOINTS;
 	primaryCmdMap["T"]=CMD_RUN_ONE_INSTRUCTION;
@@ -527,8 +528,11 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  The number here (passCount) is a decimal number." << std::endl;
 	std::cout << "MP EIP|BRK EIP" << std::endl;
 	std::cout << "MP CS:EIP|BRK CS:EIP" << std::endl;
+	std::cout << "MPSF EIP|BRK EIP" << std::endl;
+	std::cout << "MPSF CS:EIP|BRK CS:EIP" << std::endl;
 	std::cout << "  Add a monitor-only break point.  At a monitor-only break point, the VM will print" << std::endl;
 	std::cout << "  the status, but will not stop the execution." << std::endl;
+	std::cout << "  MPSF will only show CS:EIP when it passes the monitor point." << std::endl;
 	std::cout << "BC Num" << std::endl;
 	std::cout << "  Delete a break point." << std::endl;
 	std::cout << "  Num is the number printed by PRINT BRK." << std::endl;
@@ -1057,7 +1061,8 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 		Execute_AddBreakPointWithPassCount(towns,cmd);
 		break;
 	case CMD_ADD_MONITORPOINT:
-		Execute_AddMonitorPoint(towns,cmd);
+	case CMD_ADD_MONITORPOINT_SHORT_FORMAT:
+		Execute_AddBreakPoint(towns,cmd);
 		break;
 	case CMD_DELETE_BREAKPOINT:
 		Execute_DeleteBreakPoint(towns,cmd);
@@ -1841,6 +1846,15 @@ void TownsCommandInterpreter::Execute_AddBreakPoint(FMTowns &towns,Command &cmd)
 
 	i486Debugger::BreakPointInfo info;
 
+	if(CMD_ADD_MONITORPOINT==cmd.primaryCmd)
+	{
+		info.flags=i486Debugger::BRKPNT_FLAG_MONITOR_ONLY;
+	}
+	else if(CMD_ADD_MONITORPOINT_SHORT_FORMAT==cmd.primaryCmd)
+	{
+		info.flags=i486Debugger::BRKPNT_FLAG_MONITOR_ONLY|i486Debugger::BRKPNT_FLAG_SHORT_FORMAT;
+	}
+
 	auto addrAndSym=towns.debugger.GetSymTable().FindSymbolFromLabel(cmd.argv[1]);
 	if(addrAndSym.second.label==cmd.argv[1])
 	{
@@ -1894,29 +1908,6 @@ void TownsCommandInterpreter::Execute_AddBreakPointWithPassCount(FMTowns &towns,
 
 	i486Debugger::BreakPointInfo info;
 	info.passCountUntilBreak=cpputil::Atoi(cmd.argv[2].c_str());
-
-	auto addrAndSym=towns.debugger.GetSymTable().FindSymbolFromLabel(cmd.argv[1]);
-	if(addrAndSym.second.label==cmd.argv[1])
-	{
-		towns.debugger.AddBreakPoint(addrAndSym.first,info);
-	}
-	else
-	{
-		auto farPtr=towns.cpu.TranslateFarPointer(cmdutil::MakeFarPointer(cmd.argv[1],towns.cpu));
-		towns.debugger.AddBreakPoint(farPtr,info);
-	}
-}
-
-void TownsCommandInterpreter::Execute_AddMonitorPoint(FMTowns &towns,Command &cmd)
-{
-	if(cmd.argv.size()<2)
-	{
-		PrintError(ERROR_TOO_FEW_ARGS);
-		return;
-	}
-
-	i486Debugger::BreakPointInfo info;
-	info.flags=i486Debugger::BRKPNT_FLAG_MONITOR_ONLY;
 
 	auto addrAndSym=towns.debugger.GetSymTable().FindSymbolFromLabel(cmd.argv[1]);
 	if(addrAndSym.second.label==cmd.argv[1])

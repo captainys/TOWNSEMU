@@ -31,7 +31,11 @@ public:
 	enum
 	{
 		CSEIP_LOG_SIZE=0x10000,
-		CSEIP_LOG_MASK=0x0FFFF
+		CSEIP_LOG_MASK=0x0FFFF,
+
+		/* Windows 3.1 uses INT 20H for VxD services.
+		*/
+		INT_WIN31_VxD=0x20,
 	};
 
 	enum
@@ -53,9 +57,9 @@ public:
 		BRKPNT_FLAG_SILENT_UNTIL_BREAK=2,
 
 
-		/* Windows 3.1 uses INT 20H for VxD services.
+		/* If set, it will print only CS:EIP and disassembly when it passes or stop at the breakpoint.
 		*/
-		INT_WIN31_VxD=0x20,
+		BRKPNT_FLAG_SHORT_FORMAT=4,
 	};
 	class BreakPointInfo
 	{
