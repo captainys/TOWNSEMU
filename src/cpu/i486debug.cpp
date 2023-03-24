@@ -205,6 +205,16 @@ std::vector <i486Debugger::CS_EIP> i486Debugger::GetBreakPoints(void) const
 	return list;
 }
 
+std::vector <std::pair <i486Debugger::CS_EIP,i486Debugger::BreakPointInfo> > i486Debugger::GetBreakPointsEx(void) const
+{
+	std::vector <std::pair<CS_EIP,BreakPointInfo> > list;
+	for(auto bp : breakPoints)
+	{
+		list.push_back(bp);
+	}
+	return list;
+}
+
 void i486Debugger::AddBreakOnIORead(unsigned int ioport)
 {
 	breakOnIORead[ioport%(i486DX::I486_NUM_IOPORT)]=true;

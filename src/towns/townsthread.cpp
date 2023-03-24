@@ -111,6 +111,19 @@ void TownsThread::VMMainLoop(FMTowns *townsPtr,Outside_World *outside_world,clas
 							townsPtr->var.powerOff=true;
 							break;
 						}
+
+						if(""!=townsPtr->debugger.lastBreakPointInfo.saveState)
+						{
+							if(true!=townsPtr->SaveState(townsPtr->debugger.lastBreakPointInfo.saveState))
+							{
+								std::cout << "Error Saving " << townsPtr->debugger.lastBreakPointInfo.saveState << std::endl;
+							}
+							else
+							{
+								std::cout << "Saved " << townsPtr->debugger.lastBreakPointInfo.saveState << std::endl;
+							}
+						}
+
 						if(true!=townsPtr->debugger.lastBreakPointInfo.ShouldBreak())
 						{
 							if(0!=(townsPtr->debugger.lastBreakPointInfo.flags&i486Debugger::BRKPNT_FLAG_MONITOR_ONLY) ||

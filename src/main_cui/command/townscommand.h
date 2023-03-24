@@ -188,6 +188,7 @@ public:
 
 		CMD_SAVE_STATE,
 		CMD_LOAD_STATE,
+		CMD_SAVE_STATE_AT,
 
 		CMD_GAMEPORT,
 
@@ -324,6 +325,7 @@ public:
 		ERROR_VRAM_LAYER_UNAVAILABLE,
 		ERROR_UNDEFINED_BREAK_POINT_OPTION,
 		ERROR_CANNOT_CHDIR,
+		ERROR_DEBUGGER_NOT_ENABLED,
 	};
 
 	class Command
@@ -353,6 +355,7 @@ public:
 
 	void Execute_AddBreakPoint(FMTowns &towns,Command &cmd);
 	void Execute_AddBreakPointWithPassCount(FMTowns &towns,Command &cmd);
+	void Execute_AddSavePoint(FMTowns &towns,Command &cmd);
 	void Execute_AddMonitorPoint(FMTowns &towns,Command &cmd);
 	void Execute_DeleteBreakPoint(FMTowns &towns,Command &cmd);
 	void Execute_ListBreakPoints(FMTowns &towns,Command &cmd);

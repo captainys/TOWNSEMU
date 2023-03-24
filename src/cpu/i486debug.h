@@ -67,11 +67,16 @@ public:
 		/* passedCount is always incremented when CS:EIP matches the breakpoint.
 		*/
 		uint64_t passedCount=0;
+		/* Save machine state at this break point.
+		*/
+		std::string saveState;
+
 		inline void Clear(void)
 		{
 			flags=0;
 			passCountUntilBreak=0;
 			passedCount=0;
+			saveState="";
 		}
 
 		/*! Call this function when reached the break point.
@@ -186,6 +191,7 @@ public:
 	void RemoveBreakPoint(CS_EIP bp);
 	void ClearBreakPoints(void);
 	std::vector <CS_EIP> GetBreakPoints(void) const;
+	std::vector <std::pair<CS_EIP,BreakPointInfo> > GetBreakPointsEx(void) const;
 
 	void AddBreakOnIORead(unsigned int ioport);
 	void RemoveBreakOnIORead(unsigned int ioport);

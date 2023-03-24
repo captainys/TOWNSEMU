@@ -202,6 +202,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 
 	primaryCmdMap["SAVESTATE"]=CMD_SAVE_STATE;
 	primaryCmdMap["LOADSTATE"]=CMD_LOAD_STATE;
+	primaryCmdMap["SAVESTATEAT"]=CMD_SAVE_STATE_AT;
 
 	primaryCmdMap["GAMEPORT"]=CMD_GAMEPORT;
 	primaryCmdMap["TOGGLE_HOST_MOUSE_CURSOR"]=CMD_TOGGLE_HOST_MOUSE_CURSOR;
@@ -601,9 +602,14 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  File name needs to be specified by -QUICKSAVESTATE option." << std::endl;
 
 	std::cout << "SAVESTATE fileName" << std::endl;
-	std::cout << "  Save machine state (experimental)" << std::endl;
+	std::cout << "  Save machine state" << std::endl;
 	std::cout << "LOADSTATE fileName" << std::endl;
-	std::cout << "  Load machine state (experimental)" << std::endl;
+	std::cout << "  Load machine state" << std::endl;
+	std::cout << "SAVESTATEAT CS:EIP filename" << std::endl;
+	std::cout << "  Save machine state at specific CS:EIP to the specified file." << std::endl;
+	std::cout << "  File will be overwritten if CS:EIP passes the same location multiple times." << std::endl;
+	std::cout << "      SAVESTATEAT 0:0 \"\"" << std::endl;
+	std::cout << "  to cancel schedule." << std::endl;
 
 	std::cout << "DOSSEG 01234" << std::endl;
 	std::cout << "  Set Real-Mode MSDOS segment in hexa-decimal." << std::endl;
@@ -865,6 +871,9 @@ void TownsCommandInterpreter::PrintError(int errCode) const
 		break;
 	case ERROR_CANNOT_CHDIR:
 		std::cout << "Error: Cannot change directory." << std::endl;
+		break;
+	case ERROR_DEBUGGER_NOT_ENABLED:
+		std::cout << "Error: Debugger is not enabled." << std::endl;
 		break;
 
 	default:
@@ -1232,6 +1241,9 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 		{
 			PrintError(ERROR_TOO_FEW_ARGS);
 		}
+		break;
+	case CMD_SAVE_STATE_AT:
+		Execute_AddSavePoint(towns,cmd);
 		break;
 
 	case CMD_PRINT_STATUS:
@@ -1821,6 +1833,11 @@ void TownsCommandInterpreter::Execute_AddBreakPoint(FMTowns &towns,Command &cmd)
 		PrintError(ERROR_TOO_FEW_ARGS);
 		return;
 	}
+	if(nullptr==towns.cpu.debuggerPtr)
+	{
+		PrintError(ERROR_DEBUGGER_NOT_ENABLED);
+		return;
+	}
 
 	i486Debugger::BreakPointInfo info;
 
@@ -1833,6 +1850,37 @@ void TownsCommandInterpreter::Execute_AddBreakPoint(FMTowns &towns,Command &cmd)
 	{
 		auto farPtr=towns.cpu.TranslateFarPointer(cmdutil::MakeFarPointer(cmd.argv[1],towns.cpu));
 		towns.debugger.AddBreakPoint(farPtr,info);
+	}
+}
+
+void TownsCommandInterpreter::Execute_AddSavePoint(FMTowns &towns,Command &cmd)
+{
+	if(cmd.argv.size()<3)
+	{
+		PrintError(ERROR_TOO_FEW_ARGS);
+		return;
+	}
+	if(nullptr==towns.cpu.debuggerPtr)
+	{
+		PrintError(ERROR_DEBUGGER_NOT_ENABLED);
+		return;
+	}
+
+	i486Debugger::BreakPointInfo info;
+	info.flags=i486Debugger::BRKPNT_FLAG_MONITOR_ONLY;
+	info.saveState=cmd.argv[2];
+
+	auto addrAndSym=towns.debugger.GetSymTable().FindSymbolFromLabel(cmd.argv[1]);
+	if(addrAndSym.second.label==cmd.argv[1])
+	{
+		towns.debugger.AddBreakPoint(addrAndSym.first,info);
+		std::cout << "Will save state at " << addrAndSym.first.Format() << std::endl;
+	}
+	else
+	{
+		auto farPtr=towns.cpu.TranslateFarPointer(cmdutil::MakeFarPointer(cmd.argv[1],towns.cpu));
+		towns.debugger.AddBreakPoint(farPtr,info);
+		std::cout << "Will save state at " << addrAndSym.first.Format() << std::endl;
 	}
 }
 
@@ -1906,9 +1954,21 @@ void TownsCommandInterpreter::Execute_DeleteBreakPoint(FMTowns &towns,Command &c
 void TownsCommandInterpreter::Execute_ListBreakPoints(FMTowns &towns,Command &cmd)
 {
 	int bpn=0;
-	for(auto bp : towns.debugger.GetBreakPoints())
+	for(auto bp : towns.debugger.GetBreakPointsEx())
 	{
-		std::cout << cpputil::Ubtox(bpn) << " " << cpputil::Ustox(bp.SEG) << ":" << cpputil::Uitox(bp.OFFSET) << std::endl;
+		std::cout << cpputil::Ubtox(bpn) << " " << cpputil::Ustox(bp.first.SEG) << ":" << cpputil::Uitox(bp.first.OFFSET);
+		if(0!=(bp.second.flags&i486Debugger::BRKPNT_FLAG_MONITOR_ONLY))
+		{
+			if(""!=bp.second.saveState)
+			{
+				std::cout << " Save-State " << bp.second.saveState;
+			}
+			else
+			{
+				std::cout << " Monitor Only";
+			}
+		}
+		std::cout << std::endl;
 		++bpn;
 	}
 	auto &breakOnIORead=towns.debugger.GetBreakOnIORead();
