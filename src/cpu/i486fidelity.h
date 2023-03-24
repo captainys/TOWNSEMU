@@ -66,11 +66,12 @@ public:
 	inline static void ClearSegmentRegisterAttribBytes(uint16_t &attribBytes){};
 
 	// Protect EFLAGS IOPL bits.
-	class IOPLBits
+	class EFLAGS
 	{
 	};
-	inline static void SaveIOPLBits(IOPLBits &iopl,const i486DX &cpu){};
-	inline static void RestoreIOPLBits(i486DX &cpu,const IOPLBits &iopl){};
+	inline static void SaveEFLAGS(EFLAGS &,const i486DX &cpu){};
+	inline static void RestoreIOPLBits(i486DX &cpu,const EFLAGS &){};
+	inline static void RestoreIF(i486DX &cpu,const EFLAGS &){};
 };
 
 class i486DXDefaultFidelity : public i486DXLowFidelity
@@ -627,26 +628,34 @@ public:
 
 
 
-	class IOPLBits
+	class EFLAGS
 	{
 	public:
-		uint32_t iopl;
+		uint32_t eflags;
 	};
-	inline static void SaveIOPLBits(IOPLBits &iopl,const i486DX &cpu)
+	inline static void SaveEFLAGS(EFLAGS &eflags,const i486DX &cpu)
 	{
 		if(true!=cpu.IsInRealMode() && 0!=cpu.state.CS().DPL)
 		{
-			iopl.iopl=(cpu.state.EFLAGS&i486DX::EFLAGS_IOPL);
+			eflags.eflags=cpu.state.EFLAGS;
 		}
 	};
-	inline static void RestoreIOPLBits(i486DX &cpu,const IOPLBits &iopl)
+	inline static void RestoreIOPLBits(i486DX &cpu,const EFLAGS &eflags)
 	{
 		if(true!=cpu.IsInRealMode() && 0!=cpu.state.CS().DPL)
 		{
 			cpu.state.EFLAGS&=~i486DX::EFLAGS_IOPL;
-			cpu.state.EFLAGS|=iopl.iopl;
+			cpu.state.EFLAGS|=(eflags.eflags&i486DX::EFLAGS_IOPL);
 		}
 	};
+	inline static void RestoreIF(i486DX &cpu,const EFLAGS &eflags)
+	{
+		if(true!=cpu.IsInRealMode() && cpu.GetIOPL()<cpu.state.CS().DPL)
+		{
+			cpu.state.EFLAGS&=~i486DX::EFLAGS_INT_ENABLE;
+			cpu.state.EFLAGS|=(eflags.eflags&i486DX::EFLAGS_INT_ENABLE);
+		}
+	}
 };
 
 /* } */

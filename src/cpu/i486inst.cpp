@@ -9337,6 +9337,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 	case I486_RENUMBER_PUSHF://            0x9C,
 		clocksPassed=4; // If running as 386 and in protected mode, 3 clocks.
+		if(true==fidelity.IOPLExceptionInVM86Mode(*this,EXCEPTION_GP,mem,inst.numBytes))
+		{
+			EIPIncrement=0;
+			break;
+		}
 		{
 			Push(mem,inst.operandSize,state.EFLAGS);
 		}
@@ -9564,8 +9569,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			break;
 		}
 		{
-			TSUGARU_I486_FIDELITY_CLASS::IOPLBits ioplBits;
-			TSUGARU_I486_FIDELITY_CLASS::SaveIOPLBits(ioplBits,*this);
+			TSUGARU_I486_FIDELITY_CLASS::EFLAGS ioplBits;
+			TSUGARU_I486_FIDELITY_CLASS::SaveEFLAGS(ioplBits,*this);
 
 			// VM and RF flags must be preserved.
 			unsigned int EFLAGS=Pop(mem,inst.operandSize);
@@ -9576,6 +9581,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			SetFLAGSorEFLAGS(inst.operandSize,EFLAGS);
 
 			TSUGARU_I486_FIDELITY_CLASS::RestoreIOPLBits(*this,ioplBits);
+			TSUGARU_I486_FIDELITY_CLASS::RestoreIF(*this,ioplBits);
 		}
 		break;
 
@@ -9608,11 +9614,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				clocksPassed=36;
 			}
 
-			//if(true==fidelity.IOPLExceptionInVM86Mode(*this,EXCEPTION_GP,mem,inst.numBytes))
-			//{
-			//	EIPIncrement=0;
-			//	break;
-			//}
+			if(true==fidelity.IOPLExceptionInVM86Mode(*this,EXCEPTION_GP,mem,inst.numBytes))
+			{
+				EIPIncrement=0;
+				break;
+			}
 
 			bool IRET_TO_VM86=false;
 
@@ -9622,8 +9628,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			SetIPorEIP(inst.operandSize,eip);
 			auto segRegValue=cs;
 
-			TSUGARU_I486_FIDELITY_CLASS::IOPLBits ioplBits;
-			TSUGARU_I486_FIDELITY_CLASS::SaveIOPLBits(ioplBits,*this);
+			TSUGARU_I486_FIDELITY_CLASS::EFLAGS ioplBits;
+			TSUGARU_I486_FIDELITY_CLASS::SaveEFLAGS(ioplBits,*this);
 			SetFLAGSorEFLAGS(inst.operandSize,eflags);
 			TSUGARU_I486_FIDELITY_CLASS::RestoreIOPLBits(*this,ioplBits);
 			if(true!=IsInRealMode())
