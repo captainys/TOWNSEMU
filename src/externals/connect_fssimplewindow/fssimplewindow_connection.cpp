@@ -265,7 +265,11 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 
 	this->winWid=640;
 	this->winHei=480;
+#ifndef TSUGARU_I486_HIGH_FIDELITY
 	FsSetWindowTitle("FM Towns Emulator - TSUGARU");
+#else
+	FsSetWindowTitle("FM Towns Emulator - TSUGARU (High-Fidelity Mode)");
+#endif
 	soundPlayer.Start();
 	cddaStartHSG=0;
 #ifdef AUDIO_USE_STREAMING

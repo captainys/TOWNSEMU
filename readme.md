@@ -36,29 +36,51 @@ http://ysflight.com/FM/towns/FreeTOWNS/j.html
 
 
 # LIMITATIONS
-The emulation is getting better.  Thanks to the great help from the users around the world, with conservative estimate Tsugaru can run more than 95% of the FM TOWNS commercial application titles.  Emulation state is in the Wiki (https://wiki3.jp/fmtowns/page/10).  Wiki is set up by WINDY.  (Thanks!)  Overall, I think it is safe to say more than 97% of FM TOWNS apps works.
+The emulation is getting better.  Thanks to the great help from the users around the world, with conservative estimate Tsugaru can run more than 97% of the FM TOWNS commercial application titles.  Emulation state is in the Wiki (https://wiki3.jp/fmtowns/page/10).  Wiki is set up by WINDY.  (Thanks!)  Overall, I think it is safe to say more than 97% of FM TOWNS apps works.
 
-80486 emulation is, getting faster, but slow.  At this time, if you run the VM on Core i7 3.0GHz PC, VM runs somewhere like 80486 25 to 28MHz.  Core i9 2.80GHz can keep up with 66MHz.  There is a room for speed up.  Will be done down the road.
+80486 emulation is, getting faster, but there is a room for improvement.  Will be improved down the road.
 
 Not-all instructions of Intel 80486 processor have been implemented yet.  Towns OS didn't use task registers.  I have no plan on adding support for those registers.  Since the emulator works as a debugger, debug registers won't be supported, either.
 
-FM Sound Generators is becoming more realistic, but still not all functionalities are supported.
+If you compile in High-Fidelity Mode (cmake from srchf instead of src), it is able to start Windows 3.1, but only limited functionalities are supported.
 
 
 
-エミュレーションはかなりよくなってきて、世界中のユーザの皆さまのご協力により、少なく見積もってFM TOWNS用に発売されたソフトの95%以上が動作可能と推定しています。また、ユーザによる動作確認もWikiに上がってきています。(https://wiki3.jp/fmtowns/page/10) WikiはWINDYさんがセットアップしてくださいました。ありがとうございます。現状で、少なく見積もって97%以上のFM TOWNSアプリケーションを実行できると言えるようです。
 
-80486エミュレーションは速くなってきましたが、まだ遅いです。今のバージョンだとCore i7 3GHzで実行して80486 25～28MHz相当のスピードです。Core i9の2.8GHzだと66MHzぐらい出るようですが、まだスピードアップの余地があるので、そのうちやります。
+エミュレーションはかなりよくなってきて、世界中のユーザの皆さまのご協力により、少なく見積もってFM TOWNS用に発売されたソフトの97%以上が動作可能と推定しています。また、ユーザによる動作確認もWikiに上がってきています。(https://wiki3.jp/fmtowns/page/10) WikiはWINDYさんがセットアップしてくださいました。ありがとうございます。現状で、少なく見積もって97%以上のFM TOWNSアプリケーションを実行できると言えるようです。
+
+80486エミュレーションは速くなってきましたが、まだ改善の予知があります。少しずつスピードアップしていきます。
 
 80486のすべてのインストラクションをエミュレートできてません。なお、Towns OSはタスク機能は使ってなかったと思われるので多分サポートしません。また、エミュレータがデバッガとして機能するのでデバッグ機能もサポートしない予定です。
 
-FM音源は、かなりそれっぽくなってきましたが、まだSSG_EG未対応です。
+High-Fidelity Modeでコンパイルすると(srcでなくsrchfにcmakeをかける)、Windows 3.1が起動できるようになりましたが、まだかなり機能限定です。
 
 
 
 
 # Source Code
 Open Source with 3-clause BSD License.
+
+
+
+
+# Build Instruction
+At this time I just post commands for macOS.  Other platforms will follow.
+
+この間たまたまmacOS用のコマンドのシークエンスを抜き出したので、macOS用だけ書いておきます。他のプラットフォーム用もそのうち書きます。
+
+```
+git clone https://github.com/captainys/TOWNSEMU.git
+cd TOWNSEMU/gui/src
+git clone https://github.com/captainys/public.git
+cd ..
+mkdir build
+cd build
+cmake ../src
+cmake --build . --config Release
+cp main_cui/Tsugaru_CUI.app/Contents/MacOS/Tsugaru_CUI main_gui/Tsugaru_GUI.app/Contents/MacOS/.
+main_gui/Tsugaru_GUI.app/Contents/MacOS/Tsugaru_GUI
+```
 
 
 
@@ -290,6 +312,9 @@ The tests are timing-sensitive, or the CPU needs to be reasonably fast.  If not,
 
 # Revisions
 Please see commit comments after this!
+
+### 2023/03/25
+- Can start Windows 3.1 if compiled in the High-Fidelity Mode!
 
 ### 2021/05/06
 - Virtual Machine is pretty stable, I think.
