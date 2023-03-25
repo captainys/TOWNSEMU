@@ -9632,6 +9632,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			TSUGARU_I486_FIDELITY_CLASS::SaveEFLAGS(ioplBits,*this);
 			SetFLAGSorEFLAGS(inst.operandSize,eflags);
 			TSUGARU_I486_FIDELITY_CLASS::RestoreIOPLBits(*this,ioplBits);
+			TSUGARU_I486_FIDELITY_CLASS::RestoreIF(*this,ioplBits);
 			if(true!=IsInRealMode())
 			{
 				// if(state.EFLAGS&EFLAGS_NESTED)
