@@ -10215,7 +10215,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 	case I486_RENUMBER_STI://              0xFB,
 		clocksPassed=5;
-		if(true==fidelity.IOPLExceptionInVM86Mode(*this,EXCEPTION_GP,mem,inst.numBytes))
+		if(true==fidelity.IOPLException(*this,EXCEPTION_GP,mem,inst.numBytes))
 		{
 			EIPIncrement=0;
 			break;
