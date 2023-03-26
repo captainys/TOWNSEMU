@@ -5186,6 +5186,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	const auto &op1=instOp.op1;
 	const auto &op2=instOp.op2;
 	FetchInstruction(state.CSEIPWindow,instOp,state.CS(),state.EIP,mem);
+	if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
+	{
+		return 10; // Is 10 good?
+	}
+
 	if(nullptr!=debuggerPtr)
 	{
 		debuggerPtr->BeforeRunOneInstruction(*this,mem,io,inst);
