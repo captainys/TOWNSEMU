@@ -5123,6 +5123,13 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			clocksPassed=1; \
 		}
 
+	#define HANDLE_EXCEPTION_IF_ANY \
+		if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes)) \
+		{ \
+			EIPIncrement=0; \
+			break; \
+		}
+
 
 
 	static const unsigned int reg8AndPattern[]=
@@ -5404,6 +5411,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{
 				uint32_t value1=EvaluateOperandRegOrMem16(mem,inst.addressSize,inst.segOverride,op1);
 				uint32_t value2=inst.EvalUimm16();
+				HANDLE_EXCEPTION_IF_ANY;
 				AndWord(value1,value2);
 				// SetCF(false); Done in AndWordOrDword
 				// SetOF(false);
@@ -5411,6 +5419,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			else
 			{
 				auto value1=EvaluateOperandRegOrMem32(mem,inst.addressSize,inst.segOverride,op1);
+				HANDLE_EXCEPTION_IF_ANY;
 				auto value2=inst.EvalUimm32();
 				AndDword(value1,value2);
 				// SetCF(false); Done in AndWordOrDword
@@ -5423,6 +5432,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1);
 				if(nullptr!=operPtr)
 				{
+					HANDLE_EXCEPTION_IF_ANY;
 					operPtr[0]=~operPtr[0];
 					operPtr[1]=~operPtr[1];
 					if(32==inst.operandSize)
@@ -5434,6 +5444,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				else
 				{
 					auto value1=EvaluateOperandReg16OrReg32OrMem(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+					HANDLE_EXCEPTION_IF_ANY;
 					value1.byteData[0]=~value1.byteData[0];
 					value1.byteData[1]=~value1.byteData[1];
 					value1.byteData[2]=~value1.byteData[2];
@@ -5448,6 +5459,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				auto operPtr=GetOperandPointer(mem, inst.addressSize, inst.segOverride, op1);
 				if(nullptr!=operPtr)
 				{
+					HANDLE_EXCEPTION_IF_ANY;
 					uint32_t r=0;
 					if(16==inst.operandSize)
 					{
@@ -5463,6 +5475,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				else
 				{
 					auto value1 = EvaluateOperandReg16OrReg32OrMem(mem, inst.addressSize, inst.segOverride, op1, inst.operandSize / 8);
+					HANDLE_EXCEPTION_IF_ANY;
 					uint32_t r = 0;
 					uint32_t i = value1.GetAsDword();
 					SubWordOrDword(inst.operandSize, r, i);
@@ -8306,10 +8319,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					value2|=0xFFFFFF00;
 				}
 			}
-			if(true==state.exception)
-			{
-				break;
-			}
+			HANDLE_EXCEPTION_IF_ANY;
 
 			auto REG=inst.GetREG();
 			switch(REG)
@@ -8341,6 +8351,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			default:
 				std_unreachable;
 			}
+			HANDLE_EXCEPTION_IF_ANY;
 			if(7!=REG) // Don't store a value if it is CMP
 			{
 				if(nullptr!=operPtr)
@@ -8358,6 +8369,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				{
 					value1.SetDword(i);
 					StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+					HANDLE_EXCEPTION_IF_ANY;
 				}
 			}
 		}
@@ -8758,7 +8770,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			clocksPassed=1;
 			auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
-			SetAL(FetchByte(inst.addressSize,seg,inst.EvalUimm32(),mem));
+			auto byteData=FetchByte(inst.addressSize,seg,inst.EvalUimm32(),mem);
+			HANDLE_EXCEPTION_IF_ANY;
+			SetAL(byteData);
 		}
 		break;
 	case I486_RENUMBER_MOV_M_TO_EAX: //     0xA1, // 16/32 depends on OPSIZE_OVERRIDE
@@ -8766,11 +8780,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			clocksPassed=1;
 			auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
 			unsigned int value=FetchWordOrDword(inst.operandSize,inst.addressSize,seg,inst.EvalUimm32(),mem);
-			if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
-			{
-				EIPIncrement=0;
-				break;
-			}
+			HANDLE_EXCEPTION_IF_ANY;
 			state.EAX()&=operandSizeAndPattern[inst.operandSize>>3];
 			state.EAX()|=(value&operandSizeMask[inst.operandSize>>3]);
 		}
@@ -8900,6 +8910,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			src.MakeByte(value);
 			StoreOperandValue8(op1,mem,inst.addressSize,inst.segOverride,src);
 			clocksPassed=1;
+			HANDLE_EXCEPTION_IF_ANY;
 		}
 		break;
 	case I486_RENUMBER_MOV_TO_R8: //        0x8A,
@@ -9560,24 +9571,89 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 
 	case I486_RENUMBER_POP_SS://           0x17,
-		clocksPassed=3;
-		LoadSegmentRegister(state.SS(),Pop(mem,inst.operandSize),mem);
+		{
+			clocksPassed=3;
+			auto selector=Pop(mem,inst.operandSize);
+			if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
+			{
+				EIPIncrement=0;
+				break;
+			}
+			LoadSegmentRegister(state.SS(),selector,mem);
+			if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
+			{
+				EIPIncrement=0;
+				break;
+			}
+		}
 		break;
 	case I486_RENUMBER_POP_DS://           0x1F,
-		clocksPassed=3;
-		LoadSegmentRegister(state.DS(),Pop(mem,inst.operandSize),mem);
+		{
+			clocksPassed=3;
+			auto selector=Pop(mem,inst.operandSize);
+			if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
+			{
+				EIPIncrement=0;
+				break;
+			}
+			LoadSegmentRegister(state.DS(),selector,mem);
+			if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
+			{
+				EIPIncrement=0;
+				break;
+			}
+		}
 		break;
 	case I486_RENUMBER_POP_ES://           0x07,
-		clocksPassed=3;
-		LoadSegmentRegister(state.ES(),Pop(mem,inst.operandSize),mem);
+		{
+			clocksPassed=3;
+			auto selector=Pop(mem,inst.operandSize);
+			if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
+			{
+				EIPIncrement=0;
+				break;
+			}
+			LoadSegmentRegister(state.ES(),selector,mem);
+			if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
+			{
+				EIPIncrement=0;
+				break;
+			}
+		}
 		break;
 	case I486_RENUMBER_POP_FS://           0x0FA1,
-		clocksPassed=3;
-		LoadSegmentRegister(state.FS(),Pop(mem,inst.operandSize),mem);
+		{
+			clocksPassed=3;
+			auto selector=Pop(mem,inst.operandSize);
+			if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
+			{
+				EIPIncrement=0;
+				break;
+			}
+			LoadSegmentRegister(state.FS(),selector,mem);
+			if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
+			{
+				EIPIncrement=0;
+				break;
+			}
+		}
 		break;
 	case I486_RENUMBER_POP_GS://           0x0FA9,
-		clocksPassed=3;
-		LoadSegmentRegister(state.GS(),Pop(mem,inst.operandSize),mem);
+		{
+			clocksPassed=3;
+			auto selector=Pop(mem,inst.operandSize);
+			if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
+			{
+				EIPIncrement=0;
+				break;
+			}
+			LoadSegmentRegister(state.GS(),selector,mem);
+			if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
+			{
+				EIPIncrement=0;
+				break;
+			}
+		}
 		break;
 
 	case I486_RENUMBER_POPA://             0x61,
