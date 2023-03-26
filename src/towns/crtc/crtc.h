@@ -134,6 +134,14 @@ public:
 		HIGHRES_REG_PALSEL  =0x130,   // Read bit9=PaletteBusy,  Write (Prob) 0->Page0 16-color palette, 1->Page1 16-color palette, 2->256-color palette
 		HIGHRES_REG_PALINDEX=0x132,   // Write Palette Index
 		HIGHRES_REG_PALCOL  =0x133,   // 32-bit access available.  Read/Write.  Low 8bit R, Mid Low 8bit G, Mid High 8bit B, High 8bit unused
+
+		HIGHRES_REG_WD_MOUSEX=0x000, // Word Access Reg0 for Hardware Mouse Cursor X
+		HIGHRES_REG_WD_MOUSEY=0x001, // Word Access Reg1 for Hardware Mouse Cursor Y
+		HIGHRES_REG_WD_MOUSE_ORIGINX=0x002, // Word Access Reg 2 for Origin in the Pattern X
+		HIGHRES_REG_WD_MOUSE_ORIGINY=0x003, // Word Access Reg 2 for Origin in the Pattern Y
+		HIGHRES_REG_WD_MOUSE_DEFINE=0x006,  // Word Access Reg 6 for starting/ending mouse pattern definition
+		HIGHRES_REG_WD_MOUSE_UNKNOWN=0x008,
+		HIGHRES_REG_MOUSE_PATTERN=0x009,
 	};
 
 	static const unsigned int CLKSELtoHz[4];
@@ -189,6 +197,19 @@ public:
 		void Deserialize(const unsigned char *&data);
 	};
 
+	class HardwareMouseCursor
+	{
+	public:
+		bool defining=false,defined=false;
+		uint32_t ptnCount=0;
+		uint32_t unknownValueReg8=0; // Maybe color.
+		uint32_t X=0,Y=0;
+		uint32_t originX=0,originY=0;
+		uint8_t ANDPtn[512]={0},ORPtn[512]={0};
+
+		void Reset(void);
+	};
+
 	enum
 	{
 		NUM_CRTC_REGISTERS=32,
@@ -220,6 +241,7 @@ public:
 		bool highResCrtcReg4Bit1=true;
 		unsigned int highResPaletteMode,highResPaletteLatch;
 		AnalogPalette highResCrtcPalette;
+		HardwareMouseCursor highResCrtcMouse;
 
 
 
