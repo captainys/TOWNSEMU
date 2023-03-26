@@ -202,10 +202,10 @@ void TownsRender::BuildImage(const unsigned char VRAM[],const TownsCRTC::AnalogP
 
 	if(true==highResCRTC && true==hardwareMouse.defined)
 	{
-		uint8_t *ANDPtn=hardwareMouse.ANDPtn;
-		uint8_t *ORPtn=hardwareMouse.ORPtn;
 		for(int y=0; y<64; ++y)
 		{
+			uint8_t *ANDPtn=hardwareMouse.ANDPtn+8*y;
+			uint8_t *ORPtn=hardwareMouse.ORPtn+8*y;
 			uint8_t bit=0x80;
 			for(int x=0; x<64; ++x)
 			{

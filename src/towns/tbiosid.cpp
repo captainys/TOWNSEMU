@@ -525,6 +525,14 @@ bool FMTowns::ControlMouse(int &diffX,int &diffY,int hostMouseX,int hostMouseY,u
 	int slowDownRange=0;
 	var.lastKnownMouseX=hostMouseX;
 	var.lastKnownMouseY=hostMouseY;
+
+	// Windows 3.1 >>
+	if(true==crtc.state.highResCRTCEnabled && true==crtc.state.highResCrtcMouse.defined)
+	{
+		slowDownRange=4;
+	}
+	// Windows 3.1 <<
+
 	if(true==GetMouseCoordinate(mx,my,tbiosid) && true==var.mouseIntegration)
 	{
 		Vec2i origin;
