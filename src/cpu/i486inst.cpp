@@ -9439,6 +9439,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			state.EAX()=Pop32(mem);
 		}
+		if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
+		{
+			EIPIncrement=0;
+			break;
+		}
 		break;
 	case I486_RENUMBER_POP_ECX://          0x59,
 		clocksPassed=4;
@@ -9449,6 +9454,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		else
 		{
 			state.ECX()=Pop32(mem);
+		}
+		if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
+		{
+			EIPIncrement=0;
+			break;
 		}
 		break;
 	case I486_RENUMBER_POP_EDX://          0x5A,
@@ -9461,6 +9471,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			state.EDX()=Pop32(mem);
 		}
+		if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
+		{
+			EIPIncrement=0;
+			break;
+		}
 		break;
 	case I486_RENUMBER_POP_EBX://          0x5B,
 		clocksPassed=4;
@@ -9471,6 +9486,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		else
 		{
 			state.EBX()=Pop32(mem);
+		}
+		if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
+		{
+			EIPIncrement=0;
+			break;
 		}
 		break;
 	case I486_RENUMBER_POP_ESP://          0x5C,
@@ -9483,6 +9503,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			state.ESP()=Pop32(mem);
 		}
+		if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
+		{
+			EIPIncrement=0;
+			break;
+		}
 		break;
 	case I486_RENUMBER_POP_EBP://          0x5D,
 		clocksPassed=4;
@@ -9493,6 +9518,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		else
 		{
 			state.EBP()=Pop32(mem);
+		}
+		if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
+		{
+			EIPIncrement=0;
+			break;
 		}
 		break;
 	case I486_RENUMBER_POP_ESI://          0x5E,
@@ -9505,6 +9535,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			state.ESI()=Pop32(mem);
 		}
+		if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
+		{
+			EIPIncrement=0;
+			break;
+		}
 		break;
 	case I486_RENUMBER_POP_EDI://          0x5F,
 		clocksPassed=4;
@@ -9515,6 +9550,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		else
 		{
 			state.EDI()=Pop32(mem);
+		}
+		if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
+		{
+			EIPIncrement=0;
+			break;
 		}
 		break;
 
