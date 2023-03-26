@@ -64,6 +64,10 @@ void TownsRender::Prepare(const TownsCRTC &crtc)
 {
 	frequency=crtc.GetHorizontalFrequency();
 	highResCRTC=crtc.state.highResCRTCEnabled;
+	if(true==highResCRTC)
+	{
+		hardwareMouse=crtc.state.highResCrtcMouse;
+	}
 	crtcIsSinglePageMode=crtc.InSinglePageMode();
 	if(true==crtcIsSinglePageMode)
 	{
@@ -84,6 +88,10 @@ void TownsRender::Prepare(const TownsCRTC &crtc)
 void TownsRender::PrepareEntireVRAMLayer(const TownsCRTC &crtc,int layer)
 {
 	highResCRTC=crtc.state.highResCRTCEnabled;
+	if(true==highResCRTC)
+	{
+		hardwareMouse=crtc.state.highResCrtcMouse;
+	}
 	crtcIsSinglePageMode=crtc.InSinglePageMode();
 	if(true==crtcIsSinglePageMode)
 	{
@@ -189,6 +197,49 @@ void TownsRender::BuildImage(const unsigned char VRAM[],const TownsCRTC::AnalogP
 			linePtr[1]=(unsigned char)((unsigned int)linePtr[1]*7/8);
 			linePtr[2]=(unsigned char)((unsigned int)linePtr[2]*7/8);
 			linePtr+=4;
+		}
+	}
+
+	if(true==highResCRTC && true==hardwareMouse.defined)
+	{
+		uint8_t *ANDPtn=hardwareMouse.ANDPtn;
+		uint8_t *ORPtn=hardwareMouse.ORPtn;
+		for(int y=0; y<64; ++y)
+		{
+			uint8_t bit=0x80;
+			for(int x=0; x<64; ++x)
+			{
+				uint32_t xOnScrn=hardwareMouse.X+x-hardwareMouse.originX;
+				uint32_t yOnScrn=hardwareMouse.Y+y-hardwareMouse.originY;
+				if(xOnScrn<wid && yOnScrn<hei)
+				{
+					if(0==(*ANDPtn&bit))
+					{
+						auto pixelPtr=rgba.data()+4*(wid*yOnScrn+xOnScrn);
+						if(0==(*ORPtn&bit))
+						{
+							pixelPtr[0]=0;
+							pixelPtr[1]=0;
+							pixelPtr[2]=0;
+							pixelPtr[3]=255;
+						}
+						else
+						{
+							pixelPtr[0]=255;
+							pixelPtr[1]=255;
+							pixelPtr[2]=255;
+							pixelPtr[3]=255;
+						}
+					}
+					bit>>=1;
+					if(0==bit)
+					{
+						++ANDPtn;
+						++ORPtn;
+						bit=0x80;
+					}
+				}
+			}
 		}
 	}
 }

@@ -1085,9 +1085,10 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 				state.highResCrtcMouse.originY=data;
 				break;
 			case HIGHRES_REG_WD_MOUSE_DEFINE: //0x006,  // Word Access Reg 6 for starting/ending mouse pattern definition
-				if(1==data)
+				if(0==data)
 				{
 					state.highResCrtcMouse.defining=true;
+					state.highResCrtcMouse.defined=false;
 					state.highResCrtcMouse.ptnCount=0;
 				}
 				else
@@ -1099,7 +1100,7 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 					}
 				}
 				break;
-			case HIGHRES_REG_WD_MOUSE_UNKNOWN: //0x008,
+			case HIGHRES_REG_WD_MOUSE_UNKNOWN8: //0x008,
 				state.highResCrtcMouse.unknownValueReg8=data;
 				break;
 			case HIGHRES_REG_MOUSE_PATTERN:

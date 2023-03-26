@@ -810,6 +810,15 @@ void FMTowns::SetCAPCOMCPSFState(int port,bool left,bool right,bool up,bool down
 
 bool FMTowns::GetMouseCoordinate(int &mx,int &my,unsigned int tbiosid) const
 {
+	// Windows 3.1 >>
+	if(true==crtc.state.highResCRTCEnabled && true==crtc.state.highResCrtcMouse.defined)
+	{
+		mx=crtc.state.highResCrtcMouse.X;
+		my=crtc.state.highResCrtcMouse.Y;
+		return true;
+	}
+	// Windows 3.1 <<
+
 	if(true==state.mouseBIOSActive &&
 	   TOWNS_APPSPECIFIC_ULTIMAUNDERWORLD!=state.appSpecificSetting)
 	{

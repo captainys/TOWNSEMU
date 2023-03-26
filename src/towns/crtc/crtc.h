@@ -140,7 +140,7 @@ public:
 		HIGHRES_REG_WD_MOUSE_ORIGINX=0x002, // Word Access Reg 2 for Origin in the Pattern X
 		HIGHRES_REG_WD_MOUSE_ORIGINY=0x003, // Word Access Reg 2 for Origin in the Pattern Y
 		HIGHRES_REG_WD_MOUSE_DEFINE=0x006,  // Word Access Reg 6 for starting/ending mouse pattern definition
-		HIGHRES_REG_WD_MOUSE_UNKNOWN=0x008,
+		HIGHRES_REG_WD_MOUSE_UNKNOWN8=0x008,
 		HIGHRES_REG_MOUSE_PATTERN=0x009,
 	};
 
@@ -202,7 +202,7 @@ public:
 	public:
 		bool defining=false,defined=false;
 		uint32_t ptnCount=0;
-		uint32_t unknownValueReg8=0; // Maybe color.
+		uint32_t unknownValueReg8=0;
 		uint32_t X=0,Y=0;
 		uint32_t originX=0,originY=0;
 		uint8_t ANDPtn[512]={0},ORPtn[512]={0};

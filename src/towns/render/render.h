@@ -34,6 +34,7 @@ private:
 	bool crtcIsSinglePageMode;
 	bool crtcShowPage[2];
 	TownsCRTC::Layer crtcLayer[2];
+	TownsCRTC::HardwareMouseCursor hardwareMouse;
 	int crtcPriorityPage;
 	Vec2i crtcRenderSize;
 	int scanLineCounter=0;
