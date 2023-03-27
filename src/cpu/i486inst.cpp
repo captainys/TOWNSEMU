@@ -4666,8 +4666,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{ \
 			unsigned int dst=INT_LOW_WORD(state.reg32()[regNum]); \
 			auto src=EvaluateOperandRegOrMem16(mem,inst.addressSize,inst.segOverride,op2); \
-			if(true==state.exception) \
+			if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes)) \
 			{ \
+				EIPIncrement=0; \
 				break; \
 			} \
 			(func16)(dst,src); \
@@ -4680,8 +4681,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{ \
 			unsigned int dst=state.reg32()[regNum]; \
 			auto src=EvaluateOperandRegOrMem32(mem,inst.addressSize,inst.segOverride,op2); \
-			if(true==state.exception) \
+			if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes)) \
 			{ \
+				EIPIncrement=0; \
 				break; \
 			} \
 			(func32)(dst,src); \
@@ -5247,6 +5249,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{
 				clocksPassed=(OPER_ADDR==op1.operandType ? 2 : 1);
 				uint32_t byte=EvaluateOperandRegOrMem8(mem,inst.addressSize,inst.segOverride,op1);
+				HANDLE_EXCEPTION_IF_ANY;
 				AndByte(byte,inst.EvalUimm8());
 				// SetCF(false); Done in AndByte
 				// SetOF(false); Done in AndByte
@@ -5266,6 +5269,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				else
 				{
 					auto value=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op1);
+					HANDLE_EXCEPTION_IF_ANY;
 					if(true!=state.exception)
 					{
 						value.byteData[0]=~value.byteData[0];
@@ -5288,6 +5292,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				else
 				{
 					auto value1 = EvaluateOperand8(mem, inst.addressSize, inst.segOverride, op1);
+					HANDLE_EXCEPTION_IF_ANY;
 					uint32_t r = 0;
 					uint32_t i = value1.GetAsDword();
 					SubByte(r, i);
@@ -5300,6 +5305,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{
 				clocksPassed=(OPER_ADDR==op1.operandType ? 18 : 13);
 				uint8_t value=EvaluateOperandRegOrMem8(mem,inst.addressSize,inst.segOverride,op1);
+				HANDLE_EXCEPTION_IF_ANY;
 				auto mul=GetAL()*value;
 				SetAX(mul);
 				if(0!=cpputil::GetWordHighByte(mul))
@@ -5320,6 +5326,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{
 				clocksPassed=(OPER_ADDR==op1.operandType ? 18 : 13);
 				int OP=cpputil::ByteToSigned32(EvaluateOperandRegOrMem8(mem,inst.addressSize,inst.segOverride,op1));
+				HANDLE_EXCEPTION_IF_ANY;
 				if(true!=state.exception)
 				{
 					int AL=cpputil::ByteToSigned32(GetAL());
@@ -5344,6 +5351,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{
 				clocksPassed=16;
 				uint16_t value=EvaluateOperandRegOrMem8(mem,inst.addressSize,inst.segOverride,op1);
+				HANDLE_EXCEPTION_IF_ANY;
 				if(0==value)
 				{
 					Interrupt(0,mem,0,0,false); // [1] pp.26-28
@@ -5365,6 +5373,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{
 				clocksPassed=20;
 				auto value=EvaluateOperandRegOrMem8(mem,inst.addressSize,inst.segOverride,op1);
+				HANDLE_EXCEPTION_IF_ANY;
 				if(0==value)
 				{
 					Interrupt(0,mem,0,0,false); // [1] pp.26-28
@@ -6300,6 +6309,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				destin=state.EIP+offset+inst.numBytes;
 				Push32(mem,state.EIP+inst.numBytes);
 			}
+			HANDLE_EXCEPTION_IF_ANY;
 
 			if(true==enableCallStack)
 			{
@@ -9387,46 +9397,57 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_RENUMBER_PUSH_EBP://         0x55,
 		clocksPassed=1;
 		Push(mem,inst.operandSize,GetEBP());
+		HANDLE_EXCEPTION_IF_ANY;
 		break;
 	case I486_RENUMBER_PUSH_ESI://         0x56,
 		clocksPassed=1;
 		Push(mem,inst.operandSize,GetESI());
+		HANDLE_EXCEPTION_IF_ANY;
 		break;
 	case I486_RENUMBER_PUSH_EDI://         0x57,
 		clocksPassed=1;
 		Push(mem,inst.operandSize,GetEDI());
+		HANDLE_EXCEPTION_IF_ANY;
 		break;
 	case I486_RENUMBER_PUSH_I8://          0x6A,
 		clocksPassed=1;
 		Push(mem,inst.operandSize,inst.EvalSimm8());
+		HANDLE_EXCEPTION_IF_ANY;
 		break;
 	case I486_RENUMBER_PUSH_I://           0x68,
 		clocksPassed=1;
 		Push(mem,inst.operandSize,inst.EvalSimm16or32(inst.operandSize));
+		HANDLE_EXCEPTION_IF_ANY;
 		break;
 	case I486_RENUMBER_PUSH_CS://          0x0E,
 		Push(mem,inst.operandSize,state.CS().value);
 		clocksPassed=3;
+		HANDLE_EXCEPTION_IF_ANY;
 		break;
 	case I486_RENUMBER_PUSH_SS://          0x16,
 		Push(mem,inst.operandSize,state.SS().value);
 		clocksPassed=3;
+		HANDLE_EXCEPTION_IF_ANY;
 		break;
 	case I486_RENUMBER_PUSH_DS://          0x1E,
 		Push(mem,inst.operandSize,state.DS().value);
 		clocksPassed=3;
+		HANDLE_EXCEPTION_IF_ANY;
 		break;
 	case I486_RENUMBER_PUSH_ES://          0x06,
 		Push(mem,inst.operandSize,state.ES().value);
 		clocksPassed=3;
+		HANDLE_EXCEPTION_IF_ANY;
 		break;
 	case I486_RENUMBER_PUSH_FS://          0x0FA0,
 		Push(mem,inst.operandSize,state.FS().value);
 		clocksPassed=3;
+		HANDLE_EXCEPTION_IF_ANY;
 		break;
 	case I486_RENUMBER_PUSH_GS://          0x0FA8,
 		Push(mem,inst.operandSize,state.GS().value);
 		clocksPassed=3;
+		HANDLE_EXCEPTION_IF_ANY;
 		break;
 
 
@@ -9435,7 +9456,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			OperandValue value;
 			value.MakeByteWordOrDword(inst.operandSize,Pop(mem,inst.operandSize));
+			HANDLE_EXCEPTION_IF_ANY;
 			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+			HANDLE_EXCEPTION_IF_ANY;
 		}
 		break;
 
