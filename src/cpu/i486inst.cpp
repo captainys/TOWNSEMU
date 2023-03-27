@@ -9454,10 +9454,15 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_RENUMBER_POP_M://            0x8F,
 		clocksPassed=6;
 		{
+			auto savedESP=state.ESP();
 			OperandValue value;
 			value.MakeByteWordOrDword(inst.operandSize,Pop(mem,inst.operandSize));
 			HANDLE_EXCEPTION_IF_ANY;
 			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+			if(true==state.exception)
+			{
+				state.ESP()=savedESP; // If exception, don't move ESP.
+			}
 			HANDLE_EXCEPTION_IF_ANY;
 		}
 		break;
