@@ -7805,37 +7805,32 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					EIPIncrement=0;
 
 					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,(inst.operandSize+16)/8);
-					if(true!=state.exception)
+					HANDLE_EXCEPTION_IF_ANY;
+
+					/* What is this?
+					   FM TOWNS BIOS uses 
+							MOV		AX,0110H
+							MOV		FS,AX
+							CALL	FAR PTR FS:[0040H]
+						for reading from a mouse.  That is a perfect opportunity for the emulator to
+						identify the operating system version.  The CPU class fires:
+							mouseBIOSInterceptorPtr->Intercept();
+						when indirect CALL to 0110:[0040H].
+					*/
+					if(nullptr!=mouseBIOSInterceptorPtr)
 					{
-						/* What is this?
-						   FM TOWNS BIOS uses 
-								MOV		AX,0110H
-								MOV		FS,AX
-								CALL	FAR PTR FS:[0040H]
-							for reading from a mouse.  That is a perfect opportunity for the emulator to
-							identify the operating system version.  The CPU class fires:
-								mouseBIOSInterceptorPtr->Intercept();
-							when indirect CALL to 0110:[0040H].
-						*/
-						if(nullptr!=mouseBIOSInterceptorPtr)
+						unsigned int offset;
+						auto segPtr=ExtractSegmentAndOffset(offset,op1,inst.segOverride);
+						if(0x0110==segPtr->value && 0x0040==offset)
 						{
-							unsigned int offset;
-							auto segPtr=ExtractSegmentAndOffset(offset,op1,inst.segOverride);
-							if(0x0110==segPtr->value && 0x0040==offset)
-							{
-								mouseBIOSInterceptorPtr->InterceptMouseBIOS();
-							}
+							mouseBIOSInterceptorPtr->InterceptMouseBIOS();
 						}
-
-						auto destSeg=value.GetFwordSegment();
-						auto destEIP=value.GetAsDword();
-
-						clocksPassed=CALLF(mem,inst.operandSize,inst.numBytes,destSeg,destEIP,clocksPassed);
 					}
-					else
-					{
-						HandleException(false,mem,inst.numBytes);
-					}
+
+					auto destSeg=value.GetFwordSegment();
+					auto destEIP=value.GetAsDword();
+
+					clocksPassed=CALLF(mem,inst.operandSize,inst.numBytes,destSeg,destEIP,clocksPassed);
 				}
 				break;
 			case 5: // JMPF Indirect
@@ -7851,14 +7846,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					EIPIncrement=0;
 
 					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,(inst.operandSize+16)/8);
-					if(true!=state.exception)
-					{
-						JMPF(mem,inst.operandSize,inst.numBytes,value.GetFwordSegment(),value.GetAsDword(),clocksPassed);
-					}
-					else
-					{
-						HandleException(false,mem,inst.numBytes);
-					}
+					HANDLE_EXCEPTION_IF_ANY;
+					JMPF(mem,inst.operandSize,inst.numBytes,value.GetFwordSegment(),value.GetAsDword(),clocksPassed);
 				}
 				break;
 			case 6: // PUSH
