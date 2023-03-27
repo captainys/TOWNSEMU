@@ -143,12 +143,14 @@ public:
 		SCSICMD_WRITE_6         =0x0A,  // [9] 9.2.20 WRITE(6) command
 		SCSICMD_SEEK_6          =0x0B,  // [9] 9.2.15 SEEK(6) and SEEK(10) commands
 		SCSICMD_INQUIRY         =0x12,
+		SCSICMD_COPY            =0x18,  // [9] 8.2.3 Copy Command
 		SCSICMD_PREVENT_REMOVAL =0x1E,  // [9] 9.2.4 PREVENT ALLOW MEDIUM REMOVAL command
 		SCSICMD_READ_CAPACITY   =0x25,  // [9] 9.2.7 READ CAPACITY command
 		SCSICMD_READ_10         =0x28,  // [9] 9.2.6 READ(10) command
 		SCSICMD_WRITE_10        =0x2A,  // [9] 9.2.21 WRITE(10) command
 		SCSICMD_SEEK_10         =0x2B,  // [9] 9.2.15 SEEK(6) and SEEK(10) commands
 		SCSICMD_VERIFY_10       =0x2F,  // [9] 9.2.19 VERIFY command
+		SCSICMD_COPY_AND_VERIFY =0x3A,  // [9] 8.2.4 Copy and Verify Command
 		SCSICMD_READ_SUBCHANNEL =0x42,  // [9] 14.2.10 READ SUB-CHANNEL command
 		SCSICMD_READTOC         =0x43,
 		SCSICMD_PLAY_AUDIO_MSF  =0x47,

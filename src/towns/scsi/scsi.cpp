@@ -196,6 +196,8 @@ TownsSCSI::TownsSCSI(class FMTowns *townsPtr) : Device(townsPtr)
 	commandLength[SCSICMD_READTOC]        =10;
 	commandLength[SCSICMD_PLAY_AUDIO_MSF] =10;
 	commandLength[SCSICMD_PAUSE_RESUME]   =10;
+	commandLength[SCSICMD_COPY]           =6;
+	commandLength[SCSICMD_COPY_AND_VERIFY]=10;
 }
 
 void TownsSCSI::SetOutsideWorld(class Outside_World *ptr)
@@ -781,6 +783,14 @@ void TownsSCSI::ExecSCSICommand(void)
 		state.status=STATUSCODE_GOOD;
 		state.message=0; // What am I supposed to return?
 		state.senseKey=SENSEKEY_NO_SENSE;
+		EnterStatusPhase();
+		break;
+	case SCSICMD_COPY:
+	case SCSICMD_COPY_AND_VERIFY:
+		std::cout << "SCSI Coomand [" << cpputil::Ubtox(state.commandBuffer[0]) << "] not implemented.  Just returns error." << std::endl;
+		state.senseKey=SENSEKEY_ILLEGAL_REQUEST;
+		state.status=STATUSCODE_CHECK_CONDITION;
+		state.message=0; // What am I supposed to return?
 		EnterStatusPhase();
 		break;
 	default:
