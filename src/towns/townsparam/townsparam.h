@@ -6,6 +6,7 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 #include "townsdef.h"
 
 class TownsStartParameters
@@ -80,6 +81,8 @@ public:
 	std::string playbackEventLogFName;
 	std::string keyMapFName;
 	bool memCardWriteProtected=false;
+
+	std::unordered_map <std::string,std::string> fileNameAlias;
 
 	std::vector <std::string> sharedDir;
 

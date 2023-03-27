@@ -358,6 +358,13 @@ public:
 		bool justLoadedState=false;
 
 
+
+		/*!
+		*/
+		std::unordered_map <std::string,std::string> fileNameAlias;
+
+
+
 		i486DX::FarPointer disassemblePointer;
 		Variable();
 		void Reset(void);

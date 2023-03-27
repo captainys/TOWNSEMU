@@ -78,6 +78,9 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  However, it may break time-sensitive applications.  Like ChaseHQ flickers." << std::endl;
 	std::cout << "  To prevent such break down, this option will prevent VM timer from fast-forwarded" << std::endl;
 	std::cout << "  when VM lags.  In return, the execution may become slower." << std::endl;
+	std::cout << "-ALIAS aliasLabel filename" << std::endl;
+	std::cout << "  Define file-name alias.  Alias can later be used as a parameter to FDxLOAD, TAPELOAD commands." << std::endl;
+	std::cout << "  eg. You can use -ALIAS DISKA \"full-path-to-game-diskA\" to ease disk swap from command." << std::endl;
 	std::cout << "-CMOS filename" << std::endl;
 	std::cout << "  Specify CMOS (BIOS settings) file.  If you specify this option," << std::endl;
 	std::cout << "  CMOS settings will be saved automatically when closing the program." << std::endl;
@@ -533,6 +536,13 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		{
 			int drv=ARG[3]-'0';
 			fdImgWriteProtect[drv]=false;
+		}
+		else if("-ALIAS"==ARG && i+2<argc)
+		{
+			auto LABEL=argv[i+1];
+			cpputil::Capitalize(LABEL);
+			fileNameAlias[LABEL]=argv[i+2];
+			i+=2;
 		}
 		else if("-CDPATH"==ARG && i+1<argc)
 		{

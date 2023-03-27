@@ -77,6 +77,8 @@ void FMTowns::State::PowerOn(void)
 		}
 	}
 
+	towns.var.fileNameAlias=argv.fileNameAlias;
+
 	if(TOWNSTYPE_UNKNOWN!=argv.townsType)
 	{
 		towns.townsType=argv.townsType;
