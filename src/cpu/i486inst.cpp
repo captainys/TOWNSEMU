@@ -7802,6 +7802,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 						clocksPassed=20;
 					}
 
+					EIPIncrement=0;
+
 					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,(inst.operandSize+16)/8);
 					if(true!=state.exception)
 					{
@@ -7829,8 +7831,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 						auto destEIP=value.GetAsDword();
 
 						clocksPassed=CALLF(mem,inst.operandSize,inst.numBytes,destSeg,destEIP,clocksPassed);
-
-						EIPIncrement=0;
+					}
+					else
+					{
+						HandleException(false,mem,inst.numBytes);
 					}
 				}
 				break;
@@ -7844,13 +7848,16 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					{
 						clocksPassed=1;
 					}
+					EIPIncrement=0;
 
 					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,(inst.operandSize+16)/8);
 					if(true!=state.exception)
 					{
 						JMPF(mem,inst.operandSize,inst.numBytes,value.GetFwordSegment(),value.GetAsDword(),clocksPassed);
-
-						EIPIncrement=0;
+					}
+					else
+					{
+						HandleException(false,mem,inst.numBytes);
 					}
 				}
 				break;
