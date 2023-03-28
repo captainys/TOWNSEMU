@@ -4743,10 +4743,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{\
 				uint32_t i=cpputil::GetWord(operPtr);\
 				auto src=INT_LOW_WORD(state.reg32()[regNum]); \
-				if(true==state.exception)\
-				{\
-					break;\
-				}\
+				if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes)) \
+				{ \
+					EIPIncrement=0; \
+					break; \
+				} \
 				(func16)(i,src);\
 				if(true==(update))\
 				{\
@@ -4757,10 +4758,6 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{\
 				uint32_t i=cpputil::GetDword(operPtr);\
 				auto src=state.reg32()[regNum]; \
-				if(true==state.exception)\
-				{\
-					break;\
-				}\
 				(func32)(i,src);\
 				if(true==(update))\
 				{\
@@ -4772,8 +4769,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{ \
 			auto dst=EvaluateOperandReg16OrReg32OrMem(mem,inst.addressSize,inst.segOverride,op1,2); \
 			auto src=INT_LOW_WORD(state.reg32()[regNum]); \
-			if(true==state.exception) \
+			if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes)) \
 			{ \
+				EIPIncrement=0; \
 				break; \
 			} \
 			auto i=dst.GetAsWord(); \
@@ -4783,13 +4781,19 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				dst.SetDword(i); \
 				StoreOperandValueReg16OrReg32OrMem(op1,mem,inst.addressSize,inst.segOverride,dst); \
 			} \
+			if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes)) \
+			{ \
+				EIPIncrement=0; \
+				break; \
+			} \
 		} \
 		else \
 		{ \
 			auto dst=EvaluateOperandReg16OrReg32OrMem(mem,inst.addressSize,inst.segOverride,op1,4); \
 			auto src=state.reg32()[regNum]; \
-			if(true==state.exception) \
+			if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes)) \
 			{ \
+				EIPIncrement=0; \
 				break; \
 			} \
 			auto i=dst.GetAsDword(); \
@@ -4798,6 +4802,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{ \
 				dst.SetDword(i); \
 				StoreOperandValueReg16OrReg32OrMem(op1,mem,inst.addressSize,inst.segOverride,dst); \
+			} \
+			if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes)) \
+			{ \
+				EIPIncrement=0; \
+				break; \
 			} \
 		} \
 	}
@@ -4817,8 +4826,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		if(nullptr!=operPtr) \
 		{ \
 			auto value2=GetRegisterValue8(reg); \
-			if(true==state.exception) \
+			if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes)) \
 			{ \
+				EIPIncrement=0; \
 				break; \
 			} \
 			uint32_t i=*operPtr; \
@@ -4832,8 +4842,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{ \
 			auto value1=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op1); \
 			auto value2=GetRegisterValue8(reg); \
-			if(true==state.exception) \
+			if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes)) \
 			{ \
+				EIPIncrement=0; \
 				break; \
 			} \
 			auto i=value1.GetAsDword(); \
@@ -4842,6 +4853,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{ \
 				value1.SetDword(i); \
 				StoreOperandValue8(op1,mem,inst.addressSize,inst.segOverride,value1); \
+			} \
+			if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes)) \
+			{ \
+				EIPIncrement=0; \
+				break; \
 			} \
 		} \
 	}
