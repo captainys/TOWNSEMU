@@ -415,13 +415,16 @@ public:
 
 	inline static void PageFaultCheckAfterEnter(class i486DX &cpu,Memory &mem)
 	{
-		if(16==cpu.GetStackAddressingSize())
+		if(true==cpu.PagingEnabled())
 		{
-			cpu.LinearAddressToPhysicalAddressWrite(cpu.state.SS().baseLinearAddr+cpu.state.SP(),mem);
-		}
-		else
-		{
-			cpu.LinearAddressToPhysicalAddressWrite(cpu.state.SS().baseLinearAddr+cpu.state.ESP(),mem);
+			if(16==cpu.GetStackAddressingSize())
+			{
+				cpu.LinearAddressToPhysicalAddressWrite(cpu.state.SS().baseLinearAddr+cpu.state.SP(),mem);
+			}
+			else
+			{
+				cpu.LinearAddressToPhysicalAddressWrite(cpu.state.SS().baseLinearAddr+cpu.state.ESP(),mem);
+			}
 		}
 	}
 
