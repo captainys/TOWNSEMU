@@ -4537,8 +4537,18 @@ inline unsigned int i486DX::CALLF(Memory &mem,uint16_t opSize,uint16_t instNumBy
 			auto newCPL=state.CS().DPL;
 			auto prevSS=state.SS().value;
 			auto prevESP=state.ESP();
-			LoadSegmentRegister(state.SS(),FetchWord(32,state.TR,TSS_OFFSET_SS0+newCPL*8,mem),mem);
-			state.ESP()=FetchDword(32,state.TR,TSS_OFFSET_ESP0+newCPL*8,mem);
+			if(DESCTYPE_AVAILABLE_286_TSS==state.TR.GetType() ||
+			   DESCTYPE_BUSY_286_TSS==state.TR.GetType())
+			{
+				LoadSegmentRegister(state.SS(),FetchWord(32,state.TR,TSS286_OFFSET_SS0+newCPL*4,mem),mem);
+				state.ESP()=FetchWord(32,state.TR,TSS286_OFFSET_SP0+newCPL*4,mem);
+			}
+			else
+			{
+				// Assume 386 TSS.
+				LoadSegmentRegister(state.SS(),FetchWord(32,state.TR,TSS_OFFSET_SS0+newCPL*8,mem),mem);
+				state.ESP()=FetchDword(32,state.TR,TSS_OFFSET_ESP0+newCPL*8,mem);
+			}
 			Push(mem,opSize,prevSS,prevESP);
 		}
 	}

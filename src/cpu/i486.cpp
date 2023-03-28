@@ -809,38 +809,91 @@ std::vector <std::string> i486DX::GetTSSText(const Memory &mem) const
 	text.push_back("");
 	text.back()+="TR="+cpputil::Ustox(state.TR.value)+" TR Linear Base Addr="+cpputil::Uitox(state.TR.baseLinearAddr);
 
-	text.push_back("");
-	text.back()+="LINK(OLD TSS SELECTOR)="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,0,mem));
+	if(DESCTYPE_AVAILABLE_386_TSS==state.TR.GetType() ||
+	   DESCTYPE_BUSY_386_TSS==state.TR.GetType())
+	{
+		text.push_back("");
+		text.back()+="LINK(OLD TSS SELECTOR)="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,0,mem));
 
-	text.push_back("");
-	text.back()+="SS0:ESP0="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,8,mem))+":"+cpputil::Uitox(DebugFetchDword(addrSize,state.TR,4,mem));
-	text.push_back("");
-	text.back()+="SS1:ESP1="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,0x10,mem))+":"+cpputil::Uitox(DebugFetchDword(addrSize,state.TR,0x0C,mem));
-	text.push_back("");
-	text.back()+="SS2:ESP2="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,0x18,mem))+":"+cpputil::Uitox(DebugFetchDword(addrSize,state.TR,0x14,mem));
-	text.push_back("");
-	text.back()+="CS:EIP="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,0x4C,mem))+":"+cpputil::Uitox(DebugFetchDword(addrSize,state.TR,0x20,mem));
-	text.push_back("");
-	text.back()+="EFLAGS="+cpputil::Uitox(DebugFetchDword(addrSize,state.TR,0x24,mem));
-	text.push_back("");
-	text.back()+="EAX="+cpputil::Uitox(DebugFetchDword(addrSize,state.TR,0x28,mem))+" ECX="+cpputil::Uitox(DebugFetchDword(addrSize,state.TR,0x2C,mem));
-	text.push_back("");
-	text.back()+="EDX="+cpputil::Uitox(DebugFetchDword(addrSize,state.TR,0x30,mem))+" EBX="+cpputil::Uitox(DebugFetchDword(addrSize,state.TR,0x34,mem));
-	text.push_back("");
-	text.back()+="ESP="+cpputil::Uitox(DebugFetchDword(addrSize,state.TR,0x38,mem))+" EBP="+cpputil::Uitox(DebugFetchDword(addrSize,state.TR,0x3C,mem));
-	text.push_back("");
-	text.back()+="ESI="+cpputil::Uitox(DebugFetchDword(addrSize,state.TR,0x40,mem))+" EDI="+cpputil::Uitox(DebugFetchDword(addrSize,state.TR,0x44,mem));
-	text.push_back("");
-	text.back()+="ES="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,0x48,mem))+" SS="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,0x50,mem));
-	text.push_back("");
-	text.back()+="DS="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,0x54,mem))+" FS="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,0x58,mem));
-	text.push_back("");
-	text.back()+="GS="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,0x5C,mem));
-	text.push_back("");
-	text.back()+="LDT="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,0x60,mem));
-	text.push_back("");
-	text.back()+="T="+cpputil::Ustox(DebugFetchDword(addrSize,state.TR,0x64,mem));
-	text.back()+="  I/O MAP Base="+cpputil::Ustox(DebugFetchDword(addrSize,state.TR,0x66,mem));
+		text.push_back("");
+		text.back()+="SS0:ESP0="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,8,mem))+":"+cpputil::Uitox(DebugFetchDword(addrSize,state.TR,4,mem));
+		text.push_back("");
+		text.back()+="SS1:ESP1="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,0x10,mem))+":"+cpputil::Uitox(DebugFetchDword(addrSize,state.TR,0x0C,mem));
+		text.push_back("");
+		text.back()+="SS2:ESP2="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,0x18,mem))+":"+cpputil::Uitox(DebugFetchDword(addrSize,state.TR,0x14,mem));
+		text.push_back("");
+		text.back()+="CS:EIP="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,0x4C,mem))+":"+cpputil::Uitox(DebugFetchDword(addrSize,state.TR,0x20,mem));
+		text.push_back("");
+		text.back()+="EFLAGS="+cpputil::Uitox(DebugFetchDword(addrSize,state.TR,0x24,mem));
+		text.push_back("");
+		text.back()+="EAX="+cpputil::Uitox(DebugFetchDword(addrSize,state.TR,0x28,mem))+" ECX="+cpputil::Uitox(DebugFetchDword(addrSize,state.TR,0x2C,mem));
+		text.push_back("");
+		text.back()+="EDX="+cpputil::Uitox(DebugFetchDword(addrSize,state.TR,0x30,mem))+" EBX="+cpputil::Uitox(DebugFetchDword(addrSize,state.TR,0x34,mem));
+		text.push_back("");
+		text.back()+="ESP="+cpputil::Uitox(DebugFetchDword(addrSize,state.TR,0x38,mem))+" EBP="+cpputil::Uitox(DebugFetchDword(addrSize,state.TR,0x3C,mem));
+		text.push_back("");
+		text.back()+="ESI="+cpputil::Uitox(DebugFetchDword(addrSize,state.TR,0x40,mem))+" EDI="+cpputil::Uitox(DebugFetchDword(addrSize,state.TR,0x44,mem));
+		text.push_back("");
+		text.back()+="ES="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,0x48,mem))+" SS="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,0x50,mem));
+		text.push_back("");
+		text.back()+="DS="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,0x54,mem))+" FS="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,0x58,mem));
+		text.push_back("");
+		text.back()+="GS="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,0x5C,mem));
+		text.push_back("");
+		text.back()+="LDT="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,0x60,mem));
+		text.push_back("");
+		text.back()+="T="+cpputil::Ustox(DebugFetchDword(addrSize,state.TR,0x64,mem));
+		text.back()+="  I/O MAP Base="+cpputil::Ustox(DebugFetchDword(addrSize,state.TR,0x66,mem));
+	}
+	else if(DESCTYPE_AVAILABLE_286_TSS==state.TR.GetType() ||
+	        DESCTYPE_BUSY_286_TSS==state.TR.GetType())
+	{
+		text.push_back("");
+		text.back()+="LINK(OLD TSS SELECTOR)="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,0,mem));
+
+		text.push_back("");
+		text.back()+="SS0:SP0="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,4,mem))+":"+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,2,mem));
+		text.push_back("");
+		text.back()+="SS1:SP1="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,8,mem))+":"+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,6,mem));
+		text.push_back("");
+		text.back()+="SS1:SP1="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,12,mem))+":"+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,10,mem));
+
+		text.push_back("");
+		text.back()+="IP="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,14,mem));
+		text.push_back("");
+		text.back()+="FLAGS="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,16,mem));
+		text.push_back("");
+		text.back()+="AX="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,18,mem));
+		text.push_back("");
+		text.back()+="CX="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,20,mem));
+		text.push_back("");
+		text.back()+="DX="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,22,mem));
+		text.push_back("");
+		text.back()+="BX="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,24,mem));
+		text.push_back("");
+		text.back()+="SP="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,26,mem));
+		text.push_back("");
+		text.back()+="BP="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,28,mem));
+		text.push_back("");
+		text.back()+="SI="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,30,mem));
+		text.push_back("");
+		text.back()+="DI="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,32,mem));
+		text.push_back("");
+		text.back()+="ES="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,34,mem));
+		text.push_back("");
+		text.back()+="CS="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,36,mem));
+		text.push_back("");
+		text.back()+="SS="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,38,mem));
+		text.push_back("");
+		text.back()+="DS="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,40,mem));
+		text.push_back("");
+		text.back()+="LDTR="+cpputil::Ustox(DebugFetchWord(addrSize,state.TR,42,mem));
+	}
+	else
+	{
+		text.push_back("TR is not pointing to a task-state segment.");
+	}
+
 
 	return text;
 }
