@@ -4875,8 +4875,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		unsigned int reg=REG_AL+inst.GetREG(); \
 		auto value1=GetRegisterValue8(reg); \
 		auto value2=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op2); \
-		if(true==state.exception) \
+		if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes)) \
 		{ \
+			EIPIncrement=0; \
 			break; \
 		} \
 		(func)(value1,value2.GetAsDword()); \
