@@ -7229,8 +7229,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					// FISUBR m16int
 					break;
 				case 6:
-					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,2);
-					clocksPassed=state.fpuState.FIDIV_m16int(*this,value.byteData);
+					{
+						auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,2);
+						clocksPassed=state.fpuState.FIDIV_m16int(*this,value.byteData);
+					}
 					break;
 				case 7:
 					// FIDIVR m16int
