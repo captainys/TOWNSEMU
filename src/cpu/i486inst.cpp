@@ -7663,8 +7663,17 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 
 
-	case I486_RENUMBER_INC_DEC_R_M8:
+	case I486_RENUMBER_INC_DEC_R_M8: // 0xFE
 		{
+			if(op1.operandType==OPER_ADDR)
+			{
+				clocksPassed=3;
+			}
+			else
+			{
+				clocksPassed=1;
+			}
+
 			uint32_t i;
 			uint8_t *operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1);
 			if(nullptr!=operPtr)
@@ -7675,47 +7684,40 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{
 				i=EvaluateOperandRegOrMem8(mem,inst.addressSize,inst.segOverride,op1);
 			}
-			if(true!=state.exception)
+			HANDLE_EXCEPTION_IF_ANY;
+
+			switch(inst.GetREG())
 			{
-				switch(inst.GetREG())
-				{
-				case 0:
-					IncrementByte(i);
-					break;
-				case 1:
-					DecrementByte(i);
-					break;
-				case 2:
-				case 3:
-				case 4:
-				case 5:
-				case 6:
-				case 7:
-					Abort("Undefined REG for "+cpputil::Ubtox(inst.opCode));
-					return 0;
-				default:
-					std_unreachable;
-				}
-				if(nullptr!=operPtr)
-				{
-					operPtr[0]=i;
-				}
-				else
-				{
-					StoreOperandValueRegOrMem8(op1,mem,inst.addressSize,inst.segOverride,i);
-				}
+			case 0:
+				IncrementByte(i);
+				break;
+			case 1:
+				DecrementByte(i);
+				break;
+			case 2:
+			case 3:
+			case 4:
+			case 5:
+			case 6:
+			case 7:
+				Abort("Undefined REG for "+cpputil::Ubtox(inst.opCode));
+				return 0;
+			default:
+				std_unreachable;
 			}
-			if(op1.operandType==OPER_ADDR)
+			if(nullptr!=operPtr)
 			{
-				clocksPassed=3;
+				operPtr[0]=i;
 			}
 			else
 			{
-				clocksPassed=1;
+				StoreOperandValueRegOrMem8(op1,mem,inst.addressSize,inst.segOverride,i);
 			}
+
+			HANDLE_EXCEPTION_IF_ANY;
 		}
 		break;
-	case I486_RENUMBER_INC_DEC_CALL_CALLF_JMP_JMPF_PUSH:
+	case I486_RENUMBER_INC_DEC_CALL_CALLF_JMP_JMPF_PUSH: // 0xFF
 		{
 			auto REG=inst.GetREG();
 			switch(REG)
@@ -7933,12 +7935,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				break;
 			case 6: // PUSH
 				{
-					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
 					clocksPassed=4;
-					if(true!=state.exception)
-					{
-						Push(mem,inst.operandSize,value.GetAsDword());
-					}
+					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+					HANDLE_EXCEPTION_IF_ANY;
+					Push(mem,inst.operandSize,value.GetAsDword());
+					HANDLE_EXCEPTION_IF_ANY;
 				}
 				break;
 			case 7:
