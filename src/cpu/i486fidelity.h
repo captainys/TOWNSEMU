@@ -602,16 +602,21 @@ public:
 			uint32_t newSP,newSS;
 			if(16==operandSize)
 			{
-				cpu.state.ESP()+=4;
+				// (*)
 				newSP=cpu.Pop16(mem);
 				newSS=cpu.Pop16(mem);
 			}
 			else
 			{
-				cpu.state.ESP()+=8;
+				// (*)
 				newSP=cpu.Pop32(mem);
 				newSS=cpu.Pop32(mem);
 			}
+			// (*) 80386 Programmer's Reference Manual 1986 says increment eSP by 4 if operandSize is 16 or 8 if 32.
+			//     However, looks like these 4 and 8 seem to be talking about the size for CS and eIP.
+			//     Also same description exists for SAME-PRIVILEGE-LEVEL.
+			//     Therefore, I suppose I am not supposed to increment eSP here.
+
 			// Imm is already added.
 			cpu.LoadSegmentRegister(cpu.state.SS(),newSS,mem);
 			cpu.state.ESP()=newSP;
