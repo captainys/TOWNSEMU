@@ -38,7 +38,9 @@ public:
 	constexpr bool VERRTypeCheck(const i486DX &cpu,const i486DX::SegmentRegister &reg) const{return true;}
 	constexpr bool VERWTypeCheck(const i486DX &cpu,const i486DX::SegmentRegister &reg) const{return true;}
 
-	void PageFaultCheckAfterEnter(class i486DX &cpu,Memory &mem) const{}
+	inline void PageFaultCheckAfterEnter(class i486DX &cpu,Memory &mem) const{}
+
+	inline void CheckRETFtoOuterLevel(i486DX &cpu,Memory &mem,uint32_t operandSize,uint32_t prevDPL){};
 
 	// LoadSegmentRegister
 	class LoadSegmentRegisterVariables
