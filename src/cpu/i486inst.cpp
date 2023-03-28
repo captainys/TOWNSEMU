@@ -2680,6 +2680,27 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 			case 0:
 				disasm=DisassembleTypicalOneOperand("FIADD(m16int)  ",op1,16,cs.value,eip,symTable);
 				break;
+			case 1:
+				disasm=DisassembleTypicalOneOperand("FIMUL(m16int)  ",op1,16,cs.value,eip,symTable);
+				break;
+			case 2:
+				disasm=DisassembleTypicalOneOperand("FICOM(m16int)  ",op1,16,cs.value,eip,symTable);
+				break;
+			case 3:
+				disasm=DisassembleTypicalOneOperand("FICOMP(m16int)  ",op1,16,cs.value,eip,symTable);
+				break;
+			case 4:
+				disasm=DisassembleTypicalOneOperand("FISUB(m16int)  ",op1,16,cs.value,eip,symTable);
+				break;
+			case 5:
+				disasm=DisassembleTypicalOneOperand("FISUR(m16int)  ",op1,16,cs.value,eip,symTable);
+				break;
+			case 6:
+				disasm=DisassembleTypicalOneOperand("FIDIV(m16int)  ",op1,16,cs.value,eip,symTable);
+				break;
+			case 7:
+				disasm=DisassembleTypicalOneOperand("FIDIVR(m16int)  ",op1,16,cs.value,eip,symTable);
+				break;
 			default:
 				disasm="?FPUINST REG="+cpputil::Ubtox(Instruction::GetREG(operand[0]));;
 				break;
@@ -7173,6 +7194,37 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			if(0xD9==inst.operand[0])
 			{
 				clocksPassed=state.fpuState.FCOMPP(*this);
+			}
+			else
+			{
+				switch(inst.GetREG())
+				{
+				case 0:
+					// FIADD m16int
+					break;
+				case 1:
+					// FIMUL m16int
+					break;
+				case 2:
+					// FICOM m16int
+					break;
+				case 3:
+					// FICOMP m16int
+					break;
+				case 4:
+					// FISUB m16int
+					break;
+				case 5:
+					// FISUBR m16int
+					break;
+				case 6:
+					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,2);
+					clocksPassed=state.fpuState.FIDIV_m16int(*this,value.byteData);
+					break;
+				case 7:
+					// FIDIVR m16int
+					break;
+				}
 			}
 			break;
 		}

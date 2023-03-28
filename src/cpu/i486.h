@@ -434,6 +434,7 @@ public:
 		void GetSTAsSignedInt(class i486DX &cpu,OperandValueBase &value);
 		void GetSTAs80BitBCD(class i486DX &cpu,OperandValueBase &value);
 
+		static int16_t IntFrom16Bit(const unsigned char byteData[]);
 		static int32_t IntFrom32Bit(const unsigned char byteData[]);
 		static int64_t IntFrom64Bit(const unsigned char byteData[]);
 
@@ -534,6 +535,7 @@ public:
 		unsigned int FCOM_m64real(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FCOMP_m64real(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FCOS(i486DX &cpu);
+		unsigned int FIDIV_m16int(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FILD_m32int(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FILD_m64int(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FDIV_m32real(i486DX &cpu,const unsigned char byteData[]);

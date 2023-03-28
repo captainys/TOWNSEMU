@@ -37,6 +37,18 @@ void i486DX::FPUState::BreakOnNan(i486DX &cpu,double value)
 
 
 
+/* static */ int16_t i486DX::FPUState::IntFrom16Bit(const unsigned char byteData[])
+{
+#ifdef YS_LITTLE_ENDIAN
+	return *((int16_t *)byteData);
+#else
+	uint16_t ui;
+	ui= (uint32_t)byteData[0]|
+	   ((uint32_t)byteData[1]<<8);
+	return *((int16_t *)&ui);
+#endif
+}
+
 /* static */ int32_t i486DX::FPUState::IntFrom32Bit(const unsigned char byteData[])
 {
 #ifdef YS_LITTLE_ENDIAN
@@ -824,6 +836,28 @@ unsigned int i486DX::FPUState::FDIVRP_STi_ST(i486DX &cpu,int i)
 		return 73;
 	}
 	return 0; // Let it abort.
+}
+unsigned int i486DX::FPUState::FIDIV_m16int(i486DX &cpu,const unsigned char byteData[])
+{
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+
+		double src=(double)IntFrom16Bit(byteData);
+		auto &st=ST(cpu);
+		if(0==st.value)
+		{
+			// Zero division
+		}
+		st.value/=src;
+
+	#ifdef CHECK_FOR_NAN
+		BreakOnNan(cpu,st.value);
+	#endif
+
+		return 73;
+	}
+	return 0;
 }
 unsigned int i486DX::FPUState::FILD_m32int(i486DX &cpu,const unsigned char byteData[])
 {
