@@ -3532,8 +3532,8 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 				}
 				return;
 			case DESCTYPE_286_INT_GATE: // 0b0110:
-				Abort("286 16-bit INT gate not supported");
 				gateOperandSize=16;
+				isINTGate=true;
 				break;
 			case DESCTYPE_286_TRAP_GATE: // 0b0111:
 				// I have no idea if it is the correct way of handling an 80286 gate.
@@ -3592,8 +3592,18 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 
 					auto TempSS=state.SS();
 					auto TempESP=state.ESP();
-					LoadSegmentRegister(state.SS(),FetchWord(32,state.TR,TSS_OFFSET_SS0+newCS.DPL*8,mem),mem);
-					state.ESP()=FetchDword(32,state.TR,TSS_OFFSET_ESP0+newCS.DPL*8,mem);
+					if(DESCTYPE_AVAILABLE_286_TSS==state.TR.GetType() ||
+					   DESCTYPE_BUSY_286_TSS==state.TR.GetType())
+					{
+						LoadSegmentRegister(state.SS(),FetchWord(32,state.TR,TSS286_OFFSET_SS0+newCS.DPL*4,mem),mem);
+						state.ESP()=FetchWord(32,state.TR,TSS286_OFFSET_SP0+newCS.DPL*4,mem);
+					}
+					else
+					{
+						// Assume 386 TSS.
+						LoadSegmentRegister(state.SS(),FetchWord(32,state.TR,TSS_OFFSET_SS0+newCS.DPL*8,mem),mem);
+						state.ESP()=FetchDword(32,state.TR,TSS_OFFSET_ESP0+newCS.DPL*8,mem);
+					}
 					Push(mem,gateOperandSize,TempSS.value);
 					Push(mem,gateOperandSize,TempESP);
 				}
