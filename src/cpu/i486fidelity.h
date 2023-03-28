@@ -593,6 +593,28 @@ public:
 	{
 		attribBytes=0;
 	}
+	inline static void CheckRETFtoOuterLevel(i486DX &cpu,Memory &mem,uint32_t operandSize,uint32_t prevDPL)
+	{
+		if(0==cpu.GetVM() && true!=cpu.IsInRealMode() && cpu.state.CS().DPL>prevDPL)
+		{
+			uint32_t newSP,newSS;
+			if(16==operandSize)
+			{
+				cpu.state.ESP()+=4;
+				newSP=cpu.Pop16(mem);
+				newSS=cpu.Pop16(mem);
+			}
+			else
+			{
+				cpu.state.ESP()+=8;
+				newSP=cpu.Pop32(mem);
+				newSS=cpu.Pop32(mem);
+			}
+			// Imm is already added.
+			cpu.LoadSegmentRegister(cpu.state.SS(),newSS,mem);
+			cpu.state.ESP()=newSP;
+		}
+	}
 
 
 

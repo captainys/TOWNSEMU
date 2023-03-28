@@ -6560,6 +6560,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			clocksPassed=14+level*3;
 
 			Push(mem,inst.operandSize,state.EBP());
+			HANDLE_EXCEPTION_IF_ANY;
 			auto framePtr=state.ESP();
 			if(0<level)
 			{
@@ -9931,6 +9932,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{
 				clocksPassed=18;
 			}
+			auto prevDPL=state.CS().DPL;
 
 			uint32_t eip,cs;
 			Pop(eip,cs,mem,inst.operandSize);
@@ -9942,6 +9944,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			{
 				PopCallStack(state.CS().value,state.EIP);
 			}
+
+			fidelity.CheckRETFtoOuterLevel(*this,mem,inst.operandSize,prevDPL);
 		}
 		break;
 	case I486_RENUMBER_RET_I16://          0xC2,
@@ -9955,21 +9959,26 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		}
 		break;
 	case I486_RENUMBER_RETF_I16://         0xCA,
-		if(true==IsInRealMode())
 		{
-			clocksPassed=14;
-		}
-		else
-		{
-			clocksPassed=17;
-		}
-		SetIPorEIP(inst.operandSize,Pop(mem,inst.operandSize));
-		LoadSegmentRegister(state.CS(),Pop(mem,inst.operandSize),mem);
-		state.ESP()+=inst.EvalUimm16(); // Do I need to take &0xffff if address mode is 16? 
-		EIPIncrement=0;
-		if(enableCallStack)
-		{
-			PopCallStack(state.CS().value,state.EIP);
+			if(true==IsInRealMode())
+			{
+				clocksPassed=14;
+			}
+			else
+			{
+				clocksPassed=17;
+			}
+			auto prevDPL=state.CS().DPL;
+
+			SetIPorEIP(inst.operandSize,Pop(mem,inst.operandSize));
+			LoadSegmentRegister(state.CS(),Pop(mem,inst.operandSize),mem);
+			state.ESP()+=inst.EvalUimm16(); // Do I need to take &0xffff if address mode is 16? 
+			EIPIncrement=0;
+			if(enableCallStack)
+			{
+				PopCallStack(state.CS().value,state.EIP);
+			}
+			fidelity.CheckRETFtoOuterLevel(*this,mem,inst.operandSize,prevDPL);
 		}
 		break;
 
