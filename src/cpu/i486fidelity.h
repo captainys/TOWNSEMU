@@ -10,8 +10,12 @@
 class i486DXLowFidelity
 {
 public:
-	inline static void SaveESPHighWord(uint8_t,uint32_t){}
-	inline static void RestoreESPHighWord(uint8_t,uint32_t &){}
+	class SavedESP
+	{
+	};
+	inline static void SaveESP(SavedESP &,uint8_t,uint32_t){}
+	inline static void RestoreESPHighWord(uint8_t,uint32_t &,SavedESP){}
+	constexpr bool HandleExceptionAndRestoreESPIfAny(class i486DX &,Memory &,uint32_t instNumBytes,SavedESP) const{return false;}
 
 	inline static void Sync_CS_RPL_to_DPL(class i486DX &){}
 
@@ -123,21 +127,34 @@ public:
 class i486DXHighFidelity : public i486DXDefaultFidelity
 {
 public:
-	uint32_t ESPHigh;
-	inline void SaveESPHighWord(uint8_t addressSize,uint32_t ESP)
+	class SavedESP
+	{
+	public:
+		uint32_t ESP;
+	};
+	inline static void SaveESP(SavedESP &save,uint8_t,uint32_t ESP)
+	{
+		save.ESP=ESP;
+	}
+	inline void RestoreESPHighWord(uint8_t addressSize,uint32_t &ESP,SavedESP savedESP)
 	{
 		if(16==addressSize)
 		{
-			ESPHigh=(ESP&0xFFFF0000);
+			ESP&=0xFFFF;
+			ESP|=(savedESP.ESP&0xFFFF0000);
 		}
 	}
-	inline void RestoreESPHighWord(uint8_t addressSize,uint32_t &ESP)
+	inline static bool HandleExceptionAndRestoreESPIfAny(class i486DX &cpu,Memory &mem,uint32_t instNumBytes,SavedESP ESP)
 	{
-		if(16==addressSize)
+		if(true==cpu.state.exception)
 		{
-			ESP&=0xFFFF;ESP|=ESPHigh;
+			cpu.state.ESP()=ESP.ESP;
+			cpu.HandleException(true,mem,instNumBytes);
+			return true;
 		}
+		return false;
 	}
+
 
 	inline static void Sync_CS_RPL_to_DPL(class i486DX &cpu)
 	{
