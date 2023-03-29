@@ -5186,7 +5186,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		TSUGARU_I486_FIDELITY_CLASS::SaveESP(savedESP,inst.addressSize,state.ESP());
 
 	#define HANDLE_EXCEPTION_PUSH_POP \
-		if(true==fidelity.HandleExceptionAndRestoreESPIfAny(*this,mem,inst.numBytes,savedESP) \
+		if(true==fidelity.HandleExceptionAndRestoreESPIfAny(*this,mem,inst.numBytes,savedESP)) \
 		{ \
 			EIPIncrement=0; \
 			break; \
@@ -9446,14 +9446,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_RENUMBER_PUSHA://            0x60,
 		clocksPassed=11;
 		{
+			SAVE_ESP_BEFORE_PUSH_POP;
 			auto temp=state.ESP();
 			Push(mem,inst.operandSize,state.EAX(),state.ECX(),state.EDX());
 			Push(mem,inst.operandSize,state.EBX(),temp       ,state.EBP());
 			Push(mem,inst.operandSize,state.ESI(),state.EDI());
-			// if(true==state.exception)
-			// {
-			// 	state.ESP()=temp;
-			// }
+			HANDLE_EXCEPTION_PUSH_POP;
 		}
 		break;
 	case I486_RENUMBER_PUSHF://            0x9C,
@@ -9464,116 +9462,139 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			break;
 		}
 		{
+			SAVE_ESP_BEFORE_PUSH_POP;
 			Push(mem,inst.operandSize,state.EFLAGS);
+			HANDLE_EXCEPTION_PUSH_POP;
 		}
 		break;
 
 
 	case I486_RENUMBER_PUSH_EAX://         0x50,
 		{
+			SAVE_ESP_BEFORE_PUSH_POP;
 			clocksPassed=1;
 			Push(mem,inst.operandSize,GetEAX());
+			HANDLE_EXCEPTION_PUSH_POP;
 		}
 		break;
 	case I486_RENUMBER_PUSH_ECX://         0x51,
 		{
+			SAVE_ESP_BEFORE_PUSH_POP;
 			clocksPassed=1;
 			Push(mem,inst.operandSize,GetECX());
+			HANDLE_EXCEPTION_PUSH_POP;
 		}
 		break;
 	case I486_RENUMBER_PUSH_EDX://         0x52,
 		{
+			SAVE_ESP_BEFORE_PUSH_POP;
 			clocksPassed=1;
 			Push(mem,inst.operandSize,GetEDX());
+			HANDLE_EXCEPTION_PUSH_POP;
 		}
 		break;
 	case I486_RENUMBER_PUSH_EBX://         0x53,
 		{
+			SAVE_ESP_BEFORE_PUSH_POP;
 			clocksPassed=1;
 			Push(mem,inst.operandSize,GetEBX());
+			HANDLE_EXCEPTION_PUSH_POP;
 		}
 		break;
 	case I486_RENUMBER_PUSH_ESP://         0x54,
 		{
+			SAVE_ESP_BEFORE_PUSH_POP;
 			clocksPassed=1;
 			Push(mem,inst.operandSize,GetESP());
+			HANDLE_EXCEPTION_PUSH_POP;
 		}
 		break;
 	case I486_RENUMBER_PUSH_EBP://         0x55,
 		{
+			SAVE_ESP_BEFORE_PUSH_POP;
 			clocksPassed=1;
 			Push(mem,inst.operandSize,GetEBP());
-			HANDLE_EXCEPTION_IF_ANY;
+			HANDLE_EXCEPTION_PUSH_POP;
 		}
 		break;
 	case I486_RENUMBER_PUSH_ESI://         0x56,
 		{
+			SAVE_ESP_BEFORE_PUSH_POP;
 			clocksPassed=1;
 			Push(mem,inst.operandSize,GetESI());
-			HANDLE_EXCEPTION_IF_ANY;
+			HANDLE_EXCEPTION_PUSH_POP;
 		}
 		break;
 	case I486_RENUMBER_PUSH_EDI://         0x57,
 		{
+			SAVE_ESP_BEFORE_PUSH_POP;
 			clocksPassed=1;
 			Push(mem,inst.operandSize,GetEDI());
-			HANDLE_EXCEPTION_IF_ANY;
+			HANDLE_EXCEPTION_PUSH_POP;
 		}
 		break;
 	case I486_RENUMBER_PUSH_I8://          0x6A,
 		{
+			SAVE_ESP_BEFORE_PUSH_POP;
 			clocksPassed=1;
 			Push(mem,inst.operandSize,inst.EvalSimm8());
-			HANDLE_EXCEPTION_IF_ANY;
+			HANDLE_EXCEPTION_PUSH_POP;
 		}
 		break;
 	case I486_RENUMBER_PUSH_I://           0x68,
 		{
+			SAVE_ESP_BEFORE_PUSH_POP;
 			clocksPassed=1;
 			Push(mem,inst.operandSize,inst.EvalSimm16or32(inst.operandSize));
-			HANDLE_EXCEPTION_IF_ANY;
+			HANDLE_EXCEPTION_PUSH_POP;
 		}
 		break;
 	case I486_RENUMBER_PUSH_CS://          0x0E,
 		{
+			SAVE_ESP_BEFORE_PUSH_POP;
 			Push(mem,inst.operandSize,state.CS().value);
 			clocksPassed=3;
-			HANDLE_EXCEPTION_IF_ANY;
+			HANDLE_EXCEPTION_PUSH_POP;
 		}
 		break;
 	case I486_RENUMBER_PUSH_SS://          0x16,
 		{
+			SAVE_ESP_BEFORE_PUSH_POP;
 			Push(mem,inst.operandSize,state.SS().value);
 			clocksPassed=3;
-			HANDLE_EXCEPTION_IF_ANY;
+			HANDLE_EXCEPTION_PUSH_POP;
 		}
 		break;
 	case I486_RENUMBER_PUSH_DS://          0x1E,
 		{
+			SAVE_ESP_BEFORE_PUSH_POP;
 			Push(mem,inst.operandSize,state.DS().value);
 			clocksPassed=3;
-			HANDLE_EXCEPTION_IF_ANY;
+			HANDLE_EXCEPTION_PUSH_POP;
 		}
 		break;
 	case I486_RENUMBER_PUSH_ES://          0x06,
 		{
+			SAVE_ESP_BEFORE_PUSH_POP;
 			Push(mem,inst.operandSize,state.ES().value);
 			clocksPassed=3;
-			HANDLE_EXCEPTION_IF_ANY;
+			HANDLE_EXCEPTION_PUSH_POP;
 		}
 		break;
 	case I486_RENUMBER_PUSH_FS://          0x0FA0,
 		{
+			SAVE_ESP_BEFORE_PUSH_POP;
 			Push(mem,inst.operandSize,state.FS().value);
 			clocksPassed=3;
-			HANDLE_EXCEPTION_IF_ANY;
+			HANDLE_EXCEPTION_PUSH_POP;
 		}
 		break;
 	case I486_RENUMBER_PUSH_GS://          0x0FA8,
 		{
+			SAVE_ESP_BEFORE_PUSH_POP;
 			Push(mem,inst.operandSize,state.GS().value);
 			clocksPassed=3;
-			HANDLE_EXCEPTION_IF_ANY;
+			HANDLE_EXCEPTION_PUSH_POP;
 		}
 		break;
 
@@ -9581,233 +9602,186 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_RENUMBER_POP_M://            0x8F,
 		clocksPassed=6;
 		{
-			auto savedESP=state.ESP();
+			SAVE_ESP_BEFORE_PUSH_POP;
 			OperandValue value;
 			value.MakeByteWordOrDword(inst.operandSize,Pop(mem,inst.operandSize));
-			HANDLE_EXCEPTION_IF_ANY;
+			HANDLE_EXCEPTION_PUSH_POP;
 			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
-			if(true==state.exception)
-			{
-				state.ESP()=savedESP; // If exception, don't move ESP.
-			}
-			HANDLE_EXCEPTION_IF_ANY;
+			HANDLE_EXCEPTION_PUSH_POP;
 		}
 		break;
 
 
 	case I486_RENUMBER_POP_EAX://          0x58,
-		clocksPassed=4;
-		if(16==inst.operandSize)
 		{
-			SetAX(Pop16(mem));
-		}
-		else
-		{
-			state.EAX()=Pop32(mem);
-		}
-		if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
-		{
-			EIPIncrement=0;
-			break;
+			SAVE_ESP_BEFORE_PUSH_POP;
+			clocksPassed=4;
+			if(16==inst.operandSize)
+			{
+				SetAX(Pop16(mem));
+			}
+			else
+			{
+				state.EAX()=Pop32(mem);
+			}
+			HANDLE_EXCEPTION_PUSH_POP;
 		}
 		break;
 	case I486_RENUMBER_POP_ECX://          0x59,
-		clocksPassed=4;
-		if(16==inst.operandSize)
 		{
-			SetCX(Pop16(mem));
-		}
-		else
-		{
-			state.ECX()=Pop32(mem);
-		}
-		if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
-		{
-			EIPIncrement=0;
-			break;
+			SAVE_ESP_BEFORE_PUSH_POP;
+			clocksPassed=4;
+			if(16==inst.operandSize)
+			{
+				SetCX(Pop16(mem));
+			}
+			else
+			{
+				state.ECX()=Pop32(mem);
+			}
+			HANDLE_EXCEPTION_PUSH_POP;
 		}
 		break;
 	case I486_RENUMBER_POP_EDX://          0x5A,
-		clocksPassed=4;
-		if(16==inst.operandSize)
 		{
-			SetDX(Pop16(mem));
-		}
-		else
-		{
-			state.EDX()=Pop32(mem);
-		}
-		if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
-		{
-			EIPIncrement=0;
-			break;
+			SAVE_ESP_BEFORE_PUSH_POP;
+			clocksPassed=4;
+			if(16==inst.operandSize)
+			{
+				SetDX(Pop16(mem));
+			}
+			else
+			{
+				state.EDX()=Pop32(mem);
+			}
+			HANDLE_EXCEPTION_PUSH_POP;
 		}
 		break;
 	case I486_RENUMBER_POP_EBX://          0x5B,
-		clocksPassed=4;
-		if(16==inst.operandSize)
 		{
-			SetBX(Pop16(mem));
-		}
-		else
-		{
-			state.EBX()=Pop32(mem);
-		}
-		if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
-		{
-			EIPIncrement=0;
-			break;
+			SAVE_ESP_BEFORE_PUSH_POP;
+			clocksPassed=4;
+			if(16==inst.operandSize)
+			{
+				SetBX(Pop16(mem));
+			}
+			else
+			{
+				state.EBX()=Pop32(mem);
+			}
+			HANDLE_EXCEPTION_PUSH_POP;
 		}
 		break;
 	case I486_RENUMBER_POP_ESP://          0x5C,
-		clocksPassed=4;
-		if(16==inst.operandSize)
 		{
-			SetSP(Pop16(mem));
-		}
-		else
-		{
-			state.ESP()=Pop32(mem);
-		}
-		if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
-		{
-			EIPIncrement=0;
-			break;
+			SAVE_ESP_BEFORE_PUSH_POP;
+			clocksPassed=4;
+			if(16==inst.operandSize)
+			{
+				SetSP(Pop16(mem));
+			}
+			else
+			{
+				state.ESP()=Pop32(mem);
+			}
+			HANDLE_EXCEPTION_PUSH_POP;
 		}
 		break;
 	case I486_RENUMBER_POP_EBP://          0x5D,
-		clocksPassed=4;
-		if(16==inst.operandSize)
 		{
-			SetBP(Pop16(mem));
-		}
-		else
-		{
-			state.EBP()=Pop32(mem);
-		}
-		if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
-		{
-			EIPIncrement=0;
-			break;
+			SAVE_ESP_BEFORE_PUSH_POP;
+			clocksPassed=4;
+			if(16==inst.operandSize)
+			{
+				SetBP(Pop16(mem));
+			}
+			else
+			{
+				state.EBP()=Pop32(mem);
+			}
+			HANDLE_EXCEPTION_PUSH_POP;
 		}
 		break;
 	case I486_RENUMBER_POP_ESI://          0x5E,
-		clocksPassed=4;
-		if(16==inst.operandSize)
 		{
-			SetSI(Pop16(mem));
-		}
-		else
-		{
-			state.ESI()=Pop32(mem);
-		}
-		if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
-		{
-			EIPIncrement=0;
-			break;
+			SAVE_ESP_BEFORE_PUSH_POP;
+			clocksPassed=4;
+			if(16==inst.operandSize)
+			{
+				SetSI(Pop16(mem));
+			}
+			else
+			{
+				state.ESI()=Pop32(mem);
+			}
+			HANDLE_EXCEPTION_PUSH_POP;
 		}
 		break;
 	case I486_RENUMBER_POP_EDI://          0x5F,
-		clocksPassed=4;
-		if(16==inst.operandSize)
 		{
-			SetDI(Pop16(mem));
-		}
-		else
-		{
-			state.EDI()=Pop32(mem);
-		}
-		if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
-		{
-			EIPIncrement=0;
-			break;
+			SAVE_ESP_BEFORE_PUSH_POP;
+			clocksPassed=4;
+			if(16==inst.operandSize)
+			{
+				SetDI(Pop16(mem));
+			}
+			else
+			{
+				state.EDI()=Pop32(mem);
+			}
+			HANDLE_EXCEPTION_PUSH_POP;
 		}
 		break;
 
 
 	case I486_RENUMBER_POP_SS://           0x17,
 		{
+			SAVE_ESP_BEFORE_PUSH_POP;
 			clocksPassed=3;
 			auto selector=Pop(mem,inst.operandSize);
-			if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
-			{
-				EIPIncrement=0;
-				break;
-			}
+			HANDLE_EXCEPTION_PUSH_POP;
 			LoadSegmentRegister(state.SS(),selector,mem);
-			if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
-			{
-				EIPIncrement=0;
-				break;
-			}
+			HANDLE_EXCEPTION_PUSH_POP;
 		}
 		break;
 	case I486_RENUMBER_POP_DS://           0x1F,
 		{
+			SAVE_ESP_BEFORE_PUSH_POP;
 			clocksPassed=3;
 			auto selector=Pop(mem,inst.operandSize);
-			if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
-			{
-				EIPIncrement=0;
-				break;
-			}
+			HANDLE_EXCEPTION_PUSH_POP;
 			LoadSegmentRegister(state.DS(),selector,mem);
-			if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
-			{
-				EIPIncrement=0;
-				break;
-			}
+			HANDLE_EXCEPTION_PUSH_POP;
 		}
 		break;
 	case I486_RENUMBER_POP_ES://           0x07,
 		{
+			SAVE_ESP_BEFORE_PUSH_POP;
 			clocksPassed=3;
 			auto selector=Pop(mem,inst.operandSize);
-			if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
-			{
-				EIPIncrement=0;
-				break;
-			}
+			HANDLE_EXCEPTION_PUSH_POP;
 			LoadSegmentRegister(state.ES(),selector,mem);
-			if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
-			{
-				EIPIncrement=0;
-				break;
-			}
+			HANDLE_EXCEPTION_PUSH_POP;
 		}
 		break;
 	case I486_RENUMBER_POP_FS://           0x0FA1,
 		{
+			SAVE_ESP_BEFORE_PUSH_POP;
 			clocksPassed=3;
 			auto selector=Pop(mem,inst.operandSize);
-			if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
-			{
-				EIPIncrement=0;
-				break;
-			}
+			HANDLE_EXCEPTION_PUSH_POP;
 			LoadSegmentRegister(state.FS(),selector,mem);
-			if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
-			{
-				EIPIncrement=0;
-				break;
-			}
+			HANDLE_EXCEPTION_PUSH_POP;
 		}
 		break;
 	case I486_RENUMBER_POP_GS://           0x0FA9,
 		{
+			SAVE_ESP_BEFORE_PUSH_POP;
 			clocksPassed=3;
 			auto selector=Pop(mem,inst.operandSize);
-			if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
-			{
-				EIPIncrement=0;
-				break;
-			}
+			HANDLE_EXCEPTION_PUSH_POP;
 			LoadSegmentRegister(state.GS(),selector,mem);
-			if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
-			{
-				EIPIncrement=0;
-				break;
-			}
+			HANDLE_EXCEPTION_PUSH_POP;
 		}
 		break;
 
@@ -9815,6 +9789,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		clocksPassed=9;
 		if(16==inst.operandSize)
 		{
+			SAVE_ESP_BEFORE_PUSH_POP;
 			state.EDI()=((state.EDI()&0xffff0000)|(Pop(mem,inst.operandSize)&0xffff));
 			state.ESI()=((state.ESI()&0xffff0000)|(Pop(mem,inst.operandSize)&0xffff));
 			state.EBP()=((state.EBP()&0xffff0000)|(Pop(mem,inst.operandSize)&0xffff));
@@ -9823,9 +9798,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			state.EDX()=((state.EDX()&0xffff0000)|(Pop(mem,inst.operandSize)&0xffff));
 			state.ECX()=((state.ECX()&0xffff0000)|(Pop(mem,inst.operandSize)&0xffff));
 			state.EAX()=((state.EAX()&0xffff0000)|(Pop(mem,inst.operandSize)&0xffff));
+			HANDLE_EXCEPTION_PUSH_POP;
 		}
 		else
 		{
+			SAVE_ESP_BEFORE_PUSH_POP;
 			state.EDI()=Pop(mem,inst.operandSize);
 			state.ESI()=Pop(mem,inst.operandSize);
 			state.EBP()=Pop(mem,inst.operandSize);
@@ -9834,8 +9811,8 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			state.EDX()=Pop(mem,inst.operandSize);
 			state.ECX()=Pop(mem,inst.operandSize);
 			state.EAX()=Pop(mem,inst.operandSize);
+			HANDLE_EXCEPTION_PUSH_POP;
 		}
-		// If exception, restore ESP.
 		break;
 
 	case I486_RENUMBER_POPF://             0x9D,
@@ -9850,7 +9827,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			TSUGARU_I486_FIDELITY_CLASS::SaveEFLAGS(ioplBits,*this);
 
 			// VM and RF flags must be preserved.
+			SAVE_ESP_BEFORE_PUSH_POP;
 			unsigned int EFLAGS=Pop(mem,inst.operandSize);
+			HANDLE_EXCEPTION_PUSH_POP;
+
 			EFLAGS&=~(EFLAGS_RESUME|EFLAGS_VIRTUAL86);
 			EFLAGS|= (state.EFLAGS&(EFLAGS_RESUME|EFLAGS_VIRTUAL86));
 			EFLAGS&=EFLAGS_MASK;
