@@ -85,6 +85,7 @@ void TownsThread::VMMainLoop(FMTowns *townsPtr,Outside_World *outside_world,clas
 			clockTicking=true;
 			{
 				townsPtr->var.nextTimeSync=townsPtr->state.townsTime+NANOSECONDS_PER_TIME_SYNC;
+				townsPtr->debugger.ClearStopFlag();
 				if(true==townsPtr->CheckAbort())
 				{
 					townsPtr->var.nextTimeSync=0;
@@ -177,6 +178,7 @@ void TownsThread::VMMainLoop(FMTowns *townsPtr,Outside_World *outside_world,clas
 		case RUNMODE_ONE_INSTRUCTION:
 			if(true!=townsPtr->CheckAbort())
 			{
+				townsPtr->debugger.ClearStopFlag();
 				townsPtr->RunOneInstruction();
 				townsPtr->pic.ProcessIRQ(townsPtr->cpu,townsPtr->mem);
 				townsPtr->RunFastDevicePolling();

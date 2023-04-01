@@ -14,6 +14,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 << LICENSE */
 #include <iostream>
 #include <fstream>
+#include <stdint.h>
 
 #include "i486.h"
 #include "i486inst.h"
@@ -190,11 +191,17 @@ void i486Debugger::ClearBreakPoints(void)
 {
 	breakPoints.clear();
 	oneTimeBreakPoint.Nullify();
+	ClearCSBreakPoints();
+}
+
+void i486Debugger::ClearCSBreakPoints(void)
+{
 	for(auto &CS : breakOnCS)
 	{
 		CS=false;
 	}
 }
+
 std::vector <i486Debugger::CS_EIP> i486Debugger::GetBreakPoints(void) const
 {
 	std::vector <CS_EIP> list;
@@ -211,6 +218,21 @@ std::vector <std::pair <i486Debugger::CS_EIP,i486Debugger::BreakPointInfo> > i48
 	for(auto bp : breakPoints)
 	{
 		list.push_back(bp);
+	}
+	return list;
+}
+
+std::vector <uint16_t> i486Debugger::GetCSBreakPoints(void) const
+{
+	std::vector <uint16_t> list;
+	uint16_t cs=0;
+	for(auto b : breakOnCS)
+	{
+		if(true==b)
+		{
+			list.push_back(cs);
+		}
+		++cs;
 	}
 	return list;
 }
@@ -676,6 +698,7 @@ void i486Debugger::ClearStopFlag(void)
 {
 	stop=false;
 	externalBreakReason="";
+	additionalDisasm="";
 	lastBreakPointInfo.Clear();
 }
 

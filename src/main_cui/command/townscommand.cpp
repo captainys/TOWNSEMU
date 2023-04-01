@@ -72,6 +72,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["MP"]=CMD_ADD_MONITORPOINT;
 	primaryCmdMap["MPSF"]=CMD_ADD_MONITORPOINT_SHORT_FORMAT;
 	primaryCmdMap["BC"]=CMD_DELETE_BREAKPOINT;
+	primaryCmdMap["BCW"]=CMD_DELETE_CS_BREAKPOINTS;
 	primaryCmdMap["BL"]=CMD_LIST_BREAKPOINTS;
 	primaryCmdMap["T"]=CMD_RUN_ONE_INSTRUCTION;
 	primaryCmdMap["ADTR"]=CMD_TRANSLATE_ADDRESS;
@@ -537,6 +538,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Delete a break point." << std::endl;
 	std::cout << "  Num is the number printed by PRINT BRK." << std::endl;
 	std::cout << "  BC * to erase all break points." << std::endl;
+	std::cout << "BCW" << std::endl;
+	std::cout << "  Delete wildcard (CS) break points." << std::endl;
 	std::cout << "BL" << std::endl;
 	std::cout << "  List break points." << std::endl;
 	std::cout << "BRKON" << std::endl;
@@ -1066,6 +1069,10 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 		break;
 	case CMD_DELETE_BREAKPOINT:
 		Execute_DeleteBreakPoint(towns,cmd);
+		break;
+	case CMD_DELETE_CS_BREAKPOINTS:
+		towns.debugger.ClearCSBreakPoints();
+		std::cout << "Cleared Wildcard (CS) Breakpoints." << std::endl;
 		break;
 	case CMD_LIST_BREAKPOINTS:
 		Execute_ListBreakPoints(towns,cmd);
@@ -1961,6 +1968,10 @@ void TownsCommandInterpreter::Execute_ListBreakPoints(FMTowns &towns,Command &cm
 		}
 		std::cout << std::endl;
 		++bpn;
+	}
+	for(auto cs : towns.debugger.GetCSBreakPoints())
+	{
+		std::cout << cpputil::Ustox(cs) << ":*" << std::endl;
 	}
 	auto &breakOnIORead=towns.debugger.GetBreakOnIORead();
 	if(true!=breakOnIORead.empty())

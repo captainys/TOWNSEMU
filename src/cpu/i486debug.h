@@ -112,7 +112,7 @@ public:
 	bool breakOnCS[65536];
 	std::vector <bool> breakOnIORead,breakOnIOWrite;
 	CS_EIP oneTimeBreakPoint;
-	std::string externalBreakReason;
+	std::string externalBreakReason,additionalDisasm;
 	std::map <unsigned int,std::string> ioLabel;
 
 	bool breakOnVM86Mode=false,prevVM86Mode=false;
@@ -194,8 +194,10 @@ public:
 	void AddBreakPoint(CS_EIP bp,BreakPointInfo info);
 	void RemoveBreakPoint(CS_EIP bp);
 	void ClearBreakPoints(void);
+	void ClearCSBreakPoints(void);
 	std::vector <CS_EIP> GetBreakPoints(void) const;
 	std::vector <std::pair<CS_EIP,BreakPointInfo> > GetBreakPointsEx(void) const;
+	std::vector <uint16_t> GetCSBreakPoints(void) const;
 
 	void AddBreakOnIORead(unsigned int ioport);
 	void RemoveBreakOnIORead(unsigned int ioport);
