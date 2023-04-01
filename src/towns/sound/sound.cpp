@@ -62,6 +62,9 @@ void TownsSound::PCMStopPlay(unsigned char chStopPlay)
 		}
 	}
 }
+void TownsSound::PCMPausePlay(unsigned char chPausePlay)
+{
+}
 
 /* virtual */ void TownsSound::PowerOn(void)
 {
@@ -132,7 +135,7 @@ void TownsSound::PCMStopPlay(unsigned char chStopPlay)
 			}
 			if(0!=startStop.chStopPlay && nullptr!=outside_world)
 			{
-				PCMStopPlay(startStop.chStopPlay);
+				PCMPausePlay(startStop.chStopPlay);
 			}
 		}
 		break;
