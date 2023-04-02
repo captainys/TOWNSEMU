@@ -1266,6 +1266,18 @@ void FMTowns::PrintStatus(void) const
 	if(""!=debugger.externalBreakReason)
 	{
 		std::cout << debugger.externalBreakReason << std::endl;
+		if(nullptr!=cpu.debuggerPtr)
+		{
+			cpu.debuggerPtr->WriteLogFile(debugger.externalBreakReason);
+		}
+	}
+	if(""!=debugger.additionalDisasm)
+	{
+		std::cout << debugger.additionalDisasm << std::endl;
+		if(nullptr!=cpu.debuggerPtr)
+		{
+			cpu.debuggerPtr->WriteLogFile(debugger.additionalDisasm);
+		}
 	}
 	PrintDisassembly();
 }

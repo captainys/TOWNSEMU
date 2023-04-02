@@ -10721,7 +10721,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			msg+=")";
 			Abort(msg);
 		}
-		debuggerPtr->AfterRunOneInstruction(clocksPassed,*this,mem,io,inst);
+		debuggerPtr->AfterRunOneInstruction(clocksPassed,*this,mem,io,inst,op1,op2);
 	}
 
 	return clocksPassed;

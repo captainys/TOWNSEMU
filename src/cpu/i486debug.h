@@ -219,7 +219,7 @@ public:
 
 	/*! Callback from i486DX::RunOneInstruction.
 	*/
-	void AfterRunOneInstruction(unsigned int clocksPassed,i486DX &cpu,Memory &mem,InOut &io,const i486DX::Instruction &inst);
+	void AfterRunOneInstruction(unsigned int clocksPassed,i486DX &cpu,Memory &mem,InOut &io,const i486DX::Instruction &inst,const i486DX::Operand &op1,const i486DX::Operand &op2);
 
 	/*! Check for break points. 
 	*/
