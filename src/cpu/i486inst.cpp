@@ -1569,7 +1569,8 @@ void i486DX::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,MemoryAcce
 			unsigned int MODR_M;
 			FUNCCLASS::PeekOperand8(cpu, MODR_M, inst, ptr, seg, offset, mem);
 			if (0xE3 == MODR_M || // FNINIT
-				0xE2 == MODR_M)   // FCLEX
+				0xE2 == MODR_M || // FCLEX
+				0xE4 == MODR_M)   // FSETPM
 			{
 				FUNCCLASS::FetchOperand8(cpu, inst, ptr, seg, offset, mem);
 			}
@@ -2479,6 +2480,10 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		if(0xE3==operand[0])
 		{
 			disasm="FNINIT";
+		}
+		else if(0xE4==operand[0])
+		{
+			disasm="FSETPM (No effect in 80386 and newer)";
 		}
 		else if(0xE2==operand[0])
 		{
@@ -7023,6 +7028,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		else if(0xE2==inst.operand[0])
 		{
 			clocksPassed=state.fpuState.FCLEX(*this);
+		}
+		else if(0xE4==inst.operand[0])
+		{
+			clocksPassed=1; // FSETPM does nothing in 80386 and later.
 		}
 		if(0xE3==inst.operand[0])
 		{
