@@ -5192,6 +5192,21 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			break; \
 		}
 
+	// Use the following as a pair.
+	#define SAVE_ECX_BEFORE_STRINGOP \
+		TSUGARU_I486_FIDELITY_CLASS::SavedECX savedECX; \
+		TSUGARU_I486_FIDELITY_CLASS::SaveECX(savedECX,state.ECX());
+
+	#define HANDLE_EXCEPTION_STRINGOP \
+		if(true==fidelity.HandleExceptionAndRestoreECXIfAny(*this,mem,inst.numBytes,savedECX)) \
+		{ \
+			EIPIncrement=0; \
+			break; \
+		}
+
+	#define UPDATED_SAVED_ECX_AFTER_STRINGOP \
+		TSUGARU_I486_FIDELITY_CLASS::SaveECX(savedECX,state.ECX());
+
 
 
 	static const unsigned int reg8AndPattern[]=
@@ -10293,46 +10308,56 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 
 	case I486_RENUMBER_SCASB://            0xAE,
-		for(int ctr=0;
-		    ctr<MAX_REP_BUNDLE_COUNT &&
-		    true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize);
-		    ++ctr)
 		{
-			auto data=FetchByte(inst.addressSize,state.ES(),state.EDI(),mem);
-			auto AL=GetAL();
-			SubByte(AL,data);
-			UpdateDIorEDIAfterStringOp(inst.addressSize,8);
-			clocksPassed+=6;
-			if(true==REPEorNECheck(clocksPassed,inst.instPrefix,inst.addressSize))
+			SAVE_ECX_BEFORE_STRINGOP;
+			for(int ctr=0;
+			    ctr<MAX_REP_BUNDLE_COUNT &&
+			    true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize);
+			    ++ctr)
 			{
-				EIPIncrement=0;
-			}
-			else
-			{
-				EIPIncrement=inst.numBytes;
-				break;
+				auto data=FetchByte(inst.addressSize,state.ES(),state.EDI(),mem);
+				HANDLE_EXCEPTION_STRINGOP;
+				auto AL=GetAL();
+				SubByte(AL,data);
+				UpdateDIorEDIAfterStringOp(inst.addressSize,8);
+				clocksPassed+=6;
+				if(true==REPEorNECheck(clocksPassed,inst.instPrefix,inst.addressSize))
+				{
+					EIPIncrement=0;
+				}
+				else
+				{
+					EIPIncrement=inst.numBytes;
+					break;
+				}
+				UPDATED_SAVED_ECX_AFTER_STRINGOP;
 			}
 		}
 		break;
 	case I486_RENUMBER_SCAS://             0xAF,
-		for(int ctr=0;
-		    ctr<MAX_REP_BUNDLE_COUNT &&
-		    true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize);
-		    ++ctr)
 		{
-			auto data=FetchWordOrDword(inst.operandSize,inst.addressSize,state.ES(),state.EDI(),mem);
-			auto EAX=GetEAX();
-			SubWordOrDword(inst.operandSize,EAX,data);
-			UpdateDIorEDIAfterStringOp(inst.addressSize,inst.operandSize);
-			clocksPassed+=6;
-			if(true==REPEorNECheck(clocksPassed,inst.instPrefix,inst.addressSize))
+			SAVE_ECX_BEFORE_STRINGOP;
+			for(int ctr=0;
+			    ctr<MAX_REP_BUNDLE_COUNT &&
+			    true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize);
+			    ++ctr)
 			{
-				EIPIncrement=0;
-			}
-			else
-			{
-				EIPIncrement=inst.numBytes;
-				break;
+				auto data=FetchWordOrDword(inst.operandSize,inst.addressSize,state.ES(),state.EDI(),mem);
+				HANDLE_EXCEPTION_STRINGOP;
+				auto EAX=GetEAX();
+				SubWordOrDword(inst.operandSize,EAX,data);
+				UpdateDIorEDIAfterStringOp(inst.addressSize,inst.operandSize);
+				clocksPassed+=6;
+				if(true==REPEorNECheck(clocksPassed,inst.instPrefix,inst.addressSize))
+				{
+					EIPIncrement=0;
+				}
+				else
+				{
+					EIPIncrement=inst.numBytes;
+					break;
+				}
+				UPDATED_SAVED_ECX_AFTER_STRINGOP;
 			}
 		}
 		break;

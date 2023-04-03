@@ -2,7 +2,6 @@
 #define I486FIDELITY_IS_INCLUDED
 /* { */
 
-
 // Low Fidelity Mode (Planned)  Minimum exception handling.  Faster execution of FM TOWNS native apps.
 // Default Fidelity Mode        Exception handling required for running Fractal Engine.
 // High Fidelity Mode (Planned) Exception handling required for running Windows 3.1
@@ -16,6 +15,12 @@ public:
 	inline static void SaveESP(SavedESP &,uint8_t,uint32_t){}
 	inline static void RestoreESPHighWord(uint8_t,uint32_t &,SavedESP){}
 	constexpr bool HandleExceptionAndRestoreESPIfAny(class i486DX &,Memory &,uint32_t instNumBytes,SavedESP) const{return false;}
+
+	class SavedECX
+	{
+	};
+	inline static void SaveECX(SavedECX &,uint32_t){}
+	constexpr bool HandleExceptionAndRestoreECXIfAny(class i486DX &,Memory &,uint32_t instNumBytes,const SavedECX) const{return false;}
 
 	inline static void Sync_CS_RPL_to_DPL(class i486DX &){}
 
@@ -149,6 +154,27 @@ public:
 		if(true==cpu.state.exception)
 		{
 			cpu.state.ESP()=ESP.ESP;
+			cpu.HandleException(true,mem,instNumBytes);
+			return true;
+		}
+		return false;
+	}
+
+
+	class SavedECX
+	{
+	public:
+		uint32_t ECX;
+	};
+	inline static void SaveECX(SavedECX &save,uint32_t ECX)
+	{
+		save.ECX=ECX;
+	}
+	inline bool HandleExceptionAndRestoreECXIfAny(class i486DX &cpu,Memory &mem,uint32_t instNumBytes,const SavedECX ECX)
+	{
+		if(true==cpu.state.exception)
+		{
+			cpu.state.ECX()=ECX.ECX;
 			cpu.HandleException(true,mem,instNumBytes);
 			return true;
 		}
