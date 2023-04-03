@@ -1753,12 +1753,6 @@ std::string i486DX::DisassembleData(unsigned int addressSize,SegmentRegister seg
 	return disasm;
 }
 
-void i486DX::Move(Memory &mem,int addressSize,int segmentOverride,const Operand &dst,const Operand &src)
-{
-	auto value=EvaluateOperand(mem,addressSize,segmentOverride,src,dst.GetSize());
-	StoreOperandValue(dst,mem,addressSize,segmentOverride,value);
-}
-
 // OF SF ZF AF PF
 void i486DX::DecrementWordOrDword(unsigned int operandSize,unsigned int &value)
 {

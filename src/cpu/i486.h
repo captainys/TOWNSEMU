@@ -3073,13 +3073,6 @@ public:
 	unsigned int RunOneInstruction(Memory &mem,InOut &io);
 
 
-	/*! Move source operand to destination operand.  
-	    If the destination operand is a segment register, it updates baseLinearAddr.
-	    If the destination operand is SS, it sets holdIRQ flag.
-	*/
-	void Move(Memory &mem,int addressMode,int segmentOverride,const Operand &dst,const Operand &src);
-
-
 	/*! Decrement a value.  It also sets OF SF ZF AF PF according to the result.
 	    operandSize needs to be 16 or 32.
 	*/

@@ -7949,10 +7949,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			case 6: // PUSH
 				{
 					clocksPassed=4;
+					SAVE_ESP_BEFORE_PUSH_POP;
 					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
-					HANDLE_EXCEPTION_IF_ANY;
+					HANDLE_EXCEPTION_PUSH_POP;
 					Push(mem,inst.operandSize,value.GetAsDword());
-					HANDLE_EXCEPTION_IF_ANY;
+					HANDLE_EXCEPTION_PUSH_POP;
 				}
 				break;
 			case 7:
@@ -8835,13 +8836,15 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 
 	case I486_RENUMBER_MOV_FROM_SEG: //     0x8C,
+		clocksPassed=3;
 		{
 			auto seg=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,2);
+			HANDLE_EXCEPTION_IF_ANY;
 			seg.byteData[2]=0;
 			seg.byteData[3]=0;
 			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,seg);
+			HANDLE_EXCEPTION_IF_ANY;
 		}
-		clocksPassed=3;
 		break;
 	case I486_RENUMBER_MOV_TO_SEG: //       0x8E,
 		if(true==IsInRealMode())
@@ -8859,12 +8862,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			EIPIncrement=0;
 			break;
 		}
-
-		Move(mem,inst.addressSize,inst.segOverride,op1,op2);
-
-		if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
 		{
-			EIPIncrement=0;
+			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,op1.GetSize());
+			HANDLE_EXCEPTION_IF_ANY;
+			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+			HANDLE_EXCEPTION_IF_ANY;
 		}
 		break;
 	case I486_RENUMBER_MOV_M_TO_AL: //      0xA0,
@@ -8957,12 +8959,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				uint32_t value=state.reg32()[regNum];
 				StoreOperandValueRegOrMem32(op1,mem,inst.addressSize,inst.segOverride,value);
 			}
+			clocksPassed=1;
 			if(true==state.exception)
 			{
 				HandleException(true,mem,inst.numBytes);
 				EIPIncrement=0;
 			}
-			clocksPassed=1;
 		}
 		break;
 	case I486_RENUMBER_MOV_TO_R: //         0x8B, // 16/32 depends on OPSIZE_OVERRIDE
@@ -9115,7 +9117,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	case I486_RENUMBER_MOV_FROM_CR://      0x0F20,
 		if(0==(state.EFLAGS&EFLAGS_VIRTUAL86))
 		{
-			Move(mem,inst.addressSize,inst.segOverride,op1,op2);
+			// Used to be Move(mem,inst.addressSize,inst.segOverride,op1,op2);
+			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,op1.GetSize());
+			HANDLE_EXCEPTION_IF_ANY;
+			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+			HANDLE_EXCEPTION_IF_ANY;
 		}
 		else
 		{
@@ -9126,20 +9132,44 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		clocksPassed=4;
 		break;
 	case I486_RENUMBER_MOV_FROM_DR://      0x0F21,
-		Move(mem,inst.addressSize,inst.segOverride,op1,op2);
+		// Used to be Move(mem,inst.addressSize,inst.segOverride,op1,op2);
 		clocksPassed=10;
+		{
+			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,op1.GetSize());
+			HANDLE_EXCEPTION_IF_ANY;
+			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+			HANDLE_EXCEPTION_IF_ANY;
+		}
 		break;
 	case I486_RENUMBER_MOV_TO_DR://        0x0F23,
-		Move(mem,inst.addressSize,inst.segOverride,op1,op2);
+		// Used to be Move(mem,inst.addressSize,inst.segOverride,op1,op2);
 		clocksPassed=11;
+		{
+			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,op1.GetSize());
+			HANDLE_EXCEPTION_IF_ANY;
+			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+			HANDLE_EXCEPTION_IF_ANY;
+		}
 		break;
 	case I486_RENUMBER_MOV_FROM_TR://      0x0F24,
-		Move(mem,inst.addressSize,inst.segOverride,op1,op2);
+		// Used to be Move(mem,inst.addressSize,inst.segOverride,op1,op2);
 		clocksPassed=4;  // 3 for TR3 strictly speaking.
+		{
+			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,op1.GetSize());
+			HANDLE_EXCEPTION_IF_ANY;
+			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+			HANDLE_EXCEPTION_IF_ANY;
+		}
 		break;
 	case I486_RENUMBER_MOV_TO_TR://        0x0F26,
-		Move(mem,inst.addressSize,inst.segOverride,op1,op2);
+		// Used to be Move(mem,inst.addressSize,inst.segOverride,op1,op2);
 		clocksPassed=4;  // 6 for TR6 strictly speaking.
+		{
+			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,op1.GetSize());
+			HANDLE_EXCEPTION_IF_ANY;
+			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+			HANDLE_EXCEPTION_IF_ANY;
+		}
 		break;
 
 
@@ -10706,7 +10736,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	if(0==clocksPassed)
 	{
 		Abort("Clocks-Passed is not set.");
-		return 0;
+		EIPIncrement=0;
 	}
 	state.EIP+=EIPIncrement;
 
