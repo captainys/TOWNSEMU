@@ -447,31 +447,52 @@ void i486Debugger::BeforeRunOneInstruction(i486DX &cpu,Memory &mem,InOut &io,con
 void i486Debugger::AfterRunOneInstruction(unsigned int clocksPassed,i486DX &cpu,Memory &mem,InOut &io,const i486DX::Instruction &inst,const i486DX::Operand &op1,const i486DX::Operand &op2)
 {
 	specialDebugInfo->AfterRunOneInstruction(*this,clocksPassed,cpu,mem,io,inst);
-	CheckForBreakPoints(cpu);
-
-	if(true==breakOnVM86Mode)
+	if(true!=stop && true!=cpu.state.exception)
 	{
-		if(true!=prevVM86Mode && true==cpu.GetVM())
+		CheckForBreakPoints(cpu);
+		if(true==breakOnVM86Mode)
 		{
-			stop=true;
-			externalBreakReason="Entered VM86 Mode";
+			if(true!=prevVM86Mode && true==cpu.GetVM())
+			{
+				stop=true;
+				externalBreakReason="Entered VM86 Mode";
+			}
+		}
+		if(true==breakOnProtectedMode)
+		{
+			bool protectedMode=(true!=cpu.GetVM() && true!=cpu.IsInRealMode());
+			if(true!=prevProtectedMode && true==protectedMode)
+			{
+				stop=true;
+				externalBreakReason="Entered Protected Mode";
+			}
+		}
+		if(true==breakOnRealMode)
+		{
+			if(true!=prevRealMode && true==cpu.IsInRealMode())
+			{
+				stop=true;
+				externalBreakReason="Entered Real Mode";
+			}
 		}
 	}
-	if(true==breakOnProtectedMode)
+	else
 	{
-		bool protectedMode=(true!=cpu.GetVM() && true!=cpu.IsInRealMode());
-		if(true!=prevProtectedMode && true==protectedMode)
+		auto &prevCSEIPLog=CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK)&CSEIP_LOG_MASK];
+		i486DX::SegmentRegister CS;
+		cpu.DebugLoadSegmentRegister(CS,prevCSEIPLog.SEG,mem,prevRealMode);
+		if(prevVM86Mode==cpu.GetVM() &&
+		   prevProtectedMode==(true!=cpu.GetVM() && true!=cpu.IsInRealMode()) &&
+		   prevRealMode==cpu.IsInRealMode())
 		{
-			stop=true;
-			externalBreakReason="Entered Protected Mode";
+			additionalDisasm=cpu.Disassemble(inst,op1,op2,CS,prevCSEIPLog.OFFSET,mem,GetSymTable(),GetIOTable());
 		}
-	}
-	if(true==breakOnRealMode)
-	{
-		if(true!=prevRealMode && true==cpu.IsInRealMode())
+		else
 		{
-			stop=true;
-			externalBreakReason="Entered Real Mode";
+			additionalDisasm=cpputil::Ustox(prevCSEIPLog.SEG)+":"+cpputil::Uitox(prevCSEIPLog.OFFSET);
+			additionalDisasm+=" (Mode Changed) ";
+			cpputil::ExtendString(additionalDisasm,40);
+			additionalDisasm+=inst.Disassemble(op1,op2,CS,prevCSEIPLog.OFFSET,GetSymTable(),GetIOTable());
 		}
 	}
 }

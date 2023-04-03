@@ -106,6 +106,7 @@ public:
 		CMD_OFFSET_IS_LABEL,
 		CMD_DEL_SYMBOL,
 		CMD_IMPORT_EXP_SYMTABLE,
+		CMD_LOAD_SYMTABLE,
 
 		CMD_TYPE_KEYBOARD,
 		CMD_KEYBOARD,
@@ -385,6 +386,7 @@ public:
 	void Execute_AddSymbol(FMTowns &towns,Command &cmd);
 	void Execute_DelSymbol(FMTowns &towns,Command &cmd);
 	void Execute_ImportEXPSymbolTable(FMTowns &towns,Command &cmd);
+	void Execute_LoadSymbolTable(FMTowns &towns,Command &cmd);
 
 	void Execute_SymbolInquiry(FMTowns &towns,Command &cmd);
 

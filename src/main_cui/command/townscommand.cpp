@@ -101,6 +101,8 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["DEFRAW"]=CMD_DEF_RAW_BYTES;
 	primaryCmdMap["DELSYM"]=CMD_DEL_SYMBOL;
 	primaryCmdMap["IMPORTEXPSYM"]=CMD_IMPORT_EXP_SYMTABLE;
+	primaryCmdMap["LOADSYM"]=CMD_LOAD_SYMTABLE;
+	primaryCmdMap["SYMLOAD"]=CMD_LOAD_SYMTABLE;
 	primaryCmdMap["IMMISIO"]=CMD_IMM_IS_IOPORT;
 	primaryCmdMap["IMMISSYM"]=CMD_IMM_IS_LABEL;
 	primaryCmdMap["IMMISLAB"]=CMD_IMM_IS_LABEL;
@@ -1278,6 +1280,9 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 		break;
 	case CMD_IMPORT_EXP_SYMTABLE:
 		Execute_ImportEXPSymbolTable(towns,cmd);
+		break;
+	case CMD_LOAD_SYMTABLE:
+		Execute_LoadSymbolTable(towns,cmd);
 		break;
 
 	case CMD_PRINT_SYMBOL:
@@ -3737,6 +3742,33 @@ void TownsCommandInterpreter::Execute_ImportEXPSymbolTable(FMTowns &towns,Comman
 		{
 			PrintError(ERROR_CANNOT_OPEN_FILE);
 		}
+	}
+	else
+	{
+		PrintError(ERROR_TOO_FEW_ARGS);
+	}
+}
+
+void TownsCommandInterpreter::Execute_LoadSymbolTable(FMTowns &towns,Command &cmd)
+{
+	if(2<=cmd.argv.size())
+	{
+		auto fName=towns.debugger.GetSymTable().fName;
+		if(true==towns.debugger.GetSymTable().Load(cmd.argv[1].c_str()))
+		{
+			towns.debugger.GetSymTable().fName=fName;
+			std::cout << "Loaded symbol table." << std::endl;
+			if(true!=towns.debugger.GetSymTable().AutoSave())
+			{
+				std::cout << "Auto-Saving of Symbol Table Failed." << std::endl;
+				std::cout << "File name is not specified or invalid." << std::endl;
+			}
+		}
+		else
+		{
+			PrintError(ERROR_CANNOT_OPEN_FILE);
+		}
+		towns.debugger.GetSymTable().fName=fName;
 	}
 	else
 	{
