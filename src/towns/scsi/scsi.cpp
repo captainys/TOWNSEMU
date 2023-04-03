@@ -73,12 +73,14 @@ void TownsSCSI::SCSIIOThread::ThreadFunc(void)
 		    data=cpputil::ReadBinaryFile(fName,filePtr,length);
 			cmd=CMD_NONE;
 			dataReady=true;
+			cond.notify_all();
 		}
 		else if(CMD_CDREAD==cmd)
 		{
 			data=discImgPtr->ReadSectorMODE1(filePtr,length);
 			cmd=CMD_NONE;
 			dataReady=true;
+			cond.notify_all();
 		}
 	}
 }
@@ -95,6 +97,7 @@ bool TownsSCSI::SCSIIOThread::IsBusy(void) const
 void TownsSCSI::SCSIIOThread::WaitReady(void)
 {
 	std::unique_lock<std::mutex> lock(mutex);
+	cond.wait(lock,[=]{return cmd==CMD_NONE;});
 }
 void TownsSCSI::SCSIIOThread::SetUpFileRead(std::string fName,uint64_t filePtr,uint64_t length)
 {
