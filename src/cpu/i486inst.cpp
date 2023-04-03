@@ -6346,7 +6346,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				clocksPassed=20;
 			}
 
+			SAVE_ESP_BEFORE_PUSH_POP;
 			clocksPassed=CALLF(mem,inst.operandSize,inst.numBytes,op1.seg,op1.offset,clocksPassed);
+			HANDLE_EXCEPTION_PUSH_POP;
 
 			EIPIncrement=0;
 		}
@@ -6355,6 +6357,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			clocksPassed=3;
 
+			SAVE_ESP_BEFORE_PUSH_POP;
 			uint32_t destin;
 
 			if(16==inst.operandSize)
@@ -6369,7 +6372,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				destin=state.EIP+offset+inst.numBytes;
 				Push32(mem,state.EIP+inst.numBytes);
 			}
-			HANDLE_EXCEPTION_IF_ANY;
+			HANDLE_EXCEPTION_PUSH_POP;
 
 			if(true==enableCallStack)
 			{
@@ -7859,9 +7862,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				{
 					clocksPassed=5;  // Same for CALL Indirect and JMP Indirect.
 					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+					HANDLE_EXCEPTION_IF_ANY;
 					if(true!=state.exception)
 					{
+						SAVE_ESP_BEFORE_PUSH_POP;
 						Push(mem,inst.operandSize,state.EIP+inst.numBytes);
+						HANDLE_EXCEPTION_PUSH_POP;
 						if(true==enableCallStack)
 						{
 							PushCallStack(
@@ -7926,7 +7932,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					auto destSeg=value.GetFwordSegment();
 					auto destEIP=value.GetAsDword();
 
+					SAVE_ESP_BEFORE_PUSH_POP;
 					clocksPassed=CALLF(mem,inst.operandSize,inst.numBytes,destSeg,destEIP,clocksPassed);
+					HANDLE_EXCEPTION_PUSH_POP;
 				}
 				break;
 			case 5: // JMPF Indirect
