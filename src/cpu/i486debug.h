@@ -213,6 +213,10 @@ public:
 
 	void SetOneTimeBreakPoint(unsigned int CS,unsigned int EIP);
 
+private:
+	bool inInstruction=false;  // Set in BeforeRunOneInstruction and cleared in AfterRunOneInstruction
+
+public:
 	/*! Callback from i486DX::RunOneInstruction.
 	*/
 	void BeforeRunOneInstruction(i486DX &cpu,Memory &mem,InOut &io,const i486DX::Instruction &inst);
@@ -224,6 +228,10 @@ public:
 	/*! Check for break points. 
 	*/
 	void CheckForBreakPoints(i486DX &cpu);
+
+	/*!
+	*/
+	void HandleException(i486DX &cpu,Memory &mem,unsigned int instNumBytes);
 
 	/*! Break on INT
 	*/

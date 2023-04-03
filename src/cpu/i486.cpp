@@ -394,11 +394,10 @@ void i486DX::InvalidateDescriptorCache(void)
 
 void i486DX::HandleException(bool,Memory &mem,unsigned int numInstBytesForCallStack)
 {
-	/* Should add a flag.
 	if(nullptr!=debuggerPtr)
 	{
-		debuggerPtr->ExternalBreak("Exception!");
-	} */
+		debuggerPtr->HandleException(*this,mem,numInstBytesForCallStack);
+	}
 
 	// Only some of the exceptions push error code onto the stack.
 	// See Section 9.9 of i486 Programmer's Reference Manual for the information.

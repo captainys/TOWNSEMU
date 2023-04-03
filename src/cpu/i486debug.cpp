@@ -442,10 +442,14 @@ void i486Debugger::BeforeRunOneInstruction(i486DX &cpu,Memory &mem,InOut &io,con
 			WriteLogFile(regDump);
 		}
 	}
+
+	inInstruction=true;
 }
 
 void i486Debugger::AfterRunOneInstruction(unsigned int clocksPassed,i486DX &cpu,Memory &mem,InOut &io,const i486DX::Instruction &inst,const i486DX::Operand &op1,const i486DX::Operand &op2)
 {
+	inInstruction=false;
+
 	specialDebugInfo->AfterRunOneInstruction(*this,clocksPassed,cpu,mem,io,inst);
 	if(true!=stop && true!=cpu.state.exception)
 	{
@@ -536,6 +540,15 @@ void i486Debugger::CheckForBreakPoints(i486DX &cpu)
 	{
 		stop=true;
 		oneTimeBreakPoint.Nullify();
+	}
+}
+
+void i486Debugger::HandleException(i486DX &cpu,Memory &mem,unsigned int instNumBytes)
+{
+	auto &prevCSEIPLog=CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK)&CSEIP_LOG_MASK];
+	if(true==inInstruction && cpu.state.ESP()!=prevCSEIPLog.ESP)
+	{
+		ExternalBreak("ESP value changed before handling exception.");
 	}
 }
 
