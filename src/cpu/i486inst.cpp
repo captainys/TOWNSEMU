@@ -9820,28 +9820,72 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		if(16==inst.operandSize)
 		{
 			SAVE_ESP_BEFORE_PUSH_POP;
-			state.EDI()=((state.EDI()&0xffff0000)|(Pop(mem,inst.operandSize)&0xffff));
-			state.ESI()=((state.ESI()&0xffff0000)|(Pop(mem,inst.operandSize)&0xffff));
-			state.EBP()=((state.EBP()&0xffff0000)|(Pop(mem,inst.operandSize)&0xffff));
-			Pop(mem,inst.operandSize);
-			state.EBX()=((state.EBX()&0xffff0000)|(Pop(mem,inst.operandSize)&0xffff));
-			state.EDX()=((state.EDX()&0xffff0000)|(Pop(mem,inst.operandSize)&0xffff));
-			state.ECX()=((state.ECX()&0xffff0000)|(Pop(mem,inst.operandSize)&0xffff));
-			state.EAX()=((state.EAX()&0xffff0000)|(Pop(mem,inst.operandSize)&0xffff));
+
+			auto pop=Pop(mem,inst.operandSize)&0xffff;
 			HANDLE_EXCEPTION_PUSH_POP;
+			state.EDI()=((state.EDI()&0xffff0000)|pop);
+
+			pop=Pop(mem,inst.operandSize)&0xffff;
+			HANDLE_EXCEPTION_PUSH_POP;
+			state.ESI()=((state.ESI()&0xffff0000)|pop);
+
+			pop=Pop(mem,inst.operandSize)&0xffff;
+			HANDLE_EXCEPTION_PUSH_POP;
+			state.EBP()=((state.EBP()&0xffff0000)|pop);
+
+			Pop(mem,inst.operandSize);
+			HANDLE_EXCEPTION_PUSH_POP;
+
+			pop=Pop(mem,inst.operandSize)&0xffff;
+			HANDLE_EXCEPTION_PUSH_POP;
+			state.EBX()=((state.EBX()&0xffff0000)|pop);
+
+			pop=Pop(mem,inst.operandSize)&0xffff;
+			HANDLE_EXCEPTION_PUSH_POP;
+			state.EDX()=((state.EDX()&0xffff0000)|pop);
+
+			pop=Pop(mem,inst.operandSize)&0xffff;
+			HANDLE_EXCEPTION_PUSH_POP;
+			state.ECX()=((state.ECX()&0xffff0000)|pop);
+
+			pop=Pop(mem,inst.operandSize)&0xffff;
+			HANDLE_EXCEPTION_PUSH_POP;
+			state.EAX()=((state.EAX()&0xffff0000)|pop);
 		}
 		else
 		{
 			SAVE_ESP_BEFORE_PUSH_POP;
-			state.EDI()=Pop(mem,inst.operandSize);
-			state.ESI()=Pop(mem,inst.operandSize);
-			state.EBP()=Pop(mem,inst.operandSize);
-			Pop(mem,inst.operandSize);
-			state.EBX()=Pop(mem,inst.operandSize);
-			state.EDX()=Pop(mem,inst.operandSize);
-			state.ECX()=Pop(mem,inst.operandSize);
-			state.EAX()=Pop(mem,inst.operandSize);
+
+			auto pop=Pop(mem,inst.operandSize);
 			HANDLE_EXCEPTION_PUSH_POP;
+			state.EDI()=pop;
+
+			pop=Pop(mem,inst.operandSize);
+			HANDLE_EXCEPTION_PUSH_POP;
+			state.ESI()=pop;
+
+			pop=Pop(mem,inst.operandSize);
+			HANDLE_EXCEPTION_PUSH_POP;
+			state.EBP()=pop;
+
+			Pop(mem,inst.operandSize);
+			HANDLE_EXCEPTION_PUSH_POP;
+
+			pop=Pop(mem,inst.operandSize);
+			HANDLE_EXCEPTION_PUSH_POP;
+			state.EBX()=pop;
+
+			pop=Pop(mem,inst.operandSize);
+			HANDLE_EXCEPTION_PUSH_POP;
+			state.EDX()=pop;
+
+			pop=Pop(mem,inst.operandSize);
+			HANDLE_EXCEPTION_PUSH_POP;
+			state.ECX()=pop;
+
+			pop=Pop(mem,inst.operandSize);
+			HANDLE_EXCEPTION_PUSH_POP;
+			state.EAX()=pop;
 		}
 		break;
 
@@ -9875,18 +9919,25 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 
 	case I486_RENUMBER_RET://              0xC3,
 		clocksPassed=5;
-		if(16==inst.operandSize)
 		{
-			SetIP(Pop16(mem));
-		}
-		else
-		{
-			SetEIP(Pop32(mem));
-		}
-		EIPIncrement=0;
-		if(enableCallStack)
-		{
-			PopCallStack(state.CS().value,state.EIP);
+			SAVE_ESP_BEFORE_PUSH_POP;
+			if(16==inst.operandSize)
+			{
+				auto IP=Pop16(mem);
+				HANDLE_EXCEPTION_PUSH_POP;
+				SetIP(IP);
+			}
+			else
+			{
+				auto EIP=Pop32(mem);
+				HANDLE_EXCEPTION_PUSH_POP;
+				SetEIP(EIP);
+			}
+			EIPIncrement=0;
+			if(enableCallStack)
+			{
+				PopCallStack(state.CS().value,state.EIP);
+			}
 		}
 		break;
 	case I486_RENUMBER_IRET://   0xCF,
@@ -10014,7 +10065,9 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			auto prevDPL=state.CS().DPL;
 
 			uint32_t eip,cs;
+			SAVE_ESP_BEFORE_PUSH_POP;
 			Pop(eip,cs,mem,inst.operandSize);
+			HANDLE_EXCEPTION_PUSH_POP;
 
 			SetIPorEIP(inst.operandSize,eip);
 			LoadSegmentRegister(state.CS(),cs,mem);
@@ -10029,7 +10082,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		break;
 	case I486_RENUMBER_RET_I16://          0xC2,
 		clocksPassed=5;
-		SetIPorEIP(inst.operandSize,Pop(mem,inst.operandSize));
+		{
+			SAVE_ESP_BEFORE_PUSH_POP;
+			auto EIP=Pop(mem,inst.operandSize);
+			HANDLE_EXCEPTION_PUSH_POP;
+			SetIPorEIP(inst.operandSize,EIP);
+		}
 		state.ESP()+=inst.EvalUimm16(); // Do I need to take &0xffff if address mode is 16? 
 		EIPIncrement=0;
 		if(enableCallStack)
@@ -10049,7 +10107,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			}
 			auto prevDPL=state.CS().DPL;
 
-			SetIPorEIP(inst.operandSize,Pop(mem,inst.operandSize));
+			SAVE_ESP_BEFORE_PUSH_POP;
+			auto EIP=Pop(mem,inst.operandSize);
+			HANDLE_EXCEPTION_PUSH_POP;
+
+			SetIPorEIP(inst.operandSize,EIP);
 			LoadSegmentRegister(state.CS(),Pop(mem,inst.operandSize),mem);
 			state.ESP()+=inst.EvalUimm16(); // Do I need to take &0xffff if address mode is 16? 
 			EIPIncrement=0;
