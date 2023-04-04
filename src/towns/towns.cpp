@@ -594,6 +594,7 @@ FMTowns::FMTowns() :
 
 	io.AddDevice(&cdrom,TOWNSIO_CDROM_MASTER_CTRL_STATUS);
 	io.AddDevice(&cdrom,TOWNSIO_CDROM_COMMAND_STATUS);
+	io.AddDevice(&cdrom,TOWNSIO_CDROM_CACHE_2XSPEED);
 	io.AddDevice(&cdrom,TOWNSIO_CDROM_PARAMETER_DATA);
 	io.AddDevice(&cdrom,TOWNSIO_CDROM_TRANSFER_CTRL);
 	io.AddDevice(&cdrom,TOWNSIO_CDROM_SUBCODE_STATUS);

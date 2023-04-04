@@ -241,6 +241,8 @@ TownsCDROM::TownsCDROM(class FMTowns *townsPtr,class TownsPIC *PICPtr,class Town
 			return data;
 		}
 		break;
+	case TOWNSIO_CDROM_CACHE_2XSPEED:
+		break;
 	case TOWNSIO_CDROM_PARAMETER_DATA://    0x4C4, // [2] pp.224
 		// Data register for software transfer.  Not supported yet.
 		Abort("Unsupported CDROM I/O Read 04C4H");
@@ -839,12 +841,13 @@ void TownsCDROM::BeginReadSector(DiscImage::MinSecFrm msfBegin,DiscImage::MinSec
 					// Means DMA was not set up in time.
 					state.ClearStatusQueue();
 					state.PushStatusQueue(0x21,0x0F,0,0); // Abnormal termination.  I don't know which error to return.
+					state.SIRQ=false;
 					if(true==StatusRequestBit(state.cmd) && 0!=(state.cmd&CMDFLAG_IRQ) && true==state.enableSIRQ)
 					{
 						PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
+						state.SIRQ=true;
 					}
 					state.DRY=true;
-					state.SIRQ=false;
 					state.DEI=false;
 					state.DTSF=false;
 					state.STSF=false;
