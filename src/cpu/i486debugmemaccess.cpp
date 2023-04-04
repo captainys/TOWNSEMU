@@ -172,6 +172,22 @@ void i486DebugMemoryAccess::ClearBreakOnWrite(unsigned int physAddr)
 	return data;
 }
 
+/* virtual */ unsigned int i486DebugMemoryAccess::FetchByteDMA(unsigned int physAddr) const
+{
+	auto data=memAccessChain->FetchByte(physAddr);
+	if(true==breakOnRead[physAddr-physAddrTop])
+	{
+		std::string msg;
+		msg="Memory Read BYTE PTR PHYS:[";
+		msg+=cpputil::Uitox(physAddr);
+		msg+="] (";
+		msg+=cpputil::Ubtox(data);
+		msg+="H) **DMA**";
+		debuggerPtr->ExternalBreak(msg);
+	}
+	return data;
+}
+
 inline bool i486DebugMemoryAccess::CheckBreakOnWriteCondition(uint32_t physAddr,unsigned int data) const
 {
 	auto offset=physAddr-physAddrTop;
@@ -235,6 +251,20 @@ inline bool i486DebugMemoryAccess::CheckBreakOnWriteCondition(uint32_t physAddr,
 		debuggerPtr->ExternalBreak(msg);
 	}
 	memAccessChain->StoreDword(physAddr,data);
+}
+/* virtual */ void i486DebugMemoryAccess::StoreByteDMA(unsigned int physAddr,unsigned char data)
+{
+	if(true==CheckBreakOnWriteCondition(physAddr,data))
+	{
+		std::string msg;
+		msg="Memory Write BYTE PTR PHYS:[";
+		msg+=cpputil::Uitox(physAddr);
+		msg+="] (";
+		msg+=cpputil::Ubtox(data);
+		msg+=") **DMA**";
+		debuggerPtr->ExternalBreak(msg);
+	}
+	memAccessChain->StoreByte(physAddr,data);
 }
 
 /* static */ void i486DebugMemoryAccess::SetBreakOnMemRead(Memory &mem,i486Debugger &debugger,unsigned int physAddr)

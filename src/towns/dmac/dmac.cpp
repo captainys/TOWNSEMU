@@ -301,7 +301,7 @@ unsigned int TownsDMAC::DeviceToMemory(State::Channel *DMACh,unsigned long long 
 	auto &mem=townsPtr->mem;
 	for(i=0; i<len && 0<=DMACh->currentCount && DMACh->currentCount<=DMACh->baseCount; ++i)
 	{
-		mem.StoreByte(DMACh->currentAddr,data[i]);
+		mem.StoreByteDMA(DMACh->currentAddr,data[i]);
 		++DMACh->currentAddr;
 		--DMACh->currentCount;
 	}
@@ -333,7 +333,7 @@ std::vector <unsigned char> TownsDMAC::MemoryToDevice(State::Channel *DMACh,unsi
 	data.resize(length);
 	for(i=0; i<length && 0<=DMACh->currentCount && DMACh->currentCount<=DMACh->baseCount; ++i)
 	{
-		data[i]=mem.FetchByte(DMACh->currentAddr);
+		data[i]=mem.FetchByteDMA(DMACh->currentAddr);
 		++DMACh->currentAddr;
 		--DMACh->currentCount;
 	}

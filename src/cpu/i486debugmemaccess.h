@@ -54,6 +54,9 @@ public:
 	virtual void StoreWord(unsigned int physAddr,unsigned int data);
 	virtual void StoreDword(unsigned int physAddr,unsigned int data);
 
+	virtual unsigned int FetchByteDMA(unsigned int physAddr) const override;
+	virtual void StoreByteDMA(unsigned int physAddr,unsigned char data) override;
+
 	inline bool CheckBreakOnWriteCondition(uint32_t physAddr,unsigned int data) const;
 
 	static void SetBreakOnMemRead(Memory &mem,i486Debugger &debugger,unsigned int physAddr);

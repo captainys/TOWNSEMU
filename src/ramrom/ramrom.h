@@ -47,6 +47,11 @@ public:
 	virtual void StoreWord(unsigned int physAddr,unsigned int data);
 	virtual void StoreDword(unsigned int physAddr,unsigned int data);
 
+	/* Default behavior is just forward calls to FetchByte and StoreByte.
+	*/
+	virtual unsigned int FetchByteDMA(unsigned int physAddr) const;
+	virtual void StoreByteDMA(unsigned int physAddr,unsigned char data);
+
 	/*! Memory Access Pointer is for skipping segment and paging translation and directly accessing the memory.
 	    Not all memory range can be accessible by the MemoryAccess::Pointer, memory-mapped I/O for example.
 	    Therefore, the default behavior is returning an unaccessible pointer.
@@ -302,6 +307,18 @@ public:
 	{
 		auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
 		memAccess->StoreByte(physAddr,data);
+	}
+
+	inline unsigned int FetchByteDMA(unsigned int physAddr) const
+	{
+		auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
+		return memAccess->FetchByteDMA(physAddr);
+	}
+
+	inline void StoreByteDMA(unsigned int physAddr,unsigned char data)
+	{
+		auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
+		memAccess->StoreByteDMA(physAddr,data);
 	}
 
 	inline void StoreWord(unsigned int physAddr,unsigned int data)

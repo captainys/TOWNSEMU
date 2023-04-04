@@ -50,6 +50,15 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	return window;
 }
 
+/* virtual */ unsigned int MemoryAccess::FetchByteDMA(unsigned int physAddr) const
+{
+	return FetchByte(physAddr);
+}
+/* virtual */ void MemoryAccess::StoreByteDMA(unsigned int physAddr,unsigned char data)
+{
+	StoreByte(physAddr,data);
+}
+
 ////////////////////////////////////////////////////////////
 
 
