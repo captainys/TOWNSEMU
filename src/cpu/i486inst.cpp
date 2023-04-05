@@ -2726,6 +2726,9 @@ std::string i486DX::Instruction::Disassemble(const Operand &op1In,const Operand 
 		{
 			switch(Instruction::GetREG(operand[0]))
 			{
+			case 0:
+				disasm=DisassembleTypicalOneOperand("FILD(m16int)  ",op1,operandSize,cs.value,eip,symTable);
+				break;
 			case 4:
 				disasm=DisassembleTypicalOneOperand("FBLD(m80dec)  ",op1,operandSize,cs.value,eip,symTable);
 				break;
