@@ -29,6 +29,8 @@ void i8251::Reset(void)
 	state.TxEMPTY=false;
 	state.RTS=false;
 	state.DTR=false;
+	state.RxRDY=false;
+	state.TxRDY=false;
 
 	state.lastTxTime=0;
 	state.lastRxTime=0;
