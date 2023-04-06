@@ -6,6 +6,8 @@
 // Default Fidelity Mode        Exception handling required for running Fractal Engine.
 // High Fidelity Mode (Planned) Exception handling required for running Windows 3.1
 
+#include <string.h>
+
 class i486DXLowFidelity
 {
 public:
@@ -83,6 +85,15 @@ public:
 	inline static void SaveEFLAGS(EFLAGS &,const i486DX &cpu){};
 	inline static void RestoreIOPLBits(i486DX &cpu,const EFLAGS &){};
 	inline static void RestoreIF(i486DX &cpu,const EFLAGS &){};
+
+
+
+	class Debugger_ExceptionVerification
+	{
+	public:
+		static inline void SaveCPUState(const class i486DX &cpu,unsigned int prefix){};
+		inline constexpr bool CPUStateChanged(const class i486DX &cpu) const {return false;}
+	};
 };
 
 class i486DXDefaultFidelity : public i486DXLowFidelity
@@ -731,6 +742,56 @@ public:
 			cpu.state.EFLAGS|=(eflags.eflags&i486DX::EFLAGS_INT_ENABLE);
 		}
 	}
+
+
+	class Debugger_ExceptionVerification
+	{
+	public:
+		bool dontCheckBecauseREP=false;
+		uint32_t NULL_and_reg32[9];
+		uint32_t EIP;
+		uint16_t CS,DS,ES,FS,GS,SS;
+		inline void SaveCPUState(const class i486DX &cpu,unsigned int prefix)
+		{
+			dontCheckBecauseREP=(prefix==i486DX::INST_PREFIX_REP ||  // =  0xF3, // REP/REPE/REPZ
+			                     prefix==i486DX::INST_PREFIX_REPE || // = 0xF3, // REP/REPE/REPZ
+			                     prefix==i486DX::INST_PREFIX_REPNE); // =0xF2, // REPNE/REPNZ
+
+			memcpy(NULL_and_reg32,cpu.state.NULL_and_reg32,sizeof(NULL_and_reg32));
+			EIP=cpu.state.EIP;
+			CS=cpu.state.CS().value;
+			DS=cpu.state.DS().value;
+			ES=cpu.state.ES().value;
+			FS=cpu.state.FS().value;
+			GS=cpu.state.GS().value;
+			SS=cpu.state.SS().value;
+		};
+		inline bool CPUStateChanged(const class i486DX &cpu) const
+		{
+			if(true!=dontCheckBecauseREP)
+			{
+				for(int i=1; i<9; ++i)
+				{
+					if(NULL_and_reg32[i]!=cpu.state.NULL_and_reg32[i])
+					{
+						return true;
+					}
+				}
+				if(EIP!=cpu.state.EIP ||
+				   CS!=cpu.state.CS().value ||
+				   DS!=cpu.state.DS().value ||
+				   ES!=cpu.state.ES().value ||
+				   FS!=cpu.state.FS().value ||
+				   GS!=cpu.state.GS().value ||
+				   SS!=cpu.state.SS().value
+				   )
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+	};
 };
 
 /* } */

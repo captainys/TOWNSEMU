@@ -215,6 +215,7 @@ public:
 
 private:
 	bool inInstruction=false;  // Set in BeforeRunOneInstruction and cleared in AfterRunOneInstruction
+	TSUGARU_I486_FIDELITY_CLASS::Debugger_ExceptionVerification prevCPUState;
 
 public:
 	/*! Callback from i486DX::RunOneInstruction.
