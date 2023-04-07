@@ -554,6 +554,7 @@ public:
 		unsigned int FCOMP_m64real(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FCOS(i486DX &cpu);
 		unsigned int FIDIV_m16int(i486DX &cpu,const unsigned char byteData[]);
+		unsigned int FILD_m16int(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FILD_m32int(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FILD_m64int(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FDIV_m32real(i486DX &cpu,const unsigned char byteData[]);

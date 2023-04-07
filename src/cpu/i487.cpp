@@ -859,6 +859,16 @@ unsigned int i486DX::FPUState::FIDIV_m16int(i486DX &cpu,const unsigned char byte
 	}
 	return 0;
 }
+unsigned int i486DX::FPUState::FILD_m16int(i486DX &cpu,const unsigned char byteData[])
+{
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+		Push(cpu,(double)IntFrom16Bit(byteData));
+		return 16;
+	}
+	return 0;
+}
 unsigned int i486DX::FPUState::FILD_m32int(i486DX &cpu,const unsigned char byteData[])
 {
 	if(true==enabled)

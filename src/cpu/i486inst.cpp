@@ -7330,6 +7330,12 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 		{
 			switch(Instruction::GetREG(inst.operand[0]))
 			{
+			case 0:
+				{
+					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,2);
+					clocksPassed=state.fpuState.FILD_m16int(*this,value.byteData);
+				}
+				break;
 			case 4:
 				{
 					auto value=EvaluateOperand80(mem,inst.addressSize,inst.segOverride,op1);
