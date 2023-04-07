@@ -547,7 +547,7 @@ void i486Debugger::CheckForBreakPoints(i486DX &cpu)
 void i486Debugger::HandleException(i486DX &cpu,Memory &mem,unsigned int instNumBytes)
 {
 	auto &prevCSEIPLog=CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK)&CSEIP_LOG_MASK];
-	if(true==prevCPUState.CPUStateChanged(cpu))
+	if(true==inInstruction && true==prevCPUState.CPUStateChanged(cpu))
 	{
 		ExternalBreak("CPU State Changed before handling exception.");
 		return;

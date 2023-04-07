@@ -71,8 +71,8 @@ def Run(argv):
 		os.path.join(TSUGARUDIR,"testdata","CMOS.bin"),
 		"-DONTAUTOSAVECMOS",
 		"-USEFPU",
-		#"-HIGHRES",
-		#"-DEBUG",
+		"-HIGHRES",
+		"-DEBUG",
 		#"-PAUSE",
 	]+argv).wait()
 

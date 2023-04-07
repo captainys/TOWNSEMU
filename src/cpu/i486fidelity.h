@@ -766,6 +766,32 @@ public:
 			GS=cpu.state.GS().value;
 			SS=cpu.state.SS().value;
 		};
+
+		void PrintChanges(const class i486DX &cpu) const
+		{
+			for(int j=1; j<8; ++j)
+			{
+				std::cout << "REG32_" << j-1 << " "<<
+				    cpputil::Uitox(NULL_and_reg32[j]) << "->" << 
+				    cpputil::Uitox(cpu.state.NULL_and_reg32[j]) << std::endl;
+			}
+
+			std::cout << "EIP " <<
+				cpputil::Uitox(EIP) << "->" << cpputil::Ustox(cpu.state.EIP) << std::endl;
+			std::cout << "CS " <<
+				cpputil::Ustox(CS ) << "->" << cpputil::Ustox(cpu.state.CS().value) << std::endl;
+			std::cout << "DS " <<
+				cpputil::Ustox(DS ) << "->" << cpputil::Ustox(cpu.state.DS().value) << std::endl;
+			std::cout << "ES " <<
+				cpputil::Ustox(ES ) << "->" << cpputil::Ustox(cpu.state.ES().value) << std::endl;
+			std::cout << "FS " <<
+				cpputil::Ustox(FS ) << "->" << cpputil::Ustox(cpu.state.FS().value) << std::endl;
+			std::cout << "GS " <<
+				cpputil::Ustox(GS ) << "->" << cpputil::Ustox(cpu.state.GS().value) << std::endl;
+			std::cout << "SS " <<
+				cpputil::Ustox(SS ) << "->" << cpputil::Ustox(cpu.state.SS().value) << std::endl;
+		}
+
 		inline bool CPUStateChanged(const class i486DX &cpu) const
 		{
 			if(true!=dontCheckBecauseREP)
@@ -774,6 +800,7 @@ public:
 				{
 					if(NULL_and_reg32[i]!=cpu.state.NULL_and_reg32[i])
 					{
+						PrintChanges(cpu);
 						return true;
 					}
 				}
