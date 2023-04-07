@@ -10790,10 +10790,14 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				// op2 is a register.
 				auto RM=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op1);
 
+				HANDLE_EXCEPTION_IF_ANY;
+
 				OperandValue R;
 				R.MakeByte(state.reg32()[regNum&3]>>reg8Shift[regNum]);
 
 				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,R);
+
+				HANDLE_EXCEPTION_IF_ANY;
 
 				state.reg32()[regNum&3]&=reg8AndPattern[regNum];
 				state.reg32()[regNum&3]|=((unsigned int)(RM.GetAsByte())<<reg8Shift[regNum]);
@@ -10831,12 +10835,17 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				auto op32or16=inst.operandSize>>3;
 				auto RM=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,op32or16);
 				auto R=state.reg32()[inst.GetREG()]&operandSizeMask[op32or16];
+				auto newR=RM.GetAsDword();
 
-				state.reg32()[inst.GetREG()]&=operandSizeAndPattern[op32or16];
-				state.reg32()[inst.GetREG()]|=(RM.GetAsDword()&operandSizeMask[op32or16]);
+				HANDLE_EXCEPTION_IF_ANY;
 
 				RM.SetDword(R);
 				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,RM);
+
+				HANDLE_EXCEPTION_IF_ANY;
+
+				state.reg32()[inst.GetREG()]&=operandSizeAndPattern[op32or16];
+				state.reg32()[inst.GetREG()]|=(newR&operandSizeMask[op32or16]);
 			}
 		}
 		break;
