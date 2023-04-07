@@ -5146,9 +5146,17 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 	#define LOAD_FAR_POINTER(SEGREG) \
 		if(OPER_ADDR==op2.operandType) \
 		{ \
+			clocksPassed=9; \
 			auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,(inst.operandSize+16)/8); \
 			if(true!=state.exception) \
 			{ \
+				auto seg=value.GetFwordSegment(); \
+				LoadSegmentRegister(state.SEGREG(),seg,mem); \
+				if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes)) \
+				{ \
+					EIPIncrement=0; \
+					break; \
+				} \
 				auto regNum=inst.GetREG(); \
 				if(16==inst.operandSize) \
 				{ \
@@ -5158,10 +5166,7 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				{ \
 					state.reg32()[regNum]=value.GetAsDword(); \
 				} \
-				auto seg=value.GetFwordSegment(); \
-				LoadSegmentRegister(state.SEGREG(),seg,mem); \
 			} \
-			clocksPassed=9; \
 		} \
 		else \
 		{ \
