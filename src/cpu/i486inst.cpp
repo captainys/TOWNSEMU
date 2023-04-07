@@ -9683,11 +9683,15 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			clocksPassed=4;
 			if(16==inst.operandSize)
 			{
-				SetAX(Pop16(mem));
+				auto pop=Pop16(mem);
+				HANDLE_EXCEPTION_PUSH_POP;
+				SetAX(pop);
 			}
 			else
 			{
-				state.EAX()=Pop32(mem);
+				auto pop=Pop32(mem);
+				HANDLE_EXCEPTION_PUSH_POP;
+				state.EAX()=pop;
 			}
 			HANDLE_EXCEPTION_PUSH_POP;
 		}
@@ -9698,11 +9702,15 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			clocksPassed=4;
 			if(16==inst.operandSize)
 			{
-				SetCX(Pop16(mem));
+				auto pop=Pop16(mem);
+				HANDLE_EXCEPTION_PUSH_POP;
+				SetCX(pop);
 			}
 			else
 			{
-				state.ECX()=Pop32(mem);
+				auto pop=Pop32(mem);
+				HANDLE_EXCEPTION_PUSH_POP;
+				state.ECX()=pop;
 			}
 			HANDLE_EXCEPTION_PUSH_POP;
 		}
@@ -9713,11 +9721,15 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			clocksPassed=4;
 			if(16==inst.operandSize)
 			{
-				SetDX(Pop16(mem));
+				auto pop=Pop16(mem);
+				HANDLE_EXCEPTION_PUSH_POP;
+				SetDX(pop);
 			}
 			else
 			{
-				state.EDX()=Pop32(mem);
+				auto pop=Pop32(mem);
+				HANDLE_EXCEPTION_PUSH_POP;
+				state.EDX()=pop;
 			}
 			HANDLE_EXCEPTION_PUSH_POP;
 		}
@@ -9728,11 +9740,15 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			clocksPassed=4;
 			if(16==inst.operandSize)
 			{
-				SetBX(Pop16(mem));
+				auto pop=Pop16(mem);
+				HANDLE_EXCEPTION_PUSH_POP;
+				SetBX(pop);
 			}
 			else
 			{
-				state.EBX()=Pop32(mem);
+				auto pop=Pop32(mem);
+				HANDLE_EXCEPTION_PUSH_POP;
+				state.EBX()=pop;
 			}
 			HANDLE_EXCEPTION_PUSH_POP;
 		}
@@ -9743,11 +9759,15 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			clocksPassed=4;
 			if(16==inst.operandSize)
 			{
-				SetSP(Pop16(mem));
+				auto pop=Pop16(mem);
+				HANDLE_EXCEPTION_PUSH_POP;
+				SetSP(pop);
 			}
 			else
 			{
-				state.ESP()=Pop32(mem);
+				auto pop=Pop32(mem);
+				HANDLE_EXCEPTION_PUSH_POP;
+				state.ESP()=pop;
 			}
 			HANDLE_EXCEPTION_PUSH_POP;
 		}
@@ -9758,11 +9778,15 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			clocksPassed=4;
 			if(16==inst.operandSize)
 			{
-				SetBP(Pop16(mem));
+				auto pop=Pop16(mem);
+				HANDLE_EXCEPTION_PUSH_POP;
+				SetBP(pop);
 			}
 			else
 			{
-				state.EBP()=Pop32(mem);
+				auto pop=Pop32(mem);
+				HANDLE_EXCEPTION_PUSH_POP;
+				state.EBP()=pop;
 			}
 			HANDLE_EXCEPTION_PUSH_POP;
 		}
@@ -9773,11 +9797,15 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			clocksPassed=4;
 			if(16==inst.operandSize)
 			{
-				SetSI(Pop16(mem));
+				auto pop=Pop16(mem);
+				HANDLE_EXCEPTION_PUSH_POP;
+				SetSI(pop);
 			}
 			else
 			{
-				state.ESI()=Pop32(mem);
+				auto pop=Pop32(mem);
+				HANDLE_EXCEPTION_PUSH_POP;
+				state.ESI()=pop;
 			}
 			HANDLE_EXCEPTION_PUSH_POP;
 		}
@@ -9788,11 +9816,15 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			clocksPassed=4;
 			if(16==inst.operandSize)
 			{
-				SetDI(Pop16(mem));
+				auto pop=Pop16(mem);
+				HANDLE_EXCEPTION_PUSH_POP;
+				SetDI(pop);
 			}
 			else
 			{
-				state.EDI()=Pop32(mem);
+				auto pop=Pop32(mem);
+				HANDLE_EXCEPTION_PUSH_POP;
+				state.EDI()=pop;
 			}
 			HANDLE_EXCEPTION_PUSH_POP;
 		}
