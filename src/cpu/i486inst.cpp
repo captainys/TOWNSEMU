@@ -6943,6 +6943,39 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			case 6: // FNSTENV
 				{
 					// 14 bytes or 28 bytes depends on operand size?  Figure 15-5 through 15-8 of i486 Programmer's Reference Manual 1990 for layout.
+					// WTF!? Four types of layouts?  Intel designers were really creative in the evil way.
+					// Protected Mode && 32-bit (Figure 15-5)
+					//   RESERVED | CONTROL WORD     +0H
+					//   RESERVED | STATUS WORD      +4H
+					//   RESERVED | TAG WORD         +8H
+					//        IP OFFSET              +CH
+					//   RESERVED | CS selector      +10H
+					//       Data Operand Offset     +14H
+					//   RESERVED | Operand Selector +18H
+					// Real Mode && 32-bit (Figure 15-6)
+					//   RESERVED | CONTROL WORD                       +0H
+					//   RESERVED | STATUS WORD                        +4H
+					//   RESERVED | TAG WORD                           +8H
+					//   RESERVED | IP OFFSET                          +CH
+					//   0000 (IP 16bits) 0 (Opcode 11bits)            +10H
+					//   RESERVED | Data Operand Offset                +14H
+					//   0000 (Operand Selector 16bits) 000000000000   +18H
+					// Protected Mode && 16-bit (Figure 15-7)
+					//   CONTROL WORD            +0H
+					//   STATUS WORD             +4H
+					//   TAG WORD                +8H
+					//   IP OFFSET               +CH
+					//   CS selector             +10H
+					//   Data Operand Offset     +14H
+					//   Operand Selector        +18H
+					// Real Mode && 16-bit (Figure 15-8)
+					//   CONTROL WORD                     +0H
+					//   STATUS WORD                      +4H
+					//   TAG WORD                         +8H
+					//   IP OFFSET                        +CH
+					//   IP(high-4bit) 0 Opcode(11 bits)  +10H
+					//   Data Operand Offset              +14H
+					//   DP(high 4-bit) <- 0 ->           +18H
 				}
 				break;
 			case 7: // "FNSTCW"
