@@ -6940,6 +6940,11 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					clocksPassed=state.fpuState.FLDCW(*this,cw);
 				}
 				break;
+			case 6: // FNSTENV
+				{
+					// 14 bytes or 28 bytes depends on operand size?  Figure 15-5 through 15-8 of i486 Programmer's Reference Manual 1990 for layout.
+				}
+				break;
 			case 7: // "FNSTCW"
 				{
 					OperandValue value;
@@ -7278,7 +7283,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					// FIADD m16int
 					break;
 				case 1:
-					// FIMUL m16int
+					{
+						auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,2);
+						clocksPassed=state.fpuState.FIMUL_m16int(*this,value.byteData);
+					}
 					break;
 				case 2:
 					// FICOM m16int

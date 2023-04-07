@@ -1076,6 +1076,19 @@ unsigned int i486DX::FPUState::FMUL_m64real(i486DX &cpu,const unsigned char byte
 	}
 	return 0;
 }
+unsigned int i486DX::FPUState::FIMUL_m16int(i486DX &cpu,const unsigned char byteData[])
+{
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+
+		double src=(double)IntFrom16Bit(byteData);
+		ST(cpu).value*=src;
+
+		return 25;
+	}
+	return 0;
+}
 unsigned int i486DX::FPUState::FPATAN(i486DX &cpu)
 {
 	if(true==enabled)
