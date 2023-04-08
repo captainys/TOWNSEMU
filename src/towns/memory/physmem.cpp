@@ -144,7 +144,7 @@ void TownsPhysicalMemory::State::Reset(void)
 		break;
 
 	case TOWNSIO_KANJI_JISCODE_HIGH://  0xFF94,
-		state.kanjiROMAccess.JISCodeHigh=data;
+		state.kanjiROMAccess.JISCodeHigh=data&0x7F;
 		break;
 	case TOWNSIO_KANJI_JISCODE_LOW://   0xFF95,
 		state.kanjiROMAccess.JISCodeLow=data;

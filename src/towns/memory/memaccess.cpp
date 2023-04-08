@@ -362,7 +362,7 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 			break;
 
 		case TOWNSMEMIO_KANJI_JISCODE_HIGH:// 0x000CFF94,
-			physMemPtr->state.kanjiROMAccess.JISCodeHigh=data;
+			physMemPtr->state.kanjiROMAccess.JISCodeHigh=data&0x7F;
 			break;
 		case TOWNSMEMIO_KANJI_JISCODE_LOW://  0x000CFF95,
 			physMemPtr->state.kanjiROMAccess.JISCodeLow=data;
