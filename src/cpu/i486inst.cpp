@@ -6941,7 +6941,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				}
 				break;
 			case 6: // FNSTENV
+				if(true==state.fpuState.enabled)
 				{
+					unsigned int offset;
+					auto segPtr=ExtractSegmentAndOffset(offset,op1,inst.segOverride);
 					// 14 bytes or 28 bytes depends on operand size?  Figure 15-5 through 15-8 of i486 Programmer's Reference Manual 1990 for layout.
 					// WTF!? Four types of layouts?  Intel designers were really creative in the evil way.
 					// Protected Mode && 32-bit (Figure 15-5)
@@ -6952,6 +6955,17 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					//   RESERVED | CS selector      +10H
 					//       Data Operand Offset     +14H
 					//   RESERVED | Operand Selector +18H
+					clocksPassed=67;
+					if(true!=IsInRealMode() && 32==inst.operandSize)
+					{
+						StoreDword(mem,inst.addressSize,*segPtr,offset   ,state.fpuState.controlWord);
+						StoreDword(mem,inst.addressSize,*segPtr,offset+ 4,state.fpuState.statusWord);
+						StoreDword(mem,inst.addressSize,*segPtr,offset+ 8,state.fpuState.tagWord);
+						StoreDword(mem,inst.addressSize,*segPtr,offset+12,0);
+						StoreDword(mem,inst.addressSize,*segPtr,offset+16,0);
+						StoreDword(mem,inst.addressSize,*segPtr,offset+20,0);
+						StoreDword(mem,inst.addressSize,*segPtr,offset+24,0);
+					}
 					// Real Mode && 32-bit (Figure 15-6)
 					//   RESERVED | CONTROL WORD                       +0H
 					//   RESERVED | STATUS WORD                        +4H
@@ -6960,22 +6974,52 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 					//   0000 (IP 16bits) 0 (Opcode 11bits)            +10H
 					//   RESERVED | Data Operand Offset                +14H
 					//   0000 (Operand Selector 16bits) 000000000000   +18H
+					else if(true==IsInRealMode() && 32==inst.operandSize)
+					{
+						StoreDword(mem,inst.addressSize,*segPtr,offset   ,state.fpuState.controlWord);
+						StoreDword(mem,inst.addressSize,*segPtr,offset+ 4,state.fpuState.statusWord);
+						StoreDword(mem,inst.addressSize,*segPtr,offset+ 8,state.fpuState.tagWord);
+						StoreDword(mem,inst.addressSize,*segPtr,offset+12,0);
+						StoreDword(mem,inst.addressSize,*segPtr,offset+16,0);
+						StoreDword(mem,inst.addressSize,*segPtr,offset+20,0);
+						StoreDword(mem,inst.addressSize,*segPtr,offset+24,0);
+					}
 					// Protected Mode && 16-bit (Figure 15-7)
 					//   CONTROL WORD            +0H
-					//   STATUS WORD             +4H
-					//   TAG WORD                +8H
-					//   IP OFFSET               +CH
-					//   CS selector             +10H
-					//   Data Operand Offset     +14H
-					//   Operand Selector        +18H
+					//   STATUS WORD             +2H
+					//   TAG WORD                +4H
+					//   IP OFFSET               +6H
+					//   CS selector             +8H
+					//   Data Operand Offset     +AH
+					//   Operand Selector        +CH
+					else if(true!=IsInRealMode() && 16==inst.operandSize)
+					{
+						StoreWord(mem,inst.addressSize,*segPtr,offset   ,state.fpuState.controlWord);
+						StoreWord(mem,inst.addressSize,*segPtr,offset+ 2,state.fpuState.statusWord);
+						StoreWord(mem,inst.addressSize,*segPtr,offset+ 4,state.fpuState.tagWord);
+						StoreWord(mem,inst.addressSize,*segPtr,offset+ 6,0);
+						StoreWord(mem,inst.addressSize,*segPtr,offset+ 8,0);
+						StoreWord(mem,inst.addressSize,*segPtr,offset+10,0);
+						StoreWord(mem,inst.addressSize,*segPtr,offset+12,0);
+					}
 					// Real Mode && 16-bit (Figure 15-8)
 					//   CONTROL WORD                     +0H
-					//   STATUS WORD                      +4H
-					//   TAG WORD                         +8H
-					//   IP OFFSET                        +CH
-					//   IP(high-4bit) 0 Opcode(11 bits)  +10H
-					//   Data Operand Offset              +14H
-					//   DP(high 4-bit) <- 0 ->           +18H
+					//   STATUS WORD                      +2H
+					//   TAG WORD                         +4H
+					//   IP OFFSET                        +6H
+					//   IP(high-4bit) 0 Opcode(11 bits)  +8H
+					//   Data Operand Offset              +AH
+					//   DP(high 4-bit) <- 0 ->           +CH
+					else if(true==IsInRealMode() && 16==inst.operandSize)
+					{
+						StoreWord(mem,inst.addressSize,*segPtr,offset   ,state.fpuState.controlWord);
+						StoreWord(mem,inst.addressSize,*segPtr,offset+ 2,state.fpuState.statusWord);
+						StoreWord(mem,inst.addressSize,*segPtr,offset+ 4,state.fpuState.tagWord);
+						StoreWord(mem,inst.addressSize,*segPtr,offset+ 6,0);
+						StoreWord(mem,inst.addressSize,*segPtr,offset+ 8,0);
+						StoreWord(mem,inst.addressSize,*segPtr,offset+10,0);
+						StoreWord(mem,inst.addressSize,*segPtr,offset+12,0);
+					}
 				}
 				break;
 			case 7: // "FNSTCW"
