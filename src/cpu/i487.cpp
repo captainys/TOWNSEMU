@@ -616,6 +616,19 @@ unsigned int i486DX::FPUState::FADDP_STi_ST(i486DX &cpu,int i)
 	}
 	return 0; // Let it abort.
 }
+unsigned int i486DX::FPUState::FIADD_m16int(i486DX &cpu,const unsigned char byteData[])
+{
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+
+		double src=(double)IntFrom16Bit(byteData);
+		ST(cpu).value+=src;
+
+		return 7;
+	}
+	return 0;
+}
 unsigned int i486DX::FPUState::FBLD(i486DX &cpu,const unsigned char byteData[])
 {
 	if(true==enabled)

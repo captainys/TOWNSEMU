@@ -7364,7 +7364,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 				switch(inst.GetREG())
 				{
 				case 0:
-					// FIADD m16int
+					{
+						auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,2);
+						clocksPassed=state.fpuState.FIADD_m16int(*this,value.byteData);
+					}
 					break;
 				case 1:
 					{

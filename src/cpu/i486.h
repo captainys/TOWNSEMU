@@ -542,6 +542,7 @@ public:
 		unsigned int FADD64(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FADD_ST_STi(i486DX &cpu,int i);
 		unsigned int FADDP_STi_ST(i486DX &cpu,int i);
+		unsigned int FIADD_m16int(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FBLD(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FCHS(i486DX &cpu);
 		unsigned int FCLEX(i486DX &cpu);
