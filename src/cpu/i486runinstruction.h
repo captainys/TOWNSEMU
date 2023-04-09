@@ -74,7 +74,7 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::CALLF(Memory &mem,uint16_t op
 	}
 	else
 	{
-		TSUGARU_I486_FIDELITY_CLASS fidelity;
+		FIDELITY fidelity;
 
 		auto prevCPL=state.CS().DPL;
 
@@ -160,7 +160,7 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::JMPF(Memory &mem,uint16_t opS
 	}
 	else
 	{
-		TSUGARU_I486_FIDELITY_CLASS fidelity;
+		FIDELITY fidelity;
 
 		auto prevCPL=state.CS().DPL;
 
