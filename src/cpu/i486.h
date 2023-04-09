@@ -579,6 +579,7 @@ public:
 		unsigned int FMUL_m32real(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FMUL_m64real(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FIMUL_m16int(i486DX &cpu,const unsigned char byteData[]);
+		unsigned int FIMUL_m32int(i486DX &cpu,const unsigned char byteData[]);
 		unsigned int FPATAN(i486DX &cpu);
 		unsigned int FPREM(i486DX &cpu);
 		unsigned int FPTAN(i486DX &cpu);

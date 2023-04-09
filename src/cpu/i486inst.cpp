@@ -7070,6 +7070,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			case 0:  // FIADD m32int
 				break;
 			case 1:  // FIMUL m32int
+				{
+					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,4);
+					clocksPassed=state.fpuState.FIMUL_m32int(*this,value.byteData);
+				}
 				break;
 			case 2:  // FICOM m32int
 				break;
