@@ -144,7 +144,7 @@ bool i486SymbolTable::ImportEXPSymbolTable(std::string fName)
 		offset+=2;
 
 		// Assume Code Segment is 000Ch
-		i486DX::FarPointer ptr;
+		i486DXCommon::FarPointer ptr;
 		ptr.SEG=0x000C;
 		ptr.OFFSET=addr;
 		SetImportedLabel(ptr,label);

@@ -105,7 +105,7 @@ public:
 		}
 	};
 
-	typedef i486DX::FarPointer CS_EIP;
+	typedef i486DXCommon::FarPointer CS_EIP;
 
 	std::map <CS_EIP,BreakPointInfo> breakPoints;
 	BreakPointInfo lastBreakPointInfo;
@@ -125,7 +125,7 @@ public:
 
 	uint32_t instHist[0xFFFF];
 
-	class CSEIPLogType : public i486DX::FarPointer
+	class CSEIPLogType : public i486DXCommon::FarPointer
 	{
 	public:
 		unsigned int SS,ESP;
@@ -218,21 +218,21 @@ private:
 	TSUGARU_I486_FIDELITY_CLASS::Debugger_ExceptionVerification prevCPUState;
 
 public:
-	/*! Callback from i486DX::RunOneInstruction.
+	/*! Callback from i486DXCommon::RunOneInstruction.
 	*/
-	void BeforeRunOneInstruction(i486DX &cpu,Memory &mem,InOut &io,const i486DX::Instruction &inst);
+	void BeforeRunOneInstruction(i486DXCommon &cpu,Memory &mem,InOut &io,const i486DXCommon::Instruction &inst);
 
-	/*! Callback from i486DX::RunOneInstruction.
+	/*! Callback from i486DXCommon::RunOneInstruction.
 	*/
-	void AfterRunOneInstruction(unsigned int clocksPassed,i486DX &cpu,Memory &mem,InOut &io,const i486DX::Instruction &inst,const i486DX::Operand &op1,const i486DX::Operand &op2);
+	void AfterRunOneInstruction(unsigned int clocksPassed,i486DXCommon &cpu,Memory &mem,InOut &io,const i486DXCommon::Instruction &inst,const i486DXCommon::Operand &op1,const i486DXCommon::Operand &op2);
 
 	/*! Check for break points. 
 	*/
-	void CheckForBreakPoints(i486DX &cpu);
+	void CheckForBreakPoints(i486DXCommon &cpu);
 
 	/*!
 	*/
-	void HandleException(i486DX &cpu,Memory &mem,unsigned int instNumBytes);
+	void HandleException(i486DXCommon &cpu,Memory &mem,unsigned int instNumBytes);
 
 	/*! Break on INT
 	*/
@@ -248,7 +248,7 @@ public:
 
 	/*! Return formatted call-stack text.
 	*/
-	std::vector <std::string> GetCallStackText(const i486DX &cpu) const;
+	std::vector <std::string> GetCallStackText(const i486DXCommon &cpu) const;
 
 	/*! Break from an external reason.
 	    It sets stop==1 and externalBreakReason=reason.
@@ -261,22 +261,22 @@ public:
 	*/
 	void ClearStopFlag(void);
 
-	/*! Called from i486DX class when an interrupt is shot.
+	/*! Called from i486DXCommon class when an interrupt is shot.
 	*/
-	void Interrupt(const i486DX &cpu,unsigned int INTNum,Memory &mem,unsigned int numInstBytes);
+	void Interrupt(const i486DXCommon &cpu,unsigned int INTNum,Memory &mem,unsigned int numInstBytes);
 private:
 	/*!
 	*/
-	std::string INTExplanation(const i486DX &cpu,unsigned int INTNum,Memory &mem) const;
+	std::string INTExplanation(const i486DXCommon &cpu,unsigned int INTNum,Memory &mem) const;
 
 public:
-	/*! Called from i486DX class when data is written to I/O.
+	/*! Called from i486DXCommon class when data is written to I/O.
 	*/
-	void IOWrite(const i486DX &cpu,unsigned int ioport,unsigned int data,unsigned int lengthInBytes);
+	void IOWrite(const i486DXCommon &cpu,unsigned int ioport,unsigned int data,unsigned int lengthInBytes);
 
-	/*! Called from i486DX class when data is read from I/O.
+	/*! Called from i486DXCommon class when data is read from I/O.
 	*/
-	void IORead(const i486DX &cpu,unsigned int ioport,unsigned int data,unsigned int lengthInBytes);
+	void IORead(const i486DXCommon &cpu,unsigned int ioport,unsigned int data,unsigned int lengthInBytes);
 
 	/*!
 	*/
@@ -290,7 +290,7 @@ private:
 
 
 public:
-	std::vector <unsigned int> FindCaller(unsigned int procAddr,const i486DX::SegmentRegister &seg,const i486DX &cpu,const Memory &mem);
+	std::vector <unsigned int> FindCaller(unsigned int procAddr,const i486DXCommon::SegmentRegister &seg,const i486DXCommon &cpu,const Memory &mem);
 
 	bool OpenLogFile(std::string logFileName);
 	std::ofstream &LogFileStream(void);

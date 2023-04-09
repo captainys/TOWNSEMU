@@ -21,7 +21,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "i486.h"
 
 
-i486DX::State::State()
+i486DXCommon::State::State()
 {
 #ifdef YS_LITTLE_ENDIAN
 	reg8Ptr[0]=(uint8_t *)&NULL_and_reg32[REG_EAX];
@@ -36,27 +36,27 @@ i486DX::State::State()
 }
 
 
-const char *const i486DX::Reg8Str[8]=
+const char *const i486DXCommon::Reg8Str[8]=
 {
 	"AL","CL","DL","BL","AH","CH","DH","BH"
 };
 
-const char *const i486DX::Reg16Str[8]=
+const char *const i486DXCommon::Reg16Str[8]=
 {
 	"AX","CX","DX","BX","SP","BP","SI","DI"
 };
 
-const char *const i486DX::Reg32Str[8]=
+const char *const i486DXCommon::Reg32Str[8]=
 {
 	"EAX","ECX","EDX","EBX","ESP","EBP","ESI","EDI"
 };
 
-const char *const i486DX::Sreg[8]=
+const char *const i486DXCommon::Sreg[8]=
 {
 	"ES","CS","SS","DS","FS","GS"
 };
 
-const char *const i486DX::RegToStr[REG_TOTAL_NUMBER_OF_REGISTERS]=
+const char *const i486DXCommon::RegToStr[REG_TOTAL_NUMBER_OF_REGISTERS]=
 {
 	"(none)",
 
@@ -99,7 +99,7 @@ const char *const i486DX::RegToStr[REG_TOTAL_NUMBER_OF_REGISTERS]=
 	"GS",
 };
 
-const bool i486DX::ParityTable[256]=
+const bool i486DXCommon::ParityTable[256]=
 {
 true, false,false,true, false,true, true, false,false,true, true, false,true, false,false,true,
 false,true, true, false,true, false,false,true, true, false,false,true, false,true, true, false,
@@ -119,12 +119,12 @@ false,true, true, false,true, false,false,true, true, false,false,true, false,tr
 true, false,false,true, false,true, true, false,false,true, true, false,true, false,false,true,
 };
 
-std::string i486DX::FarPointer::Format(void) const
+std::string i486DXCommon::FarPointer::Format(void) const
 {
 	return cpputil::Uitox(SEG)+":"+cpputil::Uitox(OFFSET);
 }
 
-void i486DX::FarPointer::MakeFromString(const std::string &str)
+void i486DXCommon::FarPointer::MakeFromString(const std::string &str)
 {
 	Nullify();
 	for(unsigned int i=0; i<str.size(); ++i)
@@ -139,39 +139,39 @@ void i486DX::FarPointer::MakeFromString(const std::string &str)
 			cpputil::Capitalize(segPart);
 			if("CS"==segPart)
 			{
-				this->SEG=i486DX::FarPointer::SEG_REGISTER|i486DX::REG_CS;
+				this->SEG=i486DXCommon::FarPointer::SEG_REGISTER|i486DXCommon::REG_CS;
 			}
 			else if("SS"==segPart)
 			{
-				this->SEG=i486DX::FarPointer::SEG_REGISTER|i486DX::REG_SS;
+				this->SEG=i486DXCommon::FarPointer::SEG_REGISTER|i486DXCommon::REG_SS;
 			}
 			else if("DS"==segPart)
 			{
-				this->SEG=i486DX::FarPointer::SEG_REGISTER|i486DX::REG_DS;
+				this->SEG=i486DXCommon::FarPointer::SEG_REGISTER|i486DXCommon::REG_DS;
 			}
 			else if("ES"==segPart)
 			{
-				this->SEG=i486DX::FarPointer::SEG_REGISTER|i486DX::REG_ES;
+				this->SEG=i486DXCommon::FarPointer::SEG_REGISTER|i486DXCommon::REG_ES;
 			}
 			else if("FS"==segPart)
 			{
-				this->SEG=i486DX::FarPointer::SEG_REGISTER|i486DX::REG_FS;
+				this->SEG=i486DXCommon::FarPointer::SEG_REGISTER|i486DXCommon::REG_FS;
 			}
 			else if("GS"==segPart)
 			{
-				this->SEG=i486DX::FarPointer::SEG_REGISTER|i486DX::REG_GS;
+				this->SEG=i486DXCommon::FarPointer::SEG_REGISTER|i486DXCommon::REG_GS;
 			}
 			else if("PHYS"==segPart || "P"==segPart)
 			{
-				this->SEG=i486DX::FarPointer::PHYS_ADDR;
+				this->SEG=i486DXCommon::FarPointer::PHYS_ADDR;
 			}
 			else if("LINE"==segPart || "L"==segPart)
 			{
-				this->SEG=i486DX::FarPointer::LINEAR_ADDR;
+				this->SEG=i486DXCommon::FarPointer::LINEAR_ADDR;
 			}
 			else if('R'==segPart[0] || 'r'==segPart[0])
 			{
-				this->SEG=i486DX::FarPointer::REAL_ADDR|cpputil::Xtoi(str.data()+1);
+				this->SEG=i486DXCommon::FarPointer::REAL_ADDR|cpputil::Xtoi(str.data()+1);
 			}
 			else
 			{
@@ -188,11 +188,11 @@ void i486DX::FarPointer::MakeFromString(const std::string &str)
 		}
 	}
 
-	this->SEG=i486DX::FarPointer::NO_SEG;
+	this->SEG=i486DXCommon::FarPointer::NO_SEG;
 	this->OFFSET=cpputil::Xtoi(str.data());
 }
 
-i486DX::FarPointer i486DX::TranslateFarPointer(FarPointer ptr) const
+i486DXCommon::FarPointer i486DXCommon::TranslateFarPointer(FarPointer ptr) const
 {
 	if(ptr.SEG==FarPointer::NO_SEG)
 	{
@@ -205,7 +205,7 @@ i486DX::FarPointer i486DX::TranslateFarPointer(FarPointer ptr) const
 	return ptr;
 }
 
-void i486DX::FarPointer::LoadSegmentRegister(SegmentRegister &seg,i486DX &cpu,const Memory &mem) const
+void i486DXCommon::FarPointer::LoadSegmentRegister(SegmentRegister &seg,i486DXCommon &cpu,const Memory &mem) const
 {
 	if(SEG==NO_SEG)
 	{
@@ -240,7 +240,7 @@ void i486DX::FarPointer::LoadSegmentRegister(SegmentRegister &seg,i486DX &cpu,co
 ////////////////////////////////////////////////////////////
 
 
-i486DX::i486DX(VMBase *vmPtr) : CPU(vmPtr)
+i486DXCommon::i486DXCommon(VMBase *vmPtr) : CPU(vmPtr)
 {
 	state.NULL_and_reg32[ 0]=0;
 
@@ -287,7 +287,7 @@ i486DX::i486DX(VMBase *vmPtr) : CPU(vmPtr)
 	ClearPageTableCache();
 }
 
-void i486DX::Reset(void)
+void i486DXCommon::Reset(void)
 {
 	// page 10-1 [1]
 	state.EFLAGS=RESET_EFLAGS;
@@ -351,7 +351,7 @@ void i486DX::Reset(void)
 	state.exception=false;
 }
 
-void i486DX::ClearPageTableCache(void)
+void i486DXCommon::ClearPageTableCache(void)
 {
 	for(auto &c : state.pageTableCache)
 	{
@@ -362,7 +362,7 @@ void i486DX::ClearPageTableCache(void)
 	state.pageTableCacheValidCounter=1;
 }
 
-void i486DX::InvalidatePageTableCache()
+void i486DXCommon::InvalidatePageTableCache()
 {
 	++state.pageTableCacheValidCounter;
 	if(state.pageTableCacheValidCounter==0xffffffff)
@@ -371,7 +371,7 @@ void i486DX::InvalidatePageTableCache()
 	}
 }
 
-void i486DX::ClearDescriptorCache(void)
+void i486DXCommon::ClearDescriptorCache(void)
 {
 	state.descriptorCacheValidCounter=1;
 	for(auto &c : state.descriptorCacheValid)
@@ -383,7 +383,7 @@ void i486DX::ClearDescriptorCache(void)
 		ptr=nullptr;
 	}
 }
-void i486DX::InvalidateDescriptorCache(void)
+void i486DXCommon::InvalidateDescriptorCache(void)
 {
 	++state.descriptorCacheValidCounter;
 	if(0xffffffff==state.descriptorCacheValidCounter)
@@ -392,7 +392,7 @@ void i486DX::InvalidateDescriptorCache(void)
 	}
 }
 
-void i486DX::HandleException(bool,Memory &mem,unsigned int numInstBytesForCallStack)
+void i486DXCommon::HandleException(bool,Memory &mem,unsigned int numInstBytesForCallStack)
 {
 	if(nullptr!=debuggerPtr)
 	{
@@ -439,7 +439,7 @@ void i486DX::HandleException(bool,Memory &mem,unsigned int numInstBytesForCallSt
 	state.exception=false;
 }
 
-std::vector <std::string> i486DX::GetStateText(void) const
+std::vector <std::string> i486DXCommon::GetStateText(void) const
 {
 	std::vector <std::string> text;
 
@@ -527,7 +527,7 @@ std::vector <std::string> i486DX::GetStateText(void) const
 	return text;
 }
 
-std::vector <std::string> i486DX::GetSegRegText(void) const
+std::vector <std::string> i486DXCommon::GetSegRegText(void) const
 {
 	std::vector <std::string> text;
 
@@ -573,7 +573,7 @@ std::vector <std::string> i486DX::GetSegRegText(void) const
 	return text;
 }
 
-std::vector <std::string> i486DX::GetGDTText(const Memory &mem) const
+std::vector <std::string> i486DXCommon::GetGDTText(const Memory &mem) const
 {
 	std::vector <std::string> text;
 	text.push_back("GDT  Limit=");
@@ -655,7 +655,7 @@ std::vector <std::string> i486DX::GetGDTText(const Memory &mem) const
 	return text;
 }
 
-std::vector <std::string> i486DX::GetLDTText(const Memory &mem) const
+std::vector <std::string> i486DXCommon::GetLDTText(const Memory &mem) const
 {
 	std::vector <std::string> text;
 	text.push_back("LDT  Limit=");
@@ -740,7 +740,7 @@ std::vector <std::string> i486DX::GetLDTText(const Memory &mem) const
 	return text;
 }
 
-std::vector <std::string> i486DX::GetIDTText(const Memory &mem) const
+std::vector <std::string> i486DXCommon::GetIDTText(const Memory &mem) const
 {
 	std::vector <std::string> text;
 	std::string empty;
@@ -799,7 +799,7 @@ std::vector <std::string> i486DX::GetIDTText(const Memory &mem) const
 	return text;
 }
 
-std::vector <std::string> i486DX::GetTSSText(const Memory &mem) const
+std::vector <std::string> i486DXCommon::GetTSSText(const Memory &mem) const
 {
 	std::vector <std::string> text;
 
@@ -897,7 +897,7 @@ std::vector <std::string> i486DX::GetTSSText(const Memory &mem) const
 	return text;
 }
 
-std::vector <std::string> i486DX::GetDRText(void) const
+std::vector <std::string> i486DXCommon::GetDRText(void) const
 {
 	std::vector <std::string> text;
 	int i=0;
@@ -918,7 +918,7 @@ std::vector <std::string> i486DX::GetDRText(void) const
 	}
 	return text;
 }
-std::vector <std::string> i486DX::GetTESTText(void) const
+std::vector <std::string> i486DXCommon::GetTESTText(void) const
 {
 	std::vector <std::string> text;
 	int i=0;
@@ -940,7 +940,7 @@ std::vector <std::string> i486DX::GetTESTText(void) const
 	return text;
 }
 
-void i486DX::PrintState(void) const
+void i486DXCommon::PrintState(void) const
 {
 	for(auto &str : GetStateText())
 	{
@@ -952,7 +952,7 @@ void i486DX::PrintState(void) const
 	}
 }
 
-void i486DX::PrintGDT(const Memory &mem) const
+void i486DXCommon::PrintGDT(const Memory &mem) const
 {
 	for(auto &str : GetGDTText(mem))
 	{
@@ -964,7 +964,7 @@ void i486DX::PrintGDT(const Memory &mem) const
 	}
 }
 
-void i486DX::PrintLDT(const Memory &mem) const
+void i486DXCommon::PrintLDT(const Memory &mem) const
 {
 	for(auto &str : GetLDTText(mem))
 	{
@@ -976,7 +976,7 @@ void i486DX::PrintLDT(const Memory &mem) const
 	}
 }
 
-void i486DX::PrintIDT(const Memory &mem) const
+void i486DXCommon::PrintIDT(const Memory &mem) const
 {
 	for(auto &str : GetIDTText(mem))
 	{
@@ -988,7 +988,7 @@ void i486DX::PrintIDT(const Memory &mem) const
 	}
 }
 
-void i486DX::PrintPageTranslation(const Memory &mem,uint32_t linearAddr) const
+void i486DXCommon::PrintPageTranslation(const Memory &mem,uint32_t linearAddr) const
 {
 	for(int i=0; i<2; ++i)
 	{
@@ -1061,9 +1061,9 @@ void i486DX::PrintPageTranslation(const Memory &mem,uint32_t linearAddr) const
 
 #include "i486loadsegreg.h"
 
-const unsigned char *i486DX::GetSegmentDescriptor(unsigned char buf[8],unsigned int selector,const Memory &mem) const
+const unsigned char *i486DXCommon::GetSegmentDescriptor(unsigned char buf[8],unsigned int selector,const Memory &mem) const
 {
-	LoadSegmentRegisterTemplate<const i486DX> loader;
+	LoadSegmentRegisterTemplate<const i486DXCommon> loader;
 	loader.LoadProtectedModeDescriptor(*this,selector,mem);
 	if(nullptr!=loader.rawDesc)
 	{
@@ -1073,13 +1073,13 @@ const unsigned char *i486DX::GetSegmentDescriptor(unsigned char buf[8],unsigned 
 	return nullptr;
 }
 
-unsigned int i486DX::DebugLoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode) const
+unsigned int i486DXCommon::DebugLoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode) const
 {
-	LoadSegmentRegisterTemplate<const i486DX> loader;
+	LoadSegmentRegisterTemplate<const i486DXCommon> loader;
 	return loader.LoadSegmentRegister(*this,reg,value,mem,IsInRealMode());
 }
 
-unsigned int i486DX::LoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem)
+unsigned int i486DXCommon::LoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem)
 {
 	TSUGARU_I486_FIDELITY_CLASS fidelity;
 
@@ -1087,7 +1087,7 @@ unsigned int i486DX::LoadSegmentRegister(SegmentRegister &reg,unsigned int value
 	{
 		state.holdIRQ=true;
 	}
-	LoadSegmentRegisterTemplate<i486DX> loader;
+	LoadSegmentRegisterTemplate<i486DXCommon> loader;
 
 	fidelity.SetLoadSegmentRegisterFlags(loader.fidelityFlags,*this,reg);
 
@@ -1097,7 +1097,7 @@ unsigned int i486DX::LoadSegmentRegister(SegmentRegister &reg,unsigned int value
 }
 
 
-unsigned i486DX::LoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode)
+unsigned i486DXCommon::LoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode)
 {
 	TSUGARU_I486_FIDELITY_CLASS fidelity;
 
@@ -1105,7 +1105,7 @@ unsigned i486DX::LoadSegmentRegister(SegmentRegister &reg,unsigned int value,con
 	{
 		state.holdIRQ=true;
 	}
-	LoadSegmentRegisterTemplate<i486DX> loader;
+	LoadSegmentRegisterTemplate<i486DXCommon> loader;
 
 	fidelity.SetLoadSegmentRegisterFlags(loader.fidelityFlags,*this,reg);
 
@@ -1114,7 +1114,7 @@ unsigned i486DX::LoadSegmentRegister(SegmentRegister &reg,unsigned int value,con
 	return ret;
 }
 
-void i486DX::LoadSegmentRegisterRealMode(SegmentRegister &reg,unsigned int value)
+void i486DXCommon::LoadSegmentRegisterRealMode(SegmentRegister &reg,unsigned int value)
 {
 	if(&reg==&state.SS())
 	{
@@ -1128,12 +1128,12 @@ void i486DX::LoadSegmentRegisterRealMode(SegmentRegister &reg,unsigned int value
 	// reg.limit=0xffff;  Surprisingly, reg.limit isn't affected!?  According to https://wiki.osdev.org/Unreal_Mode
 }
 
-void i486DX::LoadTaskRegister(unsigned int value,const Memory &mem)
+void i486DXCommon::LoadTaskRegister(unsigned int value,const Memory &mem)
 {
 	LoadSegmentRegister(state.TR,value,mem);
 }
 
-void i486DX::LoadDescriptorTableRegister(SystemAddressRegister &reg,int operandSize,const unsigned char byteData[])
+void i486DXCommon::LoadDescriptorTableRegister(SystemAddressRegister &reg,int operandSize,const unsigned char byteData[])
 {
 	reg.limit=byteData[0]|(byteData[1]<<8);
 	if(16==operandSize)
@@ -1146,18 +1146,18 @@ void i486DX::LoadDescriptorTableRegister(SystemAddressRegister &reg,int operandS
 	}
 }
 
-i486DX::FarPointer i486DX::GetCallGate(unsigned int selector,const Memory &mem)
+i486DXCommon::FarPointer i486DXCommon::GetCallGate(unsigned int selector,const Memory &mem)
 {
-	LoadSegmentRegisterTemplate<i486DX> loader;
+	LoadSegmentRegisterTemplate<i486DXCommon> loader;
 	return loader.GetCallGate(*this,selector,mem);
 }
-i486DX::FarPointer i486DX::DebugGetCallGate(unsigned int selector,const Memory &mem) const
+i486DXCommon::FarPointer i486DXCommon::DebugGetCallGate(unsigned int selector,const Memory &mem) const
 {
-	LoadSegmentRegisterTemplate<const i486DX> loader;
+	LoadSegmentRegisterTemplate<const i486DXCommon> loader;
 	return loader.GetCallGate(*this,selector,mem);
 }
 
-i486DX::InterruptDescriptor i486DX::GetInterruptDescriptor(unsigned int INTNum,Memory &mem)
+i486DXCommon::InterruptDescriptor i486DXCommon::GetInterruptDescriptor(unsigned int INTNum,Memory &mem)
 {
 	InterruptDescriptor desc;
 	if(8*INTNum<state.IDTR.limit)
@@ -1197,7 +1197,7 @@ i486DX::InterruptDescriptor i486DX::GetInterruptDescriptor(unsigned int INTNum,M
 	return desc;
 }
 
-i486DX::InterruptDescriptor i486DX::DebugGetInterruptDescriptor(unsigned int INTNum,const Memory &mem) const
+i486DXCommon::InterruptDescriptor i486DXCommon::DebugGetInterruptDescriptor(unsigned int INTNum,const Memory &mem) const
 {
 	InterruptDescriptor desc;
 	if(8*INTNum<state.IDTR.limit)
@@ -1231,7 +1231,7 @@ i486DX::InterruptDescriptor i486DX::DebugGetInterruptDescriptor(unsigned int INT
 	return desc;
 }
 
-i486DX::OperandValue i486DX::DescriptorTableToOperandValue(const SystemAddressRegister &reg,int operandSize) const
+i486DXCommon::OperandValue i486DXCommon::DescriptorTableToOperandValue(const SystemAddressRegister &reg,int operandSize) const
 {
 	OperandValue operaValue;
 	operaValue.numBytes=6;
@@ -1250,7 +1250,7 @@ i486DX::OperandValue i486DX::DescriptorTableToOperandValue(const SystemAddressRe
 	return operaValue;
 }
 
-/* static */ unsigned int i486DX::GetRegisterSize(int reg)
+/* static */ unsigned int i486DXCommon::GetRegisterSize(int reg)
 {
 	switch(reg)
 	{
@@ -1297,7 +1297,7 @@ i486DX::OperandValue i486DX::DescriptorTableToOperandValue(const SystemAddressRe
 	return 0;
 }
 
-inline unsigned char *i486DX::GetStackAccessPointer(Memory &mem,uint32_t linearAddr,const unsigned int numBytes)
+inline unsigned char *i486DXCommon::GetStackAccessPointer(Memory &mem,uint32_t linearAddr,const unsigned int numBytes)
 {
 	if((linearAddr&(MemoryAccess::MEMORY_WINDOW_SIZE-1))<=(MemoryAccess::MEMORY_WINDOW_SIZE-numBytes))
 	{
@@ -1320,7 +1320,7 @@ inline unsigned char *i486DX::GetStackAccessPointer(Memory &mem,uint32_t linearA
 	return nullptr;
 }
 
-void i486DX::Push16(Memory &mem,unsigned int value)
+void i486DXCommon::Push16(Memory &mem,unsigned int value)
 {
 	TSUGARU_I486_FIDELITY_CLASS fidelity;
 
@@ -1350,7 +1350,7 @@ void i486DX::Push16(Memory &mem,unsigned int value)
 	StoreWord(mem,addressSize,state.SS(),ESP,value);
 }
 
-void i486DX::Push32(Memory &mem,unsigned int value)
+void i486DXCommon::Push32(Memory &mem,unsigned int value)
 {
 	TSUGARU_I486_FIDELITY_CLASS fidelity;
 
@@ -1376,7 +1376,7 @@ void i486DX::Push32(Memory &mem,unsigned int value)
 	StoreDword(mem,addressSize,state.SS(),ESP,value);
 }
 
-unsigned int i486DX::Pop16(Memory &mem)
+unsigned int i486DXCommon::Pop16(Memory &mem)
 {
 	TSUGARU_I486_FIDELITY_CLASS fidelity;
 
@@ -1407,7 +1407,7 @@ unsigned int i486DX::Pop16(Memory &mem)
 	return value;
 }
 
-unsigned int i486DX::Pop32(Memory &mem)
+unsigned int i486DXCommon::Pop32(Memory &mem)
 {
 	TSUGARU_I486_FIDELITY_CLASS fidelity;
 
@@ -1435,7 +1435,7 @@ unsigned int i486DX::Pop32(Memory &mem)
 	return value;
 }
 
-void i486DX::Push(Memory &mem,unsigned int operandSize,uint32_t firstPush,uint32_t secondPush)
+void i486DXCommon::Push(Memory &mem,unsigned int operandSize,uint32_t firstPush,uint32_t secondPush)
 {
 	TSUGARU_I486_FIDELITY_CLASS fidelity;
 
@@ -1479,7 +1479,7 @@ void i486DX::Push(Memory &mem,unsigned int operandSize,uint32_t firstPush,uint32
 		StoreDword(mem,addressSize,state.SS(),ESP  ,secondPush);
 	}
 }
-void i486DX::Pop(uint32_t &firstPop,uint32_t &secondPop,Memory &mem,unsigned int operandSize)
+void i486DXCommon::Pop(uint32_t &firstPop,uint32_t &secondPop,Memory &mem,unsigned int operandSize)
 {
 	TSUGARU_I486_FIDELITY_CLASS fidelity;
 
@@ -1525,7 +1525,7 @@ void i486DX::Pop(uint32_t &firstPop,uint32_t &secondPop,Memory &mem,unsigned int
 	fidelity.RestoreESPHighWord(addressSize,ESP,savedESP);
 }
 
-void i486DX::Push(Memory &mem,unsigned int operandSize,uint32_t firstPush,uint32_t secondPush,uint32_t thirdPush)
+void i486DXCommon::Push(Memory &mem,unsigned int operandSize,uint32_t firstPush,uint32_t secondPush,uint32_t thirdPush)
 {
 	TSUGARU_I486_FIDELITY_CLASS fidelity;
 
@@ -1573,7 +1573,7 @@ void i486DX::Push(Memory &mem,unsigned int operandSize,uint32_t firstPush,uint32
 		StoreDword(mem,addressSize,state.SS(),ESP  ,thirdPush);
 	}
 }
-void i486DX::Pop(uint32_t &firstPop,uint32_t &secondPop,uint32_t &thirdPop,Memory &mem,unsigned int operandSize)
+void i486DXCommon::Pop(uint32_t &firstPop,uint32_t &secondPop,uint32_t &thirdPop,Memory &mem,unsigned int operandSize)
 {
 	TSUGARU_I486_FIDELITY_CLASS fidelity;
 
@@ -1623,7 +1623,7 @@ void i486DX::Pop(uint32_t &firstPop,uint32_t &secondPop,uint32_t &thirdPop,Memor
 	fidelity.RestoreESPHighWord(addressSize,ESP,savedESP);
 }
 
-unsigned int i486DX::PhysicalAddressToLinearAddress(unsigned physAddr,const Memory &mem) const
+unsigned int i486DXCommon::PhysicalAddressToLinearAddress(unsigned physAddr,const Memory &mem) const
 {
 	if(true==IsInRealMode() || true!=PagingEnabled())
 	{
@@ -1657,7 +1657,7 @@ unsigned int i486DX::PhysicalAddressToLinearAddress(unsigned physAddr,const Memo
 	return 0;
 }
 
-std::string i486DX::Disassemble(const Instruction &inst,const Operand &op1,const Operand &op2,SegmentRegister seg,unsigned int offset,const Memory &mem,const class i486SymbolTable &symTable,const std::map <unsigned int,std::string> &ioTable) const
+std::string i486DXCommon::Disassemble(const Instruction &inst,const Operand &op1,const Operand &op2,SegmentRegister seg,unsigned int offset,const Memory &mem,const class i486SymbolTable &symTable,const std::map <unsigned int,std::string> &ioTable) const
 {
 	std::string disasm;
 	disasm+=cpputil::Ustox(seg.value);
@@ -1677,7 +1677,7 @@ std::string i486DX::Disassemble(const Instruction &inst,const Operand &op1,const
 	return disasm;
 }
 
-std::string i486DX::DisassembleData(unsigned int addressSize,SegmentRegister seg,unsigned int offset,const Memory &mem,unsigned int unitBytes,unsigned int segBytes,unsigned int repeat,unsigned int chopOff) const
+std::string i486DXCommon::DisassembleData(unsigned int addressSize,SegmentRegister seg,unsigned int offset,const Memory &mem,unsigned int unitBytes,unsigned int segBytes,unsigned int repeat,unsigned int chopOff) const
 {
 	if(4<unitBytes)
 	{
@@ -1753,7 +1753,7 @@ std::string i486DX::DisassembleData(unsigned int addressSize,SegmentRegister seg
 }
 
 // OF SF ZF AF PF
-void i486DX::DecrementWordOrDword(unsigned int operandSize,unsigned int &value)
+void i486DXCommon::DecrementWordOrDword(unsigned int operandSize,unsigned int &value)
 {
 	if(16==operandSize)
 	{
@@ -1764,7 +1764,7 @@ void i486DX::DecrementWordOrDword(unsigned int operandSize,unsigned int &value)
 		DecrementDword(value);
 	}
 }
-void i486DX::DecrementDword(unsigned int &value)
+void i486DXCommon::DecrementDword(unsigned int &value)
 {
 	--value;
 	SetOF(value==0x7FFFFFFF);
@@ -1773,7 +1773,7 @@ void i486DX::DecrementDword(unsigned int &value)
 	SetAF(0x0F==(value&0x0F));
 	SetPF(CheckParity(value));
 }
-void i486DX::DecrementWord(unsigned int &value)
+void i486DXCommon::DecrementWord(unsigned int &value)
 {
 	value=((value-1)&0xFFFF);
 	SetOF(value==0x7FFF);
@@ -1782,7 +1782,7 @@ void i486DX::DecrementWord(unsigned int &value)
 	SetAF(0x0F==(value&0x0F));
 	SetPF(CheckParity(value));
 }
-void i486DX::DecrementByte(unsigned int &value)
+void i486DXCommon::DecrementByte(unsigned int &value)
 {
 	value=((value-1)&0xFF);
 	SetOF(value==0x7F);
@@ -1791,7 +1791,7 @@ void i486DX::DecrementByte(unsigned int &value)
 	SetAF(0x0F==(value&0x0F));
 	SetPF(CheckParity(value));
 }
-void i486DX::DecrementWithMask(unsigned int &value,unsigned int mask,unsigned int signBit)
+void i486DXCommon::DecrementWithMask(unsigned int &value,unsigned int mask,unsigned int signBit)
 {
 	value=((value-1)&mask);
 	SetOF(signBit-1==value);
@@ -1801,7 +1801,7 @@ void i486DX::DecrementWithMask(unsigned int &value,unsigned int mask,unsigned in
 	SetPF(CheckParity(value));
 }
 
-void i486DX::IncrementWordOrDword(unsigned int operandSize,unsigned int &value)
+void i486DXCommon::IncrementWordOrDword(unsigned int operandSize,unsigned int &value)
 {
 	if(16==operandSize)
 	{
@@ -1812,7 +1812,7 @@ void i486DX::IncrementWordOrDword(unsigned int operandSize,unsigned int &value)
 		IncrementDword(value);
 	}
 }
-void i486DX::IncrementDword(unsigned int &value)
+void i486DXCommon::IncrementDword(unsigned int &value)
 {
 	SetAF(0x0F==(value&0x0F));
 	++value;
@@ -1821,7 +1821,7 @@ void i486DX::IncrementDword(unsigned int &value)
 	SetZF(0==value);
 	SetPF(CheckParity(value));
 }
-void i486DX::IncrementWord(unsigned int &value)
+void i486DXCommon::IncrementWord(unsigned int &value)
 {
 	SetAF(0x0F==(value&0x0F));
 	value=(value+1)&0xffff;
@@ -1830,7 +1830,7 @@ void i486DX::IncrementWord(unsigned int &value)
 	SetZF(0==value);
 	SetPF(CheckParity(value));
 }
-void i486DX::IncrementByte(unsigned int &value)
+void i486DXCommon::IncrementByte(unsigned int &value)
 {
 	SetAF(0x0F==(value&0x0F));
 	value=(value+1)&0xff;
@@ -1839,7 +1839,7 @@ void i486DX::IncrementByte(unsigned int &value)
 	SetZF(0==value);
 	SetPF(CheckParity(value));
 }
-void i486DX::IncrementWithMask(unsigned int &value,unsigned int mask,unsigned int signBit)
+void i486DXCommon::IncrementWithMask(unsigned int &value,unsigned int mask,unsigned int signBit)
 {
 	SetAF(0x0F==(value&0x0F));
 	value=(value+1)&mask;
@@ -1851,7 +1851,7 @@ void i486DX::IncrementWithMask(unsigned int &value,unsigned int mask,unsigned in
 
 
 
-void i486DX::AddWordOrDword(int operandSize,unsigned int &value1,unsigned int value2)
+void i486DXCommon::AddWordOrDword(int operandSize,unsigned int &value1,unsigned int value2)
 {
 	if(16==operandSize)
 	{
@@ -1862,7 +1862,7 @@ void i486DX::AddWordOrDword(int operandSize,unsigned int &value1,unsigned int va
 		AddDword(value1,value2);
 	}
 }
-void i486DX::AddDword(unsigned int &value1,unsigned int value2)
+void i486DXCommon::AddDword(unsigned int &value1,unsigned int value2)
 {
 	auto prevValue=value1&0xffffffff;
 	value1=(value1+value2)&0xffffffff;
@@ -1881,7 +1881,7 @@ void i486DX::AddDword(unsigned int &value1,unsigned int value2)
 	RaiseCF(value1<prevValue);
 	RaisePF(CheckParity(value1));
 }
-void i486DX::AddWord(unsigned int &value1,unsigned int value2)
+void i486DXCommon::AddWord(unsigned int &value1,unsigned int value2)
 {
 	auto prevValue=value1&0xffff;
 	value1=(value1+value2)&0xffff;
@@ -1900,7 +1900,7 @@ void i486DX::AddWord(unsigned int &value1,unsigned int value2)
 	RaiseCF(value1<prevValue);
 	RaisePF(CheckParity(value1));
 }
-void i486DX::AddByte(unsigned int &value1,unsigned int value2)
+void i486DXCommon::AddByte(unsigned int &value1,unsigned int value2)
 {
 	auto prevValue=value1&0xff;
 	value1=(value1+value2)&0xff;
@@ -1919,7 +1919,7 @@ void i486DX::AddByte(unsigned int &value1,unsigned int value2)
 	RaiseCF(value1<prevValue);
 	RaisePF(CheckParity(value1));
 }
-void i486DX::AndWordOrDword(int operandSize,unsigned int &value1,unsigned int value2)
+void i486DXCommon::AndWordOrDword(int operandSize,unsigned int &value1,unsigned int value2)
 {
 	if(16==operandSize)
 	{
@@ -1930,7 +1930,7 @@ void i486DX::AndWordOrDword(int operandSize,unsigned int &value1,unsigned int va
 		AndDword(value1,value2);
 	}
 }
-void i486DX::AndDword(unsigned int &value1,unsigned int value2)
+void i486DXCommon::AndDword(unsigned int &value1,unsigned int value2)
 {
 	value1&=value2;
 	state.EFLAGS&=~(
@@ -1943,7 +1943,7 @@ void i486DX::AndDword(unsigned int &value1,unsigned int value2)
 	RaiseZF(0==value1);
 	RaisePF(CheckParity(value1));
 }
-void i486DX::AndWord(unsigned int &value1,unsigned int value2)
+void i486DXCommon::AndWord(unsigned int &value1,unsigned int value2)
 {
 	value1&=value2;
 	value1&=0xFFFF;
@@ -1957,7 +1957,7 @@ void i486DX::AndWord(unsigned int &value1,unsigned int value2)
 	RaiseZF(0==value1);
 	RaisePF(CheckParity(value1));
 }
-void i486DX::AndByte(unsigned int &value1,unsigned int value2)
+void i486DXCommon::AndByte(unsigned int &value1,unsigned int value2)
 {
 	value1&=value2;
 	value1&=0xFF;
@@ -1971,7 +1971,7 @@ void i486DX::AndByte(unsigned int &value1,unsigned int value2)
 	RaiseZF(0==value1);
 	RaisePF(CheckParity(value1));
 }
-void i486DX::SubByteWordOrDword(int operandSize,unsigned int &value1,unsigned int value2)
+void i486DXCommon::SubByteWordOrDword(int operandSize,unsigned int &value1,unsigned int value2)
 {
 	if(8==operandSize)
 	{
@@ -1986,11 +1986,11 @@ void i486DX::SubByteWordOrDword(int operandSize,unsigned int &value1,unsigned in
 		SubDword(value1,value2);
 	}
 }
-void i486DX::SubWordOrDword(int operandSize,unsigned int &value1,unsigned int value2)
+void i486DXCommon::SubWordOrDword(int operandSize,unsigned int &value1,unsigned int value2)
 {
 	SubByteWordOrDword(operandSize,value1,value2);
 }
-void i486DX::SubDword(unsigned int &value1,unsigned int value2)
+void i486DXCommon::SubDword(unsigned int &value1,unsigned int value2)
 {
 	auto prevValue=value1&0xffffffff;
 	value1=(value1-value2)&0xffffffff;
@@ -2009,7 +2009,7 @@ void i486DX::SubDword(unsigned int &value1,unsigned int value2)
 	RaiseCF(value1>prevValue);
 	RaisePF(CheckParity(value1));
 }
-void i486DX::SubWord(unsigned int &value1,unsigned int value2)
+void i486DXCommon::SubWord(unsigned int &value1,unsigned int value2)
 {
 	auto prevValue=value1&0xffff;
 	value1=(value1-value2)&0xffff;
@@ -2028,7 +2028,7 @@ void i486DX::SubWord(unsigned int &value1,unsigned int value2)
 	RaiseCF(value1>prevValue);
 	RaisePF(CheckParity(value1));
 }
-void i486DX::SubByte(unsigned int &value1,unsigned int value2)
+void i486DXCommon::SubByte(unsigned int &value1,unsigned int value2)
 {
 	auto prevValue=value1&0xff;
 	value1=(value1-value2)&0xff;
@@ -2047,7 +2047,7 @@ void i486DX::SubByte(unsigned int &value1,unsigned int value2)
 	RaiseCF(value1>prevValue);
 	RaisePF(CheckParity(value1));
 }
-void i486DX::AdcWordOrDword(int operandSize,unsigned int &value1,unsigned int value2)
+void i486DXCommon::AdcWordOrDword(int operandSize,unsigned int &value1,unsigned int value2)
 {
 	if(16==operandSize)
 	{
@@ -2058,7 +2058,7 @@ void i486DX::AdcWordOrDword(int operandSize,unsigned int &value1,unsigned int va
 		AdcDword(value1,value2);
 	}
 }
-void i486DX::AdcDword(unsigned int &value1,unsigned int value2)
+void i486DXCommon::AdcDword(unsigned int &value1,unsigned int value2)
 {
 	auto carry=(0!=(state.EFLAGS&EFLAGS_CARRY) ? 1 : 0);
 	auto prevValue=value1&0xffffffff;
@@ -2078,7 +2078,7 @@ void i486DX::AdcDword(unsigned int &value1,unsigned int value2)
 	RaiseCF(value1<prevValue || (0!=carry && value1==prevValue)); // 2nd condition for 0xFFFFFFFF+0xFFFFFFFF+1
 	RaisePF(CheckParity(value1));
 }
-void i486DX::AdcWord(unsigned int &value1,unsigned int value2)
+void i486DXCommon::AdcWord(unsigned int &value1,unsigned int value2)
 {
 	auto carry=(0!=(state.EFLAGS&EFLAGS_CARRY) ? 1 : 0);
 	auto prevValue=value1&0xffff;
@@ -2098,7 +2098,7 @@ void i486DX::AdcWord(unsigned int &value1,unsigned int value2)
 	RaiseCF(value1<prevValue || (0!=carry && value1==prevValue)); // 2nd condition for 0xFFFF+0xFFFF+1
 	RaisePF(CheckParity(value1));
 }
-void i486DX::AdcByte(unsigned int &value1,unsigned int value2)
+void i486DXCommon::AdcByte(unsigned int &value1,unsigned int value2)
 {
 	auto carry=(0!=(state.EFLAGS&EFLAGS_CARRY) ? 1 : 0);
 	auto prevValue=value1&0xff;
@@ -2118,7 +2118,7 @@ void i486DX::AdcByte(unsigned int &value1,unsigned int value2)
 	RaiseCF(value1<prevValue || (0!=carry && value1==prevValue)); // 2nd condition for 0xFF+0xFF+1
 	RaisePF(CheckParity(value1));
 }
-void i486DX::SbbWordOrDword(int operandSize,unsigned int &value1,unsigned int value2)
+void i486DXCommon::SbbWordOrDword(int operandSize,unsigned int &value1,unsigned int value2)
 {
 	if(16==operandSize)
 	{
@@ -2129,7 +2129,7 @@ void i486DX::SbbWordOrDword(int operandSize,unsigned int &value1,unsigned int va
 		SbbDword(value1,value2);
 	}
 }
-void i486DX::SbbDword(unsigned int &value1,unsigned int value2)
+void i486DXCommon::SbbDword(unsigned int &value1,unsigned int value2)
 {
 	auto carry=(0!=(state.EFLAGS&EFLAGS_CARRY) ? 1 : 0);
 	auto prevValue=value1&0xffffffff;
@@ -2141,7 +2141,7 @@ void i486DX::SbbDword(unsigned int &value1,unsigned int value2)
 	SetCF(value1>prevValue || (0!=carry && value1==prevValue));
 	SetPF(CheckParity(value1));
 }
-void i486DX::SbbWord(unsigned int &value1,unsigned int value2)
+void i486DXCommon::SbbWord(unsigned int &value1,unsigned int value2)
 {
 	auto carry=(0!=(state.EFLAGS&EFLAGS_CARRY) ? 1 : 0);
 	auto prevValue=value1&0xffff;
@@ -2153,7 +2153,7 @@ void i486DX::SbbWord(unsigned int &value1,unsigned int value2)
 	SetCF(value1>prevValue || (0!=carry && value1==prevValue));
 	SetPF(CheckParity(value1));
 }
-void i486DX::SbbByte(unsigned int &value1,unsigned int value2)
+void i486DXCommon::SbbByte(unsigned int &value1,unsigned int value2)
 {
 	auto carry=(0!=(state.EFLAGS&EFLAGS_CARRY) ? 1 : 0);
 	auto prevValue=value1&0xff;
@@ -2165,7 +2165,7 @@ void i486DX::SbbByte(unsigned int &value1,unsigned int value2)
 	SetCF(value1>prevValue || (0!=carry && value1==prevValue));
 	SetPF(CheckParity(value1));
 }
-void i486DX::OrWordOrDword(int operandSize,unsigned int &value1,unsigned int value2)
+void i486DXCommon::OrWordOrDword(int operandSize,unsigned int &value1,unsigned int value2)
 {
 	if(16==operandSize)
 	{
@@ -2176,7 +2176,7 @@ void i486DX::OrWordOrDword(int operandSize,unsigned int &value1,unsigned int val
 		OrDword(value1,value2);
 	}
 }
-void i486DX::OrDword(unsigned int &value1,unsigned int value2)
+void i486DXCommon::OrDword(unsigned int &value1,unsigned int value2)
 {
 	ClearCFOF();
 	//SetCF(false);
@@ -2186,7 +2186,7 @@ void i486DX::OrDword(unsigned int &value1,unsigned int value2)
 	SetZF(0==value1);
 	SetPF(CheckParity(value1));
 }
-void i486DX::OrWord(unsigned int &value1,unsigned int value2)
+void i486DXCommon::OrWord(unsigned int &value1,unsigned int value2)
 {
 	ClearCFOF();
 	//SetCF(false);
@@ -2197,7 +2197,7 @@ void i486DX::OrWord(unsigned int &value1,unsigned int value2)
 	SetZF(0==value1);
 	SetPF(CheckParity(value1));
 }
-void i486DX::OrByte(unsigned int &value1,unsigned int value2)
+void i486DXCommon::OrByte(unsigned int &value1,unsigned int value2)
 {
 	ClearCFOF();
 	//SetCF(false);
@@ -2208,7 +2208,7 @@ void i486DX::OrByte(unsigned int &value1,unsigned int value2)
 	SetZF(0==value1);
 	SetPF(CheckParity(value1));
 }
-void i486DX::XorWordOrDword(int operandSize,unsigned int &value1,unsigned int value2)
+void i486DXCommon::XorWordOrDword(int operandSize,unsigned int &value1,unsigned int value2)
 {
 	if(16==operandSize)
 	{
@@ -2219,7 +2219,7 @@ void i486DX::XorWordOrDword(int operandSize,unsigned int &value1,unsigned int va
 		XorDword(value1,value2);
 	}
 }
-void i486DX::XorDword(unsigned int &value1,unsigned int value2)
+void i486DXCommon::XorDword(unsigned int &value1,unsigned int value2)
 {
 	ClearCFOF();
 	//SetCF(false);
@@ -2229,7 +2229,7 @@ void i486DX::XorDword(unsigned int &value1,unsigned int value2)
 	SetZF(0==value1);
 	SetPF(CheckParity(value1));
 }
-void i486DX::XorWord(unsigned int &value1,unsigned int value2)
+void i486DXCommon::XorWord(unsigned int &value1,unsigned int value2)
 {
 	ClearCFOF();
 	//SetCF(false);
@@ -2240,7 +2240,7 @@ void i486DX::XorWord(unsigned int &value1,unsigned int value2)
 	SetZF(0==value1);
 	SetPF(CheckParity(value1));
 }
-void i486DX::XorByte(unsigned int &value1,unsigned int value2)
+void i486DXCommon::XorByte(unsigned int &value1,unsigned int value2)
 {
 	ClearCFOF();
 	//SetCF(false);
@@ -2253,7 +2253,7 @@ void i486DX::XorByte(unsigned int &value1,unsigned int value2)
 }
 
 template<typename T, typename _>
-inline void i486DX::RolTemplate(unsigned int &value, unsigned int c) {
+inline void i486DXCommon::RolTemplate(unsigned int &value, unsigned int c) {
 
 	constexpr auto all = std::numeric_limits<T>::max();
 	constexpr auto sign = all ^ (all >> 1);
@@ -2273,7 +2273,7 @@ inline void i486DX::RolTemplate(unsigned int &value, unsigned int c) {
 	}
 }
 
-void i486DX::RolByteWordOrDword(int operandSize,unsigned int &value,unsigned int ctr)
+void i486DXCommon::RolByteWordOrDword(int operandSize,unsigned int &value,unsigned int ctr)
 {
 	switch(operandSize)
 	{
@@ -2290,22 +2290,22 @@ void i486DX::RolByteWordOrDword(int operandSize,unsigned int &value,unsigned int
 	}
 }
 
-void i486DX::RolDword(unsigned int &value, unsigned int ctr)
+void i486DXCommon::RolDword(unsigned int &value, unsigned int ctr)
 {
 	RolTemplate<uint32_t>(value, ctr);
 }
 
-void i486DX::RolWord(unsigned int &value, unsigned int ctr)
+void i486DXCommon::RolWord(unsigned int &value, unsigned int ctr)
 {
 	RolTemplate<uint16_t>(value, ctr);
 }
 
-void i486DX::RolByte(unsigned int &value, unsigned int ctr)
+void i486DXCommon::RolByte(unsigned int &value, unsigned int ctr)
 {
 	RolTemplate<uint8_t>(value, ctr);
 }
 
-void i486DX::RorByteWordOrDword(int operandSize,unsigned int &value,unsigned int ctr)
+void i486DXCommon::RorByteWordOrDword(int operandSize,unsigned int &value,unsigned int ctr)
 {
 	switch(operandSize)
 	{
@@ -2323,7 +2323,7 @@ void i486DX::RorByteWordOrDword(int operandSize,unsigned int &value,unsigned int
 }
 
 template<typename T, typename _>
-inline void i486DX::RorTemplate(unsigned int &value, unsigned int c) {
+inline void i486DXCommon::RorTemplate(unsigned int &value, unsigned int c) {
 
 	constexpr auto all = std::numeric_limits<T>::max();
 	constexpr auto sign = all ^ (all >> 1);
@@ -2341,22 +2341,22 @@ inline void i486DX::RorTemplate(unsigned int &value, unsigned int c) {
 	}
 }
 
-void i486DX::RorDword(unsigned int &value, unsigned int ctr)
+void i486DXCommon::RorDword(unsigned int &value, unsigned int ctr)
 {
 	RorTemplate<uint32_t>(value, ctr);
 }
 
-void i486DX::RorWord(unsigned int &value, unsigned int ctr)
+void i486DXCommon::RorWord(unsigned int &value, unsigned int ctr)
 {
 	RorTemplate<uint16_t>(value, ctr);
 }
 
-void i486DX::RorByte(unsigned int &value, unsigned int ctr)
+void i486DXCommon::RorByte(unsigned int &value, unsigned int ctr)
 {
 	RorTemplate<uint8_t>(value, ctr);
 }
 
-void i486DX::RclWordOrDword(int operandSize,unsigned int &value,unsigned int ctr)
+void i486DXCommon::RclWordOrDword(int operandSize,unsigned int &value,unsigned int ctr)
 {
 	if(16==operandSize)
 	{
@@ -2367,7 +2367,7 @@ void i486DX::RclWordOrDword(int operandSize,unsigned int &value,unsigned int ctr
 		RclDword(value,ctr);
 	}
 }
-void i486DX::RclDword(unsigned int &value,unsigned int ctr)
+void i486DXCommon::RclDword(unsigned int &value,unsigned int ctr)
 {
 	auto prevValue=value;
 	for(unsigned int i=0; i<ctr; ++i)
@@ -2382,7 +2382,7 @@ void i486DX::RclDword(unsigned int &value,unsigned int ctr)
 		SetOF((prevValue&0x80000000)!=(value&0x80000000));
 	}
 }
-void i486DX::RclWord(unsigned int &value,unsigned int ctr)
+void i486DXCommon::RclWord(unsigned int &value,unsigned int ctr)
 {
 	auto prevValue=value;
 	for(unsigned int i=0; i<ctr; ++i)
@@ -2398,7 +2398,7 @@ void i486DX::RclWord(unsigned int &value,unsigned int ctr)
 		SetOF((prevValue&0x8000)!=(value&0x8000));
 	}
 }
-void i486DX::RclByte(unsigned int &value,unsigned int ctr)
+void i486DXCommon::RclByte(unsigned int &value,unsigned int ctr)
 {
 	auto prevValue=value;
 	for(unsigned int i=0; i<ctr; ++i)
@@ -2415,7 +2415,7 @@ void i486DX::RclByte(unsigned int &value,unsigned int ctr)
 	}
 }
 
-void i486DX::RcrWordOrDword(int operandSize,unsigned int &value,unsigned int ctr)
+void i486DXCommon::RcrWordOrDword(int operandSize,unsigned int &value,unsigned int ctr)
 {
 	if(16==operandSize)
 	{
@@ -2426,7 +2426,7 @@ void i486DX::RcrWordOrDword(int operandSize,unsigned int &value,unsigned int ctr
 		RcrDword(value,ctr);
 	}
 }
-void i486DX::RcrDword(unsigned int &value,unsigned int ctr)
+void i486DXCommon::RcrDword(unsigned int &value,unsigned int ctr)
 {
 	if(1==ctr)
 	{
@@ -2440,7 +2440,7 @@ void i486DX::RcrDword(unsigned int &value,unsigned int ctr)
 		value=(value>>1)|highBit;
 	}
 }
-void i486DX::RcrWord(unsigned int &value,unsigned int ctr)
+void i486DXCommon::RcrWord(unsigned int &value,unsigned int ctr)
 {
 	value&=0xffff;
 	if(1==ctr)
@@ -2455,7 +2455,7 @@ void i486DX::RcrWord(unsigned int &value,unsigned int ctr)
 		value=(value>>1)|highBit;
 	}
 }
-void i486DX::RcrByte(unsigned int &value,unsigned int ctr)
+void i486DXCommon::RcrByte(unsigned int &value,unsigned int ctr)
 {
 	value&=0xff;
 	if(1==ctr)
@@ -2471,7 +2471,7 @@ void i486DX::RcrByte(unsigned int &value,unsigned int ctr)
 	}
 }
 
-void i486DX::SarByteWordOrDword(int operandSize,unsigned int &value,unsigned int ctr)
+void i486DXCommon::SarByteWordOrDword(int operandSize,unsigned int &value,unsigned int ctr)
 {
 	switch(operandSize)
 	{
@@ -2487,7 +2487,7 @@ void i486DX::SarByteWordOrDword(int operandSize,unsigned int &value,unsigned int
 		break;
 	}
 }
-void i486DX::SarDword(unsigned int &value,unsigned int ctr)
+void i486DXCommon::SarDword(unsigned int &value,unsigned int ctr)
 {
 	unsigned long long int value64=value;
 	if(0!=(value64&0x80000000))
@@ -2506,7 +2506,7 @@ void i486DX::SarDword(unsigned int &value,unsigned int ctr)
 	}
 	value=(unsigned int)(value64);
 }
-void i486DX::SarWord(unsigned int &value,unsigned int ctr)
+void i486DXCommon::SarWord(unsigned int &value,unsigned int ctr)
 {
 	unsigned int value32=value;
 	if(0!=(value32&0x8000))
@@ -2525,7 +2525,7 @@ void i486DX::SarWord(unsigned int &value,unsigned int ctr)
 	}
 	value=value32;
 }
-void i486DX::SarByte(unsigned int &value,unsigned int ctr)
+void i486DXCommon::SarByte(unsigned int &value,unsigned int ctr)
 {
 	unsigned int value16=value;
 	if(0!=(value16&0x80))
@@ -2546,7 +2546,7 @@ void i486DX::SarByte(unsigned int &value,unsigned int ctr)
 }
 
 template <unsigned int bitCount,unsigned int maskBits,unsigned int signBit>
-void i486DX::ShlTemplate(unsigned int &value,unsigned int ctr)
+void i486DXCommon::ShlTemplate(unsigned int &value,unsigned int ctr)
 {
 	// OF CF ZF PF SF
 	ctr&=31;
@@ -2566,7 +2566,7 @@ void i486DX::ShlTemplate(unsigned int &value,unsigned int ctr)
 	SetPF(CheckParity(value));
 	SetSF(0!=(value&signBit));
 }
-void i486DX::ShlWordOrDword(int operandSize,unsigned int &value,unsigned int ctr)
+void i486DXCommon::ShlWordOrDword(int operandSize,unsigned int &value,unsigned int ctr)
 {
 	if(16==operandSize)
 	{
@@ -2577,21 +2577,21 @@ void i486DX::ShlWordOrDword(int operandSize,unsigned int &value,unsigned int ctr
 		ShlDword(value,ctr);
 	}
 }
-void i486DX::ShlDword(unsigned int &value,unsigned int ctr)
+void i486DXCommon::ShlDword(unsigned int &value,unsigned int ctr)
 {
 	ShlTemplate<32,0xFFFFFFFF,0x80000000>(value,ctr);
 }
-void i486DX::ShlWord(unsigned int &value,unsigned int ctr)
+void i486DXCommon::ShlWord(unsigned int &value,unsigned int ctr)
 {
 	ShlTemplate<16,0xFFFF,0x8000>(value,ctr);
 }
-void i486DX::ShlByte(unsigned int &value,unsigned int ctr)
+void i486DXCommon::ShlByte(unsigned int &value,unsigned int ctr)
 {
 	ShlTemplate<8,0xFF,0x80>(value,ctr);
 }
 
 template <unsigned int bitCount,unsigned int maskBits,unsigned int signBit>
-inline void i486DX::ShrTemplate(unsigned int &value,unsigned int ctr)
+inline void i486DXCommon::ShrTemplate(unsigned int &value,unsigned int ctr)
 {
 	// OF CF ZF PF SF
 	ctr&=31;
@@ -2611,7 +2611,7 @@ inline void i486DX::ShrTemplate(unsigned int &value,unsigned int ctr)
 	SetPF(CheckParity(value));
 	SetSF(0!=(value&signBit));
 }
-void i486DX::ShrWordOrDword(int operandSize,unsigned int &value,unsigned int ctr)
+void i486DXCommon::ShrWordOrDword(int operandSize,unsigned int &value,unsigned int ctr)
 {
 	if(16==operandSize)
 	{
@@ -2622,22 +2622,22 @@ void i486DX::ShrWordOrDword(int operandSize,unsigned int &value,unsigned int ctr
 		ShrDword(value,ctr);
 	}
 }
-void i486DX::ShrDword(unsigned int &value,unsigned int ctr)
+void i486DXCommon::ShrDword(unsigned int &value,unsigned int ctr)
 {
 	ShrTemplate<32,0xffffffff,0x80000000>(value,ctr);
 }
-void i486DX::ShrWord(unsigned int &value,unsigned int ctr)
+void i486DXCommon::ShrWord(unsigned int &value,unsigned int ctr)
 {
 	ShrTemplate<16,0xFFFF,0x8000>(value,ctr);
 }
-void i486DX::ShrByte(unsigned int &value,unsigned int ctr)
+void i486DXCommon::ShrByte(unsigned int &value,unsigned int ctr)
 {
 	ShrTemplate<8,0xFF,0x80>(value,ctr);
 }
 
 
 
-i486DX::OperandValue i486DX::EvaluateOperand(
+i486DXCommon::OperandValue i486DXCommon::EvaluateOperand(
     Memory &mem,int addressSize,int segmentOverride,const Operand &op,int destinationBytes)
 {
 	static const unsigned int addressMask[2]=
@@ -2646,7 +2646,7 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 		0xFFFFFFFF,
 	};
 
-	i486DX::OperandValue value;
+	i486DXCommon::OperandValue value;
 	value.numBytes=0;
 	switch(op.operandType)
 	{
@@ -2751,7 +2751,7 @@ i486DX::OperandValue i486DX::EvaluateOperand(
 	return value;
 }
 
-uint8_t i486DX::EvaluateOperandRegOrMem8(Memory &mem,int addressSize,int segmentOverride,const Operand &op)
+uint8_t i486DXCommon::EvaluateOperandRegOrMem8(Memory &mem,int addressSize,int segmentOverride,const Operand &op)
 {
 	if(OPER_ADDR==op.operandType)
 	{
@@ -2770,7 +2770,7 @@ uint8_t i486DX::EvaluateOperandRegOrMem8(Memory &mem,int addressSize,int segment
 	return 0;
 }
 
-uint16_t i486DX::EvaluateOperandRegOrMem16(Memory &mem,int addressSize,int segmentOverride,const Operand &op)
+uint16_t i486DXCommon::EvaluateOperandRegOrMem16(Memory &mem,int addressSize,int segmentOverride,const Operand &op)
 {
 	static const unsigned int addressMask[2]=
 	{
@@ -2778,7 +2778,7 @@ uint16_t i486DX::EvaluateOperandRegOrMem16(Memory &mem,int addressSize,int segme
 		0xFFFFFFFF,
 	};
 
-	i486DX::OperandValue value;
+	i486DXCommon::OperandValue value;
 	value.numBytes=0;
 	if(OPER_REG32==op.operandType)
 	{
@@ -2797,7 +2797,7 @@ uint16_t i486DX::EvaluateOperandRegOrMem16(Memory &mem,int addressSize,int segme
 		return FetchWord(addressSize,seg,offset,mem);
 	}
 }
-uint32_t i486DX::EvaluateOperandRegOrMem32(Memory &mem,int addressSize,int segmentOverride,const Operand &op)
+uint32_t i486DXCommon::EvaluateOperandRegOrMem32(Memory &mem,int addressSize,int segmentOverride,const Operand &op)
 {
 	static const unsigned int addressMask[2]=
 	{
@@ -2805,7 +2805,7 @@ uint32_t i486DX::EvaluateOperandRegOrMem32(Memory &mem,int addressSize,int segme
 		0xFFFFFFFF,
 	};
 
-	i486DX::OperandValue value;
+	i486DXCommon::OperandValue value;
 	value.numBytes=0;
 	if(OPER_REG32==op.operandType)
 	{
@@ -2825,7 +2825,7 @@ uint32_t i486DX::EvaluateOperandRegOrMem32(Memory &mem,int addressSize,int segme
 	}
 }
 
-i486DX::OperandValue i486DX::EvaluateOperandReg16OrReg32OrMem(
+i486DXCommon::OperandValue i486DXCommon::EvaluateOperandReg16OrReg32OrMem(
 	    Memory &mem,int addressSize,int segmentOverride,const Operand &op,int destinationBytes)
 {
 	static const unsigned int addressMask[2]=
@@ -2834,7 +2834,7 @@ i486DX::OperandValue i486DX::EvaluateOperandReg16OrReg32OrMem(
 		0xFFFFFFFF,
 	};
 
-	i486DX::OperandValue value;
+	i486DXCommon::OperandValue value;
 	value.numBytes=0;
 	if(OPER_REG32==op.operandType)
 	{
@@ -2878,7 +2878,7 @@ i486DX::OperandValue i486DX::EvaluateOperandReg16OrReg32OrMem(
 	return value;
 }
 
-i486DX::OperandValue i486DX::EvaluateOperand8(
+i486DXCommon::OperandValue i486DXCommon::EvaluateOperand8(
     Memory &mem,int addressSize,int segmentOverride,const Operand &op)
 {
 	static const unsigned int addressMask[2]=
@@ -2887,7 +2887,7 @@ i486DX::OperandValue i486DX::EvaluateOperand8(
 		0xFFFFFFFF,
 	};
 
-	i486DX::OperandValue value;
+	i486DXCommon::OperandValue value;
 	value.numBytes=1;
 	switch(op.operandType)
 	{
@@ -2909,7 +2909,7 @@ i486DX::OperandValue i486DX::EvaluateOperand8(
 	return value;
 }
 
-i486DX::OperandValue i486DX::EvaluateOperand64(
+i486DXCommon::OperandValue i486DXCommon::EvaluateOperand64(
 	    Memory &mem,int addressSize,int segmentOverride,const Operand &op)
 {
 	static const unsigned int addressMask[2]=
@@ -2918,7 +2918,7 @@ i486DX::OperandValue i486DX::EvaluateOperand64(
 		0xFFFFFFFF,
 	};
 
-	i486DX::OperandValue value;
+	i486DXCommon::OperandValue value;
 	value.numBytes=0;
 	switch(op.operandType)
 	{
@@ -2942,7 +2942,7 @@ i486DX::OperandValue i486DX::EvaluateOperand64(
 	return value;
 }
 
-i486DX::OperandValue i486DX::EvaluateOperand80(
+i486DXCommon::OperandValue i486DXCommon::EvaluateOperand80(
 	    Memory &mem,int addressSize,int segmentOverride,const Operand &op)
 {
 	static const unsigned int addressMask[2]=
@@ -2951,7 +2951,7 @@ i486DX::OperandValue i486DX::EvaluateOperand80(
 		0xFFFFFFFF,
 	};
 
-	i486DX::OperandValue value;
+	i486DXCommon::OperandValue value;
 	value.numBytes=0;
 	switch(op.operandType)
 	{
@@ -2976,7 +2976,7 @@ i486DX::OperandValue i486DX::EvaluateOperand80(
 	return value;
 }
 
-void i486DX::StoreOperandValue(
+void i486DXCommon::StoreOperandValue(
     const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value)
 {
 	static const unsigned int addressMask[2]=
@@ -3073,7 +3073,7 @@ void i486DX::StoreOperandValue(
 	}
 }
 
-void i486DX::StoreOperandValueRegOrMem8(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,uint8_t value)
+void i486DXCommon::StoreOperandValueRegOrMem8(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,uint8_t value)
 {
 	static const unsigned int addressMask[2]=
 	{
@@ -3094,7 +3094,7 @@ void i486DX::StoreOperandValueRegOrMem8(const Operand &dst,Memory &mem,int addre
 		StoreByte(mem,addressSize,seg,offset,value);
 	}
 }
-void i486DX::StoreOperandValueRegOrMem16(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,uint16_t value)
+void i486DXCommon::StoreOperandValueRegOrMem16(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,uint16_t value)
 {
 	static const unsigned int addressMask[2]=
 	{
@@ -3119,7 +3119,7 @@ void i486DX::StoreOperandValueRegOrMem16(const Operand &dst,Memory &mem,int addr
 		StoreWord(mem,addressSize,seg,offset,value);
 	}
 }
-void i486DX::StoreOperandValueRegOrMem32(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,uint32_t value)
+void i486DXCommon::StoreOperandValueRegOrMem32(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,uint32_t value)
 {
 	static const unsigned int addressMask[2]=
 	{
@@ -3145,7 +3145,7 @@ void i486DX::StoreOperandValueRegOrMem32(const Operand &dst,Memory &mem,int addr
 	}
 }
 
-void i486DX::StoreOperandValueReg16OrReg32OrMem(
+void i486DXCommon::StoreOperandValueReg16OrReg32OrMem(
     const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value)
 {
 	static const unsigned int addressMask[2]=
@@ -3189,7 +3189,7 @@ void i486DX::StoreOperandValueReg16OrReg32OrMem(
 	}
 }
 
-void i486DX::StoreOperandValue8(
+void i486DXCommon::StoreOperandValue8(
     const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value)
 {
 	static const unsigned int addressMask[2]=
@@ -3217,7 +3217,7 @@ void i486DX::StoreOperandValue8(
 	}
 }
 
-void i486DX::StoreOperandValue64(
+void i486DXCommon::StoreOperandValue64(
     const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value)
 {
 	static const unsigned int addressMask[2]=
@@ -3244,7 +3244,7 @@ void i486DX::StoreOperandValue64(
 	}
 }
 
-void i486DX::StoreOperandValue80(
+void i486DXCommon::StoreOperandValue80(
     const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value)
 {
 	static const unsigned int addressMask[2]=
@@ -3272,7 +3272,7 @@ void i486DX::StoreOperandValue80(
 	}
 }
 
-bool i486DX::REPCheck(unsigned int &clocksPassed,unsigned int instPrefix,unsigned int addressSize)
+bool i486DXCommon::REPCheck(unsigned int &clocksPassed,unsigned int instPrefix,unsigned int addressSize)
 {
 	if(INST_PREFIX_REP==instPrefix || INST_PREFIX_REPNE==instPrefix)
 	{
@@ -3289,7 +3289,7 @@ bool i486DX::REPCheck(unsigned int &clocksPassed,unsigned int instPrefix,unsigne
 	return true;
 }
 
-bool i486DX::REPEorNECheck(unsigned int &clocksForRep,unsigned int instPrefix,unsigned int addressSize)
+bool i486DXCommon::REPEorNECheck(unsigned int &clocksForRep,unsigned int instPrefix,unsigned int addressSize)
 {
 	if(INST_PREFIX_REPE==instPrefix)
 	{
@@ -3302,7 +3302,7 @@ bool i486DX::REPEorNECheck(unsigned int &clocksForRep,unsigned int instPrefix,un
 	return false;
 }
 
-inline i486DX::CallStack i486DX::MakeCallStack(
+inline i486DXCommon::CallStack i486DXCommon::MakeCallStack(
 	    bool isInterrupt,unsigned short INTNum,unsigned short AX,
 	    unsigned int CR0,
 	    unsigned int fromCS,unsigned int fromEIP,unsigned int callOpCodeLength,
@@ -3328,7 +3328,7 @@ inline i486DX::CallStack i486DX::MakeCallStack(
 	stk.procEIP=procEIP;
 	return stk;
 }
-void i486DX::PushCallStack(
+void i486DXCommon::PushCallStack(
 	    bool isInterrupt,unsigned short INTNum,unsigned short AX,
 	    unsigned int CR0,
 	    unsigned int fromCS,unsigned int fromEIP,unsigned int callOpCodeLength,
@@ -3358,7 +3358,7 @@ void i486DX::PushCallStack(
 		}
 	}
 }
-void i486DX::PopCallStack(unsigned int CS,unsigned int EIP)
+void i486DXCommon::PopCallStack(unsigned int CS,unsigned int EIP)
 {
 	if(true!=callStack.empty())
 	{
@@ -3396,18 +3396,18 @@ void i486DX::PopCallStack(unsigned int CS,unsigned int EIP)
 		}
 	}
 }
-void i486DX::AttachDebugger(i486Debugger *debugger)
+void i486DXCommon::AttachDebugger(i486Debugger *debugger)
 {
 	this->debuggerPtr=debugger;
 }
-void i486DX::DetachDebugger(void)
+void i486DXCommon::DetachDebugger(void)
 {
 	debuggerPtr=nullptr;
 }
 
 /*! Fetch a byte for debugger.  It won't change exception status.
 */
-unsigned int i486DX::DebugFetchByte(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+unsigned int i486DXCommon::DebugFetchByte(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 {
 	offset&=AddressMask((unsigned char)addressSize);
 	auto addr=seg.baseLinearAddr+offset;
@@ -3422,7 +3422,7 @@ unsigned int i486DX::DebugFetchByte(unsigned int addressSize,const SegmentRegist
 
 /*! Fetch a dword.  It won't change exception status.
 */
-unsigned int i486DX::DebugFetchWord(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+unsigned int i486DXCommon::DebugFetchWord(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 {
 	offset&=AddressMask((unsigned char)addressSize);
 	auto addr=seg.baseLinearAddr+offset;
@@ -3441,7 +3441,7 @@ unsigned int i486DX::DebugFetchWord(unsigned int addressSize,const SegmentRegist
 
 /*! Fetch a dword for debugging.  It won't change exception status.
 */
-unsigned int i486DX::DebugFetchDword(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+unsigned int i486DXCommon::DebugFetchDword(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 {
 	offset&=AddressMask((unsigned char)addressSize);
 	auto addr=seg.baseLinearAddr+offset;
@@ -3467,7 +3467,7 @@ unsigned int i486DX::DebugFetchDword(unsigned int addressSize,const SegmentRegis
     Function name is left as FetchWordOrDword temporarily for the time being.
     Will be unified to FetchByteWordOrDword in the future.
 */
-unsigned int i486DX::DebugFetchWordOrDword(unsigned int operandSize,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+unsigned int i486DXCommon::DebugFetchWordOrDword(unsigned int operandSize,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 {
 	switch(operandSize)
 	{
@@ -3480,14 +3480,14 @@ unsigned int i486DX::DebugFetchWordOrDword(unsigned int operandSize,unsigned int
 		return DebugFetchDword(addressSize,seg,offset,mem);
 	}
 }
-unsigned int i486DX::DebugFetchByteWordOrDword(unsigned int operandSize,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+unsigned int i486DXCommon::DebugFetchByteWordOrDword(unsigned int operandSize,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 {
 	return DebugFetchWordOrDword(operandSize,addressSize,seg,offset,mem);
 }
 
 /*! Fetch a byte by linear address for debugging.  It won't change exception status.
 */
-unsigned int i486DX::DebugFetchByteByLinearAddress(const Memory &mem,unsigned int linearAddr) const
+unsigned int i486DXCommon::DebugFetchByteByLinearAddress(const Memory &mem,unsigned int linearAddr) const
 {
 	if(true==PagingEnabled())
 	{
@@ -3498,7 +3498,7 @@ unsigned int i486DX::DebugFetchByteByLinearAddress(const Memory &mem,unsigned in
 	return returnValue;
 }
 
-std::string i486DX::DebugFetchString(int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+std::string i486DXCommon::DebugFetchString(int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 {
 	std::string str;
 	for(int i=0; i<255; ++i)
@@ -3513,7 +3513,7 @@ std::string i486DX::DebugFetchString(int addressSize,const SegmentRegister &seg,
 	return str;
 }
 
-/* static */ int i486DX::StrToReg(const std::string &regName)
+/* static */ int i486DXCommon::StrToReg(const std::string &regName)
 {
 	for(int i=0; i<REG_TOTAL_NUMBER_OF_REGISTERS; ++i)
 	{
@@ -3525,7 +3525,7 @@ std::string i486DX::DebugFetchString(int addressSize,const SegmentRegister &seg,
 	return REG_NULL;
 }
 
-void i486DX::DebugStoreByte(Memory &mem,int addressSize,SegmentRegister seg,unsigned int offset,unsigned char byteData)
+void i486DXCommon::DebugStoreByte(Memory &mem,int addressSize,SegmentRegister seg,unsigned int offset,unsigned char byteData)
 {
 	offset&=AddressMask((unsigned char)addressSize);
 	auto linearAddr=seg.baseLinearAddr+offset;
@@ -3538,7 +3538,7 @@ void i486DX::DebugStoreByte(Memory &mem,int addressSize,SegmentRegister seg,unsi
 	return mem.StoreByte(physicalAddr,byteData);
 }
 
-void i486DX::DebugStoreWord(Memory &mem,int addressSize,SegmentRegister seg,unsigned int offset,unsigned int data)
+void i486DXCommon::DebugStoreWord(Memory &mem,int addressSize,SegmentRegister seg,unsigned int offset,unsigned int data)
 {
 	offset&=AddressMask((unsigned char)addressSize);
 	auto linearAddr=seg.baseLinearAddr+offset;
@@ -3556,7 +3556,7 @@ void i486DX::DebugStoreWord(Memory &mem,int addressSize,SegmentRegister seg,unsi
 	}
 	mem.StoreWord(physicalAddr,data);
 }
-void i486DX::DebugStoreDword(Memory &mem,int addressSize,SegmentRegister seg,unsigned int offset,unsigned int data)
+void i486DXCommon::DebugStoreDword(Memory &mem,int addressSize,SegmentRegister seg,unsigned int offset,unsigned int data)
 {
 	offset&=AddressMask((unsigned char)addressSize);
 	auto linearAddr=seg.baseLinearAddr+offset;
@@ -3577,7 +3577,7 @@ void i486DX::DebugStoreDword(Memory &mem,int addressSize,SegmentRegister seg,uns
 	mem.StoreDword(physicalAddr,data);
 }
 
-bool i486DX::TestIOMapPermission(const SegmentRegister &TR,unsigned int ioMin,unsigned int accessSize,Memory &mem)
+bool i486DXCommon::TestIOMapPermission(const SegmentRegister &TR,unsigned int ioMin,unsigned int accessSize,Memory &mem)
 {
 	unsigned int IOMapOffset0=FetchWord(32,TR,0x66,mem);
 	for(auto ioport=ioMin; ioport<ioMin+accessSize; ++ioport)
@@ -3595,7 +3595,7 @@ bool i486DX::TestIOMapPermission(const SegmentRegister &TR,unsigned int ioMin,un
 	}
 	return true;
 }
-bool i486DX::DebugTestIOMapPermission(const SegmentRegister &TR,unsigned int ioMin,unsigned int accessSize,const Memory &mem) const
+bool i486DXCommon::DebugTestIOMapPermission(const SegmentRegister &TR,unsigned int ioMin,unsigned int accessSize,const Memory &mem) const
 {
 	unsigned int IOMapOffset0=DebugFetchWord(32,TR,0x66,mem);
 	for(auto ioport=ioMin; ioport<ioMin+accessSize; ++ioport)
@@ -3614,7 +3614,7 @@ bool i486DX::DebugTestIOMapPermission(const SegmentRegister &TR,unsigned int ioM
 	return true;
 }
 
-/* static */ std::string i486DX::ExceptionTypeToStr(unsigned int exceptionType)
+/* static */ std::string i486DXCommon::ExceptionTypeToStr(unsigned int exceptionType)
 {
 	switch(exceptionType)
 	{

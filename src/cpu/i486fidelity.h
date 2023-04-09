@@ -16,42 +16,42 @@ public:
 	};
 	inline static void SaveESP(SavedESP &,uint8_t,uint32_t){}
 	inline static void RestoreESPHighWord(uint8_t,uint32_t &,SavedESP){}
-	constexpr bool HandleExceptionAndRestoreESPIfAny(class i486DX &,Memory &,uint32_t instNumBytes,SavedESP) const{return false;}
+	constexpr bool HandleExceptionAndRestoreESPIfAny(class i486DXCommon &,Memory &,uint32_t instNumBytes,SavedESP) const{return false;}
 
 	class SavedECX
 	{
 	};
 	inline static void SaveECX(SavedECX &,uint32_t){}
-	constexpr bool HandleExceptionAndRestoreECXIfAny(class i486DX &,Memory &,uint32_t instNumBytes,const SavedECX) const{return false;}
+	constexpr bool HandleExceptionAndRestoreECXIfAny(class i486DXCommon &,Memory &,uint32_t instNumBytes,const SavedECX) const{return false;}
 
-	inline static void Sync_CS_RPL_to_DPL(class i486DX &){}
+	inline static void Sync_CS_RPL_to_DPL(class i486DXCommon &){}
 
-	constexpr bool UDException_MOV_TO_CS(class i486DX &,uint32_t reg,Memory &mem,uint32_t instNumBytes) const{return false;}
+	constexpr bool UDException_MOV_TO_CS(class i486DXCommon &,uint32_t reg,Memory &mem,uint32_t instNumBytes) const{return false;}
 
-	constexpr bool IOPLException(class i486DX &,uint32_t exceptionType,Memory &,uint32_t instNumBytes) const{return false;}
+	constexpr bool IOPLException(class i486DXCommon &,uint32_t exceptionType,Memory &,uint32_t instNumBytes) const{return false;}
 
-	constexpr bool IOPLExceptionInVM86Mode(class i486DX &cpu,uint32_t exceptionType,Memory &mem,uint32_t instNumBytes) const{return false;}
+	constexpr bool IOPLExceptionInVM86Mode(class i486DXCommon &cpu,uint32_t exceptionType,Memory &mem,uint32_t instNumBytes) const{return false;}
 
-	constexpr bool HandleExceptionIfAny(class i486DX &,Memory &,uint32_t instNumBytes) const{return false;}
+	constexpr bool HandleExceptionIfAny(class i486DXCommon &,Memory &,uint32_t instNumBytes) const{return false;}
 
-	constexpr bool PageLevelException(class i486DX &cpu,bool write,uint32_t linearAddr,uint32_t pageIndex,uint32_t pageInfo) const{return false;}
+	constexpr bool PageLevelException(class i486DXCommon &cpu,bool write,uint32_t linearAddr,uint32_t pageIndex,uint32_t pageInfo) const{return false;}
 
-	inline static void SetPageFlags(class i486DX &cpu,uint32_t linearAddr,Memory &mem,uint32_t flags){};
+	inline static void SetPageFlags(class i486DXCommon &cpu,uint32_t linearAddr,Memory &mem,uint32_t flags){};
 
-	constexpr bool SegmentWriteException(class i486DX &cpu,const i486DX::SegmentRegister &reg,uint32_t offset) const{return false;}
+	constexpr bool SegmentWriteException(class i486DXCommon &cpu,const i486DXCommon::SegmentRegister &reg,uint32_t offset) const{return false;}
 
-	constexpr bool SegmentReadException(class i486DX &cpu,const i486DX::SegmentRegister &seg,uint32_t offset) const{return false;}
+	constexpr bool SegmentReadException(class i486DXCommon &cpu,const i486DXCommon::SegmentRegister &seg,uint32_t offset) const{return false;}
 
-	constexpr bool LockNotAllowed(class i486DX &cpu,Memory &mem,const i486DX::Instruction &inst,const i486DX::Operand &op1) const{return false;}
+	constexpr bool LockNotAllowed(class i486DXCommon &cpu,Memory &mem,const i486DXCommon::Instruction &inst,const i486DXCommon::Operand &op1) const{return false;}
 
 	// This is not performance critical, but unless it returns true, state-file saved in the older version Tsugaru
 	// may not work.
-	constexpr bool VERRTypeCheck(const i486DX &cpu,const i486DX::SegmentRegister &reg) const{return true;}
-	constexpr bool VERWTypeCheck(const i486DX &cpu,const i486DX::SegmentRegister &reg) const{return true;}
+	constexpr bool VERRTypeCheck(const i486DXCommon &cpu,const i486DXCommon::SegmentRegister &reg) const{return true;}
+	constexpr bool VERWTypeCheck(const i486DXCommon &cpu,const i486DXCommon::SegmentRegister &reg) const{return true;}
 
-	inline void PageFaultCheckAfterEnter(class i486DX &cpu,Memory &mem) const{}
+	inline void PageFaultCheckAfterEnter(class i486DXCommon &cpu,Memory &mem) const{}
 
-	inline void CheckRETFtoOuterLevel(i486DX &cpu,Memory &mem,uint32_t operandSize,uint32_t prevDPL){};
+	inline void CheckRETFtoOuterLevel(i486DXCommon &cpu,Memory &mem,uint32_t operandSize,uint32_t prevDPL){};
 
 	// LoadSegmentRegister
 	class LoadSegmentRegisterVariables
@@ -64,15 +64,15 @@ public:
 	public:
 	};
 	inline static void SetLimit(LoadSegmentRegisterVariables &,uint32_t limit){};
-	inline static void SetLoadSegmentRegisterFlags(LoadSegmentRegisterFlags &flags,const i486DX &cpu,const i486DX::SegmentRegister &reg){};
-	inline constexpr bool CheckSelectorBeyondLimit(class i486DX &cpu,LoadSegmentRegisterVariables &var,uint32_t selector)const{return false;}
-	inline constexpr bool CheckSelectorBeyondLimit(const class i486DX &cpu,LoadSegmentRegisterVariables &var,uint32_t selector)const{return false;}
-	inline constexpr bool LoadNullSelector(i486DX &cpu,i486DX::SegmentRegister &reg,uint32_t selector)const{return false;}
-	inline constexpr bool LoadNullSelector(const i486DX &cpu,const i486DX::SegmentRegister &reg,uint32_t selector)const{return false;}
-	inline constexpr bool DescriptorException(const LoadSegmentRegisterFlags flags,i486DX &cpu,uint32_t selector,const uint8_t *desc)const{return false;}
-	inline constexpr bool DescriptorException(const LoadSegmentRegisterFlags flags,const i486DX &cpu,uint32_t selector,const uint8_t *desc)const{return false;}
-	inline constexpr bool TakeIOReadException(i486DX &cpu,unsigned int ioport,unsigned int accessSize,Memory &mem,unsigned int numInstBytes)const{return false;}
-	inline constexpr bool TakeIOWriteException(i486DX &cpu,unsigned int ioport,unsigned int accessSize,Memory &mem,unsigned int numInstBytes)const{return false;}
+	inline static void SetLoadSegmentRegisterFlags(LoadSegmentRegisterFlags &flags,const i486DXCommon &cpu,const i486DXCommon::SegmentRegister &reg){};
+	inline constexpr bool CheckSelectorBeyondLimit(class i486DXCommon &cpu,LoadSegmentRegisterVariables &var,uint32_t selector)const{return false;}
+	inline constexpr bool CheckSelectorBeyondLimit(const class i486DXCommon &cpu,LoadSegmentRegisterVariables &var,uint32_t selector)const{return false;}
+	inline constexpr bool LoadNullSelector(i486DXCommon &cpu,i486DXCommon::SegmentRegister &reg,uint32_t selector)const{return false;}
+	inline constexpr bool LoadNullSelector(const i486DXCommon &cpu,const i486DXCommon::SegmentRegister &reg,uint32_t selector)const{return false;}
+	inline constexpr bool DescriptorException(const LoadSegmentRegisterFlags flags,i486DXCommon &cpu,uint32_t selector,const uint8_t *desc)const{return false;}
+	inline constexpr bool DescriptorException(const LoadSegmentRegisterFlags flags,const i486DXCommon &cpu,uint32_t selector,const uint8_t *desc)const{return false;}
+	inline constexpr bool TakeIOReadException(i486DXCommon &cpu,unsigned int ioport,unsigned int accessSize,Memory &mem,unsigned int numInstBytes)const{return false;}
+	inline constexpr bool TakeIOWriteException(i486DXCommon &cpu,unsigned int ioport,unsigned int accessSize,Memory &mem,unsigned int numInstBytes)const{return false;}
 
 
 	// If low-fidelity, don't care if it is readable or writable.
@@ -82,41 +82,41 @@ public:
 	class EFLAGS
 	{
 	};
-	inline static void SaveEFLAGS(EFLAGS &,const i486DX &cpu){};
-	inline static void RestoreIOPLBits(i486DX &cpu,const EFLAGS &){};
-	inline static void RestoreIF(i486DX &cpu,const EFLAGS &){};
+	inline static void SaveEFLAGS(EFLAGS &,const i486DXCommon &cpu){};
+	inline static void RestoreIOPLBits(i486DXCommon &cpu,const EFLAGS &){};
+	inline static void RestoreIF(i486DXCommon &cpu,const EFLAGS &){};
 
 
 
 	class Debugger_ExceptionVerification
 	{
 	public:
-		static inline void SaveCPUState(const class i486DX &cpu,unsigned int prefix){};
-		inline constexpr bool CPUStateChanged(const class i486DX &cpu) const {return false;}
+		static inline void SaveCPUState(const class i486DXCommon &cpu,unsigned int prefix){};
+		inline constexpr bool CPUStateChanged(const class i486DXCommon &cpu) const {return false;}
 	};
 };
 
 class i486DXDefaultFidelity : public i486DXLowFidelity
 {
 public:
-	static inline bool SegmentReadException(class i486DX &cpu,const i486DX::SegmentRegister &seg,uint32_t offset)
+	static inline bool SegmentReadException(class i486DXCommon &cpu,const i486DXCommon::SegmentRegister &seg,uint32_t offset)
 	{
 		if(seg.limit<offset) // Needed to run Fractal Engine Demo and other Psygnosis games.
 		{
-			cpu.RaiseException(i486DX::EXCEPTION_GP,0);
+			cpu.RaiseException(i486DXCommon::EXCEPTION_GP,0);
 			return true;
 		}
 		return false;
 	}
 
 	// Default fidelity level does not consider Protected Mode && IOPL<CPL since no known Towns native app uses 0<CPL protected mode.
-	static inline bool TakeIOReadException(i486DX &cpu,unsigned int ioport,unsigned int accessSize,Memory &mem,unsigned int numInstBytes)
+	static inline bool TakeIOReadException(i486DXCommon &cpu,unsigned int ioport,unsigned int accessSize,Memory &mem,unsigned int numInstBytes)
 	{
-		if(0!=(cpu.state.EFLAGS&i486DX::EFLAGS_VIRTUAL86))
+		if(0!=(cpu.state.EFLAGS&i486DXCommon::EFLAGS_VIRTUAL86))
 		{
 			if(true!=cpu.TestIOMapPermission(cpu.state.TR,ioport,accessSize,mem))
 			{
-				cpu.RaiseException(i486DX::EXCEPTION_GP,0);
+				cpu.RaiseException(i486DXCommon::EXCEPTION_GP,0);
 				cpu.HandleException(true,mem,numInstBytes);
 				return true;
 			}
@@ -125,13 +125,13 @@ public:
 	}
 
 	// Default fidelity level does not consider Protected Mode && IOPL<CPL since no known Towns native app uses 0<CPL protected mode.
-	static inline bool TakeIOWriteException(i486DX &cpu,unsigned int ioport,unsigned int accessSize,Memory &mem,unsigned int numInstBytes)
+	static inline bool TakeIOWriteException(i486DXCommon &cpu,unsigned int ioport,unsigned int accessSize,Memory &mem,unsigned int numInstBytes)
 	{
-		if(0!=(cpu.state.EFLAGS&i486DX::EFLAGS_VIRTUAL86))
+		if(0!=(cpu.state.EFLAGS&i486DXCommon::EFLAGS_VIRTUAL86))
 		{
 			if(true!=cpu.TestIOMapPermission(cpu.state.TR,ioport,accessSize,mem))
 			{
-				cpu.RaiseException(i486DX::EXCEPTION_GP,0);
+				cpu.RaiseException(i486DXCommon::EXCEPTION_GP,0);
 				cpu.HandleException(false,mem,numInstBytes);
 				return true;
 			}
@@ -160,7 +160,7 @@ public:
 			ESP|=(savedESP.ESP&0xFFFF0000);
 		}
 	}
-	inline static bool HandleExceptionAndRestoreESPIfAny(class i486DX &cpu,Memory &mem,uint32_t instNumBytes,SavedESP ESP)
+	inline static bool HandleExceptionAndRestoreESPIfAny(class i486DXCommon &cpu,Memory &mem,uint32_t instNumBytes,SavedESP ESP)
 	{
 		if(true==cpu.state.exception)
 		{
@@ -181,7 +181,7 @@ public:
 	{
 		save.ECX=ECX;
 	}
-	inline bool HandleExceptionAndRestoreECXIfAny(class i486DX &cpu,Memory &mem,uint32_t instNumBytes,const SavedECX ECX)
+	inline bool HandleExceptionAndRestoreECXIfAny(class i486DXCommon &cpu,Memory &mem,uint32_t instNumBytes,const SavedECX ECX)
 	{
 		if(true==cpu.state.exception)
 		{
@@ -193,24 +193,24 @@ public:
 	}
 
 
-	inline static void Sync_CS_RPL_to_DPL(class i486DX &cpu)
+	inline static void Sync_CS_RPL_to_DPL(class i486DXCommon &cpu)
 	{
 		cpu.state.CS().value&=~3;
 		cpu.state.CS().value|=(cpu.state.CS().DPL&3);
 	}
 
-	inline bool UDException_MOV_TO_CS(class i486DX &cpu,uint32_t reg,Memory &mem,uint32_t instNumBytes)
+	inline bool UDException_MOV_TO_CS(class i486DXCommon &cpu,uint32_t reg,Memory &mem,uint32_t instNumBytes)
 	{
-		if(reg==i486DX::REG_CS)
+		if(reg==i486DXCommon::REG_CS)
 		{
-			cpu.RaiseException(i486DX::EXCEPTION_UD,0);
+			cpu.RaiseException(i486DXCommon::EXCEPTION_UD,0);
 			cpu.HandleException(true,mem,instNumBytes);
 			return true;
 		}
 		return false;
 	}
 
-	inline static bool IOPLException(class i486DX &cpu,uint32_t exceptionType,Memory &mem,uint32_t instNumBytes)
+	inline static bool IOPLException(class i486DXCommon &cpu,uint32_t exceptionType,Memory &mem,uint32_t instNumBytes)
 	{
 		if(true!=cpu.IsInRealMode() && cpu.GetIOPL()<cpu.state.CS().DPL)
 		{
@@ -220,7 +220,7 @@ public:
 		}
 		return false;
 	}
-	inline static bool IOPLExceptionInVM86Mode(class i486DX &cpu,uint32_t exceptionType,Memory &mem,uint32_t instNumBytes)
+	inline static bool IOPLExceptionInVM86Mode(class i486DXCommon &cpu,uint32_t exceptionType,Memory &mem,uint32_t instNumBytes)
 	{
 		if(true!=cpu.IsInRealMode() && cpu.GetVM() && cpu.GetIOPL()<3)
 		{
@@ -231,7 +231,7 @@ public:
 		return false;
 	}
 
-	inline static bool HandleExceptionIfAny(class i486DX &cpu,Memory &mem,uint32_t instNumBytes)
+	inline static bool HandleExceptionIfAny(class i486DXCommon &cpu,Memory &mem,uint32_t instNumBytes)
 	{
 		if(true==cpu.state.exception)
 		{
@@ -241,20 +241,20 @@ public:
 		return false;
 	}
 
-	inline static bool PageLevelException(class i486DX &cpu,bool write,uint32_t linearAddr,uint32_t pageIndex,uint32_t pageInfo)
+	inline static bool PageLevelException(class i486DXCommon &cpu,bool write,uint32_t linearAddr,uint32_t pageIndex,uint32_t pageInfo)
 	{
 		auto raise=[&]
 		{
-			uint32_t code=i486DX::PFFLAG_PAGE_LEVEL;
+			uint32_t code=i486DXCommon::PFFLAG_PAGE_LEVEL;
 			if(true==write)
 			{
-				code|=i486DX::PFFLAG_WRITE;
+				code|=i486DXCommon::PFFLAG_WRITE;
 			}
 			if(3==cpu.state.CS().DPL)
 			{
-				code|=i486DX::PFFLAG_USER_MODE;
+				code|=i486DXCommon::PFFLAG_USER_MODE;
 			}
-			cpu.RaiseException(i486DX::EXCEPTION_PF,code);
+			cpu.RaiseException(i486DXCommon::EXCEPTION_PF,code);
 			cpu.state.exceptionLinearAddr=linearAddr;
 		};
 
@@ -280,7 +280,7 @@ public:
 		return false;
 	}
 
-	inline static void SetPageFlags(class i486DX &cpu,uint32_t linearAddr,Memory &mem,uint32_t flags)
+	inline static void SetPageFlags(class i486DXCommon &cpu,uint32_t linearAddr,Memory &mem,uint32_t flags)
 	{
 		uint32_t pageDirectoryIndex=((linearAddr>>22)&1023);
 		uint32_t pageTableIndex=((linearAddr>>12)&1023);
@@ -306,22 +306,22 @@ public:
 	}
 
 
-	static inline bool SegmentReadException(class i486DX &cpu,const i486DX::SegmentRegister &seg,uint32_t offset)
+	static inline bool SegmentReadException(class i486DXCommon &cpu,const i486DXCommon::SegmentRegister &seg,uint32_t offset)
 	{
 		auto raise=[&]
 		{
 			if(&seg==&cpu.state.SS())
 			{
-				cpu.RaiseException(i486DX::EXCEPTION_SS,0);
+				cpu.RaiseException(i486DXCommon::EXCEPTION_SS,0);
 			}
 			else
 			{
-				cpu.RaiseException(i486DX::EXCEPTION_GP,0);
+				cpu.RaiseException(i486DXCommon::EXCEPTION_GP,0);
 			}
 		};
 
 		uint32_t type=seg.GetType();
-		if(true!=cpu.IsInRealMode() && true!=cpu.GetVM() && (i486DX::SEGTYPE_CODE_NONCONFORMING_EXECONLY==type || i486DX::SEGTYPE_CODE_CONFORMING_EXECONLY==type))
+		if(true!=cpu.IsInRealMode() && true!=cpu.GetVM() && (i486DXCommon::SEGTYPE_CODE_NONCONFORMING_EXECONLY==type || i486DXCommon::SEGTYPE_CODE_CONFORMING_EXECONLY==type))
 		{
 			raise();
 			return true;
@@ -333,22 +333,22 @@ public:
 		}
 		return false;
 	}
-	inline static bool SegmentWriteException(class i486DX &cpu,const i486DX::SegmentRegister &seg,uint32_t offset)
+	inline static bool SegmentWriteException(class i486DXCommon &cpu,const i486DXCommon::SegmentRegister &seg,uint32_t offset)
 	{
 		auto raise=[&]
 		{
 			if(&seg==&cpu.state.SS())
 			{
-				cpu.RaiseException(i486DX::EXCEPTION_SS,0);
+				cpu.RaiseException(i486DXCommon::EXCEPTION_SS,0);
 			}
 			else
 			{
-				cpu.RaiseException(i486DX::EXCEPTION_GP,0);
+				cpu.RaiseException(i486DXCommon::EXCEPTION_GP,0);
 			}
 		};
 
 		uint32_t type=seg.GetType();
-		if(true!=cpu.IsInRealMode() && true!=cpu.GetVM() && i486DX::SEGTYPE_DATA_NORMAL_RW!=type && i486DX::SEGTYPE_DATA_EXPAND_DOWN_RW!=type)
+		if(true!=cpu.IsInRealMode() && true!=cpu.GetVM() && i486DXCommon::SEGTYPE_DATA_NORMAL_RW!=type && i486DXCommon::SEGTYPE_DATA_EXPAND_DOWN_RW!=type)
 		{
 			raise();
 			return true;
@@ -361,11 +361,11 @@ public:
 		return false;
 	}
 
-	static inline bool LockNotAllowed(class i486DX &cpu,Memory &mem,const i486DX::Instruction &inst,const i486DX::Operand &op1)
+	static inline bool LockNotAllowed(class i486DXCommon &cpu,Memory &mem,const i486DXCommon::Instruction &inst,const i486DXCommon::Operand &op1)
 	{
-		if(i486DX::INST_PREFIX_LOCK==inst.instPrefix)
+		if(i486DXCommon::INST_PREFIX_LOCK==inst.instPrefix)
 		{
-			if(i486DX::OPER_ADDR==op1.operandType)
+			if(i486DXCommon::OPER_ADDR==op1.operandType)
 			{
 				switch(inst.opCode)
 				{
@@ -419,14 +419,14 @@ public:
 					break;
 				}
 			}
-			cpu.RaiseException(i486DX::EXCEPTION_UD,0);
+			cpu.RaiseException(i486DXCommon::EXCEPTION_UD,0);
 			cpu.HandleException(true,mem,inst.numBytes);
 			return true;
 		}
 		return false;
 	}
 
-	static inline bool VERRTypeCheck(const i486DX &cpu,const i486DX::SegmentRegister &reg)
+	static inline bool VERRTypeCheck(const i486DXCommon &cpu,const i486DXCommon::SegmentRegister &reg)
 	{
 		// https://wiki.osdev.org/Descriptors
 		uint32_t type=reg.GetType();
@@ -434,12 +434,12 @@ public:
 		{
 			return false; // Looks like inaccessible for system segments.
 		}
-		else if(i486DX::SEGTYPE_CODE_NONCONFORMING_EXECONLY==type || i486DX::SEGTYPE_CODE_CONFORMING_EXECONLY==type)
+		else if(i486DXCommon::SEGTYPE_CODE_NONCONFORMING_EXECONLY==type || i486DXCommon::SEGTYPE_CODE_CONFORMING_EXECONLY==type)
 		{
 			return false; // Not readable.
 		}
-		else if((i486DX::SEGTYPE_CODE_NONCONFORMING_READABLE==type ||
-		         i486DX::SEGTYPE_DATA_NORMAL_RW==type)
+		else if((i486DXCommon::SEGTYPE_CODE_NONCONFORMING_READABLE==type ||
+		         i486DXCommon::SEGTYPE_DATA_NORMAL_RW==type)
 		         && reg.DPL<cpu.state.CS().DPL) // Is it the condition?  Weird.
 		{
 			return false; // Not readable.
@@ -447,7 +447,7 @@ public:
 		// Readable.
 		return true;
 	}
-	static inline bool VERWTypeCheck(const i486DX &cpu,const i486DX::SegmentRegister &reg)
+	static inline bool VERWTypeCheck(const i486DXCommon &cpu,const i486DXCommon::SegmentRegister &reg)
 	{
 		// https://wiki.osdev.org/Descriptors
 		uint32_t type=reg.GetType();
@@ -455,7 +455,7 @@ public:
 		{
 			return false; // Looks like inaccessible for system segments.
 		}
-		else if(i486DX::SEGTYPE_DATA_NORMAL_RW!=type && i486DX::SEGTYPE_DATA_EXPAND_DOWN_RW!=type)
+		else if(i486DXCommon::SEGTYPE_DATA_NORMAL_RW!=type && i486DXCommon::SEGTYPE_DATA_EXPAND_DOWN_RW!=type)
 		{
 			return false; // Unwritable.
 		}
@@ -467,7 +467,7 @@ public:
 		return true;
 	}
 
-	inline static void PageFaultCheckAfterEnter(class i486DX &cpu,Memory &mem)
+	inline static void PageFaultCheckAfterEnter(class i486DXCommon &cpu,Memory &mem)
 	{
 		if(true==cpu.PagingEnabled())
 		{
@@ -492,7 +492,7 @@ public:
 	{
 		var.limit=limit;
 	}
-	inline static void SetLoadSegmentRegisterFlags(LoadSegmentRegisterFlags &flags,const i486DX &cpu,const i486DX::SegmentRegister &reg)
+	inline static void SetLoadSegmentRegisterFlags(LoadSegmentRegisterFlags &flags,const i486DXCommon &cpu,const i486DXCommon::SegmentRegister &reg)
 	{
 		if(&reg==&cpu.state.DS() || &reg==&cpu.state.ES() || &reg==&cpu.state.FS() || &reg==&cpu.state.GS())
 		{
@@ -508,7 +508,7 @@ public:
 			flags.loadingCodeSegment=true;
 		}
 	}
-	inline bool LoadNullSelector(i486DX &cpu,i486DX::SegmentRegister &reg,uint32_t selector)
+	inline bool LoadNullSelector(i486DXCommon &cpu,i486DXCommon::SegmentRegister &reg,uint32_t selector)
 	{
 		// INTEL 80386 Programmer's Reference Manual 1986 pp.346
 		// IF DS,ES,FS,or GS is loaded with a null selector THEN load segment register with selector, clear descriptor valid flag.
@@ -516,7 +516,7 @@ public:
 		{
 			if(&reg==&cpu.state.SS())
 			{
-				cpu.RaiseException(i486DX::EXCEPTION_GP,0);
+				cpu.RaiseException(i486DXCommon::EXCEPTION_GP,0);
 				return true;
 			}
 			else
@@ -528,22 +528,22 @@ public:
 		}
 		return false;
 	}
-	inline bool LoadNullSelector(const i486DX &cpu,const i486DX::SegmentRegister &reg,uint32_t selector)
+	inline bool LoadNullSelector(const i486DXCommon &cpu,const i486DXCommon::SegmentRegister &reg,uint32_t selector)
 	{
-		// Do nothing from const i486DX &.
+		// Do nothing from const i486DXCommon &.
 		return false;
 	}
-	inline bool DescriptorException(const LoadSegmentRegisterFlags flags,i486DX &cpu,uint32_t selector,const uint8_t *desc)
+	inline bool DescriptorException(const LoadSegmentRegisterFlags flags,i486DXCommon &cpu,uint32_t selector,const uint8_t *desc)
 	{
 		if(nullptr==desc || 0==(desc[5]&0x80)) // Segment not present
 		{
 			if(true!=flags.loadingStackSegment)
 			{
-				cpu.RaiseException(i486DX::EXCEPTION_ND,selector&~3);
+				cpu.RaiseException(i486DXCommon::EXCEPTION_ND,selector&~3);
 			}
 			else
 			{
-				cpu.RaiseException(i486DX::EXCEPTION_SS,selector&~3);
+				cpu.RaiseException(i486DXCommon::EXCEPTION_SS,selector&~3);
 			}
 			return true;
 		}
@@ -579,12 +579,12 @@ public:
 
 			if(0==(desc[5]&0x10)) // If system, GP.
 			{
-				cpu.RaiseException(i486DX::EXCEPTION_GP,selector&~3);
+				cpu.RaiseException(i486DXCommon::EXCEPTION_GP,selector&~3);
 				return true;
 			}
 			else if(0!=(desc[5]&8) && 0==(desc[5]&2)) // If Code and Unreadable, GP.
 			{
-				cpu.RaiseException(i486DX::EXCEPTION_GP,selector&~3); // If cpu is const i486DX &, it does nothing.
+				cpu.RaiseException(i486DXCommon::EXCEPTION_GP,selector&~3); // If cpu is const i486DXCommon &, it does nothing.
 				return true;
 			}
 			else
@@ -594,7 +594,7 @@ public:
 				auto DPL=(desc[5]>>5)&3;
 				if(DPL<CPL && DPL<RPL && (0==(desc[5]&8) || 0==(desc[5]&4))) // If Data or Non-Conforming Code and DPL<RPL,CPL
 				{
-					cpu.RaiseException(i486DX::EXCEPTION_GP,selector&~3);
+					cpu.RaiseException(i486DXCommon::EXCEPTION_GP,selector&~3);
 					return true;
 				}
 			}
@@ -607,43 +607,43 @@ public:
 			//   DPL must be equal to CPL
 			if(0==(desc[5]&0x10)) // If system, GP.
 			{
-				cpu.RaiseException(i486DX::EXCEPTION_GP,selector&~3);
+				cpu.RaiseException(i486DXCommon::EXCEPTION_GP,selector&~3);
 				return true;
 			}
 			if(0!=(desc[5]&8)) // If code, GP.
 			{
-				cpu.RaiseException(i486DX::EXCEPTION_GP,selector&~3);
+				cpu.RaiseException(i486DXCommon::EXCEPTION_GP,selector&~3);
 				return true;
 			}
 			if(0==(desc[5]&2)) // If readable data, GP.
 			{
-				cpu.RaiseException(i486DX::EXCEPTION_GP,selector&~3);
+				cpu.RaiseException(i486DXCommon::EXCEPTION_GP,selector&~3);
 				return true;
 			}
 			auto CPL=cpu.state.CS().DPL;
 			auto DPL=(desc[5]>>5)&3;
 			if(CPL!=DPL)
 			{
-				cpu.RaiseException(i486DX::EXCEPTION_GP,selector&~3);
+				cpu.RaiseException(i486DXCommon::EXCEPTION_GP,selector&~3);
 				return true;
 			}
 		}
 		return false;
 	}
-	inline bool DescriptorException(const LoadSegmentRegisterFlags flags,const i486DX &cpu,uint32_t selector,const uint8_t *desc)
+	inline bool DescriptorException(const LoadSegmentRegisterFlags flags,const i486DXCommon &cpu,uint32_t selector,const uint8_t *desc)
 	{
 		return false;
 	}
-	inline static bool CheckSelectorBeyondLimit(class i486DX &cpu,LoadSegmentRegisterVariables &var,uint32_t selector)
+	inline static bool CheckSelectorBeyondLimit(class i486DXCommon &cpu,LoadSegmentRegisterVariables &var,uint32_t selector)
 	{
 		if(var.limit<=(selector&0xfff8))
 		{
-			cpu.RaiseException(i486DX::EXCEPTION_GP,selector&~3);
+			cpu.RaiseException(i486DXCommon::EXCEPTION_GP,selector&~3);
 			return true;
 		}
 		return false;
 	}
-	inline static bool CheckSelectorBeyondLimit(const class i486DX &cpu,LoadSegmentRegisterVariables &var,uint32_t selector)
+	inline static bool CheckSelectorBeyondLimit(const class i486DXCommon &cpu,LoadSegmentRegisterVariables &var,uint32_t selector)
 	{
 		return false;
 	}
@@ -652,7 +652,7 @@ public:
 	{
 		attribBytes=0;
 	}
-	inline static void CheckRETFtoOuterLevel(i486DX &cpu,Memory &mem,uint32_t operandSize,uint32_t prevDPL)
+	inline static void CheckRETFtoOuterLevel(i486DXCommon &cpu,Memory &mem,uint32_t operandSize,uint32_t prevDPL)
 	{
 		if(0==cpu.GetVM() && true!=cpu.IsInRealMode() && cpu.state.CS().DPL>prevDPL)
 		{
@@ -683,13 +683,13 @@ public:
 
 
 	// High fidelity level considers Protected Mode && IOPL<CPL for Windows 3.1 protected-mode interrupt handlers.
-	static inline bool TakeIOReadException(i486DX &cpu,unsigned int ioport,unsigned int accessSize,Memory &mem,unsigned int numInstBytes)
+	static inline bool TakeIOReadException(i486DXCommon &cpu,unsigned int ioport,unsigned int accessSize,Memory &mem,unsigned int numInstBytes)
 	{
-		if(true!=cpu.IsInRealMode() && (0!=(cpu.state.EFLAGS&i486DX::EFLAGS_VIRTUAL86) || cpu.GetIOPL()<cpu.state.CS().DPL))
+		if(true!=cpu.IsInRealMode() && (0!=(cpu.state.EFLAGS&i486DXCommon::EFLAGS_VIRTUAL86) || cpu.GetIOPL()<cpu.state.CS().DPL))
 		{
 			if(true!=cpu.TestIOMapPermission(cpu.state.TR,ioport,accessSize,mem))
 			{
-				cpu.RaiseException(i486DX::EXCEPTION_GP,0);
+				cpu.RaiseException(i486DXCommon::EXCEPTION_GP,0);
 				cpu.HandleException(true,mem,numInstBytes);
 				return true;
 			}
@@ -698,13 +698,13 @@ public:
 	}
 
 	// High fidelity level considers Protected Mode && IOPL<CPL for Windows 3.1 protected-mode interrupt handlers.
-	static inline bool TakeIOWriteException(i486DX &cpu,unsigned int ioport,unsigned int accessSize,Memory &mem,unsigned int numInstBytes)
+	static inline bool TakeIOWriteException(i486DXCommon &cpu,unsigned int ioport,unsigned int accessSize,Memory &mem,unsigned int numInstBytes)
 	{
-		if(true!=cpu.IsInRealMode() && (0!=(cpu.state.EFLAGS&i486DX::EFLAGS_VIRTUAL86) || cpu.GetIOPL()<cpu.state.CS().DPL))
+		if(true!=cpu.IsInRealMode() && (0!=(cpu.state.EFLAGS&i486DXCommon::EFLAGS_VIRTUAL86) || cpu.GetIOPL()<cpu.state.CS().DPL))
 		{
 			if(true!=cpu.TestIOMapPermission(cpu.state.TR,ioport,accessSize,mem))
 			{
-				cpu.RaiseException(i486DX::EXCEPTION_GP,0);
+				cpu.RaiseException(i486DXCommon::EXCEPTION_GP,0);
 				cpu.HandleException(false,mem,numInstBytes);
 				return true;
 			}
@@ -719,27 +719,27 @@ public:
 	public:
 		uint32_t eflags;
 	};
-	inline static void SaveEFLAGS(EFLAGS &eflags,const i486DX &cpu)
+	inline static void SaveEFLAGS(EFLAGS &eflags,const i486DXCommon &cpu)
 	{
 		if(true!=cpu.IsInRealMode() && 0!=cpu.state.CS().DPL)
 		{
 			eflags.eflags=cpu.state.EFLAGS;
 		}
 	};
-	inline static void RestoreIOPLBits(i486DX &cpu,const EFLAGS &eflags)
+	inline static void RestoreIOPLBits(i486DXCommon &cpu,const EFLAGS &eflags)
 	{
 		if(true!=cpu.IsInRealMode() && 0!=cpu.state.CS().DPL)
 		{
-			cpu.state.EFLAGS&=~i486DX::EFLAGS_IOPL;
-			cpu.state.EFLAGS|=(eflags.eflags&i486DX::EFLAGS_IOPL);
+			cpu.state.EFLAGS&=~i486DXCommon::EFLAGS_IOPL;
+			cpu.state.EFLAGS|=(eflags.eflags&i486DXCommon::EFLAGS_IOPL);
 		}
 	};
-	inline static void RestoreIF(i486DX &cpu,const EFLAGS &eflags)
+	inline static void RestoreIF(i486DXCommon &cpu,const EFLAGS &eflags)
 	{
 		if(true!=cpu.IsInRealMode() && cpu.GetIOPL()<cpu.state.CS().DPL)
 		{
-			cpu.state.EFLAGS&=~i486DX::EFLAGS_INT_ENABLE;
-			cpu.state.EFLAGS|=(eflags.eflags&i486DX::EFLAGS_INT_ENABLE);
+			cpu.state.EFLAGS&=~i486DXCommon::EFLAGS_INT_ENABLE;
+			cpu.state.EFLAGS|=(eflags.eflags&i486DXCommon::EFLAGS_INT_ENABLE);
 		}
 	}
 
@@ -751,11 +751,11 @@ public:
 		uint32_t NULL_and_reg32[9];
 		uint32_t EIP;
 		uint16_t CS,DS,ES,FS,GS,SS;
-		inline void SaveCPUState(const class i486DX &cpu,unsigned int prefix)
+		inline void SaveCPUState(const class i486DXCommon &cpu,unsigned int prefix)
 		{
-			dontCheckBecauseREP=(prefix==i486DX::INST_PREFIX_REP ||  // =  0xF3, // REP/REPE/REPZ
-			                     prefix==i486DX::INST_PREFIX_REPE || // = 0xF3, // REP/REPE/REPZ
-			                     prefix==i486DX::INST_PREFIX_REPNE); // =0xF2, // REPNE/REPNZ
+			dontCheckBecauseREP=(prefix==i486DXCommon::INST_PREFIX_REP ||  // =  0xF3, // REP/REPE/REPZ
+			                     prefix==i486DXCommon::INST_PREFIX_REPE || // = 0xF3, // REP/REPE/REPZ
+			                     prefix==i486DXCommon::INST_PREFIX_REPNE); // =0xF2, // REPNE/REPNZ
 
 			memcpy(NULL_and_reg32,cpu.state.NULL_and_reg32,sizeof(NULL_and_reg32));
 			EIP=cpu.state.EIP;
@@ -767,7 +767,7 @@ public:
 			SS=cpu.state.SS().value;
 		};
 
-		void PrintChanges(const class i486DX &cpu) const
+		void PrintChanges(const class i486DXCommon &cpu) const
 		{
 			for(int j=1; j<8; ++j)
 			{
@@ -792,7 +792,7 @@ public:
 				cpputil::Ustox(SS ) << "->" << cpputil::Ustox(cpu.state.SS().value) << std::endl;
 		}
 
-		inline bool CPUStateChanged(const class i486DX &cpu) const
+		inline bool CPUStateChanged(const class i486DXCommon &cpu) const
 		{
 			if(true!=dontCheckBecauseREP)
 			{

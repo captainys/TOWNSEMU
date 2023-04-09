@@ -27,7 +27,7 @@ static const double VALUE_OF_PI=3.14159265358979323846;
 
 
 
-void i486DX::FPUState::BreakOnNan(i486DX &cpu,double value)
+void i486DXCommon::FPUState::BreakOnNan(i486DXCommon &cpu,double value)
 {
 	if(nullptr!=cpu.debuggerPtr && true==isnan(value))
 	{
@@ -37,7 +37,7 @@ void i486DX::FPUState::BreakOnNan(i486DX &cpu,double value)
 
 
 
-/* static */ int16_t i486DX::FPUState::IntFrom16Bit(const unsigned char byteData[])
+/* static */ int16_t i486DXCommon::FPUState::IntFrom16Bit(const unsigned char byteData[])
 {
 #ifdef YS_LITTLE_ENDIAN
 	return *((int16_t *)byteData);
@@ -49,7 +49,7 @@ void i486DX::FPUState::BreakOnNan(i486DX &cpu,double value)
 #endif
 }
 
-/* static */ int32_t i486DX::FPUState::IntFrom32Bit(const unsigned char byteData[])
+/* static */ int32_t i486DXCommon::FPUState::IntFrom32Bit(const unsigned char byteData[])
 {
 #ifdef YS_LITTLE_ENDIAN
 	return *((int32_t *)byteData);
@@ -63,7 +63,7 @@ void i486DX::FPUState::BreakOnNan(i486DX &cpu,double value)
 #endif
 }
 
-/* static */ int64_t i486DX::FPUState::IntFrom64Bit(const unsigned char byteData[])
+/* static */ int64_t i486DXCommon::FPUState::IntFrom64Bit(const unsigned char byteData[])
 {
 #ifdef YS_LITTLE_ENDIAN
 	return *((int64_t *)byteData);
@@ -81,7 +81,7 @@ void i486DX::FPUState::BreakOnNan(i486DX &cpu,double value)
 #endif
 }
 
-/* static */ void i486DX::FPUState::DoubleTo80Bit(OperandValueBase &value80,double src)
+/* static */ void i486DXCommon::FPUState::DoubleTo80Bit(OperandValueBase &value80,double src)
 {
 	// Assume sizeof(double) is 8-byte long.
 	uint64_t binary=*((uint64_t *)&src);
@@ -164,11 +164,11 @@ void i486DX::FPUState::BreakOnNan(i486DX &cpu,double value)
 	value80.byteData[9]=(((exponent>>8)&255)|signBit);
 #endif
 }
-/* static */ double i486DX::FPUState::DoubleFrom80Bit(const OperandValueBase &value80)
+/* static */ double i486DXCommon::FPUState::DoubleFrom80Bit(const OperandValueBase &value80)
 {
 	return DoubleFrom80Bit(value80.byteData);
 }
-/* static */ double i486DX::FPUState::DoubleFrom80Bit(const unsigned char byteData[])
+/* static */ double i486DXCommon::FPUState::DoubleFrom80Bit(const unsigned char byteData[])
 {
 	uint16_t exponent;
 	uint64_t fraction;
@@ -243,7 +243,7 @@ void i486DX::FPUState::BreakOnNan(i486DX &cpu,double value)
 	return d;
 }
 
-/* static */ double i486DX::FPUState::DoubleFrom64Bit(const unsigned char byteData[])
+/* static */ double i486DXCommon::FPUState::DoubleFrom64Bit(const unsigned char byteData[])
 {
 	double d;
 
@@ -266,7 +266,7 @@ void i486DX::FPUState::BreakOnNan(i486DX &cpu,double value)
 	return d;
 }
 
-/* static */ double i486DX::FPUState::DoubleFrom32Bit(const unsigned char byteData[])
+/* static */ double i486DXCommon::FPUState::DoubleFrom32Bit(const unsigned char byteData[])
 {
 	float f;
 
@@ -285,7 +285,7 @@ void i486DX::FPUState::BreakOnNan(i486DX &cpu,double value)
 	return (double)f;
 }
 
-/* static */ double i486DX::FPUState::DoubleFrom80BitBCD(const unsigned char bcd80[])
+/* static */ double i486DXCommon::FPUState::DoubleFrom80BitBCD(const unsigned char bcd80[])
 {
 	uint64_t i64=0,digit=1;
 	for(int i=0; i<9; ++i)
@@ -306,12 +306,12 @@ void i486DX::FPUState::BreakOnNan(i486DX &cpu,double value)
 }
 
 
-i486DX::FPUState::FPUState()
+i486DXCommon::FPUState::FPUState()
 {
 	enabled=false; // Tentative.
 	Reset();
 }
-void i486DX::FPUState::Reset(void)
+void i486DXCommon::FPUState::Reset(void)
 {
 	controlWord=0x037F;
 	statusWord=0;
@@ -323,7 +323,7 @@ void i486DX::FPUState::Reset(void)
 		s.value=0.0;
 	}
 }
-void i486DX::FPUState::FNINIT(void)
+void i486DXCommon::FPUState::FNINIT(void)
 {
 // [1] pp.26-97 FNINIT
 // CW<=037FH
@@ -339,11 +339,11 @@ void i486DX::FPUState::FNINIT(void)
 		Reset();
 	}
 }
-bool i486DX::FPUState::ExceptionPending(void) const
+bool i486DXCommon::FPUState::ExceptionPending(void) const
 {
 	return false;// Tentative 
 }
-unsigned int i486DX::FPUState::GetStatusWord(void) const
+unsigned int i486DXCommon::FPUState::GetStatusWord(void) const
 {
 	if(true==enabled)
 	{
@@ -354,7 +354,7 @@ unsigned int i486DX::FPUState::GetStatusWord(void) const
 		return 0xffff;
 	}
 }
-unsigned int i486DX::FPUState::GetControlWord(void) const
+unsigned int i486DXCommon::FPUState::GetControlWord(void) const
 {
 	if(true==enabled)
 	{
@@ -365,11 +365,11 @@ unsigned int i486DX::FPUState::GetControlWord(void) const
 		return 0xffff;
 	}
 }
-unsigned int i486DX::FPUState::GetRC(void) const
+unsigned int i486DXCommon::FPUState::GetRC(void) const
 {
 	return (GetControlWord()>>10)&3;
 }
-double i486DX::FPUState::RoundToInteger(double src) const
+double i486DXCommon::FPUState::RoundToInteger(double src) const
 {
 	switch(GetRC())
 	{
@@ -393,7 +393,7 @@ double i486DX::FPUState::RoundToInteger(double src) const
 	}
 	
 }
-void i486DX::FPUState::GetSTAsDouble(class i486DX &cpu,class OperandValueBase &value)
+void i486DXCommon::FPUState::GetSTAsDouble(class i486DXCommon &cpu,class OperandValueBase &value)
 {
 #ifdef YS_LITTLE_ENDIAN
 	double *doublePtr=(double *)value.byteData;
@@ -411,7 +411,7 @@ void i486DX::FPUState::GetSTAsDouble(class i486DX &cpu,class OperandValueBase &v
 #endif
 	value.numBytes=8;
 }
-void i486DX::FPUState::GetSTAsFloat(class i486DX &cpu,OperandValueBase &value)
+void i486DXCommon::FPUState::GetSTAsFloat(class i486DXCommon &cpu,OperandValueBase &value)
 {
 #ifdef YS_LITTLE_ENDIAN
 	float *floatPtr=(float *)value.byteData;
@@ -426,7 +426,7 @@ void i486DX::FPUState::GetSTAsFloat(class i486DX &cpu,OperandValueBase &value)
 #endif
 	value.numBytes=4;
 }
-void i486DX::FPUState::GetSTAsSignedInt(class i486DX &cpu,class OperandValueBase &value)
+void i486DXCommon::FPUState::GetSTAsSignedInt(class i486DXCommon &cpu,class OperandValueBase &value)
 {
 	int64_t i=0;
 	double d=RoundToInteger(ST(cpu).value);
@@ -441,7 +441,7 @@ void i486DX::FPUState::GetSTAsSignedInt(class i486DX &cpu,class OperandValueBase
 	value.byteData[6]=((i>>48)&255);
 	value.byteData[7]=((i>>56)&255);
 }
-void i486DX::FPUState::GetSTAs80BitBCD(class i486DX &cpu,OperandValueBase &value)
+void i486DXCommon::FPUState::GetSTAs80BitBCD(class i486DXCommon &cpu,OperandValueBase &value)
 {
 	double src=ST(cpu).value;
 	value.numBytes=10;
@@ -464,7 +464,7 @@ void i486DX::FPUState::GetSTAs80BitBCD(class i486DX &cpu,OperandValueBase &value
 		srcI/=10;
 	}
 }
-bool i486DX::FPUState::Push(class i486DX &cpu,double value)
+bool i486DXCommon::FPUState::Push(class i486DXCommon &cpu,double value)
 {
 	if(0<stackPtr)
 	{
@@ -475,7 +475,7 @@ bool i486DX::FPUState::Push(class i486DX &cpu,double value)
 	}
 	return false; // Should shoot an exception for this.
 }
-void i486DX::FPUState::Pop(i486DX &cpu)
+void i486DXCommon::FPUState::Pop(i486DXCommon &cpu)
 {
 	if(stackPtr<STACK_LEN)
 	{
@@ -486,7 +486,7 @@ void i486DX::FPUState::Pop(i486DX &cpu)
 		// Raise NM exception
 	}
 }
-void i486DX::FPUState::Pop(class i486DX &cpu,int level)
+void i486DXCommon::FPUState::Pop(class i486DXCommon &cpu,int level)
 {
 	if(stackPtr+level<=STACK_LEN)
 	{
@@ -498,12 +498,12 @@ void i486DX::FPUState::Pop(class i486DX &cpu,int level)
 		// Should I make stack pointer to zero?
 	}
 }
-unsigned int i486DX::FPUState::NumFilled(void) const
+unsigned int i486DXCommon::FPUState::NumFilled(void) const
 {
 	return STACK_LEN-stackPtr;
 }
 
-std::vector <std::string> i486DX::FPUState::GetStateText(void) const
+std::vector <std::string> i486DXCommon::FPUState::GetStateText(void) const
 {
 	std::vector <std::string> text;
 
@@ -543,7 +543,7 @@ std::vector <std::string> i486DX::FPUState::GetStateText(void) const
 	return text;
 }
 
-unsigned int i486DX::FPUState::F2XM1(i486DX &cpu)
+unsigned int i486DXCommon::FPUState::F2XM1(i486DXCommon &cpu)
 {
 	if(true==enabled)
 	{
@@ -554,7 +554,7 @@ unsigned int i486DX::FPUState::F2XM1(i486DX &cpu)
 	}
 	return 0;
 }
-unsigned int i486DX::FPUState::FABS(i486DX &cpu)
+unsigned int i486DXCommon::FPUState::FABS(i486DXCommon &cpu)
 {
 	if(true==enabled)
 	{
@@ -564,7 +564,7 @@ unsigned int i486DX::FPUState::FABS(i486DX &cpu)
 	}
 	return 0;
 }
-unsigned int i486DX::FPUState::FADD_m32real(i486DX &cpu,const unsigned char byteData[])
+unsigned int i486DXCommon::FPUState::FADD_m32real(i486DXCommon &cpu,const unsigned char byteData[])
 {
 	if(true==enabled)
 	{
@@ -576,7 +576,7 @@ unsigned int i486DX::FPUState::FADD_m32real(i486DX &cpu,const unsigned char byte
 	}
 	return 0;
 }
-unsigned int i486DX::FPUState::FADD64(i486DX &cpu,const unsigned char byteData[])
+unsigned int i486DXCommon::FPUState::FADD64(i486DXCommon &cpu,const unsigned char byteData[])
 {
 	if(true==enabled)
 	{
@@ -588,7 +588,7 @@ unsigned int i486DX::FPUState::FADD64(i486DX &cpu,const unsigned char byteData[]
 	}
 	return 0;
 }
-unsigned int i486DX::FPUState::FADD_ST_STi(i486DX &cpu,int i)
+unsigned int i486DXCommon::FPUState::FADD_ST_STi(i486DXCommon &cpu,int i)
 {
 	if(true==enabled)
 	{
@@ -601,7 +601,7 @@ unsigned int i486DX::FPUState::FADD_ST_STi(i486DX &cpu,int i)
 	}
 	return 0; // Let it abort.
 }
-unsigned int i486DX::FPUState::FADDP_STi_ST(i486DX &cpu,int i)
+unsigned int i486DXCommon::FPUState::FADDP_STi_ST(i486DXCommon &cpu,int i)
 {
 	if(true==enabled)
 	{
@@ -616,7 +616,7 @@ unsigned int i486DX::FPUState::FADDP_STi_ST(i486DX &cpu,int i)
 	}
 	return 0; // Let it abort.
 }
-unsigned int i486DX::FPUState::FIADD_m16int(i486DX &cpu,const unsigned char byteData[])
+unsigned int i486DXCommon::FPUState::FIADD_m16int(i486DXCommon &cpu,const unsigned char byteData[])
 {
 	if(true==enabled)
 	{
@@ -629,7 +629,7 @@ unsigned int i486DX::FPUState::FIADD_m16int(i486DX &cpu,const unsigned char byte
 	}
 	return 0;
 }
-unsigned int i486DX::FPUState::FBLD(i486DX &cpu,const unsigned char byteData[])
+unsigned int i486DXCommon::FPUState::FBLD(i486DXCommon &cpu,const unsigned char byteData[])
 {
 	if(true==enabled)
 	{
@@ -639,7 +639,7 @@ unsigned int i486DX::FPUState::FBLD(i486DX &cpu,const unsigned char byteData[])
 	}
 	return 0;
 }
-unsigned int i486DX::FPUState::FCHS(i486DX &cpu)
+unsigned int i486DXCommon::FPUState::FCHS(i486DXCommon &cpu)
 {
 	if(true==enabled)
 	{
@@ -649,11 +649,11 @@ unsigned int i486DX::FPUState::FCHS(i486DX &cpu)
 	}
 	return 0; // Let it abort.
 }
-unsigned int i486DX::FPUState::FCLEX(i486DX &cpu)
+unsigned int i486DXCommon::FPUState::FCLEX(i486DXCommon &cpu)
 {
 	return 7;
 }
-unsigned int i486DX::FPUState::FCOM_m32real(i486DX &cpu,const unsigned char byteData[])
+unsigned int i486DXCommon::FPUState::FCOM_m32real(i486DXCommon &cpu,const unsigned char byteData[])
 {
 	if(true==enabled)
 	{
@@ -662,7 +662,7 @@ unsigned int i486DX::FPUState::FCOM_m32real(i486DX &cpu,const unsigned char byte
 	}
 	return 0; // Let it abort.
 }
-unsigned int i486DX::FPUState::FCOMP_m32real(i486DX &cpu,const unsigned char byteData[])
+unsigned int i486DXCommon::FPUState::FCOMP_m32real(i486DXCommon &cpu,const unsigned char byteData[])
 {
 	if(true==enabled)
 	{
@@ -672,7 +672,7 @@ unsigned int i486DX::FPUState::FCOMP_m32real(i486DX &cpu,const unsigned char byt
 	}
 	return 0; // Let it abort.
 }
-unsigned int i486DX::FPUState::FCOM_m64real(i486DX &cpu,const unsigned char byteData[])
+unsigned int i486DXCommon::FPUState::FCOM_m64real(i486DXCommon &cpu,const unsigned char byteData[])
 {
 	if(true==enabled)
 	{
@@ -681,7 +681,7 @@ unsigned int i486DX::FPUState::FCOM_m64real(i486DX &cpu,const unsigned char byte
 	}
 	return 0; // Let it abort.
 }
-unsigned int i486DX::FPUState::FCOMP_m64real(i486DX &cpu,const unsigned char byteData[])
+unsigned int i486DXCommon::FPUState::FCOMP_m64real(i486DXCommon &cpu,const unsigned char byteData[])
 {
 	if(true==enabled)
 	{
@@ -691,7 +691,7 @@ unsigned int i486DX::FPUState::FCOMP_m64real(i486DX &cpu,const unsigned char byt
 	}
 	return 0; // Let it abort.
 }
-unsigned int i486DX::FPUState::FCOM(i486DX &cpu,int i)
+unsigned int i486DXCommon::FPUState::FCOM(i486DXCommon &cpu,int i)
 {
 	if(true==enabled)
 	{
@@ -700,7 +700,7 @@ unsigned int i486DX::FPUState::FCOM(i486DX &cpu,int i)
 	}
 	return 0; // Let it abort.
 }
-unsigned int i486DX::FPUState::FCOMP(i486DX &cpu,int i)
+unsigned int i486DXCommon::FPUState::FCOMP(i486DXCommon &cpu,int i)
 {
 	if(true==enabled)
 	{
@@ -710,7 +710,7 @@ unsigned int i486DX::FPUState::FCOMP(i486DX &cpu,int i)
 	}
 	return 0; // Let it abort.
 }
-unsigned int i486DX::FPUState::FCOMPP(i486DX &cpu)
+unsigned int i486DXCommon::FPUState::FCOMPP(i486DXCommon &cpu)
 {
 	if(true==enabled)
 	{
@@ -720,7 +720,7 @@ unsigned int i486DX::FPUState::FCOMPP(i486DX &cpu)
 	}
 	return 0; // Let it abort.
 }
-unsigned int i486DX::FPUState::FDIV_m32real(i486DX &cpu,const unsigned char byteData[])
+unsigned int i486DXCommon::FPUState::FDIV_m32real(i486DXCommon &cpu,const unsigned char byteData[])
 {
 	if(true==enabled)
 	{
@@ -738,7 +738,7 @@ unsigned int i486DX::FPUState::FDIV_m32real(i486DX &cpu,const unsigned char byte
 	}
 	return 0;
 }
-unsigned int i486DX::FPUState::FDIVR_m32real(i486DX &cpu,const unsigned char byteData[])
+unsigned int i486DXCommon::FPUState::FDIVR_m32real(i486DXCommon &cpu,const unsigned char byteData[])
 {
 	if(true==enabled)
 	{
@@ -760,7 +760,7 @@ unsigned int i486DX::FPUState::FDIVR_m32real(i486DX &cpu,const unsigned char byt
 	}
 	return 0;
 }
-unsigned int i486DX::FPUState::FIDIVR_m32int(i486DX &cpu,const unsigned char byteData[])
+unsigned int i486DXCommon::FPUState::FIDIVR_m32int(i486DXCommon &cpu,const unsigned char byteData[])
 {
 	if(true==enabled)
 	{
@@ -782,7 +782,7 @@ unsigned int i486DX::FPUState::FIDIVR_m32int(i486DX &cpu,const unsigned char byt
 	}
 	return 0;
 }
-unsigned int i486DX::FPUState::FDIVP_STi_ST(i486DX &cpu,int i)
+unsigned int i486DXCommon::FPUState::FDIVP_STi_ST(i486DXCommon &cpu,int i)
 {
 	if(true==enabled)
 	{
@@ -805,7 +805,7 @@ unsigned int i486DX::FPUState::FDIVP_STi_ST(i486DX &cpu,int i)
 	}
 	return 0; // Let it abort.
 }
-unsigned int i486DX::FPUState::FDIV_m64real(i486DX &cpu,const unsigned char byteData[])
+unsigned int i486DXCommon::FPUState::FDIV_m64real(i486DXCommon &cpu,const unsigned char byteData[])
 {
 	if(true==enabled)
 	{
@@ -827,7 +827,7 @@ unsigned int i486DX::FPUState::FDIV_m64real(i486DX &cpu,const unsigned char byte
 	}
 	return 0;
 }
-unsigned int i486DX::FPUState::FDIVR_m64real(i486DX &cpu,const unsigned char byteData[])
+unsigned int i486DXCommon::FPUState::FDIVR_m64real(i486DXCommon &cpu,const unsigned char byteData[])
 {
 	if(true==enabled)
 	{
@@ -849,7 +849,7 @@ unsigned int i486DX::FPUState::FDIVR_m64real(i486DX &cpu,const unsigned char byt
 	}
 	return 0;
 }
-unsigned int i486DX::FPUState::FDIVRP_STi_ST(i486DX &cpu,int i)
+unsigned int i486DXCommon::FPUState::FDIVRP_STi_ST(i486DXCommon &cpu,int i)
 {
 	if(true==enabled)
 	{
@@ -872,7 +872,7 @@ unsigned int i486DX::FPUState::FDIVRP_STi_ST(i486DX &cpu,int i)
 	}
 	return 0; // Let it abort.
 }
-unsigned int i486DX::FPUState::FIDIV_m16int(i486DX &cpu,const unsigned char byteData[])
+unsigned int i486DXCommon::FPUState::FIDIV_m16int(i486DXCommon &cpu,const unsigned char byteData[])
 {
 	if(true==enabled)
 	{
@@ -894,7 +894,7 @@ unsigned int i486DX::FPUState::FIDIV_m16int(i486DX &cpu,const unsigned char byte
 	}
 	return 0;
 }
-unsigned int i486DX::FPUState::FILD_m16int(i486DX &cpu,const unsigned char byteData[])
+unsigned int i486DXCommon::FPUState::FILD_m16int(i486DXCommon &cpu,const unsigned char byteData[])
 {
 	if(true==enabled)
 	{
@@ -904,7 +904,7 @@ unsigned int i486DX::FPUState::FILD_m16int(i486DX &cpu,const unsigned char byteD
 	}
 	return 0;
 }
-unsigned int i486DX::FPUState::FILD_m32int(i486DX &cpu,const unsigned char byteData[])
+unsigned int i486DXCommon::FPUState::FILD_m32int(i486DXCommon &cpu,const unsigned char byteData[])
 {
 	if(true==enabled)
 	{
@@ -914,7 +914,7 @@ unsigned int i486DX::FPUState::FILD_m32int(i486DX &cpu,const unsigned char byteD
 	}
 	return 0;
 }
-unsigned int i486DX::FPUState::FILD_m64int(i486DX &cpu,const unsigned char byteData[])
+unsigned int i486DXCommon::FPUState::FILD_m64int(i486DXCommon &cpu,const unsigned char byteData[])
 {
 	if(true==enabled)
 	{
@@ -924,7 +924,7 @@ unsigned int i486DX::FPUState::FILD_m64int(i486DX &cpu,const unsigned char byteD
 	}
 	return 0;
 }
-unsigned int i486DX::FPUState::FLD32(i486DX &cpu,const unsigned char byteData[])
+unsigned int i486DXCommon::FPUState::FLD32(i486DXCommon &cpu,const unsigned char byteData[])
 {
 	if(true==enabled)
 	{
@@ -937,7 +937,7 @@ unsigned int i486DX::FPUState::FLD32(i486DX &cpu,const unsigned char byteData[])
 	}
 	return 0;
 }
-unsigned int i486DX::FPUState::FLD64(i486DX &cpu,const unsigned char byteData[])
+unsigned int i486DXCommon::FPUState::FLD64(i486DXCommon &cpu,const unsigned char byteData[])
 {
 	if(true==enabled)
 	{
@@ -951,7 +951,7 @@ unsigned int i486DX::FPUState::FLD64(i486DX &cpu,const unsigned char byteData[])
 	}
 	return 0;
 }
-unsigned int i486DX::FPUState::FLD80(i486DX &cpu,const unsigned char byteData[])
+unsigned int i486DXCommon::FPUState::FLD80(i486DXCommon &cpu,const unsigned char byteData[])
 {
 	if(true==enabled)
 	{
@@ -964,7 +964,7 @@ unsigned int i486DX::FPUState::FLD80(i486DX &cpu,const unsigned char byteData[])
 	}
 	return 0;
 }
-unsigned int i486DX::FPUState::FLDCW(i486DX &cpu,uint16_t cw)
+unsigned int i486DXCommon::FPUState::FLDCW(i486DXCommon &cpu,uint16_t cw)
 {
 	if(true==enabled)
 	{
@@ -972,7 +972,7 @@ unsigned int i486DX::FPUState::FLDCW(i486DX &cpu,uint16_t cw)
 	}
 	return 4;
 }
-unsigned int i486DX::FPUState::FLD_ST(i486DX &cpu,int i)
+unsigned int i486DXCommon::FPUState::FLD_ST(i486DXCommon &cpu,int i)
 {
 	if(true==enabled)
 	{
@@ -985,7 +985,7 @@ unsigned int i486DX::FPUState::FLD_ST(i486DX &cpu,int i)
 	}
 	return 0; // Let it abort.
 }
-unsigned int i486DX::FPUState::FLD1(i486DX &cpu)
+unsigned int i486DXCommon::FPUState::FLD1(i486DXCommon &cpu)
 {
 	if(true==enabled)
 	{
@@ -997,7 +997,7 @@ unsigned int i486DX::FPUState::FLD1(i486DX &cpu)
 	}
 	return 0; // Let it abort.
 }
-unsigned int i486DX::FPUState::FLDL2T(i486DX &cpu)
+unsigned int i486DXCommon::FPUState::FLDL2T(i486DXCommon &cpu)
 {
 	if(true==enabled)
 	{
@@ -1006,7 +1006,7 @@ unsigned int i486DX::FPUState::FLDL2T(i486DX &cpu)
 	}
 	return 0; // Let it abort.
 }
-unsigned int i486DX::FPUState::FLDL2E(i486DX &cpu)
+unsigned int i486DXCommon::FPUState::FLDL2E(i486DXCommon &cpu)
 {
 	if(true==enabled)
 	{
@@ -1015,7 +1015,7 @@ unsigned int i486DX::FPUState::FLDL2E(i486DX &cpu)
 	}
 	return 0; // Let it abort.
 }
-unsigned int i486DX::FPUState::FLDLN2(i486DX &cpu)
+unsigned int i486DXCommon::FPUState::FLDLN2(i486DXCommon &cpu)
 {
 	if(true==enabled)
 	{
@@ -1024,7 +1024,7 @@ unsigned int i486DX::FPUState::FLDLN2(i486DX &cpu)
 	}
 	return 0; // Let it abort.
 }
-unsigned int i486DX::FPUState::FLDPI(i486DX &cpu)
+unsigned int i486DXCommon::FPUState::FLDPI(i486DXCommon &cpu)
 {
 	if(true==enabled)
 	{
@@ -1033,7 +1033,7 @@ unsigned int i486DX::FPUState::FLDPI(i486DX &cpu)
 	}
 	return 0; // Let it abort.
 }
-unsigned int i486DX::FPUState::FLDZ(i486DX &cpu)
+unsigned int i486DXCommon::FPUState::FLDZ(i486DXCommon &cpu)
 {
 	if(true==enabled)
 	{
@@ -1042,7 +1042,7 @@ unsigned int i486DX::FPUState::FLDZ(i486DX &cpu)
 	}
 	return 0;
 }
-unsigned int i486DX::FPUState::FMULP(i486DX &cpu,int i)
+unsigned int i486DXCommon::FPUState::FMULP(i486DXCommon &cpu,int i)
 {
 	if(true==enabled)
 	{
@@ -1060,7 +1060,7 @@ unsigned int i486DX::FPUState::FMULP(i486DX &cpu,int i)
 	}
 	return 0; // Let it abort.
 }
-unsigned int i486DX::FPUState::FMUL_ST_STi(i486DX &cpu,int i)
+unsigned int i486DXCommon::FPUState::FMUL_ST_STi(i486DXCommon &cpu,int i)
 {
 	if(true==enabled)
 	{
@@ -1077,7 +1077,7 @@ unsigned int i486DX::FPUState::FMUL_ST_STi(i486DX &cpu,int i)
 	}
 	return 0; // Let it abort.
 }
-unsigned int i486DX::FPUState::FMUL_m32real(i486DX &cpu,const unsigned char byteData[])
+unsigned int i486DXCommon::FPUState::FMUL_m32real(i486DXCommon &cpu,const unsigned char byteData[])
 {
 	if(true==enabled)
 	{
@@ -1094,7 +1094,7 @@ unsigned int i486DX::FPUState::FMUL_m32real(i486DX &cpu,const unsigned char byte
 	}
 	return 0;
 }
-unsigned int i486DX::FPUState::FMUL_m64real(i486DX &cpu,const unsigned char byteData[])
+unsigned int i486DXCommon::FPUState::FMUL_m64real(i486DXCommon &cpu,const unsigned char byteData[])
 {
 	if(true==enabled)
 	{
@@ -1111,7 +1111,7 @@ unsigned int i486DX::FPUState::FMUL_m64real(i486DX &cpu,const unsigned char byte
 	}
 	return 0;
 }
-unsigned int i486DX::FPUState::FIMUL_m16int(i486DX &cpu,const unsigned char byteData[])
+unsigned int i486DXCommon::FPUState::FIMUL_m16int(i486DXCommon &cpu,const unsigned char byteData[])
 {
 	if(true==enabled)
 	{
@@ -1124,7 +1124,7 @@ unsigned int i486DX::FPUState::FIMUL_m16int(i486DX &cpu,const unsigned char byte
 	}
 	return 0;
 }
-unsigned int i486DX::FPUState::FIMUL_m32int(i486DX &cpu,const unsigned char byteData[])
+unsigned int i486DXCommon::FPUState::FIMUL_m32int(i486DXCommon &cpu,const unsigned char byteData[])
 {
 	if(true==enabled)
 	{
@@ -1137,7 +1137,7 @@ unsigned int i486DX::FPUState::FIMUL_m32int(i486DX &cpu,const unsigned char byte
 	}
 	return 0;
 }
-unsigned int i486DX::FPUState::FPATAN(i486DX &cpu)
+unsigned int i486DXCommon::FPUState::FPATAN(i486DXCommon &cpu)
 {
 	if(true==enabled)
 	{
@@ -1156,7 +1156,7 @@ unsigned int i486DX::FPUState::FPATAN(i486DX &cpu)
 	}
 	return 0; // Let it abort.
 }
-unsigned int i486DX::FPUState::FPREM(i486DX &cpu)
+unsigned int i486DXCommon::FPUState::FPREM(i486DXCommon &cpu)
 {
 	if(true==enabled)
 	{
@@ -1202,7 +1202,7 @@ unsigned int i486DX::FPUState::FPREM(i486DX &cpu)
 	}
 	return 0; // Let it abort.
 }
-unsigned int i486DX::FPUState::FRNDINT(i486DX &cpu)
+unsigned int i486DXCommon::FPUState::FRNDINT(i486DXCommon &cpu)
 {
 	if(true==enabled)
 	{
@@ -1219,7 +1219,7 @@ unsigned int i486DX::FPUState::FRNDINT(i486DX &cpu)
 	}
 	return 0; // Let it abort.
 }
-unsigned int i486DX::FPUState::FSCALE(i486DX &cpu)
+unsigned int i486DXCommon::FPUState::FSCALE(i486DXCommon &cpu)
 {
 	if(true==enabled)
 	{
@@ -1239,7 +1239,7 @@ unsigned int i486DX::FPUState::FSCALE(i486DX &cpu)
 	}
 	return 0; // Let it abort.
 }
-unsigned int i486DX::FPUState::FSIN(i486DX &cpu)
+unsigned int i486DXCommon::FPUState::FSIN(i486DXCommon &cpu)
 {
 	if(true==enabled)
 	{
@@ -1256,7 +1256,7 @@ unsigned int i486DX::FPUState::FSIN(i486DX &cpu)
 	}
 	return 0; // Let it abort.
 }
-unsigned int i486DX::FPUState::FSINCOS(i486DX &cpu)
+unsigned int i486DXCommon::FPUState::FSINCOS(i486DXCommon &cpu)
 {
 	if(true==enabled)
 	{
@@ -1276,7 +1276,7 @@ unsigned int i486DX::FPUState::FSINCOS(i486DX &cpu)
 	}
 	return 0;
 }
-unsigned int i486DX::FPUState::FCOS(i486DX &cpu)
+unsigned int i486DXCommon::FPUState::FCOS(i486DXCommon &cpu)
 {
 	if(true==enabled)
 	{
@@ -1293,7 +1293,7 @@ unsigned int i486DX::FPUState::FCOS(i486DX &cpu)
 	}
 	return 0; // Let it abort.
 }
-unsigned int i486DX::FPUState::FPTAN(i486DX &cpu)
+unsigned int i486DXCommon::FPUState::FPTAN(i486DXCommon &cpu)
 {
 	if(true==enabled)
 	{
@@ -1320,7 +1320,7 @@ unsigned int i486DX::FPUState::FPTAN(i486DX &cpu)
 	}
 	return 0; // Let it abort.
 }
-unsigned int i486DX::FPUState::FSQRT(i486DX &cpu)
+unsigned int i486DXCommon::FPUState::FSQRT(i486DXCommon &cpu)
 {
 	if(true==enabled)
 	{
@@ -1336,7 +1336,7 @@ unsigned int i486DX::FPUState::FSQRT(i486DX &cpu)
 	}
 	return 0;
 }
-unsigned int i486DX::FPUState::FSTP_STi(i486DX &cpu,int i)
+unsigned int i486DXCommon::FPUState::FSTP_STi(i486DXCommon &cpu,int i)
 {
 	if(true==enabled)
 	{
@@ -1349,7 +1349,7 @@ unsigned int i486DX::FPUState::FSTP_STi(i486DX &cpu,int i)
 	}
 	return 0;
 }
-unsigned int i486DX::FPUState::FSUB_m32real(i486DX &cpu,const unsigned char byteData[])
+unsigned int i486DXCommon::FPUState::FSUB_m32real(i486DXCommon &cpu,const unsigned char byteData[])
 {
 	if(true==enabled)
 	{
@@ -1367,7 +1367,7 @@ unsigned int i486DX::FPUState::FSUB_m32real(i486DX &cpu,const unsigned char byte
 	}
 	return 0;
 }
-unsigned int i486DX::FPUState::FSUB_m64real(i486DX &cpu,const unsigned char byteData[])
+unsigned int i486DXCommon::FPUState::FSUB_m64real(i486DXCommon &cpu,const unsigned char byteData[])
 {
 	if(true==enabled)
 	{
@@ -1385,7 +1385,7 @@ unsigned int i486DX::FPUState::FSUB_m64real(i486DX &cpu,const unsigned char byte
 	}
 	return 0;
 }
-unsigned int i486DX::FPUState::FSUB_ST_STi(i486DX &cpu,int i)
+unsigned int i486DXCommon::FPUState::FSUB_ST_STi(i486DXCommon &cpu,int i)
 {
 	if(true==enabled)
 	{
@@ -1397,7 +1397,7 @@ unsigned int i486DX::FPUState::FSUB_ST_STi(i486DX &cpu,int i)
 	}
 	return 0;
 }
-unsigned int i486DX::FPUState::FSUB_STi_ST(i486DX &cpu,int i)
+unsigned int i486DXCommon::FPUState::FSUB_STi_ST(i486DXCommon &cpu,int i)
 {
 	if(true==enabled)
 	{
@@ -1409,7 +1409,7 @@ unsigned int i486DX::FPUState::FSUB_STi_ST(i486DX &cpu,int i)
 	}
 	return 0;
 }
-unsigned int i486DX::FPUState::FSUBP_STi_ST(i486DX &cpu,int i)
+unsigned int i486DXCommon::FPUState::FSUBP_STi_ST(i486DXCommon &cpu,int i)
 {
 	if(true==enabled)
 	{
@@ -1422,7 +1422,7 @@ unsigned int i486DX::FPUState::FSUBP_STi_ST(i486DX &cpu,int i)
 	}
 	return 0;
 }
-unsigned int i486DX::FPUState::FSUBR_m32real(i486DX &cpu,const unsigned char byteData[])
+unsigned int i486DXCommon::FPUState::FSUBR_m32real(i486DXCommon &cpu,const unsigned char byteData[])
 {
 	if(true==enabled)
 	{
@@ -1436,7 +1436,7 @@ unsigned int i486DX::FPUState::FSUBR_m32real(i486DX &cpu,const unsigned char byt
 	}
 	return 0;
 }
-unsigned int i486DX::FPUState::FSUBR_m64real(i486DX &cpu,const unsigned char byteData[])
+unsigned int i486DXCommon::FPUState::FSUBR_m64real(i486DXCommon &cpu,const unsigned char byteData[])
 {
 	if(true==enabled)
 	{
@@ -1450,7 +1450,7 @@ unsigned int i486DX::FPUState::FSUBR_m64real(i486DX &cpu,const unsigned char byt
 	}
 	return 0;
 }
-unsigned int i486DX::FPUState::FSUBRP_STi_ST(i486DX &cpu,int i)
+unsigned int i486DXCommon::FPUState::FSUBRP_STi_ST(i486DXCommon &cpu,int i)
 {
 	if(true==enabled)
 	{
@@ -1463,7 +1463,7 @@ unsigned int i486DX::FPUState::FSUBRP_STi_ST(i486DX &cpu,int i)
 	}
 	return 0;
 }
-unsigned int i486DX::FPUState::FTST(i486DX &cpu)
+unsigned int i486DXCommon::FPUState::FTST(i486DXCommon &cpu)
 {
 	if(true==enabled)
 	{
@@ -1473,7 +1473,7 @@ unsigned int i486DX::FPUState::FTST(i486DX &cpu)
 	}
 	return 0;
 }
-unsigned int i486DX::FPUState::FXAM(i486DX &cpu)
+unsigned int i486DXCommon::FPUState::FXAM(i486DXCommon &cpu)
 {
 	if(true==enabled)
 	{
@@ -1517,7 +1517,7 @@ unsigned int i486DX::FPUState::FXAM(i486DX &cpu)
 	}
 	return 0;
 }
-unsigned int i486DX::FPUState::FXCH(i486DX &cpu,int i)
+unsigned int i486DXCommon::FPUState::FXCH(i486DXCommon &cpu,int i)
 {
 	if(true==enabled)
 	{
@@ -1527,7 +1527,7 @@ unsigned int i486DX::FPUState::FXCH(i486DX &cpu,int i)
 	}
 	return 0;
 }
-unsigned int i486DX::FPUState::FYL2X(i486DX &cpu)
+unsigned int i486DXCommon::FPUState::FYL2X(i486DXCommon &cpu)
 {
 	if(true==enabled)
 	{

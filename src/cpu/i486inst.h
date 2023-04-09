@@ -22,9 +22,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 //  (1) Add OPCODE enum.
 //  (2) Add RENUMBER enum.  (Make sure to delete =0x??)
 //  (3) Add a mapping in MakeOpCodeRenumberTable()
-//  (4) Implement i486DX::FetchOperand
-//  (5) Implement i486DX::Instruction::Disassemble
-//  (6) Implement i486DX::RunOneInstruction
+//  (4) Implement i486DXCommon::FetchOperand
+//  (5) Implement i486DXCommon::Instruction::Disassemble
+//  (6) Implement i486DXCommon::RunOneInstruction
 //  (7) Add disassembly test.
 
 

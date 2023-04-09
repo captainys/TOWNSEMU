@@ -50,7 +50,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 class i486SymbolTable;
 
 
-class i486DX : public CPU
+class i486DXCommon : public CPU
 {
 public:
 	#define NUM_BYTES_MASK static const unsigned int numBytesMask[5]={0,0xFF,0xFFFF,0xFFFFFF,0xFFFFFFFF};
@@ -373,7 +373,7 @@ public:
 		std::string Format(void) const;
 		void MakeFromString(const std::string &str);
 
-		void LoadSegmentRegister(SegmentRegister &seg,i486DX &cpu,const Memory &mem) const;
+		void LoadSegmentRegister(SegmentRegister &seg,i486DXCommon &cpu,const Memory &mem) const;
 	};
 
 	/*! Translate far pointer.
@@ -442,15 +442,15 @@ public:
 		unsigned int GetStatusWord(void) const;
 		unsigned int GetControlWord(void) const;
 
-		void BreakOnNan(i486DX &cpu,double value);
+		void BreakOnNan(i486DXCommon &cpu,double value);
 
 		unsigned int GetRC(void) const;
 		double RoundToInteger(double src) const;
 
-		void GetSTAsDouble(class i486DX &cpu,OperandValueBase &value);
-		void GetSTAsFloat(class i486DX &cpu,OperandValueBase &value);
-		void GetSTAsSignedInt(class i486DX &cpu,OperandValueBase &value);
-		void GetSTAs80BitBCD(class i486DX &cpu,OperandValueBase &value);
+		void GetSTAsDouble(class i486DXCommon &cpu,OperandValueBase &value);
+		void GetSTAsFloat(class i486DXCommon &cpu,OperandValueBase &value);
+		void GetSTAsSignedInt(class i486DXCommon &cpu,OperandValueBase &value);
+		void GetSTAs80BitBCD(class i486DXCommon &cpu,OperandValueBase &value);
 
 		static int16_t IntFrom16Bit(const unsigned char byteData[]);
 		static int32_t IntFrom32Bit(const unsigned char byteData[]);
@@ -465,20 +465,20 @@ public:
 
 		static double DoubleFrom32Bit(const unsigned char byteData[]);
 
-		bool Push(class i486DX &cpu,double value);
-		void Pop(class i486DX &cpu);
-		void Pop(class i486DX &cpu,int level);
+		bool Push(class i486DXCommon &cpu,double value);
+		void Pop(class i486DXCommon &cpu);
+		void Pop(class i486DXCommon &cpu,int level);
 		unsigned int NumFilled(void) const;
 
 		FPUState();
 
 		std::vector <std::string> GetStateText(void) const;
 
-		inline Stack &ST(class i486DX &cpu)
+		inline Stack &ST(class i486DXCommon &cpu)
 		{
 			return ST(cpu,0);
 		}
-		inline Stack &ST(class i486DX &cpu,int i)
+		inline Stack &ST(class i486DXCommon &cpu,int i)
 		{
 			if(stackPtr+i<STACK_LEN)
 			{
@@ -487,11 +487,11 @@ public:
 			// Raise exception.
 			return nullRegister;
 		}
-		inline const Stack &ST(class i486DX &cpu) const
+		inline const Stack &ST(class i486DXCommon &cpu) const
 		{
 			return ST(cpu,0);
 		}
-		inline const Stack &ST(class i486DX &cpu,int i) const
+		inline const Stack &ST(class i486DXCommon &cpu,int i) const
 		{
 			if(stackPtr+i<STACK_LEN)
 			{
@@ -536,73 +536,73 @@ public:
 		}
 
 		// Returns clocks passed.
-		unsigned int F2XM1(i486DX &cpu);
-		unsigned int FABS(i486DX &cpu);
-		unsigned int FADD_m32real(i486DX &cpu,const unsigned char byteData[]);
-		unsigned int FADD64(i486DX &cpu,const unsigned char byteData[]);
-		unsigned int FADD_ST_STi(i486DX &cpu,int i);
-		unsigned int FADDP_STi_ST(i486DX &cpu,int i);
-		unsigned int FIADD_m16int(i486DX &cpu,const unsigned char byteData[]);
-		unsigned int FBLD(i486DX &cpu,const unsigned char byteData[]);
-		unsigned int FCHS(i486DX &cpu);
-		unsigned int FCLEX(i486DX &cpu);
-		unsigned int FCOM(i486DX &cpu,int i);
-		unsigned int FCOMP(i486DX &cpu,int i);
-		unsigned int FCOMPP(i486DX &cpu);
-		unsigned int FCOM_m32real(i486DX &cpu,const unsigned char byteData[]);
-		unsigned int FCOMP_m32real(i486DX &cpu,const unsigned char byteData[]);
-		unsigned int FCOM_m64real(i486DX &cpu,const unsigned char byteData[]);
-		unsigned int FCOMP_m64real(i486DX &cpu,const unsigned char byteData[]);
-		unsigned int FCOS(i486DX &cpu);
-		unsigned int FIDIV_m16int(i486DX &cpu,const unsigned char byteData[]);
-		unsigned int FILD_m16int(i486DX &cpu,const unsigned char byteData[]);
-		unsigned int FILD_m32int(i486DX &cpu,const unsigned char byteData[]);
-		unsigned int FILD_m64int(i486DX &cpu,const unsigned char byteData[]);
-		unsigned int FDIV_m32real(i486DX &cpu,const unsigned char byteData[]);
-		unsigned int FDIVP_STi_ST(i486DX &cpu,int i);
-		unsigned int FDIV_m64real(i486DX &cpu,const unsigned char byteData[]);
-		unsigned int FDIVR_m64real(i486DX &cpu,const unsigned char byteData[]);
-		unsigned int FDIVR_m32real(i486DX &cpu,const unsigned char byteData[]);
-		unsigned int FIDIVR_m32int(i486DX &cpu,const unsigned char byteData[]);
-		unsigned int FDIVRP_STi_ST(i486DX &cpu,int i);
-		unsigned int FLD32(i486DX &cpu,const unsigned char byteData[]);
-		unsigned int FLD64(i486DX &cpu,const unsigned char byteData[]);
-		unsigned int FLD80(i486DX &cpu,const unsigned char byteData[]);
-		unsigned int FLDCW(i486DX &cpu,uint16_t cw);
-		unsigned int FLD_ST(i486DX &cpu,int i);
-		unsigned int FLD1(i486DX &cpu);
-		unsigned int FLDL2T(i486DX &cpu);
-		unsigned int FLDL2E(i486DX &cpu);
-		unsigned int FLDLN2(i486DX &cpu);
-		unsigned int FLDPI(i486DX &cpu);
-		unsigned int FLDZ(i486DX &cpu);
-		unsigned int FMULP(i486DX &cpu,int i);
-		unsigned int FMUL_ST_STi(i486DX &cpu,int i);
-		unsigned int FMUL_m32real(i486DX &cpu,const unsigned char byteData[]);
-		unsigned int FMUL_m64real(i486DX &cpu,const unsigned char byteData[]);
-		unsigned int FIMUL_m16int(i486DX &cpu,const unsigned char byteData[]);
-		unsigned int FIMUL_m32int(i486DX &cpu,const unsigned char byteData[]);
-		unsigned int FPATAN(i486DX &cpu);
-		unsigned int FPREM(i486DX &cpu);
-		unsigned int FPTAN(i486DX &cpu);
-		unsigned int FRNDINT(i486DX &cpu);
-		unsigned int FSCALE(i486DX &cpu);
-		unsigned int FSIN(i486DX &cpu);
-		unsigned int FSINCOS(i486DX &cpu);
-		unsigned int FSQRT(i486DX &cpu);
-		unsigned int FSTP_STi(i486DX &cpu,int i);
-		unsigned int FSUB_m32real(i486DX &cpu,const unsigned char byteData[]);
-		unsigned int FSUB_m64real(i486DX &cpu,const unsigned char byteData[]);
-		unsigned int FSUB_ST_STi(i486DX &cpu,int i);
-		unsigned int FSUB_STi_ST(i486DX &cpu,int i);
-		unsigned int FSUBP_STi_ST(i486DX &cpu,int i);
-		unsigned int FSUBR_m32real(i486DX &cpu,const unsigned char byteData[]);
-		unsigned int FSUBR_m64real(i486DX &cpu,const unsigned char byteData[]);
-		unsigned int FSUBRP_STi_ST(i486DX &cpu,int i);
-		unsigned int FTST(i486DX &cpu);
-		unsigned int FXAM(i486DX &cpu);
-		unsigned int FXCH(i486DX &cpu,int i);
-		unsigned int FYL2X(i486DX &cpu);
+		unsigned int F2XM1(i486DXCommon &cpu);
+		unsigned int FABS(i486DXCommon &cpu);
+		unsigned int FADD_m32real(i486DXCommon &cpu,const unsigned char byteData[]);
+		unsigned int FADD64(i486DXCommon &cpu,const unsigned char byteData[]);
+		unsigned int FADD_ST_STi(i486DXCommon &cpu,int i);
+		unsigned int FADDP_STi_ST(i486DXCommon &cpu,int i);
+		unsigned int FIADD_m16int(i486DXCommon &cpu,const unsigned char byteData[]);
+		unsigned int FBLD(i486DXCommon &cpu,const unsigned char byteData[]);
+		unsigned int FCHS(i486DXCommon &cpu);
+		unsigned int FCLEX(i486DXCommon &cpu);
+		unsigned int FCOM(i486DXCommon &cpu,int i);
+		unsigned int FCOMP(i486DXCommon &cpu,int i);
+		unsigned int FCOMPP(i486DXCommon &cpu);
+		unsigned int FCOM_m32real(i486DXCommon &cpu,const unsigned char byteData[]);
+		unsigned int FCOMP_m32real(i486DXCommon &cpu,const unsigned char byteData[]);
+		unsigned int FCOM_m64real(i486DXCommon &cpu,const unsigned char byteData[]);
+		unsigned int FCOMP_m64real(i486DXCommon &cpu,const unsigned char byteData[]);
+		unsigned int FCOS(i486DXCommon &cpu);
+		unsigned int FIDIV_m16int(i486DXCommon &cpu,const unsigned char byteData[]);
+		unsigned int FILD_m16int(i486DXCommon &cpu,const unsigned char byteData[]);
+		unsigned int FILD_m32int(i486DXCommon &cpu,const unsigned char byteData[]);
+		unsigned int FILD_m64int(i486DXCommon &cpu,const unsigned char byteData[]);
+		unsigned int FDIV_m32real(i486DXCommon &cpu,const unsigned char byteData[]);
+		unsigned int FDIVP_STi_ST(i486DXCommon &cpu,int i);
+		unsigned int FDIV_m64real(i486DXCommon &cpu,const unsigned char byteData[]);
+		unsigned int FDIVR_m64real(i486DXCommon &cpu,const unsigned char byteData[]);
+		unsigned int FDIVR_m32real(i486DXCommon &cpu,const unsigned char byteData[]);
+		unsigned int FIDIVR_m32int(i486DXCommon &cpu,const unsigned char byteData[]);
+		unsigned int FDIVRP_STi_ST(i486DXCommon &cpu,int i);
+		unsigned int FLD32(i486DXCommon &cpu,const unsigned char byteData[]);
+		unsigned int FLD64(i486DXCommon &cpu,const unsigned char byteData[]);
+		unsigned int FLD80(i486DXCommon &cpu,const unsigned char byteData[]);
+		unsigned int FLDCW(i486DXCommon &cpu,uint16_t cw);
+		unsigned int FLD_ST(i486DXCommon &cpu,int i);
+		unsigned int FLD1(i486DXCommon &cpu);
+		unsigned int FLDL2T(i486DXCommon &cpu);
+		unsigned int FLDL2E(i486DXCommon &cpu);
+		unsigned int FLDLN2(i486DXCommon &cpu);
+		unsigned int FLDPI(i486DXCommon &cpu);
+		unsigned int FLDZ(i486DXCommon &cpu);
+		unsigned int FMULP(i486DXCommon &cpu,int i);
+		unsigned int FMUL_ST_STi(i486DXCommon &cpu,int i);
+		unsigned int FMUL_m32real(i486DXCommon &cpu,const unsigned char byteData[]);
+		unsigned int FMUL_m64real(i486DXCommon &cpu,const unsigned char byteData[]);
+		unsigned int FIMUL_m16int(i486DXCommon &cpu,const unsigned char byteData[]);
+		unsigned int FIMUL_m32int(i486DXCommon &cpu,const unsigned char byteData[]);
+		unsigned int FPATAN(i486DXCommon &cpu);
+		unsigned int FPREM(i486DXCommon &cpu);
+		unsigned int FPTAN(i486DXCommon &cpu);
+		unsigned int FRNDINT(i486DXCommon &cpu);
+		unsigned int FSCALE(i486DXCommon &cpu);
+		unsigned int FSIN(i486DXCommon &cpu);
+		unsigned int FSINCOS(i486DXCommon &cpu);
+		unsigned int FSQRT(i486DXCommon &cpu);
+		unsigned int FSTP_STi(i486DXCommon &cpu,int i);
+		unsigned int FSUB_m32real(i486DXCommon &cpu,const unsigned char byteData[]);
+		unsigned int FSUB_m64real(i486DXCommon &cpu,const unsigned char byteData[]);
+		unsigned int FSUB_ST_STi(i486DXCommon &cpu,int i);
+		unsigned int FSUB_STi_ST(i486DXCommon &cpu,int i);
+		unsigned int FSUBP_STi_ST(i486DXCommon &cpu,int i);
+		unsigned int FSUBR_m32real(i486DXCommon &cpu,const unsigned char byteData[]);
+		unsigned int FSUBR_m64real(i486DXCommon &cpu,const unsigned char byteData[]);
+		unsigned int FSUBRP_STi_ST(i486DXCommon &cpu,int i);
+		unsigned int FTST(i486DXCommon &cpu);
+		unsigned int FXAM(i486DXCommon &cpu);
+		unsigned int FXCH(i486DXCommon &cpu,int i);
+		unsigned int FYL2X(i486DXCommon &cpu);
 	};
 
 	class InterruptDescriptor : public FarPointer
@@ -758,7 +758,7 @@ public:
 		// is set to CR3.
 		//
 		// Descriptor cache is referred and updated in function:
-		//   i486DX::LoadSegmentRegisterTemplate::LoadProtectedModeDescriptor
+		//   i486DXCommon::LoadSegmentRegisterTemplate::LoadProtectedModeDescriptor
 		unsigned int descriptorCacheValidCounter=1;               // This must be cleared on state-load.
 		unsigned int descriptorCacheValid[DESCRIPTOR_CACHE_SIZE]; // This must be cleared on state-load.
 		unsigned char const *descriptorCache[DESCRIPTOR_CACHE_SIZE];    // This must be cleared on state-load.
@@ -850,7 +850,7 @@ public:
 			return CR[num&3];
 		}
 
-		/*! This function must NOT be used anywhere outside i486DX::SetCR.
+		/*! This function must NOT be used anywhere outside i486DXCommon::SetCR.
 		*/
 		inline void _SetCR(unsigned int num,unsigned int value)
 		{
@@ -2279,7 +2279,7 @@ public:
 
 	/*! Default constructor.  As you can see.
 	*/
-	i486DX(VMBase *vmPtr);
+	i486DXCommon(VMBase *vmPtr);
 private:
 	void MakeOpCodeRenumberTable(void);
 
@@ -3066,18 +3066,6 @@ public:
 	static std::string Get16or32BitRegisterNameFromMODR_M(int dataSize,unsigned char MOD_RM);
 
 
-	/*! CALL FAR */
-	inline unsigned int CALLF(Memory &mem,uint16_t opSize,uint16_t instNumBytes,uint16_t newCS,uint32_t newEIP,uint16_t defClocks);
-
-
-	/*! JMP FAR */
-	inline unsigned int JMPF(Memory &mem,uint16_t opSize,uint16_t instNumBytes,uint16_t newCS,uint32_t newEIP,uint16_t defClocks);
-
-
-	/*! Run one instruction and returns number of clocks. */
-	unsigned int RunOneInstruction(Memory &mem,InOut &io);
-
-
 	/*! Decrement a value.  It also sets OF SF ZF AF PF according to the result.
 	    operandSize needs to be 16 or 32.
 	*/
@@ -3366,7 +3354,7 @@ public:
 
 #include "i486fidelity.h"
 
-inline unsigned long i486DX::LinearAddressToPhysicalAddressRead(unsigned int linearAddr,Memory &mem)
+inline unsigned long i486DXCommon::LinearAddressToPhysicalAddressRead(unsigned int linearAddr,Memory &mem)
 {
 	TSUGARU_I486_FIDELITY_CLASS fidelity;
 
@@ -3409,7 +3397,7 @@ inline unsigned long i486DX::LinearAddressToPhysicalAddressRead(unsigned int lin
 	return physicalAddr;
 }
 
-inline unsigned long i486DX::LinearAddressToPhysicalAddressWrite(unsigned int linearAddr,Memory &mem)
+inline unsigned long i486DXCommon::LinearAddressToPhysicalAddressWrite(unsigned int linearAddr,Memory &mem)
 {
 	TSUGARU_I486_FIDELITY_CLASS fidelity;
 
@@ -3455,7 +3443,7 @@ inline unsigned long i486DX::LinearAddressToPhysicalAddressWrite(unsigned int li
 
 #include "i486debug.h"
 
-inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numInstBytesForReturn,unsigned int numInstBytesForCallStack,bool SWI)
+inline void i486DXCommon::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numInstBytesForReturn,unsigned int numInstBytesForCallStack,bool SWI)
 {
 	TSUGARU_I486_FIDELITY_CLASS fidelity;
 
@@ -3693,7 +3681,7 @@ inline void i486DX::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numIn
 	}
 };
 
-inline unsigned int i486DX::FetchByte(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)
+inline unsigned int i486DXCommon::FetchByte(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)
 {
 	offset&=AddressMask((unsigned char)addressSize);
 	auto addr=seg.baseLinearAddr+offset;
@@ -3717,7 +3705,7 @@ inline unsigned int i486DX::FetchByte(unsigned int addressSize,const SegmentRegi
 	}
 	return mem.FetchByte(addr);
 }
-inline unsigned int i486DX::FetchWord(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)
+inline unsigned int i486DXCommon::FetchWord(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)
 {
 	offset&=AddressMask((unsigned char)addressSize);
 	auto addr=seg.baseLinearAddr+offset;
@@ -3749,7 +3737,7 @@ inline unsigned int i486DX::FetchWord(unsigned int addressSize,const SegmentRegi
 	}
 	return mem.FetchWord(addr);
 }
-inline unsigned int i486DX::FetchDword(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)
+inline unsigned int i486DXCommon::FetchDword(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)
 {
 	offset&=AddressMask((unsigned char)addressSize);
 	auto addr=seg.baseLinearAddr+offset;
@@ -3786,7 +3774,7 @@ inline unsigned int i486DX::FetchDword(unsigned int addressSize,const SegmentReg
 	return mem.FetchDword(addr);
 }
 
-inline void i486DX::StoreByte(Memory &mem,int addressSize,const SegmentRegister &seg,unsigned int offset,unsigned char byteData)
+inline void i486DXCommon::StoreByte(Memory &mem,int addressSize,const SegmentRegister &seg,unsigned int offset,unsigned char byteData)
 {
 	offset&=AddressMask((unsigned char)addressSize);
 	auto linearAddr=seg.baseLinearAddr+offset;
@@ -3813,7 +3801,7 @@ inline void i486DX::StoreByte(Memory &mem,int addressSize,const SegmentRegister 
 	return mem.StoreByte(physicalAddr,byteData);
 }
 
-inline void i486DX::StoreWord(Memory &mem,int addressSize,const SegmentRegister &seg,unsigned int offset,unsigned int data)
+inline void i486DXCommon::StoreWord(Memory &mem,int addressSize,const SegmentRegister &seg,unsigned int offset,unsigned int data)
 {
 	offset&=AddressMask((unsigned char)addressSize);
 	auto linearAddr=seg.baseLinearAddr+offset;
@@ -3849,7 +3837,7 @@ inline void i486DX::StoreWord(Memory &mem,int addressSize,const SegmentRegister 
 	}
 	mem.StoreWord(physicalAddr,data);
 }
-inline void i486DX::StoreDword(Memory &mem,int addressSize,const SegmentRegister &seg,unsigned int offset,unsigned int data)
+inline void i486DXCommon::StoreDword(Memory &mem,int addressSize,const SegmentRegister &seg,unsigned int offset,unsigned int data)
 {
 	offset&=AddressMask((unsigned char)addressSize);
 	auto linearAddr=seg.baseLinearAddr+offset;
@@ -3888,7 +3876,7 @@ inline void i486DX::StoreDword(Memory &mem,int addressSize,const SegmentRegister
 	mem.StoreDword(physicalAddr,data);
 }
 
-inline void i486DX::StoreWordOrDword(Memory &mem,unsigned int operandSize,int addressSize,const SegmentRegister &seg,unsigned int offset,unsigned int data)
+inline void i486DXCommon::StoreWordOrDword(Memory &mem,unsigned int operandSize,int addressSize,const SegmentRegister &seg,unsigned int offset,unsigned int data)
 {
 	switch(operandSize)
 	{
@@ -3905,7 +3893,7 @@ inline void i486DX::StoreWordOrDword(Memory &mem,unsigned int operandSize,int ad
 	}
 }
 
-inline void i486DX::IOOut8(InOut &io,unsigned int ioport,unsigned int data)
+inline void i486DXCommon::IOOut8(InOut &io,unsigned int ioport,unsigned int data)
 {
 	if(nullptr!=debuggerPtr)
 	{
@@ -3913,7 +3901,7 @@ inline void i486DX::IOOut8(InOut &io,unsigned int ioport,unsigned int data)
 	}
 	io.Out8(ioport,data);
 }
-inline void i486DX::IOOut16(InOut &io,unsigned int ioport,unsigned int data)
+inline void i486DXCommon::IOOut16(InOut &io,unsigned int ioport,unsigned int data)
 {
 	if(nullptr!=debuggerPtr)
 	{
@@ -3921,7 +3909,7 @@ inline void i486DX::IOOut16(InOut &io,unsigned int ioport,unsigned int data)
 	}
 	io.Out16(ioport,data);
 }
-inline void i486DX::IOOut32(InOut &io,unsigned int ioport,unsigned int data)
+inline void i486DXCommon::IOOut32(InOut &io,unsigned int ioport,unsigned int data)
 {
 	if(nullptr!=debuggerPtr)
 	{
@@ -3929,7 +3917,7 @@ inline void i486DX::IOOut32(InOut &io,unsigned int ioport,unsigned int data)
 	}
 	io.Out32(ioport,data);
 }
-inline unsigned int i486DX::IOIn8(InOut &io,unsigned int ioport)
+inline unsigned int i486DXCommon::IOIn8(InOut &io,unsigned int ioport)
 {
 	auto data=io.In8(ioport);
 	if(nullptr!=debuggerPtr)
@@ -3938,7 +3926,7 @@ inline unsigned int i486DX::IOIn8(InOut &io,unsigned int ioport)
 	}
 	return data;
 }
-inline unsigned int i486DX::IOIn16(InOut &io,unsigned int ioport)
+inline unsigned int i486DXCommon::IOIn16(InOut &io,unsigned int ioport)
 {
 	auto data=io.In16(ioport);
 	if(nullptr!=debuggerPtr)
@@ -3947,7 +3935,7 @@ inline unsigned int i486DX::IOIn16(InOut &io,unsigned int ioport)
 	}
 	return data;
 }
-inline unsigned int i486DX::IOIn32(InOut &io,unsigned int ioport)
+inline unsigned int i486DXCommon::IOIn32(InOut &io,unsigned int ioport)
 {
 	auto data=io.In32(ioport);
 	if(nullptr!=debuggerPtr)
@@ -3957,7 +3945,7 @@ inline unsigned int i486DX::IOIn32(InOut &io,unsigned int ioport)
 	return data;
 }
 
-inline unsigned int i486DX::GetRegisterValue(int reg) const
+inline unsigned int i486DXCommon::GetRegisterValue(int reg) const
 {
 	switch(reg)
 	{
@@ -4033,7 +4021,7 @@ inline unsigned int i486DX::GetRegisterValue(int reg) const
 	return 0;
 }
 
-inline unsigned int i486DX::GetRegisterValue8(int reg) const
+inline unsigned int i486DXCommon::GetRegisterValue8(int reg) const
 {
 #ifdef YS_LITTLE_ENDIAN
 	return *state.reg8Ptr[reg-REG_AL];
@@ -4044,7 +4032,7 @@ inline unsigned int i486DX::GetRegisterValue8(int reg) const
 #endif
 }
 
-inline void i486DX::SetRegisterValue(unsigned int reg,unsigned int value)
+inline void i486DXCommon::SetRegisterValue(unsigned int reg,unsigned int value)
 {
 	switch(reg)
 	{
@@ -4129,7 +4117,7 @@ inline void i486DX::SetRegisterValue(unsigned int reg,unsigned int value)
 	}
 }
 
-inline void i486DX::SetRegisterValue8(unsigned int reg,unsigned char value)
+inline void i486DXCommon::SetRegisterValue8(unsigned int reg,unsigned char value)
 {
 #ifdef YS_LITTLE_ENDIAN
 	*state.reg8Ptr[reg-REG_AL]=value;
@@ -4145,6 +4133,40 @@ inline void i486DX::SetRegisterValue8(unsigned int reg,unsigned char value)
 	state.reg32()[regIdx&3]|=(value<<(highLow<<3));
 #endif
 }
+
+
+// Fidelity Layer
+
+template <class FIDELITY>
+class i486DXFidelityLayer : public i486DXCommon
+{
+public:
+	i486DXFidelityLayer(VMBase *vmPtr) : i486DXCommon(vmPtr){}
+
+	/*! Run one instruction and returns number of clocks. */
+	unsigned int RunOneInstruction(Memory &mem,InOut &io);
+
+private:
+	/*! CALL FAR */
+	inline unsigned int CALLF(Memory &mem,uint16_t opSize,uint16_t instNumBytes,uint16_t newCS,uint32_t newEIP,uint16_t defClocks);
+
+	/*! JMP FAR */
+	inline unsigned int JMPF(Memory &mem,uint16_t opSize,uint16_t instNumBytes,uint16_t newCS,uint32_t newEIP,uint16_t defClocks);
+
+public:
+};
+
+
+// Assembled
+
+class i486DX : public i486DXFidelityLayer <TSUGARU_I486_FIDELITY_CLASS>
+{
+public:
+	i486DX(VMBase *vmPtr) : i486DXFidelityLayer<TSUGARU_I486_FIDELITY_CLASS>(vmPtr){}
+};
+
+#include "i486templatefunctions.h"
+#include "i486runinstruction.h"
 
 /* } */
 #endif

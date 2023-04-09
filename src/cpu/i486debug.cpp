@@ -52,32 +52,32 @@ public:
 		enableSpecialBreak3=true;
 	}
 
-	void BeforeRunOneInstruction(i486Debugger &debugger,i486DX &cpu,Memory &mem,InOut &io,const i486DX::Instruction &inst);
-	void AfterRunOneInstruction(i486Debugger &debugger,unsigned int clocksPassed,i486DX &cpu,Memory &mem,InOut &io,const i486DX::Instruction &inst);
-	void Interrupt(i486Debugger &debugger,const i486DX &cpu,unsigned int INTNum,Memory &mem,unsigned int numInstBytes);
+	void BeforeRunOneInstruction(i486Debugger &debugger,i486DXCommon &cpu,Memory &mem,InOut &io,const i486DXCommon::Instruction &inst);
+	void AfterRunOneInstruction(i486Debugger &debugger,unsigned int clocksPassed,i486DXCommon &cpu,Memory &mem,InOut &io,const i486DXCommon::Instruction &inst);
+	void Interrupt(i486Debugger &debugger,const i486DXCommon &cpu,unsigned int INTNum,Memory &mem,unsigned int numInstBytes);
 
-	void IOWrite(i486Debugger &debugger,const i486DX &cpu,unsigned int ioport,unsigned int data,unsigned int lengthInBytes);
-	void IORead(i486Debugger &debugger,const i486DX &cpu,unsigned int ioport,unsigned int data,unsigned int lengthInBytes);
+	void IOWrite(i486Debugger &debugger,const i486DXCommon &cpu,unsigned int ioport,unsigned int data,unsigned int lengthInBytes);
+	void IORead(i486Debugger &debugger,const i486DXCommon &cpu,unsigned int ioport,unsigned int data,unsigned int lengthInBytes);
 	std::vector <std::string> GetText(void) const;
 };
 
-void i486Debugger::SpecialDebugInfo::BeforeRunOneInstruction(i486Debugger &debugger,i486DX &cpu,Memory &mem,InOut &io,const i486DX::Instruction &inst)
+void i486Debugger::SpecialDebugInfo::BeforeRunOneInstruction(i486Debugger &debugger,i486DXCommon &cpu,Memory &mem,InOut &io,const i486DXCommon::Instruction &inst)
 {
 }
-void i486Debugger::SpecialDebugInfo::AfterRunOneInstruction(i486Debugger &debugger,unsigned int clocksPassed,i486DX &cpu,Memory &mem,InOut &io,const i486DX::Instruction &inst)
+void i486Debugger::SpecialDebugInfo::AfterRunOneInstruction(i486Debugger &debugger,unsigned int clocksPassed,i486DXCommon &cpu,Memory &mem,InOut &io,const i486DXCommon::Instruction &inst)
 {
 }
-void i486Debugger::SpecialDebugInfo::Interrupt(i486Debugger &debugger,const i486DX &cpu,unsigned int INTNum,Memory &mem,unsigned int numInstBytes)
+void i486Debugger::SpecialDebugInfo::Interrupt(i486Debugger &debugger,const i486DXCommon &cpu,unsigned int INTNum,Memory &mem,unsigned int numInstBytes)
 {
 }
-void i486Debugger::SpecialDebugInfo::IOWrite(i486Debugger &debugger,const i486DX &cpu,unsigned int ioport,unsigned int data,unsigned int lengthInBytes)
+void i486Debugger::SpecialDebugInfo::IOWrite(i486Debugger &debugger,const i486DXCommon &cpu,unsigned int ioport,unsigned int data,unsigned int lengthInBytes)
 {
 	/* if(0x3150==ioport || 0x3A5C==ioport || 0x3188==ioport)
 	{
 		debugger.ExternalBreak("Special Break IO Write "+cpputil::Uitox(ioport));
 	} */
 }
-void i486Debugger::SpecialDebugInfo::IORead(i486Debugger &debugger,const i486DX &cpu,unsigned int ioport,unsigned int data,unsigned int lengthInBytes)
+void i486Debugger::SpecialDebugInfo::IORead(i486Debugger &debugger,const i486DXCommon &cpu,unsigned int ioport,unsigned int data,unsigned int lengthInBytes)
 {
 	/* if(0x5e8==ioport || 0x3A5C==ioport)
 	{
@@ -93,8 +93,8 @@ i486Debugger::i486Debugger()
 {
 	specialDebugInfo=new SpecialDebugInfo;
 	symTablePtr=new i486SymbolTable;
-	breakOnIORead.resize(i486DX::I486_NUM_IOPORT);
-	breakOnIOWrite.resize(i486DX::I486_NUM_IOPORT);
+	breakOnIORead.resize(i486DXCommon::I486_NUM_IOPORT);
+	breakOnIOWrite.resize(i486DXCommon::I486_NUM_IOPORT);
 	for(auto iter=breakOnIORead.begin(); breakOnIORead.end()!=iter; ++iter)
 	{
 		*iter=false;
@@ -163,7 +163,7 @@ void i486Debugger::CleanUp(void)
 }
 void i486Debugger::AddBreakPoint(CS_EIP bp,BreakPointInfo info)
 {
-	if((bp.SEG&i486DX::FarPointer::SPECIAL_SEG_MASK)==i486DX::FarPointer::SEG_WILDCARD)
+	if((bp.SEG&i486DXCommon::FarPointer::SPECIAL_SEG_MASK)==i486DXCommon::FarPointer::SEG_WILDCARD)
 	{
 		breakOnCS[bp.SEG&0xFFFF]=true;
 	}
@@ -174,7 +174,7 @@ void i486Debugger::AddBreakPoint(CS_EIP bp,BreakPointInfo info)
 }
 void i486Debugger::RemoveBreakPoint(CS_EIP bp)
 {
-	if((bp.SEG&i486DX::FarPointer::SPECIAL_SEG_MASK)==i486DX::FarPointer::SEG_WILDCARD)
+	if((bp.SEG&i486DXCommon::FarPointer::SPECIAL_SEG_MASK)==i486DXCommon::FarPointer::SEG_WILDCARD)
 	{
 		breakOnCS[bp.SEG&0xFFFF]=false;
 	}
@@ -239,30 +239,30 @@ std::vector <uint16_t> i486Debugger::GetCSBreakPoints(void) const
 
 void i486Debugger::AddBreakOnIORead(unsigned int ioport)
 {
-	breakOnIORead[ioport%(i486DX::I486_NUM_IOPORT)]=true;
+	breakOnIORead[ioport%(i486DXCommon::I486_NUM_IOPORT)]=true;
 }
 void i486Debugger::RemoveBreakOnIORead(unsigned int ioport)
 {
-	breakOnIORead[ioport%(i486DX::I486_NUM_IOPORT)]=false;
+	breakOnIORead[ioport%(i486DXCommon::I486_NUM_IOPORT)]=false;
 }
 void i486Debugger::RemoveBreakOnIORead(void)
 {
-	for(unsigned int i=0; i<i486DX::I486_NUM_IOPORT; ++i)
+	for(unsigned int i=0; i<i486DXCommon::I486_NUM_IOPORT; ++i)
 	{
 		breakOnIORead[i]=false;
 	}
 }
 void i486Debugger::AddBreakOnIOWrite(unsigned int ioport)
 {
-	breakOnIOWrite[ioport%(i486DX::I486_NUM_IOPORT)]=true;
+	breakOnIOWrite[ioport%(i486DXCommon::I486_NUM_IOPORT)]=true;
 }
 void i486Debugger::RemoveBreakOnIOWrite(unsigned int ioport)
 {
-	breakOnIOWrite[ioport%(i486DX::I486_NUM_IOPORT)]=false;
+	breakOnIOWrite[ioport%(i486DXCommon::I486_NUM_IOPORT)]=false;
 }
 void i486Debugger::RemoveBreakOnIOWrite(void)
 {
-	for(unsigned int i=0; i<i486DX::I486_NUM_IOPORT; ++i)
+	for(unsigned int i=0; i<i486DXCommon::I486_NUM_IOPORT; ++i)
 	{
 		breakOnIOWrite[i]=false;
 	}
@@ -270,7 +270,7 @@ void i486Debugger::RemoveBreakOnIOWrite(void)
 const std::vector <unsigned int> i486Debugger::GetBreakOnIORead(void) const
 {
 	std::vector <unsigned int> ioport;
-	for(unsigned int i=0; i<i486DX::I486_NUM_IOPORT; ++i)
+	for(unsigned int i=0; i<i486DXCommon::I486_NUM_IOPORT; ++i)
 	{
 		if(true==breakOnIORead[i])
 		{
@@ -282,7 +282,7 @@ const std::vector <unsigned int> i486Debugger::GetBreakOnIORead(void) const
 const std::vector <unsigned int> i486Debugger::GetBreakOnIOWrite(void) const
 {
 	std::vector <unsigned int> ioport;
-	for(unsigned int i=0; i<i486DX::I486_NUM_IOPORT; ++i)
+	for(unsigned int i=0; i<i486DXCommon::I486_NUM_IOPORT; ++i)
 	{
 		if(true==breakOnIOWrite[i])
 		{
@@ -298,7 +298,7 @@ void i486Debugger::SetOneTimeBreakPoint(unsigned int CS,unsigned int EIP)
 	oneTimeBreakPoint.OFFSET=EIP;
 }
 
-void i486Debugger::BeforeRunOneInstruction(i486DX &cpu,Memory &mem,InOut &io,const i486DX::Instruction &inst)
+void i486Debugger::BeforeRunOneInstruction(i486DXCommon &cpu,Memory &mem,InOut &io,const i486DXCommon::Instruction &inst)
 {
 	specialDebugInfo->BeforeRunOneInstruction(*this,cpu,mem,io,inst);
 	prevCPUState.SaveCPUState(cpu,inst.instPrefix);
@@ -414,7 +414,7 @@ void i486Debugger::BeforeRunOneInstruction(i486DX &cpu,Memory &mem,InOut &io,con
 
 	if(true==disassembleEveryStep && lastDisassembleAddr!=cseip)
 	{
-		i486DX::InstructionAndOperand instOp;
+		i486DXCommon::InstructionAndOperand instOp;
 		MemoryAccess::ConstMemoryWindow emptyMemWindow;
 		cpu.DebugFetchInstruction(emptyMemWindow,instOp,mem);
 		auto disasm=cpu.Disassemble(instOp.inst,instOp.op1,instOp.op2,cpu.state.CS(),cpu.state.EIP,mem,GetSymTable(),GetIOTable());
@@ -447,7 +447,7 @@ void i486Debugger::BeforeRunOneInstruction(i486DX &cpu,Memory &mem,InOut &io,con
 	inInstruction=true;
 }
 
-void i486Debugger::AfterRunOneInstruction(unsigned int clocksPassed,i486DX &cpu,Memory &mem,InOut &io,const i486DX::Instruction &inst,const i486DX::Operand &op1,const i486DX::Operand &op2)
+void i486Debugger::AfterRunOneInstruction(unsigned int clocksPassed,i486DXCommon &cpu,Memory &mem,InOut &io,const i486DXCommon::Instruction &inst,const i486DXCommon::Operand &op1,const i486DXCommon::Operand &op2)
 {
 	inInstruction=false;
 
@@ -484,7 +484,7 @@ void i486Debugger::AfterRunOneInstruction(unsigned int clocksPassed,i486DX &cpu,
 	else
 	{
 		auto &prevCSEIPLog=CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK)&CSEIP_LOG_MASK];
-		i486DX::SegmentRegister CS;
+		i486DXCommon::SegmentRegister CS;
 		cpu.DebugLoadSegmentRegister(CS,prevCSEIPLog.SEG,mem,prevRealMode);
 		if(prevVM86Mode==cpu.GetVM() &&
 		   prevProtectedMode==(true!=cpu.GetVM() && true!=cpu.IsInRealMode()) &&
@@ -520,7 +520,7 @@ std::vector <i486Debugger::CSEIPLogType> i486Debugger::GetCSEIPLog(unsigned int 
 	return list;
 }
 
-void i486Debugger::CheckForBreakPoints(i486DX &cpu)
+void i486Debugger::CheckForBreakPoints(i486DXCommon &cpu)
 {
 	CS_EIP cseip;
 	cseip.SEG=cpu.state.CS().value;
@@ -544,7 +544,7 @@ void i486Debugger::CheckForBreakPoints(i486DX &cpu)
 	}
 }
 
-void i486Debugger::HandleException(i486DX &cpu,Memory &mem,unsigned int instNumBytes)
+void i486Debugger::HandleException(i486DXCommon &cpu,Memory &mem,unsigned int instNumBytes)
 {
 	auto &prevCSEIPLog=CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK)&CSEIP_LOG_MASK];
 	if(true==inInstruction && true==prevCPUState.CPUStateChanged(cpu))
@@ -592,7 +592,7 @@ void i486Debugger::ClearBreakOnINT(unsigned int INTNum)
 	breakOnINT[INTNum&(BreakOnINTCondition::NUM_INTERRUPTS-1)].cond=BreakOnINTCondition::COND_NEVER;
 }
 
-std::vector <std::string> i486Debugger::GetCallStackText(const i486DX &cpu) const
+std::vector <std::string> i486Debugger::GetCallStackText(const i486DXCommon &cpu) const
 {
 	auto &symTable=GetSymTable();
 	std::vector <std::string> text;
@@ -742,7 +742,7 @@ void i486Debugger::ClearStopFlag(void)
 	lastBreakPointInfo.Clear();
 }
 
-void i486Debugger::Interrupt(const i486DX &cpu,unsigned int INTNum,Memory &mem,unsigned int numInstBytes)
+void i486Debugger::Interrupt(const i486DXCommon &cpu,unsigned int INTNum,Memory &mem,unsigned int numInstBytes)
 {
 	specialDebugInfo->Interrupt(*this,cpu,INTNum,mem,numInstBytes);
 	if(breakOnINT[INTNum&0xFF].cond!=BreakOnINTCondition::COND_NEVER)
@@ -821,7 +821,7 @@ void i486Debugger::Interrupt(const i486DX &cpu,unsigned int INTNum,Memory &mem,u
 	}
 }
 
-std::string i486Debugger::INTExplanation(const i486DX &cpu,unsigned int INTNum,Memory &mem) const
+std::string i486Debugger::INTExplanation(const i486DXCommon &cpu,unsigned int INTNum,Memory &mem) const
 {
 	auto &symTable=GetSymTable();
 	auto INTLabel=symTable.GetINTLabel(INTNum);
@@ -860,11 +860,11 @@ std::string i486Debugger::INTExplanation(const i486DX &cpu,unsigned int INTNum,M
 	return INTLabel;
 }
 
-void i486Debugger::IOWrite(const i486DX &cpu,unsigned int ioport,unsigned int data,unsigned int lengthInBytes)
+void i486Debugger::IOWrite(const i486DXCommon &cpu,unsigned int ioport,unsigned int data,unsigned int lengthInBytes)
 {
 	specialDebugInfo->IOWrite(*this,cpu,ioport,data,lengthInBytes);
 
-	if(true==breakOnIOWrite[ioport&(i486DX::I486_NUM_IOPORT-1)])
+	if(true==breakOnIOWrite[ioport&(i486DXCommon::I486_NUM_IOPORT-1)])
 	{
 		std::string msg;
 		if(4==lengthInBytes)
@@ -918,11 +918,11 @@ void i486Debugger::IOWrite(const i486DX &cpu,unsigned int ioport,unsigned int da
 		}
 	}
 }
-void i486Debugger::IORead(const i486DX &cpu,unsigned int ioport,unsigned int data,unsigned int lengthInBytes)
+void i486Debugger::IORead(const i486DXCommon &cpu,unsigned int ioport,unsigned int data,unsigned int lengthInBytes)
 {
 	specialDebugInfo->IORead(*this,cpu,ioport,data,lengthInBytes);
 
-	if(true==breakOnIORead[ioport&(i486DX::I486_NUM_IOPORT-1)])
+	if(true==breakOnIORead[ioport&(i486DXCommon::I486_NUM_IOPORT-1)])
 	{
 		std::string msg="IORead Port:"+cpputil::Uitox(ioport)+" Value:"+cpputil::Ubtox(data);
 		ExternalBreak(msg);
@@ -988,7 +988,7 @@ bool i486Debugger::AtLeastOneMonitorIOPortIsSet(void) const
 	return false;
 }
 
-std::vector <unsigned int> i486Debugger::FindCaller(unsigned int procAddr,const i486DX::SegmentRegister &seg,const i486DX &cpu,const Memory &mem)
+std::vector <unsigned int> i486Debugger::FindCaller(unsigned int procAddr,const i486DXCommon::SegmentRegister &seg,const i486DXCommon &cpu,const Memory &mem)
 {
 	std::vector <unsigned int> caller;
 
@@ -1010,7 +1010,7 @@ std::vector <unsigned int> i486Debugger::FindCaller(unsigned int procAddr,const 
 		{
 			std::cout << "Searching..." << cpputil::Uitox(EIP) << std::endl;
 		}
-		i486DX::InstructionAndOperand instOp;
+		i486DXCommon::InstructionAndOperand instOp;
 		cpu.DebugFetchInstruction(memWindow,instOp,seg,EIP,mem);
 		auto &inst=instOp.inst;
 		auto &op1=instOp.op1;

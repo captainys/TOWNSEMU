@@ -91,7 +91,7 @@ bool i486SymbolTable::Load(std::istream &ifp)
 {
 	const int STATE_OUTSIDE=0,STATE_INSIDE=1;
 	int state=STATE_OUTSIDE;
-	i486DX::FarPointer curPtr;
+	i486DXCommon::FarPointer curPtr;
 	i486Symbol curSymbol;
 
 	// /begin0
@@ -243,12 +243,12 @@ bool i486SymbolTable::AutoSave(void) const
 
 const i486Symbol *i486SymbolTable::Find(unsigned int SEG,unsigned int OFFSET) const
 {
-	i486DX::FarPointer ptr;
+	i486DXCommon::FarPointer ptr;
 	ptr.SEG=SEG;
 	ptr.OFFSET=OFFSET;
 	return Find(ptr);
 }
-const i486Symbol *i486SymbolTable::Find(i486DX::FarPointer ptr) const
+const i486Symbol *i486SymbolTable::Find(i486DXCommon::FarPointer ptr) const
 {
 	auto iter=symTable.find(ptr);
 	if(symTable.end()!=iter)
@@ -268,7 +268,7 @@ const i486Symbol *i486SymbolTable::FindFromOffset(uint32_t OFFSET) const
 	}
 	return nullptr;
 }
-std::pair <i486DX::FarPointer,i486Symbol> i486SymbolTable::FindSymbolFromLabel(const std::string &label) const
+std::pair <i486DXCommon::FarPointer,i486Symbol> i486SymbolTable::FindSymbolFromLabel(const std::string &label) const
 {
 	for(auto &addrAndSym : symTable)
 	{
@@ -277,34 +277,34 @@ std::pair <i486DX::FarPointer,i486Symbol> i486SymbolTable::FindSymbolFromLabel(c
 			return addrAndSym;
 		}
 	}
-	std::pair <i486DX::FarPointer,i486Symbol> empty;
+	std::pair <i486DXCommon::FarPointer,i486Symbol> empty;
 	return empty;
 }
-i486Symbol *i486SymbolTable::Update(i486DX::FarPointer ptr,const std::string &label)
+i486Symbol *i486SymbolTable::Update(i486DXCommon::FarPointer ptr,const std::string &label)
 {
 	auto &symbol=symTable[ptr];
 	symbol.label=label;
 	return &symbol;
 }
-i486Symbol *i486SymbolTable::SetComment(i486DX::FarPointer ptr,const std::string &inLineComment)
+i486Symbol *i486SymbolTable::SetComment(i486DXCommon::FarPointer ptr,const std::string &inLineComment)
 {
 	auto &symbol=symTable[ptr];
 	symbol.inLineComment=inLineComment;
 	return &symbol;
 }
-i486Symbol *i486SymbolTable::SetImmIsIOPort(i486DX::FarPointer ptr)
+i486Symbol *i486SymbolTable::SetImmIsIOPort(i486DXCommon::FarPointer ptr)
 {
 	auto &symbol=symTable[ptr];
 	symbol.immIsIOAddr=true;
 	return &symbol;
 }
-i486Symbol *i486SymbolTable::SetImmIsASCII(i486DX::FarPointer ptr)
+i486Symbol *i486SymbolTable::SetImmIsASCII(i486DXCommon::FarPointer ptr)
 {
 	auto &symbol=symTable[ptr];
 	symbol.immIsASCII=true;
 	return &symbol;
 }
-i486Symbol *i486SymbolTable::SetImportedLabel(i486DX::FarPointer ptr,const std::string &label)
+i486Symbol *i486SymbolTable::SetImportedLabel(i486DXCommon::FarPointer ptr,const std::string &label)
 {
 	bool makeItProcedure=false; // It can be a data, it can be a procedure, but temporarily make it a procedure, if not in the database yet.
 	auto found=symTable.find(ptr);
@@ -320,19 +320,19 @@ i486Symbol *i486SymbolTable::SetImportedLabel(i486DX::FarPointer ptr,const std::
 	}
 	return &symbol;
 }
-i486Symbol *i486SymbolTable::SetImmIsSymbol(i486DX::FarPointer ptr)
+i486Symbol *i486SymbolTable::SetImmIsSymbol(i486DXCommon::FarPointer ptr)
 {
 	auto &symbol=symTable[ptr];
 	symbol.immIsSymbol=true;
 	return &symbol;
 }
-i486Symbol *i486SymbolTable::SetOffsetIsSymbol(i486DX::FarPointer ptr)
+i486Symbol *i486SymbolTable::SetOffsetIsSymbol(i486DXCommon::FarPointer ptr)
 {
 	auto &symbol=symTable[ptr];
 	symbol.offsetIsSymbol=true;
 	return &symbol;
 }
-bool i486SymbolTable::Delete(i486DX::FarPointer ptr)
+bool i486SymbolTable::Delete(i486DXCommon::FarPointer ptr)
 {
 	auto iter=symTable.find(ptr);
 	if(symTable.end()!=iter)
@@ -342,7 +342,7 @@ bool i486SymbolTable::Delete(i486DX::FarPointer ptr)
 	}
 	return false;
 }
-bool i486SymbolTable::DeleteComment(i486DX::FarPointer ptr)
+bool i486SymbolTable::DeleteComment(i486DXCommon::FarPointer ptr)
 {
 	auto iter=symTable.find(ptr);
 	if(symTable.end()!=iter)
@@ -352,12 +352,12 @@ bool i486SymbolTable::DeleteComment(i486DX::FarPointer ptr)
 	}
 	return false;
 }
-const std::map <i486DX::FarPointer,i486Symbol> &i486SymbolTable::GetTable(void) const
+const std::map <i486DXCommon::FarPointer,i486Symbol> &i486SymbolTable::GetTable(void) const
 {
 	return symTable;
 }
 
-unsigned int i486SymbolTable::GetRawDataBytes(i486DX::FarPointer ptr) const
+unsigned int i486SymbolTable::GetRawDataBytes(i486DXCommon::FarPointer ptr) const
 {
 	auto *sym=Find(ptr);
 	if(nullptr!=sym &&
@@ -374,7 +374,7 @@ unsigned int i486SymbolTable::GetRawDataBytes(i486DX::FarPointer ptr) const
 
 void i486SymbolTable::PrintIfAny(unsigned int SEG,unsigned int OFFSET,bool returnType,bool label,bool param) const
 {
-	i486DX::FarPointer ptr;
+	i486DXCommon::FarPointer ptr;
 	ptr.SEG=SEG;
 	ptr.OFFSET=OFFSET;
 	auto *sym=Find(ptr);

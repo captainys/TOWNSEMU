@@ -5,7 +5,7 @@
 // Must be included from i486???.cpp only.
 
 template <class CPUCLASS>
-class i486DX::LoadSegmentRegisterTemplate
+class i486DXCommon::LoadSegmentRegisterTemplate
 {
 public:
 	unsigned char rawDescBuf[8];
@@ -14,16 +14,16 @@ public:
 	TSUGARU_I486_FIDELITY_CLASS fidelity;
 	TSUGARU_I486_FIDELITY_CLASS::LoadSegmentRegisterFlags fidelityFlags;
 
-	// For mutable i486DX >>
-	static inline unsigned int FetchByteByLinearAddress(i486DX &cpu,Memory &mem,unsigned int linearAddr)
+	// For mutable i486DXCommon >>
+	static inline unsigned int FetchByteByLinearAddress(i486DXCommon &cpu,Memory &mem,unsigned int linearAddr)
 	{
 		return cpu.FetchByteByLinearAddress(mem,linearAddr);
 	}
-	static inline MemoryAccess::ConstMemoryWindow GetConstMemoryWindowFromLinearAddress(i486DX &cpu,unsigned int linearAddr,Memory &mem)
+	static inline MemoryAccess::ConstMemoryWindow GetConstMemoryWindowFromLinearAddress(i486DXCommon &cpu,unsigned int linearAddr,Memory &mem)
 	{
 		return cpu.GetConstMemoryWindowFromLinearAddress(linearAddr,mem);
 	}
-	static inline const unsigned char *LoadFromDescriptorCache(i486DX &cpu,uint16_t selectorValue)
+	static inline const unsigned char *LoadFromDescriptorCache(i486DXCommon &cpu,uint16_t selectorValue)
 	{
 		auto index=(selectorValue>>DESCRIPTOR_TO_INDEX_SHIFT);
 		if(cpu.state.descriptorCacheValidCounter<=cpu.state.descriptorCacheValid[index])
@@ -32,35 +32,35 @@ public:
 		}
 		return nullptr;
 	}
-	static inline void StoreToDescriptorCache(i486DX &cpu,uint16_t selectorValue,const unsigned char *descPtr)
+	static inline void StoreToDescriptorCache(i486DXCommon &cpu,uint16_t selectorValue,const unsigned char *descPtr)
 	{
 		auto index=(selectorValue>>DESCRIPTOR_TO_INDEX_SHIFT);
 		cpu.state.descriptorCache[index]=descPtr;
 		cpu.state.descriptorCacheValid[index]=cpu.state.descriptorCacheValidCounter;
 	}
-	static inline void SetAccessedFlag(uint8_t rawDesc[],i486DX &cpu)
+	static inline void SetAccessedFlag(uint8_t rawDesc[],i486DXCommon &cpu)
 	{
 		rawDesc[5]|=1;
 	}
-	// For mutable i486DX <<
+	// For mutable i486DXCommon <<
 
-	// For constant i486DX >>
-	static inline unsigned int FetchByteByLinearAddress(const i486DX &cpu,const Memory &mem,unsigned int linearAddr)
+	// For constant i486DXCommon >>
+	static inline unsigned int FetchByteByLinearAddress(const i486DXCommon &cpu,const Memory &mem,unsigned int linearAddr)
 	{
 		return cpu.DebugFetchByteByLinearAddress(mem,linearAddr);
 	}
-	static inline MemoryAccess::ConstMemoryWindow GetConstMemoryWindowFromLinearAddress(const i486DX &cpu,unsigned int linearAddr,const Memory &mem)
+	static inline MemoryAccess::ConstMemoryWindow GetConstMemoryWindowFromLinearAddress(const i486DXCommon &cpu,unsigned int linearAddr,const Memory &mem)
 	{
 		return cpu.DebugGetConstMemoryWindowFromLinearAddress(linearAddr,mem);
 	}
-	static inline const unsigned char *LoadFromDescriptorCache(const i486DX &,uint16_t)
+	static inline const unsigned char *LoadFromDescriptorCache(const i486DXCommon &,uint16_t)
 	{
 		return nullptr;
 	}
-	static inline void StoreToDescriptorCache(const i486DX &,uint16_t selectorValue,const unsigned char *)
+	static inline void StoreToDescriptorCache(const i486DXCommon &,uint16_t selectorValue,const unsigned char *)
 	{
 	}
-	// For constant i486DX <<
+	// For constant i486DXCommon <<
 
 
 
@@ -117,7 +117,7 @@ public:
 
 	inline unsigned int LoadSegmentRegister(CPUCLASS &cpu,SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode)
 	{
-		if(true==isInRealMode || 0!=(i486DX::EFLAGS_VIRTUAL86&cpu.state.EFLAGS))
+		if(true==isInRealMode || 0!=(i486DXCommon::EFLAGS_VIRTUAL86&cpu.state.EFLAGS))
 		{
 			reg.value=value;
 			reg.baseLinearAddr=(value<<4);
@@ -125,7 +125,7 @@ public:
 			reg.operandSize=16;
 			// reg.limit=0xffff;   Surprisingly, reg.limit isn't affected!?  According to https://wiki.osdev.org/Unreal_Mode
 			reg.limit=std::max<unsigned int>(reg.limit,0xffff);
-			reg.DPL=(0!=(i486DX::EFLAGS_VIRTUAL86&cpu.state.EFLAGS) ? 3 : 0);
+			reg.DPL=(0!=(i486DXCommon::EFLAGS_VIRTUAL86&cpu.state.EFLAGS) ? 3 : 0);
 			fidelity.ClearSegmentRegisterAttribBytes(reg.attribBytes);
 			return 0xFFFFFFFF;
 		}
@@ -190,13 +190,13 @@ public:
 		}
 	}
 
-	inline i486DX::FarPointer GetCallGate(CPUCLASS &cpu,unsigned int value,const Memory &mem)
+	inline i486DXCommon::FarPointer GetCallGate(CPUCLASS &cpu,unsigned int value,const Memory &mem)
 	{
 		LoadProtectedModeDescriptor(cpu,value,mem);
 
 		// i486 Programmer's Reference Manual pp.6-11 Figure 6-5 Call Gate
 		// What is "COUNT" used for?
-		i486DX::FarPointer ptr;
+		i486DXCommon::FarPointer ptr;
 		ptr.SEG=(rawDesc[2]|(rawDesc[3]<<8));
 		ptr.OFFSET=(rawDesc[0]|(rawDesc[1]<<8)|(rawDesc[6]<<16)|(rawDesc[7]<<24));
 		return ptr;

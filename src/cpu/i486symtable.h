@@ -88,7 +88,7 @@ public:
 class i486SymbolTable
 {
 private:
-	std::map <i486DX::FarPointer,i486Symbol> symTable;
+	std::map <i486DXCommon::FarPointer,i486Symbol> symTable;
 	std::map <unsigned int,i486INT> INTLabel;
 	std::map <unsigned int,i486INTFunc> INTFunc[256];
 public:
@@ -119,27 +119,27 @@ public:
 	bool AutoSave(void) const;
 
 	const i486Symbol *Find(unsigned int SEG,unsigned int OFFSET) const;
-	const i486Symbol *Find(i486DX::FarPointer ptr) const;
+	const i486Symbol *Find(i486DXCommon::FarPointer ptr) const;
 	const i486Symbol *FindFromOffset(uint32_t OFFSET) const;
-	i486Symbol *Update(i486DX::FarPointer ptr,const std::string &label);
-	i486Symbol *SetComment(i486DX::FarPointer ptr,const std::string &inLineComment);
-	i486Symbol *SetImportedLabel(i486DX::FarPointer ptr,const std::string &label);
-	i486Symbol *SetImmIsSymbol(i486DX::FarPointer ptr);
-	i486Symbol *SetImmIsASCII(i486DX::FarPointer ptr);
-	i486Symbol *SetOffsetIsSymbol(i486DX::FarPointer ptr);
+	i486Symbol *Update(i486DXCommon::FarPointer ptr,const std::string &label);
+	i486Symbol *SetComment(i486DXCommon::FarPointer ptr,const std::string &inLineComment);
+	i486Symbol *SetImportedLabel(i486DXCommon::FarPointer ptr,const std::string &label);
+	i486Symbol *SetImmIsSymbol(i486DXCommon::FarPointer ptr);
+	i486Symbol *SetImmIsASCII(i486DXCommon::FarPointer ptr);
+	i486Symbol *SetOffsetIsSymbol(i486DXCommon::FarPointer ptr);
 
 
 	/*! Disassembler should take IMM operand at the given address as an IO-port address.
 	*/
-	i486Symbol *SetImmIsIOPort(i486DX::FarPointer ptr);
+	i486Symbol *SetImmIsIOPort(i486DXCommon::FarPointer ptr);
 
-	bool Delete(i486DX::FarPointer ptr);
-	bool DeleteComment(i486DX::FarPointer ptr);
-	const std::map <i486DX::FarPointer,i486Symbol> &GetTable(void) const;
+	bool Delete(i486DXCommon::FarPointer ptr);
+	bool DeleteComment(i486DXCommon::FarPointer ptr);
+	const std::map <i486DXCommon::FarPointer,i486Symbol> &GetTable(void) const;
 
 	/*! Returns the number of bytes if the address is marked as byte data, otherwize returns zero.
 	*/
-	unsigned int GetRawDataBytes(i486DX::FarPointer ptr) const;
+	unsigned int GetRawDataBytes(i486DXCommon::FarPointer ptr) const;
 
 	/*! Print if a symbol is defined for the SEG:OFFSET
 	*/
@@ -147,7 +147,7 @@ public:
 
 	/*! This function does exhaustive search.
 	*/
-	std::pair <i486DX::FarPointer,i486Symbol> FindSymbolFromLabel(const std::string &label) const;
+	std::pair <i486DXCommon::FarPointer,i486Symbol> FindSymbolFromLabel(const std::string &label) const;
 
 	std::vector <std::string> GetList(bool returnType=false,bool label=true,bool param=true) const;
 

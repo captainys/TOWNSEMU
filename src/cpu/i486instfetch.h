@@ -1,4 +1,4 @@
-class i486DX::BurstModeFetchInstructionFunctions
+class i486DXCommon::BurstModeFetchInstructionFunctions
 {
 public:
 	/* This class does not check remaining bytes in the MemoryAccess::ConstPointer.
@@ -13,13 +13,13 @@ public:
 	   It should cause CPU exception.  However, I don't want to waste host CPU time for checking this.
 
 	*/
-	typedef i486DX CPUCLASS;
+	typedef i486DXCommon CPUCLASS;
 
 	inline static void GetConstMemoryWindow(
 		CPUCLASS &cpu,
 		MemoryAccess::ConstMemoryWindow &memWin,
 		unsigned int codeAddressSize,
-		const i486DX::SegmentRegister &CS,
+		const i486DXCommon::SegmentRegister &CS,
 		unsigned int offset,
 		Memory &mem)
 	{
@@ -134,16 +134,16 @@ public:
 	}
 };
 
-class i486DX::DebugFetchInstructionFunctions
+class i486DXCommon::DebugFetchInstructionFunctions
 {
 public:
-	typedef const i486DX CPUCLASS;
+	typedef const i486DXCommon CPUCLASS;
 
 	inline static void GetConstMemoryWindow(
 		CPUCLASS &cpu,
 		MemoryAccess::ConstMemoryWindow &memWin,
 		unsigned int codeAddressSize,
-		const i486DX::SegmentRegister &CS,
+		const i486DXCommon::SegmentRegister &CS,
 		unsigned int offset,
 		const Memory &mem)
 	{
@@ -226,16 +226,16 @@ public:
 	}
 };
 
-class i486DX::RealFetchInstructionFunctions
+class i486DXCommon::RealFetchInstructionFunctions
 {
 public:
-	typedef i486DX CPUCLASS;
+	typedef i486DXCommon CPUCLASS;
 
 	inline static void GetConstMemoryWindow(
 		CPUCLASS &cpu,
 		MemoryAccess::ConstMemoryWindow &memWin,
 		unsigned int codeAddressSize,
-		const i486DX::SegmentRegister &CS,
+		const i486DXCommon::SegmentRegister &CS,
 		unsigned int offset,
 		Memory &mem)
 	{
@@ -319,7 +319,7 @@ public:
 };
 
 template <class CPUCLASS,class MEMCLASS,class FUNCCLASS,class BURSTMODEFUNCCLASS>
-class i486DX::FetchInstructionClass
+class i486DXCommon::FetchInstructionClass
 {
 public:
 	static inline void FetchInstruction(

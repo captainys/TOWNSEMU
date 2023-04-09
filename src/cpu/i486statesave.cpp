@@ -1,7 +1,7 @@
 #include "i486.h"
 
 
-void i486DX::SegmentProperty::Serialize(std::vector <unsigned char> &data) const
+void i486DXCommon::SegmentProperty::Serialize(std::vector <unsigned char> &data) const
 {
 	PushUint32(data,baseLinearAddr);
 	PushUint32(data,operandSize);
@@ -11,7 +11,7 @@ void i486DX::SegmentProperty::Serialize(std::vector <unsigned char> &data) const
 	PushUint32(data,attribBytes);
 }
 
-bool i486DX::SegmentProperty::Deserialize(const unsigned char *&data,unsigned int version)
+bool i486DXCommon::SegmentProperty::Deserialize(const unsigned char *&data,unsigned int version)
 {
 	baseLinearAddr=ReadUint32(data);
 	operandSize=ReadUint32(data);
@@ -29,59 +29,59 @@ bool i486DX::SegmentProperty::Deserialize(const unsigned char *&data,unsigned in
 	return true;
 }
 
-void i486DX::SegmentRegister::Serialize(std::vector <unsigned char> &data) const
+void i486DXCommon::SegmentRegister::Serialize(std::vector <unsigned char> &data) const
 {
 	SegmentProperty::Serialize(data);
 	PushUint16(data,value);
 }
 
-bool i486DX::SegmentRegister::Deserialize(const unsigned char *&data,unsigned int version)
+bool i486DXCommon::SegmentRegister::Deserialize(const unsigned char *&data,unsigned int version)
 {
 	SegmentProperty::Deserialize(data,version);
 	value=ReadUint16(data);
 	return true;
 }
 
-void i486DX::SystemAddressRegister::Serialize(std::vector <unsigned char> &data) const
+void i486DXCommon::SystemAddressRegister::Serialize(std::vector <unsigned char> &data) const
 {
 	PushUint32(data,linearBaseAddr);
 	PushUint16(data,limit);
 }
 
-bool i486DX::SystemAddressRegister::Deserialize(const unsigned char *&data)
+bool i486DXCommon::SystemAddressRegister::Deserialize(const unsigned char *&data)
 {
 	linearBaseAddr=ReadUint32(data);
 	limit=ReadUint16(data);
 	return true;
 }
 
-void i486DX::SystemAddressRegisterAndSelector::Serialize(std::vector <unsigned char> &data) const
+void i486DXCommon::SystemAddressRegisterAndSelector::Serialize(std::vector <unsigned char> &data) const
 {
 	SystemAddressRegister::Serialize(data);
 	PushUint16(data,selector);
 }
 
-bool i486DX::SystemAddressRegisterAndSelector::Deserialize(const unsigned char *&data)
+bool i486DXCommon::SystemAddressRegisterAndSelector::Deserialize(const unsigned char *&data)
 {
 	SystemAddressRegister::Deserialize(data);
 	selector=ReadUint16(data);
 	return true;
 }
 
-void i486DX::TaskRegister::Serialize(std::vector <unsigned char> &data) const
+void i486DXCommon::TaskRegister::Serialize(std::vector <unsigned char> &data) const
 {
 	SegmentRegister::Serialize(data);
 	PushUint32(data,attrib);
 }
 
-bool i486DX::TaskRegister::Deserialize(const unsigned char *&data,unsigned int version)
+bool i486DXCommon::TaskRegister::Deserialize(const unsigned char *&data,unsigned int version)
 {
 	SegmentRegister::Deserialize(data,version);
 	attrib=ReadUint32(data);
 	return true;
 }
 
-void i486DX::State::Serialize(std::vector <unsigned char> &data) const
+void i486DXCommon::State::Serialize(std::vector <unsigned char> &data) const
 {
 	for(auto x : NULL_and_reg32)
 	{
@@ -135,7 +135,7 @@ void i486DX::State::Serialize(std::vector <unsigned char> &data) const
 		PushUint16(data,s.tag);
 	}
 }
-bool i486DX::State::Deserialize(const unsigned char *&data,uint32_t version)
+bool i486DXCommon::State::Deserialize(const unsigned char *&data,uint32_t version)
 {
 	for(auto &x : NULL_and_reg32)
 	{
@@ -204,18 +204,18 @@ bool i486DX::State::Deserialize(const unsigned char *&data,uint32_t version)
 	return true;
 }
 
-/* virtual */ uint32_t i486DX::SerializeVersion(void) const
+/* virtual */ uint32_t i486DXCommon::SerializeVersion(void) const
 {
 	return 2;
 	// Version 0 doesn't include FPU state.
 	// Version 1 includes FPU state.
 	// Version 2 includes segment attrib bytes.
 }
-/* virtual */ void i486DX::SpecificSerialize(std::vector <unsigned char> &data,std::string) const
+/* virtual */ void i486DXCommon::SpecificSerialize(std::vector <unsigned char> &data,std::string) const
 {
 	state.Serialize(data);
 }
-/* virtual */ bool i486DX::SpecificDeserialize(const unsigned char *&data,std::string,uint32_t version)
+/* virtual */ bool i486DXCommon::SpecificDeserialize(const unsigned char *&data,std::string,uint32_t version)
 {
 	ClearPageTableCache();  // Need to clear on load state.
 	ClearDescriptorCache(); // Need to clear on load state.

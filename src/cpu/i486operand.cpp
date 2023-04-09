@@ -21,12 +21,12 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 
 
-i486DX::Operand::Operand(int addressSize,int dataSize,const unsigned char operand[])
+i486DXCommon::Operand::Operand(int addressSize,int dataSize,const unsigned char operand[])
 {
 	Decode(addressSize,dataSize,operand);
 }
 
-unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned char operand[])
+unsigned int i486DXCommon::Operand::Decode(int addressSize,int dataSize,const unsigned char operand[])
 {
 	NUM_BYTES_TO_BASIC_REG_BASE
 	NUM_BYTES_TO_REGISTER_OPERAND_TYPE
@@ -513,33 +513,33 @@ unsigned int i486DX::Operand::Decode(int addressSize,int dataSize,const unsigned
 
 	return numBytes;
 }
-void i486DX::Operand::DecodeMODR_MForRegister(int dataSize,unsigned char MODR_M)
+void i486DXCommon::Operand::DecodeMODR_MForRegister(int dataSize,unsigned char MODR_M)
 {
 	auto REG_OPCODE=((MODR_M>>3)&7);
 	MakeByRegisterNumber(dataSize,REG_OPCODE);
 }
-void i486DX::Operand::DecodeMODR_MForSegmentRegister(unsigned char MODR_M)
+void i486DXCommon::Operand::DecodeMODR_MForSegmentRegister(unsigned char MODR_M)
 {
 	auto REG_OPCODE=((MODR_M>>3)&7);
 	operandType=OPER_SREG;
 	reg=REG_SEGMENT_REG_BASE+REG_OPCODE;
 }
-void i486DX::Operand::DecodeMODR_MForCRRegister(unsigned char MODR_M)
+void i486DXCommon::Operand::DecodeMODR_MForCRRegister(unsigned char MODR_M)
 {
 	auto REG_OPCODE=((MODR_M>>3)&7);
 	operandType=OPER_CR0+REG_OPCODE;
 }
-void i486DX::Operand::DecodeMODR_MForDRRegister(unsigned char MODR_M)
+void i486DXCommon::Operand::DecodeMODR_MForDRRegister(unsigned char MODR_M)
 {
 	auto REG_OPCODE=((MODR_M>>3)&7);
 	operandType=OPER_DR0+REG_OPCODE;
 }
-void i486DX::Operand::DecodeMODR_MForTestRegister(unsigned char MODR_M)
+void i486DXCommon::Operand::DecodeMODR_MForTestRegister(unsigned char MODR_M)
 {
 	auto REG_OPCODE=((MODR_M>>3)&7);
 	operandType=OPER_TEST0+REG_OPCODE;
 }
-void i486DX::Operand::MakeByRegisterNumber(int dataSize,int regNum)
+void i486DXCommon::Operand::MakeByRegisterNumber(int dataSize,int regNum)
 {
 	NUM_BYTES_TO_BASIC_REG_BASE
 	NUM_BYTES_TO_REGISTER_OPERAND_TYPE
@@ -561,7 +561,7 @@ void i486DX::Operand::MakeByRegisterNumber(int dataSize,int regNum)
 		break;
 	} */
 }
-void i486DX::Operand::MakeSimpleAddressOffsetFromImm(const Instruction &inst)
+void i486DXCommon::Operand::MakeSimpleAddressOffsetFromImm(const Instruction &inst)
 {
 	operandType=OPER_ADDR;
 	baseReg=REG_NULL;
@@ -580,7 +580,7 @@ void i486DX::Operand::MakeSimpleAddressOffsetFromImm(const Instruction &inst)
 	}
 }
 
-unsigned int i486DX::Operand::DecodeFarAddr(int addressSize,int operandSize,const unsigned char operand[])
+unsigned int i486DXCommon::Operand::DecodeFarAddr(int addressSize,int operandSize,const unsigned char operand[])
 {
 	operandType=OPER_FARADDR;
 	switch(operandSize)
@@ -599,7 +599,7 @@ unsigned int i486DX::Operand::DecodeFarAddr(int addressSize,int operandSize,cons
 	}
 }
 
-std::string i486DX::Operand::Disassemble(uint32_t cs,uint32_t eip,const i486SymbolTable &symTable) const
+std::string i486DXCommon::Operand::Disassemble(uint32_t cs,uint32_t eip,const i486SymbolTable &symTable) const
 {
 	switch(operandType)
 	{
@@ -656,7 +656,7 @@ std::string i486DX::Operand::Disassemble(uint32_t cs,uint32_t eip,const i486Symb
 	return "(UndefinedOperandType?)";
 }
 
-std::string i486DX::Operand::DisassembleAsAddr(uint32_t cs,uint32_t eip,const i486SymbolTable &symTable) const
+std::string i486DXCommon::Operand::DisassembleAsAddr(uint32_t cs,uint32_t eip,const i486SymbolTable &symTable) const
 {
 	bool empty=true;
 
@@ -726,7 +726,7 @@ std::string i486DX::Operand::DisassembleAsAddr(uint32_t cs,uint32_t eip,const i4
 	disasm.push_back(']');
 	return disasm;
 }
-std::string i486DX::Operand::DisassembleAsFarAddr(uint32_t cs,uint32_t eip,const i486SymbolTable &symTable) const
+std::string i486DXCommon::Operand::DisassembleAsFarAddr(uint32_t cs,uint32_t eip,const i486SymbolTable &symTable) const
 {
 	// It doesn't add [] because may be used by JMP.
 	std::string disasm;
@@ -748,11 +748,11 @@ std::string i486DX::Operand::DisassembleAsFarAddr(uint32_t cs,uint32_t eip,const
 	}
 	return disasm;
 }
-std::string i486DX::Operand::DisassembleAsReg(void) const
+std::string i486DXCommon::Operand::DisassembleAsReg(void) const
 {
 	return RegToStr[reg];
 }
-/* static */ std::string i486DX::Operand::GetSizeQualifierToDisassembly(const Operand &op,int operandSize)
+/* static */ std::string i486DXCommon::Operand::GetSizeQualifierToDisassembly(const Operand &op,int operandSize)
 {
 	if(op.operandType==OPER_ADDR)
 	{
@@ -771,7 +771,7 @@ std::string i486DX::Operand::DisassembleAsReg(void) const
 	return "";
 }
 
-/* static */ std::string i486DX::Operand::GetSegmentQualifierToDisassembly(int segOverride,const Operand &op)
+/* static */ std::string i486DXCommon::Operand::GetSegmentQualifierToDisassembly(int segOverride,const Operand &op)
 {
 	if(0!=segOverride && OPER_ADDR==op.operandType)
 	{
@@ -794,7 +794,7 @@ std::string i486DX::Operand::DisassembleAsReg(void) const
 	return "";
 }
 
-unsigned int i486DX::Operand::GetSize(void) const
+unsigned int i486DXCommon::Operand::GetSize(void) const
 {
 	switch(operandType)
 	{
@@ -806,7 +806,7 @@ unsigned int i486DX::Operand::GetSize(void) const
 	case OPER_REG8:
 	case OPER_REG16:
 	case OPER_REG32:
-		return i486DX::GetRegisterSize(reg);
+		return i486DXCommon::GetRegisterSize(reg);
 	case OPER_CR0:
 	case OPER_CR1:
 	case OPER_CR2:
