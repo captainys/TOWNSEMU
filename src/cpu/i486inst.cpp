@@ -7086,6 +7086,10 @@ unsigned int i486DX::RunOneInstruction(Memory &mem,InOut &io)
 			case 6:  // FIDIV m32int
 				break;
 			case 7:  // FIDIVR m32int
+				{
+					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,4);
+					clocksPassed=state.fpuState.FIDIVR_m32int(*this,value.byteData);
+				}
 				break;
 			}
 		}
