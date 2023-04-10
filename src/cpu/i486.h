@@ -40,6 +40,22 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 class i486SymbolTable;
 
 
+/*
+About the Fidelity Layer:
+The goal of the fidelity classes, i486DXLowFielityOperation, i486DXDefaultFidelityOperation, and i486DXHighFidelityOperation, are to derive CPU classes with different levels of fidelity in exception handling.
+
+Majority of FM TOWNS native apps runs in CPL=0, where any instructions were accepted.  Crash in that environment means the end of the world for the running application program.  Therefore, there is little point to waste host CPU time for emulating exception handling except some situations that exceptions were intentionally invoked.
+On the other hand, Windows 3.1 uses exceptions just like interrupts, exceptions everywhere.  The host needs to emulate exception handling to install and run the operating system and applications.
+In C++, such a difference can be described using virtual functions.  Exception handler functions in the low-fidelity CPU class do nothing, and in the high-fidelity CPU class handle exceptions correctly.
+
+However, the virtual function is not an option here because it is slow.  It takes just one step to call a regular function, or a compile-time bound function.  To call a virtual function, it is a indirect call, which takes two steps inside the CPU to start with, and in C++, the executable binary first looks at the vtable, and then make an indirect call from one of the function pointers in the vtable.  If I count a regular function call as one step, a virtual function takes 3 steps to call.  It is unacceptable in a function that is called millions times per second.
+
+Alternative is to use template.  All template functions are compile-time bound unless made virtual.  The drawback is many functions need to be moved from .CPP to .H, making longer build time, which I care less than the runtime performance.
+
+Therefore, the CPU class now is divided into three parts.  The base class, i486Common define common functionality and data structure for any fidelity level.  The fidelity classes define different behaviors of different fidelity levels.  And, a template class i486FidelityLayer, which takes a fidelity class as a template parameter, and implements functions that needs to behave differently for different fidelity levels.
+*/
+
+
 class i486DXCommon : public CPU
 {
 public:
