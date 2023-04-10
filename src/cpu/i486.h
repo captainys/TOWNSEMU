@@ -2329,11 +2329,6 @@ public:
 	void LoadDescriptorTableRegister(SystemAddressRegister &reg,int operandSize,const unsigned char byteData[]);
 
 	/*! Retrieve Interrupt Descriptor from the current IDT.
-	    It could raise page fault.
-	*/
-	InterruptDescriptor GetInterruptDescriptor(unsigned int INTNum,Memory &mem);
-
-	/*! Retrieve Interrupt Descriptor from the current IDT.
 	    This will not change the CPU state including exceptions.
 	*/
 	InterruptDescriptor DebugGetInterruptDescriptor(unsigned int INTNum,const Memory &mem) const;
@@ -2476,59 +2471,9 @@ public:
 	    page-table entries.  Therefore, page-translation for read and write needs to do different
 	    things.
 	*/
-	inline unsigned long LinearAddressToPhysicalAddressRead(unsigned int linearAddr,Memory &mem);
 	inline unsigned long LinearAddressToPhysicalAddressWrite(unsigned int linearAddr,Memory &mem);
 
-
-	/*! Push a value.
-	*/
-	void Push16(Memory &mem,unsigned int value);
-	void Push32(Memory &mem,unsigned int value);
-	inline void Push(Memory &mem,unsigned int operandSize,unsigned int value)
-	{
-		if(16==operandSize)
-		{
-			Push16(mem,value);
-		}
-		else
-		{
-			Push32(mem,value);
-		}
-	}
-
-	/*! Pop a value.
-	*/
-	unsigned int Pop16(Memory &mem);
-	unsigned int Pop32(Memory &mem);
-	inline unsigned int Pop(Memory &mem,unsigned int operandSize)
-	{
-		if(16==operandSize)
-		{
-			return Pop16(mem);
-		}
-		else
-		{
-			return Pop32(mem);
-		}
-	}
-
-	/*! Push two values.
-	*/
-	void Push(Memory &mem,unsigned int operandSize,uint32_t firstPush,uint32_t secondPush);
-
-	/*! Pop two values.
-	*/
-	void Pop(uint32_t &firstPop,uint32_t &secondPop,Memory &mem,unsigned int operandSize);
-
-	/*! Push three values.
-	*/
-	void Push(Memory &mem,unsigned int operandSize,uint32_t firstPush,uint32_t secondPush,uint32_t thirdPush);
-
-	/*! Pop three values.
-	*/
-	void Pop(uint32_t &firstPop,uint32_t &secondPop,uint32_t &thirdPop,Memory &mem,unsigned int operandSize);
-
-private:
+protected:
 	// This function is a helper function for Push and Pop.
 	// It checks if the cached SSESPWindow covers the required number of bytes.
 	// If not, it tries to re-cache SSESPWindow.
@@ -2537,82 +2482,6 @@ private:
 	inline unsigned char *GetStackAccessPointer(Memory &mem,uint32_t linearAddr,unsigned int numBytes);
 
 public:
-	/*! Fetch a byte. 
-	    Turned out mem cannot be const.  Fetching byte will update page-table entry A flag.
-	*/
-	inline unsigned int FetchByte(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem);
-
-	/*! Fetch a word.
-	    Turned out mem cannot be const.  Fetching byte will update page-table entry A flag.
-	*/
-	inline unsigned int FetchWord(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem);
-
-	/*! Fetch a dword.
-	    Turned out mem cannot be const.  Fetching byte will update page-table entry A flag.
-	*/
-	inline unsigned int FetchDword(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem);
-
-	/*! Fetch a byte, word, or dword.
-	    Function name is left as FetchWordOrDword temporarily for the time being.
-	    Will be unified to FetchByteWordOrDword in the future.
-	    Turned out mem cannot be const.  Accessing memory will update page-table entry A flag.
-	*/
-	inline unsigned int FetchWordOrDword(unsigned int operandSize,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)
-	{
-		switch(operandSize)
-		{
-		case 8:
-			return FetchByte(addressSize,seg,offset,mem);
-		case 16:
-			return FetchWord(addressSize,seg,offset,mem);
-		default:
-		case 32:
-			return FetchDword(addressSize,seg,offset,mem);
-		}
-	}
-	inline unsigned int FetchByteWordOrDword(unsigned int operandSize,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)
-	{
-		return FetchWordOrDword(operandSize,addressSize,seg,offset,mem);
-	}
-
-	/*! Fetch a byte by linear address.
-	*/
-	inline unsigned int FetchByteByLinearAddress(Memory &mem,unsigned int linearAddr)
-	{
-		if(true==PagingEnabled())
-		{
-			linearAddr=LinearAddressToPhysicalAddressRead(linearAddr,mem);
-		}
-		return mem.FetchByte(linearAddr);
-	}
-
-	/*! Returns const memory window from SEG:OFFSET.
-	    This may raise page fault depending on SEG:OFFSET.
-	    Turned out mem cannot be const.  Accessing memory will update page-table entry A flag.
-	*/
-	inline MemoryAccess::ConstMemoryWindow GetConstMemoryWindow(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)
-	{
-		offset&=AddressMask((unsigned char)addressSize);
-		auto linearAddr=seg.baseLinearAddr+offset;
-		return GetConstMemoryWindowFromLinearAddress(linearAddr,mem);
-	}
-
-	/*! Returns const memory window from a linear address.
-	    This may raise page fault depending on SEG:OFFSET.
-	    Turned out mem cannot be const.  Accessing memory will update page-table entry A flag.
-	*/
-	inline MemoryAccess::ConstMemoryWindow GetConstMemoryWindowFromLinearAddress(unsigned int linearAddr,Memory &mem)
-	{
-		auto physAddr=linearAddr;
-		if(true==PagingEnabled())
-		{
-			physAddr=LinearAddressToPhysicalAddressRead(linearAddr,mem);
-		}
-		auto memWin=mem.GetConstMemoryWindow(physAddr);
-		memWin.linearBaseAddr=(linearAddr&(~0xfff));
-		return memWin;
-	}
-
 	/*! Returns const memory window from SEG:OFFSET.
 	    It will not change the state of the CPU including exceptions.
 	*/
@@ -2679,22 +2548,6 @@ public:
 	std::string DebugFetchString(int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
 
 
-
-
-	/*! Fetch a byte from CS:[EIP+offset].
-	*/
-	inline unsigned int FetchInstructionByte(unsigned int offset,Memory &mem)
-	{
-		return FetchByte(state.CS().addressSize,state.CS(),state.EIP+offset,mem);
-	}
-
-	/*! Fetch an instruction.
-	    This function may raise page fault.
-	*/
-	inline void FetchInstruction(MemoryAccess::ConstMemoryWindow &memWin,InstructionAndOperand &instOp,Memory &mem)
-	{
-		return FetchInstruction(memWin,instOp,state.CS(),state.EIP,mem);
-	}
 	/*! Fetch an instruction.
 	    It will not affect the CPU state.
 	*/
@@ -2763,26 +2616,6 @@ private:
 	/*! Fetch an 8-bit operand.  Returns the number of bytes fetched.
 	    It pushes inst.operandLen and this->numBytes by 1 byte.
 	*/
-	inline void FetchOperand8(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,Memory &mem);
-	/*! Peek an 8-bit operand.  Returns the number of bytes fetched.
-	    It does not push inst.operandLen and this->numBytes by 1 byte.
-	*/
-	inline void PeekOperand8(unsigned int &operand,const Instruction &inst,const MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,Memory &mem);
-	/*! Fetch an 16-bit operand  Returns the number of bytes fetched..
-	*/
-	inline void FetchOperand16(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,Memory &mem);
-	/*! Fetch an 32-bit operand.  Returns the number of bytes fetched.
-	*/
-	inline void FetchOperand32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,Memory &mem);
-	/*! Fetch an 16- or 32-bit operand.  Length fetched depends on inst.operandSize.
-	    Returns the number of bytes fetched.
-	*/
-	inline unsigned int FetchOperand16or32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,Memory &mem);
-
-
-	/*! Fetch an 8-bit operand.  Returns the number of bytes fetched.
-	    It pushes inst.operandLen and this->numBytes by 1 byte.
-	*/
 	inline void DebugFetchOperand8(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
 	/*! Peek an 8-bit operand.  Returns the number of bytes fetched.
 	    It does not push inst.operandLen and this->numBytes by 1 byte.
@@ -2809,21 +2642,6 @@ private:
 	    Operand &op,int addressSize,int dataSize,
 	    CPUCLASS &cpu,Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,MEMCLASS &mem);
 
-
-	/*! Fetch an 8-bit operand.
-	    It pushes inst.operandLen and this->numBytes by 1 byte.
-	*/
-	inline void FetchImm8(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,Memory &mem);
-	/*! Fetch an 16-bit operand.
-	*/
-	inline void FetchImm16(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,Memory &mem);
-	/*! Fetch an 32-bit operand.
-	*/
-	inline void FetchImm32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,Memory &mem);
-	/*! Fetch an 16- or 32-bit operand.  Length fetched depends on inst.operandSize.
-	    Returns the number of bytes fetched.
-	*/
-	inline unsigned int FetchImm16or32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,Memory &mem);
 
 	/*! Fetch an 8-bit operand.
 	    It pushes inst.operandLen and this->numBytes by 1 byte.
@@ -2862,14 +2680,6 @@ private:
 
 public:
 	/*! Fetch an instruction from specific segment and offset.
-	*/
-	inline void FetchInstruction(MemoryAccess::ConstMemoryWindow &memWin,InstructionAndOperand &instOp,const SegmentRegister &CS,unsigned int offset,Memory &mem)
-	{
-		const unsigned int operandSize=*CSOperandSizePointer[Return0InRealMode1InProtectedMode()];
-		const unsigned int addressSize=*CSAddressSizePointer[Return0InRealMode1InProtectedMode()];
-		return FetchInstruction(memWin,instOp,CS,offset,mem,operandSize,addressSize);
-	}
-	/*! Fetch an instruction from specific segment and offset.
 	    It will not affect the CPU state including exceptions.
 	*/
 	inline void DebugFetchInstruction(MemoryAccess::ConstMemoryWindow &memWin,InstructionAndOperand &instOp,const SegmentRegister &CS,unsigned int offset,const Memory &mem) const
@@ -2878,13 +2688,11 @@ public:
 		const unsigned int addressSize=*CSAddressSizePointer[Return0InRealMode1InProtectedMode()];
 		return DebugFetchInstruction(memWin,instOp,CS,offset,mem,operandSize,addressSize);
 	}
-private:
-	class BurstModeFetchInstructionFunctions;
+protected:
 	class DebugFetchInstructionFunctions;
-	class RealFetchInstructionFunctions;
 	template <class CPUCLASS,class MEMCLASS,class FUNCCLASS,class BURSTMODEFUNCCLASS>
 	class FetchInstructionClass;
-private:
+
 	/* Set in the constructor. CS******SizePointer[0] points to sixteen, and
 	   CS******SizePointer[1] points to CS.******Size.
 	*/
@@ -2893,83 +2701,12 @@ private:
 
 public:
 	/*! Fetch an instruction from specific segment and offset with given default operand size and address size.
-	*/
-	void FetchInstruction(
-	    MemoryAccess::ConstMemoryWindow &memWin,
-	    InstructionAndOperand &instOp,
-	    const SegmentRegister &CS,unsigned int offset,Memory &mem,unsigned int defOperSize,unsigned int defAddrSize);
-
-	/*! Fetch an instruction from specific segment and offset with given default operand size and address size.
 	    It will not affect the CPU status including exceptions.
 	*/
 	void DebugFetchInstruction(
 	    MemoryAccess::ConstMemoryWindow &memWin,
 	    InstructionAndOperand &instOp,
 	    const SegmentRegister &CS,unsigned int offset,const Memory &mem,unsigned int defOperSize,unsigned int defAddrSize) const;
-
-private:
-	inline unsigned int FetchInstructionByte(MemoryAccess::ConstPointer &ptr,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)
-	{
-		if(0<ptr.length)
-		{
-			return ptr.FetchByte();
-		}
-		else
-		{
-			return FetchByte(addressSize,seg,offset,mem);
-		}
-	}
-	inline unsigned int PeekInstructionByte(const MemoryAccess::ConstPointer &ptr,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)
-	{
-		if(0<ptr.length)
-		{
-			return ptr.PeekByte();
-		}
-		else
-		{
-			return FetchByte(addressSize,seg,offset,mem);
-		}
-	}
-	inline void FetchInstructionTwoBytes(unsigned char buf[2],MemoryAccess::ConstPointer &ptr,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)
-	{
-		if(2<=ptr.length)
-		{
-			ptr.FetchTwoBytes(buf);
-		}
-		else
-		{
-			// See comment in FetchInstructionFourBytes for why ptr.length needs to be cleared.
-			ptr.length=0;
-			buf[0]=FetchByte(addressSize,seg,offset  ,mem);
-			buf[1]=FetchByte(addressSize,seg,offset+1,mem);
-		}
-	}
-	inline void FetchInstructionFourBytes(unsigned char buf[4],MemoryAccess::ConstPointer &ptr,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)
-	{
-		if(4<=ptr.length)
-		{
-			ptr.FetchFourBytes(buf);
-		}
-		else
-		{
-			// ptr.length should be cleared.
-			// Or, the following instruction:
-			//   000C:0000BFFA 66C705F85700001300        MOV     WORD PTR [000057F8H],0013H
-			// was interpreted as:
-			//   000C:0000BFFA 66C705F85700001300        MOV     WORD PTR [000057F8H],57F8H
-			// Why?  At CS:EIP==000C:BFFAH, ConstPointer has 7 more bytes to go, but it runs out
-			// before reading 000057F8.  So, ConstPointer was leaving 3 bytes when the
-			// address offset was fetched.  Then, subsequent FetchInstructionTwoBytes saw
-			// ConstPointer having 3 more bytes, and took from the ConstPointer.
-			// This problem can be avoided by clearing ptr.length.
-			// It happens only at the 4KB border, therefore little performance penalty.
-			ptr.length=0;
-			buf[0]=FetchByte(addressSize,seg,offset  ,mem);
-			buf[1]=FetchByte(addressSize,seg,offset+1,mem);
-			buf[2]=FetchByte(addressSize,seg,offset+2,mem);
-			buf[3]=FetchByte(addressSize,seg,offset+3,mem);
-		}
-	}
 
 public:
 	/*! Make a disassembly.
@@ -3151,52 +2888,6 @@ public:
 	inline uint8_t *GetOperandPointer(Memory &mem,int addressSize,int segmentOverride,const Operand &op);
 
 
-	/*! Evaluates an operand.
-	    destinationBytes is non zero if the operand that receives the value has a known size.
-	    If the destination size depends on the source size, destinationBytes should be zero.
-
-		When operandType is OPER_ADDR, destinationBytes parameter defines the number of bytes fetched from the memory.
-		It is significant when FWORD PTR (4 bytes in Real Mode, 6 bytes in Protected Mode) needs to be
-		fetched.  First 2 or 4 bytes from FWORD PTR will give offset, and the last 2 bytes give segment.
-		In which case returned OperandValue will return correct value for GetAsDword, GetAsWord, and GetFwordSegment.
-	*/
-	OperandValue EvaluateOperand(
-	    Memory &mem,int addressSize,int segmentOverride,const Operand &op,int destinationBytes);
-
-	/*! Evaluate an operand when it is known to be Reg8 or Mem8.
-	*/
-	uint8_t EvaluateOperandRegOrMem8(Memory &mem,int addressSize,int segmentOverride,const Operand &op);
-
-	/*! Evaluate an operand when it is known to be Reg16 or Mem16.
-	*/
-	uint16_t EvaluateOperandRegOrMem16(Memory &mem,int addressSize,int segmentOverride,const Operand &op);
-
-	/*! Evaluate an operand when it is known to be Reg32 or Mem32.
-	*/
-	uint32_t EvaluateOperandRegOrMem32(Memory &mem,int addressSize,int segmentOverride,const Operand &op);
-
-	/*! Evaluate an operand when it is known to be either a register or memory.
-	*/
-	OperandValue EvaluateOperandReg16OrReg32OrMem(
-	    Memory &mem,int addressSize,int segmentOverride,const Operand &op,int destinationBytes);
-
-	/*! Evaluate operand as an 8-bit operand.
-	    Use EvaluateOperandRegOrMem8 instead.
-	*/
-	OperandValue EvaluateOperand8(
-	    Memory &mem,int addressSize,int segmentOverride,const Operand &op);
-
-	/*! Evaluate operand as an 64-bit operand (double).
-	*/
-	OperandValue EvaluateOperand64(
-	    Memory &mem,int addressSize,int segmentOverride,const Operand &op);
-
-	/*! Evaluate operand as an 80-bit operand (80-bit floating point).
-	*/
-	OperandValue EvaluateOperand80(
-	    Memory &mem,int addressSize,int segmentOverride,const Operand &op);
-
-
 	/*! Extract segment register and address offset from the OPER_ADDR type operand.
 	    It doesn't check the operand type.  Using it for a different operand type would crash the
 	    program.
@@ -3254,11 +2945,6 @@ public:
 	}
 
 	static int StrToReg(const std::string &regName);
-
-	/*! Return true if I/O access is permitted in I/O Map of TSS.
-	    It could raise exception.
-	*/
-	bool TestIOMapPermission(const SegmentRegister &TR,unsigned int ioMin,unsigned int accessSize,Memory &mem);
 
 	/*! Return true if I/O access is permitted in I/O Map of TSS.
 	    It will not raise an exception.  It is for debugging purpose.
@@ -3406,53 +3092,325 @@ public:
 			seg.limit=0xFFFF;
 		}
 	}
+
+	/*! Push a value.
+	*/
+	void Push16(Memory &mem,unsigned int value);
+	void Push32(Memory &mem,unsigned int value);
+	inline void Push(Memory &mem,unsigned int operandSize,unsigned int value)
+	{
+		if(16==operandSize)
+		{
+			Push16(mem,value);
+		}
+		else
+		{
+			Push32(mem,value);
+		}
+	}
+
+	/*! Pop a value.
+	*/
+	unsigned int Pop16(Memory &mem);
+	unsigned int Pop32(Memory &mem);
+	inline unsigned int Pop(Memory &mem,unsigned int operandSize)
+	{
+		if(16==operandSize)
+		{
+			return Pop16(mem);
+		}
+		else
+		{
+			return Pop32(mem);
+		}
+	}
+
+	/*! Push two values.
+	*/
+	void Push(Memory &mem,unsigned int operandSize,uint32_t firstPush,uint32_t secondPush);
+
+	/*! Pop two values.
+	*/
+	void Pop(uint32_t &firstPop,uint32_t &secondPop,Memory &mem,unsigned int operandSize);
+
+	/*! Push three values.
+	*/
+	void Push(Memory &mem,unsigned int operandSize,uint32_t firstPush,uint32_t secondPush,uint32_t thirdPush);
+
+	/*! Pop three values.
+	*/
+	void Pop(uint32_t &firstPop,uint32_t &secondPop,uint32_t &thirdPop,Memory &mem,unsigned int operandSize);
+
+
+	inline unsigned long LinearAddressToPhysicalAddressRead(unsigned int linearAddr,Memory &mem);
+
+	/*! Fetch a byte by linear address.
+	*/
+	inline unsigned int FetchByteByLinearAddress(Memory &mem,unsigned int linearAddr)
+	{
+		if(true==PagingEnabled())
+		{
+			linearAddr=LinearAddressToPhysicalAddressRead(linearAddr,mem);
+		}
+		return mem.FetchByte(linearAddr);
+	}
+
+	/*! Returns const memory window from a linear address.
+	    This may raise page fault depending on SEG:OFFSET.
+	    Turned out mem cannot be const.  Accessing memory will update page-table entry A flag.
+	*/
+	inline MemoryAccess::ConstMemoryWindow GetConstMemoryWindowFromLinearAddress(unsigned int linearAddr,Memory &mem)
+	{
+		auto physAddr=linearAddr;
+		if(true==PagingEnabled())
+		{
+			physAddr=LinearAddressToPhysicalAddressRead(linearAddr,mem);
+		}
+		auto memWin=mem.GetConstMemoryWindow(physAddr);
+		memWin.linearBaseAddr=(linearAddr&(~0xfff));
+		return memWin;
+	}
+
+	/*! Returns const memory window from SEG:OFFSET.
+	    This may raise page fault depending on SEG:OFFSET.
+	    Turned out mem cannot be const.  Accessing memory will update page-table entry A flag.
+	*/
+	inline MemoryAccess::ConstMemoryWindow GetConstMemoryWindow(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)
+	{
+		offset&=AddressMask((unsigned char)addressSize);
+		auto linearAddr=seg.baseLinearAddr+offset;
+		return GetConstMemoryWindowFromLinearAddress(linearAddr,mem);
+	}
+
+	/*! Fetch a byte. 
+	    Turned out mem cannot be const.  Fetching byte will update page-table entry A flag.
+	*/
+	inline unsigned int FetchByte(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem);
+
+	/*! Fetch a word.
+	    Turned out mem cannot be const.  Fetching byte will update page-table entry A flag.
+	*/
+	inline unsigned int FetchWord(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem);
+
+	/*! Fetch a dword.
+	    Turned out mem cannot be const.  Fetching byte will update page-table entry A flag.
+	*/
+	inline unsigned int FetchDword(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem);
+
+	/*! Fetch a byte, word, or dword.
+	    Function name is left as FetchWordOrDword temporarily for the time being.
+	    Will be unified to FetchByteWordOrDword in the future.
+	    Turned out mem cannot be const.  Accessing memory will update page-table entry A flag.
+	*/
+	inline unsigned int FetchWordOrDword(unsigned int operandSize,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)
+	{
+		switch(operandSize)
+		{
+		case 8:
+			return FetchByte(addressSize,seg,offset,mem);
+		case 16:
+			return FetchWord(addressSize,seg,offset,mem);
+		default:
+		case 32:
+			return FetchDword(addressSize,seg,offset,mem);
+		}
+	}
+	inline unsigned int FetchByteWordOrDword(unsigned int operandSize,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)
+	{
+		return FetchWordOrDword(operandSize,addressSize,seg,offset,mem);
+	}
+
+	/*! Fetch a byte from CS:[EIP+offset].
+	*/
+	inline unsigned int FetchInstructionByte(unsigned int offset,Memory &mem)
+	{
+		return FetchByte(state.CS().addressSize,state.CS(),state.EIP+offset,mem);
+	}
+
+	/*! Fetch an instruction.
+	    This function may raise page fault.
+	*/
+	inline void FetchInstruction(MemoryAccess::ConstMemoryWindow &memWin,InstructionAndOperand &instOp,Memory &mem)
+	{
+		return FetchInstruction(memWin,instOp,state.CS(),state.EIP,mem);
+	}
+
+private:
+	inline unsigned int FetchInstructionByte(MemoryAccess::ConstPointer &ptr,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)
+	{
+		if(0<ptr.length)
+		{
+			return ptr.FetchByte();
+		}
+		else
+		{
+			return FetchByte(addressSize,seg,offset,mem);
+		}
+	}
+	inline unsigned int PeekInstructionByte(const MemoryAccess::ConstPointer &ptr,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)
+	{
+		if(0<ptr.length)
+		{
+			return ptr.PeekByte();
+		}
+		else
+		{
+			return FetchByte(addressSize,seg,offset,mem);
+		}
+	}
+	inline void FetchInstructionTwoBytes(unsigned char buf[2],MemoryAccess::ConstPointer &ptr,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)
+	{
+		if(2<=ptr.length)
+		{
+			ptr.FetchTwoBytes(buf);
+		}
+		else
+		{
+			// See comment in FetchInstructionFourBytes for why ptr.length needs to be cleared.
+			ptr.length=0;
+			buf[0]=FetchByte(addressSize,seg,offset  ,mem);
+			buf[1]=FetchByte(addressSize,seg,offset+1,mem);
+		}
+	}
+	inline void FetchInstructionFourBytes(unsigned char buf[4],MemoryAccess::ConstPointer &ptr,unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)
+	{
+		if(4<=ptr.length)
+		{
+			ptr.FetchFourBytes(buf);
+		}
+		else
+		{
+			// ptr.length should be cleared.
+			// Or, the following instruction:
+			//   000C:0000BFFA 66C705F85700001300        MOV     WORD PTR [000057F8H],0013H
+			// was interpreted as:
+			//   000C:0000BFFA 66C705F85700001300        MOV     WORD PTR [000057F8H],57F8H
+			// Why?  At CS:EIP==000C:BFFAH, ConstPointer has 7 more bytes to go, but it runs out
+			// before reading 000057F8.  So, ConstPointer was leaving 3 bytes when the
+			// address offset was fetched.  Then, subsequent FetchInstructionTwoBytes saw
+			// ConstPointer having 3 more bytes, and took from the ConstPointer.
+			// This problem can be avoided by clearing ptr.length.
+			// It happens only at the 4KB border, therefore little performance penalty.
+			ptr.length=0;
+			buf[0]=FetchByte(addressSize,seg,offset  ,mem);
+			buf[1]=FetchByte(addressSize,seg,offset+1,mem);
+			buf[2]=FetchByte(addressSize,seg,offset+2,mem);
+			buf[3]=FetchByte(addressSize,seg,offset+3,mem);
+		}
+	}
+
+	/*! Retrieve Interrupt Descriptor from the current IDT.
+	    It could raise page fault.
+	*/
+	InterruptDescriptor GetInterruptDescriptor(unsigned int INTNum,Memory &mem);
+
+	/*! Evaluates an operand.
+	    destinationBytes is non zero if the operand that receives the value has a known size.
+	    If the destination size depends on the source size, destinationBytes should be zero.
+
+		When operandType is OPER_ADDR, destinationBytes parameter defines the number of bytes fetched from the memory.
+		It is significant when FWORD PTR (4 bytes in Real Mode, 6 bytes in Protected Mode) needs to be
+		fetched.  First 2 or 4 bytes from FWORD PTR will give offset, and the last 2 bytes give segment.
+		In which case returned OperandValue will return correct value for GetAsDword, GetAsWord, and GetFwordSegment.
+	*/
+	OperandValue EvaluateOperand(
+	    Memory &mem,int addressSize,int segmentOverride,const Operand &op,int destinationBytes);
+
+	/*! Evaluate an operand when it is known to be Reg8 or Mem8.
+	*/
+	uint8_t EvaluateOperandRegOrMem8(Memory &mem,int addressSize,int segmentOverride,const Operand &op);
+
+	/*! Evaluate an operand when it is known to be Reg16 or Mem16.
+	*/
+	uint16_t EvaluateOperandRegOrMem16(Memory &mem,int addressSize,int segmentOverride,const Operand &op);
+
+	/*! Evaluate an operand when it is known to be Reg32 or Mem32.
+	*/
+	uint32_t EvaluateOperandRegOrMem32(Memory &mem,int addressSize,int segmentOverride,const Operand &op);
+
+	/*! Evaluate an operand when it is known to be either a register or memory.
+	*/
+	OperandValue EvaluateOperandReg16OrReg32OrMem(
+	    Memory &mem,int addressSize,int segmentOverride,const Operand &op,int destinationBytes);
+
+	/*! Evaluate operand as an 8-bit operand.
+	    Use EvaluateOperandRegOrMem8 instead.
+	*/
+	OperandValue EvaluateOperand8(
+	    Memory &mem,int addressSize,int segmentOverride,const Operand &op);
+
+	/*! Evaluate operand as an 64-bit operand (double).
+	*/
+	OperandValue EvaluateOperand64(
+	    Memory &mem,int addressSize,int segmentOverride,const Operand &op);
+
+	/*! Evaluate operand as an 80-bit operand (80-bit floating point).
+	*/
+	OperandValue EvaluateOperand80(
+	    Memory &mem,int addressSize,int segmentOverride,const Operand &op);
+
+public:
+	/*! Return true if I/O access is permitted in I/O Map of TSS.
+	    It could raise exception.
+	*/
+	bool TestIOMapPermission(const SegmentRegister &TR,unsigned int ioMin,unsigned int accessSize,Memory &mem);
+
+	class BurstModeFetchInstructionFunctions;
+	class RealFetchInstructionFunctions;
+
+	/*! Fetch an instruction from specific segment and offset.
+	*/
+	inline void FetchInstruction(MemoryAccess::ConstMemoryWindow &memWin,InstructionAndOperand &instOp,const SegmentRegister &CS,unsigned int offset,Memory &mem)
+	{
+		const unsigned int operandSize=*CSOperandSizePointer[Return0InRealMode1InProtectedMode()];
+		const unsigned int addressSize=*CSAddressSizePointer[Return0InRealMode1InProtectedMode()];
+		return FetchInstruction(memWin,instOp,CS,offset,mem,operandSize,addressSize);
+	}
+
+	/*! Fetch an instruction from specific segment and offset with given default operand size and address size.
+	*/
+	void FetchInstruction(
+	    MemoryAccess::ConstMemoryWindow &memWin,
+	    InstructionAndOperand &instOp,
+	    const SegmentRegister &CS,unsigned int offset,Memory &mem,unsigned int defOperSize,unsigned int defAddrSize);
+
+	/*! Fetch an 8-bit operand.  Returns the number of bytes fetched.
+	    It pushes inst.operandLen and this->numBytes by 1 byte.
+	*/
+	inline void FetchOperand8(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,Memory &mem);
+	/*! Peek an 8-bit operand.  Returns the number of bytes fetched.
+	    It does not push inst.operandLen and this->numBytes by 1 byte.
+	*/
+	inline void PeekOperand8(unsigned int &operand,const Instruction &inst,const MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,Memory &mem);
+	/*! Fetch an 16-bit operand  Returns the number of bytes fetched..
+	*/
+	inline void FetchOperand16(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,Memory &mem);
+	/*! Fetch an 32-bit operand.  Returns the number of bytes fetched.
+	*/
+	inline void FetchOperand32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,Memory &mem);
+	/*! Fetch an 16- or 32-bit operand.  Length fetched depends on inst.operandSize.
+	    Returns the number of bytes fetched.
+	*/
+	inline unsigned int FetchOperand16or32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,Memory &mem);
+
+	/*! Fetch an 8-bit operand.
+	    It pushes inst.operandLen and this->numBytes by 1 byte.
+	*/
+	inline void FetchImm8(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,Memory &mem);
+	/*! Fetch an 16-bit operand.
+	*/
+	inline void FetchImm16(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,Memory &mem);
+	/*! Fetch an 32-bit operand.
+	*/
+	inline void FetchImm32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,Memory &mem);
+	/*! Fetch an 16- or 32-bit operand.  Length fetched depends on inst.operandSize.
+	    Returns the number of bytes fetched.
+	*/
+	inline unsigned int FetchImm16or32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,Memory &mem);
 };
 
 
 #include "i486fidelity.h"
-
-inline unsigned long i486DXCommon::LinearAddressToPhysicalAddressRead(unsigned int linearAddr,Memory &mem)
-{
-	TSUGARU_I486_FIDELITY_CLASS fidelity;
-
-	auto pageIndex=(linearAddr>>LINEARADDR_TO_PAGE_SHIFT);
-	PageTableEntry pageInfo;
-	if(state.pageTableCache[pageIndex].valid<state.pageTableCacheValidCounter)
-	{
-		pageInfo=ReadPageInfo(linearAddr,mem);
-		if(0==(pageInfo.table&PAGEINFO_FLAG_PRESENT))
-		{
-			uint32_t code=0;
-			if(0!=state.CS().DPL)
-			{
-				code|=PFFLAG_USER_MODE;
-			}
-			RaiseException(EXCEPTION_PF,code);
-			state.exceptionLinearAddr=linearAddr;
-			return 0;
-		}
-		if(true==fidelity.PageLevelException(*this,false,linearAddr,pageInfo.dir,pageInfo.table))
-		{
-			return 0;
-		}
-		state.pageTableCache[pageIndex].info=pageInfo;
-		state.pageTableCache[pageIndex].valid=state.pageTableCacheValidCounter;
-	}
-	else
-	{
-		pageInfo=state.pageTableCache[pageIndex].info;
-		if(true==fidelity.PageLevelException(*this,false,linearAddr,pageInfo.dir,pageInfo.table))
-		{
-			return 0;
-		}
-	}
-
-	fidelity.SetPageFlags(*this,linearAddr,mem,PAGEINFO_FLAG_A);
-
-	auto offset=(linearAddr&4095);
-	auto physicalAddr=(pageInfo.table&0xFFFFF000)+offset;
-	return physicalAddr;
-}
 
 inline unsigned long i486DXCommon::LinearAddressToPhysicalAddressWrite(unsigned int linearAddr,Memory &mem)
 {
@@ -3500,12 +3458,13 @@ inline unsigned long i486DXCommon::LinearAddressToPhysicalAddressWrite(unsigned 
 
 #include "i486debug.h"
 
-inline unsigned int i486DXCommon::FetchByte(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)
+template <class FIDELITY>
+inline unsigned int i486DXFidelityLayer<FIDELITY>::FetchByte(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)
 {
 	offset&=AddressMask((unsigned char)addressSize);
 	auto addr=seg.baseLinearAddr+offset;
 
-	TSUGARU_I486_FIDELITY_CLASS fidelity;
+	FIDELITY fidelity;
 	if(true==fidelity.SegmentReadException(*this,seg,offset))
 	{
 		return 0;
@@ -3524,7 +3483,9 @@ inline unsigned int i486DXCommon::FetchByte(unsigned int addressSize,const Segme
 	}
 	return mem.FetchByte(addr);
 }
-inline unsigned int i486DXCommon::FetchWord(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)
+
+template <class FIDELITY>
+inline unsigned int i486DXFidelityLayer<FIDELITY>::FetchWord(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)
 {
 	offset&=AddressMask((unsigned char)addressSize);
 	auto addr=seg.baseLinearAddr+offset;
@@ -3556,7 +3517,9 @@ inline unsigned int i486DXCommon::FetchWord(unsigned int addressSize,const Segme
 	}
 	return mem.FetchWord(addr);
 }
-inline unsigned int i486DXCommon::FetchDword(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)
+
+template <class FIDELITY>
+inline unsigned int i486DXFidelityLayer<FIDELITY>::FetchDword(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)
 {
 	offset&=AddressMask((unsigned char)addressSize);
 	auto addr=seg.baseLinearAddr+offset;
@@ -3965,6 +3928,7 @@ public:
 };
 
 #include "i486loadsegreg.h"
+#include "i486instfetch.h"
 #include "i486templatefunctions.h"
 #include "i486runinstruction.h"
 

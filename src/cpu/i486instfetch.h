@@ -1,4 +1,8 @@
-class i486DXCommon::BurstModeFetchInstructionFunctions
+#ifndef I486INSTFETCH_H_IS_INCLUDED
+#define I486INSTFETCH_H_IS_INCLUDED
+
+template <class FIDELITY>
+class i486DXFidelityLayer<FIDELITY>::BurstModeFetchInstructionFunctions
 {
 public:
 	/* This class does not check remaining bytes in the MemoryAccess::ConstPointer.
@@ -13,7 +17,7 @@ public:
 	   It should cause CPU exception.  However, I don't want to waste host CPU time for checking this.
 
 	*/
-	typedef i486DXCommon CPUCLASS;
+	typedef i486DXFidelityLayer<FIDELITY> CPUCLASS;
 
 	inline static void GetConstMemoryWindow(
 		CPUCLASS &cpu,
@@ -226,10 +230,11 @@ public:
 	}
 };
 
-class i486DXCommon::RealFetchInstructionFunctions
+template <class FIDELITY>
+class i486DXFidelityLayer<FIDELITY>::RealFetchInstructionFunctions
 {
 public:
-	typedef i486DXCommon CPUCLASS;
+	typedef i486DXFidelityLayer<FIDELITY> CPUCLASS;
 
 	inline static void GetConstMemoryWindow(
 		CPUCLASS &cpu,
@@ -372,3 +377,5 @@ public:
 		}
 	}
 };
+
+#endif
