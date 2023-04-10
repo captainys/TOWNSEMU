@@ -213,9 +213,85 @@ public:
 
 	void SetOneTimeBreakPoint(unsigned int CS,unsigned int EIP);
 
-private:
+public:
 	bool inInstruction=false;  // Set in BeforeRunOneInstruction and cleared in AfterRunOneInstruction
-	TSUGARU_I486_FIDELITY_CLASS::Debugger_ExceptionVerification prevCPUState;
+	class ExceptionVerification
+	{
+	public:
+		bool dontCheckBecauseREP=false;
+		uint32_t NULL_and_reg32[9];
+		uint32_t EIP;
+		uint16_t CS,DS,ES,FS,GS,SS;
+		inline void SaveCPUState(const class i486DXCommon &cpu,unsigned int prefix)
+		{
+			dontCheckBecauseREP=(prefix==i486DXCommon::INST_PREFIX_REP ||  // =  0xF3, // REP/REPE/REPZ
+			                     prefix==i486DXCommon::INST_PREFIX_REPE || // = 0xF3, // REP/REPE/REPZ
+			                     prefix==i486DXCommon::INST_PREFIX_REPNE); // =0xF2, // REPNE/REPNZ
+
+			memcpy(NULL_and_reg32,cpu.state.NULL_and_reg32,sizeof(NULL_and_reg32));
+			EIP=cpu.state.EIP;
+			CS=cpu.state.CS().value;
+			DS=cpu.state.DS().value;
+			ES=cpu.state.ES().value;
+			FS=cpu.state.FS().value;
+			GS=cpu.state.GS().value;
+			SS=cpu.state.SS().value;
+		};
+
+		void PrintChanges(const class i486DXCommon &cpu) const
+		{
+			for(int j=1; j<8; ++j)
+			{
+				std::cout << "REG32_" << j-1 << " "<<
+				    cpputil::Uitox(NULL_and_reg32[j]) << "->" << 
+				    cpputil::Uitox(cpu.state.NULL_and_reg32[j]) << std::endl;
+			}
+
+			std::cout << "EIP " <<
+				cpputil::Uitox(EIP) << "->" << cpputil::Ustox(cpu.state.EIP) << std::endl;
+			std::cout << "CS " <<
+				cpputil::Ustox(CS ) << "->" << cpputil::Ustox(cpu.state.CS().value) << std::endl;
+			std::cout << "DS " <<
+				cpputil::Ustox(DS ) << "->" << cpputil::Ustox(cpu.state.DS().value) << std::endl;
+			std::cout << "ES " <<
+				cpputil::Ustox(ES ) << "->" << cpputil::Ustox(cpu.state.ES().value) << std::endl;
+			std::cout << "FS " <<
+				cpputil::Ustox(FS ) << "->" << cpputil::Ustox(cpu.state.FS().value) << std::endl;
+			std::cout << "GS " <<
+				cpputil::Ustox(GS ) << "->" << cpputil::Ustox(cpu.state.GS().value) << std::endl;
+			std::cout << "SS " <<
+				cpputil::Ustox(SS ) << "->" << cpputil::Ustox(cpu.state.SS().value) << std::endl;
+		}
+
+		inline bool CPUStateChanged(const class i486DXCommon &cpu) const
+		{
+			if(true!=dontCheckBecauseREP)
+			{
+				for(int i=1; i<9; ++i)
+				{
+					if(NULL_and_reg32[i]!=cpu.state.NULL_and_reg32[i])
+					{
+						PrintChanges(cpu);
+						return true;
+					}
+				}
+				if(EIP!=cpu.state.EIP ||
+				   CS!=cpu.state.CS().value ||
+				   DS!=cpu.state.DS().value ||
+				   ES!=cpu.state.ES().value ||
+				   FS!=cpu.state.FS().value ||
+				   GS!=cpu.state.GS().value ||
+				   SS!=cpu.state.SS().value
+				   )
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+	};
+	ExceptionVerification verifyException;
+
 
 public:
 	/*! Callback from i486DXCommon::RunOneInstruction.

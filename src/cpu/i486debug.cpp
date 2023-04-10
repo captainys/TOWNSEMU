@@ -301,7 +301,6 @@ void i486Debugger::SetOneTimeBreakPoint(unsigned int CS,unsigned int EIP)
 void i486Debugger::BeforeRunOneInstruction(i486DXCommon &cpu,Memory &mem,InOut &io,const i486DXCommon::Instruction &inst)
 {
 	specialDebugInfo->BeforeRunOneInstruction(*this,cpu,mem,io,inst);
-	prevCPUState.SaveCPUState(cpu,inst.instPrefix);
 
 	++instHist[inst.opCode];
 
@@ -547,11 +546,6 @@ void i486Debugger::CheckForBreakPoints(i486DXCommon &cpu)
 void i486Debugger::HandleException(i486DXCommon &cpu,Memory &mem,unsigned int instNumBytes)
 {
 	auto &prevCSEIPLog=CSEIPLog[(CSEIPLogPtr+CSEIP_LOG_MASK)&CSEIP_LOG_MASK];
-	if(true==inInstruction && true==prevCPUState.CPUStateChanged(cpu))
-	{
-		ExternalBreak("CPU State Changed before handling exception.");
-		return;
-	}
 	if(true==inInstruction && cpu.state.ESP()!=prevCSEIPLog.ESP)
 	{
 		ExternalBreak("ESP value changed before handling exception.");

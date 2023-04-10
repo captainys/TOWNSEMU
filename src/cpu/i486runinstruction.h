@@ -1787,6 +1787,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 	if(nullptr!=debuggerPtr)
 	{
 		debuggerPtr->BeforeRunOneInstruction(*this,mem,io,inst);
+		fidelity.BeforeRunOneInstruction(*this,inst,debuggerPtr);
 	}
 
 	if(true==fidelity.LockNotAllowed(*this,mem,inst,op1))

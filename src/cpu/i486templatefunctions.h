@@ -247,6 +247,7 @@ void i486DXFidelityLayer <FIDELITY>::HandleException(bool,Memory &mem,unsigned i
 	if(nullptr!=debuggerPtr)
 	{
 		debuggerPtr->HandleException(*this,mem,numInstBytesForCallStack);
+		FIDELITY::OnHandleException(*this,debuggerPtr);
 	}
 
 	// Only some of the exceptions push error code onto the stack.

@@ -88,14 +88,8 @@ public:
 	inline static void RestoreIOPLBits(i486DXCommon &cpu,const EFLAGS &){};
 	inline static void RestoreIF(i486DXCommon &cpu,const EFLAGS &){};
 
-
-
-	class Debugger_ExceptionVerification
-	{
-	public:
-		static inline void SaveCPUState(const class i486DXCommon &cpu,unsigned int prefix){};
-		inline constexpr bool CPUStateChanged(const class i486DXCommon &cpu) const {return false;}
-	};
+	inline static void BeforeRunOneInstruction(const i486DXCommon &,const i486DXCommon::Instruction &inst,i486Debugger *debuggerPtr){};
+	inline static void OnHandleException(const i486DXCommon &,i486Debugger *debuggerPtr){};
 };
 
 class i486DXDefaultFidelity : public i486DXLowFidelity
@@ -750,81 +744,22 @@ public:
 	}
 
 
-	class Debugger_ExceptionVerification
+	inline static void BeforeRunOneInstruction(const i486DXCommon &cpu,const i486DXCommon::Instruction &inst,i486Debugger *debuggerPtr)
 	{
-	public:
-		bool dontCheckBecauseREP=false;
-		uint32_t NULL_and_reg32[9];
-		uint32_t EIP;
-		uint16_t CS,DS,ES,FS,GS,SS;
-		inline void SaveCPUState(const class i486DXCommon &cpu,unsigned int prefix)
+		if(nullptr!=debuggerPtr)
 		{
-			dontCheckBecauseREP=(prefix==i486DXCommon::INST_PREFIX_REP ||  // =  0xF3, // REP/REPE/REPZ
-			                     prefix==i486DXCommon::INST_PREFIX_REPE || // = 0xF3, // REP/REPE/REPZ
-			                     prefix==i486DXCommon::INST_PREFIX_REPNE); // =0xF2, // REPNE/REPNZ
-
-			memcpy(NULL_and_reg32,cpu.state.NULL_and_reg32,sizeof(NULL_and_reg32));
-			EIP=cpu.state.EIP;
-			CS=cpu.state.CS().value;
-			DS=cpu.state.DS().value;
-			ES=cpu.state.ES().value;
-			FS=cpu.state.FS().value;
-			GS=cpu.state.GS().value;
-			SS=cpu.state.SS().value;
-		};
-
-		void PrintChanges(const class i486DXCommon &cpu) const
-		{
-			for(int j=1; j<8; ++j)
-			{
-				std::cout << "REG32_" << j-1 << " "<<
-				    cpputil::Uitox(NULL_and_reg32[j]) << "->" << 
-				    cpputil::Uitox(cpu.state.NULL_and_reg32[j]) << std::endl;
-			}
-
-			std::cout << "EIP " <<
-				cpputil::Uitox(EIP) << "->" << cpputil::Ustox(cpu.state.EIP) << std::endl;
-			std::cout << "CS " <<
-				cpputil::Ustox(CS ) << "->" << cpputil::Ustox(cpu.state.CS().value) << std::endl;
-			std::cout << "DS " <<
-				cpputil::Ustox(DS ) << "->" << cpputil::Ustox(cpu.state.DS().value) << std::endl;
-			std::cout << "ES " <<
-				cpputil::Ustox(ES ) << "->" << cpputil::Ustox(cpu.state.ES().value) << std::endl;
-			std::cout << "FS " <<
-				cpputil::Ustox(FS ) << "->" << cpputil::Ustox(cpu.state.FS().value) << std::endl;
-			std::cout << "GS " <<
-				cpputil::Ustox(GS ) << "->" << cpputil::Ustox(cpu.state.GS().value) << std::endl;
-			std::cout << "SS " <<
-				cpputil::Ustox(SS ) << "->" << cpputil::Ustox(cpu.state.SS().value) << std::endl;
+			debuggerPtr->verifyException.SaveCPUState(cpu,inst.instPrefix);
 		}
-
-		inline bool CPUStateChanged(const class i486DXCommon &cpu) const
+	}
+	inline static void OnHandleException(const i486DXCommon &cpu,i486Debugger *debuggerPtr)
+	{
+		if(nullptr!=debuggerPtr && true==debuggerPtr->inInstruction && debuggerPtr->verifyException.CPUStateChanged(cpu))
 		{
-			if(true!=dontCheckBecauseREP)
-			{
-				for(int i=1; i<9; ++i)
-				{
-					if(NULL_and_reg32[i]!=cpu.state.NULL_and_reg32[i])
-					{
-						PrintChanges(cpu);
-						return true;
-					}
-				}
-				if(EIP!=cpu.state.EIP ||
-				   CS!=cpu.state.CS().value ||
-				   DS!=cpu.state.DS().value ||
-				   ES!=cpu.state.ES().value ||
-				   FS!=cpu.state.FS().value ||
-				   GS!=cpu.state.GS().value ||
-				   SS!=cpu.state.SS().value
-				   )
-				{
-					return true;
-				}
-			}
-			return false;
+			debuggerPtr->verifyException.PrintChanges(cpu);
+			debuggerPtr->ExternalBreak("CPU State Changed before handling exception.");
+			return;
 		}
-	};
+	}
 };
 
 /* } */

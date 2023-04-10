@@ -3405,8 +3405,8 @@ public:
 };
 
 
-#include "i486fidelity.h"
 #include "i486debug.h"
+#include "i486fidelity.h"
 
 template <class FIDELITY>
 inline unsigned int i486DXFidelityLayer<FIDELITY>::FetchByte(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)
