@@ -31,12 +31,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 
 
-#ifdef TSUGARU_I486_HIGH_FIDELITY
-	#define TSUGARU_I486_FIDELITY_CLASS i486DXHighFidelityOperation
-#else
-	#define TSUGARU_I486_FIDELITY_CLASS i486DXDefaultFidelityOperation
-#endif
-
 // References
 // [1]  i486 Processor Programmers Reference Manual
 
@@ -3875,12 +3869,6 @@ inline void i486DXCommon::SetRegisterValue8(unsigned int reg,unsigned char value
 
 // Assembled
 
-class i486DX : public i486DXFidelityLayer <TSUGARU_I486_FIDELITY_CLASS>
-{
-public:
-	i486DX(VMBase *vmPtr) : i486DXFidelityLayer<TSUGARU_I486_FIDELITY_CLASS>(vmPtr){}
-};
-
 class i486DXDefaultFidelity : public i486DXFidelityLayer <i486DXDefaultFidelityOperation>
 {
 public:
@@ -3893,6 +3881,19 @@ public:
 	i486DXHighFidelity(VMBase *vmPtr) : i486DXFidelityLayer<i486DXHighFidelityOperation>(vmPtr){}
 };
 
+#ifdef TSUGARU_I486_HIGH_FIDELITY
+	class i486DX : public i486DXHighFidelity
+	{
+	public:
+		i486DX(VMBase *vmPtr) : i486DXHighFidelity(vmPtr){}
+	};
+#else
+	class i486DX : public i486DXDefaultFidelity
+	{
+	public:
+		i486DX(VMBase *vmPtr) : i486DXDefaultFidelity(vmPtr){}
+	};
+#endif
 
 
 /* } */
