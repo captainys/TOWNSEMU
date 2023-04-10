@@ -3881,6 +3881,12 @@ public:
 	i486DX(VMBase *vmPtr) : i486DXFidelityLayer<TSUGARU_I486_FIDELITY_CLASS>(vmPtr){}
 };
 
+class i486DXDefaultFidelity : public i486DXFidelityLayer <i486DXDefaultFidelityOperation>
+{
+public:
+	i486DXDefaultFidelity(VMBase *vmPtr) : i486DXFidelityLayer<i486DXDefaultFidelityOperation>(vmPtr){}
+};
+
 
 
 /* } */
