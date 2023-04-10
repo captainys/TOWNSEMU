@@ -1691,7 +1691,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 
 	// Use the following as a pair.
 	#define SAVE_ESP_BEFORE_PUSH_POP \
-		FIDELITY::SavedESP savedESP; \
+		typename FIDELITY::SavedESP savedESP; \
 		FIDELITY::SaveESP(savedESP,inst.addressSize,state.ESP());
 
 	#define HANDLE_EXCEPTION_PUSH_POP \
@@ -1703,7 +1703,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 
 	// Use the following as a pair.
 	#define SAVE_ECX_BEFORE_STRINGOP \
-		FIDELITY::SavedECX savedECX; \
+		typename FIDELITY::SavedECX savedECX; \
 		FIDELITY::SaveECX(savedECX,state.ECX());
 
 	#define HANDLE_EXCEPTION_STRINGOP \
@@ -6578,7 +6578,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			break;
 		}
 		{
-			FIDELITY::EFLAGS ioplBits;
+			typename FIDELITY::EFLAGS ioplBits;
 			FIDELITY::SaveEFLAGS(ioplBits,*this);
 
 			// VM and RF flags must be preserved.
@@ -6647,7 +6647,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			SetIPorEIP(inst.operandSize,eip);
 			auto segRegValue=cs;
 
-			FIDELITY::EFLAGS ioplBits;
+			typename FIDELITY::EFLAGS ioplBits;
 			FIDELITY::SaveEFLAGS(ioplBits,*this);
 			SetFLAGSorEFLAGS(inst.operandSize,eflags);
 			FIDELITY::RestoreIOPLBits(*this,ioplBits);
