@@ -11,6 +11,8 @@
 class i486DXLowFidelity
 {
 public:
+	typedef i486DXLowFidelity THISCLASS;
+
 	class SavedESP
 	{
 	};
@@ -99,6 +101,8 @@ public:
 class i486DXDefaultFidelity : public i486DXLowFidelity
 {
 public:
+	typedef i486DXDefaultFidelity THISCLASS;
+
 	static inline bool SegmentReadException(class i486DXCommon &cpu,const i486DXCommon::SegmentRegister &seg,uint32_t offset)
 	{
 		if(seg.limit<offset) // Needed to run Fractal Engine Demo and other Psygnosis games.
@@ -110,7 +114,7 @@ public:
 	}
 
 	// Default fidelity level does not consider Protected Mode && IOPL<CPL since no known Towns native app uses 0<CPL protected mode.
-	static inline bool TakeIOReadException(i486DXCommon &cpu,unsigned int ioport,unsigned int accessSize,Memory &mem,unsigned int numInstBytes)
+	static inline bool TakeIOReadException(i486DXFidelityLayer<THISCLASS> &cpu,unsigned int ioport,unsigned int accessSize,Memory &mem,unsigned int numInstBytes)
 	{
 		if(0!=(cpu.state.EFLAGS&i486DXCommon::EFLAGS_VIRTUAL86))
 		{
@@ -125,7 +129,7 @@ public:
 	}
 
 	// Default fidelity level does not consider Protected Mode && IOPL<CPL since no known Towns native app uses 0<CPL protected mode.
-	static inline bool TakeIOWriteException(i486DXCommon &cpu,unsigned int ioport,unsigned int accessSize,Memory &mem,unsigned int numInstBytes)
+	static inline bool TakeIOWriteException(i486DXFidelityLayer<THISCLASS> &cpu,unsigned int ioport,unsigned int accessSize,Memory &mem,unsigned int numInstBytes)
 	{
 		if(0!=(cpu.state.EFLAGS&i486DXCommon::EFLAGS_VIRTUAL86))
 		{
@@ -143,6 +147,8 @@ public:
 class i486DXHighFidelity : public i486DXDefaultFidelity
 {
 public:
+	typedef i486DXHighFidelity THISCLASS;
+
 	class SavedESP
 	{
 	public:
@@ -160,7 +166,7 @@ public:
 			ESP|=(savedESP.ESP&0xFFFF0000);
 		}
 	}
-	inline static bool HandleExceptionAndRestoreESPIfAny(class i486DXCommon &cpu,Memory &mem,uint32_t instNumBytes,SavedESP ESP)
+	inline static bool HandleExceptionAndRestoreESPIfAny(i486DXFidelityLayer<THISCLASS> &cpu,Memory &mem,uint32_t instNumBytes,SavedESP ESP)
 	{
 		if(true==cpu.state.exception)
 		{
@@ -181,7 +187,7 @@ public:
 	{
 		save.ECX=ECX;
 	}
-	inline bool HandleExceptionAndRestoreECXIfAny(class i486DXCommon &cpu,Memory &mem,uint32_t instNumBytes,const SavedECX ECX)
+	inline bool HandleExceptionAndRestoreECXIfAny(i486DXFidelityLayer<THISCLASS> &cpu,Memory &mem,uint32_t instNumBytes,const SavedECX ECX)
 	{
 		if(true==cpu.state.exception)
 		{
@@ -199,7 +205,7 @@ public:
 		cpu.state.CS().value|=(cpu.state.CS().DPL&3);
 	}
 
-	inline bool UDException_MOV_TO_CS(class i486DXCommon &cpu,uint32_t reg,Memory &mem,uint32_t instNumBytes)
+	inline bool UDException_MOV_TO_CS(i486DXFidelityLayer<THISCLASS> &cpu,uint32_t reg,Memory &mem,uint32_t instNumBytes)
 	{
 		if(reg==i486DXCommon::REG_CS)
 		{
@@ -210,7 +216,7 @@ public:
 		return false;
 	}
 
-	inline static bool IOPLException(class i486DXCommon &cpu,uint32_t exceptionType,Memory &mem,uint32_t instNumBytes)
+	inline static bool IOPLException(i486DXFidelityLayer<THISCLASS> &cpu,uint32_t exceptionType,Memory &mem,uint32_t instNumBytes)
 	{
 		if(true!=cpu.IsInRealMode() && cpu.GetIOPL()<cpu.state.CS().DPL)
 		{
@@ -220,7 +226,7 @@ public:
 		}
 		return false;
 	}
-	inline static bool IOPLExceptionInVM86Mode(class i486DXCommon &cpu,uint32_t exceptionType,Memory &mem,uint32_t instNumBytes)
+	inline static bool IOPLExceptionInVM86Mode(i486DXFidelityLayer<THISCLASS> &cpu,uint32_t exceptionType,Memory &mem,uint32_t instNumBytes)
 	{
 		if(true!=cpu.IsInRealMode() && cpu.GetVM() && cpu.GetIOPL()<3)
 		{
@@ -231,7 +237,7 @@ public:
 		return false;
 	}
 
-	inline static bool HandleExceptionIfAny(class i486DXCommon &cpu,Memory &mem,uint32_t instNumBytes)
+	inline static bool HandleExceptionIfAny(i486DXFidelityLayer<THISCLASS> &cpu,Memory &mem,uint32_t instNumBytes)
 	{
 		if(true==cpu.state.exception)
 		{
@@ -361,7 +367,7 @@ public:
 		return false;
 	}
 
-	static inline bool LockNotAllowed(class i486DXCommon &cpu,Memory &mem,const i486DXCommon::Instruction &inst,const i486DXCommon::Operand &op1)
+	static inline bool LockNotAllowed(i486DXFidelityLayer<THISCLASS> &cpu,Memory &mem,const i486DXCommon::Instruction &inst,const i486DXCommon::Operand &op1)
 	{
 		if(i486DXCommon::INST_PREFIX_LOCK==inst.instPrefix)
 		{
@@ -683,7 +689,7 @@ public:
 
 
 	// High fidelity level considers Protected Mode && IOPL<CPL for Windows 3.1 protected-mode interrupt handlers.
-	static inline bool TakeIOReadException(i486DXCommon &cpu,unsigned int ioport,unsigned int accessSize,Memory &mem,unsigned int numInstBytes)
+	static inline bool TakeIOReadException(i486DXFidelityLayer<THISCLASS> &cpu,unsigned int ioport,unsigned int accessSize,Memory &mem,unsigned int numInstBytes)
 	{
 		if(true!=cpu.IsInRealMode() && (0!=(cpu.state.EFLAGS&i486DXCommon::EFLAGS_VIRTUAL86) || cpu.GetIOPL()<cpu.state.CS().DPL))
 		{
@@ -698,7 +704,7 @@ public:
 	}
 
 	// High fidelity level considers Protected Mode && IOPL<CPL for Windows 3.1 protected-mode interrupt handlers.
-	static inline bool TakeIOWriteException(i486DXCommon &cpu,unsigned int ioport,unsigned int accessSize,Memory &mem,unsigned int numInstBytes)
+	static inline bool TakeIOWriteException(i486DXFidelityLayer<THISCLASS> &cpu,unsigned int ioport,unsigned int accessSize,Memory &mem,unsigned int numInstBytes)
 	{
 		if(true!=cpu.IsInRealMode() && (0!=(cpu.state.EFLAGS&i486DXCommon::EFLAGS_VIRTUAL86) || cpu.GetIOPL()<cpu.state.CS().DPL))
 		{

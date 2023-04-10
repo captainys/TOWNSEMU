@@ -392,53 +392,6 @@ void i486DXCommon::InvalidateDescriptorCache(void)
 	}
 }
 
-void i486DXCommon::HandleException(bool,Memory &mem,unsigned int numInstBytesForCallStack)
-{
-	if(nullptr!=debuggerPtr)
-	{
-		debuggerPtr->HandleException(*this,mem,numInstBytesForCallStack);
-	}
-
-	// Only some of the exceptions push error code onto the stack.
-	// See Section 9.9 of i486 Programmer's Reference Manual for the information.
-	switch(state.exceptionType)
-	{
-	case EXCEPTION_PF:
-		Interrupt(INT_PAGE_FAULT,mem,0,numInstBytesForCallStack,false);
-		Push(mem,32,state.exceptionCode);
-		SetCR(2,state.exceptionLinearAddr);
-		break;
-	case EXCEPTION_GP:
-		Interrupt(INT_GENERAL_PROTECTION,mem,0,numInstBytesForCallStack,false);
-		if(true!=IsInRealMode()) // As HIMEM.SYS's expectation.
-		{
-			Push(mem,32,state.exceptionCode);
-		}
-		break;
-	case EXCEPTION_ND:
-		Interrupt(INT_SEGMENT_NOT_PRESENT,mem,0,numInstBytesForCallStack,false);
-		if(true!=IsInRealMode())
-		{
-			Push(mem,32,state.exceptionCode);
-		}
-		break;
-	case EXCEPTION_UD:
-		Interrupt(INT_INVALID_OPCODE,mem,0,numInstBytesForCallStack,false);
-		break;
-	case EXCEPTION_SS:
-		Interrupt(INT_STACK_FAULT,mem,0,numInstBytesForCallStack,false);
-		if(true!=IsInRealMode()) // As HIMEM.SYS's expectation.
-		{
-			Push(mem,32,state.exceptionCode);
-		}
-		break;
-	default:
-		Abort("Undefined exception.");
-		break;
-	}
-	state.exception=false;
-}
-
 std::vector <std::string> i486DXCommon::GetStateText(void) const
 {
 	std::vector <std::string> text;
@@ -1058,8 +1011,6 @@ void i486DXCommon::PrintPageTranslation(const Memory &mem,uint32_t linearAddr) c
 		}
 	}
 }
-
-#include "i486loadsegreg.h"
 
 const unsigned char *i486DXCommon::GetSegmentDescriptor(unsigned char buf[8],unsigned int selector,const Memory &mem) const
 {
