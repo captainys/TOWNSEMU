@@ -209,10 +209,10 @@ void FMTowns::Daikoukai_ApplyPatchesCacheAddr(void)
 
 		auto linearBase=cpu.state.DS().baseLinearAddr;
 		unsigned int exceptionType,exceptionCode; // To discard
-		state.appSpecific_Daikoukai_YNDialogXAddr=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,linearBase+0x1F098,mem);
-		state.appSpecific_Daikoukai_YNDialogYAddr=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,linearBase+0x1F09C,mem);
-		state.appSpecific_Daikoukai_DentakuDialogXAddr=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,linearBase+0x1F0AC,mem);
-		state.appSpecific_Daikoukai_DentakuDialogYAddr=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,linearBase+0x1F0B0,mem);
+		state.appSpecific_Daikoukai_YNDialogXAddr=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,linearBase+0x1F098,mem);
+		state.appSpecific_Daikoukai_YNDialogYAddr=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,linearBase+0x1F09C,mem);
+		state.appSpecific_Daikoukai_DentakuDialogXAddr=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,linearBase+0x1F0AC,mem);
+		state.appSpecific_Daikoukai_DentakuDialogYAddr=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,linearBase+0x1F0B0,mem);
 
 		std::cout << "Cached YN Dialog Location Addr:" << 
 		             cpputil::Itox(state.appSpecific_Daikoukai_YNDialogXAddr) << " " <<
