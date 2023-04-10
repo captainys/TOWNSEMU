@@ -18,6 +18,8 @@ i486symtable.cpp
 i486symtableexp.cpp
 i486statesave.cpp
 i486fidelity.h
+i486runinstruction.h
+i486templatefunctions.h
 )
 target_link_libraries(cpu device ramrom inout cpputil)
 target_include_directories(cpu PUBLIC .)

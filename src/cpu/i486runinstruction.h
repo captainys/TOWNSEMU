@@ -1872,7 +1872,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			auto value2=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op2,inst.operandSize/8);
 			auto selector=value2.GetAsWord();
 
-			i486DXCommon::LoadSegmentRegisterTemplate<const i486DXCommon> loader;
+			i486DXCommon::LoadSegmentRegisterTemplate<const i486DXCommon,FIDELITY> loader;
 			loader.LoadProtectedModeDescriptor(*this,selector,mem);
 			if(true==state.exception || nullptr==loader.rawDesc)
 			{
@@ -4480,7 +4480,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			auto selector=selectorValue.GetAsWord();
 			if(true!=state.exception)
 			{
-				i486DXCommon::LoadSegmentRegisterTemplate<const i486DXCommon> loader;
+				i486DXCommon::LoadSegmentRegisterTemplate<const i486DXCommon,FIDELITY> loader;
 				loader.LoadProtectedModeDescriptor(*this,selector,mem);
 				if(true==state.exception || nullptr==loader.rawDesc)
 				{

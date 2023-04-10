@@ -289,5 +289,180 @@ void i486DXFidelityLayer <FIDELITY>::HandleException(bool,Memory &mem,unsigned i
 	state.exception=false;
 }
 
+template <class FIDELITY>
+const unsigned char *i486DXFidelityLayer <FIDELITY>::GetSegmentDescriptor(unsigned char buf[8],unsigned int selector,const Memory &mem) const
+{
+	LoadSegmentRegisterTemplate<const i486DXFidelityLayer <FIDELITY>,FIDELITY> loader;
+	loader.LoadProtectedModeDescriptor(*this,selector,mem);
+	if(nullptr!=loader.rawDesc)
+	{
+		memcpy(buf,loader.rawDesc,8);
+		return buf;
+	}
+	return nullptr;
+}
+
+template <class FIDELITY>
+unsigned int i486DXFidelityLayer <FIDELITY>::DebugLoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode) const
+{
+	LoadSegmentRegisterTemplate<const i486DXFidelityLayer <FIDELITY>,FIDELITY> loader;
+	return loader.LoadSegmentRegister(*this,reg,value,mem,IsInRealMode());
+}
+
+template <class FIDELITY>
+unsigned int i486DXFidelityLayer <FIDELITY>::LoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem)
+{
+	FIDELITY fidelity;
+
+	if(&reg==&state.SS())
+	{
+		state.holdIRQ=true;
+	}
+	LoadSegmentRegisterTemplate<i486DXFidelityLayer <FIDELITY>,FIDELITY> loader;
+
+	fidelity.SetLoadSegmentRegisterFlags(loader.fidelityFlags,*this,reg);
+
+	auto ret=loader.LoadSegmentRegister(*this,reg,value,mem,IsInRealMode());
+
+	return ret;
+}
+
+template <class FIDELITY>
+unsigned int i486DXFidelityLayer <FIDELITY>::LoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode)
+{
+	FIDELITY fidelity;
+
+	if(&reg==&state.SS())
+	{
+		state.holdIRQ=true;
+	}
+	LoadSegmentRegisterTemplate<i486DXCommon,FIDELITY> loader;
+
+	fidelity.SetLoadSegmentRegisterFlags(loader.fidelityFlags,*this,reg);
+
+	auto ret=loader.LoadSegmentRegister(*this,reg,value,mem,isInRealMode);
+
+	return ret;
+}
+
+template <class FIDELITY>
+void i486DXFidelityLayer <FIDELITY>::LoadTaskRegister(unsigned int value,const Memory &mem)
+{
+	LoadSegmentRegister(state.TR,value,mem);
+}
+
+template <class FIDELITY>
+i486DXCommon::FarPointer i486DXFidelityLayer <FIDELITY>::GetCallGate(unsigned int selector,const Memory &mem)
+{
+	LoadSegmentRegisterTemplate<i486DXFidelityLayer <FIDELITY>,FIDELITY> loader;
+	return loader.GetCallGate(*this,selector,mem);
+}
+
+template <class FIDELITY>
+i486DXCommon::FarPointer i486DXFidelityLayer <FIDELITY>::DebugGetCallGate(unsigned int selector,const Memory &mem) const
+{
+	LoadSegmentRegisterTemplate<const i486DXFidelityLayer <FIDELITY>,FIDELITY> loader;
+	return loader.GetCallGate(*this,selector,mem);
+}
+
+template <class FIDELITY>
+void i486DXFidelityLayer <FIDELITY>::StoreOperandValue(
+    const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value)
+{
+	static const unsigned int addressMask[2]=
+	{
+		0x0000FFFF,
+		0xFFFFFFFF,
+	};
+
+	switch(dst.operandType)
+	{
+	case OPER_UNDEFINED:
+		Abort("Tried to evaluate an undefined operand.");
+		break;
+	case OPER_ADDR:
+		{
+			unsigned int offset;
+			const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,dst,segmentOverride);
+
+			offset&=addressMask[addressSize>>5];
+			switch(value.numBytes)
+			{
+			case 1:
+				StoreByte(mem,addressSize,seg,offset,value.byteData[0]);
+				break;
+			case 2:
+				StoreWord(mem,addressSize,seg,offset,cpputil::GetWord(value.byteData));// cpputil::GetWord is faster than using value.GetAsWord.
+				break;
+			case 4:
+				StoreDword(mem,addressSize,seg,offset,cpputil::GetDword(value.byteData));// cpputil::GetWord is faster than using value.GetAsDword.
+				break;
+			default:
+				for(unsigned int i=0; i<value.numBytes; ++i)
+				{
+					StoreByte(mem,addressSize,seg,offset+i,value.byteData[i]);
+				}
+				break;
+			}
+		}
+		break;
+	case OPER_FARADDR:
+		Abort("Tried to evaluate FAR ADDRESS.");
+		break;
+	case OPER_REG32:
+		{
+			state.NULL_and_reg32[dst.reg]=cpputil::GetDword(value.byteData);
+		}
+		break;
+	case OPER_REG16:
+		{
+			SET_INT_LOW_WORD(state.NULL_and_reg32[dst.reg&15],cpputil::GetWord(value.byteData));
+		}
+		break;
+	case OPER_REG8:
+		SetRegisterValue8(dst.reg,value.byteData[0]);
+		break;
+	case OPER_SREG:
+		LoadSegmentRegister(state.sreg[dst.reg-REG_SEGMENT_REG_BASE],cpputil::GetWord(value.byteData),mem);
+		break;
+
+	case OPER_CR0:
+	case OPER_CR1:
+	case OPER_CR2:
+	case OPER_CR3:
+		SetCR(dst.operandType-OPER_CR0,cpputil::GetDword(value.byteData));
+		break;
+	case OPER_DR0:
+	case OPER_DR1:
+	case OPER_DR2:
+	case OPER_DR3:
+	case OPER_DR4:
+	case OPER_DR5:
+	case OPER_DR6:
+	case OPER_DR7:
+		state.DR[dst.operandType-OPER_DR0]=cpputil::GetDword(value.byteData);
+		break;
+	case OPER_TEST0:
+	case OPER_TEST1:
+	case OPER_TEST2:
+	case OPER_TEST3:
+	case OPER_TEST4:
+	case OPER_TEST5:
+	case OPER_TEST6:
+	case OPER_TEST7:
+		state.TEST[dst.operandType-OPER_TEST0]=cpputil::GetDword(value.byteData);
+		break;
+	default:
+		#ifdef _WIN32
+			__assume(0);
+		#elif defined(__clang__) || defined(__GNUC__)
+			__builtin_unreachable();
+		#else
+			break;
+		#endif
+	}
+}
+
+
 /* } */
 #endif

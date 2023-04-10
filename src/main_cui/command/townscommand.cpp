@@ -3438,7 +3438,7 @@ void TownsCommandInterpreter::Execute_Disassemble(FMTowns &towns,Command &cmd)
 	}
 
 	i486DX::SegmentRegister seg;
-	farPtr.LoadSegmentRegister(seg,towns.cpu,towns.mem);
+	towns.cpu.DebugLoadSegmentRegisterFromFarPointer(seg,towns.mem,farPtr);
 	farPtr=towns.cpu.TranslateFarPointer(farPtr);
 	for(int i=0; i<16; ++i)
 	{
@@ -3480,7 +3480,7 @@ void TownsCommandInterpreter::Execute_Disassemble16(FMTowns &towns,Command &cmd)
 	}
 
 	i486DX::SegmentRegister seg;
-	farPtr.LoadSegmentRegister(seg,towns.cpu,towns.mem);
+	towns.cpu.DebugLoadSegmentRegisterFromFarPointer(seg,towns.mem,farPtr);
 	farPtr=towns.cpu.TranslateFarPointer(farPtr);
 	for(int i=0; i<16; ++i)
 	{
@@ -3522,7 +3522,7 @@ void TownsCommandInterpreter::Execute_Disassemble32(FMTowns &towns,Command &cmd)
 	}
 
 	i486DX::SegmentRegister seg;
-	farPtr.LoadSegmentRegister(seg,towns.cpu,towns.mem);
+	towns.cpu.DebugLoadSegmentRegisterFromFarPointer(seg,towns.mem,farPtr);
 	farPtr=towns.cpu.TranslateFarPointer(farPtr);
 	for(int i=0; i<16; ++i)
 	{
@@ -3983,7 +3983,7 @@ void TownsCommandInterpreter::Execute_EditMemory(FMTowns &towns,Command &cmd,uns
 			else
 			{
 				i486DX::SegmentRegister seg;
-				farPtr.LoadSegmentRegister(seg,towns.cpu,towns.mem);
+				towns.cpu.DebugLoadSegmentRegisterFromFarPointer(seg,towns.mem,farPtr);
 				for(int i=0; i<cmd.argv[2].size(); ++i)
 				{
 					towns.cpu.DebugStoreByte(towns.mem,32,seg,farPtr.OFFSET+i,cmd.argv[2][i]);
@@ -4017,7 +4017,7 @@ void TownsCommandInterpreter::Execute_EditMemory(FMTowns &towns,Command &cmd,uns
 					else
 					{
 						i486DX::SegmentRegister seg;
-						farPtr.LoadSegmentRegister(seg,towns.cpu,towns.mem);
+						towns.cpu.DebugLoadSegmentRegisterFromFarPointer(seg,towns.mem,farPtr);
 						switch(numBytes)
 						{
 						case 1:
@@ -4616,7 +4616,7 @@ void TownsCommandInterpreter::Execute_SaveMemDump(FMTowns &towns,Command &cmd)
 		i486DX::SegmentRegister seg;
 		if((farPtr.SEG&0xFFFF0000)!=i486DX::FarPointer::PHYS_ADDR)
 		{
-			farPtr.LoadSegmentRegister(seg,towns.cpu,towns.mem);
+			towns.cpu.DebugLoadSegmentRegisterFromFarPointer(seg,towns.mem,farPtr);
 		}
 		std::vector <unsigned char> buf;
 		for(unsigned int i=0; i<length; ++i)

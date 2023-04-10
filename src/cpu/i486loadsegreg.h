@@ -4,15 +4,15 @@
 
 // Must be included from i486???.cpp only.
 
-template <class CPUCLASS>
+template <class CPUCLASS,class FIDELITY>
 class i486DXCommon::LoadSegmentRegisterTemplate
 {
 public:
 	unsigned char rawDescBuf[8];
 	const unsigned char *rawDesc;
 
-	TSUGARU_I486_FIDELITY_CLASS fidelity;
-	TSUGARU_I486_FIDELITY_CLASS::LoadSegmentRegisterFlags fidelityFlags;
+	FIDELITY fidelity;
+	class FIDELITY::LoadSegmentRegisterFlags fidelityFlags;
 
 	// For mutable i486DXCommon >>
 	static inline unsigned int FetchByteByLinearAddress(i486DXCommon &cpu,Memory &mem,unsigned int linearAddr)
@@ -66,7 +66,7 @@ public:
 
 	inline void LoadProtectedModeDescriptor(CPUCLASS &cpu,unsigned int value,const Memory &mem)
 	{
-		TSUGARU_I486_FIDELITY_CLASS::LoadSegmentRegisterVariables fidelityVar;
+		FIDELITY::LoadSegmentRegisterVariables fidelityVar;
 
 		rawDesc=LoadFromDescriptorCache(cpu,value);
 		if(nullptr!=rawDesc)

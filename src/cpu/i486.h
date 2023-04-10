@@ -372,8 +372,6 @@ public:
 
 		std::string Format(void) const;
 		void MakeFromString(const std::string &str);
-
-		void LoadSegmentRegister(SegmentRegister &seg,i486DXCommon &cpu,const Memory &mem) const;
 	};
 
 	/*! Translate far pointer.
@@ -2316,57 +2314,14 @@ public:
 	void PrintPageTranslation(const Memory &mem,uint32_t linearAddr) const;
 
 protected:
-	template <class CPUCLASS>
+	template <class CPUCLASS,class FIDELITY>
 	class LoadSegmentRegisterTemplate;
 public:
-
-	/*! Loads a segment register.
-	    If reg is SS, it raise holdIRQ flag.
-	    How the segment linear base address is set depends on the CPU mode,
-	    and in the protected mode, it needs to look at GDT and LDT.
-	    Therefore it needs a reference to memory.
-
-		It returns the upper-4 bytes of the descriptor.  In real mode, it always returns 0xFFFFFFFF.
-	*/
-	unsigned int LoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem);
-
-	/*! It works the same as LoadSegmentRegister function except it takes isInRealMode flag from the outside.
-
-		It returns the upper-4 bytes of the descriptor.  In real mode, it always returns 0xFFFFFFFF.
-	*/
-	unsigned int LoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode);
 
 	/*! Loads a segment register in real mode.
 	    If reg is SS, it raise holdIRQ flag.
 	*/
 	void LoadSegmentRegisterRealMode(SegmentRegister &reg,unsigned int value);
-
-	/*! Returns non-null pointer same as buf if the selector is within limit.
-	    Returns nullptr if out of limit.
-	*/
-	const unsigned char *GetSegmentDescriptor(unsigned char buf[8],unsigned int selector,const Memory &mem) const;
-
-	/*! Get Call Gate.
-	    This function may raise exception.
-	*/
-	FarPointer GetCallGate(unsigned int selector,const Memory &mem);
-
-	/*! Get Call Gate.
-	    This function will not raise exception.
-	*/
-	FarPointer DebugGetCallGate(unsigned int selector,const Memory &mem) const;
-
-	/*! Load Task Register.
-	*/
-	void LoadTaskRegister(unsigned int value,const Memory &mem);
-
-	/*! Loads a segment register.
-	    It does not rely on the current CPU state, instead isInRealMode is given as a parameter.
-	    Even if reg==SS, it does not update holdIRQ flag.
-
-		It returns the upper-4 bytes of the descriptor.  In real mode, it always returns 0xFFFFFFFF.
-	*/
-	unsigned int DebugLoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode) const;
 
 	/*! Loads limit and linear base address to a descriptor table register.
 	    How many bytes are loaded depends on operand size.  [1] 26-194.
@@ -3263,12 +3218,6 @@ public:
 	}
 
 
-	/*! Stores value to the destination described by the operand.
-	    If the destination is memory, the number of bytes stored depends on numByte member of OperandValue.
-	    If the destination is a register, the number of bytes stored depends on the size of the register.
-	*/
-	void StoreOperandValue(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value);
-
 	/*! Stores value to the destination operand, when the operand is known to be reg8 or mem8. */
 	void StoreOperandValueRegOrMem8(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,uint8_t value);
 
@@ -3320,6 +3269,11 @@ public:
 	virtual uint32_t SerializeVersion(void) const;
 	virtual void SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const;
 	virtual bool SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version);
+
+
+	/*! DebugLoadSegmentRegister is implemented in the sub-class.  It is not performance critical.
+	*/
+	virtual unsigned int DebugLoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode) const=0;
 };
 
 // Fidelity Layer
@@ -3371,6 +3325,87 @@ public:
 	    See Interrupt() function for numInstBytes.
 	*/
 	void HandleException(bool,Memory &mem,unsigned int numInstBytesForCallStack);
+
+	/*! Loads a segment register.
+	    If reg is SS, it raise holdIRQ flag.
+	    How the segment linear base address is set depends on the CPU mode,
+	    and in the protected mode, it needs to look at GDT and LDT.
+	    Therefore it needs a reference to memory.
+
+		It returns the upper-4 bytes of the descriptor.  In real mode, it always returns 0xFFFFFFFF.
+	*/
+	unsigned int LoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem);
+
+	/*! It works the same as LoadSegmentRegister function except it takes isInRealMode flag from the outside.
+
+		It returns the upper-4 bytes of the descriptor.  In real mode, it always returns 0xFFFFFFFF.
+	*/
+	unsigned int LoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode);
+
+	/*! Loads a segment register.
+	    It does not rely on the current CPU state, instead isInRealMode is given as a parameter.
+	    Even if reg==SS, it does not update holdIRQ flag.
+
+		It returns the upper-4 bytes of the descriptor.  In real mode, it always returns 0xFFFFFFFF.
+	*/
+	unsigned int DebugLoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode) const override;
+
+	/*! Load Task Register.
+	*/
+	void LoadTaskRegister(unsigned int value,const Memory &mem);
+
+	/*! Returns non-null pointer same as buf if the selector is within limit.
+	    Returns nullptr if out of limit.
+	*/
+	const unsigned char *GetSegmentDescriptor(unsigned char buf[8],unsigned int selector,const Memory &mem) const;
+
+	/*! Get Call Gate.
+	    This function may raise exception.
+	*/
+	FarPointer GetCallGate(unsigned int selector,const Memory &mem);
+
+	/*! Get Call Gate.
+	    This function will not raise exception.
+	*/
+	FarPointer DebugGetCallGate(unsigned int selector,const Memory &mem) const;
+
+	/*! Stores value to the destination described by the operand.
+	    If the destination is memory, the number of bytes stored depends on numByte member of OperandValue.
+	    If the destination is a register, the number of bytes stored depends on the size of the register.
+	*/
+	void StoreOperandValue(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value);
+
+	void DebugLoadSegmentRegisterFromFarPointer(SegmentRegister &seg,const Memory &mem,FarPointer ptr) const
+	{
+		if(ptr.SEG==FarPointer::NO_SEG)
+		{
+			seg=state.CS();
+		}
+		else if(0==(ptr.SEG&0xFFFF0000))
+		{
+			DebugLoadSegmentRegister(seg,ptr.SEG&0xFFFF,mem,IsInRealMode());
+		}
+		else if((ptr.SEG&0xFFFF0000)==FarPointer::SEG_REGISTER)
+		{
+			seg=state.GetSegmentRegister(ptr.SEG&0xFFFF);
+		}
+		else if((ptr.SEG&0xFFFF0000)==FarPointer::LINEAR_ADDR)
+		{
+			seg.value=0;
+			seg.baseLinearAddr=0;
+			seg.operandSize=32;
+			seg.addressSize=32;
+			seg.limit=0xFFFFFFFF;
+		}
+		else if((ptr.SEG&0xFFFF0000)==FarPointer::REAL_ADDR)
+		{
+			seg.value=ptr.SEG&0xFFFF;
+			seg.baseLinearAddr=seg.value*0x10;
+			seg.operandSize=16;
+			seg.addressSize=16;
+			seg.limit=0xFFFF;
+		}
+	}
 };
 
 

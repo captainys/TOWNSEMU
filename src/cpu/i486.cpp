@@ -205,38 +205,6 @@ i486DXCommon::FarPointer i486DXCommon::TranslateFarPointer(FarPointer ptr) const
 	return ptr;
 }
 
-void i486DXCommon::FarPointer::LoadSegmentRegister(SegmentRegister &seg,i486DXCommon &cpu,const Memory &mem) const
-{
-	if(SEG==NO_SEG)
-	{
-		seg=cpu.state.CS();
-	}
-	else if(0==(SEG&0xFFFF0000))
-	{
-		cpu.LoadSegmentRegister(seg,SEG&0xFFFF,mem);
-	}
-	else if((SEG&0xFFFF0000)==SEG_REGISTER)
-	{
-		seg=cpu.state.GetSegmentRegister(SEG&0xFFFF);
-	}
-	else if((SEG&0xFFFF0000)==LINEAR_ADDR)
-	{
-		seg.value=0;
-		seg.baseLinearAddr=0;
-		seg.operandSize=32;
-		seg.addressSize=32;
-		seg.limit=0xFFFFFFFF;
-	}
-	else if((SEG&0xFFFF0000)==REAL_ADDR)
-	{
-		seg.value=SEG&0xFFFF;
-		seg.baseLinearAddr=seg.value*0x10;
-		seg.operandSize=16;
-		seg.addressSize=16;
-		seg.limit=0xFFFF;
-	}
-}
-
 ////////////////////////////////////////////////////////////
 
 
@@ -1012,59 +980,6 @@ void i486DXCommon::PrintPageTranslation(const Memory &mem,uint32_t linearAddr) c
 	}
 }
 
-const unsigned char *i486DXCommon::GetSegmentDescriptor(unsigned char buf[8],unsigned int selector,const Memory &mem) const
-{
-	LoadSegmentRegisterTemplate<const i486DXCommon> loader;
-	loader.LoadProtectedModeDescriptor(*this,selector,mem);
-	if(nullptr!=loader.rawDesc)
-	{
-		memcpy(buf,loader.rawDesc,8);
-		return buf;
-	}
-	return nullptr;
-}
-
-unsigned int i486DXCommon::DebugLoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode) const
-{
-	LoadSegmentRegisterTemplate<const i486DXCommon> loader;
-	return loader.LoadSegmentRegister(*this,reg,value,mem,IsInRealMode());
-}
-
-unsigned int i486DXCommon::LoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem)
-{
-	TSUGARU_I486_FIDELITY_CLASS fidelity;
-
-	if(&reg==&state.SS())
-	{
-		state.holdIRQ=true;
-	}
-	LoadSegmentRegisterTemplate<i486DXCommon> loader;
-
-	fidelity.SetLoadSegmentRegisterFlags(loader.fidelityFlags,*this,reg);
-
-	auto ret=loader.LoadSegmentRegister(*this,reg,value,mem,IsInRealMode());
-
-	return ret;
-}
-
-
-unsigned i486DXCommon::LoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode)
-{
-	TSUGARU_I486_FIDELITY_CLASS fidelity;
-
-	if(&reg==&state.SS())
-	{
-		state.holdIRQ=true;
-	}
-	LoadSegmentRegisterTemplate<i486DXCommon> loader;
-
-	fidelity.SetLoadSegmentRegisterFlags(loader.fidelityFlags,*this,reg);
-
-	auto ret=loader.LoadSegmentRegister(*this,reg,value,mem,isInRealMode);
-
-	return ret;
-}
-
 void i486DXCommon::LoadSegmentRegisterRealMode(SegmentRegister &reg,unsigned int value)
 {
 	if(&reg==&state.SS())
@@ -1079,11 +994,6 @@ void i486DXCommon::LoadSegmentRegisterRealMode(SegmentRegister &reg,unsigned int
 	// reg.limit=0xffff;  Surprisingly, reg.limit isn't affected!?  According to https://wiki.osdev.org/Unreal_Mode
 }
 
-void i486DXCommon::LoadTaskRegister(unsigned int value,const Memory &mem)
-{
-	LoadSegmentRegister(state.TR,value,mem);
-}
-
 void i486DXCommon::LoadDescriptorTableRegister(SystemAddressRegister &reg,int operandSize,const unsigned char byteData[])
 {
 	reg.limit=byteData[0]|(byteData[1]<<8);
@@ -1095,17 +1005,6 @@ void i486DXCommon::LoadDescriptorTableRegister(SystemAddressRegister &reg,int op
 	{
 		reg.linearBaseAddr=byteData[2]|(byteData[3]<<8)|(byteData[4]<<16)|(byteData[5]<<24);
 	}
-}
-
-i486DXCommon::FarPointer i486DXCommon::GetCallGate(unsigned int selector,const Memory &mem)
-{
-	LoadSegmentRegisterTemplate<i486DXCommon> loader;
-	return loader.GetCallGate(*this,selector,mem);
-}
-i486DXCommon::FarPointer i486DXCommon::DebugGetCallGate(unsigned int selector,const Memory &mem) const
-{
-	LoadSegmentRegisterTemplate<const i486DXCommon> loader;
-	return loader.GetCallGate(*this,selector,mem);
 }
 
 i486DXCommon::InterruptDescriptor i486DXCommon::GetInterruptDescriptor(unsigned int INTNum,Memory &mem)
@@ -2925,103 +2824,6 @@ i486DXCommon::OperandValue i486DXCommon::EvaluateOperand80(
 		break;
 	}
 	return value;
-}
-
-void i486DXCommon::StoreOperandValue(
-    const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value)
-{
-	static const unsigned int addressMask[2]=
-	{
-		0x0000FFFF,
-		0xFFFFFFFF,
-	};
-
-	switch(dst.operandType)
-	{
-	case OPER_UNDEFINED:
-		Abort("Tried to evaluate an undefined operand.");
-		break;
-	case OPER_ADDR:
-		{
-			unsigned int offset;
-			const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,dst,segmentOverride);
-
-			offset&=addressMask[addressSize>>5];
-			switch(value.numBytes)
-			{
-			case 1:
-				StoreByte(mem,addressSize,seg,offset,value.byteData[0]);
-				break;
-			case 2:
-				StoreWord(mem,addressSize,seg,offset,cpputil::GetWord(value.byteData));// cpputil::GetWord is faster than using value.GetAsWord.
-				break;
-			case 4:
-				StoreDword(mem,addressSize,seg,offset,cpputil::GetDword(value.byteData));// cpputil::GetWord is faster than using value.GetAsDword.
-				break;
-			default:
-				for(unsigned int i=0; i<value.numBytes; ++i)
-				{
-					StoreByte(mem,addressSize,seg,offset+i,value.byteData[i]);
-				}
-				break;
-			}
-		}
-		break;
-	case OPER_FARADDR:
-		Abort("Tried to evaluate FAR ADDRESS.");
-		break;
-	case OPER_REG32:
-		{
-			state.NULL_and_reg32[dst.reg]=cpputil::GetDword(value.byteData);
-		}
-		break;
-	case OPER_REG16:
-		{
-			SET_INT_LOW_WORD(state.NULL_and_reg32[dst.reg&15],cpputil::GetWord(value.byteData));
-		}
-		break;
-	case OPER_REG8:
-		SetRegisterValue8(dst.reg,value.byteData[0]);
-		break;
-	case OPER_SREG:
-		LoadSegmentRegister(state.sreg[dst.reg-REG_SEGMENT_REG_BASE],cpputil::GetWord(value.byteData),mem);
-		break;
-
-	case OPER_CR0:
-	case OPER_CR1:
-	case OPER_CR2:
-	case OPER_CR3:
-		SetCR(dst.operandType-OPER_CR0,cpputil::GetDword(value.byteData));
-		break;
-	case OPER_DR0:
-	case OPER_DR1:
-	case OPER_DR2:
-	case OPER_DR3:
-	case OPER_DR4:
-	case OPER_DR5:
-	case OPER_DR6:
-	case OPER_DR7:
-		state.DR[dst.operandType-OPER_DR0]=cpputil::GetDword(value.byteData);
-		break;
-	case OPER_TEST0:
-	case OPER_TEST1:
-	case OPER_TEST2:
-	case OPER_TEST3:
-	case OPER_TEST4:
-	case OPER_TEST5:
-	case OPER_TEST6:
-	case OPER_TEST7:
-		state.TEST[dst.operandType-OPER_TEST0]=cpputil::GetDword(value.byteData);
-		break;
-	default:
-		#ifdef _WIN32
-			__assume(0);
-		#elif defined(__clang__) || defined(__GNUC__)
-			__builtin_unreachable();
-		#else
-			break;
-		#endif
-	}
 }
 
 void i486DXCommon::StoreOperandValueRegOrMem8(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,uint8_t value)

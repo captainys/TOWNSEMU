@@ -658,7 +658,7 @@ public:
 	{
 		attribBytes=0;
 	}
-	inline static void CheckRETFtoOuterLevel(i486DXCommon &cpu,Memory &mem,uint32_t operandSize,uint32_t prevDPL)
+	inline static void CheckRETFtoOuterLevel(i486DXFidelityLayer<THISCLASS> &cpu,Memory &mem,uint32_t operandSize,uint32_t prevDPL)
 	{
 		if(0==cpu.GetVM() && true!=cpu.IsInRealMode() && cpu.state.CS().DPL>prevDPL)
 		{
