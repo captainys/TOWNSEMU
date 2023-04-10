@@ -26,8 +26,8 @@ def CTest():
 
 def Build():
 	proc=[]
-	os.chdir(BUILDDIR_TEST386)
-	proc.append(subprocess.Popen(CMakeBuild()))
+	# os.chdir(BUILDDIR_TEST386)
+	# proc.append(subprocess.Popen(CMakeBuild()))
 	os.chdir(BUILDDIR)
 	proc.append(subprocess.Popen(CMakeBuild()))
 
@@ -45,8 +45,8 @@ def Build():
 
 def Test():
 	proc=[]
-	os.chdir(BUILDDIR_TEST386)
-	proc.append(subprocess.Popen(CTest()))
+	# os.chdir(BUILDDIR_TEST386)
+	# proc.append(subprocess.Popen(CTest()))
 	os.chdir(BUILDDIR)
 	proc.append(subprocess.Popen(CTest()))
 

@@ -31,6 +31,8 @@ add_compile_definitions(YS_TWOS_COMPLEMENT)
 
 enable_testing()
 
+add_subdirectory(test386vm)
+
 add_subdirectory(resources)
 
 add_subdirectory(osdependent)
