@@ -3887,6 +3887,12 @@ public:
 	i486DXDefaultFidelity(VMBase *vmPtr) : i486DXFidelityLayer<i486DXDefaultFidelityOperation>(vmPtr){}
 };
 
+class i486DXHighFidelity : public i486DXFidelityLayer <i486DXHighFidelityOperation>
+{
+public:
+	i486DXHighFidelity(VMBase *vmPtr) : i486DXFidelityLayer<i486DXHighFidelityOperation>(vmPtr){}
+};
+
 
 
 /* } */
