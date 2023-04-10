@@ -901,11 +901,11 @@ void FMTowns::ProcessSound(Outside_World *outside_world)
 
 		unsigned int excType,excCode;
 		state.MOS_work_linearAddr=cpu.state.GS().baseLinearAddr+cpu.GetEDI();
-		state.MOS_work_physicalAddr=cpu.LinearAddressToPhysicalAddress(excType,excCode,state.MOS_work_linearAddr,mem);
+		state.MOS_work_physicalAddr=cpu.DebugLinearAddressToPhysicalAddress(excType,excCode,state.MOS_work_linearAddr,mem);
 
 		i486DX::SegmentRegister CS;
 		cpu.LoadSegmentRegister(CS,0x110,mem);
-		state.TBIOS_physicalAddr=cpu.LinearAddressToPhysicalAddress(excType,excCode,CS.baseLinearAddr,mem);
+		state.TBIOS_physicalAddr=cpu.DebugLinearAddressToPhysicalAddress(excType,excCode,CS.baseLinearAddr,mem);
 		state.tbiosVersion=IdentifyTBIOS(state.TBIOS_physicalAddr);
 		state.TBIOS_mouseInfoOffset=FindTBIOSMouseInfoOffset(state.tbiosVersion,state.TBIOS_physicalAddr);
 
@@ -946,10 +946,10 @@ void FMTowns::ProcessSound(Outside_World *outside_world)
 
 			uint32_t ptrToStruct=cpu.DebugFetchDword(32,DS,0x13418,mem);
 
-			state.appSpecific_StickPosXPtr=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+ptrToStruct+0x18,mem);
-			state.appSpecific_StickPosYPtr=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+ptrToStruct+0x1A,mem);
-			state.appSpecific_ThrottlePtr=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x0002A576,mem);
-			state.appSpecific_RudderPtr=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x0002A57A,mem);
+			state.appSpecific_StickPosXPtr=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+ptrToStruct+0x18,mem);
+			state.appSpecific_StickPosYPtr=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+ptrToStruct+0x1A,mem);
+			state.appSpecific_ThrottlePtr=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x0002A576,mem);
+			state.appSpecific_RudderPtr=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x0002A57A,mem);
 			std::cout << "  StickX Physical Addr       =" << cpputil::Uitox(state.appSpecific_StickPosXPtr) << std::endl;
 			std::cout << "  StickY Physical Addr       =" << cpputil::Uitox(state.appSpecific_StickPosYPtr) << std::endl;
 			std::cout << "  Throttle Physical Addr     =" << cpputil::Uitox(state.appSpecific_ThrottlePtr) << std::endl;

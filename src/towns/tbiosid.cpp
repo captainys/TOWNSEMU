@@ -250,14 +250,14 @@ void FMTowns::OnCRTC_HST_Write(void)
 				unsigned int exceptionType,exceptionCode;
 				cpu.DebugLoadSegmentRegister(DS,0x0014,mem,false);
 
-				state.appSpecific_MousePtrX=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x6EEDC,mem);
-				state.appSpecific_MousePtrY=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x6EEDE,mem);
+				state.appSpecific_MousePtrX=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x6EEDC,mem);
+				state.appSpecific_MousePtrY=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x6EEDE,mem);
 
-				state.appSpecific_StickPosXPtr=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x0006EF30,mem);
-				state.appSpecific_StickPosYPtr=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x0006EF34,mem);
+				state.appSpecific_StickPosXPtr=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x0006EF30,mem);
+				state.appSpecific_StickPosYPtr=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x0006EF34,mem);
 
-				state.appSpecific_WC_setSpeedPtr=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x00066EF1,mem);
-				state.appSpecific_WC_maxSpeedPtr=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x000651BC,mem);
+				state.appSpecific_WC_setSpeedPtr=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x00066EF1,mem);
+				state.appSpecific_WC_maxSpeedPtr=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x000651BC,mem);
 
 				std::cout << "  MousePointerX Physical Base=" << cpputil::Uitox(state.appSpecific_MousePtrX) << std::endl;
 				std::cout << "  MousePointerY Physical Base=" << cpputil::Uitox(state.appSpecific_MousePtrY) << std::endl;
@@ -273,13 +273,13 @@ void FMTowns::OnCRTC_HST_Write(void)
 				unsigned int exceptionType,exceptionCode;
 				cpu.DebugLoadSegmentRegister(DS,0x0014,mem,false);
 
-				state.appSpecific_MousePtrX=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x4B060,mem);
-				state.appSpecific_MousePtrY=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x4B064,mem);
-				state.appSpecific_WC2_EventQueueBaseAddr=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+WC2_EVENTQUEUE_BASE_ADDR,mem);
+				state.appSpecific_MousePtrX=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x4B060,mem);
+				state.appSpecific_MousePtrY=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x4B064,mem);
+				state.appSpecific_WC2_EventQueueBaseAddr=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+WC2_EVENTQUEUE_BASE_ADDR,mem);
 				state.appSpecific_HoldMouseIntegration=true;
 
-				state.appSpecific_WC_setSpeedPtr=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x00002C46,mem);
-				state.appSpecific_WC_maxSpeedPtr=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x00003C53,mem);
+				state.appSpecific_WC_setSpeedPtr=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x00002C46,mem);
+				state.appSpecific_WC_maxSpeedPtr=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x00003C53,mem);
 
 				std::cout << "  MousePointerX Physical Base=" << cpputil::Uitox(state.appSpecific_MousePtrX) << std::endl;
 				std::cout << "  MousePointerY Physical Base=" << cpputil::Uitox(state.appSpecific_MousePtrY) << std::endl;
@@ -322,8 +322,8 @@ void FMTowns::OnCRTC_HST_Write(void)
 				unsigned int exceptionType,exceptionCode;
 				cpu.DebugLoadSegmentRegister(DS,0x0014,mem,false);
 
-				state.appSpecific_MousePtrX=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x9122,mem);
-				state.appSpecific_MousePtrY=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x9124,mem);
+				state.appSpecific_MousePtrX=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x9122,mem);
+				state.appSpecific_MousePtrY=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x9124,mem);
 
 				std::cout << "  MousePointerX Physical Base=" << cpputil::Uitox(state.appSpecific_MousePtrX) << std::endl;
 				std::cout << "  MousePointerY Physical Base=" << cpputil::Uitox(state.appSpecific_MousePtrY) << std::endl;
@@ -339,8 +339,8 @@ void FMTowns::OnCRTC_HST_Write(void)
 				unsigned int exceptionType,exceptionCode;
 				cpu.DebugLoadSegmentRegister(DS,0x005C,mem,false);
 
-				state.appSpecific_MousePtrX=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x2DFE,mem);
-				state.appSpecific_MousePtrY=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x2E00,mem);
+				state.appSpecific_MousePtrX=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x2DFE,mem);
+				state.appSpecific_MousePtrY=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x2E00,mem);
 
 				std::cout << "  MousePointerX Physical Base=" << cpputil::Uitox(state.appSpecific_MousePtrX) << std::endl;
 				std::cout << "  MousePointerY Physical Base=" << cpputil::Uitox(state.appSpecific_MousePtrY) << std::endl;
@@ -352,8 +352,8 @@ void FMTowns::OnCRTC_HST_Write(void)
 				unsigned int exceptionType,exceptionCode;
 				cpu.DebugLoadSegmentRegister(DS,0x0014,mem,false);
 
-				state.appSpecific_MousePtrX=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x5E420,mem);
-				state.appSpecific_MousePtrY=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x5E422,mem);
+				state.appSpecific_MousePtrX=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x5E420,mem);
+				state.appSpecific_MousePtrY=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x5E422,mem);
 
 				std::cout << "  MousePointerX Physical Base=" << cpputil::Uitox(state.appSpecific_MousePtrX) << std::endl;
 				std::cout << "  MousePointerY Physical Base=" << cpputil::Uitox(state.appSpecific_MousePtrY) << std::endl;
@@ -365,8 +365,8 @@ void FMTowns::OnCRTC_HST_Write(void)
 				unsigned int exceptionType,exceptionCode;
 				cpu.DebugLoadSegmentRegister(DS,0x0118,mem,false);
 
-				state.appSpecific_MousePtrX=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x15E60+0x0C,mem);
-				state.appSpecific_MousePtrY=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x15E60+0x0E,mem);
+				state.appSpecific_MousePtrX=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x15E60+0x0C,mem);
+				state.appSpecific_MousePtrY=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x15E60+0x0E,mem);
 
 				std::cout << "  MousePointerX Physical Base=" << cpputil::Uitox(state.appSpecific_MousePtrX) << std::endl;
 				std::cout << "  MousePointerY Physical Base=" << cpputil::Uitox(state.appSpecific_MousePtrY) << std::endl;
@@ -378,8 +378,8 @@ void FMTowns::OnCRTC_HST_Write(void)
 				unsigned int exceptionType,exceptionCode;
 				cpu.DebugLoadSegmentRegister(DS,0x014,mem,false);
 
-				state.appSpecific_MousePtrX=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x55CDC,mem);
-				state.appSpecific_MousePtrY=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x55CDE,mem);
+				state.appSpecific_MousePtrX=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x55CDC,mem);
+				state.appSpecific_MousePtrY=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x55CDE,mem);
 
 				std::cout << "  MousePointerX Physical Base=" << cpputil::Uitox(state.appSpecific_MousePtrX) << std::endl;
 				std::cout << "  MousePointerY Physical Base=" << cpputil::Uitox(state.appSpecific_MousePtrY) << std::endl;
@@ -391,8 +391,8 @@ void FMTowns::OnCRTC_HST_Write(void)
 				unsigned int exceptionType,exceptionCode;
 				cpu.DebugLoadSegmentRegister(DS,0x014,mem,false);
 
-				state.appSpecific_MousePtrX=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x20794,mem);
-				state.appSpecific_MousePtrY=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x20798,mem);
+				state.appSpecific_MousePtrX=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x20794,mem);
+				state.appSpecific_MousePtrY=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x20798,mem);
 
 				std::cout << "  MousePointerX Physical Base=" << cpputil::Uitox(state.appSpecific_MousePtrX) << std::endl;
 				std::cout << "  MousePointerY Physical Base=" << cpputil::Uitox(state.appSpecific_MousePtrY) << std::endl;

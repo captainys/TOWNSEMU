@@ -4892,7 +4892,7 @@ void TownsCommandInterpreter::Execute_BreakOnMemoryWrite(FMTowns &towns,Command 
 			if(i486DX::FarPointer::LINEAR_ADDR==farPtr.SEG)
 			{
 				unsigned int exceptionType,exceptionCode;
-				physAddr=towns.cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,farPtr.OFFSET,towns.mem);
+				physAddr=towns.cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,farPtr.OFFSET,towns.mem);
 			}
 			else if(i486DX::FarPointer::PHYS_ADDR==farPtr.SEG)
 			{
@@ -4905,7 +4905,7 @@ void TownsCommandInterpreter::Execute_BreakOnMemoryWrite(FMTowns &towns,Command 
 				auto linear=seg.baseLinearAddr+farPtr.OFFSET;
 
 				unsigned int exceptionType,exceptionCode;
-				physAddr=towns.cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,linear,towns.mem);
+				physAddr=towns.cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,linear,towns.mem);
 			}
 			if(nAddr<2)
 			{

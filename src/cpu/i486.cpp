@@ -507,7 +507,7 @@ std::vector <std::string> i486DXCommon::GetGDTText(const Memory &mem) const
 	{
 		unsigned int DTLinearBaseAddr=state.GDTR.linearBaseAddr+selector;
 		unsigned int excType,excCode;
-		unsigned int DTPhysicalAddr=LinearAddressToPhysicalAddress(excType,excCode,DTLinearBaseAddr,mem);
+		unsigned int DTPhysicalAddr=DebugLinearAddressToPhysicalAddress(excType,excCode,DTLinearBaseAddr,mem);
 		const unsigned char rawDesc[8]=
 		{
 			(unsigned char)DebugFetchByteByLinearAddress(mem,DTLinearBaseAddr),
@@ -591,7 +591,7 @@ std::vector <std::string> i486DXCommon::GetLDTText(const Memory &mem) const
 	{
 		unsigned int DTLinearBaseAddr=state.LDTR.linearBaseAddr+selector;
 		unsigned int excType,excCode;
-		unsigned int DTPhysicalAddr=LinearAddressToPhysicalAddress(excType,excCode,DTLinearBaseAddr,mem);
+		unsigned int DTPhysicalAddr=DebugLinearAddressToPhysicalAddress(excType,excCode,DTLinearBaseAddr,mem);
 		const unsigned char rawDesc[8]=
 		{
 			(unsigned char)DebugFetchByteByLinearAddress(mem,DTLinearBaseAddr),
@@ -2119,205 +2119,6 @@ void i486DXCommon::ShrByte(unsigned int &value,unsigned int ctr)
 	ShrTemplate<8,0xFF,0x80>(value,ctr);
 }
 
-void i486DXCommon::StoreOperandValueRegOrMem8(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,uint8_t value)
-{
-	static const unsigned int addressMask[2]=
-	{
-		0x0000FFFF,
-		0xFFFFFFFF,
-	};
-
-	if(OPER_REG8==dst.operandType)
-	{
-		SetRegisterValue8(dst.reg,value);
-	}
-	else
-	{
-		unsigned int offset;
-		const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,dst,segmentOverride);
-
-		offset&=addressMask[addressSize>>5];
-		StoreByte(mem,addressSize,seg,offset,value);
-	}
-}
-void i486DXCommon::StoreOperandValueRegOrMem16(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,uint16_t value)
-{
-	static const unsigned int addressMask[2]=
-	{
-		0x0000FFFF,
-		0xFFFFFFFF,
-	};
-
-	if(OPER_REG32==dst.operandType)
-	{
-		state.NULL_and_reg32[dst.reg]=value;
-	}
-	else if(OPER_REG16==dst.operandType)
-	{
-		SET_INT_LOW_WORD(state.NULL_and_reg32[dst.reg&15],value);
-	}
-	else
-	{
-		unsigned int offset;
-		const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,dst,segmentOverride);
-
-		offset&=addressMask[addressSize>>5];
-		StoreWord(mem,addressSize,seg,offset,value);
-	}
-}
-void i486DXCommon::StoreOperandValueRegOrMem32(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,uint32_t value)
-{
-	static const unsigned int addressMask[2]=
-	{
-		0x0000FFFF,
-		0xFFFFFFFF,
-	};
-
-	if(OPER_REG32==dst.operandType)
-	{
-		state.NULL_and_reg32[dst.reg]=value;
-	}
-	else if(OPER_REG16==dst.operandType)
-	{
-		SET_INT_LOW_WORD(state.NULL_and_reg32[dst.reg&15],value);
-	}
-	else
-	{
-		unsigned int offset;
-		const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,dst,segmentOverride);
-
-		offset&=addressMask[addressSize>>5];
-		StoreDword(mem,addressSize,seg,offset,value);
-	}
-}
-
-void i486DXCommon::StoreOperandValueReg16OrReg32OrMem(
-    const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value)
-{
-	static const unsigned int addressMask[2]=
-	{
-		0x0000FFFF,
-		0xFFFFFFFF,
-	};
-
-	if(OPER_REG32==dst.operandType)
-	{
-		state.NULL_and_reg32[dst.reg]=cpputil::GetDword(value.byteData);
-	}
-	else if(OPER_REG16==dst.operandType)
-	{
-		SET_INT_LOW_WORD(state.NULL_and_reg32[dst.reg&15],cpputil::GetWord(value.byteData));
-	}
-	else
-	{
-		unsigned int offset;
-		const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,dst,segmentOverride);
-
-		offset&=addressMask[addressSize>>5];
-		switch(value.numBytes)
-		{
-		case 1:
-			StoreByte(mem,addressSize,seg,offset,value.byteData[0]);
-			break;
-		case 2:
-			StoreWord(mem,addressSize,seg,offset,cpputil::GetWord(value.byteData));// cpputil::GetWord is faster than using value.GetAsWord.
-			break;
-		case 4:
-			StoreDword(mem,addressSize,seg,offset,cpputil::GetDword(value.byteData));// cpputil::GetWord is faster than using value.GetAsDword.
-			break;
-		default:
-			for(unsigned int i=0; i<value.numBytes; ++i)
-			{
-				StoreByte(mem,addressSize,seg,offset+i,value.byteData[i]);
-			}
-			break;
-		}
-	}
-}
-
-void i486DXCommon::StoreOperandValue8(
-    const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value)
-{
-	static const unsigned int addressMask[2]=
-	{
-		0x0000FFFF,
-		0xFFFFFFFF,
-	};
-
-	switch(dst.operandType)
-	{
-	default:
-		Abort("Tried to store value to a non 8-bit operand with StoreOperandValue8.");
-		break;
-	case OPER_ADDR:
-		{
-			unsigned int offset;
-			const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,dst,segmentOverride);
-			offset&=addressMask[addressSize>>5];
-			StoreByte(mem,addressSize,seg,offset,value.byteData[0]);
-		}
-		break;
-	case OPER_REG8:
-		SetRegisterValue8(dst.reg,value.byteData[0]);
-		break;
-	}
-}
-
-void i486DXCommon::StoreOperandValue64(
-    const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value)
-{
-	static const unsigned int addressMask[2]=
-	{
-		0x0000FFFF,
-		0xFFFFFFFF,
-	};
-
-	switch(dst.operandType)
-	{
-	default:
-		Abort("Tried to store 64-bit value to a non-address operand.");
-		break;
-	case OPER_ADDR:
-		{
-			unsigned int offset;
-			const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,dst,segmentOverride);
-			offset&=addressMask[addressSize>>5];
-
-			StoreDword(mem,addressSize,seg,offset,  cpputil::GetDword(value.byteData));
-			StoreDword(mem,addressSize,seg,offset+4,cpputil::GetDword(value.byteData+4));
-		}
-		break;
-	}
-}
-
-void i486DXCommon::StoreOperandValue80(
-    const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value)
-{
-	static const unsigned int addressMask[2]=
-	{
-		0x0000FFFF,
-		0xFFFFFFFF,
-	};
-
-	switch(dst.operandType)
-	{
-	default:
-		Abort("Tried to store 64-bit value to a non-address operand.");
-		break;
-	case OPER_ADDR:
-		{
-			unsigned int offset;
-			const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,dst,segmentOverride);
-			offset&=addressMask[addressSize>>5];
-
-			StoreDword(mem,addressSize,seg,offset,  cpputil::GetDword(value.byteData));
-			StoreDword(mem,addressSize,seg,offset+4,cpputil::GetDword(value.byteData+4));
-			StoreWord(mem,addressSize,seg,offset+8,cpputil::GetWord(value.byteData+8));
-		}
-		break;
-	}
-}
-
 bool i486DXCommon::REPCheck(unsigned int &clocksPassed,unsigned int instPrefix,unsigned int addressSize)
 {
 	if(INST_PREFIX_REP==instPrefix || INST_PREFIX_REPNE==instPrefix)
@@ -2460,7 +2261,7 @@ unsigned int i486DXCommon::DebugFetchByte(unsigned int addressSize,const Segment
 	if(true==PagingEnabled())
 	{
 		unsigned int type,code;
-		addr=LinearAddressToPhysicalAddress(type,code,addr,mem);
+		addr=DebugLinearAddressToPhysicalAddress(type,code,addr,mem);
 	}
 	auto returnValue=mem.FetchByte(addr);
 	return returnValue;
@@ -2475,7 +2276,7 @@ unsigned int i486DXCommon::DebugFetchWord(unsigned int addressSize,const Segment
 	if(true==PagingEnabled())
 	{
 		unsigned int type,code;
-		addr=LinearAddressToPhysicalAddress(type,code,addr,mem);
+		addr=DebugLinearAddressToPhysicalAddress(type,code,addr,mem);
 		if(0xFFC<(addr&0xfff)) // May hit the page boundary
 		{
 			return DebugFetchByte(addressSize,seg,offset,mem)|(DebugFetchByte(addressSize,seg,offset+1,mem)<<8);
@@ -2494,7 +2295,7 @@ unsigned int i486DXCommon::DebugFetchDword(unsigned int addressSize,const Segmen
 	if(true==PagingEnabled())
 	{
 		unsigned int type,code;
-		addr=LinearAddressToPhysicalAddress(type,code,addr,mem);
+		addr=DebugLinearAddressToPhysicalAddress(type,code,addr,mem);
 		if(0xFF8<(addr&0xfff)) // May hit the page boundary
 		{
 			auto returnValue=
@@ -2538,7 +2339,7 @@ unsigned int i486DXCommon::DebugFetchByteByLinearAddress(const Memory &mem,unsig
 	if(true==PagingEnabled())
 	{
 		unsigned int type,code;
-		linearAddr=LinearAddressToPhysicalAddress(type,code,linearAddr,mem);
+		linearAddr=DebugLinearAddressToPhysicalAddress(type,code,linearAddr,mem);
 	}
 	auto returnValue=mem.FetchByte(linearAddr);
 	return returnValue;
@@ -2579,7 +2380,7 @@ void i486DXCommon::DebugStoreByte(Memory &mem,int addressSize,SegmentRegister se
 	if(true==PagingEnabled())
 	{
 		unsigned int exceptionType,exceptionCode;
-		physicalAddr=LinearAddressToPhysicalAddress(exceptionType,exceptionCode,linearAddr,mem);
+		physicalAddr=DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,linearAddr,mem);
 	}
 	return mem.StoreByte(physicalAddr,byteData);
 }
@@ -2592,11 +2393,11 @@ void i486DXCommon::DebugStoreWord(Memory &mem,int addressSize,SegmentRegister se
 	if(true==PagingEnabled())
 	{
 		unsigned int exceptionType,exceptionCode;
-		physicalAddr=LinearAddressToPhysicalAddress(exceptionType,exceptionCode,linearAddr,mem);
+		physicalAddr=DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,linearAddr,mem);
 		if(0xFFE<(physicalAddr&0xfff)) // May hit the page boundary
 		{
-			StoreByte(mem,addressSize,seg,offset  , data    &255);// May hit the page boundary. Don't use StoreWord
-			StoreByte(mem,addressSize,seg,offset+1,(data>>8)&255);// May hit the page boundary. Don't use StoreWord
+			DebugStoreByte(mem,addressSize,seg,offset  , data    &255);// May hit the page boundary. Don't use StoreWord
+			DebugStoreByte(mem,addressSize,seg,offset+1,(data>>8)&255);// May hit the page boundary. Don't use StoreWord
 			return;
 		}
 	}
@@ -2610,13 +2411,13 @@ void i486DXCommon::DebugStoreDword(Memory &mem,int addressSize,SegmentRegister s
 	if(true==PagingEnabled())
 	{
 		unsigned int exceptionType,exceptionCode;
-		physicalAddr=LinearAddressToPhysicalAddress(exceptionType,exceptionCode,linearAddr,mem);
+		physicalAddr=DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,linearAddr,mem);
 		if(0xFFC<(physicalAddr&0xfff)) // May hit the page boundary
 		{
-			StoreByte(mem,addressSize,seg,offset  , data     &255);
-			StoreByte(mem,addressSize,seg,offset+1,(data>> 8)&255);// May hit the page boundary. Don't use StoreDword
-			StoreByte(mem,addressSize,seg,offset+2,(data>>16)&255);// May hit the page boundary. Don't use StoreDword
-			StoreByte(mem,addressSize,seg,offset+3,(data>>24)&255);// May hit the page boundary. Don't use StoreDword
+			DebugStoreByte(mem,addressSize,seg,offset  , data     &255);
+			DebugStoreByte(mem,addressSize,seg,offset+1,(data>> 8)&255);// May hit the page boundary. Don't use StoreDword
+			DebugStoreByte(mem,addressSize,seg,offset+2,(data>>16)&255);// May hit the page boundary. Don't use StoreDword
+			DebugStoreByte(mem,addressSize,seg,offset+3,(data>>24)&255);// May hit the page boundary. Don't use StoreDword
 			return;
 		}
 	}

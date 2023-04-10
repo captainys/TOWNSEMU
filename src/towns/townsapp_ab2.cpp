@@ -19,7 +19,7 @@ void FMTowns::AB2_Identify(void)
 		std::cout << "Afterburner II Ver. 1.01" << std::endl;
 		cpu.DebugStoreDword(mem, 32, CS, 0xeeea, 0x90909090);
 		cpu.DebugStoreWord(mem, 32, CS, 0xeeee, 0x9090);
-		state.appSpecific_ThrottlePtr=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x82f44,mem);
+		state.appSpecific_ThrottlePtr=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x82f44,mem);
 	}
 	else if(0x66 == cpu.DebugFetchByte(32, CS, 0xef4e, mem) &&
 	        0xa3 == cpu.DebugFetchByte(32, CS, 0xef4f, mem) &&
@@ -29,7 +29,7 @@ void FMTowns::AB2_Identify(void)
 		std::cout << "Afterburner II Ver. 1.02" << std::endl;
 		cpu.DebugStoreDword(mem, 32, CS, 0xef4e, 0x90909090);
 		cpu.DebugStoreWord(mem, 32, CS, 0xef52, 0x9090);
-		state.appSpecific_ThrottlePtr=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x82fa8,mem);
+		state.appSpecific_ThrottlePtr=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x82fa8,mem);
 	}
 	else if(0x66 == cpu.DebugFetchByte(32, CS, 0xf6f6, mem) &&
 	        0xa3 == cpu.DebugFetchByte(32, CS, 0xf6f7, mem) &&
@@ -39,7 +39,7 @@ void FMTowns::AB2_Identify(void)
 		std::cout << "Afterburner II Ver. 1.03" << std::endl;
 		cpu.DebugStoreDword(mem, 32, CS, 0xf6f6, 0x90909090);
 		cpu.DebugStoreWord(mem, 32, CS, 0xf6fa, 0x9090);
-		state.appSpecific_ThrottlePtr=cpu.LinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x85de4,mem);
+		state.appSpecific_ThrottlePtr=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x85de4,mem);
 	}
 }
 

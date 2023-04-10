@@ -463,7 +463,8 @@ void i486DXFidelityLayer <FIDELITY>::StoreOperandValue(
 	}
 }
 
-inline unsigned char *i486DXCommon::GetStackAccessPointer(Memory &mem,uint32_t linearAddr,const unsigned int numBytes)
+template <class FIDELITY>
+inline unsigned char *i486DXFidelityLayer<FIDELITY>::GetStackAccessPointer(Memory &mem,uint32_t linearAddr,const unsigned int numBytes)
 {
 	if((linearAddr&(MemoryAccess::MEMORY_WINDOW_SIZE-1))<=(MemoryAccess::MEMORY_WINDOW_SIZE-numBytes))
 	{
@@ -837,6 +838,50 @@ inline unsigned long i486DXFidelityLayer<FIDELITY>::LinearAddressToPhysicalAddre
 	}
 
 	fidelity.SetPageFlags(*this,linearAddr,mem,PAGEINFO_FLAG_A);
+
+	auto offset=(linearAddr&4095);
+	auto physicalAddr=(pageInfo.table&0xFFFFF000)+offset;
+	return physicalAddr;
+}
+
+template <class FIDELITY>
+inline unsigned long i486DXFidelityLayer<FIDELITY>::LinearAddressToPhysicalAddressWrite(unsigned int linearAddr,Memory &mem)
+{
+	FIDELITY fidelity;
+
+	auto pageIndex=(linearAddr>>LINEARADDR_TO_PAGE_SHIFT);
+	PageTableEntry pageInfo;
+	if(state.pageTableCache[pageIndex].valid<state.pageTableCacheValidCounter)
+	{
+		pageInfo=ReadPageInfo(linearAddr,mem);
+		if(0==(pageInfo.table&PAGEINFO_FLAG_PRESENT))
+		{
+			uint32_t code=PFFLAG_WRITE;
+			if(0!=state.CS().DPL)
+			{
+				code|=PFFLAG_USER_MODE;
+			}
+			RaiseException(EXCEPTION_PF,code);
+			state.exceptionLinearAddr=linearAddr;
+			return 0;
+		}
+		if(true==fidelity.PageLevelException(*this,true,linearAddr,pageInfo.dir,pageInfo.table))
+		{
+			return 0;
+		}
+		state.pageTableCache[pageIndex].info=pageInfo;
+		state.pageTableCache[pageIndex].valid=state.pageTableCacheValidCounter;
+	}
+	else
+	{
+		pageInfo=state.pageTableCache[pageIndex].info;
+		if(true==fidelity.PageLevelException(*this,true,linearAddr,pageInfo.dir,pageInfo.table))
+		{
+			return 0;
+		}
+	}
+
+	fidelity.SetPageFlags(*this,linearAddr,mem,PAGEINFO_FLAG_A|PAGEINFO_FLAG_D);
 
 	auto offset=(linearAddr&4095);
 	auto physicalAddr=(pageInfo.table&0xFFFFF000)+offset;
@@ -1335,6 +1380,212 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::FetchImm16or32(Instruction &i
 	{
 		FetchImm32(inst,ptr,seg,offset,mem);
 		return 4;
+	}
+}
+
+template <class FIDELITY>
+void i486DXFidelityLayer<FIDELITY>::StoreOperandValueRegOrMem8(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,uint8_t value)
+{
+	static const unsigned int addressMask[2]=
+	{
+		0x0000FFFF,
+		0xFFFFFFFF,
+	};
+
+	if(OPER_REG8==dst.operandType)
+	{
+		SetRegisterValue8(dst.reg,value);
+	}
+	else
+	{
+		unsigned int offset;
+		const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,dst,segmentOverride);
+
+		offset&=addressMask[addressSize>>5];
+		StoreByte(mem,addressSize,seg,offset,value);
+	}
+}
+template <class FIDELITY>
+void i486DXFidelityLayer<FIDELITY>::StoreOperandValueRegOrMem16(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,uint16_t value)
+{
+	static const unsigned int addressMask[2]=
+	{
+		0x0000FFFF,
+		0xFFFFFFFF,
+	};
+
+	if(OPER_REG32==dst.operandType)
+	{
+		state.NULL_and_reg32[dst.reg]=value;
+	}
+	else if(OPER_REG16==dst.operandType)
+	{
+		SET_INT_LOW_WORD(state.NULL_and_reg32[dst.reg&15],value);
+	}
+	else
+	{
+		unsigned int offset;
+		const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,dst,segmentOverride);
+
+		offset&=addressMask[addressSize>>5];
+		StoreWord(mem,addressSize,seg,offset,value);
+	}
+}
+template <class FIDELITY>
+void i486DXFidelityLayer<FIDELITY>::StoreOperandValueRegOrMem32(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,uint32_t value)
+{
+	static const unsigned int addressMask[2]=
+	{
+		0x0000FFFF,
+		0xFFFFFFFF,
+	};
+
+	if(OPER_REG32==dst.operandType)
+	{
+		state.NULL_and_reg32[dst.reg]=value;
+	}
+	else if(OPER_REG16==dst.operandType)
+	{
+		SET_INT_LOW_WORD(state.NULL_and_reg32[dst.reg&15],value);
+	}
+	else
+	{
+		unsigned int offset;
+		const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,dst,segmentOverride);
+
+		offset&=addressMask[addressSize>>5];
+		StoreDword(mem,addressSize,seg,offset,value);
+	}
+}
+
+template <class FIDELITY>
+void i486DXFidelityLayer<FIDELITY>::StoreOperandValueReg16OrReg32OrMem(
+    const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value)
+{
+	static const unsigned int addressMask[2]=
+	{
+		0x0000FFFF,
+		0xFFFFFFFF,
+	};
+
+	if(OPER_REG32==dst.operandType)
+	{
+		state.NULL_and_reg32[dst.reg]=cpputil::GetDword(value.byteData);
+	}
+	else if(OPER_REG16==dst.operandType)
+	{
+		SET_INT_LOW_WORD(state.NULL_and_reg32[dst.reg&15],cpputil::GetWord(value.byteData));
+	}
+	else
+	{
+		unsigned int offset;
+		const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,dst,segmentOverride);
+
+		offset&=addressMask[addressSize>>5];
+		switch(value.numBytes)
+		{
+		case 1:
+			StoreByte(mem,addressSize,seg,offset,value.byteData[0]);
+			break;
+		case 2:
+			StoreWord(mem,addressSize,seg,offset,cpputil::GetWord(value.byteData));// cpputil::GetWord is faster than using value.GetAsWord.
+			break;
+		case 4:
+			StoreDword(mem,addressSize,seg,offset,cpputil::GetDword(value.byteData));// cpputil::GetWord is faster than using value.GetAsDword.
+			break;
+		default:
+			for(unsigned int i=0; i<value.numBytes; ++i)
+			{
+				StoreByte(mem,addressSize,seg,offset+i,value.byteData[i]);
+			}
+			break;
+		}
+	}
+}
+
+template <class FIDELITY>
+void i486DXFidelityLayer<FIDELITY>::StoreOperandValue8(
+    const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value)
+{
+	static const unsigned int addressMask[2]=
+	{
+		0x0000FFFF,
+		0xFFFFFFFF,
+	};
+
+	switch(dst.operandType)
+	{
+	default:
+		Abort("Tried to store value to a non 8-bit operand with StoreOperandValue8.");
+		break;
+	case OPER_ADDR:
+		{
+			unsigned int offset;
+			const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,dst,segmentOverride);
+			offset&=addressMask[addressSize>>5];
+			StoreByte(mem,addressSize,seg,offset,value.byteData[0]);
+		}
+		break;
+	case OPER_REG8:
+		SetRegisterValue8(dst.reg,value.byteData[0]);
+		break;
+	}
+}
+
+template <class FIDELITY>
+void i486DXFidelityLayer<FIDELITY>::StoreOperandValue64(
+    const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value)
+{
+	static const unsigned int addressMask[2]=
+	{
+		0x0000FFFF,
+		0xFFFFFFFF,
+	};
+
+	switch(dst.operandType)
+	{
+	default:
+		Abort("Tried to store 64-bit value to a non-address operand.");
+		break;
+	case OPER_ADDR:
+		{
+			unsigned int offset;
+			const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,dst,segmentOverride);
+			offset&=addressMask[addressSize>>5];
+
+			StoreDword(mem,addressSize,seg,offset,  cpputil::GetDword(value.byteData));
+			StoreDword(mem,addressSize,seg,offset+4,cpputil::GetDword(value.byteData+4));
+		}
+		break;
+	}
+}
+
+template <class FIDELITY>
+void i486DXFidelityLayer<FIDELITY>::StoreOperandValue80(
+    const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value)
+{
+	static const unsigned int addressMask[2]=
+	{
+		0x0000FFFF,
+		0xFFFFFFFF,
+	};
+
+	switch(dst.operandType)
+	{
+	default:
+		Abort("Tried to store 64-bit value to a non-address operand.");
+		break;
+	case OPER_ADDR:
+		{
+			unsigned int offset;
+			const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,dst,segmentOverride);
+			offset&=addressMask[addressSize>>5];
+
+			StoreDword(mem,addressSize,seg,offset,  cpputil::GetDword(value.byteData));
+			StoreDword(mem,addressSize,seg,offset+4,cpputil::GetDword(value.byteData+4));
+			StoreWord(mem,addressSize,seg,offset+8,cpputil::GetWord(value.byteData+8));
+		}
+		break;
 	}
 }
 

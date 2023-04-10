@@ -913,7 +913,8 @@ void i486DXCommon::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,Memo
 
 }
 
-inline uint8_t *i486DXCommon::GetOperandPointer(
+template <class FIDELITY>
+inline uint8_t *i486DXFidelityLayer<FIDELITY>::GetOperandPointer(
     Memory &mem,int addressSize,int segmentOverride,const Operand &op)
 {
 #ifdef YS_LITTLE_ENDIAN

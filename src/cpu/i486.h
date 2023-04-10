@@ -2434,7 +2434,7 @@ public:
 
 	/*!
 	*/
-	inline unsigned long LinearAddressToPhysicalAddress(
+	inline unsigned long DebugLinearAddressToPhysicalAddress(
 	    unsigned int &exceptionType,unsigned int &exceptionCode,unsigned int linearAddr,const Memory &mem) const
 	{
 		auto pageIndex=(linearAddr>>LINEARADDR_TO_PAGE_SHIFT);
@@ -2466,21 +2466,6 @@ public:
 	*/
 	unsigned int PhysicalAddressToLinearAddress(unsigned physAddr,const Memory &mem) const;
 
-
-	/*! x86 keeps track of accessed page and written page in bit 5 (access) and bit 6 (write) of
-	    page-table entries.  Therefore, page-translation for read and write needs to do different
-	    things.
-	*/
-	inline unsigned long LinearAddressToPhysicalAddressWrite(unsigned int linearAddr,Memory &mem);
-
-protected:
-	// This function is a helper function for Push and Pop.
-	// It checks if the cached SSESPWindow covers the required number of bytes.
-	// If not, it tries to re-cache SSESPWindow.
-	// If the number of bytes in the stack is accessible from the pointer, it returns the pointer.
-	// If not, it returns nullptr.
-	inline unsigned char *GetStackAccessPointer(Memory &mem,uint32_t linearAddr,unsigned int numBytes);
-
 public:
 	/*! Returns const memory window from SEG:OFFSET.
 	    It will not change the state of the CPU including exceptions.
@@ -2501,30 +2486,12 @@ public:
 		if(true==PagingEnabled())
 		{
 			unsigned int type,code;
-			physAddr=LinearAddressToPhysicalAddress(type,code,linearAddr,mem);
+			physAddr=DebugLinearAddressToPhysicalAddress(type,code,linearAddr,mem);
 		}
 		auto memWin=mem.GetConstMemoryWindow(physAddr);
 		memWin.linearBaseAddr=(linearAddr&(~0xfff));
 		return memWin;
 	}
-
-	/*! Store a byte.
-	*/
-	inline void StoreByte(Memory &mem,int addressSize,const SegmentRegister &seg,unsigned int offset,unsigned char data);
-
-	/*! Store a word.
-	*/
-	inline void StoreWord(Memory &mem,int addressSize,const SegmentRegister &seg,unsigned int offset,unsigned int data);
-
-	/*! Store a dword.
-	*/
-	inline void StoreDword(Memory &mem,int addressSize,const SegmentRegister &seg,unsigned int offset,unsigned int data);
-
-
-
-	/*! Store a word or dword.  Operand size must be 16 or 32.
-	*/
-	inline void StoreWordOrDword(Memory &mem,unsigned int operandSize,int addressSize,const SegmentRegister &seg,unsigned int offset,unsigned int data);
 
 	/*! Fetch a byte for debugger.  It won't change exception status.
 	*/
@@ -2878,16 +2845,6 @@ public:
 	void ShrByte(unsigned int &value,unsigned int ctr);
 
 
-	/*! Returns a pointer to the operand.
-	    Can only be used for OPER_ADDR or OPER_REG.
-	    If available, it will reduce operand-type check for evaluate operand -> store operand
-	    type instructions.
-	    If there is a possibility of crossing the page boundary, it will return nullptr.
-	    *** Also, if it was memory, it assumes it will write to the address. ***
-	*/
-	inline uint8_t *GetOperandPointer(Memory &mem,int addressSize,int segmentOverride,const Operand &op);
-
-
 	/*! Extract segment register and address offset from the OPER_ADDR type operand.
 	    It doesn't check the operand type.  Using it for a different operand type would crash the
 	    program.
@@ -2907,33 +2864,6 @@ public:
 		auto sregIndex=segPrefixToSregIndex[segmentOverride];
 		return sregIndexToSregPtrTable[sregIndex];
 	}
-
-
-	/*! Stores value to the destination operand, when the operand is known to be reg8 or mem8. */
-	void StoreOperandValueRegOrMem8(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,uint8_t value);
-
-	/*! Stores value to the destination operand, when the operand is known to be reg16 or mem16. */
-	void StoreOperandValueRegOrMem16(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,uint16_t value);
-
-	/*! Stores value to the destination operand, when the operand is known to be reg32 or mem32. */
-	void StoreOperandValueRegOrMem32(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,uint32_t value);
-
-	/*! Stores value to the destination described by the operand
-	    when the operand is known to be reg16, reg32, or mem.
-	*/
-	void StoreOperandValueReg16OrReg32OrMem(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value);
-
-	/*! Store value to an 8-bit operand.
-	*/
-	void StoreOperandValue8(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value);
-
-	/*! Store value to an 64-bit operand.
-	*/
-	void StoreOperandValue64(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value);
-
-	/*! Store value to an 80-bit operand.
-	*/
-	void StoreOperandValue80(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value);
 
 	/*! Returns override-segment for the prefix.  Returns default DS.
 	*/
@@ -3093,6 +3023,15 @@ public:
 		}
 	}
 
+protected:
+	// This function is a helper function for Push and Pop.
+	// It checks if the cached SSESPWindow covers the required number of bytes.
+	// If not, it tries to re-cache SSESPWindow.
+	// If the number of bytes in the stack is accessible from the pointer, it returns the pointer.
+	// If not, it returns nullptr.
+	inline unsigned char *GetStackAccessPointer(Memory &mem,uint32_t linearAddr,unsigned int numBytes);
+
+public:
 	/*! Push a value.
 	*/
 	void Push16(Memory &mem,unsigned int value);
@@ -3142,6 +3081,11 @@ public:
 	void Pop(uint32_t &firstPop,uint32_t &secondPop,uint32_t &thirdPop,Memory &mem,unsigned int operandSize);
 
 
+	/*! x86 keeps track of accessed page and written page in bit 5 (access) and bit 6 (write) of
+	    page-table entries.  Therefore, page-translation for read and write needs to do different
+	    things.
+	*/
+	inline unsigned long LinearAddressToPhysicalAddressWrite(unsigned int linearAddr,Memory &mem);
 	inline unsigned long LinearAddressToPhysicalAddressRead(unsigned int linearAddr,Memory &mem);
 
 	/*! Fetch a byte by linear address.
@@ -3349,6 +3293,15 @@ private:
 	OperandValue EvaluateOperand80(
 	    Memory &mem,int addressSize,int segmentOverride,const Operand &op);
 
+	/*! Returns a pointer to the operand.
+	    Can only be used for OPER_ADDR or OPER_REG.
+	    If available, it will reduce operand-type check for evaluate operand -> store operand
+	    type instructions.
+	    If there is a possibility of crossing the page boundary, it will return nullptr.
+	    *** Also, if it was memory, it assumes it will write to the address. ***
+	*/
+	inline uint8_t *GetOperandPointer(Memory &mem,int addressSize,int segmentOverride,const Operand &op);
+
 public:
 	/*! Return true if I/O access is permitted in I/O Map of TSS.
 	    It could raise exception.
@@ -3407,55 +3360,52 @@ public:
 	    Returns the number of bytes fetched.
 	*/
 	inline unsigned int FetchImm16or32(Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,Memory &mem);
+
+	/*! Store a byte.
+	*/
+	inline void StoreByte(Memory &mem,int addressSize,const SegmentRegister &seg,unsigned int offset,unsigned char data);
+
+	/*! Store a word.
+	*/
+	inline void StoreWord(Memory &mem,int addressSize,const SegmentRegister &seg,unsigned int offset,unsigned int data);
+
+	/*! Store a dword.
+	*/
+	inline void StoreDword(Memory &mem,int addressSize,const SegmentRegister &seg,unsigned int offset,unsigned int data);
+
+	/*! Store a word or dword.  Operand size must be 16 or 32.
+	*/
+	inline void StoreWordOrDword(Memory &mem,unsigned int operandSize,int addressSize,const SegmentRegister &seg,unsigned int offset,unsigned int data);
+
+	/*! Stores value to the destination operand, when the operand is known to be reg8 or mem8. */
+	void StoreOperandValueRegOrMem8(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,uint8_t value);
+
+	/*! Stores value to the destination operand, when the operand is known to be reg16 or mem16. */
+	void StoreOperandValueRegOrMem16(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,uint16_t value);
+
+	/*! Stores value to the destination operand, when the operand is known to be reg32 or mem32. */
+	void StoreOperandValueRegOrMem32(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,uint32_t value);
+
+	/*! Stores value to the destination described by the operand
+	    when the operand is known to be reg16, reg32, or mem.
+	*/
+	void StoreOperandValueReg16OrReg32OrMem(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value);
+
+	/*! Store value to an 8-bit operand.
+	*/
+	void StoreOperandValue8(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value);
+
+	/*! Store value to an 64-bit operand.
+	*/
+	void StoreOperandValue64(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value);
+
+	/*! Store value to an 80-bit operand.
+	*/
+	void StoreOperandValue80(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value);
 };
 
 
 #include "i486fidelity.h"
-
-inline unsigned long i486DXCommon::LinearAddressToPhysicalAddressWrite(unsigned int linearAddr,Memory &mem)
-{
-	TSUGARU_I486_FIDELITY_CLASS fidelity;
-
-	auto pageIndex=(linearAddr>>LINEARADDR_TO_PAGE_SHIFT);
-	PageTableEntry pageInfo;
-	if(state.pageTableCache[pageIndex].valid<state.pageTableCacheValidCounter)
-	{
-		pageInfo=ReadPageInfo(linearAddr,mem);
-		if(0==(pageInfo.table&PAGEINFO_FLAG_PRESENT))
-		{
-			uint32_t code=PFFLAG_WRITE;
-			if(0!=state.CS().DPL)
-			{
-				code|=PFFLAG_USER_MODE;
-			}
-			RaiseException(EXCEPTION_PF,code);
-			state.exceptionLinearAddr=linearAddr;
-			return 0;
-		}
-		if(true==fidelity.PageLevelException(*this,true,linearAddr,pageInfo.dir,pageInfo.table))
-		{
-			return 0;
-		}
-		state.pageTableCache[pageIndex].info=pageInfo;
-		state.pageTableCache[pageIndex].valid=state.pageTableCacheValidCounter;
-	}
-	else
-	{
-		pageInfo=state.pageTableCache[pageIndex].info;
-		if(true==fidelity.PageLevelException(*this,true,linearAddr,pageInfo.dir,pageInfo.table))
-		{
-			return 0;
-		}
-	}
-
-	fidelity.SetPageFlags(*this,linearAddr,mem,PAGEINFO_FLAG_A|PAGEINFO_FLAG_D);
-
-	auto offset=(linearAddr&4095);
-	auto physicalAddr=(pageInfo.table&0xFFFFF000)+offset;
-	return physicalAddr;
-}
-
-
 #include "i486debug.h"
 
 template <class FIDELITY>
@@ -3490,7 +3440,7 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::FetchWord(unsigned int addres
 	offset&=AddressMask((unsigned char)addressSize);
 	auto addr=seg.baseLinearAddr+offset;
 
-	TSUGARU_I486_FIDELITY_CLASS fidelity;
+	FIDELITY fidelity;
 	if(true==fidelity.SegmentReadException(*this,seg,offset))
 	{
 		return 0;
@@ -3524,7 +3474,7 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::FetchDword(unsigned int addre
 	offset&=AddressMask((unsigned char)addressSize);
 	auto addr=seg.baseLinearAddr+offset;
 
-	TSUGARU_I486_FIDELITY_CLASS fidelity;
+	FIDELITY fidelity;
 	if(true==fidelity.SegmentReadException(*this,seg,offset))
 	{
 		return 0;
@@ -3556,12 +3506,13 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::FetchDword(unsigned int addre
 	return mem.FetchDword(addr);
 }
 
-inline void i486DXCommon::StoreByte(Memory &mem,int addressSize,const SegmentRegister &seg,unsigned int offset,unsigned char byteData)
+template <class FIDELITY>
+inline void i486DXFidelityLayer<FIDELITY>::StoreByte(Memory &mem,int addressSize,const SegmentRegister &seg,unsigned int offset,unsigned char byteData)
 {
 	offset&=AddressMask((unsigned char)addressSize);
 	auto linearAddr=seg.baseLinearAddr+offset;
 
-	TSUGARU_I486_FIDELITY_CLASS fidelity;
+	FIDELITY fidelity;
 	if(true==fidelity.SegmentWriteException(*this,seg,offset))
 	{
 		return;
@@ -3583,12 +3534,13 @@ inline void i486DXCommon::StoreByte(Memory &mem,int addressSize,const SegmentReg
 	return mem.StoreByte(physicalAddr,byteData);
 }
 
-inline void i486DXCommon::StoreWord(Memory &mem,int addressSize,const SegmentRegister &seg,unsigned int offset,unsigned int data)
+template <class FIDELITY>
+inline void i486DXFidelityLayer<FIDELITY>::StoreWord(Memory &mem,int addressSize,const SegmentRegister &seg,unsigned int offset,unsigned int data)
 {
 	offset&=AddressMask((unsigned char)addressSize);
 	auto linearAddr=seg.baseLinearAddr+offset;
 
-	TSUGARU_I486_FIDELITY_CLASS fidelity;
+	FIDELITY fidelity;
 	if(true==fidelity.SegmentWriteException(*this,seg,offset))
 	{
 		return;
@@ -3619,12 +3571,13 @@ inline void i486DXCommon::StoreWord(Memory &mem,int addressSize,const SegmentReg
 	}
 	mem.StoreWord(physicalAddr,data);
 }
-inline void i486DXCommon::StoreDword(Memory &mem,int addressSize,const SegmentRegister &seg,unsigned int offset,unsigned int data)
+template <class FIDELITY>
+inline void i486DXFidelityLayer<FIDELITY>::StoreDword(Memory &mem,int addressSize,const SegmentRegister &seg,unsigned int offset,unsigned int data)
 {
 	offset&=AddressMask((unsigned char)addressSize);
 	auto linearAddr=seg.baseLinearAddr+offset;
 
-	TSUGARU_I486_FIDELITY_CLASS fidelity;
+	FIDELITY fidelity;
 	if(true==fidelity.SegmentWriteException(*this,seg,offset))
 	{
 		return;
@@ -3658,7 +3611,8 @@ inline void i486DXCommon::StoreDword(Memory &mem,int addressSize,const SegmentRe
 	mem.StoreDword(physicalAddr,data);
 }
 
-inline void i486DXCommon::StoreWordOrDword(Memory &mem,unsigned int operandSize,int addressSize,const SegmentRegister &seg,unsigned int offset,unsigned int data)
+template <class FIDELITY>
+inline void i486DXFidelityLayer<FIDELITY>::StoreWordOrDword(Memory &mem,unsigned int operandSize,int addressSize,const SegmentRegister &seg,unsigned int offset,unsigned int data)
 {
 	switch(operandSize)
 	{
@@ -3918,6 +3872,10 @@ inline void i486DXCommon::SetRegisterValue8(unsigned int reg,unsigned char value
 
 
 
+#include "i486loadsegreg.h"
+#include "i486instfetch.h"
+#include "i486templatefunctions.h"
+#include "i486runinstruction.h"
 
 // Assembled
 
@@ -3927,10 +3885,7 @@ public:
 	i486DX(VMBase *vmPtr) : i486DXFidelityLayer<TSUGARU_I486_FIDELITY_CLASS>(vmPtr){}
 };
 
-#include "i486loadsegreg.h"
-#include "i486instfetch.h"
-#include "i486templatefunctions.h"
-#include "i486runinstruction.h"
+
 
 /* } */
 #endif

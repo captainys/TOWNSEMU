@@ -473,7 +473,7 @@ public:
 		return true;
 	}
 
-	inline static void PageFaultCheckAfterEnter(class i486DXCommon &cpu,Memory &mem)
+	inline static void PageFaultCheckAfterEnter(class i486DXFidelityLayer<THISCLASS> &cpu,Memory &mem)
 	{
 		if(true==cpu.PagingEnabled())
 		{
