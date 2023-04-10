@@ -30,15 +30,11 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "i486inst.h"
 
 
-// Define the following macro to cause UD exception when MOV CS,src
-// #define TSUGARU_I486_MORE_EXCEPTION_HANDLING
-
-
 
 #ifdef TSUGARU_I486_HIGH_FIDELITY
-	#define TSUGARU_I486_FIDELITY_CLASS i486DXHighFidelity
+	#define TSUGARU_I486_FIDELITY_CLASS i486DXHighFidelityOperation
 #else
-	#define TSUGARU_I486_FIDELITY_CLASS i486DXDefaultFidelity
+	#define TSUGARU_I486_FIDELITY_CLASS i486DXDefaultFidelityOperation
 #endif
 
 // References

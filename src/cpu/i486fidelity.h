@@ -8,10 +8,10 @@
 
 #include <string.h>
 
-class i486DXLowFidelity
+class i486DXLowFidelityOperation
 {
 public:
-	typedef i486DXLowFidelity THISCLASS;
+	typedef i486DXLowFidelityOperation THISCLASS;
 
 	class SavedESP
 	{
@@ -92,10 +92,10 @@ public:
 	inline static void OnHandleException(const i486DXCommon &,i486Debugger *debuggerPtr){};
 };
 
-class i486DXDefaultFidelity : public i486DXLowFidelity
+class i486DXDefaultFidelityOperation : public i486DXLowFidelityOperation
 {
 public:
-	typedef i486DXDefaultFidelity THISCLASS;
+	typedef i486DXDefaultFidelityOperation THISCLASS;
 
 	static inline bool SegmentReadException(class i486DXCommon &cpu,const i486DXCommon::SegmentRegister &seg,uint32_t offset)
 	{
@@ -138,10 +138,10 @@ public:
 	}
 };
 
-class i486DXHighFidelity : public i486DXDefaultFidelity
+class i486DXHighFidelityOperation : public i486DXDefaultFidelityOperation
 {
 public:
-	typedef i486DXHighFidelity THISCLASS;
+	typedef i486DXHighFidelityOperation THISCLASS;
 
 	class SavedESP
 	{
