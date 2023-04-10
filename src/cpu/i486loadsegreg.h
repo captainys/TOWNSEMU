@@ -15,11 +15,11 @@ public:
 	class FIDELITY::LoadSegmentRegisterFlags fidelityFlags;
 
 	// For mutable i486DXCommon >>
-	static inline unsigned int FetchByteByLinearAddress(i486DXCommon &cpu,Memory &mem,unsigned int linearAddr)
+	static inline unsigned int FetchByteByLinearAddress(i486DXFidelityLayer<FIDELITY> &cpu,Memory &mem,unsigned int linearAddr)
 	{
 		return cpu.FetchByteByLinearAddress(mem,linearAddr);
 	}
-	static inline MemoryAccess::ConstMemoryWindow GetConstMemoryWindowFromLinearAddress(i486DXCommon &cpu,unsigned int linearAddr,Memory &mem)
+	static inline MemoryAccess::ConstMemoryWindow GetConstMemoryWindowFromLinearAddress(i486DXFidelityLayer<FIDELITY> &cpu,unsigned int linearAddr,Memory &mem)
 	{
 		return cpu.GetConstMemoryWindowFromLinearAddress(linearAddr,mem);
 	}
@@ -66,7 +66,7 @@ public:
 
 	inline void LoadProtectedModeDescriptor(CPUCLASS &cpu,unsigned int value,const Memory &mem)
 	{
-		FIDELITY::LoadSegmentRegisterVariables fidelityVar;
+		typename FIDELITY::LoadSegmentRegisterVariables fidelityVar;
 
 		rawDesc=LoadFromDescriptorCache(cpu,value);
 		if(nullptr!=rawDesc)
