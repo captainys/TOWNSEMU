@@ -77,7 +77,8 @@ public:
 
 	// separateProcess flag may only be changed when starting the VM.
 	bool separateProcess=false;
-	TownsVM VM;
+	TownsVM <i486DXDefaultFidelity> VMDefaultFidelity;
+	TownsVM <i486DXHighFidelity> VMHighFidelity;
 
 	// pauseResumeKey is updated in ReallyRun function from TownsProfile.
 	unsigned int pauseResumeKey=FSKEY_SCROLLLOCK;
@@ -132,6 +133,9 @@ public:
 	*/
 	void Draw(void);
 
+	template <class VMClass>
+	void DrawVMLastImage(VMClass &vm);
+
 
 	/*! Start Tsugaru_CUI with the profile set in the profileDlg.
 	*/
@@ -151,7 +155,12 @@ public:
 	void ResumeVMIfSameProc(void);
 
 private:
+	template <class VMClass>
+	bool ResumeVMIfSameProc(VMClass &VM);
+
 	bool ReallyRun(bool usePipe=true);
+	template <class VMClass>
+	void ReallyRunWithinSameProcess(VMClass &VM);
 	std::string FindTsugaruCUI(void) const;
 	std::vector <YsWString> CheckMissingROMFiles(void) const;
 	std::string GetCMOSFileName(void) const;

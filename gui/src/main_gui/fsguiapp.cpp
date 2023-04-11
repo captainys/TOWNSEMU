@@ -474,6 +474,23 @@ void FsGuiMainCanvas::OnInterval(void)
 	}
 }
 
+template <class VMClass>
+void FsGuiMainCanvas::DrawVMLastImage(VMClass &VM)
+{
+	if(true!=separateProcess &&
+	   true==VM.IsRunning() &&
+	   nullptr!=VM.outsideWorldPtr &&
+	   nullptr!=VM.townsPtr)
+	{
+		auto image=VM.lastImage.GetImage();
+		if(0<image.wid && 0<image.hei)
+		{
+			VM.outsideWorldPtr->UpdateStatusBitmap(*VM.townsPtr);
+			VM.outsideWorldPtr->RenderBeforeSwapBuffers(image,*VM.townsPtr);
+		}
+	}
+}
+
 void FsGuiMainCanvas::Draw(void)
 {
 	// Do this at the beginning of Draw funtion.  This will allow one of the elements set SetNeedRedraw(YSTRUE) 
@@ -506,18 +523,8 @@ void FsGuiMainCanvas::Draw(void)
 	glLoadIdentity();
 #endif
 
-	if(true!=separateProcess &&
-	   true==VM.IsRunning() &&
-	   nullptr!=VM.outsideWorldPtr &&
-	   nullptr!=VM.townsPtr)
-	{
-		auto image=VM.lastImage.GetImage();
-		if(0<image.wid && 0<image.hei)
-		{
-			VM.outsideWorldPtr->UpdateStatusBitmap(*VM.townsPtr);
-			VM.outsideWorldPtr->RenderBeforeSwapBuffers(image,*VM.townsPtr);
-		}
-	}
+	DrawVMLastImage(VMDefaultFidelity);
+	DrawVMLastImage(VMHighFidelity);
 
 	YsGLSLUsePlain2DRenderer(YsGLSLSharedPlain2DRenderer());
 	YsGLSLUseWindowCoordinateInPlain2DDrawing(YsGLSLSharedPlain2DRenderer(),YSTRUE);
@@ -589,6 +596,24 @@ void FsGuiMainCanvas::Run(void)
 {
 	// Warn if the VM is already running.
 	ReallyRun();
+}
+
+template <class VMClass>
+void FsGuiMainCanvas::ReallyRunWithinSameProcess(VMClass &VM)
+{
+	VM.profile=profileDlg->GetProfile();
+	if(""==VM.profile.CMOSFName)
+	{
+		VM.profile.CMOSFName=GetCMOSFileName();
+	}
+	RemoveDialog(profileDlg);
+
+	VM.Run();
+	if(true!=VM.IsRunning())
+	{
+		AddDialog(profileDlg);
+	}
+	SetNeedRedraw(YSTRUE);
 }
 
 bool FsGuiMainCanvas::ReallyRun(bool usePipe)
@@ -676,19 +701,14 @@ bool FsGuiMainCanvas::ReallyRun(bool usePipe)
 	}
 	else
 	{
-		VM.profile=profileDlg->GetProfile();
-		if(""==VM.profile.CMOSFName)
+		if(i486DXCommon::HIGH_FIDELITY==profile.CPUFidelityLevel)
 		{
-			VM.profile.CMOSFName=GetCMOSFileName();
+			ReallyRunWithinSameProcess(VMHighFidelity);
 		}
-		RemoveDialog(profileDlg);
-
-		VM.Run();
-		if(true!=VM.IsRunning())
+		else
 		{
-			AddDialog(profileDlg);
+			ReallyRunWithinSameProcess(VMDefaultFidelity);
 		}
-		SetNeedRedraw(YSTRUE);
 	}
 
 	return true;
@@ -702,7 +722,7 @@ bool FsGuiMainCanvas::IsVMRunning(void) const
 	}
 	else
 	{
-		return VM.IsRunning();
+		return VMHighFidelity.IsRunning() || VMDefaultFidelity.IsRunning();
 	}
 }
 void FsGuiMainCanvas::SendVMCommand(std::string cmd)
@@ -713,11 +733,19 @@ void FsGuiMainCanvas::SendVMCommand(std::string cmd)
 	}
 	else
 	{
-		VM.SendCommand(cmd);
+		if(true==VMDefaultFidelity.IsRunning())
+		{
+			VMDefaultFidelity.SendCommand(cmd);
+		}
+		else if(true==VMHighFidelity.IsRunning())
+		{
+			VMHighFidelity.SendCommand(cmd);
+		}
 	}
 }
 
-void FsGuiMainCanvas::ResumeVMIfSameProc(void)
+template <class VMClass>
+bool FsGuiMainCanvas::ResumeVMIfSameProc(VMClass &VM)
 {
 	if(true!=separateProcess && true==VM.IsRunning())
 	{
@@ -727,6 +755,19 @@ void FsGuiMainCanvas::ResumeVMIfSameProc(void)
 			AddDialog(profileDlg);
 		}
 		SetNeedRedraw(YSTRUE);
+		return true;
+	}
+	return false;
+}
+
+void FsGuiMainCanvas::ResumeVMIfSameProc(void)
+{
+	if(true!=ResumeVMIfSameProc(VMDefaultFidelity))
+	{
+		if(true!=ResumeVMIfSameProc(VMHighFidelity))
+		{
+			// ResumeVMIfSameProc(VMLowFidelity);
+		}
 	}
 }
 

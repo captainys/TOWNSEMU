@@ -30,12 +30,13 @@ public:
 	void SendCommand(std::string cmd);
 };
 
+template <class CPUCLASS>
 class TownsVM
 {
 public:
 	TownsProfile profile;
 	TownsRender lastImage;
-	FMTownsTemplate <i486DXDefaultFidelity> *townsPtr=nullptr;
+	FMTownsTemplate <CPUCLASS> *townsPtr=nullptr;
 	TownsThread *townsThreadPtr=nullptr;
 	TownsCommandQueue *cmdQueuePtr=nullptr;
 	FsSimpleWindowConnection *outsideWorldPtr=nullptr;
@@ -51,7 +52,87 @@ public:
 	void SendCommand(std::string cmd);
 };
 
+template <class CPUCLASS>
+TownsVM<CPUCLASS>::TownsVM()
+{
+}
+template <class CPUCLASS>
+TownsVM<CPUCLASS>::~TownsVM()
+{
+	Free();
+}
 
+template <class CPUCLASS>
+void TownsVM<CPUCLASS>::Alloc(void)
+{
+	townsPtr=new FMTownsTemplate <CPUCLASS>;
+	townsThreadPtr=new TownsThread;
+	cmdQueuePtr=new TownsCommandQueue;
+	outsideWorldPtr=new FsSimpleWindowConnection;
+	outsideWorldPtr->lowerRightIcon=Outside_World::LOWER_RIGHT_MENU;
+	townsThreadPtr->SetRunMode(TownsThread::RUNMODE_POWER_OFF);
+	townsThreadPtr->SetReturnOnPause(true);
+}
+template <class CPUCLASS>
+void TownsVM<CPUCLASS>::Free(void)
+{
+	delete townsThreadPtr;
+	delete townsPtr;
+	delete cmdQueuePtr;
+	delete outsideWorldPtr;
+	townsPtr=nullptr;
+	townsThreadPtr=nullptr;
+	cmdQueuePtr=nullptr;
+	outsideWorldPtr=nullptr;
+}
+
+template <class CPUCLASS>
+void TownsVM<CPUCLASS>::Run(void)
+{
+	if(nullptr==townsPtr ||
+	   TownsThread::RUNMODE_POWER_OFF==townsThreadPtr->GetRunMode() ||
+	   TownsThread::RUNMODE_EXIT==townsThreadPtr->GetRunMode())
+	{
+		Free();
+		Alloc();
+
+		townsPtr->Setup(*townsPtr,outsideWorldPtr,profile);
+		townsThreadPtr->SetRunMode(TownsThread::RUNMODE_RUN);
+		townsThreadPtr->VMStart(townsPtr,outsideWorldPtr,cmdQueuePtr);
+	}
+	else
+	{
+		townsThreadPtr->SetRunMode(TownsThread::RUNMODE_RUN);
+	}
+
+	townsThreadPtr->VMMainLoop(townsPtr,outsideWorldPtr,cmdQueuePtr);
+
+	if(TownsThread::RUNMODE_EXIT==townsThreadPtr->GetRunMode())
+	{
+		townsThreadPtr->VMEnd(townsPtr,outsideWorldPtr,cmdQueuePtr);
+		Free();
+	}
+	else
+	{
+		townsPtr->ForceRender(lastImage,*outsideWorldPtr);
+	}
+}
+template <class CPUCLASS>
+bool TownsVM<CPUCLASS>::IsRunning(void) const
+{
+	return
+		(nullptr!=townsThreadPtr &&
+		 TownsThread::RUNMODE_POWER_OFF!=townsThreadPtr->GetRunMode() &&
+		 TownsThread::RUNMODE_EXIT!=townsThreadPtr->GetRunMode());
+}
+template <class CPUCLASS>
+void TownsVM<CPUCLASS>::SendCommand(std::string cmd)
+{
+	if(nullptr!=cmdQueuePtr)
+	{
+		cmdQueuePtr->SendCommand(cmd);
+	}
+}
 
 /* } */
 #endif
