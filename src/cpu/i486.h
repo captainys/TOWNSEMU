@@ -58,6 +58,45 @@ Therefore, the CPU class now is divided into three parts.  The base class, i486C
 
 class i486DXCommon : public CPU
 {
+public:
+	enum
+	{
+		LOW_FIDELITY  =0x00,
+		MID_FIDELITY  =0x80,
+		HIGH_FIDELITY =0xFF,
+		UNDEFINED_FIDELITY=0xFFFFFFFF
+	};
+	static const std::string FidelityLevelToStr(unsigned int fidelityLevel)
+	{
+		switch(fidelityLevel)
+		{
+		case LOW_FIDELITY:
+			return "LOWFIDELITY";
+		case MID_FIDELITY:
+			return "MIDFIDELITY";
+		case HIGH_FIDELITY:
+			return "HIGHFIDELITY";
+		}
+		return "";
+	}
+	static unsigned int StrToFidelityLevel(std::string str)
+	{
+		cpputil::Capitalize(str);
+		if(FidelityLevelToStr(LOW_FIDELITY)==str)
+		{
+			return LOW_FIDELITY;
+		}
+		if(FidelityLevelToStr(MID_FIDELITY)==str)
+		{
+			return MID_FIDELITY;
+		}
+		if(FidelityLevelToStr(HIGH_FIDELITY)==str)
+		{
+			return HIGH_FIDELITY;
+		}
+		return UNDEFINED_FIDELITY;
+	}
+
 private:
 	i486DXCommon(const i486DXCommon &);
 	i486DXCommon &operator=(const i486DXCommon &);

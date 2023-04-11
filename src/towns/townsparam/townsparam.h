@@ -8,6 +8,7 @@
 #include <vector>
 #include <unordered_map>
 #include "townsdef.h"
+#include "i486.h" // Need FidelityLevel.
 
 class TownsStartParameters
 {
@@ -43,6 +44,8 @@ public:
 	};
 
 	unsigned int townsType=TOWNSTYPE_UNKNOWN;
+
+	unsigned int CPUFidelityLevel=i486DXCommon::MID_FIDELITY;
 
 	unsigned int gamePort[NUM_GAMEPORTS]={TOWNS_GAMEPORTEMU_PHYSICAL0,TOWNS_GAMEPORTEMU_MOUSE};
 

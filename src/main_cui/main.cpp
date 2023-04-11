@@ -179,12 +179,23 @@ int main(int ac,char *av[])
 	}
 
 
-	static FMTownsTemplate <i486DX> towns;
 	Outside_World *outside_world=new FsSimpleWindowConnection;
-	if(true!=FMTownsCommon::Setup(towns,outside_world,argv))
+	if(i486DXCommon::HIGH_FIDELITY==argv.CPUFidelityLevel)
 	{
-		return 1;
+		static FMTownsTemplate <i486DXHighFidelity> towns;
+		if(true!=FMTownsCommon::Setup(towns,outside_world,argv))
+		{
+			return 1;
+		}
+		return Run(towns,argv,*outside_world);
 	}
-
-	return Run(towns,argv,*outside_world);
+	else
+	{
+		static FMTownsTemplate <i486DXDefaultFidelity> towns;
+		if(true!=FMTownsCommon::Setup(towns,outside_world,argv))
+		{
+			return 1;
+		}
+		return Run(towns,argv,*outside_world);
+	}
 }
