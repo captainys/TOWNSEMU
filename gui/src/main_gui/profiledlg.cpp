@@ -1206,6 +1206,8 @@ TownsProfile ProfileDialog::GetProfile(void) const
 	profile.mapXYExpression[0]=mapXYExpressionTxt[0]->GetString().c_str();
 	profile.mapXYExpression[1]=mapXYExpressionTxt[1]->GetString().c_str();
 
+	profile.CPUFidelityLevel=i486DXCommon::StrToFidelityLevel(CPUFidelityDrp->GetSelectedString().data());
+
 	return profile;
 }
 void ProfileDialog::SetProfile(const TownsProfile &profile)
@@ -1446,6 +1448,8 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 	scrnShotCropTxt[3]->SetInteger(profile.scrnShotHei);
 	mapXYExpressionTxt[0]->SetText(profile.mapXYExpression[0].c_str());
 	mapXYExpressionTxt[1]->SetText(profile.mapXYExpression[1].c_str());
+
+	CPUFidelityDrp->SelectByString(i486DXCommon::FidelityLevelToStr(profile.CPUFidelityLevel).c_str());
 }
 
 void ProfileDialog::SetDefaultFMVolume(void)
