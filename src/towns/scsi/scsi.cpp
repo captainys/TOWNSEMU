@@ -613,8 +613,8 @@ void TownsSCSI::ExecSCSICommand(void)
 			std::cout << " " << cpputil::Ubtox(state.commandBuffer[i]);
 		}
 		std::cout << " @ ";
-		std::cout << cpputil::Ustox(townsPtr->cpu.state.CS().value) << ":";
-		std::cout << cpputil::Uitox(townsPtr->cpu.state.EIP) << std::endl;
+		std::cout << cpputil::Ustox(townsPtr->CPU().state.CS().value) << ":";
+		std::cout << cpputil::Uitox(townsPtr->CPU().state.EIP) << std::endl;
 	}
 	switch(state.commandBuffer[0])
 	{

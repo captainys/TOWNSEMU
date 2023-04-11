@@ -166,8 +166,8 @@ TownsCDROM::TownsCDROM(class FMTowns *townsPtr,class TownsPIC *PICPtr,class Town
 		}
 		state.cmdReceived=true;
 		state.cmd=data;
-		var.lastCmdIssuedAt.SEG=townsPtr->cpu.state.CS().value;
-		var.lastCmdIssuedAt.OFFSET=townsPtr->cpu.state.EIP;
+		var.lastCmdIssuedAt.SEG=townsPtr->CPU().state.CS().value;
+		var.lastCmdIssuedAt.OFFSET=townsPtr->CPU().state.EIP;
 		cmdOrParam=true;
 		break;
 	case TOWNSIO_CDROM_PARAMETER_DATA://    0x4C4, // [2] pp.224
@@ -180,8 +180,8 @@ TownsCDROM::TownsCDROM(class FMTowns *townsPtr,class TownsPIC *PICPtr,class Town
 			state.nParamQueue=PARAM_QUEUE_LEN-1;
 		}
 		state.paramQueue[state.nParamQueue++]=data;
-		var.lastParamWrittenAt.SEG=townsPtr->cpu.state.CS().value;
-		var.lastParamWrittenAt.OFFSET=townsPtr->cpu.state.EIP;
+		var.lastParamWrittenAt.SEG=townsPtr->CPU().state.CS().value;
+		var.lastParamWrittenAt.OFFSET=townsPtr->CPU().state.EIP;
 		cmdOrParam=true;
 		break;
 	case TOWNSIO_CDROM_TRANSFER_CTRL://     0x4C6, // [2] pp.227

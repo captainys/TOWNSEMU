@@ -194,7 +194,7 @@ void TownsVnDrv::ExecPrimaryCommand(unsigned int cmd)
 		switch((cmd>>8)&0xFF)
 		{
 		case TOWNS_VNDRV_CMD_GET_DRIVES://   0x00,
-			townsPtr->cpu.SetAL(NumDrives());
+			townsPtr->CPU().SetAL(NumDrives());
 			break;
 		case TOWNS_VNDRV_CMD_FIND_FIRST://   0x1B,
 			{
@@ -203,16 +203,16 @@ void TownsVnDrv::ExecPrimaryCommand(unsigned int cmd)
 				auto drvPtr=GetSharedDir(drvNum);
 				if(nullptr==drvPtr)
 				{
-					townsPtr->cpu.SetAX(TOWNS_VNDRV_ERR_PATH_NOT_FOUND);
+					townsPtr->CPU().SetAX(TOWNS_VNDRV_ERR_PATH_NOT_FOUND);
 					std::cout << "Path doesn't exist." << std::endl;
 					break;
 				}
 
 				std::string subDir;
-				auto ESI=townsPtr->cpu.state.ESI();
+				auto ESI=townsPtr->CPU().state.ESI();
 				for(;;)
 				{
-					auto c=townsPtr->cpu.DebugFetchByte(32,townsPtr->cpu.state.FS(),ESI++,townsPtr->mem);
+					auto c=townsPtr->CPU().DebugFetchByte(32,townsPtr->CPU().state.FS(),ESI++,townsPtr->mem);
 					if(0==c)
 					{
 						break;
@@ -227,7 +227,7 @@ void TownsVnDrv::ExecPrimaryCommand(unsigned int cmd)
 					{
 						if(subDir[i]=='.' && subDir[i+1]=='.') // Don't allow ".." to be in the path.
 						{
-							townsPtr->cpu.SetAX(TOWNS_VNDRV_ERR_PATH_NOT_FOUND);
+							townsPtr->CPU().SetAX(TOWNS_VNDRV_ERR_PATH_NOT_FOUND);
 							violation=true;
 							break;
 						}
@@ -239,15 +239,15 @@ void TownsVnDrv::ExecPrimaryCommand(unsigned int cmd)
 					}
 				}
 
-				townsPtr->cpu.SetAX(TOWNS_VNDRV_ERR_FILE_NOT_FOUND);
+				townsPtr->CPU().SetAX(TOWNS_VNDRV_ERR_FILE_NOT_FOUND);
 				// auto dirEnt=drvPtr->FindFirst(subDir);
 				// if(true==dirEnt.endOfDir)
 				// {
-				// 	townsPtr->cpu.SetAX(TOWNS_VNDRV_ERR_FILE_NOT_FOUND);
+				// 	townsPtr->CPU().SetAX(TOWNS_VNDRV_ERR_FILE_NOT_FOUND);
 				// 	std::cout << "File not found" << std::endl;
 				// 	break;
 				// }
-				// townsPtr->cpu.SetAX(TOWNS_VNDRV_ERR_NO_ERROR);
+				// townsPtr->CPU().SetAX(TOWNS_VNDRV_ERR_NO_ERROR);
 				// StoreDirEnt(dirEnt);
 			}
 			break;
@@ -258,20 +258,20 @@ void TownsVnDrv::ExecPrimaryCommand(unsigned int cmd)
 				auto drvPtr=GetSharedDir(drvNum);
 				if(nullptr==drvPtr)
 				{
-					townsPtr->cpu.SetAX(TOWNS_VNDRV_ERR_PATH_NOT_FOUND);
+					townsPtr->CPU().SetAX(TOWNS_VNDRV_ERR_PATH_NOT_FOUND);
 					std::cout << "Path doesn't exist." << std::endl;
 					break;
 				}
 
-				townsPtr->cpu.SetAX(TOWNS_VNDRV_ERR_NO_MORE_FILES);
+				townsPtr->CPU().SetAX(TOWNS_VNDRV_ERR_NO_MORE_FILES);
 				// auto dirEnt=drvPtr->FindNext();
 				// if(true==dirEnt.endOfDir)
 				// {
-				// 	townsPtr->cpu.SetAX(TOWNS_VNDRV_ERR_NO_MORE_FILES);
+				// 	townsPtr->CPU().SetAX(TOWNS_VNDRV_ERR_NO_MORE_FILES);
 				// 	std::cout << "File not found" << std::endl;
 				// 	break;
 				// }
-				// townsPtr->cpu.SetAX(TOWNS_VNDRV_ERR_NO_ERROR);
+				// townsPtr->CPU().SetAX(TOWNS_VNDRV_ERR_NO_ERROR);
 				// StoreDirEnt(dirEnt);
 			}
 			break;
@@ -293,7 +293,7 @@ void TownsVnDrv::ExecAuxCommand(unsigned int cmd)
 				std::string str;
 				for(;;)
 				{
-					auto data=townsPtr->cpu.DebugFetchByte(32,townsPtr->cpu.state.DS(),townsPtr->cpu.state.EBX()+i,townsPtr->mem);
+					auto data=townsPtr->CPU().DebugFetchByte(32,townsPtr->CPU().state.DS(),townsPtr->CPU().state.EBX()+i,townsPtr->mem);
 					if(0==data)
 					{
 						break;
@@ -306,10 +306,10 @@ void TownsVnDrv::ExecAuxCommand(unsigned int cmd)
 			break;
 		case TOWNS_VNDRV_AUXCMD_MEMDUMP://   0x0A,
 			{
-				i486DX::FarPointer ptr;
-				ptr.SEG=townsPtr->cpu.state.DS().value;
-				ptr.OFFSET=townsPtr->cpu.state.EBX();
-				for(auto line : miscutil::MakeMemDump(townsPtr->cpu,townsPtr->mem,ptr,townsPtr->cpu.state.ECX(),/*shiftJIS=*/true))
+				i486DXCommon::FarPointer ptr;
+				ptr.SEG=townsPtr->CPU().state.DS().value;
+				ptr.OFFSET=townsPtr->CPU().state.EBX();
+				for(auto line : miscutil::MakeMemDump(townsPtr->CPU(),townsPtr->mem,ptr,townsPtr->CPU().state.ECX(),/*shiftJIS=*/true))
 				{
 					std::cout << line << std::endl;
 				}
@@ -317,10 +317,10 @@ void TownsVnDrv::ExecAuxCommand(unsigned int cmd)
 			break;
 		case TOWNS_VNDRV_AUXCMD_MEMDUMP_LINEAR://     0x0B,
 			{
-				i486DX::FarPointer ptr;
-				ptr.SEG=i486DX::FarPointer::LINEAR_ADDR;
-				ptr.OFFSET=townsPtr->cpu.state.EBX();
-				for(auto line : miscutil::MakeMemDump(townsPtr->cpu,townsPtr->mem,ptr,townsPtr->cpu.state.ECX(),/*shiftJIS=*/true))
+				i486DXCommon::FarPointer ptr;
+				ptr.SEG=i486DXCommon::FarPointer::LINEAR_ADDR;
+				ptr.OFFSET=townsPtr->CPU().state.EBX();
+				for(auto line : miscutil::MakeMemDump(townsPtr->CPU(),townsPtr->mem,ptr,townsPtr->CPU().state.ECX(),/*shiftJIS=*/true))
 				{
 					std::cout << line << std::endl;
 				}
@@ -328,10 +328,10 @@ void TownsVnDrv::ExecAuxCommand(unsigned int cmd)
 			break;
 		case TOWNS_VNDRV_AUXCMD_MEMDUMP_PHYSICAL://   0x0C,
 			{
-				i486DX::FarPointer ptr;
-				ptr.SEG=i486DX::FarPointer::PHYS_ADDR;
-				ptr.OFFSET=townsPtr->cpu.state.EBX();
-				for(auto line : miscutil::MakeMemDump(townsPtr->cpu,townsPtr->mem,ptr,townsPtr->cpu.state.ECX(),/*shiftJIS=*/true))
+				i486DXCommon::FarPointer ptr;
+				ptr.SEG=i486DXCommon::FarPointer::PHYS_ADDR;
+				ptr.OFFSET=townsPtr->CPU().state.EBX();
+				for(auto line : miscutil::MakeMemDump(townsPtr->CPU(),townsPtr->mem,ptr,townsPtr->CPU().state.ECX(),/*shiftJIS=*/true))
 				{
 					std::cout << line << std::endl;
 				}
@@ -343,9 +343,9 @@ void TownsVnDrv::ExecAuxCommand(unsigned int cmd)
 
 void TownsVnDrv::StoreDirEnt(const FileSys::DirectoryEntry &dirEnt)
 {
-	auto &GS=townsPtr->cpu.state.GS();
-	auto EDI=townsPtr->cpu.state.EDI();
-	townsPtr->cpu.DebugStoreByte(townsPtr->mem,32,GS,EDI,dirEnt.attr);
+	auto &GS=townsPtr->CPU().state.GS();
+	auto EDI=townsPtr->CPU().state.EDI();
+	townsPtr->CPU().DebugStoreByte(townsPtr->mem,32,GS,EDI,dirEnt.attr);
 
 	unsigned int timeStamp=0;
 	timeStamp|=((dirEnt.year-1980)<<25);
@@ -355,8 +355,8 @@ void TownsVnDrv::StoreDirEnt(const FileSys::DirectoryEntry &dirEnt)
 	timeStamp|=(dirEnt.minutes<<5);
 	timeStamp|=(dirEnt.seconds>>1);
 
-	townsPtr->cpu.DebugStoreDword(townsPtr->mem,32,GS,EDI+1,timeStamp);
-	townsPtr->cpu.DebugStoreDword(townsPtr->mem,32,GS,EDI+5,(unsigned int)dirEnt.length);
+	townsPtr->CPU().DebugStoreDword(townsPtr->mem,32,GS,EDI+1,timeStamp);
+	townsPtr->CPU().DebugStoreDword(townsPtr->mem,32,GS,EDI+5,(unsigned int)dirEnt.length);
 
 	char file8_3[12];
 	for(auto &c : file8_3)
@@ -408,7 +408,7 @@ void TownsVnDrv::StoreDirEnt(const FileSys::DirectoryEntry &dirEnt)
 
 	for(int i=0; i<12; ++i)
 	{
-		townsPtr->cpu.DebugStoreByte(townsPtr->mem,32,GS,EDI+9+i,file8_3[i]);
+		townsPtr->CPU().DebugStoreByte(townsPtr->mem,32,GS,EDI+9+i,file8_3[i]);
 	}
-	townsPtr->cpu.DebugStoreByte(townsPtr->mem,32,GS,EDI+9+12,0);
+	townsPtr->CPU().DebugStoreByte(townsPtr->mem,32,GS,EDI+9+12,0);
 }

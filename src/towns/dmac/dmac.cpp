@@ -159,7 +159,7 @@ TownsDMAC::TownsDMAC(class FMTowns *townsPtr) : Device(townsPtr)
 		state.ch[state.SELCH].modeCtrl=data;
 		if(state.ch[state.SELCH].modeCtrl&0x20)
 		{
-			townsPtr->cpu.Abort("DMAC: ADIR bit not supported.");
+			townsPtr->CPU().Abort("DMAC: ADIR bit not supported.");
 		}
 		break;
 	case TOWNSIO_DMAC_STATUS://              0xAB,

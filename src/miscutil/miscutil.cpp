@@ -17,7 +17,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 
 
-std::vector <std::string> miscutil::MakeMemDump(const i486DX &cpu,const Memory &mem,i486DX::FarPointer ptr,unsigned int length,bool shiftJIS)
+std::vector <std::string> miscutil::MakeMemDump(const i486DXCommon &cpu,const Memory &mem,i486DXCommon::FarPointer ptr,unsigned int length,bool shiftJIS)
 {
 	// Make it 32-bit addressing.  I don't think there is any point rounding the address for memory dump.
 	const int addressSize=32;
@@ -26,7 +26,7 @@ std::vector <std::string> miscutil::MakeMemDump(const i486DX &cpu,const Memory &
 	auto lineStart=(ptr.OFFSET&~0x0F);
 	auto lineEnd=((ptr.OFFSET+length-1)&~0x0F);
 
-	if((ptr.SEG&0xffff0000)==i486DX::FarPointer::LINEAR_ADDR)
+	if((ptr.SEG&0xffff0000)==i486DXCommon::FarPointer::LINEAR_ADDR)
 	{
 		for(auto addr0=lineStart; addr0<=lineEnd; addr0+=16)
 		{
@@ -76,7 +76,7 @@ std::vector <std::string> miscutil::MakeMemDump(const i486DX &cpu,const Memory &
 			text.push_back((std::string &&)str);
 		}
 	}
-	else if((ptr.SEG&0xffff0000)==i486DX::FarPointer::PHYS_ADDR)
+	else if((ptr.SEG&0xffff0000)==i486DXCommon::FarPointer::PHYS_ADDR)
 	{
 		for(auto addr0=lineStart; addr0<=lineEnd; addr0+=16)
 		{
@@ -128,12 +128,12 @@ std::vector <std::string> miscutil::MakeMemDump(const i486DX &cpu,const Memory &
 	}
 	else
 	{
-		i486DX::SegmentRegister seg;
+		i486DXCommon::SegmentRegister seg;
 		std::string segTxt;
-		if((ptr.SEG&0xffff0000)==i486DX::FarPointer::SEG_REGISTER)
+		if((ptr.SEG&0xffff0000)==i486DXCommon::FarPointer::SEG_REGISTER)
 		{
 			seg=cpu.state.GetSegmentRegister(ptr.SEG&0xffff);
-			if((ptr.SEG&0xff)<i486DX::REG_TOTAL_NUMBER_OF_REGISTERS)
+			if((ptr.SEG&0xff)<i486DXCommon::REG_TOTAL_NUMBER_OF_REGISTERS)
 			{
 				segTxt=cpu.RegToStr[ptr.SEG&0xff];
 			}
@@ -201,7 +201,7 @@ std::vector <std::string> miscutil::MakeMemDump(const i486DX &cpu,const Memory &
 	return text;
 }
 
-std::vector <std::string> miscutil::MakeMemDump2(const i486DX &cpu,const Memory &mem,i486DX::FarPointer ptr,int wid,int hei,int skip,bool includeASCII,bool shiftJIS)
+std::vector <std::string> miscutil::MakeMemDump2(const i486DXCommon &cpu,const Memory &mem,i486DXCommon::FarPointer ptr,int wid,int hei,int skip,bool includeASCII,bool shiftJIS)
 {
 	std::vector <std::string> text;
 
@@ -210,22 +210,22 @@ std::vector <std::string> miscutil::MakeMemDump2(const i486DX &cpu,const Memory 
 		unsigned int addr0=ptr.OFFSET+y*wid;
 		std::string addrTxt;
 
-		if((ptr.SEG&0xffff0000)==i486DX::FarPointer::LINEAR_ADDR)
+		if((ptr.SEG&0xffff0000)==i486DXCommon::FarPointer::LINEAR_ADDR)
 		{
 			addrTxt=cpputil::Uitox(addr0);
 		}
-		else if((ptr.SEG&0xffff0000)==i486DX::FarPointer::PHYS_ADDR)
+		else if((ptr.SEG&0xffff0000)==i486DXCommon::FarPointer::PHYS_ADDR)
 		{
 			addrTxt=cpputil::Uitox(addr0);
 		}
 		else
 		{
-			i486DX::SegmentRegister seg;
+			i486DXCommon::SegmentRegister seg;
 			std::string segTxt;
-			if((ptr.SEG&0xffff0000)==i486DX::FarPointer::SEG_REGISTER)
+			if((ptr.SEG&0xffff0000)==i486DXCommon::FarPointer::SEG_REGISTER)
 			{
 				seg=cpu.state.GetSegmentRegister(ptr.SEG&0xffff);
-				if((ptr.SEG&0xff)<i486DX::REG_TOTAL_NUMBER_OF_REGISTERS)
+				if((ptr.SEG&0xff)<i486DXCommon::REG_TOTAL_NUMBER_OF_REGISTERS)
 				{
 					segTxt=cpu.RegToStr[ptr.SEG&0xff];
 				}
@@ -282,21 +282,21 @@ std::vector <std::string> miscutil::MakeMemDump2(const i486DX &cpu,const Memory 
 	return text;
 }
 
-unsigned char miscutil::GetByte(const i486DX &cpu,const Memory &mem,i486DX::FarPointer ptr,uint32_t offset)
+unsigned char miscutil::GetByte(const i486DXCommon &cpu,const Memory &mem,i486DXCommon::FarPointer ptr,uint32_t offset)
 {
-	if((ptr.SEG&0xffff0000)==i486DX::FarPointer::LINEAR_ADDR)
+	if((ptr.SEG&0xffff0000)==i486DXCommon::FarPointer::LINEAR_ADDR)
 	{
 		return cpu.DebugFetchByteByLinearAddress(mem,ptr.OFFSET+offset);
 	}
-	else if((ptr.SEG&0xffff0000)==i486DX::FarPointer::PHYS_ADDR)
+	else if((ptr.SEG&0xffff0000)==i486DXCommon::FarPointer::PHYS_ADDR)
 	{
 		return mem.FetchByte(ptr.OFFSET+offset);
 	}
 	else
 	{
-		i486DX::SegmentRegister seg;
+		i486DXCommon::SegmentRegister seg;
 		std::string segTxt;
-		if((ptr.SEG&0xffff0000)==i486DX::FarPointer::SEG_REGISTER)
+		if((ptr.SEG&0xffff0000)==i486DXCommon::FarPointer::SEG_REGISTER)
 		{
 			seg=cpu.state.GetSegmentRegister(ptr.SEG&0xffff);
 		}
