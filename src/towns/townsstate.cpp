@@ -13,6 +13,7 @@
 
 bool FMTowns::SaveState(std::string fName) const
 {
+	auto &cpu=CPU();
 	std::ofstream ofp(fName,std::ios::binary);
 	if(true==ofp.is_open())
 	{
@@ -49,6 +50,7 @@ bool FMTowns::SaveState(std::string fName) const
 }
 bool FMTowns::LoadState(std::string fName,class Outside_World &outsideWorld)
 {
+	auto &cpu=CPU();
 	std::ifstream ifp(fName,std::ios::binary);
 	if(true==ifp.is_open())
 	{

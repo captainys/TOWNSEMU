@@ -42,6 +42,7 @@ static void PushBack_MouseClick(TownsEventLog &eventLog,int x,int y)
 
 void FMTowns::Daikoukai_ApplyPatchesCacheAddr(void)
 {
+	auto &cpu=CPU();
 	if(true!=cpu.IsInRealMode())
 	{
 		if(

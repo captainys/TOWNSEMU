@@ -277,7 +277,7 @@ void FMTowns::UpdateCDEleVol(Outside_World *outside_world)
 
 /* virtual */ void FMTowns::RunScheduledTask(unsigned long long int townsTime)
 {
-	cpu.Reset();
+	CPU().Reset();
 }
 void FMTowns::AdjustMachineSpeedForMemoryWait(void)
 {
