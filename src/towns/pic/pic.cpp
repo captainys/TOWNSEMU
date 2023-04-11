@@ -203,7 +203,7 @@ bool TownsPIC::I8259A::HigherPriorityINTIsInService(unsigned int INTNum) const
 	return false;
 }
 
-void TownsPIC::I8259A::FireIRQ(i486DX &cpu,Memory &mem,unsigned int INTToGo)
+void TownsPIC::I8259A::FireIRQ(i486DXCommon &cpu,Memory &mem,unsigned int INTToGo)
 {
 	// What should I do in AEOI mode?
 	// If I fire INT without raising ISR, in the next cycle it will re-fire an INT without CPU having a time to run CLI instruction.
@@ -216,7 +216,7 @@ void TownsPIC::I8259A::FireIRQ(i486DX &cpu,Memory &mem,unsigned int INTToGo)
 	{
 		ISR|=(1<<INTToGo);
 		auto CPUINT=(GetT()&0xF8)|(INTToGo&7);
-		cpu.Interrupt(CPUINT,mem,0,0,false);
+		cpu.RedirectInterrupt(CPUINT,mem,0,0,false);
 	}
 }
 

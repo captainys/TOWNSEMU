@@ -25,6 +25,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 void FMTowns::ProcessVMToHostCommand(unsigned int vmCmd,unsigned int paramLen,const unsigned char param[])
 {
+	auto &cpu=CPU();
 	switch(vmCmd)
 	{
 	case TOWNS_VMIF_CMD_CAPTURE_CRTC:

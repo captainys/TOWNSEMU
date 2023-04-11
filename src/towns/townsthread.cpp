@@ -93,7 +93,7 @@ void TownsThread::VMMainLoop(FMTowns *townsPtr,Outside_World *outside_world,clas
 				while(townsPtr->state.townsTime<townsPtr->var.nextTimeSync)
 				{
 					townsPtr->RunOneInstruction();
-					townsPtr->pic.ProcessIRQ(townsPtr->cpu,townsPtr->mem);
+					townsPtr->pic.ProcessIRQ(townsPtr->CPU(),townsPtr->mem);
 					townsPtr->RunFastDevicePolling();
 					townsPtr->RunScheduledTasks();
 
@@ -104,8 +104,8 @@ void TownsThread::VMMainLoop(FMTowns *townsPtr,Outside_World *outside_world,clas
 					if(true==townsPtr->debugger.stop)
 					{
 						if(true==townsPtr->debugger.lastBreakPointInfo.ShouldBreak() &&
-						   townsPtr->cpu.state.CS().value==townsPtr->var.powerOffAt.SEG &&
-						   townsPtr->cpu.state.EIP==townsPtr->var.powerOffAt.OFFSET)
+						   townsPtr->CPU().state.CS().value==townsPtr->var.powerOffAt.SEG &&
+						   townsPtr->CPU().state.EIP==townsPtr->var.powerOffAt.OFFSET)
 						{
 							std::cout << "Break at the power-off point." << std::endl;
 							std::cout << "Normal termination of a unit testing." << std::endl;
@@ -180,7 +180,7 @@ void TownsThread::VMMainLoop(FMTowns *townsPtr,Outside_World *outside_world,clas
 			{
 				townsPtr->debugger.ClearStopFlag();
 				townsPtr->RunOneInstruction();
-				townsPtr->pic.ProcessIRQ(townsPtr->cpu,townsPtr->mem);
+				townsPtr->pic.ProcessIRQ(townsPtr->CPU(),townsPtr->mem);
 				townsPtr->RunFastDevicePolling();
 				townsPtr->RunScheduledTasks();
 			}

@@ -141,7 +141,7 @@ public:
 		/*! Fires an IRQ.  This function should be called after IRQ mask checked, and CPU's IF checked.
 		    This function just fires up an IRQ without checking anything.
 		*/
-		void FireIRQ(i486DX &cpu,Memory &mem,unsigned int INTToGo);
+		void FireIRQ(i486DXCommon &cpu,Memory &mem,unsigned int INTToGo);
 
 		void Serialize(std::vector <unsigned char> &data) const;
 		bool Deserialize(const unsigned char *&data,uint32_t version);
@@ -184,7 +184,7 @@ public:
 
 	std::vector <std::string> GetStateText(void) const;
 
-	inline void ProcessIRQ(i486DX &cpu,Memory &mem)
+	inline void ProcessIRQ(i486DXCommon &cpu,Memory &mem)
 	{
 		if(0!=state.IRR0_OR_IRR1_Cache && cpu.GetIF() && false==cpu.state.holdIRQ)
 		{

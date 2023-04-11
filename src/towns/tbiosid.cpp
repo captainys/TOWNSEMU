@@ -239,6 +239,7 @@ unsigned int FMTowns::FindTBIOSMouseInfoOffset(unsigned int tbiosVersion,unsigne
 
 void FMTowns::OnCRTC_HST_Write(void)
 {
+	auto &cpu=CPU();
 	std::cout << "Write to CRTC-HST register." << std::endl;
 	if(0!=(cpu.state.GetCR(0)&i486DX::CR0_PROTECTION_ENABLE))
 	{
