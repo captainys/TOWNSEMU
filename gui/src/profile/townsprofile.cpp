@@ -354,6 +354,9 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 	text.back()+=mapXYExpression[1];
 	text.back().push_back('\"');
 
+	text.push_back("CPUFIDEL ");
+	text.back()+=i486DXCommon::FidelityLevelToStr(CPUFidelityLevel);
+
 	return text;
 }
 bool TownsProfile::Deserialize(const std::vector <std::string> &text)
@@ -768,6 +771,10 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 				mapXYExpression[1]=argv[1];
 			}
 		}
+		else if(0==argv[0].STRCMP("CPUFIDEL") && 2<=argv.size())
+		{
+			CPUFidelityLevel=i486DXCommon::StrToFidelityLevel(argv[1].c_str());
+		}
 		else
 		{
 			errorMsg="Unrecognized keyword:";
@@ -1125,6 +1132,11 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 	{
 		argv.push_back("-KEYMAP");
 		argv.push_back(keyMapFName);
+	}
+
+	if(i486DXCommon::HIGH_FIDELITY==CPUFidelityLevel)
+	{
+		argv.push_back("-HIGHFIDELITY");
 	}
 
 	return argv;

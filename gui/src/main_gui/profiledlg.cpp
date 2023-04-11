@@ -136,9 +136,14 @@ void ProfileDialog::Make(void)
 		CPUFreqTxt->SetInteger(25);
 		AddStaticText(0,FSKEY_NULL,"(Too-fast frequency rather slows down VM)",YSFALSE);
 		FPUBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Enable 80387 FPU",YSFALSE);
-
 		RAMSizeTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"RAM (MB)",4,YSFALSE);
 		RAMSizeTxt->SetInteger(4);
+
+		AddStaticText(0,FSKEY_NULL,"CPU Fidelity:",YSTRUE);
+		CPUFidelityDrp=AddEmptyDropList(0,FSKEY_NULL,"",8,20,20,YSFALSE);
+		CPUFidelityDrp->AddString(i486DXCommon::FidelityLevelToStr(i486DXCommon::MID_FIDELITY).c_str(),YSTRUE);
+		CPUFidelityDrp->AddString(i486DXCommon::FidelityLevelToStr(i486DXCommon::HIGH_FIDELITY).c_str(),YSFALSE);
+		CPUFidelityHelpBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"What's this?",YSFALSE);
 
 		CDImgBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"CD Image:",YSTRUE);
 		CDImgTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",nShowPath,YSFALSE);
@@ -896,6 +901,10 @@ void ProfileDialog::OnSliderPositionChange(FsGuiSlider *slider,const double &pre
 		std::vector <const wchar_t *> extList={L".TState"};
 		BrowseSaveAs(L"Select A Quick State-Save File",quickStateSaveFNameTxt,extList);
 	}
+	if(CPUFidelityHelpBtn==btn)
+	{
+		ExplainCPUFidelity();
+	}
 	for(int i=0; i<MAX_NUM_SHARED_DIR; ++i)
 	{
 		if(browseShareDirBtn[i]==btn)
@@ -1462,4 +1471,22 @@ void ProfileDialog::UpdatePCMVolumeText(void)
 	YsString text;
 	text.Printf("%d",(int)scaled);
 	pcmVolumeText->SetText(text);
+}
+void ProfileDialog::ExplainCPUFidelity(void)
+{
+	FsGuiMessageBoxDialog *dlg=FsGuiDialog::CreateSelfDestructiveDialog<FsGuiMessageBoxDialog>();
+	dlg->Make(
+		L"About CPU Fidelity",
+		L"Medium-Fidelity CPU core emulates x86 features necessary for majority of FM TOWNS applications\n"
+		L"including TownsOS and DOS6 and Fractal Engines.\n"
+		L"It skips exception handling that are not used in those applications.\n"
+		L"\n"
+		L"High-Fidelity CPU core emulates more x86 features necessary for installing and running Windows 3.1.\n"
+		L"\n"
+		L"Since High-Fidelity CPU needs to check and handle more exceptions, it is slower than Medium-Fidelity\n"
+		L"CPU core.\n"
+		L"\n"
+		L"Windows 3.1 requires High-Fidelity CPU core.\n",
+		L"OK",nullptr);
+	AttachModalDialog(dlg);
 }

@@ -77,11 +77,11 @@ public:
 		switch(fidelityLevel)
 		{
 		case LOW_FIDELITY:
-			return "LOWFIDELITY";
+			return "LOW_FIDELITY";
 		case MID_FIDELITY:
-			return "MIDFIDELITY";
+			return "MEDIUM_FIDELITY";
 		case HIGH_FIDELITY:
-			return "HIGHFIDELITY";
+			return "HIGH_FIDELITY";
 		}
 		return "";
 	}

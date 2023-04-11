@@ -46,6 +46,8 @@ public:
 	FsGuiDropList *scrnModeDrp;
 	FsGuiButton *autoStartBtn;
 	FsGuiTextBox *CPUFreqTxt,*RAMSizeTxt;
+	FsGuiDropList *CPUFidelityDrp;
+	FsGuiButton *CPUFidelityHelpBtn;
 	FsGuiButton *FPUBtn;
 	FsGuiButton *catchUpRealTimeBtn;
 	FsGuiButton *runBtn;
@@ -132,6 +134,8 @@ public:
 	void SetDefaultPCMVolume(void);
 	void UpdateFMVolumeText(void);
 	void UpdatePCMVolumeText(void);
+
+	void ExplainCPUFidelity(void);
 };
 
 
