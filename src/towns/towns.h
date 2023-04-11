@@ -372,7 +372,7 @@ public:
 
 	// Machine State >>
 	State state;
-	i486DX cpu;
+	i486DX _cpu;
 	i486Debugger debugger;
 	TownsEventLog eventLog;
 	TownsPIC pic;
@@ -400,11 +400,11 @@ public:
 
 	i486DXCommon &CPU(void)
 	{
-		return cpu;
+		return _cpu;
 	}
 	const i486DXCommon &CPU(void) const
 	{
-		return cpu;
+		return _cpu;
 	}
 
 	/*! Pointers of all devices (except *this) must be stored in allDevices.

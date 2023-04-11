@@ -23,10 +23,10 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 namespace cmdutil
 {
 	/*! Make a far pointer from a string.
-	    If no segment is given, SEG member of i486DX::FarPointer will be set to
-	    i486DX::FarPointer::NO_SEG.
+	    If no segment is given, SEG member of i486DXCommon::FarPointer will be set to
+	    i486DXCommon::FarPointer::NO_SEG.
 	*/
-	i486DX::FarPointer MakeFarPointer(const std::string &str,const i486DX &cpu);
+	i486DXCommon::FarPointer MakeFarPointer(const std::string &str,const i486DXCommon &cpu);
 
 	/*! Print prompt.
 	*/

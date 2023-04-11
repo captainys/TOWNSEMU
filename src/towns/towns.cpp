@@ -419,7 +419,7 @@ void FMTownsCommon::Variable::Reset(void)
 
 FMTownsCommon::FMTownsCommon() : 
 	Device(this),
-	cpu(this),
+	_cpu(this),
 	physMem(this,&mem,&sound.state.rf5c68),
 	keyboard(this,&pic),
 	crtc(this,&sprite),
@@ -870,7 +870,7 @@ void FMTownsCommon::NotifyDiskRead(void)
 
 unsigned int FMTownsCommon::RunOneInstruction(void)
 {
-	auto clocksPassed=cpu.RunOneInstruction(mem,io);
+	auto clocksPassed=_cpu.RunOneInstruction(mem,io);
 	state.clockBalance+=clocksPassed*1000;
 
 	// Since last update, clockBalance*1000/freq nano seconds have passed.
@@ -882,8 +882,8 @@ unsigned int FMTownsCommon::RunOneInstruction(void)
 	state.townsTime+=passedInNanoSec;
 	state.clockBalance%=FREQ;
 
-	var.disassemblePointer.SEG=cpu.state.CS().value;
-	var.disassemblePointer.OFFSET=cpu.state.EIP;
+	var.disassemblePointer.SEG=_cpu.state.CS().value;
+	var.disassemblePointer.OFFSET=_cpu.state.EIP;
 
 	return clocksPassed;
 }

@@ -2,7 +2,7 @@
 #include "townslineparser.h"
 #include "cpputil.h"
 
-TownsLineParser::TownsLineParser(const class i486DX *cpuPtr)
+TownsLineParser::TownsLineParser(const class i486DXCommon *cpuPtr)
 {
 	this->cpuPtr=cpuPtr;
 }
@@ -16,7 +16,7 @@ TownsLineParser::TownsLineParser(const class i486DX *cpuPtr)
 	std::string cap=str;
 	cpputil::Capitalize(cap);
 	auto reg=cpuPtr->StrToReg(cap);
-	if(i486DX::REG_NULL!=reg)
+	if(i486DXCommon::REG_NULL!=reg)
 	{
 		return cpuPtr->GetRegisterValue(reg);
 	}
@@ -26,7 +26,7 @@ TownsLineParser::TownsLineParser(const class i486DX *cpuPtr)
 	}
 }
 
-TownsLineParserHexadecimal::TownsLineParserHexadecimal(const class i486DX *cpuPtr)
+TownsLineParserHexadecimal::TownsLineParserHexadecimal(const class i486DXCommon *cpuPtr)
 {
 	this->cpuPtr=cpuPtr;
 }
@@ -40,7 +40,7 @@ TownsLineParserHexadecimal::TownsLineParserHexadecimal(const class i486DX *cpuPt
 	std::string cap=str;
 	cpputil::Capitalize(cap);
 	auto reg=cpuPtr->StrToReg(cap);
-	if(i486DX::REG_NULL!=reg)
+	if(i486DXCommon::REG_NULL!=reg)
 	{
 		return cpuPtr->GetRegisterValue(reg);
 	}

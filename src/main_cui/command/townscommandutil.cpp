@@ -20,9 +20,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 
 
-i486DX::FarPointer cmdutil::MakeFarPointer(const std::string &str,const i486DX &cpu)
+i486DXCommon::FarPointer cmdutil::MakeFarPointer(const std::string &str,const i486DXCommon &cpu)
 {
-	i486DX::FarPointer ptr;
+	i486DXCommon::FarPointer ptr;
 	ptr.MakeFromString(str);
 
 	// To allow description like EAX+EDI*2+10, discard offset part from MakeFromString and re-calculate.

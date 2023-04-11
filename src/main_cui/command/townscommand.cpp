@@ -942,10 +942,10 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,clas
 		thr.SetRunMode(TownsThread::RUNMODE_RUN);
 		if(1<cmd.argv.size())
 		{
-			auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.cpu);
-			if(farPtr.SEG==i486DX::FarPointer::NO_SEG)
+			auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.CPU());
+			if(farPtr.SEG==i486DXCommon::FarPointer::NO_SEG)
 			{
-				farPtr.SEG=towns.cpu.state.CS().value;
+				farPtr.SEG=towns.CPU().state.CS().value;
 			}
 			towns.debugger.oneTimeBreakPoint=farPtr;
 		}
@@ -953,7 +953,7 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,clas
 	case CMD_INTERRUPT:
 		if(1<cmd.argv.size())
 		{
-			towns.cpu.Interrupt(cpputil::Xtoi(cmd.argv[1].c_str()),towns.mem,0,0,false);
+			towns.CPU().RedirectInterrupt(cpputil::Xtoi(cmd.argv[1].c_str()),towns.mem,0,0,false);
 			towns.PrintStatus();
 		}
 		else
@@ -1002,9 +1002,9 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,clas
 		waitVM=true;
 		break;
 	case CMD_RETURN_FROM_PROCEDURE:
-		if(0<towns.cpu.callStack.size())
+		if(0<towns.CPU().callStack.size())
 		{
-			auto s=towns.cpu.callStack.back();
+			auto s=towns.CPU().callStack.back();
 			towns.debugger.ClearStopFlag();
 			towns.debugger.SetOneTimeBreakPoint(s.fromCS,s.fromEIP+s.callOpCodeLength);
 			thr.SetRunMode(TownsThread::RUNMODE_RUN);
@@ -1735,7 +1735,7 @@ void TownsCommandInterpreter::Execute_Enable(FMTownsCommon &towns,Command &cmd)
 			std::cout << "YM2612 register write log is Enabled." << std::endl;
 			break;
 		case ENABLE_FPU:
-			towns.cpu.state.fpuState.enabled=true;
+			towns.CPU().state.fpuState.enabled=true;
 			std::cout << "80487 Enabled." << std::endl;
 			break;
 		case ENABLE_FDCMONITOR:
@@ -1822,7 +1822,7 @@ void TownsCommandInterpreter::Execute_Disable(FMTownsCommon &towns,Command &cmd)
 			std::cout << "YM2612 register write log is Disabled." << std::endl;
 			break;
 		case ENABLE_FPU:
-			towns.cpu.state.fpuState.enabled=false;
+			towns.CPU().state.fpuState.enabled=false;
 			std::cout << "80487 Disabled." << std::endl;
 			break;
 		case ENABLE_FDCMONITOR:
@@ -1850,7 +1850,7 @@ void TownsCommandInterpreter::Execute_AddBreakPoint(FMTownsCommon &towns,Command
 		PrintError(ERROR_TOO_FEW_ARGS);
 		return;
 	}
-	if(nullptr==towns.cpu.debuggerPtr)
+	if(nullptr==towns.CPU().debuggerPtr)
 	{
 		PrintError(ERROR_DEBUGGER_NOT_ENABLED);
 		return;
@@ -1874,7 +1874,7 @@ void TownsCommandInterpreter::Execute_AddBreakPoint(FMTownsCommon &towns,Command
 	}
 	else
 	{
-		auto farPtr=towns.cpu.TranslateFarPointer(cmdutil::MakeFarPointer(cmd.argv[1],towns.cpu));
+		auto farPtr=towns.CPU().TranslateFarPointer(cmdutil::MakeFarPointer(cmd.argv[1],towns.CPU()));
 		towns.debugger.AddBreakPoint(farPtr,info);
 	}
 }
@@ -1886,7 +1886,7 @@ void TownsCommandInterpreter::Execute_AddSavePoint(FMTownsCommon &towns,Command 
 		PrintError(ERROR_TOO_FEW_ARGS);
 		return;
 	}
-	if(nullptr==towns.cpu.debuggerPtr)
+	if(nullptr==towns.CPU().debuggerPtr)
 	{
 		PrintError(ERROR_DEBUGGER_NOT_ENABLED);
 		return;
@@ -1904,7 +1904,7 @@ void TownsCommandInterpreter::Execute_AddSavePoint(FMTownsCommon &towns,Command 
 	}
 	else
 	{
-		auto farPtr=towns.cpu.TranslateFarPointer(cmdutil::MakeFarPointer(cmd.argv[1],towns.cpu));
+		auto farPtr=towns.CPU().TranslateFarPointer(cmdutil::MakeFarPointer(cmd.argv[1],towns.CPU()));
 		towns.debugger.AddBreakPoint(farPtr,info);
 		std::cout << "Will save state at " << addrAndSym.first.Format() << std::endl;
 	}
@@ -1928,7 +1928,7 @@ void TownsCommandInterpreter::Execute_AddBreakPointWithPassCount(FMTownsCommon &
 	}
 	else
 	{
-		auto farPtr=towns.cpu.TranslateFarPointer(cmdutil::MakeFarPointer(cmd.argv[1],towns.cpu));
+		auto farPtr=towns.CPU().TranslateFarPointer(cmdutil::MakeFarPointer(cmd.argv[1],towns.CPU()));
 		towns.debugger.AddBreakPoint(farPtr,info);
 	}
 }
@@ -2019,28 +2019,28 @@ void TownsCommandInterpreter::Execute_Dump(FMTownsCommon &towns,Command &cmd)
 			towns.PrintStatus();
 			break;
 		case DUMP_GDT:
-			towns.cpu.PrintGDT(towns.mem);
+			towns.CPU().PrintGDT(towns.mem);
 			break;
 		case DUMP_LDT:
-			towns.cpu.PrintLDT(towns.mem);
+			towns.CPU().PrintLDT(towns.mem);
 			break;
 		case DUMP_IDT:
-			towns.cpu.PrintIDT(towns.mem);
+			towns.CPU().PrintIDT(towns.mem);
 			break;
 		case DUMP_TSS:
-			for(auto str : towns.cpu.GetTSSText(towns.mem))
+			for(auto str : towns.CPU().GetTSSText(towns.mem))
 			{
 				std::cout << str << std::endl;
 			}
 			break;
 		case DUMP_TSS_IOMAP:
 			{
-				bool prevPermitted=towns.cpu.DebugTestIOMapPermission(towns.cpu.state.TR,0,1,towns.mem);
+				bool prevPermitted=towns.CPU().DebugTestIOMapPermission(towns.CPU().state.TR,0,1,towns.mem);
 				unsigned int nBlocked=0;
 				unsigned int lastFlip=0;
 				for(unsigned int ioport=0; ioport<0x1000; ++ioport)
 				{
-					bool permitted=towns.cpu.DebugTestIOMapPermission(towns.cpu.state.TR,ioport,1,towns.mem);
+					bool permitted=towns.CPU().DebugTestIOMapPermission(towns.CPU().state.TR,ioport,1,towns.mem);
 					if(prevPermitted!=permitted)
 					{
 						if(true!=prevPermitted)
@@ -2290,7 +2290,7 @@ void TownsCommandInterpreter::Execute_Dump(FMTownsCommon &towns,Command &cmd)
 			}
 			break;
 		case DUMP_SEGMENT_REGISTER_DETAILS:
-			for(auto str : towns.cpu.GetSegRegText())
+			for(auto str : towns.CPU().GetSegRegText())
 			{
 				std::cout << str << std::endl;
 			}
@@ -2307,7 +2307,7 @@ void TownsCommandInterpreter::Execute_Dump(FMTownsCommon &towns,Command &cmd)
 			break;
 		case DUMP_FPU:
 			{
-				for(auto str : towns.cpu.state.fpuState.GetStateText())
+				for(auto str : towns.CPU().state.fpuState.GetStateText())
 				{
 					std::cout << str << std::endl;
 				}
@@ -2354,13 +2354,13 @@ void TownsCommandInterpreter::Execute_Dump(FMTownsCommon &towns,Command &cmd)
 			}
 			break;
 		case DUMP_DR:
-			for(auto str : towns.cpu.GetDRText())
+			for(auto str : towns.CPU().GetDRText())
 			{
 				std::cout << str << std::endl;
 			}
 			break;
 		case DUMP_TEST:
-			for(auto str : towns.cpu.GetTESTText())
+			for(auto str : towns.CPU().GetTESTText())
 			{
 				std::cout << str << std::endl;
 			}
@@ -2369,10 +2369,10 @@ void TownsCommandInterpreter::Execute_Dump(FMTownsCommon &towns,Command &cmd)
 	}
 	else
 	{
-		auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.cpu);
-		if(i486DX::FarPointer::NO_SEG!=farPtr.SEG)
+		auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.CPU());
+		if(i486DXCommon::FarPointer::NO_SEG!=farPtr.SEG)
 		{
-			for(auto str : miscutil::MakeMemDump(towns.cpu,towns.mem,farPtr,256,/*shiftJIS*/false))
+			for(auto str : miscutil::MakeMemDump(towns.CPU(),towns.mem,farPtr,256,/*shiftJIS*/false))
 			{
 				std::cout << str << std::endl;
 			}
@@ -2417,10 +2417,10 @@ void TownsCommandInterpreter::Execute_MemoryDump(FMTownsCommon &towns,Command &c
 			ascii=(0!=cpputil::Atoi(cmd.argv[5].c_str()));
 		}
 
-		auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.cpu);
-		if(i486DX::FarPointer::NO_SEG!=farPtr.SEG)
+		auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.CPU());
+		if(i486DXCommon::FarPointer::NO_SEG!=farPtr.SEG)
 		{
-			for(auto str : miscutil::MakeMemDump2(towns.cpu,towns.mem,farPtr,wid,hei,skip,ascii,/*shiftJIS*/false))
+			for(auto str : miscutil::MakeMemDump2(towns.CPU(),towns.mem,farPtr,wid,hei,skip,ascii,/*shiftJIS*/false))
 			{
 				std::cout << str << std::endl;
 			}
@@ -2947,7 +2947,7 @@ void TownsCommandInterpreter::Execute_Calculate(FMTownsCommon &towns,Command &cm
 	}
 	for(int i=1; i<cmd.argv.size(); ++i)
 	{
-		TownsLineParser parser(&towns.cpu);
+		TownsLineParser parser(&towns.CPU());
 		if(true==parser.Analyze(cmd.argv[i]))
 		{
 			auto value=parser.Evaluate();
@@ -3408,15 +3408,15 @@ void TownsCommandInterpreter::Execute_AddressTranslation(FMTownsCommon &towns,Co
 {
 	if(2<=cmd.argv.size())
 	{
-		auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.cpu);
-		farPtr=towns.cpu.TranslateFarPointer(farPtr);
+		auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.CPU());
+		farPtr=towns.CPU().TranslateFarPointer(farPtr);
 		std::cout << farPtr.Format() << std::endl;
 
-		i486DX::SegmentRegister seg;
-		towns.cpu.LoadSegmentRegister(seg,farPtr.SEG,towns.mem);
+		i486DXCommon::SegmentRegister seg;
+		towns.CPU().DebugLoadSegmentRegister(seg,farPtr.SEG,towns.mem,towns.CPU().IsInRealMode());
 		auto linear=seg.baseLinearAddr+farPtr.OFFSET;
 
-		towns.cpu.PrintPageTranslation(towns.mem,linear);
+		towns.CPU().PrintPageTranslation(towns.mem,linear);
 	}
 	else
 	{
@@ -3429,24 +3429,24 @@ void TownsCommandInterpreter::Execute_Disassemble(FMTownsCommon &towns,Command &
 	auto farPtr=towns.var.disassemblePointer;
 	if(2<=cmd.argv.size())
 	{
-		farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.cpu);
-		if((farPtr.SEG&0xFFFF0000)==i486DX::FarPointer::PHYS_ADDR)
+		farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.CPU());
+		if((farPtr.SEG&0xFFFF0000)==i486DXCommon::FarPointer::PHYS_ADDR)
 		{
 			std::cout << "Disassembly cannot be from Physical address." << std::endl;
 			return;
 		}
 	}
 
-	i486DX::SegmentRegister seg;
-	towns.cpu.DebugLoadSegmentRegisterFromFarPointer(seg,towns.mem,farPtr);
-	farPtr=towns.cpu.TranslateFarPointer(farPtr);
+	i486DXCommon::SegmentRegister seg;
+	towns.CPU().DebugLoadSegmentRegisterFromFarPointer(seg,towns.mem,farPtr);
+	farPtr=towns.CPU().TranslateFarPointer(farPtr);
 	for(int i=0; i<16; ++i)
 	{
-		i486DX::InstructionAndOperand instOp;
+		i486DXCommon::InstructionAndOperand instOp;
 		MemoryAccess::ConstMemoryWindow emptyMemWin;
 
 		towns.debugger.GetSymTable().PrintIfAny(farPtr.SEG,farPtr.OFFSET);
-		towns.cpu.DebugFetchInstruction(emptyMemWin,instOp,seg,farPtr.OFFSET,towns.mem);
+		towns.CPU().DebugFetchInstruction(emptyMemWin,instOp,seg,farPtr.OFFSET,towns.mem);
 		auto &inst=instOp.inst;
 		auto &op1=instOp.op1;
 		auto &op2=instOp.op2;
@@ -3454,12 +3454,12 @@ void TownsCommandInterpreter::Execute_Disassemble(FMTownsCommon &towns,Command &
 		if(0<nRawBytes)
 		{
 			unsigned int unitBytes=1,segBytes=0,repeat=nRawBytes,chopOff=16;
-			std::cout << towns.cpu.DisassembleData(inst.addressSize,seg,farPtr.OFFSET,towns.mem,unitBytes,segBytes,repeat,chopOff) << std::endl;
+			std::cout << towns.CPU().DisassembleData(inst.addressSize,seg,farPtr.OFFSET,towns.mem,unitBytes,segBytes,repeat,chopOff) << std::endl;
 			farPtr.OFFSET+=nRawBytes;
 		}
 		else
 		{
-			auto disasm=towns.cpu.Disassemble(inst,op1,op2,seg,farPtr.OFFSET,towns.mem,towns.debugger.GetSymTable(),towns.debugger.GetIOTable());
+			auto disasm=towns.CPU().Disassemble(inst,op1,op2,seg,farPtr.OFFSET,towns.mem,towns.debugger.GetSymTable(),towns.debugger.GetIOTable());
 			std::cout << disasm << std::endl;
 			farPtr.OFFSET+=inst.numBytes;
 		}
@@ -3471,24 +3471,24 @@ void TownsCommandInterpreter::Execute_Disassemble16(FMTownsCommon &towns,Command
 	auto farPtr=towns.var.disassemblePointer;
 	if(2<=cmd.argv.size())
 	{
-		farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.cpu);
-		if((farPtr.SEG&0xFFFF0000)==i486DX::FarPointer::PHYS_ADDR)
+		farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.CPU());
+		if((farPtr.SEG&0xFFFF0000)==i486DXCommon::FarPointer::PHYS_ADDR)
 		{
 			std::cout << "Disassembly cannot be from Physical address." << std::endl;
 			return;
 		}
 	}
 
-	i486DX::SegmentRegister seg;
-	towns.cpu.DebugLoadSegmentRegisterFromFarPointer(seg,towns.mem,farPtr);
-	farPtr=towns.cpu.TranslateFarPointer(farPtr);
+	i486DXCommon::SegmentRegister seg;
+	towns.CPU().DebugLoadSegmentRegisterFromFarPointer(seg,towns.mem,farPtr);
+	farPtr=towns.CPU().TranslateFarPointer(farPtr);
 	for(int i=0; i<16; ++i)
 	{
-		i486DX::InstructionAndOperand instOp;
+		i486DXCommon::InstructionAndOperand instOp;
 		MemoryAccess::ConstMemoryWindow emptyMemWin;
 
 		towns.debugger.GetSymTable().PrintIfAny(farPtr.SEG,farPtr.OFFSET);
-		towns.cpu.FetchInstruction(emptyMemWin,instOp,seg,farPtr.OFFSET,towns.mem,16,16);
+		towns.CPU().DebugFetchInstruction(emptyMemWin,instOp,seg,farPtr.OFFSET,towns.mem,16,16);
 		auto &inst=instOp.inst;
 		auto &op1=instOp.op1;
 		auto &op2=instOp.op2;
@@ -3496,12 +3496,12 @@ void TownsCommandInterpreter::Execute_Disassemble16(FMTownsCommon &towns,Command
 		if(0<nRawBytes)
 		{
 			unsigned int unitBytes=1,segBytes=0,repeat=nRawBytes,chopOff=16;
-			std::cout << towns.cpu.DisassembleData(inst.addressSize,seg,farPtr.OFFSET,towns.mem,unitBytes,segBytes,repeat,chopOff) << std::endl;
+			std::cout << towns.CPU().DisassembleData(inst.addressSize,seg,farPtr.OFFSET,towns.mem,unitBytes,segBytes,repeat,chopOff) << std::endl;
 			farPtr.OFFSET+=nRawBytes;
 		}
 		else
 		{
-			auto disasm=towns.cpu.Disassemble(inst,op1,op2,seg,farPtr.OFFSET,towns.mem,towns.debugger.GetSymTable(),towns.debugger.GetIOTable());
+			auto disasm=towns.CPU().Disassemble(inst,op1,op2,seg,farPtr.OFFSET,towns.mem,towns.debugger.GetSymTable(),towns.debugger.GetIOTable());
 			std::cout << disasm << std::endl;
 			farPtr.OFFSET+=inst.numBytes;
 		}
@@ -3513,24 +3513,24 @@ void TownsCommandInterpreter::Execute_Disassemble32(FMTownsCommon &towns,Command
 	auto farPtr=towns.var.disassemblePointer;
 	if(2<=cmd.argv.size())
 	{
-		farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.cpu);
-		if((farPtr.SEG&0xFFFF0000)==i486DX::FarPointer::PHYS_ADDR)
+		farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.CPU());
+		if((farPtr.SEG&0xFFFF0000)==i486DXCommon::FarPointer::PHYS_ADDR)
 		{
 			std::cout << "Disassembly cannot be from Physical address." << std::endl;
 			return;
 		}
 	}
 
-	i486DX::SegmentRegister seg;
-	towns.cpu.DebugLoadSegmentRegisterFromFarPointer(seg,towns.mem,farPtr);
-	farPtr=towns.cpu.TranslateFarPointer(farPtr);
+	i486DXCommon::SegmentRegister seg;
+	towns.CPU().DebugLoadSegmentRegisterFromFarPointer(seg,towns.mem,farPtr);
+	farPtr=towns.CPU().TranslateFarPointer(farPtr);
 	for(int i=0; i<16; ++i)
 	{
-		i486DX::InstructionAndOperand instOp;
+		i486DXCommon::InstructionAndOperand instOp;
 		MemoryAccess::ConstMemoryWindow emptyMemWin;
 
 		towns.debugger.GetSymTable().PrintIfAny(farPtr.SEG,farPtr.OFFSET);
-		towns.cpu.FetchInstruction(emptyMemWin,instOp,seg,farPtr.OFFSET,towns.mem,32,32); // Fetch it anyway to have inst.addressSize
+		towns.CPU().DebugFetchInstruction(emptyMemWin,instOp,seg,farPtr.OFFSET,towns.mem,32,32); // Fetch it anyway to have inst.addressSize
 		auto &inst=instOp.inst;
 		auto &op1=instOp.op1;
 		auto &op2=instOp.op2;
@@ -3538,12 +3538,12 @@ void TownsCommandInterpreter::Execute_Disassemble32(FMTownsCommon &towns,Command
 		if(0<nRawBytes)
 		{
 			unsigned int unitBytes=1,segBytes=0,repeat=nRawBytes,chopOff=16;
-			std::cout << towns.cpu.DisassembleData(inst.addressSize,seg,farPtr.OFFSET,towns.mem,unitBytes,segBytes,repeat,chopOff) << std::endl;
+			std::cout << towns.CPU().DisassembleData(inst.addressSize,seg,farPtr.OFFSET,towns.mem,unitBytes,segBytes,repeat,chopOff) << std::endl;
 			farPtr.OFFSET+=nRawBytes;
 		}
 		else
 		{
-			auto disasm=towns.cpu.Disassemble(inst,op1,op2,seg,farPtr.OFFSET,towns.mem,towns.debugger.GetSymTable(),towns.debugger.GetIOTable());
+			auto disasm=towns.CPU().Disassemble(inst,op1,op2,seg,farPtr.OFFSET,towns.mem,towns.debugger.GetSymTable(),towns.debugger.GetIOTable());
 			std::cout << disasm << std::endl;
 			farPtr.OFFSET+=inst.numBytes;
 		}
@@ -3633,8 +3633,8 @@ void TownsCommandInterpreter::Execute_AddSymbol(FMTownsCommon &towns,Command &cm
 		case CMD_ADD_LABEL:
 		case CMD_ADD_DATALABEL:
 			{
-				auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.cpu);
-				farPtr=towns.cpu.TranslateFarPointer(farPtr);
+				auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.CPU());
+				farPtr=towns.CPU().TranslateFarPointer(farPtr);
 				auto *newSym=symTable.Update(farPtr,cmd.argv[2]);
 				switch(cmd.primaryCmd)
 				{
@@ -3657,8 +3657,8 @@ void TownsCommandInterpreter::Execute_AddSymbol(FMTownsCommon &towns,Command &cm
 				auto numBytes=cpputil::Xtoi(cmd.argv[3].c_str());
 				if(0<numBytes)
 				{
-					auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.cpu);
-					farPtr=towns.cpu.TranslateFarPointer(farPtr);
+					auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.CPU());
+					farPtr=towns.CPU().TranslateFarPointer(farPtr);
 					auto *newSym=symTable.Update(farPtr,cmd.argv[2]);
 					newSym->symType=i486Symbol::SYM_RAW_DATA;
 					newSym->rawDataBytes=numBytes;
@@ -3677,37 +3677,37 @@ void TownsCommandInterpreter::Execute_AddSymbol(FMTownsCommon &towns,Command &cm
 			break;
 		case CMD_ADD_COMMENT:
 			{
-				auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.cpu);
-				farPtr=towns.cpu.TranslateFarPointer(farPtr);
+				auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.CPU());
+				farPtr=towns.CPU().TranslateFarPointer(farPtr);
 				symTable.SetComment(farPtr,cmd.argv[2]);
 				std::cout << "Added comment " << cmd.argv[2] << std::endl;
 			}
 			break;
 		case CMD_IMM_IS_IOPORT:
 			{
-				auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.cpu);
-				farPtr=towns.cpu.TranslateFarPointer(farPtr);
+				auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.CPU());
+				farPtr=towns.CPU().TranslateFarPointer(farPtr);
 				symTable.SetImmIsIOPort(farPtr);
 			}
 			break;
 		case CMD_IMM_IS_LABEL:
 			{
-				auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.cpu);
-				farPtr=towns.cpu.TranslateFarPointer(farPtr);
+				auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.CPU());
+				farPtr=towns.CPU().TranslateFarPointer(farPtr);
 				symTable.SetImmIsSymbol(farPtr);
 			}
 			break;
 		case CMD_IMM_IS_ASCII:
 			{
-				auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.cpu);
-				farPtr=towns.cpu.TranslateFarPointer(farPtr);
+				auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.CPU());
+				farPtr=towns.CPU().TranslateFarPointer(farPtr);
 				symTable.SetImmIsASCII(farPtr);
 			}
 			break;
 		case CMD_OFFSET_IS_LABEL:
 			{
-				auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.cpu);
-				farPtr=towns.cpu.TranslateFarPointer(farPtr);
+				auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.CPU());
+				farPtr=towns.CPU().TranslateFarPointer(farPtr);
 				symTable.SetOffsetIsSymbol(farPtr);
 			}
 			break;
@@ -3781,8 +3781,8 @@ void TownsCommandInterpreter::Execute_DelSymbol(FMTownsCommon &towns,Command &cm
 	auto &symTable=towns.debugger.GetSymTable();
 	if(2<=cmd.argv.size())
 	{
-		auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.cpu);
-		farPtr=towns.cpu.TranslateFarPointer(farPtr);
+		auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.CPU());
+		farPtr=towns.CPU().TranslateFarPointer(farPtr);
 		if(true==symTable.Delete(farPtr))
 		{
 			std::cout << "Symbol&|Comment deleted." << std::endl;
@@ -3913,44 +3913,44 @@ void TownsCommandInterpreter::Execute_Let(FMTownsCommon &towns,Command &cmd)
 	{
 		std::string cap=cmd.argv[1];
 		cpputil::Capitalize(cap);
-		auto reg=towns.cpu.StrToReg(cap);
+		auto reg=towns.CPU().StrToReg(cap);
 		if(
-		   i486DX::REG_AL==reg ||
-		   i486DX::REG_AH==reg ||
-		   i486DX::REG_AX==reg ||
-		   i486DX::REG_EAX==reg ||
-		   i486DX::REG_BL==reg ||
-		   i486DX::REG_BH==reg ||
-		   i486DX::REG_BX==reg ||
-		   i486DX::REG_EBX==reg ||
-		   i486DX::REG_CL==reg ||
-		   i486DX::REG_CH==reg ||
-		   i486DX::REG_CX==reg ||
-		   i486DX::REG_ECX==reg ||
-		   i486DX::REG_DL==reg ||
-		   i486DX::REG_DH==reg ||
-		   i486DX::REG_DX==reg ||
-		   i486DX::REG_EDX==reg ||
-		   i486DX::REG_SI==reg ||
-		   i486DX::REG_ESI==reg ||
-		   i486DX::REG_DI==reg ||
-		   i486DX::REG_EDI==reg ||
-		   i486DX::REG_SP==reg ||
-		   i486DX::REG_ESP==reg ||
-		   i486DX::REG_BP==reg ||
-		   i486DX::REG_EBP==reg
+		   i486DXCommon::REG_AL==reg ||
+		   i486DXCommon::REG_AH==reg ||
+		   i486DXCommon::REG_AX==reg ||
+		   i486DXCommon::REG_EAX==reg ||
+		   i486DXCommon::REG_BL==reg ||
+		   i486DXCommon::REG_BH==reg ||
+		   i486DXCommon::REG_BX==reg ||
+		   i486DXCommon::REG_EBX==reg ||
+		   i486DXCommon::REG_CL==reg ||
+		   i486DXCommon::REG_CH==reg ||
+		   i486DXCommon::REG_CX==reg ||
+		   i486DXCommon::REG_ECX==reg ||
+		   i486DXCommon::REG_DL==reg ||
+		   i486DXCommon::REG_DH==reg ||
+		   i486DXCommon::REG_DX==reg ||
+		   i486DXCommon::REG_EDX==reg ||
+		   i486DXCommon::REG_SI==reg ||
+		   i486DXCommon::REG_ESI==reg ||
+		   i486DXCommon::REG_DI==reg ||
+		   i486DXCommon::REG_EDI==reg ||
+		   i486DXCommon::REG_SP==reg ||
+		   i486DXCommon::REG_ESP==reg ||
+		   i486DXCommon::REG_BP==reg ||
+		   i486DXCommon::REG_EBP==reg
 		)
 		{
-			TownsLineParserHexadecimal parser(&towns.cpu);
+			TownsLineParserHexadecimal parser(&towns.CPU());
 			if(true==parser.Analyze(cmd.argv[2]))
 			{
-				towns.cpu.SetRegisterValue(reg,parser.Evaluate());
+				towns.CPU().SetRegisterValue(reg,parser.Evaluate());
 				std::cout << "Loaded register value." << std::endl;
 			}
 		}
 		else if("CF"==cap)
 		{
-			towns.cpu.SetCF(0!=cpputil::Atoi(cmd.argv[2].c_str()));
+			towns.CPU().SetCF(0!=cpputil::Atoi(cmd.argv[2].c_str()));
 			std::cout << "Loaded CF." << std::endl;
 		}
 		else
@@ -3964,15 +3964,15 @@ void TownsCommandInterpreter::Execute_EditMemory(FMTownsCommon &towns,Command &c
 {
 	if(3<=cmd.argv.size())
 	{
-		auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.cpu);
-		if(farPtr.SEG==i486DX::FarPointer::NO_SEG)
+		auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1],towns.CPU());
+		if(farPtr.SEG==i486DXCommon::FarPointer::NO_SEG)
 		{
-			farPtr.SEG=towns.cpu.state.DS().value;
+			farPtr.SEG=towns.CPU().state.DS().value;
 		}
-		TownsLineParserHexadecimal parser(&towns.cpu);
+		TownsLineParserHexadecimal parser(&towns.CPU());
 		if(~0==numBytes) // String
 		{
-			if((farPtr.SEG&0xFFFF0000)==i486DX::FarPointer::PHYS_ADDR)
+			if((farPtr.SEG&0xFFFF0000)==i486DXCommon::FarPointer::PHYS_ADDR)
 			{
 				for(int i=0; i<cmd.argv[2].size(); ++i)
 				{
@@ -3982,13 +3982,13 @@ void TownsCommandInterpreter::Execute_EditMemory(FMTownsCommon &towns,Command &c
 			}
 			else
 			{
-				i486DX::SegmentRegister seg;
-				towns.cpu.DebugLoadSegmentRegisterFromFarPointer(seg,towns.mem,farPtr);
+				i486DXCommon::SegmentRegister seg;
+				towns.CPU().DebugLoadSegmentRegisterFromFarPointer(seg,towns.mem,farPtr);
 				for(int i=0; i<cmd.argv[2].size(); ++i)
 				{
-					towns.cpu.DebugStoreByte(towns.mem,32,seg,farPtr.OFFSET+i,cmd.argv[2][i]);
+					towns.CPU().DebugStoreByte(towns.mem,32,seg,farPtr.OFFSET+i,cmd.argv[2][i]);
 				}
-				towns.cpu.DebugStoreByte(towns.mem,32,seg,farPtr.OFFSET+cmd.argv[2].size(),0);
+				towns.CPU().DebugStoreByte(towns.mem,32,seg,farPtr.OFFSET+cmd.argv[2].size(),0);
 			}
 			std::cout << "Stored string to memory." << std::endl;
 		}
@@ -3999,7 +3999,7 @@ void TownsCommandInterpreter::Execute_EditMemory(FMTownsCommon &towns,Command &c
 			{
 				if(true==parser.Analyze(cmd.argv[i]))
 				{
-					if((farPtr.SEG&0xFFFF0000)==i486DX::FarPointer::PHYS_ADDR)
+					if((farPtr.SEG&0xFFFF0000)==i486DXCommon::FarPointer::PHYS_ADDR)
 					{
 						switch(numBytes)
 						{
@@ -4016,18 +4016,18 @@ void TownsCommandInterpreter::Execute_EditMemory(FMTownsCommon &towns,Command &c
 					}
 					else
 					{
-						i486DX::SegmentRegister seg;
-						towns.cpu.DebugLoadSegmentRegisterFromFarPointer(seg,towns.mem,farPtr);
+						i486DXCommon::SegmentRegister seg;
+						towns.CPU().DebugLoadSegmentRegisterFromFarPointer(seg,towns.mem,farPtr);
 						switch(numBytes)
 						{
 						case 1:
-							towns.cpu.DebugStoreByte(towns.mem,32,seg,OFFSET,parser.Evaluate());
+							towns.CPU().DebugStoreByte(towns.mem,32,seg,OFFSET,parser.Evaluate());
 							break;
 						case 2:
-							towns.cpu.DebugStoreWord(towns.mem,32,seg,OFFSET,parser.Evaluate());
+							towns.CPU().DebugStoreWord(towns.mem,32,seg,OFFSET,parser.Evaluate());
 							break;
 						case 4:
-							towns.cpu.DebugStoreDword(towns.mem,32,seg,OFFSET,parser.Evaluate());
+							towns.CPU().DebugStoreDword(towns.mem,32,seg,OFFSET,parser.Evaluate());
 							break;
 						}
 					}
@@ -4360,28 +4360,28 @@ void TownsCommandInterpreter::Execute_Search_ByteSequence(FMTownsCommon &towns,c
 
 void TownsCommandInterpreter::FoundAt(FMTownsCommon &towns,unsigned int physAddr)
 {
-	auto linearAddr=towns.cpu.PhysicalAddressToLinearAddress(physAddr,towns.mem);
+	auto linearAddr=towns.CPU().PhysicalAddressToLinearAddress(physAddr,towns.mem);
 	std::cout << "Found at PHYS:" << cpputil::Uitox(physAddr) << "  LINEAR:" << cpputil::Uitox(linearAddr) << std::endl;
-	FoundAt("CS:",towns.cpu.state.CS().baseLinearAddr,linearAddr);
-	FoundAt("DS:",towns.cpu.state.DS().baseLinearAddr,linearAddr);
-	FoundAt("SS:",towns.cpu.state.SS().baseLinearAddr,linearAddr);
-	FoundAt("ES:",towns.cpu.state.SS().baseLinearAddr,linearAddr);
-	if(true!=towns.cpu.IsInRealMode() && 0x000C!=towns.cpu.state.CS().value)
+	FoundAt("CS:",towns.CPU().state.CS().baseLinearAddr,linearAddr);
+	FoundAt("DS:",towns.CPU().state.DS().baseLinearAddr,linearAddr);
+	FoundAt("SS:",towns.CPU().state.SS().baseLinearAddr,linearAddr);
+	FoundAt("ES:",towns.CPU().state.SS().baseLinearAddr,linearAddr);
+	if(true!=towns.CPU().IsInRealMode() && 0x000C!=towns.CPU().state.CS().value)
 	{
-		i486DX::SegmentRegister seg;
-		towns.cpu.DebugLoadSegmentRegister(seg,0x000c,towns.mem,false);
+		i486DXCommon::SegmentRegister seg;
+		towns.CPU().DebugLoadSegmentRegister(seg,0x000c,towns.mem,false);
 		FoundAt("000C:",seg.baseLinearAddr,linearAddr);
 	}
-	if(true!=towns.cpu.IsInRealMode() && 0x0014!=towns.cpu.state.DS().value)
+	if(true!=towns.CPU().IsInRealMode() && 0x0014!=towns.CPU().state.DS().value)
 	{
-		i486DX::SegmentRegister seg;
-		towns.cpu.DebugLoadSegmentRegister(seg,0x0014,towns.mem,false);
+		i486DXCommon::SegmentRegister seg;
+		towns.CPU().DebugLoadSegmentRegister(seg,0x0014,towns.mem,false);
 		FoundAt("0014:",seg.baseLinearAddr,linearAddr);
 	}
-	if(true!=towns.cpu.IsInRealMode())
+	if(true!=towns.CPU().IsInRealMode())
 	{
-		i486DX::SegmentRegister seg;
-		towns.cpu.DebugLoadSegmentRegister(seg,0x0110,towns.mem,false);
+		i486DXCommon::SegmentRegister seg;
+		towns.CPU().DebugLoadSegmentRegister(seg,0x0110,towns.mem,false);
 		FoundAt("0110:",seg.baseLinearAddr,linearAddr);
 	}
 }
@@ -4396,17 +4396,17 @@ void TownsCommandInterpreter::Execute_Find_Caller(FMTownsCommon &towns,Command &
 	if(2<=cmd.argv.size())
 	{
 		auto procAddr=cpputil::Xtoi(cmd.argv[1].c_str());
-		for(auto callerAddr : towns.debugger.FindCaller(procAddr,towns.cpu.state.CS(),towns.cpu,towns.mem))
+		for(auto callerAddr : towns.debugger.FindCaller(procAddr,towns.CPU().state.CS(),towns.CPU(),towns.mem))
 		{
-			auto &seg=towns.cpu.state.CS();
+			auto &seg=towns.CPU().state.CS();
 
-			i486DX::InstructionAndOperand instOp;
+			i486DXCommon::InstructionAndOperand instOp;
 			MemoryAccess::ConstMemoryWindow emptyMemWin;
 
 			towns.debugger.GetSymTable().PrintIfAny(seg.value,callerAddr);
-			towns.cpu.FetchInstruction(emptyMemWin,instOp,seg,callerAddr,towns.mem);
+			towns.CPU().DebugFetchInstruction(emptyMemWin,instOp,seg,callerAddr,towns.mem);
 
-			auto disasm=towns.cpu.Disassemble(instOp.inst,instOp.op1,instOp.op2,seg,callerAddr,towns.mem,towns.debugger.GetSymTable(),towns.debugger.GetIOTable());
+			auto disasm=towns.CPU().Disassemble(instOp.inst,instOp.op1,instOp.op2,seg,callerAddr,towns.mem,towns.debugger.GetSymTable(),towns.debugger.GetIOTable());
 			std::cout << disasm << std::endl;
 		}
 	}
@@ -4428,13 +4428,13 @@ void TownsCommandInterpreter::Execute_Exception(FMTownsCommon &towns,Command &cm
 		}
 		else if("PAGEFAULT"==typeStr)
 		{
-			towns.cpu.Interrupt(i486DX::INT_PAGE_FAULT,towns.mem,0,0,false);
-			towns.cpu.Push(towns.mem,32,0);
+			towns.CPU().RedirectInterrupt(i486DXCommon::INT_PAGE_FAULT,towns.mem,0,0,false);
+			towns.CPU().RedirectPush(towns.mem,32,0);
 			towns.PrintStatus();
 		}
 		else if("DIVISION"==typeStr)
 		{
-			towns.cpu.Interrupt(i486DX::INT_DIVISION_BY_ZERO,towns.mem,0,0,false);
+			towns.CPU().RedirectInterrupt(i486DXCommon::INT_DIVISION_BY_ZERO,towns.mem,0,0,false);
 			towns.PrintStatus();
 		}
 		else
@@ -4603,32 +4603,32 @@ void TownsCommandInterpreter::Execute_SaveMemDump(FMTownsCommon &towns,Command &
 {
 	if(4<=cmd.argv.size())
 	{
-		auto farPtr=cmdutil::MakeFarPointer(cmd.argv[2],towns.cpu);
-		if(farPtr.SEG==i486DX::FarPointer::NO_SEG)
+		auto farPtr=cmdutil::MakeFarPointer(cmd.argv[2],towns.CPU());
+		if(farPtr.SEG==i486DXCommon::FarPointer::NO_SEG)
 		{
-			farPtr.SEG=towns.cpu.state.DS().value;
+			farPtr.SEG=towns.CPU().state.DS().value;
 		}
 
-		TownsLineParserHexadecimal parser(&towns.cpu);
+		TownsLineParserHexadecimal parser(&towns.CPU());
 		parser.Analyze(cmd.argv[3]);
 		auto length=parser.Evaluate();
 
-		i486DX::SegmentRegister seg;
-		if((farPtr.SEG&0xFFFF0000)!=i486DX::FarPointer::PHYS_ADDR)
+		i486DXCommon::SegmentRegister seg;
+		if((farPtr.SEG&0xFFFF0000)!=i486DXCommon::FarPointer::PHYS_ADDR)
 		{
-			towns.cpu.DebugLoadSegmentRegisterFromFarPointer(seg,towns.mem,farPtr);
+			towns.CPU().DebugLoadSegmentRegisterFromFarPointer(seg,towns.mem,farPtr);
 		}
 		std::vector <unsigned char> buf;
 		for(unsigned int i=0; i<length; ++i)
 		{
 			unsigned char c;
-			if((farPtr.SEG&0xFFFF0000)==i486DX::FarPointer::PHYS_ADDR)
+			if((farPtr.SEG&0xFFFF0000)==i486DXCommon::FarPointer::PHYS_ADDR)
 			{
 				c=towns.mem.FetchByte(farPtr.OFFSET+i);
 			}
 			else
 			{
-				c=towns.cpu.DebugFetchByte(32,seg,farPtr.OFFSET+i,towns.mem);
+				c=towns.CPU().DebugFetchByte(32,seg,farPtr.OFFSET+i,towns.mem);
 			}
 			buf.push_back(c);
 		}
@@ -4885,27 +4885,27 @@ void TownsCommandInterpreter::Execute_BreakOnMemoryWrite(FMTownsCommon &towns,Co
 		}
 		else if(std::string::npos!=cmd.argv[i].find(':'))
 		{
-			auto farPtr=cmdutil::MakeFarPointer(cmd.argv[i],towns.cpu);
-			farPtr=towns.cpu.TranslateFarPointer(farPtr);
+			auto farPtr=cmdutil::MakeFarPointer(cmd.argv[i],towns.CPU());
+			farPtr=towns.CPU().TranslateFarPointer(farPtr);
 
 			uint32_t physAddr=0;
-			if(i486DX::FarPointer::LINEAR_ADDR==farPtr.SEG)
+			if(i486DXCommon::FarPointer::LINEAR_ADDR==farPtr.SEG)
 			{
 				unsigned int exceptionType,exceptionCode;
-				physAddr=towns.cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,farPtr.OFFSET,towns.mem);
+				physAddr=towns.CPU().DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,farPtr.OFFSET,towns.mem);
 			}
-			else if(i486DX::FarPointer::PHYS_ADDR==farPtr.SEG)
+			else if(i486DXCommon::FarPointer::PHYS_ADDR==farPtr.SEG)
 			{
 				physAddr=farPtr.OFFSET;
 			}
 			else
 			{
-				i486DX::SegmentRegister seg;
-				towns.cpu.LoadSegmentRegister(seg,farPtr.SEG,towns.mem);
+				i486DXCommon::SegmentRegister seg;
+				towns.CPU().DebugLoadSegmentRegister(seg,farPtr.SEG,towns.mem,towns.CPU().IsInRealMode());
 				auto linear=seg.baseLinearAddr+farPtr.OFFSET;
 
 				unsigned int exceptionType,exceptionCode;
-				physAddr=towns.cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,linear,towns.mem);
+				physAddr=towns.CPU().DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,linear,towns.mem);
 			}
 			if(nAddr<2)
 			{

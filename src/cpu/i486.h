@@ -2926,9 +2926,45 @@ public:
 	*/
 	virtual unsigned int DebugLoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode) const=0;
 
+	void DebugLoadSegmentRegisterFromFarPointer(SegmentRegister &seg,const Memory &mem,FarPointer ptr) const
+	{
+		if(ptr.SEG==FarPointer::NO_SEG)
+		{
+			seg=state.CS();
+		}
+		else if(0==(ptr.SEG&0xFFFF0000))
+		{
+			DebugLoadSegmentRegister(seg,ptr.SEG&0xFFFF,mem,IsInRealMode());
+		}
+		else if((ptr.SEG&0xFFFF0000)==FarPointer::SEG_REGISTER)
+		{
+			seg=state.GetSegmentRegister(ptr.SEG&0xFFFF);
+		}
+		else if((ptr.SEG&0xFFFF0000)==FarPointer::LINEAR_ADDR)
+		{
+			seg.value=0;
+			seg.baseLinearAddr=0;
+			seg.operandSize=32;
+			seg.addressSize=32;
+			seg.limit=0xFFFFFFFF;
+		}
+		else if((ptr.SEG&0xFFFF0000)==FarPointer::REAL_ADDR)
+		{
+			seg.value=ptr.SEG&0xFFFF;
+			seg.baseLinearAddr=seg.value*0x10;
+			seg.operandSize=16;
+			seg.addressSize=16;
+			seg.limit=0xFFFF;
+		}
+	}
+
 	/*! Redirect to Interrupt in the sub-class from PIC.
 	*/
 	virtual void RedirectInterrupt(unsigned int intNum,Memory &mem,unsigned int numInstBytesForReturn,unsigned int numInstBytesForCallStack,bool SWI)=0;
+
+	/*! Redirect to Push in the sub-class.
+	*/
+	virtual void RedirectPush(Memory &mem,unsigned int operandSize,unsigned int value)=0;
 };
 
 // Fidelity Layer
@@ -3029,38 +3065,6 @@ public:
 	    If the destination is a register, the number of bytes stored depends on the size of the register.
 	*/
 	void StoreOperandValue(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value);
-
-	void DebugLoadSegmentRegisterFromFarPointer(SegmentRegister &seg,const Memory &mem,FarPointer ptr) const
-	{
-		if(ptr.SEG==FarPointer::NO_SEG)
-		{
-			seg=state.CS();
-		}
-		else if(0==(ptr.SEG&0xFFFF0000))
-		{
-			DebugLoadSegmentRegister(seg,ptr.SEG&0xFFFF,mem,IsInRealMode());
-		}
-		else if((ptr.SEG&0xFFFF0000)==FarPointer::SEG_REGISTER)
-		{
-			seg=state.GetSegmentRegister(ptr.SEG&0xFFFF);
-		}
-		else if((ptr.SEG&0xFFFF0000)==FarPointer::LINEAR_ADDR)
-		{
-			seg.value=0;
-			seg.baseLinearAddr=0;
-			seg.operandSize=32;
-			seg.addressSize=32;
-			seg.limit=0xFFFFFFFF;
-		}
-		else if((ptr.SEG&0xFFFF0000)==FarPointer::REAL_ADDR)
-		{
-			seg.value=ptr.SEG&0xFFFF;
-			seg.baseLinearAddr=seg.value*0x10;
-			seg.operandSize=16;
-			seg.addressSize=16;
-			seg.limit=0xFFFF;
-		}
-	}
 
 protected:
 	// This function is a helper function for Push and Pop.
@@ -3490,6 +3494,11 @@ public:
 	void RedirectInterrupt(unsigned int intNum,Memory &mem,unsigned int numInstBytesForReturn,unsigned int numInstBytesForCallStack,bool SWI) override
 	{
 		Interrupt(intNum,mem,numInstBytesForReturn,numInstBytesForCallStack,SWI);
+	}
+
+	void RedirectPush(Memory &mem,unsigned int operandSize,unsigned int value)
+	{
+		Push(mem,operandSize,value);
 	}
 };
 
