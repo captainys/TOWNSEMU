@@ -419,7 +419,6 @@ void FMTownsCommon::Variable::Reset(void)
 
 FMTownsCommon::FMTownsCommon() : 
 	Device(this),
-	_cpu(this),
 	physMem(this,&mem,&sound.state.rf5c68),
 	keyboard(this,&pic),
 	crtc(this,&sprite),

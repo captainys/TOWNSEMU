@@ -374,7 +374,6 @@ public:
 	State state;
 	virtual i486DXCommon &CPU(void)=0;
 	virtual const i486DXCommon &CPU(void) const=0;
-	i486DX _cpu;
 	i486Debugger debugger;
 	TownsEventLog eventLog;
 	TownsPIC pic;
@@ -808,6 +807,8 @@ template <class CPUCLASS>
 class FMTownsTemplate : public FMTownsCommon
 {
 private:
+	CPUCLASS _cpu;
+
 	// Will be removed when the code is stable.
 	// In fact, this function probably would never be called anyway before baseClassReady
 	// since virtual functions are not ready when vtable is not ready.
@@ -832,7 +833,7 @@ public:
 		return _cpu;
 	}
 
-	FMTownsTemplate()
+	FMTownsTemplate() : _cpu(this)
 	{
 		auto &cpu=CPU();
 		cpu.mouseBIOSInterceptorPtr=this;

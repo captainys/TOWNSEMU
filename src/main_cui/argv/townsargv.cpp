@@ -41,6 +41,14 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  Fullscreen on start up" << std::endl;
 	std::cout << "-HIGHRES" << std::endl;
 	std::cout << "  Enable High Resolution CRTC (default)" << std::endl;
+	std::cout << "-HIGHFIDELITY" << std::endl;
+	std::cout << "-HIGHFIDELITYCPU" << std::endl;
+	std::cout << "  Use high-fidelity CPU core.  Needed to run Windows 3.1." << std::endl;
+	std::cout << "  High-fidelity CPU core does more exception handling than" << std::endl;
+	std::cout << "  the default CPU core for running Windows 3.1, however," << std::endl;
+	std::cout << "  it runs slower." << std::endl;
+	std::cout << "  The machine-state file saved from the default-fidelity CPU core" << std::endl;
+	std::cout << "  may crash if loaded to the high-fidelity CPU core, or vise-versa." << std::endl;
 	std::cout << "-LOWRES" << std::endl;
 	std::cout << "  Disable High Resolution CRTC" << std::endl;
 	std::cout << "-PAUSE" << std::endl;
@@ -861,6 +869,10 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		else if("-HIGHRES"==ARG)
 		{
 			highResAvailable=true;
+		}
+		else if("-HIGHFIDELITY"==ARG || "-HIGHFIDELITYCPU"==ARG)
+		{
+			CPUFidelityLevel=i486DXCommon::HIGH_FIDELITY;
 		}
 		else if("-LOWRES"==ARG)
 		{
