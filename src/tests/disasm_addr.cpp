@@ -60,7 +60,7 @@ ERREND:
 
 int main(int ac,char *av[])
 {
-	static FMTownsCommon towns;
+	static FMTowns towns;
 
 	towns.Reset();
 

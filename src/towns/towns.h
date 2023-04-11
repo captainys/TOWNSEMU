@@ -372,6 +372,8 @@ public:
 
 	// Machine State >>
 	State state;
+	virtual i486DXCommon &CPU(void)=0;
+	virtual const i486DXCommon &CPU(void) const=0;
 	i486DX _cpu;
 	i486Debugger debugger;
 	TownsEventLog eventLog;
@@ -397,15 +399,6 @@ public:
 	Variable var;
 	InOut io;
 	Memory mem;
-
-	i486DXCommon &CPU(void)
-	{
-		return _cpu;
-	}
-	const i486DXCommon &CPU(void) const
-	{
-		return _cpu;
-	}
 
 	/*! Pointers of all devices (except *this) must be stored in allDevices.
 	*/
@@ -436,6 +429,9 @@ public:
 	//	}
 
 
+	bool baseClassReady=false;
+	// Will be set to true at the end of the constructor.
+	// Will be removed when the class is stable.
 	FMTownsCommon();
 
 
@@ -811,6 +807,44 @@ public:
 	void AB2_Throttle(unsigned int inputThr);
 };
 
+class FMTowns : public FMTownsCommon
+{
+private:
+	// Will be removed when the code is stable.
+	inline void CheckBaseClassReady(void) const
+	{
+		if(true!=baseClassReady)
+		{
+			std::cout << "Someone tried to access CPU before it is ready." << std::endl;
+			exit(1);
+		}
+	}
+
+public:
+	i486DXCommon &CPU(void) override
+	{
+		CheckBaseClassReady();
+		return _cpu;
+	}
+	const i486DXCommon &CPU(void) const override
+	{
+		CheckBaseClassReady();
+		return _cpu;
+	}
+
+	FMTowns()
+	{
+		auto &cpu=CPU();
+		cpu.mouseBIOSInterceptorPtr=this;
+		cpu.int21HInterceptorPtr=this;
+
+		// This function caches the CPU pointer, and therefore cannot be
+		// called in the constructor of the base class, when CPU is not ready yet.
+		physMem.SetUpMemoryAccess(townsType,TownsTypeToCPUType(townsType));
+
+		PowerOn();
+	}
+};
 
 /* } */
 #endif

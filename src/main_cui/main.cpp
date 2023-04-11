@@ -178,7 +178,7 @@ int main(int ac,char *av[])
 	}
 
 
-	static FMTownsCommon towns;
+	static FMTowns towns;
 	Outside_World *outside_world=new FsSimpleWindowConnection;
 	if(true!=FMTownsCommon::Setup(towns,outside_world,argv))
 	{

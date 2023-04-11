@@ -438,12 +438,15 @@ FMTownsCommon::FMTownsCommon() :
 	tgdrv(this),
 	mapXY{this,this}
 {
-	auto &cpu=CPU();
+	/* Memo to myself:
+	To instantiate high-fidelity VM and default-fidelity VM in the same executable
+	without making RunOneInstruction virtual, CPU class is in the sub-class.
+	Therefore, CPU is not ready until sub-class is ready, which is not yet at this line.
+	Any initialization, including caching CPU pointer using CPU() function, needs to
+	wait until the sub-class constructor.
+	*/
 
 	townsType=TOWNSTYPE_2_MX;
-
-	cpu.mouseBIOSInterceptorPtr=this;
-	cpu.int21HInterceptorPtr=this;
 
 	debugger.ioLabel=FMTownsIOMap();
 	debugger.GetSymTable().MakeDOSIntFuncLabel();
@@ -479,7 +482,6 @@ FMTownsCommon::FMTownsCommon() :
 		physMem.state.CMOSRAM[i]=defCMOS[i];
 	}
 
-	physMem.SetUpMemoryAccess(townsType,TownsTypeToCPUType(townsType));
 	physMem.FMRVRAMAccess.townsPtr=this;
 	physMem.FMRVRAMAccess.crtcPtr=&this->crtc;
 
@@ -657,7 +659,7 @@ FMTownsCommon::FMTownsCommon() :
 
 	io.AddDevice(&tgdrv,TOWNSIO_VM_TGDRV);
 
-	PowerOn();
+	baseClassReady=true;
 }
 
 /* static */ int FMTownsCommon::TownsTypeToCPUType(unsigned int townsType)
