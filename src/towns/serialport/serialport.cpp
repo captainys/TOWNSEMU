@@ -336,7 +336,7 @@ void TownsSerialPort::State::UpdateINTState(void)
 
 
 
-TownsSerialPort::TownsSerialPort(class FMTowns *townsPtr) : Device(townsPtr)
+TownsSerialPort::TownsSerialPort(class FMTownsCommon *townsPtr) : Device(townsPtr)
 {
 	this->townsPtr=townsPtr;
 	state.intel8251.clientPtr=&defaultClient;

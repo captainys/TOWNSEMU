@@ -161,10 +161,10 @@ public:
 	};
 
 	State state;
-	class FMTowns *townsPtr;
+	class FMTownsCommon *townsPtr;
 	bool debugBreakOnICW1Write,debugBreakOnICW4Write;
 
-	TownsPIC(class FMTowns *townsPtr);
+	TownsPIC(class FMTownsCommon *townsPtr);
 
 	virtual const char *DeviceName(void) const{return "PIC";}
 

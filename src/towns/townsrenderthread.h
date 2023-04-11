@@ -53,8 +53,8 @@ public:
 	TownsRenderingThread();
 	~TownsRenderingThread();
 
-	void CheckRenderingTimer(FMTowns &towns,class TownsRender &render);
-	void CheckImageReady(FMTowns &towns,class Outside_World &world);
+	void CheckRenderingTimer(FMTownsCommon &towns,class TownsRender &render);
+	void CheckImageReady(FMTownsCommon &towns,class Outside_World &world);
 	void WaitIdle(void);
 
 	void DiscardRunningRenderingTask(void);

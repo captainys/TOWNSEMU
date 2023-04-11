@@ -35,7 +35,7 @@ void TownsVnDrv::State::Reset(void)
 
 ////////////////////////////////////////////////////////////
 
-TownsVnDrv::TownsVnDrv(class FMTowns *townsPtr) : Device(townsPtr)
+TownsVnDrv::TownsVnDrv(class FMTownsCommon *townsPtr) : Device(townsPtr)
 {
 	this->townsPtr=townsPtr;
 }

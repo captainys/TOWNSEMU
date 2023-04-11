@@ -67,7 +67,7 @@ public:
 
 	std::string ROMPath;
 	std::string CMOSFName;
-	bool autoSaveCMOS=true; // If this flag is false, CMOSFName will not be copied to FMTowns::Variable.
+	bool autoSaveCMOS=true; // If this flag is false, CMOSFName will not be copied to FMTownsCommon::Variable.
 	bool zeroCMOS=false; // Clear CMOS on Start Up
 	std::string fdImgFName[NUM_FDDRIVES];
 	bool fdImgWriteProtect[NUM_FDDRIVES]={false,false,false,false};

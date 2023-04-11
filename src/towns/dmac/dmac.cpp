@@ -61,7 +61,7 @@ void TownsDMAC::State::Reset(void)
 
 ////////////////////////////////////////////////////////////
 
-TownsDMAC::TownsDMAC(class FMTowns *townsPtr) : Device(townsPtr)
+TownsDMAC::TownsDMAC(class FMTownsCommon *townsPtr) : Device(townsPtr)
 {
 	this->townsPtr=townsPtr;
 	debugBreakOnDMACRequest=false;

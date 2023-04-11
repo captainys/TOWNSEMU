@@ -30,7 +30,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 class TownsThread
 {
 private:
-	FMTowns *townsPtr;
+	FMTownsCommon *townsPtr;
 	std::unique_ptr <TownsRenderingThread> renderingThread;
 	int runMode=RUNMODE_PAUSE;
 	bool returnOnPause=false;
@@ -56,11 +56,11 @@ public:
 
 	TownsThread();
 
-	void VMStart(FMTowns *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread);
-	void VMMainLoop(FMTowns *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread);
-	void VMEnd(FMTowns *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread);
+	void VMStart(FMTownsCommon *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread);
+	void VMMainLoop(FMTownsCommon *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread);
+	void VMEnd(FMTownsCommon *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread);
 private:
-	void AdjustRealTime(FMTowns *townsPtr,long long int cpuTimePassed,std::chrono::time_point<std::chrono::high_resolution_clock> time0,Outside_World *outside_world);
+	void AdjustRealTime(FMTownsCommon *townsPtr,long long int cpuTimePassed,std::chrono::time_point<std::chrono::high_resolution_clock> time0,Outside_World *outside_world);
 
 public:
 
@@ -78,7 +78,7 @@ public:
 	*/
 	void SetReturnOnPause(bool flag);
 
-	void PrintStatus(const FMTowns &towns) const;
+	void PrintStatus(const FMTownsCommon &towns) const;
 };
 
 class TownsUIThread
@@ -87,19 +87,19 @@ public:
 	mutable std::mutex uiLock;
 	bool vmTerminated=false;
 
-	void Run(TownsThread *vmThread,FMTowns *towns,const class TownsARGV *argv,Outside_World *outside_world);
+	void Run(TownsThread *vmThread,FMTownsCommon *towns,const class TownsARGV *argv,Outside_World *outside_world);
 private:
 	/*! Main function should only populate command queue, and not execute.
 	    Main thread will lock uiLock and then call ExecCommandQueue, where the UI commands should be executed.
 	*/
-	virtual void Main(TownsThread &vmThread,FMTowns &towns,const class TownsARGV &argv,Outside_World &outside_world)=0;
+	virtual void Main(TownsThread &vmThread,FMTownsCommon &towns,const class TownsARGV &argv,Outside_World &outside_world)=0;
 
 public:
 	/*! ExecCommandQueue is called from the main thread.
 	    uiLock is owned by the main thread when ExecCommandQueue is called.
 	    It must also executes commands in the outside_world->commandQueue.
 	*/
-	virtual void ExecCommandQueue(TownsThread &vmThread,FMTowns &towns,Outside_World *outside_world)=0;
+	virtual void ExecCommandQueue(TownsThread &vmThread,FMTownsCommon &towns,Outside_World *outside_world)=0;
 };
 
 /* } */

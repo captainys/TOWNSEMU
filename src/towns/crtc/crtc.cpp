@@ -282,7 +282,7 @@ void TownsCRTC::ScreenModeCache::MakeFMRCompatible(void)
 ////////////////////////////////////////////////////////////
 
 
-TownsCRTC::TownsCRTC(class FMTowns *ptr,TownsSprite *spritePtr) : Device(ptr)
+TownsCRTC::TownsCRTC(class FMTownsCommon *ptr,TownsSprite *spritePtr) : Device(ptr)
 {
 	this->townsPtr=ptr;
 	this->spritePtr=spritePtr;

@@ -24,7 +24,7 @@ TownsThread::TownsThread(void) : renderingThread(new TownsRenderingThread)
 	runMode=RUNMODE_PAUSE;
 }
 
-void TownsThread::VMStart(FMTowns *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread)
+void TownsThread::VMStart(FMTownsCommon *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread)
 {
 	renderingThread->imageNeedsFlip=outside_world->ImageNeedsFlip();
 
@@ -48,7 +48,7 @@ void TownsThread::VMStart(FMTowns *townsPtr,Outside_World *outside_world,class T
 		break;
 	}
 }
-void TownsThread::VMMainLoop(FMTowns *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread)
+void TownsThread::VMMainLoop(FMTownsCommon *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread)
 {
 	// Just in case, if there is a remains of the rendering from the previous run, discard it.
 	renderingThread->DiscardRunningRenderingTask();
@@ -165,7 +165,7 @@ void TownsThread::VMMainLoop(FMTowns *townsPtr,Outside_World *outside_world,clas
 			if(townsPtr->state.nextDevicePollingTime<townsPtr->state.townsTime)
 			{
 				outside_world->DevicePolling(*townsPtr);
-				townsPtr->state.nextDevicePollingTime=townsPtr->state.townsTime+FMTowns::DEVICE_POLLING_INTERVAL;
+				townsPtr->state.nextDevicePollingTime=townsPtr->state.townsTime+FMTownsCommon::DEVICE_POLLING_INTERVAL;
 			}
 			townsPtr->eventLog.Interval(*townsPtr);
 			if(true==townsPtr->CheckAbort() || outside_world->PauseKeyPressed())
@@ -243,7 +243,7 @@ void TownsThread::VMMainLoop(FMTowns *townsPtr,Outside_World *outside_world,clas
 	// WaitIdle to make sure the rendering thread is done with rendering before leaving this function.
 	renderingThread->DiscardRunningRenderingTask();
 }
-void TownsThread::VMEnd(FMTowns *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread)
+void TownsThread::VMEnd(FMTownsCommon *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread)
 {
 	uiThread->uiLock.lock();
 	uiThread->vmTerminated=true;
@@ -291,13 +291,13 @@ void TownsThread::VMEnd(FMTowns *townsPtr,Outside_World *outside_world,class Tow
 //                                     |------>|  New deficit
 
 
-void TownsThread::AdjustRealTime(FMTowns *townsPtr,long long int cpuTimePassed,std::chrono::time_point<std::chrono::high_resolution_clock> time0,Outside_World *outside_world)
+void TownsThread::AdjustRealTime(FMTownsCommon *townsPtr,long long int cpuTimePassed,std::chrono::time_point<std::chrono::high_resolution_clock> time0,Outside_World *outside_world)
 {
 	long long int realTimePassed=std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now()-time0).count();
 
 	townsPtr->var.timeAdjustLog[townsPtr->var.timeAdjustLogPtr]=cpuTimePassed-realTimePassed;
 	townsPtr->var.timeDeficitLog[townsPtr->var.timeAdjustLogPtr]=townsPtr->state.timeDeficit;
-	townsPtr->var.timeAdjustLogPtr=(townsPtr->var.timeAdjustLogPtr+1)&(FMTowns::Variable::TIME_ADJUSTMENT_LOG_LEN-1);
+	townsPtr->var.timeAdjustLogPtr=(townsPtr->var.timeAdjustLogPtr+1)&(FMTownsCommon::Variable::TIME_ADJUSTMENT_LOG_LEN-1);
 
 	int64_t balance=cpuTimePassed-(townsPtr->state.timeDeficit+realTimePassed);
 	if(balance<0)  // Case 3
@@ -330,9 +330,9 @@ void TownsThread::AdjustRealTime(FMTowns *townsPtr,long long int cpuTimePassed,s
 	}
 	this->timeDeficit=townsPtr->state.timeDeficit;
 
-	if(FMTowns::State::CATCHUP_DEFICIT_CUTOFF<townsPtr->state.timeDeficit)
+	if(FMTownsCommon::State::CATCHUP_DEFICIT_CUTOFF<townsPtr->state.timeDeficit)
 	{
-		townsPtr->state.timeDeficit=FMTowns::State::CATCHUP_DEFICIT_CUTOFF;
+		townsPtr->state.timeDeficit=FMTownsCommon::State::CATCHUP_DEFICIT_CUTOFF;
 	}
 }
 
@@ -350,7 +350,7 @@ void TownsThread::SetReturnOnPause(bool flag)
 	returnOnPause=flag;
 }
 
-void TownsThread::PrintStatus(const FMTowns &towns) const
+void TownsThread::PrintStatus(const FMTownsCommon &towns) const
 {
 	towns.PrintStatus();
 }
@@ -359,7 +359,7 @@ void TownsThread::PrintStatus(const FMTowns &towns) const
 ////////////////////////////////////////////////////////////
 
 
-void TownsUIThread::Run(TownsThread *vmThread,FMTowns *towns,const TownsARGV *argv,Outside_World *outside_world)
+void TownsUIThread::Run(TownsThread *vmThread,FMTownsCommon *towns,const TownsARGV *argv,Outside_World *outside_world)
 {
 	Main(*vmThread,*towns,*argv,*outside_world);
 }

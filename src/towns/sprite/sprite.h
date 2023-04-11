@@ -6,7 +6,7 @@
 class TownsSprite : public Device
 {
 private:
-	class FMTowns *townsPtr;
+	class FMTownsCommon *townsPtr;
 public:
 	virtual const char *DeviceName(void) const{return "SPRITE";}
 
@@ -79,7 +79,7 @@ public:
 	State state;
 	class TownsPhysicalMemory *physMemPtr;
 
-	TownsSprite(class FMTowns *townsPtr,class TownsPhysicalMemory *physMemPtr);
+	TownsSprite(class FMTownsCommon *townsPtr,class TownsPhysicalMemory *physMemPtr);
 
 	inline bool SPEN(void) const
 	{

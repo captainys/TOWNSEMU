@@ -27,7 +27,7 @@ Phase and I/O [0xC32] read
 class TownsSCSI : public Device
 {
 private:
-	class FMTowns *townsPtr;
+	class FMTownsCommon *townsPtr;
 	class Outside_World *outsideworld=nullptr;
 public:
 	virtual const char *DeviceName(void) const{return "SCSI";}
@@ -244,7 +244,7 @@ public:
 	SCSIIOThread ioThread;
 
 
-	TownsSCSI(class FMTowns *townsPtr);
+	TownsSCSI(class FMTownsCommon *townsPtr);
 
 	void SetOutsideWorld(class Outside_World *ptr);
 

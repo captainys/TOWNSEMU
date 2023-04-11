@@ -23,7 +23,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 class TownsDMAC : public Device
 {
 private:
-	class FMTowns *townsPtr;
+	class FMTownsCommon *townsPtr;
 public:
 	virtual const char *DeviceName(void) const{return "DMAC";}
 
@@ -66,7 +66,7 @@ public:
 
 	bool debugBreakOnDMACRequest;
 
-	TownsDMAC(class FMTowns *townsPtr);
+	TownsDMAC(class FMTownsCommon *townsPtr);
 
 	virtual void PowerOn(void);
 	virtual void Reset(void);

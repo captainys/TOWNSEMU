@@ -307,7 +307,7 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 	soundPlayer.End();
 }
 
-/* virtual */ void FsSimpleWindowConnection::DevicePolling(class FMTowns &towns)
+/* virtual */ void FsSimpleWindowConnection::DevicePolling(class FMTownsCommon &towns)
 {
 	soundPlayer.KeepPlaying();
 	FsPollDevice();
@@ -1394,7 +1394,7 @@ void FsSimpleWindowConnection::PollGamePads(void)
 		}
 	}
 }
-/* virtual */ void FsSimpleWindowConnection::UpdateStatusBitmap(class FMTowns &towns)
+/* virtual */ void FsSimpleWindowConnection::UpdateStatusBitmap(class FMTownsCommon &towns)
 {
 	// Update Status Bitmap
 	{
@@ -1425,12 +1425,12 @@ void FsSimpleWindowConnection::PollGamePads(void)
 	}
 
 }
-/* virtual */ void FsSimpleWindowConnection::Render(const TownsRender::Image &img,const class FMTowns &towns)
+/* virtual */ void FsSimpleWindowConnection::Render(const TownsRender::Image &img,const class FMTownsCommon &towns)
 {
 	RenderBeforeSwapBuffers(img,towns);
 	FsSwapBuffers();
 }
-void FsSimpleWindowConnection::RenderBeforeSwapBuffers(const TownsRender::Image &img,const class FMTowns &towns)
+void FsSimpleWindowConnection::RenderBeforeSwapBuffers(const TownsRender::Image &img,const class FMTownsCommon &towns)
 {
 	int winWid,winHei;
 	FsGetWindowSize(winWid,winHei);

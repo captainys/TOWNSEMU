@@ -121,7 +121,7 @@ public:
 public:
 	/*! Called from FMTownsThread.
 	*/
-	inline void Interval(class FMTowns &towns)
+	inline void Interval(class FMTownsCommon &towns)
 	{
 		if(MODE_PLAYBACK==mode)
 		{
@@ -129,7 +129,7 @@ public:
 		}
 	}
 private:
-	void Playback(class FMTowns &towns);
+	void Playback(class FMTownsCommon &towns);
 
 
 

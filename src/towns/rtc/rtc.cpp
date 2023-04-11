@@ -37,7 +37,7 @@ void TownsRTC::State::Reset(void)
 
 ////////////////////////////////////////////////////////////
 
-TownsRTC::TownsRTC(class FMTowns *townsPtr) : Device(townsPtr)
+TownsRTC::TownsRTC(class FMTownsCommon *townsPtr) : Device(townsPtr)
 {
 	this->townsPtr=townsPtr;
 }

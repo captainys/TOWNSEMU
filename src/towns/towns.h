@@ -55,10 +55,10 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 // Adding a device:
 // (1) Make a class
 // (2) Implement State, IO functions, Reset function.
-// (3) Add as data member in FMTowns class.
-// (4) In FMTowns::FMTowns() add to allDevices.
-// (5) In FMTowns::FMTowns() add to io.
-class FMTowns : public VMBase, public Device, public i486DX::FMTownsMouseBiosInterceptor, public i486DX::INT21HInterceptor
+// (3) Add as data member in FMTownsCommon class.
+// (4) In FMTownsCommon::FMTownsCommon() add to allDevices.
+// (5) In FMTownsCommon::FMTownsCommon() add to io.
+class FMTownsCommon : public VMBase, public Device, public i486DX::FMTownsMouseBiosInterceptor, public i486DX::INT21HInterceptor
 {
 public:
 	// I'm talking about 66MHz to 120MHz ball park.
@@ -436,7 +436,7 @@ public:
 	//	}
 
 
-	FMTowns();
+	FMTownsCommon();
 
 
 	virtual void Abort(std::string devName,std::string abortReason) override
@@ -446,7 +446,7 @@ public:
 	}
 
 
-	static bool Setup(FMTowns &towns,Outside_World *outside_world,const TownsStartParameters &argv);
+	static bool Setup(FMTownsCommon &towns,Outside_World *outside_world,const TownsStartParameters &argv);
 
 
 	unsigned int MachineID(void) const;
@@ -554,7 +554,7 @@ public:
 	bool GetMouseCoordinate(int &mx,int &my,unsigned int tbiosid) const;
 
 
-	/*! After constructing FMTowns class, call this function to specify where to look
+	/*! After constructing FMTownsCommon class, call this function to specify where to look
 	    for the ROM images.
 	    It just redirect the call to mem.LoadROMImages() function.
 	    Returns false if it could not read ROM images.
@@ -725,9 +725,9 @@ public:
 	class MemoryEvaluation : public LineParser
 	{
 	private:
-		FMTowns *townsPtr=nullptr;
+		FMTownsCommon *townsPtr=nullptr;
 	public:
-		MemoryEvaluation(FMTowns *townsPtr);
+		MemoryEvaluation(FMTownsCommon *townsPtr);
 
 		bool ready=false;
 

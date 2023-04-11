@@ -11,7 +11,7 @@
 // (6) If floppy-disk image, use image stored in the state file.
 
 
-bool FMTowns::SaveState(std::string fName) const
+bool FMTownsCommon::SaveState(std::string fName) const
 {
 	auto &cpu=CPU();
 	std::ofstream ofp(fName,std::ios::binary);
@@ -48,7 +48,7 @@ bool FMTowns::SaveState(std::string fName) const
 	}
 	return false;
 }
-bool FMTowns::LoadState(std::string fName,class Outside_World &outsideWorld)
+bool FMTownsCommon::LoadState(std::string fName,class Outside_World &outsideWorld)
 {
 	auto &cpu=CPU();
 	std::ifstream ifp(fName,std::ios::binary);
@@ -127,7 +127,7 @@ bool FMTowns::LoadState(std::string fName,class Outside_World &outsideWorld)
 	return false;
 }
 
-/* virtual */ uint32_t FMTowns::SerializeVersion(void) const
+/* virtual */ uint32_t FMTownsCommon::SerializeVersion(void) const
 {
 	// Version 1 added app-specific settings for Daikoukaijidai
 	// Version 2 added DOSLOLSEG, DOSLOLOFF, DOSVER
@@ -135,7 +135,7 @@ bool FMTowns::LoadState(std::string fName,class Outside_World &outsideWorld)
 	return 3;
 }
 
-/* virtual */ void FMTowns::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
+/* virtual */ void FMTownsCommon::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
 {
 	PushInt64(data,state.townsTime);
 	PushInt64(data,state.nextRenderingTime);
@@ -207,7 +207,7 @@ bool FMTowns::LoadState(std::string fName,class Outside_World &outsideWorld)
 	PushUint32(data,state.mainRAMWait);
 	PushUint32(data,state.VRAMWait);
 }
-/* virtual */ bool FMTowns::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
+/* virtual */ bool FMTownsCommon::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
 {
 	state.townsTime=ReadInt64(data);
 	state.nextRenderingTime=ReadInt64(data);

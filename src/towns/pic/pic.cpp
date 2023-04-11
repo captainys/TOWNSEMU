@@ -237,7 +237,7 @@ void TownsPIC::State::Reset(void)
 ////////////////////////////////////////////////////////////
 
 
-TownsPIC::TownsPIC(FMTowns *townsPtr) : Device(townsPtr)
+TownsPIC::TownsPIC(FMTownsCommon *townsPtr) : Device(townsPtr)
 {
 	this->townsPtr=townsPtr;
 	for(auto &chip : state.i8259A)

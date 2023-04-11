@@ -26,7 +26,7 @@ void TownsTgDrv::State::Reset(void)
 {
 }
 
-TownsTgDrv::TownsTgDrv(class FMTowns *townsPtr) : Device(townsPtr)
+TownsTgDrv::TownsTgDrv(class FMTownsCommon *townsPtr) : Device(townsPtr)
 {
 	this->townsPtr=townsPtr;
 }

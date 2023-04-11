@@ -24,7 +24,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 class TownsFDC : public DiskDrive
 {
 public:
-	class FMTowns *townsPtr;
+	class FMTownsCommon *townsPtr;
 	class TownsPIC *PICPtr;
 	class TownsDMAC *DMACPtr;
 
@@ -33,7 +33,7 @@ public:
 
 	virtual const char *DeviceName(void) const{return "FDC";}
 
-	TownsFDC(class FMTowns *townsPtr,class TownsPIC *PICPtr,class TownsDMAC *dmacPtr);
+	TownsFDC(class FMTownsCommon *townsPtr,class TownsPIC *PICPtr,class TownsDMAC *dmacPtr);
 
 	void SendCommand(unsigned int cmd);
 

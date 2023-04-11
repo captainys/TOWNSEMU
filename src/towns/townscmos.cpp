@@ -4,7 +4,7 @@
 // Captured in this emulator after setting:
 //   Single-Drive Mode=OFF
 //   Boot media=CD-ROM
-const unsigned char FMTowns::defCMOS[TOWNS_CMOS_SIZE]=
+const unsigned char FMTownsCommon::defCMOS[TOWNS_CMOS_SIZE]=
 {
 	0x01,0xff,0x42,0x4f,0x4f,0x54,0xa8,0x00,
 	0x40,0x00,0x01,0xfe,0x53,0x45,0x54,0x55,

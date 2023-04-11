@@ -93,7 +93,7 @@ Interpretation in the Linux for Towns source towns_cd.c (static void process_eve
 class TownsCDROM : public Device
 {
 private:
-	class FMTowns *townsPtr;
+	class FMTownsCommon *townsPtr;
 	class TownsPIC *PICPtr;
 	class TownsDMAC *DMACPtr;
 	class Outside_World *OutsideWorld=nullptr;
@@ -254,7 +254,7 @@ public:
 
 	virtual const char *DeviceName(void) const{return "CDROM";}
 
-	TownsCDROM(class FMTowns *townsPtr,class TownsPIC *PICPtr,class TownsDMAC *DMACPtr);
+	TownsCDROM(class FMTownsCommon *townsPtr,class TownsPIC *PICPtr,class TownsDMAC *DMACPtr);
 
 
 	virtual void PowerOn(void);
@@ -323,7 +323,7 @@ public:
 
 	void BreakOnCommandCheck(const char phase[]);
 
-	/*! Call-back from FMTowns class.
+	/*! Call-back from FMTownsCommon class.
 	*/
 	void RunScheduledTask(unsigned long long int townsTime);
 private:
@@ -357,7 +357,7 @@ private:
 	virtual bool SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version);
 
 public:
-	// Will be called from FMTowns::LoadState
+	// Will be called from FMTownsCommon::LoadState
 	void ResumeCDDAAfterRestore(class Outside_World *outsideWorld);
 };
 

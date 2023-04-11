@@ -41,7 +41,7 @@ void TownsSound::State::ResetVariables(void)
 
 ////////////////////////////////////////////////////////////
 
-TownsSound::TownsSound(class FMTowns *townsPtr) : Device(townsPtr)
+TownsSound::TownsSound(class FMTownsCommon *townsPtr) : Device(townsPtr)
 {
 	this->townsPtr=townsPtr;
 }

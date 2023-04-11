@@ -26,7 +26,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 
 
-void FMTowns::State::PowerOn(void)
+void FMTownsCommon::State::PowerOn(void)
 {
 	Reset();
 	townsTime=0;
@@ -38,7 +38,7 @@ void FMTowns::State::PowerOn(void)
 	nextRenderingTime=0;
 }
 
-/* static */ bool FMTowns::Setup(FMTowns &towns,Outside_World *outside_world,const TownsStartParameters &argv)
+/* static */ bool FMTownsCommon::Setup(FMTownsCommon &towns,Outside_World *outside_world,const TownsStartParameters &argv)
 {
 	if(""==argv.ROMPath)
 	{
@@ -371,7 +371,7 @@ void FMTowns::State::PowerOn(void)
 	return true;
 }
 
-void FMTowns::State::Reset(void)
+void FMTownsCommon::State::Reset(void)
 {
 	clockBalance=0;
 
@@ -392,7 +392,7 @@ void FMTowns::State::Reset(void)
 ////////////////////////////////////////////////////////////
 
 
-FMTowns::Variable::Variable()
+FMTownsCommon::Variable::Variable()
 {
 	freeRunTimerShift=0;
 	for(auto &t : timeAdjustLog)
@@ -404,7 +404,7 @@ FMTowns::Variable::Variable()
 	Reset();
 }
 
-void FMTowns::Variable::Reset(void)
+void FMTownsCommon::Variable::Reset(void)
 {
 	// freeRunTimerShift should survive Reset.
 	disassemblePointer.SEG=0;
@@ -417,7 +417,7 @@ void FMTowns::Variable::Reset(void)
 ////////////////////////////////////////////////////////////
 
 
-FMTowns::FMTowns() : 
+FMTownsCommon::FMTownsCommon() : 
 	Device(this),
 	cpu(this),
 	physMem(this,&CPU(),&mem,&sound.state.rf5c68),
@@ -660,7 +660,7 @@ FMTowns::FMTowns() :
 	PowerOn();
 }
 
-/* static */ int FMTowns::TownsTypeToCPUType(unsigned int townsType)
+/* static */ int FMTownsCommon::TownsTypeToCPUType(unsigned int townsType)
 {
 	switch(townsType)
 	{
@@ -697,12 +697,12 @@ FMTowns::FMTowns() :
 	return TOWNSCPU_UNKNOWN;
 }
 
-int FMTowns::GetCPUType(void) const
+int FMTownsCommon::GetCPUType(void) const
 {
 	return TownsTypeToCPUType(townsType);
 }
 
-unsigned int FMTowns::MachineID(void) const
+unsigned int FMTownsCommon::MachineID(void) const
 {
 	const int i80286=0;
 	const int i80386=1;
@@ -821,7 +821,7 @@ unsigned int FMTowns::MachineID(void) const
 	return (highByte<<8)|lowByte;
 }
 
-bool FMTowns::LoadROMImages(const char dirName[])
+bool FMTownsCommon::LoadROMImages(const char dirName[])
 {
 	if(true!=physMem.LoadROMImages(dirName))
 	{
@@ -831,7 +831,7 @@ bool FMTowns::LoadROMImages(const char dirName[])
 	return true;
 }
 
-void FMTowns::PowerOn(void)
+void FMTownsCommon::PowerOn(void)
 {
 	state.PowerOn();
 	CPU().PowerOn();
@@ -843,7 +843,7 @@ void FMTowns::PowerOn(void)
 		}
 	}
 }
-void FMTowns::Reset(void)
+void FMTownsCommon::Reset(void)
 {
 	auto &cpu=CPU();
 	var.Reset();
@@ -861,14 +861,14 @@ void FMTowns::Reset(void)
 	var.disassemblePointer.OFFSET=cpu.state.EIP;
 }
 
-void FMTowns::NotifyDiskRead(void)
+void FMTownsCommon::NotifyDiskRead(void)
 {
 	keyboard.BootSequenceStarted();
 	gameport.BootSequenceStarted();
 	state.noWait=var.noWaitStandby;
 }
 
-unsigned int FMTowns::RunOneInstruction(void)
+unsigned int FMTownsCommon::RunOneInstruction(void)
 {
 	auto clocksPassed=cpu.RunOneInstruction(mem,io);
 	state.clockBalance+=clocksPassed*1000;
@@ -888,12 +888,12 @@ unsigned int FMTowns::RunOneInstruction(void)
 	return clocksPassed;
 }
 
-void FMTowns::ProcessSound(Outside_World *outside_world)
+void FMTownsCommon::ProcessSound(Outside_World *outside_world)
 {
 	sound.ProcessSound();
 }
 
-/* virtual */ void FMTowns::InterceptMouseBIOS(void)
+/* virtual */ void FMTownsCommon::InterceptMouseBIOS(void)
 {
 	auto &cpu=CPU();
 	if(0==cpu.GetAH())
@@ -971,7 +971,7 @@ void FMTowns::ProcessSound(Outside_World *outside_world)
 	}
 }
 
-/* virtual */ void FMTowns::InterceptINT21H(unsigned int AX,const std::string fName)
+/* virtual */ void FMTownsCommon::InterceptINT21H(unsigned int AX,const std::string fName)
 {
 	if(TownsEventLog::MODE_RECORDING==eventLog.mode)
 	{
@@ -986,7 +986,7 @@ void FMTowns::ProcessSound(Outside_World *outside_world)
 	}
 }
 
-void FMTowns::RunFastDevicePollingInternal(void)
+void FMTownsCommon::RunFastDevicePollingInternal(void)
 {
 	timer.TimerPolling(state.townsTime);
 	sound.SoundPolling(state.townsTime);
@@ -994,7 +994,7 @@ void FMTowns::RunFastDevicePollingInternal(void)
 	state.nextFastDevicePollingTime=state.townsTime+FAST_DEVICE_POLLING_INTERVAL;
 }
 
-bool FMTowns::CheckRenderingTimer(TownsRender &render,Outside_World &world)
+bool FMTownsCommon::CheckRenderingTimer(TownsRender &render,Outside_World &world)
 {
 	if(state.nextRenderingTime<=state.townsTime && true!=crtc.InVSYNC(state.townsTime))
 	{
@@ -1009,17 +1009,17 @@ bool FMTowns::CheckRenderingTimer(TownsRender &render,Outside_World &world)
 	return false;
 }
 
-void FMTowns::SetUpVRAMAccess(bool breakOnRead,bool breakOnWrite)
+void FMTownsCommon::SetUpVRAMAccess(bool breakOnRead,bool breakOnWrite)
 {
 	physMem.SetUpVRAMAccess(TownsTypeToCPUType(townsType),breakOnRead,breakOnWrite);
 }
 
-bool FMTowns::FASTModeLamp(void) const
+bool FMTownsCommon::FASTModeLamp(void) const
 {
 	return (0==state.mainRAMWait && state.VRAMWait<3);
 }
 
-void FMTowns::SetMainRAMSize(long long int size)
+void FMTownsCommon::SetMainRAMSize(long long int size)
 {
 	uint64_t RAMEnd=0x7FFFFFFF;
 	if(TOWNSTYPE_MARTY==townsType)
@@ -1038,7 +1038,7 @@ void FMTowns::SetMainRAMSize(long long int size)
 	mem.AddAccess(&physMem.mainRAMAccess,0x00100000,physMem.state.RAM.size()-1);
 }
 
-void FMTowns::ForceRender(class TownsRender &render,class Outside_World &world)
+void FMTownsCommon::ForceRender(class TownsRender &render,class Outside_World &world)
 {
 	render.Prepare(crtc);
 	render.damperWireLine=var.damperWireLine;
@@ -1051,45 +1051,45 @@ void FMTowns::ForceRender(class TownsRender &render,class Outside_World &world)
 	world.Render(render.GetImage(),*this);
 }
 
-void FMTowns::RenderQuiet(class TownsRender &render,bool layer0,bool layer1)
+void FMTownsCommon::RenderQuiet(class TownsRender &render,bool layer0,bool layer1)
 {
 	render.Prepare(crtc);
 	render.OerrideShowPage(layer0,layer1);
 	render.BuildImage(physMem.state.VRAM,crtc.GetPalette(),crtc.chaseHQPalette);
 }
 
-void FMTowns::RenderEntireVRAMLayerQuiet(class TownsRender &render,unsigned int layer)
+void FMTownsCommon::RenderEntireVRAMLayerQuiet(class TownsRender &render,unsigned int layer)
 {
 	render.PrepareEntireVRAMLayer(crtc,layer);
 	render.BuildImage(physMem.state.VRAM,crtc.GetPalette(),crtc.chaseHQPalette);
 }
 
-bool FMTowns::GetEleVolCDLeftEN(void) const
+bool FMTownsCommon::GetEleVolCDLeftEN(void) const
 {
 	return state.eleVol[TOWNS_ELEVOL_FOR_CD][TOWNS_ELEVOL_CD_LEFT].EN;
 }
-bool FMTowns::GetEleVolCDRightEN(void) const
+bool FMTownsCommon::GetEleVolCDRightEN(void) const
 {
 	return state.eleVol[TOWNS_ELEVOL_FOR_CD][TOWNS_ELEVOL_CD_RIGHT].EN;
 }
-unsigned int FMTowns::GetEleVolCDLeft(void) const
+unsigned int FMTownsCommon::GetEleVolCDLeft(void) const
 {
 	return state.eleVol[TOWNS_ELEVOL_FOR_CD][TOWNS_ELEVOL_CD_LEFT].vol;
 }
-unsigned int FMTowns::GetEleVolCDRight(void) const
+unsigned int FMTownsCommon::GetEleVolCDRight(void) const
 {
 	return state.eleVol[TOWNS_ELEVOL_FOR_CD][TOWNS_ELEVOL_CD_RIGHT].vol;
 }
 ////////////////////////////////////////////////////////////
 
-void FMTowns::EnableDebugger(void)
+void FMTownsCommon::EnableDebugger(void)
 {
 	auto &cpu=CPU();
 	cpu.AttachDebugger(&debugger);
 	debugger.stop=false;
 	cpu.enableCallStack=true;
 }
-void FMTowns::DisableDebugger(void)
+void FMTownsCommon::DisableDebugger(void)
 {
 	auto &cpu=CPU();
 	cpu.DetachDebugger();
@@ -1097,7 +1097,7 @@ void FMTowns::DisableDebugger(void)
 	cpu.enableCallStack=false;
 }
 
-std::vector <std::string> FMTowns::GetStackText(unsigned int numBytes) const
+std::vector <std::string> FMTownsCommon::GetStackText(unsigned int numBytes) const
 {
 	auto &cpu=CPU();
 	std::vector <std::string> text;
@@ -1115,7 +1115,7 @@ std::vector <std::string> FMTowns::GetStackText(unsigned int numBytes) const
 	}
 	return text;
 }
-void FMTowns::PrintStack(unsigned int numBytes) const
+void FMTownsCommon::PrintStack(unsigned int numBytes) const
 {
 	auto &cpu=CPU();
 	for(auto s : GetStackText(numBytes))
@@ -1127,7 +1127,7 @@ void FMTowns::PrintStack(unsigned int numBytes) const
 		}
 	}
 }
-void FMTowns::PrintDisassembly(void) const
+void FMTownsCommon::PrintDisassembly(void) const
 {
 	auto &cpu=CPU();
 	i486DX::InstructionAndOperand instOp;
@@ -1141,7 +1141,7 @@ void FMTowns::PrintDisassembly(void) const
 	}
 }
 
-std::vector <std::string> FMTowns::GetRealModeIntVectorsText(void) const
+std::vector <std::string> FMTownsCommon::GetRealModeIntVectorsText(void) const
 {
 	std::vector <std::string> text;
 	for(int i=0; i<256; i+=4)
@@ -1163,7 +1163,7 @@ std::vector <std::string> FMTowns::GetRealModeIntVectorsText(void) const
 	}
 	return text;
 }
-void FMTowns::DumpRealModeIntVectors(void) const
+void FMTownsCommon::DumpRealModeIntVectors(void) const
 {
 	auto &cpu=CPU();
 	for(auto s : GetRealModeIntVectorsText())
@@ -1175,12 +1175,12 @@ void FMTowns::DumpRealModeIntVectors(void) const
 		}
 	}
 }
-std::vector <std::string> FMTowns::GetCallStackText(void) const
+std::vector <std::string> FMTownsCommon::GetCallStackText(void) const
 {
 	auto &cpu=CPU();
 	return debugger.GetCallStackText(cpu);
 }
-void FMTowns::PrintCallStack(void) const
+void FMTownsCommon::PrintCallStack(void) const
 {
 	auto &cpu=CPU();
 	for(auto str : GetCallStackText())
@@ -1192,7 +1192,7 @@ void FMTowns::PrintCallStack(void) const
 		}
 	}
 }
-void FMTowns::PrintPIC(void) const
+void FMTownsCommon::PrintPIC(void) const
 {
 	auto &cpu=CPU();
 	for(auto str : pic.GetStateText())
@@ -1205,7 +1205,7 @@ void FMTowns::PrintPIC(void) const
 	}
 }
 
-void FMTowns::PrintDMAC(void) const
+void FMTownsCommon::PrintDMAC(void) const
 {
 	auto &cpu=CPU();
 	for(auto str : dmac.GetStateText())
@@ -1218,7 +1218,7 @@ void FMTowns::PrintDMAC(void) const
 	}
 }
 
-void FMTowns::PrintFDC(void) const
+void FMTownsCommon::PrintFDC(void) const
 {
 	auto &cpu=CPU();
 	for(auto str : fdc.GetStatusText())
@@ -1231,7 +1231,7 @@ void FMTowns::PrintFDC(void) const
 	}
 }
 
-void FMTowns::PrintTimer(void) const
+void FMTownsCommon::PrintTimer(void) const
 {
 	auto &cpu=CPU();
 	for(auto str : timer.GetStatusText())
@@ -1244,7 +1244,7 @@ void FMTowns::PrintTimer(void) const
 	}
 }
 
-void FMTowns::PrintSound(void) const
+void FMTownsCommon::PrintSound(void) const
 {
 	auto &cpu=CPU();
 	for(auto str : sound.state.rf5c68.GetStatusText())
@@ -1265,7 +1265,7 @@ void FMTowns::PrintSound(void) const
 	}
 }
 
-void FMTowns::PrintStatus(void) const
+void FMTownsCommon::PrintStatus(void) const
 {
 	if(true==VMBase::CheckAbort())
 	{
@@ -1301,7 +1301,7 @@ void FMTowns::PrintStatus(void) const
 	PrintDisassembly();
 }
 
-std::vector <std::string> FMTowns::GetMouseStatusText(void) const
+std::vector <std::string> FMTownsCommon::GetMouseStatusText(void) const
 {
 	std::vector <std::string> text;
 
@@ -1388,7 +1388,7 @@ std::vector <std::string> FMTowns::GetMouseStatusText(void) const
 	return text;
 }
 
-/* static */ void FMTowns::MakeINTInfo(class i486SymbolTable &symTable)
+/* static */ void FMTownsCommon::MakeINTInfo(class i486SymbolTable &symTable)
 {
 	symTable.AddINTLabel(0x40,"Timer");
 	symTable.AddINTLabel(0x41,"Keyboard");
@@ -1506,12 +1506,12 @@ std::vector <std::string> FMTowns::GetMouseStatusText(void) const
 
 ////////////////////////////////////////////////////////////
 
-FMTowns::MemoryEvaluation::MemoryEvaluation(FMTowns *townsPtr)
+FMTownsCommon::MemoryEvaluation::MemoryEvaluation(FMTownsCommon *townsPtr)
 {
 	this->townsPtr=townsPtr;
 }
 
-bool FMTowns::MemoryEvaluation::Decode(std::string str)
+bool FMTownsCommon::MemoryEvaluation::Decode(std::string str)
 {
 	ready=false;
 	errorMessage="";
@@ -1531,7 +1531,7 @@ bool FMTowns::MemoryEvaluation::Decode(std::string str)
 	return ready;
 }
 
-std::string FMTowns::MemoryEvaluation::MatchCustomKeyword(std::string str) const
+std::string FMTownsCommon::MemoryEvaluation::MatchCustomKeyword(std::string str) const
 {
 	unsigned int skip=0;
 	if("BYTE:"==str.substr(0,5))
@@ -1548,13 +1548,13 @@ std::string FMTowns::MemoryEvaluation::MatchCustomKeyword(std::string str) const
 	}
 	return "";
 }
-bool FMTowns::MemoryEvaluation::IsCustomUnaryOperator(std::string str) const
+bool FMTownsCommon::MemoryEvaluation::IsCustomUnaryOperator(std::string str) const
 {
 	return ("BYTE:"==str.substr(0,5) ||
 	        "WORD:"==str.substr(0,5) ||
 	        "DWORD:"==str.substr(0,6));
 }
-long long int FMTowns::MemoryEvaluation::EvaluateCustomUnaryOperator(const Term *t,long long int operand) const
+long long int FMTownsCommon::MemoryEvaluation::EvaluateCustomUnaryOperator(const Term *t,long long int operand) const
 {
 	// All capitalized in Decode.
 	if("BYTE:"==t->label.substr(0,5))
@@ -1572,12 +1572,12 @@ long long int FMTowns::MemoryEvaluation::EvaluateCustomUnaryOperator(const Term 
 	return 0;
 }
 
-long long int FMTowns::MemoryEvaluation::EvaluateRawNumber(const std::string &str) const
+long long int FMTownsCommon::MemoryEvaluation::EvaluateRawNumber(const std::string &str) const
 {
 	return cpputil::Atoi(str.c_str());
 }
 
-unsigned int FMTowns::MemoryEvaluation::EvaluateMemoryReference(unsigned int addr,unsigned int nBytes) const
+unsigned int FMTownsCommon::MemoryEvaluation::EvaluateMemoryReference(unsigned int addr,unsigned int nBytes) const
 {
 	int data=0;
 	for(int i=0; i<nBytes; ++i)

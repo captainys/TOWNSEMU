@@ -39,11 +39,11 @@ public:
 	TownsCommandInterpreter cmdInterpreter;
 	bool uiTerminate=false;
 
-	virtual void Main(TownsThread &vmThread,FMTowns &towns,const TownsARGV &argv,Outside_World &outside_world);
-	virtual void ExecCommandQueue(TownsThread &vmThread,FMTowns &towns,Outside_World *outside_world);
+	virtual void Main(TownsThread &vmThread,FMTownsCommon &towns,const TownsARGV &argv,Outside_World &outside_world);
+	virtual void ExecCommandQueue(TownsThread &vmThread,FMTownsCommon &towns,Outside_World *outside_world);
 };
 
-/* virtual */ void TownsCUIThread::Main(TownsThread &townsThread,FMTowns &towns,const TownsARGV &argv,Outside_World &outside_world)
+/* virtual */ void TownsCUIThread::Main(TownsThread &townsThread,FMTownsCommon &towns,const TownsARGV &argv,Outside_World &outside_world)
 {
 	for(auto &ftfr : argv.toSend)
 	{
@@ -85,7 +85,7 @@ public:
 	}
 }
 
-/* virtual */ void TownsCUIThread::ExecCommandQueue(TownsThread &townsThread,FMTowns &towns,Outside_World *outside_world)
+/* virtual */ void TownsCUIThread::ExecCommandQueue(TownsThread &townsThread,FMTownsCommon &towns,Outside_World *outside_world)
 {
 	if(true==cmdInterpreter.waitVM)
 	{
@@ -127,7 +127,7 @@ public:
 
 
 
-int Run(FMTowns &towns,const TownsARGV &argv,Outside_World &outside_world)
+int Run(FMTownsCommon &towns,const TownsARGV &argv,Outside_World &outside_world)
 {
 	TownsThread townsThread;
 
@@ -178,9 +178,9 @@ int main(int ac,char *av[])
 	}
 
 
-	static FMTowns towns;
+	static FMTownsCommon towns;
 	Outside_World *outside_world=new FsSimpleWindowConnection;
-	if(true!=FMTowns::Setup(towns,outside_world,argv))
+	if(true!=FMTownsCommon::Setup(towns,outside_world,argv))
 	{
 		return 1;
 	}

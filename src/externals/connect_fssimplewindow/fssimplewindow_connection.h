@@ -86,11 +86,11 @@ public:
 
 	virtual void Start(void) override;
 	virtual void Stop(void) override;
-	virtual void DevicePolling(class FMTowns &towns) override;
+	virtual void DevicePolling(class FMTownsCommon &towns) override;
 	void PollGamePads(void);
-	virtual void UpdateStatusBitmap(class FMTowns &towns) override;
-	virtual void Render(const TownsRender::Image &img,const class FMTowns &towns) override;
-	void RenderBeforeSwapBuffers(const TownsRender::Image &img,const class FMTowns &towns);
+	virtual void UpdateStatusBitmap(class FMTownsCommon &towns) override;
+	virtual void Render(const TownsRender::Image &img,const class FMTownsCommon &towns) override;
+	void RenderBeforeSwapBuffers(const TownsRender::Image &img,const class FMTownsCommon &towns);
 	virtual bool ImageNeedsFlip(void) override;
 
 	virtual void SetKeyboardLayout(unsigned int layout) override;

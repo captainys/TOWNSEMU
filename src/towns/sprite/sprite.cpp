@@ -36,7 +36,7 @@ void TownsSprite::State::Reset(void)
 {
 }
 
-TownsSprite::TownsSprite(class FMTowns *townsPtr,TownsPhysicalMemory *physMemPtr) : Device(townsPtr)
+TownsSprite::TownsSprite(class FMTownsCommon *townsPtr,TownsPhysicalMemory *physMemPtr) : Device(townsPtr)
 {
 	this->townsPtr=townsPtr;
 	this->physMemPtr=physMemPtr;

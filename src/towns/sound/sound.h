@@ -28,7 +28,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 class TownsSound : public Device
 {
 private:
-	class FMTowns *townsPtr;
+	class FMTownsCommon *townsPtr;
 public:
 	enum
 	{
@@ -80,7 +80,7 @@ public:
 		return true==state.rf5c68.IsPlaying();
 	}
 
-	TownsSound(class FMTowns *townsPtr);
+	TownsSound(class FMTownsCommon *townsPtr);
 	void SetOutsideWorld(class Outside_World *outside_world);
 	void PCMStartPlay(unsigned char chStartPlay);
 	void PCMStopPlay(unsigned char chStopPlay);
@@ -93,7 +93,7 @@ public:
 
 	virtual unsigned int IOReadByte(unsigned int ioport);
 
-	/*! Called from FMTowns::RunFastDevicePolling.
+	/*! Called from FMTownsCommon::RunFastDevicePolling.
 	*/
 	void SoundPolling(unsigned long long int townsTime);
 

@@ -40,7 +40,7 @@ static void PushBack_MouseClick(TownsEventLog &eventLog,int x,int y)
 	eventLog.AddEvent(e);
 }
 
-void FMTowns::Daikoukai_ApplyPatchesCacheAddr(void)
+void FMTownsCommon::Daikoukai_ApplyPatchesCacheAddr(void)
 {
 	auto &cpu=CPU();
 	if(true!=cpu.IsInRealMode())
@@ -240,7 +240,7 @@ void FMTowns::Daikoukai_ApplyPatchesCacheAddr(void)
 		std::cout << "Space for deciding heading (when heading dialog is open)" << std::endl;
 	}
 }
-void FMTowns::Daikoukai_RightClick(void)
+void FMTownsCommon::Daikoukai_RightClick(void)
 {
 	TownsEventLog::Event e;
 	e.eventType=TownsEventLog::EVT_RBUTTONDOWN;
@@ -255,7 +255,7 @@ void FMTowns::Daikoukai_RightClick(void)
 	e.mosTolerance=480;
 	eventLog.AddEvent(e);
 }
-void FMTowns::Daikoukai_YKey(void)
+void FMTownsCommon::Daikoukai_YKey(void)
 {
 	if(0!=state.appSpecific_Daikoukai_DentakuDialogXAddr &&
 	   0!=state.appSpecific_Daikoukai_DentakuDialogYAddr)
@@ -266,7 +266,7 @@ void FMTowns::Daikoukai_YKey(void)
 		PushBack_MouseClick(eventLog,x+20,y+24);
 	}
 }
-void FMTowns::Daikoukai_NKey(void)
+void FMTownsCommon::Daikoukai_NKey(void)
 {
 	if(0!=state.appSpecific_Daikoukai_YNDialogXAddr &&
 	   0!=state.appSpecific_Daikoukai_YNDialogYAddr)
@@ -277,51 +277,51 @@ void FMTowns::Daikoukai_NKey(void)
 		PushBack_MouseClick(eventLog,x+50,y+24);
 	}
 }
-void FMTowns::Daikoukai_Left(void)
+void FMTownsCommon::Daikoukai_Left(void)
 {
 	PushBack_MouseClick(eventLog,444,176);
 }
-void FMTowns::Daikoukai_Right(void)
+void FMTownsCommon::Daikoukai_Right(void)
 {
 	PushBack_MouseClick(eventLog,474,176);
 }
-void FMTowns::Daikoukai_CourseSet(void)
+void FMTownsCommon::Daikoukai_CourseSet(void)
 {
 	PushBack_MouseClick(eventLog,508,176);
 }
-void FMTowns::Daikoukai_F1(void)
+void FMTownsCommon::Daikoukai_F1(void)
 {
 	PushBack_MouseClick(eventLog,440,160);
 }
-void FMTowns::Daikoukai_F2(void)
+void FMTownsCommon::Daikoukai_F2(void)
 {
 	PushBack_MouseClick(eventLog,496,160);
 }
-void FMTowns::Daikoukai_F3(void)
+void FMTownsCommon::Daikoukai_F3(void)
 {
 	PushBack_MouseClick(eventLog,552,160);
 }
-void FMTowns::Daikoukai_F4(void)
+void FMTownsCommon::Daikoukai_F4(void)
 {
 	PushBack_MouseClick(eventLog,608,160);
 }
-void FMTowns::Daikoukai_F5(void)
+void FMTownsCommon::Daikoukai_F5(void)
 {
 	PushBack_MouseClick(eventLog,440,192);
 }
-void FMTowns::Daikoukai_F6(void)
+void FMTownsCommon::Daikoukai_F6(void)
 {
 	PushBack_MouseClick(eventLog,496,192);
 }
-void FMTowns::Daikoukai_F7(void)
+void FMTownsCommon::Daikoukai_F7(void)
 {
 	PushBack_MouseClick(eventLog,552,192);
 }
-void FMTowns::Daikoukai_F8(void)
+void FMTownsCommon::Daikoukai_F8(void)
 {
 	PushBack_MouseClick(eventLog,608,192);
 }
-void FMTowns::Daikoukai_DentakuButton(int dx,int dy)
+void FMTownsCommon::Daikoukai_DentakuButton(int dx,int dy)
 {
 	if(0!=state.appSpecific_Daikoukai_DentakuDialogXAddr &&
 	   0!=state.appSpecific_Daikoukai_DentakuDialogYAddr)
@@ -332,91 +332,91 @@ void FMTowns::Daikoukai_DentakuButton(int dx,int dy)
 		PushBack_MouseClick(eventLog,x+dx,y+dy);
 	}
 }
-void FMTowns::Daikoukai_Dentaku_Plus1000(void)
+void FMTownsCommon::Daikoukai_Dentaku_Plus1000(void)
 {
 	Daikoukai_DentakuButton(16,40);
 }
-void FMTowns::Daikoukai_Dentaku_Plus100(void)
+void FMTownsCommon::Daikoukai_Dentaku_Plus100(void)
 {
 	Daikoukai_DentakuButton(40,40);
 }
-void FMTowns::Daikoukai_Dentaku_Plus10(void)
+void FMTownsCommon::Daikoukai_Dentaku_Plus10(void)
 {
 	Daikoukai_DentakuButton(64,40);
 }
-void FMTowns::Daikoukai_Dentaku_Plus1(void)
+void FMTownsCommon::Daikoukai_Dentaku_Plus1(void)
 {
 	Daikoukai_DentakuButton(88,40);
 }
-void FMTowns::Daikoukai_Dentaku_Minus1000(void)
+void FMTownsCommon::Daikoukai_Dentaku_Minus1000(void)
 {
 	Daikoukai_DentakuButton(16,72);
 }
-void FMTowns::Daikoukai_Dentaku_Minus100(void)
+void FMTownsCommon::Daikoukai_Dentaku_Minus100(void)
 {
 	Daikoukai_DentakuButton(40,72);
 }
-void FMTowns::Daikoukai_Dentaku_Minus10(void)
+void FMTownsCommon::Daikoukai_Dentaku_Minus10(void)
 {
 	Daikoukai_DentakuButton(64,72);
 }
-void FMTowns::Daikoukai_Dentaku_Minus1(void)
+void FMTownsCommon::Daikoukai_Dentaku_Minus1(void)
 {
 	Daikoukai_DentakuButton(88,72);
 }
-void FMTowns::Daikoukai_Dentaku_0(void)
+void FMTownsCommon::Daikoukai_Dentaku_0(void)
 {
 	Daikoukai_DentakuButton(16,168);
 }
-void FMTowns::Daikoukai_Dentaku_1(void)
+void FMTownsCommon::Daikoukai_Dentaku_1(void)
 {
 	Daikoukai_DentakuButton(16,144);
 }
-void FMTowns::Daikoukai_Dentaku_2(void)
+void FMTownsCommon::Daikoukai_Dentaku_2(void)
 {
 	Daikoukai_DentakuButton(40,144);
 }
-void FMTowns::Daikoukai_Dentaku_3(void)
+void FMTownsCommon::Daikoukai_Dentaku_3(void)
 {
 	Daikoukai_DentakuButton(64,144);
 }
-void FMTowns::Daikoukai_Dentaku_4(void)
+void FMTownsCommon::Daikoukai_Dentaku_4(void)
 {
 	Daikoukai_DentakuButton(16,120);
 }
-void FMTowns::Daikoukai_Dentaku_5(void)
+void FMTownsCommon::Daikoukai_Dentaku_5(void)
 {
 	Daikoukai_DentakuButton(40,120);
 }
-void FMTowns::Daikoukai_Dentaku_6(void)
+void FMTownsCommon::Daikoukai_Dentaku_6(void)
 {
 	Daikoukai_DentakuButton(64,120);
 }
-void FMTowns::Daikoukai_Dentaku_7(void)
+void FMTownsCommon::Daikoukai_Dentaku_7(void)
 {
 	Daikoukai_DentakuButton(16,96);
 }
-void FMTowns::Daikoukai_Dentaku_8(void)
+void FMTownsCommon::Daikoukai_Dentaku_8(void)
 {
 	Daikoukai_DentakuButton(40,96);
 }
-void FMTowns::Daikoukai_Dentaku_9(void)
+void FMTownsCommon::Daikoukai_Dentaku_9(void)
 {
 	Daikoukai_DentakuButton(64,96);
 }
-void FMTowns::Daikoukai_Dentaku_Max(void)
+void FMTownsCommon::Daikoukai_Dentaku_Max(void)
 {
 	Daikoukai_DentakuButton(92,96);
 }
-void FMTowns::Daikoukai_Dentaku_Min(void)
+void FMTownsCommon::Daikoukai_Dentaku_Min(void)
 {
 	Daikoukai_DentakuButton(92,120);
 }
-void FMTowns::Daikoukai_Dentaku_AC(void)
+void FMTownsCommon::Daikoukai_Dentaku_AC(void)
 {
 	Daikoukai_DentakuButton(92,144);
 }
-void FMTowns::Daikoukai_Dentaku_RET(void)
+void FMTownsCommon::Daikoukai_Dentaku_RET(void)
 {
 	Daikoukai_DentakuButton(64,168);
 }

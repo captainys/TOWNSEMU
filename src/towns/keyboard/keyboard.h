@@ -60,7 +60,7 @@ public:
 
 	bool debugBreakOnReturnKey=false;
 
-	class FMTowns *townsPtr;
+	class FMTownsCommon *townsPtr;
 	class TownsPIC *picPtr;
 
 	void SetAutoType(std::string str);
@@ -81,7 +81,7 @@ private:
 
 public:
 	virtual const char *DeviceName(void) const{return "KEYBOARD";}
-	TownsKeyboard(class FMTowns *townsPtr,class TownsPIC *picPtr);
+	TownsKeyboard(class FMTownsCommon *townsPtr,class TownsPIC *picPtr);
 	virtual void IOWriteByte(unsigned int ioport,unsigned int data);
 	virtual unsigned int IOReadByte(unsigned int ioport);
 

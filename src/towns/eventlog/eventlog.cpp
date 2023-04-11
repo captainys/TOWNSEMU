@@ -512,7 +512,7 @@ bool TownsEventLog::LoadEventLog(std::string fName)
 
 
 
-void TownsEventLog::Playback(class FMTowns &towns)
+void TownsEventLog::Playback(class FMTownsCommon &towns)
 {
 	if(MODE_PLAYBACK==mode)
 	{

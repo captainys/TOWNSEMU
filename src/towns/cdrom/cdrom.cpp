@@ -111,7 +111,7 @@ void TownsCDROM::State::ResetMPU(void)
 
 ////////////////////////////////////////////////////////////
 
-TownsCDROM::TownsCDROM(class FMTowns *townsPtr,class TownsPIC *PICPtr,class TownsDMAC *DMACPtr) : Device(townsPtr)
+TownsCDROM::TownsCDROM(class FMTownsCommon *townsPtr,class TownsPIC *PICPtr,class TownsDMAC *DMACPtr) : Device(townsPtr)
 {
 	this->townsPtr=townsPtr;
 	this->PICPtr=PICPtr;

@@ -17,7 +17,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 
 
-/* virtual */ void FMTowns::IOWriteByte(unsigned int ioport,unsigned int data)
+/* virtual */ void FMTownsCommon::IOWriteByte(unsigned int ioport,unsigned int data)
 {
 	switch(ioport)
 	{
@@ -122,15 +122,15 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 		break;
 	}
 }
-/* virtual */ void FMTowns::IOWriteWord(unsigned int ioport,unsigned int data)
+/* virtual */ void FMTownsCommon::IOWriteWord(unsigned int ioport,unsigned int data)
 {
 	Device::IOWriteWord(ioport,data);
 }
-/* virtual */ void FMTowns::IOWriteDword(unsigned int ioport,unsigned int data)
+/* virtual */ void FMTownsCommon::IOWriteDword(unsigned int ioport,unsigned int data)
 {
 	Device::IOWriteDword(ioport,data);
 }
-/* virtual */ unsigned int FMTowns::IOReadByte(unsigned int ioport)
+/* virtual */ unsigned int FMTownsCommon::IOReadByte(unsigned int ioport)
 {
 
 	switch(ioport)
@@ -228,7 +228,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	}
 	return 0xff;
 }
-/* virtual */ unsigned int FMTowns::IOReadWord(unsigned int ioport)
+/* virtual */ unsigned int FMTownsCommon::IOReadWord(unsigned int ioport)
 {
 	switch(ioport)
 	{
@@ -237,12 +237,12 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	}
 	return Device::IOReadWord(ioport);
 }
-/* virtual */ unsigned int FMTowns::IOReadDword(unsigned int ioport)
+/* virtual */ unsigned int FMTownsCommon::IOReadDword(unsigned int ioport)
 {
 	return Device::IOReadWord(ioport);
 }
 
-void FMTowns::UpdateEleVol(int eleVol)
+void FMTownsCommon::UpdateEleVol(int eleVol)
 {
 	if(TOWNS_ELEVOL_FOR_CD==eleVol &&
 	  (TOWNS_ELEVOL_CD_LEFT==state.eleVolChLatch[TOWNS_ELEVOL_FOR_CD] || TOWNS_ELEVOL_CD_RIGHT==state.eleVolChLatch[TOWNS_ELEVOL_FOR_CD]))
@@ -251,7 +251,7 @@ void FMTowns::UpdateEleVol(int eleVol)
 	}
 }
 
-void FMTowns::UpdateCDEleVol(Outside_World *outside_world)
+void FMTownsCommon::UpdateCDEleVol(Outside_World *outside_world)
 {
 	if(true==cdrom.var.CDDAmute)
 	{
@@ -275,11 +275,11 @@ void FMTowns::UpdateCDEleVol(Outside_World *outside_world)
 	}
 }
 
-/* virtual */ void FMTowns::RunScheduledTask(unsigned long long int townsTime)
+/* virtual */ void FMTownsCommon::RunScheduledTask(unsigned long long int townsTime)
 {
 	CPU().Reset();
 }
-void FMTowns::AdjustMachineSpeedForMemoryWait(void)
+void FMTownsCommon::AdjustMachineSpeedForMemoryWait(void)
 {
 	if(true==FASTModeLamp())
 	{

@@ -913,7 +913,7 @@ TownsCommandInterpreter::Command TownsCommandInterpreter::Interpret(const std::s
 	return cmd;
 }
 
-void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outside_World *outside_world,Command &cmd)
+void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,class Outside_World *outside_world,Command &cmd)
 {
 	if(CMD_DISASM!=cmd.primaryCmd && CMD_DISASM16!=cmd.primaryCmd && CMD_DISASM32!=cmd.primaryCmd)
 	{
@@ -1659,7 +1659,7 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTowns &towns,class Outs
 	}
 }
 
-void TownsCommandInterpreter::Execute_Enable(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_Enable(FMTownsCommon &towns,Command &cmd)
 {
 	if(cmd.argv.size()<2)
 	{
@@ -1753,7 +1753,7 @@ void TownsCommandInterpreter::Execute_Enable(FMTowns &towns,Command &cmd)
 		}
 	}
 }
-void TownsCommandInterpreter::Execute_Disable(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_Disable(FMTownsCommon &towns,Command &cmd)
 {
 	if(cmd.argv.size()<2)
 	{
@@ -1843,7 +1843,7 @@ void TownsCommandInterpreter::Execute_Disable(FMTowns &towns,Command &cmd)
 	}
 }
 
-void TownsCommandInterpreter::Execute_AddBreakPoint(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_AddBreakPoint(FMTownsCommon &towns,Command &cmd)
 {
 	if(cmd.argv.size()<2)
 	{
@@ -1879,7 +1879,7 @@ void TownsCommandInterpreter::Execute_AddBreakPoint(FMTowns &towns,Command &cmd)
 	}
 }
 
-void TownsCommandInterpreter::Execute_AddSavePoint(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_AddSavePoint(FMTownsCommon &towns,Command &cmd)
 {
 	if(cmd.argv.size()<3)
 	{
@@ -1910,7 +1910,7 @@ void TownsCommandInterpreter::Execute_AddSavePoint(FMTowns &towns,Command &cmd)
 	}
 }
 
-void TownsCommandInterpreter::Execute_AddBreakPointWithPassCount(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_AddBreakPointWithPassCount(FMTownsCommon &towns,Command &cmd)
 {
 	if(cmd.argv.size()<3)
 	{
@@ -1933,7 +1933,7 @@ void TownsCommandInterpreter::Execute_AddBreakPointWithPassCount(FMTowns &towns,
 	}
 }
 
-void TownsCommandInterpreter::Execute_DeleteBreakPoint(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_DeleteBreakPoint(FMTownsCommon &towns,Command &cmd)
 {
 	if(cmd.argv.size()<2)
 	{
@@ -1954,7 +1954,7 @@ void TownsCommandInterpreter::Execute_DeleteBreakPoint(FMTowns &towns,Command &c
 		}
 	}
 }
-void TownsCommandInterpreter::Execute_ListBreakPoints(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_ListBreakPoints(FMTownsCommon &towns,Command &cmd)
 {
 	int bpn=0;
 	for(auto bp : towns.debugger.GetBreakPointsEx())
@@ -1998,7 +1998,7 @@ void TownsCommandInterpreter::Execute_ListBreakPoints(FMTowns &towns,Command &cm
 	}
 }
 
-void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_Dump(FMTownsCommon &towns,Command &cmd)
 {
 	if(cmd.argv.size()<2)
 	{
@@ -2181,9 +2181,9 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 			break;
 		case DUMP_TIME_BALANCE:
 			{
-				for(unsigned int i=FMTowns::Variable::TIME_ADJUSTMENT_LOG_LEN-64; i<FMTowns::Variable::TIME_ADJUSTMENT_LOG_LEN; ++i)
+				for(unsigned int i=FMTownsCommon::Variable::TIME_ADJUSTMENT_LOG_LEN-64; i<FMTownsCommon::Variable::TIME_ADJUSTMENT_LOG_LEN; ++i)
 				{
-					auto I=(towns.var.timeAdjustLogPtr+i+1)%FMTowns::Variable::TIME_ADJUSTMENT_LOG_LEN;
+					auto I=(towns.var.timeAdjustLogPtr+i+1)%FMTownsCommon::Variable::TIME_ADJUSTMENT_LOG_LEN;
 					auto l=cpputil::Itoa(towns.var.timeAdjustLog[I]);
 					while(l.size()<12)
 					{
@@ -2194,13 +2194,13 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 					std::cout << std::endl;
 				}
 				int64_t avgBalance=0,avgDeficit=0;
-				for(unsigned int i=0; i<FMTowns::Variable::TIME_ADJUSTMENT_LOG_LEN; ++i)
+				for(unsigned int i=0; i<FMTownsCommon::Variable::TIME_ADJUSTMENT_LOG_LEN; ++i)
 				{
 					avgBalance+=towns.var.timeAdjustLog[i];
 					avgDeficit+=towns.var.timeDeficitLog[i];
 				}
-				avgBalance/=FMTowns::Variable::TIME_ADJUSTMENT_LOG_LEN;
-				avgDeficit/=FMTowns::Variable::TIME_ADJUSTMENT_LOG_LEN;
+				avgBalance/=FMTownsCommon::Variable::TIME_ADJUSTMENT_LOG_LEN;
+				avgDeficit/=FMTownsCommon::Variable::TIME_ADJUSTMENT_LOG_LEN;
 				std::cout << "Average" << std::endl;
 				auto l=cpputil::Itoa(avgBalance);
 				while(l.size()<12)
@@ -2385,7 +2385,7 @@ void TownsCommandInterpreter::Execute_Dump(FMTowns &towns,Command &cmd)
 	}
 }
 
-void TownsCommandInterpreter::Execute_MemoryDump(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_MemoryDump(FMTownsCommon &towns,Command &cmd)
 {
 	if(cmd.argv.size()<2)
 	{
@@ -2433,7 +2433,7 @@ void TownsCommandInterpreter::Execute_MemoryDump(FMTowns &towns,Command &cmd)
 	}
 }
 
-void TownsCommandInterpreter::Execute_Dump_DOSInfo(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_Dump_DOSInfo(FMTownsCommon &towns,Command &cmd)
 {
 	if(3<=cmd.argv.size())
 	{
@@ -2938,7 +2938,7 @@ void TownsCommandInterpreter::Execute_Dump_DOSInfo(FMTowns &towns,Command &cmd)
 	}
 }
 
-void TownsCommandInterpreter::Execute_Calculate(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_Calculate(FMTownsCommon &towns,Command &cmd)
 {
 	if(cmd.argv.size()<2)
 	{
@@ -2956,7 +2956,7 @@ void TownsCommandInterpreter::Execute_Calculate(FMTowns &towns,Command &cmd)
 	}
 }
 
-void TownsCommandInterpreter::Execute_BreakOn(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_BreakOn(FMTownsCommon &towns,Command &cmd)
 {
 	if(cmd.argv.size()<2)
 	{
@@ -3192,7 +3192,7 @@ void TownsCommandInterpreter::Execute_BreakOn(FMTowns &towns,Command &cmd)
 		std::cout << "Break On " << reason << " is ON." << std::endl;
 	}
 }
-void TownsCommandInterpreter::Execute_ClearBreakOn(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_ClearBreakOn(FMTownsCommon &towns,Command &cmd)
 {
 	if(cmd.argv.size()<2)
 	{
@@ -3404,7 +3404,7 @@ void TownsCommandInterpreter::Execute_ClearBreakOn(FMTowns &towns,Command &cmd)
 	}
 }
 
-void TownsCommandInterpreter::Execute_AddressTranslation(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_AddressTranslation(FMTownsCommon &towns,Command &cmd)
 {
 	if(2<=cmd.argv.size())
 	{
@@ -3424,7 +3424,7 @@ void TownsCommandInterpreter::Execute_AddressTranslation(FMTowns &towns,Command 
 	}
 }
 
-void TownsCommandInterpreter::Execute_Disassemble(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_Disassemble(FMTownsCommon &towns,Command &cmd)
 {
 	auto farPtr=towns.var.disassemblePointer;
 	if(2<=cmd.argv.size())
@@ -3466,7 +3466,7 @@ void TownsCommandInterpreter::Execute_Disassemble(FMTowns &towns,Command &cmd)
 	}
 	towns.var.disassemblePointer=farPtr;
 }
-void TownsCommandInterpreter::Execute_Disassemble16(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_Disassemble16(FMTownsCommon &towns,Command &cmd)
 {
 	auto farPtr=towns.var.disassemblePointer;
 	if(2<=cmd.argv.size())
@@ -3508,7 +3508,7 @@ void TownsCommandInterpreter::Execute_Disassemble16(FMTowns &towns,Command &cmd)
 	}
 	towns.var.disassemblePointer=farPtr;
 }
-void TownsCommandInterpreter::Execute_Disassemble32(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_Disassemble32(FMTownsCommon &towns,Command &cmd)
 {
 	auto farPtr=towns.var.disassemblePointer;
 	if(2<=cmd.argv.size())
@@ -3551,7 +3551,7 @@ void TownsCommandInterpreter::Execute_Disassemble32(FMTowns &towns,Command &cmd)
 	towns.var.disassemblePointer=farPtr;
 }
 
-void TownsCommandInterpreter::Execute_PrintHistory(FMTowns &towns,unsigned int n)
+void TownsCommandInterpreter::Execute_PrintHistory(FMTownsCommon &towns,unsigned int n)
 {
 	auto list=towns.debugger.GetCSEIPLog(n);
 	auto &symTable=towns.debugger.GetSymTable();
@@ -3575,7 +3575,7 @@ void TownsCommandInterpreter::Execute_PrintHistory(FMTowns &towns,unsigned int n
 	}
 }
 
-void TownsCommandInterpreter::Execute_SaveHistory(FMTowns &towns,const std::string &fName)
+void TownsCommandInterpreter::Execute_SaveHistory(FMTownsCommon &towns,const std::string &fName)
 {
 	std::ofstream ofp(fName);
 	if(ofp.is_open())
@@ -3608,7 +3608,7 @@ void TownsCommandInterpreter::Execute_SaveHistory(FMTowns &towns,const std::stri
 	}
 }
 
-void TownsCommandInterpreter::Execute_SaveEventLog(FMTowns &towns,const std::string &fName)
+void TownsCommandInterpreter::Execute_SaveEventLog(FMTownsCommon &towns,const std::string &fName)
 {
 	if(true!=towns.eventLog.SaveEventLog(fName))
 	{
@@ -3620,7 +3620,7 @@ void TownsCommandInterpreter::Execute_SaveEventLog(FMTowns &towns,const std::str
 	}
 }
 
-void TownsCommandInterpreter::Execute_AddSymbol(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_AddSymbol(FMTownsCommon &towns,Command &cmd)
 {
 	if(3<=cmd.argv.size() || 
 	  (2<=cmd.argv.size() && (CMD_IMM_IS_IOPORT==cmd.primaryCmd || CMD_IMM_IS_ASCII==cmd.primaryCmd || CMD_OFFSET_IS_LABEL==cmd.primaryCmd || CMD_IMM_IS_LABEL==cmd.primaryCmd)))
@@ -3725,7 +3725,7 @@ void TownsCommandInterpreter::Execute_AddSymbol(FMTowns &towns,Command &cmd)
 	}
 }
 
-void TownsCommandInterpreter::Execute_ImportEXPSymbolTable(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_ImportEXPSymbolTable(FMTownsCommon &towns,Command &cmd)
 {
 	if(2<=cmd.argv.size())
 	{
@@ -3749,7 +3749,7 @@ void TownsCommandInterpreter::Execute_ImportEXPSymbolTable(FMTowns &towns,Comman
 	}
 }
 
-void TownsCommandInterpreter::Execute_LoadSymbolTable(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_LoadSymbolTable(FMTownsCommon &towns,Command &cmd)
 {
 	if(2<=cmd.argv.size())
 	{
@@ -3776,7 +3776,7 @@ void TownsCommandInterpreter::Execute_LoadSymbolTable(FMTowns &towns,Command &cm
 	}
 }
 
-void TownsCommandInterpreter::Execute_DelSymbol(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_DelSymbol(FMTownsCommon &towns,Command &cmd)
 {
 	auto &symTable=towns.debugger.GetSymTable();
 	if(2<=cmd.argv.size())
@@ -3798,7 +3798,7 @@ void TownsCommandInterpreter::Execute_DelSymbol(FMTowns &towns,Command &cmd)
 	}
 }
 
-void TownsCommandInterpreter::Execute_SymbolInquiry(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_SymbolInquiry(FMTownsCommon &towns,Command &cmd)
 {
 	std::string ptn="*";
 	uint32_t segFilter=0xFFFF0000;
@@ -3880,7 +3880,7 @@ void TownsCommandInterpreter::Execute_SymbolInquiry(FMTowns &towns,Command &cmd)
 	}
 }
 
-void TownsCommandInterpreter::Execute_TypeKeyboard(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_TypeKeyboard(FMTownsCommon &towns,Command &cmd)
 {
 	for(int i=0; i<cmd.cmdline.size(); ++i)
 	{
@@ -3907,7 +3907,7 @@ void TownsCommandInterpreter::Execute_TypeKeyboard(FMTowns &towns,Command &cmd)
 	}
 }
 
-void TownsCommandInterpreter::Execute_Let(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_Let(FMTownsCommon &towns,Command &cmd)
 {
 	if(3<=cmd.argv.size())
 	{
@@ -3960,7 +3960,7 @@ void TownsCommandInterpreter::Execute_Let(FMTowns &towns,Command &cmd)
 	}
 }
 
-void TownsCommandInterpreter::Execute_EditMemory(FMTowns &towns,Command &cmd,unsigned int numBytes)
+void TownsCommandInterpreter::Execute_EditMemory(FMTownsCommon &towns,Command &cmd,unsigned int numBytes)
 {
 	if(3<=cmd.argv.size())
 	{
@@ -4042,12 +4042,12 @@ void TownsCommandInterpreter::Execute_EditMemory(FMTowns &towns,Command &cmd,uns
 		}
 	}
 }
-void TownsCommandInterpreter::Execute_Replace(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_Replace(FMTownsCommon &towns,Command &cmd)
 {
 	std::cout << "Not implemented yet." << std::endl;
 }
 
-void TownsCommandInterpreter::Execute_CRTCPage(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_CRTCPage(FMTownsCommon &towns,Command &cmd)
 {
 	if(2<=cmd.argv.size() && towns.crtc.InSinglePageMode())
 	{
@@ -4093,7 +4093,7 @@ void TownsCommandInterpreter::Execute_CRTCPage(FMTowns &towns,Command &cmd)
 	}
 }
 
-void TownsCommandInterpreter::Execute_CMOSLoad(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_CMOSLoad(FMTownsCommon &towns,Command &cmd)
 {
 	if(2<=cmd.argv.size())
 	{
@@ -4114,7 +4114,7 @@ void TownsCommandInterpreter::Execute_CMOSLoad(FMTowns &towns,Command &cmd)
 		PrintError(ERROR_TOO_FEW_ARGS);
 	}
 }
-void TownsCommandInterpreter::Execute_CMOSSave(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_CMOSSave(FMTownsCommon &towns,Command &cmd)
 {
 	if(2<=cmd.argv.size())
 	{
@@ -4132,7 +4132,7 @@ void TownsCommandInterpreter::Execute_CMOSSave(FMTowns &towns,Command &cmd)
 		PrintError(ERROR_TOO_FEW_ARGS);
 	}
 }
-void TownsCommandInterpreter::Execute_CDLoad(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_CDLoad(FMTownsCommon &towns,Command &cmd)
 {
 	if(2<=cmd.argv.size())
 	{
@@ -4149,7 +4149,7 @@ void TownsCommandInterpreter::Execute_CDLoad(FMTowns &towns,Command &cmd)
 	}
 }
 
-void TownsCommandInterpreter::Execute_SCSICDLoad(unsigned int SCSIID,FMTowns &towns,const Command &cmd)
+void TownsCommandInterpreter::Execute_SCSICDLoad(unsigned int SCSIID,FMTownsCommon &towns,const Command &cmd)
 {
 	if(2<=cmd.argv.size())
 	{
@@ -4175,7 +4175,7 @@ void TownsCommandInterpreter::Execute_SCSICDLoad(unsigned int SCSIID,FMTowns &to
 	}
 }
 
-void TownsCommandInterpreter::Execute_FDLoad(int drv,FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_FDLoad(int drv,FMTownsCommon &towns,Command &cmd)
 {
 	if(2<=cmd.argv.size())
 	{
@@ -4190,13 +4190,13 @@ void TownsCommandInterpreter::Execute_FDLoad(int drv,FMTowns &towns,Command &cmd
 	}
 }
 
-void TownsCommandInterpreter::Execute_FDEject(int drv,FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_FDEject(int drv,FMTownsCommon &towns,Command &cmd)
 {
 	towns.fdc.Eject(drv);
 	std::cout << "Ejected Floppy Drive " << drv << std::endl;
 }
 
-void TownsCommandInterpreter::Execute_MakeMemoryFilter(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_MakeMemoryFilter(FMTownsCommon &towns,Command &cmd)
 {
 	if(2<=cmd.argv.size())
 	{
@@ -4209,7 +4209,7 @@ void TownsCommandInterpreter::Execute_MakeMemoryFilter(FMTowns &towns,Command &c
 		towns.physMem.BeginMemFilter();
 	}
 }
-void TownsCommandInterpreter::Execute_UpdateMemoryFilter(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_UpdateMemoryFilter(FMTownsCommon &towns,Command &cmd)
 {
 	if(2<=cmd.argv.size())
 	{
@@ -4248,7 +4248,7 @@ void TownsCommandInterpreter::Execute_UpdateMemoryFilter(FMTowns &towns,Command 
 	}
 }
 
-void TownsCommandInterpreter::Execute_SaveYM2612Log(FMTowns &towns,std::string fName)
+void TownsCommandInterpreter::Execute_SaveYM2612Log(FMTownsCommon &towns,std::string fName)
 {
 	std::ofstream ofp(fName);
 	if(ofp.is_open())
@@ -4268,7 +4268,7 @@ void TownsCommandInterpreter::Execute_SaveYM2612Log(FMTowns &towns,std::string f
 	}
 }
 
-void TownsCommandInterpreter::Execute_Search_Bytes(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_Search_Bytes(FMTownsCommon &towns,Command &cmd)
 {
 	std::vector <unsigned char> bytes;
 	for(int i=1; i<cmd.argv.size(); ++i)
@@ -4307,7 +4307,7 @@ void TownsCommandInterpreter::Execute_Search_Bytes(FMTowns &towns,Command &cmd)
 	}
 	return Execute_Search_ByteSequence(towns,bytes);
 }
-void TownsCommandInterpreter::Execute_Search_String(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_Search_String(FMTownsCommon &towns,Command &cmd)
 {
 	if(2<=cmd.argv.size())
 	{
@@ -4328,7 +4328,7 @@ void TownsCommandInterpreter::Execute_Search_String(FMTowns &towns,Command &cmd)
 	}
 }
 
-void TownsCommandInterpreter::Execute_Search_ByteSequence(FMTowns &towns,const std::vector <unsigned char> &bytes)
+void TownsCommandInterpreter::Execute_Search_ByteSequence(FMTownsCommon &towns,const std::vector <unsigned char> &bytes)
 {
 	if(0==bytes.size())
 	{
@@ -4358,7 +4358,7 @@ void TownsCommandInterpreter::Execute_Search_ByteSequence(FMTowns &towns,const s
 	}
 }
 
-void TownsCommandInterpreter::FoundAt(FMTowns &towns,unsigned int physAddr)
+void TownsCommandInterpreter::FoundAt(FMTownsCommon &towns,unsigned int physAddr)
 {
 	auto linearAddr=towns.cpu.PhysicalAddressToLinearAddress(physAddr,towns.mem);
 	std::cout << "Found at PHYS:" << cpputil::Uitox(physAddr) << "  LINEAR:" << cpputil::Uitox(linearAddr) << std::endl;
@@ -4391,7 +4391,7 @@ void TownsCommandInterpreter::FoundAt(std::string segLabel,unsigned int linearBa
 	std::cout << segLabel << cpputil::Uitox(linearAddr-linearBase) << std::endl;
 }
 
-void TownsCommandInterpreter::Execute_Find_Caller(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_Find_Caller(FMTownsCommon &towns,Command &cmd)
 {
 	if(2<=cmd.argv.size())
 	{
@@ -4416,7 +4416,7 @@ void TownsCommandInterpreter::Execute_Find_Caller(FMTowns &towns,Command &cmd)
 	}
 }
 
-void TownsCommandInterpreter::Execute_Exception(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_Exception(FMTownsCommon &towns,Command &cmd)
 {
 	if(2<=cmd.argv.size())
 	{
@@ -4447,7 +4447,7 @@ void TownsCommandInterpreter::Execute_Exception(FMTowns &towns,Command &cmd)
 		PrintError(ERROR_TOO_FEW_ARGS);
 	}
 }
-void TownsCommandInterpreter::Execute_XMODEMtoVM(FMTowns &towns,Command &cmd,uint32_t packetLength)
+void TownsCommandInterpreter::Execute_XMODEMtoVM(FMTownsCommon &towns,Command &cmd,uint32_t packetLength)
 {
 	if(2<=cmd.argv.size())
 	{
@@ -4475,7 +4475,7 @@ void TownsCommandInterpreter::Execute_XMODEMtoVM(FMTowns &towns,Command &cmd,uin
 		PrintError(ERROR_TOO_FEW_ARGS);
 	}
 }
-void TownsCommandInterpreter::Execute_XMODEMfromVM(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_XMODEMfromVM(FMTownsCommon &towns,Command &cmd)
 {
 	if(2<=cmd.argv.size())
 	{
@@ -4496,7 +4496,7 @@ void TownsCommandInterpreter::Execute_XMODEMfromVM(FMTowns &towns,Command &cmd)
 	}
 }
 
-void TownsCommandInterpreter::Execute_XMODEMCRCfromVM(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_XMODEMCRCfromVM(FMTownsCommon &towns,Command &cmd)
 {
 	if(2<=cmd.argv.size())
 	{
@@ -4569,7 +4569,7 @@ void TownsCommandInterpreter::Execute_LoadKeyMap(Outside_World &outside_world,co
 	}
 }
 
-void TownsCommandInterpreter::Execute_SaveScreenShot(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_SaveScreenShot(FMTownsCommon &towns,Command &cmd)
 {
 	bool layer[2]=
 	{
@@ -4599,7 +4599,7 @@ void TownsCommandInterpreter::Execute_SaveScreenShot(FMTowns &towns,Command &cmd
 
 	SaveScreenShot(towns,render,cmd.argv[1]);
 }
-void TownsCommandInterpreter::Execute_SaveMemDump(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_SaveMemDump(FMTownsCommon &towns,Command &cmd)
 {
 	if(4<=cmd.argv.size())
 	{
@@ -4649,17 +4649,17 @@ void TownsCommandInterpreter::Execute_SaveMemDump(FMTowns &towns,Command &cmd)
 		PrintError(ERROR_TOO_FEW_ARGS);
 	}
 }
-void TownsCommandInterpreter::Execute_SaveVRAMLayer(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_SaveVRAMLayer(FMTownsCommon &towns,Command &cmd)
 {
 	std::cout << "VRAM Layer save will be available soon." << std::endl;
 }
 
-void TownsCommandInterpreter::Execute_SpecialDebug(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_SpecialDebug(FMTownsCommon &towns,Command &cmd)
 {
 	std::cout << "Currently nothing happens with special debugging command." << std::endl;
 }
 
-void TownsCommandInterpreter::Execute_Gameport(FMTowns &towns,Outside_World *outside_world,Command &cmd)
+void TownsCommandInterpreter::Execute_Gameport(FMTownsCommon &towns,Outside_World *outside_world,Command &cmd)
 {
 	if(3<=cmd.argv.size())
 	{
@@ -4686,7 +4686,7 @@ void TownsCommandInterpreter::Execute_Gameport(FMTowns &towns,Outside_World *out
 	}
 }
 
-void TownsCommandInterpreter::Execute_QuickScreenShot(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_QuickScreenShot(FMTownsCommon &towns,Command &cmd)
 {
 	bool layer[2]=
 	{
@@ -4755,7 +4755,7 @@ void TownsCommandInterpreter::Execute_QuickScreenShot(FMTowns &towns,Command &cm
 	SaveScreenShot(towns,render,ful);
 }
 
-void TownsCommandInterpreter::SaveScreenShot(FMTowns &towns,TownsRender &render,std::string &fName)
+void TownsCommandInterpreter::SaveScreenShot(FMTownsCommon &towns,TownsRender &render,std::string &fName)
 {
 	if(0!=towns.var.scrnShotWid && 0!=towns.var.scrnShotHei)
 	{
@@ -4780,7 +4780,7 @@ void TownsCommandInterpreter::SaveScreenShot(FMTowns &towns,TownsRender &render,
 }
 
 
-void TownsCommandInterpreter::Execute_QuickScreenShotDirectory(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_QuickScreenShotDirectory(FMTownsCommon &towns,Command &cmd)
 {
 	if(2<=cmd.argv.size())
 	{
@@ -4792,7 +4792,7 @@ void TownsCommandInterpreter::Execute_QuickScreenShotDirectory(FMTowns &towns,Co
 	}
 }
 
-void TownsCommandInterpreter::Execute_AutoShot(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_AutoShot(FMTownsCommon &towns,Command &cmd)
 {
 	if(4<=cmd.argv.size())
 	{
@@ -4815,7 +4815,7 @@ void TownsCommandInterpreter::Execute_AutoShot(FMTowns &towns,Command &cmd)
 	}
 }
 
-void TownsCommandInterpreter::Execute_BreakOnMemoryWrite(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_BreakOnMemoryWrite(FMTownsCommon &towns,Command &cmd)
 {
 	bool useValue=false,useMinMax=false;
 	unsigned char value=0,minValue=0,maxValue=255;
@@ -4986,7 +4986,7 @@ void TownsCommandInterpreter::Execute_BreakOnMemoryWrite(FMTowns &towns,Command 
 		PrintError(ERROR_TOO_FEW_ARGS);
 	}
 }
-void TownsCommandInterpreter::Execute_LS(FMTowns &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_LS(FMTownsCommon &towns,Command &cmd)
 {
 	FileSys fileSys;
 	bool detail=false;

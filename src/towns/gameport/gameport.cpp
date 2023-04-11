@@ -500,7 +500,7 @@ void TownsGamePort::Port::SetAutoShotTimer(unsigned int prevTrig,unsigned int tr
 
 ////////////////////////////////////////////////////////////
 
-TownsGamePort::TownsGamePort(class FMTowns *townsPtr) : Device(townsPtr)
+TownsGamePort::TownsGamePort(class FMTownsCommon *townsPtr) : Device(townsPtr)
 {
 	this->townsPtr=townsPtr;
 	state.ports[0].device=GAMEPAD;

@@ -39,7 +39,7 @@ target_include_directories(townsnewdevice PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 class TownsTgDrv : public Device
 {
 private:
-	class FMTowns *townsPtr;
+	class FMTownsCommon *townsPtr;
 public:
 	virtual const char *DeviceName(void) const{return "TGDRIVE";}
 
@@ -88,7 +88,7 @@ public:
 
 	State state;
 
-	TownsTgDrv(class FMTowns *townsPtr);
+	TownsTgDrv(class FMTownsCommon *townsPtr);
 
 	virtual void PowerOn(void);
 	virtual void Reset(void);

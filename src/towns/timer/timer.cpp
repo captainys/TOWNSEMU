@@ -235,7 +235,7 @@ void TownsTimer::State::TickIn(unsigned int nTick)
 
 ////////////////////////////////////////////////////////////
 
-TownsTimer::TownsTimer(class FMTowns *townsPtr,class TownsPIC *picPtr) : Device(townsPtr)
+TownsTimer::TownsTimer(class FMTownsCommon *townsPtr,class TownsPIC *picPtr) : Device(townsPtr)
 {
 	this->townsPtr=townsPtr;
 	this->picPtr=picPtr;

@@ -29,7 +29,7 @@ const unsigned int WC2_EVENTQUEUE_LAST_OFFSET=0x6E4-WC2_EVENTQUEUE_BASE_ADDR;
 const unsigned int WC2_EVENTQUEUE_READ_PTR=   0x6EC-WC2_EVENTQUEUE_BASE_ADDR;
 const unsigned int WC2_EVENTQUEUE_FILLED=     0x6F4-WC2_EVENTQUEUE_BASE_ADDR;
 
-void FMTowns::GetTBIOSIdentifierStrings(std::string s[4],unsigned int biosPhysicalBaseAddr) const
+void FMTownsCommon::GetTBIOSIdentifierStrings(std::string s[4],unsigned int biosPhysicalBaseAddr) const
 {
 	for(int i=0; i<4; ++i)
 	{
@@ -82,7 +82,7 @@ Towns OS V2.1 L50 TBIOS V31L35 (Free Software Collection 11)
 00100000 56 33 31 4C 33 35 00 00 39 34 2F 31 32 2F 30 33|V31L35  94/12/03
 00100010 74 6F 77 6E 73 00 00 00 74 62 69 6F 73 00 00 00|towns   tbios
 */
-unsigned int FMTowns::IdentifyTBIOS(unsigned int biosPhysicalBaseAddr) const
+unsigned int FMTownsCommon::IdentifyTBIOS(unsigned int biosPhysicalBaseAddr) const
 {
 	std::string s[4];
 	GetTBIOSIdentifierStrings(s,biosPhysicalBaseAddr);
@@ -123,7 +123,7 @@ unsigned int FMTowns::IdentifyTBIOS(unsigned int biosPhysicalBaseAddr) const
 	return TBIOS_UNKNOWN;
 }
 
-unsigned int FMTowns::FindTBIOSMouseInfoOffset(unsigned int tbiosVersion,unsigned int biosPhysicalBaseAddr) const
+unsigned int FMTownsCommon::FindTBIOSMouseInfoOffset(unsigned int tbiosVersion,unsigned int biosPhysicalBaseAddr) const
 {
 	switch(tbiosVersion)
 	{
@@ -237,7 +237,7 @@ unsigned int FMTowns::FindTBIOSMouseInfoOffset(unsigned int tbiosVersion,unsigne
 	return 0;
 }
 
-void FMTowns::OnCRTC_HST_Write(void)
+void FMTownsCommon::OnCRTC_HST_Write(void)
 {
 	auto &cpu=CPU();
 	std::cout << "Write to CRTC-HST register." << std::endl;
@@ -406,7 +406,7 @@ void FMTowns::OnCRTC_HST_Write(void)
 	}
 }
 
-void FMTowns::OnCDDAStart(void)
+void FMTownsCommon::OnCDDAStart(void)
 {
 	switch(state.appSpecificSetting)
 	{
@@ -419,7 +419,7 @@ void FMTowns::OnCDDAStart(void)
 	}
 }
 
-const char *FMTowns::TBIOSIDENTtoString(unsigned int tbios) const
+const char *FMTownsCommon::TBIOSIDENTtoString(unsigned int tbios) const
 {
 	switch(tbios)
 	{
@@ -494,12 +494,12 @@ static inline int ScaleStep(int d,int scale256)
 	} */
 }
 
-bool FMTowns::ControlMouse(int hostMouseX,int hostMouseY,unsigned int tbiosid)
+bool FMTownsCommon::ControlMouse(int hostMouseX,int hostMouseY,unsigned int tbiosid)
 {
 	int diffX,diffY;
 	return ControlMouse(diffX,diffY,hostMouseX,hostMouseY,tbiosid);
 }
-bool FMTowns::ControlMouse(int &diffX,int &diffY,int hostMouseX,int hostMouseY,unsigned int tbiosid)
+bool FMTownsCommon::ControlMouse(int &diffX,int &diffY,int hostMouseX,int hostMouseY,unsigned int tbiosid)
 {
 	// Wing Commander 2 requires mouse deltas to be zero until the mouse-presence check is done.
 	if(true!=state.mouseBIOSActive &&
@@ -641,14 +641,14 @@ bool FMTowns::ControlMouse(int &diffX,int &diffY,int hostMouseX,int hostMouseY,u
 	return false;
 }
 
-bool FMTowns::ControlMouseInVMCoord(int goalMouseX,int goalMouseY,unsigned int tbiosid)
+bool FMTownsCommon::ControlMouseInVMCoord(int goalMouseX,int goalMouseY,unsigned int tbiosid)
 {
 	int mx,my;
 	GetMouseCoordinate(mx,my,tbiosid);
 	return ControlMouseByDiff(goalMouseX-mx,goalMouseY-my,tbiosid);
 }
 
-bool FMTowns::ControlMouseByDiff(int diffX,int diffY,unsigned int tbiosid,int slowDownRange)
+bool FMTownsCommon::ControlMouseByDiff(int diffX,int diffY,unsigned int tbiosid,int slowDownRange)
 {
 	if(state.MOS_pulsePerPixelH<8)
 	{
@@ -701,7 +701,7 @@ bool FMTowns::ControlMouseByDiff(int diffX,int diffY,unsigned int tbiosid,int sl
 	return true;
 }
 
-void FMTowns::DontControlMouse(void)
+void FMTownsCommon::DontControlMouse(void)
 {
 	for(auto &p : gameport.state.ports)
 	{
@@ -712,7 +712,7 @@ void FMTowns::DontControlMouse(void)
 	}
 }
 
-void FMTowns::SetMouseButtonState(bool lButton,bool rButton)
+void FMTownsCommon::SetMouseButtonState(bool lButton,bool rButton)
 {
 	if(TOWNS_APPSPECIFIC_SUPERDAISEN==state.appSpecificSetting ||
 	   TOWNS_APPSPECIFIC_DAIKOUKAIJIDAI==state.appSpecificSetting)
@@ -793,31 +793,31 @@ void FMTowns::SetMouseButtonState(bool lButton,bool rButton)
 	}
 }
 
-void FMTowns::SetGamePadState(int port,bool Abutton,bool Bbutton,bool left,bool right,bool up,bool down,bool run,bool pause)
+void FMTownsCommon::SetGamePadState(int port,bool Abutton,bool Bbutton,bool left,bool right,bool up,bool down,bool run,bool pause)
 {
 	auto &p=gameport.state.ports[port&1];
 	p.SetGamePadState(Abutton,Bbutton,left,right,up,down,run,pause,state.townsTime);
 }
 
-void FMTowns::SetMouseMotion(int port,int dx,int dy)
+void FMTownsCommon::SetMouseMotion(int port,int dx,int dy)
 {
 	auto &p=gameport.state.ports[port&1];
 	p.mouseMotion.Set(dx,dy);
 }
 
-void FMTowns::SetCyberStickState(int port,int x,int y,int z,int w,unsigned int trig)
+void FMTownsCommon::SetCyberStickState(int port,int x,int y,int z,int w,unsigned int trig)
 {
 	auto &p=gameport.state.ports[port&1];
 	p.SetCyberStickState(x,y,z,w,trig,state.townsTime);
 }
 
-void FMTowns::SetCAPCOMCPSFState(int port,bool left,bool right,bool up,bool down,bool A,bool B,bool X,bool Y,bool L,bool R, bool start,bool select)
+void FMTownsCommon::SetCAPCOMCPSFState(int port,bool left,bool right,bool up,bool down,bool A,bool B,bool X,bool Y,bool L,bool R, bool start,bool select)
 {
 	auto &p=gameport.state.ports[port&1];
 	p.SetCAPCOMCPSFState(left,right,up,down,A,B,X,Y,L,R,start,select,state.townsTime);
 }
 
-bool FMTowns::GetMouseCoordinate(int &mx,int &my,unsigned int tbiosid) const
+bool FMTownsCommon::GetMouseCoordinate(int &mx,int &my,unsigned int tbiosid) const
 {
 	// Windows 3.1 >>
 	if(true==crtc.state.highResCRTCEnabled && true==crtc.state.highResCrtcMouse.defined)
@@ -1045,7 +1045,7 @@ bool FMTowns::GetMouseCoordinate(int &mx,int &my,unsigned int tbiosid) const
 	return false;
 }
 
-void FMTowns::GetWingCommanderSetSpeedMaxSpeed(unsigned int &setSpeed,unsigned int &maxSpeed)
+void FMTownsCommon::GetWingCommanderSetSpeedMaxSpeed(unsigned int &setSpeed,unsigned int &maxSpeed)
 {
 	setSpeed=mem.FetchByte(state.appSpecific_WC_setSpeedPtr);
 	maxSpeed=mem.FetchByte(state.appSpecific_WC_maxSpeedPtr);

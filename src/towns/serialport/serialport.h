@@ -11,7 +11,7 @@
 class TownsSerialPort : public Device
 {
 private:
-	class FMTowns *townsPtr;
+	class FMTownsCommon *townsPtr;
 public:
 	virtual const char *DeviceName(void) const{return "RS232C";} // You must implement it.
 
@@ -91,7 +91,7 @@ public:
 	State state;
 	DefaultClient defaultClient;
 
-	TownsSerialPort(class FMTowns *townsPtr);
+	TownsSerialPort(class FMTownsCommon *townsPtr);
 
 	void UpdatePIC(void);
 

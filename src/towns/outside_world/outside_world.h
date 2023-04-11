@@ -148,9 +148,9 @@ public:
 
 	virtual void Start(void)=0;
 	virtual void Stop(void)=0;
-	virtual void DevicePolling(class FMTowns &towns)=0;
-	virtual void UpdateStatusBitmap(class FMTowns &towns)=0;
-	virtual void Render(const TownsRender::Image &img,const class FMTowns &towns)=0;
+	virtual void DevicePolling(class FMTownsCommon &towns)=0;
+	virtual void UpdateStatusBitmap(class FMTownsCommon &towns)=0;
+	virtual void Render(const TownsRender::Image &img,const class FMTownsCommon &towns)=0;
 
 	/*! Implementation should return true if the image needs to be flipped before drawn on the window.
 	    The flag is transferred to rendering thread class at the beginning of the TownsThread::Start.
@@ -174,15 +174,15 @@ public:
 
 	/*! Implementation should call this function for each inkey for application-specific augmentation to work correctly.
 	*/
-	void ProcessInkey(class FMTowns &towns,int townsKey);
+	void ProcessInkey(class FMTownsCommon &towns,int townsKey);
 
 	/*! Implementation should call this function for each mouse reading for application-specific augmentation to work correctly.
 	*/
-	void ProcessMouse(class FMTowns &towns,int lb,int mb,int rb,int mx,int my);
+	void ProcessMouse(class FMTownsCommon &towns,int lb,int mb,int rb,int mx,int my);
 
 	/*! Right now it updates mouse neutral position for Wing Commander 1 if app-specific augumentation is enabled.
 	*/
-	void ProcessAppSpecific(class FMTowns &towns);
+	void ProcessAppSpecific(class FMTownsCommon &towns);
 
 	virtual std::vector <std::string> MakeDefaultKeyMappingText(void) const;
 	virtual std::vector <std::string> MakeKeyMappingText(void) const;

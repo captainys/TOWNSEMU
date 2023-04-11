@@ -66,10 +66,10 @@ bool Outside_World::PauseKeyPressed(void)
 	pauseKey=false;
 	return flag;
 }
-void Outside_World::ProcessInkey(class FMTowns &towns,int townsKey)
+void Outside_World::ProcessInkey(class FMTownsCommon &towns,int townsKey)
 {
 }
-void Outside_World::ProcessMouse(class FMTowns &towns,int lb,int mb,int rb,int mx,int my)
+void Outside_World::ProcessMouse(class FMTownsCommon &towns,int lb,int mb,int rb,int mx,int my)
 {
 	towns.SetMouseButtonState((0!=lb),(0!=rb));
 	if(true==mouseIntegrationActive)
@@ -105,7 +105,7 @@ void Outside_World::ProcessMouse(class FMTowns &towns,int lb,int mb,int rb,int m
 	lastMx=mx;
 	lastMy=my;
 }
-void Outside_World::ProcessAppSpecific(class FMTowns &towns)
+void Outside_World::ProcessAppSpecific(class FMTownsCommon &towns)
 {
 	if(TOWNS_APPSPECIFIC_WINGCOMMANDER1==towns.state.appSpecificSetting)
 	{

@@ -25,7 +25,7 @@ void TownsKeyboard::State::Reset(void)
 	KBINT=false;
 	bootKeyCombSequenceCounter=0;
 }
-TownsKeyboard::TownsKeyboard(FMTowns *townsPtr,TownsPIC *picPtr) : Device(townsPtr)
+TownsKeyboard::TownsKeyboard(FMTownsCommon *townsPtr,TownsPIC *picPtr) : Device(townsPtr)
 {
 	this->townsPtr=townsPtr;
 	this->picPtr=picPtr;

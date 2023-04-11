@@ -351,102 +351,102 @@ public:
 	/*! Executes a command.
 	    VM must be locked before calling.
 	*/
-	void Execute(TownsThread &thr,FMTowns &towns,class Outside_World *outside_world,Command &cmd);
+	void Execute(TownsThread &thr,FMTownsCommon &towns,class Outside_World *outside_world,Command &cmd);
 
-	void Execute_Enable(FMTowns &towns,Command &cmd);
-	void Execute_Disable(FMTowns &towns,Command &cmd);
+	void Execute_Enable(FMTownsCommon &towns,Command &cmd);
+	void Execute_Disable(FMTownsCommon &towns,Command &cmd);
 
-	void Execute_AddBreakPoint(FMTowns &towns,Command &cmd);
-	void Execute_AddBreakPointWithPassCount(FMTowns &towns,Command &cmd);
-	void Execute_AddSavePoint(FMTowns &towns,Command &cmd);
-	void Execute_AddMonitorPoint(FMTowns &towns,Command &cmd);
-	void Execute_DeleteBreakPoint(FMTowns &towns,Command &cmd);
-	void Execute_ListBreakPoints(FMTowns &towns,Command &cmd);
+	void Execute_AddBreakPoint(FMTownsCommon &towns,Command &cmd);
+	void Execute_AddBreakPointWithPassCount(FMTownsCommon &towns,Command &cmd);
+	void Execute_AddSavePoint(FMTownsCommon &towns,Command &cmd);
+	void Execute_AddMonitorPoint(FMTownsCommon &towns,Command &cmd);
+	void Execute_DeleteBreakPoint(FMTownsCommon &towns,Command &cmd);
+	void Execute_ListBreakPoints(FMTownsCommon &towns,Command &cmd);
 
-	void Execute_Dump(FMTowns &towns,Command &cmd);
-	void Execute_Dump_DOSInfo(FMTowns &towns,Command &cmd);
+	void Execute_Dump(FMTownsCommon &towns,Command &cmd);
+	void Execute_Dump_DOSInfo(FMTownsCommon &towns,Command &cmd);
 
-	void Execute_MemoryDump(FMTowns &towns,Command &cmd);
+	void Execute_MemoryDump(FMTownsCommon &towns,Command &cmd);
 
-	void Execute_Calculate(FMTowns &towns,Command &cmd);
+	void Execute_Calculate(FMTownsCommon &towns,Command &cmd);
 
-	void Execute_BreakOn(FMTowns &towns,Command &cmd);
-	void Execute_ClearBreakOn(FMTowns &towns,Command &cmd);
+	void Execute_BreakOn(FMTownsCommon &towns,Command &cmd);
+	void Execute_ClearBreakOn(FMTownsCommon &towns,Command &cmd);
 
-	void Execute_AddressTranslation(FMTowns &towns,Command &cmd);
-	void Execute_Disassemble(FMTowns &towns,Command &cmd);
-	void Execute_Disassemble16(FMTowns &towns,Command &cmd);
-	void Execute_Disassemble32(FMTowns &towns,Command &cmd);
+	void Execute_AddressTranslation(FMTownsCommon &towns,Command &cmd);
+	void Execute_Disassemble(FMTownsCommon &towns,Command &cmd);
+	void Execute_Disassemble16(FMTownsCommon &towns,Command &cmd);
+	void Execute_Disassemble32(FMTownsCommon &towns,Command &cmd);
 
-	void Execute_PrintHistory(FMTowns &towns,unsigned int n);
-	void Execute_SaveHistory(FMTowns &towns,const std::string &fName);
+	void Execute_PrintHistory(FMTownsCommon &towns,unsigned int n);
+	void Execute_SaveHistory(FMTownsCommon &towns,const std::string &fName);
 
-	void Execute_SaveEventLog(FMTowns &towns,const std::string &fName);
+	void Execute_SaveEventLog(FMTownsCommon &towns,const std::string &fName);
 
-	void Execute_AddSymbol(FMTowns &towns,Command &cmd);
-	void Execute_DelSymbol(FMTowns &towns,Command &cmd);
-	void Execute_ImportEXPSymbolTable(FMTowns &towns,Command &cmd);
-	void Execute_LoadSymbolTable(FMTowns &towns,Command &cmd);
+	void Execute_AddSymbol(FMTownsCommon &towns,Command &cmd);
+	void Execute_DelSymbol(FMTownsCommon &towns,Command &cmd);
+	void Execute_ImportEXPSymbolTable(FMTownsCommon &towns,Command &cmd);
+	void Execute_LoadSymbolTable(FMTownsCommon &towns,Command &cmd);
 
-	void Execute_SymbolInquiry(FMTowns &towns,Command &cmd);
+	void Execute_SymbolInquiry(FMTownsCommon &towns,Command &cmd);
 
-	void Execute_TypeKeyboard(FMTowns &towns,Command &cmd);
+	void Execute_TypeKeyboard(FMTownsCommon &towns,Command &cmd);
 
-	void Execute_Let(FMTowns &towns,Command &cmd);
-	void Execute_EditMemory(FMTowns &towns,Command &cmd,unsigned int numBytes);
-	void Execute_Replace(FMTowns &towns,Command &cmd);
+	void Execute_Let(FMTownsCommon &towns,Command &cmd);
+	void Execute_EditMemory(FMTownsCommon &towns,Command &cmd,unsigned int numBytes);
+	void Execute_Replace(FMTownsCommon &towns,Command &cmd);
 
-	void Execute_CRTCPage(FMTowns &towns,Command &cmd);
+	void Execute_CRTCPage(FMTownsCommon &towns,Command &cmd);
 
-	void Execute_CMOSLoad(FMTowns &towns,Command &cmd);
-	void Execute_CMOSSave(FMTowns &towns,Command &cmd);
-	void Execute_CDLoad(FMTowns &towns,Command &cmd);
-	void Execute_SCSICDLoad(unsigned int SCSIID,FMTowns &towns,const Command &cmd);
-	void Execute_FDLoad(int drv,FMTowns &towns,Command &cmd);
-	void Execute_FDEject(int drv,FMTowns &towns,Command &cmd);
+	void Execute_CMOSLoad(FMTownsCommon &towns,Command &cmd);
+	void Execute_CMOSSave(FMTownsCommon &towns,Command &cmd);
+	void Execute_CDLoad(FMTownsCommon &towns,Command &cmd);
+	void Execute_SCSICDLoad(unsigned int SCSIID,FMTownsCommon &towns,const Command &cmd);
+	void Execute_FDLoad(int drv,FMTownsCommon &towns,Command &cmd);
+	void Execute_FDEject(int drv,FMTownsCommon &towns,Command &cmd);
 
-	void Execute_MakeMemoryFilter(FMTowns &towns,Command &cmd);
-	void Execute_UpdateMemoryFilter(FMTowns &towns,Command &cmd);
+	void Execute_MakeMemoryFilter(FMTownsCommon &towns,Command &cmd);
+	void Execute_UpdateMemoryFilter(FMTownsCommon &towns,Command &cmd);
 
-	void Execute_Exception(FMTowns &towns,Command &cmd);
+	void Execute_Exception(FMTownsCommon &towns,Command &cmd);
 
-	void Execute_SaveYM2612Log(FMTowns &towns,std::string fName);
+	void Execute_SaveYM2612Log(FMTownsCommon &towns,std::string fName);
 
 	void Execute_SaveKeyMap(const Outside_World &outside_world,const Command &cmd);
 	void Execute_LoadKeyMap(Outside_World &outside_world,const Command &cmd);
 
-	void Execute_Search_Bytes(FMTowns &towns,Command &cmd);
-	void Execute_Search_String(FMTowns &towns,Command &cmd);
-	void Execute_Search_ByteSequence(FMTowns &towns,const std::vector <unsigned char> &bytes);
-	void FoundAt(FMTowns &towns,unsigned int physAddr);
+	void Execute_Search_Bytes(FMTownsCommon &towns,Command &cmd);
+	void Execute_Search_String(FMTownsCommon &towns,Command &cmd);
+	void Execute_Search_ByteSequence(FMTownsCommon &towns,const std::vector <unsigned char> &bytes);
+	void FoundAt(FMTownsCommon &towns,unsigned int physAddr);
 	void FoundAt(std::string segLabel,unsigned int linearBase,unsigned int linearAddr);
 
-	void Execute_Find_Caller(FMTowns &towns,Command &cmd);
+	void Execute_Find_Caller(FMTownsCommon &towns,Command &cmd);
 
-	void Execute_XMODEMtoVM(FMTowns &towns,Command &cmd,uint32_t packetLength);
-	void Execute_XMODEMfromVM(FMTowns &towns,Command &cmd);
-	void Execute_XMODEMCRCfromVM(FMTowns &towns,Command &cmd);
+	void Execute_XMODEMtoVM(FMTownsCommon &towns,Command &cmd,uint32_t packetLength);
+	void Execute_XMODEMfromVM(FMTownsCommon &towns,Command &cmd);
+	void Execute_XMODEMCRCfromVM(FMTownsCommon &towns,Command &cmd);
 
-	void Execute_SaveScreenShot(FMTowns &towns,Command &cmd);
-	void Execute_SaveVRAMLayer(FMTowns &towns,Command &cmd);
+	void Execute_SaveScreenShot(FMTownsCommon &towns,Command &cmd);
+	void Execute_SaveVRAMLayer(FMTownsCommon &towns,Command &cmd);
 
-	void SaveScreenShot(FMTowns &towns,TownsRender &render,std::string &fName);
+	void SaveScreenShot(FMTownsCommon &towns,TownsRender &render,std::string &fName);
 
-	void Execute_SpecialDebug(FMTowns &towns,Command &cmd);
+	void Execute_SpecialDebug(FMTownsCommon &towns,Command &cmd);
 
-	void Execute_SaveMemDump(FMTowns &towns,Command &cmd);
+	void Execute_SaveMemDump(FMTownsCommon &towns,Command &cmd);
 
-	void Execute_Gameport(FMTowns &towns,Outside_World *outside_world,Command &cmd);
+	void Execute_Gameport(FMTownsCommon &towns,Outside_World *outside_world,Command &cmd);
 
-	void Execute_QuickScreenShot(FMTowns &towns,Command &cmd);
-	void Execute_QuickScreenShotPages(FMTowns &towns,Command &cmd);
-	void Execute_QuickScreenShotDirectory(FMTowns &towns,Command &cmd);
+	void Execute_QuickScreenShot(FMTownsCommon &towns,Command &cmd);
+	void Execute_QuickScreenShotPages(FMTownsCommon &towns,Command &cmd);
+	void Execute_QuickScreenShotDirectory(FMTownsCommon &towns,Command &cmd);
 
-	void Execute_AutoShot(FMTowns &towns,Command &cmd);
+	void Execute_AutoShot(FMTownsCommon &towns,Command &cmd);
 
-	void Execute_BreakOnMemoryWrite(FMTowns &towns,Command &cmd);
+	void Execute_BreakOnMemoryWrite(FMTownsCommon &towns,Command &cmd);
 
-	void Execute_LS(FMTowns &towns,Command &cmd);
+	void Execute_LS(FMTownsCommon &towns,Command &cmd);
 };
 
 

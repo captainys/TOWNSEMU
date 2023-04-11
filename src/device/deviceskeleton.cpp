@@ -31,7 +31,7 @@ target_include_directories(townsnewdevice PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 class DeviceSkeleton : public Device
 {
 private:
-	class FMTowns *townsPtr;
+	class FMTownsCommon *townsPtr;
 public:
 	virtual const char *DeviceName(void) const=0; // You must implement it.
 
@@ -44,7 +44,7 @@ public:
 
 	State state;
 
-	DeviceSkeleton(class FMTowns *townsPtr);
+	DeviceSkeleton(class FMTownsCommon *townsPtr);
 
 	virtual void PowerOn(void);
 	virtual void Reset(void);
@@ -56,7 +56,7 @@ public:
 
 #include "towns.h"
 
-DeviceSkeleton::DeviceSkeleton(class FMTowns *townsPtr) : Device(townsPtr)
+DeviceSkeleton::DeviceSkeleton(class FMTownsCommon *townsPtr) : Device(townsPtr)
 {
 	this->townsPtr=townsPtr;
 }

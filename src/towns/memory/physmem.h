@@ -77,7 +77,7 @@ class TownsFMRVRAMAccess : public TownsMemAccess
 {
 public:
 	class TownsCRTC *crtcPtr;
-	class FMTowns *townsPtr; // Need townsTime for getting HSYNC.
+	class FMTownsCommon *townsPtr; // Need townsTime for getting HSYNC.
 
 	bool breakOnFMRVRAMWrite,breakOnFMRVRAMRead;
 	bool breakOnCVRAMWrite,breakOnCVRAMRead;
@@ -172,8 +172,8 @@ public:
 class TownsOldMemCardAccess : public TownsMemAccess
 {
 public:
-	class FMTowns *townsPtr; // Need to notify disk read upon BOOTKEY ICM
-	TownsOldMemCardAccess(class FMTowns *townsPtr)
+	class FMTownsCommon *townsPtr; // Need to notify disk read upon BOOTKEY ICM
+	TownsOldMemCardAccess(class FMTownsCommon *townsPtr)
 	{
 		this->townsPtr=townsPtr;
 	}
@@ -185,8 +185,8 @@ public:
 class TownsJEIDA4MemCardAccess : public TownsMemAccess
 {
 public:
-	class FMTowns *townsPtr; // Need to notify disk read upon BOOTKEY ICM
-	TownsJEIDA4MemCardAccess(class FMTowns *townsPtr)
+	class FMTownsCommon *townsPtr; // Need to notify disk read upon BOOTKEY ICM
+	TownsJEIDA4MemCardAccess(class FMTownsCommon *townsPtr)
 	{
 		this->townsPtr=townsPtr;
 	}
@@ -382,7 +382,7 @@ public:
 		void Reset(void);
 	};
 
-	class FMTowns *townsPtr;
+	class FMTownsCommon *townsPtr;
 	State state;
 	std::vector <unsigned char> sysRom,dosRom,fontRom,font20Rom,dicRom;
 	std::vector <unsigned char> martyRom;
@@ -442,7 +442,7 @@ public:
 
 
 
-	TownsPhysicalMemory(class FMTowns *townsPtr,class i486DXCommon *cpuPtr,class Memory *memPtr,class RF5C68 *pcmPtr);
+	TownsPhysicalMemory(class FMTownsCommon *townsPtr,class i486DXCommon *cpuPtr,class Memory *memPtr,class RF5C68 *pcmPtr);
 
 	bool LoadROMImages(const char dirName[]);
 
@@ -451,7 +451,7 @@ public:
 	void SetCMOS(const std::vector <unsigned char> &cmos);
 
 	/*! Sets the main RAM size.
-	    Don't call this function directly.  Call FMTowns::SetMainRAMSize, which will call this function from inside.
+	    Don't call this function directly.  Call FMTownsCommon::SetMainRAMSize, which will call this function from inside.
 	*/
 	void SetMainRAMSize(long long int size);
 

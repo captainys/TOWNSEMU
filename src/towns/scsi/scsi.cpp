@@ -174,7 +174,7 @@ void TownsSCSI::State::Reset(void)
 
 
 
-TownsSCSI::TownsSCSI(class FMTowns *townsPtr) : Device(townsPtr)
+TownsSCSI::TownsSCSI(class FMTownsCommon *townsPtr) : Device(townsPtr)
 {
 	this->townsPtr=townsPtr;
 

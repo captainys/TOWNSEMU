@@ -23,7 +23,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 
 
-void FMTowns::ProcessVMToHostCommand(unsigned int vmCmd,unsigned int paramLen,const unsigned char param[])
+void FMTownsCommon::ProcessVMToHostCommand(unsigned int vmCmd,unsigned int paramLen,const unsigned char param[])
 {
 	auto &cpu=CPU();
 	switch(vmCmd)
@@ -69,7 +69,7 @@ void FMTowns::ProcessVMToHostCommand(unsigned int vmCmd,unsigned int paramLen,co
 		break;
 	}
 }
-void FMTowns::VMHostFileTransfer(void)
+void FMTownsCommon::VMHostFileTransfer(void)
 {
 	if(0<var.ftfr.toSend.size())
 	{
@@ -182,14 +182,14 @@ void FMTowns::VMHostFileTransfer(void)
 		physMem.state.spriteRAM[0]=TOWNS_VMIF_TFR_END;
 	}
 }
-void FMTowns::VMHostFileTransfer::AddHostToVM(std::string hostFName,std::string vmFName)
+void FMTownsCommon::VMHostFileTransfer::AddHostToVM(std::string hostFName,std::string vmFName)
 {
 	File f;
 	toSend.push_back(f);
 	toSend.back().hostFName=hostFName;
 	toSend.back().vmFName=vmFName;
 }
-void FMTowns::VMHostFileTransfer::AddVMToHost(std::string vmFName,std::string hostFName)
+void FMTownsCommon::VMHostFileTransfer::AddVMToHost(std::string vmFName,std::string hostFName)
 {
 	File f;
 	toRecv.push_back(f);

@@ -321,7 +321,7 @@ public:
 	};
 	ChaseHQPalette chaseHQPalette;
 
-	class FMTowns *townsPtr;
+	class FMTownsCommon *townsPtr;
 	class TownsSprite *spritePtr;
 	State state;
 
@@ -331,7 +331,7 @@ public:
 
 	virtual const char *DeviceName(void) const{return "CRTC";}
 
-	TownsCRTC(class FMTowns *ptr,class TownsSprite *spritePtr);
+	TownsCRTC(class FMTownsCommon *ptr,class TownsSprite *spritePtr);
 
 	void UpdateSpriteHardware(void);
 

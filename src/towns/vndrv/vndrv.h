@@ -7,7 +7,7 @@
 class TownsVnDrv : public Device
 {
 private:
-	class FMTowns *townsPtr;
+	class FMTownsCommon *townsPtr;
 public:
 	virtual const char *DeviceName(void) const{return "VNDRV";}
 
@@ -32,7 +32,7 @@ public:
 
 	State state;
 
-	TownsVnDrv(class FMTowns *townsPtr);
+	TownsVnDrv(class FMTownsCommon *townsPtr);
 
 	FileSys *GetSharedDir(unsigned int drvNum);
 	const FileSys *GetSharedDir(unsigned int drvNum) const;

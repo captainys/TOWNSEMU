@@ -67,7 +67,7 @@ static void Dunmas_Click_Cast_Spell(TownsEventLog &eventLog,int Yoffset)
 	Dunmas_PushBack_MouseClick(eventLog,280,67+Yoffset);
 }
 
-void FMTowns::Dunmas_Spell_Char(int charNum,int Yoffset)
+void FMTownsCommon::Dunmas_Spell_Char(int charNum,int Yoffset)
 {
 	// Spell Char 1
 	// MOS 239 46
@@ -98,7 +98,7 @@ void FMTowns::Dunmas_Spell_Char(int charNum,int Yoffset)
 	}
 }
 
-void FMTowns::Dunmas_Spell_Level(int level)
+void FMTownsCommon::Dunmas_Spell_Level(int level)
 {
 	if(level<0)
 	{
@@ -111,7 +111,7 @@ void FMTowns::Dunmas_Spell_Level(int level)
 	state.appSpecific_Dunmas_SpellPower=level;
 }
 
-void FMTowns::Dunmas_Spell_Light(int Yoffset)
+void FMTownsCommon::Dunmas_Spell_Light(int Yoffset)
 {
 	// POW,2,3,4
 	Dunmas_Click_Spell_Symbol(eventLog,state.appSpecific_Dunmas_SpellPower,Yoffset);
@@ -120,14 +120,14 @@ void FMTowns::Dunmas_Spell_Light(int Yoffset)
 	Dunmas_Click_Spell_Symbol(eventLog,4,Yoffset);
 	Dunmas_Click_Cast_Spell(eventLog,Yoffset);
 }
-void FMTowns::Dunmas_Spell_Torch(int Yoffset)
+void FMTownsCommon::Dunmas_Spell_Torch(int Yoffset)
 {
 	// POW,3
 	Dunmas_Click_Spell_Symbol(eventLog,state.appSpecific_Dunmas_SpellPower,Yoffset);
 	Dunmas_Click_Spell_Symbol(eventLog,3,Yoffset);
 	Dunmas_Click_Cast_Spell(eventLog,Yoffset);
 }
-void FMTowns::Dunmas_Spell_SeeThrough(int Yoffset)
+void FMTownsCommon::Dunmas_Spell_SeeThrough(int Yoffset)
 {
 	// POW,2,1,4
 	Dunmas_Click_Spell_Symbol(eventLog,state.appSpecific_Dunmas_SpellPower,Yoffset);
@@ -136,14 +136,14 @@ void FMTowns::Dunmas_Spell_SeeThrough(int Yoffset)
 	Dunmas_Click_Spell_Symbol(eventLog,4,Yoffset);
 	Dunmas_Click_Cast_Spell(eventLog,Yoffset);
 }
-void FMTowns::Dunmas_Spell_MakeLifePotion(int Yoffset)
+void FMTownsCommon::Dunmas_Spell_MakeLifePotion(int Yoffset)
 {
 	// POW,1
 	Dunmas_Click_Spell_Symbol(eventLog,state.appSpecific_Dunmas_SpellPower,Yoffset);
 	Dunmas_Click_Spell_Symbol(eventLog,1,Yoffset);
 	Dunmas_Click_Cast_Spell(eventLog,Yoffset);
 }
-void FMTowns::Dunmas_Spell_MakeDetoxPotion(int Yoffset)
+void FMTownsCommon::Dunmas_Spell_MakeDetoxPotion(int Yoffset)
 {
 	// 0,1,5
 	Dunmas_Click_Spell_Symbol(eventLog,state.appSpecific_Dunmas_SpellPower,Yoffset);
@@ -151,14 +151,14 @@ void FMTowns::Dunmas_Spell_MakeDetoxPotion(int Yoffset)
 	Dunmas_Click_Spell_Symbol(eventLog,4,Yoffset);
 	Dunmas_Click_Cast_Spell(eventLog,Yoffset);
 }
-void FMTowns::Dunmas_Spell_MakeStaminaPotion(int Yoffset)
+void FMTownsCommon::Dunmas_Spell_MakeStaminaPotion(int Yoffset)
 {
 	// POW,0
 	Dunmas_Click_Spell_Symbol(eventLog,state.appSpecific_Dunmas_SpellPower,Yoffset);
 	Dunmas_Click_Spell_Symbol(eventLog,0,Yoffset);
 	Dunmas_Click_Cast_Spell(eventLog,Yoffset);
 }
-void FMTowns::Dunmas_Spell_Fireball(int Yoffset)
+void FMTownsCommon::Dunmas_Spell_Fireball(int Yoffset)
 {
 	// POW,3,3
 	Dunmas_Click_Spell_Symbol(eventLog,state.appSpecific_Dunmas_SpellPower,Yoffset);
@@ -166,7 +166,7 @@ void FMTowns::Dunmas_Spell_Fireball(int Yoffset)
 	Dunmas_Click_Spell_Symbol(eventLog,3,Yoffset);
 	Dunmas_Click_Cast_Spell(eventLog,Yoffset);
 }
-void FMTowns::Dunmas_Spell_FourFireballs(int Yoffset)
+void FMTownsCommon::Dunmas_Spell_FourFireballs(int Yoffset)
 {
 	Dunmas_PushBack_MouseClick(eventLog,239,46+Yoffset);
 	Dunmas_Spell_Fireball(Yoffset);
@@ -177,7 +177,7 @@ void FMTowns::Dunmas_Spell_FourFireballs(int Yoffset)
 	Dunmas_PushBack_MouseClick(eventLog,266,46+Yoffset);
 	Dunmas_Spell_Fireball(Yoffset);
 }
-void FMTowns::Dunmas_Spell_LightningBolt(int Yoffset)
+void FMTownsCommon::Dunmas_Spell_LightningBolt(int Yoffset)
 {
 	// POW,2,2,5
 	Dunmas_Click_Spell_Symbol(eventLog,state.appSpecific_Dunmas_SpellPower,Yoffset);
@@ -186,7 +186,7 @@ void FMTowns::Dunmas_Spell_LightningBolt(int Yoffset)
 	Dunmas_Click_Spell_Symbol(eventLog,4,Yoffset);
 	Dunmas_Click_Cast_Spell(eventLog,Yoffset);
 }
-void FMTowns::Dunmas_Spell_Defense(int Yoffset)
+void FMTownsCommon::Dunmas_Spell_Defense(int Yoffset)
 {
 	// POW,0,3
 	Dunmas_Click_Spell_Symbol(eventLog,state.appSpecific_Dunmas_SpellPower,Yoffset);
@@ -194,7 +194,7 @@ void FMTowns::Dunmas_Spell_Defense(int Yoffset)
 	Dunmas_Click_Spell_Symbol(eventLog,3,Yoffset);
 	Dunmas_Click_Cast_Spell(eventLog,Yoffset);
 }
-void FMTowns::Dunmas_Spell_FireDefense(int Yoffset)
+void FMTownsCommon::Dunmas_Spell_FireDefense(int Yoffset)
 {
 	// POW,3,4,3
 	Dunmas_Click_Spell_Symbol(eventLog,state.appSpecific_Dunmas_SpellPower,Yoffset);
@@ -203,7 +203,7 @@ void FMTowns::Dunmas_Spell_FireDefense(int Yoffset)
 	Dunmas_Click_Spell_Symbol(eventLog,3,Yoffset);
 	Dunmas_Click_Cast_Spell(eventLog,Yoffset);
 }
-void FMTowns::Dunmas_FrontRow_Attack(int level,bool continuous,int Yoffset)
+void FMTownsCommon::Dunmas_FrontRow_Attack(int level,bool continuous,int Yoffset)
 {
 	Dunmas_PushBack_MouseClick(eventLog,246,89+Yoffset);
 	Dunmas_PushBack_MouseClick(eventLog,246,89+Yoffset);
@@ -216,7 +216,7 @@ void FMTowns::Dunmas_FrontRow_Attack(int level,bool continuous,int Yoffset)
 		eventLog.AddEvent(e);
 	}
 }
-void FMTowns::Dunmas_All_Attack(int level,bool continuous,int Yoffset)
+void FMTownsCommon::Dunmas_All_Attack(int level,bool continuous,int Yoffset)
 {
 	Dunmas_PushBack_MouseClick(eventLog,246,89+Yoffset);
 	Dunmas_PushBack_MouseClick(eventLog,246,89+Yoffset);

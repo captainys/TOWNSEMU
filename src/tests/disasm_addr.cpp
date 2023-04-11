@@ -23,7 +23,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 bool TestAddressingDisassembly(
     unsigned addressSize,
     unsigned dataSize,
-    unsigned oplen,const unsigned char operand[],FMTowns &towns,const std::string &correctDisasm)
+    unsigned oplen,const unsigned char operand[],FMTownsCommon &towns,const std::string &correctDisasm)
 {
 	i486DX::Operand oper;
 	i486SymbolTable symTable;
@@ -60,7 +60,7 @@ ERREND:
 
 int main(int ac,char *av[])
 {
-	static FMTowns towns;
+	static FMTownsCommon towns;
 
 	towns.Reset();
 

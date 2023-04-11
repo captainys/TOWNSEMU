@@ -20,7 +20,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "towns.h"
 
 
-TownsFDC::TownsFDC(class FMTowns *townsPtr,class TownsPIC *PICPtr,class TownsDMAC *DMACPtr) : DiskDrive(townsPtr)
+TownsFDC::TownsFDC(class FMTownsCommon *townsPtr,class TownsPIC *PICPtr,class TownsDMAC *DMACPtr) : DiskDrive(townsPtr)
 {
 	this->townsPtr=townsPtr;
 	this->PICPtr=PICPtr;

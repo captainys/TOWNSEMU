@@ -30,7 +30,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 class TownsTimer : public Device
 {
 private:
-	class FMTowns *townsPtr;
+	class FMTownsCommon *townsPtr;
 	class TownsPIC *picPtr;
 public:
 	virtual const char *DeviceName(void) const{return "INTERVALTIMER";}
@@ -98,7 +98,7 @@ public:
 	State state;
 	bool breakOnBeep=false;
 
-	TownsTimer(class FMTowns *townsPtr,class TownsPIC *picPtr);
+	TownsTimer(class FMTownsCommon *townsPtr,class TownsPIC *picPtr);
 
 	virtual void PowerOn(void);
 	virtual void Reset(void);
@@ -107,7 +107,7 @@ public:
 
 	virtual unsigned int IOReadByte(unsigned int ioport);
 
-	/*! Called from FMTowns::RunFastDevicePolling
+	/*! Called from FMTownsCommon::RunFastDevicePolling
 	*/
 	inline void TimerPolling(unsigned long long int townsTime)
 	{

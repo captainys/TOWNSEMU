@@ -4,7 +4,7 @@
 // Afterburner II Application-Specific Customization
 // Contribution from BCC.
 
-void FMTowns::AB2_Identify(void)
+void FMTownsCommon::AB2_Identify(void)
 {
 	i486DX::SegmentRegister CS,DS;
 	unsigned int exceptionType,exceptionCode;
@@ -43,7 +43,7 @@ void FMTowns::AB2_Identify(void)
 	}
 }
 
-void FMTowns::AB2_Throttle(unsigned int inputThr)
+void FMTownsCommon::AB2_Throttle(unsigned int inputThr)
 {
 	if(0!=state.appSpecific_ThrottlePtr)
 	{

@@ -63,7 +63,7 @@ void TownsRenderingThread::WaitIdle(void)
 	std::unique_lock <std::mutex> mainLock(mainMutex);
 }
 
-void TownsRenderingThread::CheckRenderingTimer(FMTowns &towns,TownsRender &render)
+void TownsRenderingThread::CheckRenderingTimer(FMTownsCommon &towns,TownsRender &render)
 {
 	if(STATE_IDLE==state && 
 	   towns.state.nextRenderingTime<=towns.state.townsTime && 
@@ -91,7 +91,7 @@ void TownsRenderingThread::CheckRenderingTimer(FMTowns &towns,TownsRender &rende
 	}
 }
 
-void TownsRenderingThread::CheckImageReady(FMTowns &towns,Outside_World &world)
+void TownsRenderingThread::CheckImageReady(FMTownsCommon &towns,Outside_World &world)
 {
 	if(STATE_RENDERING==state && checkImageAfterThisTIme<towns.state.townsTime)
 	{

@@ -19,7 +19,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 class TownsRTC : public Device
 {
 private:
-	class FMTowns *townsPtr;
+	class FMTownsCommon *townsPtr;
 public:
 	virtual const char *DeviceName(void) const{return "RTC";}
 
@@ -59,7 +59,7 @@ public:
 
 	State state;
 
-	TownsRTC(class FMTowns *townsPtr);
+	TownsRTC(class FMTownsCommon *townsPtr);
 
 	virtual void PowerOn(void);
 	virtual void Reset(void);

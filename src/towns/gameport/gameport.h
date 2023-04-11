@@ -22,7 +22,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 class TownsGamePort : public Device
 {
 private:
-	class FMTowns *townsPtr;
+	class FMTownsCommon *townsPtr;
 public:
 	virtual const char *DeviceName(void) const{return "GAMEPORT";}
 
@@ -143,7 +143,7 @@ public:
 
 	static unsigned int EmulationTypeToDeviceType(unsigned int emulationType);
 
-	TownsGamePort(class FMTowns *townsPtr);
+	TownsGamePort(class FMTownsCommon *townsPtr);
 
 	void BootSequenceStarted(void);
 	void SetBootKeyCombination(unsigned int keyComb);
