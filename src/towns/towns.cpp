@@ -870,26 +870,6 @@ void FMTownsCommon::NotifyDiskRead(void)
 	state.noWait=var.noWaitStandby;
 }
 
-unsigned int FMTownsCommon::RunOneInstruction(void)
-{
-	auto clocksPassed=_cpu.RunOneInstruction(mem,io);
-	state.clockBalance+=clocksPassed*1000;
-
-	// Since last update, clockBalance*1000/freq nano seconds have passed.
-	// Eg.  66MHz ->  66 clocks passed means 1 micro second.
-	//                clockBalance is 66000.
-	//                clockBalance/freq=1000.  1000 nano seconds.
-	auto FREQ=state.currentFreq;
-	auto passedInNanoSec=(state.clockBalance/FREQ);
-	state.townsTime+=passedInNanoSec;
-	state.clockBalance%=FREQ;
-
-	var.disassemblePointer.SEG=_cpu.state.CS().value;
-	var.disassemblePointer.OFFSET=_cpu.state.EIP;
-
-	return clocksPassed;
-}
-
 void FMTownsCommon::ProcessSound(Outside_World *outside_world)
 {
 	sound.ProcessSound();

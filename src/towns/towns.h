@@ -576,9 +576,6 @@ public:
 	void NotifyDiskRead(void);
 
 
-	/*! Run one instruction and returns the number of clocks passed. */
-	unsigned int RunOneInstruction(void);
-
 	/*! Process sound.
 	*/
 	void ProcessSound(Outside_World *outside_world);
@@ -807,10 +804,13 @@ public:
 	void AB2_Throttle(unsigned int inputThr);
 };
 
-class FMTowns : public FMTownsCommon
+template <class CPUCLASS>
+class FMTownsTemplate : public FMTownsCommon
 {
 private:
 	// Will be removed when the code is stable.
+	// In fact, this function probably would never be called anyway before baseClassReady
+	// since virtual functions are not ready when vtable is not ready.
 	inline void CheckBaseClassReady(void) const
 	{
 		if(true!=baseClassReady)
@@ -832,7 +832,7 @@ public:
 		return _cpu;
 	}
 
-	FMTowns()
+	FMTownsTemplate()
 	{
 		auto &cpu=CPU();
 		cpu.mouseBIOSInterceptorPtr=this;
@@ -844,6 +844,35 @@ public:
 
 		PowerOn();
 	}
+
+	/*! Run one instruction and returns the number of clocks passed. */
+	inline unsigned int RunOneInstruction(void)
+	{
+		auto clocksPassed=_cpu.RunOneInstruction(mem,io);
+		state.clockBalance+=clocksPassed*1000;
+
+		// Since last update, clockBalance*1000/freq nano seconds have passed.
+		// Eg.  66MHz ->  66 clocks passed means 1 micro second.
+		//                clockBalance is 66000.
+		//                clockBalance/freq=1000.  1000 nano seconds.
+		auto FREQ=state.currentFreq;
+		auto passedInNanoSec=(state.clockBalance/FREQ);
+		state.townsTime+=passedInNanoSec;
+		state.clockBalance%=FREQ;
+
+		var.disassemblePointer.SEG=_cpu.state.CS().value;
+		var.disassemblePointer.OFFSET=_cpu.state.EIP;
+
+		return clocksPassed;
+	}
+
+};
+
+class FMTownsWithMediumFidelityCPU : public FMTownsTemplate <i486DXDefaultFidelity>
+{
+};
+class FMTownsWithHighFidelityCPU : public FMTownsTemplate <i486DXHighFidelity>
+{
 };
 
 /* } */

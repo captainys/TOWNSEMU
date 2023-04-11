@@ -57,9 +57,13 @@ public:
 	TownsThread();
 
 	void VMStart(FMTownsCommon *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread);
-	void VMMainLoop(FMTownsCommon *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread);
+	void VMMainLoop(FMTownsTemplate <i486DX> *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread);
+	void VMMainLoop(FMTownsTemplate <i486DXDefaultFidelity> *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread);
+	void VMMainLoop(FMTownsTemplate <i486DXHighFidelity> *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread);
 	void VMEnd(FMTownsCommon *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread);
 private:
+	template <class FMTownsClass>
+	void VMMainLoopTemplate(FMTownsClass *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread);
 	void AdjustRealTime(FMTownsCommon *townsPtr,long long int cpuTimePassed,std::chrono::time_point<std::chrono::high_resolution_clock> time0,Outside_World *outside_world);
 
 public:

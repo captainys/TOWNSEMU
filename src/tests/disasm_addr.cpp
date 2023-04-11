@@ -60,7 +60,7 @@ ERREND:
 
 int main(int ac,char *av[])
 {
-	static FMTowns towns;
+	static FMTownsWithMediumFidelityCPU towns;
 
 	towns.Reset();
 

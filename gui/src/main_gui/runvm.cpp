@@ -2,10 +2,10 @@
 #include "fssimplewindow_connection.h"
 
 
-/* virtual */ void TownsCommandQueue::Main(TownsThread &,FMTowns &,const TownsARGV &,Outside_World &)
+/* virtual */ void TownsCommandQueue::Main(TownsThread &,FMTownsCommon &,const TownsARGV &,Outside_World &)
 {
 }
-/* virtual */ void TownsCommandQueue::ExecCommandQueue(TownsThread &vmThread,FMTowns &towns,Outside_World *outside_world)
+/* virtual */ void TownsCommandQueue::ExecCommandQueue(TownsThread &vmThread,FMTownsCommon &towns,Outside_World *outside_world)
 {
 	for(int i=0; i<2; ++i)
 	{
@@ -43,7 +43,7 @@ TownsVM::~TownsVM()
 
 void TownsVM::Alloc(void)
 {
-	townsPtr=new FMTowns;
+	townsPtr=new FMTownsTemplate <i486DX>;
 	townsThreadPtr=new TownsThread;
 	cmdQueuePtr=new TownsCommandQueue;
 	outsideWorldPtr=new FsSimpleWindowConnection;
@@ -72,7 +72,7 @@ void TownsVM::Run(void)
 		Free();
 		Alloc();
 
-		FMTowns::Setup(*townsPtr,outsideWorldPtr,profile);
+		townsPtr->Setup(*townsPtr,outsideWorldPtr,profile);
 		townsThreadPtr->SetRunMode(TownsThread::RUNMODE_RUN);
 		townsThreadPtr->VMStart(townsPtr,outsideWorldPtr,cmdQueuePtr);
 	}

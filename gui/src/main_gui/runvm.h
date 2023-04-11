@@ -24,8 +24,8 @@ public:
 	std::queue <std::string> cmdqueue;
 	TownsCommandInterpreter cmdInterpreter;
 
-	virtual void Main(TownsThread &vmThread,FMTowns &towns,const TownsARGV &argv,Outside_World &outside_world);
-	virtual void ExecCommandQueue(TownsThread &vmThread,FMTowns &towns,Outside_World *outside_world);
+	virtual void Main(TownsThread &vmThread,FMTownsCommon &towns,const TownsARGV &argv,Outside_World &outside_world);
+	virtual void ExecCommandQueue(TownsThread &vmThread,FMTownsCommon &towns,Outside_World *outside_world);
 
 	void SendCommand(std::string cmd);
 };
@@ -35,7 +35,7 @@ class TownsVM
 public:
 	TownsProfile profile;
 	TownsRender lastImage;
-	FMTowns *townsPtr=nullptr;
+	FMTownsTemplate <i486DX> *townsPtr=nullptr;
 	TownsThread *townsThreadPtr=nullptr;
 	TownsCommandQueue *cmdQueuePtr=nullptr;
 	FsSimpleWindowConnection *outsideWorldPtr=nullptr;

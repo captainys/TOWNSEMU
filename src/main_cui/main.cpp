@@ -127,7 +127,8 @@ public:
 
 
 
-int Run(FMTownsCommon &towns,const TownsARGV &argv,Outside_World &outside_world)
+template <class CPUCLASS>
+int Run(FMTownsTemplate <CPUCLASS> &towns,const TownsARGV &argv,Outside_World &outside_world)
 {
 	TownsThread townsThread;
 
@@ -178,7 +179,7 @@ int main(int ac,char *av[])
 	}
 
 
-	static FMTowns towns;
+	static FMTownsTemplate <i486DX> towns;
 	Outside_World *outside_world=new FsSimpleWindowConnection;
 	if(true!=FMTownsCommon::Setup(towns,outside_world,argv))
 	{
