@@ -31,8 +31,6 @@ add_compile_definitions(YS_TWOS_COMPLEMENT)
 
 enable_testing()
 
-add_subdirectory(test386vm)
-
 add_subdirectory(resources)
 
 add_subdirectory(osdependent)
@@ -71,3 +69,7 @@ add_subdirectory(externals)
 
 #command-line utilities
 add_subdirectory(cmdutil)
+
+
+#test386
+add_subdirectory(test386vm)
