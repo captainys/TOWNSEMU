@@ -6,6 +6,7 @@
 
 void FMTownsCommon::AB2_Identify(void)
 {
+	auto &cpu=CPU();
 	i486DX::SegmentRegister CS,DS;
 	unsigned int exceptionType,exceptionCode;
 	cpu.DebugLoadSegmentRegister(DS,0x0014,mem,false);
