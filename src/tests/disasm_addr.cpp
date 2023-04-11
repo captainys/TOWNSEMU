@@ -25,7 +25,7 @@ bool TestAddressingDisassembly(
     unsigned dataSize,
     unsigned oplen,const unsigned char operand[],FMTownsCommon &towns,const std::string &correctDisasm)
 {
-	i486DX::Operand oper;
+	i486DXCommon::Operand oper;
 	i486SymbolTable symTable;
 	auto numBytes=oper.Decode(addressSize,dataSize,operand);
 	auto disasm=oper.Disassemble(0,0,symTable);

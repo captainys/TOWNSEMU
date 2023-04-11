@@ -888,7 +888,7 @@ void FMTownsCommon::ProcessSound(Outside_World *outside_world)
 		state.MOS_work_linearAddr=cpu.state.GS().baseLinearAddr+cpu.GetEDI();
 		state.MOS_work_physicalAddr=cpu.DebugLinearAddressToPhysicalAddress(excType,excCode,state.MOS_work_linearAddr,mem);
 
-		i486DX::SegmentRegister CS;
+		i486DXCommon::SegmentRegister CS;
 		cpu.DebugLoadSegmentRegister(CS,0x110,mem,false);
 		state.TBIOS_physicalAddr=cpu.DebugLinearAddressToPhysicalAddress(excType,excCode,CS.baseLinearAddr,mem);
 		state.tbiosVersion=IdentifyTBIOS(state.TBIOS_physicalAddr);
@@ -925,7 +925,7 @@ void FMTownsCommon::ProcessSound(Outside_World *outside_world)
 		// Looks like it is one of the good times of capturing joystick pointer in Air Warrior V2.
 		if(TOWNS_APPSPECIFIC_AIRWARRIOR_V2==state.appSpecificSetting)
 		{
-			i486DX::SegmentRegister DS;
+			i486DXCommon::SegmentRegister DS;
 			unsigned int exceptionType,exceptionCode;
 			cpu.DebugLoadSegmentRegister(DS,0x0014,mem,false);
 
@@ -1111,7 +1111,7 @@ void FMTownsCommon::PrintStack(unsigned int numBytes) const
 void FMTownsCommon::PrintDisassembly(void) const
 {
 	auto &cpu=CPU();
-	i486DX::InstructionAndOperand instOp;
+	i486DXCommon::InstructionAndOperand instOp;
 	MemoryAccess::ConstMemoryWindow emptyMemWin;
 	cpu.DebugFetchInstruction(emptyMemWin,instOp,mem);
 	auto disasm=cpu.Disassemble(instOp.inst,instOp.op1,instOp.op2,cpu.state.CS(),cpu.state.EIP,mem,debugger.GetSymTable(),debugger.GetIOTable());

@@ -35,7 +35,7 @@ class TownsVM
 public:
 	TownsProfile profile;
 	TownsRender lastImage;
-	FMTownsTemplate <i486DX> *townsPtr=nullptr;
+	FMTownsTemplate <i486DXDefaultFidelity> *townsPtr=nullptr;
 	TownsThread *townsThreadPtr=nullptr;
 	TownsCommandQueue *cmdQueuePtr=nullptr;
 	FsSimpleWindowConnection *outsideWorldPtr=nullptr;

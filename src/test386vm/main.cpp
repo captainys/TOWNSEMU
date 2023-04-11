@@ -157,7 +157,7 @@ int main(int ac,char *av[])
 			}
 			std::cout << std::endl;
 
-			i486DX::InstructionAndOperand instOp;
+			i486DXCommon::InstructionAndOperand instOp;
 			MemoryAccess::ConstMemoryWindow emptyMemWin;
 
 			cpu.DebugFetchInstruction(emptyMemWin,instOp,cpu.state.CS(),cpu.GetEIP(),*memPtr);

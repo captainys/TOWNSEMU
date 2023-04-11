@@ -241,13 +241,13 @@ void FMTownsCommon::OnCRTC_HST_Write(void)
 {
 	auto &cpu=CPU();
 	std::cout << "Write to CRTC-HST register." << std::endl;
-	if(0!=(cpu.state.GetCR(0)&i486DX::CR0_PROTECTION_ENABLE))
+	if(0!=(cpu.state.GetCR(0)&i486DXCommon::CR0_PROTECTION_ENABLE))
 	{
 		switch(state.appSpecificSetting)
 		{
 		case TOWNS_APPSPECIFIC_WINGCOMMANDER1:
 			{
-				i486DX::SegmentRegister DS;
+				i486DXCommon::SegmentRegister DS;
 				unsigned int exceptionType,exceptionCode;
 				cpu.DebugLoadSegmentRegister(DS,0x0014,mem,false);
 
@@ -270,7 +270,7 @@ void FMTownsCommon::OnCRTC_HST_Write(void)
 			break;
 		case TOWNS_APPSPECIFIC_WINGCOMMANDER2:
 			{
-				i486DX::SegmentRegister DS;
+				i486DXCommon::SegmentRegister DS;
 				unsigned int exceptionType,exceptionCode;
 				cpu.DebugLoadSegmentRegister(DS,0x0014,mem,false);
 
@@ -288,7 +288,7 @@ void FMTownsCommon::OnCRTC_HST_Write(void)
 				std::cout << "  Max-Speed Physical Addr    =" << cpputil::Uitox(state.appSpecific_WC_maxSpeedPtr) << std::endl;
 				std::cout << "  Event Queue Base Physical Base=" << cpputil::Uitox(state.appSpecific_WC2_EventQueueBaseAddr) << std::endl;
 
-				i486DX::SegmentRegister CS;
+				i486DXCommon::SegmentRegister CS;
 				cpu.DebugLoadSegmentRegister(CS,0x0014,mem,false);
 				if(0x74==cpu.DebugFetchByte(32,CS,0x8F634,mem) &&
 				   0x72==cpu.DebugFetchByte(32,CS,0x8F635,mem) &&
@@ -319,7 +319,7 @@ void FMTownsCommon::OnCRTC_HST_Write(void)
 			break;
 		case TOWNS_APPSPECIFIC_LEMMINGS:
 			{
-				i486DX::SegmentRegister DS;
+				i486DXCommon::SegmentRegister DS;
 				unsigned int exceptionType,exceptionCode;
 				cpu.DebugLoadSegmentRegister(DS,0x0014,mem,false);
 
@@ -336,7 +336,7 @@ void FMTownsCommon::OnCRTC_HST_Write(void)
 			// 009C:00003C41 660305002E0000            ADD     AX,[00002E00H] ; (Prob)DS:[2E00H]=X
 			// 009C:00003C98 66A3FE2D0000              MOV     [00002DFEH],AX ; (Prob)DS:[2DFEH]=Y
 			{
-				i486DX::SegmentRegister DS;
+				i486DXCommon::SegmentRegister DS;
 				unsigned int exceptionType,exceptionCode;
 				cpu.DebugLoadSegmentRegister(DS,0x005C,mem,false);
 
@@ -349,7 +349,7 @@ void FMTownsCommon::OnCRTC_HST_Write(void)
 			break;
 		case TOWNS_APPSPECIFIC_OPERATIONWOLF:
 			{
-				i486DX::SegmentRegister DS;
+				i486DXCommon::SegmentRegister DS;
 				unsigned int exceptionType,exceptionCode;
 				cpu.DebugLoadSegmentRegister(DS,0x0014,mem,false);
 
@@ -362,7 +362,7 @@ void FMTownsCommon::OnCRTC_HST_Write(void)
 			break;
 		case TOWNS_APPSPECIFIC_STRIKECOMMANDER:
 			{
-				i486DX::SegmentRegister DS;
+				i486DXCommon::SegmentRegister DS;
 				unsigned int exceptionType,exceptionCode;
 				cpu.DebugLoadSegmentRegister(DS,0x0118,mem,false);
 
@@ -375,7 +375,7 @@ void FMTownsCommon::OnCRTC_HST_Write(void)
 			break;
 		case TOWNS_APPSPECIFIC_ULTIMAUNDERWORLD:
 			{
-				i486DX::SegmentRegister DS;
+				i486DXCommon::SegmentRegister DS;
 				unsigned int exceptionType,exceptionCode;
 				cpu.DebugLoadSegmentRegister(DS,0x014,mem,false);
 
@@ -388,7 +388,7 @@ void FMTownsCommon::OnCRTC_HST_Write(void)
 			break;
 		case TOWNS_APPSPECIFIC_RASHINBAN:
 			{
-				i486DX::SegmentRegister DS;
+				i486DXCommon::SegmentRegister DS;
 				unsigned int exceptionType,exceptionCode;
 				cpu.DebugLoadSegmentRegister(DS,0x014,mem,false);
 

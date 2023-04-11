@@ -31,6 +31,12 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 
 
+#ifdef TSUGARU_I486_HIGH_FIDELITY
+	#error High-Fidelity Mode is now integrated.  Compile without this macro and use -HIGHFIDELITY option.
+#endif
+
+
+
 // References
 // [1]  i486 Processor Programmers Reference Manual
 
@@ -4027,21 +4033,6 @@ class i486DXHighFidelity : public i486DXFidelityLayer <i486DXHighFidelityOperati
 public:
 	i486DXHighFidelity(VMBase *vmPtr) : i486DXFidelityLayer<i486DXHighFidelityOperation>(vmPtr){}
 };
-
-#ifdef TSUGARU_I486_HIGH_FIDELITY
-	class i486DX : public i486DXHighFidelity
-	{
-	public:
-		i486DX(VMBase *vmPtr) : i486DXHighFidelity(vmPtr){}
-	};
-#else
-	class i486DX : public i486DXDefaultFidelity
-	{
-	public:
-		i486DX(VMBase *vmPtr) : i486DXDefaultFidelity(vmPtr){}
-	};
-#endif
-
 
 /* } */
 #endif

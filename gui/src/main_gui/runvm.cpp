@@ -43,7 +43,7 @@ TownsVM::~TownsVM()
 
 void TownsVM::Alloc(void)
 {
-	townsPtr=new FMTownsTemplate <i486DX>;
+	townsPtr=new FMTownsTemplate <i486DXDefaultFidelity>;
 	townsThreadPtr=new TownsThread;
 	cmdQueuePtr=new TownsCommandQueue;
 	outsideWorldPtr=new FsSimpleWindowConnection;

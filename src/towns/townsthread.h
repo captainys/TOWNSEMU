@@ -57,7 +57,6 @@ public:
 	TownsThread();
 
 	void VMStart(FMTownsCommon *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread);
-	void VMMainLoop(FMTownsTemplate <i486DX> *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread);
 	void VMMainLoop(FMTownsTemplate <i486DXDefaultFidelity> *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread);
 	void VMMainLoop(FMTownsTemplate <i486DXHighFidelity> *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread);
 	void VMEnd(FMTownsCommon *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread);

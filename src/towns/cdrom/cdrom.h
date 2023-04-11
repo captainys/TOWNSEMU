@@ -230,8 +230,8 @@ public:
 		// For debugging purposes
 		unsigned char lastParam[8]={0,0,0,0,0,0,0,0};
 		// For debugging purposes
-		i486DX::FarPointer lastCmdIssuedAt;
-		i486DX::FarPointer lastParamWrittenAt;
+		i486DXCommon::FarPointer lastCmdIssuedAt;
+		i486DXCommon::FarPointer lastParamWrittenAt;
 
 		bool CDEleVolUpdate=false;
 		bool CDDAmute=false;

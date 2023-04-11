@@ -49,10 +49,6 @@ void TownsThread::VMStart(FMTownsCommon *townsPtr,Outside_World *outside_world,c
 	}
 }
 
-void TownsThread::VMMainLoop(FMTownsTemplate <i486DX> *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread)
-{
-	VMMainLoopTemplate(townsPtr,outside_world,uiThread);
-}
 void TownsThread::VMMainLoop(FMTownsTemplate <i486DXDefaultFidelity>  *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread)
 {
 	VMMainLoopTemplate(townsPtr,outside_world,uiThread);

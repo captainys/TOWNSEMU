@@ -58,7 +58,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 // (3) Add as data member in FMTownsCommon class.
 // (4) In FMTownsCommon::FMTownsCommon() add to allDevices.
 // (5) In FMTownsCommon::FMTownsCommon() add to io.
-class FMTownsCommon : public VMBase, public Device, public i486DX::FMTownsMouseBiosInterceptor, public i486DX::INT21HInterceptor
+class FMTownsCommon : public VMBase, public Device, public i486DXCommon::FMTownsMouseBiosInterceptor, public i486DXCommon::INT21HInterceptor
 {
 public:
 	// I'm talking about 66MHz to 120MHz ball park.
@@ -346,7 +346,7 @@ public:
 		    The instruction pointer must be a break point, and the debugger must be enabled for this feature.
 		    For unit testing.
 		*/
-		i486DX::FarPointer powerOffAt;
+		i486DXCommon::FarPointer powerOffAt;
 
 
 		int lastKnownMouseX=0,lastKnownMouseY=0;
@@ -365,7 +365,7 @@ public:
 
 
 
-		i486DX::FarPointer disassemblePointer;
+		i486DXCommon::FarPointer disassemblePointer;
 		Variable();
 		void Reset(void);
 	};

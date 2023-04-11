@@ -1212,7 +1212,7 @@ int TownsTgDrv::DriveLetterToSharedDirIndex(char letter) const
 	}
 	return -1;
 }
-void TownsTgDrv::MakeVMSFT(const class i486DX::SegmentRegister &seg,uint32_t offset,char driveLetter,int hostSFTIdx,FileSys::SystemFileTable &hostSFT)
+void TownsTgDrv::MakeVMSFT(const class i486DXCommon::SegmentRegister &seg,uint32_t offset,char driveLetter,int hostSFTIdx,FileSys::SystemFileTable &hostSFT)
 {
 	auto &cpu=townsPtr->CPU();
 	auto &mem=townsPtr->mem;
@@ -1274,12 +1274,12 @@ void TownsTgDrv::MakeDOSDirEnt(uint32_t DTABuffer,const FileSys::DirectoryEntry 
 	townsPtr->mem.StoreWord(DTABuffer+0x1A,0); // First cluster N/A for Network file
 	townsPtr->mem.StoreDword(DTABuffer+0x1C,(uint32_t)dirent.length);
 }
-unsigned int TownsTgDrv::FetchDriveCodeFromSFT(const class i486DX::SegmentRegister &seg,uint32_t offset) const
+unsigned int TownsTgDrv::FetchDriveCodeFromSFT(const class i486DXCommon::SegmentRegister &seg,uint32_t offset) const
 {
 	unsigned int flags=FetchDeviceInfoFromSFT(seg,offset);
 	return flags&0x1F;
 }
-uint16_t TownsTgDrv::FetchSFTReferenceCount(const class i486DX::SegmentRegister &seg,uint32_t offset) const
+uint16_t TownsTgDrv::FetchSFTReferenceCount(const class i486DXCommon::SegmentRegister &seg,uint32_t offset) const
 {
 	return townsPtr->CPU().RedirectFetchWord(
 		townsPtr->CPU().state.CS().addressSize,
@@ -1287,7 +1287,7 @@ uint16_t TownsTgDrv::FetchSFTReferenceCount(const class i486DX::SegmentRegister 
 		offset,
 		townsPtr->mem);
 }
-uint32_t TownsTgDrv::FetchFilePositionFromSFT(const class i486DX::SegmentRegister &seg,uint32_t offset) const
+uint32_t TownsTgDrv::FetchFilePositionFromSFT(const class i486DXCommon::SegmentRegister &seg,uint32_t offset) const
 {
 	return townsPtr->CPU().RedirectFetchDword(
 		townsPtr->CPU().state.CS().addressSize,
@@ -1295,7 +1295,7 @@ uint32_t TownsTgDrv::FetchFilePositionFromSFT(const class i486DX::SegmentRegiste
 		offset+0x15,
 		townsPtr->mem);
 }
-unsigned int TownsTgDrv::FetchDeviceInfoFromSFT(const class i486DX::SegmentRegister &seg,uint32_t offset) const
+unsigned int TownsTgDrv::FetchDeviceInfoFromSFT(const class i486DXCommon::SegmentRegister &seg,uint32_t offset) const
 {
 	return townsPtr->CPU().RedirectFetchWord(
 		townsPtr->CPU().state.CS().addressSize,
@@ -1317,7 +1317,7 @@ std::string TownsTgDrv::FetchCString(uint32_t physAddr) const
 	}
 	return str;
 }
-std::string TownsTgDrv::FetchCString(const i486DX::SegmentRegister &seg,uint32_t offset) const
+std::string TownsTgDrv::FetchCString(const i486DXCommon::SegmentRegister &seg,uint32_t offset) const
 {
 	std::string str;
 	for(;;)

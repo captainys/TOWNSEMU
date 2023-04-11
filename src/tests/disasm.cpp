@@ -36,7 +36,7 @@ public:
 
 bool TestDisassembly(unsigned int operandSize,unsigned int addressSize,long long int instLen,const unsigned char instByte[],const std::string &correctDisasm)
 {
-	static i486DX cpu(nullptr);
+	static i486DXDefaultFidelity cpu(nullptr);
 	cpu.Reset();
 
 	Memory mem;
@@ -64,14 +64,14 @@ bool TestDisassembly(unsigned int operandSize,unsigned int addressSize,long long
 
 	cpu.state.EIP=0x1000;
 
-	cpu.SetCR(0,i486DX::CR0_PROTECTION_ENABLE);
+	cpu.SetCR(0,i486DXCommon::CR0_PROTECTION_ENABLE);
 
 	for(unsigned int i=0; i<instLen; ++i)
 	{
 		memAccess.ram[i]=instByte[i];
 	}
 
-	i486DX::InstructionAndOperand instOp;
+	i486DXCommon::InstructionAndOperand instOp;
 	i486SymbolTable emptySymTable;
 	MemoryAccess::ConstMemoryWindow memWin;
 	std::map <unsigned int,std::string> emptyIOTable;
@@ -79,7 +79,7 @@ bool TestDisassembly(unsigned int operandSize,unsigned int addressSize,long long
 	{
 		cpu.DebugFetchInstruction(memWin,instOp,cpu.state.CS(),cpu.state.EIP,mem,cpu.state.CS().operandSize,cpu.state.CS().addressSize);
 		auto disasm=instOp.inst.Disassemble(instOp.op1,instOp.op2,cpu.state.CS(),cpu.state.EIP,emptySymTable,emptyIOTable);
-		std::cout << "i486DX::DebugFetchInstruction()" << std::endl;
+		std::cout << "i486DXCommon::DebugFetchInstruction()" << std::endl;
 		std::cout << "Disassembled as: [" << disasm << "]" << std::endl;
 		if(disasm!=correctDisasm)
 		{
@@ -90,7 +90,7 @@ bool TestDisassembly(unsigned int operandSize,unsigned int addressSize,long long
 	{
 		cpu.FetchInstruction(memWin,instOp,cpu.state.CS(),cpu.state.EIP,mem,cpu.state.CS().operandSize,cpu.state.CS().addressSize);
 		auto disasm=instOp.inst.Disassemble(instOp.op1,instOp.op2,cpu.state.CS(),cpu.state.EIP,emptySymTable,emptyIOTable);
-		std::cout << "i486DX::FetchInstruction()" << std::endl;
+		std::cout << "i486DXCommon::FetchInstruction()" << std::endl;
 		std::cout << "Disassembled as: [" << disasm << "]" << std::endl;
 		if(disasm!=correctDisasm)
 		{
