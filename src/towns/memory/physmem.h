@@ -397,7 +397,6 @@ public:
 	bool takeJISCodeLog;
 	std::vector <unsigned char> JISCodeLog; // Log KanjiROM Read Access
 
-	class i486DXCommon *cpuPtr;
 	class Memory *memPtr;
 
 	TownsMainRAMAccess mainRAMAccess;
@@ -442,7 +441,7 @@ public:
 
 
 
-	TownsPhysicalMemory(class FMTownsCommon *townsPtr,class i486DXCommon *cpuPtr,class Memory *memPtr,class RF5C68 *pcmPtr);
+	TownsPhysicalMemory(class FMTownsCommon *townsPtr,class Memory *memPtr,class RF5C68 *pcmPtr);
 
 	bool LoadROMImages(const char dirName[]);
 

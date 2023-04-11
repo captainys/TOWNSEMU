@@ -273,7 +273,7 @@ void TownsPhysicalMemory::State::Reset(void)
 	return data;
 }
 
-TownsPhysicalMemory::TownsPhysicalMemory(class FMTownsCommon *townsPtr,class i486DXCommon *cpuPtr,class Memory *memPtr,class RF5C68 *pcmPtr) :
+TownsPhysicalMemory::TownsPhysicalMemory(class FMTownsCommon *townsPtr,class Memory *memPtr,class RF5C68 *pcmPtr) :
 	Device(townsPtr),
 	waveRAMAccess(pcmPtr),
 	oldMemCardAccess(townsPtr),
@@ -282,7 +282,6 @@ TownsPhysicalMemory::TownsPhysicalMemory(class FMTownsCommon *townsPtr,class i48
 	this->townsPtr=townsPtr;
 
 	takeJISCodeLog=false;
-	this->cpuPtr=cpuPtr;
 	this->memPtr=memPtr;
 
 	for(auto &b : state.CMOSRAM)
@@ -459,7 +458,7 @@ void TownsPhysicalMemory::SetDummySize(long long int size)
 void TownsPhysicalMemory::SetUpMemoryAccess(unsigned int townsType,unsigned int cpuType)
 {
 	auto &mem=*memPtr;
-	auto &cpu=*cpuPtr;
+	auto &cpu=townsPtr->CPU();
 
 	mem.CleanUp();
 
