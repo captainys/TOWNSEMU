@@ -398,6 +398,15 @@ public:
 	InOut io;
 	Memory mem;
 
+	i486DXCommon &CPU(void)
+	{
+		return cpu;
+	}
+	const i486DXCommon &CPU(void) const
+	{
+		return cpu;
+	}
+
 	/*! Pointers of all devices (except *this) must be stored in allDevices.
 	*/
 	using VMBase::allDevices;

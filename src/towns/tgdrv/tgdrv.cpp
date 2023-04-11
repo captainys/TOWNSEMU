@@ -53,21 +53,21 @@ TownsTgDrv::TownsTgDrv(class FMTowns *townsPtr) : Device(townsPtr)
 			std::cout << "Installing Tsugaru Drive." << std::endl;
 			if(true==Install())
 			{
-				townsPtr->cpu.SetCF(false);
+				townsPtr->CPU().SetCF(false);
 			}
 			else
 			{
-				townsPtr->cpu.SetCF(true);
+				townsPtr->CPU().SetCF(true);
 			}
 			break;
 		case TOWNS_VM_TGDRV_INT2FH://      0x02,
 			// To use AL for OUT DX,AL  AX is copied to BX.
 			// AX is also at SS:[SP]
-			std::cout << "INT 2FH Intercept. Req=" << cpputil::Ustox(townsPtr->cpu.GetBX()) << std::endl;
+			std::cout << "INT 2FH Intercept. Req=" << cpputil::Ustox(townsPtr->CPU().GetBX()) << std::endl;
 			// Set PF if not my drive.
 			// Clear PF if my drive.
 			bool myDrive=false;
-			switch(townsPtr->cpu.GetBX())
+			switch(townsPtr->CPU().GetBX())
 			{
 			case 0x6809:
 				// Installation Check.
@@ -77,8 +77,8 @@ TownsTgDrv::TownsTgDrv(class FMTowns *townsPtr) : Device(townsPtr)
 				//     CF=clear
 				myDrive=true;
 				ReturnAX(TGDRV_ID_SHORT);
-				ReturnBX(townsPtr->cpu.state.CS().value);
-				townsPtr->cpu.SetCF(false);
+				ReturnBX(townsPtr->CPU().state.CS().value);
+				townsPtr->CPU().SetCF(false);
 				break;
 			case 0x1101:
 				myDrive=Int2F_1101_Rmdir();
@@ -141,7 +141,7 @@ TownsTgDrv::TownsTgDrv(class FMTowns *townsPtr) : Device(townsPtr)
 				myDrive=Int2F_112E_ExtendedOpenOrCreate();
 				break;
 			}
-			townsPtr->cpu.SetPF(true!=myDrive);
+			townsPtr->CPU().SetPF(true!=myDrive);
 			break;
 		}
 		break;
@@ -167,18 +167,18 @@ bool TownsTgDrv::Int2F_1101_Rmdir(void)
 		if(TOWNS_DOSERR_NO_ERROR!=invalidErr)
 		{
 			ReturnAX(invalidErr);
-			townsPtr->cpu.SetCF(true);
+			townsPtr->CPU().SetCF(true);
 			return true; // Yes it's my drive.
 		}
 
 		if(true==sharedDir[sharedDirIdx].RmdirSubPath(subPath))
 		{
-			townsPtr->cpu.SetCF(false);
+			townsPtr->CPU().SetCF(false);
 		}
 		else
 		{
 			ReturnAX(TOWNS_DOSERR_INVALID_ACCESS);
-			townsPtr->cpu.SetCF(true);
+			townsPtr->CPU().SetCF(true);
 		}
 
 		return true; // Yes, it's my drive.
@@ -200,18 +200,18 @@ bool TownsTgDrv::Int2F_1103_Mkdir(void)
 		if(TOWNS_DOSERR_NO_ERROR!=invalidErr)
 		{
 			ReturnAX(invalidErr);
-			townsPtr->cpu.SetCF(true);
+			townsPtr->CPU().SetCF(true);
 			return true; // Yes it's my drive.
 		}
 
 		if(true==sharedDir[sharedDirIdx].MkdirSubPath(subPath))
 		{
-			townsPtr->cpu.SetCF(false);
+			townsPtr->CPU().SetCF(false);
 		}
 		else
 		{
 			ReturnAX(TOWNS_DOSERR_INVALID_ACCESS);
-			townsPtr->cpu.SetCF(true);
+			townsPtr->CPU().SetCF(true);
 		}
 
 		return true; // Yes, it's my drive.
@@ -235,7 +235,7 @@ bool TownsTgDrv::Int2F_1105_Chdir(void)
 		if(TOWNS_DOSERR_NO_ERROR!=invalidErr)
 		{
 			ReturnAX(invalidErr);
-			townsPtr->cpu.SetCF(true);
+			townsPtr->CPU().SetCF(true);
 			return true; // Yes it's my drive.
 		}
 
@@ -245,7 +245,7 @@ bool TownsTgDrv::Int2F_1105_Chdir(void)
 			{
 				townsPtr->mem.StoreByte(CDSAddr+i,0);
 			}
-			townsPtr->cpu.SetCF(false);
+			townsPtr->CPU().SetCF(false);
 		}
 		else if(true==sharedDir[sharedDirIdx].SubPathIsDirectory(subPath) && subPath.size()<0x43-7)
 		{
@@ -257,12 +257,12 @@ bool TownsTgDrv::Int2F_1105_Chdir(void)
 			{
 				townsPtr->mem.StoreByte(CDSAddr+6+i,0);
 			}
-			townsPtr->cpu.SetCF(false);
+			townsPtr->CPU().SetCF(false);
 		}
 		else
 		{
 			ReturnAX(TOWNS_DOSERR_DIR_NOT_FOUND);
-			townsPtr->cpu.SetCF(true);
+			townsPtr->CPU().SetCF(true);
 		}
 		return true; // Yes, it's my drive.
 	}
@@ -270,20 +270,20 @@ bool TownsTgDrv::Int2F_1105_Chdir(void)
 }
 bool TownsTgDrv::Int2F_1106_CloseRemoteFile(void)
 {
-	char drvLetter='A'+FetchDriveCodeFromSFT(townsPtr->cpu.state.ES(),townsPtr->cpu.state.DI());
+	char drvLetter='A'+FetchDriveCodeFromSFT(townsPtr->CPU().state.ES(),townsPtr->CPU().state.DI());
 	auto sharedDirIdx=DriveLetterToSharedDirIndex(drvLetter);
 	if(0<=sharedDirIdx)
 	{
-		auto hostSFTIdx=townsPtr->cpu.FetchWord(
-		    townsPtr->cpu.state.CS().addressSize,
-		    townsPtr->cpu.state.ES(),
-		    townsPtr->cpu.state.DI()+0x0B,
+		auto hostSFTIdx=townsPtr->CPU().RedirectFetchWord(
+		    townsPtr->CPU().state.CS().addressSize,
+		    townsPtr->CPU().state.ES(),
+		    townsPtr->CPU().state.DI()+0x0B,
 		    townsPtr->mem);
 		if(0<=hostSFTIdx &&
 		   hostSFTIdx<FileSys::MAX_NUM_OPEN_FILE &&
 		   true==sharedDir[sharedDirIdx].sft[hostSFTIdx].IsOpen())
 		{
-			auto refCount=FetchSFTReferenceCount(townsPtr->cpu.state.ES(),townsPtr->cpu.state.DI());
+			auto refCount=FetchSFTReferenceCount(townsPtr->CPU().state.ES(),townsPtr->CPU().state.DI());
 			if(refCount<=1)
 			{
 				sharedDir[sharedDirIdx].CloseFile(hostSFTIdx);
@@ -293,19 +293,19 @@ bool TownsTgDrv::Int2F_1106_CloseRemoteFile(void)
 			{
 				--refCount;
 			}
-			townsPtr->cpu.StoreWord(
+			townsPtr->CPU().RedirectStoreWord(
 				townsPtr->mem,
-				townsPtr->cpu.state.CS().addressSize,
-				townsPtr->cpu.state.ES(),
-				townsPtr->cpu.state.DI(),
+				townsPtr->CPU().state.CS().addressSize,
+				townsPtr->CPU().state.ES(),
+				townsPtr->CPU().state.DI(),
 				refCount);  // Update ref count.
-			townsPtr->cpu.SetCF(false);
+			townsPtr->CPU().SetCF(false);
 		}
 		else
 		{
 			// File not open.
 			ReturnAX(TOWNS_DOSERR_INVALID_HANDLE);
-			townsPtr->cpu.SetCF(true);
+			townsPtr->CPU().SetCF(true);
 		}
 		return true; // Yes, it's my drive.
 	}
@@ -313,35 +313,35 @@ bool TownsTgDrv::Int2F_1106_CloseRemoteFile(void)
 }
 bool TownsTgDrv::Int2F_1107_Flush(void)
 {
-	char drvLetter='A'+FetchDriveCodeFromSFT(townsPtr->cpu.state.ES(),townsPtr->cpu.state.DI());
+	char drvLetter='A'+FetchDriveCodeFromSFT(townsPtr->CPU().state.ES(),townsPtr->CPU().state.DI());
 	auto sharedDirIdx=DriveLetterToSharedDirIndex(drvLetter);
 	if(0<=sharedDirIdx)
 	{
 		// There's nothing to flush.
-		townsPtr->cpu.SetCF(false);
+		townsPtr->CPU().SetCF(false);
 		return true; // Yes, it's my drive.
 	}
 	return false; // No, it's not my drive.
 }
 bool TownsTgDrv::Int2F_1108_ReadFromRemoteFile(void)
 {
-	char drvLetter='A'+FetchDriveCodeFromSFT(townsPtr->cpu.state.ES(),townsPtr->cpu.state.DI());
+	char drvLetter='A'+FetchDriveCodeFromSFT(townsPtr->CPU().state.ES(),townsPtr->CPU().state.DI());
 	auto sharedDirIdx=DriveLetterToSharedDirIndex(drvLetter);
 	if(0<=sharedDirIdx)
 	{
-		auto hostSFTIdx=townsPtr->cpu.FetchWord(
-		    townsPtr->cpu.state.CS().addressSize,
-		    townsPtr->cpu.state.ES(),
-		    townsPtr->cpu.state.DI()+0x0B,
+		auto hostSFTIdx=townsPtr->CPU().RedirectFetchWord(
+		    townsPtr->CPU().state.CS().addressSize,
+		    townsPtr->CPU().state.ES(),
+		    townsPtr->CPU().state.DI()+0x0B,
 		    townsPtr->mem);
 		if(0<=hostSFTIdx &&
 		   hostSFTIdx<FileSys::MAX_NUM_OPEN_FILE &&
 		   true==sharedDir[sharedDirIdx].sft[hostSFTIdx].IsOpen())
 		{
-			auto position=FetchFilePositionFromSFT(townsPtr->cpu.state.ES(),townsPtr->cpu.state.DI());
+			auto position=FetchFilePositionFromSFT(townsPtr->CPU().state.ES(),townsPtr->CPU().state.DI());
 			sharedDir[sharedDirIdx].Seek(hostSFTIdx,position);
 
-			auto data=sharedDir[sharedDirIdx].sft[hostSFTIdx].Read(townsPtr->cpu.GetCX());
+			auto data=sharedDir[sharedDirIdx].sft[hostSFTIdx].Read(townsPtr->CPU().GetCX());
 			auto DTAAddr=GetDTAAddress();
 			for(auto d : data)
 			{
@@ -349,20 +349,20 @@ bool TownsTgDrv::Int2F_1108_ReadFromRemoteFile(void)
 			}
 			ReturnCX(data.size());
 
-			townsPtr->cpu.StoreDword(
+			townsPtr->CPU().RedirectStoreDword(
 				townsPtr->mem,
-				townsPtr->cpu.state.CS().addressSize,
-				townsPtr->cpu.state.ES(),
-				townsPtr->cpu.state.DI()+0x15,
+				townsPtr->CPU().state.CS().addressSize,
+				townsPtr->CPU().state.ES(),
+				townsPtr->CPU().state.DI()+0x15,
 				sharedDir[sharedDirIdx].sft[hostSFTIdx].GetFilePointer());
 
-			townsPtr->cpu.SetCF(false);
+			townsPtr->CPU().SetCF(false);
 		}
 		else
 		{
 			// File not open.
 			ReturnAX(TOWNS_DOSERR_INVALID_HANDLE);
-			townsPtr->cpu.SetCF(true);
+			townsPtr->CPU().SetCF(true);
 		}
 		return true; // Yes, it's my drive.
 	}
@@ -370,67 +370,67 @@ bool TownsTgDrv::Int2F_1108_ReadFromRemoteFile(void)
 }
 bool TownsTgDrv::Int2F_1109_WriteToRemoteFile(void)
 {
-	char drvLetter='A'+FetchDriveCodeFromSFT(townsPtr->cpu.state.ES(),townsPtr->cpu.state.DI());
+	char drvLetter='A'+FetchDriveCodeFromSFT(townsPtr->CPU().state.ES(),townsPtr->CPU().state.DI());
 	auto sharedDirIdx=DriveLetterToSharedDirIndex(drvLetter);
 	if(0<=sharedDirIdx)
 	{
-		std::cout << cpputil::Ustox(townsPtr->cpu.GetCX()) << std::endl;
+		std::cout << cpputil::Ustox(townsPtr->CPU().GetCX()) << std::endl;
 
-		auto hostSFTIdx=townsPtr->cpu.FetchWord(
-		    townsPtr->cpu.state.CS().addressSize,
-		    townsPtr->cpu.state.ES(),
-		    townsPtr->cpu.state.DI()+0x0B,
+		auto hostSFTIdx=townsPtr->CPU().RedirectFetchWord(
+		    townsPtr->CPU().state.CS().addressSize,
+		    townsPtr->CPU().state.ES(),
+		    townsPtr->CPU().state.DI()+0x0B,
 		    townsPtr->mem);
 		if(0<=hostSFTIdx &&
 		   hostSFTIdx<FileSys::MAX_NUM_OPEN_FILE &&
 		   true==sharedDir[sharedDirIdx].sft[hostSFTIdx].IsOpen())
 		{
-			if(0!=townsPtr->cpu.GetCX()) // If CX==0, truncate to the current file position.  See below.
+			if(0!=townsPtr->CPU().GetCX()) // If CX==0, truncate to the current file position.  See below.
 			{
 				auto DMABuffer=GetDTAAddress();
 				std::vector <unsigned char> data;
-				data.resize(townsPtr->cpu.GetCX());
-				for(int i=0; i<townsPtr->cpu.GetCX(); ++i)
+				data.resize(townsPtr->CPU().GetCX());
+				for(int i=0; i<townsPtr->CPU().GetCX(); ++i)
 				{
 					data[i]=townsPtr->mem.FetchByte(DMABuffer+i);
 				}
 
-				auto position=FetchFilePositionFromSFT(townsPtr->cpu.state.ES(),townsPtr->cpu.state.DI());
+				auto position=FetchFilePositionFromSFT(townsPtr->CPU().state.ES(),townsPtr->CPU().state.DI());
 				sharedDir[sharedDirIdx].Seek(hostSFTIdx,position);
 
 				auto bytesWritten=sharedDir[sharedDirIdx].sft[hostSFTIdx].Write(data);
 				auto filePointer=sharedDir[sharedDirIdx].sft[hostSFTIdx].GetFilePointer();
-				townsPtr->cpu.StoreDword(
+				townsPtr->CPU().RedirectStoreDword(
 					townsPtr->mem,
-					townsPtr->cpu.state.CS().addressSize,
-					townsPtr->cpu.state.ES(),
-					townsPtr->cpu.state.DI()+0x15,
+					townsPtr->CPU().state.CS().addressSize,
+					townsPtr->CPU().state.ES(),
+					townsPtr->CPU().state.DI()+0x15,
 					filePointer);
 
-				uint32_t newSize=townsPtr->cpu.FetchDword(
-					townsPtr->cpu.state.CS().addressSize,
-					townsPtr->cpu.state.ES(),
-					townsPtr->cpu.state.DI()+0x11,
+				uint32_t newSize=townsPtr->CPU().RedirectFetchDword(
+					townsPtr->CPU().state.CS().addressSize,
+					townsPtr->CPU().state.ES(),
+					townsPtr->CPU().state.DI()+0x11,
 					townsPtr->mem);
 
 				if(newSize<filePointer)
 				{
-					townsPtr->cpu.StoreDword(
+					townsPtr->CPU().RedirectStoreDword(
 						townsPtr->mem,
-						townsPtr->cpu.state.CS().addressSize,
-						townsPtr->cpu.state.ES(),
-						townsPtr->cpu.state.DI()+0x11,
+						townsPtr->CPU().state.CS().addressSize,
+						townsPtr->CPU().state.ES(),
+						townsPtr->CPU().state.DI()+0x11,
 						filePointer);
 				}
 				ReturnCX(bytesWritten);
-				townsPtr->cpu.SetCF(false);
+				townsPtr->CPU().SetCF(false);
 			}
 			else
 			{
 				// http://www.ctyme.com/intr/rb-2791.htm
 				// CX=0 will truncate or extend the file to the current file position.
 
-				auto position=FetchFilePositionFromSFT(townsPtr->cpu.state.ES(),townsPtr->cpu.state.DI());
+				auto position=FetchFilePositionFromSFT(townsPtr->CPU().state.ES(),townsPtr->CPU().state.DI());
 				auto fsize=sharedDir[sharedDirIdx].Fsize(hostSFTIdx);
 				std::cout << "Current Position :" << position << std::endl;
 				std::cout << "Current File Size:" << fsize << std::endl;
@@ -444,13 +444,13 @@ bool TownsTgDrv::Int2F_1109_WriteToRemoteFile(void)
 				}
 
 				ReturnCX(0);
-				townsPtr->cpu.SetCF(false);
+				townsPtr->CPU().SetCF(false);
 			}
 		}
 		else
 		{
 			ReturnAX(TOWNS_DOSERR_INVALID_ACCESS);
-			townsPtr->cpu.SetCF(true);
+			townsPtr->CPU().SetCF(true);
 		}
 		return true; // Yes, it's my drive.
 	}
@@ -458,7 +458,7 @@ bool TownsTgDrv::Int2F_1109_WriteToRemoteFile(void)
 }
 bool TownsTgDrv::Int2F_110C_GetDiskInformation(void)
 {
-	auto CDS=FetchCString(townsPtr->cpu.state.ES(),townsPtr->cpu.state.DI());
+	auto CDS=FetchCString(townsPtr->CPU().state.ES(),townsPtr->CPU().state.DI());
 	if(CDS.size()<3)
 	{
 		return false;
@@ -490,7 +490,7 @@ bool TownsTgDrv::Int2F_110C_GetDiskInformation(void)
 			// No file, no space.
 			ReturnDX(0);
 		}
-		townsPtr->cpu.SetCF(false);
+		townsPtr->CPU().SetCF(false);
 		return true; // Yes, it's my drive.
 	}
 	return false; // No, it's not my drive.
@@ -509,7 +509,7 @@ bool TownsTgDrv::Int2F_110E_SetFileAttrib(void)
 		std::cout << subPath << std::endl;
 		std::cout << cpputil::Ustox(attr) << std::endl;
 
-		townsPtr->cpu.SetCF(false);
+		townsPtr->CPU().SetCF(false);
 		return true; // Yes, it's my drive.
 	}
 	return false; // No, it's not my drive.
@@ -527,7 +527,7 @@ bool TownsTgDrv::Int2F_110F_GetFileAttrib(void)
 		if(TOWNS_DOSERR_NO_ERROR!=invalidErr)
 		{
 			ReturnAX(invalidErr);
-			townsPtr->cpu.SetCF(true);
+			townsPtr->CPU().SetCF(true);
 			return true; // Yes it's my drive.
 		}
 
@@ -536,15 +536,15 @@ bool TownsTgDrv::Int2F_110F_GetFileAttrib(void)
 		{
 			ReturnAX(dirent.attr);
 			ReturnBX(dirent.length>>16);
-			townsPtr->cpu.SetDI(dirent.length&0xFFFF);
+			townsPtr->CPU().SetDI(dirent.length&0xFFFF);
 			ReturnCX(dirent.FormatDOSTime());
 			ReturnDX(dirent.FormatDOSDate());
-			townsPtr->cpu.SetCF(false);
+			townsPtr->CPU().SetCF(false);
 		}
 		else
 		{
 			ReturnAX(TOWNS_DOSERR_FILE_NOT_FOUND);
-			townsPtr->cpu.SetCF(true);
+			townsPtr->CPU().SetCF(true);
 		}
 
 		return true; // Yes, it's my drive.
@@ -559,7 +559,7 @@ bool TownsTgDrv::Int2F_1111_Rename(void)
 	auto sharedDirIdx=FullyQualifiedFileNameToSharedDirIndex(fn1);
 	if(0<=sharedDirIdx)
 	{
-		townsPtr->cpu.SetCF(true); // Tentative
+		townsPtr->CPU().SetCF(true); // Tentative
 
 		std::cout << fn1 << std::endl;
 		std::cout << fn2 << std::endl;
@@ -576,7 +576,7 @@ bool TownsTgDrv::Int2F_1111_Rename(void)
 
 		if(true==sharedDir[sharedDirIdx].RenameSubPath(fn1,fn2))
 		{
-			townsPtr->cpu.SetCF(false);
+			townsPtr->CPU().SetCF(false);
 		}
 		else
 		{
@@ -598,11 +598,11 @@ bool TownsTgDrv::Int2F_1113_Delete(void)
 		if(TOWNS_DOSERR_NO_ERROR!=invalidErr)
 		{
 			ReturnAX(invalidErr);
-			townsPtr->cpu.SetCF(true);
+			townsPtr->CPU().SetCF(true);
 			return true; // Yes it's my drive.
 		}
 
-		townsPtr->cpu.SetCF(true);
+		townsPtr->CPU().SetCF(true);
 		ReturnAX(TOWNS_DOSERR_INVALID_ACCESS);
 
 		auto subPath=DropDriveLetter(fName);
@@ -623,7 +623,7 @@ bool TownsTgDrv::Int2F_1113_Delete(void)
 		{
 			if(true==sharedDir[sharedDirIdx].DeleteSubPathFile(subPath))
 			{
-				townsPtr->cpu.SetCF(false);
+				townsPtr->CPU().SetCF(false);
 			}
 		}
 		else
@@ -664,14 +664,14 @@ bool TownsTgDrv::Int2F_1113_Delete(void)
 			}
 			FileSys::DeleteFindContext(find);
 
-			townsPtr->cpu.SetCF(false);
+			townsPtr->CPU().SetCF(false);
 			for(auto fn : toDel)
 			{
 				auto subPath=cpputil::MakeFullPathName(subDir,fn);
 				std::cout << subPath << std::endl;
 				if(true!=sharedDir[sharedDirIdx].DeleteSubPathFile(subPath))
 				{
-					townsPtr->cpu.SetCF(true);
+					townsPtr->CPU().SetCF(true);
 					ReturnAX(TOWNS_DOSERR_ACCESS_DENIED);
 				}
 			}
@@ -696,20 +696,20 @@ bool TownsTgDrv::Int2F_1116_OpenExistingFile(void)
 		if(TOWNS_DOSERR_NO_ERROR!=invalidErr)
 		{
 			ReturnAX(invalidErr);
-			townsPtr->cpu.SetCF(true);
+			townsPtr->CPU().SetCF(true);
 			return true; // Yes it's my drive.
 		}
 
 		auto hostSFTIdx=sharedDir[sharedDirIdx].OpenExistingFile(FetchPSP(),subPath,FileSys::OPENMODE_RW);
 		if(0<=hostSFTIdx)
 		{
-			MakeVMSFT(townsPtr->cpu.state.ES(),townsPtr->cpu.state.DI(),driveLetter,hostSFTIdx,sharedDir[sharedDirIdx].sft[hostSFTIdx]);
-			townsPtr->cpu.SetCF(false);
+			MakeVMSFT(townsPtr->CPU().state.ES(),townsPtr->CPU().state.DI(),driveLetter,hostSFTIdx,sharedDir[sharedDirIdx].sft[hostSFTIdx]);
+			townsPtr->CPU().SetCF(false);
 		}
 		else
 		{
 			ReturnAX(TOWNS_DOSERR_FILE_NOT_FOUND);
-			townsPtr->cpu.SetCF(true);
+			townsPtr->CPU().SetCF(true);
 		}
 		return true; // Yes, it's my drive.
 	}
@@ -722,7 +722,7 @@ bool TownsTgDrv::Int2F_1117_CreateOrTruncate(void)
 	auto sharedDirIdx=FullyQualifiedFileNameToSharedDirIndex(fName);
 	if(0<=sharedDirIdx)
 	{
-		townsPtr->cpu.SetCF(true);
+		townsPtr->CPU().SetCF(true);
 
 		auto subPath=DropDriveLetter(fName);
 		auto mode=FetchStackParam0();
@@ -731,7 +731,7 @@ bool TownsTgDrv::Int2F_1117_CreateOrTruncate(void)
 		if(TOWNS_DOSERR_NO_ERROR!=invalidErr)
 		{
 			ReturnAX(invalidErr);
-			townsPtr->cpu.SetCF(true);
+			townsPtr->CPU().SetCF(true);
 			return true; // Yes it's my drive.
 		}
 
@@ -743,8 +743,8 @@ bool TownsTgDrv::Int2F_1117_CreateOrTruncate(void)
 		auto hostSFTIdx=sharedDir[sharedDirIdx].OpenFileTruncate(FetchPSP(),subPath,FileSys::OPENMODE_RW);
 		if(0<=hostSFTIdx)
 		{
-			MakeVMSFT(townsPtr->cpu.state.ES(),townsPtr->cpu.state.DI(),driveLetter,hostSFTIdx,sharedDir[sharedDirIdx].sft[hostSFTIdx]);
-			townsPtr->cpu.SetCF(false);
+			MakeVMSFT(townsPtr->CPU().state.ES(),townsPtr->CPU().state.DI(),driveLetter,hostSFTIdx,sharedDir[sharedDirIdx].sft[hostSFTIdx]);
+			townsPtr->CPU().SetCF(false);
 		}
 
 		return true; // Yes, it's my drive.
@@ -798,7 +798,7 @@ bool TownsTgDrv::Int2F_111B_FindFirst(void)
 			{
 				townsPtr->mem.StoreByte(DTABuffer+0x15+i,0);
 			}
-			townsPtr->cpu.SetCF(false);
+			townsPtr->CPU().SetCF(false);
 		}
 		else
 		{
@@ -809,7 +809,7 @@ bool TownsTgDrv::Int2F_111B_FindFirst(void)
 			if(TOWNS_DOSERR_NO_ERROR!=invalidErr)
 			{
 				ReturnAX(invalidErr);
-				townsPtr->cpu.SetCF(true);
+				townsPtr->CPU().SetCF(true);
 				return true; // Yes it's my drive.
 			}
 
@@ -841,7 +841,7 @@ bool TownsTgDrv::Int2F_111B_FindFirst(void)
 				{
 					MakeDOSDirEnt(DTABuffer+0x15,dirent);
 					townsPtr->mem.StoreWord(DTABuffer+0x0F,fsIdx);  // Use Cluster Number to connect fsIdx
-					townsPtr->cpu.SetCF(false);
+					townsPtr->CPU().SetCF(false);
 					found=true;
 					break;
 				}
@@ -851,7 +851,7 @@ bool TownsTgDrv::Int2F_111B_FindFirst(void)
 			{
 				// if not found
 				ReturnAX(TOWNS_DOSERR_FILE_NOT_FOUND);
-				townsPtr->cpu.SetCF(true);
+				townsPtr->CPU().SetCF(true);
 			}
 		}
 		return true; // Yes, it's mine.
@@ -897,7 +897,7 @@ bool TownsTgDrv::Int2F_111C_FindNext(void)
 				   true==FileSys::DOSAttrMatch(sAttr,dirent.attr))
 				{
 					MakeDOSDirEnt(DTABuffer+0x15,dirent);
-					townsPtr->cpu.SetCF(false);
+					townsPtr->CPU().SetCF(false);
 					found=true;
 					break;
 				}
@@ -906,13 +906,13 @@ bool TownsTgDrv::Int2F_111C_FindNext(void)
 			{
 				// if not found
 				ReturnAX(TOWNS_DOSERR_NO_MORE_FILES);
-				townsPtr->cpu.SetCF(true);
+				townsPtr->CPU().SetCF(true);
 			}
 		}
 		else
 		{
 			ReturnAX(TOWNS_DOSERR_FILE_NOT_FOUND);
-			townsPtr->cpu.SetCF(true);
+			townsPtr->CPU().SetCF(true);
 		}
 		return true;
 	}
@@ -931,13 +931,13 @@ bool TownsTgDrv::Int2F_111D_CloseAll(void)
 }
 bool TownsTgDrv::Int2F_1123_QualifyRemoteFileName(void)
 {
-	auto fn=FetchCString(townsPtr->cpu.state.DS(),townsPtr->cpu.state.SI());
+	auto fn=FetchCString(townsPtr->CPU().state.DS(),townsPtr->CPU().state.SI());
 	std::cout << fn << std::endl;
 	auto sharedDirIndex=FullyQualifiedFileNameToSharedDirIndex(fn);
 	if(0<=sharedDirIndex)
 	{
 		// MSCDEX looks to be ignoring it anyway.
-		townsPtr->cpu.SetCF(true);
+		townsPtr->CPU().SetCF(true);
 		return true;
 	}
 	return false;
@@ -953,7 +953,7 @@ bool TownsTgDrv::Int2F_112E_ExtendedOpenOrCreate(void)
 	auto sharedDirIdx=FullyQualifiedFileNameToSharedDirIndex(fName);
 	if(0<=sharedDirIdx)
 	{
-		townsPtr->cpu.SetCF(true); // Tentative
+		townsPtr->CPU().SetCF(true); // Tentative
 
 		// This function is not supposed to be called from DOS 3.x
 
@@ -1063,9 +1063,9 @@ bool TownsTgDrv::Int2F_112E_ExtendedOpenOrCreate(void)
 
 		if(0<=hostSFTIdx)
 		{
-			MakeVMSFT(townsPtr->cpu.state.ES(),townsPtr->cpu.state.DI(),driveLetter,hostSFTIdx,sharedDir[sharedDirIdx].sft[hostSFTIdx]);
+			MakeVMSFT(townsPtr->CPU().state.ES(),townsPtr->CPU().state.DI(),driveLetter,hostSFTIdx,sharedDir[sharedDirIdx].sft[hostSFTIdx]);
 			ReturnCX(CX);
-			townsPtr->cpu.SetCF(false);
+			townsPtr->CPU().SetCF(false);
 		}
 		else
 		{
@@ -1095,78 +1095,78 @@ unsigned int TownsTgDrv::CheckFileName(const std::string &fName) const
 
 uint16_t TownsTgDrv::FetchPSP(void) const
 {
-	return townsPtr->cpu.FetchWord(
-	            townsPtr->cpu.state.SS().addressSize,
-	            townsPtr->cpu.state.SS(),
-	            townsPtr->cpu.state.SP()+8,
+	return townsPtr->CPU().RedirectFetchWord(
+	            townsPtr->CPU().state.SS().addressSize,
+	            townsPtr->CPU().state.SS(),
+	            townsPtr->CPU().state.SP()+8,
 	            townsPtr->mem);
 }
 uint16_t TownsTgDrv::FetchStackParam0(void) const
 {
-	return townsPtr->cpu.FetchWord(
-	            townsPtr->cpu.state.SS().addressSize,
-	            townsPtr->cpu.state.SS(),
-	            townsPtr->cpu.state.SP()+10,
+	return townsPtr->CPU().RedirectFetchWord(
+	            townsPtr->CPU().state.SS().addressSize,
+	            townsPtr->CPU().state.SS(),
+	            townsPtr->CPU().state.SP()+10,
 	            townsPtr->mem);
 }
 uint16_t TownsTgDrv::FetchStackParam1(void) const
 {
-	return townsPtr->cpu.FetchWord(
-	            townsPtr->cpu.state.SS().addressSize,
-	            townsPtr->cpu.state.SS(),
-	            townsPtr->cpu.state.SP()+12,
+	return townsPtr->CPU().RedirectFetchWord(
+	            townsPtr->CPU().state.SS().addressSize,
+	            townsPtr->CPU().state.SS(),
+	            townsPtr->CPU().state.SP()+12,
 	            townsPtr->mem);
 }
 uint16_t TownsTgDrv::FetchStackParam2(void) const
 {
-	return townsPtr->cpu.FetchWord(
-	            townsPtr->cpu.state.SS().addressSize,
-	            townsPtr->cpu.state.SS(),
-	            townsPtr->cpu.state.SP()+14,
+	return townsPtr->CPU().RedirectFetchWord(
+	            townsPtr->CPU().state.SS().addressSize,
+	            townsPtr->CPU().state.SS(),
+	            townsPtr->CPU().state.SP()+14,
 	            townsPtr->mem);
 }
 uint16_t TownsTgDrv::FetchStackParam3(void) const
 {
-	return townsPtr->cpu.FetchWord(
-	            townsPtr->cpu.state.SS().addressSize,
-	            townsPtr->cpu.state.SS(),
-	            townsPtr->cpu.state.SP()+16,
+	return townsPtr->CPU().RedirectFetchWord(
+	            townsPtr->CPU().state.SS().addressSize,
+	            townsPtr->CPU().state.SS(),
+	            townsPtr->CPU().state.SP()+16,
 	            townsPtr->mem);
 }
 void TownsTgDrv::ReturnAX(uint16_t ax)
 {
-	townsPtr->cpu.StoreWord(
+	townsPtr->CPU().RedirectStoreWord(
 	    townsPtr->mem,
-	    townsPtr->cpu.state.SS().addressSize,
-	    townsPtr->cpu.state.SS(),
-	    townsPtr->cpu.state.SP(),
+	    townsPtr->CPU().state.SS().addressSize,
+	    townsPtr->CPU().state.SS(),
+	    townsPtr->CPU().state.SP(),
 	    ax);
 }
 void TownsTgDrv::ReturnBX(uint16_t bx)
 {
-	townsPtr->cpu.StoreWord(
+	townsPtr->CPU().RedirectStoreWord(
 	    townsPtr->mem,
-	    townsPtr->cpu.state.SS().addressSize,
-	    townsPtr->cpu.state.SS(),
-	    townsPtr->cpu.state.SP()+2,
+	    townsPtr->CPU().state.SS().addressSize,
+	    townsPtr->CPU().state.SS(),
+	    townsPtr->CPU().state.SP()+2,
 	    bx);
 }
 void TownsTgDrv::ReturnCX(uint16_t cx)
 {
-	townsPtr->cpu.StoreWord(
+	townsPtr->CPU().RedirectStoreWord(
 	    townsPtr->mem,
-	    townsPtr->cpu.state.SS().addressSize,
-	    townsPtr->cpu.state.SS(),
-	    townsPtr->cpu.state.SP()+4,
+	    townsPtr->CPU().state.SS().addressSize,
+	    townsPtr->CPU().state.SS(),
+	    townsPtr->CPU().state.SP()+4,
 	    cx);
 }
 void TownsTgDrv::ReturnDX(uint16_t dx)
 {
-	townsPtr->cpu.StoreWord(
+	townsPtr->CPU().RedirectStoreWord(
 	    townsPtr->mem,
-	    townsPtr->cpu.state.SS().addressSize,
-	    townsPtr->cpu.state.SS(),
-	    townsPtr->cpu.state.SP()+6,
+	    townsPtr->CPU().state.SS().addressSize,
+	    townsPtr->CPU().state.SS(),
+	    townsPtr->CPU().state.SP()+6,
 	    dx);
 }
 
@@ -1200,9 +1200,9 @@ int TownsTgDrv::DriveLetterToSharedDirIndex(char letter) const
 {
 	for(int i=0; i<TOWNS_TGDRV_MAX_NUM_DRIVES; ++i)
 	{
-		if(letter==townsPtr->cpu.FetchByte(
-			townsPtr->cpu.state.CS().addressSize,
-			townsPtr->cpu.state.CS(),
+		if(letter==townsPtr->CPU().RedirectFetchByte(
+			townsPtr->CPU().state.CS().addressSize,
+			townsPtr->CPU().state.CS(),
 			DRIVELETTER_BUFFER+i,
 			townsPtr->mem) &&
 			true==sharedDir[i].linked)
@@ -1214,38 +1214,38 @@ int TownsTgDrv::DriveLetterToSharedDirIndex(char letter) const
 }
 void TownsTgDrv::MakeVMSFT(const class i486DX::SegmentRegister &seg,uint32_t offset,char driveLetter,int hostSFTIdx,FileSys::SystemFileTable &hostSFT)
 {
-	auto &cpu=townsPtr->cpu;
+	auto &cpu=townsPtr->CPU();
 	auto &mem=townsPtr->mem;
 	auto &CS=cpu.state.CS();
-	cpu.StoreWord(mem,CS.addressSize,seg,offset+0x00,1); // Ref Count
-	cpu.StoreWord(mem,CS.addressSize,seg,offset+0x02,hostSFT.mode);
-	cpu.StoreByte(mem,CS.addressSize,seg,offset+0x04,hostSFT.attr);
+	cpu.RedirectStoreWord(mem,CS.addressSize,seg,offset+0x00,1); // Ref Count
+	cpu.RedirectStoreWord(mem,CS.addressSize,seg,offset+0x02,hostSFT.mode);
+	cpu.RedirectStoreByte(mem,CS.addressSize,seg,offset+0x04,hostSFT.attr);
 
 	uint16_t devInfo;
 	devInfo=cpputil::Capitalize(driveLetter)-'A';
 	devInfo|=0x8000; // Redirected.
-	cpu.StoreWord(mem,CS.addressSize,seg,offset+0x05,devInfo);
+	cpu.RedirectStoreWord(mem,CS.addressSize,seg,offset+0x05,devInfo);
 
-	cpu.StoreDword(mem,CS.addressSize,seg,offset+0x07,TGDRV_ID); // Redirected. No DPB.  Write Tsugaru Drive ID.
-	cpu.StoreWord(mem,CS.addressSize,seg,offset+0x0B,hostSFTIdx); // Use this word to connect with host.
+	cpu.RedirectStoreDword(mem,CS.addressSize,seg,offset+0x07,TGDRV_ID); // Redirected. No DPB.  Write Tsugaru Drive ID.
+	cpu.RedirectStoreWord(mem,CS.addressSize,seg,offset+0x0B,hostSFTIdx); // Use this word to connect with host.
 
-	cpu.StoreWord(mem,CS.addressSize,seg,offset+0x0D,hostSFT.FormatDOSTime());
-	cpu.StoreWord(mem,CS.addressSize,seg,offset+0x0F,hostSFT.FormatDOSDate());
-	cpu.StoreDword(mem,CS.addressSize,seg,offset+0x11,hostSFT.GetFileSize());
-	cpu.StoreDword(mem,CS.addressSize,seg,offset+0x15,hostSFT.GetFilePointer());
+	cpu.RedirectStoreWord(mem,CS.addressSize,seg,offset+0x0D,hostSFT.FormatDOSTime());
+	cpu.RedirectStoreWord(mem,CS.addressSize,seg,offset+0x0F,hostSFT.FormatDOSDate());
+	cpu.RedirectStoreDword(mem,CS.addressSize,seg,offset+0x11,hostSFT.GetFileSize());
+	cpu.RedirectStoreDword(mem,CS.addressSize,seg,offset+0x15,hostSFT.GetFilePointer());
 
-	cpu.StoreWord(mem,CS.addressSize,seg,offset+0x19,0); // Rel cluster.  N/A.
-	cpu.StoreWord(mem,CS.addressSize,seg,offset+0x1B,0); // Absolute cluster.  N/A.
-	cpu.StoreWord(mem,CS.addressSize,seg,offset+0x1D,0); // Dir ent sector N/A
-	cpu.StoreWord(mem,CS.addressSize,seg,offset+0x1F,0); // Dir ent position in sector N/A
+	cpu.RedirectStoreWord(mem,CS.addressSize,seg,offset+0x19,0); // Rel cluster.  N/A.
+	cpu.RedirectStoreWord(mem,CS.addressSize,seg,offset+0x1B,0); // Absolute cluster.  N/A.
+	cpu.RedirectStoreWord(mem,CS.addressSize,seg,offset+0x1D,0); // Dir ent sector N/A
+	cpu.RedirectStoreWord(mem,CS.addressSize,seg,offset+0x1F,0); // Dir ent position in sector N/A
 	auto eleven=FilenameTo11Bytes(hostSFT.fName);
 
 	for(int i=0; i<11; ++i)
 	{
-		cpu.StoreByte(mem,CS.addressSize,seg,offset+0x20+i,eleven[i]);
+		cpu.RedirectStoreByte(mem,CS.addressSize,seg,offset+0x20+i,eleven[i]);
 	}
 
-	cpu.StoreByte(mem,CS.addressSize,seg,offset+0x31,FetchPSP());
+	cpu.RedirectStoreByte(mem,CS.addressSize,seg,offset+0x31,FetchPSP());
 }
 void TownsTgDrv::MakeDOSDirEnt(uint32_t DTABuffer,const FileSys::DirectoryEntry &dirent)
 {
@@ -1281,24 +1281,24 @@ unsigned int TownsTgDrv::FetchDriveCodeFromSFT(const class i486DX::SegmentRegist
 }
 uint16_t TownsTgDrv::FetchSFTReferenceCount(const class i486DX::SegmentRegister &seg,uint32_t offset) const
 {
-	return townsPtr->cpu.FetchWord(
-		townsPtr->cpu.state.CS().addressSize,
+	return townsPtr->CPU().RedirectFetchWord(
+		townsPtr->CPU().state.CS().addressSize,
 		seg,
 		offset,
 		townsPtr->mem);
 }
 uint32_t TownsTgDrv::FetchFilePositionFromSFT(const class i486DX::SegmentRegister &seg,uint32_t offset) const
 {
-	return townsPtr->cpu.FetchDword(
-		townsPtr->cpu.state.CS().addressSize,
+	return townsPtr->CPU().RedirectFetchDword(
+		townsPtr->CPU().state.CS().addressSize,
 		seg,
 		offset+0x15,
 		townsPtr->mem);
 }
 unsigned int TownsTgDrv::FetchDeviceInfoFromSFT(const class i486DX::SegmentRegister &seg,uint32_t offset) const
 {
-	return townsPtr->cpu.FetchWord(
-		townsPtr->cpu.state.CS().addressSize,
+	return townsPtr->CPU().RedirectFetchWord(
+		townsPtr->CPU().state.CS().addressSize,
 		seg,
 		offset+0x05,
 		townsPtr->mem);
@@ -1322,8 +1322,8 @@ std::string TownsTgDrv::FetchCString(const i486DX::SegmentRegister &seg,uint32_t
 	std::string str;
 	for(;;)
 	{
-		auto c=townsPtr->cpu.FetchByte(
-		    townsPtr->cpu.state.CS().addressSize,
+		auto c=townsPtr->CPU().RedirectFetchByte(
+		    townsPtr->CPU().state.CS().addressSize,
 		    seg,
 		    offset++,
 			townsPtr->mem);
@@ -1452,7 +1452,7 @@ void TownsTgDrv::StoreDPB(unsigned int SEG,unsigned int OFFSET,DOSDPB dpb)
 
 bool TownsTgDrv::Install(void)
 {
-	auto &cpu=townsPtr->cpu;
+	auto &cpu=townsPtr->CPU();
 	auto &mem=townsPtr->mem;
 
 	std::cout << "AX=" << cpputil::Ustox(cpu.GetAX()) << std::endl;
@@ -1466,10 +1466,10 @@ bool TownsTgDrv::Install(void)
 	std::string param;
 	{
 		uint16_t offset=cpu.state.SI();
-		int len=cpu.FetchByte(cpu.state.CS().addressSize,cpu.state.ES(),offset,mem);
+		int len=cpu.RedirectFetchByte(cpu.state.CS().addressSize,cpu.state.ES(),offset,mem);
 		for(int i=0; i<len; ++i)
 		{
-			param.push_back(cpu.FetchByte(cpu.state.CS().addressSize,cpu.state.ES(),offset+1+i,mem));
+			param.push_back(cpu.RedirectFetchByte(cpu.state.CS().addressSize,cpu.state.ES(),offset+1+i,mem));
 		}
 	}
 	std::cout << "{" << param << "}" << std::endl;
@@ -1530,7 +1530,7 @@ bool TownsTgDrv::Install(void)
 				break;
 			}
 
-			cpu.StoreByte(
+			cpu.RedirectStoreByte(
 			    mem,
 			    cpu.state.CS().addressSize,
 			    cpu.state.DS(),
@@ -1570,7 +1570,7 @@ bool TownsTgDrv::Install(void)
 
 			++I;
 		}
-		cpu.StoreByte(
+		cpu.RedirectStoreByte(
 		    mem,
 		    cpu.state.CS().addressSize,
 		    cpu.state.DS(),
@@ -1625,7 +1625,7 @@ bool TownsTgDrv::Install(void)
 				std::cout << std::endl;
 
 				unsigned int newDPBOFF=DUMMYDPB_BUFFER;
-				unsigned int newDPBSEG=townsPtr->cpu.state.CS().value;
+				unsigned int newDPBSEG=townsPtr->CPU().state.CS().value;
 
 				for(int i=0; i<sizeof(DPBDrives); ++i)
 				{
