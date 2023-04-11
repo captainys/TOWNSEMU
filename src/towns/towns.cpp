@@ -127,7 +127,7 @@ void FMTowns::State::PowerOn(void)
 	{
 		towns.var.slowModeFreq=argv.slowModeFreq;
 	}
-	towns.cpu.state.fpuState.enabled=argv.useFPU;
+	towns.CPU().state.fpuState.enabled=argv.useFPU;
 
 	if(0!=argv.memSizeInMB)
 	{
@@ -420,7 +420,7 @@ void FMTowns::Variable::Reset(void)
 FMTowns::FMTowns() : 
 	Device(this),
 	cpu(this),
-	physMem(this,&cpu,&mem,&sound.state.rf5c68),
+	physMem(this,&CPU(),&mem,&sound.state.rf5c68),
 	keyboard(this,&pic),
 	crtc(this,&sprite),
 	sprite(this,&physMem),
@@ -438,6 +438,8 @@ FMTowns::FMTowns() :
 	tgdrv(this),
 	mapXY{this,this}
 {
+	auto &cpu=CPU();
+
 	townsType=TOWNSTYPE_2_MX;
 
 	cpu.mouseBIOSInterceptorPtr=this;
@@ -832,7 +834,7 @@ bool FMTowns::LoadROMImages(const char dirName[])
 void FMTowns::PowerOn(void)
 {
 	state.PowerOn();
-	cpu.PowerOn();
+	CPU().PowerOn();
 	for(auto devPtr : allDevices)
 	{
 		if(devPtr!=this)
@@ -843,6 +845,7 @@ void FMTowns::PowerOn(void)
 }
 void FMTowns::Reset(void)
 {
+	auto &cpu=CPU();
 	var.Reset();
 	state.Reset();
 	cpu.Reset();
@@ -892,6 +895,7 @@ void FMTowns::ProcessSound(Outside_World *outside_world)
 
 /* virtual */ void FMTowns::InterceptMouseBIOS(void)
 {
+	auto &cpu=CPU();
 	if(0==cpu.GetAH())
 	{
 		if(TownsEventLog::MODE_RECORDING==eventLog.mode || TownsEventLog::MODE_PLAYBACK==eventLog.mode)
@@ -904,7 +908,7 @@ void FMTowns::ProcessSound(Outside_World *outside_world)
 		state.MOS_work_physicalAddr=cpu.DebugLinearAddressToPhysicalAddress(excType,excCode,state.MOS_work_linearAddr,mem);
 
 		i486DX::SegmentRegister CS;
-		cpu.LoadSegmentRegister(CS,0x110,mem);
+		cpu.DebugLoadSegmentRegister(CS,0x110,mem,false);
 		state.TBIOS_physicalAddr=cpu.DebugLinearAddressToPhysicalAddress(excType,excCode,CS.baseLinearAddr,mem);
 		state.tbiosVersion=IdentifyTBIOS(state.TBIOS_physicalAddr);
 		state.TBIOS_mouseInfoOffset=FindTBIOSMouseInfoOffset(state.tbiosVersion,state.TBIOS_physicalAddr);
@@ -1080,12 +1084,14 @@ unsigned int FMTowns::GetEleVolCDRight(void) const
 
 void FMTowns::EnableDebugger(void)
 {
+	auto &cpu=CPU();
 	cpu.AttachDebugger(&debugger);
 	debugger.stop=false;
 	cpu.enableCallStack=true;
 }
 void FMTowns::DisableDebugger(void)
 {
+	auto &cpu=CPU();
 	cpu.DetachDebugger();
 	debugger.stop=false;
 	cpu.enableCallStack=false;
@@ -1093,6 +1099,7 @@ void FMTowns::DisableDebugger(void)
 
 std::vector <std::string> FMTowns::GetStackText(unsigned int numBytes) const
 {
+	auto &cpu=CPU();
 	std::vector <std::string> text;
 	for(unsigned int offsetHigh=0; offsetHigh<numBytes; offsetHigh+=16)
 	{
@@ -1110,6 +1117,7 @@ std::vector <std::string> FMTowns::GetStackText(unsigned int numBytes) const
 }
 void FMTowns::PrintStack(unsigned int numBytes) const
 {
+	auto &cpu=CPU();
 	for(auto s : GetStackText(numBytes))
 	{
 		std::cout << s << std::endl;
@@ -1121,6 +1129,7 @@ void FMTowns::PrintStack(unsigned int numBytes) const
 }
 void FMTowns::PrintDisassembly(void) const
 {
+	auto &cpu=CPU();
 	i486DX::InstructionAndOperand instOp;
 	MemoryAccess::ConstMemoryWindow emptyMemWin;
 	cpu.DebugFetchInstruction(emptyMemWin,instOp,mem);
@@ -1156,6 +1165,7 @@ std::vector <std::string> FMTowns::GetRealModeIntVectorsText(void) const
 }
 void FMTowns::DumpRealModeIntVectors(void) const
 {
+	auto &cpu=CPU();
 	for(auto s : GetRealModeIntVectorsText())
 	{
 		std::cout << s << std::endl;
@@ -1167,10 +1177,12 @@ void FMTowns::DumpRealModeIntVectors(void) const
 }
 std::vector <std::string> FMTowns::GetCallStackText(void) const
 {
+	auto &cpu=CPU();
 	return debugger.GetCallStackText(cpu);
 }
 void FMTowns::PrintCallStack(void) const
 {
+	auto &cpu=CPU();
 	for(auto str : GetCallStackText())
 	{
 		std::cout << str << std::endl;
@@ -1182,6 +1194,7 @@ void FMTowns::PrintCallStack(void) const
 }
 void FMTowns::PrintPIC(void) const
 {
+	auto &cpu=CPU();
 	for(auto str : pic.GetStateText())
 	{
 		std::cout << str << std::endl;
@@ -1194,6 +1207,7 @@ void FMTowns::PrintPIC(void) const
 
 void FMTowns::PrintDMAC(void) const
 {
+	auto &cpu=CPU();
 	for(auto str : dmac.GetStateText())
 	{
 		std::cout << str << std::endl;
@@ -1206,6 +1220,7 @@ void FMTowns::PrintDMAC(void) const
 
 void FMTowns::PrintFDC(void) const
 {
+	auto &cpu=CPU();
 	for(auto str : fdc.GetStatusText())
 	{
 		std::cout << str << std::endl;
@@ -1218,6 +1233,7 @@ void FMTowns::PrintFDC(void) const
 
 void FMTowns::PrintTimer(void) const
 {
+	auto &cpu=CPU();
 	for(auto str : timer.GetStatusText())
 	{
 		std::cout << str << std::endl;
@@ -1230,6 +1246,7 @@ void FMTowns::PrintTimer(void) const
 
 void FMTowns::PrintSound(void) const
 {
+	auto &cpu=CPU();
 	for(auto str : sound.state.rf5c68.GetStatusText())
 	{
 		std::cout << str << std::endl;
@@ -1257,6 +1274,7 @@ void FMTowns::PrintStatus(void) const
 		std::cout << "Reason:" << vmAbortReason << std::endl;
 	}
 
+	auto &cpu=CPU();
 	if(nullptr!=cpu.debuggerPtr)
 	{
 		std::cout << "Debugger Enabled." << std::endl;

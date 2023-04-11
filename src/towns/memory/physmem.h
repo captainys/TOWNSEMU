@@ -39,10 +39,10 @@ class TownsMemAccess : public MemoryAccess
 {
 public:
 	class TownsPhysicalMemory *physMemPtr;
-	class i486DX *cpuPtr;
+	class i486DXCommon *cpuPtr;
 	TownsMemAccess();
 	void SetPhysicalMemoryPointer(TownsPhysicalMemory *ptr);
-	void SetCPUPointer(class i486DX *cpuPtr);
+	void SetCPUPointer(class i486DXCommon *cpuPtr);
 };
 
 
@@ -397,7 +397,7 @@ public:
 	bool takeJISCodeLog;
 	std::vector <unsigned char> JISCodeLog; // Log KanjiROM Read Access
 
-	class i486DX *cpuPtr;
+	class i486DXCommon *cpuPtr;
 	class Memory *memPtr;
 
 	TownsMainRAMAccess mainRAMAccess;
@@ -442,7 +442,7 @@ public:
 
 
 
-	TownsPhysicalMemory(class FMTowns *townsPtr,class i486DX *cpuPtr,class Memory *memPtr,class RF5C68 *pcmPtr);
+	TownsPhysicalMemory(class FMTowns *townsPtr,class i486DXCommon *cpuPtr,class Memory *memPtr,class RF5C68 *pcmPtr);
 
 	bool LoadROMImages(const char dirName[]);
 

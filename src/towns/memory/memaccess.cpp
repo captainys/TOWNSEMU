@@ -33,7 +33,7 @@ void TownsMemAccess::SetPhysicalMemoryPointer(TownsPhysicalMemory *ptr)
 {
 	physMemPtr=ptr;
 }
-void TownsMemAccess::SetCPUPointer(class i486DX *cpuPtr)
+void TownsMemAccess::SetCPUPointer(class i486DXCommon *cpuPtr)
 {
 	this->cpuPtr=cpuPtr;
 }
