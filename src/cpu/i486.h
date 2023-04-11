@@ -58,6 +58,10 @@ Therefore, the CPU class now is divided into three parts.  The base class, i486C
 
 class i486DXCommon : public CPU
 {
+private:
+	i486DXCommon(const i486DXCommon &);
+	i486DXCommon &operator=(const i486DXCommon &);
+
 public:
 	#define NUM_BYTES_MASK static const unsigned int numBytesMask[5]={0,0xFF,0xFFFF,0xFFFFFF,0xFFFFFFFF};
 	#define NUM_BYTES_TO_BASIC_REG_BASE static const unsigned int numBytesToBasicRegBase[5]={REG_8BIT_REG_BASE,REG_8BIT_REG_BASE,REG_16BIT_REG_BASE,REG_16BIT_REG_BASE,REG_32BIT_REG_BASE};
@@ -2499,6 +2503,31 @@ public:
 		return memWin;
 	}
 
+	/*! Redirect to sub-class FetchByte.  To be used from infrequently by drivers.
+	*/
+	virtual unsigned int RedirectFetchByte(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)=0;
+
+	/*! Redirect to sub-class FetchWord.  To be used from infrequently by drivers.
+	*/
+	virtual unsigned int RedirectFetchWord(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)=0;
+
+	/*! Redirect to sub-class FetchDword.  To be used from infrequently by drivers.
+	*/
+	virtual unsigned int RedirectFetchDword(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)=0;
+
+	/*! Redirect to sub-class StoreByte.  To be used from infrequently by drivers.
+	*/
+	virtual void RedirectStoreByte(Memory &mem,int addressSize,const SegmentRegister &seg,unsigned int offset,unsigned char data)=0;
+
+	/*! Redirect to sub-class StoreWord.  To be used from infrequently by drivers.
+	*/
+	virtual void RedirectStoreWord(Memory &mem,int addressSize,const SegmentRegister &seg,unsigned int offset,unsigned int data)=0;
+
+	/*! Redirect to sub-class StoreDword.  To be used from infrequently by drivers.
+	*/
+	virtual void RedirectStoreDword(Memory &mem,int addressSize,const SegmentRegister &seg,unsigned int offset,unsigned int data)=0;
+
+
 	/*! Fetch a byte for debugger.  It won't change exception status.
 	*/
 	unsigned int DebugFetchByte(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
@@ -2896,6 +2925,10 @@ public:
 	/*! DebugLoadSegmentRegister is implemented in the sub-class.  It is not performance critical.
 	*/
 	virtual unsigned int DebugLoadSegmentRegister(SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode) const=0;
+
+	/*! Redirect to Interrupt in the sub-class from PIC.
+	*/
+	virtual void RedirectInterrupt(unsigned int intNum,Memory &mem,unsigned int numInstBytesForReturn,unsigned int numInstBytesForCallStack,bool SWI)=0;
 };
 
 // Fidelity Layer
@@ -3408,6 +3441,56 @@ public:
 	/*! Store value to an 80-bit operand.
 	*/
 	void StoreOperandValue80(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value);
+
+
+	/*! Allow access to FetchByte from the base class.  To be used from infrequently by drivers.
+	*/
+	unsigned int RedirectFetchByte(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem) override
+	{
+		return FetchByte(addressSize,seg,offset,mem);
+	}
+
+	/*! Allow access to FetchWord from the base class.  To be used from infrequently by drivers.
+	*/
+	unsigned int RedirectFetchWord(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem) override
+	{
+		return FetchWord(addressSize,seg,offset,mem);
+	}
+
+	/*! Allow access to FetchDword from the base class.  To be used from infrequently by drivers.
+	*/
+	unsigned int RedirectFetchDword(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem) override
+	{
+		return FetchDword(addressSize,seg,offset,mem);
+	}
+
+	/*! Allow access to StoreByte from the base class.  To be used from infrequently by drivers.
+	*/
+	void RedirectStoreByte(Memory &mem,int addressSize,const SegmentRegister &seg,unsigned int offset,unsigned char data) override
+	{
+		StoreByte(mem,addressSize,seg,offset,data);
+	}
+
+	/*! Allow access to StoreWord from the base class.  To be used from infrequently by drivers.
+	*/
+	void RedirectStoreWord(Memory &mem,int addressSize,const SegmentRegister &seg,unsigned int offset,unsigned int data) override
+	{
+		StoreWord(mem,addressSize,seg,offset,data);
+	}
+
+	/*! Allow access to StoreDword from the base class.  To be used from infrequently by drivers.
+	*/
+	void RedirectStoreDword(Memory &mem,int addressSize,const SegmentRegister &seg,unsigned int offset,unsigned int data) override
+	{
+		StoreDword(mem,addressSize,seg,offset,data);
+	}
+
+	/*! Allow access to Interrupt from the base class.  To be used from PIC.
+	*/
+	void RedirectInterrupt(unsigned int intNum,Memory &mem,unsigned int numInstBytesForReturn,unsigned int numInstBytesForCallStack,bool SWI) override
+	{
+		Interrupt(intNum,mem,numInstBytesForReturn,numInstBytesForCallStack,SWI);
+	}
 };
 
 
