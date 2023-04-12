@@ -605,7 +605,7 @@ std::string TownsGamePortEmuToStr(unsigned int emu)
 unsigned int TownsStrToApp(std::string str)
 {
 	Capitalize(str);
-	if("WINGCOMMANDER1"==str || "WC1"==str)
+	if("WINGCOMMANDER1"==str || "WC1"==str || "WINGCOMMANDER"==str || "WC"==str)
 	{
 		return TOWNS_APPSPECIFIC_WINGCOMMANDER1;
 	}
