@@ -188,15 +188,22 @@ public:
 	{
 		if(0!=state.IRR0_OR_IRR1_Cache && cpu.GetIF() && false==cpu.state.holdIRQ)
 		{
-			unsigned int chip=0;
-			if(7==state.i8259A[0].highestPriorityInt) // in which case i8259A[1], then i8259A[0].
+			unsigned int chip=0,INTToGo=8;
+			if(0==(state.i8259A[0].OCW[0]&0x80)) // If PIC0 OCW[0] bit 7 is zero, check both PICs.
 			{
-				chip=1;
+				if(7==state.i8259A[0].highestPriorityInt) // in which case i8259A[1], then i8259A[0].
+				{
+					chip=1;
+				}
+				INTToGo=state.i8259A[chip].INTToGo();
+				if(8<=INTToGo && 0==state.i8259A[chip].ISR)
+				{
+					chip=1-chip;
+					INTToGo=state.i8259A[chip].INTToGo();
+				}
 			}
-			auto INTToGo=state.i8259A[chip].INTToGo();
-			if(8<=INTToGo && 0==state.i8259A[chip].ISR)
+			else  // If PIC0 OCW[0] bit 7 is one, check only PIC0.
 			{
-				chip=1-chip;
 				INTToGo=state.i8259A[chip].INTToGo();
 			}
 			if(INTToGo<8)
