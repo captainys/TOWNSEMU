@@ -21,6 +21,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <set>
 #include <map>
 #include <fstream>
+#include <string.h> // for memcpy
 #include "i486.h"
 
 

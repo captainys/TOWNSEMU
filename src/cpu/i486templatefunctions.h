@@ -2,6 +2,8 @@
 #define I486TEMPLATEFUNCTIONS_IS_INCLUDED
 /* { */
 
+#include <string.h> // for memcpy
+
 template <class FIDELITY>
 inline void i486DXFidelityLayer <FIDELITY>::Interrupt(unsigned int INTNum,Memory &mem,unsigned int numInstBytesForReturn,unsigned int numInstBytesForCallStack,bool SWI)
 {
