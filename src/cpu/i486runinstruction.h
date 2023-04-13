@@ -4380,6 +4380,14 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			switch(REG)
 			{
 			case 0: // INC
+				if(op1.operandType==OPER_ADDR)
+				{
+					clocksPassed=3;
+				}
+				else
+				{
+					clocksPassed=1;
+				}
 				if(16==inst.operandSize)
 				{
 					uint8_t *operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1);
@@ -4391,6 +4399,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					else
 					{
 						i=EvaluateOperandRegOrMem16(mem,inst.addressSize,inst.segOverride,op1);
+						HANDLE_EXCEPTION_IF_ANY;
 					}
 					if(true!=state.exception)
 					{
@@ -4402,6 +4411,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 						else
 						{
 							StoreOperandValueRegOrMem16(op1,mem,inst.addressSize,inst.segOverride,i);
+							HANDLE_EXCEPTION_IF_ANY;
 						}
 					}
 				}
@@ -4416,6 +4426,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					else
 					{
 						i=EvaluateOperandRegOrMem32(mem,inst.addressSize,inst.segOverride,op1);
+						HANDLE_EXCEPTION_IF_ANY;
 					}
 					if(true!=state.exception)
 					{
@@ -4427,9 +4438,12 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 						else
 						{
 							StoreOperandValueRegOrMem32(op1,mem,inst.addressSize,inst.segOverride,i);
+							HANDLE_EXCEPTION_IF_ANY;
 						}
 					}
 				}
+				break;
+			case 1: // DEC
 				if(op1.operandType==OPER_ADDR)
 				{
 					clocksPassed=3;
@@ -4438,8 +4452,6 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				{
 					clocksPassed=1;
 				}
-				break;
-			case 1: // DEC
 				if(16==inst.operandSize)
 				{
 					uint8_t *operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1);
@@ -4451,6 +4463,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					else
 					{
 						i=EvaluateOperandRegOrMem16(mem,inst.addressSize,inst.segOverride,op1);
+						HANDLE_EXCEPTION_IF_ANY;
 					}
 					if(true!=state.exception)
 					{
@@ -4462,6 +4475,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 						else
 						{
 							StoreOperandValueRegOrMem16(op1,mem,inst.addressSize,inst.segOverride,i);
+							HANDLE_EXCEPTION_IF_ANY;
 						}
 					}
 				}
@@ -4476,6 +4490,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					else
 					{
 						i=EvaluateOperandRegOrMem32(mem,inst.addressSize,inst.segOverride,op1);
+						HANDLE_EXCEPTION_IF_ANY;
 					}
 					if(true!=state.exception)
 					{
@@ -4487,16 +4502,9 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 						else
 						{
 							StoreOperandValueRegOrMem32(op1,mem,inst.addressSize,inst.segOverride,i);
+							HANDLE_EXCEPTION_IF_ANY;
 						}
 					}
-				}
-				if(op1.operandType==OPER_ADDR)
-				{
-					clocksPassed=3;
-				}
-				else
-				{
-					clocksPassed=1;
 				}
 				break;
 			case 2: // CALL Indirect
