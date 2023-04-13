@@ -20,6 +20,12 @@ public:
 	inline static void RestoreESPHighWord(uint8_t,uint32_t &,SavedESP){}
 	constexpr bool HandleExceptionAndRestoreESPIfAny(class i486DXCommon &,Memory &,uint32_t instNumBytes,SavedESP) const{return false;}
 
+	class SavedESPEBP
+	{
+	};
+	inline static void SaveESPEBP(SavedESPEBP &,uint8_t,uint32_t,uint32_t){}
+	constexpr bool HandleExceptionAndRestoreESPEBPIfAny(class i486DXCommon &,Memory &,uint32_t instNumBytes,SavedESPEBP) const{return false;}
+
 	class SavedECX
 	{
 	};
@@ -165,6 +171,29 @@ public:
 		if(true==cpu.state.exception)
 		{
 			cpu.state.ESP()=ESP.ESP;
+			cpu.HandleException(true,mem,instNumBytes);
+			return true;
+		}
+		return false;
+	}
+
+
+	class SavedESPEBP
+	{
+	public:
+		uint32_t ESP,EBP;
+	};
+	inline static void SaveESPEBP(SavedESPEBP &save,uint8_t,uint32_t ESP,uint32_t EBP)
+	{
+		save.ESP=ESP;
+		save.EBP=EBP;
+	}
+	inline static bool HandleExceptionAndRestoreESPEBPIfAny(i486DXFidelityLayer<THISCLASS> &cpu,Memory &mem,uint32_t instNumBytes,SavedESPEBP ESP)
+	{
+		if(true==cpu.state.exception)
+		{
+			cpu.state.ESP()=ESP.ESP;
+			cpu.state.EBP()=ESP.EBP;
 			cpu.HandleException(true,mem,instNumBytes);
 			return true;
 		}

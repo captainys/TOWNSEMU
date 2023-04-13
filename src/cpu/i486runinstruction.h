@@ -1702,6 +1702,18 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		}
 
 	// Use the following as a pair.
+	#define SAVE_ESPEBP_BEFORE_ENTER \
+		typename FIDELITY::SavedESPEBP saved; \
+		FIDELITY::SaveESPEBP(saved,inst.addressSize,state.ESP(),state.EBP());
+
+	#define HANDLE_EXCEPTION_ENTER \
+		if(true==fidelity.HandleExceptionAndRestoreESPEBPIfAny(*this,mem,inst.numBytes,saved)) \
+		{ \
+			EIPIncrement=0; \
+			break; \
+		}
+
+	// Use the following as a pair.
 	#define SAVE_ECX_BEFORE_STRINGOP \
 		typename FIDELITY::SavedECX savedECX; \
 		FIDELITY::SaveECX(savedECX,state.ECX());
@@ -3110,6 +3122,8 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 
 	case I486_RENUMBER_ENTER://      0xC8,
 		{
+			SAVE_ESPEBP_BEFORE_ENTER;
+
 			// Weird operand.
 			unsigned int frameSize=cpputil::GetWord(inst.operand);
 			unsigned int level=inst.operand[2]&0x1F;
@@ -3117,7 +3131,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			clocksPassed=14+level*3;
 
 			Push(mem,inst.operandSize,state.EBP());
-			HANDLE_EXCEPTION_IF_ANY;
+			HANDLE_EXCEPTION_ENTER;
 			auto framePtr=state.ESP();
 			if(0<level)
 			{
@@ -3129,17 +3143,22 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					{
 						SetBP(GetBP()-2);
 						auto dat=FetchWord(GetStackAddressingSize(),state.SS(),state.BP(),mem);
+						HANDLE_EXCEPTION_ENTER;
 						Push16(mem,dat);
+						HANDLE_EXCEPTION_ENTER;
 					}
 					else
 					{
 						SetEBP(GetEBP()-4);
 						auto dat=FetchDword(GetStackAddressingSize(),state.SS(),state.EBP(),mem);
+						HANDLE_EXCEPTION_ENTER;
 						Push32(mem,dat);
+						HANDLE_EXCEPTION_ENTER;
 					}
 				}
 
 				Push(mem,inst.operandSize,framePtr);  // Should it be operandSize or addressSize?  Extremely confusing!
+				HANDLE_EXCEPTION_ENTER;
 			}
 			if(16==inst.operandSize)
 			{
@@ -3160,10 +3179,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			if(true!=IsInRealMode())
 			{
 				fidelity.PageFaultCheckAfterEnter(*this,mem);
-				if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
-				{
-					EIPIncrement=0;
-				}
+				HANDLE_EXCEPTION_ENTER;
 			}
 		}
 		break;
