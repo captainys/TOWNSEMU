@@ -1037,6 +1037,14 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 		break;
 	case TOWNSIO_MX_IMGOUT_D0://   0x474,
 		// std::cout << "MX-VIDOUTCONTROL16[" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << "H]=" << cpputil::Ustox(data) << "H" << std::endl;
+		if(state.highResCrtcRegAddrLatch!=HIGHRES_REG_WD_MOUSEX && //0x000, // Word Access Reg0 for Hardware Mouse Cursor X
+		   state.highResCrtcRegAddrLatch!=HIGHRES_REG_WD_MOUSEY)   //0x001, // Word Access Reg1 for Hardware Mouse Cursor Y
+		{
+			if(true==monitorCRTC2)
+			{
+				std::cout << "Write to CRTC2 Reg(D0)=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Ustox(data) << std::endl;
+			}
+		}
 		if(state.highResCrtcRegAddrLatch<NUM_HIRES_CRTC_REGISTERS)
 		{
 			if(state.highResCrtcRegAddrLatch!=HIGHRES_REG_WD_MOUSEX && //0x000, // Word Access Reg0 for Hardware Mouse Cursor X
@@ -1044,10 +1052,6 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 			{
 				state.highResCrtcReg[state.highResCrtcRegAddrLatch]&=0xFFFF0000;
 				state.highResCrtcReg[state.highResCrtcRegAddrLatch]|=(data&0xFFFF);
-				if(true==monitorCRTC2)
-				{
-					std::cout << "Write to CRTC2 Reg(D0)=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Ustox(data) << std::endl;
-				}
 			}
 			switch(state.highResCrtcRegAddrLatch)
 			{
