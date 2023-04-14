@@ -867,49 +867,48 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 		{
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]&=0xFFFFFF00;
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]|=(data&0xFF);
-
-			switch(state.highResCrtcRegAddrLatch)
+		}
+		switch(state.highResCrtcRegAddrLatch)
+		{
+		case HIGHRES_REG_CTRL1:
+			if(0!=(data&2))
 			{
-			case HIGHRES_REG_CTRL1:
-				if(0!=(data&2))
-				{
-					state.highResCrtcReg4Bit0=false;
-					state.highResCrtcReg4Bit1=false;
-				}
+				state.highResCrtcReg4Bit0=false;
+				state.highResCrtcReg4Bit1=false;
+			}
+			break;
+		case HIGHRES_REG_PALINDEX:
+			state.highResCrtcPalette.codeLatch=data;
+			break;
+		case HIGHRES_REG_PALCOL:
+			switch(state.highResCrtcReg[HIGHRES_REG_PALSEL])
+			{
+			case 0:
+				state.highResCrtcPalette.Set16(0,2,data);
 				break;
-			case HIGHRES_REG_PALINDEX:
-				state.highResCrtcPalette.codeLatch=data;
+			case 1:
+				state.highResCrtcPalette.Set16(1,2,data);
 				break;
-			case HIGHRES_REG_PALCOL:
-				switch(state.highResCrtcReg[HIGHRES_REG_PALSEL])
-				{
-				case 0:
-					state.highResCrtcPalette.Set16(0,2,data);
-					break;
-				case 1:
-					state.highResCrtcPalette.Set16(1,2,data);
-					break;
-				case 2:
-					state.highResCrtcPalette.Set256(2,data);
-					break;
-				}
-				break;
-			case HIGHRES_REG_MOUSE_PATTERN:
-				if(true==state.highResCrtcMouse.defining)
-				{
-					if(state.highResCrtcMouse.ptnCount<512)
-					{
-						state.highResCrtcMouse.ANDPtn[state.highResCrtcMouse.ptnCount]=data;
-						++state.highResCrtcMouse.ptnCount;
-					}
-					else if(state.highResCrtcMouse.ptnCount<1024)
-					{
-						state.highResCrtcMouse.ORPtn[state.highResCrtcMouse.ptnCount-512]=data;
-						++state.highResCrtcMouse.ptnCount;
-					}
-				}
+			case 2:
+				state.highResCrtcPalette.Set256(2,data);
 				break;
 			}
+			break;
+		case HIGHRES_REG_MOUSE_PATTERN:
+			if(true==state.highResCrtcMouse.defining)
+			{
+				if(state.highResCrtcMouse.ptnCount<512)
+				{
+					state.highResCrtcMouse.ANDPtn[state.highResCrtcMouse.ptnCount]=data;
+					++state.highResCrtcMouse.ptnCount;
+				}
+				else if(state.highResCrtcMouse.ptnCount<1024)
+				{
+					state.highResCrtcMouse.ORPtn[state.highResCrtcMouse.ptnCount-512]=data;
+					++state.highResCrtcMouse.ptnCount;
+				}
+			}
+			break;
 		}
 		break;
 	case TOWNSIO_MX_IMGOUT_D1://   0x475,
@@ -1037,8 +1036,8 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 		break;
 	case TOWNSIO_MX_IMGOUT_D0://   0x474,
 		// std::cout << "MX-VIDOUTCONTROL16[" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << "H]=" << cpputil::Ustox(data) << "H" << std::endl;
-		if(state.highResCrtcRegAddrLatch!=HIGHRES_REG_WD_MOUSEX && //0x000, // Word Access Reg0 for Hardware Mouse Cursor X
-		   state.highResCrtcRegAddrLatch!=HIGHRES_REG_WD_MOUSEY)   //0x001, // Word Access Reg1 for Hardware Mouse Cursor Y
+		if(state.highResCrtcRegAddrLatch!=HIGHRES_REG_WD_MOUSEX && //0x200
+		   state.highResCrtcRegAddrLatch!=HIGHRES_REG_WD_MOUSEY)   //0x201
 		{
 			if(true==monitorCRTC2)
 			{
@@ -1047,76 +1046,72 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 		}
 		if(state.highResCrtcRegAddrLatch<NUM_HIRES_CRTC_REGISTERS)
 		{
-			if(state.highResCrtcRegAddrLatch!=HIGHRES_REG_WD_MOUSEX && //0x000, // Word Access Reg0 for Hardware Mouse Cursor X
-			   state.highResCrtcRegAddrLatch!=HIGHRES_REG_WD_MOUSEY)   //0x001, // Word Access Reg1 for Hardware Mouse Cursor Y
+			state.highResCrtcReg[state.highResCrtcRegAddrLatch]&=0xFFFF0000;
+			state.highResCrtcReg[state.highResCrtcRegAddrLatch]|=(data&0xFFFF);
+		}
+		switch(state.highResCrtcRegAddrLatch)
+		{
+		case HIGHRES_REG_CTRL1:
+			if(0!=(data&2))
 			{
-				state.highResCrtcReg[state.highResCrtcRegAddrLatch]&=0xFFFF0000;
-				state.highResCrtcReg[state.highResCrtcRegAddrLatch]|=(data&0xFFFF);
+				state.highResCrtcReg4Bit0=false;
+				state.highResCrtcReg4Bit1=false;
 			}
-			switch(state.highResCrtcRegAddrLatch)
+			break;
+		case HIGHRES_REG_PALINDEX:
+			state.highResCrtcPalette.codeLatch=data&0xFF;
+			break;
+		case HIGHRES_REG_PALCOL:
+			switch(state.highResCrtcReg[HIGHRES_REG_PALSEL])
 			{
-			case HIGHRES_REG_CTRL1:
-				if(0!=(data&2))
-				{
-					state.highResCrtcReg4Bit0=false;
-					state.highResCrtcReg4Bit1=false;
-				}
+			case 0:
+				state.highResCrtcPalette.Set16(0,2,data&0xFF);          // Low Green
+				state.highResCrtcPalette.Set16(0,0,(data>>8)&0xFF);     // High Red
 				break;
-			case HIGHRES_REG_PALINDEX:
-				state.highResCrtcPalette.codeLatch=data&0xFF;
+			case 1:
+				state.highResCrtcPalette.Set16(1,2,data&0xFF);          // Low Green
+				state.highResCrtcPalette.Set16(1,0,(data>>8)&0xFF);     // High Red
 				break;
-			case HIGHRES_REG_PALCOL:
-				switch(state.highResCrtcReg[HIGHRES_REG_PALSEL])
-				{
-				case 0:
-					state.highResCrtcPalette.Set16(0,2,data&0xFF);          // Low Green
-					state.highResCrtcPalette.Set16(0,0,(data>>8)&0xFF);     // High Red
-					break;
-				case 1:
-					state.highResCrtcPalette.Set16(1,2,data&0xFF);          // Low Green
-					state.highResCrtcPalette.Set16(1,0,(data>>8)&0xFF);     // High Red
-					break;
-				case 2:
-					state.highResCrtcPalette.Set256(2,data&0xFF);          // Low Green
-					state.highResCrtcPalette.Set256(0,(data>>8)&0xFF);     // High Red
-					break;
-				}
-				break;
-			case HIGHRES_REG_WD_MOUSEX: //0x000, // Word Access Reg0 for Hardware Mouse Cursor X
-				state.highResCrtcMouse.X=data;
-				break;
-			case HIGHRES_REG_WD_MOUSEY: //0x001, // Word Access Reg1 for Hardware Mouse Cursor Y
-				state.highResCrtcMouse.Y=data;
-				break;
-			case HIGHRES_REG_WD_MOUSE_ORIGINX: //0x002, // Word Access Reg 2 for Origin in the Pattern X
-				state.highResCrtcMouse.originX=data;
-				break;
-			case HIGHRES_REG_WD_MOUSE_ORIGINY: //0x003, // Word Access Reg 2 for Origin in the Pattern Y
-				state.highResCrtcMouse.originY=data;
-				break;
-			case HIGHRES_REG_WD_MOUSE_DEFINE: //0x006,  // Word Access Reg 6 for starting/ending mouse pattern definition
-				if(0==data)
-				{
-					state.highResCrtcMouse.defining=true;
-					state.highResCrtcMouse.defined=false;
-					state.highResCrtcMouse.ptnCount=0;
-				}
-				else
-				{
-					if(true==state.highResCrtcMouse.defining)
-					{
-						state.highResCrtcMouse.defined=true;
-						state.highResCrtcMouse.defining=false;
-					}
-				}
-				break;
-			case HIGHRES_REG_WD_MOUSE_UNKNOWN8: //0x008,
-				state.highResCrtcMouse.unknownValueReg8=data;
-				break;
-			case HIGHRES_REG_MOUSE_PATTERN:
-				std::cout << "Word writing to the hardware-mouse pattern?" << std::endl;
+			case 2:
+				state.highResCrtcPalette.Set256(2,data&0xFF);          // Low Green
+				state.highResCrtcPalette.Set256(0,(data>>8)&0xFF);     // High Red
 				break;
 			}
+			break;
+		case HIGHRES_REG_WD_MOUSEX: //0x200
+			state.highResCrtcMouse.X=data;
+			break;
+		case HIGHRES_REG_WD_MOUSEY: //0x201
+			state.highResCrtcMouse.Y=data;
+			break;
+		case HIGHRES_REG_WD_MOUSE_ORIGINX: //0x202
+			state.highResCrtcMouse.originX=data;
+			break;
+		case HIGHRES_REG_WD_MOUSE_ORIGINY: //0x203
+			state.highResCrtcMouse.originY=data;
+			break;
+		case HIGHRES_REG_WD_MOUSE_DEFINE: //0x206
+			if(0==data)
+			{
+				state.highResCrtcMouse.defining=true;
+				state.highResCrtcMouse.defined=false;
+				state.highResCrtcMouse.ptnCount=0;
+			}
+			else
+			{
+				if(true==state.highResCrtcMouse.defining)
+				{
+					state.highResCrtcMouse.defined=true;
+					state.highResCrtcMouse.defining=false;
+				}
+			}
+			break;
+		case HIGHRES_REG_WD_MOUSE_UNKNOWN8: //0x208,
+			state.highResCrtcMouse.unknownValueReg8=data;
+			break;
+		case HIGHRES_REG_MOUSE_PATTERN:
+			std::cout << "Word writing to the hardware-mouse pattern?" << std::endl;
+			break;
 		}
 		break;
 	case TOWNSIO_MX_IMGOUT_D1://   0x475,
