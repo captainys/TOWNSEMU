@@ -238,6 +238,10 @@ public:
 		bool highResCRTCEnabled=false;
 		unsigned int highResCrtcReg[NUM_HIRES_CRTC_REGISTERS];
 		unsigned int highResCrtcRegAddrLatch;
+		bool highResCrtcReg4Bit0=false;
+		// High-Res CRTC Reg4 Bit0 seems to work independent of highResCRTCEnabled flag.
+		// Looks like it is mostly in sync with highResCRTCEnabled flag, but can independently
+		// turned off by writing Bit1=1 to Reg 4.  Meaning unknown.
 		bool highResCrtcReg4Bit1=true;
 		unsigned int highResPaletteMode,highResPaletteLatch;
 		AnalogPalette highResCrtcPalette;

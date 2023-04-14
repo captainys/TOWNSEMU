@@ -4415,8 +4415,8 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					else
 					{
 						i=EvaluateOperandRegOrMem16(mem,inst.addressSize,inst.segOverride,op1);
-						HANDLE_EXCEPTION_IF_ANY;
 					}
+					HANDLE_EXCEPTION_IF_ANY;
 					if(true!=state.exception)
 					{
 						IncrementWord(i);
@@ -4442,8 +4442,8 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					else
 					{
 						i=EvaluateOperandRegOrMem32(mem,inst.addressSize,inst.segOverride,op1);
-						HANDLE_EXCEPTION_IF_ANY;
 					}
+					HANDLE_EXCEPTION_IF_ANY;
 					if(true!=state.exception)
 					{
 						IncrementDword(i);
@@ -4479,8 +4479,8 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					else
 					{
 						i=EvaluateOperandRegOrMem16(mem,inst.addressSize,inst.segOverride,op1);
-						HANDLE_EXCEPTION_IF_ANY;
 					}
+					HANDLE_EXCEPTION_IF_ANY;
 					if(true!=state.exception)
 					{
 						DecrementWord(i);
@@ -4506,8 +4506,8 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					else
 					{
 						i=EvaluateOperandRegOrMem32(mem,inst.addressSize,inst.segOverride,op1);
-						HANDLE_EXCEPTION_IF_ANY;
 					}
+					HANDLE_EXCEPTION_IF_ANY;
 					if(true!=state.exception)
 					{
 						DecrementDword(i);
@@ -7403,6 +7403,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		clocksPassed=(OPER_ADDR==op1.operandType ? 5 : 3);
 		{
 			auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1);
+			HANDLE_EXCEPTION_IF_ANY;
 			auto regNum=inst.GetREG(); // Guaranteed to be between 0 and 7
 			if(nullptr!=operPtr)
 			{
@@ -7441,6 +7442,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		clocksPassed=(OPER_ADDR==op1.operandType ? 5 : 3);
 		{
 			auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1);
+			HANDLE_EXCEPTION_IF_ANY;
 			if(nullptr!=operPtr)
 			{
 				if(16==inst.operandSize)

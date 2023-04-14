@@ -873,6 +873,7 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 			case HIGHRES_REG_CTRL1:
 				if(0!=(data&2))
 				{
+					state.highResCrtcReg4Bit0=false;
 					state.highResCrtcReg4Bit1=false;
 				}
 				break;
@@ -1053,6 +1054,7 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 			case HIGHRES_REG_CTRL1:
 				if(0!=(data&2))
 				{
+					state.highResCrtcReg4Bit0=false;
 					state.highResCrtcReg4Bit1=false;
 				}
 				break;
@@ -1187,6 +1189,7 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 			{
 				if(0!=(data&2))
 				{
+					state.highResCrtcReg4Bit0=false;
 					state.highResCrtcReg4Bit1=false;
 				}
 			}
@@ -1391,7 +1394,7 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 			{
 				data|=2;
 			}
-			if(true==state.highResCRTCEnabled)
+			if(true==state.highResCrtcReg4Bit0)
 			{
 				data|=1;
 			}
@@ -1504,10 +1507,12 @@ void TownsCRTC::WriteCR0(unsigned int data)
 		if(0==(data&0x8000)) // Clear START bit, disable conventional CRTC, enable high-res CRTC
 		{
 			state.highResCRTCEnabled=true;
+			state.highResCrtcReg4Bit0=true;
 		}
 		else
 		{
 			state.highResCRTCEnabled=false;
+			state.highResCrtcReg4Bit0=false;
 		}
 	}
 }
@@ -1894,6 +1899,12 @@ std::vector <std::string> TownsCRTC::GetHighResStatusText(void) const
 	std::vector <std::string> text;
 	text.push_back(true==state.highResCRTCEnabled ? "HighRes CRTC Enabled" : "HighRes CRTC Disabled");
 
+	text.push_back("Reg 4 ");
+	text.back()+="bit0=";
+	text.back().push_back('0'+state.highResCrtcReg4Bit0);
+	text.back()+="  bit1=";
+	text.back().push_back('0'+state.highResCrtcReg4Bit1);
+
 	text.push_back(true==HighResCrtcIsInSinglePageMode() ? "Single-Layer Mode" : "Two-Layer Mode");
 
 	Layer layer[2];
@@ -1963,7 +1974,8 @@ void TownsCRTC::AnalogPalette::Deserialize(const unsigned char *&data)
 /* virtual */ uint32_t TownsCRTC::SerializeVersion(void) const
 {
 	// Version 1 Added High-Res CRTC Hardware Mouse Cursor.
-	return 1;
+	// Version 2 Added highResCrtcReg4Bit0.
+	return 2;
 }
 /* virtual */ void TownsCRTC::SpecificSerialize(std::vector <unsigned char> &data,std::string) const
 {
@@ -1997,6 +2009,7 @@ void TownsCRTC::AnalogPalette::Deserialize(const unsigned char *&data)
 		PushUint32(data,r);
 	}
 	PushUint32(data,state.highResCrtcRegAddrLatch);
+	PushBool(data,state.highResCrtcReg4Bit0);
 	PushBool(data,state.highResCrtcReg4Bit1);
 	PushUint32(data,state.highResPaletteMode);
 	PushUint32(data,state.highResPaletteLatch);
@@ -2055,6 +2068,14 @@ void TownsCRTC::AnalogPalette::Deserialize(const unsigned char *&data)
 		r=ReadUint32(data);
 	}
 	state.highResCrtcRegAddrLatch=ReadUint32(data);
+	if(2<=version)
+	{
+		state.highResCrtcReg4Bit0=ReadBool(data);
+	}
+	else
+	{
+		state.highResCrtcReg4Bit0=state.highResCRTCEnabled;
+	}
 	state.highResCrtcReg4Bit1=ReadBool(data);
 	state.highResPaletteMode=ReadUint32(data);
 	state.highResPaletteLatch=ReadUint32(data);
