@@ -6774,8 +6774,10 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			Pop(eip,cs,mem,inst.operandSize);
 			HANDLE_EXCEPTION_PUSH_POP;
 
-			SetIPorEIP(inst.operandSize,eip);
 			LoadSegmentRegister(state.CS(),cs,mem);
+			HANDLE_EXCEPTION_PUSH_POP;
+
+			SetIPorEIP(inst.operandSize,eip);
 			EIPIncrement=0;
 			if(enableCallStack)
 			{
@@ -6816,8 +6818,13 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			auto EIP=Pop(mem,inst.operandSize);
 			HANDLE_EXCEPTION_PUSH_POP;
 
+			auto cs=Pop(mem,inst.operandSize);
+			HANDLE_EXCEPTION_PUSH_POP;
+
+			LoadSegmentRegister(state.CS(),cs,mem);
+			HANDLE_EXCEPTION_PUSH_POP;
+
 			SetIPorEIP(inst.operandSize,EIP);
-			LoadSegmentRegister(state.CS(),Pop(mem,inst.operandSize),mem);
 			state.ESP()+=inst.EvalUimm16(); // Do I need to take &0xffff if address mode is 16? 
 			EIPIncrement=0;
 			if(enableCallStack)
