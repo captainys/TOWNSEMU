@@ -22,6 +22,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <time.h>
 #include <stdio.h>
 
+#include "yspng.h"
 #include "yspngenc.h"
 
 #include "i486debugmemaccess.h"

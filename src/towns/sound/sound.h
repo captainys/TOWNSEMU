@@ -24,6 +24,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "cpputil.h"
 #include "ym2612.h"
 #include "rf5c68.h"
+#include "yssimplesound.h"
 
 class TownsSound : public Device
 {
@@ -59,8 +60,17 @@ public:
 		void Reset(void);
 		void ResetVariables(void);
 	};
+	class Variable
+	{
+	public:
+		uint64_t nextSampleReadyTime=0;
+		const uint64_t PCMSamplingRate=19200;
+		uint64_t wavePointer=0,wavePointerLeftOver=0;
+		YsSoundPlayer::SoundData waveToBeSentToVM;
+	};
 
 	State state;
+	Variable var;
 	class Outside_World *outside_world=nullptr;
 
 	bool recordFMandPCM=false;

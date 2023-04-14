@@ -19,6 +19,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "outside_world.h"
 
 
+
 void TownsSound::State::PowerOn(void)
 {
 	ym2612.PowerOn();
@@ -219,8 +220,53 @@ void TownsSound::PCMPausePlay(unsigned char chPausePlay)
 		break;
 
 	case TOWNSIO_SOUND_SAMPLING_DATA: //    0x4E7, // [2] pp.179,
+		data=0x80; // Means zero.
+		if(var.wavePointer<var.waveToBeSentToVM.GetNumSamplePerChannel() &&
+		   0<var.waveToBeSentToVM.GetNumChannel())
+		{
+			int sum=0;
+			for(int i=0; i<var.waveToBeSentToVM.GetNumChannel(); ++i)
+			{
+				sum+=var.waveToBeSentToVM.GetSignedValue16(i,var.wavePointer);
+			}
+			sum/=var.waveToBeSentToVM.GetNumChannel();
+
+			sum*=126;
+			sum/=32768;
+
+			if(0<sum)
+			{
+				data=sum;
+			}
+			else if(sum<0)
+			{
+				data=0x80|(-sum);
+			}
+
+			// Wave pointer must be moved by wave sampling rate / PCM sampling rate.
+			var.wavePointerLeftOver+=var.waveToBeSentToVM.PlayBackRate();
+			while(var.PCMSamplingRate<=var.wavePointerLeftOver)
+			{
+				++var.wavePointer;
+				var.wavePointerLeftOver-=var.PCMSamplingRate;
+			}
+		}
+		var.nextSampleReadyTime+=PER_SECOND/var.PCMSamplingRate;
+		if(var.nextSampleReadyTime<townsPtr->state.townsTime)
+		{
+			// Maybe not used long time.
+			var.nextSampleReadyTime=townsPtr->state.townsTime+PER_SECOND/var.PCMSamplingRate;
+		}
 		break;
 	case TOWNSIO_SOUND_SAMPLING_FLAGS: //    0x4E8, // [2] pp.179,
+		if(var.nextSampleReadyTime<=townsPtr->state.townsTime)
+		{
+			data=1;
+		}
+		else
+		{
+			data=0;
+		}
 		break;
 	}
 	return data;
@@ -638,5 +684,6 @@ void TownsSound::DeserializeRF5C68(const unsigned char *&data)
 	DeserializeYM2612(data,version);
 	DeserializeRF5C68(data);
 	nextFMPCMWaveGenTime=0;
+	var.nextSampleReadyTime=0;
 	return true;
 }
