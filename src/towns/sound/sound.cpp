@@ -152,6 +152,10 @@ void TownsSound::PCMPausePlay(unsigned char chPausePlay)
 			}
 		}
 		break;
+	case TOWNSIO_SOUND_SAMPLING_DATA: //    0x4E7, // [2] pp.179,
+		break;
+	case TOWNSIO_SOUND_SAMPLING_FLAGS: //    0x4E8, // [2] pp.179,
+		break;
 	}
 }
 /* virtual */ unsigned int TownsSound::IOReadByte(unsigned int ioport)
@@ -212,6 +216,11 @@ void TownsSound::PCMPausePlay(unsigned char chPausePlay)
 	case TOWNSIO_SOUND_PCM_CTRL://          0x4F7, // [2] pp.19,
 		break;
 	case TOWNSIO_SOUND_PCM_CH_ON_OFF://     0x4F8, // [2] pp.19,
+		break;
+
+	case TOWNSIO_SOUND_SAMPLING_DATA: //    0x4E7, // [2] pp.179,
+		break;
+	case TOWNSIO_SOUND_SAMPLING_FLAGS: //    0x4E8, // [2] pp.179,
 		break;
 	}
 	return data;

@@ -635,6 +635,9 @@ FMTownsCommon::FMTownsCommon() :
 	io.AddDevice(&sound,TOWNSIO_SOUND_PCM_CTRL);//          0x4F7, // [2] pp.19,
 	io.AddDevice(&sound,TOWNSIO_SOUND_PCM_CH_ON_OFF);//     0x4F8, // [2] pp.19,
 
+	io.AddDevice(&sound,TOWNSIO_SOUND_SAMPLING_DATA); //    0x4E7, // [2] pp.179,
+	io.AddDevice(&sound,TOWNSIO_SOUND_SAMPLING_FLAGS);//    0x4E8, // [2] pp.179,
+
 
 	io.AddDevice(&timer,TOWNSIO_TIMER0_COUNT);//             0x40,
 	io.AddDevice(&timer,TOWNSIO_TIMER1_COUNT);//             0x42,

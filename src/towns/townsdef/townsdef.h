@@ -369,6 +369,10 @@ enum
 	TOWNSIO_SOUND_DATA0=             0x4DA, // [2] pp.18,
 	TOWNSIO_SOUND_ADDRESS1=          0x4DC, // [2] pp.18,
 	TOWNSIO_SOUND_DATA1=             0x4DE, // [2] pp.18,
+
+	TOWNSIO_SOUND_SAMPLING_DATA=     0x4E7, // [2] pp.179,
+	TOWNSIO_SOUND_SAMPLING_FLAGS=    0x4E8, // [2] pp.179,
+
 	TOWNSIO_SOUND_INT_REASON=        0x4E9, // [2] pp.19,
 	TOWNSIO_SOUND_PCM_INT_MASK=      0x4EA, // [2] pp.19,
 	TOWNSIO_SOUND_PCM_INT=           0x4EB, // [2] pp.19,
