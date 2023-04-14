@@ -1033,7 +1033,7 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 		break; // No write access;
 
 	case TOWNSIO_MX_IMGOUT_ADDR_LOW://  0x472,
-		state.highResCrtcRegAddrLatch=(data&(NUM_HIRES_CRTC_REGISTERS-1));
+		state.highResCrtcRegAddrLatch=data;
 		break;
 	case TOWNSIO_MX_IMGOUT_D0://   0x474,
 		// std::cout << "MX-VIDOUTCONTROL16[" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << "H]=" << cpputil::Ustox(data) << "H" << std::endl;
