@@ -859,12 +859,12 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 		break;
 	case TOWNSIO_MX_IMGOUT_D0://   0x474,
 		// std::cout << "MX-VIDOUTCONTROL8[" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << "H]=" << cpputil::Ubtox(data) << "H" << std::endl;
+		if(true==monitorCRTC2)
+		{
+			std::cout << "Write to CRTC2 Reg(D0)=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Ubtox(data) << std::endl;
+		}
 		if(state.highResCrtcRegAddrLatch<NUM_HIRES_CRTC_REGISTERS)
 		{
-			if(true==monitorCRTC2)
-			{
-				std::cout << "Write to CRTC2 Reg(D0)=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Ubtox(data) << std::endl;
-			}
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]&=0xFFFFFF00;
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]|=(data&0xFF);
 
@@ -913,12 +913,12 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 		}
 		break;
 	case TOWNSIO_MX_IMGOUT_D1://   0x475,
+		if(true==monitorCRTC2)
+		{
+			std::cout << "Write to CRTC2 Reg(D1)=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Ubtox(data) << std::endl;
+		}
 		if(state.highResCrtcRegAddrLatch<NUM_HIRES_CRTC_REGISTERS)
 		{
-			if(true==monitorCRTC2)
-			{
-				std::cout << "Write to CRTC2 Reg(D1)=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Ubtox(data) << std::endl;
-			}
 			// std::cout << "MX-VIDOUTCONTROL8[" << cpputil::Ustox(state.highResCrtcRegAddrLatch+1) << "H]=" << cpputil::Ubtox(data) << "H" << std::endl;
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]&=0xFFFF00FF;
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]|=((data&0xFF)<<8);
@@ -940,12 +940,12 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 		}
 		break;
 	case TOWNSIO_MX_IMGOUT_D2://   0x476,
+		if(true==monitorCRTC2)
+		{
+			std::cout << "Write to CRTC2 Reg(D2)=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Ubtox(data) << std::endl;
+		}
 		if(state.highResCrtcRegAddrLatch<NUM_HIRES_CRTC_REGISTERS)
 		{
-			if(true==monitorCRTC2)
-			{
-				std::cout << "Write to CRTC2 Reg(D2)=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Ubtox(data) << std::endl;
-			}
 			// std::cout << "MX-VIDOUTCONTROL8[" << cpputil::Ustox(state.highResCrtcRegAddrLatch+2) << "H]=" << cpputil::Ubtox(data) << "H" << std::endl;
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]&=0xFF00FFFF;
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]|=((data&0xFF)<<16);
@@ -967,12 +967,12 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 		}
 		break;
 	case TOWNSIO_MX_IMGOUT_D3://   0x477,
+		if(true==monitorCRTC2)
+		{
+			std::cout << "Write to CRTC2 Reg(D3)=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Ubtox(data) << std::endl;
+		}
 		if(state.highResCrtcRegAddrLatch<NUM_HIRES_CRTC_REGISTERS)
 		{
-			if(true==monitorCRTC2)
-			{
-				std::cout << "Write to CRTC2 Reg(D3)=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Ubtox(data) << std::endl;
-			}
 			// std::cout << "MX-VIDOUTCONTROL8[" << cpputil::Ustox(state.highResCrtcRegAddrLatch+3) << "H]=" << cpputil::Ubtox(data) << "H" << std::endl;
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]&=0x00FFFFFF;
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]|=((data&0xFF)<<24);
