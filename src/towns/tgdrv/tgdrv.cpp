@@ -700,7 +700,8 @@ bool TownsTgDrv::Int2F_1116_OpenExistingFile(void)
 			return true; // Yes it's my drive.
 		}
 
-		auto hostSFTIdx=sharedDir[sharedDirIdx].OpenExistingFile(FetchPSP(),subPath,FileSys::OPENMODE_RW);
+		// Memo: mode&3 can be FileSys::OPENMODE_READ, FileSys::OPENMODE_WRITE, or FileSys::OPENMODE_RW.
+		auto hostSFTIdx=sharedDir[sharedDirIdx].OpenExistingFile(FetchPSP(),subPath,mode&3);
 		if(0<=hostSFTIdx)
 		{
 			MakeVMSFT(townsPtr->CPU().state.ES(),townsPtr->CPU().state.DI(),driveLetter,hostSFTIdx,sharedDir[sharedDirIdx].sft[hostSFTIdx]);
