@@ -137,6 +137,8 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 
 	primaryCmdMap["FMVOL"]=CMD_FMVOL;
 	primaryCmdMap["PCMVOL"]=CMD_PCMVOL;
+	primaryCmdMap["LOADWAV"]=CMD_LOADWAV;
+	primaryCmdMap["SENDWAV"]=CMD_LOADWAV;
 
 	primaryCmdMap["CALC"]=CMD_CALCULATE;
 	primaryCmdMap["ASC"]=CMD_STRING_TO_ASCII;
@@ -656,6 +658,9 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Set PCM (RF5C68) volume.  0 to 8192.  Default value is 4096." << std::endl;
 	std::cout << "PCMCH 0/1 0/1 0/1 0/1 0/1 0/1 0/1 0/1" << std::endl;
 	std::cout << "  Enable/Disable PCM channels." << std::endl;
+	std::cout << "LOADWAV filename" << std::endl;
+	std::cout << "SENDWAV filename" << std::endl;
+	std::cout << "  Send wave to PCM sampling register." << std::endl;
 
 	std::cout << "SAVEWAVRAM filename" << std::endl;
 	std::cout << "  Save binary dump of the wave RAM." << std::endl;
@@ -1185,6 +1190,23 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,clas
 			towns.sound.state.rf5c68.chMute[6]=(0==cpputil::Atoi(cmd.argv[7].c_str()));
 			towns.sound.state.rf5c68.chMute[7]=(0==cpputil::Atoi(cmd.argv[8].c_str()));
 			std::cout << "Set RF5C68 chnanle mute/unmute" << std::endl;
+		}
+		else
+		{
+			PrintError(ERROR_TOO_FEW_ARGS);
+		}
+		break;
+	case CMD_LOADWAV:
+		if(2<=cmd.argv.size())
+		{
+			if(YSOK==towns.sound.LoadWav(cmd.argv[1]))
+			{
+				std::cout << "Loaded " << cmd.argv[1] << " to be sent to PCM sampling register." << std::endl;
+			}
+			else
+			{
+				PrintError(ERROR_CANNOT_OPEN_FILE);
+			}
 		}
 		else
 		{

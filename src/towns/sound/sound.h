@@ -64,6 +64,7 @@ public:
 	{
 	public:
 		uint64_t nextSampleReadyTime=0;
+		const uint32_t PCMSamplingScale=2;
 		const uint64_t PCMSamplingRate=19200;
 		uint64_t wavePointer=0,wavePointerLeftOver=0;
 		YsSoundPlayer::SoundData waveToBeSentToVM;
@@ -116,6 +117,10 @@ public:
 	/*! Call this function periodically while VM is paused.
 	*/
 	void ProcessSilence(void);
+
+	/*! Loads .WAV file to be sent to PCM sampling register.
+	*/
+	bool LoadWav(std::string wav);
 
 	void StartRecording(void);
 	void EndRecording(void);

@@ -231,16 +231,28 @@ void TownsSound::PCMPausePlay(unsigned char chPausePlay)
 			}
 			sum/=var.waveToBeSentToVM.GetNumChannel();
 
-			sum*=126;
+			sum*=126*var.PCMSamplingScale;
 			sum/=32768;
+			if(sum<-126)
+			{
+				sum=-126;
+			}
+			else if(126<sum)
+			{
+				sum=126;
+			}
 
 			if(0<sum)
 			{
-				data=sum;
+				data=0x80|sum;
 			}
 			else if(sum<0)
 			{
-				data=0x80|(-sum);
+				data=(sum&0x7F);
+			}
+			if(0xFF==data)
+			{
+				data=0xFE;
 			}
 
 			// Wave pointer must be moved by wave sampling rate / PCM sampling rate.
@@ -408,6 +420,16 @@ void TownsSound::ProcessSilence(void)
 		memset(silence.data(),0,silence.size());
 		outside_world->BeepPlay(BUZZER_SAMPLING_RATE,silence);
 	}
+}
+
+bool TownsSound::LoadWav(std::string fName)
+{
+	if(YSOK==var.waveToBeSentToVM.LoadWav(fName.c_str()))
+	{
+		var.wavePointer=0;
+		return true;
+	}
+	return false;
 }
 
 void TownsSound::StartRecording(void)
