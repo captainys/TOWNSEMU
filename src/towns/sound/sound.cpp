@@ -300,7 +300,7 @@ std::vector <std::string> TownsSound::GetStatusText(void) const
 
 void TownsSound::ProcessSound(void)
 {
-	if((true==IsFMPlaying() || true==IsPCMPlaying() || townsPtr->state.townsTime<lastFMPCMWaveGenTime+RINGBUFFER_CLEAR_TIME) && nullptr!=outside_world)
+	if((true==IsFMPlaying() || true==IsPCMPlaying() || true==IsPCMRecording() || townsPtr->state.townsTime<lastFMPCMWaveGenTime+RINGBUFFER_CLEAR_TIME) && nullptr!=outside_world)
 	{
 		if(nextFMPCMWaveGenTime<=townsPtr->state.townsTime)
 		{
@@ -353,6 +353,44 @@ void TownsSound::ProcessSound(void)
 						{
 							state.rf5c68.SetIRQBank(ch.IRQBank);
 							ch.IRQAfterThisPlayBack=false;
+						}
+					}
+					lastFMPCMWaveGenTime=townsPtr->state.townsTime;
+				}
+				if(true==IsPCMRecording())
+				{
+					int balance=0;
+					for(int fill=0; fill<fillNumSamples; ++fill)
+					{
+						int sum=0;
+						if(0<var.waveToBeSentToVM.GetNumChannel() && var.wavePointerPlayed<var.waveToBeSentToVM.GetNumSamplePerChannel())
+						{
+							for(int i=0; i<var.waveToBeSentToVM.GetNumChannel(); ++i)
+							{
+								sum+=var.waveToBeSentToVM.GetSignedValue16(i,var.wavePointerPlayed);
+							}
+							sum/=var.waveToBeSentToVM.GetNumChannel();
+						}
+						int32_t L=cpputil::GetSignedWord(fillPtr+fill*4);
+						int32_t R=cpputil::GetSignedWord(fillPtr+fill*4+2);
+						L+=sum;
+						R+=sum;
+						if(L<0)
+						{
+							L+=65536;
+						}
+						if(R<0)
+						{
+							R+=65536;
+						}
+						cpputil::PutWord(fillPtr+fill*4,L);
+						cpputil::PutWord(fillPtr+fill*4+2,R);
+
+						balance+=var.waveToBeSentToVM.PlayBackRate();
+						while(YM2612::WAVE_SAMPLING_RATE<=balance)
+						{
+							++var.wavePointerPlayed;
+							balance-=YM2612::WAVE_SAMPLING_RATE;
 						}
 					}
 					lastFMPCMWaveGenTime=townsPtr->state.townsTime;
@@ -427,6 +465,7 @@ bool TownsSound::LoadWav(std::string fName)
 	if(YSOK==var.waveToBeSentToVM.LoadWav(fName.c_str()))
 	{
 		var.wavePointer=0;
+		var.wavePointerPlayed=0;
 		return true;
 	}
 	return false;

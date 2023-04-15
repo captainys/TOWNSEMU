@@ -66,7 +66,7 @@ public:
 		uint64_t nextSampleReadyTime=0;
 		const uint32_t PCMSamplingScale=2;
 		const uint64_t PCMSamplingRate=19200;
-		uint64_t wavePointer=0,wavePointerLeftOver=0;
+		uint64_t wavePointerPlayed=0,wavePointer=0,wavePointerLeftOver=0;
 		YsSoundPlayer::SoundData waveToBeSentToVM;
 	};
 
@@ -89,6 +89,11 @@ public:
 	inline bool IsPCMPlaying(void) const
 	{
 		return true==state.rf5c68.IsPlaying();
+	}
+	inline bool IsPCMRecording(void) const
+	{
+		return var.wavePointerPlayed<var.waveToBeSentToVM.GetNumSamplePerChannel() &&
+		       var.wavePointerPlayed<var.wavePointer;
 	}
 
 	TownsSound(class FMTownsCommon *townsPtr);
