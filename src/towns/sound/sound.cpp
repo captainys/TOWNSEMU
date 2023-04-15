@@ -241,19 +241,8 @@ void TownsSound::PCMPausePlay(unsigned char chPausePlay)
 			{
 				sum=126;
 			}
-
-			if(0<sum)
-			{
-				data=0x80|sum;
-			}
-			else if(sum<0)
-			{
-				data=(sum&0x7F);
-			}
-			if(0xFF==data)
-			{
-				data=0xFE;
-			}
+			sum+=128;
+			data=sum;
 
 			// Wave pointer must be moved by wave sampling rate / PCM sampling rate.
 			var.PCMSamplePointerLeftOver+=var.waveToBeSentToVM.PlayBackRate();
