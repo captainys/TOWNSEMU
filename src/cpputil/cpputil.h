@@ -39,6 +39,7 @@ std::string ChangeExtension(const char orgFName[],const char newExt[]);
 std::string RemoveExtension(const char orgFName[]);
 std::string GetBaseName(const std::string &path);
 bool StrStartsWith(const std::string &str,const char ptn[]);
+bool StrIncludes(const std::string str,char c); // std::find sucks.
 const char *StrSkip(const char str[],const char ptn[]);
 const char *StrSkipSpace(const char str[]);
 const char *StrSkipNonSpace(const char str[]);

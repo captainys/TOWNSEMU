@@ -781,8 +781,8 @@ void i486Debugger::Interrupt(const i486DXCommon &cpu,unsigned int INTNum,Memory 
 						str+=openingFName;
 						ExternalBreak(str);
 					}
-					else if(targetFName.end()==std::find(targetFName.begin(),targetFName.end(),'\\') &&
-					        targetFName.end()==std::find(targetFName.begin(),targetFName.end(),'/'))
+					else if(true!=cpputil::StrIncludes(targetFName,'\\') &&
+					        true!=cpputil::StrIncludes(targetFName,'/')) // std::find sucks
 					{
 						std::string openingBaseName,openingPath;
 						cpputil::SeparatePathFile(openingPath,openingBaseName,openingFName);
