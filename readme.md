@@ -65,9 +65,22 @@ Open Source with 3-clause BSD License.
 
 
 # Build Instruction
-At this time I just post commands for macOS.  Other platforms will follow.
 
-この間たまたまmacOS用のコマンドのシークエンスを抜き出したので、macOS用だけ書いておきます。他のプラットフォーム用もそのうち書きます。
+For Windows Visual C++:
+
+```
+git clone https://github.com/captainys/TOWNSEMU.git
+cd .\TOWNSEMU\gui\src
+git clone https://github.com/captainys/public.git
+cd ..
+mkdir build
+cd build
+cmake ../src
+cmake --build . --config Release --parallel
+```
+
+
+For macOS:
 
 ```
 git clone https://github.com/captainys/TOWNSEMU.git
