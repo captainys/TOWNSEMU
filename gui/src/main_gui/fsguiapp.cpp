@@ -364,6 +364,11 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 	}
 
 	{
+		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_U,L"Sound")->GetSubMenu();
+		subMenu->AddTextItem(0,FSKEY_R,"Select WAV File for PCM Sampling in the VM")->BindCallBack(&THISCLASS::Audio_SelectWAVToPCMRecording,this);
+	}
+
+	{
 		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_A,L"Automation")->GetSubMenu();
 		subMenu->AddTextItem(0,FSKEY_B,"Begin Recording")->BindCallBack(&THISCLASS::EventLog_StartRecording,this);
 		subMenu->AddTextItem(0,FSKEY_E,"End Recording")->BindCallBack(&THISCLASS::EventLog_EndRecording,this);
@@ -2030,6 +2035,48 @@ void FsGuiMainCanvas::VM_SaveScreenshot_FileSelected(FsGuiDialog *dlg,int return
 		YsString utf8;
 		YsUnicodeToSystemEncoding(utf8,fName);
 		std::string cmd="SS ";
+		cmd.push_back('\"');
+		cmd+=utf8.c_str();
+		cmd.push_back('\"');
+		cmd.push_back('\n');
+		SendVMCommand(cmd);
+		VMMustResume=YSTRUE;
+	}
+}
+
+////////////////////////////////////////////////////////////
+
+void FsGuiMainCanvas::Audio_SelectWAVToPCMRecording(FsGuiPopUpMenuItem *)
+{
+	if(true==IsVMRunning())
+	{
+		YsWString path,file;
+		profileDlg->profileFNameTxt->GetWText().SeparatePathFile(path,file);
+
+		auto fdlg=FsGuiDialog::CreateSelfDestructiveDialog<FsGuiFileDialog>();
+		fdlg->Initialize();
+		fdlg->mode=FsGuiFileDialog::MODE_OPEN;
+		fdlg->multiSelect=YSFALSE;
+		fdlg->title.Set(L"Select WAV for PCM Recording");
+		fdlg->fileExtensionArray.Append(L".wav");
+		fdlg->defaultFileName=path;
+		fdlg->BindCloseModalCallBack(&THISCLASS::Audio_Audio_SelectWAVToPCMRecording_FileSelected,this);
+		AttachModalDialog(fdlg);
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+void FsGuiMainCanvas::Audio_Audio_SelectWAVToPCMRecording_FileSelected(FsGuiDialog *dlg,int returnCode)
+{
+	auto fdlg=dynamic_cast <FsGuiFileDialog *>(dlg);
+	if(nullptr!=fdlg && (int)YSOK==returnCode)
+	{
+		YsWString fName=fdlg->selectedFileArray[0];
+		YsString utf8;
+		YsUnicodeToSystemEncoding(utf8,fName);
+		std::string cmd="LOADWAV ";
 		cmd.push_back('\"');
 		cmd+=utf8.c_str();
 		cmd.push_back('\"');

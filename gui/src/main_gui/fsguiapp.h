@@ -287,6 +287,10 @@ private:
 	void VM_Test_PrintTimeBalance(FsGuiPopUpMenuItem *);
 
 
+	void Audio_SelectWAVToPCMRecording(FsGuiPopUpMenuItem *);
+	void Audio_Audio_SelectWAVToPCMRecording_FileSelected(FsGuiDialog *dlg,int returnCode);
+
+
 	void CD_SelectImageFile(FsGuiPopUpMenuItem *);
 	void CD_ImageFileSelected(FsGuiDialog *dlg,int returnCode);
 	void CD_Eject(FsGuiPopUpMenuItem *);
