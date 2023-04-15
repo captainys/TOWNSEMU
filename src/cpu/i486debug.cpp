@@ -571,6 +571,8 @@ void i486Debugger::SetBreakOnFOpen(std::string fName)
 {
 	breakOnINT[0x21].cond=BreakOnINTCondition::COND_FOPEN_FCREATE;
 	breakOnINT[0x21].fName=fName;
+	breakOnINT[0x30].cond=BreakOnINTCondition::COND_FOPEN_FCREATE;
+	breakOnINT[0x30].fName=fName;
 }
 
 void i486Debugger::ClearBreakOnINT(void)
@@ -764,19 +766,31 @@ void i486Debugger::Interrupt(const i486DXCommon &cpu,unsigned int INTNum,Memory 
 				}
 				if(true==brk)
 				{
-					std::string fName;
+					auto targetFName=breakOnINT[INTNum&0xFF].fName;
+					std::string openingFName;
 					if(true==cpu.IsInRealMode())  // Real Mode
 					{
-						fName=cpu.DebugFetchString(16,cpu.state.DS(),cpu.GetDX(),mem);
+						openingFName=cpu.DebugFetchString(16,cpu.state.DS(),cpu.GetDX(),mem);
 					}
 					else
 					{
-						fName=cpu.DebugFetchString(32,cpu.state.DS(),cpu.GetEDX(),mem);
+						openingFName=cpu.DebugFetchString(32,cpu.state.DS(),cpu.GetEDX(),mem);
 					}
-					if(true==cpputil::WildCardCompare(breakOnINT[INTNum&0xFF].fName,fName)) // Pattern,Filename
+					if(true==cpputil::WildCardCompare(targetFName,openingFName)) // Pattern,Filename
 					{
-						str+=fName;
+						str+=openingFName;
 						ExternalBreak(str);
+					}
+					else if(targetFName.end()==std::find(targetFName.begin(),targetFName.end(),'\\') &&
+					        targetFName.end()==std::find(targetFName.begin(),targetFName.end(),'/'))
+					{
+						std::string openingBaseName,openingPath;
+						cpputil::SeparatePathFile(openingPath,openingBaseName,openingFName);
+						if(true==cpputil::WildCardCompare(targetFName,openingBaseName)) // Pattern,Filename
+						{
+							str+=openingFName;
+							ExternalBreak(str);
+						}
 					}
 				}
 			}
