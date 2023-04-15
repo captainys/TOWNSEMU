@@ -63,10 +63,10 @@ public:
 	class Variable
 	{
 	public:
-		uint64_t nextSampleReadyTime=0;
+		uint64_t nextPCMSampleReadyTime=0;
 		const uint32_t PCMSamplingScale=2;
 		const uint64_t PCMSamplingRate=19200;
-		uint64_t wavePointerPlayed=0,wavePointer=0,wavePointerLeftOver=0;
+		uint64_t PCMSamplePlayed=0,PCMSamplePointer=0,PCMSamplePointerLeftOver=0;
 		YsSoundPlayer::SoundData waveToBeSentToVM;
 	};
 
@@ -92,8 +92,8 @@ public:
 	}
 	inline bool IsPCMRecording(void) const
 	{
-		return var.wavePointerPlayed<var.waveToBeSentToVM.GetNumSamplePerChannel() &&
-		       var.wavePointerPlayed<var.wavePointer;
+		return var.PCMSamplePlayed<var.waveToBeSentToVM.GetNumSamplePerChannel() &&
+		       var.PCMSamplePlayed<var.PCMSamplePointer;
 	}
 
 	TownsSound(class FMTownsCommon *townsPtr);

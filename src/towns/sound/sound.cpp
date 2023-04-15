@@ -221,13 +221,13 @@ void TownsSound::PCMPausePlay(unsigned char chPausePlay)
 
 	case TOWNSIO_SOUND_SAMPLING_DATA: //    0x4E7, // [2] pp.179,
 		data=0x80; // Means zero.
-		if(var.wavePointer<var.waveToBeSentToVM.GetNumSamplePerChannel() &&
+		if(var.PCMSamplePointer<var.waveToBeSentToVM.GetNumSamplePerChannel() &&
 		   0<var.waveToBeSentToVM.GetNumChannel())
 		{
 			int sum=0;
 			for(int i=0; i<var.waveToBeSentToVM.GetNumChannel(); ++i)
 			{
-				sum+=var.waveToBeSentToVM.GetSignedValue16(i,var.wavePointer);
+				sum+=var.waveToBeSentToVM.GetSignedValue16(i,var.PCMSamplePointer);
 			}
 			sum/=var.waveToBeSentToVM.GetNumChannel();
 
@@ -256,22 +256,22 @@ void TownsSound::PCMPausePlay(unsigned char chPausePlay)
 			}
 
 			// Wave pointer must be moved by wave sampling rate / PCM sampling rate.
-			var.wavePointerLeftOver+=var.waveToBeSentToVM.PlayBackRate();
-			while(var.PCMSamplingRate<=var.wavePointerLeftOver)
+			var.PCMSamplePointerLeftOver+=var.waveToBeSentToVM.PlayBackRate();
+			while(var.PCMSamplingRate<=var.PCMSamplePointerLeftOver)
 			{
-				++var.wavePointer;
-				var.wavePointerLeftOver-=var.PCMSamplingRate;
+				++var.PCMSamplePointer;
+				var.PCMSamplePointerLeftOver-=var.PCMSamplingRate;
 			}
 		}
-		var.nextSampleReadyTime+=PER_SECOND/var.PCMSamplingRate;
-		if(var.nextSampleReadyTime<townsPtr->state.townsTime)
+		var.nextPCMSampleReadyTime+=PER_SECOND/var.PCMSamplingRate;
+		if(var.nextPCMSampleReadyTime<townsPtr->state.townsTime)
 		{
 			// Maybe not used long time.
-			var.nextSampleReadyTime=townsPtr->state.townsTime+PER_SECOND/var.PCMSamplingRate;
+			var.nextPCMSampleReadyTime=townsPtr->state.townsTime+PER_SECOND/var.PCMSamplingRate;
 		}
 		break;
 	case TOWNSIO_SOUND_SAMPLING_FLAGS: //    0x4E8, // [2] pp.179,
-		if(var.nextSampleReadyTime<=townsPtr->state.townsTime)
+		if(var.nextPCMSampleReadyTime<=townsPtr->state.townsTime)
 		{
 			data=1;
 		}
@@ -363,11 +363,11 @@ void TownsSound::ProcessSound(void)
 					for(int fill=0; fill<fillNumSamples; ++fill)
 					{
 						int sum=0;
-						if(0<var.waveToBeSentToVM.GetNumChannel() && var.wavePointerPlayed<var.waveToBeSentToVM.GetNumSamplePerChannel())
+						if(0<var.waveToBeSentToVM.GetNumChannel() && var.PCMSamplePlayed<var.waveToBeSentToVM.GetNumSamplePerChannel())
 						{
 							for(int i=0; i<var.waveToBeSentToVM.GetNumChannel(); ++i)
 							{
-								sum+=var.waveToBeSentToVM.GetSignedValue16(i,var.wavePointerPlayed);
+								sum+=var.waveToBeSentToVM.GetSignedValue16(i,var.PCMSamplePlayed);
 							}
 							sum/=var.waveToBeSentToVM.GetNumChannel();
 						}
@@ -389,7 +389,7 @@ void TownsSound::ProcessSound(void)
 						balance+=var.waveToBeSentToVM.PlayBackRate();
 						while(YM2612::WAVE_SAMPLING_RATE<=balance)
 						{
-							++var.wavePointerPlayed;
+							++var.PCMSamplePlayed;
 							balance-=YM2612::WAVE_SAMPLING_RATE;
 						}
 					}
@@ -464,8 +464,8 @@ bool TownsSound::LoadWav(std::string fName)
 {
 	if(YSOK==var.waveToBeSentToVM.LoadWav(fName.c_str()))
 	{
-		var.wavePointer=0;
-		var.wavePointerPlayed=0;
+		var.PCMSamplePointer=0;
+		var.PCMSamplePlayed=0;
 		return true;
 	}
 	return false;
@@ -745,6 +745,6 @@ void TownsSound::DeserializeRF5C68(const unsigned char *&data)
 	DeserializeYM2612(data,version);
 	DeserializeRF5C68(data);
 	nextFMPCMWaveGenTime=0;
-	var.nextSampleReadyTime=0;
+	var.nextPCMSampleReadyTime=0;
 	return true;
 }
