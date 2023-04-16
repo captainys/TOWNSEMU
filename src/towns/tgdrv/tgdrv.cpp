@@ -701,7 +701,17 @@ bool TownsTgDrv::Int2F_1116_OpenExistingFile(void)
 		}
 
 		// Memo: mode&3 can be FileSys::OPENMODE_READ, FileSys::OPENMODE_WRITE, or FileSys::OPENMODE_RW.
-		auto hostSFTIdx=sharedDir[sharedDirIdx].OpenExistingFile(FetchPSP(),subPath,mode&3);
+		//       However, if open an existing file as OPENMODE_WRITE, it's going to erase and start over.
+		//       Therefore, open READ or RW in this case.
+		if(0==(mode&3))
+		{
+			mode=FileSys::OPENMODE_READ;
+		}
+		else
+		{
+			mode=FileSys::OPENMODE_RW;
+		}
+		auto hostSFTIdx=sharedDir[sharedDirIdx].OpenExistingFile(FetchPSP(),subPath,mode);
 		if(0<=hostSFTIdx)
 		{
 			MakeVMSFT(townsPtr->CPU().state.ES(),townsPtr->CPU().state.DI(),driveLetter,hostSFTIdx,sharedDir[sharedDirIdx].sft[hostSFTIdx]);
