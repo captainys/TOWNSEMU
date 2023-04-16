@@ -2204,6 +2204,10 @@ void i486DXCommon::PushCallStack(
 			}
 		}
 	}
+	if(nullptr!=debuggerPtr && debuggerPtr->breakOnCallStackDepth<=callStack.size())
+	{
+		debuggerPtr->ExternalBreak("Call Stack Depth Exceeds Threshold.");
+	}
 }
 void i486DXCommon::PopCallStack(unsigned int CS,unsigned int EIP)
 {

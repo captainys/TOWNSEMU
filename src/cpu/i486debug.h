@@ -120,6 +120,8 @@ public:
 	bool breakOnProtectedMode=false,prevProtectedMode=false;
 	bool breakOnRealMode=false,prevRealMode=false;
 
+	uint32_t breakOnCallStackDepth=0x7fffffff;
+
 	// Monitoring Windows 3.1 VxD
 	uint8_t breakOrMonitorOnVxDCall=BRKPNT_FLAG_NONE;
 	uint32_t breakOnVxDId=~0,breakOnVxDServiceNumber=~0;
@@ -368,6 +370,9 @@ private:
 
 public:
 	std::vector <unsigned int> FindCaller(unsigned int procAddr,const i486DXCommon::SegmentRegister &seg,const i486DXCommon &cpu,const Memory &mem);
+
+	void SetBreakOnCallStackDepth(uint32_t depth);
+	void ClearBreakOnCallStackDepth(void);
 
 	bool OpenLogFile(std::string logFileName);
 	std::ofstream &LogFileStream(void);

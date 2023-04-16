@@ -1127,3 +1127,12 @@ void i486Debugger::WriteLogFile(std::string str)
 		logOfs << str << std::endl;
 	}
 }
+
+void i486Debugger::SetBreakOnCallStackDepth(uint32_t depth)
+{
+	breakOnCallStackDepth=depth;
+}
+void i486Debugger::ClearBreakOnCallStackDepth(void)
+{
+	breakOnCallStackDepth=0x7FFFFFFF;
+}

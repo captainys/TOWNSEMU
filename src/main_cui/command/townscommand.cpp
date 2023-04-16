@@ -337,6 +337,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	breakEventMap["REALMODE"]=BREAK_ON_REAL_MODE;
 	breakEventMap["VM86MODE"]=BREAK_ON_VM86_MODE;
 	breakEventMap["VXDCALL"]=BREAK_ON_VXD_CALL;
+	breakEventMap["CST"]=BREAK_ON_CALLSTACK_DEPTH;
 }
 
 void TownsCommandInterpreter::PrintHelp(void) const
@@ -842,6 +843,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "VXDCALL VxDId" << std::endl;
 	std::cout << "VXDCALL VxDId SvdNum" << std::endl;
 	std::cout << "  Windows 3.1 VxD service call." << std::endl;
+	std::cout << "CST depth" << std::endl;
+	std::cout << "  When the call stack depth exceeds the threshold." << std::endl;
 }
 
 void TownsCommandInterpreter::PrintError(int errCode) const
@@ -3211,6 +3214,18 @@ void TownsCommandInterpreter::Execute_BreakOn(FMTownsCommon &towns,Command &cmd)
 
 			}
 			break;
+		case BREAK_ON_CALLSTACK_DEPTH:
+			if(3<=cmd.argv.size())
+			{
+				uint32_t depth=cpputil::Atoi(cmd.argv[2].data());
+				towns.debugger.SetBreakOnCallStackDepth(depth);
+			}
+			else
+			{
+				PrintError(ERROR_TOO_FEW_ARGS);
+				return;
+			}
+			break;
 		}
 		std::cout << "Break On " << reason << " is ON." << std::endl;
 	}
@@ -3421,6 +3436,9 @@ void TownsCommandInterpreter::Execute_ClearBreakOn(FMTownsCommon &towns,Command 
 		case BREAK_ON_VXD_CALL:
 			towns.debugger.breakOrMonitorOnVxDCall=i486Debugger::BRKPNT_FLAG_NONE;
 			std::cout << "Don't break on VxD Call." << std::endl;
+			break;
+		case BREAK_ON_CALLSTACK_DEPTH:
+			towns.debugger.ClearBreakOnCallStackDepth();
 			break;
 		}
 		std::cout << "Break On " << iter->first << " is OFF." << std::endl;
