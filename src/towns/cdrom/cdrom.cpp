@@ -189,7 +189,7 @@ TownsCDROM::TownsCDROM(class FMTownsCommon *townsPtr,class TownsPIC *PICPtr,clas
 		state.CPUTransfer=(0!=(data&0x08));
 		if(true==state.DMATransfer)
 		{
-			state.WaitForDTS=false;
+			state.WaitForDTSSTS=false;
 			auto DMACh=DMACPtr->GetDMAChannel(TOWNSDMA_CDROM);
 			bool DMAAvailable=(nullptr!=DMACh && (0<DMACh->currentCount && 0xFFFFFFFF!=(DMACh->currentCount&0xFFFFFFFF)));
 			if(true==DMAAvailable && true!=state.DTSF)
@@ -197,6 +197,11 @@ TownsCDROM::TownsCDROM(class FMTownsCommon *townsPtr,class TownsPIC *PICPtr,clas
 				state.DTSF=true;
 				townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+state.readSectorTime);
 			}
+		}
+		else if(true==state.CPUTransfer)
+		{
+			state.WaitForDTSSTS=false;
+			state.STSF=true;
 		}
 		break;
 	case TOWNSIO_CDROM_SUBCODE_STATUS://    0x4CC,
@@ -244,8 +249,53 @@ TownsCDROM::TownsCDROM(class FMTownsCommon *townsPtr,class TownsPIC *PICPtr,clas
 	case TOWNSIO_CDROM_CACHE_2XSPEED:
 		break;
 	case TOWNSIO_CDROM_PARAMETER_DATA://    0x4C4, // [2] pp.224
-		// Data register for software transfer.  Not supported yet.
-		Abort("Unsupported CDROM I/O Read 04C4H");
+		if(true==state.STSF)
+		{
+			if(0==var.sectorCacheForCPUTransfer.size())
+			{
+				if(CDCMD_MODE1READ==(state.cmd&0x9F))
+				{
+					var.sectorCacheForCPUTransfer=state.GetDisc().ReadSectorMODE1(state.readingSectorHSG,1);
+				}
+				else if(CDCMD_MODE2READ==(state.cmd&0x9F))
+				{
+					var.sectorCacheForCPUTransfer=state.GetDisc().ReadSectorMODE2(state.readingSectorHSG,1);
+				}
+				else
+				{
+					var.sectorCacheForCPUTransfer=state.GetDisc().ReadSectorRAW(state.readingSectorHSG,1);
+				}
+			}
+
+			if(state.CPUTransferPointer<var.sectorCacheForCPUTransfer.size())
+			{
+				unsigned char data=var.sectorCacheForCPUTransfer[state.CPUTransferPointer++];
+				if(var.sectorCacheForCPUTransfer.size()<=state.CPUTransferPointer)
+				{
+					++state.readingSectorHSG;
+					townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+NOTIFICATION_TIME);
+					state.CPUTransfer=false;
+					state.STSF=false;
+					state.DEI=true;  // It's CPU transfer.  Should it set DMA END Interrupt?
+					state.CPUTransferPointer=0;
+					var.sectorCacheForCPUTransfer.clear();
+					if(true==var.debugBreakOnDEI)
+					{
+						townsPtr->debugger.ExternalBreak("CD-ROM Software Read End");
+					}
+				}
+				return data;
+			}
+			else
+			{
+				Abort("CDROM I/O Read 04C4H Overflow");
+			}
+		}
+		else
+		{
+			// Just in case, it may be VM error.
+			Abort("CDROM I/O Read 04C4H while STSF=false");
+		}
 		break;
 	case TOWNSIO_CDROM_TRANSFER_CTRL://     0x4C6, // [2] pp.227
 		// Write only.
@@ -740,7 +790,7 @@ void TownsCDROM::BeginReadSector(DiscImage::MinSecFrm msfBegin,DiscImage::MinSec
 
 		state.DRY=false;
 		state.DTSF=false;
-		state.WaitForDTS=false;
+		state.WaitForDTSSTS=false;
 	}
 }
 
@@ -803,7 +853,7 @@ void TownsCDROM::BeginReadSector(DiscImage::MinSecFrm msfBegin,DiscImage::MinSec
 				auto DMACh=DMACPtr->GetDMAChannel(TOWNSDMA_CDROM);
 				bool DMAAvailable=(nullptr!=DMACh && (0<DMACh->currentCount && 0xFFFFFFFF!=(DMACh->currentCount&0xFFFFFFFF)));
 
-				if(true==state.WaitForDTS)
+				if(true==state.WaitForDTSSTS)
 				{
 					// I was avoiding to implement LOST DATA because I thought correctly written program won't cuase LOST DATA.
 					// However, looks like Shadow of the Beast 2 is intentionally causing lost data in the following procedure:
@@ -913,7 +963,7 @@ void TownsCDROM::BeginReadSector(DiscImage::MinSecFrm msfBegin,DiscImage::MinSec
 
 					// Write to DTS (state.DMATransfer) should trigger the DMA transfer.
 					// If the CPU does not do so before the LOSTDATA_TIMEOUT, abort the command.
-					state.WaitForDTS=true;
+					state.WaitForDTSSTS=true;
 					townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+LOSTDATA_TIMEOUT);
 				}
 				// Second State.  DMA available, but the transfer hasn't started.  Wait for the CPU to write DTS=1.
@@ -1219,7 +1269,9 @@ void TownsCDROM::SetSIRQ_IRR(void)
 
 /* virtual */ uint32_t TownsCDROM::SerializeVersion(void) const
 {
-	return 3;
+	// Version 4
+	//   Added CPUTransferPointer
+	return 4;
 }
 /* virtual */ void TownsCDROM::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
 {
@@ -1255,7 +1307,7 @@ void TownsCDROM::SetSIRQ_IRR(void)
 
 	PushBool(data,state.DMATransfer);
 	PushBool(data,state.CPUTransfer); // Both are not supposed to be 1, but I/O can set it that way.
-	PushBool(data,state.WaitForDTS);
+	PushBool(data,state.WaitForDTSSTS);
 
 	PushBool(data,state.discChanged);
 
@@ -1269,6 +1321,8 @@ void TownsCDROM::SetSIRQ_IRR(void)
 	PushBool(data,state.CDDARepeat);
 
 	PushUint32(data,state.readSectorTime); // Version 3 or newer.
+
+	PushUint32(data,state.CPUTransferPointer); // Version 4 or newer
 }
 /* virtual */ bool TownsCDROM::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
 {
@@ -1366,7 +1420,7 @@ void TownsCDROM::SetSIRQ_IRR(void)
 
 	state.DMATransfer=ReadBool(data);
 	state.CPUTransfer=ReadBool(data); // Both are not supposed to be 1, but I/O can set it that way.
-	state.WaitForDTS=ReadBool(data);
+	state.WaitForDTSSTS=ReadBool(data);
 
 	state.discChanged=ReadBool(data);
     
@@ -1391,6 +1445,13 @@ void TownsCDROM::SetSIRQ_IRR(void)
 	{
 		state.readSectorTime=ReadUint32(data);
 	}
+
+	state.CPUTransferPointer=0;
+	if(4<=version)
+	{
+		state.CPUTransferPointer=ReadUint32(data);
+	}
+	var.sectorCacheForCPUTransfer.clear();
 	return true;
 }
 

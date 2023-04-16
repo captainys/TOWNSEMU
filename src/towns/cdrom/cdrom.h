@@ -164,7 +164,8 @@ public:
 
 		unsigned int readSectorTime=DEFAULT_READ_SECTOR_TIME;
 		bool DMATransfer,CPUTransfer; // Both are not supposed to be 1, but I/O can set it that way.
-		bool WaitForDTS;
+		unsigned int CPUTransferPointer=0;
+		bool WaitForDTSSTS;
 
 		bool discChanged;
 
@@ -245,6 +246,8 @@ public:
 		// it breaks the VM only if a specific command is sent.
 		// debugBreakOnSpecificCommand is ignored if debugBreakOnCommandWrite!=true.
 		unsigned int debugBreakOnSpecificCommand=0xffff;
+
+		std::vector <uint8_t> sectorCacheForCPUTransfer;
 	};
 
 	State state;
