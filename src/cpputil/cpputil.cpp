@@ -1105,3 +1105,15 @@ bool cpputil::WildCardCompare(int lenPtn,const char ptn[],int lenStr,const char 
 	}
 	return false;
 }
+
+bool cpputil::StrIncludes(const std::string str,char c)
+{
+	for(auto x : str)
+	{
+		if(x==c)
+		{
+			return true;
+		}
+	}
+	return false;
+}
