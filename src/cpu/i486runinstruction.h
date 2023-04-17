@@ -966,6 +966,9 @@ inline uint8_t *i486DXFidelityLayer<FIDELITY>::GetOperandPointer(
 template <class FIDELITY>
 inline unsigned int i486DXFidelityLayer<FIDELITY>::CALLF(Memory &mem,uint16_t opSize,uint16_t instNumBytes,uint16_t newCS,uint32_t newEIP,uint16_t defClocks)
 {
+	FIDELITY::SavedCSEIP savedCSEIP;
+	FIDELITY::SaveCSEIP(savedCSEIP,*this);
+
 	auto prevCS=state.CS().value;
 	auto returnEIP=state.EIP+instNumBytes;
 
@@ -1058,6 +1061,8 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::CALLF(Memory &mem,uint16_t op
 	}
 
 	Push(mem,opSize,prevCS,returnEIP);
+
+	FIDELITY::RestoreCSEIPIfException(*this,savedCSEIP);
 
 	return defClocks;
 }

@@ -63,7 +63,11 @@ TownsTgDrv::TownsTgDrv(class FMTownsCommon *townsPtr) : Device(townsPtr)
 		case TOWNS_VM_TGDRV_INT2FH://      0x02,
 			// To use AL for OUT DX,AL  AX is copied to BX.
 			// AX is also at SS:[SP]
-			std::cout << "INT 2FH Intercept. Req=" << cpputil::Ustox(townsPtr->CPU().GetBX()) << std::endl;
+			if(0x1600!=(townsPtr->CPU().GetBX()&0xFF00))
+			{
+				// 0x16?? is used for DPMI.  Not TGDRV's business.
+				std::cout << "INT 2FH Intercept. Req=" << cpputil::Ustox(townsPtr->CPU().GetBX()) << std::endl;
+			}
 			// Set PF if not my drive.
 			// Clear PF if my drive.
 			bool myDrive=false;

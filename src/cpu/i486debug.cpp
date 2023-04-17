@@ -107,6 +107,7 @@ i486Debugger::i486Debugger()
 	{
 		CS=false;
 	}
+	MakeVxDLabelTable();
 	CleanUp();
 }
 i486Debugger::~i486Debugger()
@@ -741,6 +742,10 @@ void i486Debugger::ClearStopFlag(void)
 void i486Debugger::Interrupt(const i486DXCommon &cpu,unsigned int INTNum,Memory &mem,unsigned int numInstBytes)
 {
 	specialDebugInfo->Interrupt(*this,cpu,INTNum,mem,numInstBytes);
+	if(INT_WIN31_VxD==INTNum)
+	{
+		AutoAnnotateVxD(cpu,mem,cpu.state.CS(),cpu.state.EIP);
+	}
 	if(breakOnINT[INTNum&0xFF].cond!=BreakOnINTCondition::COND_NEVER)
 	{
 		switch(breakOnINT[INTNum&0xFF].cond)

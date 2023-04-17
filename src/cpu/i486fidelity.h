@@ -32,6 +32,12 @@ public:
 	inline static void SaveECX(SavedECX &,uint32_t){}
 	constexpr bool HandleExceptionAndRestoreECXIfAny(class i486DXCommon &,Memory &,uint32_t instNumBytes,const SavedECX) const{return false;}
 
+	class SavedCSEIP
+	{
+	};
+	inline static void SaveCSEIP(SavedCSEIP &,const class i486DXCommon &){}
+	inline static void RestoreCSEIPIfException(class i486DXCommon &,const SavedCSEIP &){}
+
 	inline static void Sync_CS_RPL_to_DPL(class i486DXCommon &){}
 
 	constexpr bool UDException_MOV_TO_CS(class i486DXCommon &,uint32_t reg,Memory &mem,uint32_t instNumBytes) const{return false;}
@@ -219,6 +225,27 @@ public:
 			return true;
 		}
 		return false;
+	}
+
+
+	class SavedCSEIP
+	{
+	public:
+		i486DXCommon::SegmentRegister CS;
+		uint32_t EIP;
+	};
+	inline static void SaveCSEIP(SavedCSEIP &saved,const class i486DXCommon &cpu)
+	{
+		saved.CS=cpu.state.CS();
+		saved.EIP=cpu.state.EIP;
+	}
+	inline static void RestoreCSEIPIfException(class i486DXCommon &cpu,const SavedCSEIP &saved)
+	{
+		if(true==cpu.state.exception)
+		{
+			cpu.state.CS()=saved.CS;
+			cpu.state.EIP=saved.EIP;
+		}
 	}
 
 

@@ -241,6 +241,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	featureMap["EVENTLOG"]=ENABLE_EVENTLOG;
 	featureMap["DEBUGGER"]=ENABLE_DEBUGGER;
 	featureMap["DEBUG"]=ENABLE_DEBUGGER;
+	featureMap["AUTOVXD"]=ENABLE_AUTO_ANNOTATE_VXDCALL;
 	featureMap["MOUSEINTEG"]=ENABLE_MOUSEINTEGRATION;
 	featureMap["YM2612LOG"]=ENABLE_YM2612_LOG;
 	featureMap["FPU"]=ENABLE_FPU;
@@ -698,6 +699,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "DEBUGGER" << std::endl;
 	std::cout << "DEBUG" << std::endl;
 	std::cout << "  Debugger." << std::endl;
+	std::cout << "AUTOVXD" << std::endl;
+	std::cout << "  Auto-Annotate Windows 3.1 VxD Call." << std::endl;
 	std::cout << "MOUSEINTEG" << std::endl;
 	std::cout << "  Mouse Integration." << std::endl;
 	std::cout << "YM2612LOG" << std::endl;
@@ -1751,6 +1754,17 @@ void TownsCommandInterpreter::Execute_Enable(FMTownsCommon &towns,Command &cmd)
 			towns.EnableDebugger();
 			std::cout << "Debugger is ON." << std::endl;
 			break;
+		case ENABLE_AUTO_ANNOTATE_VXDCALL:
+			if(nullptr==towns.CPU().debuggerPtr)
+			{
+				PrintError(ERROR_DEBUGGER_NOT_ENABLED);
+			}
+			else
+			{
+				towns.CPU().debuggerPtr->autoAnnotateVxDCall=true;
+				std::cout << "Auto Annotate VxD Calls." << std::endl;
+			}
+			break;
 		case ENABLE_MOUSEINTEGRATION:
 			towns.var.mouseIntegration=true;
 			std::cout << "Mouse Integration is Enabled." << std::endl;
@@ -1837,6 +1851,17 @@ void TownsCommandInterpreter::Execute_Disable(FMTownsCommon &towns,Command &cmd)
 		case ENABLE_DEBUGGER:
 			towns.DisableDebugger();
 			std::cout << "Debugger is OFF." << std::endl;
+			break;
+		case ENABLE_AUTO_ANNOTATE_VXDCALL:
+			if(nullptr==towns.CPU().debuggerPtr)
+			{
+				PrintError(ERROR_DEBUGGER_NOT_ENABLED);
+			}
+			else
+			{
+				towns.CPU().debuggerPtr->autoAnnotateVxDCall=false;
+				std::cout << "Turn Off Auto Annotate VxD Calls." << std::endl;
+			}
 			break;
 		case ENABLE_MOUSEINTEGRATION:
 			towns.var.mouseIntegration=false;

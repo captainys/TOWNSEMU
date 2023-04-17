@@ -116,6 +116,10 @@ public:
 	std::string externalBreakReason,additionalDisasm;
 	std::map <unsigned int,std::string> ioLabel;
 
+	std::map <unsigned int,std::string> VxDLabel;
+	bool autoAnnotateVxDCall=false;
+	std::map <unsigned int,std::map <unsigned int,std::string> > VxDFuncLabel;
+
 	bool breakOnVM86Mode=false,prevVM86Mode=false;
 	bool breakOnProtectedMode=false,prevProtectedMode=false;
 	bool breakOnRealMode=false,prevRealMode=false;
@@ -373,6 +377,9 @@ public:
 
 	void SetBreakOnCallStackDepth(uint32_t depth);
 	void ClearBreakOnCallStackDepth(void);
+
+	void MakeVxDLabelTable(void);
+	void AutoAnnotateVxD(const i486DXCommon &cpu,const Memory &mem,const i486DXCommon::SegmentRegister &reg,uint32_t EIP);
 
 	bool OpenLogFile(std::string logFileName);
 	std::ofstream &LogFileStream(void);
