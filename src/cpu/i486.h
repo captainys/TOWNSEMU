@@ -3016,6 +3016,12 @@ public:
 	/*! Redirect to Push in the sub-class.
 	*/
 	virtual void RedirectPush(Memory &mem,unsigned int operandSize,unsigned int value)=0;
+
+
+	/*! Redirect to LinearAddressToPhysicalAddressRead/Write
+	*/
+	virtual unsigned long RedirectLinearAddressToPhysicalAddressWrite(unsigned int linearAddr,Memory &mem)=0;
+	virtual unsigned long RedirectLinearAddressToPhysicalAddressRead(unsigned int linearAddr,Memory &mem)=0;
 };
 
 // Fidelity Layer
@@ -3547,9 +3553,18 @@ public:
 		Interrupt(intNum,mem,numInstBytesForReturn,numInstBytesForCallStack,SWI);
 	}
 
-	void RedirectPush(Memory &mem,unsigned int operandSize,unsigned int value)
+	void RedirectPush(Memory &mem,unsigned int operandSize,unsigned int value) override
 	{
 		Push(mem,operandSize,value);
+	}
+
+	unsigned long RedirectLinearAddressToPhysicalAddressWrite(unsigned int linearAddr,Memory &mem) override
+	{
+		return LinearAddressToPhysicalAddressWrite(linearAddr,mem);
+	}
+	unsigned long RedirectLinearAddressToPhysicalAddressRead(unsigned int linearAddr,Memory &mem) override
+	{
+		return LinearAddressToPhysicalAddressRead(linearAddr,mem);
 	}
 };
 

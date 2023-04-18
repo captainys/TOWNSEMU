@@ -1354,8 +1354,7 @@ uint8_t TownsTgDrv::FetchByte(uint32_t linearAddr) const
 {
 	if(true==townsPtr->CPU().PagingEnabled())
 	{
-		uint32_t exceptionType,exceptionCode;
-		auto physAddr=townsPtr->CPU().DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,linearAddr,townsPtr->mem);
+		auto physAddr=townsPtr->CPU().RedirectLinearAddressToPhysicalAddressRead(linearAddr,townsPtr->mem);
 		return townsPtr->mem.FetchByte(physAddr);
 	}
 	else
@@ -1383,8 +1382,7 @@ void TownsTgDrv::StoreByte(uint32_t linearAddr,uint8_t data)
 {
 	if(true==townsPtr->CPU().PagingEnabled())
 	{
-		uint32_t exceptionType,exceptionCode;
-		auto physAddr=townsPtr->CPU().DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,linearAddr,townsPtr->mem);
+		auto physAddr=townsPtr->CPU().RedirectLinearAddressToPhysicalAddressWrite(linearAddr,townsPtr->mem);
 		return townsPtr->mem.StoreByte(physAddr,data);
 	}
 	else
@@ -1910,8 +1908,7 @@ uint32_t TownsTgDrv::GetDTAAddress(void) const
 
 	if(true==townsPtr->CPU().PagingEnabled())
 	{
-		uint32_t exceptionType,exceptionCode;
-		DTAPointer=townsPtr->CPU().DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DTAPointer,townsPtr->mem);
+		DTAPointer=townsPtr->CPU().RedirectLinearAddressToPhysicalAddressRead(DTAPointer,townsPtr->mem);
 	}
 	uint32_t off=FetchWord(DTAPointer);
 	uint32_t seg=FetchWord(DTAPointer+2);
