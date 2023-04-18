@@ -83,86 +83,8 @@ void i486DXCommon::FPUState::BreakOnNan(i486DXCommon &cpu,double value)
 
 /* static */ void i486DXCommon::FPUState::DoubleTo80Bit(OperandValueBase &value80,double src)
 {
-	// Assume sizeof(double) is 8-byte long.
-	uint64_t binary=*((uint64_t *)&src);
-	uint16_t exponent=((binary>>52)&2047);   // 1023=2^0
-	uint64_t fraction=(binary&((1LL<<52)-1));
-	unsigned char signBit=((binary>>63)<<7);
-
-	// Reference  https://en.wikipedia.org/wiki/Double-precision_floating-point_format
-	//            https://en.wikipedia.org/wiki/Extended_precision
-	if(INFINITY==src)
-	{
-		value80.numBytes=10;
-		value80.byteData[9]=0x7F;
-		value80.byteData[8]=0xFF;
-		value80.byteData[7]=0x80;
-		value80.byteData[6]=0;
-		value80.byteData[5]=0;
-		value80.byteData[4]=0;
-		value80.byteData[3]=0;
-		value80.byteData[2]=0;
-		value80.byteData[1]=0;
-		value80.byteData[0]=0;
-		return;
-	}
-	else if(-INFINITY==src)
-	{
-		value80.numBytes=10;
-		value80.byteData[9]=0xFF;
-		value80.byteData[8]=0xFF;
-		value80.byteData[7]=0x80;
-		value80.byteData[6]=0;
-		value80.byteData[5]=0;
-		value80.byteData[4]=0;
-		value80.byteData[3]=0;
-		value80.byteData[2]=0;
-		value80.byteData[1]=0;
-		value80.byteData[0]=0;
-		return;
-	}
-	else if(isnan(src))
-	{
-		value80.numBytes=10;
-		value80.byteData[9]=0x7F;
-		value80.byteData[8]=0xFF;
-		value80.byteData[7]=0xFF;
-		value80.byteData[6]=0xFF;
-		value80.byteData[5]=0xFF;
-		value80.byteData[4]=0xFF;
-		value80.byteData[3]=0xFF;
-		value80.byteData[2]=0xFF;
-		value80.byteData[1]=0xFF;
-		value80.byteData[0]=0xFF;
-		return;
-	}
-
-
-	// In 80-bit format, fraction needs to be expanded to 64-bit
-	// Exponent 16383 is 2^0.
-	exponent=exponent+16383-1023;
-	fraction<<=11;
-	fraction|=(1LL<<63);  // Integer bit.
-
-	// It doesn't handle positive/negative infinity and NaN yet.
-
 	value80.numBytes=10;
-#ifdef YS_LITTLE_ENDIAN
-	*((uint16_t *)(value80.byteData+8))=exponent;
-	*((uint64_t *)value80.byteData)=fraction;
-	value80.byteData[9]|=signBit;
-#else
-	value80.byteData[0]=( fraction     &255);
-	value80.byteData[1]=((fraction>> 8)&255);
-	value80.byteData[2]=((fraction>>16)&255);
-	value80.byteData[3]=((fraction>>24)&255);
-	value80.byteData[4]=((fraction>>32)&255);
-	value80.byteData[5]=((fraction>>40)&255);
-	value80.byteData[6]=((fraction>>48)&255);
-	value80.byteData[7]=((fraction>>56)&255);
-	value80.byteData[8]=(exponent&255);
-	value80.byteData[9]=(((exponent>>8)&255)|signBit);
-#endif
+	DoubleTo80Bit(value80.byteData,src);
 }
 /* static */ void i486DXCommon::FPUState::DoubleTo80Bit(uint8_t value80[],double src)
 {
