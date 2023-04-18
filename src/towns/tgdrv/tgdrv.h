@@ -145,6 +145,13 @@ public:
 	std::string FetchCString(uint32_t physAddr) const;
 	std::string FetchCString(const class i486DXCommon::SegmentRegister &seg,uint32_t offset) const;
 
+	uint8_t FetchByte(uint32_t linearAddr);
+	uint16_t FetchWord(uint32_t linearAddr);
+	uint32_t FetchDword(uint32_t linearAddr);
+	void StoreByte(uint32_t linearAddr,uint8_t data);
+	void StoreWord(uint32_t linearAddr,uint16_t data);
+	void StoreDword(uint32_t linearAddr,uint32_t data);
+
 	void AddDPB(unsigned int lastDPBSEG,unsigned int lastDPBOFFSET,unsigned int newDPBSEG,unsigned int newDPBOFFSET);
 	DOSDPB FetchDPB(unsigned int SEG,unsigned int OFFSET) const;
 	void StoreDPB(unsigned int SEG,unsigned int OFFSET,DOSDPB dpb);

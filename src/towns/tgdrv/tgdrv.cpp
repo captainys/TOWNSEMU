@@ -1350,6 +1350,60 @@ std::string TownsTgDrv::FetchCString(const i486DXCommon::SegmentRegister &seg,ui
 	}
 	return str;
 }
+uint8_t TownsTgDrv::FetchByte(uint32_t linearAddr)
+{
+	if(true==townsPtr->CPU().PagingEnabled())
+	{
+		uint32_t exceptionType,exceptionCode;
+		auto physAddr=townsPtr->CPU().DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,linearAddr,townsPtr->mem);
+		return townsPtr->mem.FetchByte(physAddr);
+	}
+	else
+	{
+		return townsPtr->mem.FetchByte(linearAddr);
+	}
+}
+uint16_t TownsTgDrv::FetchWord(uint32_t linearAddr)
+{
+	uint32_t data;
+	data=FetchByte(linearAddr+1);
+	data<<=8;
+	data|=FetchByte(linearAddr);
+	return data;
+}
+uint32_t TownsTgDrv::FetchDword(uint32_t linearAddr)
+{
+	uint32_t data;
+	data=FetchWord(linearAddr+2);
+	data<<=16;
+	data|=FetchWord(linearAddr);
+	return data;
+}
+void TownsTgDrv::StoreByte(uint32_t linearAddr,uint8_t data)
+{
+	if(true==townsPtr->CPU().PagingEnabled())
+	{
+		uint32_t exceptionType,exceptionCode;
+		auto physAddr=townsPtr->CPU().DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,linearAddr,townsPtr->mem);
+		return townsPtr->mem.StoreByte(physAddr,data);
+	}
+	else
+	{
+		return townsPtr->mem.StoreByte(linearAddr,data);
+	}
+}
+void TownsTgDrv::StoreWord(uint32_t linearAddr,uint16_t data)
+{
+	StoreByte(linearAddr  ,data&0xFF);
+	StoreByte(linearAddr+1,(data>>8)&0xFF);
+}
+void TownsTgDrv::StoreDword(uint32_t linearAddr,uint32_t data)
+{
+	StoreByte(linearAddr  ,data&0xFF);
+	StoreByte(linearAddr+1,(data>>8)&0xFF);
+	StoreByte(linearAddr+2,(data>>16)&0xFF);
+	StoreByte(linearAddr+3,(data>>24)&0xFF);
+}
 void TownsTgDrv::AddDPB(unsigned int lastDPBSEG,unsigned int lastDPBOFFSET,unsigned int newDPBSEG,unsigned int newDPBOFFSET)
 {
 	DOSDPB DPB=FetchDPB(lastDPBSEG,lastDPBOFFSET);
@@ -1854,6 +1908,12 @@ uint32_t TownsTgDrv::GetDTAAddress(void) const
 	else
 	{
 		DTAPointer=townsPtr->state.DOSLOLSEG*0x10+0x32C;
+	}
+
+	if(true==townsPtr->CPU().PagingEnabled())
+	{
+		uint32_t exceptionType,exceptionCode;
+		DTAPointer=townsPtr->CPU().DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DTAPointer,townsPtr->mem);
 	}
 	uint32_t off=townsPtr->mem.FetchWord(DTAPointer);
 	uint32_t seg=townsPtr->mem.FetchWord(DTAPointer+2);
