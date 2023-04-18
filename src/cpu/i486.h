@@ -510,6 +510,7 @@ public:
 		static int64_t IntFrom64Bit(const unsigned char byteData[]);
 
 		static void DoubleTo80Bit(OperandValueBase &value80,double src);
+		static void DoubleTo80Bit(uint8_t value80[],double src);
 		static double DoubleFrom80Bit(const OperandValueBase &value80);
 		static double DoubleFrom80Bit(const unsigned char value80[]);
 		static double DoubleFrom80BitBCD(const unsigned char bcd80[]);
@@ -639,6 +640,8 @@ public:
 		unsigned int FPREM(i486DXCommon &cpu);
 		unsigned int FPTAN(i486DXCommon &cpu);
 		unsigned int FRNDINT(i486DXCommon &cpu);
+		std::vector <uint8_t> FSAVE(const i486DXCommon &cpu,unsigned int operandSize) const;
+		unsigned int PopulateFPUEnv(uint8_t *data,unsigned int operandSize,bool isInRealMode) const;
 		unsigned int FSCALE(i486DXCommon &cpu);
 		unsigned int FSIN(i486DXCommon &cpu);
 		unsigned int FSINCOS(i486DXCommon &cpu);

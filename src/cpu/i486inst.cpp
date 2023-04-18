@@ -1578,7 +1578,7 @@ std::string i486DXCommon::Instruction::Disassemble(const Operand &op1In,const Op
 					disasm="?FPUINST REG=5";
 					break;
 				case 6: // FSAVE m94/108byte
-					disasm="?FPUINST REG=6";
+					disasm=DisassembleTypicalOneOperand("FSAVE(m64real)",op1,operandSize,cs.value,eip,symTable);
 					break;
 				case 7: // FNSTSW m2byte
 					disasm=DisassembleTypicalOneOperand("FNSTSW",op1,operandSize,cs.value,eip,symTable);

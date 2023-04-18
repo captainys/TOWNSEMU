@@ -164,6 +164,85 @@ void i486DXCommon::FPUState::BreakOnNan(i486DXCommon &cpu,double value)
 	value80.byteData[9]=(((exponent>>8)&255)|signBit);
 #endif
 }
+/* static */ void i486DXCommon::FPUState::DoubleTo80Bit(uint8_t value80[],double src)
+{
+	// Assume sizeof(double) is 8-byte long.
+	uint64_t binary=*((uint64_t *)&src);
+	uint16_t exponent=((binary>>52)&2047);   // 1023=2^0
+	uint64_t fraction=(binary&((1LL<<52)-1));
+	unsigned char signBit=((binary>>63)<<7);
+
+	// Reference  https://en.wikipedia.org/wiki/Double-precision_floating-point_format
+	//            https://en.wikipedia.org/wiki/Extended_precision
+	if(INFINITY==src)
+	{
+		value80[9]=0x7F;
+		value80[8]=0xFF;
+		value80[7]=0x80;
+		value80[6]=0;
+		value80[5]=0;
+		value80[4]=0;
+		value80[3]=0;
+		value80[2]=0;
+		value80[1]=0;
+		value80[0]=0;
+		return;
+	}
+	else if(-INFINITY==src)
+	{
+		value80[9]=0xFF;
+		value80[8]=0xFF;
+		value80[7]=0x80;
+		value80[6]=0;
+		value80[5]=0;
+		value80[4]=0;
+		value80[3]=0;
+		value80[2]=0;
+		value80[1]=0;
+		value80[0]=0;
+		return;
+	}
+	else if(isnan(src))
+	{
+		value80[9]=0x7F;
+		value80[8]=0xFF;
+		value80[7]=0xFF;
+		value80[6]=0xFF;
+		value80[5]=0xFF;
+		value80[4]=0xFF;
+		value80[3]=0xFF;
+		value80[2]=0xFF;
+		value80[1]=0xFF;
+		value80[0]=0xFF;
+		return;
+	}
+
+
+	// In 80-bit format, fraction needs to be expanded to 64-bit
+	// Exponent 16383 is 2^0.
+	exponent=exponent+16383-1023;
+	fraction<<=11;
+	fraction|=(1LL<<63);  // Integer bit.
+
+	// It doesn't handle positive/negative infinity and NaN yet.
+
+#ifdef YS_LITTLE_ENDIAN
+	*((uint16_t *)(value80+8))=exponent;
+	*((uint64_t *)value80)=fraction;
+	value80[9]|=signBit;
+#else
+	value80[0]=( fraction     &255);
+	value80[1]=((fraction>> 8)&255);
+	value80[2]=((fraction>>16)&255);
+	value80[3]=((fraction>>24)&255);
+	value80[4]=((fraction>>32)&255);
+	value80[5]=((fraction>>40)&255);
+	value80[6]=((fraction>>48)&255);
+	value80[7]=((fraction>>56)&255);
+	value80[8]=(exponent&255);
+	value80[9]=(((exponent>>8)&255)|signBit);
+#endif
+}
 /* static */ double i486DXCommon::FPUState::DoubleFrom80Bit(const OperandValueBase &value80)
 {
 	return DoubleFrom80Bit(value80.byteData);
@@ -1218,6 +1297,110 @@ unsigned int i486DXCommon::FPUState::FRNDINT(i486DXCommon &cpu)
 		return 241;
 	}
 	return 0; // Let it abort.
+}
+std::vector <uint8_t> i486DXCommon::FPUState::FSAVE(const i486DXCommon &cpu,unsigned int operandSize) const
+{
+	std::vector <uint8_t> data;
+	if(16==operandSize)
+	{
+		data.resize(94);
+	}
+	else
+	{
+		data.resize(108);
+	}
+	unsigned int STPtr=PopulateFPUEnv(data.data(),operandSize,cpu.IsInRealMode());
+	for(int i=0; i<STACK_LEN; ++i)
+	{
+		DoubleTo80Bit(data.data()+STPtr,stack[i].value);
+		STPtr+=10;
+	}
+	if(data.size()!=STPtr)
+	{
+		std::cout << "FSAVE Error!" << std::endl;
+	}
+	return data;
+}
+unsigned int  i486DXCommon::FPUState::PopulateFPUEnv(uint8_t *data,unsigned int operandSize,bool isInRealMode) const
+{
+	// 14 bytes or 28 bytes depends on operand size?  Figure 15-5 through 15-8 of i486 Programmer's Reference Manual 1990 for layout.
+	// WTF!? Four types of layouts?  Intel designers were really creative in the evil way.
+	// Protected Mode && 32-bit (Figure 15-5)
+	//   RESERVED | CONTROL WORD     +0H
+	//   RESERVED | STATUS WORD      +4H
+	//   RESERVED | TAG WORD         +8H
+	//        IP OFFSET              +CH
+	//   RESERVED | CS selector      +10H
+	//       Data Operand Offset     +14H
+	//   RESERVED | Operand Selector +18H
+	if(true!=isInRealMode && 32==operandSize)
+	{
+		cpputil::PutDword(data   ,controlWord);
+		cpputil::PutDword(data+ 4,statusWord);
+		cpputil::PutDword(data+ 8,tagWord);
+		cpputil::PutDword(data+12,0);
+		cpputil::PutDword(data+16,0);
+		cpputil::PutDword(data+20,0);
+		cpputil::PutDword(data+24,0);
+		return 28;
+	}
+	// Real Mode && 32-bit (Figure 15-6)
+	//   RESERVED | CONTROL WORD                       +0H
+	//   RESERVED | STATUS WORD                        +4H
+	//   RESERVED | TAG WORD                           +8H
+	//   RESERVED | IP OFFSET                          +CH
+	//   0000 (IP 16bits) 0 (Opcode 11bits)            +10H
+	//   RESERVED | Data Operand Offset                +14H
+	//   0000 (Operand Selector 16bits) 000000000000   +18H
+	else if(true==isInRealMode && 32==operandSize)
+	{
+		cpputil::PutDword(data   ,controlWord);
+		cpputil::PutDword(data+ 4,statusWord);
+		cpputil::PutDword(data+ 8,tagWord);
+		cpputil::PutDword(data+12,0);
+		cpputil::PutDword(data+16,0);
+		cpputil::PutDword(data+20,0);
+		cpputil::PutDword(data+24,0);
+		return 28;
+	}
+	// Protected Mode && 16-bit (Figure 15-7)
+	//   CONTROL WORD            +0H
+	//   STATUS WORD             +2H
+	//   TAG WORD                +4H
+	//   IP OFFSET               +6H
+	//   CS selector             +8H
+	//   Data Operand Offset     +AH
+	//   Operand Selector        +CH
+	else if(true!=isInRealMode && 16==operandSize)
+	{
+		cpputil::PutWord(data   ,controlWord);
+		cpputil::PutWord(data+ 2,statusWord);
+		cpputil::PutWord(data+ 4,tagWord);
+		cpputil::PutWord(data+ 6,0);
+		cpputil::PutWord(data+ 8,0);
+		cpputil::PutWord(data+10,0);
+		cpputil::PutWord(data+12,0);
+		return 14;
+	}
+	// Real Mode && 16-bit (Figure 15-8)
+	//   CONTROL WORD                     +0H
+	//   STATUS WORD                      +2H
+	//   TAG WORD                         +4H
+	//   IP OFFSET                        +6H
+	//   IP(high-4bit) 0 Opcode(11 bits)  +8H
+	//   Data Operand Offset              +AH
+	//   DP(high 4-bit) <- 0 ->           +CH
+	else if(true==isInRealMode && 16==operandSize)
+	{
+		cpputil::PutWord(data   ,controlWord);
+		cpputil::PutWord(data+ 2,statusWord);
+		cpputil::PutWord(data+ 4,tagWord);
+		cpputil::PutWord(data+ 6,0);
+		cpputil::PutWord(data+ 8,0);
+		cpputil::PutWord(data+10,0);
+		cpputil::PutWord(data+12,0);
+		return 14;
+	}
 }
 unsigned int i486DXCommon::FPUState::FSCALE(i486DXCommon &cpu)
 {
