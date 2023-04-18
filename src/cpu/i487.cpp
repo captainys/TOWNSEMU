@@ -1334,6 +1334,24 @@ std::vector <uint8_t> i486DXCommon::FPUState::FSAVE(const i486DXCommon &cpu,unsi
 	}
 	return data;
 }
+std::vector <uint8_t> i486DXCommon::FPUState::FNSTENV(const i486DXCommon &cpu,unsigned int operandSize) const
+{
+	std::vector <uint8_t> data;
+	if(16==operandSize)
+	{
+		data.resize(14);
+	}
+	else
+	{
+		data.resize(28);
+	}
+	unsigned int size=PopulateFPUEnv(data.data(),operandSize,cpu.IsInRealMode());
+	if(data.size()!=size)
+	{
+		std::cout << "FNSTENV Error!" << std::endl;
+	}
+	return data;
+}
 unsigned int  i486DXCommon::FPUState::PopulateFPUEnv(uint8_t *data,unsigned int operandSize,bool isInRealMode) const
 {
 	// 14 bytes or 28 bytes depends on operand size?  Figure 15-5 through 15-8 of i486 Programmer's Reference Manual 1990 for layout.

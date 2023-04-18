@@ -643,6 +643,7 @@ public:
 		unsigned int FRSTOR(const i486DXCommon &cpu,unsigned int operandSize,const uint8_t data[]);
 		unsigned int RestoreEnv(unsigned int operandSize,bool isInRealMode,const uint8_t data[]);
 		std::vector <uint8_t> FSAVE(const i486DXCommon &cpu,unsigned int operandSize) const;
+		std::vector <uint8_t> FNSTENV(const i486DXCommon &cpu,unsigned int operandSize) const;
 		unsigned int PopulateFPUEnv(uint8_t *data,unsigned int operandSize,bool isInRealMode) const;
 		unsigned int FSCALE(i486DXCommon &cpu);
 		unsigned int FSIN(i486DXCommon &cpu);
