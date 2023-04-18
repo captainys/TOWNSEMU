@@ -1298,6 +1298,97 @@ unsigned int i486DXCommon::FPUState::FRNDINT(i486DXCommon &cpu)
 	}
 	return 0; // Let it abort.
 }
+unsigned int i486DXCommon::FPUState::FRSTOR(const i486DXCommon &cpu,unsigned int operandSize,const uint8_t data[])
+{
+	unsigned int STPtr=RestoreEnv(operandSize,cpu.IsInRealMode(),data);
+	for(int i=0; i<STACK_LEN; ++i)
+	{
+		stack[i].value=DoubleFrom80Bit(data+STPtr);
+		STPtr+=10;
+	}
+	return 131;
+}
+unsigned int i486DXCommon::FPUState::RestoreEnv(unsigned int operandSize,bool isInRealMode,const uint8_t data[])
+{
+	// 14 bytes or 28 bytes depends on operand size?  Figure 15-5 through 15-8 of i486 Programmer's Reference Manual 1990 for layout.
+	// WTF!? Four types of layouts?  Intel designers were really creative in the evil way.
+	// Protected Mode && 32-bit (Figure 15-5)
+	//   RESERVED | CONTROL WORD     +0H
+	//   RESERVED | STATUS WORD      +4H
+	//   RESERVED | TAG WORD         +8H
+	//        IP OFFSET              +CH
+	//   RESERVED | CS selector      +10H
+	//       Data Operand Offset     +14H
+	//   RESERVED | Operand Selector +18H
+	if(true!=isInRealMode && 32==operandSize)
+	{
+		controlWord=cpputil::GetDword(data);
+		statusWord =cpputil::GetDword(data+ 4);
+		tagWord    =cpputil::GetDword(data+ 8);
+		// cpputil::GetDword(data+12);
+		// cpputil::GetDword(data+16);
+		// cpputil::GetDword(data+20);
+		// cpputil::GetDword(data+24);
+		return 28;
+	}
+	// Real Mode && 32-bit (Figure 15-6)
+	//   RESERVED | CONTROL WORD                       +0H
+	//   RESERVED | STATUS WORD                        +4H
+	//   RESERVED | TAG WORD                           +8H
+	//   RESERVED | IP OFFSET                          +CH
+	//   0000 (IP 16bits) 0 (Opcode 11bits)            +10H
+	//   RESERVED | Data Operand Offset                +14H
+	//   0000 (Operand Selector 16bits) 000000000000   +18H
+	else if(true==isInRealMode && 32==operandSize)
+	{
+		controlWord=cpputil::GetDword(data   );
+		statusWord =cpputil::GetDword(data+ 4);
+		tagWord    =cpputil::GetDword(data+ 8);
+		// cpputil::GetDword(data+12);
+		// cpputil::GetDword(data+16);
+		// cpputil::GetDword(data+20);
+		// cpputil::GetDword(data+24);
+		return 28;
+	}
+	// Protected Mode && 16-bit (Figure 15-7)
+	//   CONTROL WORD            +0H
+	//   STATUS WORD             +2H
+	//   TAG WORD                +4H
+	//   IP OFFSET               +6H
+	//   CS selector             +8H
+	//   Data Operand Offset     +AH
+	//   Operand Selector        +CH
+	else if(true!=isInRealMode && 16==operandSize)
+	{
+		controlWord=cpputil::GetWord(data   );
+		statusWord =cpputil::GetWord(data+ 2);
+		tagWord    =cpputil::GetWord(data+ 4);
+		//cpputil::GetWord(data+ 6);
+		//cpputil::GetWord(data+ 8);
+		//cpputil::GetWord(data+10);
+		//cpputil::GetWord(data+12);
+		return 14;
+	}
+	// Real Mode && 16-bit (Figure 15-8)
+	//   CONTROL WORD                     +0H
+	//   STATUS WORD                      +2H
+	//   TAG WORD                         +4H
+	//   IP OFFSET                        +6H
+	//   IP(high-4bit) 0 Opcode(11 bits)  +8H
+	//   Data Operand Offset              +AH
+	//   DP(high 4-bit) <- 0 ->           +CH
+	else if(true==isInRealMode && 16==operandSize)
+	{
+		controlWord=cpputil::GetWord(data   );
+		statusWord =cpputil::GetWord(data+ 2);
+		tagWord    =cpputil::GetWord(data+ 4);
+		//cpputil::GetWord(data+ 6);
+		//cpputil::GetWord(data+ 8);
+		//cpputil::GetWord(data+10);
+		//cpputil::GetWord(data+12);
+		return 14;
+	}
+}
 std::vector <uint8_t> i486DXCommon::FPUState::FSAVE(const i486DXCommon &cpu,unsigned int operandSize) const
 {
 	std::vector <uint8_t> data;

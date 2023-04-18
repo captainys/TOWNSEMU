@@ -644,6 +644,7 @@ void i486DXCommon::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,Memo
 				case 0:	// FLD m64real
 				case 2: // FST m64real
 				case 3: // FSTP m64real
+				case 4: // FRSTOR m94/108byte
 				case 6: // FSAVE m94/108byte
 				case 7: // FNSTSW m2byte
 					FetchOperandRMandDecode<CPUCLASS, MEMCLASS, FUNCCLASS>(op1, inst.addressSize, inst.operandSize, cpu, inst, ptr, seg, offset, mem);
@@ -3830,6 +3831,21 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 						state.fpuState.Pop(*this);
 						StoreOperandValue64(op1,mem,inst.addressSize,inst.segOverride,value);
 						clocksPassed=8;
+					}
+					break;
+				case 4: // FRSTOR m94/108byte
+					{
+						std::vector <uint8_t> data;
+						unsigned int offset;
+						auto segPtr=ExtractSegmentAndOffset(offset,op1,inst.segOverride);
+
+						unsigned int size=(16==inst.operandSize ? 94 : 108);
+						data.resize(size);
+						for(unsigned int i=0; i<size; ++i)
+						{
+							data[i]=FetchByte(inst.addressSize,*segPtr,offset+i,mem);
+						}
+						clocksPassed=state.fpuState.FRSTOR(*this,inst.operandSize,data.data());
 					}
 					break;
 				case 6: // FSAVE m94/108byte
