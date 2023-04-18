@@ -247,7 +247,7 @@ bool TownsTgDrv::Int2F_1105_Chdir(void)
 		{
 			for(int i=6; i<0x43; ++i)
 			{
-				townsPtr->mem.StoreByte(CDSAddr+i,0);
+				StoreByte(CDSAddr+i,0);
 			}
 			townsPtr->CPU().SetCF(false);
 		}
@@ -255,11 +255,11 @@ bool TownsTgDrv::Int2F_1105_Chdir(void)
 		{
 			for(int i=0; i<subPath.size() && i+6<0x42; ++i)
 			{
-				townsPtr->mem.StoreByte(CDSAddr+6+i,subPath[i]);
+				StoreByte(CDSAddr+6+i,subPath[i]);
 			}
 			for(int i=subPath.size(); i+6<0x43; ++i)
 			{
-				townsPtr->mem.StoreByte(CDSAddr+6+i,0);
+				StoreByte(CDSAddr+6+i,0);
 			}
 			townsPtr->CPU().SetCF(false);
 		}
@@ -787,7 +787,7 @@ bool TownsTgDrv::Int2F_111B_FindFirst(void)
 
 	if(0<=sharedDirIndex)
 	{
-		townsPtr->mem.StoreByte(DTABuffer,0x80|(drvLetter-'A'+1));  // (drv&0x7F) is FCB drive index.
+		StoreByte(DTABuffer,0x80|(drvLetter-'A'+1));  // (drv&0x7F) is FCB drive index.
 		auto last=GetLastOfFilename(fn);
 		std::cout << last << std::endl;
 		auto eleven=FilenameTo11Bytes(last);
@@ -795,23 +795,23 @@ bool TownsTgDrv::Int2F_111B_FindFirst(void)
 
 		for(int i=0; i<11; ++i)
 		{
-			townsPtr->mem.StoreByte(DTABuffer+1+i,eleven[i]);
+			StoreByte(DTABuffer+1+i,eleven[i]);
 		}
-		townsPtr->mem.StoreByte(DTABuffer+0x0C,(unsigned char)sAttr);
-		townsPtr->mem.StoreWord(DTABuffer+0x0D,1);  // Entry Count? Always 1?
+		StoreByte(DTABuffer+0x0C,(unsigned char)sAttr);
+		StoreWord(DTABuffer+0x0D,1);  // Entry Count? Always 1?
 		// townsPtr->mem.StoreWord(DTABuffer+0x0F,1);  // Cluster Number? Always 1?
-		townsPtr->mem.StoreDword(DTABuffer+0x11,0);  // Entry Count? Always 1?
+		StoreDword(DTABuffer+0x11,0);  // Entry Count? Always 1?
 
 		if(sAttr==TOWNS_DOS_DIRENT_ATTR_VOLLABEL) // If it is requesting more than volume label, just skip it, and do normal FindFirst
 		{
 			for(int i=0; i<11; ++i)
 			{
-				townsPtr->mem.StoreByte(DTABuffer+0x15+i,"TSUGARUDRIV"[i]);
+				StoreByte(DTABuffer+0x15+i,"TSUGARUDRIV"[i]);
 			}
-			townsPtr->mem.StoreByte(DTABuffer+0x15+0x0B,TOWNS_DOS_DIRENT_ATTR_VOLLABEL);
+			StoreByte(DTABuffer+0x15+0x0B,TOWNS_DOS_DIRENT_ATTR_VOLLABEL);
 			for(int i=0x16; i<0x1C; ++i)
 			{
-				townsPtr->mem.StoreByte(DTABuffer+0x15+i,0);
+				StoreByte(DTABuffer+0x15+i,0);
 			}
 			townsPtr->CPU().SetCF(false);
 		}
@@ -855,7 +855,7 @@ bool TownsTgDrv::Int2F_111B_FindFirst(void)
 				   true==FileSys::DOSAttrMatch(sAttr,dirent.attr))
 				{
 					MakeDOSDirEnt(DTABuffer+0x15,dirent);
-					townsPtr->mem.StoreWord(DTABuffer+0x0F,fsIdx);  // Use Cluster Number to connect fsIdx
+					StoreWord(DTABuffer+0x0F,fsIdx);  // Use Cluster Number to connect fsIdx
 					townsPtr->CPU().SetCF(false);
 					found=true;
 					break;
@@ -877,7 +877,7 @@ bool TownsTgDrv::Int2F_111C_FindNext(void)
 {
 	// ES:DI is CDS for the drive.
 	uint32_t DTABuffer=GetDTAAddress();
-	unsigned char drv=townsPtr->mem.FetchByte(DTABuffer);
+	unsigned char drv=FetchByte(DTABuffer);
 	if(0==(drv&0x80))
 	{
 		return false;
@@ -886,9 +886,9 @@ bool TownsTgDrv::Int2F_111C_FindNext(void)
 	char templ11[11];
 	for(int i=0; i<11; ++i)
 	{
-		templ11[i]=townsPtr->mem.FetchByte(DTABuffer+1+i);
+		templ11[i]=FetchByte(DTABuffer+1+i);
 	}
-	uint16_t sAttr=townsPtr->mem.FetchByte(DTABuffer+0x0C);
+	uint16_t sAttr=FetchByte(DTABuffer+0x0C);
 	sAttr&=(~TOWNS_DOS_DIRENT_ATTR_VOLLABEL);
 
 	drv=(drv&0x7F)-1+'A'; // (drv&0x7F) is FCB drive index.
@@ -896,7 +896,7 @@ bool TownsTgDrv::Int2F_111C_FindNext(void)
 	if(0<=sharedDirIndex)
 	{
 		bool found=false;
-		int sfIdx=townsPtr->mem.FetchWord(DTABuffer+0x0F);
+		int sfIdx=FetchWord(DTABuffer+0x0F);
 		if(true==sharedDir[sharedDirIndex].FindStructValid(sfIdx))
 		{
 			for(;;)
@@ -1002,8 +1002,8 @@ bool TownsTgDrv::Int2F_112E_ExtendedOpenOrCreate(void)
 		//     attr=0020H
 
 		uint32_t addr=GetFilenameBufferAddress();
-		uint16_t openMode=townsPtr->mem.FetchWord(addr+0x2E1-0x9E);
-		uint16_t openAction=townsPtr->mem.FetchWord(addr+0x2DD-0x9E);
+		uint16_t openMode=FetchWord(addr+0x2E1-0x9E);
+		uint16_t openAction=FetchWord(addr+0x2DD-0x9E);
 
 		std::cout << fName << std::endl;
 		std::cout << cpputil::Ustox(openMode) << std::endl;
@@ -1279,15 +1279,15 @@ void TownsTgDrv::MakeDOSDirEnt(uint32_t DTABuffer,const FileSys::DirectoryEntry 
 	}
 	for(int i=0; i<11; ++i)
 	{
-		townsPtr->mem.StoreByte(DTABuffer+i,fName11[i]);
+		StoreByte(DTABuffer+i,fName11[i]);
 	}
-	townsPtr->mem.StoreByte(DTABuffer+0x0B,dirent.attr);
-	townsPtr->mem.StoreByte(DTABuffer+0x0C,0);
+	StoreByte(DTABuffer+0x0B,dirent.attr);
+	StoreByte(DTABuffer+0x0C,0);
 
-	townsPtr->mem.StoreWord(DTABuffer+0x16,dirent.FormatDOSTime());
-	townsPtr->mem.StoreWord(DTABuffer+0x18,dirent.FormatDOSDate());
-	townsPtr->mem.StoreWord(DTABuffer+0x1A,0); // First cluster N/A for Network file
-	townsPtr->mem.StoreDword(DTABuffer+0x1C,(uint32_t)dirent.length);
+	StoreWord(DTABuffer+0x16,dirent.FormatDOSTime());
+	StoreWord(DTABuffer+0x18,dirent.FormatDOSDate());
+	StoreWord(DTABuffer+0x1A,0); // First cluster N/A for Network file
+	StoreDword(DTABuffer+0x1C,(uint32_t)dirent.length);
 }
 unsigned int TownsTgDrv::FetchDriveCodeFromSFT(const class i486DXCommon::SegmentRegister &seg,uint32_t offset) const
 {
@@ -1323,7 +1323,7 @@ std::string TownsTgDrv::FetchCString(uint32_t physAddr) const
 	std::string str;
 	for(;;)
 	{
-		auto c=townsPtr->mem.FetchByte(physAddr++);
+		auto c=FetchByte(physAddr++);
 		if(0==c)
 		{
 			break;
@@ -1350,7 +1350,7 @@ std::string TownsTgDrv::FetchCString(const i486DXCommon::SegmentRegister &seg,ui
 	}
 	return str;
 }
-uint8_t TownsTgDrv::FetchByte(uint32_t linearAddr)
+uint8_t TownsTgDrv::FetchByte(uint32_t linearAddr) const
 {
 	if(true==townsPtr->CPU().PagingEnabled())
 	{
@@ -1363,7 +1363,7 @@ uint8_t TownsTgDrv::FetchByte(uint32_t linearAddr)
 		return townsPtr->mem.FetchByte(linearAddr);
 	}
 }
-uint16_t TownsTgDrv::FetchWord(uint32_t linearAddr)
+uint16_t TownsTgDrv::FetchWord(uint32_t linearAddr) const
 {
 	uint32_t data;
 	data=FetchByte(linearAddr+1);
@@ -1371,7 +1371,7 @@ uint16_t TownsTgDrv::FetchWord(uint32_t linearAddr)
 	data|=FetchByte(linearAddr);
 	return data;
 }
-uint32_t TownsTgDrv::FetchDword(uint32_t linearAddr)
+uint32_t TownsTgDrv::FetchDword(uint32_t linearAddr) const
 {
 	uint32_t data;
 	data=FetchWord(linearAddr+2);
@@ -1421,9 +1421,9 @@ void TownsTgDrv::AddDPB(unsigned int lastDPBSEG,unsigned int lastDPBOFFSET,unsig
 	StoreDPB(newDPBSEG,newDPBOFFSET,DPB);
 
 	auto NUM_DPB_ADDR=townsPtr->state.DOSLOLSEG*0x10+0x0046; // SYSVARS+20h
-	auto NUM_DPB=townsPtr->mem.FetchByte(NUM_DPB_ADDR);
+	auto NUM_DPB=FetchByte(NUM_DPB_ADDR);
 	++NUM_DPB;
-	townsPtr->mem.StoreByte(NUM_DPB_ADDR,NUM_DPB);
+	StoreByte(NUM_DPB_ADDR,NUM_DPB);
 }
 TownsTgDrv::DOSDPB TownsTgDrv::FetchDPB(unsigned int SEG,unsigned int OFFSET) const
 {
@@ -1432,90 +1432,88 @@ TownsTgDrv::DOSDPB TownsTgDrv::FetchDPB(unsigned int SEG,unsigned int OFFSET) co
 
 	unsigned int baseAddr=SEG*0x10+OFFSET;
 
-	dpb.DRIVE_CODE			=mem.FetchByte(baseAddr+0x00);
-	dpb.UNIT_CODE			=mem.FetchByte(baseAddr+0x01);
-	dpb.BYTES_PER_SECTOR	=mem.FetchWord(baseAddr+0x02);
-	dpb.CLUSTER_MASK		=mem.FetchByte(baseAddr+0x04);
-	dpb.CLUSTER_SHIFT		=mem.FetchByte(baseAddr+0x05);
-	dpb.FIRST_FAT_SECTOR	=mem.FetchWord(baseAddr+0x06);
-	dpb.NUM_FATS			=mem.FetchByte(baseAddr+0x08);
-	dpb.NUM_DIRENTS			=mem.FetchWord(baseAddr+0x09);
-	dpb.FIRST_DATA_SECTOR	=mem.FetchWord(baseAddr+0x0b);
-	dpb.MAX_CLUSTER_NUM		=mem.FetchWord(baseAddr+0x0d);
+	dpb.DRIVE_CODE			=FetchByte(baseAddr+0x00);
+	dpb.UNIT_CODE			=FetchByte(baseAddr+0x01);
+	dpb.BYTES_PER_SECTOR	=FetchWord(baseAddr+0x02);
+	dpb.CLUSTER_MASK		=FetchByte(baseAddr+0x04);
+	dpb.CLUSTER_SHIFT		=FetchByte(baseAddr+0x05);
+	dpb.FIRST_FAT_SECTOR	=FetchWord(baseAddr+0x06);
+	dpb.NUM_FATS			=FetchByte(baseAddr+0x08);
+	dpb.NUM_DIRENTS			=FetchWord(baseAddr+0x09);
+	dpb.FIRST_DATA_SECTOR	=FetchWord(baseAddr+0x0b);
+	dpb.MAX_CLUSTER_NUM		=FetchWord(baseAddr+0x0d);
 
 	auto dosverMajor=townsPtr->state.DOSVER&0xFF;
 	if(3==dosverMajor)
 	{
-		dpb.SECTORS_PER_FAT		=mem.FetchByte(baseAddr+0x0f);
-		dpb.FIRST_DIR_SECTOR	=mem.FetchWord(baseAddr+0x10);
-		dpb.DEV_DRIVER_OFFSET 	=mem.FetchWord(baseAddr+0x12);
-		dpb.DEV_DRIVER_SEG 		=mem.FetchWord(baseAddr+0x14);
-		dpb.MEDIA_DESC_TYPE		=mem.FetchByte(baseAddr+0x16);
-		dpb.ACCESS_FLAG			=mem.FetchByte(baseAddr+0x17);
-		dpb.NEXT_DPB_OFFSET		=mem.FetchWord(baseAddr+0x18);
-		dpb.NEXT_DPB_SEG		=mem.FetchWord(baseAddr+0x1A);
-		dpb.LAST_CLUSTER_ALLOC	=mem.FetchWord(baseAddr+0x1C);
-		dpb.NUM_FREE_CLUSTERS	=mem.FetchWord(baseAddr+0x1E);
+		dpb.SECTORS_PER_FAT		=FetchByte(baseAddr+0x0f);
+		dpb.FIRST_DIR_SECTOR	=FetchWord(baseAddr+0x10);
+		dpb.DEV_DRIVER_OFFSET 	=FetchWord(baseAddr+0x12);
+		dpb.DEV_DRIVER_SEG 		=FetchWord(baseAddr+0x14);
+		dpb.MEDIA_DESC_TYPE		=FetchByte(baseAddr+0x16);
+		dpb.ACCESS_FLAG			=FetchByte(baseAddr+0x17);
+		dpb.NEXT_DPB_OFFSET		=FetchWord(baseAddr+0x18);
+		dpb.NEXT_DPB_SEG		=FetchWord(baseAddr+0x1A);
+		dpb.LAST_CLUSTER_ALLOC	=FetchWord(baseAddr+0x1C);
+		dpb.NUM_FREE_CLUSTERS	=FetchWord(baseAddr+0x1E);
 	}
 	else
 	{
-		dpb.SECTORS_PER_FAT		=mem.FetchWord(baseAddr+0x0f);
-		dpb.FIRST_DIR_SECTOR	=mem.FetchWord(baseAddr+0x11);
-		dpb.DEV_DRIVER_OFFSET 	=mem.FetchWord(baseAddr+0x13);
-		dpb.DEV_DRIVER_SEG 		=mem.FetchWord(baseAddr+0x15);
-		dpb.MEDIA_DESC_TYPE		=mem.FetchByte(baseAddr+0x17);
-		dpb.ACCESS_FLAG			=mem.FetchByte(baseAddr+0x18);
-		dpb.NEXT_DPB_OFFSET		=mem.FetchWord(baseAddr+0x19);
-		dpb.NEXT_DPB_SEG		=mem.FetchWord(baseAddr+0x1B);
-		dpb.LAST_CLUSTER_ALLOC	=mem.FetchWord(baseAddr+0x1D);
-		dpb.NUM_FREE_CLUSTERS	=mem.FetchWord(baseAddr+0x1F);
+		dpb.SECTORS_PER_FAT		=FetchWord(baseAddr+0x0f);
+		dpb.FIRST_DIR_SECTOR	=FetchWord(baseAddr+0x11);
+		dpb.DEV_DRIVER_OFFSET 	=FetchWord(baseAddr+0x13);
+		dpb.DEV_DRIVER_SEG 		=FetchWord(baseAddr+0x15);
+		dpb.MEDIA_DESC_TYPE		=FetchByte(baseAddr+0x17);
+		dpb.ACCESS_FLAG			=FetchByte(baseAddr+0x18);
+		dpb.NEXT_DPB_OFFSET		=FetchWord(baseAddr+0x19);
+		dpb.NEXT_DPB_SEG		=FetchWord(baseAddr+0x1B);
+		dpb.LAST_CLUSTER_ALLOC	=FetchWord(baseAddr+0x1D);
+		dpb.NUM_FREE_CLUSTERS	=FetchWord(baseAddr+0x1F);
 	}
 
 	return dpb;
 }
 void TownsTgDrv::StoreDPB(unsigned int SEG,unsigned int OFFSET,DOSDPB dpb)
 {
-	auto &mem=townsPtr->mem;
-
 	unsigned int baseAddr=SEG*0x10+OFFSET;
 
-	mem.StoreByte(baseAddr+0x00,dpb.DRIVE_CODE);
-	mem.StoreByte(baseAddr+0x01,dpb.UNIT_CODE);
-	mem.StoreWord(baseAddr+0x02,dpb.BYTES_PER_SECTOR);
-	mem.StoreByte(baseAddr+0x04,dpb.CLUSTER_MASK);
-	mem.StoreByte(baseAddr+0x05,dpb.CLUSTER_SHIFT);
-	mem.StoreWord(baseAddr+0x06,dpb.FIRST_FAT_SECTOR);
-	mem.StoreByte(baseAddr+0x08,dpb.NUM_FATS);
-	mem.StoreWord(baseAddr+0x09,dpb.NUM_DIRENTS);
-	mem.StoreWord(baseAddr+0x0b,dpb.FIRST_DATA_SECTOR);
-	mem.StoreWord(baseAddr+0x0d,dpb.MAX_CLUSTER_NUM);
+	StoreByte(baseAddr+0x00,dpb.DRIVE_CODE);
+	StoreByte(baseAddr+0x01,dpb.UNIT_CODE);
+	StoreWord(baseAddr+0x02,dpb.BYTES_PER_SECTOR);
+	StoreByte(baseAddr+0x04,dpb.CLUSTER_MASK);
+	StoreByte(baseAddr+0x05,dpb.CLUSTER_SHIFT);
+	StoreWord(baseAddr+0x06,dpb.FIRST_FAT_SECTOR);
+	StoreByte(baseAddr+0x08,dpb.NUM_FATS);
+	StoreWord(baseAddr+0x09,dpb.NUM_DIRENTS);
+	StoreWord(baseAddr+0x0b,dpb.FIRST_DATA_SECTOR);
+	StoreWord(baseAddr+0x0d,dpb.MAX_CLUSTER_NUM);
 
 	auto dosverMajor=townsPtr->state.DOSVER&0xFF;
 	if(3==dosverMajor)
 	{
-		mem.StoreByte(baseAddr+0x0f,dpb.SECTORS_PER_FAT);
-		mem.StoreWord(baseAddr+0x10,dpb.FIRST_DIR_SECTOR);
-		mem.StoreWord(baseAddr+0x12,dpb.DEV_DRIVER_OFFSET);
-		mem.StoreWord(baseAddr+0x14,dpb.DEV_DRIVER_SEG);
-		mem.StoreByte(baseAddr+0x16,dpb.MEDIA_DESC_TYPE);
-		mem.StoreByte(baseAddr+0x17,dpb.ACCESS_FLAG);
-		mem.StoreWord(baseAddr+0x18,dpb.NEXT_DPB_OFFSET);
-		mem.StoreWord(baseAddr+0x1A,dpb.NEXT_DPB_SEG);
-		mem.StoreWord(baseAddr+0x1C,dpb.LAST_CLUSTER_ALLOC);
-		mem.StoreWord(baseAddr+0x1E,dpb.NUM_FREE_CLUSTERS);
+		StoreByte(baseAddr+0x0f,dpb.SECTORS_PER_FAT);
+		StoreWord(baseAddr+0x10,dpb.FIRST_DIR_SECTOR);
+		StoreWord(baseAddr+0x12,dpb.DEV_DRIVER_OFFSET);
+		StoreWord(baseAddr+0x14,dpb.DEV_DRIVER_SEG);
+		StoreByte(baseAddr+0x16,dpb.MEDIA_DESC_TYPE);
+		StoreByte(baseAddr+0x17,dpb.ACCESS_FLAG);
+		StoreWord(baseAddr+0x18,dpb.NEXT_DPB_OFFSET);
+		StoreWord(baseAddr+0x1A,dpb.NEXT_DPB_SEG);
+		StoreWord(baseAddr+0x1C,dpb.LAST_CLUSTER_ALLOC);
+		StoreWord(baseAddr+0x1E,dpb.NUM_FREE_CLUSTERS);
 	}
 	else
 	{
-		mem.StoreWord(baseAddr+0x0f,dpb.SECTORS_PER_FAT);
-		mem.StoreWord(baseAddr+0x11,dpb.FIRST_DIR_SECTOR);
-		mem.StoreWord(baseAddr+0x13,dpb.DEV_DRIVER_OFFSET);
-		mem.StoreWord(baseAddr+0x15,dpb.DEV_DRIVER_SEG);
-		mem.StoreByte(baseAddr+0x17,dpb.MEDIA_DESC_TYPE);
-		mem.StoreByte(baseAddr+0x18,dpb.ACCESS_FLAG);
-		mem.StoreWord(baseAddr+0x19,dpb.NEXT_DPB_OFFSET);
-		mem.StoreWord(baseAddr+0x1B,dpb.NEXT_DPB_SEG);
-		mem.StoreWord(baseAddr+0x1D,dpb.LAST_CLUSTER_ALLOC);
-		mem.StoreWord(baseAddr+0x1F,dpb.NUM_FREE_CLUSTERS);
+		StoreWord(baseAddr+0x0f,dpb.SECTORS_PER_FAT);
+		StoreWord(baseAddr+0x11,dpb.FIRST_DIR_SECTOR);
+		StoreWord(baseAddr+0x13,dpb.DEV_DRIVER_OFFSET);
+		StoreWord(baseAddr+0x15,dpb.DEV_DRIVER_SEG);
+		StoreByte(baseAddr+0x17,dpb.MEDIA_DESC_TYPE);
+		StoreByte(baseAddr+0x18,dpb.ACCESS_FLAG);
+		StoreWord(baseAddr+0x19,dpb.NEXT_DPB_OFFSET);
+		StoreWord(baseAddr+0x1B,dpb.NEXT_DPB_SEG);
+		StoreWord(baseAddr+0x1D,dpb.LAST_CLUSTER_ALLOC);
+		StoreWord(baseAddr+0x1F,dpb.NUM_FREE_CLUSTERS);
 	}
 }
 
@@ -1612,30 +1610,30 @@ bool TownsTgDrv::Install(void)
 			auto CDSAddr=GetCDSAddress(DriveLetterToDriveIndex(letter));
 			for(int i=0; i<GetCDSLength(); ++i)
 			{
-				mem.StoreByte(CDSAddr+i,0);
+				StoreByte(CDSAddr+i,0);
 			}
 
 			// Probably it is no necessary to make it \\P.A.
 			if(true==useSlashSlash)
 			{
-				mem.StoreByte(CDSAddr  ,'\\');
-				mem.StoreByte(CDSAddr+1,'\\');
-				mem.StoreByte(CDSAddr+2,letter);
-				mem.StoreByte(CDSAddr+2,'.');
-				mem.StoreByte(CDSAddr+2,'A');
-				mem.StoreByte(CDSAddr+2,'.');
-				mem.StoreWord(CDSAddr+0x4F,6); // Length for "\\P.A."
+				StoreByte(CDSAddr  ,'\\');
+				StoreByte(CDSAddr+1,'\\');
+				StoreByte(CDSAddr+2,letter);
+				StoreByte(CDSAddr+2,'.');
+				StoreByte(CDSAddr+2,'A');
+				StoreByte(CDSAddr+2,'.');
+				StoreWord(CDSAddr+0x4F,6); // Length for "\\P.A."
 			}
 			else
 			{
-				mem.StoreByte(CDSAddr  ,letter);
-				mem.StoreByte(CDSAddr+1,':');
-				mem.StoreByte(CDSAddr+2,'\\');
-				mem.StoreWord(CDSAddr+0x4F,2); // Length for "?:"  Don't count '\\'
+				StoreByte(CDSAddr  ,letter);
+				StoreByte(CDSAddr+1,':');
+				StoreByte(CDSAddr+2,'\\');
+				StoreWord(CDSAddr+0x4F,2); // Length for "?:"  Don't count '\\'
 			}
 
-			mem.StoreWord(CDSAddr+0x43,0xC000);
-			mem.StoreDword(CDSAddr+0x45,TGDRV_ID); // Put "TGDR" instead of DPB pointer.
+			StoreWord(CDSAddr+0x43,0xC000);
+			StoreDword(CDSAddr+0x45,TGDRV_ID); // Put "TGDR" instead of DPB pointer.
 
 			++I;
 		}
@@ -1662,9 +1660,9 @@ bool TownsTgDrv::Install(void)
 
 				const auto DOSLOLSEG=townsPtr->state.DOSLOLSEG;
 				unsigned int NumDPBFromList=0;
-				unsigned int NumDPBFromSYSVARS=townsPtr->mem.FetchByte(DOSLOLSEG*0x10+0x46); // SYSVARS+20h
-				unsigned int DPBOFF=townsPtr->mem.FetchWord(DOSLOLSEG*0x10+0x26); // SYSVARS+00h
-				unsigned int DPBSEG=townsPtr->mem.FetchWord(DOSLOLSEG*0x10+0x28); // SYSVARS+02h
+				unsigned int NumDPBFromSYSVARS=FetchByte(DOSLOLSEG*0x10+0x46); // SYSVARS+20h
+				unsigned int DPBOFF=FetchWord(DOSLOLSEG*0x10+0x26); // SYSVARS+00h
+				unsigned int DPBSEG=FetchWord(DOSLOLSEG*0x10+0x28); // SYSVARS+02h
 
 				const unsigned int DPB_PTR_TO_NEXT_DPB=0x18; // 0x19 for Ver 4.x or higher.
 
@@ -1739,7 +1737,7 @@ unsigned int TownsTgDrv::GetCDSCount(void) const
 {
 	auto &mem=townsPtr->mem;
 	auto addr=townsPtr->state.DOSLOLSEG*0x10+TOWNS_DOS_CDS_COUNT;
-	return mem.FetchByte(addr);
+	return FetchByte(addr);
 }
 
 unsigned int TownsTgDrv::GetCDSLength(void) const
@@ -1761,7 +1759,7 @@ std::string TownsTgDrv::GetFilenameBuffer1(void) const
 	std::string fn;
 	for(;;)
 	{
-		auto c=townsPtr->mem.FetchByte(addr++);
+		auto c=FetchByte(addr++);
 		if(0==c)
 		{
 			break;
@@ -1776,7 +1774,7 @@ std::string TownsTgDrv::GetFilenameBuffer2(void) const
 	std::string fn;
 	for(;;)
 	{
-		auto c=townsPtr->mem.FetchByte(addr++);
+		auto c=FetchByte(addr++);
 		if(0==c)
 		{
 			break;
@@ -1887,15 +1885,15 @@ uint32_t TownsTgDrv::GetCDSAddress(unsigned int driveIndex) const
 {
 	auto &mem=townsPtr->mem;
 	auto DOSADDR=townsPtr->state.DOSLOLSEG*0x10;
-	auto ofs=mem.FetchWord(DOSADDR+TOWNS_DOS_CDS_LIST_PTR);
-	auto seg=mem.FetchWord(DOSADDR+TOWNS_DOS_CDS_LIST_PTR+2);
+	auto ofs=FetchWord(DOSADDR+TOWNS_DOS_CDS_LIST_PTR);
+	auto seg=FetchWord(DOSADDR+TOWNS_DOS_CDS_LIST_PTR+2);
 	return seg*0x10+ofs+GetCDSLength()*driveIndex;
 }
 
 uint16_t TownsTgDrv::GetCDSType(unsigned int driveIndex) const
 {
 	auto addr=GetCDSAddress(driveIndex);
-	return townsPtr->mem.FetchWord(addr+0x43);
+	return FetchWord(addr+0x43);
 }
 uint32_t TownsTgDrv::GetDTAAddress(void) const
 {
@@ -1915,8 +1913,8 @@ uint32_t TownsTgDrv::GetDTAAddress(void) const
 		uint32_t exceptionType,exceptionCode;
 		DTAPointer=townsPtr->CPU().DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DTAPointer,townsPtr->mem);
 	}
-	uint32_t off=townsPtr->mem.FetchWord(DTAPointer);
-	uint32_t seg=townsPtr->mem.FetchWord(DTAPointer+2);
+	uint32_t off=FetchWord(DTAPointer);
+	uint32_t seg=FetchWord(DTAPointer+2);
 	return seg*0x10+off;
 }
 uint32_t TownsTgDrv::GetFilenameBufferAddress(void) const
@@ -1950,7 +1948,7 @@ uint32_t TownsTgDrv::GetSDBAddress(void) const
 uint16_t TownsTgDrv::GetSAttr(void) const
 {
 	auto addr=GetSAttrAddress();
-	return townsPtr->mem.FetchWord(addr);
+	return FetchWord(addr);
 }
 uint32_t TownsTgDrv::GetDPBSize(void) const
 {
