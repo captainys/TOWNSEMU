@@ -349,7 +349,7 @@ bool TownsTgDrv::Int2F_1108_ReadFromRemoteFile(void)
 			auto DTAAddr=GetDTAAddress();
 			for(auto d : data)
 			{
-				townsPtr->mem.StoreByte(DTAAddr++,d);
+				StoreByte(DTAAddr++,d);
 			}
 			ReturnCX(data.size());
 
@@ -396,7 +396,7 @@ bool TownsTgDrv::Int2F_1109_WriteToRemoteFile(void)
 				data.resize(townsPtr->CPU().GetCX());
 				for(int i=0; i<townsPtr->CPU().GetCX(); ++i)
 				{
-					data[i]=townsPtr->mem.FetchByte(DMABuffer+i);
+					data[i]=FetchByte(DMABuffer+i);
 				}
 
 				auto position=FetchFilePositionFromSFT(townsPtr->CPU().state.ES(),townsPtr->CPU().state.DI());
