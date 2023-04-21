@@ -10,7 +10,7 @@ THISFILE=os.path.realpath(__file__)
 THISDIR=os.path.dirname(THISFILE)
 TSUGARUDIR=os.path.join(THISDIR,"..")
 
-BUILDDIR=os.path.join(TSUGARUDIR,"buildhf")
+BUILDDIR=os.path.join(TSUGARUDIR,"build")
 SRCDIR=os.path.join(TSUGARUDIR,"src")
 ROMDIR=os.path.join(TSUGARUDIR,"..","TOWNSEMU_TEST","ROM_"+TOWNSTYPE)
 DISKDIR=os.path.join(TSUGARUDIR,"..","TOWNSEMU_TEST","DISKIMG")
@@ -59,8 +59,9 @@ def Run(argv):
 	subprocess.Popen([
 		TsugaruExe(),
 		ROMDIR,
+		"-HIGHFIDELITY",
 		"-SYM",
-		os.path.join(TSUGARUDIR,"symtables","RUN"+TOWNSTYPE+".txt"),
+		os.path.join(TSUGARUDIR,"symtables","RUN"+TOWNSTYPE+"_HF.txt"),
 		"-HD0",
 		os.path.join(DISKDIR,"hddimage.bin"),
 		"-HD1",

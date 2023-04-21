@@ -344,6 +344,14 @@ void i486DXCommon::MakeOpCodeRenumberTable(void)
 	opCodeRenumberTable[I486_OPCODE_XOR_RM_FROM_R]=I486_RENUMBER_XOR_RM_FROM_R;
 	opCodeRenumberTable[I486_OPCODE_XOR_R8_FROM_RM8]=I486_RENUMBER_XOR_R8_FROM_RM8;
 	opCodeRenumberTable[I486_OPCODE_XOR_R_FROM_RM]=I486_RENUMBER_XOR_R_FROM_RM;
+	opCodeRenumberTable[I486_OPCODE_BSWAP_EAX]=I486_RENUMBER_BSWAP_EAX;
+	opCodeRenumberTable[I486_OPCODE_BSWAP_ECX]=I486_RENUMBER_BSWAP_ECX;
+	opCodeRenumberTable[I486_OPCODE_BSWAP_EDX]=I486_RENUMBER_BSWAP_EDX;
+	opCodeRenumberTable[I486_OPCODE_BSWAP_EBX]=I486_RENUMBER_BSWAP_EBX;
+	opCodeRenumberTable[I486_OPCODE_BSWAP_ESP]=I486_RENUMBER_BSWAP_ESP;
+	opCodeRenumberTable[I486_OPCODE_BSWAP_EBP]=I486_RENUMBER_BSWAP_EBP;
+	opCodeRenumberTable[I486_OPCODE_BSWAP_ESI]=I486_RENUMBER_BSWAP_ESI;
+	opCodeRenumberTable[I486_OPCODE_BSWAP_EDI]=I486_RENUMBER_BSWAP_EDI;
 
 	for(auto &i : opCodeNeedOperandTable)
 	{
@@ -3244,6 +3252,31 @@ std::string i486DXCommon::Instruction::Disassemble(const Operand &op1In,const Op
 				disasm+="[EBX]";
 			}
 		}
+		break;
+
+	case I486_OPCODE_BSWAP_EAX:
+		disasm="BSWAP EAX";
+		break;
+	case I486_OPCODE_BSWAP_ECX:
+		disasm="BSWAP ECX";
+		break;
+	case I486_OPCODE_BSWAP_EDX:
+		disasm="BSWAP EDX";
+		break;
+	case I486_OPCODE_BSWAP_EBX:
+		disasm="BSWAP EBX";
+		break;
+	case I486_OPCODE_BSWAP_ESP:
+		disasm="BSWAP ESP";
+		break;
+	case I486_OPCODE_BSWAP_EBP:
+		disasm="BSWAP EBP";
+		break;
+	case I486_OPCODE_BSWAP_ESI:
+		disasm="BSWAP ESI";
+		break;
+	case I486_OPCODE_BSWAP_EDI:
+		disasm="BSWAP EDI";
 		break;
 	}
 

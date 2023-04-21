@@ -7477,6 +7477,24 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		}
 		break;
 
+	case I486_RENUMBER_BSWAP_EAX:
+	case I486_RENUMBER_BSWAP_ECX:
+	case I486_RENUMBER_BSWAP_EDX:
+	case I486_RENUMBER_BSWAP_EBX:
+	case I486_RENUMBER_BSWAP_ESP:
+	case I486_RENUMBER_BSWAP_EBP:
+	case I486_RENUMBER_BSWAP_ESI:
+	case I486_RENUMBER_BSWAP_EDI:
+		{
+			auto regNum=inst.opCode&0x07;
+			unsigned int &reg=state.NULL_and_reg32[REG_EAX+regNum];
+			uint8_t *bytes=(uint8_t *)&reg;
+			std::swap(bytes[0],bytes[3]);
+			std::swap(bytes[1],bytes[2]);
+			clocksPassed=1;
+		}
+		break;
+
 	case I486_RENUMBER_REALLY_UNDEFINED:
 		clocksPassed=0;
 		break;
