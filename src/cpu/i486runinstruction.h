@@ -576,6 +576,11 @@ void i486DXCommon::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,Memo
 			{
 				FUNCCLASS::FetchOperand8(cpu, inst, ptr, seg, offset, mem);
 			}
+			else if(0xE0==MODR_M || // FNENI
+			        0xE1==MODR_M)   // FNDISI
+			{
+				// No operand.
+			}
 			else
 			{
 				switch (Instruction::GetREG(MODR_M))
@@ -3585,6 +3590,12 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		{
 			state.fpuState.FNINIT();
 			clocksPassed=17;
+		}
+		else if(0xE0==inst.operand[0] || // FNENI
+		        0xE1==inst.operand[0])   // FNDISI
+		{
+			// Apparently legacy instruction from 8087 and no effect in 80386 and later.  (Maybe 80286 and later)
+			clocksPassed=1;
 		}
 		else
 		{

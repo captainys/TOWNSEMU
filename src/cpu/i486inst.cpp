@@ -1454,6 +1454,14 @@ std::string i486DXCommon::Instruction::Disassemble(const Operand &op1In,const Op
 		{
 			disasm="FCLEX";
 		}
+		else if(0xE0==operand[0])   // FNENI
+		{
+			disasm="FNENI";
+		}
+		else if(0xE1==operand[0])   // FNDISI
+		{
+			disasm="FNDISI";
+		}
 		else
 		{
 			unsigned int MODR_M=operand[0];
