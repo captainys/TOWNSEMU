@@ -329,7 +329,7 @@ public:
 	class TownsSprite *spritePtr;
 	State state;
 
-	bool monitorCRTC2=true;
+	bool monitorCRTC2=false;
 	bool cached;   // At this time unused.
 	ScreenModeCache cache;   // At this time unused.
 

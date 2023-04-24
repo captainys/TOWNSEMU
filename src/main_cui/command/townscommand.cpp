@@ -250,6 +250,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	featureMap["FDCMON"]=ENABLE_FDCMONITOR;
 	featureMap["CDCMON"]=ENABLE_CDCMONITOR;
 	featureMap["VXDMON"]=ENABLE_VXDMONITOR;
+	featureMap["CRTC2MON"]=ENABLE_CRTC2MONITOR;
 
 	dumpableMap["CALLSTACK"]=DUMP_CALLSTACK;
 	dumpableMap["CST"]=DUMP_CALLSTACK;
@@ -711,6 +712,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  CDC monitor." << std::endl;
 	std::cout << "VXDMON" << std::endl;
 	std::cout << "  Windows 3.1 VxD Monitor." << std::endl;
+	std::cout << "CRTC2MON" << std::endl;
+	std::cout << "  High-Res CRTC Monitor." << std::endl;
 
 
 
@@ -1790,6 +1793,10 @@ void TownsCommandInterpreter::Execute_Enable(FMTownsCommon &towns,Command &cmd)
 			towns.debugger.breakOrMonitorOnVxDCall=i486Debugger::BRKPNT_FLAG_MONITOR_ONLY;
 			std::cout << "VxD Monitor Enabled." << std::endl;
 			break;
+		case ENABLE_CRTC2MONITOR:
+			towns.crtc.monitorCRTC2=true;
+			std::cout << "High-Res CRTC Monitor Enabled." << std::endl;
+			break;
 		}
 	}
 }
@@ -1889,6 +1896,10 @@ void TownsCommandInterpreter::Execute_Disable(FMTownsCommon &towns,Command &cmd)
 			towns.debugger.breakOnVxDId=~0;
 			towns.debugger.breakOnVxDServiceNumber=~0;
 			std::cout << "VxD Monitor Disabled." << std::endl;
+			break;
+		case ENABLE_CRTC2MONITOR:
+			towns.crtc.monitorCRTC2=false;
+			std::cout << "High-Res CRTC Monitor Disabled." << std::endl;
 			break;
 		}
 	}
