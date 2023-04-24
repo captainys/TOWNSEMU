@@ -784,6 +784,8 @@ enum
 	TOWNS_VMIF_CMD_NOTIFY_DOSSEG= 0x07, // Capture CS as DOSSEG
 	TOWNS_VMIF_CMD_NOTIFY_DOSVER= 0x08, // Capture DOS Version.  Use it after MOV AH,30H  ->  INT 21H  ->  MOV BX,AX
 	TOWNS_VMIF_CMD_NOTIFY_DOSLOL= 0x09, // Capture DOS List of Lists, not DOS Laugh Out Loud.  Also updates DOSSEG (supposed to be the same)
+
+	TOWNS_VMIF_CMD_NOTIFY_MOUSE = 0x0A, // Notify Mouse Position
 };
 
 enum

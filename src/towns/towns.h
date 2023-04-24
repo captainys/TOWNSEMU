@@ -256,6 +256,10 @@ public:
 
 		bool scanLineEffectIn15KHz=false;
 
+		// Report from TGMOUSE.EXE running in Windows 3.1
+		mutable bool mousePositionReported=false;
+		int mouseXReported=0,mouseYReported=0;
+
 		/*! Enable/disable mouse integration.
 		    To disable mouse integration, set this flag false, and call DontControlMouse().
 		    To enable, set this flag true, then VM will respect the next ControlMouse and SetMouseButtonState functions and on.

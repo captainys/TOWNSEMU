@@ -826,6 +826,13 @@ bool FMTownsCommon::GetMouseCoordinate(int &mx,int &my,unsigned int tbiosid) con
 		my=crtc.state.highResCrtcMouse.Y;
 		return true;
 	}
+	if(true==var.mousePositionReported)
+	{
+		var.mousePositionReported=false;
+		mx=var.mouseXReported;
+		my=var.mouseYReported;
+		return true;
+	}
 	// Windows 3.1 <<
 
 	if(true==state.mouseBIOSActive &&

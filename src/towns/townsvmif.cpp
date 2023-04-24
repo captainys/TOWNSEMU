@@ -67,6 +67,14 @@ void FMTownsCommon::ProcessVMToHostCommand(unsigned int vmCmd,unsigned int param
 		state.DOSLOLSEG=cpu.state.ES().value;
 		state.DOSLOLOFF=cpu.GetBX();
 		break;
+	case TOWNS_VMIF_CMD_NOTIFY_MOUSE:
+		if(4<=paramLen)
+		{
+			var.mousePositionReported=true;
+			var.mouseXReported=cpputil::GetWord(param);
+			var.mouseYReported=cpputil::GetWord(param+2);
+		}
+		break;
 	}
 }
 void FMTownsCommon::VMHostFileTransfer(void)
