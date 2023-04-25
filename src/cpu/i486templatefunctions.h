@@ -48,7 +48,6 @@ inline void i486DXFidelityLayer <FIDELITY>::Interrupt(unsigned int INTNum,Memory
 		if(FarPointer::NO_SEG!=desc.SEG)
 		{
 			auto type=desc.GetType();
-			std::string errMsg;
 			unsigned int gateOperandSize=32;
 			bool isINTGate=true; // false if it is a trap gate.
 			// https://wiki.osdev.org/Interrupt_Descriptor_Table
