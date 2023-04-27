@@ -6799,13 +6799,15 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			HANDLE_EXCEPTION_PUSH_POP;
 
 			SetIPorEIP(inst.operandSize,EIP);
-			state.ESP()+=inst.EvalUimm16(); // Do I need to take &0xffff if address mode is 16? 
 			EIPIncrement=0;
 			if(enableCallStack)
 			{
 				PopCallStack(state.CS().value,state.EIP);
 			}
 			fidelity.CheckRETFtoOuterLevel(*this,mem,inst.operandSize,prevDPL);
+
+			// IMM must be added after CheckRETFtoOuterLevel, which may need to pop ESP,SS.
+			state.ESP()+=inst.EvalUimm16(); // Do I need to take &0xffff if address mode is 16? 
 		}
 		break;
 
