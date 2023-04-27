@@ -33,5 +33,10 @@ int main(void)
 	unsigned int SEG=SET_UP_EXPDOWN_SEG(1,0,0x00000000,0x0FFFF);
 	printf("Expand-Down Segment: %04x\n",SEG);
 
+	unsigned int offset=PointerToLinearAddr(TestBuffer+0x20000);
+	printf("Offset %08x is mapped to linear address %08x in Expand-Down Segment.\n",
+		offset,
+		READ_FROM_SEG(SEG,offset)
+		);
 	return 0;
 }
