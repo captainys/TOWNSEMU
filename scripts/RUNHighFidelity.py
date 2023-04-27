@@ -75,6 +75,8 @@ def Run(argv):
 		"-HIGHRES",
 		"-DEBUG",
 		#"-PAUSE",
+		"-SHAREDDIR",
+		TSUGARUDIR
 	]+argv).wait()
 
 

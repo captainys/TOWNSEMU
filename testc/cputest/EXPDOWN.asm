@@ -43,10 +43,11 @@ GET_DS_BASE_LINEAR		ENDP
 
 ; Returns a Expand-Down Segment Selector.
 ; unsigned int SET_UP_EXPDOWN_SEG(unsigned int DorB,unsigned int Gbit,unsigned int baseLinear,unsigned int limit)
-; [EBP+10H] Limit
-; [EBP+0CH] BaseLinear
-; [EBP+08H] Gbit
-; [EBP+04H] DorB
+; [EBP+14H] Limit
+; [EBP+10H] BaseLinear
+; [EBP+0CH] Gbit
+; [EBP+08H] DorB
+; [EBP+04H] Return EIP
 ; [EBP]     PrevEBP
 ; [EBP-04H] Selector
 SET_UP_EXPDOWN_SEG		PROC
@@ -62,23 +63,23 @@ SET_UP_EXPDOWN_SEG		PROC
 						MOV		GS,AX
 
 
-						MOV		EAX,[BP+0CH] ; BaseLinear
+						MOV		EAX,[EBP+10H] ; BaseLinear
 						MOV		GS:[TEST_SEG_OFFSET+2],AX
 						SHR		EAX,16
 						MOV		GS:[TEST_SEG_OFFSET+4],AL
 						MOV		GS:[TEST_SEG_OFFSET+7],AH
 
 
-						MOV		EAX,[BP+10H] ; Limit
+						MOV		EAX,[EBP+14H] ; Limit
 						MOV		GS:[TEST_SEG_OFFSET],AX
 						SHR		EAX,16
 
-						MOV		AH,[BP+04H] ; D-bit
+						MOV		AH,[EBP+08H] ; D-bit
 						AND		AH,1
 						SHL		AH,6
 						OR		AL,AH
 
-						MOV		AH,[BP+08H] ; G-bit
+						MOV		AH,[EBP+0CH] ; G-bit
 						AND		AH,1
 						SHL		AH,7
 						OR		Al,AH
@@ -91,6 +92,9 @@ SET_UP_EXPDOWN_SEG		PROC
 
 						MOV		AX,LDT_SEG
 						LLDT	AX
+
+
+						DEBUG_BREAK_TOWNS_VM
 
 
 						POP		GS
