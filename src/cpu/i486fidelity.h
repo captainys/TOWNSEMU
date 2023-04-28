@@ -382,7 +382,29 @@ public:
 			raise();
 			return true;
 		}
-		if(seg.limit<offset)
+		if(i486DXCommon::SEGTYPE_DATA_EXPAND_DOWN_READONLY==type ||
+		   i486DXCommon::SEGTYPE_DATA_EXPAND_DOWN_RW==type)
+		{
+			if(32==seg.addressSize)
+			{
+				// Valid Range=seg.limit+1 and above
+				if(offset<=seg.limit)
+				{
+					raise();
+					return true;
+				}
+			}
+			else
+			{
+				// Valid Range=seg.limit+1 to 0xFFFF
+				if(offset<=seg.limit || 0xFFFF<offset)
+				{
+					raise();
+					return true;
+				}
+			}
+		}
+		else if(seg.limit<offset)
 		{
 			raise();
 			return true;
@@ -409,7 +431,29 @@ public:
 			raise();
 			return true;
 		}
-		if(seg.limit<offset)
+
+		if(i486DXCommon::SEGTYPE_DATA_EXPAND_DOWN_RW==type)
+		{
+			if(32==seg.addressSize)
+			{
+				// Valid Range=seg.limit+1 and above
+				if(offset<=seg.limit)
+				{
+					raise();
+					return true;
+				}
+			}
+			else
+			{
+				// Valid Range=seg.limit+1 to 0xFFFF
+				if(offset<=seg.limit || 0xFFFF<offset)
+				{
+					raise();
+					return true;
+				}
+			}
+		}
+		else if(seg.limit<offset)
 		{
 			raise();
 			return true;
