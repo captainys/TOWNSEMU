@@ -3024,6 +3024,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 
 	case I486_RENUMBER_CMPSB://           0xA6,
 		{
+			auto ECX=state.ECX();
 			auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
 			for(int ctr=0;
 			    ctr<MAX_REP_BUNDLE_COUNT &&
@@ -3047,6 +3048,14 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 						break;
 					}
 				}
+				else
+				{
+					SetECX(ECX);
+					HandleException(true,mem,inst.numBytes);
+					EIPIncrement=0;
+					break;
+				}
+				ECX=state.ECX();
 			}
 		}
 		break;
@@ -6729,6 +6738,11 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					}
 				}
 			}
+
+			if(16==state.CS().addressSize)
+			{
+				state.EIP&=0xFFFF;
+			}
 		}
 		break;
 	case I486_RENUMBER_RETF://             0xCB,
@@ -6759,6 +6773,11 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			}
 
 			fidelity.CheckRETFtoOuterLevel(*this,mem,inst.operandSize,prevDPL);
+
+			if(16==state.CS().addressSize)
+			{
+				state.EIP&=0xFFFF;
+			}
 		}
 		break;
 	case I486_RENUMBER_RET_I16://          0xC2,
@@ -6808,6 +6827,11 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 
 			// IMM must be added after CheckRETFtoOuterLevel, which may need to pop ESP,SS.
 			state.ESP()+=inst.EvalUimm16(); // Do I need to take &0xffff if address mode is 16? 
+
+			if(16==state.CS().addressSize)
+			{
+				state.EIP&=0xFFFF;
+			}
 		}
 		break;
 
