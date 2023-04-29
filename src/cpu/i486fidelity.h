@@ -372,7 +372,7 @@ public:
 			}
 			else
 			{
-				cpu.RaiseException(i486DXCommon::EXCEPTION_GP,0);
+				cpu.RaiseException(i486DXCommon::EXCEPTION_GP,seg.value&~0xFFFC);// 80386 Programmer's Reference Manual pp.162
 			}
 		};
 
@@ -421,7 +421,7 @@ public:
 			}
 			else
 			{
-				cpu.RaiseException(i486DXCommon::EXCEPTION_GP,0);
+				cpu.RaiseException(i486DXCommon::EXCEPTION_GP,seg.value&0xFFFC);// 80386 Programmer's Reference Manual pp.162
 			}
 		};
 
