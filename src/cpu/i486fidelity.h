@@ -372,7 +372,9 @@ public:
 			}
 			else
 			{
-				cpu.RaiseException(i486DXCommon::EXCEPTION_GP,seg.value&0xFFFC);// 80386 Programmer's Reference Manual pp.162
+				cpu.RaiseException(i486DXCommon::EXCEPTION_GP,0);
+				// 80386 Programmer's Reference Manual pp.162 tells error code should be the selector&0xFFFC,
+				// but TEST386 expect the error code to be zero.  WTF!?
 			}
 		};
 
@@ -421,7 +423,9 @@ public:
 			}
 			else
 			{
-				cpu.RaiseException(i486DXCommon::EXCEPTION_GP,seg.value&0xFFFC);// 80386 Programmer's Reference Manual pp.162
+				cpu.RaiseException(i486DXCommon::EXCEPTION_GP,0);
+				// 80386 Programmer's Reference Manual pp.162 tells error code should be the selector&0xFFFC,
+				// but TEST386 expect the error code to be zero.  WTF!?
 			}
 		};
 

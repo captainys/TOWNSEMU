@@ -123,6 +123,8 @@ int main(int ac,char *av[])
 	int ctr=0,noMove=0;
 	bool triggered=false;
 	uint32_t EIP_Error=0xD58F;
+	uint16_t prevCS=0;
+	uint32_t prevEIP=0;
 	while(true!=cpu.state.halt)
 	{
 		if(true==cpu.state.halt || true==vm.CheckAbort() || cpu.GetEIP()==EIP_Error || /*1369681<ctr+100 ||*/ true==triggered)
@@ -183,6 +185,9 @@ int main(int ac,char *av[])
 		// 	std::cout << ctr << " " << cpputil::Ustox(cpu.state.CS().value) << ":" << cpputil::Uitox(cpu.GetEIP()) << std::endl;
 		// }
 
+		prevEIP=cpu.GetEIP();
+		prevCS=cpu.state.CS().value;
+
 		auto EIP=cpu.GetEIP();
 		auto clocksPassed=cpu.RunOneInstruction(*memPtr,*io);
 		if(EIP==cpu.GetEIP())
@@ -203,6 +208,7 @@ int main(int ac,char *av[])
 	std::cout << std::endl;
 
 	std::cout << "POST CODE: 0x" << cpputil::Ubtox(vm.POSTCODE) << std::endl;
+	std::cout << "Prev CS:EIP: " << cpputil::Ustox(prevCS) << ":" << cpputil::Uitox(prevEIP) << std::endl;
 
 	if(true==cpu.state.halt && 0xFF==vm.POSTCODE)
 	{
