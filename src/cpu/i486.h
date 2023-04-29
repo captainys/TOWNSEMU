@@ -3579,7 +3579,7 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::FetchByte(unsigned int addres
 	auto addr=seg.baseLinearAddr+offset;
 
 	FIDELITY fidelity;
-	if(true==fidelity.SegmentReadException(*this,seg,offset))
+	if(true==fidelity.SegmentReadException(*this,seg,offset,1))
 	{
 		return 0;
 	}
@@ -3605,7 +3605,7 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::FetchWord(unsigned int addres
 	auto addr=seg.baseLinearAddr+offset;
 
 	FIDELITY fidelity;
-	if(true==fidelity.SegmentReadException(*this,seg,offset))
+	if(true==fidelity.SegmentReadException(*this,seg,offset,2))
 	{
 		return 0;
 	}
@@ -3639,7 +3639,7 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::FetchDword(unsigned int addre
 	auto addr=seg.baseLinearAddr+offset;
 
 	FIDELITY fidelity;
-	if(true==fidelity.SegmentReadException(*this,seg,offset))
+	if(true==fidelity.SegmentReadException(*this,seg,offset,4))
 	{
 		return 0;
 	}
@@ -3677,7 +3677,7 @@ inline void i486DXFidelityLayer<FIDELITY>::StoreByte(Memory &mem,int addressSize
 	auto linearAddr=seg.baseLinearAddr+offset;
 
 	FIDELITY fidelity;
-	if(true==fidelity.SegmentWriteException(*this,seg,offset))
+	if(true==fidelity.SegmentWriteException(*this,seg,offset,1))
 	{
 		return;
 	}
@@ -3705,7 +3705,7 @@ inline void i486DXFidelityLayer<FIDELITY>::StoreWord(Memory &mem,int addressSize
 	auto linearAddr=seg.baseLinearAddr+offset;
 
 	FIDELITY fidelity;
-	if(true==fidelity.SegmentWriteException(*this,seg,offset))
+	if(true==fidelity.SegmentWriteException(*this,seg,offset,2))
 	{
 		return;
 	}
@@ -3742,7 +3742,7 @@ inline void i486DXFidelityLayer<FIDELITY>::StoreDword(Memory &mem,int addressSiz
 	auto linearAddr=seg.baseLinearAddr+offset;
 
 	FIDELITY fidelity;
-	if(true==fidelity.SegmentWriteException(*this,seg,offset))
+	if(true==fidelity.SegmentWriteException(*this,seg,offset,4))
 	{
 		return;
 	}

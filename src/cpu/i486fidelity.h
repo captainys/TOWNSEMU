@@ -52,9 +52,9 @@ public:
 
 	inline static void SetPageFlags(class i486DXCommon &cpu,uint32_t linearAddr,Memory &mem,uint32_t flags){};
 
-	constexpr bool SegmentWriteException(class i486DXCommon &cpu,const i486DXCommon::SegmentRegister &reg,uint32_t offset) const{return false;}
+	constexpr bool SegmentWriteException(class i486DXCommon &cpu,const i486DXCommon::SegmentRegister &reg,uint32_t offset,uint32_t bytes) const{return false;}
 
-	constexpr bool SegmentReadException(class i486DXCommon &cpu,const i486DXCommon::SegmentRegister &seg,uint32_t offset) const{return false;}
+	constexpr bool SegmentReadException(class i486DXCommon &cpu,const i486DXCommon::SegmentRegister &seg,uint32_t offset,uint32_t bytes) const{return false;}
 
 	constexpr bool LockNotAllowed(class i486DXCommon &cpu,Memory &mem,const i486DXCommon::Instruction &inst,const i486DXCommon::Operand &op1) const{return false;}
 
@@ -109,7 +109,7 @@ class i486DXDefaultFidelityOperation : public i486DXLowFidelityOperation
 public:
 	typedef i486DXDefaultFidelityOperation THISCLASS;
 
-	static inline bool SegmentReadException(class i486DXCommon &cpu,const i486DXCommon::SegmentRegister &seg,uint32_t offset)
+	static inline bool SegmentReadException(class i486DXCommon &cpu,const i486DXCommon::SegmentRegister &seg,uint32_t offset,uint32_t bytes)
 	{
 		if(seg.limit<offset) // Needed to run Fractal Engine Demo and other Psygnosis games.
 		{
@@ -362,7 +362,7 @@ public:
 	}
 
 
-	static inline bool SegmentReadException(class i486DXCommon &cpu,const i486DXCommon::SegmentRegister &seg,uint32_t offset)
+	static inline bool SegmentReadException(class i486DXCommon &cpu,const i486DXCommon::SegmentRegister &seg,uint32_t offset,uint32_t bytes)
 	{
 		auto raise=[&]
 		{
@@ -372,7 +372,7 @@ public:
 			}
 			else
 			{
-				cpu.RaiseException(i486DXCommon::EXCEPTION_GP,seg.value&~0xFFFC);// 80386 Programmer's Reference Manual pp.162
+				cpu.RaiseException(i486DXCommon::EXCEPTION_GP,seg.value&0xFFFC);// 80386 Programmer's Reference Manual pp.162
 			}
 		};
 
@@ -388,7 +388,7 @@ public:
 			if(32==seg.addressSize)
 			{
 				// Valid Range=seg.limit+1 and above
-				if(offset<=seg.limit)
+				if(offset<=seg.limit || 0xFFFFFFFF-bytes+1<offset)
 				{
 					raise();
 					return true;
@@ -397,21 +397,21 @@ public:
 			else
 			{
 				// Valid Range=seg.limit+1 to 0xFFFF
-				if(offset<=seg.limit || 0xFFFF<offset)
+				if(offset<=seg.limit || 0xFFFF-bytes+1<offset)
 				{
 					raise();
 					return true;
 				}
 			}
 		}
-		else if(seg.limit<offset)
+		else if(seg.limit-bytes+1<offset)
 		{
 			raise();
 			return true;
 		}
 		return false;
 	}
-	inline static bool SegmentWriteException(class i486DXCommon &cpu,const i486DXCommon::SegmentRegister &seg,uint32_t offset)
+	inline static bool SegmentWriteException(class i486DXCommon &cpu,const i486DXCommon::SegmentRegister &seg,uint32_t offset,uint32_t bytes)
 	{
 		auto raise=[&]
 		{
@@ -437,7 +437,7 @@ public:
 			if(32==seg.addressSize)
 			{
 				// Valid Range=seg.limit+1 and above
-				if(offset<=seg.limit)
+				if(offset<=seg.limit || 0xFFFFFFFF-bytes+1<offset)
 				{
 					raise();
 					return true;
@@ -446,14 +446,14 @@ public:
 			else
 			{
 				// Valid Range=seg.limit+1 to 0xFFFF
-				if(offset<=seg.limit || 0xFFFF<offset)
+				if(offset<=seg.limit || 0xFFFF-bytes+1<offset)
 				{
 					raise();
 					return true;
 				}
 			}
 		}
-		else if(seg.limit<offset)
+		else if(seg.limit-bytes+1<offset)
 		{
 			raise();
 			return true;
