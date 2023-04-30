@@ -2,24 +2,26 @@
 // Keyboard Shortcuts
 #include "towns.h"
 
+// Field view (96,40)-(479,423)=384x384
+//   Port Mode/Oceam Mode 16x16 tile  24x24 tile
 
 // City mode
 //   MapLeftX
 //   PHYS:000508A0
-//   000C:00017EA2 A3A0280000                MOV     [000028A0H],EAX
+//   000C:00017EA2 A3A0280000                MOV     [000028A0H(m_x)],EAX
 //   MapUpY
 //   PHYS:000508A4
-//   000C:00017EEF A3A4280000                MOV     [000028A4H],EAX
+//   000C:00017EEF A3A4280000                MOV     [000028A4H(m_y)],EAX
 
 // Ocean mode
 //   MapLeftX
 //   phys:50DFE
-//   000C:00049F2B 66FF0DFE2D0000            DEC     WORD PTR [00002DFEH]
-//   000C:00049F4D 66FF05FE2D0000            INC     WORD PTR [00002DFEH]
+//   000C:00049F2B 66FF0DFE2D0000            DEC     WORD PTR [00002DFEH(DispX)]
+//   000C:00049F4D 66FF05FE2D0000            INC     WORD PTR [00002DFEH(DispX)]
 //   MapLeftY
 //   phys:50E00
-//   000C:00049F89 66FF0D002E0000            DEC     WORD PTR [00002E00H]
-//   000C:00049FAB 66FF05002E0000            INC     WORD PTR [00002E00H]
+//   000C:00049F89 66FF0D002E0000            DEC     WORD PTR [00002E00H(DispY)]
+//   000C:00049FAB 66FF05002E0000            INC     WORD PTR [00002E00H(DispY)]
 
 // Left Arrow  (515,380)
 // Up Arrow    (547,346)
