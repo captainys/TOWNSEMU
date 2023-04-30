@@ -6,7 +6,7 @@ set(SYMTABLE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../symtables)
 set(TESTDATA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../testdata)
 
 
-add_executable(Tsugaru_CUI MACOSX_BUNDLE main.cpp)
+add_executable(Tsugaru_CUI MACOSX_BUNDLE main.cpp ../resources/tsugaru_icon.rc)
 target_link_libraries(${TARGET_NAME} 
 	towns 
 	townscommand 

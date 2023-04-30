@@ -166,6 +166,7 @@ profiledlg.h
 profiledlg.cpp
 singleton.cpp
 runvm.cpp
+../../../src/resources/tsugaru_icon.rc
 )
 
 set(HEADERS
