@@ -1148,7 +1148,17 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 			}
 		}
 
-		if(mouseEmulationByAnalogAxis!=true)
+		if(TOWNS_APPSPECIFIC_DAIKOUKAIJIDAI2==towns.state.appSpecificSetting &&
+		   true==towns.Daikoukai2_ControlMouseByArrowKeys(
+			    lb,mb,rb,mx,my,
+			    FsGetKeyState(FSKEY_LEFT),
+			    FsGetKeyState(FSKEY_UP),
+			    FsGetKeyState(FSKEY_RIGHT),
+			    FsGetKeyState(FSKEY_DOWN)))
+		{
+			this->ProcessMouse(towns,lb,mb,rb,mx,my);
+		}
+		else if(mouseEmulationByAnalogAxis!=true)
 		{
 			struct YsGamePadReading reading;
 			mx-=this->dx;

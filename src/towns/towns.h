@@ -805,6 +805,13 @@ public:
 
 	void AB2_Identify(void);  // Called on Mouse-BIOS initialization.
 	void AB2_Throttle(unsigned int inputThr);
+
+	bool Daikoukai2_ControlMouseByArrowKeys(
+		int &lb,int &mb,int &rb,int &mx,int &my,
+		unsigned int leftKey,
+		unsigned int upKey,
+		unsigned int rightKey,
+		unsigned int downKey);
 };
 
 template <class CPUCLASS>
