@@ -943,6 +943,10 @@ void FMTownsCommon::ProcessSound(Outside_World *outside_world)
 			std::cout << "  Throttle Physical Addr     =" << cpputil::Uitox(state.appSpecific_ThrottlePtr) << std::endl;
 			std::cout << "  Rudder Physical Addr       =" << cpputil::Uitox(state.appSpecific_RudderPtr) << std::endl;
 		}
+		if(TOWNS_APPSPECIFIC_DAIKOUKAIJIDAI2==state.appSpecificSetting)
+		{
+			Daikoukai2_CaptureAddresses();
+		}
 	}
 	else if(1==cpu.GetAH())
 	{

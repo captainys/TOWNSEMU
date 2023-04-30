@@ -28,6 +28,20 @@
 // Right Arrow (580,380)
 // Down Arrow  (547,411)
 
+void FMTownsCommon::Daikoukai2_CaptureAddresses(void)
+{
+	auto &cpu=CPU();
+
+	i486DXCommon::SegmentRegister DS;
+	unsigned int exceptionType,exceptionCode;
+	cpu.DebugLoadSegmentRegister(DS,0x0014,mem,false);
+
+	state.appSpecific_Daikoukai2_m_x=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x28A0,mem);
+	state.appSpecific_Daikoukai2_m_y=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x28A4,mem);
+	state.appSpecific_Daikoukai2_DispX=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x2DFE,mem);
+	state.appSpecific_Daikoukai2_DispY=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x2E00,mem);
+	state.appSpecific_Daikoukai2_p_flag=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x2899,mem);
+}
 bool FMTownsCommon::Daikoukai2_ControlMouseByArrowKeys(
 		int &lb,int &mb,int &rb,int &mx,int &my,
 		unsigned int leftKey,
@@ -36,29 +50,35 @@ bool FMTownsCommon::Daikoukai2_ControlMouseByArrowKeys(
 		unsigned int downKey)
 {
 	int destX,destY;
-	if(0!=leftKey)
+	if(0==mem.FetchByte(state.appSpecific_Daikoukai2_p_flag))
 	{
-		destX=515;
-		destY=381;
-	}
-	else if(0!=upKey)
-	{
-		destX=547;
-		destY=346;
-	}
-	else if(0!=rightKey)
-	{
-		destX=580;
-		destY=380;
-	}
-	else if(0!=downKey)
-	{
-		destX=547;
-		destY=411;
 	}
 	else
 	{
-		return false;
+		if(0!=leftKey)
+		{
+			destX=515;
+			destY=381;
+		}
+		else if(0!=upKey)
+		{
+			destX=547;
+			destY=346;
+		}
+		else if(0!=rightKey)
+		{
+			destX=580;
+			destY=380;
+		}
+		else if(0!=downKey)
+		{
+			destX=547;
+			destY=411;
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	mx=destX;
