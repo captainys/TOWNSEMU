@@ -50,8 +50,52 @@ bool FMTownsCommon::Daikoukai2_ControlMouseByArrowKeys(
 		unsigned int downKey)
 {
 	int destX,destY;
-	if(0==mem.FetchByte(state.appSpecific_Daikoukai2_p_flag))
+	if(0xFF==mem.FetchByte(state.appSpecific_Daikoukai2_p_flag))  // 0xFF->Ocean  0x1D->Port
 	{
+		if(0!=leftKey && 0!=upKey)
+		{
+			destX=514;
+			destY=323;
+		}
+		else if(0!=rightKey && 0!=upKey)
+		{
+			destX=588;
+			destY=323;
+		}
+		else if(0!=rightKey && 0!=downKey)
+		{
+			destX=588;
+			destY=396;
+		}
+		else if(0!=leftKey && 0!=downKey)
+		{
+			destX=514;
+			destY=396;
+		}
+		else if(0!=leftKey)
+		{
+			destX=501;
+			destY=360;
+		}
+		else if(0!=upKey)
+		{
+			destX=552;
+			destY=308;
+		}
+		else if(0!=rightKey)
+		{
+			destX=599;
+			destY=360;
+		}
+		else if(0!=downKey)
+		{
+			destX=551;
+			destY=410;
+		}
+		else
+		{
+			return false;
+		}
 	}
 	else
 	{
