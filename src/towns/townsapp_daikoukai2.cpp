@@ -2,6 +2,8 @@
 // Keyboard Shortcuts
 #include "towns.h"
 #include "townsdef.h"
+#include "render.h"
+#include "crtc.h"
 
 // Field view (96,40)-(479,423)=384x384
 //   Port Mode/Oceam Mode 16x16 tile  24x24 tile
@@ -28,6 +30,10 @@
 // Page0:000000 0044DD DD4400 DD66AA 00AA66 00AAFF FFAA66 FFEEDD 777799 0044CC AA6600 DDBB55 0088EE 007766 00BB66 FFEEDD
 // Page1:000000 0044DD DD4400 DD66AA 00AA66 00AAFF FFAA66 FFEEDD 777799 0044CC AA6600 DDBB55 0088EE 007766 00BB66 FFEEDD
 // Arctic, day palette:
+// Page0:000000 0044DD DD4400 DD66AA 00AA66 00AAFF FFAA66 FFEEDD 777799 0044CC AA6600 EEBB55 0088FF 007766 00BB66 FFEEDD
+// Page1:000000 0044DD DD4400 DD66AA 00AA66 00AAFF FFAA66 FFEEDD 777799 0044CC AA6600 EEBB55 0088FF 007766 00BB66 FFEEDD
+
+// London, day palette:
 // Page0:000000 0044DD DD4400 DD66AA 00AA66 00AAFF FFAA66 FFEEDD 777799 0044CC AA6600 EEBB55 0088FF 007766 00BB66 FFEEDD
 // Page1:000000 0044DD DD4400 DD66AA 00AA66 00AAFF FFAA66 FFEEDD 777799 0044CC AA6600 EEBB55 0088FF 007766 00BB66 FFEEDD
 
@@ -160,6 +166,7 @@ void FMTownsCommon::Daikoukai2_TakeOverKeystroke(unsigned int code1,unsigned int
 	if(0==(TOWNS_KEYFLAG_RELEASE&code1))
 	{
 		int x,y;
+		TownsEventLog::Event e;
 		switch(code2)
 		{
 		case TOWNS_JISKEY_0:
@@ -258,13 +265,30 @@ void FMTownsCommon::Daikoukai2_TakeOverKeystroke(unsigned int code1,unsigned int
 			x=619;
 			y=362;
 			break;
+		case TOWNS_JISKEY_BREAK:
+		case TOWNS_JISKEY_ESC:
+			eventLog.CleanUp();
+
+			e.eventType=TownsEventLog::EVT_RBUTTONDOWN;
+			e.t=std::chrono::milliseconds(75);
+			e.mos.Set(320,240);
+			e.mosTolerance=2;
+			eventLog.AddEvent(e);
+
+			e.eventType=TownsEventLog::EVT_RBUTTONUP;
+			e.t=std::chrono::milliseconds(75);
+			e.mos.Set(320,240);
+			e.mosTolerance=2;
+			eventLog.AddEvent(e);
+
+			eventLog.BeginPlayback();
+			return;
 		default:
 			return;
 		}
 
 		eventLog.CleanUp();
 
-		TownsEventLog::Event e;
 		e.eventType=TownsEventLog::EVT_LBUTTONDOWN;
 		e.t=std::chrono::milliseconds(75);
 		e.mos.Set(x,y);
@@ -290,4 +314,35 @@ bool FMTownsCommon::Daikoukaijidai2_MapXY(int &x,int &y) const
 	x=16*state.appSpecific_Daikoukai2_MapX;
 	y=16*state.appSpecific_Daikoukai2_MapY;
 	return true;
+}
+void FMTownsCommon::Daikoukaijidai2_ScreenshotOverride(TownsRender &render,TownsCRTC::AnalogPalette &palette) const
+{
+	const char dayPalette[16][3]=
+	{
+		{0x00,0x00,0x00},
+		{0x00,0x44,0xDD},
+		{0xDD,0x44,0x00},
+		{0xDD,0x66,0xAA},
+		{0x00,0xAA,0x66},
+		{0x00,0xAA,0xFF},
+		{0xFF,0xAA,0x66},
+		{0xFF,0xEE,0xDD},
+		{0x77,0x77,0x99},
+		{0x00,0x44,0xCC},
+		{0xAA,0x66,0x00},
+		{0xEE,0xBB,0x55},
+		{0x00,0x88,0xFF},
+		{0x00,0x77,0x66},
+		{0x00,0xBB,0x66},
+		{0xFF,0xEE,0xDD},
+	};
+	for(int page=0; page<2; ++page)
+	{
+		for(int i=0; i<16; ++i)
+		{
+			palette.plt16[page][i][0]=dayPalette[i][0];
+			palette.plt16[page][i][1]=dayPalette[i][1];
+			palette.plt16[page][i][2]=dayPalette[i][2];
+		}
+	}
 }

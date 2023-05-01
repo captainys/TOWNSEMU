@@ -1043,7 +1043,11 @@ void FMTownsCommon::RenderQuiet(class TownsRender &render,bool layer0,bool layer
 {
 	render.Prepare(crtc);
 	render.OerrideShowPage(layer0,layer1);
-	render.BuildImage(physMem.state.VRAM,crtc.GetPalette(),crtc.chaseHQPalette);
+
+	auto palette=crtc.GetPalette();
+	ApplicationSpecificScreenshotOverride(render,palette);
+
+	render.BuildImage(physMem.state.VRAM,palette,crtc.chaseHQPalette);
 }
 
 void FMTownsCommon::RenderEntireVRAMLayerQuiet(class TownsRender &render,unsigned int layer)
@@ -1583,4 +1587,13 @@ bool FMTownsCommon::GetApplicationSpecificMapXY(int &x,int &y) const
 		return Daikoukaijidai2_MapXY(x,y);
 	}
 	return false;
+}
+
+void FMTownsCommon::ApplicationSpecificScreenshotOverride(class TownsRender &render,TownsCRTC::AnalogPalette &palette) const
+{
+	switch(state.appSpecificSetting)
+	{
+	case TOWNS_APPSPECIFIC_DAIKOUKAIJIDAI2:
+		return Daikoukaijidai2_ScreenshotOverride(render,palette);
+	}
 }

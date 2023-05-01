@@ -753,6 +753,8 @@ public:
 	// I need to think about two-mode games.
 	bool GetApplicationSpecificMapXY(int &x,int &y) const;
 
+	void ApplicationSpecificScreenshotOverride(class TownsRender &render,class TownsCRTC::AnalogPalette &palette) const;
+
 	// Dungeon Master Keyboard Shortcut
 	// Yoffset is needed because click coordinate is shifted about 8 pixels down in Japanese mode.
 	void Dunmas_Spell_Char(int charNum,int Yoffset);
@@ -822,6 +824,7 @@ public:
 		unsigned int downKey);
 	void Daikoukai2_TakeOverKeystroke(unsigned int code1,unsigned int code2);
 	bool Daikoukaijidai2_MapXY(int &x,int &y) const;
+	void Daikoukaijidai2_ScreenshotOverride(TownsRender &render,TownsCRTC::AnalogPalette &palette) const;
 };
 
 template <class CPUCLASS>
