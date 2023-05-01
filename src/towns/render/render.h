@@ -86,6 +86,10 @@ private:
 	void SetResolution(int wid,int hei);
 
 public:
+	/*!
+	*/
+	void MakeOpaque(void);
+
 	/*! Returns an image.
 	*/
 	Image GetImage(void) const;

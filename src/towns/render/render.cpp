@@ -60,6 +60,14 @@ void TownsRender::Crop(unsigned int x0,unsigned int y0,unsigned int newWid,unsig
 	hei=newHei;
 }
 
+void TownsRender::MakeOpaque(void)
+{
+	for(int i=0; i<wid*hei; ++i)
+	{
+		rgba[i*4+3]=255;
+	}
+}
+
 void TownsRender::Prepare(const TownsCRTC &crtc)
 {
 	frequency=crtc.GetHorizontalFrequency();

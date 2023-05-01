@@ -24,6 +24,13 @@
 //   000C:00049F89 66FF0D002E0000            DEC     WORD PTR [00002E00H(DispY)]
 //   000C:00049FAB 66FF05002E0000            INC     WORD PTR [00002E00H(DispY)]
 
+// Over the ocean, day palette:
+// Page0:000000 0044DD DD4400 DD66AA 00AA66 00AAFF FFAA66 FFEEDD 777799 0044CC AA6600 DDBB55 0088EE 007766 00BB66 FFEEDD
+// Page1:000000 0044DD DD4400 DD66AA 00AA66 00AAFF FFAA66 FFEEDD 777799 0044CC AA6600 DDBB55 0088EE 007766 00BB66 FFEEDD
+// Arctic, day palette:
+// Page0:000000 0044DD DD4400 DD66AA 00AA66 00AAFF FFAA66 FFEEDD 777799 0044CC AA6600 EEBB55 0088FF 007766 00BB66 FFEEDD
+// Page1:000000 0044DD DD4400 DD66AA 00AA66 00AAFF FFAA66 FFEEDD 777799 0044CC AA6600 EEBB55 0088FF 007766 00BB66 FFEEDD
+
 // Left Arrow  (515,380)
 // Up Arrow    (547,346)
 // Right Arrow (580,380)
@@ -155,42 +162,52 @@ void FMTownsCommon::Daikoukai2_TakeOverKeystroke(unsigned int code1,unsigned int
 		int x,y;
 		switch(code2)
 		{
+		case TOWNS_JISKEY_0:
 		case TOWNS_JISKEY_NUM_0:
 			x=523;
 			y=410;
 			break;
+		case TOWNS_JISKEY_1:
 		case TOWNS_JISKEY_NUM_1:
 			x=523;
 			y=386;
 			break;
+		case TOWNS_JISKEY_2:
 		case TOWNS_JISKEY_NUM_2:
 			x=547;
 			y=386;
 			break;
+		case TOWNS_JISKEY_3:
 		case TOWNS_JISKEY_NUM_3:
 			x=571;
 			y=386;
 			break;
+		case TOWNS_JISKEY_4:
 		case TOWNS_JISKEY_NUM_4:
 			x=523;
 			y=362;
 			break;
+		case TOWNS_JISKEY_5:
 		case TOWNS_JISKEY_NUM_5:
 			x=547;
 			y=362;
 			break;
+		case TOWNS_JISKEY_6:
 		case TOWNS_JISKEY_NUM_6:
 			x=571;
 			y=362;
 			break;
+		case TOWNS_JISKEY_7:
 		case TOWNS_JISKEY_NUM_7:
 			x=523;
 			y=338;
 			break;
+		case TOWNS_JISKEY_8:
 		case TOWNS_JISKEY_NUM_8:
 			x=547;
 			y=338;
 			break;
+		case TOWNS_JISKEY_9:
 		case TOWNS_JISKEY_NUM_9:
 			x=571;
 			y=338;
@@ -211,17 +228,41 @@ void FMTownsCommon::Daikoukai2_TakeOverKeystroke(unsigned int code1,unsigned int
 			x=596;
 			y=362;
 			break;
+		case TOWNS_JISKEY_RETURN:
 		case TOWNS_JISKEY_NUM_RETURN:
 			x=608;
 			y=410;
 			break;
+		case TOWNS_JISKEY_NUM_EQUAL:
 		case TOWNS_JISKEY_NUM_DOT:
 			x=547;
 			y=410;
 			break;
+		case TOWNS_JISKEY_PF01:
+			x=629;
+			y=384;
+			break;
+		case TOWNS_JISKEY_PF02:
+			x=629;
+			y=302;
+			break;
+		case TOWNS_JISKEY_PF03:
+			x=629;
+			y=226;
+			break;
+		case TOWNS_JISKEY_PF04:
+			x=629;
+			y=143;
+			break;
+		case TOWNS_JISKEY_BACKSPACE:
+			x=619;
+			y=362;
+			break;
 		default:
 			return;
 		}
+
+		eventLog.CleanUp();
 
 		TownsEventLog::Event e;
 		e.eventType=TownsEventLog::EVT_LBUTTONDOWN;
@@ -235,6 +276,8 @@ void FMTownsCommon::Daikoukai2_TakeOverKeystroke(unsigned int code1,unsigned int
 		e.mos.Set(x,y);
 		e.mosTolerance=2;
 		eventLog.AddEvent(e);
+
+		eventLog.BeginPlayback();
 	}
 }
 // 0  (523,410)   =  (547,410)  +  (571,410)  Return (608,410)

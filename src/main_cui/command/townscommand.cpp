@@ -4848,6 +4848,7 @@ void TownsCommandInterpreter::SaveScreenShot(FMTownsCommon &towns,TownsRender &r
 		render.Crop(towns.var.scrnShotX0,towns.var.scrnShotY0,towns.var.scrnShotWid,towns.var.scrnShotHei);
 	}
 
+	render.MakeOpaque();
 	auto img=render.GetImage();
 
 	auto fNameTmp=fName+".tmp";
