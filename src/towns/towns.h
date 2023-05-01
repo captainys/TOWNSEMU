@@ -215,10 +215,8 @@ public:
 		uint32_t appSpecific_Daikoukai_DentakuDialogXAddr=0;          // Needs to be state-saved
 		uint32_t appSpecific_Daikoukai_DentakuDialogYAddr=0;          // Needs to be state-saved
 
-		uint32_t appSpecific_Daikoukai2_m_x=0; // Won't be saved in state.
-		uint32_t appSpecific_Daikoukai2_m_y=0; // Won't be saved in state.
-		uint32_t appSpecific_Daikoukai2_DispX=0; // Won't be saved in state.
-		uint32_t appSpecific_Daikoukai2_DispY=0; // Won't be saved in state.
+		uint32_t appSpecific_Daikoukai2_MapX=0; // Won't be saved in state.
+		uint32_t appSpecific_Daikoukai2_MapY=0; // Won't be saved in state.
 		uint32_t appSpecific_Daikoukai2_p_flag=0; // Won't be saved in state.
 
 		void PowerOn(void);
@@ -815,7 +813,7 @@ public:
 	void AB2_Identify(void);  // Called on Mouse-BIOS initialization.
 	void AB2_Throttle(unsigned int inputThr);
 
-	void Daikoukai2_CaptureAddresses(void);
+	void Daikoukai2_CaptureFlags(void);
 	bool Daikoukai2_ControlMouseByArrowKeys(
 		int &lb,int &mb,int &rb,int &mx,int &my,
 		unsigned int leftKey,

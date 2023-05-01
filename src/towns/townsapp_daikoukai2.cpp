@@ -29,7 +29,7 @@
 // Right Arrow (580,380)
 // Down Arrow  (547,411)
 
-void FMTownsCommon::Daikoukai2_CaptureAddresses(void)
+void FMTownsCommon::Daikoukai2_CaptureFlags(void)
 {
 	auto &cpu=CPU();
 
@@ -37,11 +37,17 @@ void FMTownsCommon::Daikoukai2_CaptureAddresses(void)
 	unsigned int exceptionType,exceptionCode;
 	cpu.DebugLoadSegmentRegister(DS,0x0014,mem,false);
 
-	state.appSpecific_Daikoukai2_m_x=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x28A0,mem);
-	state.appSpecific_Daikoukai2_m_y=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x28A4,mem);
-	state.appSpecific_Daikoukai2_DispX=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x2DFE,mem);
-	state.appSpecific_Daikoukai2_DispY=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x2E00,mem);
-	state.appSpecific_Daikoukai2_p_flag=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x2899,mem);
+	state.appSpecific_Daikoukai2_p_flag=cpu.DebugFetchByte(32,DS,0x2899,mem);
+	if(0xFF==state.appSpecific_Daikoukai2_p_flag) // Ocean mode
+	{
+		state.appSpecific_Daikoukai2_MapX=cpu.DebugFetchWord(32,DS,0x2DFE,mem);
+		state.appSpecific_Daikoukai2_MapY=cpu.DebugFetchWord(32,DS,0x2E00,mem);
+	}
+	else
+	{
+		state.appSpecific_Daikoukai2_MapX=cpu.DebugFetchDword(32,DS,0x28A0,mem);
+		state.appSpecific_Daikoukai2_MapY=cpu.DebugFetchDword(32,DS,0x28A4,mem);
+	}
 }
 bool FMTownsCommon::Daikoukai2_ControlMouseByArrowKeys(
 		int &lb,int &mb,int &rb,int &mx,int &my,
@@ -51,7 +57,7 @@ bool FMTownsCommon::Daikoukai2_ControlMouseByArrowKeys(
 		unsigned int downKey)
 {
 	int destX,destY;
-	if(0xFF==mem.FetchByte(state.appSpecific_Daikoukai2_p_flag))  // 0xFF->Ocean  0x1D->Port
+	if(0xFF==state.appSpecific_Daikoukai2_p_flag)  // 0xFF->Ocean  0x1D->Port
 	{
 		if(0!=leftKey && 0!=upKey)
 		{
@@ -238,15 +244,7 @@ void FMTownsCommon::Daikoukai2_TakeOverKeystroke(unsigned int code1,unsigned int
 
 bool FMTownsCommon::Daikoukaijidai2_MapXY(int &x,int &y) const
 {
-	if(0xFF==mem.FetchByte(state.appSpecific_Daikoukai2_p_flag))  // 0xFF->Ocean  0x1D->Port
-	{
-		x=16*mem.FetchWord(state.appSpecific_Daikoukai2_DispX);
-		y=16*mem.FetchWord(state.appSpecific_Daikoukai2_DispY);
-	}
-	else
-	{
-		x=16*mem.FetchWord(state.appSpecific_Daikoukai2_m_x);
-		y=16*mem.FetchWord(state.appSpecific_Daikoukai2_m_y);
-	}
+	x=16*state.appSpecific_Daikoukai2_MapX;
+	y=16*state.appSpecific_Daikoukai2_MapY;
 	return true;
 }

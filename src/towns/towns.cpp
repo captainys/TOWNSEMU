@@ -945,7 +945,7 @@ void FMTownsCommon::ProcessSound(Outside_World *outside_world)
 		}
 		if(TOWNS_APPSPECIFIC_DAIKOUKAIJIDAI2==state.appSpecificSetting)
 		{
-			Daikoukai2_CaptureAddresses();
+			Daikoukai2_CaptureFlags();
 		}
 	}
 	else if(1==cpu.GetAH())
