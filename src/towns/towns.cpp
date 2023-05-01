@@ -923,7 +923,7 @@ void FMTownsCommon::ProcessSound(Outside_World *outside_world)
 	else if(0x0E==cpu.GetAH())
 	{
 		state.mouseDisplayPage=cpu.GetAL();
-		std::cout << "Mouse Display Page: " << state.mouseDisplayPage << std::endl;
+		// std::cout << "Mouse Display Page: " << state.mouseDisplayPage << std::endl;
 
 		// Looks like it is one of the good times of capturing joystick pointer in Air Warrior V2.
 		if(TOWNS_APPSPECIFIC_AIRWARRIOR_V2==state.appSpecificSetting)
