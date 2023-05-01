@@ -4808,15 +4808,24 @@ void TownsCommandInterpreter::Execute_QuickScreenShot(FMTownsCommon &towns,Comma
 			ful=fmt;
 		}
 
-		if(true==towns.mapXY[0].ready)
+		int mapX,mapY;
+		if(true==towns.GetApplicationSpecificMapXY(mapX,mapY))
 		{
-			sprintf(fmt,"$X=%d",towns.mapXY[0].Evaluate());
+			sprintf(fmt,"$X=%d$Y=%d",mapX,mapY);
 			ful+=std::string(fmt);
 		}
-		if(true==towns.mapXY[1].ready)
+		else
 		{
-			sprintf(fmt,"$Y=%d",towns.mapXY[1].Evaluate());
-			ful+=std::string(fmt);
+			if(true==towns.mapXY[0].ready)
+			{
+				sprintf(fmt,"$X=%d",towns.mapXY[0].Evaluate());
+				ful+=std::string(fmt);
+			}
+			if(true==towns.mapXY[1].ready)
+			{
+				sprintf(fmt,"$Y=%d",towns.mapXY[1].Evaluate());
+				ful+=std::string(fmt);
+			}
 		}
 
 		ful+=".png";

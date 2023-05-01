@@ -52,6 +52,15 @@ void TownsKeyboard::SetAutoType(std::string str)
 
 void TownsKeyboard::PushFifo(unsigned char code1,unsigned char code2)
 {
+	if(TOWNS_APPSPECIFIC_DAIKOUKAIJIDAI2==townsPtr->state.appSpecificSetting &&
+	   TBIOS_UNKNOWN!=townsPtr->state.tbiosVersion)
+	{
+		// Once TBIOS is identified, Daikoukai Jidai 2 never reads key stroke.
+		// Pushing it to the queue will cause annoying clicking sound.
+		townsPtr->Daikoukai2_TakeOverKeystroke(code1,code2);
+		return;
+	}
+
 	if(TOWNS_APPSPECIFIC_DUNGEONMASTER_JP==townsPtr->state.appSpecificSetting ||
 	   TOWNS_APPSPECIFIC_DUNGEONMASTER_EN==townsPtr->state.appSpecificSetting)
 	{

@@ -1574,3 +1574,13 @@ unsigned int FMTownsCommon::MemoryEvaluation::EvaluateMemoryReference(unsigned i
 	}
 	return data;
 }
+
+bool FMTownsCommon::GetApplicationSpecificMapXY(int &x,int &y) const
+{
+	switch(state.appSpecificSetting)
+	{
+	case TOWNS_APPSPECIFIC_DAIKOUKAIJIDAI2:
+		return Daikoukaijidai2_MapXY(x,y);
+	}
+	return false;
+}

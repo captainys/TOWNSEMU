@@ -1,6 +1,7 @@
 // Daikoukaijidai2 for FM TOWNS
 // Keyboard Shortcuts
 #include "towns.h"
+#include "townsdef.h"
 
 // Field view (96,40)-(479,423)=384x384
 //   Port Mode/Oceam Mode 16x16 tile  24x24 tile
@@ -141,8 +142,111 @@ bool FMTownsCommon::Daikoukai2_ControlMouseByArrowKeys(
 
 	return true;
 }
+void FMTownsCommon::Daikoukai2_TakeOverKeystroke(unsigned int code1,unsigned int code2)
+{
+	if(0==(TOWNS_KEYFLAG_RELEASE&code1))
+	{
+		int x,y;
+		switch(code2)
+		{
+		case TOWNS_JISKEY_NUM_0:
+			x=523;
+			y=410;
+			break;
+		case TOWNS_JISKEY_NUM_1:
+			x=523;
+			y=386;
+			break;
+		case TOWNS_JISKEY_NUM_2:
+			x=547;
+			y=386;
+			break;
+		case TOWNS_JISKEY_NUM_3:
+			x=571;
+			y=386;
+			break;
+		case TOWNS_JISKEY_NUM_4:
+			x=523;
+			y=362;
+			break;
+		case TOWNS_JISKEY_NUM_5:
+			x=547;
+			y=362;
+			break;
+		case TOWNS_JISKEY_NUM_6:
+			x=571;
+			y=362;
+			break;
+		case TOWNS_JISKEY_NUM_7:
+			x=523;
+			y=338;
+			break;
+		case TOWNS_JISKEY_NUM_8:
+			x=547;
+			y=338;
+			break;
+		case TOWNS_JISKEY_NUM_9:
+			x=571;
+			y=338;
+			break;
+		case TOWNS_JISKEY_NUM_PLUS:
+			x=571;
+			y=410;
+			break;
+		case TOWNS_JISKEY_NUM_MINUS:
+			x=596;
+			y=386;
+			break;
+		case TOWNS_JISKEY_NUM_STAR:
+			x=596;
+			y=338;
+			break;
+		case TOWNS_JISKEY_NUM_SLASH:
+			x=596;
+			y=362;
+			break;
+		case TOWNS_JISKEY_NUM_RETURN:
+			x=608;
+			y=410;
+			break;
+		case TOWNS_JISKEY_NUM_DOT:
+			x=547;
+			y=410;
+			break;
+		default:
+			return;
+		}
 
+		TownsEventLog::Event e;
+		e.eventType=TownsEventLog::EVT_LBUTTONDOWN;
+		e.t=std::chrono::milliseconds(75);
+		e.mos.Set(x,y);
+		e.mosTolerance=2;
+		eventLog.AddEvent(e);
+
+		e.eventType=TownsEventLog::EVT_LBUTTONUP;
+		e.t=std::chrono::milliseconds(75);
+		e.mos.Set(x,y);
+		e.mosTolerance=2;
+		eventLog.AddEvent(e);
+	}
+}
 // 0  (523,410)   =  (547,410)  +  (571,410)  Return (608,410)
 // 1  (523,386)   2  (547,386)  3  (571,386)  -  (596,386)  +- (619,386)
 // 4  (523,362)   5  (547,362)  6  (571,362)  /  (596,362)  AC (619,362)
 // 7  (523,338)   8  (547,338)  9  (571,338)  *  (596,338)  Max(619,338)
+
+bool FMTownsCommon::Daikoukaijidai2_MapXY(int &x,int &y) const
+{
+	if(0xFF==mem.FetchByte(state.appSpecific_Daikoukai2_p_flag))  // 0xFF->Ocean  0x1D->Port
+	{
+		x=16*mem.FetchWord(state.appSpecific_Daikoukai2_DispX);
+		y=16*mem.FetchWord(state.appSpecific_Daikoukai2_DispY);
+	}
+	else
+	{
+		x=16*mem.FetchWord(state.appSpecific_Daikoukai2_m_x);
+		y=16*mem.FetchWord(state.appSpecific_Daikoukai2_m_y);
+	}
+	return true;
+}

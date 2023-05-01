@@ -180,7 +180,7 @@ public:
 		/*! TBIOS version, TBIOS physical address (it should be contiguous in physical memory),
 		    Mouse work area pointer.  Captured upon MOS_start and MOS_end.
 		*/
-		unsigned int tbiosVersion;
+		unsigned int tbiosVersion=TBIOS_UNKNOWN;
 		bool mouseBIOSActive=false;
 		int mouseDisplayPage=0;
 		unsigned int TBIOS_physicalAddr=0;
@@ -751,6 +751,9 @@ public:
 	MemoryEvaluation mapXY[2];
 
 
+	// For the time being, it is easier for me to encode map XY of Daikoukaijidai2 in this function.
+	// I need to think about two-mode games.
+	bool GetApplicationSpecificMapXY(int &x,int &y) const;
 
 	// Dungeon Master Keyboard Shortcut
 	// Yoffset is needed because click coordinate is shifted about 8 pixels down in Japanese mode.
@@ -819,6 +822,8 @@ public:
 		unsigned int upKey,
 		unsigned int rightKey,
 		unsigned int downKey);
+	void Daikoukai2_TakeOverKeystroke(unsigned int code1,unsigned int code2);
+	bool Daikoukaijidai2_MapXY(int &x,int &y) const;
 };
 
 template <class CPUCLASS>
