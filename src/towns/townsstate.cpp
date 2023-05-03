@@ -310,5 +310,7 @@ bool FMTownsCommon::LoadState(std::string fName,class Outside_World &outsideWorl
 
 	VMBase::ClearAbortFlag();
 
+	lastAutoQSSCheckTime=0;
+
 	return true;
 }

@@ -74,6 +74,8 @@ public:
 		FAST_DEVICE_POLLING_INTERVAL=10000,  // Nano-seconds
 		DEVICE_POLLING_INTERVAL=   8000000,  // 8ms
 
+		AUTOQSS_CHECK_INTERVAL=  100000000,  // 100ms
+
 		RESET_REASON_SOFTWARE=1,
 		RESET_REASON_CPU=2,
 	};
@@ -750,6 +752,7 @@ public:
 	bool autoQSS=false;
 	int lastAutoQSSXY[2]={0,0};
 	int autoQSSThresholdXY[2]={0,0};
+	uint64_t lastAutoQSSCheckTime=0;
 
 	void EnableAutoQSS(unsigned int autoQSSThresholdX,unsigned int autoQSSThresholdY);
 	void DisableAutoQSS(void);
