@@ -747,7 +747,17 @@ public:
 		unsigned int EvaluateMemoryReference(unsigned int addr,unsigned int nBytes) const;
 	};
 	MemoryEvaluation mapXY[2];
+	bool autoQSS=false;
+	int lastAutoQSSXY[2]={0,0};
+	int autoQSSThresholdXY[2]={0,0};
 
+	void EnableAutoQSS(unsigned int autoQSSThresholdX,unsigned int autoQSSThresholdY);
+	void DisableAutoQSS(void);
+	// Returns true if calculated map-coordinate moved more than the specified threshold in at least one axis.
+	// If it returns true, x and y are calculated map-coordinate.
+	bool CheckAutoQSS(int &x,int &y);
+
+	bool GetMapXY(int &x,int &y) const;
 
 	// For the time being, it is easier for me to encode map XY of Daikoukaijidai2 in this function.
 	// I need to think about two-mode games.

@@ -15,6 +15,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <iostream>
 #include <fstream>
 #include <algorithm>
+#include <cmath>
+#include <cstdlib>
 
 #include "cpputil.h"
 #include "towns.h"
@@ -1577,6 +1579,60 @@ unsigned int FMTownsCommon::MemoryEvaluation::EvaluateMemoryReference(unsigned i
 		data|=(townsPtr->mem.FetchByte(addr+i)<<(i*8));
 	}
 	return data;
+}
+
+void FMTownsCommon::EnableAutoQSS(unsigned int autoQSSThresholdX,unsigned int autoQSSThresholdY)
+{
+	autoQSS=true;
+	GetMapXY(lastAutoQSSXY[0],lastAutoQSSXY[1]);
+	autoQSSThresholdXY[0]=autoQSSThresholdX;
+	autoQSSThresholdXY[1]=autoQSSThresholdY;
+}
+void FMTownsCommon::DisableAutoQSS(void)
+{
+	autoQSS=false;
+}
+bool FMTownsCommon::CheckAutoQSS(int &x,int &y)
+{
+	if(TOWNS_APPSPECIFIC_DAIKOUKAIJIDAI2==state.appSpecificSetting) // Prevent mouse-cursor contamination.
+	{
+		int mx,my;
+		if(true!=GetMouseCoordinate(mx,my,state.tbiosVersion) || 500<mx)
+		{
+			return false;
+		}
+	}
+
+	if(true==GetMapXY(x,y) &&
+	   (std::abs(x-lastAutoQSSXY[0])>=autoQSSThresholdXY[0] ||
+	    std::abs(y-lastAutoQSSXY[1])>=autoQSSThresholdXY[1]))
+	{
+		lastAutoQSSXY[0]=x;
+		lastAutoQSSXY[1]=y;
+		return true;
+	}
+
+	return false;
+}
+
+bool FMTownsCommon::GetMapXY(int &x,int &y) const
+{
+	switch(state.appSpecificSetting)
+	{
+	case TOWNS_APPSPECIFIC_DAIKOUKAIJIDAI2:
+		if(true==Daikoukaijidai2_MapXY(x,y))
+		{
+			return true;
+		}
+		break;
+	}
+	if(true==mapXY[0].ready || true==mapXY[1].ready)
+	{
+		x=(true==mapXY[0].ready ? mapXY[0].Evaluate() : 0);
+		y=(true==mapXY[1].ready ? mapXY[1].Evaluate() : 0);
+		return true;
+	}
+	return false;
 }
 
 bool FMTownsCommon::GetApplicationSpecificMapXY(int &x,int &y) const
