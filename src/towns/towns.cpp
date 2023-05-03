@@ -1594,24 +1594,27 @@ void FMTownsCommon::DisableAutoQSS(void)
 }
 bool FMTownsCommon::CheckAutoQSS(int &x,int &y)
 {
-	if(TOWNS_APPSPECIFIC_DAIKOUKAIJIDAI2==state.appSpecificSetting) // Prevent mouse-cursor contamination.
+	if(true==autoQSS && lastAutoQSSCheckTime+AUTOQSS_CHECK_INTERVAL<state.townsTime)
 	{
-		int mx,my;
-		if(true!=GetMouseCoordinate(mx,my,state.tbiosVersion) || 500<mx)
+		lastAutoQSSCheckTime=state.townsTime;
+		if(TOWNS_APPSPECIFIC_DAIKOUKAIJIDAI2==state.appSpecificSetting) // Prevent mouse-cursor contamination.
 		{
-			return false;
+			int mx,my;
+			if(true!=GetMouseCoordinate(mx,my,state.tbiosVersion) || 500<mx)
+			{
+				return false;
+			}
+		}
+
+		if(true==GetMapXY(x,y) &&
+		   (std::abs(x-lastAutoQSSXY[0])>=autoQSSThresholdXY[0] ||
+		    std::abs(y-lastAutoQSSXY[1])>=autoQSSThresholdXY[1]))
+		{
+			lastAutoQSSXY[0]=x;
+			lastAutoQSSXY[1]=y;
+			return true;
 		}
 	}
-
-	if(true==GetMapXY(x,y) &&
-	   (std::abs(x-lastAutoQSSXY[0])>=autoQSSThresholdXY[0] ||
-	    std::abs(y-lastAutoQSSXY[1])>=autoQSSThresholdXY[1]))
-	{
-		lastAutoQSSXY[0]=x;
-		lastAutoQSSXY[1]=y;
-		return true;
-	}
-
 	return false;
 }
 

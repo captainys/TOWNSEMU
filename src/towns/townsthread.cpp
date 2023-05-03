@@ -226,6 +226,14 @@ void TownsThread::VMMainLoopTemplate(FMTownsClass *townsPtr,Outside_World *outsi
 			townsPtr->fdc.SaveModifiedDiskImages();
 			townsPtr->physMem.state.memCard.SaveRawImageIfModified();
 		}
+		if(true==townsPtr->autoQSS)
+		{
+			int x,y;
+			if(true==townsPtr->CheckAutoQSS(x,y))
+			{
+				// PushCommand("QSS");
+			}
+		}
 
 		if(RUNMODE_PAUSE==runModeCopy)
 		{

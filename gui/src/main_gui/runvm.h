@@ -24,8 +24,8 @@ public:
 	std::queue <std::string> cmdqueue;
 	TownsCommandInterpreter cmdInterpreter;
 
-	virtual void Main(TownsThread &vmThread,FMTownsCommon &towns,const TownsARGV &argv,Outside_World &outside_world);
-	virtual void ExecCommandQueue(TownsThread &vmThread,FMTownsCommon &towns,Outside_World *outside_world);
+	virtual void Main(TownsThread &vmThread,FMTownsCommon &towns,const TownsARGV &argv,Outside_World &outside_world) override;
+	virtual void ExecCommandQueue(TownsThread &vmThread,FMTownsCommon &towns,Outside_World *outside_world) override;
 
 	void SendCommand(std::string cmd);
 };
