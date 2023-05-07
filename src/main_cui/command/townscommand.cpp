@@ -251,6 +251,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	featureMap["CDCMON"]=ENABLE_CDCMONITOR;
 	featureMap["VXDMON"]=ENABLE_VXDMONITOR;
 	featureMap["CRTC2MON"]=ENABLE_CRTC2MONITOR;
+	featureMap["AUTOQSS"]=ENABLE_AUTOQSS;
 
 	dumpableMap["CALLSTACK"]=DUMP_CALLSTACK;
 	dumpableMap["CST"]=DUMP_CALLSTACK;
@@ -1797,6 +1798,20 @@ void TownsCommandInterpreter::Execute_Enable(FMTownsCommon &towns,Command &cmd)
 			towns.crtc.monitorCRTC2=true;
 			std::cout << "High-Res CRTC Monitor Enabled." << std::endl;
 			break;
+		case ENABLE_AUTOQSS:
+			if(4<=cmd.argv.size())
+			{
+				auto thrX=cpputil::Atoi(cmd.argv[2].c_str());
+				auto thrY=cpputil::Atoi(cmd.argv[3].c_str());
+				towns.EnableAutoQSS(thrX,thrY);
+				std::cout << "Enabled Auto Quick Screen Save." << std::endl;
+				std::cout << "Displacement Threshold: " << thrX << "," << thrY << std::endl;
+			}
+			else
+			{
+				PrintError(ERROR_TOO_FEW_ARGS);
+			}
+			break;
 		}
 	}
 }
@@ -1900,6 +1915,10 @@ void TownsCommandInterpreter::Execute_Disable(FMTownsCommon &towns,Command &cmd)
 		case ENABLE_CRTC2MONITOR:
 			towns.crtc.monitorCRTC2=false;
 			std::cout << "High-Res CRTC Monitor Disabled." << std::endl;
+			break;
+		case ENABLE_AUTOQSS:
+			towns.DisableAutoQSS();
+			std::cout << "Auto QSS Disabled." << std::endl;
 			break;
 		}
 	}

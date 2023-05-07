@@ -335,6 +335,23 @@ void TownsEventLog::MakeRepeat(void)
 	}
 }
 
+void TownsEventLog::AddClick(int x,int y,int t0,int t1)
+{
+	Event e;
+
+	e.eventType=EVT_LBUTTONDOWN;
+	e.t=std::chrono::milliseconds(t0);
+	e.mos.Set(x,y);
+	e.mosTolerance=2;
+	AddEvent(e);
+
+	e.eventType=EVT_LBUTTONUP;
+	e.t=std::chrono::milliseconds(t1);
+	e.mos.Set(x,y);
+	e.mosTolerance=2;
+	AddEvent(e);
+}
+
 bool TownsEventLog::SaveEventLog(std::string fName) const
 {
 	std::ofstream ofp(fName);

@@ -153,6 +153,8 @@ public:
 
 	void MakeRepeat(void);
 
+	void AddClick(int x,int y,int t0=100,int t1=100);
+
 	bool SaveEventLog(std::string fName) const;
 	bool LoadEventLog(std::string fName);
 };

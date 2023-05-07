@@ -1600,19 +1600,21 @@ bool FMTownsCommon::CheckAutoQSS(int &x,int &y)
 		if(TOWNS_APPSPECIFIC_DAIKOUKAIJIDAI2==state.appSpecificSetting) // Prevent mouse-cursor contamination.
 		{
 			int mx,my;
-			if(true!=GetMouseCoordinate(mx,my,state.tbiosVersion) || 500<mx)
+			if(true!=GetMouseCoordinate(mx,my,state.tbiosVersion) || mx<500)
 			{
 				return false;
 			}
 		}
 
-		if(true==GetMapXY(x,y) &&
-		   (std::abs(x-lastAutoQSSXY[0])>=autoQSSThresholdXY[0] ||
-		    std::abs(y-lastAutoQSSXY[1])>=autoQSSThresholdXY[1]))
+		if(true==GetMapXY(x,y))
 		{
-			lastAutoQSSXY[0]=x;
-			lastAutoQSSXY[1]=y;
-			return true;
+			if(std::abs(x-lastAutoQSSXY[0])>=autoQSSThresholdXY[0] ||
+			   std::abs(y-lastAutoQSSXY[1])>=autoQSSThresholdXY[1])
+			{
+				lastAutoQSSXY[0]=x;
+				lastAutoQSSXY[1]=y;
+				return true;
+			}
 		}
 	}
 	return false;

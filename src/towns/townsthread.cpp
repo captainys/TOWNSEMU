@@ -231,7 +231,7 @@ void TownsThread::VMMainLoopTemplate(FMTownsClass *townsPtr,Outside_World *outsi
 			int x,y;
 			if(true==townsPtr->CheckAutoQSS(x,y))
 			{
-				// PushCommand("QSS");
+				outside_world->commandQueue.push("QSS"); // I should have made FMTowns class own the external command queue :-P
 			}
 		}
 

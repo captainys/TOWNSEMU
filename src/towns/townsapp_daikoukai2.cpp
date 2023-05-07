@@ -231,6 +231,10 @@ void FMTownsCommon::Daikoukai2_TakeOverKeystroke(unsigned int code1,unsigned int
 			x=596;
 			y=338;
 			break;
+		case TOWNS_JISKEY_X:
+			x=619;
+			y=338;
+			break;
 		case TOWNS_JISKEY_NUM_SLASH:
 			x=596;
 			y=362;
@@ -268,19 +272,26 @@ void FMTownsCommon::Daikoukai2_TakeOverKeystroke(unsigned int code1,unsigned int
 		case TOWNS_JISKEY_BREAK:
 		case TOWNS_JISKEY_ESC:
 			eventLog.CleanUp();
+			{
+				int cx,cy;
+				if(true!=GetMouseCoordinate(cx,cy,state.tbiosVersion))
+				{
+					cx=320;
+					cy=240;
+				}
 
-			e.eventType=TownsEventLog::EVT_RBUTTONDOWN;
-			e.t=std::chrono::milliseconds(75);
-			e.mos.Set(320,240);
-			e.mosTolerance=2;
-			eventLog.AddEvent(e);
+				e.eventType=TownsEventLog::EVT_RBUTTONDOWN;
+				e.t=std::chrono::milliseconds(75);
+				e.mos.Set(cx,cy);
+				e.mosTolerance=2;
+				eventLog.AddEvent(e);
 
-			e.eventType=TownsEventLog::EVT_RBUTTONUP;
-			e.t=std::chrono::milliseconds(75);
-			e.mos.Set(320,240);
-			e.mosTolerance=2;
-			eventLog.AddEvent(e);
-
+				e.eventType=TownsEventLog::EVT_RBUTTONUP;
+				e.t=std::chrono::milliseconds(75);
+				e.mos.Set(cx,cy);
+				e.mosTolerance=2;
+				eventLog.AddEvent(e);
+			}
 			eventLog.BeginPlayback();
 			return;
 		default:
@@ -288,19 +299,7 @@ void FMTownsCommon::Daikoukai2_TakeOverKeystroke(unsigned int code1,unsigned int
 		}
 
 		eventLog.CleanUp();
-
-		e.eventType=TownsEventLog::EVT_LBUTTONDOWN;
-		e.t=std::chrono::milliseconds(75);
-		e.mos.Set(x,y);
-		e.mosTolerance=2;
-		eventLog.AddEvent(e);
-
-		e.eventType=TownsEventLog::EVT_LBUTTONUP;
-		e.t=std::chrono::milliseconds(75);
-		e.mos.Set(x,y);
-		e.mosTolerance=2;
-		eventLog.AddEvent(e);
-
+		eventLog.AddClick(x,y);
 		eventLog.BeginPlayback();
 	}
 }
