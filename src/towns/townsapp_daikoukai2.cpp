@@ -47,10 +47,13 @@ void FMTownsCommon::Daikoukai2_CaptureFlags(void)
 	auto &cpu=CPU();
 
 	i486DXCommon::SegmentRegister DS;
-	unsigned int exceptionType,exceptionCode;
+	unsigned int excType,excCode;
 	cpu.DebugLoadSegmentRegister(DS,0x0014,mem,false);
 
 	state.appSpecific_Daikoukai2_p_flag=cpu.DebugFetchByte(32,DS,0x2899,mem);
+	state.appSpecific_Daikoukai2_GetaYAddr=cpu.DebugLinearAddressToPhysicalAddress(excType,excCode,DS.baseLinearAddr+0xAF80,mem);
+	state.appSpecific_Daikoukai2_DentakuXAddr=cpu.DebugLinearAddressToPhysicalAddress(excType,excCode,DS.baseLinearAddr+0xC4E8,mem);
+	state.appSpecific_Daikoukai2_DentakuYAddr=cpu.DebugLinearAddressToPhysicalAddress(excType,excCode,DS.baseLinearAddr+0xC4EC,mem);
 	if(0xFF==state.appSpecific_Daikoukai2_p_flag) // Ocean mode
 	{
 		state.appSpecific_Daikoukai2_MapX=cpu.DebugFetchWord(32,DS,0x2DFE,mem);
@@ -165,89 +168,109 @@ void FMTownsCommon::Daikoukai2_TakeOverKeystroke(unsigned int code1,unsigned int
 {
 	if(0==(TOWNS_KEYFLAG_RELEASE&code1))
 	{
+		auto &cpu=CPU();
+		if((0x000C==cpu.state.CS().value || 0x0110==cpu.state.CS().value) && 0x0014==cpu.state.DS().value)
+		{
+			Daikoukai2_CaptureFlags();
+			// Double-buffering is not used in sea-battle mode.
+			// If state-loaded after the victory, it may not know the addresses.
+		}
+
+		int dentakuX=mem.FetchDword(state.appSpecific_Daikoukai2_DentakuXAddr);
+		int dentakuY=mem.FetchDword(state.appSpecific_Daikoukai2_DentakuYAddr);
+		int getaY=mem.FetchDword(state.appSpecific_Daikoukai2_GetaYAddr);
+
+		int dentakuOffsetX=dentakuX-0x1F8;
+		int dentakuOffsetY=dentakuY-0xF8+(getaY-0x20);
+
 		int x,y;
 		TownsEventLog::Event e;
 		switch(code2)
 		{
 		case TOWNS_JISKEY_0:
 		case TOWNS_JISKEY_NUM_0:
-			x=523;
-			y=410;
+			x=523+dentakuOffsetX;
+			y=410+dentakuOffsetY;
 			break;
 		case TOWNS_JISKEY_1:
 		case TOWNS_JISKEY_NUM_1:
-			x=523;
-			y=386;
+			x=523+dentakuOffsetX;
+			y=386+dentakuOffsetY;
 			break;
 		case TOWNS_JISKEY_2:
 		case TOWNS_JISKEY_NUM_2:
-			x=547;
-			y=386;
+			x=547+dentakuOffsetX;
+			y=386+dentakuOffsetY;
 			break;
 		case TOWNS_JISKEY_3:
 		case TOWNS_JISKEY_NUM_3:
-			x=571;
-			y=386;
+			x=571+dentakuOffsetX;
+			y=386+dentakuOffsetY;
 			break;
 		case TOWNS_JISKEY_4:
 		case TOWNS_JISKEY_NUM_4:
-			x=523;
-			y=362;
+			x=523+dentakuOffsetX;
+			y=362+dentakuOffsetY;
 			break;
 		case TOWNS_JISKEY_5:
 		case TOWNS_JISKEY_NUM_5:
-			x=547;
-			y=362;
+			x=547+dentakuOffsetX;
+			y=362+dentakuOffsetY;
 			break;
 		case TOWNS_JISKEY_6:
 		case TOWNS_JISKEY_NUM_6:
-			x=571;
-			y=362;
+			x=571+dentakuOffsetX;
+			y=362+dentakuOffsetY;
 			break;
 		case TOWNS_JISKEY_7:
 		case TOWNS_JISKEY_NUM_7:
-			x=523;
-			y=338;
+			x=523+dentakuOffsetX;
+			y=338+dentakuOffsetY;
 			break;
 		case TOWNS_JISKEY_8:
 		case TOWNS_JISKEY_NUM_8:
-			x=547;
-			y=338;
+			x=547+dentakuOffsetX;
+			y=338+dentakuOffsetY;
 			break;
 		case TOWNS_JISKEY_9:
 		case TOWNS_JISKEY_NUM_9:
-			x=571;
-			y=338;
+			x=571+dentakuOffsetX;
+			y=338+dentakuOffsetY;
 			break;
 		case TOWNS_JISKEY_NUM_PLUS:
-			x=571;
-			y=410;
+			x=571+dentakuOffsetX;
+			y=410+dentakuOffsetY;
 			break;
 		case TOWNS_JISKEY_NUM_MINUS:
-			x=596;
-			y=386;
+			x=596+dentakuOffsetX;
+			y=386+dentakuOffsetY;
 			break;
 		case TOWNS_JISKEY_NUM_STAR:
-			x=596;
-			y=338;
+			x=596+dentakuOffsetX;
+			y=338+dentakuOffsetY;
 			break;
 		case TOWNS_JISKEY_X:
-			x=619;
-			y=338;
+			x=619+dentakuOffsetX;
+			y=338+dentakuOffsetY;
 			break;
 		case TOWNS_JISKEY_NUM_SLASH:
-			x=596;
-			y=362;
+			x=596+dentakuOffsetX;
+			y=362+dentakuOffsetY;
 			break;
 		case TOWNS_JISKEY_RETURN:
 		case TOWNS_JISKEY_NUM_RETURN:
-			x=608;
-			y=410;
+			x=608+dentakuOffsetX;
+			y=410+dentakuOffsetY;
 			break;
 		case TOWNS_JISKEY_NUM_EQUAL:
 		case TOWNS_JISKEY_NUM_DOT:
-			x=547;
-			y=410;
+			x=547+dentakuOffsetX;
+			y=410+dentakuOffsetY;
+			break;
+		case TOWNS_JISKEY_C:
+		case TOWNS_JISKEY_BACKSPACE:
+			x=619+dentakuOffsetX;
+			y=362+dentakuOffsetY;
 			break;
 		case TOWNS_JISKEY_PF01:
 			x=629;
@@ -264,10 +287,6 @@ void FMTownsCommon::Daikoukai2_TakeOverKeystroke(unsigned int code1,unsigned int
 		case TOWNS_JISKEY_PF04:
 			x=629;
 			y=143;
-			break;
-		case TOWNS_JISKEY_BACKSPACE:
-			x=619;
-			y=362;
 			break;
 		case TOWNS_JISKEY_BREAK:
 		case TOWNS_JISKEY_ESC:

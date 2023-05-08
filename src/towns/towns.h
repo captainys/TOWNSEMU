@@ -220,6 +220,9 @@ public:
 		uint32_t appSpecific_Daikoukai2_MapX=0; // Won't be saved in state.
 		uint32_t appSpecific_Daikoukai2_MapY=0; // Won't be saved in state.
 		uint32_t appSpecific_Daikoukai2_p_flag=0; // Won't be saved in state.
+		uint32_t appSpecific_Daikoukai2_GetaYAddr=0; // Won't be saved in state.
+		uint32_t appSpecific_Daikoukai2_DentakuXAddr=0; // Won't be saved in state.
+		uint32_t appSpecific_Daikoukai2_DentakuYAddr=0; // Won't be saved in state.
 
 		void PowerOn(void);
 		void Reset(void);
