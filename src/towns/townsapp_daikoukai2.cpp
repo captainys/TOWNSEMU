@@ -64,6 +64,20 @@ void FMTownsCommon::Daikoukai2_CaptureFlags(void)
 		state.appSpecific_Daikoukai2_MapX=cpu.DebugFetchDword(32,DS,0x28A0,mem);
 		state.appSpecific_Daikoukai2_MapY=cpu.DebugFetchDword(32,DS,0x28A4,mem);
 	}
+
+	// YesNoDsp ()
+	// 000C:00027210 53                        PUSH    EBX
+	// 000C:00027211 56                        PUSH    ESI
+	// 000C:00027212 57                        PUSH    EDI
+	// 000C:00027213 A1C0F50000                MOV     EAX,[0000F5C0H]
+	// 000C:00027218 8D0480                    LEA     EAX,[EAX+EAX*4]
+	// 000C:0002721B 8D048500000000            LEA     EAX,[EAX*4]
+	// 000C:00027222 8BB8D8F50000              MOV     EDI,[EAX+0000F5D8H]
+	// 000C:00027228 8BB0DCF50000              MOV     ESI,[EAX+0000F5DCH]
+	uint32_t EAX=cpu.DebugFetchDword(32,DS,0xF5C0,mem);
+	EAX*=20;
+	state.appSpecific_Daikoukai2_YesNoXAddr=cpu.DebugLinearAddressToPhysicalAddress(excType,excCode,DS.baseLinearAddr+0xF5D8+EAX,mem);
+	state.appSpecific_Daikoukai2_YesNoYAddr=cpu.DebugLinearAddressToPhysicalAddress(excType,excCode,DS.baseLinearAddr+0xF5DC+EAX,mem);
 }
 bool FMTownsCommon::Daikoukai2_ControlMouseByArrowKeys(
 		int &lb,int &mb,int &rb,int &mx,int &my,
@@ -179,6 +193,9 @@ void FMTownsCommon::Daikoukai2_TakeOverKeystroke(unsigned int code1,unsigned int
 		int dentakuX=mem.FetchDword(state.appSpecific_Daikoukai2_DentakuXAddr);
 		int dentakuY=mem.FetchDword(state.appSpecific_Daikoukai2_DentakuYAddr);
 		int getaY=mem.FetchDword(state.appSpecific_Daikoukai2_GetaYAddr);
+
+		int yesNoX=mem.FetchDword(state.appSpecific_Daikoukai2_YesNoXAddr);
+		int yesNoY=mem.FetchDword(state.appSpecific_Daikoukai2_YesNoYAddr);
 
 		int dentakuOffsetX=dentakuX-0x1F8;
 		int dentakuOffsetY=dentakuY-0xF8+(getaY-0x20);
@@ -313,13 +330,24 @@ void FMTownsCommon::Daikoukai2_TakeOverKeystroke(unsigned int code1,unsigned int
 			}
 			eventLog.BeginPlayback();
 			return;
+		case TOWNS_JISKEY_Y:
+			x=yesNoX+40;
+			y=yesNoY+30+getaY;
+			break;
+		case TOWNS_JISKEY_N:
+			x=yesNoX+100;
+			y=yesNoY+30+getaY;
+			break;
 		default:
 			return;
 		}
 
-		eventLog.CleanUp();
-		eventLog.AddClick(x,y);
-		eventLog.BeginPlayback();
+		if(0<=x && x<640 && 0<=y && y<480)
+		{
+			eventLog.CleanUp();
+			eventLog.AddClick(x,y);
+			eventLog.BeginPlayback();
+		}
 	}
 }
 // 0  (523,410)   =  (547,410)  +  (571,410)  Return (608,410)

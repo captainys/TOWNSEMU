@@ -76,7 +76,7 @@ void Outside_World::ProcessMouse(class FMTownsCommon &towns,int lb,int mb,int rb
 	{
 		int diffX,diffY;
 		towns.ControlMouse(diffX,diffY,mx,my,towns.state.tbiosVersion);
-		if(0==diffX && 0==diffY)
+		if(-1<=diffX && diffX<=1 && -1<=diffY && diffY<=1) // Added tolerance.
 		{
 			--mouseStationaryCount;
 			if(mouseStationaryCount<=0)
