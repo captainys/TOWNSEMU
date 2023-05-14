@@ -696,6 +696,8 @@ unsigned int i486DXCommon::FPUState::FCOM(i486DXCommon &cpu,int i)
 {
 	if(true==enabled)
 	{
+		// It should raise Invalid-Operation exception if one of the operands is NaN.
+		// This CPU core is not emulating this behavior.  FCOM works same as FUCOM.
 		Compare(ST(cpu).value,ST(cpu,i).value);
 		return 4;
 	}
@@ -725,6 +727,8 @@ unsigned int i486DXCommon::FPUState::FUCOM_STi(i486DXCommon &cpu,int i)
 {
 	if(true==enabled)
 	{
+		Compare(ST(cpu).value,ST(cpu,i).value);
+		return 4;
 	}
 	return 0; // Let it abort.
 }
