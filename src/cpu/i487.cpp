@@ -721,6 +721,13 @@ unsigned int i486DXCommon::FPUState::FCOMPP(i486DXCommon &cpu)
 	}
 	return 0; // Let it abort.
 }
+unsigned int i486DXCommon::FPUState::FUCOM_STi(i486DXCommon &cpu,int i)
+{
+	if(true==enabled)
+	{
+	}
+	return 0; // Let it abort.
+}
 unsigned int i486DXCommon::FPUState::FDIV_m32real(i486DXCommon &cpu,const unsigned char byteData[])
 {
 	if(true==enabled)

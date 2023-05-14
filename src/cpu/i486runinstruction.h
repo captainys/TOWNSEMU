@@ -634,6 +634,10 @@ void i486DXCommon::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,Memo
 			{
 				FUNCCLASS::FetchOperand8(cpu, inst, ptr, seg, offset, mem);   // FFREE
 			}
+			else if(0xE1==MODR_M)  // FUCOM ST1
+			{
+				// No Operand
+			}
 			else if (0xE0 == (MODR_M & 0xF8) || 0xE1 == (MODR_M & 0xF8) || 0xE8 == (MODR_M & 0xF8) || 0xE9 == (MODR_M & 0xF8))
 			{
 				FUNCCLASS::FetchOperand8(cpu, inst, ptr, seg, offset, mem);   // FUCOM
@@ -3755,6 +3759,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			case 0xC0: // C0 11000xxx
 				break;
 			case 0xE0:
+				clocksPassed=state.fpuState.FUCOM_STi(*this,inst.operand[0]&7);
 				break;
 			case 0xE8:
 				break;

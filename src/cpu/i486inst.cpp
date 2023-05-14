@@ -1567,7 +1567,13 @@ std::string i486DXCommon::Instruction::Disassemble(const Operand &op1In,const Op
 				disasm+=cpputil::Ubtox(MODR_M&7);
 				disasm+=")";
 			}
-			else if(0xE0==(MODR_M&0xF8) || 0xE1==(MODR_M&0xF8) || 0xE8==(MODR_M&0xF8) || 0xE9==(MODR_M&0xF8))
+			else if(0xE0==(MODR_M&0xF8))
+			{
+				disasm="FUCOM ST(";
+				disasm+=cpputil::Ubtox(MODR_M&7);
+				disasm+=")";
+			}
+			else if(0xE8==(MODR_M&0xF8))
 			{
 				disasm="?FPUINST";
 			}
