@@ -1553,7 +1553,9 @@ std::string i486DXCommon::Instruction::Disassemble(const Operand &op1In,const Op
 			unsigned int MODR_M=operand[0];
 			if(0xD0==(MODR_M&0xF8)) // D0 11010xxx    [1] pp.151  0<=i<=7
 			{
-				disasm="?FPUINST";
+				disasm = "FST ST(";
+				disasm += cpputil::Ubtox(MODR_M & 7);
+				disasm += ")";
 			}
 			else if(0xD8==(MODR_M&0xF8)) // D8 11011xxx
 			{
