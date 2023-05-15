@@ -385,8 +385,8 @@ void FMTownsCommon::Daikoukai2_TakeOverKeystroke(unsigned int code1,unsigned int
 
 bool FMTownsCommon::Daikoukaijidai2_MapXY(int &x,int &y) const
 {
-	x=16*state.appSpecific_Daikoukai2_MapX;
-	y=16*state.appSpecific_Daikoukai2_MapY;
+	x=state.appSpecific_Daikoukai2_MapX;
+	y=state.appSpecific_Daikoukai2_MapY;
 	return true;
 }
 void FMTownsCommon::Daikoukaijidai2_ScreenshotOverride(TownsRender &render,TownsCRTC::AnalogPalette &palette) const
