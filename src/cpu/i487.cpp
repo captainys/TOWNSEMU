@@ -626,7 +626,7 @@ unsigned int i486DXCommon::FPUState::FIADD_m16int(i486DXCommon &cpu,const unsign
 		double src=(double)IntFrom16Bit(byteData);
 		ST(cpu).value+=src;
 
-		return 7;
+		return 24;
 	}
 	return 0;
 }
