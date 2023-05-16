@@ -151,6 +151,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["EMW"]=CMD_EDIT_MEMORY_WORD;
 	primaryCmdMap["EMD"]=CMD_EDIT_MEMORY_DWORD;
 	primaryCmdMap["EMS"]=CMD_EDIT_MEMORY_STRING;
+	primaryCmdMap["EM"]=CMD_EDIT_MEMORY;
 	primaryCmdMap["REPLACE"]=CMD_REPLACE;
 	primaryCmdMap["SAVEMEMDUMP"]=CMD_SAVE_MEMORY_DUMP;
 
@@ -574,6 +575,9 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "EMD seg:offset data" <<std::endl;
 	std::cout << "EMS seg:offset data" <<std::endl;
 	std::cout << "  Edit memory byte/word/dword/string respectively." << std::endl;
+	std::cout << "EM seg:offset data" << std::endl;
+	std::cout << "  Edit memory.  Byte/word/dword depends on the length of the word." << std::endl;
+	std::cout << "  FF makes a byte. FFFF makes a word.  FFFFFFFF makes a dword." << std::endl;
 	std::cout << "REPLACE hexadecimal-data hexadecimal-data" << std::endl;
 	std::cout << "  Replace in main memory." << std::endl;
 	std::cout << "SAVEMEMDUMP filename seg:offset length" << std::endl;
@@ -1378,6 +1382,9 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,clas
 		break;
 	case CMD_EDIT_MEMORY_STRING:
 		Execute_EditMemory(towns,cmd,~0);
+		break;
+	case CMD_EDIT_MEMORY:
+		Execute_EditMemory(towns,cmd,0);
 		break;
 	case CMD_REPLACE:
 		Execute_Replace(towns,cmd);
@@ -4105,6 +4112,75 @@ void TownsCommandInterpreter::Execute_EditMemory(FMTownsCommon &towns,Command &c
 				towns.CPU().DebugStoreByte(towns.mem,32,seg,farPtr.OFFSET+cmd.argv[2].size(),0);
 			}
 			std::cout << "Stored string to memory." << std::endl;
+		}
+		else if(0==numBytes) // Byte/Word/Dword depends on the length.
+		{
+			auto OFFSET=farPtr.OFFSET;
+			for(int i=2; i<cmd.argv.size(); ++i)
+			{
+				auto word=cmd.argv[i];
+				if(word.back()=='H' || word.back()=='h')
+				{
+					word.pop_back();
+				}
+				else if(word[0]=='0' && word[1]=='x')
+				{
+					word.erase(word.begin());
+					word.erase(word.begin());
+				}
+
+				unsigned int data=cpputil::Xtoi(word.c_str());
+				if(2==word.size())
+				{
+					numBytes=1;
+				}
+				else if(4==word.size())
+				{
+					numBytes=2;
+				}
+				else if(8==word.size())
+				{
+					numBytes=4;
+				}
+				else
+				{
+					break;
+				}
+
+				if((farPtr.SEG&0xFFFF0000)==i486DXCommon::FarPointer::PHYS_ADDR)
+				{
+					switch(numBytes)
+					{
+					case 1:
+						towns.mem.StoreByte(OFFSET,data);
+						break;
+					case 2:
+						towns.mem.StoreWord(OFFSET,data);
+						break;
+					case 4:
+						towns.mem.StoreDword(OFFSET,data);
+						break;
+					}
+				}
+				else
+				{
+					i486DXCommon::SegmentRegister seg;
+					towns.CPU().DebugLoadSegmentRegisterFromFarPointer(seg,towns.mem,farPtr);
+					switch(numBytes)
+					{
+					case 1:
+						towns.CPU().DebugStoreByte(towns.mem,32,seg,OFFSET,data);
+						break;
+					case 2:
+						towns.CPU().DebugStoreWord(towns.mem,32,seg,OFFSET,data);
+						break;
+					case 4:
+						towns.CPU().DebugStoreDword(towns.mem,32,seg,OFFSET,data);
+						break;
+					}
+				}
+				OFFSET+=numBytes;
+			}
 		}
 		else
 		{
