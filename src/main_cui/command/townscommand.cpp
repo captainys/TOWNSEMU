@@ -188,6 +188,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 
 	primaryCmdMap["HOST2VM"]=CMD_HOST_TO_VM_FILE_TRANSFER;
 	primaryCmdMap["VM2HOST"]=CMD_VM_TO_HOST_FILE_TRANSFER;
+	primaryCmdMap["SAVEVM2HOSTDUMP"]=CMD_SAVE_VM_TO_HOST_DUMP;
 
 	primaryCmdMap["FREQ"]=CMD_FREQUENCY;
 
@@ -1532,6 +1533,23 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,clas
 			std::cout << "Schedule VM to Host Tranfer" << std::endl;
 			std::cout << "From: " << cmd.argv[1] << std::endl;
 			std::cout << "To:   " << file << std::endl;
+		}
+		else
+		{
+			PrintError(ERROR_TOO_FEW_ARGS);
+		}
+		break;
+	case CMD_SAVE_VM_TO_HOST_DUMP:
+		if(2<=cmd.argv.size())
+		{
+			if(true==cpputil::WriteBinaryFile(cmd.argv[1],towns.var.vmToHost.size(),towns.var.vmToHost.data()))
+			{
+				std::cout << "Saved." << std::endl;
+			}
+			else
+			{
+				std::cout << "Save error." << std::endl;
+			}
 		}
 		else
 		{
