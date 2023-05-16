@@ -803,6 +803,8 @@ enum
 	TOWNS_VMIF_CMD_NOTIFY_DOSLOL= 0x09, // Capture DOS List of Lists, not DOS Laugh Out Loud.  Also updates DOSSEG (supposed to be the same)
 
 	TOWNS_VMIF_CMD_NOTIFY_MOUSE = 0x0A, // Notify Mouse Position
+
+	TOWNS_VMIF_CMD_BYTE_VM_TO_HOST=0x0B,// Send byte to the host.  Write to data register then write this command.
 };
 
 enum

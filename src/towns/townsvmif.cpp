@@ -75,6 +75,12 @@ void FMTownsCommon::ProcessVMToHostCommand(unsigned int vmCmd,unsigned int param
 			var.mouseYReported=cpputil::GetWord(param+2);
 		}
 		break;
+	case TOWNS_VMIF_CMD_BYTE_VM_TO_HOST:
+		for(int i=0; i<paramLen; ++i)
+		{
+			var.vmToHost.push_back(param[i]);
+		}
+		break;
 	}
 }
 void FMTownsCommon::VMHostFileTransfer(void)

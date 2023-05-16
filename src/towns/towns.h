@@ -379,6 +379,11 @@ public:
 		std::unordered_map <std::string,std::string> fileNameAlias;
 
 
+		/*!
+		*/
+		std::vector <uint8_t> vmToHost;
+
+
 
 		i486DXCommon::FarPointer disassemblePointer;
 		Variable();
