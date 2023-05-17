@@ -391,7 +391,7 @@ bool FMTownsCommon::Daikoukaijidai2_MapXY(int &x,int &y) const
 }
 void FMTownsCommon::Daikoukaijidai2_ScreenshotOverride(TownsRender &render,TownsCRTC::AnalogPalette &palette) const
 {
-	const char dayPalette[16][3]=
+	const unsigned char dayPalette[16][3]=
 	{
 		{0x00,0x00,0x00},
 		{0x00,0x44,0xDD},
