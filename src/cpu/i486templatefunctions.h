@@ -1259,7 +1259,7 @@ i486DXCommon::OperandValue i486DXFidelityLayer<FIDELITY>::EvaluateOperand80(
 	switch(op.operandType)
 	{
 	default:
-		Abort("Tried to evaluate 64-bit from an inappropriate operandType.");
+		Abort("Tried to evaluate 80-bit from an inappropriate operandType.");
 		break;
 	case OPER_ADDR:
 		{

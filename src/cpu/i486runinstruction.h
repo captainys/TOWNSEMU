@@ -586,13 +586,13 @@ void i486DXCommon::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,Memo
 				switch (Instruction::GetREG(MODR_M))
 				{
 				case 0: // FILD m32int
+				case 2: // FIST m32int
 				case 3: // FISTP m32int
 				case 5: // FLD m80real
 				case 7: // FSTP m80real
 					FetchOperandRMandDecode<CPUCLASS, MEMCLASS, FUNCCLASS>(op1, inst.addressSize, inst.operandSize, cpu, inst, ptr, seg, offset, mem);
 					break;
 				case 1:
-				case 2:
 				case 4:
 				case 6:
 				default:
@@ -634,13 +634,13 @@ void i486DXCommon::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,Memo
 			{
 				FUNCCLASS::FetchOperand8(cpu, inst, ptr, seg, offset, mem);   // FFREE
 			}
-			else if(0xE1==MODR_M)  // FUCOM ST1
-			{
-				// No Operand
-			}
-			else if (0xE0 == (MODR_M & 0xF8) || 0xE1 == (MODR_M & 0xF8) || 0xE8 == (MODR_M & 0xF8) || 0xE9 == (MODR_M & 0xF8))
+			else if (0xE0 == (MODR_M & 0xF8)) // E0 11100xxx
 			{
 				FUNCCLASS::FetchOperand8(cpu, inst, ptr, seg, offset, mem);   // FUCOM
+			}
+			else if (0xE8 == (MODR_M & 0xF8)) // E8 11101xxx
+			{
+				FUNCCLASS::FetchOperand8(cpu, inst, ptr, seg, offset, mem);   // FUCOMP
 			}
 			else
 			{
@@ -3526,7 +3526,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		}
 		else if(0xE9==inst.operand[0])
 		{
-			// FUCOMPP
+			clocksPassed = state.fpuState.FUCOMPP(*this);
 		}
 		else
 		{
@@ -3615,7 +3615,6 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			switch(Instruction::GetREG(inst.operand[0]))
 			{
 			case 1:
-			case 2:
 			case 4:
 			case 6:
 			default:
@@ -3624,6 +3623,15 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				{
 					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,4);
 					clocksPassed=state.fpuState.FILD_m32int(*this,value.byteData);
+				}
+				break;
+			case 2: // FIST m32int
+				{
+					OperandValue value;
+					state.fpuState.GetSTAsSignedInt(*this, value);
+					value.numBytes = 4;
+					StoreOperandValue(op1, mem, inst.addressSize, inst.segOverride, value);
+					clocksPassed = 32;
 				}
 				break;
 			case 3: // FISTP m32int
@@ -3762,6 +3770,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				clocksPassed=state.fpuState.FUCOM_STi(*this,inst.operand[0]&7);
 				break;
 			case 0xE8:
+				clocksPassed = state.fpuState.FUCOMP_STi(*this, inst.operand[0] & 7);
 				break;
 			default:
 				switch(Instruction::GetREG(inst.operand[0]))
@@ -3884,7 +3893,10 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					// FICOMP m16int
 					break;
 				case 4:
-					// FISUB m16int
+					{
+						auto value = EvaluateOperand(mem, inst.addressSize, inst.segOverride, op1, 2);
+						clocksPassed = state.fpuState.FISUB_m16int(*this, value.byteData);
+					}
 					break;
 				case 5:
 					// FISUBR m16int

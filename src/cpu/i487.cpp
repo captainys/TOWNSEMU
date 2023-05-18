@@ -626,7 +626,7 @@ unsigned int i486DXCommon::FPUState::FIADD_m16int(i486DXCommon &cpu,const unsign
 		double src=(double)IntFrom16Bit(byteData);
 		ST(cpu).value+=src;
 
-		return 7;
+		return 24;
 	}
 	return 0;
 }
@@ -723,12 +723,32 @@ unsigned int i486DXCommon::FPUState::FCOMPP(i486DXCommon &cpu)
 	}
 	return 0; // Let it abort.
 }
-unsigned int i486DXCommon::FPUState::FUCOM_STi(i486DXCommon &cpu,int i)
+unsigned int i486DXCommon::FPUState::FUCOM_STi(i486DXCommon& cpu, int i)
 {
-	if(true==enabled)
+	if (true == enabled)
 	{
-		Compare(ST(cpu).value,ST(cpu,i).value);
+		Compare(ST(cpu).value, ST(cpu, i).value);
 		return 4;
+	}
+	return 0; // Let it abort.
+}
+unsigned int i486DXCommon::FPUState::FUCOMP_STi(i486DXCommon& cpu, int i)
+{
+	if (true == enabled)
+	{
+		Compare(ST(cpu).value, ST(cpu, i).value);
+		Pop(cpu);
+		return 4;
+	}
+	return 0; // Let it abort.
+}
+unsigned int i486DXCommon::FPUState::FUCOMPP(i486DXCommon& cpu)
+{
+	if (true == enabled)
+	{
+		Compare(ST(cpu).value, ST(cpu, 1).value);
+		Pop(cpu, 2);
+		return 5;
 	}
 	return 0; // Let it abort.
 }
@@ -1644,6 +1664,19 @@ unsigned int i486DXCommon::FPUState::FSUBP_STi_ST(i486DXCommon &cpu,int i)
 		STi.value=STi.value-ST.value;
 		Pop(cpu);
 		return 10;
+	}
+	return 0;
+}
+unsigned int i486DXCommon::FPUState::FISUB_m16int(i486DXCommon& cpu, const unsigned char byteData[])
+{
+	if (true == enabled)
+	{
+		statusWord &= ~STATUS_C1;
+
+		double src = (double)IntFrom16Bit(byteData);
+		ST(cpu).value -= src;
+
+		return 24;
 	}
 	return 0;
 }
