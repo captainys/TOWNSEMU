@@ -317,6 +317,25 @@ void FMTownsCommon::Daikoukai2_TakeOverKeystroke(unsigned int code1,unsigned int
 				return;
 			}
 			break;
+		case TOWNS_JISKEY_H:
+			{
+				int cx,cy;
+				if(true!=GetMouseCoordinate(cx,cy,state.tbiosVersion))
+				{
+					cx=320;
+					cy=240;
+				}
+				eventLog.CleanUp();
+				eventLog.AddClick(cx,cy);
+				eventLog.AddClick(619+dentakuOffsetX,338+dentakuOffsetY);  // Max
+				eventLog.AddClick(596+dentakuOffsetX,362+dentakuOffsetY);  // /
+				eventLog.AddClick(547+dentakuOffsetX,386+dentakuOffsetY);  // 2
+				eventLog.AddClick(547+dentakuOffsetX,410+dentakuOffsetY);  // =
+				eventLog.AddClick(608+dentakuOffsetX,410+dentakuOffsetY);  // Enter
+				eventLog.BeginPlayback();
+				return;
+			}
+			break;
 		case TOWNS_JISKEY_PF01:
 			x=629;
 			y=384;
