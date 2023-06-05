@@ -3945,6 +3945,15 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					clocksPassed=state.fpuState.FILD_m16int(*this,value.byteData);
 				}
 				break;
+			case 2: // FIST m16int
+				{
+					OperandValue value;
+					state.fpuState.GetSTAsSignedInt(*this,value);
+					value.numBytes=2;
+					StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+					clocksPassed=33;
+				}
+				break;
 			case 3: // FISTP m16int
 				{
 					OperandValue value;

@@ -1712,6 +1712,9 @@ std::string i486DXCommon::Instruction::Disassemble(const Operand &op1In,const Op
 			case 0:
 				disasm=DisassembleTypicalOneOperand("FILD(m16int)  ",op1,operandSize,cs.value,eip,symTable);
 				break;
+			case 2:
+				disasm=DisassembleTypicalOneOperand("FIST(m16int)  ",op1,operandSize,cs.value,eip,symTable);
+				break;
 			case 3:
 				disasm=DisassembleTypicalOneOperand("FISTP(m16int)  ",op1,operandSize,cs.value,eip,symTable);
 				break;
