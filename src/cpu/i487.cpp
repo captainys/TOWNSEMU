@@ -792,6 +792,28 @@ unsigned int i486DXCommon::FPUState::FDIVR_m32real(i486DXCommon &cpu,const unsig
 	}
 	return 0;
 }
+unsigned int i486DXCommon::FPUState::FIDIV_m32int(i486DXCommon &cpu,const unsigned char byteData[])
+{
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+
+		double src=IntFrom32Bit(byteData);
+		auto &st=ST(cpu);
+		if(0==src)
+		{
+			// Zero division
+		}
+		st.value=st.value/src;
+
+	#ifdef CHECK_FOR_NAN
+		BreakOnNan(cpu,st.value);
+	#endif
+
+		return 73;
+	}
+	return 0;
+}
 unsigned int i486DXCommon::FPUState::FIDIVR_m32int(i486DXCommon &cpu,const unsigned char byteData[])
 {
 	if(true==enabled)

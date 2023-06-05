@@ -3549,6 +3549,10 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			case 5:  // FISUBR m32int
 				break;
 			case 6:  // FIDIV m32int
+				{
+					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,4);
+					clocksPassed=state.fpuState.FIDIV_m32int(*this,value.byteData);
+				}
 				break;
 			case 7:  // FIDIVR m32int
 				{
