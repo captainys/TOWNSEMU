@@ -279,7 +279,7 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 		{
 			auto *freqSubMenu=subMenu->AddTextItem(0,FSKEY_F,L"CPU Frequency")->AddSubMenu();
 			freqSubMenu->AddTextItem(0,FSKEY_1,L"1MHz")->BindCallBack(&THISCLASS::VM_1MHz,this);
-			freqSubMenu->AddTextItem(0,FSKEY_2,L"4MHz")->BindCallBack(&THISCLASS::VM_4MHz,this);
+			freqSubMenu->AddTextItem(0,FSKEY_2,L"5MHz")->BindCallBack(&THISCLASS::VM_5MHz,this);
 			freqSubMenu->AddTextItem(0,FSKEY_3,L"8MHz")->BindCallBack(&THISCLASS::VM_8MHz,this);
 			freqSubMenu->AddTextItem(0,FSKEY_4,L"12MHz")->BindCallBack(&THISCLASS::VM_12MHz,this);
 			freqSubMenu->AddTextItem(0,FSKEY_5,L"16MHz")->BindCallBack(&THISCLASS::VM_16MHz,this);
@@ -1844,11 +1844,11 @@ void FsGuiMainCanvas::VM_1MHz(FsGuiPopUpMenuItem *)
 		VM_Not_Running_Error();
 	}
 }
-void FsGuiMainCanvas::VM_4MHz(FsGuiPopUpMenuItem *)
+void FsGuiMainCanvas::VM_5MHz(FsGuiPopUpMenuItem *)
 {
 	if(true==IsVMRunning())
 	{
-		SendVMCommand("FREQ 4\n");
+		SendVMCommand("FREQ 5\n");
 		VMMustResume=YSTRUE;
 	}
 	else

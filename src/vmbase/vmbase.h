@@ -71,11 +71,12 @@ public:
 
 inline void VMBase::RunScheduledTasks(long long int vmTime)
 {
+	Device *devPtr=nullptr;
 	for(auto devIndex=allDevices[0]->vmNextTaskScheduledDeviceIndex;
 	    0<=devIndex;
-	    devIndex=allDevices[devIndex]->vmNextTaskScheduledDeviceIndex)
+	    devIndex=devPtr->vmNextTaskScheduledDeviceIndex)
 	{
-		auto devPtr=allDevices[devIndex];
+		devPtr=allDevices[devIndex];
 		if(devPtr->commonState.scheduleTime<=vmTime)
 		{
 			// Device may make another schedule in the call back.

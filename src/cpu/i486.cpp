@@ -2131,7 +2131,7 @@ bool i486DXCommon::REPCheck(unsigned int &clocksPassed,unsigned int instPrefix,u
 		}
 		--counter;
 		SetCXorECX(addressSize,counter);
-		clocksPassed+=7;
+		clocksPassed+=3;
 	}
 	return true;
 }

@@ -70,7 +70,7 @@ public:
 	enum
 	{
 		FREQUENCY_DEFAULT=25,                // MHz
-		FREQUENCY_SLOWMODE_DEFAULT=8,        // MHz
+		FREQUENCY_SLOWMODE_DEFAULT=5,        // MHz
 		FAST_DEVICE_POLLING_INTERVAL=10000,  // Nano-seconds
 		DEVICE_POLLING_INTERVAL=   8000000,  // 8ms
 
@@ -869,12 +869,12 @@ private:
 	}
 
 public:
-	i486DXCommon &CPU(void) override
+	i486DXCommon &CPU(void) override final
 	{
 		CheckBaseClassReady();
 		return _cpu;
 	}
-	const i486DXCommon &CPU(void) const override
+	const i486DXCommon &CPU(void) const override final
 	{
 		CheckBaseClassReady();
 		return _cpu;
