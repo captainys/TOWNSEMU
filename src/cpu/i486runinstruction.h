@@ -7,12 +7,13 @@ inline unsigned int i486DXCommon::FetchOperandRMandDecode(
     Operand &op,int addressSize,int dataSize,
     CPUCLASS &cpu,Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,MEMCLASS &mem)
 {
-	inst.operand[0]=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,seg,offset,mem);
+	auto *operandPtr=inst.operand;
+	operandPtr[0]=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,seg,offset,mem);
 
 	NUM_BYTES_TO_BASIC_REG_BASE
 	NUM_BYTES_TO_REGISTER_OPERAND_TYPE
 
-	const auto MODR_M=inst.operand[0];
+	const auto MODR_M=operandPtr[0];
 	const auto MOD=((MODR_M>>6)&3);
 	// const auto REG_OPCODE=((MODR_M>>3)&7);
 	#define R_M (MODR_M&7)
@@ -71,39 +72,39 @@ inline unsigned int i486DXCommon::FetchOperandRMandDecode(
 			{REG_BX,REG_SI},{REG_BX,REG_DI},{REG_BP,REG_SI},{REG_BP,REG_DI},{REG_SI,REG_NULL},{REG_DI,REG_NULL},{REG_BP,REG_NULL},{REG_BX,REG_NULL},
 		};
 
-		switch(caseTable[inst.operand[0]])
+		switch(caseTable[operandPtr[0]])
 		{
 		case 0:
-			FUNCCLASS::FetchInstructionTwoBytes(inst.operand+1,cpu,ptr,inst.codeAddressSize,seg,offset+1,mem);
+			FUNCCLASS::FetchInstructionTwoBytes(operandPtr+1,cpu,ptr,inst.codeAddressSize,seg,offset+1,mem);
 
 			op.operandType=OPER_ADDR;
 			op.baseReg=REG_NULL;
 			op.indexReg=REG_NULL;
 			// indexShift=0; Already cleared in Clear()
-			op.offset=cpputil::GetSignedWord(inst.operand+1);
+			op.offset=cpputil::GetSignedWord(operandPtr+1);
 			op.offsetBits=16;
 			inst.operandLen=3;
 			break;
 		case 1:
-			inst.operand[1]=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,seg,offset+1,mem);
+			operandPtr[1]=FUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,seg,offset+1,mem);
 
 			op.operandType=OPER_ADDR;
 			// indexShisft=0; Already cleared in Clear()
 			op.baseReg=MODR_M_to_BaseIndex[MODR_M][0];
 			op.indexReg=MODR_M_to_BaseIndex[MODR_M][1];
 			op.offsetBits=8;
-			op.offset=cpputil::GetSignedByte(inst.operand[1]);
+			op.offset=cpputil::GetSignedByte(operandPtr[1]);
 			inst.operandLen=2;
 			break;
 		case 2:
-			FUNCCLASS::FetchInstructionTwoBytes(inst.operand+1,cpu,ptr,inst.codeAddressSize,seg,offset+1,mem);
+			FUNCCLASS::FetchInstructionTwoBytes(operandPtr+1,cpu,ptr,inst.codeAddressSize,seg,offset+1,mem);
 
 			op.operandType=OPER_ADDR;
 			// indexShisft=0; Already cleared in Clear()
 			op.baseReg=MODR_M_to_BaseIndex[MODR_M][0];
 			op.indexReg=MODR_M_to_BaseIndex[MODR_M][1];
 			op.offsetBits=16;
-			op.offset=cpputil::GetSignedWord(inst.operand+1);
+			op.offset=cpputil::GetSignedWord(operandPtr+1);
 			inst.operandLen=3;
 			break;
 		case 3:
@@ -160,28 +161,28 @@ inline unsigned int i486DXCommon::FetchOperandRMandDecode(
 			REG_EDI,
 		};
 
-		switch (caseTable[inst.operand[0]])
+		switch (caseTable[operandPtr[0]])
 		{
 		case A:
-			FUNCCLASS::FetchInstructionFourBytes(inst.operand + 1, cpu, ptr, inst.codeAddressSize, seg, offset + 1, mem);
+			FUNCCLASS::FetchInstructionFourBytes(operandPtr + 1, cpu, ptr, inst.codeAddressSize, seg, offset + 1, mem);
 
 			op.operandType = OPER_ADDR;
 			op.baseReg = REG_NULL;
 			op.indexReg = REG_NULL;
 			// indexShift=0; Already cleared in Clear()
-			op.offset = cpputil::GetSignedDword(inst.operand + 1);
+			op.offset = cpputil::GetSignedDword(operandPtr + 1);
 			op.offsetBits = 32;
 			inst.operandLen = 5;
 			break;
 		case B: // MOD==0
 		{
-			inst.operand[1] = FUNCCLASS::FetchInstructionByte(cpu, ptr, inst.codeAddressSize, seg, offset + 1, mem);
+			operandPtr[1] = FUNCCLASS::FetchInstructionByte(cpu, ptr, inst.codeAddressSize, seg, offset + 1, mem);
 
 			op.operandType = OPER_ADDR;
 			// indexShift=0; Already cleared in Clear()
 			op.offset = 0;
 
-			auto SIB = inst.operand[1];
+			auto SIB = operandPtr[1];
 			auto SS = ((SIB >> 6) & 3);
 			auto INDEX = ((SIB >> 3) & 7);
 			auto BASE = (SIB & 7);
@@ -193,11 +194,11 @@ inline unsigned int i486DXCommon::FetchOperandRMandDecode(
 			}
 			else
 			{
-				FUNCCLASS::FetchInstructionFourBytes(inst.operand + 2, cpu, ptr, inst.codeAddressSize, seg, offset + 2, mem);
+				FUNCCLASS::FetchInstructionFourBytes(operandPtr + 2, cpu, ptr, inst.codeAddressSize, seg, offset + 2, mem);
 
 				op.baseReg = REG_NULL; // 0b00==MOD && 5==BASE  disp32[index]
 				op.offsetBits = 32;
-				op.offset = cpputil::GetSignedDword(inst.operand + 2);
+				op.offset = cpputil::GetSignedDword(operandPtr + 2);
 				inst.operandLen = 6;
 			}
 
@@ -206,7 +207,7 @@ inline unsigned int i486DXCommon::FetchOperandRMandDecode(
 		}
 		break;
 		case C:
-			inst.operand[1] = FUNCCLASS::FetchInstructionByte(cpu, ptr, inst.codeAddressSize, seg, offset + 1, mem);
+			operandPtr[1] = FUNCCLASS::FetchInstructionByte(cpu, ptr, inst.codeAddressSize, seg, offset + 1, mem);
 
 			op.operandType = OPER_ADDR;
 			// indexShift=0; Already cleared in Clear()
@@ -215,11 +216,11 @@ inline unsigned int i486DXCommon::FetchOperandRMandDecode(
 			op.indexReg = REG_NULL;
 
 			op.offsetBits = 8;
-			op.offset = cpputil::GetSignedByte(inst.operand[1]);
+			op.offset = cpputil::GetSignedByte(operandPtr[1]);
 			inst.operandLen = 2;
 			break;
 		case D:
-			FUNCCLASS::FetchInstructionFourBytes(inst.operand + 1, cpu, ptr, inst.codeAddressSize, seg, offset + 1, mem);
+			FUNCCLASS::FetchInstructionFourBytes(operandPtr + 1, cpu, ptr, inst.codeAddressSize, seg, offset + 1, mem);
 
 			op.operandType = OPER_ADDR;
 			// indexShift=0; Already cleared in Clear()
@@ -228,7 +229,7 @@ inline unsigned int i486DXCommon::FetchOperandRMandDecode(
 			op.indexReg = REG_NULL;
 
 			op.offsetBits = 32;
-			op.offset = cpputil::GetSignedDword(inst.operand + 1);
+			op.offset = cpputil::GetSignedDword(operandPtr + 1);
 			inst.operandLen = 5;
 			break;
 		case E:
@@ -247,13 +248,13 @@ inline unsigned int i486DXCommon::FetchOperandRMandDecode(
 			break;
 		case G: // MOD==1
 		{
-			FUNCCLASS::FetchInstructionTwoBytes(inst.operand + 1, cpu, ptr, inst.codeAddressSize, seg, offset + 1, mem);
+			FUNCCLASS::FetchInstructionTwoBytes(operandPtr + 1, cpu, ptr, inst.codeAddressSize, seg, offset + 1, mem);
 
 			op.operandType = OPER_ADDR;
 			// indexShift=0; Already cleared in Clear()
 			op.offset = 0;
 
-			auto SIB = inst.operand[1];
+			auto SIB = operandPtr[1];
 			auto SS = ((SIB >> 6) & 3);
 			auto INDEX = ((SIB >> 3) & 7);
 			auto BASE = (SIB & 7);
@@ -271,21 +272,21 @@ inline unsigned int i486DXCommon::FetchOperandRMandDecode(
 			op.indexShift = SS;
 
 			op.offsetBits = 8;
-			op.offset = cpputil::GetSignedByte(inst.operand[2]);
+			op.offset = cpputil::GetSignedByte(operandPtr[2]);
 
 			inst.operandLen = 3;
 		}
 		break;
 		case H: // MOD==2
 		{
-			inst.operand[1] = FUNCCLASS::FetchInstructionByte(cpu, ptr, inst.codeAddressSize, seg, offset + 1, mem);
-			FUNCCLASS::FetchInstructionFourBytes(inst.operand + 2, cpu, ptr, inst.codeAddressSize, seg, offset + 2, mem);
+			operandPtr[1] = FUNCCLASS::FetchInstructionByte(cpu, ptr, inst.codeAddressSize, seg, offset + 1, mem);
+			FUNCCLASS::FetchInstructionFourBytes(operandPtr + 2, cpu, ptr, inst.codeAddressSize, seg, offset + 2, mem);
 
 			op.operandType = OPER_ADDR;
 			// indexShift=0; Already cleared in Clear()
 			op.offset = 0;
 
-			auto SIB = inst.operand[1];
+			auto SIB = operandPtr[1];
 			auto SS = ((SIB >> 6) & 3);
 			auto INDEX = ((SIB >> 3) & 7);
 			auto BASE = (SIB & 7);
@@ -303,7 +304,7 @@ inline unsigned int i486DXCommon::FetchOperandRMandDecode(
 			op.indexShift = SS;
 
 			op.offsetBits = 32;
-			op.offset = cpputil::GetSignedDword(inst.operand + 2);
+			op.offset = cpputil::GetSignedDword(operandPtr + 2);
 
 			inst.operandLen = 6;
 		}
@@ -3041,7 +3042,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				{
 					SubByte(data1,data2);
 					UpdateESIandEDIAfterStringOp(inst.addressSize,8);
-					clocksPassed+=8;
+					clocksPassed+=4;
 					if(true==REPEorNECheck(clocksPassed,inst.instPrefix,inst.addressSize))
 					{
 						EIPIncrement=0;
@@ -3078,7 +3079,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				{
 					SubWordOrDword(inst.operandSize,data1,data2);
 					UpdateESIandEDIAfterStringOp(inst.addressSize,inst.operandSize);
-					clocksPassed+=8;
+					clocksPassed+=4;
 					if(true==REPEorNECheck(clocksPassed,inst.instPrefix,inst.addressSize))
 					{
 						EIPIncrement=0;
@@ -5862,6 +5863,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 	case I486_RENUMBER_MOVSB://            0xA4,
 		// REP/REPE/REPNE CX or ECX is chosen based on addressSize.
 		{
+			clocksPassed=7;
 			auto ECX=state.ECX();
 			auto prefix=REPNEtoREP(inst.instPrefix);
 			auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
@@ -5872,7 +5874,6 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			{
 				auto data=FetchByte(inst.addressSize,seg,state.ESI(),mem);
 				StoreByte(mem,inst.addressSize,state.ES(),state.EDI(),data);
-				clocksPassed+=7;
 				if(true!=state.exception)
 				{
 					UpdateSIorESIAfterStringOp(inst.addressSize,8);
@@ -5900,6 +5901,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		break;
 	case I486_RENUMBER_MOVS://             0xA5,
 		{
+			clocksPassed=7;
 			auto ECX=state.ECX();
 			auto prefix=REPNEtoREP(inst.instPrefix);
 			auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
@@ -5910,7 +5912,6 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			{
 				auto data=FetchWordOrDword(inst.operandSize,inst.addressSize,seg,state.ESI(),mem);
 				StoreWordOrDword(mem,inst.operandSize,inst.addressSize,state.ES(),state.EDI(),data);
-				clocksPassed+=7;
 				if(true!=state.exception)
 				{
 					UpdateESIandEDIAfterStringOp(inst.addressSize,inst.operandSize);
@@ -7039,7 +7040,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				auto AL=GetAL();
 				SubByte(AL,data);
 				UpdateDIorEDIAfterStringOp(inst.addressSize,8);
-				clocksPassed+=6;
+				clocksPassed+=2;
 				if(true==REPEorNECheck(clocksPassed,inst.instPrefix,inst.addressSize))
 				{
 					EIPIncrement=0;
@@ -7066,7 +7067,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				auto EAX=GetEAX();
 				SubWordOrDword(inst.operandSize,EAX,data);
 				UpdateDIorEDIAfterStringOp(inst.addressSize,inst.operandSize);
-				clocksPassed+=6;
+				clocksPassed+=2;
 				if(true==REPEorNECheck(clocksPassed,inst.instPrefix,inst.addressSize))
 				{
 					EIPIncrement=0;
@@ -7350,7 +7351,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			    ++ctr)
 			{
 				StoreByte(mem,inst.addressSize,state.ES(),state.EDI(),GetAL());
-				clocksPassed+=5;
+				clocksPassed+=1;
 				if(true!=state.exception)
 				{
 					UpdateDIorEDIAfterStringOp(inst.addressSize,8);
@@ -7386,7 +7387,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			    ++ctr)
 			{
 				StoreWordOrDword(mem,inst.operandSize,inst.addressSize,state.ES(),state.EDI(),GetEAX());
-				clocksPassed+=5;
+				clocksPassed+=1;
 				if(true!=state.exception)
 				{
 					UpdateDIorEDIAfterStringOp(inst.addressSize,inst.operandSize);

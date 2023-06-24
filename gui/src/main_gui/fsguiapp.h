@@ -267,7 +267,7 @@ private:
 	void VM_Resume(FsGuiPopUpMenuItem *);
 
 	void VM_1MHz(FsGuiPopUpMenuItem *);
-	void VM_4MHz(FsGuiPopUpMenuItem *);
+	void VM_5MHz(FsGuiPopUpMenuItem *);
 	void VM_8MHz(FsGuiPopUpMenuItem *);
 	void VM_12MHz(FsGuiPopUpMenuItem *);
 	void VM_16MHz(FsGuiPopUpMenuItem *);
