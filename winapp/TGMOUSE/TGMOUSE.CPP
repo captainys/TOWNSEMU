@@ -120,6 +120,17 @@ static LRESULT WINAPI WindowFunc(HWND hWnd,UINT msg,WPARAM wp,LPARAM lp)
 	case WM_MOUSEMOVE:
 		break;
 
+	case WM_TIMER:
+		POINT pos;
+		GetCursorPos(&pos);
+
+		_outp(TOWNSIO_VM_HOST_IF_DATA,pos.x);
+		_outp(TOWNSIO_VM_HOST_IF_DATA,pos.x>>8);
+		_outp(TOWNSIO_VM_HOST_IF_DATA,pos.y);
+		_outp(TOWNSIO_VM_HOST_IF_DATA,pos.y>>8);
+		_outp(TOWNSIO_VM_HOST_IF_CMD_STATUS,TOWNS_VMIF_CMD_NOTIFY_MOUSE);
+		break;
+
 	default:
 		return DefWindowProc(hWnd,msg,wp,lp);
 	}
@@ -139,21 +150,13 @@ static LRESULT WINAPI WindowFunc(HWND hWnd,UINT msg,WPARAM wp,LPARAM lp)
 int PASCAL WinMain(HINSTANCE inst,HINSTANCE,LPSTR param,int)
 {
 	OpenWindow(inst);
+	SetTimer(hWnd,NULL,10,NULL);
 	while(NULL!=hWnd)
 	{
 		MSG msg;
 		PeekMessage(&msg,NULL,0,0,1);
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
-
-		POINT pos;
-		GetCursorPos(&pos);
-
-		_outp(TOWNSIO_VM_HOST_IF_DATA,pos.x);
-		_outp(TOWNSIO_VM_HOST_IF_DATA,pos.x>>8);
-		_outp(TOWNSIO_VM_HOST_IF_DATA,pos.y);
-		_outp(TOWNSIO_VM_HOST_IF_DATA,pos.y>>8);
-		_outp(TOWNSIO_VM_HOST_IF_CMD_STATUS,TOWNS_VMIF_CMD_NOTIFY_MOUSE);
 	}
 	return 0;
 }
