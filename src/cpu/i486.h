@@ -667,6 +667,7 @@ public:
 		unsigned int FXAM(i486DXCommon &cpu);
 		unsigned int FXCH(i486DXCommon &cpu,int i);
 		unsigned int FYL2X(i486DXCommon &cpu);
+		unsigned int FYL2XP1(i486DXCommon &cpu);
 	};
 
 	class InterruptDescriptor : public FarPointer

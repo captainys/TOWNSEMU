@@ -3418,7 +3418,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		}
 		else if(0xF9==inst.operand[0])
 		{
-			// FYL2XP1
+			clocksPassed=state.fpuState.FYL2XP1(*this);
 		}
 		else if(0xFA==inst.operand[0])
 		{

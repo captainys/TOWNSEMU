@@ -1825,3 +1825,22 @@ unsigned int i486DXCommon::FPUState::FYL2X(i486DXCommon &cpu)
 	}
 	return 0;
 }
+
+unsigned int i486DXCommon::FPUState::FYL2XP1(i486DXCommon &cpu)
+{
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+		auto &st=ST(cpu);
+		auto &st1=ST(cpu,1);
+		st1.value=log2(st.value+1.0)*st1.value;
+		Pop(cpu);
+
+	#ifdef CHECK_FOR_NAN
+		BreakOnNan(cpu,st1.value);
+	#endif
+
+		return 313;
+	}
+	return 0;
+}
