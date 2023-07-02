@@ -172,6 +172,8 @@ public:
 	int OpenFileNotTruncate(unsigned int PSP,std::string subPath,unsigned int openMode);
 	int OpenFileTruncate(unsigned int PSP,std::string subPath,unsigned int openMode);
 
+	bool CheckFileExist(std::string subPath);
+
 	void Seek(int SftIdx,uint32_t pos);
 
 	uint32_t Fsize(int SftIdx);

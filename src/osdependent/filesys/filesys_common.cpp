@@ -316,6 +316,12 @@ int FileSys::OpenFileTruncate(unsigned int PSP,std::string subPath,unsigned int 
 	}
 	return -1;
 }
+bool FileSys::CheckFileExist(std::string subPath)
+{
+	BackSlashToSlash(subPath);
+	auto fullPath=cpputil::MakeFullPathName(hostPath,subPath);
+	return cpputil::FileExists(fullPath);
+}
 void FileSys::Seek(int sftIdx,uint32_t pos)
 {
 	if(0<=sftIdx &&

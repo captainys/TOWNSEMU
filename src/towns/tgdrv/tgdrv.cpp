@@ -625,7 +625,12 @@ bool TownsTgDrv::Int2F_1113_Delete(void)
 
 		if(true!=wildCard)
 		{
-			if(true==sharedDir[sharedDirIdx].DeleteSubPathFile(subPath))
+			if(true!=sharedDir[sharedDirIdx].CheckFileExist(subPath))
+			{
+				// LHA tries to delete LHTMP)1(.LZH and expects FILE_NOT_FOUND or success.
+				ReturnAX(TOWNS_DOSERR_FILE_NOT_FOUND);
+			}
+			else if(true==sharedDir[sharedDirIdx].DeleteSubPathFile(subPath))
 			{
 				townsPtr->CPU().SetCF(false);
 			}
