@@ -1528,7 +1528,13 @@ Vec2i TownsCRTC::GetRenderSize(void) const
 	// Well, google translate didn't work.  Use something better.
 	if(true!=state.highResCRTCEnabled)
 	{
-		const int maxHei=480;   // Height still has errors.  Some 320x240 mode returns 320x880 size.
+		const int maxHei=512;
+		// Height still has errors.  Some 320x240 mode returns 320x880 size.  (Damn it!  I forgot which one.)
+
+		// Raiden uses 256x256 (2X scale) mode.  But, if I make max height 512 pixels, it ends up showing
+		// bottom two lines that are not supposed to be visible.  Do I have to make it 508 pixels (254 pixels if 2X) if sprite is ON?
+		// I could not test it on my real FM TOWNS II MX because my LCD monitor cropped at Y=480 anyway in this frequency.
+
 		if(LowResCrtcIsInSinglePageMode())
 		{
 			auto dim=GetPageSizeOnMonitor(0);
