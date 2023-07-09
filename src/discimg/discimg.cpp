@@ -439,7 +439,7 @@ unsigned int DiscImage::OpenCUEPostProcess(void)
 			tracks[i].start=HSGtoMSF(startSector+numPreGapSec);
 			tracks[i].end=HSGtoMSF(startSector+numSec-numPreGapSec-1);
 			tracks[i].locationInFile=locationInFile;
-			binaries[i].byteOffsetInDisc=locationInFile;
+			binaries[i].byteOffsetInDisc=locationInFile + binaries[i].bytesToSkip;
 			locationInFile+=numBytes;
 			startSector+=numSec;
 		}
