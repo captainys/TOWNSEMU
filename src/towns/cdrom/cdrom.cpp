@@ -743,6 +743,10 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 		if(nullptr!=OutsideWorld)
 		{
 			OutsideWorld->CDDAResume();
+			if(State::CDDA_PAUSED==state.CDDAState)
+			{
+				state.CDDAState=State::CDDA_PLAYING;
+			}
 		}
 		if(true==StatusRequestBit(state.cmd))
 		{
