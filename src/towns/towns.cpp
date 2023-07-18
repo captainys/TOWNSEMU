@@ -273,6 +273,18 @@ void FMTownsCommon::State::PowerOn(void)
 			towns.gameport.state.ports[1].device=TOWNS_GAMEPORTEMU_NONE;
 		}
 	}
+	if(TOWNS_APPSPECIFIC_LEMMINGS2==towns.state.appSpecificSetting)
+	{
+		// Lemmings2's FBIOS seems to be extermely sensitive to timing!
+		// What version is that?
+		// Lower frequency causes CD-ROM BIOS to fail.
+		// Faster frequency will cause flickering.
+		// So far 18MHz to 20MHz are the only stable frequencies I found that is stable and prevent flickering.
+		towns.state.currentFreq=20;
+		towns.var.slowModeFreq=towns.state.currentFreq;
+		towns.state.fastModeFreq=towns.state.currentFreq;
+		towns.cdrom.state.readSectorTime=TOWNS_CD_READ_SECTOR_TIME_1X;
+	}
 
 	for(auto i=0; i<argv.sharedDir.size() && i<TownsVnDrv::MAX_NUM_SHARED_DIRECTORIES; ++i)
 	{

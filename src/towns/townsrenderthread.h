@@ -25,10 +25,18 @@ public:
 		QUIT
 	};
 
+	enum
+	{
+		RENDER_TIMING_OUTSIDE_VSYNC,
+		RENDER_TIMING_FIRST1MS_OF_VERTICAL,
+	};
+
 	std::mutex mainMutex,statusMutex;
 	std::thread workerThread;
 	std::condition_variable cond;
 	bool imageNeedsFlip=false;
+
+	unsigned int renderTiming=RENDER_TIMING_OUTSIDE_VSYNC;
 
 	TownsRender *rendererPtr;
 	unsigned char VRAMCopy[TOWNS_VRAM_SIZE];

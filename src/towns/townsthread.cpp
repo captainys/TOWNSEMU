@@ -46,6 +46,9 @@ void TownsThread::VMStart(FMTownsCommon *townsPtr,Outside_World *outside_world,c
 		// Brandish doesn't know about 80486.  It confuses as 80386SX and messes up.
 		townsPtr->state.pretend386DX=true;
 		break;
+	case TOWNS_APPSPECIFIC_LEMMINGS2:
+		renderingThread->renderTiming=TownsRenderingThread::RENDER_TIMING_FIRST1MS_OF_VERTICAL;
+		break;
 	}
 }
 

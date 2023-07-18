@@ -66,28 +66,42 @@ void TownsRenderingThread::WaitIdle(void)
 void TownsRenderingThread::CheckRenderingTimer(FMTownsCommon &towns,TownsRender &render)
 {
 	if(STATE_IDLE==state && 
-	   towns.state.nextRenderingTime<=towns.state.townsTime && 
-	   true!=towns.crtc.InVSYNC(towns.state.townsTime))
+	   towns.state.nextRenderingTime<=towns.state.townsTime)
 	{
-		render.Prepare(towns.crtc);
-		render.damperWireLine=towns.var.damperWireLine;
-		render.scanLineEffectIn15KHz=towns.var.scanLineEffectIn15KHz;
-		this->rendererPtr=&render;
-		memcpy(this->VRAMCopy,towns.physMem.state.VRAM,towns.crtc.GetEffectiveVRAMSize());
-		this->paletteCopy=towns.crtc.GetPalette();
-		this->chaseHQPaletteCopy=towns.crtc.chaseHQPalette;
-
-		state=STATE_RENDERING;
-		towns.state.nextRenderingTime=towns.state.townsTime+TOWNS_RENDERING_FREQUENCY;
-
-		checkImageAfterThisTIme=towns.state.townsTime+3000000; // Give sub-thread some time.
-
+		bool isTiming=false;
+		switch(renderTiming)
 		{
-			std::unique_lock <std::mutex> statusLock(statusMutex);
-			command=RENDER;
-			imageReady=false;
+		case RENDER_TIMING_OUTSIDE_VSYNC:
+			isTiming=(true!=towns.crtc.InVSYNC(towns.state.townsTime));
+			break;
+		case RENDER_TIMING_FIRST1MS_OF_VERTICAL:
+			isTiming=towns.crtc.First1msOfVerticalPeriod(towns.state.townsTime);
+			break;
+		default:
+			std_unreachable;
 		}
-		cond.notify_one();
+		if(true==isTiming)
+		{
+			render.Prepare(towns.crtc);
+			render.damperWireLine=towns.var.damperWireLine;
+			render.scanLineEffectIn15KHz=towns.var.scanLineEffectIn15KHz;
+			this->rendererPtr=&render;
+			memcpy(this->VRAMCopy,towns.physMem.state.VRAM,towns.crtc.GetEffectiveVRAMSize());
+			this->paletteCopy=towns.crtc.GetPalette();
+			this->chaseHQPaletteCopy=towns.crtc.chaseHQPalette;
+
+			state=STATE_RENDERING;
+			towns.state.nextRenderingTime=towns.state.townsTime+TOWNS_RENDERING_FREQUENCY;
+
+			checkImageAfterThisTIme=towns.state.townsTime+3000000; // Give sub-thread some time.
+
+			{
+				std::unique_lock <std::mutex> statusLock(statusMutex);
+				command=RENDER;
+				imageReady=false;
+			}
+			cond.notify_one();
+		}
 	}
 }
 
