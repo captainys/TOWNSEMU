@@ -149,13 +149,31 @@ unsigned int TownsTimer::State::ReadChannelCounter(unsigned int ch) // accessLow
 {
 	unsigned int data=0;
 	auto &CH=channels[ch&7];
-	if(true==CH.accessLow)
+	if(true==CH.latched)
 	{
-		data=CH.latchedCounter&0xff;
+		if(true==CH.accessLow)
+		{
+			data=CH.latchedCounter&0xff;
+		}
+		else
+		{
+			data=(CH.latchedCounter>>8)&0xff;
+			// i8254 data sheet tells it unlatches when the counter is read.
+			// i8253 data sheet does not seem to say it.  But, presumably the same.
+			// D-Return assumes this behavior.
+			CH.latched=false;
+		}
 	}
 	else
 	{
-		data=(CH.latchedCounter>>8)&0xff;
+		if(true==CH.accessLow)
+		{
+			data=CH.counter&0xff;
+		}
+		else
+		{
+			data=(CH.counter>>8)&0xff;
+		}
 	}
 	if(3==CH.RL)
 	{
