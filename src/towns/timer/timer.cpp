@@ -61,6 +61,9 @@ void TownsTimer::State::Reset(void)
 void TownsTimer::State::Latch(unsigned int ch)
 {
 	// i8254 data sheet tells that the first-latched value stays until it is unlatched by reading.
+	// i8253 data sheet does not tell this way.  However it says:
+	//   'it is mandatroy to complete the entire read operation as programmed.'
+	//   pp.3-58 in "MODE Register for Latching Control."  Therefore, it probably is the same thing as i8254.
 	auto &CH=channels[ch&7];
 	if(true!=CH.latched)
 	{
