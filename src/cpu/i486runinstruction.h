@@ -3249,11 +3249,11 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			}
 			else if(0xE8==(MODR_M&0xF8))
 			{
-			   // FSUBR ST,STi
+				clocksPassed=state.fpuState.FSUBR_ST_STi(*this,MODR_M&7);
 			}
 			else if(0xF0==(MODR_M&0xF8))
 			{
-			   // FDIV ST,STi
+			   	clocksPassed=state.fpuState.FDIV_ST_STi(*this,MODR_M&7);
 			}
 			else if(0xF8==(MODR_M&0xF8))
 			{
@@ -3765,6 +3765,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			switch(inst.operand[0]&0xF8)
 			{
 			case 0xD0: // D0 11010xxx    [1] pp.151  0<=i<=7
+				clocksPassed=state.fpuState.FST_STi(*this,(inst.operand[0]&7));
 				break;
 			case 0xD8: // D8 11011xxx
 				clocksPassed=state.fpuState.FSTP_STi(*this,(inst.operand[0]&7));
