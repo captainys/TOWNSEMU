@@ -104,6 +104,7 @@ void TownsCDROM::State::ResetMPU(void)
 	}
 	readingSectorHSG=0;
 	endSectorHSG=0;
+	headPositionHSG=0;
 	ClearStatusQueue();
 	DMATransfer=false;
 	CPUTransfer=false;
@@ -778,6 +779,19 @@ void TownsCDROM::BeginReadSector(DiscImage::MinSecFrm msfBegin,DiscImage::MinSec
 		state.readingSectorHSG-=150;
 		state.endSectorHSG-=150;
 
+		uint64_t distance;
+		if(state.readingSectorHSG<state.headPositionHSG)
+		{
+			distance=state.headPositionHSG-state.readingSectorHSG;
+		}
+		else
+		{
+			distance=state.readingSectorHSG-state.headPositionHSG;
+		}
+		uint64_t seekTime=distance;
+		seekTime*=MAX_SEEK_TIME;
+		seekTime/=MAX_NUM_SECTORS;
+
 		// Shadow of the Beast issues command 02H and expects status to be returned.
 		// Probably MODE2READ command needs to disregard STATUS REQUEST bit.
 
@@ -790,7 +804,7 @@ void TownsCDROM::BeginReadSector(DiscImage::MinSecFrm msfBegin,DiscImage::MinSec
 			state.SIRQ=true;
 			PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
 		}
-		townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+state.readSectorTime);
+		townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+state.readSectorTime+seekTime);
 
 		state.DRY=false;
 		state.DTSF=false;
@@ -975,6 +989,8 @@ void TownsCDROM::BeginReadSector(DiscImage::MinSecFrm msfBegin,DiscImage::MinSec
 				else if(true==DMAAvailable && true==state.DMATransfer && true==state.DTSF)
 				{
 					townsPtr->NotifyDiskRead();
+
+					state.headPositionHSG=state.readingSectorHSG;
 
 					std::vector <unsigned char> data;
 					if(CDCMD_MODE1READ==(state.cmd&0x9F))
@@ -1275,7 +1291,9 @@ void TownsCDROM::SetSIRQ_IRR(void)
 {
 	// Version 4
 	//   Added CPUTransferPointer
-	return 4;
+	// Version 5
+	//   Added headPositionHSG
+	return 5;
 }
 /* virtual */ void TownsCDROM::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
 {
@@ -1308,6 +1326,7 @@ void TownsCDROM::SetSIRQ_IRR(void)
 
 	PushUint32(data,state.readingSectorHSG);
 	PushUint32(data,state.endSectorHSG);
+	PushUint32(data,state.headPositionHSG);
 
 	PushBool(data,state.DMATransfer);
 	PushBool(data,state.CPUTransfer); // Both are not supposed to be 1, but I/O can set it that way.
@@ -1421,6 +1440,14 @@ void TownsCDROM::SetSIRQ_IRR(void)
 
 	state.readingSectorHSG=ReadUint32(data);
 	state.endSectorHSG=ReadUint32(data);
+	if(5<=version)
+	{
+		state.headPositionHSG=ReadUint32(data);
+	}
+	else
+	{
+		state.headPositionHSG=0;
+	}
 
 	state.DMATransfer=ReadBool(data);
 	state.CPUTransfer=ReadBool(data); // Both are not supposed to be 1, but I/O can set it that way.

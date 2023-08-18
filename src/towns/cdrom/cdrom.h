@@ -116,6 +116,8 @@ public:
 		SEEK_TIME=            100000000,  // Tentatively 100ms
 		LOSTDATA_TIMEOUT=     100000000,  // Tentatively 100ms. I don't think the CDC had a large FIFO buffer back in 1989. The real time-out should have been much shorter.
 		STATUS_CHECKBACK_TIME=  1000000,
+		MAX_SEEK_TIME=        500000000,  // 500ms to seek from inner most to outer most. (Just guess)
+		MAX_NUM_SECTORS=         350000,  // Max 700MB, 2KB per sector.
 	};
 
 	// Reference [3] 
@@ -160,7 +162,7 @@ public:
 		unsigned char paramQueue[8];
 		std::vector <unsigned char> statusQueue;
 
-		unsigned int readingSectorHSG,endSectorHSG;
+		unsigned int readingSectorHSG,endSectorHSG,headPositionHSG;
 
 		unsigned int readSectorTime=DEFAULT_READ_SECTOR_TIME;
 		bool DMATransfer,CPUTransfer; // Both are not supposed to be 1, but I/O can set it that way.
