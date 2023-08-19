@@ -195,6 +195,14 @@ TownsCDROM::TownsCDROM(class FMTownsCommon *townsPtr,class TownsPIC *PICPtr,clas
 			bool DMAAvailable=(nullptr!=DMACh && (0<DMACh->currentCount && 0xFFFFFFFF!=(DMACh->currentCount&0xFFFFFFFF)));
 			if(true==DMAAvailable && true!=state.DTSF)
 			{
+				if((DMACh->modeCtrl&0x0C)!=0x04)
+				{
+					// Confirmed in real FM TOWNS 2MX.
+					// If DMA is configured to I/O to Memory, CPU freezes when DTS is set.
+					Abort(
+						"Whole system freezes when DTS is set, but the DMA direction is not set as I/O to MEM.\n"
+						"Confirmed in real FM TOWNS 2MX.  Presumably DMA locks the memory bus indefinitely.");
+				}
 				state.DTSF=true;
 				townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+state.readSectorTime);
 			}
