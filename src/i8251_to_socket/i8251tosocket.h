@@ -1,6 +1,7 @@
 #ifndef I8251_TO_SOCKET_H_IS_INCLUDED
 #define I8251_TO_SOCKET_H_IS_INCLUDED
 
+#include <vector>
 #include "i8251.h"
 #include "yssocket.h"
 
@@ -8,6 +9,9 @@
 class i8251toSocketClient : public i8251::Client, public YsSocketClient
 {
 public:
+	std::vector <unsigned char> toVM;
+
+
 	/*! i8251 class will call this function to see if the client is ready to receive a byte.
 	*/
 	virtual bool TxRDY(void) override;

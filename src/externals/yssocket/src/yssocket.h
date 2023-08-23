@@ -76,31 +76,6 @@ inline YSBOOL YsXor(YSBOOL a,YSBOOL b)
 
 
 
-#ifdef _WIN32
-#define _WINSOCKAPI_
-	// According to the Win32API documentation,
-	// I must define _WINSOCKAPI_ to prevent inclusion of
-	// winsock.h from windows.h
-	// WIN32_LEAN_AND_MEAN works the same.
-	#ifndef WIN32_LEAN_AND_MEAN
-		// Prevent inclusion of winsock.h
-		#define WIN32_LEAN_AND_MEAN
-		#include <windows.h>
-		#undef WIN32_LEAN_AND_MEAN
-	#else
-		#include <windows.h>
-	#endif
-
-	#include <winsock2.h>
-#else
-	#include <unistd.h>
-	#include <netdb.h>
-	#include <sys/types.h>
-	#include <sys/socket.h>
-	typedef int SOCKET;
-#endif
-
-
 class YsSocket
 {
 protected:
@@ -109,6 +84,8 @@ protected:
 		nBufferSize=4096
 	};
 	unsigned char buffer[nBufferSize];
+
+	class OSDependentData;
 };
 
 
@@ -141,8 +118,6 @@ public:
 	virtual YSRESULT ConnectionClosedByClient(int clientId);
 
 protected:
-	SOCKET GetClientSocket(int clientId);
-
 	YSBOOL started;
 
 	int listeningPort;
@@ -151,8 +126,7 @@ protected:
 
 	/* Temporary Variable */
 	YSBOOL *clientReady;
-	SOCKET listeningSocket;
-	SOCKET *clientSock;
+	OSDependentData *internal=nullptr;
 };
 
 ////////////////////////////////////////////////////////////
@@ -192,7 +166,7 @@ protected:
 
 	YSBOOL connected;
 	int port;
-	SOCKET sock;
+	OSDependentData *internal=nullptr;
 };
 
 

@@ -4,6 +4,7 @@
 
 #include <vector>
 #include "i8251.h"
+#include "i8251tosocket.h"
 #include "device.h"
 
 
@@ -90,8 +91,12 @@ public:
 
 	State state;
 	DefaultClient defaultClient;
+	i8251toSocketClient socketClient;
 
 	TownsSerialPort(class FMTownsCommon *townsPtr);
+
+	bool ConnectSocketClient(std::string serverAddr);
+	void DisconnectSocketClient(void);
 
 	void UpdatePIC(void);
 

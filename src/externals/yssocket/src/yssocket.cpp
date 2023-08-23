@@ -34,6 +34,19 @@ typedef struct sockaddr_in SOCKADDR_IN;
 #include "yssocket.h"
 
 
+
+class YsSocket::OSDependentData
+{
+public:
+	// Used by server
+	SOCKET listeningSocket;
+	SOCKET *clientSock;
+
+	// Used by client
+	SOCKET sock;
+};
+
+
 YsSocketServer::YsSocketServer(int listen,int maxNumCli)
 {
 	started=YSFALSE;
@@ -42,7 +55,7 @@ YsSocketServer::YsSocketServer(int listen,int maxNumCli)
 
 	maxNumClient=maxNumCli;
 
-	clientSock=new SOCKET [maxNumCli];
+	internal->clientSock=new SOCKET [maxNumCli];
 	clientSockUsed=new YSBOOL [maxNumCli];
 	clientReady=new YSBOOL [maxNumCli];
 
@@ -51,6 +64,8 @@ YsSocketServer::YsSocketServer(int listen,int maxNumCli)
 	{
 		clientSockUsed[i]=YSFALSE;
 	}
+
+	internal=new OSDependentData;
 }
 
 
@@ -61,9 +76,10 @@ YsSocketServer::~YsSocketServer()
 		Terminate();
 	}
 
-	delete [] clientSock;
+	delete [] internal->clientSock;
 	delete [] clientSockUsed;
 	delete [] clientReady;
+	delete internal;
 }
 
 
@@ -84,8 +100,8 @@ YSRESULT YsSocketServer::Start(void)
 		}
 #endif
 
-		listeningSocket=socket(PF_INET,SOCK_STREAM,0);
-		if(listeningSocket==-1)
+		internal->listeningSocket=socket(PF_INET,SOCK_STREAM,0);
+		if(internal->listeningSocket==-1)
 		{
 			printf("Error occuerd in socket(PF_INET,SOCK_STREAM,0);\n");
 			return YSERR;
@@ -95,7 +111,7 @@ YSRESULT YsSocketServer::Start(void)
 		struct linger lingerOpt;
 		lingerOpt.l_onoff=1;
 		lingerOpt.l_linger=10;
-		setsockopt(listeningSocket,SOL_SOCKET,SO_LINGER,(void *)&lingerOpt,sizeof(lingerOpt));
+		setsockopt(internal->listeningSocket,SOL_SOCKET,SO_LINGER,(void *)&lingerOpt,sizeof(lingerOpt));
 #endif
 
 
@@ -105,22 +121,22 @@ YSRESULT YsSocketServer::Start(void)
 
 
 
-		if(bind(listeningSocket,(SOCKADDR *)&addr,sizeof(SOCKADDR_IN))!=0)
+		if(bind(internal->listeningSocket,(SOCKADDR *)&addr,sizeof(SOCKADDR_IN))!=0)
 		{
 #ifdef _WIN32
-			closesocket(listeningSocket);
+			closesocket(internal->listeningSocket);
 #else
-			close(listeningSocket);
+			close(internal->listeningSocket);
 #endif
 			printf("Error occured in bind()\n");
 			return YSERR;
 		}
-		if(listen(listeningSocket,5)!=0)   // 5 should be replaced with maxNumClient####
+		if(listen(internal->listeningSocket,5)!=0)   // 5 should be replaced with maxNumClient####
 		{
 #ifdef _WIN32
-			closesocket(listeningSocket);
+			closesocket(internal->listeningSocket);
 #else
-			close(listeningSocket);
+			close(internal->listeningSocket);
 #endif
 			printf("Error occured in listen()\n");
 			return YSERR;
@@ -152,10 +168,10 @@ YSRESULT YsSocketServer::Terminate(void)
 		}
 
 #ifdef _WIN32
-		closesocket(listeningSocket);
+		closesocket(internal->listeningSocket);
 		WSACleanup();
 #else
-		close(listeningSocket);
+		close(internal->listeningSocket);
 #endif
 
 		started=YSFALSE;
@@ -177,7 +193,7 @@ YSRESULT YsSocketServer::CheckAndAcceptConnection(void)
 	fd_set set;
 	timeval wait;
 	FD_ZERO(&set);
-	FD_SET(listeningSocket,&set);
+	FD_SET(internal->listeningSocket,&set);
 	wait.tv_sec=0;
 	wait.tv_usec=0;
 	if(select(1,&set,NULL,NULL,&wait)>=1)
@@ -186,7 +202,7 @@ YSRESULT YsSocketServer::CheckAndAcceptConnection(void)
 	}
 #else
 	struct pollfd pfd;
-	pfd.fd=listeningSocket;
+	pfd.fd=internal->listeningSocket;
 	pfd.events=POLLIN;
 	pfd.revents=0;
 	if(poll(&pfd,1,1)>=1)
@@ -206,12 +222,12 @@ YSRESULT YsSocketServer::CheckAndAcceptConnection(void)
 			if(clientSockUsed[i]!=YSTRUE)
 			{
 				addrlen=sizeof(SOCKADDR_IN);
-				clientSock[i]=accept(listeningSocket,(SOCKADDR *)&addr,&addrlen);
+				internal->clientSock[i]=accept(internal->listeningSocket,(SOCKADDR *)&addr,&addrlen);
 
 			#ifdef _WIN32
 				BOOL b;                                                                  // 2009/04/05
 				b=TRUE;                                                                  // 2009/04/05
-				setsockopt(clientSock[i],IPPROTO_TCP,TCP_NODELAY,(char *)&b,sizeof(b));  // 2009/04/05
+				setsockopt(internal->clientSock[i],IPPROTO_TCP,TCP_NODELAY,(char *)&b,sizeof(b));  // 2009/04/05
 			#endif
 
 				unsigned int ipAddr[4];
@@ -227,14 +243,14 @@ YSRESULT YsSocketServer::CheckAndAcceptConnection(void)
 				ipAddr[0]= addr.sin_addr.s_addr     &255;
 			#endif
 
-				if(clientSock[i]!=INVALID_SOCKET)
+				if(internal->clientSock[i]!=INVALID_SOCKET)
 				{
 					clientSockUsed[i]=YSTRUE;
 
 					int value;
 					socklen_t len;
 					len=4;
-					if(getsockopt(clientSock[i],SOL_SOCKET,SO_SNDBUF,(char *)&value,&len)==0)
+					if(getsockopt(internal->clientSock[i],SOL_SOCKET,SO_SNDBUF,(char *)&value,&len)==0)
 					{
 						printf("Send Buffer Size=%d\n",value);
 					}
@@ -243,7 +259,7 @@ YSRESULT YsSocketServer::CheckAndAcceptConnection(void)
 						printf("Cannot retrieve Send Buffer Size\n");
 					}
 
-					if(getsockopt(clientSock[i],SOL_SOCKET,SO_SNDTIMEO,(char *)&value,&len)==0)
+					if(getsockopt(internal->clientSock[i],SOL_SOCKET,SO_SNDTIMEO,(char *)&value,&len)==0)
 					{
 						printf("Send Time Out=%d\n",value);
 					}
@@ -279,7 +295,7 @@ YSRESULT YsSocketServer::CheckReceive(void)
 			fd_set set;
 			timeval wait;
 			FD_ZERO(&set);
-			FD_SET(clientSock[i],&set);
+			FD_SET(internal->clientSock[i],&set);
 			wait.tv_sec=0;  // Linux select modifies wait.
 			wait.tv_usec=0; // It must be reset right before select in a loop.
 			if(select(1,&set,NULL,NULL,&wait)>=1)
@@ -288,7 +304,7 @@ YSRESULT YsSocketServer::CheckReceive(void)
 			}
 		#else
 			struct pollfd pfd;
-			pfd.fd=clientSock[i];
+			pfd.fd=internal->clientSock[i];
 			pfd.events=POLLIN;
 			pfd.revents=0;
 			if(poll(&pfd,1,1)>=1)
@@ -299,13 +315,13 @@ YSRESULT YsSocketServer::CheckReceive(void)
 
 			if(ready==YSTRUE)
 			{
-				byteReceived=recv(clientSock[i],(char *)buffer,nBufferSize,0);
+				byteReceived=recv(internal->clientSock[i],(char *)buffer,nBufferSize,0);
 				if(byteReceived==0 || byteReceived==SOCKET_ERROR)
 				{
 				#ifdef _WIN32
-					closesocket(clientSock[i]);
+					closesocket(internal->clientSock[i]);
 				#else
-					close(clientSock[i]);
+					close(internal->clientSock[i]);
 				#endif
 					clientSockUsed[i]=YSFALSE;
 					ConnectionClosedByClient(i);
@@ -354,9 +370,9 @@ YSRESULT YsSocketServer::Disconnect(int clientId)   /* clientId=-1 to close all 
 	if(0<=clientId && clientId<maxNumClient && clientSockUsed[clientId]==YSTRUE)
 	{
 #ifdef _WIN32
-		closesocket(clientSock[clientId]);
+		closesocket(internal->clientSock[clientId]);
 #else
-		close(clientSock[clientId]);
+		close(internal->clientSock[clientId]);
 #endif
 		clientSockUsed[clientId]=YSFALSE;
 		return YSOK;
@@ -379,14 +395,14 @@ YSRESULT YsSocketServer::Send(int clientId,YSSIZE_T nBytes,unsigned char dat[],u
 		wait.tv_sec=timeout/1000;
 		wait.tv_usec=timeout%1000;
 		FD_ZERO(&set);
-		FD_SET(clientSock[clientId],&set);
+		FD_SET(internal->clientSock[clientId],&set);
 		if(select(1,NULL,&set,NULL,&wait)>=1)
 		{
 			ready=YSTRUE;
 		}
 	#else
 		struct pollfd pfd;
-		pfd.fd=clientSock[clientId];
+		pfd.fd=internal->clientSock[clientId];
 		pfd.events=POLLOUT;  // 2004/01/12
 		pfd.revents=0;
 		if(poll(&pfd,1,1)>=1)
@@ -398,7 +414,7 @@ YSRESULT YsSocketServer::Send(int clientId,YSSIZE_T nBytes,unsigned char dat[],u
 
 		if(ready==YSTRUE)
 		{
-			send(clientSock[clientId],(char *)dat,(int)nBytes,0);
+			send(internal->clientSock[clientId],(char *)dat,(int)nBytes,0);
 			return YSOK;
 		}
 		else
@@ -421,7 +437,7 @@ YSRESULT YsSocketServer::Send(int clientId,YSSIZE_T nBytes,unsigned char dat[],u
 				fd_set set;
 				timeval wait;
 				FD_ZERO(&set);
-				FD_SET(clientSock[i],&set);
+				FD_SET(internal->clientSock[i],&set);
 				wait.tv_sec=timeout/1000;
 				wait.tv_usec=timeout%1000;   // Wait 10 microseconds
 				if(select(1,NULL,&set,NULL,&wait)>=1)
@@ -430,7 +446,7 @@ YSRESULT YsSocketServer::Send(int clientId,YSSIZE_T nBytes,unsigned char dat[],u
 				}
 			#else
 				struct pollfd pfd;
-				pfd.fd=clientSock[i];
+				pfd.fd=internal->clientSock[i];
 				pfd.events=POLLOUT;
 				pfd.revents=0;
 				if(poll(&pfd,1,1)>=1)
@@ -441,7 +457,7 @@ YSRESULT YsSocketServer::Send(int clientId,YSSIZE_T nBytes,unsigned char dat[],u
 
 				if(ready==YSTRUE)
 				{
-					send(clientSock[i],(char *)dat,(int)nBytes,0);
+					send(internal->clientSock[i],(char *)dat,(int)nBytes,0);
 				}
 				else
 				{
@@ -496,11 +512,13 @@ YSRESULT YsSocketServer::ConnectionClosedByClient(int clientId)
 
 YsSocketClient::YsSocketClient()
 {
+	internal=new OSDependentData;
 	Initialize(-1);
 }
 
 YsSocketClient::YsSocketClient(int port)
 {
+	internal=new OSDependentData;
 	Initialize(port);
 }
 
@@ -517,6 +535,7 @@ YsSocketClient::~YsSocketClient()
 	{
 		Terminate();
 	}
+	delete internal;
 }
 
 YSRESULT YsSocketClient::Start(int port)
@@ -590,7 +609,7 @@ YSRESULT YsSocketClient::Connect(const char host[])
 	{
 		YSBOOL IpDirect;
 		int i,ipset,ip[4];
-		sock=socket(PF_INET,SOCK_STREAM,0);
+		internal->sock=socket(PF_INET,SOCK_STREAM,0);
 
 		IpDirect=YSTRUE;
 		ip[0]=atoi(host);
@@ -629,9 +648,9 @@ YSRESULT YsSocketClient::Connect(const char host[])
 			if(table==NULL)
 			{
 #ifdef _WIN32
-				closesocket(sock);
+				closesocket(internal->sock);
 #else
-				close(sock);
+				close(internal->sock);
 #endif
 				return YSERR;
 			}
@@ -707,13 +726,13 @@ YSRESULT YsSocketClient::Connect(const char host[])
 #endif
 		printf("Trying to : %s\n",buf);
 
-		if(connect(sock,(SOCKADDR *)&addr,sizeof(SOCKADDR_IN))!=0)
+		if(connect(internal->sock,(SOCKADDR *)&addr,sizeof(SOCKADDR_IN))!=0)
 		{
 			printf("Error occured in connect()\n");
 #ifdef _WIN32
-			closesocket(sock);
+			closesocket(internal->sock);
 #else
-			close(sock);
+			close(internal->sock);
 #endif
 			return YSERR;
 		}
@@ -722,7 +741,7 @@ YSRESULT YsSocketClient::Connect(const char host[])
 #ifdef _WIN32
 		BOOL b;                                                         // 2009/04/05
 		b=TRUE;                                                         // 2009/04/05
-		setsockopt(sock,IPPROTO_TCP,TCP_NODELAY,(char *)&b,sizeof(b));  // 2009/04/05
+		setsockopt(internal->sock,IPPROTO_TCP,TCP_NODELAY,(char *)&b,sizeof(b));  // 2009/04/05
 #endif
 
 		connected=YSTRUE;
@@ -740,9 +759,9 @@ YSRESULT YsSocketClient::Disconnect(void)
 	if(connected==YSTRUE)
 	{
 #ifdef _WIN32
-		closesocket(sock);
+		closesocket(internal->sock);
 #else
-		close(sock);
+		close(internal->sock);
 #endif
 		connected=YSFALSE;
 		return YSOK;
@@ -771,14 +790,14 @@ YSRESULT YsSocketClient::Send(YSSIZE_T nBytes,unsigned char dat[],unsigned timeo
 	wait.tv_sec=timeout/1000;
 	wait.tv_usec=timeout%1000;
 	FD_ZERO(&set);
-	FD_SET(sock,&set);
+	FD_SET(internal->sock,&set);
 	if(select(1,NULL,&set,NULL,&wait)>=1)
 	{
 		ready=YSTRUE;
 	}
 #else
 	struct pollfd pfd;
-	pfd.fd=sock;
+	pfd.fd=internal->sock;
 	pfd.events=POLLOUT;
 	pfd.revents=0;
 	if(poll(&pfd,1,1)>=1)
@@ -789,7 +808,7 @@ YSRESULT YsSocketClient::Send(YSSIZE_T nBytes,unsigned char dat[],unsigned timeo
 
 	if(ready==YSTRUE)
 	{
-		send(sock,(char *)dat,(int)nBytes,0);
+		send(internal->sock,(char *)dat,(int)nBytes,0);
 		return YSOK;
 	}
 	else
@@ -809,14 +828,14 @@ YSRESULT YsSocketClient::CheckReceive(void)
 	wait.tv_sec=0;
 	wait.tv_usec=0;  // Don't wait. If no message, no need to read.
 	FD_ZERO(&set);
-	FD_SET(sock,&set);
+	FD_SET(internal->sock,&set);
 	if(select(1,&set,NULL,NULL,&wait)>=1)
 	{
 		ready=YSTRUE;
 	}
 #else
 	struct pollfd pfd;
-	pfd.fd=sock;
+	pfd.fd=internal->sock;
 	pfd.events=POLLIN;
 	pfd.revents=0;
 	if(poll(&pfd,1,1)>=1)
@@ -828,7 +847,7 @@ YSRESULT YsSocketClient::CheckReceive(void)
 	if(ready==YSTRUE)
 	{
 		int nBytesReceived;
-		nBytesReceived=recv(sock,(char *)buffer,nBufferSize,0);
+		nBytesReceived=recv(internal->sock,(char *)buffer,nBufferSize,0);
 		if(nBytesReceived==0 || nBytesReceived==SOCKET_ERROR)
 		{
 			ConnectionClosedByServer();

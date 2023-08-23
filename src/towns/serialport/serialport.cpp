@@ -341,6 +341,21 @@ TownsSerialPort::TownsSerialPort(class FMTownsCommon *townsPtr) : Device(townsPt
 	this->townsPtr=townsPtr;
 	state.intel8251.clientPtr=&defaultClient;
 }
+bool TownsSerialPort::ConnectSocketClient(std::string serverAddr)
+{
+	if(YSTRUE!=socketClient.IsConnected())
+	{
+		return YSTRUE==socketClient.Connect(serverAddr.c_str());
+	}
+	return false;
+}
+void TownsSerialPort::DisconnectSocketClient(void)
+{
+	if(YSTRUE==socketClient.IsConnected())
+	{
+		socketClient.Disconnect();
+	}
+}
 void TownsSerialPort::UpdatePIC(void)
 {
 	townsPtr->pic.SetInterruptRequestBit(TOWNSIRQ_RS232C,state.INTbyTxRDY_RxRDY_SYNDET);
