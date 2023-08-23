@@ -42,3 +42,14 @@ bool i8251toSocketClient::DSR(void)
 {
 	return true; // Always ready
 }
+
+
+YSRESULT i8251toSocketClient::Received(YSSIZE_T nBytes,unsigned char dat[])
+{
+	return YSOK;
+}
+
+YSRESULT i8251toSocketClient::ConnectionClosedByServer(void)
+{
+	return YSOK;
+}

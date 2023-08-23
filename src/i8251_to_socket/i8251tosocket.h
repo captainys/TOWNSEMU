@@ -56,6 +56,10 @@ public:
 	/*!
 	*/
 	virtual bool DSR(void) override;
+
+
+	YSRESULT Received(YSSIZE_T nBytes,unsigned char dat[]) override;
+	YSRESULT ConnectionClosedByServer(void) override;
 };
 
 
