@@ -49,6 +49,7 @@ add_subdirectory(ym2612)
 add_subdirectory(ym2612tests)
 add_subdirectory(rf5c68)
 add_subdirectory(i8251)
+add_subdirectory(i8251_to_socket)
 add_subdirectory(diskdrive)
 
 add_subdirectory(customstick)
