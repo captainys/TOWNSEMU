@@ -23,6 +23,8 @@ add_subdirectory(../../src/resources resources)
 
 add_subdirectory(../../src/osdependent osdependent)
 
+add_subdirectory(../../src/serversample serversample)
+
 add_subdirectory(../../src/cpputil cpputil)
 add_subdirectory(../../src/lineparser lineparser)
 add_subdirectory(../../src/miscutil miscutil)
