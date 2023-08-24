@@ -240,6 +240,9 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  Specify a hot key for pause/resume.  Default is SCROLLLOCK" << std::endl;
 	std::cout << "-RSTCP IPAddress:port" << std::endl;
 	std::cout << "  Forward RS232C (COM0) to TCP/IP." << std::endl;
+	std::cout << "  !!CAUTION!! TRANSMISSION IS NOT ENCRYPTED!!!!\n" << std::endl;
+	std::cout << "  !!CAUTION!! DO NOT SEND SENSITIVE AND/OR PERSONAL INFORMATION OVER TCP/IP FORWARDING!!!!\n" << std::endl;
+	std::cout << "  !!CAUTION!! I WILL NOT TAKE RESPONSIBILITY FOR ANY DAMAGE CAUSED BY COMPROMISED INFORMATION!!!!" << std::endl;
 }
 
 void TownsARGV::PrintApplicationList(void) const

@@ -106,6 +106,8 @@ public:
 	FsGuiTextBox *scrnShotCropTxt[4];
 	FsGuiTextBox *mapXYExpressionTxt[2];
 
+	FsGuiTextBox *RS232CtoTCPTxt=nullptr;
+
 	ProfileDialog(FsGuiMainCanvas *canvasPtr);
 
 	void Make(void);

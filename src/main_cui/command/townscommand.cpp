@@ -407,6 +407,9 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "RSTCP IPAddress:Port" << std::endl;
 	std::cout << "  Start RS232C (COM0) to TCP/IP forwarding." << std::endl;
 	std::cout << "  XMODEM between VM and host cannot be used while COM0 is forwarded to TCP." << std::endl;
+	std::cout << "  !!CAUTION!! TRANSMISSION IS NOT ENCRYPTED!!!!\n" << std::endl;
+	std::cout << "  !!CAUTION!! DO NOT SEND SENSITIVE AND/OR PERSONAL INFORMATION OVER TCP/IP FORWARDING!!!!\n" << std::endl;
+	std::cout << "  !!CAUTION!! I WILL NOT TAKE RESPONSIBILITY FOR ANY DAMAGE CAUSED BY COMPROMISED INFORMATION!!!!" << std::endl;
 	std::cout << "DRSTCP" << std::endl;
 	std::cout << "  Disconnect RS232C (COM0) to TCP/IP forwading." << std::endl;
 
@@ -1579,6 +1582,9 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,clas
 			if(true==towns.serialport.ConnectSocketClient(cmd.argv[1]))
 			{
 				std::cout << "RS232C to TCP/IP client connected." << std::endl;
+				std::cout << "!!CAUTION!! TRANSMISSION IS NOT ENCRYPTED!!!!\n" << std::endl;
+				std::cout << "!!CAUTION!! DO NOT SEND SENSITIVE AND/OR PERSONAL INFORMATION OVER TCP/IP FORWARDING!!!!\n" << std::endl;
+				std::cout << "!!CAUTION!! I WILL NOT TAKE RESPONSIBILITY FOR ANY DAMAGE CAUSED BY COMPROMISED INFORMATION!!!!" << std::endl;
 			}
 			else
 			{

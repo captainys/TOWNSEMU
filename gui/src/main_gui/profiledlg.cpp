@@ -213,6 +213,21 @@ void ProfileDialog::Make(void)
 	}
 
 	{
+		auto tabId=AddTab(tab,"RS232C");
+		BeginAddTabItem(tab,tabId);
+
+		AddStaticText(0,FSKEY_NULL,"RS232C to TCP/IP Forwarding.",YSTRUE);
+		RS232CtoTCPTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"IPAddress:PORT",32,YSTRUE);
+		AddStaticText(0,FSKEY_NULL,
+			"!!CAUTION!! TRANSMISSION IS NOT ENCRYPTED!!!!\n"
+			"!!CAUTION!! DO NOT SEND SENSITIVE AND/OR PERSONAL INFORMATION OVER TCP/IP FORWARDING!!!!\n"
+			"!!CAUTION!! I WILL NOT TAKE RESPONSIBILITY FOR ANY DAMAGE CAUSED BY COMPROMISED INFORMATION!!!!"
+			,YSTRUE);
+
+		EndAddTabItem();
+	}
+
+	{
 		auto tabId=AddTab(tab,"SCSI");
 		BeginAddTabItem(tab,tabId);
 
@@ -1208,6 +1223,8 @@ TownsProfile ProfileDialog::GetProfile(void) const
 
 	profile.CPUFidelityLevel=i486DXCommon::StrToFidelityLevel(CPUFidelityDrp->GetSelectedString().data());
 
+	profile.RS232CtoTCPAddr=RS232CtoTCPTxt->GetString().c_str();
+
 	return profile;
 }
 void ProfileDialog::SetProfile(const TownsProfile &profile)
@@ -1450,6 +1467,8 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 	mapXYExpressionTxt[1]->SetText(profile.mapXYExpression[1].c_str());
 
 	CPUFidelityDrp->SelectByString(i486DXCommon::FidelityLevelToStr(profile.CPUFidelityLevel).c_str());
+
+	RS232CtoTCPTxt->SetText(profile.RS232CtoTCPAddr.c_str());
 }
 
 void ProfileDialog::SetDefaultFMVolume(void)
