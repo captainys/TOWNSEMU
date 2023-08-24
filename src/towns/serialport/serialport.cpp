@@ -345,7 +345,28 @@ bool TownsSerialPort::ConnectSocketClient(std::string serverAddr)
 {
 	if(YSTRUE!=socketClient.IsConnected())
 	{
-		if(YSTRUE==socketClient.Connect(serverAddr.c_str()))
+		std::string ipAddr,portStr;
+		bool colon=false;
+		for(auto c : serverAddr)
+		{
+			if(':'==c)
+			{
+				colon=true;
+			}
+			else if(true!=colon)
+			{
+				ipAddr.push_back(c);
+			}
+			else
+			{
+				portStr.push_back(c);
+			}
+		}
+
+		unsigned int port=cpputil::Atoi(portStr.c_str());
+
+		if(YSOK==socketClient.Start(port) &&
+		   YSTRUE==socketClient.Connect(ipAddr.c_str()))
 		{
 			state.intel8251.clientPtr=&socketClient;
 			return true;
@@ -358,6 +379,8 @@ void TownsSerialPort::DisconnectSocketClient(void)
 	if(YSTRUE==socketClient.IsConnected())
 	{
 		socketClient.Disconnect();
+		socketClient.Terminate();
+		state.intel8251.clientPtr=&defaultClient;
 	}
 }
 void TownsSerialPort::UpdatePIC(void)

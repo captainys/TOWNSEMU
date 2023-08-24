@@ -199,6 +199,9 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["XMODEMFROMVM"]=CMD_XMODEM_FROM_VM;
 	primaryCmdMap["XMODEMCRCFROMVM"]=CMD_XMODEMCRC_FROM_VM;
 
+	primaryCmdMap["RSTCP"]=CMD_RS232C_TO_TCP;
+	primaryCmdMap["DRSTCP"]=CMD_DISCONNECT_TCP;
+
 	primaryCmdMap["SPECIALDEBUG"]=CMD_SPECIAL_DEBUG;
 	primaryCmdMap["DOSSEG"]=CMD_DOSSEG;
 
@@ -400,6 +403,12 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Write un-protect floppy disk." << std::endl;
 	std::cout << "PAUSE|PAU" << std::endl;
 	std::cout << "  Pause VM." << std::endl;
+
+	std::cout << "RSTCP IPAddress:Port" << std::endl;
+	std::cout << "  Start RS232C (COM0) to TCP/IP forwarding." << std::endl;
+	std::cout << "  XMODEM between VM and host cannot be used while COM0 is forwarded to TCP." << std::endl;
+	std::cout << "DRSTCP" << std::endl;
+	std::cout << "  Disconnect RS232C (COM0) to TCP/IP forwading." << std::endl;
 
 	std::cout << "XMODEMTOVM filename" << std::endl;
 	std::cout << "  File transfer to the VM with XMODEM.  Type this command first," << std::endl;
@@ -1562,6 +1571,28 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,clas
 		{
 			PrintError(ERROR_TOO_FEW_ARGS);
 		}
+		break;
+
+	case CMD_RS232C_TO_TCP:
+		if(2<=cmd.argv.size())
+		{
+			if(true==towns.serialport.ConnectSocketClient(cmd.argv[1]))
+			{
+				std::cout << "RS232C to TCP/IP client connected." << std::endl;
+			}
+			else
+			{
+				std::cout << "RS232C to TCP/IP client cannot connect to host " << cmd.argv[1] << std::endl;
+			}
+		}
+		else
+		{
+			PrintError(ERROR_TOO_FEW_ARGS);
+		}
+		break;
+	case CMD_DISCONNECT_TCP:
+		towns.serialport.DisconnectSocketClient();
+		std::cout << "RS232C to TCP/IP client disconnected (if not disconnected yet)." << std::endl;
 		break;
 
 	case CMD_XMODEM_TO_VM:
