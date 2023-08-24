@@ -182,6 +182,8 @@ public:
 
 	std::string pauseResumeKeyLabel="SCROLLLOCK";
 
+	std::string RS232CtoTCPAddr;
+
 	TownsStartParameters();
 };
 

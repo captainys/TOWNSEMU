@@ -382,6 +382,19 @@ void FMTownsCommon::State::PowerOn(void)
 
 	towns.var.quickStateSaveFName=argv.quickStateSaveFName;
 
+	if(""!=argv.RS232CtoTCPAddr)
+	{
+		if(towns.serialport.ConnectSocketClient(argv.RS232CtoTCPAddr))
+		{
+			std::cout << "COM0 connected to " << argv.RS232CtoTCPAddr << std::endl;
+		}
+		else
+		{
+			std::cout << "Warning!  RS232C to TCP forwarding failed to connect!" << std::endl;
+			std::cout << "Host address " << argv.RS232CtoTCPAddr << std::endl;
+		}
+	}
+
 	return true;
 }
 
