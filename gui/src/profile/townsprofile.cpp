@@ -83,6 +83,8 @@ void TownsProfile::CleanUp(void)
 	pauseResumeKeyLabel="SCROLLLOCK";
 
 	sharedDir.clear();
+
+	RS232CtoTCPAddr="";
 }
 std::vector <std::string> TownsProfile::Serialize(void) const
 {
@@ -356,6 +358,9 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 
 	text.push_back("CPUFIDEL ");
 	text.back()+=i486DXCommon::FidelityLevelToStr(CPUFidelityLevel);
+
+	text.push_back("RS232TCP ");
+	text.back()+=RS232CtoTCPAddr;
 
 	return text;
 }
@@ -775,6 +780,17 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 		{
 			CPUFidelityLevel=i486DXCommon::StrToFidelityLevel(argv[1].c_str());
 		}
+		else if(0==argv[0].STRCMP("RS232TCP"))
+		{
+			if(2<=argv.size())
+			{
+				RS232CtoTCPAddr=argv[1];
+			}
+			else
+			{
+				RS232CtoTCPAddr="";
+			}
+		}
 		else
 		{
 			errorMsg="Unrecognized keyword:";
@@ -1137,6 +1153,12 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 	if(i486DXCommon::HIGH_FIDELITY==CPUFidelityLevel)
 	{
 		argv.push_back("-HIGHFIDELITY");
+	}
+
+	if(""!=RS232CtoTCPAddr)
+	{
+		argv.push_back("-RSTCP");
+		argv.push_back(RS232CtoTCPAddr);
 	}
 
 	return argv;

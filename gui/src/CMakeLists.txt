@@ -37,6 +37,7 @@ add_subdirectory(../../src/ym2612 ym2612)
 # add_subdirectory(../../src/ym2612tests ym2612tests)
 add_subdirectory(../../src/rf5c68 rf5c68)
 add_subdirectory(../../src/i8251 i8251)
+add_subdirectory(../../src/i8251_to_socket i8251_to_socket)
 add_subdirectory(../../src/diskdrive diskdrive)
 
 add_subdirectory(../../src/customstick customstick)
@@ -52,6 +53,7 @@ add_subdirectory(../../src/main_cui main_cui)
 
 add_subdirectory(../../src/externals/d77 d77)
 add_subdirectory(../../src/externals/yspng yspng)
+add_subdirectory(../../src/externals/yssocket/src yssocket)
 add_subdirectory(../../src/externals/connect_fssimplewindow connect_fssimplewindow)
 
 
