@@ -49,6 +49,8 @@ public:
 
 YsSocketServer::YsSocketServer(int listen,int maxNumCli)
 {
+	internal=new OSDependentData;
+
 	started=YSFALSE;
 
 	listeningPort=listen;
@@ -64,8 +66,6 @@ YsSocketServer::YsSocketServer(int listen,int maxNumCli)
 	{
 		clientSockUsed[i]=YSFALSE;
 	}
-
-	internal=new OSDependentData;
 }
 
 

@@ -345,7 +345,11 @@ bool TownsSerialPort::ConnectSocketClient(std::string serverAddr)
 {
 	if(YSTRUE!=socketClient.IsConnected())
 	{
-		return YSTRUE==socketClient.Connect(serverAddr.c_str());
+		if(YSTRUE==socketClient.Connect(serverAddr.c_str()))
+		{
+			state.intel8251.clientPtr=&socketClient;
+			return true;
+		}
 	}
 	return false;
 }

@@ -74,3 +74,7 @@ add_subdirectory(cmdutil)
 
 #test386
 add_subdirectory(test386vm)
+
+
+#Serial to TCP Server Sample
+add_subdirectory(serversample)

@@ -1,0 +1,2 @@
+add_executable(telnetServer server.cpp)
+target_link_libraries(telnetServer yssocket_export)
