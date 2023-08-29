@@ -673,6 +673,10 @@ unsigned int TownsStrToApp(std::string str)
 	{
 		return TOWNS_APPSPECIFIC_AFTERBURNER2;
 	}
+	if("ORGEL"==str)
+	{
+		return TOWNS_APPSPECIFIC_ORGEL;
+	}
 	return TOWNS_APPSPECIFIC_NONE;
 }
 std::string TownsAppToStr(unsigned int i)
@@ -715,6 +719,8 @@ std::string TownsAppToStr(unsigned int i)
 		return "AFTERBURNER2";
 	case TOWNS_APPSPECIFIC_DAIKOUKAIJIDAI2:
 		return "DAIKOUKAIJIDAI2";
+	case TOWNS_APPSPECIFIC_ORGEL:
+		return "ORGEL";
 	}
 }
 

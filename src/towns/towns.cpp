@@ -265,26 +265,7 @@ void FMTownsCommon::State::PowerOn(void)
 		towns.gameport.state.ports[i].maxButtonHoldTime[1]=argv.maxButtonHoldTime[i][1];
 	}
 
-	if(TOWNS_APPSPECIFIC_RASHINBAN==towns.state.appSpecificSetting)
-	{
-		if(towns.gameport.state.ports[1].device==TOWNS_GAMEPORTEMU_MOUSE)
-		{
-			towns.gameport.state.ports[0].device=TOWNS_GAMEPORTEMU_MOUSE;
-			towns.gameport.state.ports[1].device=TOWNS_GAMEPORTEMU_NONE;
-		}
-	}
-	if(TOWNS_APPSPECIFIC_LEMMINGS2==towns.state.appSpecificSetting)
-	{
-		// Lemmings2's FBIOS seems to be extermely sensitive to timing!
-		// What version is that?
-		// Lower frequency causes CD-ROM BIOS to fail.
-		// Faster frequency will cause flickering.
-		// So far 18MHz to 20MHz are the only stable frequencies I found that is stable and prevent flickering.
-		towns.state.currentFreq=20;
-		towns.var.slowModeFreq=towns.state.currentFreq;
-		towns.state.fastModeFreq=towns.state.currentFreq;
-		towns.cdrom.state.readSectorTime=TOWNS_CD_READ_SECTOR_TIME_1X;
-	}
+	towns.AppSpecificSetup(outside_world,argv);
 
 	for(auto i=0; i<argv.sharedDir.size() && i<TownsVnDrv::MAX_NUM_SHARED_DIRECTORIES; ++i)
 	{
@@ -396,6 +377,35 @@ void FMTownsCommon::State::PowerOn(void)
 	}
 
 	return true;
+}
+
+void FMTownsCommon::AppSpecificSetup(Outside_World *outside_world,const TownsStartParameters &argv)
+{
+	switch(state.appSpecificSetting)
+	{
+	case TOWNS_APPSPECIFIC_RASHINBAN:
+		if(gameport.state.ports[1].device==TOWNS_GAMEPORTEMU_MOUSE)
+		{
+			gameport.state.ports[0].device=TOWNS_GAMEPORTEMU_MOUSE;
+			gameport.state.ports[1].device=TOWNS_GAMEPORTEMU_NONE;
+		}
+		break;
+	case TOWNS_APPSPECIFIC_LEMMINGS2:
+		// Lemmings2's FBIOS seems to be extermely sensitive to timing!
+		// What version is that?
+		// Lower frequency causes CD-ROM BIOS to fail.
+		// Faster frequency will cause flickering.
+		// So far 18MHz to 20MHz are the only stable frequencies I found that is stable and prevent flickering.
+		state.currentFreq=20;
+		var.slowModeFreq=state.currentFreq;
+		state.fastModeFreq=state.currentFreq;
+		cdrom.state.readSectorTime=TOWNS_CD_READ_SECTOR_TIME_1X;
+		break;
+	case TOWNS_APPSPECIFIC_ORGEL:
+		cdrom.state.readSectorTime=TOWNS_CD_READ_SECTOR_TIME_1X;
+		cdrom.var.sectorReadTimeDelay=TownsCDROM::SECTORREAD_DELAY_ORGEL;
+		break;
+	}
 }
 
 void FMTownsCommon::State::Reset(void)

@@ -462,6 +462,7 @@ public:
 
 
 	static bool Setup(FMTownsCommon &towns,Outside_World *outside_world,const TownsStartParameters &argv);
+	void AppSpecificSetup(Outside_World *outside_world,const TownsStartParameters &argv);
 
 
 	unsigned int MachineID(void) const;

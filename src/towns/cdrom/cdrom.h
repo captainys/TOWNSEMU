@@ -110,14 +110,28 @@ public:
 	enum
 	{
 		DELAYED_STATUS_IRQ_TIME=  50000,  // Tentatively  50us
-		DEFAULT_READ_SECTOR_TIME= 5000000,  // Tentatively   5ms  1X CD-ROM should be 1second/75frames=13.3ms per sector
+		DEFAULT_READ_SECTOR_TIME=13300000,  // Tentatively   5ms  1X CD-ROM should be 1second/75frames=13.3ms per sector
 		NOTIFICATION_TIME=      1000000,  // Tentatively   1ms
 		CDDASTOP_TIME=          1000000,  // Tentatively   1ms
 		SEEK_TIME=            100000000,  // Tentatively 100ms
 		LOSTDATA_TIMEOUT=     100000000,  // Tentatively 100ms. I don't think the CDC had a large FIFO buffer back in 1989. The real time-out should have been much shorter.
 		STATUS_CHECKBACK_TIME=  1000000,
-		MAX_SEEK_TIME=        500000000,  // 500ms to seek from inner most to outer most. (Just guess)
 		MAX_NUM_SECTORS=         350000,  // Max 700MB, 2KB per sector.
+
+		SECTORREAD_DELAY_ORGEL=200000000,
+		/*
+		Orgel first revision plays back movie without synchronizing with CD pre-fetch.
+		When the CD speed is too fast, pre-fetch function apparently overflows the buffer and crashes.
+		CD reading needs to be slowed down.
+		What I haven't figure is why faster CPU speed does not compensate for this problem.
+		With faster CPU clock, the picture runs way much faster than the voice.
+		Nonetheless, slowing down CPU to 12MHz, and using MAX_SEEK_TIME=500ms, it did run without crash.
+		There might be a cap in the picture-update rate?  Or, something to do with voice?
+		The program may be trying to synchronizing by looking at the PCM playback?
+		It does crash if I run it on real FM TOWNS II MX.
+		DATAWEST later released a revised version that can be used in faster FM TOWNS models.
+		Presumably, the bug-fixed version does not require this delay.
+		*/
 	};
 
 	// Reference [3] 
@@ -243,6 +257,8 @@ public:
 		bool debugMonitorCommandWrite=false;
 		bool debugBreakOnDEI=false;
 		bool debugBreakOnDataReady=false;
+
+		unsigned int sectorReadTimeDelay=0;
 
 		// If debugBreakOnCommandWrite==true and 0xffff!=debugBreakOnSpecificCommand,
 		// it breaks the VM only if a specific command is sent.
