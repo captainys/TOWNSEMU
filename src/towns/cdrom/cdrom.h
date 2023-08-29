@@ -114,6 +114,7 @@ public:
 		NOTIFICATION_TIME=      1000000,  // Tentatively   1ms
 		CDDASTOP_TIME=          1000000,  // Tentatively   1ms
 		SEEK_TIME=            100000000,  // Tentatively 100ms
+		MAX_SEEK_TIME=       2000000000,  // From BCC: Official specification of 1X CD-ROM Seek Time is 3 seconds.  2secs should be close enough with no harm.
 		LOSTDATA_TIMEOUT=     100000000,  // Tentatively 100ms. I don't think the CDC had a large FIFO buffer back in 1989. The real time-out should have been much shorter.
 		STATUS_CHECKBACK_TIME=  1000000,
 		MAX_NUM_SECTORS=         350000,  // Max 700MB, 2KB per sector.

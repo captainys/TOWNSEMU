@@ -787,10 +787,18 @@ void TownsCDROM::BeginReadSector(DiscImage::MinSecFrm msfBegin,DiscImage::MinSec
 		state.readingSectorHSG-=150;
 		state.endSectorHSG-=150;
 
-		// Time needed for seeking the head should be a function of
-		// current head position (state.headPositionHSG) and sector position (state.readingSectorHSG).
-		// But, we do not know the formula at this time.
-		uint64_t seekTime=0;
+		uint64_t distance;
+		if(state.readingSectorHSG<state.headPositionHSG)
+		{
+			distance=state.headPositionHSG-state.readingSectorHSG;
+		}
+		else
+		{
+			distance=state.readingSectorHSG-state.headPositionHSG;
+		}
+		uint64_t seekTime=distance;
+		seekTime*=MAX_SEEK_TIME;
+		seekTime/=MAX_NUM_SECTORS;
 
 		// Shadow of the Beast issues command 02H and expects status to be returned.
 		// Probably MODE2READ command needs to disregard STATUS REQUEST bit.
