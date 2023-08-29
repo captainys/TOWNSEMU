@@ -38,6 +38,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 	const uint32_t TOWNS_NUM_GAMEPORTS=2;
 
 	const uint32_t TOWNS_CD_READ_SECTOR_TIME_1X=13300000; // nanoseconds
+	const uint32_t TOWNS_CD_SEEK_TIME_1X     =2000000000; // nanoseconds.    // From BCC: Official specification of 1X CD-ROM Seek Time is 3 seconds.  2secs should be close enough with no harm.
 #endif
 
 

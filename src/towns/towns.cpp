@@ -99,6 +99,7 @@ void FMTownsCommon::State::PowerOn(void)
 	if(0!=argv.cdSpeed)
 	{
 		towns.cdrom.state.readSectorTime=TOWNS_CD_READ_SECTOR_TIME_1X/argv.cdSpeed;
+		towns.cdrom.state.maxSeekTime=TOWNS_CD_SEEK_TIME_1X/argv.cdSpeed;
 	}
 
 	for(int scsiID=0; scsiID<TownsStartParameters::MAX_NUM_SCSI_DEVICES; ++scsiID)

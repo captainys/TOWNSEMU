@@ -797,7 +797,7 @@ void TownsCDROM::BeginReadSector(DiscImage::MinSecFrm msfBegin,DiscImage::MinSec
 			distance=state.readingSectorHSG-state.headPositionHSG;
 		}
 		uint64_t seekTime=distance;
-		seekTime*=MAX_SEEK_TIME;
+		seekTime*=state.maxSeekTime;
 		seekTime/=MAX_NUM_SECTORS;
 
 		// Shadow of the Beast issues command 02H and expects status to be returned.

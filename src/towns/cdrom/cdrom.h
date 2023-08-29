@@ -110,11 +110,11 @@ public:
 	enum
 	{
 		DELAYED_STATUS_IRQ_TIME=  50000,  // Tentatively  50us
-		DEFAULT_READ_SECTOR_TIME=13300000,  // Tentatively   5ms  1X CD-ROM should be 1second/75frames=13.3ms per sector
+		DEFAULT_READ_SECTOR_TIME=5000000, // Tentatively   5ms  1X CD-ROM should be 1second/75frames=13.3ms per sector
+		DEFAULT_SEEK_TIME=            0,
 		NOTIFICATION_TIME=      1000000,  // Tentatively   1ms
 		CDDASTOP_TIME=          1000000,  // Tentatively   1ms
 		SEEK_TIME=            100000000,  // Tentatively 100ms
-		MAX_SEEK_TIME=       2000000000,  // From BCC: Official specification of 1X CD-ROM Seek Time is 3 seconds.  2secs should be close enough with no harm.
 		LOSTDATA_TIMEOUT=     100000000,  // Tentatively 100ms. I don't think the CDC had a large FIFO buffer back in 1989. The real time-out should have been much shorter.
 		STATUS_CHECKBACK_TIME=  1000000,
 		MAX_NUM_SECTORS=         350000,  // Max 700MB, 2KB per sector.
@@ -180,6 +180,7 @@ public:
 		unsigned int readingSectorHSG,endSectorHSG,headPositionHSG;
 
 		unsigned int readSectorTime=DEFAULT_READ_SECTOR_TIME;
+		unsigned int maxSeekTime=DEFAULT_SEEK_TIME;
 		bool DMATransfer,CPUTransfer; // Both are not supposed to be 1, but I/O can set it that way.
 		unsigned int CPUTransferPointer=0;
 		bool WaitForDTSSTS;
