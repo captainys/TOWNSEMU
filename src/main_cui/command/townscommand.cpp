@@ -946,7 +946,7 @@ TownsCommandInterpreter::Command TownsCommandInterpreter::Interpret(const std::s
 	return cmd;
 }
 
-void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,class Outside_World *outside_world,Command &cmd)
+void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,class Outside_World *outside_world,class Outside_World::Sound *sound,Command &cmd)
 {
 	if(CMD_DISASM!=cmd.primaryCmd && CMD_DISASM16!=cmd.primaryCmd && CMD_DISASM32!=cmd.primaryCmd)
 	{
@@ -1292,7 +1292,7 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,clas
 	case CMD_LOAD_STATE:
 		if(2<=cmd.argv.size())
 		{
-			if(true!=towns.LoadState(cmd.argv[1],*outside_world))
+			if(true!=towns.LoadState(cmd.argv[1],*sound))
 			{
 				PrintError(ERROR_CANNOT_OPEN_FILE);
 			}
@@ -1441,11 +1441,11 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,clas
 		break;
 	case CMD_CDDAMUTE:
 		towns.cdrom.var.CDDAmute=true;
-		towns.UpdateCDEleVol(outside_world);
+		towns.UpdateCDEleVol(sound);
 		break;
 	case CMD_CDDAUNMUTE:
 		towns.cdrom.var.CDDAmute=false;
-		towns.UpdateCDEleVol(outside_world);
+		towns.UpdateCDEleVol(sound);
 		break;
 
 	case CMD_SCSICD0LOAD:
@@ -1695,7 +1695,7 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,clas
 		}
 		break;
 	case CMD_QUICK_LOADSTATE:
-		if(true!=towns.LoadState(towns.var.quickStateSaveFName,*outside_world))
+		if(true!=towns.LoadState(towns.var.quickStateSaveFName,*sound))
 		{
 			PrintError(ERROR_CANNOT_OPEN_FILE);
 		}

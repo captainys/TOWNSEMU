@@ -220,6 +220,11 @@ public:
 	class Window
 	{
 	public:
+		virtual void Start(void)=0;
+		virtual void Stop(void)=0;
+		virtual void Interval(void)=0;
+		virtual void Render(void)=0;
+		virtual void Communicate(Outside_World *)=0;
 	};
 	// virtual Window *CreateWindow(void) const=0;
 	class Sound

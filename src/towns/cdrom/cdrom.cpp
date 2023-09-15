@@ -61,7 +61,7 @@ void TownsCDROM::State::Reset(void)
 	CDDAEndTime.Set(0,2,0);
 }
 
-void TownsCDROM::SetOutsideWorld(class Outside_World *outside_world)
+void TownsCDROM::SetOutsideWorld(class Outside_World::Sound *outside_world)
 {
 	this->OutsideWorld=outside_world;
 }
@@ -1494,7 +1494,7 @@ void TownsCDROM::SetSIRQ_IRR(void)
 	return true;
 }
 
-void TownsCDROM::ResumeCDDAAfterRestore(class Outside_World *outsideWorld)
+void TownsCDROM::ResumeCDDAAfterRestore(class Outside_World::Sound *outsideWorld)
 {
 	unsigned int leftLinear=255;
 	unsigned int rightLinear=255;

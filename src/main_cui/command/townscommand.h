@@ -361,7 +361,7 @@ public:
 	/*! Executes a command.
 	    VM must be locked before calling.
 	*/
-	void Execute(TownsThread &thr,FMTownsCommon &towns,class Outside_World *outside_world,Command &cmd);
+	void Execute(TownsThread &thr,FMTownsCommon &towns,class Outside_World *outside_world,class Outside_World::Sound *sound,Command &cmd);
 
 	void Execute_Enable(FMTownsCommon &towns,Command &cmd);
 	void Execute_Disable(FMTownsCommon &towns,Command &cmd);

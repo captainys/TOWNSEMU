@@ -251,7 +251,7 @@ void FMTownsCommon::UpdateEleVol(int eleVol)
 	}
 }
 
-void FMTownsCommon::UpdateCDEleVol(Outside_World *outside_world)
+void FMTownsCommon::UpdateCDEleVol(Outside_World::Sound *outside_world)
 {
 	if(true==cdrom.var.CDDAmute)
 	{

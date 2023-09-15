@@ -40,7 +40,7 @@ public:
 	bool uiTerminate=false;
 
 	virtual void Main(TownsThread &vmThread,FMTownsCommon &towns,const TownsARGV &argv,Outside_World &outside_world) override;
-	virtual void ExecCommandQueue(TownsThread &vmThread,FMTownsCommon &towns,Outside_World *outside_world) override;
+	virtual void ExecCommandQueue(TownsThread &vmThread,FMTownsCommon &towns,Outside_World *outside_world,Outside_World::Sound *sound) override;
 };
 
 /* virtual */ void TownsCUIThread::Main(TownsThread &townsThread,FMTownsCommon &towns,const TownsARGV &argv,Outside_World &outside_world)
@@ -85,7 +85,7 @@ public:
 	}
 }
 
-/* virtual */ void TownsCUIThread::ExecCommandQueue(TownsThread &townsThread,FMTownsCommon &towns,Outside_World *outside_world)
+/* virtual */ void TownsCUIThread::ExecCommandQueue(TownsThread &townsThread,FMTownsCommon &towns,Outside_World *outside_world,Outside_World::Sound *sound)
 {
 	if(true==cmdInterpreter.waitVM)
 	{
@@ -105,7 +105,7 @@ public:
 		if(""!=this->cmdline)
 		{
 			auto cmd=cmdInterpreter.Interpret(this->cmdline);
-			cmdInterpreter.Execute(townsThread,towns,outside_world,cmd);
+			cmdInterpreter.Execute(townsThread,towns,outside_world,sound,cmd);
 			if(TownsCommandInterpreter::CMD_QUIT==cmd.primaryCmd)
 			{
 				uiTerminate=true;
@@ -115,7 +115,7 @@ public:
 		while(true!=outside_world->commandQueue.empty())
 		{
 			auto cmd=cmdInterpreter.Interpret(outside_world->commandQueue.front());
-			cmdInterpreter.Execute(townsThread,towns,outside_world,cmd);
+			cmdInterpreter.Execute(townsThread,towns,outside_world,sound,cmd);
 			if(TownsCommandInterpreter::CMD_QUIT==cmd.primaryCmd)
 			{
 				uiTerminate=true;
@@ -128,7 +128,7 @@ public:
 
 
 template <class CPUCLASS>
-int Run(FMTownsTemplate <CPUCLASS> &towns,const TownsARGV &argv,Outside_World &outside_world)
+int Run(FMTownsTemplate <CPUCLASS> &towns,const TownsARGV &argv,Outside_World &outside_world,Outside_World::Sound &sound)
 {
 	TownsThread townsThread;
 
@@ -149,8 +149,8 @@ int Run(FMTownsTemplate <CPUCLASS> &towns,const TownsARGV &argv,Outside_World &o
 	TownsCUIThread cuiThread;
 
 	std::thread UIThread(&TownsCUIThread::Run,&cuiThread,&townsThread,&towns,&argv,&outside_world);
-	townsThread.VMStart(&towns,&outside_world,&cuiThread);
-	townsThread.VMMainLoop(&towns,&outside_world,&cuiThread);
+	townsThread.VMStart(&towns,&outside_world,&sound,&cuiThread);
+	townsThread.VMMainLoop(&towns,&outside_world,&sound,&cuiThread);
 	townsThread.VMEnd(&towns,&outside_world,&cuiThread);
 
 	UIThread.join();
@@ -179,7 +179,8 @@ int main(int ac,char *av[])
 	}
 
 
-	Outside_World *outside_world=new FsSimpleWindowConnection;
+	auto *outside_world=new FsSimpleWindowConnection;
+	auto *sound=outside_world->CreateSound();
 	if(i486DXCommon::HIGH_FIDELITY==argv.CPUFidelityLevel)
 	{
 		static FMTownsTemplate <i486DXHighFidelity> towns;
@@ -187,7 +188,7 @@ int main(int ac,char *av[])
 		{
 			return 1;
 		}
-		return Run(towns,argv,*outside_world);
+		return Run(towns,argv,*outside_world,*sound);
 	}
 	else
 	{
@@ -196,6 +197,6 @@ int main(int ac,char *av[])
 		{
 			return 1;
 		}
-		return Run(towns,argv,*outside_world);
+		return Run(towns,argv,*outside_world,*sound);
 	}
 }

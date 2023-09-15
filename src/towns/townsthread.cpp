@@ -29,13 +29,12 @@ void TownsThread::VMStart(FMTownsCommon *townsPtr,Outside_World *outside_world,O
 	renderingThread->imageNeedsFlip=outside_world->ImageNeedsFlip();
 
 	this->townsPtr=townsPtr;
-	townsPtr->scsi.SetOutsideWorld(outside_world);
 
 	outside_world->Start();
 
 	if(""!=townsPtr->var.startUpStateFName)
 	{
-		townsPtr->LoadState(townsPtr->var.startUpStateFName,*outside_world);
+		townsPtr->LoadState(townsPtr->var.startUpStateFName,*sound);
 	}
 
 	switch(townsPtr->state.appSpecificSetting)
@@ -67,6 +66,7 @@ void TownsThread::VMMainLoopTemplate(FMTownsClass *townsPtr,Outside_World *outsi
 
 	townsPtr->cdrom.SetOutsideWorld(sound);
 	townsPtr->sound.SetOutsideWorld(sound);
+	townsPtr->scsi.SetOutsideWorld(sound);
 	sound->Start();
 
 	TownsRender render;
@@ -171,7 +171,7 @@ void TownsThread::VMMainLoopTemplate(FMTownsClass *townsPtr,Outside_World *outsi
 				}
 			}
 			townsPtr->ProcessSound(outside_world);
-			townsPtr->cdrom.UpdateCDDAState(townsPtr->state.townsTime,*outside_world);
+			townsPtr->cdrom.UpdateCDDAState(townsPtr->state.townsTime,*sound);
 
 			// townsPtr->CheckRenderingTimer(render,*outside_world);
 			renderingThread->CheckRenderingTimer(*townsPtr,render);
@@ -251,7 +251,7 @@ void TownsThread::VMMainLoopTemplate(FMTownsClass *townsPtr,Outside_World *outsi
 		}
 
 		uiThread->uiLock.lock();
-		uiThread->ExecCommandQueue(*this,*townsPtr,outside_world);
+		uiThread->ExecCommandQueue(*this,*townsPtr,outside_world,sound);
 		uiThread->uiLock.unlock();
 		if(true==townsPtr->var.justLoadedState)
 		{

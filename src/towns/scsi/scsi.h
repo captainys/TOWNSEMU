@@ -9,6 +9,7 @@
 #include <condition_variable>
 
 #include "discimg.h"
+#include "outside_world.h"
 
 /*
 Phase and I/O [0xC32] read
@@ -28,7 +29,7 @@ class TownsSCSI : public Device
 {
 private:
 	class FMTownsCommon *townsPtr;
-	class Outside_World *outsideworld=nullptr;
+	class Outside_World::Sound *outsideworld=nullptr;
 public:
 	virtual const char *DeviceName(void) const{return "SCSI";}
 
@@ -246,7 +247,7 @@ public:
 
 	TownsSCSI(class FMTownsCommon *townsPtr);
 
-	void SetOutsideWorld(class Outside_World *ptr);
+	void SetOutsideWorld(class Outside_World::Sound *ptr);
 
 	virtual void PowerOn(void);
 	virtual void Reset(void);

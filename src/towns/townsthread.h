@@ -102,7 +102,7 @@ public:
 	    uiLock is owned by the main thread when ExecCommandQueue is called.
 	    It must also executes commands in the outside_world->commandQueue.
 	*/
-	virtual void ExecCommandQueue(TownsThread &vmThread,FMTownsCommon &towns,Outside_World *outside_world)=0;
+	virtual void ExecCommandQueue(TownsThread &vmThread,FMTownsCommon &towns,Outside_World *outside_world,Outside_World::Sound *sound)=0;
 };
 
 /* } */

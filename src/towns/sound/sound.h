@@ -25,6 +25,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "ym2612.h"
 #include "rf5c68.h"
 #include "yssimplesound.h"
+#include "outside_world.h"
 
 class TownsSound : public Device
 {

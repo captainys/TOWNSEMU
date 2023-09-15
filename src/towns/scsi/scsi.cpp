@@ -23,8 +23,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include "towns.h"
 
-#include "outside_world.h"
-
 
 
 ////////////////////////////////////////////////////////////
@@ -203,7 +201,7 @@ TownsSCSI::TownsSCSI(class FMTownsCommon *townsPtr) : Device(townsPtr)
 	commandLength[SCSICMD_COPY_AND_VERIFY]=10;
 }
 
-void TownsSCSI::SetOutsideWorld(class Outside_World *ptr)
+void TownsSCSI::SetOutsideWorld(class Outside_World::Sound *ptr)
 {
 	this->outsideworld=ptr;
 }

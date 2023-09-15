@@ -139,7 +139,7 @@ public:
 		virtual void BeepPlay(int samplingRate, std::vector<unsigned char> &wave) override;
 		virtual void BeepPlayStop() override;
 		virtual bool BeepChannelPlaying() const override;
-	}
+	};
 	virtual Sound *CreateSound(void) const override;
 	virtual void DeleteSound(Sound *) const override;
 };

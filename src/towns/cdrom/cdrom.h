@@ -22,6 +22,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "discimg.h"
 #include "device.h"
 #include "townsdef.h"
+#include "outside_world.h"
 #include "i486.h"
 
 /*! Disassembly of some game titles suggested that the command can be issued like:
@@ -381,7 +382,7 @@ private:
 
 public:
 	// Will be called from FMTownsCommon::LoadState
-	void ResumeCDDAAfterRestore(class Outside_World *outsideWorld);
+	void ResumeCDDAAfterRestore(class Outside_World::Sound *outsideWorld);
 };
 
 

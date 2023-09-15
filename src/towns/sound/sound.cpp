@@ -46,7 +46,7 @@ TownsSound::TownsSound(class FMTownsCommon *townsPtr) : Device(townsPtr)
 {
 	this->townsPtr=townsPtr;
 }
-void TownsSound::SetOutsideWorld(class Outside_World *outside_world)
+void TownsSound::SetOutsideWorld(class Outside_World::Sound *outside_world)
 {
 	this->outside_world=outside_world;
 }
