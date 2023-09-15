@@ -1728,9 +1728,13 @@ Outside_World::Sound *FsSimpleWindowConnection::CreateSound(void) const
 	return new SoundConnection;
 }
 
-void FsSimpleWindowConnection::DeleteSound(Sound *ptr) const
+void FsSimpleWindowConnection::DeleteSound(Sound *PTR) const
 {
-	delete ptr;
+	auto ptr=dynamic_cast<SoundConnection *>(PTR);
+	if(nullptr!=ptr)
+	{
+		delete ptr;
+	}
 }
 
 void FsSimpleWindowConnection::SoundConnection::Start(void)

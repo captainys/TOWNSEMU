@@ -5,7 +5,7 @@
 /* virtual */ void TownsCommandQueue::Main(TownsThread &,FMTownsCommon &,const TownsARGV &,Outside_World &)
 {
 }
-/* virtual */ void TownsCommandQueue::ExecCommandQueue(TownsThread &vmThread,FMTownsCommon &towns,Outside_World *outside_world)
+/* virtual */ void TownsCommandQueue::ExecCommandQueue(TownsThread &vmThread,FMTownsCommon &towns,Outside_World *outside_world,Outside_World::Sound *sound)
 {
 	for(int i=0; i<2; ++i)
 	{
@@ -18,7 +18,7 @@
 			std::cout << cmdline << std::endl;
 
 			auto cmd=cmdInterpreter.Interpret(cmdline);
-			cmdInterpreter.Execute(vmThread,towns,outside_world,cmd);
+			cmdInterpreter.Execute(vmThread,towns,outside_world,sound,cmd);
 			if(TownsCommandInterpreter::CMD_QUIT==cmd.primaryCmd)
 			{
 			}

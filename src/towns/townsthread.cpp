@@ -268,7 +268,6 @@ void TownsThread::VMMainLoopTemplate(FMTownsClass *townsPtr,Outside_World *outsi
 	renderingThread->DiscardRunningRenderingTask();
 
 	sound->Stop();
-	outside_world->DeleteSound(sound);
 }
 void TownsThread::VMEnd(FMTownsCommon *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread)
 {
