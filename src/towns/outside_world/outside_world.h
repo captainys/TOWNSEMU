@@ -217,30 +217,41 @@ public:
 
 
 
-public:
-	/*! Left level and right level can be 0 to 256.  Value above 256 will be rounded to 256.
-	*/
-	virtual void CDDAPlay(const DiscImage &discImg,DiscImage::MinSecFrm from,DiscImage::MinSecFrm to,bool repeat,unsigned int,unsigned int)=0;
-	virtual void CDDASetVolume(float leftVol,float rightVol)=0;
-	virtual void CDDAStop(void)=0;
-	virtual void CDDAPause(void)=0;
-	virtual void CDDAResume(void)=0;
-	virtual bool CDDAIsPlaying(void)=0;
-	virtual DiscImage::MinSecFrm CDDACurrentPosition(void)=0;
+	class Window
+	{
+	public:
+	};
+	// virtual Window *CreateWindow(void) const=0;
+	class Audio
+	{
+	public:
+		virtual void Start(void)=0;
+		virtual void Stop(void)=0;
 
+		virtual void Polling(void)=0;
 
+		/*! Left level and right level can be 0 to 256.  Value above 256 will be rounded to 256.
+		*/
+		virtual void CDDAPlay(const DiscImage &discImg,DiscImage::MinSecFrm from,DiscImage::MinSecFrm to,bool repeat,unsigned int,unsigned int)=0;
+		virtual void CDDASetVolume(float leftVol,float rightVol)=0;
+		virtual void CDDAStop(void)=0;
+		virtual void CDDAPause(void)=0;
+		virtual void CDDAResume(void)=0;
+		virtual bool CDDAIsPlaying(void)=0;
+		virtual DiscImage::MinSecFrm CDDACurrentPosition(void)=0;
 
-public:
-	virtual void FMPCMPlay(std::vector <unsigned char > &wave)=0;
-	virtual void FMPCMPlayStop(void)=0;
-	virtual bool FMPCMChannelPlaying(void)=0;
+	public:
+		virtual void FMPCMPlay(std::vector <unsigned char > &wave)=0;
+		virtual void FMPCMPlayStop(void)=0;
+		virtual bool FMPCMChannelPlaying(void)=0;
 
-
-
-public:
-	virtual void BeepPlay(int samplingRate, std::vector<unsigned char>& wave) = 0;
-	virtual void BeepPlayStop() = 0;
-	virtual bool BeepChannelPlaying() const = 0;
+	public:
+		virtual void BeepPlay(int samplingRate, std::vector<unsigned char>& wave) = 0;
+		virtual void BeepPlayStop() = 0;
+		virtual bool BeepChannelPlaying() const = 0;
+	};
+	virtual Sound *CreateSound(void) const=0;
+	virtual void DeleteSound(Sound *) const=0;
 };
 
 

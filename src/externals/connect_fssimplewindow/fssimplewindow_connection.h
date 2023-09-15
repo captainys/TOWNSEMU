@@ -99,36 +99,49 @@ public:
 	virtual void RegisterHostShortCut(std::string hostKeyLabel,bool ctrl,bool shift,std::string cmdStr) override;
 	virtual void RegisterPauseResume(std::string hostKeyLabel) override;
 
-	YsSoundPlayer soundPlayer;
-	YsSoundPlayer::SoundData cddaChannel;
-	unsigned long long cddaStartHSG;
-	virtual void CDDAPlay(const DiscImage &discImg,DiscImage::MinSecFrm from,DiscImage::MinSecFrm to,bool repeat,unsigned int,unsigned int) override;
-	virtual void CDDASetVolume(float leftVol,float rightVol) override;
-	virtual void CDDAStop(void) override;
-	virtual void CDDAPause(void) override;
-	virtual void CDDAResume(void) override;
-	virtual bool CDDAIsPlaying(void) override;
-	virtual DiscImage::MinSecFrm CDDACurrentPosition(void) override;
-
-
 	virtual void ToggleMouseCursor(void) override;
 
 
-#ifdef AUDIO_USE_STREAMING
-	YsSoundPlayer::Stream FMPCMStream;
-#else
-	YsSoundPlayer::SoundData FMPCMChannel;
-#endif
-	virtual void FMPCMPlay(std::vector <unsigned char > &wave) override;
-	virtual void FMPCMPlayStop(void) override;
-	virtual bool FMPCMChannelPlaying(void) override;
 
+	class SoundConnection : public Audio
+	{
+	public:
+		YsSoundPlayer soundPlayer;
+		YsSoundPlayer::SoundData cddaChannel;
+		unsigned long long cddaStartHSG;
 
+	#ifdef AUDIO_USE_STREAMING
+		YsSoundPlayer::Stream FMPCMStream;
+	#else
+		YsSoundPlayer::SoundData FMPCMChannel;
+	#endif
 
-	YsSoundPlayer::SoundData BeepChannel;
-	virtual void BeepPlay(int samplingRate, std::vector<unsigned char> &wave) override;
-	virtual void BeepPlayStop() override;
-	virtual bool BeepChannelPlaying() const override;
+		YsSoundPlayer::SoundData BeepChannel;
+
+	public:
+		virtual void Start(void) override;
+		virtual void Stop(void) override;
+
+		virtual void Polling(void) override;
+
+		virtual void CDDAPlay(const DiscImage &discImg,DiscImage::MinSecFrm from,DiscImage::MinSecFrm to,bool repeat,unsigned int,unsigned int) override;
+		virtual void CDDASetVolume(float leftVol,float rightVol) override;
+		virtual void CDDAStop(void) override;
+		virtual void CDDAPause(void) override;
+		virtual void CDDAResume(void) override;
+		virtual bool CDDAIsPlaying(void) override;
+		virtual DiscImage::MinSecFrm CDDACurrentPosition(void) override;
+
+		virtual void FMPCMPlay(std::vector <unsigned char > &wave) override;
+		virtual void FMPCMPlayStop(void) override;
+		virtual bool FMPCMChannelPlaying(void) override;
+
+		virtual void BeepPlay(int samplingRate, std::vector<unsigned char> &wave) override;
+		virtual void BeepPlayStop() override;
+		virtual bool BeepChannelPlaying() const override;
+	}
+	virtual Sound *CreateSound(void) const override;
+	virtual void DeleteSound(Sound *) const override;
 };
 
 /* } */

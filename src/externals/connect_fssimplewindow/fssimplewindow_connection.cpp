@@ -270,13 +270,6 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 #else
 	FsSetWindowTitle("FM Towns Emulator - TSUGARU (High-Fidelity Mode)");
 #endif
-	soundPlayer.Start();
-	cddaStartHSG=0;
-#ifdef AUDIO_USE_STREAMING
-	YsSoundPlayer::StreamingOption FMPCMStreamOpt;
-	FMPCMStreamOpt.ringBufferLengthMillisec=TownsSound::FM_PCM_MILLISEC_PER_WAVE*2+TownsSound::WAVE_STREAMING_SAFETY_BUFFER;
-	soundPlayer.StartStreaming(FMPCMStream,FMPCMStreamOpt);
-#endif
 
 	glClearColor(0,0,0,0);
 	mainTexId=GenTexture();
@@ -304,12 +297,10 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 	{
 		FsUnmaximizeWindow();
 	}
-	soundPlayer.End();
 }
 
 /* virtual */ void FsSimpleWindowConnection::DevicePolling(class FMTownsCommon &towns)
 {
-	soundPlayer.KeepPlaying();
 	FsPollDevice();
 	bool ctrlKey=(0!=FsGetKeyState(FSKEY_CTRL));
 	bool shiftKey=(0!=FsGetKeyState(FSKEY_SHIFT));
@@ -1706,86 +1697,16 @@ void FsSimpleWindowConnection::RenderBeforeSwapBuffers(const TownsRender::Image 
 	}
 }
 
-/* virtual */ void FsSimpleWindowConnection::CDDAPlay(const DiscImage &discImg,DiscImage::MinSecFrm from,DiscImage::MinSecFrm to,bool repeat,unsigned int,unsigned int)
+void FsSimpleWindowConnection::PauseKeyPressed(void)
 {
-	auto wave=discImg.GetWave(from,to);
-	cddaChannel.CreateFromSigned16bitStereo(44100,wave);
-	if(true==repeat)
+	if(0==FsGetKeyState(FSKEY_SHIFT))
 	{
-		soundPlayer.PlayBackground(cddaChannel);
+		this->pauseKey=true;
 	}
 	else
 	{
-		soundPlayer.PlayOneShot(cddaChannel);
+		ToggleMouseCursor();
 	}
-	cddaStartHSG=from.ToHSG();
-}
-/* virtual */ void FsSimpleWindowConnection::CDDASetVolume(float leftVol,float rightVol)
-{
-	soundPlayer.SetVolumeLR(cddaChannel,leftVol,rightVol);
-}
-/* virtual */ void FsSimpleWindowConnection::CDDAStop(void)
-{
-	soundPlayer.Stop(cddaChannel);
-}
-/* virtual */ void FsSimpleWindowConnection::CDDAPause(void)
-{
-	soundPlayer.Pause(cddaChannel);
-}
-/* virtual */ void FsSimpleWindowConnection::CDDAResume(void)
-{
-	soundPlayer.Resume(cddaChannel);
-}
-/* virtual */ bool FsSimpleWindowConnection::CDDAIsPlaying(void)
-{
-	return (YSTRUE==soundPlayer.IsPlaying(cddaChannel));
-}
-/* virtual */ DiscImage::MinSecFrm FsSimpleWindowConnection::CDDACurrentPosition(void)
-{
-	double sec=soundPlayer.GetCurrentPosition(cddaChannel);
-	unsigned long long secHSG=(unsigned long long)(sec*75.0);
-	unsigned long long posInDisc=secHSG+cddaStartHSG;
-
-	DiscImage::MinSecFrm msf;
-	msf.FromHSG(posInDisc);
-	return msf;
-}
-
-/* virtual */ void FsSimpleWindowConnection::FMPCMPlay(std::vector <unsigned char> &wave)
-{
-#ifdef AUDIO_USE_STREAMING
-	YsSoundPlayer::SoundData nextWave;
-	nextWave.CreateFromSigned16bitStereo(YM2612::WAVE_SAMPLING_RATE,wave);
-	soundPlayer.AddNextStreamingSegment(FMPCMStream,nextWave);
-#else
-	FMPCMChannel.CreateFromSigned16bitStereo(YM2612::WAVE_SAMPLING_RATE,wave);
-	soundPlayer.PlayOneShot(FMPCMChannel);
-#endif
-}
-/* virtual */ void FsSimpleWindowConnection::FMPCMPlayStop(void)
-{
-}
-/* virtual */ bool FsSimpleWindowConnection::FMPCMChannelPlaying(void)
-{
-#ifdef AUDIO_USE_STREAMING
-	unsigned int numSamples=(TownsSound::FM_PCM_MILLISEC_PER_WAVE*YM2612::WAVE_SAMPLING_RATE+999)/1000;
-	return YSTRUE!=soundPlayer.StreamPlayerReadyToAcceptNextNumSample(FMPCMStream,numSamples);
-#else
-	return YSTRUE==soundPlayer.IsPlaying(FMPCMChannel);
-#endif
-}
-
-/* virtual */ void FsSimpleWindowConnection::BeepPlay(int samplingRate, std::vector<unsigned char> &wave) {
-	BeepChannel.CreateFromSigned16bitStereo(samplingRate, wave);
-	soundPlayer.PlayOneShot(BeepChannel);
-}
-
-/* virtual */ void FsSimpleWindowConnection::BeepPlayStop() {
-	soundPlayer.Stop(BeepChannel);
-}
-
-/* virtual */ bool FsSimpleWindowConnection::BeepChannelPlaying() const {
-	return YSTRUE == soundPlayer.IsPlaying(BeepChannel);
 }
 
 /* virtual */ void FsSimpleWindowConnection::ToggleMouseCursor(void)
@@ -1800,14 +1721,116 @@ void FsSimpleWindowConnection::RenderBeforeSwapBuffers(const TownsRender::Image 
 	}
 }
 
-void FsSimpleWindowConnection::PauseKeyPressed(void)
+////////////////////////////////////////////////////////////////
+
+Outside_World::Sound *FsSimpleWindowConnection::CreateSound(void) const
 {
-	if(0==FsGetKeyState(FSKEY_SHIFT))
+	return new SoundConnection;
+}
+
+void FsSimpleWindowConnection::DeleteSound(Sound *ptr) const
+{
+	delete ptr;
+}
+
+void FsSimpleWindowConnection::SoundConnection::Start(void)
+{
+	soundPlayer.Start();
+	cddaStartHSG=0;
+#ifdef AUDIO_USE_STREAMING
+	YsSoundPlayer::StreamingOption FMPCMStreamOpt;
+	FMPCMStreamOpt.ringBufferLengthMillisec=TownsSound::FM_PCM_MILLISEC_PER_WAVE*2+TownsSound::WAVE_STREAMING_SAFETY_BUFFER;
+	soundPlayer.StartStreaming(FMPCMStream,FMPCMStreamOpt);
+#endif
+}
+void FsSimpleWindowConnection::SoundConnection::Stop(void)
+{
+	soundPlayer.End();
+}
+
+void FsSimpleWindowConnection::SoundConnection::Polling(void)
+{
+	soundPlayer.KeepPlaying();
+}
+
+void FsSimpleWindowConnection::SoundConnection::CDDAPlay(const DiscImage &discImg,DiscImage::MinSecFrm from,DiscImage::MinSecFrm to,bool repeat,unsigned int,unsigned int)
+{
+	auto wave=discImg.GetWave(from,to);
+	cddaChannel.CreateFromSigned16bitStereo(44100,wave);
+	if(true==repeat)
 	{
-		this->pauseKey=true;
+		soundPlayer.PlayBackground(cddaChannel);
 	}
 	else
 	{
-		ToggleMouseCursor();
+		soundPlayer.PlayOneShot(cddaChannel);
 	}
+	cddaStartHSG=from.ToHSG();
+}
+void FsSimpleWindowConnection::SoundConnection::CDDASetVolume(float leftVol,float rightVol)
+{
+	soundPlayer.SetVolumeLR(cddaChannel,leftVol,rightVol);
+}
+void FsSimpleWindowConnection::SoundConnection::CDDAStop(void)
+{
+	soundPlayer.Stop(cddaChannel);
+}
+void FsSimpleWindowConnection::SoundConnection::CDDAPause(void)
+{
+	soundPlayer.Pause(cddaChannel);
+}
+void FsSimpleWindowConnection::SoundConnection::CDDAResume(void)
+{
+	soundPlayer.Resume(cddaChannel);
+}
+bool FsSimpleWindowConnection::SoundConnection::CDDAIsPlaying(void)
+{
+	return (YSTRUE==soundPlayer.IsPlaying(cddaChannel));
+}
+DiscImage::MinSecFrm FsSimpleWindowConnection::SoundConnection::CDDACurrentPosition(void)
+{
+	double sec=soundPlayer.GetCurrentPosition(cddaChannel);
+	unsigned long long secHSG=(unsigned long long)(sec*75.0);
+	unsigned long long posInDisc=secHSG+cddaStartHSG;
+
+	DiscImage::MinSecFrm msf;
+	msf.FromHSG(posInDisc);
+	return msf;
+}
+
+void FsSimpleWindowConnection::SoundConnection::FMPCMPlay(std::vector <unsigned char> &wave)
+{
+#ifdef AUDIO_USE_STREAMING
+	YsSoundPlayer::SoundData nextWave;
+	nextWave.CreateFromSigned16bitStereo(YM2612::WAVE_SAMPLING_RATE,wave);
+	soundPlayer.AddNextStreamingSegment(FMPCMStream,nextWave);
+#else
+	FMPCMChannel.CreateFromSigned16bitStereo(YM2612::WAVE_SAMPLING_RATE,wave);
+	soundPlayer.PlayOneShot(FMPCMChannel);
+#endif
+}
+void FsSimpleWindowConnection::SoundConnection::FMPCMPlayStop(void)
+{
+}
+bool FsSimpleWindowConnection::SoundConnection::FMPCMChannelPlaying(void)
+{
+#ifdef AUDIO_USE_STREAMING
+	unsigned int numSamples=(TownsSound::FM_PCM_MILLISEC_PER_WAVE*YM2612::WAVE_SAMPLING_RATE+999)/1000;
+	return YSTRUE!=soundPlayer.StreamPlayerReadyToAcceptNextNumSample(FMPCMStream,numSamples);
+#else
+	return YSTRUE==soundPlayer.IsPlaying(FMPCMChannel);
+#endif
+}
+
+void FsSimpleWindowConnection::SoundConnection::BeepPlay(int samplingRate, std::vector<unsigned char> &wave) {
+	BeepChannel.CreateFromSigned16bitStereo(samplingRate, wave);
+	soundPlayer.PlayOneShot(BeepChannel);
+}
+
+void FsSimpleWindowConnection::SoundConnection::BeepPlayStop() {
+	soundPlayer.Stop(BeepChannel);
+}
+
+bool FsSimpleWindowConnection::SoundConnection::BeepChannelPlaying() const {
+	return YSTRUE == soundPlayer.IsPlaying(BeepChannel);
 }
