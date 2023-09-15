@@ -103,7 +103,7 @@ public:
 
 
 
-	class SoundConnection : public Audio
+	class SoundConnection : public Sound
 	{
 	public:
 		YsSoundPlayer soundPlayer;

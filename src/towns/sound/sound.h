@@ -74,7 +74,7 @@ public:
 
 	State state;
 	Variable var;
-	class Outside_World *outside_world=nullptr;
+	class Outside_World::Sound *outside_world=nullptr;
 
 	bool recordFMandPCM=false;
 	std::vector <unsigned char> FMPCMrecording;
@@ -99,7 +99,7 @@ public:
 	}
 
 	TownsSound(class FMTownsCommon *townsPtr);
-	void SetOutsideWorld(class Outside_World *outside_world);
+	void SetOutsideWorld(class Outside_World::Sound *outside_world);
 	void PCMStartPlay(unsigned char chStartPlay);
 	void PCMStopPlay(unsigned char chStopPlay);
 	void PCMPausePlay(unsigned char chStopPlay);

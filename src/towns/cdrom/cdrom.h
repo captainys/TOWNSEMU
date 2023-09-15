@@ -96,7 +96,7 @@ private:
 	class FMTownsCommon *townsPtr;
 	class TownsPIC *PICPtr;
 	class TownsDMAC *DMACPtr;
-	class Outside_World *OutsideWorld=nullptr;
+	class Outside_World::Sound *OutsideWorld=nullptr;
 
 public:
 	enum
@@ -283,8 +283,8 @@ public:
 	virtual void PowerOn(void);
 	virtual void Reset(void);
 
-	void SetOutsideWorld(class Outside_World *outside_world);
-	inline void UpdateCDDAState(long long int townsTime,Outside_World &outside_world)
+	void SetOutsideWorld(class Outside_World::Sound *outside_world);
+	inline void UpdateCDDAState(long long int townsTime,Outside_World::Sound &outside_world)
 	{
 		if(state.nextCDDAPollingTime<townsTime)
 		{
@@ -312,7 +312,7 @@ public:
 		return (0!=(cmd&CMDFLAG_STATUS_REQUEST)); // This interpretation of [2] prevents Shadow of the Beast from starting.
 	}
 private:
-	void UpdateCDDAStateInternal(long long int townsTime,Outside_World &outside_world);
+	void UpdateCDDAStateInternal(long long int townsTime,Outside_World::Sound &outside_world);
 public:
 	inline bool CDDAIsPlaying(void) const
 	{

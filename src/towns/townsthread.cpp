@@ -24,13 +24,11 @@ TownsThread::TownsThread(void) : renderingThread(new TownsRenderingThread)
 	runMode=RUNMODE_PAUSE;
 }
 
-void TownsThread::VMStart(FMTownsCommon *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread)
+void TownsThread::VMStart(FMTownsCommon *townsPtr,Outside_World *outside_world,Outside_World::Sound *sound,class TownsUIThread *uiThread)
 {
 	renderingThread->imageNeedsFlip=outside_world->ImageNeedsFlip();
 
 	this->townsPtr=townsPtr;
-	townsPtr->cdrom.SetOutsideWorld(outside_world);
-	townsPtr->sound.SetOutsideWorld(outside_world);
 	townsPtr->scsi.SetOutsideWorld(outside_world);
 
 	outside_world->Start();
@@ -52,20 +50,24 @@ void TownsThread::VMStart(FMTownsCommon *townsPtr,Outside_World *outside_world,c
 	}
 }
 
-void TownsThread::VMMainLoop(FMTownsTemplate <i486DXDefaultFidelity>  *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread)
+void TownsThread::VMMainLoop(FMTownsTemplate <i486DXDefaultFidelity>  *townsPtr,Outside_World *outside_world,Outside_World::Sound *sound,class TownsUIThread *uiThread)
 {
-	VMMainLoopTemplate(townsPtr,outside_world,uiThread);
+	VMMainLoopTemplate(townsPtr,outside_world,sound,uiThread);
 }
-void TownsThread::VMMainLoop(FMTownsTemplate <i486DXHighFidelity>  *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread)
+void TownsThread::VMMainLoop(FMTownsTemplate <i486DXHighFidelity>  *townsPtr,Outside_World *outside_world,Outside_World::Sound *sound,class TownsUIThread *uiThread)
 {
-	VMMainLoopTemplate(townsPtr,outside_world,uiThread);
+	VMMainLoopTemplate(townsPtr,outside_world,sound,uiThread);
 }
 
 template <class FMTownsClass>
-void TownsThread::VMMainLoopTemplate(FMTownsClass *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread)
+void TownsThread::VMMainLoopTemplate(FMTownsClass *townsPtr,Outside_World *outside_world,Outside_World::Sound *sound,class TownsUIThread *uiThread)
 {
 	// Just in case, if there is a remains of the rendering from the previous run, discard it.
 	renderingThread->DiscardRunningRenderingTask();
+
+	townsPtr->cdrom.SetOutsideWorld(sound);
+	townsPtr->sound.SetOutsideWorld(sound);
+	sound->Start();
 
 	TownsRender render;
 	bool terminate=false;
@@ -264,6 +266,9 @@ void TownsThread::VMMainLoopTemplate(FMTownsClass *townsPtr,Outside_World *outsi
 	// Rendering thread may be working on local TownsRender.
 	// WaitIdle to make sure the rendering thread is done with rendering before leaving this function.
 	renderingThread->DiscardRunningRenderingTask();
+
+	sound->Stop();
+	outside_world->DeleteSound(sound);
 }
 void TownsThread::VMEnd(FMTownsCommon *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread)
 {

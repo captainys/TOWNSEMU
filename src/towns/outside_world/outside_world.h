@@ -222,7 +222,7 @@ public:
 	public:
 	};
 	// virtual Window *CreateWindow(void) const=0;
-	class Audio
+	class Sound
 	{
 	public:
 		virtual void Start(void)=0;

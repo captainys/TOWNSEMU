@@ -66,7 +66,7 @@ void TownsCDROM::SetOutsideWorld(class Outside_World *outside_world)
 	this->OutsideWorld=outside_world;
 }
 
-void TownsCDROM::UpdateCDDAStateInternal(long long int townsTime,Outside_World &outside_world)
+void TownsCDROM::UpdateCDDAStateInternal(long long int townsTime,Outside_World::Sound &outside_world)
 {
 	state.nextCDDAPollingTime=townsTime+State::CDDA_POLLING_INTERVAL;
 	if(State::CDDA_PLAYING==state.CDDAState)
