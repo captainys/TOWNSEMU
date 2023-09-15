@@ -1723,6 +1723,38 @@ void FsSimpleWindowConnection::PauseKeyPressed(void)
 
 ////////////////////////////////////////////////////////////////
 
+void FsSimpleWindowConnection::WindowConnection::Start(void)
+{
+}
+void FsSimpleWindowConnection::WindowConnection::Stop(void)
+{
+}
+void FsSimpleWindowConnection::WindowConnection::Interval(void)
+{
+}
+void FsSimpleWindowConnection::WindowConnection::Render(void)
+{
+}
+void FsSimpleWindowConnection::WindowConnection::Communicate(Outside_World *ow)
+{
+	auto outwide_world=dynamic_cast<FsSimpleWindowConnection*>(ow);
+}
+
+Outside_World::WindowInterface *FsSimpleWindowConnection::CreateWindowInterface(void) const
+{
+	return new WindowConnection;
+}
+void FsSimpleWindowConnection::DeleteWindowInterface(Outside_World::WindowInterface *PTR) const
+{
+	auto ptr=dynamic_cast<WindowConnection*>(PTR);
+	if(nullptr!=ptr)
+	{
+		delete ptr;
+	}
+}
+
+////////////////////////////////////////////////////////////////
+
 Outside_World::Sound *FsSimpleWindowConnection::CreateSound(void) const
 {
 	return new SoundConnection;

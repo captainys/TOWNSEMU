@@ -128,7 +128,7 @@ public:
 
 
 template <class CPUCLASS>
-int Run(FMTownsTemplate <CPUCLASS> &towns,const TownsARGV &argv,Outside_World &outside_world,Outside_World::Sound &sound)
+int Run(FMTownsTemplate <CPUCLASS> &towns,const TownsARGV &argv,Outside_World &outside_world,Outside_World::Sound &sound,Outside_World::WindowInterface &window)
 {
 	TownsThread townsThread;
 
@@ -150,7 +150,7 @@ int Run(FMTownsTemplate <CPUCLASS> &towns,const TownsARGV &argv,Outside_World &o
 
 	std::thread UIThread(&TownsCUIThread::Run,&cuiThread,&townsThread,&towns,&argv,&outside_world);
 	townsThread.VMStart(&towns,&outside_world,&sound,&cuiThread);
-	townsThread.VMMainLoop(&towns,&outside_world,&sound,&cuiThread);
+	townsThread.VMMainLoop(&towns,&outside_world,&sound,&window,&cuiThread);
 	townsThread.VMEnd(&towns,&outside_world,&cuiThread);
 
 	UIThread.join();
@@ -181,6 +181,8 @@ int main(int ac,char *av[])
 
 	auto *outside_world=new FsSimpleWindowConnection;
 	auto *sound=outside_world->CreateSound();
+	auto *window=outside_world->CreateWindowInterface();
+	window->Start();
 	if(i486DXCommon::HIGH_FIDELITY==argv.CPUFidelityLevel)
 	{
 		static FMTownsTemplate <i486DXHighFidelity> towns;
@@ -188,7 +190,7 @@ int main(int ac,char *av[])
 		{
 			return 1;
 		}
-		return Run(towns,argv,*outside_world,*sound);
+		return Run(towns,argv,*outside_world,*sound,*window);
 	}
 	else
 	{
@@ -197,6 +199,6 @@ int main(int ac,char *av[])
 		{
 			return 1;
 		}
-		return Run(towns,argv,*outside_world,*sound);
+		return Run(towns,argv,*outside_world,*sound,*window);
 	}
 }

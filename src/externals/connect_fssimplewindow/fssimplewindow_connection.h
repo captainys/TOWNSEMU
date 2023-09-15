@@ -103,6 +103,20 @@ public:
 
 
 
+	class WindowConnection : public WindowInterface
+	{
+	public:
+		void Start(void) override;
+		void Stop(void) override;
+		void Interval(void) override;
+		void Render(void) override;
+		void Communicate(Outside_World *) override;
+	};
+	WindowInterface *CreateWindowInterface(void) const override;
+	void DeleteWindowInterface(WindowInterface *) const override;
+
+
+
 	class SoundConnection : public Sound
 	{
 	public:

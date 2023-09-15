@@ -49,17 +49,32 @@ void TownsThread::VMStart(FMTownsCommon *townsPtr,Outside_World *outside_world,O
 	}
 }
 
-void TownsThread::VMMainLoop(FMTownsTemplate <i486DXDefaultFidelity>  *townsPtr,Outside_World *outside_world,Outside_World::Sound *sound,class TownsUIThread *uiThread)
+void TownsThread::VMMainLoop(
+    FMTownsTemplate <i486DXDefaultFidelity>  *townsPtr,
+    Outside_World *outside_world,
+    Outside_World::Sound *sound,
+    Outside_World::WindowInterface *window,
+    class TownsUIThread *uiThread)
 {
-	VMMainLoopTemplate(townsPtr,outside_world,sound,uiThread);
+	VMMainLoopTemplate(townsPtr,outside_world,sound,window,uiThread);
 }
-void TownsThread::VMMainLoop(FMTownsTemplate <i486DXHighFidelity>  *townsPtr,Outside_World *outside_world,Outside_World::Sound *sound,class TownsUIThread *uiThread)
+void TownsThread::VMMainLoop(
+    FMTownsTemplate <i486DXHighFidelity>  *townsPtr,
+    Outside_World *outside_world,
+    Outside_World::Sound *sound,
+    Outside_World::WindowInterface *window,
+    class TownsUIThread *uiThread)
 {
-	VMMainLoopTemplate(townsPtr,outside_world,sound,uiThread);
+	VMMainLoopTemplate(townsPtr,outside_world,sound,window,uiThread);
 }
 
 template <class FMTownsClass>
-void TownsThread::VMMainLoopTemplate(FMTownsClass *townsPtr,Outside_World *outside_world,Outside_World::Sound *sound,class TownsUIThread *uiThread)
+void TownsThread::VMMainLoopTemplate(
+    FMTownsClass *townsPtr,
+    Outside_World *outside_world,
+    Outside_World::Sound *sound,
+    Outside_World::WindowInterface *window,
+    class TownsUIThread *uiThread)
 {
 	// Just in case, if there is a remains of the rendering from the previous run, discard it.
 	renderingThread->DiscardRunningRenderingTask();

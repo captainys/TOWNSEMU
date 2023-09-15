@@ -284,6 +284,17 @@ TownsRender::Image TownsRender::GetImage(void) const
 	img.rgba=this->rgba.data();
 	return img;
 }
+TownsRender::ImageCopy TownsRender::MoveImage(void)
+{
+	ImageCopy img;
+	img.wid=this->wid;
+	img.hei=this->hei;
+	std::swap(img.rgba,this->rgba);
+	this->wid=0;
+	this->hei=0;
+	this->rgba.clear();
+	return img;
+}
 
 template <class OFFSETTRANS>
 void TownsRender::Render(

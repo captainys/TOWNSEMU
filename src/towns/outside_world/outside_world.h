@@ -217,16 +217,29 @@ public:
 
 
 
-	class Window
+	class WindowInterface
 	{
 	public:
+		TownsRender::ImageCopy mostRecentImage;
+
 		virtual void Start(void)=0;
 		virtual void Stop(void)=0;
 		virtual void Interval(void)=0;
 		virtual void Render(void)=0;
 		virtual void Communicate(Outside_World *)=0;
 	};
-	// virtual Window *CreateWindow(void) const=0;
+	virtual WindowInterface *CreateWindowInterface(void) const=0;
+	virtual void DeleteWindowInterface(WindowInterface *) const=0;
+
+
+
+	/*! Sound class will entirely stay within the VM thread.
+	    TownsThread::VMMainLoop will Start and Stop the class.
+	    Therefore, it must not be started or stopped outside of TownsThread::VMMainLoop.
+
+	    Sound class will be referenced from TownsSound, TownsCDROM, TownsSCSI classes,
+	    TownsSound class for FM/PCM/Beep, TownsCDROM and TownsSCSI for CDDA.
+	*/
 	class Sound
 	{
 	public:

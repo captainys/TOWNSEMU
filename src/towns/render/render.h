@@ -50,6 +50,12 @@ public:
 		unsigned int wid,hei;
 		const unsigned char *rgba;
 	};
+	class ImageCopy
+	{
+	public:
+		unsigned int wid,hei;
+		std::vector <unsigned char> rgba;
+	};
 
 	TownsRender();
 
@@ -91,8 +97,16 @@ public:
 	void MakeOpaque(void);
 
 	/*! Returns an image.
+	    This image is a light-copy of the image, therefore it does not own the bitmap.
+	    This image only retains a link to the bitmap of TownsRender class.
 	*/
 	Image GetImage(void) const;
+
+	/*! Returns an image.
+	    This image takes ownership of the bitmap from TownsRender.
+	    After this function, this TownsRender loses the bitmap.
+	*/
+	ImageCopy MoveImage(void);
 
 	class VRAM0Trans // 80000000H to 80080000H
 	{
