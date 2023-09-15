@@ -301,39 +301,49 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 
 /* virtual */ void FsSimpleWindowConnection::DevicePolling(class FMTownsCommon &towns)
 {
-	FsPollDevice();
-	bool ctrlKey=(0!=FsGetKeyState(FSKEY_CTRL));
-	bool shiftKey=(0!=FsGetKeyState(FSKEY_SHIFT));
+	// WindosInterface class is now in charge of updating device status.
+	// Before DevicePolling is called, TownsThread::VMMainLoop calls WindowInterface::Communicate
+	// to transfer cached events and device status to this->windowEvent.
+
+	bool ctrlKey=(0!=windowEvent.keyState[FSKEY_CTRL]);
+	bool shiftKey=(0!=windowEvent.keyState[FSKEY_SHIFT]);
 
 	PollGamePads();
 
-	int lb,mb,rb,mx,my;
-	auto mosEvt=FsGetMouseEvent(lb,mb,rb,mx,my);
-	if(LOWER_RIGHT_NONE!=lowerRightIcon && FSMOUSEEVENT_LBUTTONDOWN==mosEvt)
+	for(auto &mos : windowEvent.mouseEvents)
 	{
-		int wid,hei;
-		FsGetWindowSize(wid,hei);
+		if(LOWER_RIGHT_NONE!=lowerRightIcon && FSMOUSEEVENT_LBUTTONDOWN==mos.evt)
+		{
+			int wid=windowEvent.winWid;
+			int hei=windowEvent.winHei;
 
-		int iconWid=0;
-		int iconHei=0;
-		switch(lowerRightIcon)
-		{
-		case LOWER_RIGHT_NONE:
-			break;
-		case LOWER_RIGHT_PAUSE:
-			iconWid=PAUSE_wid;
-			iconHei=PAUSE_hei;
-			break;
-		case LOWER_RIGHT_MENU:
-			iconWid=MENU_wid;
-			iconHei=MENU_hei;
-			break;
-		}
-		if(wid-iconWid<mx && hei-iconHei<my)
-		{
-			this->pauseKey=true;
+			int iconWid=0;
+			int iconHei=0;
+			switch(lowerRightIcon)
+			{
+			case LOWER_RIGHT_NONE:
+				break;
+			case LOWER_RIGHT_PAUSE:
+				iconWid=PAUSE_wid;
+				iconHei=PAUSE_hei;
+				break;
+			case LOWER_RIGHT_MENU:
+				iconWid=MENU_wid;
+				iconHei=MENU_hei;
+				break;
+			}
+			if(wid-iconWid<mos.mx && hei-iconHei<mos.my)
+			{
+				this->pauseKey=true;
+			}
 		}
 	}
+
+	int lb=windowEvent.lastKnownMouse.lb;
+	int mb=windowEvent.lastKnownMouse.mb;
+	int rb=windowEvent.lastKnownMouse.rb;
+	int mx=windowEvent.lastKnownMouse.mx;
+	int my=windowEvent.lastKnownMouse.my;
 
 
 	bool gamePadEmulationByKey=false; // Emulate a gamepad with keyboard
@@ -530,10 +540,9 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 	// if(true==keyTranslationMode)
 	if(TOWNS_KEYBOARD_MODE_DIRECT!=keyboardMode) // Means one of the translation modes.
 	{
-		unsigned int c;
-		while(0!=(c=FsInkeyChar()))
+		for(auto c : windowEvent.charCode)
 		{
-			if(0==FsGetKeyState(FSKEY_CTRL))
+			if(0==windowEvent.keyState[FSKEY_CTRL])
 			{
 				if(' '<=c)
 				{
@@ -546,7 +555,7 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 				}
 			}
 		}
-		while(0!=(c=FsInkey()))
+		for(auto c : windowEvent.keyCode)
 		{
 			if(PAUSE_KEY_CODE==c)
 			{
@@ -647,8 +656,7 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 	}
 	else // if(TOWNS_KEYBOARD_MODE_DIRECT==keyboardMode)
 	{
-		unsigned int c;
-		while(0!=(c=FsInkey()))
+		for(auto c : windowEvent.keyCode)
 		{
 			unsigned char byteData=0;
 			this->ProcessInkey(towns,FSKEYtoTownsKEY[c]);
@@ -745,7 +753,7 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 			}
 
 			unsigned char byteData=0;
-			auto sta=FsGetKeyState(key);
+			auto sta=windowEvent.keyState[key];
 			if(0!=FSKEYtoTownsKEY[key] && 0!=FSKEYState[key] && 0==sta)
 			{
 				byteData|=(ctrlKey ? TOWNS_KEYFLAG_CTRL : 0);
@@ -758,9 +766,6 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 			{
 				FSKEYState[key]=0;
 			}
-		}
-		while(0!=FsInkeyChar())
-		{
 		}
 	}
 
@@ -776,18 +781,18 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 				break;
 			case TOWNS_GAMEPORTEMU_KEYBOARD:
 				{
-					bool Abutton=(0!=FsGetKeyState(FSKEY_Z));
-					bool Bbutton=(0!=FsGetKeyState(FSKEY_X));
-					bool run=(0!=FsGetKeyState(FSKEY_A));
-					bool pause=(0!=FsGetKeyState(FSKEY_S));
-					bool left=(0!=FsGetKeyState(FSKEY_LEFT));
-					bool right=(0!=FsGetKeyState(FSKEY_RIGHT));
+					bool Abutton=(0!=windowEvent.keyState[FSKEY_Z]);
+					bool Bbutton=(0!=windowEvent.keyState[FSKEY_X]);
+					bool run=(0!=windowEvent.keyState[FSKEY_A]);
+					bool pause=(0!=windowEvent.keyState[FSKEY_S]);
+					bool left=(0!=windowEvent.keyState[FSKEY_LEFT]);
+					bool right=(0!=windowEvent.keyState[FSKEY_RIGHT]);
 					if(true==left && true==right)
 					{
 						right=false;
 					}
-					bool up=(0!=FsGetKeyState(FSKEY_UP));
-					bool down=(0!=FsGetKeyState(FSKEY_DOWN));
+					bool up=(0!=windowEvent.keyState[FSKEY_UP]);
+					bool down=(0!=windowEvent.keyState[FSKEY_DOWN]);
 					if(true==up && true==down)
 					{
 						down=false;
@@ -942,21 +947,21 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 						mouseEmulationByAnalogAxis=true;
 						if(TOWNS_GAMEPORTEMU_MOUSE_BY_KEY==gamePort[portId])
 						{
-							upDownLeftRight[0]=(0!=FsGetKeyState(FSKEY_UP));
-							upDownLeftRight[1]=(0!=FsGetKeyState(FSKEY_DOWN));
-							upDownLeftRight[2]=(0!=FsGetKeyState(FSKEY_LEFT));
-							upDownLeftRight[3]=(0!=FsGetKeyState(FSKEY_RIGHT));
-							button[0]=(0!=FsGetKeyState(FSKEY_Z));
-							button[1]=(0!=FsGetKeyState(FSKEY_X));
+							upDownLeftRight[0]=(0!=windowEvent.keyState[FSKEY_UP]);
+							upDownLeftRight[1]=(0!=windowEvent.keyState[FSKEY_DOWN]);
+							upDownLeftRight[2]=(0!=windowEvent.keyState[FSKEY_LEFT]);
+							upDownLeftRight[3]=(0!=windowEvent.keyState[FSKEY_RIGHT]);
+							button[0]=(0!=windowEvent.keyState[FSKEY_Z]);
+							button[1]=(0!=windowEvent.keyState[FSKEY_X]);
 						}
 						else if(TOWNS_GAMEPORTEMU_MOUSE_BY_NUMPAD==gamePort[portId])
 						{
-							upDownLeftRight[0]=(0!=FsGetKeyState(FSKEY_TEN7) || 0!=FsGetKeyState(FSKEY_TEN8) || 0!=FsGetKeyState(FSKEY_TEN9));
-							upDownLeftRight[1]=(0!=FsGetKeyState(FSKEY_TEN1) || 0!=FsGetKeyState(FSKEY_TEN2) || 0!=FsGetKeyState(FSKEY_TEN3));
-							upDownLeftRight[2]=(0!=FsGetKeyState(FSKEY_TEN1) || 0!=FsGetKeyState(FSKEY_TEN4) || 0!=FsGetKeyState(FSKEY_TEN7));
-							upDownLeftRight[3]=(0!=FsGetKeyState(FSKEY_TEN3) || 0!=FsGetKeyState(FSKEY_TEN6) || 0!=FsGetKeyState(FSKEY_TEN9));
-							button[0]=(0!=FsGetKeyState(FSKEY_TENSLASH));
-							button[1]=(0!=FsGetKeyState(FSKEY_TENSTAR));
+							upDownLeftRight[0]=(0!=windowEvent.keyState[FSKEY_TEN7] || 0!=windowEvent.keyState[FSKEY_TEN8] || 0!=windowEvent.keyState[FSKEY_TEN9]);
+							upDownLeftRight[1]=(0!=windowEvent.keyState[FSKEY_TEN1] || 0!=windowEvent.keyState[FSKEY_TEN2] || 0!=windowEvent.keyState[FSKEY_TEN3]);
+							upDownLeftRight[2]=(0!=windowEvent.keyState[FSKEY_TEN1] || 0!=windowEvent.keyState[FSKEY_TEN4] || 0!=windowEvent.keyState[FSKEY_TEN7]);
+							upDownLeftRight[3]=(0!=windowEvent.keyState[FSKEY_TEN3] || 0!=windowEvent.keyState[FSKEY_TEN6] || 0!=windowEvent.keyState[FSKEY_TEN9]);
+							button[0]=(0!=windowEvent.keyState[FSKEY_TENSLASH]);
+							button[1]=(0!=windowEvent.keyState[FSKEY_TENSTAR]);
 						}
 						else
 						{
@@ -1142,10 +1147,10 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 		if(TOWNS_APPSPECIFIC_DAIKOUKAIJIDAI2==towns.state.appSpecificSetting &&
 		   true==towns.Daikoukai2_ControlMouseByArrowKeys(
 			    lb,mb,rb,mx,my,
-			    FsGetKeyState(FSKEY_LEFT),
-			    FsGetKeyState(FSKEY_UP),
-			    FsGetKeyState(FSKEY_RIGHT),
-			    FsGetKeyState(FSKEY_DOWN)))
+			    windowEvent.keyState[FSKEY_LEFT],
+			    windowEvent.keyState[FSKEY_UP],
+			    windowEvent.keyState[FSKEY_RIGHT],
+			    windowEvent.keyState[FSKEY_DOWN]))
 		{
 			this->ProcessMouse(towns,lb,mb,rb,mx,my);
 		}
@@ -1699,7 +1704,7 @@ void FsSimpleWindowConnection::RenderBeforeSwapBuffers(const TownsRender::Image 
 
 void FsSimpleWindowConnection::PauseKeyPressed(void)
 {
-	if(0==FsGetKeyState(FSKEY_SHIFT))
+	if(0==windowEvent.keyState[FSKEY_SHIFT])
 	{
 		this->pauseKey=true;
 	}
@@ -1731,13 +1736,47 @@ void FsSimpleWindowConnection::WindowConnection::Stop(void)
 }
 void FsSimpleWindowConnection::WindowConnection::Interval(void)
 {
+	FsPollDevice();
+
+	FsGetWindowSize(primary.winWid,primary.winHei);
+
+	int code;
+	while(FSKEY_NULL!=(code=FsInkey()))
+	{
+		primary.keyCode.push_back(code);
+	}
+	while(0!=(code=FsInkeyChar()))
+	{
+		primary.charCode.push_back(code);
+	}
+	for(int key=0; key<FSKEY_NUM_KEYCODE; ++key)
+	{
+		primary.keyState[key]=FsGetKeyState(key);
+	}
+	for(;;)
+	{
+		primary.lastKnownMouse.Read();
+		if(FSMOUSEEVENT_NONE==primary.lastKnownMouse.evt)
+		{
+			break;
+		}
+		primary.mouseEvents.push_back(primary.lastKnownMouse);
+	}
+
+	if(true==readyToSend.EventEmpty())
+	{
+		std::swap(primary,readyToSend);
+		primary.CleanUpEvents();
+	}
 }
 void FsSimpleWindowConnection::WindowConnection::Render(void)
 {
 }
 void FsSimpleWindowConnection::WindowConnection::Communicate(Outside_World *ow)
 {
-	auto outwide_world=dynamic_cast<FsSimpleWindowConnection*>(ow);
+	auto outside_world=dynamic_cast<FsSimpleWindowConnection*>(ow);
+	std::swap(outside_world->windowEvent,readyToSend);
+	readyToSend.CleanUpEvents();
 }
 
 Outside_World::WindowInterface *FsSimpleWindowConnection::CreateWindowInterface(void) const
