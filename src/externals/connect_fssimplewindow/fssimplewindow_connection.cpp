@@ -182,6 +182,13 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 
 	auto &gamePads=windowEvent.gamePads;
 
+	if(prevGamePads.size()!=gamePads.size())
+	{
+		// Probably the first time.  There is no previous game-pad states.
+		// Make it a copy.
+		prevGamePads=gamePads;
+	}
+
 	bool gamePadEmulationByKey=false; // Emulate a gamepad with keyboard
 	bool mouseEmulationByNumPad=false; // Emulate mouse with keyboard numpad
 	for(unsigned int portId=0; portId<TOWNS_NUM_GAMEPORTS; ++portId)
