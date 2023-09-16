@@ -201,7 +201,6 @@ int main(int ac,char *av[])
 	auto *outside_world=new FsSimpleWindowConnection;
 	auto *sound=outside_world->CreateSound();
 	auto *window=outside_world->CreateWindowInterface();
-	window->Start();
 	if(i486DXCommon::HIGH_FIDELITY==argv.CPUFidelityLevel)
 	{
 		static FMTownsTemplate <i486DXHighFidelity> towns;
@@ -209,6 +208,7 @@ int main(int ac,char *av[])
 		{
 			return 1;
 		}
+		window->Start();
 		return Run(towns,argv,*outside_world,*sound,*window);
 	}
 	else
@@ -218,6 +218,7 @@ int main(int ac,char *av[])
 		{
 			return 1;
 		}
+		window->Start();
 		return Run(towns,argv,*outside_world,*sound,*window);
 	}
 }
