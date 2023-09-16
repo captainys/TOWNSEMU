@@ -157,7 +157,8 @@ int Run(FMTownsTemplate <CPUCLASS> &towns,const TownsARGV &argv,Outside_World &o
 	});
 
 	auto t0=std::chrono::high_resolution_clock::now();
-	for(;;)
+	window.ClearVMClosedFlag();
+	while(true!=window.CheckVMClosed())
 	{
 		window.Interval();
 		auto t=std::chrono::high_resolution_clock::now();

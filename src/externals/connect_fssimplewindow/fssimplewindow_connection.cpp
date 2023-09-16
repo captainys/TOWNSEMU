@@ -1556,6 +1556,13 @@ void FsSimpleWindowConnection::WindowConnection::Render(bool swapBuffers)
 	// {
 	renderingLock.lock();
 
+	if(0==mostRecentImage.wid || 0==mostRecentImage.hei)
+	{
+		// Before the first image was sent.
+		renderingLock.unlock();
+		return;
+	}
+
 	UpdateStatusBitmap();
 
 	UpdateTexture(statusTexId,STATUS_WID,STATUS_HEI,statusBitmap);
@@ -1693,13 +1700,10 @@ void FsSimpleWindowConnection::WindowConnection::Communicate(Outside_World *ow)
 	{
 		std::lock_guard<std::mutex> lock(deviceStateLock);
 
-		std::swap(outside_world->windowEvent,readyToSend);
-		if(outside_world->prevGamePads.size()!=outside_world->windowEvent.gamePads.size())
-		{
-			// If the size of prevGamePads is different from gamePads,
-			// it probably is the first time reading.  Just make a copy.
-			outside_world->prevGamePads=outside_world->windowEvent.gamePads;
-		}
+		// Kind of want to use swap, but Communicate can be called more than once before the
+		// next Interval is called, in which case state can go back and force between two
+		// samples.  Therefore, copy here.
+		outside_world->windowEvent=readyToSend;
 		readyToSend.CleanUpEvents();
 
 		gamePadsNeedUpdate=outside_world->gamePadsNeedUpdate;

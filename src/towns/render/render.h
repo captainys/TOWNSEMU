@@ -47,13 +47,13 @@ public:
 	class Image
 	{
 	public:
-		unsigned int wid,hei;
+		unsigned int wid=0,hei=0;
 		const unsigned char *rgba;
 	};
 	class ImageCopy
 	{
 	public:
-		unsigned int wid,hei;
+		unsigned int wid=0,hei=0;
 		std::vector <unsigned char> rgba;
 	};
 

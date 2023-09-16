@@ -254,6 +254,22 @@ Outside_World::WindowInterface::~WindowInterface()
 	delete [] statusBitmap;
 	statusBitmap=nullptr;
 }
+void Outside_World::WindowInterface::NotifyVMClosed(void)
+{
+	std::lock_guard <std::mutex> lock(VMCloseLock);
+	VMClosed=true;
+}
+bool Outside_World::WindowInterface::CheckVMClosed(void) const
+{
+	std::lock_guard <std::mutex> lock(VMCloseLock);
+	auto copy=VMClosed;
+	return copy;
+}
+void Outside_World::WindowInterface::ClearVMClosedFlag(void)
+{
+	std::lock_guard <std::mutex> lock(VMCloseLock);
+	VMClosed=false;
+}
 void Outside_World::WindowInterface::Put16x16(int x0,int y0,const unsigned char icon16x16[])
 {
 	auto dstPtr=statusBitmap+(STATUS_WID*y0+x0)*4;

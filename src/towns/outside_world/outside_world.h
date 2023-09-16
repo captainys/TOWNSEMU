@@ -19,6 +19,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <vector>
 #include <string>
 #include <queue>
+#include <mutex>
 
 #include "render.h"
 #include "discimg.h"
@@ -228,6 +229,9 @@ public:
 
 		int winWid=640,winHei=480;
 
+		mutable std::mutex VMCloseLock;
+		bool VMClosed=false;
+
 		WindowInterface();
 		~WindowInterface();
 
@@ -236,6 +240,14 @@ public:
 		virtual void Interval(void)=0;
 		virtual void Render(bool swapBuffers)=0;
 		virtual void UpdateImage(TownsRender::ImageCopy &img)=0;
+
+		/*! Called from the VM thread to tell VM is closed.
+		*/
+		void NotifyVMClosed(void);
+
+		void ClearVMClosedFlag(void);
+
+		bool CheckVMClosed(void) const;
 
 		/*! Called in the VM thread.
 		    WindowInterface  ->(Device State)-> Outside_World

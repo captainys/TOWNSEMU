@@ -285,6 +285,7 @@ void TownsThread::VMMainLoopTemplate(
 	renderingThread->DiscardRunningRenderingTask();
 
 	sound->Stop();
+	window->NotifyVMClosed();
 }
 void TownsThread::VMEnd(FMTownsCommon *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread)
 {
