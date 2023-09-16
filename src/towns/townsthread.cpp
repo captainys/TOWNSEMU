@@ -195,7 +195,6 @@ void TownsThread::VMMainLoopTemplate(
 			outside_world->ProcessAppSpecific(*townsPtr);
 			if(townsPtr->state.nextDevicePollingTime<townsPtr->state.townsTime)
 			{
-				window->Interval();
 				window->Communicate(outside_world);
 				outside_world->DevicePolling(*townsPtr);
 				sound->Polling();

@@ -149,10 +149,28 @@ int Run(FMTownsTemplate <CPUCLASS> &towns,const TownsARGV &argv,Outside_World &o
 	TownsCUIThread cuiThread;
 
 	std::thread UIThread(&TownsCUIThread::Run,&cuiThread,&townsThread,&towns,&argv,&outside_world);
-	townsThread.VMStart(&towns,&outside_world,&sound,&cuiThread);
-	townsThread.VMMainLoop(&towns,&outside_world,&sound,&window,&cuiThread);
-	townsThread.VMEnd(&towns,&outside_world,&cuiThread);
 
+	std::thread VMThread([&]{
+		townsThread.VMStart(&towns,&outside_world,&sound,&cuiThread);
+		townsThread.VMMainLoop(&towns,&outside_world,&sound,&window,&cuiThread);
+		townsThread.VMEnd(&towns,&outside_world,&cuiThread);
+	});
+
+	auto t0=std::chrono::high_resolution_clock::now();
+	for(;;)
+	{
+		window.Interval();
+		auto t=std::chrono::high_resolution_clock::now();
+		auto dt=t-t0;
+		if(16<=std::chrono::duration_cast<std::chrono::milliseconds>(dt).count())
+		{
+			window.Render(true);
+			t0=t;
+		}
+		std::this_thread::sleep_for(std::chrono::milliseconds(5));
+	}
+
+	VMThread.join();
 	UIThread.join();
 
 	return towns.var.returnCode;

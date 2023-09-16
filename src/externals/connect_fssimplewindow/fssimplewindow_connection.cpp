@@ -1548,6 +1548,7 @@ void FsSimpleWindowConnection::WindowConnection::Interval(void)
 		std::swap(primary,readyToSend);
 		primary.CleanUpEvents();
 		primary.gamePads=readyToSend.gamePads;
+		primary.lastKnownMouse=readyToSend.lastKnownMouse;
 	}
 }
 void FsSimpleWindowConnection::WindowConnection::Render(bool swapBuffers)

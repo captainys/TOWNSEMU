@@ -117,9 +117,6 @@ void TownsRenderingThread::CheckImageReady(FMTownsCommon &towns,Outside_World &w
 		if(true==imageReady)
 		{
 			windowInterface.UpdateImage(rendererPtr->MoveImage());
-
-windowInterface.Render(true);
-
 			world.UpdateStatusBarInfo(towns);
 			state=STATE_IDLE;
 		}
