@@ -221,11 +221,17 @@ public:
 	{
 	public:
 		TownsRender::ImageCopy mostRecentImage;
+		std::vector <unsigned int> gamePadsNeedUpdate;  // Copy of Outside_World's gamePadsNeedUpdate.
 
 		virtual void Start(void)=0;
 		virtual void Stop(void)=0;
 		virtual void Interval(void)=0;
 		virtual void Render(void)=0;
+
+		/*! Called in the VM thread.
+		    WindowInterface  ->(Device State)-> Outside_World
+		    WindowInterface  <-(Game Pads In Use)<- Outside_World
+		*/
 		virtual void Communicate(Outside_World *)=0;
 	};
 	virtual WindowInterface *CreateWindowInterface(void) const=0;

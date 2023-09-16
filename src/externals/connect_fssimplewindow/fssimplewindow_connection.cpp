@@ -45,24 +45,6 @@ FsSimpleWindowConnection::FsSimpleWindowConnection()
 	{
 		FSKEYState[i]=0;
 	}
-
-	if(true!=gamePadInitialized)
-	{
-		YsGamePadInitialize();
-		gamePadInitialized=true;
-	}
-
-	auto nGameDevs=YsGamePadGetNumDevices();
-	if(0<nGameDevs)
-	{
-		gamePads.resize(nGameDevs);
-		prevGamePads.resize(nGameDevs);
-		for(unsigned int i=0; i<nGameDevs; ++i)
-		{
-			YsGamePadRead(&gamePads[i],i);
-			prevGamePads[i]=gamePads[i];
-		}
-	}
 }
 FsSimpleWindowConnection::~FsSimpleWindowConnection()
 {
@@ -308,7 +290,10 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 	bool ctrlKey=(0!=windowEvent.keyState[FSKEY_CTRL]);
 	bool shiftKey=(0!=windowEvent.keyState[FSKEY_SHIFT]);
 
-	PollGamePads();
+	if(true!=Outside_World::gameDevsNeedUpdateCached)
+	{
+		std::cout << "Squawk!  Game Devices that need updates not cached!" << std::endl;
+	}
 
 	for(auto &mos : windowEvent.mouseEvents)
 	{
@@ -345,6 +330,7 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 	int mx=windowEvent.lastKnownMouse.mx;
 	int my=windowEvent.lastKnownMouse.my;
 
+	auto &gamePads=windowEvent.gamePads;
 
 	bool gamePadEmulationByKey=false; // Emulate a gamepad with keyboard
 	bool mouseEmulationByNumPad=false; // Emulate mouse with keyboard numpad
@@ -808,11 +794,6 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 			case TOWNS_GAMEPORTEMU_PHYSICAL5:
 			case TOWNS_GAMEPORTEMU_PHYSICAL6:
 			case TOWNS_GAMEPORTEMU_PHYSICAL7:
-				if(true!=gamePadInitialized)
-				{
-					YsGamePadInitialize();
-					gamePadInitialized=true;
-				}
 				{
 					int padId=gamePort[portId]-TOWNS_GAMEPORTEMU_PHYSICAL0;
 					if(0<=padId && padId<gamePads.size())
@@ -839,11 +820,6 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 			case TOWNS_GAMEPORTEMU_ANALOG5:
 			case TOWNS_GAMEPORTEMU_ANALOG6:
 			case TOWNS_GAMEPORTEMU_ANALOG7:
-				if(true!=gamePadInitialized)
-				{
-					YsGamePadInitialize();
-					gamePadInitialized=true;
-				}
 				{
 					int padId=gamePort[portId]-TOWNS_GAMEPORTEMU_ANALOG0;
 					if(0<=padId && padId<gamePads.size())
@@ -872,11 +848,6 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 			case TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL5:
 			case TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL6:
 			case TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL7:
-				if(true!=gamePadInitialized)
-				{
-					YsGamePadInitialize();
-					gamePadInitialized=true;
-				}
 				{
 					int padId=gamePort[portId]-TOWNS_GAMEPORTEMU_CAPCOM_BY_PHYSICAL0;
 					if(0<=padId && padId<gamePads.size())
@@ -929,13 +900,6 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 			case TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL6:
 			case TOWNS_GAMEPORTEMU_MOUSE_BY_PHYSICAL7:
 				{
-					if(TOWNS_GAMEPORTEMU_MOUSE_BY_KEY!=gamePort[portId] &&
-					   TOWNS_GAMEPORTEMU_MOUSE_BY_NUMPAD!=gamePort[portId] &&
-					   true!=gamePadInitialized)
-					{
-						YsGamePadInitialize();
-						gamePadInitialized=true;
-					}
 					{
 						const int accel=1;
 						const int maxSpeed=80;
@@ -1031,11 +995,6 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 			case TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG6:
 			case TOWNS_GAMEPORTEMU_MOUSE_BY_ANALOG7:
 				{
-					if(true!=gamePadInitialized)
-					{
-						YsGamePadInitialize();
-						gamePadInitialized=true;
-					}
 					{
 						const double maxSpeed=20.0;
 
@@ -1385,21 +1344,6 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 		}
 	}
 }
-void FsSimpleWindowConnection::PollGamePads(void)
-{
-	if(true!=Outside_World::gameDevsNeedUpdateCached)
-	{
-		std::cout << "Squawk!  Game Devices that need updates not cached!" << std::endl;
-	}
-	for(auto padId : Outside_World::gamePadsNeedUpdate)
-	{
-		if(padId<gamePads.size())
-		{
-			prevGamePads[padId]=gamePads[padId];
-			YsGamePadRead(&gamePads[padId],padId);
-		}
-	}
-}
 /* virtual */ void FsSimpleWindowConnection::UpdateStatusBitmap(class FMTownsCommon &towns)
 {
 	// Update Status Bitmap
@@ -1730,6 +1674,21 @@ void FsSimpleWindowConnection::PauseKeyPressed(void)
 
 void FsSimpleWindowConnection::WindowConnection::Start(void)
 {
+	if(true!=gamePadInitialized)
+	{
+		YsGamePadInitialize();
+		gamePadInitialized=true;
+	}
+
+	auto nGameDevs=YsGamePadGetNumDevices();
+	if(0<nGameDevs)
+	{
+		primary.gamePads.resize(nGameDevs);
+		for(unsigned int i=0; i<nGameDevs; ++i)
+		{
+			YsGamePadRead(&primary.gamePads[i],i);
+		}
+	}
 }
 void FsSimpleWindowConnection::WindowConnection::Stop(void)
 {
@@ -1763,10 +1722,14 @@ void FsSimpleWindowConnection::WindowConnection::Interval(void)
 		primary.mouseEvents.push_back(primary.lastKnownMouse);
 	}
 
+	PollGamePads();
+
 	if(true==readyToSend.EventEmpty())
 	{
+		std::lock_guard <std::mutex> lock(deviceStateLock);
 		std::swap(primary,readyToSend);
 		primary.CleanUpEvents();
+		primary.gamePads=readyToSend.gamePads;
 	}
 }
 void FsSimpleWindowConnection::WindowConnection::Render(void)
@@ -1775,8 +1738,20 @@ void FsSimpleWindowConnection::WindowConnection::Render(void)
 void FsSimpleWindowConnection::WindowConnection::Communicate(Outside_World *ow)
 {
 	auto outside_world=dynamic_cast<FsSimpleWindowConnection*>(ow);
+	std::swap(outside_world->prevGamePads,outside_world->windowEvent.gamePads);
+
+	std::lock_guard<std::mutex> lock(deviceStateLock);
+
 	std::swap(outside_world->windowEvent,readyToSend);
+	if(outside_world->prevGamePads.size()!=outside_world->windowEvent.gamePads.size())
+	{
+		// If the size of prevGamePads is different from gamePads,
+		// it probably is the first time reading.  Just make a copy.
+		outside_world->prevGamePads=outside_world->windowEvent.gamePads;
+	}
 	readyToSend.CleanUpEvents();
+
+	gamePadsNeedUpdate=outside_world->gamePadsNeedUpdate;
 }
 
 Outside_World::WindowInterface *FsSimpleWindowConnection::CreateWindowInterface(void) const
@@ -1790,6 +1765,18 @@ void FsSimpleWindowConnection::DeleteWindowInterface(Outside_World::WindowInterf
 	{
 		delete ptr;
 	}
+}
+
+void FsSimpleWindowConnection::WindowConnection::PollGamePads(void)
+{
+	for(auto padId : gamePadsNeedUpdate)
+	{
+		if(padId<primary.gamePads.size())
+		{
+			YsGamePadRead(&primary.gamePads[padId],padId);
+		}
+	}
+
 }
 
 ////////////////////////////////////////////////////////////////

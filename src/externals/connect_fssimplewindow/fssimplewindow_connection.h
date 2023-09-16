@@ -39,6 +39,8 @@ So, my best decision is to use streaming mode in macOS, which should work perfec
 #include "ysgamepad.h"
 #include "fssimplewindow.h"
 #include <vector>
+#include <thread>
+#include <mutex>
 
 class FsSimpleWindowConnection : public Outside_World
 {
@@ -59,6 +61,8 @@ public:
 		std::vector <MouseEvent> mouseEvents;
 		unsigned char keyState[FSKEY_NUM_KEYCODE];
 		MouseEvent lastKnownMouse;
+
+		std::vector <struct YsGamePadReading> gamePads;
 
 		int winWid=640,winHei=480;
 
@@ -99,7 +103,6 @@ public:
 	HostShortCut hostShortCut[FSKEY_NUM_KEYCODE];
 	unsigned int PAUSE_KEY_CODE=DEFAULT_PAUSE_KEY_CODE;
 
-	bool gamePadInitialized=false;
 	unsigned int *FSKEYtoTownsKEY=nullptr;
 	unsigned int *FSKEYState=nullptr;
 	FsSimpleWindowConnection();
@@ -112,7 +115,7 @@ public:
 
 	std::vector <unsigned char> PAUSEicon,MENUicon;
 
-	std::vector <struct YsGamePadReading> gamePads,prevGamePads;
+	std::vector <struct YsGamePadReading> prevGamePads;
 
 	// For mouse emulation by pad digital axes.
 	int mouseDX=0,mouseDY=0;
@@ -128,7 +131,6 @@ public:
 	virtual void Start(void) override;
 	virtual void Stop(void) override;
 	virtual void DevicePolling(class FMTownsCommon &towns) override;
-	void PollGamePads(void);
 	virtual void UpdateStatusBitmap(class FMTownsCommon &towns) override;
 	virtual void Render(const TownsRender::Image &img,const class FMTownsCommon &towns) override;
 	void RenderBeforeSwapBuffers(const TownsRender::Image &img,const class FMTownsCommon &towns);
@@ -147,14 +149,20 @@ public:
 	class WindowConnection : public WindowInterface
 	{
 	public:
+		bool gamePadInitialized=false;
+
 		DeviceAndEvent primary;
 		DeviceAndEvent readyToSend;
+
+		std::mutex deviceStateLock;
 
 		void Start(void) override;
 		void Stop(void) override;
 		void Interval(void) override;
 		void Render(void) override;
 		void Communicate(Outside_World *) override;
+
+		void PollGamePads(void);
 	};
 	WindowInterface *CreateWindowInterface(void) const override;
 	void DeleteWindowInterface(WindowInterface *) const override;
