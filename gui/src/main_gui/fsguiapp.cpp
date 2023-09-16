@@ -490,8 +490,8 @@ void FsGuiMainCanvas::DrawVMLastImage(VMClass &VM)
 		auto image=VM.lastImage.GetImage();
 		if(0<image.wid && 0<image.hei)
 		{
-			VM.outsideWorldPtr->UpdateStatusBitmap(*VM.townsPtr);
-			VM.outsideWorldPtr->RenderBeforeSwapBuffers(image,*VM.townsPtr);
+			VM.outsideWorldPtr->UpdateStatusBarInfo(*VM.townsPtr);
+			VM.outsideWorldWindowPtr->Render(false);
 		}
 	}
 }

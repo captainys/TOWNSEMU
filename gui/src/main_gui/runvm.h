@@ -107,7 +107,8 @@ void TownsVM<CPUCLASS>::Run(void)
 		Free();
 		Alloc();
 
-		townsPtr->Setup(*townsPtr,outsideWorldPtr,profile);
+		townsPtr->Setup(*townsPtr,outsideWorldPtr,outsideWorldWindowPtr,profile);
+		outsideWorldWindowPtr->Start();
 		townsThreadPtr->SetRunMode(TownsThread::RUNMODE_RUN);
 		townsThreadPtr->VMStart(townsPtr,outsideWorldPtr,outsideWorldSoundPtr,cmdQueuePtr);
 	}
@@ -116,18 +117,37 @@ void TownsVM<CPUCLASS>::Run(void)
 		townsThreadPtr->SetRunMode(TownsThread::RUNMODE_RUN);
 	}
 
-	outsideWorldWindowPtr->Start();
-	townsThreadPtr->VMMainLoop(townsPtr,outsideWorldPtr,outsideWorldSoundPtr,outsideWorldWindowPtr,cmdQueuePtr);
-	outsideWorldWindowPtr->Stop();
+	outsideWorldWindowPtr->ClearVMClosedFlag();
+
+	std::thread VMThread([&]{
+		townsThreadPtr->VMMainLoop(townsPtr,outsideWorldPtr,outsideWorldSoundPtr,outsideWorldWindowPtr,cmdQueuePtr);});
+
+	auto t0=std::chrono::high_resolution_clock::now();
+	outsideWorldWindowPtr->ClearVMClosedFlag();
+	while(true!=outsideWorldWindowPtr->CheckVMClosed())
+	{
+		outsideWorldWindowPtr->Interval();
+		auto t=std::chrono::high_resolution_clock::now();
+		auto dt=t-t0;
+		if(16<=std::chrono::duration_cast<std::chrono::milliseconds>(dt).count())
+		{
+			outsideWorldWindowPtr->Render(true);
+			t0=t;
+		}
+		std::this_thread::sleep_for(std::chrono::milliseconds(5));
+	}
+
+	VMThread.join();
 
 	if(TownsThread::RUNMODE_EXIT==townsThreadPtr->GetRunMode())
 	{
 		townsThreadPtr->VMEnd(townsPtr,outsideWorldPtr,cmdQueuePtr);
+		outsideWorldWindowPtr->Stop();
 		Free();
 	}
 	else
 	{
-		townsPtr->ForceRender(lastImage,*outsideWorldPtr);
+		townsPtr->ForceRender(lastImage,*outsideWorldPtr,*outsideWorldWindowPtr);
 	}
 }
 template <class CPUCLASS>
