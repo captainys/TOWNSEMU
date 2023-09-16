@@ -38,8 +38,6 @@ public:
 		unsigned int button=0;
 	};
 
-	bool windowShift=false;
-
 	// Mouse will be automatically identified by towns.gameport.
 	// Only game-pad emulation takes effect.
 	unsigned int gamePort[TOWNS_NUM_GAMEPORTS];
@@ -131,12 +129,15 @@ public:
 		STATUS_WID=640,
 		STATUS_HEI=16
 	};
-	unsigned char *statusBitmap;
-	bool cdAccessLamp=false;
-	bool fdAccessLamp[4]={false,false,false,false};
-	bool scsiAccessLamp[6]={false,false,false,false,false,false};
-	bool autoScaling=false;
-	unsigned int windowModeOnStartUp=TownsStartParameters::WINDOW_NORMAL;
+	class StatusBarInfo
+	{
+	public:
+		bool cdAccessLamp=false;
+		bool fdAccessLamp[4]={false,false,false,false};
+		bool scsiAccessLamp[6]={false,false,false,false,false,false};
+		bool strikeCommanderSpecial=false;
+	};
+	StatusBarInfo statusBarInfo;
 	unsigned int dx=0,dy=0;  // Screen (0,0) will be window (dx,dy)
 	unsigned int scaling=100; // In Percent
 	bool pauseKey=false;
@@ -149,8 +150,7 @@ public:
 	virtual void Start(void)=0;
 	virtual void Stop(void)=0;
 	virtual void DevicePolling(class FMTownsCommon &towns)=0;
-	virtual void UpdateStatusBitmap(class FMTownsCommon &towns)=0;
-	virtual void Render(const TownsRender::Image &img,const class FMTownsCommon &towns)=0;
+	void UpdateStatusBarInfo(class FMTownsCommon &towns);
 
 	/*! Implementation should return true if the image needs to be flipped before drawn on the window.
 	    The flag is transferred to rendering thread class at the beginning of the TownsThread::Start.
@@ -165,12 +165,6 @@ public:
 	/*! Return pauseKey flag.  The flag is clear after this function.
 	*/
 	bool PauseKeyPressed(void);
-
-	void Put16x16(int x0,int y0,const unsigned char icon16x16[]);
-	void Put16x16Invert(int x0,int y0,const unsigned char icon16x16[]);
-
-	void Put16x16Select(int x0,int y0,const unsigned char idleIcon16x16[],const unsigned char busyIcon16x16[],bool busy);
-	void Put16x16SelectInvert(int x0,int y0,const unsigned char idleIcon16x16[],const unsigned char busyIcon16x16[],bool busy);
 
 	/*! Implementation should call this function for each inkey for application-specific augmentation to work correctly.
 	*/
@@ -222,17 +216,39 @@ public:
 	public:
 		TownsRender::ImageCopy mostRecentImage;
 		std::vector <unsigned int> gamePadsNeedUpdate;  // Copy of Outside_World's gamePadsNeedUpdate.
+		bool windowShift=false;
+		bool autoScaling=false;
+
+		unsigned int windowModeOnStartUp=TownsStartParameters::WINDOW_NORMAL;
+
+		unsigned char *statusBitmap;
+		unsigned int dx=0,dy=0;  // Screen (0,0) will be window (dx,dy)
+		unsigned int scaling=100; // In Percent
+		unsigned int lowerRightIcon=LOWER_RIGHT_NONE;
+
+		int winWid=640,winHei=480;
+
+		WindowInterface();
+		~WindowInterface();
 
 		virtual void Start(void)=0;
 		virtual void Stop(void)=0;
 		virtual void Interval(void)=0;
-		virtual void Render(void)=0;
+		virtual void Render(bool swapBuffers)=0;
+		virtual void UpdateImage(TownsRender::ImageCopy &img)=0;
 
 		/*! Called in the VM thread.
 		    WindowInterface  ->(Device State)-> Outside_World
 		    WindowInterface  <-(Game Pads In Use)<- Outside_World
 		*/
 		virtual void Communicate(Outside_World *)=0;
+
+
+		void Put16x16(int x0,int y0,const unsigned char icon16x16[]);
+		void Put16x16Invert(int x0,int y0,const unsigned char icon16x16[]);
+
+		void Put16x16Select(int x0,int y0,const unsigned char idleIcon16x16[],const unsigned char busyIcon16x16[],bool busy);
+		void Put16x16SelectInvert(int x0,int y0,const unsigned char idleIcon16x16[],const unsigned char busyIcon16x16[],bool busy);
 	};
 	virtual WindowInterface *CreateWindowInterface(void) const=0;
 	virtual void DeleteWindowInterface(WindowInterface *) const=0;

@@ -186,7 +186,7 @@ int main(int ac,char *av[])
 	if(i486DXCommon::HIGH_FIDELITY==argv.CPUFidelityLevel)
 	{
 		static FMTownsTemplate <i486DXHighFidelity> towns;
-		if(true!=FMTownsCommon::Setup(towns,outside_world,argv))
+		if(true!=FMTownsCommon::Setup(towns,outside_world,window,argv))
 		{
 			return 1;
 		}
@@ -195,7 +195,7 @@ int main(int ac,char *av[])
 	else
 	{
 		static FMTownsTemplate <i486DXDefaultFidelity> towns;
-		if(true!=FMTownsCommon::Setup(towns,outside_world,argv))
+		if(true!=FMTownsCommon::Setup(towns,outside_world,window,argv))
 		{
 			return 1;
 		}

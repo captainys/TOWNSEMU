@@ -40,7 +40,7 @@ void FMTownsCommon::State::PowerOn(void)
 	nextRenderingTime=0;
 }
 
-/* static */ bool FMTownsCommon::Setup(FMTownsCommon &towns,Outside_World *outside_world,const TownsStartParameters &argv)
+/* static */ bool FMTownsCommon::Setup(FMTownsCommon &towns,Outside_World *outside_world,Outside_World::WindowInterface *windowInterface,const TownsStartParameters &argv)
 {
 	if(""==argv.ROMPath)
 	{
@@ -315,9 +315,10 @@ void FMTownsCommon::State::PowerOn(void)
 	outside_world->throttleAxis=argv.throttleAxis;
 
 	outside_world->scaling=argv.scaling;
-	outside_world->windowShift=argv.windowShift;
-	outside_world->autoScaling=argv.autoScaling;
-	outside_world->windowModeOnStartUp=argv.windowModeOnStartUp;
+	windowInterface->scaling=argv.scaling;
+	windowInterface->autoScaling=argv.autoScaling;
+	windowInterface->windowShift=argv.windowShift;
+	windowInterface->windowModeOnStartUp=argv.windowModeOnStartUp;
 
 	outside_world->mouseByFlightstickAvailable=argv.mouseByFlightstickAvailable;
 	outside_world->cyberStickAssignment=argv.cyberStickAssignment;
@@ -1020,21 +1021,6 @@ void FMTownsCommon::RunFastDevicePollingInternal(void)
 	state.nextFastDevicePollingTime=state.townsTime+FAST_DEVICE_POLLING_INTERVAL;
 }
 
-bool FMTownsCommon::CheckRenderingTimer(TownsRender &render,Outside_World &world)
-{
-	if(state.nextRenderingTime<=state.townsTime && true!=crtc.InVSYNC(state.townsTime))
-	{
-		render.Prepare(crtc);
-		render.damperWireLine=var.damperWireLine;
-		render.BuildImage(physMem.state.VRAM,crtc.state.palette,crtc.chaseHQPalette);
-		world.Render(render.GetImage(),*this);
-		world.UpdateStatusBitmap(*this);
-		state.nextRenderingTime=state.townsTime+TOWNS_RENDERING_FREQUENCY;
-		return true;
-	}
-	return false;
-}
-
 void FMTownsCommon::SetUpVRAMAccess(bool breakOnRead,bool breakOnWrite)
 {
 	physMem.SetUpVRAMAccess(TownsTypeToCPUType(townsType),breakOnRead,breakOnWrite);
@@ -1064,7 +1050,7 @@ void FMTownsCommon::SetMainRAMSize(long long int size)
 	mem.AddAccess(&physMem.mainRAMAccess,0x00100000,physMem.state.RAM.size()-1);
 }
 
-void FMTownsCommon::ForceRender(class TownsRender &render,class Outside_World &world)
+void FMTownsCommon::ForceRender(class TownsRender &render,class Outside_World &world,Outside_World::WindowInterface &windowInterface)
 {
 	render.Prepare(crtc);
 	render.damperWireLine=var.damperWireLine;
@@ -1073,8 +1059,9 @@ void FMTownsCommon::ForceRender(class TownsRender &render,class Outside_World &w
 	{
 		render.FlipUpsideDown();
 	}
-	world.UpdateStatusBitmap(*this);
-	world.Render(render.GetImage(),*this);
+	world.UpdateStatusBarInfo(*this);
+	windowInterface.Communicate(&world);
+	windowInterface.UpdateImage(render.MoveImage());
 }
 
 void FMTownsCommon::RenderQuiet(class TownsRender &render,bool layer0,bool layer1)

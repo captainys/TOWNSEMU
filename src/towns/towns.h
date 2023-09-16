@@ -50,6 +50,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include "eventlog.h"
 
+#include "outside_world.h"
+
 
 
 // Adding a device:
@@ -461,7 +463,7 @@ public:
 	}
 
 
-	static bool Setup(FMTownsCommon &towns,Outside_World *outside_world,const TownsStartParameters &argv);
+	static bool Setup(FMTownsCommon &towns,Outside_World *outside_world,Outside_World::WindowInterface *windowInterface,const TownsStartParameters &argv);
 	void AppSpecificSetup(Outside_World *outside_world,const TownsStartParameters &argv);
 
 
@@ -651,7 +653,7 @@ public:
 	/*! Force render regardless of the rendering timer.
 	    It does not update the rendering timer.
 	*/
-	void ForceRender(class TownsRender &render,class Outside_World &world);
+	void ForceRender(class TownsRender &render,Outside_World &world,Outside_World::WindowInterface &windowInterface);
 
 
 	/*! Render, but not transfer to the window.

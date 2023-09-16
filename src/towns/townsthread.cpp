@@ -103,7 +103,7 @@ void TownsThread::VMMainLoopTemplate(
 		{
 		case RUNMODE_PAUSE:
 			renderingThread->WaitIdle();
-			townsPtr->ForceRender(render,*outside_world);
+			townsPtr->ForceRender(render,*outside_world,*window);
 			outside_world->DevicePolling(*townsPtr);
 			if(true==outside_world->PauseKeyPressed())
 			{
@@ -190,7 +190,7 @@ void TownsThread::VMMainLoopTemplate(
 
 			// townsPtr->CheckRenderingTimer(render,*outside_world);
 			renderingThread->CheckRenderingTimer(*townsPtr,render);
-			renderingThread->CheckImageReady(*townsPtr,*outside_world);
+			renderingThread->CheckImageReady(*townsPtr,*outside_world,*window);
 
 			outside_world->ProcessAppSpecific(*townsPtr);
 			if(townsPtr->state.nextDevicePollingTime<townsPtr->state.townsTime)

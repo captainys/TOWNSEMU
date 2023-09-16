@@ -52,54 +52,6 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 	delete [] FSKEYState;
 }
 
-GLuint FsSimpleWindowConnection::GenTexture(void)
-{
-	GLuint texId;
-
-	glGenTextures(1,&texId);  // Reserve one texture identifier
-	glBindTexture(GL_TEXTURE_2D,texId);  // Making the texture identifier current (or bring it to the deck)
-
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP);
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP);
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-
-	return texId;
-}
-
-void FsSimpleWindowConnection::UpdateTexture(GLuint texId,int wid,int hei,const unsigned char *rgba) const
-{
-	glBindTexture(GL_TEXTURE_2D,texId);
-	glTexImage2D
-	    (GL_TEXTURE_2D,
-	     0,
-	     GL_RGBA,
-	     wid,
-	     hei,
-	     0,
-	     GL_RGBA,
-	     GL_UNSIGNED_BYTE,
-	     rgba);
-}
-void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) const
-{
-	glBegin(GL_QUADS);
-
-	glTexCoord2f(0,0);
-	glVertex2i(x0,y1);
-
-	glTexCoord2f(1,0);
-	glVertex2i(x1,y1);
-
-	glTexCoord2f(1,1);
-	glVertex2i(x1,y0);
-
-	glTexCoord2f(0,1);
-	glVertex2i(x0,y0);
-
-	glEnd();
-}
-
 /* virtual */ std::vector <std::string> FsSimpleWindowConnection::MakeDefaultKeyMappingText(void) const
 {
 	unsigned int FSKEYtoTownsKEY[FSKEY_NUM_KEYCODE];
@@ -174,111 +126,9 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 
 /* virtual */ void FsSimpleWindowConnection::Start(void)
 {
-	int wid=640*scaling/100;
-	int hei=480*scaling/100;
-
-	int winY0=0;
-	if(true==windowShift)
-	{
-		winY0=48;
-	}
-
-
-	// In tight GUI integration, FsResizeWindow will re-enter OnDraw call-back, and will crash inside
-	// unless bitmaps are ready.  Do it before FsResizeWindow.
-
-	// Make PAUSE and MENU icons.  Used only in the tightly-integrated GUI.
-	PAUSEicon.resize(4*PAUSE_wid*PAUSE_hei);
-	MENUicon.resize(4*MENU_wid*MENU_hei);
-	for(int y=0; y<PAUSE_hei; ++y)
-	{
-		int Y=PAUSE_hei-1-y;
-		for(int x=0; x<PAUSE_wid; ++x)
-		{
-			PAUSEicon[(y*PAUSE_wid+x)*4  ]=PAUSE[(Y*PAUSE_wid+x)*4  ];
-			PAUSEicon[(y*PAUSE_wid+x)*4+1]=PAUSE[(Y*PAUSE_wid+x)*4+1];
-			PAUSEicon[(y*PAUSE_wid+x)*4+2]=PAUSE[(Y*PAUSE_wid+x)*4+2];
-			PAUSEicon[(y*PAUSE_wid+x)*4+3]=PAUSE[(Y*PAUSE_wid+x)*4+3];
-		}
-	}
-	for(int y=0; y<MENU_hei; ++y)
-	{
-		int Y=MENU_hei-1-y;
-		for(int x=0; x<MENU_wid; ++x)
-		{
-			MENUicon[(y*MENU_wid+x)*4  ]=MENU[(Y*MENU_wid+x)*4  ];
-			MENUicon[(y*MENU_wid+x)*4+1]=MENU[(Y*MENU_wid+x)*4+1];
-			MENUicon[(y*MENU_wid+x)*4+2]=MENU[(Y*MENU_wid+x)*4+2];
-			MENUicon[(y*MENU_wid+x)*4+3]=MENU[(Y*MENU_wid+x)*4+3];
-		}
-	}
-
-
-
-	if(0==FsCheckWindowOpen())
-	{
-		FsOpenWindow(0,winY0,wid,hei+STATUS_HEI,1);
-	}
-	else
-	{
-		FsResizeWindow(wid,hei);
-	}
-
-	switch(windowModeOnStartUp)
-	{
-	case TownsStartParameters::WINDOW_MAXIMIZE:
-		FsPollDevice();
-		FsMaximizeWindow();
-		for(int i=0; i<10; ++i)
-		{
-			FsPollDevice();
-		}
-		break;
-	case TownsStartParameters::WINDOW_FULLSCREEN:
-		FsPollDevice();
-		FsMakeFullScreen();
-		for(int i=0; i<10; ++i)
-		{
-			FsPollDevice();
-		}
-		autoScaling=true;
-		break;
-	}
-
-	this->winWid=640;
-	this->winHei=480;
-#ifndef TSUGARU_I486_HIGH_FIDELITY
-	FsSetWindowTitle("FM Towns Emulator - TSUGARU");
-#else
-	FsSetWindowTitle("FM Towns Emulator - TSUGARU (High-Fidelity Mode)");
-#endif
-
-	glClearColor(0,0,0,0);
-	mainTexId=GenTexture();
-	statusTexId=GenTexture();
-
-	pauseIconTexId=GenTexture();
-	UpdateTexture(pauseIconTexId,PAUSE_wid,PAUSE_hei,PAUSEicon.data());
-	menuIconTexId=GenTexture();
-	UpdateTexture(menuIconTexId,MENU_wid,MENU_hei,MENUicon.data());
-
-	// Make initial status bitmap
-	Put16x16Invert(0,15,CD_IDLE);
-	for(int fd=0; fd<2; ++fd)
-	{
-		Put16x16Invert(16+16*fd,15,FD_IDLE);
-	}
-	for(int hdd=0; hdd<6; ++hdd)
-	{
-		Put16x16Invert(48+16*hdd,15,HDD_IDLE);
-	}
 }
 /* virtual */ void FsSimpleWindowConnection::Stop(void)
 {
-	if(TownsStartParameters::WINDOW_NORMAL!=windowModeOnStartUp)
-	{
-		FsUnmaximizeWindow();
-	}
 }
 
 /* virtual */ void FsSimpleWindowConnection::DevicePolling(class FMTownsCommon &towns)
@@ -1344,147 +1194,7 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 		}
 	}
 }
-/* virtual */ void FsSimpleWindowConnection::UpdateStatusBitmap(class FMTownsCommon &towns)
-{
-	// Update Status Bitmap
-	{
-		bool busy=(true!=towns.cdrom.state.DRY);
-		if(cdAccessLamp!=busy)
-		{
-			Put16x16SelectInvert(0,15,CD_IDLE,CD_BUSY,busy);
-			cdAccessLamp=busy;
-		}
-	}
-	for(int fd=0; fd<2; ++fd)
-	{
-		bool busy=(fd==towns.fdc.DriveSelect() && true==towns.fdc.state.busy);
-		if(fdAccessLamp[fd]!=busy)
-		{
-			Put16x16SelectInvert(16+16*fd,15,FD_IDLE,FD_BUSY,busy);
-			fdAccessLamp[fd]=busy;
-		}
-	}
-	for(int hdd=0; hdd<6; ++hdd)
-	{
-		bool busy=(hdd==towns.scsi.state.selId && true==towns.scsi.state.BUSY);
-		if(scsiAccessLamp[hdd]!=busy)
-		{
-			Put16x16SelectInvert(48+16*hdd,15,HDD_IDLE,HDD_BUSY,busy);
-			scsiAccessLamp[hdd]=busy;
-		}
-	}
 
-}
-/* virtual */ void FsSimpleWindowConnection::Render(const TownsRender::Image &img,const class FMTownsCommon &towns)
-{
-	RenderBeforeSwapBuffers(img,towns);
-	FsSwapBuffers();
-}
-void FsSimpleWindowConnection::RenderBeforeSwapBuffers(const TownsRender::Image &img,const class FMTownsCommon &towns)
-{
-	int winWid,winHei;
-	FsGetWindowSize(winWid,winHei);
-
-	if(true==autoScaling)
-	{
-		if(0<img.wid && 0<img.hei)
-		{
-			unsigned int scaleX=100*winWid/img.wid;
-			unsigned int scaleY=100*(winHei-STATUS_HEI)/img.hei;
-			this->scaling=std::min(scaleX,scaleY);
-		}
-	}
-	else
-	{
-		if(this->winWid!=img.wid || this->winHei!=img.hei)
-		{
-			this->winWid=img.wid;
-			this->winHei=img.hei;
-			sinceLastResize=10;
-		}
-		else if(0<sinceLastResize)
-		{
-			--sinceLastResize;
-			if(0==sinceLastResize)
-			{
-				FsResizeWindow(this->winWid*scaling/100,this->winHei*scaling/100+STATUS_HEI);
-			}
-		}
-	}
-
-	unsigned int renderWid=img.wid*this->scaling/100;
-	unsigned int renderHei=img.hei*this->scaling/100;
-	this->dx=(renderWid<winWid ? (winWid-renderWid)/2 : 0);
-	this->dy=(renderHei<(winHei-STATUS_HEI) ? (winHei-STATUS_HEI-renderHei)/2 : 0);
-
-	glClear(GL_COLOR_BUFFER_BIT);
-	glViewport(0,0,winWid,winHei);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0.0f,float(winWid),float(winHei),0.0f,-1,1);
-
-
-	glEnable(GL_TEXTURE_2D);
-    glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
-	glColor3f(1,1,1);
-
-	UpdateTexture(statusTexId,STATUS_WID,STATUS_HEI,statusBitmap);
-	DrawTextureRect(0,winHei-1-STATUS_HEI,STATUS_WID,winHei-1);
-
-	/*glRasterPos2i(0,winHei-1);
-	glPixelZoom(1,1);
-	glDrawPixels(STATUS_WID,STATUS_HEI,GL_RGBA,GL_UNSIGNED_BYTE,statusBitmap); */
-
-	switch(lowerRightIcon)
-	{
-	case LOWER_RIGHT_NONE:
-		break;
-	case LOWER_RIGHT_PAUSE:
-		glBindTexture(GL_TEXTURE_2D,pauseIconTexId);
-		DrawTextureRect(winWid-PAUSE_wid,winHei-1-PAUSE_hei,winWid,winHei-1);
-		/* glRasterPos2i(winWid-PAUSE_wid,winHei-1);
-		glDrawPixels(PAUSE_wid,PAUSE_hei,GL_RGBA,GL_UNSIGNED_BYTE,PAUSEicon.data()); */
-		break;
-	case LOWER_RIGHT_MENU:
-		glBindTexture(GL_TEXTURE_2D,menuIconTexId);
-		DrawTextureRect(winWid-MENU_wid,winHei-1-MENU_hei,winWid,winHei-1);
-		/* glRasterPos2i(winWid-MENU_wid,winHei-1);
-		glDrawPixels(MENU_wid,MENU_hei,GL_RGBA,GL_UNSIGNED_BYTE,MENUicon.data()); */
-		break;
-	}
-
-
-	UpdateTexture(mainTexId,img.wid,img.hei,img.rgba);
-	DrawTextureRect(this->dx,this->dy+img.hei*scaling/100,this->dx+img.wid*scaling/100,this->dy);
-
-	glDisable(GL_TEXTURE_2D);
-
-	/*glPixelZoom((float)scaling/100.0f,(float)scaling/100.0f);
-	glRasterPos2i(this->dx,(img.hei*scaling/100)+dy);
-	glDrawPixels(img.wid,img.hei,GL_RGBA,GL_UNSIGNED_BYTE,img.rgba);*/
-
-
-	if(TOWNS_APPSPECIFIC_STRIKECOMMANDER==towns.state.appSpecificSetting)
-	{
-		int x;
-		glColor3ub(128,128,255);
-		glBegin(GL_LINES);
-
-		x=this->dx+160*2*scaling/100;
-		glVertex2i(x,winHei-1);
-		glVertex2i(x,winHei-STATUS_HEI+1);
-
-		x=this->dx+224*2*scaling/100;
-		glVertex2i(x,winHei-1);
-		glVertex2i(x,winHei-STATUS_HEI+1);
-
-		x=this->dx+278*2*scaling/100;
-		glVertex2i(x,winHei-1);
-		glVertex2i(x,winHei-STATUS_HEI+1);
-
-		glEnd();
-	}
-}
 /* virtual */ bool FsSimpleWindowConnection::ImageNeedsFlip(void)
 {
 	return false;
@@ -1674,6 +1384,106 @@ void FsSimpleWindowConnection::PauseKeyPressed(void)
 
 void FsSimpleWindowConnection::WindowConnection::Start(void)
 {
+	int wid=640*scaling/100;
+	int hei=480*scaling/100;
+
+	int winY0=0;
+	if(true==windowShift)
+	{
+		winY0=48;
+	}
+
+
+	// In tight GUI integration, FsResizeWindow will re-enter OnDraw call-back, and will crash inside
+	// unless bitmaps are ready.  Do it before FsResizeWindow.
+
+	// Make PAUSE and MENU icons.  Used only in the tightly-integrated GUI.
+	PAUSEicon.resize(4*PAUSE_wid*PAUSE_hei);
+	MENUicon.resize(4*MENU_wid*MENU_hei);
+	for(int y=0; y<PAUSE_hei; ++y)
+	{
+		int Y=PAUSE_hei-1-y;
+		for(int x=0; x<PAUSE_wid; ++x)
+		{
+			PAUSEicon[(y*PAUSE_wid+x)*4  ]=PAUSE[(Y*PAUSE_wid+x)*4  ];
+			PAUSEicon[(y*PAUSE_wid+x)*4+1]=PAUSE[(Y*PAUSE_wid+x)*4+1];
+			PAUSEicon[(y*PAUSE_wid+x)*4+2]=PAUSE[(Y*PAUSE_wid+x)*4+2];
+			PAUSEicon[(y*PAUSE_wid+x)*4+3]=PAUSE[(Y*PAUSE_wid+x)*4+3];
+		}
+	}
+	for(int y=0; y<MENU_hei; ++y)
+	{
+		int Y=MENU_hei-1-y;
+		for(int x=0; x<MENU_wid; ++x)
+		{
+			MENUicon[(y*MENU_wid+x)*4  ]=MENU[(Y*MENU_wid+x)*4  ];
+			MENUicon[(y*MENU_wid+x)*4+1]=MENU[(Y*MENU_wid+x)*4+1];
+			MENUicon[(y*MENU_wid+x)*4+2]=MENU[(Y*MENU_wid+x)*4+2];
+			MENUicon[(y*MENU_wid+x)*4+3]=MENU[(Y*MENU_wid+x)*4+3];
+		}
+	}
+
+
+
+	if(0==FsCheckWindowOpen())
+	{
+		FsOpenWindow(0,winY0,wid,hei+STATUS_HEI,1);
+	}
+	else
+	{
+		FsResizeWindow(wid,hei);
+	}
+
+	switch(windowModeOnStartUp)
+	{
+	case TownsStartParameters::WINDOW_MAXIMIZE:
+		FsPollDevice();
+		FsMaximizeWindow();
+		for(int i=0; i<10; ++i)
+		{
+			FsPollDevice();
+		}
+		break;
+	case TownsStartParameters::WINDOW_FULLSCREEN:
+		FsPollDevice();
+		FsMakeFullScreen();
+		for(int i=0; i<10; ++i)
+		{
+			FsPollDevice();
+		}
+		autoScaling=true;
+		break;
+	}
+
+	this->winWid=640;
+	this->winHei=480;
+#ifndef TSUGARU_I486_HIGH_FIDELITY
+	FsSetWindowTitle("FM Towns Emulator - TSUGARU");
+#else
+	FsSetWindowTitle("FM Towns Emulator - TSUGARU (High-Fidelity Mode)");
+#endif
+
+	glClearColor(0,0,0,0);
+	mainTexId=GenTexture();
+	statusTexId=GenTexture();
+
+	pauseIconTexId=GenTexture();
+	UpdateTexture(pauseIconTexId,PAUSE_wid,PAUSE_hei,PAUSEicon.data());
+	menuIconTexId=GenTexture();
+	UpdateTexture(menuIconTexId,MENU_wid,MENU_hei,MENUicon.data());
+
+	// Make initial status bitmap
+	Put16x16Invert(0,15,CD_IDLE);
+	for(int fd=0; fd<2; ++fd)
+	{
+		Put16x16Invert(16+16*fd,15,FD_IDLE);
+	}
+	for(int hdd=0; hdd<6; ++hdd)
+	{
+		Put16x16Invert(48+16*hdd,15,HDD_IDLE);
+	}
+
+
 	if(true!=gamePadInitialized)
 	{
 		YsGamePadInitialize();
@@ -1692,6 +1502,14 @@ void FsSimpleWindowConnection::WindowConnection::Start(void)
 }
 void FsSimpleWindowConnection::WindowConnection::Stop(void)
 {
+	if(TownsStartParameters::WINDOW_NORMAL!=windowModeOnStartUp)
+	{
+		FsUnmaximizeWindow();
+	}
+	glDeleteTextures(1,&mainTexId);
+	glDeleteTextures(1,&statusTexId);
+	glDeleteTextures(1,&pauseIconTexId);
+	glDeleteTextures(1,&menuIconTexId);
 }
 void FsSimpleWindowConnection::WindowConnection::Interval(void)
 {
@@ -1732,26 +1550,169 @@ void FsSimpleWindowConnection::WindowConnection::Interval(void)
 		primary.gamePads=readyToSend.gamePads;
 	}
 }
-void FsSimpleWindowConnection::WindowConnection::Render(void)
+void FsSimpleWindowConnection::WindowConnection::Render(bool swapBuffers)
 {
+	// {
+	renderingLock.lock();
+
+	UpdateStatusBitmap();
+
+	UpdateTexture(statusTexId,STATUS_WID,STATUS_HEI,statusBitmap);
+	UpdateTexture(mainTexId,mostRecentImage.wid,mostRecentImage.hei,mostRecentImage.rgba.data());
+
+	auto scaling=this->scaling;
+	auto dx=this->dx;
+	auto dy=this->dy;
+	auto lowerRightIcon=this->lowerRightIcon;
+
+	auto imgWid=mostRecentImage.wid;
+	auto imgHei=mostRecentImage.hei;
+
+	renderingLock.unlock();
+	// }
+
+
+	int winWid,winHei;
+	FsGetWindowSize(winWid,winHei);
+
+	if(true==autoScaling)
+	{
+		if(0<imgWid && 0<imgHei)
+		{
+			unsigned int scaleX=100*winWid/imgWid;
+			unsigned int scaleY=100*(winHei-STATUS_HEI)/imgHei;
+			scaling=std::min(scaleX,scaleY);
+		}
+	}
+	else
+	{
+		if(this->winWid!=imgWid || this->winHei!=imgHei)
+		{
+			this->winWid=imgWid;
+			this->winHei=imgHei;
+			sinceLastResize=10;
+		}
+		else if(0<sinceLastResize)
+		{
+			--sinceLastResize;
+			if(0==sinceLastResize)
+			{
+				FsResizeWindow(this->winWid*scaling/100,this->winHei*scaling/100+STATUS_HEI);
+			}
+		}
+	}
+
+	unsigned int renderWid=imgWid*scaling/100;
+	unsigned int renderHei=imgHei*scaling/100;
+	dx=(renderWid<winWid ? (winWid-renderWid)/2 : 0);
+	dy=(renderHei<(winHei-STATUS_HEI) ? (winHei-STATUS_HEI-renderHei)/2 : 0);
+
+	glClear(GL_COLOR_BUFFER_BIT);
+	glViewport(0,0,winWid,winHei);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(0.0f,float(winWid),float(winHei),0.0f,-1,1);
+
+
+	glEnable(GL_TEXTURE_2D);
+    glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
+	glColor3f(1,1,1);
+
+	glBindTexture(GL_TEXTURE_2D,statusTexId);
+	DrawTextureRect(0,winHei-1-STATUS_HEI,STATUS_WID,winHei-1);
+
+	switch(lowerRightIcon)
+	{
+	case LOWER_RIGHT_NONE:
+		break;
+	case LOWER_RIGHT_PAUSE:
+		glBindTexture(GL_TEXTURE_2D,pauseIconTexId);
+		DrawTextureRect(winWid-PAUSE_wid,winHei-1-PAUSE_hei,winWid,winHei-1);
+		break;
+	case LOWER_RIGHT_MENU:
+		glBindTexture(GL_TEXTURE_2D,menuIconTexId);
+		DrawTextureRect(winWid-MENU_wid,winHei-1-MENU_hei,winWid,winHei-1);
+		break;
+	}
+
+	glBindTexture(GL_TEXTURE_2D,mainTexId);
+	DrawTextureRect(dx,dy+imgHei*scaling/100,dx+imgWid*scaling/100,dy);
+
+	glDisable(GL_TEXTURE_2D);
+
+	if(true==statusBarInfo.strikeCommanderSpecial)
+	{
+		int x;
+		glColor3ub(128,128,255);
+		glBegin(GL_LINES);
+
+		x=dx+160*2*scaling/100;
+		glVertex2i(x,winHei-1);
+		glVertex2i(x,winHei-STATUS_HEI+1);
+
+		x=dx+224*2*scaling/100;
+		glVertex2i(x,winHei-1);
+		glVertex2i(x,winHei-STATUS_HEI+1);
+
+		x=dx+278*2*scaling/100;
+		glVertex2i(x,winHei-1);
+		glVertex2i(x,winHei-STATUS_HEI+1);
+
+		glEnd();
+	}
+
+	if(true==swapBuffers)
+	{
+		FsSwapBuffers();
+	}
+
+	// {
+	renderingLock.lock();
+
+	this->scaling=scaling;
+	this->dx=dx;
+	this->dy=dy;
+
+	renderingLock.unlock();
+	// }
 }
+
+void FsSimpleWindowConnection::WindowConnection::UpdateImage(TownsRender::ImageCopy &img)
+{
+	renderingLock.lock();
+	std::swap(mostRecentImage,img);
+	renderingLock.unlock();
+}
+
 void FsSimpleWindowConnection::WindowConnection::Communicate(Outside_World *ow)
 {
 	auto outside_world=dynamic_cast<FsSimpleWindowConnection*>(ow);
 	std::swap(outside_world->prevGamePads,outside_world->windowEvent.gamePads);
 
-	std::lock_guard<std::mutex> lock(deviceStateLock);
-
-	std::swap(outside_world->windowEvent,readyToSend);
-	if(outside_world->prevGamePads.size()!=outside_world->windowEvent.gamePads.size())
 	{
-		// If the size of prevGamePads is different from gamePads,
-		// it probably is the first time reading.  Just make a copy.
-		outside_world->prevGamePads=outside_world->windowEvent.gamePads;
-	}
-	readyToSend.CleanUpEvents();
+		std::lock_guard<std::mutex> lock(deviceStateLock);
 
-	gamePadsNeedUpdate=outside_world->gamePadsNeedUpdate;
+		std::swap(outside_world->windowEvent,readyToSend);
+		if(outside_world->prevGamePads.size()!=outside_world->windowEvent.gamePads.size())
+		{
+			// If the size of prevGamePads is different from gamePads,
+			// it probably is the first time reading.  Just make a copy.
+			outside_world->prevGamePads=outside_world->windowEvent.gamePads;
+		}
+		readyToSend.CleanUpEvents();
+
+		gamePadsNeedUpdate=outside_world->gamePadsNeedUpdate;
+	}
+	{
+		std::lock_guard<std::mutex> lock(renderingLock);
+
+		statusBarInfo=outside_world->statusBarInfo;
+		lowerRightIcon=outside_world->lowerRightIcon;
+
+		outside_world->scaling=scaling;
+		outside_world->dx=dx;
+		outside_world->dy=dy;
+	}
 }
 
 Outside_World::WindowInterface *FsSimpleWindowConnection::CreateWindowInterface(void) const
@@ -1776,7 +1737,78 @@ void FsSimpleWindowConnection::WindowConnection::PollGamePads(void)
 			YsGamePadRead(&primary.gamePads[padId],padId);
 		}
 	}
+}
 
+void FsSimpleWindowConnection::WindowConnection::UpdateStatusBitmap(void)
+{
+	// Update Status Bitmap
+	if(prevStatusBarInfo.cdAccessLamp!=statusBarInfo.cdAccessLamp)
+	{
+		Put16x16SelectInvert(0,15,CD_IDLE,CD_BUSY,statusBarInfo.cdAccessLamp);
+	}
+	for(int fd=0; fd<2; ++fd)
+	{
+		if(prevStatusBarInfo.fdAccessLamp[fd]!=statusBarInfo.fdAccessLamp[fd])
+		{
+			Put16x16SelectInvert(16+16*fd,15,FD_IDLE,FD_BUSY,statusBarInfo.fdAccessLamp[fd]);
+		}
+	}
+	for(int hdd=0; hdd<6; ++hdd)
+	{
+		if(prevStatusBarInfo.scsiAccessLamp[hdd]!=statusBarInfo.scsiAccessLamp[hdd])
+		{
+			Put16x16SelectInvert(48+16*hdd,15,HDD_IDLE,HDD_BUSY,statusBarInfo.scsiAccessLamp[hdd]);
+		}
+	}
+	prevStatusBarInfo=statusBarInfo;
+}
+
+GLuint FsSimpleWindowConnection::WindowConnection::GenTexture(void)
+{
+	GLuint texId;
+
+	glGenTextures(1,&texId);  // Reserve one texture identifier
+	glBindTexture(GL_TEXTURE_2D,texId);  // Making the texture identifier current (or bring it to the deck)
+
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+
+	return texId;
+}
+
+void FsSimpleWindowConnection::WindowConnection::UpdateTexture(GLuint texId,int wid,int hei,const unsigned char *rgba) const
+{
+	glBindTexture(GL_TEXTURE_2D,texId);
+	glTexImage2D
+	    (GL_TEXTURE_2D,
+	     0,
+	     GL_RGBA,
+	     wid,
+	     hei,
+	     0,
+	     GL_RGBA,
+	     GL_UNSIGNED_BYTE,
+	     rgba);
+}
+void FsSimpleWindowConnection::WindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) const
+{
+	glBegin(GL_QUADS);
+
+	glTexCoord2f(0,0);
+	glVertex2i(x0,y1);
+
+	glTexCoord2f(1,0);
+	glVertex2i(x1,y1);
+
+	glTexCoord2f(1,1);
+	glVertex2i(x1,y0);
+
+	glTexCoord2f(0,1);
+	glVertex2i(x0,y0);
+
+	glEnd();
 }
 
 ////////////////////////////////////////////////////////////////

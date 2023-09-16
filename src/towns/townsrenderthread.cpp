@@ -105,7 +105,7 @@ void TownsRenderingThread::CheckRenderingTimer(FMTownsCommon &towns,TownsRender 
 	}
 }
 
-void TownsRenderingThread::CheckImageReady(FMTownsCommon &towns,Outside_World &world)
+void TownsRenderingThread::CheckImageReady(FMTownsCommon &towns,Outside_World &world,Outside_World::WindowInterface &windowInterface)
 {
 	if(STATE_RENDERING==state && checkImageAfterThisTIme<towns.state.townsTime)
 	{
@@ -116,8 +116,11 @@ void TownsRenderingThread::CheckImageReady(FMTownsCommon &towns,Outside_World &w
 		}
 		if(true==imageReady)
 		{
-			world.Render(rendererPtr->GetImage(),towns);
-			world.UpdateStatusBitmap(towns);
+			windowInterface.UpdateImage(rendererPtr->MoveImage());
+
+windowInterface.Render(true);
+
+			world.UpdateStatusBarInfo(towns);
 			state=STATE_IDLE;
 		}
 	}

@@ -98,8 +98,6 @@ public:
 
 	#define DEFAULT_PAUSE_KEY_CODE FSKEY_SCROLLLOCK
 
-	GLuint mainTexId,statusTexId,pauseIconTexId,menuIconTexId;
-
 	HostShortCut hostShortCut[FSKEY_NUM_KEYCODE];
 	unsigned int PAUSE_KEY_CODE=DEFAULT_PAUSE_KEY_CODE;
 
@@ -108,20 +106,10 @@ public:
 	FsSimpleWindowConnection();
 	~FsSimpleWindowConnection();
 
-	GLuint GenTexture(void);
-	void UpdateTexture(GLuint texId,int wid,int hei,const unsigned char *rgba) const;
-	void DrawTextureRect(int x0,int y0,int x1,int y1) const;
-	void PauseKeyPressed(void);
-
-	std::vector <unsigned char> PAUSEicon,MENUicon;
-
 	std::vector <struct YsGamePadReading> prevGamePads;
 
 	// For mouse emulation by pad digital axes.
 	int mouseDX=0,mouseDY=0;
-
-	int winWid=640,winHei=480;
-	unsigned int sinceLastResize=0;
 
 
 	virtual std::vector <std::string> MakeDefaultKeyMappingText(void) const override;
@@ -131,9 +119,6 @@ public:
 	virtual void Start(void) override;
 	virtual void Stop(void) override;
 	virtual void DevicePolling(class FMTownsCommon &towns) override;
-	virtual void UpdateStatusBitmap(class FMTownsCommon &towns) override;
-	virtual void Render(const TownsRender::Image &img,const class FMTownsCommon &towns) override;
-	void RenderBeforeSwapBuffers(const TownsRender::Image &img,const class FMTownsCommon &towns);
 	virtual bool ImageNeedsFlip(void) override;
 
 	virtual void SetKeyboardLayout(unsigned int layout) override;
@@ -144,22 +129,41 @@ public:
 
 	virtual void ToggleMouseCursor(void) override;
 
+	void PauseKeyPressed(void);
+
 
 
 	class WindowConnection : public WindowInterface
 	{
 	public:
+		std::mutex deviceStateLock;
+
 		bool gamePadInitialized=false;
 
 		DeviceAndEvent primary;
 		DeviceAndEvent readyToSend;
 
-		std::mutex deviceStateLock;
+		std::mutex renderingLock;
+
+		StatusBarInfo statusBarInfo,prevStatusBarInfo;
+
+		GLuint mainTexId,statusTexId,pauseIconTexId,menuIconTexId;
+
+		unsigned int sinceLastResize=0;
+
+		GLuint GenTexture(void);
+		void UpdateTexture(GLuint texId,int wid,int hei,const unsigned char *rgba) const;
+		void DrawTextureRect(int x0,int y0,int x1,int y1) const;
+
+		void UpdateStatusBitmap(void);
+
+		std::vector <unsigned char> PAUSEicon,MENUicon;
 
 		void Start(void) override;
 		void Stop(void) override;
 		void Interval(void) override;
-		void Render(void) override;
+		void Render(bool swapBuffers) override;
+		void UpdateImage(TownsRender::ImageCopy &img) override;
 		void Communicate(Outside_World *) override;
 
 		void PollGamePads(void);

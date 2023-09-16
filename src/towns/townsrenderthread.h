@@ -12,6 +12,7 @@
 #include "render.h"
 #include "towns.h"
 #include "townsdef.h"
+#include "outside_world.h"
 
 
 
@@ -62,7 +63,7 @@ public:
 	~TownsRenderingThread();
 
 	void CheckRenderingTimer(FMTownsCommon &towns,class TownsRender &render);
-	void CheckImageReady(FMTownsCommon &towns,class Outside_World &world);
+	void CheckImageReady(FMTownsCommon &towns,class Outside_World &world,Outside_World::WindowInterface &windowInterface);
 	void WaitIdle(void);
 
 	void DiscardRunningRenderingTask(void);
