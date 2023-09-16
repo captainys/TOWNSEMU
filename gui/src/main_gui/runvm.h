@@ -41,6 +41,7 @@ public:
 	TownsCommandQueue *cmdQueuePtr=nullptr;
 	FsSimpleWindowConnection *outsideWorldPtr=nullptr;
 	FsSimpleWindowConnection::Sound *outsideWorldSoundPtr=nullptr;
+	FsSimpleWindowConnection::WindowInterface *outsideWorldWindowPtr=nullptr;
 
 	TownsVM();
 	~TownsVM();
@@ -74,6 +75,7 @@ void TownsVM<CPUCLASS>::Alloc(void)
 	townsThreadPtr->SetRunMode(TownsThread::RUNMODE_POWER_OFF);
 	townsThreadPtr->SetReturnOnPause(true);
 	outsideWorldSoundPtr=outsideWorldPtr->CreateSound();
+	outsideWorldWindowPtr=outsideWorldPtr->CreateWindowInterface();
 }
 template <class CPUCLASS>
 void TownsVM<CPUCLASS>::Free(void)
@@ -81,8 +83,10 @@ void TownsVM<CPUCLASS>::Free(void)
 	if(nullptr!=outsideWorldPtr)
 	{
 		outsideWorldPtr->DeleteSound(outsideWorldSoundPtr);
+		outsideWorldPtr->DeleteWindowInterface(outsideWorldWindowPtr);
 	}
 	outsideWorldSoundPtr=nullptr;
+	outsideWorldWindowPtr=nullptr;
 	delete townsThreadPtr;
 	delete townsPtr;
 	delete cmdQueuePtr;
@@ -112,7 +116,9 @@ void TownsVM<CPUCLASS>::Run(void)
 		townsThreadPtr->SetRunMode(TownsThread::RUNMODE_RUN);
 	}
 
-	townsThreadPtr->VMMainLoop(townsPtr,outsideWorldPtr,outsideWorldSoundPtr,cmdQueuePtr);
+	outsideWorldWindowPtr->Start();
+	townsThreadPtr->VMMainLoop(townsPtr,outsideWorldPtr,outsideWorldSoundPtr,outsideWorldWindowPtr,cmdQueuePtr);
+	outsideWorldWindowPtr->Stop();
 
 	if(TownsThread::RUNMODE_EXIT==townsThreadPtr->GetRunMode())
 	{
