@@ -1199,8 +1199,7 @@ void TownsCDROM::SetStatusSubQRead(void)
 		playPtr/=CDDA_SAMPLING_RATE;
 		playPtr+=state.CDDAStartTime.ToHSG();
 
-		DiscImage::MinSecFrm msf;
-		msf.FromHSG(playPtr);
+		discTime.FromHSG(playPtr);
 
 		if(state.CDDAEndTime<discTime)
 		{
