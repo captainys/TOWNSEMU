@@ -19,6 +19,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 // #include <queue>  std::queue turned out to be useless.
 #include <vector>
 #include <string>
+#include <thread>
+#include <mutex>
+#include <algorithm>
 #include "discimg.h"
 #include "device.h"
 #include "townsdef.h"
@@ -171,6 +174,34 @@ public:
 	enum
 	{
 		CDDA_POLLING_INTERVAL=1000000000/75, // 1 frame = 1/75 second.
+	};
+
+	class AsyncWaveReader
+	{
+	public:
+		enum
+		{
+			STATE_IDLE,
+			STATE_BUSY,
+			STATE_DATAREADY,
+		};
+	private:
+		std::thread thr;
+		std::mutex stateLock;
+		int state=STATE_IDLE;
+		std::vector <unsigned char> wave;
+		DiscImage *discImg;
+		DiscImage::MinSecFrm from,to;
+
+	public:
+		AsyncWaveReader();
+		~AsyncWaveReader();
+		unsigned int GetState(void);
+		void Start(DiscImage *discImg,DiscImage::MinSecFrm from,DiscImage::MinSecFrm to);
+		std::vector <unsigned char> &GetWave(void);
+
+	private:
+		void ThreadFunc(void);
 	};
 
 	class State

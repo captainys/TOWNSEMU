@@ -20,7 +20,51 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "towns.h"
 #include "cpputil.h"
 
+TownsCDROM::AsyncWaveReader::AsyncWaveReader()
+{
+}
+TownsCDROM::AsyncWaveReader::~AsyncWaveReader()
+{
+	if(STATE_IDLE!=GetState())
+	{
+		thr.join();
+		state=STATE_IDLE;
+	}
+}
+unsigned int TownsCDROM::AsyncWaveReader::GetState(void)
+{
+	stateLock.lock();
+	auto stateCopy=state;
+	stateLock.unlock();
+	return stateCopy;
+}
+void TownsCDROM::AsyncWaveReader::Start(DiscImage *discImg,DiscImage::MinSecFrm from,DiscImage::MinSecFrm to)
+{
+	if(STATE_IDLE!=GetState())
+	{
+		thr.join(); // Just in case.  Flush the last task.
+	}
+	this->discImg=discImg;
+	this->from=from;
+	this->to=to;
+	std::thread t(&TownsCDROM::AsyncWaveReader::ThreadFunc,this);
+	std::swap(t,thr);
+}
+std::vector <unsigned char> &TownsCDROM::AsyncWaveReader::GetWave(void)
+{
+	thr.join();
+	state=STATE_IDLE;
+	return wave;
+}
+void TownsCDROM::AsyncWaveReader::ThreadFunc(void)
+{
+	wave=discImg->GetWave(from,to);
+	stateLock.lock();
+	state=STATE_DATAREADY;
+	stateLock.unlock();
+}
 
+////////////////////////////////////////////////////////////
 
 TownsCDROM::State::State()
 {
