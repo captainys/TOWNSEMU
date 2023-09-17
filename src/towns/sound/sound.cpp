@@ -358,6 +358,7 @@ void TownsSound::ProcessSound(void)
 				if(true==cdrom->CDDAIsPlaying())
 				{
 					cdrom->AddWaveForNumSamples(fillPtr,fillNumSamples,WAVE_OUT_SAMPLING_RATE);
+					lastFMPCMWaveGenTime=townsPtr->state.townsTime;
 				}
 				if(true==IsPCMRecording())
 				{

@@ -1522,23 +1522,71 @@ void TownsCDROM::AddWaveForNumSamples(unsigned char waveBuf[],unsigned int numSa
 	}
 	else
 	{
-		uint64_t writePtr=0;
-		for(uint64_t i=0; i<numSamples && state.CDDAPlayPointer<CDDAWaveSize; ++i)
+		int Lvol=townsPtr->GetEleVolCDLeft();
+		int Rvol=townsPtr->GetEleVolCDRight();
+		if(true!=townsPtr->GetEleVolCDLeftEN())
 		{
-			int L=cpputil::GetSignedWord(waveBuf+writePtr);
-			int R=cpputil::GetSignedWord(waveBuf+writePtr+2);
+			Lvol=0;
+		}
+		if(true!=townsPtr->GetEleVolCDRightEN())
+		{
+			Rvol=0;
+		}
 
-			L+=cpputil::GetSignedWord(state.CDDAWave.data()+state.CDDAPlayPointer);
-			R+=cpputil::GetSignedWord(state.CDDAWave.data()+state.CDDAPlayPointer+2);
-
-			cpputil::PutWord(waveBuf+writePtr,L);
-			cpputil::PutWord(waveBuf+writePtr+2,R);
-
-			writePtr+=4;
-			state.CDDAPlayPointer+=4;
-			if(true==state.CDDARepeat && CDDAWaveSize<=state.CDDAPlayPointer)
+		if(63==Lvol && 63==Rvol)
+		{
+			uint64_t writePtr=0;
+			for(uint64_t i=0; i<numSamples && state.CDDAPlayPointer<CDDAWaveSize; ++i)
 			{
-				state.CDDAPlayPointer=0;
+				int L=cpputil::GetSignedWord(waveBuf+writePtr);
+				int R=cpputil::GetSignedWord(waveBuf+writePtr+2);
+
+				L+=cpputil::GetSignedWord(state.CDDAWave.data()+state.CDDAPlayPointer);
+				R+=cpputil::GetSignedWord(state.CDDAWave.data()+state.CDDAPlayPointer+2);
+
+				L=std::max(std::min(L,32767),-32767);
+				R=std::max(std::min(R,32767),-32767);
+
+				cpputil::PutWord(waveBuf+writePtr,L);
+				cpputil::PutWord(waveBuf+writePtr+2,R);
+
+				writePtr+=4;
+				state.CDDAPlayPointer+=4;
+				if(true==state.CDDARepeat && CDDAWaveSize<=state.CDDAPlayPointer)
+				{
+					state.CDDAPlayPointer=0;
+				}
+			}
+		}
+		else
+		{
+			uint64_t writePtr=0;
+			for(uint64_t i=0; i<numSamples && state.CDDAPlayPointer<CDDAWaveSize; ++i)
+			{
+				int L=cpputil::GetSignedWord(waveBuf+writePtr);
+				int R=cpputil::GetSignedWord(waveBuf+writePtr+2);
+
+				int Lcd=cpputil::GetSignedWord(state.CDDAWave.data()+state.CDDAPlayPointer);
+				int Rcd=cpputil::GetSignedWord(state.CDDAWave.data()+state.CDDAPlayPointer+2);
+
+				Lcd=Lcd*Lvol/63;
+				Rcd=Rcd*Rvol/63;
+
+				L+=Lcd;
+				R+=Rcd;
+
+				L=std::max(std::min(L,32767),-32767);
+				R=std::max(std::min(R,32767),-32767);
+
+				cpputil::PutWord(waveBuf+writePtr,L);
+				cpputil::PutWord(waveBuf+writePtr+2,R);
+
+				writePtr+=4;
+				state.CDDAPlayPointer+=4;
+				if(true==state.CDDARepeat && CDDAWaveSize<=state.CDDAPlayPointer)
+				{
+					state.CDDAPlayPointer=0;
+				}
 			}
 		}
 		if(true!=state.CDDARepeat && CDDAWaveSize<=state.CDDAPlayPointer)

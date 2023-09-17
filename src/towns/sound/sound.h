@@ -79,6 +79,8 @@ public:
 	class Outside_World::Sound *outside_world=nullptr;
 	class TownsCDROM *cdrom=nullptr;
 
+	// Since 2023/09/17, CDDA is played from the same channel as FM and PCM.
+	// Although the variables say FMPCM, it also includes CDDA.
 	bool recordFMandPCM=false;
 	std::vector <unsigned char> FMPCMrecording;
 
