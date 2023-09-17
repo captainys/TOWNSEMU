@@ -24,7 +24,7 @@ TownsThread::TownsThread(void) : renderingThread(new TownsRenderingThread)
 	runMode=RUNMODE_PAUSE;
 }
 
-void TownsThread::VMStart(FMTownsCommon *townsPtr,Outside_World *outside_world,Outside_World::Sound *sound,class TownsUIThread *uiThread)
+void TownsThread::VMStart(FMTownsCommon *townsPtr,Outside_World *outside_world,Outside_World::Sound *,class TownsUIThread *uiThread)
 {
 	renderingThread->imageNeedsFlip=outside_world->ImageNeedsFlip();
 
@@ -34,7 +34,7 @@ void TownsThread::VMStart(FMTownsCommon *townsPtr,Outside_World *outside_world,O
 
 	if(""!=townsPtr->var.startUpStateFName)
 	{
-		townsPtr->LoadState(townsPtr->var.startUpStateFName,*sound);
+		townsPtr->LoadState(townsPtr->var.startUpStateFName);
 	}
 
 	switch(townsPtr->state.appSpecificSetting)
@@ -79,8 +79,8 @@ void TownsThread::VMMainLoopTemplate(
 	// Just in case, if there is a remains of the rendering from the previous run, discard it.
 	renderingThread->DiscardRunningRenderingTask();
 
-	townsPtr->cdrom.SetOutsideWorld(sound);
 	townsPtr->sound.SetOutsideWorld(sound);
+	townsPtr->sound.SetCDROMPointer(&townsPtr->cdrom);
 	townsPtr->scsi.SetOutsideWorld(sound);
 	sound->Start();
 
@@ -186,7 +186,7 @@ void TownsThread::VMMainLoopTemplate(
 				}
 			}
 			townsPtr->ProcessSound(outside_world);
-			townsPtr->cdrom.UpdateCDDAState(townsPtr->state.townsTime,*sound);
+			townsPtr->cdrom.UpdateCDDAState(townsPtr->state.townsTime);
 
 			// townsPtr->CheckRenderingTimer(render,*outside_world);
 			renderingThread->CheckRenderingTimer(*townsPtr,render);

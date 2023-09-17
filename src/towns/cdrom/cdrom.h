@@ -97,7 +97,6 @@ private:
 	class FMTownsCommon *townsPtr;
 	class TownsPIC *PICPtr;
 	class TownsDMAC *DMACPtr;
-	class Outside_World::Sound *OutsideWorld=nullptr;
 
 public:
 	enum
@@ -120,6 +119,8 @@ public:
 		LOSTDATA_TIMEOUT=     100000000,  // Tentatively 100ms. I don't think the CDC had a large FIFO buffer back in 1989. The real time-out should have been much shorter.
 		STATUS_CHECKBACK_TIME=  1000000,
 		MAX_NUM_SECTORS=         350000,  // Max 700MB, 2KB per sector.
+
+		SECTOR_PER_SEC_1X=           75,
 
 		SECTORREAD_DELAY_ORGEL=200000000,
 		/*
@@ -231,7 +232,7 @@ public:
 		bool CDDARepeat=false;
 
 		std::vector <unsigned char> CDDAWave;
-		long long int CDDAPlayPointer=0;
+		unsigned int CDDAPlayPointer=0;
 
 	private:
 		DiscImage *imgPtr;
@@ -289,12 +290,11 @@ public:
 	virtual void PowerOn(void);
 	virtual void Reset(void);
 
-	void SetOutsideWorld(class Outside_World::Sound *outside_world);
-	inline void UpdateCDDAState(long long int townsTime,Outside_World::Sound &outside_world)
+	inline void UpdateCDDAState(long long int townsTime)
 	{
 		if(state.nextCDDAPollingTime<townsTime)
 		{
-			UpdateCDDAStateInternal(townsTime,outside_world);
+			UpdateCDDAStateInternal(townsTime);
 		}
 	}
 	static inline bool StatusRequestBit(unsigned char cmd)
@@ -318,7 +318,7 @@ public:
 		return (0!=(cmd&CMDFLAG_STATUS_REQUEST)); // This interpretation of [2] prevents Shadow of the Beast from starting.
 	}
 private:
-	void UpdateCDDAStateInternal(long long int townsTime,Outside_World::Sound &outside_world);
+	void UpdateCDDAStateInternal(long long int townsTime);
 public:
 	inline bool CDDAIsPlaying(void) const
 	{
@@ -387,7 +387,7 @@ private:
 
 public:
 	// Will be called from FMTownsCommon::LoadState
-	void ResumeCDDAAfterRestore(class Outside_World::Sound *outsideWorld);
+	void ResumeCDDAAfterRestore(void);
 
 
 public:

@@ -727,7 +727,7 @@ public:
 
 
 	bool SaveState(std::string fName) const;
-	bool LoadState(std::string fName,class Outside_World::Sound &sound);
+	bool LoadState(std::string fName);
 
 	virtual uint32_t SerializeVersion(void) const;
 	virtual void SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const;

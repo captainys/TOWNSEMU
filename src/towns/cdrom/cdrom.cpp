@@ -19,7 +19,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "townsdef.h"
 #include "towns.h"
 #include "cpputil.h"
-#include "outside_world.h"
 
 
 
@@ -64,17 +63,12 @@ void TownsCDROM::State::Reset(void)
 	CDDAPlayPointer=0;
 }
 
-void TownsCDROM::SetOutsideWorld(class Outside_World::Sound *outside_world)
-{
-	this->OutsideWorld=outside_world;
-}
-
-void TownsCDROM::UpdateCDDAStateInternal(long long int townsTime,Outside_World::Sound &outside_world)
+void TownsCDROM::UpdateCDDAStateInternal(long long int townsTime)
 {
 	state.nextCDDAPollingTime=townsTime+CDDA_POLLING_INTERVAL;
 	if(CDDA_PLAYING==state.CDDAState)
 	{
-		if(true!=OutsideWorld->CDDAIsPlaying())
+		if(state.CDDAWave.size()<=state.CDDAPlayPointer)
 		{
 			state.CDDAState=CDDA_STOPPING;
 		}
@@ -82,12 +76,6 @@ void TownsCDROM::UpdateCDDAStateInternal(long long int townsTime,Outside_World::
 	else if(CDDA_STOPPING==state.CDDAState)
 	{
 		state.CDDAState=CDDA_ENDED;
-	}
-
-	if(true==var.CDEleVolUpdate)
-	{
-		townsPtr->UpdateCDEleVol(&outside_world);
-		var.CDEleVolUpdate=false;
 	}
 }
 
@@ -565,7 +553,6 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 		{
 			// CDDA needs to stop when MODE1READ is sent while playing.
 			state.CDDAState=CDDA_IDLE;
-			OutsideWorld->CDDAStop();
 
 			// TownsOS V2.1 L20 issues MODE1READ command without checking the status by GETSTATE.
 			// This causes an issue when redirecting Internal CD-ROM to external CD-ROM.
@@ -613,17 +600,15 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 			msfEnd.frm=DiscImage::BCDToBin(state.paramQueue[5]);
 			msfEnd-=offset;
 
-			if(nullptr!=OutsideWorld)
-			{
-				bool repeat=(1==state.paramQueue[6]); // Should I say 0!= ?
-				OutsideWorld->CDDAPlay(state.GetDisc(),msfBegin,msfEnd,repeat,255,255);
-				townsPtr->UpdateCDEleVol(OutsideWorld);
+			bool repeat=(1==state.paramQueue[6]); // Should I say 0!= ?
+			state.CDDAWave=state.GetDisc().GetWave(msfBegin,msfEnd);
+			state.CDDAPlayPointer=0;
 
-				state.CDDAState=CDDA_PLAYING;
-				state.CDDAStartTime=msfBegin;
-				state.CDDAEndTime=msfEnd;
-				state.CDDARepeat=repeat;
-			}
+			state.CDDAState=CDDA_PLAYING;
+			state.CDDAStartTime=msfBegin;
+			state.CDDAEndTime=msfEnd;
+			state.CDDARepeat=repeat;
+
 			if(true==StatusRequestBit(state.cmd))
 			{
 				SetStatusDriveNotReadyOrDiscChangedOrNoError();
@@ -731,10 +716,6 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 		}
 		break;
 	case CDCMD_CDDAPAUSE://  0x85,
-		if(nullptr!=OutsideWorld)
-		{
-			OutsideWorld->CDDAPause();
-		}
 		// Fix for ChaseHQ.
 		// CDDAState must be reset to IDLE regardless of the Status Request.
 		// ChaseHQ was issuing CDDAPAUSE command without Status Request flag.
@@ -752,13 +733,9 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 		std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " not implemented yet." << std::endl;
 		break;
 	case CDCMD_CDDARESUME:// 0x87,
-		if(nullptr!=OutsideWorld)
+		if(CDDA_PAUSED==state.CDDAState)
 		{
-			OutsideWorld->CDDAResume();
-			if(CDDA_PAUSED==state.CDDAState)
-			{
-				state.CDDAState=CDDA_PLAYING;
-			}
+			state.CDDAState=CDDA_PLAYING;
 		}
 		if(true==StatusRequestBit(state.cmd))
 		{
@@ -1203,12 +1180,6 @@ void TownsCDROM::SetStatusSubQRead(void)
 		return;
 	}
 
-	if(nullptr==OutsideWorld)
-	{
-		SetStatusDriveNotReady();
-		return;
-	}
-
 	// From reverse-engineering of CD-ROM BIOS, it is most likely:
 	// 00 00 00 00  <- First return no error.
 	// 18H xx trkBCD xx
@@ -1222,7 +1193,15 @@ void TownsCDROM::SetStatusSubQRead(void)
 
 	if(CDDA_PLAYING==state.CDDAState)
 	{
-		discTime=OutsideWorld->CDDACurrentPosition();
+		uint64_t playPtr=state.CDDAPlayPointer;
+		playPtr/=4;
+		playPtr*=SECTOR_PER_SEC_1X;
+		playPtr/=CDDA_SAMPLING_RATE;
+		playPtr+=state.CDDAStartTime.ToHSG();
+
+		DiscImage::MinSecFrm msf;
+		msf.FromHSG(playPtr);
+
 		if(state.CDDAEndTime<discTime)
 		{
 			discTime=state.CDDAEndTime;
@@ -1270,10 +1249,6 @@ void TownsCDROM::PushStatusCDDAPlayEnded(void)
 
 void TownsCDROM::StopCDDA(void)
 {
-	if(nullptr!=OutsideWorld)
-	{
-		OutsideWorld->CDDAStop();
-	}
 	state.ClearStatusQueue();
 	if(true!=SetStatusDriveNotReadyOrDiscChanged())
 	{
@@ -1347,10 +1322,16 @@ void TownsCDROM::SetSIRQ_IRR(void)
 
 	PushBool(data,state.delayedSIRQ);
 
+	uint64_t CDDAPlayingSector=state.CDDAPlayPointer;
+	CDDAPlayingSector/=4;
+	CDDAPlayingSector*=SECTOR_PER_SEC_1X; // 75 sector per second
+	CDDAPlayingSector/=CDDA_SAMPLING_RATE; // Make it sector offset.
+	auto CDDAPlayingTime=state.CDDAStartTime.ToHSG()+CDDAPlayingSector;
+
 	PushUint32(data,state.CDDAState);
 	PushInt64(data,state.nextCDDAPollingTime);
 	PushUint32(data,state.CDDAStartTime.ToHSG());
-	PushUint32(data,state.CDDAStartTime.ToHSG()); // Will be the current position.  Temporarily the start time.
+	PushUint32(data,CDDAPlayingTime);
 	PushUint32(data,state.CDDAEndTime.ToHSG());
 	PushBool(data,state.CDDARepeat);
 
@@ -1473,7 +1454,14 @@ void TownsCDROM::SetSIRQ_IRR(void)
 	if(2<=version)
 	{
 		state.CDDAStartTime.FromHSG(ReadUint32(data));
-		ReadUint32(data); // Will be the current position.  Temporarily the start time.
+
+		uint64_t CDDAPlayingTime=ReadUint32(data);
+		CDDAPlayingTime-=state.CDDAStartTime.ToHSG();
+		CDDAPlayingTime*=CDDA_SAMPLING_RATE;
+		CDDAPlayingTime/=SECTOR_PER_SEC_1X;
+		CDDAPlayingTime*=4;
+		state.CDDAPlayPointer=CDDAPlayingTime;
+
 		state.CDDAEndTime.FromHSG(ReadUint32(data));
 		state.CDDARepeat=ReadBool(data);
 	}
@@ -1497,18 +1485,14 @@ void TownsCDROM::SetSIRQ_IRR(void)
 	return true;
 }
 
-void TownsCDROM::ResumeCDDAAfterRestore(class Outside_World::Sound *outsideWorld)
+void TownsCDROM::ResumeCDDAAfterRestore(void)
 {
 	unsigned int leftLinear=255;
 	unsigned int rightLinear=255;
-	if(CDDA_PLAYING==state.CDDAState)
+	if(CDDA_PLAYING==state.CDDAState || CDDA_PAUSED==state.CDDAState)
 	{
-		outsideWorld->CDDAPlay(state.GetDisc(),state.CDDAStartTime,state.CDDAEndTime,state.CDDARepeat,leftLinear,rightLinear);
-	}
-	else if(CDDA_PAUSED==state.CDDAState)
-	{
-		outsideWorld->CDDAPlay(state.GetDisc(),state.CDDAStartTime,state.CDDAEndTime,state.CDDARepeat,leftLinear,rightLinear);
-		outsideWorld->CDDAPause();
+		state.CDDAWave=state.GetDisc().GetWave(state.CDDAStartTime,state.CDDAEndTime);
+		// state.CDDAPlayPointer should have already been set.
 	}
 }
 

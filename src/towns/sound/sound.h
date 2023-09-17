@@ -26,6 +26,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "rf5c68.h"
 #include "yssimplesound.h"
 #include "outside_world.h"
+#include "cdrom.h"
 
 class TownsSound : public Device
 {
@@ -76,6 +77,7 @@ public:
 	State state;
 	Variable var;
 	class Outside_World::Sound *outside_world=nullptr;
+	class TownsCDROM *cdrom=nullptr;
 
 	bool recordFMandPCM=false;
 	std::vector <unsigned char> FMPCMrecording;
@@ -101,6 +103,7 @@ public:
 
 	TownsSound(class FMTownsCommon *townsPtr);
 	void SetOutsideWorld(class Outside_World::Sound *outside_world);
+	void SetCDROMPointer(class TownsCDROM *cdrom);
 	void PCMStartPlay(unsigned char chStartPlay);
 	void PCMStopPlay(unsigned char chStopPlay);
 	void PCMPausePlay(unsigned char chStopPlay);

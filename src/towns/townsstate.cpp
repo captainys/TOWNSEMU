@@ -48,7 +48,7 @@ bool FMTownsCommon::SaveState(std::string fName) const
 	}
 	return false;
 }
-bool FMTownsCommon::LoadState(std::string fName,class Outside_World::Sound &soundDevice)
+bool FMTownsCommon::LoadState(std::string fName)
 {
 	auto &cpu=CPU();
 	std::ifstream ifp(fName,std::ios::binary);
@@ -118,7 +118,7 @@ bool FMTownsCommon::LoadState(std::string fName,class Outside_World::Sound &soun
 			}
 		}
 
-		cdrom.ResumeCDDAAfterRestore(&soundDevice);
+		cdrom.ResumeCDDAAfterRestore();
 
 		var.justLoadedState=true;
 

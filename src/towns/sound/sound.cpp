@@ -50,6 +50,10 @@ void TownsSound::SetOutsideWorld(class Outside_World::Sound *outside_world)
 {
 	this->outside_world=outside_world;
 }
+void TownsSound::SetCDROMPointer(class TownsCDROM *cdrom)
+{
+	this->cdrom=cdrom;
+}
 void TownsSound::PCMStartPlay(unsigned char chStartPlay)
 {
 }

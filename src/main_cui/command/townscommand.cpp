@@ -1292,7 +1292,7 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,clas
 	case CMD_LOAD_STATE:
 		if(2<=cmd.argv.size())
 		{
-			if(true!=towns.LoadState(cmd.argv[1],*sound))
+			if(true!=towns.LoadState(cmd.argv[1]))
 			{
 				PrintError(ERROR_CANNOT_OPEN_FILE);
 			}
@@ -1695,7 +1695,7 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,clas
 		}
 		break;
 	case CMD_QUICK_LOADSTATE:
-		if(true!=towns.LoadState(towns.var.quickStateSaveFName,*sound))
+		if(true!=towns.LoadState(towns.var.quickStateSaveFName))
 		{
 			PrintError(ERROR_CANNOT_OPEN_FILE);
 		}
