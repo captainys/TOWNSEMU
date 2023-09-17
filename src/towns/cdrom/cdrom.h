@@ -106,6 +106,7 @@ public:
 		STATE_QUEUE_LEN=4,
 		CMDFLAG_STATUS_REQUEST=0x20,
 		CMDFLAG_IRQ=0x40,
+		CDDA_SAMPLING_RATE=44100,
 	};
 
 	enum
@@ -156,6 +157,19 @@ public:
 		CDCMD_UNKNOWN2=   0x86,
 		CDCMD_CDDARESUME= 0x87,
 		CDCMD_UNKNOWN3=   0x9F,
+	};
+
+	enum
+	{
+		CDDA_IDLE,
+		CDDA_PLAYING,
+		CDDA_PAUSED,
+		CDDA_STOPPING,
+		CDDA_ENDED,
+	};
+	enum
+	{
+		CDDA_POLLING_INTERVAL=1000000000/75, // 1 frame = 1/75 second.
 	};
 
 	class State
@@ -211,22 +225,13 @@ public:
 		// BIOS disassembly suggests that command A0H should return status:
 		//   00 00 00 00 07 00 00 00
 		// once CDDA play ended.  For this purpose, the CDDA must have an additional state ENDED.
-		enum
-		{
-			CDDA_IDLE,
-			CDDA_PLAYING,
-			CDDA_PAUSED,
-			CDDA_STOPPING,
-			CDDA_ENDED,
-		};
-		enum
-		{
-			CDDA_POLLING_INTERVAL=1000000000/75, // 1 frame = 1/75 second.
-		};
 		unsigned int CDDAState=CDDA_IDLE;
 		long long int nextCDDAPollingTime=0;
 		DiscImage::MinSecFrm CDDAStartTime,CDDAEndTime;
 		bool CDDARepeat=false;
+
+		std::vector <unsigned char> CDDAWave;
+		long long int CDDAPlayPointer=0;
 
 	private:
 		DiscImage *imgPtr;
@@ -317,7 +322,7 @@ private:
 public:
 	inline bool CDDAIsPlaying(void) const
 	{
-		return (State::CDDA_PLAYING==state.CDDAState || State::CDDA_STOPPING==state.CDDAState);
+		return (CDDA_PLAYING==state.CDDAState || CDDA_STOPPING==state.CDDAState);
 	}
 
 	virtual void IOWriteByte(unsigned int ioport,unsigned int data);
@@ -383,6 +388,11 @@ private:
 public:
 	// Will be called from FMTownsCommon::LoadState
 	void ResumeCDDAAfterRestore(class Outside_World::Sound *outsideWorld);
+
+
+public:
+	bool IsCDDAPlaying(void) const;
+	void AddWaveForNumSamples(unsigned char waveBuf[],unsigned int numSamples,int outSamplingRate);
 };
 
 

@@ -59,6 +59,9 @@ void TownsCDROM::State::Reset(void)
 	CDDAState=CDDA_IDLE;
 	nextCDDAPollingTime=0;
 	CDDAEndTime.Set(0,2,0);
+
+	CDDAWave.clear();
+	CDDAPlayPointer=0;
 }
 
 void TownsCDROM::SetOutsideWorld(class Outside_World::Sound *outside_world)
@@ -68,17 +71,17 @@ void TownsCDROM::SetOutsideWorld(class Outside_World::Sound *outside_world)
 
 void TownsCDROM::UpdateCDDAStateInternal(long long int townsTime,Outside_World::Sound &outside_world)
 {
-	state.nextCDDAPollingTime=townsTime+State::CDDA_POLLING_INTERVAL;
-	if(State::CDDA_PLAYING==state.CDDAState)
+	state.nextCDDAPollingTime=townsTime+CDDA_POLLING_INTERVAL;
+	if(CDDA_PLAYING==state.CDDAState)
 	{
 		if(true!=OutsideWorld->CDDAIsPlaying())
 		{
-			state.CDDAState=State::CDDA_STOPPING;
+			state.CDDAState=CDDA_STOPPING;
 		}
 	}
-	else if(State::CDDA_STOPPING==state.CDDAState)
+	else if(CDDA_STOPPING==state.CDDAState)
 	{
-		state.CDDAState=State::CDDA_ENDED;
+		state.CDDAState=CDDA_ENDED;
 	}
 
 	if(true==var.CDEleVolUpdate)
@@ -434,19 +437,19 @@ std::vector <std::string> TownsCDROM::GetStatusText(void) const
 	text.push_back("CDDA:");
 	switch(state.CDDAState)
 	{
-	case State::CDDA_IDLE:
+	case CDDA_IDLE:
 		text.back()+="IDLE";
 		break;
-	case State::CDDA_PLAYING:
+	case CDDA_PLAYING:
 		text.back()+="PLAYING";
 		break;
-	case State::CDDA_PAUSED:
+	case CDDA_PAUSED:
 		text.back()+="PAUSED";
 		break;
-	case State::CDDA_STOPPING:
+	case CDDA_STOPPING:
 		text.back()+="STOPPING";
 		break;
-	case State::CDDA_ENDED:
+	case CDDA_ENDED:
 		text.back()+="ENDED";
 		break;
 	default:
@@ -561,7 +564,7 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 	case CDCMD_RAWREAD://    0x03,
 		{
 			// CDDA needs to stop when MODE1READ is sent while playing.
-			state.CDDAState=State::CDDA_IDLE;
+			state.CDDAState=CDDA_IDLE;
 			OutsideWorld->CDDAStop();
 
 			// TownsOS V2.1 L20 issues MODE1READ command without checking the status by GETSTATE.
@@ -616,7 +619,7 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 				OutsideWorld->CDDAPlay(state.GetDisc(),msfBegin,msfEnd,repeat,255,255);
 				townsPtr->UpdateCDEleVol(OutsideWorld);
 
-				state.CDDAState=State::CDDA_PLAYING;
+				state.CDDAState=CDDA_PLAYING;
 				state.CDDAStartTime=msfBegin;
 				state.CDDAEndTime=msfEnd;
 				state.CDDARepeat=repeat;
@@ -680,7 +683,7 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 		{
 			townsPtr->UnscheduleDeviceCallBack(*this);
 			SetStatusDriveNotReadyOrDiscChangedOrNoError();
-			if(State::CDDA_ENDED==state.CDDAState)
+			if(CDDA_ENDED==state.CDDAState)
 			{
 				// 2020/07/30
 				// Vain Dream crashes when CD BIOS Call AX=53C0H returns an error because the BIOS is expecting
@@ -698,7 +701,7 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 				// Maybe subsequent to CDDA Stop command?
 
 				// PushStatusCDDAPlayEnded();
-				state.CDDAState=State::CDDA_IDLE;
+				state.CDDAState=CDDA_IDLE;
 			}
 			if(CMDFLAG_IRQ&state.cmd)
 			{
@@ -735,7 +738,7 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 		// Fix for ChaseHQ.
 		// CDDAState must be reset to IDLE regardless of the Status Request.
 		// ChaseHQ was issuing CDDAPAUSE command without Status Request flag.
-		state.CDDAState=State::CDDA_PAUSED;
+		state.CDDAState=CDDA_PAUSED;
 		if(true==StatusRequestBit(state.cmd))
 		{
 			if(true!=SetStatusDriveNotReadyOrDiscChanged())
@@ -752,9 +755,9 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 		if(nullptr!=OutsideWorld)
 		{
 			OutsideWorld->CDDAResume();
-			if(State::CDDA_PAUSED==state.CDDAState)
+			if(CDDA_PAUSED==state.CDDAState)
 			{
-				state.CDDAState=State::CDDA_PLAYING;
+				state.CDDAState=CDDA_PLAYING;
 			}
 		}
 		if(true==StatusRequestBit(state.cmd))
@@ -1091,7 +1094,7 @@ bool TownsCDROM::SetStatusDriveNotReadyOrDiscChanged(void)
 void TownsCDROM::SetStatusNoError(void)
 {
 	unsigned char next2ndByteOfStatusCode=0;
-	if(State::CDDA_PAUSED==state.CDDAState)
+	if(CDDA_PAUSED==state.CDDAState)
 	{
 		// Probably: Response to A0H, 00 01 xx xx means CDDA is paused.
 		// 0256:00001F01 A03100                    MOV     AL,[0031H]   // Second byte of the status code, if the first byte is 00H
@@ -1217,7 +1220,7 @@ void TownsCDROM::SetStatusSubQRead(void)
 	DiscImage::MinSecFrm twoSec,discTime;
 	twoSec.Set(0,2,0);
 
-	if(State::CDDA_PLAYING==state.CDDAState)
+	if(CDDA_PLAYING==state.CDDAState)
 	{
 		discTime=OutsideWorld->CDDACurrentPosition();
 		if(state.CDDAEndTime<discTime)
@@ -1274,7 +1277,7 @@ void TownsCDROM::StopCDDA(void)
 	state.ClearStatusQueue();
 	if(true!=SetStatusDriveNotReadyOrDiscChanged())
 	{
-		state.CDDAState=State::CDDA_ENDED;
+		state.CDDAState=CDDA_ENDED;
 		SetStatusNoError();
 		PushStatusCDDAStopDone();
 		state.PushStatusQueue(0,0x0D,0,0);
@@ -1282,7 +1285,7 @@ void TownsCDROM::StopCDDA(void)
 	else
 	{
 		// See fix for ChaseHQ in CDDAPAUSE.
-		state.CDDAState=State::CDDA_IDLE;
+		state.CDDAState=CDDA_IDLE;
 	}
 }
 
@@ -1476,7 +1479,7 @@ void TownsCDROM::SetSIRQ_IRR(void)
 	}
 	else
 	{
-		state.CDDAState=State::CDDA_IDLE;
+		state.CDDAState=CDDA_IDLE;
 		state.CDDAEndTime.FromHSG(ReadUint32(data));
 	}
 
@@ -1498,13 +1501,65 @@ void TownsCDROM::ResumeCDDAAfterRestore(class Outside_World::Sound *outsideWorld
 {
 	unsigned int leftLinear=255;
 	unsigned int rightLinear=255;
-	if(State::CDDA_PLAYING==state.CDDAState)
+	if(CDDA_PLAYING==state.CDDAState)
 	{
 		outsideWorld->CDDAPlay(state.GetDisc(),state.CDDAStartTime,state.CDDAEndTime,state.CDDARepeat,leftLinear,rightLinear);
 	}
-	else if(State::CDDA_PAUSED==state.CDDAState)
+	else if(CDDA_PAUSED==state.CDDAState)
 	{
 		outsideWorld->CDDAPlay(state.GetDisc(),state.CDDAStartTime,state.CDDAEndTime,state.CDDARepeat,leftLinear,rightLinear);
 		outsideWorld->CDDAPause();
+	}
+}
+
+void TownsCDROM::AddWaveForNumSamples(unsigned char waveBuf[],unsigned int numSamples,int outSamplingRate)
+{
+	if(CDDA_SAMPLING_RATE!=outSamplingRate)
+	{
+		std::cout << "TownsCDROM::int AddWaveForNumSamples does not support other than " << CDDA_SAMPLING_RATE << "Hz" << std::endl;
+		state.CDDAState=CDDA_STOPPING;
+		return;
+	}
+
+	auto CDDAWaveSize=(state.CDDAWave.size()+3)&~3;  // Just in case, force it to be 4*N.
+	if(0==CDDAWaveSize)
+	{
+		state.CDDAState=CDDA_STOPPING;
+		return;
+	}
+
+	if(true==var.CDDAmute)
+	{
+		state.CDDAPlayPointer+=numSamples*4;
+		if(true==state.CDDARepeat)
+		{
+			state.CDDAPlayPointer%=CDDAWaveSize;
+		}
+	}
+	else
+	{
+		uint64_t writePtr=0;
+		for(uint64_t i=0; i<numSamples && state.CDDAPlayPointer<CDDAWaveSize; ++i)
+		{
+			int L=cpputil::GetSignedWord(waveBuf+writePtr);
+			int R=cpputil::GetSignedWord(waveBuf+writePtr+2);
+
+			L+=cpputil::GetSignedWord(state.CDDAWave.data()+state.CDDAPlayPointer);
+			R+=cpputil::GetSignedWord(state.CDDAWave.data()+state.CDDAPlayPointer+2);
+
+			cpputil::PutWord(waveBuf+writePtr,L);
+			cpputil::PutWord(waveBuf+writePtr+2,R);
+
+			writePtr+=4;
+			state.CDDAPlayPointer+=4;
+			if(true==state.CDDARepeat && CDDAWaveSize<=state.CDDAPlayPointer)
+			{
+				state.CDDAPlayPointer=0;
+			}
+		}
+		if(true!=state.CDDARepeat && CDDAWaveSize<=state.CDDAPlayPointer)
+		{
+			state.CDDAState=CDDA_STOPPING;
+		}
 	}
 }
