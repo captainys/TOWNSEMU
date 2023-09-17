@@ -494,6 +494,8 @@ std::vector <std::string> TownsCDROM::GetStatusText(void) const
 
 unsigned int TownsCDROM::LoadDiscImage(const std::string &fName)
 {
+	while(AsyncWaveReader::STATE_BUSY==waveReader.GetState());
+
 	std::string ext=cpputil::GetExtension(fName.c_str());
 	cpputil::Capitalize(ext);
 	if(".BIN"==ext || ".IMG"==ext)
@@ -553,9 +555,33 @@ void TownsCDROM::BreakOnCommandCheck(const char phase[])
 void TownsCDROM::ExecuteCDROMCommand(void)
 {
 	BreakOnCommandCheck("Write");
+	switch(state.cmd&0x9F)
+	{
+	case CDCMD_CDDAPLAY://   0x04,
+		PrepareCDDAPlay();
+		break;
+	}
 	state.DRY=false;
 	state.delayedSIRQ=true;
 	townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DELAYED_STATUS_IRQ_TIME);
+}
+
+void TownsCDROM::PrepareCDDAPlay(void)
+{
+	DiscImage::MinSecFrm msfBegin,msfEnd;
+	auto offset=DiscImage::MakeMSF(0,2,0);
+
+	msfBegin.min=DiscImage::BCDToBin(state.paramQueue[0]);
+	msfBegin.sec=DiscImage::BCDToBin(state.paramQueue[1]);
+	msfBegin.frm=DiscImage::BCDToBin(state.paramQueue[2]);
+	msfBegin-=offset;
+
+	msfEnd.min=DiscImage::BCDToBin(state.paramQueue[3]);
+	msfEnd.sec=DiscImage::BCDToBin(state.paramQueue[4]);
+	msfEnd.frm=DiscImage::BCDToBin(state.paramQueue[5]);
+	msfEnd-=offset;
+
+	waveReader.Start(&state.GetDisc(),msfBegin,msfEnd);
 }
 
 void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
@@ -624,6 +650,12 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 		}
 		break;
 	case CDCMD_CDDAPLAY://   0x04,
+		if(AsyncWaveReader::STATE_DATAREADY!=waveReader.GetState())
+		{
+			state.delayedSIRQ=true;
+			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DELAYED_STATUS_IRQ_TIME);
+		}
+		else
 		{
 			// I realized ChaseHQ go into infinite loop unless Status Queue is cleared.
 			// I'm wondering if I should do the same for all other commands.
@@ -645,7 +677,7 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 			msfEnd-=offset;
 
 			bool repeat=(1==state.paramQueue[6]); // Should I say 0!= ?
-			state.CDDAWave=state.GetDisc().GetWave(msfBegin,msfEnd);
+			state.CDDAWave=waveReader.GetWave();;
 			state.CDDAPlayPointer=0;
 
 			state.CDDAState=CDDA_PLAYING;

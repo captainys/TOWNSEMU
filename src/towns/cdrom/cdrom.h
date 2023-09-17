@@ -203,6 +203,7 @@ public:
 	private:
 		void ThreadFunc(void);
 	};
+	AsyncWaveReader waveReader;
 
 	class State
 	{
@@ -376,6 +377,8 @@ public:
 	/*! 
 	*/
 	void ExecuteCDROMCommand(void);
+
+	void PrepareCDDAPlay(void);
 
 	void DelayedCommandExecution(unsigned long long int townsTime);
 
