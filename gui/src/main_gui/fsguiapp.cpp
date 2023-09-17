@@ -485,14 +485,9 @@ void FsGuiMainCanvas::DrawVMLastImage(VMClass &VM)
 	if(true!=separateProcess &&
 	   true==VM.IsRunning() &&
 	   nullptr!=VM.outsideWorldPtr &&
-	   nullptr!=VM.townsPtr)
+	   nullptr!=VM.outsideWorldWindowPtr)
 	{
-		auto image=VM.lastImage.GetImage();
-		if(0<image.wid && 0<image.hei)
-		{
-			VM.outsideWorldPtr->UpdateStatusBarInfo(*VM.townsPtr);
-			VM.outsideWorldWindowPtr->Render(false);
-		}
+		VM.outsideWorldWindowPtr->Render(false);
 	}
 }
 
