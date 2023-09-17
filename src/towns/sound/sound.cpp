@@ -293,7 +293,12 @@ std::vector <std::string> TownsSound::GetStatusText(void) const
 
 void TownsSound::ProcessSound(void)
 {
-	if((true==IsFMPlaying() || true==IsPCMPlaying() || true==IsPCMRecording() || townsPtr->state.townsTime<lastFMPCMWaveGenTime+RINGBUFFER_CLEAR_TIME) && nullptr!=outside_world)
+	if((true==IsFMPlaying() ||
+	    true==IsPCMPlaying() ||
+	    true==IsPCMRecording() ||
+	    true==cdrom->CDDAIsPlaying() ||
+	    townsPtr->state.townsTime<lastFMPCMWaveGenTime+RINGBUFFER_CLEAR_TIME) && 
+	   nullptr!=outside_world)
 	{
 		if(nextFMPCMWaveGenTime<=townsPtr->state.townsTime)
 		{
@@ -349,6 +354,10 @@ void TownsSound::ProcessSound(void)
 						}
 					}
 					lastFMPCMWaveGenTime=townsPtr->state.townsTime;
+				}
+				if(true==cdrom->CDDAIsPlaying())
+				{
+					cdrom->AddWaveForNumSamples(fillPtr,fillNumSamples,WAVE_OUT_SAMPLING_RATE);
 				}
 				if(true==IsPCMRecording())
 				{
