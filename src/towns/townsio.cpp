@@ -251,30 +251,6 @@ void FMTownsCommon::UpdateEleVol(int eleVol)
 	}
 }
 
-void FMTownsCommon::UpdateCDEleVol(Outside_World::Sound *outside_world)
-{
-	if(true==cdrom.var.CDDAmute)
-	{
-		outside_world->CDDASetVolume(0,0);
-	}
-	else
-	{
-		unsigned int leftVol=GetEleVolCDLeft();
-		unsigned int rightVol=GetEleVolCDRight();
-		if(true!=GetEleVolCDLeftEN())
-		{
-			leftVol=0;
-		}
-		if(true!=GetEleVolCDRightEN())
-		{
-			rightVol=0;
-		}
-		float left=(float)leftVol/63.0;
-		float right=(float)rightVol/63.0;
-		outside_world->CDDASetVolume(left,right);
-	}
-}
-
 /* virtual */ void FMTownsCommon::RunScheduledTask(unsigned long long int townsTime)
 {
 	CPU().Reset();

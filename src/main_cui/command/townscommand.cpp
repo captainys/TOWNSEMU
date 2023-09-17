@@ -1441,11 +1441,9 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,clas
 		break;
 	case CMD_CDDAMUTE:
 		towns.cdrom.var.CDDAmute=true;
-		towns.UpdateCDEleVol(sound);
 		break;
 	case CMD_CDDAUNMUTE:
 		towns.cdrom.var.CDDAmute=false;
-		towns.UpdateCDEleVol(sound);
 		break;
 
 	case CMD_SCSICD0LOAD:

@@ -684,7 +684,6 @@ public:
 	virtual unsigned int IOReadDword(unsigned int ioport);
 	virtual void RunScheduledTask(unsigned long long int townsTime);
 	void UpdateEleVol(int eleVol);
-	void UpdateCDEleVol(Outside_World::Sound *outside_world);
 
 	/*! Electric Volume.  Returns 31 when max level.  0 when -32dB. */
 	bool GetEleVolCDLeftEN(void) const;

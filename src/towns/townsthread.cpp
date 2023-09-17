@@ -24,7 +24,7 @@ TownsThread::TownsThread(void) : renderingThread(new TownsRenderingThread)
 	runMode=RUNMODE_PAUSE;
 }
 
-void TownsThread::VMStart(FMTownsCommon *townsPtr,Outside_World *outside_world,Outside_World::Sound *,class TownsUIThread *uiThread)
+void TownsThread::VMStart(FMTownsCommon *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread)
 {
 	renderingThread->imageNeedsFlip=outside_world->ImageNeedsFlip();
 

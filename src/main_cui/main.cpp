@@ -151,7 +151,7 @@ int Run(FMTownsTemplate <CPUCLASS> &towns,const TownsARGV &argv,Outside_World &o
 	std::thread UIThread(&TownsCUIThread::Run,&cuiThread,&townsThread,&towns,&argv,&outside_world);
 
 	std::thread VMThread([&]{
-		townsThread.VMStart(&towns,&outside_world,&sound,&cuiThread);
+		townsThread.VMStart(&towns,&outside_world,&cuiThread);
 		townsThread.VMMainLoop(&towns,&outside_world,&sound,&window,&cuiThread);
 		townsThread.VMEnd(&towns,&outside_world,&cuiThread);
 	});
