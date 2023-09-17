@@ -1061,7 +1061,8 @@ void FMTownsCommon::ForceRender(class TownsRender &render,class Outside_World &w
 	}
 	world.UpdateStatusBarInfo(*this);
 	windowInterface.Communicate(&world);
-	windowInterface.UpdateImage(render.MoveImage());
+	auto img=render.MoveImage();
+	windowInterface.UpdateImage(img);
 }
 
 void FMTownsCommon::RenderQuiet(class TownsRender &render,bool layer0,bool layer1)
