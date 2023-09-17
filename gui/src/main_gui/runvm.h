@@ -116,7 +116,7 @@ void TownsVM<CPUCLASS>::Run(void)
 		auto outsideWorldSoundPtr=outsideWorldPtr->CreateSound();
 		if(true==freshStart)
 		{
-			townsThreadPtr->VMStart(townsPtr,outsideWorldPtr,outsideWorldSoundPtr,cmdQueuePtr);
+			townsThreadPtr->VMStart(townsPtr,outsideWorldPtr,cmdQueuePtr);
 		}
 		townsThreadPtr->VMMainLoop(townsPtr,outsideWorldPtr,outsideWorldSoundPtr,outsideWorldWindowPtr,cmdQueuePtr);
 		if(TownsThread::RUNMODE_EXIT==townsThreadPtr->GetRunMode())
