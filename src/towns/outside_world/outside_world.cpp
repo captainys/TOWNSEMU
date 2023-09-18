@@ -228,6 +228,7 @@ void Outside_World::UpdateStatusBarInfo(class FMTownsCommon &towns)
 	{
 		statusBarInfo.scsiAccessLamp[hdd]=(hdd==towns.scsi.state.selId && true==towns.scsi.state.BUSY);
 	}
+	statusBarInfo.strikeCommanderSpecial=(TOWNS_APPSPECIFIC_STRIKECOMMANDER==towns.state.appSpecificSetting);
 }
 
 /* virtual */ void Outside_World::RegisterHostShortCut(std::string hostKeyLabel,bool ctrl,bool shift,std::string cmdStr)
