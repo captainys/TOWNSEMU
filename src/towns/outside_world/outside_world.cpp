@@ -254,12 +254,6 @@ Outside_World::WindowInterface::~WindowInterface()
 	delete [] statusBitmap;
 	statusBitmap=nullptr;
 }
-void Outside_World::WindowInterface::SetImageNeedsFlip(bool needFlip)
-{
-	newImageLock.lock();
-	imageNeedsFlip=needFlip;
-	newImageLock.unlock();
-}
 void Outside_World::WindowInterface::BaseInterval(void)
 {
 	newImageLock.lock();
@@ -282,7 +276,7 @@ void Outside_World::WindowInterface::BaseInterval(void)
 		newImageLock.unlock();
 	}
 }
-bool Outside_World::WindowInterface::SendNewImage(class FMTownsCommon &towns)
+bool Outside_World::WindowInterface::SendNewImage(class FMTownsCommon &towns,bool imageNeedsFlip)
 {
 	if(true==newImageLock.try_lock())
 	{
@@ -292,6 +286,7 @@ bool Outside_World::WindowInterface::SendNewImage(class FMTownsCommon &towns)
 		memcpy(this->VRAMCopy,towns.physMem.state.VRAM,towns.crtc.GetEffectiveVRAMSize());
 		this->paletteCopy=towns.crtc.GetPalette();
 		this->chaseHQPaletteCopy=towns.crtc.chaseHQPalette;
+		this->imageNeedsFlip=imageNeedsFlip;
 		needRender=true;
 
 		newImageLock.unlock();

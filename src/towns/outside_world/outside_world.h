@@ -252,10 +252,6 @@ public:
 		virtual void Render(bool swapBuffers)=0;
 		virtual void UpdateImage(TownsRender::ImageCopy &img)=0;
 
-		/*!
-		*/
-		void SetImageNeedsFlip(bool needFlip);
-
 		/*! Interval function must call this function.
 		*/
 		void BaseInterval(void);
@@ -264,7 +260,7 @@ public:
 		    It will try_lock the renderer, but it fails, it gives up not to block
 		    the VM thread.
 		*/
-		bool SendNewImage(class FMTownsCommon &towns);
+		bool SendNewImage(class FMTownsCommon &towns,bool imageNeedsFlip);
 
 		/*! Called from the VM thread to tell VM is closed.
 		*/
