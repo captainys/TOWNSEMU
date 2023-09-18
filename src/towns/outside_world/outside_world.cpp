@@ -254,6 +254,51 @@ Outside_World::WindowInterface::~WindowInterface()
 	delete [] statusBitmap;
 	statusBitmap=nullptr;
 }
+void Outside_World::WindowInterface::SetImageNeedsFlip(bool needFlip)
+{
+	newImageLock.lock();
+	imageNeedsFlip=needFlip;
+	newImageLock.unlock();
+}
+void Outside_World::WindowInterface::BaseInterval(void)
+{
+	newImageLock.lock();
+	if(true==needRender)
+	{
+		renderer.BuildImage(VRAMCopy,paletteCopy,chaseHQPaletteCopy);
+		needRender=false;
+		newImageLock.unlock();
+
+		if(true==imageNeedsFlip)
+		{
+			renderer.FlipUpsideDown();
+		}
+
+		auto img=renderer.MoveImage();
+		std::swap(mostRecentImage,img);
+	}
+	else
+	{
+		newImageLock.unlock();
+	}
+}
+bool Outside_World::WindowInterface::SendNewImage(class FMTownsCommon &towns)
+{
+	if(true==newImageLock.try_lock())
+	{
+		renderer.Prepare(towns.crtc);
+		renderer.damperWireLine=towns.var.damperWireLine;
+		renderer.scanLineEffectIn15KHz=towns.var.scanLineEffectIn15KHz;
+		memcpy(this->VRAMCopy,towns.physMem.state.VRAM,towns.crtc.GetEffectiveVRAMSize());
+		this->paletteCopy=towns.crtc.GetPalette();
+		this->chaseHQPaletteCopy=towns.crtc.chaseHQPalette;
+		needRender=true;
+
+		newImageLock.unlock();
+		return true;
+	}
+	return false;
+}
 void Outside_World::WindowInterface::NotifyVMClosed(void)
 {
 	std::lock_guard <std::mutex> lock(VMCloseLock);

@@ -188,9 +188,7 @@ void TownsThread::VMMainLoopTemplate(
 			townsPtr->ProcessSound(outside_world);
 			townsPtr->cdrom.UpdateCDDAState(townsPtr->state.townsTime);
 
-			// townsPtr->CheckRenderingTimer(render,*outside_world);
-			renderingThread->CheckRenderingTimer(*townsPtr,render);
-			renderingThread->CheckImageReady(*townsPtr,*outside_world,*window);
+			renderingThread->CheckRenderingTimer(*townsPtr,*window);
 
 			outside_world->ProcessAppSpecific(*townsPtr);
 			if(townsPtr->state.nextDevicePollingTime<townsPtr->state.townsTime)

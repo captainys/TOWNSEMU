@@ -63,6 +63,32 @@ void TownsRenderingThread::WaitIdle(void)
 	std::unique_lock <std::mutex> mainLock(mainMutex);
 }
 
+void TownsRenderingThread::CheckRenderingTimer(FMTownsCommon &towns,class Outside_World::WindowInterface &window)
+{
+	if(towns.state.nextRenderingTime<=towns.state.townsTime)
+	{
+		bool isTiming=false;
+		switch(renderTiming)
+		{
+		case RENDER_TIMING_OUTSIDE_VSYNC:
+			isTiming=(true!=towns.crtc.InVSYNC(towns.state.townsTime));
+			break;
+		case RENDER_TIMING_FIRST1MS_OF_VERTICAL:
+			isTiming=towns.crtc.First1msOfVerticalPeriod(towns.state.townsTime);
+			break;
+		default:
+			std_unreachable;
+		}
+		if(true==isTiming)
+		{
+			if(true==window.SendNewImage(towns))
+			{
+				towns.state.nextRenderingTime=towns.state.townsTime+TOWNS_RENDERING_FREQUENCY;
+			}
+		}
+	}
+}
+
 void TownsRenderingThread::CheckRenderingTimer(FMTownsCommon &towns,TownsRender &render)
 {
 	if(STATE_IDLE==state && 

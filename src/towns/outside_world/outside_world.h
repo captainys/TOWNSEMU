@@ -27,6 +27,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "ym2612.h"
 #include "townsdef.h"
 #include "townsparam.h"
+#include "crtc.h"
 
 class Outside_World
 {
@@ -216,6 +217,16 @@ public:
 	{
 	public:
 		TownsRender::ImageCopy mostRecentImage;
+
+		std::mutex newImageLock;
+		bool needRender=false;
+		bool imageNeedsFlip=false;
+		TownsRender renderer;
+		unsigned char VRAMCopy[TOWNS_VRAM_SIZE];
+		TownsCRTC::AnalogPalette paletteCopy;
+		TownsCRTC::ChaseHQPalette chaseHQPaletteCopy;
+
+
 		std::vector <unsigned int> gamePadsNeedUpdate;  // Copy of Outside_World's gamePadsNeedUpdate.
 		bool windowShift=false;
 		bool autoScaling=false;
@@ -240,6 +251,20 @@ public:
 		virtual void Interval(void)=0;
 		virtual void Render(bool swapBuffers)=0;
 		virtual void UpdateImage(TownsRender::ImageCopy &img)=0;
+
+		/*!
+		*/
+		void SetImageNeedsFlip(bool needFlip);
+
+		/*! Interval function must call this function.
+		*/
+		void BaseInterval(void);
+
+		/*! Called from the VM thread to tell the new image should be rendered.
+		    It will try_lock the renderer, but it fails, it gives up not to block
+		    the VM thread.
+		*/
+		bool SendNewImage(class FMTownsCommon &towns);
 
 		/*! Called from the VM thread to tell VM is closed.
 		*/

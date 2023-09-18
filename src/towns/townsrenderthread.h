@@ -62,6 +62,8 @@ public:
 	TownsRenderingThread();
 	~TownsRenderingThread();
 
+	void CheckRenderingTimer(FMTownsCommon &towns,class Outside_World::WindowInterface &window);
+
 	void CheckRenderingTimer(FMTownsCommon &towns,class TownsRender &render);
 	void CheckImageReady(FMTownsCommon &towns,class Outside_World &world,Outside_World::WindowInterface &windowInterface);
 	void WaitIdle(void);
