@@ -142,6 +142,7 @@ public:
 
 		DeviceAndEvent primary;
 		DeviceAndEvent readyToSend;
+		bool VMThreadReadyToTakeDeviceAndEvent=true;
 
 		std::mutex renderingLock;
 

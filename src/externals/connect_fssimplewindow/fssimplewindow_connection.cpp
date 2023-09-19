@@ -1553,13 +1553,15 @@ void FsSimpleWindowConnection::WindowConnection::Interval(void)
 
 	PollGamePads();
 
-	if(true==readyToSend.EventEmpty())
 	{
 		std::lock_guard <std::mutex> lock(deviceStateLock);
-		std::swap(primary,readyToSend);
-		primary.CleanUpEvents();
-		primary.gamePads=readyToSend.gamePads;
-		primary.lastKnownMouse=readyToSend.lastKnownMouse;
+		if(true==readyToSend.EventEmpty())
+		{
+			std::swap(primary,readyToSend);
+			primary.CleanUpEvents();
+			primary.gamePads=readyToSend.gamePads;
+			primary.lastKnownMouse=readyToSend.lastKnownMouse;
+		}
 	}
 }
 /*! Called from the Window thread.
