@@ -1518,6 +1518,8 @@ void FsSimpleWindowConnection::WindowConnection::Stop(void)
 	glDeleteTextures(1,&pauseIconTexId);
 	glDeleteTextures(1,&menuIconTexId);
 }
+/*! Called from the Window Thread.
+*/
 void FsSimpleWindowConnection::WindowConnection::Interval(void)
 {
 	BaseInterval();
