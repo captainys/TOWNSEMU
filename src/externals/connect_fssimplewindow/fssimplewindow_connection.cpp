@@ -1520,6 +1520,8 @@ void FsSimpleWindowConnection::WindowConnection::Stop(void)
 }
 void FsSimpleWindowConnection::WindowConnection::Interval(void)
 {
+	BaseInterval();
+
 	FsPollDevice();
 
 	FsGetWindowSize(primary.winWid,primary.winHei);

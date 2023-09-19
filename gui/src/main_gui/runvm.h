@@ -139,7 +139,6 @@ void TownsVM<CPUCLASS>::Run(void)
 			outsideWorldWindowPtr->Render(true);
 			t0=t;
 		}
-		std::this_thread::sleep_for(std::chrono::milliseconds(5));
 	}
 
 	VMThread.join();

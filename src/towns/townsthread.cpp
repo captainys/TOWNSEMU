@@ -19,15 +19,13 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "townsthread.h"
 
 
-TownsThread::TownsThread(void) : renderingThread(new TownsRenderingThread)
+TownsThread::TownsThread(void)
 {
 	runMode=RUNMODE_PAUSE;
 }
 
 void TownsThread::VMStart(FMTownsCommon *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread)
 {
-	renderingThread->imageNeedsFlip=outside_world->ImageNeedsFlip();
-
 	this->townsPtr=townsPtr;
 
 	outside_world->Start();
@@ -44,7 +42,7 @@ void TownsThread::VMStart(FMTownsCommon *townsPtr,Outside_World *outside_world,c
 		townsPtr->state.pretend386DX=true;
 		break;
 	case TOWNS_APPSPECIFIC_LEMMINGS2:
-		renderingThread->renderTiming=TownsRenderingThread::RENDER_TIMING_FIRST1MS_OF_VERTICAL;
+		renderTiming=RENDER_TIMING_FIRST1MS_OF_VERTICAL;
 		break;
 	}
 }
@@ -76,9 +74,6 @@ void TownsThread::VMMainLoopTemplate(
     Outside_World::WindowInterface *window,
     class TownsUIThread *uiThread)
 {
-	// Just in case, if there is a remains of the rendering from the previous run, discard it.
-	renderingThread->DiscardRunningRenderingTask();
-
 	townsPtr->sound.SetOutsideWorld(sound);
 	townsPtr->sound.SetCDROMPointer(&townsPtr->cdrom);
 	townsPtr->scsi.SetOutsideWorld(sound);
@@ -102,7 +97,6 @@ void TownsThread::VMMainLoopTemplate(
 		switch(runMode)
 		{
 		case RUNMODE_PAUSE:
-			renderingThread->WaitIdle();
 			townsPtr->ForceRender(render,*outside_world,*window);
 			outside_world->DevicePolling(*townsPtr);
 			if(true==outside_world->PauseKeyPressed())
@@ -188,9 +182,7 @@ void TownsThread::VMMainLoopTemplate(
 			townsPtr->ProcessSound(outside_world);
 			townsPtr->cdrom.UpdateCDDAState(townsPtr->state.townsTime);
 
-			// townsPtr->CheckRenderingTimer(render,*outside_world);
-			renderingThread->CheckRenderingTimer(*townsPtr,render);
-			renderingThread->CheckImageReady(*townsPtr,*outside_world,*window);
+			CheckRenderingTimer(*townsPtr,*window,outside_world->ImageNeedsFlip());
 
 			outside_world->ProcessAppSpecific(*townsPtr);
 			if(townsPtr->state.nextDevicePollingTime<townsPtr->state.townsTime)
@@ -272,17 +264,12 @@ void TownsThread::VMMainLoopTemplate(
 		uiThread->uiLock.unlock();
 		if(true==townsPtr->var.justLoadedState)
 		{
-			renderingThread->DiscardRunningRenderingTask();
 		}
 		else if(true==clockTicking)
 		{
 			AdjustRealTime(townsPtr,townsPtr->state.townsTime-townsTime0,realTime0,outside_world);
 		}
 	}
-
-	// Rendering thread may be working on local TownsRender.
-	// WaitIdle to make sure the rendering thread is done with rendering before leaving this function.
-	renderingThread->DiscardRunningRenderingTask();
 
 	sound->Stop();
 	window->NotifyVMClosed();
@@ -309,6 +296,32 @@ void TownsThread::VMEnd(FMTownsCommon *townsPtr,Outside_World *outside_world,cla
 	if(true==townsPtr->var.forceQuitOnPowerOff)
 	{
 		exit(0);
+	}
+}
+
+void TownsThread::CheckRenderingTimer(FMTownsCommon &towns,class Outside_World::WindowInterface &window,bool imageNeedsFlip)
+{
+	if(towns.state.nextRenderingTime<=towns.state.townsTime)
+	{
+		bool isTiming=false;
+		switch(renderTiming)
+		{
+		case RENDER_TIMING_OUTSIDE_VSYNC:
+			isTiming=(true!=towns.crtc.InVSYNC(towns.state.townsTime));
+			break;
+		case RENDER_TIMING_FIRST1MS_OF_VERTICAL:
+			isTiming=towns.crtc.First1msOfVerticalPeriod(towns.state.townsTime);
+			break;
+		default:
+			std_unreachable;
+		}
+		if(true==isTiming)
+		{
+			if(true==window.SendNewImage(towns,imageNeedsFlip))
+			{
+				towns.state.nextRenderingTime=towns.state.townsTime+TOWNS_RENDERING_FREQUENCY;
+			}
+		}
 	}
 }
 

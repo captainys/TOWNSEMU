@@ -142,6 +142,9 @@ void FsOpenWindow(const FsOpenWindowOption &opt)
 		fsKeyPress[n]=0;
 	}
 
+	// Apparently XInitThread is requierd even if only one thread is accessing X-Window system, unless that thread is the main thread.
+	// Weird.
+	XInitThreads();
 	ysXDsp=XOpenDisplay(NULL);
 
 	if(ysXDsp!=NULL)

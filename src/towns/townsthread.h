@@ -24,19 +24,24 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include "towns.h"
 #include "outside_world.h"
-#include "townsrenderthread.h"
 #include "render.h"
 
 class TownsThread
 {
 private:
 	FMTownsCommon *townsPtr;
-	std::unique_ptr <TownsRenderingThread> renderingThread;
 	int runMode=RUNMODE_PAUSE;
 	bool returnOnPause=false;
 
 	// This will be used for virtually slwoing down CPU when VM is lagging.
 	long long int timeDeficit=0;
+
+	enum
+	{
+		RENDER_TIMING_OUTSIDE_VSYNC,
+		RENDER_TIMING_FIRST1MS_OF_VERTICAL,
+	};
+	unsigned int renderTiming=RENDER_TIMING_OUTSIDE_VSYNC;
 
 public:
 	enum
@@ -61,6 +66,8 @@ public:
 	void VMMainLoop(FMTownsTemplate <i486DXHighFidelity> *townsPtr,Outside_World *outside_world,Outside_World::Sound *sound,Outside_World::WindowInterface *window,class TownsUIThread *uiThread);
 	void VMEnd(FMTownsCommon *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread);
 private:
+	void CheckRenderingTimer(FMTownsCommon &towns,class Outside_World::WindowInterface &window,bool imageNeedsFlip);
+
 	template <class FMTownsClass>
 	void VMMainLoopTemplate(FMTownsClass *townsPtr,Outside_World *outside_world,Outside_World::Sound *sound,Outside_World::WindowInterface *window,class TownsUIThread *uiThread);
 	void AdjustRealTime(FMTownsCommon *townsPtr,long long int cpuTimePassed,std::chrono::time_point<std::chrono::high_resolution_clock> time0,Outside_World *outside_world);
