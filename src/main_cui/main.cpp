@@ -30,6 +30,17 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "fssimplewindow_connection.h"
 
 
+#ifdef _WIN32
+#include <timeapi.h>
+#else
+static void timeBeginPeriod(int)
+{
+}
+static void timeEndPeriod(int)
+{
+}
+#endif
+
 
 class TownsCUIThread : public TownsUIThread
 {
@@ -167,6 +178,12 @@ int Run(FMTownsTemplate <CPUCLASS> &towns,const TownsARGV &argv,Outside_World &o
 		{
 			window.Render(true);
 			t0=t;
+		}
+		else
+		{
+			timeBeginPeriod(1);
+			std::this_thread::sleep_for(std::chrono::milliseconds(8));
+			timeEndPeriod(1);
 		}
 	}
 

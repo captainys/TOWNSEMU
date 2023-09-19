@@ -93,6 +93,17 @@ void TownsVM<CPUCLASS>::Free(void)
 	outsideWorldPtr=nullptr;
 }
 
+#ifdef _WIN32
+#include <timeapi.h>
+#else
+static void timeBeginPeriod(int)
+{
+}
+static void timeEndPeriod(int)
+{
+}
+#endif
+
 template <class CPUCLASS>
 void TownsVM<CPUCLASS>::Run(void)
 {
@@ -138,6 +149,12 @@ void TownsVM<CPUCLASS>::Run(void)
 		{
 			outsideWorldWindowPtr->Render(true);
 			t0=t;
+		}
+		else
+		{
+			timeBeginPeriod(1);
+			std::this_thread::sleep_for(std::chrono::milliseconds(8));
+			timeEndPeriod(1);
 		}
 	}
 
