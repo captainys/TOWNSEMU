@@ -218,7 +218,10 @@ public:
 	public:
 		TownsRender::ImageCopy mostRecentImage;
 
+		std::mutex deviceStateLock;
+		std::mutex renderingLock;
 		std::mutex newImageLock;
+
 		bool needRender=false;
 		bool imageNeedsFlip=false;
 		TownsRender renderer;
@@ -240,8 +243,11 @@ public:
 
 		int winWid=640,winHei=480;
 
-		mutable std::mutex VMCloseLock;
-		bool VMClosed=false;
+		/* VM Thread writes VMClosedFromVMThread with deviceStateLock at the end of VMMainLoop.
+		   Window Thread copies VMClosedFromVMThread to VMClosed in the Interval with deviceStateLock.
+		   VMClosed is only accessed in the Window thread.  Save one lock.
+		*/
+		bool VMClosed=false,VMClosedFromVMThread=false;
 
 		WindowInterface();
 		~WindowInterface();
@@ -273,6 +279,8 @@ public:
 
 		void ClearVMClosedFlag(void);
 
+		/*! Called from the Window thread.
+		*/
 		bool CheckVMClosed(void) const;
 
 		/*! Called in the VM thread.

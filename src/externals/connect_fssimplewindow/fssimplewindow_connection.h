@@ -136,17 +136,18 @@ public:
 	class WindowConnection : public WindowInterface
 	{
 	public:
-		std::mutex deviceStateLock;
-
+		// Locked by deviceStateLock >>
 		bool gamePadInitialized=false;
 
 		DeviceAndEvent primary;
 		DeviceAndEvent readyToSend;
-		bool VMThreadReadyToTakeDeviceAndEvent=true;
+		// Locked by deviceStateLock <<
 
-		std::mutex renderingLock;
 
+		// Locked by renderingLock >>
 		StatusBarInfo statusBarInfo,prevStatusBarInfo;
+		// Locked by renderingLock <<
+
 
 		GLuint mainTexId,statusTexId,pauseIconTexId,menuIconTexId;
 

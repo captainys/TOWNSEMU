@@ -295,20 +295,23 @@ bool Outside_World::WindowInterface::SendNewImage(class FMTownsCommon &towns,boo
 	}
 	return false;
 }
+/*! Called from the VM thread to tell VM is closed.
+*/
 void Outside_World::WindowInterface::NotifyVMClosed(void)
 {
-	std::lock_guard <std::mutex> lock(VMCloseLock);
-	VMClosed=true;
+	std::lock_guard <std::mutex> lock(deviceStateLock);
+	VMClosedFromVMThread=true;
 }
+/*! Called in the Window Thread.
+*/
 bool Outside_World::WindowInterface::CheckVMClosed(void) const
 {
-	std::lock_guard <std::mutex> lock(VMCloseLock);
-	auto copy=VMClosed;
-	return copy;
+	return VMClosed;
 }
 void Outside_World::WindowInterface::ClearVMClosedFlag(void)
 {
-	std::lock_guard <std::mutex> lock(VMCloseLock);
+	std::lock_guard <std::mutex> lock(deviceStateLock);
+	VMClosedFromVMThread=false;
 	VMClosed=false;
 }
 void Outside_World::WindowInterface::Put16x16(int x0,int y0,const unsigned char icon16x16[])
