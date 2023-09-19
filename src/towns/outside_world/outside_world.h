@@ -223,6 +223,7 @@ public:
 		std::mutex newImageLock;
 
 		bool needRender=false;
+		bool newImageRendered=false;
 		bool imageNeedsFlip=false;
 		TownsRender renderer;
 		unsigned char VRAMCopy[TOWNS_VRAM_SIZE];
@@ -264,6 +265,7 @@ public:
 		virtual void UpdateImage(TownsRender::ImageCopy &img)=0;
 
 		/*! Interval function must call this function.
+		    Called in the Window thread.
 		*/
 		void BaseInterval(void);
 

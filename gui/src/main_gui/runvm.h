@@ -145,10 +145,11 @@ void TownsVM<CPUCLASS>::Run(void)
 		outsideWorldWindowPtr->Interval();
 		auto t=std::chrono::high_resolution_clock::now();
 		auto dt=t-t0;
-		if(16<=std::chrono::duration_cast<std::chrono::milliseconds>(dt).count())
+		if(50<=std::chrono::duration_cast<std::chrono::milliseconds>(dt).count() || true==outsideWorldWindowPtr->newImageRendered)
 		{
 			outsideWorldWindowPtr->Render(true);
 			t0=t;
+			outsideWorldWindowPtr->newImageRendered=false;
 		}
 		else
 		{

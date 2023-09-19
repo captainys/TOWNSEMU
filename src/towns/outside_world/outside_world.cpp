@@ -262,6 +262,7 @@ void Outside_World::WindowInterface::BaseInterval(void)
 	{
 		renderer.BuildImage(VRAMCopy,paletteCopy,chaseHQPaletteCopy);
 		needRender=false;
+		newImageRendered=true;
 		newImageLock.unlock();
 
 		if(true==imageNeedsFlip)
@@ -277,6 +278,10 @@ void Outside_World::WindowInterface::BaseInterval(void)
 		newImageLock.unlock();
 	}
 }
+/*! Called from the VM thread to tell the new image should be rendered.
+    It will try_lock the renderer, but it fails, it gives up not to block
+    the VM thread.
+*/
 bool Outside_World::WindowInterface::SendNewImage(class FMTownsCommon &towns,bool imageNeedsFlip)
 {
 	if(true==newImageLock.try_lock())
