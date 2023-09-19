@@ -252,7 +252,7 @@ public:
 		*/
 		virtual void Interval(void)=0;
 		/*! Called from the Window thread.
-		      VM thread may access scaling, dx, dy, therefore must be locked.
+		      VM thread may access scaling, dx, dy, and lowerRightIcon, which therefore must be locked.
 		*/
 		virtual void Render(bool swapBuffers)=0;
 		virtual void UpdateImage(TownsRender::ImageCopy &img)=0;

@@ -1561,7 +1561,7 @@ void FsSimpleWindowConnection::WindowConnection::Interval(void)
 	}
 }
 /*! Called from the Window thread.
-      VM thread may access scaling, dx, dy, therefore must be locked.
+      VM thread may access scaling, dx, dy, and lowerRightIcon, which therefore must be locked.
 */
 void FsSimpleWindowConnection::WindowConnection::Render(bool swapBuffers)
 {
