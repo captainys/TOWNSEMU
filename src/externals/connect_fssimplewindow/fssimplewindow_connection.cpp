@@ -1560,8 +1560,14 @@ void FsSimpleWindowConnection::WindowConnection::Interval(void)
 		primary.lastKnownMouse=readyToSend.lastKnownMouse;
 	}
 }
+/*! Called from the Window thread.
+      VM thread may access scaling, dx, dy, therefore must be locked.
+*/
 void FsSimpleWindowConnection::WindowConnection::Render(bool swapBuffers)
 {
+	int winWid,winHei;
+	FsGetWindowSize(winWid,winHei);
+
 	// {
 	renderingLock.lock();
 
@@ -1577,20 +1583,10 @@ void FsSimpleWindowConnection::WindowConnection::Render(bool swapBuffers)
 	UpdateTexture(statusTexId,STATUS_WID,STATUS_HEI,statusBitmap);
 	UpdateTexture(mainTexId,mostRecentImage.wid,mostRecentImage.hei,mostRecentImage.rgba.data());
 
-	auto scaling=this->scaling;
-	auto dx=this->dx;
-	auto dy=this->dy;
 	auto lowerRightIcon=this->lowerRightIcon;
 
 	auto imgWid=mostRecentImage.wid;
 	auto imgHei=mostRecentImage.hei;
-
-	renderingLock.unlock();
-	// }
-
-
-	int winWid,winHei;
-	FsGetWindowSize(winWid,winHei);
 
 	if(true==autoScaling)
 	{
@@ -1601,7 +1597,17 @@ void FsSimpleWindowConnection::WindowConnection::Render(bool swapBuffers)
 			scaling=std::min(scaleX,scaleY);
 		}
 	}
-	else
+
+	unsigned int renderWid=imgWid*scaling/100;
+	unsigned int renderHei=imgHei*scaling/100;
+	dx=(renderWid<winWid ? (winWid-renderWid)/2 : 0);
+	dy=(renderHei<(winHei-STATUS_HEI) ? (winHei-STATUS_HEI-renderHei)/2 : 0);
+
+	renderingLock.unlock();
+	// }
+
+
+	if(true!=autoScaling)
 	{
 		if(this->winWid!=imgWid || this->winHei!=imgHei)
 		{
@@ -1618,11 +1624,6 @@ void FsSimpleWindowConnection::WindowConnection::Render(bool swapBuffers)
 			}
 		}
 	}
-
-	unsigned int renderWid=imgWid*scaling/100;
-	unsigned int renderHei=imgHei*scaling/100;
-	dx=(renderWid<winWid ? (winWid-renderWid)/2 : 0);
-	dy=(renderHei<(winHei-STATUS_HEI) ? (winHei-STATUS_HEI-renderHei)/2 : 0);
 
 	glClear(GL_COLOR_BUFFER_BIT);
 	glViewport(0,0,winWid,winHei);
@@ -1682,16 +1683,6 @@ void FsSimpleWindowConnection::WindowConnection::Render(bool swapBuffers)
 	{
 		FsSwapBuffers();
 	}
-
-	// {
-	renderingLock.lock();
-
-	this->scaling=scaling;
-	this->dx=dx;
-	this->dy=dy;
-
-	renderingLock.unlock();
-	// }
 }
 
 void FsSimpleWindowConnection::WindowConnection::UpdateImage(TownsRender::ImageCopy &img)
@@ -1701,6 +1692,10 @@ void FsSimpleWindowConnection::WindowConnection::UpdateImage(TownsRender::ImageC
 	renderingLock.unlock();
 }
 
+/*! Called in the VM thread.
+    WindowInterface  ->(Device State)-> Outside_World
+    WindowInterface  <-(Game Pads In Use)<- Outside_World
+*/
 void FsSimpleWindowConnection::WindowConnection::Communicate(Outside_World *ow)
 {
 	auto outside_world=dynamic_cast<FsSimpleWindowConnection*>(ow);

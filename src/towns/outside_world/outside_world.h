@@ -248,7 +248,12 @@ public:
 
 		virtual void Start(void)=0;
 		virtual void Stop(void)=0;
+		/*! Called from the Window thread.
+		*/
 		virtual void Interval(void)=0;
+		/*! Called from the Window thread.
+		      VM thread may access scaling, dx, dy, therefore must be locked.
+		*/
 		virtual void Render(bool swapBuffers)=0;
 		virtual void UpdateImage(TownsRender::ImageCopy &img)=0;
 
