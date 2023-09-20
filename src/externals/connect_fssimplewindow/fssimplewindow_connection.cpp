@@ -1555,7 +1555,7 @@ void FsSimpleWindowConnection::WindowConnection::Interval(void)
 
 	{
 		std::lock_guard <std::mutex> lock(deviceStateLock);
-		VMClosed=VMClosedFromVMThread;
+		winThr.VMClosed=shared.VMClosedFromVMThread;
 		if(true==readyToSend.EventEmpty())
 		{
 			std::swap(primary,readyToSend);

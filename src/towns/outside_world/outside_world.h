@@ -222,6 +222,34 @@ public:
 		std::mutex renderingLock;
 		std::mutex newImageLock;
 
+		class SharedVariables
+		{
+		public:
+			// Managed by deviceStateLock
+			bool VMClosedFromVMThread=false;  // Written from the VM Thread.
+
+			// Managed by renderingLock
+
+			// Managed by newImageLock
+		};
+		class VMThreadVariables
+		{
+		public:
+		};
+		class WindowThreadVariables
+		{
+		public:
+			/* VM Thread writes VMClosedFromVMThread with deviceStateLock at the end of VMMainLoop.
+			   Window Thread copies VMClosedFromVMThread to VMClosed in the Interval with deviceStateLock.
+			   VMClosed is only accessed in the Window thread.  Save one lock.
+			*/
+			bool VMClosed=false;
+		};
+		SharedVariables shared;
+		VMThreadVariables VMThr;
+		WindowThreadVariables winThr;
+
+
 		bool needRender=false;
 		bool newImageRendered=false;
 		bool imageNeedsFlip=false;
@@ -244,11 +272,6 @@ public:
 
 		int winWid=640,winHei=480;
 
-		/* VM Thread writes VMClosedFromVMThread with deviceStateLock at the end of VMMainLoop.
-		   Window Thread copies VMClosedFromVMThread to VMClosed in the Interval with deviceStateLock.
-		   VMClosed is only accessed in the Window thread.  Save one lock.
-		*/
-		bool VMClosed=false,VMClosedFromVMThread=false;
 
 		WindowInterface();
 		~WindowInterface();
