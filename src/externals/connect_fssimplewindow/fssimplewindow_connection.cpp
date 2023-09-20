@@ -1491,19 +1491,19 @@ void FsSimpleWindowConnection::WindowConnection::Start(void)
 	}
 
 
-	if(true!=gamePadInitialized)
+	if(true!=winThrEx.gamePadInitialized)
 	{
 		YsGamePadInitialize();
-		gamePadInitialized=true;
+		winThrEx.gamePadInitialized=true;
 	}
 
 	auto nGameDevs=YsGamePadGetNumDevices();
 	if(0<nGameDevs)
 	{
-		primary.gamePads.resize(nGameDevs);
+		winThrEx.primary.gamePads.resize(nGameDevs);
 		for(unsigned int i=0; i<nGameDevs; ++i)
 		{
-			YsGamePadRead(&primary.gamePads[i],i);
+			YsGamePadRead(&winThrEx.primary.gamePads[i],i);
 		}
 	}
 }
@@ -1526,29 +1526,29 @@ void FsSimpleWindowConnection::WindowConnection::Interval(void)
 
 	FsPollDevice();
 
-	FsGetWindowSize(primary.winWid,primary.winHei);
+	FsGetWindowSize(winThrEx.primary.winWid,winThrEx.primary.winHei);
 
 	int code;
 	while(FSKEY_NULL!=(code=FsInkey()))
 	{
-		primary.keyCode.push_back(code);
+		winThrEx.primary.keyCode.push_back(code);
 	}
 	while(0!=(code=FsInkeyChar()))
 	{
-		primary.charCode.push_back(code);
+		winThrEx.primary.charCode.push_back(code);
 	}
 	for(int key=0; key<FSKEY_NUM_KEYCODE; ++key)
 	{
-		primary.keyState[key]=FsGetKeyState(key);
+		winThrEx.primary.keyState[key]=FsGetKeyState(key);
 	}
 	for(;;)
 	{
-		primary.lastKnownMouse.Read();
-		if(FSMOUSEEVENT_NONE==primary.lastKnownMouse.evt)
+		winThrEx.primary.lastKnownMouse.Read();
+		if(FSMOUSEEVENT_NONE==winThrEx.primary.lastKnownMouse.evt)
 		{
 			break;
 		}
-		primary.mouseEvents.push_back(primary.lastKnownMouse);
+		winThrEx.primary.mouseEvents.push_back(winThrEx.primary.lastKnownMouse);
 	}
 
 	PollGamePads();
@@ -1557,12 +1557,10 @@ void FsSimpleWindowConnection::WindowConnection::Interval(void)
 		std::lock_guard <std::mutex> lock(deviceStateLock);
 		winThr.VMClosed=shared.VMClosedFromVMThread;
 		winThr.gamePadsNeedUpdate=shared.gamePadsNeedUpdate;
-		if(true==readyToSend.EventEmpty())
+		if(true==sharedEx.readyToSend.EventEmpty())
 		{
-			std::swap(primary,readyToSend);
-			primary.CleanUpEvents();
-			primary.gamePads=readyToSend.gamePads;
-			primary.lastKnownMouse=readyToSend.lastKnownMouse;
+			sharedEx.readyToSend=winThrEx.primary;
+			winThrEx.primary.CleanUpEvents();
 		}
 	}
 }
@@ -1611,6 +1609,8 @@ void FsSimpleWindowConnection::WindowConnection::Render(bool swapBuffers)
 	auto dy=shared.dy;
 	auto scaling=shared.scaling;
 
+	auto strikeCommanderSpecial=sharedEx.statusBarInfo.strikeCommanderSpecial;
+
 	renderingLock.unlock();
 	// }
 
@@ -1621,12 +1621,12 @@ void FsSimpleWindowConnection::WindowConnection::Render(bool swapBuffers)
 		{
 			winThr.winWid=imgWid;
 			winThr.winHei=imgHei;
-			sinceLastResize=10;
+			winThrEx.sinceLastResize=10;
 		}
-		else if(0<sinceLastResize)
+		else if(0<winThrEx.sinceLastResize)
 		{
-			--sinceLastResize;
-			if(0==sinceLastResize)
+			--winThrEx.sinceLastResize;
+			if(0==winThrEx.sinceLastResize)
 			{
 				FsResizeWindow(winThr.winWid*scaling/100,winThr.winHei*scaling/100+STATUS_HEI);
 			}
@@ -1666,7 +1666,7 @@ void FsSimpleWindowConnection::WindowConnection::Render(bool swapBuffers)
 
 	glDisable(GL_TEXTURE_2D);
 
-	if(true==statusBarInfo.strikeCommanderSpecial)
+	if(true==strikeCommanderSpecial)
 	{
 		int x;
 		glColor3ub(128,128,255);
@@ -1715,15 +1715,15 @@ void FsSimpleWindowConnection::WindowConnection::Communicate(Outside_World *ow)
 		// Kind of want to use swap, but Communicate can be called more than once before the
 		// next Interval is called, in which case state can go back and force between two
 		// samples.  Therefore, copy here.
-		outside_world->windowEvent=readyToSend;
-		readyToSend.CleanUpEvents();
+		outside_world->windowEvent=sharedEx.readyToSend;
+		sharedEx.readyToSend.CleanUpEvents();
 
 		shared.gamePadsNeedUpdate=outside_world->gamePadsNeedUpdate;
 	}
 	{
 		std::lock_guard<std::mutex> lock(renderingLock);
 
-		statusBarInfo=outside_world->statusBarInfo;
+		sharedEx.statusBarInfo=outside_world->statusBarInfo;
 		shared.lowerRightIcon=outside_world->lowerRightIcon;
 
 		outside_world->scaling=shared.scaling;
@@ -1749,9 +1749,9 @@ void FsSimpleWindowConnection::WindowConnection::PollGamePads(void)
 {
 	for(auto padId : winThr.gamePadsNeedUpdate)
 	{
-		if(padId<primary.gamePads.size())
+		if(padId<winThrEx.primary.gamePads.size())
 		{
-			YsGamePadRead(&primary.gamePads[padId],padId);
+			YsGamePadRead(&winThrEx.primary.gamePads[padId],padId);
 		}
 	}
 }
@@ -1759,25 +1759,25 @@ void FsSimpleWindowConnection::WindowConnection::PollGamePads(void)
 void FsSimpleWindowConnection::WindowConnection::UpdateStatusBitmap(void)
 {
 	// Update Status Bitmap
-	if(prevStatusBarInfo.cdAccessLamp!=statusBarInfo.cdAccessLamp)
+	if(winThrEx.prevStatusBarInfo.cdAccessLamp!=sharedEx.statusBarInfo.cdAccessLamp)
 	{
-		Put16x16SelectInvert(0,15,CD_IDLE,CD_BUSY,statusBarInfo.cdAccessLamp);
+		Put16x16SelectInvert(0,15,CD_IDLE,CD_BUSY,sharedEx.statusBarInfo.cdAccessLamp);
 	}
 	for(int fd=0; fd<2; ++fd)
 	{
-		if(prevStatusBarInfo.fdAccessLamp[fd]!=statusBarInfo.fdAccessLamp[fd])
+		if(winThrEx.prevStatusBarInfo.fdAccessLamp[fd]!=sharedEx.statusBarInfo.fdAccessLamp[fd])
 		{
-			Put16x16SelectInvert(16+16*fd,15,FD_IDLE,FD_BUSY,statusBarInfo.fdAccessLamp[fd]);
+			Put16x16SelectInvert(16+16*fd,15,FD_IDLE,FD_BUSY,sharedEx.statusBarInfo.fdAccessLamp[fd]);
 		}
 	}
 	for(int hdd=0; hdd<6; ++hdd)
 	{
-		if(prevStatusBarInfo.scsiAccessLamp[hdd]!=statusBarInfo.scsiAccessLamp[hdd])
+		if(winThrEx.prevStatusBarInfo.scsiAccessLamp[hdd]!=sharedEx.statusBarInfo.scsiAccessLamp[hdd])
 		{
-			Put16x16SelectInvert(48+16*hdd,15,HDD_IDLE,HDD_BUSY,statusBarInfo.scsiAccessLamp[hdd]);
+			Put16x16SelectInvert(48+16*hdd,15,HDD_IDLE,HDD_BUSY,sharedEx.statusBarInfo.scsiAccessLamp[hdd]);
 		}
 	}
-	prevStatusBarInfo=statusBarInfo;
+	winThrEx.prevStatusBarInfo=sharedEx.statusBarInfo;
 }
 
 GLuint FsSimpleWindowConnection::WindowConnection::GenTexture(void)

@@ -136,22 +136,33 @@ public:
 	class WindowConnection : public WindowInterface
 	{
 	public:
-		// Locked by deviceStateLock >>
-		bool gamePadInitialized=false;
+		class SharedVariables
+		{
+		public:
+			// Locked by deviceStateLock >>
+			DeviceAndEvent readyToSend;
 
-		DeviceAndEvent primary;
-		DeviceAndEvent readyToSend;
-		// Locked by deviceStateLock <<
+			// Locked by renderingLock >>
+			StatusBarInfo statusBarInfo;
+		};
+		class WindowThreadVariables
+		{
+		public:
+			DeviceAndEvent primary;
+			StatusBarInfo statusBarInfo,prevStatusBarInfo;
+			bool gamePadInitialized=false;
+			unsigned int sinceLastResize=0;
+		};
+		class VMThreadVariables
+		{
+		public:
+		};
+		SharedVariables sharedEx;
+		WindowThreadVariables winThrEx;
+		VMThreadVariables VMThrEx;
 
-
-		// Locked by renderingLock >>
-		StatusBarInfo statusBarInfo,prevStatusBarInfo;
-		// Locked by renderingLock <<
-
-
+		// Constants that do not change.
 		GLuint mainTexId,statusTexId,pauseIconTexId,menuIconTexId;
-
-		unsigned int sinceLastResize=0;
 
 		GLuint GenTexture(void);
 		void UpdateTexture(GLuint texId,int wid,int hei,const unsigned char *rgba) const;
