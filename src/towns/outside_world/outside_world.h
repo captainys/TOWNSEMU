@@ -230,6 +230,7 @@ public:
 			// Managed by renderingLock
 			unsigned int dx=0,dy=0;  // Screen (0,0) will be window (dx,dy)
 			unsigned int scaling=100; // In Percent
+			unsigned int lowerRightIcon=LOWER_RIGHT_NONE;
 
 			// Managed by newImageLock
 			bool needRender=false;
@@ -256,6 +257,8 @@ public:
 			bool newImageRendered=false;
 			std::vector <unsigned int> gamePadsNeedUpdate;  // Copy of Outside_World's gamePadsNeedUpdate.
 			int winWid=640,winHei=480;
+
+			unsigned char *statusBitmap;
 		};
 		SharedVariables shared;
 		VMThreadVariables VMThr;
@@ -268,8 +271,6 @@ public:
 
 		unsigned int windowModeOnStartUp=TownsStartParameters::WINDOW_NORMAL;
 
-		unsigned char *statusBitmap;
-		unsigned int lowerRightIcon=LOWER_RIGHT_NONE;
 
 
 		WindowInterface();

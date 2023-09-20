@@ -1602,10 +1602,10 @@ void FsSimpleWindowConnection::WindowConnection::Render(bool swapBuffers)
 
 	UpdateStatusBitmap();
 
-	UpdateTexture(statusTexId,STATUS_WID,STATUS_HEI,statusBitmap);
+	UpdateTexture(statusTexId,STATUS_WID,STATUS_HEI,winThr.statusBitmap);
 	UpdateTexture(mainTexId,winThr.mostRecentImage.wid,winThr.mostRecentImage.hei,winThr.mostRecentImage.rgba.data());
 
-	auto lowerRightIcon=this->lowerRightIcon;
+	auto lowerRightIcon=shared.lowerRightIcon;
 
 	auto dx=shared.dx;
 	auto dy=shared.dy;
@@ -1724,7 +1724,7 @@ void FsSimpleWindowConnection::WindowConnection::Communicate(Outside_World *ow)
 		std::lock_guard<std::mutex> lock(renderingLock);
 
 		statusBarInfo=outside_world->statusBarInfo;
-		lowerRightIcon=outside_world->lowerRightIcon;
+		shared.lowerRightIcon=outside_world->lowerRightIcon;
 
 		outside_world->scaling=shared.scaling;
 		outside_world->dx=shared.dx;

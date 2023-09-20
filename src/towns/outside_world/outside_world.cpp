@@ -244,16 +244,16 @@ void Outside_World::UpdateStatusBarInfo(class FMTownsCommon &towns)
 
 Outside_World::WindowInterface::WindowInterface()
 {
-	statusBitmap=new unsigned char [STATUS_WID*STATUS_HEI*4];
+	winThr.statusBitmap=new unsigned char [STATUS_WID*STATUS_HEI*4];
 	for(int i=0; i<STATUS_WID*STATUS_HEI*4; ++i)
 	{
-		statusBitmap[i]=0;
+		winThr.statusBitmap[i]=0;
 	}
 }
 Outside_World::WindowInterface::~WindowInterface()
 {
-	delete [] statusBitmap;
-	statusBitmap=nullptr;
+	delete [] winThr.statusBitmap;
+	winThr.statusBitmap=nullptr;
 }
 /*! Interval function must call this function.
     Called in the Window thread.
@@ -327,7 +327,7 @@ void Outside_World::WindowInterface::ClearVMClosedFlag(void)
 }
 void Outside_World::WindowInterface::Put16x16(int x0,int y0,const unsigned char icon16x16[])
 {
-	auto dstPtr=statusBitmap+(STATUS_WID*y0+x0)*4;
+	auto dstPtr=winThr.statusBitmap+(STATUS_WID*y0+x0)*4;
 	auto srcPtr=icon16x16;
 	for(auto y=0; y<16; ++y)
 	{
@@ -341,7 +341,7 @@ void Outside_World::WindowInterface::Put16x16(int x0,int y0,const unsigned char 
 }
 void Outside_World::WindowInterface::Put16x16Invert(int x0,int y0,const unsigned char icon16x16[])
 {
-	auto dstPtr=statusBitmap+(STATUS_WID*y0+x0)*4;
+	auto dstPtr=winThr.statusBitmap+(STATUS_WID*y0+x0)*4;
 	auto srcPtr=icon16x16;
 	for(auto y=0; y<16; ++y)
 	{
