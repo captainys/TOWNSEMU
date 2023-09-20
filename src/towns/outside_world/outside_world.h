@@ -216,8 +216,6 @@ public:
 	class WindowInterface
 	{
 	public:
-		TownsRender::ImageCopy mostRecentImage;
-
 		std::mutex deviceStateLock;
 		std::mutex renderingLock;
 		std::mutex newImageLock;
@@ -227,10 +225,17 @@ public:
 		public:
 			// Managed by deviceStateLock
 			bool VMClosedFromVMThread=false;  // Written from the VM Thread.
+			std::vector <unsigned int> gamePadsNeedUpdate;  // Copy of Outside_World's gamePadsNeedUpdate.
 
 			// Managed by renderingLock
 
 			// Managed by newImageLock
+			bool needRender=false;
+			bool imageNeedsFlip=false;
+			TownsRender renderer;
+			unsigned char VRAMCopy[TOWNS_VRAM_SIZE];
+			TownsCRTC::AnalogPalette paletteCopy;
+			TownsCRTC::ChaseHQPalette chaseHQPaletteCopy;
 		};
 		class VMThreadVariables
 		{
@@ -243,23 +248,17 @@ public:
 			   Window Thread copies VMClosedFromVMThread to VMClosed in the Interval with deviceStateLock.
 			   VMClosed is only accessed in the Window thread.  Save one lock.
 			*/
+			TownsRender::ImageCopy mostRecentImage;
 			bool VMClosed=false;
+			bool newImageRendered=false;
+			std::vector <unsigned int> gamePadsNeedUpdate;  // Copy of Outside_World's gamePadsNeedUpdate.
 		};
 		SharedVariables shared;
 		VMThreadVariables VMThr;
 		WindowThreadVariables winThr;
 
 
-		bool needRender=false;
-		bool newImageRendered=false;
-		bool imageNeedsFlip=false;
-		TownsRender renderer;
-		unsigned char VRAMCopy[TOWNS_VRAM_SIZE];
-		TownsCRTC::AnalogPalette paletteCopy;
-		TownsCRTC::ChaseHQPalette chaseHQPaletteCopy;
 
-
-		std::vector <unsigned int> gamePadsNeedUpdate;  // Copy of Outside_World's gamePadsNeedUpdate.
 		bool windowShift=false;
 		bool autoScaling=false;
 

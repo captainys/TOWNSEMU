@@ -174,11 +174,11 @@ int Run(FMTownsTemplate <CPUCLASS> &towns,const TownsARGV &argv,Outside_World &o
 		window.Interval();
 		auto t=std::chrono::high_resolution_clock::now();
 		auto dt=t-t0;
-		if(50<=std::chrono::duration_cast<std::chrono::milliseconds>(dt).count() || true==window.newImageRendered)
+		if(50<=std::chrono::duration_cast<std::chrono::milliseconds>(dt).count() || true==window.winThr.newImageRendered)
 		{
 			window.Render(true);
 			t0=t;
-			window.newImageRendered=false;
+			window.winThr.newImageRendered=false;
 		}
 		else
 		{

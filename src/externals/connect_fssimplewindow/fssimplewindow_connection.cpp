@@ -1556,6 +1556,7 @@ void FsSimpleWindowConnection::WindowConnection::Interval(void)
 	{
 		std::lock_guard <std::mutex> lock(deviceStateLock);
 		winThr.VMClosed=shared.VMClosedFromVMThread;
+		winThr.gamePadsNeedUpdate=shared.gamePadsNeedUpdate;
 		if(true==readyToSend.EventEmpty())
 		{
 			std::swap(primary,readyToSend);
@@ -1573,25 +1574,23 @@ void FsSimpleWindowConnection::WindowConnection::Render(bool swapBuffers)
 	int winWid,winHei;
 	FsGetWindowSize(winWid,winHei);
 
-	// {
-	renderingLock.lock();
-
-	if(0==mostRecentImage.wid || 0==mostRecentImage.hei)
+	if(0==winThr.mostRecentImage.wid || 0==winThr.mostRecentImage.hei)
 	{
-		// Before the first image was sent.
-		renderingLock.unlock();
 		return;
 	}
+
+	// {
+	renderingLock.lock();
 
 	UpdateStatusBitmap();
 
 	UpdateTexture(statusTexId,STATUS_WID,STATUS_HEI,statusBitmap);
-	UpdateTexture(mainTexId,mostRecentImage.wid,mostRecentImage.hei,mostRecentImage.rgba.data());
+	UpdateTexture(mainTexId,winThr.mostRecentImage.wid,winThr.mostRecentImage.hei,winThr.mostRecentImage.rgba.data());
 
 	auto lowerRightIcon=this->lowerRightIcon;
 
-	auto imgWid=mostRecentImage.wid;
-	auto imgHei=mostRecentImage.hei;
+	auto imgWid=winThr.mostRecentImage.wid;
+	auto imgHei=winThr.mostRecentImage.hei;
 
 	if(true==autoScaling)
 	{
@@ -1693,7 +1692,7 @@ void FsSimpleWindowConnection::WindowConnection::Render(bool swapBuffers)
 void FsSimpleWindowConnection::WindowConnection::UpdateImage(TownsRender::ImageCopy &img)
 {
 	renderingLock.lock();
-	std::swap(mostRecentImage,img);
+	std::swap(winThr.mostRecentImage,img);
 	renderingLock.unlock();
 }
 
@@ -1715,7 +1714,7 @@ void FsSimpleWindowConnection::WindowConnection::Communicate(Outside_World *ow)
 		outside_world->windowEvent=readyToSend;
 		readyToSend.CleanUpEvents();
 
-		gamePadsNeedUpdate=outside_world->gamePadsNeedUpdate;
+		shared.gamePadsNeedUpdate=outside_world->gamePadsNeedUpdate;
 	}
 	{
 		std::lock_guard<std::mutex> lock(renderingLock);
@@ -1744,7 +1743,7 @@ void FsSimpleWindowConnection::DeleteWindowInterface(Outside_World::WindowInterf
 
 void FsSimpleWindowConnection::WindowConnection::PollGamePads(void)
 {
-	for(auto padId : gamePadsNeedUpdate)
+	for(auto padId : winThr.gamePadsNeedUpdate)
 	{
 		if(padId<primary.gamePads.size())
 		{

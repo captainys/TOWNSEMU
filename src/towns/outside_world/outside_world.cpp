@@ -255,23 +255,29 @@ Outside_World::WindowInterface::~WindowInterface()
 	delete [] statusBitmap;
 	statusBitmap=nullptr;
 }
+/*! Interval function must call this function.
+    Called in the Window thread.
+*/
 void Outside_World::WindowInterface::BaseInterval(void)
 {
 	newImageLock.lock();
-	if(true==needRender)
+	if(true==shared.needRender)
 	{
-		renderer.BuildImage(VRAMCopy,paletteCopy,chaseHQPaletteCopy);
-		needRender=false;
-		newImageRendered=true;
+		shared.renderer.BuildImage(shared.VRAMCopy,shared.paletteCopy,shared.chaseHQPaletteCopy);
+		shared.needRender=false;
+		auto imageNeedsFlipCopy=shared.imageNeedsFlip;
 		newImageLock.unlock();
 
-		if(true==imageNeedsFlip)
+		winThr.newImageRendered=true;
+
+		// Rendered image won't be touched by the VM Thread.  Safe to cook.
+		if(true==imageNeedsFlipCopy)
 		{
-			renderer.FlipUpsideDown();
+			shared.renderer.FlipUpsideDown();
 		}
 
-		auto img=renderer.MoveImage();
-		std::swap(mostRecentImage,img);
+		auto img=shared.renderer.MoveImage();
+		std::swap(winThr.mostRecentImage,img);
 	}
 	else
 	{
@@ -286,14 +292,14 @@ bool Outside_World::WindowInterface::SendNewImage(class FMTownsCommon &towns,boo
 {
 	if(true==newImageLock.try_lock())
 	{
-		renderer.Prepare(towns.crtc);
-		renderer.damperWireLine=towns.var.damperWireLine;
-		renderer.scanLineEffectIn15KHz=towns.var.scanLineEffectIn15KHz;
-		memcpy(this->VRAMCopy,towns.physMem.state.VRAM,towns.crtc.GetEffectiveVRAMSize());
-		this->paletteCopy=towns.crtc.GetPalette();
-		this->chaseHQPaletteCopy=towns.crtc.chaseHQPalette;
-		this->imageNeedsFlip=imageNeedsFlip;
-		needRender=true;
+		shared.renderer.Prepare(towns.crtc);
+		shared.renderer.damperWireLine=towns.var.damperWireLine;
+		shared.renderer.scanLineEffectIn15KHz=towns.var.scanLineEffectIn15KHz;
+		memcpy(shared.VRAMCopy,towns.physMem.state.VRAM,towns.crtc.GetEffectiveVRAMSize());
+		shared.paletteCopy=towns.crtc.GetPalette();
+		shared.chaseHQPaletteCopy=towns.crtc.chaseHQPalette;
+		shared.imageNeedsFlip=imageNeedsFlip;
+		shared.needRender=true;
 
 		newImageLock.unlock();
 		return true;
