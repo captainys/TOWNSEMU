@@ -1391,8 +1391,8 @@ void FsSimpleWindowConnection::PauseKeyPressed(void)
 
 void FsSimpleWindowConnection::WindowConnection::Start(void)
 {
-	int wid=640*scaling/100;
-	int hei=480*scaling/100;
+	int wid=640*shared.scaling/100;
+	int hei=480*shared.scaling/100;
 
 	int winY0=0;
 	if(true==windowShift)
@@ -1462,8 +1462,8 @@ void FsSimpleWindowConnection::WindowConnection::Start(void)
 		break;
 	}
 
-	this->winWid=640;
-	this->winHei=480;
+	winThr.winWid=640;
+	winThr.winHei=480;
 #ifndef TSUGARU_I486_HIGH_FIDELITY
 	FsSetWindowTitle("FM Towns Emulator - TSUGARU");
 #else
@@ -1579,8 +1579,26 @@ void FsSimpleWindowConnection::WindowConnection::Render(bool swapBuffers)
 		return;
 	}
 
+	auto imgWid=winThr.mostRecentImage.wid;
+	auto imgHei=winThr.mostRecentImage.hei;
+
 	// {
 	renderingLock.lock();
+
+	if(true==autoScaling)
+	{
+		if(0<imgWid && 0<imgHei)
+		{
+			unsigned int scaleX=100*winWid/imgWid;
+			unsigned int scaleY=100*(winHei-STATUS_HEI)/imgHei;
+			shared.scaling=std::min(scaleX,scaleY);
+		}
+	}
+
+	unsigned int renderWid=imgWid*shared.scaling/100;
+	unsigned int renderHei=imgHei*shared.scaling/100;
+	shared.dx=(renderWid<winWid ? (winWid-renderWid)/2 : 0);
+	shared.dy=(renderHei<(winHei-STATUS_HEI) ? (winHei-STATUS_HEI-renderHei)/2 : 0);
 
 	UpdateStatusBitmap();
 
@@ -1589,23 +1607,9 @@ void FsSimpleWindowConnection::WindowConnection::Render(bool swapBuffers)
 
 	auto lowerRightIcon=this->lowerRightIcon;
 
-	auto imgWid=winThr.mostRecentImage.wid;
-	auto imgHei=winThr.mostRecentImage.hei;
-
-	if(true==autoScaling)
-	{
-		if(0<imgWid && 0<imgHei)
-		{
-			unsigned int scaleX=100*winWid/imgWid;
-			unsigned int scaleY=100*(winHei-STATUS_HEI)/imgHei;
-			scaling=std::min(scaleX,scaleY);
-		}
-	}
-
-	unsigned int renderWid=imgWid*scaling/100;
-	unsigned int renderHei=imgHei*scaling/100;
-	dx=(renderWid<winWid ? (winWid-renderWid)/2 : 0);
-	dy=(renderHei<(winHei-STATUS_HEI) ? (winHei-STATUS_HEI-renderHei)/2 : 0);
+	auto dx=shared.dx;
+	auto dy=shared.dy;
+	auto scaling=shared.scaling;
 
 	renderingLock.unlock();
 	// }
@@ -1613,10 +1617,10 @@ void FsSimpleWindowConnection::WindowConnection::Render(bool swapBuffers)
 
 	if(true!=autoScaling)
 	{
-		if(this->winWid!=imgWid || this->winHei!=imgHei)
+		if(winThr.winWid!=imgWid || winThr.winHei!=imgHei)
 		{
-			this->winWid=imgWid;
-			this->winHei=imgHei;
+			winThr.winWid=imgWid;
+			winThr.winHei=imgHei;
 			sinceLastResize=10;
 		}
 		else if(0<sinceLastResize)
@@ -1624,7 +1628,7 @@ void FsSimpleWindowConnection::WindowConnection::Render(bool swapBuffers)
 			--sinceLastResize;
 			if(0==sinceLastResize)
 			{
-				FsResizeWindow(this->winWid*scaling/100,this->winHei*scaling/100+STATUS_HEI);
+				FsResizeWindow(winThr.winWid*scaling/100,winThr.winHei*scaling/100+STATUS_HEI);
 			}
 		}
 	}
@@ -1722,9 +1726,9 @@ void FsSimpleWindowConnection::WindowConnection::Communicate(Outside_World *ow)
 		statusBarInfo=outside_world->statusBarInfo;
 		lowerRightIcon=outside_world->lowerRightIcon;
 
-		outside_world->scaling=scaling;
-		outside_world->dx=dx;
-		outside_world->dy=dy;
+		outside_world->scaling=shared.scaling;
+		outside_world->dx=shared.dx;
+		outside_world->dy=shared.dy;
 	}
 }
 

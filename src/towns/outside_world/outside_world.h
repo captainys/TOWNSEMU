@@ -228,6 +228,8 @@ public:
 			std::vector <unsigned int> gamePadsNeedUpdate;  // Copy of Outside_World's gamePadsNeedUpdate.
 
 			// Managed by renderingLock
+			unsigned int dx=0,dy=0;  // Screen (0,0) will be window (dx,dy)
+			unsigned int scaling=100; // In Percent
 
 			// Managed by newImageLock
 			bool needRender=false;
@@ -248,10 +250,12 @@ public:
 			   Window Thread copies VMClosedFromVMThread to VMClosed in the Interval with deviceStateLock.
 			   VMClosed is only accessed in the Window thread.  Save one lock.
 			*/
-			TownsRender::ImageCopy mostRecentImage;
 			bool VMClosed=false;
+
+			TownsRender::ImageCopy mostRecentImage;
 			bool newImageRendered=false;
 			std::vector <unsigned int> gamePadsNeedUpdate;  // Copy of Outside_World's gamePadsNeedUpdate.
+			int winWid=640,winHei=480;
 		};
 		SharedVariables shared;
 		VMThreadVariables VMThr;
@@ -265,11 +269,7 @@ public:
 		unsigned int windowModeOnStartUp=TownsStartParameters::WINDOW_NORMAL;
 
 		unsigned char *statusBitmap;
-		unsigned int dx=0,dy=0;  // Screen (0,0) will be window (dx,dy)
-		unsigned int scaling=100; // In Percent
 		unsigned int lowerRightIcon=LOWER_RIGHT_NONE;
-
-		int winWid=640,winHei=480;
 
 
 		WindowInterface();
