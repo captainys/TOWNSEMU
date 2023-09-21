@@ -47,6 +47,7 @@ void TownsCDROM::AsyncWaveReader::Start(DiscImage *discImg,DiscImage::MinSecFrm 
 	this->discImg=discImg;
 	this->from=from;
 	this->to=to;
+	this->state=STATE_BUSY;
 	std::thread t(&TownsCDROM::AsyncWaveReader::ThreadFunc,this);
 	std::swap(t,thr);
 }
@@ -154,6 +155,18 @@ TownsCDROM::TownsCDROM(class FMTownsCommon *townsPtr,class TownsPIC *PICPtr,clas
 	this->DMACPtr=DMACPtr;
 	state.Reset();
 }
+TownsCDROM::~TownsCDROM()
+{
+	WaitUntilAsyncWaveReaderFinished();
+}
+void TownsCDROM::WaitUntilAsyncWaveReaderFinished(void)
+{
+	if(AsyncWaveReader::STATE_IDLE!=waveReader.GetState())
+	{
+		waveReader.GetWave(); // This will join the thread.
+	}
+}
+
 
 /* virtual */ void TownsCDROM::PowerOn(void)
 {

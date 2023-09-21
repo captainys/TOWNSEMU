@@ -317,6 +317,8 @@ public:
 	virtual const char *DeviceName(void) const{return "CDROM";}
 
 	TownsCDROM(class FMTownsCommon *townsPtr,class TownsPIC *PICPtr,class TownsDMAC *DMACPtr);
+	~TownsCDROM();
+	void WaitUntilAsyncWaveReaderFinished(void);
 
 
 	virtual void PowerOn(void);

@@ -277,6 +277,8 @@ void TownsThread::VMMainLoopTemplate(
 }
 void TownsThread::VMEnd(FMTownsCommon *townsPtr,Outside_World *outside_world,class TownsUIThread *uiThread)
 {
+	townsPtr->cdrom.WaitUntilAsyncWaveReaderFinished();
+
 	uiThread->uiLock.lock();
 	uiThread->vmTerminated=true;
 	uiThread->uiLock.unlock();
