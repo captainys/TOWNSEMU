@@ -836,6 +836,28 @@ unsigned int i486DXCommon::FPUState::FIDIVR_m32int(i486DXCommon &cpu,const unsig
 	}
 	return 0;
 }
+unsigned int i486DXCommon::FPUState::FDIV_ST_STi(i486DXCommon &cpu,int i)
+{
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+
+		auto &ST=this->ST(cpu);
+		auto &STi=this->ST(cpu,i);
+		if(0.0==ST.value)
+		{
+			// Zero division.
+		}
+		ST.value=ST.value/STi.value;
+
+	#ifdef CHECK_FOR_NAN
+		BreakOnNan(cpu,ST.value);
+	#endif
+
+		return 73;
+	}
+	return 0; // Let it abort.
+}
 unsigned int i486DXCommon::FPUState::FDIVP_STi_ST(i486DXCommon &cpu,int i)
 {
 	if(true==enabled)
@@ -1603,6 +1625,18 @@ unsigned int i486DXCommon::FPUState::FSQRT(i486DXCommon &cpu)
 	}
 	return 0;
 }
+unsigned int i486DXCommon::FPUState::FST_STi(i486DXCommon &cpu,int i)
+{
+	if(true==enabled)
+	{
+		auto &st=ST(cpu);
+		auto &sti=ST(cpu,i);
+		sti=st;
+
+		return 3;
+	}
+	return 0;
+}
 unsigned int i486DXCommon::FPUState::FSTP_STi(i486DXCommon &cpu,int i)
 {
 	if(true==enabled)
@@ -1726,6 +1760,18 @@ unsigned int i486DXCommon::FPUState::FSUBR_m64real(i486DXCommon &cpu,const unsig
 		auto &st=ST(cpu);
 		st.value=src-st.value;
 
+		return 10;
+	}
+	return 0;
+}
+unsigned int i486DXCommon::FPUState::FSUBR_ST_STi(i486DXCommon &cpu,int i)
+{
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+		auto &ST=this->ST(cpu);
+		auto &STi=this->ST(cpu,i);
+		ST.value=STi.value-ST.value;
 		return 10;
 	}
 	return 0;
