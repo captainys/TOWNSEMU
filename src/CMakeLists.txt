@@ -35,6 +35,8 @@ add_subdirectory(resources)
 
 add_subdirectory(osdependent)
 
+add_subdirectory(vgmrecorder)
+
 add_subdirectory(cpputil)
 add_subdirectory(lineparser)
 add_subdirectory(miscutil)
