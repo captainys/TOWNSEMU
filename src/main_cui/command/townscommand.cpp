@@ -210,6 +210,10 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["ENDFMPCMREC"]=CMD_END_FMPCM_RECORDING;
 	primaryCmdMap["SAVEFMPCMREC"]=CMD_SAVE_FMPCM_RECORDING;
 
+	primaryCmdMap["STARTVGMREC"]=CMD_START_VGM_RECORDING;
+	primaryCmdMap["ENDVGMREC"]=CMD_END_VGM_RECORDING;
+	primaryCmdMap["SAVEVGMREC"]=CMD_SAVE_VGM_RECORDING;
+
 	primaryCmdMap["SAVEWAVRAM"]=CMD_SAVE_WAVERAM;
 
 	primaryCmdMap["SAVESTATE"]=CMD_SAVE_STATE;
@@ -1650,6 +1654,20 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,clas
 			towns.sound.SaveRecording(cmd.argv[1]);
 		}
 		break;
+
+	case CMD_START_VGM_RECORDING:
+		towns.sound.StartVGMRecording();
+		break;
+	case CMD_END_VGM_RECORDING:
+		towns.sound.EndVGMRecording();
+		break;
+	case CMD_SAVE_VGM_RECORDING:
+		if(2<=cmd.argv.size())
+		{
+			towns.sound.SaveVGMRecording(cmd.argv[1]);
+		}
+		break;
+
 	case CMD_SAVE_WAVERAM:
 		if(2<=cmd.argv.size())
 		{

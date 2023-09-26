@@ -507,7 +507,11 @@ void TownsSound::StartVGMRecording(void)
 	var.vgmRecorder.CleanUp();
 	var.vgmRecorder.enabled=true;
 
-	for(unsigned int reg=0x21; reg<=0xB0; ++reg)
+	for(unsigned int reg=0x22; reg<=0x28; ++reg)
+	{
+		var.vgmRecorder.WriteRegister(townsPtr->state.townsTime,VGMRecorder::YM2612_CH0,reg,state.ym2612.state.regSet[0][reg]);
+	}
+	for(unsigned int reg=0x30; reg<=0xB0; ++reg)
 	{
 		var.vgmRecorder.WriteRegister(townsPtr->state.townsTime,VGMRecorder::YM2612_CH0,reg,state.ym2612.state.regSet[0][reg]);
 	}
@@ -519,6 +523,11 @@ void TownsSound::StartVGMRecording(void)
 void TownsSound::EndVGMRecording(void)
 {
 	var.vgmRecorder.enabled=false;
+}
+void TownsSound::SaveVGMRecording(std::string fName) const
+{
+	auto data=var.vgmRecorder.Encode();
+	cpputil::WriteBinaryFile(fName,data.size(),data.data());
 }
 
 

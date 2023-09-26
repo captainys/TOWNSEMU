@@ -59,7 +59,7 @@ void VGMRecorder::WritePCMMemoryBlock(uint64_t VMTime,unsigned char target,unsig
 	memWrite.push_back(chunk);
 }
 
-std::vector <unsigned char> VGMRecorder::Encode(void)
+std::vector <unsigned char> VGMRecorder::Encode(void) const
 {
 	std::vector <unsigned char> vgm;
 

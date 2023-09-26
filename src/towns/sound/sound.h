@@ -144,7 +144,7 @@ public:
 
 	void StartVGMRecording(void);
 	void EndVGMRecording(void);
-
+	void SaveVGMRecording(std::string fName) const;
 
 	void SerializeYM2612(std::vector <unsigned char> &data) const;
 	void DeserializeYM2612(const unsigned char *&data,unsigned int version);

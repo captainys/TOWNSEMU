@@ -36,7 +36,7 @@ public:
 	std::vector <RegWriteLog> log;
 	std::vector <MemoryWriteChunk> memWrite;
 
-	unsigned int YM2612clock=2000000; // For FM TOWNS YM2612
+	unsigned int YM2612clock=8000000; // For FM TOWNS YM2612.  I thought it was 2MHz, 3x prescaler.  Why 8MHz works?
 	unsigned int YM2203clock=1228800; // For FM77AV YM2203
 	unsigned int RF5C68clock=8000000; // Actually I don't know.  I know the sampling frequency is 20725Hz.
 	unsigned int AY8910clock=1228800; // For FM-7 AY3-8910
@@ -57,7 +57,7 @@ public:
 	*/
 	void WritePCMMemoryBlock(uint64_t VMTime,unsigned char target,unsigned int address,unsigned int size,unsigned char data[]);
 
-	std::vector <unsigned char> Encode(void);
+	std::vector <unsigned char> Encode(void) const;
 
 	void WriteUint(unsigned char *dst,unsigned int data) const;
 };
