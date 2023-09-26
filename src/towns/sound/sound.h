@@ -19,6 +19,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <vector>
 #include <string>
 
+#include "vgmrecorder.h"
+
 #include "device.h"
 #include "townsdef.h"
 #include "cpputil.h"
@@ -72,6 +74,7 @@ public:
 		const uint64_t PCMSamplingRate=19200;
 		uint64_t PCMSamplePlayed=0,PCMSamplePointer=0,PCMSamplePointerLeftOver=0;
 		YsSoundPlayer::SoundData waveToBeSentToVM;
+		VGMRecorder vgmRecorder;
 	};
 
 	State state;
@@ -138,6 +141,9 @@ public:
 	void StartRecording(void);
 	void EndRecording(void);
 	void SaveRecording(std::string fName) const;
+
+	void StartVGMRecording(void);
+	void EndVGMRecording(void);
 
 
 	void SerializeYM2612(std::vector <unsigned char> &data) const;
