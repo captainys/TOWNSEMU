@@ -134,6 +134,7 @@ std::vector <unsigned char> VGMRecorder::Encode(void) const
 			if(prevPtr<ptr)
 			{
 				auto dt=ptr-prevPtr;
+				nSamples+=dt;
 				while(65535<dt)
 				{
 					vgm.push_back(VGM_CMD_WAIT);
@@ -147,7 +148,6 @@ std::vector <unsigned char> VGMRecorder::Encode(void) const
 					vgm.push_back(dt&0xff);
 					vgm.push_back((dt>>8)&0xff);
 				}
-				nSamples+=dt;
 				prevPtr=ptr;
 			}
 
@@ -186,6 +186,8 @@ std::vector <unsigned char> VGMRecorder::Encode(void) const
 			}
 		}
 	}
+
+	vgm.push_back(VGM_CMD_END);
 
 	WriteUint(vgm.data()+VGM_OFFSET_TOTAL_NUM_SAMPLES,nSamples);
 
