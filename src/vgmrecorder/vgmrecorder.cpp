@@ -1,9 +1,62 @@
+#include "ym2612.h"
+#include "rf5c68.h"
 #include "vgmrecorder.h"
 
 void VGMRecorder::CleanUp(void)
 {
 	log.clear();
 	memWrite.clear();
+}
+
+void VGMRecorder::CaptureYM2612InitialCondition(uint64_t VMTime,const class YM2612 &ym2612)
+{
+	for(unsigned int reg=0x22; reg<=0x28; ++reg)
+	{
+		WriteRegister(VMTime,REG_YM2612_CH0,reg,ym2612.state.regSet[0][reg]);
+	}
+	for(unsigned int reg=0x30; reg<=0xB0; ++reg)
+	{
+		WriteRegister(VMTime,REG_YM2612_CH0,reg,ym2612.state.regSet[0][reg]);
+	}
+	for(unsigned int reg=0x30; reg<=0xB0; ++reg)
+	{
+		WriteRegister(VMTime,REG_YM2612_CH3,reg,ym2612.state.regSet[1][reg]);
+	}
+}
+void VGMRecorder::CaptureRF5C68InitialCondition(uint64_t VMTime,const class RF5C68 &rf5c68)
+{
+	for(int bank=0; bank<0x10; ++bank)
+	{
+		unsigned char data=(true==rf5c68.state.playing ? 0x80 : 0);
+		data|=bank;
+		WriteRegister(VMTime,REG_RF5C68,RF5C68::REG_CONTROL,data);
+		WritePCMMemoryBlock(VMTime,MEM_RF5C68,0,0x1000,rf5c68.state.waveRAM.data()+(bank<<12));
+	}
+
+	for(int ch=0; ch<RF5C68::NUM_CHANNELS; ++ch)
+	{
+		unsigned char data=(true==rf5c68.state.playing ? 0x80 : 0);
+		data|=0x40; // MOD=CB
+		data|=ch;
+		WriteRegister(VMTime,REG_RF5C68,RF5C68::REG_CONTROL,data);
+		WriteRegister(VMTime,REG_RF5C68,RF5C68::REG_ENV,rf5c68.state.ch[ch].ENV);
+		WriteRegister(VMTime,REG_RF5C68,RF5C68::REG_PAN,rf5c68.state.ch[ch].PAN);
+		WriteRegister(VMTime,REG_RF5C68,RF5C68::REG_FDL,rf5c68.state.ch[ch].FD&0xFF);
+		WriteRegister(VMTime,REG_RF5C68,RF5C68::REG_FDH,(rf5c68.state.ch[ch].FD>>8)&0xFF);
+		WriteRegister(VMTime,REG_RF5C68,RF5C68::REG_LSL,rf5c68.state.ch[ch].LS&0xFF);
+		WriteRegister(VMTime,REG_RF5C68,RF5C68::REG_LSH,(rf5c68.state.ch[ch].LS>>8)&0xFF);
+		WriteRegister(VMTime,REG_RF5C68,RF5C68::REG_ST,rf5c68.state.ch[ch].ST);
+	}
+	WriteRegister(VMTime,REG_RF5C68,RF5C68::REG_CH_ON_OFF,rf5c68.state.chOnOff);
+
+	unsigned char data=(true==rf5c68.state.playing ? 0x80 : 0);
+	data|=0x40; // MOD=CB
+	data|=rf5c68.state.CB;
+	WriteRegister(VMTime,REG_RF5C68,RF5C68::REG_CONTROL,data);
+
+	data=(true==rf5c68.state.playing ? 0x80 : 0);
+	data|=rf5c68.state.Bank; // MOD=WB
+	WriteRegister(VMTime,REG_RF5C68,RF5C68::REG_CONTROL,data);
 }
 
 void VGMRecorder::WriteRegister(uint64_t VMTime,unsigned char target,unsigned int reg,unsigned char value)
@@ -18,7 +71,7 @@ void VGMRecorder::WriteRegister(uint64_t VMTime,unsigned char target,unsigned in
 
 void VGMRecorder::WritePCMMemory(uint64_t VMTime,unsigned char target,unsigned int address,unsigned char value)
 {
-	if(0<log.size() && RF5C68_MEM==log.back().target && log.back().reg<memWrite.size())
+	if(0<log.size() && MEM_RF5C68==log.back().target && log.back().reg<memWrite.size())
 	{
 		auto &lastMemWriteChunk=memWrite[log.back().reg];
 		if(address==lastMemWriteChunk.address+lastMemWriteChunk.data.size())
@@ -41,7 +94,7 @@ void VGMRecorder::WritePCMMemory(uint64_t VMTime,unsigned char target,unsigned i
 	memWrite.push_back(chunk);
 }
 
-void VGMRecorder::WritePCMMemoryBlock(uint64_t VMTime,unsigned char target,unsigned int address,unsigned int size,unsigned char data[])
+void VGMRecorder::WritePCMMemoryBlock(uint64_t VMTime,unsigned char target,unsigned int address,unsigned int size,const unsigned char data[])
 {
 	RegWriteLog newLog;
 	newLog.VMTimeInNanosec=VMTime;
@@ -96,10 +149,12 @@ std::vector <unsigned char> VGMRecorder::Encode(void) const
 		VGM_CMD_WAIT=0x61,
 		VGM_CMD_WAIT_735=0x62,
 		VGM_CMD_WAIT_882=0x63,
-		VGM_CMD_PCMRAMWRITE=0x68,
+		VGM_CMD_DATA_BLOCK=0x67,
 		VGM_CMD_END=0x66,
 		VGM_CMD_AY8910=0xA0,
 		VGM_CMD_RF5C68=0xB0,
+
+		VGM_DATABLOCK_RF5C68_RAM=0xC0,
 
 		VGM_RATE_NTSC=60,
 	};
@@ -153,35 +208,47 @@ std::vector <unsigned char> VGMRecorder::Encode(void) const
 
 			switch(L.target)
 			{
-			case YM2612_CH0:
+			case REG_YM2612_CH0:
 				vgm.push_back(VGM_CMD_YM2612_CH0);
 				vgm.push_back(L.reg);
 				vgm.push_back(L.value);
 				break;
-			case YM2612_CH3:
+			case REG_YM2612_CH3:
 				vgm.push_back(VGM_CMD_YM2612_CH3);
 				vgm.push_back(L.reg);
 				vgm.push_back(L.value);
 				break;
-			case YM2203:
+			case REG_YM2203:
 				vgm.push_back(VGM_CMD_YM2203);
 				vgm.push_back(L.reg);
 				vgm.push_back(L.value);
 				break;
-			case AY38910:
+			case REG_AY38910:
 				vgm.push_back(VGM_CMD_AY8910);
 				vgm.push_back(L.reg);
 				vgm.push_back(L.value);
 				break;
-			case RF5C68:
-				//vgm.push_back(VGM_CMD_RF5C68);
-				//vgm.push_back(L.reg);
-				//vgm.push_back(L.value);
+			case REG_RF5C68:
+				vgm.push_back(VGM_CMD_RF5C68);
+				vgm.push_back(L.reg);
+				vgm.push_back(L.value);
 				break;
-			case RF5C68_MEM:
-				//vgm.push_back(VGM_CMD_PCMRAMWRITE);
-				//vgm.push_back(0x66); // ?
-				//vgm.push_back(0xC0); // RF5C68 RAM
+			case MEM_RF5C68:
+				vgm.push_back(VGM_CMD_DATA_BLOCK);
+				vgm.push_back(VGM_CMD_END);
+				vgm.push_back(VGM_DATABLOCK_RF5C68_RAM);
+				{
+					auto &memBlock=this->memWrite[L.reg];
+					unsigned int size=memBlock.data.size()+2;
+
+					vgm.push_back(size&0xFF);
+					vgm.push_back((size>>8)&0xFF);
+
+					vgm.push_back(memBlock.address&0xFF);
+					vgm.push_back((memBlock.address>>8)&0xFF);
+
+					vgm.insert(vgm.end(),memBlock.data.begin(),memBlock.data.end());
+				}
 				break;
 			}
 		}

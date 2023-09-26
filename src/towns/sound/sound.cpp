@@ -95,7 +95,7 @@ void TownsSound::PCMPausePlay(unsigned char chPausePlay)
 			state.ym2612.WriteRegister(0,state.addrLatch[0],data,townsPtr->state.townsTime);
 			if(true==var.vgmRecorder.enabled)
 			{
-				var.vgmRecorder.WriteRegister(townsPtr->state.townsTime,VGMRecorder::YM2612_CH0,state.addrLatch[0],data);
+				var.vgmRecorder.WriteRegister(townsPtr->state.townsTime,VGMRecorder::REG_YM2612_CH0,state.addrLatch[0],data);
 			}
 		}
 		break;
@@ -107,7 +107,7 @@ void TownsSound::PCMPausePlay(unsigned char chPausePlay)
 			state.ym2612.WriteRegister(3,state.addrLatch[1],data,townsPtr->state.townsTime);
 			if(true==var.vgmRecorder.enabled)
 			{
-				var.vgmRecorder.WriteRegister(townsPtr->state.townsTime,VGMRecorder::YM2612_CH3,state.addrLatch[1],data);
+				var.vgmRecorder.WriteRegister(townsPtr->state.townsTime,VGMRecorder::REG_YM2612_CH3,state.addrLatch[1],data);
 			}
 		}
 		break;
@@ -507,18 +507,8 @@ void TownsSound::StartVGMRecording(void)
 	var.vgmRecorder.CleanUp();
 	var.vgmRecorder.enabled=true;
 
-	for(unsigned int reg=0x22; reg<=0x28; ++reg)
-	{
-		var.vgmRecorder.WriteRegister(townsPtr->state.townsTime,VGMRecorder::YM2612_CH0,reg,state.ym2612.state.regSet[0][reg]);
-	}
-	for(unsigned int reg=0x30; reg<=0xB0; ++reg)
-	{
-		var.vgmRecorder.WriteRegister(townsPtr->state.townsTime,VGMRecorder::YM2612_CH0,reg,state.ym2612.state.regSet[0][reg]);
-	}
-	for(unsigned int reg=0x30; reg<=0xB0; ++reg)
-	{
-		var.vgmRecorder.WriteRegister(townsPtr->state.townsTime,VGMRecorder::YM2612_CH3,reg,state.ym2612.state.regSet[1][reg]);
-	}
+	var.vgmRecorder.CaptureYM2612InitialCondition(townsPtr->state.townsTime,state.ym2612);
+	var.vgmRecorder.CaptureRF5C68InitialCondition(townsPtr->state.townsTime,state.rf5c68);
 }
 void TownsSound::EndVGMRecording(void)
 {

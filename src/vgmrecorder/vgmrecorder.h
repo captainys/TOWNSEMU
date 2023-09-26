@@ -10,12 +10,12 @@ class VGMRecorder
 public:
 	enum
 	{
-		YM2612_CH0,
-		YM2612_CH3,
-		YM2203,
-		AY38910,
-		RF5C68,
-		RF5C68_MEM
+		REG_YM2612_CH0,
+		REG_YM2612_CH3,
+		REG_YM2203,
+		REG_AY38910,
+		REG_RF5C68,
+		MEM_RF5C68
 	};
 	class RegWriteLog
 	{
@@ -46,6 +46,14 @@ public:
 	*/
 	void CleanUp(void);
 
+	/*!
+	*/
+	void CaptureYM2612InitialCondition(uint64_t VMTime,const class YM2612 &ym2612);
+
+	/*!
+	*/
+	void CaptureRF5C68InitialCondition(uint64_t VMTime,const class RF5C68 &ym2612);
+
 	/*! Log register write.
 	*/
 	void WriteRegister(uint64_t VMTime,unsigned char target,unsigned int reg,unsigned char value);
@@ -55,7 +63,7 @@ public:
 
 	/*! Target needs to be RF5C68_MEM.
 	*/
-	void WritePCMMemoryBlock(uint64_t VMTime,unsigned char target,unsigned int address,unsigned int size,unsigned char data[]);
+	void WritePCMMemoryBlock(uint64_t VMTime,unsigned char target,unsigned int address,unsigned int size,const unsigned char data[]);
 
 	std::vector <unsigned char> Encode(void) const;
 

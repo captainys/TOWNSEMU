@@ -38,6 +38,19 @@ public:
 		// Adjusted to keep balance.
 	};
 
+	enum
+	{
+		REG_ENV=0,
+		REG_PAN=1,
+		REG_FDL=2,
+		REG_FDH=3,
+		REG_LSL=4,
+		REG_LSH=5,
+		REG_ST=6,
+		REG_CONTROL=7,
+		REG_CH_ON_OFF=8,
+	};
+
 	class Channel
 	{
 	public:
