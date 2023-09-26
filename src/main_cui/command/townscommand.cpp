@@ -1656,15 +1656,24 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,clas
 		break;
 
 	case CMD_START_VGM_RECORDING:
-		towns.sound.StartVGMRecording();
+		towns.sound.ArmVGMRecording();
+		std::cout << "Armed VGM Recording." << std::endl;
 		break;
 	case CMD_END_VGM_RECORDING:
 		towns.sound.EndVGMRecording();
+		std::cout << "Stopped VGM Recording." << std::endl;
 		break;
 	case CMD_SAVE_VGM_RECORDING:
 		if(2<=cmd.argv.size())
 		{
-			towns.sound.SaveVGMRecording(cmd.argv[1]);
+			if(true==towns.sound.SaveVGMRecording(cmd.argv[1]))
+			{
+				std::cout << "Saved VGM Recording." << std::endl;
+			}
+			else
+			{
+				std::cout << "Failed to save VGM Recording." << std::endl;
+			}
 		}
 		break;
 

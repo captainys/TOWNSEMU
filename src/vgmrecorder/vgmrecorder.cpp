@@ -25,6 +25,7 @@ void VGMRecorder::CaptureYM2612InitialCondition(uint64_t VMTime,const class YM26
 }
 void VGMRecorder::CaptureRF5C68InitialCondition(uint64_t VMTime,const class RF5C68 &rf5c68)
 {
+	WriteRegister(VMTime,REG_RF5C68,RF5C68::REG_CH_ON_OFF,0xFF);
 	for(int bank=0; bank<0x10; ++bank)
 	{
 		unsigned char data=(true==rf5c68.state.playing ? 0x80 : 0);
@@ -241,8 +242,11 @@ std::vector <unsigned char> VGMRecorder::Encode(void) const
 					auto &memBlock=this->memWrite[L.reg];
 					unsigned int size=memBlock.data.size()+2;
 
+					// 32-bit block size
 					vgm.push_back(size&0xFF);
 					vgm.push_back((size>>8)&0xFF);
+					vgm.push_back(0);
+					vgm.push_back(0);
 
 					vgm.push_back(memBlock.address&0xFF);
 					vgm.push_back((memBlock.address>>8)&0xFF);

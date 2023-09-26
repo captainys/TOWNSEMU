@@ -93,10 +93,7 @@ void TownsSound::PCMPausePlay(unsigned char chPausePlay)
 	case TOWNSIO_SOUND_DATA0://             0x4DA, // [2] pp.18,
 		{
 			state.ym2612.WriteRegister(0,state.addrLatch[0],data,townsPtr->state.townsTime);
-			if(true==var.vgmRecorder.enabled)
-			{
-				var.vgmRecorder.WriteRegister(townsPtr->state.townsTime,VGMRecorder::REG_YM2612_CH0,state.addrLatch[0],data);
-			}
+			ProcessRecordFMWrite(VGMRecorder::REG_YM2612_CH0,state.addrLatch[0],data);
 		}
 		break;
 	case TOWNSIO_SOUND_ADDRESS1://          0x4DC, // [2] pp.18,
@@ -105,10 +102,7 @@ void TownsSound::PCMPausePlay(unsigned char chPausePlay)
 	case TOWNSIO_SOUND_DATA1://             0x4DE, // [2] pp.18,
 		{
 			state.ym2612.WriteRegister(3,state.addrLatch[1],data,townsPtr->state.townsTime);
-			if(true==var.vgmRecorder.enabled)
-			{
-				var.vgmRecorder.WriteRegister(townsPtr->state.townsTime,VGMRecorder::REG_YM2612_CH3,state.addrLatch[1],data);
-			}
+			ProcessRecordFMWrite(VGMRecorder::REG_YM2612_CH3,state.addrLatch[1],data);
 		}
 		break;
 	case TOWNSIO_SOUND_INT_REASON://        0x4E9, // [2] pp.19,
@@ -120,24 +114,31 @@ void TownsSound::PCMPausePlay(unsigned char chPausePlay)
 		break;
 	case TOWNSIO_SOUND_PCM_ENV://           0x4F0, // [2] pp.19,
 		state.rf5c68.WriteENV(data);
+		ProcessRecordPCMWrite(RF5C68::REG_ENV,data);
 		break;
 	case TOWNSIO_SOUND_PCM_PAN://           0x4F1, // [2] pp.19,
 		state.rf5c68.WritePAN(data);
+		ProcessRecordPCMWrite(RF5C68::REG_PAN,data);
 		break;
 	case TOWNSIO_SOUND_PCM_FDL://           0x4F2, // [2] pp.19,
 		state.rf5c68.WriteFDL(data);
+		ProcessRecordPCMWrite(RF5C68::REG_FDL,data);
 		break;
 	case TOWNSIO_SOUND_PCM_FDH://           0x4F3, // [2] pp.19,
 		state.rf5c68.WriteFDH(data);
+		ProcessRecordPCMWrite(RF5C68::REG_FDH,data);
 		break;
 	case TOWNSIO_SOUND_PCM_LSL://           0x4F4, // [2] pp.19,
 		state.rf5c68.WriteLSL(data);
+		ProcessRecordPCMWrite(RF5C68::REG_LSL,data);
 		break;
 	case TOWNSIO_SOUND_PCM_LSH://           0x4F5, // [2] pp.19,
 		state.rf5c68.WriteLSH(data);
+		ProcessRecordPCMWrite(RF5C68::REG_LSH,data);
 		break;
 	case TOWNSIO_SOUND_PCM_ST://            0x4F6, // [2] pp.19,
 		state.rf5c68.WriteST(data);
+		ProcessRecordPCMWrite(RF5C68::REG_ST,data);
 		break;
 	case TOWNSIO_SOUND_PCM_CTRL://          0x4F7, // [2] pp.19,
 		{
@@ -151,6 +152,7 @@ void TownsSound::PCMPausePlay(unsigned char chPausePlay)
 				PCMPausePlay(startStop.chStopPlay);
 			}
 		}
+		ProcessRecordPCMWrite(RF5C68::REG_CONTROL,data);
 		break;
 	case TOWNSIO_SOUND_PCM_CH_ON_OFF://     0x4F8, // [2] pp.19,
 		{
@@ -164,6 +166,7 @@ void TownsSound::PCMPausePlay(unsigned char chPausePlay)
 				PCMStopPlay(startStop.chStopPlay);
 			}
 		}
+		ProcessRecordPCMWrite(RF5C68::REG_CH_ON_OFF,data);
 		break;
 	case TOWNSIO_SOUND_SAMPLING_DATA: //    0x4E7, // [2] pp.179,
 		break;
@@ -171,6 +174,42 @@ void TownsSound::PCMPausePlay(unsigned char chPausePlay)
 		break;
 	}
 }
+void TownsSound::ProcessRecordFMWrite(unsigned int regSet,unsigned int reg,unsigned char data)
+{
+	if(true==var.vgmRecordingArmed)
+	{
+		if(true!=var.vgmRecorder.enabled &&
+		   (reg==YM2612::REG_TIMER_A_COUNT_HIGH ||
+		    reg==YM2612::REG_TIMER_A_COUNT_LOW ||
+		    reg==YM2612::REG_TIMER_B_COUNT ||
+		    reg==YM2612::REG_TIMER_CONTROL))
+		{
+			return;
+		}
+		if(true!=var.vgmRecorder.enabled)
+		{
+			StartVGMRecording();
+			std::cout << "VGM Recording Started." << std::endl;
+		}
+		if(true==var.vgmRecorder.enabled)
+		{
+			var.vgmRecorder.WriteRegister(townsPtr->state.townsTime,regSet,reg,data);
+		}
+	}
+}
+void TownsSound::ProcessRecordPCMWrite(unsigned int reg,unsigned char data)
+{
+	if(true==var.vgmRecordingArmed)
+	{
+		if(true!=var.vgmRecorder.enabled)
+		{
+			StartVGMRecording();
+			std::cout << "VGM Recording Started." << std::endl;
+		}
+		var.vgmRecorder.WriteRegister(townsPtr->state.townsTime,VGMRecorder::REG_RF5C68,reg,data);
+	}
+}
+
 /* virtual */ unsigned int TownsSound::IOReadByte(unsigned int ioport)
 {
 	unsigned char data=0xff;
@@ -492,32 +531,36 @@ void TownsSound::EndRecording(void)
 	recordFMandPCM=false;
 }
 #include "yssimplesound.h"
-void TownsSound::SaveRecording(std::string fName) const
+bool TownsSound::SaveRecording(std::string fName) const
 {
 	YsSoundPlayer::SoundData data;
 	auto dataCopy=FMPCMrecording;
 	data.CreateFromSigned16bitStereo(44100,dataCopy);
 	auto wavFile=data.MakeWavByteData();
-	cpputil::WriteBinaryFile(fName,wavFile.size(),wavFile.data());
+	return cpputil::WriteBinaryFile(fName,wavFile.size(),wavFile.data());
 }
 
+void TownsSound::ArmVGMRecording(void)
+{
+	var.vgmRecordingArmed=true;
+}
 
 void TownsSound::StartVGMRecording(void)
 {
 	var.vgmRecorder.CleanUp();
 	var.vgmRecorder.enabled=true;
-
 	var.vgmRecorder.CaptureYM2612InitialCondition(townsPtr->state.townsTime,state.ym2612);
 	var.vgmRecorder.CaptureRF5C68InitialCondition(townsPtr->state.townsTime,state.rf5c68);
 }
 void TownsSound::EndVGMRecording(void)
 {
+	var.vgmRecordingArmed=false;
 	var.vgmRecorder.enabled=false;
 }
-void TownsSound::SaveVGMRecording(std::string fName) const
+bool TownsSound::SaveVGMRecording(std::string fName) const
 {
 	auto data=var.vgmRecorder.Encode();
-	cpputil::WriteBinaryFile(fName,data.size(),data.data());
+	return cpputil::WriteBinaryFile(fName,data.size(),data.data());
 }
 
 

@@ -74,6 +74,7 @@ public:
 		const uint64_t PCMSamplingRate=19200;
 		uint64_t PCMSamplePlayed=0,PCMSamplePointer=0,PCMSamplePointerLeftOver=0;
 		YsSoundPlayer::SoundData waveToBeSentToVM;
+		bool vgmRecordingArmed=false;
 		VGMRecorder vgmRecorder;
 	};
 
@@ -117,6 +118,8 @@ public:
 	virtual void Reset(void);
 
 	virtual void IOWriteByte(unsigned int ioport,unsigned int data);
+	void ProcessRecordFMWrite(unsigned int regSet,unsigned int reg,unsigned char data);
+	void ProcessRecordPCMWrite(unsigned int reg,unsigned char data);
 
 	virtual unsigned int IOReadByte(unsigned int ioport);
 
@@ -140,11 +143,12 @@ public:
 
 	void StartRecording(void);
 	void EndRecording(void);
-	void SaveRecording(std::string fName) const;
+	bool SaveRecording(std::string fName) const;
 
+	void ArmVGMRecording(void);
 	void StartVGMRecording(void);
 	void EndVGMRecording(void);
-	void SaveVGMRecording(std::string fName) const;
+	bool SaveVGMRecording(std::string fName) const;
 
 	void SerializeYM2612(std::vector <unsigned char> &data) const;
 	void DeserializeYM2612(const unsigned char *&data,unsigned int version);
