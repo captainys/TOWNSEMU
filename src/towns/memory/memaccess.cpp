@@ -680,10 +680,16 @@ TownsFMRVRAMAccess::TownsFMRVRAMAccess()
 /* virtual */ void TownsWaveRAMAccess::StoreByte(unsigned int physAddr,unsigned char data)
 {
 	pcmPtr->WriteWaveRAM(physAddr&TOWNSADDR_WAVERAM_WINDOW_AND,data);
+	if(true==vgmRecorderPtr->enabled)
+	{
+		vgmRecorderPtr->WritePCMMemory(townsPtr->state.townsTime,VGMRecorder::MEM_RF5C68,physAddr&TOWNSADDR_WAVERAM_WINDOW_AND,data);
+	}
 }
-TownsWaveRAMAccess::TownsWaveRAMAccess(class RF5C68 *pcmPtr)
+TownsWaveRAMAccess::TownsWaveRAMAccess(class FMTownsCommon *townsPtr,class RF5C68 *pcmPtr,class VGMRecorder *vgmRecPtr)
 {
+	this->townsPtr=townsPtr;
 	this->pcmPtr=pcmPtr;
+	this->vgmRecorderPtr=vgmRecPtr;
 }
 
 

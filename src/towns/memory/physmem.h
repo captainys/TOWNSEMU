@@ -224,8 +224,10 @@ public:
 	virtual unsigned int FetchByte(unsigned int physAddr) const;
 	virtual void StoreByte(unsigned int physAddr,unsigned char data);
 
-	class RF5C68 *pcmPtr;
-	TownsWaveRAMAccess(class RF5C68 *pcmPtr);
+	class FMTownsCommon *townsPtr=nullptr;
+	class RF5C68 *pcmPtr=nullptr;
+	class VGMRecorder *vgmRecorderPtr=nullptr;
+	TownsWaveRAMAccess(class FMTownsCommon *townsPtr,class RF5C68 *pcmPtr,class VGMRecorder *vgmRecPtr);
 };
 
 class TownsSysROMAccess : public TownsMemAccess

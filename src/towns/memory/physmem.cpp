@@ -275,7 +275,7 @@ void TownsPhysicalMemory::State::Reset(void)
 
 TownsPhysicalMemory::TownsPhysicalMemory(class FMTownsCommon *townsPtr,class Memory *memPtr,class RF5C68 *pcmPtr) :
 	Device(townsPtr),
-	waveRAMAccess(pcmPtr),
+	waveRAMAccess(townsPtr,pcmPtr,&townsPtr->sound.var.vgmRecorder),
 	oldMemCardAccess(townsPtr),
 	JEIDA4MemCardAccess(townsPtr)
 {
