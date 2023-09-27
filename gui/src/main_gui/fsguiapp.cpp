@@ -2105,21 +2105,94 @@ void FsGuiMainCanvas::Audio_Save_WAVCapture_Save(YsWString fName)
 
 void FsGuiMainCanvas::Audio_Start_VGMCapture(FsGuiPopUpMenuItem *)
 {
+	if(true==IsVMRunning())
+	{
+		SendVMCommand("STARTVGMREC");
+		VMMustResume=YSTRUE;
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
 }
 void FsGuiMainCanvas::Audio_Stop_VGMCapture(FsGuiPopUpMenuItem *)
 {
+	if(true==IsVMRunning())
+	{
+		SendVMCommand("ENDVGMREC");
+		VMMustResume=YSTRUE;
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
 }
 void FsGuiMainCanvas::Audio_Save_VGMCapture(FsGuiPopUpMenuItem *)
 {
+	if(true==IsVMRunning())
+	{
+		YsWString path,file;
+		profileDlg->profileFNameTxt->GetWText().SeparatePathFile(path,file);
+
+		auto fdlg=FsGuiDialog::CreateSelfDestructiveDialog<FsGuiFileDialog>();
+		fdlg->Initialize();
+		fdlg->mode=FsGuiFileDialog::MODE_SAVE;
+		fdlg->multiSelect=YSFALSE;
+		fdlg->title.Set(L"Select VGM File Name");
+		fdlg->fileExtensionArray.Append(L".vgm");
+		fdlg->defaultFileName=path;
+		fdlg->BindCloseModalCallBack(&THISCLASS::Audio_Save_VGMCapture_FileSelected,this);
+		AttachModalDialog(fdlg);
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
 }
 void FsGuiMainCanvas::Audio_Save_VGMCapture_FileSelected(FsGuiDialog *dlg,int returnCode)
 {
+	auto fdlg=dynamic_cast <FsGuiFileDialog *>(dlg);
+	if(nullptr!=fdlg && (int)YSOK==returnCode)
+	{
+		auto fName=fdlg->selectedFileArray[0];
+		if(YSTRUE==YsFileIO::CheckFileExist(fName))
+		{
+			auto dlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialogWithPayload<YsWString> >();
+			dlg->payload=fName;
+			dlg->Make(L"Overwrite VGM?",L"Are you sure?",L"Yes",L"No");
+			dlg->BindCloseModalCallBack(&FsGuiMainCanvas::Audio_Save_VGMCapture_Confirm,this);
+			AttachModalDialog(dlg);
+		}
+		else
+		{
+			Audio_Save_VGMCapture_Save(fName);
+		}
+	}
 }
-void FsGuiMainCanvas::Audio_Save_VGMCapture_Confirm(FsGuiDialog *dlg,int returnCode)
+void FsGuiMainCanvas::Audio_Save_VGMCapture_Confirm(FsGuiDialog *dlgIn,int returnCode)
 {
+	auto dlg=dynamic_cast <FsGuiMessageBoxDialogWithPayload<YsWString> *>(dlgIn);
+	if(nullptr!=dlg && (int)YSOK==returnCode)
+	{
+		Audio_Save_VGMCapture_Save(dlg->payload);
+	}
 }
 void FsGuiMainCanvas::Audio_Save_VGMCapture_Save(YsWString fName)
 {
+	YsString utf8;
+	YsUnicodeToSystemEncoding(utf8,fName);
+
+	SendVMCommand("ENDVGMREC\n");
+
+	YsString cmd;
+	cmd="SAVEVGMREC \"";
+	cmd.Append(utf8);
+	cmd.Append("\"");
+	cmd.Append("\n");
+	SendVMCommand(cmd.data());
+	VMMustResume=YSTRUE;
+
+	lastEventFName=fName;
 }
 
 ////////////////////////////////////////////////////////////
