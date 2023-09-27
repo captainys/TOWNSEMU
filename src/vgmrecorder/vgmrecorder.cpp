@@ -323,8 +323,119 @@ void VGMRecorder::TrimUnusedDevices(void)
 			log.erase(log.begin()+i);
 		}
 	}
+
+	if(true!=useYM2612)
+	{
+		YM2612clock=0;
+	}
+	if(true!=useYM2203)
+	{
+		YM2203clock=0;
+	}
+	if(true!=useAY38910)
+	{
+		AY8910clock=0;
+	}
+	if(true!=useRF5C68)
+	{
+		RF5C68clock=0;
+	}
 }
 
 void VGMRecorder::TrimNoSoundSegments(void)
 {
+	size_t firstKeyOn=0;
+	size_t lastKeyOff=log.size();
+
+	bool prevKey=false;
+	bool YM2612key[6]={false,false,false,false,false,false};
+	bool YM2203key[6]={false,false,false,false,false,false};
+	bool AY8910key[3]={false,false,false};
+	bool RF5C68key[8]={false,false,false,false,false,false,false,false};
+
+	for(size_t i=0; i<log.size(); ++i)
+	{
+		auto L=log[i];
+		switch(L.target)
+		{
+		case REG_YM2612_CH0:
+			if(YM2612::REG_KEY_ON_OFF==L.reg)
+			{
+				auto ch=(L.value&3);
+				if(ch<3)
+				{
+					YM2612key[ch]=(0!=(L.value&0xF0));
+				}
+			}
+			break;
+		case REG_YM2612_CH3:
+			if(YM2612::REG_KEY_ON_OFF==L.reg)
+			{
+				auto ch=(L.value&3);
+				if(ch<3)
+				{
+					YM2612key[3+ch]=(0!=(L.value&0xF0));
+				}
+			}
+			break;
+		case REG_YM2203:
+			if(YM2612::REG_KEY_ON_OFF==L.reg)
+			{
+				auto ch=(L.value&3);
+				if(ch<3)
+				{
+					YM2203key[ch]=(0!=(L.value&0xF0));
+				}
+			}
+			if(8==L.reg || 9==L.reg || 10==L.reg)
+			{
+				YM2203key[3+L.reg-8]=(0!=(L.value&0x1F));
+			}
+			break;
+		case REG_AY38910:
+			if(8==L.reg || 9==L.reg || 10==L.reg)
+			{
+				AY8910key[L.reg-8]=(0!=(L.value&0x1F));
+			}
+			break;
+		case REG_RF5C68:
+			if(RF5C68::REG_CH_ON_OFF==L.reg)
+			{
+				auto value=L.value;
+				for(int i=0; i<8; ++i)
+				{
+					RF5C68key[i]=(0==(value&1));
+					value>>=1;
+				}
+			}
+			break;
+		}
+
+		bool key=false;
+		for(auto b : YM2612key)
+		{
+			key=(key || b);
+		}
+		for(auto b : YM2203key)
+		{
+			key=(key || b);
+		}
+		for(auto b : AY8910key)
+		{
+			key=(key || b);
+		}
+		for(auto b : RF5C68key)
+		{
+			key=(key || b);
+		}
+		if(0==firstKeyOn && true==key)
+		{
+			firstKeyOn=i;
+		}
+		if(true==prevKey && true!=key)
+		{
+			lastKeyOff=i+1;
+		}
+		prevKey=key;
+	}
 }
