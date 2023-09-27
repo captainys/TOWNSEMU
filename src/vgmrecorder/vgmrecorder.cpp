@@ -273,3 +273,58 @@ void VGMRecorder::WriteUint(unsigned char *dst,unsigned int data) const
 	dst[2]=(data>>16)&0xff;
 	dst[3]=(data>>24)&0xff;
 }
+
+void VGMRecorder::TrimUnusedDevices(void)
+{
+	bool useYM2612=false,useYM2203=false,useRF5C68=false,useAY38910=false;
+	for(auto L : log)
+	{
+		switch(L.target)
+		{
+		case REG_YM2612_CH0:
+		case REG_YM2612_CH3:
+			if(YM2612::REG_KEY_ON_OFF==L.reg && 0!=(L.value&0xF0))
+			{
+				useYM2612=true;
+			}
+			break;
+		case REG_YM2203:
+			if(YM2612::REG_KEY_ON_OFF==L.reg && 0!=(L.value&0xF0))
+			{
+				useYM2203=true;
+			}
+			if((8==L.reg || 9==L.reg || 10==L.reg) && 0!=(L.value&0x1F))
+			{
+				useYM2203=true;
+			}
+			break;
+		case REG_AY38910:
+			if((8==L.reg || 9==L.reg || 10==L.reg) && 0!=(L.value&0x1F))
+			{
+				useAY38910=true;
+			}
+			break;
+		case REG_RF5C68:
+			if(RF5C68::REG_CH_ON_OFF==L.reg && 0xFF!=(L.value&0xFF))
+			{
+				useRF5C68=true;
+			}
+			break;
+		}
+	}
+	for(int i=log.size()-1; 0<=i; --i)
+	{
+		auto &L=log[i];
+		if((true!=useYM2612 && (REG_YM2612_CH0==L.target || REG_YM2612_CH3==L.target)) ||
+		   (true!=useYM2203 && (REG_YM2203==L.target)) ||
+		   (true!=useAY38910 && (REG_AY38910==L.target)) ||
+		   (true!=useRF5C68 &&  (REG_RF5C68==L.target || MEM_RF5C68==L.target)))
+		{
+			log.erase(log.begin()+i);
+		}
+	}
+}
+
+void VGMRecorder::TrimNoSoundSegments(void)
+{
+}

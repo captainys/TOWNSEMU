@@ -68,6 +68,14 @@ public:
 	std::vector <unsigned char> Encode(void) const;
 
 	void WriteUint(unsigned char *dst,unsigned int data) const;
+
+	/*!
+	*/
+	void TrimUnusedDevices(void);
+
+	/*!
+	*/
+	void TrimNoSoundSegments(void);
 };
 
 
