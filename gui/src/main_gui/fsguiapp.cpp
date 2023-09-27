@@ -366,6 +366,9 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 	{
 		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_U,L"Sound")->GetSubMenu();
 		subMenu->AddTextItem(0,FSKEY_R,"Select WAV File for PCM Sampling in the VM")->BindCallBack(&THISCLASS::Audio_SelectWAVToPCMRecording,this);
+		subMenu->AddTextItem(0,FSKEY_NULL,"Start VGM Capture")->BindCallBack(&THISCLASS::Audio_Start_VGMCapture,this);
+		subMenu->AddTextItem(0,FSKEY_NULL,"Stop VGM Capture")->BindCallBack(&THISCLASS::Audio_Stop_VGMCapture,this);
+		subMenu->AddTextItem(0,FSKEY_NULL,"Save Captured VGM")->BindCallBack(&THISCLASS::Audio_Save_VGMCapture,this);
 	}
 
 	{
@@ -2079,6 +2082,44 @@ void FsGuiMainCanvas::Audio_Audio_SelectWAVToPCMRecording_FileSelected(FsGuiDial
 		SendVMCommand(cmd);
 		VMMustResume=YSTRUE;
 	}
+}
+
+void FsGuiMainCanvas::Audio_Start_WAVCapture(FsGuiPopUpMenuItem *)
+{
+}
+void FsGuiMainCanvas::Audio_Stop_WAVCapture(FsGuiPopUpMenuItem *)
+{
+}
+void FsGuiMainCanvas::Audio_Save_WAVCapture(FsGuiPopUpMenuItem *)
+{
+}
+void FsGuiMainCanvas::Audio_Save_WAVCapture_FileSelected(FsGuiDialog *dlg,int returnCode)
+{
+}
+void FsGuiMainCanvas::Audio_Save_WAVCapture_Confirm(FsGuiDialog *dlg,int returnCode)
+{
+}
+void FsGuiMainCanvas::Audio_Save_WAVCapture_Save(YsWString fName)
+{
+}
+
+void FsGuiMainCanvas::Audio_Start_VGMCapture(FsGuiPopUpMenuItem *)
+{
+}
+void FsGuiMainCanvas::Audio_Stop_VGMCapture(FsGuiPopUpMenuItem *)
+{
+}
+void FsGuiMainCanvas::Audio_Save_VGMCapture(FsGuiPopUpMenuItem *)
+{
+}
+void FsGuiMainCanvas::Audio_Save_VGMCapture_FileSelected(FsGuiDialog *dlg,int returnCode)
+{
+}
+void FsGuiMainCanvas::Audio_Save_VGMCapture_Confirm(FsGuiDialog *dlg,int returnCode)
+{
+}
+void FsGuiMainCanvas::Audio_Save_VGMCapture_Save(YsWString fName)
+{
 }
 
 ////////////////////////////////////////////////////////////

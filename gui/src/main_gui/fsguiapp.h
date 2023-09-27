@@ -290,6 +290,20 @@ private:
 	void Audio_SelectWAVToPCMRecording(FsGuiPopUpMenuItem *);
 	void Audio_Audio_SelectWAVToPCMRecording_FileSelected(FsGuiDialog *dlg,int returnCode);
 
+	void Audio_Start_WAVCapture(FsGuiPopUpMenuItem *);
+	void Audio_Stop_WAVCapture(FsGuiPopUpMenuItem *);
+	void Audio_Save_WAVCapture(FsGuiPopUpMenuItem *);
+	void Audio_Save_WAVCapture_FileSelected(FsGuiDialog *dlg,int returnCode);
+	void Audio_Save_WAVCapture_Confirm(FsGuiDialog *dlg,int returnCode);
+	void Audio_Save_WAVCapture_Save(YsWString fName);
+
+	void Audio_Start_VGMCapture(FsGuiPopUpMenuItem *);
+	void Audio_Stop_VGMCapture(FsGuiPopUpMenuItem *);
+	void Audio_Save_VGMCapture(FsGuiPopUpMenuItem *);
+	void Audio_Save_VGMCapture_FileSelected(FsGuiDialog *dlg,int returnCode);
+	void Audio_Save_VGMCapture_Confirm(FsGuiDialog *dlg,int returnCode);
+	void Audio_Save_VGMCapture_Save(YsWString fName);
+
 
 	void CD_SelectImageFile(FsGuiPopUpMenuItem *);
 	void CD_ImageFileSelected(FsGuiDialog *dlg,int returnCode);
