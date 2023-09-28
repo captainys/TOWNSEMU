@@ -42,7 +42,7 @@ public:
 	std::string composer="unspecified";
 	std::string releaseDate="unspecified";
 	std::string whoConverted="unspecified";
-	std::string note;
+	std::string notes;
 
 	unsigned int YM2612clock=8000000; // For FM TOWNS YM2612.  I thought it was 2MHz, 3x prescaler.  Why 8MHz works?
 	unsigned int YM2203clock=1228800; // For FM77AV YM2203
@@ -87,7 +87,7 @@ public:
 
 	/*!
 	*/
-	std::vector <unsigned char> GenerateTD3Tag(void) const;
+	std::vector <unsigned char> GenerateGD3Tag(void) const;
 	void AddStringToGD3Tag(std::vector <unsigned char> &gd3,std::string str) const;
 };
 

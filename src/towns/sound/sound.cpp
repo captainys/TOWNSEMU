@@ -549,8 +549,10 @@ void TownsSound::StartVGMRecording(void)
 {
 	var.vgmRecorder.CleanUp();
 
-	var.vgmRecorder.systemName="FM TOWNS";
-	var.vgmRecorder.note="Recorded by using FM TOWNS Emulator Tsugaru.";
+	var.vgmRecorder.systemName="FM Towns";
+	// Official VGM system name seems to be "FM Towns", but I have never seen Fujitsu used small letters in the FM TOWNS logo.
+	// I think officially it should be "FM TOWNS", but I do when in VGM, do as the VGMians do.
+	var.vgmRecorder.notes="Recorded using FM TOWNS Emulator Tsugaru.";
 
 	var.vgmRecorder.enabled=true;
 	var.vgmRecorder.CaptureYM2612InitialCondition(townsPtr->state.townsTime,state.ym2612);

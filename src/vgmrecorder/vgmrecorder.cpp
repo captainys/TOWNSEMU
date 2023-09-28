@@ -134,6 +134,7 @@ std::vector <unsigned char> VGMRecorder::Encode(void) const
 
 		VGM_OFFSET_EOF=4,
 		VGM_OFFSET_VERSION=8,
+		VGM_OFFSET_GD3_OFFSET=0x14,
 		VGM_OFFSET_TOTAL_NUM_SAMPLES=0x18,
 		VGM_OFFSET_RATE=0x24,
 		VGM_OFFSET_YM2612CLK=0x2C,
@@ -261,6 +262,13 @@ std::vector <unsigned char> VGMRecorder::Encode(void) const
 	vgm.push_back(VGM_CMD_END);
 
 	WriteUint(vgm.data()+VGM_OFFSET_TOTAL_NUM_SAMPLES,nSamples);
+
+
+	auto gd3=GenerateGD3Tag();
+	auto gd3Offset=vgm.size()-VGM_OFFSET_GD3_OFFSET;
+	vgm.insert(vgm.end(),gd3.begin(),gd3.end());
+	WriteUint(vgm.data()+VGM_OFFSET_GD3_OFFSET,gd3Offset);
+
 
 	WriteUint(vgm.data()+VGM_OFFSET_EOF,vgm.size()-4);
 	return vgm;
@@ -452,7 +460,7 @@ void VGMRecorder::TrimNoSoundSegments(void)
 	// }
 }
 
-std::vector <unsigned char> VGMRecorder::GenerateTD3Tag(void) const
+std::vector <unsigned char> VGMRecorder::GenerateGD3Tag(void) const
 {
 	std::vector <unsigned char> data;
 
@@ -474,6 +482,21 @@ std::vector <unsigned char> VGMRecorder::GenerateTD3Tag(void) const
 	data.push_back(0);
 	data.push_back(0);
 
+	AddStringToGD3Tag(data,trackName);  // Track Name in English characters
+	AddStringToGD3Tag(data,"");         // Track Name in non-English characters
+	AddStringToGD3Tag(data,gameName);   // Game Name in English characters
+	AddStringToGD3Tag(data,"");         // Game Name in non-English characters (What encoding should I use?)
+	AddStringToGD3Tag(data,systemName); // System Name in English characters
+	AddStringToGD3Tag(data,"");         // System Name in non-English characfters
+	AddStringToGD3Tag(data,composer);   // Name of Original Track Author in English characters (Should it be the composer?)
+	AddStringToGD3Tag(data,"");         // Name of Original Track Author in non-English characters
+	AddStringToGD3Tag(data,releaseDate);
+	AddStringToGD3Tag(data,whoConverted);
+	AddStringToGD3Tag(data,notes);
+	data.push_back(0);             // I'm not sure if the last empty string is needed, but the sample VGM I referred to does this.
+	data.push_back(0);
+
+	WriteUint(data.data()+8,(unsigned int)data.size());
 
 	return data;
 }
