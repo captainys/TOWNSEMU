@@ -36,12 +36,12 @@ public:
 	std::vector <RegWriteLog> log;
 	std::vector <MemoryWriteChunk> memWrite;
 
-	std::string trackName="unspecified";
-	std::string gameName="unspecified";
-	std::string systemName="unspecified";
-	std::string composer="unspecified";
-	std::string releaseDate="unspecified";
-	std::string whoConverted="unspecified";
+	std::string trackName;
+	std::string gameName;
+	std::string systemName;
+	std::string composer;
+	std::string releaseDate;
+	std::string whoConverted;
 	std::string notes;
 
 	unsigned int YM2612clock=8000000; // For FM TOWNS YM2612.  I thought it was 2MHz, 3x prescaler.  Why 8MHz works?
