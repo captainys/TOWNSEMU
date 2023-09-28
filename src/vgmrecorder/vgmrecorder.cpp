@@ -128,40 +128,6 @@ std::vector <unsigned char> VGMRecorder::Encode(void) const
 	vgm[2]=0x6d;
 	vgm[3]=0x20;
 
-	enum
-	{
-		VGM_HEADER_LENGTH=256,
-
-		VGM_OFFSET_EOF=4,
-		VGM_OFFSET_VERSION=8,
-		VGM_OFFSET_GD3_OFFSET=0x14,
-		VGM_OFFSET_TOTAL_NUM_SAMPLES=0x18,
-		VGM_OFFSET_RATE=0x24,
-		VGM_OFFSET_YM2612CLK=0x2C,
-		VGM_OFFSET_STREAMOFFSET=0x34,
-		VGM_OFFSET_RF5C68CLK=0x40,
-		VGM_OFFSET_YM2203CLK=0x44,
-		VGM_OFFSET_AY8910CLK=0x74,
-		VGM_OFFSET_AY8910TYPE=0x78,
-		VGM_OFFSET_AY8910FLAGS=0x79,
-
-		VGM_CMD_YM2612_CH0=0x52,
-		VGM_CMD_YM2612_CH3=0x53,
-		VGM_CMD_YM2203=0x55,
-		VGM_CMD_WAIT=0x61,
-		VGM_CMD_WAIT_735=0x62,
-		VGM_CMD_WAIT_882=0x63,
-		VGM_CMD_DATA_BLOCK=0x67,
-		VGM_CMD_END=0x66,
-		VGM_CMD_AY8910=0xA0,
-		VGM_CMD_RF5C68=0xB0,
-
-		VGM_DATABLOCK_RF5C68_RAM=0xC0,
-
-		VGM_RATE_NTSC=60,
-	};
-
-
 	WriteUint(vgm.data()+VGM_OFFSET_VERSION,0x0171); // Version
 
 	WriteUint(vgm.data()+VGM_OFFSET_RATE,VGM_RATE_NTSC); // Rate
@@ -274,12 +240,22 @@ std::vector <unsigned char> VGMRecorder::Encode(void) const
 	return vgm;
 }
 
-void VGMRecorder::WriteUint(unsigned char *dst,unsigned int data) const
+void VGMRecorder::WriteUint(unsigned char *dst,unsigned int data)
 {
 	dst[0]=data&0xff;
 	dst[1]=(data>>8)&0xff;
 	dst[2]=(data>>16)&0xff;
 	dst[3]=(data>>24)&0xff;
+}
+
+unsigned int VGMRecorder::ReadUint(const unsigned char *src)
+{
+	unsigned int dat=0;
+	dat=((unsigned int)src[0]) |
+	    ((unsigned int)src[1]<<8) |
+	    ((unsigned int)src[2]<<16) |
+	    ((unsigned int)src[3]<<24);
+	return dat;
 }
 
 void VGMRecorder::TrimUnusedDevices(void)
@@ -496,7 +472,7 @@ std::vector <unsigned char> VGMRecorder::GenerateGD3Tag(void) const
 	data.push_back(0);             // I'm not sure if the last empty string is needed, but the sample VGM I referred to does this.
 	data.push_back(0);
 
-	WriteUint(data.data()+8,(unsigned int)data.size());
+	WriteUint(data.data()+8,(unsigned int)data.size()-12);
 
 	return data;
 }
@@ -510,3 +486,30 @@ void VGMRecorder::AddStringToGD3Tag(std::vector <unsigned char> &gd3,std::string
 	gd3.push_back(0);
 	gd3.push_back(0);
 }
+
+/* static */ std::vector <unsigned char> VGMRecorder::GetGD3Tag(const std::vector <unsigned char> vgmBinary)
+{
+	std::vector <unsigned char> tag;
+	if(VGM_OFFSET_GD3_OFFSET+4<=vgmBinary.size())
+	{
+		size_t GD3Offset=VGM_OFFSET_GD3_OFFSET+ReadUint(vgmBinary.data()+VGM_OFFSET_GD3_OFFSET);
+		if(GD3Offset+12==vgmBinary.size())
+		{
+			if(vgmBinary[GD3Offset]=='G' &&
+			   vgmBinary[GD3Offset]=='d' &&
+			   vgmBinary[GD3Offset]=='3' &&
+			   vgmBinary[GD3Offset]==' ')
+			{
+				size_t GD3Size=ReadUint(vgmBinary.data()+GD3Offset+8);
+				if(GD3Offset+GD3Size+12<=vgmBinary.size())
+				{
+					tag.insert(tag.end(),
+					           vgmBinary.begin()+GD3Offset,
+					           vgmBinary.begin()+GD3Offset+GD3Size+12);
+				}
+			}
+		}
+	}
+	return tag;
+}
+

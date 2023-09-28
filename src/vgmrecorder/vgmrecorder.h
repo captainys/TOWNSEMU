@@ -10,6 +10,39 @@ class VGMRecorder
 public:
 	enum
 	{
+		VGM_HEADER_LENGTH=256,
+
+		VGM_OFFSET_EOF=4,
+		VGM_OFFSET_VERSION=8,
+		VGM_OFFSET_GD3_OFFSET=0x14,
+		VGM_OFFSET_TOTAL_NUM_SAMPLES=0x18,
+		VGM_OFFSET_RATE=0x24,
+		VGM_OFFSET_YM2612CLK=0x2C,
+		VGM_OFFSET_STREAMOFFSET=0x34,
+		VGM_OFFSET_RF5C68CLK=0x40,
+		VGM_OFFSET_YM2203CLK=0x44,
+		VGM_OFFSET_AY8910CLK=0x74,
+		VGM_OFFSET_AY8910TYPE=0x78,
+		VGM_OFFSET_AY8910FLAGS=0x79,
+
+		VGM_CMD_YM2612_CH0=0x52,
+		VGM_CMD_YM2612_CH3=0x53,
+		VGM_CMD_YM2203=0x55,
+		VGM_CMD_WAIT=0x61,
+		VGM_CMD_WAIT_735=0x62,
+		VGM_CMD_WAIT_882=0x63,
+		VGM_CMD_DATA_BLOCK=0x67,
+		VGM_CMD_END=0x66,
+		VGM_CMD_AY8910=0xA0,
+		VGM_CMD_RF5C68=0xB0,
+
+		VGM_DATABLOCK_RF5C68_RAM=0xC0,
+
+		VGM_RATE_NTSC=60,
+	};
+
+	enum
+	{
 		REG_YM2612_CH0,
 		REG_YM2612_CH3,
 		REG_YM2203,
@@ -75,7 +108,9 @@ public:
 
 	std::vector <unsigned char> Encode(void) const;
 
-	void WriteUint(unsigned char *dst,unsigned int data) const;
+	static void WriteUint(unsigned char *dst,unsigned int data);
+
+	static unsigned int ReadUint(const unsigned char *src);
 
 	/*!
 	*/
@@ -89,6 +124,10 @@ public:
 	*/
 	std::vector <unsigned char> GenerateGD3Tag(void) const;
 	void AddStringToGD3Tag(std::vector <unsigned char> &gd3,std::string str) const;
+
+	/*!
+	*/
+	static std::vector <unsigned char> GetGD3Tag(const std::vector <unsigned char> vgmBinary);
 };
 
 
