@@ -548,6 +548,10 @@ void TownsSound::ArmVGMRecording(void)
 void TownsSound::StartVGMRecording(void)
 {
 	var.vgmRecorder.CleanUp();
+
+	var.vgmRecorder.systemName="FM TOWNS";
+	var.vgmRecorder.note="Recorded by using FM TOWNS Emulator Tsugaru.";
+
 	var.vgmRecorder.enabled=true;
 	var.vgmRecorder.CaptureYM2612InitialCondition(townsPtr->state.townsTime,state.ym2612);
 	var.vgmRecorder.CaptureRF5C68InitialCondition(townsPtr->state.townsTime,state.rf5c68);

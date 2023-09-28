@@ -451,3 +451,39 @@ void VGMRecorder::TrimNoSoundSegments(void)
 	// 	log.pop_back();
 	// }
 }
+
+std::vector <unsigned char> VGMRecorder::GenerateTD3Tag(void) const
+{
+	std::vector <unsigned char> data;
+
+	// Identifier
+	data.push_back('G');
+	data.push_back('d');
+	data.push_back('3');
+	data.push_back(' ');
+
+	// Version
+	data.push_back(0);
+	data.push_back(1);
+	data.push_back(0);
+	data.push_back(0);
+
+	// Size (tentative)
+	data.push_back(0);
+	data.push_back(0);
+	data.push_back(0);
+	data.push_back(0);
+
+
+	return data;
+}
+void VGMRecorder::AddStringToGD3Tag(std::vector <unsigned char> &gd3,std::string str) const
+{
+	for(auto c : str)
+	{
+		gd3.push_back(c);
+		gd3.push_back(0);
+	}
+	gd3.push_back(0);
+	gd3.push_back(0);
+}

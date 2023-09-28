@@ -36,6 +36,14 @@ public:
 	std::vector <RegWriteLog> log;
 	std::vector <MemoryWriteChunk> memWrite;
 
+	std::string trackName="unspecified";
+	std::string gameName="unspecified";
+	std::string systemName="unspecified";
+	std::string composer="unspecified";
+	std::string releaseDate="unspecified";
+	std::string whoConverted="unspecified";
+	std::string note;
+
 	unsigned int YM2612clock=8000000; // For FM TOWNS YM2612.  I thought it was 2MHz, 3x prescaler.  Why 8MHz works?
 	unsigned int YM2203clock=1228800; // For FM77AV YM2203
 	unsigned int RF5C68clock=8000000; // Actually I don't know.  I know the sampling frequency is 20725Hz.
@@ -76,6 +84,11 @@ public:
 	/*!
 	*/
 	void TrimNoSoundSegments(void);
+
+	/*!
+	*/
+	std::vector <unsigned char> GenerateTD3Tag(void) const;
+	void AddStringToGD3Tag(std::vector <unsigned char> &gd3,std::string str) const;
 };
 
 
