@@ -438,4 +438,16 @@ void VGMRecorder::TrimNoSoundSegments(void)
 		}
 		prevKey=key;
 	}
+
+	for(int i=firstKeyOn-1; 0<=i; --i)
+	{
+		log[i].VMTimeInNanosec=log[i+1].VMTimeInNanosec;
+	}
+
+	// If I do the following, I can trim off trailing silence,
+	// but I may lose Release phase.
+	// while(lastKeyOff<log.size())
+	// {
+	// 	log.pop_back();
+	// }
 }

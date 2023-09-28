@@ -557,6 +557,11 @@ void TownsSound::EndVGMRecording(void)
 	var.vgmRecordingArmed=false;
 	var.vgmRecorder.enabled=false;
 }
+void TownsSound::TrimVGMRecording(void)
+{
+	var.vgmRecorder.TrimUnusedDevices();
+	var.vgmRecorder.TrimNoSoundSegments();
+}
 bool TownsSound::SaveVGMRecording(std::string fName) const
 {
 	auto data=var.vgmRecorder.Encode();

@@ -148,6 +148,7 @@ public:
 	void ArmVGMRecording(void);
 	void StartVGMRecording(void);
 	void EndVGMRecording(void);
+	void TrimVGMRecording(void);
 	bool SaveVGMRecording(std::string fName) const;
 
 	void SerializeYM2612(std::vector <unsigned char> &data) const;

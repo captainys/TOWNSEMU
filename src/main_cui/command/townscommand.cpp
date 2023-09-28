@@ -1666,6 +1666,7 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,clas
 	case CMD_SAVE_VGM_RECORDING:
 		if(2<=cmd.argv.size())
 		{
+			towns.sound.TrimVGMRecording();
 			if(true==towns.sound.SaveVGMRecording(cmd.argv[1]))
 			{
 				std::cout << "Saved VGM Recording." << std::endl;
