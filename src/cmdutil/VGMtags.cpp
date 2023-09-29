@@ -2,6 +2,7 @@
 #include <fstream>
 #include <vector>
 #include <string>
+#include <cctype>
 
 #include "vgmrecorder.h"
 
@@ -27,15 +28,113 @@ std::vector <unsigned char> ReadBinaryFile(std::string fileName)
 }
 
 
+class CommandParameterInfo
+{
+public:
+	class TagValue
+	{
+	public:
+		unsigned int tagId;
+		std::string value;
+	};
+	std::string iVgmFileName,oVgmFileName;
+	std::vector <TagValue> tagValueSet;
 
+	bool RecognizeCommandParameter(int argc,char *argv[]);
+	void PrintHelp(void) const;
+};
+bool CommandParameterInfo::RecognizeCommandParameter(int argc,char *argv[])
+{
+	if(argc<2)
+	{
+		std::cout << "Too few arguments." << std::endl;
+		std::cout << "VMTag -h for help." << std::endl;
+		return false;
+	}
+	iVgmFileName=argv[1];
+	for(int i=1; i<argc; ++i)
+	{
+		std::string opt=argv[i];
+		for(auto &c : opt)
+		{
+			c=std::toupper(c);
+		}
+		if("-HELP"==opt || "-H"==opt)
+		{
+			PrintHelp();
+			return false;
+		}
+		else if(("-T"==opt || "-TAG"==opt) && i+2<argc)
+		{
+			std::string tag=argv[i+1];
+			for(auto &c : tag)
+			{
+				c=std::toupper(c);
+			}
+			TagValue tv;
+			tv.tagId=VGMRecorder::StrToTagId(tag);
+			if(VGMRecorder::GD3_UNDEFINED==tv.tagId)
+			{
+				std::cout << "Undefined tag." << std::endl;
+				return false;
+			}
+			tv.value=argv[i+2];
+			tagValueSet.push_back(tv);
+			i+=2;
+		}
+		else if(("-O"==opt || "-OUT"==opt) && i+1<argc)
+		{
+			oVgmFileName=argv[i+1];
+			++i;
+		}
+		else
+		{
+			if(1==i)
+			{
+				iVgmFileName=argv[i];
+			}
+			else
+			{
+				std::cout << "Unrecognized or insufficient arguments." << std::endl;
+				return false;
+			}
+		}
+	}
+
+	if(0<tagValueSet.size() && ""==oVgmFileName)
+	{
+		std::cout << "Output file name is not specified although -T tags are given." << std::endl;
+		return false;
+	}
+	return true;
+}
+void CommandParameterInfo::PrintHelp(void) const
+{
+	std::cout << "Usage:" << std::endl;
+	std::cout << "  VGMtag inputVgmFileName.vgm [options]" << std::endl;
+	std::cout << "Options:" << std::endl;
+	std::cout << "  -t TagType TagValue" << std::endl;
+	std::cout << "  -tag TagType TagValue" << std::endl;
+	std::cout << "    Set value to a tag.  -t and -tag have the same meaning." << std::endl;
+	std::cout << "    TagType can be one of:" << std::endl;
+	for(int id=0; id<VGMRecorder::GD3_UNDEFINED; ++id)
+	{
+		std::cout << "      " << VGMRecorder::TagIdToStr(id) << std::endl;
+	}
+	std::cout << "  -o outputVgmFileName.vgm" << std::endl;
+	std::cout << "  -out outputVgmFileName.vgm" << std::endl;
+	std::cout << "    Specify output .vgm file name." << std::endl;
+	std::cout << "    -o and -out have the same meaning." << std::endl;
+}
 int main(int ac,char *av[])
 {
-	if(ac<2)
+	CommandParameterInfo cpi;
+	if(true!=cpi.RecognizeCommandParameter(ac,av))
 	{
 		return 1;
 	}
 
-	auto data=ReadBinaryFile(av[1]);
+	auto data=ReadBinaryFile(cpi.iVgmFileName);
 
 	auto GD3tag=VGMRecorder::GetGD3Tag(data);
 	if(0<GD3tag.size())

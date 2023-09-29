@@ -601,6 +601,7 @@ bool VGMRecorder::ClearTagItem(std::vector <unsigned char> &GD3,unsigned int tag
 	while(tagPtr+1<GD3.size() && 0!=GD3[tagPtr])
 	{
 		GD3.erase(GD3.begin()+tagPtr);
+		GD3.erase(GD3.begin()+tagPtr);
 	}
 
 	return true;
