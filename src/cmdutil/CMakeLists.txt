@@ -9,3 +9,6 @@ target_link_libraries(chopbincue discimg cpputil)
 
 add_executable(wav2snd wav2snd.cpp)
 target_link_libraries(wav2snd yssimplesound_nownd)
+
+add_executable(VGMtags VGMtags.cpp)
+target_link_libraries(VGMtags vgmrecorder)

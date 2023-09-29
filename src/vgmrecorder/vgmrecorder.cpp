@@ -493,12 +493,12 @@ void VGMRecorder::AddStringToGD3Tag(std::vector <unsigned char> &gd3,std::string
 	if(VGM_OFFSET_GD3_OFFSET+4<=vgmBinary.size())
 	{
 		size_t GD3Offset=VGM_OFFSET_GD3_OFFSET+ReadUint(vgmBinary.data()+VGM_OFFSET_GD3_OFFSET);
-		if(GD3Offset+12==vgmBinary.size())
+		if(GD3Offset+12<=vgmBinary.size())
 		{
-			if(vgmBinary[GD3Offset]=='G' &&
-			   vgmBinary[GD3Offset]=='d' &&
-			   vgmBinary[GD3Offset]=='3' &&
-			   vgmBinary[GD3Offset]==' ')
+			if(vgmBinary[GD3Offset  ]=='G' &&
+			   vgmBinary[GD3Offset+1]=='d' &&
+			   vgmBinary[GD3Offset+2]=='3' &&
+			   vgmBinary[GD3Offset+3]==' ')
 			{
 				size_t GD3Size=ReadUint(vgmBinary.data()+GD3Offset+8);
 				if(GD3Offset+GD3Size+12<=vgmBinary.size())
