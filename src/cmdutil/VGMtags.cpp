@@ -27,6 +27,17 @@ std::vector <unsigned char> ReadBinaryFile(std::string fileName)
 	return data;
 }
 
+bool WriteBinaryFile(std::string fileName,const std::vector <unsigned char> &data)
+{
+	std::ofstream ofp(fileName,std::ios::binary);
+	if(true==ofp.is_open())
+	{
+		ofp.write((char *)data.data(),data.size());
+		return true;
+	}
+	return false;
+}
+
 
 class CommandParameterInfo
 {
@@ -42,6 +53,7 @@ public:
 
 	bool RecognizeCommandParameter(int argc,char *argv[]);
 	void PrintHelp(void) const;
+	bool NeedEdit(void) const;
 };
 bool CommandParameterInfo::RecognizeCommandParameter(int argc,char *argv[])
 {
@@ -126,6 +138,11 @@ void CommandParameterInfo::PrintHelp(void) const
 	std::cout << "    Specify output .vgm file name." << std::endl;
 	std::cout << "    -o and -out have the same meaning." << std::endl;
 }
+bool CommandParameterInfo::NeedEdit(void) const
+{
+	return 0<tagValueSet.size();
+}
+
 int main(int ac,char *av[])
 {
 	CommandParameterInfo cpi;
@@ -148,11 +165,35 @@ int main(int ac,char *av[])
 			++id;
 		}
 
-		return 0;
+		if(true==cpi.NeedEdit())
+		{
+			if(true!=VGMRecorder::RemoveGD3Tag(data))
+			{
+				std::cout << "Cannot remove GD3 tag." << std::endl;
+				std::cout << "Most likely GD3 tag is not at the end of the VGM file." << std::endl;
+				return 1;
+			}
+		}
 	}
 	else
 	{
-		std::cout << "Cannot extract GD3 tag." << std::endl;
+		std::cout << "Input VGM does not have GD3 tag information." << std::endl;
+		GD3tag=VGMRecorder::MakeEmptyGD3Tag();
+	}
+
+	for(auto tv : cpi.tagValueSet)
+	{
+		VGMRecorder::ClearTagItem(GD3tag,tv.tagId);
+		VGMRecorder::InsertTagItem(GD3tag,tv.tagId,tv.value);
+		VGMRecorder::UpdateGD3Size(GD3tag);
+	}
+
+	int id=0;
+	for(auto s : VGMRecorder::ExtractGD3Tags(GD3tag))
+	{
+		std::cout << VGMRecorder::TagIdToStr(id) << ":";
+		std::cout << s << std::endl;
+		++id;
 	}
 
 	return 0;

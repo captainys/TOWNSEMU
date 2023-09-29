@@ -142,6 +142,14 @@ public:
 
 	/*!
 	*/
+	static std::vector <unsigned char> MakeEmptyGD3Tag(void);
+
+	/*!
+	*/
+	static void UpdateGD3Size(std::vector <unsigned char> &gd3);
+
+	/*!
+	*/
 	static std::vector <unsigned char> GetGD3Tag(const std::vector <unsigned char> &vgmBinary);
 
 	/*!
@@ -153,6 +161,7 @@ public:
 	static bool AddGD3Tag(std::vector <unsigned char> &vgm,const std::vector <unsigned char> &GD3);
 
 	static bool ClearTagItem(std::vector <unsigned char> &GD3,unsigned int tagId);
+	static bool InsertTagItem(std::vector <unsigned char> &GD3,unsigned int tagId,std::string value);
 
 	static unsigned int StrToTagId(std::string str);
 	static std::string TagIdToStr(unsigned int tagId);

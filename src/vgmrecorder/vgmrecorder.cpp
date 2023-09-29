@@ -473,6 +473,56 @@ std::vector <unsigned char> VGMRecorder::GenerateGD3Tag(void) const
 
 	return data;
 }
+
+std::vector <unsigned char> VGMRecorder::MakeEmptyGD3Tag(void)
+{
+	std::vector <unsigned char> data;
+
+	// Identifier
+	data.push_back('G');
+	data.push_back('d');
+	data.push_back('3');
+	data.push_back(' ');
+
+	// Version
+	data.push_back(0);
+	data.push_back(1);
+	data.push_back(0);
+	data.push_back(0);
+
+	// Size (tentative)
+	data.push_back(0);
+	data.push_back(0);
+	data.push_back(0);
+	data.push_back(0);
+
+	AddStringToGD3Tag(data,""); // Track Name in English characters
+	AddStringToGD3Tag(data,""); // Track Name in non-English characters
+	AddStringToGD3Tag(data,""); // Game Name in English characters
+	AddStringToGD3Tag(data,""); // Game Name in non-English characters (What encoding should I use?)
+	AddStringToGD3Tag(data,""); // System Name in English characters
+	AddStringToGD3Tag(data,""); // System Name in non-English characfters
+	AddStringToGD3Tag(data,""); // Name of Original Track Author in English characters (Should it be the composer?)
+	AddStringToGD3Tag(data,""); // Name of Original Track Author in non-English characters
+	AddStringToGD3Tag(data,""); // Game Release Date
+	AddStringToGD3Tag(data,""); // Who converted to VGM
+	AddStringToGD3Tag(data,""); // Notes.
+	data.push_back(0);          // I'm not sure if the last empty string is needed, but the sample VGM I referred to does this.
+	data.push_back(0);
+
+	WriteUint(data.data()+8,(unsigned int)data.size()-12);
+
+	return data;
+}
+
+void VGMRecorder::UpdateGD3Size(std::vector <unsigned char> &gd3)
+{
+	if(12<=gd3.size())
+	{
+		WriteUint(gd3.data()+8,(unsigned int)gd3.size()-12);
+	}
+}
+
 void VGMRecorder::AddStringToGD3Tag(std::vector <unsigned char> &gd3,std::string str)
 {
 	for(auto c : str)
@@ -587,11 +637,11 @@ bool VGMRecorder::ClearTagItem(std::vector <unsigned char> &GD3,unsigned int tag
 	size_t tagPtr=12;
 	for(int i=0; i<tagId; ++i)
 	{
-		// Skip one tag.
 		while(tagPtr<GD3.size() && 0!=GD3[tagPtr])
 		{
 			tagPtr+=2;
 		}
+		tagPtr+=2;
 	}
 	if(GD3.size()<=tagPtr)
 	{
@@ -607,6 +657,32 @@ bool VGMRecorder::ClearTagItem(std::vector <unsigned char> &GD3,unsigned int tag
 	return true;
 }
 
+bool VGMRecorder::InsertTagItem(std::vector <unsigned char> &GD3,unsigned int tagId,std::string value)
+{
+	size_t tagPtr=12;
+	for(int i=0; i<tagId; ++i)
+	{
+		while(tagPtr<GD3.size() && 0!=GD3[tagPtr])
+		{
+			tagPtr+=2;
+		}
+		tagPtr+=2;
+	}
+	if(GD3.size()<=tagPtr)
+	{
+		return false;
+	}
+
+	for(auto c : value)
+	{
+		GD3.insert(GD3.begin()+tagPtr,c);
+		++tagPtr;
+		GD3.insert(GD3.begin()+tagPtr,0);
+		++tagPtr;
+	}
+
+	return true;
+}
 
 unsigned int VGMRecorder::StrToTagId(std::string str)
 {
