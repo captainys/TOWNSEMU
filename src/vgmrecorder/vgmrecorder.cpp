@@ -1,3 +1,4 @@
+#include <cctype>
 #include "ym2612.h"
 #include "rf5c68.h"
 #include "vgmrecorder.h"
@@ -228,15 +229,11 @@ std::vector <unsigned char> VGMRecorder::Encode(void) const
 	vgm.push_back(VGM_CMD_END);
 
 	WriteUint(vgm.data()+VGM_OFFSET_TOTAL_NUM_SAMPLES,nSamples);
-
-
-	auto gd3=GenerateGD3Tag();
-	auto gd3Offset=vgm.size()-VGM_OFFSET_GD3_OFFSET;
-	vgm.insert(vgm.end(),gd3.begin(),gd3.end());
-	WriteUint(vgm.data()+VGM_OFFSET_GD3_OFFSET,gd3Offset);
-
-
 	WriteUint(vgm.data()+VGM_OFFSET_EOF,vgm.size()-4);
+
+
+	AddGD3Tag(vgm,GenerateGD3Tag());
+
 	return vgm;
 }
 
@@ -476,7 +473,7 @@ std::vector <unsigned char> VGMRecorder::GenerateGD3Tag(void) const
 
 	return data;
 }
-void VGMRecorder::AddStringToGD3Tag(std::vector <unsigned char> &gd3,std::string str) const
+void VGMRecorder::AddStringToGD3Tag(std::vector <unsigned char> &gd3,std::string str)
 {
 	for(auto c : str)
 	{
@@ -487,7 +484,7 @@ void VGMRecorder::AddStringToGD3Tag(std::vector <unsigned char> &gd3,std::string
 	gd3.push_back(0);
 }
 
-/* static */ std::vector <unsigned char> VGMRecorder::GetGD3Tag(const std::vector <unsigned char> vgmBinary)
+std::vector <unsigned char> VGMRecorder::GetGD3Tag(const std::vector <unsigned char> &vgmBinary)
 {
 	std::vector <unsigned char> tag;
 	if(VGM_OFFSET_GD3_OFFSET+4<=vgmBinary.size())
@@ -513,3 +510,144 @@ void VGMRecorder::AddStringToGD3Tag(std::vector <unsigned char> &gd3,std::string
 	return tag;
 }
 
+std::vector <std::string> VGMRecorder::ExtractGD3Tags(const std::vector <unsigned char> &GD3)
+{
+	std::vector <std::string> tags;
+	auto limit=std::min <unsigned int>(GD3.size(),12+ReadUint(GD3.data()+8));
+
+	std::string current;
+	for(size_t i=12; i<limit; i+=2)
+	{
+		if(0==GD3[i])
+		{
+			tags.push_back(current);
+			current.clear();
+		}
+		else
+		{
+			current.push_back(GD3[i]);
+		}
+	}
+
+	if(""!=current)
+	{
+		tags.push_back(current);
+	}
+
+	return tags;
+}
+
+bool VGMRecorder::RemoveGD3Tag(std::vector <unsigned char> &vgm)
+{
+	std::vector <unsigned char> tag;
+	if(VGM_OFFSET_GD3_OFFSET+4<=vgm.size())
+	{
+		size_t GD3Offset=VGM_OFFSET_GD3_OFFSET+ReadUint(vgm.data()+VGM_OFFSET_GD3_OFFSET);
+		if(GD3Offset+12<=vgm.size())
+		{
+			if(vgm[GD3Offset  ]=='G' &&
+			   vgm[GD3Offset+1]=='d' &&
+			   vgm[GD3Offset+2]=='3' &&
+			   vgm[GD3Offset+3]==' ')
+			{
+				size_t GD3Size=ReadUint(vgm.data()+GD3Offset+8);
+				if(vgm.size()<=GD3Offset+GD3Size+12)
+				{
+					// GD3 is at the end of file.  Can remove.
+					vgm.resize(GD3Offset);
+					WriteUint(vgm.data()+VGM_OFFSET_GD3_OFFSET,0);
+					WriteUint(vgm.data()+VGM_OFFSET_EOF,vgm.size()-4);
+					return true;
+				}
+			}
+		}
+	}
+	return false;
+}
+
+bool VGMRecorder::AddGD3Tag(std::vector <unsigned char> &vgm,const std::vector <unsigned char> &GD3)
+{
+	if(0==ReadUint(vgm.data()+VGM_OFFSET_GD3_OFFSET))
+	{
+		auto gd3Offset=vgm.size()-VGM_OFFSET_GD3_OFFSET;
+		vgm.insert(vgm.end(),GD3.begin(),GD3.end());
+		WriteUint(vgm.data()+VGM_OFFSET_GD3_OFFSET,gd3Offset);
+		WriteUint(vgm.data()+VGM_OFFSET_EOF,vgm.size()-4);
+		return true;
+	}
+	else
+	{
+		// Tag already exists.
+		return false;
+	}
+}
+
+bool VGMRecorder::ClearTagItem(std::vector <unsigned char> &GD3,unsigned int tagId)
+{
+	size_t tagPtr=12;
+	for(int i=0; i<tagId; ++i)
+	{
+		// Skip one tag.
+		while(tagPtr<GD3.size() && 0!=GD3[tagPtr])
+		{
+			tagPtr+=2;
+		}
+	}
+	if(GD3.size()<=tagPtr)
+	{
+		return false;
+	}
+
+	while(tagPtr+1<GD3.size() && 0!=GD3[tagPtr])
+	{
+		GD3.erase(GD3.begin()+tagPtr);
+	}
+
+	return true;
+}
+
+
+unsigned int VGMRecorder::StrToTagId(std::string str)
+{
+	for(auto &c : str)
+	{
+		c=std::toupper(c);
+	}
+	for(unsigned int i=0; i<GD3_UNDEFINED; ++i)
+	{
+		if(str==TagIdToStr(i))
+		{
+			return i;
+		}
+	}
+	return GD3_UNDEFINED;
+}
+std::string VGMRecorder::TagIdToStr(unsigned int tagId)
+{
+	switch(tagId)
+	{
+	case GD3_TRACKNAME_ENGLISH:
+		return "TRACKNAME";
+	case GD3_TRACKNAME_INTERNATIONAL:
+		return "TRACKNAME_INTL";
+	case GD3_GAMENAME_ENGLISH:
+		return "GAMENAME";
+	case GD3_GAMENAME_INTERNATIONAL:
+		return "GAMENAME_INTL";
+	case GD3_SYSTEMNAME_ENGLISH:
+		return "SYSTEMNAME";
+	case GD3_SYSTEMNAME_INTERNATIONAL:
+		return "SYSTEMNAME_INTL";
+	case GD3_COMPOSER_ENGLISH:
+		return "COMPOSER";
+	case GD3_COMPOSER_INTERNATIONAL:
+		return "COMPOSER_INTL";
+	case GD3_RELEASE_DATE:
+		return "RELEASEDATE";
+	case GD3_WHO_CONVERTED:
+		return "WHOCONVERTED";
+	case GD3_NOTES:
+		return "NOTES";
+	}
+	return "";
+}

@@ -40,7 +40,22 @@ public:
 
 		VGM_RATE_NTSC=60,
 	};
-
+	enum
+	{
+		// Should be in the order stored in GD3.  GD3_TRACKNAME_ENGLISH must be zero.
+		GD3_TRACKNAME_ENGLISH,
+		GD3_TRACKNAME_INTERNATIONAL,
+		GD3_GAMENAME_ENGLISH,
+		GD3_GAMENAME_INTERNATIONAL,
+		GD3_SYSTEMNAME_ENGLISH,
+		GD3_SYSTEMNAME_INTERNATIONAL,
+		GD3_COMPOSER_ENGLISH,
+		GD3_COMPOSER_INTERNATIONAL,
+		GD3_RELEASE_DATE,
+		GD3_WHO_CONVERTED,
+		GD3_NOTES,
+	GD3_UNDEFINED,
+	};
 	enum
 	{
 		REG_YM2612_CH0,
@@ -123,11 +138,24 @@ public:
 	/*!
 	*/
 	std::vector <unsigned char> GenerateGD3Tag(void) const;
-	void AddStringToGD3Tag(std::vector <unsigned char> &gd3,std::string str) const;
+	static void AddStringToGD3Tag(std::vector <unsigned char> &gd3,std::string str);
 
 	/*!
 	*/
-	static std::vector <unsigned char> GetGD3Tag(const std::vector <unsigned char> vgmBinary);
+	static std::vector <unsigned char> GetGD3Tag(const std::vector <unsigned char> &vgmBinary);
+
+	/*!
+	*/
+	static std::vector <std::string> ExtractGD3Tags(const std::vector <unsigned char> &GD3);
+
+
+	static bool RemoveGD3Tag(std::vector <unsigned char> &vgm);
+	static bool AddGD3Tag(std::vector <unsigned char> &vgm,const std::vector <unsigned char> &GD3);
+
+	static bool ClearTagItem(std::vector <unsigned char> &GD3,unsigned int tagId);
+
+	static unsigned int StrToTagId(std::string str);
+	static std::string TagIdToStr(unsigned int tagId);
 };
 
 

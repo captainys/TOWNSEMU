@@ -40,6 +40,15 @@ int main(int ac,char *av[])
 	auto GD3tag=VGMRecorder::GetGD3Tag(data);
 	if(0<GD3tag.size())
 	{
+		auto tags=VGMRecorder::ExtractGD3Tags(GD3tag);
+		int id=0;
+		for(auto s : tags)
+		{
+			std::cout << VGMRecorder::TagIdToStr(id) << ":";
+			std::cout << s << std::endl;
+			++id;
+		}
+
 		return 0;
 	}
 	else
