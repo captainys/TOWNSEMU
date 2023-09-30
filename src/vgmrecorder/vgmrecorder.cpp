@@ -264,13 +264,13 @@ void VGMRecorder::TrimUnusedDevices(void)
 		{
 		case REG_YM2612_CH0:
 		case REG_YM2612_CH3:
-			if(YM2612::REG_KEY_ON_OFF==L.reg && 0!=(L.value&0xF0))
+			if(YM2612_REG_KEY_ON_OFF==L.reg && 0!=(L.value&0xF0))
 			{
 				useYM2612=true;
 			}
 			break;
 		case REG_YM2203:
-			if(YM2612::REG_KEY_ON_OFF==L.reg && 0!=(L.value&0xF0))
+			if(YM2612_REG_KEY_ON_OFF==L.reg && 0!=(L.value&0xF0))
 			{
 				useYM2203=true;
 			}
@@ -286,7 +286,7 @@ void VGMRecorder::TrimUnusedDevices(void)
 			}
 			break;
 		case REG_RF5C68:
-			if(RF5C68::REG_CH_ON_OFF==L.reg && 0xFF!=(L.value&0xFF))
+			if(RF5C68_REG_CH_ON_OFF==L.reg && 0xFF!=(L.value&0xFF))
 			{
 				useRF5C68=true;
 			}
@@ -340,7 +340,7 @@ void VGMRecorder::TrimNoSoundSegments(void)
 		switch(L.target)
 		{
 		case REG_YM2612_CH0:
-			if(YM2612::REG_KEY_ON_OFF==L.reg)
+			if(YM2612_REG_KEY_ON_OFF==L.reg)
 			{
 				auto ch=(L.value&3);
 				if(ch<3)
@@ -350,7 +350,7 @@ void VGMRecorder::TrimNoSoundSegments(void)
 			}
 			break;
 		case REG_YM2612_CH3:
-			if(YM2612::REG_KEY_ON_OFF==L.reg)
+			if(YM2612_REG_KEY_ON_OFF==L.reg)
 			{
 				auto ch=(L.value&3);
 				if(ch<3)
@@ -360,7 +360,7 @@ void VGMRecorder::TrimNoSoundSegments(void)
 			}
 			break;
 		case REG_YM2203:
-			if(YM2612::REG_KEY_ON_OFF==L.reg)
+			if(YM2203_REG_KEY_ON_OFF==L.reg)
 			{
 				auto ch=(L.value&3);
 				if(ch<3)
@@ -380,7 +380,7 @@ void VGMRecorder::TrimNoSoundSegments(void)
 			}
 			break;
 		case REG_RF5C68:
-			if(RF5C68::REG_CH_ON_OFF==L.reg)
+			if(RF5C68_REG_CH_ON_OFF==L.reg)
 			{
 				auto value=L.value;
 				for(int i=0; i<8; ++i)

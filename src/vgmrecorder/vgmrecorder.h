@@ -42,6 +42,12 @@ public:
 	};
 	enum
 	{
+		YM2612_REG_KEY_ON_OFF=0x28,
+		YM2203_REG_KEY_ON_OFF=0x28,
+		RF5C68_REG_CH_ON_OFF=8,
+	};
+	enum
+	{
 		// Should be in the order stored in GD3.  GD3_TRACKNAME_ENGLISH must be zero.
 		GD3_TRACKNAME_ENGLISH,
 		GD3_TRACKNAME_INTERNATIONAL,
