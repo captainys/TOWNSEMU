@@ -156,15 +156,6 @@ int main(int ac,char *av[])
 	auto GD3tag=VGMRecorder::GetGD3Tag(data);
 	if(0<GD3tag.size())
 	{
-		auto tags=VGMRecorder::ExtractGD3Tags(GD3tag);
-		int id=0;
-		for(auto s : tags)
-		{
-			std::cout << VGMRecorder::TagIdToStr(id) << ":";
-			std::cout << s << std::endl;
-			++id;
-		}
-
 		if(true==cpi.NeedEdit())
 		{
 			if(true!=VGMRecorder::RemoveGD3Tag(data))
@@ -194,6 +185,23 @@ int main(int ac,char *av[])
 		std::cout << VGMRecorder::TagIdToStr(id) << ":";
 		std::cout << s << std::endl;
 		++id;
+	}
+
+	if(true==cpi.NeedEdit())
+	{
+		VGMRecorder::AddGD3Tag(data,GD3tag);
+	}
+
+	if(""!=cpi.oVgmFileName)
+	{
+		if(true==WriteBinaryFile(cpi.oVgmFileName,data))
+		{
+			std::cout << "Saved " << cpi.oVgmFileName << std::endl;
+		}
+		else
+		{
+			std::cout << "Something went wrong while saving the VGM." << std::endl;
+		}
 	}
 
 	return 0;
