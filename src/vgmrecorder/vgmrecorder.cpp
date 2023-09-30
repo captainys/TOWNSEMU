@@ -1,64 +1,10 @@
 #include <cctype>
-#include "ym2612.h"
-#include "rf5c68.h"
 #include "vgmrecorder.h"
 
 void VGMRecorder::CleanUp(void)
 {
 	log.clear();
 	memWrite.clear();
-}
-
-void VGMRecorder::CaptureYM2612InitialCondition(uint64_t VMTime,const class YM2612 &ym2612)
-{
-	for(unsigned int reg=0x22; reg<=0x28; ++reg)
-	{
-		WriteRegister(VMTime,REG_YM2612_CH0,reg,ym2612.state.regSet[0][reg]);
-	}
-	for(unsigned int reg=0x30; reg<=0xB0; ++reg)
-	{
-		WriteRegister(VMTime,REG_YM2612_CH0,reg,ym2612.state.regSet[0][reg]);
-	}
-	for(unsigned int reg=0x30; reg<=0xB0; ++reg)
-	{
-		WriteRegister(VMTime,REG_YM2612_CH3,reg,ym2612.state.regSet[1][reg]);
-	}
-}
-void VGMRecorder::CaptureRF5C68InitialCondition(uint64_t VMTime,const class RF5C68 &rf5c68)
-{
-	WriteRegister(VMTime,REG_RF5C68,RF5C68::REG_CH_ON_OFF,0xFF);
-	for(int bank=0; bank<0x10; ++bank)
-	{
-		unsigned char data=(true==rf5c68.state.playing ? 0x80 : 0);
-		data|=bank;
-		WriteRegister(VMTime,REG_RF5C68,RF5C68::REG_CONTROL,data);
-		WritePCMMemoryBlock(VMTime,MEM_RF5C68,0,0x1000,rf5c68.state.waveRAM.data()+(bank<<12));
-	}
-
-	for(int ch=0; ch<RF5C68::NUM_CHANNELS; ++ch)
-	{
-		unsigned char data=(true==rf5c68.state.playing ? 0x80 : 0);
-		data|=0x40; // MOD=CB
-		data|=ch;
-		WriteRegister(VMTime,REG_RF5C68,RF5C68::REG_CONTROL,data);
-		WriteRegister(VMTime,REG_RF5C68,RF5C68::REG_ENV,rf5c68.state.ch[ch].ENV);
-		WriteRegister(VMTime,REG_RF5C68,RF5C68::REG_PAN,rf5c68.state.ch[ch].PAN);
-		WriteRegister(VMTime,REG_RF5C68,RF5C68::REG_FDL,rf5c68.state.ch[ch].FD&0xFF);
-		WriteRegister(VMTime,REG_RF5C68,RF5C68::REG_FDH,(rf5c68.state.ch[ch].FD>>8)&0xFF);
-		WriteRegister(VMTime,REG_RF5C68,RF5C68::REG_LSL,rf5c68.state.ch[ch].LS&0xFF);
-		WriteRegister(VMTime,REG_RF5C68,RF5C68::REG_LSH,(rf5c68.state.ch[ch].LS>>8)&0xFF);
-		WriteRegister(VMTime,REG_RF5C68,RF5C68::REG_ST,rf5c68.state.ch[ch].ST);
-	}
-	WriteRegister(VMTime,REG_RF5C68,RF5C68::REG_CH_ON_OFF,rf5c68.state.chOnOff);
-
-	unsigned char data=(true==rf5c68.state.playing ? 0x80 : 0);
-	data|=0x40; // MOD=CB
-	data|=rf5c68.state.CB;
-	WriteRegister(VMTime,REG_RF5C68,RF5C68::REG_CONTROL,data);
-
-	data=(true==rf5c68.state.playing ? 0x80 : 0);
-	data|=rf5c68.state.Bank; // MOD=WB
-	WriteRegister(VMTime,REG_RF5C68,RF5C68::REG_CONTROL,data);
 }
 
 void VGMRecorder::WriteRegister(uint64_t VMTime,unsigned char target,unsigned int reg,unsigned char value)
@@ -192,7 +138,7 @@ std::vector <unsigned char> VGMRecorder::Encode(void) const
 				vgm.push_back(L.reg);
 				vgm.push_back(L.value);
 				break;
-			case REG_AY38910:
+			case REG_AY8910:
 				vgm.push_back(VGM_CMD_AY8910);
 				vgm.push_back(L.reg);
 				vgm.push_back(L.value);
@@ -257,7 +203,7 @@ unsigned int VGMRecorder::ReadUint(const unsigned char *src)
 
 void VGMRecorder::TrimUnusedDevices(void)
 {
-	bool useYM2612=false,useYM2203=false,useRF5C68=false,useAY38910=false;
+	bool useYM2612=false,useYM2203=false,useRF5C68=false,useAY8910=false;
 	for(auto L : log)
 	{
 		switch(L.target)
@@ -279,10 +225,10 @@ void VGMRecorder::TrimUnusedDevices(void)
 				useYM2203=true;
 			}
 			break;
-		case REG_AY38910:
+		case REG_AY8910:
 			if((8==L.reg || 9==L.reg || 10==L.reg) && 0!=(L.value&0x1F))
 			{
-				useAY38910=true;
+				useAY8910=true;
 			}
 			break;
 		case REG_RF5C68:
@@ -298,7 +244,7 @@ void VGMRecorder::TrimUnusedDevices(void)
 		auto &L=log[i];
 		if((true!=useYM2612 && (REG_YM2612_CH0==L.target || REG_YM2612_CH3==L.target)) ||
 		   (true!=useYM2203 && (REG_YM2203==L.target)) ||
-		   (true!=useAY38910 && (REG_AY38910==L.target)) ||
+		   (true!=useAY8910 && (REG_AY8910==L.target)) ||
 		   (true!=useRF5C68 &&  (REG_RF5C68==L.target || MEM_RF5C68==L.target)))
 		{
 			log.erase(log.begin()+i);
@@ -313,7 +259,7 @@ void VGMRecorder::TrimUnusedDevices(void)
 	{
 		YM2203clock=0;
 	}
-	if(true!=useAY38910)
+	if(true!=useAY8910)
 	{
 		AY8910clock=0;
 	}
@@ -373,7 +319,7 @@ void VGMRecorder::TrimNoSoundSegments(void)
 				YM2203key[3+L.reg-8]=(0!=(L.value&0x1F));
 			}
 			break;
-		case REG_AY38910:
+		case REG_AY8910:
 			if(8==L.reg || 9==L.reg || 10==L.reg)
 			{
 				AY8910key[L.reg-8]=(0!=(L.value&0x1F));

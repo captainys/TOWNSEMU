@@ -3,6 +3,7 @@
 /* { */
 
 #include <stdint.h>
+#include <string>
 #include <vector>
 
 class VGMRecorder
@@ -67,7 +68,7 @@ public:
 		REG_YM2612_CH0,
 		REG_YM2612_CH3,
 		REG_YM2203,
-		REG_AY38910,
+		REG_AY8910,
 		REG_RF5C68,
 		MEM_RF5C68
 	};
@@ -115,6 +116,14 @@ public:
 	/*!
 	*/
 	void CaptureRF5C68InitialCondition(uint64_t VMTime,const class RF5C68 &ym2612);
+
+	/*! FM77AV Emulator Mutsu uses YM2612 class for the FM part of YM2203C, and AY38910 class for the PSG part.
+	*/
+	void CaptureYM2203InitialCondition(uint64_t VMTime,const class YM2612 &ym2612,const char ay8910part[16]);
+
+	/*!
+	*/
+	void CaptureAY8910InitialCondition(uint64_t VMTime,const char ay8910part[16]);
 
 	/*! Log register write.
 	*/
