@@ -1202,6 +1202,18 @@ std::string i486DXCommon::Instruction::Disassemble(const Operand &op1In,const Op
 				disasm.push_back('0'+(operand[0]&7));
 				disasm+=")";
 			}
+			else if(0xE8==(MODR_M&0xF8))   // FSUBR ST,STi
+			{
+				disasm="FSUBR  ST,ST(";
+				disasm.push_back('0'+(operand[0]&7));
+				disasm+=")";
+			}
+			else if(0xF0==(MODR_M&0xF8))   // FDIV ST,STi
+			{
+				disasm="FDIV   ST,ST(";
+				disasm.push_back('0'+(operand[0]&7));
+				disasm+=")";
+			}
 			else
 			{
 				switch(GetREG())
@@ -1506,6 +1518,12 @@ std::string i486DXCommon::Instruction::Disassemble(const Operand &op1In,const Op
 			else if(0xC0<=MODR_M && MODR_M<=0xC7)
 			{
 				disasm="FADD  ST(";
+				disasm.push_back('0'+(MODR_M&7));
+				disasm+="),ST";
+			}
+			else if(0xC8<=MODR_M && MODR_M<=0xCF)
+			{
+				disasm="FMUL  ST(";
 				disasm.push_back('0'+(MODR_M&7));
 				disasm+="),ST";
 			}

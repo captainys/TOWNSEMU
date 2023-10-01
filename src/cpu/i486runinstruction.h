@@ -3370,7 +3370,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		}
 		else if(0xEC==inst.operand[0])
 		{
-			// FLDLG2
+			clocksPassed=state.fpuState.FLDLG2(*this);
 		}
 		else if(0xED==inst.operand[0])
 		{
@@ -3682,11 +3682,11 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			}
 			else if(0xC0==(MODR_M&0xF8))
 			{
-				// FADD ST(i),ST
+				clocksPassed=state.fpuState.FADD_STi_ST(*this,MODR_M&7);
 			}
 			else if(0xC8==(MODR_M&0xF8))
 			{
-				// FMUL STi,ST
+				clocksPassed=state.fpuState.FMUL_STi_ST(*this,MODR_M&7);
 			}
 			else if(0xE0==(MODR_M&0xF8))
 			{
@@ -3771,6 +3771,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				clocksPassed=state.fpuState.FSTP_STi(*this,(inst.operand[0]&7));
 				break;
 			case 0xC0: // C0 11000xxx
+				clocksPassed=state.fpuState.FFREE(*this,(inst.operand[0]&7));
 				break;
 			case 0xE0:
 				clocksPassed=state.fpuState.FUCOM_STi(*this,inst.operand[0]&7);
