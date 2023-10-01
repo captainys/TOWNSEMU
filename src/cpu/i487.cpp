@@ -602,6 +602,19 @@ unsigned int i486DXCommon::FPUState::FADD_ST_STi(i486DXCommon &cpu,int i)
 	}
 	return 0; // Let it abort.
 }
+unsigned int i486DXCommon::FPUState::FADD_STi_ST(i486DXCommon &cpu,int i)
+{
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+
+		auto &ST=this->ST(cpu);
+		auto &STi=this->ST(cpu,i);
+		STi.value+=ST.value;
+		return 10;
+	}
+	return 0; // Let it abort.
+}
 unsigned int i486DXCommon::FPUState::FADDP_STi_ST(i486DXCommon &cpu,int i)
 {
 	if(true==enabled)
@@ -1091,6 +1104,15 @@ unsigned int i486DXCommon::FPUState::FLDL2E(i486DXCommon &cpu)
 	}
 	return 0; // Let it abort.
 }
+unsigned int i486DXCommon::FPUState::FLDLG2(i486DXCommon &cpu)
+{
+	if(true==enabled)
+	{
+		Push(cpu,log10(2.0));
+		return 8;
+	}
+	return 0; // Let it abort.
+}
 unsigned int i486DXCommon::FPUState::FLDLN2(i486DXCommon &cpu)
 {
 	if(true==enabled)
@@ -1147,6 +1169,23 @@ unsigned int i486DXCommon::FPUState::FMUL_ST_STi(i486DXCommon &cpu,int i)
 		ST.value=ST.value*STi.value;
 	#ifdef CHECK_FOR_NAN
 		BreakOnNan(cpu,ST.value);
+	#endif
+
+		return 16;
+	}
+	return 0; // Let it abort.
+}
+unsigned int i486DXCommon::FPUState::FMUL_STi_ST(i486DXCommon &cpu,int i)
+{
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+
+		auto &ST=this->ST(cpu);
+		auto &STi=this->ST(cpu,i);
+		STi.value=STi.value*ST.value;
+	#ifdef CHECK_FOR_NAN
+		BreakOnNan(cpu,STi.value);
 	#endif
 
 		return 16;
@@ -1507,6 +1546,16 @@ unsigned int  i486DXCommon::FPUState::PopulateFPUEnv(uint8_t *data,unsigned int 
 		cpputil::PutWord(data+12,0);
 		return 14;
 	}
+}
+unsigned int i486DXCommon::FPUState::FFREE(i486DXCommon &cpu,int i)
+{
+	if(true==enabled)
+	{
+		tagWord |= ((0x3 >> (i * 2)) & 0xffff);
+		return 3;
+	}
+
+	return 0; // Let it abort.
 }
 unsigned int i486DXCommon::FPUState::FSCALE(i486DXCommon &cpu)
 {

@@ -595,6 +595,7 @@ public:
 		unsigned int FADD_m32real(i486DXCommon &cpu,const unsigned char byteData[]);
 		unsigned int FADD64(i486DXCommon &cpu,const unsigned char byteData[]);
 		unsigned int FADD_ST_STi(i486DXCommon &cpu,int i);
+		unsigned int FADD_STi_ST(i486DXCommon &cpu,int i);
 		unsigned int FADDP_STi_ST(i486DXCommon &cpu,int i);
 		unsigned int FIADD_m16int(i486DXCommon &cpu,const unsigned char byteData[]);
 		unsigned int FBLD(i486DXCommon &cpu,const unsigned char byteData[]);
@@ -632,11 +633,13 @@ public:
 		unsigned int FLD1(i486DXCommon &cpu);
 		unsigned int FLDL2T(i486DXCommon &cpu);
 		unsigned int FLDL2E(i486DXCommon &cpu);
+		unsigned int FLDLG2(i486DXCommon &cpu);
 		unsigned int FLDLN2(i486DXCommon &cpu);
 		unsigned int FLDPI(i486DXCommon &cpu);
 		unsigned int FLDZ(i486DXCommon &cpu);
 		unsigned int FMULP(i486DXCommon &cpu,int i);
 		unsigned int FMUL_ST_STi(i486DXCommon &cpu,int i);
+		unsigned int FMUL_STi_ST(i486DXCommon &cpu,int i);
 		unsigned int FMUL_m32real(i486DXCommon &cpu,const unsigned char byteData[]);
 		unsigned int FMUL_m64real(i486DXCommon &cpu,const unsigned char byteData[]);
 		unsigned int FIMUL_m16int(i486DXCommon &cpu,const unsigned char byteData[]);
@@ -650,6 +653,7 @@ public:
 		std::vector <uint8_t> FSAVE(const i486DXCommon &cpu,unsigned int operandSize) const;
 		std::vector <uint8_t> FNSTENV(const i486DXCommon &cpu,unsigned int operandSize) const;
 		unsigned int PopulateFPUEnv(uint8_t *data,unsigned int operandSize,bool isInRealMode) const;
+		unsigned int FFREE(i486DXCommon &cpu,int i);
 		unsigned int FSCALE(i486DXCommon &cpu);
 		unsigned int FSIN(i486DXCommon &cpu);
 		unsigned int FSINCOS(i486DXCommon &cpu);
