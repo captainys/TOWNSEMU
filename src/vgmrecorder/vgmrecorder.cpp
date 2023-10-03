@@ -63,6 +63,12 @@ void VGMRecorder::WritePCMMemoryBlock(uint64_t VMTime,unsigned char target,unsig
 std::vector <unsigned char> VGMRecorder::Encode(void) const
 {
 	std::vector <unsigned char> vgm;
+	std::vector <unsigned char> extHeader;
+
+	if(0<YM2203clock)
+	{
+		extHeader=GenerateExtraHeaderForYM2203CVolumeProblem();
+	}
 
 	vgm.resize(256);
 	for(auto &d : vgm)
@@ -81,7 +87,7 @@ std::vector <unsigned char> VGMRecorder::Encode(void) const
 
 	WriteUint(vgm.data()+VGM_OFFSET_YM2612CLK,YM2612clock);
 
-	WriteUint(vgm.data()+VGM_OFFSET_STREAMOFFSET,(VGM_HEADER_LENGTH-VGM_OFFSET_STREAMOFFSET)); // Relative offset to VGM data stream.
+	WriteUint(vgm.data()+VGM_OFFSET_STREAMOFFSET,(VGM_HEADER_LENGTH+extHeader.size()-VGM_OFFSET_STREAMOFFSET)); // Relative offset to VGM data stream.
 
 	WriteUint(vgm.data()+VGM_OFFSET_RF5C68CLK,RF5C68clock);
 
@@ -91,6 +97,14 @@ std::vector <unsigned char> VGMRecorder::Encode(void) const
 	vgm[VGM_OFFSET_AY8910TYPE]=0; // AY8910
 	vgm[VGM_OFFSET_AY8910FLAGS]=(0<AY8910clock ? 1 : 0); // What's this?
 	vgm[VGM_OFFSET_AY_IN_YM2203_FLAGS]=(0<YM2203clock ? 1 : 0);  // What's this?
+
+
+	if(0<extHeader.size())
+	{
+		WriteUint(vgm.data()+VGM_OFFSET_EXTHEADER_OFFSET,vgm.size()-VGM_OFFSET_EXTHEADER_OFFSET);
+		vgm.insert(vgm.end(),extHeader.begin(),extHeader.end());
+	}
+
 
 	unsigned int nSamples=0;
 	if(0<log.size())
@@ -377,6 +391,38 @@ void VGMRecorder::TrimNoSoundSegments(void)
 	// {
 	// 	log.pop_back();
 	// }
+}
+
+std::vector <unsigned char> VGMRecorder::GenerateExtraHeaderForYM2203CVolumeProblem(void)
+{
+	// VGM Player seems to play SSG-part of YM2203 way too quiet,
+	// or FM-part way too loud.  It seems to be necessary to balance it by extra header.
+	std::vector <unsigned char> data;
+	data.resize(32);
+	for(auto &d : data)
+	{
+		d=0;
+	}
+
+	WriteUint(data.data()  ,12); // 12-byte
+	WriteUint(data.data()+4,0);  // No clock-adjustment
+	WriteUint(data.data()+8,4);  // 4-bytes from this is Volume-adjustment list.
+
+	// In the future, if I support WHGPlay, I'll need to have 2 entries for the second YM2203
+	data[12]=1;    // 1 entry
+	data[13]=6;    // 6 for YM2203C (Looks like 0:SN76489, 1:YM2413, 2:YM2612, 3:YM2151, 4:Sega PCM, 5:RF5C68, and 6:YM2203)
+	               // Looks like 0x86 for SSG-part of YM2203.
+	data[14]=0;    // Flags
+	data[15]=0x80; // Relative volume to 0x100.
+	               // World Trade Federation!?  It sounds correct if I halved the relative volume.  100% off the real hardware?
+	               // I adjusted by listening to the output from VGMPlay.
+	               // To adjust it correctly, I should match with the real output from FM77AV.
+	               // Which I should be able to do, but that's going to be too much work.
+	               // It surprised me that VGM community left this YM2203 volume inaccuracy problem unresolved,
+	               // leaving it to the VGM encoder.
+	data[16]=0x80; // Bit15 to make it relative.
+
+	return data;
 }
 
 std::vector <unsigned char> VGMRecorder::GenerateGD3Tag(void) const

@@ -26,6 +26,7 @@ public:
 		VGM_OFFSET_AY8910TYPE=0x78,
 		VGM_OFFSET_AY8910FLAGS=0x79,
 		VGM_OFFSET_AY_IN_YM2203_FLAGS=0x7A,
+		VGM_OFFSET_EXTHEADER_OFFSET=0xBC,
 
 		VGM_CMD_YM2612_CH0=0x52,
 		VGM_CMD_YM2612_CH3=0x53,
@@ -150,6 +151,10 @@ public:
 	/*!
 	*/
 	void TrimNoSoundSegments(void);
+
+
+	static std::vector <unsigned char> GenerateExtraHeaderForYM2203CVolumeProblem(void);
+
 
 	/*!
 	*/
