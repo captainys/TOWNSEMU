@@ -16,6 +16,8 @@ void VGMRecorder::CaptureYM2203InitialCondition(uint64_t VMTime,const class YM26
 		WriteRegister(VMTime,REG_YM2203,reg,ym2612.state.regSet[0][reg]);
 	}
 
+// This macro should be defined when compiled for Mutsu.
+#ifdef YM_PRESCALER_CONFIGURABLE
 	switch(ym2612.state.preScaler)
 	{
 	case 6:
@@ -29,4 +31,5 @@ void VGMRecorder::CaptureYM2203InitialCondition(uint64_t VMTime,const class YM26
 		WriteRegister(VMTime,REG_YM2203,YM2612::REG_PRESCALER_2,0xFF); // 2F
 		break;
 	}
+#endif
 }
