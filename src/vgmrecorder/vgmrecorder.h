@@ -119,11 +119,11 @@ public:
 
 	/*! FM77AV Emulator Mutsu uses YM2612 class for the FM part of YM2203C, and AY38910 class for the PSG part.
 	*/
-	void CaptureYM2203InitialCondition(uint64_t VMTime,const class YM2612 &ym2612,const char ay8910part[16]);
+	void CaptureYM2203InitialCondition(uint64_t VMTime,const class YM2612 &ym2612,const unsigned char ay8910part[16]);
 
 	/*!
 	*/
-	void CaptureAY8910InitialCondition(uint64_t VMTime,const char ay8910part[16]);
+	void CaptureAY8910InitialCondition(uint64_t VMTime,const unsigned char ay8910part[16]);
 
 	/*! Log register write.
 	*/
