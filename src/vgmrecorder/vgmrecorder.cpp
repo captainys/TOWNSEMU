@@ -89,8 +89,8 @@ std::vector <unsigned char> VGMRecorder::Encode(void) const
 
 	WriteUint(vgm.data()+VGM_OFFSET_AY8910CLK,AY8910clock);
 	vgm[VGM_OFFSET_AY8910TYPE]=0; // AY8910
-	vgm[VGM_OFFSET_AY8910FLAGS]=0; // What's this?
-
+	vgm[VGM_OFFSET_AY8910FLAGS]=(0<AY8910clock ? 1 : 0); // What's this?
+	vgm[VGM_OFFSET_AY_IN_YM2203_FLAGS]=(0<YM2203clock ? 1 : 0);  // What's this?
 
 	unsigned int nSamples=0;
 	if(0<log.size())
