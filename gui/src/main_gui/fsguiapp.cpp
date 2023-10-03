@@ -366,6 +366,9 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 	{
 		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_U,L"Sound")->GetSubMenu();
 		subMenu->AddTextItem(0,FSKEY_R,"Select WAV File for PCM Sampling in the VM")->BindCallBack(&THISCLASS::Audio_SelectWAVToPCMRecording,this);
+		subMenu->AddTextItem(0,FSKEY_NULL,"Start WAV Capture")->BindCallBack(&THISCLASS::Audio_Start_WAVCapture,this);
+		subMenu->AddTextItem(0,FSKEY_NULL,"Stop WAV Capture")->BindCallBack(&THISCLASS::Audio_Stop_WAVCapture,this);
+		subMenu->AddTextItem(0,FSKEY_NULL,"Save Captured WAV")->BindCallBack(&THISCLASS::Audio_Save_WAVCapture,this);
 		subMenu->AddTextItem(0,FSKEY_NULL,"Start VGM Capture")->BindCallBack(&THISCLASS::Audio_Start_VGMCapture,this);
 		subMenu->AddTextItem(0,FSKEY_NULL,"Stop VGM Capture")->BindCallBack(&THISCLASS::Audio_Stop_VGMCapture,this);
 		subMenu->AddTextItem(0,FSKEY_NULL,"Save Captured VGM")->BindCallBack(&THISCLASS::Audio_Save_VGMCapture,this);
@@ -2086,21 +2089,92 @@ void FsGuiMainCanvas::Audio_Audio_SelectWAVToPCMRecording_FileSelected(FsGuiDial
 
 void FsGuiMainCanvas::Audio_Start_WAVCapture(FsGuiPopUpMenuItem *)
 {
+	if(true==IsVMRunning())
+	{
+		SendVMCommand("STARTFMPCMREC");
+		VMMustResume=YSTRUE;
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
 }
 void FsGuiMainCanvas::Audio_Stop_WAVCapture(FsGuiPopUpMenuItem *)
 {
+	if(true==IsVMRunning())
+	{
+		SendVMCommand("ENDFMPCMREC");
+		VMMustResume=YSTRUE;
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
 }
 void FsGuiMainCanvas::Audio_Save_WAVCapture(FsGuiPopUpMenuItem *)
 {
+	if(true==IsVMRunning())
+	{
+		YsWString path,file;
+		profileDlg->profileFNameTxt->GetWText().SeparatePathFile(path,file);
+
+		auto fdlg=FsGuiDialog::CreateSelfDestructiveDialog<FsGuiFileDialog>();
+		fdlg->Initialize();
+		fdlg->mode=FsGuiFileDialog::MODE_SAVE;
+		fdlg->multiSelect=YSFALSE;
+		fdlg->title.Set(L"Select WAV File Name to SAVE");
+		fdlg->fileExtensionArray.Append(L".wav");
+		fdlg->defaultFileName=path;
+		fdlg->BindCloseModalCallBack(&THISCLASS::Audio_Save_WAVCapture_FileSelected,this);
+		AttachModalDialog(fdlg);
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
 }
 void FsGuiMainCanvas::Audio_Save_WAVCapture_FileSelected(FsGuiDialog *dlg,int returnCode)
 {
+	auto fdlg=dynamic_cast <FsGuiFileDialog *>(dlg);
+	if(nullptr!=fdlg && (int)YSOK==returnCode)
+	{
+		auto fName=fdlg->selectedFileArray[0];
+		if(YSTRUE==YsFileIO::CheckFileExist(fName))
+		{
+			auto dlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialogWithPayload<YsWString> >();
+			dlg->payload=fName;
+			dlg->Make(L"Overwrite WAV?",L"Are you sure?",L"Yes",L"No");
+			dlg->BindCloseModalCallBack(&FsGuiMainCanvas::Audio_Save_WAVCapture_Confirm,this);
+			AttachModalDialog(dlg);
+		}
+		else
+		{
+			Audio_Save_WAVCapture_Save(fName);
+		}
+	}
 }
-void FsGuiMainCanvas::Audio_Save_WAVCapture_Confirm(FsGuiDialog *dlg,int returnCode)
+void FsGuiMainCanvas::Audio_Save_WAVCapture_Confirm(FsGuiDialog *dlgIn,int returnCode)
 {
+	auto dlg=dynamic_cast <FsGuiMessageBoxDialogWithPayload<YsWString> *>(dlgIn);
+	if(nullptr!=dlg && (int)YSOK==returnCode)
+	{
+		Audio_Save_WAVCapture_Save(dlg->payload);
+	}
 }
 void FsGuiMainCanvas::Audio_Save_WAVCapture_Save(YsWString fName)
 {
+	YsString utf8;
+	YsUnicodeToSystemEncoding(utf8,fName);
+
+	SendVMCommand("ENDFMPCMREC\n");
+
+	YsString cmd;
+	cmd="SAVEFMPCMREC \"";
+	cmd.Append(utf8);
+	cmd.Append("\"");
+	cmd.Append("\n");
+	SendVMCommand(cmd.data());
+	VMMustResume=YSTRUE;
 }
 
 void FsGuiMainCanvas::Audio_Start_VGMCapture(FsGuiPopUpMenuItem *)
@@ -2191,8 +2265,6 @@ void FsGuiMainCanvas::Audio_Save_VGMCapture_Save(YsWString fName)
 	cmd.Append("\n");
 	SendVMCommand(cmd.data());
 	VMMustResume=YSTRUE;
-
-	lastEventFName=fName;
 }
 
 ////////////////////////////////////////////////////////////
