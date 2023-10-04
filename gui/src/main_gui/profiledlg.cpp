@@ -468,6 +468,8 @@ void ProfileDialog::Make(void)
 		bootKeyBtn[12]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"DEBUG",YSFALSE);
 		bootKeyBtn[13]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"PAD_A",YSFALSE);
 		bootKeyBtn[14]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"PAD_B",YSFALSE);
+		bootKeyBtn[15]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"T",YSFALSE);
+		bootKeyBtn[16]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"N",YSFALSE);
 		SetRadioButtonGroup(sizeof(bootKeyBtn)/sizeof(bootKeyBtn[0]),bootKeyBtn);
 
 		EndAddTabItem();

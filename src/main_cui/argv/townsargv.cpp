@@ -705,10 +705,18 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 			{
 				bootKeyComb=BOOT_KEYCOMB_PAD_B;
 			}
+			else if("FAST"==COMB || "T"==COMB)
+			{
+				bootKeyComb=BOOT_KEYCOMB_FASTMODE;
+			}
+			else if("SLOW"==COMB || "N"==COMB)
+			{
+				bootKeyComb=BOOT_KEYCOMB_SLOWMODE;
+			}
 			else
 			{
 				std::cout << "Undefined boot-key combination:" << argv[i+1] << std::endl;
-				std::cout << "Must be one of: NONE,CD,F0,F1,F2,F3,H0,H1,H2,H3,H4,ICM,DEBUG,PADA,PADB." << std::endl;
+				std::cout << "Must be one of: NONE,CD,F0,F1,F2,F3,H0,H1,H2,H3,H4,ICM,DEBUG,PADA,PADB,T,N." << std::endl;
 				return false;
 			}
 			++i;

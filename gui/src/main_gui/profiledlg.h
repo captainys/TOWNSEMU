@@ -40,7 +40,7 @@ public:
 	FsGuiTextBox *mouseMinXTxt,*mouseMinYTxt,*mouseMaxXTxt,*mouseMaxYTxt;
 	FsGuiTextBox *maxButtonHoldTimeTxt[2][2];
 
-	FsGuiButton *bootKeyBtn[15];
+	FsGuiButton *bootKeyBtn[17];
 	FsGuiTextBox *scrnScaleTxt;
 	FsGuiButton *scrnAutoScaleBtn;
 	FsGuiDropList *scrnModeDrp;

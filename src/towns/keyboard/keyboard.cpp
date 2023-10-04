@@ -607,6 +607,10 @@ void TownsKeyboard::SetBootKeyCombination(unsigned int keyComb)
 						return code[num%5];
 					}
 					break;
+				case BOOT_KEYCOMB_FASTMODE:
+					return 0x15;
+				case BOOT_KEYCOMB_SLOWMODE:
+					return 0x2F;
 				}
 			}
 		}
