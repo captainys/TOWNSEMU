@@ -596,7 +596,7 @@ double YsSoundPlayer::APISpecificData::GetCurrentPosition(const SoundData &dat) 
 {
  	for(auto &p : playing)
 	{
-		if(nullptr==p.dat)
+		if(&dat==p.dat)
 		{
 			return (double)p.ptr/(double)dat.PlayBackRate();
 		}

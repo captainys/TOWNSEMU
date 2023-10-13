@@ -372,7 +372,7 @@ double YsSimpleSound_OSX_GetCurrentPosition(struct YsAVAudioEngine *engineInfoPt
 		AVAudioTime *t=[playerNodePtr playerTimeForNodeTime:[playerNodePtr lastRenderTime]];
 		uint64_t samplePos=[t sampleTime];
 
-		return (double)samplePos/(double)ptr->samplingRate;
+		return (double)samplePos/(double)PLAYBACK_RATE;
 	}
 	return 0.0;
 }
