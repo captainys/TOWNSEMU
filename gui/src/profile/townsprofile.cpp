@@ -294,6 +294,10 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 	sstream << "PCMVOLUM " << pcmVol;
 	text.push_back(sstream.str());
 
+	sstream.str("");
+	sstream << "SNDDBLBF " << (maximumSoundDoubleBuffering ? "MAX" : "NORMAL");
+	text.push_back(sstream.str());
+
 	if(""!=startUpStateFName)
 	{
 		sstream.str("");
@@ -699,6 +703,17 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 			if(2<=argv.size())
 			{
 				pcmVol=argv[1].Atoi();
+			}
+		}
+		else if(0==argv[0].STRCMP("SNDDBLBF"))
+		{
+			if(2<=argv.size() && 0==argv[1].STRCMP("MAX"))
+			{
+				maximumSoundDoubleBuffering=true;
+			}
+			else
+			{
+				maximumSoundDoubleBuffering=false;
 			}
 		}
 		else if(0==argv[0].STRCMP("LOADSTAT"))
@@ -1159,6 +1174,11 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 	{
 		argv.push_back("-RSTCP");
 		argv.push_back(RS232CtoTCPAddr);
+	}
+
+	if(true==maximumSoundDoubleBuffering)
+	{
+		argv.push_back("-MAXSNDDBLBUF");
 	}
 
 	return argv;
