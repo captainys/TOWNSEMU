@@ -242,6 +242,7 @@ void FMTownsCommon::State::PowerOn(void)
 	{
 		towns.sound.state.rf5c68.state.volume=argv.pcmVol;
 	}
+	towns.sound.var.maximumDoubleBuffering=argv.maximumSoundDoubleBuffering;
 
 	if(true==argv.powerOffAtBreakPoint)
 	{

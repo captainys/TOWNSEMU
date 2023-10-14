@@ -97,6 +97,7 @@ public:
 	std::vector <HostShortCut> hostShortCutKeys;
 
 	int fmVol=-1,pcmVol=-1;
+	bool maximumSoundDoubleBuffering=false;
 
 	bool mouseByFlightstickAvailable=false;
 	bool cyberStickAssignment=false;

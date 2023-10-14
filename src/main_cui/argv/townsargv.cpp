@@ -214,6 +214,8 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "-FMVOL volume" << std::endl;
 	std::cout << "-PCMVOL volume" << std::endl;
 	std::cout << "  Specify FM/PCM volume.  Volume will be rounded to 0 to 8192." << std::endl;
+	std::cout << "-MAXSNDDBLBUF" << std::endl;
+	std::cout << "  Try this option if the sound is choppy or hear static noise." << std::endl;
 	std::cout << "-DAMPERWIRELINE" << std::endl;
 	std::cout << "  Render damper-wire line to make you feel nostalgic." << std::endl;
 	std::cout << "-TOWNSTYPE" << std::endl;
@@ -862,6 +864,10 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 			}
 			pcmVol=vol;
 			++i;
+		}
+		else if("-MAXSNDDBLBUF"==ARG)
+		{
+			maximumSoundDoubleBuffering=true;
 		}
 		else if("-ICM"==ARG && i+1<argc)
 		{
