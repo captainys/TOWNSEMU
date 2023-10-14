@@ -76,6 +76,8 @@ public:
 		YsSoundPlayer::SoundData waveToBeSentToVM;
 		bool vgmRecordingArmed=false;
 		VGMRecorder vgmRecorder;
+
+		bool maximumDoubleBuffering=false;
 	};
 
 	State state;

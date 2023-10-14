@@ -347,7 +347,7 @@ void TownsSound::ProcessSound(void)
 	    townsPtr->state.townsTime<lastFMPCMWaveGenTime+RINGBUFFER_CLEAR_TIME) && 
 	   nullptr!=outside_world)
 	{
-		if(nextFMPCMWaveGenTime<=townsPtr->state.townsTime)
+		if(nextFMPCMWaveGenTime<=townsPtr->state.townsTime || true==var.maximumDoubleBuffering)
 		{
 			const unsigned int WAVE_OUT_SAMPLING_RATE=YM2612::WAVE_SAMPLING_RATE; // Align with YM2612.
 			const uint32_t numSamplesPerWave=FM_PCM_MILLISEC_PER_WAVE*WAVE_OUT_SAMPLING_RATE/1000;
