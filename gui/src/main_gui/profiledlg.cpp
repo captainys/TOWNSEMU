@@ -445,6 +445,8 @@ void ProfileDialog::Make(void)
 		pcmVolumeText=AddStaticText(0,FSKEY_NULL,"00000",YSFALSE);
 		pcmVolumeSlider=AddHorizontalSlider(0,FSKEY_NULL,32,0.0,8192.0,YSFALSE);
 
+		maxSoundDoubldBufBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Maximum Double Buffering",YSTRUE);
+
 		EndAddTabItem();
 	}
 
@@ -1169,6 +1171,7 @@ TownsProfile ProfileDialog::GetProfile(void) const
 	{
 		profile.pcmVol=-1;
 	}
+	profile.maximumSoundDoubleBuffering=(YSTRUE==maxSoundDoubldBufBtn->GetCheck());
 
 	profile.cdSpeed=CDSpeedDrp->GetSelection();
 	if(profile.cdSpeed<0)
@@ -1409,6 +1412,8 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 		pcmVolumeSlider->SetPositionByScaledValue(profile.pcmVol);
 		UpdatePCMVolumeText();
 	}
+	maxSoundDoubldBufBtn->SetCheck(profile.maximumSoundDoubleBuffering ? YSTRUE : YSFALSE);
+
 
 	CDSpeedDrp->Select(profile.cdSpeed);
 

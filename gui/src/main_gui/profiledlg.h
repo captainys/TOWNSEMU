@@ -83,6 +83,7 @@ public:
 	FsGuiStatic *fmVolumeText,*pcmVolumeText;
 	FsGuiButton *fmVolumeDefaultBtn,*pcmVolumeDefaultBtn;
 	FsGuiSlider *fmVolumeSlider,*pcmVolumeSlider;
+	FsGuiButton *maxSoundDoubldBufBtn;
 
 
 	FsGuiDropList *hostShortCutKeyLabelDrp[MAX_NUM_HOST_SHORTCUT];
