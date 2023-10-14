@@ -21,6 +21,7 @@ struct GamepadInfo
   unsigned char n;
 };
 
+static int NumGameDevs=0;
 static const int PadButtonRead=1;
 static const int PadAxisRead=2;
 
@@ -127,6 +128,8 @@ void YsGamePadInitialize(void)
 			cache[gamepadId].reading.dirs[0].upDownLeftRight[1]=0;
 			cache[gamepadId].reading.dirs[0].upDownLeftRight[2]=0;
 			cache[gamepadId].reading.dirs[0].upDownLeftRight[3]=0;
+
+			NumGameDevs=gamepadId+1;
 		}
 	}
 }
@@ -148,7 +151,7 @@ void YsGamePadWaitReady(void)
 
 int YsGamePadGetNumDevices(void)
 {
-	return 0;
+	return NumGameDevs;
 }
 
 void YsGamePadRead(struct YsGamePadReading *reading,int gamePadId)
