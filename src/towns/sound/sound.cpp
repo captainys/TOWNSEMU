@@ -479,6 +479,9 @@ void TownsSound::ProcessSound(void)
 		nextFMPCMWave.clear(); // It was supposed to be cleared in FMPlay.  Just in case.
 		nextFMPCMWaveFilledInMillisec=0;
 		state.ym2612.CheckToneDoneAllChannels();
+
+		// Next piece of wave must be made immediately.  See buffer-timing.png.
+		nextFMPCMWaveGenTime=townsPtr->state.townsTime;
 	}
 
 	if (townsPtr->timer.IsBuzzerPlaying()) {

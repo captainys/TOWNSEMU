@@ -41,12 +41,13 @@ public:
 		FM_PCM_MILLISEC_PER_WAVE=20, // Looks like time resolution of Wave Playback of Direct Sound is 10ms.  And, it needs to be 10 times integer.
 		BEEP_MILLISEC_PER_WAVE=20,
 		WAVE_STREAMING_SAFETY_BUFFER=10,
+		MILLISEC_PER_WAVE_GENERATION=4,
 #else
 		FM_PCM_MILLISEC_PER_WAVE=40, // Maybe because I am developing on VirtualBox, I am getting outrageously slow latency of 80ms (40ms*2).
 		BEEP_MILLISEC_PER_WAVE=40,
 		WAVE_STREAMING_SAFETY_BUFFER=10,
+		MILLISEC_PER_WAVE_GENERATION=8,
 #endif
-		MILLISEC_PER_WAVE_GENERATION=4,
 
 		RINGBUFFER_CLEAR_TIME=2000000000,  // Run 2 seconds after last wave generation to clear the ring buffer.  1 second should be enough, but just to be absolutely sure.
 	};
