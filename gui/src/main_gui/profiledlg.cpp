@@ -3,6 +3,7 @@
 #include <set>
 #include "profiledlg.h"
 #include "fsguiapp.h"
+#include "ysport.h"
 
 #include "ym2612.h"
 
@@ -814,8 +815,14 @@ void ProfileDialog::OnSliderPositionChange(FsGuiSlider *slider,const double &pre
 {
 	if(ROMDirBtn==btn)
 	{
+		YsString defDir=ROMDirTxt->GetString();
+		if(0==defDir.Strcmp(""))
+		{
+			YsSpecialPath::GetUserDir(defDir);
+		}
+
 		YsString def;
-		def.MakeFullPathName(ROMDirTxt->GetString(),"FMT_SYS.ROM");
+		def.MakeFullPathName(defDir,"FMT_SYS.ROM");
 
 		auto fdlg=FsGuiDialog::CreateSelfDestructiveDialog<FsGuiFileDialog>();
 		fdlg->Initialize();
