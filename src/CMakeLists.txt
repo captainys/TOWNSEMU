@@ -10,8 +10,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(APPLE)
     set(DISC_IMAGE_DIR "$ENV{HOME}/TOWNSISO")
-else()
+elseif(MSVC)
     set(DISC_IMAGE_DIR "C:/D/TownsISO")
+else()
+    set(DISC_IMAGE_DIR "/mnt/TownsISO")
 endif()
 
 add_compile_definitions(YS_LITTLE_ENDIAN)
