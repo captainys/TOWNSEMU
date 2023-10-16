@@ -831,8 +831,17 @@ void ProfileDialog::OnSliderPositionChange(FsGuiSlider *slider,const double &pre
 		fdlg->title.Set(L"Select a ROM file (like FMT_SYS.ROM)");
 		fdlg->fileExtensionArray.Append(L".ROM");
 		fdlg->defaultFileName.SetUTF8String(def);
-		fdlg->BindCloseModalCallBack(&THISCLASS::OnSelectROMFile,this);
 		AttachModalDialog(fdlg);
+		fdlg->CallOnCloseModal([=,this](int returnCode)
+		{
+			if((int)YSOK==returnCode)
+			{
+				YsWString ful(fdlg->selectedFileArray[0]);
+				YsWString pth,fil;
+				ful.SeparatePathFile(pth,fil);
+				ROMDirTxt->SetText(pth);
+			}
+		});
 	}
 	if(CDImgBtn==btn)
 	{
@@ -943,18 +952,6 @@ void ProfileDialog::OnSliderPositionChange(FsGuiSlider *slider,const double &pre
 	{
 		std::vector <const wchar_t *> extList={L".txt"};
 		BrowseSaveAs(L"Select A Key-Mapping File",keyMapFileTxt,extList);
-	}
-}
-
-void ProfileDialog::OnSelectROMFile(FsGuiDialog *dlg,int returnCode)
-{
-	auto fdlg=dynamic_cast <FsGuiFileDialog *>(dlg);
-	if((int)YSOK==returnCode && nullptr!=fdlg)
-	{
-		YsWString ful(fdlg->selectedFileArray[0]);
-		YsWString pth,fil;
-		ful.SeparatePathFile(pth,fil);
-		ROMDirTxt->SetText(pth);
 	}
 }
 
@@ -1077,16 +1074,15 @@ void ProfileDialog::Browse(const wchar_t label[],FsGuiTextBox *txt,YsString dflt
 		fdlg->fileExtensionArray.Append(ext);
 	}
 	fdlg->defaultFileName.SetUTF8String(def);
-	fdlg->BindCloseModalCallBack(&THISCLASS::OnSelectFile,this);
 	AttachModalDialog(fdlg);
-}
-void ProfileDialog::OnSelectFile(FsGuiDialog *dlg,int returnCode)
-{
-	auto fdlg=dynamic_cast <FsGuiFileDialog *>(dlg);
-	if((int)YSOK==returnCode && nullptr!=fdlg)
+
+	fdlg->CallOnCloseModal([=,this](int returnCode)
 	{
-		nowBrowsingTxt->SetText(fdlg->selectedFileArray[0]);
-	}
+		if((int)YSOK==returnCode)
+		{
+			nowBrowsingTxt->SetText(fdlg->selectedFileArray[0]);
+		}
+	});
 }
 
 void ProfileDialog::BrowseSaveAs(const wchar_t label[],FsGuiTextBox *txt,std::vector <const wchar_t *> extList)
@@ -1105,7 +1101,7 @@ void ProfileDialog::BrowseSaveAs(const wchar_t label[],FsGuiTextBox *txt,std::ve
 		fdlg->fileExtensionArray.Append(ext);
 	}
 	fdlg->defaultFileName.SetUTF8String(def);
-	fdlg->BindCloseModalCallBack(&THISCLASS::OnSelectFile,this);
+	fdlg->BindCloseModalCallBack(&THISCLASS::OnSelectFileSaveAs,this);
 	AttachModalDialog(fdlg);
 }
 void ProfileDialog::OnSelectFileSaveAs(FsGuiDialog *dlg,int returnCode)

@@ -118,7 +118,6 @@ public:
 	virtual void OnDropListSelChange(FsGuiDropList *drp,int prevSel);
 
 	virtual void OnButtonClick(FsGuiButton *btn);
-	void OnSelectROMFile(FsGuiDialog *dlg,int returnCode);
 
 	YsString GetDefaultCDImageFileName(void) const;
 	YsString GetDefaultStateFileName(void) const;
@@ -128,7 +127,6 @@ public:
 
 	FsGuiTextBox *nowBrowsingTxt=nullptr;
 	void Browse(const wchar_t label[],FsGuiTextBox *txt,YsString dflt,std::vector <const wchar_t *> extList);
-	void OnSelectFile(FsGuiDialog *dlg,int returnCode);
 
 	void BrowseDir(const wchar_t label[],FsGuiTextBox *txt,std::vector <const wchar_t *> extList);
 	void OnSelectDir(FsGuiDialog *dlg,int returnCode);
