@@ -120,8 +120,14 @@ public:
 	virtual void OnButtonClick(FsGuiButton *btn);
 	void OnSelectROMFile(FsGuiDialog *dlg,int returnCode);
 
+	YsString GetDefaultCDImageFileName(void) const;
+	YsString GetDefaultStateFileName(void) const;
+	YsString GetDefaultFDImageFileName(int i) const;
+	YsString GetDefaultHDImageFileName(int i) const;
+	YsString MakeUpAnyImageFileName(YsString filePart) const;
+
 	FsGuiTextBox *nowBrowsingTxt=nullptr;
-	void Browse(const wchar_t label[],FsGuiTextBox *txt,std::vector <const wchar_t *> extList);
+	void Browse(const wchar_t label[],FsGuiTextBox *txt,YsString dflt,std::vector <const wchar_t *> extList);
 	void OnSelectFile(FsGuiDialog *dlg,int returnCode);
 
 	void BrowseDir(const wchar_t label[],FsGuiTextBox *txt,std::vector <const wchar_t *> extList);
