@@ -311,9 +311,9 @@ void YsSoundPlayer::APISpecificData::KeepPlaying(void)
 			snd_pcm_wait(handle,1);
 		}
 
-		const int nAvail=(unsigned int)snd_pcm_avail_update(handle);
+		const int nAvail=(unsigned int)snd_pcm_avail(handle);
 
-		if(nPeriod<nAvail)
+		if(nPeriod<=nAvail)
 		{
 			unsigned int writeBufFilledInNStep=0;
 			int nThSound=0;
