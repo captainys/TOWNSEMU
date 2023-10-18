@@ -41,12 +41,10 @@ public:
 		FM_PCM_MILLISEC_PER_WAVE=20, // Looks like time resolution of Wave Playback of Direct Sound is 10ms.  And, it needs to be 10 times integer.
 		BEEP_MILLISEC_PER_WAVE=20,
 		WAVE_STREAMING_SAFETY_BUFFER=10,
-		MILLISEC_PER_WAVE_GENERATION=4,
 #else
 		FM_PCM_MILLISEC_PER_WAVE=40, // Maybe because I am developing on VirtualBox, I am getting outrageously slow latency of 80ms (40ms*2).
 		BEEP_MILLISEC_PER_WAVE=40,
 		WAVE_STREAMING_SAFETY_BUFFER=10,
-		MILLISEC_PER_WAVE_GENERATION=8,
 #endif
 
 		RINGBUFFER_CLEAR_TIME=2000000000,  // Run 2 seconds after last wave generation to clear the ring buffer.  1 second should be enough, but just to be absolutely sure.
@@ -91,8 +89,6 @@ public:
 	bool recordFMandPCM=false;
 	std::vector <unsigned char> FMPCMrecording;
 
-	uint64_t nextFMPCMWaveFilledInMillisec=0;
-	uint64_t nextFMPCMWaveGenTime=0;
 	uint64_t lastFMPCMWaveGenTime=0;
 	std::vector <unsigned char> nextFMPCMWave;
 
@@ -113,9 +109,6 @@ public:
 	TownsSound(class FMTownsCommon *townsPtr);
 	void SetOutsideWorld(class Outside_World::Sound *outside_world);
 	void SetCDROMPointer(class TownsCDROM *cdrom);
-	void PCMStartPlay(unsigned char chStartPlay);
-	void PCMStopPlay(unsigned char chStopPlay);
-	void PCMPausePlay(unsigned char chStopPlay);
 
 	virtual void PowerOn(void);
 	virtual void Reset(void);
