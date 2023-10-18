@@ -81,6 +81,7 @@ public:
 	unsigned int bufSizeInByte=0;
 	unsigned char *writeBuf=nullptr;
 
+	static std::vector <YsSoundPlayer::APISpecificData *> activePlayers;
 
 	APISpecificData();
 	~APISpecificData();
@@ -108,6 +109,13 @@ public:
 	void PrintState(int errCode);
 
 	double GetCurrentPosition(const SoundData &dat) const;
+
+	static void TimerInterrupt(int signum);
+	static void StartTimer(void);
+	static void EndTimer(void);
+	static void MaskTimer(void);
+	static void UnmaskTimer(void);
+	class TimerMaskGuard;
 };
 
 
@@ -117,6 +125,7 @@ public:
 	SoundData playing,standBy;
 };
 
+std::vector <YsSoundPlayer::APISpecificData *> YsSoundPlayer::APISpecificData::activePlayers;
 
 
 void YsSoundPlayer::APISpecificData::PlayingSound::Make(SoundData &dat,YSBOOL loop)
@@ -143,6 +152,108 @@ public:
 
 
 
+// Another attempt to un-necessitate KeepPlaying function. >>
+#include <unistd.h>
+#include <signal.h>
+#include <sys/time.h>
+#include <stdio.h>
+#include <pthread.h>
+
+// https://stackoverflow.com/questions/21091000/how-to-get-thread-id-of-a-pthread-in-linux-c-program
+static pthread_t audioThread;
+
+void YsSoundPlayer::APISpecificData::TimerInterrupt(int signum)
+{
+	auto thisThread=pthread_self();
+	if(thisThread!=audioThread)
+	{
+		sigset_t sigset;
+		sigemptyset(&sigset);
+		sigaddset(&sigset,SIGALRM);
+		sigprocmask(SIG_BLOCK,&sigset,NULL);
+		return;
+	}
+
+	for(auto player : activePlayers)
+	{
+		player->KeepPlaying();
+	}
+}
+
+static bool timerRunning=false;
+static struct itimerval prevTimer;
+void (*prevSignalHandler)(int);
+void YsSoundPlayer::APISpecificData::StartTimer(void)
+{
+	if(true!=timerRunning)
+	{
+		audioThread=pthread_self();
+
+		struct itimerval timer;
+		timer.it_value.tv_sec=0;
+		timer.it_value.tv_usec=2000;
+		timer.it_interval.tv_sec=0;
+		timer.it_interval.tv_usec=2000; // 2ms timer.
+		setitimer(ITIMER_REAL,&timer,&prevTimer);
+		prevSignalHandler=signal(SIGALRM,TimerInterrupt);
+		timerRunning=true;
+	}
+}
+void YsSoundPlayer::APISpecificData::EndTimer(void)
+{
+	if(true==timerRunning)
+	{
+		struct itimerval timer;
+		setitimer(ITIMER_REAL,&prevTimer,&timer);
+		signal(SIGALRM,prevSignalHandler);
+		timerRunning=false;
+	}
+}
+static int maskLevel=0;
+void YsSoundPlayer::APISpecificData::MaskTimer(void)
+{
+	if(true==timerRunning)
+	{
+		if(0==maskLevel)
+		{
+			sigset_t sigset;
+			sigemptyset(&sigset);
+			sigaddset(&sigset,SIGALRM);
+			sigprocmask(SIG_BLOCK,&sigset,NULL);
+		}
+		++maskLevel;
+	}
+}
+void YsSoundPlayer::APISpecificData::UnmaskTimer(void)
+{
+	if(true==timerRunning)
+	{
+		if(0<maskLevel)
+		{
+			--maskLevel;
+			if(0==maskLevel)
+			{
+				sigset_t sigset;
+				sigemptyset(&sigset);
+				sigaddset(&sigset,SIGALRM);
+				sigprocmask(SIG_UNBLOCK,&sigset,NULL);
+			}
+		}
+	}
+}
+class YsSoundPlayer::APISpecificData::TimerMaskGuard
+{
+public:
+	TimerMaskGuard()
+	{
+		MaskTimer();
+	}
+	~TimerMaskGuard()
+	{
+		UnmaskTimer();
+	}
+};
+// Another attempt to un-necessitate KeepPlaying function. <<
 ////////////////////////////////////////////////////////////
 
 
@@ -261,6 +372,13 @@ YSRESULT YsSoundPlayer::APISpecificData::Start(void)
 	snd_pcm_wait(handle,1);
 
 
+	auto found=std::find(activePlayers.begin(),activePlayers.end(),this);
+	if(activePlayers.end()==found)
+	{
+		activePlayers.push_back(this);
+	}
+
+
 	return YSOK;
 }
 YSRESULT YsSoundPlayer::APISpecificData::End(void)
@@ -287,6 +405,12 @@ YSRESULT YsSoundPlayer::APISpecificData::End(void)
 	}
 
 	CleanUp();
+
+	auto found=std::find(activePlayers.begin(),activePlayers.end(),this);
+	if(activePlayers.end()==found)
+	{
+		activePlayers.erase(found);
+	}
 
 	return YSOK;
 }

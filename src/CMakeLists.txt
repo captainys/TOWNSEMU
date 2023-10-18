@@ -13,7 +13,7 @@ if(APPLE)
 elseif(MSVC)
     set(DISC_IMAGE_DIR "C:/D/TownsISO")
 else()
-    set(DISC_IMAGE_DIR "/mnt/TownsISO")
+    set(DISC_IMAGE_DIR "$ENV{HOME}/TownsISO")
 endif()
 
 add_compile_definitions(YS_LITTLE_ENDIAN)
