@@ -163,6 +163,79 @@ void RF5C68::WriteST(unsigned char value)
 	state.ch[state.CB].playPtrLeftOver=0;
 }
 
+void RF5C68::WriteRegister(unsigned char reg,unsigned char data,uint64_t VMTimeInNS)
+{
+	if(true==useScheduling)
+	{
+		WriteRegisterSchedule(reg,data,VMTimeInNS);
+	}
+	else
+	{
+		ReallyWriteRegister(reg,data,VMTimeInNS);
+	}
+}
+void RF5C68::ReallyWriteRegister(unsigned int reg,unsigned int data,uint64_t)
+{
+	switch(reg)
+	{
+	case REG_ENV: //0,
+		WriteENV(data);
+		break;
+	case REG_PAN: //1,
+		WritePAN(data);
+		break;
+	case REG_FDL: //2,
+		WriteFDL(data);
+		break;
+	case REG_FDH: //3,
+		WriteFDH(data);
+		break;
+	case REG_LSL: //4,
+		WriteLSL(data);
+		break;
+	case REG_LSH: //5,
+		WriteLSH(data);
+		break;
+	case REG_ST: //6,
+		WriteST(data);
+		break;
+	case REG_CONTROL: //7,
+		WriteControl(data);
+		break;
+	case REG_CH_ON_OFF: //8,
+		{
+			auto startStop=WriteChannelOnOff(data);
+			if(0!=startStop.chStopPlay)
+			{
+				for(unsigned int ch=0; ch<NUM_CHANNELS; ++ch)
+				{
+					if(0!=(startStop.chStopPlay&(1<<ch)))
+					{
+						PlayStopped(ch);
+					}
+				}
+			}
+		}
+		break;
+	}
+}
+void RF5C68::WriteRegisterSchedule(unsigned int reg,unsigned int value,uint64_t systemTimeInNS)
+{
+	RegWriteLog rwl;
+	rwl.reg=reg;
+	rwl.data=value;
+	rwl.systemTimeInNS=systemTimeInNS;
+	regWriteSched.push_back(rwl);
+}
+void RF5C68::FlushRegisterSchedule(void)
+{
+	for(auto sched : regWriteSched)
+	{
+		ReallyWriteRegister(sched.reg,sched.data,sched.systemTimeInNS);
+	}
+	regWriteSched.clear();
+}
+
 std::vector <std::string> RF5C68::GetStatusText(void) const
 {
 	std::vector <std::string> text;
@@ -202,13 +275,13 @@ std::vector <std::string> RF5C68::GetStatusText(void) const
 	return text;
 }
 
-unsigned int RF5C68::MakeWaveForNumSamples(unsigned char waveBuf[],unsigned int numSamples,int outSamplingRate)
+unsigned int RF5C68::MakeWaveForNumSamples(unsigned char waveBuf[],unsigned int numSamples,int outSamplingRate,uint64_t VMTime)
 {
 	std::memset(waveBuf,0,numSamples*4);
-	return AddWaveForNumSamples(waveBuf,numSamples,outSamplingRate);
+	return AddWaveForNumSamples(waveBuf,numSamples,outSamplingRate,VMTime);
 }
 
-unsigned int RF5C68::AddWaveForNumSamples(unsigned char waveBuf[],unsigned int numSamples,int outSamplingRate)
+unsigned int RF5C68::AddWaveForNumSamples(unsigned char waveBuf[],unsigned int numSamples,int outSamplingRate,uint64_t VMTime)
 {
 	unsigned int numPlayingCh=0,playingCh[NUM_CHANNELS];
 	unsigned int LvolCh[NUM_CHANNELS],RvolCh[NUM_CHANNELS],pcmAddr[NUM_CHANNELS];

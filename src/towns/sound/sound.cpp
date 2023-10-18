@@ -54,6 +54,8 @@ void TownsSound::SetCDROMPointer(class TownsCDROM *cdrom)
 {
 	this->cdrom=cdrom;
 }
+
+/* No longer used
 void TownsSound::PCMStartPlay(unsigned char chStartPlay)
 {
 }
@@ -70,6 +72,7 @@ void TownsSound::PCMStopPlay(unsigned char chStopPlay)
 void TownsSound::PCMPausePlay(unsigned char chPausePlay)
 {
 }
+*/
 
 /* virtual */ void TownsSound::PowerOn(void)
 {
@@ -113,59 +116,39 @@ void TownsSound::PCMPausePlay(unsigned char chPausePlay)
 	case TOWNSIO_SOUND_PCM_INT://           0x4EB, // [2] pp.19,
 		break;
 	case TOWNSIO_SOUND_PCM_ENV://           0x4F0, // [2] pp.19,
-		state.rf5c68.WriteENV(data);
+		state.rf5c68.WriteRegister(RF5C68::REG_ENV,data,townsPtr->state.townsTime);
 		ProcessRecordPCMWrite(RF5C68::REG_ENV,data);
 		break;
 	case TOWNSIO_SOUND_PCM_PAN://           0x4F1, // [2] pp.19,
-		state.rf5c68.WritePAN(data);
+		state.rf5c68.WriteRegister(RF5C68::REG_PAN,data,townsPtr->state.townsTime);
 		ProcessRecordPCMWrite(RF5C68::REG_PAN,data);
 		break;
 	case TOWNSIO_SOUND_PCM_FDL://           0x4F2, // [2] pp.19,
-		state.rf5c68.WriteFDL(data);
+		state.rf5c68.WriteRegister(RF5C68::REG_FDL,data,townsPtr->state.townsTime);
 		ProcessRecordPCMWrite(RF5C68::REG_FDL,data);
 		break;
 	case TOWNSIO_SOUND_PCM_FDH://           0x4F3, // [2] pp.19,
-		state.rf5c68.WriteFDH(data);
+		state.rf5c68.WriteRegister(RF5C68::REG_FDH,data,townsPtr->state.townsTime);
 		ProcessRecordPCMWrite(RF5C68::REG_FDH,data);
 		break;
 	case TOWNSIO_SOUND_PCM_LSL://           0x4F4, // [2] pp.19,
-		state.rf5c68.WriteLSL(data);
+		state.rf5c68.WriteRegister(RF5C68::REG_LSL,data,townsPtr->state.townsTime);
 		ProcessRecordPCMWrite(RF5C68::REG_LSL,data);
 		break;
 	case TOWNSIO_SOUND_PCM_LSH://           0x4F5, // [2] pp.19,
-		state.rf5c68.WriteLSH(data);
+		state.rf5c68.WriteRegister(RF5C68::REG_LSH,data,townsPtr->state.townsTime);
 		ProcessRecordPCMWrite(RF5C68::REG_LSH,data);
 		break;
 	case TOWNSIO_SOUND_PCM_ST://            0x4F6, // [2] pp.19,
-		state.rf5c68.WriteST(data);
+		state.rf5c68.WriteRegister(RF5C68::REG_ST,data,townsPtr->state.townsTime);
 		ProcessRecordPCMWrite(RF5C68::REG_ST,data);
 		break;
 	case TOWNSIO_SOUND_PCM_CTRL://          0x4F7, // [2] pp.19,
-		{
-			auto startStop=state.rf5c68.WriteControl(data);
-			if(0!=startStop.chStartPlay && nullptr!=outside_world)
-			{
-				PCMStartPlay(startStop.chStartPlay);
-			}
-			if(0!=startStop.chStopPlay && nullptr!=outside_world)
-			{
-				PCMPausePlay(startStop.chStopPlay);
-			}
-		}
+		state.rf5c68.WriteRegister(RF5C68::REG_CONTROL,data,townsPtr->state.townsTime);
 		ProcessRecordPCMWrite(RF5C68::REG_CONTROL,data);
 		break;
 	case TOWNSIO_SOUND_PCM_CH_ON_OFF://     0x4F8, // [2] pp.19,
-		{
-			auto startStop=state.rf5c68.WriteChannelOnOff(data);
-			if(0!=startStop.chStartPlay && nullptr!=outside_world)
-			{
-				PCMStartPlay(startStop.chStartPlay);
-			}
-			if(0!=startStop.chStopPlay && nullptr!=outside_world)
-			{
-				PCMStopPlay(startStop.chStopPlay);
-			}
-		}
+		state.rf5c68.WriteRegister(RF5C68::REG_CH_ON_OFF,data,townsPtr->state.townsTime);
 		ProcessRecordPCMWrite(RF5C68::REG_CH_ON_OFF,data);
 		break;
 	case TOWNSIO_SOUND_SAMPLING_DATA: //    0x4E7, // [2] pp.179,
@@ -381,14 +364,14 @@ void TownsSound::ProcessSound(void)
 					// Therefore, PCM wave must be generated and played for making IRQ.
 					if(0!=(state.muteFlag&1))
 					{
-						state.rf5c68.AddWaveForNumSamples(fillPtr,fillNumSamples,WAVE_OUT_SAMPLING_RATE);
+						state.rf5c68.AddWaveForNumSamples(fillPtr,fillNumSamples,WAVE_OUT_SAMPLING_RATE,townsPtr->state.townsTime);
 					}
 					else
 					{
 						// AddWaveForNumSamples will set IRQAfterThisPlayBack flag.
 						std::vector <unsigned char> dummy;
 						dummy.resize(fillNumSamples*4);
-						state.rf5c68.AddWaveForNumSamples(dummy.data(),fillNumSamples,WAVE_OUT_SAMPLING_RATE);
+						state.rf5c68.AddWaveForNumSamples(dummy.data(),fillNumSamples,WAVE_OUT_SAMPLING_RATE,townsPtr->state.townsTime);
 					}
 
 					for(unsigned int chNum=0; chNum<RF5C68::NUM_CHANNELS; ++chNum)
@@ -756,7 +739,8 @@ void TownsSound::DeserializeYM2612(const unsigned char *&data,unsigned int versi
 }
 void TownsSound::SerializeRF5C68(std::vector <unsigned char> &data) const
 {
-	auto &rf5c68=state.rf5c68;
+	auto rf5c68=state.rf5c68;
+	rf5c68.FlushRegisterSchedule();
 
 	PushUcharArray(data,rf5c68.state.waveRAM);
 	for(auto &ch : rf5c68.state.ch)

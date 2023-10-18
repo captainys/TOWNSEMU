@@ -98,11 +98,11 @@ public:
 
 	inline bool IsFMPlaying(void) const
 	{
-		return 0!=state.ym2612.state.playingCh;
+		return 0!=state.ym2612.state.playingCh || 0<state.ym2612.regWriteSched.size();
 	}
 	inline bool IsPCMPlaying(void) const
 	{
-		return true==state.rf5c68.IsPlaying();
+		return true==state.rf5c68.IsPlaying() || 0<state.rf5c68.regWriteSched.size();
 	}
 	inline bool IsPCMRecording(void) const
 	{
