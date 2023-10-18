@@ -168,14 +168,25 @@ void RF5C68::WriteRegister(unsigned char reg,unsigned char data,uint64_t VMTimeI
 	if(true==useScheduling)
 	{
 		WriteRegisterSchedule(reg,data,VMTimeInNS);
+		if(REG_CONTROL==reg)
+		{
+			WriteControl(data);
+			if(0==(0x40&data)) // Bank must be switched with no delay.
+			{
+				auto WB=(data&0x0f);
+				state.Bank=WB;
+				state.Bank<<=12;
+			}
+		}
 	}
 	else
 	{
 		ReallyWriteRegister(reg,data,VMTimeInNS);
 	}
 }
-void RF5C68::ReallyWriteRegister(unsigned int reg,unsigned int data,uint64_t)
+RF5C68::StartAndStopChannelBits RF5C68::ReallyWriteRegister(unsigned int reg,unsigned int data,uint64_t)
 {
+	StartAndStopChannelBits startStop;
 	switch(reg)
 	{
 	case REG_ENV: //0,
@@ -204,7 +215,7 @@ void RF5C68::ReallyWriteRegister(unsigned int reg,unsigned int data,uint64_t)
 		break;
 	case REG_CH_ON_OFF: //8,
 		{
-			auto startStop=WriteChannelOnOff(data);
+			startStop=WriteChannelOnOff(data);
 			if(0!=startStop.chStopPlay)
 			{
 				for(unsigned int ch=0; ch<NUM_CHANNELS; ++ch)
@@ -218,6 +229,7 @@ void RF5C68::ReallyWriteRegister(unsigned int reg,unsigned int data,uint64_t)
 		}
 		break;
 	}
+	return startStop;
 }
 void RF5C68::WriteRegisterSchedule(unsigned int reg,unsigned int value,uint64_t systemTimeInNS)
 {
@@ -285,21 +297,30 @@ unsigned int RF5C68::AddWaveForNumSamples(unsigned char waveBuf[],unsigned int n
 {
 	unsigned int numPlayingCh=0,playingCh[NUM_CHANNELS];
 	unsigned int LvolCh[NUM_CHANNELS],RvolCh[NUM_CHANNELS],pcmAddr[NUM_CHANNELS];
-	for(unsigned int chNum=0; chNum<NUM_CHANNELS; ++chNum)
-	{
-		auto &ch=state.ch[chNum];
-		LvolCh[chNum]=(ch.PAN&0x0F);
-		RvolCh[chNum]=((ch.PAN>>4)&0x0F);
-		LvolCh[chNum]=(LvolCh[chNum]*ch.ENV);
-		RvolCh[chNum]=(RvolCh[chNum]*ch.ENV);
-		pcmAddr[chNum]=(ch.playPtr<<FD_BIT_SHIFT)|ch.playPtrLeftOver;
-		ch.repeatAfterThisSegment=false;
 
-		if(0<ch.FD && 0==(state.chOnOff&(1<<chNum)))
+	auto Reinit=[&](unsigned int chFlags)
+	{
+		numPlayingCh=0;
+		for(unsigned int chNum=0; chNum<NUM_CHANNELS; ++chNum)
 		{
-			playingCh[numPlayingCh++]=chNum;
+			auto &ch=state.ch[chNum];
+			LvolCh[chNum]=(ch.PAN&0x0F);
+			RvolCh[chNum]=((ch.PAN>>4)&0x0F);
+			LvolCh[chNum]=(LvolCh[chNum]*ch.ENV);
+			RvolCh[chNum]=(RvolCh[chNum]*ch.ENV);
+			if(0!=(chFlags&(1<<chNum)))
+			{
+				pcmAddr[chNum]=(ch.playPtr<<FD_BIT_SHIFT)|ch.playPtrLeftOver;
+			}
+			ch.repeatAfterThisSegment=false;
+			if(0<ch.FD && 0==(state.chOnOff&(1<<chNum)))
+			{
+				playingCh[numPlayingCh++]=chNum;
+			}
 		}
-	}
+	};
+
+	Reinit(0xff);
 
 	unsigned int regSchedPtr=0;
 	auto VMTime=lastWAVGenTime;
@@ -314,7 +335,13 @@ unsigned int RF5C68::AddWaveForNumSamples(unsigned char waveBuf[],unsigned int n
 			{
 				break;
 			}
-			ReallyWriteRegister(regWriteSched[regSchedPtr].reg,regWriteSched[regSchedPtr].data,regWriteSched[regSchedPtr].systemTimeInNS);
+			auto startStop=ReallyWriteRegister(regWriteSched[regSchedPtr].reg,regWriteSched[regSchedPtr].data,regWriteSched[regSchedPtr].systemTimeInNS);
+
+			if(0!=(startStop.chStartPlay|startStop.chStopPlay))
+			{
+				Reinit(startStop.chStartPlay);
+			}
+
 			++regSchedPtr;
 		}
 

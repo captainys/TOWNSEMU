@@ -44,6 +44,8 @@ void TownsSound::State::ResetVariables(void)
 
 TownsSound::TownsSound(class FMTownsCommon *townsPtr) : Device(townsPtr)
 {
+	state.ym2612.useScheduling=true;
+	state.rf5c68.useScheduling=true;
 	this->townsPtr=townsPtr;
 }
 void TownsSound::SetOutsideWorld(class Outside_World::Sound *outside_world)
@@ -351,10 +353,11 @@ void TownsSound::ProcessSound(void)
 				auto fillNumSamples=fillEnd-fillBegin;
 				auto fillPtr=nextFMPCMWave.data()+fillBegin*4;
 
+				bool wavGenerated=false;
 				if(true==IsFMPlaying() && 0!=(state.muteFlag&2))
 				{
-					state.ym2612.MakeWaveForNSamples(fillPtr,fillNumSamples,0);
-					lastFMPCMWaveGenTime=townsPtr->state.townsTime;
+					state.ym2612.MakeWaveForNSamples(fillPtr,fillNumSamples,lastFMPCMWaveGenTime);
+					wavGenerated=true;
 				}
 				if(true==IsPCMPlaying())
 				{
@@ -364,14 +367,14 @@ void TownsSound::ProcessSound(void)
 					// Therefore, PCM wave must be generated and played for making IRQ.
 					if(0!=(state.muteFlag&1))
 					{
-						state.rf5c68.AddWaveForNumSamples(fillPtr,fillNumSamples,WAVE_OUT_SAMPLING_RATE,townsPtr->state.townsTime);
+						state.rf5c68.AddWaveForNumSamples(fillPtr,fillNumSamples,WAVE_OUT_SAMPLING_RATE,lastFMPCMWaveGenTime);
 					}
 					else
 					{
 						// AddWaveForNumSamples will set IRQAfterThisPlayBack flag.
 						std::vector <unsigned char> dummy;
 						dummy.resize(fillNumSamples*4);
-						state.rf5c68.AddWaveForNumSamples(dummy.data(),fillNumSamples,WAVE_OUT_SAMPLING_RATE,townsPtr->state.townsTime);
+						state.rf5c68.AddWaveForNumSamples(dummy.data(),fillNumSamples,WAVE_OUT_SAMPLING_RATE,lastFMPCMWaveGenTime);
 					}
 
 					for(unsigned int chNum=0; chNum<RF5C68::NUM_CHANNELS; ++chNum)
@@ -383,12 +386,12 @@ void TownsSound::ProcessSound(void)
 							ch.IRQAfterThisPlayBack=false;
 						}
 					}
-					lastFMPCMWaveGenTime=townsPtr->state.townsTime;
+					wavGenerated=true;
 				}
 				if(true==cdrom->CDDAIsPlaying())
 				{
 					cdrom->AddWaveForNumSamples(fillPtr,fillNumSamples,WAVE_OUT_SAMPLING_RATE);
-					lastFMPCMWaveGenTime=townsPtr->state.townsTime;
+					wavGenerated=true;
 				}
 				if(true==IsPCMRecording())
 				{
@@ -426,6 +429,10 @@ void TownsSound::ProcessSound(void)
 							balance-=YM2612::WAVE_SAMPLING_RATE;
 						}
 					}
+					wavGenerated=true;
+				}
+				if(true==wavGenerated)
+				{
 					lastFMPCMWaveGenTime=townsPtr->state.townsTime;
 				}
 				nextFMPCMWaveFilledInMillisec+=MILLISEC_PER_WAVE_GENERATION;
@@ -768,6 +775,8 @@ void TownsSound::SerializeRF5C68(std::vector <unsigned char> &data) const
 void TownsSound::DeserializeRF5C68(const unsigned char *&data)
 {
 	auto &rf5c68=state.rf5c68;
+
+	rf5c68.FlushRegisterSchedule();
 
 	rf5c68.state.waveRAM=ReadUcharArray(data);
 	for(auto &ch : rf5c68.state.ch)

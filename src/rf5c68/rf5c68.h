@@ -179,7 +179,7 @@ public:
 	void WriteRegister(unsigned char reg,unsigned char data,uint64_t VMTimeInNS);
 
 private:
-	void ReallyWriteRegister(unsigned int reg,unsigned int value,uint64_t systemTimeInNS);
+	StartAndStopChannelBits ReallyWriteRegister(unsigned int reg,unsigned int value,uint64_t systemTimeInNS);
 	void WriteRegisterSchedule(unsigned int reg,unsigned int value,uint64_t systemTimeInNS);
 
 public:
