@@ -72,7 +72,7 @@ public:
 	snd_pcm_sw_params_t *swParam;
 
 	unsigned int nChannel,rate;
-	unsigned int pcmBufSize;
+	snd_pcm_uframes_t pcmBufSize;
 	snd_pcm_uframes_t nPeriod;
 
 	const unsigned int bytePerTimeStep;
@@ -223,7 +223,7 @@ YSRESULT YsSoundPlayer::APISpecificData::Start(void)
 	snd_pcm_hw_params_get_channels(hwParam,&nChannel);
 	snd_pcm_hw_params_get_rate(hwParam,&rate,&dir);
 	snd_pcm_hw_params_get_period_size(hwParam,&nPeriod,&dir);
-	snd_pcm_hw_params_get_buffer_size(hwParam,(snd_pcm_uframes_t *)&pcmBufSize);
+	snd_pcm_hw_params_get_buffer_size(hwParam,&pcmBufSize);
 	printf("%d channels, %d Hz, %d periods, %d frames buffer.\n",
 		   nChannel,rate,(int)nPeriod,(int)pcmBufSize);
 
