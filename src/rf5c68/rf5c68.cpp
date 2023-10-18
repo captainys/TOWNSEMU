@@ -275,13 +275,13 @@ std::vector <std::string> RF5C68::GetStatusText(void) const
 	return text;
 }
 
-unsigned int RF5C68::MakeWaveForNumSamples(unsigned char waveBuf[],unsigned int numSamples,int outSamplingRate,uint64_t VMTime)
+unsigned int RF5C68::MakeWaveForNumSamples(unsigned char waveBuf[],unsigned int numSamples,int outSamplingRate,uint64_t lastWAVGenTime)
 {
 	std::memset(waveBuf,0,numSamples*4);
-	return AddWaveForNumSamples(waveBuf,numSamples,outSamplingRate,VMTime);
+	return AddWaveForNumSamples(waveBuf,numSamples,outSamplingRate,lastWAVGenTime);
 }
 
-unsigned int RF5C68::AddWaveForNumSamples(unsigned char waveBuf[],unsigned int numSamples,int outSamplingRate,uint64_t VMTime)
+unsigned int RF5C68::AddWaveForNumSamples(unsigned char waveBuf[],unsigned int numSamples,int outSamplingRate,uint64_t lastWAVGenTime)
 {
 	unsigned int numPlayingCh=0,playingCh[NUM_CHANNELS];
 	unsigned int LvolCh[NUM_CHANNELS],RvolCh[NUM_CHANNELS],pcmAddr[NUM_CHANNELS];
@@ -301,10 +301,23 @@ unsigned int RF5C68::AddWaveForNumSamples(unsigned char waveBuf[],unsigned int n
 		}
 	}
 
+	unsigned int regSchedPtr=0;
+	auto VMTime=lastWAVGenTime;
+
 	unsigned int nFilled=0;
 	auto wavePtr=waveBuf;
 	while(nFilled<numSamples && 0<numPlayingCh)
 	{
+		while(regSchedPtr<regWriteSched.size())
+		{
+			if(VMTime<regWriteSched[regSchedPtr].systemTimeInNS)
+			{
+				break;
+			}
+			ReallyWriteRegister(regWriteSched[regSchedPtr].reg,regWriteSched[regSchedPtr].data,regWriteSched[regSchedPtr].systemTimeInNS);
+			++regSchedPtr;
+		}
+
 		int Lout=0,Rout=0;
 		for(int i=numPlayingCh-1; 0<=i; --i)
 		{
@@ -417,6 +430,11 @@ unsigned int RF5C68::AddWaveForNumSamples(unsigned char waveBuf[],unsigned int n
 			state.timeBalance-=SAMPLING_RATE;
 			wavePtr+=4;
 			++nFilled;
+
+			if(regSchedPtr<regWriteSched.size())
+			{
+				VMTime+=1000000000/outSamplingRate;
+			}
 		}
 		state.timeBalance+=outSamplingRate;
 	}
@@ -427,6 +445,14 @@ unsigned int RF5C68::AddWaveForNumSamples(unsigned char waveBuf[],unsigned int n
 		ch.playPtr=(pcmAddr[chNum]>>FD_BIT_SHIFT);
 		ch.playPtrLeftOver=(pcmAddr[chNum]&((1<<FD_BIT_SHIFT)-1));
 	}
+
+
+	for(auto i=regSchedPtr; i<regWriteSched.size(); ++i)
+	{
+		ReallyWriteRegister(regWriteSched[i].reg,regWriteSched[i].data,regWriteSched[i].systemTimeInNS);
+	}
+	regWriteSched.clear();
+
 
 	return nFilled;
 }

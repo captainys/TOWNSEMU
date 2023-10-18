@@ -151,9 +151,9 @@ public:
 	    Returns actual number of samples filled in the buffer.  Number of bytes will be return-value*4.
 	    Buffer must be long enough for numSamples*4.
 	*/
-	unsigned int MakeWaveForNumSamples(unsigned char waveBuf[],unsigned int numSamples,int outSamplingRate,uint64_t VMTime);
+	unsigned int MakeWaveForNumSamples(unsigned char waveBuf[],unsigned int numSamples,int outSamplingRate,uint64_t lastWAVGenTime);
 
-	unsigned int AddWaveForNumSamples(unsigned char waveBuf[],unsigned int numSamples,int outSamplingRate,uint64_t VMTime);
+	unsigned int AddWaveForNumSamples(unsigned char waveBuf[],unsigned int numSamples,int outSamplingRate,uint64_t lastWAVGenTime);
 
 	/*! Returns true if playing.
 	*/
