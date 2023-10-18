@@ -66,19 +66,20 @@ public:
 	std::vector <PlayingSound> playing;
 	std::vector <PlayingStream> playingStream;
 
-	snd_pcm_t *handle;
-	snd_async_handler_t *asyncHandler;
-	snd_pcm_hw_params_t *hwParam;
-	snd_pcm_sw_params_t *swParam;
+	snd_pcm_t *handle=nullptr;
+	snd_async_handler_t *asyncHandler=nullptr;
+	snd_pcm_hw_params_t *hwParam=nullptr;
+	snd_pcm_sw_params_t *swParam=nullptr;
 
-	unsigned int nChannel,rate;
-	snd_pcm_uframes_t pcmBufSize;
-	snd_pcm_uframes_t nPeriod;
+	unsigned int nChannel=2,rate=44100;
+	snd_pcm_uframes_t pcmBufSize=0;
+	snd_pcm_uframes_t nPeriod=0;
 
-	const unsigned int bytePerTimeStep;
-	unsigned int bufSizeInNStep;
-	unsigned int bufSizeInByte;
-	unsigned char *writeBuf;
+	const unsigned int bytePerSample=2;
+	unsigned int bytePerTimeStep=4;
+	unsigned int bufSizeInNStep=0;
+	unsigned int bufSizeInByte=0;
+	unsigned char *writeBuf=nullptr;
 
 
 	APISpecificData();
@@ -147,7 +148,7 @@ public:
 
 
 YsSoundPlayer::APISpecificData::APISpecificData() :
-	bytePerTimeStep(2) // 2 bytes for 16-bit mono stream per time step
+	bytePerSample(2) // 2 bytes for 16-bit mono stream per time step
 {
 	for(auto &p : playing)
 	{
@@ -191,7 +192,7 @@ YSRESULT YsSoundPlayer::APISpecificData::Start(void)
 	snd_pcm_hw_params_any(handle,hwParam);
 	snd_pcm_hw_params_set_access(handle,hwParam,SND_PCM_ACCESS_RW_INTERLEAVED);
 	snd_pcm_hw_params_set_format(handle,hwParam,SND_PCM_FORMAT_S16_LE);
-	snd_pcm_hw_params_set_channels(handle,hwParam,1);
+	snd_pcm_hw_params_set_channels(handle,hwParam,2);
 
 	// ? Why did I make it 8000 before ?
 	// Apparently 8000Hz has some problems in play back.
@@ -227,8 +228,9 @@ YSRESULT YsSoundPlayer::APISpecificData::Start(void)
 	printf("%d channels, %d Hz, %d periods, %d frames buffer.\n",
 		   nChannel,rate,(int)nPeriod,(int)pcmBufSize);
 
+	bytePerTimeStep=bytePerSample*nChannel;
 	bufSizeInNStep=nPeriod*4;
-	bufSizeInByte=bufSizeInNStep*bytePerTimeStep;
+	bufSizeInByte=nChannel*bufSizeInNStep*bytePerTimeStep;
 	if(nullptr!=writeBuf)
 	{
 		delete [] writeBuf;
