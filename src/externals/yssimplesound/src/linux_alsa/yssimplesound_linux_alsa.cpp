@@ -8,6 +8,10 @@
 #define ALSA_PCM_NEW_HW_PARAMS_API
 #include <alsa/asoundlib.h>
 
+
+// #define USE_INTERVAL_TIMER
+
+
 /*
 2015/10/21  About a broken promise of ALSA asynchronous playback.
 
@@ -118,15 +122,13 @@ public:
 	class TimerMaskGuard;
 };
 
+std::vector <YsSoundPlayer::APISpecificData *> YsSoundPlayer::APISpecificData::activePlayers;
 
 class YsSoundPlayer::Stream::APISpecificData
 {
 public:
 	SoundData playing,standBy;
 };
-
-std::vector <YsSoundPlayer::APISpecificData *> YsSoundPlayer::APISpecificData::activePlayers;
-
 
 void YsSoundPlayer::APISpecificData::PlayingSound::Make(SoundData &dat,YSBOOL loop)
 {
@@ -151,6 +153,7 @@ public:
 };
 
 
+#ifdef USE_INTERVAL_TIMER
 
 // Another attempt to un-necessitate KeepPlaying function. >>
 #include <unistd.h>
@@ -167,10 +170,11 @@ void YsSoundPlayer::APISpecificData::TimerInterrupt(int signum)
 	auto thisThread=pthread_self();
 	if(thisThread!=audioThread)
 	{
-		sigset_t sigset;
+		static sigset_t sigset;
 		sigemptyset(&sigset);
 		sigaddset(&sigset,SIGALRM);
 		sigprocmask(SIG_BLOCK,&sigset,NULL);
+		// This sigprocmask is supposed to 
 		return;
 	}
 
@@ -254,6 +258,19 @@ public:
 	}
 };
 // Another attempt to un-necessitate KeepPlaying function. <<
+#else
+void YsSoundPlayer::APISpecificData::TimerInterrupt(int){}
+void YsSoundPlayer::APISpecificData::StartTimer(void){}
+void YsSoundPlayer::APISpecificData::EndTimer(void){}
+void YsSoundPlayer::APISpecificData::MaskTimer(void){}
+void YsSoundPlayer::APISpecificData::UnmaskTimer(void){}
+class YsSoundPlayer::APISpecificData::TimerMaskGuard
+{
+public:
+};
+#endif
+
+
 ////////////////////////////////////////////////////////////
 
 
@@ -378,6 +395,7 @@ YSRESULT YsSoundPlayer::APISpecificData::Start(void)
 		activePlayers.push_back(this);
 	}
 
+	StartTimer();
 
 	return YSOK;
 }
@@ -410,6 +428,10 @@ YSRESULT YsSoundPlayer::APISpecificData::End(void)
 	if(activePlayers.end()==found)
 	{
 		activePlayers.erase(found);
+	}
+	if(0==activePlayers.size())
+	{
+		EndTimer();
 	}
 
 	return YSOK;
@@ -580,6 +602,8 @@ void YsSoundPlayer::APISpecificData::DiscardEnded(void)
 
 bool YsSoundPlayer::APISpecificData::PopulateWriteBuffer(unsigned int &writePtr,unsigned int wavPtr,const SoundData *wavFile,YSBOOL loop,int nThSound)
 {
+	TimerMaskGuard tmg;
+
 	bool notLoopAndAllTheWayToEnd=false;
 
 	int64_t numSamplesIn=wavFile->GetNumSamplePerChannel();
@@ -661,6 +685,8 @@ bool YsSoundPlayer::APISpecificData::PopulateWriteBuffer(unsigned int &writePtr,
 
 void YsSoundPlayer::APISpecificData::PrintState(int errCode)
 {
+	TimerMaskGuard tmg;
+
 	if(0==errCode)
 	{
 	}
@@ -720,6 +746,8 @@ void YsSoundPlayer::APISpecificData::PrintState(int errCode)
 
 double YsSoundPlayer::APISpecificData::GetCurrentPosition(const SoundData &dat) const
 {
+	TimerMaskGuard tmg;
+
  	for(auto &p : playing)
 	{
 		if(&dat==p.dat)
@@ -756,11 +784,14 @@ void YsSoundPlayer::SetVolumeAPISpecific(SoundData &dat,float leftVol,float righ
 
 void YsSoundPlayer::KeepPlayingAPISpecific(void)
 {
+	APISpecificData::TimerMaskGuard tmg;
 	api->KeepPlaying();
 }
 
 YSRESULT YsSoundPlayer::PlayOneShotAPISpecific(SoundData &dat)
 {
+	APISpecificData::TimerMaskGuard tmg;
+
 	for(auto &p : api->playing)
 	{
 		if(p.dat==&dat)
@@ -777,6 +808,8 @@ YSRESULT YsSoundPlayer::PlayOneShotAPISpecific(SoundData &dat)
 }
 YSRESULT YsSoundPlayer::PlayBackgroundAPISpecific(SoundData &dat)
 {
+	APISpecificData::TimerMaskGuard tmg;
+
 	for(auto &p : api->playing)
 	{
 		if(p.dat==&dat)
@@ -794,6 +827,8 @@ YSRESULT YsSoundPlayer::PlayBackgroundAPISpecific(SoundData &dat)
 
 YSBOOL YsSoundPlayer::IsPlayingAPISpecific(const SoundData &dat) const
 {
+	APISpecificData::TimerMaskGuard tmg;
+
 	for(auto &p : api->playing)
 	{
 		if(&dat==p.dat)
@@ -806,11 +841,14 @@ YSBOOL YsSoundPlayer::IsPlayingAPISpecific(const SoundData &dat) const
 
 double YsSoundPlayer::GetCurrentPositionAPISpecific(const SoundData &dat) const
 {
+	APISpecificData::TimerMaskGuard tmg;
 	return api->GetCurrentPosition(dat);
 }
 
 void YsSoundPlayer::StopAPISpecific(SoundData &dat)
 {
+	APISpecificData::TimerMaskGuard tmg;
+
 	YSBOOL stopped=YSFALSE;
 
 	for(auto &p : api->playing)
@@ -832,20 +870,24 @@ void YsSoundPlayer::StopAPISpecific(SoundData &dat)
 
 void YsSoundPlayer::PauseAPISpecific(SoundData &dat)
 {
+	APISpecificData::TimerMaskGuard tmg;
 }
 
 void YsSoundPlayer::ResumeAPISpecific(SoundData &dat)
 {
+	APISpecificData::TimerMaskGuard tmg;
 }
 
 ////////////////////////////////////////////////////////////
 
 YsSoundPlayer::SoundData::APISpecificDataPerSoundData::APISpecificDataPerSoundData()
 {
+	APISpecificData::TimerMaskGuard tmg;
 	CleanUp();
 }
 YsSoundPlayer::SoundData::APISpecificDataPerSoundData::~APISpecificDataPerSoundData()
 {
+	APISpecificData::TimerMaskGuard tmg;
 	CleanUp();
 }
 void YsSoundPlayer::SoundData::APISpecificDataPerSoundData::CleanUp(void)
@@ -865,6 +907,7 @@ void YsSoundPlayer::SoundData::DeleteAPISpecificData(APISpecificDataPerSoundData
 
 YSRESULT YsSoundPlayer::SoundData::PreparePlay(YsSoundPlayer &player)
 {
+	APISpecificData::TimerMaskGuard tmg;
 	Resample(player.api->rate);
 	ConvertToMono();
 	ConvertTo16Bit();
@@ -874,6 +917,7 @@ YSRESULT YsSoundPlayer::SoundData::PreparePlay(YsSoundPlayer &player)
 
 void YsSoundPlayer::SoundData::CleanUpAPISpecific(void)
 {
+	APISpecificData::TimerMaskGuard tmg;
 	api->CleanUp();
 }
 
@@ -891,6 +935,7 @@ void YsSoundPlayer::Stream::DeleteAPISpecificData(APISpecificData *api)
 
 YSRESULT YsSoundPlayer::StartStreamingAPISpecific(Stream &stream,StreamingOption)
 {
+	APISpecificData::TimerMaskGuard tmg;
 	for(auto playingStream : this->api->playingStream)
 	{
 		if(playingStream.dat==&stream)
@@ -907,6 +952,7 @@ YSRESULT YsSoundPlayer::StartStreamingAPISpecific(Stream &stream,StreamingOption
 }
 void YsSoundPlayer::StopStreamingAPISpecific(Stream &stream)
 {
+	APISpecificData::TimerMaskGuard tmg;
 	for(int i=0; i<this->api->playingStream.size(); ++i)
 	{
 		if(this->api->playingStream[i].dat==&stream)
@@ -918,6 +964,7 @@ void YsSoundPlayer::StopStreamingAPISpecific(Stream &stream)
 }
 YSBOOL YsSoundPlayer::StreamPlayerReadyToAcceptNextNumSampleAPISpecific(const Stream &stream,unsigned int) const
 {
+	APISpecificData::TimerMaskGuard tmg;
 	if(0==stream.api->standBy.NTimeStep())
 	{
 		return YSTRUE;
@@ -926,6 +973,7 @@ YSBOOL YsSoundPlayer::StreamPlayerReadyToAcceptNextNumSampleAPISpecific(const St
 }
 YSRESULT YsSoundPlayer::AddNextStreamingSegmentAPISpecific(Stream &stream,const SoundData &dat)
 {
+	APISpecificData::TimerMaskGuard tmg;
 	if(0==stream.api->playing.NTimeStep())
 	{
 		stream.api->playing.CopyFrom(dat);
