@@ -194,6 +194,7 @@ public:
 #include <sys/time.h>
 #include <stdio.h>
 #include <pthread.h>
+#include <thread>
 #include <mutex>
 
 // https://stackoverflow.com/questions/21091000/how-to-get-thread-id-of-a-pthread-in-linux-c-program
@@ -269,6 +270,7 @@ void YsSoundPlayer::APISpecificData::EndTimer(void)
 		setitimer(ITIMER_REAL,&prevTimer,&timer);
 		signal(SIGALRM,prevSignalHandler);
 		timerRunning=false;
+		std::this_thread::sleep_for(std::chrono::milliseconds(10)); // Give 5 chances to flush pending signals.
 	}
 }
 void YsSoundPlayer::APISpecificData::MaskTimer(void)
@@ -486,7 +488,7 @@ YSRESULT YsSoundPlayer::APISpecificData::End(void)
 		}
 
 		auto found=std::find(activePlayers.begin(),activePlayers.end(),this);
-		if(activePlayers.end()==found)
+		if(activePlayers.end()!=found)
 		{
 			activePlayers.erase(found);
 		}
