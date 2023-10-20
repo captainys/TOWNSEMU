@@ -257,8 +257,8 @@ void YsSoundPlayer::APISpecificData::StartTimer(void)
 		timer.it_interval.tv_usec=0;
 		// Do not repeat.  Next timer will be set in the handler.
 		// This way prevents re-entrance problem.
-		setitimer(ITIMER_REAL,&timer,&prevTimer);
 		prevSignalHandler=signal(SIGALRM,TimerInterrupt);
+		setitimer(ITIMER_REAL,&timer,&prevTimer);
 		timerRunning=true;
 	}
 }
@@ -268,9 +268,10 @@ void YsSoundPlayer::APISpecificData::EndTimer(void)
 	{
 		struct itimerval timer;
 		setitimer(ITIMER_REAL,&prevTimer,&timer);
-		signal(SIGALRM,prevSignalHandler);
+		signal(SIGALRM,SIG_IGN);
 		timerRunning=false;
 		std::this_thread::sleep_for(std::chrono::milliseconds(10)); // Give 5 chances to flush pending signals.
+		signal(SIGALRM,prevSignalHandler);
 	}
 }
 void YsSoundPlayer::APISpecificData::MaskTimer(void)
