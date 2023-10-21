@@ -11,7 +11,7 @@
 
 
 // By uncommenting the following, KeepPlaying is unnecessary if the process has only one thread.
-#define ALSA_USE_INTERVAL_TIMER
+// #define ALSA_USE_INTERVAL_TIMER
 
 
 /*
