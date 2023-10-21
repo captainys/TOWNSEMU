@@ -173,6 +173,12 @@ YSRESULT YsSoundPlayer::StartStreaming(Stream &streamPlayer,StreamingOption opt)
 	return StartStreamingAPISpecific(streamPlayer,opt);
 }
 
+YSRESULT YsSoundPlayer::StartStreaming(Stream &streamPlayer)
+{
+	StreamingOption opt;
+	return StartStreamingAPISpecific(streamPlayer,opt);
+}
+
 void YsSoundPlayer::StopStreaming(Stream &streamPlayer)
 {
 	StopStreamingAPISpecific(streamPlayer);

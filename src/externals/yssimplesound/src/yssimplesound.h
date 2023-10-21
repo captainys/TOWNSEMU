@@ -179,9 +179,13 @@ public:
 	*/
 	void PlayBackground(SoundData &dat);
 
-	/*! Start play as a stream.  Additional 
+	/*! Start play as a stream.
 	*/
 	YSRESULT StartStreaming(Stream &streamPlayer,StreamingOption opt);
+
+	/*! Start play as a stream with default options.
+	*/
+	YSRESULT StartStreaming(Stream &streamPlayer);
 
 	/*! Stop a stream player.
 	*/
