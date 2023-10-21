@@ -265,6 +265,7 @@ private:
 	// Make Uncopiable <<
 
 	bool prepared=false;
+	bool IsPrepared(YsSoundPlayer &player);
 
 	friend class YsSoundPlayer;
 	class APISpecificDataPerSoundData;

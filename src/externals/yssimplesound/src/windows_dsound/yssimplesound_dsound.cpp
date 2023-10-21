@@ -8,6 +8,7 @@
 #include <dsound.h>
 
 #include "yssimplesound.h"
+#include <vector>
 
 
 #pragma comment(lib,"user32.lib")
@@ -55,6 +56,12 @@ public:
 	HWND hOwnWnd;
 	LPDIRECTSOUND8 dSound8;
 
+	// Recycle count is incremented every time Direct Sound 8 object is started.
+	// An associated data can compare recycleCount against the count when the buffer is prepared to
+	// check if the player has been ended and re-started, in which case, sound buffer was wiped with
+	// Direct Sound 8 object.
+	unsigned int recycleCount=0;
+
 	APISpecificData();
 	~APISpecificData();
 	void CleanUp(void);
@@ -72,7 +79,9 @@ private:
 class YsSoundPlayer::SoundData::APISpecificDataPerSoundData
 {
 public:
-	LPDIRECTSOUNDBUFFER dSoundBuf;
+	LPDIRECTSOUND8 dSound8Association=NULL;
+	LPDIRECTSOUNDBUFFER dSoundBuf=NULL;
+	unsigned int playerRecycleCount=~0;
 
 	APISpecificDataPerSoundData();
 	~APISpecificDataPerSoundData();
@@ -185,6 +194,7 @@ void YsSoundPlayer::APISpecificData::Start(void)
 			dSound8->SetCooperativeLevel(hOwnWnd,DSSCL_PRIORITY);
 		}
 	}
+	++recycleCount;
 }
 void YsSoundPlayer::APISpecificData::End(void)
 {
@@ -456,8 +466,22 @@ void YsSoundPlayer::SoundData::DeleteAPISpecificData(APISpecificDataPerSoundData
 	delete ptr;
 }
 
+bool YsSoundPlayer::SoundData::IsPrepared(YsSoundPlayer &player)
+{
+	if(player.api->recycleCount!=api->playerRecycleCount || player.api->dSound8!=api->dSound8Association)
+	{
+		return false;
+	}
+	return prepared;
+}
+
 YSRESULT YsSoundPlayer::SoundData::PreparePlay(YsSoundPlayer &player)
 {
+	if(player.api->recycleCount!=api->playerRecycleCount || player.api->dSound8!=api->dSound8Association)
+	{
+		// In this case, DirectSoundBuffer is gone with the player.
+		api->dSoundBuf=nullptr;
+	}
 	if(nullptr!=api->dSoundBuf)
 	{
 		return YSOK;
@@ -468,6 +492,8 @@ YSRESULT YsSoundPlayer::SoundData::PreparePlay(YsSoundPlayer &player)
 	}
 
 	api->CreateBuffer(player.api->dSound8,*this);
+	api->playerRecycleCount=player.api->recycleCount;
+	api->dSound8Association=player.api->dSound8;
 	if(nullptr!=api->dSoundBuf)
 	{
 		return YSOK;

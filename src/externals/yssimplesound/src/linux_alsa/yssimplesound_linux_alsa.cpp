@@ -975,6 +975,11 @@ void YsSoundPlayer::SoundData::DeleteAPISpecificData(APISpecificDataPerSoundData
 	delete ptr;
 }
 
+bool YsSoundPlayer::SoundData::IsPrepared(YsSoundPlayer &)
+{
+	return prepared;
+}
+
 YSRESULT YsSoundPlayer::SoundData::PreparePlay(YsSoundPlayer &player)
 {
 	APISpecificData::TimerMaskGuard tmg;

@@ -149,7 +149,7 @@ void YsSoundPlayer::PreparePlay(SoundData &dat)
 
 void YsSoundPlayer::PlayOneShot(SoundData &dat)
 {
-	if(true!=dat.prepared)
+	if(true!=dat.IsPrepared(*this))
 	{
 		PreparePlay(dat);
 	}
@@ -159,7 +159,7 @@ void YsSoundPlayer::PlayOneShot(SoundData &dat)
 }
 void YsSoundPlayer::PlayBackground(SoundData &dat)
 {
-	if(true!=dat.prepared)
+	if(true!=dat.IsPrepared(*this))
 	{
 		PreparePlay(dat);
 	}
