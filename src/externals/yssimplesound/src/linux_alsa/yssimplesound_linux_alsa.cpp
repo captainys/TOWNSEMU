@@ -8,6 +8,12 @@
 #define ALSA_PCM_NEW_HW_PARAMS_API
 #include <alsa/asoundlib.h>
 
+
+
+// By uncommenting the following, KeepPlaying is unnecessary if the process has only one thread.
+// #define ALSA_USE_INTERVAL_TIMER
+
+
 /*
 2015/10/21  About a broken promise of ALSA asynchronous playback.
 
@@ -35,6 +41,36 @@ However, in ALSA, you need to stop your main thread while ALSA's so-called async
 It is absolutely useless.
 
 Better use polling-based playback.  At least that way you can let your main thread do something useful, while keeping the audio played background.
+
+
+
+
+2023/10/17
+ALSA is the most difficult and the worst sound API I have ever used.  Especially, the API requires constant
+polling, which is very problematic.  This requirement substantially restricts the program structure.
+And many programmers are having difficulties (search StackOverflow).
+
+As a result, among macOS, Windows, and Linux versions of this YsSimpleSound library, only Linux version
+required constant call to KeepPlaying function.
+
+I let my students use this library for an assignment.  It was a disaster.  So many students didn't bother
+calling KeepPlaying in the main loop because it was unnecessary in Windows and macOS.
+
+But, that was before.
+
+Finally!  Interval Timer solved the problem.  One hiccup of the interval timer was that the signal
+SIGALRM could be sent to any thread.  If I don't do anything if the thread was not the audio thread,
+it at least prevented crash, but could not feed the next piece of wave to ALSA in time.
+
+The solution was to force sending SIGALRM to the audio thread to pthread_signal if another thread
+ended up receiving te signal.
+
+Still there was a possibility of reentrance, which was prevented by not set up interval timer.
+Instead, just set up a one-time timer, and then set a new timer in the timer handler.
+
+The last issue was ALSA seems to freeze randomly if I call one of snd_pcm_drop, snd_pcm_prepare, or snd_pcm_wait 
+while the PCM state is PREPARED.  I was doing it when PCM state was not RUNNING.  But, once I figured,
+simply not calling them when the state is PREPARED solved the problem.
 
 */
 
@@ -81,6 +117,7 @@ public:
 	unsigned int bufSizeInByte=0;
 	unsigned char *writeBuf=nullptr;
 
+	static std::vector <YsSoundPlayer::APISpecificData *> activePlayers;
 
 	APISpecificData();
 	~APISpecificData();
@@ -108,16 +145,23 @@ public:
 	void PrintState(int errCode);
 
 	double GetCurrentPosition(const SoundData &dat) const;
+
+	static void TimerInterrupt(int signum);
+	static void UserInterrupt(int signum);
+	static void StartTimer(void);
+	static void EndTimer(void);
+	static void MaskTimer(void);
+	static void UnmaskTimer(void);
+	class TimerMaskGuard;
 };
 
+std::vector <YsSoundPlayer::APISpecificData *> YsSoundPlayer::APISpecificData::activePlayers;
 
 class YsSoundPlayer::Stream::APISpecificData
 {
 public:
 	SoundData playing,standBy;
 };
-
-
 
 void YsSoundPlayer::APISpecificData::PlayingSound::Make(SoundData &dat,YSBOOL loop)
 {
@@ -141,6 +185,151 @@ public:
 	void CleanUp(void);
 };
 
+
+#ifdef ALSA_USE_INTERVAL_TIMER
+
+// Another attempt to un-necessitate KeepPlaying function. >>
+#include <unistd.h>
+#include <signal.h>
+#include <sys/time.h>
+#include <stdio.h>
+#include <pthread.h>
+#include <thread>
+#include <mutex>
+
+// https://stackoverflow.com/questions/21091000/how-to-get-thread-id-of-a-pthread-in-linux-c-program
+static pthread_t audioThread;
+static bool timerRunning=false;
+static struct itimerval prevTimer;
+static void (*prevSignalHandler)(int);
+static int maskLevel=0;
+
+void YsSoundPlayer::APISpecificData::TimerInterrupt(int signum)
+{
+	auto thisThread=pthread_self();
+	if(thisThread!=audioThread)
+	{
+		// This sigprocmask is supposed to disable signal sent to other thread.
+		// https://devarea.com/linux-handling-signals-in-a-multithreaded-application/
+		// But, doesn't work.
+		//static sigset_t sigset;
+		//sigemptyset(&sigset);
+		//sigaddset(&sigset,SIGALRM);
+		//sigprocmask(SIG_BLOCK,&sigset,NULL);
+
+		// This handler needs to be invoked in the audioThread, but if I
+		// do it, somehow the program hangs in player->KeepPlaying()
+		// It looks to crash when nothing is playing.
+		pthread_kill(audioThread,SIGALRM);
+
+		return;
+	}
+
+	if(0==maskLevel)
+	{
+		// Just in case.  If another threads intecepts the signal, and shot SIGALRM by pthread_kill,
+		// there might be a lag until the audio thread receives the signal.
+		// If the signal comes in while the timer signal is masked, do not call KeepPlaying, 
+		// but instead schedule next timer.
+		for(auto player : activePlayers)
+		{
+			player->KeepPlaying();
+		}
+	}
+
+	struct itimerval timer,prevTimer;
+	timer.it_value.tv_sec=0;
+	timer.it_value.tv_usec=2000; // 2ms timer.
+	timer.it_interval.tv_sec=0;
+	timer.it_interval.tv_usec=0;
+	setitimer(ITIMER_REAL,&timer,&prevTimer);
+}
+void YsSoundPlayer::APISpecificData::StartTimer(void)
+{
+	if(true!=timerRunning)
+	{
+		audioThread=pthread_self();
+
+		struct itimerval timer;
+		timer.it_value.tv_sec=0;
+		timer.it_value.tv_usec=2000; // 2ms timer.
+		timer.it_interval.tv_sec=0;
+		timer.it_interval.tv_usec=0;
+		// Do not repeat.  Next timer will be set in the handler.
+		// This way prevents re-entrance problem.
+		prevSignalHandler=signal(SIGALRM,TimerInterrupt);
+		setitimer(ITIMER_REAL,&timer,&prevTimer);
+		timerRunning=true;
+	}
+}
+void YsSoundPlayer::APISpecificData::EndTimer(void)
+{
+	if(true==timerRunning)
+	{
+		struct itimerval timer;
+		setitimer(ITIMER_REAL,&prevTimer,&timer);
+		signal(SIGALRM,SIG_IGN);
+		timerRunning=false;
+		std::this_thread::sleep_for(std::chrono::milliseconds(10)); // Give 5 chances to flush pending signals.
+		signal(SIGALRM,prevSignalHandler);
+	}
+}
+void YsSoundPlayer::APISpecificData::MaskTimer(void)
+{
+	if(true==timerRunning)
+	{
+		if(0==maskLevel)
+		{
+			sigset_t sigset;
+			sigemptyset(&sigset);
+			sigaddset(&sigset,SIGALRM);
+			sigprocmask(SIG_BLOCK,&sigset,NULL);
+		}
+		++maskLevel;
+	}
+}
+void YsSoundPlayer::APISpecificData::UnmaskTimer(void)
+{
+	if(true==timerRunning)
+	{
+		if(0<maskLevel)
+		{
+			--maskLevel;
+			if(0==maskLevel)
+			{
+				sigset_t sigset;
+				sigemptyset(&sigset);
+				sigaddset(&sigset,SIGALRM);
+				sigprocmask(SIG_UNBLOCK,&sigset,NULL);
+			}
+		}
+	}
+}
+class YsSoundPlayer::APISpecificData::TimerMaskGuard
+{
+public:
+	TimerMaskGuard()
+	{
+		MaskTimer();
+	}
+	~TimerMaskGuard()
+	{
+		UnmaskTimer();
+	}
+};
+// Another attempt to un-necessitate KeepPlaying function. <<
+#else
+void YsSoundPlayer::APISpecificData::TimerInterrupt(int){}
+void YsSoundPlayer::APISpecificData::UserInterrupt(int){}
+void YsSoundPlayer::APISpecificData::StartTimer(void){}
+void YsSoundPlayer::APISpecificData::EndTimer(void){}
+void YsSoundPlayer::APISpecificData::MaskTimer(void){}
+void YsSoundPlayer::APISpecificData::UnmaskTimer(void){}
+class YsSoundPlayer::APISpecificData::TimerMaskGuard
+{
+public:
+};
+#endif
 
 
 ////////////////////////////////////////////////////////////
@@ -261,32 +450,54 @@ YSRESULT YsSoundPlayer::APISpecificData::Start(void)
 	snd_pcm_wait(handle,1);
 
 
+	auto found=std::find(activePlayers.begin(),activePlayers.end(),this);
+	if(activePlayers.end()==found)
+	{
+		activePlayers.push_back(this);
+	}
+
+	StartTimer();
+
 	return YSOK;
 }
 YSRESULT YsSoundPlayer::APISpecificData::End(void)
 {
-	if(nullptr!=hwParam)
-	{
-		// This gives an error => snd_pcm_hw_params_free(hwParam);
-		hwParam=nullptr;
-	}
-	if(nullptr!=swParam)
-	{
-		// This gives an error => snd_pcm_sw_params_free(swParam);
-		swParam=nullptr;
-	}
-	if(nullptr!=handle)
-	{
-		snd_pcm_close(handle);
-		handle=nullptr;
-	}
-	if(nullptr!=writeBuf)
-	{
-		delete [] writeBuf;
-		writeBuf=nullptr;
-	}
-
 	CleanUp();
+
+	{
+		TimerMaskGuard tmg;
+
+		if(nullptr!=hwParam)
+		{
+			// This gives an error => snd_pcm_hw_params_free(hwParam);
+			hwParam=nullptr;
+		}
+		if(nullptr!=swParam)
+		{
+			// This gives an error => snd_pcm_sw_params_free(swParam);
+			swParam=nullptr;
+		}
+		if(nullptr!=handle)
+		{
+			snd_pcm_close(handle);
+			handle=nullptr;
+		}
+		if(nullptr!=writeBuf)
+		{
+			delete [] writeBuf;
+			writeBuf=nullptr;
+		}
+
+		auto found=std::find(activePlayers.begin(),activePlayers.end(),this);
+		if(activePlayers.end()!=found)
+		{
+			activePlayers.erase(found);
+		}
+	}
+	if(0==activePlayers.size())
+	{
+		EndTimer();
+	}
 
 	return YSOK;
 }
@@ -306,8 +517,11 @@ void YsSoundPlayer::APISpecificData::KeepPlaying(void)
 		snd_pcm_status_alloca(&pcmStatus);
 		snd_pcm_status(handle,pcmStatus);
 
-		if(SND_PCM_STATE_RUNNING!=pcmState)
+		if(SND_PCM_STATE_RUNNING!=pcmState && SND_PCM_STATE_PREPARED!=pcmState)
 		{
+			// 2023/10/19
+			// Call to the following three functions while the PCM state is PREPARED might freeze.
+			// If it is PREPARED, probably I don't have to do any of the three.
 			snd_pcm_drop(handle);
 			snd_pcm_prepare(handle);
 			snd_pcm_wait(handle,1);
@@ -456,6 +670,8 @@ void YsSoundPlayer::APISpecificData::DiscardEnded(void)
 
 bool YsSoundPlayer::APISpecificData::PopulateWriteBuffer(unsigned int &writePtr,unsigned int wavPtr,const SoundData *wavFile,YSBOOL loop,int nThSound)
 {
+	TimerMaskGuard tmg;
+
 	bool notLoopAndAllTheWayToEnd=false;
 
 	int64_t numSamplesIn=wavFile->GetNumSamplePerChannel();
@@ -537,6 +753,8 @@ bool YsSoundPlayer::APISpecificData::PopulateWriteBuffer(unsigned int &writePtr,
 
 void YsSoundPlayer::APISpecificData::PrintState(int errCode)
 {
+	TimerMaskGuard tmg;
+
 	if(0==errCode)
 	{
 	}
@@ -596,6 +814,8 @@ void YsSoundPlayer::APISpecificData::PrintState(int errCode)
 
 double YsSoundPlayer::APISpecificData::GetCurrentPosition(const SoundData &dat) const
 {
+	TimerMaskGuard tmg;
+
  	for(auto &p : playing)
 	{
 		if(&dat==p.dat)
@@ -632,11 +852,16 @@ void YsSoundPlayer::SetVolumeAPISpecific(SoundData &dat,float leftVol,float righ
 
 void YsSoundPlayer::KeepPlayingAPISpecific(void)
 {
+#ifndef ALSA_USE_INTERVAL_TIMER
+	APISpecificData::TimerMaskGuard tmg;
 	api->KeepPlaying();
+#endif
 }
 
 YSRESULT YsSoundPlayer::PlayOneShotAPISpecific(SoundData &dat)
 {
+	APISpecificData::TimerMaskGuard tmg;
+
 	for(auto &p : api->playing)
 	{
 		if(p.dat==&dat)
@@ -653,6 +878,8 @@ YSRESULT YsSoundPlayer::PlayOneShotAPISpecific(SoundData &dat)
 }
 YSRESULT YsSoundPlayer::PlayBackgroundAPISpecific(SoundData &dat)
 {
+	APISpecificData::TimerMaskGuard tmg;
+
 	for(auto &p : api->playing)
 	{
 		if(p.dat==&dat)
@@ -670,6 +897,8 @@ YSRESULT YsSoundPlayer::PlayBackgroundAPISpecific(SoundData &dat)
 
 YSBOOL YsSoundPlayer::IsPlayingAPISpecific(const SoundData &dat) const
 {
+	APISpecificData::TimerMaskGuard tmg;
+
 	for(auto &p : api->playing)
 	{
 		if(&dat==p.dat)
@@ -682,11 +911,14 @@ YSBOOL YsSoundPlayer::IsPlayingAPISpecific(const SoundData &dat) const
 
 double YsSoundPlayer::GetCurrentPositionAPISpecific(const SoundData &dat) const
 {
+	APISpecificData::TimerMaskGuard tmg;
 	return api->GetCurrentPosition(dat);
 }
 
 void YsSoundPlayer::StopAPISpecific(SoundData &dat)
 {
+	APISpecificData::TimerMaskGuard tmg;
+
 	YSBOOL stopped=YSFALSE;
 
 	for(auto &p : api->playing)
@@ -708,20 +940,24 @@ void YsSoundPlayer::StopAPISpecific(SoundData &dat)
 
 void YsSoundPlayer::PauseAPISpecific(SoundData &dat)
 {
+	APISpecificData::TimerMaskGuard tmg;
 }
 
 void YsSoundPlayer::ResumeAPISpecific(SoundData &dat)
 {
+	APISpecificData::TimerMaskGuard tmg;
 }
 
 ////////////////////////////////////////////////////////////
 
 YsSoundPlayer::SoundData::APISpecificDataPerSoundData::APISpecificDataPerSoundData()
 {
+	APISpecificData::TimerMaskGuard tmg;
 	CleanUp();
 }
 YsSoundPlayer::SoundData::APISpecificDataPerSoundData::~APISpecificDataPerSoundData()
 {
+	APISpecificData::TimerMaskGuard tmg;
 	CleanUp();
 }
 void YsSoundPlayer::SoundData::APISpecificDataPerSoundData::CleanUp(void)
@@ -741,6 +977,7 @@ void YsSoundPlayer::SoundData::DeleteAPISpecificData(APISpecificDataPerSoundData
 
 YSRESULT YsSoundPlayer::SoundData::PreparePlay(YsSoundPlayer &player)
 {
+	APISpecificData::TimerMaskGuard tmg;
 	Resample(player.api->rate);
 	ConvertToMono();
 	ConvertTo16Bit();
@@ -750,6 +987,7 @@ YSRESULT YsSoundPlayer::SoundData::PreparePlay(YsSoundPlayer &player)
 
 void YsSoundPlayer::SoundData::CleanUpAPISpecific(void)
 {
+	APISpecificData::TimerMaskGuard tmg;
 	api->CleanUp();
 }
 
@@ -767,6 +1005,7 @@ void YsSoundPlayer::Stream::DeleteAPISpecificData(APISpecificData *api)
 
 YSRESULT YsSoundPlayer::StartStreamingAPISpecific(Stream &stream,StreamingOption)
 {
+	APISpecificData::TimerMaskGuard tmg;
 	for(auto playingStream : this->api->playingStream)
 	{
 		if(playingStream.dat==&stream)
@@ -783,6 +1022,7 @@ YSRESULT YsSoundPlayer::StartStreamingAPISpecific(Stream &stream,StreamingOption
 }
 void YsSoundPlayer::StopStreamingAPISpecific(Stream &stream)
 {
+	APISpecificData::TimerMaskGuard tmg;
 	for(int i=0; i<this->api->playingStream.size(); ++i)
 	{
 		if(this->api->playingStream[i].dat==&stream)
@@ -794,6 +1034,7 @@ void YsSoundPlayer::StopStreamingAPISpecific(Stream &stream)
 }
 YSBOOL YsSoundPlayer::StreamPlayerReadyToAcceptNextNumSampleAPISpecific(const Stream &stream,unsigned int) const
 {
+	APISpecificData::TimerMaskGuard tmg;
 	if(0==stream.api->standBy.NTimeStep())
 	{
 		return YSTRUE;
@@ -802,6 +1043,7 @@ YSBOOL YsSoundPlayer::StreamPlayerReadyToAcceptNextNumSampleAPISpecific(const St
 }
 YSRESULT YsSoundPlayer::AddNextStreamingSegmentAPISpecific(Stream &stream,const SoundData &dat)
 {
+	APISpecificData::TimerMaskGuard tmg;
 	if(0==stream.api->playing.NTimeStep())
 	{
 		stream.api->playing.CopyFrom(dat);
