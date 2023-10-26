@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
+#include <ctype.h>
 #include "yssimplesound.h"
 
 YsSoundPlayer *YsSoundPlayer::currentPlayer=nullptr;
@@ -506,68 +507,109 @@ YSRESULT YsSoundPlayer::SoundData::LoadWav(BinaryInStream &inStream)
 	// Wait, is it fSize+12?  A new theory tells that "fmt " immediately following "WAVE"
 	// is a chunk???
 
-	if(inStream.Fetch(buf,8)!=8)
-	{
-		printf("Error in reading WAVEfmt.\n");
-		return YSERR;
-	}
-	if(strncmp((char *)buf,"WAVEfmt",7)!=0)
-	{
-		printf("Warning: WAVEfmt not found\n");
-	}
-
-
 	if(inStream.Fetch(buf,4)!=4)
 	{
-		printf("Error in reading header size.\n");
+		printf("Error in reading WAVE signature.\n");
 		return YSERR;
 	}
-	hdrSize=GetUnsigned(buf);
-	printf("Header Size=%d\n",hdrSize);
-
-
-	//    WORD  wFormatTag; 
-	//    WORD  nChannels; 
-	//    DWORD nSamplesPerSec; 
-	//    DWORD nAvgBytesPerSec; 
-	//    WORD  nBlockAlign; 
-	//    WORD  wBitsPerSample; 
-	//    WORD  cbSize; 
-	if(inStream.Fetch(buf,hdrSize)!=hdrSize)
+	if(strncmp((char *)buf,"WAVE",4)!=0)
 	{
-		printf("Error in reading header.\n");
-		return YSERR;
+		printf("Warning: WAVE signature not found\n");
 	}
-	wFormatTag=GetUnsignedShort(buf);
-	nChannels=GetUnsignedShort(buf+2);
-	nSamplesPerSec=GetUnsigned(buf+4);
-	nAvgBytesPerSec=GetUnsigned(buf+8);
-	nBlockAlign=GetUnsignedShort(buf+12);
-	wBitsPerSample=(hdrSize>=16 ? GetUnsignedShort(buf+14) : 0);
-	cbSize=(hdrSize>=18 ? GetUnsignedShort(buf+16) : 0);
-
-	printf("wFormatTag=%d\n",wFormatTag);
-	printf("nChannels=%d\n",nChannels);
-	printf("nSamplesPerSec=%d\n",nSamplesPerSec);
-	printf("nAvgBytesPerSec=%d\n",nAvgBytesPerSec);
-	printf("nBlockAlign=%d\n",nBlockAlign);
-	printf("wBitsPerSample=%d\n",wBitsPerSample);
-	printf("cbSize=%d\n",cbSize);
 
 
-
+	bool fmtSet=false,dataSet=false;
 	for(;;)
 	{
 		if(inStream.Fetch(buf,4)!=4)
 		{
-			printf("Error while waiting for data.\n");
-			return YSERR;
+			if(true!=fmtSet)
+			{
+				printf("Error WAVE format not set before the end of file.\n");
+				return YSERR;
+			}
+			if(true!=dataSet)
+			{
+				printf("Error WAVE data not set before the end of file.\n");
+				return YSERR;
+			}
+			break;
 		}
 
-		if((buf[0]=='d' || buf[0]=='D') && (buf[1]=='a' || buf[1]=='A') &&
-		   (buf[2]=='t' || buf[2]=='T') && (buf[3]=='a' || buf[3]=='A'))
+		buf[0]=toupper(buf[0]);
+		buf[1]=toupper(buf[1]);
+		buf[2]=toupper(buf[2]);
+		buf[3]=toupper(buf[3]);
+
+		if('F'==buf[0] && 'M'==buf[1] && 'T'==buf[2])
 		{
-			break;
+			if(true==fmtSet)
+			{
+				printf("Error: Multiple fmt tags.\n");
+				return YSERR;
+			}
+			if(inStream.Fetch(buf,4)!=4)
+			{
+				printf("Error in reading header size.\n");
+				return YSERR;
+			}
+			hdrSize=GetUnsigned(buf);
+			printf("Header Size=%d\n",hdrSize);
+
+			//    WORD  wFormatTag;
+			//    WORD  nChannels;
+			//    DWORD nSamplesPerSec;
+			//    DWORD nAvgBytesPerSec;
+			//    WORD  nBlockAlign;
+			//    WORD  wBitsPerSample;
+			//    WORD  cbSize;
+			if(inStream.Fetch(buf,hdrSize)!=hdrSize)
+			{
+				printf("Error in reading header.\n");
+				return YSERR;
+			}
+			wFormatTag=GetUnsignedShort(buf);
+			nChannels=GetUnsignedShort(buf+2);
+			nSamplesPerSec=GetUnsigned(buf+4);
+			nAvgBytesPerSec=GetUnsigned(buf+8);
+			nBlockAlign=GetUnsignedShort(buf+12);
+			wBitsPerSample=(hdrSize>=16 ? GetUnsignedShort(buf+14) : 0);
+			cbSize=(hdrSize>=18 ? GetUnsignedShort(buf+16) : 0);
+
+			printf("wFormatTag=%d\n",wFormatTag);
+			printf("nChannels=%d\n",nChannels);
+			printf("nSamplesPerSec=%d\n",nSamplesPerSec);
+			printf("nAvgBytesPerSec=%d\n",nAvgBytesPerSec);
+			printf("nBlockAlign=%d\n",nBlockAlign);
+			printf("wBitsPerSample=%d\n",wBitsPerSample);
+			printf("cbSize=%d\n",cbSize);
+
+			fmtSet=true;
+		}
+		else if(buf[0]=='D' && buf[1]=='A' && buf[2]=='T' && buf[3]=='A')
+		{
+			if(true==dataSet)
+			{
+				printf("Error: Multiple DATA tags appeared.\n");
+				return YSERR;
+			}
+
+			if(inStream.Fetch(buf,4)!=4)
+			{
+				printf("Error in reading data size.\n");
+				return YSERR;
+			}
+			dataSize=GetUnsigned(buf);
+			printf("Data Size=%d (0x%x)\n",dataSize,dataSize);
+
+			dat.resize(dataSize);
+			if((l=inStream.Fetch(dat.data(),dataSize))!=dataSize)
+			{
+				printf("Warning: File ended before reading all data.\n");
+				printf("  %d (0x%x) bytes have been read\n",l,l);
+			}
+
+			dataSet=true;
 		}
 		else
 		{
@@ -578,8 +620,6 @@ YSRESULT YsSoundPlayer::SoundData::LoadWav(BinaryInStream &inStream)
 				return YSERR;
 			}
 
-
-
 			l=GetUnsigned(buf);
 			if(inStream.Skip(l)!=l)
 			{
@@ -587,22 +627,6 @@ YSRESULT YsSoundPlayer::SoundData::LoadWav(BinaryInStream &inStream)
 				return YSERR;
 			}
 		}
-	}
-
-
-	if(inStream.Fetch(buf,4)!=4)
-	{
-		printf("Error in reading data size.\n");
-		return YSERR;
-	}
-	dataSize=GetUnsigned(buf);
-	printf("Data Size=%d (0x%x)\n",dataSize,dataSize);
-
-	dat.resize(dataSize);
-	if((l=inStream.Fetch(dat.data(),dataSize))!=dataSize)
-	{
-		printf("Warning: File ended before reading all data.\n");
-		printf("  %d (0x%x) bytes have been read\n",l,l);
 	}
 
 	this->stereo=(nChannels==2 ? YSTRUE : YSFALSE);
