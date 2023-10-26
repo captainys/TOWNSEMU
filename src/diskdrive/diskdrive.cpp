@@ -342,19 +342,38 @@ std::vector <uint8_t> DiskDrive::DiskImage::ReadAddress(int diskIdx,unsigned int
 					{
 						sectorPos=0;
 					}
-					auto &sector=trkPtr->sector[sectorPos];
+
+					std::vector <unsigned char> CHRN_CRC;
+					if(sectorPos<trkPtr->IDMark.size())
+					{
+						CHRN_CRC.resize(6);
+						// trkPtr->IDMark[sectorPos][1] is RDD command for ID Mark (2).
+						CHRN_CRC[0]=trkPtr->IDMark[sectorPos][1];
+						CHRN_CRC[1]=trkPtr->IDMark[sectorPos][2];
+						CHRN_CRC[2]=trkPtr->IDMark[sectorPos][3];
+						CHRN_CRC[3]=trkPtr->IDMark[sectorPos][4];
+						CHRN_CRC[4]=trkPtr->IDMark[sectorPos][5];
+						CHRN_CRC[5]=trkPtr->IDMark[sectorPos][6];
+					}
+					else
+					{
+						auto &sector=trkPtr->sector[sectorPos];
+						auto C=sector.cylinder;
+						auto H=sector.head;
+						auto R=sector.sector;
+						auto N=sector.sizeShift;
+
+						uint16_t crc_val = CalcCRC(std::vector<uint8_t>{0xfe, C, H, R, N, 0x00, 0x00});
+						CHRN_CRC.resize(6);
+						CHRN_CRC[0]=C;
+						CHRN_CRC[1]=H;
+						CHRN_CRC[2]=R;
+						CHRN_CRC[3]=N;
+						CHRN_CRC[4]=static_cast<unsigned char>(crc_val >> 8);
+						CHRN_CRC[5]=static_cast<unsigned char>(crc_val);
+					}
 					++sectorPos;
 
-					uint16_t crc_val = CalcCRC(std::vector<uint8_t>{0xfe, sector.cylinder, sector.head, sector.sector, sector.sizeShift, 0x00, 0x00});
-					std::vector <unsigned char> CHRN_CRC=
-					{
-						sector.cylinder,
-						sector.head,
-						sector.sector,
-						sector.sizeShift,
-						static_cast<unsigned char>(crc_val >> 8),
-						static_cast<unsigned char>(crc_val)
-					};
 					return CHRN_CRC;
 				}
 			}
