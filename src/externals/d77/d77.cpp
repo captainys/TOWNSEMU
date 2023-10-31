@@ -120,7 +120,7 @@ void D77File::D77Disk::D77Sector::CleanUp(void)
 	}
 	sectorDataSize=0; // Including the header.
 	sectorData.clear();
-	unstableByte.clear();
+	unstableBytes.clear();
 }
 bool D77File::D77Disk::D77Sector::SameCHR(const D77Sector &s) const
 {
@@ -411,22 +411,22 @@ void D77File::D77Disk::D77Track::IdentifyUnstableByte(void)
 
 	for(auto &s : sector)
 	{
-		s.unstableByte.clear();
+		s.unstableBytes.clear();
 	}
 
 	// If the value changes, can be an unstable byte.
 	for(int i=0; i<sector.size(); ++i)
 	{
 		auto &s0=sector[i];
-		if(0<s0.unstableByte.size()) // Already taken care?
+		if(0<s0.unstableBytes.size()) // Already taken care?
 		{
 			continue;
 		}
 
-		s0.unstableByte.resize(s0.sectorData.size());
-		for(int i=0; i<s0.unstableByte.size(); ++i)
+		s0.unstableBytes.resize(s0.sectorData.size());
+		for(int i=0; i<s0.unstableBytes.size(); ++i)
 		{
-			s0.unstableByte[i]=false;
+			s0.unstableBytes[i]=false;
 		}
 
 		for(int j=i+1; j<sector.size(); ++j)
@@ -438,7 +438,7 @@ void D77File::D77Disk::D77Track::IdentifyUnstableByte(void)
 				{
 					if(s0.sectorData[k]!=s1.sectorData[k])
 					{
-						s0.unstableByte[k]=true;
+						s0.unstableBytes[k]=true;
 					}
 				}
 			}
@@ -450,7 +450,7 @@ void D77File::D77Disk::D77Track::IdentifyUnstableByte(void)
 			auto &s1=sector[j];
 			if(true==s0.SameCHRNandActualSize(s1))
 			{
-				s1.unstableByte=s0.unstableByte;
+				s1.unstableBytes=s0.unstableBytes;
 			}
 		}
 	}
@@ -461,13 +461,13 @@ void D77File::D77Disk::D77Track::IdentifyUnstableByteRDD(void)
 {
 	for(auto &s : sector)
 	{
-		s.unstableByte.clear();
+		s.unstableBytes.clear();
 	}
 	// If the value changes, can be an unstable byte.
 	for(int i=0; i<sector.size(); ++i)
 	{
 		auto &s0=sector[i];
-		if(0<s0.unstableByte.size()) // Already taken care?
+		if(0<s0.unstableBytes.size()) // Already taken care?
 		{
 			continue;
 		}
@@ -476,10 +476,10 @@ void D77File::D77Disk::D77Track::IdentifyUnstableByteRDD(void)
 			continue;
 		}
 
-		s0.unstableByte.resize(s0.sectorData.size());
-		for(int i=0; i<s0.unstableByte.size(); ++i)
+		s0.unstableBytes.resize(s0.sectorData.size());
+		for(int i=0; i<s0.unstableBytes.size(); ++i)
 		{
-			s0.unstableByte[i]=false;
+			s0.unstableBytes[i]=false;
 		}
 
 		for(int j=i+1; j<sector.size(); ++j)
@@ -492,7 +492,7 @@ void D77File::D77Disk::D77Track::IdentifyUnstableByteRDD(void)
 				{
 					if(s0.sectorData[k]!=s1.sectorData[k])
 					{
-						s0.unstableByte[k]=true;
+						s0.unstableBytes[k]=true;
 					}
 				}
 			}
@@ -505,7 +505,7 @@ void D77File::D77Disk::D77Track::IdentifyUnstableByteRDD(void)
 			if(true==s1.resampled &&
 			   true==s0.SameCHRNandActualSize(s1))
 			{
-				s1.unstableByte=s0.unstableByte;
+				s1.unstableBytes=s0.unstableBytes;
 			}
 		}
 	}
@@ -518,7 +518,7 @@ void D77File::D77Disk::D77Track::UnidentifyUnstableByteForContinuousData(void)
 	// If the same byte repeats more than 4 bytes, it must be a stable byte,
 	for(auto &s : sector)
 	{
-		if(s.sectorData.size()==s.unstableByte.size())
+		if(s.sectorData.size()==s.unstableBytes.size())
 		{
 			for(int i=0; i+4<=s.sectorData.size(); ++i)
 			{
@@ -530,7 +530,7 @@ void D77File::D77Disk::D77Track::UnidentifyUnstableByteForContinuousData(void)
 				{
 					for(; i<j; ++i)
 					{
-						s.unstableByte[i]=false;
+						s.unstableBytes[i]=false;
 					}
 					--i;
 				}
@@ -835,7 +835,8 @@ std::vector <unsigned char> D77File::D77Disk::MakeRDDImage(void) const
 
 		for(auto IDMark : track[trk].IDMark)
 		{
-			bin.insert(bin.end(),IDMark.begin(),IDMark.end());
+			bin.insert(bin.end(),IDMark.data.begin(),IDMark.data.end());
+			IDMark.EncodeRDDUnstableBytes(bin);
 		}
 
 		if(0<track[trk].trackImage.size())
@@ -861,6 +862,7 @@ std::vector <unsigned char> D77File::D77Disk::MakeRDDImage(void) const
 				bin.push_back(0);
 			}
 		}
+		track[trk].EncodeRDDUnstableBytes(bin);
 
 		for(auto &s : track[trk].sector)
 		{
@@ -925,6 +927,8 @@ std::vector <unsigned char> D77File::D77Disk::MakeRDDImage(void) const
 			{
 				bin.push_back(0);
 			}
+
+			s.EncodeRDDUnstableBytes(bin);
 		}
 
 		// End Track
@@ -1105,6 +1109,7 @@ bool D77File::D77Disk::SetRDDImage(size_t &bytesUsed,size_t len,const unsigned c
 	ptr+=32;
 	unsigned int C=0,H=0;
 	D77Track *trkPtr=nullptr;
+	HasUnstableByteFlags *lastData=nullptr;
 	while(ptr+16<=len)
 	{
 		switch(rdd[ptr])
@@ -1118,16 +1123,18 @@ bool D77File::D77Disk::SetRDDImage(size_t &bytesUsed,size_t len,const unsigned c
 				track.resize(C*2+H+1);
 				trkPtr=&track.back();
 			}
+			lastData=nullptr;
 			break;
 		case 2: // ID Mark
 			if(nullptr!=trkPtr)
 			{
-				std::array <unsigned char,16> IDMark;
+				D77IDMark IDMark;
 				for(int i=0; i<16; ++i)
 				{
-					IDMark[i]=rdd[ptr+i];
+					IDMark.data[i]=rdd[ptr+i];
 				}
 				trkPtr->IDMark.push_back(IDMark);
+				lastData=&trkPtr->IDMark.back();
 			}
 			else
 			{
@@ -1173,6 +1180,7 @@ bool D77File::D77Disk::SetRDDImage(size_t &bytesUsed,size_t len,const unsigned c
 					sector.sectorData[i]=rdd[ptr+16+i];
 				}
 				trkPtr->sector.push_back(sector);
+				lastData=&trkPtr->sector.back();
 
 				for(auto &s : trkPtr->sector) // **** D77!
 				{
@@ -1206,6 +1214,7 @@ bool D77File::D77Disk::SetRDDImage(size_t &bytesUsed,size_t len,const unsigned c
 				{
 					trkPtr->trackImage.push_back(rdd[ptr+16+i]);
 				}
+				lastData=trkPtr;
 				ptr+=16+(realLen+15)&0xFFF0;
 			}
 			else
@@ -1225,6 +1234,32 @@ bool D77File::D77Disk::SetRDDImage(size_t &bytesUsed,size_t len,const unsigned c
 		case 6: // End of Disk.  Force it to be done
 			bytesUsed=ptr+16;
 			ptr=len;
+			break;
+		case 0x10: // Unstable byte flags
+			if(nullptr==lastData)
+			{
+				if(true==verboseMode)
+				{
+					fprintf(stderr,"Unstable byte flags without a data.\n");
+				}
+				return false;
+			}
+			else
+			{
+				unsigned int sz=rdd[ptr+2];
+				sz<<=8;
+				sz|=rdd[ptr+1];
+
+				lastData->unstableBytes.resize(sz);
+				for(unsigned int i=0; i<sz; ++i)
+				{
+					auto flag=rdd[ptr+16+(i/8)]&(1<<(i%8));
+					lastData->unstableBytes[i]=(0!=flag);
+				}
+
+				unsigned int skipSize=((sz+15)&~15);
+				ptr+=16+skipSize;
+			}
 			break;
 		default:
 			if(true==verboseMode)

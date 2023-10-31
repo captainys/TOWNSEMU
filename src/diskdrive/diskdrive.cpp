@@ -348,12 +348,12 @@ std::vector <uint8_t> DiskDrive::DiskImage::ReadAddress(int diskIdx,unsigned int
 					{
 						CHRN_CRC.resize(6);
 						// trkPtr->IDMark[sectorPos][1] is RDD command for ID Mark (2).
-						CHRN_CRC[0]=trkPtr->IDMark[sectorPos][1];
-						CHRN_CRC[1]=trkPtr->IDMark[sectorPos][2];
-						CHRN_CRC[2]=trkPtr->IDMark[sectorPos][3];
-						CHRN_CRC[3]=trkPtr->IDMark[sectorPos][4];
-						CHRN_CRC[4]=trkPtr->IDMark[sectorPos][5];
-						CHRN_CRC[5]=trkPtr->IDMark[sectorPos][6];
+						CHRN_CRC[0]=trkPtr->IDMark[sectorPos].data[1];
+						CHRN_CRC[1]=trkPtr->IDMark[sectorPos].data[2];
+						CHRN_CRC[2]=trkPtr->IDMark[sectorPos].data[3];
+						CHRN_CRC[3]=trkPtr->IDMark[sectorPos].data[4];
+						CHRN_CRC[4]=trkPtr->IDMark[sectorPos].data[5];
+						CHRN_CRC[5]=trkPtr->IDMark[sectorPos].data[6];
 					}
 					else
 					{
