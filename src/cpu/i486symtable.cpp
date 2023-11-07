@@ -374,14 +374,24 @@ unsigned int i486SymbolTable::GetRawDataBytes(i486DXCommon::FarPointer ptr) cons
 
 void i486SymbolTable::PrintIfAny(unsigned int SEG,unsigned int OFFSET,bool returnType,bool label,bool param) const
 {
+	auto str=GetFormattedSymbol(SEG,OFFSET,returnType,label,param);
+	if(""!=str)
+	{
+		std::cout << str << std::endl;
+	}
+}
+
+std::string i486SymbolTable::GetFormattedSymbol(unsigned int SEG,unsigned int OFFSET,bool returnType,bool label,bool param) const
+{
 	i486DXCommon::FarPointer ptr;
 	ptr.SEG=SEG;
 	ptr.OFFSET=OFFSET;
 	auto *sym=Find(ptr);
 	if(nullptr!=sym && (0<sym->label.size() || 0<sym->imported.size()))
 	{
-		std::cout << sym->Format(returnType,label,param) << std::endl;
+		return sym->Format(returnType,label,param);
 	}
+	return "";
 }
 
 std::vector <std::string> i486SymbolTable::GetList(bool returnType,bool label,bool param) const

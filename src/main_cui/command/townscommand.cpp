@@ -3629,7 +3629,12 @@ void TownsCommandInterpreter::Execute_Disassemble(FMTownsCommon &towns,Command &
 		i486DXCommon::InstructionAndOperand instOp;
 		MemoryAccess::ConstMemoryWindow emptyMemWin;
 
-		towns.debugger.GetSymTable().PrintIfAny(farPtr.SEG,farPtr.OFFSET);
+		auto sym=towns.debugger.GetSymTable().GetFormattedSymbol(farPtr.SEG,farPtr.OFFSET);
+		if(""!=sym)
+		{
+			std::cout << sym << std::endl;
+			towns.debugger.WriteLogFile(sym);
+		}
 		towns.CPU().DebugFetchInstruction(emptyMemWin,instOp,seg,farPtr.OFFSET,towns.mem);
 		auto &inst=instOp.inst;
 		auto &op1=instOp.op1;
@@ -3638,13 +3643,16 @@ void TownsCommandInterpreter::Execute_Disassemble(FMTownsCommon &towns,Command &
 		if(0<nRawBytes)
 		{
 			unsigned int unitBytes=1,segBytes=0,repeat=nRawBytes,chopOff=16;
-			std::cout << towns.CPU().DisassembleData(inst.addressSize,seg,farPtr.OFFSET,towns.mem,unitBytes,segBytes,repeat,chopOff) << std::endl;
+			auto line=towns.CPU().DisassembleData(inst.addressSize,seg,farPtr.OFFSET,towns.mem,unitBytes,segBytes,repeat,chopOff);
+			std::cout << line << std::endl;
+			towns.debugger.WriteLogFile(line);
 			farPtr.OFFSET+=nRawBytes;
 		}
 		else
 		{
 			auto disasm=towns.CPU().Disassemble(inst,op1,op2,seg,farPtr.OFFSET,towns.mem,towns.debugger.GetSymTable(),towns.debugger.GetIOTable());
 			std::cout << disasm << std::endl;
+			towns.debugger.WriteLogFile(disasm);
 			farPtr.OFFSET+=inst.numBytes;
 		}
 	}
