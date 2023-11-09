@@ -171,6 +171,7 @@ void YsSoundPlayer::PlayBackground(SoundData &dat)
 
 YSRESULT YsSoundPlayer::StartStreaming(Stream &streamPlayer,StreamingOption opt)
 {
+	streamPlayer.requestedRingBufferLengthMillisec=opt.ringBufferLengthMillisec;
 	return StartStreamingAPISpecific(streamPlayer,opt);
 }
 
@@ -197,6 +198,18 @@ YSBOOL YsSoundPlayer::StreamPlayerReadyToAcceptNextSegment(const Stream &streamP
 	{
 		return YSFALSE;
 	}
+
+	uint32_t millisec=dat.GetNumSamplePerChannel()*1000/dat.PlayBackRate();
+	if(streamPlayer.requestedRingBufferLengthMillisec<millisec*2)
+	{
+		// This output is added because one of my MMLPlayer sample was trying to send 1000 millisec at a time.
+		// It was fine in Linux and macOSX since the implementation was using double-buffering.
+		// It caused some trouble in Windows since the implementation was really using a ring-buffer.
+		printf("Number of Samples given to the stream player (%u) must be less than or equal\n",millisec);
+		printf("to the half of the requested ring-buffer size (%u)\n",streamPlayer.requestedRingBufferLengthMillisec);
+		return YSFALSE;
+	}
+
 	return StreamPlayerReadyToAcceptNextNumSample(streamPlayer,dat.GetNumSamplePerChannel());
 }
 

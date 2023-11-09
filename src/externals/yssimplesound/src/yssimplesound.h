@@ -467,6 +467,7 @@ private:
 
 	class APISpecificData;
 
+	uint32_t requestedRingBufferLengthMillisec=0;
 	APISpecificData *api=nullptr;
 
 	// Written in API-specific code
