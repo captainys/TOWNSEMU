@@ -1246,9 +1246,13 @@ bool D77File::D77Disk::SetRDDImage(size_t &bytesUsed,size_t len,const unsigned c
 			}
 			else
 			{
-				unsigned int sz=rdd[ptr+2];
+				// Size is initially was at +1 and +2.  It has been changed to +E and +F.
+				// However, at the time of change (although the spec was on the github
+				// for the short time) no .RDD with 10H tag was supposed to exist.
+				// So, it should be safe.  Hopefully.
+				unsigned int sz=rdd[ptr+0x0F];
 				sz<<=8;
-				sz|=rdd[ptr+1];
+				sz|=rdd[ptr+0x0E];
 
 				lastData->unstableBytes.resize(sz);
 				for(unsigned int i=0; i<sz; ++i)
