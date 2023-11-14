@@ -57,6 +57,7 @@ public:
 
 	bool noWait=true;
 	bool noWaitStandby=false;
+	bool fastSCSI=false,fastFD=false;
 
 	bool highResAvailable=true;
 

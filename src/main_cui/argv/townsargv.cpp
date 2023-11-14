@@ -80,6 +80,11 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "-NOWAITBOOT" << std::endl;
 	std::cout << "  No wait during the memory test, and then VM waits for real time when" << std::endl;
 	std::cout << "  VM time runs ahead of the real time." << std::endl;
+	std::cout << "-FASTSCSI" << std::endl;
+	std::cout << "-NORMALSCSI" << std::endl;
+	std::cout << "-FASTFD" << std::endl;
+	std::cout << "-NORMALFD" << std::endl;
+	std::cout << "  Control speed of SCSI and FDC.  Some program may not run with FASTSCSI or FASTFD" << std::endl;
 	std::cout << "-NOCATCHUPREALTIME" << std::endl;
 	std::cout << "  By default, when VM lags behind the real time, the VM timer is fast-forwarded to catch" << std::endl;
 	std::cout << "  up with the real time.  This will play YM2612 BGMs roughly correct timing." << std::endl;
@@ -451,6 +456,22 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		{
 			noWait=false;
 			noWaitStandby=false;
+		}
+		else if("-FASTSCSI"==ARG)
+		{
+			fastSCSI=true;
+		}
+		else if("-NORMALSCSI"==ARG || "-SLOWSCSI"==ARG)
+		{
+			fastSCSI=false;
+		}
+		else if("-FASTFD"==ARG)
+		{
+			fastFD=true;
+		}
+		else if("-NORMALFD"==ARG || "-SLOWFD"==ARG)
+		{
+			fastFD=false;
 		}
 		else if("-NOWAITBOOT"==ARG)
 		{

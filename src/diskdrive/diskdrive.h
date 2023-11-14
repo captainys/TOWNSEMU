@@ -42,6 +42,8 @@ public:
 		WRITE_TRACK_TIME=        1000000,  //  1ms in Nano Seconds.  Just took arbitrary.  Need to make it real.
 		ADDRMARK_READ_TIME=      1000000,  //  1ms in Nano Seconds.  Just took arbitrary.  Need to make it real.  But, keep it fast for the time being.
 		DISK_CHANGE_TIME=       50000000,  //  Minimum 50ms after disk insertion before drive is ready.
+
+		FAST_DRIVE_WAIT_TIME=      10000,
 	};
 	enum
 	{
@@ -53,6 +55,32 @@ public:
 		MEDIA_2HD_1440KB=5,
 		MEDIA_SINGLE_DENSITY=0xFF,  // Not supported by TSUGARU.
 	};
+
+	bool fastDrive=false;
+	unsigned int RestoreTime(void) const
+	{
+		return (true==fastDrive ? FAST_DRIVE_WAIT_TIME : RESTORE_TIME);
+	}
+	unsigned int SeekTime(void) const
+	{
+		return (true==fastDrive ? FAST_DRIVE_WAIT_TIME : SEEK_TIME);
+	}
+	unsigned int StepTime(void) const
+	{
+		return (true==fastDrive ? FAST_DRIVE_WAIT_TIME : STEP_TIME);
+	}
+	unsigned int SectorReadWriteTime(void) const
+	{
+		return (true==fastDrive ? FAST_DRIVE_WAIT_TIME : SECTOR_READ_WRITE_TIME);
+	}
+	unsigned int WriteTrackTime(void) const
+	{
+		return (true==fastDrive ? FAST_DRIVE_WAIT_TIME : WRITE_TRACK_TIME);
+	}
+	unsigned int AddrMarkReadTime(void) const
+	{
+		return (true==fastDrive ? FAST_DRIVE_WAIT_TIME : ADDRMARK_READ_TIME);
+	}
 
 	class Sector
 	{
