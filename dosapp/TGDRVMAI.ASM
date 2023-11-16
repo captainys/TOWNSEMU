@@ -105,13 +105,35 @@ INSTALL					PROC
 						PUSH	ES	; Save command parameter pointer
 						PUSH	SI
 
-
 						PUSH	CS
 						POP		DS
 
 						LEA		DX,MSG_INTRO
 						MOV		AH,09H
 						INT		21H
+
+						POP		SI
+						POP		ES
+
+
+						MOV		DX,2F10H ; VNDRV Tsugaru Check
+						MOV		AX,0F0FH
+						OUT		DX,AX
+
+						IN		AX,DX    ; Supposed to return NOT of the last written value.
+						CMP		AX,0F0F0H
+						JNE		NOT_TSUGARU
+
+						MOV		AX,5555H ; 0101010101010101b
+						OUT		DX,AX
+
+						IN		AX,DX
+						CMP		AX,0AAAAH ; 1010101010101010b
+						JNE		NOT_TSUGARU
+
+
+						PUSH	ES	; Save command parameter pointer
+						PUSH	SI
 
 						MOV		AX,6809h ; TGDRV Installation Check
 						INT		2FH
@@ -176,9 +198,9 @@ INSTALL_CHECKED:
 						LEA		SI,ASSIGNED_TGDRV_LETTERS
 DRIVE_MSG_LOOP:
 						PUSH	CX
+						LODSB
 						PUSH	SI
 
-						LODSB
 						MOV		CS:[MSG_DRIVES+6],AL
 
 						LEA		DX,MSG_DRIVES
@@ -203,14 +225,21 @@ ERRMSG_AND_EXIT:
 						STC
 						RET
 
+NOT_TSUGARU:
+						LEA		DX,MSG_NOT_TSUGARU
+						MOV		AH,09H
+						INT		21H
+						JMP		FAILED_INSTALL
+
 
 INSTALL					ENDP
 
 
 MSG_INTRO				DB		"TSUGARU HOST-VM File Sharing Driver TGDRV",0Dh,0Ah
 						DB		"By CaptainYS  http://www.ysflight.com",0Dh,0Ah
-						DB		"Version 20220209",0Dh,0Ah,0,'$'
+						DB		"Version 20231115B",0Dh,0Ah,0,'$'
 MSG_ALREADY_INSTALLED	DB		"TGDRV has already beein installed.",0Dh,0Ah,0,'$'
 MSG_INSTALLED			DB		"TGDRV has been installed.",0Dh,0Ah,0,'$'
 MSG_NOT_INSTALLED		DB		"TGDRV has not been installed.",0Dh,0Ah,0,'$'
+MSG_NOT_TSUGARU			DB		"Not on FM TOWNS Emulator Tsugaru.",0Dh,0Ah,0,'$'
 MSG_DRIVES				DB		"Drive  ",0Dh,0Ah,0,'$'
