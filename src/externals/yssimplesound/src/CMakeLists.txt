@@ -50,7 +50,7 @@ add_library(yssimplesound_nownd yssimplesound.cpp yssimplesound.h nownd/yssimple
 target_include_directories(yssimplesound_nownd PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_subdirectory(unittest)
-
+add_subdirectory(playwav)
 
 
 set(YS_ALL_BATCH_TEST ${YS_ALL_BATCH_TEST} PARENT_SCOPE)

@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <vector>
+#include <string.h>
 
 #include <fssimplewindow.h>
 #include <yssimplesound.h>
@@ -32,11 +33,16 @@ void MakeWaveData(std::vector <unsigned char> &wave)
 	}
 }
 
+void MakeSilence(std::vector <unsigned char> &wave)
+{
+	wave.resize(samplePerChannel*4);  // 4-bytes per sample * 44.1KHz = 1 second
+	memset((char *)wave.data(),0,wave.size());
+}
 
 int main(void)
 {
 	std::vector <unsigned char> wave;
-	MakeWaveData(wave);
+	MakeSilence(wave); // MakeWaveData(wave);
 
 	YsSoundPlayer::SoundData data;
 	data.CreateFromSigned16bitStereo(44100,wave);

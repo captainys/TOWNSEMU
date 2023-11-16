@@ -111,6 +111,7 @@ public:
 	/*! Writes to the IRQ Bank mask register. */
 	void WriteIRQBankMask(unsigned char value);
 
+protected:
 	/*! Writes to the ENV register. */
 	void WriteENV(unsigned char value);
 
@@ -132,6 +133,7 @@ public:
 	/*! Writes to ST register. */
 	void WriteST(unsigned char value);
 
+public:
 	/*! Writes to Wave RAM. */
 	inline void WriteWaveRAM(unsigned int offset,unsigned char value)
 	{
@@ -149,9 +151,9 @@ public:
 	    Returns actual number of samples filled in the buffer.  Number of bytes will be return-value*4.
 	    Buffer must be long enough for numSamples*4.
 	*/
-	unsigned int MakeWaveForNumSamples(unsigned char waveBuf[],unsigned int numSamples,int outSamplingRate);
+	unsigned int MakeWaveForNumSamples(unsigned char waveBuf[],unsigned int numSamples,int outSamplingRate,uint64_t lastWAVGenTime);
 
-	unsigned int AddWaveForNumSamples(unsigned char waveBuf[],unsigned int numSamples,int outSamplingRate);
+	unsigned int AddWaveForNumSamples(unsigned char waveBuf[],unsigned int numSamples,int outSamplingRate,uint64_t lastWAVGenTime);
 
 	/*! Returns true if playing.
 	*/
@@ -168,6 +170,28 @@ public:
 	/*!
 	*/
 	void SetUpNextSegment(unsigned int chNum);
+
+
+
+	/*! If useScheduling is false, VMTime can be 0.
+	    To use register scheduling, set useScheduling=true, and give VMTime to WriteRegister and MakeWaveForNumSamples / AddWaveForNumSamples.
+	*/
+	void WriteRegister(unsigned char reg,unsigned char data,uint64_t VMTimeInNS);
+
+private:
+	StartAndStopChannelBits ReallyWriteRegister(unsigned int reg,unsigned int value,uint64_t systemTimeInNS);
+	void WriteRegisterSchedule(unsigned int reg,unsigned int value,uint64_t systemTimeInNS);
+
+public:
+	class RegWriteLog
+	{
+	public:
+		unsigned char reg,data;
+		uint64_t systemTimeInNS;
+	};
+	bool useScheduling=false;
+	std::vector <RegWriteLog> regWriteSched;
+	void FlushRegisterSchedule(void);
 };
 
 

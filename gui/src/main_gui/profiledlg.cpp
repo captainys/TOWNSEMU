@@ -3,6 +3,7 @@
 #include <set>
 #include "profiledlg.h"
 #include "fsguiapp.h"
+#include "ysport.h"
 
 #include "ym2612.h"
 
@@ -445,6 +446,8 @@ void ProfileDialog::Make(void)
 		pcmVolumeText=AddStaticText(0,FSKEY_NULL,"00000",YSFALSE);
 		pcmVolumeSlider=AddHorizontalSlider(0,FSKEY_NULL,32,0.0,8192.0,YSFALSE);
 
+		maxSoundDoubldBufBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Maximum Double Buffering",YSTRUE);
+
 		EndAddTabItem();
 	}
 
@@ -468,6 +471,8 @@ void ProfileDialog::Make(void)
 		bootKeyBtn[12]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"DEBUG",YSFALSE);
 		bootKeyBtn[13]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"PAD_A",YSFALSE);
 		bootKeyBtn[14]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"PAD_B",YSFALSE);
+		bootKeyBtn[15]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"T",YSFALSE);
+		bootKeyBtn[16]=AddTextButton(0,FSKEY_NULL,FSGUI_RADIOBUTTON,"N",YSFALSE);
 		SetRadioButtonGroup(sizeof(bootKeyBtn)/sizeof(bootKeyBtn[0]),bootKeyBtn);
 
 		EndAddTabItem();
@@ -810,8 +815,14 @@ void ProfileDialog::OnSliderPositionChange(FsGuiSlider *slider,const double &pre
 {
 	if(ROMDirBtn==btn)
 	{
+		YsString defDir=ROMDirTxt->GetString();
+		if(0==defDir.Strcmp(""))
+		{
+			YsSpecialPath::GetUserDir(defDir);
+		}
+
 		YsString def;
-		def.MakeFullPathName(ROMDirTxt->GetString(),"FMT_SYS.ROM");
+		def.MakeFullPathName(defDir,"FMT_SYS.ROM");
 
 		auto fdlg=FsGuiDialog::CreateSelfDestructiveDialog<FsGuiFileDialog>();
 		fdlg->Initialize();
@@ -820,18 +831,27 @@ void ProfileDialog::OnSliderPositionChange(FsGuiSlider *slider,const double &pre
 		fdlg->title.Set(L"Select a ROM file (like FMT_SYS.ROM)");
 		fdlg->fileExtensionArray.Append(L".ROM");
 		fdlg->defaultFileName.SetUTF8String(def);
-		fdlg->BindCloseModalCallBack(&THISCLASS::OnSelectROMFile,this);
 		AttachModalDialog(fdlg);
+		fdlg->CallOnCloseModal([=,this](int returnCode)
+		{
+			if((int)YSOK==returnCode)
+			{
+				YsWString ful(fdlg->selectedFileArray[0]);
+				YsWString pth,fil;
+				ful.SeparatePathFile(pth,fil);
+				ROMDirTxt->SetText(pth);
+			}
+		});
 	}
 	if(CDImgBtn==btn)
 	{
 		std::vector <const wchar_t *> extList={L".CUE",L".ISO",L".MDS"};
-		Browse(L"CD Image",CDImgTxt,extList);
+		Browse(L"CD Image",CDImgTxt,GetDefaultCDImageFileName(),extList);
 	}
 	if(startUpStateFNameBtn==btn)
 	{
 		std::vector <const wchar_t *> extList={L".TState"};
-		Browse(L"Start-Up VM State",startUpStateFNameTxt,extList);
+		Browse(L"Start-Up VM State",startUpStateFNameTxt,GetDefaultStateFileName(),extList);
 	}
 	for(int i=0; i<2; ++i)
 	{
@@ -840,7 +860,7 @@ void ProfileDialog::OnSliderPositionChange(FsGuiSlider *slider,const double &pre
 			YsWString label(L"Floppy Drive ");
 			label.push_back('0'+i);
 			std::vector <const wchar_t *> extList={L".BIN",L".D77",L".RDD",L".D88",L".XDF"};
-			Browse(label,FDImgTxt[i],extList);
+			Browse(label,FDImgTxt[i],GetDefaultFDImageFileName(i),extList);
 		}
 	}
 	for(int i=0; i<sizeof(HDImgBtn)/sizeof(HDImgBtn[0]); ++i)
@@ -850,7 +870,7 @@ void ProfileDialog::OnSliderPositionChange(FsGuiSlider *slider,const double &pre
 			YsWString label(L"SCSI HDD ");
 			label.push_back('0'+i);
 			std::vector <const wchar_t *> extList={L".BIN",L".HDD",L".HDM",L".HDI",L".H0",L".H1",L".H2",L".H3"};
-			Browse(label,HDImgTxt[i],extList);
+			Browse(label,HDImgTxt[i],GetDefaultHDImageFileName(i),extList);
 		}
 	}
 	if(runBtn==btn)
@@ -935,22 +955,114 @@ void ProfileDialog::OnSliderPositionChange(FsGuiSlider *slider,const double &pre
 	}
 }
 
-void ProfileDialog::OnSelectROMFile(FsGuiDialog *dlg,int returnCode)
+YsString ProfileDialog::GetDefaultCDImageFileName(void)  const
 {
-	auto fdlg=dynamic_cast <FsGuiFileDialog *>(dlg);
-	if((int)YSOK==returnCode && nullptr!=fdlg)
+	YsString str=CDImgTxt->GetString();
+	if(0==str.Strcmp(""))
 	{
-		YsWString ful(fdlg->selectedFileArray[0]);
-		YsWString pth,fil;
-		ful.SeparatePathFile(pth,fil);
-		ROMDirTxt->SetText(pth);
+		str=MakeUpAnyImageFileName("*.CUE");
 	}
+	return str;
 }
-void ProfileDialog::Browse(const wchar_t label[],FsGuiTextBox *txt,std::vector <const wchar_t *> extList)
+YsString ProfileDialog::GetDefaultStateFileName(void)    const
+{
+	YsString str=startUpStateFNameTxt->GetString();
+	if(0==str.Strcmp(""))
+	{
+		str=MakeUpAnyImageFileName("*.tstate");
+	}
+	return str;
+}
+YsString ProfileDialog::GetDefaultFDImageFileName(int i) const
+{
+	YsString str;
+	for(auto txt : FDImgTxt)
+	{
+		if(nullptr!=txt)
+		{
+			str=txt->GetString();
+			if(0!=str.Strcmp(""))
+			{
+				break;
+			}
+		}
+	}
+	if(0==str.Strcmp(""))
+	{
+		str=MakeUpAnyImageFileName("*.D77");
+	}
+	return str;
+}
+YsString ProfileDialog::GetDefaultHDImageFileName(int i) const
+{
+	YsString str;
+	for(auto txt : HDImgTxt)
+	{
+		if(nullptr!=txt)
+		{
+			str=txt->GetString();
+			if(0!=str.Strcmp(""))
+			{
+				break;
+			}
+		}
+	}
+	if(0==str.Strcmp(""))
+	{
+		str=MakeUpAnyImageFileName("*.H0");
+	}
+	return str;
+}
+YsString ProfileDialog::MakeUpAnyImageFileName(YsString filePart) const
+{
+	YsString ful=canvasPtr->lastSelectedProfileFName.GetUTF8String();
+	if(0==ful.Strcmp(""))
+	{
+		ful=CDImgTxt->GetString();
+	}
+	if(0==ful.Strcmp(""))
+	{
+		for(auto txt : FDImgTxt)
+		{
+			if(nullptr!=txt && 0==ful.Strcmp(""))
+			{
+				ful=txt->GetString();
+			}
+		}
+	}
+	if(0==ful.Strcmp(""))
+	{
+		for(auto txt : HDImgTxt)
+		{
+			if(nullptr!=txt && 0==ful.Strcmp(""))
+			{
+				ful=txt->GetString();
+			}
+		}
+	}
+	if(0!=ful.Strcmp(""))
+	{
+		YsString str,path,file;
+		ful.SeparatePathFile(path,file);
+		str.MakeFullPathName(path,filePart);
+		return str;
+	}
+	return "";
+}
+
+void ProfileDialog::Browse(const wchar_t label[],FsGuiTextBox *txt,YsString dflt,std::vector <const wchar_t *> extList)
 {
 	nowBrowsingTxt=txt;
 
-	YsString def=ROMDirTxt->GetString();
+	YsString def=dflt;
+	if(0==def.Strcmp(""))
+	{
+		def=ROMDirTxt->GetString();
+	}
+	if(0==def.Strcmp(""))
+	{
+		YsSpecialPath::GetUserDir(def);
+	}
 
 	auto fdlg=FsGuiDialog::CreateSelfDestructiveDialog<FsGuiFileDialog>();
 	fdlg->Initialize();
@@ -962,16 +1074,15 @@ void ProfileDialog::Browse(const wchar_t label[],FsGuiTextBox *txt,std::vector <
 		fdlg->fileExtensionArray.Append(ext);
 	}
 	fdlg->defaultFileName.SetUTF8String(def);
-	fdlg->BindCloseModalCallBack(&THISCLASS::OnSelectFile,this);
 	AttachModalDialog(fdlg);
-}
-void ProfileDialog::OnSelectFile(FsGuiDialog *dlg,int returnCode)
-{
-	auto fdlg=dynamic_cast <FsGuiFileDialog *>(dlg);
-	if((int)YSOK==returnCode && nullptr!=fdlg)
+
+	fdlg->CallOnCloseModal([=,this](int returnCode)
 	{
-		nowBrowsingTxt->SetText(fdlg->selectedFileArray[0]);
-	}
+		if((int)YSOK==returnCode)
+		{
+			nowBrowsingTxt->SetText(fdlg->selectedFileArray[0]);
+		}
+	});
 }
 
 void ProfileDialog::BrowseSaveAs(const wchar_t label[],FsGuiTextBox *txt,std::vector <const wchar_t *> extList)
@@ -990,7 +1101,7 @@ void ProfileDialog::BrowseSaveAs(const wchar_t label[],FsGuiTextBox *txt,std::ve
 		fdlg->fileExtensionArray.Append(ext);
 	}
 	fdlg->defaultFileName.SetUTF8String(def);
-	fdlg->BindCloseModalCallBack(&THISCLASS::OnSelectFile,this);
+	fdlg->BindCloseModalCallBack(&THISCLASS::OnSelectFileSaveAs,this);
 	AttachModalDialog(fdlg);
 }
 void ProfileDialog::OnSelectFileSaveAs(FsGuiDialog *dlg,int returnCode)
@@ -1167,6 +1278,7 @@ TownsProfile ProfileDialog::GetProfile(void) const
 	{
 		profile.pcmVol=-1;
 	}
+	profile.maximumSoundDoubleBuffering=(YSTRUE==maxSoundDoubldBufBtn->GetCheck());
 
 	profile.cdSpeed=CDSpeedDrp->GetSelection();
 	if(profile.cdSpeed<0)
@@ -1407,6 +1519,8 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 		pcmVolumeSlider->SetPositionByScaledValue(profile.pcmVol);
 		UpdatePCMVolumeText();
 	}
+	maxSoundDoubldBufBtn->SetCheck(profile.maximumSoundDoubleBuffering ? YSTRUE : YSFALSE);
+
 
 	CDSpeedDrp->Select(profile.cdSpeed);
 

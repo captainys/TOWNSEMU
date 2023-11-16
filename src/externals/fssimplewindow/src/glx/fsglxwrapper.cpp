@@ -450,6 +450,11 @@ void FsSetWindowTitle(const char windowTitle[])
 
 void FsPollDevice(void)
 {
+	if(NULL==ysXWnd)
+	{
+		return;
+	}
+
 	int i,fsKey,fsKey2;
 	char chr;
 	KeySym ks;

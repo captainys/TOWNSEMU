@@ -145,6 +145,10 @@ public:
 	*/
 	void PrintIfAny(unsigned int SEG,unsigned int OFFSET,bool returnType=false,bool label=true,bool param=true) const;
 
+	/*! Return a formatted symbol for the SEG:OFFSET.  If no symbol, returns "".
+	*/
+	std::string GetFormattedSymbol(unsigned int SEG,unsigned int OFFSET,bool returnType=false,bool label=true,bool param=true) const;
+
 	/*! This function does exhaustive search.
 	*/
 	std::pair <i486DXCommon::FarPointer,i486Symbol> FindSymbolFromLabel(const std::string &label) const;

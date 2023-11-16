@@ -1438,7 +1438,7 @@ void FsSimpleWindowConnection::WindowConnection::Start(void)
 	}
 	else
 	{
-		FsResizeWindow(wid,hei);
+		FsResizeWindow(wid,hei+STATUS_HEI);
 	}
 
 	switch(windowModeOnStartUp)

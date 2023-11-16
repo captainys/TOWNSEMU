@@ -40,7 +40,7 @@ public:
 	FsGuiTextBox *mouseMinXTxt,*mouseMinYTxt,*mouseMaxXTxt,*mouseMaxYTxt;
 	FsGuiTextBox *maxButtonHoldTimeTxt[2][2];
 
-	FsGuiButton *bootKeyBtn[15];
+	FsGuiButton *bootKeyBtn[17];
 	FsGuiTextBox *scrnScaleTxt;
 	FsGuiButton *scrnAutoScaleBtn;
 	FsGuiDropList *scrnModeDrp;
@@ -83,6 +83,7 @@ public:
 	FsGuiStatic *fmVolumeText,*pcmVolumeText;
 	FsGuiButton *fmVolumeDefaultBtn,*pcmVolumeDefaultBtn;
 	FsGuiSlider *fmVolumeSlider,*pcmVolumeSlider;
+	FsGuiButton *maxSoundDoubldBufBtn;
 
 
 	FsGuiDropList *hostShortCutKeyLabelDrp[MAX_NUM_HOST_SHORTCUT];
@@ -117,11 +118,15 @@ public:
 	virtual void OnDropListSelChange(FsGuiDropList *drp,int prevSel);
 
 	virtual void OnButtonClick(FsGuiButton *btn);
-	void OnSelectROMFile(FsGuiDialog *dlg,int returnCode);
+
+	YsString GetDefaultCDImageFileName(void) const;
+	YsString GetDefaultStateFileName(void) const;
+	YsString GetDefaultFDImageFileName(int i) const;
+	YsString GetDefaultHDImageFileName(int i) const;
+	YsString MakeUpAnyImageFileName(YsString filePart) const;
 
 	FsGuiTextBox *nowBrowsingTxt=nullptr;
-	void Browse(const wchar_t label[],FsGuiTextBox *txt,std::vector <const wchar_t *> extList);
-	void OnSelectFile(FsGuiDialog *dlg,int returnCode);
+	void Browse(const wchar_t label[],FsGuiTextBox *txt,YsString dflt,std::vector <const wchar_t *> extList);
 
 	void BrowseDir(const wchar_t label[],FsGuiTextBox *txt,std::vector <const wchar_t *> extList);
 	void OnSelectDir(FsGuiDialog *dlg,int returnCode);

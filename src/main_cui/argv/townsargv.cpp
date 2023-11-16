@@ -80,6 +80,11 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "-NOWAITBOOT" << std::endl;
 	std::cout << "  No wait during the memory test, and then VM waits for real time when" << std::endl;
 	std::cout << "  VM time runs ahead of the real time." << std::endl;
+	std::cout << "-FASTSCSI" << std::endl;
+	std::cout << "-NORMALSCSI" << std::endl;
+	std::cout << "-FASTFD" << std::endl;
+	std::cout << "-NORMALFD" << std::endl;
+	std::cout << "  Control speed of SCSI and FDC.  Some program may not run with FASTSCSI or FASTFD" << std::endl;
 	std::cout << "-NOCATCHUPREALTIME" << std::endl;
 	std::cout << "  By default, when VM lags behind the real time, the VM timer is fast-forwarded to catch" << std::endl;
 	std::cout << "  up with the real time.  This will play YM2612 BGMs roughly correct timing." << std::endl;
@@ -214,6 +219,8 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "-FMVOL volume" << std::endl;
 	std::cout << "-PCMVOL volume" << std::endl;
 	std::cout << "  Specify FM/PCM volume.  Volume will be rounded to 0 to 8192." << std::endl;
+	std::cout << "-MAXSNDDBLBUF" << std::endl;
+	std::cout << "  Try this option if the sound is choppy or hear static noise." << std::endl;
 	std::cout << "-DAMPERWIRELINE" << std::endl;
 	std::cout << "  Render damper-wire line to make you feel nostalgic." << std::endl;
 	std::cout << "-TOWNSTYPE" << std::endl;
@@ -449,6 +456,22 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		{
 			noWait=false;
 			noWaitStandby=false;
+		}
+		else if("-FASTSCSI"==ARG)
+		{
+			fastSCSI=true;
+		}
+		else if("-NORMALSCSI"==ARG || "-SLOWSCSI"==ARG)
+		{
+			fastSCSI=false;
+		}
+		else if("-FASTFD"==ARG)
+		{
+			fastFD=true;
+		}
+		else if("-NORMALFD"==ARG || "-SLOWFD"==ARG)
+		{
+			fastFD=false;
 		}
 		else if("-NOWAITBOOT"==ARG)
 		{
@@ -705,10 +728,18 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 			{
 				bootKeyComb=BOOT_KEYCOMB_PAD_B;
 			}
+			else if("FAST"==COMB || "T"==COMB)
+			{
+				bootKeyComb=BOOT_KEYCOMB_FASTMODE;
+			}
+			else if("SLOW"==COMB || "N"==COMB)
+			{
+				bootKeyComb=BOOT_KEYCOMB_SLOWMODE;
+			}
 			else
 			{
 				std::cout << "Undefined boot-key combination:" << argv[i+1] << std::endl;
-				std::cout << "Must be one of: NONE,CD,F0,F1,F2,F3,H0,H1,H2,H3,H4,ICM,DEBUG,PADA,PADB." << std::endl;
+				std::cout << "Must be one of: NONE,CD,F0,F1,F2,F3,H0,H1,H2,H3,H4,ICM,DEBUG,PADA,PADB,T,N." << std::endl;
 				return false;
 			}
 			++i;
@@ -854,6 +885,10 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 			}
 			pcmVol=vol;
 			++i;
+		}
+		else if("-MAXSNDDBLBUF"==ARG)
+		{
+			maximumSoundDoubleBuffering=true;
 		}
 		else if("-ICM"==ARG && i+1<argc)
 		{

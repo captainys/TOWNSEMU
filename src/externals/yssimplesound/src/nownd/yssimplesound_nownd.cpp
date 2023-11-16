@@ -122,6 +122,11 @@ void YsSoundPlayer::SoundData::DeleteAPISpecificData(APISpecificDataPerSoundData
 	delete ptr;
 }
 
+bool YsSoundPlayer::SoundData::IsPrepared(YsSoundPlayer &player)
+{
+	return false;
+}
+
 YSRESULT YsSoundPlayer::SoundData::PreparePlay(YsSoundPlayer &player)
 {
 	return YSOK;

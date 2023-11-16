@@ -212,6 +212,14 @@ unsigned int TownsStrToKeyComb(std::string str)
 	{
 		return BOOT_KEYCOMB_PAD_B;
 	}
+	if("T"==str || "t"==str || "FAST"==str || "fast"==str)
+	{
+		return BOOT_KEYCOMB_FASTMODE;
+	}
+	if("N"==str || "n"==str || "SLOW"==str || "slow"==str)
+	{
+		return BOOT_KEYCOMB_SLOWMODE;
+	}
 	return BOOT_KEYCOMB_NONE;
 }
 
@@ -249,6 +257,10 @@ std::string TownsKeyCombToStr(unsigned int keycomb)
 		return "PADA";
 	case BOOT_KEYCOMB_PAD_B:
 		return "PADB";
+	case BOOT_KEYCOMB_FASTMODE:
+		return "FAST";
+	case BOOT_KEYCOMB_SLOWMODE:
+		return "SLOW";
 	}
 	return "NONE";
 }

@@ -64,6 +64,7 @@ void FMTownsCommon::State::PowerOn(void)
 		return false;
 	}
 
+	towns.fdc.fastDrive=argv.fastFD;
 	towns.fdc.searchPaths=argv.fdSearchPaths;
 	for(int drv=0; drv<4; ++drv)
 	{
@@ -102,6 +103,7 @@ void FMTownsCommon::State::PowerOn(void)
 		towns.cdrom.state.maxSeekTime=TOWNS_CD_SEEK_TIME_1X/argv.cdSpeed;
 	}
 
+	towns.scsi.fastMode=argv.fastSCSI;
 	for(int scsiID=0; scsiID<TownsStartParameters::MAX_NUM_SCSI_DEVICES; ++scsiID)
 	{
 		auto scsi=argv.scsiImg[scsiID];
@@ -242,6 +244,7 @@ void FMTownsCommon::State::PowerOn(void)
 	{
 		towns.sound.state.rf5c68.state.volume=argv.pcmVol;
 	}
+	towns.sound.var.maximumDoubleBuffering=argv.maximumSoundDoubleBuffering;
 
 	if(true==argv.powerOffAtBreakPoint)
 	{

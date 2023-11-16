@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <chrono>
 #include "yssimplesound.h"
 
 
@@ -43,6 +44,9 @@ public:
 	void CleanUp(void);
 
 	YsAVSound *sndPtr;
+	decltype(std::chrono::high_resolution_clock::now()) t0;
+	// AVFoundation has a bug that lastRenderTime returns an incorrect time until about 0.1 second into the play back.
+	// It needs to remember when play-back is started and return zero until it reaches the threshold.
 };
 
 
@@ -114,6 +118,7 @@ YSRESULT YsSoundPlayer::PlayOneShotAPISpecific(SoundData &dat)
 {
 	if(nullptr!=dat.api->sndPtr)
 	{
+		dat.api->t0=std::chrono::high_resolution_clock::now();
 		YsSimpleSound_OSX_SetVolume(api->enginePtr,dat.api->sndPtr,dat.playBackVolumeLeft);
 		YsSimpleSound_OSX_PlayOneShot(api->enginePtr,dat.api->sndPtr);
 		return YSOK;
@@ -125,6 +130,7 @@ YSRESULT YsSoundPlayer::PlayBackgroundAPISpecific(SoundData &dat)
 {
 	if(nullptr!=dat.api->sndPtr)
 	{
+		dat.api->t0=std::chrono::high_resolution_clock::now();
 		YsSimpleSound_OSX_SetVolume(api->enginePtr,dat.api->sndPtr,dat.playBackVolumeLeft);
 		YsSimpleSound_OSX_PlayBackground(api->enginePtr,dat.api->sndPtr);
 		return YSOK;
@@ -145,6 +151,14 @@ double YsSoundPlayer::GetCurrentPositionAPISpecific(const SoundData &dat) const
 {
 	if(nullptr!=dat.api->sndPtr)
 	{
+		auto dt=std::chrono::high_resolution_clock::now()-dat.api->t0;
+		auto tick=std::chrono::duration_cast<std::chrono::milliseconds>(dt).count();
+		if(tick<50)
+		{
+			// AVFoundation class has a bug that lastRenderTime reporst incorrect time until
+			// some time into the play back.
+			return 0.0;
+		}
 		return YsSimpleSound_OSX_GetCurrentPosition(api->enginePtr,dat.api->sndPtr);
 	}
 	return 0.0;
@@ -211,6 +225,11 @@ YsSoundPlayer::SoundData::APISpecificDataPerSoundData *YsSoundPlayer::SoundData:
 void YsSoundPlayer::SoundData::DeleteAPISpecificData(APISpecificDataPerSoundData *ptr)
 {
 	delete ptr;
+}
+
+bool YsSoundPlayer::SoundData::IsPrepared(YsSoundPlayer &player)
+{
+	return prepared;
 }
 
 YSRESULT YsSoundPlayer::SoundData::PreparePlay(YsSoundPlayer &player)

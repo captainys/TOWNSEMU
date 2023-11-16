@@ -101,7 +101,32 @@ public:
 		MESSAGE_DELAY=500000,
 		STATUS_DELAY=500000,
 		IOTHREAD_WAIT_INTERVAL=100000,
+
+		FAST_SCSI_INTERVAL=1000,  // 1us.
 	};
+
+	bool fastMode=false;
+	unsigned int CommandRequestInterval(void)
+	{
+		return (true==fastMode ? FAST_SCSI_INTERVAL : COMMAND_REQUEST_INTERVAL);
+	}
+	unsigned int DataInterval(void)
+	{
+		return (true==fastMode ? FAST_SCSI_INTERVAL : DATA_INTERVAL);
+	}
+	unsigned int CommandDelay(void)
+	{
+		return (true==fastMode ? FAST_SCSI_INTERVAL : COMMAND_DELAY);
+	}
+	unsigned int MessageDelay(void)
+	{
+		return (true==fastMode ? FAST_SCSI_INTERVAL : MESSAGE_DELAY);
+	}
+	unsigned int StatusDelay(void)
+	{
+		return (true==fastMode ? FAST_SCSI_INTERVAL : STATUS_DELAY);
+	}
+
 
 	enum
 	{

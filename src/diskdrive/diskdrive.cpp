@@ -342,19 +342,38 @@ std::vector <uint8_t> DiskDrive::DiskImage::ReadAddress(int diskIdx,unsigned int
 					{
 						sectorPos=0;
 					}
-					auto &sector=trkPtr->sector[sectorPos];
+
+					std::vector <unsigned char> CHRN_CRC;
+					if(sectorPos<trkPtr->IDMark.size())
+					{
+						CHRN_CRC.resize(6);
+						// trkPtr->IDMark[sectorPos][1] is RDD command for ID Mark (2).
+						CHRN_CRC[0]=trkPtr->IDMark[sectorPos].data[1];
+						CHRN_CRC[1]=trkPtr->IDMark[sectorPos].data[2];
+						CHRN_CRC[2]=trkPtr->IDMark[sectorPos].data[3];
+						CHRN_CRC[3]=trkPtr->IDMark[sectorPos].data[4];
+						CHRN_CRC[4]=trkPtr->IDMark[sectorPos].data[5];
+						CHRN_CRC[5]=trkPtr->IDMark[sectorPos].data[6];
+					}
+					else
+					{
+						auto &sector=trkPtr->sector[sectorPos];
+						auto C=sector.cylinder;
+						auto H=sector.head;
+						auto R=sector.sector;
+						auto N=sector.sizeShift;
+
+						uint16_t crc_val = CalcCRC(std::vector<uint8_t>{0xfe, C, H, R, N, 0x00, 0x00});
+						CHRN_CRC.resize(6);
+						CHRN_CRC[0]=C;
+						CHRN_CRC[1]=H;
+						CHRN_CRC[2]=R;
+						CHRN_CRC[3]=N;
+						CHRN_CRC[4]=static_cast<unsigned char>(crc_val >> 8);
+						CHRN_CRC[5]=static_cast<unsigned char>(crc_val);
+					}
 					++sectorPos;
 
-					uint16_t crc_val = CalcCRC(std::vector<uint8_t>{0xfe, sector.cylinder, sector.head, sector.sector, sector.sizeShift, 0x00, 0x00});
-					std::vector <unsigned char> CHRN_CRC=
-					{
-						sector.cylinder,
-						sector.head,
-						sector.sector,
-						sector.sizeShift,
-						static_cast<unsigned char>(crc_val >> 8),
-						static_cast<unsigned char>(crc_val)
-					};
 					return CHRN_CRC;
 				}
 			}
@@ -972,7 +991,7 @@ void DiskDrive::SendCommand(unsigned int cmd,uint64_t vmTime)
 		switch(cmd&0xF0)
 		{
 		case 0x00: // Restore
-			vmPtr->ScheduleDeviceCallBack(*this,vmTime+RESTORE_TIME);
+			vmPtr->ScheduleDeviceCallBack(*this,vmTime+RestoreTime());
 			state.recordType=false;
 			state.recordNotFound=false;
 			state.CRCError=false;
@@ -982,7 +1001,7 @@ void DiskDrive::SendCommand(unsigned int cmd,uint64_t vmTime)
 			state.busy=true;
 			break;
 		case 0x10: // Seek
-			vmPtr->ScheduleDeviceCallBack(*this,vmTime+SEEK_TIME);
+			vmPtr->ScheduleDeviceCallBack(*this,vmTime+SeekTime());
 			state.recordType=false;
 			state.recordNotFound=false;
 			state.CRCError=false;
@@ -993,7 +1012,7 @@ void DiskDrive::SendCommand(unsigned int cmd,uint64_t vmTime)
 			break;
 		case 0x20: // Step?
 		case 0x30: // Step?
-			vmPtr->ScheduleDeviceCallBack(*this,vmTime+STEP_TIME);
+			vmPtr->ScheduleDeviceCallBack(*this,vmTime+StepTime());
 			state.recordType=false;
 			state.recordNotFound=false;
 			state.CRCError=false;
@@ -1004,7 +1023,7 @@ void DiskDrive::SendCommand(unsigned int cmd,uint64_t vmTime)
 			break;
 		case 0x40: // Step In
 		case 0x50: // Step In
-			vmPtr->ScheduleDeviceCallBack(*this,vmTime+STEP_TIME);
+			vmPtr->ScheduleDeviceCallBack(*this,vmTime+StepTime());
 			state.recordType=false;
 			state.recordNotFound=false;
 			state.CRCError=false;
@@ -1015,7 +1034,7 @@ void DiskDrive::SendCommand(unsigned int cmd,uint64_t vmTime)
 			break;
 		case 0x60: // Step Out
 		case 0x70: // Step Out
-			vmPtr->ScheduleDeviceCallBack(*this,vmTime+STEP_TIME);
+			vmPtr->ScheduleDeviceCallBack(*this,vmTime+StepTime());
 			state.recordType=false;
 			state.recordNotFound=false;
 			state.CRCError=false;
@@ -1027,7 +1046,7 @@ void DiskDrive::SendCommand(unsigned int cmd,uint64_t vmTime)
 
 		case 0x80: // Read Data (Read Sector)
 		case 0x90: // Read Data (Read Sector)
-			vmPtr->ScheduleDeviceCallBack(*this,vmTime+SECTOR_READ_WRITE_TIME);
+			vmPtr->ScheduleDeviceCallBack(*this,vmTime+SectorReadWriteTime());
 			state.recordType=false;
 			state.recordNotFound=false;
 			state.CRCError=false;
@@ -1044,7 +1063,7 @@ void DiskDrive::SendCommand(unsigned int cmd,uint64_t vmTime)
 			break;
 		case 0xA0: // Write Data (Write Sector)
 		case 0xB0: // Write Data (Write Sector)
-			vmPtr->ScheduleDeviceCallBack(*this,vmTime+SECTOR_READ_WRITE_TIME);
+			vmPtr->ScheduleDeviceCallBack(*this,vmTime+SectorReadWriteTime());
 			state.recordType=false;
 			state.recordNotFound=false;
 			state.CRCError=false;
@@ -1061,7 +1080,7 @@ void DiskDrive::SendCommand(unsigned int cmd,uint64_t vmTime)
 			break;
 
 		case 0xC0: // Read Address
-			vmPtr->ScheduleDeviceCallBack(*this,vmTime+ADDRMARK_READ_TIME);
+			vmPtr->ScheduleDeviceCallBack(*this,vmTime+AddrMarkReadTime());
 			state.recordType=false;
 			state.recordNotFound=false;
 			state.CRCError=false;
@@ -1077,7 +1096,7 @@ void DiskDrive::SendCommand(unsigned int cmd,uint64_t vmTime)
 			state.DDMErrorAfterRead=false;
 			break;
 		case 0xE0: // Read Track
-			vmPtr->ScheduleDeviceCallBack(*this,vmTime+WRITE_TRACK_TIME);
+			vmPtr->ScheduleDeviceCallBack(*this,vmTime+WriteTrackTime());
 			state.recordType=false;
 			state.recordNotFound=false;
 			state.CRCError=false;
@@ -1092,7 +1111,7 @@ void DiskDrive::SendCommand(unsigned int cmd,uint64_t vmTime)
 			state.DDMErrorAfterRead=false;
 			break;
 		case 0xF0: // Write Track
-			vmPtr->ScheduleDeviceCallBack(*this,vmTime+WRITE_TRACK_TIME);
+			vmPtr->ScheduleDeviceCallBack(*this,vmTime+WriteTrackTime());
 			state.recordType=false;
 			state.recordNotFound=false;
 			state.CRCError=false;

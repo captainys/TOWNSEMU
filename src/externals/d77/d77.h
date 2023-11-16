@@ -164,7 +164,43 @@ public:
 			int track;
 			int side;
 		};
-		class D77Sector
+
+		class HasUnstableByteFlags
+		{
+		public:
+			std::vector <bool> unstableBytes;
+
+			void EncodeRDDUnstableBytes(std::vector <unsigned char> &rdd) const
+			{
+				if(0<unstableBytes.size())
+				{
+					rdd.push_back(0x10);
+					rdd.push_back(unstableBytes.size()&0xFF);
+					rdd.push_back((unstableBytes.size()>>8)&0xFF);
+					while(0!=(rdd.size()&15))
+					{
+						rdd.push_back(0);
+					}
+					for(size_t i=0; i<unstableBytes.size(); ++i)
+					{
+						if(0==(i&7))
+						{
+							rdd.push_back(0);
+						}
+						if(true==unstableBytes[i])
+						{
+							rdd.back()|=(1<<(i&7));
+						}
+					}
+					while(0!=(rdd.size()&15))
+					{
+						rdd.push_back(0);
+					}
+				}
+			}
+		};
+
+		class D77Sector : public HasUnstableByteFlags
 		{
 		public:
 			unsigned char cylinder;
@@ -178,7 +214,6 @@ public:
 			unsigned char reservedByte[5];
 			unsigned short sectorDataSize; // Excluding the header.
 			std::vector <unsigned char> sectorData;
-			std::vector <bool> unstableByte;
 
 			bool resampled=false;  // true if the sector was sampled multiple times for replicating unstable-byte or Corocoro protect.
 			bool probLeafInTheForest=false;  // true if it is suspected to be one of leaf-in-the-forest protect (such as Thexder and Fire Crystal)
@@ -203,7 +238,7 @@ public:
 			*/
 			inline std::vector <unsigned char> GetData(void) const
 			{
-				if(sectorData.size()!=unstableByte.size())
+				if(sectorData.size()!=unstableBytes.size())
 				{
 					return sectorData;
 				}
@@ -212,7 +247,7 @@ public:
 					auto copy=sectorData;
 					for(int i=0; i<copy.size(); ++i)
 					{
-						if(true==unstableByte[i])
+						if(true==unstableBytes[i])
 						{
 							copy[i]=rand()&0x255;
 						}
@@ -225,7 +260,12 @@ public:
 			bool SameCHRN(const D77Sector &s) const;
 			bool SameCHRNandActualSize(const D77Sector &s) const;
 		};
-		class D77Track
+		class D77IDMark : public HasUnstableByteFlags
+		{
+		public:
+			std::array <unsigned char,16> data;  // As stored in .RDD
+		};
+		class D77Track : public HasUnstableByteFlags
 		{
 		friend class D77Disk;
 
@@ -240,7 +280,7 @@ public:
 
 			std::vector <D77Sector> sector;
 			std::vector <unsigned char> trackImage;  // Result by track-dump command of MB8877.
-			std::vector <std::array <unsigned char,16> > IDMark; // Result by Read-ID command of MB8877.
+			std::vector <D77IDMark> IDMark; // Result by Read-ID command of MB8877.
 			unsigned char FDCStatusAfterTrackRead=0;
 
 			D77Track();

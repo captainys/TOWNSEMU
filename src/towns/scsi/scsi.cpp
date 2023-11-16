@@ -356,7 +356,7 @@ void TownsSCSI::EnterCommandPhase(void)
 	state.REQ=true;
 	state.INT=true;
 	SetUpIO_MSG_CDfromPhase();
-	townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+COMMAND_DELAY);
+	townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+CommandDelay());
 }
 void TownsSCSI::EnterDataInPhase(void)
 {
@@ -364,7 +364,7 @@ void TownsSCSI::EnterDataInPhase(void)
 	state.REQ=true;
 	state.bytesTransferred=0;
 	SetUpIO_MSG_CDfromPhase();
-	townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DATA_INTERVAL);
+	townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DataInterval());
 
 	if(SCSICMD_READ_6==state.commandBuffer[0] ||
 	   SCSICMD_READ_10==state.commandBuffer[0])
@@ -420,7 +420,7 @@ void TownsSCSI::EnterDataOutPhase(void)
 	state.REQ=true;
 	state.bytesTransferred=0;
 	SetUpIO_MSG_CDfromPhase();
-	townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DATA_INTERVAL);
+	townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DataInterval());
 }
 void TownsSCSI::EnterMessageInPhase(void)
 {
@@ -428,7 +428,7 @@ void TownsSCSI::EnterMessageInPhase(void)
 	state.REQ=true;
 	state.INT=true;
 	SetUpIO_MSG_CDfromPhase();
-	townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+MESSAGE_DELAY);
+	townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+MessageDelay());
 }
 void TownsSCSI::EnterStatusPhase(void)
 {
@@ -436,7 +436,7 @@ void TownsSCSI::EnterStatusPhase(void)
 	state.REQ=true;
 	state.INT=true;
 	SetUpIO_MSG_CDfromPhase();
-	townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+MESSAGE_DELAY);
+	townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+MessageDelay());
 }
 
 
@@ -597,7 +597,7 @@ void TownsSCSI::ProcessPhaseData(unsigned int dataByte)
 		}
 		else
 		{
-			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+COMMAND_REQUEST_INTERVAL);
+			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+CommandRequestInterval());
 		}
 	}
 }
@@ -841,7 +841,7 @@ void TownsSCSI::ExecSCSICommand(void)
 					}
 					else
 					{
-						townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DATA_INTERVAL);
+						townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DataInterval());
 					}
 				}
 				break;
@@ -874,7 +874,7 @@ void TownsSCSI::ExecSCSICommand(void)
 					}
 					else
 					{
-						townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DATA_INTERVAL);
+						townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DataInterval());
 					}
 				}
 				break;
@@ -945,7 +945,7 @@ void TownsSCSI::ExecSCSICommand(void)
 					}
 					else
 					{
-						townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DATA_INTERVAL);
+						townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DataInterval());
 					}
 				}
 				else
@@ -1070,7 +1070,7 @@ void TownsSCSI::ExecSCSICommand(void)
 		}
 		else // DMA Not Ready check again after waiting for some period.
 		{
-			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DATA_INTERVAL);
+			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DataInterval());
 		}
 	}
 	else if(PHASE_DATA_OUT==state.phase)
@@ -1083,7 +1083,7 @@ void TownsSCSI::ExecSCSICommand(void)
 				townsPtr->debugger.ExternalBreak("SCSI DMA Transfer");
 			}
 
-			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DATA_INTERVAL);
+			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DataInterval());
 			switch(state.commandBuffer[0])
 			{
 			case SCSICMD_WRITE_6:
@@ -1126,7 +1126,7 @@ void TownsSCSI::ExecSCSICommand(void)
 						}
 						else
 						{
-							townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DATA_INTERVAL);
+							townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DataInterval());
 							// Continue Data-Out Phase.
 						}
 					}
@@ -1149,7 +1149,7 @@ void TownsSCSI::ExecSCSICommand(void)
 							}
 							else
 							{
-								townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DATA_INTERVAL);
+								townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DataInterval());
 								// Continue Data-Out Phase.
 							}
 						}
@@ -1198,7 +1198,7 @@ void TownsSCSI::ExecSCSICommand(void)
 		}
 		else // DMA Not Ready check again after waiting for some period.
 		{
-			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DATA_INTERVAL);
+			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DataInterval());
 		}
 	}
 }

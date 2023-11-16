@@ -142,13 +142,13 @@ void D77ExtraInfo::Apply(D77File::D77Disk &disk) const
 		}
 		for(auto &usBytes : s.unstableBytes)
 		{
-			while(secPtr->unstableByte.size()<secPtr->sectorData.size())
+			while(secPtr->unstableBytes.size()<secPtr->sectorData.size())
 			{
-				secPtr->unstableByte.push_back(false);
+				secPtr->unstableBytes.push_back(false);
 			}
-			for(unsigned i=0; i<usBytes.length && usBytes.offset+i<secPtr->unstableByte.size(); ++i)
+			for(unsigned i=0; i<usBytes.length && usBytes.offset+i<secPtr->unstableBytes.size(); ++i)
 			{
-				secPtr->unstableByte[usBytes.offset+i]=true;
+				secPtr->unstableBytes[usBytes.offset+i]=true;
 			}
 			std::cout << "USBYTE applied to " << s.C << " " << s.H << " " << s.R << std::endl;
 		}

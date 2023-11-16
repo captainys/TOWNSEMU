@@ -146,6 +146,18 @@ private:
 public:
 	/*! Call this function at the beginning of your program once.
 	    Calling this function more than once in your program may crash your program.
+
+	    Starting and stopping multiple times in one execution of a process is now experimental.
+
+	    There is no reason to have multiple instances of YsSoundPlayer class simultaneously.
+		Having multiple instances of YsSoundPlayer class simultanteously has not been tested.
+
+		This code assumes this class is used from one thread.  I.e., all the member functions
+		should be called from the same thread that called the Start function.  It is a common
+		requirement of the back-end APIs such as DirectSound8, AVFoundation, and ALSA.
+		(Although ALSA documentation tells if appropriately created ALSA is thread safe,
+		how to 'appropriately' create ALSA object is nowhere to find.  ALSA is very
+		unprofessionally mainained.)
 	*/
 	void Start(void);
 
@@ -167,9 +179,13 @@ public:
 	*/
 	void PlayBackground(SoundData &dat);
 
-	/*! Start play as a stream.  Additional 
+	/*! Start play as a stream.
 	*/
 	YSRESULT StartStreaming(Stream &streamPlayer,StreamingOption opt);
+
+	/*! Start play as a stream with default options.
+	*/
+	YSRESULT StartStreaming(Stream &streamPlayer);
 
 	/*! Stop a stream player.
 	*/
@@ -253,6 +269,7 @@ private:
 	// Make Uncopiable <<
 
 	bool prepared=false;
+	bool IsPrepared(YsSoundPlayer &player);
 
 	friend class YsSoundPlayer;
 	class APISpecificDataPerSoundData;
@@ -450,6 +467,7 @@ private:
 
 	class APISpecificData;
 
+	uint32_t requestedRingBufferLengthMillisec=0;
 	APISpecificData *api=nullptr;
 
 	// Written in API-specific code

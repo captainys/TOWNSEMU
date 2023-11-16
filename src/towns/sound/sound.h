@@ -46,7 +46,6 @@ public:
 		BEEP_MILLISEC_PER_WAVE=40,
 		WAVE_STREAMING_SAFETY_BUFFER=10,
 #endif
-		MILLISEC_PER_WAVE_GENERATION=4,
 
 		RINGBUFFER_CLEAR_TIME=2000000000,  // Run 2 seconds after last wave generation to clear the ring buffer.  1 second should be enough, but just to be absolutely sure.
 	};
@@ -76,6 +75,8 @@ public:
 		YsSoundPlayer::SoundData waveToBeSentToVM;
 		bool vgmRecordingArmed=false;
 		VGMRecorder vgmRecorder;
+
+		bool maximumDoubleBuffering=false;
 	};
 
 	State state;
@@ -88,18 +89,16 @@ public:
 	bool recordFMandPCM=false;
 	std::vector <unsigned char> FMPCMrecording;
 
-	uint64_t nextFMPCMWaveFilledInMillisec=0;
-	uint64_t nextFMPCMWaveGenTime=0;
 	uint64_t lastFMPCMWaveGenTime=0;
 	std::vector <unsigned char> nextFMPCMWave;
 
 	inline bool IsFMPlaying(void) const
 	{
-		return 0!=state.ym2612.state.playingCh;
+		return 0!=state.ym2612.state.playingCh || 0<state.ym2612.regWriteSched.size();
 	}
 	inline bool IsPCMPlaying(void) const
 	{
-		return true==state.rf5c68.IsPlaying();
+		return true==state.rf5c68.IsPlaying() || 0<state.rf5c68.regWriteSched.size();
 	}
 	inline bool IsPCMRecording(void) const
 	{
@@ -110,9 +109,6 @@ public:
 	TownsSound(class FMTownsCommon *townsPtr);
 	void SetOutsideWorld(class Outside_World::Sound *outside_world);
 	void SetCDROMPointer(class TownsCDROM *cdrom);
-	void PCMStartPlay(unsigned char chStartPlay);
-	void PCMStopPlay(unsigned char chStopPlay);
-	void PCMPausePlay(unsigned char chStopPlay);
 
 	virtual void PowerOn(void);
 	virtual void Reset(void);
@@ -148,6 +144,7 @@ public:
 	void ArmVGMRecording(void);
 	void StartVGMRecording(void);
 	void EndVGMRecording(void);
+	void TrimVGMRecording(void);
 	bool SaveVGMRecording(std::string fName) const;
 
 	void SerializeYM2612(std::vector <unsigned char> &data) const;
