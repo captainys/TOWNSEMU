@@ -1367,20 +1367,23 @@ public:
 		*/
 		inline unsigned int GetAsDword(void) const
 		{
-			static const unsigned int numBytesMask[MAX_NUM_BYTES]=
+			unsigned int dword=cpputil::GetDword(byteData);
+			switch(numBytes)
 			{
-				0x00000000,
-				0x000000FF,
-				0x0000FFFF,
-				0x00FFFFFF,
-				0xFFFFFFFF,
-				0xFFFFFFFF,
-				0xFFFFFFFF,
-				0xFFFFFFFF,
-				0xFFFFFFFF,
-				0xFFFFFFFF,
-			};
-			return cpputil::GetDword(byteData)&numBytesMask[numBytes];
+				case 0:
+					dword=0;
+					break;
+				case 1:
+					dword&=0x000000FF;
+					break;
+				case 2:
+					dword&=0x0000FFFF;
+					break;
+				case 3:
+					dword&=0x00FFFFFF;
+					break;
+			}
+			return dword;
 		}
 		/*! Returns a value as an unsigned byte.
 		    It won't evaluate beyond numBytes.
@@ -1395,22 +1398,19 @@ public:
 		*/
 		inline unsigned int GetAsWord(void) const
 		{
-			static const unsigned int numBytesMask[MAX_NUM_BYTES]=
-			{
-				0x00000000,
-				0x000000FF,
-				0x0000FFFF,
-				0x0000FFFF,
-				0x0000FFFF,
-				0x0000FFFF,
-				0x0000FFFF,
-				0x0000FFFF,
-				0x0000FFFF,
-				0x0000FFFF,
-			};
-
 			unsigned int word=cpputil::GetWord(byteData);
-			word&=numBytesMask[numBytes];
+			switch(numBytes)
+			{
+				case 0:
+					word=0;
+					break;
+				case 1:
+					word&=0x000000FF;
+					break;
+				default:
+					word&=0x0000FFFF;
+					break;
+			}
 			return word;
 		}
 
