@@ -6,6 +6,7 @@
 
 #include <fstream>
 #include <vector>
+#include <cstdint>
 #include <string>
 
 // When C++17's filesystem library is commonly available and stable, I'll change it to

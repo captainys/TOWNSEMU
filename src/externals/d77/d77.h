@@ -113,6 +113,7 @@ Offset    Size          Meaning
 
 #include <array>
 #include <vector>
+#include <cstdint>
 #include <string>
 
 class D77File
