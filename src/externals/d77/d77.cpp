@@ -1188,6 +1188,7 @@ bool D77File::D77Disk::SetRDDImage(size_t &bytesUsed,size_t len,const unsigned c
 
 				D77Sector sector;
 				sector.Make(cc,hh,rr,128<<(nn&3));
+				sector.sizeShift=nn; // May be not 0 to 3.
 				sector.resampled=(0!=(flags&2));
 				sector.probLeafInTheForest=(0!=(flags&4));
 				sector.density=(0!=(flags&0) ? D77_DENSITY_FM : 0x00);
@@ -1794,7 +1795,7 @@ bool D77File::D77Disk::ResizeSector(int trk,int sid,int sec,int newSize)
 			{
 				printf("Resize Track:%d Side:%d Sector:%d to %d bytes\n",trk,sid,sec,newSize);
 
-				auto curSize=(128<<s.sizeShift);
+				auto curSize=s.sectorData.size();
 				s.sizeShift=newSizeShift;
 				s.sectorDataSize=newSize;
 				s.sectorData.resize(newSize);
