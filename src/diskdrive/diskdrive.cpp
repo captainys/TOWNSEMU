@@ -324,7 +324,7 @@ bool DiskDrive::DiskImage::SectorExists(int diskIdx,unsigned int C,unsigned int 
 	}
 	return false;
 }
-std::vector <uint8_t> DiskDrive::DiskImage::ReadAddress(int diskIdx,unsigned int cylinder,unsigned int side,unsigned int &sectorPos) const
+std::vector <uint8_t> DiskDrive::DiskImage::ReadAddress(bool &crcError,int diskIdx,unsigned int cylinder,unsigned int side,unsigned int &sectorPos) const
 {
 	switch(fileType)
 	{
@@ -354,6 +354,7 @@ std::vector <uint8_t> DiskDrive::DiskImage::ReadAddress(int diskIdx,unsigned int
 						CHRN_CRC[3]=trkPtr->IDMark[sectorPos].data[4];
 						CHRN_CRC[4]=trkPtr->IDMark[sectorPos].data[5];
 						CHRN_CRC[5]=trkPtr->IDMark[sectorPos].data[6];
+						crcError=trkPtr->IDMark[sectorPos].CRCError();
 					}
 					else
 					{
@@ -371,6 +372,7 @@ std::vector <uint8_t> DiskDrive::DiskImage::ReadAddress(int diskIdx,unsigned int
 						CHRN_CRC[3]=N;
 						CHRN_CRC[4]=static_cast<unsigned char>(crc_val >> 8);
 						CHRN_CRC[5]=static_cast<unsigned char>(crc_val);
+						crcError=false;
 					}
 					++sectorPos;
 

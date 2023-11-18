@@ -298,7 +298,7 @@ void TownsFDC::MakeReady(void)
 				}
 
 				// Copy CHRN and CRC CRC to DMA.
-				auto CHRN_CRC=imgPtr->ReadAddress(diskIdx,trackPos,state.side,state.addrMarkReadCount);
+				auto CHRN_CRC=imgPtr->ReadAddress(state.CRCError,diskIdx,trackPos,state.side,state.addrMarkReadCount);
 				if(0<CHRN_CRC.size())
 				{
 					auto DMACh=DMACPtr->GetDMAChannel(TOWNSDMA_FPD);

@@ -15,6 +15,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <algorithm>
 #include <set>
 #include <string.h>
+#include <stdint.h>
 #include "d77.h"
 
 
@@ -173,6 +174,13 @@ bool D77File::D77Disk::D77Sector::Make(int trk,int sid,int secId,int secSize)
 		b=0;
 	}
 	return true;
+}
+
+////////////////////////////////////////////////////////////
+
+bool D77File::D77Disk::D77IDMark::CRCError(void) const
+{
+	return 8<=data.size() && 0!=(data[7]&8);
 }
 
 ////////////////////////////////////////////////////////////
@@ -482,12 +490,14 @@ void D77File::D77Disk::D77Track::IdentifyUnstableByteRDD(void)
 			s0.unstableBytes[i]=false;
 		}
 
+		bool reallyResampled=false;
 		for(int j=i+1; j<sector.size(); ++j)
 		{
 			auto &s1=sector[j];
 			if(true==s1.resampled &&
 			   true==s0.SameCHRNandActualSize(s1))
 			{
+				reallyResampled=true;
 				for(int k=0; k<s0.sectorData.size(); ++k)
 				{
 					if(s0.sectorData[k]!=s1.sectorData[k])
@@ -498,14 +508,21 @@ void D77File::D77Disk::D77Track::IdentifyUnstableByteRDD(void)
 			}
 		}
 
-		// Once identified, copy to all multi-sample sectors.
-		for(int j=i+1; j<sector.size(); ++j)
+		if(true!=reallyResampled)
 		{
-			auto &s1=sector[j];
-			if(true==s1.resampled &&
-			   true==s0.SameCHRNandActualSize(s1))
+			s0.unstableBytes.clear();
+		}
+		else
+		{
+			// Once identified, copy to all multi-sample sectors.
+			for(int j=i+1; j<sector.size(); ++j)
 			{
-				s1.unstableBytes=s0.unstableBytes;
+				auto &s1=sector[j];
+				if(true==s1.resampled &&
+				   true==s0.SameCHRNandActualSize(s1))
+				{
+					s1.unstableBytes=s0.unstableBytes;
+				}
 			}
 		}
 	}
@@ -909,7 +926,7 @@ std::vector <unsigned char> D77File::D77Disk::MakeRDDImage(void) const
 				bin.push_back(0);
 			}
 
-			unsigned int millisec=s.nanosecPerByte;
+			uint64_t millisec=s.nanosecPerByte;
 			millisec*=s.sectorData.size();
 			millisec/=1000;
 			bin.push_back(millisec&0xFF);

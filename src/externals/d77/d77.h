@@ -174,13 +174,17 @@ public:
 			{
 				if(0<unstableBytes.size())
 				{
+					size_t numBytes=(unstableBytes.size()+7)/8;
+
 					rdd.push_back(0x10);
-					rdd.push_back(unstableBytes.size()&0xFF);
-					rdd.push_back((unstableBytes.size()>>8)&0xFF);
-					while(0!=(rdd.size()&15))
+					while(14!=(rdd.size()&15))
 					{
 						rdd.push_back(0);
 					}
+
+					rdd.push_back(numBytes&0xFF);
+					rdd.push_back((numBytes>>8)&0xFF);
+
 					for(size_t i=0; i<unstableBytes.size(); ++i)
 					{
 						if(0==(i&7))
@@ -264,6 +268,7 @@ public:
 		{
 		public:
 			std::array <unsigned char,16> data;  // As stored in .RDD
+			bool CRCError(void) const;
 		};
 		class D77Track : public HasUnstableByteFlags
 		{
