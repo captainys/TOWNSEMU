@@ -205,7 +205,6 @@ void FsOpenWindow(const FsOpenWindowOption &opt)
 					XStoreName(ysXDsp,ysXWnd,title);
 
 
-// Should I use XSetWMProperties? titlebar problem.
 					XWMHints wmHints;
 					wmHints.flags=0;
 					wmHints.initial_state=NormalState;
