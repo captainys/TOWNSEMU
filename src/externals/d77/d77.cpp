@@ -263,6 +263,17 @@ void D77File::D77Disk::D77Track::PrintDetailedInfo(void) const
 			{
 				printf("   ");
 			}
+
+			if(0!=s.nanosecPerByte)
+			{
+				uint64_t millisec=s.nanosecPerByte;
+				millisec*=s.sectorData.size();
+				printf(" %llu millisec to read.",millisec);
+			}
+			else
+			{
+				printf(" No read-time Info.    ");
+			}
 			printf("\n");
 		}
 	}
