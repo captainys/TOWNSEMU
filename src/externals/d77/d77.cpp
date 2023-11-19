@@ -544,6 +544,9 @@ void D77File::D77Disk::D77Track::UnidentifyUnstableByteForContinuousData(void)
 {
 	// Trailing stable bytes can flip between 0xF6 and 0x00, therefore can be identified as unstable bytes, but must not be randomized.
 	// If the same byte repeats more than 4 bytes, it must be a stable byte,
+
+	// If it is unlucky, resample of Xanadu A disk from FM TOWNS FDC may have about 10 bytes of continuous 0xFF.
+	// The threshold is increased from 4 to 19 bytes.  It should cover first- and second-gen corocoro protect.
 	for(auto &s : sector)
 	{
 		if(s.sectorData.size()==s.unstableBytes.size())
@@ -554,7 +557,7 @@ void D77File::D77Disk::D77Track::UnidentifyUnstableByteForContinuousData(void)
 				for(; j<s.sectorData.size() && s.sectorData[i]==s.sectorData[j]; ++j)
 				{
 				}
-				if(i+4<=j)
+				if(i+18<=j)
 				{
 					for(; i<j; ++i)
 					{
