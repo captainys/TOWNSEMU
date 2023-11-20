@@ -187,6 +187,7 @@ TownsSCSI::TownsSCSI(class FMTownsCommon *townsPtr) : Device(townsPtr)
 	commandLength[SCSICMD_WRITE_6]        =6;
 	commandLength[SCSICMD_SEEK_6]         =6;
 	commandLength[SCSICMD_INQUIRY]        =6;
+	commandLength[SCSICMD_START_STOP_UNIT]=6;
 	commandLength[SCSICMD_PREVENT_REMOVAL]=6;
 	commandLength[SCSICMD_READ_CAPACITY]  =10;
 	commandLength[SCSICMD_READ_10]        =10;
@@ -619,6 +620,8 @@ void TownsSCSI::ExecSCSICommand(void)
 	case SCSICMD_INQUIRY:
 		EnterDataInPhase();
 		break;
+	case SCSICMD_START_STOP_UNIT:
+		// Fall down to status phase.
 	case SCSICMD_PREVENT_REMOVAL:
 		// I just ignore this command, and let it return STATUSCODE_GOOD by falling down to SCSICMD_TEST_UNIT_READY.
 		// (state.commandBuffer[4]&1)==1 means Prevent, or 0 Allow.
