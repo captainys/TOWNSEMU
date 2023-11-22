@@ -120,7 +120,7 @@ void D77File::D77Disk::D77Sector::CleanUp(void)
 		c=0;
 	}
 	sectorDataSize=0; // Including the header.
-	sectorData.clear();
+	data.clear();
 	unstableBytes.clear();
 }
 bool D77File::D77Disk::D77Sector::SameCHR(const D77Sector &s) const
@@ -138,7 +138,7 @@ bool D77File::D77Disk::D77Sector::SameCHRN(const D77Sector &s) const
 }
 bool D77File::D77Disk::D77Sector::SameCHRNandActualSize(const D77Sector &s) const
 {
-	return SameCHRN(s) && sectorData.size()==s.sectorData.size();
+	return SameCHRN(s) && data.size()==s.data.size();
 }
 bool D77File::D77Disk::D77Sector::Make(int trk,int sid,int secId,int secSize)
 {
@@ -167,9 +167,9 @@ bool D77File::D77Disk::D77Sector::Make(int trk,int sid,int secId,int secSize)
 	sector=secId;
 	this->sizeShift=sizeShift;
 	sectorDataSize=secSize;
-	sectorData.resize(secSize);
+	data.resize(secSize);
 	resampled=false;
-	for(auto &b : sectorData)
+	for(auto &b : data)
 	{
 		b=0;
 	}
@@ -216,7 +216,7 @@ void D77File::D77Disk::D77Track::PrintInfo(void) const
 				printf("\n");
 			}
 			auto &s=sector[i];
-			printf("%02x[%3d]",s.sector,(int)s.sectorData.size());
+			printf("%02x[%3d]",s.sector,(int)s.data.size());
 			if(0!=s.crcStatus)
 			{
 				printf("C");
@@ -243,7 +243,7 @@ void D77File::D77Disk::D77Track::PrintDetailedInfo(void) const
 		for(int i=0; i<sector.size(); ++i)
 		{
 			auto &s=sector[i];
-			printf("%3d:%02x[%4d] ",i+1,s.sector,(int)s.sectorData.size());
+			printf("%3d:%02x[%4d] ",i+1,s.sector,(int)s.data.size());
 
 			printf("CHRN:%02x%02x%02x%02x",s.cylinder,s.head,s.sector,s.sizeShift);
 
@@ -267,7 +267,7 @@ void D77File::D77Disk::D77Track::PrintDetailedInfo(void) const
 			if(0!=s.nanosecPerByte)
 			{
 				uint64_t millisec=s.nanosecPerByte;
-				millisec*=s.sectorData.size();
+				millisec*=s.data.size();
 				printf(" %llu millisec to read.",millisec);
 			}
 			else
@@ -290,12 +290,12 @@ std::vector <D77File::D77Disk::D77Track::SectorLocation> D77File::D77Disk::D77Tr
 	for(int sectorPos=0; sectorPos<sector.size(); ++sectorPos)
 	{
 		auto &s=sector[sectorPos];
-		for(int i=0; i<=s.sectorData.size()-pattern.size(); ++i)
+		for(int i=0; i<=s.data.size()-pattern.size(); ++i)
 		{
 			bool diff=false;
 			for(int j=0; j<pattern.size(); ++j)
 			{
-				if(s.sectorData[i+j]!=pattern[j])
+				if(s.data[i+j]!=pattern[j])
 				{
 					diff=true;
 					break;
@@ -321,9 +321,9 @@ void D77File::D77Disk::D77Track::Replace(SectorLocation pos,const std::vector <u
 	if(0<=pos.sectorPos && pos.sectorPos<sector.size())
 	{
 		auto &s=sector[pos.sectorPos];
-		for(int i=0; i<pattern.size() && pos.addr+i<s.sectorData.size(); ++i)
+		for(int i=0; i<pattern.size() && pos.addr+i<s.data.size(); ++i)
 		{
-			s.sectorData[pos.addr+i]=pattern[i];
+			s.data[pos.addr+i]=pattern[i];
 		}
 	}
 }
@@ -394,7 +394,7 @@ bool D77File::D77Disk::D77Track::SetSectorCHRN(int secId,int C,int H,int R,int N
 		sector[secId-1].sector=R;
 		sector[secId-1].sizeShift=N;
 		sector[secId-1].sectorDataSize=(128<<(N&3));
-		sector[secId-1].sectorData.resize(sector[secId-1].sectorDataSize);
+		sector[secId-1].data.resize(sector[secId-1].sectorDataSize);
 		return true;
 	}
 	return false;
@@ -442,7 +442,7 @@ void D77File::D77Disk::D77Track::IdentifyUnstableByte(void)
 			continue;
 		}
 
-		s0.unstableBytes.resize(s0.sectorData.size());
+		s0.unstableBytes.resize(s0.data.size());
 		for(int i=0; i<s0.unstableBytes.size(); ++i)
 		{
 			s0.unstableBytes[i]=false;
@@ -453,9 +453,9 @@ void D77File::D77Disk::D77Track::IdentifyUnstableByte(void)
 			auto &s1=sector[j];
 			if(true==s0.SameCHRNandActualSize(s1))
 			{
-				for(int k=0; k<s0.sectorData.size(); ++k)
+				for(int k=0; k<s0.data.size(); ++k)
 				{
-					if(s0.sectorData[k]!=s1.sectorData[k])
+					if(s0.data[k]!=s1.data[k])
 					{
 						s0.unstableBytes[k]=true;
 					}
@@ -495,7 +495,7 @@ void D77File::D77Disk::D77Track::IdentifyUnstableByteRDD(void)
 			continue;
 		}
 
-		s0.unstableBytes.resize(s0.sectorData.size());
+		s0.unstableBytes.resize(s0.data.size());
 		for(int i=0; i<s0.unstableBytes.size(); ++i)
 		{
 			s0.unstableBytes[i]=false;
@@ -509,9 +509,9 @@ void D77File::D77Disk::D77Track::IdentifyUnstableByteRDD(void)
 			   true==s0.SameCHRNandActualSize(s1))
 			{
 				reallyResampled=true;
-				for(int k=0; k<s0.sectorData.size(); ++k)
+				for(int k=0; k<s0.data.size(); ++k)
 				{
-					if(s0.sectorData[k]!=s1.sectorData[k])
+					if(s0.data[k]!=s1.data[k])
 					{
 						s0.unstableBytes[k]=true;
 					}
@@ -549,12 +549,12 @@ void D77File::D77Disk::D77Track::UnidentifyUnstableByteForContinuousData(void)
 	// The threshold is increased from 4 to 19 bytes.  It should cover first- and second-gen corocoro protect.
 	for(auto &s : sector)
 	{
-		if(s.sectorData.size()==s.unstableBytes.size())
+		if(s.data.size()==s.unstableBytes.size())
 		{
-			for(int i=0; i+4<=s.sectorData.size(); ++i)
+			for(int i=0; i+4<=s.data.size(); ++i)
 			{
 				int j=i+1;
-				for(; j<s.sectorData.size() && s.sectorData[i]==s.sectorData[j]; ++j)
+				for(; j<s.data.size() && s.data[i]==s.data[j]; ++j)
 				{
 				}
 				if(i+18<=j)
@@ -773,7 +773,7 @@ std::vector <unsigned char> D77File::D77Disk::MakeD77Image(void) const
 				UnsignedShortToWord(buf,s.sectorDataSize);
 				d77Img.push_back(buf[0]);
 				d77Img.push_back(buf[1]);
-				for(auto d : s.sectorData)
+				for(auto d : s.data)
 				{
 					d77Img.push_back(d);
 				}
@@ -941,16 +941,16 @@ std::vector <unsigned char> D77File::D77Disk::MakeRDDImage(void) const
 			}
 
 			uint64_t millisec=s.nanosecPerByte;
-			millisec*=s.sectorData.size();
+			millisec*=s.data.size();
 			millisec/=1000;
 			bin.push_back(millisec&0xFF);
 			bin.push_back((millisec>>8)&0xFF);
 			bin.push_back((millisec>>24)&0xFF);
 
-			bin.push_back(s.sectorData.size()&0xFF);
-			bin.push_back((s.sectorData.size()>>8)&0xFF);
+			bin.push_back(s.data.size()&0xFF);
+			bin.push_back((s.data.size()>>8)&0xFF);
 
-			for(auto c : s.sectorData)
+			for(auto c : s.data)
 			{
 				bin.push_back(c);
 			}
@@ -1206,10 +1206,10 @@ bool D77File::D77Disk::SetRDDImage(size_t &bytesUsed,size_t len,const unsigned c
 					sector.crcStatus=D77_SECTOR_STATUS_RECORD_NOT_FOUND; // Record Not Found;
 				}
 				sector.nanosecPerByte=millisec*1000/std::max<int>(realLen,1);
-				sector.sectorData.resize(realLen);
+				sector.data.resize(realLen);
 				for(size_t i=0; i<realLen; ++i)
 				{
-					sector.sectorData[i]=rdd[ptr+16+i];
+					sector.data[i]=rdd[ptr+16+i];
 				}
 				trkPtr->sector.push_back(sector);
 				lastData=&trkPtr->sector.back();
@@ -1381,10 +1381,10 @@ D77File::D77Disk::D77Track D77File::D77Disk::MakeTrackData(const unsigned char t
 			break;
 		}
 
-		sec.sectorData.resize(sizeFromShift);
+		sec.data.resize(sizeFromShift);
 		for(int i=0; i<sizeFromShift; ++i)
 		{
-			sec.sectorData[i]=sectorPtr[0x10+i];
+			sec.data[i]=sectorPtr[0x10+i];
 		}
 		trk.sector.push_back((D77Disk::D77Sector &&)sec);
 
@@ -1423,8 +1423,8 @@ void D77File::D77Disk::CreateStandardFormatted(void)
 			sec.sizeShift=1;
 			sec.nSectorTrack=16;
 			sec.sectorDataSize=256;
-			sec.sectorData.resize(256);
-			for(auto &b : sec.sectorData)
+			sec.data.resize(256);
+			for(auto &b : sec.data)
 			{
 				b=0xff;
 			}
@@ -1561,7 +1561,7 @@ std::vector <unsigned char> D77File::D77Disk::ReadTrack(int trk,int sid) const
 				data.push_back(0xA1);
 				data.push_back(0xA1);
 				data.push_back(0xFB);
-				data.insert(data.end(),s.sectorData.begin(),s.sectorData.end());
+				data.insert(data.end(),s.data.begin(),s.data.end());
 				data.push_back(0xCC); // Should be CRC.
 				data.push_back(0xCC);
 				// GAP 3
@@ -1716,9 +1716,9 @@ long long int D77File::D77Disk::WriteSector(int trk,int sid,int sec,long long in
 		if(nullptr!=secPtr)
 		{
 			long long int nWritten=0;
-			for(long long int i=0; i<nByte && i<(long long int)(secPtr->sectorData.size()); ++i)
+			for(long long int i=0; i<nByte && i<(long long int)(secPtr->data.size()); ++i)
 			{
-				secPtr->sectorData[i]=dat[i];
+				secPtr->data[i]=dat[i];
 				++nWritten;
 			}
 			if(0<nWritten)
@@ -1798,14 +1798,14 @@ bool D77File::D77Disk::ResizeSector(int trk,int sid,int sec,int newSize)
 			{
 				printf("Resize Track:%d Side:%d Sector:%d to %d bytes\n",trk,sid,sec,newSize);
 
-				auto curSize=s.sectorData.size();
+				auto curSize=s.data.size();
 				s.sizeShift=newSizeShift;
 				s.sectorDataSize=newSize;
-				s.sectorData.resize(newSize);
+				s.data.resize(newSize);
 
 				for(auto i=curSize; i<newSize; ++i)
 				{
-					s.sectorData[i]=0;
+					s.data[i]=0;
 				}
 
 				resized=true;

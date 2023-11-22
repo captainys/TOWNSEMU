@@ -294,7 +294,7 @@ unsigned int DiskDrive::DiskImage::GetSectorLength(int diskIdx,unsigned int C,un
 				auto secPtr=diskPtr->GetSector(C,H,R);
 				if(nullptr!=secPtr)
 				{
-					return secPtr->sectorData.size();
+					return secPtr->data.size();
 				}
 			}
 		}
@@ -487,7 +487,7 @@ unsigned int DiskDrive::DiskImage::WriteTrack(int diskIdx,unsigned int C,unsigne
 						sector.Make(C,H,R,sectorSize);
 						for(unsigned int i=0; i<sectorSize; ++i)
 						{
-							sector.sectorData[i]=dataPtr[i];
+							sector.data[i]=dataPtr[i];
 						}
 						sectors.push_back((D77File::D77Disk::D77Sector&&)sector);
 						trackCapacity+=sectorSize;

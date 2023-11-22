@@ -217,17 +217,21 @@ public:
 			unsigned char crcStatus;
 			unsigned char reservedByte[5];
 			unsigned short sectorDataSize; // Excluding the header.
-			std::vector <unsigned char> sectorData;
+			std::vector <unsigned char> data;
 
 			bool resampled=false;  // true if the sector was sampled multiple times for replicating unstable-byte or Corocoro protect.
 			bool probLeafInTheForest=false;  // true if it is suspected to be one of leaf-in-the-forest protect (such as Thexder and Fire Crystal)
 
-			// Experimental >>
-			// nanosecPerByte
-			//   Zero means standard rate computed from RPM and track length.
-			//   Non zero means the sector must be read at the different rate.
 			unsigned int nanosecPerByte=0;
-			// Experimental <<
+
+			inline unsigned char &C(void){return cylinder;}
+			inline unsigned char C(void) const{return cylinder;}
+			inline unsigned char &H(void){return head;}
+			inline unsigned char H(void) const{return head;}
+			inline unsigned char &R(void){return sector;}
+			inline unsigned char R(void) const{return sector;}
+			inline unsigned char &N(void){return sizeShift;}
+			inline unsigned char N(void) const{return sizeShift;}
 
 			D77Sector();
 			~D77Sector();
@@ -242,13 +246,13 @@ public:
 			*/
 			inline std::vector <unsigned char> GetData(void) const
 			{
-				if(sectorData.size()!=unstableBytes.size())
+				if(data.size()!=unstableBytes.size())
 				{
-					return sectorData;
+					return data;
 				}
 				else
 				{
-					auto copy=sectorData;
+					auto copy=data;
 					for(int i=0; i<copy.size(); ++i)
 					{
 						if(true==unstableBytes[i])
