@@ -1362,6 +1362,17 @@ D77File::D77Disk::D77Track D77File::D77Disk::MakeTrackData(const unsigned char t
 		sec.density=sectorPtr[6];
 		sec.deletedData=sectorPtr[7];
 		sec.crcStatus=sectorPtr[8];
+
+		if(1==sec.crcStatus)
+		{
+			// CRC Status can be one of:
+			//   0,
+			//   D77_SECTOR_STATUS_CRC=0xB0,
+			//   D77_SECTOR_STATUS_RECORD_NOT_FOUND=0xF0,
+			// But, if it is 1, it may be created by my buggy D77 generator :-P
+			sec.crcStatus=D77_SECTOR_STATUS_CRC;
+		}
+
 		for(int i=0; i<5; ++i)
 		{
 			sec.reservedByte[i]=sectorPtr[9+i];
