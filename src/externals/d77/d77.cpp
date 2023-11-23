@@ -119,7 +119,6 @@ void D77File::D77Disk::D77Sector::CleanUp(void)
 	{
 		c=0;
 	}
-	sectorDataSize=0; // Including the header.
 	data.clear();
 	unstableBytes.clear();
 }
@@ -166,7 +165,6 @@ bool D77File::D77Disk::D77Sector::Make(int trk,int sid,int secId,int secSize)
 	this->H()=sid;
 	this->R()=secId;
 	this->N()=N;
-	sectorDataSize=secSize;
 	data.resize(secSize);
 	resampled=false;
 	for(auto &b : data)
@@ -393,8 +391,7 @@ bool D77File::D77Disk::D77Track::SetSectorCHRN(int secId,int C,int H,int R,int N
 		sector[secId-1].H()=H;
 		sector[secId-1].R()=R;
 		sector[secId-1].N()=N;
-		sector[secId-1].sectorDataSize=(128<<(N&3));
-		sector[secId-1].data.resize(sector[secId-1].sectorDataSize);
+		sector[secId-1].data.resize(128<<(N&3));
 		return true;
 	}
 	return false;
@@ -765,12 +762,12 @@ std::vector <unsigned char> D77File::D77Disk::MakeD77Image(void) const
 				d77Img.push_back(buf[1]);
 				d77Img.push_back(s.density);
 				d77Img.push_back(s.deletedData);
-				d77Img.push_back(s.crcStatus!=0 ? 0xb0 : 0);
+				d77Img.push_back(s.crcStatus);
 				for(int i=0; i<5; ++i)
 				{
 					d77Img.push_back(s.reservedByte[i]);
 				}
-				UnsignedShortToWord(buf,s.sectorDataSize);
+				UnsignedShortToWord(buf,s.sectorDataSize());
 				d77Img.push_back(buf[0]);
 				d77Img.push_back(buf[1]);
 				for(auto d : s.data)
@@ -1377,18 +1374,17 @@ D77File::D77Disk::D77Track D77File::D77Disk::MakeTrackData(const unsigned char t
 		{
 			sec.reservedByte[i]=sectorPtr[9+i];
 		}
-		sec.sectorDataSize=WordToUnsignedShort(sectorPtr+0x0e);
+		long long int sectorLen=WordToUnsignedShort(sectorPtr+0x0e);
 
-		auto nextSectorOffset=sectorOffset+0x10+sec.sectorDataSize;
+		auto nextSectorOffset=sectorOffset+0x10+sectorLen;
 
 		long long int sizeFromShift=(128<<(sec.N()&3));
-		long long int sizeFromDataSize=sec.sectorDataSize;
-		if(sizeFromShift!=sizeFromDataSize)
+		if(sizeFromShift!=sectorLen)
 		{
 			printf("Broken Data.  Sector size doesn't match number of bytes for the sector.\n");
 			printf("  Cyl:%d Head:%d Sec:%d\n",sec.C(),sec.H(),sec.R());
 			printf("  From shift:%d\n",(int)sizeFromShift);
-			printf("  From data size:%d\n",(int)sizeFromDataSize);
+			printf("  From data size:%d\n",(int)sectorLen);
 			break;
 		}
 
@@ -1433,7 +1429,6 @@ void D77File::D77Disk::CreateStandardFormatted(void)
 			sec.R()=j;
 			sec.N()=1;
 			sec.nSectorTrack=16;
-			sec.sectorDataSize=256;
 			sec.data.resize(256);
 			for(auto &b : sec.data)
 			{
@@ -1811,7 +1806,6 @@ bool D77File::D77Disk::ResizeSector(int trk,int sid,int sec,int newSize)
 
 				auto curSize=s.data.size();
 				s.N()=newN;
-				s.sectorDataSize=newSize;
 				s.data.resize(newSize);
 
 				for(auto i=curSize; i<newSize; ++i)

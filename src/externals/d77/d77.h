@@ -213,7 +213,6 @@ public:
 			unsigned char deletedData;
 			unsigned char crcStatus;
 			unsigned char reservedByte[5];
-			unsigned short sectorDataSize; // Excluding the header.
 			std::vector <unsigned char> data;
 
 			bool resampled=false;  // true if the sector was sampled multiple times for replicating unstable-byte or Corocoro protect.
@@ -229,6 +228,9 @@ public:
 			inline unsigned char R(void) const{return CHRN[2];}
 			inline unsigned char &N(void){return CHRN[3];}
 			inline unsigned char N(void) const{return CHRN[3];}// 128<<N()=size
+
+			// Left for gradual transition.
+			unsigned short sectorDataSize(void) const{return data.size();}
 
 			D77Sector();
 			~D77Sector();
