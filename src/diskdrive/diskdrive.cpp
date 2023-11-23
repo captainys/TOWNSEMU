@@ -121,7 +121,7 @@ unsigned int DiskDrive::DiskImage::IdentifyDiskMediaType(int diskIdx) const
 				{
 					for(auto &sec : trk->sector)
 					{
-						totalSize+=(128<<(sec.sizeShift&3));
+						totalSize+=(128<<(sec.N()&3));
 					}
 				}
 			}
@@ -213,16 +213,16 @@ DiskDrive::Sector DiskDrive::DiskImage::ReadSectorFrom(
 					for(int i=0; i<trackPtr->sector.size(); ++i,++nSteps)
 					{
 						auto &d77Sector=trackPtr->sector[(i+searchStartFrom)%trackPtr->sector.size()];
-						if(d77Sector.cylinder==C &&
-						   (true!=verifySide || d77Sector.head==H) &&
-						   d77Sector.sector==R)
+						if(d77Sector.C()==C &&
+						   (true!=verifySide || d77Sector.H()==H) &&
+						   d77Sector.R()==R)
 						{
 							searchStartFrom=(i+searchStartFrom+1)%trackPtr->sector.size();
 							sector.exists=true;
-							sector.C=d77Sector.cylinder;
-							sector.H=d77Sector.head;
-							sector.R=d77Sector.sector;
-							sector.N=d77Sector.sizeShift;
+							sector.C=d77Sector.C();
+							sector.H=d77Sector.H();
+							sector.R=d77Sector.R();
+							sector.N=d77Sector.N();
 							sector.data=d77Sector.GetData();
 							sector.crcStatus=d77Sector.crcStatus;
 							sector.DDM=d77Sector.deletedData;
@@ -359,10 +359,10 @@ std::vector <uint8_t> DiskDrive::DiskImage::ReadAddress(bool &crcError,int diskI
 					else
 					{
 						auto &sector=trkPtr->sector[sectorPos];
-						auto C=sector.cylinder;
-						auto H=sector.head;
-						auto R=sector.sector;
-						auto N=sector.sizeShift;
+						auto C=sector.C();
+						auto H=sector.H();
+						auto R=sector.R();
+						auto N=sector.N();
 
 						uint16_t crc_val = CalcCRC(std::vector<uint8_t>{0xfe, C, H, R, N, 0x00, 0x00});
 						CHRN_CRC.resize(6);

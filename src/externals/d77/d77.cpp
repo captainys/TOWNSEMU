@@ -102,9 +102,9 @@ D77File::D77Disk::D77Sector::~D77Sector()
 }
 void D77File::D77Disk::D77Sector::CleanUp(void)
 {
-	cylinder=0;
+	C()=0;
 	H()=0;
-	sector=0;
+	R()=0;
 	N()=0;  // 128<<N()=size
 	nSectorTrack=0;
 	density=0;
@@ -125,15 +125,15 @@ void D77File::D77Disk::D77Sector::CleanUp(void)
 }
 bool D77File::D77Disk::D77Sector::SameCHR(const D77Sector &s) const
 {
-	return (cylinder==s.C() &&
+	return (C()==s.C() &&
 	        H()==s.H() &&
-	        sector==s.R());
+	        R()==s.R());
 }
 bool D77File::D77Disk::D77Sector::SameCHRN(const D77Sector &s) const
 {
-	return (cylinder==s.C() &&
+	return (C()==s.C() &&
 	        H()==s.H() &&
-	        sector==s.R() &&
+	        R()==s.R() &&
 	        N()==s.N());
 }
 bool D77File::D77Disk::D77Sector::SameCHRNandActualSize(const D77Sector &s) const
@@ -162,9 +162,9 @@ bool D77File::D77Disk::D77Sector::Make(int trk,int sid,int secId,int secSize)
 		break;
 	}
 	CleanUp();
-	cylinder=trk;
-	H()=sid;
-	sector=secId;
+	this->C()=trk;
+	this->H()=sid;
+	this->R()=secId;
 	this->N()=N;
 	sectorDataSize=secSize;
 	data.resize(secSize);
@@ -2045,7 +2045,7 @@ bool D77File::D77Disk::DeleteSectorByIndex(int trk,int sid,int sectorIdx)
 		{
 			auto &s0=t.sector[sectorIdx];
 			printf("Deleted %dth sector in Track %d Side %d\n",sectorIdx,trk,sid);
-			printf("(Sector Track:%d Side:%d Sector:%d)\n",s0.C(),s0.H(),s0.sector);
+			printf("(Sector Track:%d Side:%d Sector:%d)\n",s0.C(),s0.H(),s0.R());
 
 			t.sector.erase(t.sector.begin()+sectorIdx);
 			modified=true;
