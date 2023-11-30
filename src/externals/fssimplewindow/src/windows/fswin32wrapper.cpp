@@ -1202,7 +1202,10 @@ void FsShowMouseCursor(int showFlag)
 	}
 	else
 	{
-		while(0<=ShowCursor(FALSE));
+		// 2023/11/30
+		// Something occasionally increase the cursor count and decrease again.
+		// I need to decrement to -1 to assure the cursor is hidden all the time.
+		while(-1<=ShowCursor(FALSE));
 	}
 }
 

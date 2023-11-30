@@ -94,6 +94,11 @@ public:
 	std::vector <unsigned int> gamePadsNeedUpdate;
 	bool gameDevsNeedUpdateCached=false;
 
+	/*! Show or hide mouse cursor.  Sent to the WindowThread in the Communicate.
+	    Then the window thread will look at it.
+	*/
+	bool showMouseCursor=true;
+
 
 	inline float ApplyZeroZone(float rawInput,float zeroZone)
 	{
@@ -226,6 +231,7 @@ public:
 			// Managed by deviceStateLock
 			bool VMClosedFromVMThread=false;  // Written from the VM Thread.
 			std::vector <unsigned int> gamePadsNeedUpdate;  // Copy of Outside_World's gamePadsNeedUpdate.
+			bool showMouseCursor=true;
 
 			// Managed by renderingLock
 			unsigned int dx=0,dy=0;  // Screen (0,0) will be window (dx,dy)

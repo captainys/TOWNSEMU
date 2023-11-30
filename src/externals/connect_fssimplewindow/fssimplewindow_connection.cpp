@@ -1377,14 +1377,7 @@ void FsSimpleWindowConnection::PauseKeyPressed(void)
 
 /* virtual */ void FsSimpleWindowConnection::ToggleMouseCursor(void)
 {
-	if(0!=FsIsMouseCursorVisible())
-	{
-		FsShowMouseCursor(0);
-	}
-	else
-	{
-		FsShowMouseCursor(1);
-	}
+	showMouseCursor=(showMouseCursor!=true);
 }
 
 ////////////////////////////////////////////////////////////////
@@ -1525,6 +1518,18 @@ void FsSimpleWindowConnection::WindowConnection::Interval(void)
 	BaseInterval();
 
 	FsPollDevice();
+
+	if(shared.showMouseCursor!=(FsIsMouseCursorVisible()!=0))
+	{
+		if(true==shared.showMouseCursor)
+		{
+			FsShowMouseCursor(1);
+		}
+		else
+		{
+			FsShowMouseCursor(0);
+		}
+	}
 
 	FsGetWindowSize(winThrEx.primary.winWid,winThrEx.primary.winHei);
 
@@ -1703,6 +1708,7 @@ void FsSimpleWindowConnection::WindowConnection::UpdateImage(TownsRender::ImageC
 /*! Called in the VM thread.
     WindowInterface  ->(Device State)-> Outside_World
     WindowInterface  <-(Game Pads In Use)<- Outside_World
+    WindowInterface  <-(Show Mouse Cursor) <- Outside_World
 */
 void FsSimpleWindowConnection::WindowConnection::Communicate(Outside_World *ow)
 {
@@ -1719,6 +1725,7 @@ void FsSimpleWindowConnection::WindowConnection::Communicate(Outside_World *ow)
 		sharedEx.readyToSend.CleanUpEvents();
 
 		shared.gamePadsNeedUpdate=outside_world->gamePadsNeedUpdate;
+		shared.showMouseCursor=outside_world->showMouseCursor;
 	}
 	{
 		std::lock_guard<std::mutex> lock(renderingLock);
