@@ -637,6 +637,7 @@ void FsGuiMainCanvas::ReallyRunWithinSameProcess(VMClass &VM)
 	AddDialog(resumeVMDlg);
 
 	VM.Run();
+	FsShowMouseCursor(1);
 	if(true!=VM.IsRunning())
 	{
 		AddDialog(profileDlg);
@@ -780,6 +781,7 @@ bool FsGuiMainCanvas::ResumeVMIfSameProc(VMClass &VM)
 	if(true!=separateProcess && true==VM.IsRunning())
 	{
 		VM.Run();
+		FsShowMouseCursor(1);
 		if(true!=VM.IsRunning())
 		{
 			AddDialog(profileDlg);
