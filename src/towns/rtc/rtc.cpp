@@ -117,18 +117,23 @@ TownsRTC::TownsRTC(class FMTownsCommon *townsPtr) : Device(townsPtr)
 				data|=(tm->tm_min/10);
 				break;
 			case REG_HOUR://4
+				{
+					int hour=tm->tm_hour;
+					if(true!=state.hour24 && 12<hour)
+					{
+						hour-=12;
+					}
+					data=hour%10;
+				}
+				break;
 			case REG_10HOUR://5 // Bit 2 is AM/PM
 				data|=(state.hour24 ? 0x08 : 0);
 				data|=(tm->tm_hour>=12 ? 0x04 : 0);
 				{
-					int hour;
-					if(state.hour24)
+					int hour=tm->tm_hour;
+					if(true!=state.hour24 && 12<hour)
 					{
-						hour=tm->tm_hour;
-					}
-					else
-					{
-						hour=tm->tm_hour%12;
+						hour-=12;
 					}
 					if(REG_HOUR==state.registerLatch)
 					{
