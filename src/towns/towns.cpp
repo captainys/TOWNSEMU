@@ -282,6 +282,8 @@ void FMTownsCommon::State::PowerOn(void)
 
 	towns.crtc.state.highResAvailable=argv.highResAvailable;
 
+	towns.highResPCM.state.enabled=argv.highResPCM;
+
 	if(TOWNS_KEYBOARD_MODE_DEFAULT!=argv.keyboardMode)
 	{
 		outside_world->keyboardMode=argv.keyboardMode;
