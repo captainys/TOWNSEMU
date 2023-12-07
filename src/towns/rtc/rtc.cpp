@@ -29,7 +29,7 @@ void TownsRTC::State::PowerOn(void)
 void TownsRTC::State::Reset(void)
 {
 	state=STATE_NONE;
-	hour24=false;
+	hour24=true; // The data sheet does not tell if the timer is in the 24-hour mode or 12-hour mode, but I cannot think it is in 12-hour mode on reset.
 	registerLatch=0;
 	lastDataWrite=0;
 }
@@ -80,7 +80,7 @@ TownsRTC::TownsRTC(class FMTownsCommon *townsPtr) : Device(townsPtr)
 				// Write data.
 				if(state.registerLatch==REG_10HOUR)
 				{
-					state.hour24=((state.lastDataWrite&0x10)==0x10);
+					state.hour24=((state.lastDataWrite&0x08)==0x08);
 				}
 			}
 			else if(0x84==data)
@@ -117,18 +117,23 @@ TownsRTC::TownsRTC(class FMTownsCommon *townsPtr) : Device(townsPtr)
 				data|=(tm->tm_min/10);
 				break;
 			case REG_HOUR://4
+				{
+					int hour=tm->tm_hour;
+					if(true!=state.hour24 && 12<hour)
+					{
+						hour-=12;
+					}
+					data=hour%10;
+				}
+				break;
 			case REG_10HOUR://5 // Bit 2 is AM/PM
 				data|=(state.hour24 ? 0x08 : 0);
-				data|=(tm->tm_hour>=12 ? 0x04 : 0);
+				data|=((true!=state.hour24 && tm->tm_hour>=12) ? 0x04 : 0);
 				{
-					int hour;
-					if(state.hour24)
+					int hour=tm->tm_hour;
+					if(true!=state.hour24 && 12<hour)
 					{
-						hour=tm->tm_hour;
-					}
-					else
-					{
-						hour=tm->tm_hour%12;
+						hour-=12;
 					}
 					if(REG_HOUR==state.registerLatch)
 					{

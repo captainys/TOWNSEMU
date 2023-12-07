@@ -179,14 +179,9 @@ void TownsFDC::MakeReady(void)
 						}
 						else
 						{
-							if(0!=sec.crcStatus)
-							{
-								state.CRCError=true;
-							}
-							if(0!=sec.DDM)
-							{
-								state.recordType=true;
-							}
+							state.CRCError=(D77File::D77_SECTOR_STATUS_CRC==sec.crcStatus);
+							state.recordNotFound=(D77File::D77_SECTOR_STATUS_RECORD_NOT_FOUND==sec.crcStatus);
+							state.recordType=(0!=sec.DDM);
 							MakeReady();
 							DMACPtr->SetDMATransferEnd(TOWNSDMA_FPD);
 						}
@@ -298,7 +293,7 @@ void TownsFDC::MakeReady(void)
 				}
 
 				// Copy CHRN and CRC CRC to DMA.
-				auto CHRN_CRC=imgPtr->ReadAddress(diskIdx,trackPos,state.side,state.addrMarkReadCount);
+				auto CHRN_CRC=imgPtr->ReadAddress(state.CRCError,diskIdx,trackPos,state.side,state.addrMarkReadCount);
 				if(0<CHRN_CRC.size())
 				{
 					auto DMACh=DMACPtr->GetDMAChannel(TOWNSDMA_FPD);

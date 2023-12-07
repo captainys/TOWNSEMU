@@ -175,13 +175,17 @@ public:
 			{
 				if(0<unstableBytes.size())
 				{
+					size_t numBytes=(unstableBytes.size()+7)/8;
+
 					rdd.push_back(0x10);
-					rdd.push_back(unstableBytes.size()&0xFF);
-					rdd.push_back((unstableBytes.size()>>8)&0xFF);
-					while(0!=(rdd.size()&15))
+					while(14!=(rdd.size()&15))
 					{
 						rdd.push_back(0);
 					}
+
+					rdd.push_back(numBytes&0xFF);
+					rdd.push_back((numBytes>>8)&0xFF);
+
 					for(size_t i=0; i<unstableBytes.size(); ++i)
 					{
 						if(0==(i&7))
@@ -204,27 +208,30 @@ public:
 		class D77Sector : public HasUnstableByteFlags
 		{
 		public:
-			unsigned char cylinder;
-			unsigned char head;
-			unsigned char sector;
-			unsigned char sizeShift;  // 128<<sizeShift=size
+			unsigned char CHRN[4];
 			unsigned short nSectorTrack;
 			unsigned char density;
 			unsigned char deletedData;
 			unsigned char crcStatus;
 			unsigned char reservedByte[5];
-			unsigned short sectorDataSize; // Excluding the header.
-			std::vector <unsigned char> sectorData;
+			std::vector <unsigned char> data;
 
 			bool resampled=false;  // true if the sector was sampled multiple times for replicating unstable-byte or Corocoro protect.
 			bool probLeafInTheForest=false;  // true if it is suspected to be one of leaf-in-the-forest protect (such as Thexder and Fire Crystal)
 
-			// Experimental >>
-			// nanosecPerByte
-			//   Zero means standard rate computed from RPM and track length.
-			//   Non zero means the sector must be read at the different rate.
 			unsigned int nanosecPerByte=0;
-			// Experimental <<
+
+			inline unsigned char &C(void){return CHRN[0];}
+			inline unsigned char C(void) const{return CHRN[0];}
+			inline unsigned char &H(void){return CHRN[1];}
+			inline unsigned char H(void) const{return CHRN[1];}
+			inline unsigned char &R(void){return CHRN[2];}
+			inline unsigned char R(void) const{return CHRN[2];}
+			inline unsigned char &N(void){return CHRN[3];}
+			inline unsigned char N(void) const{return CHRN[3];}// 128<<N()=size
+
+			// Left for gradual transition.
+			unsigned short sectorDataSize(void) const{return data.size();}
 
 			D77Sector();
 			~D77Sector();
@@ -239,13 +246,13 @@ public:
 			*/
 			inline std::vector <unsigned char> GetData(void) const
 			{
-				if(sectorData.size()!=unstableBytes.size())
+				if(data.size()!=unstableBytes.size())
 				{
-					return sectorData;
+					return data;
 				}
 				else
 				{
-					auto copy=sectorData;
+					auto copy=data;
 					for(int i=0; i<copy.size(); ++i)
 					{
 						if(true==unstableBytes[i])
@@ -265,6 +272,7 @@ public:
 		{
 		public:
 			std::array <unsigned char,16> data;  // As stored in .RDD
+			bool CRCError(void) const;
 		};
 		class D77Track : public HasUnstableByteFlags
 		{

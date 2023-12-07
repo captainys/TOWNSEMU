@@ -1190,6 +1190,8 @@ int FsGetNativeTextInputEvent(void)
 	return FSNATIVETEXTEVENT_NONE;
 }
 
+static int showFlag=1;
+
 void FsShowMouseCursor(int showFlag)
 {
 	// Win32 mouse cursor visibility is controlled by a counter.
@@ -1204,11 +1206,21 @@ void FsShowMouseCursor(int showFlag)
 	{
 		while(0<=ShowCursor(FALSE));
 	}
+	::showFlag=showFlag;
 }
 
 int FsIsMouseCursorVisible(void)
 {
-	ShowCursor(TRUE);
-	auto ctr=ShowCursor(FALSE);
+	int ctr;
+	if(0!=::showFlag)
+	{
+		ShowCursor(TRUE);
+		ctr=ShowCursor(FALSE);
+	}
+	else
+	{
+		ShowCursor(FALSE);
+		ctr=ShowCursor(TRUE);
+	}
 	return 0<=ctr;
 }

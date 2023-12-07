@@ -15,6 +15,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <algorithm>
 #include <set>
 #include <string.h>
+#include <stdint.h>
 #include "d77.h"
 
 
@@ -101,10 +102,10 @@ D77File::D77Disk::D77Sector::~D77Sector()
 }
 void D77File::D77Disk::D77Sector::CleanUp(void)
 {
-	cylinder=0;
-	head=0;
-	sector=0;
-	sizeShift=0;  // 128<<sizeShift=size
+	C()=0;
+	H()=0;
+	R()=0;
+	N()=0;  // 128<<N()=size
 	nSectorTrack=0;
 	density=0;
 	deletedData=0;
@@ -118,61 +119,66 @@ void D77File::D77Disk::D77Sector::CleanUp(void)
 	{
 		c=0;
 	}
-	sectorDataSize=0; // Including the header.
-	sectorData.clear();
+	data.clear();
 	unstableBytes.clear();
 }
 bool D77File::D77Disk::D77Sector::SameCHR(const D77Sector &s) const
 {
-	return (cylinder==s.cylinder &&
-	        head==s.head &&
-	        sector==s.sector);
+	return (C()==s.C() &&
+	        H()==s.H() &&
+	        R()==s.R());
 }
 bool D77File::D77Disk::D77Sector::SameCHRN(const D77Sector &s) const
 {
-	return (cylinder==s.cylinder &&
-	        head==s.head &&
-	        sector==s.sector &&
-	        sizeShift==s.sizeShift);
+	return (C()==s.C() &&
+	        H()==s.H() &&
+	        R()==s.R() &&
+	        N()==s.N());
 }
 bool D77File::D77Disk::D77Sector::SameCHRNandActualSize(const D77Sector &s) const
 {
-	return SameCHRN(s) && sectorData.size()==s.sectorData.size();
+	return SameCHRN(s) && data.size()==s.data.size();
 }
 bool D77File::D77Disk::D77Sector::Make(int trk,int sid,int secId,int secSize)
 {
-	int sizeShift=0;
+	int N=0;
 	switch(secSize)
 	{
 	default:
 		fprintf(stderr,"Size needs to be 128,256,512, or 1024.\n");
 		return false;
 	case 128:
-		sizeShift=0;
+		N=0;
 		break;
 	case 256:
-		sizeShift=1;
+		N=1;
 		break;
 	case 512:
-		sizeShift=2;
+		N=2;
 		break;
 	case 1024:
-		sizeShift=3;
+		N=3;
 		break;
 	}
 	CleanUp();
-	cylinder=trk;
-	head=sid;
-	sector=secId;
-	this->sizeShift=sizeShift;
-	sectorDataSize=secSize;
-	sectorData.resize(secSize);
+	this->C()=trk;
+	this->H()=sid;
+	this->R()=secId;
+	this->N()=N;
+	data.resize(secSize);
 	resampled=false;
-	for(auto &b : sectorData)
+	for(auto &b : data)
 	{
 		b=0;
 	}
 	return true;
+}
+
+////////////////////////////////////////////////////////////
+
+bool D77File::D77Disk::D77IDMark::CRCError(void) const
+{
+	return 8<=data.size() && 0!=(data[7]&8);
 }
 
 ////////////////////////////////////////////////////////////
@@ -200,7 +206,7 @@ void D77File::D77Disk::D77Track::PrintInfo(void) const
 {
 	if(0<sector.size())
 	{
-		printf("Cyl:%d Head:%d\n",(int)sector[0].cylinder,(int)sector[0].head);
+		printf("Cyl:%d Head:%d\n",(int)sector[0].C(),(int)sector[0].H());
 		for(int i=0; i<sector.size(); ++i)
 		{
 			if(0<i && 0==i%8)
@@ -208,7 +214,7 @@ void D77File::D77Disk::D77Track::PrintInfo(void) const
 				printf("\n");
 			}
 			auto &s=sector[i];
-			printf("%02x[%3d]",s.sector,(int)s.sectorData.size());
+			printf("%02x[%3d]",s.R(),(int)s.data.size());
 			if(0!=s.crcStatus)
 			{
 				printf("C");
@@ -231,13 +237,13 @@ void D77File::D77Disk::D77Track::PrintDetailedInfo(void) const
 {
 	if(0<sector.size())
 	{
-		printf("Cyl:%d Head:%d\n",(int)sector[0].cylinder,(int)sector[0].head);
+		printf("Cyl:%d Head:%d\n",(int)sector[0].C(),(int)sector[0].H());
 		for(int i=0; i<sector.size(); ++i)
 		{
 			auto &s=sector[i];
-			printf("%3d:%02x[%4d] ",i+1,s.sector,(int)s.sectorData.size());
+			printf("%3d:%02x[%4d] ",i+1,s.R(),(int)s.data.size());
 
-			printf("CHRN:%02x%02x%02x%02x",s.cylinder,s.head,s.sector,s.sizeShift);
+			printf("CHRN:%02x%02x%02x%02x",s.C(),s.H(),s.R(),s.N());
 
 			if(0!=s.crcStatus)
 			{
@@ -255,6 +261,17 @@ void D77File::D77Disk::D77Track::PrintDetailedInfo(void) const
 			{
 				printf("   ");
 			}
+
+			if(0!=s.nanosecPerByte)
+			{
+				uint64_t millisec=s.nanosecPerByte;
+				millisec*=s.data.size();
+				printf(" %llu millisec to read.",millisec);
+			}
+			else
+			{
+				printf(" No read-time Info.    ");
+			}
 			printf("\n");
 		}
 	}
@@ -271,12 +288,12 @@ std::vector <D77File::D77Disk::D77Track::SectorLocation> D77File::D77Disk::D77Tr
 	for(int sectorPos=0; sectorPos<sector.size(); ++sectorPos)
 	{
 		auto &s=sector[sectorPos];
-		for(int i=0; i<=s.sectorData.size()-pattern.size(); ++i)
+		for(int i=0; i<=s.data.size()-pattern.size(); ++i)
 		{
 			bool diff=false;
 			for(int j=0; j<pattern.size(); ++j)
 			{
-				if(s.sectorData[i+j]!=pattern[j])
+				if(s.data[i+j]!=pattern[j])
 				{
 					diff=true;
 					break;
@@ -286,9 +303,9 @@ std::vector <D77File::D77Disk::D77Track::SectorLocation> D77File::D77Disk::D77Tr
 			{
 				SectorLocation f;
 				f.sectorPos=sectorPos;
-				f.track=s.cylinder;
-				f.side=s.head;
-				f.sector=s.sector;
+				f.track=s.C();
+				f.side=s.H();
+				f.sector=s.R();
 				f.addr=i;
 				found.push_back(f);
 			}
@@ -302,9 +319,9 @@ void D77File::D77Disk::D77Track::Replace(SectorLocation pos,const std::vector <u
 	if(0<=pos.sectorPos && pos.sectorPos<sector.size())
 	{
 		auto &s=sector[pos.sectorPos];
-		for(int i=0; i<pattern.size() && pos.addr+i<s.sectorData.size(); ++i)
+		for(int i=0; i<pattern.size() && pos.addr+i<s.data.size(); ++i)
 		{
-			s.sectorData[pos.addr+i]=pattern[i];
+			s.data[pos.addr+i]=pattern[i];
 		}
 	}
 }
@@ -313,7 +330,7 @@ D77File::D77Disk::D77Sector *D77File::D77Disk::D77Track::FindSector(int sectorId
 {
 	for(auto &s : sector)
 	{
-		if(s.sector==sectorId)
+		if(s.R()==sectorId)
 		{
 			return &s;
 		}
@@ -324,7 +341,7 @@ const D77File::D77Disk::D77Sector *D77File::D77Disk::D77Track::FindSector(int se
 {
 	for(auto &s : sector)
 	{
-		if(s.sector==sectorId)
+		if(s.R()==sectorId)
 		{
 			return &s;
 		}
@@ -336,7 +353,7 @@ int D77File::D77Disk::D77Track::GetTrackNumber(void) const
 {
 	if(0<sector.size())
 	{
-		return sector[0].cylinder;
+		return sector[0].C();
 	}
 	return -1;
 }
@@ -370,12 +387,11 @@ bool D77File::D77Disk::D77Track::SetSectorCHRN(int secId,int C,int H,int R,int N
 {
 	if(1<=secId && secId<=this->sector.size())
 	{
-		sector[secId-1].cylinder=C;
-		sector[secId-1].head=H;
-		sector[secId-1].sector=R;
-		sector[secId-1].sizeShift=N;
-		sector[secId-1].sectorDataSize=(128<<(N&3));
-		sector[secId-1].sectorData.resize(sector[secId-1].sectorDataSize);
+		sector[secId-1].C()=C;
+		sector[secId-1].H()=H;
+		sector[secId-1].R()=R;
+		sector[secId-1].N()=N;
+		sector[secId-1].data.resize(128<<(N&3));
 		return true;
 	}
 	return false;
@@ -384,7 +400,7 @@ int D77File::D77Disk::D77Track::GetSide(void) const
 {
 	if(0<sector.size())
 	{
-		return sector[0].head;
+		return sector[0].H();
 	}
 	return -1;
 }
@@ -423,7 +439,7 @@ void D77File::D77Disk::D77Track::IdentifyUnstableByte(void)
 			continue;
 		}
 
-		s0.unstableBytes.resize(s0.sectorData.size());
+		s0.unstableBytes.resize(s0.data.size());
 		for(int i=0; i<s0.unstableBytes.size(); ++i)
 		{
 			s0.unstableBytes[i]=false;
@@ -434,9 +450,9 @@ void D77File::D77Disk::D77Track::IdentifyUnstableByte(void)
 			auto &s1=sector[j];
 			if(true==s0.SameCHRNandActualSize(s1))
 			{
-				for(int k=0; k<s0.sectorData.size(); ++k)
+				for(int k=0; k<s0.data.size(); ++k)
 				{
-					if(s0.sectorData[k]!=s1.sectorData[k])
+					if(s0.data[k]!=s1.data[k])
 					{
 						s0.unstableBytes[k]=true;
 					}
@@ -476,21 +492,23 @@ void D77File::D77Disk::D77Track::IdentifyUnstableByteRDD(void)
 			continue;
 		}
 
-		s0.unstableBytes.resize(s0.sectorData.size());
+		s0.unstableBytes.resize(s0.data.size());
 		for(int i=0; i<s0.unstableBytes.size(); ++i)
 		{
 			s0.unstableBytes[i]=false;
 		}
 
+		bool reallyResampled=false;
 		for(int j=i+1; j<sector.size(); ++j)
 		{
 			auto &s1=sector[j];
 			if(true==s1.resampled &&
 			   true==s0.SameCHRNandActualSize(s1))
 			{
-				for(int k=0; k<s0.sectorData.size(); ++k)
+				reallyResampled=true;
+				for(int k=0; k<s0.data.size(); ++k)
 				{
-					if(s0.sectorData[k]!=s1.sectorData[k])
+					if(s0.data[k]!=s1.data[k])
 					{
 						s0.unstableBytes[k]=true;
 					}
@@ -498,14 +516,21 @@ void D77File::D77Disk::D77Track::IdentifyUnstableByteRDD(void)
 			}
 		}
 
-		// Once identified, copy to all multi-sample sectors.
-		for(int j=i+1; j<sector.size(); ++j)
+		if(true!=reallyResampled)
 		{
-			auto &s1=sector[j];
-			if(true==s1.resampled &&
-			   true==s0.SameCHRNandActualSize(s1))
+			s0.unstableBytes.clear();
+		}
+		else
+		{
+			// Once identified, copy to all multi-sample sectors.
+			for(int j=i+1; j<sector.size(); ++j)
 			{
-				s1.unstableBytes=s0.unstableBytes;
+				auto &s1=sector[j];
+				if(true==s1.resampled &&
+				   true==s0.SameCHRNandActualSize(s1))
+				{
+					s1.unstableBytes=s0.unstableBytes;
+				}
 			}
 		}
 	}
@@ -516,17 +541,20 @@ void D77File::D77Disk::D77Track::UnidentifyUnstableByteForContinuousData(void)
 {
 	// Trailing stable bytes can flip between 0xF6 and 0x00, therefore can be identified as unstable bytes, but must not be randomized.
 	// If the same byte repeats more than 4 bytes, it must be a stable byte,
+
+	// If it is unlucky, resample of Xanadu A disk from FM TOWNS FDC may have about 10 bytes of continuous 0xFF.
+	// The threshold is increased from 4 to 19 bytes.  It should cover first- and second-gen corocoro protect.
 	for(auto &s : sector)
 	{
-		if(s.sectorData.size()==s.unstableBytes.size())
+		if(s.data.size()==s.unstableBytes.size())
 		{
-			for(int i=0; i+4<=s.sectorData.size(); ++i)
+			for(int i=0; i+4<=s.data.size(); ++i)
 			{
 				int j=i+1;
-				for(; j<s.sectorData.size() && s.sectorData[i]==s.sectorData[j]; ++j)
+				for(; j<s.data.size() && s.data[i]==s.data[j]; ++j)
 				{
 				}
-				if(i+4<=j)
+				if(i+18<=j)
 				{
 					for(; i<j; ++i)
 					{
@@ -547,9 +575,9 @@ std::vector <D77File::D77Disk::D77Track::SectorLocation> D77File::D77Disk::D77Tr
 	{
 		SectorLocation loc;
 		loc.sectorPos=pos;
-		loc.track=s.cylinder;
-		loc.side=s.head;
-		loc.sector=s.sector;
+		loc.track=s.C();
+		loc.side=s.H();
+		loc.sector=s.R();
 		loc.addr=0;
 		secList.push_back(loc);
 		++pos;
@@ -618,8 +646,8 @@ D77File::D77Disk::D77Track *D77File::D77Disk::FindEditableTrack(int cyl,int side
 	for(auto &t : track)
 	{
 		if(true!=t.sector.empty() &&
-		   t.sector[0].cylinder==cyl &&
-		   t.sector[0].head==side)
+		   t.sector[0].C()==cyl &&
+		   t.sector[0].H()==side)
 		{
 			return &t;
 		}
@@ -642,8 +670,8 @@ const D77File::D77Disk::D77Track *D77File::D77Disk::FindTrack(int cyl,int side) 
 	for(auto &t : track)
 	{
 		if(true!=t.sector.empty() &&
-		   t.sector[0].cylinder==cyl &&
-		   t.sector[0].head==side)
+		   t.sector[0].C()==cyl &&
+		   t.sector[0].H()==side)
 		{
 			return &t;
 		}
@@ -666,8 +694,8 @@ D77File::D77Disk::D77Track *D77File::D77Disk::FindTrack(int cyl,int side)
 	for(auto &t : track)
 	{
 		if(true!=t.sector.empty() &&
-		   t.sector[0].cylinder==cyl &&
-		   t.sector[0].head==side)
+		   t.sector[0].C()==cyl &&
+		   t.sector[0].H()==side)
 		{
 			return &t;
 		}
@@ -725,24 +753,24 @@ std::vector <unsigned char> D77File::D77Disk::MakeD77Image(void) const
 			for(auto &s : t.sector)
 			{
 				unsigned char buf[2];
-				d77Img.push_back(s.cylinder);
-				d77Img.push_back(s.head);
-				d77Img.push_back(s.sector);
-				d77Img.push_back(s.sizeShift);
+				d77Img.push_back(s.C());
+				d77Img.push_back(s.H());
+				d77Img.push_back(s.R());
+				d77Img.push_back(s.N());
 				UnsignedShortToWord(buf,s.nSectorTrack);
 				d77Img.push_back(buf[0]);
 				d77Img.push_back(buf[1]);
 				d77Img.push_back(s.density);
 				d77Img.push_back(s.deletedData);
-				d77Img.push_back(s.crcStatus!=0 ? 0xb0 : 0);
+				d77Img.push_back(s.crcStatus);
 				for(int i=0; i<5; ++i)
 				{
 					d77Img.push_back(s.reservedByte[i]);
 				}
-				UnsignedShortToWord(buf,s.sectorDataSize);
+				UnsignedShortToWord(buf,s.sectorDataSize());
 				d77Img.push_back(buf[0]);
 				d77Img.push_back(buf[1]);
-				for(auto d : s.sectorData)
+				for(auto d : s.data)
 				{
 					d77Img.push_back(d);
 				}
@@ -868,10 +896,10 @@ std::vector <unsigned char> D77File::D77Disk::MakeRDDImage(void) const
 		{
 			// Data
 			bin.push_back(0x03);
-			bin.push_back(s.cylinder);
-			bin.push_back(s.head);
-			bin.push_back(s.sector);
-			bin.push_back(s.sizeShift);
+			bin.push_back(s.C());
+			bin.push_back(s.H());
+			bin.push_back(s.R());
+			bin.push_back(s.N());
 
 			// Make up MB8877 Status Byte
 			unsigned char st=0;
@@ -909,17 +937,17 @@ std::vector <unsigned char> D77File::D77Disk::MakeRDDImage(void) const
 				bin.push_back(0);
 			}
 
-			unsigned int millisec=s.nanosecPerByte;
-			millisec*=s.sectorData.size();
+			uint64_t millisec=s.nanosecPerByte;
+			millisec*=s.data.size();
 			millisec/=1000;
 			bin.push_back(millisec&0xFF);
 			bin.push_back((millisec>>8)&0xFF);
 			bin.push_back((millisec>>24)&0xFF);
 
-			bin.push_back(s.sectorData.size()&0xFF);
-			bin.push_back((s.sectorData.size()>>8)&0xFF);
+			bin.push_back(s.data.size()&0xFF);
+			bin.push_back((s.data.size()>>8)&0xFF);
 
-			for(auto c : s.sectorData)
+			for(auto c : s.data)
 			{
 				bin.push_back(c);
 			}
@@ -1160,6 +1188,7 @@ bool D77File::D77Disk::SetRDDImage(size_t &bytesUsed,size_t len,const unsigned c
 
 				D77Sector sector;
 				sector.Make(cc,hh,rr,128<<(nn&3));
+				sector.N()=nn; // May be not 0 to 3.
 				sector.resampled=(0!=(flags&2));
 				sector.probLeafInTheForest=(0!=(flags&4));
 				sector.density=(0!=(flags&0) ? D77_DENSITY_FM : 0x00);
@@ -1174,10 +1203,10 @@ bool D77File::D77Disk::SetRDDImage(size_t &bytesUsed,size_t len,const unsigned c
 					sector.crcStatus=D77_SECTOR_STATUS_RECORD_NOT_FOUND; // Record Not Found;
 				}
 				sector.nanosecPerByte=millisec*1000/std::max<int>(realLen,1);
-				sector.sectorData.resize(realLen);
+				sector.data.resize(realLen);
 				for(size_t i=0; i<realLen; ++i)
 				{
-					sector.sectorData[i]=rdd[ptr+16+i];
+					sector.data[i]=rdd[ptr+16+i];
 				}
 				trkPtr->sector.push_back(sector);
 				lastData=&trkPtr->sector.back();
@@ -1294,17 +1323,17 @@ D77File::D77Disk::D77Track D77File::D77Disk::MakeTrackData(const unsigned char t
 		}
 
 		D77Disk::D77Sector sec;
-		sec.cylinder=sectorPtr[0];
-		sec.head=sectorPtr[1];
-		sec.sector=sectorPtr[2];
+		sec.C()=sectorPtr[0];
+		sec.H()=sectorPtr[1];
+		sec.R()=sectorPtr[2];
 		if(lastPtr<=sectorPtr+sectorNByte)
 		{
 			printf("Broken Data. Overflow.\n");
-			printf("  Cyl:%d Head:%d Sec:%d\n",sec.cylinder,sec.head,sec.sector);
+			printf("  Cyl:%d Head:%d Sec:%d\n",sec.C(),sec.H(),sec.R());
 			break;
 		}
 
-		sec.sizeShift=sectorPtr[3];
+		sec.N()=sectorPtr[3];
 		sec.nSectorTrack=WordToUnsignedShort(sectorPtr+4);
 		if(DAMN_BIG_NUMBER==nSectorTrack)
 		{
@@ -1313,7 +1342,7 @@ D77File::D77Disk::D77Track D77File::D77Disk::MakeTrackData(const unsigned char t
 		else if(nSectorTrack!=sec.nSectorTrack)
 		{
 			printf("Broken Data.  Number of sectors inconsistent within a track.\n");
-			printf("  Cyl:%d Head:%d Sec:%d\n",sec.cylinder,sec.head,sec.sector);
+			printf("  Cyl:%d Head:%d Sec:%d\n",sec.C(),sec.H(),sec.R());
 			printf("  Previous number of sectors for the track:%d\n",(int)nSectorTrack);
 			printf("  Number of sectors for the track:%d\n",sec.nSectorTrack);
 			break;
@@ -1330,29 +1359,39 @@ D77File::D77Disk::D77Track D77File::D77Disk::MakeTrackData(const unsigned char t
 		sec.density=sectorPtr[6];
 		sec.deletedData=sectorPtr[7];
 		sec.crcStatus=sectorPtr[8];
+
+		if(1==sec.crcStatus)
+		{
+			// CRC Status can be one of:
+			//   0,
+			//   D77_SECTOR_STATUS_CRC=0xB0,
+			//   D77_SECTOR_STATUS_RECORD_NOT_FOUND=0xF0,
+			// But, if it is 1, it may be created by my buggy D77 generator :-P
+			sec.crcStatus=D77_SECTOR_STATUS_CRC;
+		}
+
 		for(int i=0; i<5; ++i)
 		{
 			sec.reservedByte[i]=sectorPtr[9+i];
 		}
-		sec.sectorDataSize=WordToUnsignedShort(sectorPtr+0x0e);
+		long long int sectorLen=WordToUnsignedShort(sectorPtr+0x0e);
 
-		auto nextSectorOffset=sectorOffset+0x10+sec.sectorDataSize;
+		auto nextSectorOffset=sectorOffset+0x10+sectorLen;
 
-		long long int sizeFromShift=(128<<(sec.sizeShift&3));
-		long long int sizeFromDataSize=sec.sectorDataSize;
-		if(sizeFromShift!=sizeFromDataSize)
+		long long int sizeFromShift=(128<<(sec.N()&3));
+		if(sizeFromShift!=sectorLen)
 		{
 			printf("Broken Data.  Sector size doesn't match number of bytes for the sector.\n");
-			printf("  Cyl:%d Head:%d Sec:%d\n",sec.cylinder,sec.head,sec.sector);
+			printf("  Cyl:%d Head:%d Sec:%d\n",sec.C(),sec.H(),sec.R());
 			printf("  From shift:%d\n",(int)sizeFromShift);
-			printf("  From data size:%d\n",(int)sizeFromDataSize);
+			printf("  From data size:%d\n",(int)sectorLen);
 			break;
 		}
 
-		sec.sectorData.resize(sizeFromShift);
+		sec.data.resize(sizeFromShift);
 		for(int i=0; i<sizeFromShift; ++i)
 		{
-			sec.sectorData[i]=sectorPtr[0x10+i];
+			sec.data[i]=sectorPtr[0x10+i];
 		}
 		trk.sector.push_back((D77Disk::D77Sector &&)sec);
 
@@ -1385,14 +1424,13 @@ void D77File::D77Disk::CreateStandardFormatted(void)
 		for(int j=1; j<=16; ++j)
 		{
 			D77Disk::D77Sector sec;
-			sec.cylinder=cyl;
-			sec.head=head;
-			sec.sector=j;
-			sec.sizeShift=1;
+			sec.C()=cyl;
+			sec.H()=head;
+			sec.R()=j;
+			sec.N()=1;
 			sec.nSectorTrack=16;
-			sec.sectorDataSize=256;
-			sec.sectorData.resize(256);
-			for(auto &b : sec.sectorData)
+			sec.data.resize(256);
+			for(auto &b : sec.data)
 			{
 				b=0xff;
 			}
@@ -1492,13 +1530,13 @@ std::vector <unsigned char> D77File::D77Disk::ReadTrack(int trk,int sid) const
 		for(auto &s : trkPtr->sector)
 		{
 			uint32_t CHRN;
-			CHRN=s.cylinder;
+			CHRN=s.C();
 			CHRN<<=8;
-			CHRN|=s.head;
+			CHRN|=s.H();
 			CHRN<<=8;
-			CHRN|=s.sector;
+			CHRN|=s.R();
 			CHRN<<=8;
-			CHRN|=s.sizeShift;
+			CHRN|=s.N();
 			if(visited.find(CHRN)==visited.end())
 			{
 				visited.insert(CHRN);
@@ -1510,10 +1548,10 @@ std::vector <unsigned char> D77File::D77Disk::ReadTrack(int trk,int sid) const
 				data.push_back(0xA1);
 				data.push_back(0xA1);
 				data.push_back(0xFE);
-				data.push_back(s.cylinder);
-				data.push_back(s.head);
-				data.push_back(s.sector);
-				data.push_back(s.sizeShift);
+				data.push_back(s.C());
+				data.push_back(s.H());
+				data.push_back(s.R());
+				data.push_back(s.N());
 				data.push_back(0xCC); // Should be CRC.
 				data.push_back(0xCC);
 				// GAP 2
@@ -1529,7 +1567,7 @@ std::vector <unsigned char> D77File::D77Disk::ReadTrack(int trk,int sid) const
 				data.push_back(0xA1);
 				data.push_back(0xA1);
 				data.push_back(0xFB);
-				data.insert(data.end(),s.sectorData.begin(),s.sectorData.end());
+				data.insert(data.end(),s.data.begin(),s.data.end());
 				data.push_back(0xCC); // Should be CRC.
 				data.push_back(0xCC);
 				// GAP 3
@@ -1643,10 +1681,10 @@ bool D77File::D77Disk::ReplaceSectorCHRN(int C0,int H0,int R0,int N0,int C,int H
 		for(int secIdx=0; secIdx<t.sector.size(); ++secIdx)
 		{
 			auto &s=t.sector[secIdx];
-			if(s.cylinder==C0 &&
-			   s.head==H0 &&
-			   s.sector==R0 &&
-			   s.sizeShift==N0)
+			if(s.C()==C0 &&
+			   s.H()==H0 &&
+			   s.R()==R0 &&
+			   s.N()==N0)
 			{
 				printf("Replaced in track %d side %d\n",trkIdx/2,trkIdx%2);
 				t.SetSectorCHRN(secIdx+1,C,H,R,N);
@@ -1684,9 +1722,9 @@ long long int D77File::D77Disk::WriteSector(int trk,int sid,int sec,long long in
 		if(nullptr!=secPtr)
 		{
 			long long int nWritten=0;
-			for(long long int i=0; i<nByte && i<(long long int)(secPtr->sectorData.size()); ++i)
+			for(long long int i=0; i<nByte && i<(long long int)(secPtr->data.size()); ++i)
 			{
-				secPtr->sectorData[i]=dat[i];
+				secPtr->data[i]=dat[i];
 				++nWritten;
 			}
 			if(0<nWritten)
@@ -1713,10 +1751,10 @@ bool D77File::D77Disk::RenumberSector(int trk,int sid,int secFrom,int secTo)
 	{
 		for(auto &s : trackPtr->sector)
 		{
-			if(s.sector==secFrom)
+			if(s.R()==secFrom)
 			{
 				printf("Renumber Track:%d Side:%d Sector:%d to Sector:%d\n",trk,sid,secFrom,secTo);
-				s.sector=secTo;
+				s.R()=secTo;
 				renumbered=true;
 				SetModified();
 			}
@@ -1733,22 +1771,22 @@ bool D77File::D77Disk::ResizeSector(int trk,int sid,int sec,int newSize)
 		return false;
 	}
 
-	int newSizeShift=0;
+	int newN=0;
 	if(newSize==128)
 	{
-		newSizeShift=0;
+		newN=0;
 	}
 	else if(256==newSize)
 	{
-		newSizeShift=1;
+		newN=1;
 	}
 	else if(512==newSize)
 	{
-		newSizeShift=2;
+		newN=2;
 	}
 	else if(1024==newSize)
 	{
-		newSizeShift=3;
+		newN=3;
 	}
 	else
 	{
@@ -1762,18 +1800,17 @@ bool D77File::D77Disk::ResizeSector(int trk,int sid,int sec,int newSize)
 	{
 		for(auto &s : trackPtr->sector)
 		{
-			if(s.sector==sec)
+			if(s.R()==sec)
 			{
 				printf("Resize Track:%d Side:%d Sector:%d to %d bytes\n",trk,sid,sec,newSize);
 
-				auto curSize=(128<<s.sizeShift);
-				s.sizeShift=newSizeShift;
-				s.sectorDataSize=newSize;
-				s.sectorData.resize(newSize);
+				auto curSize=s.data.size();
+				s.N()=newN;
+				s.data.resize(newSize);
 
 				for(auto i=curSize; i<newSize; ++i)
 				{
-					s.sectorData[i]=0;
+					s.data[i]=0;
 				}
 
 				resized=true;
@@ -1798,9 +1835,9 @@ bool D77File::D77Disk::SetCRCError(int trk,int sid,int sec,bool crcError)
 	{
 		for(auto &s : trackPtr->sector)
 		{
-			if(-1==sec || s.sector==sec)
+			if(-1==sec || s.R()==sec)
 			{
-				printf("Modify CRC Error Track:%d Side:%d Sector:%d\n",trk,sid,s.sector);
+				printf("Modify CRC Error Track:%d Side:%d Sector:%d\n",trk,sid,s.R());
 
 				if(true==crcError)
 				{
@@ -1833,9 +1870,9 @@ bool D77File::D77Disk::SetDDM(int trk,int sid,int sec,bool ddm)
 	{
 		for(auto &s : trackPtr->sector)
 		{
-			if(-1==sec || s.sector==sec)
+			if(-1==sec || s.R()==sec)
 			{
-				printf("Modify DDM:%d Side:%d Sector:%d\n",trk,sid,s.sector);
+				printf("Modify DDM:%d Side:%d Sector:%d\n",trk,sid,s.R());
 
 				if(true==ddm)
 				{
@@ -1862,7 +1899,7 @@ bool D77File::D77Disk::GetCRCError(int trk,int sid,int sec) const
 	{
 		for(auto &s : trackPtr->sector)
 		{
-			if(s.sector==sec)
+			if(s.R()==sec)
 			{
 				return 0!=s.crcStatus && 0xF0!=s.crcStatus;
 			}
@@ -1878,7 +1915,7 @@ bool D77File::D77Disk::GetRecordNotFound(int trk,int sid,int sec) const
 	{
 		for(auto &s : trackPtr->sector)
 		{
-			if(s.sector==sec)
+			if(s.R()==sec)
 			{
 				return 0xF0==s.crcStatus;
 			}
@@ -1894,7 +1931,7 @@ bool D77File::D77Disk::GetDDM(int trk,int sid,int sec) const
 	{
 		for(auto &s : trackPtr->sector)
 		{
-			if(s.sector==sec)
+			if(s.R()==sec)
 			{
 				return 0!=s.deletedData;
 			}
@@ -1922,9 +1959,9 @@ bool D77File::D77Disk::DeleteDuplicateSector(int trk,int sid)
 			for(long long int j=t.sector.size()-1; i<j; --j)
 			{
 				auto &s1=t.sector[j];
-				if(s0.sector==s1.sector)
+				if(s0.R()==s1.R())
 				{
-					printf("Deleted Duplicate Sector Track:%d Side:%d Sector:%d\n",s0.cylinder,s0.head,s0.sector);
+					printf("Deleted Duplicate Sector Track:%d Side:%d Sector:%d\n",s0.C(),s0.H(),s0.R());
 					t.sector.erase(t.sector.begin()+j);
 					modified=true;
 					SetModified();
@@ -1952,9 +1989,9 @@ bool D77File::D77Disk::CheckDuplicateSector(int trk,int sid) const
 			for(long long int j=t.sector.size()-1; i<j; --j)
 			{
 				auto &s1=t.sector[j];
-				if(s0.sector==s1.sector)
+				if(s0.R()==s1.R())
 				{
-					printf("Duplicate Sector found Track:%d Side:%d Sector:%d\n",s0.cylinder,s0.head,s0.sector);
+					printf("Duplicate Sector found Track:%d Side:%d Sector:%d\n",s0.C(),s0.H(),s0.R());
 					return true;
 				}
 			}
@@ -1979,9 +2016,9 @@ bool D77File::D77Disk::DeleteSectorWithId(int trk,int sid,int sectorId)
 		for(long long int j=t.sector.size()-1; 0<=j; --j)
 		{
 			auto &s0=t.sector[j];
-			if(sectorId==s0.sector)
+			if(sectorId==s0.R())
 			{
-				printf("Deleted Sector Track:%d Side:%d Sector:%d\n",s0.cylinder,s0.head,s0.sector);
+				printf("Deleted Sector Track:%d Side:%d Sector:%d\n",s0.C(),s0.H(),s0.R());
 				t.sector.erase(t.sector.begin()+j);
 				modified=true;
 				SetModified();
@@ -2013,7 +2050,7 @@ bool D77File::D77Disk::DeleteSectorByIndex(int trk,int sid,int sectorIdx)
 		{
 			auto &s0=t.sector[sectorIdx];
 			printf("Deleted %dth sector in Track %d Side %d\n",sectorIdx,trk,sid);
-			printf("(Sector Track:%d Side:%d Sector:%d)\n",s0.cylinder,s0.head,s0.sector);
+			printf("(Sector Track:%d Side:%d Sector:%d)\n",s0.C(),s0.H(),s0.R());
 
 			t.sector.erase(t.sector.begin()+sectorIdx);
 			modified=true;
@@ -2084,7 +2121,7 @@ const D77File::D77Disk::D77Sector *D77File::D77Disk::GetSectorFrom(int trk,int s
 		for(nStep=0; nStep<trkPtr->sector.size(); ++nStep)
 		{
 			auto idx=(posInTrack+nStep)%trkPtr->sector.size();
-			if(sec==trkPtr->sector[idx].sector)
+			if(sec==trkPtr->sector[idx].R())
 			{
 				posInTrack=(idx+1)%trkPtr->sector.size();
 				return &trkPtr->sector[idx];
@@ -2102,7 +2139,7 @@ D77File::D77Disk::D77Sector *D77File::D77Disk::GetSectorFrom(int trk,int sid,int
 		for(nStep=0; nStep<trkPtr->sector.size(); ++nStep)
 		{
 			auto idx=(posInTrack+nStep)%trkPtr->sector.size();
-			if(sec==trkPtr->sector[idx].sector)
+			if(sec==trkPtr->sector[idx].R())
 			{
 				posInTrack=(idx+1)%trkPtr->sector.size();
 				return &trkPtr->sector[idx];
@@ -2161,8 +2198,8 @@ bool D77File::D77Disk::CopyTrack(int dstTrk,int dstSide,int srcTrk,int srcSide)
 		toTrk->sector=fromTrk->sector;
 		for(auto &s : toTrk->sector)
 		{
-			s.cylinder=dstTrk;
-			s.head=dstSide;
+			s.C()=dstTrk;
+			s.H()=dstSide;
 		}
 		return true;
 	}

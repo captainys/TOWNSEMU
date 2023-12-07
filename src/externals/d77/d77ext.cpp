@@ -142,7 +142,7 @@ void D77ExtraInfo::Apply(D77File::D77Disk &disk) const
 		}
 		for(auto &usBytes : s.unstableBytes)
 		{
-			while(secPtr->unstableBytes.size()<secPtr->sectorData.size())
+			while(secPtr->unstableBytes.size()<secPtr->data.size())
 			{
 				secPtr->unstableBytes.push_back(false);
 			}

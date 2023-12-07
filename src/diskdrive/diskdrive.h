@@ -139,7 +139,7 @@ public:
 		unsigned int GetSectorLength(int diskIdx,unsigned int C,unsigned int H,unsigned int R) const;
 		bool SectorExists(int diskIdx,unsigned int C,unsigned int H,unsigned int R) const;
 		bool WriteSector(int diskIdx,unsigned int C,unsigned int H,unsigned int R,const std::vector <uint8_t> &data);
-		std::vector <uint8_t> ReadAddress(int diskIdx,unsigned int cylinder,unsigned int side,unsigned int &sectorPos) const;
+		std::vector <uint8_t> ReadAddress(bool &crcError,int diskIdx,unsigned int cylinder,unsigned int side,unsigned int &sectorPos) const;
 
 		void SetNumCylinders(int diskIdx,unsigned int n);
 
