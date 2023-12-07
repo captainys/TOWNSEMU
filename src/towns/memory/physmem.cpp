@@ -307,30 +307,120 @@ bool TownsPhysicalMemory::LoadROMImages(const char dirName[])
 	std::string fName;
 	fName=cpputil::MakeFullPathName(dirName,"FMT_SYS.ROM");
 	sysRom=cpputil::ReadBinaryFile(fName);
+
+	fName=cpputil::MakeFullPathName(dirName,"FMT_DOS.ROM");
+	dosRom=cpputil::ReadBinaryFile(fName);
+
+	fName=cpputil::MakeFullPathName(dirName,"FMT_FNT.ROM");
+	fontRom=cpputil::ReadBinaryFile(fName);
+
+	fName=cpputil::MakeFullPathName(dirName,"FMT_F20.ROM");
+	font20Rom=cpputil::ReadBinaryFile(fName);
+
+	fName=cpputil::MakeFullPathName(dirName,"FMT_DIC.ROM");
+	dicRom=cpputil::ReadBinaryFile(fName);
+
+	fName=cpputil::MakeFullPathName(dirName,"MYTOWNS.ROM");
+	std::vector <uint8_t> serROM=cpputil::ReadBinaryFile(fName);
+
+	fName=cpputil::MakeFullPathName(dirName,"MAR_EX0.ROM");
+	std::vector <uint8_t> mar0=cpputil::ReadBinaryFile(fName);
+	fName=cpputil::MakeFullPathName(dirName,"MAR_EX1.ROM");
+	std::vector <uint8_t> mar1=cpputil::ReadBinaryFile(fName);
+	fName=cpputil::MakeFullPathName(dirName,"MAR_EX2.ROM");
+	std::vector <uint8_t> mar2=cpputil::ReadBinaryFile(fName);
+	fName=cpputil::MakeFullPathName(dirName,"MAR_EX3.ROM");
+	std::vector <uint8_t> mar3=cpputil::ReadBinaryFile(fName);
+
+
+	fName=cpputil::MakeFullPathName(dirName,"FMT_ALL.ROM");
+	auto allRoms=cpputil::ReadBinaryFile(fName);
+	if(0<allRoms.size())
+	{
+		size_t ptr=0;
+		while(ptr+16<=allRoms.size())
+		{
+			std::vector <uint8_t> *toRead=nullptr;
+			if(0==memcmp(allRoms.data()+ptr,"FMT_SYS.ROM",7))
+			{
+				toRead=&sysRom;
+			}
+			else if(0==memcmp(allRoms.data()+ptr,"FMT_DOS.ROM",7))
+			{
+				toRead=&dosRom;
+			}
+			else if(0==memcmp(allRoms.data()+ptr,"FMT_FNT.ROM",7))
+			{
+				toRead=&fontRom;
+			}
+			else if(0==memcmp(allRoms.data()+ptr,"FMT_F20.ROM",7))
+			{
+				toRead=&font20Rom;
+			}
+			else if(0==memcmp(allRoms.data()+ptr,"FMT_DIC.ROM",7))
+			{
+				toRead=&dicRom;
+			}
+			else if(0==memcmp(allRoms.data()+ptr,"MYTOWNS.ROM",7))
+			{
+				toRead=&serROM;
+			}
+			else if(0==memcmp(allRoms.data()+ptr,"MAR_EX0.ROM",7))
+			{
+				toRead=&mar0;
+			}
+			else if(0==memcmp(allRoms.data()+ptr,"MAR_EX1.ROM",7))
+			{
+				toRead=&mar1;
+			}
+			else if(0==memcmp(allRoms.data()+ptr,"MAR_EX2.ROM",7))
+			{
+				toRead=&mar2;
+			}
+			else if(0==memcmp(allRoms.data()+ptr,"MAR_EX3.ROM",7))
+			{
+				toRead=&mar3;
+			}
+
+			if(nullptr==toRead)
+			{
+				break;
+			}
+
+			std::string f;
+			for(int i=0; i<7; ++i)
+			{
+				f.push_back(allRoms[ptr+i]);
+			}
+			std::cout << "Extract: " << f << std::endl;
+
+			size_t len=cpputil::GetDword(allRoms.data()+ptr+12);
+			if(allRoms.size()<ptr+16+len)
+			{
+				break;
+			}
+			toRead->clear();
+			toRead->insert(toRead->begin(),allRoms.data()+ptr+16,allRoms.data()+ptr+16+len);
+			ptr+=16+len;
+		}
+	}
+
+
 	if(256*1024!=sysRom.size())
 	{
 		Abort("Cannot read FMT_SYS.ROM or incorrect file size.");
 		return false;
 	}
-
-	fName=cpputil::MakeFullPathName(dirName,"FMT_DOS.ROM");
-	dosRom=cpputil::ReadBinaryFile(fName);
 	if(512*1024!=dosRom.size())
 	{
 		Abort("Cannot read FMT_DOS.ROM or incorrect file size.");
 		return false;
 	}
-
-	fName=cpputil::MakeFullPathName(dirName,"FMT_FNT.ROM");
-	fontRom=cpputil::ReadBinaryFile(fName);
 	if(256*1024!=fontRom.size())
 	{
 		Abort("Cannot read FMT_FNT.ROM or incorrect file size.");
 		return false;
 	}
-
-	fName=cpputil::MakeFullPathName(dirName,"FMT_F20.ROM");
-	font20Rom=cpputil::ReadBinaryFile(fName);
 	if(512*1024!=font20Rom.size())
 	{
 		std::cout << "Cannot read FMT_F20.ROM or incorrect file size." << std::endl;
@@ -341,33 +431,18 @@ bool TownsPhysicalMemory::LoadROMImages(const char dirName[])
 			b=0xff;
 		}
 	}
-
-	fName=cpputil::MakeFullPathName(dirName,"FMT_DIC.ROM");
-	dicRom=cpputil::ReadBinaryFile(fName);
 	if(512*1024!=dicRom.size())
 	{
 		Abort("Cannot read FMT_DIC.ROM or incorrect file size.");
 		return false;
 	}
-
-	fName=cpputil::MakeFullPathName(dirName,"MYTOWNS.ROM");
-	auto data=cpputil::ReadBinaryFile(fName);
-	if(SERIAL_ROM_LENGTH<=data.size())
+	if(SERIAL_ROM_LENGTH<=serROM.size())
 	{
 		for(int i=0; i<SERIAL_ROM_LENGTH; ++i)
 		{
-			serialROM[i]=data[i];
+			serialROM[i]=serROM[i];
 		}
 	}
-
-	fName=cpputil::MakeFullPathName(dirName,"MAR_EX0.ROM");
-	auto mar0=cpputil::ReadBinaryFile(fName);
-	fName=cpputil::MakeFullPathName(dirName,"MAR_EX1.ROM");
-	auto mar1=cpputil::ReadBinaryFile(fName);
-	fName=cpputil::MakeFullPathName(dirName,"MAR_EX2.ROM");
-	auto mar2=cpputil::ReadBinaryFile(fName);
-	fName=cpputil::MakeFullPathName(dirName,"MAR_EX3.ROM");
-	auto mar3=cpputil::ReadBinaryFile(fName);
 
 	if(512*1024==mar0.size() &&
 	   512*1024==mar1.size() &&
