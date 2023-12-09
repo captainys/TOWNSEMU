@@ -467,12 +467,16 @@ void TownsHighResPCM::ProcessDMA(void)
 	{
 		if(true!=state.recording) // isPlaying
 		{
-			auto data=state.DMAC.MemoryToDevice(townsPtr,0xFFFFFFFF);
-			if(0<data.size())
+			auto bytesAvailable=state.DMAC.BytesAvailable();
+			if(0<bytesAvailable)
 			{
-				state.dataBuffer.insert(state.dataBuffer.end(),data.begin(),data.end());
-				state.DMAE=true;
-				UpdatePIC();
+				auto data=state.DMAC.MemoryToDevice(townsPtr,bytesAvailable);
+				if(0<data.size())
+				{
+					state.dataBuffer.insert(state.dataBuffer.end(),data.begin(),data.end());
+					state.DMAE=true;
+					UpdatePIC();
+				}
 			}
 		}
 		else

@@ -48,6 +48,9 @@ public:
 
 			bool AUTI(void) const; // Auto re-initialize
 
+			/*! */
+			unsigned int BytesAvailable(void) const;
+
 			/*! Transfer data from device to memory.
 			    Returns number of bytes written to memory.
 			*/
