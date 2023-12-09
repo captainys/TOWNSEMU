@@ -105,52 +105,82 @@ void TownsHighResPCM::IOWriteByte(unsigned int ioport,unsigned int data)
 		UpdatePIC();
 		break;
 	case TOWNSIO_HIGHRESPCM_DMACOUNT_LOW:// 0x512, // [2] pp.833
-		state.DMAC.currentCount&=0xff00;
-		state.DMAC.currentCount|=(data&0xff);
-		state.DMAC.terminalCount=false; // Probably
-		if(true!=state.DMACBase)
+		if(true==state.DMACBase)
 		{
+			state.DMAC.baseCount&=0xff00;
+			state.DMAC.baseCount|=(data&0xff);
+		}
+		else
+		{
+			state.DMAC.currentCount&=0xff00;
+			state.DMAC.currentCount|=(data&0xff);
+			state.DMAC.terminalCount=false; // Probably
 			state.DMAC.baseCount=state.DMAC.currentCount;
 		}
 		break;
 	case TOWNSIO_HIGHRESPCM_DMACOUNT_HIGH://0x513, // [2] pp.833
-		state.DMAC.currentCount&=0xff;
-		state.DMAC.currentCount|=((data&0xff)<<8);
-		state.DMAC.terminalCount=false; // Probably
-		if(true!=state.DMACBase)
+		if(true==state.DMACBase)
 		{
+			state.DMAC.baseCount&=0xff;
+			state.DMAC.baseCount|=((data&0xff)<<8);
+		}
+		else
+		{
+			state.DMAC.currentCount&=0xff;
+			state.DMAC.currentCount|=((data&0xff)<<8);
+			state.DMAC.terminalCount=false; // Probably
 			state.DMAC.baseCount=state.DMAC.currentCount;
 		}
 		break;
 	case TOWNSIO_HIGHRESPCM_DMAADDR_LOW://  0x514, // [2] pp.834
-		state.DMAC.currentAddr&=0xffffff00;
-		state.DMAC.currentAddr|=(data&0xff);
-		if(true!=state.DMACBase)
+		if(true==state.DMACBase)
 		{
+			state.DMAC.baseAddr&=0xffffff00;
+			state.DMAC.baseAddr|=(data&0xff);
+		}
+		else
+		{
+			state.DMAC.currentAddr&=0xffffff00;
+			state.DMAC.currentAddr|=(data&0xff);
 			state.DMAC.baseAddr=state.DMAC.currentAddr;
 		}
 		break;
 	case TOWNSIO_HIGHRESPCM_DMAADDR_MIDLOW://0x515, // [2] pp.834
-		state.DMAC.currentAddr&=0xffff00ff;
-		state.DMAC.currentAddr|=((data&0xff)<<8);
-		if(true!=state.DMACBase)
+		if(true==state.DMACBase)
 		{
+			state.DMAC.baseAddr&=0xffff00ff;
+			state.DMAC.baseAddr|=((data&0xff)<<8);
+		}
+		else
+		{
+			state.DMAC.currentAddr&=0xffff00ff;
+			state.DMAC.currentAddr|=((data&0xff)<<8);
 			state.DMAC.baseAddr=state.DMAC.currentAddr;
 		}
 		break;
 	case TOWNSIO_HIGHRESPCM_DMAADDR_MIDHIGH://0x516, // [2] pp.834
-		state.DMAC.currentAddr&=0xff00ffff;
-		state.DMAC.currentAddr|=((data&0xff)<<16);
-		if(true!=state.DMACBase)
+		if(true==state.DMACBase)
 		{
+			state.DMAC.baseAddr&=0xff00ffff;
+			state.DMAC.baseAddr|=((data&0xff)<<16);
+		}
+		else
+		{
+			state.DMAC.currentAddr&=0xff00ffff;
+			state.DMAC.currentAddr|=((data&0xff)<<16);
 			state.DMAC.baseAddr=state.DMAC.currentAddr;
 		}
 		break;
 	case TOWNSIO_HIGHRESPCM_DMAADDR_HIGH:// 0x517, // [2] pp.834
-		state.DMAC.currentAddr&=0x00ffffff;
-		state.DMAC.currentAddr|=((data&0xff)<<24);
-		if(true!=state.DMACBase)
+		if(true==state.DMACBase)
 		{
+			state.DMAC.baseAddr&=0x00ffffff;
+			state.DMAC.baseAddr|=((data&0xff)<<24);
+		}
+		else
+		{
+			state.DMAC.currentAddr&=0x00ffffff;
+			state.DMAC.currentAddr|=((data&0xff)<<24);
 			state.DMAC.baseAddr=state.DMAC.currentAddr;
 		}
 		break;
