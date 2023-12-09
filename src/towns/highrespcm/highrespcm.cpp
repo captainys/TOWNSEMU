@@ -1,8 +1,23 @@
 #include <stdint.h>
 #include "highrespcm.h"
 #include "towns.h"
-#include "sound.h"
+#include "cpputil.h"
 
+
+inline void WordOp_Add(unsigned char *ptr,int value)
+{
+	value+=cpputil::GetSignedWord(ptr);
+
+	if(value<-32767)
+	{
+		value=-32767;
+	}
+	else if(32767<value)
+	{
+		value=32767;
+	}
+	cpputil::PutWord(ptr,(value&0xFFFF));
+}
 
 void TownsHighResPCM::State::PowerOn(void)
 {
@@ -462,120 +477,6 @@ unsigned int TownsHighResPCM::IOReadByte(unsigned int ioport)
 	return data;
 }
 
-class TownsHighResPCM::WAV8Mono
-{
-public:
-	inline void Push(std::vector <uint8_t> &dataBuf,const uint8_t *incoming)
-	{
-		uint8_t data=*incoming;
-		data-=0x80;
-		dataBuf.push_back(data);
-		dataBuf.push_back(data);
-		dataBuf.push_back(data);
-		dataBuf.push_back(data);
-	}
-	constexpr unsigned int BytesPerTimeStep(void) const
-	{
-		return 1;
-	}
-};
-class TownsHighResPCM::WAV8Stereo
-{
-public:
-	inline void Push(std::vector <uint8_t> &dataBuf,const uint8_t *incoming)
-	{
-		uint8_t data=incoming[0];
-		data-=0x80;
-		dataBuf.push_back(data);
-		dataBuf.push_back(data);
-		data=incoming[1];
-		data-=0x80;
-		dataBuf.push_back(data);
-		dataBuf.push_back(data);
-	}
-	constexpr unsigned int BytesPerTimeStep(void) const
-	{
-		return 2;
-	}
-};
-class TownsHighResPCM::WAV16Mono
-{
-public:
-	inline void Push(std::vector <uint8_t> &dataBuf,const uint8_t *incoming)
-	{
-		dataBuf.push_back(incoming[0]);
-		dataBuf.push_back(incoming[1]);
-		dataBuf.push_back(incoming[0]);
-		dataBuf.push_back(incoming[1]);
-	}
-	constexpr unsigned int BytesPerTimeStep(void) const
-	{
-		return 2;
-	}
-};
-class TownsHighResPCM::WAV16Stereo
-{
-public:
-	inline void Push(std::vector <uint8_t> &dataBuf,const uint8_t *incoming)
-	{
-		dataBuf.push_back(incoming[0]);
-		dataBuf.push_back(incoming[1]);
-		dataBuf.push_back(incoming[2]);
-		dataBuf.push_back(incoming[3]);
-	}
-	constexpr unsigned int BytesPerTimeStep(void) const
-	{
-		return 4;
-	}
-};
-class TownsHighResPCM::SND
-{
-public:
-	inline void Push(std::vector <uint8_t> &dataBuf,const uint8_t *incoming)
-	{
-		auto data=*incoming;
-		if(0!=(0x80&data))
-		{
-			uint8_t a=data&0x7F;
-			data=0;
-			data-=a;
-		}
-		dataBuf.push_back(data);
-		dataBuf.push_back(data);
-		dataBuf.push_back(data);
-		dataBuf.push_back(data);
-	}
-	constexpr unsigned int BytesPerTimeStep(void) const
-	{
-		return 1;
-	}
-};
-template <class Format>
-class TownsHighResPCM::Populator
-{
-public:
-	void Populate(std::vector <uint8_t> &dataBuf,const std::vector <uint8_t> &incoming,unsigned int incomingFreq)
-	{
-		const unsigned int WAVE_OUT_SAMPLING_RATE=YM2612::WAVE_SAMPLING_RATE; // Align with YM2612.
-
-		Format fmt;
-		int balance=WAVE_OUT_SAMPLING_RATE;
-		for(unsigned int i=0; i+fmt.BytesPerTimeStep()<=incoming.size();)
-		{
-			if(0<balance)
-			{
-				balance-=incomingFreq;
-				fmt.Push(dataBuf,incoming.data()+i);
-			}
-			else
-			{
-				balance+=WAVE_OUT_SAMPLING_RATE;
-				i+=fmt.BytesPerTimeStep();
-			}
-		}
-	}
-};
-
 void TownsHighResPCM::ProcessDMA(void)
 {
 	if(true!=state.DREQMask)
@@ -585,53 +486,11 @@ void TownsHighResPCM::ProcessDMA(void)
 			auto bytesAvailable=state.DMAC.BytesAvailable();
 			if(0<bytesAvailable)
 			{
+printf("  %d\n",bytesAvailable);
 				auto data=state.DMAC.MemoryToDevice(townsPtr,bytesAvailable);
+				state.dataBuffer.insert(state.dataBuffer.end(),data.begin(),data.end());
 				if(0<data.size())
 				{
-					const unsigned int WAVE_OUT_SAMPLING_RATE=YM2612::WAVE_SAMPLING_RATE; // Align with YM2612.
-
-					if(true!=state.SNDFormat)
-					{
-						if(true==state.stereo && true==state.bit16 && WAVE_OUT_SAMPLING_RATE==state.freq)
-						{
-							data.resize((data.size()+3)&~3);
-							state.dataBuffer.insert(state.dataBuffer.end(),data.begin(),data.end());
-						}
-						else
-						{
-							if(true==state.bit16)  // WAV16
-							{
-								if(true==state.stereo) // WAV16 Stereo
-								{
-									Populator <WAV16Stereo> populator;
-									populator.Populate(state.dataBuffer,data,state.freq);
-								}
-								else // WAV16 Monaural
-								{
-									Populator <WAV16Mono> populator;
-									populator.Populate(state.dataBuffer,data,state.freq);
-								}
-							}
-							else // WAV8
-							{
-								if(true==state.stereo)
-								{
-									Populator <WAV8Stereo> populator;
-									populator.Populate(state.dataBuffer,data,state.freq);
-								}
-								else
-								{
-									Populator <WAV8Mono> populator;
-									populator.Populate(state.dataBuffer,data,state.freq);
-								}
-							}
-						}
-					}
-					else // SND
-					{
-						Populator <SND> populator;
-						populator.Populate(state.dataBuffer,data,state.freq);
-					}
 					state.DMAE=true;
 					UpdatePIC();
 				}
@@ -653,6 +512,213 @@ void TownsHighResPCM::UpdatePIC(void)
 		         (state.audioIRQEnabled && state.audioLevelDetected);
 		townsPtr->pic.SetInterruptRequestBit(state.interrupt,IRQ);
 	}
+}
+
+class TownsHighResPCM::WAV8Mono
+{
+public:
+	inline void Get(uint8_t sample[4],const uint8_t *incoming)
+	{
+		uint8_t data=*incoming;
+		data-=0x80;
+		sample[0]=data;
+		sample[1]=data;
+		sample[2]=data;
+		sample[3]=data;
+	}
+	constexpr unsigned int BytesPerTimeStep(void) const
+	{
+		return 1;
+	}
+};
+class TownsHighResPCM::WAV8Stereo
+{
+public:
+	inline void Get(uint8_t sample[4],const uint8_t *incoming)
+	{
+		uint8_t data=incoming[0];
+		data-=0x80;
+		sample[0]=data;
+		sample[1]=data;
+		data=incoming[1];
+		data-=0x80;
+		sample[2]=data;
+		sample[3]=data;
+	}
+	constexpr unsigned int BytesPerTimeStep(void) const
+	{
+		return 2;
+	}
+};
+class TownsHighResPCM::WAV16Mono
+{
+public:
+	inline void Get(uint8_t sample[4],const uint8_t *incoming)
+	{
+		sample[0]=incoming[0];
+		sample[1]=incoming[1];
+		sample[2]=incoming[0];
+		sample[3]=incoming[1];
+	}
+	constexpr unsigned int BytesPerTimeStep(void) const
+	{
+		return 2;
+	}
+};
+class TownsHighResPCM::WAV16Stereo
+{
+public:
+	inline void Get(uint8_t sample[4],const uint8_t *incoming)
+	{
+		sample[0]=incoming[0];
+		sample[1]=incoming[1];
+		sample[2]=incoming[2];
+		sample[3]=incoming[3];
+	}
+	constexpr unsigned int BytesPerTimeStep(void) const
+	{
+		return 4;
+	}
+};
+class TownsHighResPCM::SND
+{
+public:
+	inline void Get(uint8_t sample[4],const uint8_t *incoming)
+	{
+		auto data=*incoming;
+		if(0!=(0x80&data))
+		{
+			uint8_t a=data&0x7F;
+			data=0;
+			data-=a;
+		}
+		sample[0]=data;
+		sample[1]=data;
+		sample[2]=data;
+		sample[3]=data;
+	}
+	constexpr unsigned int BytesPerTimeStep(void) const
+	{
+		return 1;
+	}
+};
+template <class Format>
+class TownsHighResPCM::Populator
+{
+public:
+	// Returns length used from the incoming data buffer.
+	unsigned int Populate(uint8_t output[],const std::vector <uint8_t> &incoming,unsigned int numSamples,unsigned int incomingFreq,unsigned int outputFreq)
+	{
+		const unsigned int WAVE_OUT_SAMPLING_RATE=outputFreq;
+
+		Format fmt;
+		int balance=WAVE_OUT_SAMPLING_RATE;
+		unsigned int i=0,outPtr=0;
+		while(i+fmt.BytesPerTimeStep()<=incoming.size() && 0<numSamples)
+		{
+			if(0<balance)
+			{
+				balance-=incomingFreq;
+				uint8_t sample[4];
+				fmt.Get(sample,incoming.data()+i);
+				WordOp_Add(output+outPtr  ,cpputil::GetSignedWord(sample));
+				WordOp_Add(output+outPtr+2,cpputil::GetSignedWord(sample+2));
+				outPtr+=4;
+				--numSamples;
+			}
+			else
+			{
+				balance+=WAVE_OUT_SAMPLING_RATE;
+				i+=fmt.BytesPerTimeStep();
+			}
+		}
+
+		return i;
+	}
+};
+
+void TownsHighResPCM::DropWaveForNumSamples(unsigned int nSamples,unsigned int WAVE_OUT_SAMPLING_RATE)
+{
+	unsigned int used=0;
+	if(true!=state.SNDFormat)
+	{
+		if(true==state.bit16)  // WAV16
+		{
+			if(true==state.stereo) // WAV16 Stereo
+			{
+				WAV16Stereo format;
+				used=format.BytesPerTimeStep()*nSamples*state.freq/WAVE_OUT_SAMPLING_RATE;
+			}
+			else // WAV16 Monaural
+			{
+				WAV16Mono format;
+				used=format.BytesPerTimeStep()*nSamples*state.freq/WAVE_OUT_SAMPLING_RATE;
+			}
+		}
+		else // WAV8
+		{
+			if(true==state.stereo)
+			{
+				WAV8Stereo format;
+				used=format.BytesPerTimeStep()*nSamples*state.freq/WAVE_OUT_SAMPLING_RATE;
+			}
+			else
+			{
+				WAV8Mono format;
+				used=format.BytesPerTimeStep()*nSamples*state.freq/WAVE_OUT_SAMPLING_RATE;
+			}
+		}
+	}
+	else // SND
+	{
+		SND format;
+		used=format.BytesPerTimeStep()*nSamples*state.freq/WAVE_OUT_SAMPLING_RATE;
+	}
+	state.dataBuffer.erase(state.dataBuffer.begin(),state.dataBuffer.begin()+used);
+}
+void TownsHighResPCM::AddWaveForNumSamples(uint8_t output[],unsigned int nSamples,unsigned int WAVE_OUT_SAMPLING_RATE)
+{
+	unsigned int used=0;
+	if(true!=state.SNDFormat)
+	{
+		if(true==state.bit16)  // WAV16
+		{
+			if(true==state.stereo) // WAV16 Stereo
+			{
+printf("%s %d\n",__FUNCTION__,__LINE__);
+				Populator <WAV16Stereo> populator;
+				used=populator.Populate(output,state.dataBuffer,nSamples,state.freq,WAVE_OUT_SAMPLING_RATE);
+			}
+			else // WAV16 Monaural
+			{
+printf("%s %d\n",__FUNCTION__,__LINE__);
+				Populator <WAV16Mono> populator;
+				used=populator.Populate(output,state.dataBuffer,nSamples,state.freq,WAVE_OUT_SAMPLING_RATE);
+			}
+		}
+		else // WAV8
+		{
+			if(true==state.stereo)
+			{
+printf("%s %d\n",__FUNCTION__,__LINE__);
+				Populator <WAV8Stereo> populator;
+				used=populator.Populate(output,state.dataBuffer,nSamples,state.freq,WAVE_OUT_SAMPLING_RATE);
+			}
+			else
+			{
+printf("%s %d\n",__FUNCTION__,__LINE__);
+				Populator <WAV8Mono> populator;
+				used=populator.Populate(output,state.dataBuffer,nSamples,state.freq,WAVE_OUT_SAMPLING_RATE);
+			}
+		}
+	}
+	else // SND
+	{
+printf("%s %d\n",__FUNCTION__,__LINE__);
+		Populator <SND> populator;
+		used=populator.Populate(output,state.dataBuffer,nSamples,state.freq,WAVE_OUT_SAMPLING_RATE);
+	}
+	state.dataBuffer.erase(state.dataBuffer.begin(),state.dataBuffer.begin()+used);
 }
 
 ////////////////////////////////////////////////////////////

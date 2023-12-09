@@ -304,11 +304,17 @@ std::vector <std::string> TownsSound::GetStatusText(void) const
 	return state.ym2612.GetStatusText();
 }
 
+inline bool TownsSound::IsHighResPCMPlaying(void) const
+{
+	return 0<townsPtr->highResPCM.state.dataBuffer.size();
+}
+
 void TownsSound::ProcessSound(void)
 {
 	if((true==IsFMPlaying() ||
 	    true==IsPCMPlaying() ||
 	    true==IsPCMRecording() ||
+	    true==IsHighResPCMPlaying() ||
 	    true==cdrom->CDDAIsPlaying() ||
 	    townsPtr->state.townsTime<lastFMPCMWaveGenTime+RINGBUFFER_CLEAR_TIME) && 
 	    nullptr!=outside_world)
@@ -353,6 +359,19 @@ void TownsSound::ProcessSound(void)
 						state.rf5c68.SetIRQBank(ch.IRQBank);
 						ch.IRQAfterThisPlayBack=false;
 					}
+				}
+				wavGenerated=true;
+			}
+			if(true==IsHighResPCMPlaying())
+			{
+				auto &highResPCM=townsPtr->highResPCM;
+				if(true==highResPCM.var.mute)
+				{
+					highResPCM.DropWaveForNumSamples(numSamplesPerWave,WAVE_OUT_SAMPLING_RATE);
+				}
+				else
+				{
+					highResPCM.AddWaveForNumSamples(nextFMPCMWave.data(),numSamplesPerWave,WAVE_OUT_SAMPLING_RATE);
 				}
 				wavGenerated=true;
 			}

@@ -31,7 +31,7 @@ unsigned int TownsDMAC::State::Channel::BytesAvailable(void) const
 {
 	if(0<=this->currentCount && this->currentCount<=this->baseCount)
 	{
-		return this->baseCount-this->currentCount+1;
+		return this->currentCount+1;
 	}
 	return 0;
 }

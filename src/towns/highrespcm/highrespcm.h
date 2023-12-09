@@ -65,6 +65,13 @@ public:
 	};
 	State state;
 
+	class Variables
+	{
+	public:
+		bool mute=false;
+	};
+	Variables var;
+
 	TownsHighResPCM(FMTownsCommon *townsPtr);
 	void PowerOn(void);
 	void Reset(void);
@@ -85,6 +92,9 @@ public:
 	class SND;
 	template <class Format>
 	class Populator;
+
+	void DropWaveForNumSamples(unsigned int nSamples,unsigned int WAVE_OUT_SAMPLING_RATE);
+	void AddWaveForNumSamples(uint8_t output[],unsigned int nSamples,unsigned int WAVE_OUT_SAMPLING_RATE);
 
 	uint32_t SerializeVersion(void) const override;
 	void SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const override;

@@ -105,6 +105,7 @@ public:
 		return var.PCMSamplePlayed<var.waveToBeSentToVM.GetNumSamplePerChannel() &&
 		       var.PCMSamplePlayed<var.PCMSamplePointer;
 	}
+	inline bool IsHighResPCMPlaying(void) const;
 
 	TownsSound(class FMTownsCommon *townsPtr);
 	void SetOutsideWorld(class Outside_World::Sound *outside_world);
