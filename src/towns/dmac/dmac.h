@@ -47,6 +47,15 @@ public:
 			bool terminalCount;        // 00AB
 
 			bool AUTI(void) const; // Auto re-initialize
+
+			/*! Transfer data from device to memory.
+			    Returns number of bytes written to memory.
+			*/
+			unsigned int DeviceToMemory(FMTownsCommon *townsPtr,unsigned long long len,const unsigned char dat[]);
+			/*! Transfer data from memory to device.
+			    Returns number of bytes read from memory.
+			*/
+			std::vector <unsigned char> MemoryToDevice(FMTownsCommon *townsPtr,unsigned int length);
 		};
 
 		unsigned int bitSize;      // 00A0H 8 or 16

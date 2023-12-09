@@ -17,6 +17,7 @@ public:
 	{
 		RESET_TIME=1000,
 		NO_INTERRUPT=0xff,
+		DMA_CHECK_INTERVAL=500000, // Every 500us
 	};
 
 	class State
@@ -38,7 +39,7 @@ public:
 		bool audioIRQEnabled=false;
 		bool audioLevelDetected=false;
 
-		bool audioInIRQ=false,bufferIRQ=false,DMAIRQ=false;
+		bool audioInIRQ=false,bufferIRQ=false;
 
 		bool SNDFormat=false; // WAV by default.
 		bool stereo=false;
@@ -57,6 +58,8 @@ public:
 		unsigned int peakLevel=0;  // bit7 is Level Over.
 		unsigned int peakLevelThreshold=0;
 
+		std::vector <uint8_t> dataBuffer;
+
 		void PowerOn(void);
 		void Reset(void);
 	};
@@ -66,9 +69,14 @@ public:
 	void PowerOn(void);
 	void Reset(void);
 
+	void RunScheduledTask(unsigned long long int townsTime) override;
+
 	void IOWriteByte(unsigned int ioport,unsigned int data) override;
 
 	unsigned int IOReadByte(unsigned int ioport) override;
+
+	void ProcessDMA(void);
+	void UpdatePIC(void);
 
 	uint32_t SerializeVersion(void) const override;
 	void SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const override;

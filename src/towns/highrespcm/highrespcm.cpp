@@ -22,12 +22,12 @@ void TownsHighResPCM::State::Reset(void)
 	bufferIRQEnabled=false;
 	bufferOverrun=false;
 	bufferUnderrun=false;
+	bufferMask=true;
 
 	audioIRQEnabled=false;
 
 	audioInIRQ=false;
 	bufferIRQ=false;
-	DMAIRQ=false;
 
 	SNDFormat=false; // WAV by default.
 	stereo=false;
@@ -58,6 +58,15 @@ void TownsHighResPCM::Reset(void)
 	state.Reset();
 }
 
+void TownsHighResPCM::RunScheduledTask(unsigned long long int townsTime)
+{
+	ProcessDMA();
+	if(true!=state.bufferMask)
+	{
+		townsPtr->ScheduleDeviceCallBack(*this,townsTime+DMA_CHECK_INTERVAL);
+	}
+}
+
 void TownsHighResPCM::IOWriteByte(unsigned int ioport,unsigned int data)
 {
 	if(true!=state.enabled)
@@ -74,10 +83,10 @@ void TownsHighResPCM::IOWriteByte(unsigned int ioport,unsigned int data)
 		if(0!=(data&1))
 		{
 			state.DMAE=false;
-			state.DMAIRQ=false; // Prob
 		}
 		state.DMAEIRQEnabled=(0!=(data&2));
 		state.DMAC.modeCtrl=(data&0x10);
+		UpdatePIC();
 		break;
 	case TOWNSIO_HIGHRESPCM_DMACOUNT_LOW:// 0x512, // [2] pp.833
 		state.DMAC.currentCount&=0xff00;
@@ -232,6 +241,7 @@ void TownsHighResPCM::IOWriteByte(unsigned int ioport,unsigned int data)
 		{
 			// Initialize buffer?
 		}
+		UpdatePIC();
 		break;
 	case TOWNSIO_HIGHRESPCM_REC_PLAYBACK:// 0x51C, // [2] pp.838
 		state.audioIRQEnabled=(0!=(data&0x20));
@@ -241,7 +251,12 @@ void TownsHighResPCM::IOWriteByte(unsigned int ioport,unsigned int data)
 			state.audioInIRQ=false; // Prob.
 		}
 		state.DREQMask=(0!=(data&2));
+		if(true==state.bufferMask && 0==(data&1))
+		{
+			townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+DMA_CHECK_INTERVAL);
+		}
 		state.bufferMask=(0!=(data&1));
+		UpdatePIC();
 		break;
 	case TOWNSIO_HIGHRESPCM_REC_PEAK_MON:// 0x51D, // [2] pp.839
 		if(0==(data&0x80))
@@ -273,7 +288,7 @@ unsigned int TownsHighResPCM::IOReadByte(unsigned int ioport)
 	{
 	case TOWNSIO_HIGHRESPCM_BANK://         0x510, // [2] pp.832
 		data=(state.DMACBase ? 1 : 0);
-		data|=(state.DMAIRQ ? 0x10 : 0);
+		data|=(state.DMAE ? 0x10 : 0);
 		data|=(state.bufferIRQ ? 0x20 : 0);
 		data|=(state.audioInIRQ ? 0x40 : 0);
 		break;
@@ -444,6 +459,37 @@ unsigned int TownsHighResPCM::IOReadByte(unsigned int ioport)
 		break;
 	}
 	return data;
+}
+
+void TownsHighResPCM::ProcessDMA(void)
+{
+	if(true!=state.DREQMask)
+	{
+		if(true!=state.recording) // isPlaying
+		{
+			auto data=state.DMAC.MemoryToDevice(townsPtr,0xFFFFFFFF);
+			if(0<data.size())
+			{
+				state.dataBuffer.insert(state.dataBuffer.end(),data.begin(),data.end());
+				state.DMAE=true;
+				UpdatePIC();
+			}
+		}
+		else
+		{
+		}
+	}
+}
+
+void TownsHighResPCM::UpdatePIC(void)
+{
+	if(NO_INTERRUPT!=state.interrupt)
+	{
+		bool IRQ=(state.DMAEIRQEnabled && state.DMAE) ||
+		         (state.bufferIRQEnabled && (state.bufferOverrun || state.bufferUnderrun)) ||
+		         (state.audioIRQEnabled && state.audioLevelDetected);
+		townsPtr->pic.SetInterruptRequestBit(state.interrupt,IRQ);
+	}
 }
 
 ////////////////////////////////////////////////////////////
