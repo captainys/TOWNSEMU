@@ -54,7 +54,8 @@ public:
 
 		unsigned int interrupt=NO_INTERRUPT;
 
-		unsigned int peakLevel=0;
+		unsigned int peakLevel=0;  // bit7 is Level Over.
+		unsigned int peakLevelThreshold=0;
 
 		void PowerOn(void);
 		void Reset(void);

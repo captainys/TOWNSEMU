@@ -715,7 +715,7 @@ FMTownsCommon::FMTownsCommon() :
 	io.AddDevice(&highResPCM,TOWNSIO_HIGHRESPCM_DMAADDR_MIDLOW);//0x515, // [2] pp.834
 	io.AddDevice(&highResPCM,TOWNSIO_HIGHRESPCM_DMAADDR_MIDHIGH);//0x516, // [2] pp.834
 	io.AddDevice(&highResPCM,TOWNSIO_HIGHRESPCM_DMAADDR_HIGH);// 0x517, // [2] pp.834
-	io.AddDevice(&highResPCM,TOWNSIO_HIGHRESPCM_DMAADDR_CLOCK);//0x518, // [2] pp.834
+	io.AddDevice(&highResPCM,TOWNSIO_HIGHRESPCM_CLOCK);//0x518, // [2] pp.834
 	io.AddDevice(&highResPCM,TOWNSIO_HIGHRESPCM_MODE);//         0x519, // [2] pp.835
 	io.AddDevice(&highResPCM,TOWNSIO_HIGHRESPCM_SYSCONTROL);//   0x51A, // [2] pp.836
 	io.AddDevice(&highResPCM,TOWNSIO_HIGHRESPCM_BUFFCONTROL);//  0x51B, // [2] pp.837
