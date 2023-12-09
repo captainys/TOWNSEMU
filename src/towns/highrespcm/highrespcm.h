@@ -78,6 +78,14 @@ public:
 	void ProcessDMA(void);
 	void UpdatePIC(void);
 
+	class WAV8Mono;
+	class WAV8Stereo;
+	class WAV16Mono;
+	class WAV16Stereo;
+	class SND;
+	template <class Format>
+	class Populator;
+
 	uint32_t SerializeVersion(void) const override;
 	void SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const override;
 	bool SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version) override;

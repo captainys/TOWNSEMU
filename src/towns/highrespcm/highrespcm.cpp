@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include "highrespcm.h"
 #include "towns.h"
+#include "sound.h"
 
 
 void TownsHighResPCM::State::PowerOn(void)
@@ -461,6 +462,120 @@ unsigned int TownsHighResPCM::IOReadByte(unsigned int ioport)
 	return data;
 }
 
+class TownsHighResPCM::WAV8Mono
+{
+public:
+	inline void Push(std::vector <uint8_t> &dataBuf,const uint8_t *incoming)
+	{
+		uint8_t data=*incoming;
+		data-=0x80;
+		dataBuf.push_back(data);
+		dataBuf.push_back(data);
+		dataBuf.push_back(data);
+		dataBuf.push_back(data);
+	}
+	constexpr unsigned int BytesPerTimeStep(void) const
+	{
+		return 1;
+	}
+};
+class TownsHighResPCM::WAV8Stereo
+{
+public:
+	inline void Push(std::vector <uint8_t> &dataBuf,const uint8_t *incoming)
+	{
+		uint8_t data=incoming[0];
+		data-=0x80;
+		dataBuf.push_back(data);
+		dataBuf.push_back(data);
+		data=incoming[1];
+		data-=0x80;
+		dataBuf.push_back(data);
+		dataBuf.push_back(data);
+	}
+	constexpr unsigned int BytesPerTimeStep(void) const
+	{
+		return 2;
+	}
+};
+class TownsHighResPCM::WAV16Mono
+{
+public:
+	inline void Push(std::vector <uint8_t> &dataBuf,const uint8_t *incoming)
+	{
+		dataBuf.push_back(incoming[0]);
+		dataBuf.push_back(incoming[1]);
+		dataBuf.push_back(incoming[0]);
+		dataBuf.push_back(incoming[1]);
+	}
+	constexpr unsigned int BytesPerTimeStep(void) const
+	{
+		return 2;
+	}
+};
+class TownsHighResPCM::WAV16Stereo
+{
+public:
+	inline void Push(std::vector <uint8_t> &dataBuf,const uint8_t *incoming)
+	{
+		dataBuf.push_back(incoming[0]);
+		dataBuf.push_back(incoming[1]);
+		dataBuf.push_back(incoming[2]);
+		dataBuf.push_back(incoming[3]);
+	}
+	constexpr unsigned int BytesPerTimeStep(void) const
+	{
+		return 4;
+	}
+};
+class TownsHighResPCM::SND
+{
+public:
+	inline void Push(std::vector <uint8_t> &dataBuf,const uint8_t *incoming)
+	{
+		auto data=*incoming;
+		if(0!=(0x80&data))
+		{
+			uint8_t a=data&0x7F;
+			data=0;
+			data-=a;
+		}
+		dataBuf.push_back(data);
+		dataBuf.push_back(data);
+		dataBuf.push_back(data);
+		dataBuf.push_back(data);
+	}
+	constexpr unsigned int BytesPerTimeStep(void) const
+	{
+		return 1;
+	}
+};
+template <class Format>
+class TownsHighResPCM::Populator
+{
+public:
+	void Populate(std::vector <uint8_t> &dataBuf,const std::vector <uint8_t> &incoming,unsigned int incomingFreq)
+	{
+		const unsigned int WAVE_OUT_SAMPLING_RATE=YM2612::WAVE_SAMPLING_RATE; // Align with YM2612.
+
+		Format fmt;
+		int balance=WAVE_OUT_SAMPLING_RATE;
+		for(unsigned int i=0; i+fmt.BytesPerTimeStep()<=incoming.size();)
+		{
+			if(0<balance)
+			{
+				balance-=incomingFreq;
+				fmt.Push(dataBuf,incoming.data()+i);
+			}
+			else
+			{
+				balance+=WAVE_OUT_SAMPLING_RATE;
+				i+=fmt.BytesPerTimeStep();
+			}
+		}
+	}
+};
+
 void TownsHighResPCM::ProcessDMA(void)
 {
 	if(true!=state.DREQMask)
@@ -473,7 +588,50 @@ void TownsHighResPCM::ProcessDMA(void)
 				auto data=state.DMAC.MemoryToDevice(townsPtr,bytesAvailable);
 				if(0<data.size())
 				{
-					state.dataBuffer.insert(state.dataBuffer.end(),data.begin(),data.end());
+					const unsigned int WAVE_OUT_SAMPLING_RATE=YM2612::WAVE_SAMPLING_RATE; // Align with YM2612.
+
+					if(true!=state.SNDFormat)
+					{
+						if(true==state.stereo && true==state.bit16 && WAVE_OUT_SAMPLING_RATE==state.freq)
+						{
+							data.resize((data.size()+3)&~3);
+							state.dataBuffer.insert(state.dataBuffer.end(),data.begin(),data.end());
+						}
+						else
+						{
+							if(true==state.bit16)  // WAV16
+							{
+								if(true==state.stereo) // WAV16 Stereo
+								{
+									Populator <WAV16Stereo> populator;
+									populator.Populate(state.dataBuffer,data,state.freq);
+								}
+								else // WAV16 Monaural
+								{
+									Populator <WAV16Mono> populator;
+									populator.Populate(state.dataBuffer,data,state.freq);
+								}
+							}
+							else // WAV8
+							{
+								if(true==state.stereo)
+								{
+									Populator <WAV8Stereo> populator;
+									populator.Populate(state.dataBuffer,data,state.freq);
+								}
+								else
+								{
+									Populator <WAV8Mono> populator;
+									populator.Populate(state.dataBuffer,data,state.freq);
+								}
+							}
+						}
+					}
+					else // SND
+					{
+						Populator <SND> populator;
+						populator.Populate(state.dataBuffer,data,state.freq);
+					}
 					state.DMAE=true;
 					UpdatePIC();
 				}
@@ -481,6 +639,7 @@ void TownsHighResPCM::ProcessDMA(void)
 		}
 		else
 		{
+			// Recording not supported yet.
 		}
 	}
 }
