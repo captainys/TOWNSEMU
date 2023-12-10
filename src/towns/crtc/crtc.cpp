@@ -923,7 +923,10 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 	case TOWNSIO_MX_IMGOUT_D1://   0x475,
 		if(true==monitorCRTC2)
 		{
-			std::cout << "Write to CRTC2 Reg(D1)=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Ubtox(data) << std::endl;
+			std::ostringstream ss;
+			ss << "Write to CRTC2 Reg(D1)=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Ubtox(data);
+			std::cout << ss.str() << std::endl;
+			townsPtr->debugger.WriteLogFile(ss.str());
 		}
 		if(state.highResCrtcRegAddrLatch<NUM_HIRES_CRTC_REGISTERS)
 		{
@@ -950,7 +953,10 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 	case TOWNSIO_MX_IMGOUT_D2://   0x476,
 		if(true==monitorCRTC2)
 		{
-			std::cout << "Write to CRTC2 Reg(D2)=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Ubtox(data) << std::endl;
+			std::ostringstream ss;
+			ss << "Write to CRTC2 Reg(D2)=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Ubtox(data);
+			std::cout << ss.str() << std::endl;
+			townsPtr->debugger.WriteLogFile(ss.str());
 		}
 		if(state.highResCrtcRegAddrLatch<NUM_HIRES_CRTC_REGISTERS)
 		{
@@ -977,7 +983,10 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 	case TOWNSIO_MX_IMGOUT_D3://   0x477,
 		if(true==monitorCRTC2)
 		{
-			std::cout << "Write to CRTC2 Reg(D3)=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Ubtox(data) << std::endl;
+			std::ostringstream ss;
+			ss << "Write to CRTC2 Reg(D3)=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Ubtox(data);
+			std::cout << ss.str() << std::endl;
+			townsPtr->debugger.WriteLogFile(ss.str());
 		}
 		if(state.highResCrtcRegAddrLatch<NUM_HIRES_CRTC_REGISTERS)
 		{
@@ -1050,7 +1059,10 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 		{
 			if(true==monitorCRTC2)
 			{
-				std::cout << "Write to CRTC2 Reg(D0)=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Ustox(data) << std::endl;
+				std::ostringstream ss;
+				ss << "Write to CRTC2 Reg(D0)=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Ustox(data);
+				std::cout << ss.str() << std::endl;
+				townsPtr->debugger.WriteLogFile(ss.str());
 			}
 		}
 		if(state.highResCrtcRegAddrLatch<NUM_HIRES_CRTC_REGISTERS)
@@ -1131,7 +1143,10 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]|=((data&0xFFFF)<<8);
 			if(true==monitorCRTC2)
 			{
-				std::cout << "Write to CRTC2 Reg(D1)=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Ustox(data) << std::endl;
+				std::ostringstream ss;
+				ss << "Write to CRTC2 Reg(D1)=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Ustox(data);
+				std::cout << ss.str() << std::endl;
+				townsPtr->debugger.WriteLogFile(ss.str());
 			}
 		}
 		break;
@@ -1143,7 +1158,10 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]|=((data&0xFFFF)<<16);
 			if(true==monitorCRTC2)
 			{
-				std::cout << "Write to CRTC2 Reg(D2)=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Ustox(data) << std::endl;
+				std::ostringstream ss;
+				ss << "Write to CRTC2 Reg(D2)=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Ustox(data);
+				std::cout << ss.str() << std::endl;
+				townsPtr->debugger.WriteLogFile(ss.str());
 			}
 			if(HIGHRES_REG_PALCOL==state.highResCrtcRegAddrLatch)
 			{
@@ -1169,7 +1187,10 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 		{
 			if(true==monitorCRTC2)
 			{
-				std::cout << "Write to CRTC2 Reg(D3)=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Ustox(data) << std::endl;
+				std::ostringstream ss;
+				ss << "Write to CRTC2 Reg(D3)=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Ustox(data);
+				std::cout << ss.str() << std::endl;
+				townsPtr->debugger.WriteLogFile(ss.str());
 			}
 		}
 		break;
@@ -1191,7 +1212,10 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]=data;
 			if(true==monitorCRTC2)
 			{
-				std::cout << "Write to CRTC2 Reg(D0)=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Uitox(data) << std::endl;
+				std::ostringstream ss;
+				ss << "Write to CRTC2 Reg(D0)=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Uitox(data);
+				std::cout << ss.str() << std::endl;
+				townsPtr->debugger.WriteLogFile(ss.str());
 			}
 			if(HIGHRES_REG_CTRL1==state.highResCrtcRegAddrLatch)
 			{
@@ -1236,7 +1260,10 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 		{
 			if(true==monitorCRTC2)
 			{
-				std::cout << "Write to CRTC2 Reg(D1)=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Uitox(data) << std::endl;
+				std::ostringstream ss;
+				ss << "Write to CRTC2 Reg(D1)=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Uitox(data);
+				std::cout << ss.str() << std::endl;
+				townsPtr->debugger.WriteLogFile(ss.str());
 			}
 		}
 		break;
@@ -1246,7 +1273,10 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 		{
 			if(true==monitorCRTC2)
 			{
-				std::cout << "Write to CRTC2 Reg(D2)=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Uitox(data) << std::endl;
+				std::ostringstream ss;
+				ss << "Write to CRTC2 Reg(D2)=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Uitox(data);
+				std::cout << ss.str() << std::endl;
+				townsPtr->debugger.WriteLogFile(ss.str());
 			}
 		}
 		break;
@@ -1255,7 +1285,10 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 		{
 			if(true==monitorCRTC2)
 			{
-				std::cout << "Write to CRTC2 Reg(D3)=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Uitox(data) << std::endl;
+				std::ostringstream ss;
+				ss << "Write to CRTC2 Reg(D3)=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Uitox(data);
+				std::cout << ss.str() << std::endl;
+				townsPtr->debugger.WriteLogFile(ss.str());
 			}
 		}
 		break;
@@ -1849,7 +1882,7 @@ std::vector <std::string> TownsCRTC::GetLowResPaletteText(const AnalogPalette &p
 
 void TownsCRTC::MakeHighResPageLayerInfo(Layer &layer,unsigned char page) const
 {
-	switch(state.highResCrtcReg[HIGHRES_REG_P0_PALETTE+0x10*page])
+	switch(state.highResCrtcReg[HIGHRES_REG_P0_PALETTE+0x10*page]&0xFFFF)
 	{
 	default:
 	case 0x0F:
@@ -1861,7 +1894,7 @@ void TownsCRTC::MakeHighResPageLayerInfo(Layer &layer,unsigned char page) const
 	case 0x8000:
 		layer.bitsPerPixel=16;
 		break;
-	case 0xFFFFFF:
+	case 0xFFFF:
 		layer.bitsPerPixel=24;
 		break;
 	}
