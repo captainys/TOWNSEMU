@@ -1367,7 +1367,9 @@ void TownsCDROM::SetSIRQ_IRR(void)
 	//   Added CPUTransferPointer
 	// Version 5
 	//   Added headPositionHSG
-	return 5;
+	// Version 6
+	//   Bug fix.  Use PushUcharArray/ReadUcharArray for status queue.
+	return 6;
 }
 /* virtual */ void TownsCDROM::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
 {
@@ -1393,10 +1395,7 @@ void TownsCDROM::SetSIRQ_IRR(void)
 	{
 		PushUint16(data,p);
 	}
-	for(auto q : state.statusQueue)
-	{
-		PushUint16(data,q);
-	}
+	PushUcharArray(data,state.statusQueue);
 
 	PushUint32(data,state.readingSectorHSG);
 	PushUint32(data,state.endSectorHSG);
@@ -1513,9 +1512,13 @@ void TownsCDROM::SetSIRQ_IRR(void)
 	{
 		p=ReadUint16(data);
 	}
-	for(auto &q : state.statusQueue)
+	if(6<=version)
 	{
-		q=ReadUint16(data);
+		state.statusQueue=ReadUcharArray(data);
+	}
+	else
+	{
+		state.statusQueue.clear(); // My bad.
 	}
 
 	state.readingSectorHSG=ReadUint32(data);
