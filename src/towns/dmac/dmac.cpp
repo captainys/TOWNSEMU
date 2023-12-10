@@ -29,11 +29,7 @@ bool TownsDMAC::State::Channel::AUTI(void) const
 
 unsigned int TownsDMAC::State::Channel::CountsAvailable(void) const
 {
-	if(0<=this->currentCount && this->currentCount<=this->baseCount)
-	{
-		return this->currentCount+1;
-	}
-	return 0;
+	return (this->currentCount&0xFFFF)+1;
 }
 
 unsigned int TownsDMAC::State::Channel::DeviceToMemory(FMTownsCommon *townsPtr,unsigned long long len,const unsigned char data[])
