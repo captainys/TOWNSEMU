@@ -38,21 +38,33 @@ unsigned int TownsDMAC::State::Channel::DeviceToMemory(FMTownsCommon *townsPtr,u
 	auto &mem=townsPtr->mem;
 	if(1==bytesPerCount)
 	{
-		for(i=0; i<len && 0<=this->currentCount && this->currentCount<=this->baseCount; ++i)
+		bool termCount=false;
+		this->currentCount&=0xFFFF;
+		for(i=0; i<len && true!=termCount; ++i)
 		{
 			mem.StoreByteDMA(this->currentAddr,data[i]);
 			++(this->currentAddr);
+			if(0==this->currentCount)
+			{
+				termCount=true;
+			}
 			--(this->currentCount);
 		}
 	}
 	else if(2==bytesPerCount)
 	{
-		for(i=0; i+1<len && 0<=this->currentCount && this->currentCount<=this->baseCount; i+=2)
+		bool termCount=false;
+		this->currentCount&=0xFFFF;
+		for(i=0; i+1<len && true!=termCount; i+=2)
 		{
 			mem.StoreByteDMA(this->currentAddr,data[i]);
 			++(this->currentAddr);
 			mem.StoreByteDMA(this->currentAddr,data[i+1]);
 			++(this->currentAddr);
+			if(0==this->currentCount)
+			{
+				termCount=true;
+			}
 			--(this->currentCount);
 		}
 	}
@@ -84,21 +96,33 @@ std::vector <unsigned char> TownsDMAC::State::Channel::MemoryToDevice(FMTownsCom
 	data.resize(length);
 	if(1==bytesPerCount)
 	{
-		for(i=0; i<length && 0<=this->currentCount && this->currentCount<=this->baseCount; ++i)
+		bool termCount=false;
+		this->currentCount&=0xFFFF;
+		for(i=0; i<length && true!=termCount; ++i)
 		{
 			data[i]=mem.FetchByteDMA(this->currentAddr);
 			++(this->currentAddr);
+			if(0==this->currentCount)
+			{
+				termCount=true;
+			}
 			--(this->currentCount);
 		}
 	}
 	else if(2==bytesPerCount)
 	{
-		for(i=0; i+1<length && 0<=this->currentCount && this->currentCount<=this->baseCount; i+=2)
+		bool termCount=false;
+		this->currentCount&=0xFFFF;
+		for(i=0; i+1<length && true!=termCount; i+=2)
 		{
 			data[i]=mem.FetchByteDMA(this->currentAddr);
 			++(this->currentAddr);
 			data[i+1]=mem.FetchByteDMA(this->currentAddr);
 			++(this->currentAddr);
+			if(0==this->currentCount)
+			{
+				termCount=true;
+			}
 			--(this->currentCount);
 		}
 	}
