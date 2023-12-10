@@ -58,6 +58,8 @@ def Run(argv):
 		os.path.join(TSUGARUDIR,"testdata","CMOS.bin"),
 		"-DONTAUTOSAVECMOS",
 		"-USEFPU",
+		"-MEMSIZE",
+		"16",
 		#"-HIGHRES",
 		#"-DEBUG",
 		#"-PAUSE",

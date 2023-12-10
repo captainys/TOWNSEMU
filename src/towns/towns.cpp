@@ -282,6 +282,8 @@ void FMTownsCommon::State::PowerOn(void)
 
 	towns.crtc.state.highResAvailable=argv.highResAvailable;
 
+	towns.highResPCM.state.enabled=argv.highResPCM;
+
 	if(TOWNS_KEYBOARD_MODE_DEFAULT!=argv.keyboardMode)
 	{
 		outside_world->keyboardMode=argv.keyboardMode;
@@ -477,7 +479,8 @@ FMTownsCommon::FMTownsCommon() :
 	serialport(this),
 	vndrv(this),
 	tgdrv(this),
-	mapXY{this,this}
+	mapXY{this,this},
+	highResPCM(this)
 {
 	/* Memo to myself:
 	To instantiate high-fidelity VM and default-fidelity VM in the same executable
@@ -510,6 +513,7 @@ FMTownsCommon::FMTownsCommon() :
 	allDevices.push_back(&serialport);
 	allDevices.push_back(&vndrv);
 	allDevices.push_back(&tgdrv);
+	allDevices.push_back(&highResPCM);
 	VMBase::CacheDeviceIndex();
 
 	physMem.SetMainRAMSize(4*1024*1024);
@@ -702,6 +706,23 @@ FMTownsCommon::FMTownsCommon() :
 	io.AddDevice(&vndrv,TOWNSIO_VNDRV_AUXCOMMAND);//     0x2F18,
 
 	io.AddDevice(&tgdrv,TOWNSIO_VM_TGDRV);
+
+	io.AddDevice(&highResPCM,TOWNSIO_HIGHRESPCM_BANK);//         0x510, // [2] pp.832
+	io.AddDevice(&highResPCM,TOWNSIO_HIGHRESPCM_DMASTATUS);//    0x511, // [2] pp.832
+	io.AddDevice(&highResPCM,TOWNSIO_HIGHRESPCM_DMACOUNT_LOW);// 0x512, // [2] pp.833
+	io.AddDevice(&highResPCM,TOWNSIO_HIGHRESPCM_DMACOUNT_HIGH);//0x513, // [2] pp.833
+	io.AddDevice(&highResPCM,TOWNSIO_HIGHRESPCM_DMAADDR_LOW);//  0x514, // [2] pp.834
+	io.AddDevice(&highResPCM,TOWNSIO_HIGHRESPCM_DMAADDR_MIDLOW);//0x515, // [2] pp.834
+	io.AddDevice(&highResPCM,TOWNSIO_HIGHRESPCM_DMAADDR_MIDHIGH);//0x516, // [2] pp.834
+	io.AddDevice(&highResPCM,TOWNSIO_HIGHRESPCM_DMAADDR_HIGH);// 0x517, // [2] pp.834
+	io.AddDevice(&highResPCM,TOWNSIO_HIGHRESPCM_CLOCK);//0x518, // [2] pp.834
+	io.AddDevice(&highResPCM,TOWNSIO_HIGHRESPCM_MODE);//         0x519, // [2] pp.835
+	io.AddDevice(&highResPCM,TOWNSIO_HIGHRESPCM_SYSCONTROL);//   0x51A, // [2] pp.836
+	io.AddDevice(&highResPCM,TOWNSIO_HIGHRESPCM_BUFFCONTROL);//  0x51B, // [2] pp.837
+	io.AddDevice(&highResPCM,TOWNSIO_HIGHRESPCM_REC_PLAYBACK);// 0x51C, // [2] pp.838
+	io.AddDevice(&highResPCM,TOWNSIO_HIGHRESPCM_REC_PEAK_MON);// 0x51D, // [2] pp.839
+	io.AddDevice(&highResPCM,TOWNSIO_HIGHRESPCM_DATA_LOW);//     0x51E, // [2] pp.840
+	io.AddDevice(&highResPCM,TOWNSIO_HIGHRESPCM_DATA_HIGH);//    0x51F, // [2] pp.840
 
 	baseClassReady=true;
 }

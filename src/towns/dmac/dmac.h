@@ -47,6 +47,30 @@ public:
 			bool terminalCount;        // 00AB
 
 			bool AUTI(void) const; // Auto re-initialize
+
+			/*! */
+			unsigned int CountsAvailable(void) const;
+
+			/*! Transfer data from device to memory.
+			    Returns number of bytes written to memory.
+			*/
+			unsigned int DeviceToMemory(FMTownsCommon *townsPtr,unsigned long long len,const unsigned char dat[]);
+			/*! Transfer data from memory to device.
+			    Returns number of bytes read from memory.
+			*/
+			std::vector <unsigned char> MemoryToDevice(FMTownsCommon *townsPtr,unsigned int length);
+
+			/*! Major contradiction:
+			      TOWNS's primary DMA by default transfer data 16-bits at a time.
+			      According to the data sheet, the number of bytes transferred implies to be 2 times (count+1).
+			      However, all BIOS, drivers, everything sets number of bytes -1 as count, and everything works.
+			      High-Resolution PCM, however, seems to use the (number of bytes-1)/2 as count.
+
+			      There can be a logic between TOWNS's primary DMA and the CPU.
+
+			      For the time being, I introduce the following variable to absorb the changes.
+			*/
+			unsigned int bytesPerCount=1; // Can be 1 or 2
 		};
 
 		unsigned int bitSize;      // 00A0H 8 or 16

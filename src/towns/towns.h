@@ -47,6 +47,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "vndrv.h"
 #include "tgdrv.h"
 #include "townsparam.h"
+#include "highrespcm.h"
 
 #include "eventlog.h"
 
@@ -414,6 +415,7 @@ public:
 	TownsSerialPort serialport;
 	TownsVnDrv vndrv;
 	TownsTgDrv tgdrv;
+	TownsHighResPCM highResPCM;
 	// Machine State <<
 
 	unsigned int townsType;

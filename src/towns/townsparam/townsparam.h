@@ -61,6 +61,8 @@ public:
 
 	bool highResAvailable=true;
 
+	bool highResPCM=false;
+
 	bool catchUpRealTime=true;
 
 	bool damperWireLine=false;

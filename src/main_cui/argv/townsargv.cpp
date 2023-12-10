@@ -40,7 +40,13 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "-FULLSCREEN" << std::endl;
 	std::cout << "  Fullscreen on start up" << std::endl;
 	std::cout << "-HIGHRES" << std::endl;
-	std::cout << "  Enable High Resolution CRTC (default)" << std::endl;
+	std::cout << "  Enable High-Resolution CRTC (default)" << std::endl;
+	std::cout << "-NOHIGHRES" << std::endl;
+	std::cout << "  Disable High-Resolution CRTC" << std::endl;
+	std::cout << "-HIGHRESPCM" << std::endl;
+	std::cout << "  Enable High-Resolution PCM" << std::endl;
+	std::cout << "-NOHIGHRESPCM" << std::endl;
+	std::cout << "  Disable High-Resolution PCM" << std::endl;
 	std::cout << "-HIGHFIDELITY" << std::endl;
 	std::cout << "-HIGHFIDELITYCPU" << std::endl;
 	std::cout << "  Use high-fidelity CPU core.  Needed to run Windows 3.1." << std::endl;
@@ -906,9 +912,21 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		{
 			memCardWriteProtected=true;
 		}
+		else if("-HIGHRESPCM"==ARG)
+		{
+			highResPCM=true;
+		}
+		else if("-NOHIGHRESPCM"==ARG)
+		{
+			highResPCM=false;
+		}
 		else if("-HIGHRES"==ARG)
 		{
 			highResAvailable=true;
+		}
+		else if("-NOHIGHRES"==ARG)
+		{
+			highResAvailable=false;
 		}
 		else if("-HIGHFIDELITY"==ARG || "-HIGHFIDELITYCPU"==ARG)
 		{

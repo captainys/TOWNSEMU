@@ -27,6 +27,120 @@ bool TownsDMAC::State::Channel::AUTI(void) const
 	return 0!=(modeCtrl&0x10);
 }
 
+unsigned int TownsDMAC::State::Channel::CountsAvailable(void) const
+{
+	return (this->currentCount&0xFFFF)+1;
+}
+
+unsigned int TownsDMAC::State::Channel::DeviceToMemory(FMTownsCommon *townsPtr,unsigned long long len,const unsigned char data[])
+{
+	unsigned int i;
+	auto &mem=townsPtr->mem;
+	if(1==bytesPerCount)
+	{
+		bool termCount=false;
+		this->currentCount&=0xFFFF;
+		for(i=0; i<len && true!=termCount; ++i)
+		{
+			mem.StoreByteDMA(this->currentAddr,data[i]);
+			++(this->currentAddr);
+			if(0==this->currentCount)
+			{
+				termCount=true;
+			}
+			--(this->currentCount);
+		}
+	}
+	else if(2==bytesPerCount)
+	{
+		bool termCount=false;
+		this->currentCount&=0xFFFF;
+		for(i=0; i+1<len && true!=termCount; i+=2)
+		{
+			mem.StoreByteDMA(this->currentAddr,data[i]);
+			++(this->currentAddr);
+			mem.StoreByteDMA(this->currentAddr,data[i+1]);
+			++(this->currentAddr);
+			if(0==this->currentCount)
+			{
+				termCount=true;
+			}
+			--(this->currentCount);
+		}
+	}
+	if(0<i)
+	{
+		if(this->baseCount<this->currentCount)
+		{
+			this->terminalCount=true;
+		}
+		if(this->currentCount+1==0 && true==this->AUTI()) // :-(  Maybe I should use signed integer for counts.
+		{
+			// Memo to myself:
+			// AUTOI is Auto-Initialize.  Not Auto-Increment.
+			// Confirmed by uPD71071 data sheet (English version) page 19, top-right paragraph.
+			// Both address and count need to be initialized at ~END or terminal count.
+			// Interpreting it as Auto-Increment, and only initialize count is an error.
+			// Shadow of the Beast demands both address and count be initialized.
+			this->currentAddr=this->baseAddr;
+			this->currentCount=this->baseCount;
+		}
+	}
+	return i;
+}
+std::vector <unsigned char> TownsDMAC::State::Channel::MemoryToDevice(FMTownsCommon *townsPtr,unsigned int length)
+{
+	std::vector <unsigned char> data;
+	unsigned int i;
+	auto &mem=townsPtr->mem;
+	data.resize(length);
+	if(1==bytesPerCount)
+	{
+		bool termCount=false;
+		this->currentCount&=0xFFFF;
+		for(i=0; i<length && true!=termCount; ++i)
+		{
+			data[i]=mem.FetchByteDMA(this->currentAddr);
+			++(this->currentAddr);
+			if(0==this->currentCount)
+			{
+				termCount=true;
+			}
+			--(this->currentCount);
+		}
+	}
+	else if(2==bytesPerCount)
+	{
+		bool termCount=false;
+		this->currentCount&=0xFFFF;
+		for(i=0; i+1<length && true!=termCount; i+=2)
+		{
+			data[i]=mem.FetchByteDMA(this->currentAddr);
+			++(this->currentAddr);
+			data[i+1]=mem.FetchByteDMA(this->currentAddr);
+			++(this->currentAddr);
+			if(0==this->currentCount)
+			{
+				termCount=true;
+			}
+			--(this->currentCount);
+		}
+	}
+	data.resize(i);
+	if(0<i)
+	{
+		if(this->baseCount<this->currentCount)
+		{
+			this->terminalCount=true;
+		}
+		if(this->currentCount+1==0 && true==this->AUTI()) // :-(  Maybe I should use signed integer for counts.
+		{
+			this->currentAddr=this->baseAddr;
+			this->currentCount=this->baseCount;
+		}
+	}
+	return data;
+}
 
 ////////////////////////////////////////////////////////////
 
@@ -327,60 +441,11 @@ unsigned int TownsDMAC::DeviceToMemory(State::Channel *DMACh,const std::vector <
 }
 unsigned int TownsDMAC::DeviceToMemory(State::Channel *DMACh,unsigned long long len,const unsigned char data[])
 {
-	unsigned int i;
-	auto &mem=townsPtr->mem;
-	for(i=0; i<len && 0<=DMACh->currentCount && DMACh->currentCount<=DMACh->baseCount; ++i)
-	{
-		mem.StoreByteDMA(DMACh->currentAddr,data[i]);
-		++DMACh->currentAddr;
-		--DMACh->currentCount;
-	}
-	if(0<i)
-	{
-		if(DMACh->baseCount<DMACh->currentCount)
-		{
-			DMACh->terminalCount=true;
-		}
-		if(DMACh->currentCount+1==0 && true==DMACh->AUTI()) // :-(  Maybe I should use signed integer for counts.
-		{
-			// Memo to myself:
-			// AUTOI is Auto-Initialize.  Not Auto-Increment.
-			// Confirmed by uPD71071 data sheet (English version) page 19, top-right paragraph.
-			// Both address and count need to be initialized at ~END or terminal count.
-			// Interpreting it as Auto-Increment, and only initialize count is an error.
-			// Shadow of the Beast demands both address and count be initialized.
-			DMACh->currentAddr=DMACh->baseAddr;
-			DMACh->currentCount=DMACh->baseCount;
-		}
-	}
-	return i;
+	return DMACh->DeviceToMemory(townsPtr,len,data);
 }
 std::vector <unsigned char> TownsDMAC::MemoryToDevice(State::Channel *DMACh,unsigned int length)
 {
-	std::vector <unsigned char> data;
-	unsigned int i;
-	auto &mem=townsPtr->mem;
-	data.resize(length);
-	for(i=0; i<length && 0<=DMACh->currentCount && DMACh->currentCount<=DMACh->baseCount; ++i)
-	{
-		data[i]=mem.FetchByteDMA(DMACh->currentAddr);
-		++DMACh->currentAddr;
-		--DMACh->currentCount;
-	}
-	data.resize(i);
-	if(0<i)
-	{
-		if(DMACh->baseCount<DMACh->currentCount)
-		{
-			DMACh->terminalCount=true;
-		}
-		if(DMACh->currentCount+1==0 && true==DMACh->AUTI()) // :-(  Maybe I should use signed integer for counts.
-		{
-			DMACh->currentAddr=DMACh->baseAddr;
-			DMACh->currentCount=DMACh->baseCount;
-		}
-	}
-	return data;
+	return DMACh->MemoryToDevice(townsPtr,length);
 }
 
 std::vector <std::string> TownsDMAC::GetStateText(void) const
