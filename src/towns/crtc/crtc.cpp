@@ -13,6 +13,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 << LICENSE */
 #include <iostream>
+#include <sstream>
 #include <algorithm>
 
 #include "cpputil.h"
@@ -866,7 +867,10 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 		// std::cout << "MX-VIDOUTCONTROL8[" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << "H]=" << cpputil::Ubtox(data) << "H" << std::endl;
 		if(true==monitorCRTC2)
 		{
-			std::cout << "Write to CRTC2 Reg(D0)=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Ubtox(data) << std::endl;
+			std::ostringstream ss;
+			ss << "Write to CRTC2 Reg(D0)=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Ubtox(data);
+			std::cout << ss.str() << std::endl;
+			townsPtr->debugger.WriteLogFile(ss.str());
 		}
 		if(state.highResCrtcRegAddrLatch<NUM_HIRES_CRTC_REGISTERS)
 		{
