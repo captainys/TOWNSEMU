@@ -27,7 +27,7 @@ bool TownsDMAC::State::Channel::AUTI(void) const
 	return 0!=(modeCtrl&0x10);
 }
 
-unsigned int TownsDMAC::State::Channel::BytesAvailable(void) const
+unsigned int TownsDMAC::State::Channel::CountsAvailable(void) const
 {
 	if(0<=this->currentCount && this->currentCount<=this->baseCount)
 	{
@@ -40,11 +40,25 @@ unsigned int TownsDMAC::State::Channel::DeviceToMemory(FMTownsCommon *townsPtr,u
 {
 	unsigned int i;
 	auto &mem=townsPtr->mem;
-	for(i=0; i<len && 0<=this->currentCount && this->currentCount<=this->baseCount; ++i)
+	if(1==bytesPerCount)
 	{
-		mem.StoreByteDMA(this->currentAddr,data[i]);
-		++(this->currentAddr);
-		--(this->currentCount);
+		for(i=0; i<len && 0<=this->currentCount && this->currentCount<=this->baseCount; ++i)
+		{
+			mem.StoreByteDMA(this->currentAddr,data[i]);
+			++(this->currentAddr);
+			--(this->currentCount);
+		}
+	}
+	else if(2==bytesPerCount)
+	{
+		for(i=0; i+1<len && 0<=this->currentCount && this->currentCount<=this->baseCount; i+=2)
+		{
+			mem.StoreByteDMA(this->currentAddr,data[i]);
+			++(this->currentAddr);
+			mem.StoreByteDMA(this->currentAddr,data[i+1]);
+			++(this->currentAddr);
+			--(this->currentCount);
+		}
 	}
 	if(0<i)
 	{
@@ -72,11 +86,25 @@ std::vector <unsigned char> TownsDMAC::State::Channel::MemoryToDevice(FMTownsCom
 	unsigned int i;
 	auto &mem=townsPtr->mem;
 	data.resize(length);
-	for(i=0; i<length && 0<=this->currentCount && this->currentCount<=this->baseCount; ++i)
+	if(1==bytesPerCount)
 	{
-		data[i]=mem.FetchByteDMA(this->currentAddr);
-		++(this->currentAddr);
-		--(this->currentCount);
+		for(i=0; i<length && 0<=this->currentCount && this->currentCount<=this->baseCount; ++i)
+		{
+			data[i]=mem.FetchByteDMA(this->currentAddr);
+			++(this->currentAddr);
+			--(this->currentCount);
+		}
+	}
+	else if(2==bytesPerCount)
+	{
+		for(i=0; i+1<length && 0<=this->currentCount && this->currentCount<=this->baseCount; i+=2)
+		{
+			data[i]=mem.FetchByteDMA(this->currentAddr);
+			++(this->currentAddr);
+			data[i+1]=mem.FetchByteDMA(this->currentAddr);
+			++(this->currentAddr);
+			--(this->currentCount);
+		}
 	}
 	data.resize(i);
 	if(0<i)

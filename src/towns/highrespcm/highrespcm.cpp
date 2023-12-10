@@ -31,6 +31,8 @@ void TownsHighResPCM::State::Reset(void)
 	DMAC.currentAddr=0;
 	DMAC.modeCtrl=0;
 	DMAC.terminalCount=false;
+	DMAC.bytesPerCount=2;
+
 	DMACBase=false;
 	DMAE=false;
 	DMAEIRQEnabled=false;
@@ -41,9 +43,6 @@ void TownsHighResPCM::State::Reset(void)
 	bufferMask=true;
 
 	audioIRQEnabled=false;
-
-	audioInIRQ=false;
-	bufferIRQ=false;
 
 	SNDFormat=false; // WAV by default.
 	stereo=false;
@@ -294,7 +293,6 @@ void TownsHighResPCM::IOWriteByte(unsigned int ioport,unsigned int data)
 		if(0!=(data&0x10))
 		{
 			state.audioLevelDetected=false;
-			state.audioInIRQ=false; // Prob.
 		}
 		state.DREQMask=(0!=(data&2));
 		if(true==state.bufferMask && 0==(data&1))
@@ -309,7 +307,6 @@ void TownsHighResPCM::IOWriteByte(unsigned int ioport,unsigned int data)
 		{
 			state.audioLevelDetected=false; // Prob.
 			state.peakLevel=0;
-			state.audioInIRQ=false; // Prob.
 		}
 		else
 		{
@@ -335,8 +332,8 @@ unsigned int TownsHighResPCM::IOReadByte(unsigned int ioport)
 	case TOWNSIO_HIGHRESPCM_BANK://         0x510, // [2] pp.832
 		data=(state.DMACBase ? 1 : 0);
 		data|=(state.DMAE ? 0x10 : 0);
-		data|=(state.bufferIRQ ? 0x20 : 0);
-		data|=(state.audioInIRQ ? 0x40 : 0);
+		data|=((state.bufferOverrun || state.bufferUnderrun) ? 0x20 : 0);
+		data|=(state.audioLevelDetected ? 0x40 : 0);
 		break;
 	case TOWNSIO_HIGHRESPCM_DMASTATUS://    0x511, // [2] pp.832
 		if(true==state.DMAC.terminalCount)
@@ -483,7 +480,7 @@ unsigned int TownsHighResPCM::IOReadByte(unsigned int ioport)
 		{
 			data|=0x20;
 		}
-		if(true==state.audioInIRQ)
+		if(true==state.audioLevelDetected)
 		{
 			data|=0x10;
 		}
@@ -509,20 +506,29 @@ unsigned int TownsHighResPCM::IOReadByte(unsigned int ioport)
 
 void TownsHighResPCM::ProcessDMA(void)
 {
-	if(true!=state.DREQMask)
+static int ctr=0;
+	if(true!=state.DREQMask && true!=state.bufferMask)
 	{
 		if(true!=state.recording) // isPlaying
 		{
-			auto bytesAvailable=state.DMAC.BytesAvailable();
+			auto bytesAvailable=state.DMAC.CountsAvailable()*2; // 16-bit transfer....
 			if(0<bytesAvailable)
 			{
-printf("  %d\n",bytesAvailable);
 				auto data=state.DMAC.MemoryToDevice(townsPtr,bytesAvailable);
+printf("  %d %d\n",bytesAvailable,data.size());
+++ctr;
+//if(17==ctr)townsPtr->debugger.ExternalBreak("HRPCM");
 				state.dataBuffer.insert(state.dataBuffer.end(),data.begin(),data.end());
 				if(0<data.size())
 				{
 					state.DMAE=true;
 					UpdatePIC();
+
+					if(true!=state.DMAC.AUTI())
+					{
+printf("%s %d\n",__FUNCTION__,__LINE__);
+						state.DREQMask=true;
+					}
 				}
 			}
 		}
@@ -709,19 +715,18 @@ void TownsHighResPCM::DropWaveForNumSamples(unsigned int nSamples,unsigned int W
 void TownsHighResPCM::AddWaveForNumSamples(uint8_t output[],unsigned int nSamples,unsigned int WAVE_OUT_SAMPLING_RATE)
 {
 	unsigned int used=0;
+printf("%d\n",state.dataBuffer.size());
 	if(true!=state.SNDFormat)
 	{
 		if(true==state.bit16)  // WAV16
 		{
 			if(true==state.stereo) // WAV16 Stereo
 			{
-printf("%s %d\n",__FUNCTION__,__LINE__);
 				Populator <WAV16Stereo> populator;
 				used=populator.Populate(output,state.dataBuffer,nSamples,state.freq,WAVE_OUT_SAMPLING_RATE);
 			}
 			else // WAV16 Monaural
 			{
-printf("%s %d\n",__FUNCTION__,__LINE__);
 				Populator <WAV16Mono> populator;
 				used=populator.Populate(output,state.dataBuffer,nSamples,state.freq,WAVE_OUT_SAMPLING_RATE);
 			}
@@ -730,13 +735,11 @@ printf("%s %d\n",__FUNCTION__,__LINE__);
 		{
 			if(true==state.stereo)
 			{
-printf("%s %d\n",__FUNCTION__,__LINE__);
 				Populator <WAV8Stereo> populator;
 				used=populator.Populate(output,state.dataBuffer,nSamples,state.freq,WAVE_OUT_SAMPLING_RATE);
 			}
 			else
 			{
-printf("%s %d\n",__FUNCTION__,__LINE__);
 				Populator <WAV8Mono> populator;
 				used=populator.Populate(output,state.dataBuffer,nSamples,state.freq,WAVE_OUT_SAMPLING_RATE);
 			}
@@ -744,11 +747,93 @@ printf("%s %d\n",__FUNCTION__,__LINE__);
 	}
 	else // SND
 	{
-printf("%s %d\n",__FUNCTION__,__LINE__);
 		Populator <SND> populator;
 		used=populator.Populate(output,state.dataBuffer,nSamples,state.freq,WAVE_OUT_SAMPLING_RATE);
 	}
+printf("del %d %d\n",used,nSamples);
 	state.dataBuffer.erase(state.dataBuffer.begin(),state.dataBuffer.begin()+used);
+}
+
+////////////////////////////////////////////////////////////
+
+std::vector <std::string> TownsHighResPCM::GetStatusText(void) const
+{
+	std::vector <std::string> text;
+
+	text.push_back("DMAC");
+	text.back()+=" MODE="+cpputil::Ubtox(state.DMAC.modeCtrl);
+	text.back()+=" BASEAD="+cpputil::Uitox(state.DMAC.baseAddr);
+	text.back()+=" CURRAD="+cpputil::Uitox(state.DMAC.currentAddr);
+	text.back()+=" BASECT="+cpputil::Uitox(state.DMAC.baseCount);
+	text.back()+=" CURRCT="+cpputil::Uitox(state.DMAC.currentCount);
+
+	text.push_back("BASE=");
+	text.back()+=(state.DMACBase ? "1" : "0");
+	text.back()+=" DMAEIRQ=";
+	text.back()+=(state.DMAEIRQEnabled ? "Enabled" : "Disabled");
+	text.back()+=" DMAE=";
+	text.back()+=(state.DMAE ? "1" : "0");
+
+	text.push_back("BUFFERIRQ=");
+	text.back()+=(state.bufferIRQEnabled ? "Enabled" : "Disabled");
+	text.back()+=" UNDERRUN=";
+	text.back()+=(state.bufferUnderrun ? "1" : "0");
+	text.back()+=" OVERRUN=";
+	text.back()+=(state.bufferOverrun ? "1" : "0");
+
+	text.push_back("AUDIOIN_IRQ=");
+	text.back()+=(state.audioIRQEnabled ? "Enabled" : "Disabled");
+	text.back()+=" LEVEL_DETECTED=";
+	text.back()+=(state.audioLevelDetected ? "1" : "0");
+
+	text.push_back("AUDIO_FORMAT=");
+	if(true==state.SNDFormat)
+	{
+		text.back()+="SND";
+	}
+	else
+	{
+		text.back()+="WAV";
+		if(true==state.bit16)
+		{
+			text.back()+="16";
+		}
+		else
+		{
+			text.back()+="8";
+		}
+		if(true==state.stereo)
+		{
+			text.back()+=" STEREO";
+		}
+		else
+		{
+			text.back()+=" MONO";
+		}
+	}
+
+	if(true==state.recording)
+	{
+		text.push_back("MODE=Recording");
+	}
+	else
+	{
+		text.push_back("MODE=Playback");
+	}
+	text.back()+=" DATAPORT=";
+	text.back()+=(true==state.dataPort ? " SOFT-TFR Port" : "LEVEL Monitor");
+
+	text.push_back("DREQMask=");
+	text.back()+=(state.DREQMask ? "1" : "0");
+	text.back()+=" BufferMask=";
+	text.back()+=(state.bufferMask ? "1" : "0");
+	text.back()+=" INT=";
+	text.back()+=cpputil::Uitoa(state.interrupt);
+
+	text.push_back("Buffer Filled=");
+	text.back()+=cpputil::Uitoa(state.dataBuffer.size());
+
+	return text;
 }
 
 ////////////////////////////////////////////////////////////

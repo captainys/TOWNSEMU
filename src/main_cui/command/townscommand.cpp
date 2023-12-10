@@ -314,6 +314,8 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	dumpableMap["80487"]=DUMP_FPU;
 	dumpableMap["WHEREIAM"]=DUMP_WHERE_I_AM;
 	dumpableMap["INSTHIST"]=DUMP_INSTRUCTION_HISTOGRAM;
+	dumpableMap["HIGHRESPCM"]=DUMP_HIGHRES_PCM;
+	dumpableMap["HIRESPCM"]=DUMP_HIGHRES_PCM;
 
 
 	breakEventMap["ICW1"]=   BREAK_ON_PIC_IWC1;
@@ -2530,6 +2532,12 @@ void TownsCommandInterpreter::Execute_Dump(FMTownsCommon &towns,Command &cmd)
 			break;
 		case DUMP_TEST:
 			for(auto str : towns.CPU().GetTESTText())
+			{
+				std::cout << str << std::endl;
+			}
+			break;
+		case DUMP_HIGHRES_PCM:
+			for(auto str : towns.highResPCM.GetStatusText())
 			{
 				std::cout << str << std::endl;
 			}

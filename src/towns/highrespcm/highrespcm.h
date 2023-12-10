@@ -3,6 +3,7 @@
 /* { */
 
 #include <vector>
+#include <string>
 #include <stdint.h>
 #include "dmac.h"
 
@@ -38,8 +39,6 @@ public:
 
 		bool audioIRQEnabled=false;
 		bool audioLevelDetected=false;
-
-		bool audioInIRQ=false,bufferIRQ=false;
 
 		bool SNDFormat=false; // WAV by default.
 		bool stereo=false;
@@ -95,6 +94,8 @@ public:
 
 	void DropWaveForNumSamples(unsigned int nSamples,unsigned int WAVE_OUT_SAMPLING_RATE);
 	void AddWaveForNumSamples(uint8_t output[],unsigned int nSamples,unsigned int WAVE_OUT_SAMPLING_RATE);
+
+	std::vector <std::string> GetStatusText(void) const;
 
 	uint32_t SerializeVersion(void) const override;
 	void SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const override;
