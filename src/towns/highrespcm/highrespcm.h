@@ -19,6 +19,7 @@ public:
 		RESET_TIME=1000,
 		NO_INTERRUPT=0xff,
 		DMA_CHECK_INTERVAL=500000, // Every 500us
+		DATABUF_FETCH_THR=1024,    // There is no info about the size of High-Res PCM internal buffer.
 	};
 
 	class State

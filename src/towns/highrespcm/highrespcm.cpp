@@ -285,6 +285,7 @@ void TownsHighResPCM::IOWriteByte(unsigned int ioport,unsigned int data)
 		if(0x0F==(data&0x0F))
 		{
 			// Initialize buffer?
+			state.dataBuffer.clear(); // Prob.
 		}
 		UpdatePIC();
 		break;
@@ -506,18 +507,14 @@ unsigned int TownsHighResPCM::IOReadByte(unsigned int ioport)
 
 void TownsHighResPCM::ProcessDMA(void)
 {
-static int ctr=0;
 	if(true!=state.DREQMask && true!=state.bufferMask)
 	{
-		if(true!=state.recording) // isPlaying
+		if(true!=state.recording && state.dataBuffer.size()<DATABUF_FETCH_THR) // isPlaying
 		{
 			auto bytesAvailable=state.DMAC.CountsAvailable()*2; // 16-bit transfer....
 			if(0<bytesAvailable)
 			{
 				auto data=state.DMAC.MemoryToDevice(townsPtr,bytesAvailable);
-printf("  %d %d\n",bytesAvailable,data.size());
-++ctr;
-//if(17==ctr)townsPtr->debugger.ExternalBreak("HRPCM");
 				state.dataBuffer.insert(state.dataBuffer.end(),data.begin(),data.end());
 				if(0<data.size())
 				{
@@ -526,7 +523,6 @@ printf("  %d %d\n",bytesAvailable,data.size());
 
 					if(true!=state.DMAC.AUTI())
 					{
-printf("%s %d\n",__FUNCTION__,__LINE__);
 						state.DREQMask=true;
 					}
 				}
@@ -715,7 +711,6 @@ void TownsHighResPCM::DropWaveForNumSamples(unsigned int nSamples,unsigned int W
 void TownsHighResPCM::AddWaveForNumSamples(uint8_t output[],unsigned int nSamples,unsigned int WAVE_OUT_SAMPLING_RATE)
 {
 	unsigned int used=0;
-printf("%d\n",state.dataBuffer.size());
 	if(true!=state.SNDFormat)
 	{
 		if(true==state.bit16)  // WAV16
@@ -750,7 +745,6 @@ printf("%d\n",state.dataBuffer.size());
 		Populator <SND> populator;
 		used=populator.Populate(output,state.dataBuffer,nSamples,state.freq,WAVE_OUT_SAMPLING_RATE);
 	}
-printf("del %d %d\n",used,nSamples);
 	state.dataBuffer.erase(state.dataBuffer.begin(),state.dataBuffer.begin()+used);
 }
 
@@ -820,6 +814,8 @@ std::vector <std::string> TownsHighResPCM::GetStatusText(void) const
 	{
 		text.push_back("MODE=Playback");
 	}
+	text.back()+=" FREQ=";
+	text.back()+=cpputil::Uitoa(state.freq);
 	text.back()+=" DATAPORT=";
 	text.back()+=(true==state.dataPort ? " SOFT-TFR Port" : "LEVEL Monitor");
 
