@@ -98,52 +98,82 @@ TownsDMAC::TownsDMAC(class FMTownsCommon *townsPtr) : Device(townsPtr)
 		state.SELCH=data&3;
 		break;
 	case TOWNSIO_DMAC_COUNT_LOW://           0xA2,
-		state.ch[state.SELCH].currentCount&=0xff00;
-		state.ch[state.SELCH].currentCount|=(data&0xff);
-		state.ch[state.SELCH].terminalCount=false; // Probably
-		if(true!=state.BASE)
+		if(true==state.BASE)
 		{
+			state.ch[state.SELCH].baseCount&=0xff00;
+			state.ch[state.SELCH].baseCount|=(data&0xff);
+		}
+		else
+		{
+			state.ch[state.SELCH].currentCount&=0xff00;
+			state.ch[state.SELCH].currentCount|=(data&0xff);
+			state.ch[state.SELCH].terminalCount=false; // Probably
 			state.ch[state.SELCH].baseCount=state.ch[state.SELCH].currentCount;
 		}
 		break;
 	case TOWNSIO_DMAC_COUNT_HIGH://          0xA3,
-		state.ch[state.SELCH].currentCount&=0xff;
-		state.ch[state.SELCH].currentCount|=((data&0xff)<<8);
-		state.ch[state.SELCH].terminalCount=false; // Probably
-		if(true!=state.BASE)
+		if(true==state.BASE)
 		{
+			state.ch[state.SELCH].baseCount&=0xff;
+			state.ch[state.SELCH].baseCount|=((data&0xff)<<8);
+		}
+		else
+		{
+			state.ch[state.SELCH].currentCount&=0xff;
+			state.ch[state.SELCH].currentCount|=((data&0xff)<<8);
+			state.ch[state.SELCH].terminalCount=false; // Probably
 			state.ch[state.SELCH].baseCount=state.ch[state.SELCH].currentCount;
 		}
 		break;
 	case TOWNSIO_DMAC_ADDRESS_LOWEST://      0xA4,
-		state.ch[state.SELCH].currentAddr&=0xffffff00;
-		state.ch[state.SELCH].currentAddr|=(data&0xff);
-		if(true!=state.BASE)
+		if(true==state.BASE)
 		{
+			state.ch[state.SELCH].baseAddr&=0xffffff00;
+			state.ch[state.SELCH].baseAddr|=(data&0xff);
+		}
+		else
+		{
+			state.ch[state.SELCH].currentAddr&=0xffffff00;
+			state.ch[state.SELCH].currentAddr|=(data&0xff);
 			state.ch[state.SELCH].baseAddr=state.ch[state.SELCH].currentAddr;
 		}
 		break;
 	case TOWNSIO_DMAC_ADDRESS_MIDLOW://      0xA5,
-		state.ch[state.SELCH].currentAddr&=0xffff00ff;
-		state.ch[state.SELCH].currentAddr|=((data&0xff)<<8);
-		if(true!=state.BASE)
+		if(true==state.BASE)
 		{
+			state.ch[state.SELCH].baseAddr&=0xffff00ff;
+			state.ch[state.SELCH].baseAddr|=((data&0xff)<<8);
+		}
+		else
+		{
+			state.ch[state.SELCH].currentAddr&=0xffff00ff;
+			state.ch[state.SELCH].currentAddr|=((data&0xff)<<8);
 			state.ch[state.SELCH].baseAddr=state.ch[state.SELCH].currentAddr;
 		}
 		break;
 	case TOWNSIO_DMAC_ADDRESS_MIDHIGH://     0xA6,
-		state.ch[state.SELCH].currentAddr&=0xff00ffff;
-		state.ch[state.SELCH].currentAddr|=((data&0xff)<<16);
-		if(true!=state.BASE)
+		if(true==state.BASE)
 		{
+			state.ch[state.SELCH].baseAddr&=0xff00ffff;
+			state.ch[state.SELCH].baseAddr|=((data&0xff)<<16);
+		}
+		else
+		{
+			state.ch[state.SELCH].currentAddr&=0xff00ffff;
+			state.ch[state.SELCH].currentAddr|=((data&0xff)<<16);
 			state.ch[state.SELCH].baseAddr=state.ch[state.SELCH].currentAddr;
 		}
 		break;
 	case TOWNSIO_DMAC_ADDRESS_HIGHEST://     0xA7,
-		state.ch[state.SELCH].currentAddr&=0x00ffffff;
-		state.ch[state.SELCH].currentAddr|=((data&0xff)<<24);
-		if(true!=state.BASE)
+		if(true==state.BASE)
 		{
+			state.ch[state.SELCH].baseAddr&=0x00ffffff;
+			state.ch[state.SELCH].baseAddr|=((data&0xff)<<24);
+		}
+		else
+		{
+			state.ch[state.SELCH].currentAddr&=0x00ffffff;
+			state.ch[state.SELCH].currentAddr|=((data&0xff)<<24);
 			state.ch[state.SELCH].baseAddr=state.ch[state.SELCH].currentAddr;
 		}
 		break;
