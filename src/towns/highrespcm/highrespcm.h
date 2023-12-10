@@ -19,7 +19,9 @@ public:
 		RESET_TIME=1000,
 		NO_INTERRUPT=0xff,
 		DMA_CHECK_INTERVAL=500000, // Every 500us
-		DATABUF_FETCH_THR=1024,    // There is no info about the size of High-Res PCM internal buffer.
+		INTERNAL_BUFFER_SIZE=8192, // There is no info about the size of High-Res PCM internal buffer.
+		                           // Confirmed 1024 is too small.
+		                           // Maybe 8KB is reasonable for a 1993 sound chip.
 	};
 
 	class State
@@ -58,6 +60,7 @@ public:
 		unsigned int peakLevel=0;  // bit7 is Level Over.
 		unsigned int peakLevelThreshold=0;
 
+		int balance=0; // Balance for re-sampling.
 		std::vector <uint8_t> dataBuffer;
 
 		void PowerOn(void);

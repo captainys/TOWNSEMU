@@ -286,6 +286,7 @@ void TownsHighResPCM::IOWriteByte(unsigned int ioport,unsigned int data)
 		{
 			// Initialize buffer?
 			state.dataBuffer.clear(); // Prob.
+			state.balance=1;
 		}
 		UpdatePIC();
 		break;
@@ -509,10 +510,10 @@ void TownsHighResPCM::ProcessDMA(void)
 {
 	if(true!=state.DREQMask && true!=state.bufferMask)
 	{
-		if(true!=state.recording && state.dataBuffer.size()<DATABUF_FETCH_THR) // isPlaying
+		if(true!=state.recording) // isPlaying
 		{
 			auto bytesAvailable=state.DMAC.CountsAvailable()*2; // 16-bit transfer....
-			if(0<bytesAvailable)
+			if(0<bytesAvailable && state.dataBuffer.size()+bytesAvailable<INTERNAL_BUFFER_SIZE)
 			{
 				auto data=state.DMAC.MemoryToDevice(townsPtr,bytesAvailable);
 				state.dataBuffer.insert(state.dataBuffer.end(),data.begin(),data.end());
@@ -639,12 +640,11 @@ class TownsHighResPCM::Populator
 {
 public:
 	// Returns length used from the incoming data buffer.
-	unsigned int Populate(uint8_t output[],const std::vector <uint8_t> &incoming,unsigned int numSamples,unsigned int incomingFreq,unsigned int outputFreq)
+	unsigned int Populate(int &balance,uint8_t output[],const std::vector <uint8_t> &incoming,unsigned int numSamples,unsigned int incomingFreq,unsigned int outputFreq)
 	{
 		const unsigned int WAVE_OUT_SAMPLING_RATE=outputFreq;
 
 		Format fmt;
-		int balance=WAVE_OUT_SAMPLING_RATE;
 		unsigned int i=0,outPtr=0;
 		while(i+fmt.BytesPerTimeStep()<=incoming.size() && 0<numSamples)
 		{
@@ -718,12 +718,12 @@ void TownsHighResPCM::AddWaveForNumSamples(uint8_t output[],unsigned int nSample
 			if(true==state.stereo) // WAV16 Stereo
 			{
 				Populator <WAV16Stereo> populator;
-				used=populator.Populate(output,state.dataBuffer,nSamples,state.freq,WAVE_OUT_SAMPLING_RATE);
+				used=populator.Populate(state.balance,output,state.dataBuffer,nSamples,state.freq,WAVE_OUT_SAMPLING_RATE);
 			}
 			else // WAV16 Monaural
 			{
 				Populator <WAV16Mono> populator;
-				used=populator.Populate(output,state.dataBuffer,nSamples,state.freq,WAVE_OUT_SAMPLING_RATE);
+				used=populator.Populate(state.balance,output,state.dataBuffer,nSamples,state.freq,WAVE_OUT_SAMPLING_RATE);
 			}
 		}
 		else // WAV8
@@ -731,19 +731,19 @@ void TownsHighResPCM::AddWaveForNumSamples(uint8_t output[],unsigned int nSample
 			if(true==state.stereo)
 			{
 				Populator <WAV8Stereo> populator;
-				used=populator.Populate(output,state.dataBuffer,nSamples,state.freq,WAVE_OUT_SAMPLING_RATE);
+				used=populator.Populate(state.balance,output,state.dataBuffer,nSamples,state.freq,WAVE_OUT_SAMPLING_RATE);
 			}
 			else
 			{
 				Populator <WAV8Mono> populator;
-				used=populator.Populate(output,state.dataBuffer,nSamples,state.freq,WAVE_OUT_SAMPLING_RATE);
+				used=populator.Populate(state.balance,output,state.dataBuffer,nSamples,state.freq,WAVE_OUT_SAMPLING_RATE);
 			}
 		}
 	}
 	else // SND
 	{
 		Populator <SND> populator;
-		used=populator.Populate(output,state.dataBuffer,nSamples,state.freq,WAVE_OUT_SAMPLING_RATE);
+		used=populator.Populate(state.balance,output,state.dataBuffer,nSamples,state.freq,WAVE_OUT_SAMPLING_RATE);
 	}
 	state.dataBuffer.erase(state.dataBuffer.begin(),state.dataBuffer.begin()+used);
 }
