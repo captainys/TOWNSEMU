@@ -34,7 +34,10 @@ bool FMTownsCommon::SaveState(std::string fName) const
 		allDevices.push_back(&timer);
 		allDevices.push_back(&keyboard);
 		allDevices.push_back(&serialport);
-		allDevices.push_back(&highResPCM);
+		if(true==highResPCM.state.enabled)  // Don't save High-Res PCM unless enabled so that older version can load state.
+		{
+			allDevices.push_back(&highResPCM);
+		}
 		// allDevices.push_back(&vndrv);
 
 		for(auto devPtr : allDevices)
