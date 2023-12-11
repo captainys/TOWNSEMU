@@ -841,9 +841,94 @@ uint32_t TownsHighResPCM::SerializeVersion(void) const
 
 void TownsHighResPCM::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
 {
+	PushBool(data,state.enabled);
+
+	PushUint64(data,state.resetTime);
+	PushUint32(data,state.freq);
+
+	PushUint32(data,state.DMAC.baseCount);
+	PushUint32(data,state.DMAC.currentCount);
+	PushUint32(data,state.DMAC.baseAddr);
+	PushUint32(data,state.DMAC.currentAddr);
+	PushUint16(data,state.DMAC.modeCtrl);
+	PushBool(data,state.DMAC.terminalCount);
+
+	PushBool(data,state.DMACBase);
+	PushBool(data,state.DMAE);
+	PushBool(data,state.DMAEIRQEnabled);
+
+	PushBool(data,state.bufferIRQEnabled);
+	PushBool(data,state.bufferOverrun);
+	PushBool(data,state.bufferUnderrun);
+
+	PushBool(data,state.audioIRQEnabled);
+	PushBool(data,state.audioLevelDetected);
+
+	PushBool(data,state.SNDFormat); // WAV by default.
+	PushBool(data,state.stereo);
+	PushBool(data,state.bit16);
+
+	PushBool(data,state.recording);
+	PushBool(data,state.dataPort); // false:Level Monitor  true:Software-transfer port
+
+	PushBool(data,state.DREQMask);
+	PushBool(data,state.bufferMask);
+
+	PushUint32(data,state.conversionLevel);
+
+	PushUint16(data,state.interrupt);
+
+	PushUint32(data,state.peakLevel);  // bit7 is Level Over.
+	PushUint32(data,state.peakLevelThreshold);
+
+	PushInt32(data,state.balance); // Balance for re-sampling.
+	PushUcharArray(data,state.dataBuffer);
 }
 
 bool TownsHighResPCM::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
 {
+	state.enabled=ReadBool(data);
+
+	state.resetTime=ReadUint64(data);
+	state.freq=ReadUint32(data);
+
+	state.DMAC.baseCount=ReadUint32(data);
+	state.DMAC.currentCount=ReadUint32(data);
+	state.DMAC.baseAddr=ReadUint32(data);
+	state.DMAC.currentAddr=ReadUint32(data);
+	state.DMAC.modeCtrl=ReadUint16(data);
+	state.DMAC.terminalCount=ReadBool(data);
+
+	state.DMACBase=ReadBool(data);
+	state.DMAE=ReadBool(data);
+	state.DMAEIRQEnabled=ReadBool(data);
+
+	state.bufferIRQEnabled=ReadBool(data);
+	state.bufferOverrun=ReadBool(data);
+	state.bufferUnderrun=ReadBool(data);
+
+	state.audioIRQEnabled=ReadBool(data);
+	state.audioLevelDetected=ReadBool(data);
+
+	state.SNDFormat=ReadBool(data);
+	state.stereo=ReadBool(data);
+	state.bit16=ReadBool(data);
+
+	state.recording=ReadBool(data);
+	state.dataPort=ReadBool(data);
+
+	state.DREQMask=ReadBool(data);
+	state.bufferMask=ReadBool(data);
+
+	state.conversionLevel=ReadUint32(data);
+
+	state.interrupt=ReadUint16(data);
+
+	state.peakLevel=ReadUint32(data);
+	state.peakLevelThreshold=ReadUint32(data);
+
+	state.balance=ReadInt32(data);
+	state.dataBuffer=ReadUcharArray(data);
+
 	return true;
 }

@@ -34,6 +34,7 @@ bool FMTownsCommon::SaveState(std::string fName) const
 		allDevices.push_back(&timer);
 		allDevices.push_back(&keyboard);
 		allDevices.push_back(&serialport);
+		allDevices.push_back(&highResPCM);
 		// allDevices.push_back(&vndrv);
 
 		for(auto devPtr : allDevices)
@@ -71,7 +72,10 @@ bool FMTownsCommon::LoadState(std::string fName)
 		allDevices.push_back(&timer);
 		allDevices.push_back(&keyboard);
 		allDevices.push_back(&serialport);
+		allDevices.push_back(&highResPCM);
 		// allDevices.push_back(&vndrv);
+
+		highResPCM.state.enabled=false; // If not read must be made by an old version, keep it disabled.
 
 		while(true!=ifp.eof())
 		{
