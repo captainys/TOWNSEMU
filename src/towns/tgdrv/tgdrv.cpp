@@ -13,6 +13,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 << LICENSE */
 #include <iostream>
+#include <cctype>
 #include "tgdrv.h"
 #include "towns.h"
 
@@ -1803,6 +1804,7 @@ std::string TownsTgDrv::GetLastOfFilename(std::string in) const
 	}
 	return last;
 }
+
 std::string TownsTgDrv::FilenameTo11Bytes(std::string in) const
 {
 	int ptr=0;
@@ -1832,6 +1834,10 @@ std::string TownsTgDrv::FilenameTo11Bytes(std::string in) const
 	while(eleven.size()<11)
 	{
 		eleven.push_back(' ');
+	}
+	for(auto &c : eleven)
+	{
+		c=std::toupper(c);
 	}
 	return eleven;
 }
