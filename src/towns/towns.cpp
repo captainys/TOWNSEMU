@@ -1289,15 +1289,7 @@ void FMTownsCommon::PrintTimer(void) const
 void FMTownsCommon::PrintSound(void) const
 {
 	auto &cpu=CPU();
-	for(auto str : sound.state.rf5c68.GetStatusText())
-	{
-		std::cout << str << std::endl;
-		if(nullptr!=cpu.debuggerPtr)
-		{
-			cpu.debuggerPtr->WriteLogFile(str);
-		}
-	}
-	for(auto str : sound.state.ym2612.GetStatusText())
+	for(auto str : sound.GetStatusText())
 	{
 		std::cout << str << std::endl;
 		if(nullptr!=cpu.debuggerPtr)

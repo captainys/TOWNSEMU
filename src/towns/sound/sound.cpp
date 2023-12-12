@@ -301,7 +301,16 @@ void TownsSound::SoundPolling(unsigned long long int townsTime)
 
 std::vector <std::string> TownsSound::GetStatusText(void) const
 {
-	return state.ym2612.GetStatusText();
+	std::vector <std::string> text;
+	auto fmText=state.ym2612.GetStatusText();
+	auto pcmText=state.rf5c68.GetStatusText();
+
+	text.push_back("MUTE_FLAG=0x");
+	text.back()+=cpputil::Ubtox(state.muteFlag);
+	text.insert(text.end(),pcmText.begin(),pcmText.end());
+	text.insert(text.end(),fmText.begin(),fmText.end());
+
+	return text;
 }
 
 inline bool TownsSound::IsHighResPCMPlaying(void) const
@@ -347,8 +356,8 @@ void TownsSound::ProcessSound(void)
 				{
 					// AddWaveForNumSamples will set IRQAfterThisPlayBack flag.
 					std::vector <unsigned char> dummy;
-					dummy.resize(numSamplesPerWave);
-					state.rf5c68.AddWaveForNumSamples(nextFMPCMWave.data(),numSamplesPerWave,WAVE_OUT_SAMPLING_RATE,lastFMPCMWaveGenTime);
+					dummy.resize(numSamplesPerWave*4);
+					state.rf5c68.AddWaveForNumSamples(dummy.data(),numSamplesPerWave,WAVE_OUT_SAMPLING_RATE,lastFMPCMWaveGenTime);
 				}
 
 				for(unsigned int chNum=0; chNum<RF5C68::NUM_CHANNELS; ++chNum)
