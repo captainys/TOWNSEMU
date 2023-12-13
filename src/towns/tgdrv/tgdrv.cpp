@@ -1100,15 +1100,29 @@ bool TownsTgDrv::Int2F_112E_ExtendedOpenOrCreate(void)
 
 unsigned int TownsTgDrv::CheckFileName(const std::string &fName) const
 {
+	bool inKanji=false;
 	for(int i=0; i<fName.size(); ++i)
 	{
-		if('.'==fName[i] && '.'==fName[i+1])
+		if(true==inKanji)
 		{
-			return TOWNS_DOSERR_ACCESS_DENIED;
+			inKanji=false;
 		}
-		if(fName[i]<' ' || 0x80<=fName[i])
+		else
 		{
-			return TOWNS_DOSERR_ACCESS_DENIED;
+			if('.'==fName[i] && '.'==fName[i+1])
+			{
+				return TOWNS_DOSERR_ACCESS_DENIED;
+			}
+
+			unsigned char c=fName[i];
+			if((0x81<=c && c<=0x9F) || (0xE0<c && c<=0xEF))
+			{
+				inKanji=true;
+			}
+			else if(fName[i]<' ')
+			{
+				return TOWNS_DOSERR_ACCESS_DENIED;
+			}
 		}
 	}
 	return TOWNS_DOSERR_NO_ERROR;

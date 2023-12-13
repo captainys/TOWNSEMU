@@ -198,11 +198,11 @@ uint32_t FileSys::SystemFileTable::Write(const std::vector <unsigned char> &data
 	}
 	return 0;
 }
-bool FileSys::SubPathIsDirectory(std::string subPath)
+bool FileSys::SubPathIsDirectory(std::string subPath) // subPath is in Shift-JIS
 {
 	BackSlashToSlash(subPath);
 	auto findContext=CreateFindContext();
-	auto dirent=FindFirst(subPath,findContext);
+	auto dirent=FindFirst(subPath,findContext); // subPath in FindFirst is in Shift-JIS.
 	DeleteFindContext(findContext);
 	return 0!=(dirent.attr&ATTR_DIR);
 }
@@ -213,13 +213,13 @@ int FileSys::OpenExistingFile(unsigned int PSP,std::string subPath,unsigned int 
 	{
 		BackSlashToSlash(subPath);
 
-		auto fullPath=cpputil::MakeFullPathName(hostPath,subPath);
+		auto fullPath=cpputil::MakeFullPathName(hostPath,ToHostEncoding(subPath));
 		if(true!=cpputil::FileExists(fullPath))
 		{
 			return -1;
 		}
-
-		auto dirent=GetFileAttrib(subPath);
+std::cout << fullPath << std::endl;
+		auto dirent=GetFileAttrib(subPath);  // subPath in Shift-JIS
 
 		sft[sftIdx].fName=subPath;
 		sft[sftIdx].mode=openMode;
@@ -252,7 +252,7 @@ int FileSys::OpenFileNotTruncate(unsigned int PSP,std::string subPath,unsigned i
 	{
 		BackSlashToSlash(subPath);
 
-		auto fullPath=cpputil::MakeFullPathName(hostPath,subPath);
+		auto fullPath=cpputil::MakeFullPathName(hostPath,ToHostEncoding(subPath));
 		if(true!=cpputil::FileExists(fullPath))
 		{
 			// If not exist, make one.
@@ -294,7 +294,7 @@ int FileSys::OpenFileTruncate(unsigned int PSP,std::string subPath,unsigned int 
 	{
 		BackSlashToSlash(subPath);
 
-		auto fullPath=cpputil::MakeFullPathName(hostPath,subPath);
+		auto fullPath=cpputil::MakeFullPathName(hostPath,ToHostEncoding(subPath));
 		if(true!=cpputil::FileExists(fullPath))
 		{
 			// If not exist, make one.
@@ -319,7 +319,7 @@ int FileSys::OpenFileTruncate(unsigned int PSP,std::string subPath,unsigned int 
 bool FileSys::CheckFileExist(std::string subPath)
 {
 	BackSlashToSlash(subPath);
-	auto fullPath=cpputil::MakeFullPathName(hostPath,subPath);
+	auto fullPath=cpputil::MakeFullPathName(hostPath,ToHostEncoding(subPath));
 	return cpputil::FileExists(fullPath);
 }
 void FileSys::Seek(int sftIdx,uint32_t pos)
@@ -438,25 +438,25 @@ bool FileSys::RenameSubPath(std::string subPathFrom,std::string subPathTo)
 	BackSlashToSlash(subPathFrom);
 	BackSlashToSlash(subPathTo);
 
-	auto fullPathFrom=cpputil::MakeFullPathName(hostPath,subPathFrom);
-	auto fullPathTo=cpputil::MakeFullPathName(hostPath,subPathTo);
+	auto fullPathFrom=cpputil::MakeFullPathName(hostPath,ToHostEncoding(subPathFrom));
+	auto fullPathTo=cpputil::MakeFullPathName(hostPath,ToHostEncoding(subPathTo));
 	return 0==rename(fullPathFrom.c_str(),fullPathTo.c_str());
 }
 bool FileSys::DeleteSubPathFile(std::string subPath)
 {
 	BackSlashToSlash(subPath);
-	auto fullPath=cpputil::MakeFullPathName(hostPath,subPath);
+	auto fullPath=cpputil::MakeFullPathName(hostPath,ToHostEncoding(subPath));
 	return 0==remove(fullPath.c_str());
 }
 bool FileSys::RmdirSubPath(std::string subPath)
 {
 	BackSlashToSlash(subPath);
-	return Rmdir(cpputil::MakeFullPathName(hostPath,subPath));
+	return Rmdir(cpputil::MakeFullPathName(hostPath,ToHostEncoding(subPath)));
 }
 bool FileSys::MkdirSubPath(std::string subPath)
 {
 	BackSlashToSlash(subPath);
-	return Mkdir(cpputil::MakeFullPathName(hostPath,subPath));
+	return Mkdir(cpputil::MakeFullPathName(hostPath,ToHostEncoding(subPath)));
 }
 int FileSys::FindAvailableSFT(void) const
 {

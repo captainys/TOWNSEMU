@@ -28,6 +28,15 @@ void FileSys::FindContext::Close(void)
 	}
 }
 
+/* static */ std::string FileSys::ToHostEncoding(std::string from)
+{
+	return from;
+}
+/* static */ std::string FileSys::ToSJISEncoding(std::string from)
+{
+	return from;
+}
+
 static void StatToDirectoryEntry(FileSys::DirectoryEntry &dirent,const struct stat &stat)
 {
 	dirent.attr=0;

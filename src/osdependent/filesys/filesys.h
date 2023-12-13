@@ -21,6 +21,9 @@ private:
 	FileSys(const FileSys &incoming);
 	FileSys &operator=(const FileSys &incoming);
 
+	static std::string ToHostEncoding(std::string from);
+	static std::string ToSJISEncoding(std::string from);
+
 public:
 	class FindContext;
 
@@ -94,6 +97,8 @@ public:
 	/*! SubPath needs to be a directory.
 	    "/*.*" or "/*" will be added for file listing.
 	    Returns an index to find struct.
+
+		subPath is in the Shift-JIS encoding.
 	*/
 	int FindFirst(DirectoryEntry &ent,unsigned int PSP,const std::string &subPath);
 
@@ -126,6 +131,8 @@ public:
 
 	/*! SubPath needs to be a directory.
 	    "/*.*" or "/*" will be added for file listing.
+
+		subPath is in the Shift-JIS encoding.
 	*/
 	DirectoryEntry FindFirst(std::string subPath,FindContext *find);
 
@@ -133,6 +140,8 @@ public:
 
 	/*! Returns file attribute in directory entry.
 	    If file not found, endOfDir member will be true.
+
+		subPath is in the Shift-JIS encoding.
 	*/
 	DirectoryEntry GetFileAttrib(std::string subPath) const;
 	// In OS-Dependent part <<
@@ -161,6 +170,7 @@ public:
 	};
 	SystemFileTable sft[MAX_NUM_OPEN_FILE];
 	/*!
+		subPath is in the Shift-JIS encoding.
 	*/
 	bool SubPathIsDirectory(std::string subPath);
 

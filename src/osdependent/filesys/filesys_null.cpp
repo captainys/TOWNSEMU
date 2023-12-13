@@ -8,6 +8,14 @@ FileSys::FileSys()
 FileSys::~FileSys()
 {
 }
+/* static */ std::string FileSys::ToHostEncoding(std::string sjis)
+{
+	return sjis;
+}
+/* static */ std::string FileSys::ToSJISEncoding(std::string host)
+{
+	return host;
+}
 /* static */ std::string FileSys::Getcwd(void)
 {
 	return "";
