@@ -11,7 +11,7 @@ else()
 endif()
 
 add_library(${TARGET_NAME} filesys.h filesys_common.cpp ${SRCS})
-target_link_libraries(${TARGET_NAME} cpputil)
+target_link_libraries(${TARGET_NAME} cpputil miscutil)
 target_include_directories(${TARGET_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 

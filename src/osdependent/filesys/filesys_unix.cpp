@@ -2,6 +2,9 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include "filesys.h"
+#include "sjis2utf8.h"
+
+#include <mutex>
 
 
 
@@ -28,13 +31,26 @@ void FileSys::FindContext::Close(void)
 	}
 }
 
+static std::mutex sjisMutex;
+static ShiftJIS_UTF8 *sjisUtf8=nullptr;
+static void MakeSjisUtf8(void)
+{
+	std::lock_guard <std::mutex> lock(sjisMutex);
+	if(nullptr==sjisUtf8)
+	{
+		sjisUtf8=new ShiftJIS_UTF8;
+	}
+}
+
 /* static */ std::string FileSys::ToHostEncoding(std::string from)
 {
-	return from;
+	MakeSjisUtf8();
+	return sjisUtf8->SJIStoUTF8(from);
 }
 /* static */ std::string FileSys::ToSJISEncoding(std::string from)
 {
-	return from;
+	MakeSjisUtf8();
+	return sjisUtf8->UTF8toSJIS(from);
 }
 
 static void StatToDirectoryEntry(FileSys::DirectoryEntry &dirent,const struct stat &stat)
@@ -73,7 +89,7 @@ FileSys::DirectoryEntry FileSys::FindContext::Read(std::string hostPath) const
 			StatToDirectoryEntry(ent,st);
 
 			ent.endOfDir=false;
-			ent.fName=de->d_name;
+			ent.fName=ToSJISEncoding(de->d_name);
 		}
 	}
 	else
@@ -104,7 +120,7 @@ void FileSys::FindClose(FindContext *find)
 }
 FileSys::DirectoryEntry FileSys::FindFirst(std::string subPath,FindContext *context)
 {
-	std::string path=MakeHostPath(subPath);
+	std::string path=MakeHostPath(ToHostEncoding(subPath));
 	DirectoryEntry ent;
 
 	context->Close();
@@ -127,7 +143,7 @@ FileSys::DirectoryEntry FileSys::FindFirst(std::string subPath,FindContext *cont
 }
 FileSys::DirectoryEntry FileSys::GetFileAttrib(std::string fileName) const
 {
-	std::string path=MakeHostPath(fileName);
+	std::string path=MakeHostPath(ToHostEncoding(fileName));
 
 	DirectoryEntry ent;
 
