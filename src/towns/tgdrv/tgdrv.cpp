@@ -1119,7 +1119,7 @@ unsigned int TownsTgDrv::CheckFileName(const std::string &fName) const
 			{
 				inKanji=true;
 			}
-			else if(fName[i]<' ')
+			else if(c<' ')
 			{
 				return TOWNS_DOSERR_ACCESS_DENIED;
 			}
