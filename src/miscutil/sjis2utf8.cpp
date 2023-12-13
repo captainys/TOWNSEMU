@@ -11362,7 +11362,7 @@ ShiftJIS_UTF8::ShiftJIS_UTF8()
 		_SJIStoUTF8[c.sjis]=utf8;
 
 		uint32_t utf8_32;
-		utf8_32=(utf8[0]<<24)|(utf8[1]<<8)|utf8[2];
+		utf8_32=(utf8[0]<<16)|(utf8[1]<<8)|utf8[2];
 		_UTF8toSJIS[utf8_32]=c.sjis;
 	}
 }
@@ -11405,7 +11405,7 @@ std::string ShiftJIS_UTF8::UTF8toSJIS(std::string from) const
 	{
 		if(i+2<from.size())
 		{
-			unsigned short code=(uc[i]<<16)|(uc[i+1]<<8)|uc[i+2];
+			uint32_t code=(uc[i]<<16)|(uc[i+1]<<8)|uc[i+2];
 			auto found=_UTF8toSJIS.find(code);
 			if(found!=_UTF8toSJIS.end())
 			{
