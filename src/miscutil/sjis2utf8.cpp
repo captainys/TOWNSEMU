@@ -11375,18 +11375,29 @@ std::string ShiftJIS_UTF8::SJIStoUTF8(std::string from) const
 	{
 		if(i+1<from.size())
 		{
-			unsigned short code=(uc[i]<<8)|uc[i+1];
-			auto found=_SJIStoUTF8.find(code);
+			auto found=_SJIStoUTF8.find(uc[i]); // Hankaku Kana?
 			if(found!=_SJIStoUTF8.end())
 			{
 				to.push_back(found->second[0]);
 				to.push_back(found->second[1]);
 				to.push_back(found->second[2]);
-				++i;
+				continue;
 			}
 			else
 			{
-				to.push_back(from[i]);
+				unsigned short code=(uc[i]<<8)|uc[i+1];
+				auto found=_SJIStoUTF8.find(code);
+				if(found!=_SJIStoUTF8.end())
+				{
+					to.push_back(found->second[0]);
+					to.push_back(found->second[1]);
+					to.push_back(found->second[2]);
+					++i;
+				}
+				else
+				{
+					to.push_back(from[i]);
+				}
 			}
 		}
 		else
@@ -11410,8 +11421,15 @@ std::string ShiftJIS_UTF8::UTF8toSJIS(std::string from) const
 			if(found!=_UTF8toSJIS.end())
 			{
 				unsigned short code=found->second;
-				to.push_back(code>>8);
-				to.push_back(code&0xFF);
+				if(code<0x100)
+				{
+					to.push_back(code); // Hankaku Kana?
+				}
+				else
+				{
+					to.push_back(code>>8);
+					to.push_back(code&0xFF);
+				}
 				i+=2;
 			}
 			else
