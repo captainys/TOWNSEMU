@@ -6623,13 +6623,17 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 
 			// VM and RF flags must be preserved.
 			SAVE_ESP_BEFORE_PUSH_POP;
-			unsigned int EFLAGS=Pop(mem,inst.operandSize);
+			uint32_t incoming=Pop(mem,inst.operandSize);
 			HANDLE_EXCEPTION_PUSH_POP;
 
-			EFLAGS&=~(EFLAGS_RESUME|EFLAGS_VIRTUAL86);
-			EFLAGS|= (state.EFLAGS&(EFLAGS_RESUME|EFLAGS_VIRTUAL86));
-			EFLAGS&=EFLAGS_MASK;
-			EFLAGS|=EFLAGS_ALWAYS_ON;
+			const uint32_t mask=0b1000111111111010101;
+
+			incoming&=mask;
+
+			auto EFLAGS=state.EFLAGS;
+			EFLAGS&=~mask;
+			EFLAGS|=incoming;
+
 			SetFLAGSorEFLAGS(inst.operandSize,EFLAGS);
 
 			FIDELITY::RestoreIOPLBits(*this,ioplBits);
@@ -6870,8 +6874,10 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 
 
 	case I486_RENUMBER_SAHF://=             0x9E,
-		state.EFLAGS&=(~0xFF);
-		state.EFLAGS|=GetAH();
+		{
+			state.EFLAGS&=(~0b11010101); // b7, b6, b4, b2, b0 only.
+			state.EFLAGS|=(GetAH()&0b11010101);
+		}
 		clocksPassed=2;
 		break;
 
