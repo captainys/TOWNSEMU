@@ -324,27 +324,26 @@ unsigned int RF5C68::AddWaveForNumSamples(unsigned char waveBuf[],unsigned int n
 
 	unsigned int regSchedPtr=0;
 	auto VMTime=lastWAVGenTime;
+	while(regSchedPtr<regWriteSched.size())
+	{
+		if(VMTime<regWriteSched[regSchedPtr].systemTimeInNS)
+		{
+			break;
+		}
+		auto startStop=ReallyWriteRegister(regWriteSched[regSchedPtr].reg,regWriteSched[regSchedPtr].data,regWriteSched[regSchedPtr].systemTimeInNS);
+
+		if(0!=(startStop.chStartPlay|startStop.chStopPlay))
+		{
+			Reinit(startStop.chStartPlay);
+		}
+
+		++regSchedPtr;
+	}
 
 	unsigned int nFilled=0;
 	auto wavePtr=waveBuf;
 	while(nFilled<numSamples && 0<numPlayingCh)
 	{
-		while(regSchedPtr<regWriteSched.size())
-		{
-			if(VMTime<regWriteSched[regSchedPtr].systemTimeInNS)
-			{
-				break;
-			}
-			auto startStop=ReallyWriteRegister(regWriteSched[regSchedPtr].reg,regWriteSched[regSchedPtr].data,regWriteSched[regSchedPtr].systemTimeInNS);
-
-			if(0!=(startStop.chStartPlay|startStop.chStopPlay))
-			{
-				Reinit(startStop.chStartPlay);
-			}
-
-			++regSchedPtr;
-		}
-
 		int Lout=0,Rout=0;
 		for(int i=numPlayingCh-1; 0<=i; --i)
 		{
