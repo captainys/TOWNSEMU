@@ -2390,6 +2390,15 @@ public:
 protected:
 	template <class CPUCLASS,class FIDELITY>
 	class LoadSegmentRegisterTemplate;
+
+	static inline uint16_t LOW16BITS(uint32_t selector)
+	{
+	#ifdef YS_LITTLE_ENDIAN
+		return *((uint16_t *)&selector);
+	#else
+		return selector&0xFFFF;
+	#endif
+	}
 public:
 
 	/*! Loads a segment register in real mode.

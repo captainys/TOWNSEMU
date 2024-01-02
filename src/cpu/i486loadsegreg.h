@@ -66,6 +66,8 @@ public:
 
 	inline void LoadProtectedModeDescriptor(CPUCLASS &cpu,unsigned int value,const Memory &mem)
 	{
+		value=cpu.LOW16BITS(value);
+
 		typename FIDELITY::LoadSegmentRegisterVariables fidelityVar;
 
 		rawDesc=LoadFromDescriptorCache(cpu,value);
@@ -117,6 +119,7 @@ public:
 
 	inline unsigned int LoadSegmentRegister(CPUCLASS &cpu,SegmentRegister &reg,unsigned int value,const Memory &mem,bool isInRealMode)
 	{
+		value=cpu.LOW16BITS(value);
 		if(true==isInRealMode || 0!=(i486DXCommon::EFLAGS_VIRTUAL86&cpu.state.EFLAGS))
 		{
 			reg.value=value;
