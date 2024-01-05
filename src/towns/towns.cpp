@@ -51,6 +51,8 @@ void FMTownsCommon::State::PowerOn(void)
 		return false;
 	}
 
+	towns.var.fileNameAlias=argv.fileNameAlias;
+
 	if(true!=towns.LoadROMImages(argv.ROMPath.c_str()))
 	{
 		std::cout << towns.vmAbortReason << std::endl;
@@ -70,7 +72,8 @@ void FMTownsCommon::State::PowerOn(void)
 	{
 		if(""!=argv.fdImgFName[drv])
 		{
-			towns.fdc.LoadD77orRDDorRAW(drv,argv.fdImgFName[drv].c_str(),towns.state.townsTime);
+			auto imgFileName=towns.var.ApplyAlias(argv.fdImgFName[drv]);
+			towns.fdc.LoadD77orRDDorRAW(drv,imgFileName.c_str(),towns.state.townsTime);
 			if(true==argv.fdImgWriteProtect[drv])
 			{
 				// D77 image may have write-protect switch.
@@ -79,8 +82,6 @@ void FMTownsCommon::State::PowerOn(void)
 			}
 		}
 	}
-
-	towns.var.fileNameAlias=argv.fileNameAlias;
 
 	if(TOWNSTYPE_UNKNOWN!=argv.townsType)
 	{
@@ -91,7 +92,8 @@ void FMTownsCommon::State::PowerOn(void)
 	towns.cdrom.searchPaths=argv.cdSearchPaths;
 	if(""!=argv.cdImgFName)
 	{
-		auto errCode=towns.cdrom.state.GetDisc().Open(argv.cdImgFName);
+		auto imgFileName=towns.var.ApplyAlias(argv.cdImgFName);
+		auto errCode=towns.cdrom.state.GetDisc().Open(imgFileName);
 		if(DiscImage::ERROR_NOERROR!=errCode)
 		{
 			std::cout << DiscImage::ErrorCodeToText(errCode);
@@ -107,16 +109,17 @@ void FMTownsCommon::State::PowerOn(void)
 	for(int scsiID=0; scsiID<TownsStartParameters::MAX_NUM_SCSI_DEVICES; ++scsiID)
 	{
 		auto scsi=argv.scsiImg[scsiID];
+		auto imgFileName=towns.var.ApplyAlias(scsi.imgFName);
 		if(scsi.imageType==TownsStartParameters::SCSIIMAGE_HARDDISK)
 		{
-			if(true!=towns.scsi.LoadHardDiskImage(scsiID,scsi.imgFName))
+			if(true!=towns.scsi.LoadHardDiskImage(scsiID,imgFileName))
 			{
 				std::cout << "Failed to load hard disk image." << std::endl;
 			}
 		}
 		else if(scsi.imageType==TownsStartParameters::SCSIIMAGE_CDROM)
 		{
-			if(true!=towns.scsi.LoadCDImage(scsiID,scsi.imgFName))
+			if(true!=towns.scsi.LoadCDImage(scsiID,imgFileName))
 			{
 				std::cout << "Failed to load SCSI CD image." << std::endl;
 			}
@@ -457,6 +460,17 @@ void FMTownsCommon::Variable::Reset(void)
 	nVM2HostParam=0;
 }
 
+std::string FMTownsCommon::Variable::ApplyAlias(std::string incoming) const
+{
+	auto INCOMING=incoming;
+	cpputil::Capitalize(INCOMING);
+	auto found=fileNameAlias.find(INCOMING);
+	if(fileNameAlias.end()!=found)
+	{
+		return found->second;
+	}
+	return incoming;
+}
 
 ////////////////////////////////////////////////////////////
 

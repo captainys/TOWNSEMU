@@ -4405,7 +4405,8 @@ void TownsCommandInterpreter::Execute_CDLoad(FMTownsCommon &towns,Command &cmd)
 {
 	if(2<=cmd.argv.size())
 	{
-		auto errCode=towns.cdrom.LoadDiscImage(cmd.argv[1]);
+		auto imgFileName=towns.var.ApplyAlias(cmd.argv[1]);
+		auto errCode=towns.cdrom.LoadDiscImage(imgFileName);
 		std::cout << "[" << cmd.argv[1] << "]" << std::endl;
 		if(DiscImage::ERROR_NOERROR==errCode)
 		{
@@ -4426,7 +4427,8 @@ void TownsCommandInterpreter::Execute_SCSICDLoad(unsigned int SCSIID,FMTownsComm
 		   (towns.scsi.state.dev[SCSIID].devType==TownsSCSI::SCSIDEVICE_NONE ||
 		    towns.scsi.state.dev[SCSIID].devType==TownsSCSI::SCSIDEVICE_CDROM))
 		{
-			auto res=towns.scsi.LoadCDImage(SCSIID,cmd.argv[1]);
+			auto imgFileName=towns.var.ApplyAlias(cmd.argv[1]);
+			auto res=towns.scsi.LoadCDImage(SCSIID,imgFileName);
 			std::cout << "[" << cmd.argv[1] << "]" << std::endl;
 			if(true==res)
 			{
@@ -4448,7 +4450,8 @@ void TownsCommandInterpreter::Execute_FDLoad(int drv,FMTownsCommon &towns,Comman
 {
 	if(2<=cmd.argv.size())
 	{
-		if(true==towns.fdc.LoadD77orRDDorRAW(drv,cmd.argv[1].c_str(),towns.state.townsTime,false))
+		auto imgFileName=towns.var.ApplyAlias(cmd.argv[1]);
+		if(true==towns.fdc.LoadD77orRDDorRAW(drv,imgFileName.c_str(),towns.state.townsTime,false))
 		{
 			std::cout << "Loaded FD image." << std::endl;
 		}

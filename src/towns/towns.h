@@ -382,6 +382,13 @@ public:
 		std::unordered_map <std::string,std::string> fileNameAlias;
 
 
+
+		/*!
+		*/
+		std::string ApplyAlias(std::string incoming) const;
+
+
+
 		/*!
 		*/
 		std::vector <uint8_t> vmToHost;
