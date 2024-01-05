@@ -4,7 +4,7 @@ project(TSUGARU)
 # Uncomment the following line to compile CPU core in high-fidelity mode.
 # add_compile_definitions(TSUGARU_I486_HIGH_FIDELITY)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 
