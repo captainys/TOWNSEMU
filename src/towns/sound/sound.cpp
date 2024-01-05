@@ -45,7 +45,13 @@ void TownsSound::State::ResetVariables(void)
 TownsSound::TownsSound(class FMTownsCommon *townsPtr) : Device(townsPtr)
 {
 	state.ym2612.useScheduling=true;
-	state.rf5c68.useScheduling=true;
+
+	// 2024/01/05
+	// Looks like scheduling PCM registers only without logging PCM memory causes conflict.
+	// Until I am able to record PCM memory log without causing too much complication,
+	// I keep it off.  (Problems reported in Wolfenstein 3D and ALLTYNEX)
+	state.rf5c68.useScheduling=false;
+
 	this->townsPtr=townsPtr;
 }
 void TownsSound::SetOutsideWorld(class Outside_World::Sound *outside_world)
