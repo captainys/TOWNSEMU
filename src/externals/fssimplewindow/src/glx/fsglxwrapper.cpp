@@ -205,7 +205,6 @@ void FsOpenWindow(const FsOpenWindowOption &opt)
 					XStoreName(ysXDsp,ysXWnd,title);
 
 
-// Should I use XSetWMProperties? titlebar problem.
 					XWMHints wmHints;
 					wmHints.flags=0;
 					wmHints.initial_state=NormalState;
@@ -445,7 +444,14 @@ void FsGetWindowPosition(int &x0,int &y0)
 
 void FsSetWindowTitle(const char windowTitle[])
 {
-	printf("Sorry. %s not supported on this platform yet\n",__FUNCTION__);
+	const int formatSize = 8;
+	XChangeProperty(ysXDsp, ysXWnd,
+		XInternAtom(ysXDsp, "_NET_WM_NAME", False),
+		XInternAtom(ysXDsp, "UTF8_STRING", False),
+		formatSize,
+		PropModeReplace,
+		(unsigned char *) windowTitle,
+		strlen(windowTitle));
 }
 
 void FsPollDevice(void)

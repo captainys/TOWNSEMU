@@ -32,6 +32,12 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "ysgamepad.h"
 #include "townsparam.h"
 
+#ifndef TSUGARU_I486_HIGH_FIDELITY
+#define WINDOW_TITLE "FM Towns Emulator - TSUGARU"
+#else
+#define WINDOW_TITLE "FM Towns Emulator - TSUGARU (High-Fidelity Mode)"
+#endif
+
 
 FsSimpleWindowConnection::FsSimpleWindowConnection()
 {
@@ -1427,7 +1433,7 @@ void FsSimpleWindowConnection::WindowConnection::Start(void)
 
 	if(0==FsCheckWindowOpen())
 	{
-		FsOpenWindow(0,winY0,wid,hei+STATUS_HEI,1);
+		FsOpenWindow(0,winY0,wid,hei+STATUS_HEI,1,WINDOW_TITLE);
 	}
 	else
 	{
@@ -1457,11 +1463,6 @@ void FsSimpleWindowConnection::WindowConnection::Start(void)
 
 	winThr.winWid=640;
 	winThr.winHei=480;
-#ifndef TSUGARU_I486_HIGH_FIDELITY
-	FsSetWindowTitle("FM Towns Emulator - TSUGARU");
-#else
-	FsSetWindowTitle("FM Towns Emulator - TSUGARU (High-Fidelity Mode)");
-#endif
 
 	glClearColor(0,0,0,0);
 	mainTexId=GenTexture();
