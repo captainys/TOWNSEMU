@@ -782,11 +782,12 @@ void TownsRender::Render16Bit(const TownsCRTC::Layer &layer,const unsigned char 
 	// If transparnet==true, there is a possibility that memcpy overwrites background pixels.
 	unsigned int yStep=(true!=transparent ? ZV0 : 1);
 	auto bottomY=this->hei-yStep;
+	auto X=layer.originOnMonitor.x();
+	auto RenderOffsetX=X*2;
 	if (true != transparent)
 	{
 		for (int y = 0; y < layer.sizeOnMonitor.y() && y + layer.originOnMonitor.y() <= bottomY; y += yStep)
 		{
-			auto X = layer.originOnMonitor.x();
 			auto Y = y + layer.originOnMonitor.y();
 			unsigned char* dstLine = rgba.data() + 4 * (Y * this->wid + X);
 			auto dst = dstLine;
@@ -794,7 +795,7 @@ void TownsRender::Render16Bit(const TownsCRTC::Layer &layer,const unsigned char 
 			unsigned int inLineVRAMOffset = layer.VRAMHSkipBytes;
 			int ZHswitch = 0;
 			auto ZH = ZHsrc[ZHswitch];
-			for (int x = 0; x < layer.sizeOnMonitor.x() && x + layer.originOnMonitor.x() < this->wid && inLineVRAMOffset < layer.bytesPerLine; x++)
+			for (int x = 0; x < layer.sizeOnMonitor.x() && x + layer.originOnMonitor.x() < this->wid && inLineVRAMOffset < layer.bytesPerLine + RenderOffsetX; x++)
 			{
 				unsigned int VRAMAddr = lineVRAMOffset + ((inLineVRAMOffset + VRAMOffsetHorizontal) & VRAMHScrollMask);
 				VRAMAddr = VRAMBase + ((VRAMAddr + VRAMOffsetVertical) & VRAMVScrollMask);
@@ -842,7 +843,6 @@ void TownsRender::Render16Bit(const TownsCRTC::Layer &layer,const unsigned char 
 	{
 		for (int y = 0; y < layer.sizeOnMonitor.y() && y + layer.originOnMonitor.y() <= bottomY; y += yStep)
 		{
-			auto X = layer.originOnMonitor.x();
 			auto Y = y + layer.originOnMonitor.y();
 			unsigned char* dstLine = rgba.data() + 4 * (Y * this->wid + X);
 			auto dst = dstLine;
@@ -850,7 +850,7 @@ void TownsRender::Render16Bit(const TownsCRTC::Layer &layer,const unsigned char 
 			unsigned int inLineVRAMOffset = layer.VRAMHSkipBytes;
 			int ZHswitch = 0;
 			auto ZH = ZHsrc[ZHswitch];
-			for (int x = 0; x < layer.sizeOnMonitor.x() && x + layer.originOnMonitor.x() < this->wid && inLineVRAMOffset < layer.bytesPerLine; x++)
+			for (int x = 0; x < layer.sizeOnMonitor.x() && x + layer.originOnMonitor.x() < this->wid && inLineVRAMOffset < layer.bytesPerLine + RenderOffsetX; x++)
 			{
 				unsigned int VRAMAddr = lineVRAMOffset + ((inLineVRAMOffset + VRAMOffsetHorizontal) & VRAMHScrollMask);
 				VRAMAddr = VRAMBase + ((VRAMAddr + VRAMOffsetVertical) & VRAMVScrollMask);
