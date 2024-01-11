@@ -1567,7 +1567,6 @@ bool FMTownsCommon::MemoryEvaluation::Decode(std::string str)
 	cpputil::Capitalize(str);
 	if(true==Analyze(str))
 	{
-Print();
 		Evaluate(); // Dummy-evaluate.
 		if(true!=error)
 		{

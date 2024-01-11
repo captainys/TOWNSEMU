@@ -1786,7 +1786,7 @@ std::vector <std::string> TownsCRTC::GetStatusText(void) const
 	text.back()+=cpputil::Itoa(state.sifter[0]&3)+" "+cpputil::Itoa((state.sifter[0]>>2)&3);
 
 	text.push_back("");
-	text.back()+="FMR VRAM Display Offset:"+cpputil::Ubtox(state.FMRVRAMOffset);
+	text.back()+="FMR VRAM Display Offset:"+cpputil::Uitox(state.FMRVRAMOffset);
 
 	text.push_back("");
 	text.back()+="FMR VRAM Display Planes:"+cpputil::Ubtox(state.FMRGVRAMDisplayPlanes);
