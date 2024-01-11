@@ -567,6 +567,7 @@ FMTownsCommon::FMTownsCommon() :
 	// Individual I/O mappings >>>
 	io.AddDevice(&scsi,TOWNSIO_SCSI_DATA);           // 0xC30 [2] pp.263
 	io.AddDevice(&scsi,TOWNSIO_SCSI_STATUS_CONTROL); // 0xC32 [2] pp.262
+	io.AddDevice(&scsi,TOWNSIO_SCSI_WORD_TFR_AVAIL); // 0xC34 [2] pp.801
 
 
 	io.AddDevice(&crtc,TOWNSIO_CRTC_ADDRESS);//             0x440,
@@ -1566,6 +1567,7 @@ bool FMTownsCommon::MemoryEvaluation::Decode(std::string str)
 	cpputil::Capitalize(str);
 	if(true==Analyze(str))
 	{
+Print();
 		Evaluate(); // Dummy-evaluate.
 		if(true!=error)
 		{

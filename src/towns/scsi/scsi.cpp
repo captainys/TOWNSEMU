@@ -539,6 +539,12 @@ void TownsSCSI::EnterStatusPhase(void)
 			return data;
 		}
 		break;
+	case TOWNSIO_SCSI_WORD_TFR_AVAIL: // 0xC34, [2] pp.801
+		if(TOWNSTYPE_2_UG<=townsPtr->townsType)
+		{
+			return 0x7F;  // If UG or newer, indicate word-transfer is available.
+		}
+		break;
 	}
 	return 0xff;
 }

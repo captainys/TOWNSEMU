@@ -5,6 +5,8 @@
 
 const char *const LineParser::allOp[]=
 {
+	"==",
+	"!=",
 	"+",
 	"-",
 	"*",
@@ -40,6 +42,8 @@ const char *const LineParser::lowPriorityOp[]=
 
 const char *const LineParser::lowestPriorityOp[]=
 {
+	"==",
+	"!=",
 	"|",
 	"&",
 	"^",
@@ -287,6 +291,14 @@ long long int LineParser::Evaluate(const Term *t) const
 		if(true==t->custom)
 		{
 			return EvaluateCustomBinaryOperator(t,left,right);
+		}
+		else if("=="==t->next->label)
+		{
+			return left==right;
+		}
+		else if("!="==t->next->label)
+		{
+			return left!=right;
 		}
 		else if("*"==t->next->label)
 		{

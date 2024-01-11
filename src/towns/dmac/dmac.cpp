@@ -300,10 +300,18 @@ TownsDMAC::TownsDMAC(class FMTownsCommon *townsPtr) : Device(townsPtr)
 		state.devCtrl[1]=data;
 		break;
 	case TOWNSIO_DMAC_MODE_CONTROL://        0xAA,
-		state.ch[state.SELCH].modeCtrl=data;
-		if(state.ch[state.SELCH].modeCtrl&0x20)
+		if(data&0x20)
 		{
 			townsPtr->CPU().Abort("DMAC: ADIR bit not supported.");
+		}
+		state.ch[state.SELCH].modeCtrl=data;
+		if(0==(data&1))
+		{
+			state.ch[state.SELCH].bytesPerCount=1;
+		}
+		else
+		{
+			state.ch[state.SELCH].bytesPerCount=2;
 		}
 		break;
 	case TOWNSIO_DMAC_STATUS://              0xAB,
@@ -536,6 +544,14 @@ std::vector <std::string> TownsDMAC::GetStateText(void) const
 		ch.currentAddr=ReadUint32(data);  // 00A4 to 00A7
 		ch.modeCtrl=ReadUint16(data);     // 00AA
 		ch.terminalCount=ReadBool(data);  // 00AB
+		if(0==(ch.modeCtrl&1))
+		{
+			ch.bytesPerCount=1;
+		}
+		else
+		{
+			ch.bytesPerCount=2;
+		}
 	}
 	return true;
 }
