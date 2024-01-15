@@ -158,6 +158,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 
 
 	primaryCmdMap["CRTCPAGE"]=CMD_CRTC_PAGE;
+	primaryCmdMap["CRTCSWAPFMR"]=CMD_CRTC_SWAP_FMRGVRAMPAGE;
 	primaryCmdMap["CMOSLOAD"]=CMD_CMOSLOAD;
 	primaryCmdMap["CMOSSAVE"]=CMD_CMOSSAVE;
 	primaryCmdMap["CDLOAD"]=CMD_CDLOAD;
@@ -602,6 +603,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Save memory dump.  Seg, offset, and length are in hexadecimal." << std::endl;
 	std::cout << "CRTCPAGE 1|0 1|0" << std::endl;
 	std::cout << "  Turn on/off display page." << std::endl;
+	std::cout << "CRTCSWAPFMR" << std::endl;
+	std::cout << "  Swap FMR GVRAM Page." << std::endl;
 	std::cout << "CMOSLOAD filename" << std::endl;
 	std::cout << "  Load CMOS." << std::endl;
 	std::cout << "CMOSSAVE filename" << std::endl;
@@ -1413,6 +1416,9 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,clas
 
 	case CMD_CRTC_PAGE:
 		Execute_CRTCPage(towns,cmd);
+		break;
+	case CMD_CRTC_SWAP_FMRGVRAMPAGE:
+		Execute_CRTC_SwapFMRGVRAMPage(towns,cmd);
 		break;
 	case CMD_CMOSLOAD:
 		Execute_CMOSLoad(towns,cmd);
@@ -4361,6 +4367,15 @@ void TownsCommandInterpreter::Execute_CRTCPage(FMTownsCommon &towns,Command &cmd
 		PrintError(ERROR_TOO_FEW_ARGS);
 	}
 }
+
+void TownsCommandInterpreter::Execute_CRTC_SwapFMRGVRAMPage(FMTownsCommon &towns,Command &cmd)
+{
+	std::cout << "FMR GVRAM Page from " << cpputil::Uitox(towns.crtc.state.FMRVRAMOffset);
+	towns.crtc.state.FMRVRAMOffset=TOWNS_FMRMODE_VRAM_OFFSET-towns.crtc.state.FMRVRAMOffset;
+	std::cout << " to " << cpputil::Uitox(towns.crtc.state.FMRVRAMOffset);
+	std::cout << std::endl;
+}
+
 
 void TownsCommandInterpreter::Execute_CMOSLoad(FMTownsCommon &towns,Command &cmd)
 {

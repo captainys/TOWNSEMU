@@ -121,6 +121,7 @@ public:
 		CMD_SAVE_MEMORY_DUMP,
 
 		CMD_CRTC_PAGE,
+		CMD_CRTC_SWAP_FMRGVRAMPAGE,
 
 		CMD_CALCULATE,
 		CMD_STRING_TO_ASCII,
@@ -412,6 +413,7 @@ public:
 	void Execute_Replace(FMTownsCommon &towns,Command &cmd);
 
 	void Execute_CRTCPage(FMTownsCommon &towns,Command &cmd);
+	void Execute_CRTC_SwapFMRGVRAMPage(FMTownsCommon &towns,Command &cmd);
 
 	void Execute_CMOSLoad(FMTownsCommon &towns,Command &cmd);
 	void Execute_CMOSSave(FMTownsCommon &towns,Command &cmd);

@@ -423,7 +423,7 @@ std::vector <unsigned char> DiskDrive::DiskImage::ReadTrack(int diskIdx,unsigned
 	return std::vector <unsigned char>();
 }
 
-unsigned int DiskDrive::DiskImage::WriteTrack(int diskIdx,unsigned int C,unsigned int H,const std::vector <uint8_t> &formatData)
+unsigned int DiskDrive::DiskImage::WriteTrack(int diskIdx,unsigned int RealC,unsigned int RealH,const std::vector <uint8_t> &formatData)
 {
 	unsigned int mediaType=MEDIA_UNKNOWN;
 	switch(fileType)
@@ -498,6 +498,7 @@ unsigned int DiskDrive::DiskImage::WriteTrack(int diskIdx,unsigned int C,unsigne
 			if(MEDIA_UNKNOWN!=newDiskMediaType)
 			{
 				mediaType=newDiskMediaType;
+				/* diskPtr->ForceWriteTrack is supposed to take care of resizing.
 				switch(newDiskMediaType)
 				{
 				case MEDIA_2DD_640KB:
@@ -521,13 +522,13 @@ unsigned int DiskDrive::DiskImage::WriteTrack(int diskIdx,unsigned int C,unsigne
 				case MEDIA_2HD_1440KB:
 					diskPtr->SetNumTrack(80);
 					break;
-				}
+				} */
 			}
 			for(auto &s : sectors)
 			{
 				s.nSectorTrack=(unsigned short)sectors.size();
 			}
-			diskPtr->ForceWriteTrack(C,H,(int)sectors.size(),sectors.data());
+			diskPtr->ForceWriteTrack(RealC,RealH,(int)sectors.size(),sectors.data());
 		}
 		break;
 	}
