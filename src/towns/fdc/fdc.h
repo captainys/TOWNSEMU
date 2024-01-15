@@ -18,6 +18,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include <vector>
 #include <string>
+#include <unordered_map>
 #include "diskdrive.h"
 
 
@@ -46,6 +47,24 @@ public:
 	virtual unsigned int IOReadByte(unsigned int ioport);
 
 	virtual void Reset(void);
+
+
+
+	class BreakOnAccess
+	{
+	public:
+		bool monitorOnly=false;
+	};
+
+	std::unordered_map <unsigned int,BreakOnAccess> breakOnReadSector,breakOnReadAddress;
+
+	void SetBreakOnReadSector(unsigned char CHRN[4],bool monitorOnly);
+	void ClearBreakOnReadSector(unsigned char CHRN[4]);
+	void ClearAllBreakOnReadSector(void);
+
+	void SetBreakOnReadAddress(unsigned char CHRN[4],bool monitorOnly);
+	void ClearBreakOnReadAddress(unsigned char CHRN[4]);
+	void ClearAllBreakOnReadAddress(void);
 };
 
 

@@ -151,6 +151,42 @@ void TownsFDC::MakeReady(void)
 				{
 					std::cout << "C:" << trackPos << " H:" << state.side << " R:" << GetSectorReg();
 				}
+				{
+					unsigned int keys[2]=
+					{
+						(trackPos<<16)|(state.side<<8)|GetSectorReg(),
+						(GetTrackReg()<<16)|(state.side<<8)|GetSectorReg()
+					};
+					for(auto key : keys)
+					{
+						auto found=breakOnReadSector.find(key);
+						if(found!=breakOnReadSector.end())
+						{
+							std::string msg="Read Sector ";
+							msg+=cpputil::Ubtox(key>>16);
+							msg.push_back(' ');
+							msg+=cpputil::Ubtox((key>>8)&255);
+							msg.push_back(' ');
+							msg+=cpputil::Ubtox(key&255);
+							msg+=" at ";
+							msg+=cpputil::Ustox(townsPtr->CPU().state.CS().value);
+							msg.push_back(':');
+							msg+=cpputil::Ustox(townsPtr->CPU().state.EIP);
+							if(true==found->second.monitorOnly)
+							{
+								townsPtr->debugger.WriteLogFile(msg);
+								msg.push_back(':');
+
+								std::cout << msg << std::endl;
+							}
+							else
+							{
+								townsPtr->debugger.WriteLogFile(msg);
+								townsPtr->debugger.ExternalBreak(msg);
+							}
+						}
+					}
+				}
 
 				unsigned int nStepsToGetToTheSector=0;
 				auto verifySide=(0!=(state.lastCmd&2));
@@ -296,6 +332,41 @@ void TownsFDC::MakeReady(void)
 				auto CHRN_CRC=imgPtr->ReadAddress(state.CRCError,diskIdx,trackPos,state.side,state.addrMarkReadCount);
 				if(0<CHRN_CRC.size())
 				{
+					unsigned int keys[2]=
+					{
+						(trackPos<<16)|(state.side<<8)|CHRN_CRC[2],
+						(CHRN_CRC[0]<<16)|(CHRN_CRC[1]<<8)|CHRN_CRC[2]
+					};
+					for(auto key : keys)
+					{
+						auto found=breakOnReadAddress.find(key);
+						if(found!=breakOnReadAddress.end())
+						{
+							std::string msg="Read Address ";
+							msg+=cpputil::Ubtox(key>>16);
+							msg.push_back(' ');
+							msg+=cpputil::Ubtox((key>>8)&255);
+							msg.push_back(' ');
+							msg+=cpputil::Ubtox(key&255);
+							msg+=" at ";
+							msg+=cpputil::Ustox(townsPtr->CPU().state.CS().value);
+							msg.push_back(':');
+							msg+=cpputil::Ustox(townsPtr->CPU().state.EIP);
+							if(true==found->second.monitorOnly)
+							{
+								townsPtr->debugger.WriteLogFile(msg);
+								msg.push_back(':');
+
+								std::cout << msg << std::endl;
+							}
+							else
+							{
+								townsPtr->debugger.WriteLogFile(msg);
+								townsPtr->debugger.ExternalBreak(msg);
+							}
+						}
+					}
+
 					auto DMACh=DMACPtr->GetDMAChannel(TOWNSDMA_FPD);
 					if(nullptr!=DMACh)
 					{
@@ -572,4 +643,53 @@ void TownsFDC::MakeReady(void)
 /* virtual */ void TownsFDC::Reset(void)
 {
 	DiskDrive::Reset();
+}
+
+void TownsFDC::SetBreakOnReadSector(unsigned char CHRN[4],bool monitorOnly)
+{
+	unsigned int key=(CHRN[0]<<16)|(CHRN[1]<<8)|CHRN[2];
+	BreakOnAccess cond;
+	cond.monitorOnly=monitorOnly;
+	breakOnReadSector[key]=cond;
+}
+
+void TownsFDC::ClearBreakOnReadSector(unsigned char CHRN[4])
+{
+	unsigned int key=(CHRN[0]<<16)|(CHRN[1]<<8)|CHRN[2];
+	auto found=breakOnReadSector.find(key);
+	if(breakOnReadSector.end()!=found)
+	{
+		breakOnReadSector.erase(found);
+	}
+}
+
+void TownsFDC::ClearAllBreakOnReadSector(void)
+{
+	std::unordered_map <unsigned int,BreakOnAccess> empty;
+	std::swap(empty,breakOnReadSector);
+}
+
+
+void TownsFDC::SetBreakOnReadAddress(unsigned char CHRN[4],bool monitorOnly)
+{
+	unsigned int key=(CHRN[0]<<16)|(CHRN[1]<<8)|CHRN[2];
+	BreakOnAccess cond;
+	cond.monitorOnly=monitorOnly;
+	breakOnReadAddress[key]=cond;
+}
+
+void TownsFDC::ClearBreakOnReadAddress(unsigned char CHRN[4])
+{
+	unsigned int key=(CHRN[0]<<16)|(CHRN[1]<<8)|CHRN[2];
+	auto found=breakOnReadAddress.find(key);
+	if(breakOnReadAddress.end()!=found)
+	{
+		breakOnReadAddress.erase(found);
+	}
+}
+
+void TownsFDC::ClearAllBreakOnReadAddress(void)
+{
+	std::unordered_map <unsigned int,BreakOnAccess> empty;
+	std::swap(empty,breakOnReadAddress);
 }

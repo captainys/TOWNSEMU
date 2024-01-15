@@ -323,6 +323,10 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	breakEventMap["ICW4"]=   BREAK_ON_PIC_IWC4;
 	breakEventMap["DMACREQ"]=BREAK_ON_DMAC_REQUEST;
 	breakEventMap["FDCCMD"]= BREAK_ON_FDC_COMMAND;
+	breakEventMap["FDCREADSEC"]=BREAK_ON_FDC_READSECTOR;
+	breakEventMap["FDCREADSECT"]=BREAK_ON_FDC_READSECTOR;
+	breakEventMap["FDCREADADR"]=BREAK_ON_FDC_READADDRESS;
+	breakEventMap["FDCREADADDR"]=BREAK_ON_FDC_READADDRESS;
 	breakEventMap["INT"]=    BREAK_ON_INT;
 	breakEventMap["FOPEN"]=  BREAK_ON_FOPEN;
 	breakEventMap["RDCVRAM"]=BREAK_ON_CVRAM_READ;
@@ -837,6 +841,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "ICW4" << std::endl;
 	std::cout << "DMACREQ" << std::endl;
 	std::cout << "FDCCMD" << std::endl;
+	std::cout << "FDCREADSEC C H R [mon(itorOnly)]" << std::endl;
+	std::cout << "FDCREADADR C H R [mon(itorOnly)]" << std::endl;
 	std::cout << "CDCCMD" << std::endl;
 	std::cout << "CDCCMD cmdValueInHex" << std::endl;
 	std::cout << "CDCDEI" << std::endl;
@@ -3166,6 +3172,44 @@ void TownsCommandInterpreter::Execute_BreakOn(FMTownsCommon &towns,Command &cmd)
 		case BREAK_ON_FDC_COMMAND:
 			towns.fdc.debugBreakOnCommandWrite=true;
 			break;
+		case BREAK_ON_FDC_READSECTOR:
+		case BREAK_ON_FDC_READADDRESS:
+			if(5<=cmd.argv.size())
+			{
+				uint8_t CHR[3]=
+				{
+					cpputil::Xtoi(cmd.argv[2].c_str()),
+					cpputil::Xtoi(cmd.argv[3].c_str()),
+					cpputil::Xtoi(cmd.argv[4].c_str()),
+				};
+				bool monitorOnly=false;
+				for(int i=5; i<cmd.argv.size(); ++i)
+				{
+					std::string arg=cmd.argv[i];
+					cpputil::Capitalize(arg);
+					if("MON"==arg || "MONITOR"==arg || "MONITORONLY"==arg)
+					{
+						monitorOnly=true;
+					}
+				}
+				if(iter->second==BREAK_ON_FDC_READADDRESS)
+				{
+					std::cout << "Break on FDC read address ";
+					towns.fdc.SetBreakOnReadAddress(CHR,monitorOnly);
+				}
+				else
+				{
+					std::cout << "Break on FDC read sector ";
+					towns.fdc.SetBreakOnReadSector(CHR,monitorOnly);
+				}
+				std::cout << "0x" << cpputil::Ubtox(CHR[0]) << cpputil::Ubtox(CHR[1]) << cpputil::Ubtox(CHR[2]) << std::endl;
+			}
+			else
+			{
+				PrintError(ERROR_TOO_FEW_ARGS);
+				return;
+			}
+			break;
 		case BREAK_ON_FOPEN:
 			if(3<=cmd.argv.size())
 			{
@@ -3412,6 +3456,47 @@ void TownsCommandInterpreter::Execute_ClearBreakOn(FMTownsCommon &towns,Command 
 			break;
 		case BREAK_ON_FDC_COMMAND:
 			towns.fdc.debugBreakOnCommandWrite=false;
+			break;
+		case BREAK_ON_FDC_READSECTOR:
+		case BREAK_ON_FDC_READADDRESS:
+			if(5<=cmd.argv.size())
+			{
+				uint8_t CHR[3]=
+				{
+					cpputil::Xtoi(cmd.argv[2].c_str()),
+					cpputil::Xtoi(cmd.argv[3].c_str()),
+					cpputil::Xtoi(cmd.argv[4].c_str()),
+				};
+				if(iter->second==BREAK_ON_FDC_READADDRESS)
+				{
+					std::cout << "Do not Break on FDC read address ";
+					towns.fdc.ClearBreakOnReadAddress(CHR);
+				}
+				else
+				{
+					std::cout << "Break on FDC read sector ";
+					towns.fdc.ClearBreakOnReadSector(CHR);
+				}
+				std::cout << "0x" << cpputil::Ubtox(CHR[0]) << cpputil::Ubtox(CHR[1]) << cpputil::Ubtox(CHR[2]) << std::endl;
+			}
+			else if(2==cmd.argv.size())
+			{
+				if(iter->second==BREAK_ON_FDC_READADDRESS)
+				{
+					std::cout << "Do not Break on FDC read address" << std::endl;;
+					towns.fdc.ClearAllBreakOnReadAddress();
+				}
+				else
+				{
+					std::cout << "Break on FDC read sector" << std::endl;;
+					towns.fdc.ClearAllBreakOnReadSector();
+				}
+			}
+			else
+			{
+				PrintError(ERROR_TOO_FEW_ARGS);
+				return;
+			}
 			break;
 		case BREAK_ON_INT:
 			if(3<=cmd.argv.size())
