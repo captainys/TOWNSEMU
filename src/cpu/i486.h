@@ -3422,7 +3422,7 @@ private:
 	    If there is a possibility of crossing the page boundary, it will return nullptr.
 	    *** Also, if it was memory, it assumes it will write to the address. ***
 	*/
-	inline uint8_t *GetOperandPointer(Memory &mem,int addressSize,int segmentOverride,const Operand &op);
+	inline uint8_t *GetOperandPointer(Memory &mem,int addressSize,int segmentOverride,const Operand &op,bool forWrite);
 
 public:
 	/*! Return true if I/O access is permitted in I/O Map of TSS.

@@ -926,7 +926,7 @@ void i486DXCommon::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,Memo
 
 template <class FIDELITY>
 inline uint8_t *i486DXFidelityLayer<FIDELITY>::GetOperandPointer(
-    Memory &mem,int addressSize,int segmentOverride,const Operand &op)
+    Memory &mem,int addressSize,int segmentOverride,const Operand &op,bool forWrite)
 {
 #ifdef YS_LITTLE_ENDIAN
 	if(OPER_REG32==op.operandType)
@@ -961,7 +961,14 @@ inline uint8_t *i486DXFidelityLayer<FIDELITY>::GetOperandPointer(
 		{
 			if(true==PagingEnabled())
 			{
-				physAddr=LinearAddressToPhysicalAddressWrite(physAddr,mem); // Assume write-operation for stack.
+				if(true==forWrite)
+				{
+					physAddr=LinearAddressToPhysicalAddressWrite(physAddr,mem); // Assume write-operation for stack.
+				}
+				else
+				{
+					physAddr=LinearAddressToPhysicalAddressRead(physAddr,mem); // Assume write-operation for stack.
+				}
 			}
 			auto memWin=mem.GetMemoryWindow(physAddr);
 			if(nullptr!=memWin.ptr)
@@ -1256,7 +1263,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			clocksPassed=1; \
 		} \
 		auto regNum=inst.GetREG(); \
-		auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1);\
+		auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1,update);\
 		if(nullptr!=operPtr)\
 		{\
 			if(16==inst.operandSize)\
@@ -1347,7 +1354,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			clocksPassed=1; \
 		} \
 		unsigned int reg=REG_AL+inst.GetREG(); \
-		auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1); \
+		auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1,update); \
 		if(nullptr!=operPtr) \
 		{ \
 			auto value2=GetRegisterValue8(reg); \
@@ -1452,7 +1459,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 	// For RCL and RCR see reminder #20200123-1
 	#define ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8(ctr) \
 	{ \
-		auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1); \
+		auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1,true); \
 		if(nullptr!=operPtr) \
 		{ \
 			uint32_t i=*operPtr; \
@@ -1549,7 +1556,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 	// For RCL and RCR See reminder #20200123-1
 	#define ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM(ctr) \
 	{ \
-		auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1); \
+		auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1,true); \
 		if(nullptr!=operPtr) \
 		{ \
 			if(true!=state.exception) \
@@ -1876,7 +1883,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		case 2: // NOT
 			{
 				clocksPassed=(OPER_ADDR==op1.operandType ? 3 : 1);
-				auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1);
+				auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1,true);
 				if(nullptr!=operPtr)
 				{
 					if(true!=state.exception)
@@ -1899,7 +1906,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		case 3: // NEG
 			{
 				clocksPassed = (OPER_ADDR == op1.operandType ? 3 : 1);
-				auto operPtr=GetOperandPointer(mem, inst.addressSize, inst.segOverride, op1);
+				auto operPtr=GetOperandPointer(mem, inst.addressSize, inst.segOverride, op1,true);
 				if(nullptr!=operPtr)
 				{
 					uint32_t r=0;
@@ -2056,7 +2063,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		case 2: // NOT
 			{
 				clocksPassed=(OPER_ADDR==op1.operandType ? 2 : 1);
-				auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1);
+				auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1,true);
 				if(nullptr!=operPtr)
 				{
 					HANDLE_EXCEPTION_IF_ANY;
@@ -2083,7 +2090,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		case 3: // NEG
 			{
 				clocksPassed = (OPER_ADDR == op1.operandType ? 3 : 1);
-				auto operPtr=GetOperandPointer(mem, inst.addressSize, inst.segOverride, op1);
+				auto operPtr=GetOperandPointer(mem, inst.addressSize, inst.segOverride, op1,true);
 				if(nullptr!=operPtr)
 				{
 					HANDLE_EXCEPTION_IF_ANY;
@@ -4369,7 +4376,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			}
 
 			uint32_t i;
-			uint8_t *operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1);
+			uint8_t *operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1,true);
 			if(nullptr!=operPtr)
 			{
 				i=operPtr[0];
@@ -4427,7 +4434,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				}
 				if(16==inst.operandSize)
 				{
-					uint8_t *operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1);
+					uint8_t *operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1,true);
 					uint32_t i;
 					if(nullptr!=operPtr)
 					{
@@ -4454,7 +4461,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				}
 				else
 				{
-					uint8_t *operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1);
+					uint8_t *operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1,true);
 					uint32_t i;
 					if(nullptr!=operPtr)
 					{
@@ -4491,7 +4498,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				}
 				if(16==inst.operandSize)
 				{
-					uint8_t *operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1);
+					uint8_t *operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1,true);
 					uint32_t i;
 					if(nullptr!=operPtr)
 					{
@@ -4518,7 +4525,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				}
 				else
 				{
-					uint8_t *operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1);
+					uint8_t *operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1,true);
 					uint32_t i;
 					if(nullptr!=operPtr)
 					{
@@ -5000,10 +5007,11 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			{
 				clocksPassed=1;
 			}
+			auto REG=inst.GetREG();
 
 			OperandValue value1;
 			uint32_t i;
-			auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1);
+			auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1,(7!=REG)); // forWrite is true if REG!=7 (CMP)
 			if(nullptr!=operPtr)
 			{
 				i=operPtr[0];
@@ -5021,7 +5029,6 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				break;
 			}
 
-			auto REG=inst.GetREG();
 			switch(REG)
 			{
 			case 0:
@@ -5082,7 +5089,8 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				clocksPassed=1;
 			}
 
-			auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1);
+			auto REG=inst.GetREG();
+			auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1,(7!=REG)); // forWrite is true if REG!=7 (CMP)
 			OperandValue value1;
 			uint32_t i;
 			if(nullptr!=operPtr)
@@ -5117,7 +5125,6 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			}
 			HANDLE_EXCEPTION_IF_ANY;
 
-			auto REG=inst.GetREG();
 			switch(REG)
 			{
 			case 0:
@@ -6950,7 +6957,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				case I486_RENUMBER_SHLD_RM_CL://       0x0FA5,
 					if(16==inst.operandSize)
 					{
-						auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1);
+						auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1,true);
 						uint16_t v1;
 						if(nullptr!=operPtr)
 						{
@@ -6979,7 +6986,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					}
 					else
 					{
-						auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1);
+						auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1,true);
 						uint32_t v1;
 						if(nullptr!=operPtr)
 						{
@@ -7011,7 +7018,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				case I486_RENUMBER_SHRD_RM_CL://       0x0FAD,
 					if(16==inst.operandSize)
 					{
-						auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1);
+						auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1,true);
 						uint16_t v1;
 						if(nullptr!=operPtr)
 						{
@@ -7040,7 +7047,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					}
 					else
 					{
-						auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1);
+						auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1,true);
 						uint32_t v1;
 						if(nullptr!=operPtr)
 						{
@@ -7487,7 +7494,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 	case I486_RENUMBER_XCHG_RM8_R8://           0x86,
 		clocksPassed=(OPER_ADDR==op1.operandType ? 5 : 3);
 		{
-			auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1);
+			auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1,true);
 			HANDLE_EXCEPTION_IF_ANY;
 			auto regNum=inst.GetREG(); // Guaranteed to be between 0 and 7
 			if(nullptr!=operPtr)
@@ -7526,7 +7533,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 	case I486_RENUMBER_XCHG_RM_R://             0x87,
 		clocksPassed=(OPER_ADDR==op1.operandType ? 5 : 3);
 		{
-			auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1);
+			auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1,true);
 			HANDLE_EXCEPTION_IF_ANY;
 			if(nullptr!=operPtr)
 			{
