@@ -3178,9 +3178,9 @@ void TownsCommandInterpreter::Execute_BreakOn(FMTownsCommon &towns,Command &cmd)
 			{
 				uint8_t CHR[3]=
 				{
-					cpputil::Xtoi(cmd.argv[2].c_str()),
-					cpputil::Xtoi(cmd.argv[3].c_str()),
-					cpputil::Xtoi(cmd.argv[4].c_str()),
+					(uint8_t)cpputil::Xtoi(cmd.argv[2].c_str()),
+					(uint8_t)cpputil::Xtoi(cmd.argv[3].c_str()),
+					(uint8_t)cpputil::Xtoi(cmd.argv[4].c_str()),
 				};
 				bool monitorOnly=false;
 				for(int i=5; i<cmd.argv.size(); ++i)
@@ -3463,9 +3463,9 @@ void TownsCommandInterpreter::Execute_ClearBreakOn(FMTownsCommon &towns,Command 
 			{
 				uint8_t CHR[3]=
 				{
-					cpputil::Xtoi(cmd.argv[2].c_str()),
-					cpputil::Xtoi(cmd.argv[3].c_str()),
-					cpputil::Xtoi(cmd.argv[4].c_str()),
+					(uint8_t)cpputil::Xtoi(cmd.argv[2].c_str()),
+					(uint8_t)cpputil::Xtoi(cmd.argv[3].c_str()),
+					(uint8_t)cpputil::Xtoi(cmd.argv[4].c_str()),
 				};
 				if(iter->second==BREAK_ON_FDC_READADDRESS)
 				{
