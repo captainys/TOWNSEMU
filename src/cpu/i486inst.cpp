@@ -2596,7 +2596,7 @@ std::string i486DXCommon::Instruction::Disassemble(const Operand &op1In,const Op
 			disasm=DisassembleTypicalOneOperand("LMSW",op1,16+operandSize,cs.value,eip,symTable);
 			break;
 		case 7:
-			disasm=DisassembleTypicalOneOperand("INVLPG",op1,16+operandSize,cs.value,eip,symTable);
+			disasm=DisassembleTypicalOneOperand("INVLPG",op1,operandSize,cs.value,eip,symTable);
 			break;
 		default:
 			disasm=DisassembleTypicalTwoOperands(cpputil::Ubtox(opCode)+"?",op1,op2,cs.value,eip,symTable)+" REG="+cpputil::Ubtox(GetREG());

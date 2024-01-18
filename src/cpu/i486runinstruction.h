@@ -5418,8 +5418,42 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				SetCR(0,cr0);
 			}
 			break;
+		case 7: // INVLPG
+			clocksPassed=11;
+			if(IsInRealMode())
+			{
+				RaiseException(EXCEPTION_UD,0);
+				EIPIncrement=0;
+			}
+			else if(0!=state.CS().DPL)
+			{
+				RaiseException(EXCEPTION_GP,0);
+				EIPIncrement=0;
+			}
+			else
+			{
+				if(OPER_ADDR==op1.operandType)
+				{
+					unsigned int offset;
+					const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,op1,inst.segOverride);
+					if(16==inst.addressSize)
+					{
+						offset&=0xFFFF;
+					}
+					auto linearAddr=seg.baseLinearAddr+offset; // Tentative.
+
+					auto pageIndex=(linearAddr>>LINEARADDR_TO_PAGE_SHIFT);
+					state.pageTableCache[pageIndex].valid=state.pageTableCacheValidCounter-1;
+				}
+				else
+				{
+					RaiseException(EXCEPTION_UD,0);
+					EIPIncrement=0;
+				}
+			}
+			break;
 		default:
-			Abort("Undefined REG for "+cpputil::Ubtox(inst.opCode));
+			Abort("Undefined REG for "+cpputil::Ustox(inst.opCode));
 			return 0;
 		}
 		break;
