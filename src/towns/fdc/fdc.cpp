@@ -334,8 +334,8 @@ void TownsFDC::MakeReady(void)
 				{
 					unsigned int keys[2]=
 					{
-						(trackPos<<16)|(state.side<<8)|CHRN_CRC[2],
-						(CHRN_CRC[0]<<16)|(CHRN_CRC[1]<<8)|CHRN_CRC[2]
+						(trackPos<<16)|(state.side<<8)|uint32_t(CHRN_CRC[2]),
+						(uint32_t(CHRN_CRC[0])<<16)|(uint32_t(CHRN_CRC[1])<<8)|uint32_t(CHRN_CRC[2])
 					};
 					for(auto key : keys)
 					{
