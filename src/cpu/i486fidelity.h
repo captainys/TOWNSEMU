@@ -616,7 +616,8 @@ public:
 	{
 		// INTEL 80386 Programmer's Reference Manual 1986 pp.346
 		// IF DS,ES,FS,or GS is loaded with a null selector THEN load segment register with selector, clear descriptor valid flag.
-		if(0==selector)
+		// Intel 80386 Programmer's Reference Manual 1986, pp. 332, LGS/LSS/LDS/LES/LFS "a null selector (values 0000-0003)"
+		if(0==(selector&0xFFFC))
 		{
 			if(&reg==&cpu.state.SS())
 			{
@@ -625,7 +626,7 @@ public:
 			}
 			else
 			{
-				reg.value=0;
+				reg.value=selector;
 				reg.limit=0;
 				return true;
 			}
