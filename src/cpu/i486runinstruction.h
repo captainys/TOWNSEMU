@@ -1278,6 +1278,11 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			{\
 				uint32_t i=cpputil::GetDword(operPtr);\
 				auto src=state.reg32()[regNum]; \
+				if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes)) \
+				{ \
+					EIPIncrement=0; \
+					break; \
+				} \
 				(func32)(i,src);\
 				if(true==(update))\
 				{\
