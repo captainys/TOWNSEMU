@@ -4609,6 +4609,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				{
 					clocksPassed=5;  // Same for CALL Indirect and JMP Indirect.
 					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
+					HANDLE_EXCEPTION_IF_ANY;
 					if(true!=state.exception)
 					{
 						state.EIP=(value.GetAsDword()&operandSizeMask[inst.operandSize>>3]);
@@ -6940,6 +6941,10 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			{
 				// true means IMM16 is already consumed in CheckRETFtoOuterLevel.
 				state.ESP()+=inst.EvalUimm16(); // Do I need to take &0xffff if address mode is 16? 
+			}
+			else
+			{
+				std::cout << "RETF to lower level with 0<IMM16." << std::endl;
 			}
 
 			if(16==state.CS().addressSize)
