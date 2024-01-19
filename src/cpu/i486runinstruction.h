@@ -2,6 +2,8 @@
 #define I486RUNINSTRUCTION_IS_INCLUDED
 /* { */
 
+#include <iostream>
+
 template <class CPUCLASS,class MEMCLASS,class FUNCCLASS>
 inline unsigned int i486DXCommon::FetchOperandRMandDecode(
     Operand &op,int addressSize,int dataSize,
@@ -1023,7 +1025,12 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::CALLF(Memory &mem,uint16_t op
 		case DESC_TYPE_16BIT_CALL_GATE:
 		case DESC_TYPE_32BIT_CALL_GATE:
 			{
-				auto ptr=GetCallGate(newCS,mem);
+				unsigned int paramWordCount;
+				auto ptr=GetCallGate(paramWordCount,newCS,mem);
+				if(0!=paramWordCount)
+				{
+					std::cout << "Warning: Parameter size for CALL GATE is not supported. " << paramWordCount << std::endl;
+				}
 				if(descType==DESC_TYPE_16BIT_CALL_GATE)
 				{
 					ptr.OFFSET&=0xFFFF;

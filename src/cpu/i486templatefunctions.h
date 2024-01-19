@@ -354,17 +354,17 @@ void i486DXFidelityLayer <FIDELITY>::LoadTaskRegister(unsigned int value,const M
 }
 
 template <class FIDELITY>
-i486DXCommon::FarPointer i486DXFidelityLayer <FIDELITY>::GetCallGate(unsigned int selector,const Memory &mem)
+i486DXCommon::FarPointer i486DXFidelityLayer <FIDELITY>::GetCallGate(unsigned int &paramWordCount,unsigned int selector,const Memory &mem)
 {
 	LoadSegmentRegisterTemplate<i486DXFidelityLayer <FIDELITY>,FIDELITY> loader;
-	return loader.GetCallGate(*this,selector,mem);
+	return loader.GetCallGate(paramWordCount,*this,selector,mem);
 }
 
 template <class FIDELITY>
-i486DXCommon::FarPointer i486DXFidelityLayer <FIDELITY>::DebugGetCallGate(unsigned int selector,const Memory &mem) const
+i486DXCommon::FarPointer i486DXFidelityLayer <FIDELITY>::DebugGetCallGate(unsigned int &paramWordCount,unsigned int selector,const Memory &mem) const
 {
 	LoadSegmentRegisterTemplate<const i486DXFidelityLayer <FIDELITY>,FIDELITY> loader;
-	return loader.GetCallGate(*this,selector,mem);
+	return loader.GetCallGate(paramWordCount,*this,selector,mem);
 }
 
 template <class FIDELITY>

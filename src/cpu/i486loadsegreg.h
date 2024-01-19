@@ -193,7 +193,7 @@ public:
 		}
 	}
 
-	inline i486DXCommon::FarPointer GetCallGate(CPUCLASS &cpu,unsigned int value,const Memory &mem)
+	inline i486DXCommon::FarPointer GetCallGate(unsigned int &paramWordCount,CPUCLASS &cpu,unsigned int value,const Memory &mem)
 	{
 		LoadProtectedModeDescriptor(cpu,value,mem);
 
@@ -202,6 +202,7 @@ public:
 		i486DXCommon::FarPointer ptr;
 		ptr.SEG=(rawDesc[2]|(rawDesc[3]<<8));
 		ptr.OFFSET=(rawDesc[0]|(rawDesc[1]<<8)|(rawDesc[6]<<16)|(rawDesc[7]<<24));
+		paramWordCount=(unsigned int)(rawDesc[4]&31);
 		return ptr;
 	}
 };

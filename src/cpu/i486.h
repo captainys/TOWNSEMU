@@ -3132,12 +3132,12 @@ public:
 	/*! Get Call Gate.
 	    This function may raise exception.
 	*/
-	FarPointer GetCallGate(unsigned int selector,const Memory &mem);
+	FarPointer GetCallGate(unsigned int &paramWordCount,unsigned int selector,const Memory &mem);
 
 	/*! Get Call Gate.
 	    This function will not raise exception.
 	*/
-	FarPointer DebugGetCallGate(unsigned int selector,const Memory &mem) const;
+	FarPointer DebugGetCallGate(unsigned int &paramWordCount,unsigned int selector,const Memory &mem) const;
 
 	/*! Stores value to the destination described by the operand.
 	    If the destination is memory, the number of bytes stored depends on numByte member of OperandValue.
