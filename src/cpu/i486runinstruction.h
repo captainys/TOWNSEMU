@@ -1010,6 +1010,8 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::CALLF(Memory &mem,uint16_t op
 	else
 	{
 		FIDELITY fidelity;
+		unsigned int copyParamCount=0;
+		uint32_t copyParams[64]; // Maximum should be 31 parameters.
 
 		auto prevCPL=state.CS().DPL;
 
@@ -1025,11 +1027,27 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::CALLF(Memory &mem,uint16_t op
 		case DESC_TYPE_16BIT_CALL_GATE:
 		case DESC_TYPE_32BIT_CALL_GATE:
 			{
-				unsigned int paramWordCount;
-				auto ptr=GetCallGate(paramWordCount,newCS,mem);
-				if(0!=paramWordCount)
+				auto ptr=GetCallGate(copyParamCount,newCS,mem);
+
+				if(0!=copyParamCount)
 				{
-					std::cout << "Warning: Parameter size for CALL GATE is not supported. " << paramWordCount << std::endl;
+					std::cout << "Call Gate with parameter count " << copyParamCount << " operand size " << opSize << std::endl;
+				}
+				if(0!=copyParamCount && 16!=opSize && nullptr!=debuggerPtr)
+				{
+					std::cout << "I cannot find if the number of bytes copied should differ by operand size, or always times two!!!! WTF!!!!" << std::endl;
+					debuggerPtr->ExternalBreak("Call Gate used with non-zero parameter count and 32-bit operand size.");
+				}
+
+				copyParamCount=copyParamCount*opSize/16;
+				uint32_t ESP=state.ESP();
+				if(16==GetStackAddressingSize())
+				{
+					ESP&=0xFFFF;
+				}
+				for(int i=0; i<copyParamCount; ++i)
+				{
+					copyParams[i]=FetchWord(GetStackAddressingSize(),state.SS(),ESP+i*2,mem);
 				}
 				if(descType==DESC_TYPE_16BIT_CALL_GATE)
 				{
@@ -1082,6 +1100,11 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::CALLF(Memory &mem,uint16_t op
 				state.ESP()=FetchDword(32,state.TR,TSS_OFFSET_ESP0+newCPL*8,mem);
 			}
 			Push(mem,opSize,prevSS,prevESP);
+
+			for(int i=0; i<copyParamCount; ++i)
+			{
+				Push16(mem,copyParams[copyParamCount-1-i]);
+			}
 		}
 	}
 
@@ -6862,7 +6885,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				PopCallStack(state.CS().value,state.EIP);
 			}
 
-			fidelity.CheckRETFtoOuterLevel(*this,mem,inst.operandSize,prevDPL);
+			fidelity.CheckRETFtoOuterLevel(*this,mem,inst.operandSize,prevDPL,0);
 
 			if(16==state.CS().addressSize)
 			{
@@ -6913,10 +6936,11 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			{
 				PopCallStack(state.CS().value,state.EIP);
 			}
-			fidelity.CheckRETFtoOuterLevel(*this,mem,inst.operandSize,prevDPL);
-
-			// IMM must be added after CheckRETFtoOuterLevel, which may need to pop ESP,SS.
-			state.ESP()+=inst.EvalUimm16(); // Do I need to take &0xffff if address mode is 16? 
+			if(true!=fidelity.CheckRETFtoOuterLevel(*this,mem,inst.operandSize,prevDPL,inst.EvalUimm16()))
+			{
+				// true means IMM16 is already consumed in CheckRETFtoOuterLevel.
+				state.ESP()+=inst.EvalUimm16(); // Do I need to take &0xffff if address mode is 16? 
+			}
 
 			if(16==state.CS().addressSize)
 			{

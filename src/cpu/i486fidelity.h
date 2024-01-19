@@ -65,7 +65,7 @@ public:
 
 	inline void PageFaultCheckAfterEnter(class i486DXCommon &cpu,Memory &mem) const{}
 
-	inline void CheckRETFtoOuterLevel(i486DXCommon &cpu,Memory &mem,uint32_t operandSize,uint32_t prevDPL){};
+	inline bool CheckRETFtoOuterLevel(i486DXCommon &cpu,Memory &mem,uint32_t operandSize,uint32_t prevDPL,uint16_t imm16){return false;};
 
 	// LoadSegmentRegister
 	class LoadSegmentRegisterVariables
@@ -757,11 +757,14 @@ public:
 	{
 		attribBytes=0;
 	}
-	inline static void CheckRETFtoOuterLevel(i486DXFidelityLayer<THISCLASS> &cpu,Memory &mem,uint32_t operandSize,uint32_t prevDPL)
+	inline static bool CheckRETFtoOuterLevel(i486DXFidelityLayer<THISCLASS> &cpu,Memory &mem,uint32_t operandSize,uint32_t prevDPL,uint16_t imm16)
 	{
 		if(0==cpu.GetVM() && true!=cpu.IsInRealMode() && cpu.state.CS().DPL>prevDPL)
 		{
 			uint32_t newSP,newSS;
+
+			cpu.state.ESP()+=imm16; // Skip parameters from Call-Gate
+
 			if(16==operandSize)
 			{
 				// (*)
@@ -782,7 +785,10 @@ public:
 			// Imm is already added.
 			cpu.LoadSegmentRegister(cpu.state.SS(),newSS,mem);
 			cpu.state.ESP()=newSP;
+
+			return true;
 		}
+		return false;
 	}
 
 
