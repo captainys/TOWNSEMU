@@ -302,7 +302,7 @@ TownsDMAC::TownsDMAC(class FMTownsCommon *townsPtr) : Device(townsPtr)
 	case TOWNSIO_DMAC_MODE_CONTROL://        0xAA,
 		if(data&0x20)
 		{
-			townsPtr->CPU().Abort("DMAC: ADIR bit not supported.");
+			townsPtr->debugger.ExternalBreak("DMAC: ADIR bit not supported.");
 		}
 		state.ch[state.SELCH].modeCtrl=data;
 		if(0==(data&1))
@@ -384,11 +384,12 @@ TownsDMAC::TownsDMAC(class FMTownsCommon *townsPtr) : Device(townsPtr)
 		}
 		break;
 	case TOWNSIO_DMAC_DEVICE_CONTROL_LOW://  0xA8,
-		break;
+		return state.devCtrl[0];
 	case TOWNSIO_DMAC_DEVICE_CONTROL_HIGH:// 0xA9,
+		return state.devCtrl[1]&3;
 		break;
 	case TOWNSIO_DMAC_MODE_CONTROL://        0xAA,
-		break;
+		return state.ch[state.SELCH].modeCtrl&0xFD;
 	case TOWNSIO_DMAC_STATUS://              0xAB,
 		{
 			unsigned int data=0;
