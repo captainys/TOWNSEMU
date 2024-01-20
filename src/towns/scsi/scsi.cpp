@@ -354,8 +354,8 @@ void TownsSCSI::EnterCommandPhase(void)
 	// Seriously?  FM Towns BIOS Looks to be waiting for the COMMAND phase.
 	state.phase=PHASE_COMMAND;
 	state.nCommandFilled=0;
-	state.REQ=true;
-	state.INT=true;
+	state.REQ=false; // REQ and INT will be set in RunScheduledTask
+	state.INT=false;
 	SetUpIO_MSG_CDfromPhase();
 	townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+CommandDelay());
 }
@@ -426,16 +426,16 @@ void TownsSCSI::EnterDataOutPhase(void)
 void TownsSCSI::EnterMessageInPhase(void)
 {
 	state.phase=PHASE_MESSAGE_IN;
-	state.REQ=true;
-	state.INT=true;
+	state.REQ=false; // REQ and INT will be set in RunScheduledTask
+	state.INT=false;
 	SetUpIO_MSG_CDfromPhase();
 	townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+MessageDelay());
 }
 void TownsSCSI::EnterStatusPhase(void)
 {
 	state.phase=PHASE_STATUS;
-	state.REQ=true;
-	state.INT=true;
+	state.REQ=false; // REQ and INT will be set in RunScheduledTask
+	state.INT=false;
 	SetUpIO_MSG_CDfromPhase();
 	townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+MessageDelay());
 }
@@ -494,6 +494,12 @@ void TownsSCSI::EnterStatusPhase(void)
 		{
 			// Probably resetting IMSK should also clear IRR.
 			townsPtr->pic.SetInterruptRequestBit(TOWNSIRQ_SCSI,false);
+		}
+		else if(/*true==IRQEnabled() && */ true==state.INT)
+		{
+			// INT is already set when IRQ is enabled.
+			townsPtr->pic.SetInterruptRequestBit(TOWNSIRQ_SCSI,true);
+			std::cout << "SCSI: INT is already set when IMSK is enabled.  Not usual." << std::endl;
 		}
 		break;
 	}
@@ -817,7 +823,7 @@ void TownsSCSI::ExecSCSICommand(void)
 	{
 		state.REQ=true;
 		state.INT=true;
-		if(true==IRQEnabled())
+		if(true==IRQEnabled()) // If INT is not enabled in time, PIC can be notified upon IMSK=true.
 		{
 			townsPtr->pic.SetInterruptRequestBit(TOWNSIRQ_SCSI,true);
 		}
