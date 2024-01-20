@@ -1213,24 +1213,53 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 			if(true==monitorCRTC2)
 			{
 				std::ostringstream ss;
-				ss << "Write to CRTC2 Reg(D0)=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Uitox(data);
+				ss << "Write to CRTC2 Reg(D0)=" << cpputil::Uitox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Uitox(data);
 				std::cout << ss.str() << std::endl;
 				townsPtr->debugger.WriteLogFile(ss.str());
 			}
-			if(HIGHRES_REG_CTRL1==state.highResCrtcRegAddrLatch)
+			switch(state.highResCrtcRegAddrLatch)
 			{
+			case HIGHRES_REG_CTRL0://   =0x000,   // Write 0 -> ?   1->enable highRes CRTC
+			case HIGHRES_REG_PGCTRL://  =0x001,   // bit1 0->1-Layer mode  1->2-Layer mode    bit9 ?
+
+
+			case HIGHRES_REG_CTRL1://   =0x004,   // Read bit0=HighResEnabled bit1=(Initial=1, WriteToBit1->0, HighResoDisabled->1)   Write bit1=1->bit0=0
 				if(0!=(data&2))
 				{
 					state.highResCrtcReg4Bit0=false;
 					state.highResCrtcReg4Bit1=false;
 				}
-			}
-			if(HIGHRES_REG_PALINDEX==state.highResCrtcRegAddrLatch)
-			{
+				break;
+			case HIGHRES_REG_DISPPAGE:// =0x005,   // Prob  bit0 PriorityPage   bit8 ShowPage0   bit9 ShowPage1
+
+
+			case HIGHRES_REG_P0_WID_H://   =0x110,
+			case HIGHRES_REG_P0_WID_L://   =0x111,
+			case HIGHRES_REG_P0_HEI_H://   =0x112,
+			case HIGHRES_REG_P0_HEI_L://   =0x113,
+			case HIGHRES_REG_P0_VRAM_WID://=0x114,
+			case HIGHRES_REG_P0_VRAM_HEI://=0x115,
+			case HIGHRES_REG_P0_VRAM_OFFSET_X://=0x116, // Prob
+			case HIGHRES_REG_P0_VRAM_OFFSET_Y://=0x117, // Prob
+			case HIGHRES_REG_P0_ZOOM://    =0x119,
+			case HIGHRES_REG_P0_PALETTE:// =0x11B,   // Prob 8000H 32K color, 0FH 16-color palette, 0FFH 256-color palette, FFFFFFH 24-bit color
+
+			case HIGHRES_REG_P1_WID_H://   =0x120,
+			case HIGHRES_REG_P1_WID_L://   =0x121,
+			case HIGHRES_REG_P1_HEI_H://   =0x122,
+			case HIGHRES_REG_P1_HEI_L://   =0x123,
+			case HIGHRES_REG_P1_VRAM_WID://=0x124,
+			case HIGHRES_REG_P1_VRAM_HEI://=0x125,
+			case HIGHRES_REG_P1_VRAM_OFFSET_X://=0x126,  // Prob
+			case HIGHRES_REG_P1_VRAM_OFFSET_Y://=0x127,  // Prob
+			case HIGHRES_REG_P1_ZOOM://    =0x129,
+			case HIGHRES_REG_P1_PALETTE:// =0x12B,   // Prob 8000H 32K color, 0FH 16-color palette, 0FFH 256-color palette
+
+
+			case HIGHRES_REG_PALINDEX:
 				state.highResCrtcPalette.codeLatch=data&0xFF;
-			}
-			if(HIGHRES_REG_PALCOL==state.highResCrtcRegAddrLatch)
-			{
+				break;
+			case HIGHRES_REG_PALCOL:
 				switch(state.highResCrtcReg[HIGHRES_REG_PALSEL])
 				{
 				case 0:
@@ -1251,6 +1280,7 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 				}
 				state.highResCrtcPalette.codeLatch++;
 				state.highResCrtcPalette.codeLatch&=0xFF;
+				break;
 			}
 		}
 		break;
@@ -1261,7 +1291,7 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 			if(true==monitorCRTC2)
 			{
 				std::ostringstream ss;
-				ss << "Write to CRTC2 Reg(D1)=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Uitox(data);
+				ss << "Write to CRTC2 Reg(D1)=" << cpputil::Uitox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Uitox(data);
 				std::cout << ss.str() << std::endl;
 				townsPtr->debugger.WriteLogFile(ss.str());
 			}
@@ -1274,7 +1304,7 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 			if(true==monitorCRTC2)
 			{
 				std::ostringstream ss;
-				ss << "Write to CRTC2 Reg(D2)=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Uitox(data);
+				ss << "Write to CRTC2 Reg(D2)=" << cpputil::Uitox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Uitox(data);
 				std::cout << ss.str() << std::endl;
 				townsPtr->debugger.WriteLogFile(ss.str());
 			}
@@ -1286,7 +1316,7 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 			if(true==monitorCRTC2)
 			{
 				std::ostringstream ss;
-				ss << "Write to CRTC2 Reg(D3)=" << cpputil::Ustox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Uitox(data);
+				ss << "Write to CRTC2 Reg(D3)=" << cpputil::Uitox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Uitox(data);
 				std::cout << ss.str() << std::endl;
 				townsPtr->debugger.WriteLogFile(ss.str());
 			}
