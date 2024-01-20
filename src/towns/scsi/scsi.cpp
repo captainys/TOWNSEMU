@@ -577,7 +577,7 @@ void TownsSCSI::ProcessPhaseData(unsigned int dataByte)
 		else if(commandLength[state.commandBuffer[0]]<=state.nCommandFilled)
 		{
 			// Execute command
-			if(true==breakOnSCSICommand)
+			if(true==breakOnSCSICommand[state.commandBuffer[0]])
 			{
 				std::string msg;
 				msg="SCSI Command (";

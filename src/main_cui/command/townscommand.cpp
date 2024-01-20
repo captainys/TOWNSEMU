@@ -3345,7 +3345,20 @@ void TownsCommandInterpreter::Execute_BreakOn(FMTownsCommon &towns,Command &cmd)
 			towns.keyboard.debugBreakOnReturnKey=true;
 			break;
 		case BREAK_ON_SCSI_COMMAND:
-			towns.scsi.breakOnSCSICommand=true;
+			if(cmd.argv.size()<=2)
+			{
+				std::cout << "Break on all SCSI commands." << std::endl;
+				for(int i=0; i<256; ++i)
+				{
+					towns.scsi.breakOnSCSICommand[i]=true;
+				}
+			}
+			else
+			{
+				uint8_t i=cpputil::Xtoi(cmd.argv[2].c_str());
+				std::cout << "Break on SCSI command " << cpputil::Ubtox(i) << std::endl;
+				towns.scsi.breakOnSCSICommand[i]=true;
+			}
 			break;
 		case BREAK_ON_SCSI_DMA_TRANSFER:
 			towns.scsi.breakOnDMATransfer=true;
@@ -3599,7 +3612,20 @@ void TownsCommandInterpreter::Execute_ClearBreakOn(FMTownsCommon &towns,Command 
 			towns.keyboard.debugBreakOnReturnKey=false;
 			break;
 		case BREAK_ON_SCSI_COMMAND:
-			towns.scsi.breakOnSCSICommand=false;
+			if(cmd.argv.size()<=2)
+			{
+				std::cout << "Clear break on all SCSI commands." << std::endl;
+				for(int i=0; i<256; ++i)
+				{
+					towns.scsi.breakOnSCSICommand[i]=false;
+				}
+			}
+			else
+			{
+				uint8_t i=cpputil::Xtoi(cmd.argv[2].c_str());
+				std::cout << "Clear break on SCSI command " << cpputil::Ubtox(i) << std::endl;
+				towns.scsi.breakOnSCSICommand[i]=false;
+			}
 			break;
 		case BREAK_ON_SCSI_DMA_TRANSFER:
 			towns.scsi.breakOnDMATransfer=false;

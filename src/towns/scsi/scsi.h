@@ -222,7 +222,7 @@ public:
 
 
 	unsigned int commandLength[256];
-	bool breakOnSCSICommand=false;
+	bool breakOnSCSICommand[256];
 	bool breakOnDMATransfer=false;
 
 
