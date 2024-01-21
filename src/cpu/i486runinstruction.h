@@ -1786,6 +1786,14 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 	#define UPDATED_SAVED_ECX_AFTER_STRINGOP \
 		FIDELITY::SaveECX(savedECX,state.ECX());
 
+	#define FPU_TRAP \
+		if(true!=state.fpuState.enabled) \
+		{ \
+			Interrupt(INT_DEVICE_NOT_AVAILABLE,mem,0,0,false); \
+			clocksPassed=26; \
+			EIPIncrement=0; \
+			break; \
+		}
 
 
 	static const unsigned int reg8AndPattern[]=
@@ -3271,30 +3279,37 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			auto MODR_M=inst.operand[0];
 			if(0xC0==(MODR_M&0xF8))   // FADD ST,ST(i)
 			{
+				FPU_TRAP;
 				clocksPassed=state.fpuState.FADD_ST_STi(*this,MODR_M&7);
 			}
 			else if(0xC8==(MODR_M&0xF8))   // FMUL ST,ST(i)
 			{
+				FPU_TRAP;
 				clocksPassed=state.fpuState.FMUL_ST_STi(*this,MODR_M&7);
 			}
 			else if(0xD0==(MODR_M&0xF8))   // FCOM
 			{
+				FPU_TRAP;
 				clocksPassed=state.fpuState.FCOM(*this,MODR_M&7);
 			}
 			else if(0xD8==(MODR_M&0xF8))   // FCOMP
 			{
+				FPU_TRAP;
 				clocksPassed=state.fpuState.FCOMP(*this,MODR_M&7);
 			}
 			else if(0xE0==(MODR_M&0xF8))
 			{
+				FPU_TRAP;
 				clocksPassed=state.fpuState.FSUB_ST_STi(*this,MODR_M&7);
 			}
 			else if(0xE8==(MODR_M&0xF8))
 			{
+				FPU_TRAP;
 				clocksPassed=state.fpuState.FSUBR_ST_STi(*this,MODR_M&7);
 			}
 			else if(0xF0==(MODR_M&0xF8))
 			{
+				FPU_TRAP;
 			   	clocksPassed=state.fpuState.FDIV_ST_STi(*this,MODR_M&7);
 			}
 			else if(0xF8==(MODR_M&0xF8))
@@ -3306,48 +3321,56 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				switch(inst.GetREG())
 				{
 				case 0:	// FADD m32real
+					FPU_TRAP;
 					{
 						auto value=EvaluateOperand64(mem,inst.addressSize,inst.segOverride,op1);
 						clocksPassed=state.fpuState.FADD_m32real(*this,value.byteData);
 					}
 					break;
 				case 1:
+					FPU_TRAP;
 					{
 						auto value=EvaluateOperand64(mem,inst.addressSize,inst.segOverride,op1);
 						clocksPassed=state.fpuState.FMUL_m32real(*this,value.byteData);
 					}
 					break;
 				case 2:
+					FPU_TRAP;
 					{
 						auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,4);
 						clocksPassed=state.fpuState.FCOM_m32real(*this,value.byteData);
 					}
 					break;
 				case 3:
+					FPU_TRAP;
 					{
 						auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,4);
 						clocksPassed=state.fpuState.FCOMP_m32real(*this,value.byteData);
 					}
 					break;
 				case 4:
+					FPU_TRAP;
 					{
 						auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,4);
 						clocksPassed=state.fpuState.FSUB_m32real(*this,value.byteData);
 					}
 					break;
 				case 5:
+					FPU_TRAP;
 					{
 						auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,4);
 						clocksPassed=state.fpuState.FSUBR_m32real(*this,value.byteData);
 					}
 					break;
 				case 6:
+					FPU_TRAP;
 					{
 						auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,4);
 						clocksPassed=state.fpuState.FDIV_m32real(*this,value.byteData);
 					}
 					break;
 				case 7:
+					FPU_TRAP;
 					{
 						auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,4);
 						clocksPassed=state.fpuState.FDIVR_m32real(*this,value.byteData);
@@ -3368,10 +3391,12 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 
 		if(0xC0<=inst.operand[0] && inst.operand[0]<=0xC7)
 		{
+			FPU_TRAP;
 			clocksPassed=state.fpuState.FLD_ST(*this,inst.operand[0]&7);
 		}
 		else if(0xC8<=inst.operand[0] && inst.operand[0]<=0xCF)
 		{
+			FPU_TRAP;
 			clocksPassed=state.fpuState.FXCH(*this,inst.operand[0]&7);
 		}
 		else if(0xD0==inst.operand[0])
@@ -3380,62 +3405,77 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		}
 		else if(0xE0==inst.operand[0])
 		{
+			FPU_TRAP;
 			clocksPassed=state.fpuState.FCHS(*this);
 		}
 		else if(0xE1==inst.operand[0])
 		{
+			FPU_TRAP;
 			clocksPassed=state.fpuState.FABS(*this);
 		}
 		else if(0xE4==inst.operand[0])
 		{
+			FPU_TRAP;
 			clocksPassed=state.fpuState.FTST(*this);
 		}
 		else if(0xE5==inst.operand[0])
 		{
+			FPU_TRAP;
 			clocksPassed=state.fpuState.FXAM(*this);
 		}
 		else if(0xE8==inst.operand[0])
 		{
+			FPU_TRAP;
 			clocksPassed=state.fpuState.FLD1(*this);
 		}
 		else if(0xE9==inst.operand[0])
 		{
+			FPU_TRAP;
 			clocksPassed=state.fpuState.FLDL2T(*this);
 		}
 		else if(0xEA==inst.operand[0])
 		{
+			FPU_TRAP;
 			clocksPassed=state.fpuState.FLDL2E(*this);
 		}
 		else if(0xEB==inst.operand[0])
 		{
+			FPU_TRAP;
 			clocksPassed=state.fpuState.FLDPI(*this);
 		}
 		else if(0xEC==inst.operand[0])
 		{
+			FPU_TRAP;
 			clocksPassed=state.fpuState.FLDLG2(*this);
 		}
 		else if(0xED==inst.operand[0])
 		{
+			FPU_TRAP;
 			clocksPassed=state.fpuState.FLDLN2(*this);
 		}
 		else if(0xEE==inst.operand[0])
 		{
+			FPU_TRAP;
 			clocksPassed=state.fpuState.FLDZ(*this);
 		}
 		else if(0xF0==inst.operand[0])
 		{
+			FPU_TRAP;
 			clocksPassed=state.fpuState.F2XM1(*this);
 		}
 		else if(0xF1==inst.operand[0])
 		{
+			FPU_TRAP;
 			clocksPassed=state.fpuState.FYL2X(*this);
 		}
 		else if(0xF2==inst.operand[0])
 		{
+			FPU_TRAP;
 			clocksPassed=state.fpuState.FPTAN(*this);
 		}
 		else if(0xF3==inst.operand[0])
 		{
+			FPU_TRAP;
 			clocksPassed=state.fpuState.FPATAN(*this);
 		}
 		else if(0xF4==inst.operand[0])
@@ -3456,34 +3496,42 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		}
 		else if(0xF8==inst.operand[0])
 		{
+			FPU_TRAP;
 			clocksPassed=state.fpuState.FPREM(*this);
 		}
 		else if(0xF9==inst.operand[0])
 		{
+			FPU_TRAP;
 			clocksPassed=state.fpuState.FYL2XP1(*this);
 		}
 		else if(0xFA==inst.operand[0])
 		{
+			FPU_TRAP;
 			clocksPassed=state.fpuState.FSQRT(*this);
 		}
 		else if(0xFB==inst.operand[0])
 		{
+			FPU_TRAP;
 			clocksPassed=state.fpuState.FSINCOS(*this);
 		}
 		else if(0xFC==inst.operand[0])
 		{
+			FPU_TRAP;
 			clocksPassed=state.fpuState.FRNDINT(*this);
 		}
 		else if(0xFD==inst.operand[0])
 		{
+			FPU_TRAP;
 			clocksPassed=state.fpuState.FSCALE(*this);
 		}
 		else if(0xFE==inst.operand[0])
 		{
+			FPU_TRAP;
 			clocksPassed=state.fpuState.FSIN(*this);
 		}
 		else if(0xFF==inst.operand[0])
 		{
+			FPU_TRAP;
 			clocksPassed=state.fpuState.FCOS(*this);
 		}
 		else
@@ -3491,12 +3539,14 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			switch(inst.GetREG())
 			{
 			case 0: // "FLD m32real"
+				FPU_TRAP;
 				{
 					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,4);
 					clocksPassed=state.fpuState.FLD32(*this,value.byteData);
 				}
 				break;
 			case 2: // "FST m32real"
+				FPU_TRAP;
 				{
 					OperandValue value;
 					state.fpuState.GetSTAsFloat(*this,value);
@@ -3505,6 +3555,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				}
 				break;
 			case 3: // FSTP m32real
+				FPU_TRAP;
 				{
 					OperandValue value;
 					state.fpuState.GetSTAsFloat(*this,value);
@@ -3514,6 +3565,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				}
 				break;
 			case 5: // "FLDCW"
+				FPU_TRAP;
 				{
 					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
 					auto cw=value.GetAsWord();
@@ -3521,6 +3573,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				}
 				break;
 			case 6: // FNSTENV
+				FPU_TRAP;
 				if(true==state.fpuState.enabled)
 				{
 					unsigned int offset;
@@ -3569,6 +3622,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		}
 		else if(0xE9==inst.operand[0])
 		{
+			FPU_TRAP;
 			clocksPassed = state.fpuState.FUCOMPP(*this);
 		}
 		else
@@ -3578,6 +3632,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			case 0:  // FIADD m32int
 				break;
 			case 1:  // FIMUL m32int
+				FPU_TRAP;
 				{
 					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,4);
 					clocksPassed=state.fpuState.FIMUL_m32int(*this,value.byteData);
@@ -3592,12 +3647,14 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			case 5:  // FISUBR m32int
 				break;
 			case 6:  // FIDIV m32int
+				FPU_TRAP;
 				{
 					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,4);
 					clocksPassed=state.fpuState.FIDIV_m32int(*this,value.byteData);
 				}
 				break;
 			case 7:  // FIDIVR m32int
+				FPU_TRAP;
 				{
 					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,4);
 					clocksPassed=state.fpuState.FIDIVR_m32int(*this,value.byteData);
@@ -3640,6 +3697,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		}
 		else if(0xE2==inst.operand[0])
 		{
+			FPU_TRAP;
 			clocksPassed=state.fpuState.FCLEX(*this);
 		}
 		else if(0xE4==inst.operand[0])
@@ -3667,12 +3725,14 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			default:
 				break;
 			case 0: // FILD m32int
+				FPU_TRAP;
 				{
 					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,4);
 					clocksPassed=state.fpuState.FILD_m32int(*this,value.byteData);
 				}
 				break;
 			case 2: // FIST m32int
+				FPU_TRAP;
 				{
 					OperandValue value;
 					state.fpuState.GetSTAsSignedInt(*this, value);
@@ -3682,6 +3742,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				}
 				break;
 			case 3: // FISTP m32int
+				FPU_TRAP;
 				{
 					OperandValue value;
 					state.fpuState.GetSTAsSignedInt(*this,value);
@@ -3692,12 +3753,14 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				}
 				break;
 			case 5: // FLD m80real
+				FPU_TRAP;
 				{
 					auto value=EvaluateOperand80(mem,inst.addressSize,inst.segOverride,op1);
 					clocksPassed=state.fpuState.FLD80(*this,value.byteData);
 				}
 				break;
 			case 7: // FSTP m80real
+				FPU_TRAP;
 				{
 					OperandValue value;
 					i486DXCommon::FPUState::DoubleTo80Bit(value,state.fpuState.ST(*this).value);
@@ -3720,14 +3783,17 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			unsigned int MODR_M=inst.operand[0];
 			if(0xE8==(MODR_M&0xF8))
 			{
+				FPU_TRAP;
 				clocksPassed=state.fpuState.FSUB_STi_ST(*this,MODR_M&7);
 			}
 			else if(0xC0==(MODR_M&0xF8))
 			{
+				FPU_TRAP;
 				clocksPassed=state.fpuState.FADD_STi_ST(*this,MODR_M&7);
 			}
 			else if(0xC8==(MODR_M&0xF8))
 			{
+				FPU_TRAP;
 				clocksPassed=state.fpuState.FMUL_STi_ST(*this,MODR_M&7);
 			}
 			else if(0xE0==(MODR_M&0xF8))
@@ -3743,48 +3809,56 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				switch(Instruction::GetREG(MODR_M))
 				{
 				case 0:	// FADD m64real
+					FPU_TRAP;
 					{
 						auto value=EvaluateOperand64(mem,inst.addressSize,inst.segOverride,op1);
 						clocksPassed=state.fpuState.FADD64(*this,value.byteData);
 					}
 					break;
 				case 1: // FMUL m64real
+					FPU_TRAP;
 					{
 						auto value=EvaluateOperand64(mem,inst.addressSize,inst.segOverride,op1);
 						clocksPassed=state.fpuState.FMUL_m64real(*this,value.byteData);
 					}
 					break;
 				case 2: //
+					FPU_TRAP;
 					{
 						auto value=EvaluateOperand64(mem,inst.addressSize,inst.segOverride,op1);
 						clocksPassed=state.fpuState.FCOM_m64real(*this,value.byteData);
 					}
 					break;
 				case 3: // FCOMP m64real
+					FPU_TRAP;
 					{
 						auto value=EvaluateOperand64(mem,inst.addressSize,inst.segOverride,op1);
 						clocksPassed=state.fpuState.FCOMP_m64real(*this,value.byteData);
 					}
 					break;
 				case 4:
+					FPU_TRAP;
 					{
 						auto value=EvaluateOperand64(mem,inst.addressSize,inst.segOverride,op1);
 						clocksPassed=state.fpuState.FSUB_m64real(*this,value.byteData);
 					}
 					break;
 				case 5:
+					FPU_TRAP;
 					{
 						auto value=EvaluateOperand64(mem,inst.addressSize,inst.segOverride,op1);
 						clocksPassed=state.fpuState.FSUBR_m64real(*this,value.byteData);
 					}
 					break;
 				case 6: // FDIV m64real
+					FPU_TRAP;
 					{
 						auto value=EvaluateOperand64(mem,inst.addressSize,inst.segOverride,op1);
 						clocksPassed=state.fpuState.FDIV_m64real(*this,value.byteData);
 					}
 					break;
 				case 7: // FDIVR m64real
+					FPU_TRAP;
 					{
 						auto value=EvaluateOperand64(mem,inst.addressSize,inst.segOverride,op1);
 						clocksPassed=state.fpuState.FDIVR_m64real(*this,value.byteData);
@@ -3807,30 +3881,37 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			switch(inst.operand[0]&0xF8)
 			{
 			case 0xD0: // D0 11010xxx    [1] pp.151  0<=i<=7
+				FPU_TRAP;
 				clocksPassed=state.fpuState.FST_STi(*this,(inst.operand[0]&7));
 				break;
 			case 0xD8: // D8 11011xxx
+				FPU_TRAP;
 				clocksPassed=state.fpuState.FSTP_STi(*this,(inst.operand[0]&7));
 				break;
 			case 0xC0: // C0 11000xxx
+				FPU_TRAP;
 				clocksPassed=state.fpuState.FFREE(*this,(inst.operand[0]&7));
 				break;
 			case 0xE0:
+				FPU_TRAP;
 				clocksPassed=state.fpuState.FUCOM_STi(*this,inst.operand[0]&7);
 				break;
 			case 0xE8:
+				FPU_TRAP;
 				clocksPassed = state.fpuState.FUCOMP_STi(*this, inst.operand[0] & 7);
 				break;
 			default:
 				switch(Instruction::GetREG(inst.operand[0]))
 				{
 				case 0:	// FLD m64real
+					FPU_TRAP;
 					{
 						auto value=EvaluateOperand64(mem,inst.addressSize,inst.segOverride,op1);
 						clocksPassed=state.fpuState.FLD64(*this,value.byteData);
 					}
 					break;
 				case 2: // FST m64real
+					FPU_TRAP;
 					{
 						OperandValue value;
 						state.fpuState.GetSTAsDouble(*this,value);
@@ -3839,6 +3920,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					}
 					break;
 				case 3: // FSTP m64real
+					FPU_TRAP;
 					{
 						OperandValue value;
 						state.fpuState.GetSTAsDouble(*this,value);
@@ -3848,6 +3930,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					}
 					break;
 				case 4: // FRSTOR m94/108byte
+					FPU_TRAP;
 					{
 						std::vector <uint8_t> data;
 						unsigned int offset;
@@ -3863,6 +3946,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					}
 					break;
 				case 6: // FSAVE m94/108byte
+					FPU_TRAP;
 					{
 						clocksPassed=154;
 
@@ -3897,26 +3981,33 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		switch(inst.operand[0]&0xF8)
 		{
 		case 0xC0:
+			FPU_TRAP;
 			clocksPassed=state.fpuState.FADDP_STi_ST(*this,inst.operand[0]&7);
 			break;
 		case 0xC8:
+			FPU_TRAP;
 			clocksPassed=state.fpuState.FMULP(*this,inst.operand[0]&7);
 			break;
 		case 0xE0:
+			FPU_TRAP;
 			clocksPassed=state.fpuState.FSUBRP_STi_ST(*this,inst.operand[0]&7);
 			break;
 		case 0xE8:
+			FPU_TRAP;
 			clocksPassed=state.fpuState.FSUBP_STi_ST(*this,inst.operand[0]&7);
 			break;
 		case 0xF0:
+			FPU_TRAP;
 			clocksPassed=state.fpuState.FDIVRP_STi_ST(*this,inst.operand[0]&7);
 			break;
 		case 0xF8:
+			FPU_TRAP;
 			clocksPassed=state.fpuState.FDIVP_STi_ST(*this,inst.operand[0]&7);
 			break;
 		default:
 			if(0xD9==inst.operand[0])
 			{
+				FPU_TRAP;
 				clocksPassed=state.fpuState.FCOMPP(*this);
 			}
 			else
@@ -3924,12 +4015,14 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				switch(inst.GetREG())
 				{
 				case 0:
+					FPU_TRAP;
 					{
 						auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,2);
 						clocksPassed=state.fpuState.FIADD_m16int(*this,value.byteData);
 					}
 					break;
 				case 1:
+					FPU_TRAP;
 					{
 						auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,2);
 						clocksPassed=state.fpuState.FIMUL_m16int(*this,value.byteData);
@@ -3942,6 +4035,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					// FICOMP m16int
 					break;
 				case 4:
+					FPU_TRAP;
 					{
 						auto value = EvaluateOperand(mem, inst.addressSize, inst.segOverride, op1, 2);
 						clocksPassed = state.fpuState.FISUB_m16int(*this, value.byteData);
@@ -3951,6 +4045,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					// FISUBR m16int
 					break;
 				case 6:
+					FPU_TRAP;
 					{
 						auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,2);
 						clocksPassed=state.fpuState.FIDIV_m16int(*this,value.byteData);
@@ -3973,6 +4068,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		#endif
 		if(0xE0==inst.operand[0])
 		{
+			// FNSTSW AX
 			SetAX(state.fpuState.GetStatusWord());
 			clocksPassed=3;
 		}
@@ -3989,12 +4085,14 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			switch(Instruction::GetREG(inst.operand[0]))
 			{
 			case 0:
+				FPU_TRAP;
 				{
 					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,2);
 					clocksPassed=state.fpuState.FILD_m16int(*this,value.byteData);
 				}
 				break;
 			case 2: // FIST m16int
+				FPU_TRAP;
 				{
 					OperandValue value;
 					state.fpuState.GetSTAsSignedInt(*this,value);
@@ -4004,6 +4102,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				}
 				break;
 			case 3: // FISTP m16int
+				FPU_TRAP;
 				{
 					OperandValue value;
 					state.fpuState.GetSTAsSignedInt(*this,value);
@@ -4014,18 +4113,21 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				}
 				break;
 			case 4:
+				FPU_TRAP;
 				{
 					auto value=EvaluateOperand80(mem,inst.addressSize,inst.segOverride,op1);
 					clocksPassed=state.fpuState.FBLD(*this,value.byteData);
 				}
 				break;
 			case 5: // FILD m64int
+				FPU_TRAP;
 				{
 					auto value=EvaluateOperand64(mem,inst.addressSize,inst.segOverride,op1);
 					clocksPassed=state.fpuState.FILD_m64int(*this,value.byteData);
 				}
 				break;
 			case 6: // FBSTP m80dec
+				FPU_TRAP;
 				{
 					OperandValue value;
 					state.fpuState.GetSTAs80BitBCD(*this,value);
@@ -4035,6 +4137,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				}
 				break;
 			case 7: // FISTP m64int
+				FPU_TRAP;
 				{
 					OperandValue value;
 					state.fpuState.GetSTAsSignedInt(*this,value);
