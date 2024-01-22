@@ -850,6 +850,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "INT n" << std::endl;
 	std::cout << "INT n AH=hh" << std::endl;
 	std::cout << "INT n AX=hhhh" << std::endl;
+	std::cout << "INT n CSEIP=cs:eip EIP=eip" << std::endl;
+	std::cout << "  Break on interrupt.  Can specify specific multiple CS:EIP or EIP." << std::endl;
 	std::cout << "FOPEN fileNameWildCard" << std::endl;
 	std::cout << "  Break when fopen,fcreate with the given file name." << std::endl;
 	std::cout << "RDCVRAM" << std::endl;
@@ -3225,9 +3227,11 @@ void TownsCommandInterpreter::Execute_BreakOn(FMTownsCommon &towns,Command &cmd)
 			if(3<=cmd.argv.size())
 			{
 				towns.debugger.SetBreakOnINT(cpputil::Xtoi(cmd.argv[2].c_str()));
-				if(4<=cmd.argv.size())
+				std::vector <i486DXCommon::FarPointer> cseip;
+				std::vector <uint32_t> eip;
+				for(int i=3; i<cmd.argv.size(); ++i)
 				{
-					std::string cond=cmd.argv[3];
+					std::string cond=cmd.argv[i];
 					cpputil::Capitalize(cond);
 					if('A'==cond[0] && 'H'==cond[1] && '='==cond[2])
 					{
@@ -3239,6 +3243,25 @@ void TownsCommandInterpreter::Execute_BreakOn(FMTownsCommon &towns,Command &cmd)
 						unsigned int AX=cpputil::Xtoi(cond.c_str()+3);
 						towns.debugger.SetBreakOnINTwithAX(cpputil::Xtoi(cmd.argv[2].c_str()),AX);
 					}
+					else if('E'==cond[0] && 'I'==cond[1] && 'P'==cond[2] && '='==cond[3])
+					{
+						uint32_t EIP=cpputil::Xtoi(cond.c_str()+4);
+						eip.push_back(EIP);
+					}
+					else if('C'==cond[0] && 'S'==cond[1] && 'E'==cond[2] && 'I'==cond[3] && 'P'==cond[4] && '='==cond[5])
+					{
+						auto farPtr=cmdutil::MakeFarPointer(cond.c_str()+6,towns.CPU());
+						farPtr=towns.CPU().TranslateFarPointer(farPtr);
+						cseip.push_back(farPtr);
+					}
+				}
+				for(auto key : cseip)
+				{
+					towns.debugger.AddBreakOnINT_CSEIP(cpputil::Xtoi(cmd.argv[2].c_str()),key.SEG,key.OFFSET);
+				}
+				for(auto key : eip)
+				{
+					towns.debugger.AddBreakOnINT_EIP(cpputil::Xtoi(cmd.argv[2].c_str()),key);
 				}
 			}
 			else

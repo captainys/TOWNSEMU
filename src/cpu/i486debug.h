@@ -184,6 +184,10 @@ public:
 		unsigned short cond=COND_NEVER;
 		unsigned short condValue=0;
 		std::string fName;
+
+		// If CSEIP.size()==0, any CS:EIP.
+		// Else 00000000|EIP or CS|EIP.
+		std::set <uint64_t> CSEIP;
 	};
 	BreakOnINTCondition breakOnINT[BreakOnINTCondition::NUM_INTERRUPTS];
 	mutable bool stop;
@@ -323,6 +327,8 @@ public:
 	void SetBreakOnFOpen(std::string fName);
 	void SetBreakOnINTwithAH(unsigned int IRQNum,unsigned int AH);
 	void SetBreakOnINTwithAX(unsigned int IRQNum,unsigned int AX);
+	void AddBreakOnINT_CSEIP(unsigned int IRQNum,uint32_t CS,uint32_t EIP);
+	void AddBreakOnINT_EIP(unsigned int IRQNum,uint32_t EIP);
 
 	/*! Clear break on INT
 	*/

@@ -556,16 +556,32 @@ void i486Debugger::HandleException(i486DXCommon &cpu,Memory &mem,unsigned int in
 void i486Debugger::SetBreakOnINT(unsigned int INTNum)
 {
 	breakOnINT[INTNum&(BreakOnINTCondition::NUM_INTERRUPTS-1)].cond=BreakOnINTCondition::COND_ALWAYS;
+	breakOnINT[INTNum&(BreakOnINTCondition::NUM_INTERRUPTS-1)].CSEIP.clear();
 }
 void i486Debugger::SetBreakOnINTwithAH(unsigned int INTNum,unsigned int AH)
 {
 	breakOnINT[INTNum&(BreakOnINTCondition::NUM_INTERRUPTS-1)].cond=BreakOnINTCondition::COND_AH;
 	breakOnINT[INTNum&(BreakOnINTCondition::NUM_INTERRUPTS-1)].condValue=AH;
+	breakOnINT[INTNum&(BreakOnINTCondition::NUM_INTERRUPTS-1)].CSEIP.clear();
 }
 void i486Debugger::SetBreakOnINTwithAX(unsigned int INTNum,unsigned int AX)
 {
 	breakOnINT[INTNum&(BreakOnINTCondition::NUM_INTERRUPTS-1)].cond=BreakOnINTCondition::COND_AX;
 	breakOnINT[INTNum&(BreakOnINTCondition::NUM_INTERRUPTS-1)].condValue=AX;
+	breakOnINT[INTNum&(BreakOnINTCondition::NUM_INTERRUPTS-1)].CSEIP.clear();
+}
+
+void i486Debugger::AddBreakOnINT_CSEIP(unsigned int INTNum,uint32_t CS,uint32_t EIP)
+{
+	uint64_t key=CS;
+	key<<=32;
+	key|=EIP;
+	breakOnINT[INTNum&(BreakOnINTCondition::NUM_INTERRUPTS-1)].CSEIP.insert(key);
+}
+
+void i486Debugger::AddBreakOnINT_EIP(unsigned int INTNum,uint32_t EIP)
+{
+	breakOnINT[INTNum&(BreakOnINTCondition::NUM_INTERRUPTS-1)].CSEIP.insert(EIP);
 }
 
 void i486Debugger::SetBreakOnFOpen(std::string fName)
@@ -748,6 +764,18 @@ void i486Debugger::Interrupt(const i486DXCommon &cpu,unsigned int INTNum,Memory 
 	}
 	if(breakOnINT[INTNum&0xFF].cond!=BreakOnINTCondition::COND_NEVER)
 	{
+		if(0<breakOnINT[INTNum&0xFF].CSEIP.size())
+		{
+			uint64_t CS=cpu.state.CS().value;
+			uint64_t EIP=cpu.state.EIP;
+			uint64_t key=(CS<<32)|EIP;
+			if(breakOnINT[INTNum&0xFF].CSEIP.end()==breakOnINT[INTNum&0xFF].CSEIP.find(key) &&
+			   breakOnINT[INTNum&0xFF].CSEIP.end()==breakOnINT[INTNum&0xFF].CSEIP.find(EIP))
+			{
+				return;
+			}
+		}
+
 		switch(breakOnINT[INTNum&0xFF].cond)
 		{
 		case BreakOnINTCondition::COND_FOPEN_FCREATE:
