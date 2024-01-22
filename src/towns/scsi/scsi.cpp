@@ -197,6 +197,7 @@ TownsSCSI::TownsSCSI(class FMTownsCommon *townsPtr) : Device(townsPtr)
 	commandLength[SCSICMD_READ_SUBCHANNEL]=10;
 	commandLength[SCSICMD_READTOC]        =10;
 	commandLength[SCSICMD_PLAY_AUDIO_MSF] =10;
+	commandLength[SCSICMD_PLAY_AUDIO_LBA] =10;
 	commandLength[SCSICMD_PAUSE_RESUME]   =10;
 	commandLength[SCSICMD_COPY]           =6;
 	commandLength[SCSICMD_COPY_AND_VERIFY]=10;
@@ -750,6 +751,42 @@ void TownsSCSI::ExecSCSICommand(void)
 		{
 			auto start=DiscImage::MakeMSF(state.commandBuffer[3],state.commandBuffer[4],state.commandBuffer[5]);
 			auto end=DiscImage::MakeMSF(state.commandBuffer[6],state.commandBuffer[7],state.commandBuffer[8]);
+			start-=DiscImage::MakeMSF(0,2,0);
+			end-=DiscImage::MakeMSF(0,2,0);
+			if(nullptr!=outsideworld)
+			{
+				outsideworld->CDDAPlay(state.dev[state.selId].discImg,start,end,false,255,255); // There is no repeat.  Electric Volume not connected to SCSI CD.
+			}
+			state.dev[state.selId].CDDAEndTime=end;
+			state.status=STATUSCODE_GOOD;
+			state.message=0; // What am I supposed to return?
+			state.senseKey=SENSEKEY_NO_SENSE;
+			EnterStatusPhase();
+		}
+		else
+		{
+			state.senseKey=SENSEKEY_ILLEGAL_REQUEST;
+			state.status=STATUSCODE_CHECK_CONDITION;
+			state.message=0; // What am I supposed to return?
+			EnterStatusPhase();
+		}
+		break;
+	case SCSICMD_PLAY_AUDIO_LBA:
+		if(SCSIDEVICE_CDROM==state.dev[state.selId].devType)
+		{
+			unsigned int
+			    LBA=(state.commandBuffer[2]<<24)|
+				    (state.commandBuffer[3]<<16)|
+				    (state.commandBuffer[4]<<8)|
+				     state.commandBuffer[5],
+			    LEN=(state.commandBuffer[6]<<24)|
+				    (state.commandBuffer[7]<<16)|
+				    (state.commandBuffer[8]<<8)|
+				     state.commandBuffer[9];
+
+			auto start=DiscImage::HSGtoMSF(LBA);
+			auto end=DiscImage::HSGtoMSF(LBA+LEN);
+
 			start-=DiscImage::MakeMSF(0,2,0);
 			end-=DiscImage::MakeMSF(0,2,0);
 			if(nullptr!=outsideworld)

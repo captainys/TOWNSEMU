@@ -2671,7 +2671,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				auto bitOffset=inst.EvalUimm8()&0x1F;
 				auto bit=(1<<bitOffset);
 				auto src=value1.GetAsDword();
-				SetCF(0!=(src&bit));
+				bool CF=(0!=(src&bit));
 				switch(inst.GetREG())
 				{
 				case 4: // BT (Bit Test)
@@ -2708,7 +2708,10 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				default:
 					std_unreachable;
 				}
+				HANDLE_EXCEPTION_IF_ANY;
+				SetCF(CF);
 			}
+			HANDLE_EXCEPTION_IF_ANY;
 		}
 		break;
 
@@ -3117,6 +3120,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 
 	case I486_RENUMBER_CMPS://            0xA7,
 		{
+			auto ECX=state.ECX();
 			auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
 			for(int ctr=0;
 			    ctr<MAX_REP_BUNDLE_COUNT &&
@@ -3140,6 +3144,14 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 						break;
 					}
 				}
+				else
+				{
+					SetECX(ECX);
+					HandleException(true,mem,inst.numBytes);
+					EIPIncrement=0;
+					break;
+				}
+				ECX=state.ECX();
 			}
 		}
 		break;

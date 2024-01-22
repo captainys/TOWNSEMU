@@ -180,6 +180,7 @@ public:
 		SCSICMD_COPY_AND_VERIFY =0x3A,  // [9] 8.2.4 Copy and Verify Command
 		SCSICMD_READ_SUBCHANNEL =0x42,  // [9] 14.2.10 READ SUB-CHANNEL command
 		SCSICMD_READTOC         =0x43,
+		SCSICMD_PLAY_AUDIO_LBA  =0x45,
 		SCSICMD_PLAY_AUDIO_MSF  =0x47,
 		SCSICMD_PAUSE_RESUME    =0x4B,  // [9] 14.2.1 PAUSE RESUME command.
 		// When adding a support for command, don't forget to add commandLength[]= in the constructor.
