@@ -920,32 +920,36 @@ void TownsSCSI::ExecSCSICommand(void)
 					unsigned int pageCode=(state.commandBuffer[2]&0x3F);
 					unsigned int allocLen=state.commandBuffer[4];
 
-					unsigned char data[12]={0,0,0,0,0,0,0,0,0,0,0,0};
+					unsigned char data[20];
+					unsigned int dataLen=4;
+					memset(data,0,sizeof(data));
+					data[0]=0;
 					data[1]=0; // Media Type  0 is default ??
-					data[3]=(12<=allocLen ? 8 : 0) ; // Block Descriptor Length (0 or 8)
-					data[4]=1; // Density Code  1:User Data Only
-					data[5]=0; // Number of blocks High  (I cannot figure the meaning.)
-					data[6]=0; // Number of blocks Mid
-					data[7]=0; // Number of blocks Low
-					data[9]=0; // Block Length High  0x800=2048 bytes per sector or 0x200=512 bytes per sector.
-					data[10]=(SCSIDEVICE_CDROM==state.dev[state.selId].devType ? 8 : 2); // Block Length Mid
-					data[11]=0; // Block Length Low
-
-					if(true==disableBlockDescriptor && 4<allocLen)
+					data[2]=0;
+					if(12<=allocLen && 0==disableBlockDescriptor)
 					{
-						allocLen=4;
-					}
-
-					if(4<=allocLen && allocLen<12)
-					{
-						allocLen=4;
+						data[3]=8; // Block Descriptor Length=8;
+						data[4]=1; // Density Code  1:User Data Only
+						data[5]=0; // Number of blocks High  (I cannot figure the meaning.)
+						data[6]=0; // Number of blocks Mid
+						data[7]=0; // Number of blocks Low
+						data[9]=0; // Block Length High  0x800=2048 bytes per sector or 0x200=512 bytes per sector.
+						data[10]=(SCSIDEVICE_CDROM==state.dev[state.selId].devType ? 8 : 2); // Block Length Mid
+						data[11]=0; // Block Length Low
+						dataLen=12;
 					}
 					else
 					{
-						allocLen=12;
+						data[3]=0;
+						dataLen=4;
 					}
 
-					townsPtr->dmac.DeviceToMemory(DMACh,allocLen,data);
+					data[dataLen++]=pageCode;
+					data[dataLen++]=0; // WTF?  I don't know what it is.  Just make it zero length.
+
+					dataLen=std::min(allocLen,dataLen);
+
+					townsPtr->dmac.DeviceToMemory(DMACh,dataLen,data);
 					townsPtr->dmac.SetDMATransferEnd(TOWNSDMA_SCSI);
 					state.status=STATUSCODE_GOOD;
 					state.message=0;
