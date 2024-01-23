@@ -202,6 +202,7 @@ TownsSCSI::TownsSCSI(class FMTownsCommon *townsPtr) : Device(townsPtr)
 	commandLength[SCSICMD_COPY]           =6;
 	commandLength[SCSICMD_COPY_AND_VERIFY]=10;
 	commandLength[SCSICMD_MODE_SENSE]     =6;
+	commandLength[SCSICMD_MODE_SELECT]    =6;
 }
 
 void TownsSCSI::SetOutsideWorld(class Outside_World::Sound *ptr)
@@ -658,6 +659,15 @@ void TownsSCSI::ExecSCSICommand(void)
 		}
 		EnterStatusPhase();
 		break;
+	case SCSICMD_MODE_SELECT:
+		// I totally don't know what to do with this command.
+		state.status=STATUSCODE_CHECK_CONDITION;
+		state.message=0; // What am I supposed to return?
+		state.senseKey=SENSEKEY_UNIT_ATTENTION;
+		EnterStatusPhase();
+		std::cout << "SCSI MODE SELECT command is given, but I have no idea what to do with it." << std::endl;
+		break;
+
 	case SCSICMD_MODE_SENSE:
 	case SCSICMD_SENSE:
 		EnterDataInPhase();
