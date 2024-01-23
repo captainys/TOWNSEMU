@@ -927,8 +927,8 @@ void TownsSCSI::ExecSCSICommand(void)
 					data[5]=0; // Number of blocks High  (I cannot figure the meaning.)
 					data[6]=0; // Number of blocks Mid
 					data[7]=0; // Number of blocks Low
-					data[9]=0; // Block Length High  0x800=2048 bytes per sector
-					data[10]=8; // Block Length Mid
+					data[9]=0; // Block Length High  0x800=2048 bytes per sector or 0x200=512 bytes per sector.
+					data[10]=(SCSIDEVICE_CDROM==state.dev[state.selId].devType ? 8 : 2); // Block Length Mid
 					data[11]=0; // Block Length Low
 
 					if(true==disableBlockDescriptor && 4<allocLen)
