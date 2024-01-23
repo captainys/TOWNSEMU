@@ -201,6 +201,7 @@ TownsSCSI::TownsSCSI(class FMTownsCommon *townsPtr) : Device(townsPtr)
 	commandLength[SCSICMD_PAUSE_RESUME]   =10;
 	commandLength[SCSICMD_COPY]           =6;
 	commandLength[SCSICMD_COPY_AND_VERIFY]=10;
+	commandLength[SCSICMD_MODE_SENSE]     =6;
 }
 
 void TownsSCSI::SetOutsideWorld(class Outside_World::Sound *ptr)
@@ -657,6 +658,7 @@ void TownsSCSI::ExecSCSICommand(void)
 		}
 		EnterStatusPhase();
 		break;
+	case SCSICMD_MODE_SENSE:
 	case SCSICMD_SENSE:
 		EnterDataInPhase();
 		break;
@@ -904,6 +906,46 @@ void TownsSCSI::ExecSCSICommand(void)
 					senseData[2]=state.senseKey;
 
 					townsPtr->dmac.DeviceToMemory(DMACh,sizeof(senseData),senseData);
+					townsPtr->dmac.SetDMATransferEnd(TOWNSDMA_SCSI);
+					state.status=STATUSCODE_GOOD;
+					state.message=0;
+					EnterStatusPhase();
+				}
+				break;
+			case SCSICMD_MODE_SENSE:
+				{
+					unsigned int logicalUnitNumber=(state.commandBuffer[1]>>5);
+					bool disableBlockDescriptor=(state.commandBuffer[1]>>3)&1;
+					unsigned int PCF=(state.commandBuffer[2]>>6);
+					unsigned int pageCode=(state.commandBuffer[2]&0x3F);
+					unsigned int allocLen=state.commandBuffer[4];
+
+					unsigned char data[12]={0,0,0,0,0,0,0,0,0,0,0,0};
+					data[1]=0; // Media Type  0 is default ??
+					data[3]=(12<=allocLen ? 8 : 0) ; // Block Descriptor Length (0 or 8)
+					data[4]=1; // Density Code  1:User Data Only
+					data[5]=0; // Number of blocks High  (I cannot figure the meaning.)
+					data[6]=0; // Number of blocks Mid
+					data[7]=0; // Number of blocks Low
+					data[9]=0; // Block Length High  0x800=2048 bytes per sector
+					data[10]=8; // Block Length Mid
+					data[11]=0; // Block Length Low
+
+					if(true==disableBlockDescriptor && 4<allocLen)
+					{
+						allocLen=4;
+					}
+
+					if(4<=allocLen && allocLen<12)
+					{
+						allocLen=4;
+					}
+					else
+					{
+						allocLen=12;
+					}
+
+					townsPtr->dmac.DeviceToMemory(DMACh,allocLen,data);
 					townsPtr->dmac.SetDMATransferEnd(TOWNSDMA_SCSI);
 					state.status=STATUSCODE_GOOD;
 					state.message=0;
@@ -1423,6 +1465,11 @@ std::vector <unsigned char> TownsSCSI::MakeTOCData(int scsiId,unsigned int start
 			auto &allTracks=state.dev[scsiId].discImg.GetTracks();
 			for(auto trk=startTrack; trk<=state.dev[scsiId].discImg.GetNumTracks(); ++trk)
 			{
+				if(0==trk)
+				{
+					continue;
+				}
+
 				auto &t=allTracks[trk-1];
 				unsigned char ADR_CTRL=0;
 				if(DiscImage::TRACK_AUDIO==t.trackType)

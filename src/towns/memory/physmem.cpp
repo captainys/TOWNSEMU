@@ -175,6 +175,9 @@ void TownsPhysicalMemory::State::Reset(void)
 	case TOWNSIO_MEMCARD_ATTRIB: //           0x491, // [2] pp.795
 		state.memCardREG=(0!=(data&1));
 		break;
+	default:
+		std::cout << "PhysMem: Undefined I/O Write " << cpputil::Ustox(ioport) << " " << cpputil::Ubtox(data) << std::endl;
+		break;
 	}
 }
 /* virtual */ unsigned int TownsPhysicalMemory::IOReadByte(unsigned int ioport)
@@ -268,6 +271,10 @@ void TownsPhysicalMemory::State::Reset(void)
 	case TOWNSIO_MEMCARD_ATTRIB: //           0x491, // [2] pp.795
 		data=(TOWNS_MEMCARD_TYPE_JEIDA4==state.memCard.memCardType ? 0 : 0x80);
 		data|=(state.memCardREG ? 1 : 0);
+		break;
+	default:
+		std::cout << "PhysMem: Undefined I/O Read " << cpputil::Ustox(ioport) << std::endl;
+		data=0xFF;
 		break;
 	}
 	return data;

@@ -170,6 +170,7 @@ public:
 		SCSICMD_SEEK_6          =0x0B,  // [9] 9.2.15 SEEK(6) and SEEK(10) commands
 		SCSICMD_INQUIRY         =0x12,
 		SCSICMD_COPY            =0x18,  // [9] 8.2.3 Copy Command
+		SCSICMD_MODE_SENSE      =0x1A,
 		SCSICMD_START_STOP_UNIT =0x1B,
 		SCSICMD_PREVENT_REMOVAL =0x1E,  // [9] 9.2.4 PREVENT ALLOW MEDIUM REMOVAL command
 		SCSICMD_READ_CAPACITY   =0x25,  // [9] 9.2.7 READ CAPACITY command
