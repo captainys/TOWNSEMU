@@ -379,7 +379,10 @@ public:
 		};
 
 		uint32_t type=seg.GetType();
-		if(true!=cpu.IsInRealMode() && true!=cpu.GetVM() && (i486DXCommon::SEGTYPE_CODE_NONCONFORMING_EXECONLY==type || i486DXCommon::SEGTYPE_CODE_CONFORMING_EXECONLY==type))
+		if(true!=cpu.IsInRealMode() &&
+		   true!=cpu.GetVM() &&
+		   (i486DXCommon::SEGTYPE_CODE_NONCONFORMING_EXECONLY==type || i486DXCommon::SEGTYPE_CODE_CONFORMING_EXECONLY==type ||
+		    0==(seg.value&0xFFFC)))
 		{
 			raise();
 			return true;
@@ -431,6 +434,11 @@ public:
 
 		uint32_t type=seg.GetType();
 		if(true!=cpu.IsInRealMode() && true!=cpu.GetVM() && i486DXCommon::SEGTYPE_DATA_NORMAL_RW!=type && i486DXCommon::SEGTYPE_DATA_EXPAND_DOWN_RW!=type)
+		{
+			raise();
+			return true;
+		}
+		if(true!=cpu.IsInRealMode() && true!=cpu.GetVM() && 0==(seg.value&0xFFFC))
 		{
 			raise();
 			return true;
