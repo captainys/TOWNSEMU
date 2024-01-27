@@ -746,11 +746,50 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 		std::cout << "Currently just return no-error status." << std::endl;
 		if(true==StatusRequestBit(state.cmd))
 		{
-			if(true==SetStatusDriveNotReadyOrDiscChanged())
+			if(3==state.paramQueue[0])
 			{
-				return;
+				if(0==state.GetDisc().GetNumTracks())
+				{
+					SetStatusDriveNotReady();
+					return;
+				}
+				else if(true==state.discChanged)
+				{
+					SetStatusDiscChanged();
+					state.discChanged=false;
+				}
+
+				SetStatusNoError();
+				unsigned char discType=0x21; // With a data track 41h, 21h otherwise.
+				for(auto &trk : state.GetDisc().GetTracks())
+				{
+					if(trk.trackType==DiscImage::TRACK_MODE1_DATA)
+					{
+						discType=0x41;
+						break;
+					}
+				}
+				state.PushStatusQueue(0x18,discType,0,0);
+				state.PushStatusQueue(0x19,0,0,0);
+				state.PushStatusQueue(0x19,0,0,0);
+				state.PushStatusQueue(0x20,0,0,0);
+
+				// Here's an example from a sample taken by a real MX.
+				// Except the byte following 18h, second, third, and fourth bytes changes.  I cannot find the meaning.
+				// 00 00 00 00
+				// 18 41 01 00
+				// 19 00 01 74
+				// 19 00 00 00
+				// 20 00 00 00
 			}
-			SetStatusNoError();
+			else
+			{
+				if(true==SetStatusDriveNotReadyOrDiscChanged())
+				{
+					return;
+				}
+				SetStatusNoError();
+			}
 			if(CMDFLAG_IRQ&state.cmd)
 			{
 				SetSIRQ_IRR();
