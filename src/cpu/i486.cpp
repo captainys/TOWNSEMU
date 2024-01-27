@@ -494,7 +494,7 @@ std::vector <std::string> i486DXCommon::GetSegRegText(void) const
 	return text;
 }
 
-std::vector <std::string> i486DXCommon::GetGDTText(const Memory &mem) const
+std::vector <std::string> i486DXCommon::GetGDTText(const Memory &mem,unsigned int min,unsigned int max) const
 {
 	std::vector <std::string> text;
 	text.push_back("GDT  Limit=");
@@ -502,9 +502,16 @@ std::vector <std::string> i486DXCommon::GetGDTText(const Memory &mem) const
 	text.back()+="  LinearBase=";
 	text.back()+=cpputil::Uitox(state.GDTR.linearBaseAddr);
 
+	min&=0xFFF8;
+	max&=0xFFF8;
 
 	for(unsigned int selector=0; selector<state.GDTR.limit; selector+=8)
 	{
+		if(selector<min || max<selector)
+		{
+			continue;
+		}
+
 		unsigned int DTLinearBaseAddr=state.GDTR.linearBaseAddr+selector;
 		unsigned int excType,excCode;
 		unsigned int DTPhysicalAddr=DebugLinearAddressToPhysicalAddress(excType,excCode,DTLinearBaseAddr,mem);
@@ -576,7 +583,7 @@ std::vector <std::string> i486DXCommon::GetGDTText(const Memory &mem) const
 	return text;
 }
 
-std::vector <std::string> i486DXCommon::GetLDTText(const Memory &mem) const
+std::vector <std::string> i486DXCommon::GetLDTText(const Memory &mem,unsigned int min,unsigned int max) const
 {
 	std::vector <std::string> text;
 	text.push_back("LDT  Limit=");
@@ -586,9 +593,18 @@ std::vector <std::string> i486DXCommon::GetLDTText(const Memory &mem) const
 	text.back()+="  Selector=";
 	text.back()+=cpputil::Uitox(state.LDTR.selector);
 
+	min&=0xFFFC;
+	max&=0xFFFC;
+	min|=4;
+	max|=4;
 
 	for(unsigned int selector=0; selector<state.LDTR.limit; selector+=8)
 	{
+		if((selector|4)<min || max<(selector|4))
+		{
+			continue;
+		}
+
 		unsigned int DTLinearBaseAddr=state.LDTR.linearBaseAddr+selector;
 		unsigned int excType,excCode;
 		unsigned int DTPhysicalAddr=DebugLinearAddressToPhysicalAddress(excType,excCode,DTLinearBaseAddr,mem);
@@ -661,7 +677,7 @@ std::vector <std::string> i486DXCommon::GetLDTText(const Memory &mem) const
 	return text;
 }
 
-std::vector <std::string> i486DXCommon::GetIDTText(const Memory &mem) const
+std::vector <std::string> i486DXCommon::GetIDTText(const Memory &mem,unsigned int min,unsigned int max) const
 {
 	std::vector <std::string> text;
 	std::string empty;
@@ -671,6 +687,12 @@ std::vector <std::string> i486DXCommon::GetIDTText(const Memory &mem) const
 	text.back()+="  Limit="+cpputil::Uitox(state.IDTR.limit);
 	for(unsigned int offset=0; offset<state.IDTR.limit && offset<0x800; offset+=8)
 	{
+		unsigned int INTNum=offset/8;
+		if(INTNum<min || max<INTNum)
+		{
+			continue;
+		}
+
 		auto desc=DebugGetInterruptDescriptor(offset/8,mem);
 		text.push_back(empty);
 		text.back()=cpputil::Ubtox(offset/8);
@@ -873,9 +895,9 @@ void i486DXCommon::PrintState(void) const
 	}
 }
 
-void i486DXCommon::PrintGDT(const Memory &mem) const
+void i486DXCommon::PrintGDT(const Memory &mem,unsigned int min,unsigned int max) const
 {
-	for(auto &str : GetGDTText(mem))
+	for(auto &str : GetGDTText(mem,min,max))
 	{
 		std::cout << str << std::endl;
 		if(nullptr!=debuggerPtr)
@@ -885,9 +907,9 @@ void i486DXCommon::PrintGDT(const Memory &mem) const
 	}
 }
 
-void i486DXCommon::PrintLDT(const Memory &mem) const
+void i486DXCommon::PrintLDT(const Memory &mem,unsigned int min,unsigned int max) const
 {
-	for(auto &str : GetLDTText(mem))
+	for(auto &str : GetLDTText(mem,min,max))
 	{
 		std::cout << str << std::endl;
 		if(nullptr!=debuggerPtr)
@@ -897,9 +919,9 @@ void i486DXCommon::PrintLDT(const Memory &mem) const
 	}
 }
 
-void i486DXCommon::PrintIDT(const Memory &mem) const
+void i486DXCommon::PrintIDT(const Memory &mem,unsigned int min,unsigned int max) const
 {
-	for(auto &str : GetIDTText(mem))
+	for(auto &str : GetIDTText(mem,min,max))
 	{
 		std::cout << str << std::endl;
 		if(nullptr!=debuggerPtr)

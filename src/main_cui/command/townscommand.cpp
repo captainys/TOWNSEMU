@@ -2204,13 +2204,49 @@ void TownsCommandInterpreter::Execute_Dump(FMTownsCommon &towns,Command &cmd)
 			towns.PrintStatus();
 			break;
 		case DUMP_GDT:
-			towns.CPU().PrintGDT(towns.mem);
+			{
+				unsigned int min=0,max=0xFFFF;
+				if(3<=cmd.argv.size())
+				{
+					min=cpputil::Xtoi(cmd.argv[2].data());
+					max=min;
+				}
+				if(4<=cmd.argv.size())
+				{
+					max=cpputil::Xtoi(cmd.argv[3].data());
+				}
+				towns.CPU().PrintGDT(towns.mem,min,max);
+			}
 			break;
 		case DUMP_LDT:
-			towns.CPU().PrintLDT(towns.mem);
+			{
+				unsigned int min=0,max=0xFFFF;
+				if(3<=cmd.argv.size())
+				{
+					min=cpputil::Xtoi(cmd.argv[2].data());
+					max=min;
+				}
+				if(4<=cmd.argv.size())
+				{
+					max=cpputil::Xtoi(cmd.argv[3].data());
+				}
+				towns.CPU().PrintLDT(towns.mem,min,max);
+			}
 			break;
 		case DUMP_IDT:
-			towns.CPU().PrintIDT(towns.mem);
+			{
+				unsigned int min=0,max=0xFFFF;
+				if(3<=cmd.argv.size())
+				{
+					min=cpputil::Xtoi(cmd.argv[2].data());
+					max=min;
+				}
+				if(4<=cmd.argv.size())
+				{
+					max=cpputil::Xtoi(cmd.argv[3].data());
+				}
+				towns.CPU().PrintIDT(towns.mem,min,max);
+			}
 			break;
 		case DUMP_TSS:
 			for(auto str : towns.CPU().GetTSSText(towns.mem))

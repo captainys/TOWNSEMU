@@ -2348,15 +2348,15 @@ public:
 
 	/*! Returns GDT text.
 	*/
-	std::vector <std::string> GetGDTText(const Memory &mem) const;
+	std::vector <std::string> GetGDTText(const Memory &mem,unsigned int min,unsigned int max) const;
 
 	/*! Returns LDT text.
 	*/
-	std::vector <std::string> GetLDTText(const Memory &mem) const;
+	std::vector <std::string> GetLDTText(const Memory &mem,unsigned int min,unsigned int max) const;
 
 	/*! Returns IDT text.
 	*/
-	std::vector <std::string> GetIDTText(const Memory &mem) const;
+	std::vector <std::string> GetIDTText(const Memory &mem,unsigned int min,unsigned int max) const;
 
 	/*! Return Task Status Segment text.
 	*/
@@ -2375,13 +2375,13 @@ public:
 	void PrintState(void) const;
 
 	/*! Print IDT. */
-	void PrintIDT(const Memory &mem) const;
+	void PrintIDT(const Memory &mem,unsigned int min=0,unsigned int max=0xFF) const;
 
 	/*! Print GDT. */
-	void PrintGDT(const Memory &mem) const;
+	void PrintGDT(const Memory &mem,unsigned int min=0,unsigned int max=0xFFFF) const;
 
 	/*! Print LDT. */
-	void PrintLDT(const Memory &mem) const;
+	void PrintLDT(const Memory &mem,unsigned int min=0,unsigned int max=0xFFFF) const;
 
 	/*! Print Page Translation details
 	*/

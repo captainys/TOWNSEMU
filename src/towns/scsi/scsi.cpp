@@ -502,7 +502,8 @@ void TownsSCSI::EnterStatusPhase(void)
 		{
 			// INT is already set when IRQ is enabled.
 			townsPtr->pic.SetInterruptRequestBit(TOWNSIRQ_SCSI,true);
-			std::cout << "SCSI: INT is already set when IMSK is enabled.  Not usual." << std::endl;
+			// Looks to be it is enable.  Comment out message.
+			// std::cout << "SCSI: INT is already set when IMSK is enabled.  Not usual." << std::endl;
 		}
 		break;
 	}
