@@ -300,6 +300,12 @@ void TownsCDROM::WaitUntilAsyncWaveReaderFinished(void)
 				state.statusQueue[i]=state.statusQueue[i+1];
 			}
 			state.statusQueue.pop_back();
+
+			if(0==(state.statusQueue.size()&3) && CMDFLAG_IRQ&state.cmd)
+			{
+				SetSIRQ_IRR();
+			}
+
 			return data;
 		}
 		break;
@@ -724,6 +730,10 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 			SetStatusNoError();
 		}
 		SetStatusQueueForTOC();
+		if(CMDFLAG_IRQ&state.cmd)
+		{
+			SetSIRQ_IRR();
+		}
 		break;
 	case CDCMD_SUBQREAD://   0x06,
 		if(true==StatusRequestBit(state.cmd))
