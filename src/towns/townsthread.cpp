@@ -192,6 +192,14 @@ void TownsThread::VMMainLoopTemplate(
 				outside_world->DevicePolling(*townsPtr);
 				sound->Polling();
 				townsPtr->state.nextDevicePollingTime=townsPtr->state.townsTime+FMTownsCommon::DEVICE_POLLING_INTERVAL;
+				if(true==townsPtr->debugger.stop)
+				{
+					// ExternalBreak may be sent from a device.  Stop flag is cleared at the beginning of RUNMODE_RUN.
+					// Must change to RUNMODE_PAUSE here.
+					PrintStatus(*townsPtr);
+					std::cout << ">";
+					runMode=RUNMODE_PAUSE;
+				}
 			}
 			townsPtr->eventLog.Interval(*townsPtr);
 			if(true==townsPtr->CheckAbort() || outside_world->PauseKeyPressed())
