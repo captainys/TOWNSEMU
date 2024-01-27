@@ -160,7 +160,7 @@ public:
 		CDCMD_CDDAPAUSE=  0x85,
 		CDCMD_UNKNOWN2=   0x86,
 		CDCMD_CDDARESUME= 0x87,
-		CDCMD_UNKNOWN3=   0x9F,
+		CDCMD_UNKNOWN3=   0x9F, // Used from Windows 95 Internal CD-ROM Driver.
 	};
 
 	enum

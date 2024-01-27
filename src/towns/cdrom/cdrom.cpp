@@ -749,8 +749,21 @@ void TownsCDROM::DelayedCommandExecution(unsigned long long int townsTime)
 		break;
 	case CDCMD_UNKNOWN3://   0x9F, ? Used by TownsMagazine Vol.2
 		std::cout << "CDROM Command " << cpputil::Ubtox(state.cmd) << " function unknown." << std::endl;
-		std::cout << "Currently just returns error status." << std::endl;
-		state.PushStatusQueue(0x21,0,0,0);
+		if(0x5F==state.paramQueue[1] &&
+		   0xFC==state.paramQueue[2] &&
+		   0x5F==state.paramQueue[3] &&
+		   0xFC==state.paramQueue[4])
+		{
+			// Windows 95 sends these parameter bytes and expect to get two status messages.
+			std::cout << "Probably call from Windows 95 CD-ROM driver." << std::endl;
+			state.PushStatusQueue(0,0,0,0);
+			state.PushStatusQueue(0x1F,0x5F,0xFC,0x01);
+		}
+		else
+		{
+			std::cout << "Currently just returns error status." << std::endl;
+			state.PushStatusQueue(0x21,0,0,0);
+		}
 		break;
 	case CDCMD_SETSTATE://   0x80,
 		if(true==StatusRequestBit(state.cmd))
