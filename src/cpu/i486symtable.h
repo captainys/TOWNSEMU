@@ -91,6 +91,7 @@ private:
 	std::map <i486DXCommon::FarPointer,i486Symbol> symTable;
 	std::map <unsigned int,i486INT> INTLabel;
 	std::map <unsigned int,i486INTFunc> INTFunc[256];
+	std::map <unsigned int,i486DXCommon::FarPointer> windowsAPIEntry;
 public:
 	mutable std::string fName;
 
@@ -163,6 +164,9 @@ public:
 	*/
 	void AddINTFuncLabel(unsigned int INTNum,unsigned int AHorAX,const std::string label);
 
+	/*!
+	*/
+	void AddWindowsAPIEntry(unsigned int vmId,unsigned int SEG,unsigned int OFFSET);
 
 	/*! It also register INT 2FH as MSCDEX.EXE
 	*/

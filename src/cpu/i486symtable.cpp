@@ -430,6 +430,13 @@ void i486SymbolTable::AddINTFuncLabel(unsigned int INTNum,unsigned int AHorAX,co
 		INTFunc[INTNum][AHorAX].label=label;
 	}
 }
+void i486SymbolTable::AddWindowsAPIEntry(unsigned int vmId,unsigned int SEG,unsigned int OFFSET)
+{
+	i486DXCommon::FarPointer cseip;
+	cseip.SEG=SEG;
+	cseip.OFFSET=OFFSET;
+	windowsAPIEntry[vmId]=cseip;
+}
 void i486SymbolTable::MakeDOSIntFuncLabel(void)
 {
 	AddINTLabel(0x2F,"MSCDEX");

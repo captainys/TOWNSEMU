@@ -37,6 +37,11 @@ public:
 		/* Windows 3.1 uses INT 20H for VxD services.
 		*/
 		INT_WIN31_VxD=0x20,
+
+		/* Windows 3.1 and 95 uses INT 2FH, AX=1684h for getting API entry from 16-bit process. */
+		INT_WIN_DPMI_2FH=0x2F,
+
+		DPMI_GET_API_ENTRY=0x1684,
 	};
 
 	enum
@@ -57,10 +62,21 @@ public:
 		*/
 		BRKPNT_FLAG_SILENT_UNTIL_BREAK=2,
 
-
 		/* If set, it will print only CS:EIP and disassembly when it passes or stop at the breakpoint.
 		*/
 		BRKPNT_FLAG_SHORT_FORMAT=4,
+
+		/*
+		*/
+		BRKPNT_FLAG_DONT_STOP=8,
+
+		/* If set, break point will clear after breaking once.
+		*/
+		BRKPNT_FLAG_ONE_TIME=16,
+
+		/* If set, it captures Windows 3.1/95 API Entry Point from ES:DI.
+		*/
+		BRKPNT_FLAG_CAPTURE_WIN_APIENTRY=32,
 	};
 	class BreakPointInfo
 	{
@@ -72,6 +88,9 @@ public:
 		/* passedCount is always incremented when CS:EIP matches the breakpoint.
 		*/
 		uint64_t passedCount=0;
+		/*
+		*/
+		uint16_t win_vmmId=0;
 		/* Save machine state at this break point.
 		*/
 		std::string saveState;
@@ -79,6 +98,7 @@ public:
 		inline void Clear(void)
 		{
 			flags=0;
+			win_vmmId=0;
 			passCountUntilBreak=0;
 			passedCount=0;
 			saveState="";

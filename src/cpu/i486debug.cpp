@@ -526,12 +526,27 @@ void i486Debugger::CheckForBreakPoints(i486DXCommon &cpu)
 	cseip.SEG=cpu.state.CS().value;
 	cseip.OFFSET=cpu.state.EIP;
 
-	auto found=breakPoints.find(cseip);
-	if(found!=breakPoints.end())
 	{
-		stop=true;
-		found->second.SteppedOn();
-		lastBreakPointInfo=found->second;
+		auto found=breakPoints.find(cseip);
+		if(found!=breakPoints.end())
+		{
+			stop=(0==(found->second.flags&BRKPNT_FLAG_DONT_STOP));
+			found->second.SteppedOn();
+			if(0!=(found->second.flags&BRKPNT_FLAG_CAPTURE_WIN_APIENTRY))
+			{
+				unsigned int SEG=cpu.state.ES().value;
+				unsigned int OFF=cpu.GetDI();
+				std::cout << "VMID:" << cpputil::Ustox(found->second.win_vmmId) << " API Entry " << cpputil::Ustox(SEG) << ":" << cpputil::Ustox(OFF) << std::endl;
+				GetSymTable().AddWindowsAPIEntry(found->second.win_vmmId,SEG,OFF);
+				found->second.flags&=~BRKPNT_FLAG_CAPTURE_WIN_APIENTRY;
+			}
+			lastBreakPointInfo=found->second;
+
+			if(0!=(found->second.flags&BRKPNT_FLAG_ONE_TIME))
+			{
+				breakPoints.erase(found);
+			}
+		}
 	}
 	if(breakOnCS[cseip.SEG])
 	{
@@ -761,6 +776,28 @@ void i486Debugger::Interrupt(const i486DXCommon &cpu,unsigned int INTNum,Memory 
 	if(INT_WIN31_VxD==INTNum)
 	{
 		AutoAnnotateVxD(cpu,mem,cpu.state.CS(),cpu.state.EIP);
+	}
+	if(INT_WIN_DPMI_2FH==INTNum)
+	{
+		if(DPMI_GET_API_ENTRY==cpu.GetAX())
+		{
+			CS_EIP bp;
+			bp.SEG=cpu.state.CS().value;
+			bp.OFFSET=cpu.state.EIP+2;
+			auto found=breakPoints.find(bp);
+			if(breakPoints.end()==found)
+			{
+				BreakPointInfo info;
+				info.flags=BRKPNT_FLAG_CAPTURE_WIN_APIENTRY|BRKPNT_FLAG_ONE_TIME|BRKPNT_FLAG_DONT_STOP;
+				info.win_vmmId=cpu.GetBX();
+				AddBreakPoint(bp,info);
+			}
+			else
+			{
+				found->second.flags|=BRKPNT_FLAG_CAPTURE_WIN_APIENTRY;
+				found->second.win_vmmId=cpu.GetBX();
+			}
+		}
 	}
 	if(breakOnINT[INTNum&0xFF].cond!=BreakOnINTCondition::COND_NEVER)
 	{
