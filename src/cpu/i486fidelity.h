@@ -388,8 +388,7 @@ public:
 		}
 		if(true!=cpu.IsInRealMode() && true!=cpu.GetVM() && 0==(seg.value&0xFFFC))
 		{
-			std::cout << cpputil::Ustox(cpu.state.CS().value) << ":" << cpputil::Uitox(cpu.state.EIP) << " reads from null segment " << cpputil::Ustox(seg.value) << std::endl;
-			std::cout << "(Currently not taking exception)" << std::endl;
+			raise();
 			return true;
 		}
 		if(i486DXCommon::SEGTYPE_DATA_EXPAND_DOWN_READONLY==type ||
@@ -653,16 +652,9 @@ public:
 	}
 	inline bool DescriptorException(const LoadSegmentRegisterFlags flags,i486DXCommon &cpu,uint32_t selector,const uint8_t *desc)
 	{
-		if(nullptr==desc || 0==(desc[5]&0x80)) // Segment not present
+		if(nullptr==desc || (true==flags.loadingStackSegment && 0==(selector&0xFFFC)))
 		{
-			if(true!=flags.loadingStackSegment)
-			{
-				cpu.RaiseException(i486DXCommon::EXCEPTION_ND,selector&~3);
-			}
-			else
-			{
-				cpu.RaiseException(i486DXCommon::EXCEPTION_SS,selector&~3);
-			}
+			cpu.RaiseException(i486DXCommon::EXCEPTION_GP,selector&~3);
 			return true;
 		}
 
@@ -716,6 +708,19 @@ public:
 					return true;
 				}
 			}
+		}
+
+		if(0==(desc[5]&0x80)) // Segment not present
+		{
+			if(true!=flags.loadingStackSegment)
+			{
+				cpu.RaiseException(i486DXCommon::EXCEPTION_ND,selector&~3);
+			}
+			else
+			{
+				cpu.RaiseException(i486DXCommon::EXCEPTION_SS,selector&~3);
+			}
+			return true;
 		}
 
 		if(true==flags.loadingStackSegment)
