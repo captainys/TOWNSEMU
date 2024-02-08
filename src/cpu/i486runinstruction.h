@@ -1776,6 +1776,12 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			EIPIncrement=0; \
 			break; \
 		}
+	#define HANDLE_EXCEPTION_ENTER_INSIDE \
+		if(true==fidelity.HandleExceptionAndRestoreESPEBPIfAny(*this,mem,inst.numBytes,saved)) \
+		{ \
+			EIPIncrement=0; \
+			goto BREAK_ENTER; \
+		}
 
 	// Use the following as a pair.
 	#define SAVE_ECX_BEFORE_STRINGOP \
@@ -3236,17 +3242,17 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					{
 						SetBP(GetBP()-2);
 						auto dat=FetchWord(GetStackAddressingSize(),state.SS(),state.BP(),mem);
-						HANDLE_EXCEPTION_ENTER;
+						HANDLE_EXCEPTION_ENTER_INSIDE;
 						Push16(mem,dat);
-						HANDLE_EXCEPTION_ENTER;
+						HANDLE_EXCEPTION_ENTER_INSIDE;
 					}
 					else
 					{
 						SetEBP(GetEBP()-4);
 						auto dat=FetchDword(GetStackAddressingSize(),state.SS(),state.EBP(),mem);
-						HANDLE_EXCEPTION_ENTER;
+						HANDLE_EXCEPTION_ENTER_INSIDE;
 						Push32(mem,dat);
-						HANDLE_EXCEPTION_ENTER;
+						HANDLE_EXCEPTION_ENTER_INSIDE;
 					}
 				}
 
@@ -3275,6 +3281,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				HANDLE_EXCEPTION_ENTER;
 			}
 		}
+	BREAK_ENTER:
 		break;
 
 

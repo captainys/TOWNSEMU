@@ -249,6 +249,9 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "-QUICKSTATESAVE filename" << std::endl;
 	std::cout << "  Specify quick state save/load file name." << std::endl;
 
+	std::cout << "-INITCMD cmd" << std::endl;
+	std::cout << "  Add commands that are executed at the start of the VM." << std::endl;
+
 	std::cout << "-PAUSEKEY keyLabel" << std::endl;
 	std::cout << "  Specify a hot key for pause/resume.  Default is SCROLLLOCK" << std::endl;
 	std::cout << "-RSTCP IPAddress:port" << std::endl;
@@ -1004,6 +1007,11 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		else if("-RSTCP"==ARG && i+1<argc)
 		{
 			RS232CtoTCPAddr=argv[i+1];
+			++i;
+		}
+		else if("-INITCMD"==ARG && i+1<argc)
+		{
+			initCmd.push_back(argv[i+1]);
 			++i;
 		}
 		else

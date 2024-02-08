@@ -111,6 +111,9 @@ public:
 	long long int maxButtonHoldTime[2][2]={{0,0},{0,0}};
 
 
+	std::vector <std::string> initCmd;
+
+
 	// When adding a throttle control for an app, also update Outside_World::CacheGamePadIndicesThatNeedUpdates.
 	int throttlePhysicalId=-1;
 	int throttleAxis=2;

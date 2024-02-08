@@ -51,6 +51,11 @@ void FMTownsCommon::State::PowerOn(void)
 		return false;
 	}
 
+	for(auto &s : argv.initCmd)
+	{
+		outside_world->commandQueue.push(s);
+	}
+
 	towns.var.fileNameAlias=argv.fileNameAlias;
 
 	if(true!=towns.LoadROMImages(argv.ROMPath.c_str()))
