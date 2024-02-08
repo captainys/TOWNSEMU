@@ -1694,6 +1694,12 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				StoreOperandValueReg16OrReg32OrMem(op1,mem,inst.addressSize,inst.segOverride,value); \
 			} \
 		}\
+		if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes)) \
+		{ \
+			clocksPassed=35; \
+			EIPIncrement=0; \
+			break; \
+		} \
 	}
 
 	// op1 is a register.
