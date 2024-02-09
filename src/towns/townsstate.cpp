@@ -17,30 +17,7 @@ bool FMTownsCommon::SaveState(std::string fName) const
 	std::ofstream ofp(fName,std::ios::binary);
 	if(true==ofp.is_open())
 	{
-		std::vector <const Device *> allDevices;
-		allDevices.push_back(this);
-		allDevices.push_back(&cpu);
-		allDevices.push_back(&pic);
-		allDevices.push_back(&dmac);
-		allDevices.push_back(&physMem);
-		allDevices.push_back(&crtc);
-		allDevices.push_back(&sprite);
-		allDevices.push_back(&fdc);
-		allDevices.push_back(&scsi);
-		allDevices.push_back(&cdrom);
-		allDevices.push_back(&rtc);
-		allDevices.push_back(&sound);
-		allDevices.push_back(&gameport);
-		allDevices.push_back(&timer);
-		allDevices.push_back(&keyboard);
-		allDevices.push_back(&serialport);
-		if(true==highResPCM.state.enabled)  // Don't save High-Res PCM unless enabled so that older version can load state.
-		{
-			allDevices.push_back(&highResPCM);
-		}
-		// allDevices.push_back(&vndrv);
-
-		for(auto devPtr : allDevices)
+		for(auto devPtr : DevicesToSaveState())
 		{
 			auto dat=devPtr->Serialize(fName);
 			uint32_t len=(uint32_t)dat.size();
@@ -54,30 +31,9 @@ bool FMTownsCommon::SaveState(std::string fName) const
 }
 bool FMTownsCommon::LoadState(std::string fName)
 {
-	auto &cpu=CPU();
 	std::ifstream ifp(fName,std::ios::binary);
 	if(true==ifp.is_open())
 	{
-		std::vector <Device *> allDevices;
-		allDevices.push_back(this);
-		allDevices.push_back(&cpu);
-		allDevices.push_back(&pic);
-		allDevices.push_back(&dmac);
-		allDevices.push_back(&physMem);
-		allDevices.push_back(&crtc);
-		allDevices.push_back(&sprite);
-		allDevices.push_back(&fdc);
-		allDevices.push_back(&scsi);
-		allDevices.push_back(&cdrom);
-		allDevices.push_back(&rtc);
-		allDevices.push_back(&sound);
-		allDevices.push_back(&gameport);
-		allDevices.push_back(&timer);
-		allDevices.push_back(&keyboard);
-		allDevices.push_back(&serialport);
-		allDevices.push_back(&highResPCM);
-		// allDevices.push_back(&vndrv);
-
 		highResPCM.state.enabled=false; // If not read must be made by an old version, keep it disabled.
 
 		while(true!=ifp.eof())
@@ -94,7 +50,7 @@ bool FMTownsCommon::LoadState(std::string fName)
 			ifp.read((char *)data.data(),len);
 
 			bool successful=false;
-			for(auto devPtr : allDevices)
+			for(auto devPtr : DevicesToLoadState())
 			{
 				if(true==devPtr->Deserialize(data,fName))
 				{
@@ -108,30 +64,142 @@ bool FMTownsCommon::LoadState(std::string fName)
 				return false;
 			}
 		}
-
-		// I was first running a loop for unscheduling all devices,
-		// and then a loop for re-scheduling devices that has non-null scheduleTime
-		// only to realize that UnscheduleDeviceCallBack was nullifying the scheduleTime.
-
-		for(auto devPtr : allDevices)
-		{
-			if(TIME_NO_SCHEDULE!=devPtr->commonState.scheduleTime)
-			{
-				ScheduleDeviceCallBack(*devPtr,devPtr->commonState.scheduleTime);
-			}
-			else
-			{
-				UnscheduleDeviceCallBack(*devPtr);
-			}
-		}
-
-		cdrom.ResumeCDDAAfterRestore();
-
-		var.justLoadedState=true;
-
+		LoadStatePostProcess();
 		return true;
 	}
 	return false;
+}
+
+std::vector <uint8_t> FMTownsCommon::SaveStateMem(void) const
+{
+	std::vector <uint8_t> state;
+
+	for(auto devPtr : DevicesToSaveState())
+	{
+		auto dat=devPtr->Serialize("MEM");
+		uint32_t len=(uint32_t)dat.size();
+		PushUint32(state,len);
+		state.insert(state.end(),dat.begin(),dat.end());
+	}
+
+	return state;
+}
+bool FMTownsCommon::LoadStateMem(const std::vector <uint8_t> &state)
+{
+	highResPCM.state.enabled=false; // If not read must be made by an old version, keep it disabled.
+
+	for(size_t ptr=0; ptr+4<=state.size(); )
+	{
+		const uint8_t *data=state.data()+ptr;
+		uint32_t len=ReadUint32(data);
+		if(0==len)
+		{
+			break;
+		}
+
+		ptr+=4;
+		data+=4;
+		auto left=state.size()-ptr;
+		if(left<len)
+		{
+			std::cout << "Memory-Saved State is too short." << std::endl;
+			return false;
+		}
+
+		std::vector <uint8_t> DATA;
+		DATA.insert(DATA.end(),data,data+len);
+
+		bool successful=false;
+		for(auto devPtr : DevicesToLoadState())
+		{
+			if(true==devPtr->Deserialize(DATA,"MEM"))
+			{
+				successful=true;
+				break;
+			}
+		}
+
+		if(true!=successful)
+		{
+			return false;
+		}
+	}
+	LoadStatePostProcess();
+	return true;
+}
+
+std::vector <const Device *> FMTownsCommon::DevicesToSaveState(void) const
+{
+	std::vector <const Device *> allDevices;
+	auto &cpu=CPU();
+	allDevices.push_back(this);
+	allDevices.push_back(&cpu);
+	allDevices.push_back(&pic);
+	allDevices.push_back(&dmac);
+	allDevices.push_back(&physMem);
+	allDevices.push_back(&crtc);
+	allDevices.push_back(&sprite);
+	allDevices.push_back(&fdc);
+	allDevices.push_back(&scsi);
+	allDevices.push_back(&cdrom);
+	allDevices.push_back(&rtc);
+	allDevices.push_back(&sound);
+	allDevices.push_back(&gameport);
+	allDevices.push_back(&timer);
+	allDevices.push_back(&keyboard);
+	allDevices.push_back(&serialport);
+	if(true==highResPCM.state.enabled)  // Don't save High-Res PCM unless enabled so that older version can load state.
+	{
+		allDevices.push_back(&highResPCM);
+	}
+	// allDevices.push_back(&vndrv);
+	return allDevices;
+}
+std::vector <Device *> FMTownsCommon::DevicesToLoadState(void)
+{
+	std::vector <Device *> allDevices;
+	auto &cpu=CPU();
+	allDevices.push_back(this);
+	allDevices.push_back(&cpu);
+	allDevices.push_back(&pic);
+	allDevices.push_back(&dmac);
+	allDevices.push_back(&physMem);
+	allDevices.push_back(&crtc);
+	allDevices.push_back(&sprite);
+	allDevices.push_back(&fdc);
+	allDevices.push_back(&scsi);
+	allDevices.push_back(&cdrom);
+	allDevices.push_back(&rtc);
+	allDevices.push_back(&sound);
+	allDevices.push_back(&gameport);
+	allDevices.push_back(&timer);
+	allDevices.push_back(&keyboard);
+	allDevices.push_back(&serialport);
+	allDevices.push_back(&highResPCM);
+	// allDevices.push_back(&vndrv);
+	return allDevices;
+}
+void FMTownsCommon::LoadStatePostProcess(void)
+{
+	// I was first running a loop for unscheduling all devices,
+	// and then a loop for re-scheduling devices that has non-null scheduleTime
+	// only to realize that UnscheduleDeviceCallBack was nullifying the scheduleTime.
+
+	for(auto devPtr : DevicesToLoadState())
+	{
+		if(TIME_NO_SCHEDULE!=devPtr->commonState.scheduleTime)
+		{
+			ScheduleDeviceCallBack(*devPtr,devPtr->commonState.scheduleTime);
+		}
+		else
+		{
+			UnscheduleDeviceCallBack(*devPtr);
+		}
+	}
+
+	cdrom.ResumeCDDAAfterRestore();
+
+	var.justLoadedState=true;
 }
 
 /* virtual */ uint32_t FMTownsCommon::SerializeVersion(void) const

@@ -737,6 +737,15 @@ public:
 	bool SaveState(std::string fName) const;
 	bool LoadState(std::string fName);
 
+	std::vector <uint8_t> SaveStateMem(void) const;
+	bool LoadStateMem(const std::vector <uint8_t> &state);
+
+private:
+	std::vector <const Device *> DevicesToSaveState(void) const;
+	std::vector <Device *> DevicesToLoadState(void);
+	void LoadStatePostProcess(void);
+
+public:
 	virtual uint32_t SerializeVersion(void) const;
 	virtual void SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const;
 	virtual bool SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version);
