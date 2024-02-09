@@ -783,8 +783,8 @@ bool TownsTgDrv::Int2F_111B_FindFirst(void)
 	}
 
 	std::cout << fn << std::endl;
-	std::cout << cpputil::Ustox(sAttr) << std::endl;
-	std::cout << cpputil::Uitox(GetDTAAddress()) << std::endl;
+	std::cout << "ATTR " << cpputil::Ustox(sAttr) << std::endl;
+	std::cout << "DTA Addr " << cpputil::Uitox(GetDTAAddress()) << std::endl;
 
 	unsigned char drvLetter=FullyQualifiedFileNameToDriveLetter(fn);
 	auto sharedDirIndex=DriveLetterToSharedDirIndex(drvLetter);
@@ -808,7 +808,7 @@ bool TownsTgDrv::Int2F_111B_FindFirst(void)
 		// townsPtr->mem.StoreWord(DTABuffer+0x0F,1);  // Cluster Number? Always 1?
 		StoreDword(DTABuffer+0x11,0);  // Entry Count? Always 1?
 
-		if(sAttr==TOWNS_DOS_DIRENT_ATTR_VOLLABEL) // If it is requesting more than volume label, just skip it, and do normal FindFirst
+		if(0!=(sAttr&TOWNS_DOS_DIRENT_ATTR_VOLLABEL)) // If it is requesting more than volume label, just skip it, and do normal FindFirst
 		{
 			for(int i=0; i<11; ++i)
 			{
