@@ -395,6 +395,17 @@ public:
 
 
 
+		class MemoryStateSave
+		{
+		public:
+			std::vector <uint8_t> data;
+			i486DXCommon::FarPointer CSEIP;
+			uint64_t townsTime;
+		};
+		std::map <unsigned int,MemoryStateSave> memoryStateSave;
+
+
+
 		i486DXCommon::FarPointer disassemblePointer;
 		Variable();
 		void Reset(void);

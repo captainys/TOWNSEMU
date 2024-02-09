@@ -221,6 +221,10 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["LOADSTATE"]=CMD_LOAD_STATE;
 	primaryCmdMap["SAVESTATEAT"]=CMD_SAVE_STATE_AT;
 
+	primaryCmdMap["SAVESTATEM"]=CMD_SAVE_STATE_MEM;
+	primaryCmdMap["LOADSTATEM"]=CMD_LOAD_STATE_MEM;
+
+
 	primaryCmdMap["GAMEPORT"]=CMD_GAMEPORT;
 	primaryCmdMap["TOGGLE_HOST_MOUSE_CURSOR"]=CMD_TOGGLE_HOST_MOUSE_CURSOR;
 	primaryCmdMap["TOGGLEMOUSE"]=CMD_TOGGLE_HOST_MOUSE_CURSOR;
@@ -1323,6 +1327,49 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,clas
 			PrintError(ERROR_TOO_FEW_ARGS);
 		}
 		break;
+
+	case CMD_SAVE_STATE_MEM:
+		{
+			unsigned int slot=0;
+			if(2<=cmd.argv.size())
+			{
+				slot=cpputil::Atoi(cmd.argv[1].data());
+			}
+			FMTownsCommon::Variable::MemoryStateSave state;
+			state.data=towns.SaveStateMem();
+			state.CSEIP.SEG=towns.CPU().state.CS().value;
+			state.CSEIP.OFFSET=towns.CPU().state.EIP;
+			state.townsTime=towns.state.townsTime;
+			towns.var.memoryStateSave[slot]=state;
+			std::cout << "Saved state to memory slot:" << slot << std::endl;
+		}
+		break;
+	case CMD_LOAD_STATE_MEM:
+		{
+			unsigned int slot=0;
+			if(2<=cmd.argv.size())
+			{
+				slot=cpputil::Atoi(cmd.argv[1].data());
+			}
+			auto found=towns.var.memoryStateSave.find(slot);
+			if(towns.var.memoryStateSave.end()!=found)
+			{
+				if(true==towns.LoadStateMem(found->second.data))
+				{
+					std::cout << "Loaded" << std::endl;
+				}
+				else
+				{
+					std::cout << "Cannot load from slot " << slot << std::endl;
+				}
+			}
+			else
+			{
+				std::cout << "No state saved in slot " << slot << std::endl;
+			}
+		}
+		break;
+
 	case CMD_SAVE_STATE_AT:
 		Execute_AddSavePoint(towns,cmd);
 		break;

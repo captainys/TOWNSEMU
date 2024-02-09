@@ -91,14 +91,13 @@ bool FMTownsCommon::LoadStateMem(const std::vector <uint8_t> &state)
 	for(size_t ptr=0; ptr+4<=state.size(); )
 	{
 		const uint8_t *data=state.data()+ptr;
-		uint32_t len=ReadUint32(data);
+		uint32_t len=ReadUint32(data); // This increments the pointer.
 		if(0==len)
 		{
 			break;
 		}
 
 		ptr+=4;
-		data+=4;
 		auto left=state.size()-ptr;
 		if(left<len)
 		{
@@ -108,6 +107,7 @@ bool FMTownsCommon::LoadStateMem(const std::vector <uint8_t> &state)
 
 		std::vector <uint8_t> DATA;
 		DATA.insert(DATA.end(),data,data+len);
+		ptr+=len;
 
 		bool successful=false;
 		for(auto devPtr : DevicesToLoadState())
