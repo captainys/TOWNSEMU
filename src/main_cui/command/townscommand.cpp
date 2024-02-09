@@ -321,6 +321,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	dumpableMap["INSTHIST"]=DUMP_INSTRUCTION_HISTOGRAM;
 	dumpableMap["HIGHRESPCM"]=DUMP_HIGHRES_PCM;
 	dumpableMap["HIRESPCM"]=DUMP_HIGHRES_PCM;
+	dumpableMap["SAVESTATEM"]=DUMP_SAVESTATEM;
 
 
 	breakEventMap["ICW1"]=   BREAK_ON_PIC_IWC1;
@@ -661,6 +662,11 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "      SAVESTATEAT 0:0 \"\"" << std::endl;
 	std::cout << "  to cancel schedule." << std::endl;
 
+	std::cout << "SAVESTATEM number" << std::endl;
+	std::cout << "  Save machine state to memory.  If no number is given, save to slot 0." << std::endl;
+	std::cout << "LOADSTATEM number" << std::endl;
+	std::cout << "  Load machine state from memory.  If no number is given, load from slot 0." << std::endl;
+
 	std::cout << "DOSSEG 01234" << std::endl;
 	std::cout << "  Set Real-Mode MSDOS segment in hexa-decimal." << std::endl;
 	std::cout << "  Default value is 1679h (Towns OS V2.1L20 IO.SYS)." << std::endl;
@@ -838,6 +844,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  CPU debug registers." << std::endl;
 	std::cout << "TEST" << std::endl;
 	std::cout << "  CPU TEST registers." << std::endl;
+	std::cout << "SAVESTATEM" << std::endl;
+	std::cout << "  List of memory-saved states." << std::endl;
 	std::cout << "" << std::endl;
 
 	std::cout << "<< Event that can break >>" << std::endl;
@@ -2631,6 +2639,14 @@ void TownsCommandInterpreter::Execute_Dump(FMTownsCommon &towns,Command &cmd)
 			for(auto str : towns.CPU().GetTESTText())
 			{
 				std::cout << str << std::endl;
+			}
+			break;
+		case DUMP_SAVESTATEM:
+			for(auto &state : towns.var.memoryStateSave)
+			{
+				std::cout << state.first;
+				std::cout << " " << cpputil::Ustox(state.second.CSEIP.SEG) << ":" << cpputil::Uitox(state.second.CSEIP.OFFSET);
+				std::cout << " at " << state.second.townsTime << std::endl;
 			}
 			break;
 		case DUMP_HIGHRES_PCM:
