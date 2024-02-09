@@ -21,7 +21,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 {
 	switch(ioport)
 	{
-	case TOWNSIO_POWER_CONTROL:
+	case TOWNSIO_POWER_CONTROL: // 0x0022
 		if(0!=(data&0x40))
 		{
 			var.powerOff=true;
@@ -31,6 +31,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 			state.resetReason=RESET_REASON_SOFTWARE;
 			Reset();
 		}
+		// Since Towns HG, bit 8 is CRT power OFF.  Tsugaru is not taking it into account
+		// at this time.
 		break;
 	case TOWNSIO_RESET_REASON:
 		if(0!=(data&0x40))
@@ -135,6 +137,14 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 	switch(ioport)
 	{
+	case TOWNSIO_POWER_CONTROL: // 0x0022
+		// Since Towns HG, bit 8 is CRT power OFF.  Tsugaru is not taking it into account
+		// at this time.
+		// FM Towns Technical Databook pp.806 tells bit 0 to bit 6 will be undefined when read.
+		// However, Windows 95 reads from 0x0022 and OR with 0x80 to turn off monitor.
+		// Therefore, I assume bit 0 to 6 should return 0 when read.
+		// Tsugaru is not taking CRT Power Off into account, therefore it returns zero.
+		return 0;
 	case TOWNSIO_RESET_REASON://      0x20,
 		{
 			auto ret=state.resetReason;

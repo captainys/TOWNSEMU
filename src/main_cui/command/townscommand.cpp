@@ -3323,7 +3323,7 @@ void TownsCommandInterpreter::Execute_BreakOn(FMTownsCommon &towns,Command &cmd)
 			{
 				auto portMin=cpputil::Xtoi(cmd.argv[2].c_str());
 				auto portMax=cpputil::Xtoi(cmd.argv[3].c_str());
-				for(unsigned int ioport=portMin; ioport<portMax; ++ioport)
+				for(unsigned int ioport=portMin; ioport<=portMax; ++ioport)
 				{
 					towns.debugger.AddBreakOnIORead(ioport);
 				}
@@ -3348,7 +3348,7 @@ void TownsCommandInterpreter::Execute_BreakOn(FMTownsCommon &towns,Command &cmd)
 			{
 				auto portMin=cpputil::Xtoi(cmd.argv[2].c_str());
 				auto portMax=cpputil::Xtoi(cmd.argv[3].c_str());
-				for(unsigned int ioport=portMin; ioport<portMax; ++ioport)
+				for(unsigned int ioport=portMin; ioport<=portMax; ++ioport)
 				{
 					towns.debugger.AddBreakOnIOWrite(ioport);
 				}
