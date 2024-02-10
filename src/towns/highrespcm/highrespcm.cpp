@@ -640,12 +640,13 @@ class TownsHighResPCM::Populator
 {
 public:
 	// Returns length used from the incoming data buffer.
-	unsigned int Populate(int &balance,uint8_t output[],const std::vector <uint8_t> &incoming,unsigned int numSamples,unsigned int incomingFreq,unsigned int outputFreq)
+	unsigned int Populate(int &balance,uint8_t output[],const std::vector <uint8_t> &incoming,unsigned int numSamples,unsigned int incomingFreq,unsigned int outputFreq,float Ltr,float Rtr)
 	{
 		const unsigned int WAVE_OUT_SAMPLING_RATE=outputFreq;
 
 		Format fmt;
 		unsigned int i=0,outPtr=0;
+		int Lpcm, Rpcm;
 		while(i+fmt.BytesPerTimeStep()<=incoming.size() && 0<numSamples)
 		{
 			if(0<balance)
@@ -653,8 +654,10 @@ public:
 				balance-=incomingFreq;
 				uint8_t sample[4];
 				fmt.Get(sample,incoming.data()+i);
-				WordOp_Add(output+outPtr  ,cpputil::GetSignedWord(sample));
-				WordOp_Add(output+outPtr+2,cpputil::GetSignedWord(sample+2));
+				Lpcm = cpputil::GetSignedWord(sample) * Ltr;
+				Rpcm = cpputil::GetSignedWord(sample) * Rtr;
+				WordOp_Add(output+outPtr  , Lpcm);
+				WordOp_Add(output+outPtr+2, Rpcm);
 				outPtr+=4;
 				--numSamples;
 			}
@@ -711,6 +714,81 @@ void TownsHighResPCM::DropWaveForNumSamples(unsigned int nSamples,unsigned int W
 void TownsHighResPCM::AddWaveForNumSamples(uint8_t output[],unsigned int nSamples,unsigned int WAVE_OUT_SAMPLING_RATE)
 {
 	unsigned int used=0;
+
+	int Lvol = townsPtr->GetEleVolPCMLeft();
+	float Ltr;
+
+	if (true != townsPtr->GetEleVolPCMLeftEN())
+	{
+		Lvol = 0;
+		Ltr = 0.0; // mute
+	}
+	else
+	{
+		if (true != townsPtr->GetEleVolPCMLeftC32())
+		{
+			if (true != townsPtr->GetEleVolPCMLeftC0())
+			{
+				if (Lvol != 63)
+				{
+					Ltr = 0.5 * (Lvol - 63);	//calculation db (-0.5 ~ -31.5)
+					Ltr = std::pow(10, Ltr / 20);//calculation transmission ratio
+				}
+				else
+				{
+					Ltr = 1.0;
+				}
+			}
+			else
+			{
+				Lvol = 63;
+				Ltr = 1.0;
+			}
+		}
+		else
+		{
+			Lvol = 0;
+			Ltr = 0.025; // transmission ratio 0.025 = -32.0 db
+		}
+	}
+
+	int Rvol = townsPtr->GetEleVolPCMRight();
+	float Rtr;
+
+	if (true != townsPtr->GetEleVolPCMRightEN())
+	{
+		Rvol = 0;
+		Rtr = 0.0; // mute
+	}
+	else
+	{
+		if (true != townsPtr->GetEleVolPCMRightC32())
+		{
+			if (true != townsPtr->GetEleVolPCMRightC0())
+			{
+				if (Rvol != 63)
+				{
+					Rtr = 0.5 * (Rvol - 63);	// calculation db (-0.5 ~ -31.5)
+					Rtr = std::pow(10, Rtr / 20);// calculation transmission ratio
+				}
+				else
+				{
+					Rtr = 1.0;
+				}
+			}
+			else
+			{
+				Rvol = 63;
+				Rtr = 1.0;
+			}
+		}
+		else
+		{
+			Rvol = 0;
+			Rtr = 0.025; // transmission ratio 0.025 = -32.0 db
+		}
+	}
+
 	if(true!=state.SNDFormat)
 	{
 		if(true==state.bit16)  // WAV16
@@ -718,12 +796,12 @@ void TownsHighResPCM::AddWaveForNumSamples(uint8_t output[],unsigned int nSample
 			if(true==state.stereo) // WAV16 Stereo
 			{
 				Populator <WAV16Stereo> populator;
-				used=populator.Populate(state.balance,output,state.dataBuffer,nSamples,state.freq,WAVE_OUT_SAMPLING_RATE);
+				used=populator.Populate(state.balance,output,state.dataBuffer,nSamples,state.freq,WAVE_OUT_SAMPLING_RATE,Ltr,Rtr);
 			}
 			else // WAV16 Monaural
 			{
 				Populator <WAV16Mono> populator;
-				used=populator.Populate(state.balance,output,state.dataBuffer,nSamples,state.freq,WAVE_OUT_SAMPLING_RATE);
+				used=populator.Populate(state.balance,output,state.dataBuffer,nSamples,state.freq,WAVE_OUT_SAMPLING_RATE,Ltr,Rtr);
 			}
 		}
 		else // WAV8
@@ -731,19 +809,19 @@ void TownsHighResPCM::AddWaveForNumSamples(uint8_t output[],unsigned int nSample
 			if(true==state.stereo)
 			{
 				Populator <WAV8Stereo> populator;
-				used=populator.Populate(state.balance,output,state.dataBuffer,nSamples,state.freq,WAVE_OUT_SAMPLING_RATE);
+				used=populator.Populate(state.balance,output,state.dataBuffer,nSamples,state.freq,WAVE_OUT_SAMPLING_RATE,Ltr,Rtr);
 			}
 			else
 			{
 				Populator <WAV8Mono> populator;
-				used=populator.Populate(state.balance,output,state.dataBuffer,nSamples,state.freq,WAVE_OUT_SAMPLING_RATE);
+				used=populator.Populate(state.balance,output,state.dataBuffer,nSamples,state.freq,WAVE_OUT_SAMPLING_RATE,Ltr,Rtr);
 			}
 		}
 	}
 	else // SND
 	{
 		Populator <SND> populator;
-		used=populator.Populate(state.balance,output,state.dataBuffer,nSamples,state.freq,WAVE_OUT_SAMPLING_RATE);
+		used=populator.Populate(state.balance,output,state.dataBuffer,nSamples,state.freq,WAVE_OUT_SAMPLING_RATE,Ltr,Rtr);
 	}
 	state.dataBuffer.erase(state.dataBuffer.begin(),state.dataBuffer.begin()+used);
 }
