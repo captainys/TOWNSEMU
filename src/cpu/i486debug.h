@@ -93,6 +93,7 @@ public:
 		uint16_t win_vmmId=0;
 		/* Save machine state at this break point.
 		*/
+		bool saveStateMem=false;
 		std::string saveState;
 
 		inline void Clear(void)

@@ -140,13 +140,28 @@ void TownsThread::VMMainLoopTemplate(
 
 						if(""!=townsPtr->debugger.lastBreakPointInfo.saveState)
 						{
-							if(true!=townsPtr->SaveState(townsPtr->debugger.lastBreakPointInfo.saveState))
+							if(true!=townsPtr->debugger.lastBreakPointInfo.saveStateMem)
 							{
-								std::cout << "Error Saving " << townsPtr->debugger.lastBreakPointInfo.saveState << std::endl;
+								if(true!=townsPtr->SaveState(townsPtr->debugger.lastBreakPointInfo.saveState))
+								{
+									std::cout << "Error Saving " << townsPtr->debugger.lastBreakPointInfo.saveState << std::endl;
+								}
+								else
+								{
+									std::cout << "Saved " << townsPtr->debugger.lastBreakPointInfo.saveState << std::endl;
+								}
 							}
 							else
 							{
-								std::cout << "Saved " << townsPtr->debugger.lastBreakPointInfo.saveState << std::endl;
+								unsigned int slot=0;
+								slot=cpputil::Atoi(townsPtr->debugger.lastBreakPointInfo.saveState.data());
+								FMTownsCommon::Variable::MemoryStateSave state;
+								state.data=townsPtr->SaveStateMem();
+								state.CSEIP.SEG=townsPtr->CPU().state.CS().value;
+								state.CSEIP.OFFSET=townsPtr->CPU().state.EIP;
+								state.townsTime=townsPtr->state.townsTime;
+								townsPtr->var.memoryStateSave[slot]=state;
+								std::cout << "Saved state to memory slot:" << slot << std::endl;
 							}
 						}
 

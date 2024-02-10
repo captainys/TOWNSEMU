@@ -223,6 +223,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 
 	primaryCmdMap["SAVESTATEM"]=CMD_SAVE_STATE_MEM;
 	primaryCmdMap["LOADSTATEM"]=CMD_LOAD_STATE_MEM;
+	primaryCmdMap["SAVESTATEMAT"]=CMD_SAVE_STATE_MEM_AT;
 
 
 	primaryCmdMap["GAMEPORT"]=CMD_GAMEPORT;
@@ -666,6 +667,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Save machine state to memory.  If no number is given, save to slot 0." << std::endl;
 	std::cout << "LOADSTATEM number" << std::endl;
 	std::cout << "  Load machine state from memory.  If no number is given, load from slot 0." << std::endl;
+	std::cout << "SAVESTATEMAT CS:EIP number" << std::endl;
+	std::cout << "  Save machine state at CS:EIP to memory." << std::endl;
 
 	std::cout << "DOSSEG 01234" << std::endl;
 	std::cout << "  Set Real-Mode MSDOS segment in hexa-decimal." << std::endl;
@@ -1377,7 +1380,7 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,clas
 			}
 		}
 		break;
-
+	case CMD_SAVE_STATE_MEM_AT:
 	case CMD_SAVE_STATE_AT:
 		Execute_AddSavePoint(towns,cmd);
 		break;
@@ -2134,6 +2137,7 @@ void TownsCommandInterpreter::Execute_AddSavePoint(FMTownsCommon &towns,Command 
 
 	i486Debugger::BreakPointInfo info;
 	info.flags=i486Debugger::BRKPNT_FLAG_MONITOR_ONLY;
+	info.saveStateMem=(CMD_SAVE_STATE_MEM_AT==cmd.primaryCmd);
 	info.saveState=cmd.argv[2];
 
 	auto addrAndSym=towns.debugger.GetSymTable().FindSymbolFromLabel(cmd.argv[1]);
@@ -2146,7 +2150,7 @@ void TownsCommandInterpreter::Execute_AddSavePoint(FMTownsCommon &towns,Command 
 	{
 		auto farPtr=towns.CPU().TranslateFarPointer(cmdutil::MakeFarPointer(cmd.argv[1],towns.CPU()));
 		towns.debugger.AddBreakPoint(farPtr,info);
-		std::cout << "Will save state at " << addrAndSym.first.Format() << std::endl;
+		std::cout << "Will save state at " << farPtr.Format() << std::endl;
 	}
 }
 
