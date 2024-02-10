@@ -802,12 +802,9 @@ void TownsRender::Render16Bit(const TownsCRTC::Layer &layer,const unsigned char 
 				OFFSETTRANS::Trans(VRAMAddr);
 
 				unsigned short col16 = cpputil::GetWord(VRAM + VRAMAddr);
-				dst[0] = ((col16 & 0b000001111100000) >> 5);
-				dst[0] = (dst[0] << 3) | ((dst[0] >> 2) & 7);
-				dst[1] = ((col16 & 0b111110000000000) >> 10);
-				dst[1] = (dst[1] << 3) | ((dst[1] >> 2) & 7);
-				dst[2] = (col16 & 0b000000000011111);
-				dst[2] = (dst[2] << 3) | ((dst[2] >> 2) & 7);
+				dst[0] = ((col16 >> 2) & 0xf8) | ((col16 >> 7) & 7);
+				dst[1] = ((col16 >> 7) & 0xf8) | ((col16 >> 12) & 7);
+				dst[2] = ((col16 << 3) & 0xf8) | ((col16 >> 2) & 7);
 				dst[3] = 255;
 				dst += 4;
 				if (0 == (--ZH))
@@ -859,12 +856,9 @@ void TownsRender::Render16Bit(const TownsCRTC::Layer &layer,const unsigned char 
 				unsigned short col16 = cpputil::GetWord(VRAM + VRAMAddr);
 				if (0 == (col16 & 0x8000))
 				{
-					dst[0] = ((col16 & 0b000001111100000) >> 5);
-					dst[0] = (dst[0] << 3) | ((dst[0] >> 2) & 7);
-					dst[1] = ((col16 & 0b111110000000000) >> 10);
-					dst[1] = (dst[1] << 3) | ((dst[1] >> 2) & 7);
-					dst[2] = (col16 & 0b000000000011111);
-					dst[2] = (dst[2] << 3) | ((dst[2] >> 2) & 7);
+					dst[0] = ((col16 >> 2) & 0xf8) | ((col16 >> 7) & 7);
+					dst[1] = ((col16 >> 7) & 0xf8) | ((col16 >> 12) & 7);
+					dst[2] = ((col16 << 3) & 0xf8) | ((col16 >> 2) & 7);
 					dst[3] = 255;
 				}
 				dst += 4;
