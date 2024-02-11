@@ -253,14 +253,19 @@ void i486DXFidelityLayer <FIDELITY>::HandleException(bool,Memory &mem,unsigned i
 
 	// Only some of the exceptions push error code onto the stack.
 	// See Section 9.9 of i486 Programmer's Reference Manual for the information.
+
+	// Clear exception flag before Interrupt, so that Push16/Push32 works again.
+
 	switch(state.exceptionType)
 	{
 	case EXCEPTION_PF:
+		state.exception=false;
 		Interrupt(INT_PAGE_FAULT,mem,0,numInstBytesForCallStack,false);
 		Push(mem,32,state.exceptionCode);
 		SetCR(2,state.exceptionLinearAddr);
 		break;
 	case EXCEPTION_GP:
+		state.exception=false;
 		Interrupt(INT_GENERAL_PROTECTION,mem,0,numInstBytesForCallStack,false);
 		if(true!=IsInRealMode()) // As HIMEM.SYS's expectation.
 		{
@@ -268,6 +273,7 @@ void i486DXFidelityLayer <FIDELITY>::HandleException(bool,Memory &mem,unsigned i
 		}
 		break;
 	case EXCEPTION_ND:
+		state.exception=false;
 		Interrupt(INT_SEGMENT_NOT_PRESENT,mem,0,numInstBytesForCallStack,false);
 		if(true!=IsInRealMode())
 		{
@@ -275,9 +281,11 @@ void i486DXFidelityLayer <FIDELITY>::HandleException(bool,Memory &mem,unsigned i
 		}
 		break;
 	case EXCEPTION_UD:
+		state.exception=false;
 		Interrupt(INT_INVALID_OPCODE,mem,0,numInstBytesForCallStack,false);
 		break;
 	case EXCEPTION_SS:
+		state.exception=false;
 		Interrupt(INT_STACK_FAULT,mem,0,numInstBytesForCallStack,false);
 		if(true!=IsInRealMode()) // As HIMEM.SYS's expectation.
 		{
@@ -288,7 +296,6 @@ void i486DXFidelityLayer <FIDELITY>::HandleException(bool,Memory &mem,unsigned i
 		Abort("Undefined exception.");
 		break;
 	}
-	state.exception=false;
 }
 
 template <class FIDELITY>
@@ -508,6 +515,12 @@ void i486DXFidelityLayer <FIDELITY>::Push16(Memory &mem,unsigned int value)
 
 	unsigned int linearAddr=state.SS().baseLinearAddr+(ESP&(numBytesMask[addressSize>>3]));
 	auto accessPtr=GetStackAccessPointer(mem,linearAddr,bytesToStore);
+
+	if(fidelity.CheckExceptionInHighFidelityMode(*this))
+	{
+		return;
+	}
+
 	if(nullptr!=accessPtr)
 	{
 		cpputil::PutWord(accessPtr,value);
@@ -539,6 +552,12 @@ void i486DXFidelityLayer <FIDELITY>::Push32(Memory &mem,unsigned int value)
 
 	unsigned int linearAddr=state.SS().baseLinearAddr+(ESP&(numBytesMask[addressSize>>3]));
 	auto accessPtr=GetStackAccessPointer(mem,linearAddr,bytesToStore);
+
+	if(fidelity.CheckExceptionInHighFidelityMode(*this))
+	{
+		return;
+	}
+
 	if(nullptr!=accessPtr)
 	{
 		cpputil::PutDword(accessPtr,value);
