@@ -169,7 +169,7 @@ void TownsDMAC::State::Reset(void)
 	temporaryReg[0]=0;
 	temporaryReg[1]=0;
 	req=0;
-	mask=0;
+	mask=0x0F;
 }
 
 
