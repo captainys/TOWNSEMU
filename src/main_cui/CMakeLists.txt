@@ -1109,3 +1109,35 @@ add_test(
 		-DONTAUTOSAVECMOS
 		-DAMPERWIRELINE
 )
+
+# To add a new test for Windows 95
+#   1. Write a test program called STARTUP.EXE.
+#   2. Copy the following test.
+#   3. Change -SHAREDDIR to the location where STARTUP.EXE is in.
+# Windows 95 will run STARTUP.EXE at the root of the shared drive.
+add_test(
+	NAME WINDOWS95_BOOT
+	COMMAND
+		${TARGET_NAME}
+		"${TOWNSEMU_TEST}/ROM_MX"
+		-HIGHFIDELITY
+		-HIGHRESPCM
+		-USEFPU
+		-COPYFILE
+		"${TOWNSEMU_TEST}/Win95/WIN95.h0"
+		"${CMAKE_BINARY_DIR}/Win95.h0"
+		-HD0
+		"${CMAKE_BINARY_DIR}/Win95.h0"
+		-SHAREDDIR
+		"${CMAKE_CURRENT_SOURCE_DIR}/../../testc/WIN95/BOOT"
+		-CMOS
+		"${TOWNSEMU_TEST}/Win95/CMOS.BIN"
+		-DONTAUTOSAVECMOS
+		-DEBUG
+		-UNITTEST
+		-FASTSCSI
+		-MEMSIZE
+		32
+		-BOOTKEY
+		H0
+)
