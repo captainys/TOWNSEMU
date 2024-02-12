@@ -2277,7 +2277,9 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				unsigned int denom=value.GetAsDword();
 				if(true==state.exception)
 				{
+					clocksPassed=40;
 					EIPIncrement=0;
+					HANDLE_EXCEPTION_IF_ANY;
 				}
 				else if(0==denom)
 				{
@@ -2313,7 +2315,9 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				int denom=value.GetAsSignedDword();
 				if(true==state.exception)
 				{
+					clocksPassed=40;
 					EIPIncrement=0;
+					HANDLE_EXCEPTION_IF_ANY;
 				}
 				else if(0==denom)
 				{
@@ -2864,6 +2868,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				}
 			}
 		}
+		HANDLE_EXCEPTION_IF_ANY;
 		break;
 
 
@@ -7253,12 +7258,12 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			    true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize);
 			    ++ctr)
 			{
+				clocksPassed+=2;
 				auto data=FetchByte(inst.addressSize,state.ES(),state.EDI(),mem);
 				HANDLE_EXCEPTION_STRINGOP;
 				auto AL=GetAL();
 				SubByte(AL,data);
 				UpdateDIorEDIAfterStringOp(inst.addressSize,8);
-				clocksPassed+=2;
 				if(true==REPEorNECheck(clocksPassed,inst.instPrefix,inst.addressSize))
 				{
 					EIPIncrement=0;
