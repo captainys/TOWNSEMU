@@ -7791,13 +7791,21 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 #elif defined(__clang__) || defined(__GNUC__)
 		__builtin_unreachable();
 #endif
-		Abort("Undefined instruction or simply not supported yet.");
+		{
+			std::string msg="Undefined instruction or simply not supported yet.  Opcode=";
+			msg+=cpputil::Ustox(inst.opCode);
+			msg+="H  ";
+			Abort(msg);
+		}
 		return 0;
 	}
 
 	if(0==clocksPassed)
 	{
-		Abort("Clocks-Passed is not set.");
+		std::string msg="Clocks-Passed is not set.  Opcode=";
+		msg+=cpputil::Ustox(inst.opCode);
+		msg+="H";
+		Abort(msg);
 		EIPIncrement=0;
 	}
 	state.EIP+=EIPIncrement;
@@ -7806,7 +7814,9 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 	{
 		if(true==state.exception)
 		{
-			std::string msg="Unhandled exception!  ";
+			std::string msg="Unhandled exception!  Opcode=";
+			msg+=cpputil::Ustox(inst.opCode);
+			msg+="H  ";
 			msg+=ExceptionTypeToStr(state.exceptionType);
 			msg+="(0x";
 			msg+=cpputil::Uitox(state.exceptionCode);
