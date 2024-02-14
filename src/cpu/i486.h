@@ -598,6 +598,7 @@ public:
 		unsigned int FADD_STi_ST(i486DXCommon &cpu,int i);
 		unsigned int FADDP_STi_ST(i486DXCommon &cpu,int i);
 		unsigned int FIADD_m16int(i486DXCommon &cpu,const unsigned char byteData[]);
+		unsigned int FIADD_m32int(i486DXCommon &cpu,const unsigned char byteData[]);
 		unsigned int FBLD(i486DXCommon &cpu,const unsigned char byteData[]);
 		unsigned int FCHS(i486DXCommon &cpu);
 		unsigned int FCLEX(i486DXCommon &cpu);
@@ -666,6 +667,7 @@ public:
 		unsigned int FSUB_STi_ST(i486DXCommon &cpu,int i);
 		unsigned int FSUBP_STi_ST(i486DXCommon &cpu,int i);
 		unsigned int FISUB_m16int(i486DXCommon& cpu, const unsigned char byteData[]);
+		unsigned int FISUB_m32int(i486DXCommon& cpu, const unsigned char byteData[]);
 		unsigned int FSUBR_m32real(i486DXCommon &cpu,const unsigned char byteData[]);
 		unsigned int FSUBR_m64real(i486DXCommon &cpu,const unsigned char byteData[]);
 		unsigned int FSUBR_ST_STi(i486DXCommon &cpu,int i);

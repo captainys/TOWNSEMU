@@ -1752,6 +1752,13 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			EIPIncrement=0; \
 			break; \
 		}
+	#define HANDLE_EXCEPTION_IF_ANY_CLOCK(clk) \
+		if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes)) \
+		{ \
+			clocksPassed=(clk); \
+			EIPIncrement=0; \
+			break; \
+		}
 
 	// Use the following as a pair.
 	#define SAVE_ESP_BEFORE_PUSH_POP \
@@ -3664,6 +3671,11 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			switch(Instruction::GetREG(inst.operand[0]))
 			{
 			case 0:  // FIADD m32int
+				FPU_TRAP;
+				{
+					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,4);
+					clocksPassed=state.fpuState.FIADD_m32int(*this,value.byteData);
+				}
 				break;
 			case 1:  // FIMUL m32int
 				FPU_TRAP;
@@ -3677,6 +3689,11 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			case 3:  // FICOMP m32int
 				break;
 			case 4:  // FISUB m32int
+				FPU_TRAP;
+				{
+					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,4);
+					clocksPassed=state.fpuState.FISUB_m32int(*this,value.byteData);
+				}
 				break;
 			case 5:  // FISUBR m32int
 				break;
@@ -3945,6 +3962,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					FPU_TRAP;
 					{
 						auto value=EvaluateOperand64(mem,inst.addressSize,inst.segOverride,op1);
+						HANDLE_EXCEPTION_IF_ANY_CLOCK(20);
 						clocksPassed=state.fpuState.FLD64(*this,value.byteData);
 					}
 					break;

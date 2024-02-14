@@ -643,6 +643,19 @@ unsigned int i486DXCommon::FPUState::FIADD_m16int(i486DXCommon &cpu,const unsign
 	}
 	return 0;
 }
+unsigned int i486DXCommon::FPUState::FIADD_m32int(i486DXCommon &cpu,const unsigned char byteData[])
+{
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+
+		double src=(double)IntFrom32Bit(byteData);
+		ST(cpu).value+=src;
+
+		return 24;
+	}
+	return 0;
+}
 unsigned int i486DXCommon::FPUState::FBLD(i486DXCommon &cpu,const unsigned char byteData[])
 {
 	if(true==enabled)
@@ -1780,6 +1793,19 @@ unsigned int i486DXCommon::FPUState::FISUB_m16int(i486DXCommon& cpu, const unsig
 
 		double src = (double)IntFrom16Bit(byteData);
 		ST(cpu).value -= src;
+
+		return 24;
+	}
+	return 0;
+}
+unsigned int i486DXCommon::FPUState::FISUB_m32int(i486DXCommon& cpu, const unsigned char byteData[])
+{
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+
+		double src=(double)IntFrom32Bit(byteData);
+		ST(cpu).value-=src;
 
 		return 24;
 	}
