@@ -3617,6 +3617,10 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				}
 				break;
 			case 7: // "FNSTCW"
+				if(0!=(state.GetCR(0)&(CR0_TASK_SWITCHED|CR0_EMULATION)))
+				{
+					FPU_TRAP;
+				}
 				{
 					OperandValue value;
 					value.MakeWord(state.fpuState.GetControlWord());
@@ -3736,6 +3740,10 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		}
 		if(0xE3==inst.operand[0])
 		{
+			if(0!=(state.GetCR(0)&(CR0_TASK_SWITCHED|CR0_EMULATION)))
+			{
+				FPU_TRAP;
+			}
 			state.fpuState.FNINIT();
 			clocksPassed=17;
 		}
@@ -3990,6 +3998,10 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					}
 					break;
 				case 7: // FNSTSW m2byte
+					if(0!=(state.GetCR(0)&(CR0_TASK_SWITCHED|CR0_EMULATION)))
+					{
+						FPU_TRAP;
+					}
 					{
 						clocksPassed=3;
 						OperandValue value;
@@ -4099,6 +4111,10 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		if(0xE0==inst.operand[0])
 		{
 			// FNSTSW AX
+			if(0!=(state.GetCR(0)&(CR0_TASK_SWITCHED|CR0_EMULATION)))
+			{
+				FPU_TRAP;
+			}
 			SetAX(state.fpuState.GetStatusWord());
 			clocksPassed=3;
 		}
