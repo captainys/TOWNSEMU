@@ -3867,6 +3867,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					FPU_TRAP;
 					{
 						auto value=EvaluateOperand64(mem,inst.addressSize,inst.segOverride,op1);
+						HANDLE_EXCEPTION_IF_ANY_CLOCK(20);
 						clocksPassed=state.fpuState.FADD64(*this,value.byteData);
 					}
 					break;
@@ -3874,6 +3875,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					FPU_TRAP;
 					{
 						auto value=EvaluateOperand64(mem,inst.addressSize,inst.segOverride,op1);
+						HANDLE_EXCEPTION_IF_ANY_CLOCK(20);
 						clocksPassed=state.fpuState.FMUL_m64real(*this,value.byteData);
 					}
 					break;
@@ -3881,6 +3883,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					FPU_TRAP;
 					{
 						auto value=EvaluateOperand64(mem,inst.addressSize,inst.segOverride,op1);
+						HANDLE_EXCEPTION_IF_ANY_CLOCK(20);
 						clocksPassed=state.fpuState.FCOM_m64real(*this,value.byteData);
 					}
 					break;
@@ -3888,6 +3891,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					FPU_TRAP;
 					{
 						auto value=EvaluateOperand64(mem,inst.addressSize,inst.segOverride,op1);
+						HANDLE_EXCEPTION_IF_ANY_CLOCK(20);
 						clocksPassed=state.fpuState.FCOMP_m64real(*this,value.byteData);
 					}
 					break;
@@ -3895,6 +3899,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					FPU_TRAP;
 					{
 						auto value=EvaluateOperand64(mem,inst.addressSize,inst.segOverride,op1);
+						HANDLE_EXCEPTION_IF_ANY_CLOCK(20);
 						clocksPassed=state.fpuState.FSUB_m64real(*this,value.byteData);
 					}
 					break;
@@ -3902,6 +3907,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					FPU_TRAP;
 					{
 						auto value=EvaluateOperand64(mem,inst.addressSize,inst.segOverride,op1);
+						HANDLE_EXCEPTION_IF_ANY_CLOCK(20);
 						clocksPassed=state.fpuState.FSUBR_m64real(*this,value.byteData);
 					}
 					break;
@@ -3909,6 +3915,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					FPU_TRAP;
 					{
 						auto value=EvaluateOperand64(mem,inst.addressSize,inst.segOverride,op1);
+						HANDLE_EXCEPTION_IF_ANY_CLOCK(20);
 						clocksPassed=state.fpuState.FDIV_m64real(*this,value.byteData);
 					}
 					break;
@@ -3916,6 +3923,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					FPU_TRAP;
 					{
 						auto value=EvaluateOperand64(mem,inst.addressSize,inst.segOverride,op1);
+						HANDLE_EXCEPTION_IF_ANY_CLOCK(20);
 						clocksPassed=state.fpuState.FDIVR_m64real(*this,value.byteData);
 					}
 					break;
