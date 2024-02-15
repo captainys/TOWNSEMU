@@ -442,7 +442,7 @@ void TestTrigonometric(void)
 			exit(1);
 		}
 
-		if(i!=90 && i!=270)
+		if(i!=90 && i!=-90)
 		{
 			double t=tan(rd);
 			if(0!=Compare(t,s/c))
