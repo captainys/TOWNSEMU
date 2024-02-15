@@ -1,3 +1,5 @@
+#include <windows.h>
+
 #define TOWNSIO_VM_HOST_IF_CMD_STATUS        0x2386
 #define TOWNSIO_VM_HOST_IF_DATA              0x2387
 
@@ -6,7 +8,7 @@
 #define TOWNS_VMIF_CMD_PAUSE                 0x02
 #define TOWNS_VMIF_CMD_EXIT_VM               0x03
 
-int main(void)
+int PASCAL WinMain(HINSTANCE inst,HINSTANCE,LPSTR param,int)
 {
 	// Writing 02h to I/O 2386h will break Tsugaru.
 	// Needs to be before including windows.h because windows.h is
