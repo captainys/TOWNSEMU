@@ -1039,6 +1039,7 @@ void FMTownsCommon::ProcessSound(Outside_World *outside_world)
 		}
 		std::cout << "Mouse BIOS stopped." << std::endl;
 		state.mouseBIOSActive=false;
+		state.tbiosVersion=TBIOS_UNKNOWN;
 	}
 }
 
