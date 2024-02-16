@@ -24,6 +24,10 @@ void OpenWindow(HINSTANCE inst)
 	int wid=100;
 	int hei=100;
 
+	int scrnWid=GetSystemMetrics(SM_CXSCREEN);
+	x0=scrnWid-wid;
+
+
 	// int useMultiSampleBuffer==(int)opt.useMultiSampleBuffer;
 	const char *windowName="TGMOUSE";
 
@@ -46,9 +50,9 @@ void OpenWindow(HINSTANCE inst)
 		rc.top   =y0;
 		rc.right =(unsigned long)(x0+wid-1);
 		rc.bottom=(unsigned long)(y0+hei-1);
-		AdjustWindowRect(&rc,WINSTYLE,FALSE);
-		wid  =rc.right-rc.left+1;
-		hei  =rc.bottom-rc.top+1;
+		//AdjustWindowRect(&rc,WINSTYLE,FALSE);
+		//wid  =rc.right-rc.left+1;
+		//hei  =rc.bottom-rc.top+1;
 
 		const char *windowNameUsed=(const char *)(NULL!=windowName ? windowName : WINNAME);
 
