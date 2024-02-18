@@ -514,7 +514,11 @@ std::vector <std::string> i486DXCommon::GetGDTText(const Memory &mem,unsigned in
 
 		unsigned int DTLinearBaseAddr=state.GDTR.linearBaseAddr+selector;
 		unsigned int excType,excCode;
-		unsigned int DTPhysicalAddr=DebugLinearAddressToPhysicalAddress(excType,excCode,DTLinearBaseAddr,mem);
+		unsigned int DTPhysicalAddr=DTLinearBaseAddr;
+		if(true==PagingEnabled())
+		{
+			DTPhysicalAddr=DebugLinearAddressToPhysicalAddress(excType,excCode,DTLinearBaseAddr,mem);
+		}
 		const unsigned char rawDesc[8]=
 		{
 			(unsigned char)DebugFetchByteByLinearAddress(mem,DTLinearBaseAddr),
@@ -607,7 +611,11 @@ std::vector <std::string> i486DXCommon::GetLDTText(const Memory &mem,unsigned in
 
 		unsigned int DTLinearBaseAddr=state.LDTR.linearBaseAddr+selector;
 		unsigned int excType,excCode;
-		unsigned int DTPhysicalAddr=DebugLinearAddressToPhysicalAddress(excType,excCode,DTLinearBaseAddr,mem);
+		unsigned int DTPhysicalAddr=DTLinearBaseAddr;
+		if(true==PagingEnabled())
+		{
+			DTPhysicalAddr=DebugLinearAddressToPhysicalAddress(excType,excCode,DTLinearBaseAddr,mem);
+		}
 		const unsigned char rawDesc[8]=
 		{
 			(unsigned char)DebugFetchByteByLinearAddress(mem,DTLinearBaseAddr),
