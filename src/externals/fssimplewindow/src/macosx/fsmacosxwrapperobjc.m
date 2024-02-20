@@ -956,7 +956,7 @@ static YsMacDelegate *ysDelegate=nil;
 		int unicode,fskey;
 		unicode=[chrsNoMod characterAtIndex:0];
 		fskey=YsMacUnicodeToFsKeyCode(unicode);
-printf("%d %d\n",unicode,fskey);
+
 		if(fskey!=0)
 		{
 			// 2014/07/26
