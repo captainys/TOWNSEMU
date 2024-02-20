@@ -105,16 +105,16 @@ static int FsNormalKeyCode[256]=
 	0,                 // 30
 	0,                 // 31
 	FSKEY_SPACE,       // 32
-	0,                 // 33
-	0,                 // 34
-	0,                 // 35
-	0,                 // 36
-	0,                 // 37
-	0,                 // 38
-	FSKEY_SINGLEQUOTE, // 39
-	0,                 // 40
-	0,                 // 41
-	0,                 // 42
+	FSKEY_1,           // 33
+	FSKEY_2,           // 34
+	FSKEY_3,           // 35
+	FSKEY_4,           // 36
+	FSKEY_5,           // 37
+	FSKEY_6,           // 38
+	FSKEY_7,           // 39
+	FSKEY_9,           // 40
+	FSKEY_0,           // 41
+	FSKEY_8,           // 42
 	FSKEY_PLUS,        // 43
 	FSKEY_COMMA,       // 44
 	FSKEY_MINUS,       // 45
@@ -122,20 +122,20 @@ static int FsNormalKeyCode[256]=
 	FSKEY_SLASH,       // 47
 	FSKEY_0,           // 48
 	FSKEY_1,           // 49
-	FSKEY_2,           // 50
+	FSKEY_2,           // 50 .
 	FSKEY_3,           // 51
 	FSKEY_4,           // 52
 	FSKEY_5,           // 53
-	FSKEY_6,           // 54
+	FSKEY_TILDA,       // 54 .
 	FSKEY_7,           // 55
-	FSKEY_8,           // 56
+	FSKEY_8,           // 56 .
 	FSKEY_9,           // 57
 	FSKEY_COLON,       // 58
 	FSKEY_SEMICOLON,   // 59
-	0,                 // 60
-	0,                 // 61
-	0,                 // 62
-	0,                 // 63
+	FSKEY_COMMA,       // 60 <
+	FSKEY_MINUS,       // 61 =
+	FSKEY_DOT,         // 62 >
+	FSKEY_SLASH,       // 63
 	FSKEY_AT,          // 64
 	FSKEY_A,           // 65
 	FSKEY_B,           // 66
@@ -166,9 +166,9 @@ static int FsNormalKeyCode[256]=
 	FSKEY_LBRACKET,    // 91
 	FSKEY_BACKSLASH,   // 92
 	FSKEY_RBRACKET,    // 93
-	0,                 // 94
-	0,                 // 95
-	0,                 // 96
+	FSKEY_6,           // 94 ^
+	FSKEY_MINUS,       // 95
+	FSKEY_TILDA,       // 96
 	FSKEY_A,           // 97
 	FSKEY_B,           // 98
 	FSKEY_C,           // 99
@@ -196,7 +196,7 @@ static int FsNormalKeyCode[256]=
 	FSKEY_Y,           // 121
 	FSKEY_Z,           // 122
 	FSKEY_LBRACKET,    // 123
-	0,                 // 124
+	FSKEY_BACKSLASH,   // 124 |
 	FSKEY_RBRACKET,    // 125
 	FSKEY_TILDA,       // 126
 	FSKEY_BS,          // 127
@@ -956,7 +956,7 @@ static YsMacDelegate *ysDelegate=nil;
 		int unicode,fskey;
 		unicode=[chrsNoMod characterAtIndex:0];
 		fskey=YsMacUnicodeToFsKeyCode(unicode);
-
+printf("%d %d\n",unicode,fskey);
 		if(fskey!=0)
 		{
 			// 2014/07/26
