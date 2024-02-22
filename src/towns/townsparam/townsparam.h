@@ -61,7 +61,7 @@ public:
 
 	bool highResAvailable=true;
 
-	bool highResPCM=false;
+	bool highResPCM=true;
 
 	bool catchUpRealTime=true;
 
