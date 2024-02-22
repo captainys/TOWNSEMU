@@ -1675,15 +1675,70 @@ void TownsCDROM::AddWaveForNumSamples(unsigned char waveBuf[],unsigned int numSa
 	}
 	else
 	{
-		int Lvol=townsPtr->GetEleVolCDLeft();
-		int Rvol=townsPtr->GetEleVolCDRight();
+		int Lvol = townsPtr->GetEleVolCDLeft();
+		float Ltr;
+
 		if(true!=townsPtr->GetEleVolCDLeftEN())
 		{
-			Lvol=0;
+			Lvol = 0;
+			Ltr  = 0.0; // mute
+		}else
+		{
+			if(true != townsPtr->GetEleVolCDLeftC32())
+			{
+				if(true != townsPtr->GetEleVolCDLeftC0())
+				{
+					if(Lvol != 63)
+					{
+						Ltr = 0.5 * (Lvol - 63);	//calculation db (-0.5 ~ -31.5)
+						Ltr = std::pow( 10 , Ltr / 20 );//calculation transmission ratio
+					}else
+					{
+						Ltr = 1.0;
+					}
+				}else
+				{
+					Lvol = 63;
+					Ltr = 1.0;
+				}
+			}else
+			{
+				Lvol = 0;
+				Ltr  = 0.025; // transmission ratio 0.025 = -32.0 db
+			}
 		}
+
+		int Rvol = townsPtr->GetEleVolCDRight();
+		float Rtr;
+
 		if(true!=townsPtr->GetEleVolCDRightEN())
 		{
-			Rvol=0;
+			Rvol = 0;
+			Rtr  = 0.0; // mute
+		}else
+		{
+			if(true != townsPtr->GetEleVolCDRightC32())
+			{
+				if(true != townsPtr->GetEleVolCDRightC0())
+				{
+					if(Rvol != 63)
+					{
+						Rtr = 0.5 * (Rvol - 63);	// calculation db (-0.5 ~ -31.5)
+						Rtr = std::pow( 10 , Rtr / 20 );// calculation transmission ratio
+					}else
+					{
+						Rtr = 1.0;
+					}
+				}else
+				{
+					Rvol = 63;
+					Rtr = 1.0;
+				}
+			}else
+			{
+				Rvol = 0;
+				Rtr  = 0.025; // transmission ratio 0.025 = -32.0 db
+			}
 		}
 
 		if(63==Lvol && 63==Rvol)
@@ -1722,8 +1777,8 @@ void TownsCDROM::AddWaveForNumSamples(unsigned char waveBuf[],unsigned int numSa
 				int Lcd=cpputil::GetSignedWord(state.CDDAWave.data()+state.CDDAPlayPointer);
 				int Rcd=cpputil::GetSignedWord(state.CDDAWave.data()+state.CDDAPlayPointer+2);
 
-				Lcd=Lcd*Lvol/63;
-				Rcd=Rcd*Rvol/63;
+				Lcd=Lcd*Ltr;
+				Rcd=Rcd*Rtr;
 
 				L+=Lcd;
 				R+=Rcd;

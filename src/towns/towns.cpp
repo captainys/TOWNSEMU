@@ -1135,6 +1135,22 @@ bool FMTownsCommon::GetEleVolCDRightEN(void) const
 {
 	return state.eleVol[TOWNS_ELEVOL_FOR_CD][TOWNS_ELEVOL_CD_RIGHT].EN;
 }
+bool FMTownsCommon::GetEleVolCDLeftC32(void) const
+{
+	return state.eleVol[TOWNS_ELEVOL_FOR_CD][TOWNS_ELEVOL_CD_LEFT].C32;
+}
+bool FMTownsCommon::GetEleVolCDRightC32(void) const
+{
+	return state.eleVol[TOWNS_ELEVOL_FOR_CD][TOWNS_ELEVOL_CD_RIGHT].C32;
+}
+bool FMTownsCommon::GetEleVolCDLeftC0(void) const
+{
+	return state.eleVol[TOWNS_ELEVOL_FOR_CD][TOWNS_ELEVOL_CD_LEFT].C0;
+}
+bool FMTownsCommon::GetEleVolCDRightC0(void) const
+{
+	return state.eleVol[TOWNS_ELEVOL_FOR_CD][TOWNS_ELEVOL_CD_RIGHT].C0;
+}
 unsigned int FMTownsCommon::GetEleVolCDLeft(void) const
 {
 	return state.eleVol[TOWNS_ELEVOL_FOR_CD][TOWNS_ELEVOL_CD_LEFT].vol;
@@ -1142,6 +1158,39 @@ unsigned int FMTownsCommon::GetEleVolCDLeft(void) const
 unsigned int FMTownsCommon::GetEleVolCDRight(void) const
 {
 	return state.eleVol[TOWNS_ELEVOL_FOR_CD][TOWNS_ELEVOL_CD_RIGHT].vol;
+}
+
+bool FMTownsCommon::GetEleVolPCMLeftEN(void) const
+{
+	return state.eleVol[TOWNS_ELEVOL_FOR_PCM][TOWNS_ELEVOL_PCM_LEFT].EN;
+}
+bool FMTownsCommon::GetEleVolPCMRightEN(void) const
+{
+	return state.eleVol[TOWNS_ELEVOL_FOR_PCM][TOWNS_ELEVOL_PCM_RIGHT].EN;
+}
+bool FMTownsCommon::GetEleVolPCMLeftC32(void) const
+{
+	return state.eleVol[TOWNS_ELEVOL_FOR_PCM][TOWNS_ELEVOL_PCM_LEFT].C32;
+}
+bool FMTownsCommon::GetEleVolPCMRightC32(void) const
+{
+	return state.eleVol[TOWNS_ELEVOL_FOR_PCM][TOWNS_ELEVOL_PCM_RIGHT].C32;
+}
+bool FMTownsCommon::GetEleVolPCMLeftC0(void) const
+{
+	return state.eleVol[TOWNS_ELEVOL_FOR_PCM][TOWNS_ELEVOL_PCM_LEFT].C0;
+}
+bool FMTownsCommon::GetEleVolPCMRightC0(void) const
+{
+	return state.eleVol[TOWNS_ELEVOL_FOR_PCM][TOWNS_ELEVOL_PCM_RIGHT].C0;
+}
+unsigned int FMTownsCommon::GetEleVolPCMLeft(void) const
+{
+	return state.eleVol[TOWNS_ELEVOL_FOR_PCM][TOWNS_ELEVOL_PCM_LEFT].vol;
+}
+unsigned int FMTownsCommon::GetEleVolPCMRight(void) const
+{
+	return state.eleVol[TOWNS_ELEVOL_FOR_PCM][TOWNS_ELEVOL_PCM_RIGHT].vol;
 }
 ////////////////////////////////////////////////////////////
 
