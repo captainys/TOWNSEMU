@@ -47,7 +47,21 @@ void FMTownsCommon::ProcessVMToHostCommand(unsigned int vmCmd,unsigned int param
 		break;
 	case TOWNS_VMIF_CMD_EXIT_VM:
 		var.powerOff=true;
-		var.returnCode=param[0];
+		if(0<paramLen)
+		{
+			// In Windows 95, apparently the testing thread is called while TGMOUSE was
+			// trying to notify the mouse coordinate.
+			// To avoid fake failure from the test, it should take the last parameter pushed, instead of param[0].
+			// However, there is a possibility that TGMOUSE is invoked after the testing
+			// pushed the parameter, before EXIT_VM is written to the I/O.
+			// The problem is only for pre-emptive multi-tasking operating systems, and
+			// this change will make it exremely unlikely.  So, I leave it this way for the time being.
+			var.returnCode=param[paramLen-1];
+		}
+		else
+		{
+			var.returnCode=-1;
+		}
 		break;
 	case TOWNS_VMIF_CMD_FILE_RXRDY:
 	case TOWNS_VMIF_CMD_FILE_TXRDY:
