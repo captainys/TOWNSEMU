@@ -450,7 +450,8 @@ public:
 			return true;
 		}
 
-		if(i486DXCommon::SEGTYPE_DATA_EXPAND_DOWN_RW==type)
+		if(i486DXCommon::SEGTYPE_DATA_EXPAND_DOWN_RW==type ||
+		   i486DXCommon::SEGTYPE_DATA_EXPAND_DOWN_READONLY==type)
 		{
 			if(32==seg.addressSize)
 			{

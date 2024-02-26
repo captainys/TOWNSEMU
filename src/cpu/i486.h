@@ -276,7 +276,7 @@ public:
 		inline unsigned int GetType(void) const
 		{
 			auto type=attribBytes&0x1F;
-			if(8<=type)
+			if(0x10<=type)
 			{
 				// bit0 is ACCESSED flag and meaningless.
 				return type&0x1E;
