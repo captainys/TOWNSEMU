@@ -1796,6 +1796,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		if(true==fidelity.HandleExceptionAndRestoreECXIfAny(*this,mem,inst.numBytes,savedECX)) \
 		{ \
 			EIPIncrement=0; \
+			clocksPassed+=ClocksForHandlingException(); \
 			break; \
 		}
 
