@@ -1762,6 +1762,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 	#define HANDLE_EXCEPTION_PUSH_POP \
 		if(true==fidelity.HandleExceptionAndRestoreESPIfAny(*this,mem,inst.numBytes,savedESP)) \
 		{ \
+			clocksPassed+=ClocksForHandlingException(); \
 			EIPIncrement=0; \
 			break; \
 		}
@@ -1775,12 +1776,14 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		if(true==fidelity.HandleExceptionAndRestoreESPEBPIfAny(*this,mem,inst.numBytes,saved)) \
 		{ \
 			EIPIncrement=0; \
+			clocksPassed+=ClocksForHandlingException(); \
 			break; \
 		}
 	#define HANDLE_EXCEPTION_ENTER_INSIDE \
 		if(true==fidelity.HandleExceptionAndRestoreESPEBPIfAny(*this,mem,inst.numBytes,saved)) \
 		{ \
 			EIPIncrement=0; \
+			clocksPassed+=ClocksForHandlingException(); \
 			goto BREAK_ENTER; \
 		}
 
@@ -2596,6 +2599,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			{
 				RaiseException(EXCEPTION_UD,0);
 				HandleException(true,mem,inst.numBytes);
+				clocksPassed+=ClocksForHandlingException();
 				EIPIncrement=0;
 				break;
 			}
@@ -2671,6 +2675,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				{
 					RaiseException(EXCEPTION_UD,0);
 					HandleException(true,mem,inst.numBytes);
+					clocksPassed+=ClocksForHandlingException();
 					EIPIncrement=0;
 					break;
 				}
