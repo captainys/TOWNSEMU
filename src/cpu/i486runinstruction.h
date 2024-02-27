@@ -3134,6 +3134,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				{
 					SetECX(ECX);
 					HandleException(true,mem,inst.numBytes);
+					clocksPassed+=ClocksForHandlingException();
 					EIPIncrement=0;
 					break;
 				}
@@ -3172,6 +3173,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				{
 					SetECX(ECX);
 					HandleException(true,mem,inst.numBytes);
+					clocksPassed+=ClocksForHandlingException();
 					EIPIncrement=0;
 					break;
 				}
