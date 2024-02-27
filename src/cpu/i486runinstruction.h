@@ -1750,13 +1750,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes)) \
 		{ \
 			EIPIncrement=0; \
-			break; \
-		}
-	#define HANDLE_EXCEPTION_IF_ANY_CLOCK(clk) \
-		if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes)) \
-		{ \
-			clocksPassed=(clk); \
-			EIPIncrement=0; \
+			clocksPassed+=ClocksForHandlingException(); \
 			break; \
 		}
 
@@ -1809,7 +1803,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		if(true!=state.fpuState.enabled) \
 		{ \
 			Interrupt(INT_DEVICE_NOT_AVAILABLE,mem,0,0,false); \
-			clocksPassed=26; \
+			clocksPassed=ClocksForHandlingException(); \
 			EIPIncrement=0; \
 			break; \
 		}
@@ -1878,7 +1872,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 	FetchInstruction(state.CSEIPWindow,instOp,state.CS(),state.EIP,mem);
 	if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
 	{
-		return 10; // Is 10 good?
+		return ClocksForHandlingException();
 	}
 
 	if(nullptr!=debuggerPtr)
@@ -1889,7 +1883,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 
 	if(true==fidelity.LockNotAllowed(*this,mem,inst,op1))
 	{
-		return 1;
+		return ClocksForHandlingException();
 	}
 
 	int EIPIncrement=inst.numBytes;
@@ -1901,7 +1895,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 	case I486_RENUMBER_UNDEFINED_SHOOT_INT6_WIN31:
 		Interrupt(INT_INVALID_OPCODE,mem,0,0,false);
 		EIPIncrement=0;
-		clocksPassed=26;  // ? How many clocks should I use?
+		clocksPassed=ClocksForHandlingException();
 		break;
 
 	case I486_RENUMBER_C0_ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8_I8://0xC0,// ROL(REG=0),ROR(REG=1),RCL(REG=2),RCR(REG=3),SAL/SHL(REG=4),SHR(REG=5),SAR(REG=7)
@@ -3363,7 +3357,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					FPU_TRAP;
 					{
 						auto value=EvaluateOperand64(mem,inst.addressSize,inst.segOverride,op1);
-						HANDLE_EXCEPTION_IF_ANY_CLOCK(20);
+						HANDLE_EXCEPTION_IF_ANY;
 						clocksPassed=state.fpuState.FADD_m32real(*this,value.byteData);
 					}
 					break;
@@ -3371,7 +3365,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					FPU_TRAP;
 					{
 						auto value=EvaluateOperand64(mem,inst.addressSize,inst.segOverride,op1);
-						HANDLE_EXCEPTION_IF_ANY_CLOCK(20);
+						HANDLE_EXCEPTION_IF_ANY;
 						clocksPassed=state.fpuState.FMUL_m32real(*this,value.byteData);
 					}
 					break;
@@ -3379,7 +3373,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					FPU_TRAP;
 					{
 						auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,4);
-						HANDLE_EXCEPTION_IF_ANY_CLOCK(20);
+						HANDLE_EXCEPTION_IF_ANY;
 						clocksPassed=state.fpuState.FCOM_m32real(*this,value.byteData);
 					}
 					break;
@@ -3387,7 +3381,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					FPU_TRAP;
 					{
 						auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,4);
-						HANDLE_EXCEPTION_IF_ANY_CLOCK(20);
+						HANDLE_EXCEPTION_IF_ANY;
 						clocksPassed=state.fpuState.FCOMP_m32real(*this,value.byteData);
 					}
 					break;
@@ -3395,7 +3389,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					FPU_TRAP;
 					{
 						auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,4);
-						HANDLE_EXCEPTION_IF_ANY_CLOCK(20);
+						HANDLE_EXCEPTION_IF_ANY;
 						clocksPassed=state.fpuState.FSUB_m32real(*this,value.byteData);
 					}
 					break;
@@ -3403,7 +3397,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					FPU_TRAP;
 					{
 						auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,4);
-						HANDLE_EXCEPTION_IF_ANY_CLOCK(20);
+						HANDLE_EXCEPTION_IF_ANY;
 						clocksPassed=state.fpuState.FSUBR_m32real(*this,value.byteData);
 					}
 					break;
@@ -3411,7 +3405,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					FPU_TRAP;
 					{
 						auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,4);
-						HANDLE_EXCEPTION_IF_ANY_CLOCK(20);
+						HANDLE_EXCEPTION_IF_ANY;
 						clocksPassed=state.fpuState.FDIV_m32real(*this,value.byteData);
 					}
 					break;
@@ -3419,7 +3413,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					FPU_TRAP;
 					{
 						auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,4);
-						HANDLE_EXCEPTION_IF_ANY_CLOCK(20);
+						HANDLE_EXCEPTION_IF_ANY;
 						clocksPassed=state.fpuState.FDIVR_m32real(*this,value.byteData);
 					}
 					break;
@@ -3877,7 +3871,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					FPU_TRAP;
 					{
 						auto value=EvaluateOperand64(mem,inst.addressSize,inst.segOverride,op1);
-						HANDLE_EXCEPTION_IF_ANY_CLOCK(20);
+						HANDLE_EXCEPTION_IF_ANY;
 						clocksPassed=state.fpuState.FADD64(*this,value.byteData);
 					}
 					break;
@@ -3885,7 +3879,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					FPU_TRAP;
 					{
 						auto value=EvaluateOperand64(mem,inst.addressSize,inst.segOverride,op1);
-						HANDLE_EXCEPTION_IF_ANY_CLOCK(20);
+						HANDLE_EXCEPTION_IF_ANY;
 						clocksPassed=state.fpuState.FMUL_m64real(*this,value.byteData);
 					}
 					break;
@@ -3893,7 +3887,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					FPU_TRAP;
 					{
 						auto value=EvaluateOperand64(mem,inst.addressSize,inst.segOverride,op1);
-						HANDLE_EXCEPTION_IF_ANY_CLOCK(20);
+						HANDLE_EXCEPTION_IF_ANY;
 						clocksPassed=state.fpuState.FCOM_m64real(*this,value.byteData);
 					}
 					break;
@@ -3901,7 +3895,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					FPU_TRAP;
 					{
 						auto value=EvaluateOperand64(mem,inst.addressSize,inst.segOverride,op1);
-						HANDLE_EXCEPTION_IF_ANY_CLOCK(20);
+						HANDLE_EXCEPTION_IF_ANY;
 						clocksPassed=state.fpuState.FCOMP_m64real(*this,value.byteData);
 					}
 					break;
@@ -3909,7 +3903,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					FPU_TRAP;
 					{
 						auto value=EvaluateOperand64(mem,inst.addressSize,inst.segOverride,op1);
-						HANDLE_EXCEPTION_IF_ANY_CLOCK(20);
+						HANDLE_EXCEPTION_IF_ANY;
 						clocksPassed=state.fpuState.FSUB_m64real(*this,value.byteData);
 					}
 					break;
@@ -3917,7 +3911,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					FPU_TRAP;
 					{
 						auto value=EvaluateOperand64(mem,inst.addressSize,inst.segOverride,op1);
-						HANDLE_EXCEPTION_IF_ANY_CLOCK(20);
+						HANDLE_EXCEPTION_IF_ANY;
 						clocksPassed=state.fpuState.FSUBR_m64real(*this,value.byteData);
 					}
 					break;
@@ -3925,7 +3919,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					FPU_TRAP;
 					{
 						auto value=EvaluateOperand64(mem,inst.addressSize,inst.segOverride,op1);
-						HANDLE_EXCEPTION_IF_ANY_CLOCK(20);
+						HANDLE_EXCEPTION_IF_ANY;
 						clocksPassed=state.fpuState.FDIV_m64real(*this,value.byteData);
 					}
 					break;
@@ -3933,7 +3927,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					FPU_TRAP;
 					{
 						auto value=EvaluateOperand64(mem,inst.addressSize,inst.segOverride,op1);
-						HANDLE_EXCEPTION_IF_ANY_CLOCK(20);
+						HANDLE_EXCEPTION_IF_ANY;
 						clocksPassed=state.fpuState.FDIVR_m64real(*this,value.byteData);
 					}
 					break;
@@ -3980,7 +3974,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					FPU_TRAP;
 					{
 						auto value=EvaluateOperand64(mem,inst.addressSize,inst.segOverride,op1);
-						HANDLE_EXCEPTION_IF_ANY_CLOCK(20);
+						HANDLE_EXCEPTION_IF_ANY;
 						clocksPassed=state.fpuState.FLD64(*this,value.byteData);
 					}
 					break;
