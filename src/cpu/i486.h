@@ -3046,6 +3046,19 @@ public:
 	*/
 	virtual unsigned long RedirectLinearAddressToPhysicalAddressWrite(unsigned int linearAddr,Memory &mem)=0;
 	virtual unsigned long RedirectLinearAddressToPhysicalAddressRead(unsigned int linearAddr,Memory &mem)=0;
+
+	/*! I have absolutely no idea how much clocks should be added when an exception is handled.
+	    It may be buried somewhere in the 80386 or 80486 Programmer's Reference Manual, but I cannot find it.
+	    I'm ok if it is roughly correct.
+	*/
+	inline unsigned int ClocksForHandlingException(void) const
+	{
+		if(true!=IsInRealMode() && 0!=state.CS().DPL)
+		{
+			return 100;
+		}
+		return 50;
+	}
 };
 
 // Fidelity Layer
