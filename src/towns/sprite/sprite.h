@@ -23,7 +23,8 @@ public:
 		SPRITE_PTN16_BYTES_PER_LINE=8,
 		SPRITE_PALETTE_NUM_COLORS=16,
 		SPRITE_SCREEN_CLEAR_TIME=32000,
-		SPRITE_ONE_TRANSFER_TIME=57000,  // FM TOWNS Technical Databook tells it is 75us.  Actual measurement was 57us.  WTF.
+		SPRITE_ONE_TRANSFER_TIME_FASTMODE=57000,  // FM TOWNS Technical Databook tells it is 75us.  Actual measurement was 57us.  WTF.
+		SPRITE_ONE_TRANSFER_TIME=73000,  // Looks like MX's sprite is faster.
 	};
 	enum
 	{
@@ -71,6 +72,7 @@ public:
 		bool screenModeAcceptsSprite;
 		uint8_t callbackType;
 		uint8_t page;
+		unsigned int transferTime=SPRITE_ONE_TRANSFER_TIME_FASTMODE;
 
 		void PowerOn(void);
 		void Reset(void);

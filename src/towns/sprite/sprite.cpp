@@ -328,7 +328,7 @@ void TownsSprite::RunScheduledTask(unsigned long long int townsTime)
 		if (SPEN()) {
 			state.page = 1 - state.page;
 			state.spriteBusy = true;
-			auto finishTime = townsTime + SPRITE_SCREEN_CLEAR_TIME + (uint64_t)SPRITE_ONE_TRANSFER_TIME * NumSpritesToDraw();
+			auto finishTime = townsTime + SPRITE_SCREEN_CLEAR_TIME + (uint64_t)state.transferTime * NumSpritesToDraw();
 
 			townsPtr->ScheduleDeviceCallBack(*this, finishTime);
 			state.callbackType = CALLBACK_FINISH;
@@ -385,6 +385,10 @@ std::vector <std::string> TownsSprite::GetStatusText(const unsigned char spriteR
 	text.push_back("");
 	text.back()="#ActuallyDrawn:";
 	text.back()+=cpputil::Itoa(NumSpritesActuallyDrawn());
+
+	text.push_back("");
+	text.back()="Transfer Time:";
+	text.back()+=cpputil::Itoa(state.transferTime);
 
 	return text;
 }
@@ -558,7 +562,8 @@ std::vector <std::string> TownsSprite::GetPattern16BitText(unsigned int ptnIdx,c
 
 /* virtual */ uint32_t TownsSprite::SerializeVersion(void) const
 {
-	return 1;
+	// Version 2: Sprite Transfer Time
+	return 2;
 }
 /* virtual */ void TownsSprite::SpecificSerialize(std::vector <unsigned char> &data,std::string) const
 {
@@ -573,9 +578,14 @@ std::vector <std::string> TownsSprite::GetPattern16BitText(unsigned int ptnIdx,c
 	// Version 1 and later >>
 	PushUint16(data, state.callbackType);
 	PushUint16(data, state.page);
+
+	// Vesion 2 and later >>
+	PushUint32(data,state.transferTime);
 }
 /* virtual */ bool TownsSprite::SpecificDeserialize(const unsigned char *&data,std::string,uint32_t version)
 {
+	state.transferTime=SPRITE_ONE_TRANSFER_TIME_FASTMODE;
+
 	state.addressLatch=ReadUint16(data);
 	for(auto &r : state.reg)
 	{
@@ -599,6 +609,10 @@ std::vector <std::string> TownsSprite::GetPattern16BitText(unsigned int ptnIdx,c
 	{
 		state.callbackType = ReadUint16(data);
 		state.page = ReadUint16(data);
+	}
+	else if(2<=version)
+	{
+		state.transferTime=ReadUint32(data);
 	}
 	return true;
 }
