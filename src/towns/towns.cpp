@@ -149,6 +149,10 @@ void FMTownsCommon::State::PowerOn(void)
 		{
 			megabyte=64;
 		}
+		if(TOWNSCPU_80386SX==towns.TownsTypeToCPUType(argv.townsType) && 10<megabyte)
+		{
+			megabyte=10;
+		}
 		towns.SetMainRAMSize(megabyte*1024*1024);
 	}
 

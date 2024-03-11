@@ -141,6 +141,9 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "-ICMWP" << std::endl;
 	std::cout << "-JEIDA4WP" << std::endl;
 	std::cout << "  Write protect memory card." << std::endl;
+	std::cout << "-ICMUP" << std::endl;
+	std::cout << "-JEIDA4UP" << std::endl;
+	std::cout << "  Write un-protect memory card." << std::endl;
 	std::cout << "-GAMEPORT0 KEY|PHYSx|ANAx|NONE" << std::endl;
 	std::cout << "-GAMEPORT1 KEY|PHYSx|ANAx|NONE" << std::endl;
 	std::cout << "  Specify game-port emulation.  By keyboard (Arrow,Z,X,A,S), or physical gamepad." << std::endl;
@@ -914,6 +917,10 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		else if("-ICMWP"==ARG || "-JEIDA4WP"==ARG)
 		{
 			memCardWriteProtected=true;
+		}
+		else if("-ICMUP"==ARG || "-JEIDA4UP"==ARG)
+		{
+			memCardWriteProtected=false;
 		}
 		else if("-HIGHRESPCM"==ARG)
 		{
