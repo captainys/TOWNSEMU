@@ -1811,6 +1811,20 @@ unsigned int i486DXCommon::FPUState::FISUB_m32int(i486DXCommon& cpu, const unsig
 	}
 	return 0;
 }
+unsigned int i486DXCommon::FPUState::FISUBR_m32int(i486DXCommon &cpu,const unsigned char byteData[])
+{
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+
+		double src=(double)IntFrom32Bit(byteData);
+		auto &st=ST(cpu);
+		st.value=src-st.value;
+
+		return 24;
+	}
+	return 0;
+}
 unsigned int i486DXCommon::FPUState::FSUBR_m32real(i486DXCommon &cpu,const unsigned char byteData[])
 {
 	if(true==enabled)

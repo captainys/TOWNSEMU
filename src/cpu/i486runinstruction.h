@@ -3706,6 +3706,11 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				}
 				break;
 			case 5:  // FISUBR m32int
+				FPU_TRAP;
+				{
+					auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,4);
+					clocksPassed=state.fpuState.FISUBR_m32int(*this,value.byteData);
+				}
 				break;
 			case 6:  // FIDIV m32int
 				FPU_TRAP;
