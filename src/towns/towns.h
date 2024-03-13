@@ -607,6 +607,10 @@ public:
 	*/
 	void Reset(void);
 
+	/*! Resets the virtual machine with a boot key.
+	*/
+	void Reset(unsigned int bootKey);
+
 	/*! This function is called when:
 	      Floppy-disk sector is read,
 	      CD-ROM sector is read, and

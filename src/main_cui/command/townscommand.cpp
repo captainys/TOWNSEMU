@@ -949,6 +949,9 @@ void TownsCommandInterpreter::PrintError(int errCode) const
 	case ERROR_DEBUGGER_NOT_ENABLED:
 		std::cout << "Error: Debugger is not enabled." << std::endl;
 		break;
+	case ERROR_UNDEFINED_BOOT_KEY_COMBINATION:
+		std::cout << "Error: Undefined Boot Key Combination." << std::endl;
+		break;
 
 	default:
 		std::cout << "Error" << std::endl;
@@ -1000,7 +1003,22 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,clas
 		exit(0);
 		break;
 	case CMD_RESET:
-		towns.Reset();
+		if(1<cmd.argv.size())
+		{
+			unsigned int bootKeyComb=TownsStrToKeyComb(cmd.argv[1]);
+			if(BOOT_KEYCOMB_ERROR!=bootKeyComb)
+			{
+				towns.Reset(bootKeyComb);
+			}
+			else
+			{
+				PrintError(ERROR_UNDEFINED_BOOT_KEY_COMBINATION);
+			}
+		}
+		else
+		{
+			towns.Reset();
+		}
 		break;
 	case CMD_RUN:
 		towns.debugger.ClearStopFlag();

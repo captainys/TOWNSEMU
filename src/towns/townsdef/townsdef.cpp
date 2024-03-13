@@ -220,7 +220,7 @@ unsigned int TownsStrToKeyComb(std::string str)
 	{
 		return BOOT_KEYCOMB_SLOWMODE;
 	}
-	return BOOT_KEYCOMB_NONE;
+	return BOOT_KEYCOMB_ERROR;
 }
 
 std::string TownsKeyCombToStr(unsigned int keycomb)

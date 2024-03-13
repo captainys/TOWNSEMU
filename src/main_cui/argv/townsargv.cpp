@@ -677,78 +677,8 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		}
 		else if("-BOOTKEY"==ARG && i+1<argc)
 		{
-			std::string COMB=argv[i+1];
-			cpputil::Capitalize(COMB);
-
-			if("NONE"==COMB)
-			{
-				bootKeyComb=BOOT_KEYCOMB_NONE;
-			}
-			else if("CD"==COMB)
-			{
-				bootKeyComb=BOOT_KEYCOMB_CD;
-			}
-			else if("F0"==COMB)
-			{
-				bootKeyComb=BOOT_KEYCOMB_F0;
-			}
-			else if("F1"==COMB)
-			{
-				bootKeyComb=BOOT_KEYCOMB_F1;
-			}
-			else if("F2"==COMB)
-			{
-				bootKeyComb=BOOT_KEYCOMB_F2;
-			}
-			else if("F3"==COMB)
-			{
-				bootKeyComb=BOOT_KEYCOMB_F3;
-			}
-			else if("H0"==COMB)
-			{
-				bootKeyComb=BOOT_KEYCOMB_H0;
-			}
-			else if("H1"==COMB)
-			{
-				bootKeyComb=BOOT_KEYCOMB_H1;
-			}
-			else if("H2"==COMB)
-			{
-				bootKeyComb=BOOT_KEYCOMB_H2;
-			}
-			else if("H3"==COMB)
-			{
-				bootKeyComb=BOOT_KEYCOMB_H3;
-			}
-			else if("H4"==COMB)
-			{
-				bootKeyComb=BOOT_KEYCOMB_H4;
-			}
-			else if("ICM"==COMB)
-			{
-				bootKeyComb=BOOT_KEYCOMB_ICM;
-			}
-			else if("DEBUG"==COMB)
-			{
-				bootKeyComb=BOOT_KEYCOMB_DEBUG;
-			}
-			else if("PADA"==COMB)
-			{
-				bootKeyComb=BOOT_KEYCOMB_PAD_A;
-			}
-			else if("PADB"==COMB)
-			{
-				bootKeyComb=BOOT_KEYCOMB_PAD_B;
-			}
-			else if("FAST"==COMB || "T"==COMB)
-			{
-				bootKeyComb=BOOT_KEYCOMB_FASTMODE;
-			}
-			else if("SLOW"==COMB || "N"==COMB)
-			{
-				bootKeyComb=BOOT_KEYCOMB_SLOWMODE;
-			}
-			else
+			bootKeyComb=TownsStrToKeyComb(argv[i+1]);
+			if(BOOT_KEYCOMB_ERROR==bootKeyComb)
 			{
 				std::cout << "Undefined boot-key combination:" << argv[i+1] << std::endl;
 				std::cout << "Must be one of: NONE,CD,F0,F1,F2,F3,H0,H1,H2,H3,H4,ICM,DEBUG,PADA,PADB,T,N." << std::endl;

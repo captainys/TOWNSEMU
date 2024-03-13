@@ -952,6 +952,13 @@ void FMTownsCommon::Reset(void)
 	var.disassemblePointer.OFFSET=cpu.state.EIP;
 }
 
+void FMTownsCommon::Reset(unsigned int bootKey)
+{
+	Reset();
+	keyboard.SetBootKeyCombination(bootKey);
+	gameport.SetBootKeyCombination(bootKey);
+}
+
 void FMTownsCommon::NotifyDiskRead(void)
 {
 	keyboard.BootSequenceStarted();
