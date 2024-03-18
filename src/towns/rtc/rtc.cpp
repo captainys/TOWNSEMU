@@ -98,6 +98,11 @@ TownsRTC::TownsRTC(class FMTownsCommon *townsPtr) : Device(townsPtr)
 	{
 	case TOWNSIO_RTC_DATA://                 0x70,
 		data=0x80;
+		// FM TOWNS Technical Databook p.85 tells ready flag must be off 430+244=674us per sec.
+		if(townsPtr->state.townsTime%1000000<674)
+		{
+			data=0;
+		}
 		if(state.state!=STATE_NONE)
 		{
 			auto t=time(nullptr);
@@ -123,7 +128,7 @@ TownsRTC::TownsRTC(class FMTownsCommon *townsPtr) : Device(townsPtr)
 					{
 						hour-=12;
 					}
-					data=hour%10;
+					data|=hour%10;
 				}
 				break;
 			case REG_10HOUR://5 // Bit 2 is AM/PM

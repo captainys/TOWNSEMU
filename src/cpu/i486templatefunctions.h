@@ -11,7 +11,7 @@ inline void i486DXFidelityLayer <FIDELITY>::Interrupt(unsigned int INTNum,Memory
 
 	if(nullptr!=debuggerPtr)
 	{
-		debuggerPtr->Interrupt(*this,INTNum,mem,numInstBytesForReturn);
+		debuggerPtr->Interrupt(*this,INTNum,mem,numInstBytesForReturn,SWI);
 	}
 
 	state.halt=false;

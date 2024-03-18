@@ -373,7 +373,7 @@ public:
 
 	/*! Called from i486DXCommon class when an interrupt is shot.
 	*/
-	void Interrupt(const i486DXCommon &cpu,unsigned int INTNum,Memory &mem,unsigned int numInstBytes);
+	void Interrupt(const i486DXCommon &cpu,unsigned int INTNum,Memory &mem,unsigned int numInstBytes,bool SWI);
 private:
 	/*!
 	*/

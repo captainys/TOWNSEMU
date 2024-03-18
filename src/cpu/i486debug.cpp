@@ -770,14 +770,14 @@ void i486Debugger::ClearStopFlag(void)
 	lastBreakPointInfo.Clear();
 }
 
-void i486Debugger::Interrupt(const i486DXCommon &cpu,unsigned int INTNum,Memory &mem,unsigned int numInstBytes)
+void i486Debugger::Interrupt(const i486DXCommon &cpu,unsigned int INTNum,Memory &mem,unsigned int numInstBytes,bool SWI)
 {
 	specialDebugInfo->Interrupt(*this,cpu,INTNum,mem,numInstBytes);
-	if(INT_WIN31_VxD==INTNum)
+	if(INT_WIN31_VxD==INTNum && true==SWI)
 	{
 		AutoAnnotateVxD(cpu,mem,cpu.state.CS(),cpu.state.EIP);
 	}
-	if(INT_WIN_DPMI_2FH==INTNum)
+	if(INT_WIN_DPMI_2FH==INTNum && true==SWI)
 	{
 		if(DPMI_GET_API_ENTRY==cpu.GetAX())
 		{
