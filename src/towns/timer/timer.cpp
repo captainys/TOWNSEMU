@@ -369,6 +369,7 @@ TownsTimer::TownsTimer(class FMTownsCommon *townsPtr,class TownsPIC *picPtr) : D
 	case TOWNSIO_TIMER_3_4_5_CTRL://         0x56,
 		break;
 	case TOWNSIO_TIMER_INT_CTRL_INT_REASON://0x60,
+		TimerPolling(townsPtr->state.townsTime);
 		data=0;
 		data|=(state.TMOUT[0] ? 0x01 : 0);
 		data|=(state.TMOUT[1] ? 0x02 : 0);
