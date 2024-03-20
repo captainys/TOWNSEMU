@@ -1214,6 +1214,12 @@ std::string i486DXCommon::Instruction::Disassemble(const Operand &op1In,const Op
 				disasm.push_back('0'+(operand[0]&7));
 				disasm+=")";
 			}
+			else if(0xF8==(MODR_M&0xF8)) // FDIVR ST,STi
+			{
+				disasm="FDIVR  ST,ST(";
+				disasm.push_back('0'+(operand[0]&7));
+				disasm+=")";
+			}
 			else
 			{
 				switch(GetREG())

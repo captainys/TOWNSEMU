@@ -525,7 +525,7 @@ void i486DXCommon::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,Memo
 		{
 			unsigned int MODR_M;
 			FUNCCLASS::PeekOperand8(cpu, MODR_M, inst, ptr, seg, offset, mem);
-			if (0xC0 <= MODR_M && MODR_M <= 0xE7) // FADD ST,STi  FMUL ST,STI, FCOM, FCOMP, FSUB
+			if (0xC0 <= MODR_M) // FADD ST,STi  FMUL ST,STI, FCOM, FCOMP, FSUB, FDIV, FDIVR
 			{
 				FUNCCLASS::FetchOperand8(cpu, inst, ptr, seg, offset, mem);
 			}
