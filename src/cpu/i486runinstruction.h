@@ -575,14 +575,11 @@ void i486DXCommon::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,Memo
 			FUNCCLASS::PeekOperand8(cpu, MODR_M, inst, ptr, seg, offset, mem);
 			if (0xE3 == MODR_M || // FNINIT
 				0xE2 == MODR_M || // FCLEX
-				0xE4 == MODR_M)   // FSETPM
+				0xE4 == MODR_M || // FSETPM
+				0xE0 == MODR_M || // FNENI
+				0xE1 == MODR_M)   // FNDISI
 			{
 				FUNCCLASS::FetchOperand8(cpu, inst, ptr, seg, offset, mem);
-			}
-			else if(0xE0==MODR_M || // FNENI
-			        0xE1==MODR_M)   // FNDISI
-			{
-				// No operand.
 			}
 			else
 			{
@@ -3770,7 +3767,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		{
 			clocksPassed=1; // FSETPM does nothing in 80386 and later.
 		}
-		if(0xE3==inst.operand[0])
+		else if(0xE3==inst.operand[0])
 		{
 			if(0!=(state.GetCR(0)&(CR0_TASK_SWITCHED|CR0_EMULATION)))
 			{
@@ -3869,6 +3866,10 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			else if(0xE0==(MODR_M&0xF8))
 			{
 				// FSUBR STi,ST
+			}
+			else if(0xF0==(MODR_M&0xF8))
+			{
+				// FDIVR STi,ST
 			}
 			else if(0xF8==(MODR_M&0xF8))
 			{
