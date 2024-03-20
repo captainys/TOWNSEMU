@@ -146,6 +146,7 @@ public:
 		PHASE_DATA_IN,
 		PHASE_DATA_OUT,
 		PHASE_STATUS,
+		PHASE_STATUS_TO_BUSFREE,
 	};
 	enum
 	{
@@ -303,6 +304,7 @@ public:
 	void EnterDataOutPhase(void);
 	void EnterMessageInPhase(void);
 	void EnterStatusPhase(void);
+	void EnterStatusPhaseWithoutFollowingMessageIn(void);
 
 	virtual void IOWriteByte(unsigned int ioport,unsigned int data);
 

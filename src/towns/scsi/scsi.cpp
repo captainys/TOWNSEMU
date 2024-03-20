@@ -274,6 +274,8 @@ bool TownsSCSI::LoadCDImage(unsigned int scsiId,std::string fName)
 		return "DATA_OUT";
 	case PHASE_STATUS:
 		return "STATUS";
+	case PHASE_STATUS_TO_BUSFREE:
+		return "STATUS(without MESSAGE_IN)";
 	}
 	return "UNDEFINED";
 }
@@ -318,6 +320,7 @@ void TownsSCSI::SetUpIO_MSG_CDfromPhase(void)
 		state.C_D=false;
 		break;
 	case PHASE_STATUS:
+	case PHASE_STATUS_TO_BUSFREE:
 		state.I_O=true;
 		state.MSG=false;
 		state.C_D=true;
@@ -349,7 +352,7 @@ void TownsSCSI::EnterSelectionPhase(void)
 	state.senseKey=SENSEKEY_ILLEGAL_REQUEST;
 	state.status=STATUSCODE_CHECK_CONDITION;
 	state.message=0;
-	EnterStatusPhase();
+	EnterStatusPhaseWithoutFollowingMessageIn();
 }
 void TownsSCSI::EnterCommandPhase(void)
 {
@@ -437,6 +440,14 @@ void TownsSCSI::EnterMessageInPhase(void)
 void TownsSCSI::EnterStatusPhase(void)
 {
 	state.phase=PHASE_STATUS;
+	state.REQ=false; // REQ and INT will be set in RunScheduledTask
+	state.INT=false;
+	SetUpIO_MSG_CDfromPhase();
+	townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+MessageDelay());
+}
+void TownsSCSI::EnterStatusPhaseWithoutFollowingMessageIn(void)
+{
+	state.phase=PHASE_STATUS_TO_BUSFREE;
 	state.REQ=false; // REQ and INT will be set in RunScheduledTask
 	state.INT=false;
 	SetUpIO_MSG_CDfromPhase();
@@ -564,6 +575,11 @@ unsigned char TownsSCSI::PhaseReturnData(void)
 	if(PHASE_STATUS==state.phase)
 	{
 		EnterMessageInPhase();
+		return state.status;
+	}
+	else if(PHASE_STATUS_TO_BUSFREE==state.phase)
+	{
+		EnterBusFreePhase();
 		return state.status;
 	}
 	else if(PHASE_MESSAGE_IN==state.phase)
@@ -869,7 +885,8 @@ void TownsSCSI::ExecSCSICommand(void)
 {
 	if(PHASE_COMMAND==state.phase ||
 	   PHASE_MESSAGE_IN==state.phase ||
-	   PHASE_STATUS==state.phase)
+	   PHASE_STATUS==state.phase ||
+	   PHASE_STATUS_TO_BUSFREE==state.phase)
 	{
 		state.REQ=true;
 		state.INT=true;
