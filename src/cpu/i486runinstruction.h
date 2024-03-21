@@ -606,9 +606,7 @@ void i486DXCommon::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,Memo
 		{
 			unsigned int MODR_M;
 			FUNCCLASS::PeekOperand8(cpu, MODR_M, inst, ptr, seg, offset, mem);
-			if ((0xE8 <= MODR_M && MODR_M <= 0xEF) || // FSUB ST(i),ST
-				(0xC0 <= MODR_M && MODR_M <= 0xC7)    // FADD ST(i),ST
-				)
+			if (0xC0 <= MODR_M)
 			{
 				FUNCCLASS::FetchOperand8(cpu, inst, ptr, seg, offset, mem);
 			}
@@ -3848,12 +3846,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			}
 		#endif
 			unsigned int MODR_M=inst.operand[0];
-			if(0xE8==(MODR_M&0xF8))
-			{
-				FPU_TRAP;
-				clocksPassed=state.fpuState.FSUB_STi_ST(*this,MODR_M&7);
-			}
-			else if(0xC0==(MODR_M&0xF8))
+			if(0xC0==(MODR_M&0xF8))
 			{
 				FPU_TRAP;
 				clocksPassed=state.fpuState.FADD_STi_ST(*this,MODR_M&7);
@@ -3863,9 +3856,22 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				FPU_TRAP;
 				clocksPassed=state.fpuState.FMUL_STi_ST(*this,MODR_M&7);
 			}
+			else if(0xD0==(MODR_M&0xF8))
+			{
+				// FCOM2 ST,STi? (Need check)
+			}
+			else if(0xD8==(MODR_M&0xF8))
+			{
+				// FCOMP3 ST,STi? (Need check)
+			}
 			else if(0xE0==(MODR_M&0xF8))
 			{
 				// FSUBR STi,ST
+			}
+			else if(0xE8==(MODR_M&0xF8))
+			{
+				FPU_TRAP;
+				clocksPassed=state.fpuState.FSUB_STi_ST(*this,MODR_M&7);
 			}
 			else if(0xF0==(MODR_M&0xF8))
 			{
