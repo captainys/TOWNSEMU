@@ -619,12 +619,16 @@ public:
 		unsigned int FILD_m64int(i486DXCommon &cpu,const unsigned char byteData[]);
 		unsigned int FDIV_m32real(i486DXCommon &cpu,const unsigned char byteData[]);
 		unsigned int FDIV_ST_STi(i486DXCommon &cpu,int i);
+		unsigned int FDIV_STi_ST(i486DXCommon &cpu,int i);
 		unsigned int FDIVP_STi_ST(i486DXCommon &cpu,int i);
 		unsigned int FDIV_m64real(i486DXCommon &cpu,const unsigned char byteData[]);
 		unsigned int FDIVR_m64real(i486DXCommon &cpu,const unsigned char byteData[]);
 		unsigned int FDIVR_m32real(i486DXCommon &cpu,const unsigned char byteData[]);
 		unsigned int FIDIV_m32int(i486DXCommon &cpu,const unsigned char byteData[]);
+		unsigned int FIDIVR_m16int(i486DXCommon &cpu,const unsigned char byteData[]);
 		unsigned int FIDIVR_m32int(i486DXCommon &cpu,const unsigned char byteData[]);
+		unsigned int FDIVR_ST_STi(i486DXCommon &cpu,int i);
+		unsigned int FDIVR_STi_ST(i486DXCommon &cpu,int i);
 		unsigned int FDIVRP_STi_ST(i486DXCommon &cpu,int i);
 		unsigned int FLD32(i486DXCommon &cpu,const unsigned char byteData[]);
 		unsigned int FLD64(i486DXCommon &cpu,const unsigned char byteData[]);

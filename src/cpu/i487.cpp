@@ -678,6 +678,7 @@ unsigned int i486DXCommon::FPUState::FCHS(i486DXCommon &cpu)
 }
 unsigned int i486DXCommon::FPUState::FCLEX(i486DXCommon &cpu)
 {
+	statusWord&=0x7F00;
 	return 7;
 }
 unsigned int i486DXCommon::FPUState::FCOM_m32real(i486DXCommon &cpu,const unsigned char byteData[])
@@ -840,6 +841,28 @@ unsigned int i486DXCommon::FPUState::FIDIV_m32int(i486DXCommon &cpu,const unsign
 	}
 	return 0;
 }
+unsigned int i486DXCommon::FPUState::FIDIVR_m16int(i486DXCommon &cpu,const unsigned char byteData[])
+{
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+
+		double src=IntFrom16Bit(byteData);
+		auto &st=ST(cpu);
+		if(0==st.value)
+		{
+			// Zero division
+		}
+		st.value=src/st.value;
+
+	#ifdef CHECK_FOR_NAN
+		BreakOnNan(cpu,st.value);
+	#endif
+
+		return 73;
+	}
+	return 0;
+}
 unsigned int i486DXCommon::FPUState::FIDIVR_m32int(i486DXCommon &cpu,const unsigned char byteData[])
 {
 	if(true==enabled)
@@ -881,6 +904,28 @@ unsigned int i486DXCommon::FPUState::FDIV_ST_STi(i486DXCommon &cpu,int i)
 	#endif
 
 		return 73;
+	}
+	return 0; // Let it abort.
+}
+unsigned int i486DXCommon::FPUState::FDIV_STi_ST(i486DXCommon &cpu,int i)
+{
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+
+		auto &ST=this->ST(cpu);
+		auto &STi=this->ST(cpu,i);
+		if(0.0==STi.value)
+		{
+			// Zero division.
+		}
+		STi.value=STi.value/ST.value; // Let it be a NaN if ST1.value is zero.
+
+	#ifdef CHECK_FOR_NAN
+		BreakOnNan(cpu,STi.value);
+	#endif
+
+		return 70;
 	}
 	return 0; // Let it abort.
 }
@@ -951,7 +996,7 @@ unsigned int i486DXCommon::FPUState::FDIVR_m64real(i486DXCommon &cpu,const unsig
 	}
 	return 0;
 }
-unsigned int i486DXCommon::FPUState::FDIVRP_STi_ST(i486DXCommon &cpu,int i)
+unsigned int i486DXCommon::FPUState::FDIVR_ST_STi(i486DXCommon &cpu,int i)
 {
 	if(true==enabled)
 	{
@@ -960,6 +1005,50 @@ unsigned int i486DXCommon::FPUState::FDIVRP_STi_ST(i486DXCommon &cpu,int i)
 		auto &ST=this->ST(cpu);
 		auto &STi=this->ST(cpu,i);
 		if(0.0==ST.value)
+		{
+			// Zero division.
+		}
+		ST.value=STi.value/ST.value; // Let it be a NaN if ST.value is zero.
+
+	#ifdef CHECK_FOR_NAN
+		BreakOnNan(cpu,STi.value);
+	#endif
+
+		return 73;
+	}
+	return 0; // Let it abort.
+}
+unsigned int i486DXCommon::FPUState::FDIVR_STi_ST(i486DXCommon &cpu,int i)
+{
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+
+		auto &ST=this->ST(cpu);
+		auto &STi=this->ST(cpu,i);
+		if(0.0==STi.value)
+		{
+			// Zero division.
+		}
+		STi.value=ST.value/STi.value; // Let it be a NaN if ST1.value is zero.
+
+	#ifdef CHECK_FOR_NAN
+		BreakOnNan(cpu,STi.value);
+	#endif
+
+		return 73;
+	}
+	return 0; // Let it abort.
+}
+unsigned int i486DXCommon::FPUState::FDIVRP_STi_ST(i486DXCommon &cpu,int i)
+{
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+
+		auto &ST=this->ST(cpu);
+		auto &STi=this->ST(cpu,i);
+		if(0.0==STi.value)
 		{
 			// Zero division.
 		}

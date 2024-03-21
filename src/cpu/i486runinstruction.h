@@ -3332,7 +3332,8 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			}
 			else if(0xF8==(MODR_M&0xF8))
 			{
-			   // FDIVR ST,STi
+			   FPU_TRAP;
+			   clocksPassed=state.fpuState.FDIVR_ST_STi(*this,MODR_M&7);
 			}
 			else
 			{
@@ -3860,10 +3861,14 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			else if(0xF0==(MODR_M&0xF8))
 			{
 				// FDIVR STi,ST
+				FPU_TRAP;
+				clocksPassed=state.fpuState.FDIVR_STi_ST(*this,MODR_M&7);
 			}
 			else if(0xF8==(MODR_M&0xF8))
 			{
 				// FDIV STi,ST
+				FPU_TRAP;
+				clocksPassed=state.fpuState.FDIV_STi_ST(*this,MODR_M&7);
 			}
 			else
 			{
@@ -4129,6 +4134,11 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					break;
 				case 7:
 					// FIDIVR m16int
+					FPU_TRAP;
+					{
+						auto value=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,2);
+						clocksPassed=state.fpuState.FIDIVR_m16int(*this,value.byteData);
+					}
 					break;
 				}
 			}

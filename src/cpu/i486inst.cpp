@@ -1515,21 +1515,49 @@ std::string i486DXCommon::Instruction::Disassemble(const Operand &op1In,const Op
 	case I486_OPCODE_FPU_DC:
 		{
 			unsigned int MODR_M=operand[0];
-			if(0xE8<=MODR_M && MODR_M<=0xEF)
-			{
-				disasm="FSUB  ST(";
-				disasm.push_back('0'+(MODR_M&7));
-				disasm+="),ST";
-			}
-			else if(0xC0<=MODR_M && MODR_M<=0xC7)
+			if(0xC0==(MODR_M&0xF8))
 			{
 				disasm="FADD  ST(";
 				disasm.push_back('0'+(MODR_M&7));
 				disasm+="),ST";
 			}
-			else if(0xC8<=MODR_M && MODR_M<=0xCF)
+			else if(0xC8==(MODR_M&0xF8))
 			{
 				disasm="FMUL  ST(";
+				disasm.push_back('0'+(MODR_M&7));
+				disasm+="),ST";
+			}
+			else if(0xD0==(MODR_M&0xF8))
+			{
+				// FCOM2 ST,STi? (Need check)
+				disasm="FCOM2? Need Check";
+			}
+			else if(0xD8==(MODR_M&0xF8))
+			{
+				// FCOMP3 ST,STi? (Need check)
+				disasm="FCOMP3? Need Check";
+			}
+			else if(0xE0==(MODR_M&0xF8))
+			{
+				disasm="FSUBR ST(";
+				disasm.push_back('0'+(MODR_M&7));
+				disasm+="),ST";
+			}
+			else if(0xE8==(MODR_M&0xF8))
+			{
+				disasm="FSUB  ST(";
+				disasm.push_back('0'+(MODR_M&7));
+				disasm+="),ST";
+			}
+			else if(0xF0==(MODR_M&0xF8))
+			{
+				disasm="FDIVR ST(";
+				disasm.push_back('0'+(MODR_M&7));
+				disasm+="),ST";
+			}
+			else if(0xF8==(MODR_M&0xF8))
+			{
+				disasm="FDIV  ST(";
 				disasm.push_back('0'+(MODR_M&7));
 				disasm+="),ST";
 			}
