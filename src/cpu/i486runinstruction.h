@@ -620,25 +620,9 @@ void i486DXCommon::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,Memo
 		{
 			unsigned int MODR_M;
 			FUNCCLASS::PeekOperand8(cpu, MODR_M, inst, ptr, seg, offset, mem);
-			if (0xD0 == (MODR_M & 0xF8)) // D0 11010xxx    [1] pp.151  0<=i<=7
+			if (0xC0 <= (MODR_M & 0xF8) && (MODR_M & 0xF8) <= 0xE8)
 			{
-				FUNCCLASS::FetchOperand8(cpu, inst, ptr, seg, offset, mem);   // FST
-			}
-			else if (0xD8 == (MODR_M & 0xF8)) // D8 11011xxx
-			{
-				FUNCCLASS::FetchOperand8(cpu, inst, ptr, seg, offset, mem);   // FSTP
-			}
-			else if (0xC0 == (MODR_M & 0xF8)) // C0 11000xxx
-			{
-				FUNCCLASS::FetchOperand8(cpu, inst, ptr, seg, offset, mem);   // FFREE
-			}
-			else if (0xE0 == (MODR_M & 0xF8)) // E0 11100xxx
-			{
-				FUNCCLASS::FetchOperand8(cpu, inst, ptr, seg, offset, mem);   // FUCOM
-			}
-			else if (0xE8 == (MODR_M & 0xF8)) // E8 11101xxx
-			{
-				FUNCCLASS::FetchOperand8(cpu, inst, ptr, seg, offset, mem);   // FUCOMP
+				FUNCCLASS::FetchOperand8(cpu, inst, ptr, seg, offset, mem);
 			}
 			else
 			{
@@ -3965,6 +3949,12 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		#endif
 			switch(inst.operand[0]&0xF8)
 			{
+			case 0xC0: // C0 11000xxx
+				FPU_TRAP;
+				clocksPassed=state.fpuState.FFREE(*this,(inst.operand[0]&7));
+				break;
+			case 0xC8: // FXCH4? Need check
+				break;
 			case 0xD0: // D0 11010xxx    [1] pp.151  0<=i<=7
 				FPU_TRAP;
 				clocksPassed=state.fpuState.FST_STi(*this,(inst.operand[0]&7));
@@ -3972,10 +3962,6 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			case 0xD8: // D8 11011xxx
 				FPU_TRAP;
 				clocksPassed=state.fpuState.FSTP_STi(*this,(inst.operand[0]&7));
-				break;
-			case 0xC0: // C0 11000xxx
-				FPU_TRAP;
-				clocksPassed=state.fpuState.FFREE(*this,(inst.operand[0]&7));
 				break;
 			case 0xE0:
 				FPU_TRAP;
