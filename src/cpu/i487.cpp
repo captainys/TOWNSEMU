@@ -2014,6 +2014,20 @@ unsigned int i486DXCommon::FPUState::FISUB_m32int(i486DXCommon& cpu, const unsig
 	}
 	return 0;
 }
+unsigned int i486DXCommon::FPUState::FISUBR_m16int(i486DXCommon &cpu,const unsigned char byteData[])
+{
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+
+		double src=(double)IntFrom16Bit(byteData);
+		auto &st=ST(cpu);
+		st.value=src-st.value;
+
+		return 24;
+	}
+	return 0;
+}
 unsigned int i486DXCommon::FPUState::FISUBR_m32int(i486DXCommon &cpu,const unsigned char byteData[])
 {
 	if(true==enabled)
@@ -2064,6 +2078,18 @@ unsigned int i486DXCommon::FPUState::FSUBR_ST_STi(i486DXCommon &cpu,int i)
 		auto &ST=this->ST(cpu);
 		auto &STi=this->ST(cpu,i);
 		ST.value=STi.value-ST.value;
+		return 10;
+	}
+	return 0;
+}
+unsigned int i486DXCommon::FPUState::FSUBR_STi_ST(i486DXCommon &cpu,int i)
+{
+	if(true==enabled)
+	{
+		statusWord&=~STATUS_C1;
+		auto &ST=this->ST(cpu);
+		auto &STi=this->ST(cpu,i);
+		STi.value=ST.value-STi.value;
 		return 10;
 	}
 	return 0;

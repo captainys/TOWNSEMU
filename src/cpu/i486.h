@@ -675,10 +675,12 @@ public:
 		unsigned int FSUBP_STi_ST(i486DXCommon &cpu,int i);
 		unsigned int FISUB_m16int(i486DXCommon& cpu, const unsigned char byteData[]);
 		unsigned int FISUB_m32int(i486DXCommon& cpu, const unsigned char byteData[]);
+		unsigned int FISUBR_m16int(i486DXCommon &cpu,const unsigned char byteData[]);
 		unsigned int FISUBR_m32int(i486DXCommon &cpu,const unsigned char byteData[]);
 		unsigned int FSUBR_m32real(i486DXCommon &cpu,const unsigned char byteData[]);
 		unsigned int FSUBR_m64real(i486DXCommon &cpu,const unsigned char byteData[]);
 		unsigned int FSUBR_ST_STi(i486DXCommon &cpu,int i);
+		unsigned int FSUBR_STi_ST(i486DXCommon &cpu,int i);
 		unsigned int FSUBRP_STi_ST(i486DXCommon &cpu,int i);
 		unsigned int FTST(i486DXCommon &cpu);
 		unsigned int FXAM(i486DXCommon &cpu);

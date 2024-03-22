@@ -3875,6 +3875,8 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			else if(0xE0==(MODR_M&0xF8))
 			{
 				// FSUBR STi,ST
+				FPU_TRAP;
+				clocksPassed=state.fpuState.FSUBR_STi_ST(*this,MODR_M&7);
 			}
 			else if(0xE8==(MODR_M&0xF8))
 			{
@@ -4147,6 +4149,11 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					break;
 				case 5:
 					// FISUBR m16int
+					FPU_TRAP;
+					{
+						auto value = EvaluateOperand(mem, inst.addressSize, inst.segOverride, op1, 2);
+						clocksPassed = state.fpuState.FISUBR_m16int(*this, value.byteData);
+					}
 					break;
 				case 6:
 					FPU_TRAP;
