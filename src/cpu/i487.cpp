@@ -1419,6 +1419,54 @@ unsigned int i486DXCommon::FPUState::FPREM(i486DXCommon &cpu)
 	}
 	return 0; // Let it abort.
 }
+unsigned int i486DXCommon::FPUState::FPREM1(i486DXCommon &cpu)
+{
+	if(true==enabled)
+	{
+		statusWord&=~(STATUS_C0|STATUS_C1|STATUS_C2|STATUS_C3);
+
+		auto &ST=this->ST(cpu);
+		auto &ST1=this->ST(cpu,1);
+		if(0==ST1.value)
+		{
+			statusWord|=STATUS_C2;
+			// Zero division
+		}
+		else
+		{
+			// x86 manual tells that it should set LEAST significant bits of the quotient in C0,C3,C1.
+			// LEAST?  Is there any use?  I need to do math to make sense of it.
+			// For the meantime, I ignore those 3 bits.
+
+			// -> I see, I see.  It makes sense.  C0, C3, C1 should be taken from the quotient converted to integer.
+			//    I was thinking to take least significant bits from fraction part of floating point,
+			//    which for sure doesn't do any good.
+
+			// i486 Programmer's Reference Manual suggests FPREM1 uses nearest integer, instead of truncate.
+			int64_t quo=(int64_t)(fabs(ST.value/ST1.value)+0.0001);
+			if(0!=(quo&1))
+			{
+				statusWord|=STATUS_C1;
+			}
+			if(0!=(quo&2))
+			{
+				statusWord|=STATUS_C3;
+			}
+			if(0!=(quo&4))
+			{
+				statusWord|=STATUS_C0;
+			}
+		}
+		ST.value=fmod(ST.value,ST1.value);
+
+	#ifdef CHECK_FOR_NAN
+		BreakOnNan(cpu,ST.value);
+	#endif
+
+		return 94;
+	}
+	return 0; // Let it abort.
+}
 unsigned int i486DXCommon::FPUState::FRNDINT(i486DXCommon &cpu)
 {
 	if(true==enabled)
@@ -1568,6 +1616,11 @@ std::vector <uint8_t> i486DXCommon::FPUState::FNSTENV(const i486DXCommon &cpu,un
 	}
 	return data;
 }
+unsigned int i486DXCommon::FPUState::FLDENV(const i486DXCommon &cpu,unsigned int operandSize,const uint8_t data[])
+{
+	RestoreFPUEnv(data,operandSize,cpu.IsInRealMode());
+	return 44; // 34 in protected mode
+}
 unsigned int  i486DXCommon::FPUState::PopulateFPUEnv(uint8_t *data,unsigned int operandSize,bool isInRealMode) const
 {
 	// 14 bytes or 28 bytes depends on operand size?  Figure 15-5 through 15-8 of i486 Programmer's Reference Manual 1990 for layout.
@@ -1647,6 +1700,67 @@ unsigned int  i486DXCommon::FPUState::PopulateFPUEnv(uint8_t *data,unsigned int 
 		cpputil::PutWord(data+10,0);
 		cpputil::PutWord(data+12,0);
 		return 14;
+	}
+}
+void i486DXCommon::FPUState::RestoreFPUEnv(const uint8_t *data,unsigned int operandSize,bool isInRealMode)
+{
+	// 14 bytes or 28 bytes depends on operand size?  Figure 15-5 through 15-8 of i486 Programmer's Reference Manual 1990 for layout.
+	// WTF!? Four types of layouts?  Intel designers were really creative in the evil way.
+	// Protected Mode && 32-bit (Figure 15-5)
+	//   RESERVED | CONTROL WORD     +0H
+	//   RESERVED | STATUS WORD      +4H
+	//   RESERVED | TAG WORD         +8H
+	//        IP OFFSET              +CH
+	//   RESERVED | CS selector      +10H
+	//       Data Operand Offset     +14H
+	//   RESERVED | Operand Selector +18H
+	if(true!=isInRealMode && 32==operandSize)
+	{
+		controlWord=cpputil::GetDword(data   );
+		statusWord =cpputil::GetDword(data+ 4);
+		tagWord    =cpputil::GetDword(data+ 8);
+	}
+	// Real Mode && 32-bit (Figure 15-6)
+	//   RESERVED | CONTROL WORD                       +0H
+	//   RESERVED | STATUS WORD                        +4H
+	//   RESERVED | TAG WORD                           +8H
+	//   RESERVED | IP OFFSET                          +CH
+	//   0000 (IP 16bits) 0 (Opcode 11bits)            +10H
+	//   RESERVED | Data Operand Offset                +14H
+	//   0000 (Operand Selector 16bits) 000000000000   +18H
+	else if(true==isInRealMode && 32==operandSize)
+	{
+		controlWord=cpputil::GetDword(data   );
+		statusWord =cpputil::GetDword(data+ 4);
+		tagWord    =cpputil::GetDword(data+ 8);
+	}
+	// Protected Mode && 16-bit (Figure 15-7)
+	//   CONTROL WORD            +0H
+	//   STATUS WORD             +2H
+	//   TAG WORD                +4H
+	//   IP OFFSET               +6H
+	//   CS selector             +8H
+	//   Data Operand Offset     +AH
+	//   Operand Selector        +CH
+	else if(true!=isInRealMode && 16==operandSize)
+	{
+		controlWord=cpputil::GetWord(data   );
+		statusWord =cpputil::GetWord(data+ 2);
+		tagWord    =cpputil::GetWord(data+ 4);
+	}
+	// Real Mode && 16-bit (Figure 15-8)
+	//   CONTROL WORD                     +0H
+	//   STATUS WORD                      +2H
+	//   TAG WORD                         +4H
+	//   IP OFFSET                        +6H
+	//   IP(high-4bit) 0 Opcode(11 bits)  +8H
+	//   Data Operand Offset              +AH
+	//   DP(high 4-bit) <- 0 ->           +CH
+	else if(true==isInRealMode && 16==operandSize)
+	{
+		controlWord=cpputil::GetWord(data   );
+		statusWord =cpputil::GetWord(data+ 2);
+		tagWord    =cpputil::GetWord(data+ 4);
 	}
 }
 unsigned int i486DXCommon::FPUState::FFREE(i486DXCommon &cpu,int i)

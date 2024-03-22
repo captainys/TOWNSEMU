@@ -651,13 +651,16 @@ public:
 		unsigned int FIMUL_m32int(i486DXCommon &cpu,const unsigned char byteData[]);
 		unsigned int FPATAN(i486DXCommon &cpu);
 		unsigned int FPREM(i486DXCommon &cpu);
+		unsigned int FPREM1(i486DXCommon &cpu);
 		unsigned int FPTAN(i486DXCommon &cpu);
 		unsigned int FRNDINT(i486DXCommon &cpu);
 		unsigned int FRSTOR(const i486DXCommon &cpu,unsigned int operandSize,const uint8_t data[]);
 		unsigned int RestoreEnv(unsigned int operandSize,bool isInRealMode,const uint8_t data[]);
 		std::vector <uint8_t> FSAVE(const i486DXCommon &cpu,unsigned int operandSize) const;
 		std::vector <uint8_t> FNSTENV(const i486DXCommon &cpu,unsigned int operandSize) const;
+		unsigned int FLDENV(const i486DXCommon &cpu,unsigned int operandSize,const uint8_t data[]);
 		unsigned int PopulateFPUEnv(uint8_t *data,unsigned int operandSize,bool isInRealMode) const;
+		void RestoreFPUEnv(const uint8_t *data,unsigned int operandSize,bool isInRealMode);
 		unsigned int FFREE(i486DXCommon &cpu,int i);
 		unsigned int FSCALE(i486DXCommon &cpu);
 		unsigned int FSIN(i486DXCommon &cpu);

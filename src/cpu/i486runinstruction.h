@@ -3511,7 +3511,8 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		}
 		else if(0xF5==inst.operand[0])
 		{
-			// FPREM1
+			FPU_TRAP;
+			clocksPassed=state.fpuState.FPREM1(*this);
 		}
 		else if(0xF6==inst.operand[0])
 		{
@@ -3589,6 +3590,28 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
 					state.fpuState.Pop(*this);
 					clocksPassed=7;
+				}
+				break;
+			case 4: // "FLDENV"
+				FPU_TRAP;
+				{
+					uint8_t data[28];
+					unsigned int dataLen=14;
+					if(16==inst.operandSize)
+					{
+						dataLen=14;
+					}
+					else
+					{
+						dataLen=28;
+					}
+					unsigned int offset;
+					auto segPtr=ExtractSegmentAndOffset(offset,op1,inst.segOverride);
+					for(unsigned int i=0; i<dataLen; ++i)
+					{
+						data[i]=FetchByte(inst.addressSize,*segPtr,offset+i,mem);
+					}
+					clocksPassed=state.fpuState.FLDENV(*this,inst.operandSize,data);
 				}
 				break;
 			case 5: // "FLDCW"
