@@ -6982,6 +6982,11 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				EIPIncrement=0;
 				break;
 			}
+			if(true==fidelity.IsTaskReturn(*this))
+			{
+				Abort("Task Return Not Supported");
+				break;
+			}
 
 			bool IRET_TO_VM86=false;
 

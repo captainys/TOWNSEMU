@@ -175,11 +175,7 @@ inline void i486DXFidelityLayer <FIDELITY>::Interrupt(unsigned int INTNum,Memory
 				{
 					SetIF(false);
 				}
-				SetTF(false);
-				if(newCS.DPL<CPL)
-				{
-					state.EFLAGS&=(~EFLAGS_NESTED);
-				}
+				state.EFLAGS&=(~(EFLAGS_NESTED|EFLAGS_TRAP));
 			}
 			else // Interrupt from Virtual86 mode
 			{
