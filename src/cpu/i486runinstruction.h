@@ -7071,11 +7071,13 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				EIPIncrement=0;
 				break;
 			}
-			if(true==fidelity.IsTaskReturn(*this))
-			{
-				Abort("Task Return Not Supported");
-				break;
-			}
+			// I still do not understand the logic of task return.
+			// But, none of TownsOS, Windows 3.1, Windows 95, and Linux for TOWNS seems to be using it anyway.
+			// if(true==fidelity.IsTaskReturn(*this))
+			// {
+			// 	Abort("Task Return Not Supported");
+			// 	break;
+			// }
 
 			bool IRET_TO_VM86=false;
 

@@ -414,19 +414,19 @@ public:
 	TownsSinglePageVRAMAccessTemplate <0> VRAMAccess1;
 	TownsVRAMAccessTemplate           <0> VRAMAccessHighRes0;
 	TownsVRAMAccessTemplate           <0x80000> VRAMAccessHighRes1;
-	TownsVRAMAccessTemplate           <0> VRAMAccessHighRes2;
+	TownsSinglePageVRAMAccessTemplate <0> VRAMAccessHighRes2;
 
 	TownsVRAMAccessWithMaskTemplate           <0> VRAMAccessWithMask0;
 	TownsSinglePageVRAMAccessWithMaskTemplate <0> VRAMAccessWithMask1;
 	TownsVRAMAccessWithMaskTemplate           <0> VRAMAccessWithMaskHighRes0;
 	TownsVRAMAccessWithMaskTemplate           <0x80000> VRAMAccessWithMaskHighRes1;
-	TownsVRAMAccessWithMaskTemplate           <0> VRAMAccessWithMaskHighRes2;
+	TownsSinglePageVRAMAccessWithMaskTemplate <0> VRAMAccessWithMaskHighRes2;
 
 	TownsMemAccessDebug <TownsVRAMAccessTemplate           <0> > VRAMAccess0Debug;
 	TownsMemAccessDebug <TownsSinglePageVRAMAccessTemplate <0> > VRAMAccess1Debug;
 	TownsMemAccessDebug <TownsVRAMAccessTemplate           <0> > VRAMAccessHighRes0Debug;
 	TownsMemAccessDebug <TownsVRAMAccessTemplate           <0x80000> > VRAMAccessHighRes1Debug;
-	TownsMemAccessDebug <TownsVRAMAccessTemplate           <0> > VRAMAccessHighRes2Debug;
+	TownsMemAccessDebug <TownsSinglePageVRAMAccessTemplate <0> > VRAMAccessHighRes2Debug;
 
 
 	TownsSpriteRAMAccess spriteRAMAccess;
