@@ -340,6 +340,26 @@ public:
 		TSS_OFFSET_SS1= 0x10,
 		TSS_OFFSET_ESP2=0x14,
 		TSS_OFFSET_SS2= 0x18,
+		TSS_OFFSET_CR3= 0x1C,
+		TSS_OFFSET_EIP= 0x20,
+		TSS_OFFSET_EFLAGS=0x24,
+		TSS_OFFSET_EAX= 0x28,
+		TSS_OFFSET_ECX= 0x2C,
+		TSS_OFFSET_EDX= 0x30,
+		TSS_OFFSET_EBX= 0x34,
+		TSS_OFFSET_ESP= 0x38,
+		TSS_OFFSET_EBP= 0x3C,
+		TSS_OFFSET_ESI= 0x40,
+		TSS_OFFSET_EDI= 0x44,
+		TSS_OFFSET_ES=  0x48,
+		TSS_OFFSET_CS=  0x4C,
+		TSS_OFFSET_SS=  0x50,
+		TSS_OFFSET_DS=  0x54,
+		TSS_OFFSET_FS=  0x58,
+		TSS_OFFSET_GS=  0x5C,
+		TSS_OFFSET_LDT= 0x60,
+		TSS_OFFSET_T=   0x64,  // Something to do with debugger.
+		TSS_OFFSET_IOMAPBASE=0x66,
 
 		TSS286_OFFSET_SP0=2,
 		TSS286_OFFSET_SS0=4,
@@ -3088,6 +3108,12 @@ private:
 
 	/*! JMP FAR */
 	inline unsigned int JMPF(Memory &mem,uint16_t opSize,uint16_t instNumBytes,uint16_t newCS,uint32_t newEIP,uint16_t defClocks);
+
+	/*! Switch Task */
+	void SwitchTaskToTSS(Memory &mem,uint32_t instNumBytes,uint16_t prevCS,const SegmentRegister &newTSS,bool nested);
+
+	/*! */
+	inline void SwitchTaskToTSS();
 
 public:
 	/*! Issue an interrupt.

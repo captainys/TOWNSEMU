@@ -1107,6 +1107,7 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::JMPF(Memory &mem,uint16_t opS
 		FIDELITY fidelity;
 
 		auto prevCPL=state.CS().DPL;
+		auto prevCS=state.CS().value;
 
 		LoadSegmentRegister(state.CS(),newCS,mem);
 		if(fidelity.HandleExceptionIfAny(*this,mem,instNumBytes))
@@ -1124,10 +1125,13 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::JMPF(Memory &mem,uint16_t opS
 		case DESCTYPE_AVAILABLE_286_TSS: //               1,
 		case DESCTYPE_BUSY_286_TSS: //                    3,
 		case DESCTYPE_TASK_GATE: //                       5,
-		case DESCTYPE_AVAILABLE_386_TSS: //               9,
 		case DESCTYPE_BUSY_386_TSS: //                 0x0B,
 			Abort("JMPF to Task not supported.");
 			break;
+		case DESCTYPE_AVAILABLE_386_TSS: //               9,
+			SwitchTaskToTSS(mem,instNumBytes,prevCS,state.CS(),false);
+			break;
+
 		case SEGTYPE_CODE_NONCONFORMING_EXECONLY: //0b11000, // Code Non-Conforming Execute-Only
 		case SEGTYPE_CODE_NONCONFORMING_READABLE: //0b11010, // Code Non-Conforming Readable
 		case SEGTYPE_CODE_CONFORMING_EXECONLY: //   0b11100, // Code Conforming     Execute-Only
@@ -1147,6 +1151,91 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::JMPF(Memory &mem,uint16_t opS
 	}
 
 	return defClocks;
+}
+
+template <class FIDELITY>
+void i486DXFidelityLayer<FIDELITY>::SwitchTaskToTSS(Memory &mem,uint32_t instNumBytes,uint16_t prevCS,const SegmentRegister &newTSS,bool nested)
+{
+	// INTEL 80386 PROGRAMMER'S REFERENCE MANUAL 1986
+	// Section 7.5 Page 138
+
+	// 1. Check the current task is allowed to switch.
+	//    I'll worry about it later.
+
+	// 2. Check if the next TSS descriptor is marked present and has a valid limit.
+	//    I'll worry about it later.
+
+	// 3. Save the state of the current task.
+	//      LDT, EFLAGS, EIP, EAX, ECX, EDX, EBX, ESP, EBP, ESI,EDI, ES, CS, SS, DS, FS, GS
+	DebugStoreDword(mem,32,state.TR,TSS_OFFSET_LDT,state.LDTR.selector);
+	DebugStoreDword(mem,32,state.TR,TSS_OFFSET_EFLAGS,state.EFLAGS);
+	DebugStoreDword(mem,32,state.TR,TSS_OFFSET_EIP,state.EIP+instNumBytes);
+	DebugStoreDword(mem,32,state.TR,TSS_OFFSET_EAX,state.EAX());
+	DebugStoreDword(mem,32,state.TR,TSS_OFFSET_ECX,state.ECX());
+	DebugStoreDword(mem,32,state.TR,TSS_OFFSET_EDX,state.EDX());
+	DebugStoreDword(mem,32,state.TR,TSS_OFFSET_EBX,state.EBX());
+	DebugStoreDword(mem,32,state.TR,TSS_OFFSET_ESP,state.ESP());
+	DebugStoreDword(mem,32,state.TR,TSS_OFFSET_EBP,state.EBP());
+	DebugStoreDword(mem,32,state.TR,TSS_OFFSET_ESI,state.ESI());
+	DebugStoreDword(mem,32,state.TR,TSS_OFFSET_EDI,state.EDI());
+	DebugStoreDword(mem,32,state.TR,TSS_OFFSET_ES,state.ES().value);
+	DebugStoreDword(mem,32,state.TR,TSS_OFFSET_CS,prevCS);
+	DebugStoreDword(mem,32,state.TR,TSS_OFFSET_SS,state.SS().value);
+	DebugStoreDword(mem,32,state.TR,TSS_OFFSET_DS,state.DS().value);
+	DebugStoreDword(mem,32,state.TR,TSS_OFFSET_FS,state.FS().value);
+	DebugStoreDword(mem,32,state.TR,TSS_OFFSET_GS,state.GS().value);
+
+	// 4. Load Task Register
+	LoadTaskRegister(newTSS.value,mem);
+
+	// 5. Load incoming task's state.
+	//      LDT, EFLAGS, EIP, EAX, ECX, EDX, EBX, ESP, EBP, ESI,EDI, ES, CS, SS, DS, FS, GS, PDBR(=CR3)
+	InvalidateDescriptorCache();
+	auto selector=DebugFetchWord(32,state.TR,TSS_OFFSET_LDT,mem);
+	auto TI=(0!=(selector&4));
+	state.LDTR.selector=selector;
+	if(0==selector)
+	{
+		state.LDTR.linearBaseAddr=0;
+		state.LDTR.limit=0;
+	}
+	else if(0!=TI) // Pointing LDT
+	{
+		Abort("Task Switching Failure (LDT)");
+	}
+	else
+	{
+		SegmentRegister seg;
+		LoadSegmentRegister(seg,selector,mem,false); // Force to read from GDT by setting isInRealMode=false
+		const unsigned char byteData[]=
+		{
+			(unsigned char)( seg.limit    &0xff),
+			(unsigned char)((seg.limit>>8)&0xff),
+			(unsigned char)( seg.baseLinearAddr     &0xff),
+			(unsigned char)((seg.baseLinearAddr>>8) &0xff),
+			(unsigned char)((seg.baseLinearAddr>>16)&0xff),
+			(unsigned char)((seg.baseLinearAddr>>24)&0xff),
+		};
+		LoadDescriptorTableRegister(state.LDTR,32,byteData);
+	}
+
+	state.EFLAGS=DebugFetchDword(32,state.TR,TSS_OFFSET_EFLAGS,mem);
+	state.EIP=DebugFetchDword(32,state.TR,TSS_OFFSET_EIP,mem);
+	state.EAX()=DebugFetchDword(32,state.TR,TSS_OFFSET_EAX,mem);
+	state.ECX()=DebugFetchDword(32,state.TR,TSS_OFFSET_ECX,mem);
+	state.EDX()=DebugFetchDword(32,state.TR,TSS_OFFSET_EDX,mem);
+	state.EBX()=DebugFetchDword(32,state.TR,TSS_OFFSET_EBX,mem);
+	state.ESP()=DebugFetchDword(32,state.TR,TSS_OFFSET_ESP,mem);
+	state.EBP()=DebugFetchDword(32,state.TR,TSS_OFFSET_EBP,mem);
+	state.ESI()=DebugFetchDword(32,state.TR,TSS_OFFSET_ESI,mem);
+	state.EDI()=DebugFetchDword(32,state.TR,TSS_OFFSET_EDI,mem);
+	LoadSegmentRegister(state.ES(),DebugFetchWord(32,state.TR,TSS_OFFSET_ES,mem),mem,false);
+	LoadSegmentRegister(state.SS(),DebugFetchWord(32,state.TR,TSS_OFFSET_SS,mem),mem,false);
+	LoadSegmentRegister(state.DS(),DebugFetchWord(32,state.TR,TSS_OFFSET_DS,mem),mem,false);
+	LoadSegmentRegister(state.FS(),DebugFetchWord(32,state.TR,TSS_OFFSET_FS,mem),mem,false);
+	LoadSegmentRegister(state.GS(),DebugFetchWord(32,state.TR,TSS_OFFSET_GS,mem),mem,false);
+	SetCR(3,DebugFetchDword(32,state.TR,TSS_OFFSET_CR3,mem),mem);
+	LoadSegmentRegister(state.CS(),DebugFetchWord(32,state.TR,TSS_OFFSET_CS,mem),mem,false);
 }
 
 template <class FIDELITY>
