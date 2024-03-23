@@ -905,6 +905,7 @@ unsigned int FMTownsCommon::MachineID(void) const
 		break;
 	case TOWNSTYPE_MARTY:
 		// Disassembly of TBIOS.SYS indicated that TBIOS.SYS detects marty by testing highByte&0x40.
+		// 4AH confirmed by aochan on 2024/03/23
 		highByte=0x4A;
 		break;
 	}
