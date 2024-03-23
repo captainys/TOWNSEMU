@@ -4662,6 +4662,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					//SetOF(false);
 				}
 			}
+			HANDLE_EXCEPTION_IF_ANY;
 		}
 		break;
 
