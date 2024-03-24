@@ -76,6 +76,7 @@ public:
 	    For making it a key-release code, do keyCodeBuf[0]|=TOWNS_KEYFLAG_THUMBSHIFT_RELEASE.
 	*/
 	static unsigned int TranslateChar(unsigned char keyCodeBuf[2],unsigned char c);
+	void TypeToFifo(const unsigned char keyCodeBuf[2]);
 private:
 	static TownsKeyCombination translation_data[256];
 

@@ -42,8 +42,7 @@ void TownsKeyboard::SetAutoType(std::string str)
 		unsigned char byteData[2];
 		if(0<TranslateChar(byteData,str[0]))
 		{
-			PushFifo(byteData[0]|TOWNS_KEYFLAG_PRESS  ,byteData[1]);
-			PushFifo(byteData[0]|TOWNS_KEYFLAG_RELEASE,byteData[1]);
+			TypeToFifo(byteData);
 		}
 		str.erase(str.begin());
 	}
@@ -505,8 +504,7 @@ void TownsKeyboard::SetBootKeyCombination(unsigned int keyComb)
 					unsigned char byteData[2];
 					if(0<TranslateChar(byteData,autoType[0]))
 					{
-						PushFifo(byteData[0]|TOWNS_KEYFLAG_PRESS  ,byteData[1]);
-						PushFifo(byteData[0]|TOWNS_KEYFLAG_RELEASE,byteData[1]);
+						TypeToFifo(byteData);
 					}
 					autoType.erase(autoType.begin());
 				}
@@ -652,6 +650,19 @@ bool TownsKeyboard::InFifoBuffer(unsigned int code) const
 		}
 	}
 	return false;
+}
+void TownsKeyboard::TypeToFifo(const unsigned char byteData[2])
+{
+	if(0!=(byteData[0]&TOWNS_KEYFLAG_SHIFT))
+	{
+		PushFifo(byteData[0]|TOWNS_KEYFLAG_PRESS,TOWNS_JISKEY_SHIFT);
+	}
+	PushFifo(byteData[0]|TOWNS_KEYFLAG_PRESS  ,byteData[1]);
+	PushFifo(byteData[0]|TOWNS_KEYFLAG_RELEASE,byteData[1]);
+	if(0!=(byteData[0]&TOWNS_KEYFLAG_SHIFT))
+	{
+		PushFifo((byteData[0]|TOWNS_KEYFLAG_RELEASE)&~(TOWNS_KEYFLAG_SHIFT|TOWNS_KEYFLAG_CTRL),TOWNS_JISKEY_SHIFT);
+	}
 }
 
 

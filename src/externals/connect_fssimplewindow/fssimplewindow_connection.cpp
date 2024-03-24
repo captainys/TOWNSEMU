@@ -398,8 +398,7 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 					unsigned char byteData[2]={0,0};
 					if(0<TownsKeyboard::TranslateChar(byteData,c))
 					{
-						towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_PRESS  ,byteData[1]);
-						towns.keyboard.PushFifo(byteData[0]|TOWNS_KEYFLAG_RELEASE,byteData[1]);
+						towns.keyboard.TypeToFifo(byteData);
 					}
 				}
 			}
