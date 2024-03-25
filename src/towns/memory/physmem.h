@@ -132,15 +132,28 @@ public:
 	virtual void StoreDword(unsigned int physAddr,unsigned int data);
 };
 
-template <const uint32_t DISPLACEMENT>
-class TownsSinglePageVRAMAccessTemplate : public TownsMemAccess
+class TownsSinglePageVRAMAddressTransform
 {
 public:
 	static inline unsigned int SinglePageOffsetToLinearOffset(unsigned int offset)
 	{
 		return ((offset&4)<<16)|((offset&0x7fff8)>>1)|(offset&3);
 	};
+};
 
+class TownsSinglePageHighResVRAMAddressTransform
+{
+public:
+	static inline unsigned int SinglePageOffsetToLinearOffset(unsigned int offset)
+	{
+		return (offset&0x80000)|((offset&4)<<16)|((offset&0x7fff8)>>1)|(offset&3);
+	};
+};
+
+template <const uint32_t DISPLACEMENT,class TRANSFORM>
+class TownsSinglePageVRAMAccessTemplate : public TownsMemAccess, public TRANSFORM
+{
+public:
 	virtual unsigned int FetchByte(unsigned int physAddr) const;
 	virtual unsigned int FetchWord(unsigned int physAddr) const;
 	virtual unsigned int FetchDword(unsigned int physAddr) const;
@@ -149,8 +162,8 @@ public:
 	virtual void StoreDword(unsigned int physAddr,unsigned int data);
 };
 
-template <const uint32_t DISPLACEMENT>
-class TownsSinglePageVRAMAccessWithMaskTemplate : public TownsSinglePageVRAMAccessTemplate <DISPLACEMENT>
+template <const uint32_t DISPLACEMENT,class TRANSFORM>
+class TownsSinglePageVRAMAccessWithMaskTemplate : public TownsSinglePageVRAMAccessTemplate <DISPLACEMENT,TRANSFORM>
 {
 public:
 	virtual void StoreByte(unsigned int physAddr,unsigned char data);
@@ -411,22 +424,22 @@ public:
 
 
 	TownsVRAMAccessTemplate           <0> VRAMAccess0;
-	TownsSinglePageVRAMAccessTemplate <0> VRAMAccess1;
+	TownsSinglePageVRAMAccessTemplate <0,TownsSinglePageVRAMAddressTransform> VRAMAccess1;
 	TownsVRAMAccessTemplate           <0> VRAMAccessHighRes0;
 	TownsVRAMAccessTemplate           <0x80000> VRAMAccessHighRes1;
-	TownsSinglePageVRAMAccessTemplate <0> VRAMAccessHighRes2;
+	TownsSinglePageVRAMAccessTemplate <0,TownsSinglePageHighResVRAMAddressTransform> VRAMAccessHighRes2;
 
 	TownsVRAMAccessWithMaskTemplate           <0> VRAMAccessWithMask0;
-	TownsSinglePageVRAMAccessWithMaskTemplate <0> VRAMAccessWithMask1;
+	TownsSinglePageVRAMAccessWithMaskTemplate <0,TownsSinglePageVRAMAddressTransform> VRAMAccessWithMask1;
 	TownsVRAMAccessWithMaskTemplate           <0> VRAMAccessWithMaskHighRes0;
 	TownsVRAMAccessWithMaskTemplate           <0x80000> VRAMAccessWithMaskHighRes1;
-	TownsSinglePageVRAMAccessWithMaskTemplate <0> VRAMAccessWithMaskHighRes2;
+	TownsSinglePageVRAMAccessWithMaskTemplate <0,TownsSinglePageHighResVRAMAddressTransform> VRAMAccessWithMaskHighRes2;
 
 	TownsMemAccessDebug <TownsVRAMAccessTemplate           <0> > VRAMAccess0Debug;
-	TownsMemAccessDebug <TownsSinglePageVRAMAccessTemplate <0> > VRAMAccess1Debug;
+	TownsMemAccessDebug <TownsSinglePageVRAMAccessTemplate <0,TownsSinglePageVRAMAddressTransform> > VRAMAccess1Debug;
 	TownsMemAccessDebug <TownsVRAMAccessTemplate           <0> > VRAMAccessHighRes0Debug;
 	TownsMemAccessDebug <TownsVRAMAccessTemplate           <0x80000> > VRAMAccessHighRes1Debug;
-	TownsMemAccessDebug <TownsSinglePageVRAMAccessTemplate <0> > VRAMAccessHighRes2Debug;
+	TownsMemAccessDebug <TownsSinglePageVRAMAccessTemplate <0,TownsSinglePageHighResVRAMAddressTransform> > VRAMAccessHighRes2Debug;
 
 
 	TownsSpriteRAMAccess spriteRAMAccess;
@@ -621,15 +634,15 @@ void TownsVRAMAccessWithMaskTemplate<DISPLACEMENT>::StoreDword(unsigned int phys
 
 ////////////////////////////////////////////////////////////
 
-template <const unsigned int DISPLACEMENT>
-unsigned int TownsSinglePageVRAMAccessTemplate <DISPLACEMENT>::FetchByte(unsigned int physAddr) const
+template <const unsigned int DISPLACEMENT,class TRANSFORM>
+unsigned int TownsSinglePageVRAMAccessTemplate <DISPLACEMENT,TRANSFORM>::FetchByte(unsigned int physAddr) const
 {
 	auto &state=physMemPtr->state;
 	auto offset=SinglePageOffsetToLinearOffset(physAddr&TOWNSADDR_VRAM_AND);
 	return state.VRAM[offset];
 }
-template <const unsigned int DISPLACEMENT>
-unsigned int TownsSinglePageVRAMAccessTemplate <DISPLACEMENT>::FetchWord(unsigned int physAddr) const
+template <const unsigned int DISPLACEMENT,class TRANSFORM>
+unsigned int TownsSinglePageVRAMAccessTemplate <DISPLACEMENT,TRANSFORM>::FetchWord(unsigned int physAddr) const
 {
 	auto &state=physMemPtr->state;
 	auto offset=(physAddr&TOWNSADDR_VRAM_AND);
@@ -642,8 +655,8 @@ unsigned int TownsSinglePageVRAMAccessTemplate <DISPLACEMENT>::FetchWord(unsigne
 	    state.VRAM[SinglePageOffsetToLinearOffset(offset)],
 	    state.VRAM[SinglePageOffsetToLinearOffset(offset+1)]);
 }
-template <const unsigned int DISPLACEMENT>
-unsigned int TownsSinglePageVRAMAccessTemplate <DISPLACEMENT>::FetchDword(unsigned int physAddr) const
+template <const unsigned int DISPLACEMENT,class TRANSFORM>
+unsigned int TownsSinglePageVRAMAccessTemplate <DISPLACEMENT,TRANSFORM>::FetchDword(unsigned int physAddr) const
 {
 	auto &state=physMemPtr->state;
 	auto offset=(physAddr&TOWNSADDR_VRAM_AND);
@@ -658,15 +671,15 @@ unsigned int TownsSinglePageVRAMAccessTemplate <DISPLACEMENT>::FetchDword(unsign
 	    state.VRAM[SinglePageOffsetToLinearOffset(offset+2)],
 	    state.VRAM[SinglePageOffsetToLinearOffset(offset+3)]);
 }
-template <const unsigned int DISPLACEMENT>
-void TownsSinglePageVRAMAccessTemplate <DISPLACEMENT>::StoreByte(unsigned int physAddr,unsigned char data)
+template <const unsigned int DISPLACEMENT,class TRANSFORM>
+void TownsSinglePageVRAMAccessTemplate <DISPLACEMENT,TRANSFORM>::StoreByte(unsigned int physAddr,unsigned char data)
 {
 	auto &state=physMemPtr->state;
 	auto offset=SinglePageOffsetToLinearOffset(physAddr&TOWNSADDR_VRAM_AND);
 	state.VRAM[offset]=data;
 }
-template <const unsigned int DISPLACEMENT>
-void TownsSinglePageVRAMAccessTemplate <DISPLACEMENT>::StoreWord(unsigned int physAddr,unsigned int data)
+template <const unsigned int DISPLACEMENT,class TRANSFORM>
+void TownsSinglePageVRAMAccessTemplate <DISPLACEMENT,TRANSFORM>::StoreWord(unsigned int physAddr,unsigned int data)
 {
 	auto &state=physMemPtr->state;
 	auto offset=(physAddr&TOWNSADDR_VRAM_AND);
@@ -687,8 +700,8 @@ void TownsSinglePageVRAMAccessTemplate <DISPLACEMENT>::StoreWord(unsigned int ph
 	#endif
 	}
 }
-template <const unsigned int DISPLACEMENT>
-void TownsSinglePageVRAMAccessTemplate <DISPLACEMENT>::StoreDword(unsigned int physAddr,unsigned int data)
+template <const unsigned int DISPLACEMENT,class TRANSFORM>
+void TownsSinglePageVRAMAccessTemplate <DISPLACEMENT,TRANSFORM>::StoreDword(unsigned int physAddr,unsigned int data)
 {
 	auto &state=physMemPtr->state;
 	auto offset=(physAddr&TOWNSADDR_VRAM_AND);
@@ -716,8 +729,8 @@ void TownsSinglePageVRAMAccessTemplate <DISPLACEMENT>::StoreDword(unsigned int p
 
 
 
-template <const unsigned int DISPLACEMENT>
-void TownsSinglePageVRAMAccessWithMaskTemplate<DISPLACEMENT>::StoreByte(unsigned int physAddr,unsigned char data)
+template <const unsigned int DISPLACEMENT,class TRANSFORM>
+void TownsSinglePageVRAMAccessWithMaskTemplate<DISPLACEMENT,TRANSFORM>::StoreByte(unsigned int physAddr,unsigned char data)
 {
 	auto &state=this->physMemPtr->state;
 	auto offset=(physAddr&TOWNSADDR_VRAM_AND);
@@ -728,8 +741,8 @@ void TownsSinglePageVRAMAccessWithMaskTemplate<DISPLACEMENT>::StoreByte(unsigned
 	state.VRAM[offset]&=nega;
 	state.VRAM[offset]|=(data&mask);
 }
-template <const unsigned int DISPLACEMENT>
-void TownsSinglePageVRAMAccessWithMaskTemplate<DISPLACEMENT>::StoreWord(unsigned int physAddr,unsigned int data)
+template <const unsigned int DISPLACEMENT,class TRANSFORM>
+void TownsSinglePageVRAMAccessWithMaskTemplate<DISPLACEMENT,TRANSFORM>::StoreWord(unsigned int physAddr,unsigned int data)
 {
 	auto &state=this->physMemPtr->state;
 	auto offset=(physAddr&TOWNSADDR_VRAM_AND);
@@ -750,8 +763,8 @@ void TownsSinglePageVRAMAccessWithMaskTemplate<DISPLACEMENT>::StoreWord(unsigned
 		state.VRAM[this->SinglePageOffsetToLinearOffset(offset+1)]|=(( state.nativeVRAMMask[(physAddr&3)+1])&((data>>8)&255));
 	}
 }
-template <const unsigned int DISPLACEMENT>
-void TownsSinglePageVRAMAccessWithMaskTemplate<DISPLACEMENT>::StoreDword(unsigned int physAddr,unsigned int data)
+template <const unsigned int DISPLACEMENT,class TRANSFORM>
+void TownsSinglePageVRAMAccessWithMaskTemplate<DISPLACEMENT,TRANSFORM>::StoreDword(unsigned int physAddr,unsigned int data)
 {
 	auto &state=this->physMemPtr->state;
 	auto offset=(physAddr&TOWNSADDR_VRAM_AND);
