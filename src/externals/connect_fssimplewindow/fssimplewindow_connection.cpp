@@ -430,7 +430,11 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 					{
 						keyFlags=TOWNS_KEYFLAG_SHIFT;
 					}
-					const unsigned char byteData[2]={keyFlags|TOWNS_KEYFLAG_TYPE_FIRSTBYTE|TOWNS_KEYFLAG_TYPE_JIS,FSKEYtoTownsKEY[c]};
+					const unsigned char byteData[2]=
+					{
+						(unsigned char)(keyFlags|TOWNS_KEYFLAG_TYPE_FIRSTBYTE|TOWNS_KEYFLAG_TYPE_JIS),
+						(unsigned char)FSKEYtoTownsKEY[c]
+					};
 					towns.keyboard.TypeToFifo(byteData);
 				}
 				break;
