@@ -1217,53 +1217,100 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 		if(state.highResCrtcRegAddrLatch<NUM_HIRES_CRTC_REGISTERS)
 		{
 			state.highResCrtcReg[state.highResCrtcRegAddrLatch]=data;
-			if(true==monitorCRTC2)
+		}
+
+		if(true==monitorCRTC2)
+		{
+			std::ostringstream ss;
+			ss << "Write to CRTC2 Reg(D0)=" << cpputil::Uitox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Uitox(data);
+			std::cout << ss.str() << std::endl;
+			townsPtr->debugger.WriteLogFile(ss.str());
+		}
+		switch(state.highResCrtcRegAddrLatch)
+		{
+		case HIGHRES_REG_CTRL0://   =0x000,   // Write 0 -> ?   1->enable highRes CRTC
+			state.highResCRTCEnabled=(0!=(data&1));
+			break;
+
+		case HIGHRES_REG_CTRL1://   =0x004,   // Read bit0=HighResEnabled bit1=(Initial=1, WriteToBit1->0, HighResoDisabled->1)   Write bit1=1->bit0=0
+			if(0!=(data&2))
 			{
-				std::ostringstream ss;
-				ss << "Write to CRTC2 Reg(D0)=" << cpputil::Uitox(state.highResCrtcRegAddrLatch) << " Value=" << cpputil::Uitox(data);
-				std::cout << ss.str() << std::endl;
-				townsPtr->debugger.WriteLogFile(ss.str());
+				state.highResCrtcReg4Bit0=false;
+				state.highResCrtcReg4Bit1=false;
 			}
-			switch(state.highResCrtcRegAddrLatch)
+			break;
+
+		case HIGHRES_REG_PALINDEX:
+			state.highResCrtcPalette.codeLatch=data&0xFF;
+			break;
+		case HIGHRES_REG_PALCOL:
+			switch(state.highResCrtcReg[HIGHRES_REG_PALSEL])
 			{
-			case HIGHRES_REG_CTRL0://   =0x000,   // Write 0 -> ?   1->enable highRes CRTC
-				state.highResCRTCEnabled=(0!=(data&1));
+			case 0:
+				state.highResCrtcPalette.Set16(0,2,data&0xFF);       // B
+				state.highResCrtcPalette.Set16(0,0,(data>>8)&0xFF);  // R
+				state.highResCrtcPalette.Set16(0,1,(data>>16)&0xFF); // G
 				break;
-
-			case HIGHRES_REG_CTRL1://   =0x004,   // Read bit0=HighResEnabled bit1=(Initial=1, WriteToBit1->0, HighResoDisabled->1)   Write bit1=1->bit0=0
-				if(0!=(data&2))
-				{
-					state.highResCrtcReg4Bit0=false;
-					state.highResCrtcReg4Bit1=false;
-				}
+			case 1:
+				state.highResCrtcPalette.Set16(1,2,data&0xFF);
+				state.highResCrtcPalette.Set16(1,0,(data>>8)&0xFF);
+				state.highResCrtcPalette.Set16(1,1,(data>>16)&0xFF);
 				break;
-
-			case HIGHRES_REG_PALINDEX:
-				state.highResCrtcPalette.codeLatch=data&0xFF;
-				break;
-			case HIGHRES_REG_PALCOL:
-				switch(state.highResCrtcReg[HIGHRES_REG_PALSEL])
-				{
-				case 0:
-					state.highResCrtcPalette.Set16(0,2,data&0xFF);       // B
-					state.highResCrtcPalette.Set16(0,0,(data>>8)&0xFF);  // R
-					state.highResCrtcPalette.Set16(0,1,(data>>16)&0xFF); // G
-					break;
-				case 1:
-					state.highResCrtcPalette.Set16(1,2,data&0xFF);
-					state.highResCrtcPalette.Set16(1,0,(data>>8)&0xFF);
-					state.highResCrtcPalette.Set16(1,1,(data>>16)&0xFF);
-					break;
-				case 2:
-					state.highResCrtcPalette.Set256(2,data&0xFF);
-					state.highResCrtcPalette.Set256(0,(data>>8)&0xFF);
-					state.highResCrtcPalette.Set256(1,(data>>16)&0xFF);
-					break;
-				}
-				state.highResCrtcPalette.codeLatch++;
-				state.highResCrtcPalette.codeLatch&=0xFF;
+			case 2:
+				state.highResCrtcPalette.Set256(2,data&0xFF);
+				state.highResCrtcPalette.Set256(0,(data>>8)&0xFF);
+				state.highResCrtcPalette.Set256(1,(data>>16)&0xFF);
 				break;
 			}
+			state.highResCrtcPalette.codeLatch++;
+			state.highResCrtcPalette.codeLatch&=0xFF;
+			break;
+		case HIGHRES_REG_MOUSE_PATTERN:
+			if(true==state.highResCrtcMouse.defining)
+			{
+				if(state.highResCrtcMouse.ptnCount<512)
+				{
+					state.highResCrtcMouse.ANDPtn[state.highResCrtcMouse.ptnCount]=data;
+					++state.highResCrtcMouse.ptnCount;
+				}
+				else if(state.highResCrtcMouse.ptnCount<1024)
+				{
+					state.highResCrtcMouse.ORPtn[state.highResCrtcMouse.ptnCount-512]=data;
+					++state.highResCrtcMouse.ptnCount;
+				}
+			}
+			break;
+		case HIGHRES_REG_WD_MOUSEX: //0x200
+			state.highResCrtcMouse.X=data;
+			break;
+		case HIGHRES_REG_WD_MOUSEY: //0x201
+			state.highResCrtcMouse.Y=data;
+			break;
+		case HIGHRES_REG_WD_MOUSE_ORIGINX: //0x202
+			state.highResCrtcMouse.originX=data;
+			break;
+		case HIGHRES_REG_WD_MOUSE_ORIGINY: //0x203
+			state.highResCrtcMouse.originY=data;
+			break;
+		case HIGHRES_REG_WD_MOUSE_DEFINE: //0x206
+			if(0==data)
+			{
+				state.highResCrtcMouse.defining=true;
+				state.highResCrtcMouse.defined=false;
+				state.highResCrtcMouse.ptnCount=0;
+			}
+			else
+			{
+				if(true==state.highResCrtcMouse.defining)
+				{
+					state.highResCrtcMouse.defined=true;
+					state.highResCrtcMouse.defining=false;
+				}
+			}
+			break;
+		case HIGHRES_REG_WD_MOUSE_UNKNOWN8: //0x208,
+			state.highResCrtcMouse.unknownValueReg8=data;
+			break;
 		}
 		break;
 	case TOWNSIO_MX_IMGOUT_D1://   0x475,
