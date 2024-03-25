@@ -157,7 +157,14 @@ void TownsRender::BuildImage(const unsigned char VRAM[],const TownsCRTC::AnalogP
 	{
 		if(true==crtcShowPage[0])
 		{
-			Render<VRAM1Trans>(0,crtcLayer[0],palette,chaseHQPalette,VRAM,false);
+			if(true==highResCRTC)
+			{
+				Render<VRAM1TransHR>(0,crtcLayer[0],palette,chaseHQPalette,VRAM,false);
+			}
+			else
+			{
+				Render<VRAM1Trans>(0,crtcLayer[0],palette,chaseHQPalette,VRAM,false);
+			}
 		}
 	}
 	else

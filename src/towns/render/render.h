@@ -123,6 +123,14 @@ public:
 			offset=((offset&4)<<16)|((offset&0x7fff8)>>1)|(offset&3);
 		};
 	};
+	class VRAM1TransHR // 83000000H to 83100000H
+	{
+	public:
+		inline static void Trans(unsigned int &offset)
+		{
+			offset=(offset&0x80000)|((offset&4)<<16)|((offset&0x7fff8)>>1)|(offset&3);
+		};
+	};
 
 	template <class OFFSETTRANS>
 	void Render(unsigned int page,const TownsCRTC::Layer &layer,const TownsCRTC::AnalogPalette &palette,const TownsCRTC::ChaseHQPalette &chaseHQ,const unsigned char VRAM[],bool transparent);
