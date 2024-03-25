@@ -638,7 +638,7 @@ template <const unsigned int DISPLACEMENT,class TRANSFORM>
 unsigned int TownsSinglePageVRAMAccessTemplate <DISPLACEMENT,TRANSFORM>::FetchByte(unsigned int physAddr) const
 {
 	auto &state=physMemPtr->state;
-	auto offset=SinglePageOffsetToLinearOffset(physAddr&TOWNSADDR_VRAM_AND);
+	auto offset=this->SinglePageOffsetToLinearOffset(physAddr&TOWNSADDR_VRAM_AND);
 	return state.VRAM[offset];
 }
 template <const unsigned int DISPLACEMENT,class TRANSFORM>
@@ -648,12 +648,12 @@ unsigned int TownsSinglePageVRAMAccessTemplate <DISPLACEMENT,TRANSFORM>::FetchWo
 	auto offset=(physAddr&TOWNSADDR_VRAM_AND);
 	if(0==(offset&1))
 	{
-		offset=SinglePageOffsetToLinearOffset(offset);
+		offset=this->SinglePageOffsetToLinearOffset(offset);
 		return cpputil::GetWord(state.VRAM+offset);
 	}
 	return cpputil::MakeUnsignedWord(
-	    state.VRAM[SinglePageOffsetToLinearOffset(offset)],
-	    state.VRAM[SinglePageOffsetToLinearOffset(offset+1)]);
+	    state.VRAM[this->SinglePageOffsetToLinearOffset(offset)],
+	    state.VRAM[this->SinglePageOffsetToLinearOffset(offset+1)]);
 }
 template <const unsigned int DISPLACEMENT,class TRANSFORM>
 unsigned int TownsSinglePageVRAMAccessTemplate <DISPLACEMENT,TRANSFORM>::FetchDword(unsigned int physAddr) const
@@ -662,20 +662,20 @@ unsigned int TownsSinglePageVRAMAccessTemplate <DISPLACEMENT,TRANSFORM>::FetchDw
 	auto offset=(physAddr&TOWNSADDR_VRAM_AND);
 	if(0==(offset&3))
 	{
-		offset=SinglePageOffsetToLinearOffset(offset);
+		offset=this->SinglePageOffsetToLinearOffset(offset);
 		return cpputil::GetDword(state.VRAM+offset);
 	}
 	return cpputil::MakeUnsignedDword(
-	    state.VRAM[SinglePageOffsetToLinearOffset(offset)],
-	    state.VRAM[SinglePageOffsetToLinearOffset(offset+1)],
-	    state.VRAM[SinglePageOffsetToLinearOffset(offset+2)],
-	    state.VRAM[SinglePageOffsetToLinearOffset(offset+3)]);
+	    state.VRAM[this->SinglePageOffsetToLinearOffset(offset)],
+	    state.VRAM[this->SinglePageOffsetToLinearOffset(offset+1)],
+	    state.VRAM[this->SinglePageOffsetToLinearOffset(offset+2)],
+	    state.VRAM[this->SinglePageOffsetToLinearOffset(offset+3)]);
 }
 template <const unsigned int DISPLACEMENT,class TRANSFORM>
 void TownsSinglePageVRAMAccessTemplate <DISPLACEMENT,TRANSFORM>::StoreByte(unsigned int physAddr,unsigned char data)
 {
 	auto &state=physMemPtr->state;
-	auto offset=SinglePageOffsetToLinearOffset(physAddr&TOWNSADDR_VRAM_AND);
+	auto offset=this->SinglePageOffsetToLinearOffset(physAddr&TOWNSADDR_VRAM_AND);
 	state.VRAM[offset]=data;
 }
 template <const unsigned int DISPLACEMENT,class TRANSFORM>
@@ -685,18 +685,18 @@ void TownsSinglePageVRAMAccessTemplate <DISPLACEMENT,TRANSFORM>::StoreWord(unsig
 	auto offset=(physAddr&TOWNSADDR_VRAM_AND);
 	if(0==(offset&1))
 	{
-		offset=SinglePageOffsetToLinearOffset(offset);
+		offset=this->SinglePageOffsetToLinearOffset(offset);
 		cpputil::PutWord(state.VRAM+offset,(unsigned short)data);
 	}
 	else
 	{
 	#ifdef YS_LITTLE_ENDIAN
 		auto *dataPtr=(uint8_t *)&data;
-		state.VRAM[SinglePageOffsetToLinearOffset(offset)]  =dataPtr[0];
-		state.VRAM[SinglePageOffsetToLinearOffset(offset+1)]=dataPtr[1];
+		state.VRAM[this->SinglePageOffsetToLinearOffset(offset)]  =dataPtr[0];
+		state.VRAM[this->SinglePageOffsetToLinearOffset(offset+1)]=dataPtr[1];
 	#else
-		state.VRAM[SinglePageOffsetToLinearOffset(offset)]  =( data    &255);
-		state.VRAM[SinglePageOffsetToLinearOffset(offset+1)]=((data>>8)&255);
+		state.VRAM[this->SinglePageOffsetToLinearOffset(offset)]  =( data    &255);
+		state.VRAM[this->SinglePageOffsetToLinearOffset(offset+1)]=((data>>8)&255);
 	#endif
 	}
 }
@@ -707,22 +707,22 @@ void TownsSinglePageVRAMAccessTemplate <DISPLACEMENT,TRANSFORM>::StoreDword(unsi
 	auto offset=(physAddr&TOWNSADDR_VRAM_AND);
 	if(0==(offset&3))
 	{
-		offset=SinglePageOffsetToLinearOffset(offset);
+		offset=this->SinglePageOffsetToLinearOffset(offset);
 		cpputil::PutDword(state.VRAM+offset,data);
 	}
 	else
 	{
 	#ifdef YS_LITTLE_ENDIAN
 		auto *dataPtr=(uint8_t *)&data;
-		state.VRAM[SinglePageOffsetToLinearOffset(offset)]  =dataPtr[0];
-		state.VRAM[SinglePageOffsetToLinearOffset(offset+1)]=dataPtr[1];
-		state.VRAM[SinglePageOffsetToLinearOffset(offset+2)]=dataPtr[2];
-		state.VRAM[SinglePageOffsetToLinearOffset(offset+3)]=dataPtr[3];
+		state.VRAM[this->SinglePageOffsetToLinearOffset(offset)]  =dataPtr[0];
+		state.VRAM[this->SinglePageOffsetToLinearOffset(offset+1)]=dataPtr[1];
+		state.VRAM[this->SinglePageOffsetToLinearOffset(offset+2)]=dataPtr[2];
+		state.VRAM[this->SinglePageOffsetToLinearOffset(offset+3)]=dataPtr[3];
 	#else
-		state.VRAM[SinglePageOffsetToLinearOffset(offset)]  =( data     &255);
-		state.VRAM[SinglePageOffsetToLinearOffset(offset+1)]=((data>> 8)&255);
-		state.VRAM[SinglePageOffsetToLinearOffset(offset+2)]=((data>>16)&255);
-		state.VRAM[SinglePageOffsetToLinearOffset(offset+3)]=((data>>24)&255);
+		state.VRAM[this->SinglePageOffsetToLinearOffset(offset)]  =( data     &255);
+		state.VRAM[this->SinglePageOffsetToLinearOffset(offset+1)]=((data>> 8)&255);
+		state.VRAM[this->SinglePageOffsetToLinearOffset(offset+2)]=((data>>16)&255);
+		state.VRAM[this->SinglePageOffsetToLinearOffset(offset+3)]=((data>>24)&255);
 	#endif
 	}
 }
