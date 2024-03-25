@@ -513,6 +513,7 @@ void TownsKeyboard::SetBootKeyCombination(unsigned int keyComb)
 				{
 					townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+KEY_REPEAT_INTERVAL);
 				}
+
 				return ret;
 			}
 		}
@@ -653,6 +654,10 @@ bool TownsKeyboard::InFifoBuffer(unsigned int code) const
 }
 void TownsKeyboard::TypeToFifo(const unsigned char byteData[2])
 {
+	if(0!=(byteData[0]&TOWNS_KEYFLAG_CTRL))
+	{
+		PushFifo(byteData[0]|TOWNS_KEYFLAG_PRESS,TOWNS_JISKEY_CTRL);
+	}
 	if(0!=(byteData[0]&TOWNS_KEYFLAG_SHIFT))
 	{
 		PushFifo(byteData[0]|TOWNS_KEYFLAG_PRESS,TOWNS_JISKEY_SHIFT);
@@ -662,6 +667,10 @@ void TownsKeyboard::TypeToFifo(const unsigned char byteData[2])
 	if(0!=(byteData[0]&TOWNS_KEYFLAG_SHIFT))
 	{
 		PushFifo((byteData[0]|TOWNS_KEYFLAG_RELEASE)&~(TOWNS_KEYFLAG_SHIFT|TOWNS_KEYFLAG_CTRL),TOWNS_JISKEY_SHIFT);
+	}
+	if(0!=(byteData[0]&TOWNS_KEYFLAG_CTRL))
+	{
+		PushFifo((byteData[0]|TOWNS_KEYFLAG_RELEASE)&~(TOWNS_KEYFLAG_SHIFT|TOWNS_KEYFLAG_CTRL),TOWNS_JISKEY_CTRL);
 	}
 }
 
