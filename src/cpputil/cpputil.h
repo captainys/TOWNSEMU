@@ -419,6 +419,7 @@ bool Match(long long int len,const T dat1[],const T dat2[])
 bool WildCardCompare(std::string ptn,std::string str);
 bool WildCardCompare(int lenPtn,const char ptn[],int lenStr,const char str[]);
 
+bool Is2toN(unsigned int i);
 };
 
 

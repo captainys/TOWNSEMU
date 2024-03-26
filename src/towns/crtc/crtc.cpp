@@ -733,7 +733,7 @@ void TownsCRTC::MakeLowResPageLayerInfo(Layer &layer,unsigned char page) const
 	auto rawZoomX=((state.crtcReg[REG_ZOOM]>>(8*page))&15)+1;
 	layer.VRAMHSkipBytes=(((GetVRAMHSkip1X(page)/rawZoomX)*layer.bitsPerPixel)>>3);
 
-	if(512==layer.bytesPerLine || 1024==layer.bytesPerLine)
+	if(true==cpputil::Is2toN(layer.bytesPerLine))
 	{
 		layer.HScrollMask=layer.bytesPerLine-1;
 	}
@@ -1975,7 +1975,14 @@ void TownsCRTC::MakeHighResPageLayerInfo(Layer &layer,unsigned char page) const
 	layer.zoom2x=GetHighResPageZoom2X(page);
 	layer.bytesPerLine=vramWidInPix*layer.bitsPerPixel/8;
 
-	layer.HScrollMask=(layer.bytesPerLine-1);
+	if(true==cpputil::Is2toN(layer.bytesPerLine))
+	{
+		layer.HScrollMask=layer.bytesPerLine-1;
+	}
+	else
+	{
+		layer.HScrollMask=0xFFFFFFFF;
+	}
 	if(true==HighResCrtcIsInSinglePageMode())
 	{
 		layer.VScrollMask=TOWNS_VRAM_SIZE-1;

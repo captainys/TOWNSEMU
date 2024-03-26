@@ -1117,3 +1117,8 @@ bool cpputil::StrIncludes(const std::string str,char c)
 	}
 	return false;
 }
+
+bool cpputil::Is2toN(unsigned int i)
+{
+	return 0==(i&(i-1));
+}
