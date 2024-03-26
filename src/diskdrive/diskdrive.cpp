@@ -1144,6 +1144,10 @@ void DiskDrive::SendCommand(unsigned int cmd,uint64_t vmTime)
 			}
 			state.busy=false;
 			state.CRCErrorAfterRead=false;
+			if(0!=(cmd&8))
+			{
+				vmPtr->ScheduleDeviceCallBack(*this,vmTime+FORCE_INTERRUPT_TIME);
+			}
 			break;
 		}
 	}

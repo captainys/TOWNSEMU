@@ -42,6 +42,7 @@ public:
 		WRITE_TRACK_TIME=        1000000,  //  1ms in Nano Seconds.  Just took arbitrary.  Need to make it real.
 		ADDRMARK_READ_TIME=      1000000,  //  1ms in Nano Seconds.  Just took arbitrary.  Need to make it real.  But, keep it fast for the time being.
 		DISK_CHANGE_TIME=       50000000,  //  Minimum 50ms after disk insertion before drive is ready.
+		FORCE_INTERRUPT_TIME=    1000000,
 
 		FAST_DRIVE_WAIT_TIME=      10000,
 	};

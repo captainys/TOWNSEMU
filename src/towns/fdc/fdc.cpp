@@ -517,6 +517,10 @@ void TownsFDC::MakeReady(void)
 	case 0xD0: // Force Interrupt
 		townsPtr->UnscheduleDeviceCallBack(*this);
 		state.busy=false;
+		if(0!=(state.lastCmd&8))
+		{
+			PICPtr->SetInterruptRequestBit(TOWNSIRQ_FDC,state.IRQMSK);
+		}
 		break;
 	}
 	state.lastStatus=MakeUpStatus(state.lastCmd,townsTime);
