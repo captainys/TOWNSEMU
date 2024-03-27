@@ -281,6 +281,7 @@ void TownsFDC::MakeReady(void)
 							{
 								SetSectorReg(GetSectorReg()+1);
 								townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+SECTOR_READ_WRITE_TIME);
+								break; // Not supposed to make ready yet.
 							}
 							else
 							{
