@@ -613,8 +613,10 @@ void TownsFDC::MakeReady(void)
 		}
 		return data;
 	case TOWNSIO_FDC_TRACK://                0x202, // [2] pp.253
+		data=GetTrackReg();
 		break;
 	case TOWNSIO_FDC_SECTOR://               0x204, // [2] pp.253
+		data=GetSectorReg();
 		break;
 	case TOWNSIO_FDC_DATA://                 0x205, // [2] pp.253
 		data=state.drive[DriveSelect()].dataReg;
