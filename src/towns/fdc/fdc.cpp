@@ -267,6 +267,11 @@ void TownsFDC::MakeReady(void)
 					trackPos/=2;
 				}
 
+				if(true==fdcMonitor)
+				{
+					std::cout << "C:" << trackPos << " H:" << state.side << " R:" << GetSectorReg();
+				}
+
 				auto secLen=imgPtr->GetSectorLength(diskIdx,trackPos,state.side,GetSectorReg());
 				if(0<secLen)
 				{
@@ -281,6 +286,10 @@ void TownsFDC::MakeReady(void)
 							{
 								SetSectorReg(GetSectorReg()+1);
 								townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+SECTOR_READ_WRITE_TIME);
+								if(true==fdcMonitor)
+								{
+									std::cout << " DMA Ct:" << cpputil::Uitox(DMACh->currentCount) << std::endl;
+								}
 								break; // Not supposed to make ready yet.
 							}
 							else
@@ -306,7 +315,15 @@ void TownsFDC::MakeReady(void)
 				}
 				else
 				{
+					if(true==fdcMonitor)
+					{
+						std::cout << "Record Not Found";
+					}
 					state.recordNotFound=true;
+				}
+				if(true==fdcMonitor)
+				{
+					std::cout << std::endl;
 				}
 			}
 			else
