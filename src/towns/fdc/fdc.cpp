@@ -196,6 +196,8 @@ void TownsFDC::MakeReady(void)
 				if(true==sec.exists)
 				{
 					auto DMACh=DMACPtr->GetDMAChannel(TOWNSDMA_FPD);
+					// DMAC count check was necessary because Linux for TOWNS FD driver expects to receive
+					// LOST DATA if multi-sector read/write command reaches end of DMA count.
 					if(nullptr!=DMACh && 0xFFFFFFFF!=DMACh->currentCount)
 					{
 						townsPtr->NotifyDiskRead();
@@ -276,6 +278,8 @@ void TownsFDC::MakeReady(void)
 				if(0<secLen)
 				{
 					auto DMACh=DMACPtr->GetDMAChannel(TOWNSDMA_FPD);
+					// DMAC count check was necessary because Linux for TOWNS FD driver expects to receive
+					// LOST DATA if multi-sector read/write command reaches end of DMA count.
 					if(nullptr!=DMACh && 0xFFFFFFFF!=DMACh->currentCount)
 					{
 						auto toWrite=DMACPtr->MemoryToDevice(DMACh,secLen);
