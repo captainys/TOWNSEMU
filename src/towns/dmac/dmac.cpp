@@ -415,7 +415,7 @@ TownsDMAC::TownsDMAC(class FMTownsCommon *townsPtr) : Device(townsPtr)
 	case TOWNSIO_DMAC_REQUEST://             0xAE,
 		break;
 	case TOWNSIO_DMAC_MASK://                0xAF,
-		break;
+		return state.mask;
 	}
 	return 0xff;
 }
