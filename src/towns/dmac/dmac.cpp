@@ -415,6 +415,8 @@ TownsDMAC::TownsDMAC(class FMTownsCommon *townsPtr) : Device(townsPtr)
 	case TOWNSIO_DMAC_REQUEST://             0xAE,
 		break;
 	case TOWNSIO_DMAC_MASK://                0xAF,
+		// Linux is so far the only program that enabled more than one channels.
+		// Unless mask is correctly returned, Linux 1.3.30 crashes.
 		return state.mask;
 	}
 	return 0xff;
