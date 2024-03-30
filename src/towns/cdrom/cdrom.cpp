@@ -1109,22 +1109,7 @@ void TownsCDROM::BeginReadSector(DiscImage::MinSecFrm msfBegin,DiscImage::MinSec
 					// function misses 00 00 00 00 and take it as an error.  Majorit of the drivers wait for
 					// 22 00 00 00 in the same loop that discards 00 00 00 00.
 					// In fact, data-ready may happen while the VM is reading 2nd, 3rd or 4th byte of 00 00 00 00.
-					if(0!=(state.statusQueue.size()%4)) //  If the VM is in the middle of reading status bytes.
-					{
-						// Don't clear the queue.
-					}
-					else if(4==state.statusQueue.size() &&
-					        0==state.statusQueue[0] &&
-					        0==state.statusQueue[1] &&
-					        0==state.statusQueue[2] &&
-					        0==state.statusQueue[3]) // If the VM is yet to read 00 00 00 00.
-					{
-						// Don't clear the queue.
-					}
-					else
-					{
-						state.ClearStatusQueue();
-					}
+					// state.ClearStatusQueue();  is commented out.
 
 					if(true==var.debugBreakOnDataReady)
 					{
