@@ -213,9 +213,13 @@ void TownsCDROM::WaitUntilAsyncWaveReaderFinished(void)
 			// Only explanation I can imagine why command 00H returns the state and shoots an IRQ.
 			data|=(state.cmd&0x60);
 		}
+
 		// Linux for TOWNS may not be able to enable DMA in time, which will cause timeout or abnormal termination (21H 0FH 00 00).
 		// Subsequently Linux will re-issue the command.  But, unless the status queue is cleared, it senses error code 21H right away.
-		state.ClearStatusQueue();
+		// So, I thought clearing the status queue here was a good idea, but doing so broke CD-ROM BIOS CDDA STOP function.
+		// (Poly Racer test never came back.)
+		// The reason why Linux setup was failing was a different reason, so I decided not to clear the status queue here.
+
 		state.cmdReceived=true;
 		state.cmd=data;
 		var.lastCmdIssuedAt.SEG=townsPtr->CPU().state.CS().value;
