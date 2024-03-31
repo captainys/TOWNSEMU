@@ -899,7 +899,7 @@ void TownsRender::Render24Bit(const TownsCRTC::Layer &layer,const unsigned char 
 	unsigned int VRAMBase=layer.VRAMAddr;
 	unsigned int VRAMOffsetVertical=(layer.VRAMOffset+layer.FlipVRAMOffset)&~layer.HScrollMask;
 	unsigned int VRAMOffsetHorizontal=(layer.VRAMOffset+layer.FlipVRAMOffset)&layer.HScrollMask;
-	const unsigned int VRAMHScrollMask=layer.HScrollMask+1;
+	const unsigned int VRAMHScrollMask=layer.HScrollMask;
 	const unsigned int VRAMVScrollMask=layer.VScrollMask;
 	unsigned int lineVRAMOffset=0;
 	const int ZHsrc[2]={layer.zoom2x.x()/2,(layer.zoom2x.x()+1)/2};  // For x.5 times zoom rate.
@@ -922,13 +922,16 @@ void TownsRender::Render24Bit(const TownsCRTC::Layer &layer,const unsigned char 
 		auto ZH=ZHsrc[ZHswitch];
 		for(int x=0; x<layer.sizeOnMonitor.x() && x+layer.originOnMonitor.x()<this->wid && inLineVRAMOffset<layer.bytesPerLine; x++)
 		{
-			unsigned int VRAMAddr=lineVRAMOffset+((inLineVRAMOffset+VRAMOffsetHorizontal)%VRAMHScrollMask);
+			unsigned int VRAMAddr=lineVRAMOffset+((inLineVRAMOffset+VRAMOffsetHorizontal)&VRAMHScrollMask);
 			VRAMAddr=VRAMBase+((VRAMAddr+VRAMOffsetVertical)&VRAMVScrollMask);
-			OFFSETTRANS::Trans(VRAMAddr);
-
-			dst[0]=VRAM[VRAMAddr];
-			dst[1]=VRAM[VRAMAddr+1];
-			dst[2]=VRAM[VRAMAddr+2];
+			for(int i=0; i<3; ++i)
+			{
+				// 24-bit mode pixel may cross a 4-byte border.
+				// Need to transform a VRAM address for each RGB component.
+				auto VRAMAddrCopy=VRAMAddr+i;
+				OFFSETTRANS::Trans(VRAMAddrCopy);
+				dst[i]=VRAM[VRAMAddrCopy];
+			}
 			dst[3]=255;
 
 			dst+=4;
