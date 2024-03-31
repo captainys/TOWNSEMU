@@ -159,8 +159,6 @@ void RF5C68::WriteLSH(unsigned char value)
 void RF5C68::WriteST(unsigned char value)
 {
 	state.ch[state.CB].ST=value;
-	state.ch[state.CB].playPtr=(value<<8);
-	state.ch[state.CB].playPtrLeftOver=0;
 }
 
 void RF5C68::WriteRegister(unsigned char reg,unsigned char data,uint64_t VMTimeInNS)
@@ -223,6 +221,11 @@ RF5C68::StartAndStopChannelBits RF5C68::ReallyWriteRegister(unsigned int reg,uns
 					if(0!=(startStop.chStopPlay&(1<<ch)))
 					{
 						PlayStopped(ch);
+					}
+					if(0!=(startStop.chStartPlay&(1<<ch)))
+					{
+						state.ch[ch].playPtr=(state.ch[ch].ST<<8);
+						state.ch[ch].playPtrLeftOver=0;
 					}
 				}
 			}
