@@ -159,6 +159,8 @@ void RF5C68::WriteLSH(unsigned char value)
 void RF5C68::WriteST(unsigned char value)
 {
 	state.ch[state.CB].ST=value;
+	state.ch[state.CB].playPtr=(value<<8);
+	state.ch[state.CB].playPtrLeftOver=0;
 }
 
 void RF5C68::WriteRegister(unsigned char reg,unsigned char data,uint64_t VMTimeInNS)
