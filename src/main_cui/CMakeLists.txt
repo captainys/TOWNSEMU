@@ -1006,6 +1006,26 @@ add_test(
 		-DAMPERWIRELINE
 )
 
+# Rocket Ranger needs to slow down the CPU, or the opening demo crashes when the program
+# wipes BGM playback information before the BGM completed playing.  Same crash happens when
+# running it on real FM TOWNS II MX in the FAST mode.
+add_test(
+	NAME ROCKET_RANGER_OPENING
+	COMMAND
+		${TARGET_NAME}
+		"${TOWNSEMU_TEST}/ROM_MX"
+		-CD
+		"${DISC_IMAGE_DIR}/ROCKET.iso"
+		-FREQ
+		5
+		-DEBUG
+		-UNITTEST
+		-POWEROFFAT
+		000C:00000157
+		-DONTAUTOSAVECMOS
+		-DAMPERWIRELINE
+)
+
 add_test(
 	NAME DAIKOUKAIJIDAI_OPENING
 	COMMAND
