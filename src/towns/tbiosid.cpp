@@ -402,6 +402,25 @@ void FMTownsCommon::OnCRTC_HST_Write(void)
 		case TOWNS_APPSPECIFIC_AFTERBURNER2:
 			AB2_Identify();
 			break;
+		case TOWNS_APPSPECIFIC_ROCKETRANGER:
+			{
+				i486DXCommon::SegmentRegister DS;
+				unsigned int exceptionType,exceptionCode;
+				cpu.DebugLoadSegmentRegister(DS,0x014,mem,false);
+
+				// Rocket Ranger Airspeed during Takeoff
+				state.appSpecific_StickPosXPtr=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x0001861A,mem);
+				// Rocket Ranger Necessary Airspeed for Takeoff
+				state.appSpecific_StickPosYPtr=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x00018625,mem);
+				// Rocket Ranger Cyclic Counter
+				state.appSpecific_ThrottlePtr=cpu.DebugLinearAddressToPhysicalAddress(exceptionType,exceptionCode,DS.baseLinearAddr+0x00037943,mem);
+
+				std::cout << "  Rocket Ranger Pointers" << std::endl;
+				std::cout << "  Speed During Takeoff " << cpputil::Uitox(state.appSpecific_StickPosXPtr) << std::endl;
+				std::cout << "  Necessary Speed for Takeoff " << cpputil::Uitox(state.appSpecific_StickPosYPtr) << std::endl;
+				std::cout << "  Cyclic Counter during Takeoff " << cpputil::Uitox(state.appSpecific_ThrottlePtr) << std::endl;
+			}
+			break;
 		}
 	}
 }

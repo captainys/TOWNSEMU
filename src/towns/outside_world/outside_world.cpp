@@ -229,6 +229,14 @@ void Outside_World::UpdateStatusBarInfo(class FMTownsCommon &towns)
 		statusBarInfo.scsiAccessLamp[hdd]=(hdd==towns.scsi.state.selId && true==towns.scsi.state.BUSY);
 	}
 	statusBarInfo.strikeCommanderSpecial=(TOWNS_APPSPECIFIC_STRIKECOMMANDER==towns.state.appSpecificSetting);
+
+	if(TOWNS_APPSPECIFIC_ROCKETRANGER==towns.state.appSpecificSetting)
+	{
+		statusBarInfo.rocketRangerSpecial=true;
+		statusBarInfo.rocketRangerTiming=towns.mem.FetchByte(towns.state.appSpecific_ThrottlePtr);
+		statusBarInfo.rocketRangerSpeed=towns.mem.FetchWord(towns.state.appSpecific_StickPosXPtr);
+		statusBarInfo.rocketRangerNecessarySpeed=towns.mem.FetchWord(towns.state.appSpecific_StickPosYPtr);
+	}
 }
 
 /* virtual */ void Outside_World::RegisterHostShortCut(std::string hostKeyLabel,bool ctrl,bool shift,std::string cmdStr)

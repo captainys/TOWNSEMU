@@ -143,6 +143,9 @@ public:
 		bool fdAccessLamp[4]={false,false,false,false};
 		bool scsiAccessLamp[6]={false,false,false,false,false,false};
 		bool strikeCommanderSpecial=false;
+
+		bool rocketRangerSpecial=false;
+		int rocketRangerTiming=0,rocketRangerSpeed=0,rocketRangerNecessarySpeed=0;
 	};
 	StatusBarInfo statusBarInfo;
 	unsigned int dx=0,dy=0;  // Screen (0,0) will be window (dx,dy)

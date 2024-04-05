@@ -1619,6 +1619,10 @@ void FsSimpleWindowConnection::WindowConnection::Render(bool swapBuffers)
 	auto scaling=shared.scaling;
 
 	auto strikeCommanderSpecial=sharedEx.statusBarInfo.strikeCommanderSpecial;
+	auto rocketRangerSpecial=sharedEx.statusBarInfo.rocketRangerSpecial;
+	auto rocketRangerTiming=sharedEx.statusBarInfo.rocketRangerTiming;
+	auto rocketRangerSpeed=sharedEx.statusBarInfo.rocketRangerSpeed;
+	auto rocketRangerNecessarySpeed=sharedEx.statusBarInfo.rocketRangerNecessarySpeed;
 
 	renderingLock.unlock();
 	// }
@@ -1693,6 +1697,52 @@ void FsSimpleWindowConnection::WindowConnection::Render(bool swapBuffers)
 		glVertex2i(x,winHei-1);
 		glVertex2i(x,winHei-STATUS_HEI+1);
 
+		glEnd();
+	}
+
+	if(true==rocketRangerSpecial)
+	{
+		int x0=dx+100*2*scaling/100;
+		int x1=dx+130*2*scaling/100;
+
+		int x2=dx+220*2*scaling/100;
+		int x3=dx+250*2*scaling/100;
+
+		// timing: Cyclic Counter 2 to 0x20.
+		//         Button should be pressed when the number is 05h or 17h, released when the number is 9
+		//         Timing:
+		//         2->5->8->11->14->17->20->23->26->29->32
+		//           On  Off                On  Off
+		int t=rocketRangerTiming;
+
+		if((2<=t && t<=5) || (20<=t && t<=23))
+		{
+			glColor3ub(255,255,255);
+		}
+		else
+		{
+			glColor3ub(0,0,0);
+		}
+		glBegin(GL_TRIANGLE_FAN);
+		glVertex2i(x0,winHei-STATUS_HEI+1);
+		glVertex2i(x0,winHei-1);
+		glVertex2i(x1,winHei-1);
+		glVertex2i(x1,winHei-STATUS_HEI+1);
+		glEnd();
+
+		if(rocketRangerSpeed<rocketRangerNecessarySpeed)
+		{
+			glColor3ub(255,0,0);
+		}
+		else
+		{
+			glColor3ub(0,255,0);
+		}
+		glBegin(GL_TRIANGLE_FAN);
+		glVertex2i(x2,winHei-STATUS_HEI+1);
+		glVertex2i(x2,winHei-1);
+		glVertex2i(x3,winHei-1);
+		glVertex2i(x3,winHei-STATUS_HEI+1);
 		glEnd();
 	}
 
