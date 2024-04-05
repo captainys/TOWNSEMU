@@ -594,6 +594,20 @@ void TownsGamePort::State::Reset(void)
 		{
 			return 0x1F;
 		}
+		else if(TOWNS_APPSPECIFIC_ROCKETRANGER==townsPtr->state.appSpecificSetting && true==state.ports[0].run)
+		{
+			auto timing=townsPtr->mem.FetchByte(townsPtr->state.appSpecific_ThrottlePtr);
+			auto data=state.ports[0].Read(townsPtr->state.townsTime);
+			if(5==timing || 0x17==timing)
+			{
+				data&=~0x30;
+			}
+			else
+			{
+				data|=0x30;
+			}
+			return data;
+		}
 		else
 		{
 			return state.ports[0].Read(townsPtr->state.townsTime);
