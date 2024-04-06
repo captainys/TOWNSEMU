@@ -70,6 +70,8 @@ public:
 			ports[1].clientPtr=&interface[1];
 			interface[0].portNo=0;
 			interface[1].portNo=1;
+			interface[0].owner=this;
+			interface[1].owner=this;
 			ForceTxEmpty();
 		}
 		void ForceTxEmpty(void)
@@ -91,7 +93,7 @@ public:
 	public:
 		MIDICard cards[MAX_NUM_MIDI_CARDS];
 		unsigned int INTMaskSend=0,INTMaskReceive=0;
-		unsigned int writeINTOccured=0,readINTOccured=0;
+		unsigned int writeINTOccured=~0,readINTOccured=~0; // Looks like active low.
 	};
 	State state;
 	class Variable

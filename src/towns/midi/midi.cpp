@@ -15,7 +15,7 @@ void TownsMIDI::i8251Client::Tx(unsigned char data)
 void TownsMIDI::MIDICard::ByteSentFromVM(int port,unsigned char data)
 {
 	// Forward to outside_world
-	std::cout << "MIDI Write Port:" << port+portBase << " Data:" << cpputil::Ubtox(data) << std::endl;
+	std::cout << "MIDI Write Port:" << cpputil::Uitoa(port+portBase) << " Data:" << cpputil::Ubtox(data) << std::endl;
 }
 
 void TownsMIDI::MIDICard::IOWriteByte(unsigned int ioport,unsigned int data,uint64_t townsTime)
@@ -69,7 +69,7 @@ unsigned int TownsMIDI::MIDICard::IOReadByte(unsigned int ioport,uint64_t townsT
 		case (TOWNSIO_MIDI_CARD1_FIFODAT&7): //0x0E52,         // MIDI card(MT-402 or 403) No.1
 			break;
 		case (TOWNSIO_MIDI_CARD1_FIFOREG&7): //0x0E53,         // MIDI card(MT-402 or 403) No.1
-			data=fifoReg;
+			data=0;  // I have no idea what it is.
 			break;
 		}
 		ports[0].Update(townsTime);
@@ -123,7 +123,7 @@ void TownsMIDI::UpdateInterruptRequest(void)
 	// I don't know what to do with FMT-401 2nd Gen.
 
 	writeReady&=state.INTMaskSend;
-	state.writeINTOccured=writeReady;
+	state.writeINTOccured=~writeReady;  // Active low (prob)
 	townsPtr->pic.SetInterruptRequestBit(TOWNSIRQ_MIDI,0!=writeReady);
 }
 
