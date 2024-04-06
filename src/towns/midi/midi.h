@@ -97,7 +97,7 @@ public:
 		unsigned int INTMaskSend=0,INTMaskReceive=0;
 		unsigned int writeINTOccured=~0,readINTOccured=~0; // Looks like active low.
 
-		uint64_t nextTimerTickTime=0,tickLeftOver=0;
+		uint64_t nextTimerTickTime=~0,tickLeftOver=0;
 		unsigned int timerINTMask=0,timerINTOccured=0;
 	};
 	State state;
