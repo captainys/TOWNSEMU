@@ -22,6 +22,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "device.h"
 #include "townsdef.h"
 #include "i8251.h"
+#include "i8253.h"
 #include "outside_world.h"
 
 
@@ -91,9 +92,13 @@ public:
 	class State
 	{
 	public:
+		i8253 timer;
 		MIDICard cards[MAX_NUM_MIDI_CARDS];
 		unsigned int INTMaskSend=0,INTMaskReceive=0;
 		unsigned int writeINTOccured=~0,readINTOccured=~0; // Looks like active low.
+
+		uint64_t nextTimerTickTime=0,tickLeftOver=0;
+		unsigned int timerINTMask=0,timerINTOccured=0;
 	};
 	State state;
 	class Variable
@@ -105,7 +110,18 @@ public:
 
 	TownsMIDI(class FMTownsCommon *townsPtr);
 
-	void UpdateInterruptRequest(void);
+	inline void TimerPolling(uint64_t townsTime)
+	{
+		if(state.nextTimerTickTime<=townsTime)
+		{
+			TimerPollingInternal(townsTime);
+		}
+	}
+
+	void TimerPollingInternal(uint64_t townsTime);
+
+	void UpdateInterruptRequestSerial(void);
+	void UpdateInterruptRequestTimer(void);
 
 	void PowerOn(void) override;
 	void Reset(void) override;

@@ -92,25 +92,45 @@ TownsMIDI::TownsMIDI(class FMTownsCommon *townsPtr) : Device(townsPtr)
 
 void TownsMIDI::PowerOn(void)
 {
+	state.timer.PowerOn();
 	for(auto &card : state.cards)
 	{
 		card.ports[0].Reset();
 		card.ports[1].Reset();
 		card.ForceTxEmpty();
 	}
+	state.INTMaskSend=0;
+	state.INTMaskReceive=0;
+	state.writeINTOccured=~0;
+	state.readINTOccured=~0; // Looks like active low.
+	state.timerINTMask=0;
+	state.timerINTOccured=0;
+	state.nextTimerTickTime=0;
 }
 
 void TownsMIDI::Reset(void)
 {
+	state.timer.Reset();
 	for(auto &card : state.cards)
 	{
 		card.ports[0].Reset();
 		card.ports[1].Reset();
 		card.ForceTxEmpty();
 	}
+	state.INTMaskSend=0;
+	state.INTMaskReceive=0;
+	state.writeINTOccured=~0;
+	state.readINTOccured=~0; // Looks like active low.
+	state.timerINTMask=0;
+	state.timerINTOccured=0;
+	state.nextTimerTickTime=0;
 }
 
-void TownsMIDI::UpdateInterruptRequest(void)
+void TownsMIDI::TimerPollingInternal(uint64_t townsTime)
+{
+}
+
+void TownsMIDI::UpdateInterruptRequestSerial(void)
 {
 	unsigned int writeReady=0;
 	for(int i=0; i<4; ++i)
@@ -124,7 +144,11 @@ void TownsMIDI::UpdateInterruptRequest(void)
 
 	writeReady&=state.INTMaskSend;
 	state.writeINTOccured=~writeReady;  // Active low (prob)
-	townsPtr->pic.SetInterruptRequestBit(TOWNSIRQ_MIDI,0!=writeReady);
+	townsPtr->pic.SetInterruptRequestBit(TOWNSIRQ_MIDI_SERIAL,0!=writeReady);
+}
+
+void TownsMIDI::UpdateInterruptRequestTimer(void)
+{
 }
 
 void TownsMIDI::IOWriteByte(unsigned int ioport,unsigned int data)
@@ -183,7 +207,7 @@ void TownsMIDI::IOWriteByte(unsigned int ioport,unsigned int data)
 		   true==state.cards[3].enabled)
 		{
 			state.INTMaskSend=data;
-			UpdateInterruptRequest();
+			UpdateInterruptRequestSerial();
 		}
 		break;
 	case TOWNSIO_MIDI_INT_MASK_RECEIVE: //0x0E71, // MIDI RECEIVE interrupt MASK
@@ -193,7 +217,7 @@ void TownsMIDI::IOWriteByte(unsigned int ioport,unsigned int data)
 		   true==state.cards[3].enabled)
 		{
 			state.INTMaskReceive=data;
-			UpdateInterruptRequest();
+			UpdateInterruptRequestSerial();
 		}
 		break;
 
@@ -201,14 +225,70 @@ void TownsMIDI::IOWriteByte(unsigned int ioport,unsigned int data)
 		if(true==state.cards[4].enabled)
 		{
 			state.INTMaskSend=data;
-			UpdateInterruptRequest();
+			UpdateInterruptRequestSerial();
 		}
 		break;
 	case TOWNSIO_MIDI_INT_MASK_RECEIVE_FMT401GEN2: //0x4A1, // MIDI INT Mask for FMT-401 Second Gen (according to Linux midi.c)
 		if(true==state.cards[4].enabled)
 		{
 			state.INTMaskReceive=data;
-			UpdateInterruptRequest();
+			UpdateInterruptRequestSerial();
+		}
+		break;
+
+	case TOWNSIO_MIDI_TIMER_INT_CTRL_INT_REASON: //0x0E73,
+		if(true==state.cards[0].enabled ||
+		   true==state.cards[1].enabled ||
+		   true==state.cards[2].enabled ||
+		   true==state.cards[3].enabled ||
+		   true==state.cards[4].enabled)
+		{
+			state.timerINTMask=data;
+			UpdateInterruptRequestTimer();
+		}
+		break;
+	case TOWNSIO_MIDI_TIMER0_COUNT: //             0x0E74,
+		if(true==state.cards[0].enabled ||
+		   true==state.cards[1].enabled ||
+		   true==state.cards[2].enabled ||
+		   true==state.cards[3].enabled ||
+		   true==state.cards[4].enabled)
+		{
+			state.timer.SetChannelCounter(0,data);
+			UpdateInterruptRequestTimer();
+		}
+		break;
+	case TOWNSIO_MIDI_TIMER1_COUNT: //             0x0E75,
+		if(true==state.cards[0].enabled ||
+		   true==state.cards[1].enabled ||
+		   true==state.cards[2].enabled ||
+		   true==state.cards[3].enabled ||
+		   true==state.cards[4].enabled)
+		{
+			state.timer.SetChannelCounter(1,data);
+			UpdateInterruptRequestTimer();
+		}
+		break;
+	case TOWNSIO_MIDI_TIMER2_COUNT: //             0x0E76,
+		if(true==state.cards[0].enabled ||
+		   true==state.cards[1].enabled ||
+		   true==state.cards[2].enabled ||
+		   true==state.cards[3].enabled ||
+		   true==state.cards[4].enabled)
+		{
+			state.timer.SetChannelCounter(2,data);
+			UpdateInterruptRequestTimer();
+		}
+		break;
+	case TOWNSIO_MIDI_TIMER_CTRL: //               0x0E77,
+		if(true==state.cards[0].enabled ||
+		   true==state.cards[1].enabled ||
+		   true==state.cards[2].enabled ||
+		   true==state.cards[3].enabled ||
+		   true==state.cards[4].enabled)
+		{
+			state.timer.ProcessControlCommand(data);
+			UpdateInterruptRequestTimer();
 		}
 		break;
 	}
@@ -267,7 +347,7 @@ unsigned int TownsMIDI::IOReadByte(unsigned int ioport)
 			// Towns Euphony driver (probably) is clearing ISR without doing anything other than
 			// reading from this I/O.  Unless read access to this I/O clears IRR, it will cause infinite
 			// interrupt.
-			townsPtr->pic.SetInterruptRequestBit(TOWNSIRQ_MIDI,false);
+			townsPtr->pic.SetInterruptRequestBit(TOWNSIRQ_MIDI_SERIAL,false);
 			return state.writeINTOccured;
 		}
 		break;
@@ -277,7 +357,7 @@ unsigned int TownsMIDI::IOReadByte(unsigned int ioport)
 		   true==state.cards[2].enabled ||
 		   true==state.cards[3].enabled)
 		{
-			townsPtr->pic.SetInterruptRequestBit(TOWNSIRQ_MIDI,false);
+			townsPtr->pic.SetInterruptRequestBit(TOWNSIRQ_MIDI_SERIAL,false);
 			return state.readINTOccured;
 		}
 		break;
@@ -290,6 +370,62 @@ unsigned int TownsMIDI::IOReadByte(unsigned int ioport)
 	case TOWNSIO_MIDI_INT_MASK_RECEIVE_FMT401GEN2: //0x4A1, // MIDI INT Mask for FMT-401 Second Gen (according to Linux midi.c)
 		if(true==state.cards[4].enabled)
 		{
+		}
+		break;
+	case TOWNSIO_MIDI_TIMER_INT_CTRL_INT_REASON: //0x0E73,
+		if(true==state.cards[0].enabled ||
+		   true==state.cards[1].enabled ||
+		   true==state.cards[2].enabled ||
+		   true==state.cards[3].enabled ||
+		   true==state.cards[4].enabled)
+		{
+			// TOWNS's original PIT clears TIMOUT flags by writing to bit7 of INT control register.
+			// But, TOWNS OS's EUP player doesn't seem to do it.
+			// Then, probably reading from this I/O should clear TMOUT flags.
+			auto data=state.timerINTOccured;
+			state.timerINTOccured=0;
+			UpdateInterruptRequestTimer();
+			return data;
+		}
+		break;
+	case TOWNSIO_MIDI_TIMER0_COUNT: //             0x0E74,
+		if(true==state.cards[0].enabled ||
+		   true==state.cards[1].enabled ||
+		   true==state.cards[2].enabled ||
+		   true==state.cards[3].enabled ||
+		   true==state.cards[4].enabled)
+		{
+			return state.timer.ReadChannelCounter(0);
+		}
+		break;
+	case TOWNSIO_MIDI_TIMER1_COUNT: //             0x0E75,
+		if(true==state.cards[0].enabled ||
+		   true==state.cards[1].enabled ||
+		   true==state.cards[2].enabled ||
+		   true==state.cards[3].enabled ||
+		   true==state.cards[4].enabled)
+		{
+			return state.timer.ReadChannelCounter(1);
+		}
+		break;
+	case TOWNSIO_MIDI_TIMER2_COUNT: //             0x0E76,
+		if(true==state.cards[0].enabled ||
+		   true==state.cards[1].enabled ||
+		   true==state.cards[2].enabled ||
+		   true==state.cards[3].enabled ||
+		   true==state.cards[4].enabled)
+		{
+			return state.timer.ReadChannelCounter(2);
+		}
+		break;
+	case TOWNSIO_MIDI_TIMER_CTRL: //               0x0E77,
+		if(true==state.cards[0].enabled ||
+		   true==state.cards[1].enabled ||
+		   true==state.cards[2].enabled ||
+		   true==state.cards[3].enabled ||
+		   true==state.cards[4].enabled)
+		{
+			// This address is prob write-only.
 		}
 		break;
 	}

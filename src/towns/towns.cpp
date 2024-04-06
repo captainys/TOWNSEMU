@@ -785,7 +785,11 @@ FMTownsCommon::FMTownsCommon() :
 	io.AddDevice(&midi,TOWNSIO_MIDI_INT_MASK_RECEIVE); //0x0E71, // MIDI RECEIVE interrupt MASK
 	io.AddDevice(&midi,TOWNSIO_MIDI_INT_MASK_SEND_FMT401GEN2); //0x4A0, // MIDI INT Mask for FMT-401 Second Gen (according to Linux midi.c)
 	io.AddDevice(&midi,TOWNSIO_MIDI_INT_MASK_RECEIVE_FMT401GEN2); //0x4A1, // MIDI INT Mask for FMT-401 Second Gen (according to Linux midi.c)
-
+	io.AddDevice(&midi,TOWNSIO_MIDI_TIMER_INT_CTRL_INT_REASON); //0x0E73,
+	io.AddDevice(&midi,TOWNSIO_MIDI_TIMER0_COUNT); //             0x0E74,
+	io.AddDevice(&midi,TOWNSIO_MIDI_TIMER1_COUNT); //             0x0E75,
+	io.AddDevice(&midi,TOWNSIO_MIDI_TIMER2_COUNT); //             0x0E76,
+	io.AddDevice(&midi,TOWNSIO_MIDI_TIMER_CTRL); //               0x0E77,
 
 	baseClassReady=true;
 }
