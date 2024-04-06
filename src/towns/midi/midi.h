@@ -18,6 +18,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #define MIDI_IS_INCLUDED
 /* { */
 
+#include <stdint.h>
 #include "device.h"
 #include "townsdef.h"
 #include "i8251.h"
@@ -31,20 +32,19 @@ private:
 public:
 	enum
 	{
-		MAX_NUM_MIDI_CARDS=4
+		MAX_NUM_MIDI_CARDS=5
 	};
+
+	class MIDICard;
 
 	class i8251Client : public i8251::Client
 	{
 	public:
-		class MIDICard *owner=nullptr;
+		MIDICard *owner=nullptr;
 		int portNo=0;
 
 		bool TxRDY(void) override{return true;}
-		void Tx(unsigned char data) override
-		{
-			owner->ByteSentFromVM(portNo,data);
-		}
+		void Tx(unsigned char data) override;
 		void SetStopBits(unsigned char stopBits) override {}
 		void SetParity(bool enabled,bool evenParity) override {}
 		void SetDataLength(unsigned char bitsPerData) override {}
@@ -59,8 +59,10 @@ public:
 	{
 	public:
 		bool enabled=false;
+		int portBase=0;
 		i8251 ports[2];
 		i8251Client interface[2];
+		unsigned int fifoReg=0;
 
 		MIDICard()
 		{
@@ -79,12 +81,17 @@ public:
 			}
 		}
 		void ByteSentFromVM(int port,unsigned char data);
+
+		void IOWriteByte(unsigned int ioport,unsigned int data,uint64_t townsTime);
+		unsigned int IOReadByte(unsigned int ioport,uint64_t townsTime);
 	};
 
 	class State
 	{
 	public:
 		MIDICard cards[MAX_NUM_MIDI_CARDS];
+		unsigned int INTMaskSend=0,INTMaskReceive=0;
+		unsigned int writeINTOccured=0,readINTOccurred=0;
 	};
 	State state;
 	class Variable
@@ -96,12 +103,17 @@ public:
 
 	TownsMIDI(class FMTownsCommon *townsPtr);
 
-	virtual void IOWriteByte(unsigned int ioport,unsigned int data);
-	virtual unsigned int IOReadByte(unsigned int ioport);
+	void UpdateInterruptRequest(void);
 
-	virtual uint32_t SerializeVersion(void) const;
-	virtual void SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const;
-	virtual bool SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version);
+	void PowerOn(void) override;
+	void Reset(void) override;
+
+	void IOWriteByte(unsigned int ioport,unsigned int data) override;
+	unsigned int IOReadByte(unsigned int ioport) override;
+
+	uint32_t SerializeVersion(void) const override;
+	void SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const override;
+	bool SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version) override;
 };
 
 // Sample Partial Code from BCC
