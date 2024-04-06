@@ -267,6 +267,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	featureMap["VXDMON"]=ENABLE_VXDMONITOR;
 	featureMap["CRTC2MON"]=ENABLE_CRTC2MONITOR;
 	featureMap["AUTOQSS"]=ENABLE_AUTOQSS;
+	featureMap["MIDI"]=ENABLE_MIDI0;
 
 	dumpableMap["CALLSTACK"]=DUMP_CALLSTACK;
 	dumpableMap["CST"]=DUMP_CALLSTACK;
@@ -1992,6 +1993,10 @@ void TownsCommandInterpreter::Execute_Enable(FMTownsCommon &towns,Command &cmd)
 				PrintError(ERROR_TOO_FEW_ARGS);
 			}
 			break;
+		case ENABLE_MIDI0:
+			towns.midi.state.cards[0].enabled=true;
+			std::cout << "MIDI 0 Enabled." << std::endl;
+			break;
 		}
 	}
 }
@@ -2099,6 +2104,10 @@ void TownsCommandInterpreter::Execute_Disable(FMTownsCommon &towns,Command &cmd)
 		case ENABLE_AUTOQSS:
 			towns.DisableAutoQSS();
 			std::cout << "Auto QSS Disabled." << std::endl;
+			break;
+		case ENABLE_MIDI0:
+			towns.midi.state.cards[0].enabled=false;
+			std::cout << "MIDI 0 Disabled." << std::endl;
 			break;
 		}
 	}

@@ -122,8 +122,8 @@ void TownsMIDI::UpdateInterruptRequest(void)
 	}
 	// I don't know what to do with FMT-401 2nd Gen.
 
-	state.writeINTOccured=writeReady;
 	writeReady&=state.INTMaskSend;
+	state.writeINTOccured=writeReady;
 	townsPtr->pic.SetInterruptRequestBit(TOWNSIRQ_MIDI,0!=writeReady);
 }
 
@@ -264,6 +264,11 @@ unsigned int TownsMIDI::IOReadByte(unsigned int ioport)
 		   true==state.cards[2].enabled ||
 		   true==state.cards[3].enabled)
 		{
+			// Towns Euphony driver (probably) is clearing ISR without doing anything other than
+			// reading from this I/O.  Unless read access to this I/O clears IRR, it will cause infinite
+			// interrupt.
+			townsPtr->pic.SetInterruptRequestBit(TOWNSIRQ_MIDI,false);
+			return state.writeINTOccured;
 		}
 		break;
 	case TOWNSIO_MIDI_INT_MASK_RECEIVE: //0x0E71, // MIDI RECEIVE interrupt MASK
@@ -272,6 +277,8 @@ unsigned int TownsMIDI::IOReadByte(unsigned int ioport)
 		   true==state.cards[2].enabled ||
 		   true==state.cards[3].enabled)
 		{
+			townsPtr->pic.SetInterruptRequestBit(TOWNSIRQ_MIDI,false);
+			return state.readINTOccured;
 		}
 		break;
 

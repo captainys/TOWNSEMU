@@ -91,7 +91,7 @@ public:
 	public:
 		MIDICard cards[MAX_NUM_MIDI_CARDS];
 		unsigned int INTMaskSend=0,INTMaskReceive=0;
-		unsigned int writeINTOccured=0,readINTOccurred=0;
+		unsigned int writeINTOccured=0,readINTOccured=0;
 	};
 	State state;
 	class Variable
