@@ -41,6 +41,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "physmem.h"
 #include "memaccess.h"
 #include "sound.h"
+#include "midi.h"
 #include "gameport.h"
 #include "timer.h"
 #include "serialport.h"
@@ -428,6 +429,7 @@ public:
 	TownsSCSI scsi;
 	TownsKeyboard keyboard;
 	TownsSound sound;
+	TownsMIDI midi;
 	TownsGamePort gameport;
 	TownsTimer timer;
 	TownsSerialPort serialport;

@@ -497,6 +497,7 @@ FMTownsCommon::FMTownsCommon() :
 	scsi(this),
 	rtc(this),
 	sound(this),
+	midi(this),
 	gameport(this),
 	timer(this,&pic),
 	serialport(this),
@@ -530,6 +531,7 @@ FMTownsCommon::FMTownsCommon() :
 	allDevices.push_back(&cdrom);
 	allDevices.push_back(&rtc);
 	allDevices.push_back(&sound);
+	allDevices.push_back(&midi);
 	allDevices.push_back(&gameport);
 	allDevices.push_back(&timer);
 	allDevices.push_back(&keyboard);
@@ -747,6 +749,43 @@ FMTownsCommon::FMTownsCommon() :
 	io.AddDevice(&highResPCM,TOWNSIO_HIGHRESPCM_REC_PEAK_MON);// 0x51D, // [2] pp.839
 	io.AddDevice(&highResPCM,TOWNSIO_HIGHRESPCM_DATA_LOW);//     0x51E, // [2] pp.840
 	io.AddDevice(&highResPCM,TOWNSIO_HIGHRESPCM_DATA_HIGH);//    0x51F, // [2] pp.840
+
+
+	io.AddDevice(&midi,TOWNSIO_MIDI_CARD1_DATREG1); //0x0E50,         // MIDI card(MT-402 or 403) No.1 Out port 1 datReg1 (from Linux source)
+	io.AddDevice(&midi,TOWNSIO_MIDI_CARD1_CMDREG1); //0x0E51,         // MIDI card(MT-402 or 403) No.1 cmdReg1 (Linux source)
+	io.AddDevice(&midi,TOWNSIO_MIDI_CARD1_DATREG2); //0x0E54,         // MIDI card(MT-402 or 403) No.1
+	io.AddDevice(&midi,TOWNSIO_MIDI_CARD1_CMDREG2); //0x0E55,         // MIDI card(MT-402 or 403) No.1
+	io.AddDevice(&midi,TOWNSIO_MIDI_CARD1_FIFODAT); //0x0E52,         // MIDI card(MT-402 or 403) No.1
+	io.AddDevice(&midi,TOWNSIO_MIDI_CARD1_FIFOREG); //0x0E53,         // MIDI card(MT-402 or 403) No.1
+	io.AddDevice(&midi,TOWNSIO_MIDI_CARD2_DATREG1); //0x0E58,         // MIDI card 2
+	io.AddDevice(&midi,TOWNSIO_MIDI_CARD2_CMDREG1); //0x0E59,         // MIDI card 2
+	io.AddDevice(&midi,TOWNSIO_MIDI_CARD2_DATREG2); //0x0E5C,         // MIDI card 2
+	io.AddDevice(&midi,TOWNSIO_MIDI_CARD2_CMDREG2); //0x0E5D,         // MIDI card 2
+	io.AddDevice(&midi,TOWNSIO_MIDI_CARD2_FIFODAT); //0x0E5A,         // MIDI card 2
+	io.AddDevice(&midi,TOWNSIO_MIDI_CARD2_FIFOREG); //0x0E5B,         // MIDI card 2
+	io.AddDevice(&midi,TOWNSIO_MIDI_CARD3EF_DATREG1); //0x0E60,       // MIDI card 3 [E][F] according to Linux midi.c
+	io.AddDevice(&midi,TOWNSIO_MIDI_CARD3EF_CMDREG1); //0x0E61,       // MIDI card 3 [E][F]
+	io.AddDevice(&midi,TOWNSIO_MIDI_CARD3EF_DATREG2); //0x0E64,       // MIDI card 3 [E][F] according to Linux midi.c
+	io.AddDevice(&midi,TOWNSIO_MIDI_CARD3EF_CMDREG2); //0x0E65,       // MIDI card 3 [E][F]
+	io.AddDevice(&midi,TOWNSIO_MIDI_CARD3EF_FIFODAT); //0x0E62,       // MIDI card 3 [E][F] according to Linux midi.c
+	io.AddDevice(&midi,TOWNSIO_MIDI_CARD3EF_FIFOREG); //0x0E63,       // MIDI card 3 [E][F]
+	io.AddDevice(&midi,TOWNSIO_MIDI_CARD3GH_DATREG1); //0x0E68,       // MIDI card 3 [G][H] according to Linux midi.c
+	io.AddDevice(&midi,TOWNSIO_MIDI_CARD3GH_CMDREG1); //0x0E69,       // MIDI card 3 [G][H]
+	io.AddDevice(&midi,TOWNSIO_MIDI_CARD3GH_DATREG2); //0x0E6C,       // MIDI card 3 [G][H] according to Linux midi.c
+	io.AddDevice(&midi,TOWNSIO_MIDI_CARD3GH_CMDREG2); //0x0E6D,       // MIDI card 3 [G][H]
+	io.AddDevice(&midi,TOWNSIO_MIDI_CARD3GH_FIFODAT); //0x0E6A,       // MIDI card 3 [G][H] according to Linux midi.c
+	io.AddDevice(&midi,TOWNSIO_MIDI_CARD3GH_FIFORET); //0x0E6B,       // MIDI card 3 [G][H]
+	io.AddDevice(&midi,TOWNSIO_MIDI_CARD1GEN2_DATREG1); //0x04A8,     // 2nd Gen MIDI-1 according to Linux midi.c
+	io.AddDevice(&midi,TOWNSIO_MIDI_CARD1GEN2_CMDREG1); //0x04A9,     // 2nd Gen MIDI-1
+	io.AddDevice(&midi,TOWNSIO_MIDI_CARD1GEN2_DATREG2); //0x04AC,     // 2nd Gen MIDI-1 according to Linux midi.c
+	io.AddDevice(&midi,TOWNSIO_MIDI_CARD1GEN2_CMDREG2); //0x04AD,     // 2nd Gen MIDI-1
+	io.AddDevice(&midi,TOWNSIO_MIDI_CARD1GEN2_FIFODAT); //0x04AA,     // 2nd Gen MIDI-1 according to Linux midi.c
+	io.AddDevice(&midi,TOWNSIO_MIDI_CARD1GEN2_FIFOREG); //0x04AB,     // 2nd Gen MIDI-1
+	io.AddDevice(&midi,TOWNSIO_MIDI_INT_MASK_SEND); //0x0E70,    // MIDI SEND interrupt MASK
+	io.AddDevice(&midi,TOWNSIO_MIDI_INT_MASK_RECEIVE); //0x0E71, // MIDI RECEIVE interrupt MASK
+	io.AddDevice(&midi,TOWNSIO_MIDI_INT_MASK_SEND_FMT401GEN2); //0x4A0, // MIDI INT Mask for FMT-401 Second Gen (according to Linux midi.c)
+	io.AddDevice(&midi,TOWNSIO_MIDI_INT_MASK_RECEIVE_FMT401GEN2); //0x4A1, // MIDI INT Mask for FMT-401 Second Gen (according to Linux midi.c)
+
 
 	baseClassReady=true;
 }
