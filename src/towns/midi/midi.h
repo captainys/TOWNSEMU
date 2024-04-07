@@ -33,7 +33,8 @@ private:
 public:
 	enum
 	{
-		MAX_NUM_MIDI_CARDS=5
+		MAX_NUM_MIDI_CARDS=5,
+		TIMER_INTERVAL=1000000000/480000, // 480KHz? 480MHz?
 	};
 
 	class MIDICard;
@@ -122,12 +123,15 @@ public:
 
 	void UpdateInterruptRequestSerial(void);
 	void UpdateInterruptRequestTimer(void);
+	void UpdateSchedule(void);
 
 	void PowerOn(void) override;
 	void Reset(void) override;
 
 	void IOWriteByte(unsigned int ioport,unsigned int data) override;
 	unsigned int IOReadByte(unsigned int ioport) override;
+
+	void RunScheduledTask(unsigned long long int townsTime) override;
 
 	uint32_t SerializeVersion(void) const override;
 	void SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const override;

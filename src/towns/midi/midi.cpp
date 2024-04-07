@@ -149,6 +149,17 @@ void TownsMIDI::UpdateInterruptRequestSerial(void)
 
 void TownsMIDI::UpdateInterruptRequestTimer(void)
 {
+	townsPtr->pic.SetInterruptRequestBit(TOWNSIRQ_MIDI_TIMER,0!=(state.timerINTMask&state.timerINTOccured));
+}
+
+void TownsMIDI::UpdateSchedule(void)
+{
+	UpdateInterruptRequestTimer();
+	UpdateInterruptRequestSerial();
+	if(0!=state.timerINTMask || 0!=state.INTMaskSend)
+	{
+		townsPtr->ScheduleDeviceCallBack(*this,townsPtr->state.townsTime+TIMER_INTERVAL);
+	}
 }
 
 void TownsMIDI::IOWriteByte(unsigned int ioport,unsigned int data)
@@ -244,6 +255,7 @@ void TownsMIDI::IOWriteByte(unsigned int ioport,unsigned int data)
 		   true==state.cards[4].enabled)
 		{
 			state.timerINTMask=data;
+			UpdateSchedule();
 			UpdateInterruptRequestTimer();
 		}
 		break;
@@ -433,6 +445,18 @@ unsigned int TownsMIDI::IOReadByte(unsigned int ioport)
 	return 0xFF;
 }
 
+void TownsMIDI::RunScheduledTask(unsigned long long int townsTime)
+{
+	for(auto &card : state.cards)
+	{
+		if(true==card.enabled)
+		{
+			card.ports[0].Update(townsTime);
+			card.ports[1].Update(townsTime);
+		}
+	}
+	UpdateSchedule();
+}
 
 uint32_t TownsMIDI::SerializeVersion(void) const
 {
