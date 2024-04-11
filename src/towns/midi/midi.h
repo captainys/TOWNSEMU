@@ -24,6 +24,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "i8251.h"
 #include "i8253.h"
 #include "outside_world.h"
+#include "midi_interface.h"
 
 
 class TownsMIDI : public Device
@@ -65,9 +66,13 @@ public:
 		i8251 ports[2];
 		i8251Client interface[2];
 		unsigned int fifoReg=0;
+		MIDI_Interface *midiItfc=nullptr;
+		unsigned char midiMessageFilled=0,midiMessageLen=0;
+		unsigned char midiMessage[3];
 
 		MIDICard()
 		{
+			midiItfc=MIDI_Interface::Create();
 			ports[0].clientPtr=&interface[0];
 			ports[1].clientPtr=&interface[1];
 			interface[0].portNo=0;

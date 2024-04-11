@@ -15,7 +15,54 @@ void TownsMIDI::i8251Client::Tx(unsigned char data)
 void TownsMIDI::MIDICard::ByteSentFromVM(int port,unsigned char data)
 {
 	// Forward to outside_world
-	std::cout << "MIDI Write Port:" << cpputil::Uitoa(port+portBase) << " Data:" << cpputil::Ubtox(data) << std::endl;
+	// std::cout << "MIDI Write Port:" << cpputil::Uitoa(port+portBase) << " Data:" << cpputil::Ubtox(data) << std::endl;
+
+	if(0==midiMessageFilled)
+	{
+		int data_check;
+
+		data_check = data & 0xf0;
+		midiMessage[0] = data;
+		midiMessage[1] = 0;
+		midiMessage[2] = 0;
+
+		if (data_check == 0xf0)
+		{
+			switch (data)
+			{
+			case 0xf0:
+			case 0xf1:
+			case 0xf3:
+				midiMessageLen = 2;
+				break;
+			case 0xf2:
+				midiMessageLen = 3;
+				break;
+			default:
+				midiMessageLen = 1;
+				break;
+			}
+		}
+		else
+		{
+			if (data_check == 0xc0 || data_check == 0xd0)
+			{
+				midiMessageLen = 2;
+			}
+			else
+			{
+				midiMessageLen = 3;
+			}
+		}
+	}
+
+	midiMessage[midiMessageFilled++] = data;
+	if (midiMessageLen<=midiMessageFilled)
+	{
+		midiItfc->SendCommand(midiMessage);
+		midiMessageFilled=0;
+		midiMessageLen=0;
+	}
 }
 
 void TownsMIDI::MIDICard::IOWriteByte(unsigned int ioport,unsigned int data,uint64_t townsTime)
@@ -98,6 +145,8 @@ void TownsMIDI::PowerOn(void)
 		card.ports[0].Reset();
 		card.ports[1].Reset();
 		card.ForceTxEmpty();
+		card.midiMessageFilled=0;
+		card.midiMessageLen=0;
 	}
 	state.INTMaskSend=0;
 	state.INTMaskReceive=0;
@@ -116,6 +165,8 @@ void TownsMIDI::Reset(void)
 		card.ports[0].Reset();
 		card.ports[1].Reset();
 		card.ForceTxEmpty();
+		card.midiMessageFilled=0;
+		card.midiMessageLen=0;
 	}
 	state.INTMaskSend=0;
 	state.INTMaskReceive=0;
