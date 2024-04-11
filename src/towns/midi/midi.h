@@ -147,6 +147,19 @@ public:
 	bool SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version) override;
 };
 
+
+
+// MB89371A data sheet
+// http://act-ele.c.ooco.jp/jisaku/rsmoni/MB89371A.pdf
+//
+// midiOutShortMsg sample
+// http://www13.plala.or.jp/kymats/study/MULTIMEDIA/midiOutShortMsg.html
+//
+// MIDI messages
+// https://www.g200kg.com/jp/docs/tech/midi.html
+
+
+
 // Sample Partial Code from BCC
 // void TownsMIDI::IOWriteByte(unsigned int ioport,unsigned int data)
 // {

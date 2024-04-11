@@ -26,6 +26,8 @@ void TownsMIDI::MIDICard::ByteSentFromVM(int port,unsigned char data)
 		midiMessage[1] = 0;
 		midiMessage[2] = 0;
 
+		midiMessageLen=0;
+
 		if (data_check == 0xf0)
 		{
 			switch (data)
