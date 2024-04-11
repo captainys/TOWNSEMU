@@ -34,7 +34,7 @@ public:
 	enum
 	{
 		MAX_NUM_MIDI_CARDS=5,
-		TIMER_INTERVAL=1000000000/480000, // 480KHz? 480MHz?
+		TIMER_INTERVAL=1000000000/800000, // Based on the measurement, it looks to be 800KHz.
 	};
 
 	class MIDICard;
@@ -98,7 +98,7 @@ public:
 		unsigned int INTMaskSend=0,INTMaskReceive=0;
 		unsigned int writeINTOccured=~0,readINTOccured=~0; // Looks like active low.
 
-		uint64_t nextTimerTickTime=~0,tickLeftOver=0;
+		uint64_t lastTimerTickTime=0;
 		unsigned int timerINTMask=0,timerINTOccured=0;
 	};
 	State state;
@@ -113,7 +113,11 @@ public:
 
 	inline void TimerPolling(uint64_t townsTime)
 	{
-		if(state.nextTimerTickTime<=townsTime)
+		if(0==state.lastTimerTickTime)
+		{
+			state.lastTimerTickTime=townsTime;
+		}
+		else if(state.lastTimerTickTime+TIMER_INTERVAL<=townsTime)
 		{
 			TimerPollingInternal(townsTime);
 		}

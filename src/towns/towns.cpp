@@ -1116,6 +1116,7 @@ void FMTownsCommon::ProcessSound(Outside_World *outside_world)
 void FMTownsCommon::RunFastDevicePollingInternal(void)
 {
 	timer.TimerPolling(state.townsTime);
+	midi.TimerPolling(state.townsTime);
 	sound.SoundPolling(state.townsTime);
 	crtc.ProcessVSYNCIRQ(state.townsTime);
 	state.nextFastDevicePollingTime=state.townsTime+FAST_DEVICE_POLLING_INTERVAL;

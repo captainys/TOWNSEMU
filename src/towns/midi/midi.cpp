@@ -105,7 +105,7 @@ void TownsMIDI::PowerOn(void)
 	state.readINTOccured=~0; // Looks like active low.
 	state.timerINTMask=0;
 	state.timerINTOccured=0;
-	state.nextTimerTickTime=0;
+	state.lastTimerTickTime=0;
 }
 
 void TownsMIDI::Reset(void)
@@ -123,11 +123,25 @@ void TownsMIDI::Reset(void)
 	state.readINTOccured=~0; // Looks like active low.
 	state.timerINTMask=0;
 	state.timerINTOccured=0;
-	state.nextTimerTickTime=0;
+	state.lastTimerTickTime=0;
 }
 
 void TownsMIDI::TimerPollingInternal(uint64_t townsTime)
 {
+	auto nTick=(townsTime-state.lastTimerTickTime)/TIMER_INTERVAL;
+	state.lastTimerTickTime+=nTick*TIMER_INTERVAL;
+
+	bool OUT[2]={state.timer.channels[0].OUT,state.timer.channels[1].OUT};
+	state.timer.TickIn((unsigned int)nTick);
+	if(true!=OUT[0] && true==state.timer.channels[0].OUT)
+	{
+		state.timerINTOccured|=1;
+	}
+	if(true!=OUT[1] && true==state.timer.channels[1].OUT)
+	{
+		state.timerINTOccured|=2;
+	}
+	UpdateInterruptRequestTimer();
 }
 
 void TownsMIDI::UpdateInterruptRequestSerial(void)
