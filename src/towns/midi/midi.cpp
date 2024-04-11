@@ -17,7 +17,7 @@ void TownsMIDI::MIDICard::ByteSentFromVM(int port,unsigned char data)
 	// Forward to outside_world
 	// std::cout << "MIDI Write Port:" << cpputil::Uitoa(port+portBase) << " Data:" << cpputil::Ubtox(data) << std::endl;
 
-	if(0==midiMessageFilled)
+	if(0!=(0x80&data))
 	{
 		int data_check;
 
@@ -27,6 +27,7 @@ void TownsMIDI::MIDICard::ByteSentFromVM(int port,unsigned char data)
 		midiMessage[2] = 0;
 
 		midiMessageLen=0;
+		midiMessageFilled=0;
 
 		if (data_check == 0xf0)
 		{
@@ -59,11 +60,10 @@ void TownsMIDI::MIDICard::ByteSentFromVM(int port,unsigned char data)
 	}
 
 	midiMessage[midiMessageFilled++] = data;
-	if (midiMessageLen<=midiMessageFilled)
+	if (0!=midiMessageLen && midiMessageLen<=midiMessageFilled)
 	{
 		midiItfc->SendCommand(midiMessage);
-		midiMessageFilled=0;
-		midiMessageLen=0;
+		midiMessageFilled=1; // May re-use the status byte.
 	}
 }
 
