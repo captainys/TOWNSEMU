@@ -34,7 +34,7 @@ public:
 	enum
 	{
 		MAX_NUM_MIDI_CARDS=5,
-		TIMER_INTERVAL=1000000000/800000, // Based on the measurement, it looks to be 800KHz.
+		TIMER_INTERVAL=1000000000/500000, // 500KHz? 480MHz?
 	};
 
 	class MIDICard;
