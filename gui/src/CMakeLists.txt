@@ -40,6 +40,7 @@ add_subdirectory(../../src/ym2612 ym2612)
 # add_subdirectory(../../src/ym2612tests ym2612tests)
 add_subdirectory(../../src/rf5c68 rf5c68)
 add_subdirectory(../../src/i8251 i8251)
+add_subdirectory(../../src/i8253 i8253)
 add_subdirectory(../../src/i8251_to_socket i8251_to_socket)
 add_subdirectory(../../src/diskdrive diskdrive)
 
