@@ -47,6 +47,10 @@ void TownsARGV::PrintHelp(void) const
 	std::cout << "  Enable High-Resolution PCM" << std::endl;
 	std::cout << "-NOHIGHRESPCM" << std::endl;
 	std::cout << "  Disable High-Resolution PCM" << std::endl;
+	std::cout << "-MIDI n" << std::endl;
+	std::cout << "  Number of MIDI cards, between 0 and 4" << std::endl;
+	std::cout << "  Some games are known to not work when a MIDI card is installed." << std::endl;
+	std::cout << "  Recommended to keep it zero unless necessary." << std::endl;
 	std::cout << "-HIGHFIDELITY" << std::endl;
 	std::cout << "-HIGHFIDELITYCPU" << std::endl;
 	std::cout << "  Use high-fidelity CPU core.  Needed to run Windows 3.1." << std::endl;
@@ -859,6 +863,11 @@ bool TownsARGV::AnalyzeCommandParameter(int argc,char *argv[])
 		else if("-NOHIGHRESPCM"==ARG)
 		{
 			highResPCM=false;
+		}
+		else if("-MIDI"==ARG && i+1<argc)
+		{
+			nMidiCards=cpputil::Atoi(argv[i+1]);
+			++i;
 		}
 		else if("-HIGHRES"==ARG)
 		{

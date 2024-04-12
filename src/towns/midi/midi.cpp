@@ -179,6 +179,16 @@ void TownsMIDI::Reset(void)
 	state.lastTimerTickTime=0;
 }
 
+void TownsMIDI::EnableCards(int nCards)
+{
+	int i=0;
+	for(auto &c : state.cards)
+	{
+		c.enabled=(i<nCards);
+		++i;
+	}
+}
+
 void TownsMIDI::TimerPollingInternal(uint64_t townsTime)
 {
 	auto nTick=(townsTime-state.lastTimerTickTime)/TIMER_INTERVAL;

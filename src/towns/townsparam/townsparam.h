@@ -62,6 +62,7 @@ public:
 	bool highResAvailable=true;
 
 	bool highResPCM=true;
+	int nMidiCards=0;
 
 	bool catchUpRealTime=true;
 

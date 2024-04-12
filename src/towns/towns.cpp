@@ -296,6 +296,8 @@ void FMTownsCommon::State::PowerOn(void)
 
 	towns.highResPCM.state.enabled=argv.highResPCM;
 
+	towns.midi.EnableCards(argv.nMidiCards);
+
 	if(TOWNS_KEYBOARD_MODE_DEFAULT!=argv.keyboardMode)
 	{
 		outside_world->keyboardMode=argv.keyboardMode;

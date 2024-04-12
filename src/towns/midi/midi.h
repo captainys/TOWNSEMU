@@ -116,6 +116,8 @@ public:
 
 	TownsMIDI(class FMTownsCommon *townsPtr);
 
+	void EnableCards(int nCards);
+
 	inline void TimerPolling(uint64_t townsTime)
 	{
 		if(0==state.lastTimerTickTime)
