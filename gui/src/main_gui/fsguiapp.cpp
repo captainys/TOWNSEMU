@@ -285,6 +285,41 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 		subMenu->AddTextItem(0,FSKEY_NULL,L"Load Machine State and Pause")->BindCallBack(&THISCLASS::State_LoadStateAndPause,this);
 		subMenu->AddTextItem(0,FSKEY_NULL,L"Load Last Machine State")->BindCallBack(&THISCLASS::State_LoadLastState,this);
 		subMenu->AddTextItem(0,FSKEY_NULL,L"Load Last Machine State and Pause")->BindCallBack(&THISCLASS::State_LoadLastStateAndPause,this);
+
+		auto savememm=subMenu->AddTextItem(0,FSKEY_A,L"Save Machine State to Memory");
+		auto loadmemm=subMenu->AddTextItem(0,FSKEY_O,L"Load Machine State from Memory");
+		auto loadmempm=subMenu->AddTextItem(0,FSKEY_D,L"Load Machine State from Memoryand Pause");
+
+		auto savemem=savememm->AddSubMenu();
+		auto loadmem=loadmemm->AddSubMenu();
+		auto loadmemp=loadmempm->AddSubMenu();
+
+		savemem->AddTextItem(0,FSKEY_0,L"Slot 0")->BindCallBack(&THISCLASS::State_SaveMem0,this);
+		savemem->AddTextItem(0,FSKEY_1,L"Slot 1")->BindCallBack(&THISCLASS::State_SaveMem1,this);
+		savemem->AddTextItem(0,FSKEY_2,L"Slot 2")->BindCallBack(&THISCLASS::State_SaveMem2,this);
+		savemem->AddTextItem(0,FSKEY_3,L"Slot 3")->BindCallBack(&THISCLASS::State_SaveMem3,this);
+		savemem->AddTextItem(0,FSKEY_4,L"Slot 4")->BindCallBack(&THISCLASS::State_SaveMem4,this);
+		savemem->AddTextItem(0,FSKEY_5,L"Slot 5")->BindCallBack(&THISCLASS::State_SaveMem5,this);
+		savemem->AddTextItem(0,FSKEY_6,L"Slot 6")->BindCallBack(&THISCLASS::State_SaveMem6,this);
+		savemem->AddTextItem(0,FSKEY_7,L"Slot 7")->BindCallBack(&THISCLASS::State_SaveMem7,this);
+
+		loadmem->AddTextItem(0,FSKEY_0,L"Slot 0")->BindCallBack(&THISCLASS::State_LoadMem0,this);
+		loadmem->AddTextItem(0,FSKEY_1,L"Slot 1")->BindCallBack(&THISCLASS::State_LoadMem1,this);
+		loadmem->AddTextItem(0,FSKEY_2,L"Slot 2")->BindCallBack(&THISCLASS::State_LoadMem2,this);
+		loadmem->AddTextItem(0,FSKEY_3,L"Slot 3")->BindCallBack(&THISCLASS::State_LoadMem3,this);
+		loadmem->AddTextItem(0,FSKEY_4,L"Slot 4")->BindCallBack(&THISCLASS::State_LoadMem4,this);
+		loadmem->AddTextItem(0,FSKEY_5,L"Slot 5")->BindCallBack(&THISCLASS::State_LoadMem5,this);
+		loadmem->AddTextItem(0,FSKEY_6,L"Slot 6")->BindCallBack(&THISCLASS::State_LoadMem6,this);
+		loadmem->AddTextItem(0,FSKEY_7,L"Slot 7")->BindCallBack(&THISCLASS::State_LoadMem7,this);
+
+		loadmemp->AddTextItem(0,FSKEY_0,L"Slot 0")->BindCallBack(&THISCLASS::State_LoadMemP0,this);
+		loadmemp->AddTextItem(0,FSKEY_1,L"Slot 1")->BindCallBack(&THISCLASS::State_LoadMemP1,this);
+		loadmemp->AddTextItem(0,FSKEY_2,L"Slot 2")->BindCallBack(&THISCLASS::State_LoadMemP2,this);
+		loadmemp->AddTextItem(0,FSKEY_3,L"Slot 3")->BindCallBack(&THISCLASS::State_LoadMemP3,this);
+		loadmemp->AddTextItem(0,FSKEY_4,L"Slot 4")->BindCallBack(&THISCLASS::State_LoadMemP4,this);
+		loadmemp->AddTextItem(0,FSKEY_5,L"Slot 5")->BindCallBack(&THISCLASS::State_LoadMemP5,this);
+		loadmemp->AddTextItem(0,FSKEY_6,L"Slot 6")->BindCallBack(&THISCLASS::State_LoadMemP6,this);
+		loadmemp->AddTextItem(0,FSKEY_7,L"Slot 7")->BindCallBack(&THISCLASS::State_LoadMemP7,this);
 	}
 
 	{
@@ -1789,6 +1824,150 @@ void FsGuiMainCanvas::State_LoadLastStateAndPause(FsGuiPopUpMenuItem *)
 		VM_Not_Running_Error();
 	}
 }
+
+void FsGuiMainCanvas::State_SaveMem0(FsGuiPopUpMenuItem *)
+{
+	State_SaveMem(0);
+}
+
+void FsGuiMainCanvas::State_SaveMem1(FsGuiPopUpMenuItem *)
+{
+	State_SaveMem(1);
+}
+
+void FsGuiMainCanvas::State_SaveMem2(FsGuiPopUpMenuItem *)
+{
+	State_SaveMem(2);
+}
+
+void FsGuiMainCanvas::State_SaveMem3(FsGuiPopUpMenuItem *)
+{
+	State_SaveMem(3);
+}
+
+void FsGuiMainCanvas::State_SaveMem4(FsGuiPopUpMenuItem *)
+{
+	State_SaveMem(4);
+}
+
+void FsGuiMainCanvas::State_SaveMem5(FsGuiPopUpMenuItem *)
+{
+	State_SaveMem(5);
+}
+
+void FsGuiMainCanvas::State_SaveMem6(FsGuiPopUpMenuItem *)
+{
+	State_SaveMem(6);
+}
+
+void FsGuiMainCanvas::State_SaveMem7(FsGuiPopUpMenuItem *)
+{
+	State_SaveMem(7);
+}
+
+void FsGuiMainCanvas::State_SaveMem(int i)
+{
+	std::string cmd="SAVESTATEM ";
+	cmd+=cpputil::Itoa(i);
+	SendVMCommand(cmd.data());
+
+	VMMustResume=YSTRUE;
+}
+
+
+void FsGuiMainCanvas::State_LoadMem0(FsGuiPopUpMenuItem *)
+{
+	State_LoadMem(0,false);
+}
+
+void FsGuiMainCanvas::State_LoadMem1(FsGuiPopUpMenuItem *)
+{
+	State_LoadMem(1,false);
+}
+
+void FsGuiMainCanvas::State_LoadMem2(FsGuiPopUpMenuItem *)
+{
+	State_LoadMem(2,false);
+}
+
+void FsGuiMainCanvas::State_LoadMem3(FsGuiPopUpMenuItem *)
+{
+	State_LoadMem(3,false);
+}
+
+void FsGuiMainCanvas::State_LoadMem4(FsGuiPopUpMenuItem *)
+{
+	State_LoadMem(4,false);
+}
+
+void FsGuiMainCanvas::State_LoadMem5(FsGuiPopUpMenuItem *)
+{
+	State_LoadMem(5,false);
+}
+
+void FsGuiMainCanvas::State_LoadMem6(FsGuiPopUpMenuItem *)
+{
+	State_LoadMem(6,false);
+}
+
+void FsGuiMainCanvas::State_LoadMem7(FsGuiPopUpMenuItem *)
+{
+	State_LoadMem(7,false);
+}
+
+
+void FsGuiMainCanvas::State_LoadMemP0(FsGuiPopUpMenuItem *)
+{
+	State_LoadMem(0,true);
+}
+
+void FsGuiMainCanvas::State_LoadMemP1(FsGuiPopUpMenuItem *)
+{
+	State_LoadMem(1,true);
+}
+
+void FsGuiMainCanvas::State_LoadMemP2(FsGuiPopUpMenuItem *)
+{
+	State_LoadMem(2,true);
+}
+
+void FsGuiMainCanvas::State_LoadMemP3(FsGuiPopUpMenuItem *)
+{
+	State_LoadMem(3,true);
+}
+
+void FsGuiMainCanvas::State_LoadMemP4(FsGuiPopUpMenuItem *)
+{
+	State_LoadMem(4,true);
+}
+
+void FsGuiMainCanvas::State_LoadMemP5(FsGuiPopUpMenuItem *)
+{
+	State_LoadMem(5,true);
+}
+
+void FsGuiMainCanvas::State_LoadMemP6(FsGuiPopUpMenuItem *)
+{
+	State_LoadMem(6,true);
+}
+
+void FsGuiMainCanvas::State_LoadMemP7(FsGuiPopUpMenuItem *)
+{
+	State_LoadMem(7,true);
+}
+
+void FsGuiMainCanvas::State_LoadMem(int i,bool pause)
+{
+	std::string cmd="LOADSTATEM ";
+	cmd+=cpputil::Itoa(i);
+	SendVMCommand(cmd.data());
+	if(true==pause)
+	{
+		SendVMCommand("PAUSE");
+	}
+	VMMustResume=YSTRUE;
+}
+
 
 
 

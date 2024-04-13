@@ -254,6 +254,36 @@ private:
 	void State_LoadLastState(FsGuiPopUpMenuItem *);
 	void State_LoadLastStateAndPause(FsGuiPopUpMenuItem *);
 
+	void State_SaveMem0(FsGuiPopUpMenuItem *);
+	void State_SaveMem1(FsGuiPopUpMenuItem *);
+	void State_SaveMem2(FsGuiPopUpMenuItem *);
+	void State_SaveMem3(FsGuiPopUpMenuItem *);
+	void State_SaveMem4(FsGuiPopUpMenuItem *);
+	void State_SaveMem5(FsGuiPopUpMenuItem *);
+	void State_SaveMem6(FsGuiPopUpMenuItem *);
+	void State_SaveMem7(FsGuiPopUpMenuItem *);
+	void State_SaveMem(int i);
+
+	void State_LoadMem0(FsGuiPopUpMenuItem *);
+	void State_LoadMem1(FsGuiPopUpMenuItem *);
+	void State_LoadMem2(FsGuiPopUpMenuItem *);
+	void State_LoadMem3(FsGuiPopUpMenuItem *);
+	void State_LoadMem4(FsGuiPopUpMenuItem *);
+	void State_LoadMem5(FsGuiPopUpMenuItem *);
+	void State_LoadMem6(FsGuiPopUpMenuItem *);
+	void State_LoadMem7(FsGuiPopUpMenuItem *);
+
+	void State_LoadMemP0(FsGuiPopUpMenuItem *);
+	void State_LoadMemP1(FsGuiPopUpMenuItem *);
+	void State_LoadMemP2(FsGuiPopUpMenuItem *);
+	void State_LoadMemP3(FsGuiPopUpMenuItem *);
+	void State_LoadMemP4(FsGuiPopUpMenuItem *);
+	void State_LoadMemP5(FsGuiPopUpMenuItem *);
+	void State_LoadMemP6(FsGuiPopUpMenuItem *);
+	void State_LoadMemP7(FsGuiPopUpMenuItem *);
+	void State_LoadMem(int i,bool pause);
+
+
 
 
 	bool genFloppyDisk=true;
