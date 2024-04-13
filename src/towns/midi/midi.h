@@ -65,33 +65,40 @@ public:
 	public:
 		TownsMIDI *owner=nullptr;
 
+		class MIDIPort
+		{
+		public:
+			i8251 usart;
+
+			MIDI_Interface *midiItfc=nullptr;
+			unsigned char midiMessageFilled=0,midiMessageLen=0;
+			unsigned char midiMessage[3];
+			i8251Client interface;  // Fixed in the constructor.  Not saved in the state.
+		};
+
 		bool enabled=false;
 		int portBase=0;  // Fixed in the constructor.  Not saved in the state.
-		i8251 ports[2];
-		i8251Client interface[2];  // Fixed in the constructor.  Not saved in the state.
+		MIDIPort ports[2];
 		unsigned int fifoReg=0;
 		unsigned int fifoDat=0;
-		MIDI_Interface *midiItfc=nullptr;
-		unsigned char midiMessageFilled=0,midiMessageLen=0;
-		unsigned char midiMessage[3];
 
 		MIDICard()
 		{
-			midiItfc=MIDI_Interface::Create();
-			ports[0].clientPtr=&interface[0];
-			ports[1].clientPtr=&interface[1];
-			interface[0].portNo=0;
-			interface[1].portNo=1;
-			interface[0].owner=this;
-			interface[1].owner=this;
+			for(int i=0; i<2; ++i)
+			{
+				ports[i].midiItfc=MIDI_Interface::Create();
+				ports[i].usart.clientPtr=&ports[i].interface;
+				ports[i].interface.portNo=i;
+				ports[i].interface.owner=this;
+			}
 			ForceTxEmpty();
 		}
 		void ForceTxEmpty(void)
 		{
 			for(auto &p : ports)
 			{
-				p.state.TxRDY=true;
-				p.state.TxEMPTY=true;
+				p.usart.state.TxRDY=true;
+				p.usart.state.TxEMPTY=true;
 			}
 		}
 		void ByteSentFromVM(int port,unsigned char data);

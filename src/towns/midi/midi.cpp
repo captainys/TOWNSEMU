@@ -25,17 +25,19 @@ void TownsMIDI::MIDICard::ByteSentFromVM(int port,unsigned char data)
 		owner->townsPtr->debugger.WriteLogFile(s);
 	}
 
+	auto &p=ports[port];
+
 	if(0!=(0x80&data))
 	{
 		int data_check;
 
 		data_check = data & 0xf0;
-		midiMessage[0] = data;
-		midiMessage[1] = 0;
-		midiMessage[2] = 0;
+		p.midiMessage[0] = data;
+		p.midiMessage[1] = 0;
+		p.midiMessage[2] = 0;
 
-		midiMessageLen=0;
-		midiMessageFilled=0;
+		p.midiMessageLen=0;
+		p.midiMessageFilled=0;
 
 		if (data_check == 0xf0)
 		{
@@ -44,13 +46,13 @@ void TownsMIDI::MIDICard::ByteSentFromVM(int port,unsigned char data)
 			case 0xf0:
 			case 0xf1:
 			case 0xf3:
-				midiMessageLen = 2;
+				p.midiMessageLen = 2;
 				break;
 			case 0xf2:
-				midiMessageLen = 3;
+				p.midiMessageLen = 3;
 				break;
 			default:
-				midiMessageLen = 1;
+				p.midiMessageLen = 1;
 				break;
 			}
 		}
@@ -58,31 +60,31 @@ void TownsMIDI::MIDICard::ByteSentFromVM(int port,unsigned char data)
 		{
 			if (data_check == 0xc0 || data_check == 0xd0)
 			{
-				midiMessageLen = 2;
+				p.midiMessageLen = 2;
 			}
 			else
 			{
-				midiMessageLen = 3;
+				p.midiMessageLen = 3;
 			}
 		}
 	}
 
-	midiMessage[midiMessageFilled++] = data;
-	if (0!=midiMessageLen && midiMessageLen<=midiMessageFilled)
+	p.midiMessage[p.midiMessageFilled++] = data;
+	if (0!=p.midiMessageLen && p.midiMessageLen<=p.midiMessageFilled)
 	{
 		if(true==owner->midiMonitor)
 		{
 			std::string s="MIDI Message ";
-			for(int i=0; i<midiMessageFilled; ++i)
+			for(int i=0; i<p.midiMessageFilled; ++i)
 			{
-				s+=cpputil::Ubtox(midiMessage[i]);
+				s+=cpputil::Ubtox(p.midiMessage[i]);
 				s+=" ";
 			}
 			std::cout << s << std::endl;
 			owner->townsPtr->debugger.WriteLogFile(s);
 		}
-		midiItfc->SendCommand(midiMessage);
-		midiMessageFilled=1; // May re-use the status byte.
+		p.midiItfc->SendCommand(p.midiMessage);
+		p.midiMessageFilled=1; // May re-use the status byte.
 	}
 }
 
@@ -93,16 +95,16 @@ void TownsMIDI::MIDICard::IOWriteByte(unsigned int ioport,unsigned int data,uint
 		switch(ioport&7)
 		{
 		case (TOWNSIO_MIDI_CARD1_DATREG1&7): //0x0E50,         // MIDI card(MT-402 or 403) No.1 Out port 1 datReg1 (from Linux source)
-			ports[0].VMWriteData(data,townsTime);
+			ports[0].usart.VMWriteData(data,townsTime);
 			break;
 		case (TOWNSIO_MIDI_CARD1_CMDREG1&7): //0x0E51,         // MIDI card(MT-402 or 403) No.1 cmdReg1 (Linux source)
-			ports[0].VMWriteCommnand(data);
+			ports[0].usart.VMWriteCommnand(data);
 			break;
 		case (TOWNSIO_MIDI_CARD1_DATREG2&7): //0x0E54,         // MIDI card(MT-402 or 403) No.1
-			ports[1].VMWriteData(data,townsTime);
+			ports[1].usart.VMWriteData(data,townsTime);
 			break;
 		case (TOWNSIO_MIDI_CARD1_CMDREG2&7): //0x0E55,         // MIDI card(MT-402 or 403) No.1
-			ports[1].VMWriteCommnand(data);
+			ports[1].usart.VMWriteCommnand(data);
 			break;
 		case (TOWNSIO_MIDI_CARD1_FIFODAT&7): //0x0E52,         // MIDI card(MT-402 or 403) No.1
 			break;
@@ -110,8 +112,8 @@ void TownsMIDI::MIDICard::IOWriteByte(unsigned int ioport,unsigned int data,uint
 			fifoReg=data;
 			break;
 		}
-		ports[0].Update(townsTime);
-		ports[1].Update(townsTime);
+		ports[0].usart.Update(townsTime);
+		ports[1].usart.Update(townsTime);
 		ForceTxEmpty();
 	}
 }
@@ -123,16 +125,16 @@ unsigned int TownsMIDI::MIDICard::IOReadByte(unsigned int ioport,uint64_t townsT
 		switch(ioport&7)
 		{
 		case (TOWNSIO_MIDI_CARD1_DATREG1&7): //0x0E50,         // MIDI card(MT-402 or 403) No.1 Out port 1 datReg1 (from Linux source)
-			data=ports[0].VMReadData(townsTime);
+			data=ports[0].usart.VMReadData(townsTime);
 			break;
 		case (TOWNSIO_MIDI_CARD1_CMDREG1&7): //0x0E51,         // MIDI card(MT-402 or 403) No.1 cmdReg1 (Linux source)
-			data=ports[0].VMReadState();
+			data=ports[0].usart.VMReadState();
 			break;
 		case (TOWNSIO_MIDI_CARD1_DATREG2&7): //0x0E54,         // MIDI card(MT-402 or 403) No.1
-			data=ports[1].VMReadData(townsTime);
+			data=ports[1].usart.VMReadData(townsTime);
 			break;
 		case (TOWNSIO_MIDI_CARD1_CMDREG2&7): //0x0E55,         // MIDI card(MT-402 or 403) No.1
-			data=ports[1].VMReadState();
+			data=ports[1].usart.VMReadState();
 			break;
 		case (TOWNSIO_MIDI_CARD1_FIFODAT&7): //0x0E52,         // MIDI card(MT-402 or 403) No.1
 			break;
@@ -140,8 +142,8 @@ unsigned int TownsMIDI::MIDICard::IOReadByte(unsigned int ioport,uint64_t townsT
 			data=0;  // I have no idea what it is.
 			break;
 		}
-		ports[0].Update(townsTime);
-		ports[1].Update(townsTime);
+		ports[0].usart.Update(townsTime);
+		ports[1].usart.Update(townsTime);
 	}
 	return data;
 }
@@ -167,11 +169,13 @@ void TownsMIDI::PowerOn(void)
 	state.timer.PowerOn();
 	for(auto &card : state.cards)
 	{
-		card.ports[0].Reset();
-		card.ports[1].Reset();
+		card.ports[0].usart.Reset();
+		card.ports[1].usart.Reset();
 		card.ForceTxEmpty();
-		card.midiMessageFilled=0;
-		card.midiMessageLen=0;
+		card.ports[0].midiMessageFilled=0;
+		card.ports[0].midiMessageLen=0;
+		card.ports[1].midiMessageFilled=0;
+		card.ports[1].midiMessageLen=0;
 	}
 	state.INTMaskSend=0;
 	state.INTMaskReceive=0;
@@ -187,11 +191,13 @@ void TownsMIDI::Reset(void)
 	state.timer.Reset();
 	for(auto &card : state.cards)
 	{
-		card.ports[0].Reset();
-		card.ports[1].Reset();
+		card.ports[0].usart.Reset();
+		card.ports[1].usart.Reset();
 		card.ForceTxEmpty();
-		card.midiMessageFilled=0;
-		card.midiMessageLen=0;
+		card.ports[0].midiMessageFilled=0;
+		card.ports[0].midiMessageLen=0;
+		card.ports[1].midiMessageFilled=0;
+		card.ports[1].midiMessageLen=0;
 	}
 	state.INTMaskSend=0;
 	state.INTMaskReceive=0;
@@ -216,16 +222,19 @@ void TownsMIDI::Stop(void)
 {
 	for(auto &c : state.cards)
 	{
-		if(nullptr!=c.midiItfc)
+		for(auto &p : c.ports)
 		{
-			for(unsigned char cmd=0xB0; cmd<=0xBF; ++cmd)
+			if(nullptr!=p.midiItfc)
 			{
-				const unsigned char msg0[3]={cmd,0x40,0x00};
-				const unsigned char msg1[3]={cmd,0x7B,0x00};
-				const unsigned char msg2[3]={cmd,0x79,0x40};
-				c.midiItfc->SendCommand(msg0);
-				c.midiItfc->SendCommand(msg1);
-				c.midiItfc->SendCommand(msg2);
+				for(unsigned char cmd=0xB0; cmd<=0xBF; ++cmd)
+				{
+					const unsigned char msg0[3]={cmd,0x40,0x00};
+					const unsigned char msg1[3]={cmd,0x7B,0x00};
+					const unsigned char msg2[3]={cmd,0x79,0x40};
+					p.midiItfc->SendCommand(msg0);
+					p.midiItfc->SendCommand(msg1);
+					p.midiItfc->SendCommand(msg2);
+				}
 			}
 		}
 	}
@@ -570,8 +579,8 @@ void TownsMIDI::RunScheduledTask(unsigned long long int townsTime)
 	{
 		if(true==card.enabled)
 		{
-			card.ports[0].Update(townsTime);
-			card.ports[1].Update(townsTime);
+			card.ports[0].usart.Update(townsTime);
+			card.ports[1].usart.Update(townsTime);
 		}
 	}
 	UpdateSchedule();
@@ -590,13 +599,13 @@ void TownsMIDI::SpecificSerialize(std::vector <unsigned char> &data,std::string 
 		PushBool(data,c.enabled);
 		for(auto &p : c.ports)
 		{
-			p.SerializeV0(data);
+			p.usart.SerializeV0(data);
+			PushUint16(data,p.midiMessageFilled);
+			PushUint16(data,p.midiMessageLen);
+			PushUcharArray(data,3,p.midiMessage);
 		}
 		PushUint32(data,c.fifoReg);
 		PushUint32(data,c.fifoDat);
-		PushUint16(data,c.midiMessageFilled);
-		PushUint16(data,c.midiMessageLen);
-		PushUcharArray(data,3,c.midiMessage);
 	}
 	PushUint32(data,state.INTMaskSend);
 	PushUint32(data,state.INTMaskReceive);
@@ -615,13 +624,13 @@ bool TownsMIDI::SpecificDeserialize(const unsigned char *&data,std::string FName
 		c.enabled=ReadBool(data);
 		for(auto &p : c.ports)
 		{
-			p.DeserializeV0(data);
+			p.usart.DeserializeV0(data);
+			p.midiMessageFilled=ReadUint16(data);
+			p.midiMessageLen=ReadUint16(data);
+			ReadUcharArray(data,3,p.midiMessage);
 		}
 		c.fifoReg=ReadUint32(data);
 		c.fifoDat=ReadUint32(data);
-		c.midiMessageFilled=ReadUint16(data);
-		c.midiMessageLen=ReadUint16(data);
-		ReadUcharArray(data,3,c.midiMessage);
 	}
 	state.INTMaskSend=ReadUint32(data);
 	state.INTMaskReceive=ReadUint32(data);
