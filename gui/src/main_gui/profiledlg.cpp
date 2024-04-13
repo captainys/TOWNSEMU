@@ -456,6 +456,11 @@ void ProfileDialog::Make(void)
 		numMidiCardsDrp->AddString("3",YSFALSE);
 		numMidiCardsDrp->AddString("4",YSFALSE);
 
+		AddStaticText(0,FSKEY_NULL,
+			"At this time, MIDI audio is only available in Windows.\n"
+			"Enabling MIDI in non-Windows environment only enables MIDI I/O\n"
+			"but does not play music.",YSTRUE);
+
 		EndAddTabItem();
 	}
 
