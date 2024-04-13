@@ -2,6 +2,9 @@
 #define DEVICEUTIL_IS_INCLUDED
 /* { */
 
+#include <vector>
+#include <string>
+
 class DeviceUtil
 {
 protected:

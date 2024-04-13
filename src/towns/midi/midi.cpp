@@ -542,9 +542,52 @@ uint32_t TownsMIDI::SerializeVersion(void) const
 
 void TownsMIDI::SpecificSerialize(std::vector <unsigned char> &data,std::string FName) const
 {
+	state.timer.SerializeV0(data);
+	for(auto &c : state.cards)
+	{
+		PushBool(data,c.enabled);
+		for(auto &p : c.ports)
+		{
+			p.SerializeV0(data);
+		}
+		PushUint32(data,c.fifoReg);
+		PushUint32(data,c.fifoDat);
+		PushUint16(data,c.midiMessageFilled);
+		PushUint16(data,c.midiMessageLen);
+		PushUcharArray(data,3,c.midiMessage);
+	}
+	PushUint32(data,state.INTMaskSend);
+	PushUint32(data,state.INTMaskReceive);
+	PushUint32(data,state.writeINTOccured);
+	PushUint32(data,state.readINTOccured);
+	PushUint64(data,state.lastTimerTickTime);
+	PushUint32(data,state.timerINTMask);
+	PushUint32(data,state.timerINTOccured);
 }
 
 bool TownsMIDI::SpecificDeserialize(const unsigned char *&data,std::string FName,uint32_t version)
 {
+	state.timer.DeserializeV0(data);
+	for(auto &c : state.cards)
+	{
+		c.enabled=ReadBool(data);
+		for(auto &p : c.ports)
+		{
+			p.DeserializeV0(data);
+		}
+		c.fifoReg=ReadUint32(data);
+		c.fifoDat=ReadUint32(data);
+		c.midiMessageFilled=ReadUint16(data);
+		c.midiMessageLen=ReadUint16(data);
+		ReadUcharArray(data,3,c.midiMessage);
+	}
+	state.INTMaskSend=ReadUint32(data);
+	state.INTMaskReceive=ReadUint32(data);
+	state.writeINTOccured=ReadUint32(data);
+	state.readINTOccured=ReadUint32(data);
+	state.lastTimerTickTime=ReadUint64(data);
+	state.timerINTMask=ReadUint32(data);
+	state.timerINTOccured=ReadUint32(data);
+
 	return true;
 }

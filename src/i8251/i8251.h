@@ -2,7 +2,9 @@
 #define I8251_IS_INCLUDED
 /* { */
 
-class i8251
+#include "deviceutil.h"
+
+class i8251 : public DeviceUtil
 {
 public:
 	enum
@@ -171,6 +173,9 @@ public:
 	bool TxEMPTY(void) const;
 	bool DSR(void) const;
 	bool SYNDET(void) const;
+
+	void SerializeV0(std::vector <unsigned char> &data) const;
+	bool DeserializeV0(const unsigned char *&data);
 };
 
 /* } */

@@ -62,10 +62,11 @@ public:
 	{
 	public:
 		bool enabled=false;
-		int portBase=0;
+		int portBase=0;  // Fixed in the constructor.  Not saved in the state.
 		i8251 ports[2];
-		i8251Client interface[2];
+		i8251Client interface[2];  // Fixed in the constructor.  Not saved in the state.
 		unsigned int fifoReg=0;
+		unsigned int fifoDat=0;
 		MIDI_Interface *midiItfc=nullptr;
 		unsigned char midiMessageFilled=0,midiMessageLen=0;
 		unsigned char midiMessage[3];

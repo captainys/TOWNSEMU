@@ -183,3 +183,74 @@ bool i8251::SYNDET(void) const
 {
 	return state.SYNDET;
 }
+
+void i8251::SerializeV0(std::vector <unsigned char> &data) const
+{
+	PushInt64(data,state.lastTxTime);
+	PushInt64(data,state.lastRxTime);
+
+	PushBool(data,state.immediatelyAfterReset);
+
+	PushUint32(data,state.nanoSecondsPerByte);
+
+	PushUint32(data,state.baudRate);
+
+	PushUint16(data,state.stopBits);
+	PushUint16(data,state.preScale);
+
+	PushBool(data,state.SCS);
+	PushBool(data,state.ESD);
+
+	PushUint16(data,state.dataLength);
+	PushBool(data,state.evenParity);
+	PushBool(data,state.parityEnabled);
+
+	PushBool(data,state.RxEN);
+	PushBool(data,state.TxEN);
+	PushBool(data,state.RxRDY);
+	PushBool(data,state.TxRDY);
+	PushBool(data,state.SYNDET);
+	PushBool(data,state.FE);
+	PushBool(data,state.OE);
+	PushBool(data,state.PE);
+	PushBool(data,state.TxEMPTY);
+	PushBool(data,state.RTS);
+	PushBool(data,state.DTR);
+	PushBool(data,state.BREAK);
+}
+bool i8251::DeserializeV0(const unsigned char *&data)
+{
+	state.lastTxTime=ReadInt64(data);
+	state.lastRxTime=ReadInt64(data);
+
+	state.immediatelyAfterReset=ReadBool(data);
+
+	state.nanoSecondsPerByte=ReadUint32(data);
+
+	state.baudRate=ReadUint32(data);
+
+	state.stopBits=ReadUint16(data);
+	state.preScale=ReadUint16(data);
+
+	state.SCS=ReadBool(data);
+	state.ESD=ReadBool(data);
+
+	state.dataLength=ReadUint16(data);
+	state.evenParity=ReadBool(data);
+	state.parityEnabled=ReadBool(data);
+
+	state.RxEN=ReadBool(data);
+	state.TxEN=ReadBool(data);
+	state.RxRDY=ReadBool(data);
+	state.TxRDY=ReadBool(data);
+	state.SYNDET=ReadBool(data);
+	state.FE=ReadBool(data);
+	state.OE=ReadBool(data);
+	state.PE=ReadBool(data);
+	state.TxEMPTY=ReadBool(data);
+	state.RTS=ReadBool(data);
+	state.DTR=ReadBool(data);
+	state.BREAK=ReadBool(data);
+
+	return 0;
+}

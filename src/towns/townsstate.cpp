@@ -35,6 +35,7 @@ bool FMTownsCommon::LoadState(std::string fName)
 	if(true==ifp.is_open())
 	{
 		highResPCM.state.enabled=false; // If not read must be made by an old version, keep it disabled.
+		midi.EnableCards(0); // If no data, leave all disabled.
 
 		while(true!=ifp.eof())
 		{
@@ -152,7 +153,7 @@ std::vector <const Device *> FMTownsCommon::DevicesToSaveState(void) const
 	{
 		allDevices.push_back(&highResPCM);
 	}
-	// allDevices.push_back(&midi);
+	allDevices.push_back(&midi);
 	// allDevices.push_back(&vndrv);
 	return allDevices;
 }
@@ -177,7 +178,7 @@ std::vector <Device *> FMTownsCommon::DevicesToLoadState(void)
 	allDevices.push_back(&keyboard);
 	allDevices.push_back(&serialport);
 	allDevices.push_back(&highResPCM);
-	// allDevices.push_back(&midi);
+	allDevices.push_back(&midi);
 	// allDevices.push_back(&vndrv);
 	return allDevices;
 }

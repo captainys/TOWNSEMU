@@ -238,3 +238,45 @@ void i8253::TickIn(unsigned int nTick)
 		}
 	}
 }
+
+void i8253::SerializeV0(std::vector <unsigned char> &data) const
+{
+	PushUint64(data,lastTickTimeInNS);
+	for(auto &ch : channels)
+	{
+		PushUint16(data,ch.mode);
+		PushUint16(data,ch.lastCmd);
+		PushUint16(data,ch.counter);
+		PushUint16(data,ch.counterInitialValue);
+		PushUint16(data,ch.latchedCounter);
+		PushUint16(data,ch.increment);
+		PushBool(data,ch.OUT);
+		PushBool(data,ch.counting);
+		PushBool(data,ch.latched);
+		PushBool(data,ch.bcd);
+
+		PushUint32(data,ch.RL);
+		PushBool(data,ch.accessLow);
+	}
+}
+bool i8253::DeserializeV0(const unsigned char *&data)
+{
+	lastTickTimeInNS=ReadUint64(data);
+	for(auto &ch : channels)
+	{
+		ch.mode=ReadUint16(data);
+		ch.lastCmd=ReadUint16(data);
+		ch.counter=ReadUint16(data);
+		ch.counterInitialValue=ReadUint16(data);
+		ch.latchedCounter=ReadUint16(data);
+		ch.increment=ReadUint16(data);
+		ch.OUT=ReadBool(data);
+		ch.counting=ReadBool(data);
+		ch.latched=ReadBool(data);
+		ch.bcd=ReadBool(data);
+
+		ch.RL=ReadUint32(data);
+		ch.accessLow=ReadBool(data);
+	}
+	return true;
+}

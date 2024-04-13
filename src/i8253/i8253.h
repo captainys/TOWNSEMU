@@ -4,11 +4,13 @@
 
 #include <stdint.h>
 
+#include "deviceutil.h"
+
 // Goal: Use this class from TownsTimer::State.  i8253/i8254 is used from Towns on-board PIT and MIDI card.
 
 // Memo: Redbook p.617 tells the resolution of PIT on MIDI card is 1/480,000,000 seconds.  480MHz?
 // i8253/i8254 PIT Programmable Interval Timer
-class i8253
+class i8253 : public DeviceUtil
 {
 public:
 	enum
@@ -43,6 +45,9 @@ public:
 	void ProcessControlCommand(unsigned int cmd);
 
 	void TickIn(unsigned int nTick);
+
+	void SerializeV0(std::vector <unsigned char> &data) const;
+	bool DeserializeV0(const unsigned char *&data);
 };
 
 
