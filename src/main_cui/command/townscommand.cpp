@@ -268,6 +268,7 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	featureMap["CRTC2MON"]=ENABLE_CRTC2MONITOR;
 	featureMap["AUTOQSS"]=ENABLE_AUTOQSS;
 	featureMap["MIDI"]=ENABLE_MIDI0;
+	featureMap["MIDIMON"]=ENABLE_MIDIMONITOR;
 
 	dumpableMap["CALLSTACK"]=DUMP_CALLSTACK;
 	dumpableMap["CST"]=DUMP_CALLSTACK;
@@ -1997,6 +1998,10 @@ void TownsCommandInterpreter::Execute_Enable(FMTownsCommon &towns,Command &cmd)
 			towns.midi.state.cards[0].enabled=true;
 			std::cout << "MIDI 0 Enabled." << std::endl;
 			break;
+		case ENABLE_MIDIMONITOR:
+			towns.midi.midiMonitor=true;
+			std::cout << "MIDI Monitor enabled." << std::endl;
+			break;
 		}
 	}
 }
@@ -2108,6 +2113,10 @@ void TownsCommandInterpreter::Execute_Disable(FMTownsCommon &towns,Command &cmd)
 		case ENABLE_MIDI0:
 			towns.midi.state.cards[0].enabled=false;
 			std::cout << "MIDI 0 Disabled." << std::endl;
+			break;
+		case ENABLE_MIDIMONITOR:
+			towns.midi.midiMonitor=false;
+			std::cout << "MIDI Monitor disabled." << std::endl;
 			break;
 		}
 	}

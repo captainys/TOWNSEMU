@@ -10,7 +10,7 @@ private:
 public:
 	MIDI_Actual();
 	~MIDI_Actual();
-	void SendCommand(unsigned char cmdBuf[]) override;
+	void SendCommand(const unsigned char cmdBuf[]) override;
 };
 
 MIDI_Actual::MIDI_Actual()
@@ -37,7 +37,7 @@ MIDI_Actual::~MIDI_Actual()
 	}
 }
 
-void MIDI_Actual::SendCommand(unsigned char cmdBuf[])
+void MIDI_Actual::SendCommand(const unsigned char cmdBuf[])
 {
 	if(NULL!=hMidi)
 	{

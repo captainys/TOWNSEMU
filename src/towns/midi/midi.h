@@ -38,6 +38,8 @@ public:
 		TIMER_INTERVAL=1000000000/500000, // 500KHz? 480MHz?
 	};
 
+	bool midiMonitor=false;
+
 	class MIDICard;
 
 	class i8251Client : public i8251::Client
@@ -61,6 +63,8 @@ public:
 	class MIDICard
 	{
 	public:
+		TownsMIDI *owner=nullptr;
+
 		bool enabled=false;
 		int portBase=0;  // Fixed in the constructor.  Not saved in the state.
 		i8251 ports[2];
@@ -118,6 +122,7 @@ public:
 	TownsMIDI(class FMTownsCommon *townsPtr);
 
 	void EnableCards(int nCards);
+	void Stop(void);
 
 	inline void TimerPolling(uint64_t townsTime)
 	{

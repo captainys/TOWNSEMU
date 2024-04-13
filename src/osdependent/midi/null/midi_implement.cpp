@@ -3,7 +3,7 @@
 class MIDI_Actual : public MIDI_Interface
 {
 public:
-	void SendCommand(unsigned char cmdBuf[]) override
+	void SendCommand(const unsigned char cmdBuf[]) override
 	{
 	}
 };

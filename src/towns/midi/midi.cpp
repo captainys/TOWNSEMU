@@ -15,7 +15,15 @@ void TownsMIDI::i8251Client::Tx(unsigned char data)
 void TownsMIDI::MIDICard::ByteSentFromVM(int port,unsigned char data)
 {
 	// Forward to outside_world
-	// std::cout << "MIDI Write Port:" << cpputil::Uitoa(port+portBase) << " Data:" << cpputil::Ubtox(data) << std::endl;
+	if(true==owner->midiMonitor)
+	{
+		std::string s="MIDI Write Port:";
+		s+=cpputil::Uitoa(port+portBase);
+		s+=" Data:";
+		s+=cpputil::Ubtox(data);
+		std::cout << s << std::endl;
+		owner->townsPtr->debugger.WriteLogFile(s);
+	}
 
 	if(0!=(0x80&data))
 	{
@@ -62,6 +70,17 @@ void TownsMIDI::MIDICard::ByteSentFromVM(int port,unsigned char data)
 	midiMessage[midiMessageFilled++] = data;
 	if (0!=midiMessageLen && midiMessageLen<=midiMessageFilled)
 	{
+		if(true==owner->midiMonitor)
+		{
+			std::string s="MIDI Message ";
+			for(int i=0; i<midiMessageFilled; ++i)
+			{
+				s+=cpputil::Ubtox(midiMessage[i]);
+				s+=" ";
+			}
+			std::cout << s << std::endl;
+			owner->townsPtr->debugger.WriteLogFile(s);
+		}
 		midiItfc->SendCommand(midiMessage);
 		midiMessageFilled=1; // May re-use the status byte.
 	}
@@ -137,6 +156,10 @@ TownsMIDI::TownsMIDI(class FMTownsCommon *townsPtr) : Device(townsPtr)
 	state.cards[2].portBase=4;
 	state.cards[3].portBase=6;
 	state.cards[4].portBase=0;
+	for(auto &c : state.cards)
+	{
+		c.owner=this;
+	}
 }
 
 void TownsMIDI::PowerOn(void)
@@ -186,6 +209,25 @@ void TownsMIDI::EnableCards(int nCards)
 	{
 		c.enabled=(i<nCards);
 		++i;
+	}
+}
+
+void TownsMIDI::Stop(void)
+{
+	for(auto &c : state.cards)
+	{
+		if(nullptr!=c.midiItfc)
+		{
+			for(unsigned char cmd=0xB0; cmd<=0xBF; ++cmd)
+			{
+				const unsigned char msg0[3]={cmd,0x40,0x00};
+				const unsigned char msg1[3]={cmd,0x7B,0x00};
+				const unsigned char msg2[3]={cmd,0x79,0x40};
+				c.midiItfc->SendCommand(msg0);
+				c.midiItfc->SendCommand(msg1);
+				c.midiItfc->SendCommand(msg2);
+			}
+		}
 	}
 }
 

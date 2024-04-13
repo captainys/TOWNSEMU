@@ -35,6 +35,7 @@ bool FMTownsCommon::LoadState(std::string fName)
 	if(true==ifp.is_open())
 	{
 		highResPCM.state.enabled=false; // If not read must be made by an old version, keep it disabled.
+		midi.Stop();
 		midi.EnableCards(0); // If no data, leave all disabled.
 
 		while(true!=ifp.eof())
@@ -88,6 +89,8 @@ std::vector <uint8_t> FMTownsCommon::SaveStateMem(void) const
 bool FMTownsCommon::LoadStateMem(const std::vector <uint8_t> &state)
 {
 	highResPCM.state.enabled=false; // If not read must be made by an old version, keep it disabled.
+	midi.Stop();
+	midi.EnableCards(0); // If no data, leave all disabled.
 
 	for(size_t ptr=0; ptr+4<=state.size(); )
 	{
