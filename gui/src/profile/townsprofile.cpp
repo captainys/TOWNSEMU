@@ -298,6 +298,10 @@ std::vector <std::string> TownsProfile::Serialize(void) const
 	sstream << "SNDDBLBF " << (maximumSoundDoubleBuffering ? "MAX" : "NORMAL");
 	text.push_back(sstream.str());
 
+	sstream.str("");
+	sstream << "MIDICARD " << nMidiCards;
+	text.push_back(sstream.str());
+
 	if(""!=startUpStateFName)
 	{
 		sstream.str("");
@@ -714,6 +718,17 @@ bool TownsProfile::Deserialize(const std::vector <std::string> &text)
 			else
 			{
 				maximumSoundDoubleBuffering=false;
+			}
+		}
+		else if(0==argv[0].STRCMP("MIDICARD"))
+		{
+			if(2<=argv.size())
+			{
+				nMidiCards=argv[1].Atoi();
+			}
+			else
+			{
+				nMidiCards=0;
 			}
 		}
 		else if(0==argv[0].STRCMP("LOADSTAT"))
@@ -1180,6 +1195,11 @@ std::vector <std::string> TownsProfile::MakeArgv(void) const
 	{
 		argv.push_back("-MAXSNDDBLBUF");
 	}
+
+	argv.push_back("-MIDI");
+	sstream.str("");
+	sstream << nMidiCards;
+	argv.push_back(sstream.str());
 
 	return argv;
 }

@@ -448,6 +448,14 @@ void ProfileDialog::Make(void)
 
 		maxSoundDoubldBufBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Maximum Double Buffering",YSTRUE);
 
+		AddStaticText(0,FSKEY_NULL,"Number of MIDI Cards",YSTRUE);
+		numMidiCardsDrp=AddEmptyDropList(0,FSKEY_NULL,"",8,4,4,YSFALSE);
+		numMidiCardsDrp->AddString("0",YSTRUE);
+		numMidiCardsDrp->AddString("1",YSFALSE);
+		numMidiCardsDrp->AddString("2",YSFALSE);
+		numMidiCardsDrp->AddString("3",YSFALSE);
+		numMidiCardsDrp->AddString("4",YSFALSE);
+
 		EndAddTabItem();
 	}
 
@@ -1280,6 +1288,8 @@ TownsProfile ProfileDialog::GetProfile(void) const
 	}
 	profile.maximumSoundDoubleBuffering=(YSTRUE==maxSoundDoubldBufBtn->GetCheck());
 
+	profile.nMidiCards=numMidiCardsDrp->GetSelection();
+
 	profile.cdSpeed=CDSpeedDrp->GetSelection();
 	if(profile.cdSpeed<0)
 	{
@@ -1520,6 +1530,8 @@ void ProfileDialog::SetProfile(const TownsProfile &profile)
 		UpdatePCMVolumeText();
 	}
 	maxSoundDoubldBufBtn->SetCheck(profile.maximumSoundDoubleBuffering ? YSTRUE : YSFALSE);
+
+	numMidiCardsDrp->Select(profile.nMidiCards);
 
 
 	CDSpeedDrp->Select(profile.cdSpeed);

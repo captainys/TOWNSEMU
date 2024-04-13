@@ -84,6 +84,7 @@ public:
 	FsGuiButton *fmVolumeDefaultBtn,*pcmVolumeDefaultBtn;
 	FsGuiSlider *fmVolumeSlider,*pcmVolumeSlider;
 	FsGuiButton *maxSoundDoubldBufBtn;
+	FsGuiDropList *numMidiCardsDrp=nullptr;
 
 
 	FsGuiDropList *hostShortCutKeyLabelDrp[MAX_NUM_HOST_SHORTCUT];
