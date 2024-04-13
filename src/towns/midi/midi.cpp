@@ -99,12 +99,14 @@ void TownsMIDI::MIDICard::IOWriteByte(unsigned int ioport,unsigned int data,uint
 			break;
 		case (TOWNSIO_MIDI_CARD1_CMDREG1&7): //0x0E51,         // MIDI card(MT-402 or 403) No.1 cmdReg1 (Linux source)
 			ports[0].usart.VMWriteCommnand(data);
+			owner->UpdateInterruptRequestSerial();
 			break;
 		case (TOWNSIO_MIDI_CARD1_DATREG2&7): //0x0E54,         // MIDI card(MT-402 or 403) No.1
 			ports[1].usart.VMWriteData(data,townsTime);
 			break;
 		case (TOWNSIO_MIDI_CARD1_CMDREG2&7): //0x0E55,         // MIDI card(MT-402 or 403) No.1
 			ports[1].usart.VMWriteCommnand(data);
+			owner->UpdateInterruptRequestSerial();
 			break;
 		case (TOWNSIO_MIDI_CARD1_FIFODAT&7): //0x0E52,         // MIDI card(MT-402 or 403) No.1
 			break;
@@ -265,7 +267,16 @@ void TownsMIDI::UpdateInterruptRequestSerial(void)
 	{
 		if(true==state.cards[i].enabled)
 		{
-			writeReady|=(3<<(i*2));
+			unsigned int TxEN=0;
+			if(true==state.cards[i].ports[0].usart.state.TxEN)
+			{
+				TxEN|=1;
+			}
+			if(true==state.cards[i].ports[1].usart.state.TxEN)
+			{
+				TxEN|=2;
+			}
+			writeReady|=(TxEN<<(i*2));
 		}
 	}
 	// I don't know what to do with FMT-401 2nd Gen.
