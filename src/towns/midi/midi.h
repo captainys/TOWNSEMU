@@ -93,6 +93,14 @@ public:
 			}
 			ForceTxEmpty();
 		}
+		~MIDICard()
+		{
+			for(auto &p : ports)
+			{
+				MIDI_Interface::Delete(p.midiItfc);
+				p.midiItfc=nullptr;
+			}
+		}
 		void ForceTxEmpty(void)
 		{
 			for(auto &p : ports)

@@ -34,6 +34,7 @@ MIDI_Actual::~MIDI_Actual()
 	if(NULL!=hMidi)
 	{
 		midiOutClose(hMidi);
+		hMidi=NULL;
 	}
 }
 
