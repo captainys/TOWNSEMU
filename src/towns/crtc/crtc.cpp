@@ -425,7 +425,16 @@ Vec2i TownsCRTC::GetLowResPageZoom2X(unsigned char page) const
 	{
 		if(true==LowResCrtcIsInSinglePageMode())
 		{
-			zoom[1]*=2;
+			auto FO=state.crtcReg[REG_FO0+4*page];
+			auto LO=state.crtcReg[REG_LO0+4*page];
+			if(0==FO || FO==LO)  // FO==LO condition is to render GENOCIDE2 opening correctly.
+			{
+				zoom[1]*=4;
+			}
+			else
+			{
+				zoom[1]*=2;
+			}
 		}
 		else
 		{
@@ -603,7 +612,9 @@ Vec2i TownsCRTC::GetPageSizeOnMonitor(unsigned char page) const
 			wid=640;
 		}
 	}
-	if(0==state.crtcReg[REG_FO0+4*page])
+	auto FO=state.crtcReg[REG_FO0+4*page];
+	auto LO=state.crtcReg[REG_LO0+4*page];
+	if(0==FO || FO==LO)  // FO==LO condition is to render GENOCIDE2 opening correctly.
 	{
 		hei/=2;
 	}
@@ -615,7 +626,8 @@ Vec2i TownsCRTC::GetPageVRAMCoverageSize1X(unsigned char page) const
 	auto wid=state.crtcReg[REG_HDE0+page*2]-state.crtcReg[REG_HDS0+page*2];
 	auto hei=state.crtcReg[REG_VDE0+page*2]-state.crtcReg[REG_VDS0+page*2];
 	auto FO=state.crtcReg[REG_FO0+4*page];
-	if(0==FO)
+	auto LO=state.crtcReg[REG_LO0+4*page];
+	if(0==FO || FO==LO)  // FO==LO condition is to render GENOCIDE2 opening correctly.
 	{
 		hei/=2;
 	}
