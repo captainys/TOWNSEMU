@@ -1433,7 +1433,7 @@ void TownsCDROM::SetSIRQ_IRR(void)
 	if(0<state.statusQueue.size())
 	{
 		state.SIRQ=true;
-		if(true==state.enableSIRQ)
+		if(true==state.enableSIRQ)  // ChaseHQ will crash without this condition.
 		{
 			PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
 		}
