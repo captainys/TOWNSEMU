@@ -1433,7 +1433,10 @@ void TownsCDROM::SetSIRQ_IRR(void)
 	if(0<state.statusQueue.size())
 	{
 		state.SIRQ=true;
-		PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
+		if(true==state.enableSIRQ)
+		{
+			PICPtr->SetInterruptRequestBit(TOWNSIRQ_CDROM,true);
+		}
 	}
 }
 
