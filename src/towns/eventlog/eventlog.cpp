@@ -110,6 +110,23 @@ void TownsEventLog::StopPlayBack(void)
 		return "PAD0RUNDOWN";
 	case EVT_PAD0_RUN_UP:
 		return "PAD0RUNUP";
+
+	case EVT_PAD0_FORWARD_PRESS:
+		return "PAD0FORWARD_PRESS";
+	case EVT_PAD0_FORWARD_RELEASE:
+		return "PAD0FORWARD_RELEASE";
+	case EVT_PAD0_BACK_PRESS:
+		return "PAD0BACK_PRESS";
+	case EVT_PAD0_BACK_RELEASE:
+		return "PAD0BACK_RELEASE";
+	case EVT_PAD0_LEFT_PRESS:
+		return "PAD0LEFT_PRESS";
+	case EVT_PAD0_LEFT_RELEASE:
+		return "PAD0LEFT_RELEASE";
+	case EVT_PAD0_RIGHT_PRESS:
+		return "PAD0RIGHT_PRESS";
+	case EVT_PAD0_RIGHT_RELEASE:
+		return "PAD0RIGHT_RELEASE";
 	};
 	return "?";
 }
@@ -702,6 +719,71 @@ void TownsEventLog::Playback(class FMTownsCommon &towns)
 				if(dt<=tPassed)
 				{
 					towns.gameport.state.ports[0].button[3]=false;
+					playbackPtr->tPlayed=now;
+					++playbackPtr;
+				}
+				break;
+
+			case EVT_PAD0_FORWARD_PRESS:
+				if(dt<=tPassed)
+				{
+					towns.gameport.state.ports[0].up=true;
+					playbackPtr->tPlayed=now;
+					++playbackPtr;
+				}
+				break;
+			case EVT_PAD0_FORWARD_RELEASE:
+				if(dt<=tPassed)
+				{
+					towns.gameport.state.ports[0].up=false;
+					playbackPtr->tPlayed=now;
+					++playbackPtr;
+				}
+				break;
+			case EVT_PAD0_BACK_PRESS:
+				if(dt<=tPassed)
+				{
+					towns.gameport.state.ports[0].down=true;
+					playbackPtr->tPlayed=now;
+					++playbackPtr;
+				}
+				break;
+			case EVT_PAD0_BACK_RELEASE:
+				if(dt<=tPassed)
+				{
+					towns.gameport.state.ports[0].down=false;
+					playbackPtr->tPlayed=now;
+					++playbackPtr;
+				}
+				break;
+			case EVT_PAD0_LEFT_PRESS:
+				if(dt<=tPassed)
+				{
+					towns.gameport.state.ports[0].left=true;
+					playbackPtr->tPlayed=now;
+					++playbackPtr;
+				}
+				break;
+			case EVT_PAD0_LEFT_RELEASE:
+				if(dt<=tPassed)
+				{
+					towns.gameport.state.ports[0].left=false;
+					playbackPtr->tPlayed=now;
+					++playbackPtr;
+				}
+				break;
+			case EVT_PAD0_RIGHT_PRESS:
+				if(dt<=tPassed)
+				{
+					towns.gameport.state.ports[0].right=true;
+					playbackPtr->tPlayed=now;
+					++playbackPtr;
+				}
+				break;
+			case EVT_PAD0_RIGHT_RELEASE:
+				if(dt<=tPassed)
+				{
+					towns.gameport.state.ports[0].right=false;
 					playbackPtr->tPlayed=now;
 					++playbackPtr;
 				}
