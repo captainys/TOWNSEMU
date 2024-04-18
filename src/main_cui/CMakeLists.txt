@@ -286,6 +286,25 @@ add_test(
 )
 
 add_test(
+	NAME MIDI
+	COMMAND
+		${TARGET_NAME}
+		"${TOWNSEMU_TEST}/ROM_MX"
+		-FD0
+		"${TESTDATA_DIR}/FPUTEST.D77"
+		-CD
+		"${DISC_IMAGE_DIR}/TownsOSV2.1L31.cue"
+		-EVTLOG
+		"${CMAKE_SOURCE_DIR}/../testdata/eventLog/MIDI.evt"
+		-UNITTEST
+		-DONTUSEFPU
+		-DONTAUTOSAVECMOS
+		-DAMPERWIRELINE
+		-MIDI
+		1
+)
+
+add_test(
 	NAME 2F_V21L30
 	COMMAND
 		${TARGET_NAME}
