@@ -2,6 +2,7 @@
 #define DEVICEUTIL_IS_INCLUDED
 /* { */
 
+#include <stdint.h>
 #include <vector>
 #include <string>
 
