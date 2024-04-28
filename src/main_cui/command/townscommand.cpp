@@ -217,6 +217,8 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 
 	primaryCmdMap["SAVEWAVRAM"]=CMD_SAVE_WAVERAM;
 
+	primaryCmdMap["SAVEDOSSTDOUT"]=CMD_SAVE_DOSSTDOUT;
+
 	primaryCmdMap["SAVESTATE"]=CMD_SAVE_STATE;
 	primaryCmdMap["LOADSTATE"]=CMD_LOAD_STATE;
 	primaryCmdMap["SAVESTATEAT"]=CMD_SAVE_STATE_AT;
@@ -269,6 +271,8 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	featureMap["AUTOQSS"]=ENABLE_AUTOQSS;
 	featureMap["MIDI"]=ENABLE_MIDI0;
 	featureMap["MIDIMON"]=ENABLE_MIDIMONITOR;
+	featureMap["DOSSTDOUTCAP"]=ENABLE_CAPTURE_DOS_STDOUT;
+	featureMap["CAPDOSSTDOUT"]=ENABLE_CAPTURE_DOS_STDOUT;
 
 	dumpableMap["CALLSTACK"]=DUMP_CALLSTACK;
 	dumpableMap["CST"]=DUMP_CALLSTACK;
@@ -714,6 +718,9 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "SAVEWAVRAM filename" << std::endl;
 	std::cout << "  Save binary dump of the wave RAM." << std::endl;
 
+	std::cout << "SAVEDOSSTDOUT filename" << std::endl;
+	std::cout << "  Save captured DOS Stdout. (ENA DOSSTDOUTCAP to start capture.)" << std::endl;
+
 	std::cout << "AUTOSHOT port button interval" << std::endl;
 	std::cout << "  Configure auto shot.  Interval=0 disables the auto shot." << std::endl;
 	std::cout << "  Interval is in milliseconds." << std::endl;
@@ -760,6 +767,8 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Windows 3.1 VxD Monitor." << std::endl;
 	std::cout << "CRTC2MON" << std::endl;
 	std::cout << "  High-Res CRTC Monitor." << std::endl;
+	std::cout << "DOSSTDOUTCAP" << std::endl;
+	std::cout << "  DOS-Stdout Capture. (Use SAVEDOSSTDOUT to save captured data.)" << std::endl;
 
 
 
@@ -1790,6 +1799,25 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,clas
 		}
 		break;
 
+	case CMD_SAVE_DOSSTDOUT:
+		if(2<=cmd.argv.size())
+		{
+			auto data=towns.debugger.GetDOSStdout();
+			if(true==cpputil::WriteBinaryFile(cmd.argv[1],data.size(),(unsigned char *)data.data()))
+			{
+				std::cout << "Saved." << std::endl;
+			}
+			else
+			{
+				std::cout << "Save error." << std::endl;
+			}
+		}
+		else
+		{
+			PrintError(ERROR_TOO_FEW_ARGS);
+		}
+		break;
+
 	case CMD_GAMEPORT:
 		Execute_Gameport(towns,outside_world,cmd);
 		break;
@@ -2002,6 +2030,15 @@ void TownsCommandInterpreter::Execute_Enable(FMTownsCommon &towns,Command &cmd)
 			towns.midi.midiMonitor=true;
 			std::cout << "MIDI Monitor enabled." << std::endl;
 			break;
+		case ENABLE_CAPTURE_DOS_STDOUT:
+			if(nullptr==towns.CPU().debuggerPtr)
+			{
+				PrintError(ERROR_DEBUGGER_NOT_ENABLED);
+				return;
+			}
+			towns.debugger.StartCaptureDOSStdout();
+			std::cout << "Start DOS-Stdout Capture." << std::endl;
+			break;
 		}
 	}
 }
@@ -2117,6 +2154,10 @@ void TownsCommandInterpreter::Execute_Disable(FMTownsCommon &towns,Command &cmd)
 		case ENABLE_MIDIMONITOR:
 			towns.midi.midiMonitor=false;
 			std::cout << "MIDI Monitor disabled." << std::endl;
+			break;
+		case ENABLE_CAPTURE_DOS_STDOUT:
+			towns.debugger.EndCaptureDOSStdout();
+			std::cout << "Stop DOS-Stdout Capture." << std::endl;
 			break;
 		}
 	}

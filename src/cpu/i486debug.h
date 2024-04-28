@@ -178,6 +178,14 @@ public:
 	i486SymbolTable &GetSymTable(void);
 	const i486SymbolTable &GetSymTable(void) const;
 
+private:
+	bool captureDOSStdout=false;
+	std::vector <char> DOSStdout;
+public:
+	void StartCaptureDOSStdout(void);
+	void EndCaptureDOSStdout(void);
+	std::vector <char> GetDOSStdout(void) const;
+
 public:
 	std::map <unsigned int,std::string> &GetIOTable(void);
 	const std::map <unsigned int,std::string> &GetIOTable(void) const;

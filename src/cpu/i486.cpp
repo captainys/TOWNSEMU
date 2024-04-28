@@ -2394,6 +2394,21 @@ std::string i486DXCommon::DebugFetchString(int addressSize,const SegmentRegister
 	return str;
 }
 
+std::string i486DXCommon::DebugFetchDOSString(int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
+{
+	std::string str;
+	for(int i=0; i<255; ++i)
+	{
+		auto c=DebugFetchByte(addressSize,seg,offset++,mem);
+		if('$'==c)
+		{
+			break;
+		}
+		str.push_back(c);
+	}
+	return str;
+}
+
 /* static */ int i486DXCommon::StrToReg(const std::string &regName)
 {
 	for(int i=0; i<REG_TOTAL_NUMBER_OF_REGISTERS; ++i)

@@ -799,6 +799,46 @@ void i486Debugger::Interrupt(const i486DXCommon &cpu,unsigned int INTNum,Memory 
 			}
 		}
 	}
+	if(true==captureDOSStdout && INTNum==0x21)
+	{
+		if(2==cpu.GetAH() || (6==cpu.GetAH() && 0xFF!=cpu.GetDL()))
+		{
+			DOSStdout.push_back(cpu.GetDL());
+		}
+		else if(9==cpu.GetAH())
+		{
+			std::string str;
+			if(true==cpu.IsInRealMode())  // Real Mode
+			{
+				str=cpu.DebugFetchDOSString(16,cpu.state.DS(),cpu.GetDX(),mem);
+			}
+			else
+			{
+				str=cpu.DebugFetchDOSString(32,cpu.state.DS(),cpu.GetEDX(),mem);
+			}
+			for(auto c : str)
+			{
+				DOSStdout.push_back(c);
+			}
+		}
+		else if(0x40==cpu.GetAH() && (1==cpu.GetBX() || 3==cpu.GetBX()))
+		{
+			if(true==cpu.IsInRealMode())  // Real Mode
+			{
+				for(int i=0; i<cpu.GetCX(); ++i)
+				{
+					DOSStdout.push_back(cpu.DebugFetchByte(16,cpu.state.DS(),cpu.GetDX()+i,mem));
+				}
+			}
+			else
+			{
+				for(int i=0; i<cpu.GetECX(); ++i)
+				{
+					DOSStdout.push_back(cpu.DebugFetchByte(32,cpu.state.DS(),cpu.GetEDX()+i,mem));
+				}
+			}
+		}
+	}
 	if(breakOnINT[INTNum&0xFF].cond!=BreakOnINTCondition::COND_NEVER)
 	{
 		if(0<breakOnINT[INTNum&0xFF].CSEIP.size())
@@ -897,6 +937,20 @@ void i486Debugger::Interrupt(const i486DXCommon &cpu,unsigned int INTNum,Memory 
 			break;
 		}
 	}
+}
+
+void i486Debugger::StartCaptureDOSStdout(void)
+{
+	captureDOSStdout=true;
+	DOSStdout.clear();
+}
+void i486Debugger::EndCaptureDOSStdout(void)
+{
+	captureDOSStdout=false;
+}
+std::vector <char> i486Debugger::GetDOSStdout(void) const
+{
+	return DOSStdout;
 }
 
 std::string i486Debugger::INTExplanation(const i486DXCommon &cpu,unsigned int INTNum,Memory &mem) const

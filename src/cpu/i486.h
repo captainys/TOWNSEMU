@@ -2654,6 +2654,10 @@ public:
 	*/
 	std::string DebugFetchString(int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
 
+	/*! Fetch a $-terminated string from the given address
+	*/
+	std::string DebugFetchDOSString(int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const;
+
 
 	/*! Fetch an instruction.
 	    It will not affect the CPU state.
