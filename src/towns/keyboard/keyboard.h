@@ -25,7 +25,7 @@ class TownsKeyboard : public Device
 public:
 	enum
 	{
-		KEY_REPEAT_INTERVAL=1666667, // 1000000000/600 nano secounds
+		KEY_REPEAT_INTERVAL=833333, // 1000000000/1200 nano secounds
 	};
 
 	class State
