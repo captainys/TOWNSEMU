@@ -1782,112 +1782,198 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 	// For RCL and RCR See reminder #20200123-1
 	#define ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM(ctr) \
 	{ \
-		auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1,true); \
-		if(nullptr!=operPtr) \
-		{ \
-			if(true!=state.exception) \
+		if(16==inst.operandSize)\
+		{\
+			auto operPtr=GetOperandPointer16(mem,inst.addressSize,inst.segOverride,op1,true); \
+			if(nullptr!=operPtr) \
 			{ \
-				uint32_t i;\
-				if(16==inst.operandSize)\
-				{\
-					i=cpputil::GetWord(operPtr);\
-				}\
-				else\
-				{\
-					i=cpputil::GetDword(operPtr);\
-				}\
-				switch(inst.GetREG()) \
+				if(true!=state.exception) \
 				{ \
-				case 0: \
-					RolByteWordOrDword(inst.operandSize,i,ctr); \
-					clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
-					break; \
-				case 1: \
-					RorByteWordOrDword(inst.operandSize,i,ctr); \
-					clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
-					break; \
-				case 2: \
-					RclWordOrDword(inst.operandSize,i,ctr); \
-					clocksPassed=(OPER_ADDR==op1.operandType ? 10 : 11); \
-					break; \
-				case 3: \
-					clocksPassed=(OPER_ADDR==op1.operandType ? 10 : 11); \
-					RcrWordOrDword(inst.operandSize,i,ctr); \
-					break; \
-				case 4: \
-					ShlWordOrDword(inst.operandSize,i,ctr); \
-					clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
-					break; \
-				case 5: \
-					ShrWordOrDword(inst.operandSize,i,ctr); \
-					clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
-					break; \
-				case 6: \
-					Abort("Undefined REG for "+cpputil::Ubtox(inst.opCode)); \
-					clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
-					return 0; \
-				case 7: \
-					SarByteWordOrDword(inst.operandSize,i,ctr); \
-					clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
-					break; \
-				default: \
-					std_unreachable; \
-				} \
-				if(16==inst.operandSize)\
-				{\
+					uint32_t i;\
+					i=cpputil::GetWord(operPtr);\
+					switch(inst.GetREG()) \
+					{ \
+					case 0: \
+						RolWord(i,ctr); \
+						clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
+						break; \
+					case 1: \
+						RorWord(i,ctr); \
+						clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
+						break; \
+					case 2: \
+						RclWord(i,ctr); \
+						clocksPassed=(OPER_ADDR==op1.operandType ? 10 : 11); \
+						break; \
+					case 3: \
+						clocksPassed=(OPER_ADDR==op1.operandType ? 10 : 11); \
+						RcrWord(i,ctr); \
+						break; \
+					case 4: \
+						ShlWord(i,ctr); \
+						clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
+						break; \
+					case 5: \
+						ShrWord(i,ctr); \
+						clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
+						break; \
+					case 6: \
+						Abort("Undefined REG for "+cpputil::Ubtox(inst.opCode)); \
+						clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
+						return 0; \
+					case 7: \
+						SarWord(i,ctr); \
+						clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
+						break; \
+					default: \
+						std_unreachable; \
+					} \
 					cpputil::PutWord(operPtr,i);\
-				}\
-				else\
-				{\
-					cpputil::PutDword(operPtr,i);\
-				}\
+				} \
 			} \
-		} \
+			else \
+			{\
+				auto value=EvaluateOperandReg16OrReg32OrMem(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8); \
+				auto i=value.GetAsWord(); \
+				if(true!=state.exception) \
+				{ \
+					switch(inst.GetREG()) \
+					{ \
+					case 0: \
+						RolWord(i,ctr); \
+						clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
+						break; \
+					case 1: \
+						RorWord(i,ctr); \
+						clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
+						break; \
+					case 2: \
+						RclWord(i,ctr); \
+						clocksPassed=(OPER_ADDR==op1.operandType ? 10 : 11); \
+						break; \
+					case 3: \
+						clocksPassed=(OPER_ADDR==op1.operandType ? 10 : 11); \
+						RcrWord(i,ctr); \
+						break; \
+					case 4: \
+						ShlWord(i,ctr); \
+						clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
+						break; \
+					case 5: \
+						ShrWord(i,ctr); \
+						clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
+						break; \
+					case 6: \
+						Abort("Undefined REG for "+cpputil::Ubtox(inst.opCode)); \
+						clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
+						return 0; \
+					case 7: \
+						SarWord(i,ctr); \
+						clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
+						break; \
+					default: \
+						std_unreachable; \
+					} \
+					value.SetWord(i); \
+					StoreOperandValueReg16OrReg32OrMem(op1,mem,inst.addressSize,inst.segOverride,value); \
+				} \
+			} \
+		}\
 		else \
 		{\
-			auto value=EvaluateOperandReg16OrReg32OrMem(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8); \
-			auto i=value.GetAsDword(); \
-			if(true!=state.exception) \
+			auto operPtr=GetOperandPointer32(mem,inst.addressSize,inst.segOverride,op1,true); \
+			if(nullptr!=operPtr) \
 			{ \
-				switch(inst.GetREG()) \
+				if(true!=state.exception) \
 				{ \
-				case 0: \
-					RolByteWordOrDword(inst.operandSize,i,ctr); \
-					clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
-					break; \
-				case 1: \
-					RorByteWordOrDword(inst.operandSize,i,ctr); \
-					clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
-					break; \
-				case 2: \
-					RclWordOrDword(inst.operandSize,i,ctr); \
-					clocksPassed=(OPER_ADDR==op1.operandType ? 10 : 11); \
-					break; \
-				case 3: \
-					clocksPassed=(OPER_ADDR==op1.operandType ? 10 : 11); \
-					RcrWordOrDword(inst.operandSize,i,ctr); \
-					break; \
-				case 4: \
-					ShlWordOrDword(inst.operandSize,i,ctr); \
-					clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
-					break; \
-				case 5: \
-					ShrWordOrDword(inst.operandSize,i,ctr); \
-					clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
-					break; \
-				case 6: \
-					Abort("Undefined REG for "+cpputil::Ubtox(inst.opCode)); \
-					clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
-					return 0; \
-				case 7: \
-					SarByteWordOrDword(inst.operandSize,i,ctr); \
-					clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
-					break; \
-				default: \
-					std_unreachable; \
+					uint32_t i;\
+					i=cpputil::GetDword(operPtr);\
+					switch(inst.GetREG()) \
+					{ \
+					case 0: \
+						RolDword(i,ctr); \
+						clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
+						break; \
+					case 1: \
+						RorDword(i,ctr); \
+						clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
+						break; \
+					case 2: \
+						RclDword(i,ctr); \
+						clocksPassed=(OPER_ADDR==op1.operandType ? 10 : 11); \
+						break; \
+					case 3: \
+						clocksPassed=(OPER_ADDR==op1.operandType ? 10 : 11); \
+						RcrDword(i,ctr); \
+						break; \
+					case 4: \
+						ShlDword(i,ctr); \
+						clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
+						break; \
+					case 5: \
+						ShrDword(i,ctr); \
+						clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
+						break; \
+					case 6: \
+						Abort("Undefined REG for "+cpputil::Ubtox(inst.opCode)); \
+						clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
+						return 0; \
+					case 7: \
+						SarDword(i,ctr); \
+						clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
+						break; \
+					default: \
+						std_unreachable; \
+					} \
+					cpputil::PutDword(operPtr,i);\
 				} \
-				value.SetDword(i); \
-				StoreOperandValueReg16OrReg32OrMem(op1,mem,inst.addressSize,inst.segOverride,value); \
+			} \
+			else \
+			{\
+				auto value=EvaluateOperandReg16OrReg32OrMem(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8); \
+				auto i=value.GetAsDword(); \
+				if(true!=state.exception) \
+				{ \
+					switch(inst.GetREG()) \
+					{ \
+					case 0: \
+						RolDword(i,ctr); \
+						clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
+						break; \
+					case 1: \
+						RorDword(i,ctr); \
+						clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
+						break; \
+					case 2: \
+						RclDword(i,ctr); \
+						clocksPassed=(OPER_ADDR==op1.operandType ? 10 : 11); \
+						break; \
+					case 3: \
+						clocksPassed=(OPER_ADDR==op1.operandType ? 10 : 11); \
+						RcrDword(i,ctr); \
+						break; \
+					case 4: \
+						ShlDword(i,ctr); \
+						clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
+						break; \
+					case 5: \
+						ShrDword(i,ctr); \
+						clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
+						break; \
+					case 6: \
+						Abort("Undefined REG for "+cpputil::Ubtox(inst.opCode)); \
+						clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
+						return 0; \
+					case 7: \
+						SarDword(i,ctr); \
+						clocksPassed=(OPER_ADDR==op1.operandType ? 4 : 2); \
+						break; \
+					default: \
+						std_unreachable; \
+					} \
+					value.SetDword(i); \
+					StoreOperandValueReg16OrReg32OrMem(op1,mem,inst.addressSize,inst.segOverride,value); \
+				} \
 			} \
 		}\
 		if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes)) \
