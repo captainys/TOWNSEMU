@@ -3484,7 +3484,6 @@ private:
 	inline uint8_t *GetOperandPointer16(Memory &mem,int addressSize,int segmentOverride,const Operand &op,bool forWrite);
 	inline uint8_t *GetOperandPointer32(Memory &mem,int addressSize,int segmentOverride,const Operand &op,bool forWrite);
 	inline uint8_t *GetOperandPointer16or32(Memory &mem,int addressSize,int segmentOverride,const Operand &op,bool forWrite);
-	inline uint8_t *GetOperandPointerMem(Memory &mem,int addressSize,int segmentOverride,const Operand &op,bool forWrite);
 
 public:
 	/*! Return true if I/O access is permitted in I/O Map of TSS.
