@@ -963,6 +963,62 @@ inline uint8_t *i486DXFidelityLayer<FIDELITY>::GetOperandPointer(
 }
 
 template <class FIDELITY>
+inline uint8_t *i486DXFidelityLayer<FIDELITY>::GetOperandPointer8(
+    Memory &mem,int addressSize,int segmentOverride,const Operand &op,bool forWrite)
+{
+#ifdef YS_LITTLE_ENDIAN
+	if(OPER_REG8==op.operandType)
+	{
+		return (uint8_t *)state.reg8Ptr[op.reg-REG_AL];
+	}
+#ifdef YS_CPU_DEBUG
+	else if(OPER_ADDR!=op.operandType)
+	{
+		Abort(__FUNCTION__ " is used for a wrong operand type.");
+		return nullptr;
+	}
+#endif // YS_CPU_DEBUG
+	else // Assume OPER_ADDR
+	{
+		unsigned int offset;
+		const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,op,segmentOverride);
+		if(16==addressSize)
+		{
+			offset&=0xFFFF;
+		}
+
+		if(seg.limit<offset+3)
+		{
+			return nullptr;  // Let FetchByte/FetchWord/FetchDword take care of exception.
+		}
+
+		auto physAddr=seg.baseLinearAddr+offset; // Tentative.
+		auto low12bit=physAddr&0xFFF;
+		// Four-byte border check is not needed for an 8-bit address operand
+		{
+			if(true==PagingEnabled())
+			{
+				if(true==forWrite)
+				{
+					physAddr=LinearAddressToPhysicalAddressWrite(physAddr,mem); // Assume write-operation for stack.
+				}
+				else
+				{
+					physAddr=LinearAddressToPhysicalAddressRead(physAddr,mem); // Assume write-operation for stack.
+				}
+			}
+			auto memWin=mem.GetMemoryWindow(physAddr);
+			if(nullptr!=memWin.ptr)
+			{
+				return memWin.ptr+low12bit;
+			}
+		}
+	}
+#endif
+	return nullptr;
+}
+
+template <class FIDELITY>
 inline unsigned int i486DXFidelityLayer<FIDELITY>::CALLF(Memory &mem,uint16_t opSize,uint16_t instNumBytes,uint16_t newCS,uint32_t newEIP,uint16_t defClocks)
 {
 	typename FIDELITY::SavedCSEIP savedCSEIP;
@@ -1452,7 +1508,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			clocksPassed=1; \
 		} \
 		unsigned int reg=REG_AL+inst.GetREG(); \
-		auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1,update); \
+		auto operPtr=GetOperandPointer8(mem,inst.addressSize,inst.segOverride,op1,update); \
 		if(nullptr!=operPtr) \
 		{ \
 			auto value2=GetRegisterValue8(reg); \
@@ -1557,7 +1613,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 	// For RCL and RCR see reminder #20200123-1
 	#define ROL_ROR_RCL_RCR_SAL_SAR_SHL_SHR_RM8(ctr) \
 	{ \
-		auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1,true); \
+		auto operPtr=GetOperandPointer8(mem,inst.addressSize,inst.segOverride,op1,true); \
 		if(nullptr!=operPtr) \
 		{ \
 			uint32_t i=*operPtr; \
@@ -4719,7 +4775,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			}
 
 			uint32_t i;
-			uint8_t *operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1,true);
+			uint8_t *operPtr=GetOperandPointer8(mem,inst.addressSize,inst.segOverride,op1,true);
 			if(nullptr!=operPtr)
 			{
 				i=operPtr[0];
@@ -5355,7 +5411,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 
 			OperandValue value1;
 			uint32_t i;
-			auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1,(7!=REG)); // forWrite is true if REG!=7 (CMP)
+			auto operPtr=GetOperandPointer8(mem,inst.addressSize,inst.segOverride,op1,(7!=REG)); // forWrite is true if REG!=7 (CMP)
 			if(nullptr!=operPtr)
 			{
 				i=operPtr[0];
@@ -7850,7 +7906,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 	case I486_RENUMBER_XCHG_RM8_R8://           0x86,
 		clocksPassed=(OPER_ADDR==op1.operandType ? 5 : 3);
 		{
-			auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1,true);
+			auto operPtr=GetOperandPointer8(mem,inst.addressSize,inst.segOverride,op1,true);
 			HANDLE_EXCEPTION_IF_ANY;
 			auto regNum=inst.GetREG(); // Guaranteed to be between 0 and 7
 			if(nullptr!=operPtr)

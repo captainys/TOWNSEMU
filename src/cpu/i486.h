@@ -30,6 +30,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "i486inst.h"
 
 
+// #define YS_CPU_DEBUG
+
 
 #ifdef TSUGARU_I486_HIGH_FIDELITY
 	#error High-Fidelity Mode is now integrated.  Compile without this macro and use -HIGHFIDELITY option.
@@ -3478,6 +3480,7 @@ private:
 	    *** Also, if it was memory, it assumes it will write to the address. ***
 	*/
 	inline uint8_t *GetOperandPointer(Memory &mem,int addressSize,int segmentOverride,const Operand &op,bool forWrite);
+	inline uint8_t *GetOperandPointer8(Memory &mem,int addressSize,int segmentOverride,const Operand &op,bool forWrite);
 
 public:
 	/*! Return true if I/O access is permitted in I/O Map of TSS.
