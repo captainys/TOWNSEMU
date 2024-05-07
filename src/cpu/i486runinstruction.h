@@ -6486,73 +6486,48 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		break;
 	case I486_RENUMBER_MOVS://             0xA5,
 		{
+			#define MOVS_Template(addrSize,FetchFunc,StoreFunc,UpdateFunc) \
+				for(int ctr=0; \
+				    ctr<MAX_REP_BUNDLE_COUNT && \
+				    true==REPCheck(clocksPassed,prefix,(addrSize)); \
+				    ++ctr) \
+				{ \
+					auto data=(FetchFunc)((addrSize),seg,state.ESI(),mem); \
+					(StoreFunc)(mem,(addrSize),state.ES(),state.EDI(),data); \
+					if(true!=state.exception) \
+					{ \
+						(UpdateFunc)(inst.addressSize); \
+						if(INST_PREFIX_REP==prefix) \
+						{ \
+							EIPIncrement=0; \
+						} \
+						else \
+						{ \
+							EIPIncrement=inst.numBytes; \
+							break; \
+						} \
+					} \
+					else \
+					{ \
+						SetECX(ECX); \
+						HandleException(true,mem,inst.numBytes); \
+						EIPIncrement=0; \
+						break; \
+					} \
+					ECX=state.ECX(); \
+				}
+
 			clocksPassed=7;
 			auto ECX=state.ECX();
 			auto prefix=REPNEtoREP(inst.instPrefix);
 			auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
 			if(16==inst.operandSize)
 			{
-				for(int ctr=0;
-				    ctr<MAX_REP_BUNDLE_COUNT &&
-				    true==REPCheck(clocksPassed,prefix,inst.addressSize);
-				    ++ctr)
-				{
-					auto data=FetchWord(inst.addressSize,seg,state.ESI(),mem);
-					StoreWord(mem,inst.addressSize,state.ES(),state.EDI(),data);
-					if(true!=state.exception)
-					{
-						UpdateESIandEDIAfterStringOpO16(inst.addressSize);
-						if(INST_PREFIX_REP==prefix)
-						{
-							EIPIncrement=0;
-						}
-						else
-						{
-							EIPIncrement=inst.numBytes;
-							break;
-						}
-					}
-					else
-					{
-						SetECX(ECX);
-						HandleException(true,mem,inst.numBytes);
-						EIPIncrement=0;
-						break;
-					}
-					ECX=state.ECX();
-				}
+				MOVS_Template(inst.addressSize,FetchWord,StoreWord,UpdateESIandEDIAfterStringOpO16);
 			}
 			else // 32-bit operandSize
 			{
-				for(int ctr=0;
-				    ctr<MAX_REP_BUNDLE_COUNT &&
-				    true==REPCheck(clocksPassed,prefix,inst.addressSize);
-				    ++ctr)
-				{
-					auto data=FetchDword(inst.addressSize,seg,state.ESI(),mem);
-					StoreDword(mem,inst.addressSize,state.ES(),state.EDI(),data);
-					if(true!=state.exception)
-					{
-						UpdateESIandEDIAfterStringOpO32(inst.addressSize);
-						if(INST_PREFIX_REP==prefix)
-						{
-							EIPIncrement=0;
-						}
-						else
-						{
-							EIPIncrement=inst.numBytes;
-							break;
-						}
-					}
-					else
-					{
-						SetECX(ECX);
-						HandleException(true,mem,inst.numBytes);
-						EIPIncrement=0;
-						break;
-					}
-					ECX=state.ECX();
-				}
+				MOVS_Template(inst.addressSize,FetchDword,StoreDword,UpdateESIandEDIAfterStringOpO32);
 			}
 		}
 		break;
