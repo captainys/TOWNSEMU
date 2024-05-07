@@ -8016,7 +8016,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					clocksPassed+=1; \
 					if(true!=state.exception) \
 					{ \
-						(UpdateFunc)(addrSize); \
+						(UpdateFunc)(); \
 						if(INST_PREFIX_REP==prefix) \
 						{ \
 							EIPIncrement=0; \
@@ -8042,11 +8042,25 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			auto prefix=REPNEtoREP(inst.instPrefix);
 			if(16==inst.operandSize)
 			{
-				STOS_Template(inst.addressSize,StoreWord,UpdateDIorEDIAfterStringOpO16);
+				if(16==inst.addressSize)
+				{
+					STOS_Template(16,StoreWord,UpdateDIorEDIAfterStringOpO16A16);
+				}
+				else
+				{
+					STOS_Template(32,StoreWord,UpdateDIorEDIAfterStringOpO16A32);
+				}
 			}
 			else // 32-bit OperandSize
 			{
-				STOS_Template(inst.addressSize,StoreDword,UpdateDIorEDIAfterStringOpO32);
+				if(16==inst.addressSize)
+				{
+					STOS_Template(16,StoreDword,UpdateDIorEDIAfterStringOpO32A16);
+				}
+				else
+				{
+					STOS_Template(32,StoreDword,UpdateDIorEDIAfterStringOpO32A32);
+				}
 			}
 		}
 		break;
