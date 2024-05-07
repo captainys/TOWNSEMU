@@ -905,6 +905,40 @@ void i486DXCommon::FetchOperand(CPUCLASS &cpu,InstructionAndOperand &instOp,Memo
 
 }
 
+#define i486DXFidelityLayer__GetOperandPointerAddr(addrCond) \
+		unsigned int offset; \
+		const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,op,segmentOverride); \
+		if(16==addressSize) \
+		{ \
+			offset&=0xFFFF; \
+		} \
+		if(seg.limit<offset+3) \
+		{ \
+			return nullptr; \
+		} \
+		auto physAddr=seg.baseLinearAddr+offset; \
+		auto low12bit=physAddr&0xFFF; \
+		if(addrCond) \
+		{ \
+			if(true==PagingEnabled()) \
+			{ \
+				if(true==forWrite) \
+				{ \
+					physAddr=LinearAddressToPhysicalAddressWrite(physAddr,mem); \
+				} \
+				else \
+				{ \
+					physAddr=LinearAddressToPhysicalAddressRead(physAddr,mem); \
+				} \
+			} \
+			auto memWin=mem.GetMemoryWindow(physAddr); \
+			if(nullptr!=memWin.ptr) \
+			{ \
+				return memWin.ptr+low12bit; \
+			} \
+		}
+
+
 template <class FIDELITY>
 inline uint8_t *i486DXFidelityLayer<FIDELITY>::GetOperandPointer(
     Memory &mem,int addressSize,int segmentOverride,const Operand &op,bool forWrite)
@@ -924,39 +958,7 @@ inline uint8_t *i486DXFidelityLayer<FIDELITY>::GetOperandPointer(
 	}
 	else // Assume OPER_ADDR
 	{
-		unsigned int offset;
-		const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,op,segmentOverride);
-		if(16==addressSize)
-		{
-			offset&=0xFFFF;
-		}
-
-		if(seg.limit<offset+3)
-		{
-			return nullptr;  // Let FetchByte/FetchWord/FetchDword take care of exception.
-		}
-
-		auto physAddr=seg.baseLinearAddr+offset; // Tentative.
-		auto low12bit=physAddr&0xFFF;
-		if(low12bit<=0xFFC)
-		{
-			if(true==PagingEnabled())
-			{
-				if(true==forWrite)
-				{
-					physAddr=LinearAddressToPhysicalAddressWrite(physAddr,mem); // Assume write-operation for stack.
-				}
-				else
-				{
-					physAddr=LinearAddressToPhysicalAddressRead(physAddr,mem); // Assume write-operation for stack.
-				}
-			}
-			auto memWin=mem.GetMemoryWindow(physAddr);
-			if(nullptr!=memWin.ptr)
-			{
-				return memWin.ptr+low12bit;
-			}
-		}
+		i486DXFidelityLayer__GetOperandPointerAddr(low12bit<=0xFFC)
 	}
 #endif
 	return nullptr;
@@ -980,39 +982,105 @@ inline uint8_t *i486DXFidelityLayer<FIDELITY>::GetOperandPointer8(
 #endif // YS_CPU_DEBUG
 	else // Assume OPER_ADDR
 	{
-		unsigned int offset;
-		const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,op,segmentOverride);
-		if(16==addressSize)
-		{
-			offset&=0xFFFF;
-		}
-
-		if(seg.limit<offset+3)
-		{
-			return nullptr;  // Let FetchByte/FetchWord/FetchDword take care of exception.
-		}
-
-		auto physAddr=seg.baseLinearAddr+offset; // Tentative.
-		auto low12bit=physAddr&0xFFF;
 		// Four-byte border check is not needed for an 8-bit address operand
-		{
-			if(true==PagingEnabled())
-			{
-				if(true==forWrite)
-				{
-					physAddr=LinearAddressToPhysicalAddressWrite(physAddr,mem); // Assume write-operation for stack.
-				}
-				else
-				{
-					physAddr=LinearAddressToPhysicalAddressRead(physAddr,mem); // Assume write-operation for stack.
-				}
-			}
-			auto memWin=mem.GetMemoryWindow(physAddr);
-			if(nullptr!=memWin.ptr)
-			{
-				return memWin.ptr+low12bit;
-			}
-		}
+		i486DXFidelityLayer__GetOperandPointerAddr(true)
+	}
+#endif
+	return nullptr;
+}
+
+template <class FIDELITY>
+inline uint8_t *i486DXFidelityLayer<FIDELITY>::GetOperandPointer16(
+    Memory &mem,int addressSize,int segmentOverride,const Operand &op,bool forWrite)
+{
+#ifdef YS_LITTLE_ENDIAN
+	if(OPER_REG16==op.operandType)
+	{
+		return (uint8_t *)&(state.NULL_and_reg32[op.reg-(REG_AX-REG_EAX)]);
+	}
+#ifdef YS_CPU_DEBUG
+	else if(OPER_ADDR!=op.operandType)
+	{
+		Abort(__FUNCTION__ " is used for a wrong operand type.");
+		return nullptr;
+	}
+#endif // YS_CPU_DEBUG
+	else // Assume OPER_ADDR
+	{
+		i486DXFidelityLayer__GetOperandPointerAddr(low12bit<=0xFFE)
+	}
+#endif
+	return nullptr;
+}
+
+template <class FIDELITY>
+inline uint8_t *i486DXFidelityLayer<FIDELITY>::GetOperandPointer32(
+    Memory &mem,int addressSize,int segmentOverride,const Operand &op,bool forWrite)
+{
+#ifdef YS_LITTLE_ENDIAN
+	if(OPER_REG32==op.operandType)
+	{
+		return (uint8_t *)&(state.NULL_and_reg32[op.reg]);
+	}
+#ifdef YS_CPU_DEBUG
+	else if(OPER_ADDR!=op.operandType)
+	{
+		Abort(__FUNCTION__ " is used for a wrong operand type.");
+		return nullptr;
+	}
+#endif // YS_CPU_DEBUG
+	else // Assume OPER_ADDR
+	{
+		i486DXFidelityLayer__GetOperandPointerAddr(low12bit<=0xFFC)
+	}
+#endif
+	return nullptr;
+}
+
+template <class FIDELITY>
+inline uint8_t *i486DXFidelityLayer<FIDELITY>::GetOperandPointer16or32(
+    Memory &mem,int addressSize,int segmentOverride,const Operand &op,bool forWrite)
+{
+#ifdef YS_LITTLE_ENDIAN
+	if(OPER_REG32==op.operandType)
+	{
+		return (uint8_t *)&(state.NULL_and_reg32[op.reg]);
+	}
+	else if(OPER_REG16==op.operandType)
+	{
+		return (uint8_t *)&(state.NULL_and_reg32[op.reg-(REG_AX-REG_EAX)]);
+	}
+#ifdef YS_CPU_DEBUG
+	else if(OPER_ADDR!=op.operandType)
+	{
+		Abort(__FUNCTION__ " is used for a wrong operand type.");
+		return nullptr;
+	}
+#endif // YS_CPU_DEBUG
+	else // Assume OPER_ADDR
+	{
+		i486DXFidelityLayer__GetOperandPointerAddr(low12bit<=0xFFC)
+	}
+#endif
+	return nullptr;
+}
+
+template <class FIDELITY>
+inline uint8_t *i486DXFidelityLayer<FIDELITY>::GetOperandPointerMem(
+    Memory &mem,int addressSize,int segmentOverride,const Operand &op,bool forWrite)
+{
+#ifdef YS_LITTLE_ENDIAN
+
+#ifdef YS_CPU_DEBUG
+	if(OPER_ADDR!=op.operandType)
+	{
+		Abort(__FUNCTION__ " is used for a wrong operand type.");
+		return nullptr;
+	}
+#endif // YS_CPU_DEBUG
+	else // Assume OPER_ADDR
+	{
+		i486DXFidelityLayer__GetOperandPointerAddr(low12bit<=0xFFC)
 	}
 #endif
 	return nullptr;
@@ -1417,7 +1485,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			clocksPassed=1; \
 		} \
 		auto regNum=inst.GetREG(); \
-		auto operPtr=GetOperandPointer(mem,inst.addressSize,inst.segOverride,op1,update);\
+		auto operPtr=GetOperandPointer16or32(mem,inst.addressSize,inst.segOverride,op1,update);\
 		if(nullptr!=operPtr)\
 		{\
 			if(16==inst.operandSize)\
