@@ -2257,6 +2257,62 @@ public:
 			}
 		}
 	}
+	inline void UpdateDIorEDIAfterStringOpO16(unsigned int addressSize)
+	{
+		if(16==addressSize)
+		{
+			auto DI=state.EDI();
+			if(true==GetDF())
+			{
+				DI-=2;
+			}
+			else
+			{
+				DI+=2;
+			}
+			SET_INT_LOW_WORD(state.EDI(),DI);
+		}
+		else
+		{
+			if(true==GetDF())
+			{
+				state.EDI()-=2;
+			}
+			else
+			{
+				state.EDI()+=2;
+			}
+		}
+	}
+	inline void UpdateDIorEDIAfterStringOpO32(unsigned int addressSize)
+	{
+		if(16==addressSize)
+		{
+			auto DI=state.EDI();
+			if(true==GetDF())
+			{
+				DI-=4;
+			}
+			else
+			{
+				DI+=4;
+			}
+			SET_INT_LOW_WORD(state.EDI(),DI);
+		}
+		else
+		{
+			if(true==GetDF())
+			{
+				state.EDI()-=4;
+			}
+			else
+			{
+				state.EDI()+=4;
+			}
+		}
+	}
+
+
 	inline void UpdateSIorESIAfterStringOp(unsigned int addressSize,unsigned int operandSize)
 	{
 		if(16==addressSize)
@@ -2317,6 +2373,74 @@ public:
 			}
 		}
 	}
+
+	inline void UpdateESIandEDIAfterStringOpO16(unsigned int addressSize)
+	{
+		if(16==addressSize)
+		{
+			auto DI=state.EDI();
+			auto SI=state.ESI();
+			if(true==GetDF())
+			{
+				DI-=2;
+				SI-=2;
+			}
+			else
+			{
+				DI+=2;
+				SI+=2;
+			}
+			SET_INT_LOW_WORD(state.EDI(),DI);
+			SET_INT_LOW_WORD(state.ESI(),SI);
+		}
+		else
+		{
+			if(true==GetDF())
+			{
+				state.EDI()-=2;
+				state.ESI()-=2;
+			}
+			else
+			{
+				state.EDI()+=2;
+				state.ESI()+=2;
+			}
+		}
+	}
+	inline void UpdateESIandEDIAfterStringOpO32(unsigned int addressSize)
+	{
+		if(16==addressSize)
+		{
+			auto DI=state.EDI();
+			auto SI=state.ESI();
+			if(true==GetDF())
+			{
+				DI-=4;
+				SI-=4;
+			}
+			else
+			{
+				DI+=4;
+				SI+=4;
+			}
+			SET_INT_LOW_WORD(state.EDI(),DI);
+			SET_INT_LOW_WORD(state.ESI(),SI);
+		}
+		else
+		{
+			if(true==GetDF())
+			{
+				state.EDI()-=4;
+				state.ESI()-=4;
+			}
+			else
+			{
+				state.EDI()+=4;
+				state.ESI()+=4;
+			}
+		}
+	}
+
 
 	/*! Write to Control Register.  If num==3, it builds Page Table cache.
 	*/

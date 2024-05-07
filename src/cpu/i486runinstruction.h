@@ -6490,34 +6490,69 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			auto ECX=state.ECX();
 			auto prefix=REPNEtoREP(inst.instPrefix);
 			auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
-			for(int ctr=0;
-			    ctr<MAX_REP_BUNDLE_COUNT &&
-			    true==REPCheck(clocksPassed,prefix,inst.addressSize);
-			    ++ctr)
+			if(16==inst.operandSize)
 			{
-				auto data=FetchWordOrDword(inst.operandSize,inst.addressSize,seg,state.ESI(),mem);
-				StoreWordOrDword(mem,inst.operandSize,inst.addressSize,state.ES(),state.EDI(),data);
-				if(true!=state.exception)
+				for(int ctr=0;
+				    ctr<MAX_REP_BUNDLE_COUNT &&
+				    true==REPCheck(clocksPassed,prefix,inst.addressSize);
+				    ++ctr)
 				{
-					UpdateESIandEDIAfterStringOp(inst.addressSize,inst.operandSize);
-					if(INST_PREFIX_REP==prefix)
+					auto data=FetchWord(inst.addressSize,seg,state.ESI(),mem);
+					StoreWord(mem,inst.addressSize,state.ES(),state.EDI(),data);
+					if(true!=state.exception)
 					{
-						EIPIncrement=0;
+						UpdateESIandEDIAfterStringOpO16(inst.addressSize);
+						if(INST_PREFIX_REP==prefix)
+						{
+							EIPIncrement=0;
+						}
+						else
+						{
+							EIPIncrement=inst.numBytes;
+							break;
+						}
 					}
 					else
 					{
-						EIPIncrement=inst.numBytes;
+						SetECX(ECX);
+						HandleException(true,mem,inst.numBytes);
+						EIPIncrement=0;
 						break;
 					}
+					ECX=state.ECX();
 				}
-				else
+			}
+			else // 32-bit operandSize
+			{
+				for(int ctr=0;
+				    ctr<MAX_REP_BUNDLE_COUNT &&
+				    true==REPCheck(clocksPassed,prefix,inst.addressSize);
+				    ++ctr)
 				{
-					SetECX(ECX);
-					HandleException(true,mem,inst.numBytes);
-					EIPIncrement=0;
-					break;
+					auto data=FetchDword(inst.addressSize,seg,state.ESI(),mem);
+					StoreDword(mem,inst.addressSize,state.ES(),state.EDI(),data);
+					if(true!=state.exception)
+					{
+						UpdateESIandEDIAfterStringOpO32(inst.addressSize);
+						if(INST_PREFIX_REP==prefix)
+						{
+							EIPIncrement=0;
+						}
+						else
+						{
+							EIPIncrement=inst.numBytes;
+							break;
+						}
+					}
+					else
+					{
+						SetECX(ECX);
+						HandleException(true,mem,inst.numBytes);
+						EIPIncrement=0;
+						break;
+					}
+					ECX=state.ECX();
 				}
-				ECX=state.ECX();
 			}
 		}
 		break;
@@ -7984,34 +8019,69 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		{
 			auto ECX=state.ECX();
 			auto prefix=REPNEtoREP(inst.instPrefix);
-			for(int ctr=0;
-			    ctr<MAX_REP_BUNDLE_COUNT &&
-			    true==REPCheck(clocksPassed,prefix,inst.addressSize);
-			    ++ctr)
+			if(16==inst.operandSize)
 			{
-				StoreWordOrDword(mem,inst.operandSize,inst.addressSize,state.ES(),state.EDI(),GetEAX());
-				clocksPassed+=1;
-				if(true!=state.exception)
+				for(int ctr=0;
+				    ctr<MAX_REP_BUNDLE_COUNT &&
+				    true==REPCheck(clocksPassed,prefix,inst.addressSize);
+				    ++ctr)
 				{
-					UpdateDIorEDIAfterStringOp(inst.addressSize,inst.operandSize);
-					if(INST_PREFIX_REP==prefix)
+					StoreWord(mem,inst.addressSize,state.ES(),state.EDI(),GetEAX());
+					clocksPassed+=1;
+					if(true!=state.exception)
 					{
-						EIPIncrement=0;
+						UpdateDIorEDIAfterStringOpO16(inst.addressSize);
+						if(INST_PREFIX_REP==prefix)
+						{
+							EIPIncrement=0;
+						}
+						else
+						{
+							EIPIncrement=inst.numBytes;
+							break;
+						}
 					}
 					else
 					{
-						EIPIncrement=inst.numBytes;
+						SetECX(ECX);
+						HandleException(false,mem,inst.numBytes);
+						EIPIncrement=0;
 						break;
 					}
+					ECX=state.ECX();
 				}
-				else
+			}
+			else // 32-bit OperandSize
+			{
+				for(int ctr=0;
+				    ctr<MAX_REP_BUNDLE_COUNT &&
+				    true==REPCheck(clocksPassed,prefix,inst.addressSize);
+				    ++ctr)
 				{
-					SetECX(ECX);
-					HandleException(false,mem,inst.numBytes);
-					EIPIncrement=0;
-					break;
+					StoreDword(mem,inst.addressSize,state.ES(),state.EDI(),GetEAX());
+					clocksPassed+=1;
+					if(true!=state.exception)
+					{
+						UpdateDIorEDIAfterStringOpO32(inst.addressSize);
+						if(INST_PREFIX_REP==prefix)
+						{
+							EIPIncrement=0;
+						}
+						else
+						{
+							EIPIncrement=inst.numBytes;
+							break;
+						}
+					}
+					else
+					{
+						SetECX(ECX);
+						HandleException(false,mem,inst.numBytes);
+						EIPIncrement=0;
+						break;
+					}
+					ECX=state.ECX();
 				}
-				ECX=state.ECX();
 			}
 		}
 		break;
