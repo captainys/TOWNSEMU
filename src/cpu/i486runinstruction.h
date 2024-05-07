@@ -6496,7 +6496,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					(StoreFunc)(mem,(addrSize),state.ES(),state.EDI(),data); \
 					if(true!=state.exception) \
 					{ \
-						(UpdateFunc)(inst.addressSize); \
+						(UpdateFunc)(); \
 						if(INST_PREFIX_REP==prefix) \
 						{ \
 							EIPIncrement=0; \
@@ -6523,11 +6523,25 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
 			if(16==inst.operandSize)
 			{
-				MOVS_Template(inst.addressSize,FetchWord,StoreWord,UpdateESIandEDIAfterStringOpO16);
+				if(16==inst.addressSize)
+				{
+					MOVS_Template(16,FetchWord,StoreWord,UpdateESIandEDIAfterStringOpO16A16);
+				}
+				else
+				{
+					MOVS_Template(32,FetchWord,StoreWord,UpdateESIandEDIAfterStringOpO16A32);
+				}
 			}
 			else // 32-bit operandSize
 			{
-				MOVS_Template(inst.addressSize,FetchDword,StoreDword,UpdateESIandEDIAfterStringOpO32);
+				if(16==inst.addressSize)
+				{
+					MOVS_Template(16,FetchDword,StoreDword,UpdateESIandEDIAfterStringOpO32A16);
+				}
+				else
+				{
+					MOVS_Template(32,FetchDword,StoreDword,UpdateESIandEDIAfterStringOpO32A32);
+				}
 			}
 		}
 		break;

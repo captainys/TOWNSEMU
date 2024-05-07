@@ -2441,6 +2441,68 @@ public:
 		}
 	}
 
+	inline void UpdateESIandEDIAfterStringOpO16A16()
+	{
+		auto DI=state.EDI();
+		auto SI=state.ESI();
+		if(true==GetDF())
+		{
+			DI-=2;
+			SI-=2;
+		}
+		else
+		{
+			DI+=2;
+			SI+=2;
+		}
+		SET_INT_LOW_WORD(state.EDI(),DI);
+		SET_INT_LOW_WORD(state.ESI(),SI);
+	}
+	inline void UpdateESIandEDIAfterStringOpO32A16()
+	{
+		auto DI=state.EDI();
+		auto SI=state.ESI();
+		if(true==GetDF())
+		{
+			DI-=4;
+			SI-=4;
+		}
+		else
+		{
+			DI+=4;
+			SI+=4;
+		}
+		SET_INT_LOW_WORD(state.EDI(),DI);
+		SET_INT_LOW_WORD(state.ESI(),SI);
+	}
+	inline void UpdateESIandEDIAfterStringOpO16A32()
+	{
+		if(true==GetDF())
+		{
+			state.EDI()-=2;
+			state.ESI()-=2;
+		}
+		else
+		{
+			state.EDI()+=2;
+			state.ESI()+=2;
+		}
+	}
+	inline void UpdateESIandEDIAfterStringOpO32A32()
+	{
+		if(true==GetDF())
+		{
+			state.EDI()-=4;
+			state.ESI()-=4;
+		}
+		else
+		{
+			state.EDI()+=4;
+			state.ESI()+=4;
+		}
+	}
+
+
 
 	/*! Write to Control Register.  If num==3, it builds Page Table cache.
 	*/
