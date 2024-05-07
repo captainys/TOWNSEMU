@@ -2311,6 +2311,55 @@ public:
 			}
 		}
 	}
+	inline void UpdateDIorEDIAfterStringOpO16A16()
+	{
+		auto DI=state.EDI();
+		if(true==GetDF())
+		{
+			DI-=2;
+		}
+		else
+		{
+			DI+=2;
+		}
+		SET_INT_LOW_WORD(state.EDI(),DI);
+	}
+	inline void UpdateDIorEDIAfterStringOpO32A16()
+	{
+		auto DI=state.EDI();
+		if(true==GetDF())
+		{
+			DI-=4;
+		}
+		else
+		{
+			DI+=4;
+		}
+		SET_INT_LOW_WORD(state.EDI(),DI);
+	}
+	inline void UpdateDIorEDIAfterStringOpO16A32()
+	{
+		if(true==GetDF())
+		{
+			state.EDI()-=2;
+		}
+		else
+		{
+			state.EDI()+=2;
+		}
+	}
+	inline void UpdateDIorEDIAfterStringOpO32A32()
+	{
+		if(true==GetDF())
+		{
+			state.EDI()-=4;
+		}
+		else
+		{
+			state.EDI()+=4;
+		}
+	}
+
 
 
 	inline void UpdateSIorESIAfterStringOp(unsigned int addressSize,unsigned int operandSize)

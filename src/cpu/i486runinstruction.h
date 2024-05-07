@@ -8006,71 +8006,47 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 	case I486_RENUMBER_STOS://             0xAB,
 		// REP/REPE/REPNE CX or ECX is chosen based on addressSize.
 		{
+			#define STOS_Template(addrSize,StoreFunc,UpdateFunc) \
+				for(int ctr=0; \
+				    ctr<MAX_REP_BUNDLE_COUNT && \
+				    true==REPCheck(clocksPassed,prefix,(addrSize)); \
+				    ++ctr) \
+				{ \
+					(StoreFunc)(mem,(addrSize),state.ES(),state.EDI(),GetEAX()); \
+					clocksPassed+=1; \
+					if(true!=state.exception) \
+					{ \
+						(UpdateFunc)(addrSize); \
+						if(INST_PREFIX_REP==prefix) \
+						{ \
+							EIPIncrement=0; \
+						} \
+						else \
+						{ \
+							EIPIncrement=inst.numBytes; \
+							break; \
+						} \
+					} \
+					else \
+					{ \
+						SetECX(ECX); \
+						HandleException(false,mem,inst.numBytes); \
+						EIPIncrement=0; \
+						break; \
+					} \
+					ECX=state.ECX(); \
+				}
+
+
 			auto ECX=state.ECX();
 			auto prefix=REPNEtoREP(inst.instPrefix);
 			if(16==inst.operandSize)
 			{
-				for(int ctr=0;
-				    ctr<MAX_REP_BUNDLE_COUNT &&
-				    true==REPCheck(clocksPassed,prefix,inst.addressSize);
-				    ++ctr)
-				{
-					StoreWord(mem,inst.addressSize,state.ES(),state.EDI(),GetEAX());
-					clocksPassed+=1;
-					if(true!=state.exception)
-					{
-						UpdateDIorEDIAfterStringOpO16(inst.addressSize);
-						if(INST_PREFIX_REP==prefix)
-						{
-							EIPIncrement=0;
-						}
-						else
-						{
-							EIPIncrement=inst.numBytes;
-							break;
-						}
-					}
-					else
-					{
-						SetECX(ECX);
-						HandleException(false,mem,inst.numBytes);
-						EIPIncrement=0;
-						break;
-					}
-					ECX=state.ECX();
-				}
+				STOS_Template(inst.addressSize,StoreWord,UpdateDIorEDIAfterStringOpO16);
 			}
 			else // 32-bit OperandSize
 			{
-				for(int ctr=0;
-				    ctr<MAX_REP_BUNDLE_COUNT &&
-				    true==REPCheck(clocksPassed,prefix,inst.addressSize);
-				    ++ctr)
-				{
-					StoreDword(mem,inst.addressSize,state.ES(),state.EDI(),GetEAX());
-					clocksPassed+=1;
-					if(true!=state.exception)
-					{
-						UpdateDIorEDIAfterStringOpO32(inst.addressSize);
-						if(INST_PREFIX_REP==prefix)
-						{
-							EIPIncrement=0;
-						}
-						else
-						{
-							EIPIncrement=inst.numBytes;
-							break;
-						}
-					}
-					else
-					{
-						SetECX(ECX);
-						HandleException(false,mem,inst.numBytes);
-						EIPIncrement=0;
-						break;
-					}
-					ECX=state.ECX();
-				}
+				STOS_Template(inst.addressSize,StoreDword,UpdateDIorEDIAfterStringOpO32);
 			}
 		}
 		break;
