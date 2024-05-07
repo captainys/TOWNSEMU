@@ -1485,10 +1485,10 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			clocksPassed=1; \
 		} \
 		auto regNum=inst.GetREG(); \
-		auto operPtr=GetOperandPointer16or32(mem,inst.addressSize,inst.segOverride,op1,update);\
-		if(nullptr!=operPtr)\
+		if(16==inst.operandSize)\
 		{\
-			if(16==inst.operandSize)\
+			auto operPtr=GetOperandPointer16(mem,inst.addressSize,inst.segOverride,op1,update);\
+			if(nullptr!=operPtr)\
 			{\
 				uint32_t i=cpputil::GetWord(operPtr);\
 				auto src=INT_LOW_WORD(state.reg32()[regNum]); \
@@ -1505,6 +1505,32 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			}\
 			else\
 			{\
+				auto dst=EvaluateOperandReg16OrReg32OrMem(mem,inst.addressSize,inst.segOverride,op1,2); \
+				auto src=INT_LOW_WORD(state.reg32()[regNum]); \
+				if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes)) \
+				{ \
+					EIPIncrement=0; \
+					break; \
+				} \
+				auto i=dst.GetAsWord(); \
+				(func16)(i,src); \
+				if(true==(update)) \
+				{ \
+					dst.SetDword(i); \
+					StoreOperandValueReg16OrReg32OrMem(op1,mem,inst.addressSize,inst.segOverride,dst); \
+				} \
+				if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes)) \
+				{ \
+					EIPIncrement=0; \
+					break; \
+				} \
+			} \
+		} \
+		else \
+		{ \
+			auto operPtr=GetOperandPointer32(mem,inst.addressSize,inst.segOverride,op1,update);\
+			if(nullptr!=operPtr)\
+			{\
 				uint32_t i=cpputil::GetDword(operPtr);\
 				auto src=state.reg32()[regNum]; \
 				if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes)) \
@@ -1518,52 +1544,30 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					cpputil::PutDword(operPtr,i);\
 				}\
 			}\
-		}\
-		else if(16==inst.operandSize) \
-		{ \
-			auto dst=EvaluateOperandReg16OrReg32OrMem(mem,inst.addressSize,inst.segOverride,op1,2); \
-			auto src=INT_LOW_WORD(state.reg32()[regNum]); \
-			if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes)) \
-			{ \
-				EIPIncrement=0; \
-				break; \
-			} \
-			auto i=dst.GetAsWord(); \
-			(func16)(i,src); \
-			if(true==(update)) \
-			{ \
-				dst.SetDword(i); \
-				StoreOperandValueReg16OrReg32OrMem(op1,mem,inst.addressSize,inst.segOverride,dst); \
-			} \
-			if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes)) \
-			{ \
-				EIPIncrement=0; \
-				break; \
-			} \
-		} \
-		else \
-		{ \
-			auto dst=EvaluateOperandReg16OrReg32OrMem(mem,inst.addressSize,inst.segOverride,op1,4); \
-			auto src=state.reg32()[regNum]; \
-			if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes)) \
-			{ \
-				EIPIncrement=0; \
-				break; \
-			} \
-			auto i=dst.GetAsDword(); \
-			(func32)(i,src); \
-			if(true==(update)) \
-			{ \
-				dst.SetDword(i); \
-				StoreOperandValueReg16OrReg32OrMem(op1,mem,inst.addressSize,inst.segOverride,dst); \
-			} \
-			if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes)) \
-			{ \
-				EIPIncrement=0; \
-				break; \
+			else \
+			{\
+				auto dst=EvaluateOperandReg16OrReg32OrMem(mem,inst.addressSize,inst.segOverride,op1,4); \
+				auto src=state.reg32()[regNum]; \
+				if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes)) \
+				{ \
+					EIPIncrement=0; \
+					break; \
+				} \
+				auto i=dst.GetAsDword(); \
+				(func32)(i,src); \
+				if(true==(update)) \
+				{ \
+					dst.SetDword(i); \
+					StoreOperandValueReg16OrReg32OrMem(op1,mem,inst.addressSize,inst.segOverride,dst); \
+				} \
+				if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes)) \
+				{ \
+					EIPIncrement=0; \
+					break; \
+				} \
 			} \
 		} \
-	}
+	} \
 
 	#define BINARYOP_RM8_R8(func,clock_for_addr,update) \
 	{ \
