@@ -5724,17 +5724,26 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 
 	case I486_RENUMBER_LEA://=              0x8D,
 		clocksPassed=1;
-		if(OPER_ADDR==op2.operandType && 
-		  (OPER_REG32==op1.operandType || OPER_REG16==op1.operandType))
+		if(OPER_ADDR==op2.operandType)
 		{
 			unsigned int offset=
 			    state.NULL_and_reg32[op2.baseReg&15]+
 			   (state.NULL_and_reg32[op2.indexReg&15]<<op2.indexShift)+
 			   op2.offset;
-			offset&=operandSizeMask[inst.addressSize>>3];
-			OperandValue value;
-			value.MakeDword(offset);
-			StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value);
+			if(OPER_REG32==op1.operandType)
+			{
+				state.reg32()[op1.reg-REG_EAX]=offset;
+			}
+			else if(OPER_REG16==op1.operandType)
+			{
+				offset&=0xFFFF;
+				state.reg32()[op1.reg-REG_AX]&=0xFFFF0000;
+				state.reg32()[op1.reg-REG_AX]|=offset;
+			}
+			else
+			{
+				RaiseException(EXCEPTION_UD,0);
+			}
 		}
 		else
 		{
