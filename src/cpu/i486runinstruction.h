@@ -5627,89 +5627,140 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			}
 
 			auto REG=inst.GetREG();
-			auto operPtr=GetOperandPointer16or32(mem,inst.addressSize,inst.segOverride,op1,(7!=REG)); // forWrite is true if REG!=7 (CMP)
 			OperandValue value1;
-			uint32_t i;
-			if(nullptr!=operPtr)
+			uint32_t i,value2;
+			if(16==inst.operandSize)
 			{
-				if(16==inst.operandSize)
+				auto operPtr=GetOperandPointer16(mem,inst.addressSize,inst.segOverride,op1,(7!=REG)); // forWrite is true if REG!=7 (CMP)
+				if(nullptr!=operPtr)
 				{
 					i=cpputil::GetWord(operPtr);
 				}
 				else
 				{
-					i=cpputil::GetDword(operPtr);
+					value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,16/8);
+					i=value1.GetAsDword();
 				}
-			}
-			else
-			{
-				value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,inst.operandSize/8);
-				i=value1.GetAsDword();
-			}
 
-			unsigned int value2;
-			if(I486_OPCODE_BINARYOP_R_FROM_I==inst.opCode)
-			{
-				value2=inst.EvalUimm8or16or32(inst.operandSize);
-			}
-			else
-			{
-				value2=inst.EvalUimm8();
-				if(value2&0x80)
+				if(I486_OPCODE_BINARYOP_R_FROM_I==inst.opCode)
 				{
-					value2|=0xFFFFFF00;
+					value2=inst.EvalUimm16();
 				}
-			}
-			HANDLE_EXCEPTION_IF_ANY;
-
-			switch(REG)
-			{
-			case 0:
-				AddWordOrDword(inst.operandSize,i,value2);
-				break;
-			case 1:
-				OrWordOrDword(inst.operandSize,i,value2);
-				break;
-			case 2:
-				AdcWordOrDword(inst.operandSize,i,value2);
-				break;
-			case 3:
-				SbbWordOrDword(inst.operandSize,i,value2);
-				break;
-			case 4:
-				AndWordOrDword(inst.operandSize,i,value2);
-				break;
-			case 5:
-				SubWordOrDword(inst.operandSize,i,value2);
-				break;
-			case 6:
-				XorWordOrDword(inst.operandSize,i,value2);
-				break;
-			case 7:
-				SubWordOrDword(inst.operandSize,i,value2);
-				break;
-			default:
-				std_unreachable;
-			}
-			HANDLE_EXCEPTION_IF_ANY;
-			if(7!=REG) // Don't store a value if it is CMP
-			{
-				if(nullptr!=operPtr)
+				else
 				{
-					if(16==inst.operandSize)
+					value2=inst.EvalSimm8();
+				}
+				HANDLE_EXCEPTION_IF_ANY;
+
+				switch(REG)
+				{
+				case 0:
+					AddWord(i,value2);
+					break;
+				case 1:
+					OrWord(i,value2);
+					break;
+				case 2:
+					AdcWord(i,value2);
+					break;
+				case 3:
+					SbbWord(i,value2);
+					break;
+				case 4:
+					AndWord(i,value2);
+					break;
+				case 5:
+					SubWord(i,value2);
+					break;
+				case 6:
+					XorWord(i,value2);
+					break;
+				case 7:
+					SubWord(i,value2);
+					break;
+				default:
+					std_unreachable;
+				}
+				HANDLE_EXCEPTION_IF_ANY;
+				if(7!=REG) // Don't store a value if it is CMP
+				{
+					if(nullptr!=operPtr)
 					{
 						cpputil::PutWord(operPtr,i);
 					}
 					else
 					{
-						cpputil::PutDword(operPtr,i);
+						value1.SetDword(i);
+						StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+						HANDLE_EXCEPTION_IF_ANY;
 					}
+				}
+			}
+			else // 32-bit operand size
+			{
+				auto operPtr=GetOperandPointer32(mem,inst.addressSize,inst.segOverride,op1,(7!=REG)); // forWrite is true if REG!=7 (CMP)
+				if(nullptr!=operPtr)
+				{
+					i=cpputil::GetDword(operPtr);
 				}
 				else
 				{
-					value1.SetDword(i);
-					StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
-					HANDLE_EXCEPTION_IF_ANY;
+					value1=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,32/8);
+					i=value1.GetAsDword();
+				}
+
+				if(I486_OPCODE_BINARYOP_R_FROM_I==inst.opCode)
+				{
+					value2=inst.EvalUimm32();
+				}
+				else
+				{
+					value2=inst.EvalSimm8();
+				}
+				HANDLE_EXCEPTION_IF_ANY;
+
+				switch(REG)
+				{
+				case 0:
+					AddDword(i,value2);
+					break;
+				case 1:
+					OrDword(i,value2);
+					break;
+				case 2:
+					AdcDword(i,value2);
+					break;
+				case 3:
+					SbbDword(i,value2);
+					break;
+				case 4:
+					AndDword(i,value2);
+					break;
+				case 5:
+					SubDword(i,value2);
+					break;
+				case 6:
+					XorDword(i,value2);
+					break;
+				case 7:
+					SubDword(i,value2);
+					break;
+				default:
+					std_unreachable;
+				}
+				HANDLE_EXCEPTION_IF_ANY;
+				if(7!=REG) // Don't store a value if it is CMP
+				{
+					if(nullptr!=operPtr)
+					{
+						cpputil::PutDword(operPtr,i);
+					}
+					else
+					{
+						value1.SetDword(i);
+						StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+						HANDLE_EXCEPTION_IF_ANY;
+					}
 				}
 			}
 		}
