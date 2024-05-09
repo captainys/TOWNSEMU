@@ -56,10 +56,38 @@ X
 /end
 /begin0
 T 1
+* 00000000:00001A47
+# 
+R 
+L No more processes left in this runlevel
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
 * 00000000:00001A6F
 # 
 R 
 L Entering runlevel: %c
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000000:00001A85
+# 
+R 
+L /etc/powerstatus
 P 
 % 0
 M 0
@@ -88,6 +116,90 @@ T 1
 # 
 R 
 L runlevel
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000000:00003018
+# 
+R 
+L got_hup
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000000:0000301C
+# 
+R 
+L got_alrm
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000000:00003020
+# 
+R 
+L (Prob)got_pwr
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000000:00003024
+# 
+R 
+L (Prob)got_int
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000000:00003028
+# 
+R 
+L got_chld
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000000:0000302C
+# 
+R 
+L got_cont
 P 
 % 0
 M 0
@@ -812,10 +924,304 @@ X
 /end
 /begin0
 T 1
+* 00000023:000000E0
+# 
+R 
+L hup_handler
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000023:000000EF
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 1
+X 
+/end
+/begin0
+T 4
+* 00000023:000000FB
+# 
+R 
+L PADDING
+P 
+% 1
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000023:000000FC
+# 
+R 
+L pwr_handler
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000023:0000010B
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 1
+X 
+/end
+/begin0
+T 4
+* 00000023:00000117
+# 
+R 
+L PADDING
+P 
+% 1
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000023:00000118
+# 
+R 
+L int_handler
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000023:00000127
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 1
+X 
+/end
+/begin0
+T 4
+* 00000023:00000133
+# 
+R 
+L PADDING
+P 
+% 1
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000023:00000134
+# 
+R 
+L chld_handler
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000023:00000174
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 1
+X 
+/end
+/begin0
+T 1
+* 00000023:000001A0
+# 
+R 
+L alrm_handler
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 4
+* 00000023:000001BB
+# 
+R 
+L PADDING
+P 
+% 1
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000023:000001BC
+# 
+R 
+L cont_handler
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000023:000001CB
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 1
+X 
+/end
+/begin0
+T 4
+* 00000023:000001D7
+# 
+R 
+L PADDING
+P 
+% 1
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000023:000001D8
+# 
+R 
+L stop_handler
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000023:000001DB
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 1
+X 
+/end
+/begin0
+T 0
+* 00000023:000001ED
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 1
+X 
+/end
+/begin0
+T 0
+* 00000023:000001F6
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 1
+X 
+/end
+/begin0
+T 1
 * 00000023:000003C8
 # 
 R 
 L (Prob)init_log
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000023:00000414
+# 
+R 
+L (Maybe)initlog
 P 
 % 0
 M 0
@@ -843,7 +1249,7 @@ T 1
 * 00000023:000011AC
 # 
 R 
-L (Prob)start_if_needed
+L (Prob)StartEmIfNeeded
 P 
 % 0
 M 0
@@ -952,10 +1358,290 @@ X
 /end
 /begin0
 T 1
+* 00000023:00001280
+# 
+R 
+L (Prob)get_init_default()
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000023:000019A4
+# 
+R 
+L FailCheck()
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000023:000019B9
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 1
+X 
+/end
+/begin0
+T 2
+* 00000023:000019C4
+# 
+R 
+L for(ch = family; ch; ch = ch->next) {
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
 * 00000023:00001A98
 # 
 R 
-L (Most Likely)void init_main(void)
+L InitMain
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000023:00001AD9
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 1
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000023:00001ADE
+# (Prob)SIGALRM=14(0EH)
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000023:00001AE8
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 1
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000023:00001AED
+# (Prob)SIGHUP=01
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000023:00001AF7
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 1
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000023:00001AFC
+# (Prob)SIGSTOP=19(13H)
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000023:00001B06
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 1
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000023:00001B0B
+# (Prob)SIGTSTP=20(14H)
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000023:00001B15
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 1
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000023:00001B1A
+# (Prob)SIGCONT=18(12H)
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000023:00001B24
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 1
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000023:00001B29
+# (Prob)SIGCHLD=17(11H)
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000023:00001B33
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 1
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000023:00001B38
+# (Prob)SIGINT=02
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000023:00001B42
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 1
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000023:00001B47
+# (Prob)SIGPWR=30(1EH)
+R 
+L 
 P 
 % 0
 M 0
@@ -1004,6 +1690,286 @@ M 0
 B 1
 A 0
 O 1
+X 
+/end
+/begin0
+T 2
+* 00000023:00001BDC
+# 
+R 
+L while(1)
+P 
+% 0
+M 0
+B 0
+A 0
+O 1
+X 
+/end
+/begin0
+T 2
+* 00000023:00001BE8
+# 
+R 
+L for( ch = family; ch; ch = ch->next )
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000023:00001BEA
+# (Prob)02H=RUNNING
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000023:00001BEE
+# (Prob)04H=BOOT
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000023:00001C06
+# loglevel = -1;
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000023:00001C0D
+# switch(runlevel)
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 1
+X 
+/end
+/begin0
+T 0
+* 00000023:00001C13
+# 'S'
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000023:00001C1D
+# '#'
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000023:00001C21
+# '*'
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000023:00001C2C
+# 's'
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 2
+* 00000023:00001C3C
+# 
+R 
+L case '#':
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000023:00001C79
+# 'S'
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 1
+X 
+/end
+/begin0
+T 0
+* 00000023:00001C88
+# '*'
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 1
+X 
+/end
+/begin0
+T 2
+* 00000023:00001CB8
+# 
+R 
+L case 'S': case 's': /* Ended SU mode */
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000023:00001CC6
+# 'S'
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000023:00001CCC
+# '*'
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 1
+X 
+/end
+/begin0
+T 0
+* 00000023:00001CD8
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 1
+X 
+/end
+/begin0
+T 0
+* 00000023:00001CF3
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 1
+X 
+/end
+/begin0
+T 2
+* 00000023:00001D28
+# 
+R 
+L default:
+P 
+% 0
+M 0
+B 1
+A 0
+O 0
+X 
+/end
+/begin0
+T 2
+* 00000023:00001D35
+# 
+R 
+L end-of-switch(runlevel)
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
 X 
 /end
 /begin0
@@ -1063,11 +2029,193 @@ O 1
 X 
 /end
 /begin0
+T 0
+* 00000023:00001D71
+# if(ch!=NULL)
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000023:00001D75
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 1
+X 
+/end
+/begin0
+T 0
+* 00000023:00001D7A
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 1
+X 
+/end
+/begin0
+T 0
+* 00000023:00001D80
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 1
+X 
+/end
+/begin0
+T 0
+* 00000023:00001D86
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 1
+X 
+/end
+/begin0
+T 0
+* 00000023:00001D8C
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 1
+X 
+/end
+/begin0
+T 0
+* 00000023:00001D9E
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 1
+X 
+/end
+/begin0
+T 0
+* 00000023:00001DAB
+# pwrstat = 0;:
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000023:00001DAF
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 1
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000023:00001DF5
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 1
+X 
+/end
+/begin0
+T 0
+* 00000023:00001E31
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 1
+X 
+/end
+/begin0
+T 1
+* 00000023:60000180
+# 
+R 
+L alarm
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
 T 1
 * 00000023:60000250
 # 
 R 
 L (Prob)close(int fd);
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000023:600009D8
+# 
+R 
+L pause()
 P 
 % 0
 M 0
@@ -1096,6 +2244,34 @@ T 1
 # 
 R 
 L strchr
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000023:60000EE0
+# 
+R 
+L (Prob)Sync()
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000023:60000F78
+# 
+R 
+L time_t time(time_t &ptr);
 P 
 % 0
 M 0
