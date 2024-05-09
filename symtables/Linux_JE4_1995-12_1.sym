@@ -1,0 +1,1106 @@
+/begin0
+T 1
+* 00000000:00000294
+# 
+R 
+L /dev/console
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000000:000011A4
+# 
+R 
+L #*Ss
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000000:00001491
+# 
+R 
+L 'runlevel'
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000000:00001758
+# 
+R 
+L /etc/utmp
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000000:00001A6F
+# 
+R 
+L Entering runlevel: %c
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000000:0000300C
+# 
+R 
+L (Prob)family
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000000:00003014
+# 
+R 
+L runlevel
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:00109181
+# Linux version
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:0010919E
+# if (!clone(CLONE_VM, init_stack+sizeof(init_stack)))
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:001091B4
+# init();
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:001091C1
+# for(;;)idle();
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000010:00109210
+# 
+R 
+L void init(void)
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:00109219
+# setup();
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:0010924F
+# /dev/tty1
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:0010925B
+# open('/dev/tty1',O_RDWR,0);
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:00109272
+# dup(0);
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:00109289
+# dup(0);
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:001092AD
+# execve('/etc/init',argv_init,envp_init);
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:001092D1
+# execve('/bin/init',argv_init,envp_init);
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:001092F5
+# execve('/sbin/init',argv_init,envp_init);
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:0010930A
+# if ((pid = fork()) < 0)
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000010:00109C20
+# 
+R 
+L INT 80H EAX=0BH execve
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:00109C49
+# File Name to Execute
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:0010A417
+# INT 80H Branch to function
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000010:00111D00
+# 
+R 
+L dprint
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000010:00122EC0
+# 
+R 
+L do_remount_sb
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000010:00124EE0
+# 
+R 
+L static int count(char ** argv)
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000010:00124F40
+# 
+R 
+L unsigned long copy_strings(int argc,char ** argv,unsigned long *page,unsigned long p, int from_kmem)
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000010:00125150
+# 
+R 
+L int read_exec(struct inode *inode, unsigned long offset,
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000010:00125530
+# 
+R 
+L int do_execve(char * filename, char ** argv, char ** envp, struct pt_regs * regs)
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:0012553C
+# bprm.p = PAGE_SIZE*MAX_ARG_PAGES-sizeof(void *);
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:0012554B
+# for (i=0 ; i<MAX_ARG_PAGES ; i++)bprm.page[i] = 0;
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:0012555D
+# ,NULL);
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:0012556E
+# , &bprm.inode
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:0012557A
+# (filename
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:0012557B
+# retval = open_namei(filename, 0, 0, &bprm.inode, NULL);
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:0012558E
+# if (retval)return retval;
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:001255A0
+# bprm.filename = filename;
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:001255AE
+# bprm.loader = 0;
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:001255B9
+# bprm.exec = 0;
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:001255C4
+# argv
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:001255CB
+# if ((bprm.argc = count(argv)) < 0)return bprm.argc;
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:001255EC
+# if ((bprm.envc = count(envp)) < 0)return bprm.envc;
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 2
+* 00000010:0012568B
+# 
+R 
+L return FFFFFFFFH
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 2
+* 00000010:00125760
+# 
+R 
+L return FFFFFFF3H
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:0012579E
+# memset(bprm.buf,0,sizeof(bprm.buf));
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:001257B1
+# retval = read_exec(bprm.inode,0,bprm.buf,128,1);
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:001257BE
+# if (retval < 0)goto exec_error2;
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:001257C9
+# if ((bprm.buf[0] == '#') && (bprm.buf[1] == '!') && (!sh_bang)) {
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:00125A80
+# if (!sh_bang) {
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:00125B0B
+# f (!bprm.p) 
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:00125B50
+# bprm.sh_bang = sh_bang;
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:00125B57
+# for (fmt = formats
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:00125B5D
+# ; fmt ;
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:00125B68
+# fmt->load_binary;
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000010:00125B78
+# retval = fn(&bprm, regs);
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000010:001276C0
+# 
+R 
+L int open_namei(const char * pathname, int flag, int mode,struct inode ** res_inode, struct inode * base)
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000010:00149D80
+# 
+R 
+L minix_remount
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000023:000003C8
+# 
+R 
+L (Prob)init_log
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000023:00000A5C
+# 
+R 
+L (Prob)read_inittab
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000023:000011AC
+# 
+R 
+L (Prob)start_if_needed
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000023:000011B1
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 1
+X 
+/end
+/begin0
+T 2
+* 00000023:000011C0
+# 
+R 
+L for( ch = family; ch; ch = ch->next )
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000023:000011C2
+# if (ch->flags & WAITING) break;
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000023:000011CC
+# if (ch->flags & RUNNING) continue;
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000023:000011D5
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 1
+X 
+/end
+/begin0
+T 0
+* 00000023:000011F3
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 1
+X 
+/end
+/begin0
+T 0
+* 00000023:000011FB
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 1
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000023:00001A98
+# 
+R 
+L (Most Likely)void init_main(void)
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000023:00001B74
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 1
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000023:00001BA4
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 1
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000023:00001BC8
+# runlevel='#'
+R 
+L 
+P 
+% 0
+M 0
+B 1
+A 0
+O 1
+X 
+/end
+/begin0
+T 0
+* 00000023:00001D3B
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 1
+X 
+/end
+/begin0
+T 0
+* 00000023:00001D43
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 1
+A 0
+O 0
+X 
+/end
+/begin0
+T 0
+* 00000023:00001D57
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 0
+A 0
+O 1
+X 
+/end
+/begin0
+T 0
+* 00000023:00001D64
+# 
+R 
+L 
+P 
+% 0
+M 0
+B 1
+A 0
+O 1
+X 
+/end
+/begin0
+T 1
+* 00000023:60000250
+# 
+R 
+L (Prob)close(int fd);
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000023:60000D60
+# 
+R 
+L (Prob)SETSIG();
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
+/begin0
+T 1
+* 00000023:60000E08
+# 
+R 
+L strchr
+P 
+% 0
+M 0
+B 0
+A 0
+O 0
+X 
+/end
