@@ -1280,6 +1280,40 @@ add_test(
 		H0
 )
 
+# The Linux-CD test runs up to the middle of /etc/init.
+#
+# Early versions of init has a race-condition issue, and from time to time stops during the boot up.
+# Linux for TOWNS (Linux+JE2 1995-12) CD-boot uses sysvinit v2.4.
+# The issue was fixed somewhere between v2.4 and v2.88.  v2.4 still suffers from this issue.
+#
+# init.c has a SIGCHLD handler, that requires pids of CHILD structures to be filled.
+#
+# When creating a new process, it does:
+#
+# if ((ch->pid = Spawn(ch)) < 0) break;
+#
+# therefore ch->pid is not updated until Spawn returns.
+#
+# In Spawn function, it does:
+#
+#     if ((pid = fork()) == 0) {
+#       (Start the program)
+#       exit(1);
+#     }
+#     return pid;
+#
+# It is totally possible that forked process starts and finishes before return pid, in which case
+# SIGCHLD is sent before ch->pid is set.
+#
+# Then chld_handler cannot find which process finished because ch->pid is not set yet, therefore the process
+# will not be marked as ZOMBIE (or done).
+#
+# Since init thinks a process is still running although it is already done, init does not move on to the
+# next process and locks up.
+#
+# It causes CD-boot to lock up once every five or six times in my environment.
+#
+# To avoid this issue during the test, the test stops at the beginning of while(1) of InitMain.
 add_test(
 	NAME LINUX_FOR_TOWNS_1.3.30_CDBOOT
 	COMMAND
@@ -1293,6 +1327,6 @@ add_test(
 		-DEBUG
 		-UNITTEST
 		-POWEROFFAT
-		0023:0000013F
+		0023:00001BDC
 		-DAMPERWIRELINE
 )
