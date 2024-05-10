@@ -2166,6 +2166,39 @@ bool i486DXCommon::REPCheck(unsigned int &clocksPassed,unsigned int instPrefix,u
 	return true;
 }
 
+bool i486DXCommon::REPCheckA16(unsigned int &clocksPassed,unsigned int instPrefix)
+{
+	if(INST_PREFIX_REP==instPrefix || INST_PREFIX_REPNE==instPrefix)
+	{
+		auto counter=GetCX();
+		if(0==counter)
+		{
+			clocksPassed+=5;
+			return false;
+		}
+		--counter;
+		SetCX(counter);
+		clocksPassed+=3;
+	}
+	return true;
+}
+bool i486DXCommon::REPCheckA32(unsigned int &clocksPassed,unsigned int instPrefix)
+{
+	if(INST_PREFIX_REP==instPrefix || INST_PREFIX_REPNE==instPrefix)
+	{
+		auto counter=state.ECX();
+		if(0==counter)
+		{
+			clocksPassed+=5;
+			return false;
+		}
+		--counter;
+		state.ECX()=counter;
+		clocksPassed+=3;
+	}
+	return true;
+}
+
 bool i486DXCommon::REPEorNECheck(unsigned int &clocksForRep,unsigned int instPrefix,unsigned int addressSize)
 {
 	if(INST_PREFIX_REPE==instPrefix)

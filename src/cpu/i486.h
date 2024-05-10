@@ -2490,6 +2490,36 @@ public:
 		}
 	}
 
+	inline void UpdateESIandEDIAfterStringOpO8A16()
+	{
+		auto DI=state.EDI();
+		auto SI=state.ESI();
+		if(true==GetDF())
+		{
+			DI--;
+			SI--;
+		}
+		else
+		{
+			DI++;
+			SI++;
+		}
+		SET_INT_LOW_WORD(state.EDI(),DI);
+		SET_INT_LOW_WORD(state.ESI(),SI);
+	}
+	inline void UpdateESIandEDIAfterStringOpO8A32()
+	{
+		if(true==GetDF())
+		{
+			state.EDI()--;
+			state.ESI()--;
+		}
+		else
+		{
+			state.EDI()++;
+			state.ESI()++;
+		}
+	}
 	inline void UpdateESIandEDIAfterStringOpO16A16()
 	{
 		auto DI=state.EDI();
@@ -2949,6 +2979,8 @@ public:
 	    It returns true if no REP prefix.
 	*/
 	bool REPCheck(unsigned int &clocksForRep,unsigned int instPrefix,unsigned int addressSize);
+	bool REPCheckA16(unsigned int &clocksForRep,unsigned int instPrefix);
+	bool REPCheckA32(unsigned int &clocksForRep,unsigned int instPrefix);
 
 	/*! Check for REPE or REPNE.
 	    It returns true if the operation should be continued to the next iteration.

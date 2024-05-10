@@ -6520,35 +6520,45 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			auto ECX=state.ECX();
 			auto prefix=REPNEtoREP(inst.instPrefix);
 			auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
-			for(int ctr=0;
-			    ctr<MAX_REP_BUNDLE_COUNT &&
-			    true==REPCheck(clocksPassed,prefix,inst.addressSize);
-			    ++ctr)
+
+			#define MOVSB_Template(addrSize,updateFunc)\
+				for(int ctr=0;\
+				    ctr<MAX_REP_BUNDLE_COUNT &&\
+				    true==REPCheckA##addrSize(clocksPassed,prefix);\
+				    ++ctr)\
+				{\
+					auto data=FetchByte(addrSize,seg,state.ESI(),mem);\
+					StoreByte(mem,addrSize,state.ES(),state.EDI(),data);\
+					if(true!=state.exception)\
+					{\
+						(updateFunc)();\
+						if(INST_PREFIX_REP==prefix)\
+						{\
+							EIPIncrement=0;\
+						}\
+						else\
+						{\
+							EIPIncrement=inst.numBytes;\
+							break;\
+						}\
+					}\
+					else\
+					{\
+						SetECX(ECX);\
+						HandleException(true,mem,inst.numBytes);\
+						EIPIncrement=0;\
+						break;\
+					}\
+					ECX=state.ECX();\
+				}
+
+			if(16==inst.addressSize)
 			{
-				auto data=FetchByte(inst.addressSize,seg,state.ESI(),mem);
-				StoreByte(mem,inst.addressSize,state.ES(),state.EDI(),data);
-				if(true!=state.exception)
-				{
-					UpdateSIorESIAfterStringOp(inst.addressSize,8);
-					UpdateDIorEDIAfterStringOp(inst.addressSize,8);
-					if(INST_PREFIX_REP==prefix)
-					{
-						EIPIncrement=0;
-					}
-					else
-					{
-						EIPIncrement=inst.numBytes;
-						break;
-					}
-				}
-				else
-				{
-					SetECX(ECX);
-					HandleException(true,mem,inst.numBytes);
-					EIPIncrement=0;
-					break;
-				}
-				ECX=state.ECX();
+				MOVSB_Template(16,UpdateESIandEDIAfterStringOpO8A16);
+			}
+			else
+			{
+				MOVSB_Template(32,UpdateESIandEDIAfterStringOpO8A32);
 			}
 		}
 		break;
@@ -6557,7 +6567,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			#define MOVS_Template(addrSize,FetchFunc,StoreFunc,UpdateFunc) \
 				for(int ctr=0; \
 				    ctr<MAX_REP_BUNDLE_COUNT && \
-				    true==REPCheck(clocksPassed,prefix,(addrSize)); \
+				    true==REPCheckA##addrSize(clocksPassed,prefix); \
 				    ++ctr) \
 				{ \
 					auto data=(FetchFunc)((addrSize),seg,state.ESI(),mem); \
@@ -8077,7 +8087,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			#define STOS_Template(addrSize,StoreFunc,UpdateFunc) \
 				for(int ctr=0; \
 				    ctr<MAX_REP_BUNDLE_COUNT && \
-				    true==REPCheck(clocksPassed,prefix,(addrSize)); \
+				    true==REPCheckA##addrSize(clocksPassed,prefix); \
 				    ++ctr) \
 				{ \
 					(StoreFunc)(mem,(addrSize),state.ES(),state.EDI(),GetEAX()); \
