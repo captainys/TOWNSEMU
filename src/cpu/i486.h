@@ -3012,7 +3012,7 @@ public:
 	    indicates that REPE and REPNE must be do-while loop.  (Counter should be checked before the operation)
         Therefore, REPCheck is used before the operation, and REPEorNECheck after.
 	*/
-	bool REPEorNECheck(unsigned int &clocksForRep,unsigned int instPrefix,unsigned int addressSize);
+	bool REPEorNECheck(unsigned int instPrefix) const;
 
 
 

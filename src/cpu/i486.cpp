@@ -2199,7 +2199,7 @@ bool i486DXCommon::REPCheckA32(unsigned int &clocksPassed,unsigned int instPrefi
 	return true;
 }
 
-bool i486DXCommon::REPEorNECheck(unsigned int &clocksForRep,unsigned int instPrefix,unsigned int addressSize)
+bool i486DXCommon::REPEorNECheck(unsigned int instPrefix) const
 {
 	if(INST_PREFIX_REPE==instPrefix)
 	{

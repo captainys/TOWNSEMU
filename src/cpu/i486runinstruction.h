@@ -3381,7 +3381,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					SubByte(data1,data2);
 					UpdateESIandEDIAfterStringOp(inst.addressSize,8);
 					clocksPassed+=4;
-					if(true==REPEorNECheck(clocksPassed,inst.instPrefix,inst.addressSize))
+					if(true==REPEorNECheck(inst.instPrefix))
 					{
 						EIPIncrement=0;
 					}
@@ -3420,7 +3420,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					SubWordOrDword(inst.operandSize,data1,data2);
 					UpdateESIandEDIAfterStringOp(inst.addressSize,inst.operandSize);
 					clocksPassed+=4;
-					if(true==REPEorNECheck(clocksPassed,inst.instPrefix,inst.addressSize))
+					if(true==REPEorNECheck(inst.instPrefix))
 					{
 						EIPIncrement=0;
 					}
@@ -7746,7 +7746,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				auto AL=GetAL();
 				SubByte(AL,data);
 				UpdateDIorEDIAfterStringOp(inst.addressSize,8);
-				if(true==REPEorNECheck(clocksPassed,inst.instPrefix,inst.addressSize))
+				if(true==REPEorNECheck(inst.instPrefix))
 				{
 					EIPIncrement=0;
 				}
@@ -7773,7 +7773,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				SubWordOrDword(inst.operandSize,EAX,data);
 				UpdateDIorEDIAfterStringOp(inst.addressSize,inst.operandSize);
 				clocksPassed+=2;
-				if(true==REPEorNECheck(clocksPassed,inst.instPrefix,inst.addressSize))
+				if(true==REPEorNECheck(inst.instPrefix))
 				{
 					EIPIncrement=0;
 				}
