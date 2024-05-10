@@ -2311,6 +2311,30 @@ public:
 			}
 		}
 	}
+	inline void UpdateDIorEDIAfterStringOpO8A16()
+	{
+		auto DI=state.EDI();
+		if(true==GetDF())
+		{
+			DI--;
+		}
+		else
+		{
+			DI++;
+		}
+		SET_INT_LOW_WORD(state.EDI(),DI);
+	}
+	inline void UpdateDIorEDIAfterStringOpO8A32()
+	{
+		if(true==GetDF())
+		{
+			state.EDI()--;
+		}
+		else
+		{
+			state.EDI()++;
+		}
+	}
 	inline void UpdateDIorEDIAfterStringOpO16A16()
 	{
 		auto DI=state.EDI();

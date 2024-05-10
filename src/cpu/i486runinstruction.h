@@ -6521,7 +6521,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			auto prefix=REPNEtoREP(inst.instPrefix);
 			auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
 
-			#define MOVSB_Template(addrSize,updateFunc)\
+			#define MOVSB_Template(addrSize)\
 				for(int ctr=0;\
 				    ctr<MAX_REP_BUNDLE_COUNT &&\
 				    true==REPCheckA##addrSize(clocksPassed,prefix);\
@@ -6531,7 +6531,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					StoreByte(mem,addrSize,state.ES(),state.EDI(),data);\
 					if(true!=state.exception)\
 					{\
-						(updateFunc)();\
+						UpdateESIandEDIAfterStringOpO8A##addrSize();\
 						if(INST_PREFIX_REP==prefix)\
 						{\
 							EIPIncrement=0;\
@@ -6554,11 +6554,11 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 
 			if(16==inst.addressSize)
 			{
-				MOVSB_Template(16,UpdateESIandEDIAfterStringOpO8A16);
+				MOVSB_Template(16);
 			}
 			else
 			{
-				MOVSB_Template(32,UpdateESIandEDIAfterStringOpO8A32);
+				MOVSB_Template(32);
 			}
 		}
 		break;
@@ -8050,34 +8050,45 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		{
 			auto ECX=state.ECX();
 			auto prefix=REPNEtoREP(inst.instPrefix);
-			for(int ctr=0; 
-			    ctr<MAX_REP_BUNDLE_COUNT && 
-			    true==REPCheck(clocksPassed,prefix,inst.addressSize);
-			    ++ctr)
+
+			#define STOSB_Template(addrSize)\
+				for(int ctr=0; \
+				    ctr<MAX_REP_BUNDLE_COUNT && \
+				    true==REPCheckA##addrSize(clocksPassed,prefix);\
+				    ++ctr)\
+				{\
+					StoreByte(mem,addrSize,state.ES(),state.EDI(),GetAL());\
+					clocksPassed+=1;\
+					if(true!=state.exception)\
+					{\
+						UpdateDIorEDIAfterStringOpO8A##addrSize();\
+						if(INST_PREFIX_REP==prefix)\
+						{\
+							EIPIncrement=0;\
+						}\
+						else\
+						{\
+							EIPIncrement=inst.numBytes;\
+							break;\
+						}\
+					}\
+					else\
+					{\
+						SetECX(ECX);\
+						HandleException(false,mem,inst.numBytes);\
+						EIPIncrement=0;\
+						break;\
+					}\
+					ECX=state.ECX();\
+				}
+
+			if(16==inst.addressSize)
 			{
-				StoreByte(mem,inst.addressSize,state.ES(),state.EDI(),GetAL());
-				clocksPassed+=1;
-				if(true!=state.exception)
-				{
-					UpdateDIorEDIAfterStringOp(inst.addressSize,8);
-					if(INST_PREFIX_REP==prefix)
-					{
-						EIPIncrement=0;
-					}
-					else
-					{
-						EIPIncrement=inst.numBytes;
-						break;
-					}
-				}
-				else
-				{
-					SetECX(ECX);
-					HandleException(false,mem,inst.numBytes);
-					EIPIncrement=0;
-					break;
-				}
-				ECX=state.ECX();
+				STOSB_Template(16);
+			}
+			else
+			{
+				STOSB_Template(32);
 			}
 		}
 		break;
