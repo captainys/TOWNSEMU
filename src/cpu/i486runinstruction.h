@@ -3408,37 +3408,62 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		{
 			auto ECX=state.ECX();
 			auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
-			for(int ctr=0;
-			    ctr<MAX_REP_BUNDLE_COUNT &&
-			    true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize);
-			    ++ctr)
+
+			#define CMPS_Template(addrSize,wordOrDword,updateFunc)\
+				for(int ctr=0;\
+				    ctr<MAX_REP_BUNDLE_COUNT &&\
+				    true==REPCheckA##addrSize(clocksPassed,inst.instPrefix);\
+				    ++ctr)\
+				{\
+					auto data1=Fetch##wordOrDword(addrSize,seg,state.ESI(),mem);\
+					auto data2=Fetch##wordOrDword(addrSize,state.ES(),state.EDI(),mem);\
+					if(true!=state.exception)\
+					{\
+						Sub##wordOrDword(data1,data2);\
+						updateFunc();\
+						clocksPassed+=4;\
+						if(true==REPEorNECheck(inst.instPrefix))\
+						{\
+							EIPIncrement=0;\
+						}\
+						else\
+						{\
+							EIPIncrement=inst.numBytes;\
+							break;\
+						}\
+					}\
+					else\
+					{\
+						SetECX(ECX);\
+						HandleException(true,mem,inst.numBytes);\
+						clocksPassed+=ClocksForHandlingException();\
+						EIPIncrement=0;\
+						break;\
+					}\
+					ECX=state.ECX();\
+				}
+
+			if(16==inst.operandSize)
 			{
-				auto data1=FetchWordOrDword(inst.operandSize,inst.addressSize,seg,state.ESI(),mem);
-				auto data2=FetchWordOrDword(inst.operandSize,inst.addressSize,state.ES(),state.EDI(),mem);
-				if(true!=state.exception)
+				if(16==inst.addressSize)
 				{
-					SubWordOrDword(inst.operandSize,data1,data2);
-					UpdateESIandEDIAfterStringOp(inst.addressSize,inst.operandSize);
-					clocksPassed+=4;
-					if(true==REPEorNECheck(inst.instPrefix))
-					{
-						EIPIncrement=0;
-					}
-					else
-					{
-						EIPIncrement=inst.numBytes;
-						break;
-					}
+					CMPS_Template(16,Word,UpdateESIandEDIAfterStringOpO16A16);
 				}
 				else
 				{
-					SetECX(ECX);
-					HandleException(true,mem,inst.numBytes);
-					clocksPassed+=ClocksForHandlingException();
-					EIPIncrement=0;
-					break;
+					CMPS_Template(32,Word,UpdateESIandEDIAfterStringOpO16A32);
 				}
-				ECX=state.ECX();
+			}
+			else // 32-bit operand size
+			{
+				if(16==inst.addressSize)
+				{
+					CMPS_Template(16,Dword,UpdateESIandEDIAfterStringOpO32A16);
+				}
+				else
+				{
+					CMPS_Template(32,Dword,UpdateESIandEDIAfterStringOpO32A32);
+				}
 			}
 		}
 		break;
