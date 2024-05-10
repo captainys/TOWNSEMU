@@ -3369,37 +3369,48 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		{
 			auto ECX=state.ECX();
 			auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
-			for(int ctr=0;
-			    ctr<MAX_REP_BUNDLE_COUNT &&
-			    true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize);
-			    ++ctr)
+
+			#define CMPSB_Template(addrSize)\
+				for(int ctr=0;\
+				    ctr<MAX_REP_BUNDLE_COUNT &&\
+				    true==REPCheckA##addrSize(clocksPassed,inst.instPrefix);\
+				    ++ctr)\
+				{\
+					auto data1=FetchByte(addrSize,seg,state.ESI(),mem);\
+					auto data2=FetchByte(addrSize,state.ES(),state.EDI(),mem);\
+					if(true!=state.exception)\
+					{\
+						SubByte(data1,data2);\
+						UpdateESIandEDIAfterStringOpO8A##addrSize();\
+						clocksPassed+=4;\
+						if(true==REPEorNECheck(inst.instPrefix))\
+						{\
+							EIPIncrement=0;\
+						}\
+						else\
+						{\
+							EIPIncrement=inst.numBytes;\
+							break;\
+						}\
+					}\
+					else\
+					{\
+						SetECX(ECX);\
+						HandleException(true,mem,inst.numBytes);\
+						clocksPassed+=ClocksForHandlingException();\
+						EIPIncrement=0;\
+						break;\
+					}\
+					ECX=state.ECX();\
+				}\
+
+			if(16==inst.addressSize)
 			{
-				auto data1=FetchByte(inst.addressSize,seg,state.ESI(),mem);
-				auto data2=FetchByte(inst.addressSize,state.ES(),state.EDI(),mem);
-				if(true!=state.exception)
-				{
-					SubByte(data1,data2);
-					UpdateESIandEDIAfterStringOp(inst.addressSize,8);
-					clocksPassed+=4;
-					if(true==REPEorNECheck(inst.instPrefix))
-					{
-						EIPIncrement=0;
-					}
-					else
-					{
-						EIPIncrement=inst.numBytes;
-						break;
-					}
-				}
-				else
-				{
-					SetECX(ECX);
-					HandleException(true,mem,inst.numBytes);
-					clocksPassed+=ClocksForHandlingException();
-					EIPIncrement=0;
-					break;
-				}
-				ECX=state.ECX();
+				CMPSB_Template(16);
+			}
+			else
+			{
+				CMPSB_Template(32);
 			}
 		}
 		break;
