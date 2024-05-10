@@ -6214,10 +6214,18 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		{
 			clocksPassed=1;
 			auto &seg=SegmentOverrideDefaultDS(inst.segOverride);
-			unsigned int value=FetchWordOrDword(inst.operandSize,inst.addressSize,seg,inst.EvalUimm32(),mem);
-			HANDLE_EXCEPTION_IF_ANY;
-			state.EAX()&=operandSizeAndPattern[inst.operandSize>>3];
-			state.EAX()|=(value&operandSizeMask[inst.operandSize>>3]);
+			if(16==inst.operandSize)
+			{
+				unsigned int value=FetchWord(inst.addressSize,seg,inst.EvalUimm32(),mem);
+				HANDLE_EXCEPTION_IF_ANY;
+				SetAX(value);
+			}
+			else
+			{
+				unsigned int value=FetchWordOrDword(inst.operandSize,inst.addressSize,seg,inst.EvalUimm32(),mem);
+				HANDLE_EXCEPTION_IF_ANY;
+				state.EAX()=value;
+			}
 		}
 		break;
 	case I486_RENUMBER_MOV_M_FROM_AL: //    0xA2,
