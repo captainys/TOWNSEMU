@@ -4939,9 +4939,9 @@ void TownsCommandInterpreter::Execute_Search_ByteSequence(FMTownsCommon &towns,c
 	std::cout << "Search is limited in the main RAM and VRAM only." << std::endl;
 
 	int maxCount=100;
-	for(unsigned int addr=0; addr+bytes.size()<=towns.physMem.state.RAM.size(); ++addr)
+	for(unsigned int addr=0; addr+bytes.size()<=towns.mem.state.RAM.size(); ++addr)
 	{
-		if(true==cpputil::Match(bytes.size(),bytes.data(),towns.physMem.state.RAM.data()+addr))
+		if(true==cpputil::Match(bytes.size(),bytes.data(),towns.mem.state.RAM.data()+addr))
 		{
 			FoundAt(towns,addr);
 		}

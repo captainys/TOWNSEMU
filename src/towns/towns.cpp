@@ -1149,8 +1149,8 @@ void FMTownsCommon::SetMainRAMSize(long long int size)
 	}
 
 	physMem.SetMainRAMSize(size);
-	mem.RemoveAccess(physMem.state.RAM.size()-1,RAMEnd);
-	mem.AddAccess(&physMem.mainRAMAccess,0x00100000,physMem.state.RAM.size()-1);
+	mem.RemoveAccess(mem.state.RAM.size()-1,RAMEnd);
+	mem.AddAccess(&physMem.mainRAMAccess,0x00100000,mem.state.RAM.size()-1);
 }
 
 void FMTownsCommon::ForceRender(class TownsRender &render,class Outside_World &world,Outside_World::WindowInterface &windowInterface)
@@ -1325,8 +1325,8 @@ std::vector <std::string> FMTownsCommon::GetRealModeIntVectorsText(void) const
 			}
 			auto ij=i+j;
 			str+=cpputil::Ubtox(ij)+" ";
-			unsigned int offset=physMem.state.RAM[ij*4]|((unsigned int)physMem.state.RAM[ij*4+1]<<8);
-			unsigned int seg=physMem.state.RAM[ij*4+2]|((unsigned int)physMem.state.RAM[ij*4+3]<<8);
+			unsigned int offset=mem.state.RAM[ij*4]|((unsigned int)mem.state.RAM[ij*4+1]<<8);
+			unsigned int seg=mem.state.RAM[ij*4+2]|((unsigned int)mem.state.RAM[ij*4+3]<<8);
 			str+=cpputil::Ustox(seg)+":"+cpputil::Ustox(offset);
 		}
 		text.push_back(str);

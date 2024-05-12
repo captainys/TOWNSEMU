@@ -44,46 +44,46 @@ void TownsMemAccess::SetCPUPointer(class i486DXCommon *cpuPtr)
 
 /* virtual */ unsigned int TownsMainRAMAccess::FetchByte(unsigned int physAddr) const
 {
-	return physMemPtr->state.RAM[physAddr];
+	return memPtr->state.RAM[physAddr];
 }
 /* virtual */ unsigned int TownsMainRAMAccess::FetchWord(unsigned int physAddr) const
 {
-	auto &state=physMemPtr->state;
+	auto &state=memPtr->state;
 	auto *RAMPtr=state.RAM.data()+physAddr;
 	return cpputil::GetWord(RAMPtr);
 }
 /* virtual */ unsigned int TownsMainRAMAccess::FetchDword(unsigned int physAddr) const
 {
-	auto &state=physMemPtr->state;
+	auto &state=memPtr->state;
 	auto *RAMPtr=state.RAM.data()+physAddr;
 	return cpputil::GetDword(RAMPtr);
 }
 /* virtual */ void TownsMainRAMAccess::StoreByte(unsigned int physAddr,unsigned char data)
 {
-	physMemPtr->state.RAM[physAddr]=data;
+	memPtr->state.RAM[physAddr]=data;
 }
 /* virtual */ void TownsMainRAMAccess::StoreWord(unsigned int physAddr,unsigned int data)
 {
-	auto &state=physMemPtr->state;
+	auto &state=memPtr->state;
 	auto *RAMPtr=state.RAM.data()+physAddr;
 	cpputil::PutWord(RAMPtr,(unsigned short)data);
 }
 /* virtual */ void TownsMainRAMAccess::StoreDword(unsigned int physAddr,unsigned int data)
 {
-	auto &state=physMemPtr->state;
+	auto &state=memPtr->state;
 	auto *RAMPtr=state.RAM.data()+physAddr;
 	cpputil::PutDword(RAMPtr,data);
 }
 /* virtual */ MemoryAccess::ConstMemoryWindow TownsMainRAMAccess::GetConstMemoryWindow(unsigned int physAddr) const
 {
 	MemoryAccess::ConstMemoryWindow memWin;
-	memWin.ptr=physMemPtr->state.RAM.data()+(physAddr&(~0xfff));
+	memWin.ptr=memPtr->state.RAM.data()+(physAddr&(~0xfff));
 	return memWin;
 }
 /* virtual */ MemoryAccess::MemoryWindow TownsMainRAMAccess::GetMemoryWindow(unsigned int physAddr)
 {
 	MemoryAccess::MemoryWindow memWin;
-	memWin.ptr=physMemPtr->state.RAM.data()+(physAddr&(~0xfff));
+	memWin.ptr=memPtr->state.RAM.data()+(physAddr&(~0xfff));
 	return memWin;
 }
 

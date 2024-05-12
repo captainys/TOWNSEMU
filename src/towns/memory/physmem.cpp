@@ -46,7 +46,7 @@ void TownsPhysicalMemory::State::Reset(void)
 	ANKFont=false;
 	kanjiROMAccess.Reset();
 
-	for(auto &c : RAM)
+	for(auto &c : memPtr->state.RAM)
 	{
 		c=0;
 	}
@@ -214,7 +214,7 @@ void TownsPhysicalMemory::State::Reset(void)
 		state.TVRAMWrite=false;
 		break;
 	case TOWNSIO_MEMSIZE:
-		return (unsigned int)(state.RAM.size()/(1024*1024));
+		return (unsigned int)(memPtr->state.RAM.size()/(1024*1024));
 	case TOWNSIO_FMR_VRAMMASK: // 0xFF81
 		return state.FMRVRAMMask;
 	case TOWNSIO_VRAMACCESSCTRL_ADDR: //      0x458, // [2] pp.17,pp.112
@@ -281,6 +281,7 @@ void TownsPhysicalMemory::State::Reset(void)
 }
 
 TownsPhysicalMemory::TownsPhysicalMemory(class FMTownsCommon *townsPtr,class Memory *memPtr,class RF5C68 *pcmPtr) :
+	state(memPtr),
 	Device(townsPtr),
 	waveRAMAccess(townsPtr,pcmPtr,&townsPtr->sound.var.vgmRecorder),
 	oldMemCardAccess(townsPtr),
@@ -498,7 +499,7 @@ void TownsPhysicalMemory::SetMainRAMSize(long long int size)
 	{
 		size=0x100000;
 	}
-	state.RAM.resize(size);
+	memPtr->state.RAM.resize(size);
 }
 
 void TownsPhysicalMemory::SetVRAMSize(long long int size)
@@ -546,6 +547,7 @@ void TownsPhysicalMemory::SetUpMemoryAccess(unsigned int townsType,unsigned int 
 
 	mainRAMAccess.SetPhysicalMemoryPointer(this);
 	mainRAMAccess.SetCPUPointer(&cpu);
+	mainRAMAccess.memPtr=memPtr;
 	mem.AddAccess(&mainRAMAccess,0x00000000,0x000FFFFF);
 
 	FMRVRAMAccess.SetPhysicalMemoryPointer(this);
@@ -564,9 +566,9 @@ void TownsPhysicalMemory::SetUpMemoryAccess(unsigned int townsType,unsigned int 
 	mappedSysROMAccess.SetCPUPointer(&cpu);
 	ResetSysROMDicROMMappingFlag(true,false);   // This will set up memory access for 0xF8000 to 0xFFFFF and 0xD0000 to 0xDFFFF
 
-	if(0x00100000<state.RAM.size())
+	if(0x00100000<mem.state.RAM.size())
 	{
-		mem.AddAccess(&mainRAMAccess,0x00100000,(unsigned int)state.RAM.size()-1);
+		mem.AddAccess(&mainRAMAccess,0x00100000,(unsigned int)mem.state.RAM.size()-1);
 	}
 
 	VRAMAccess0.SetPhysicalMemoryPointer(this);
@@ -824,14 +826,14 @@ void TownsPhysicalMemory::EnableOrDisableNativeVRAMMask(void)
 
 void TownsPhysicalMemory::BeginMemFilter(void)
 {
-	memFilter.RAMFilter.resize(state.RAM.size());
-	memFilter.prevRAM.resize(state.RAM.size());
+	memFilter.RAMFilter.resize(memPtr->state.RAM.size());
+	memFilter.prevRAM.resize(memPtr->state.RAM.size());
 	memFilter.spriteRAMFilter.resize(GetSpriteRAMSize());
 	memFilter.prevSpriteRAM.resize(GetSpriteRAMSize());
-	for(uint32_t i=0; i<state.RAM.size(); ++i)
+	for(uint32_t i=0; i<memPtr->state.RAM.size(); ++i)
 	{
 		memFilter.RAMFilter[i]=true;
-		memFilter.prevRAM[i]=state.RAM[i];
+		memFilter.prevRAM[i]=memPtr->state.RAM[i];
 	}
 	for(uint32_t i=0; i<GetSpriteRAMSize(); ++i)
 	{
@@ -842,9 +844,9 @@ void TownsPhysicalMemory::BeginMemFilter(void)
 unsigned int TownsPhysicalMemory::ApplyMemFilter(uint8_t currentValue)
 {
 	unsigned int N=0;
-	for(uint32_t i=0; i<state.RAM.size(); ++i)
+	for(uint32_t i=0; i<memPtr->state.RAM.size(); ++i)
 	{
-		if(state.RAM[i]!=currentValue)
+		if(memPtr->state.RAM[i]!=currentValue)
 		{
 			memFilter.RAMFilter[i]=false;
 		}
@@ -852,7 +854,7 @@ unsigned int TownsPhysicalMemory::ApplyMemFilter(uint8_t currentValue)
 		{
 			++N;
 		}
-		memFilter.prevRAM[i]=state.RAM[i];
+		memFilter.prevRAM[i]=memPtr->state.RAM[i];
 	}
 	for(uint32_t i=0; i<GetSpriteRAMSize(); ++i)
 	{
@@ -871,9 +873,9 @@ unsigned int TownsPhysicalMemory::ApplyMemFilter(uint8_t currentValue)
 unsigned int TownsPhysicalMemory::ApplyMemFilterDecrease(void)
 {
 	unsigned int N=0;
-	for(uint32_t i=0; i<state.RAM.size(); ++i)
+	for(uint32_t i=0; i<memPtr->state.RAM.size(); ++i)
 	{
-		if(state.RAM[i]>=memFilter.prevRAM[i])
+		if(memPtr->state.RAM[i]>=memFilter.prevRAM[i])
 		{
 			memFilter.RAMFilter[i]=false;
 		}
@@ -881,7 +883,7 @@ unsigned int TownsPhysicalMemory::ApplyMemFilterDecrease(void)
 		{
 			++N;
 		}
-		memFilter.prevRAM[i]=state.RAM[i];
+		memFilter.prevRAM[i]=memPtr->state.RAM[i];
 	}
 	for(uint32_t i=0; i<GetSpriteRAMSize(); ++i)
 	{
@@ -900,9 +902,9 @@ unsigned int TownsPhysicalMemory::ApplyMemFilterDecrease(void)
 unsigned int TownsPhysicalMemory::ApplyMemFilterIncrease(void)
 {
 	unsigned int N=0;
-	for(uint32_t i=0; i<state.RAM.size(); ++i)
+	for(uint32_t i=0; i<memPtr->state.RAM.size(); ++i)
 	{
-		if(state.RAM[i]<=memFilter.prevRAM[i])
+		if(memPtr->state.RAM[i]<=memFilter.prevRAM[i])
 		{
 			memFilter.RAMFilter[i]=false;
 		}
@@ -910,7 +912,7 @@ unsigned int TownsPhysicalMemory::ApplyMemFilterIncrease(void)
 		{
 			++N;
 		}
-		memFilter.prevRAM[i]=state.RAM[i];
+		memFilter.prevRAM[i]=memPtr->state.RAM[i];
 	}
 	for(uint32_t i=0; i<GetSpriteRAMSize(); ++i)
 	{
@@ -929,9 +931,9 @@ unsigned int TownsPhysicalMemory::ApplyMemFilterIncrease(void)
 unsigned int TownsPhysicalMemory::ApplyMemFilterDifferent(void)
 {
 	unsigned int N=0;
-	for(uint32_t i=0; i<state.RAM.size(); ++i)
+	for(uint32_t i=0; i<memPtr->state.RAM.size(); ++i)
 	{
-		if(state.RAM[i]==memFilter.prevRAM[i])
+		if(memPtr->state.RAM[i]==memFilter.prevRAM[i])
 		{
 			memFilter.RAMFilter[i]=false;
 		}
@@ -939,7 +941,7 @@ unsigned int TownsPhysicalMemory::ApplyMemFilterDifferent(void)
 		{
 			++N;
 		}
-		memFilter.prevRAM[i]=state.RAM[i];
+		memFilter.prevRAM[i]=memPtr->state.RAM[i];
 	}
 	for(uint32_t i=0; i<GetSpriteRAMSize(); ++i)
 	{
@@ -958,9 +960,9 @@ unsigned int TownsPhysicalMemory::ApplyMemFilterDifferent(void)
 unsigned int TownsPhysicalMemory::ApplyMemFilterEqual(void)
 {
 	unsigned int N=0;
-	for(uint32_t i=0; i<state.RAM.size(); ++i)
+	for(uint32_t i=0; i<memPtr->state.RAM.size(); ++i)
 	{
-		if(state.RAM[i]!=memFilter.prevRAM[i])
+		if(memPtr->state.RAM[i]!=memFilter.prevRAM[i])
 		{
 			memFilter.RAMFilter[i]=false;
 		}
@@ -968,7 +970,7 @@ unsigned int TownsPhysicalMemory::ApplyMemFilterEqual(void)
 		{
 			++N;
 		}
-		memFilter.prevRAM[i]=state.RAM[i];
+		memFilter.prevRAM[i]=memPtr->state.RAM[i];
 	}
 	for(uint32_t i=0; i<GetSpriteRAMSize(); ++i)
 	{
@@ -1093,7 +1095,7 @@ std::vector <std::string> TownsPhysicalMemory::GetStatusText(void) const
 	spriteRAM.resize(GetSpriteRAMSize());
 	memcpy(spriteRAM.data(),state.spriteRAM,GetSpriteRAMSize());
 
-	PushUcharArray(data,state.RAM);
+	PushUcharArray(data,memPtr->state.RAM);
 	PushUcharArray(data,VRAM);
 	PushUcharArray(data,state.CVRAM);
 	PushUcharArray(data,spriteRAM);
@@ -1128,7 +1130,7 @@ std::vector <std::string> TownsPhysicalMemory::GetStatusText(void) const
 	std::string stateDir,stateName;
 	cpputil::SeparatePathFile(stateDir,stateName,stateFName);
 
-	auto prevRAMsize=state.RAM.size();
+	auto prevRAMsize=memPtr->state.RAM.size();
 
 
 
@@ -1147,7 +1149,7 @@ std::vector <std::string> TownsPhysicalMemory::GetStatusText(void) const
 		nvMsk=ReadUint16(data);
 	}
 
-	state.RAM=ReadUcharArray(data);
+	memPtr->state.RAM=ReadUcharArray(data);
 	auto VRAM=ReadUcharArray(data);
 	state.CVRAM=ReadUcharArray(data);
 	auto spriteRAM=ReadUcharArray(data);
@@ -1238,13 +1240,13 @@ std::vector <std::string> TownsPhysicalMemory::GetStatusText(void) const
 	ResetSysROMDicROMMappingFlag(state.sysRomMapping,state.dicRom);
 	ResetFMRVRAMMappingFlag(state.FMRVRAM);
 	EnableOrDisableNativeVRAMMask();
-	if(prevRAMsize<state.RAM.size())
+	if(prevRAMsize<memPtr->state.RAM.size())
 	{
-		memPtr->AddAccess(&mainRAMAccess,prevRAMsize,(unsigned int)state.RAM.size()-1);
+		memPtr->AddAccess(&mainRAMAccess,prevRAMsize,(unsigned int)memPtr->state.RAM.size()-1);
 	}
-	else if(state.RAM.size()<prevRAMsize)
+	else if(memPtr->state.RAM.size()<prevRAMsize)
 	{
-		memPtr->AddAccess(&memPtr->nullAccess,(unsigned int)state.RAM.size(),prevRAMsize-1);
+		memPtr->AddAccess(&memPtr->nullAccess,(unsigned int)memPtr->state.RAM.size(),prevRAMsize-1);
 	}
 
 	return true;

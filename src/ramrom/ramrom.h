@@ -233,6 +233,13 @@ class Memory
 public:
 	NullMemoryAccess nullAccess;
 
+	class State
+	{
+	public:
+		std::vector <unsigned char> RAM;
+	};
+	State state;
+
 private:
 	std::vector <MemoryAccess *> memAccessPtr;
 	enum

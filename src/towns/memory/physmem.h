@@ -58,6 +58,8 @@ public:
 
 	virtual ConstMemoryWindow GetConstMemoryWindow(unsigned int physAddr) const;
 	virtual MemoryWindow GetMemoryWindow(unsigned int physAddr);
+
+	class Memory *memPtr;
 };
 
 class TownsMappedSysROMAccess : public TownsMemAccess
@@ -366,6 +368,13 @@ public:
 	class State
 	{
 	public:
+		State(Memory *memPtr)
+		{
+			this->memPtr=memPtr;
+		}
+
+		Memory *memPtr;
+
 		// Memo for myself:  When implementing state load, make sure to refresh mapping 
 		//                   according to sysRomMapping, dicRom, and FMRVRAM flags.
 		bool sysRomMapping;  // Whenever changing this flag, synchronously change memory access mapping.
@@ -380,7 +389,7 @@ public:
 		unsigned int nativeVRAMMaskRegisterLatch=0;
 		unsigned char nativeVRAMMask[8]={0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff}; // Repeat twice for faster access.
 
-		std::vector <unsigned char> RAM;
+		// Main RAM is not owned by the Memory class.
 		unsigned char VRAM[TOWNS_VRAM_SIZE];
 		std::vector <unsigned char> CVRAM;
 		unsigned char spriteRAM[TOWNS_SPRITERAM_SIZE];
