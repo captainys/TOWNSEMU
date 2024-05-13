@@ -8263,8 +8263,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					uint16_t RM=cpputil::GetWord(operPtr);
 					uint16_t R=cpputil::LowWord(state.reg32()[inst.GetREG()]);
 
-					state.reg32()[inst.GetREG()]&=0xFFFF0000;
-					state.reg32()[inst.GetREG()]|=RM;
+					SET_INT_LOW_WORD(state.reg32()[inst.GetREG()],RM);
 
 					cpputil::PutWord(operPtr,R);
 				}
