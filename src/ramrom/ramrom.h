@@ -223,7 +223,6 @@ public:
 	virtual void StoreDword(unsigned int physAddr,unsigned int data);
 };
 
-
 /*! Memory class organizes MemoryAccess objects.
     Fetch and store requests will be directed to memory-access objects based on the 
     pointers stored in the 4KB slots.
@@ -231,6 +230,24 @@ public:
 class Memory
 {
 public:
+	class MainRAMAccess : public MemoryAccess
+	{
+	public:
+		unsigned int FetchByte(unsigned int physAddr) const override;
+		unsigned int FetchWord(unsigned int physAddr) const override;
+		unsigned int FetchDword(unsigned int physAddr) const override;
+		void StoreByte(unsigned int physAddr,unsigned char data) override;
+		void StoreWord(unsigned int physAddr,unsigned int data) override;
+		void StoreDword(unsigned int physAddr,unsigned int data) override;
+
+		ConstMemoryWindow GetConstMemoryWindow(unsigned int physAddr) const override;
+		MemoryWindow GetMemoryWindow(unsigned int physAddr) override;
+
+		class Memory *memPtr;
+		MainRAMAccess(class Memory *memPtr);
+	};
+
+	MainRAMAccess mainRAMAccess;
 	NullMemoryAccess nullAccess;
 
 	class State

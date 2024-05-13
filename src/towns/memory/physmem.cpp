@@ -545,10 +545,7 @@ void TownsPhysicalMemory::SetUpMemoryAccess(unsigned int townsType,unsigned int 
 
 	mem.CleanUp();
 
-	mainRAMAccess.SetPhysicalMemoryPointer(this);
-	mainRAMAccess.SetCPUPointer(&cpu);
-	mainRAMAccess.memPtr=memPtr;
-	mem.AddAccess(&mainRAMAccess,0x00000000,0x000FFFFF);
+	mem.AddAccess(&mem.mainRAMAccess,0x00000000,0x000FFFFF);
 
 	FMRVRAMAccess.SetPhysicalMemoryPointer(this);
 	FMRVRAMAccess.SetCPUPointer(&cpu);
@@ -568,7 +565,7 @@ void TownsPhysicalMemory::SetUpMemoryAccess(unsigned int townsType,unsigned int 
 
 	if(0x00100000<mem.state.RAM.size())
 	{
-		mem.AddAccess(&mainRAMAccess,0x00100000,(unsigned int)mem.state.RAM.size()-1);
+		mem.AddAccess(&mem.mainRAMAccess,0x00100000,(unsigned int)mem.state.RAM.size()-1);
 	}
 
 	VRAMAccess0.SetPhysicalMemoryPointer(this);
@@ -744,7 +741,7 @@ void TownsPhysicalMemory::UpdateSysROMDicROMMappingFlag(bool sysRomMapping, bool
 		}
 		else
 		{
-			memPtr->AddAccess(&mainRAMAccess, TOWNSADDR_SYSROM_MAP_BASE, TOWNSADDR_SYSROM_MAP_END - 1);
+			memPtr->AddAccess(&memPtr->mainRAMAccess, TOWNSADDR_SYSROM_MAP_BASE, TOWNSADDR_SYSROM_MAP_END - 1);
 		}
 	}
 
@@ -792,7 +789,7 @@ void TownsPhysicalMemory::UpdateFMRVRAMMappingFlag(bool FMRVRAMMapping)
 		}
 		else
 		{
-			memPtr->AddAccess(&mainRAMAccess, TOWNSADDR_FMR_VRAM_BASE, TOWNSADDR_FMR_RESERVED_END - 1);
+			memPtr->AddAccess(&memPtr->mainRAMAccess, TOWNSADDR_FMR_VRAM_BASE, TOWNSADDR_FMR_RESERVED_END - 1);
 		}
 	}
 }
@@ -1242,7 +1239,7 @@ std::vector <std::string> TownsPhysicalMemory::GetStatusText(void) const
 	EnableOrDisableNativeVRAMMask();
 	if(prevRAMsize<memPtr->state.RAM.size())
 	{
-		memPtr->AddAccess(&mainRAMAccess,prevRAMsize,(unsigned int)memPtr->state.RAM.size()-1);
+		memPtr->AddAccess(&memPtr->mainRAMAccess,prevRAMsize,(unsigned int)memPtr->state.RAM.size()-1);
 	}
 	else if(memPtr->state.RAM.size()<prevRAMsize)
 	{

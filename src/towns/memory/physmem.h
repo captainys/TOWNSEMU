@@ -46,22 +46,6 @@ public:
 };
 
 
-class TownsMainRAMAccess : public TownsMemAccess
-{
-public:
-	virtual unsigned int FetchByte(unsigned int physAddr) const;
-	virtual unsigned int FetchWord(unsigned int physAddr) const;
-	virtual unsigned int FetchDword(unsigned int physAddr) const;
-	virtual void StoreByte(unsigned int physAddr,unsigned char data);
-	virtual void StoreWord(unsigned int physAddr,unsigned int data);
-	virtual void StoreDword(unsigned int physAddr,unsigned int data);
-
-	virtual ConstMemoryWindow GetConstMemoryWindow(unsigned int physAddr) const;
-	virtual MemoryWindow GetMemoryWindow(unsigned int physAddr);
-
-	class Memory *memPtr;
-};
-
 class TownsMappedSysROMAccess : public TownsMemAccess
 {
 public:
@@ -423,7 +407,7 @@ public:
 
 	class Memory *memPtr;
 
-	TownsMainRAMAccess mainRAMAccess;
+	// TownsMainRAMAccess mainRAMAccess;  mainRAMAccess is now owned by Memory.
 	TownsMappedSysROMAccess mappedSysROMAccess;
 	TownsFMRVRAMAccess FMRVRAMAccess;
 	TownsMappedDICROMandCMOSRAMAccess mappedDicROMandDicRAMAccess;

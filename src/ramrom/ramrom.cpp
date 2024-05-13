@@ -87,8 +87,61 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 ////////////////////////////////////////////////////////////
 
+Memory::MainRAMAccess::MainRAMAccess(class Memory *memPtr)
+{
+	this->memPtr=memPtr;
+}
 
-Memory::Memory()
+unsigned int Memory::MainRAMAccess::FetchByte(unsigned int physAddr) const
+{
+	return memPtr->state.RAM[physAddr];
+}
+unsigned int Memory::MainRAMAccess::FetchWord(unsigned int physAddr) const
+{
+	auto &state=memPtr->state;
+	auto *RAMPtr=state.RAM.data()+physAddr;
+	return cpputil::GetWord(RAMPtr);
+}
+unsigned int Memory::MainRAMAccess::FetchDword(unsigned int physAddr) const
+{
+	auto &state=memPtr->state;
+	auto *RAMPtr=state.RAM.data()+physAddr;
+	return cpputil::GetDword(RAMPtr);
+}
+void Memory::MainRAMAccess::StoreByte(unsigned int physAddr,unsigned char data)
+{
+	memPtr->state.RAM[physAddr]=data;
+}
+void Memory::MainRAMAccess::StoreWord(unsigned int physAddr,unsigned int data)
+{
+	auto &state=memPtr->state;
+	auto *RAMPtr=state.RAM.data()+physAddr;
+	cpputil::PutWord(RAMPtr,(unsigned short)data);
+}
+void Memory::MainRAMAccess::StoreDword(unsigned int physAddr,unsigned int data)
+{
+	auto &state=memPtr->state;
+	auto *RAMPtr=state.RAM.data()+physAddr;
+	cpputil::PutDword(RAMPtr,data);
+}
+MemoryAccess::ConstMemoryWindow Memory::MainRAMAccess::GetConstMemoryWindow(unsigned int physAddr) const
+{
+	MemoryAccess::ConstMemoryWindow memWin;
+	memWin.ptr=memPtr->state.RAM.data()+(physAddr&(~0xfff));
+	return memWin;
+}
+MemoryAccess::MemoryWindow Memory::MainRAMAccess::GetMemoryWindow(unsigned int physAddr)
+{
+	MemoryAccess::MemoryWindow memWin;
+	memWin.ptr=memPtr->state.RAM.data()+(physAddr&(~0xfff));
+	return memWin;
+}
+
+
+////////////////////////////////////////////////////////////
+
+
+Memory::Memory() : mainRAMAccess(this)
 {
 	memAccessPtr.resize(1<<(32-GRANURALITY_SHIFT));
 	for(auto &ptr : memAccessPtr)

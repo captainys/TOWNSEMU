@@ -1150,7 +1150,7 @@ void FMTownsCommon::SetMainRAMSize(long long int size)
 
 	physMem.SetMainRAMSize(size);
 	mem.RemoveAccess(mem.state.RAM.size()-1,RAMEnd);
-	mem.AddAccess(&physMem.mainRAMAccess,0x00100000,mem.state.RAM.size()-1);
+	mem.AddAccess(&mem.mainRAMAccess,0x00100000,mem.state.RAM.size()-1);
 }
 
 void FMTownsCommon::ForceRender(class TownsRender &render,class Outside_World &world,Outside_World::WindowInterface &windowInterface)
