@@ -6690,8 +6690,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				}
 				else // if(16==operandSize)
 				{
-					state.reg32()[regNum]&=0xffff0000;
-					state.reg32()[regNum]|=(unsigned int)(value.GetAsWord());
+					SET_INT_LOW_WORD(state.reg32()[regNum],value.GetAsWord());
 				}
 			}
 			else
@@ -6711,8 +6710,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				auto regNum=inst.GetREG(); // Guaranteed to be between 0 and 7
 				if(0!=(value.byteData[1]&0x80))
 				{
-					value.byteData[2]=0xFF;
-					value.byteData[3]=0xFF;
+					cpputil::PutWord(value.byteData+2,0xFFFF);
 					state.reg32()[regNum]=cpputil::GetDword(value.byteData);
 				}
 				else
@@ -6759,11 +6757,11 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		else
 		{
 			clocksPassed=11; // 31 if CPL>IOPL
-		}
-		if(true==fidelity.TakeIOWriteException(*this,inst.EvalUimm8(),1,mem,inst.numBytes))
-		{
-			EIPIncrement=0;
-			break;
+			if(true==fidelity.TakeIOWriteException(*this,inst.EvalUimm8(),1,mem,inst.numBytes))
+			{
+				EIPIncrement=0;
+				break;
+			}
 		}
 		IOOut8(io,inst.EvalUimm8(),GetAL());
 		break;
@@ -6775,11 +6773,11 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		else
 		{
 			clocksPassed=11; // 31 if CPL>IOPL
-		}
-		if(true==fidelity.TakeIOWriteException(*this,inst.EvalUimm8(),inst.operandSize>>3,mem,inst.numBytes))
-		{
-			EIPIncrement=0;
-			break;
+			if(true==fidelity.TakeIOWriteException(*this,inst.EvalUimm8(),inst.operandSize>>3,mem,inst.numBytes))
+			{
+				EIPIncrement=0;
+				break;
+			}
 		}
 		if(16==inst.operandSize)
 		{
@@ -6798,11 +6796,11 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		else
 		{
 			clocksPassed=10; // 30 if CPL>IOPL
-		}
-		if(true==fidelity.TakeIOWriteException(*this,GetDX(),1,mem,inst.numBytes))
-		{
-			EIPIncrement=0;
-			break;
+			if(true==fidelity.TakeIOWriteException(*this,GetDX(),1,mem,inst.numBytes))
+			{
+				EIPIncrement=0;
+				break;
+			}
 		}
 		IOOut8(io,GetDX(),GetAL());
 		break;
@@ -6814,11 +6812,11 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		else
 		{
 			clocksPassed=10; // 30 if CPL>IOPL
-		}
-		if(true==fidelity.TakeIOWriteException(*this,GetDX(),inst.operandSize>>3,mem,inst.numBytes))
-		{
-			EIPIncrement=0;
-			break;
+			if(true==fidelity.TakeIOWriteException(*this,GetDX(),inst.operandSize>>3,mem,inst.numBytes))
+			{
+				EIPIncrement=0;
+				break;
+			}
 		}
 		if(16==inst.operandSize)
 		{
@@ -7396,13 +7394,13 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			else
 			{
 				clocksPassed=36;
+				if(true==fidelity.IOPLExceptionInVM86Mode(*this,EXCEPTION_GP,mem,inst.numBytes))
+				{
+					EIPIncrement=0;
+					break;
+				}
 			}
 
-			if(true==fidelity.IOPLExceptionInVM86Mode(*this,EXCEPTION_GP,mem,inst.numBytes))
-			{
-				EIPIncrement=0;
-				break;
-			}
 			// I still do not understand the logic of task return.
 			// But, none of TownsOS, Windows 3.1, Windows 95, and Linux for TOWNS seems to be using it anyway.
 			// if(true==fidelity.IsTaskReturn(*this))
