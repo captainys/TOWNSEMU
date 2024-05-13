@@ -215,12 +215,12 @@ public:
 class NullMemoryAccess : public MemoryAccess
 {
 public:
-	virtual unsigned int FetchByte(unsigned int physAddr) const;
-	virtual unsigned int FetchWord(unsigned int physAddr) const;
-	virtual unsigned int FetchDword(unsigned int physAddr) const;
-	virtual void StoreByte(unsigned int physAddr,unsigned char data);
-	virtual void StoreWord(unsigned int physAddr,unsigned int data);
-	virtual void StoreDword(unsigned int physAddr,unsigned int data);
+	unsigned int FetchByte(unsigned int physAddr) const override;
+	unsigned int FetchWord(unsigned int physAddr) const override;
+	unsigned int FetchDword(unsigned int physAddr) const override;
+	void StoreByte(unsigned int physAddr,unsigned char data) override;
+	void StoreWord(unsigned int physAddr,unsigned int data) override;
+	void StoreDword(unsigned int physAddr,unsigned int data) override;
 };
 
 /*! Memory class organizes MemoryAccess objects.
@@ -301,36 +301,82 @@ public:
 	inline unsigned int FetchByte(unsigned int physAddr) const
 	{
 		auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-		return memAccess->FetchByte(physAddr);
+		if(&mainRAMAccess==memAccess)
+		{
+			return state.RAM[physAddr];
+		}
+		else
+		{
+			return memAccess->FetchByte(physAddr);
+		}
 	}
 
 	inline unsigned int FetchWord(unsigned int physAddr) const
 	{
 		auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-		return memAccess->FetchWord(physAddr);
+		if(&mainRAMAccess==memAccess)
+		{
+			return cpputil::GetWord(state.RAM.data()+physAddr);
+		}
+		else
+		{
+			return memAccess->FetchWord(physAddr);
+		}
 	}
 
 	inline unsigned int FetchDword(unsigned int physAddr) const
 	{
 		auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-		return memAccess->FetchDword(physAddr);
+		if(&mainRAMAccess==memAccess)
+		{
+			return cpputil::GetDword(state.RAM.data()+physAddr);
+		}
+		else
+		{
+			return memAccess->FetchDword(physAddr);
+		}
 	}
 
 	inline MemoryAccess::ConstMemoryWindow GetConstMemoryWindow(unsigned int physAddr) const
 	{
 		auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-		return memAccess->GetConstMemoryWindow(physAddr);
+		if(&mainRAMAccess==memAccess)
+		{
+			MemoryAccess::ConstMemoryWindow memWin;
+			memWin.ptr=state.RAM.data()+(physAddr&(~0xfff));
+			return memWin;
+		}
+		else
+		{
+			return memAccess->GetConstMemoryWindow(physAddr);
+		}
 	}
 	inline MemoryAccess::MemoryWindow GetMemoryWindow(unsigned int physAddr)
 	{
 		auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-		return memAccess->GetMemoryWindow(physAddr);
+		if(&mainRAMAccess==memAccess)
+		{
+			MemoryAccess::MemoryWindow memWin;
+			memWin.ptr=state.RAM.data()+(physAddr&(~0xfff));
+			return memWin;
+		}
+		else
+		{
+			return memAccess->GetMemoryWindow(physAddr);
+		}
 	}
 
 	inline void StoreByte(unsigned int physAddr,unsigned char data)
 	{
 		auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-		memAccess->StoreByte(physAddr,data);
+		if(&mainRAMAccess==memAccess)
+		{
+			state.RAM[physAddr]=data;
+		}
+		else
+		{
+			memAccess->StoreByte(physAddr,data);
+		}
 	}
 
 	inline unsigned int FetchByteDMA(unsigned int physAddr) const
@@ -348,13 +394,27 @@ public:
 	inline void StoreWord(unsigned int physAddr,unsigned int data)
 	{
 		auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-		memAccess->StoreWord(physAddr,data);
+		if(&mainRAMAccess==memAccess)
+		{
+			cpputil::PutWord(state.RAM.data()+physAddr,data);
+		}
+		else
+		{
+			memAccess->StoreWord(physAddr,data);
+		}
 	}
 
 	inline void StoreDword(unsigned int physAddr,unsigned int data)
 	{
 		auto memAccess=memAccessPtr[physAddr>>GRANURALITY_SHIFT];
-		memAccess->StoreDword(physAddr,data);
+		if(&mainRAMAccess==memAccess)
+		{
+			cpputil::PutDword(state.RAM.data()+physAddr,data);
+		}
+		else
+		{
+			memAccess->StoreDword(physAddr,data);
+		}
 	}
 };
 

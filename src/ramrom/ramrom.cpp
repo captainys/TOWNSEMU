@@ -87,6 +87,10 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 ////////////////////////////////////////////////////////////
 
+/* MainRAMAccess class still may be used from Memory when the debugger links to the
+   memory-access object for break-on-read/write.
+   However, it may be skipped and short-cutted by FetchByte, FetchWord, and FetchDword.
+*/
 Memory::MainRAMAccess::MainRAMAccess(class Memory *memPtr)
 {
 	this->memPtr=memPtr;
