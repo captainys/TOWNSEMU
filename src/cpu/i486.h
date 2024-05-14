@@ -3444,6 +3444,14 @@ public:
 	*/
 	void HandleException(bool,Memory &mem,unsigned int numInstBytesForCallStack);
 
+	/*!
+	*/
+	inline void NullifySegmentRegister(SegmentRegister &reg)
+	{
+		reg.value=0;
+		reg.limit=0;
+	}
+
 	/*! Loads a segment register.
 	    If reg is SS, it raise holdIRQ flag.
 	    How the segment linear base address is set depends on the CPU mode,

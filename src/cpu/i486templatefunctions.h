@@ -217,10 +217,10 @@ inline void i486DXFidelityLayer <FIDELITY>::Interrupt(unsigned int INTNum,Memory
 					// Push32(mem,state.EIP+numInstBytesForReturn);
 
 					// Need to clear DS,ES,FS,GS.  Or, PUSH FS -> POP FS will shoot GP(0).
-					LoadSegmentRegister(state.DS(),0,mem);
-					LoadSegmentRegister(state.ES(),0,mem);
-					LoadSegmentRegister(state.FS(),0,mem);
-					LoadSegmentRegister(state.GS(),0,mem);
+					NullifySegmentRegister(state.DS());
+					NullifySegmentRegister(state.ES());
+					NullifySegmentRegister(state.FS());
+					NullifySegmentRegister(state.GS());
 
 					SetIPorEIP(gateOperandSize,desc.OFFSET);
 					LoadSegmentRegister(state.CS(),desc.SEG,mem);
