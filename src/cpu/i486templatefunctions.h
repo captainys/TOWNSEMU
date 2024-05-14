@@ -49,7 +49,7 @@ inline void i486DXFidelityLayer <FIDELITY>::Interrupt(unsigned int INTNum,Memory
 		auto desc=GetInterruptDescriptor(INTNum,mem);
 		if(FarPointer::NO_SEG!=desc.SEG)
 		{
-			auto type=desc.GetType();
+			const auto type=desc.GetType();
 			unsigned int gateOperandSize=32;
 			bool isINTGate=true; // false if it is a trap gate.
 			// https://wiki.osdev.org/Interrupt_Descriptor_Table
@@ -139,7 +139,7 @@ inline void i486DXFidelityLayer <FIDELITY>::Interrupt(unsigned int INTNum,Memory
 				{
 					state.CS().DPL=newCS.DPL; // Raise privilege level so that it can load SS.
 
-					auto TempSS=state.SS();
+					auto TempSS=state.SS().value;
 					auto TempESP=state.ESP();
 					if(DESCTYPE_AVAILABLE_286_TSS==state.TR.GetType() ||
 					   DESCTYPE_BUSY_286_TSS==state.TR.GetType())
@@ -153,8 +153,7 @@ inline void i486DXFidelityLayer <FIDELITY>::Interrupt(unsigned int INTNum,Memory
 						LoadSegmentRegister(state.SS(),FetchWord(32,state.TR,TSS_OFFSET_SS0+newCS.DPL*8,mem),mem);
 						state.ESP()=FetchDword(32,state.TR,TSS_OFFSET_ESP0+newCS.DPL*8,mem);
 					}
-					Push(mem,gateOperandSize,TempSS.value);
-					Push(mem,gateOperandSize,TempESP);
+					Push(mem,gateOperandSize,TempSS,TempESP);
 				}
 				else if(CPL<newCS.DPL)
 				{
@@ -175,9 +174,12 @@ inline void i486DXFidelityLayer <FIDELITY>::Interrupt(unsigned int INTNum,Memory
 
 				if(true==isINTGate)
 				{
-					SetIF(false);
+					state.EFLAGS&=(~(EFLAGS_INT_ENABLE|EFLAGS_NESTED|EFLAGS_TRAP));
 				}
-				state.EFLAGS&=(~(EFLAGS_NESTED|EFLAGS_TRAP));
+				else
+				{
+					state.EFLAGS&=(~(EFLAGS_NESTED|EFLAGS_TRAP));
+				}
 			}
 			else // Interrupt from Virtual86 mode
 			{
@@ -188,7 +190,7 @@ inline void i486DXFidelityLayer <FIDELITY>::Interrupt(unsigned int INTNum,Memory
 
 					// INT instruction of [1].
 					auto TempEFLAGS=state.EFLAGS;
-					auto TempSS=state.SS();
+					auto TempSS=state.SS().value;
 					auto TempESP=state.ESP();
 					state.EFLAGS&=~(EFLAGS_VIRTUAL86|EFLAGS_TRAP);
 					// if(fromInterruptGate)
@@ -203,7 +205,7 @@ inline void i486DXFidelityLayer <FIDELITY>::Interrupt(unsigned int INTNum,Memory
 					Push32(mem,state.FS().value);
 					Push32(mem,state.DS().value);
 					Push32(mem,state.ES().value);
-					Push32(mem,TempSS.value);
+					Push32(mem,TempSS);
 					Push32(mem,TempESP);
 					Push32(mem,TempEFLAGS);
 					Push32(mem,state.CS().value);
