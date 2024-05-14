@@ -426,6 +426,16 @@ void FMTownsCommon::AppSpecificSetup(Outside_World *outside_world,const TownsSta
 		cdrom.state.readSectorTime=TOWNS_CD_READ_SECTOR_TIME_1X;
 		cdrom.var.sectorReadTimeDelay=TownsCDROM::SECTORREAD_DELAY_ORGEL;
 		break;
+	case TOWNS_APPSPECIFIC_ASUKA120:
+		if(gameport.state.ports[0].device==TOWNS_GAMEPORTEMU_MOUSE)
+		{
+			gameport.state.ports[0].device=TOWNS_GAMEPORTEMU_NONE;
+		}
+		if(gameport.state.ports[1].device==TOWNS_GAMEPORTEMU_MOUSE)
+		{
+			gameport.state.ports[1].device=TOWNS_GAMEPORTEMU_NONE;
+		}
+		break;
 	}
 }
 

@@ -808,6 +808,22 @@ void ProfileDialog::Make(void)
 				"Also connect mouse to game port 0.\n"
 			);
 			break;
+		case TOWNS_APPSPECIFIC_ORGEL:
+			appSpecificExplanation->SetText(
+				"Orgel (DAPS ver, not DCCS ver), Data West\n"
+				"CD-ROM 1x Read time, seek time emulation.\n"
+				"CD drive reading too fast causes audio issues,\n"
+				"and freezes when playing DAPS replay.\n"
+			);
+			break;
+		case TOWNS_APPSPECIFIC_ASUKA120:
+			appSpecificExplanation->SetText(
+				"Asuka 120% (Excellent) Burning Fest, Family Soft\n"
+				"Disconected the Mouse.\n"
+				"Asuka 120% is freezes in the battle screen\n"
+				"if the mouse connected to game ports.\n"
+			);
+			break;
 		}
 	}
 }
