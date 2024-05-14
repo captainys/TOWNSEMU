@@ -7386,10 +7386,30 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		break;
 	case I486_RENUMBER_IRET://   0xCF,
 		{
-			auto prevVMFlag=state.EFLAGS&EFLAGS_VIRTUAL86;
 			if(true==IsInRealMode())
 			{
 				clocksPassed=15;
+
+				uint32_t eip,cs,eflags;
+				Pop(eip,cs,eflags,mem,inst.operandSize);
+
+				SetIPorEIP(inst.operandSize,eip);
+				auto segRegValue=cs;
+
+				typename FIDELITY::EFLAGS ioplBits;
+				FIDELITY::SaveEFLAGS(ioplBits,*this);
+				SetFLAGSorEFLAGS(inst.operandSize,eflags);
+				FIDELITY::RestoreIOPLBits(*this,ioplBits);
+				FIDELITY::RestoreIF(*this,ioplBits);
+				state.EFLAGS&=EFLAGS_MASK;
+				state.EFLAGS|=EFLAGS_ALWAYS_ON;
+
+				LoadSegmentRegisterRealMode(state.CS(),segRegValue);
+				EIPIncrement=0;
+				if(true==enableCallStack)
+				{
+					PopCallStack(state.CS().value,state.EIP);
+				}
 			}
 			else
 			{
@@ -7399,31 +7419,30 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					EIPIncrement=0;
 					break;
 				}
-			}
 
-			// I still do not understand the logic of task return.
-			// But, none of TownsOS, Windows 3.1, Windows 95, and Linux for TOWNS seems to be using it anyway.
-			// if(true==fidelity.IsTaskReturn(*this))
-			// {
-			// 	Abort("Task Return Not Supported");
-			// 	break;
-			// }
+				// I still do not understand the logic of task return.
+				// But, none of TownsOS, Windows 3.1, Windows 95, and Linux for TOWNS seems to be using it anyway.
+				// if(true==fidelity.IsTaskReturn(*this))
+				// {
+				// 	Abort("Task Return Not Supported");
+				// 	break;
+				// }
 
-			bool IRET_TO_VM86=false;
+				auto prevVMFlag=state.EFLAGS&EFLAGS_VIRTUAL86;
+				bool IRET_TO_VM86=false;
 
-			uint32_t eip,cs,eflags;
-			Pop(eip,cs,eflags,mem,inst.operandSize);
+				uint32_t eip,cs,eflags;
+				Pop(eip,cs,eflags,mem,inst.operandSize);
 
-			SetIPorEIP(inst.operandSize,eip);
-			auto segRegValue=cs;
+				SetIPorEIP(inst.operandSize,eip);
+				auto segRegValue=cs;
 
-			typename FIDELITY::EFLAGS ioplBits;
-			FIDELITY::SaveEFLAGS(ioplBits,*this);
-			SetFLAGSorEFLAGS(inst.operandSize,eflags);
-			FIDELITY::RestoreIOPLBits(*this,ioplBits);
-			FIDELITY::RestoreIF(*this,ioplBits);
-			if(true!=IsInRealMode())
-			{
+				typename FIDELITY::EFLAGS ioplBits;
+				FIDELITY::SaveEFLAGS(ioplBits,*this);
+				SetFLAGSorEFLAGS(inst.operandSize,eflags);
+				FIDELITY::RestoreIOPLBits(*this,ioplBits);
+				FIDELITY::RestoreIF(*this,ioplBits);
+
 				// if(state.EFLAGS&EFLAGS_NESTED)
 				//{
 				//	TaskReturn
@@ -7453,51 +7472,52 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				{
 					state.EFLAGS|=EFLAGS_VIRTUAL86;
 				}
-			}
-			state.EFLAGS&=EFLAGS_MASK;
-			state.EFLAGS|=EFLAGS_ALWAYS_ON;
 
-			// IRET to Virtual86 mode requires EFLAGS be loaded before the segment register.
-			auto CPL=state.CS().DPL;
-			LoadSegmentRegister(state.CS(),segRegValue,mem);
-			EIPIncrement=0;
-			if(true==enableCallStack)
-			{
-				PopCallStack(state.CS().value,state.EIP);
-			}
+				state.EFLAGS&=EFLAGS_MASK;
+				state.EFLAGS|=EFLAGS_ALWAYS_ON;
 
-			if(state.CS().DPL>CPL && true!=IsInRealMode() && 0==(state.EFLAGS&EFLAGS_VIRTUAL86))
-			{
-				// IRET to outer level
-				auto TempESP=Pop(mem,inst.operandSize);
-				auto TempSS=Pop(mem,inst.operandSize);
-				LoadSegmentRegister(state.SS(),TempSS,mem);
-				state.ESP()=TempESP;
-
-				auto nextCPL=state.CS().value&3;
-
-				unsigned int regs[]=
+				// IRET to Virtual86 mode requires EFLAGS be loaded before the segment register.
+				auto CPL=state.CS().DPL;
+				LoadSegmentRegister(state.CS(),segRegValue,mem);
+				EIPIncrement=0;
+				if(true==enableCallStack)
 				{
-					REG_ES,REG_FS,REG_GS,REG_DS
-				};
-				for(auto reg : regs)
-				{
-					auto &s=state.sreg[reg-REG_SEGMENT_REG_BASE];
-					// (1) Selector within desc table limits
-					// (2) AR byte must be data or readable CS
-					// (3) If data or non-conforming code (What's non-conforming?), DPL>=CPL or DPL>=RPL.
-					bool valid=true;
-					auto RPL=(s.value&3);
-					// Currently only checking (3)
-					if(s.DPL<nextCPL) // The DPL>=RPL condition is questionable.
-					{
-						valid=false;
-					}
+					PopCallStack(state.CS().value,state.EIP);
+				}
 
-					if(true!=valid)
+				if(state.CS().DPL>CPL && 0==(state.EFLAGS&EFLAGS_VIRTUAL86))
+				{
+					// IRET to outer level
+					auto TempESP=Pop(mem,inst.operandSize);
+					auto TempSS=Pop(mem,inst.operandSize);
+					LoadSegmentRegister(state.SS(),TempSS,mem);
+					state.ESP()=TempESP;
+
+					auto nextCPL=state.CS().value&3;
+
+					unsigned int regs[]=
 					{
-						s.value=0;
-						s.limit=0;
+						REG_ES,REG_FS,REG_GS,REG_DS
+					};
+					for(auto reg : regs)
+					{
+						auto &s=state.sreg[reg-REG_SEGMENT_REG_BASE];
+						// (1) Selector within desc table limits
+						// (2) AR byte must be data or readable CS
+						// (3) If data or non-conforming code (What's non-conforming?), DPL>=CPL or DPL>=RPL.
+						bool valid=true;
+						auto RPL=(s.value&3);
+						// Currently only checking (3)
+						if(s.DPL<nextCPL) // The DPL>=RPL condition is questionable.
+						{
+							valid=false;
+						}
+
+						if(true!=valid)
+						{
+							s.value=0;
+							s.limit=0;
+						}
 					}
 				}
 			}
