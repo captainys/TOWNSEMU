@@ -5823,9 +5823,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			}
 			else if(OPER_REG16==op1.operandType)
 			{
-				offset&=0xFFFF;
-				state.reg32()[op1.reg-REG_AX]&=0xFFFF0000;
-				state.reg32()[op1.reg-REG_AX]|=offset;
+				SET_INT_LOW_WORD(state.reg32()[op1.reg-REG_AX],offset&0xFFFF);
 			}
 			else
 			{
@@ -7450,12 +7448,15 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				// else
 				if(0==prevVMFlag && 0!=(state.EFLAGS&EFLAGS_VIRTUAL86)) // Stack-Return-To-V86
 				{
-					auto TempESP=Pop(mem,inst.operandSize);
-					auto TempSS=Pop(mem,inst.operandSize);
-					LoadSegmentRegister(state.ES(),Pop(mem,inst.operandSize),mem);
-					LoadSegmentRegister(state.DS(),Pop(mem,inst.operandSize),mem);
-					LoadSegmentRegister(state.FS(),Pop(mem,inst.operandSize),mem);
-					LoadSegmentRegister(state.GS(),Pop(mem,inst.operandSize),mem);
+					uint32_t TempESP,TempSS,ES,DS,FS,GS;
+
+					Pop(TempESP,TempSS,ES,mem,inst.operandSize);
+					Pop(DS,FS,GS,mem,inst.operandSize);
+
+					LoadSegmentRegister(state.ES(),ES,mem);
+					LoadSegmentRegister(state.DS(),DS,mem);
+					LoadSegmentRegister(state.FS(),FS,mem);
+					LoadSegmentRegister(state.GS(),GS,mem);
 					state.ESP()&=operandSizeAndPattern[inst.operandSize>>3];
 					state.ESP()|=(TempESP&operandSizeMask[inst.operandSize>>3]);
 					LoadSegmentRegister(state.SS(),TempSS,mem);
@@ -7468,11 +7469,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				// Figure 23-2 (pp. 23-5) clearly indicates that IRETD cannot be used to exit VM86 mode.
 				// G*d D**n it!  What should I believe?
 				// For the time being, I make sure IRETD won't exit VM86 mode.
-				if(0!=prevVMFlag)
-				{
-					state.EFLAGS|=EFLAGS_VIRTUAL86;
-				}
-
+				state.EFLAGS|=prevVMFlag;
 				state.EFLAGS&=EFLAGS_MASK;
 				state.EFLAGS|=EFLAGS_ALWAYS_ON;
 
@@ -7488,8 +7485,8 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				if(state.CS().DPL>CPL && 0==(state.EFLAGS&EFLAGS_VIRTUAL86))
 				{
 					// IRET to outer level
-					auto TempESP=Pop(mem,inst.operandSize);
-					auto TempSS=Pop(mem,inst.operandSize);
+					uint32_t TempESP,TempSS;
+					Pop(TempESP,TempSS,mem,inst.operandSize);
 					LoadSegmentRegister(state.SS(),TempSS,mem);
 					state.ESP()=TempESP;
 
@@ -7512,6 +7509,10 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 						{
 							valid=false;
 						}
+						//if(condition(1) || condition(2))
+						//{
+						//	valid=false;
+						//}
 
 						if(true!=valid)
 						{
