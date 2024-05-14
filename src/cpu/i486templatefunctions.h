@@ -201,15 +201,20 @@ inline void i486DXFidelityLayer <FIDELITY>::Interrupt(unsigned int INTNum,Memory
 					state.CS().DPL=0; // Change to CPL=0 before loading SS.
 					LoadSegmentRegister(state.SS(),FetchWord(32,state.TR,TSS_OFFSET_SS0,mem),mem);
 					state.ESP()=FetchDword(32,state.TR,TSS_OFFSET_ESP0,mem);
-					Push32(mem,state.GS().value);
-					Push32(mem,state.FS().value);
-					Push32(mem,state.DS().value);
-					Push32(mem,state.ES().value);
-					Push32(mem,TempSS);
-					Push32(mem,TempESP);
-					Push32(mem,TempEFLAGS);
-					Push32(mem,state.CS().value);
-					Push32(mem,state.EIP+numInstBytesForReturn);
+
+					Push(mem,32,state.GS().value,state.FS().value,state.DS().value);
+					Push(mem,32,state.ES().value,TempSS,TempESP);
+					Push(mem,32,TempEFLAGS,state.CS().value,state.EIP+numInstBytesForReturn);
+					// Equivalent>>
+					// Push32(mem,state.GS().value);
+					// Push32(mem,state.FS().value);
+					// Push32(mem,state.DS().value);
+					// Push32(mem,state.ES().value);
+					// Push32(mem,TempSS);
+					// Push32(mem,TempESP);
+					// Push32(mem,TempEFLAGS);
+					// Push32(mem,state.CS().value);
+					// Push32(mem,state.EIP+numInstBytesForReturn);
 
 					// Need to clear DS,ES,FS,GS.  Or, PUSH FS -> POP FS will shoot GP(0).
 					LoadSegmentRegister(state.DS(),0,mem);
