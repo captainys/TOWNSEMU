@@ -18,7 +18,7 @@ inline void i486DXFidelityLayer <FIDELITY>::Interrupt(unsigned int INTNum,Memory
 
 	if(IsInRealMode())
 	{
-		Push(mem,16,state.EFLAGS&0xFFFF,state.CS().value,state.EIP+numInstBytesForReturn);
+		Push(mem,16,cpputil::LowWord(state.EFLAGS),state.CS().value,state.EIP+numInstBytesForReturn);
 		// Equivalent:
 		// Push(mem,16,state.EFLAGS&0xFFFF);
 		// Push(mem,16,state.CS().value);
@@ -26,8 +26,8 @@ inline void i486DXFidelityLayer <FIDELITY>::Interrupt(unsigned int INTNum,Memory
 
 		auto intVecAddr=(INTNum&0xFF)*4;
 		uint32_t CSIP=mem.FetchDword(intVecAddr);
-		auto destIP=CSIP&0xFFFF;
-		auto destCS=(CSIP>>16)&0xFFFF;
+		auto destIP=cpputil::LowWord(CSIP);
+		auto destCS=cpputil::HighWord(CSIP);
 		if(true==enableCallStack)
 		{
 			PushCallStack(
@@ -39,8 +39,10 @@ inline void i486DXFidelityLayer <FIDELITY>::Interrupt(unsigned int INTNum,Memory
 		}
 		LoadSegmentRegisterRealMode(state.CS(),destCS);
 		state.EIP=destIP;
-		SetIF(false);
-		SetTF(false);
+
+		state.EFLAGS&=(~(EFLAGS_INT_ENABLE|EFLAGS_TRAP));
+		// SetIF(false);
+		// SetTF(false);
 	}
 	else
 	{
@@ -197,15 +199,15 @@ inline void i486DXFidelityLayer <FIDELITY>::Interrupt(unsigned int INTNum,Memory
 					state.CS().DPL=0; // Change to CPL=0 before loading SS.
 					LoadSegmentRegister(state.SS(),FetchWord(32,state.TR,TSS_OFFSET_SS0,mem),mem);
 					state.ESP()=FetchDword(32,state.TR,TSS_OFFSET_ESP0,mem);
-					Push(mem,32,state.GS().value);
-					Push(mem,32,state.FS().value);
-					Push(mem,32,state.DS().value);
-					Push(mem,32,state.ES().value);
-					Push(mem,32,TempSS.value);
-					Push(mem,32,TempESP);
-					Push(mem,32,TempEFLAGS);
-					Push(mem,32,state.CS().value);
-					Push(mem,32,state.EIP+numInstBytesForReturn);
+					Push32(mem,state.GS().value);
+					Push32(mem,state.FS().value);
+					Push32(mem,state.DS().value);
+					Push32(mem,state.ES().value);
+					Push32(mem,TempSS.value);
+					Push32(mem,TempESP);
+					Push32(mem,TempEFLAGS);
+					Push32(mem,state.CS().value);
+					Push32(mem,state.EIP+numInstBytesForReturn);
 
 					// Need to clear DS,ES,FS,GS.  Or, PUSH FS -> POP FS will shoot GP(0).
 					LoadSegmentRegister(state.DS(),0,mem);
