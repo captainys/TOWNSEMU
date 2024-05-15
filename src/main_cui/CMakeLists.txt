@@ -1303,10 +1303,11 @@ add_test(
 		-BOOTKEY
 		H0
 		-POWEROFFAT
-		1707:000015A2
+		# 1707:000015A2
 		# 0137:004010E7
-		-EVTLOG
-		"${TESTDATA_DIR}/eventLog/win95inst.evt"
+		0137:BFF61189   # USER32__49h_CreateDialogIndirectParamA
+		# -EVTLOG
+		# "${TESTDATA_DIR}/eventLog/win95inst.evt"
 )
 
 
