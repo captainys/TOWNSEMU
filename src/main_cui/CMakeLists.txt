@@ -1280,6 +1280,37 @@ add_test(
 		H0
 )
 
+add_test(
+	NAME WINDOWS95_FINAL_SETUP
+	COMMAND
+		${TARGET_NAME}
+		"${TOWNSEMU_TEST}/ROM_MX"
+		-HIGHFIDELITY
+		-USEFPU
+		-COPYFILE
+		"${TOWNSEMU_TEST}/Win95/WIN95_INSTALLING.h0"
+		"${CMAKE_BINARY_DIR}/Win95.h0"
+		-HD0
+		"${CMAKE_BINARY_DIR}/Win95.h0"
+		-CMOS
+		"${TOWNSEMU_TEST}/Win95/CMOS.BIN"
+		-DONTAUTOSAVECMOS
+		-DEBUG
+		-UNITTEST
+		-FASTSCSI
+		-MEMSIZE
+		32
+		-BOOTKEY
+		H0
+		-POWEROFFAT
+		1707:000015A2
+		# 0137:004010E7
+		-EVTLOG
+		"${TESTDATA_DIR}/eventLog/win95inst.evt"
+)
+
+
+
 # The Linux-CD test runs up to the middle of /etc/init.
 #
 # Early versions of init has a race-condition issue, and from time to time stops during the boot up.
