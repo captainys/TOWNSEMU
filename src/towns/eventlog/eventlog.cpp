@@ -431,6 +431,12 @@ bool TownsEventLog::LoadEventLog(std::string fName)
 				}
 				else if("T"==argv[0])
 				{
+					if(0==events.size())
+					{
+						std::cout << "No event defined before this line" << std::endl;
+						std::cout << "  " << line << std::endl;
+						return false;
+					}
 					if(2<=argv.size())
 					{
 						events.back().t=std::chrono::milliseconds(cpputil::Atoi(argv[1].c_str()));
@@ -454,6 +460,12 @@ bool TownsEventLog::LoadEventLog(std::string fName)
 							auto prev=*iter;
 							events.back().t=prev.t+std::chrono::milliseconds(cpputil::Atoi(argv[1].c_str()));
 						}
+						else
+						{
+							std::cout << "Two events not defined before this line" << std::endl;
+							std::cout << "  " << line << std::endl;
+							return false;
+						}
 					}
 					else
 					{
@@ -464,6 +476,12 @@ bool TownsEventLog::LoadEventLog(std::string fName)
 				}
 				else if("TWT"==argv[0])
 				{
+					if(0==events.size())
+					{
+						std::cout << "No event defined before this line" << std::endl;
+						std::cout << "  " << line << std::endl;
+						return false;
+					}
 					if(2<=argv.size())
 					{
 						events.back().townsTime=cpputil::Atoi(argv[1].c_str());
@@ -478,6 +496,12 @@ bool TownsEventLog::LoadEventLog(std::string fName)
 				}
 				else if("FNAME"==argv[0])
 				{
+					if(0==events.size())
+					{
+						std::cout << "No event defined before this line" << std::endl;
+						std::cout << "  " << line << std::endl;
+						return false;
+					}
 					if(2<=argv.size())
 					{
 						events.back().fName=argv[1];
@@ -491,6 +515,12 @@ bool TownsEventLog::LoadEventLog(std::string fName)
 				}
 				else if("MOS"==argv[0])
 				{
+					if(0==events.size())
+					{
+						std::cout << "No event defined before this line" << std::endl;
+						std::cout << "  " << line << std::endl;
+						return false;
+					}
 					if(3<=argv.size())
 					{
 						events.back().mos[0]=cpputil::Atoi(argv[1].c_str());
@@ -503,8 +533,33 @@ bool TownsEventLog::LoadEventLog(std::string fName)
 						return false;
 					}
 				}
+				else if("MOSTOL"==argv[0])
+				{
+					if(0==events.size())
+					{
+						std::cout << "No event defined before this line" << std::endl;
+						std::cout << "  " << line << std::endl;
+						return false;
+					}
+					if(2<=argv.size())
+					{
+						events.back().mosTolerance=cpputil::Atoi(argv[1].c_str());
+					}
+					else
+					{
+						std::cout << "Too few arguments" << std::endl;
+						std::cout << "  " << line << std::endl;
+						return false;
+					}
+				}
 				else if("KEYCODE"==argv[0])
 				{
+					if(0==events.size())
+					{
+						std::cout << "No event defined before this line" << std::endl;
+						std::cout << "  " << line << std::endl;
+						return false;
+					}
 					if(3<=argv.size())
 					{
 						events.back().keyCode[0]=cpputil::Xtoi(argv[1].c_str());
@@ -519,6 +574,12 @@ bool TownsEventLog::LoadEventLog(std::string fName)
 				}
 				else if("KEY"==argv[0])
 				{
+					if(0==events.size())
+					{
+						std::cout << "No event defined before this line" << std::endl;
+						std::cout << "  " << line << std::endl;
+						return false;
+					}
 					if(2<=argv.size())
 					{
 						events.back().keyCode[0]=TownsStrToKeyCode(argv[1]);
@@ -526,6 +587,12 @@ bool TownsEventLog::LoadEventLog(std::string fName)
 				}
 				else if("REPCOUNT"==argv[0])
 				{
+					if(0==events.size())
+					{
+						std::cout << "No event defined before this line" << std::endl;
+						std::cout << "  " << line << std::endl;
+						return false;
+					}
 					if(2<=argv.size())
 					{
 						events.back().repCountMax=cpputil::Atoi(argv[1].c_str());

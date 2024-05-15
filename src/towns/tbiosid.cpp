@@ -663,8 +663,11 @@ bool FMTownsCommon::ControlMouse(int &diffX,int &diffY,int hostMouseX,int hostMo
 bool FMTownsCommon::ControlMouseInVMCoord(int goalMouseX,int goalMouseY,unsigned int tbiosid)
 {
 	int mx,my;
-	GetMouseCoordinate(mx,my,tbiosid);
-	return ControlMouseByDiff(goalMouseX-mx,goalMouseY-my,tbiosid);
+	if(true==GetMouseCoordinate(mx,my,tbiosid))
+	{
+		return ControlMouseByDiff(goalMouseX-mx,goalMouseY-my,tbiosid);
+	}
+	return false;
 }
 
 bool FMTownsCommon::ControlMouseByDiff(int diffX,int diffY,unsigned int tbiosid,int slowDownRange)
