@@ -460,7 +460,7 @@ bool TownsEventLog::LoadEventLog(std::string fName)
 							auto prev=*iter;
 							events.back().t=prev.t+std::chrono::milliseconds(cpputil::Atoi(argv[1].c_str()));
 						}
-						else
+						else if(0!=cpputil::Atoi(argv[1].c_str())) // Permit 0 deltat for the first event.
 						{
 							std::cout << "Two events not defined before this line" << std::endl;
 							std::cout << "  " << line << std::endl;
