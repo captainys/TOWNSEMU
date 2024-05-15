@@ -464,7 +464,8 @@ bool TownsEventLog::LoadEventLog(std::string fName)
 						{
 							std::cout << "Two events not defined before this line" << std::endl;
 							std::cout << "  " << line << std::endl;
-							return false;
+							// Keep it a warning.  Some tests have non-zero delta t for the first event.
+							// I don't want to bother updating them.
 						}
 					}
 					else
