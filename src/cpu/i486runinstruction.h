@@ -5142,8 +5142,12 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 							    state.CS().value,value.GetAsDword(),
 							    mem);
 						}
-						state.EIP=(value.GetAsDword()&operandSizeMask[inst.operandSize>>3]);
 						EIPIncrement=0;
+						state.EIP=value.GetAsDword();
+						if(16==inst.operandSize)
+						{
+							state.EIP&=0xFFFF;
+						}
 					}
 				}
 				break;
@@ -5154,8 +5158,12 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					HANDLE_EXCEPTION_IF_ANY;
 					if(true!=state.exception)
 					{
-						state.EIP=(value.GetAsDword()&operandSizeMask[inst.operandSize>>3]);
 						EIPIncrement=0;
+						state.EIP=value.GetAsDword;
+						if(16==inst.operandSize)
+						{
+							state.EIP&=0xFFFF;
+						}
 					}
 				}
 				break;
