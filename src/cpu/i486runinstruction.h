@@ -5159,7 +5159,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					if(true!=state.exception)
 					{
 						EIPIncrement=0;
-						state.EIP=value.GetAsDword;
+						state.EIP=value.GetAsDword();
 						if(16==inst.operandSize)
 						{
 							state.EIP&=0xFFFF;
@@ -5384,9 +5384,13 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 	case I486_RENUMBER_JMP_REL8://         0xEB,   // cb
 		{
 			auto offset=inst.EvalSimm8();
-			state.EIP=((state.EIP+offset+inst.numBytes)&operandSizeMask[inst.operandSize>>3]);
 			clocksPassed=3;
 			EIPIncrement=0;
+			state.EIP=state.EIP+offset+inst.numBytes;
+			if(16==inst.operandSize)
+			{
+				state.EIP&=0xFFFF;
+			}
 		}
 		break;
 	case I486_RENUMBER_JO_REL8:   // 0x70,
@@ -5463,18 +5467,28 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		}
 		break;
 	case I486_RENUMBER_LOOPE://            0xE1,
+		if(32==inst.addressSize)
 		{
-			auto nBytes=(inst.addressSize>>3);
-			unsigned int ctr=((state.ECX()-1)&operandSizeMask[nBytes]);
-			state.ECX()=((state.ECX()&operandSizeAndPattern[nBytes])|ctr);
+			state.ECX()-=1;
+			CONDITIONALJUMP8(0!=state.ECX() && true==GetZF());
+		}
+		else
+		{
+			unsigned int ctr=GetCX()-1;
+			SetCX(ctr);
 			CONDITIONALJUMP8(0!=ctr && true==GetZF());
 		}
 		break;
 	case I486_RENUMBER_LOOPNE://           0xE0,
+		if(32==inst.addressSize)
 		{
-			auto nBytes=(inst.addressSize>>3);
-			unsigned int ctr=((state.ECX()-1)&operandSizeMask[nBytes]);
-			state.ECX()=((state.ECX()&operandSizeAndPattern[nBytes])|ctr);
+			state.ECX()-=1;
+			CONDITIONALJUMP8(0!=state.ECX() && true!=GetZF());
+		}
+		else
+		{
+			unsigned int ctr=GetCX()-1;
+			SetCX(ctr);
 			CONDITIONALJUMP8(0!=ctr && true!=GetZF());
 		}
 		break;
@@ -7465,8 +7479,14 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 					LoadSegmentRegister(state.DS(),DS,mem);
 					LoadSegmentRegister(state.FS(),FS,mem);
 					LoadSegmentRegister(state.GS(),GS,mem);
-					state.ESP()&=operandSizeAndPattern[inst.operandSize>>3];
-					state.ESP()|=(TempESP&operandSizeMask[inst.operandSize>>3]);
+					if(16==inst.operandSize)
+					{
+						SET_INT_LOW_BYTE(state.ESP(),TempESP&0xFFFF);
+					}
+					else
+					{
+						state.ESP()=TempESP;
+					}
 					LoadSegmentRegister(state.SS(),TempSS,mem);
 					IRET_TO_VM86=true;
 				}
