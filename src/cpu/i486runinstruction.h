@@ -2096,14 +2096,6 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		8,   // DH
 		8,   // BH
 	};
-	static const unsigned int operandSizeMask[]= // Same for addressSizeMask
-	{
-		0x00000000,  // 0
-		0x000000FF,  // (8>>3)
-		0x0000FFFF,  // (16>>3)
-		0x00FFFFFF,  // (24>>3)
-		0xFFFFFFFF,  // (32>>3)
-	};
 	static const unsigned int operandSizeSignBit[]=
 	{
 		0x00000000,  // 0
@@ -2111,14 +2103,6 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		0x00008000,  // (16>>3)
 		0x00800000,  // (24>>3)
 		0x80000000,  // (32>>3)
-	};
-	static const unsigned int operandSizeAndPattern[]=
-	{
-		0xFFFFFFFF, // 0
-		0xFFFFFF00, // (8>>3)
-		0xFFFF0000, // (16>>3)
-		0xFF000000, // (24>>3)
-		0x00000000, // (32>>3)
 	};
 
 
@@ -8328,20 +8312,36 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			}
 			else
 			{
-				auto op32or16=inst.operandSize>>3;
-				auto RM=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,op32or16);
-				auto R=state.reg32()[inst.GetREG()]&operandSizeMask[op32or16];
-				auto newR=RM.GetAsDword();
+				if(16==inst.operandSize)
+				{
+					auto RM=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,16/8);
+					auto R=state.reg32()[inst.GetREG()]&0xFFFF;
+					auto newR=RM.GetAsDword();
 
-				HANDLE_EXCEPTION_IF_ANY;
+					HANDLE_EXCEPTION_IF_ANY;
 
-				RM.SetDword(R);
-				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,RM);
+					RM.SetDword(R);
+					StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,RM);
 
-				HANDLE_EXCEPTION_IF_ANY;
+					HANDLE_EXCEPTION_IF_ANY;
 
-				state.reg32()[inst.GetREG()]&=operandSizeAndPattern[op32or16];
-				state.reg32()[inst.GetREG()]|=(newR&operandSizeMask[op32or16]);
+					SET_INT_LOW_WORD(state.reg32()[inst.GetREG()],newR&0xFFFF);
+				}
+				else
+				{
+					auto RM=EvaluateOperand(mem,inst.addressSize,inst.segOverride,op1,32/8);
+					auto R=state.reg32()[inst.GetREG()];
+					auto newR=RM.GetAsDword();
+
+					HANDLE_EXCEPTION_IF_ANY;
+
+					RM.SetDword(R);
+					StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,RM);
+
+					HANDLE_EXCEPTION_IF_ANY;
+
+					state.reg32()[inst.GetREG()]=newR;
+				}
 			}
 		}
 		break;

@@ -58,7 +58,7 @@ void i486DXCommon::FPUState::BreakOnNan(i486DXCommon &cpu,double value)
 	ui= (uint32_t)byteData[0]|
 	   ((uint32_t)byteData[1]<<8)|
 	   ((uint32_t)byteData[2]<<16)|
-	   ((uint32_t)byteData[3]<<24)|;
+	   ((uint32_t)byteData[3]<<24);
 	return *((int32_t *)&ui);
 #endif
 }
@@ -418,8 +418,8 @@ void i486DXCommon::FPUState::GetSTAsFloat(class i486DXCommon &cpu,OperandValueBa
 	float *floatPtr=(float *)value.byteData;
 	*floatPtr=(float)ST(cpu).value;
 #else
-	float f=ST(cpu.value);
-	uint32_t *intPtr=(uint64_t *)(&f);
+	float f=ST(cpu).value;
+	uint32_t *intPtr=(uint32_t *)(&f);
 	value.byteData[0]=  (*intPtr)     &0xFF;
 	value.byteData[1]= ((*intPtr)>> 8)&0xFF;
 	value.byteData[2]= ((*intPtr)>>16)&0xFF;
