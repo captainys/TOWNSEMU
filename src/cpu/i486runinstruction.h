@@ -7829,27 +7829,52 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 	case I486_RENUMBER_SCAS://             0xAF,
 		{
 			SAVE_ECX_BEFORE_STRINGOP;
-			for(int ctr=0;
-			    ctr<MAX_REP_BUNDLE_COUNT &&
-			    true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize);
-			    ++ctr)
+
+			#define SCAS_Template(addrSize,WordOrDword,UpdateFunc) \
+				for(int ctr=0;\
+				    ctr<MAX_REP_BUNDLE_COUNT &&\
+				    true==REPCheckA##addrSize(clocksPassed,inst.instPrefix);\
+				    ++ctr)\
+				{\
+					auto data=Fetch##WordOrDword(addrSize,state.ES(),state.EDI(),mem);\
+					HANDLE_EXCEPTION_STRINGOP;\
+					auto EAX=GetEAX();\
+					Sub##WordOrDword(EAX,data);\
+					UpdateFunc();\
+					clocksPassed+=2;\
+					if(true==REPEorNECheck(inst.instPrefix))\
+					{\
+						EIPIncrement=0;\
+					}\
+					else\
+					{\
+						EIPIncrement=inst.numBytes;\
+						break;\
+					}\
+					UPDATED_SAVED_ECX_AFTER_STRINGOP;\
+				}
+
+			if(16==inst.operandSize)
 			{
-				auto data=FetchWordOrDword(inst.operandSize,inst.addressSize,state.ES(),state.EDI(),mem);
-				HANDLE_EXCEPTION_STRINGOP;
-				auto EAX=GetEAX();
-				SubWordOrDword(inst.operandSize,EAX,data);
-				UpdateDIorEDIAfterStringOp(inst.addressSize,inst.operandSize);
-				clocksPassed+=2;
-				if(true==REPEorNECheck(inst.instPrefix))
+				if(16==inst.addressSize)
 				{
-					EIPIncrement=0;
+					SCAS_Template(16,Word,UpdateDIorEDIAfterStringOpO16A16)
 				}
 				else
 				{
-					EIPIncrement=inst.numBytes;
-					break;
+					SCAS_Template(32,Word,UpdateDIorEDIAfterStringOpO16A32)
 				}
-				UPDATED_SAVED_ECX_AFTER_STRINGOP;
+			}
+			else // 32-bit operand
+			{
+				if(16==inst.addressSize)
+				{
+					SCAS_Template(16,Dword,UpdateDIorEDIAfterStringOpO32A16)
+				}
+				else
+				{
+					SCAS_Template(32,Dword,UpdateDIorEDIAfterStringOpO32A32)
+				}
 			}
 		}
 		break;
