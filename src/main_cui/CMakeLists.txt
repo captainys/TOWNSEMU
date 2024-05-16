@@ -1303,9 +1303,8 @@ add_test(
 		-BOOTKEY
 		H0
 		-POWEROFFAT
-		1707:000015A2
-		# 0137:004010E7
-		# 0137:BFF61189   # USER32__49h_CreateDialogIndirectParamA
+		0137:BFF638D9     # USER32_192h_MessageBoxA()  Last MessageBox after clicking OK on the time and date dialog			# 1707:000015A2   "Restarting" message, but misses this address from time to time.
+		# 0137:BFF61189   # USER32__49h_CreateDialogIndirectParamA  Time and date dialog.
 		-EVTLOG
 		"${TESTDATA_DIR}/eventLog/win95inst.evt"
 )

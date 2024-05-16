@@ -7802,27 +7802,38 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 	case I486_RENUMBER_SCASB://            0xAE,
 		{
 			SAVE_ECX_BEFORE_STRINGOP;
-			for(int ctr=0;
-			    ctr<MAX_REP_BUNDLE_COUNT &&
-			    true==REPCheck(clocksPassed,inst.instPrefix,inst.addressSize);
-			    ++ctr)
+
+			#define SCASB_Template(addrSize) \
+				for(int ctr=0; \
+				    ctr<MAX_REP_BUNDLE_COUNT && \
+				    true==REPCheckA##addrSize(clocksPassed,inst.instPrefix); \
+				    ++ctr) \
+				{ \
+					clocksPassed+=2; \
+					auto data=FetchByte(addrSize,state.ES(),state.EDI(),mem); \
+					HANDLE_EXCEPTION_STRINGOP; \
+					auto AL=GetAL(); \
+					SubByte(AL,data); \
+					UpdateDIorEDIAfterStringOpO8A##addrSize(); \
+					if(true==REPEorNECheck(inst.instPrefix)) \
+					{ \
+						EIPIncrement=0; \
+					} \
+					else \
+					{ \
+						EIPIncrement=inst.numBytes; \
+						break; \
+					} \
+					UPDATED_SAVED_ECX_AFTER_STRINGOP; \
+				}
+
+			if(16==inst.addressSize)
 			{
-				clocksPassed+=2;
-				auto data=FetchByte(inst.addressSize,state.ES(),state.EDI(),mem);
-				HANDLE_EXCEPTION_STRINGOP;
-				auto AL=GetAL();
-				SubByte(AL,data);
-				UpdateDIorEDIAfterStringOp(inst.addressSize,8);
-				if(true==REPEorNECheck(inst.instPrefix))
-				{
-					EIPIncrement=0;
-				}
-				else
-				{
-					EIPIncrement=inst.numBytes;
-					break;
-				}
-				UPDATED_SAVED_ECX_AFTER_STRINGOP;
+				SCASB_Template(16);
+			}
+			else
+			{
+				SCASB_Template(32);
 			}
 		}
 		break;
