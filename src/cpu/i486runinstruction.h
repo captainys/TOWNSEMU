@@ -2096,14 +2096,6 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		8,   // DH
 		8,   // BH
 	};
-	static const unsigned int operandSizeSignBit[]=
-	{
-		0x00000000,  // 0
-		0x00000080,  // (8>>3)
-		0x00008000,  // (16>>3)
-		0x00800000,  // (24>>3)
-		0x80000000,  // (32>>3)
-	};
 
 
 

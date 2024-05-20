@@ -541,18 +541,21 @@ public:
 		std::vector <unsigned char> prevRAM;
 		std::vector <bool> spriteRAMFilter;
 		std::vector <unsigned char> prevSpriteRAM;
+		unsigned int unit=1; // Unit number of bytes
 	};
 	MemoryFilter memFilter;
 
 	/*!
 	*/
-	void BeginMemFilter(void);
-	unsigned int ApplyMemFilter(uint8_t currentValue);
+	void BeginMemFilter(unsigned int unit);
+	unsigned int ApplyMemFilter(uint32_t currentValue);
 	unsigned int ApplyMemFilterDecrease(void);
 	unsigned int ApplyMemFilterIncrease(void);
 	unsigned int ApplyMemFilterDifferent(void);
 	unsigned int ApplyMemFilterEqual(void);
 	void PrintMemFilter(void);
+
+	template <class MemFilterHelper> class MemFilterTemplate;
 
 
 

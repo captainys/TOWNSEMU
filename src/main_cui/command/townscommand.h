@@ -56,6 +56,8 @@ public:
 		CMD_EXCEPTION,
 
 		CMD_MAKE_MEMORY_FILTER,
+		CMD_MAKE_MEMORY_FILTER_WORD,
+		CMD_MAKE_MEMORY_FILTER_DWORD,
 		CMD_UPDATE_MEMORY_FILTER,
 
 		CMD_FIND,
@@ -435,7 +437,7 @@ public:
 	void Execute_FDLoad(int drv,FMTownsCommon &towns,Command &cmd);
 	void Execute_FDEject(int drv,FMTownsCommon &towns,Command &cmd);
 
-	void Execute_MakeMemoryFilter(FMTownsCommon &towns,Command &cmd);
+	void Execute_MakeMemoryFilter(FMTownsCommon &towns,Command &cmd,unsigned int unit);
 	void Execute_UpdateMemoryFilter(FMTownsCommon &towns,Command &cmd);
 
 	void Execute_Exception(FMTownsCommon &towns,Command &cmd);

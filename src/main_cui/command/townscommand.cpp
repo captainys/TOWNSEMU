@@ -85,6 +85,8 @@ TownsCommandInterpreter::TownsCommandInterpreter()
 	primaryCmdMap["INTERRUPT"]=CMD_INTERRUPT;
 	primaryCmdMap["EXCEPTION"]=CMD_EXCEPTION;
 	primaryCmdMap["MKMEMFILTER"]=CMD_MAKE_MEMORY_FILTER;
+	primaryCmdMap["MKMEMFILTERW"]=CMD_MAKE_MEMORY_FILTER_WORD;
+	primaryCmdMap["MKMEMFILTERD"]=CMD_MAKE_MEMORY_FILTER_DWORD;
 	primaryCmdMap["UPDMEMFILTER"]=CMD_UPDATE_MEMORY_FILTER;
 	primaryCmdMap["FIND"]=CMD_FIND;
 	primaryCmdMap["FINDS"]=CMD_FIND_STRING;
@@ -459,7 +461,10 @@ void TownsCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Type can be GENERAL, PAGEFAULT, or DIVISION." << std::endl;
 
 	std::cout << "MKMEMFILTER byteData" << std::endl;
+	std::cout << "MKMEMFILTERW wordData" << std::endl;
+	std::cout << "MKMEMFILTERD dwordData" << std::endl;
 	std::cout << "  Make memory filter.  Memory filter caches physical addresses that has the given value." << std::endl;
+	std::cout << "  Data is optional." << std::endl;
 	std::cout << "UPDMEMFILTER byteData" << std::endl;
 	std::cout << "  Update memory filter.  Physical addresses that does not have the given value" << std::endl;
 	std::cout << "  are deleted from the memory filter." << std::endl;
@@ -1060,7 +1065,13 @@ void TownsCommandInterpreter::Execute(TownsThread &thr,FMTownsCommon &towns,clas
 		break;
 
 	case CMD_MAKE_MEMORY_FILTER:
-		Execute_MakeMemoryFilter(towns,cmd);
+		Execute_MakeMemoryFilter(towns,cmd,1);
+		break;
+	case CMD_MAKE_MEMORY_FILTER_WORD:
+		Execute_MakeMemoryFilter(towns,cmd,2);
+		break;
+	case CMD_MAKE_MEMORY_FILTER_DWORD:
+		Execute_MakeMemoryFilter(towns,cmd,4);
 		break;
 	case CMD_UPDATE_MEMORY_FILTER:
 		Execute_UpdateMemoryFilter(towns,cmd);
@@ -4797,17 +4808,17 @@ void TownsCommandInterpreter::Execute_FDEject(int drv,FMTownsCommon &towns,Comma
 	std::cout << "Ejected Floppy Drive " << drv << std::endl;
 }
 
-void TownsCommandInterpreter::Execute_MakeMemoryFilter(FMTownsCommon &towns,Command &cmd)
+void TownsCommandInterpreter::Execute_MakeMemoryFilter(FMTownsCommon &towns,Command &cmd,unsigned int unit)
 {
 	if(2<=cmd.argv.size())
 	{
-		towns.physMem.BeginMemFilter();
+		towns.physMem.BeginMemFilter(unit);
 		auto N=towns.physMem.ApplyMemFilter(cpputil::Xtoi(cmd.argv[1].c_str()));
 		std::cout << N << " occurrences" << std::endl;
 	}
 	else
 	{
-		towns.physMem.BeginMemFilter();
+		towns.physMem.BeginMemFilter(unit);
 	}
 }
 void TownsCommandInterpreter::Execute_UpdateMemoryFilter(FMTownsCommon &towns,Command &cmd)

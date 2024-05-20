@@ -822,165 +822,318 @@ void TownsPhysicalMemory::EnableOrDisableNativeVRAMMask(void)
 	}
 }
 
-void TownsPhysicalMemory::BeginMemFilter(void)
+void TownsPhysicalMemory::BeginMemFilter(unsigned int unit)
 {
 	memFilter.RAMFilter.resize(state.RAM.size());
 	memFilter.prevRAM.resize(state.RAM.size());
 	memFilter.spriteRAMFilter.resize(GetSpriteRAMSize());
 	memFilter.prevSpriteRAM.resize(GetSpriteRAMSize());
+	memFilter.unit=unit;
 	for(uint32_t i=0; i<state.RAM.size(); ++i)
 	{
 		memFilter.RAMFilter[i]=true;
 		memFilter.prevRAM[i]=state.RAM[i];
+		if(state.RAM.size()<i+unit)
+		{
+			memFilter.RAMFilter[i]=false;
+		}
 	}
 	for(uint32_t i=0; i<GetSpriteRAMSize(); ++i)
 	{
 		memFilter.spriteRAMFilter[i]=true;
 		memFilter.prevSpriteRAM[i]=state.spriteRAM[i];
-	}
-}
-unsigned int TownsPhysicalMemory::ApplyMemFilter(uint8_t currentValue)
-{
-	unsigned int N=0;
-	for(uint32_t i=0; i<state.RAM.size(); ++i)
-	{
-		if(state.RAM[i]!=currentValue)
-		{
-			memFilter.RAMFilter[i]=false;
-		}
-		if(true==memFilter.RAMFilter[i])
-		{
-			++N;
-		}
-		memFilter.prevRAM[i]=state.RAM[i];
-	}
-	for(uint32_t i=0; i<GetSpriteRAMSize(); ++i)
-	{
-		if(state.spriteRAM[i]!=currentValue)
+		if(GetSpriteRAMSize()<i+unit)
 		{
 			memFilter.spriteRAMFilter[i]=false;
 		}
-		if(true==memFilter.spriteRAMFilter[i])
-		{
-			++N;
-		}
-		memFilter.prevSpriteRAM[i]=state.spriteRAM[i];
 	}
+}
+unsigned int TownsPhysicalMemory::ApplyMemFilter(uint32_t currentValue)
+{
+	unsigned int N=0;
+	if(1==memFilter.unit)
+	{
+		for(uint32_t i=0; i<state.RAM.size(); ++i)
+		{
+			if(state.RAM[i]!=currentValue)
+			{
+				memFilter.RAMFilter[i]=false;
+			}
+			if(true==memFilter.RAMFilter[i])
+			{
+				++N;
+			}
+		}
+		for(uint32_t i=0; i<GetSpriteRAMSize(); ++i)
+		{
+			if(state.spriteRAM[i]!=currentValue)
+			{
+				memFilter.spriteRAMFilter[i]=false;
+			}
+			if(true==memFilter.spriteRAMFilter[i])
+			{
+				++N;
+			}
+		}
+	}
+	else if(2==memFilter.unit)
+	{
+		for(uint32_t i=0; i+1<state.RAM.size(); ++i)
+		{
+			if(cpputil::GetWord(state.RAM.data()+i)!=currentValue)
+			{
+				memFilter.RAMFilter[i]=false;
+			}
+			if(true==memFilter.RAMFilter[i])
+			{
+				++N;
+			}
+		}
+		for(uint32_t i=0; i+1<GetSpriteRAMSize(); ++i)
+		{
+			if(cpputil::GetWord(state.spriteRAM+i)!=currentValue)
+			{
+				memFilter.spriteRAMFilter[i]=false;
+			}
+			if(true==memFilter.spriteRAMFilter[i])
+			{
+				++N;
+			}
+		}
+	}
+	else if(4==memFilter.unit)
+	{
+		for(uint32_t i=0; i+3<state.RAM.size(); ++i)
+		{
+			if(cpputil::GetDword(state.RAM.data()+i)!=currentValue)
+			{
+				memFilter.RAMFilter[i]=false;
+			}
+			if(true==memFilter.RAMFilter[i])
+			{
+				++N;
+			}
+		}
+		for(uint32_t i=0; i+3<GetSpriteRAMSize(); ++i)
+		{
+			if(cpputil::GetDword(state.spriteRAM+i)!=currentValue)
+			{
+				memFilter.spriteRAMFilter[i]=false;
+			}
+			if(true==memFilter.spriteRAMFilter[i])
+			{
+				++N;
+			}
+		}
+	}
+	memcpy(memFilter.prevRAM.data(),state.RAM.data(),state.RAM.size());
+	memcpy(memFilter.prevSpriteRAM.data(),state.spriteRAM,GetSpriteRAMSize());
+
 	return N;
 }
+
+
+template <class MemFilterHelper> class TownsPhysicalMemory::MemFilterTemplate
+{
+public:
+	static unsigned int Apply(uint32_t length,uint32_t unit,const unsigned char current[],unsigned char prev[],std::vector <bool> &filter)
+	{
+		unsigned int N=0;
+		for(uint32_t i=0; i+unit<=length; ++i)
+		{
+			if(true!=MemFilterHelper::Compare(current+i,prev+i))
+			{
+				filter[i]=false;
+			}
+			if(true==filter[i])
+			{
+				++N;
+			}
+		}
+		memcpy(prev,current,length);
+		return N;
+	}
+};
+
 unsigned int TownsPhysicalMemory::ApplyMemFilterDecrease(void)
 {
+	class CompareByte
+	{
+	public:
+		static bool Compare(const uint8_t *current,uint8_t *prev)
+		{
+			return *current<*prev;
+		}
+	};
+	class CompareWord
+	{
+	public:
+		static bool Compare(const uint8_t *current,uint8_t *prev)
+		{
+			return cpputil::GetWord(current)<cpputil::GetWord(prev);
+		}
+	};
+	class CompareDword
+	{
+	public:
+		static bool Compare(const uint8_t *current,uint8_t *prev)
+		{
+			return cpputil::GetDword(current)<cpputil::GetDword(prev);
+		}
+	};
 	unsigned int N=0;
-	for(uint32_t i=0; i<state.RAM.size(); ++i)
+	const auto unit=memFilter.unit;
+
+	if(1==unit)
 	{
-		if(state.RAM[i]>=memFilter.prevRAM[i])
-		{
-			memFilter.RAMFilter[i]=false;
-		}
-		if(true==memFilter.RAMFilter[i])
-		{
-			++N;
-		}
-		memFilter.prevRAM[i]=state.RAM[i];
+		N=MemFilterTemplate<CompareByte>::Apply(state.RAM.size(),unit,state.RAM.data(),memFilter.prevRAM.data(),memFilter.RAMFilter)
+		 +MemFilterTemplate<CompareByte>::Apply(GetSpriteRAMSize(),unit,state.spriteRAM,memFilter.prevSpriteRAM.data(),memFilter.spriteRAMFilter);
 	}
-	for(uint32_t i=0; i<GetSpriteRAMSize(); ++i)
+	else if(2==unit)
 	{
-		if(state.spriteRAM[i]>=memFilter.prevSpriteRAM[i])
-		{
-			memFilter.spriteRAMFilter[i]=false;
-		}
-		if(true==memFilter.spriteRAMFilter[i])
-		{
-			++N;
-		}
-		memFilter.prevSpriteRAM[i]=state.spriteRAM[i];
+		N=MemFilterTemplate<CompareWord>::Apply(state.RAM.size(),unit,state.RAM.data(),memFilter.prevRAM.data(),memFilter.RAMFilter)
+		 +MemFilterTemplate<CompareWord>::Apply(GetSpriteRAMSize(),unit,state.spriteRAM,memFilter.prevSpriteRAM.data(),memFilter.spriteRAMFilter);
 	}
+	else if(4==unit)
+	{
+		N=MemFilterTemplate<CompareDword>::Apply(state.RAM.size(),unit,state.RAM.data(),memFilter.prevRAM.data(),memFilter.RAMFilter)
+		 +MemFilterTemplate<CompareDword>::Apply(GetSpriteRAMSize(),unit,state.spriteRAM,memFilter.prevSpriteRAM.data(),memFilter.spriteRAMFilter);
+	}
+
 	return N;
 }
 unsigned int TownsPhysicalMemory::ApplyMemFilterIncrease(void)
 {
+	class CompareByte
+	{
+	public:
+		static bool Compare(const uint8_t *current,uint8_t *prev)
+		{
+			return *current>*prev;
+		}
+	};
+	class CompareWord
+	{
+	public:
+		static bool Compare(const uint8_t *current,uint8_t *prev)
+		{
+			return cpputil::GetWord(current)>cpputil::GetWord(prev);
+		}
+	};
+	class CompareDword
+	{
+	public:
+		static bool Compare(const uint8_t *current,uint8_t *prev)
+		{
+			return cpputil::GetDword(current)>cpputil::GetDword(prev);
+		}
+	};
 	unsigned int N=0;
-	for(uint32_t i=0; i<state.RAM.size(); ++i)
+	const auto unit=memFilter.unit;
+	if(1==unit)
 	{
-		if(state.RAM[i]<=memFilter.prevRAM[i])
-		{
-			memFilter.RAMFilter[i]=false;
-		}
-		if(true==memFilter.RAMFilter[i])
-		{
-			++N;
-		}
-		memFilter.prevRAM[i]=state.RAM[i];
+		N=MemFilterTemplate<CompareByte>::Apply(state.RAM.size(),unit,state.RAM.data(),memFilter.prevRAM.data(),memFilter.RAMFilter)
+		 +MemFilterTemplate<CompareByte>::Apply(GetSpriteRAMSize(),unit,state.spriteRAM,memFilter.prevSpriteRAM.data(),memFilter.spriteRAMFilter);
 	}
-	for(uint32_t i=0; i<GetSpriteRAMSize(); ++i)
+	else if(2==unit)
 	{
-		if(state.spriteRAM[i]<=memFilter.prevSpriteRAM[i])
-		{
-			memFilter.spriteRAMFilter[i]=false;
-		}
-		if(true==memFilter.spriteRAMFilter[i])
-		{
-			++N;
-		}
-		memFilter.prevSpriteRAM[i]=state.spriteRAM[i];
+		N=MemFilterTemplate<CompareWord>::Apply(state.RAM.size(),unit,state.RAM.data(),memFilter.prevRAM.data(),memFilter.RAMFilter)
+		 +MemFilterTemplate<CompareWord>::Apply(GetSpriteRAMSize(),unit,state.spriteRAM,memFilter.prevSpriteRAM.data(),memFilter.spriteRAMFilter);
+	}
+	else if(4==unit)
+	{
+		N=MemFilterTemplate<CompareDword>::Apply(state.RAM.size(),unit,state.RAM.data(),memFilter.prevRAM.data(),memFilter.RAMFilter)
+		 +MemFilterTemplate<CompareDword>::Apply(GetSpriteRAMSize(),unit,state.spriteRAM,memFilter.prevSpriteRAM.data(),memFilter.spriteRAMFilter);
 	}
 	return N;
 }
 unsigned int TownsPhysicalMemory::ApplyMemFilterDifferent(void)
 {
+	class CompareByte
+	{
+	public:
+		static bool Compare(const uint8_t *current,uint8_t *prev)
+		{
+			return *current!=*prev;
+		}
+	};
+	class CompareWord
+	{
+	public:
+		static bool Compare(const uint8_t *current,uint8_t *prev)
+		{
+			return cpputil::GetWord(current)!=cpputil::GetWord(prev);
+		}
+	};
+	class CompareDword
+	{
+	public:
+		static bool Compare(const uint8_t *current,uint8_t *prev)
+		{
+			return cpputil::GetDword(current)!=cpputil::GetDword(prev);
+		}
+	};
 	unsigned int N=0;
-	for(uint32_t i=0; i<state.RAM.size(); ++i)
+	const auto unit=memFilter.unit;
+	if(1==unit)
 	{
-		if(state.RAM[i]==memFilter.prevRAM[i])
-		{
-			memFilter.RAMFilter[i]=false;
-		}
-		if(true==memFilter.RAMFilter[i])
-		{
-			++N;
-		}
-		memFilter.prevRAM[i]=state.RAM[i];
+		N=MemFilterTemplate<CompareByte>::Apply(state.RAM.size(),unit,state.RAM.data(),memFilter.prevRAM.data(),memFilter.RAMFilter)
+		 +MemFilterTemplate<CompareByte>::Apply(GetSpriteRAMSize(),unit,state.spriteRAM,memFilter.prevSpriteRAM.data(),memFilter.spriteRAMFilter);
 	}
-	for(uint32_t i=0; i<GetSpriteRAMSize(); ++i)
+	else if(2==unit)
 	{
-		if(state.spriteRAM[i]==memFilter.prevSpriteRAM[i])
-		{
-			memFilter.spriteRAMFilter[i]=false;
-		}
-		if(true==memFilter.spriteRAMFilter[i])
-		{
-			++N;
-		}
-		memFilter.prevSpriteRAM[i]=state.spriteRAM[i];
+		N=MemFilterTemplate<CompareWord>::Apply(state.RAM.size(),unit,state.RAM.data(),memFilter.prevRAM.data(),memFilter.RAMFilter)
+		 +MemFilterTemplate<CompareWord>::Apply(GetSpriteRAMSize(),unit,state.spriteRAM,memFilter.prevSpriteRAM.data(),memFilter.spriteRAMFilter);
+	}
+	else if(4==unit)
+	{
+		N=MemFilterTemplate<CompareDword>::Apply(state.RAM.size(),unit,state.RAM.data(),memFilter.prevRAM.data(),memFilter.RAMFilter)
+		 +MemFilterTemplate<CompareDword>::Apply(GetSpriteRAMSize(),unit,state.spriteRAM,memFilter.prevSpriteRAM.data(),memFilter.spriteRAMFilter);
 	}
 	return N;
 }
 unsigned int TownsPhysicalMemory::ApplyMemFilterEqual(void)
 {
+	class CompareByte
+	{
+	public:
+		static bool Compare(const uint8_t *current,uint8_t *prev)
+		{
+			return *current==*prev;
+		}
+	};
+	class CompareWord
+	{
+	public:
+		static bool Compare(const uint8_t *current,uint8_t *prev)
+		{
+			return cpputil::GetWord(current)==cpputil::GetWord(prev);
+		}
+	};
+	class CompareDword
+	{
+	public:
+		static bool Compare(const uint8_t *current,uint8_t *prev)
+		{
+			return cpputil::GetDword(current)==cpputil::GetDword(prev);
+		}
+	};
 	unsigned int N=0;
-	for(uint32_t i=0; i<state.RAM.size(); ++i)
+	const auto unit=memFilter.unit;
+	if(1==unit)
 	{
-		if(state.RAM[i]!=memFilter.prevRAM[i])
-		{
-			memFilter.RAMFilter[i]=false;
-		}
-		if(true==memFilter.RAMFilter[i])
-		{
-			++N;
-		}
-		memFilter.prevRAM[i]=state.RAM[i];
+		N=MemFilterTemplate<CompareByte>::Apply(state.RAM.size(),unit,state.RAM.data(),memFilter.prevRAM.data(),memFilter.RAMFilter)
+		 +MemFilterTemplate<CompareByte>::Apply(GetSpriteRAMSize(),unit,state.spriteRAM,memFilter.prevSpriteRAM.data(),memFilter.spriteRAMFilter);
 	}
-	for(uint32_t i=0; i<GetSpriteRAMSize(); ++i)
+	else if(2==unit)
 	{
-		if(state.spriteRAM[i]!=memFilter.prevSpriteRAM[i])
-		{
-			memFilter.spriteRAMFilter[i]=false;
-		}
-		if(true==memFilter.spriteRAMFilter[i])
-		{
-			++N;
-		}
-		memFilter.prevSpriteRAM[i]=state.spriteRAM[i];
+		N=MemFilterTemplate<CompareWord>::Apply(state.RAM.size(),unit,state.RAM.data(),memFilter.prevRAM.data(),memFilter.RAMFilter)
+		 +MemFilterTemplate<CompareWord>::Apply(GetSpriteRAMSize(),unit,state.spriteRAM,memFilter.prevSpriteRAM.data(),memFilter.spriteRAMFilter);
+	}
+	else if(4==unit)
+	{
+		N=MemFilterTemplate<CompareDword>::Apply(state.RAM.size(),unit,state.RAM.data(),memFilter.prevRAM.data(),memFilter.RAMFilter)
+		 +MemFilterTemplate<CompareDword>::Apply(GetSpriteRAMSize(),unit,state.spriteRAM,memFilter.prevSpriteRAM.data(),memFilter.spriteRAMFilter);
 	}
 	return N;
 }
