@@ -90,7 +90,8 @@ inline void i486DXFidelityLayer <FIDELITY>::Interrupt(unsigned int INTNum,Memory
 				isINTGate=false;
 				break;
 			case DESCTYPE_TASK_GATE: // 0b0101: //"386 32-bit Task";
-				Abort("386 16-bit INT gate not supported");
+				Abort("INT to 386 32-bit Task gate not supported");
+				return; // If abort, must return.  The trailing lines may cause seg fault. (Happened while booting OSASK for TOWNS)
 				break;
 			case DESCTYPE_386_INT_GATE: // 0b1110: //"386 32-bit INT";
 				break;
@@ -100,6 +101,7 @@ inline void i486DXFidelityLayer <FIDELITY>::Interrupt(unsigned int INTNum,Memory
 			case DESCTYPE_AVAILABLE_386_TSS://               9,
 			case DESCTYPE_BUSY_386_TSS://                 0x0B,
 				Abort("INT-TO-TSS not supported");
+				return; // If abort, must return.  The trailing lines may cause seg fault.
 				break;
 			}
 
