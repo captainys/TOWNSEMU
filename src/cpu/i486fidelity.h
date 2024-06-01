@@ -92,7 +92,7 @@ public:
 
 
 	// If low-fidelity, don't care if it is readable or writable.
-	inline static void ClearSegmentRegisterAttribBytes(uint16_t &attribBytes){};
+	inline static void SetSegmentRegisterAttribBytes(uint16_t &attribBytes,uint16_t newAttrib){};
 
 	// Protect EFLAGS IOPL bits.
 	class EFLAGS
@@ -780,9 +780,9 @@ public:
 		return false;
 	}
 
-	inline static void ClearSegmentRegisterAttribBytes(uint16_t &attribBytes)
+	inline static void SetSegmentRegisterAttribBytes(uint16_t &attribBytes,uint16_t newAttrib)
 	{
-		attribBytes=0;
+		attribBytes=newAttrib;
 	}
 	inline static bool CheckRETFtoOuterLevel(i486DXFidelityLayer<THISCLASS> &cpu,Memory &mem,uint32_t operandSize,uint32_t prevDPL,uint16_t imm16)
 	{
