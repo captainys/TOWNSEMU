@@ -1332,13 +1332,23 @@ void i486DXFidelityLayer<FIDELITY>::SwitchTaskToTSS(Memory &mem,uint32_t instNum
 	state.EBP()=DebugFetchDword(32,state.TR,TSS_OFFSET_EBP,mem);
 	state.ESI()=DebugFetchDword(32,state.TR,TSS_OFFSET_ESI,mem);
 	state.EDI()=DebugFetchDword(32,state.TR,TSS_OFFSET_EDI,mem);
-	LoadSegmentRegister(state.ES(),DebugFetchWord(32,state.TR,TSS_OFFSET_ES,mem),mem,false);
-	LoadSegmentRegister(state.SS(),DebugFetchWord(32,state.TR,TSS_OFFSET_SS,mem),mem,false);
-	LoadSegmentRegister(state.DS(),DebugFetchWord(32,state.TR,TSS_OFFSET_DS,mem),mem,false);
-	LoadSegmentRegister(state.FS(),DebugFetchWord(32,state.TR,TSS_OFFSET_FS,mem),mem,false);
-	LoadSegmentRegister(state.GS(),DebugFetchWord(32,state.TR,TSS_OFFSET_GS,mem),mem,false);
+
+	uint16_t ES=DebugFetchWord(32,state.TR,TSS_OFFSET_ES,mem);
+	uint16_t SS=DebugFetchWord(32,state.TR,TSS_OFFSET_SS,mem);
+	uint16_t DS=DebugFetchWord(32,state.TR,TSS_OFFSET_DS,mem);
+	uint16_t FS=DebugFetchWord(32,state.TR,TSS_OFFSET_FS,mem);
+	uint16_t GS=DebugFetchWord(32,state.TR,TSS_OFFSET_GS,mem);
+	uint16_t CS=DebugFetchWord(32,state.TR,TSS_OFFSET_CS,mem);
+
+	// Set CS first so that the rest segment selectors can be loaded with the new CPL.
+	LoadSegmentRegister(state.CS(),CS,mem,false);
+
+	LoadSegmentRegister(state.ES(),ES,mem,false);
+	LoadSegmentRegister(state.SS(),SS,mem,false);
+	LoadSegmentRegister(state.DS(),DS,mem,false);
+	LoadSegmentRegister(state.FS(),FS,mem,false);
+	LoadSegmentRegister(state.GS(),GS,mem,false);
 	SetCR(3,DebugFetchDword(32,state.TR,TSS_OFFSET_CR3,mem),mem);
-	LoadSegmentRegister(state.CS(),DebugFetchWord(32,state.TR,TSS_OFFSET_CS,mem),mem,false);
 }
 
 template <class FIDELITY>
