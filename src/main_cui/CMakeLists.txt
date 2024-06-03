@@ -382,7 +382,7 @@ add_test(
 		-EVTLOG
 		"${TESTDATA_DIR}/eventLog/PolyRacer.evt"
 		-POWEROFFAT
-		000C:00003D84
+		000C:000047B3
 )
 
 add_test(
