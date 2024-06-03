@@ -373,7 +373,7 @@ add_test(
 		-CD
 		"${DISC_IMAGE_DIR}/TownsOSV2.1L20.cue"
 		-FD0
-		"${DISC_IMAGE_DIR}/PolyRacer.d77"
+		"${TOWNSEMU_TEST}/DISKIMG/PolyRacer.d77"
 		-UNITTEST
 		-USEFPU
 		-DONTAUTOSAVECMOS
