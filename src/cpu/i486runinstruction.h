@@ -7407,6 +7407,18 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				SetFLAGSorEFLAGS(inst.operandSize,eflags);
 				FIDELITY::RestoreIOPLBits(*this,ioplBits);
 				FIDELITY::RestoreIF(*this,ioplBits);
+
+				// If I print state.EFLAGS here, it is updated correctly.
+				// If I do not print state.EFLAGS, it is not updated from time to time.
+				// Looks like I stepped on a bug of clang.  I need to be careful to declare it as a clang bug,
+				// but it happens only in Linux using clang 6.0.0-1ubuntu2.
+				// It does not seem to happen with my clang on macOS.
+				// I need to let state.EFLAGS consumed by outside of this function, outside of this object file,
+				// to make it run correctly.  Otherwise, the compiler seems to ignore above SetFLAGSorEFLAGS.
+			#ifdef __linux__
+				ConsumeVariable(state.EFLAGS);
+			#endif
+
 				state.EFLAGS&=EFLAGS_MASK;
 				state.EFLAGS|=EFLAGS_ALWAYS_ON;
 
@@ -7446,6 +7458,9 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				typename FIDELITY::EFLAGS ioplBits;
 				FIDELITY::SaveEFLAGS(ioplBits,*this);
 				SetFLAGSorEFLAGS(inst.operandSize,eflags);
+			#ifdef __linux__
+				ConsumeVariable(state.EFLAGS);
+			#endif
 				FIDELITY::RestoreIOPLBits(*this,ioplBits);
 				FIDELITY::RestoreIF(*this,ioplBits);
 

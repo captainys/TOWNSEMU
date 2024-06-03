@@ -21,6 +21,7 @@ i486fidelity.h
 i486runinstruction.h
 i486templatefunctions.h
 i486debugVxD.cpp
+i486garbage.cpp
 )
 target_link_libraries(cpu device ramrom inout cpputil)
 target_include_directories(cpu PUBLIC .)

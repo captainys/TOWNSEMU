@@ -67,6 +67,8 @@ Therefore, the CPU class now is divided into three parts.  The base class, i486C
 class i486DXCommon : public CPU
 {
 public:
+	void ConsumeVariable(uint32_t); // See comments.
+public:
 	enum
 	{
 		LOW_FIDELITY  =0x00,
