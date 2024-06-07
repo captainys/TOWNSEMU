@@ -36,7 +36,7 @@ public:
 		const SegmentRegister &,
 		unsigned int,const Memory &)
 	{
-		return ptr.FetchByte();
+		return *(ptr.ptr++);
 	}
 	inline static unsigned int PeekInstructionByte(
 		CPUCLASS &cpu,
@@ -45,7 +45,7 @@ public:
 		const SegmentRegister &,
 		unsigned int,const Memory &)
 	{
-		return ptr.PeekByte();
+		return *ptr.ptr;
 	}
 	inline static void FetchInstructionTwoBytes(
 		unsigned char dat[2],
@@ -55,7 +55,8 @@ public:
 		const SegmentRegister &,
 		unsigned int,const Memory &)
 	{
-		ptr.FetchTwoBytes(dat);
+		*((uint16_t *)dat)=*((uint16_t *)ptr.ptr);
+		ptr.ptr+=2;
 	}
 	inline static void FetchInstructionFourBytes(
 		unsigned char dat[4],
@@ -65,27 +66,30 @@ public:
 		const SegmentRegister &,
 		unsigned int,const Memory &)
 	{
-		ptr.FetchFourBytes(dat);
+		*((uint32_t *)dat)=*((uint32_t *)ptr.ptr);
+		ptr.ptr+=4;
 	}
 
 	inline static void FetchOperand8(CPUCLASS &cpu,Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
 	{
-		inst.operand[inst.operandLen++]=ptr.FetchByte();
+		inst.operand[inst.operandLen++]=*(ptr.ptr++);
 		++inst.numBytes;
 	}
 	inline static void PeekOperand8(CPUCLASS &cpu,unsigned int &operand,const Instruction &inst,const MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
 	{
-		operand=ptr.PeekByte();
+		operand=*(ptr.ptr);
 	}
 	inline static void FetchOperand16(CPUCLASS &cpu,Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
 	{
-		ptr.FetchTwoBytes(inst.operand+inst.operandLen);
+		*((uint16_t *)(inst.operand+inst.operandLen))=*((uint16_t*)ptr.ptr);
+		ptr.ptr+=2;
 		inst.operandLen+=2;
 		inst.numBytes+=2;
 	}
 	inline static void FetchOperand32(CPUCLASS &cpu,Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
 	{
-		ptr.FetchFourBytes(inst.operand+inst.operandLen);
+		*((uint32_t *)(inst.operand+inst.operandLen))=*((uint32_t*)ptr.ptr);
+		ptr.ptr+=4;
 		inst.operandLen+=4;
 		inst.numBytes+=4;
 	}
@@ -93,14 +97,16 @@ public:
 	{
 		if(16==inst.operandSize)
 		{
-			ptr.FetchTwoBytes(inst.operand+inst.operandLen);
+			*((uint16_t *)(inst.operand+inst.operandLen))=*((uint16_t*)ptr.ptr);
+			ptr.ptr+=2;
 			inst.operandLen+=2;
 			inst.numBytes+=2;
 			return 2;
 		}
 		else // if(32==inst.operandSize)
 		{
-			ptr.FetchFourBytes(inst.operand+inst.operandLen);
+			*((uint32_t *)(inst.operand+inst.operandLen))=*((uint32_t*)ptr.ptr);
+			ptr.ptr+=4;
 			inst.operandLen+=4;
 			inst.numBytes+=4;
 			return 4;
@@ -108,30 +114,34 @@ public:
 	}
 	inline static void FetchImm8(CPUCLASS &cpu,Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
 	{
-		inst.imm[0]=ptr.FetchByte();
+		inst.imm[0]=(*ptr.ptr++);
 		++inst.numBytes;
 	}
 	inline static void FetchImm16(CPUCLASS &cpu,Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
 	{
-		ptr.FetchTwoBytes(inst.imm);
+		*((uint16_t *)(inst.imm))=*((uint16_t*)ptr.ptr);
+		ptr.ptr+=2;
 		inst.numBytes+=2;
 	}
 	inline static void FetchImm32(CPUCLASS &cpu,Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
 	{
-		ptr.FetchFourBytes(inst.imm);
+		*((uint32_t *)(inst.imm))=*((uint32_t*)ptr.ptr);
+		ptr.ptr+=4;
 		inst.numBytes+=4;
 	}
 	inline static unsigned int FetchImm16or32(CPUCLASS &cpu,Instruction &inst,MemoryAccess::ConstPointer &ptr,const SegmentRegister &seg,unsigned int offset,const Memory &mem)
 	{
 		if(16==inst.operandSize)
 		{
-			ptr.FetchTwoBytes(inst.imm);
+			*((uint16_t *)(inst.imm))=*((uint16_t*)ptr.ptr);
+			ptr.ptr+=2;
 			inst.numBytes+=2;
 			return 2;
 		}
 		else // if(32==inst.operandSize)
 		{
-			ptr.FetchFourBytes(inst.imm);
+			*((uint32_t *)(inst.imm))=*((uint32_t*)ptr.ptr);
+			ptr.ptr+=4;
 			inst.numBytes+=4;
 			return 4;
 		}
@@ -365,10 +375,12 @@ public:
 
 		// Multi-byte instruction (0x0F) and pre-fixes are handled in FetchOperand.
 
+		// According to the sample taken 2024/06/07, burst-mode is used for roughly 99.96% of the instructions.
 		if(MAX_INSTRUCTION_LENGTH<=ptr.length)
 		{
 			inst.opCode=BURSTMODEFUNCCLASS::FetchInstructionByte(cpu,ptr,inst.codeAddressSize,CS,offset+inst.numBytes++,mem);
 			CPUCLASS::template FetchOperand<CPUCLASS,MEMCLASS,BURSTMODEFUNCCLASS>(cpu,instOp,ptr,CS,offset+inst.numBytes,mem,defOperSize,defAddrSize);
+			// BurstModeFetchInstructionFunctions does not update ptr.length.
 		}
 		else
 		{
