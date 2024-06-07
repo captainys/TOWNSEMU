@@ -50,7 +50,7 @@ public:
 
 	constexpr bool PageLevelException(class i486DXCommon &cpu,bool write,uint32_t linearAddr,uint32_t pageIndex,uint32_t pageInfo) const{return false;}
 
-	inline static void SetPageFlags(class i486DXCommon &cpu,uint32_t linearAddr,Memory &mem,uint32_t flags){};
+	inline static void SetPageFlags(class i486DXCommon &cpu,uint32_t linearAddr,Memory &mem,uint32_t flags,uint32_t dir_current,uint32_t table_current){};
 
 	constexpr bool SegmentWriteException(class i486DXCommon &cpu,const i486DXCommon::SegmentRegister &reg,uint32_t offset,uint32_t bytes) const{return false;}
 
@@ -340,29 +340,29 @@ public:
 		return false;
 	}
 
-	inline static void SetPageFlags(class i486DXCommon &cpu,uint32_t linearAddr,Memory &mem,uint32_t flags)
+	inline static void SetPageFlags(class i486DXCommon &cpu,uint32_t linearAddr,Memory &mem,uint32_t flags,uint32_t pageDir,uint32_t pageTable)
 	{
+		if((pageDir&flags)==flags && (pageTable&flags)==flags)
+		{
+			// If the flags are already set, don't have to do anything.
+			return;
+		}
+		if(0==(pageDir&1) || 0==(pageTable&1))
+		{
+			// If invalid, dont' bother.
+			return;
+		}
+
+		auto pageDirectoryPtr=cpu.state.GetCR(3)&0xFFFFF000;
 		uint32_t pageDirectoryIndex=((linearAddr>>22)&1023);
 		uint32_t pageTableIndex=((linearAddr>>12)&1023);
 
-		auto pageDirectoryPtr=cpu.state.GetCR(3)&0xFFFFF000;
-		auto pageTableInfo=mem.FetchDword(pageDirectoryPtr+(pageDirectoryIndex<<2));
-		if(0==(pageTableInfo&1))
-		{
-			return;
-		}
+		const unsigned int pageTablePtr=(pageDir&0xFFFFF000);
 
-		const unsigned int pageTablePtr=(pageTableInfo&0xFFFFF000);
-		unsigned int pageInfo=mem.FetchDword(pageTablePtr+(pageTableIndex<<2));
-		if(0==(pageInfo&1))
-		{
-			return;
-		}
-
-		pageTableInfo|=flags;
-		pageInfo|=flags;
-		mem.StoreDword(pageDirectoryPtr+(pageDirectoryIndex<<2),pageTableInfo);
-		mem.StoreDword(pageTablePtr+(pageTableIndex<<2),pageInfo);
+		pageDir|=flags;
+		pageTable|=flags;
+		mem.StoreDword(pageDirectoryPtr+(pageDirectoryIndex<<2),pageDir);
+		mem.StoreDword(pageTablePtr+(pageTableIndex<<2),pageTable);
 	}
 
 

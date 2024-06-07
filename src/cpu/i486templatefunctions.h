@@ -865,7 +865,7 @@ inline unsigned long i486DXFidelityLayer<FIDELITY>::LinearAddressToPhysicalAddre
 		}
 	}
 
-	fidelity.SetPageFlags(*this,linearAddr,mem,PAGEINFO_FLAG_A);
+	fidelity.SetPageFlags(*this,linearAddr,mem,PAGEINFO_FLAG_A,pageInfo.dir,pageInfo.table);
 
 	auto offset=(linearAddr&4095);
 	auto physicalAddr=(pageInfo.table&0xFFFFF000)+offset;
@@ -909,7 +909,7 @@ inline unsigned long i486DXFidelityLayer<FIDELITY>::LinearAddressToPhysicalAddre
 		}
 	}
 
-	fidelity.SetPageFlags(*this,linearAddr,mem,PAGEINFO_FLAG_A|PAGEINFO_FLAG_D);
+	fidelity.SetPageFlags(*this,linearAddr,mem,PAGEINFO_FLAG_A|PAGEINFO_FLAG_D,pageInfo.dir,pageInfo.table);
 
 	auto offset=(linearAddr&4095);
 	auto physicalAddr=(pageInfo.table&0xFFFFF000)+offset;
