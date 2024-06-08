@@ -2323,7 +2323,7 @@ void i486DXCommon::DetachDebugger(void)
 */
 unsigned int i486DXCommon::DebugFetchByte(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 {
-	offset&=AddressMask((unsigned char)addressSize);
+	AddressMask(offset,(unsigned char)addressSize);
 	auto addr=seg.baseLinearAddr+offset;
 	if(true==PagingEnabled())
 	{
@@ -2338,7 +2338,7 @@ unsigned int i486DXCommon::DebugFetchByte(unsigned int addressSize,const Segment
 */
 unsigned int i486DXCommon::DebugFetchWord(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 {
-	offset&=AddressMask((unsigned char)addressSize);
+	AddressMask(offset,(unsigned char)addressSize);
 	auto addr=seg.baseLinearAddr+offset;
 	if(true==PagingEnabled())
 	{
@@ -2357,7 +2357,7 @@ unsigned int i486DXCommon::DebugFetchWord(unsigned int addressSize,const Segment
 */
 unsigned int i486DXCommon::DebugFetchDword(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 {
-	offset&=AddressMask((unsigned char)addressSize);
+	AddressMask(offset,(unsigned char)addressSize);
 	auto addr=seg.baseLinearAddr+offset;
 	if(true==PagingEnabled())
 	{
@@ -2456,7 +2456,7 @@ std::string i486DXCommon::DebugFetchDOSString(int addressSize,const SegmentRegis
 
 void i486DXCommon::DebugStoreByte(Memory &mem,int addressSize,SegmentRegister seg,unsigned int offset,unsigned char byteData)
 {
-	offset&=AddressMask((unsigned char)addressSize);
+	AddressMask(offset,(unsigned char)addressSize);
 	auto linearAddr=seg.baseLinearAddr+offset;
 	auto physicalAddr=linearAddr;
 	if(true==PagingEnabled())
@@ -2469,7 +2469,7 @@ void i486DXCommon::DebugStoreByte(Memory &mem,int addressSize,SegmentRegister se
 
 void i486DXCommon::DebugStoreWord(Memory &mem,int addressSize,SegmentRegister seg,unsigned int offset,unsigned int data)
 {
-	offset&=AddressMask((unsigned char)addressSize);
+	AddressMask(offset,(unsigned char)addressSize);
 	auto linearAddr=seg.baseLinearAddr+offset;
 	auto physicalAddr=linearAddr;
 	if(true==PagingEnabled())
@@ -2487,7 +2487,7 @@ void i486DXCommon::DebugStoreWord(Memory &mem,int addressSize,SegmentRegister se
 }
 void i486DXCommon::DebugStoreDword(Memory &mem,int addressSize,SegmentRegister seg,unsigned int offset,unsigned int data)
 {
-	offset&=AddressMask((unsigned char)addressSize);
+	AddressMask(offset,(unsigned char)addressSize);
 	auto linearAddr=seg.baseLinearAddr+offset;
 	auto physicalAddr=linearAddr;
 	if(true==PagingEnabled())

@@ -2782,7 +2782,7 @@ public:
 	    If it is in real mode or 16-bit addressing, it returns 0xFFFF.
 	    If it is in 32-bit addressing, it returns 0xFFFFFFFF.
 	*/
-	inline unsigned int AddressMask(unsigned char addressSize) const
+	inline void AddressMask(uint32_t &offset,unsigned char addressSize) const
 	{
 		// Segment limit may be beyond 64K in real mode.  According to https://wiki.osdev.org/Unreal_Mode
 		// See also LoadSegmentRegisterRealMode and LoadSegmentRegister
@@ -2790,8 +2790,13 @@ public:
 		//{
 		//	return 0xFFFF;
 		//}
-		unsigned int mask=(1<<(addressSize-1));
-		return mask|(mask-1);
+
+		// Probably it is faster to just check if(16==addressSize), rather than returning a mask and take AND.
+		// Also the optimizer recognizes &=0xFFFF, and takes low-word rather than really taking AND.
+		if(16==addressSize)
+		{
+			offset&=0xFFFF;
+		}
 	}
 
 
@@ -2880,7 +2885,7 @@ public:
 	*/
 	inline MemoryAccess::ConstMemoryWindow DebugGetConstMemoryWindow(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,const Memory &mem) const
 	{
-		offset&=AddressMask((unsigned char)addressSize);
+		AddressMask(offset,(unsigned char)addressSize);
 		auto linearAddr=seg.baseLinearAddr+offset;
 		return DebugGetConstMemoryWindowFromLinearAddress(linearAddr,mem);
 	}
@@ -3601,7 +3606,7 @@ public:
 	*/
 	inline MemoryAccess::ConstMemoryWindow GetConstMemoryWindow(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)
 	{
-		offset&=AddressMask((unsigned char)addressSize);
+		AddressMask(offset,(unsigned char)addressSize);
 		auto linearAddr=seg.baseLinearAddr+offset;
 		return GetConstMemoryWindowFromLinearAddress(linearAddr,mem);
 	}
@@ -3959,7 +3964,7 @@ public:
 template <class FIDELITY>
 inline unsigned int i486DXFidelityLayer<FIDELITY>::FetchByte(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)
 {
-	offset&=AddressMask((unsigned char)addressSize);
+	AddressMask(offset,(unsigned char)addressSize);
 	auto addr=seg.baseLinearAddr+offset;
 
 	FIDELITY fidelity;
@@ -3985,7 +3990,7 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::FetchByte(unsigned int addres
 template <class FIDELITY>
 inline unsigned int i486DXFidelityLayer<FIDELITY>::FetchWord(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)
 {
-	offset&=AddressMask((unsigned char)addressSize);
+	AddressMask(offset,(unsigned char)addressSize);
 	auto addr=seg.baseLinearAddr+offset;
 
 	FIDELITY fidelity;
@@ -4019,7 +4024,7 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::FetchWord(unsigned int addres
 template <class FIDELITY>
 inline unsigned int i486DXFidelityLayer<FIDELITY>::FetchDword(unsigned int addressSize,const SegmentRegister &seg,unsigned int offset,Memory &mem)
 {
-	offset&=AddressMask((unsigned char)addressSize);
+	AddressMask(offset,(unsigned char)addressSize);
 	auto addr=seg.baseLinearAddr+offset;
 
 	FIDELITY fidelity;
@@ -4057,7 +4062,7 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::FetchDword(unsigned int addre
 template <class FIDELITY>
 inline void i486DXFidelityLayer<FIDELITY>::StoreByte(Memory &mem,int addressSize,const SegmentRegister &seg,unsigned int offset,unsigned char byteData)
 {
-	offset&=AddressMask((unsigned char)addressSize);
+	AddressMask(offset,(unsigned char)addressSize);
 	auto linearAddr=seg.baseLinearAddr+offset;
 
 	FIDELITY fidelity;
@@ -4085,7 +4090,7 @@ inline void i486DXFidelityLayer<FIDELITY>::StoreByte(Memory &mem,int addressSize
 template <class FIDELITY>
 inline void i486DXFidelityLayer<FIDELITY>::StoreWord(Memory &mem,int addressSize,const SegmentRegister &seg,unsigned int offset,unsigned int data)
 {
-	offset&=AddressMask((unsigned char)addressSize);
+	AddressMask(offset,(unsigned char)addressSize);
 	auto linearAddr=seg.baseLinearAddr+offset;
 
 	FIDELITY fidelity;
@@ -4122,7 +4127,7 @@ inline void i486DXFidelityLayer<FIDELITY>::StoreWord(Memory &mem,int addressSize
 template <class FIDELITY>
 inline void i486DXFidelityLayer<FIDELITY>::StoreDword(Memory &mem,int addressSize,const SegmentRegister &seg,unsigned int offset,unsigned int data)
 {
-	offset&=AddressMask((unsigned char)addressSize);
+	AddressMask(offset,(unsigned char)addressSize);
 	auto linearAddr=seg.baseLinearAddr+offset;
 
 	FIDELITY fidelity;
