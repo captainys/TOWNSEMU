@@ -385,12 +385,6 @@ template <class FIDELITY>
 void i486DXFidelityLayer <FIDELITY>::StoreOperandValue(
     const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value)
 {
-	static const unsigned int addressMask[2]=
-	{
-		0x0000FFFF,
-		0xFFFFFFFF,
-	};
-
 	switch(dst.operandType)
 	{
 	case OPER_UNDEFINED:
@@ -401,7 +395,6 @@ void i486DXFidelityLayer <FIDELITY>::StoreOperandValue(
 			unsigned int offset;
 			const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,dst,segmentOverride);
 
-			offset&=addressMask[addressSize>>5];
 			switch(value.numBytes)
 			{
 			case 1:
@@ -961,12 +954,6 @@ template <class FIDELITY>
 i486DXCommon::OperandValue i486DXFidelityLayer<FIDELITY>::EvaluateOperand(
     Memory &mem,int addressSize,int segmentOverride,const Operand &op,int destinationBytes)
 {
-	static const unsigned int addressMask[2]=
-	{
-		0x0000FFFF,
-		0xFFFFFFFF,
-	};
-
 	i486DXCommon::OperandValue value;
 	value.numBytes=0;
 	switch(op.operandType)
@@ -981,7 +968,6 @@ i486DXCommon::OperandValue i486DXFidelityLayer<FIDELITY>::EvaluateOperand(
 			unsigned int offset;
 			const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,op,segmentOverride);
 
-			offset&=addressMask[addressSize>>5];
 			switch(value.numBytes)
 			{
 			case 1:
@@ -1095,12 +1081,6 @@ uint8_t i486DXFidelityLayer<FIDELITY>::EvaluateOperandRegOrMem8(Memory &mem,int 
 template <class FIDELITY>
 uint16_t i486DXFidelityLayer<FIDELITY>::EvaluateOperandRegOrMem16(Memory &mem,int addressSize,int segmentOverride,const Operand &op)
 {
-	static const unsigned int addressMask[2]=
-	{
-		0x0000FFFF,
-		0xFFFFFFFF,
-	};
-
 	i486DXCommon::OperandValue value;
 	value.numBytes=0;
 	if(OPER_REG32==op.operandType)
@@ -1115,8 +1095,6 @@ uint16_t i486DXFidelityLayer<FIDELITY>::EvaluateOperandRegOrMem16(Memory &mem,in
 	{
 		unsigned int offset;
 		const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,op,segmentOverride);
-
-		offset&=addressMask[addressSize>>5];
 		return FetchWord(addressSize,seg,offset,mem);
 	}
 }
@@ -1124,12 +1102,6 @@ uint16_t i486DXFidelityLayer<FIDELITY>::EvaluateOperandRegOrMem16(Memory &mem,in
 template <class FIDELITY>
 uint32_t i486DXFidelityLayer<FIDELITY>::EvaluateOperandRegOrMem32(Memory &mem,int addressSize,int segmentOverride,const Operand &op)
 {
-	static const unsigned int addressMask[2]=
-	{
-		0x0000FFFF,
-		0xFFFFFFFF,
-	};
-
 	i486DXCommon::OperandValue value;
 	value.numBytes=0;
 	if(OPER_REG32==op.operandType)
@@ -1144,8 +1116,6 @@ uint32_t i486DXFidelityLayer<FIDELITY>::EvaluateOperandRegOrMem32(Memory &mem,in
 	{
 		unsigned int offset;
 		const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,op,segmentOverride);
-
-		offset&=addressMask[addressSize>>5];
 		return FetchDword(addressSize,seg,offset,mem);
 	}
 }
@@ -1154,12 +1124,6 @@ template <class FIDELITY>
 i486DXCommon::OperandValue i486DXFidelityLayer<FIDELITY>::EvaluateOperandReg16OrReg32OrMem(
 	    Memory &mem,int addressSize,int segmentOverride,const Operand &op,int destinationBytes)
 {
-	static const unsigned int addressMask[2]=
-	{
-		0x0000FFFF,
-		0xFFFFFFFF,
-	};
-
 	i486DXCommon::OperandValue value;
 	value.numBytes=0;
 	if(OPER_REG32==op.operandType)
@@ -1180,8 +1144,6 @@ i486DXCommon::OperandValue i486DXFidelityLayer<FIDELITY>::EvaluateOperandReg16Or
 
 		unsigned int offset;
 		const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,op,segmentOverride);
-
-		offset&=addressMask[addressSize>>5];
 		switch(value.numBytes)
 		{
 		case 1:
@@ -1208,12 +1170,6 @@ template <class FIDELITY>
 i486DXCommon::OperandValue i486DXFidelityLayer<FIDELITY>::EvaluateOperand8(
     Memory &mem,int addressSize,int segmentOverride,const Operand &op)
 {
-	static const unsigned int addressMask[2]=
-	{
-		0x0000FFFF,
-		0xFFFFFFFF,
-	};
-
 	i486DXCommon::OperandValue value;
 	value.numBytes=1;
 	switch(op.operandType)
@@ -1225,7 +1181,6 @@ i486DXCommon::OperandValue i486DXFidelityLayer<FIDELITY>::EvaluateOperand8(
 		{
 			unsigned int offset;
 			const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,op,segmentOverride);
-			offset&=addressMask[addressSize>>5];
 			value.byteData[0]=FetchByte(addressSize,seg,offset,mem);
 		}
 		break;
@@ -1240,12 +1195,6 @@ template <class FIDELITY>
 i486DXCommon::OperandValue i486DXFidelityLayer<FIDELITY>::EvaluateOperand64(
 	    Memory &mem,int addressSize,int segmentOverride,const Operand &op)
 {
-	static const unsigned int addressMask[2]=
-	{
-		0x0000FFFF,
-		0xFFFFFFFF,
-	};
-
 	i486DXCommon::OperandValue value;
 	value.numBytes=0;
 	switch(op.operandType)
@@ -1260,8 +1209,6 @@ i486DXCommon::OperandValue i486DXFidelityLayer<FIDELITY>::EvaluateOperand64(
 			unsigned int offset;
 			const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,op,segmentOverride);
 
-			offset&=addressMask[addressSize>>5];
-
 			cpputil::PutDword(value.byteData  ,FetchDword(addressSize,seg,offset,mem));
 			cpputil::PutDword(value.byteData+4,FetchDword(addressSize,seg,offset+4,mem));
 		}
@@ -1274,12 +1221,6 @@ template <class FIDELITY>
 i486DXCommon::OperandValue i486DXFidelityLayer<FIDELITY>::EvaluateOperand80(
 	    Memory &mem,int addressSize,int segmentOverride,const Operand &op)
 {
-	static const unsigned int addressMask[2]=
-	{
-		0x0000FFFF,
-		0xFFFFFFFF,
-	};
-
 	i486DXCommon::OperandValue value;
 	value.numBytes=0;
 	switch(op.operandType)
@@ -1293,8 +1234,6 @@ i486DXCommon::OperandValue i486DXFidelityLayer<FIDELITY>::EvaluateOperand80(
 
 			unsigned int offset;
 			const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,op,segmentOverride);
-
-			offset&=addressMask[addressSize>>5];
 
 			cpputil::PutDword(value.byteData  ,FetchDword(addressSize,seg,offset,mem));
 			cpputil::PutDword(value.byteData+4,FetchDword(addressSize,seg,offset+4,mem));
@@ -1414,12 +1353,6 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::FetchImm16or32(Instruction &i
 template <class FIDELITY>
 void i486DXFidelityLayer<FIDELITY>::StoreOperandValueRegOrMem8(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,uint8_t value)
 {
-	static const unsigned int addressMask[2]=
-	{
-		0x0000FFFF,
-		0xFFFFFFFF,
-	};
-
 	if(OPER_REG8==dst.operandType)
 	{
 		SetRegisterValue8(dst.reg,value);
@@ -1428,20 +1361,12 @@ void i486DXFidelityLayer<FIDELITY>::StoreOperandValueRegOrMem8(const Operand &ds
 	{
 		unsigned int offset;
 		const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,dst,segmentOverride);
-
-		offset&=addressMask[addressSize>>5];
 		StoreByte(mem,addressSize,seg,offset,value);
 	}
 }
 template <class FIDELITY>
 void i486DXFidelityLayer<FIDELITY>::StoreOperandValueRegOrMem16(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,uint16_t value)
 {
-	static const unsigned int addressMask[2]=
-	{
-		0x0000FFFF,
-		0xFFFFFFFF,
-	};
-
 	if(OPER_REG32==dst.operandType)
 	{
 		state.NULL_and_reg32[dst.reg]=value;
@@ -1454,20 +1379,12 @@ void i486DXFidelityLayer<FIDELITY>::StoreOperandValueRegOrMem16(const Operand &d
 	{
 		unsigned int offset;
 		const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,dst,segmentOverride);
-
-		offset&=addressMask[addressSize>>5];
 		StoreWord(mem,addressSize,seg,offset,value);
 	}
 }
 template <class FIDELITY>
 void i486DXFidelityLayer<FIDELITY>::StoreOperandValueRegOrMem32(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,uint32_t value)
 {
-	static const unsigned int addressMask[2]=
-	{
-		0x0000FFFF,
-		0xFFFFFFFF,
-	};
-
 	if(OPER_REG32==dst.operandType)
 	{
 		state.NULL_and_reg32[dst.reg]=value;
@@ -1480,8 +1397,6 @@ void i486DXFidelityLayer<FIDELITY>::StoreOperandValueRegOrMem32(const Operand &d
 	{
 		unsigned int offset;
 		const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,dst,segmentOverride);
-
-		offset&=addressMask[addressSize>>5];
 		StoreDword(mem,addressSize,seg,offset,value);
 	}
 }
@@ -1490,12 +1405,6 @@ template <class FIDELITY>
 void i486DXFidelityLayer<FIDELITY>::StoreOperandValueReg16OrReg32OrMem(
     const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value)
 {
-	static const unsigned int addressMask[2]=
-	{
-		0x0000FFFF,
-		0xFFFFFFFF,
-	};
-
 	if(OPER_REG32==dst.operandType)
 	{
 		state.NULL_and_reg32[dst.reg]=cpputil::GetDword(value.byteData);
@@ -1508,8 +1417,6 @@ void i486DXFidelityLayer<FIDELITY>::StoreOperandValueReg16OrReg32OrMem(
 	{
 		unsigned int offset;
 		const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,dst,segmentOverride);
-
-		offset&=addressMask[addressSize>>5];
 		switch(value.numBytes)
 		{
 		case 1:
@@ -1535,12 +1442,6 @@ template <class FIDELITY>
 void i486DXFidelityLayer<FIDELITY>::StoreOperandValue8(
     const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value)
 {
-	static const unsigned int addressMask[2]=
-	{
-		0x0000FFFF,
-		0xFFFFFFFF,
-	};
-
 	switch(dst.operandType)
 	{
 	default:
@@ -1550,7 +1451,6 @@ void i486DXFidelityLayer<FIDELITY>::StoreOperandValue8(
 		{
 			unsigned int offset;
 			const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,dst,segmentOverride);
-			offset&=addressMask[addressSize>>5];
 			StoreByte(mem,addressSize,seg,offset,value.byteData[0]);
 		}
 		break;
@@ -1564,12 +1464,6 @@ template <class FIDELITY>
 void i486DXFidelityLayer<FIDELITY>::StoreOperandValue64(
     const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value)
 {
-	static const unsigned int addressMask[2]=
-	{
-		0x0000FFFF,
-		0xFFFFFFFF,
-	};
-
 	switch(dst.operandType)
 	{
 	default:
@@ -1579,8 +1473,6 @@ void i486DXFidelityLayer<FIDELITY>::StoreOperandValue64(
 		{
 			unsigned int offset;
 			const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,dst,segmentOverride);
-			offset&=addressMask[addressSize>>5];
-
 			StoreDword(mem,addressSize,seg,offset,  cpputil::GetDword(value.byteData));
 			StoreDword(mem,addressSize,seg,offset+4,cpputil::GetDword(value.byteData+4));
 		}
@@ -1592,12 +1484,6 @@ template <class FIDELITY>
 void i486DXFidelityLayer<FIDELITY>::StoreOperandValue80(
     const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value)
 {
-	static const unsigned int addressMask[2]=
-	{
-		0x0000FFFF,
-		0xFFFFFFFF,
-	};
-
 	switch(dst.operandType)
 	{
 	default:
@@ -1607,8 +1493,6 @@ void i486DXFidelityLayer<FIDELITY>::StoreOperandValue80(
 		{
 			unsigned int offset;
 			const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,dst,segmentOverride);
-			offset&=addressMask[addressSize>>5];
-
 			StoreDword(mem,addressSize,seg,offset,  cpputil::GetDword(value.byteData));
 			StoreDword(mem,addressSize,seg,offset+4,cpputil::GetDword(value.byteData+4));
 			StoreWord(mem,addressSize,seg,offset+8,cpputil::GetWord(value.byteData+8));
