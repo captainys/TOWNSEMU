@@ -1120,9 +1120,13 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 			break;
 		case HIGHRES_REG_WD_MOUSEX: //0x200
 			state.highResCrtcMouse.X=data;
+			// Also update reported coord.  It is an ad-hoc solution to Windows 3.1 not sending WM_TIMER event to TGMOUSE in certain (unknown yet) conditions.
+			townsPtr->var.mouseXReported=data;
 			break;
 		case HIGHRES_REG_WD_MOUSEY: //0x201
 			state.highResCrtcMouse.Y=data;
+			// Also update reported coord.  It is an ad-hoc solution to Windows 3.1 not sending WM_TIMER event to TGMOUSE in certain (unknown yet) conditions.
+			townsPtr->var.mouseYReported=data;
 			break;
 		case HIGHRES_REG_WD_MOUSE_ORIGINX: //0x202
 			state.highResCrtcMouse.originX=data;
@@ -1294,9 +1298,13 @@ void TownsCRTC::MEMIOWriteFMRVRAMDisplayMode(unsigned char data)
 			break;
 		case HIGHRES_REG_WD_MOUSEX: //0x200
 			state.highResCrtcMouse.X=data;
+			// Also update reported coord.  It is an ad-hoc solution to Windows 3.1 not sending WM_TIMER event to TGMOUSE in certain (unknown yet) conditions.
+			townsPtr->var.mouseXReported=data;
 			break;
 		case HIGHRES_REG_WD_MOUSEY: //0x201
 			state.highResCrtcMouse.Y=data;
+			// Also update reported coord.  It is an ad-hoc solution to Windows 3.1 not sending WM_TIMER event to TGMOUSE in certain (unknown yet) conditions.
+			townsPtr->var.mouseYReported=data;
 			break;
 		case HIGHRES_REG_WD_MOUSE_ORIGINX: //0x202
 			state.highResCrtcMouse.originX=data;
