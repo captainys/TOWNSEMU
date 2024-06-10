@@ -158,7 +158,7 @@ int PASCAL WinMain(HINSTANCE inst,HINSTANCE,LPSTR param,int)
 	while(NULL!=hWnd)
 	{
 		MSG msg;
-		PeekMessage(&msg,NULL,0,0,1);
+		GetMessage(&msg,NULL,0,0); // Why was I using PeekMessage before? PeekMessage(&msg,NULL,0,0,1);
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
