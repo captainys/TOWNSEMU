@@ -8449,13 +8449,6 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 #elif defined(__clang__) || defined(__GNUC__)
 		__builtin_unreachable();
 #endif
-		{
-			std::string msg="Undefined instruction or simply not supported yet.  Opcode=";
-			msg+=cpputil::Ustox(inst.opCode);
-			msg+="H  ";
-			Abort(msg);
-		}
-		return 0;
 	}
 
 	if(0==clocksPassed)
