@@ -1172,22 +1172,24 @@ i486DXCommon::OperandValue i486DXFidelityLayer<FIDELITY>::EvaluateOperand8(
 {
 	i486DXCommon::OperandValue value;
 	value.numBytes=1;
-	switch(op.operandType)
+
+	if(OPER_REG8==op.operandType)
 	{
-	default:
-		Abort("Tried to evaluate non 8-bit operand with EvaluateOperand8.");
-		break;
-	case OPER_ADDR:
-		{
-			unsigned int offset;
-			const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,op,segmentOverride);
-			value.byteData[0]=FetchByte(addressSize,seg,offset,mem);
-		}
-		break;
-	case OPER_REG8:
 		value.byteData[0]=GetRegisterValue8(op.reg);
-		break;
 	}
+#ifdef YS_CPU_DEBUG
+	else if(OPER_ADDR!=op.operandType)
+	{
+		Abort("Tried to evaluate non 8-bit operand with EvaluateOperand8.");
+	}
+#endif
+	else
+	{
+		unsigned int offset;
+		const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,op,segmentOverride);
+		value.byteData[0]=FetchByte(addressSize,seg,offset,mem);
+	}
+
 	return value;
 }
 
@@ -1442,21 +1444,21 @@ template <class FIDELITY>
 void i486DXFidelityLayer<FIDELITY>::StoreOperandValue8(
     const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value)
 {
-	switch(dst.operandType)
+	if(OPER_REG8==dst.operandType)
 	{
-	default:
-		Abort("Tried to store value to a non 8-bit operand with StoreOperandValue8.");
-		break;
-	case OPER_ADDR:
-		{
-			unsigned int offset;
-			const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,dst,segmentOverride);
-			StoreByte(mem,addressSize,seg,offset,value.byteData[0]);
-		}
-		break;
-	case OPER_REG8:
 		SetRegisterValue8(dst.reg,value.byteData[0]);
-		break;
+	}
+#ifdef YS_CPU_DEBUG
+	else if(OPER_ADDR!=dst.operandType)
+	{
+		Abort("Tried to store value to a non 8-bit operand with StoreOperandValue8.");
+	}
+#endif
+	else
+	{
+		unsigned int offset;
+		const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,dst,segmentOverride);
+		StoreByte(mem,addressSize,seg,offset,value.byteData[0]);
 	}
 }
 
