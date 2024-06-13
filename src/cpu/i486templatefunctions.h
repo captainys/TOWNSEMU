@@ -485,7 +485,7 @@ inline unsigned char *i486DXFidelityLayer<FIDELITY>::GetStackAccessPointer(Memor
 				physAddr=LinearAddressToPhysicalAddressWrite(linearAddr,mem); // Assume write-operation for stack.
 			}
 			state.SSESPWindow=mem.GetMemoryWindow(physAddr);
-			state.SSESPWindow.linearBaseAddr=(linearAddr&(~(MemoryAccess::MEMORY_WINDOW_SIZE-1)));
+			state.SSESPWindow.UpdateLinearBaseAddress(linearAddr);
 		}
 		// The second conidition in the next line is automatic.
 		if(nullptr!=state.SSESPWindow.ptr /*&& true==state.SSESPWindow.IsLinearAddressInRange(linearAddr)*/)

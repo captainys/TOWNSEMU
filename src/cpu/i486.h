@@ -3965,7 +3965,7 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::FetchByte(unsigned int addres
 	}
 
 	if(/* &seg==&state.SS() && */
-	   nullptr!=state.SSESPWindow.ptr &&
+	   // nullptr!=state.SSESPWindow.ptr &&
 	   true==state.SSESPWindow.IsLinearAddressInRange(addr))
 	{
 		return state.SSESPWindow.ptr[addr&(MemoryAccess::MEMORY_WINDOW_SIZE-1)];
@@ -3991,7 +3991,7 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::FetchWord(unsigned int addres
 	}
 
 	if(/* &seg==&state.SS() && */
-	   nullptr!=state.SSESPWindow.ptr &&
+	   // nullptr!=state.SSESPWindow.ptr &&
 	   true==state.SSESPWindow.IsLinearAddressInRange(addr))
 	{
 		unsigned int low12bits=(addr&(MemoryAccess::MEMORY_WINDOW_SIZE-1));
@@ -4025,7 +4025,7 @@ inline unsigned int i486DXFidelityLayer<FIDELITY>::FetchDword(unsigned int addre
 	}
 
 	if(/* &seg==&state.SS() && */
-	   nullptr!=state.SSESPWindow.ptr &&
+	   // nullptr!=state.SSESPWindow.ptr &&
 	   true==state.SSESPWindow.IsLinearAddressInRange(addr))
 	{
 		unsigned int low12bits=(addr&(MemoryAccess::MEMORY_WINDOW_SIZE-1));
@@ -4063,7 +4063,7 @@ inline void i486DXFidelityLayer<FIDELITY>::StoreByte(Memory &mem,int addressSize
 	}
 
 	if(/* &seg==&state.SS() && */
-	   nullptr!=state.SSESPWindow.ptr &&
+	   // nullptr!=state.SSESPWindow.ptr &&
 	   true==state.SSESPWindow.IsLinearAddressInRange(linearAddr))
 	{
 		state.SSESPWindow.ptr[linearAddr&(MemoryAccess::MEMORY_WINDOW_SIZE-1)]=byteData;
@@ -4091,7 +4091,7 @@ inline void i486DXFidelityLayer<FIDELITY>::StoreWord(Memory &mem,int addressSize
 	}
 
 	if(/* &seg==&state.SS() && */
-	   nullptr!=state.SSESPWindow.ptr &&
+	   // nullptr!=state.SSESPWindow.ptr &&
 	   true==state.SSESPWindow.IsLinearAddressInRange(linearAddr))
 	{
 		unsigned int low12bits=(linearAddr&(MemoryAccess::MEMORY_WINDOW_SIZE-1));
@@ -4128,7 +4128,7 @@ inline void i486DXFidelityLayer<FIDELITY>::StoreDword(Memory &mem,int addressSiz
 	}
 
 	if(/* &seg==&state.SS() && */
-	   nullptr!=state.SSESPWindow.ptr &&
+	   // nullptr!=state.SSESPWindow.ptr &&
 	   true==state.SSESPWindow.IsLinearAddressInRange(linearAddr))
 	{
 		unsigned int low12bits=(linearAddr&(MemoryAccess::MEMORY_WINDOW_SIZE-1));
