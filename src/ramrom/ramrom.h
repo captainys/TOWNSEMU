@@ -121,9 +121,9 @@ public:
 	class ConstMemoryWindow
 	{
 	public:
-		/*! Linear address should be filled by the CPU.
+		/*! Linear address should be filled by the CPU by calling UpdateLinearBaseAddress.
 		*/
-		unsigned int linearBaseAddr=0;
+		unsigned int _linearBaseAddr=~0;
 
 		/*! Pointer to the memory window.
 		    If the memory area cannot be accessed through a pointer, it is nullptr.
@@ -132,13 +132,25 @@ public:
 
 		inline void CleanUp(void)
 		{
-			linearBaseAddr=0;
+			_linearBaseAddr=~0;
 			ptr=nullptr;
+		}
+
+		inline void UpdateLinearBaseAddress(unsigned int addr)
+		{
+			if(nullptr!=ptr)
+			{
+				_linearBaseAddr=addr&~(MEMORY_WINDOW_SIZE-1);
+			}
+			else
+			{
+				_linearBaseAddr=~0;
+			}
 		}
 
 		inline bool IsLinearAddressInRange(unsigned int addr) const
 		{
-			return (addr&~(MEMORY_WINDOW_SIZE-1))==linearBaseAddr;
+			return (addr&~(MEMORY_WINDOW_SIZE-1))==_linearBaseAddr;
 		}
 
 		/*! Returns a memory-access pointer from this window.
@@ -177,7 +189,7 @@ public:
 	public:
 		/*! Linear address should be filled by the CPU.
 		*/
-		unsigned int linearBaseAddr=0;
+		unsigned int linearBaseAddr=~0;
 
 		/*! Pointer to the memory window.
 		    If the memory area cannot be accessed through a pointer, it is nullptr.
@@ -186,7 +198,7 @@ public:
 
 		inline void CleanUp(void)
 		{
-			linearBaseAddr=0;
+			linearBaseAddr=~0;
 			ptr=nullptr;
 		}
 

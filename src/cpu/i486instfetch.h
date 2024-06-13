@@ -353,7 +353,7 @@ public:
 		// Question: Do prefixes need to be in the specific order INST_PREFIX->ADDRSIZE_OVERRIDE->OPSIZE_OVERRIDE->SEG_OVERRIDE?
 
 		auto CSEIPLinear=CS.baseLinearAddr+offset;
-		if(nullptr==memWin.ptr || true!=memWin.IsLinearAddressInRange(CSEIPLinear))
+		if(true!=memWin.IsLinearAddressInRange(CSEIPLinear))
 		{
 			FUNCCLASS::GetConstMemoryWindow(cpu,memWin,inst.codeAddressSize,CS,offset,mem);
 		}

@@ -2903,7 +2903,7 @@ public:
 			physAddr=DebugLinearAddressToPhysicalAddress(type,code,linearAddr,mem);
 		}
 		auto memWin=mem.GetConstMemoryWindow(physAddr);
-		memWin.linearBaseAddr=(linearAddr&(~0xfff));
+		memWin.UpdateLinearBaseAddress(linearAddr);
 		return memWin;
 	}
 
@@ -3597,7 +3597,7 @@ public:
 			physAddr=LinearAddressToPhysicalAddressRead(linearAddr,mem);
 		}
 		auto memWin=mem.GetConstMemoryWindow(physAddr);
-		memWin.linearBaseAddr=(linearAddr&(~0xfff));
+		memWin.UpdateLinearBaseAddress(linearAddr);
 		return memWin;
 	}
 
