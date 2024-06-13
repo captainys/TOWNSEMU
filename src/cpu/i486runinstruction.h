@@ -6420,14 +6420,14 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 	case I486_RENUMBER_MOV_TO_R8: //        0x8A,
 		{
 			auto regNum=inst.GetREG(); // Guaranteed to be between 0 and 7
-			auto value=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op2);
+			uint32_t value=EvaluateOperandRegOrMem8(mem,inst.addressSize,inst.segOverride,op2);
 			if(true!=state.exception)
 			{
 			#ifdef YS_LITTLE_ENDIAN
-				*state.reg8Ptr[regNum]=value.GetAsByte();
+				*state.reg8Ptr[regNum]=value;
 			#else
 				state.reg32()[regNum&3]&=reg8AndPattern[regNum];
-				state.reg32()[regNum&3]|=((unsigned int)(value.GetAsByte())<<reg8Shift[regNum]);
+				state.reg32()[regNum&3]|=(value<<reg8Shift[regNum]);
 			#endif
 			}
 			else
