@@ -336,6 +336,16 @@ inline uint16_t LowWord(uint32_t dw)
 #endif
 }
 
+inline uint8_t LowByte(uint32_t dw)
+{
+#ifdef YS_LITTLE_ENDIAN
+	uint8_t *wdPtr=(uint8_t *)&dw;
+	return wdPtr[0];
+#else
+	return dw&0xFF;
+#endif
+}
+
 inline uint16_t HighWord(uint32_t dw)
 {
 #ifdef YS_LITTLE_ENDIAN
