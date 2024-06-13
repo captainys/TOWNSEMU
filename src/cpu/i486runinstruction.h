@@ -1746,8 +1746,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			} \
 		} \
 		else {\
-			auto value=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op1); \
-			auto i=value.GetAsDword(); \
+			unsigned int i=EvaluateOperandRegOrMem8(mem,inst.addressSize,inst.segOverride,op1); \
 			if(true!=state.exception) \
 			{ \
 				switch(inst.GetREG()) \
@@ -1787,8 +1786,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				default: \
 					std_unreachable; \
 				} \
-				value.SetDword(i); \
-				StoreOperandValue8(op1,mem,inst.addressSize,inst.segOverride,value); \
+				StoreOperandValueRegOrMem8(op1,mem,inst.addressSize,inst.segOverride,cpputil::LowByte(i)); \
 			} \
 		}\
 	}
@@ -6416,9 +6414,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		#else
 			unsigned int value=(255&(state.reg32()[regNum&3]>>reg8Shift[regNum]));
 		#endif
-			OperandValue src;
-			src.MakeByte(value);
-			StoreOperandValue8(op1,mem,inst.addressSize,inst.segOverride,src);
+			StoreOperandValueRegOrMem8(op1,mem,inst.addressSize,inst.segOverride,cpputil::LowByte(value));
 			clocksPassed=1;
 			HANDLE_EXCEPTION_IF_ANY;
 		}
