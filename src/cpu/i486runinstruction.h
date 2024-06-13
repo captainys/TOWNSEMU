@@ -6690,32 +6690,27 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 	case I486_RENUMBER_MOVZX_R_RM8://=      0x0FB6, 8bit to 16or32bit
 		{
 			clocksPassed=3;
-			auto value=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op2);
+			uint32_t value=EvaluateOperandRegOrMem8(mem,inst.addressSize,inst.segOverride,op2);
 			if(true!=state.exception)
 			{
-				value.numBytes=4;
-				if(I486_OPCODE_MOVZX_R_RM8==inst.opCode || 0==(value.byteData[0]&0x80))
+				if(I486_OPCODE_MOVZX_R_RM8==inst.opCode || 0==(value&0x80))
 				{
-					value.byteData[1]=0;
-					value.byteData[2]=0;
-					value.byteData[3]=0;
+					value&=0xFF;
 				}
 				else
 				{
-					value.byteData[1]=0xff;
-					value.byteData[2]=0xff;
-					value.byteData[3]=0xff;
+					value|=0xFFFFFF00;
 				}
 
 				// op1 is a register.
 				auto regNum=inst.GetREG(); // Guaranteed to be between 0 and 7
 				if(32==inst.operandSize)
 				{
-					state.reg32()[regNum]=value.GetAsDword();
+					state.reg32()[regNum]=value;
 				}
 				else // if(16==operandSize)
 				{
-					SET_INT_LOW_WORD(state.reg32()[regNum],value.GetAsWord());
+					SET_INT_LOW_WORD(state.reg32()[regNum],cpputil::LowWord(value));
 				}
 			}
 			else
