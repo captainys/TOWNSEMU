@@ -342,16 +342,25 @@ public:
 
 	inline static void SetPageFlags(class i486DXCommon &cpu,uint32_t linearAddr,Memory &mem,uint32_t flags,uint32_t pageDir,uint32_t pageTable)
 	{
-		if((pageDir&flags)==flags && (pageTable&flags)==flags)
+		auto dirAndTable=(pageDir&pageTable);
+		if((dirAndTable&flags)==flags || 0==(dirAndTable&1))
 		{
 			// If the flags are already set, don't have to do anything.
+			// If the directory or table is not present, no access will take place, therefore no update in flags.
 			return;
 		}
-		if(0==(pageDir&1) || 0==(pageTable&1))
-		{
-			// If invalid, dont' bother.
-			return;
-		}
+		// Equivalent >>
+		// if((pageDir&flags)==flags && (pageTable&flags)==flags)
+		// {
+		// 	// If the flags are already set, don't have to do anything.
+		// 	return;
+		// }
+		// if(0==(pageDir&1) || 0==(pageTable&1))
+		// {
+		// 	// If invalid, dont' bother.
+		// 	return;
+		// }
+		// Equivalent <<
 
 		auto pageDirectoryPtr=cpu.state.GetCR(3)&0xFFFFF000;
 		uint32_t pageDirectoryIndex=((linearAddr>>22)&1023);
