@@ -138,12 +138,7 @@ public:
 
 		inline bool IsLinearAddressInRange(unsigned int addr) const
 		{
-		#ifdef YS_TWOS_COMPLEMENT
-			addr-=linearBaseAddr;
-			return addr<MEMORY_WINDOW_SIZE;
-		#else
-			return (linearBaseAddr<=addr && addr<linearBaseAddr+MEMORY_WINDOW_SIZE);
-		#endif
+			return (addr&~(MEMORY_WINDOW_SIZE-1))==linearBaseAddr;
 		}
 
 		/*! Returns a memory-access pointer from this window.
@@ -197,12 +192,7 @@ public:
 
 		inline bool IsLinearAddressInRange(unsigned int addr) const
 		{
-		#ifdef YS_TWOS_COMPLEMENT
-			addr-=linearBaseAddr;
-			return addr<MEMORY_WINDOW_SIZE;
-		#else
-			return (linearBaseAddr<=addr && addr<linearBaseAddr+MEMORY_WINDOW_SIZE);
-		#endif
+			return (addr&~(MEMORY_WINDOW_SIZE-1))==linearBaseAddr;
 		}
 	};
 
