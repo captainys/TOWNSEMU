@@ -1646,13 +1646,13 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		} \
 		unsigned int reg=REG_AL+inst.GetREG(); \
 		auto value1=GetRegisterValue8(reg); \
-		auto value2=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op2); \
+		auto value2=EvaluateOperandRegOrMem8(mem,inst.addressSize,inst.segOverride,op2); \
 		if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes)) \
 		{ \
 			EIPIncrement=0; \
 			break; \
 		} \
-		(func)(value1,value2.GetAsDword()); \
+		(func)(value1,value2); \
 		if(true==update) \
 		{ \
 			SetRegisterValue8(reg,value1); \
