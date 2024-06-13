@@ -2218,12 +2218,12 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				}
 				else
 				{
-					auto value=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op1);
+					auto value=EvaluateOperandRegOrMem8(mem,inst.addressSize,inst.segOverride,op1);
 					HANDLE_EXCEPTION_IF_ANY;
 					if(true!=state.exception)
 					{
-						value.byteData[0]=~value.byteData[0];
-						StoreOperandValue8(op1,mem,inst.addressSize,inst.segOverride,value);
+						value=~value;
+						StoreOperandValueRegOrMem8(op1,mem,inst.addressSize,inst.segOverride,value);
 					}
 				}
 			}
@@ -2241,13 +2241,11 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				}
 				else
 				{
-					auto value1 = EvaluateOperand8(mem, inst.addressSize, inst.segOverride, op1);
+					auto value1 = EvaluateOperandRegOrMem8(mem, inst.addressSize, inst.segOverride, op1);
 					HANDLE_EXCEPTION_IF_ANY;
 					uint32_t r = 0;
-					uint32_t i = value1.GetAsDword();
-					SubByte(r, i);
-					value1.SetDword(r);
-					StoreOperandValue8(op1, mem, inst.addressSize, inst.segOverride, value1);
+					SubByte(r, value1);
+					StoreOperandValueRegOrMem8(op1, mem, inst.addressSize, inst.segOverride, r);
 				}
 			}
 			break;
