@@ -3763,12 +3763,6 @@ private:
 	OperandValue EvaluateOperandReg16OrReg32OrMem(
 	    Memory &mem,int addressSize,int segmentOverride,const Operand &op,int destinationBytes);
 
-	/*! Evaluate operand as an 8-bit operand.
-	    Use EvaluateOperandRegOrMem8 instead.
-	*/
-	OperandValue EvaluateOperand8(
-	    Memory &mem,int addressSize,int segmentOverride,const Operand &op);
-
 	/*! Evaluate operand as an 64-bit operand (double).
 	*/
 	OperandValue EvaluateOperand64(
@@ -3880,10 +3874,6 @@ public:
 	    when the operand is known to be reg16, reg32, or mem.
 	*/
 	void StoreOperandValueReg16OrReg32OrMem(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value);
-
-	/*! Store value to an 8-bit operand.
-	*/
-	void StoreOperandValue8(const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value);
 
 	/*! Store value to an 64-bit operand.
 	*/

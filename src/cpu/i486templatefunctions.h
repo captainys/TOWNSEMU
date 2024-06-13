@@ -1167,33 +1167,6 @@ i486DXCommon::OperandValue i486DXFidelityLayer<FIDELITY>::EvaluateOperandReg16Or
 }
 
 template <class FIDELITY>
-i486DXCommon::OperandValue i486DXFidelityLayer<FIDELITY>::EvaluateOperand8(
-    Memory &mem,int addressSize,int segmentOverride,const Operand &op)
-{
-	i486DXCommon::OperandValue value;
-	value.numBytes=1;
-
-	if(OPER_REG8==op.operandType)
-	{
-		value.byteData[0]=GetRegisterValue8(op.reg);
-	}
-#ifdef YS_CPU_DEBUG
-	else if(OPER_ADDR!=op.operandType)
-	{
-		Abort("Tried to evaluate non 8-bit operand with EvaluateOperand8.");
-	}
-#endif
-	else
-	{
-		unsigned int offset;
-		const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,op,segmentOverride);
-		value.byteData[0]=FetchByte(addressSize,seg,offset,mem);
-	}
-
-	return value;
-}
-
-template <class FIDELITY>
 i486DXCommon::OperandValue i486DXFidelityLayer<FIDELITY>::EvaluateOperand64(
 	    Memory &mem,int addressSize,int segmentOverride,const Operand &op)
 {
@@ -1437,28 +1410,6 @@ void i486DXFidelityLayer<FIDELITY>::StoreOperandValueReg16OrReg32OrMem(
 			}
 			break;
 		}
-	}
-}
-
-template <class FIDELITY>
-void i486DXFidelityLayer<FIDELITY>::StoreOperandValue8(
-    const Operand &dst,Memory &mem,int addressSize,int segmentOverride,const OperandValue &value)
-{
-	if(OPER_REG8==dst.operandType)
-	{
-		SetRegisterValue8(dst.reg,value.byteData[0]);
-	}
-#ifdef YS_CPU_DEBUG
-	else if(OPER_ADDR!=dst.operandType)
-	{
-		Abort("Tried to store value to a non 8-bit operand with StoreOperandValue8.");
-	}
-#endif
-	else
-	{
-		unsigned int offset;
-		const SegmentRegister &seg=*ExtractSegmentAndOffset(offset,dst,segmentOverride);
-		StoreByte(mem,addressSize,seg,offset,value.byteData[0]);
 	}
 }
 

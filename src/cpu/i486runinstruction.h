@@ -5611,7 +5611,6 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			}
 			auto REG=inst.GetREG();
 
-			OperandValue value1;
 			uint32_t i;
 			auto operPtr=GetOperandPointer8(mem,inst.addressSize,inst.segOverride,op1,(7!=REG)); // forWrite is true if REG!=7 (CMP)
 			if(nullptr!=operPtr)
@@ -5620,8 +5619,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			}
 			else
 			{
-				value1=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op1);
-				i=value1.GetAsDword();
+				i=EvaluateOperandRegOrMem8(mem,inst.addressSize,inst.segOverride,op1);
 			}
 			auto value2=inst.EvalUimm8();
 			if(true==state.exception)
@@ -5668,8 +5666,7 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 				}
 				else
 				{
-					value1.SetDword(i);
-					StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,value1);
+					StoreOperandValueRegOrMem8(op1,mem,inst.addressSize,inst.segOverride,cpputil::LowByte(i));
 					if(true==fidelity.HandleExceptionIfAny(*this,mem,inst.numBytes))
 					{
 						EIPIncrement=0;
@@ -8335,19 +8332,18 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 			else
 			{
 				// op2 is a register.
-				auto RM=EvaluateOperand8(mem,inst.addressSize,inst.segOverride,op1);
+				uint32_t RM=EvaluateOperandRegOrMem8(mem,inst.addressSize,inst.segOverride,op1);
 
 				HANDLE_EXCEPTION_IF_ANY;
 
-				OperandValue R;
-				R.MakeByte(state.reg32()[regNum&3]>>reg8Shift[regNum]);
+				uint8_t R=cpputil::LowByte(state.reg32()[regNum&3]>>reg8Shift[regNum]);
 
-				StoreOperandValue(op1,mem,inst.addressSize,inst.segOverride,R);
+				StoreOperandValueRegOrMem8(op1,mem,inst.addressSize,inst.segOverride,R);
 
 				HANDLE_EXCEPTION_IF_ANY;
 
 				state.reg32()[regNum&3]&=reg8AndPattern[regNum];
-				state.reg32()[regNum&3]|=((unsigned int)(RM.GetAsByte())<<reg8Shift[regNum]);
+				state.reg32()[regNum&3]|=(RM<<reg8Shift[regNum]);
 			}
 		}
 		break;
