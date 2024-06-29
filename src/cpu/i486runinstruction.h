@@ -8449,6 +8449,78 @@ unsigned int i486DXFidelityLayer<FIDELITY>::RunOneInstruction(Memory &mem,InOut 
 		}
 		break;
 
+	case I486_RENUMBER_CMPXCHG_RM8_R8:
+		clocksPassed=6;
+		{
+			// op2 is a register.
+			uint32_t RM=EvaluateOperandRegOrMem8(mem,inst.addressSize,inst.segOverride,op1);
+
+			HANDLE_EXCEPTION_IF_ANY;
+
+			auto regNum=inst.GetREG(); // Guaranteed to be between 0 and 7
+			uint8_t R=cpputil::LowByte(state.reg32()[regNum&3]>>reg8Shift[regNum]);
+
+			uint32_t AL=GetAL();
+			SubByte(AL,RM);
+			if(true==GetZF())
+			{
+				StoreOperandValueRegOrMem8(op1,mem,inst.addressSize,inst.segOverride,R);
+				HANDLE_EXCEPTION_IF_ANY;
+			}
+			else
+			{
+				SetAL(RM);
+			}
+		}
+		break;
+	case I486_RENUMBER_CMPXCHG_RM_R:
+		clocksPassed=6;
+		if(16==inst.operandSize)
+		{
+			// op2 is a register.
+			uint32_t RM=EvaluateOperandRegOrMem16(mem,inst.addressSize,inst.segOverride,op1);
+
+			HANDLE_EXCEPTION_IF_ANY;
+
+			auto regNum=inst.GetREG(); // Guaranteed to be between 0 and 7
+			uint32_t R=cpputil::LowWord(state.reg32()[regNum]);
+
+			uint32_t AX=GetAX();
+			SubWord(AX,RM);
+			if(true==GetZF())
+			{
+				StoreOperandValueRegOrMem16(op1,mem,inst.addressSize,inst.segOverride,R);
+				HANDLE_EXCEPTION_IF_ANY;
+			}
+			else
+			{
+				SetAX(RM);
+			}
+		}
+		else
+		{
+			// op2 is a register.
+			uint32_t RM=EvaluateOperandRegOrMem32(mem,inst.addressSize,inst.segOverride,op1);
+
+			HANDLE_EXCEPTION_IF_ANY;
+
+			auto regNum=inst.GetREG(); // Guaranteed to be between 0 and 7
+			uint32_t R=state.reg32()[regNum];
+
+			uint32_t EAX=GetEAX();
+			SubDword(EAX,RM);
+			if(true==GetZF())
+			{
+				StoreOperandValueRegOrMem32(op1,mem,inst.addressSize,inst.segOverride,R);
+				HANDLE_EXCEPTION_IF_ANY;
+			}
+			else
+			{
+				SetEAX(RM);
+			}
+		}
+		break;
+
 	case I486_RENUMBER_REALLY_UNDEFINED:
 		clocksPassed=0;
 		break;
