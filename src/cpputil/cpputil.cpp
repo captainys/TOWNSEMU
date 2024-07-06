@@ -416,6 +416,11 @@ const char *cpputil::BoolToStr(bool b)
 	}
 }
 
+bool cpputil::StrToBool(const std::string &str)
+{
+	return "TRUE"==str || "True"==str || "true"==str;
+}
+
 int cpputil::Xtoi(const char str[])
 {
 	int n=0;
